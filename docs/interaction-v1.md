@@ -1,108 +1,108 @@
-# MediaPlayer Interaction Spec V1.5
+# MediaPlayer 交互规范 V1.5
 
-## Primary layout
+## 主体布局
 
-- Root layout: `Header + Sidebar + Main`.
-- Header, Sidebar, and Main proportions are user-adjustable.
-- Main contains:
-  - paged content area
-  - metadata panel (collapsible)
-  - footer for focused item details
+- 根布局固定为 `Header + Sidebar + Main`。
+- Header、Sidebar、Main 的比例均可由用户调整。
+- Main 区包含：
+  - 分页内容区
+  - 可折叠元数据面板
+  - 当前 focus 项信息 Footer
 
-## Header controls
+## Header 控件
 
-- Logo acts as import trigger.
-- Unified import action supports files, folders, and mixed selection.
-- Mode switch: image mode vs video mode.
-- Vector mode toggle.
-- Metadata feature filters.
-- Grade control for focused image.
-- Thumbnail zoom control.
-- Auto-play toggle and interval presets.
-- Settings entry.
+- Logo 作为统一导入入口。
+- 导入动作支持文件、文件夹与混合选择。
+- 模式切换：图片模式 / 视频模式。
+- 向量模式开关。
+- 元数据特征检索。
+- 当前图片评分控件。
+- 缩略图缩放控件。
+- 自动播放开关与间隔预设。
+- 设置面板入口。
 
-## Sidebar behavior
+## Sidebar 行为
 
-### Image mode
+### 图片模式
 
-- Show hierarchical roots, folders, and archive nodes.
-- Do not show image file leaves.
-- Allow setting any node as `Current Root` for scoped navigation.
+- 展示分层根目录、子目录与图包节点。
+- 不展示图片文件叶子。
+- 任意节点可设置为 `Current Root`，用于范围化浏览。
 
-### Video mode
+### 视频模式
 
-- Show hierarchical roots, folders, and video file leaves.
-- Each video leaf has a toggle for fullscreen playlist inclusion.
-- Playlist is global across entire library.
+- 展示分层根目录、子目录与视频文件叶子。
+- 每个视频叶子带 `toggle`，用于加入/移出全屏播放列表。
+- 播放列表为全库共用。
 
-## Main behavior
+## Main 行为
 
-### Image mode
+### 图片模式
 
-- Paged thumbnail grid, not infinite scroll.
-- Supports thumbnail mode and filename-only mode.
-- Focus by click or keyboard navigation.
-- Metadata panel updates with focused item.
+- 使用分页缩略图网格，不使用无限滚动。
+- 支持“缩略图模式”与“纯文件名模式”切换。
+- 支持点击与键盘移动 focus。
+- 元数据面板随 focus 实时更新。
 
-### Video mode
+### 视频模式
 
-- Preview panel with playback controls.
-- Includes `Save as cover` button for manual cover selection.
-- Metadata panel can switch between:
-  - video metadata view
-  - playlist management view
+- 提供视频预览区域与播放控制。
+- 包含 `Save as cover` 按钮，用于手动保存封面。
+- 元数据面板可切换：
+  - 视频信息视图
+  - 播放列表管理视图
 
-### Footer
+### Main Footer
 
-- Always reflects focused item details.
-- Includes path details, size, and resolution.
-- Zip image path format: `absolute_zip_path + ordinal`.
+- 始终展示 focus 项详细信息。
+- 展示项包括路径、文件大小、分辨率。
+- `zip` 图片路径格式：`压缩包绝对路径 + 序号`。
 
-## Playlist interactions
+## 播放列表交互
 
-- Playlist can be reordered by drag-and-drop.
-- Playlist items can be removed directly.
-- Removal syncs corresponding sidebar toggle to off.
-- If currently playing item is removed, switch to next available item.
+- 支持拖拽调整顺序。
+- 支持直接删除条目。
+- 删除条目后，同步 Sidebar 对应 `toggle` 关闭。
+- 若删除当前播放项，自动切换到下一可用项。
 
-## Fullscreen mode
+## 全屏模式
 
-- Enter by Enter or double-click on focused item.
-- Toggle fullscreen by `F11`.
-- Footer appears when pointer enters bottom 20% area.
-- Display mode switches:
-  - dual display
-  - video only
-  - image only
+- Enter 或双击 focus 项进入全屏。
+- `F11` 切换全屏/窗口模式（图片模式与视频模式都可用）。
+- 鼠标进入底部 20% 区域时显示浮动 Footer。
+- Footer 提供显示模式切换：
+  - 双显示
+  - 仅视频
+  - 仅图片
 
-## Keyboard controls
+## 键盘控制
 
-### Global and image browsing
+### 全局与图片浏览
 
-- `Left/Right`: previous or next image.
-- `Up/Down`: first or last image.
-- `Ctrl+Left/Right`: previous or next package.
-- `A`: start or stop auto-play.
-- `1/2/3/4/5`: set auto-play interval to `1/2/3/5/8` seconds.
-- `Alt+0..5` or numpad `0..5`: set rating where `0 => null`.
-- `Tab` in windowed mode: switch keyboard focus between Sidebar and Main.
+- `Left/Right`：上一张 / 下一张。
+- `Up/Down`：跳到首页 / 末页。
+- `Ctrl+Left/Right`：上一个包 / 下一个包。
+- `A`：开始 / 停止自动播放。
+- `1/2/3/4/5`：自动播放间隔 `1/2/3/5/8` 秒。
+- `Alt+0..5` 或小键盘 `0..5`：评分（`0 => null`）。
+- 非全屏下 `Tab`：在 Sidebar 与 Main 之间切换键盘焦点。
 
-### Video controls
+### 视频控制
 
-- Active only in fullscreen video or dual-display with video focus.
-- `Space`: play or pause.
-- `PageUp/PageDown`: previous or next playlist video.
-- `Ctrl+PageUp/PageDown`: decrease or increase playback speed.
-- `Home/End`: decrease or increase volume.
+- 仅在“全屏视频”或“双显示且视频焦点激活”时生效。
+- `Space`：播放 / 暂停。
+- `PageUp/PageDown`：播放列表上一个 / 下一个视频。
+- `Ctrl+PageUp/PageDown`：降低 / 提高播放倍速。
+- `Home/End`：降低 / 提高音量。
 
-## Shortcut customization
+## 快捷键自定义
 
-- All shortcuts are editable in Settings.
-- Save-time conflict detection applies by scope.
-- Default profile can be restored in one action.
+- 所有快捷键均可在设置面板重映射。
+- 保存时按作用域执行冲突检测。
+- 支持一键恢复默认快捷键方案。
 
-## Settings overlay
+## 设置面板形态
 
-- Opens as a centered panel at about 80% workspace size.
-- Background content remains visible with light blur.
-- All numeric, API, vector, and UI behavior settings are managed here.
+- 以约 80% 的居中面板形式打开。
+- 背景内容轻度模糊但保持可见。
+- 统一承载数值参数、API 参数、向量相关与 UI 行为设置。

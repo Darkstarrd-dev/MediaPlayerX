@@ -1,128 +1,128 @@
-# MediaPlayer V1 Requirements Freeze
+# MediaPlayer V1 需求冻结
 
-## Product goal
+## 产品目标
 
-Build a local-first media browser for images and videos with strong scalability, modularity, and testability.
+构建一个本地优先的图片/视频综合浏览器，具备高可扩展性、模块化能力与可测试性。
 
-## Tech stack
+## 技术栈
 
-- Desktop: Electron + Node.js
-- UI: Vite + React
-- State: Zustand
-- Safety: TypeScript + Zod
-- Tests: Vitest (unit + component), with user-guided E2E scripts
-- Metadata and runtime DB: SQLite
-- Vector DB: LanceDB
-- Embedding endpoint: LM Studio (configurable)
+- 桌面端：Electron + Node.js
+- 前端：Vite + React
+- 状态管理：Zustand
+- 类型与校验：TypeScript + Zod
+- 测试：Vitest（单元 + 组件），E2E 由用户按脚本执行
+- 元数据与运行时数据库：SQLite
+- 向量数据库：LanceDB
+- Embedding 接入端点：LM Studio（可配置）
 
-## Supported platforms and storage
+## 平台与存储范围
 
-- Primary platform: Windows.
-- Ingest from local disks.
-- Removable disks can be temporarily browsed, but are not persisted into the database.
+- 目标平台：Windows。
+- 入库来源：本地磁盘。
+- 移动硬盘等可临时浏览，但默认不写入数据库。
 
-## Ingestion and update behavior
+## 导入与更新行为
 
-### Accepted input forms
+### 支持的输入形式
 
-- Single image or video file.
-- Multiple image or video files.
-- Single folder (recursive scan for media and compressed archives).
-- Multiple folders (recursive).
-- Mixed file + folder selection.
+- 单个图片或视频文件。
+- 多个图片或视频文件。
+- 单个目录（递归扫描媒体与压缩包）。
+- 多个目录（递归扫描）。
+- 文件与目录混合选择。
 
-### Input channels
+### 支持的输入渠道
 
-- Drag and drop into app.
-- Native file picker from app.
-- Clipboard paste of file paths.
+- 拖拽到应用窗口。
+- 应用内原生文件选择器。
+- 粘贴文件路径。
 
-### Archive behavior
+### 压缩包规则
 
-- Core archive format is `zip`.
-- If source is `rar` or `7z`, convert to standard storage `zip` through task pipeline.
-- Keep monitoring indexed roots for newly added zip files.
-- Detect zip changes by `size/mtime/hash` and trigger update or removal.
+- 核心压缩格式为 `zip`。
+- 源文件为 `rar` 或 `7z` 时，走任务管线转换为标准存储 `zip`。
+- 持续监控已入库根目录中的新增 `zip`。
+- 通过 `size/mtime/hash` 识别 `zip` 变化并触发更新或移除。
 
-## Thumbnail rules
+## 缩略图规则
 
-- Generate with Sharp.
-- Output format: WebP.
-- Default quality: `40`.
-- Default max edge: `512` px.
-- All thumbnail parameters are configurable in Settings.
+- 使用 Sharp 生成。
+- 输出格式：WebP。
+- 默认质量：`40`。
+- 默认最长边：`512` px。
+- 所有缩略图参数均可在设置面板调整。
 
-## Search and retrieval
+## 检索能力
 
-- Text retrieval over file/package names and metadata fields.
-- Full image-level vector retrieval (not package-level only).
-- Similarity threshold is user-adjustable.
-- Vector mode is off by default.
+- 文本检索：覆盖文件名/图包名及元数据字段。
+- 向量检索：全图片级（不是仅图包级）。
+- 相似阈值可调。
+- 向量模式默认关闭。
 
-## Embedding policy
+## Embedding 策略
 
-- Embedding model is not hard-coded.
-- Use LM Studio endpoint defaults first; all related parameters are configurable.
-- Single active model policy for V1.
-- If model changes, vector index is rebuilt.
+- Embedding 模型不写死在代码中。
+- 默认接入 LM Studio 端点，相关参数可配置。
+- V1 采用单活跃模型策略。
+- 切换模型时执行向量索引重建。
 
-## Metadata and manual curation
+## 元数据与人工整理
 
-- Metadata fields include placeholders for:
+- 元数据字段预留：
   - `work_title`
   - `language`
   - `circle`
   - `author`
   - `tags`
-- Image metadata includes `grade` in range `0..5`, default `null`.
-- AI metadata enrichment is reserved by schema and workflow; external retrieval logic is deferred.
+- 图片元数据包含 `grade` 字段，范围 `0..5`，默认 `null`。
+- AI 元数据补全先预留数据结构与流程，外部抓取逻辑后续接入。
 
-## Rename and file mutation policy
+## 重命名与物理变更策略
 
-- Physical rename sync is optional.
-- Physical rename sync scope:
-  - Package file names.
-  - Folder names.
-- Zip internal file rename is treated as an organization tool only.
-- Zip internal rename/reorder does not affect core business semantics.
+- 是否同步物理重命名为可选项。
+- 物理同步范围：
+  - 图包文件名。
+  - 目录名。
+- `zip` 内部文件重命名仅作为整理工具。
+- `zip` 内部重命名/重排序不影响核心业务语义。
 
-## Removal and conflict policy
+## 移除与冲突策略
 
-- If file is missing on disk, auto-remove from DB index.
-- User-initiated remove from DB can optionally delete physical file.
-- On rare conflict, prompt user to choose:
-  - Replace existing
-  - Keep both by renaming
+- 磁盘文件丢失时，自动从数据库索引移除。
+- 用户手动从库移除时，可选择是否同时删除实体文件。
+- 出现异常冲突时，弹窗提供：
+  - 替换已有内容
+  - 更名后保留两份
 
-## UI-specific behavior
+## UI 相关行为约束
 
-- Sidebar shows folder/package tree in image mode.
-- Sidebar shows folder/video-leaf tree in video mode.
-- Main footer shows focused item details:
-  - For zip image: `zip absolute path + ordinal`
-  - File size
-  - Resolution
+- 图片模式下，Sidebar 展示目录/图包树。
+- 视频模式下，Sidebar 展示目录/视频叶子树。
+- Main 页脚显示 focus 项详细信息：
+  - `zip` 图片：`zip 绝对路径 + 序号`
+  - 文件大小
+  - 分辨率
 
-## Video mode notes
+## 视频模式说明
 
-- Video mode uses video files as sidebar leaves.
-- Sidebar leaves contain a toggle to include/exclude item from fullscreen playlist.
-- Playlist is global for the whole library (not per current root).
-- Playlist can be viewed in metadata panel, reordered by drag-and-drop, and item-deleted.
-- Deleting from playlist syncs toggle state in sidebar.
-- Preview controls include `Save as cover` for manual cover assignment.
+- 视频模式以视频文件作为 Sidebar 叶子节点。
+- 每个视频叶子带 `toggle`，用于加入/移出全屏播放列表。
+- 播放列表为全库共用，不按 `Current Root` 分割。
+- 播放列表可在元数据面板查看、拖拽排序、删除条目。
+- 从播放列表删除条目时，同步 Sidebar 对应 `toggle` 状态。
+- 预览控件包含 `Save as cover`，用于手动保存封面。
 
-## Fullscreen behavior
+## 全屏行为
 
-- Enter by double-click or Enter, toggle by `F11`.
-- No permanent chrome; footer appears when pointer reaches bottom 20% area.
-- Footer supports display mode switch:
-  - Dual display
-  - Video only
-  - Image only
-- In dual mode, image and video regions are both visible and resizable.
+- 双击或 Enter 进入，全屏由 `F11` 切换。
+- 无常驻控制条；鼠标进入底部 20% 区域时显示浮动 Footer。
+- Footer 支持显示模式切换：
+  - 双显示
+  - 仅视频
+  - 仅图片
+- 双显示模式下，图片与视频区域可同时展示并可调尺寸。
 
-## Delivery strategy
+## 交付策略
 
-- Prioritize architecture and interaction implementation.
-- Defer heavy I/O benchmarking to relevant implementation phases.
+- 优先实现架构骨架与关键交互。
+- 大 I/O 压测延后到对应实施阶段执行。

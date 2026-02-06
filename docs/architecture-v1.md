@@ -1,96 +1,96 @@
-# MediaPlayer Architecture V1
+# MediaPlayer 架构设计 V1
 
-## Design principles
+## 设计原则
 
-- Local-first data ownership.
-- High cohesion and strict module boundaries.
-- IPC contracts validated with Zod.
-- Long-running tasks offloaded to workers.
-- Database pressure minimized for archive internals.
+- 本地优先，数据归用户本机所有。
+- 高内聚、低耦合，严格执行模块边界。
+- IPC 合约统一使用 Zod 校验。
+- 长耗时任务全部下沉到 Worker。
+- 降低数据库对压缩包内部细节的存储压力。
 
-## Runtime layers
+## 运行时分层
 
-### Electron main process
+### Electron Main 进程
 
-- Window lifecycle and app shell.
-- Native dialogs and clipboard path intake.
-- Filesystem watch orchestration.
-- Task queue scheduling and execution supervision.
-- IPC routing and permission boundary.
+- 窗口生命周期与应用壳管理。
+- 原生对话框与粘贴路径接入。
+- 文件系统监控编排。
+- 任务队列调度与执行监管。
+- IPC 路由与权限边界控制。
 
-### Preload bridge
+### Preload 桥接层
 
-- Exposes only allowlisted API surface.
-- Validates inputs and outputs against shared contracts.
-- Prevents direct Node API reachability from renderer.
+- 仅暴露白名单 API。
+- 请求与响应均校验共享合约。
+- 阻断 Renderer 对 Node API 的直接访问。
 
-### Renderer (React)
+### Renderer（React）
 
-- Header, Sidebar tree, Main grid/preview, metadata panel, settings overlay, fullscreen footer.
-- Mode switching: image mode and video mode.
-- Vector mode container and result controls.
-- State handled with Zustand slices.
+- 负责 Header、Sidebar 树、Main 网格/预览、元数据面板、设置遮罩层、全屏 Footer。
+- 负责图片模式/视频模式切换。
+- 负责向量模式容器与结果参数控制。
+- 状态管理采用 Zustand 多 slice。
 
-### Worker services
+### Worker 服务层
 
-- Scanner worker: recursive discovery, archive detection, change checks.
-- Thumbnail worker: Sharp pipeline with configurable params.
-- Vector worker: batching and LM Studio embedding calls.
-- Archive maintenance worker: convert/repack/rename/reorder tasks.
-- Video worker: metadata extraction and manual cover update persistence.
+- 扫描 Worker：递归发现、压缩包识别、变更检测。
+- 缩略图 Worker：Sharp 管线与参数化生成。
+- 向量 Worker：批处理调度与 LM Studio Embedding 调用。
+- 压缩包维护 Worker：转换、重打包、重命名、重排序任务。
+- 视频 Worker：元数据提取与手动封面持久化。
 
-## Module boundaries
+## 模块边界
 
-- `contracts`: Zod schemas and typed IPC request/response.
-- `domain`: pure business rules and use cases.
-- `infra`: filesystem, SQLite, LanceDB, LM Studio adapter, watcher adapter.
-- `ui`: React screens/components and UI-only state.
+- `contracts`：Zod schema 与强类型 IPC 请求/响应。
+- `domain`：纯业务规则与用例编排。
+- `infra`：文件系统、SQLite、LanceDB、LM Studio 适配器、文件监控适配器。
+- `ui`：React 页面/组件与纯 UI 状态。
 
-No module reads another module internals directly; all crossing happens through interface contracts.
+模块之间不得直接读取彼此内部实现，必须通过接口合约交互。
 
-## Data model strategy
+## 数据模型策略
 
-### SQLite responsibilities
+### SQLite 职责
 
-- Source roots and watch settings.
-- Package/archive level metadata.
-- Item-level stable identifiers and display state.
-- User curation fields (`grade`, display names, manual metadata).
-- Task state and operation logs.
+- 入库根目录与监控设置。
+- 图包/压缩包级元数据。
+- item 级稳定标识与展示状态。
+- 用户整理字段（`grade`、显示名、手动元数据）。
+- 任务状态与操作日志。
 
-### LanceDB responsibilities
+### LanceDB 职责
 
-- Image-level vectors.
-- Similarity search and candidate recall.
+- 图片级向量存储。
+- 相似检索与候选召回。
 
-### Archive internal names policy
+### 压缩包内部命名策略
 
-- Avoid relying on zip internal file names for core browsing.
-- Use stable item identity and ordinal-based navigation.
-- Footer path display for zip images uses absolute zip path plus ordinal.
+- 核心浏览链路不依赖 `zip` 内部文件名。
+- 以稳定 item 标识和序号导航为主。
+- `zip` 图片路径展示使用“压缩包绝对路径 + 序号”。
 
-## Task orchestration
+## 任务编排
 
-- All heavy operations are asynchronous jobs with states:
+- 所有重负载操作以异步任务执行，统一状态：
   - pending
   - running
   - paused
   - completed
   - failed
   - cancelled
-- Jobs support resume and retry.
-- Queue concurrency and batch parameters are configurable.
+- 任务支持暂停恢复与失败重试。
+- 并发度与批量参数可配置。
 
-## Safety constraints
+## 安全约束
 
-- Path normalization and traversal protections.
-- Zip handling with guardrails for malformed archives.
-- Explicit user confirmation for physical file mutations.
-- No silent destructive mutation.
+- 路径标准化与路径穿越防护。
+- `zip` 异常输入防护与容错处理。
+- 所有物理文件变更需显式用户确认。
+- 禁止静默破坏性操作。
 
-## Test strategy alignment
+## 测试策略对齐
 
-- Unit tests for domain rules, path handling, scheduling, and schema validations.
-- Component tests for major UI panels and mode transitions.
-- Integration tests for SQLite + LanceDB + filesystem workflow.
-- E2E remains user-executed via scripted checklist.
+- 单元测试：领域规则、路径处理、调度逻辑、schema 校验。
+- 组件测试：核心面板行为与模式切换。
+- 集成测试：SQLite + LanceDB + 文件系统联动链路。
+- E2E：保持用户手动执行的脚本化检查清单。

@@ -1,15 +1,38 @@
-# MediaPlayer Documentation
+# MediaPlayer 文档
 
-This folder records the current product and engineering decisions for MediaPlayer.
+该目录用于记录 MediaPlayer 当前阶段的产品定义与工程决策。
 
-## Document index
+## 文档索引
 
-- `requirements-v1.md`: frozen scope and behavior for V1.
-- `architecture-v1.md`: runtime architecture, module boundaries, and data flow.
-- `interaction-v1.md`: UI layout, interaction logic, fullscreen behavior, and keyboard controls.
+- `requirements-v1.md`：V1 需求范围与行为冻结。
+- `architecture-v1.md`：运行时架构、模块边界与数据流。
+- `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
+- `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
 
-## Current status
+## 当前状态
 
-- Product scope is frozen at interaction spec version v1.5.
-- Performance benchmarking is intentionally deferred until each high-I/O implementation phase.
-- Initial repository setup starts from these docs.
+- 产品范围已冻结到交互规范版本 `v1.5`。
+- 大 I/O 性能压测按具体实施阶段执行，不提前进行。
+- 仓库初始化以本目录文档为起点。
+
+## 文档使用方式（单一事实源）
+
+- 本目录文档是项目当前阶段的唯一事实来源（SSOT）。
+- 当代码与文档出现不一致时，默认以文档为准，并在同一开发周期内修正代码或补齐文档说明。
+- 所有功能变更必须同时更新代码与对应文档，禁止只改其一。
+- 新成员或新机器接手时，先阅读文档再改代码，避免按个人记忆实现。
+
+## 跨机器继续开发流程
+
+1. 拉取仓库：`git clone` 后切换到目标分支并执行 `git pull`。
+2. 先读文档：按 `requirements-v1.md -> architecture-v1.md -> interaction-v1.md` 顺序确认范围与约束。
+3. 再看代码：以文档中的模块边界、交互约束、数据策略为核对基线。
+4. 开发实现：新增/修改功能时，同步更新相关文档条目。
+5. 提交前自检：确认“代码行为、接口约束、交互逻辑”与文档一致。
+
+## 文档维护约定
+
+- 需求变更：更新 `requirements-v1.md`。
+- 架构调整：更新 `architecture-v1.md`。
+- 交互变化：更新 `interaction-v1.md`。
+- 如果变更跨多个维度，需同时修改多个文档并在提交信息中说明关联关系。
