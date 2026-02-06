@@ -125,4 +125,6 @@
 ## 交付策略
 
 - 优先实现架构骨架与关键交互。
+- 当前先执行“虚拟 UI 阶段”：仅实现交互框架与操作反馈，不接真实数据库与真实媒体解码。
+- UI 原型阶段采用 `Vite + React + TypeScript + Zustand + Vitest` 脚手架，不使用 plain HTML + vanilla JavaScript 一次性原型。
 - 大 I/O 压测延后到对应实施阶段执行。

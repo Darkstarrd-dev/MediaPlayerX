@@ -1,0 +1,250 @@
+export type ShortcutScope = 'global' | 'video'
+
+export type ShortcutAction =
+  | 'imagePrev'
+  | 'imageNext'
+  | 'imageFirst'
+  | 'imageLast'
+  | 'packagePrev'
+  | 'packageNext'
+  | 'autoplayToggle'
+  | 'autoplayInterval1'
+  | 'autoplayInterval2'
+  | 'autoplayInterval3'
+  | 'autoplayInterval4'
+  | 'autoplayInterval5'
+  | 'rating0'
+  | 'rating1'
+  | 'rating2'
+  | 'rating3'
+  | 'rating4'
+  | 'rating5'
+  | 'focusSwitch'
+  | 'enterFullscreen'
+  | 'fullscreenToggle'
+  | 'videoPlayPause'
+  | 'videoPrev'
+  | 'videoNext'
+  | 'videoSpeedDown'
+  | 'videoSpeedUp'
+  | 'videoVolumeDown'
+  | 'videoVolumeUp'
+
+export interface ShortcutDefinition {
+  action: ShortcutAction
+  scope: ShortcutScope
+  label: string
+}
+
+export type ShortcutMap = Record<ShortcutAction, string>
+
+export const SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
+  { action: 'imagePrev', scope: 'global', label: '图片：上一张' },
+  { action: 'imageNext', scope: 'global', label: '图片：下一张' },
+  { action: 'imageFirst', scope: 'global', label: '图片：跳首页' },
+  { action: 'imageLast', scope: 'global', label: '图片：跳末页' },
+  { action: 'packagePrev', scope: 'global', label: '图片：上一个包' },
+  { action: 'packageNext', scope: 'global', label: '图片：下一个包' },
+  { action: 'autoplayToggle', scope: 'global', label: '自动播放：开关' },
+  { action: 'autoplayInterval1', scope: 'global', label: '自动播放：1 秒' },
+  { action: 'autoplayInterval2', scope: 'global', label: '自动播放：2 秒' },
+  { action: 'autoplayInterval3', scope: 'global', label: '自动播放：3 秒' },
+  { action: 'autoplayInterval4', scope: 'global', label: '自动播放：5 秒' },
+  { action: 'autoplayInterval5', scope: 'global', label: '自动播放：8 秒' },
+  { action: 'rating0', scope: 'global', label: '评分：清空' },
+  { action: 'rating1', scope: 'global', label: '评分：1 星' },
+  { action: 'rating2', scope: 'global', label: '评分：2 星' },
+  { action: 'rating3', scope: 'global', label: '评分：3 星' },
+  { action: 'rating4', scope: 'global', label: '评分：4 星' },
+  { action: 'rating5', scope: 'global', label: '评分：5 星' },
+  { action: 'focusSwitch', scope: 'global', label: '焦点：Sidebar/Main 切换' },
+  { action: 'enterFullscreen', scope: 'global', label: '全屏：进入' },
+  { action: 'fullscreenToggle', scope: 'global', label: '全屏：切换' },
+  { action: 'videoPlayPause', scope: 'video', label: '视频：播放/暂停' },
+  { action: 'videoPrev', scope: 'video', label: '视频：上一个' },
+  { action: 'videoNext', scope: 'video', label: '视频：下一个' },
+  { action: 'videoSpeedDown', scope: 'video', label: '视频：减速' },
+  { action: 'videoSpeedUp', scope: 'video', label: '视频：加速' },
+  { action: 'videoVolumeDown', scope: 'video', label: '视频：音量-' },
+  { action: 'videoVolumeUp', scope: 'video', label: '视频：音量+' },
+]
+
+export const DEFAULT_SHORTCUTS: ShortcutMap = {
+  imagePrev: 'ArrowLeft',
+  imageNext: 'ArrowRight',
+  imageFirst: 'ArrowUp',
+  imageLast: 'ArrowDown',
+  packagePrev: 'Ctrl+ArrowLeft',
+  packageNext: 'Ctrl+ArrowRight',
+  autoplayToggle: 'KeyA',
+  autoplayInterval1: 'Digit1',
+  autoplayInterval2: 'Digit2',
+  autoplayInterval3: 'Digit3',
+  autoplayInterval4: 'Digit4',
+  autoplayInterval5: 'Digit5',
+  rating0: 'Alt+Digit0|Numpad0',
+  rating1: 'Alt+Digit1|Numpad1',
+  rating2: 'Alt+Digit2|Numpad2',
+  rating3: 'Alt+Digit3|Numpad3',
+  rating4: 'Alt+Digit4|Numpad4',
+  rating5: 'Alt+Digit5|Numpad5',
+  focusSwitch: 'Tab',
+  enterFullscreen: 'Enter',
+  fullscreenToggle: 'F11',
+  videoPlayPause: 'Space',
+  videoPrev: 'PageUp',
+  videoNext: 'PageDown',
+  videoSpeedDown: 'Ctrl+PageUp',
+  videoSpeedUp: 'Ctrl+PageDown',
+  videoVolumeDown: 'Home',
+  videoVolumeUp: 'End',
+}
+
+const MODIFIER_ORDER = ['Ctrl', 'Alt', 'Shift', 'Meta'] as const
+const MODIFIER_SET = new Set<string>(MODIFIER_ORDER)
+
+function normalizeToken(raw: string): string {
+  const token = raw.trim()
+  if (!token) {
+    return ''
+  }
+
+  const lower = token.toLowerCase()
+  if (lower === 'ctrl' || lower === 'control') return 'Ctrl'
+  if (lower === 'alt' || lower === 'option') return 'Alt'
+  if (lower === 'shift') return 'Shift'
+  if (lower === 'meta' || lower === 'cmd' || lower === 'win') return 'Meta'
+
+  if (lower === 'left') return 'ArrowLeft'
+  if (lower === 'right') return 'ArrowRight'
+  if (lower === 'up') return 'ArrowUp'
+  if (lower === 'down') return 'ArrowDown'
+
+  if (lower === 'space' || lower === 'spacebar') return 'Space'
+  if (lower === 'pgup') return 'PageUp'
+  if (lower === 'pgdown') return 'PageDown'
+  if (lower === 'del') return 'Delete'
+  if (lower === 'esc') return 'Escape'
+
+  if (/^key[a-z]$/i.test(token)) {
+    return `Key${token.slice(3).toUpperCase()}`
+  }
+
+  if (/^[a-z]$/i.test(token)) {
+    return `Key${token.toUpperCase()}`
+  }
+
+  if (/^digit[0-9]$/i.test(token)) {
+    return `Digit${token.slice(5)}`
+  }
+
+  if (/^[0-9]$/.test(token)) {
+    return `Digit${token}`
+  }
+
+  if (/^numpad[0-9]$/i.test(token)) {
+    return `Numpad${token.slice(6)}`
+  }
+
+  return token[0].toUpperCase() + token.slice(1)
+}
+
+function normalizeSingleCombo(rawCombo: string): string {
+  const tokens = rawCombo
+    .split('+')
+    .map((part) => normalizeToken(part))
+    .filter(Boolean)
+
+  if (tokens.length === 0) {
+    return ''
+  }
+
+  const modifiers: string[] = []
+  let key = ''
+  for (const token of tokens) {
+    if (MODIFIER_SET.has(token)) {
+      modifiers.push(token)
+    } else {
+      key = token
+    }
+  }
+
+  if (!key) {
+    return ''
+  }
+
+  modifiers.sort(
+    (a, b) => MODIFIER_ORDER.indexOf(a as (typeof MODIFIER_ORDER)[number]) - MODIFIER_ORDER.indexOf(b as (typeof MODIFIER_ORDER)[number]),
+  )
+
+  return [...modifiers, key].join('+')
+}
+
+export function normalizeShortcutBinding(rawBinding: string): string {
+  return rawBinding
+    .split('|')
+    .map((combo) => normalizeSingleCombo(combo))
+    .filter(Boolean)
+    .join('|')
+}
+
+export function keyboardEventToCombo(event: KeyboardEvent): string {
+  const base: string[] = []
+  if (event.ctrlKey) base.push('Ctrl')
+  if (event.altKey) base.push('Alt')
+  if (event.shiftKey) base.push('Shift')
+  if (event.metaKey) base.push('Meta')
+
+  const code = normalizeToken(event.code || event.key)
+  return normalizeSingleCombo([...base, code].join('+'))
+}
+
+export function shortcutMatches(binding: string, event: KeyboardEvent): boolean {
+  const normalized = normalizeShortcutBinding(binding)
+  if (!normalized) {
+    return false
+  }
+
+  const combo = keyboardEventToCombo(event)
+  return normalized.split('|').some((part) => part === combo)
+}
+
+export interface ShortcutConflict {
+  scope: ShortcutScope
+  combo: string
+  actions: ShortcutAction[]
+}
+
+export function findShortcutConflicts(map: ShortcutMap): ShortcutConflict[] {
+  const bucket = new Map<string, ShortcutAction[]>()
+
+  for (const definition of SHORTCUT_DEFINITIONS) {
+    const raw = normalizeShortcutBinding(map[definition.action])
+    if (!raw) {
+      continue
+    }
+
+    const combos = raw.split('|')
+    for (const combo of combos) {
+      const key = `${definition.scope}|${combo}`
+      const list = bucket.get(key) ?? []
+      list.push(definition.action)
+      bucket.set(key, list)
+    }
+  }
+
+  const conflicts: ShortcutConflict[] = []
+  for (const [key, actions] of bucket.entries()) {
+    if (actions.length <= 1) {
+      continue
+    }
+    const [scope, combo] = key.split('|')
+    conflicts.push({
+      scope: scope as ShortcutScope,
+      combo,
+      actions,
+    })
+  }
+
+  return conflicts
+}
