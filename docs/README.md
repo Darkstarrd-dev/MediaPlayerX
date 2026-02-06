@@ -9,6 +9,7 @@
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
 - `虚拟UI阶段说明.md`：当前阶段的目标、范围与验收方式（纯模拟交互）。
+- `backend-integration-guardrails.md`：后端接入阶段的强制规避方案与执行门禁。
 
 ## 当前状态
 
@@ -17,6 +18,10 @@
 - 虚拟 UI 脚手架与首版交互已落地，且已完成 `App.tsx` 的模块化拆分。
 - 文件加载前端部分已完成：导入文件/文件夹弹窗、全窗口拖拽、窗口焦点粘贴路径，并带拖拽叠加层占位反馈。
 - Sidebar 部分修正已完成：统一“设为根”按钮与“恢复”逻辑、根目录标题显示/点击折叠、可拖动分割条、`<3%` 自动折叠（三角展开按钮）、PageUp/PageDown 翻页修正、Sidebar 样式参数可配置，且目录 Mock 已扩容。
+- Main 下一轮修正待办已按 `interaction-v1.md` 完成（1~6 全部落地），并补充图包级评分、视频封面随机色保存与列表/缩略图布局修正。
+- Main 模块修正已收口，下一轮进入全屏模式专项修正。
+- 已按顺序完成 App 拆分：`useShortcutEngine -> useSidebarNavigation -> useImportPipeline -> useMediaState`。
+- 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。
 - 仓库初始化以本目录文档为起点。

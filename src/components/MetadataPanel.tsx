@@ -1,10 +1,12 @@
-import type { BrowserMode, ImagePackage, VideoItem } from '../types'
+import type { BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
 import { formatSeconds } from '../utils/ui'
 
 interface MetadataPanelProps {
   mode: BrowserMode
   metadataCollapsed: boolean
   metadataRatio: number
+  hasImageFocus: boolean
+  focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
   currentGrade: number | null
   focusedVideo: VideoItem | null
@@ -13,6 +15,7 @@ interface MetadataPanelProps {
   selectedVideoId: string
   dragVideoId: string | null
   videoVolume: number
+  videoMuted: boolean
   videoRate: number
   videoById: Map<string, VideoItem>
   onCollapse: () => void
@@ -28,6 +31,8 @@ function MetadataPanel({
   mode,
   metadataCollapsed,
   metadataRatio,
+  hasImageFocus,
+  focusedImage,
   focusedImagePackage,
   currentGrade,
   focusedVideo,
@@ -36,6 +41,7 @@ function MetadataPanel({
   selectedVideoId,
   dragVideoId,
   videoVolume,
+  videoMuted,
   videoRate,
   videoById,
   onCollapse,
@@ -46,6 +52,21 @@ function MetadataPanel({
   onDragStart,
   onDropToVideo,
 }: MetadataPanelProps) {
+  const imagePreviewSizing = (() => {
+    if (!focusedImage) {
+      return {}
+    }
+
+    if (focusedImage.width >= focusedImage.height) {
+      return { width: '100%' }
+    }
+
+    return { height: '100%' }
+  })()
+
+  const imagePreviewClassName = hasImageFocus && focusedImage ? 'metadata-content metadata-content-focus' : 'metadata-content'
+  const metadataPanelClassName = hasImageFocus && focusedImage ? 'metadata-panel is-image-focus' : 'metadata-panel'
+
   if (metadataCollapsed) {
     return (
       <button className="meta-restore" type="button" onClick={onExpand}>
@@ -55,7 +76,7 @@ function MetadataPanel({
   }
 
   return (
-    <aside className="metadata-panel" style={{ width: `${metadataRatio * 100}%` }}>
+    <aside className={metadataPanelClassName} style={{ width: `${metadataRatio * 100}%` }}>
       <div className="metadata-head">
         <strong>元数据面板</strong>
         <button type="button" onClick={onCollapse}>
@@ -64,13 +85,30 @@ function MetadataPanel({
       </div>
 
       {mode === 'image' ? (
-        <div className="metadata-content">
-          <p>{`图包：${focusedImagePackage?.displayName ?? '-'}`}</p>
-          <p>{`作品名：${focusedImagePackage?.workTitle ?? '-'}`}</p>
-          <p>{`社团：${focusedImagePackage?.circle ?? '-'}`}</p>
-          <p>{`作者：${focusedImagePackage?.author ?? '-'}`}</p>
-          <p>{`Tags：${focusedImagePackage?.tags.join(', ') ?? '-'}`}</p>
-          <p>{`评分：${currentGrade === null ? '未评分' : currentGrade}`}</p>
+        <div className={imagePreviewClassName}>
+          {hasImageFocus && focusedImage ? (
+            <div className="metadata-image-canvas">
+              <div
+                className="metadata-image-media"
+                style={{
+                  background: focusedImage.color,
+                  aspectRatio: `${focusedImage.width} / ${focusedImage.height}`,
+                  ...imagePreviewSizing,
+                }}
+              >
+                <span>{`${focusedImage.width} x ${focusedImage.height}`}</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p>{`图包：${focusedImagePackage?.displayName ?? '-'}`}</p>
+              <p>{`作品名：${focusedImagePackage?.workTitle ?? '-'}`}</p>
+              <p>{`社团：${focusedImagePackage?.circle ?? '-'}`}</p>
+              <p>{`作者：${focusedImagePackage?.author ?? '-'}`}</p>
+              <p>{`Tags：${focusedImagePackage?.tags.join(', ') ?? '-'}`}</p>
+              <p>{`图包评分：${currentGrade === null ? '未评分' : currentGrade}`}</p>
+            </>
+          )}
         </div>
       ) : (
         <div className="metadata-content">
@@ -92,7 +130,7 @@ function MetadataPanel({
               <p>{`文件：${focusedVideo.fileName}`}</p>
               <p>{`时长：${formatSeconds(focusedVideo.durationSec)}`}</p>
               <p>{`分辨率：${focusedVideo.width}x${focusedVideo.height}`}</p>
-              <p>{`音量：${videoVolume}%`}</p>
+              <p>{`音量：${videoMuted ? '静音' : `${videoVolume}%`}`}</p>
               <p>{`倍速：${videoRate.toFixed(2)}x`}</p>
             </>
           ) : null}

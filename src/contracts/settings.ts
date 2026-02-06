@@ -17,7 +17,8 @@ export const appSettingsSchema = z.object({
   sidebarVerticalGap: z.number().min(0).max(24),
   metadataRatio: z.number().min(0.2).max(0.45),
   vectorPanelHeight: z.number().min(120).max(320),
-  thumbnailScale: z.number().min(70).max(220),
+  thumbnailScale: z.number().min(1).max(9),
+  thumbnailGap: z.number().min(0).max(24),
   showNamesOnly: z.boolean(),
   metadataCollapsed: z.boolean(),
   autoPlayEnabled: z.boolean(),
@@ -29,7 +30,7 @@ export const appSettingsSchema = z.object({
   imageRootNodeId: z.string().nullable(),
   videoRootNodeId: z.string().nullable(),
   thumbnailQuality: z.number().min(1).max(100),
-  thumbnailMaxEdge: z.number().min(128).max(2048),
+  thumbnailWidth: z.number().min(128).max(2048),
   lmStudioEndpoint: z.string().min(1),
   lmStudioModel: z.string().min(1),
 })

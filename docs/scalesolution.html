@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tile Packing Mockup (3:4 ±10%)</title>
+  <style>
+    :root{
+      --bg: #0b0f17;
+      --panel: #121a2a;
+      --panel2: #0f1626;
+      --text: #e8eefc;
+      --muted: rgba(232, 238, 252, 0.70);
+      --muted2: rgba(232, 238, 252, 0.45);
+      --accent: #7aa2ff;
+      --border: rgba(232, 238, 252, 0.18);
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(122,162,255,.25), transparent 50%),
+                  radial-gradient(1000px 700px at 100% 0%, rgba(139,92,246,.18), transparent 52%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 18px;
+      gap: 14px;
+    }
+
+    .left{
+      width: 340px;
+      min-width: 320px;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+
+    .title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .title h1{
+      font-size: 16px;
+      margin:0;
+      letter-spacing:.2px;
+      line-height: 1.25;
+    }
+    .title .badge{
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,.03);
+      white-space: nowrap;
+    }
+
+    .controls{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+    }
+    button{
+      appearance:none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight: 600;
+      transition: transform .06s ease, background .15s ease, opacity .15s ease;
+      user-select: none;
+    }
+    button:active{ transform: translateY(1px); }
+    button:disabled{
+      opacity: .4;
+      cursor: not-allowed;
+    }
+    .controls .spacer{ flex:1; }
+
+    .kv{
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(0,0,0,.18);
+      padding: 12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 12px;
+    }
+    .kv .k{
+      font-size: 12px;
+      color: var(--muted2);
+      margin-bottom: 4px;
+    }
+    .kv .v{
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 600;
+      letter-spacing:.2px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    .note{
+      border: 1px dashed rgba(232, 238, 252, 0.25);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,.02);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .note code{
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      padding: 1px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .right{
+      flex: 1;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      min-width: 520px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,.03);
+      box-shadow: var(--shadow);
+    }
+    .topbar .hint{
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .topbar .hint b{ color: var(--text); }
+
+    .resizable-wrap{
+      flex: 1;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+    }
+
+    .resizable{
+      width: 900px;
+      height: 560px;
+      max-width: calc(100vw - 420px);
+      max-height: calc(100vh - 90px);
+      min-width: 320px;
+      min-height: 220px;
+      resize: both;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid rgba(232, 238, 252, 0.20);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .stage{
+      position:absolute;
+      inset: 0;
+      overflow:hidden;
+    }
+
+    .grid-outline{
+      position:absolute;
+      inset: 0;
+      pointer-events:none;
+      opacity: .45;
+      background-image:
+        linear-gradient(to right, rgba(232,238,252,.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(232,238,252,.04) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at 50% 40%, rgba(0,0,0,1), rgba(0,0,0,0));
+    }
+
+    .tile{
+      position:absolute;
+      border-radius: 14px;
+      border: 1px solid rgba(232, 238, 252, 0.20);
+      background:
+        radial-gradient(120px 100px at 18% 20%, rgba(122,162,255,.32), transparent 60%),
+        radial-gradient(160px 120px at 90% 10%, rgba(139,92,246,.22), transparent 62%),
+        rgba(255,255,255,.04);
+      box-shadow:
+        0 10px 26px rgba(0,0,0,.25),
+        inset 0 1px 0 rgba(255,255,255,.08);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      padding: 10px;
+      overflow:hidden;
+    }
+    .tile .num{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing:.3px;
+    }
+    .tile .meta{
+      font-size: 11px;
+      color: rgba(232, 238, 252, 0.68);
+      line-height: 1.3;
+    }
+
+    .footer{
+      font-size: 11px;
+      color: var(--muted2);
+      padding: 2px 2px 0 2px;
+    }
+  </style>
+</head>
+<body>
+  <aside class="left">
+    <div class="title">
+      <h1>图块自动排布 + 离散缩放级别（3:4 ±10%）</h1>
+      <div class="badge" id="stopBadge">stops: --</div>
+    </div>
+
+    <div class="controls">
+      <button id="zoomOut">−</button>
+      <button id="zoomIn">＋</button>
+      <div class="spacer"></div>
+      <button id="reset">Reset</button>
+    </div>
+
+    <div class="kv" id="kv">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="note">
+      <div><b>交互说明</b></div>
+      <div style="margin-top:6px">
+        1) 右侧容器可从右下角拖拽改变尺寸。<br/>
+        2) 点击 <code>＋</code>/<code>−</code：不会固定倍数缩放，而是跳到“下一档/上一档最优填充比例”。<br/>
+        3) 图块比例以 <code>3:4</code> 为中心，允许 <code>±10%</code> 内微调以提升空间利用率。
+      </div>
+    </div>
+
+    <div class="footer">
+      说明：gap 固定为 12px；留白由算法自动平均到四周（居中）。
+    </div>
+  </aside>
+
+  <main class="right">
+    <div class="topbar">
+      <div class="hint">
+        <b>目标：</b>在不定大小容器内，尽可能多地放入固定大小图块（按缩放级别），图块间距一致，允许边缘留白并整体居中；每个缩放级别下允许 10% 内比例微调以最大化空间利用。
+      </div>
+    </div>
+
+    <div class="resizable-wrap">
+      <div class="resizable" id="resizable">
+        <div class="stage" id="stage"></div>
+        <div class="grid-outline"></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+(() => {
+  // ========= Config =========
+  const BASE_W = 120;                 // 名义图块宽（scale=1）
+  const AR0 = 4/3;                    // 3:4 => h/w = 4/3
+  const BASE_H = BASE_W * AR0;
+  const TOL = 0.10;                   // 宽高/比例允许±10%
+  const GAP = 12;                     // 图块间距固定（px）
+
+  const SCALE_MIN = 0.40;
+  const SCALE_MAX = 2.50;
+  const SCALE_STEP = 0.01;
+
+  // ========= DOM =========
+  const resizable = document.getElementById('resizable');
+  const stage = document.getElementById('stage');
+  const zoomOutBtn = document.getElementById('zoomOut');
+  const zoomInBtn  = document.getElementById('zoomIn');
+  const resetBtn   = document.getElementById('reset');
+  const kv = document.getElementById('kv');
+  const stopBadge = document.getElementById('stopBadge');
+
+  // ========= State =========
+  let zoomStops = [];          // { scale, layout }
+  let stopIndex = 0;
+  let lastScale = 1.0;
+  let rafPending = false;
+
+  // ========= Math Helpers =========
+  function clamp(x, a, b){ return Math.max(a, Math.min(b, x)); }
+  function fmt(n, d=2){ return Number(n).toFixed(d); }
+
+  // 在给定 bounds + 允许范围内，找最大面积 w*h
+  function optimizeTile({ wLow, wHigh, hLow, hHigh, wBound, hBound }) {
+    const arMin = AR0 * (1 - TOL);
+    const arMax = AR0 * (1 + TOL);
+
+    let best = null;
+
+    const STEPS = 60;
+    for (let i=0;i<=STEPS;i++){
+      const ar = arMin + (arMax - arMin) * (i / STEPS);
+
+      // w 受限于：自身上界、容器上界、以及 h 上界折算
+      const wMax = Math.min(
+        wHigh,
+        wBound,
+        hHigh / ar,
+        hBound / ar
+      );
+      const wMin = Math.max(
+        wLow,
+        hLow / ar
+      );
+
+      if (wMax >= wMin){
+        const w = wMax;        // 面积随 w 增大而增大 => 取上界
+        const h = w * ar;
+        const area = w * h;
+        if (!best || area > best.area){
+          best = { w, h, ar, area };
+        }
+      }
+    }
+
+    return best; // or null
+  }
+
+  // 给定一个 nominal scale s，求最优布局（优先最大tile数量，其次最大利用率）
+  function bestLayoutForScale(W, H, s){
+    const wT = BASE_W * s;
+    const hT = BASE_H * s;
+
+    const wLow = wT * (1 - TOL);
+    const wHigh = wT * (1 + TOL);
+    const hLow = hT * (1 - TOL);
+    const hHigh = hT * (1 + TOL);
+
+    // 估算最大 cols/rows 搜索范围（加少量冗余）
+    const maxCols = clamp(Math.floor((W + GAP) / (wLow + GAP)) + 2, 1, 60);
+    const maxRows = clamp(Math.floor((H + GAP) / (hLow + GAP)) + 2, 1, 60);
+
+    let best = null;
+
+    for (let cols=1; cols<=maxCols; cols++){
+      const wBound = (W - (cols-1)*GAP) / cols;
+      if (wBound <= 0) continue;
+
+      for (let rows=1; rows<=maxRows; rows++){
+        const hBound = (H - (rows-1)*GAP) / rows;
+        if (hBound <= 0) continue;
+
+        const tile = optimizeTile({ wLow, wHigh, hLow, hHigh, wBound, hBound });
+        if (!tile) continue;
+
+        const count = cols * rows;
+        const util = (count * tile.area) / (W * H);
+
+        if (!best){
+          best = { cols, rows, count, util, ...tile };
+          continue;
+        }
+
+        // 目标：先尽可能多，再最大化利用率，再最大化单块面积
+        if (count > best.count ||
+            (count === best.count && util > best.util + 1e-9) ||
+            (count === best.count && Math.abs(util - best.util) <= 1e-9 && tile.area > best.area)
+        ){
+          best = { cols, rows, count, util, ...tile };
+        }
+      }
+    }
+
+    if (!best) return null;
+
+    // 计算居中留白
+    const usedW = best.cols * best.w + (best.cols - 1) * GAP;
+    const usedH = best.rows * best.h + (best.rows - 1) * GAP;
+    const marginX = (W - usedW) / 2;
+    const marginY = (H - usedH) / 2;
+
+    return {
+      scale: s,
+      ...best,
+      marginX,
+      marginY,
+      usedW,
+      usedH
+    };
+  }
+
+  // 扫描 scale 区间，压缩成离散 zoom stops（“上一级/下一级最优填充比例”）
+  function buildZoomStops(W, H){
+    const samples = [];
+    for (let s = SCALE_MIN; s <= SCALE_MAX + 1e-9; s += SCALE_STEP){
+      const layout = bestLayoutForScale(W, H, s);
+      if (!layout) continue;
+      samples.push({ s: Number(s.toFixed(2)), layout });
+    }
+    if (!samples.length) return [];
+
+    const stops = [];
+    let segKey = null;
+    let segBest = null;
+
+    for (const item of samples){
+      const key = `${item.layout.cols}x${item.layout.rows}`; // 以网格形态作为“稳定区间”
+      if (segKey === null){
+        segKey = key;
+        segBest = item;
+        continue;
+      }
+
+      if (key === segKey){
+        // 区间内取利用率更高的样本（通常靠近区间上端）
+        if (item.layout.util > segBest.layout.util + 1e-9){
+          segBest = item;
+        }
+      } else {
+        stops.push({ scale: segBest.s, layout: segBest.layout });
+        segKey = key;
+        segBest = item;
+      }
+    }
+    stops.push({ scale: segBest.s, layout: segBest.layout });
+
+    // 去重（极少数情况下 key 变化后又回到同 key）
+    const unique = [];
+    for (const st of stops){
+      const last = unique[unique.length - 1];
+      if (!last || Math.abs(last.scale - st.scale) > 1e-6){
+        unique.push(st);
+      }
+    }
+    return unique;
+  }
+
+  // ========= Rendering =========
+  function ensureTiles(n){
+    const cur = stage.children.length;
+    if (cur < n){
+      for (let i=cur; i<n; i++){
+        const el = document.createElement('div');
+        el.className = 'tile';
+        el.innerHTML = `
+          <div class="num">#${i+1}</div>
+          <div class="meta"></div>
+        `;
+        stage.appendChild(el);
+      }
+    } else if (cur > n){
+      for (let i=cur-1; i>=n; i--){
+        stage.removeChild(stage.children[i]);
+      }
+    }
+  }
+
+  function render(layout){
+    stage.style.width = '100%';
+    stage.style.height = '100%';
+
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+
+    ensureTiles(layout.count);
+
+    // 逐块定位
+    let idx = 0;
+    for (let r=0; r<layout.rows; r++){
+      for (let c=0; c<layout.cols; c++){
+        const x = layout.marginX + c * (layout.w + GAP);
+        const y = layout.marginY + r * (layout.h + GAP);
+        const el = stage.children[idx];
+
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        el.style.width = `${layout.w}px`;
+        el.style.height = `${layout.h}px`;
+
+        const meta = el.querySelector('.meta');
+        meta.textContent = `w×h: ${Math.round(layout.w)}×${Math.round(layout.h)}  |  AR: ${fmt(layout.h/layout.w, 3)}`;
+
+        idx++;
+      }
+    }
+
+    // 更新左侧信息面板
+    const tileAR = layout.h / layout.w;
+    const kvItems = [
+      ["容器尺寸", `${Math.round(W)} × ${Math.round(H)}`],
+      ["gap", `${GAP}px`],
+      ["缩放档位(scale)", `${fmt(layout.scale, 2)}×`],
+      ["网格(cols×rows)", `${layout.cols} × ${layout.rows}`],
+      ["图块数量", `${layout.count}`],
+      ["单块尺寸", `${Math.round(layout.w)} × ${Math.round(layout.h)}`],
+      ["实际比例(h/w)", `${fmt(tileAR, 3)} (基准 ${fmt(AR0,3)})`],
+      ["空间利用率", `${fmt(layout.util*100, 2)}%`],
+      ["水平留白", `${fmt(layout.marginX, 1)}px ×2`],
+      ["垂直留白", `${fmt(layout.marginY, 1)}px ×2`],
+    ];
+
+    kv.innerHTML = kvItems.map(([k,v]) => `
+      <div>
+        <div class="k">${k}</div>
+        <div class="v">${v}</div>
+      </div>
+    `).join("");
+
+    stopBadge.textContent = `stops: ${zoomStops.length}  |  #${stopIndex+1}/${zoomStops.length}`;
+
+    zoomOutBtn.disabled = stopIndex <= 0;
+    zoomInBtn.disabled = stopIndex >= zoomStops.length - 1;
+  }
+
+  function pickClosestStopIndex(stops, targetScale){
+    if (!stops.length) return 0;
+    let bestI = 0;
+    let bestD = Infinity;
+    for (let i=0;i<stops.length;i++){
+      const d = Math.abs(stops[i].scale - targetScale);
+      if (d < bestD){
+        bestD = d;
+        bestI = i;
+      }
+    }
+    return bestI;
+  }
+
+  function recomputeAndRender(){
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+
+    zoomStops = buildZoomStops(W, H);
+    if (!zoomStops.length){
+      stage.innerHTML = '';
+      kv.innerHTML = `<div style="grid-column:1 / -1;color:rgba(232,238,252,.75);font-size:13px;">
+        容器太小，当前配置下无法放入任何图块。请放大容器。
+      </div>`;
+      stopBadge.textContent = 'stops: 0';
+      zoomOutBtn.disabled = true;
+      zoomInBtn.disabled = true;
+      return;
+    }
+
+    stopIndex = pickClosestStopIndex(zoomStops, lastScale);
+    const chosen = zoomStops[stopIndex];
+    lastScale = chosen.scale;
+    render(chosen.layout);
+  }
+
+  function scheduleRecompute(){
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      rafPending = false;
+      recomputeAndRender();
+    });
+  }
+
+  // ========= Events =========
+  zoomOutBtn.addEventListener('click', () => {
+    if (stopIndex <= 0) return;
+    stopIndex--;
+    const chosen = zoomStops[stopIndex];
+    lastScale = chosen.scale;
+    render(chosen.layout);
+  });
+
+  zoomInBtn.addEventListener('click', () => {
+    if (stopIndex >= zoomStops.length - 1) return;
+    stopIndex++;
+    const chosen = zoomStops[stopIndex];
+    lastScale = chosen.scale;
+    render(chosen.layout);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    lastScale = 1.0;
+    stopIndex = pickClosestStopIndex(zoomStops, lastScale);
+    const chosen = zoomStops[stopIndex];
+    lastScale = chosen.scale;
+    render(chosen.layout);
+  });
+
+  // ResizeObserver: 容器尺寸变化 => 重算 zoom stops
+  const ro = new ResizeObserver(() => scheduleRecompute());
+  ro.observe(resizable);
+  ro.observe(stage);
+
+  // Initial
+  scheduleRecompute();
+})();
+</script>
+</body>
+</html>

@@ -7,7 +7,9 @@ interface AppHeaderProps {
   searchField: SearchField
   searchText: string
   currentGrade: number | null
-  thumbnailScale: number
+  thumbnailScaleLevel: number
+  canThumbnailScaleDown: boolean
+  canThumbnailScaleUp: boolean
   autoPlayEnabled: boolean
   autoPlayInterval: number
   importMenuOpen: boolean
@@ -21,7 +23,8 @@ interface AppHeaderProps {
   onSearchFieldChange: (field: SearchField) => void
   onSearchTextChange: (text: string) => void
   onGradeChange: (grade: number | null) => void
-  onThumbnailScaleChange: (value: number) => void
+  onThumbnailScaleDown: () => void
+  onThumbnailScaleUp: () => void
   onAutoPlayEnabledChange: (enabled: boolean) => void
   onAutoPlayIntervalChange: (value: number) => void
   onOpenSettings: () => void
@@ -34,7 +37,9 @@ function AppHeader({
   searchField,
   searchText,
   currentGrade,
-  thumbnailScale,
+  thumbnailScaleLevel,
+  canThumbnailScaleDown,
+  canThumbnailScaleUp,
   autoPlayEnabled,
   autoPlayInterval,
   importMenuOpen,
@@ -48,7 +53,8 @@ function AppHeader({
   onSearchFieldChange,
   onSearchTextChange,
   onGradeChange,
-  onThumbnailScaleChange,
+  onThumbnailScaleDown,
+  onThumbnailScaleUp,
   onAutoPlayEnabledChange,
   onAutoPlayIntervalChange,
   onOpenSettings,
@@ -122,7 +128,7 @@ function AppHeader({
 
       <div className="header-right">
         <div className="grade-control">
-          <button type="button">评分：{currentGrade === null ? '-' : currentGrade}</button>
+          <button type="button">图包评分：{currentGrade === null ? '-' : currentGrade}</button>
           <div className="grade-popover">
             {[0, 1, 2, 3, 4, 5].map((grade) => (
               <button key={grade} type="button" onClick={() => onGradeChange(grade === 0 ? null : grade)}>
@@ -132,16 +138,16 @@ function AppHeader({
           </div>
         </div>
 
-        <label className="slider-block">
-          缩放
-          <input
-            max={220}
-            min={70}
-            type="range"
-            value={thumbnailScale}
-            onChange={(event) => onThumbnailScaleChange(Number(event.target.value))}
-          />
-        </label>
+        <div className="zoom-stepper" role="group" aria-label="缩略图缩放级别">
+          <span>缩放级别</span>
+          <button aria-label="缩小缩略图" disabled={!canThumbnailScaleDown} type="button" onClick={onThumbnailScaleDown}>
+            -
+          </button>
+          <span>{thumbnailScaleLevel}</span>
+          <button aria-label="放大缩略图" disabled={!canThumbnailScaleUp} type="button" onClick={onThumbnailScaleUp}>
+            +
+          </button>
+        </div>
 
         <label className="inline-switch">
           <input

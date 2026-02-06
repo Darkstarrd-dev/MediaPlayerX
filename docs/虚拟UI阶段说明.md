@@ -18,7 +18,7 @@
 - 图片模式与视频模式切换。
 - 向量模式容器显示与阈值调节交互。
 - Sidebar 节点、Current Root 范围化显示、视频叶子 toggle。
-- Main 分页缩略图（占位）与视频预览（占位）。
+- Main 分页缩略图（占位）/纯文件名滚动列表 与视频预览（占位）。
 - 元数据面板与播放列表管理（含拖拽排序与删除）。
 - 全屏层、底部浮动 Footer、双显示/仅视频/仅图片切换。
 - 快捷键默认方案与设置面板重映射。
@@ -40,10 +40,16 @@
 ## 当前代码结构（已完成 App 拆分）
 
 - `src/App.tsx`：页面状态编排、模式切换逻辑、快捷键路由。
+- `src/features/shortcuts/useShortcutEngine.ts`：快捷键作用域判定与按键路由。
+- `src/features/sidebar/useSidebarNavigation.ts`：Sidebar 可视项导航、选中与根目录应用。
+- `src/features/import/useImportPipeline.ts`：导入弹窗、拖拽、粘贴输入管线。
+- `src/features/media/useMediaState.ts`：视频/全屏/播放列表状态与控制回调。
+- `src/features/layout/thumbnailLayout.ts`：缩略图离散 9 级排布算法（基于 `scalesolution2`）。
+- `src/features/app/helpers.ts`：搜索匹配、树遍历与文件输入工具函数。
 - `src/components/AppHeader.tsx`：顶部控件区与导入入口。
 - `src/components/SidebarPanel.tsx`：目录树与视频播放列表 toggle。
-- `src/components/ImageMainSection.tsx`：图片网格分页与焦点交互。
-- `src/components/VideoMainSection.tsx`：视频预览与虚拟播放控件。
+- `src/components/ImageMainSection.tsx`：图片网格分页、纯文件名列表与焦点交互。
+- `src/components/VideoMainSection.tsx`：视频预览、封面态与虚拟播放控件。
 - `src/components/MetadataPanel.tsx`：图片/视频元数据与播放列表管理。
 - `src/components/FullscreenLayer.tsx`：全屏层与底部浮动控制区。
 - `src/components/SettingsPanel.tsx`：设置覆盖层与快捷键映射。
@@ -67,6 +73,28 @@
 - 已完成 Sidebar 焦点行为修正：点击 Sidebar 项保持 Sidebar 焦点，左右键切回 Main，方向键持续作用于 Sidebar。
 - 已完成 Sidebar 分页键修正：`PageUp/PageDown` 按“可视项数 - 1”步长翻页，边界直接钳制首末项。
 - 已完成目录结构 Mock 数据再次扩容，可覆盖“两次翻页可继续、第三次不足直接到末项”的验证场景。
+- 已完成 Main 修正本轮 1/2/3/4/5/6：Mock 比例覆盖、Focus 状态机、纯文件名滚动列表、视频切换封面暂停态、全屏 `F`、视频控制区补齐。
+- 已完成缩略图布局修正：缩略图模式统一 `3:4` 比例、分页内整体居中，缩放时尽量减少不均匀留空。
+- 已完成缩略图内容自适应：不同长宽比图片按长边适配并在缩略图内居中。
+- 已完成评分口径修正：评分改为图包级元数据，不再绑定单张图片。
+- 已完成元数据预览修正：focus 态仅显示居中图片预览，并按长宽比自适应缩放。
+- 已完成 `Save as cover` Mock：保存随机颜色封面并写入 `console` 结果。
+- 已完成视频控制补齐：进度/静音/音量基础上新增 `0.1x~4.0x` 倍速滑条（默认 `1.0x`）。
+- 已完成第二轮 App 拆分：按 `useShortcutEngine -> useSidebarNavigation -> useImportPipeline -> useMediaState` 顺序迁移。
+- 已完成缩放算法替换：丢弃混合评分方案，切换为 `scalesolution2` 同源算法，固定 9 级，初始第 5 级。
+- 已完成缩放锚点规则：按“缩略图宽度设置值 * 0.75”作为初始级别目标宽度。
+- 已完成设置项修正：`缩略图最长边` 更名为 `缩略图宽度`，并新增 `缩略图间距`。
+- 已新增后端接入强制规约：`docs/backend-integration-guardrails.md`，后续接入真实数据链路必须遵循。
 - 已通过当前阶段质量检查：`lint`、`test`、`build`。
 - 已确认“上一个文件夹/下一个文件夹”顺序问题不在 Sidebar，定位为缩略图浏览链路问题，留待缩略图界面专项修复。
-- 下一步进入“按模块修正 UI 细节与交互行为”的迭代阶段。
+- Main 修正阶段已完成，下一步进入全屏模式专项修正阶段。
+
+## 下一轮 Main 修正入口（本轮已完成）
+
+- [已完成] Mock 图片比例扩展：补齐正方形/横图/竖图样本。
+- [已完成] Focus 状态机：鼠标点击与方向键移动等效，`Esc` 清空 focus。
+- [已完成] 元数据面板逻辑：有 focus 显示实际图片预览，无 focus 显示元数据。
+- [已完成] 纯文件名模式：改为滚动式列表视图，不分页。
+- [已完成] 视频切换行为：切换 Sidebar 视频后进入封面暂停态，不继承旧时间。
+- [已完成] 快捷键修正：全屏切换从 `F11` 改为 `F`。
+- [已完成] 视频控制补齐：进度条拖动、静音、音量控件。

@@ -10,12 +10,32 @@ import type {
 
 const COLORS = ['#dd6b66', '#d58b45', '#6da249', '#4aa6a1', '#4f86cf', '#8868d6']
 
+function makeMockDimensions(index: number): { width: number; height: number } {
+  const profileIndex = index % 3
+
+  if (profileIndex === 0) {
+    const edge = 920 + ((index * 37) % 420)
+    return { width: edge, height: edge }
+  }
+
+  if (profileIndex === 1) {
+    return {
+      width: 1360 + ((index * 71) % 700),
+      height: 760 + ((index * 29) % 240),
+    }
+  }
+
+  return {
+    width: 760 + ((index * 43) % 260),
+    height: 1280 + ((index * 61) % 700),
+  }
+}
+
 function makeImages(packageId: string, count: number, clusterOffset: number): ImageItem[] {
   const items: ImageItem[] = []
   for (let i = 0; i < count; i += 1) {
     const ordinal = i + 1
-    const width = 900 + ((i * 59) % 620)
-    const height = 1100 + ((i * 41) % 550)
+    const { width, height } = makeMockDimensions(i)
     items.push({
       id: `${packageId}-img-${ordinal}`,
       ordinal,

@@ -16,8 +16,9 @@ interface SettingsPanelProps {
   sidebarVerticalGap: number
   metadataRatio: number
   vectorPanelHeight: number
+  thumbnailGap: number
   thumbnailQuality: number
-  thumbnailMaxEdge: number
+  thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
   shortcuts: ShortcutMap
@@ -32,8 +33,9 @@ interface SettingsPanelProps {
   onSidebarVerticalGapChange: (value: number) => void
   onMetadataRatioChange: (value: number) => void
   onVectorPanelHeightChange: (value: number) => void
+  onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
-  onThumbnailMaxEdgeChange: (value: number) => void
+  onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
   onSetShortcut: (action: ShortcutAction, binding: string) => void
@@ -51,8 +53,9 @@ function SettingsPanel({
   sidebarVerticalGap,
   metadataRatio,
   vectorPanelHeight,
+  thumbnailGap,
   thumbnailQuality,
-  thumbnailMaxEdge,
+  thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
   shortcuts,
@@ -67,8 +70,9 @@ function SettingsPanel({
   onSidebarVerticalGapChange,
   onMetadataRatioChange,
   onVectorPanelHeightChange,
+  onThumbnailGapChange,
   onThumbnailQualityChange,
-  onThumbnailMaxEdgeChange,
+  onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
   onSetShortcut,
@@ -194,6 +198,17 @@ function SettingsPanel({
           <div className="settings-block">
             <h3>缩略图 / 模型参数</h3>
             <label>
+              缩略图间距 {thumbnailGap}px
+              <input
+                max={24}
+                min={0}
+                step={1}
+                type="range"
+                value={thumbnailGap}
+                onChange={(event) => onThumbnailGapChange(Number(event.target.value))}
+              />
+            </label>
+            <label>
               缩略图质量
               <input
                 max={100}
@@ -204,13 +219,13 @@ function SettingsPanel({
               />
             </label>
             <label>
-              缩略图最长边
+              缩略图宽度
               <input
                 max={2048}
                 min={128}
                 type="number"
-                value={thumbnailMaxEdge}
-                onChange={(event) => onThumbnailMaxEdgeChange(Number(event.target.value))}
+                value={thumbnailWidth}
+                onChange={(event) => onThumbnailWidthChange(Number(event.target.value))}
               />
             </label>
             <label>
