@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type DragEventHandler, type JSX } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEventHandler } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 
 import './App.css'
+import AppHeader from './components/AppHeader'
+import FullscreenLayer from './components/FullscreenLayer'
+import ImageMainSection from './components/ImageMainSection'
+import MetadataPanel from './components/MetadataPanel'
+import SettingsPanel from './components/SettingsPanel'
+import SidebarPanel from './components/SidebarPanel'
+import VideoMainSection from './components/VideoMainSection'
 import {
   IMAGE_PACKAGES,
   VIDEO_ITEMS,
@@ -24,28 +31,9 @@ import type {
   VectorCandidate,
   VideoItem,
 } from './types'
+import { clamp, isEditableTarget } from './utils/ui'
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value))
-}
-
-function formatSeconds(value: number): string {
-  const whole = Math.max(0, Math.floor(value))
-  const m = Math.floor(whole / 60)
-  const s = whole % 60
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false
-  }
-
-  const tag = target.tagName.toLowerCase()
-  return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable
-}
 
 function includesText(haystack: string, needle: string): boolean {
   return haystack.toLowerCase().includes(needle.toLowerCase())
@@ -83,6 +71,7 @@ function videoMatchesSearch(video: VideoItem, query: string): boolean {
   if (!query.trim()) {
     return true
   }
+
   return [video.fileName, video.absolutePath].join(' ').toLowerCase().includes(query.trim().toLowerCase())
 }
 
@@ -850,242 +839,89 @@ function App() {
     event.preventDefault()
   }
 
-  const renderSidebarNodes = (nodes: SidebarNode[], depth = 0): JSX.Element[] => {
-    return nodes.flatMap((node) => {
-      const isFolder = node.kind === 'folder'
-      const isActivePackage = mode === 'image' && node.packageId === selectedPackageId
-      const isActiveVideo = mode === 'video' && node.videoId === selectedVideoId
-
-      const row = (
-        <div
-          key={node.id}
-          className={`sidebar-row ${isActivePackage || isActiveVideo ? 'is-active' : ''}`}
-          style={{ paddingLeft: `${depth * 14 + 10}px` }}
-        >
-          <button
-            className="sidebar-label"
-            type="button"
-            onClick={() => {
-              if (node.packageId) {
-                setSelectedPackageId(node.packageId)
-                updateSettings({ sidebarFocus: 'main' })
-              }
-              if (node.videoId) {
-                setSelectedVideoId(node.videoId)
-                updateSettings({ sidebarFocus: 'main' })
-              }
-            }}
-          >
-            {node.label}
-          </button>
-
-          <button
-            className="sidebar-mini-btn"
-            type="button"
-            onClick={() => {
-              if (mode === 'image') {
-                updateSettings({ imageRootNodeId: node.id })
-              } else {
-                updateSettings({ videoRootNodeId: node.id })
-              }
-            }}
-          >
-            设为根
-          </button>
-
-          {mode === 'video' && node.videoId ? (
-            <input
-              aria-label={`toggle-${node.videoId}`}
-              checked={playlistIds.includes(node.videoId)}
-              type="checkbox"
-              onChange={(event) => {
-                const { checked } = event.target
-                setPlaylistIds((previous) => {
-                  if (checked) {
-                    if (previous.includes(node.videoId!)) {
-                      return previous
-                    }
-                    return [...previous, node.videoId!]
-                  }
-                  return previous.filter((id) => id !== node.videoId)
-                })
-              }}
-            />
-          ) : null}
-
-          {!isFolder && mode === 'image' && node.packageId ? (
-            <span className="sidebar-count">{packageById.get(node.packageId)?.images.length ?? 0}</span>
-          ) : null}
-        </div>
-      )
-
-      if (node.children.length === 0) {
-        return [row]
-      }
-
-      return [row, ...renderSidebarNodes(node.children, depth + 1)]
-    })
-  }
-
   return (
     <div className="app" onDragOver={onDragOverImport} onDrop={onDropImport}>
-      <header className="app-header" style={{ height: `${headerHeight}px` }}>
-        <div className="header-left">
-          <div className="logo-wrap">
-            <button
-              className="logo-btn"
-              type="button"
-              onClick={() => setImportMenuOpen((value) => !value)}
-            >
-              MediaPlayerX
-            </button>
-            {importMenuOpen ? (
-              <div className="import-menu">
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.info('模拟导入：文件')
-                    setImportMenuOpen(false)
-                  }}
-                >
-                  导入文件
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.info('模拟导入：文件夹')
-                    setImportMenuOpen(false)
-                  }}
-                >
-                  导入文件夹
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.info('模拟导入：文件 + 文件夹（混合）')
-                    setImportMenuOpen(false)
-                  }}
-                >
-                  导入混合输入
-                </button>
-              </div>
-            ) : null}
-          </div>
-
-          <div className="mode-switch" role="group" aria-label="mode-switch">
-            <button
-              className={mode === 'image' ? 'is-active' : ''}
-              type="button"
-              onClick={() => updateSettings({ mode: 'image' })}
-            >
-              图片模式
-            </button>
-            <button
-              className={mode === 'video' ? 'is-active' : ''}
-              type="button"
-              onClick={() => updateSettings({ mode: 'video' })}
-            >
-              视频模式
-            </button>
-          </div>
-
-          <label className="inline-switch">
-            <input
-              checked={vectorMode}
-              disabled={mode !== 'image'}
-              type="checkbox"
-              onChange={(event) => updateSettings({ vectorMode: event.target.checked })}
-            />
-            向量模式
-          </label>
-
-          <div className="search-box">
-            <select
-              value={searchField}
-              onChange={(event) => updateSettings({ searchField: event.target.value as SearchField })}
-            >
-              <option value="all">全部字段</option>
-              <option value="name">名称</option>
-              <option value="workTitle">作品名</option>
-              <option value="circle">社团</option>
-              <option value="author">作者</option>
-              <option value="tags">Tags</option>
-            </select>
-            <input
-              placeholder="特征检索（名称/社团/作者/tags）"
-              value={searchText}
-              onChange={(event) => updateSettings({ searchText: event.target.value })}
-            />
-          </div>
-        </div>
-
-        <div className="header-right">
-          <div className="grade-control">
-            <button type="button">评分：{currentGrade === null ? '-' : currentGrade}</button>
-            <div className="grade-popover">
-              {[0, 1, 2, 3, 4, 5].map((grade) => (
-                <button key={grade} type="button" onClick={() => setFocusedGrade(grade === 0 ? null : grade)}>
-                  {grade === 0 ? '清空' : `${grade} 星`}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <label className="slider-block">
-            缩放
-            <input
-              max={220}
-              min={70}
-              type="range"
-              value={thumbnailScale}
-              onChange={(event) => updateSettings({ thumbnailScale: Number(event.target.value) })}
-            />
-          </label>
-
-          <label className="inline-switch">
-            <input
-              checked={autoPlayEnabled}
-              type="checkbox"
-              onChange={(event) => updateSettings({ autoPlayEnabled: event.target.checked })}
-            />
-            自动播放
-          </label>
-
-          <select
-            value={autoPlayInterval}
-            onChange={(event) => updateSettings({ autoPlayInterval: Number(event.target.value) })}
-          >
-            {AUTO_PLAY_PRESETS.map((value) => (
-              <option key={value} value={value}>{`${value}s`}</option>
-            ))}
-          </select>
-
-          <button type="button" onClick={() => updateSettings({ settingsOpen: true })}>
-            设置
-          </button>
-        </div>
-      </header>
+      <AppHeader
+        headerHeight={headerHeight}
+        mode={mode}
+        vectorMode={vectorMode}
+        searchField={searchField}
+        searchText={searchText}
+        currentGrade={currentGrade}
+        thumbnailScale={thumbnailScale}
+        autoPlayEnabled={autoPlayEnabled}
+        autoPlayInterval={autoPlayInterval}
+        importMenuOpen={importMenuOpen}
+        autoPlayPresets={AUTO_PLAY_PRESETS}
+        onToggleImportMenu={() => setImportMenuOpen((value) => !value)}
+        onCloseImportMenu={() => setImportMenuOpen(false)}
+        onImportFiles={() => {
+          console.info('模拟导入：文件')
+        }}
+        onImportFolders={() => {
+          console.info('模拟导入：文件夹')
+        }}
+        onImportMixed={() => {
+          console.info('模拟导入：文件 + 文件夹（混合）')
+        }}
+        onModeChange={(nextMode) => updateSettings({ mode: nextMode })}
+        onVectorModeChange={(enabled) => updateSettings({ vectorMode: enabled })}
+        onSearchFieldChange={(field) => updateSettings({ searchField: field })}
+        onSearchTextChange={(text) => updateSettings({ searchText: text })}
+        onGradeChange={setFocusedGrade}
+        onThumbnailScaleChange={(value) => updateSettings({ thumbnailScale: value })}
+        onAutoPlayEnabledChange={(enabled) => updateSettings({ autoPlayEnabled: enabled })}
+        onAutoPlayIntervalChange={(value) => updateSettings({ autoPlayInterval: value })}
+        onOpenSettings={() => updateSettings({ settingsOpen: true })}
+      />
 
       <div className="app-body" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
-        <aside className={`sidebar ${sidebarFocus === 'sidebar' ? 'is-focus' : ''}`} style={{ width: `${sidebarRatio * 100}%` }}>
-          <div className="sidebar-head">
-            <strong>目录结构</strong>
-            {mode === 'image' && imageRootNodeId ? (
-              <button type="button" onClick={() => updateSettings({ imageRootNodeId: null })}>
-                恢复数据库根
-              </button>
-            ) : null}
-            {mode === 'video' && videoRootNodeId ? (
-              <button type="button" onClick={() => updateSettings({ videoRootNodeId: null })}>
-                恢复数据库根
-              </button>
-            ) : null}
-          </div>
-
-          <div className="sidebar-tree">
-            {mode === 'image' ? renderSidebarNodes(imageTreeForSidebar) : renderSidebarNodes(videoTreeForSidebar)}
-          </div>
-        </aside>
+        <SidebarPanel
+          mode={mode}
+          sidebarFocus={sidebarFocus}
+          sidebarRatio={sidebarRatio}
+          imageRootNodeId={imageRootNodeId}
+          videoRootNodeId={videoRootNodeId}
+          imageTreeNodes={imageTreeForSidebar}
+          videoTreeNodes={videoTreeForSidebar}
+          selectedPackageId={selectedPackageId}
+          selectedVideoId={selectedVideoId}
+          playlistIds={playlistIds}
+          getPackageImageCount={(packageId) => packageById.get(packageId)?.images.length ?? 0}
+          onSelectPackage={(packageId) => {
+            setSelectedPackageId(packageId)
+            updateSettings({ sidebarFocus: 'main' })
+          }}
+          onSelectVideo={(videoId) => {
+            setSelectedVideoId(videoId)
+            updateSettings({ sidebarFocus: 'main' })
+          }}
+          onSetCurrentRoot={(nodeId) => {
+            if (mode === 'image') {
+              updateSettings({ imageRootNodeId: nodeId })
+              return
+            }
+            updateSettings({ videoRootNodeId: nodeId })
+          }}
+          onResetRoot={() => {
+            if (mode === 'image') {
+              updateSettings({ imageRootNodeId: null })
+              return
+            }
+            updateSettings({ videoRootNodeId: null })
+          }}
+          onToggleVideoPlaylist={(videoId, checked) => {
+            setPlaylistIds((previous) => {
+              if (checked) {
+                if (previous.includes(videoId)) {
+                  return previous
+                }
+                return [...previous, videoId]
+              }
+              return previous.filter((id) => id !== videoId)
+            })
+          }}
+        />
 
         <section className={`workspace ${sidebarFocus === 'main' ? 'is-focus' : ''}`} style={{ width: `${(1 - sidebarRatio) * 100}%` }}>
           {mode === 'image' && vectorMode ? (
@@ -1119,147 +955,66 @@ function App() {
           <div className="workspace-body">
             <main className="main-pane" style={{ width: metadataCollapsed ? '100%' : `${(1 - metadataRatio) * 100}%` }}>
               {mode === 'image' ? (
-                <>
-                  <div className="main-toolbar">
-                    <strong>
-                      {vectorMode
-                        ? '向量结果视图'
-                        : `${activePackage?.displayName ?? '无图包'} (${activePackage?.images.length ?? 0} 张)`}
-                    </strong>
-                    <div className="toolbar-actions">
-                      <button type="button" onClick={() => updateSettings({ showNamesOnly: !showNamesOnly })}>
-                        {showNamesOnly ? '显示缩略图' : '纯文件名模式'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFullscreenActive(true)}
-                        disabled={!focusedImage}
-                      >
-                        进入全屏
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="image-grid" ref={gridRef}>
-                    {refsInPage.map((ref, pageIndex) => {
-                      const pkg = packageById.get(ref.packageId)
-                      const image = pkg?.images[ref.imageIndex]
-                      if (!pkg || !image) {
-                        return null
-                      }
-
-                      const absoluteIndex = pageStart + pageIndex
-                      const isFocused =
-                        focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
-
-                      return (
-                        <button
-                          key={`${ref.packageId}-${ref.imageIndex}`}
-                          className={`thumb-card ${isFocused ? 'is-focused' : ''}`}
-                          style={{ width: `${actualCellWidth}px` }}
-                          type="button"
-                          onClick={() => {
-                            if (vectorMode) {
-                              setVectorFocusIndex(absoluteIndex)
-                            }
-                            setImageFocus(ref.packageId, ref.imageIndex)
-                            updateSettings({ sidebarFocus: 'main' })
-                          }}
-                          onDoubleClick={() => setFullscreenActive(true)}
-                        >
-                          {showNamesOnly ? (
-                            <div className="name-only">{`#${image.ordinal.toString().padStart(4, '0')}`}</div>
-                          ) : (
-                            <div className="thumb-placeholder" style={{ background: image.color }}>
-                              <span>{`${image.width} x ${image.height}`}</span>
-                            </div>
-                          )}
-                          <div className="thumb-caption">
-                            <strong>{`${pkg.displayName} #${image.ordinal}`}</strong>
-                            {vectorMode ? (
-                              <small>{`score ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</small>
-                            ) : null}
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-
-                  <div className="pager-line">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (vectorMode) {
-                          setVectorPage((value) => clamp(value - 1, 0, imageTotalPages - 1))
-                          return
-                        }
-                        setPageByPackage((previous) => ({
-                          ...previous,
-                          [selectedPackageId]: clamp((previous[selectedPackageId] ?? 0) - 1, 0, imageTotalPages - 1),
-                        }))
-                      }}
-                    >
-                      上一页
-                    </button>
-                    <span>{`第 ${normalizedPageIndex + 1} / ${imageTotalPages} 页`}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (vectorMode) {
-                          setVectorPage((value) => clamp(value + 1, 0, imageTotalPages - 1))
-                          return
-                        }
-                        setPageByPackage((previous) => ({
-                          ...previous,
-                          [selectedPackageId]: clamp((previous[selectedPackageId] ?? 0) + 1, 0, imageTotalPages - 1),
-                        }))
-                      }}
-                    >
-                      下一页
-                    </button>
-                  </div>
-                </>
+                <ImageMainSection
+                  vectorMode={vectorMode}
+                  showNamesOnly={showNamesOnly}
+                  activePackage={activePackage}
+                  focusedRef={focusedRef}
+                  focusedImageExists={Boolean(focusedImage)}
+                  refsInPage={refsInPage}
+                  pageStart={pageStart}
+                  actualCellWidth={actualCellWidth}
+                  vectorCandidates={vectorCandidates}
+                  normalizedPageIndex={normalizedPageIndex}
+                  imageTotalPages={imageTotalPages}
+                  packageById={packageById}
+                  gridRef={gridRef}
+                  onToggleShowNamesOnly={() => updateSettings({ showNamesOnly: !showNamesOnly })}
+                  onEnterFullscreen={() => setFullscreenActive(true)}
+                  onSelectImage={(packageId, imageIndex, absoluteIndex) => {
+                    if (vectorMode) {
+                      setVectorFocusIndex(absoluteIndex)
+                    }
+                    setImageFocus(packageId, imageIndex)
+                    updateSettings({ sidebarFocus: 'main' })
+                  }}
+                  onPrevPage={() => {
+                    if (vectorMode) {
+                      setVectorPage((value) => clamp(value - 1, 0, imageTotalPages - 1))
+                      return
+                    }
+                    setPageByPackage((previous) => ({
+                      ...previous,
+                      [selectedPackageId]: clamp((previous[selectedPackageId] ?? 0) - 1, 0, imageTotalPages - 1),
+                    }))
+                  }}
+                  onNextPage={() => {
+                    if (vectorMode) {
+                      setVectorPage((value) => clamp(value + 1, 0, imageTotalPages - 1))
+                      return
+                    }
+                    setPageByPackage((previous) => ({
+                      ...previous,
+                      [selectedPackageId]: clamp((previous[selectedPackageId] ?? 0) + 1, 0, imageTotalPages - 1),
+                    }))
+                  }}
+                />
               ) : (
-                <>
-                  <div className="main-toolbar">
-                    <strong>{focusedVideo?.fileName ?? '无视频'}</strong>
-                    <div className="toolbar-actions">
-                      <button type="button" onClick={() => setFullscreenActive(true)}>
-                        F11 全屏
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="video-preview">
-                    <div className="video-screen">
-                      <span>{`虚拟视频时钟 ${formatSeconds(videoTime)} / ${formatSeconds(
-                        focusedVideo?.durationSec ?? 0,
-                      )}`}</span>
-                    </div>
-                    <div className="video-controls">
-                      <button type="button" onClick={() => setVideoPlaying((value) => !value)}>
-                        {videoPlaying ? '暂停' : '播放'}
-                      </button>
-                      <button type="button" onClick={() => goPlaylist(-1)}>
-                        上一个
-                      </button>
-                      <button type="button" onClick={() => goPlaylist(1)}>
-                        下一个
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          console.info('模拟 Save as cover', {
-                            videoId: focusedVideo?.id,
-                            time: videoTime,
-                          })
-                        }}
-                      >
-                        Save as cover
-                      </button>
-                    </div>
-                  </div>
-                </>
+                <VideoMainSection
+                  focusedVideo={focusedVideo}
+                  videoTime={videoTime}
+                  videoPlaying={videoPlaying}
+                  onTogglePlay={() => setVideoPlaying((value) => !value)}
+                  onPrevVideo={() => goPlaylist(-1)}
+                  onNextVideo={() => goPlaylist(1)}
+                  onSaveCover={() => {
+                    console.info('模拟 Save as cover', {
+                      videoId: focusedVideo?.id,
+                      time: videoTime,
+                    })
+                  }}
+                  onEnterFullscreen={() => setFullscreenActive(true)}
+                />
               )}
 
               <footer className="main-footer">
@@ -1281,351 +1036,95 @@ function App() {
               </footer>
             </main>
 
-            {!metadataCollapsed ? (
-              <aside className="metadata-panel" style={{ width: `${metadataRatio * 100}%` }}>
-                <div className="metadata-head">
-                  <strong>元数据面板</strong>
-                  <button type="button" onClick={() => updateSettings({ metadataCollapsed: true })}>
-                    折叠
-                  </button>
-                </div>
+            <MetadataPanel
+              mode={mode}
+              metadataCollapsed={metadataCollapsed}
+              metadataRatio={metadataRatio}
+              focusedImagePackage={focusedImagePackage}
+              currentGrade={currentGrade}
+              focusedVideo={focusedVideo}
+              metadataTab={metadataTab}
+              playlistIds={playlistIds}
+              selectedVideoId={selectedVideoId}
+              dragVideoId={dragVideoId}
+              videoVolume={videoVolume}
+              videoRate={videoRate}
+              videoById={videoById}
+              onCollapse={() => updateSettings({ metadataCollapsed: true })}
+              onExpand={() => updateSettings({ metadataCollapsed: false })}
+              onMetadataTabChange={setMetadataTab}
+              onSelectVideo={setSelectedVideoId}
+              onRemoveVideoFromPlaylist={(videoId) => {
+                setPlaylistIds((previous) => previous.filter((id) => id !== videoId))
+              }}
+              onDragStart={setDragVideoId}
+              onDropToVideo={(targetVideoId) => {
+                if (!dragVideoId || dragVideoId === targetVideoId) {
+                  return
+                }
 
-                {mode === 'image' ? (
-                  <div className="metadata-content">
-                    <p>{`图包：${focusedImagePackage?.displayName ?? '-'}`}</p>
-                    <p>{`作品名：${focusedImagePackage?.workTitle ?? '-'}`}</p>
-                    <p>{`社团：${focusedImagePackage?.circle ?? '-'}`}</p>
-                    <p>{`作者：${focusedImagePackage?.author ?? '-'}`}</p>
-                    <p>{`Tags：${focusedImagePackage?.tags.join(', ') ?? '-'}`}</p>
-                    <p>{`评分：${currentGrade === null ? '未评分' : currentGrade}`}</p>
-                  </div>
-                ) : (
-                  <div className="metadata-content">
-                    <div className="meta-tabs">
-                      <button
-                        className={metadataTab === 'info' ? 'is-active' : ''}
-                        type="button"
-                        onClick={() => setMetadataTab('info')}
-                      >
-                        视频信息
-                      </button>
-                      <button
-                        className={metadataTab === 'playlist' ? 'is-active' : ''}
-                        type="button"
-                        onClick={() => setMetadataTab('playlist')}
-                      >
-                        播放列表
-                      </button>
-                    </div>
+                setPlaylistIds((previous) => {
+                  const from = previous.indexOf(dragVideoId)
+                  const to = previous.indexOf(targetVideoId)
+                  if (from < 0 || to < 0) {
+                    return previous
+                  }
 
-                    {metadataTab === 'info' && focusedVideo ? (
-                      <>
-                        <p>{`文件：${focusedVideo.fileName}`}</p>
-                        <p>{`时长：${formatSeconds(focusedVideo.durationSec)}`}</p>
-                        <p>{`分辨率：${focusedVideo.width}x${focusedVideo.height}`}</p>
-                        <p>{`音量：${videoVolume}%`}</p>
-                        <p>{`倍速：${videoRate.toFixed(2)}x`}</p>
-                      </>
-                    ) : null}
-
-                    {metadataTab === 'playlist' ? (
-                      <div className="playlist-list">
-                        {playlistIds.map((videoId) => {
-                          const video = videoById.get(videoId)
-                          if (!video) {
-                            return null
-                          }
-
-                          return (
-                            <div
-                              key={videoId}
-                              className={`playlist-item ${selectedVideoId === videoId ? 'is-active' : ''}`}
-                              draggable
-                              onDragStart={() => setDragVideoId(videoId)}
-                              onDragOver={(event) => event.preventDefault()}
-                              onDrop={() => {
-                                if (!dragVideoId || dragVideoId === videoId) {
-                                  return
-                                }
-
-                                setPlaylistIds((previous) => {
-                                  const from = previous.indexOf(dragVideoId)
-                                  const to = previous.indexOf(videoId)
-                                  if (from < 0 || to < 0) {
-                                    return previous
-                                  }
-
-                                  const next = [...previous]
-                                  next.splice(from, 1)
-                                  next.splice(to, 0, dragVideoId)
-                                  return next
-                                })
-                              }}
-                            >
-                              <button type="button" onClick={() => setSelectedVideoId(videoId)}>
-                                {video.fileName}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setPlaylistIds((previous) => previous.filter((id) => id !== videoId))
-                                }}
-                              >
-                                删除
-                              </button>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-              </aside>
-            ) : (
-              <button
-                className="meta-restore"
-                type="button"
-                onClick={() => updateSettings({ metadataCollapsed: false })}
-              >
-                展开元数据面板
-              </button>
-            )}
+                  const next = [...previous]
+                  next.splice(from, 1)
+                  next.splice(to, 0, dragVideoId)
+                  return next
+                })
+              }}
+            />
           </div>
         </section>
       </div>
 
-      {fullscreenActive ? (
-        <div
-          className="fullscreen-layer"
-          onMouseMove={(event) => {
-            setShowFullscreenFooter(event.clientY > window.innerHeight * 0.8)
-          }}
-          onMouseLeave={() => setShowFullscreenFooter(false)}
-        >
-          <div className="fullscreen-content">
-            {fullscreenDisplay !== 'video-only' ? (
-              <section className="fullscreen-image" style={{ flex: fullscreenDisplay === 'dual' ? fullscreenSplit : 1 }}>
-                <div className="full-placeholder" style={{ background: focusedImage?.color ?? '#666' }}>
-                  <span>{`图片 #${focusedImage?.ordinal ?? '-'}`}</span>
-                </div>
-              </section>
-            ) : null}
+      <FullscreenLayer
+        fullscreenActive={fullscreenActive}
+        showFullscreenFooter={showFullscreenFooter}
+        fullscreenDisplay={fullscreenDisplay}
+        fullscreenVideoFocus={fullscreenVideoFocus}
+        fullscreenSplit={fullscreenSplit}
+        focusedImage={focusedImage}
+        focusedVideo={focusedVideo}
+        videoTime={videoTime}
+        videoPlaying={videoPlaying}
+        onSetFooterVisible={setShowFullscreenFooter}
+        onSetDisplay={setFullscreenDisplay}
+        onSetVideoFocus={setFullscreenVideoFocus}
+        onSetSplit={setFullscreenSplit}
+        onToggleVideoPlay={() => setVideoPlaying((value) => !value)}
+        onPrevVideo={() => goPlaylist(-1)}
+        onNextVideo={() => goPlaylist(1)}
+        onExit={() => setFullscreenActive(false)}
+      />
 
-            {fullscreenDisplay === 'dual' ? <div className="fullscreen-divider" /> : null}
-
-            {fullscreenDisplay !== 'image-only' ? (
-              <section className="fullscreen-video" style={{ flex: fullscreenDisplay === 'dual' ? 1 - fullscreenSplit : 1 }}>
-                <div className={`full-video-placeholder ${fullscreenVideoFocus ? 'is-focus' : ''}`}>
-                  <span>{`视频 ${focusedVideo?.fileName ?? '-'}`}</span>
-                  <strong>{`${formatSeconds(videoTime)} / ${formatSeconds(focusedVideo?.durationSec ?? 0)}`}</strong>
-                </div>
-              </section>
-            ) : null}
-          </div>
-
-          {showFullscreenFooter ? (
-            <footer className="fullscreen-footer">
-              <div className="fullscreen-group">
-                <button
-                  className={fullscreenDisplay === 'dual' ? 'is-active' : ''}
-                  type="button"
-                  onClick={() => setFullscreenDisplay('dual')}
-                >
-                  双显示
-                </button>
-                <button
-                  className={fullscreenDisplay === 'video-only' ? 'is-active' : ''}
-                  type="button"
-                  onClick={() => setFullscreenDisplay('video-only')}
-                >
-                  仅视频
-                </button>
-                <button
-                  className={fullscreenDisplay === 'image-only' ? 'is-active' : ''}
-                  type="button"
-                  onClick={() => setFullscreenDisplay('image-only')}
-                >
-                  仅图片
-                </button>
-              </div>
-
-              <div className="fullscreen-group">
-                <button type="button" onClick={() => setFullscreenVideoFocus(false)}>
-                  图片控制
-                </button>
-                <button type="button" onClick={() => setFullscreenVideoFocus(true)}>
-                  视频控制
-                </button>
-                <label>
-                  分屏比例
-                  <input
-                    max={0.8}
-                    min={0.2}
-                    step={0.02}
-                    type="range"
-                    value={fullscreenSplit}
-                    onChange={(event) => setFullscreenSplit(Number(event.target.value))}
-                  />
-                </label>
-              </div>
-
-              <div className="fullscreen-group">
-                <button type="button" onClick={() => setVideoPlaying((value) => !value)}>
-                  {videoPlaying ? '暂停' : '播放'}
-                </button>
-                <button type="button" onClick={() => goPlaylist(-1)}>
-                  上一个
-                </button>
-                <button type="button" onClick={() => goPlaylist(1)}>
-                  下一个
-                </button>
-                <button type="button" onClick={() => setFullscreenActive(false)}>
-                  退出全屏
-                </button>
-              </div>
-            </footer>
-          ) : null}
-        </div>
-      ) : null}
-
-      {settingsOpen ? (
-        <div className="settings-mask" role="dialog" aria-modal="true">
-          <section className="settings-panel">
-            <div className="settings-head">
-              <h2>设置面板（虚拟）</h2>
-              <button type="button" onClick={() => updateSettings({ settingsOpen: false })}>
-                关闭
-              </button>
-            </div>
-
-            <div className="settings-grid">
-              <div className="settings-block">
-                <h3>布局参数</h3>
-                <label>
-                  Header 高度 {headerHeight}px
-                  <input
-                    max={96}
-                    min={48}
-                    type="range"
-                    value={headerHeight}
-                    onChange={(event) => updateSettings({ headerHeight: Number(event.target.value) })}
-                  />
-                </label>
-                <label>
-                  Sidebar 比例 {(sidebarRatio * 100).toFixed(0)}%
-                  <input
-                    max={0.45}
-                    min={0.16}
-                    step={0.01}
-                    type="range"
-                    value={sidebarRatio}
-                    onChange={(event) => updateSettings({ sidebarRatio: Number(event.target.value) })}
-                  />
-                </label>
-                <label>
-                  元数据面板比例 {(metadataRatio * 100).toFixed(0)}%
-                  <input
-                    max={0.45}
-                    min={0.2}
-                    step={0.01}
-                    type="range"
-                    value={metadataRatio}
-                    onChange={(event) => updateSettings({ metadataRatio: Number(event.target.value) })}
-                  />
-                </label>
-                <label>
-                  向量容器高度 {vectorPanelHeight}px
-                  <input
-                    max={320}
-                    min={120}
-                    step={2}
-                    type="range"
-                    value={vectorPanelHeight}
-                    onChange={(event) => updateSettings({ vectorPanelHeight: Number(event.target.value) })}
-                  />
-                </label>
-              </div>
-
-              <div className="settings-block">
-                <h3>缩略图 / 模型参数</h3>
-                <label>
-                  缩略图质量
-                  <input
-                    max={100}
-                    min={1}
-                    type="number"
-                    value={thumbnailQuality}
-                    onChange={(event) => updateSettings({ thumbnailQuality: Number(event.target.value) })}
-                  />
-                </label>
-                <label>
-                  缩略图最长边
-                  <input
-                    max={2048}
-                    min={128}
-                    type="number"
-                    value={thumbnailMaxEdge}
-                    onChange={(event) => updateSettings({ thumbnailMaxEdge: Number(event.target.value) })}
-                  />
-                </label>
-                <label>
-                  LM Studio Endpoint
-                  <input
-                    type="text"
-                    value={lmStudioEndpoint}
-                    onChange={(event) => updateSettings({ lmStudioEndpoint: event.target.value })}
-                  />
-                </label>
-                <label>
-                  Embedding 模型
-                  <input
-                    type="text"
-                    value={lmStudioModel}
-                    onChange={(event) => updateSettings({ lmStudioModel: event.target.value })}
-                  />
-                </label>
-              </div>
-
-              <div className="settings-block settings-shortcuts">
-                <div className="settings-shortcuts-head">
-                  <h3>快捷键重映射</h3>
-                  <button type="button" onClick={resetShortcuts}>
-                    恢复默认
-                  </button>
-                </div>
-
-                <div className="shortcut-list">
-                  {SHORTCUT_DEFINITIONS.map((definition) => (
-                    <label key={definition.action}>
-                      <span>{definition.label}</span>
-                      <input
-                        type="text"
-                        value={shortcuts[definition.action]}
-                        onChange={(event) => setShortcut(definition.action, event.target.value)}
-                      />
-                    </label>
-                  ))}
-                </div>
-
-                <div className="shortcut-conflicts">
-                  <strong>冲突检测</strong>
-                  {shortcutConflicts.length === 0 ? (
-                    <p>当前无冲突。</p>
-                  ) : (
-                    <ul>
-                      {shortcutConflicts.map((conflict) => (
-                        <li key={`${conflict.scope}-${conflict.combo}`}>
-                          {`${conflict.scope} 范围：${conflict.combo} -> ${conflict.actions.join(', ')}`}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      ) : null}
+      <SettingsPanel
+        settingsOpen={settingsOpen}
+        headerHeight={headerHeight}
+        sidebarRatio={sidebarRatio}
+        metadataRatio={metadataRatio}
+        vectorPanelHeight={vectorPanelHeight}
+        thumbnailQuality={thumbnailQuality}
+        thumbnailMaxEdge={thumbnailMaxEdge}
+        lmStudioEndpoint={lmStudioEndpoint}
+        lmStudioModel={lmStudioModel}
+        shortcuts={shortcuts}
+        shortcutConflicts={shortcutConflicts}
+        onClose={() => updateSettings({ settingsOpen: false })}
+        onHeaderHeightChange={(value) => updateSettings({ headerHeight: value })}
+        onSidebarRatioChange={(value) => updateSettings({ sidebarRatio: value })}
+        onMetadataRatioChange={(value) => updateSettings({ metadataRatio: value })}
+        onVectorPanelHeightChange={(value) => updateSettings({ vectorPanelHeight: value })}
+        onThumbnailQualityChange={(value) => updateSettings({ thumbnailQuality: value })}
+        onThumbnailMaxEdgeChange={(value) => updateSettings({ thumbnailMaxEdge: value })}
+        onLmStudioEndpointChange={(value) => updateSettings({ lmStudioEndpoint: value })}
+        onLmStudioModelChange={(value) => updateSettings({ lmStudioModel: value })}
+        onSetShortcut={setShortcut}
+        onResetShortcuts={resetShortcuts}
+      />
     </div>
   )
 }
