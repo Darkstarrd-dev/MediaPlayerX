@@ -7,6 +7,10 @@ export type ShortcutAction =
   | 'imageLast'
   | 'packagePrev'
   | 'packageNext'
+  | 'alignUp'
+  | 'alignDown'
+  | 'alignLeft'
+  | 'alignRight'
   | 'autoplayToggle'
   | 'autoplayInterval1'
   | 'autoplayInterval2'
@@ -45,6 +49,10 @@ export const SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
   { action: 'imageLast', scope: 'global', label: '图片：下一行' },
   { action: 'packagePrev', scope: 'global', label: '图片：上一个包' },
   { action: 'packageNext', scope: 'global', label: '图片：下一个包' },
+  { action: 'alignUp', scope: 'global', label: '全屏：上对齐' },
+  { action: 'alignDown', scope: 'global', label: '全屏：下对齐' },
+  { action: 'alignLeft', scope: 'global', label: '全屏：左对齐' },
+  { action: 'alignRight', scope: 'global', label: '全屏：右对齐' },
   { action: 'autoplayToggle', scope: 'global', label: '自动播放：开关' },
   { action: 'autoplayInterval1', scope: 'global', label: '自动播放：1 秒' },
   { action: 'autoplayInterval2', scope: 'global', label: '自动播放：2 秒' },
@@ -76,6 +84,10 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   imageLast: 'ArrowDown',
   packagePrev: 'Ctrl+ArrowLeft',
   packageNext: 'Ctrl+ArrowRight',
+  alignUp: 'Alt+ArrowUp',
+  alignDown: 'Alt+ArrowDown',
+  alignLeft: 'Alt+ArrowLeft',
+  alignRight: 'Alt+ArrowRight',
   autoplayToggle: 'KeyA',
   autoplayInterval1: 'Digit1',
   autoplayInterval2: 'Digit2',

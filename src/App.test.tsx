@@ -109,15 +109,118 @@ describe('MediaPlayer 虚拟 UI', () => {
     infoSpy.mockRestore()
   })
 
-  it('支持 F 切换全屏虚拟视图', () => {
+  it('全屏默认按当前模式进入单显示，双显示切回单显示时恢复入口模式', () => {
     render(<App />)
 
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
 
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
     expect(screen.getByText('图片 #2')).toBeInTheDocument()
+    expect(screen.queryByLabelText('调整全屏分屏比例')).not.toBeInTheDocument()
+
+    fireEvent.mouseMove(screen.getByText('图片 #2'), { clientY: window.innerHeight - 4 })
+    fireEvent.click(screen.getByRole('button', { name: '双显示' }))
+    expect(screen.getByLabelText('调整全屏分屏比例')).toBeInTheDocument()
+    expect(screen.getByText(/焦点：图片/)).toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'Tab', code: 'Tab' })
+    expect(screen.getByText(/焦点：视频/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '单显示' }))
+    expect(screen.queryByLabelText('调整全屏分屏比例')).not.toBeInTheDocument()
+    expect(screen.getByText('图片 #2')).toBeInTheDocument()
+    expect(screen.queryByText(/封面态（待播放）/)).not.toBeInTheDocument()
 
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
     expect(screen.queryByText('图片 #2')).not.toBeInTheDocument()
+  })
+
+  it('全屏图片支持首末跳转、跨包翻页与上个包下个包按钮', () => {
+    render(<App />)
+
+    const readToolbarTitle = () => document.querySelector('.main-toolbar strong')?.textContent ?? ''
+
+    fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
+    fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
+
+    fireEvent.keyDown(window, { key: 'ArrowDown', code: 'ArrowDown' })
+    expect(screen.getByText('图片 #36')).toBeInTheDocument()
+
+    const titleBeforeCross = readToolbarTitle()
+    fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
+    expect(screen.getByText('图片 #1')).toBeInTheDocument()
+    expect(readToolbarTitle()).not.toBe(titleBeforeCross)
+
+    fireEvent.keyDown(window, { key: 'ArrowUp', code: 'ArrowUp' })
+    expect(screen.getByText('图片 #1')).toBeInTheDocument()
+
+    const titleBeforeCtrlPackage = readToolbarTitle()
+    fireEvent.keyDown(window, { key: 'ArrowLeft', code: 'ArrowLeft', ctrlKey: true })
+    expect(readToolbarTitle()).not.toBe(titleBeforeCtrlPackage)
+
+    const fullscreenLayer = document.querySelector('.fullscreen-layer')
+    expect(fullscreenLayer).not.toBeNull()
+    fireEvent.mouseMove(fullscreenLayer as Element, { clientY: window.innerHeight - 4 })
+
+    const speedSelect = screen.getByLabelText('全屏自动播放速度')
+    fireEvent.focus(speedSelect)
+    const titleBeforeCtrlWhenSelectFocused = readToolbarTitle()
+    fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight', ctrlKey: true })
+    expect(readToolbarTitle()).not.toBe(titleBeforeCtrlWhenSelectFocused)
+
+    const titleBeforeFooterPackage = readToolbarTitle()
+    fireEvent.click(screen.getByRole('button', { name: '下个包' }))
+    expect(readToolbarTitle()).not.toBe(titleBeforeFooterPackage)
+  })
+
+  it('视频模式进入全屏默认单视频，悬浮控件按视频位置贴顶/贴底并支持 Alt+方向键对齐', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
+
+    expect(screen.getAllByText(/封面态（待播放）/).length).toBeGreaterThan(0)
+    expect(screen.queryByLabelText('调整全屏分屏比例')).not.toBeInTheDocument()
+
+    const videoPane = document.querySelector('.fullscreen-video')
+    expect(videoPane).not.toBeNull()
+    fireEvent.mouseEnter(videoPane as Element)
+    expect(screen.getByLabelText('全屏视频进度滑条')).toBeInTheDocument()
+
+    const fullscreenLayer = document.querySelector('.fullscreen-layer')
+    expect(fullscreenLayer).not.toBeNull()
+    fireEvent.mouseMove(fullscreenLayer as Element, { clientY: window.innerHeight - 4 })
+    const rowsDefault = Array.from(document.querySelectorAll('.fullscreen-video-controls-row'))
+    expect(rowsDefault[0]?.classList.contains('is-progress')).toBe(true)
+
+    fireEvent.keyDown(window, { key: 'ArrowDown', code: 'ArrowDown', altKey: true })
+    const rowsBottomAlign = Array.from(document.querySelectorAll('.fullscreen-video-controls-row'))
+    expect(rowsBottomAlign[0]?.classList.contains('is-controls')).toBe(true)
+
+    fireEvent.keyDown(window, { key: 'ArrowUp', code: 'ArrowUp', altKey: true })
+    const rowsTopAlign = Array.from(document.querySelectorAll('.fullscreen-video-controls-row'))
+    expect(rowsTopAlign[0]?.classList.contains('is-progress')).toBe(true)
+
+    fireEvent.click(screen.getByRole('button', { name: '双显示' }))
+    const dualVideoStage = document.querySelector('.fullscreen-video .fullscreen-stage')
+    const dualImageStage = document.querySelector('.fullscreen-image .fullscreen-stage')
+    expect(dualVideoStage?.classList.contains('is-draggable')).toBe(true)
+    expect(dualImageStage?.classList.contains('is-draggable')).toBe(false)
+
+    fireEvent.mouseDown(dualVideoStage as Element, { button: 0, clientX: 120, clientY: 60 })
+    expect(dualVideoStage?.classList.contains('is-dragging')).toBe(true)
+    fireEvent.mouseMove(window, { clientX: 180, clientY: 80 })
+    fireEvent.mouseUp(window)
+    expect(dualVideoStage?.classList.contains('is-dragging')).toBe(false)
+  })
+
+  it('设置面板包含全屏对齐快捷键配置项', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    expect(screen.getByText('全屏：上对齐')).toBeInTheDocument()
+    expect(screen.getByText('全屏：下对齐')).toBeInTheDocument()
+    expect(screen.getByText('全屏：左对齐')).toBeInTheDocument()
+    expect(screen.getByText('全屏：右对齐')).toBeInTheDocument()
   })
 })

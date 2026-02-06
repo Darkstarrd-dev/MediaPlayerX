@@ -8,6 +8,8 @@ import {
 } from '../../shortcuts'
 import { isEditableTarget } from '../../utils/ui'
 
+type AlignDirection = 'up' | 'down' | 'left' | 'right'
+
 interface UseShortcutEngineParams {
   shortcuts: ShortcutMap
   mode: 'image' | 'video'
@@ -15,16 +17,20 @@ interface UseShortcutEngineParams {
   settingsOpen: boolean
   sidebarFocus: 'sidebar' | 'main'
   fullscreenActive: boolean
+  fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
   imageFocusActive: boolean
   videoShortcutActive: boolean
   hasFocusedImage: boolean
   handleSidebarNavigationKey: (event: KeyboardEvent) => boolean
   onSetImageFocusActive: (active: boolean) => void
   onSetFullscreenActive: (value: boolean | ((previous: boolean) => boolean)) => void
+  onToggleFullscreenPaneFocus: () => void
   onToggleSidebarFocus: () => void
   onMoveImage: (delta: number) => void
   onMoveImageVertical: (direction: 'up' | 'down') => void
+  onJumpImageBoundary: (target: 'first' | 'last') => void
   onGoPackage: (delta: number) => void
+  onAlignFocus: (direction: AlignDirection) => void
   onToggleAutoplay: () => void
   onApplyAutoplayIntervalByIndex: (index: 0 | 1 | 2 | 3 | 4) => void
   onSetPackageGrade: (grade: number | null) => void
@@ -41,16 +47,20 @@ export function useShortcutEngine({
   settingsOpen,
   sidebarFocus,
   fullscreenActive,
+  fullscreenDisplay,
   imageFocusActive,
   videoShortcutActive,
   hasFocusedImage,
   handleSidebarNavigationKey,
   onSetImageFocusActive,
   onSetFullscreenActive,
+  onToggleFullscreenPaneFocus,
   onToggleSidebarFocus,
   onMoveImage,
   onMoveImageVertical,
+  onJumpImageBoundary,
   onGoPackage,
+  onAlignFocus,
   onToggleAutoplay,
   onApplyAutoplayIntervalByIndex,
   onSetPackageGrade,
@@ -74,9 +84,17 @@ export function useShortcutEngine({
           onMoveImage(1)
           return
         case 'imageFirst':
+          if (fullscreenActive) {
+            onJumpImageBoundary('first')
+            return
+          }
           onMoveImageVertical('up')
           return
         case 'imageLast':
+          if (fullscreenActive) {
+            onJumpImageBoundary('last')
+            return
+          }
           onMoveImageVertical('down')
           return
         case 'packagePrev':
@@ -84,6 +102,26 @@ export function useShortcutEngine({
           return
         case 'packageNext':
           onGoPackage(1)
+          return
+        case 'alignUp':
+          if (fullscreenActive) {
+            onAlignFocus('up')
+          }
+          return
+        case 'alignDown':
+          if (fullscreenActive) {
+            onAlignFocus('down')
+          }
+          return
+        case 'alignLeft':
+          if (fullscreenActive) {
+            onAlignFocus('left')
+          }
+          return
+        case 'alignRight':
+          if (fullscreenActive) {
+            onAlignFocus('right')
+          }
           return
         case 'autoplayToggle':
           if (mode === 'image') {
@@ -185,6 +223,8 @@ export function useShortcutEngine({
       onGoPlaylist,
       onMoveImage,
       onMoveImageVertical,
+      onJumpImageBoundary,
+      onAlignFocus,
       onSetFullscreenActive,
       onSetPackageGrade,
       onToggleAutoplay,
@@ -206,6 +246,48 @@ export function useShortcutEngine({
         event.preventDefault()
         onSetImageFocusActive(false)
         return
+      }
+
+      if (event.key === 'Tab' && fullscreenActive && fullscreenDisplay === 'dual') {
+        event.preventDefault()
+        onToggleFullscreenPaneFocus()
+        return
+      }
+
+      if (fullscreenActive && mode === 'image') {
+        if (shortcutMatches(shortcuts.packagePrev, event)) {
+          event.preventDefault()
+          onGoPackage(-1)
+          return
+        }
+        if (shortcutMatches(shortcuts.packageNext, event)) {
+          event.preventDefault()
+          onGoPackage(1)
+          return
+        }
+      }
+
+      if (fullscreenActive) {
+        if (shortcutMatches(shortcuts.alignUp, event)) {
+          event.preventDefault()
+          onAlignFocus('up')
+          return
+        }
+        if (shortcutMatches(shortcuts.alignDown, event)) {
+          event.preventDefault()
+          onAlignFocus('down')
+          return
+        }
+        if (shortcutMatches(shortcuts.alignLeft, event)) {
+          event.preventDefault()
+          onAlignFocus('left')
+          return
+        }
+        if (shortcutMatches(shortcuts.alignRight, event)) {
+          event.preventDefault()
+          onAlignFocus('right')
+          return
+        }
       }
 
       if (settingsOpen && isEditableTarget(event.target)) {
@@ -265,9 +347,13 @@ export function useShortcutEngine({
     mode,
     onSetFullscreenActive,
     onSetImageFocusActive,
+    onToggleFullscreenPaneFocus,
+    onGoPackage,
+    onAlignFocus,
     settingsOpen,
     shortcuts,
     sidebarFocus,
+    fullscreenDisplay,
     vectorMode,
     videoShortcutActive,
   ])

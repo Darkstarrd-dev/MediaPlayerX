@@ -43,12 +43,14 @@ import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
 import { useUiStore } from './store/useUiStore'
 import type {
   FocusedImageRef,
+  ImagePackage,
   VectorCandidate,
 } from './types'
 import { clamp } from './utils/ui'
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const SIDEBAR_COLLAPSE_RATIO = 0.03
+type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 
 function App() {
   const {
@@ -138,6 +140,13 @@ function App() {
   const [vectorPage, setVectorPage] = useState(0)
   const [gradeByPackage, setGradeByPackage] = useState<Record<string, number | null>>({})
   const [importMenuOpen, setImportMenuOpen] = useState(false)
+  const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
+    mode === 'video' ? 'video-only' : 'image-only',
+  )
+  const [fullscreenAlignRequest, setFullscreenAlignRequest] = useState<{
+    id: number
+    direction: FullscreenAlignDirection
+  } | null>(null)
 
   const {
     selectedVideoId,
@@ -163,6 +172,8 @@ function App() {
     setFullscreenActive,
     fullscreenDisplay,
     setFullscreenDisplay,
+    fullscreenSwapped,
+    setFullscreenSwapped,
     fullscreenVideoFocus,
     setFullscreenVideoFocus,
     fullscreenSplit,
@@ -195,6 +206,7 @@ function App() {
 
   const appBodyRef = useRef<HTMLDivElement>(null)
   const workspaceBodyRef = useRef<HTMLDivElement>(null)
+  const wasFullscreenRef = useRef(false)
   const lastExpandedSidebarRatioRef = useRef(sidebarRatio >= SIDEBAR_COLLAPSE_RATIO ? sidebarRatio : 0.26)
   const [appBodyWidth, setAppBodyWidth] = useState(0)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -356,6 +368,47 @@ function App() {
     },
   })
 
+  const sidebarOrderedImageSourceIds = useMemo(() => {
+    const orderedIds: string[] = []
+    const seen = new Set<string>()
+
+    for (const node of flatSidebarNodes) {
+      const sourceId = node.imageSourceId
+      if (!sourceId || seen.has(sourceId)) {
+        continue
+      }
+      if (!rootScopedPackageIds.has(sourceId) || !packageById.has(sourceId)) {
+        continue
+      }
+      seen.add(sourceId)
+      orderedIds.push(sourceId)
+    }
+
+    if (orderedIds.length > 0) {
+      return orderedIds
+    }
+
+    return rootScopedPackages.map((pkg) => pkg.id)
+  }, [flatSidebarNodes, packageById, rootScopedPackageIds, rootScopedPackages])
+
+  const orderedRootScopedPackages = useMemo(
+    () =>
+      sidebarOrderedImageSourceIds
+        .map((sourceId) => packageById.get(sourceId))
+        .filter((pkg): pkg is ImagePackage => Boolean(pkg)),
+    [packageById, sidebarOrderedImageSourceIds],
+  )
+
+  const orderedRootScopedImageRefs = useMemo<FocusedImageRef[]>(() => {
+    const refs: FocusedImageRef[] = []
+    for (const pkg of orderedRootScopedPackages) {
+      pkg.images.forEach((_, imageIndex) => {
+        refs.push({ packageId: pkg.id, imageIndex })
+      })
+    }
+    return refs
+  }, [orderedRootScopedPackages])
+
   const readAppBodyWidth = useCallback(() => {
     const measured = appBodyRef.current?.getBoundingClientRect().width
     if (measured && measured > 0) {
@@ -480,7 +533,7 @@ function App() {
     [updateMetadataRatioByClientX],
   )
 
-  const activePackage = packageById.get(selectedPackageId) ?? rootScopedPackages[0] ?? null
+  const activePackage = packageById.get(selectedPackageId) ?? orderedRootScopedPackages[0] ?? null
 
   const activeVectorRef = vectorCandidates[vectorFocusIndex]
   const focusedRef = useMemo<FocusedImageRef | null>(() => {
@@ -611,9 +664,30 @@ function App() {
       }
 
       const current = focusByPackage[activePackage.id] ?? 0
-      setImageFocus(activePackage.id, current + delta)
+
+      if (!fullscreenActive || orderedRootScopedImageRefs.length === 0) {
+        setImageFocus(activePackage.id, current + delta)
+        return
+      }
+
+      const currentIndex = orderedRootScopedImageRefs.findIndex(
+        (ref) => ref.packageId === activePackage.id && ref.imageIndex === clamp(current, 0, activePackage.images.length - 1),
+      )
+
+      if (currentIndex < 0) {
+        setImageFocus(activePackage.id, current + delta)
+        return
+      }
+
+      const nextIndex = clamp(currentIndex + delta, 0, orderedRootScopedImageRefs.length - 1)
+      const nextRef = orderedRootScopedImageRefs[nextIndex]
+      if (!nextRef) {
+        return
+      }
+
+      setImageFocus(nextRef.packageId, nextRef.imageIndex)
     },
-    [activePackage, focusByPackage, mode, setImageFocus, vectorMode],
+    [activePackage, focusByPackage, fullscreenActive, mode, orderedRootScopedImageRefs, setImageFocus, vectorMode],
   )
 
   const moveImageVertical = useCallback(
@@ -645,27 +719,43 @@ function App() {
     [activePackage, focusByPackage, mode, setImageFocus, showNamesOnly, thumbnailColumns, vectorMode],
   )
 
+  const jumpImageBoundary = useCallback(
+    (target: 'first' | 'last') => {
+      if (mode !== 'image' || vectorMode) {
+        return
+      }
+
+      if (!activePackage) {
+        return
+      }
+
+      const nextIndex = target === 'first' ? 0 : activePackage.images.length - 1
+      setImageFocus(activePackage.id, nextIndex)
+    },
+    [activePackage, mode, setImageFocus, vectorMode],
+  )
+
   const goPackage = useCallback(
     (delta: number) => {
       if (mode !== 'image' || vectorMode) {
         return
       }
 
-      if (rootScopedPackages.length === 0) {
+      if (orderedRootScopedPackages.length === 0) {
         return
       }
 
-      const currentIndexInList = rootScopedPackages.findIndex((pkg) => pkg.id === selectedPackageId)
+      const currentIndexInList = orderedRootScopedPackages.findIndex((pkg) => pkg.id === selectedPackageId)
       const safeCurrent = currentIndexInList >= 0 ? currentIndexInList : 0
-      const nextIndex = clamp(safeCurrent + delta, 0, rootScopedPackages.length - 1)
-      const nextPackage = rootScopedPackages[nextIndex]
+      const nextIndex = clamp(safeCurrent + delta, 0, orderedRootScopedPackages.length - 1)
+      const nextPackage = orderedRootScopedPackages[nextIndex]
       if (!nextPackage) {
         return
       }
 
       setSelectedPackageId(nextPackage.id)
     },
-    [mode, rootScopedPackages, selectedPackageId, vectorMode],
+    [mode, orderedRootScopedPackages, selectedPackageId, vectorMode],
   )
 
   const setPackageGrade = useCallback(
@@ -690,6 +780,13 @@ function App() {
     [updateSettings],
   )
 
+  const requestFullscreenAlign = useCallback((direction: FullscreenAlignDirection) => {
+    setFullscreenAlignRequest((previous) => ({
+      id: (previous?.id ?? 0) + 1,
+      direction,
+    }))
+  }, [])
+
 
   useShortcutEngine({
     shortcuts,
@@ -698,18 +795,27 @@ function App() {
     settingsOpen,
     sidebarFocus,
     fullscreenActive,
+    fullscreenDisplay,
     imageFocusActive,
     videoShortcutActive,
     hasFocusedImage: Boolean(focusedImage),
     handleSidebarNavigationKey,
     onSetImageFocusActive: setImageFocusActive,
     onSetFullscreenActive: setFullscreenActive,
+    onToggleFullscreenPaneFocus: () => {
+      if (fullscreenDisplay !== 'dual') {
+        return
+      }
+      setFullscreenVideoFocus((value) => !value)
+    },
     onToggleSidebarFocus: () => {
       updateSettings({ sidebarFocus: sidebarFocus === 'sidebar' ? 'main' : 'sidebar' })
     },
     onMoveImage: moveImage,
     onMoveImageVertical: moveImageVertical,
+    onJumpImageBoundary: jumpImageBoundary,
     onGoPackage: goPackage,
+    onAlignFocus: requestFullscreenAlign,
     onToggleAutoplay: () => {
       updateSettings({ autoPlayEnabled: !autoPlayEnabled })
     },
@@ -838,14 +944,14 @@ function App() {
   }, [pagedPageSize, showNamesOnly, vectorFocusIndex, vectorMode])
 
   useEffect(() => {
-    if (rootScopedPackages.length === 0) {
+    if (orderedRootScopedPackages.length === 0) {
       return
     }
 
     if (!rootScopedPackageIds.has(selectedPackageId)) {
-      setSelectedPackageId(rootScopedPackages[0].id)
+      setSelectedPackageId(orderedRootScopedPackages[0].id)
     }
-  }, [rootScopedPackageIds, rootScopedPackages, selectedPackageId])
+  }, [orderedRootScopedPackages, rootScopedPackageIds, selectedPackageId])
 
   useEffect(() => {
     if (mode !== 'image') {
@@ -900,6 +1006,27 @@ function App() {
     }
     ensureSidebarNodeVisible(selectedSidebarNodeId)
   }, [ensureSidebarNodeVisible, selectedSidebarNodeId, sidebarCollapsed, sidebarFocus])
+
+  useEffect(() => {
+    const enteringFullscreen = fullscreenActive && !wasFullscreenRef.current
+    if (enteringFullscreen) {
+      const entryDisplay = mode === 'video' ? 'video-only' : 'image-only'
+      setFullscreenEntryDisplay(entryDisplay)
+      setFullscreenDisplay(entryDisplay)
+      setFullscreenVideoFocus(mode === 'video')
+      setFullscreenSwapped(false)
+      setShowFullscreenFooter(false)
+    }
+    wasFullscreenRef.current = fullscreenActive
+  }, [
+    fullscreenActive,
+    mode,
+    setFullscreenEntryDisplay,
+    setFullscreenDisplay,
+    setFullscreenSwapped,
+    setFullscreenVideoFocus,
+    setShowFullscreenFooter,
+  ])
 
   useEffect(() => {
     if (mode !== 'image' || !autoPlayEnabled) {
@@ -1269,22 +1396,56 @@ function App() {
       </div>
 
       <FullscreenLayer
+        mode={mode}
         fullscreenActive={fullscreenActive}
         showFullscreenFooter={showFullscreenFooter}
         fullscreenDisplay={fullscreenDisplay}
+        fullscreenEntryDisplay={fullscreenEntryDisplay}
+        fullscreenAlignRequest={fullscreenAlignRequest}
+        fullscreenSwapped={fullscreenSwapped}
         fullscreenVideoFocus={fullscreenVideoFocus}
         fullscreenSplit={fullscreenSplit}
         focusedImage={focusedImage}
         focusedVideo={focusedVideo}
+        focusedVideoCoverColor={focusedVideoCoverColor}
         videoTime={videoTime}
         videoPlaying={videoPlaying}
+        videoRate={videoRate}
+        videoVolume={videoVolume}
+        videoMuted={videoMuted}
+        autoPlayEnabled={autoPlayEnabled}
+        autoPlayInterval={autoPlayInterval}
+        autoPlayPresets={AUTO_PLAY_PRESETS}
         onSetFooterVisible={setShowFullscreenFooter}
         onSetDisplay={setFullscreenDisplay}
+        onToggleSwapSides={() => setFullscreenSwapped((value) => !value)}
         onSetVideoFocus={setFullscreenVideoFocus}
         onSetSplit={setFullscreenSplit}
+        onPrevImage={() => moveImage(-1)}
+        onNextImage={() => moveImage(1)}
+        onPrevPackage={() => goPackage(-1)}
+        onNextPackage={() => goPackage(1)}
+        onToggleAutoplay={() => {
+          updateSettings({ autoPlayEnabled: !autoPlayEnabled })
+        }}
+        onSetAutoplayInterval={(seconds) => {
+          updateSettings({ autoPlayInterval: seconds, autoPlayEnabled: true })
+        }}
         onToggleVideoPlay={() => setVideoPlaying((value) => !value)}
         onPrevVideo={() => goPlaylist(-1)}
         onNextVideo={() => goPlaylist(1)}
+        onSeekVideo={(time) => {
+          const duration = focusedVideo?.durationSec ?? 0
+          setVideoTime(clamp(time, 0, duration))
+        }}
+        onToggleVideoMute={() => setVideoMuted((value) => !value)}
+        onChangeVideoVolume={(volume) => {
+          setVideoMuted(false)
+          setVideoVolume(clamp(volume, 0, 100))
+        }}
+        onChangeVideoRate={(rate) => {
+          setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
+        }}
         onExit={() => setFullscreenActive(false)}
       />
 

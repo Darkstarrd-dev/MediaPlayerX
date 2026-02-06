@@ -34,6 +34,8 @@ interface UseMediaStateResult {
   setFullscreenActive: Dispatch<SetStateAction<boolean>>
   fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
   setFullscreenDisplay: Dispatch<SetStateAction<'dual' | 'video-only' | 'image-only'>>
+  fullscreenSwapped: boolean
+  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>
   fullscreenVideoFocus: boolean
   setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
   fullscreenSplit: number
@@ -61,6 +63,7 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videoIds }: 
 
   const [fullscreenActive, setFullscreenActive] = useState(false)
   const [fullscreenDisplay, setFullscreenDisplay] = useState<'dual' | 'video-only' | 'image-only'>('dual')
+  const [fullscreenSwapped, setFullscreenSwapped] = useState(false)
   const [fullscreenVideoFocus, setFullscreenVideoFocus] = useState(false)
   const [fullscreenSplit, setFullscreenSplit] = useState(0.56)
   const [showFullscreenFooter, setShowFullscreenFooter] = useState(false)
@@ -125,6 +128,8 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videoIds }: 
     setFullscreenActive,
     fullscreenDisplay,
     setFullscreenDisplay,
+    fullscreenSwapped,
+    setFullscreenSwapped,
     fullscreenVideoFocus,
     setFullscreenVideoFocus,
     fullscreenSplit,
