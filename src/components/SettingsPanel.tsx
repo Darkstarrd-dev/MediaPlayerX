@@ -9,6 +9,11 @@ interface SettingsPanelProps {
   settingsOpen: boolean
   headerHeight: number
   sidebarRatio: number
+  sidebarMinWidth: number
+  sidebarFontSize: number
+  sidebarCountFontSize: number
+  sidebarIndentStep: number
+  sidebarVerticalGap: number
   metadataRatio: number
   vectorPanelHeight: number
   thumbnailQuality: number
@@ -20,6 +25,11 @@ interface SettingsPanelProps {
   onClose: () => void
   onHeaderHeightChange: (value: number) => void
   onSidebarRatioChange: (value: number) => void
+  onSidebarMinWidthChange: (value: number) => void
+  onSidebarFontSizeChange: (value: number) => void
+  onSidebarCountFontSizeChange: (value: number) => void
+  onSidebarIndentStepChange: (value: number) => void
+  onSidebarVerticalGapChange: (value: number) => void
   onMetadataRatioChange: (value: number) => void
   onVectorPanelHeightChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
@@ -34,6 +44,11 @@ function SettingsPanel({
   settingsOpen,
   headerHeight,
   sidebarRatio,
+  sidebarMinWidth,
+  sidebarFontSize,
+  sidebarCountFontSize,
+  sidebarIndentStep,
+  sidebarVerticalGap,
   metadataRatio,
   vectorPanelHeight,
   thumbnailQuality,
@@ -45,6 +60,11 @@ function SettingsPanel({
   onClose,
   onHeaderHeightChange,
   onSidebarRatioChange,
+  onSidebarMinWidthChange,
+  onSidebarFontSizeChange,
+  onSidebarCountFontSizeChange,
+  onSidebarIndentStepChange,
+  onSidebarVerticalGapChange,
   onMetadataRatioChange,
   onVectorPanelHeightChange,
   onThumbnailQualityChange,
@@ -84,12 +104,67 @@ function SettingsPanel({
             <label>
               Sidebar 比例 {(sidebarRatio * 100).toFixed(0)}%
               <input
-                max={0.45}
-                min={0.16}
-                step={0.01}
+                max={0.95}
+                min={0}
+                step={0.005}
                 type="range"
                 value={sidebarRatio}
                 onChange={(event) => onSidebarRatioChange(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              Sidebar 最小宽度 {sidebarMinWidth}px
+              <input
+                max={640}
+                min={80}
+                step={2}
+                type="range"
+                value={sidebarMinWidth}
+                onChange={(event) => onSidebarMinWidthChange(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              Sidebar 字体大小 {sidebarFontSize}px
+              <input
+                max={24}
+                min={11}
+                step={1}
+                type="range"
+                value={sidebarFontSize}
+                onChange={(event) => onSidebarFontSizeChange(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              Sidebar 数字字号 {sidebarCountFontSize}px
+              <input
+                max={22}
+                min={10}
+                step={1}
+                type="range"
+                value={sidebarCountFontSize}
+                onChange={(event) => onSidebarCountFontSizeChange(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              目录结构间隔 {sidebarIndentStep}px
+              <input
+                max={48}
+                min={8}
+                step={1}
+                type="range"
+                value={sidebarIndentStep}
+                onChange={(event) => onSidebarIndentStepChange(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              目录结构上下间隔 {sidebarVerticalGap}px
+              <input
+                max={24}
+                min={0}
+                step={1}
+                type="range"
+                value={sidebarVerticalGap}
+                onChange={(event) => onSidebarVerticalGapChange(Number(event.target.value))}
               />
             </label>
             <label>

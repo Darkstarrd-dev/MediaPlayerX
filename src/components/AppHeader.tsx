@@ -16,7 +16,6 @@ interface AppHeaderProps {
   onCloseImportMenu: () => void
   onImportFiles: () => void
   onImportFolders: () => void
-  onImportMixed: () => void
   onModeChange: (mode: BrowserMode) => void
   onVectorModeChange: (enabled: boolean) => void
   onSearchFieldChange: (field: SearchField) => void
@@ -44,7 +43,6 @@ function AppHeader({
   onCloseImportMenu,
   onImportFiles,
   onImportFolders,
-  onImportMixed,
   onModeChange,
   onVectorModeChange,
   onSearchFieldChange,
@@ -81,15 +79,6 @@ function AppHeader({
                 }}
               >
                 导入文件夹
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onImportMixed()
-                  onCloseImportMenu()
-                }}
-              >
-                导入混合输入
               </button>
             </div>
           ) : null}

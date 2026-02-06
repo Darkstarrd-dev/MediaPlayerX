@@ -45,6 +45,8 @@ export interface SidebarNode {
   children: SidebarNode[]
   packageId?: string
   videoId?: string
+  imageSourceId?: string
+  directImageCount?: number
   pathKey: string
 }
 

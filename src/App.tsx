@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type DragEventHandler } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEventHandler,
+  type MouseEvent as ReactMouseEvent,
+} from 'react'
 import { useShallow } from 'zustand/react/shallow'
 
 import './App.css'
@@ -10,8 +19,10 @@ import SettingsPanel from './components/SettingsPanel'
 import SidebarPanel from './components/SidebarPanel'
 import VideoMainSection from './components/VideoMainSection'
 import {
+  IMAGE_DIRECTORY_SOURCES,
   IMAGE_PACKAGES,
   VIDEO_ITEMS,
+  buildImageSidebarTree,
   buildSidebarTree,
   buildVectorCandidates,
   findNodeById,
@@ -34,6 +45,94 @@ import type {
 import { clamp, isEditableTarget } from './utils/ui'
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
+const SIDEBAR_COLLAPSE_RATIO = 0.03
+
+type BrowserFile = File & {
+  path?: string
+  webkitRelativePath?: string
+}
+
+type DragEntry = {
+  isFile: boolean
+  isDirectory: boolean
+  name: string
+  fullPath?: string
+}
+
+type DataTransferItemWithEntry = DataTransferItem & {
+  webkitGetAsEntry?: () => DragEntry | null
+}
+
+function serializeFile(file: File): {
+  name: string
+  type: string
+  size: number
+  lastModified: number
+  relativePath?: string
+  path?: string
+} {
+  const source = file as BrowserFile
+  const relativePath = source.webkitRelativePath?.trim() || undefined
+  const nativePath = typeof source.path === 'string' && source.path.trim() ? source.path : undefined
+
+  return {
+    name: file.name,
+    type: file.type || 'application/octet-stream',
+    size: file.size,
+    lastModified: file.lastModified,
+    relativePath,
+    path: nativePath,
+  }
+}
+
+function decodeFileUriToPath(value: string): string | null {
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'file:') {
+      return null
+    }
+
+    let pathname = decodeURIComponent(url.pathname)
+    if (/^\/[a-zA-Z]:\//.test(pathname)) {
+      pathname = pathname.slice(1)
+    }
+
+    return pathname.replace(/\//g, '\\')
+  } catch {
+    return null
+  }
+}
+
+function isLikelyFilesystemPath(value: string): boolean {
+  return /^[a-zA-Z]:[\\/]/.test(value) || /^\\\\[^\\]+\\[^\\]+/.test(value) || /^\//.test(value)
+}
+
+function extractPathsFromClipboard(raw: string): string[] {
+  const tokens = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  const paths: string[] = []
+  for (const token of tokens) {
+    const unquoted = token.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1').trim()
+    const decoded = decodeFileUriToPath(unquoted)
+    const candidate = decoded ?? unquoted
+    if (isLikelyFilesystemPath(candidate)) {
+      paths.push(candidate)
+    }
+  }
+
+  return Array.from(new Set(paths))
+}
+
+function dataTransferHasFiles(dataTransfer: DataTransfer | null): boolean {
+  if (!dataTransfer) {
+    return false
+  }
+
+  return Array.from(dataTransfer.types).includes('Files')
+}
 
 function includesText(haystack: string, needle: string): boolean {
   return haystack.toLowerCase().includes(needle.toLowerCase())
@@ -86,6 +185,11 @@ function collectLeafIds(node: SidebarNode, kind: 'package' | 'video'): string[] 
   return node.children.flatMap((child) => collectLeafIds(child, kind))
 }
 
+function collectImageSourceIds(node: SidebarNode): string[] {
+  const current = node.imageSourceId ? [node.imageSourceId] : []
+  return [...current, ...node.children.flatMap((child) => collectImageSourceIds(child))]
+}
+
 function App() {
   const {
     mode,
@@ -93,6 +197,11 @@ function App() {
     settingsOpen,
     headerHeight,
     sidebarRatio,
+    sidebarMinWidth,
+    sidebarFontSize,
+    sidebarCountFontSize,
+    sidebarIndentStep,
+    sidebarVerticalGap,
     metadataRatio,
     vectorPanelHeight,
     thumbnailScale,
@@ -121,6 +230,11 @@ function App() {
       settingsOpen: state.settingsOpen,
       headerHeight: state.headerHeight,
       sidebarRatio: state.sidebarRatio,
+      sidebarMinWidth: state.sidebarMinWidth,
+      sidebarFontSize: state.sidebarFontSize,
+      sidebarCountFontSize: state.sidebarCountFontSize,
+      sidebarIndentStep: state.sidebarIndentStep,
+      sidebarVerticalGap: state.sidebarVerticalGap,
       metadataRatio: state.metadataRatio,
       vectorPanelHeight: state.vectorPanelHeight,
       thumbnailScale: state.thumbnailScale,
@@ -145,16 +259,18 @@ function App() {
     })),
   )
 
-  const packageById = useMemo(() => new Map(IMAGE_PACKAGES.map((pkg) => [pkg.id, pkg])), [])
+  const imageSources = useMemo(() => [...IMAGE_PACKAGES, ...IMAGE_DIRECTORY_SOURCES], [])
+  const packageById = useMemo(() => new Map(imageSources.map((source) => [source.id, source])), [imageSources])
   const videoById = useMemo(() => new Map(VIDEO_ITEMS.map((video) => [video.id, video])), [])
 
-  const [selectedPackageId, setSelectedPackageId] = useState(IMAGE_PACKAGES[0]?.id ?? '')
+  const [selectedPackageId, setSelectedPackageId] = useState(imageSources[0]?.id ?? '')
   const [selectedVideoId, setSelectedVideoId] = useState(VIDEO_ITEMS[0]?.id ?? '')
+  const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
   const [focusByPackage, setFocusByPackage] = useState<Record<string, number>>(() =>
-    Object.fromEntries(IMAGE_PACKAGES.map((pkg) => [pkg.id, 0])),
+    Object.fromEntries(imageSources.map((source) => [source.id, 0])),
   )
   const [pageByPackage, setPageByPackage] = useState<Record<string, number>>(() =>
-    Object.fromEntries(IMAGE_PACKAGES.map((pkg) => [pkg.id, 0])),
+    Object.fromEntries(imageSources.map((source) => [source.id, 0])),
   )
   const [vectorFocusIndex, setVectorFocusIndex] = useState(0)
   const [vectorPage, setVectorPage] = useState(0)
@@ -163,6 +279,11 @@ function App() {
   const [metadataTab, setMetadataTab] = useState<'info' | 'playlist'>('info')
   const [dragVideoId, setDragVideoId] = useState<string | null>(null)
   const [importMenuOpen, setImportMenuOpen] = useState(false)
+  const [dragOverlayActive, setDragOverlayActive] = useState(false)
+
+  const fileImportInputRef = useRef<HTMLInputElement>(null)
+  const folderImportInputRef = useRef<HTMLInputElement>(null)
+  const dragDepthRef = useRef(0)
 
   const [videoPlaying, setVideoPlaying] = useState(false)
   const [videoTime, setVideoTime] = useState(0)
@@ -175,6 +296,9 @@ function App() {
   const [fullscreenSplit, setFullscreenSplit] = useState(0.56)
   const [showFullscreenFooter, setShowFullscreenFooter] = useState(false)
 
+  const appBodyRef = useRef<HTMLDivElement>(null)
+  const lastExpandedSidebarRatioRef = useRef(sidebarRatio >= SIDEBAR_COLLAPSE_RATIO ? sidebarRatio : 0.26)
+  const [appBodyWidth, setAppBodyWidth] = useState(0)
   const gridRef = useRef<HTMLDivElement>(null)
   const [gridSize, setGridSize] = useState({ width: 1200, height: 700 })
 
@@ -183,16 +307,19 @@ function App() {
     [searchField, searchText],
   )
 
+  const scopedSearchDirectories = useMemo(
+    () => IMAGE_DIRECTORY_SOURCES.filter((directory) => packageMatchesSearch(directory, searchField, searchText)),
+    [searchField, searchText],
+  )
+
+  const scopedImageSources = useMemo(
+    () => [...scopedSearchPackages, ...scopedSearchDirectories],
+    [scopedSearchDirectories, scopedSearchPackages],
+  )
+
   const imageTreeRaw = useMemo(
-    () =>
-      buildSidebarTree(
-        scopedSearchPackages.map((pkg) => ({
-          id: pkg.id,
-          treePath: pkg.treePath,
-        })),
-        'package',
-      ),
-    [scopedSearchPackages],
+    () => buildImageSidebarTree(scopedSearchPackages, scopedSearchDirectories),
+    [scopedSearchDirectories, scopedSearchPackages],
   )
 
   const imageRootNode = useMemo(
@@ -202,14 +329,14 @@ function App() {
 
   const rootScopedPackageIds = useMemo(() => {
     if (!imageRootNode) {
-      return new Set(scopedSearchPackages.map((pkg) => pkg.id))
+      return new Set(scopedImageSources.map((source) => source.id))
     }
-    return new Set(collectLeafIds(imageRootNode, 'package'))
-  }, [imageRootNode, scopedSearchPackages])
+    return new Set(collectImageSourceIds(imageRootNode))
+  }, [imageRootNode, scopedImageSources])
 
   const rootScopedPackages = useMemo(
-    () => scopedSearchPackages.filter((pkg) => rootScopedPackageIds.has(pkg.id)),
-    [scopedSearchPackages, rootScopedPackageIds],
+    () => scopedImageSources.filter((source) => rootScopedPackageIds.has(source.id)),
+    [scopedImageSources, rootScopedPackageIds],
   )
 
   const focusedIndexInPackage = focusByPackage[selectedPackageId] ?? 0
@@ -242,31 +369,12 @@ function App() {
     return buildVectorCandidates(anchorRef, allScopedRefs).filter((candidate) => candidate.score >= vectorThreshold)
   }, [allScopedRefs, anchorRef, vectorThreshold])
 
-  const vectorPackageIds = useMemo(() => {
-    return new Set(vectorCandidates.map((candidate) => candidate.packageId))
-  }, [vectorCandidates])
-
-  const sidebarPackages = useMemo(() => {
-    if (mode !== 'image') {
-      return rootScopedPackages
+  const imageTreeForSidebar = useMemo(() => {
+    if (!imageRootNode) {
+      return imageTreeRaw
     }
-    if (!vectorMode) {
-      return rootScopedPackages
-    }
-    return rootScopedPackages.filter((pkg) => vectorPackageIds.has(pkg.id))
-  }, [mode, rootScopedPackages, vectorMode, vectorPackageIds])
-
-  const imageTreeForSidebar = useMemo(
-    () =>
-      buildSidebarTree(
-        sidebarPackages.map((pkg) => ({
-          id: pkg.id,
-          treePath: pkg.treePath,
-        })),
-        'package',
-      ),
-    [sidebarPackages],
-  )
+    return [imageRootNode]
+  }, [imageRootNode, imageTreeRaw])
 
   const searchedVideos = useMemo(
     () => VIDEO_ITEMS.filter((video) => videoMatchesSearch(video, searchText)),
@@ -313,6 +421,302 @@ function App() {
       ),
     [videosForSidebar],
   )
+
+  const activeSidebarTree = mode === 'image' ? imageTreeForSidebar : videoTreeForSidebar
+
+  const flatSidebarNodes = useMemo(() => {
+    const items: SidebarNode[] = []
+    const walk = (nodes: SidebarNode[]) => {
+      for (const node of nodes) {
+        items.push(node)
+        if (node.children.length > 0) {
+          walk(node.children)
+        }
+      }
+    }
+    walk(activeSidebarTree)
+    return items
+  }, [activeSidebarTree])
+
+  const sidebarNodeById = useMemo(() => new Map(flatSidebarNodes.map((node) => [node.id, node])), [flatSidebarNodes])
+
+  const imageSourceNodeIdMap = useMemo(() => {
+    const map = new Map<string, string>()
+    const walk = (nodes: SidebarNode[]) => {
+      for (const node of nodes) {
+        if (node.imageSourceId) {
+          map.set(node.imageSourceId, node.id)
+        }
+        if (node.children.length > 0) {
+          walk(node.children)
+        }
+      }
+    }
+    walk(imageTreeForSidebar)
+    return map
+  }, [imageTreeForSidebar])
+
+  const videoNodeIdMap = useMemo(() => {
+    const map = new Map<string, string>()
+    const walk = (nodes: SidebarNode[]) => {
+      for (const node of nodes) {
+        if (node.videoId) {
+          map.set(node.videoId, node.id)
+        }
+        if (node.children.length > 0) {
+          walk(node.children)
+        }
+      }
+    }
+    walk(videoTreeForSidebar)
+    return map
+  }, [videoTreeForSidebar])
+
+  const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
+  const canSetCurrentRoot = selectedSidebarNode?.kind === 'folder'
+  const currentRootLabel = mode === 'image' ? imageRootNode?.label ?? null : videoRootNode?.label ?? null
+
+  const applyCurrentRootFromSelection = useCallback(() => {
+    if (!selectedSidebarNode || selectedSidebarNode.kind !== 'folder') {
+      return
+    }
+
+    if (mode === 'image') {
+      updateSettings({ imageRootNodeId: selectedSidebarNode.id })
+      return
+    }
+
+    updateSettings({ videoRootNodeId: selectedSidebarNode.id })
+  }, [mode, selectedSidebarNode, updateSettings])
+
+  const collapseSidebar = useCallback(() => {
+    updateSettings({ sidebarRatio: 0, sidebarFocus: 'main' })
+  }, [updateSettings])
+
+  const ensureSidebarNodeVisible = useCallback((nodeId: string) => {
+    const container = appBodyRef.current?.querySelector<HTMLElement>('.sidebar-tree')
+    if (!container) {
+      return
+    }
+
+    const rowElements = Array.from(container.querySelectorAll<HTMLElement>('[data-sidebar-node-id]'))
+    const targetIndex = rowElements.findIndex((row) => row.dataset.sidebarNodeId === nodeId)
+    const targetRow = targetIndex >= 0 ? rowElements[targetIndex] : null
+    if (!targetRow) {
+      return
+    }
+
+    if (targetIndex === 0) {
+      container.scrollTop = 0
+      return
+    }
+
+    if (targetIndex === rowElements.length - 1) {
+      container.scrollTop = Math.max(0, container.scrollHeight - container.clientHeight)
+      return
+    }
+
+    const rowTop = targetRow.offsetTop
+    const rowBottom = rowTop + targetRow.offsetHeight
+    const viewTop = container.scrollTop
+    const viewBottom = viewTop + container.clientHeight
+
+    if (rowTop < viewTop) {
+      container.scrollTop = Math.max(0, rowTop - 4)
+      return
+    }
+
+    if (rowBottom > viewBottom) {
+      const nextTop = rowBottom - container.clientHeight + 4
+      container.scrollTop = Math.min(nextTop, Math.max(0, container.scrollHeight - container.clientHeight))
+    }
+  }, [])
+
+  const handleSidebarNavigationKey = useCallback(
+    (event: KeyboardEvent): boolean => {
+      if (flatSidebarNodes.length === 0) {
+        return false
+      }
+
+      const currentId = selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId) ? selectedSidebarNodeId : flatSidebarNodes[0].id
+      const currentIndex = Math.max(
+        0,
+        flatSidebarNodes.findIndex((node) => node.id === currentId),
+      )
+
+      const moveSelection = (nextIndex: number) => {
+        const nextNode = flatSidebarNodes[clamp(nextIndex, 0, flatSidebarNodes.length - 1)]
+        if (!nextNode) {
+          return false
+        }
+        setSelectedSidebarNodeId(nextNode.id)
+        requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id))
+        return true
+      }
+
+      const container = appBodyRef.current?.querySelector<HTMLElement>('.sidebar-tree')
+      const findVisibleCount = (): number => {
+        if (!container) {
+          return 9
+        }
+
+        const viewTop = container.scrollTop
+        const viewBottom = viewTop + container.clientHeight
+        const indexById = new Map(flatSidebarNodes.map((node, index) => [node.id, index]))
+        const visibleRows = Array.from(container.querySelectorAll<HTMLElement>('[data-sidebar-node-id]'))
+          .map((row) => {
+            const rowId = row.dataset.sidebarNodeId
+            if (!rowId) {
+              return null
+            }
+
+            const rowIndex = indexById.get(rowId)
+            if (rowIndex === undefined) {
+              return null
+            }
+
+            return {
+              index: rowIndex,
+              top: row.offsetTop,
+              bottom: row.offsetTop + row.offsetHeight,
+            }
+          })
+          .filter((item): item is { index: number; top: number; bottom: number } => item !== null)
+          .filter((row) => row.bottom > viewTop && row.top < viewBottom)
+          .length
+
+        if (visibleRows === 0) {
+          return 9
+        }
+
+        return visibleRows
+      }
+
+      if (event.key === 'ArrowDown') {
+        return moveSelection(currentIndex + 1)
+      }
+      if (event.key === 'ArrowUp') {
+        return moveSelection(currentIndex - 1)
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        updateSettings({ sidebarFocus: 'main' })
+        return true
+      }
+      if (event.key === 'PageDown') {
+        const pageStep = Math.max(1, findVisibleCount() - 1)
+        return moveSelection(currentIndex + pageStep)
+      }
+      if (event.key === 'PageUp') {
+        const pageStep = Math.max(1, findVisibleCount() - 1)
+        return moveSelection(currentIndex - pageStep)
+      }
+      if (event.key === 'Home') {
+        return moveSelection(0)
+      }
+      if (event.key === 'End') {
+        return moveSelection(flatSidebarNodes.length - 1)
+      }
+      if (event.key === 'Enter') {
+        const node = flatSidebarNodes[currentIndex]
+        if (!node) {
+          return false
+        }
+        setSelectedSidebarNodeId(node.id)
+        if (mode === 'image' && node.imageSourceId) {
+          setSelectedPackageId(node.imageSourceId)
+        }
+        if (mode === 'video' && node.videoId) {
+          setSelectedVideoId(node.videoId)
+        }
+        requestAnimationFrame(() => ensureSidebarNodeVisible(node.id))
+        return true
+      }
+
+      return false
+    },
+    [ensureSidebarNodeVisible, flatSidebarNodes, mode, selectedSidebarNodeId, sidebarNodeById, updateSettings],
+  )
+
+  const readAppBodyWidth = useCallback(() => {
+    const measured = appBodyRef.current?.getBoundingClientRect().width
+    if (measured && measured > 0) {
+      return measured
+    }
+    if (appBodyWidth > 0) {
+      return appBodyWidth
+    }
+    return window.innerWidth
+  }, [appBodyWidth])
+
+  const normalizeSidebarRatio = useCallback(
+    (candidate: number) => {
+      const bounded = clamp(candidate, 0, 0.95)
+      if (bounded < SIDEBAR_COLLAPSE_RATIO) {
+        return 0
+      }
+
+      const bodyWidth = readAppBodyWidth()
+      if (bodyWidth <= 0) {
+        return Number(bounded.toFixed(3))
+      }
+
+      const minRatio = clamp(sidebarMinWidth / bodyWidth, 0, 0.95)
+      return Number(Math.max(bounded, minRatio).toFixed(3))
+    },
+    [readAppBodyWidth, sidebarMinWidth],
+  )
+
+  const applySidebarRatio = useCallback(
+    (candidate: number) => {
+      const next = normalizeSidebarRatio(candidate)
+      if (Math.abs(next - sidebarRatio) < 0.0005) {
+        return
+      }
+      updateSettings({ sidebarRatio: next })
+    },
+    [normalizeSidebarRatio, sidebarRatio, updateSettings],
+  )
+
+  const sidebarCollapsed = sidebarRatio < SIDEBAR_COLLAPSE_RATIO
+
+  const updateSidebarRatioByClientX = useCallback(
+    (clientX: number) => {
+      const bodyRect = appBodyRef.current?.getBoundingClientRect()
+      if (!bodyRect || bodyRect.width <= 0) {
+        return
+      }
+
+      const ratio = clamp((clientX - bodyRect.left) / bodyRect.width, 0, 0.95)
+      applySidebarRatio(ratio)
+    },
+    [applySidebarRatio],
+  )
+
+  const onStartSidebarResize = useCallback(
+    (event: ReactMouseEvent<HTMLDivElement>) => {
+      event.preventDefault()
+
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        updateSidebarRatioByClientX(moveEvent.clientX)
+      }
+
+      const onMouseUp = () => {
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
+
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
+    },
+    [updateSidebarRatioByClientX],
+  )
+
+  const onExpandSidebar = useCallback(() => {
+    const bodyWidth = readAppBodyWidth()
+    const minRatio = bodyWidth > 0 ? clamp(sidebarMinWidth / bodyWidth, SIDEBAR_COLLAPSE_RATIO, 0.95) : SIDEBAR_COLLAPSE_RATIO
+    const nextRatio = Math.max(lastExpandedSidebarRatioRef.current, minRatio)
+    updateSettings({ sidebarRatio: Number(nextRatio.toFixed(3)) })
+  }, [readAppBodyWidth, sidebarMinWidth, updateSettings])
 
   const activePackage = packageById.get(selectedPackageId) ?? rootScopedPackages[0] ?? null
 
@@ -415,43 +819,9 @@ function App() {
     [packageById, pageSize],
   )
 
-  const jumpPackage = useCallback(
-    (direction: -1 | 1) => {
-      if (rootScopedPackages.length === 0) {
-        return
-      }
-
-      const index = rootScopedPackages.findIndex((pkg) => pkg.id === selectedPackageId)
-      const safeIndex = index === -1 ? 0 : index
-      const next = clamp(safeIndex + direction, 0, rootScopedPackages.length - 1)
-      const nextPackage = rootScopedPackages[next]
-      if (!nextPackage) {
-        return
-      }
-      setSelectedPackageId(nextPackage.id)
-    },
-    [rootScopedPackages, selectedPackageId],
-  )
-
   const moveImage = useCallback(
-    (step: -1 | 1) => {
-      if (mode !== 'image') {
-        return
-      }
-
-      if (vectorMode) {
-        if (vectorCandidates.length === 0) {
-          return
-        }
-
-        setVectorFocusIndex((previous) => {
-          const next = clamp(previous + step, 0, vectorCandidates.length - 1)
-          const nextRef = vectorCandidates[next]
-          if (nextRef) {
-            setImageFocus(nextRef.packageId, nextRef.imageIndex)
-          }
-          return next
-        })
+    (delta: number) => {
+      if (mode !== 'image' || vectorMode) {
         return
       }
 
@@ -459,50 +829,91 @@ function App() {
         return
       }
 
-      const currentIndex = focusByPackage[activePackage.id] ?? 0
-      const nextIndex = currentIndex + step
-
-      if (nextIndex >= 0 && nextIndex < activePackage.images.length) {
-        setImageFocus(activePackage.id, nextIndex)
-        return
-      }
-
-      const packageIndex = rootScopedPackages.findIndex((pkg) => pkg.id === activePackage.id)
-      if (packageIndex === -1) {
-        return
-      }
-
-      if (step > 0) {
-        const nextPackage = rootScopedPackages[packageIndex + 1]
-        if (nextPackage) {
-          setImageFocus(nextPackage.id, 0)
-        }
-      } else {
-        const prevPackage = rootScopedPackages[packageIndex - 1]
-        if (prevPackage) {
-          setImageFocus(prevPackage.id, prevPackage.images.length - 1)
-        }
-      }
+      const current = focusByPackage[activePackage.id] ?? 0
+      setImageFocus(activePackage.id, current + delta)
     },
-    [
-      activePackage,
-      focusByPackage,
-      mode,
-      rootScopedPackages,
-      setImageFocus,
-      vectorCandidates,
-      vectorMode,
-    ],
+    [activePackage, focusByPackage, mode, setImageFocus, vectorMode],
   )
 
+  const jumpImage = useCallback(
+    (direction: 'start' | 'end') => {
+      if (mode !== 'image' || vectorMode) {
+        return
+      }
+
+      if (!activePackage) {
+        return
+      }
+
+      if (direction === 'start') {
+        setImageFocus(activePackage.id, 0)
+      } else {
+        setImageFocus(activePackage.id, activePackage.images.length - 1)
+      }
+    },
+    [activePackage, mode, setImageFocus, vectorMode],
+  )
+
+  const goPackage = useCallback(
+    (delta: number) => {
+      if (mode !== 'image' || vectorMode) {
+        return
+      }
+
+      if (rootScopedPackages.length === 0) {
+        return
+      }
+
+      const currentIndexInList = rootScopedPackages.findIndex((pkg) => pkg.id === selectedPackageId)
+      const safeCurrent = currentIndexInList >= 0 ? currentIndexInList : 0
+      const nextIndex = clamp(safeCurrent + delta, 0, rootScopedPackages.length - 1)
+      const nextPackage = rootScopedPackages[nextIndex]
+      if (!nextPackage) {
+        return
+      }
+
+      setSelectedPackageId(nextPackage.id)
+    },
+    [mode, rootScopedPackages, selectedPackageId, vectorMode],
+  )
+
+  const goPlaylist = useCallback(
+    (delta: number) => {
+      if (playlistIds.length === 0) {
+        return
+      }
+
+      const currentIndexInPlaylist = playlistIds.findIndex((id) => id === selectedVideoId)
+      const safeCurrent = currentIndexInPlaylist >= 0 ? currentIndexInPlaylist : 0
+      const nextIndex = clamp(safeCurrent + delta, 0, playlistIds.length - 1)
+      const nextId = playlistIds[nextIndex]
+      if (!nextId) {
+        return
+      }
+
+      setSelectedVideoId(nextId)
+      setVideoTime(0)
+    },
+    [playlistIds, selectedVideoId],
+  )
+
+  const adjustVideoRate = useCallback((delta: number) => {
+    setVideoRate((value) => clamp(Number((value + delta).toFixed(2)), 0.25, 4))
+  }, [])
+
+  const adjustVideoVolume = useCallback((delta: number) => {
+    setVideoVolume((value) => clamp(value + delta, 0, 100))
+  }, [])
+
   const setFocusedGrade = useCallback(
-    (value: number | null) => {
+    (grade: number | null) => {
       if (!focusedImage) {
         return
       }
+
       setGradeByImage((previous) => ({
         ...previous,
-        [focusedImage.id]: value,
+        [focusedImage.id]: grade,
       }))
     },
     [focusedImage],
@@ -516,29 +927,14 @@ function App() {
     [updateSettings],
   )
 
-  const goPlaylist = useCallback(
-    (direction: -1 | 1) => {
-      if (playlistIds.length === 0) {
-        return
-      }
-
-      const currentIndex = playlistIds.findIndex((id) => id === selectedVideoId)
-      const safeIndex = currentIndex === -1 ? 0 : currentIndex
-      const nextIndex = clamp(safeIndex + direction, 0, playlistIds.length - 1)
-      const nextVideo = playlistIds[nextIndex]
-      if (!nextVideo) {
-        return
-      }
-
-      setSelectedVideoId(nextVideo)
-      setVideoTime(0)
-    },
-    [playlistIds, selectedVideoId],
-  )
-
   const executeShortcut = useCallback(
     (action: ShortcutAction) => {
       switch (action) {
+        case 'focusSwitch':
+          if (!fullscreenActive) {
+            updateSettings({ sidebarFocus: sidebarFocus === 'sidebar' ? 'main' : 'sidebar' })
+          }
+          return
         case 'imagePrev':
           moveImage(-1)
           return
@@ -546,30 +942,16 @@ function App() {
           moveImage(1)
           return
         case 'imageFirst':
-          if (mode !== 'image') return
-          if (vectorMode) {
-            setVectorFocusIndex(0)
-            return
-          }
-          if (activePackage) {
-            setImageFocus(activePackage.id, 0)
-          }
+          jumpImage('start')
           return
         case 'imageLast':
-          if (mode !== 'image') return
-          if (vectorMode) {
-            setVectorFocusIndex(Math.max(0, vectorCandidates.length - 1))
-            return
-          }
-          if (activePackage) {
-            setImageFocus(activePackage.id, activePackage.images.length - 1)
-          }
+          jumpImage('end')
           return
         case 'packagePrev':
-          if (mode === 'image') jumpPackage(-1)
+          goPackage(-1)
           return
         case 'packageNext':
-          if (mode === 'image') jumpPackage(1)
+          goPackage(1)
           return
         case 'autoplayToggle':
           if (mode === 'image') {
@@ -609,11 +991,6 @@ function App() {
         case 'rating5':
           setFocusedGrade(5)
           return
-        case 'focusSwitch':
-          if (!fullscreenActive) {
-            updateSettings({ sidebarFocus: sidebarFocus === 'sidebar' ? 'main' : 'sidebar' })
-          }
-          return
         case 'enterFullscreen':
           setFullscreenActive(true)
           return
@@ -637,22 +1014,22 @@ function App() {
           return
         case 'videoSpeedDown':
           if (videoShortcutActive) {
-            setVideoRate((value) => clamp(Number((value - 0.25).toFixed(2)), 0.25, 3))
+            adjustVideoRate(-0.25)
           }
           return
         case 'videoSpeedUp':
           if (videoShortcutActive) {
-            setVideoRate((value) => clamp(Number((value + 0.25).toFixed(2)), 0.25, 3))
+            adjustVideoRate(0.25)
           }
           return
         case 'videoVolumeDown':
           if (videoShortcutActive) {
-            setVideoVolume((value) => clamp(value - 5, 0, 100))
+            adjustVideoVolume(-5)
           }
           return
         case 'videoVolumeUp':
           if (videoShortcutActive) {
-            setVideoVolume((value) => clamp(value + 5, 0, 100))
+            adjustVideoVolume(5)
           }
           return
         default:
@@ -660,23 +1037,90 @@ function App() {
       }
     },
     [
-      activePackage,
       applyAutoplayIntervalByIndex,
+      adjustVideoRate,
+      adjustVideoVolume,
       autoPlayEnabled,
       fullscreenActive,
+      goPackage,
       goPlaylist,
-      jumpPackage,
+      jumpImage,
       mode,
       moveImage,
       setFocusedGrade,
-      setImageFocus,
+      setFullscreenActive,
       sidebarFocus,
       updateSettings,
-      vectorCandidates.length,
-      vectorMode,
       videoShortcutActive,
     ],
   )
+
+
+  const openImportFilesDialog = useCallback(() => {
+    const input = fileImportInputRef.current
+    if (!input) {
+      return
+    }
+
+    input.value = ''
+    input.click()
+  }, [])
+
+  const openImportFoldersDialog = useCallback(() => {
+    const input = folderImportInputRef.current
+    if (!input) {
+      return
+    }
+
+    input.value = ''
+    input.click()
+  }, [])
+
+  const onImportFilesSelected = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    if (files.length === 0) {
+      return
+    }
+
+    console.info('导入文件弹窗结果', files.map((file) => serializeFile(file)))
+  }, [])
+
+  const onImportFoldersSelected = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    if (files.length === 0) {
+      return
+    }
+
+    const rootFolders = Array.from(
+      new Set(
+        files
+          .map((file) => (file as BrowserFile).webkitRelativePath?.split('/')[0] ?? '')
+          .filter(Boolean),
+      ),
+    )
+
+    console.info('导入文件夹弹窗结果', {
+      rootFolders,
+      files: files.map((file) => serializeFile(file)),
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!appBodyRef.current) {
+      return
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const target = entries[0]
+      if (!target) {
+        return
+      }
+      setAppBodyWidth(target.contentRect.width)
+    })
+
+    observer.observe(appBodyRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     if (!gridRef.current) {
@@ -698,6 +1142,37 @@ function App() {
     observer.observe(gridRef.current)
     return () => observer.disconnect()
   }, [])
+
+  useEffect(() => {
+    const folderInput = folderImportInputRef.current
+    if (!folderInput) {
+      return
+    }
+
+    folderInput.setAttribute('webkitdirectory', '')
+    folderInput.setAttribute('directory', '')
+  }, [])
+
+  useEffect(() => {
+    if (sidebarRatio >= SIDEBAR_COLLAPSE_RATIO) {
+      lastExpandedSidebarRatioRef.current = sidebarRatio
+    }
+  }, [sidebarRatio])
+
+  useEffect(() => {
+    const normalized = normalizeSidebarRatio(sidebarRatio)
+    if (Math.abs(normalized - sidebarRatio) < 0.0005) {
+      return
+    }
+    updateSettings({ sidebarRatio: normalized })
+  }, [normalizeSidebarRatio, sidebarRatio, updateSettings])
+
+  useEffect(() => {
+    if (!sidebarCollapsed || sidebarFocus !== 'sidebar') {
+      return
+    }
+    updateSettings({ sidebarFocus: 'main' })
+  }, [sidebarCollapsed, sidebarFocus, updateSettings])
 
   useEffect(() => {
     if (!activePackage) {
@@ -739,6 +1214,28 @@ function App() {
   }, [rootScopedPackageIds, rootScopedPackages, selectedPackageId])
 
   useEffect(() => {
+    if (mode !== 'image') {
+      return
+    }
+
+    if (selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)) {
+      return
+    }
+
+    const fallbackNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? flatSidebarNodes[0]?.id ?? null
+    if (fallbackNodeId !== selectedSidebarNodeId) {
+      setSelectedSidebarNodeId(fallbackNodeId)
+    }
+  }, [
+    flatSidebarNodes,
+    imageSourceNodeIdMap,
+    mode,
+    selectedPackageId,
+    selectedSidebarNodeId,
+    sidebarNodeById,
+  ])
+
+  useEffect(() => {
     if (videosForSidebar.length === 0) {
       return
     }
@@ -747,6 +1244,28 @@ function App() {
       setSelectedVideoId(videosForSidebar[0].id)
     }
   }, [rootScopedVideoIds, selectedVideoId, videosForSidebar])
+
+  useEffect(() => {
+    if (mode !== 'video') {
+      return
+    }
+
+    if (selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)) {
+      return
+    }
+
+    const fallbackNodeId = videoNodeIdMap.get(selectedVideoId) ?? flatSidebarNodes[0]?.id ?? null
+    if (fallbackNodeId !== selectedSidebarNodeId) {
+      setSelectedSidebarNodeId(fallbackNodeId)
+    }
+  }, [flatSidebarNodes, mode, selectedSidebarNodeId, selectedVideoId, sidebarNodeById, videoNodeIdMap])
+
+  useEffect(() => {
+    if (sidebarCollapsed || sidebarFocus !== 'sidebar' || !selectedSidebarNodeId) {
+      return
+    }
+    ensureSidebarNodeVisible(selectedSidebarNodeId)
+  }, [ensureSidebarNodeVisible, selectedSidebarNodeId, sidebarCollapsed, sidebarFocus])
 
   useEffect(() => {
     if (mode !== 'image' || !autoPlayEnabled) {
@@ -781,8 +1300,21 @@ function App() {
 
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
+      if (!document.hasFocus()) {
+        return
+      }
+
+      const pastedFiles = Array.from(event.clipboardData?.files ?? [])
+      if (pastedFiles.length > 0) {
+        console.info('粘贴文件输入', pastedFiles.map((file) => serializeFile(file)))
+      }
+
       const text = event.clipboardData?.getData('text') ?? ''
-      console.info('模拟粘贴输入', text)
+      const uriList = event.clipboardData?.getData('text/uri-list') ?? ''
+      const pastedPaths = Array.from(new Set([...extractPathsFromClipboard(text), ...extractPathsFromClipboard(uriList)]))
+      if (pastedPaths.length > 0) {
+        console.info('粘贴路径输入', pastedPaths)
+      }
     }
 
     window.addEventListener('paste', onPaste)
@@ -803,6 +1335,14 @@ function App() {
 
       if (isEditableTarget(event.target)) {
         return
+      }
+
+      if (!fullscreenActive && sidebarFocus === 'sidebar') {
+        const handledBySidebar = handleSidebarNavigationKey(event)
+        if (handledBySidebar) {
+          event.preventDefault()
+          return
+        }
       }
 
       const allowedScopes = new Set(['global'])
@@ -827,20 +1367,79 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [executeShortcut, fullscreenActive, settingsOpen, shortcuts, videoShortcutActive])
+  }, [executeShortcut, fullscreenActive, handleSidebarNavigationKey, settingsOpen, shortcuts, sidebarFocus, videoShortcutActive])
+
+  const onDragEnterImport: DragEventHandler<HTMLDivElement> = (event) => {
+    if (!dataTransferHasFiles(event.dataTransfer)) {
+      return
+    }
+
+    event.preventDefault()
+    dragDepthRef.current += 1
+    setDragOverlayActive(true)
+  }
 
   const onDropImport: DragEventHandler<HTMLDivElement> = (event) => {
+    dragDepthRef.current = 0
+    setDragOverlayActive(false)
+
+    if (!dataTransferHasFiles(event.dataTransfer)) {
+      return
+    }
+
     event.preventDefault()
-    const files = Array.from(event.dataTransfer.files).map((file) => file.name)
-    console.info('模拟拖拽导入', files)
+
+    const entries: Array<{
+      kind: 'file' | 'directory'
+      name: string
+      fullPath?: string
+    }> = []
+
+    for (const item of Array.from(event.dataTransfer.items ?? [])) {
+      const entry = (item as DataTransferItemWithEntry).webkitGetAsEntry?.()
+      if (!entry) {
+        continue
+      }
+
+      entries.push({
+        kind: entry.isDirectory ? 'directory' : 'file',
+        name: entry.name,
+        fullPath: entry.fullPath,
+      })
+    }
+
+    const files = Array.from(event.dataTransfer.files).map((file) => serializeFile(file))
+    console.info('拖拽导入输入', {
+      entries,
+      files,
+    })
   }
 
   const onDragOverImport: DragEventHandler<HTMLDivElement> = (event) => {
+    if (!dataTransferHasFiles(event.dataTransfer)) {
+      return
+    }
+
     event.preventDefault()
+    event.dataTransfer.dropEffect = 'copy'
+    if (!dragOverlayActive) {
+      setDragOverlayActive(true)
+    }
+  }
+
+  const onDragLeaveImport: DragEventHandler<HTMLDivElement> = (event) => {
+    if (!dataTransferHasFiles(event.dataTransfer)) {
+      return
+    }
+
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
+    if (dragDepthRef.current === 0) {
+      setDragOverlayActive(false)
+    }
   }
 
   return (
-    <div className="app" onDragOver={onDragOverImport} onDrop={onDropImport}>
+    <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
       <AppHeader
         headerHeight={headerHeight}
         mode={mode}
@@ -855,15 +1454,8 @@ function App() {
         autoPlayPresets={AUTO_PLAY_PRESETS}
         onToggleImportMenu={() => setImportMenuOpen((value) => !value)}
         onCloseImportMenu={() => setImportMenuOpen(false)}
-        onImportFiles={() => {
-          console.info('模拟导入：文件')
-        }}
-        onImportFolders={() => {
-          console.info('模拟导入：文件夹')
-        }}
-        onImportMixed={() => {
-          console.info('模拟导入：文件 + 文件夹（混合）')
-        }}
+        onImportFiles={openImportFilesDialog}
+        onImportFolders={openImportFoldersDialog}
         onModeChange={(nextMode) => updateSettings({ mode: nextMode })}
         onVectorModeChange={(enabled) => updateSettings({ vectorMode: enabled })}
         onSearchFieldChange={(field) => updateSettings({ searchField: field })}
@@ -875,55 +1467,94 @@ function App() {
         onOpenSettings={() => updateSettings({ settingsOpen: true })}
       />
 
-      <div className="app-body" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
-        <SidebarPanel
-          mode={mode}
-          sidebarFocus={sidebarFocus}
-          sidebarRatio={sidebarRatio}
-          imageRootNodeId={imageRootNodeId}
-          videoRootNodeId={videoRootNodeId}
-          imageTreeNodes={imageTreeForSidebar}
-          videoTreeNodes={videoTreeForSidebar}
-          selectedPackageId={selectedPackageId}
-          selectedVideoId={selectedVideoId}
-          playlistIds={playlistIds}
-          getPackageImageCount={(packageId) => packageById.get(packageId)?.images.length ?? 0}
-          onSelectPackage={(packageId) => {
-            setSelectedPackageId(packageId)
-            updateSettings({ sidebarFocus: 'main' })
-          }}
-          onSelectVideo={(videoId) => {
-            setSelectedVideoId(videoId)
-            updateSettings({ sidebarFocus: 'main' })
-          }}
-          onSetCurrentRoot={(nodeId) => {
-            if (mode === 'image') {
-              updateSettings({ imageRootNodeId: nodeId })
-              return
-            }
-            updateSettings({ videoRootNodeId: nodeId })
-          }}
-          onResetRoot={() => {
-            if (mode === 'image') {
-              updateSettings({ imageRootNodeId: null })
-              return
-            }
-            updateSettings({ videoRootNodeId: null })
-          }}
-          onToggleVideoPlaylist={(videoId, checked) => {
-            setPlaylistIds((previous) => {
-              if (checked) {
-                if (previous.includes(videoId)) {
-                  return previous
-                }
-                return [...previous, videoId]
-              }
-              return previous.filter((id) => id !== videoId)
-            })
-          }}
-        />
+      <input
+        ref={fileImportInputRef}
+        multiple
+        style={{ display: 'none' }}
+        type="file"
+        onChange={onImportFilesSelected}
+      />
+      <input
+        ref={folderImportInputRef}
+        multiple
+        style={{ display: 'none' }}
+        type="file"
+        onChange={onImportFoldersSelected}
+      />
 
-        <section className={`workspace ${sidebarFocus === 'main' ? 'is-focus' : ''}`} style={{ width: `${(1 - sidebarRatio) * 100}%` }}>
+      <div className="app-body" ref={appBodyRef} style={{ height: `calc(100vh - ${headerHeight}px)` }}>
+        {sidebarCollapsed ? (
+          <button aria-label="展开目录" className="sidebar-expand-btn" type="button" onClick={onExpandSidebar}>
+            <span className="sidebar-expand-tip">展开目录</span>
+          </button>
+        ) : (
+          <>
+            <SidebarPanel
+              mode={mode}
+              sidebarFocus={sidebarFocus}
+              sidebarRatio={sidebarRatio}
+              sidebarMinWidth={sidebarMinWidth}
+              sidebarFontSize={sidebarFontSize}
+              sidebarCountFontSize={sidebarCountFontSize}
+              sidebarIndentStep={sidebarIndentStep}
+              sidebarVerticalGap={sidebarVerticalGap}
+              currentRootLabel={currentRootLabel}
+              selectedSidebarNodeId={selectedSidebarNodeId}
+              canSetCurrentRoot={canSetCurrentRoot}
+              imageRootNodeId={imageRootNodeId}
+              videoRootNodeId={videoRootNodeId}
+              imageTreeNodes={imageTreeForSidebar}
+              videoTreeNodes={videoTreeForSidebar}
+              selectedPackageId={selectedPackageId}
+              selectedVideoId={selectedVideoId}
+              playlistIds={playlistIds}
+              onSelectNode={(nodeId) => {
+                setSelectedSidebarNodeId(nodeId)
+                updateSettings({ sidebarFocus: 'sidebar' })
+              }}
+              onSelectPackage={(packageId) => {
+                setSelectedPackageId(packageId)
+              }}
+              onSelectVideo={(videoId) => {
+                setSelectedVideoId(videoId)
+              }}
+              onCollapseSidebar={collapseSidebar}
+              onSetCurrentRoot={applyCurrentRootFromSelection}
+              onResetRoot={() => {
+                if (mode === 'image') {
+                  updateSettings({ imageRootNodeId: null })
+                  return
+                }
+                updateSettings({ videoRootNodeId: null })
+              }}
+              onToggleVideoPlaylist={(videoId, checked) => {
+                setPlaylistIds((previous) => {
+                  if (checked) {
+                    if (previous.includes(videoId)) {
+                      return previous
+                    }
+                    return [...previous, videoId]
+                  }
+                  return previous.filter((id) => id !== videoId)
+                })
+              }}
+            />
+
+            <div
+              aria-label="调整 Sidebar 宽度"
+              aria-orientation="vertical"
+              className="sidebar-splitter"
+              role="separator"
+              tabIndex={-1}
+              onMouseDown={onStartSidebarResize}
+            />
+          </>
+        )}
+
+        <section
+          className={`workspace ${sidebarFocus === 'main' ? 'is-focus' : ''}`}
+          style={{ width: sidebarCollapsed ? '100%' : `calc(${(1 - sidebarRatio) * 100}% - 8px)` }}
+        >
           {mode === 'image' && vectorMode ? (
             <div className="vector-panel" style={{ height: `${vectorPanelHeight}px` }}>
               <div className="vector-top-row">
@@ -1105,6 +1736,11 @@ function App() {
         settingsOpen={settingsOpen}
         headerHeight={headerHeight}
         sidebarRatio={sidebarRatio}
+        sidebarMinWidth={sidebarMinWidth}
+        sidebarFontSize={sidebarFontSize}
+        sidebarCountFontSize={sidebarCountFontSize}
+        sidebarIndentStep={sidebarIndentStep}
+        sidebarVerticalGap={sidebarVerticalGap}
         metadataRatio={metadataRatio}
         vectorPanelHeight={vectorPanelHeight}
         thumbnailQuality={thumbnailQuality}
@@ -1115,7 +1751,12 @@ function App() {
         shortcutConflicts={shortcutConflicts}
         onClose={() => updateSettings({ settingsOpen: false })}
         onHeaderHeightChange={(value) => updateSettings({ headerHeight: value })}
-        onSidebarRatioChange={(value) => updateSettings({ sidebarRatio: value })}
+        onSidebarRatioChange={applySidebarRatio}
+        onSidebarMinWidthChange={(value) => updateSettings({ sidebarMinWidth: value })}
+        onSidebarFontSizeChange={(value) => updateSettings({ sidebarFontSize: value })}
+        onSidebarCountFontSizeChange={(value) => updateSettings({ sidebarCountFontSize: value })}
+        onSidebarIndentStepChange={(value) => updateSettings({ sidebarIndentStep: value })}
+        onSidebarVerticalGapChange={(value) => updateSettings({ sidebarVerticalGap: value })}
         onMetadataRatioChange={(value) => updateSettings({ metadataRatio: value })}
         onVectorPanelHeightChange={(value) => updateSettings({ vectorPanelHeight: value })}
         onThumbnailQualityChange={(value) => updateSettings({ thumbnailQuality: value })}
@@ -1125,6 +1766,15 @@ function App() {
         onSetShortcut={setShortcut}
         onResetShortcuts={resetShortcuts}
       />
+
+      {dragOverlayActive ? (
+        <div className="drop-overlay" aria-hidden="true">
+          <div className="drop-overlay-card">
+            <strong>导入层占位</strong>
+            <p>检测到拖拽输入，后续将替换为 Shader/CSS 动画反馈</p>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
