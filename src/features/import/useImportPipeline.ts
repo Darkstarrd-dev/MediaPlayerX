@@ -69,6 +69,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
   const refreshTasks = useCallback(async () => {
     const response = await repository.readImportTasks({ timeoutMs: IMPORT_TASK_TIMEOUT_MS })
     setImportTasks(response.tasks)
+    setTaskError(null)
   }, [repository])
 
   const enqueueImportPaths = useCallback(
@@ -124,24 +125,62 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
   )
 
   const openImportFilesDialog = useCallback(() => {
-    const input = fileImportInputRef.current
-    if (!input) {
+    const picker = repository.pickImportPaths
+    if (!picker) {
+      const input = fileImportInputRef.current
+      if (!input) {
+        return
+      }
+
+      input.value = ''
+      input.click()
       return
     }
 
-    input.value = ''
-    input.click()
-  }, [])
+    void picker(
+      {
+        mode: 'files',
+      },
+      { timeoutMs: IMPORT_TASK_TIMEOUT_MS },
+    )
+      .then((response) => {
+        if (response.paths.length > 0) {
+          void enqueueImportPaths('dialog-files', response.paths)
+        }
+      })
+      .catch((error: unknown) => {
+        setTaskError(toErrorMessage(error))
+      })
+  }, [enqueueImportPaths, repository])
 
   const openImportFoldersDialog = useCallback(() => {
-    const input = folderImportInputRef.current
-    if (!input) {
+    const picker = repository.pickImportPaths
+    if (!picker) {
+      const input = folderImportInputRef.current
+      if (!input) {
+        return
+      }
+
+      input.value = ''
+      input.click()
       return
     }
 
-    input.value = ''
-    input.click()
-  }, [])
+    void picker(
+      {
+        mode: 'folders',
+      },
+      { timeoutMs: IMPORT_TASK_TIMEOUT_MS },
+    )
+      .then((response) => {
+        if (response.paths.length > 0) {
+          void enqueueImportPaths('dialog-folders', response.paths)
+        }
+      })
+      .catch((error: unknown) => {
+        setTaskError(toErrorMessage(error))
+      })
+  }, [enqueueImportPaths, repository])
 
   const onImportFilesSelected = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])
@@ -230,7 +269,10 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
     event.preventDefault()
 
     const nativePaths = collectNativePaths(Array.from(event.dataTransfer.files))
-    void enqueueImportPaths('drag-drop', nativePaths)
+    const uriPaths = extractPathsFromClipboard(event.dataTransfer.getData('text/uri-list') ?? '')
+    const textPaths = extractPathsFromClipboard(event.dataTransfer.getData('text/plain') ?? '')
+    const mergedPaths = Array.from(new Set([...nativePaths, ...uriPaths, ...textPaths]))
+    void enqueueImportPaths('drag-drop', mergedPaths)
   }
 
   const onDragOverImport: DragEventHandler<HTMLDivElement> = (event) => {

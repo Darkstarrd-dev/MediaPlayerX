@@ -7,6 +7,7 @@ import {
 import {
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
+  pickImportPathsResponseSchema,
   readImportTasksResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImageMetadataResponseSchema,
@@ -28,6 +29,8 @@ import {
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
   type MediaLocatorDto,
+  type PickImportPathsRequestDto,
+  type PickImportPathsResponseDto,
   type ReadImportTasksResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type ReadImageMetadataRequestDto,
@@ -548,6 +551,21 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     options?: RepositoryRequestOptions,
   ): Promise<WritePlaylistResponseDto> {
     const response = this.writePlaylistSync(request)
+    return resolveAsync(response, options)
+  }
+
+  pickImportPathsSync(request: PickImportPathsRequestDto): PickImportPathsResponseDto {
+    void request
+    return pickImportPathsResponseSchema.parse({
+      paths: [],
+    })
+  }
+
+  async pickImportPaths(
+    request: PickImportPathsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickImportPathsResponseDto> {
+    const response = this.pickImportPathsSync(request)
     return resolveAsync(response, options)
   }
 

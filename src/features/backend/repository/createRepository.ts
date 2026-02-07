@@ -3,7 +3,17 @@ import { RealMediaRepository } from './realRepository'
 import type { ReadonlyMediaRepository, RepositoryMode } from './types'
 
 function resolveRepositoryMode(): RepositoryMode {
-  const mode = String(import.meta.env.VITE_MEDIA_REPOSITORY_MODE ?? 'mock').trim().toLowerCase()
+  const configuredMode = import.meta.env.VITE_MEDIA_REPOSITORY_MODE
+  if (typeof configuredMode === 'string' && configuredMode.trim().length > 0) {
+    const mode = configuredMode.trim().toLowerCase()
+    return mode === 'real' ? 'real' : 'mock'
+  }
+
+  if (typeof window !== 'undefined' && window.mediaPlayerBackend) {
+    return 'real'
+  }
+
+  const mode = String(configuredMode ?? 'mock').trim().toLowerCase()
   return mode === 'real' ? 'real' : 'mock'
 }
 

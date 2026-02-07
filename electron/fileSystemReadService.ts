@@ -76,6 +76,8 @@ const FFPROBE_BIN = process.env.MEDIA_PLAYERX_FFPROBE_BIN ?? 'ffprobe'
 const ARCHIVE_EXTRACTOR_BIN = process.env.MEDIA_PLAYERX_ARCHIVE_EXTRACTOR_BIN ?? '7z'
 const ARCHIVE_NORMALIZE_DIR_NAME = '.mediaplayerx/normalized-archives'
 const THUMBNAIL_CACHE_DIR_NAME = '.mediaplayerx/thumbnail-cache'
+const IMPORT_FILES_DIR_NAME = 'imports/files'
+const IMPORT_FOLDERS_DIR_NAME = 'imports/folders'
 const THUMBNAIL_DEFAULT_MAX_EDGE = 320
 const THUMBNAIL_DEFAULT_QUALITY = 82
 const THUMBNAIL_MIN_EDGE = 64
@@ -187,6 +189,13 @@ interface RuntimeDependencySnapshot {
   sevenZip: boolean
   powershell: boolean
   checkedAtMs: number
+}
+
+interface ImportPathInspection {
+  absolutePath: string
+  insideRoot: boolean
+  kind: 'file' | 'directory'
+  extension: string | null
 }
 
 class MediaAccessError extends Error {
@@ -957,6 +966,10 @@ export class FileSystemMediaReadService {
 
   private readonly thumbnailCacheRootDir: string
 
+  private readonly importFilesRootDir: string
+
+  private readonly importFoldersRootDir: string
+
   private readonly coverOutputRootDir: string
 
   private readonly database: MediaLibraryDatabase
@@ -994,12 +1007,42 @@ export class FileSystemMediaReadService {
 
   private runtimeDependencyLoadingPromise: Promise<RuntimeDependencySnapshot> | null = null
 
+  private importTaskQueue: Promise<void> = Promise.resolve()
+
+  private runningImportTaskIds = new Set<string>()
+
   constructor(rootDir: string) {
     this.rootDir = path.resolve(rootDir)
     this.normalizedArchiveRootDir = path.join(this.rootDir, ARCHIVE_NORMALIZE_DIR_NAME)
     this.thumbnailCacheRootDir = path.join(this.rootDir, THUMBNAIL_CACHE_DIR_NAME)
+    this.importFilesRootDir = path.join(this.rootDir, IMPORT_FILES_DIR_NAME)
+    this.importFoldersRootDir = path.join(this.rootDir, IMPORT_FOLDERS_DIR_NAME)
     this.coverOutputRootDir = path.join(this.rootDir, '.mediaplayerx', 'covers')
     this.database = new MediaLibraryDatabase(this.rootDir)
+    this.recoverInterruptedImportTasks()
+  }
+
+  private recoverInterruptedImportTasks(): void {
+    const tasks = this.database.readTasks()
+    if (tasks.length === 0) {
+      return
+    }
+
+    const now = Date.now()
+    for (const task of tasks) {
+      if (task.taskType !== 'import' || (task.status !== 'pending' && task.status !== 'running')) {
+        continue
+      }
+
+      this.database.upsertTask({
+        ...task,
+        status: 'failed',
+        progress: task.totalCount > 0 ? task.processedCount / task.totalCount : 1,
+        message: task.status === 'running' ? '导入任务已中断，请重试' : '导入任务未执行，请重试',
+        errorDetail: task.errorDetail ?? '应用重启导致任务中断',
+        updatedAtMs: now,
+      })
+    }
   }
 
   invalidateCache(): void {
@@ -2120,23 +2163,68 @@ export class FileSystemMediaReadService {
     return `import-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`
   }
 
-  private async inspectImportPath(candidatePath: string): Promise<{ ok: boolean; reason?: string }> {
-    const absolutePath = path.resolve(candidatePath)
-    if (!isPathInsideRoot(this.rootDir, absolutePath)) {
-      return { ok: false, reason: `路径越界: ${absolutePath}` }
+  private scheduleImportTask(taskId: string): void {
+    if (this.runningImportTaskIds.has(taskId)) {
+      return
     }
+
+    this.runningImportTaskIds.add(taskId)
+    this.importTaskQueue = this.importTaskQueue
+      .catch(() => undefined)
+      .then(async () => {
+        try {
+          await this.runImportTask(taskId)
+        } catch (error) {
+          const reason = error instanceof Error && error.message ? error.message : '未知错误'
+          const existing = this.database.readTask(taskId)
+          if (existing) {
+            this.database.upsertTask({
+              ...existing,
+              status: 'failed',
+              progress: 1,
+              processedCount: existing.totalCount,
+              totalCount: existing.totalCount,
+              message: '导入任务执行失败',
+              errorDetail: reason,
+              updatedAtMs: Date.now(),
+            })
+          }
+          console.error('import task execution failed', {
+            taskId,
+            reason,
+          })
+        } finally {
+          this.runningImportTaskIds.delete(taskId)
+        }
+      })
+  }
+
+  private async inspectImportPath(
+    candidatePath: string,
+  ): Promise<{ ok: true; inspection: ImportPathInspection } | { ok: false; reason: string }> {
+    const absolutePath = path.resolve(candidatePath)
 
     const stat = await fs.stat(absolutePath).catch(() => null)
     if (!stat) {
       return { ok: false, reason: `路径不存在: ${absolutePath}` }
     }
 
+    const insideRoot = isPathInsideRoot(this.rootDir, absolutePath)
+
     if (stat.isDirectory()) {
       const readable = await fs.readdir(absolutePath).then(() => true).catch(() => false)
       if (!readable) {
         return { ok: false, reason: `目录不可读: ${absolutePath}` }
       }
-      return { ok: true }
+      return {
+        ok: true,
+        inspection: {
+          absolutePath,
+          insideRoot,
+          kind: 'directory',
+          extension: null,
+        },
+      }
     }
 
     if (!stat.isFile()) {
@@ -2148,7 +2236,75 @@ export class FileSystemMediaReadService {
       return { ok: false, reason: `类型不支持: ${absolutePath}` }
     }
 
-    return { ok: true }
+    return {
+      ok: true,
+      inspection: {
+        absolutePath,
+        insideRoot,
+        kind: 'file',
+        extension,
+      },
+    }
+  }
+
+  private async copyImportedFileIntoLibrary(sourceFilePath: string, extension: string): Promise<void> {
+    const sourceBaseName = path.basename(sourceFilePath, extension)
+    const stableSuffix = createHash('sha1').update(sourceFilePath).digest('hex').slice(0, 12)
+    const targetName = `${toSafeFsName(sourceBaseName)}-${stableSuffix}${extension}`
+    const targetPath = path.join(this.importFilesRootDir, targetName)
+
+    await fs.mkdir(this.importFilesRootDir, { recursive: true })
+    await fs.copyFile(sourceFilePath, targetPath)
+  }
+
+  private async copyImportedDirectoryIntoLibrary(sourceDirectoryPath: string): Promise<number> {
+    const sourceBaseName = path.basename(sourceDirectoryPath) || 'import-folder'
+    const stableSuffix = createHash('sha1').update(sourceDirectoryPath).digest('hex').slice(0, 12)
+    const targetRootPath = path.join(this.importFoldersRootDir, `${toSafeFsName(sourceBaseName)}-${stableSuffix}`)
+
+    await fs.rm(targetRootPath, { recursive: true, force: true })
+    await fs.mkdir(targetRootPath, { recursive: true })
+
+    let copiedFileCount = 0
+    const queue: Array<{ source: string; target: string }> = [{ source: sourceDirectoryPath, target: targetRootPath }]
+
+    while (queue.length > 0) {
+      const current = queue.pop()
+      if (!current) {
+        continue
+      }
+
+      const entries = await fs.readdir(current.source, { withFileTypes: true })
+      for (const entry of entries) {
+        const sourcePath = path.join(current.source, entry.name)
+        const targetPath = path.join(current.target, entry.name)
+
+        if (entry.isDirectory()) {
+          if (entry.name === '.mediaplayerx') {
+            continue
+          }
+
+          await fs.mkdir(targetPath, { recursive: true })
+          queue.push({ source: sourcePath, target: targetPath })
+          continue
+        }
+
+        if (!entry.isFile()) {
+          continue
+        }
+
+        const extension = path.extname(entry.name).toLowerCase()
+        if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
+          continue
+        }
+
+        await fs.mkdir(path.dirname(targetPath), { recursive: true })
+        await fs.copyFile(sourcePath, targetPath)
+        copiedFileCount += 1
+      }
+    }
+
+    return copiedFileCount
   }
 
   private async runImportTask(taskId: string): Promise<ImportTaskDto> {
@@ -2169,14 +2325,39 @@ export class FileSystemMediaReadService {
     })
 
     let processedCount = 0
-    let validCount = 0
+    let successCount = 0
+    let copiedFileCount = 0
     const failedMessages: string[] = []
 
     for (const sourcePath of existing.sourcePaths) {
       const inspected = await this.inspectImportPath(sourcePath)
       if (inspected.ok) {
-        validCount += 1
-      } else if (inspected.reason) {
+        let pathSucceeded = true
+        try {
+          const { inspection } = inspected
+          if (!inspection.insideRoot) {
+            if (inspection.kind === 'file' && inspection.extension) {
+              await this.copyImportedFileIntoLibrary(inspection.absolutePath, inspection.extension)
+              copiedFileCount += 1
+            } else if (inspection.kind === 'directory') {
+              const copied = await this.copyImportedDirectoryIntoLibrary(inspection.absolutePath)
+              if (copied <= 0) {
+                pathSucceeded = false
+                failedMessages.push(`目录不包含可导入媒体: ${inspection.absolutePath}`)
+              } else {
+                copiedFileCount += copied
+              }
+            }
+          }
+
+          if (pathSucceeded) {
+            successCount += 1
+          }
+        } catch (error) {
+          const reason = error instanceof Error && error.message ? error.message : '未知错误'
+          failedMessages.push(`导入失败: ${inspected.inspection.absolutePath} (${reason})`)
+        }
+      } else {
         failedMessages.push(inspected.reason)
       }
 
@@ -2193,18 +2374,18 @@ export class FileSystemMediaReadService {
       })
     }
 
-    if (validCount > 0) {
+    if (successCount > 0) {
       this.invalidateCache()
       await this.ensureSnapshotLoaded()
     }
 
     const finishedAtMs = Date.now()
-    const failedCount = Math.max(0, totalCount - validCount)
+    const failedCount = Math.max(0, totalCount - successCount)
     const status: ImportTaskDto['status'] = failedCount > 0 ? 'failed' : 'completed'
     const message =
       status === 'completed'
-        ? `导入完成，共 ${validCount} 项`
-        : `导入失败，成功 ${validCount} 项，失败 ${failedCount} 项`
+        ? `导入完成，共 ${successCount} 项，复制 ${copiedFileCount} 个媒体文件`
+        : `导入失败，成功 ${successCount} 项，失败 ${failedCount} 项`
 
     this.database.upsertTask({
       ...existing,
@@ -2247,7 +2428,14 @@ export class FileSystemMediaReadService {
       updatedAtMs: now,
     })
 
-    const task = await this.runImportTask(taskId)
+    this.scheduleImportTask(taskId)
+
+    const queued = this.database.readTask(taskId)
+    if (!queued) {
+      throw new Error(`导入任务状态丢失: ${taskId}`)
+    }
+
+    const task = this.toImportTaskDto(queued)
     return enqueueImportTaskResponseSchema.parse({ task })
   }
 
@@ -2274,7 +2462,14 @@ export class FileSystemMediaReadService {
       updatedAtMs: now,
     })
 
-    const task = await this.runImportTask(request.task_id)
+    this.scheduleImportTask(request.task_id)
+
+    const queued = this.database.readTask(request.task_id)
+    if (!queued) {
+      throw new Error(`导入任务状态丢失: ${request.task_id}`)
+    }
+
+    const task = this.toImportTaskDto(queued)
     return retryImportTaskResponseSchema.parse({ task })
   }
 

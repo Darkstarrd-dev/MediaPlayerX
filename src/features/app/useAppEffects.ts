@@ -217,10 +217,17 @@ export function useAppEffects({
     }
 
     const focused = clamp(focusByPackage[activePackage.id] ?? 0, 0, activePackage.images.length - 1)
-    setPageByPackage((previous) => ({
-      ...previous,
-      [activePackage.id]: Math.floor(focused / pagedPageSize),
-    }))
+    const nextPage = Math.floor(focused / pagedPageSize)
+    setPageByPackage((previous) => {
+      if ((previous[activePackage.id] ?? 0) === nextPage) {
+        return previous
+      }
+
+      return {
+        ...previous,
+        [activePackage.id]: nextPage,
+      }
+    })
   }, [activePackage, focusByPackage, pagedPageSize, setPageByPackage, showNamesOnly])
 
   useEffect(() => {

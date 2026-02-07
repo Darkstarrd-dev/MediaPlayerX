@@ -1,6 +1,8 @@
 import type {
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
+  PickImportPathsRequestDto,
+  PickImportPathsResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
@@ -61,6 +63,10 @@ export interface ReadonlyMediaRepository {
     request: WritePlaylistRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePlaylistResponseDto>
+  pickImportPaths?(
+    request: PickImportPathsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickImportPathsResponseDto>
   enqueueImportTask(
     request: EnqueueImportTaskRequestDto,
     options?: RepositoryRequestOptions,
@@ -83,6 +89,7 @@ export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
   readPlaylistSync(): ReadPlaylistResponseDto
   writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto
+  pickImportPathsSync?(request: PickImportPathsRequestDto): PickImportPathsResponseDto
   enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto
   readImportTasksSync(): ReadImportTasksResponseDto
   retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto

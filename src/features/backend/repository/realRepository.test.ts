@@ -105,6 +105,9 @@ describe('RealMediaRepository', () => {
         video_ids: request.video_ids,
         updated_at_ms: Date.now(),
       }),
+      pickImportPaths: async () => ({
+        paths: [],
+      }),
       enqueueImportTask: async () => ({
         task: {
           task_id: 'task-1',
@@ -225,6 +228,9 @@ describe('RealMediaRepository', () => {
       writePlaylist: async (request) => ({
         video_ids: request.video_ids,
         updated_at_ms: Date.now(),
+      }),
+      pickImportPaths: async () => ({
+        paths: [],
       }),
       enqueueImportTask: async () => ({
         task: {
@@ -351,6 +357,9 @@ describe('RealMediaRepository', () => {
         video_ids: request.video_ids,
         updated_at_ms: Date.now(),
       }),
+      pickImportPaths: async () => ({
+        paths: [],
+      }),
       enqueueImportTask: async () => ({
         task: {
           task_id: 'task-1',
@@ -476,6 +485,9 @@ describe('RealMediaRepository', () => {
       writePlaylist: async (request) => ({
         video_ids: request.video_ids,
         updated_at_ms: Date.now(),
+      }),
+      pickImportPaths: async () => ({
+        paths: [],
       }),
       enqueueImportTask: async () => ({
         task: {

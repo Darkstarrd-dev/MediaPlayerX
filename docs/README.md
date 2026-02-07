@@ -14,7 +14,7 @@
 ## 当前状态
 
 - 产品范围已冻结到交互规范版本 `v1.5`。
-- 当前开发阶段为“虚拟 UI 交互阶段”，优先验证布局、控件位置与快捷键行为。
+- 当前开发阶段为“Electron 可用化阶段”，目标是除向量检索/特征检索外的基础能力可用。
 - 虚拟 UI 脚手架与首版交互已落地，且已完成 `App.tsx` 的模块化拆分。
 - 文件加载前端部分已完成：导入文件/文件夹弹窗、全窗口拖拽、窗口焦点粘贴路径，并带拖拽叠加层占位反馈。
 - Sidebar 部分修正已完成：统一“设为根”按钮与“恢复”逻辑、根目录标题显示/点击折叠、可拖动分割条、`<3%` 自动折叠（三角展开按钮）、PageUp/PageDown 翻页修正、Sidebar 样式参数可配置，且目录 Mock 已扩容。
@@ -36,7 +36,7 @@
 - 向量宇宙前端内容已阶段性完成：包含二次确认退出、全息球体位置控件（深度亮度、方向箭头、越界穿入）与设置面板参数化调节。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
-- Repository 切换方式：通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 选择实现；默认 `mock`。
+- Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。
 - Electron 通道已从骨架升级到真实 Main 读服务：`registerBackendIpcHandlers` 现接入 `FileSystemMediaReadService`（文件系统适配），并在 IPC 入参与出参统一执行 Zod 校验。
 - Main/Sidebar 的特征筛选口径已收敛到 Repository SSOT，前端不再维护同构筛选副本。
 - 已补充 Repository/IPC 集成测试：覆盖超时、取消、重试、快照回退，并清理 `App.test.tsx` 的 act 告警输出。
@@ -51,7 +51,9 @@
 - 后端存储已切换到 SQLite 基座：`migration/init/version`、`source/package`、`image`、`video`、`grade`、`cover`、`playlist`、`app_state`、`root_config`、`task_log` 已落地。
 - 读链路（snapshot/sidebar/page/metadata）已改为“扫描结果事务 upsert -> SQLite 查询回读”的 DB 优先路径，内存快照仅作为短生命周期缓存。
 - 播放列表已接入持久化链路：Renderer 通过 `Repository -> preload -> ipc` 读写播放列表，重启后恢复。
-- 导入链路已接入任务队列：文件/文件夹/拖拽/粘贴统一入队，任务状态持久化到 `task_log` 并在前端任务面板展示，失败可重试。
+- 导入链路已接入任务队列：文件/文件夹/拖拽/粘贴统一入队，任务状态持久化到 `task_log` 并在前端任务面板展示，失败可重试；库外路径会复制到库内 `imports/` 再刷新索引。
+- Electron 启动脚本已补齐：`npm run dev:desktop`（开发）与 `npm run desktop:start`（构建+启动）。
+- Electron 代理支持：可通过 `MEDIA_PLAYERX_PROXY_SERVER` / `MEDIA_PLAYERX_PROXY_BYPASS` 透传运行时代理配置（用于依赖联网能力或受限网络环境）。
 - 缩略图渲染链路已接入 Sharp WebP 缓存：Main 按请求变体生成并缓存缩略图，Renderer 缩略图网格优先读取 thumbnail 变体，Metadata/Fullscreen 保持 original 变体。
 - 新增 `resolveMediaResource` 审计统计：拒绝原因分类、token 命中/未命中/过期/清理计数可通过 IPC 读取。
 - 新增运行时依赖预检：Main 启动后可输出 `sharp/ffmpeg/ffprobe/7z/powershell` 可用性，Renderer 在降级生效时展示可见告警；`rar/7z` 与 zip 重处理策略按依赖可用性自动收口。

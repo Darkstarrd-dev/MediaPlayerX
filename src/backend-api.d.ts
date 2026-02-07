@@ -1,6 +1,8 @@
 import type {
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
+  PickImportPathsRequestDto,
+  PickImportPathsResponseDto,
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   LibrarySnapshotDto,
@@ -34,6 +36,7 @@ interface MediaPlayerBackendApi {
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
   readPlaylist: () => Promise<ReadPlaylistResponseDto>
   writePlaylist: (request: WritePlaylistRequestDto) => Promise<WritePlaylistResponseDto>
+  pickImportPaths: (request: PickImportPathsRequestDto) => Promise<PickImportPathsResponseDto>
   enqueueImportTask: (request: EnqueueImportTaskRequestDto) => Promise<EnqueueImportTaskResponseDto>
   readImportTasks: () => Promise<ReadImportTasksResponseDto>
   retryImportTask: (request: RetryImportTaskRequestDto) => Promise<RetryImportTaskResponseDto>

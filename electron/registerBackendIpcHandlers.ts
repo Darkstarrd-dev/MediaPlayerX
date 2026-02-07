@@ -1,10 +1,13 @@
-import { ipcMain, protocol } from 'electron'
+import { app, dialog, ipcMain, protocol } from 'electron'
+import path from 'node:path'
 
 import {
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  pickImportPathsRequestSchema,
+  pickImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -29,7 +32,8 @@ import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { FileSystemMediaReadService } from './fileSystemReadService'
 
 export function registerBackendIpcHandlers(): void {
-  const libraryRoot = process.env.MEDIA_PLAYERX_LIBRARY_ROOT ?? 'Z:/bench'
+  const defaultLibraryRoot = path.join(app.getPath('pictures'), 'MediaPlayerXLibrary')
+  const libraryRoot = path.resolve(process.env.MEDIA_PLAYERX_LIBRARY_ROOT ?? defaultLibraryRoot)
   const service = new FileSystemMediaReadService(libraryRoot)
 
   protocol.handle(MEDIA_PROTOCOL_SCHEME, async (request) => {
@@ -100,6 +104,30 @@ export function registerBackendIpcHandlers(): void {
     const request = writePlaylistRequestSchema.parse(payload)
     const response = await service.writePlaylist(request)
     return writePlaylistResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.pickImportPaths, async (_event, payload: unknown) => {
+    const request = pickImportPathsRequestSchema.parse(payload)
+    const mode = request.mode
+
+    const result = await dialog.showOpenDialog({
+      title: mode === 'folders' ? '选择要导入的文件夹' : '选择要导入的文件',
+      properties:
+        mode === 'folders' ? ['openDirectory', 'multiSelections', 'dontAddToRecent'] : ['openFile', 'multiSelections', 'dontAddToRecent'],
+      filters:
+        mode === 'folders'
+          ? undefined
+          : [
+              {
+                name: '媒体文件',
+                extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'mp4', 'webm', 'mkv', 'mov', 'zip', 'rar', '7z'],
+              },
+            ],
+    })
+
+    return pickImportPathsResponseSchema.parse({
+      paths: result.canceled ? [] : result.filePaths,
+    })
   })
 
   ipcMain.handle(BACKEND_CHANNELS.enqueueImportTask, async (_event, payload: unknown) => {

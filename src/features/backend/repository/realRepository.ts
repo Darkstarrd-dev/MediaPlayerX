@@ -2,6 +2,7 @@ import {
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  pickImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -15,6 +16,8 @@ import {
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
+  type PickImportPathsRequestDto,
+  type PickImportPathsResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
@@ -219,6 +222,19 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.writePlaylist(request), options)
     return writePlaylistResponseSchema.parse(response)
+  }
+
+  async pickImportPaths(
+    request: PickImportPathsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickImportPathsResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.pickImportPaths(request), options)
+    return pickImportPathsResponseSchema.parse(response)
   }
 
   async enqueueImportTask(

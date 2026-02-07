@@ -243,6 +243,14 @@ export const retryImportTaskResponseSchema = z.object({
   task: importTaskDtoSchema,
 })
 
+export const pickImportPathsRequestSchema = z.object({
+  mode: z.enum(['files', 'folders']),
+})
+
+export const pickImportPathsResponseSchema = z.object({
+  paths: z.array(z.string().min(1)),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -315,6 +323,8 @@ export type EnqueueImportTaskResponseDto = z.infer<typeof enqueueImportTaskRespo
 export type ReadImportTasksResponseDto = z.infer<typeof readImportTasksResponseSchema>
 export type RetryImportTaskRequestDto = z.infer<typeof retryImportTaskRequestSchema>
 export type RetryImportTaskResponseDto = z.infer<typeof retryImportTaskResponseSchema>
+export type PickImportPathsRequestDto = z.infer<typeof pickImportPathsRequestSchema>
+export type PickImportPathsResponseDto = z.infer<typeof pickImportPathsResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

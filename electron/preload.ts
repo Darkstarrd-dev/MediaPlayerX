@@ -5,6 +5,8 @@ import {
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  pickImportPathsRequestSchema,
+  pickImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -70,6 +72,11 @@ const backendApi = {
     const parsed = writePlaylistRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePlaylist, parsed)
     return writePlaylistResponseSchema.parse(response)
+  },
+  pickImportPaths: async (request: unknown) => {
+    const parsed = pickImportPathsRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pickImportPaths, parsed)
+    return pickImportPathsResponseSchema.parse(response)
   },
   enqueueImportTask: async (request: unknown) => {
     const parsed = enqueueImportTaskRequestSchema.parse(request)

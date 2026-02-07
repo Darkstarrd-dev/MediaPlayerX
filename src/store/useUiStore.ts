@@ -128,6 +128,11 @@ export const useUiStore = create<UiStore>((set, get) => ({
       return
     }
 
+    const hasChanges = SETTINGS_KEYS.some((key) => !Object.is(parsed.data[key], current[key]))
+    if (!hasChanges) {
+      return
+    }
+
     set(parsed.data)
   },
   setShortcut: (action, binding) => {

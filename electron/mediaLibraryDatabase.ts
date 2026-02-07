@@ -26,7 +26,7 @@ interface SQLiteDatabaseLike {
   close(): void
 }
 
-const require = createRequire(import.meta.url)
+const require = createRequire(process.execPath)
 const { DatabaseSync } = require('node:sqlite') as {
   DatabaseSync: new (path: string) => SQLiteDatabaseLike
 }

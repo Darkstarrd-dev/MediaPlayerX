@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -60,6 +61,7 @@ import { clamp } from './utils/ui'
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const SIDEBAR_COLLAPSE_RATIO = 0.03
+const EMPTY_FEATURE_TAGS: string[] = []
 type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 
 function App() {
@@ -158,28 +160,31 @@ function App() {
     const snapshot = mediaRepository.getInitialLibrarySnapshot()
     return snapshot ? mapLibrarySnapshotDto(snapshot) : null
   }, [mediaRepository])
+  const fallbackImagePackages = useMemo(() => (repositoryMode === 'real' ? [] : IMAGE_PACKAGES), [repositoryMode])
+  const fallbackImageDirectories = useMemo(
+    () => (repositoryMode === 'real' ? [] : IMAGE_DIRECTORY_SOURCES),
+    [repositoryMode],
+  )
+  const fallbackVideos = useMemo(() => (repositoryMode === 'real' ? [] : VIDEO_ITEMS), [repositoryMode])
   const imageSources = useMemo(
     () =>
       bootstrapLibrarySnapshot
         ? [...bootstrapLibrarySnapshot.imagePackages, ...bootstrapLibrarySnapshot.imageDirectories]
-        : [...IMAGE_PACKAGES, ...IMAGE_DIRECTORY_SOURCES],
-    [bootstrapLibrarySnapshot],
+        : [...fallbackImagePackages, ...fallbackImageDirectories],
+    [bootstrapLibrarySnapshot, fallbackImageDirectories, fallbackImagePackages],
   )
   const bootstrapImagePackages = useMemo(
-    () => bootstrapLibrarySnapshot?.imagePackages ?? IMAGE_PACKAGES,
-    [bootstrapLibrarySnapshot],
+    () => bootstrapLibrarySnapshot?.imagePackages ?? fallbackImagePackages,
+    [bootstrapLibrarySnapshot, fallbackImagePackages],
   )
   const bootstrapImageDirectories = useMemo(
-    () => bootstrapLibrarySnapshot?.imageDirectories ?? IMAGE_DIRECTORY_SOURCES,
-    [bootstrapLibrarySnapshot],
+    () => bootstrapLibrarySnapshot?.imageDirectories ?? fallbackImageDirectories,
+    [bootstrapLibrarySnapshot, fallbackImageDirectories],
   )
   const bootstrapVideos = useMemo(
-    () => bootstrapLibrarySnapshot?.videos ?? VIDEO_ITEMS,
-    [bootstrapLibrarySnapshot],
+    () => bootstrapLibrarySnapshot?.videos ?? fallbackVideos,
+    [bootstrapLibrarySnapshot, fallbackVideos],
   )
-  const packageById = useMemo(() => new Map(imageSources.map((source) => [source.id, source])), [imageSources])
-  const videoById = useMemo(() => new Map(bootstrapVideos.map((video) => [video.id, video])), [bootstrapVideos])
-
   const [selectedPackageId, setSelectedPackageId] = useState(imageSources[0]?.id ?? '')
   const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
   const [imageFocusActive, setImageFocusActive] = useState(false)
@@ -349,16 +354,11 @@ function App() {
       return null
     }
 
-    const selectedSource = packageById.get(selectedPackageId)
-    if (!selectedSource || selectedSource.images.length === 0) {
-      return null
-    }
-
     return {
       packageId: selectedPackageId,
-      imageIndex: clamp(focusByPackage[selectedPackageId] ?? 0, 0, selectedSource.images.length - 1),
+      imageIndex: Math.max(0, focusByPackage[selectedPackageId] ?? 0),
     }
-  }, [focusByPackage, imageFocusActive, mode, packageById, selectedPackageId, vectorFocusIndex, vectorResultsActive, vectorSearchResults])
+  }, [focusByPackage, imageFocusActive, mode, selectedPackageId, vectorFocusIndex, vectorResultsActive, vectorSearchResults])
 
   const backendRead = useReadOnlyDataAccess({
     repository: mediaRepository,
@@ -373,7 +373,7 @@ function App() {
     featureWorkTitleQuery: featureSearchActive ? featureWorkTitleQuery : '',
     featureCircleQuery: featureSearchActive ? featureCircleQuery : '',
     featureAuthorQuery: featureSearchActive ? featureAuthorQuery : '',
-    featureTags: featureSearchActive ? featureTags : [],
+    featureTags: featureSearchActive ? featureTags : EMPTY_FEATURE_TAGS,
     featureGradeFilter: featureSearchActive ? featureGradeFilter : null,
     gradeByPackage,
   })
@@ -385,7 +385,90 @@ function App() {
     () => [...scopedSearchPackagesEffective, ...scopedSearchDirectoriesEffective],
     [scopedSearchDirectoriesEffective, scopedSearchPackagesEffective],
   )
+  const librarySnapshotEffective = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
+  const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos
+  const packageByIdEffective = useMemo(
+    () => new Map(scopedImageSourcesEffective.map((source) => [source.id, source])),
+    [scopedImageSourcesEffective],
+  )
+  const videoByIdEffective = useMemo(() => new Map(videosEffective.map((video) => [video.id, video])), [videosEffective])
   const sidebarTreeSnapshot = sidebarSnapshot?.tree ?? null
+
+  useEffect(() => {
+    const nextSourceIds = new Set(scopedImageSourcesEffective.map((source) => source.id))
+
+    setFocusByPackage((previous) => {
+      const next: Record<string, number> = {}
+      let changed = false
+
+      for (const source of scopedImageSourcesEffective) {
+        const hadPrev = Object.prototype.hasOwnProperty.call(previous, source.id)
+        const prevValue = previous[source.id] ?? 0
+        const nextValue = clamp(prevValue, 0, Math.max(0, source.images.length - 1))
+        next[source.id] = nextValue
+        if (!hadPrev || nextValue !== prevValue) {
+          changed = true
+        }
+      }
+
+      for (const key of Object.keys(previous)) {
+        if (!nextSourceIds.has(key)) {
+          changed = true
+          break
+        }
+      }
+
+      return changed ? next : previous
+    })
+
+    setPageByPackage((previous) => {
+      const next: Record<string, number> = {}
+      let changed = false
+
+      for (const source of scopedImageSourcesEffective) {
+        const hadPrev = Object.prototype.hasOwnProperty.call(previous, source.id)
+        const prevValue = previous[source.id] ?? 0
+        const nextValue = Math.max(0, prevValue)
+        next[source.id] = nextValue
+        if (!hadPrev || nextValue !== prevValue) {
+          changed = true
+        }
+      }
+
+      for (const key of Object.keys(previous)) {
+        if (!nextSourceIds.has(key)) {
+          changed = true
+          break
+        }
+      }
+
+      return changed ? next : previous
+    })
+
+    setGradeByPackage((previous) => {
+      const next: Record<string, number | null> = {}
+      let changed = false
+
+      for (const source of scopedImageSourcesEffective) {
+        if (Object.prototype.hasOwnProperty.call(previous, source.id)) {
+          next[source.id] = previous[source.id] ?? null
+          continue
+        }
+
+        next[source.id] = source.mockGrade ?? null
+        changed = true
+      }
+
+      for (const key of Object.keys(previous)) {
+        if (!nextSourceIds.has(key)) {
+          changed = true
+          break
+        }
+      }
+
+      return changed ? next : previous
+    })
+  }, [scopedImageSourcesEffective])
 
   const imageTreeRawLocal = useMemo(
     () => buildImageSidebarTree(bootstrapImagePackages, bootstrapImageDirectories),
@@ -454,7 +537,7 @@ function App() {
 
     const leaves = Array.from(resultCountByPackage.keys())
       .map((packageId) => {
-        const pkg = packageById.get(packageId)
+        const pkg = packageByIdEffective.get(packageId)
         if (!pkg) {
           return null
         }
@@ -490,7 +573,7 @@ function App() {
       nodes: decorateNodes(rawTree),
       packageNodeIdMap,
     }
-  }, [packageById, vectorSearchResults])
+  }, [packageByIdEffective, vectorSearchResults])
 
   const vectorSidebarNodes = vectorSidebarState.nodes
   const vectorResultPackageNodeIdMap = vectorSidebarState.packageNodeIdMap
@@ -502,7 +585,7 @@ function App() {
     return imageTreeForSidebarNormal
   }, [imageTreeForSidebarNormal, vectorResultsActive, vectorSidebarNodes])
 
-  const searchedVideos = useMemo(() => bootstrapVideos, [bootstrapVideos])
+  const searchedVideos = useMemo(() => videosEffective, [videosEffective])
 
   const videoTreeRaw = useMemo(
     () =>
@@ -590,7 +673,7 @@ function App() {
       if (!sourceId || seen.has(sourceId)) {
         continue
       }
-      if (!rootScopedPackageIds.has(sourceId) || !packageById.has(sourceId)) {
+      if (!rootScopedPackageIds.has(sourceId) || !packageByIdEffective.has(sourceId)) {
         continue
       }
       seen.add(sourceId)
@@ -602,14 +685,14 @@ function App() {
     }
 
     return rootScopedPackages.map((pkg) => pkg.id)
-  }, [flatSidebarNodes, packageById, rootScopedPackageIds, rootScopedPackages])
+  }, [flatSidebarNodes, packageByIdEffective, rootScopedPackageIds, rootScopedPackages])
 
   const orderedRootScopedPackages = useMemo(
     () =>
       sidebarOrderedImageSourceIds
-        .map((sourceId) => packageById.get(sourceId))
+        .map((sourceId) => packageByIdEffective.get(sourceId))
         .filter((pkg): pkg is ImagePackage => Boolean(pkg)),
-    [packageById, sidebarOrderedImageSourceIds],
+    [packageByIdEffective, sidebarOrderedImageSourceIds],
   )
 
   const orderedRootScopedImageRefs = useMemo<FocusedImageRef[]>(() => {
@@ -707,7 +790,7 @@ function App() {
     setVectorPage,
     gradeByPackage,
     setGradeByPackage,
-    packageById,
+    packageById: packageByIdEffective,
     orderedRootScopedPackages,
     orderedRootScopedImageRefs,
     vectorResultsActive,
@@ -731,7 +814,7 @@ function App() {
   const backendMetadataSnapshot = backendRead.metadata.data ?? backendRead.metadata.snapshot
   const activePackageForDisplay =
     !vectorResultsActive && backendPageSnapshot?.sourceId
-      ? (packageById.get(backendPageSnapshot.sourceId) ?? activePackage)
+      ? (packageByIdEffective.get(backendPageSnapshot.sourceId) ?? activePackage)
       : activePackage
   const refsInPageEffective = !vectorResultsActive && backendPageSnapshot ? backendPageSnapshot.refs : refsInPage
   const pageStartEffective =
@@ -752,7 +835,7 @@ function App() {
       ? (backendMetadataSnapshot?.package ?? metadataImagePackage)
       : metadataImagePackage
   const currentGradeEffective = imageFocusActive ? (backendMetadataSnapshot?.grade ?? currentGrade) : currentGrade
-  const focusedVideo = videoById.get(selectedVideoId) ?? videosForSidebar[0] ?? null
+  const focusedVideo = videoByIdEffective.get(selectedVideoId) ?? videosForSidebar[0] ?? null
   const focusedVideoDurationSec = focusedVideo
     ? Math.max(0, videoDurationById[focusedVideo.id] ?? focusedVideo.durationSec)
     : 0
@@ -784,7 +867,7 @@ function App() {
     const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight)))
 
     const pushImageTarget = (ref: FocusedImageRef) => {
-      const image = packageById.get(ref.packageId)?.images[ref.imageIndex]
+      const image = packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]
       if (!image) {
         return
       }
@@ -844,7 +927,7 @@ function App() {
     }
 
     return targets
-  }, [actualCellWidth, actualMediaHeight, focusedImage, focusedImagePackage, focusedVideo, metadataImageEffective, metadataImagePackageEffective, packageById, refsInPageEffective])
+  }, [actualCellWidth, actualMediaHeight, focusedImage, focusedImagePackage, focusedVideo, metadataImageEffective, metadataImagePackageEffective, packageByIdEffective, refsInPageEffective])
 
   const resolvedMedia = useResolvedMediaUrls({
     repository: mediaRepository,
@@ -892,7 +975,7 @@ function App() {
       return
     }
 
-    const rankedCandidates = buildVectorCandidates(focusedRef, allScopedRefs, packageById)
+    const rankedCandidates = buildVectorCandidates(focusedRef, allScopedRefs, packageByIdEffective)
     const anchorCandidate = rankedCandidates[0]
     if (!anchorCandidate) {
       setVectorSearchResults([])
@@ -910,7 +993,7 @@ function App() {
     setSearchPanelMode('vector')
     setImageFocus(anchorCandidate.packageId, anchorCandidate.imageIndex)
     updateSettings({ vectorMode: true, sidebarFocus: 'main' })
-  }, [allScopedRefs, focusedRef, mode, packageById, setImageFocus, setSearchPanelMode, updateSettings, vectorThreshold])
+  }, [allScopedRefs, focusedRef, mode, packageByIdEffective, setImageFocus, setSearchPanelMode, updateSettings, vectorThreshold])
 
   const goToFromSearchMode = useCallback(() => {
     if (mode !== 'image') {
@@ -1265,7 +1348,7 @@ function App() {
     vectorCandidates: vectorSearchResults,
     normalizedPageIndex: normalizedPageIndexEffective,
     imageTotalPages: imageTotalPagesEffective,
-    packageById,
+    packageById: packageByIdEffective,
     imageUrlById,
     gridRef,
     onToggleShowNamesOnly: () => updateSettings({ showNamesOnly: !showNamesOnly }),
@@ -1350,7 +1433,7 @@ function App() {
     videoVolume,
     videoMuted,
     videoRate,
-    videoById,
+    videoById: videoByIdEffective,
     onCollapse: () => updateSettings({ metadataCollapsed: true }),
     onExpand: () => updateSettings({ metadataCollapsed: false }),
     onMetadataTabChange: setMetadataTab,
@@ -1712,7 +1795,7 @@ function App() {
       <VectorUniverseOverlay
         open={vectorUniverseOpen}
         focusedRef={focusedRef}
-        imageSources={imageSources}
+        imageSources={scopedImageSourcesEffective}
         scopeRefs={vectorUniverseScopeRefs}
         helperScale={vectorUniverseHelperScale}
         sceneSettings={vectorUniverseSceneSettings}

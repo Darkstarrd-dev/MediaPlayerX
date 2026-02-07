@@ -72,6 +72,30 @@ async function createSampleVideo(videoPath: string): Promise<void> {
   })
 }
 
+async function waitForImportTaskDone(
+  service: FileSystemMediaReadService,
+  taskId: string,
+  timeoutMs = 15_000,
+): Promise<{ task_id: string; status: 'completed' | 'failed'; processed_count: number; total_count: number }> {
+  const deadline = Date.now() + timeoutMs
+
+  while (Date.now() < deadline) {
+    const snapshot = await service.readImportTasks()
+    const task = snapshot.tasks.find((item) => item.task_id === taskId)
+    if (task && (task.status === 'completed' || task.status === 'failed')) {
+      return {
+        task_id: task.task_id,
+        status: task.status,
+        processed_count: task.processed_count,
+        total_count: task.total_count,
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 80))
+  }
+
+  throw new Error(`import task timeout: ${taskId}`)
+}
+
 async function writeStoredZip(
   filePath: string,
   entries: Array<{ name: string; content: Buffer }>,
@@ -448,6 +472,47 @@ describe('FileSystemMediaReadService', () => {
     const restored = await restarted.readPlaylist()
 
     expect(restored.video_ids).toEqual(targetVideoIds)
+  })
+
+  it('导入任务可将库外文件复制入库并完成刷新', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-root-'))
+    const outsideRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-source-'))
+    createdRoots.push(root)
+    createdRoots.push(outsideRoot)
+
+    const outsideImagePath = path.join(outsideRoot, 'incoming', 'scene.jpg')
+    await writeBinary(outsideImagePath, [0xff, 0xd8, 0xff, 0xd9])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+
+    const before = await service.readLibrarySnapshot()
+    const beforeImageCount = [...before.image_packages, ...before.image_directories].reduce(
+      (sum, source) => sum + source.images.length,
+      0,
+    )
+    expect(beforeImageCount).toBe(0)
+
+    const queued = await service.enqueueImportTask({
+      source: 'dialog-files',
+      paths: [outsideImagePath],
+    })
+    expect(['pending', 'running', 'completed']).toContain(queued.task.status)
+
+    const doneTask = await waitForImportTaskDone(service, queued.task.task_id)
+    expect(doneTask.status).toBe('completed')
+    expect(doneTask.processed_count).toBe(1)
+
+    const importedDirectory = path.join(root, 'imports', 'files')
+    const importedFiles = await fs.readdir(importedDirectory)
+    expect(importedFiles.some((fileName) => fileName.endsWith('.jpg'))).toBe(true)
+
+    const after = await service.readLibrarySnapshot()
+    const afterImageCount = [...after.image_packages, ...after.image_directories].reduce(
+      (sum, source) => sum + source.images.length,
+      0,
+    )
+    expect(afterImageCount).toBeGreaterThan(beforeImageCount)
   })
 
   it('resolveMediaResource 输出审计统计（拒绝分类、token 命中/过期）', async () => {
