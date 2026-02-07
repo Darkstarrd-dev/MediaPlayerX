@@ -7,10 +7,13 @@ import type {
   ReadImageSidebarTreeRequestDto,
   ReadImageSidebarTreeResponseDto,
   MediaAccessAuditResponseDto,
+  ReadPlaylistResponseDto,
   ResolveMediaResourceRequestDto,
   ResolveMediaResourceResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
+  WritePlaylistRequestDto,
+  WritePlaylistResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
 } from './contracts/backend'
@@ -23,6 +26,8 @@ interface MediaPlayerBackendApi {
   resolveMediaResource: (request: ResolveMediaResourceRequestDto) => Promise<ResolveMediaResourceResponseDto>
   writePackageGrade: (request: WritePackageGradeRequestDto) => Promise<WritePackageGradeResponseDto>
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
+  readPlaylist: () => Promise<ReadPlaylistResponseDto>
+  writePlaylist: (request: WritePlaylistRequestDto) => Promise<WritePlaylistResponseDto>
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
 }
 

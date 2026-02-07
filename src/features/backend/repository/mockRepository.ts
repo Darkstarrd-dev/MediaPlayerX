@@ -11,7 +11,9 @@ import {
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
   mediaAccessAuditResponseSchema,
+  readPlaylistResponseSchema,
   saveVideoCoverResponseSchema,
+  writePlaylistResponseSchema,
   writePackageGradeResponseSchema,
   type FeatureFilterDto,
   type ImageItemDto,
@@ -21,6 +23,7 @@ import {
   type MediaLocatorDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
+  type ReadPlaylistResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
   type ReadImageSidebarTreeRequestDto,
@@ -31,6 +34,8 @@ import {
   type SaveVideoCoverResponseDto,
   type SidebarNodeDto,
   type VideoItemDto,
+  type WritePlaylistRequestDto,
+  type WritePlaylistResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
 } from '../../../contracts/backend'
@@ -310,6 +315,8 @@ function toDeterministicCoverColor(videoId: string): string {
 }
 
 export class MockMediaRepository implements ReadonlyMediaRepository, SynchronousMediaRepository {
+  private playlistIds = MOCK_LIBRARY_SNAPSHOT.videos.slice(0, 3).map((video) => video.id)
+
   getInitialLibrarySnapshot(): LibrarySnapshotDto {
     return MOCK_LIBRARY_SNAPSHOT
   }
@@ -500,6 +507,34 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     options?: RepositoryRequestOptions,
   ): Promise<SaveVideoCoverResponseDto> {
     const response = this.saveVideoCoverSync(request)
+    return resolveAsync(response, options)
+  }
+
+  readPlaylistSync(): ReadPlaylistResponseDto {
+    return readPlaylistResponseSchema.parse({
+      video_ids: this.playlistIds,
+    })
+  }
+
+  async readPlaylist(options?: RepositoryRequestOptions): Promise<ReadPlaylistResponseDto> {
+    const response = this.readPlaylistSync()
+    return resolveAsync(response, options)
+  }
+
+  writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto {
+    const validVideoIds = new Set(MOCK_LIBRARY_SNAPSHOT.videos.map((video) => video.id))
+    this.playlistIds = Array.from(new Set(request.video_ids)).filter((id) => validVideoIds.has(id))
+    return writePlaylistResponseSchema.parse({
+      video_ids: this.playlistIds,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async writePlaylist(
+    request: WritePlaylistRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePlaylistResponseDto> {
+    const response = this.writePlaylistSync(request)
     return resolveAsync(response, options)
   }
 

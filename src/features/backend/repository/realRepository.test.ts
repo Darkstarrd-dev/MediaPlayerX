@@ -98,6 +98,13 @@ describe('RealMediaRepository', () => {
         cover_image_path: null,
         updated_at_ms: Date.now(),
       }),
+      readPlaylist: async () => ({
+        video_ids: ['video-1'],
+      }),
+      writePlaylist: async (request) => ({
+        video_ids: request.video_ids,
+        updated_at_ms: Date.now(),
+      }),
       readMediaAccessAudit: async () => ({
         resolve_requests: 1,
         resolve_granted: 1,
@@ -153,6 +160,13 @@ describe('RealMediaRepository', () => {
         video_id: 'video-1',
         cover_color: 'hsl(120, 44%, 40%)',
         cover_image_path: null,
+        updated_at_ms: Date.now(),
+      }),
+      readPlaylist: async () => ({
+        video_ids: ['video-1'],
+      }),
+      writePlaylist: async (request) => ({
+        video_ids: request.video_ids,
         updated_at_ms: Date.now(),
       }),
       readMediaAccessAudit: async () => ({
@@ -216,6 +230,13 @@ describe('RealMediaRepository', () => {
         cover_image_path: null,
         updated_at_ms: Date.now(),
       }),
+      readPlaylist: async () => ({
+        video_ids: ['video-1'],
+      }),
+      writePlaylist: async (request) => ({
+        video_ids: request.video_ids,
+        updated_at_ms: Date.now(),
+      }),
       readMediaAccessAudit: async () => ({
         resolve_requests: 1,
         resolve_granted: 1,
@@ -276,6 +297,13 @@ describe('RealMediaRepository', () => {
         video_id: 'video-001',
         cover_color: 'hsl(120, 44%, 40%)',
         cover_image_path: 'Z:/bench/.mediaplayerx/covers/video-001.jpg',
+        updated_at_ms: Date.now(),
+      }),
+      readPlaylist: async () => ({
+        video_ids: ['video-001'],
+      }),
+      writePlaylist: async (request) => ({
+        video_ids: request.video_ids,
         updated_at_ms: Date.now(),
       }),
       readMediaAccessAudit: async () => ({

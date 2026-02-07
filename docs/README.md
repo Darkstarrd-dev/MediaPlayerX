@@ -48,6 +48,9 @@
 - 已补充 Phase-2 集成测试：真实渲染链路、协议权限边界、压缩包轻扫与异常重试；`lint/test/build` 基线通过。
 - 新增视频元数据真实探测链路：Main 使用 `ffprobe` 探测时长/分辨率，Renderer 在 `loadedmetadata` 回传并校准进度显示。
 - 新增写链路下沉：图包评分与 `Save as cover` 通过 Main 写入；Renderer 采用 optimistic update + 失败回滚。
+- 后端存储已切换到 SQLite 基座：`migration/init/version`、`source/package`、`image`、`video`、`grade`、`cover`、`playlist`、`app_state`、`root_config`、`task_log` 已落地。
+- 读链路（snapshot/sidebar/page/metadata）已改为“扫描结果事务 upsert -> SQLite 查询回读”的 DB 优先路径，内存快照仅作为短生命周期缓存。
+- 播放列表已接入持久化链路：Renderer 通过 `Repository -> preload -> ipc` 读写播放列表，重启后恢复。
 - 新增 `resolveMediaResource` 审计统计：拒绝原因分类、token 命中/未命中/过期/清理计数可通过 IPC 读取。
 - 压缩包策略升级：`rar/7z` 统一走“解压 -> 转存 zip(store)”策略；zip 遇到非 `store/deflate` 图片条目时走“解压 -> webp(quality=90) -> zip(store)”归一化策略。
 - 扫描/重处理性能门禁改为双规并行：`Z:\bench`（实际负载回放） + `perf-data/<日期>-scan-dataset/input`（脚本生成全覆盖）。

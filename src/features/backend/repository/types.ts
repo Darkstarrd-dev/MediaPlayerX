@@ -3,6 +3,7 @@ import type {
   MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
+  ReadPlaylistResponseDto,
   ReadImagePageRequestDto,
   ReadImagePageResponseDto,
   ReadImageSidebarTreeRequestDto,
@@ -11,6 +12,8 @@ import type {
   ResolveMediaResourceResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
+  WritePlaylistRequestDto,
+  WritePlaylistResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
 } from '../../../contracts/backend'
@@ -47,6 +50,11 @@ export interface ReadonlyMediaRepository {
     request: SaveVideoCoverRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<SaveVideoCoverResponseDto>
+  readPlaylist(options?: RepositoryRequestOptions): Promise<ReadPlaylistResponseDto>
+  writePlaylist(
+    request: WritePlaylistRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePlaylistResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
 }
 
@@ -57,6 +65,8 @@ export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
   resolveMediaResourceSync(request: ResolveMediaResourceRequestDto): ResolveMediaResourceResponseDto
   writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
+  readPlaylistSync(): ReadPlaylistResponseDto
+  writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto
   readMediaAccessAuditSync(): MediaAccessAuditResponseDto
 }
 

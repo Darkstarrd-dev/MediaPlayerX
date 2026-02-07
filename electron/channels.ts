@@ -6,6 +6,8 @@ export const BACKEND_CHANNELS = {
   resolveMediaResource: 'backend:resolveMediaResource',
   writePackageGrade: 'backend:writePackageGrade',
   saveVideoCover: 'backend:saveVideoCover',
+  readPlaylist: 'backend:readPlaylist',
+  writePlaylist: 'backend:writePlaylist',
   readMediaAccessAudit: 'backend:readMediaAccessAudit',
 } as const
 

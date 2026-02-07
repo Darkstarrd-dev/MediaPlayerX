@@ -183,6 +183,19 @@ export const saveVideoCoverResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const readPlaylistResponseSchema = z.object({
+  video_ids: z.array(z.string().min(1)),
+})
+
+export const writePlaylistRequestSchema = z.object({
+  video_ids: z.array(z.string().min(1)),
+})
+
+export const writePlaylistResponseSchema = z.object({
+  video_ids: z.array(z.string().min(1)),
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const mediaAccessAuditResponseSchema = z.object({
   resolve_requests: nonNegativeIntSchema,
   resolve_granted: nonNegativeIntSchema,
@@ -217,4 +230,7 @@ export type WritePackageGradeRequestDto = z.infer<typeof writePackageGradeReques
 export type WritePackageGradeResponseDto = z.infer<typeof writePackageGradeResponseSchema>
 export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>
 export type SaveVideoCoverResponseDto = z.infer<typeof saveVideoCoverResponseSchema>
+export type ReadPlaylistResponseDto = z.infer<typeof readPlaylistResponseSchema>
+export type WritePlaylistRequestDto = z.infer<typeof writePlaylistRequestSchema>
+export type WritePlaylistResponseDto = z.infer<typeof writePlaylistResponseSchema>
 export type MediaAccessAuditResponseDto = z.infer<typeof mediaAccessAuditResponseSchema>

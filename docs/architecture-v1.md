@@ -18,6 +18,8 @@
 - 扫描与重处理遵循性能门禁（双规并行 + Correctness 优先）。
 - Main 已接入写链路（评分/封面保存）与 optimistic rollback 协议契约。
 - 压缩包扫描接入归一化策略：`rar/7z -> zip(store)`；zip 非 `store/deflate` 图片条目 -> `webp(90)` 后转存 zip(store)。
+- SQLite 基座已启用（含 migration/init/version）；扫描产物以事务 upsert + stale 清理写入数据库，读取统一以 SQLite 为 SSOT。
+- 播放列表写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `readPlaylist/writePlaylist`，重启后可恢复。
 
 ### Electron Main 进程
 
@@ -64,7 +66,7 @@
 - 入库根目录与监控设置。
 - 图包/压缩包级元数据。
 - item 级稳定标识与展示状态。
-- 用户整理字段（`grade`、显示名、手动元数据）。
+- 用户整理字段（`grade`、封面、播放列表、显示名、手动元数据）。
 - 任务状态与操作日志。
 
 ### LanceDB 职责

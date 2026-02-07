@@ -1,16 +1,19 @@
 import {
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readPlaylistResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
   saveVideoCoverResponseSchema,
+  writePlaylistResponseSchema,
   writePackageGradeResponseSchema,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
+  type ReadPlaylistResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
   type ReadImageSidebarTreeRequestDto,
@@ -19,6 +22,8 @@ import {
   type ResolveMediaResourceResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
+  type WritePlaylistRequestDto,
+  type WritePlaylistResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
 } from '../../../contracts/backend'
@@ -181,6 +186,29 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.saveVideoCover(request), options)
     return saveVideoCoverResponseSchema.parse(response)
+  }
+
+  async readPlaylist(options?: RepositoryRequestOptions): Promise<ReadPlaylistResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.readPlaylist(), options)
+    return readPlaylistResponseSchema.parse(response)
+  }
+
+  async writePlaylist(
+    request: WritePlaylistRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePlaylistResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.writePlaylist(request), options)
+    return writePlaylistResponseSchema.parse(response)
   }
 
   async readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto> {

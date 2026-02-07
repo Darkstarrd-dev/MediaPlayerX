@@ -6,6 +6,7 @@ import type {
   MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
+  ReadPlaylistResponseDto,
   ReadImagePageRequestDto,
   ReadImagePageResponseDto,
   ReadImageSidebarTreeRequestDto,
@@ -14,6 +15,8 @@ import type {
   ResolveMediaResourceResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
+  WritePlaylistRequestDto,
+  WritePlaylistResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
 } from '../../contracts/backend'
@@ -204,6 +207,24 @@ class CancellationAwareRepository implements ReadonlyMediaRepository {
     }
   }
 
+  async readPlaylist(options?: RepositoryRequestOptions): Promise<ReadPlaylistResponseDto> {
+    void options
+    return {
+      video_ids: [],
+    }
+  }
+
+  async writePlaylist(
+    request: WritePlaylistRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePlaylistResponseDto> {
+    void options
+    return {
+      video_ids: request.video_ids,
+      updated_at_ms: Date.now(),
+    }
+  }
+
   async readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto> {
     void options
     return {
@@ -305,6 +326,24 @@ class RetrySnapshotRepository implements ReadonlyMediaRepository {
       video_id: request.video_id,
       cover_color: request.fallback_color ?? 'hsl(120, 44%, 40%)',
       cover_image_path: null,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async readPlaylist(options?: RepositoryRequestOptions): Promise<ReadPlaylistResponseDto> {
+    void options
+    return {
+      video_ids: [],
+    }
+  }
+
+  async writePlaylist(
+    request: WritePlaylistRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePlaylistResponseDto> {
+    void options
+    return {
+      video_ids: request.video_ids,
       updated_at_ms: Date.now(),
     }
   }

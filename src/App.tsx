@@ -36,6 +36,7 @@ import { useImportPipeline } from './features/import/useImportPipeline'
 import { usePaneResizers } from './features/layout/usePaneResizers'
 import { computeThumbnailGridLayout } from './features/layout/thumbnailLayout'
 import { useMediaState } from './features/media/useMediaState'
+import { usePlaylistPersistence } from './features/media/usePlaylistPersistence'
 import { useFeatureSearch } from './features/search/useFeatureSearch'
 import { useSidebarNavigation } from './features/sidebar/useSidebarNavigation'
 import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
@@ -245,6 +246,13 @@ function App() {
     initialVideoId: bootstrapVideos[0]?.id ?? '',
     initialPlaylistIds: bootstrapVideos.slice(0, 3).map((item) => item.id),
     videos: bootstrapVideos,
+  })
+
+  const playlistPersistence = usePlaylistPersistence({
+    repository: mediaRepository,
+    videos: bootstrapVideos,
+    playlistIds,
+    setPlaylistIds,
   })
 
   const {
@@ -1425,6 +1433,22 @@ function App() {
           label: '封面写入',
           message: backendWrite.errors.cover,
           onRetry: backendWrite.clearCoverError,
+        }
+      : null,
+    playlistPersistence.readError
+      ? {
+          key: 'playlist-read',
+          label: '播放列表读取',
+          message: playlistPersistence.readError,
+          onRetry: playlistPersistence.retryRead,
+        }
+      : null,
+    playlistPersistence.writeError
+      ? {
+          key: 'playlist-write',
+          label: '播放列表写入',
+          message: playlistPersistence.writeError,
+          onRetry: playlistPersistence.retryWrite,
         }
       : null,
   ].filter((item): item is { key: string; label: string; message: string; onRetry: () => void } => Boolean(item))

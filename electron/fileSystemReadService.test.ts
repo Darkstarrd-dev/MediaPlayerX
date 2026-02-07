@@ -134,8 +134,14 @@ async function writeStoredZip(
 
 describe('FileSystemMediaReadService', () => {
   const createdRoots: string[] = []
+  const createdServices: FileSystemMediaReadService[] = []
 
   afterEach(async () => {
+    for (const service of createdServices) {
+      service.dispose()
+    }
+    createdServices.length = 0
+
     await Promise.all(
       createdRoots.map(async (root) => {
         await fs.rm(root, { recursive: true, force: true })
@@ -159,6 +165,7 @@ describe('FileSystemMediaReadService', () => {
     await writeBinary(path.join(root, '動画_かな.mp4'), [0x00, 0x00, 0x00, 0x18])
 
     const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
 
     const snapshot = await service.readLibrarySnapshot()
     expect(snapshot.image_directories.length).toBeGreaterThan(0)
@@ -229,6 +236,7 @@ describe('FileSystemMediaReadService', () => {
     await writeBinary(outsideImagePath, [0xff, 0xd8, 0xff, 0xd9])
 
     const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
     await service.readLibrarySnapshot()
 
     const allowed = await service.resolveMediaResource({
@@ -273,6 +281,7 @@ describe('FileSystemMediaReadService', () => {
     ])
 
     const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
     const snapshot = await service.readLibrarySnapshot()
     const packageDto = snapshot.image_packages.find((item) => item.absolute_path === zipPath)
 
@@ -323,6 +332,7 @@ describe('FileSystemMediaReadService', () => {
     await writeBinary(path.join(root, 'video.mp4'), [0x00, 0x00, 0x00, 0x18])
 
     const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
     const snapshot = await service.readLibrarySnapshot()
     const source = snapshot.image_directories[0]
     const video = snapshot.videos[0]
@@ -351,6 +361,31 @@ describe('FileSystemMediaReadService', () => {
     expect(refreshed.videos[0]?.cover_color).toBe('hsl(210, 44%, 40%)')
   })
 
+  it('播放列表写入后可在服务重启后恢复', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-playlist-'))
+    createdRoots.push(root)
+
+    await writeBinary(path.join(root, 'video-a.mp4'), [0x00, 0x00, 0x00, 0x18])
+    await writeBinary(path.join(root, 'video-b.mp4'), [0x00, 0x00, 0x00, 0x18])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    const snapshot = await service.readLibrarySnapshot()
+    const targetVideoIds = snapshot.videos.slice(0, 2).map((video) => video.id)
+
+    expect(targetVideoIds.length).toBe(2)
+    await service.writePlaylist({ video_ids: targetVideoIds })
+
+    service.dispose()
+
+    const restarted = new FileSystemMediaReadService(root)
+    createdServices.push(restarted)
+    await restarted.readLibrarySnapshot()
+    const restored = await restarted.readPlaylist()
+
+    expect(restored.video_ids).toEqual(targetVideoIds)
+  })
+
   it('resolveMediaResource 输出审计统计（拒绝分类、token 命中/过期）', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-audit-'))
     createdRoots.push(root)
@@ -358,6 +393,7 @@ describe('FileSystemMediaReadService', () => {
     const imagePath = path.join(root, 'inside.jpg')
     await writeBinary(imagePath, [0xff, 0xd8, 0xff, 0xd9])
     const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
     await service.readLibrarySnapshot()
 
     const allowed = await service.resolveMediaResource({
@@ -403,6 +439,7 @@ describe('FileSystemMediaReadService', () => {
     await createSampleVideo(videoPath)
 
     const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
     const snapshot = await service.readLibrarySnapshot()
     const video = snapshot.videos[0]
 

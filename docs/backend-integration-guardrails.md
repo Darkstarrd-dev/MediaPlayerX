@@ -43,7 +43,12 @@
 
 9. 写链路一致性
    - 图包评分、封面保存等写操作必须下沉到 Main，通过 IPC 契约完成。
+   - 播放列表读写同样必须下沉到 Main，通过 IPC 契约完成，不允许 Renderer 本地持久化分叉。
    - Renderer 允许 optimistic update，但失败必须 rollback，并保留可见错误信息。
+
+10. SQLite 基座约束
+   - 读链路（snapshot/sidebar/page/metadata）必须以 SQLite 为单一事实源，内存仅作为临时缓存。
+   - 扫描结果必须使用事务 upsert，并同步删除/失效条目，禁止仅依赖进程内状态恢复。
 
 ## 实施顺序（必须按序）
 

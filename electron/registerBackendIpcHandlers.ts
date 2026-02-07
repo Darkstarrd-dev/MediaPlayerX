@@ -3,6 +3,7 @@ import { ipcMain, protocol } from 'electron'
 import {
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
   readImageMetadataResponseSchema,
   readImagePageRequestSchema,
@@ -13,6 +14,8 @@ import {
   resolveMediaResourceResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
+  writePlaylistRequestSchema,
+  writePlaylistResponseSchema,
   writePackageGradeRequestSchema,
   writePackageGradeResponseSchema,
 } from '../src/contracts/backend'
@@ -80,6 +83,17 @@ export function registerBackendIpcHandlers(): void {
     const request = saveVideoCoverRequestSchema.parse(payload)
     const response = await service.saveVideoCover(request)
     return saveVideoCoverResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readPlaylist, async () => {
+    const response = await service.readPlaylist()
+    return readPlaylistResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.writePlaylist, async (_event, payload: unknown) => {
+    const request = writePlaylistRequestSchema.parse(payload)
+    const response = await service.writePlaylist(request)
+    return writePlaylistResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readMediaAccessAudit, async () => {

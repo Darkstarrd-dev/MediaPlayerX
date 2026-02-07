@@ -8,11 +8,13 @@ import { inflateRawSync } from 'node:zlib'
 import {
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readPlaylistResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
   saveVideoCoverResponseSchema,
+  writePlaylistResponseSchema,
   writePackageGradeResponseSchema,
   type FeatureFilterDto,
   type FocusedImageRefDto,
@@ -21,6 +23,7 @@ import {
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
   type MediaLocatorDto,
+  type ReadPlaylistResponseDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
@@ -33,10 +36,13 @@ import {
   type SaveVideoCoverResponseDto,
   type SidebarNodeDto,
   type VideoItemDto,
+  type WritePlaylistRequestDto,
+  type WritePlaylistResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
 } from '../src/contracts/backend'
 import { MEDIA_PROTOCOL_SCHEME } from './channels'
+import { MediaLibraryDatabase } from './mediaLibraryDatabase'
 
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'])
 const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mkv', '.mov'])
@@ -58,7 +64,6 @@ const FFMPEG_BIN = process.env.MEDIA_PLAYERX_FFMPEG_BIN ?? 'ffmpeg'
 const FFPROBE_BIN = process.env.MEDIA_PLAYERX_FFPROBE_BIN ?? 'ffprobe'
 const ARCHIVE_EXTRACTOR_BIN = process.env.MEDIA_PLAYERX_ARCHIVE_EXTRACTOR_BIN ?? '7z'
 const ARCHIVE_NORMALIZE_DIR_NAME = '.mediaplayerx/normalized-archives'
-const STATE_FILE_RELATIVE_PATH = '.mediaplayerx/state/state.json'
 
 const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])
 
@@ -82,12 +87,6 @@ interface PersistedVideoCoverRecord {
   coverColor: string
   coverImagePath: string | null
   updatedAtMs: number
-}
-
-interface PersistedServiceState {
-  version: 1
-  packageGrades: Record<string, number | null>
-  videoCovers: Record<string, PersistedVideoCoverRecord>
 }
 
 interface ServiceShellResult {
@@ -893,17 +892,15 @@ export class FileSystemMediaReadService {
 
   private readonly normalizedArchiveRootDir: string
 
-  private readonly stateFilePath: string
-
   private readonly coverOutputRootDir: string
+
+  private readonly database: MediaLibraryDatabase
 
   private snapshotCache: LibrarySnapshotDto | null = null
 
   private loadingPromise: Promise<LibrarySnapshotDto> | null = null
 
-  private stateLoadingPromise: Promise<void> | null = null
-
-  private stateReady = false
+  private stateHydrated = false
 
   private archiveEntryIndexByPath = new Map<string, Set<string>>()
 
@@ -931,16 +928,21 @@ export class FileSystemMediaReadService {
   constructor(rootDir: string) {
     this.rootDir = path.resolve(rootDir)
     this.normalizedArchiveRootDir = path.join(this.rootDir, ARCHIVE_NORMALIZE_DIR_NAME)
-    this.stateFilePath = path.join(this.rootDir, STATE_FILE_RELATIVE_PATH)
     this.coverOutputRootDir = path.join(this.rootDir, '.mediaplayerx', 'covers')
+    this.database = new MediaLibraryDatabase(this.rootDir)
   }
 
   invalidateCache(): void {
     this.snapshotCache = null
+    this.stateHydrated = false
     this.archiveEntryIndexByPath.clear()
     this.zipEntryIndexByPath.clear()
     this.mediaTokenIndex.clear()
     this.normalizedArchiveCacheBySourcePath.clear()
+  }
+
+  dispose(): void {
+    this.database.dispose()
   }
 
   private cleanupExpiredTokens(): void {
@@ -956,50 +958,13 @@ export class FileSystemMediaReadService {
   }
 
   private async ensureStateLoaded(): Promise<void> {
-    if (this.stateReady) {
+    if (this.stateHydrated) {
       return
     }
 
-    if (!this.stateLoadingPromise) {
-      this.stateLoadingPromise = this.loadPersistedState().finally(() => {
-        this.stateReady = true
-        this.stateLoadingPromise = null
-      })
-    }
-
-    await this.stateLoadingPromise
-  }
-
-  private async loadPersistedState(): Promise<void> {
-    const raw = await fs.readFile(this.stateFilePath, 'utf8').catch(() => null)
-    if (!raw) {
-      return
-    }
-
-    let parsed: PersistedServiceState | null = null
-    try {
-      parsed = JSON.parse(raw) as PersistedServiceState
-    } catch {
-      parsed = null
-    }
-
-    if (!parsed || parsed.version !== 1) {
-      return
-    }
-
-    this.packageGradeOverridesBySourceId = new Map(Object.entries(parsed.packageGrades ?? {}))
-    this.videoCoverOverridesByVideoId = new Map(Object.entries(parsed.videoCovers ?? {}))
-  }
-
-  private async persistState(): Promise<void> {
-    const payload: PersistedServiceState = {
-      version: 1,
-      packageGrades: Object.fromEntries(this.packageGradeOverridesBySourceId),
-      videoCovers: Object.fromEntries(this.videoCoverOverridesByVideoId),
-    }
-
-    await fs.mkdir(path.dirname(this.stateFilePath), { recursive: true })
-    await fs.writeFile(this.stateFilePath, JSON.stringify(payload, null, 2), 'utf8')
+    this.packageGradeOverridesBySourceId = this.database.readPackageGrades()
+    this.videoCoverOverridesByVideoId = this.database.readVideoCovers()
+    this.stateHydrated = true
   }
 
   private countResolveDenied(reason: MediaAuditRejectReason): void {
@@ -1429,11 +1394,14 @@ export class FileSystemMediaReadService {
       left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
     )
 
-    return librarySnapshotDtoSchema.parse({
+    const scannedSnapshot = librarySnapshotDtoSchema.parse({
       image_packages: imagePackages,
       image_directories: imageDirectories,
       videos: videoItems,
     })
+
+    this.database.replaceSnapshot(scannedSnapshot)
+    return this.database.readSnapshot()
   }
 
   private filterSources(request: Pick<ReadImageSidebarTreeRequestDto, 'feature_filter' | 'grade_overrides'>): {
@@ -1744,7 +1712,7 @@ export class FileSystemMediaReadService {
 
     source.mock_grade = request.grade
     this.packageGradeOverridesBySourceId.set(request.package_id, request.grade)
-    await this.persistState()
+    this.database.writePackageGrade(request.package_id, request.grade)
 
     return writePackageGradeResponseSchema.parse({
       package_id: request.package_id,
@@ -1772,13 +1740,30 @@ export class FileSystemMediaReadService {
       coverImagePath,
       updatedAtMs,
     })
-    await this.persistState()
+    this.database.writeVideoCover(video.id, coverColor, coverImagePath)
 
     return saveVideoCoverResponseSchema.parse({
       video_id: video.id,
       cover_color: coverColor,
       cover_image_path: coverImagePath,
       updated_at_ms: updatedAtMs,
+    })
+  }
+
+  async readPlaylist(): Promise<ReadPlaylistResponseDto> {
+    await this.ensureSnapshotLoaded()
+    const videoIds = this.database.readPlaylist()
+    return readPlaylistResponseSchema.parse({
+      video_ids: videoIds,
+    })
+  }
+
+  async writePlaylist(request: WritePlaylistRequestDto): Promise<WritePlaylistResponseDto> {
+    await this.ensureSnapshotLoaded()
+    const nextVideoIds = this.database.writePlaylist(request.video_ids)
+    return writePlaylistResponseSchema.parse({
+      video_ids: nextVideoIds,
+      updated_at_ms: Date.now(),
     })
   }
 

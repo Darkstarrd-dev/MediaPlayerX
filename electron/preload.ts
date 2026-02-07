@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import {
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
   readImageMetadataResponseSchema,
   readImagePageRequestSchema,
@@ -13,6 +14,8 @@ import {
   resolveMediaResourceResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
+  writePlaylistRequestSchema,
+  writePlaylistResponseSchema,
   writePackageGradeRequestSchema,
   writePackageGradeResponseSchema,
 } from '../src/contracts/backend'
@@ -52,6 +55,15 @@ const backendApi = {
     const parsed = saveVideoCoverRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.saveVideoCover, parsed)
     return saveVideoCoverResponseSchema.parse(response)
+  },
+  readPlaylist: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readPlaylist)
+    return readPlaylistResponseSchema.parse(response)
+  },
+  writePlaylist: async (request: unknown) => {
+    const parsed = writePlaylistRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePlaylist, parsed)
+    return writePlaylistResponseSchema.parse(response)
   },
   readMediaAccessAudit: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readMediaAccessAudit)
