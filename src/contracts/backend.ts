@@ -151,6 +151,13 @@ export const readImageMetadataResponseSchema = z
 
 export const resolveMediaResourceRequestSchema = z.object({
   locator: mediaLocatorDtoSchema,
+  preferred_variant: z.enum(['original', 'thumbnail']).optional(),
+  thumbnail: z
+    .object({
+      max_edge: z.number().int().min(64).max(2048).optional(),
+      quality: z.number().int().min(50).max(95).optional(),
+    })
+    .optional(),
 })
 
 export const resolveMediaResourceResponseSchema = z.object({

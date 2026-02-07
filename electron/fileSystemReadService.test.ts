@@ -8,9 +8,16 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { MEDIA_PROTOCOL_SCHEME } from './channels'
 import { FileSystemMediaReadService } from './fileSystemReadService'
 
+const ONE_PIXEL_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO5XKx8AAAAASUVORK5CYII='
+
 async function writeBinary(filePath: string, bytes: number[]): Promise<void> {
   await fs.mkdir(path.dirname(filePath), { recursive: true })
   await fs.writeFile(filePath, Buffer.from(bytes))
+}
+
+async function writeTinyPng(filePath: string): Promise<void> {
+  await fs.mkdir(path.dirname(filePath), { recursive: true })
+  await fs.writeFile(filePath, Buffer.from(ONE_PIXEL_PNG_BASE64, 'base64'))
 }
 
 async function commandExists(command: string): Promise<boolean> {
@@ -322,6 +329,44 @@ describe('FileSystemMediaReadService', () => {
         },
       }),
     ).rejects.toThrow(/entry 非法|entry 不在白名单/)
+  })
+
+  it('缩略图请求可生成 Sharp WebP 缓存并复用受控协议返回', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-thumb-cache-'))
+    createdRoots.push(root)
+
+    const imagePath = path.join(root, 'thumb-source.png')
+    await writeTinyPng(imagePath)
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await service.readLibrarySnapshot()
+
+    const resolved = await service.resolveMediaResource({
+      locator: {
+        kind: 'filesystem',
+        absolute_path: imagePath,
+        extension: '.png',
+        media_type: 'image',
+        mime_type: 'image/png',
+      },
+      preferred_variant: 'thumbnail',
+      thumbnail: {
+        max_edge: 256,
+        quality: 82,
+      },
+    })
+
+    expect(resolved.mime_type).toBe('image/webp')
+    const token = decodeURIComponent(new URL(resolved.resource_url).pathname.replace(/^\//, ''))
+    const payload = await service.readMediaResourceByToken(token, null)
+    expect(payload.status).toBe(200)
+    expect(payload.headers['content-type']).toBe('image/webp')
+    expect(payload.body.length).toBeGreaterThan(0)
+
+    const thumbnailCacheRoot = path.join(root, '.mediaplayerx', 'thumbnail-cache')
+    const cachedFiles = await fs.readdir(thumbnailCacheRoot)
+    expect(cachedFiles.some((fileName) => fileName.endsWith('.webp'))).toBe(true)
   })
 
   it('写链路可持久化评分与封面，失败时由调用端回滚', async () => {

@@ -13,6 +13,9 @@ const MEDIA_RESOLVE_TIMEOUT_MS = 8_000
 export interface MediaResolveTarget {
   targetId: string
   locator: MediaLocator | null
+  variant?: 'original' | 'thumbnail'
+  thumbnailMaxEdge?: number
+  thumbnailQuality?: number
 }
 
 interface UseResolvedMediaUrlsParams {
@@ -44,6 +47,39 @@ function isSyncResolveRepository(repository: ReadonlyMediaRepository): repositor
   return 'resolveMediaResourceSync' in repository && typeof repository.resolveMediaResourceSync === 'function'
 }
 
+function buildRequestKey(target: MediaResolveTarget): string | null {
+  if (!target.locator) {
+    return null
+  }
+
+  const base = mediaLocatorKey(target.locator)
+  if (target.variant !== 'thumbnail') {
+    return `${base}|variant:original`
+  }
+
+  const maxEdge = Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320)))
+  const quality = Math.max(50, Math.min(95, Math.round(target.thumbnailQuality ?? 82)))
+  return `${base}|variant:thumbnail|max:${maxEdge}|q:${quality}`
+}
+
+function buildResolveRequest(target: MediaResolveTarget): ResolveMediaResourceRequestDto {
+  if (target.variant === 'thumbnail') {
+    return {
+      locator: mapMediaLocatorToDto(target.locator as MediaLocator),
+      preferred_variant: 'thumbnail',
+      thumbnail: {
+        max_edge: Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320))),
+        quality: Math.max(50, Math.min(95, Math.round(target.thumbnailQuality ?? 82))),
+      },
+    }
+  }
+
+  return {
+    locator: mapMediaLocatorToDto(target.locator as MediaLocator),
+    preferred_variant: 'original',
+  }
+}
+
 export function useResolvedMediaUrls({
   repository,
   targets,
@@ -64,7 +100,7 @@ export function useResolvedMediaUrls({
       }
 
       const resolvedUrl = repository.resolveMediaResourceSync({
-        locator: mapMediaLocatorToDto(target.locator),
+        ...buildResolveRequest(target),
       }).resource_url
 
       urlByTargetId[target.targetId] = resolvedUrl
@@ -129,25 +165,27 @@ export function useResolvedMediaUrls({
       })
     }
 
-    const targetIdsByLocatorKey = new Map<string, string[]>()
-    const locatorByKey = new Map<string, MediaLocator>()
+    const targetIdsByRequestKey = new Map<string, string[]>()
+    const targetByRequestKey = new Map<string, MediaResolveTarget>()
 
     for (const target of targets) {
       if (!target.locator) {
         continue
       }
 
-      const locator = target.locator
-      const locatorKey = mediaLocatorKey(locator)
-      locatorByKey.set(locatorKey, locator)
+      const requestKey = buildRequestKey(target)
+      if (!requestKey) {
+        continue
+      }
+      targetByRequestKey.set(requestKey, target)
 
-      const list = targetIdsByLocatorKey.get(locatorKey) ?? []
+      const list = targetIdsByRequestKey.get(requestKey) ?? []
       list.push(target.targetId)
-      targetIdsByLocatorKey.set(locatorKey, list)
+      targetIdsByRequestKey.set(requestKey, list)
     }
 
-    for (const [locatorKey, targetIds] of targetIdsByLocatorKey) {
-      const cachedUrl = urlCacheByLocatorKeyRef.current.get(locatorKey)
+    for (const [requestKey, targetIds] of targetIdsByRequestKey) {
+      const cachedUrl = urlCacheByLocatorKeyRef.current.get(requestKey)
       if (cachedUrl) {
         for (const targetId of targetIds) {
           applyUrl(targetId, cachedUrl)
@@ -155,23 +193,20 @@ export function useResolvedMediaUrls({
         continue
       }
 
-      const locator = locatorByKey.get(locatorKey)
-      if (!locator) {
+      const target = targetByRequestKey.get(requestKey)
+      if (!target?.locator) {
         continue
       }
 
+      const request = buildResolveRequest(target)
+
       repository
-        .resolveMediaResource(
-          {
-            locator: mapMediaLocatorToDto(locator),
-          },
-          {
-            signal: abortController.signal,
-            timeoutMs: MEDIA_RESOLVE_TIMEOUT_MS,
-          },
-        )
+        .resolveMediaResource(request, {
+          signal: abortController.signal,
+          timeoutMs: MEDIA_RESOLVE_TIMEOUT_MS,
+        })
         .then((response) => {
-          urlCacheByLocatorKeyRef.current.set(locatorKey, response.resource_url)
+          urlCacheByLocatorKeyRef.current.set(requestKey, response.resource_url)
           for (const targetId of targetIds) {
             applyUrl(targetId, response.resource_url)
           }

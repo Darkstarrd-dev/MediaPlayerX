@@ -20,6 +20,7 @@
 - 压缩包扫描接入归一化策略：`rar/7z -> zip(store)`；zip 非 `store/deflate` 图片条目 -> `webp(90)` 后转存 zip(store)。
 - SQLite 基座已启用（含 migration/init/version）；扫描产物以事务 upsert + stale 清理写入数据库，读取统一以 SQLite 为 SSOT。
 - 播放列表写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `readPlaylist/writePlaylist`，重启后可恢复。
+- 缩略图变体链路已落地：`resolveMediaResource` 支持 `original/thumbnail` 变体，thumbnail 由 Main 使用 Sharp 生成 WebP 并落盘缓存。
 
 ### Electron Main 进程
 

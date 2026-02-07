@@ -73,8 +73,18 @@ const FFMPEG_BIN = process.env.MEDIA_PLAYERX_FFMPEG_BIN ?? 'ffmpeg'
 const FFPROBE_BIN = process.env.MEDIA_PLAYERX_FFPROBE_BIN ?? 'ffprobe'
 const ARCHIVE_EXTRACTOR_BIN = process.env.MEDIA_PLAYERX_ARCHIVE_EXTRACTOR_BIN ?? '7z'
 const ARCHIVE_NORMALIZE_DIR_NAME = '.mediaplayerx/normalized-archives'
+const THUMBNAIL_CACHE_DIR_NAME = '.mediaplayerx/thumbnail-cache'
+const THUMBNAIL_DEFAULT_MAX_EDGE = 320
+const THUMBNAIL_DEFAULT_QUALITY = 82
+const THUMBNAIL_MIN_EDGE = 64
+const THUMBNAIL_MAX_EDGE = 2048
+const THUMBNAIL_MIN_QUALITY = 50
+const THUMBNAIL_MAX_QUALITY = 95
 
 const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])
+
+type SharpModule = typeof import('sharp')
+let sharpModulePromise: Promise<SharpModule | null> | null = null
 
 type MediaAuditRejectReason =
   | 'path_outside_root'
@@ -161,6 +171,11 @@ interface NormalizedArchiveCacheRecord {
   sourceSizeBytes: number
   normalizedArchivePath: string
   strategy: ArchiveNormalizationResult['strategy']
+}
+
+interface ThumbnailRenderOptions {
+  maxEdge: number
+  quality: number
 }
 
 class MediaAccessError extends Error {
@@ -609,6 +624,29 @@ async function runProcess(command: string, args: string[], timeoutMs = 120_000):
   })
 }
 
+async function getSharpModule(): Promise<SharpModule | null> {
+  if (!sharpModulePromise) {
+    sharpModulePromise = import('sharp').catch(() => null)
+  }
+  return sharpModulePromise
+}
+
+function clampThumbnailMaxEdge(value: number | undefined): number {
+  if (!Number.isFinite(value)) {
+    return THUMBNAIL_DEFAULT_MAX_EDGE
+  }
+
+  return Math.max(THUMBNAIL_MIN_EDGE, Math.min(THUMBNAIL_MAX_EDGE, Math.round(value)))
+}
+
+function clampThumbnailQuality(value: number | undefined): number {
+  if (!Number.isFinite(value)) {
+    return THUMBNAIL_DEFAULT_QUALITY
+  }
+
+  return Math.max(THUMBNAIL_MIN_QUALITY, Math.min(THUMBNAIL_MAX_QUALITY, Math.round(value)))
+}
+
 async function collectFilesRecursive(rootDir: string): Promise<Array<{ absolutePath: string; relativePath: string }>> {
   const files: Array<{ absolutePath: string; relativePath: string }> = []
   const queue = [rootDir]
@@ -901,6 +939,8 @@ export class FileSystemMediaReadService {
 
   private readonly normalizedArchiveRootDir: string
 
+  private readonly thumbnailCacheRootDir: string
+
   private readonly coverOutputRootDir: string
 
   private readonly database: MediaLibraryDatabase
@@ -937,6 +977,7 @@ export class FileSystemMediaReadService {
   constructor(rootDir: string) {
     this.rootDir = path.resolve(rootDir)
     this.normalizedArchiveRootDir = path.join(this.rootDir, ARCHIVE_NORMALIZE_DIR_NAME)
+    this.thumbnailCacheRootDir = path.join(this.rootDir, THUMBNAIL_CACHE_DIR_NAME)
     this.coverOutputRootDir = path.join(this.rootDir, '.mediaplayerx', 'covers')
     this.database = new MediaLibraryDatabase(this.rootDir)
   }
@@ -1628,6 +1669,137 @@ export class FileSystemMediaReadService {
     return outputPath
   }
 
+  private resolveThumbnailOptionsFromRequest(
+    request: ResolveMediaResourceRequestDto,
+  ): ThumbnailRenderOptions | null {
+    if (request.preferred_variant !== 'thumbnail') {
+      return null
+    }
+    if (request.locator.media_type !== 'image') {
+      return null
+    }
+
+    return {
+      maxEdge: clampThumbnailMaxEdge(request.thumbnail?.max_edge),
+      quality: clampThumbnailQuality(request.thumbnail?.quality),
+    }
+  }
+
+  private async computeThumbnailCachePath(
+    locator: MediaLocatorDto,
+    options: ThumbnailRenderOptions,
+  ): Promise<string | null> {
+    if (locator.media_type !== 'image') {
+      return null
+    }
+
+    if (locator.kind === 'filesystem') {
+      const stat = await fs.stat(locator.absolute_path).catch(() => null)
+      if (!stat || !stat.isFile()) {
+        return null
+      }
+
+      const cacheKey = JSON.stringify({
+        variant: 'thumb',
+        kind: locator.kind,
+        path: locator.absolute_path,
+        mtimeMs: stat.mtimeMs,
+        size: stat.size,
+        maxEdge: options.maxEdge,
+        quality: options.quality,
+      })
+      const hash = createHash('sha1').update(cacheKey).digest('hex')
+      return path.join(this.thumbnailCacheRootDir, `${hash}.webp`)
+    }
+
+    const archiveStat = await fs.stat(locator.archive_path).catch(() => null)
+    if (!archiveStat || !archiveStat.isFile()) {
+      return null
+    }
+
+    const cacheKey = JSON.stringify({
+      variant: 'thumb',
+      kind: locator.kind,
+      archivePath: locator.archive_path,
+      entry: locator.entry_name,
+      mtimeMs: archiveStat.mtimeMs,
+      size: archiveStat.size,
+      maxEdge: options.maxEdge,
+      quality: options.quality,
+    })
+    const hash = createHash('sha1').update(cacheKey).digest('hex')
+    return path.join(this.thumbnailCacheRootDir, `${hash}.webp`)
+  }
+
+  private async readImageBufferForThumbnail(locator: MediaLocatorDto): Promise<Buffer> {
+    if (locator.kind === 'filesystem') {
+      return fs.readFile(locator.absolute_path)
+    }
+
+    const payload = await this.readArchiveEntryMedia(locator, locator.mime_type)
+    return Buffer.from(payload.body)
+  }
+
+  private async maybeResolveThumbnailLocator(
+    locator: MediaLocatorDto,
+    options: ThumbnailRenderOptions,
+  ): Promise<MediaLocatorDto | null> {
+    if (locator.media_type !== 'image') {
+      return null
+    }
+
+    const sharpModule = await getSharpModule()
+    if (!sharpModule?.default) {
+      return null
+    }
+
+    const cachePath = await this.computeThumbnailCachePath(locator, options)
+    if (!cachePath) {
+      return null
+    }
+
+    const cached = await fs.stat(cachePath).catch(() => null)
+    if (!cached || !cached.isFile()) {
+      const sourceBuffer = await this.readImageBufferForThumbnail(locator).catch(() => null)
+      if (!sourceBuffer || sourceBuffer.length === 0) {
+        return null
+      }
+
+      await fs.mkdir(this.thumbnailCacheRootDir, { recursive: true })
+      const tempPath = `${cachePath}.${process.pid}.${Date.now()}.tmp.webp`
+      const sharp = sharpModule.default
+
+      const generated = await sharp(sourceBuffer, { failOn: 'none' })
+        .rotate()
+        .resize({
+          width: options.maxEdge,
+          height: options.maxEdge,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .webp({ quality: options.quality })
+        .toFile(tempPath)
+        .catch(() => null)
+
+      if (!generated) {
+        await fs.rm(tempPath, { force: true })
+        return null
+      }
+
+      await fs.rename(tempPath, cachePath).catch(async () => {
+        await fs.rm(tempPath, { force: true })
+      })
+    }
+
+    return {
+      kind: 'filesystem',
+      absolute_path: cachePath,
+      extension: '.webp',
+      media_type: 'image',
+      mime_type: 'image/webp',
+    }
+  }
+
   async readLibrarySnapshot(): Promise<LibrarySnapshotDto> {
     return this.ensureSnapshotLoaded()
   }
@@ -1997,6 +2169,14 @@ export class FileSystemMediaReadService {
         this.countResolveDenied('filesystem_file_missing')
       }
       throw error
+    }
+
+    const thumbnailOptions = this.resolveThumbnailOptionsFromRequest(request)
+    if (thumbnailOptions) {
+      const thumbnailLocator = await this.maybeResolveThumbnailLocator(locator, thumbnailOptions)
+      if (thumbnailLocator) {
+        locator = thumbnailLocator
+      }
     }
 
     const mimeType = locator.mime_type || detectMimeTypeByExtension(locator.extension, locator.media_type)

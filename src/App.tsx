@@ -776,6 +776,7 @@ function App() {
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
     const targets: MediaResolveTarget[] = []
     const seenTargetIds = new Set<string>()
+    const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight)))
 
     const pushImageTarget = (ref: FocusedImageRef) => {
       const image = packageById.get(ref.packageId)?.images[ref.imageIndex]
@@ -791,6 +792,9 @@ function App() {
       targets.push({
         targetId,
         locator: image.mediaLocator,
+        variant: 'thumbnail',
+        thumbnailMaxEdge,
+        thumbnailQuality: 82,
       })
     }
 
@@ -805,6 +809,7 @@ function App() {
         targets.push({
           targetId,
           locator: metadataImageEffective.mediaLocator,
+          variant: 'original',
         })
       }
     }
@@ -816,6 +821,7 @@ function App() {
         targets.push({
           targetId,
           locator: focusedImage.mediaLocator,
+          variant: 'original',
         })
       }
     }
@@ -827,12 +833,13 @@ function App() {
         targets.push({
           targetId,
           locator: focusedVideo.mediaLocator,
+          variant: 'original',
         })
       }
     }
 
     return targets
-  }, [focusedImage, focusedImagePackage, focusedVideo, metadataImageEffective, metadataImagePackageEffective, packageById, refsInPageEffective])
+  }, [actualCellWidth, actualMediaHeight, focusedImage, focusedImagePackage, focusedVideo, metadataImageEffective, metadataImagePackageEffective, packageById, refsInPageEffective])
 
   const resolvedMedia = useResolvedMediaUrls({
     repository: mediaRepository,
