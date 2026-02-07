@@ -2,6 +2,26 @@ export type BrowserMode = 'image' | 'video'
 
 export type SearchField = 'all' | 'name' | 'workTitle' | 'circle' | 'author' | 'tags'
 
+export interface FileSystemMediaLocator {
+  kind: 'filesystem'
+  absolutePath: string
+  extension: string
+  mediaType: 'image' | 'video'
+  mimeType: string
+}
+
+export interface ArchiveEntryMediaLocator {
+  kind: 'archive-entry'
+  archivePath: string
+  archiveFormat: 'zip' | 'rar' | '7z'
+  entryName: string
+  extension: string
+  mediaType: 'image' | 'video'
+  mimeType: string
+}
+
+export type MediaLocator = FileSystemMediaLocator | ArchiveEntryMediaLocator
+
 export interface ImageItem {
   id: string
   ordinal: number
@@ -11,6 +31,7 @@ export interface ImageItem {
   cluster: number
   color: string
   featureVector: number[]
+  mediaLocator: MediaLocator
 }
 
 export interface ImagePackage {
@@ -36,6 +57,7 @@ export interface VideoItem {
   width: number
   height: number
   sizeMb: number
+  mediaLocator: MediaLocator
 }
 
 export type SidebarNodeKind = 'folder' | 'package' | 'video'

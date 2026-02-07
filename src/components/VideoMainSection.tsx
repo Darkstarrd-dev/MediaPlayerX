@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react'
+
 import type { VideoItem } from '../types'
-import { formatSeconds } from '../utils/ui'
+import { clamp, formatSeconds } from '../utils/ui'
 
 interface VideoMainSectionProps {
   focusedVideo: VideoItem | null
@@ -8,11 +10,14 @@ interface VideoMainSectionProps {
   videoRate: number
   videoVolume: number
   videoMuted: boolean
+  videoSourceUrl: string | null
+  active: boolean
   coverColor: string
   onTogglePlay: () => void
   onPrevVideo: () => void
   onNextVideo: () => void
   onSeekVideo: (time: number) => void
+  onVideoTimeUpdate: (time: number) => void
   onToggleMute: () => void
   onChangeVolume: (volume: number) => void
   onChangeRate: (rate: number) => void
@@ -27,28 +32,88 @@ function VideoMainSection({
   videoRate,
   videoVolume,
   videoMuted,
+  videoSourceUrl,
+  active,
   coverColor,
   onTogglePlay,
   onPrevVideo,
   onNextVideo,
   onSeekVideo,
+  onVideoTimeUpdate,
   onToggleMute,
   onChangeVolume,
   onChangeRate,
   onSaveCover,
   onEnterFullscreen,
 }: VideoMainSectionProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null)
   const durationSec = focusedVideo?.durationSec ?? 0
   const clampedTime = Math.min(videoTime, durationSec)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) {
+      return
+    }
+
+    video.playbackRate = clamp(videoRate, 0.1, 4)
+    video.muted = videoMuted
+    video.volume = clamp(videoVolume / 100, 0, 1)
+
+    if (!active) {
+      video.pause()
+      return
+    }
+
+    if (Math.abs(video.currentTime - clampedTime) > 0.35) {
+      video.currentTime = clampedTime
+    }
+
+    if (videoPlaying) {
+      void video.play().catch(() => undefined)
+    } else {
+      video.pause()
+    }
+  }, [active, clampedTime, videoMuted, videoPlaying, videoRate, videoSourceUrl, videoVolume])
 
   return (
     <div className="video-preview">
       <div className="video-screen" style={{ background: videoPlaying ? 'linear-gradient(135deg, #2d2f33, #212022)' : coverColor }}>
-        {videoPlaying ? (
-          <span>{`虚拟视频时钟 ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
-        ) : (
-          <span>{`封面态（待播放） ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
-        )}
+        {videoSourceUrl ? (
+          <video
+            ref={videoRef}
+            className="video-screen-media"
+            src={videoSourceUrl}
+            preload="metadata"
+            playsInline
+            onTimeUpdate={() => {
+              const currentTime = videoRef.current?.currentTime ?? 0
+              onVideoTimeUpdate(currentTime)
+            }}
+            onLoadedMetadata={() => {
+              const currentTime = videoRef.current?.currentTime ?? 0
+              onVideoTimeUpdate(currentTime)
+            }}
+            onEnded={() => {
+              onVideoTimeUpdate(0)
+              onNextVideo()
+            }}
+          />
+        ) : null}
+
+        <div className="video-screen-hud">
+          {videoPlaying ? (
+            <span>{`真实视频 ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
+          ) : (
+            <span>{`封面态（待播放） ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
+          )}
+        </div>
+
+        {!videoSourceUrl ? (
+          <div className="video-screen-empty">
+            <span>无可用视频源</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="video-progress-line">

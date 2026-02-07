@@ -3,6 +3,7 @@ import {
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
+  resolveMediaResourceResponseSchema,
   type LibrarySnapshotDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
@@ -10,6 +11,8 @@ import {
   type ReadImagePageResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
+  type ResolveMediaResourceRequestDto,
+  type ResolveMediaResourceResponseDto,
 } from '../../../contracts/backend'
 import type { ReadonlyMediaRepository, RepositoryRequestOptions } from './types'
 
@@ -131,5 +134,18 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.readImageMetadata(request), options)
     return readImageMetadataResponseSchema.parse(response)
+  }
+
+  async resolveMediaResource(
+    request: ResolveMediaResourceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ResolveMediaResourceResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.resolveMediaResource(request), options)
+    return resolveMediaResourceResponseSchema.parse(response)
   }
 }

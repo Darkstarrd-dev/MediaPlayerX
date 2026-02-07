@@ -8,6 +8,8 @@ import {
   readImagePageResponseSchema,
   readImageSidebarTreeRequestSchema,
   readImageSidebarTreeResponseSchema,
+  resolveMediaResourceRequestSchema,
+  resolveMediaResourceResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS } from './channels'
 
@@ -30,6 +32,11 @@ const backendApi = {
     const parsed = readImageMetadataRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readImageMetadata, parsed)
     return readImageMetadataResponseSchema.parse(response)
+  },
+  resolveMediaResource: async (request: unknown) => {
+    const parsed = resolveMediaResourceRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.resolveMediaResource, parsed)
+    return resolveMediaResourceResponseSchema.parse(response)
   },
 }
 

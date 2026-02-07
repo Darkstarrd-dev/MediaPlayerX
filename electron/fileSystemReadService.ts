@@ -1,37 +1,82 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import { inflateRawSync } from 'node:zlib'
 
 import {
   librarySnapshotDtoSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
+  resolveMediaResourceResponseSchema,
   type FeatureFilterDto,
   type FocusedImageRefDto,
   type ImageItemDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
+  type MediaLocatorDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
+  type ResolveMediaResourceRequestDto,
+  type ResolveMediaResourceResponseDto,
   type SidebarNodeDto,
   type VideoItemDto,
 } from '../src/contracts/backend'
+import { MEDIA_PROTOCOL_SCHEME } from './channels'
 
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'])
 const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mkv', '.mov'])
 const ARCHIVE_EXTENSIONS = new Set(['.zip', '.rar', '.7z'])
 const COLOR_PALETTE = ['#dd6b66', '#d58b45', '#6da249', '#4aa6a1', '#4f86cf', '#8868d6']
 
+const ZIP_END_OF_CENTRAL_DIR_SIGNATURE = 0x06054b50
+const ZIP_CENTRAL_FILE_HEADER_SIGNATURE = 0x02014b50
+const ZIP_LOCAL_FILE_HEADER_SIGNATURE = 0x04034b50
+const ZIP_GENERAL_PURPOSE_FLAG_UTF8 = 0x0800
+const ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED = 0x0001
+const ZIP_COMPRESSION_STORE = 0
+const ZIP_COMPRESSION_DEFLATE = 8
+const ZIP_MAX_COMMENT_LENGTH = 0xffff
+
+const MEDIA_TOKEN_TTL_MS = 5 * 60 * 1000
+const ZIP_SCAN_TAIL_PADDING = 128
+
 interface FileRecord {
   absolutePath: string
   relativePath: string
   extension: string
   sizeBytes: number
+}
+
+interface ZipCentralEntry {
+  entryName: string
+  extension: string
+  compressedSize: number
+  uncompressedSize: number
+  compressionMethod: number
+  generalPurposeBitFlag: number
+  localHeaderOffset: number
+}
+
+interface MediaTokenRecord {
+  locator: MediaLocatorDto
+  mimeType: string
+  expiresAtMs: number
+}
+
+export interface MediaProtocolResponsePayload {
+  status: number
+  headers: Record<string, string>
+  body: Uint8Array
+}
+
+interface ByteRange {
+  start: number
+  end: number
 }
 
 function normalizePathKey(value: string): string {
@@ -130,6 +175,260 @@ function matchesFeatureFilter(
   }
 
   return true
+}
+
+function isPathInsideRoot(rootDir: string, absolutePath: string): boolean {
+  const relative = path.relative(rootDir, absolutePath)
+  if (relative.length === 0) {
+    return true
+  }
+  return !relative.startsWith('..') && !path.isAbsolute(relative)
+}
+
+function normalizeArchiveEntryName(value: string): string {
+  const normalized = value.replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '')
+  return normalized
+}
+
+function isSafeArchiveEntryName(value: string): boolean {
+  if (!value || value.includes('\u0000')) {
+    return false
+  }
+  if (value.startsWith('/') || value.startsWith('\\')) {
+    return false
+  }
+  if (/^[a-zA-Z]:/.test(value)) {
+    return false
+  }
+
+  const segments = value.split('/')
+  return segments.every((segment) => segment !== '..')
+}
+
+function detectMimeTypeByExtension(extension: string, mediaType: 'image' | 'video'): string {
+  const lowerExt = extension.toLowerCase()
+  if (mediaType === 'image') {
+    if (lowerExt === '.jpg' || lowerExt === '.jpeg') {
+      return 'image/jpeg'
+    }
+    if (lowerExt === '.png') {
+      return 'image/png'
+    }
+    if (lowerExt === '.webp') {
+      return 'image/webp'
+    }
+    if (lowerExt === '.gif') {
+      return 'image/gif'
+    }
+    if (lowerExt === '.bmp') {
+      return 'image/bmp'
+    }
+    return 'application/octet-stream'
+  }
+
+  if (lowerExt === '.mp4') {
+    return 'video/mp4'
+  }
+  if (lowerExt === '.webm') {
+    return 'video/webm'
+  }
+  if (lowerExt === '.mkv') {
+    return 'video/x-matroska'
+  }
+  if (lowerExt === '.mov') {
+    return 'video/quicktime'
+  }
+  return 'application/octet-stream'
+}
+
+function findSignatureBackward(buffer: Buffer, signature: number): number {
+  for (let index = buffer.length - 4; index >= 0; index -= 1) {
+    if (buffer.readUInt32LE(index) === signature) {
+      return index
+    }
+  }
+  return -1
+}
+
+function decodeZipEntryName(bytes: Buffer, utf8: boolean): string {
+  if (utf8) {
+    return bytes.toString('utf8')
+  }
+  return bytes.toString('latin1')
+}
+
+async function scanZipCentralEntries(archivePath: string): Promise<ZipCentralEntry[]> {
+  const handle = await fs.open(archivePath, 'r')
+
+  try {
+    const stat = await handle.stat()
+    if (stat.size < 22) {
+      return []
+    }
+
+    const tailSize = Math.min(stat.size, ZIP_MAX_COMMENT_LENGTH + 22 + ZIP_SCAN_TAIL_PADDING)
+    const tailOffset = stat.size - tailSize
+    const tailBuffer = Buffer.alloc(tailSize)
+    await handle.read(tailBuffer, 0, tailSize, tailOffset)
+
+    const endOfCentralDirIndex = findSignatureBackward(tailBuffer, ZIP_END_OF_CENTRAL_DIR_SIGNATURE)
+    if (endOfCentralDirIndex < 0) {
+      throw new Error(`zip 中央目录缺失: ${archivePath}`)
+    }
+
+    const centralDirectorySize = tailBuffer.readUInt32LE(endOfCentralDirIndex + 12)
+    const centralDirectoryOffset = tailBuffer.readUInt32LE(endOfCentralDirIndex + 16)
+
+    if (centralDirectorySize === 0xffffffff || centralDirectoryOffset === 0xffffffff) {
+      throw new Error(`zip64 归档暂不支持: ${archivePath}`)
+    }
+    if (centralDirectoryOffset + centralDirectorySize > stat.size) {
+      throw new Error(`zip 中央目录越界: ${archivePath}`)
+    }
+
+    const centralBuffer = Buffer.alloc(centralDirectorySize)
+    await handle.read(centralBuffer, 0, centralDirectorySize, centralDirectoryOffset)
+
+    const entries: ZipCentralEntry[] = []
+    let cursor = 0
+    while (cursor + 46 <= centralBuffer.length) {
+      const signature = centralBuffer.readUInt32LE(cursor)
+      if (signature !== ZIP_CENTRAL_FILE_HEADER_SIGNATURE) {
+        break
+      }
+
+      const generalPurposeBitFlag = centralBuffer.readUInt16LE(cursor + 8)
+      const compressionMethod = centralBuffer.readUInt16LE(cursor + 10)
+      const compressedSize = centralBuffer.readUInt32LE(cursor + 20)
+      const uncompressedSize = centralBuffer.readUInt32LE(cursor + 24)
+      const fileNameLength = centralBuffer.readUInt16LE(cursor + 28)
+      const extraLength = centralBuffer.readUInt16LE(cursor + 30)
+      const commentLength = centralBuffer.readUInt16LE(cursor + 32)
+      const localHeaderOffset = centralBuffer.readUInt32LE(cursor + 42)
+
+      const fileNameStart = cursor + 46
+      const fileNameEnd = fileNameStart + fileNameLength
+      if (fileNameEnd > centralBuffer.length) {
+        break
+      }
+
+      const fileNameBuffer = centralBuffer.subarray(fileNameStart, fileNameEnd)
+      const entryName = normalizeArchiveEntryName(
+        decodeZipEntryName(fileNameBuffer, (generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_UTF8) !== 0),
+      )
+
+      const nextCursor = fileNameEnd + extraLength + commentLength
+      if (nextCursor > centralBuffer.length) {
+        break
+      }
+      cursor = nextCursor
+
+      if (!entryName || entryName.endsWith('/')) {
+        continue
+      }
+
+      entries.push({
+        entryName,
+        extension: path.extname(entryName).toLowerCase(),
+        compressedSize,
+        uncompressedSize,
+        compressionMethod,
+        generalPurposeBitFlag,
+        localHeaderOffset,
+      })
+    }
+
+    return entries
+  } finally {
+    await handle.close()
+  }
+}
+
+async function readZipEntryContent(archivePath: string, entry: ZipCentralEntry): Promise<Buffer> {
+  const handle = await fs.open(archivePath, 'r')
+
+  try {
+    const localHeader = Buffer.alloc(30)
+    const { bytesRead: localHeaderBytesRead } = await handle.read(localHeader, 0, localHeader.length, entry.localHeaderOffset)
+    if (localHeaderBytesRead < localHeader.length) {
+      throw new Error(`zip 条目本地头部读取失败: ${archivePath} -> ${entry.entryName}`)
+    }
+
+    if (localHeader.readUInt32LE(0) !== ZIP_LOCAL_FILE_HEADER_SIGNATURE) {
+      throw new Error(`zip 条目本地头部签名异常: ${archivePath} -> ${entry.entryName}`)
+    }
+
+    const localFileNameLength = localHeader.readUInt16LE(26)
+    const localExtraLength = localHeader.readUInt16LE(28)
+    const dataOffset = entry.localHeaderOffset + 30 + localFileNameLength + localExtraLength
+
+    const compressedBuffer = Buffer.alloc(entry.compressedSize)
+    const { bytesRead } = await handle.read(compressedBuffer, 0, compressedBuffer.length, dataOffset)
+    if (bytesRead < compressedBuffer.length) {
+      throw new Error(`zip 条目压缩数据读取不完整: ${archivePath} -> ${entry.entryName}`)
+    }
+
+    if ((entry.generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED) !== 0) {
+      throw new Error(`zip 条目被加密，当前不支持: ${archivePath} -> ${entry.entryName}`)
+    }
+
+    if (entry.compressionMethod === ZIP_COMPRESSION_STORE) {
+      return compressedBuffer
+    }
+
+    if (entry.compressionMethod === ZIP_COMPRESSION_DEFLATE) {
+      return inflateRawSync(compressedBuffer)
+    }
+
+    throw new Error(`zip 条目压缩方式不支持(${entry.compressionMethod}): ${archivePath} -> ${entry.entryName}`)
+  } finally {
+    await handle.close()
+  }
+}
+
+function parseByteRange(rangeHeader: string | null, size: number): ByteRange | null {
+  if (!rangeHeader || !rangeHeader.startsWith('bytes=')) {
+    return null
+  }
+
+  const rawRange = rangeHeader.slice('bytes='.length).split(',')[0]?.trim()
+  if (!rawRange) {
+    return null
+  }
+
+  const [startRaw, endRaw] = rawRange.split('-')
+  if (!startRaw && !endRaw) {
+    return null
+  }
+
+  if (!startRaw) {
+    const suffixLength = Number(endRaw)
+    if (!Number.isFinite(suffixLength) || suffixLength <= 0) {
+      return null
+    }
+    const start = Math.max(0, size - suffixLength)
+    return {
+      start,
+      end: size - 1,
+    }
+  }
+
+  const start = Number(startRaw)
+  const end = endRaw ? Number(endRaw) : size - 1
+  if (!Number.isFinite(start) || !Number.isFinite(end)) {
+    return null
+  }
+  if (start < 0 || end < 0 || start > end) {
+    return null
+  }
+  if (start >= size) {
+    return null
+  }
+
+  return {
+    start,
+    end: Math.min(end, size - 1),
+  }
 }
 
 function buildImageSidebarTree(
@@ -231,12 +530,30 @@ export class FileSystemMediaReadService {
 
   private loadingPromise: Promise<LibrarySnapshotDto> | null = null
 
+  private archiveEntryIndexByPath = new Map<string, Set<string>>()
+
+  private zipEntryIndexByPath = new Map<string, Map<string, ZipCentralEntry>>()
+
+  private mediaTokenIndex = new Map<string, MediaTokenRecord>()
+
   constructor(rootDir: string) {
     this.rootDir = path.resolve(rootDir)
   }
 
   invalidateCache(): void {
     this.snapshotCache = null
+    this.archiveEntryIndexByPath.clear()
+    this.zipEntryIndexByPath.clear()
+    this.mediaTokenIndex.clear()
+  }
+
+  private cleanupExpiredTokens(): void {
+    const now = Date.now()
+    for (const [token, record] of this.mediaTokenIndex) {
+      if (record.expiresAtMs <= now) {
+        this.mediaTokenIndex.delete(token)
+      }
+    }
   }
 
   private async ensureSnapshotLoaded(): Promise<LibrarySnapshotDto> {
@@ -300,8 +617,16 @@ export class FileSystemMediaReadService {
     return files
   }
 
-  private createImageItem(record: FileRecord, sourceId: string, ordinal: number): ImageItemDto {
+  private createDirectoryImageItem(record: FileRecord, sourceId: string, ordinal: number): ImageItemDto {
     const cluster = ordinal % COLOR_PALETTE.length
+    const mediaLocator: MediaLocatorDto = {
+      kind: 'filesystem',
+      absolute_path: record.absolutePath,
+      extension: record.extension,
+      media_type: 'image',
+      mime_type: detectMimeTypeByExtension(record.extension, 'image'),
+    }
+
     return {
       id: makeStableId('img', `${sourceId}:${record.absolutePath}`),
       ordinal,
@@ -311,6 +636,37 @@ export class FileSystemMediaReadService {
       cluster,
       color: COLOR_PALETTE[cluster] ?? '#4f86cf',
       feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
+      media_locator: mediaLocator,
+    }
+  }
+
+  private createArchiveImageItem(
+    sourceId: string,
+    archivePath: string,
+    entry: ZipCentralEntry,
+    ordinal: number,
+  ): ImageItemDto {
+    const cluster = ordinal % COLOR_PALETTE.length
+    const mediaLocator: MediaLocatorDto = {
+      kind: 'archive-entry',
+      archive_path: archivePath,
+      archive_format: 'zip',
+      entry_name: entry.entryName,
+      extension: entry.extension,
+      media_type: 'image',
+      mime_type: detectMimeTypeByExtension(entry.extension, 'image'),
+    }
+
+    return {
+      id: makeStableId('img', `${sourceId}:${archivePath}::${entry.entryName}`),
+      ordinal,
+      width: 1920,
+      height: 1080,
+      size_kb: 0,
+      cluster,
+      color: COLOR_PALETTE[cluster] ?? '#4f86cf',
+      feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
+      media_locator: mediaLocator,
     }
   }
 
@@ -330,25 +686,16 @@ export class FileSystemMediaReadService {
       author: '未知',
       tags: [],
       mock_grade: null,
-      images: imageFiles.map((file, index) => this.createImageItem(file, sourceId, index + 1)),
+      images: imageFiles.map((file, index) => this.createDirectoryImageItem(file, sourceId, index + 1)),
     }
   }
 
-  private createArchiveSource(file: FileRecord): ImagePackageDto {
+  private createArchiveSource(file: FileRecord, imageEntries: ZipCentralEntry[]): ImagePackageDto {
     const sourceId = makeStableId('pkg', file.absolutePath)
     const fileName = path.basename(file.absolutePath)
     const displayName = path.basename(file.absolutePath, file.extension)
 
-    const image: ImageItemDto = {
-      id: `${sourceId}-img-1`,
-      ordinal: 1,
-      width: 1920,
-      height: 1080,
-      size_kb: toSafeSizeKb(file.sizeBytes),
-      cluster: 0,
-      color: COLOR_PALETTE[0],
-      feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
-    }
+    const sortedEntries = [...imageEntries].sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
 
     return {
       id: sourceId,
@@ -361,11 +708,19 @@ export class FileSystemMediaReadService {
       author: '未知',
       tags: [],
       mock_grade: null,
-      images: [image],
+      images: sortedEntries.map((entry, index) => this.createArchiveImageItem(sourceId, file.absolutePath, entry, index + 1)),
     }
   }
 
   private createVideoSource(file: FileRecord): VideoItemDto {
+    const mediaLocator: MediaLocatorDto = {
+      kind: 'filesystem',
+      absolute_path: file.absolutePath,
+      extension: file.extension,
+      media_type: 'video',
+      mime_type: detectMimeTypeByExtension(file.extension, 'video'),
+    }
+
     return {
       id: makeStableId('vid', file.absolutePath),
       file_name: path.basename(file.absolutePath),
@@ -375,6 +730,7 @@ export class FileSystemMediaReadService {
       width: 1920,
       height: 1080,
       size_mb: toSafeSizeMb(file.sizeBytes),
+      media_locator: mediaLocator,
     }
   }
 
@@ -404,6 +760,9 @@ export class FileSystemMediaReadService {
       }
     }
 
+    this.archiveEntryIndexByPath.clear()
+    this.zipEntryIndexByPath.clear()
+
     const imageDirectories = Array.from(directoryImageMap.entries())
       .map(([directoryPath, imageFiles]) => {
         imageFiles.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
@@ -411,9 +770,34 @@ export class FileSystemMediaReadService {
       })
       .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
-    const imagePackages = archives
-      .map((file) => this.createArchiveSource(file))
-      .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
+    const imagePackages: ImagePackageDto[] = []
+    for (const archive of archives) {
+      if (archive.extension !== '.zip') {
+        imagePackages.push(this.createArchiveSource(archive, []))
+        continue
+      }
+
+      let zipEntries: ZipCentralEntry[] = []
+      try {
+        zipEntries = await scanZipCentralEntries(archive.absolutePath)
+      } catch {
+        zipEntries = []
+      }
+
+      const imageEntries = zipEntries
+        .filter((entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName))
+        .sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
+
+      this.archiveEntryIndexByPath.set(archive.absolutePath, new Set(imageEntries.map((entry) => entry.entryName)))
+      this.zipEntryIndexByPath.set(
+        archive.absolutePath,
+        new Map(imageEntries.map((entry) => [entry.entryName, entry])),
+      )
+
+      imagePackages.push(this.createArchiveSource(archive, imageEntries))
+    }
+
+    imagePackages.sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
     const videoItems = videos
       .map((file) => this.createVideoSource(file))
@@ -450,6 +834,148 @@ export class FileSystemMediaReadService {
     }
   }
 
+  private async assertLocatorAllowed(locator: MediaLocatorDto): Promise<MediaLocatorDto> {
+    if (locator.kind === 'filesystem') {
+      const absolutePath = path.resolve(locator.absolute_path)
+      if (!isPathInsideRoot(this.rootDir, absolutePath)) {
+        throw new Error(`媒体访问被拒绝（越界）: ${absolutePath}`)
+      }
+
+      const extension = path.extname(absolutePath).toLowerCase()
+      if (!extension || extension !== locator.extension.toLowerCase()) {
+        throw new Error(`媒体访问被拒绝（扩展名不一致）: ${absolutePath}`)
+      }
+
+      const extensionAllowed =
+        locator.media_type === 'image' ? IMAGE_EXTENSIONS.has(extension) : VIDEO_EXTENSIONS.has(extension)
+      if (!extensionAllowed) {
+        throw new Error(`媒体访问被拒绝（类型不允许）: ${absolutePath}`)
+      }
+
+      const stat = await fs.stat(absolutePath).catch(() => null)
+      if (!stat || !stat.isFile()) {
+        throw new Error(`媒体访问失败（文件不存在）: ${absolutePath}`)
+      }
+
+      return {
+        ...locator,
+        absolute_path: absolutePath,
+        extension,
+      }
+    }
+
+    const archivePath = path.resolve(locator.archive_path)
+    if (!isPathInsideRoot(this.rootDir, archivePath)) {
+      throw new Error(`压缩包媒体访问被拒绝（越界）: ${archivePath}`)
+    }
+    if (locator.archive_format !== 'zip') {
+      throw new Error(`压缩包媒体访问被拒绝（暂仅支持 zip）: ${archivePath}`)
+    }
+    if (path.extname(archivePath).toLowerCase() !== '.zip') {
+      throw new Error(`压缩包媒体访问被拒绝（扩展名异常）: ${archivePath}`)
+    }
+
+    const normalizedEntryName = normalizeArchiveEntryName(locator.entry_name)
+    if (!isSafeArchiveEntryName(normalizedEntryName)) {
+      throw new Error(`压缩包媒体访问被拒绝（entry 非法）: ${archivePath}`)
+    }
+
+    const allowedEntries = this.archiveEntryIndexByPath.get(archivePath)
+    if (!allowedEntries || !allowedEntries.has(normalizedEntryName)) {
+      throw new Error(`压缩包媒体访问被拒绝（entry 不在白名单）: ${archivePath}::${normalizedEntryName}`)
+    }
+
+    return {
+      ...locator,
+      archive_path: archivePath,
+      entry_name: normalizedEntryName,
+      extension: path.extname(normalizedEntryName).toLowerCase(),
+    }
+  }
+
+  private async readFilesystemMedia(
+    locator: Extract<MediaLocatorDto, { kind: 'filesystem' }>,
+    mimeType: string,
+    rangeHeader: string | null,
+  ): Promise<MediaProtocolResponsePayload> {
+    const filePath = locator.absolute_path
+    const stat = await fs.stat(filePath)
+    const size = stat.size
+
+    const requestedRange = parseByteRange(rangeHeader, size)
+    if (rangeHeader && !requestedRange) {
+      return {
+        status: 416,
+        headers: {
+          'content-type': mimeType,
+          'content-range': `bytes */${size}`,
+          'accept-ranges': 'bytes',
+          'cache-control': 'no-store',
+        },
+        body: new Uint8Array(0),
+      }
+    }
+
+    if (!requestedRange) {
+      const fileBuffer = await fs.readFile(filePath)
+      return {
+        status: 200,
+        headers: {
+          'content-type': mimeType,
+          'content-length': String(fileBuffer.length),
+          'accept-ranges': 'bytes',
+          'cache-control': 'no-store',
+        },
+        body: fileBuffer,
+      }
+    }
+
+    const { start, end } = requestedRange
+    const length = end - start + 1
+    const handle = await fs.open(filePath, 'r')
+    try {
+      const buffer = Buffer.alloc(length)
+      const { bytesRead } = await handle.read(buffer, 0, buffer.length, start)
+      const payload = bytesRead < buffer.length ? buffer.subarray(0, bytesRead) : buffer
+      return {
+        status: 206,
+        headers: {
+          'content-type': mimeType,
+          'content-length': String(payload.length),
+          'content-range': `bytes ${start}-${start + payload.length - 1}/${size}`,
+          'accept-ranges': 'bytes',
+          'cache-control': 'no-store',
+        },
+        body: payload,
+      }
+    } finally {
+      await handle.close()
+    }
+  }
+
+  private async readArchiveEntryMedia(
+    locator: Extract<MediaLocatorDto, { kind: 'archive-entry' }>,
+    mimeType: string,
+  ): Promise<MediaProtocolResponsePayload> {
+    const archivePath = locator.archive_path
+    const entryMap = this.zipEntryIndexByPath.get(archivePath)
+    const entry = entryMap?.get(locator.entry_name)
+    if (!entry) {
+      throw new Error(`压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`)
+    }
+
+    const buffer = await readZipEntryContent(archivePath, entry)
+    return {
+      status: 200,
+      headers: {
+        'content-type': mimeType,
+        'content-length': String(buffer.length),
+        'cache-control': 'no-store',
+      },
+      body: buffer,
+    }
+  }
+
   async readLibrarySnapshot(): Promise<LibrarySnapshotDto> {
     return this.ensureSnapshotLoaded()
   }
@@ -475,8 +1001,9 @@ export class FileSystemMediaReadService {
     })
 
     const allSources = [...filtered.imagePackages, ...filtered.imageDirectories]
+    const selectedById = request.source_id ? allSources.find((source) => source.id === request.source_id) : null
     const selectedSource =
-      (request.source_id ? allSources.find((source) => source.id === request.source_id) : null) ?? allSources[0] ?? null
+      selectedById ?? allSources.find((source) => source.images.length > 0) ?? allSources[0] ?? null
 
     if (!selectedSource) {
       return readImagePageResponseSchema.parse({
@@ -528,5 +1055,49 @@ export class FileSystemMediaReadService {
           }
         : null,
     )
+  }
+
+  async resolveMediaResource(
+    request: ResolveMediaResourceRequestDto,
+  ): Promise<ResolveMediaResourceResponseDto> {
+    await this.ensureSnapshotLoaded()
+    this.cleanupExpiredTokens()
+
+    const locator = await this.assertLocatorAllowed(request.locator)
+    const mimeType = locator.mime_type || detectMimeTypeByExtension(locator.extension, locator.media_type)
+    const token = randomUUID()
+    const expiresAtMs = Date.now() + MEDIA_TOKEN_TTL_MS
+
+    this.mediaTokenIndex.set(token, {
+      locator,
+      mimeType,
+      expiresAtMs,
+    })
+
+    return resolveMediaResourceResponseSchema.parse({
+      resource_url: `${MEDIA_PROTOCOL_SCHEME}://resource/${encodeURIComponent(token)}`,
+      mime_type: mimeType,
+      expires_at_ms: expiresAtMs,
+    })
+  }
+
+  async readMediaResourceByToken(
+    token: string,
+    rangeHeader: string | null,
+  ): Promise<MediaProtocolResponsePayload> {
+    this.cleanupExpiredTokens()
+
+    const record = this.mediaTokenIndex.get(token)
+    if (!record || record.expiresAtMs <= Date.now()) {
+      this.mediaTokenIndex.delete(token)
+      throw new Error('媒体资源令牌不存在或已过期')
+    }
+
+    const locator = record.locator
+    if (locator.kind === 'filesystem') {
+      return this.readFilesystemMedia(locator, record.mimeType, rangeHeader)
+    }
+
+    return this.readArchiveEntryMedia(locator, record.mimeType)
   }
 }

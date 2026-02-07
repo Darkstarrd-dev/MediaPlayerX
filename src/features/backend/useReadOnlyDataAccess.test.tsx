@@ -9,6 +9,8 @@ import type {
   ReadImagePageResponseDto,
   ReadImageSidebarTreeRequestDto,
   ReadImageSidebarTreeResponseDto,
+  ResolveMediaResourceRequestDto,
+  ResolveMediaResourceResponseDto,
 } from '../../contracts/backend'
 import { useReadOnlyDataAccess } from './useReadOnlyDataAccess'
 import type { ReadonlyMediaRepository, RepositoryRequestOptions } from './repository'
@@ -19,7 +21,7 @@ function createAbortError(): Error {
   return error
 }
 
-function createPackageDto(id: string, displayName: string) {
+function createPackageDto(id: string, displayName: string): LibrarySnapshotDto['image_packages'][number] {
   return {
     id,
     package_name: `${displayName}.zip`,
@@ -41,6 +43,13 @@ function createPackageDto(id: string, displayName: string) {
         cluster: 0,
         color: '#dd6b66',
         feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
+        media_locator: {
+          kind: 'filesystem' as const,
+          absolute_path: `Z:/bench/${displayName}.jpg`,
+          extension: '.jpg',
+          media_type: 'image' as const,
+          mime_type: 'image/jpeg',
+        },
       },
     ],
   }
@@ -151,6 +160,19 @@ class CancellationAwareRepository implements ReadonlyMediaRepository {
       grade: null,
     }
   }
+
+  async resolveMediaResource(
+    request: ResolveMediaResourceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ResolveMediaResourceResponseDto> {
+    void request
+    void options
+    return {
+      resource_url: 'about:blank#media',
+      mime_type: 'image/jpeg',
+      expires_at_ms: Date.now() + 1_000,
+    }
+  }
 }
 
 class RetrySnapshotRepository implements ReadonlyMediaRepository {
@@ -199,6 +221,19 @@ class RetrySnapshotRepository implements ReadonlyMediaRepository {
       package: source,
       image: source.images[0],
       grade: null,
+    }
+  }
+
+  async resolveMediaResource(
+    request: ResolveMediaResourceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ResolveMediaResourceResponseDto> {
+    void request
+    void options
+    return {
+      resource_url: 'about:blank#media',
+      mime_type: 'image/jpeg',
+      expires_at_ms: Date.now() + 1_000,
     }
   }
 }

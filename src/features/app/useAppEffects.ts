@@ -44,9 +44,6 @@ interface UseAppEffectsParams {
   autoPlayEnabled: boolean
   autoPlayInterval: number
   moveImage: (delta: number) => void
-  videoPlaying: boolean
-  focusedVideo: VideoItem | null
-  videoRate: number
   vectorMode: boolean
   searchPanelCollapsed: boolean
   searchPanelMode: 'vector' | 'feature'
@@ -65,8 +62,6 @@ interface UseAppEffectsParams {
   setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
   setFullscreenSwapped: Dispatch<SetStateAction<boolean>>
   setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>
-  setVideoTime: Dispatch<SetStateAction<number>>
-  goPlaylist: (delta: number) => void
   updateSettings: (patch: Partial<AppSettings>) => void
 }
 
@@ -110,9 +105,6 @@ export function useAppEffects({
   autoPlayEnabled,
   autoPlayInterval,
   moveImage,
-  videoPlaying,
-  focusedVideo,
-  videoRate,
   vectorMode,
   searchPanelCollapsed,
   searchPanelMode,
@@ -131,8 +123,6 @@ export function useAppEffects({
   setFullscreenVideoFocus,
   setFullscreenSwapped,
   setShowFullscreenFooter,
-  setVideoTime,
-  goPlaylist,
   updateSettings,
 }: UseAppEffectsParams) {
   useEffect(() => {
@@ -385,25 +375,6 @@ export function useAppEffects({
 
     return () => window.clearInterval(timer)
   }, [autoPlayEnabled, autoPlayInterval, mode, moveImage])
-
-  useEffect(() => {
-    if (!videoPlaying || !focusedVideo) {
-      return
-    }
-
-    const timer = window.setInterval(() => {
-      setVideoTime((value) => {
-        const next = value + 0.2 * videoRate
-        if (next >= focusedVideo.durationSec) {
-          goPlaylist(1)
-          return 0
-        }
-        return next
-      })
-    }, 200)
-
-    return () => window.clearInterval(timer)
-  }, [focusedVideo, goPlaylist, setVideoTime, videoPlaying, videoRate])
 
   useEffect(() => {
     if (mode !== 'image' && vectorMode) {

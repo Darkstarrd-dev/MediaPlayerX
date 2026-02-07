@@ -41,6 +41,11 @@
 - Main/Sidebar 的特征筛选口径已收敛到 Repository SSOT，前端不再维护同构筛选副本。
 - 已补充 Repository/IPC 集成测试：覆盖超时、取消、重试、快照回退，并清理 `App.test.tsx` 的 act 告警输出。
 - 已新增真实文件性能门禁并完成首份基准报告：`docs/perf/2026-02-07-scan-benchmark.md`。
+- 后端接入 Phase-2（真实媒体可用化）已落地：Main/Metadata/Fullscreen 由占位渲染切换为真实 `<img>/<video>` 渲染链路。
+- 新增媒体定位模型 `MediaLocator`（文件系统/压缩包统一表达），并在 DTO -> ViewModel 映射层收敛为 SSOT。
+- 新增 Main 白名单媒体访问协议：Renderer 仅可通过 `Repository -> preload bridge -> ipc` 获取受控 `resource_url`，禁止直连 Node/FS。
+- `FileSystemMediaReadService` 已支持 zip 压缩包轻扫（仅 entry name），扫描阶段不做全量解压、不依赖 entry size。
+- 已补充 Phase-2 集成测试：真实渲染链路、协议权限边界、压缩包轻扫与异常重试；`lint/test/build` 基线通过。
 - 扫描/重处理性能门禁改为双规并行：`Z:\bench`（实际负载回放） + `perf-data/<日期>-scan-dataset/input`（脚本生成全覆盖）。
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。

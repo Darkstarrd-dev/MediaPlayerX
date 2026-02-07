@@ -13,6 +13,25 @@ export const featureFilterDtoSchema = z.object({
   grade: z.number().int().min(0).max(5).nullable(),
 })
 
+export const mediaLocatorDtoSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('filesystem'),
+    absolute_path: z.string().min(1),
+    extension: z.string().min(1),
+    media_type: z.enum(['image', 'video']),
+    mime_type: z.string().min(1),
+  }),
+  z.object({
+    kind: z.literal('archive-entry'),
+    archive_path: z.string().min(1),
+    archive_format: z.enum(['zip', 'rar', '7z']),
+    entry_name: z.string().min(1),
+    extension: z.string().min(1),
+    media_type: z.enum(['image', 'video']),
+    mime_type: z.string().min(1),
+  }),
+])
+
 export const imageItemDtoSchema = z.object({
   id: z.string().min(1),
   ordinal: z.number().int().positive(),
@@ -22,6 +41,7 @@ export const imageItemDtoSchema = z.object({
   cluster: nonNegativeIntSchema,
   color: z.string().min(1),
   feature_vector: z.array(z.number()),
+  media_locator: mediaLocatorDtoSchema,
 })
 
 export const imagePackageDtoSchema = z.object({
@@ -47,6 +67,7 @@ export const videoItemDtoSchema = z.object({
   width: z.number().int().positive(),
   height: z.number().int().positive(),
   size_mb: nonNegativeIntSchema,
+  media_locator: mediaLocatorDtoSchema,
 })
 
 export const focusedImageRefDtoSchema = z.object({
@@ -127,7 +148,18 @@ export const readImageMetadataResponseSchema = z
   })
   .nullable()
 
+export const resolveMediaResourceRequestSchema = z.object({
+  locator: mediaLocatorDtoSchema,
+})
+
+export const resolveMediaResourceResponseSchema = z.object({
+  resource_url: z.string().min(1),
+  mime_type: z.string().min(1),
+  expires_at_ms: z.number().int().positive(),
+})
+
 export type FeatureFilterDto = z.infer<typeof featureFilterDtoSchema>
+export type MediaLocatorDto = z.infer<typeof mediaLocatorDtoSchema>
 export type ImageItemDto = z.infer<typeof imageItemDtoSchema>
 export type ImagePackageDto = z.infer<typeof imagePackageDtoSchema>
 export type VideoItemDto = z.infer<typeof videoItemDtoSchema>
@@ -140,3 +172,5 @@ export type ReadImagePageRequestDto = z.infer<typeof readImagePageRequestSchema>
 export type ReadImagePageResponseDto = z.infer<typeof readImagePageResponseSchema>
 export type ReadImageMetadataRequestDto = z.infer<typeof readImageMetadataRequestSchema>
 export type ReadImageMetadataResponseDto = z.infer<typeof readImageMetadataResponseSchema>
+export type ResolveMediaResourceRequestDto = z.infer<typeof resolveMediaResourceRequestSchema>
+export type ResolveMediaResourceResponseDto = z.infer<typeof resolveMediaResourceResponseSchema>

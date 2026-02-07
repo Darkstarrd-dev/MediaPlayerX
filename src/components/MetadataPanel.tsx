@@ -7,6 +7,7 @@ interface MetadataPanelProps {
   metadataRatio: number
   hasImageFocus: boolean
   focusedImage: ImageItem | null
+  focusedImageSrc: string | null
   focusedImagePackage: ImagePackage | null
   currentGrade: number | null
   focusedVideo: VideoItem | null
@@ -33,6 +34,7 @@ function MetadataPanel({
   metadataRatio,
   hasImageFocus,
   focusedImage,
+  focusedImageSrc,
   focusedImagePackage,
   currentGrade,
   focusedVideo,
@@ -87,16 +89,25 @@ function MetadataPanel({
         <div className={imagePreviewClassName}>
           {hasImageFocus && focusedImage ? (
             <div className="metadata-image-canvas">
-              <div
-                className="metadata-image-media"
-                style={{
-                  background: focusedImage.color,
-                  aspectRatio: `${focusedImage.width} / ${focusedImage.height}`,
-                  ...imagePreviewSizing,
-                }}
-              >
-                <span>{`${focusedImage.width} x ${focusedImage.height}`}</span>
-              </div>
+              {focusedImageSrc ? (
+                <img
+                  className="metadata-image-real"
+                  src={focusedImageSrc}
+                  alt={`${focusedImagePackage?.displayName ?? '图片'} #${focusedImage.ordinal}`}
+                  draggable={false}
+                />
+              ) : (
+                <div
+                  className="metadata-image-media"
+                  style={{
+                    background: focusedImage.color,
+                    aspectRatio: `${focusedImage.width} / ${focusedImage.height}`,
+                    ...imagePreviewSizing,
+                  }}
+                >
+                  <span>{`${focusedImage.width} x ${focusedImage.height}`}</span>
+                </div>
+              )}
             </div>
           ) : (
             <>

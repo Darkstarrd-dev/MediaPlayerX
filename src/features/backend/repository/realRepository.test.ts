@@ -30,6 +30,13 @@ function createLibrarySnapshotDto(): LibrarySnapshotDto {
             cluster: 0,
             color: '#dd6b66',
             feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
+            media_locator: {
+              kind: 'filesystem',
+              absolute_path: 'Z:/bench/archive_001.zip',
+              extension: '.jpg',
+              media_type: 'image',
+              mime_type: 'image/jpeg',
+            },
           },
         ],
       },
@@ -75,6 +82,11 @@ describe('RealMediaRepository', () => {
         image: createLibrarySnapshotDto().image_packages[0].images[0],
         grade: null,
       }),
+      resolveMediaResource: async () => ({
+        resource_url: 'about:blank#media',
+        mime_type: 'image/jpeg',
+        expires_at_ms: Date.now() + 1_000,
+      }),
     }
 
     const repository = new RealMediaRepository()
@@ -103,6 +115,11 @@ describe('RealMediaRepository', () => {
         image: createLibrarySnapshotDto().image_packages[0].images[0],
         grade: null,
       }),
+      resolveMediaResource: async () => ({
+        resource_url: 'about:blank#media',
+        mime_type: 'image/jpeg',
+        expires_at_ms: Date.now() + 1_000,
+      }),
     }
 
     const repository = new RealMediaRepository()
@@ -117,5 +134,43 @@ describe('RealMediaRepository', () => {
     await expect(task).rejects.toMatchObject({
       name: 'AbortError',
     })
+  })
+
+  it('可通过 IPC 获取可渲染媒体 URL', async () => {
+    window.mediaPlayerBackend = {
+      readLibrarySnapshot: async () => createLibrarySnapshotDto(),
+      readImageSidebarTree: async () => createSidebarResponseDto(),
+      readImagePage: async () => ({
+        source_id: 'pkg-1',
+        total_items: 1,
+        page_index: 0,
+        page_size: 1,
+        refs: [{ package_id: 'pkg-1', image_index: 0 }],
+      }),
+      readImageMetadata: async () => ({
+        package: createLibrarySnapshotDto().image_packages[0],
+        image: createLibrarySnapshotDto().image_packages[0].images[0],
+        grade: null,
+      }),
+      resolveMediaResource: async () => ({
+        resource_url: 'mediaplayerx-media://resource/token-001',
+        mime_type: 'image/jpeg',
+        expires_at_ms: Date.now() + 2_000,
+      }),
+    }
+
+    const repository = new RealMediaRepository()
+    const response = await repository.resolveMediaResource({
+      locator: {
+        kind: 'filesystem',
+        absolute_path: 'Z:/bench/archive_001.zip',
+        extension: '.jpg',
+        media_type: 'image',
+        mime_type: 'image/jpeg',
+      },
+    })
+
+    expect(response.resource_url).toContain('mediaplayerx-media://')
+    expect(response.mime_type).toBe('image/jpeg')
   })
 })

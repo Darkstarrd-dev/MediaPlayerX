@@ -1,5 +1,6 @@
 import type { RefObject } from 'react'
 
+import { mediaLocatorFileName } from '../features/backend'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../types'
 
 interface ImageMainSectionProps {
@@ -19,6 +20,7 @@ interface ImageMainSectionProps {
   normalizedPageIndex: number
   imageTotalPages: number
   packageById: Map<string, ImagePackage>
+  imageUrlById: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
   onToggleShowNamesOnly: () => void
   onEnterFullscreen: () => void
@@ -44,6 +46,7 @@ function ImageMainSection({
   normalizedPageIndex,
   imageTotalPages,
   packageById,
+  imageUrlById,
   gridRef,
   onToggleShowNamesOnly,
   onEnterFullscreen,
@@ -84,7 +87,7 @@ function ImageMainSection({
                 return null
               }
 
-              const fileName = `img_${image.ordinal.toString().padStart(4, '0')}.jpg`
+              const fileName = mediaLocatorFileName(image.mediaLocator)
               const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
 
               return (
@@ -135,6 +138,7 @@ function ImageMainSection({
 
               const absoluteIndex = pageStart + pageIndex
               const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
+              const imageSrc = imageUrlById[image.id] ?? ''
 
               return (
                 <button
@@ -146,8 +150,20 @@ function ImageMainSection({
                   onDoubleClick={onEnterFullscreen}
                 >
                   <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
-                    <div className="thumb-media" style={{ ...mediaSizing, background: image.color }}>
-                      <span>{`${image.width} x ${image.height}`}</span>
+                    <div className="thumb-media" style={mediaSizing}>
+                      {imageSrc ? (
+                        <img
+                          className="thumb-media-image"
+                          src={imageSrc}
+                          alt={`${pkg.displayName} #${image.ordinal}`}
+                          loading="lazy"
+                          draggable={false}
+                        />
+                      ) : (
+                        <div className="thumb-media-fallback" style={{ background: image.color }}>
+                          <span>{`${image.width} x ${image.height}`}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="thumb-caption">

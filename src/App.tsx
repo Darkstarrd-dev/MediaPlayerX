@@ -41,7 +41,9 @@ import { useSidebarNavigation } from './features/sidebar/useSidebarNavigation'
 import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
 import {
   createMediaRepository,
+  type MediaResolveTarget,
   mapLibrarySnapshotDto,
+  useResolvedMediaUrls,
   useReadOnlyDataAccess,
 } from './features/backend'
 import { useUiStore } from './store/useUiStore'
@@ -724,9 +726,89 @@ function App() {
       ? (backendMetadataSnapshot?.package ?? metadataImagePackage)
       : metadataImagePackage
   const currentGradeEffective = imageFocusActive ? (backendMetadataSnapshot?.grade ?? currentGrade) : currentGrade
-
   const focusedVideo = videoById.get(selectedVideoId) ?? videosForSidebar[0] ?? null
   const focusedVideoCoverColor = focusedVideo ? (videoCoverById[focusedVideo.id] ?? '#3f4b58') : '#3f4b58'
+
+  const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
+    const targets: MediaResolveTarget[] = []
+    const seenTargetIds = new Set<string>()
+
+    const pushImageTarget = (ref: FocusedImageRef) => {
+      const image = packageById.get(ref.packageId)?.images[ref.imageIndex]
+      if (!image) {
+        return
+      }
+
+      const targetId = `image:${image.id}`
+      if (seenTargetIds.has(targetId)) {
+        return
+      }
+      seenTargetIds.add(targetId)
+      targets.push({
+        targetId,
+        locator: image.mediaLocator,
+      })
+    }
+
+    for (const ref of refsInPageEffective) {
+      pushImageTarget(ref)
+    }
+
+    if (metadataImageEffective && metadataImagePackageEffective) {
+      const targetId = `image:${metadataImageEffective.id}`
+      if (!seenTargetIds.has(targetId)) {
+        seenTargetIds.add(targetId)
+        targets.push({
+          targetId,
+          locator: metadataImageEffective.mediaLocator,
+        })
+      }
+    }
+
+    if (focusedImage && focusedImagePackage) {
+      const targetId = `image:${focusedImage.id}`
+      if (!seenTargetIds.has(targetId)) {
+        seenTargetIds.add(targetId)
+        targets.push({
+          targetId,
+          locator: focusedImage.mediaLocator,
+        })
+      }
+    }
+
+    if (focusedVideo) {
+      const targetId = `video:${focusedVideo.id}`
+      if (!seenTargetIds.has(targetId)) {
+        seenTargetIds.add(targetId)
+        targets.push({
+          targetId,
+          locator: focusedVideo.mediaLocator,
+        })
+      }
+    }
+
+    return targets
+  }, [focusedImage, focusedImagePackage, focusedVideo, metadataImageEffective, metadataImagePackageEffective, packageById, refsInPageEffective])
+
+  const resolvedMedia = useResolvedMediaUrls({
+    repository: mediaRepository,
+    targets: mediaResolveTargets,
+  })
+
+  const imageUrlById = useMemo<Record<string, string>>(() => {
+    const next: Record<string, string> = {}
+    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
+      if (!targetId.startsWith('image:')) {
+        continue
+      }
+      next[targetId.slice('image:'.length)] = url
+    }
+    return next
+  }, [resolvedMedia.urlByTargetId])
+
+  const metadataImageSrc = metadataImageEffective ? (imageUrlById[metadataImageEffective.id] ?? null) : null
+  const fullscreenImageSrc = focusedImage ? (imageUrlById[focusedImage.id] ?? null) : null
+  const focusedVideoSrc = focusedVideo ? (resolvedMedia.urlByTargetId[`video:${focusedVideo.id}`] ?? null) : null
 
   const shortcutConflicts = useMemo(() => findShortcutConflicts(shortcuts), [shortcuts])
   const vectorControlConflicts = useMemo(() => findVectorControlConflicts(vectorControls), [vectorControls])
@@ -984,9 +1066,6 @@ function App() {
     autoPlayEnabled,
     autoPlayInterval,
     moveImage,
-    videoPlaying,
-    focusedVideo,
-    videoRate,
     vectorMode,
     searchPanelCollapsed,
     searchPanelMode,
@@ -1005,8 +1084,6 @@ function App() {
     setFullscreenVideoFocus,
     setFullscreenSwapped,
     setShowFullscreenFooter,
-    setVideoTime,
-    goPlaylist,
     updateSettings,
   })
 
@@ -1133,6 +1210,7 @@ function App() {
     normalizedPageIndex: normalizedPageIndexEffective,
     imageTotalPages: imageTotalPagesEffective,
     packageById,
+    imageUrlById,
     gridRef,
     onToggleShowNamesOnly: () => updateSettings({ showNamesOnly: !showNamesOnly }),
     onEnterFullscreen: () => setFullscreenActive(true),
@@ -1154,6 +1232,8 @@ function App() {
     videoRate,
     videoVolume,
     videoMuted,
+    videoSourceUrl: focusedVideoSrc,
+    active: !fullscreenActive,
     coverColor: focusedVideoCoverColor,
     onTogglePlay: () => {
       if (!focusedVideo) {
@@ -1166,6 +1246,9 @@ function App() {
     onSeekVideo: (time: number) => {
       const duration = focusedVideo?.durationSec ?? 0
       setVideoTime(clamp(time, 0, duration))
+    },
+    onVideoTimeUpdate: (time: number) => {
+      setVideoTime(time)
     },
     onToggleMute: () => setVideoMuted((value) => !value),
     onChangeVolume: (volume: number) => {
@@ -1200,6 +1283,7 @@ function App() {
     metadataRatio,
     hasImageFocus: imageFocusActive,
     focusedImage: metadataImageEffective,
+    focusedImageSrc: metadataImageSrc,
     focusedImagePackage: metadataImagePackageEffective,
     currentGrade: currentGradeEffective,
     focusedVideo,
@@ -1243,7 +1327,11 @@ function App() {
     <>
       {mode === 'image' && focusedImage && focusedImagePackage ? (
         <>
-          <span>{`${focusedImagePackage.absolutePath} #${focusedImage.ordinal}`}</span>
+          <span>
+            {focusedImage.mediaLocator.kind === 'filesystem'
+              ? focusedImage.mediaLocator.absolutePath
+              : `${focusedImage.mediaLocator.archivePath} #${focusedImage.ordinal}`}
+          </span>
           <span>{`${focusedImage.sizeKb}KB`}</span>
           <span>{`${focusedImage.width}x${focusedImage.height}`}</span>
         </>
@@ -1404,7 +1492,9 @@ function App() {
         fullscreenVideoFocus={fullscreenVideoFocus}
         fullscreenSplit={fullscreenSplit}
         focusedImage={focusedImage}
+        focusedImageSrc={fullscreenImageSrc}
         focusedVideo={focusedVideo}
+        focusedVideoSrc={focusedVideoSrc}
         focusedVideoCoverColor={focusedVideoCoverColor}
         videoTime={videoTime}
         videoPlaying={videoPlaying}
@@ -1435,6 +1525,9 @@ function App() {
         onSeekVideo={(time) => {
           const duration = focusedVideo?.durationSec ?? 0
           setVideoTime(clamp(time, 0, duration))
+        }}
+        onVideoTimeUpdate={(time) => {
+          setVideoTime(time)
         }}
         onToggleVideoMute={() => setVideoMuted((value) => !value)}
         onChangeVideoVolume={(volume) => {

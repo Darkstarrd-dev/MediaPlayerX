@@ -18,6 +18,43 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
   })
 
+  it('真实渲染链路可输出可渲染媒体 URL（Main/Metadata/Fullscreen）', async () => {
+    render(<App />)
+
+    await waitFor(() => {
+      const firstThumbImage = document.querySelector('.thumb-media-image') as HTMLImageElement | null
+      expect(firstThumbImage).not.toBeNull()
+      expect(firstThumbImage?.getAttribute('src')).toContain('data:image/svg+xml')
+    })
+
+    const firstThumbButton = screen.getByText('幻旅系列 001 #1').closest('button')
+    expect(firstThumbButton).not.toBeNull()
+    fireEvent.click(firstThumbButton as HTMLButtonElement)
+
+    await waitFor(() => {
+      const metadataImage = document.querySelector('.metadata-image-real') as HTMLImageElement | null
+      expect(metadataImage).not.toBeNull()
+      expect(metadataImage?.getAttribute('src')).toContain('data:image/svg+xml')
+    })
+
+    fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
+
+    await waitFor(() => {
+      const fullscreenImage = document.querySelector('.fullscreen-media-image-element') as HTMLImageElement | null
+      expect(fullscreenImage).not.toBeNull()
+      expect(fullscreenImage?.getAttribute('src')).toContain('data:image/svg+xml')
+    })
+
+    fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+
+    await waitFor(() => {
+      const videoElement = document.querySelector('.video-screen-media') as HTMLVideoElement | null
+      expect(videoElement).not.toBeNull()
+      expect(videoElement?.getAttribute('src')).toContain('about:blank#mock-video')
+    })
+  })
+
   it('检索面板支持向量/特征检索切换、分割条拖拽与检索模式下 Sidebar 只读联动', async () => {
     render(<App />)
 

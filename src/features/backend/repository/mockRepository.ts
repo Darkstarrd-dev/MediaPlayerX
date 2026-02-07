@@ -9,20 +9,24 @@ import {
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
+  resolveMediaResourceResponseSchema,
   type FeatureFilterDto,
   type ImageItemDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
+  type MediaLocatorDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
+  type ResolveMediaResourceRequestDto,
+  type ResolveMediaResourceResponseDto,
   type SidebarNodeDto,
   type VideoItemDto,
 } from '../../../contracts/backend'
-import type { ImagePackage, SidebarNode } from '../../../types'
+import type { ImagePackage, MediaLocator, SidebarNode } from '../../../types'
 import type {
   ReadonlyMediaRepository,
   RepositoryRequestOptions,
@@ -35,6 +39,50 @@ const MOCK_LIBRARY_SNAPSHOT: LibrarySnapshotDto = librarySnapshotDtoSchema.parse
   videos: VIDEO_ITEMS.map(toVideoItemDto),
 })
 
+function toMediaLocatorDto(locator: MediaLocator): MediaLocatorDto {
+  if (locator.kind === 'filesystem') {
+    return {
+      kind: 'filesystem',
+      absolute_path: locator.absolutePath,
+      extension: locator.extension,
+      media_type: locator.mediaType,
+      mime_type: locator.mimeType,
+    }
+  }
+
+  return {
+    kind: 'archive-entry',
+    archive_path: locator.archivePath,
+    archive_format: locator.archiveFormat,
+    entry_name: locator.entryName,
+    extension: locator.extension,
+    media_type: locator.mediaType,
+    mime_type: locator.mimeType,
+  }
+}
+
+function toMediaLocatorViewModel(locator: MediaLocatorDto): MediaLocator {
+  if (locator.kind === 'filesystem') {
+    return {
+      kind: 'filesystem',
+      absolutePath: locator.absolute_path,
+      extension: locator.extension,
+      mediaType: locator.media_type,
+      mimeType: locator.mime_type,
+    }
+  }
+
+  return {
+    kind: 'archive-entry',
+    archivePath: locator.archive_path,
+    archiveFormat: locator.archive_format,
+    entryName: locator.entry_name,
+    extension: locator.extension,
+    mediaType: locator.media_type,
+    mimeType: locator.mime_type,
+  }
+}
+
 function toImageItemDto(item: ImagePackage['images'][number]): ImageItemDto {
   return {
     id: item.id,
@@ -45,6 +93,7 @@ function toImageItemDto(item: ImagePackage['images'][number]): ImageItemDto {
     cluster: item.cluster,
     color: item.color,
     feature_vector: [...item.featureVector],
+    media_locator: toMediaLocatorDto(item.mediaLocator),
   }
 }
 
@@ -74,6 +123,7 @@ function toVideoItemDto(video: (typeof VIDEO_ITEMS)[number]): VideoItemDto {
     width: video.width,
     height: video.height,
     size_mb: video.sizeMb,
+    media_locator: toMediaLocatorDto(video.mediaLocator),
   }
 }
 
@@ -112,6 +162,7 @@ function toImagePackageViewModel(dto: ImagePackageDto): ImagePackage {
       cluster: item.cluster,
       color: item.color,
       featureVector: [...item.feature_vector],
+      mediaLocator: toMediaLocatorViewModel(item.media_locator),
     })),
   }
 }
@@ -219,6 +270,31 @@ async function resolveAsync<T>(value: T, options?: RepositoryRequestOptions): Pr
   return value
 }
 
+function locatorPathKey(locator: MediaLocatorDto): string {
+  if (locator.kind === 'filesystem') {
+    return `fs:${locator.absolute_path}`
+  }
+  return `archive:${locator.archive_path}::${locator.entry_name}`
+}
+
+function hashLocator(value: string): number {
+  let hash = 2166136261
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
+}
+
+function toMockImageDataUrl(locator: MediaLocatorDto): string {
+  const key = locatorPathKey(locator)
+  const hash = hashLocator(key)
+  const hue = hash % 360
+  const label = locator.kind === 'filesystem' ? locator.absolute_path : `${locator.archive_path}::${locator.entry_name}`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="hsl(${hue} 72% 46%)"/><stop offset="100%" stop-color="hsl(${(hue + 36) % 360} 72% 28%)"/></linearGradient></defs><rect width="1280" height="720" fill="url(#g)"/><text x="50%" y="46%" text-anchor="middle" fill="white" font-size="44" font-family="Segoe UI, sans-serif">Mock Image</text><text x="50%" y="56%" text-anchor="middle" fill="rgba(255,255,255,0.86)" font-size="22" font-family="Consolas, monospace">${label.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</text></svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
 export class MockMediaRepository implements ReadonlyMediaRepository, SynchronousMediaRepository {
   getInitialLibrarySnapshot(): LibrarySnapshotDto {
     return MOCK_LIBRARY_SNAPSHOT
@@ -262,8 +338,8 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     })
 
     const allSources = [...filtered.imagePackages, ...filtered.imageDirectories]
-    const selectedSource =
-      (request.source_id ? allSources.find((source) => source.id === request.source_id) : null) ?? allSources[0] ?? null
+    const selectedById = request.source_id ? allSources.find((source) => source.id === request.source_id) : null
+    const selectedSource = selectedById ?? allSources.find((source) => source.images.length > 0) ?? allSources[0] ?? null
 
     if (!selectedSource) {
       return readImagePageResponseSchema.parse({
@@ -331,6 +407,33 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
   ): Promise<ReadImageMetadataResponseDto> {
     const response = this.readImageMetadataSync(request)
 
+    return resolveAsync(response, options)
+  }
+
+  resolveMediaResourceSync(
+    request: ResolveMediaResourceRequestDto,
+  ): ResolveMediaResourceResponseDto {
+    const response =
+      request.locator.media_type === 'image'
+        ? {
+            resource_url: toMockImageDataUrl(request.locator),
+            mime_type: request.locator.mime_type,
+            expires_at_ms: Date.now() + 600_000,
+          }
+        : {
+            resource_url: `about:blank#mock-video-${encodeURIComponent(locatorPathKey(request.locator))}`,
+            mime_type: request.locator.mime_type,
+            expires_at_ms: Date.now() + 600_000,
+          }
+
+    return resolveMediaResourceResponseSchema.parse(response)
+  }
+
+  async resolveMediaResource(
+    request: ResolveMediaResourceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ResolveMediaResourceResponseDto> {
+    const response = this.resolveMediaResourceSync(request)
     return resolveAsync(response, options)
   }
 }

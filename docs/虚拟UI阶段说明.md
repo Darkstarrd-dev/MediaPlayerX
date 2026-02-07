@@ -38,6 +38,14 @@
 - 视频：使用“当前时间/总时长”的数字时钟模拟播放。
 - 导入、封面保存、向量任务等未接后端行为使用 `console` 输出模拟结果。
 
+## Phase-2 更新（真实媒体可用化）
+
+- Main/Metadata/Fullscreen 已从占位渲染切换为真实媒体渲染链路（`<img>/<video>`）。
+- Renderer 不再拼接本地路径读取媒体；统一通过 `Repository -> preload -> ipc` 获取受控 `resource_url`。
+- 新增媒体定位模型 `MediaLocator`：统一表达文件系统文件与压缩包 entry。
+- Main 进程新增媒体协议白名单访问，拒绝越界路径与非法压缩包 entry。
+- 压缩包扫描升级为“entry name 轻扫”：扫描阶段仅读取目录索引，不全量解压。
+
 ## 当前代码结构（已完成 App 拆分）
 
 - `src/App.tsx`：页面状态编排、模式切换逻辑、快捷键路由。
@@ -50,7 +58,7 @@
 - `src/components/AppHeader.tsx`：顶部控件区与导入入口。
 - `src/components/SidebarPanel.tsx`：目录树与视频播放列表 toggle。
 - `src/components/ImageMainSection.tsx`：图片网格分页、纯文件名列表与焦点交互。
-- `src/components/VideoMainSection.tsx`：视频预览、封面态与虚拟播放控件。
+- `src/components/VideoMainSection.tsx`：视频预览、封面态与真实播放控件。
 - `src/components/MetadataPanel.tsx`：图片/视频元数据与播放列表管理。
 - `src/components/FullscreenLayer.tsx`：全屏层与底部浮动控制区。
 - `src/components/SettingsPanel.tsx`：设置覆盖层与快捷键映射。

@@ -2,6 +2,7 @@ import type {
   FocusedImageRef,
   ImageItem,
   ImagePackage,
+  MediaLocator,
   SidebarNode,
   SidebarNodeKind,
   VectorCandidate,
@@ -72,6 +73,46 @@ function makeFeatureVector(packageId: string, imageIndex: number, cluster: numbe
   return vector
 }
 
+function buildMockImageLocator(sourceAbsolutePath: string, ordinal: number): MediaLocator {
+  const ordinalFileName = `img_${ordinal.toString().padStart(4, '0')}.jpg`
+  const [archivePathRaw, archiveEntryRootRaw] = sourceAbsolutePath.split('::')
+  const archivePath = archivePathRaw.trim()
+  const archiveEntryRoot = archiveEntryRootRaw?.trim() ?? ''
+  const archiveSuffix = archiveEntryRoot ? `${archiveEntryRoot.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')}/` : ''
+
+  if (sourceAbsolutePath.includes('::') || archivePath.toLowerCase().endsWith('.zip')) {
+    return {
+      kind: 'archive-entry',
+      archivePath,
+      archiveFormat: 'zip',
+      entryName: `${archiveSuffix}${ordinalFileName}`,
+      extension: '.jpg',
+      mediaType: 'image',
+      mimeType: 'image/jpeg',
+    }
+  }
+
+  const normalizedRoot = sourceAbsolutePath.replace(/\\/g, '/')
+  return {
+    kind: 'filesystem',
+    absolutePath: `${normalizedRoot}/${ordinalFileName}`,
+    extension: '.jpg',
+    mediaType: 'image',
+    mimeType: 'image/jpeg',
+  }
+}
+
+function buildMockVideoLocator(absolutePath: string): MediaLocator {
+  const extension = `.${absolutePath.split('.').pop()?.toLowerCase() ?? 'mp4'}`
+  return {
+    kind: 'filesystem',
+    absolutePath,
+    extension,
+    mediaType: 'video',
+    mimeType: extension === '.webm' ? 'video/webm' : 'video/mp4',
+  }
+}
+
 function makeImages(packageId: string, count: number, clusterOffset: number): ImageItem[] {
   const items: ImageItem[] = []
   for (let i = 0; i < count; i += 1) {
@@ -87,6 +128,13 @@ function makeImages(packageId: string, count: number, clusterOffset: number): Im
       cluster,
       color: COLORS[cluster],
       featureVector: makeFeatureVector(packageId, i, cluster),
+      mediaLocator: {
+        kind: 'filesystem',
+        absolutePath: `mock:///${packageId}/${ordinal}.jpg`,
+        extension: '.jpg',
+        mediaType: 'image',
+        mimeType: 'image/jpeg',
+      },
     })
   }
   return items
@@ -106,6 +154,10 @@ function withMockPackageMetadata(pkg: ImagePackage): ImagePackage {
     ...pkg,
     tags: Array.from(new Set([...pkg.tags, ...randomTags])),
     mockGrade: seed % 6,
+    images: pkg.images.map((image) => ({
+      ...image,
+      mediaLocator: buildMockImageLocator(pkg.absolutePath, image.ordinal),
+    })),
   }
 }
 
@@ -560,6 +612,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 1920,
     height: 1080,
     sizeMb: 312,
+    mediaLocator: buildMockVideoLocator('X:/视频/项目A/teaser_city.mp4'),
   },
   {
     id: 'video-002',
@@ -570,6 +623,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 1920,
     height: 1080,
     sizeMb: 420,
+    mediaLocator: buildMockVideoLocator('X:/视频/项目A/teaser_forest.mp4'),
   },
   {
     id: 'video-003',
@@ -580,6 +634,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 1280,
     height: 720,
     sizeMb: 135,
+    mediaLocator: buildMockVideoLocator('X:/视频/项目B/scene_motion.mp4'),
   },
   {
     id: 'video-004',
@@ -590,6 +645,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 3840,
     height: 2160,
     sizeMb: 1180,
+    mediaLocator: buildMockVideoLocator('Z:/回放/2025/archive_cut_01.mp4'),
   },
   {
     id: 'video-005',
@@ -600,6 +656,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 3840,
     height: 2160,
     sizeMb: 1035,
+    mediaLocator: buildMockVideoLocator('Z:/回放/2025/archive_cut_02.mp4'),
   },
 ]
 

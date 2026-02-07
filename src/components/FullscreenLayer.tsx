@@ -52,7 +52,9 @@ interface FullscreenLayerProps {
   fullscreenVideoFocus: boolean
   fullscreenSplit: number
   focusedImage: ImageItem | null
+  focusedImageSrc: string | null
   focusedVideo: VideoItem | null
+  focusedVideoSrc: string | null
   focusedVideoCoverColor: string
   videoTime: number
   videoPlaying: boolean
@@ -77,6 +79,7 @@ interface FullscreenLayerProps {
   onPrevVideo: () => void
   onNextVideo: () => void
   onSeekVideo: (time: number) => void
+  onVideoTimeUpdate: (time: number) => void
   onToggleVideoMute: () => void
   onChangeVideoVolume: (volume: number) => void
   onChangeVideoRate: (rate: number) => void
@@ -188,7 +191,9 @@ function FullscreenLayer({
   fullscreenVideoFocus,
   fullscreenSplit,
   focusedImage,
+  focusedImageSrc,
   focusedVideo,
+  focusedVideoSrc,
   focusedVideoCoverColor,
   videoTime,
   videoPlaying,
@@ -213,6 +218,7 @@ function FullscreenLayer({
   onPrevVideo,
   onNextVideo,
   onSeekVideo,
+  onVideoTimeUpdate,
   onToggleVideoMute,
   onChangeVideoVolume,
   onChangeVideoRate,
@@ -221,6 +227,7 @@ function FullscreenLayer({
   const contentRef = useRef<HTMLDivElement>(null)
   const imagePaneRef = useRef<HTMLElement>(null)
   const videoPaneRef = useRef<HTMLElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   const [imageViewportSize, setImageViewportSize] = useState<PaneViewportSize>({ width: 1, height: 1 })
   const [videoViewportSize, setVideoViewportSize] = useState<PaneViewportSize>({ width: 1, height: 1 })
@@ -235,6 +242,8 @@ function FullscreenLayer({
   const focusedPane: PaneKey = fullscreenDisplay === 'dual' ? (fullscreenVideoFocus ? 'video' : 'image') : (singlePane ?? 'image')
   const zoomEnabled = fullscreenDisplay !== 'dual'
   const autoplayEnabledForFocus = mode === 'image' && focusedPane === 'image'
+  const durationSec = focusedVideo?.durationSec ?? 0
+  const clampedVideoTime = clamp(videoTime, 0, durationSec)
 
   const imageAspect = focusedImage ? focusedImage.width / focusedImage.height : 1
   const videoAspect = focusedVideo ? focusedVideo.width / focusedVideo.height : 16 / 9
@@ -520,6 +529,33 @@ function FullscreenLayer({
     })
   }, [videoAlign, videoGeometry])
 
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) {
+      return
+    }
+
+    video.playbackRate = clamp(videoRate, 0.1, 4)
+    video.muted = videoMuted
+    video.volume = clamp(videoVolume / 100, 0, 1)
+
+    const videoVisible = fullscreenDisplay === 'video-only' || fullscreenDisplay === 'dual'
+    if (!fullscreenActive || !videoVisible || !focusedVideoSrc) {
+      video.pause()
+      return
+    }
+
+    if (Math.abs(video.currentTime - clampedVideoTime) > 0.35) {
+      video.currentTime = clampedVideoTime
+    }
+
+    if (videoPlaying) {
+      void video.play().catch(() => undefined)
+    } else {
+      video.pause()
+    }
+  }, [clampedVideoTime, focusedVideoSrc, fullscreenActive, fullscreenDisplay, videoMuted, videoPlaying, videoRate, videoVolume])
+
   if (!fullscreenActive) {
     return null
   }
@@ -530,9 +566,6 @@ function FullscreenLayer({
 
   const activeSingleTransform = singlePane === 'video' ? videoTransform : imageTransform
   const zoomPercent = Math.round(activeSingleTransform.zoom * 100)
-
-  const durationSec = focusedVideo?.durationSec ?? 0
-  const clampedVideoTime = clamp(videoTime, 0, durationSec)
 
   const videoMediaTop = (videoViewportSize.height - videoGeometry.height) / 2 + videoTransform.offsetY
   const videoMediaBottom = videoMediaTop + videoGeometry.height
@@ -579,8 +612,18 @@ function FullscreenLayer({
             background: focusedImage?.color ?? '#4f5967',
           }}
         >
-          <span>{`图片 #${focusedImage?.ordinal ?? '-'}`}</span>
-          <small>{focusedImage ? `${focusedImage.width} x ${focusedImage.height}` : '无可用图片'}</small>
+          {focusedImageSrc ? (
+            <img
+              className="fullscreen-media-image-element"
+              src={focusedImageSrc}
+              alt={`图片 #${focusedImage?.ordinal ?? '-'}`}
+              draggable={false}
+            />
+          ) : null}
+          <div className="fullscreen-media-overlay">
+            <span>{`图片 #${focusedImage?.ordinal ?? '-'}`}</span>
+            <small>{focusedImage ? `${focusedImage.width} x ${focusedImage.height}` : '无可用图片'}</small>
+          </div>
         </div>
       </div>
     </section>
@@ -672,12 +715,38 @@ function FullscreenLayer({
             background: videoPlaying ? 'linear-gradient(145deg, #232830, #15191f)' : focusedVideoCoverColor,
           }}
         >
-          <span>
-            {videoPlaying
-              ? `虚拟视频时钟 ${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`
-              : `封面态（待播放） ${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}
-          </span>
-          <small>{focusedVideo ? `${focusedVideo.fileName} (${focusedVideo.width} x ${focusedVideo.height})` : '无可用视频'}</small>
+          {focusedVideoSrc ? (
+            <video
+              ref={videoRef}
+              className="fullscreen-media-video-element"
+              src={focusedVideoSrc}
+              preload="metadata"
+              playsInline
+              onTimeUpdate={() => {
+                const currentTime = videoRef.current?.currentTime ?? 0
+                onVideoTimeUpdate(currentTime)
+              }}
+              onLoadedMetadata={() => {
+                const currentTime = videoRef.current?.currentTime ?? 0
+                onVideoTimeUpdate(currentTime)
+              }}
+              onEnded={() => {
+                onVideoTimeUpdate(0)
+                onNextVideo()
+              }}
+            />
+          ) : null}
+
+          <div className="fullscreen-media-overlay">
+            <span>
+              {videoPlaying
+                ? `真实视频 ${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`
+                : `封面态（待播放） ${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}
+            </span>
+            <small>{focusedVideo ? `${focusedVideo.fileName} (${focusedVideo.width} x ${focusedVideo.height})` : '无可用视频'}</small>
+          </div>
+
+          {!focusedVideoSrc ? <div className="fullscreen-media-empty">无可用视频源</div> : null}
         </div>
 
         {videoControlsVisible ? (

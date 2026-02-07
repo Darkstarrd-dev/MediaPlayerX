@@ -3,6 +3,7 @@ import type {
   ImageItemDto,
   ImagePackageDto,
   LibrarySnapshotDto,
+  MediaLocatorDto,
   ReadImageMetadataResponseDto,
   ReadImagePageResponseDto,
   ReadImageSidebarTreeResponseDto,
@@ -13,6 +14,7 @@ import type {
   FocusedImageRef,
   ImageItem,
   ImagePackage,
+  MediaLocator,
   SidebarNode,
   VideoItem,
 } from '../../types'
@@ -43,6 +45,28 @@ export interface ImageMetadataViewModel {
   grade: number | null
 }
 
+export function mapMediaLocatorDto(locator: MediaLocatorDto): MediaLocator {
+  if (locator.kind === 'filesystem') {
+    return {
+      kind: 'filesystem',
+      absolutePath: locator.absolute_path,
+      extension: locator.extension,
+      mediaType: locator.media_type,
+      mimeType: locator.mime_type,
+    }
+  }
+
+  return {
+    kind: 'archive-entry',
+    archivePath: locator.archive_path,
+    archiveFormat: locator.archive_format,
+    entryName: locator.entry_name,
+    extension: locator.extension,
+    mediaType: locator.media_type,
+    mimeType: locator.mime_type,
+  }
+}
+
 export function mapImageItemDto(item: ImageItemDto): ImageItem {
   return {
     id: item.id,
@@ -53,6 +77,7 @@ export function mapImageItemDto(item: ImageItemDto): ImageItem {
     cluster: item.cluster,
     color: item.color,
     featureVector: [...item.feature_vector],
+    mediaLocator: mapMediaLocatorDto(item.media_locator),
   }
 }
 
@@ -82,6 +107,7 @@ export function mapVideoItemDto(video: VideoItemDto): VideoItem {
     width: video.width,
     height: video.height,
     sizeMb: video.size_mb,
+    mediaLocator: mapMediaLocatorDto(video.media_locator),
   }
 }
 

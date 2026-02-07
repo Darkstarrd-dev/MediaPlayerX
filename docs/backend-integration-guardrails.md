@@ -31,6 +31,11 @@
    - 已拆分模块（`features/*`）禁止反向合并回 `App.tsx`。
    - 新增复杂逻辑优先放入对应 feature hook/service，不直接堆入页面组件。
 
+7. 媒体访问协议与定位模型
+   - 媒体来源统一通过 `MediaLocator`（文件系统 / 压缩包 entry）表达。
+   - Renderer 仅可消费 Main 颁发的受控 `resource_url`，禁止拼接本地路径直读。
+   - Main 必须执行根目录白名单与路径穿越校验，压缩包 entry 必须做合法性校验。
+
 ## 实施顺序（必须按序）
 
 1. 固化接口
@@ -55,6 +60,7 @@
 - 禁止把 DTO 字段直接透传到 UI。
 - 禁止绕过测试直接替换核心状态流。
 - 禁止在未更新文档时提交后端接入改动。
+- 禁止在 Renderer 直接构造 `file://` 或自定义协议路径绕过 Repository。
 
 ## 提交门禁 (Definition of Done, DoD)
 
