@@ -1,8 +1,10 @@
 import type {
+  ClearDatabaseResponseDto,
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   PickImportPathsRequestDto,
   PickImportPathsResponseDto,
+  ReadClipboardImportPathsResponseDto,
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   LibrarySnapshotDto,
@@ -37,11 +39,13 @@ interface MediaPlayerBackendApi {
   readPlaylist: () => Promise<ReadPlaylistResponseDto>
   writePlaylist: (request: WritePlaylistRequestDto) => Promise<WritePlaylistResponseDto>
   pickImportPaths: (request: PickImportPathsRequestDto) => Promise<PickImportPathsResponseDto>
+  readClipboardImportPaths: () => Promise<ReadClipboardImportPathsResponseDto>
   enqueueImportTask: (request: EnqueueImportTaskRequestDto) => Promise<EnqueueImportTaskResponseDto>
   readImportTasks: () => Promise<ReadImportTasksResponseDto>
   retryImportTask: (request: RetryImportTaskRequestDto) => Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
+  clearDatabase: () => Promise<ClearDatabaseResponseDto>
 }
 
 declare global {

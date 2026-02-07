@@ -34,6 +34,17 @@ function collectNativePaths(files: File[]): string[] {
   return Array.from(new Set(paths))
 }
 
+function collectPathsFromDataTransfer(dataTransfer: DataTransfer | null): string[] {
+  if (!dataTransfer) {
+    return []
+  }
+
+  const nativePaths = collectNativePaths(Array.from(dataTransfer.files ?? []))
+  const uriPaths = extractPathsFromClipboard(dataTransfer.getData('text/uri-list') ?? '')
+  const textPaths = extractPathsFromClipboard(dataTransfer.getData('text/plain') ?? '')
+  return Array.from(new Set([...nativePaths, ...uriPaths, ...textPaths]))
+}
+
 interface UseImportPipelineResult {
   fileImportInputRef: RefObject<HTMLInputElement | null>
   folderImportInputRef: RefObject<HTMLInputElement | null>
@@ -232,6 +243,14 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
         return
       }
 
+      const activeElement = document.activeElement as HTMLElement | null
+      if (
+        activeElement &&
+        (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable)
+      ) {
+        return
+      }
+
       const pastedFiles = Array.from(event.clipboardData?.files ?? [])
       const text = event.clipboardData?.getData('text') ?? ''
       const uriList = event.clipboardData?.getData('text/uri-list') ?? ''
@@ -240,13 +259,31 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
       const filePaths = collectNativePaths(pastedFiles)
       const mergedPaths = Array.from(new Set([...filePaths, ...pastedPaths]))
       if (mergedPaths.length > 0) {
+        event.preventDefault()
         void enqueueImportPaths('paste', mergedPaths)
+        return
       }
+
+      const clipboardReader = repository.readClipboardImportPaths
+      if (!clipboardReader) {
+        return
+      }
+
+      event.preventDefault()
+      void clipboardReader({ timeoutMs: IMPORT_TASK_TIMEOUT_MS })
+        .then((response) => {
+          if (response.paths.length > 0) {
+            void enqueueImportPaths('paste', response.paths)
+          }
+        })
+        .catch((error: unknown) => {
+          setTaskError(toErrorMessage(error))
+        })
     }
 
     window.addEventListener('paste', onPaste)
     return () => window.removeEventListener('paste', onPaste)
-  }, [enqueueImportPaths])
+  }, [enqueueImportPaths, repository])
 
   const onDragEnterImport: DragEventHandler<HTMLDivElement> = (event) => {
     if (!dataTransferHasFiles(event.dataTransfer)) {
@@ -262,16 +299,12 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
     dragDepthRef.current = 0
     setDragOverlayActive(false)
 
-    if (!dataTransferHasFiles(event.dataTransfer)) {
+    const mergedPaths = collectPathsFromDataTransfer(event.dataTransfer)
+    if (mergedPaths.length === 0) {
       return
     }
 
     event.preventDefault()
-
-    const nativePaths = collectNativePaths(Array.from(event.dataTransfer.files))
-    const uriPaths = extractPathsFromClipboard(event.dataTransfer.getData('text/uri-list') ?? '')
-    const textPaths = extractPathsFromClipboard(event.dataTransfer.getData('text/plain') ?? '')
-    const mergedPaths = Array.from(new Set([...nativePaths, ...uriPaths, ...textPaths]))
     void enqueueImportPaths('drag-drop', mergedPaths)
   }
 
@@ -297,6 +330,65 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
       setDragOverlayActive(false)
     }
   }
+
+  useEffect(() => {
+    const onWindowDragEnter = (event: DragEvent) => {
+      if (!event.dataTransfer) {
+        return
+      }
+
+      event.preventDefault()
+      if (!dataTransferHasFiles(event.dataTransfer)) {
+        return
+      }
+
+      dragDepthRef.current += 1
+      setDragOverlayActive(true)
+    }
+
+    const onWindowDragOver = (event: DragEvent) => {
+      if (!event.dataTransfer) {
+        return
+      }
+
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'copy'
+    }
+
+    const onWindowDrop = (event: DragEvent) => {
+      const mergedPaths = collectPathsFromDataTransfer(event.dataTransfer)
+      if (mergedPaths.length === 0) {
+        return
+      }
+
+      event.preventDefault()
+      dragDepthRef.current = 0
+      setDragOverlayActive(false)
+      void enqueueImportPaths('drag-drop', mergedPaths)
+    }
+
+    const onWindowDragLeave = (event: DragEvent) => {
+      if (!event.dataTransfer || !dataTransferHasFiles(event.dataTransfer)) {
+        return
+      }
+
+      dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
+      if (dragDepthRef.current === 0) {
+        setDragOverlayActive(false)
+      }
+    }
+
+    window.addEventListener('dragenter', onWindowDragEnter, true)
+    window.addEventListener('dragover', onWindowDragOver, true)
+    window.addEventListener('dragleave', onWindowDragLeave, true)
+    window.addEventListener('drop', onWindowDrop, true)
+    return () => {
+      window.removeEventListener('dragenter', onWindowDragEnter, true)
+      window.removeEventListener('dragover', onWindowDragOver, true)
+      window.removeEventListener('dragleave', onWindowDragLeave, true)
+      window.removeEventListener('drop', onWindowDrop, true)
+    }
+  }, [enqueueImportPaths])
 
   const stableTasks = useMemo(
     () => [...importTasks].sort((left, right) => right.created_at_ms - left.created_at_ms),

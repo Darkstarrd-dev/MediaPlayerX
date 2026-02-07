@@ -1,13 +1,15 @@
-import { app, dialog, ipcMain, protocol } from 'electron'
+import { app, clipboard, dialog, ipcMain, protocol } from 'electron'
 import path from 'node:path'
 
 import {
+  clearDatabaseResponseSchema,
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
   pickImportPathsRequestSchema,
   pickImportPathsResponseSchema,
+  readClipboardImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -30,6 +32,33 @@ import {
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { FileSystemMediaReadService } from './fileSystemReadService'
+
+function extractLikelyPaths(raw: string): string[] {
+  const tokens = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  return Array.from(
+    new Set(
+      tokens.filter((token) => /^[a-zA-Z]:[\\/]/.test(token) || /^\\\\[^\\]+\\[^\\]+/.test(token)),
+    ),
+  )
+}
+
+function parseClipboardFileNameWBuffer(buffer: Buffer): string[] {
+  if (buffer.length === 0) {
+    return []
+  }
+
+  const text = buffer.toString('utf16le')
+  const tokens = text
+    .split('\u0000')
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  return Array.from(new Set(tokens))
+}
 
 export function registerBackendIpcHandlers(): void {
   const defaultLibraryRoot = path.join(app.getPath('pictures'), 'MediaPlayerXLibrary')
@@ -130,6 +159,28 @@ export function registerBackendIpcHandlers(): void {
     })
   })
 
+  ipcMain.handle(BACKEND_CHANNELS.readClipboardImportPaths, async () => {
+    const paths = new Set<string>()
+
+    try {
+      const fileNameWBuffer = clipboard.readBuffer('FileNameW')
+      for (const pathValue of parseClipboardFileNameWBuffer(fileNameWBuffer)) {
+        paths.add(pathValue)
+      }
+    } catch {
+      // ignore clipboard format unsupported
+    }
+
+    const plainText = clipboard.readText()
+    for (const pathValue of extractLikelyPaths(plainText)) {
+      paths.add(pathValue)
+    }
+
+    return readClipboardImportPathsResponseSchema.parse({
+      paths: Array.from(paths),
+    })
+  })
+
   ipcMain.handle(BACKEND_CHANNELS.enqueueImportTask, async (_event, payload: unknown) => {
     const request = enqueueImportTaskRequestSchema.parse(payload)
     const response = await service.enqueueImportTask(request)
@@ -155,5 +206,10 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeCapabilities, async () => {
     const response = await service.readRuntimeCapabilities()
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.clearDatabase, async () => {
+    const response = await service.clearDatabase()
+    return clearDatabaseResponseSchema.parse(response)
   })
 }

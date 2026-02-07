@@ -85,6 +85,7 @@ interface VideoRow {
   size_mb: number
   media_locator_json: string
   cover_color: string | null
+  cover_image_path: string | null
 }
 
 function parseJson<T>(raw: string, fallback: T): T {
@@ -586,7 +587,8 @@ export class MediaLibraryDatabase {
             video.height,
             video.size_mb,
             video.media_locator_json,
-            cover.cover_color
+            cover.cover_color,
+            cover.cover_image_path
           FROM video_item AS video
           LEFT JOIN video_cover AS cover ON cover.video_id = video.id
           ORDER BY video.absolute_path COLLATE NOCASE
@@ -604,6 +606,7 @@ export class MediaLibraryDatabase {
       height: row.height,
       size_mb: row.size_mb,
       cover_color: row.cover_color ?? 'hsl(0, 0%, 36%)',
+      cover_image_path: row.cover_image_path,
       media_locator: parseJson<MediaLocatorDto>(row.media_locator_json, {
         kind: 'filesystem',
         absolute_path: row.absolute_path,
@@ -884,5 +887,18 @@ export class MediaLibraryDatabase {
       createdAtMs: row.created_at_ms,
       updatedAtMs: row.updated_at_ms,
     }))
+  }
+
+  clearDatabase(): void {
+    this.runInTransaction(() => {
+      this.db.prepare('DELETE FROM task_log').run()
+      this.db.prepare('DELETE FROM playlist_entry').run()
+      this.db.prepare('DELETE FROM video_cover').run()
+      this.db.prepare('DELETE FROM package_grade').run()
+      this.db.prepare('DELETE FROM image_item').run()
+      this.db.prepare('DELETE FROM media_source').run()
+      this.db.prepare('DELETE FROM video_item').run()
+      this.db.prepare('DELETE FROM app_state').run()
+    })
   }
 }

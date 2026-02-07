@@ -178,6 +178,13 @@ describe('RealMediaRepository', () => {
         ],
         generated_at_ms: Date.now(),
       }),
+      readClipboardImportPaths: async () => ({
+        paths: [],
+      }),
+      clearDatabase: async () => ({
+        cleared: true,
+        cleared_at_ms: Date.now(),
+      }),
     }
 
     const repository = new RealMediaRepository()
@@ -301,6 +308,13 @@ describe('RealMediaRepository', () => {
           },
         ],
         generated_at_ms: Date.now(),
+      }),
+      readClipboardImportPaths: async () => ({
+        paths: [],
+      }),
+      clearDatabase: async () => ({
+        cleared: true,
+        cleared_at_ms: Date.now(),
       }),
     }
 
@@ -429,6 +443,13 @@ describe('RealMediaRepository', () => {
           },
         ],
         generated_at_ms: Date.now(),
+      }),
+      readClipboardImportPaths: async () => ({
+        paths: [],
+      }),
+      clearDatabase: async () => ({
+        cleared: true,
+        cleared_at_ms: Date.now(),
       }),
     }
 
@@ -560,6 +581,13 @@ describe('RealMediaRepository', () => {
           },
         ],
         generated_at_ms: Date.now(),
+      }),
+      readClipboardImportPaths: async () => ({
+        paths: [],
+      }),
+      clearDatabase: async () => ({
+        cleared: true,
+        cleared_at_ms: Date.now(),
       }),
     }
 

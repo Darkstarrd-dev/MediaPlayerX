@@ -6,6 +6,7 @@ import path from 'node:path'
 import { inflateRawSync } from 'node:zlib'
 
 import {
+  clearDatabaseResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
@@ -22,6 +23,7 @@ import {
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
+  type ClearDatabaseResponseDto,
   type FeatureFilterDto,
   type FocusedImageRefDto,
   type ImageItemDto,
@@ -55,6 +57,15 @@ import {
 import { MEDIA_PROTOCOL_SCHEME } from './channels'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
 
+function resolveConcurrency(rawValue: string | undefined, fallback: number, max: number): number {
+  const parsed = Number(rawValue)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback
+  }
+
+  return Math.max(1, Math.min(max, Math.round(parsed)))
+}
+
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'])
 const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mkv', '.mov'])
 const ARCHIVE_EXTENSIONS = new Set(['.zip', '.rar', '.7z'])
@@ -84,6 +95,9 @@ const THUMBNAIL_MIN_EDGE = 64
 const THUMBNAIL_MAX_EDGE = 2048
 const THUMBNAIL_MIN_QUALITY = 50
 const THUMBNAIL_MAX_QUALITY = 95
+const DIRECTORY_SCAN_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_SCAN_CONCURRENCY, 16, 64)
+const ARCHIVE_SCAN_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_ARCHIVE_SCAN_CONCURRENCY, 10, 32)
+const IMPORT_COPY_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_IMPORT_COPY_CONCURRENCY, 24, 128)
 
 const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])
 
@@ -570,6 +584,35 @@ function toDeterministicCoverColor(videoId: string): string {
     hue = (hue * 31 + hash.charCodeAt(index)) % 360
   }
   return `hsl(${hue}, 44%, 40%)`
+}
+
+async function parallelMapLimit<T, R>(
+  items: readonly T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  if (items.length === 0) {
+    return []
+  }
+
+  const workerCount = Math.max(1, Math.min(concurrency, items.length))
+  const results = new Array<R>(items.length)
+  let cursor = 0
+
+  const workers = Array.from({ length: workerCount }, async () => {
+    while (true) {
+      const index = cursor
+      cursor += 1
+      if (index >= items.length) {
+        return
+      }
+
+      results[index] = await mapper(items[index], index)
+    }
+  })
+
+  await Promise.all(workers)
+  return results
 }
 
 function createCrc32Table(): Uint32Array {
@@ -1172,6 +1215,21 @@ export class FileSystemMediaReadService {
     })
   }
 
+  async clearDatabase(): Promise<ClearDatabaseResponseDto> {
+    this.database.clearDatabase()
+    this.packageGradeOverridesBySourceId = new Map()
+    this.videoCoverOverridesByVideoId = new Map()
+    this.mediaTokenIndex.clear()
+    this.runningImportTaskIds.clear()
+    this.importTaskQueue = Promise.resolve()
+    this.invalidateCache()
+
+    return clearDatabaseResponseSchema.parse({
+      cleared: true,
+      cleared_at_ms: Date.now(),
+    })
+  }
+
   private countResolveDenied(reason: MediaAuditRejectReason): void {
     this.mediaAudit.resolveDeniedByReason[reason] = (this.mediaAudit.resolveDeniedByReason[reason] ?? 0) + 1
   }
@@ -1219,42 +1277,69 @@ export class FileSystemMediaReadService {
     }
 
     const files: FileRecord[] = []
-    const queue = [this.rootDir]
+    let levelDirectories = [this.rootDir]
 
-    while (queue.length > 0) {
-      const current = queue.pop()
-      if (!current) {
-        continue
-      }
+    while (levelDirectories.length > 0) {
+      const nestedDirectories = await parallelMapLimit(levelDirectories, DIRECTORY_SCAN_CONCURRENCY, async (current) => {
+        const entries = await fs.readdir(current, { withFileTypes: true })
+        const nextLevel: string[] = []
+        const pendingVideoRecords: Array<{ absolutePath: string; relativePath: string; extension: string }> = []
 
-      const entries = await fs.readdir(current, { withFileTypes: true })
-      for (const entry of entries) {
-        const absolutePath = path.join(current, entry.name)
-        if (entry.isDirectory()) {
-          if (entry.name === '.mediaplayerx') {
+        for (const entry of entries) {
+          const absolutePath = path.join(current, entry.name)
+          if (entry.isDirectory()) {
+            if (entry.name === '.mediaplayerx') {
+              continue
+            }
+            nextLevel.push(absolutePath)
             continue
           }
-          queue.push(absolutePath)
-          continue
+
+          if (!entry.isFile()) {
+            continue
+          }
+
+          const extension = path.extname(entry.name).toLowerCase()
+          if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
+            continue
+          }
+
+          const relativePath = normalizePathKey(path.relative(this.rootDir, absolutePath))
+          if (VIDEO_EXTENSIONS.has(extension)) {
+            pendingVideoRecords.push({ absolutePath, relativePath, extension })
+            continue
+          }
+
+          files.push({
+            absolutePath,
+            relativePath,
+            extension,
+            sizeBytes: 0,
+          })
         }
 
-        if (!entry.isFile()) {
-          continue
+        if (pendingVideoRecords.length > 0) {
+          const videoFiles = await parallelMapLimit(
+            pendingVideoRecords,
+            DIRECTORY_SCAN_CONCURRENCY,
+            async (videoRecord) => {
+              const stat = await fs.stat(videoRecord.absolutePath).catch(() => null)
+              return {
+                absolutePath: videoRecord.absolutePath,
+                relativePath: videoRecord.relativePath,
+                extension: videoRecord.extension,
+                sizeBytes: stat?.size ?? 0,
+              }
+            },
+          )
+
+          files.push(...videoFiles)
         }
 
-        const extension = path.extname(entry.name).toLowerCase()
-        if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
-          continue
-        }
+        return nextLevel
+      })
 
-        const stat = await fs.stat(absolutePath)
-        files.push({
-          absolutePath,
-          relativePath: normalizePathKey(path.relative(this.rootDir, absolutePath)),
-          extension,
-          sizeBytes: stat.size,
-        })
-      }
+      levelDirectories = nestedDirectories.flat()
     }
 
     files.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
@@ -1388,6 +1473,7 @@ export class FileSystemMediaReadService {
       height: probe?.height && probe.height > 0 ? probe.height : 1080,
       size_mb: toSafeSizeMb(file.sizeBytes),
       cover_color: coverRecord?.coverColor ?? toDeterministicCoverColor(videoId),
+      cover_image_path: coverRecord?.coverImagePath ?? null,
       media_locator: mediaLocator,
     }
   }
@@ -1585,21 +1671,30 @@ export class FileSystemMediaReadService {
       })
       .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
-    const imagePackages: ImagePackageDto[] = []
-    for (const archive of archives) {
+    const preparedArchives = await parallelMapLimit(archives, ARCHIVE_SCAN_CONCURRENCY, async (archive) => {
       const prepared = await this.prepareArchiveEntries(archive)
       const imageEntries = prepared.imageEntries.sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
+      return {
+        archive,
+        archivePathForMediaRead: prepared.archivePathForMediaRead,
+        imageEntries,
+      }
+    })
 
+    const imagePackages: ImagePackageDto[] = []
+    for (const prepared of preparedArchives) {
       this.archiveEntryIndexByPath.set(
         prepared.archivePathForMediaRead,
-        new Set(imageEntries.map((entry) => entry.entryName)),
+        new Set(prepared.imageEntries.map((entry) => entry.entryName)),
       )
       this.zipEntryIndexByPath.set(
         prepared.archivePathForMediaRead,
-        new Map(imageEntries.map((entry) => [entry.entryName, entry])),
+        new Map(prepared.imageEntries.map((entry) => [entry.entryName, entry])),
       )
 
-      imagePackages.push(this.createArchiveSource(archive, imageEntries, prepared.archivePathForMediaRead))
+      imagePackages.push(
+        this.createArchiveSource(prepared.archive, prepared.imageEntries, prepared.archivePathForMediaRead),
+      )
     }
 
     imagePackages.sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
@@ -2044,6 +2139,19 @@ export class FileSystemMediaReadService {
     const source = allSources.find((item) => item.id === request.package_id)
     const image = source?.images[request.image_index]
 
+    if (
+      source &&
+      image &&
+      image.size_kb <= 0 &&
+      image.media_locator.kind === 'filesystem' &&
+      image.media_locator.media_type === 'image'
+    ) {
+      const stat = await fs.stat(image.media_locator.absolute_path).catch(() => null)
+      if (stat?.isFile()) {
+        image.size_kb = toSafeSizeKb(stat.size)
+      }
+    }
+
     return readImageMetadataResponseSchema.parse(
       source && image
         ? {
@@ -2090,6 +2198,7 @@ export class FileSystemMediaReadService {
     const updatedAtMs = Date.now()
 
     video.cover_color = coverColor
+    video.cover_image_path = coverImagePath
     this.videoCoverOverridesByVideoId.set(video.id, {
       coverColor,
       coverImagePath,
@@ -2257,7 +2366,10 @@ export class FileSystemMediaReadService {
     await fs.copyFile(sourceFilePath, targetPath)
   }
 
-  private async copyImportedDirectoryIntoLibrary(sourceDirectoryPath: string): Promise<number> {
+  private async copyImportedDirectoryIntoLibrary(
+    sourceDirectoryPath: string,
+    onProgress?: (copiedCount: number, totalCount: number) => void,
+  ): Promise<number> {
     const sourceBaseName = path.basename(sourceDirectoryPath) || 'import-folder'
     const stableSuffix = createHash('sha1').update(sourceDirectoryPath).digest('hex').slice(0, 12)
     const targetRootPath = path.join(this.importFoldersRootDir, `${toSafeFsName(sourceBaseName)}-${stableSuffix}`)
@@ -2265,8 +2377,8 @@ export class FileSystemMediaReadService {
     await fs.rm(targetRootPath, { recursive: true, force: true })
     await fs.mkdir(targetRootPath, { recursive: true })
 
-    let copiedFileCount = 0
     const queue: Array<{ source: string; target: string }> = [{ source: sourceDirectoryPath, target: targetRootPath }]
+    const pendingCopies: Array<{ sourcePath: string; targetPath: string }> = []
 
     while (queue.length > 0) {
       const current = queue.pop()
@@ -2284,7 +2396,6 @@ export class FileSystemMediaReadService {
             continue
           }
 
-          await fs.mkdir(targetPath, { recursive: true })
           queue.push({ source: sourcePath, target: targetPath })
           continue
         }
@@ -2298,13 +2409,24 @@ export class FileSystemMediaReadService {
           continue
         }
 
-        await fs.mkdir(path.dirname(targetPath), { recursive: true })
-        await fs.copyFile(sourcePath, targetPath)
-        copiedFileCount += 1
+        pendingCopies.push({ sourcePath, targetPath })
       }
     }
 
-    return copiedFileCount
+    if (pendingCopies.length === 0) {
+      return 0
+    }
+
+    let copiedCount = 0
+    await parallelMapLimit(pendingCopies, IMPORT_COPY_CONCURRENCY, async (copyJob) => {
+      await fs.mkdir(path.dirname(copyJob.targetPath), { recursive: true })
+      await fs.copyFile(copyJob.sourcePath, copyJob.targetPath)
+      copiedCount += 1
+      onProgress?.(copiedCount, pendingCopies.length)
+      return undefined
+    })
+
+    return pendingCopies.length
   }
 
   private async runImportTask(taskId: string): Promise<ImportTaskDto> {
@@ -2340,7 +2462,27 @@ export class FileSystemMediaReadService {
               await this.copyImportedFileIntoLibrary(inspection.absolutePath, inspection.extension)
               copiedFileCount += 1
             } else if (inspection.kind === 'directory') {
-              const copied = await this.copyImportedDirectoryIntoLibrary(inspection.absolutePath)
+              let lastProgressUpdateAtMs = 0
+              const copied = await this.copyImportedDirectoryIntoLibrary(inspection.absolutePath, (copiedCount, totalCopyCount) => {
+                const now = Date.now()
+                if (copiedCount < totalCopyCount && now - lastProgressUpdateAtMs < 150) {
+                  return
+                }
+                lastProgressUpdateAtMs = now
+
+                const inPathProgress = totalCopyCount > 0 ? copiedCount / totalCopyCount : 1
+                const overallProgress = totalCount > 0 ? (processedCount + inPathProgress) / totalCount : 1
+                this.database.upsertTask({
+                  ...existing,
+                  status: 'running',
+                  progress: Math.max(0, Math.min(1, overallProgress)),
+                  processedCount,
+                  totalCount,
+                  message: `导入进行中 ${processedCount}/${totalCount} | 拷贝 ${copiedCount}/${totalCopyCount}`,
+                  errorDetail: failedMessages.length > 0 ? failedMessages.slice(0, 3).join(' | ') : null,
+                  updatedAtMs: now,
+                })
+              })
               if (copied <= 0) {
                 pathSucceeded = false
                 failedMessages.push(`目录不包含可导入媒体: ${inspection.absolutePath}`)

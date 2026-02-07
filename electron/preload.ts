@@ -1,12 +1,14 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 import {
+  clearDatabaseResponseSchema,
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
   pickImportPathsRequestSchema,
   pickImportPathsResponseSchema,
+  readClipboardImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -78,6 +80,10 @@ const backendApi = {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pickImportPaths, parsed)
     return pickImportPathsResponseSchema.parse(response)
   },
+  readClipboardImportPaths: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readClipboardImportPaths)
+    return readClipboardImportPathsResponseSchema.parse(response)
+  },
   enqueueImportTask: async (request: unknown) => {
     const parsed = enqueueImportTaskRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.enqueueImportTask, parsed)
@@ -99,6 +105,10 @@ const backendApi = {
   readRuntimeCapabilities: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeCapabilities)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  },
+  clearDatabase: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearDatabase)
+    return clearDatabaseResponseSchema.parse(response)
   },
 }
 

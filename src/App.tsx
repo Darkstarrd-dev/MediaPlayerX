@@ -29,7 +29,6 @@ import { findVectorControlConflicts } from './vectorControls'
 import {
   collectImageSourceIds,
   collectLeafIds,
-  makeRandomCoverColor,
 } from './features/app/helpers'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
@@ -54,6 +53,7 @@ import { useUiStore } from './store/useUiStore'
 import type {
   FocusedImageRef,
   ImagePackage,
+  MediaLocator,
   SidebarNode,
   VectorCandidate,
 } from './types'
@@ -62,7 +62,46 @@ import { clamp } from './utils/ui'
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 const EMPTY_FEATURE_TAGS: string[] = []
+const RUNTIME_WARNING_DISMISS_STORAGE_KEY = 'mediaplayerx:runtime-warning-dismiss-key'
+const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.bmp': 'image/bmp',
+}
 type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
+
+function buildCoverImageLocator(absolutePath: string | null | undefined): MediaLocator | null {
+  if (!absolutePath) {
+    return null
+  }
+
+  const trimmed = absolutePath.trim()
+  if (trimmed.length === 0) {
+    return null
+  }
+
+  const extensionMatch = trimmed.match(/(\.[^./\\]+)$/)
+  const extension = extensionMatch?.[1]?.toLowerCase()
+  if (!extension) {
+    return null
+  }
+
+  const mimeType = IMAGE_MIME_BY_EXTENSION[extension]
+  if (!mimeType) {
+    return null
+  }
+
+  return {
+    kind: 'filesystem',
+    absolutePath: trimmed,
+    extension,
+    mediaType: 'image',
+    mimeType,
+  }
+}
 
 function App() {
   const {
@@ -202,6 +241,18 @@ function App() {
   )
   const [importMenuOpen, setImportMenuOpen] = useState(false)
   const [vectorUniverseOpen, setVectorUniverseOpen] = useState(false)
+  const [dismissedRuntimeWarningKey, setDismissedRuntimeWarningKey] = useState<string | null>(() => {
+    if (typeof window === 'undefined') {
+      return null
+    }
+
+    const value = window.localStorage.getItem(RUNTIME_WARNING_DISMISS_STORAGE_KEY)
+    return value && value.trim().length > 0 ? value : null
+  })
+  const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
+  const [importPanelHidden, setImportPanelHidden] = useState(false)
+  const [databaseResetPending, setDatabaseResetPending] = useState(false)
+  const [databaseResetError, setDatabaseResetError] = useState<string | null>(null)
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
     mode === 'video' ? 'video-only' : 'image-only',
   )
@@ -230,6 +281,8 @@ function App() {
     setVideoMuted,
     videoCoverById,
     setVideoCoverById,
+    videoCoverImageById,
+    setVideoCoverImageById,
     videoDurationById,
     setVideoDurationById,
     fullscreenActive,
@@ -804,6 +857,7 @@ function App() {
     repository: mediaRepository,
     setGradeByPackage,
     setVideoCoverById,
+    setVideoCoverImageById,
   })
 
   const runtimeCapabilities = useRuntimeCapabilities({
@@ -842,11 +896,19 @@ function App() {
   const focusedVideoCoverColor = focusedVideo
     ? (videoCoverById[focusedVideo.id] ?? focusedVideo.coverColor ?? '#3f4b58')
     : '#3f4b58'
+  const focusedVideoCoverImagePath = focusedVideo
+    ? (videoCoverImageById[focusedVideo.id] ?? focusedVideo.coverImagePath ?? null)
+    : null
+  const focusedVideoCoverImageLocator = useMemo(
+    () => buildCoverImageLocator(focusedVideoCoverImagePath),
+    [focusedVideoCoverImagePath],
+  )
   const focusedVideoEffective = focusedVideo
     ? {
         ...focusedVideo,
         durationSec: focusedVideoDurationSec,
         coverColor: focusedVideoCoverColor,
+        coverImagePath: focusedVideoCoverImagePath,
       }
     : null
 
@@ -862,9 +924,22 @@ function App() {
   )
 
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
-    const targets: MediaResolveTarget[] = []
-    const seenTargetIds = new Set<string>()
+    const targetById = new Map<string, MediaResolveTarget>()
     const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight)))
+
+    const upsertTarget = (target: MediaResolveTarget) => {
+      const previous = targetById.get(target.targetId)
+      if (!previous) {
+        targetById.set(target.targetId, target)
+        return
+      }
+
+      const previousIsThumbnail = previous.variant === 'thumbnail'
+      const nextIsOriginal = target.variant !== 'thumbnail'
+      if (previousIsThumbnail && nextIsOriginal) {
+        targetById.set(target.targetId, target)
+      }
+    }
 
     const pushImageTarget = (ref: FocusedImageRef) => {
       const image = packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]
@@ -872,13 +947,8 @@ function App() {
         return
       }
 
-      const targetId = `image:${image.id}`
-      if (seenTargetIds.has(targetId)) {
-        return
-      }
-      seenTargetIds.add(targetId)
-      targets.push({
-        targetId,
+      upsertTarget({
+        targetId: `image:${image.id}`,
         locator: image.mediaLocator,
         variant: 'thumbnail',
         thumbnailMaxEdge,
@@ -891,43 +961,50 @@ function App() {
     }
 
     if (metadataImageEffective && metadataImagePackageEffective) {
-      const targetId = `image:${metadataImageEffective.id}`
-      if (!seenTargetIds.has(targetId)) {
-        seenTargetIds.add(targetId)
-        targets.push({
-          targetId,
-          locator: metadataImageEffective.mediaLocator,
-          variant: 'original',
-        })
-      }
+      upsertTarget({
+        targetId: `image:${metadataImageEffective.id}`,
+        locator: metadataImageEffective.mediaLocator,
+        variant: 'original',
+      })
     }
 
     if (focusedImage && focusedImagePackage) {
-      const targetId = `image:${focusedImage.id}`
-      if (!seenTargetIds.has(targetId)) {
-        seenTargetIds.add(targetId)
-        targets.push({
-          targetId,
-          locator: focusedImage.mediaLocator,
-          variant: 'original',
-        })
-      }
+      upsertTarget({
+        targetId: `image:${focusedImage.id}`,
+        locator: focusedImage.mediaLocator,
+        variant: 'original',
+      })
     }
 
     if (focusedVideo) {
-      const targetId = `video:${focusedVideo.id}`
-      if (!seenTargetIds.has(targetId)) {
-        seenTargetIds.add(targetId)
-        targets.push({
-          targetId,
-          locator: focusedVideo.mediaLocator,
+      upsertTarget({
+        targetId: `video:${focusedVideo.id}`,
+        locator: focusedVideo.mediaLocator,
+        variant: 'original',
+      })
+
+      if (focusedVideoCoverImageLocator) {
+        upsertTarget({
+          targetId: `video-cover:${focusedVideo.id}`,
+          locator: focusedVideoCoverImageLocator,
           variant: 'original',
         })
       }
     }
 
-    return targets
-  }, [actualCellWidth, actualMediaHeight, focusedImage, focusedImagePackage, focusedVideo, metadataImageEffective, metadataImagePackageEffective, packageByIdEffective, refsInPageEffective])
+    return Array.from(targetById.values())
+  }, [
+    actualCellWidth,
+    actualMediaHeight,
+    focusedImage,
+    focusedImagePackage,
+    focusedVideo,
+    focusedVideoCoverImageLocator,
+    metadataImageEffective,
+    metadataImagePackageEffective,
+    packageByIdEffective,
+    refsInPageEffective,
+  ])
 
   const resolvedMedia = useResolvedMediaUrls({
     repository: mediaRepository,
@@ -945,9 +1022,21 @@ function App() {
     return next
   }, [resolvedMedia.urlByTargetId])
 
+  const videoCoverImageUrlById = useMemo<Record<string, string>>(() => {
+    const next: Record<string, string> = {}
+    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
+      if (!targetId.startsWith('video-cover:')) {
+        continue
+      }
+      next[targetId.slice('video-cover:'.length)] = url
+    }
+    return next
+  }, [resolvedMedia.urlByTargetId])
+
   const metadataImageSrc = metadataImageEffective ? (imageUrlById[metadataImageEffective.id] ?? null) : null
   const fullscreenImageSrc = focusedImage ? (imageUrlById[focusedImage.id] ?? null) : null
   const focusedVideoSrc = focusedVideo ? (resolvedMedia.urlByTargetId[`video:${focusedVideo.id}`] ?? null) : null
+  const focusedVideoCoverImageSrc = focusedVideo ? (videoCoverImageUrlById[focusedVideo.id] ?? null) : null
 
   const shortcutConflicts = useMemo(() => findShortcutConflicts(shortcuts), [shortcuts])
   const vectorControlConflicts = useMemo(() => findVectorControlConflicts(vectorControls), [vectorControls])
@@ -1374,6 +1463,7 @@ function App() {
     videoSourceUrl: focusedVideoSrc,
     active: !fullscreenActive,
     coverColor: focusedVideoCoverColor,
+    coverImageUrl: focusedVideoCoverImageSrc,
     onTogglePlay: () => {
       if (!focusedVideo) {
         return
@@ -1410,7 +1500,7 @@ function App() {
         return
       }
 
-      const color = makeRandomCoverColor()
+      const color = focusedVideoCoverColor
       void backendWrite.saveVideoCover(focusedVideo.id, videoTime, color)
     },
     onEnterFullscreen: () => setFullscreenActive(true),
@@ -1564,6 +1654,109 @@ function App() {
   const runtimeCapabilityWarnings = (runtimeCapabilities.data?.minimum_matrix ?? []).filter(
     (item) => item.status !== 'available',
   )
+  const runtimeWarningKey = useMemo(
+    () => runtimeCapabilityWarnings.map((item) => `${item.capability}|${item.status}|${item.note}`).join('||'),
+    [runtimeCapabilityWarnings],
+  )
+  const showRuntimeCapabilityWarnings =
+    runtimeCapabilityWarnings.length > 0 && dismissedRuntimeWarningKey !== runtimeWarningKey
+
+  const visibleImportTasks = useMemo(
+    () => importTasks.filter((task) => !dismissedImportTaskIds[task.task_id]),
+    [dismissedImportTaskIds, importTasks],
+  )
+  const activeImportTasks = useMemo(
+    () => visibleImportTasks.filter((task) => task.status === 'pending' || task.status === 'running'),
+    [visibleImportTasks],
+  )
+  const finishedImportTasks = useMemo(
+    () => visibleImportTasks.filter((task) => task.status === 'completed' || task.status === 'failed'),
+    [visibleImportTasks],
+  )
+  const recentFinishedImportTasks = useMemo(() => finishedImportTasks.slice(0, 8), [finishedImportTasks])
+  const importTasksForPanel = useMemo(
+    () => [...activeImportTasks, ...recentFinishedImportTasks],
+    [activeImportTasks, recentFinishedImportTasks],
+  )
+  const showImportTaskPanel = !importPanelHidden && (enqueuePending || taskError || importTasksForPanel.length > 0)
+
+  useEffect(() => {
+    if (enqueuePending || taskError || activeImportTasks.length > 0) {
+      setImportPanelHidden(false)
+    }
+  }, [activeImportTasks.length, enqueuePending, taskError])
+
+  const clearFinishedImportTasks = useCallback(() => {
+    setDismissedImportTaskIds((previous) => {
+      const next = { ...previous }
+      for (const task of finishedImportTasks) {
+        next[task.task_id] = true
+      }
+      return next
+    })
+  }, [finishedImportTasks])
+
+  const clearAllImportTasks = useCallback(() => {
+    setDismissedImportTaskIds((previous) => {
+      const next = { ...previous }
+      for (const task of visibleImportTasks) {
+        next[task.task_id] = true
+      }
+      return next
+    })
+  }, [visibleImportTasks])
+
+  const retryImportTaskFromPanel = useCallback(
+    (taskId: string) => {
+      setDismissedImportTaskIds((previous) => {
+        if (!(taskId in previous)) {
+          return previous
+        }
+        const next = { ...previous }
+        delete next[taskId]
+        return next
+      })
+      void retryImportTask(taskId)
+    },
+    [retryImportTask],
+  )
+
+  const clearDatabaseForDev = useCallback(() => {
+    if (!mediaRepository.clearDatabase) {
+      setDatabaseResetError('当前后端不支持清除数据库')
+      return
+    }
+
+    const confirmed =
+      typeof window === 'undefined'
+        ? true
+        : window.confirm('清除数据库将移除评分/封面/任务/播放列表缓存。仅建议开发调试使用，确认继续？')
+
+    if (!confirmed) {
+      return
+    }
+
+    setDatabaseResetPending(true)
+    setDatabaseResetError(null)
+
+    void mediaRepository
+      .clearDatabase({ timeoutMs: 15_000 })
+      .then(() => {
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
+      })
+      .catch((error: unknown) => {
+        if (error instanceof Error && error.message.trim().length > 0) {
+          setDatabaseResetError(error.message)
+          return
+        }
+        setDatabaseResetError('清除数据库失败')
+      })
+      .finally(() => {
+        setDatabaseResetPending(false)
+      })
+  }, [mediaRepository])
 
   return (
     <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
@@ -1641,10 +1834,21 @@ function App() {
         </section>
       ) : null}
 
-      {runtimeCapabilityWarnings.length > 0 ? (
+      {showRuntimeCapabilityWarnings ? (
         <section className="runtime-warning-banner" role="status" aria-live="polite">
           <header>
             <strong>运行时降级策略已生效</strong>
+            <button
+              type="button"
+              onClick={() => {
+                setDismissedRuntimeWarningKey(runtimeWarningKey)
+                if (typeof window !== 'undefined') {
+                  window.localStorage.setItem(RUNTIME_WARNING_DISMISS_STORAGE_KEY, runtimeWarningKey)
+                }
+              }}
+            >
+              忽略此告警
+            </button>
           </header>
           <ul>
             {runtimeCapabilityWarnings.map((item) => (
@@ -1657,11 +1861,21 @@ function App() {
         </section>
       ) : null}
 
-      {enqueuePending || taskError || importTasks.length > 0 ? (
+      {showImportTaskPanel ? (
         <section className="import-task-panel" role="status" aria-live="polite">
           <header>
             <strong>导入任务</strong>
+            <span>{`进行中 ${activeImportTasks.length}`}</span>
             {enqueuePending ? <span>正在入队...</span> : null}
+            <button type="button" onClick={() => setImportPanelHidden(true)}>
+              隐藏
+            </button>
+            <button type="button" onClick={clearFinishedImportTasks}>
+              清理已完成
+            </button>
+            <button type="button" onClick={clearAllImportTasks}>
+              清空列表
+            </button>
           </header>
           {taskError ? (
             <p>
@@ -1671,9 +1885,9 @@ function App() {
               </button>
             </p>
           ) : null}
-          {importTasks.length > 0 ? (
+          {importTasksForPanel.length > 0 ? (
             <ul>
-              {importTasks.slice(0, 8).map((task) => {
+              {importTasksForPanel.map((task) => {
                 const sourceLabel =
                   task.source === 'dialog-folders'
                     ? '文件夹'
@@ -1682,15 +1896,25 @@ function App() {
                       : task.source === 'paste'
                         ? '粘贴'
                         : '文件'
+                const progressPercent = Math.round(clamp(task.progress, 0, 1) * 100)
 
                 return (
                   <li key={task.task_id}>
                     <span>{`${sourceLabel} | ${task.processed_count}/${task.total_count}`}</span>
                     <span>{task.status}</span>
+                    <progress max={100} value={progressPercent} />
+                    <span>{`${progressPercent}%`}</span>
                     <span>{task.message ?? '-'}</span>
                     {task.status === 'failed' ? (
-                      <button type="button" onClick={() => void retryImportTask(task.task_id)}>
+                      <button type="button" onClick={() => retryImportTaskFromPanel(task.task_id)}>
                         重试
+                      </button>
+                    ) : task.status === 'completed' ? (
+                      <button
+                        type="button"
+                        onClick={() => setDismissedImportTaskIds((previous) => ({ ...previous, [task.task_id]: true }))}
+                      >
+                        移除
                       </button>
                     ) : null}
                   </li>
@@ -1738,6 +1962,7 @@ function App() {
         focusedImageSrc={fullscreenImageSrc}
         focusedVideo={focusedVideoEffective}
         focusedVideoSrc={focusedVideoSrc}
+        focusedVideoCoverImageSrc={focusedVideoCoverImageSrc}
         durationSec={focusedVideoDurationSec}
         focusedVideoCoverColor={focusedVideoCoverColor}
         videoTime={videoTime}
@@ -1834,6 +2059,8 @@ function App() {
         shortcutConflicts={shortcutConflicts}
         vectorControls={vectorControls}
         vectorControlConflicts={vectorControlConflicts}
+        databaseResetPending={databaseResetPending}
+        databaseResetError={databaseResetError}
         onClose={() => updateSettings({ settingsOpen: false })}
         onHeaderHeightChange={(value) => updateSettings({ headerHeight: value })}
         onSettingsFontSizeChange={(value) => updateSettings({ settingsFontSize: value })}
@@ -1862,6 +2089,7 @@ function App() {
         onSetVectorControl={setVectorControl}
         onResetShortcuts={resetShortcuts}
         onResetVectorControls={resetVectorControls}
+        onClearDatabase={clearDatabaseForDev}
       />
 
       {dragOverlayActive ? (

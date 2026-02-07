@@ -5,9 +5,11 @@ import {
   VIDEO_ITEMS,
 } from '../../../mockData'
 import {
+  clearDatabaseResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   pickImportPathsResponseSchema,
+  readClipboardImportPathsResponseSchema,
   readImportTasksResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImageMetadataResponseSchema,
@@ -22,6 +24,7 @@ import {
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
+  type ClearDatabaseResponseDto,
   type FeatureFilterDto,
   type ImageItemDto,
   type ImagePackageDto,
@@ -31,6 +34,7 @@ import {
   type MediaLocatorDto,
   type PickImportPathsRequestDto,
   type PickImportPathsResponseDto,
+  type ReadClipboardImportPathsResponseDto,
   type ReadImportTasksResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type ReadImageMetadataRequestDto,
@@ -569,6 +573,17 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     return resolveAsync(response, options)
   }
 
+  readClipboardImportPathsSync(): ReadClipboardImportPathsResponseDto {
+    return readClipboardImportPathsResponseSchema.parse({
+      paths: [],
+    })
+  }
+
+  async readClipboardImportPaths(options?: RepositoryRequestOptions): Promise<ReadClipboardImportPathsResponseDto> {
+    const response = this.readClipboardImportPathsSync()
+    return resolveAsync(response, options)
+  }
+
   enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto {
     const now = Date.now()
     const task: ImportTaskDto = {
@@ -691,6 +706,21 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     options?: RepositoryRequestOptions,
   ): Promise<ReadRuntimeCapabilitiesResponseDto> {
     const response = this.readRuntimeCapabilitiesSync()
+    return resolveAsync(response, options)
+  }
+
+  clearDatabaseSync(): ClearDatabaseResponseDto {
+    this.playlistIds = []
+    this.importTasks = []
+
+    return clearDatabaseResponseSchema.parse({
+      cleared: true,
+      cleared_at_ms: Date.now(),
+    })
+  }
+
+  async clearDatabase(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto> {
+    const response = this.clearDatabaseSync()
     return resolveAsync(response, options)
   }
 }

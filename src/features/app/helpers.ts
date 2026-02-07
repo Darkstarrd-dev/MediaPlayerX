@@ -84,7 +84,30 @@ export function dataTransferHasFiles(dataTransfer: DataTransfer | null): boolean
     return false
   }
 
-  return Array.from(dataTransfer.types).includes('Files')
+  if ((dataTransfer.files?.length ?? 0) > 0) {
+    return true
+  }
+
+  if (Array.from(dataTransfer.items ?? []).some((item) => item.kind === 'file')) {
+    return true
+  }
+
+  const normalizedTypes = Array.from(dataTransfer.types).map((type) => type.toLowerCase())
+  if (normalizedTypes.includes('files')) {
+    return true
+  }
+
+  try {
+    const uriList = dataTransfer.getData('text/uri-list') ?? ''
+    const plainText = dataTransfer.getData('text/plain') ?? ''
+    if (extractPathsFromClipboard(uriList).length > 0 || extractPathsFromClipboard(plainText).length > 0) {
+      return true
+    }
+  } catch {
+    return false
+  }
+
+  return false
 }
 
 function includesText(haystack: string, needle: string): boolean {
@@ -156,6 +179,16 @@ export function buildInitialVideoCoverMap(videos: Array<Pick<VideoItem, 'id' | '
       hash = (hash * 31 + video.id.charCodeAt(i)) % 360
     }
     map[video.id] = `hsl(${hash}, 44%, 40%)`
+  }
+  return map
+}
+
+export function buildInitialVideoCoverImageMap(
+  videos: Array<Pick<VideoItem, 'id' | 'coverImagePath'>>,
+): Record<string, string | null> {
+  const map: Record<string, string | null> = {}
+  for (const video of videos) {
+    map[video.id] = video.coverImagePath ?? null
   }
   return map
 }

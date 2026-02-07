@@ -10,6 +10,7 @@ interface VideoMainSectionProps {
   videoVolume: number
   videoMuted: boolean
   videoSourceUrl: string | null
+  coverImageUrl: string | null
   active: boolean
   coverColor: string
   onTogglePlay: () => void
@@ -33,6 +34,7 @@ function VideoMainSection({
   videoVolume,
   videoMuted,
   videoSourceUrl,
+  coverImageUrl,
   active,
   coverColor,
   onTogglePlay,
@@ -83,6 +85,7 @@ function VideoMainSection({
           <video
             ref={videoRef}
             className="video-screen-media"
+            style={{ opacity: videoPlaying ? 1 : 0 }}
             src={videoSourceUrl}
             preload="metadata"
             playsInline
@@ -104,6 +107,8 @@ function VideoMainSection({
             }}
           />
         ) : null}
+
+        {!videoPlaying && coverImageUrl ? <img className="video-screen-cover-image" src={coverImageUrl} alt="视频封面" /> : null}
 
         <div className="video-screen-hud">
           {videoPlaying ? (

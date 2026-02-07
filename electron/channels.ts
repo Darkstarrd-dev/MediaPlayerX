@@ -9,11 +9,13 @@ export const BACKEND_CHANNELS = {
   readPlaylist: 'backend:readPlaylist',
   writePlaylist: 'backend:writePlaylist',
   pickImportPaths: 'backend:pickImportPaths',
+  readClipboardImportPaths: 'backend:readClipboardImportPaths',
   enqueueImportTask: 'backend:enqueueImportTask',
   readImportTasks: 'backend:readImportTasks',
   retryImportTask: 'backend:retryImportTask',
   readRuntimeCapabilities: 'backend:readRuntimeCapabilities',
   readMediaAccessAudit: 'backend:readMediaAccessAudit',
+  clearDatabase: 'backend:clearDatabase',
 } as const
 
 export const MEDIA_PROTOCOL_SCHEME = 'mediaplayerx-media'

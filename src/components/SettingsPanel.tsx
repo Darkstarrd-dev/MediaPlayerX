@@ -45,6 +45,8 @@ interface SettingsPanelProps {
   shortcutConflicts: ShortcutConflict[]
   vectorControls: VectorControlMap
   vectorControlConflicts: VectorControlConflict[]
+  databaseResetPending: boolean
+  databaseResetError: string | null
   onClose: () => void
   onHeaderHeightChange: (value: number) => void
   onSettingsFontSizeChange: (value: number) => void
@@ -73,9 +75,10 @@ interface SettingsPanelProps {
   onSetVectorControl: (action: VectorControlAction, binding: string) => void
   onResetShortcuts: () => void
   onResetVectorControls: () => void
+  onClearDatabase: () => void
 }
 
-type SettingsSection = 'layout' | 'model' | 'shortcuts' | 'theme' | 'space3d'
+type SettingsSection = 'layout' | 'model' | 'database' | 'shortcuts' | 'theme' | 'space3d'
 
 type BindingTarget =
   | { kind: 'shortcut'; action: ShortcutAction; label: string }
@@ -84,6 +87,7 @@ type BindingTarget =
 const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
   { id: 'layout', label: '布局参数' },
   { id: 'model', label: '模型参数' },
+  { id: 'database', label: '数据库设置' },
   { id: 'shortcuts', label: '快捷键设置' },
   { id: 'theme', label: 'theme 设置' },
   { id: 'space3d', label: '3D 设置' },
@@ -118,6 +122,8 @@ function SettingsPanel({
   shortcutConflicts,
   vectorControls,
   vectorControlConflicts,
+  databaseResetPending,
+  databaseResetError,
   onClose,
   onHeaderHeightChange,
   onSettingsFontSizeChange,
@@ -146,6 +152,7 @@ function SettingsPanel({
   onSetVectorControl,
   onResetShortcuts,
   onResetVectorControls,
+  onClearDatabase,
 }: SettingsPanelProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>('layout')
   const [bindingTarget, setBindingTarget] = useState<BindingTarget | null>(null)
@@ -376,6 +383,22 @@ function SettingsPanel({
               </ul>
             )}
           </div>
+        </div>
+      )
+    }
+
+    if (activeSection === 'database') {
+      return (
+        <div className="settings-block">
+          <h3>数据库设置</h3>
+          <p className="settings-placeholder">开发阶段可使用此功能清空本地数据库后重启验证初始化链路。</p>
+          <label>
+            清除数据库（开发）
+            <button type="button" className="settings-danger-btn" disabled={databaseResetPending} onClick={onClearDatabase}>
+              {databaseResetPending ? '清除中...' : '清除数据库'}
+            </button>
+          </label>
+          {databaseResetError ? <p className="settings-danger-text">{databaseResetError}</p> : null}
         </div>
       )
     }

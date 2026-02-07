@@ -295,7 +295,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByText(/第\s+\d+\s+\/\s+\d+\s+页/)).not.toBeInTheDocument()
   })
 
-  it('视频切换后回到封面暂停态，Save as cover 走后端写链路并更新封面色', async () => {
+  it('视频切换后回到封面暂停态，Save as cover 走后端写链路并保持封面态', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
@@ -306,15 +306,11 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
     expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
 
-    const videoScreen = document.querySelector('.video-screen') as HTMLDivElement | null
-    expect(videoScreen).not.toBeNull()
-    const beforeBackground = videoScreen?.style.background
-
     fireEvent.click(screen.getByRole('button', { name: 'Save as cover' }))
 
     await waitFor(() => {
-      const currentBackground = (document.querySelector('.video-screen') as HTMLDivElement | null)?.style.background
-      expect(currentBackground).not.toBe(beforeBackground)
+      expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
     })
 
     const speedSlider = screen.getByRole('slider', { name: '倍速滑条' })
@@ -328,10 +324,12 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
 
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
-    expect(screen.getByText('图片 #2')).toBeInTheDocument()
+    expect(screen.getByAltText('图片 #2')).toBeInTheDocument()
     expect(screen.queryByLabelText('调整全屏分屏比例')).not.toBeInTheDocument()
 
-    fireEvent.mouseMove(screen.getByText('图片 #2'), { clientY: window.innerHeight - 4 })
+    const fullscreenLayer = document.querySelector('.fullscreen-layer') as HTMLElement | null
+    expect(fullscreenLayer).not.toBeNull()
+    fireEvent.mouseMove(fullscreenLayer as Element, { clientY: window.innerHeight - 4 })
     fireEvent.click(screen.getByRole('button', { name: '双显示' }))
     expect(screen.getByLabelText('调整全屏分屏比例')).toBeInTheDocument()
     expect(screen.getByText(/焦点：图片/)).toBeInTheDocument()
@@ -341,31 +339,33 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '单显示' }))
     expect(screen.queryByLabelText('调整全屏分屏比例')).not.toBeInTheDocument()
-    expect(screen.getByText('图片 #2')).toBeInTheDocument()
+    expect(screen.getByAltText('图片 #2')).toBeInTheDocument()
     expect(screen.queryByText(/封面态（待播放）/)).not.toBeInTheDocument()
 
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
-    expect(screen.queryByText('图片 #2')).not.toBeInTheDocument()
+    expect(screen.queryByAltText('图片 #2')).not.toBeInTheDocument()
   })
 
   it('全屏图片支持首末跳转、跨包翻页与上个包下个包按钮', () => {
     render(<App />)
 
     const readToolbarTitle = () => document.querySelector('.main-toolbar strong')?.textContent ?? ''
+    const readFullscreenImageAlt = () =>
+      (document.querySelector('.fullscreen-media-image-element') as HTMLImageElement | null)?.getAttribute('alt') ?? ''
 
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
 
     fireEvent.keyDown(window, { key: 'ArrowDown', code: 'ArrowDown' })
-    expect(screen.getByText('图片 #36')).toBeInTheDocument()
+    expect(readFullscreenImageAlt()).toBe('图片 #36')
 
     const titleBeforeCross = readToolbarTitle()
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
-    expect(screen.getByText('图片 #1')).toBeInTheDocument()
+    expect(readFullscreenImageAlt()).toBe('图片 #1')
     expect(readToolbarTitle()).not.toBe(titleBeforeCross)
 
     fireEvent.keyDown(window, { key: 'ArrowUp', code: 'ArrowUp' })
-    expect(screen.getByText('图片 #1')).toBeInTheDocument()
+    expect(readFullscreenImageAlt()).toBe('图片 #1')
 
     const titleBeforeCtrlPackage = readToolbarTitle()
     fireEvent.keyDown(window, { key: 'ArrowLeft', code: 'ArrowLeft', ctrlKey: true })

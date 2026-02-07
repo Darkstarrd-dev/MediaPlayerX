@@ -1,8 +1,10 @@
 import type {
+  ClearDatabaseResponseDto,
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   PickImportPathsRequestDto,
   PickImportPathsResponseDto,
+  ReadClipboardImportPathsResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
@@ -67,6 +69,7 @@ export interface ReadonlyMediaRepository {
     request: PickImportPathsRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PickImportPathsResponseDto>
+  readClipboardImportPaths?(options?: RepositoryRequestOptions): Promise<ReadClipboardImportPathsResponseDto>
   enqueueImportTask(
     request: EnqueueImportTaskRequestDto,
     options?: RepositoryRequestOptions,
@@ -78,6 +81,7 @@ export interface ReadonlyMediaRepository {
   ): Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
+  clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
 }
 
 export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
@@ -90,11 +94,13 @@ export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
   readPlaylistSync(): ReadPlaylistResponseDto
   writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto
   pickImportPathsSync?(request: PickImportPathsRequestDto): PickImportPathsResponseDto
+  readClipboardImportPathsSync?(): ReadClipboardImportPathsResponseDto
   enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto
   readImportTasksSync(): ReadImportTasksResponseDto
   retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto
   readMediaAccessAuditSync(): MediaAccessAuditResponseDto
   readRuntimeCapabilitiesSync(): ReadRuntimeCapabilitiesResponseDto
+  clearDatabaseSync?(): ClearDatabaseResponseDto
 }
 
 export type RepositoryMode = 'mock' | 'real'

@@ -243,15 +243,18 @@ describe('useWriteDataAccess', () => {
     const { result } = renderHook(() => {
       const [gradeByPackage, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
       const [videoCoverById, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(0, 40%, 40%)' })
+      const [videoCoverImageById, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
       const write = useWriteDataAccess({
         repository,
         setGradeByPackage,
         setVideoCoverById,
+        setVideoCoverImageById,
       })
 
       return {
         gradeByPackage,
         videoCoverById,
+        videoCoverImageById,
         write,
       }
     })
@@ -271,15 +274,18 @@ describe('useWriteDataAccess', () => {
     const { result } = renderHook(() => {
       const [gradeByPackage, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
       const [videoCoverById, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
+      const [videoCoverImageById, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
       const write = useWriteDataAccess({
         repository,
         setGradeByPackage,
         setVideoCoverById,
+        setVideoCoverImageById,
       })
 
       return {
         gradeByPackage,
         videoCoverById,
+        videoCoverImageById,
         write,
       }
     })
@@ -298,15 +304,18 @@ describe('useWriteDataAccess', () => {
     const { result } = renderHook(() => {
       const [gradeByPackage, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
       const [videoCoverById, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
+      const [videoCoverImageById, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
       const write = useWriteDataAccess({
         repository,
         setGradeByPackage,
         setVideoCoverById,
+        setVideoCoverImageById,
       })
 
       return {
         gradeByPackage,
         videoCoverById,
+        videoCoverImageById,
         write,
       }
     })

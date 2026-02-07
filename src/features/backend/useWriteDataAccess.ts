@@ -15,6 +15,7 @@ interface UseWriteDataAccessParams {
   repository: ReadonlyMediaRepository
   setGradeByPackage: Dispatch<SetStateAction<Record<string, number | null>>>
   setVideoCoverById: Dispatch<SetStateAction<Record<string, string>>>
+  setVideoCoverImageById: Dispatch<SetStateAction<Record<string, string | null>>>
 }
 
 interface UseWriteDataAccessResult {
@@ -36,6 +37,7 @@ export function useWriteDataAccess({
   repository,
   setGradeByPackage,
   setVideoCoverById,
+  setVideoCoverImageById,
 }: UseWriteDataAccessParams): UseWriteDataAccessResult {
   const [gradePending, setGradePending] = useState(false)
   const [coverPending, setCoverPending] = useState(false)
@@ -87,12 +89,17 @@ export function useWriteDataAccess({
   const saveVideoCover = useCallback(
     async (videoId: string, timeSec: number, optimisticColor: string) => {
       let previousColor: string | null = null
+      let previousCoverImagePath: string | null = null
       setVideoCoverById((previous) => {
         previousColor = previous[videoId] ?? null
         return {
           ...previous,
           [videoId]: optimisticColor,
         }
+      })
+      setVideoCoverImageById((previous) => {
+        previousCoverImagePath = previous[videoId] ?? null
+        return previous
       })
 
       setCoverPending(true)
@@ -114,17 +121,25 @@ export function useWriteDataAccess({
           ...previous,
           [videoId]: response.cover_color,
         }))
+        setVideoCoverImageById((previous) => ({
+          ...previous,
+          [videoId]: response.cover_image_path,
+        }))
       } catch (error: unknown) {
         setVideoCoverById((previous) => ({
           ...previous,
           [videoId]: previousColor ?? optimisticColor,
+        }))
+        setVideoCoverImageById((previous) => ({
+          ...previous,
+          [videoId]: previousCoverImagePath,
         }))
         setCoverError(toErrorMessage(error))
       } finally {
         setCoverPending(false)
       }
     },
-    [repository, setVideoCoverById],
+    [repository, setVideoCoverById, setVideoCoverImageById],
   )
 
   return {

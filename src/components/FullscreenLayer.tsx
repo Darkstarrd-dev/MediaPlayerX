@@ -55,6 +55,7 @@ interface FullscreenLayerProps {
   focusedImageSrc: string | null
   focusedVideo: VideoItem | null
   focusedVideoSrc: string | null
+  focusedVideoCoverImageSrc: string | null
   durationSec: number
   focusedVideoCoverColor: string
   videoTime: number
@@ -196,6 +197,7 @@ function FullscreenLayer({
   focusedImageSrc,
   focusedVideo,
   focusedVideoSrc,
+  focusedVideoCoverImageSrc,
   durationSec,
   focusedVideoCoverColor,
   videoTime,
@@ -239,6 +241,7 @@ function FullscreenLayer({
   const [videoTransform, setVideoTransform] = useState<PaneTransform>(DEFAULT_PANE_TRANSFORM)
   const [imageAlign, setImageAlign] = useState<PaneAlign>(DEFAULT_PANE_ALIGN)
   const [videoAlign, setVideoAlign] = useState<PaneAlign>(DEFAULT_PANE_ALIGN)
+  const [loadedImageAspect, setLoadedImageAspect] = useState<number | null>(null)
   const [videoControlsVisible, setVideoControlsVisible] = useState(false)
   const [draggingPane, setDraggingPane] = useState<PaneKey | null>(null)
 
@@ -248,7 +251,7 @@ function FullscreenLayer({
   const autoplayEnabledForFocus = mode === 'image' && focusedPane === 'image'
   const clampedVideoTime = clamp(videoTime, 0, Math.max(0, durationSec))
 
-  const imageAspect = focusedImage ? focusedImage.width / focusedImage.height : 1
+  const imageAspect = loadedImageAspect ?? (focusedImage ? focusedImage.width / focusedImage.height : 1)
   const videoAspect = focusedVideo ? focusedVideo.width / focusedVideo.height : 16 / 9
 
   const imageGeometry = useMemo(
@@ -449,6 +452,10 @@ function FullscreenLayer({
   )
 
   useEffect(() => {
+    setLoadedImageAspect(null)
+  }, [focusedImage?.id, focusedImageSrc])
+
+  useEffect(() => {
     if (!fullscreenActive) {
       return
     }
@@ -612,7 +619,6 @@ function FullscreenLayer({
             width: `${imageGeometry.width}px`,
             height: `${imageGeometry.height}px`,
             transform: `translate3d(${imageTransform.offsetX}px, ${imageTransform.offsetY}px, 0)`,
-            background: focusedImage?.color ?? '#4f5967',
           }}
         >
           {focusedImageSrc ? (
@@ -621,12 +627,14 @@ function FullscreenLayer({
               src={focusedImageSrc}
               alt={`图片 #${focusedImage?.ordinal ?? '-'}`}
               draggable={false}
+              onLoad={(event) => {
+                const imageElement = event.currentTarget
+                if (imageElement.naturalWidth > 0 && imageElement.naturalHeight > 0) {
+                  setLoadedImageAspect(imageElement.naturalWidth / imageElement.naturalHeight)
+                }
+              }}
             />
           ) : null}
-          <div className="fullscreen-media-overlay">
-            <span>{`图片 #${focusedImage?.ordinal ?? '-'}`}</span>
-            <small>{focusedImage ? `${focusedImage.width} x ${focusedImage.height}` : '无可用图片'}</small>
-          </div>
         </div>
       </div>
     </section>
@@ -722,6 +730,7 @@ function FullscreenLayer({
             <video
               ref={videoRef}
               className="fullscreen-media-video-element"
+              style={{ opacity: videoPlaying ? 1 : 0 }}
               src={focusedVideoSrc}
               preload="metadata"
               playsInline
@@ -744,14 +753,9 @@ function FullscreenLayer({
             />
           ) : null}
 
-          <div className="fullscreen-media-overlay">
-            <span>
-              {videoPlaying
-                ? `真实视频 ${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`
-                : `封面态（待播放） ${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}
-            </span>
-            <small>{focusedVideo ? `${focusedVideo.fileName} (${focusedVideo.width} x ${focusedVideo.height})` : '无可用视频'}</small>
-          </div>
+          {!videoPlaying && focusedVideoCoverImageSrc ? (
+            <img className="fullscreen-media-video-cover" src={focusedVideoCoverImageSrc} alt="视频封面" />
+          ) : null}
 
           {!focusedVideoSrc ? <div className="fullscreen-media-empty">无可用视频源</div> : null}
         </div>
@@ -771,6 +775,19 @@ function FullscreenLayer({
       </div>
     </section>
   )
+
+  const footerImageInfo = focusedImage
+    ? `图片 #${focusedImage.ordinal} | ${focusedImage.width} x ${focusedImage.height}`
+    : '无可用图片'
+  const footerVideoInfo = focusedVideo
+    ? `${videoPlaying ? '真实视频' : '封面态'} ${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)} | ${focusedVideo.fileName} (${focusedVideo.width} x ${focusedVideo.height})`
+    : '无可用视频'
+  const footerInfoText =
+    fullscreenDisplay === 'image-only'
+      ? footerImageInfo
+      : fullscreenDisplay === 'video-only'
+        ? footerVideoInfo
+        : `${footerImageInfo} || ${footerVideoInfo}`
 
   return (
     <div
@@ -809,6 +826,7 @@ function FullscreenLayer({
 
       {showFullscreenFooter ? (
         <footer className="fullscreen-footer">
+          <div className="fullscreen-meta-line">{footerInfoText}</div>
           <div className="fullscreen-group">
             <button className={fullscreenDisplay === 'dual' ? 'is-active' : ''} type="button" onClick={toggleDualDisplay}>
               {fullscreenDisplay === 'dual' ? '单显示' : '双显示'}

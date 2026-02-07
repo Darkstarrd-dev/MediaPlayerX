@@ -68,6 +68,7 @@ export const videoItemDtoSchema = z.object({
   height: z.number().int().positive(),
   size_mb: nonNegativeIntSchema,
   cover_color: z.string().min(1),
+  cover_image_path: z.string().min(1).nullable().optional(),
   media_locator: mediaLocatorDtoSchema,
 })
 
@@ -251,6 +252,15 @@ export const pickImportPathsResponseSchema = z.object({
   paths: z.array(z.string().min(1)),
 })
 
+export const readClipboardImportPathsResponseSchema = z.object({
+  paths: z.array(z.string().min(1)),
+})
+
+export const clearDatabaseResponseSchema = z.object({
+  cleared: z.boolean(),
+  cleared_at_ms: z.number().int().positive(),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -325,6 +335,8 @@ export type RetryImportTaskRequestDto = z.infer<typeof retryImportTaskRequestSch
 export type RetryImportTaskResponseDto = z.infer<typeof retryImportTaskResponseSchema>
 export type PickImportPathsRequestDto = z.infer<typeof pickImportPathsRequestSchema>
 export type PickImportPathsResponseDto = z.infer<typeof pickImportPathsResponseSchema>
+export type ReadClipboardImportPathsResponseDto = z.infer<typeof readClipboardImportPathsResponseSchema>
+export type ClearDatabaseResponseDto = z.infer<typeof clearDatabaseResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

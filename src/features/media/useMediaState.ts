@@ -1,6 +1,6 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react'
 
-import { buildInitialVideoCoverMap } from '../app/helpers'
+import { buildInitialVideoCoverImageMap, buildInitialVideoCoverMap } from '../app/helpers'
 import { clamp } from '../../utils/ui'
 import type { VideoItem } from '../../types'
 
@@ -31,6 +31,8 @@ interface UseMediaStateResult {
   setVideoMuted: Dispatch<SetStateAction<boolean>>
   videoCoverById: Record<string, string>
   setVideoCoverById: Dispatch<SetStateAction<Record<string, string>>>
+  videoCoverImageById: Record<string, string | null>
+  setVideoCoverImageById: Dispatch<SetStateAction<Record<string, string | null>>>
   videoDurationById: Record<string, number>
   setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
   fullscreenActive: boolean
@@ -63,6 +65,9 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
   const [videoVolume, setVideoVolume] = useState(60)
   const [videoMuted, setVideoMuted] = useState(false)
   const [videoCoverById, setVideoCoverById] = useState<Record<string, string>>(() => buildInitialVideoCoverMap(videos))
+  const [videoCoverImageById, setVideoCoverImageById] = useState<Record<string, string | null>>(() =>
+    buildInitialVideoCoverImageMap(videos),
+  )
   const [videoDurationById, setVideoDurationById] = useState<Record<string, number>>(() =>
     Object.fromEntries(videos.map((video) => [video.id, Math.max(0, video.durationSec)])),
   )
@@ -130,6 +135,8 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
     setVideoMuted,
     videoCoverById,
     setVideoCoverById,
+    videoCoverImageById,
+    setVideoCoverImageById,
     videoDurationById,
     setVideoDurationById,
     fullscreenActive,

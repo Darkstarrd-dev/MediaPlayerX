@@ -1,8 +1,10 @@
 import {
+  clearDatabaseResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
   pickImportPathsResponseSchema,
+  readClipboardImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -16,8 +18,10 @@ import {
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
+  type ClearDatabaseResponseDto,
   type PickImportPathsRequestDto,
   type PickImportPathsResponseDto,
+  type ReadClipboardImportPathsResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
@@ -237,6 +241,16 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
     return pickImportPathsResponseSchema.parse(response)
   }
 
+  async readClipboardImportPaths(options?: RepositoryRequestOptions): Promise<ReadClipboardImportPathsResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.readClipboardImportPaths(), options)
+    return readClipboardImportPathsResponseSchema.parse(response)
+  }
+
   async enqueueImportTask(
     request: EnqueueImportTaskRequestDto,
     options?: RepositoryRequestOptions,
@@ -291,5 +305,15 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.readRuntimeCapabilities(), options)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  }
+
+  async clearDatabase(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.clearDatabase(), options)
+    return clearDatabaseResponseSchema.parse(response)
   }
 }
