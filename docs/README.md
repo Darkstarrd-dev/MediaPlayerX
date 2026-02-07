@@ -32,6 +32,8 @@
 - 为控制复杂度，`App.tsx` 已进一步模块拆分：检索容器抽离为 `components/SearchPanel.tsx`，特征检索状态/过滤逻辑下沉到 `features/search/useFeatureSearch.ts`。
 - 主界面布局渲染层已从 `App.tsx` 抽离为 `components/AppWorkspace.tsx`，用于承载 Sidebar/Workspace/Main/Metadata 编排。
 - 本轮继续模块化：`features/app/useImageBrowserViewModel.ts` 聚合图片浏览核心视图模型，`features/app/useAppEffects.ts` 集中副作用同步链，`features/layout/usePaneResizers.ts` 统一分割条拖拽与比例归一化。
+- Header 已新增“向量宇宙”入口：可打开独立 Three.js 3D 漫游层（模拟阶段），当前实现为 billboard + 距离 LOD + tag 颜色映射 + 正前方 Raycast 命中选择，并已将控制参数接入设置面板 3D 设置页；向量宇宙范围与 Sidebar 当前范围保持一致，进入即自动捕捉鼠标，且以进入图片作为坐标原点。快捷键与 3D 控制映射现支持弹窗式新增/清除（键盘/鼠标/组合），并新增离散度与边界穿越控制。
+- 向量宇宙前端内容已阶段性完成：包含二次确认退出、全息球体位置控件（深度亮度、方向箭头、越界穿入）与设置面板参数化调节。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。

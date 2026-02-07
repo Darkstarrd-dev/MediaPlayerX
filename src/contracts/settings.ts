@@ -35,6 +35,13 @@ export const appSettingsSchema = z.object({
   thumbnailWidth: z.number().min(128).max(2048),
   lmStudioEndpoint: z.string().min(1),
   lmStudioModel: z.string().min(1),
+  vectorUniverseMoveSpeed: z.number().min(4).max(80),
+  vectorUniverseSprintMultiplier: z.number().min(1).max(4),
+  vectorUniverseLookSensitivity: z.number().min(0.0005).max(0.01),
+  vectorUniverseRaycastDistance: z.number().min(4).max(120),
+  vectorUniverseHelperScale: z.number().min(40).max(600),
+  vectorUniverseDispersion: z.number().min(0.2).max(6),
+  vectorUniverseWidgetSize: z.number().min(140).max(340),
 })
 
 export type AppSettings = z.infer<typeof appSettingsSchema>

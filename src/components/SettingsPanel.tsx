@@ -1,11 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
+  appendShortcutBinding,
+  keyboardEventToCombo,
+  mouseEventToCombo,
   SHORTCUT_DEFINITIONS,
   type ShortcutAction,
   type ShortcutConflict,
   type ShortcutMap,
 } from '../shortcuts'
+import {
+  VECTOR_CONTROL_DEFINITIONS,
+  type VectorControlAction,
+  type VectorControlConflict,
+  type VectorControlMap,
+} from '../vectorControls'
 
 interface SettingsPanelProps {
   settingsOpen: boolean
@@ -25,8 +34,17 @@ interface SettingsPanelProps {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  vectorUniverseMoveSpeed: number
+  vectorUniverseSprintMultiplier: number
+  vectorUniverseLookSensitivity: number
+  vectorUniverseRaycastDistance: number
+  vectorUniverseHelperScale: number
+  vectorUniverseDispersion: number
+  vectorUniverseWidgetSize: number
   shortcuts: ShortcutMap
   shortcutConflicts: ShortcutConflict[]
+  vectorControls: VectorControlMap
+  vectorControlConflicts: VectorControlConflict[]
   onClose: () => void
   onHeaderHeightChange: (value: number) => void
   onSettingsFontSizeChange: (value: number) => void
@@ -44,11 +62,24 @@ interface SettingsPanelProps {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
+  onVectorUniverseMoveSpeedChange: (value: number) => void
+  onVectorUniverseSprintMultiplierChange: (value: number) => void
+  onVectorUniverseLookSensitivityChange: (value: number) => void
+  onVectorUniverseRaycastDistanceChange: (value: number) => void
+  onVectorUniverseHelperScaleChange: (value: number) => void
+  onVectorUniverseDispersionChange: (value: number) => void
+  onVectorUniverseWidgetSizeChange: (value: number) => void
   onSetShortcut: (action: ShortcutAction, binding: string) => void
+  onSetVectorControl: (action: VectorControlAction, binding: string) => void
   onResetShortcuts: () => void
+  onResetVectorControls: () => void
 }
 
 type SettingsSection = 'layout' | 'model' | 'shortcuts' | 'theme' | 'space3d'
+
+type BindingTarget =
+  | { kind: 'shortcut'; action: ShortcutAction; label: string }
+  | { kind: 'vector'; action: VectorControlAction; label: string }
 
 const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
   { id: 'layout', label: '布局参数' },
@@ -76,8 +107,17 @@ function SettingsPanel({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
+  vectorUniverseMoveSpeed,
+  vectorUniverseSprintMultiplier,
+  vectorUniverseLookSensitivity,
+  vectorUniverseRaycastDistance,
+  vectorUniverseHelperScale,
+  vectorUniverseDispersion,
+  vectorUniverseWidgetSize,
   shortcuts,
   shortcutConflicts,
+  vectorControls,
+  vectorControlConflicts,
   onClose,
   onHeaderHeightChange,
   onSettingsFontSizeChange,
@@ -95,19 +135,140 @@ function SettingsPanel({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
+  onVectorUniverseMoveSpeedChange,
+  onVectorUniverseSprintMultiplierChange,
+  onVectorUniverseLookSensitivityChange,
+  onVectorUniverseRaycastDistanceChange,
+  onVectorUniverseHelperScaleChange,
+  onVectorUniverseDispersionChange,
+  onVectorUniverseWidgetSizeChange,
   onSetShortcut,
+  onSetVectorControl,
   onResetShortcuts,
+  onResetVectorControls,
 }: SettingsPanelProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>('layout')
+  const [bindingTarget, setBindingTarget] = useState<BindingTarget | null>(null)
+  const [capturingTarget, setCapturingTarget] = useState<BindingTarget | null>(null)
+  const [capturedCombo, setCapturedCombo] = useState('')
+  const captureDialogRef = useRef<HTMLDivElement>(null)
+
+  const shortcutLabelByAction = useMemo(
+    () => new Map(SHORTCUT_DEFINITIONS.map((definition) => [definition.action, definition.label])),
+    [],
+  )
+  const vectorLabelByAction = useMemo(
+    () => new Map(VECTOR_CONTROL_DEFINITIONS.map((definition) => [definition.action, definition.label])),
+    [],
+  )
+
+  const getBinding = (target: BindingTarget): string => {
+    return target.kind === 'shortcut' ? shortcuts[target.action] : vectorControls[target.action]
+  }
+
+  const setBinding = (target: BindingTarget, binding: string) => {
+    if (target.kind === 'shortcut') {
+      onSetShortcut(target.action, binding)
+      return
+    }
+    onSetVectorControl(target.action, binding)
+  }
 
   useEffect(() => {
     if (!settingsOpen) {
       setActiveSection('layout')
+      setBindingTarget(null)
+      setCapturingTarget(null)
+      setCapturedCombo('')
     }
   }, [settingsOpen])
 
+  useEffect(() => {
+    if (!capturingTarget) {
+      return
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      const combo = keyboardEventToCombo(event)
+      if (!combo) {
+        return
+      }
+      setCapturedCombo(combo)
+    }
+
+    const onMouseDown = (event: MouseEvent) => {
+      const targetNode = event.target as Node | null
+      if (targetNode && captureDialogRef.current?.contains(targetNode)) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      const combo = mouseEventToCombo(event)
+      if (!combo) {
+        return
+      }
+      setCapturedCombo(combo)
+    }
+
+    window.addEventListener('keydown', onKeyDown, true)
+    window.addEventListener('mousedown', onMouseDown, true)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true)
+      window.removeEventListener('mousedown', onMouseDown, true)
+    }
+  }, [capturingTarget])
+
   if (!settingsOpen) {
     return null
+  }
+
+  const openBindingManager = (target: BindingTarget) => {
+    setBindingTarget(target)
+    setCapturingTarget(null)
+    setCapturedCombo('')
+  }
+
+  const renderBindingRows = (kind: BindingTarget['kind']) => {
+    if (kind === 'shortcut') {
+      return (
+        <div className="shortcut-list">
+          {SHORTCUT_DEFINITIONS.map((definition) => (
+            <label key={definition.action} className="shortcut-row">
+              <span>{definition.label}</span>
+              <button
+                className="shortcut-binding-trigger"
+                type="button"
+                onClick={() => openBindingManager({ kind: 'shortcut', action: definition.action, label: definition.label })}
+              >
+                {shortcuts[definition.action] || '未设置'}
+              </button>
+            </label>
+          ))}
+        </div>
+      )
+    }
+
+    return (
+      <div className="shortcut-list">
+        {VECTOR_CONTROL_DEFINITIONS.map((definition) => (
+          <label key={definition.action} className="shortcut-row">
+            <span>{definition.label}</span>
+            <button
+              className="shortcut-binding-trigger"
+              type="button"
+              onClick={() => openBindingManager({ kind: 'vector', action: definition.action, label: definition.label })}
+            >
+              {vectorControls[definition.action] || '未设置'}
+            </button>
+          </label>
+        ))}
+      </div>
+    )
   }
 
   const renderMainSection = () => {
@@ -121,112 +282,43 @@ function SettingsPanel({
           </label>
           <label>
             Header 高度 {headerHeight}px
-            <input
-              max={96}
-              min={48}
-              type="range"
-              value={headerHeight}
-              onChange={(event) => onHeaderHeightChange(Number(event.target.value))}
-            />
+            <input max={96} min={48} type="range" value={headerHeight} onChange={(event) => onHeaderHeightChange(Number(event.target.value))} />
           </label>
           <label>
             设置面板字体大小 {settingsFontSize}px
-            <input
-              max={24}
-              min={12}
-              step={1}
-              type="range"
-              value={settingsFontSize}
-              onChange={(event) => onSettingsFontSizeChange(Number(event.target.value))}
-            />
+            <input max={24} min={12} step={1} type="range" value={settingsFontSize} onChange={(event) => onSettingsFontSizeChange(Number(event.target.value))} />
           </label>
           <label>
             Sidebar 比例 {(sidebarRatio * 100).toFixed(0)}%
-            <input
-              max={0.95}
-              min={0}
-              step={0.005}
-              type="range"
-              value={sidebarRatio}
-              onChange={(event) => onSidebarRatioChange(Number(event.target.value))}
-            />
+            <input max={0.95} min={0} step={0.005} type="range" value={sidebarRatio} onChange={(event) => onSidebarRatioChange(Number(event.target.value))} />
           </label>
           <label>
             Sidebar 最小宽度 {sidebarMinWidth}px
-            <input
-              max={640}
-              min={80}
-              step={2}
-              type="range"
-              value={sidebarMinWidth}
-              onChange={(event) => onSidebarMinWidthChange(Number(event.target.value))}
-            />
+            <input max={640} min={80} step={2} type="range" value={sidebarMinWidth} onChange={(event) => onSidebarMinWidthChange(Number(event.target.value))} />
           </label>
           <label>
             Sidebar 字体大小 {sidebarFontSize}px
-            <input
-              max={24}
-              min={11}
-              step={1}
-              type="range"
-              value={sidebarFontSize}
-              onChange={(event) => onSidebarFontSizeChange(Number(event.target.value))}
-            />
+            <input max={24} min={11} step={1} type="range" value={sidebarFontSize} onChange={(event) => onSidebarFontSizeChange(Number(event.target.value))} />
           </label>
           <label>
             Sidebar 数字字号 {sidebarCountFontSize}px
-            <input
-              max={22}
-              min={10}
-              step={1}
-              type="range"
-              value={sidebarCountFontSize}
-              onChange={(event) => onSidebarCountFontSizeChange(Number(event.target.value))}
-            />
+            <input max={22} min={10} step={1} type="range" value={sidebarCountFontSize} onChange={(event) => onSidebarCountFontSizeChange(Number(event.target.value))} />
           </label>
           <label>
             目录结构间隔 {sidebarIndentStep}px
-            <input
-              max={48}
-              min={8}
-              step={1}
-              type="range"
-              value={sidebarIndentStep}
-              onChange={(event) => onSidebarIndentStepChange(Number(event.target.value))}
-            />
+            <input max={48} min={8} step={1} type="range" value={sidebarIndentStep} onChange={(event) => onSidebarIndentStepChange(Number(event.target.value))} />
           </label>
           <label>
             目录结构上下间隔 {sidebarVerticalGap}px
-            <input
-              max={24}
-              min={0}
-              step={1}
-              type="range"
-              value={sidebarVerticalGap}
-              onChange={(event) => onSidebarVerticalGapChange(Number(event.target.value))}
-            />
+            <input max={24} min={0} step={1} type="range" value={sidebarVerticalGap} onChange={(event) => onSidebarVerticalGapChange(Number(event.target.value))} />
           </label>
           <label>
             元数据面板比例 {(metadataRatio * 100).toFixed(0)}%
-            <input
-              max={0.45}
-              min={0.2}
-              step={0.01}
-              type="range"
-              value={metadataRatio}
-              onChange={(event) => onMetadataRatioChange(Number(event.target.value))}
-            />
+            <input max={0.45} min={0.2} step={0.01} type="range" value={metadataRatio} onChange={(event) => onMetadataRatioChange(Number(event.target.value))} />
           </label>
           <label>
             向量容器高度 {vectorPanelHeight}px
-            <input
-              max={320}
-              min={120}
-              step={2}
-              type="range"
-              value={vectorPanelHeight}
-              onChange={(event) => onVectorPanelHeightChange(Number(event.target.value))}
-            />
+            <input max={320} min={120} step={2} type="range" value={vectorPanelHeight} onChange={(event) => onVectorPanelHeightChange(Number(event.target.value))} />
           </label>
         </div>
       )
@@ -238,34 +330,15 @@ function SettingsPanel({
           <h3>模型参数</h3>
           <label>
             缩略图间距 {thumbnailGap}px
-            <input
-              max={24}
-              min={0}
-              step={1}
-              type="range"
-              value={thumbnailGap}
-              onChange={(event) => onThumbnailGapChange(Number(event.target.value))}
-            />
+            <input max={24} min={0} step={1} type="range" value={thumbnailGap} onChange={(event) => onThumbnailGapChange(Number(event.target.value))} />
           </label>
           <label>
             缩略图质量
-            <input
-              max={100}
-              min={1}
-              type="number"
-              value={thumbnailQuality}
-              onChange={(event) => onThumbnailQualityChange(Number(event.target.value))}
-            />
+            <input max={100} min={1} type="number" value={thumbnailQuality} onChange={(event) => onThumbnailQualityChange(Number(event.target.value))} />
           </label>
           <label>
             缩略图宽度
-            <input
-              max={2048}
-              min={128}
-              type="number"
-              value={thumbnailWidth}
-              onChange={(event) => onThumbnailWidthChange(Number(event.target.value))}
-            />
+            <input max={2048} min={128} type="number" value={thumbnailWidth} onChange={(event) => onThumbnailWidthChange(Number(event.target.value))} />
           </label>
           <label>
             LM Studio Endpoint
@@ -284,23 +357,10 @@ function SettingsPanel({
         <div className="settings-block settings-shortcuts">
           <div className="settings-shortcuts-head">
             <h3>快捷键设置</h3>
-            <button type="button" onClick={onResetShortcuts}>
-              恢复默认
-            </button>
+            <button type="button" onClick={onResetShortcuts}>恢复默认</button>
           </div>
 
-          <div className="shortcut-list">
-            {SHORTCUT_DEFINITIONS.map((definition) => (
-              <label key={definition.action}>
-                <span>{definition.label}</span>
-                <input
-                  type="text"
-                  value={shortcuts[definition.action]}
-                  onChange={(event) => onSetShortcut(definition.action, event.target.value)}
-                />
-              </label>
-            ))}
-          </div>
+          {renderBindingRows('shortcut')}
 
           <div className="shortcut-conflicts">
             <strong>冲突检测</strong>
@@ -310,7 +370,7 @@ function SettingsPanel({
               <ul>
                 {shortcutConflicts.map((conflict) => (
                   <li key={`${conflict.scope}-${conflict.combo}`}>
-                    {`${conflict.scope} 范围：${conflict.combo} -> ${conflict.actions.join(', ')}`}
+                    {`${conflict.scope} 范围：${conflict.combo} -> ${conflict.actions.map((action) => shortcutLabelByAction.get(action) ?? action).join(', ')}`}
                   </li>
                 ))}
               </ul>
@@ -338,40 +398,77 @@ function SettingsPanel({
     }
 
     return (
-      <div className="settings-block">
-        <h3>3D 设置（占位）</h3>
-        <p className="settings-placeholder">预留：后续用于 3D 空间浏览、向量库图片映射与空间导航参数设置。</p>
+      <div className="settings-block settings-shortcuts">
+        <h3>3D 设置（向量宇宙）</h3>
+        <p className="settings-placeholder">参数 + 控制映射均可在此调整。</p>
         <label>
-          空间映射模式（预留）
-          <input disabled type="text" value="coming-soon" readOnly />
+          移动速度 {vectorUniverseMoveSpeed.toFixed(1)}
+          <input max={80} min={4} step={0.5} type="range" value={vectorUniverseMoveSpeed} onChange={(event) => onVectorUniverseMoveSpeedChange(Number(event.target.value))} />
         </label>
         <label>
-          深度缩放系数（预留）
-          <input disabled type="range" min={0} max={100} value={55} readOnly />
+          加速倍率 {vectorUniverseSprintMultiplier.toFixed(2)}
+          <input max={4} min={1} step={0.05} type="range" value={vectorUniverseSprintMultiplier} onChange={(event) => onVectorUniverseSprintMultiplierChange(Number(event.target.value))} />
         </label>
+        <label>
+          视角灵敏度 {vectorUniverseLookSensitivity.toFixed(4)}
+          <input max={0.01} min={0.0005} step={0.0001} type="range" value={vectorUniverseLookSensitivity} onChange={(event) => onVectorUniverseLookSensitivityChange(Number(event.target.value))} />
+        </label>
+        <label>
+          正前方检测距离 {vectorUniverseRaycastDistance.toFixed(1)}
+          <input max={120} min={4} step={0.5} type="range" value={vectorUniverseRaycastDistance} onChange={(event) => onVectorUniverseRaycastDistanceChange(Number(event.target.value))} />
+        </label>
+        <label>
+          坐标辅助缩放 {vectorUniverseHelperScale.toFixed(0)}
+          <input max={600} min={40} step={10} type="range" value={vectorUniverseHelperScale} onChange={(event) => onVectorUniverseHelperScaleChange(Number(event.target.value))} />
+        </label>
+        <label>
+          宇宙离散度 {vectorUniverseDispersion.toFixed(2)}
+          <input max={6} min={0.2} step={0.05} type="range" value={vectorUniverseDispersion} onChange={(event) => onVectorUniverseDispersionChange(Number(event.target.value))} />
+        </label>
+        <label>
+          位置控件大小 {vectorUniverseWidgetSize.toFixed(0)}px
+          <input max={340} min={140} step={2} type="range" value={vectorUniverseWidgetSize} onChange={(event) => onVectorUniverseWidgetSizeChange(Number(event.target.value))} />
+        </label>
+
+        <div className="settings-shortcuts-head">
+          <strong>控制映射</strong>
+          <button type="button" onClick={onResetVectorControls}>恢复默认</button>
+        </div>
+        {renderBindingRows('vector')}
+
+        <div className="shortcut-conflicts">
+          <strong>控制映射冲突</strong>
+          {vectorControlConflicts.length === 0 ? (
+            <p>当前无冲突。</p>
+          ) : (
+            <ul>
+              {vectorControlConflicts.map((conflict) => (
+                <li key={conflict.combo}>
+                  {`${conflict.combo} -> ${conflict.actions.map((action) => vectorLabelByAction.get(action) ?? action).join(', ')}`}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     )
   }
+
+  const currentBinding = bindingTarget ? getBinding(bindingTarget) : ''
+  const currentCombos = currentBinding ? currentBinding.split('|') : []
 
   return (
     <div className="settings-mask" role="dialog" aria-modal="true">
       <section className="settings-panel" style={{ fontSize: `${settingsFontSize}px` }}>
         <div className="settings-head">
           <h2>设置面板（虚拟）</h2>
-          <button type="button" onClick={onClose}>
-            关闭
-          </button>
+          <button type="button" onClick={onClose}>关闭</button>
         </div>
 
         <div className="settings-shell">
           <aside className="settings-side" aria-label="设置分组">
             {SETTINGS_SECTIONS.map((section) => (
-              <button
-                key={section.id}
-                className={activeSection === section.id ? 'is-active' : ''}
-                type="button"
-                onClick={() => setActiveSection(section.id)}
-              >
+              <button key={section.id} className={activeSection === section.id ? 'is-active' : ''} type="button" onClick={() => setActiveSection(section.id)}>
                 {section.label}
               </button>
             ))}
@@ -379,6 +476,79 @@ function SettingsPanel({
 
           <main className="settings-main">{renderMainSection()}</main>
         </div>
+
+        {bindingTarget ? (
+          <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label="快捷键编辑">
+            <section className="settings-floating-panel">
+              <h3>{bindingTarget.label}</h3>
+              {currentCombos.length > 0 ? (
+                <ul className="binding-chip-list">
+                  {currentCombos.map((combo) => (
+                    <li key={combo}>{combo}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="settings-placeholder">当前未设置快捷键。</p>
+              )}
+              <div className="settings-floating-actions">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCapturedCombo('')
+                    setCapturingTarget(bindingTarget)
+                  }}
+                >
+                  新增
+                </button>
+                <button type="button" onClick={() => setBinding(bindingTarget, '')}>清除</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBindingTarget(null)
+                    setCapturingTarget(null)
+                    setCapturedCombo('')
+                  }}
+                >
+                  关闭
+                </button>
+              </div>
+            </section>
+          </div>
+        ) : null}
+
+        {capturingTarget ? (
+          <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label="录入快捷键">
+            <section ref={captureDialogRef} className="settings-floating-panel">
+              <h3>录入快捷键</h3>
+              <p className="settings-placeholder">按下键盘/鼠标（支持组合键）。</p>
+              <p className="binding-capture-preview">{capturedCombo || '等待输入...'}</p>
+              <div className="settings-floating-actions">
+                <button
+                  type="button"
+                  disabled={!capturedCombo}
+                  onClick={() => {
+                    const existingBinding = getBinding(capturingTarget)
+                    const merged = appendShortcutBinding(existingBinding, capturedCombo)
+                    setBinding(capturingTarget, merged)
+                    setCapturingTarget(null)
+                    setCapturedCombo('')
+                  }}
+                >
+                  确认新增
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCapturingTarget(null)
+                    setCapturedCombo('')
+                  }}
+                >
+                  取消
+                </button>
+              </div>
+            </section>
+          </div>
+        ) : null}
       </section>
     </div>
   )

@@ -11,6 +11,7 @@ import AppHeader from './components/AppHeader'
 import AppWorkspace from './components/AppWorkspace'
 import FullscreenLayer from './components/FullscreenLayer'
 import SettingsPanel from './components/SettingsPanel'
+import VectorUniverseOverlay from './components/VectorUniverseOverlay'
 import {
   IMAGE_DIRECTORY_SOURCES,
   IMAGE_PACKAGES,
@@ -23,6 +24,7 @@ import {
 import {
   findShortcutConflicts,
 } from './shortcuts'
+import { findVectorControlConflicts } from './vectorControls'
 import {
   collectImageSourceIds,
   collectLeafIds,
@@ -80,10 +82,20 @@ function App() {
     thumbnailWidth,
     lmStudioEndpoint,
     lmStudioModel,
+    vectorUniverseMoveSpeed,
+    vectorUniverseSprintMultiplier,
+    vectorUniverseLookSensitivity,
+    vectorUniverseRaycastDistance,
+    vectorUniverseHelperScale,
+    vectorUniverseDispersion,
+    vectorUniverseWidgetSize,
     shortcuts,
+    vectorControls,
     updateSettings,
     setShortcut,
+    setVectorControl,
     resetShortcuts,
+    resetVectorControls,
   } = useUiStore(
     useShallow((state) => ({
       mode: state.mode,
@@ -114,10 +126,20 @@ function App() {
       thumbnailWidth: state.thumbnailWidth,
       lmStudioEndpoint: state.lmStudioEndpoint,
       lmStudioModel: state.lmStudioModel,
+      vectorUniverseMoveSpeed: state.vectorUniverseMoveSpeed,
+      vectorUniverseSprintMultiplier: state.vectorUniverseSprintMultiplier,
+      vectorUniverseLookSensitivity: state.vectorUniverseLookSensitivity,
+      vectorUniverseRaycastDistance: state.vectorUniverseRaycastDistance,
+      vectorUniverseHelperScale: state.vectorUniverseHelperScale,
+      vectorUniverseDispersion: state.vectorUniverseDispersion,
+      vectorUniverseWidgetSize: state.vectorUniverseWidgetSize,
       shortcuts: state.shortcuts,
+      vectorControls: state.vectorControls,
       updateSettings: state.updateSettings,
       setShortcut: state.setShortcut,
+      setVectorControl: state.setVectorControl,
       resetShortcuts: state.resetShortcuts,
+      resetVectorControls: state.resetVectorControls,
     })),
   )
 
@@ -141,6 +163,7 @@ function App() {
     Object.fromEntries(imageSources.map((source) => [source.id, source.mockGrade ?? null])),
   )
   const [importMenuOpen, setImportMenuOpen] = useState(false)
+  const [vectorUniverseOpen, setVectorUniverseOpen] = useState(false)
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
     mode === 'video' ? 'video-only' : 'image-only',
   )
@@ -585,6 +608,7 @@ function App() {
   const focusedVideoCoverColor = focusedVideo ? (videoCoverById[focusedVideo.id] ?? '#3f4b58') : '#3f4b58'
 
   const shortcutConflicts = useMemo(() => findShortcutConflicts(shortcuts), [shortcuts])
+  const vectorControlConflicts = useMemo(() => findVectorControlConflicts(vectorControls), [vectorControls])
 
   const videoShortcutActive =
     fullscreenActive && (fullscreenDisplay === 'video-only' || (fullscreenDisplay === 'dual' && fullscreenVideoFocus))
@@ -679,9 +703,84 @@ function App() {
     vectorResultsActive,
   ])
 
+  const vectorUniverseScopeRefs = useMemo<FocusedImageRef[]>(() => {
+    if (vectorResultsActive) {
+      const refs: FocusedImageRef[] = []
+      const seen = new Set<string>()
+
+      for (const candidate of vectorSearchResults) {
+        const key = `${candidate.packageId}:${candidate.imageIndex}`
+        if (seen.has(key)) {
+          continue
+        }
+        seen.add(key)
+        refs.push({
+          packageId: candidate.packageId,
+          imageIndex: candidate.imageIndex,
+        })
+      }
+
+      return refs
+    }
+
+    const refs: FocusedImageRef[] = []
+    for (const pkg of orderedRootScopedPackages) {
+      pkg.images.forEach((_, imageIndex) => {
+        refs.push({
+          packageId: pkg.id,
+          imageIndex,
+        })
+      })
+    }
+
+    return refs
+  }, [orderedRootScopedPackages, vectorResultsActive, vectorSearchResults])
+
+  const vectorUniverseSceneSettings = useMemo(
+    () => ({
+      moveSpeed: vectorUniverseMoveSpeed,
+      sprintMultiplier: vectorUniverseSprintMultiplier,
+      lookSensitivity: vectorUniverseLookSensitivity,
+      raycastDistance: vectorUniverseRaycastDistance,
+      dispersion: vectorUniverseDispersion,
+    }),
+    [
+      vectorUniverseDispersion,
+      vectorUniverseLookSensitivity,
+      vectorUniverseMoveSpeed,
+      vectorUniverseRaycastDistance,
+      vectorUniverseSprintMultiplier,
+    ],
+  )
+
+  const confirmVectorUniverseSelection = useCallback(
+    (ref: FocusedImageRef) => {
+      const targetNodeId = normalImageSourceNodeIdMap.get(ref.packageId) ?? null
+
+      setVectorUniverseOpen(false)
+      setVectorSearchResults([])
+      setVectorFocusIndex(0)
+      setVectorPage(0)
+      setSearchPanelMode('vector')
+
+      updateSettings({
+        mode: 'image',
+        vectorMode: false,
+        sidebarFocus: 'main',
+      })
+
+      setImageFocus(ref.packageId, ref.imageIndex)
+      if (targetNodeId) {
+        setSelectedSidebarNodeId(targetNodeId)
+      }
+    },
+    [normalImageSourceNodeIdMap, setImageFocus, setSearchPanelMode, updateSettings],
+  )
+
 
   useShortcutEngine({
     shortcuts,
+    suspended: vectorUniverseOpen,
     mode,
     vectorMode: vectorResultsActive,
     settingsOpen,
@@ -1045,6 +1144,7 @@ function App() {
         headerHeight={headerHeight}
         mode={mode}
         searchPanelOpen={vectorMode && mode === 'image'}
+        vectorUniverseOpen={vectorUniverseOpen}
         currentGrade={currentGrade}
         thumbnailScaleLevel={displayThumbnailScaleLevel}
         canThumbnailScaleDown={canThumbnailScaleDown}
@@ -1065,6 +1165,9 @@ function App() {
             setSearchPanelMode('vector')
             setSearchPanelCollapsed(false)
           }
+        }}
+        onOpenVectorUniverse={() => {
+          setVectorUniverseOpen(true)
         }}
         onGradeChange={setPackageGrade}
         onThumbnailScaleDown={() => {
@@ -1170,6 +1273,19 @@ function App() {
         onExit={() => setFullscreenActive(false)}
       />
 
+      <VectorUniverseOverlay
+        open={vectorUniverseOpen}
+        focusedRef={focusedRef}
+        imageSources={imageSources}
+        scopeRefs={vectorUniverseScopeRefs}
+        helperScale={vectorUniverseHelperScale}
+        sceneSettings={vectorUniverseSceneSettings}
+        widgetSize={vectorUniverseWidgetSize}
+        vectorControls={vectorControls}
+        onClose={() => setVectorUniverseOpen(false)}
+        onConfirmSelection={confirmVectorUniverseSelection}
+      />
+
       <SettingsPanel
         settingsOpen={settingsOpen}
         headerHeight={headerHeight}
@@ -1188,8 +1304,17 @@ function App() {
         thumbnailWidth={thumbnailWidth}
         lmStudioEndpoint={lmStudioEndpoint}
         lmStudioModel={lmStudioModel}
+        vectorUniverseMoveSpeed={vectorUniverseMoveSpeed}
+        vectorUniverseSprintMultiplier={vectorUniverseSprintMultiplier}
+        vectorUniverseLookSensitivity={vectorUniverseLookSensitivity}
+        vectorUniverseRaycastDistance={vectorUniverseRaycastDistance}
+        vectorUniverseHelperScale={vectorUniverseHelperScale}
+        vectorUniverseDispersion={vectorUniverseDispersion}
+        vectorUniverseWidgetSize={vectorUniverseWidgetSize}
         shortcuts={shortcuts}
         shortcutConflicts={shortcutConflicts}
+        vectorControls={vectorControls}
+        vectorControlConflicts={vectorControlConflicts}
         onClose={() => updateSettings({ settingsOpen: false })}
         onHeaderHeightChange={(value) => updateSettings({ headerHeight: value })}
         onSettingsFontSizeChange={(value) => updateSettings({ settingsFontSize: value })}
@@ -1207,8 +1332,17 @@ function App() {
         onThumbnailWidthChange={(value) => updateSettings({ thumbnailWidth: value })}
         onLmStudioEndpointChange={(value) => updateSettings({ lmStudioEndpoint: value })}
         onLmStudioModelChange={(value) => updateSettings({ lmStudioModel: value })}
+        onVectorUniverseMoveSpeedChange={(value) => updateSettings({ vectorUniverseMoveSpeed: value })}
+        onVectorUniverseSprintMultiplierChange={(value) => updateSettings({ vectorUniverseSprintMultiplier: value })}
+        onVectorUniverseLookSensitivityChange={(value) => updateSettings({ vectorUniverseLookSensitivity: value })}
+        onVectorUniverseRaycastDistanceChange={(value) => updateSettings({ vectorUniverseRaycastDistance: value })}
+        onVectorUniverseHelperScaleChange={(value) => updateSettings({ vectorUniverseHelperScale: value })}
+        onVectorUniverseDispersionChange={(value) => updateSettings({ vectorUniverseDispersion: value })}
+        onVectorUniverseWidgetSizeChange={(value) => updateSettings({ vectorUniverseWidgetSize: value })}
         onSetShortcut={setShortcut}
+        onSetVectorControl={setVectorControl}
         onResetShortcuts={resetShortcuts}
+        onResetVectorControls={resetVectorControls}
       />
 
       {dragOverlayActive ? (

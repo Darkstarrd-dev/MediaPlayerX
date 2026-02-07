@@ -4,6 +4,7 @@ interface AppHeaderProps {
   headerHeight: number
   mode: BrowserMode
   searchPanelOpen: boolean
+  vectorUniverseOpen: boolean
   currentGrade: number | null
   thumbnailScaleLevel: number
   canThumbnailScaleDown: boolean
@@ -18,6 +19,7 @@ interface AppHeaderProps {
   onImportFolders: () => void
   onModeChange: (mode: BrowserMode) => void
   onToggleSearchPanel: () => void
+  onOpenVectorUniverse: () => void
   onGradeChange: (grade: number | null) => void
   onThumbnailScaleDown: () => void
   onThumbnailScaleUp: () => void
@@ -30,6 +32,7 @@ function AppHeader({
   headerHeight,
   mode,
   searchPanelOpen,
+  vectorUniverseOpen,
   currentGrade,
   thumbnailScaleLevel,
   canThumbnailScaleDown,
@@ -44,6 +47,7 @@ function AppHeader({
   onImportFolders,
   onModeChange,
   onToggleSearchPanel,
+  onOpenVectorUniverse,
   onGradeChange,
   onThumbnailScaleDown,
   onThumbnailScaleUp,
@@ -98,6 +102,14 @@ function AppHeader({
           onClick={onToggleSearchPanel}
         >
           检索
+        </button>
+
+        <button
+          className={`search-trigger-btn vector-universe-trigger ${vectorUniverseOpen ? 'is-active' : ''}`}
+          type="button"
+          onClick={onOpenVectorUniverse}
+        >
+          向量宇宙
         </button>
       </div>
 

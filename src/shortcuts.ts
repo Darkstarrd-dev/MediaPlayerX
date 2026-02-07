@@ -115,6 +115,14 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
 const MODIFIER_ORDER = ['Ctrl', 'Alt', 'Shift', 'Meta'] as const
 const MODIFIER_SET = new Set<string>(MODIFIER_ORDER)
 
+const MOUSE_BUTTON_TOKEN_BY_ID: Record<number, string> = {
+  0: 'MouseLeft',
+  1: 'MouseMiddle',
+  2: 'MouseRight',
+  3: 'MouseBack',
+  4: 'MouseForward',
+}
+
 function normalizeToken(raw: string): string {
   const token = raw.trim()
   if (!token) {
@@ -126,6 +134,21 @@ function normalizeToken(raw: string): string {
   if (lower === 'alt' || lower === 'option') return 'Alt'
   if (lower === 'shift') return 'Shift'
   if (lower === 'meta' || lower === 'cmd' || lower === 'win') return 'Meta'
+
+  if (lower === 'controlleft') return 'ControlLeft'
+  if (lower === 'controlright') return 'ControlRight'
+  if (lower === 'altleft') return 'AltLeft'
+  if (lower === 'altright') return 'AltRight'
+  if (lower === 'shiftleft') return 'ShiftLeft'
+  if (lower === 'shiftright') return 'ShiftRight'
+  if (lower === 'metaleft') return 'MetaLeft'
+  if (lower === 'metaright') return 'MetaRight'
+
+  if (lower === 'mouseleft' || lower === 'leftmouse') return 'MouseLeft'
+  if (lower === 'mouseright' || lower === 'rightmouse') return 'MouseRight'
+  if (lower === 'mousemiddle' || lower === 'middlemouse') return 'MouseMiddle'
+  if (lower === 'mouseback' || lower === 'x1mouse') return 'MouseBack'
+  if (lower === 'mouseforward' || lower === 'x2mouse') return 'MouseForward'
 
   if (lower === 'left') return 'ArrowLeft'
   if (lower === 'right') return 'ArrowRight'
@@ -201,14 +224,29 @@ export function normalizeShortcutBinding(rawBinding: string): string {
 }
 
 export function keyboardEventToCombo(event: KeyboardEvent): string {
+  const code = normalizeToken(event.code || event.key)
+
+  const base: string[] = []
+  if (event.ctrlKey && code !== 'ControlLeft' && code !== 'ControlRight') base.push('Ctrl')
+  if (event.altKey && code !== 'AltLeft' && code !== 'AltRight') base.push('Alt')
+  if (event.shiftKey && code !== 'ShiftLeft' && code !== 'ShiftRight') base.push('Shift')
+  if (event.metaKey && code !== 'MetaLeft' && code !== 'MetaRight') base.push('Meta')
+
+  return normalizeSingleCombo([...base, code].join('+'))
+}
+
+export function mouseButtonToToken(button: number): string {
+  return MOUSE_BUTTON_TOKEN_BY_ID[button] ?? `MouseButton${button}`
+}
+
+export function mouseEventToCombo(event: Pick<MouseEvent, 'button' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'>): string {
   const base: string[] = []
   if (event.ctrlKey) base.push('Ctrl')
   if (event.altKey) base.push('Alt')
   if (event.shiftKey) base.push('Shift')
   if (event.metaKey) base.push('Meta')
 
-  const code = normalizeToken(event.code || event.key)
-  return normalizeSingleCombo([...base, code].join('+'))
+  return normalizeSingleCombo([...base, mouseButtonToToken(event.button)].join('+'))
 }
 
 export function shortcutMatches(binding: string, event: KeyboardEvent): boolean {
@@ -219,6 +257,40 @@ export function shortcutMatches(binding: string, event: KeyboardEvent): boolean 
 
   const combo = keyboardEventToCombo(event)
   return normalized.split('|').some((part) => part === combo)
+}
+
+export function shortcutMouseMatches(
+  binding: string,
+  event: Pick<MouseEvent, 'button' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'>,
+): boolean {
+  const normalized = normalizeShortcutBinding(binding)
+  if (!normalized) {
+    return false
+  }
+
+  const combo = mouseEventToCombo(event)
+  return normalized.split('|').some((part) => part === combo)
+}
+
+export function appendShortcutBinding(existing: string, nextCombo: string): string {
+  const normalizedExisting = normalizeShortcutBinding(existing)
+  const normalizedNext = normalizeShortcutBinding(nextCombo)
+  if (!normalizedNext) {
+    return normalizedExisting
+  }
+
+  const merged = new Set<string>()
+  if (normalizedExisting) {
+    for (const combo of normalizedExisting.split('|')) {
+      merged.add(combo)
+    }
+  }
+
+  for (const combo of normalizedNext.split('|')) {
+    merged.add(combo)
+  }
+
+  return Array.from(merged).join('|')
 }
 
 export interface ShortcutConflict {

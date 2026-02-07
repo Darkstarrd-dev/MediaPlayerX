@@ -12,6 +12,7 @@ type AlignDirection = 'up' | 'down' | 'left' | 'right'
 
 interface UseShortcutEngineParams {
   shortcuts: ShortcutMap
+  suspended?: boolean
   mode: 'image' | 'video'
   vectorMode: boolean
   settingsOpen: boolean
@@ -42,6 +43,7 @@ interface UseShortcutEngineParams {
 
 export function useShortcutEngine({
   shortcuts,
+  suspended = false,
   mode,
   vectorMode,
   settingsOpen,
@@ -236,6 +238,10 @@ export function useShortcutEngine({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (suspended) {
+        return
+      }
+
       if (event.key === 'Escape' && fullscreenActive) {
         event.preventDefault()
         onSetFullscreenActive(false)
@@ -352,6 +358,7 @@ export function useShortcutEngine({
     onAlignFocus,
     settingsOpen,
     shortcuts,
+    suspended,
     sidebarFocus,
     fullscreenDisplay,
     vectorMode,
