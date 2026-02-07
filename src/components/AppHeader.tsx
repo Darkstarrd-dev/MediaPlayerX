@@ -1,11 +1,9 @@
-import type { BrowserMode, SearchField } from '../types'
+import type { BrowserMode } from '../types'
 
 interface AppHeaderProps {
   headerHeight: number
   mode: BrowserMode
-  vectorMode: boolean
-  searchField: SearchField
-  searchText: string
+  searchPanelOpen: boolean
   currentGrade: number | null
   thumbnailScaleLevel: number
   canThumbnailScaleDown: boolean
@@ -19,9 +17,7 @@ interface AppHeaderProps {
   onImportFiles: () => void
   onImportFolders: () => void
   onModeChange: (mode: BrowserMode) => void
-  onVectorModeChange: (enabled: boolean) => void
-  onSearchFieldChange: (field: SearchField) => void
-  onSearchTextChange: (text: string) => void
+  onToggleSearchPanel: () => void
   onGradeChange: (grade: number | null) => void
   onThumbnailScaleDown: () => void
   onThumbnailScaleUp: () => void
@@ -33,9 +29,7 @@ interface AppHeaderProps {
 function AppHeader({
   headerHeight,
   mode,
-  vectorMode,
-  searchField,
-  searchText,
+  searchPanelOpen,
   currentGrade,
   thumbnailScaleLevel,
   canThumbnailScaleDown,
@@ -49,9 +43,7 @@ function AppHeader({
   onImportFiles,
   onImportFolders,
   onModeChange,
-  onVectorModeChange,
-  onSearchFieldChange,
-  onSearchTextChange,
+  onToggleSearchPanel,
   onGradeChange,
   onThumbnailScaleDown,
   onThumbnailScaleUp,
@@ -99,31 +91,14 @@ function AppHeader({
           </button>
         </div>
 
-        <label className="inline-switch">
-          <input
-            checked={vectorMode}
-            disabled={mode !== 'image'}
-            type="checkbox"
-            onChange={(event) => onVectorModeChange(event.target.checked)}
-          />
-          向量模式
-        </label>
-
-        <div className="search-box">
-          <select value={searchField} onChange={(event) => onSearchFieldChange(event.target.value as SearchField)}>
-            <option value="all">全部字段</option>
-            <option value="name">名称</option>
-            <option value="workTitle">作品名</option>
-            <option value="circle">社团</option>
-            <option value="author">作者</option>
-            <option value="tags">Tags</option>
-          </select>
-          <input
-            placeholder="特征检索（名称/社团/作者/tags）"
-            value={searchText}
-            onChange={(event) => onSearchTextChange(event.target.value)}
-          />
-        </div>
+        <button
+          className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
+          disabled={mode !== 'image'}
+          type="button"
+          onClick={onToggleSearchPanel}
+        >
+          检索
+        </button>
       </div>
 
       <div className="header-right">

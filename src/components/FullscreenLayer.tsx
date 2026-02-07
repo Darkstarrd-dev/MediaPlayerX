@@ -332,9 +332,9 @@ function FullscreenLayer({
   const startPaneDrag = useCallback(
     (pane: PaneKey, event: ReactMouseEvent<HTMLElement>) => {
       const canDragSinglePane = zoomEnabled && Boolean(singlePane) && pane === singlePane
-      const canDragDualVideoHorizontal = fullscreenDisplay === 'dual' && pane === 'video'
+      const canDragDualVideo = fullscreenDisplay === 'dual' && pane === 'video'
 
-      if (event.button !== 0 || (!canDragSinglePane && !canDragDualVideoHorizontal)) {
+      if (event.button !== 0 || (!canDragSinglePane && !canDragDualVideo)) {
         return
       }
 
@@ -350,18 +350,10 @@ function FullscreenLayer({
       const startTransform = pane === 'image' ? imageTransform : videoTransform
       const startX = event.clientX
       const startY = event.clientY
-      const horizontalOnly = canDragDualVideoHorizontal
 
       setDraggingPane(pane)
 
-      if (horizontalOnly) {
-        setPaneAlign('video', {
-          x: 'free',
-          y: videoAlign.y,
-        })
-      } else {
-        setPaneAlign(pane, { x: 'free', y: 'free' })
-      }
+      setPaneAlign(pane, { x: 'free', y: 'free' })
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         const dx = moveEvent.clientX - startX
@@ -370,7 +362,7 @@ function FullscreenLayer({
         updatePaneTransform(pane, {
           ...startTransform,
           offsetX: startTransform.offsetX + dx,
-          offsetY: horizontalOnly ? startTransform.offsetY : startTransform.offsetY + dy,
+          offsetY: startTransform.offsetY + dy,
         })
       }
 
@@ -383,7 +375,7 @@ function FullscreenLayer({
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [fullscreenDisplay, imageTransform, setPaneAlign, singlePane, updatePaneTransform, videoAlign.y, videoTransform, zoomEnabled],
+    [fullscreenDisplay, imageTransform, setPaneAlign, singlePane, updatePaneTransform, videoTransform, zoomEnabled],
   )
 
   const startSplitDrag = useCallback(

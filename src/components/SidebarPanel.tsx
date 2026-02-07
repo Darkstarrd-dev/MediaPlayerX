@@ -20,12 +20,17 @@ interface SidebarPanelProps {
   videoTreeNodes: SidebarNode[]
   selectedPackageId: string
   selectedVideoId: string
+  imageHighlightByNode?: boolean
+  searchResultMode?: boolean
+  searchResultReadonly?: boolean
+  canGoToFromSearchMode?: boolean
   playlistIds: string[]
   onSelectNode: (nodeId: string) => void
   onSelectPackage: (packageId: string) => void
   onSelectVideo: (videoId: string) => void
   onCollapseSidebar: () => void
   onSetCurrentRoot: () => void
+  onGoToFromSearchMode: () => void
   onResetRoot: () => void
   onToggleVideoPlaylist: (videoId: string, checked: boolean) => void
 }
@@ -48,12 +53,17 @@ function SidebarPanel({
   videoTreeNodes,
   selectedPackageId,
   selectedVideoId,
+  imageHighlightByNode = false,
+  searchResultMode = false,
+  searchResultReadonly = false,
+  canGoToFromSearchMode = false,
   playlistIds,
   onSelectNode,
   onSelectPackage,
   onSelectVideo,
   onCollapseSidebar,
   onSetCurrentRoot,
+  onGoToFromSearchMode,
   onResetRoot,
   onToggleVideoPlaylist,
 }: SidebarPanelProps) {
@@ -62,7 +72,9 @@ function SidebarPanel({
   const renderNodes = (nodes: SidebarNode[], depth = 0): ReactElement[] => {
     return nodes.flatMap((node) => {
       const isFolder = node.kind === 'folder'
-      const isActivePackage = mode === 'image' && node.imageSourceId === selectedPackageId
+      const isActivePackage =
+        mode === 'image' &&
+        (imageHighlightByNode ? selectedSidebarNodeId === node.id : node.imageSourceId === selectedPackageId)
       const isActiveVideo = mode === 'video' && node.videoId === selectedVideoId
       const isKeyboardActive = selectedSidebarNodeId === node.id
 
@@ -78,6 +90,9 @@ function SidebarPanel({
             type="button"
             style={{ fontSize: `${sidebarFontSize}px` }}
             onClick={() => {
+              if (mode === 'image' && searchResultReadonly) {
+                return
+              }
               onSelectNode(node.id)
               if (mode === 'image' && node.imageSourceId) {
                 onSelectPackage(node.imageSourceId)
@@ -132,13 +147,19 @@ function SidebarPanel({
         </button>
 
         <div className="sidebar-head-actions">
-          {!rootSet ? (
+          {mode === 'image' && searchResultMode ? (
+            <button type="button" disabled={!canGoToFromSearchMode} onClick={onGoToFromSearchMode}>
+              转到
+            </button>
+          ) : null}
+
+          {!rootSet && !(mode === 'image' && searchResultMode) ? (
             <button type="button" disabled={!canSetCurrentRoot} onClick={onSetCurrentRoot}>
               设为根
             </button>
           ) : null}
 
-          {mode === 'image' && imageRootNodeId ? (
+          {mode === 'image' && imageRootNodeId && !searchResultMode ? (
             <button type="button" onClick={onResetRoot}>
               恢复
             </button>

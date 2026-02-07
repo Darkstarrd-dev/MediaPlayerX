@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
@@ -12,10 +12,181 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('支持图片/视频模式切换', () => {
     render(<App />)
 
-    expect(screen.getByText('向量模式')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '检索' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
 
     expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
+  })
+
+  it('检索面板支持向量/特征检索切换、分割条拖拽与检索模式下 Sidebar 只读联动', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '检索' }))
+    const searchModeSwitch = screen.getByRole('group', { name: 'search-mode-switch' })
+    expect(within(searchModeSwitch).getByRole('button', { name: '向量检索' })).toBeInTheDocument()
+    expect(within(searchModeSwitch).getByRole('button', { name: '特征检索' })).toBeInTheDocument()
+    expect(screen.getByText('当前结果: 0 张')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '折叠' }))
+    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '展开检索容器' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '展开检索容器' }))
+    const searchModeSwitchAfterExpand = screen.getByRole('group', { name: 'search-mode-switch' })
+    expect(searchModeSwitchAfterExpand).toBeInTheDocument()
+
+    fireEvent.click(within(searchModeSwitchAfterExpand).getByRole('button', { name: '特征检索' }))
+    expect(screen.getByLabelText('名称')).toBeInTheDocument()
+    expect(screen.getByLabelText('作品名')).toBeInTheDocument()
+    expect(screen.getByLabelText('社团')).toBeInTheDocument()
+    expect(screen.getByLabelText('作者')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '选择 tags' })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: '图包评分筛选' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('名称'), { target: { value: '002' } })
+    fireEvent.change(screen.getByLabelText('作者'), { target: { value: 'Nori' } })
+    fireEvent.click(screen.getByRole('button', { name: '选择 tags' }))
+    fireEvent.click(screen.getByRole('button', { name: 'fog' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '图包评分 3 分' }))
+    expect(screen.getByRole('button', { name: '图包评分 1 分' }).classList.contains('is-active')).toBe(true)
+    expect(screen.getByRole('button', { name: '图包评分 4 分' }).classList.contains('is-active')).toBe(false)
+    fireEvent.click(screen.getByRole('button', { name: '图包评分 3 分' }))
+
+    expect(screen.getByText(/archive_002\.zip/)).toBeInTheDocument()
+    expect(screen.queryByText(/archive_001\.zip/)).not.toBeInTheDocument()
+
+    fireEvent.click(within(searchModeSwitchAfterExpand).getByRole('button', { name: '向量检索' }))
+
+    const workspace = document.querySelector('.workspace') as HTMLElement | null
+    expect(workspace).not.toBeNull()
+    vi.spyOn(workspace as HTMLElement, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      width: 1200,
+      height: 900,
+      top: 0,
+      left: 0,
+      right: 1200,
+      bottom: 900,
+      toJSON: () => ({}),
+    })
+
+    const vectorPanel = document.querySelector('.vector-panel') as HTMLElement | null
+    expect(vectorPanel).not.toBeNull()
+    const vectorHeightBefore = vectorPanel!.style.height
+    const vectorSplitter = screen.getByRole('separator', { name: '调整检索容器高度' })
+    fireEvent.mouseDown(vectorSplitter, { clientY: 164 })
+    fireEvent.mouseMove(window, { clientY: 260 })
+    fireEvent.mouseUp(window)
+    expect(vectorPanel!.style.height).not.toBe(vectorHeightBefore)
+
+    const firstThumbButton = document.querySelector('.thumb-card') as HTMLButtonElement | null
+    expect(firstThumbButton).not.toBeNull()
+    fireEvent.click(firstThumbButton as HTMLButtonElement)
+
+    const vectorSearchAction = document.querySelector('.vector-controls button') as HTMLButtonElement | null
+    expect(vectorSearchAction).not.toBeNull()
+    fireEvent.click(vectorSearchAction as HTMLButtonElement)
+
+    const readResultCount = () => {
+      const text = screen.getByText(/当前结果:/).textContent ?? ''
+      const matched = text.match(/(\d+)/)
+      return Number(matched?.[1] ?? '0')
+    }
+
+    expect(screen.getByText('向量结果视图')).toBeInTheDocument()
+    expect(screen.getAllByText(/相似度 1\.00/).length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '转到' })).toBeInTheDocument()
+    expect(document.querySelector('.main-footer span')?.textContent ?? '').toContain('#')
+
+    const countBeforeThresholdChange = readResultCount()
+    const thresholdSlider = screen.getByRole('slider', { name: /相似度阈值/ })
+    fireEvent.change(thresholdSlider, { target: { value: '0.95' } })
+    expect(readResultCount()).toBe(countBeforeThresholdChange)
+
+    fireEvent.click(vectorSearchAction as HTMLButtonElement)
+    const countAfterSearch = readResultCount()
+    expect(countAfterSearch).toBeLessThanOrEqual(countBeforeThresholdChange)
+
+    const folderRows = Array.from(document.querySelectorAll<HTMLElement>('.sidebar-row[data-sidebar-node-id^="folder:"]'))
+    expect(folderRows.length).toBeGreaterThan(0)
+    for (const row of folderRows) {
+      expect(row.querySelector('.sidebar-count')).toBeNull()
+    }
+
+    const sidebarTree = document.querySelector('.sidebar-tree') as HTMLElement | null
+    expect(sidebarTree).not.toBeNull()
+    const sidebarRows = Array.from(sidebarTree!.querySelectorAll<HTMLElement>('[data-sidebar-node-id]'))
+    expect(sidebarRows.length).toBeGreaterThan(0)
+
+    Object.defineProperty(sidebarTree!, 'clientHeight', { configurable: true, value: 36 })
+    Object.defineProperty(sidebarTree!, 'scrollHeight', { configurable: true, value: sidebarRows.length * 28 })
+
+    sidebarRows.forEach((row, index) => {
+      Object.defineProperty(row, 'offsetTop', { configurable: true, value: index * 28 })
+      Object.defineProperty(row, 'offsetHeight', { configurable: true, value: 28 })
+    })
+
+    sidebarTree!.scrollTop = 0
+    for (let index = 0; index < 60; index += 1) {
+      fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
+    }
+
+    await waitFor(() => {
+      expect(sidebarTree!.scrollTop).toBeGreaterThan(0)
+    })
+
+    fireEvent.keyDown(window, { key: 'Home', code: 'Home' })
+
+    const readFocusedPath = () => document.querySelector('.main-footer span')?.textContent ?? ''
+    const focusedBeforeSidebarClick = readFocusedPath()
+    expect(focusedBeforeSidebarClick).toContain('#')
+
+    const firstSidebarLabel = document.querySelector('.sidebar-tree .sidebar-label') as HTMLElement | null
+    expect(firstSidebarLabel).not.toBeNull()
+    fireEvent.click(firstSidebarLabel as HTMLElement)
+    expect(readFocusedPath()).toBe(focusedBeforeSidebarClick)
+
+    expect(document.querySelector('.sidebar.is-focus')).toBeNull()
+    fireEvent.keyDown(window, { key: 'Tab', code: 'Tab' })
+    expect(document.querySelector('.sidebar.is-focus')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: '转到' }))
+    expect(screen.queryByText('向量结果视图')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '转到' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '设为根' })).toBeInTheDocument()
+  })
+
+  it('布局锁定开启后，主界面分割条拖动失效', () => {
+    render(<App />)
+
+    const sidebar = document.querySelector('.sidebar') as HTMLElement | null
+    expect(sidebar).not.toBeNull()
+    const widthBeforeLock = sidebar!.style.width
+
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    const layoutLockToggle = screen.getByLabelText('布局锁定')
+    fireEvent.click(layoutLockToggle)
+    fireEvent.click(screen.getByRole('button', { name: '关闭' }))
+
+    const sidebarSplitter = screen.getByRole('separator', { name: '调整 Sidebar 宽度' })
+    fireEvent.mouseDown(sidebarSplitter, { clientX: 220 })
+    fireEvent.mouseMove(window, { clientX: 640 })
+    fireEvent.mouseUp(window)
+
+    const widthAfterLock = (document.querySelector('.sidebar') as HTMLElement).style.width
+    expect(widthAfterLock).toBe(widthBeforeLock)
+  })
+
+  it('元数据面板标题可折叠，并可恢复展开', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据面板' }))
+    expect(screen.getByRole('button', { name: '展开元数据面板' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '展开元数据面板' }))
+    expect(screen.getByRole('button', { name: '元数据面板' })).toBeInTheDocument()
   })
 
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {
@@ -203,21 +374,48 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '双显示' }))
     const dualVideoStage = document.querySelector('.fullscreen-video .fullscreen-stage')
+    const dualVideoMedia = document.querySelector('.fullscreen-video .fullscreen-media-video') as HTMLElement
     const dualImageStage = document.querySelector('.fullscreen-image .fullscreen-stage')
     expect(dualVideoStage?.classList.contains('is-draggable')).toBe(true)
     expect(dualImageStage?.classList.contains('is-draggable')).toBe(false)
 
+    const transformBeforeDrag = dualVideoMedia.style.transform
     fireEvent.mouseDown(dualVideoStage as Element, { button: 0, clientX: 120, clientY: 60 })
     expect(dualVideoStage?.classList.contains('is-dragging')).toBe(true)
-    fireEvent.mouseMove(window, { clientX: 180, clientY: 80 })
+    fireEvent.mouseMove(window, { clientX: 120, clientY: 120 })
     fireEvent.mouseUp(window)
     expect(dualVideoStage?.classList.contains('is-dragging')).toBe(false)
+
+    const transformAfterDrag = dualVideoMedia.style.transform
+    expect(transformAfterDrag).not.toBe(transformBeforeDrag)
+    const yOffset = transformAfterDrag.match(/translate3d\([^,]+,\s*([-\d.]+)px,\s*0\)/)?.[1]
+    expect(Number(yOffset ?? '0')).not.toBe(0)
   })
 
-  it('设置面板包含全屏对齐快捷键配置项', () => {
+  it('设置面板按 side/main 分栏并包含新增占位项与全屏对齐快捷键配置', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    const settingsPanel = document.querySelector('.settings-panel') as HTMLElement | null
+    expect(settingsPanel).not.toBeNull()
+
+    expect(screen.getByRole('button', { name: '布局参数' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '模型参数' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '快捷键设置' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'theme 设置' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '3D 设置' })).toBeInTheDocument()
+
+    const settingsFontSlider = screen.getByLabelText(/设置面板字体大小/)
+    fireEvent.change(settingsFontSlider, { target: { value: '18' } })
+    expect(settingsPanel?.style.fontSize).toBe('18px')
+
+    fireEvent.click(screen.getByRole('button', { name: 'theme 设置' }))
+    expect(screen.getByText('theme 设置（占位）')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '3D 设置' }))
+    expect(screen.getByText('3D 设置（占位）')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '快捷键设置' }))
     expect(screen.getByText('全屏：上对齐')).toBeInTheDocument()
     expect(screen.getByText('全屏：下对齐')).toBeInTheDocument()
     expect(screen.getByText('全屏：左对齐')).toBeInTheDocument()

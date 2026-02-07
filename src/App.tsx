@@ -31,8 +31,6 @@ import {
 import {
   collectImageSourceIds,
   collectLeafIds,
-  packageMatchesSearch,
-  videoMatchesSearch,
   makeRandomCoverColor,
 } from './features/app/helpers'
 import { useImportPipeline } from './features/import/useImportPipeline'
@@ -44,6 +42,7 @@ import { useUiStore } from './store/useUiStore'
 import type {
   FocusedImageRef,
   ImagePackage,
+  SidebarNode,
   VectorCandidate,
 } from './types'
 import { clamp } from './utils/ui'
@@ -58,8 +57,10 @@ function App() {
     vectorMode,
     settingsOpen,
     headerHeight,
+    settingsFontSize,
     sidebarRatio,
     sidebarMinWidth,
+    layoutLocked,
     sidebarFontSize,
     sidebarCountFontSize,
     sidebarIndentStep,
@@ -72,8 +73,6 @@ function App() {
     metadataCollapsed,
     autoPlayEnabled,
     autoPlayInterval,
-    searchField,
-    searchText,
     vectorThreshold,
     sidebarFocus,
     imageRootNodeId,
@@ -92,8 +91,10 @@ function App() {
       vectorMode: state.vectorMode,
       settingsOpen: state.settingsOpen,
       headerHeight: state.headerHeight,
+      settingsFontSize: state.settingsFontSize,
       sidebarRatio: state.sidebarRatio,
       sidebarMinWidth: state.sidebarMinWidth,
+      layoutLocked: state.layoutLocked,
       sidebarFontSize: state.sidebarFontSize,
       sidebarCountFontSize: state.sidebarCountFontSize,
       sidebarIndentStep: state.sidebarIndentStep,
@@ -106,8 +107,6 @@ function App() {
       metadataCollapsed: state.metadataCollapsed,
       autoPlayEnabled: state.autoPlayEnabled,
       autoPlayInterval: state.autoPlayInterval,
-      searchField: state.searchField,
-      searchText: state.searchText,
       vectorThreshold: state.vectorThreshold,
       sidebarFocus: state.sidebarFocus,
       imageRootNodeId: state.imageRootNodeId,
@@ -136,9 +135,12 @@ function App() {
   const [pageByPackage, setPageByPackage] = useState<Record<string, number>>(() =>
     Object.fromEntries(imageSources.map((source) => [source.id, 0])),
   )
+  const [vectorSearchResults, setVectorSearchResults] = useState<VectorCandidate[]>([])
   const [vectorFocusIndex, setVectorFocusIndex] = useState(0)
   const [vectorPage, setVectorPage] = useState(0)
-  const [gradeByPackage, setGradeByPackage] = useState<Record<string, number | null>>({})
+  const [gradeByPackage, setGradeByPackage] = useState<Record<string, number | null>>(() =>
+    Object.fromEntries(imageSources.map((source) => [source.id, source.mockGrade ?? null])),
+  )
   const [importMenuOpen, setImportMenuOpen] = useState(false)
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
     mode === 'video' ? 'video-only' : 'image-only',
@@ -205,22 +207,168 @@ function App() {
   } = useImportPipeline()
 
   const appBodyRef = useRef<HTMLDivElement>(null)
+  const workspaceRef = useRef<HTMLElement>(null)
   const workspaceBodyRef = useRef<HTMLDivElement>(null)
+  const vectorPanelRef = useRef<HTMLDivElement>(null)
+  const vectorPanelContentRef = useRef<HTMLDivElement>(null)
   const wasFullscreenRef = useRef(false)
   const lastExpandedSidebarRatioRef = useRef(sidebarRatio >= SIDEBAR_COLLAPSE_RATIO ? sidebarRatio : 0.26)
   const [appBodyWidth, setAppBodyWidth] = useState(0)
   const gridRef = useRef<HTMLDivElement>(null)
   const [gridSize, setGridSize] = useState({ width: 1200, height: 700 })
+  const [searchPanelMode, setSearchPanelMode] = useState<'vector' | 'feature'>('vector')
 
-  const scopedSearchPackages = useMemo(
-    () => IMAGE_PACKAGES.filter((pkg) => packageMatchesSearch(pkg, searchField, searchText)),
-    [searchField, searchText],
+  const [featureNameQuery, setFeatureNameQuery] = useState('')
+  const [featureWorkTitleQuery, setFeatureWorkTitleQuery] = useState('')
+  const [featureCircleQuery, setFeatureCircleQuery] = useState('')
+  const [featureAuthorQuery, setFeatureAuthorQuery] = useState('')
+  const [featureTags, setFeatureTags] = useState<string[]>([])
+  const [featureGradeFilter, setFeatureGradeFilter] = useState<number | null>(null)
+  const [featureTagPickerOpen, setFeatureTagPickerOpen] = useState(false)
+  const [searchPanelCollapsed, setSearchPanelCollapsed] = useState(false)
+
+  useEffect(() => {
+    if (!vectorMode || searchPanelMode !== 'feature') {
+      setFeatureTagPickerOpen(false)
+    }
+  }, [searchPanelMode, vectorMode])
+
+  const featureSearchActive = mode === 'image' && vectorMode && searchPanelMode === 'feature'
+
+  const featureCircleOptions = useMemo(
+    () => Array.from(new Set(imageSources.map((source) => source.circle))).sort((a, b) => a.localeCompare(b, 'zh-CN')),
+    [imageSources],
+  )
+  const featureAuthorOptions = useMemo(
+    () => Array.from(new Set(imageSources.map((source) => source.author))).sort((a, b) => a.localeCompare(b, 'zh-CN')),
+    [imageSources],
+  )
+  const featureTagOptions = useMemo(
+    () => Array.from(new Set(imageSources.flatMap((source) => source.tags))).sort((a, b) => a.localeCompare(b, 'zh-CN')),
+    [imageSources],
   )
 
-  const scopedSearchDirectories = useMemo(
-    () => IMAGE_DIRECTORY_SOURCES.filter((directory) => packageMatchesSearch(directory, searchField, searchText)),
-    [searchField, searchText],
-  )
+  const scopedSearchPackages = useMemo(() => {
+    if (!featureSearchActive) {
+      return IMAGE_PACKAGES
+    }
+
+    const nameQuery = featureNameQuery.trim().toLowerCase()
+    const workTitleQuery = featureWorkTitleQuery.trim().toLowerCase()
+    const circleQuery = featureCircleQuery.trim().toLowerCase()
+    const authorQuery = featureAuthorQuery.trim().toLowerCase()
+    const selectedTags = featureTags.map((tag) => tag.toLowerCase())
+
+    const match = (pkg: ImagePackage) => {
+      if (nameQuery) {
+        const matchesName = [pkg.packageName, pkg.displayName].some((value) => value.toLowerCase().includes(nameQuery))
+        if (!matchesName) {
+          return false
+        }
+      }
+
+      if (workTitleQuery && !pkg.workTitle.toLowerCase().includes(workTitleQuery)) {
+        return false
+      }
+
+      if (circleQuery && !pkg.circle.toLowerCase().includes(circleQuery)) {
+        return false
+      }
+
+      if (authorQuery && !pkg.author.toLowerCase().includes(authorQuery)) {
+        return false
+      }
+
+      if (selectedTags.length > 0) {
+        const lowerTags = pkg.tags.map((tag) => tag.toLowerCase())
+        const allTagsMatched = selectedTags.every((tag) => lowerTags.includes(tag))
+        if (!allTagsMatched) {
+          return false
+        }
+      }
+
+      if (featureGradeFilter !== null) {
+        const grade = gradeByPackage[pkg.id] ?? 0
+        if (grade !== featureGradeFilter) {
+          return false
+        }
+      }
+
+      return true
+    }
+
+    return IMAGE_PACKAGES.filter(match)
+  }, [
+    featureAuthorQuery,
+    featureCircleQuery,
+    featureGradeFilter,
+    featureNameQuery,
+    featureSearchActive,
+    featureTags,
+    featureWorkTitleQuery,
+    gradeByPackage,
+  ])
+
+  const scopedSearchDirectories = useMemo(() => {
+    if (!featureSearchActive) {
+      return IMAGE_DIRECTORY_SOURCES
+    }
+
+    const nameQuery = featureNameQuery.trim().toLowerCase()
+    const workTitleQuery = featureWorkTitleQuery.trim().toLowerCase()
+    const circleQuery = featureCircleQuery.trim().toLowerCase()
+    const authorQuery = featureAuthorQuery.trim().toLowerCase()
+    const selectedTags = featureTags.map((tag) => tag.toLowerCase())
+
+    const match = (directory: ImagePackage) => {
+      if (nameQuery) {
+        const matchesName = [directory.packageName, directory.displayName].some((value) => value.toLowerCase().includes(nameQuery))
+        if (!matchesName) {
+          return false
+        }
+      }
+
+      if (workTitleQuery && !directory.workTitle.toLowerCase().includes(workTitleQuery)) {
+        return false
+      }
+
+      if (circleQuery && !directory.circle.toLowerCase().includes(circleQuery)) {
+        return false
+      }
+
+      if (authorQuery && !directory.author.toLowerCase().includes(authorQuery)) {
+        return false
+      }
+
+      if (selectedTags.length > 0) {
+        const lowerTags = directory.tags.map((tag) => tag.toLowerCase())
+        const allTagsMatched = selectedTags.every((tag) => lowerTags.includes(tag))
+        if (!allTagsMatched) {
+          return false
+        }
+      }
+
+      if (featureGradeFilter !== null) {
+        const grade = gradeByPackage[directory.id] ?? 0
+        if (grade !== featureGradeFilter) {
+          return false
+        }
+      }
+
+      return true
+    }
+
+    return IMAGE_DIRECTORY_SOURCES.filter(match)
+  }, [
+    featureAuthorQuery,
+    featureCircleQuery,
+    featureGradeFilter,
+    featureNameQuery,
+    featureSearchActive,
+    featureTags,
+    featureWorkTitleQuery,
+    gradeByPackage,
+  ])
 
   const scopedImageSources = useMemo(
     () => [...scopedSearchPackages, ...scopedSearchDirectories],
@@ -249,19 +397,6 @@ function App() {
     [scopedImageSources, rootScopedPackageIds],
   )
 
-  const focusedIndexInPackage = focusByPackage[selectedPackageId] ?? 0
-  const anchorRef = useMemo<FocusedImageRef | null>(() => {
-    const selectedPackage = packageById.get(selectedPackageId)
-    if (!selectedPackage) {
-      return null
-    }
-    const clampedIndex = clamp(focusedIndexInPackage, 0, selectedPackage.images.length - 1)
-    return {
-      packageId: selectedPackage.id,
-      imageIndex: clampedIndex,
-    }
-  }, [focusedIndexInPackage, packageById, selectedPackageId])
-
   const allScopedRefs = useMemo<FocusedImageRef[]>(() => {
     const refs: FocusedImageRef[] = []
     for (const pkg of rootScopedPackages) {
@@ -272,24 +407,90 @@ function App() {
     return refs
   }, [rootScopedPackages])
 
-  const vectorCandidates = useMemo<VectorCandidate[]>(() => {
-    if (!anchorRef) {
-      return []
-    }
-    return buildVectorCandidates(anchorRef, allScopedRefs).filter((candidate) => candidate.score >= vectorThreshold)
-  }, [allScopedRefs, anchorRef, vectorThreshold])
+  const vectorResultsActive = mode === 'image' && vectorMode && searchPanelMode === 'vector' && vectorSearchResults.length > 0
+  const searchResultsMode = vectorResultsActive || featureSearchActive
+  const searchResultsReadOnly = vectorResultsActive
 
-  const imageTreeForSidebar = useMemo(() => {
+  const imageTreeForSidebarNormal = useMemo(() => {
     if (!imageRootNode) {
       return imageTreeRaw
     }
     return [imageRootNode]
   }, [imageRootNode, imageTreeRaw])
 
-  const searchedVideos = useMemo(
-    () => VIDEO_ITEMS.filter((video) => videoMatchesSearch(video, searchText)),
-    [searchText],
-  )
+  const normalImageSourceNodeIdMap = useMemo(() => {
+    const map = new Map<string, string>()
+    const walk = (nodes: SidebarNode[]) => {
+      for (const node of nodes) {
+        if (node.imageSourceId) {
+          map.set(node.imageSourceId, node.id)
+        }
+        if (node.children.length > 0) {
+          walk(node.children)
+        }
+      }
+    }
+    walk(imageTreeForSidebarNormal)
+    return map
+  }, [imageTreeForSidebarNormal])
+
+  const vectorSidebarState = useMemo(() => {
+    const resultCountByPackage = new Map<string, number>()
+    for (const candidate of vectorSearchResults) {
+      resultCountByPackage.set(candidate.packageId, (resultCountByPackage.get(candidate.packageId) ?? 0) + 1)
+    }
+
+    const leaves = Array.from(resultCountByPackage.keys())
+      .map((packageId) => {
+        const pkg = packageById.get(packageId)
+        if (!pkg) {
+          return null
+        }
+        return {
+          id: packageId,
+          treePath: pkg.treePath,
+        }
+      })
+      .filter((leaf): leaf is { id: string; treePath: string[] } => Boolean(leaf))
+
+    const rawTree = buildSidebarTree(leaves, 'package')
+    const packageNodeIdMap = new Map<string, string>()
+
+    const decorateNodes = (nodes: SidebarNode[]): SidebarNode[] => {
+      return nodes.map((node) => {
+        const children = decorateNodes(node.children)
+        const selfResultCount = node.packageId ? (resultCountByPackage.get(node.packageId) ?? 0) : undefined
+
+        if (node.packageId) {
+          packageNodeIdMap.set(node.packageId, node.id)
+        }
+
+        return {
+          ...node,
+          children,
+          imageSourceId: node.packageId ?? node.imageSourceId,
+          directImageCount: selfResultCount,
+        }
+      })
+    }
+
+    return {
+      nodes: decorateNodes(rawTree),
+      packageNodeIdMap,
+    }
+  }, [packageById, vectorSearchResults])
+
+  const vectorSidebarNodes = vectorSidebarState.nodes
+  const vectorResultPackageNodeIdMap = vectorSidebarState.packageNodeIdMap
+
+  const imageTreeForSidebar = useMemo(() => {
+    if (vectorResultsActive) {
+      return vectorSidebarNodes
+    }
+    return imageTreeForSidebarNormal
+  }, [imageTreeForSidebarNormal, vectorResultsActive, vectorSidebarNodes])
+
+  const searchedVideos = useMemo(() => VIDEO_ITEMS, [])
 
   const videoTreeRaw = useMemo(
     () =>
@@ -466,6 +667,9 @@ function App() {
 
   const onStartSidebarResize = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
+      if (layoutLocked) {
+        return
+      }
       event.preventDefault()
 
       const onMouseMove = (moveEvent: MouseEvent) => {
@@ -480,7 +684,7 @@ function App() {
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [updateSidebarRatioByClientX],
+    [layoutLocked, updateSidebarRatioByClientX],
   )
 
   const onExpandSidebar = useCallback(() => {
@@ -516,6 +720,9 @@ function App() {
 
   const onStartMetadataResize = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
+      if (layoutLocked) {
+        return
+      }
       event.preventDefault()
 
       const onMouseMove = (moveEvent: MouseEvent) => {
@@ -530,14 +737,55 @@ function App() {
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [updateMetadataRatioByClientX],
+    [layoutLocked, updateMetadataRatioByClientX],
+  )
+
+  const updateVectorPanelHeightByClientY = useCallback(
+    (clientY: number) => {
+      const rect = workspaceRef.current?.getBoundingClientRect()
+      if (!rect || rect.height <= 0) {
+        return
+      }
+
+      const minHeight = 120
+      const maxHeight = Math.max(minHeight, Math.min(320, Math.floor(rect.height - 120)))
+      const nextHeight = clamp(Math.round(clientY - rect.top), minHeight, maxHeight)
+      if (Math.abs(nextHeight - vectorPanelHeight) < 1) {
+        return
+      }
+
+      updateSettings({ vectorPanelHeight: nextHeight })
+    },
+    [updateSettings, vectorPanelHeight],
+  )
+
+  const onStartVectorPanelResize = useCallback(
+    (event: ReactMouseEvent<HTMLDivElement>) => {
+      if (layoutLocked || searchPanelCollapsed) {
+        return
+      }
+      event.preventDefault()
+
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        updateVectorPanelHeightByClientY(moveEvent.clientY)
+      }
+
+      const onMouseUp = () => {
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
+
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
+    },
+    [layoutLocked, searchPanelCollapsed, updateVectorPanelHeightByClientY],
   )
 
   const activePackage = packageById.get(selectedPackageId) ?? orderedRootScopedPackages[0] ?? null
 
-  const activeVectorRef = vectorCandidates[vectorFocusIndex]
+  const activeVectorRef = vectorSearchResults[vectorFocusIndex]
   const focusedRef = useMemo<FocusedImageRef | null>(() => {
-    if (mode === 'image' && vectorMode) {
+    if (mode === 'image' && vectorResultsActive) {
       if (!activeVectorRef) {
         return null
       }
@@ -552,7 +800,7 @@ function App() {
       packageId: activePackage.id,
       imageIndex: clamp(focusByPackage[activePackage.id] ?? 0, 0, activePackage.images.length - 1),
     }
-  }, [activePackage, activeVectorRef, focusByPackage, imageFocusActive, mode, vectorMode])
+  }, [activePackage, activeVectorRef, focusByPackage, imageFocusActive, mode, vectorResultsActive])
 
   const focusedImage = useMemo(() => {
     if (!focusedRef) {
@@ -580,8 +828,8 @@ function App() {
       return [] as FocusedImageRef[]
     }
 
-    if (vectorMode) {
-      return vectorCandidates.map((candidate) => ({
+    if (vectorResultsActive) {
+      return vectorSearchResults.map((candidate) => ({
         packageId: candidate.packageId,
         imageIndex: candidate.imageIndex,
       }))
@@ -595,7 +843,7 @@ function App() {
       packageId: activePackage.id,
       imageIndex,
     }))
-  }, [mode, vectorMode, vectorCandidates, activePackage])
+  }, [mode, vectorResultsActive, vectorSearchResults, activePackage])
 
   const thumbnailLayout = useMemo(
     () =>
@@ -619,7 +867,7 @@ function App() {
   const pagedPageSize = thumbnailLayout.pageSize
   const actualThumbnailGap = thumbnailLayout.gap
 
-  const imagePageIndex = showNamesOnly ? 0 : vectorMode ? vectorPage : (pageByPackage[selectedPackageId] ?? 0)
+  const imagePageIndex = showNamesOnly ? 0 : vectorResultsActive ? vectorPage : (pageByPackage[selectedPackageId] ?? 0)
   const imageTotalPages = showNamesOnly ? 1 : Math.max(1, Math.ceil(visibleImageRefs.length / pagedPageSize))
   const normalizedPageIndex = showNamesOnly ? 0 : clamp(imagePageIndex, 0, imageTotalPages - 1)
   const pageStart = showNamesOnly ? 0 : normalizedPageIndex * pagedPageSize
@@ -655,7 +903,24 @@ function App() {
 
   const moveImage = useCallback(
     (delta: number) => {
-      if (mode !== 'image' || vectorMode) {
+      if (mode !== 'image') {
+        return
+      }
+
+      if (vectorResultsActive) {
+        if (vectorSearchResults.length === 0) {
+          return
+        }
+
+        const currentIndex = clamp(vectorFocusIndex, 0, vectorSearchResults.length - 1)
+        const nextIndex = clamp(currentIndex + delta, 0, vectorSearchResults.length - 1)
+        const nextRef = vectorSearchResults[nextIndex]
+        if (!nextRef) {
+          return
+        }
+
+        setVectorFocusIndex(nextIndex)
+        setImageFocus(nextRef.packageId, nextRef.imageIndex)
         return
       }
 
@@ -687,12 +952,41 @@ function App() {
 
       setImageFocus(nextRef.packageId, nextRef.imageIndex)
     },
-    [activePackage, focusByPackage, fullscreenActive, mode, orderedRootScopedImageRefs, setImageFocus, vectorMode],
+    [
+      activePackage,
+      focusByPackage,
+      fullscreenActive,
+      mode,
+      orderedRootScopedImageRefs,
+      setImageFocus,
+      vectorFocusIndex,
+      vectorResultsActive,
+      vectorSearchResults,
+    ],
   )
 
   const moveImageVertical = useCallback(
     (direction: 'up' | 'down') => {
-      if (mode !== 'image' || vectorMode) {
+      if (mode !== 'image') {
+        return
+      }
+
+      if (vectorResultsActive) {
+        if (vectorSearchResults.length === 0) {
+          return
+        }
+
+        const step = showNamesOnly ? 1 : Math.max(1, thumbnailColumns)
+        const currentIndex = clamp(vectorFocusIndex, 0, vectorSearchResults.length - 1)
+        const candidate = direction === 'up' ? currentIndex - step : currentIndex + step
+        const nextIndex = clamp(candidate, 0, vectorSearchResults.length - 1)
+        const nextRef = vectorSearchResults[nextIndex]
+        if (!nextRef) {
+          return
+        }
+
+        setVectorFocusIndex(nextIndex)
+        setImageFocus(nextRef.packageId, nextRef.imageIndex)
         return
       }
 
@@ -716,12 +1010,38 @@ function App() {
 
       setImageFocus(activePackage.id, candidate)
     },
-    [activePackage, focusByPackage, mode, setImageFocus, showNamesOnly, thumbnailColumns, vectorMode],
+    [
+      activePackage,
+      focusByPackage,
+      mode,
+      setImageFocus,
+      showNamesOnly,
+      thumbnailColumns,
+      vectorFocusIndex,
+      vectorResultsActive,
+      vectorSearchResults,
+    ],
   )
 
   const jumpImageBoundary = useCallback(
     (target: 'first' | 'last') => {
-      if (mode !== 'image' || vectorMode) {
+      if (mode !== 'image') {
+        return
+      }
+
+      if (vectorResultsActive) {
+        if (vectorSearchResults.length === 0) {
+          return
+        }
+
+        const nextIndex = target === 'first' ? 0 : vectorSearchResults.length - 1
+        const nextRef = vectorSearchResults[nextIndex]
+        if (!nextRef) {
+          return
+        }
+
+        setVectorFocusIndex(nextIndex)
+        setImageFocus(nextRef.packageId, nextRef.imageIndex)
         return
       }
 
@@ -732,12 +1052,12 @@ function App() {
       const nextIndex = target === 'first' ? 0 : activePackage.images.length - 1
       setImageFocus(activePackage.id, nextIndex)
     },
-    [activePackage, mode, setImageFocus, vectorMode],
+    [activePackage, mode, setImageFocus, vectorResultsActive, vectorSearchResults],
   )
 
   const goPackage = useCallback(
     (delta: number) => {
-      if (mode !== 'image' || vectorMode) {
+      if (mode !== 'image' || vectorResultsActive) {
         return
       }
 
@@ -755,7 +1075,7 @@ function App() {
 
       setSelectedPackageId(nextPackage.id)
     },
-    [mode, orderedRootScopedPackages, selectedPackageId, vectorMode],
+    [mode, orderedRootScopedPackages, selectedPackageId, vectorResultsActive],
   )
 
   const setPackageGrade = useCallback(
@@ -787,11 +1107,85 @@ function App() {
     }))
   }, [])
 
+  const runVectorSearch = useCallback(() => {
+    if (mode !== 'image' || !focusedRef) {
+      return
+    }
+
+    const rankedCandidates = buildVectorCandidates(focusedRef, allScopedRefs, packageById)
+    const anchorCandidate = rankedCandidates[0]
+    if (!anchorCandidate) {
+      setVectorSearchResults([])
+      return
+    }
+
+    const filteredResults = [
+      anchorCandidate,
+      ...rankedCandidates.slice(1).filter((candidate) => candidate.score >= vectorThreshold),
+    ]
+
+    setVectorSearchResults(filteredResults)
+    setVectorFocusIndex(0)
+    setVectorPage(0)
+    setSearchPanelMode('vector')
+    setImageFocus(anchorCandidate.packageId, anchorCandidate.imageIndex)
+    updateSettings({ vectorMode: true, sidebarFocus: 'main' })
+  }, [allScopedRefs, focusedRef, mode, packageById, setImageFocus, updateSettings, vectorThreshold])
+
+  const goToFromSearchMode = useCallback(() => {
+    if (mode !== 'image') {
+      return
+    }
+
+    if (vectorResultsActive) {
+      if (!focusedRef) {
+        return
+      }
+
+      const targetPackageId = focusedRef.packageId
+      const targetNodeId = normalImageSourceNodeIdMap.get(targetPackageId) ?? null
+
+      setSelectedPackageId(targetPackageId)
+      setImageFocus(targetPackageId, focusedRef.imageIndex)
+      setVectorSearchResults([])
+      setVectorFocusIndex(0)
+      setVectorPage(0)
+      setSearchPanelMode('vector')
+      updateSettings({ vectorMode: false, sidebarFocus: 'main' })
+
+      if (targetNodeId) {
+        setSelectedSidebarNodeId(targetNodeId)
+      }
+      return
+    }
+
+    if (featureSearchActive) {
+      const targetNodeId = selectedSidebarNodeId
+      setVectorSearchResults([])
+      setVectorFocusIndex(0)
+      setVectorPage(0)
+      setSearchPanelMode('vector')
+      updateSettings({ vectorMode: false, sidebarFocus: 'main' })
+      if (targetNodeId) {
+        setSelectedSidebarNodeId(targetNodeId)
+      }
+    }
+  }, [
+    featureSearchActive,
+    focusedRef,
+    mode,
+    normalImageSourceNodeIdMap,
+    selectedSidebarNodeId,
+    setImageFocus,
+    updateSettings,
+    vectorResultsActive,
+  ])
+
 
   useShortcutEngine({
     shortcuts,
     mode,
-    vectorMode,
+    vectorMode: vectorResultsActive,
     settingsOpen,
     sidebarFocus,
     fullscreenActive,
@@ -809,6 +1203,9 @@ function App() {
       setFullscreenVideoFocus((value) => !value)
     },
     onToggleSidebarFocus: () => {
+      if (vectorResultsActive) {
+        return
+      }
       updateSettings({ sidebarFocus: sidebarFocus === 'sidebar' ? 'main' : 'sidebar' })
     },
     onMoveImage: moveImage,
@@ -902,6 +1299,13 @@ function App() {
   }, [sidebarCollapsed, sidebarFocus, updateSettings])
 
   useEffect(() => {
+    if (!vectorResultsActive || sidebarFocus !== 'sidebar') {
+      return
+    }
+    updateSettings({ sidebarFocus: 'main' })
+  }, [sidebarFocus, updateSettings, vectorResultsActive])
+
+  useEffect(() => {
     if (thumbnailScale === normalizedThumbnailScale) {
       return
     }
@@ -921,17 +1325,17 @@ function App() {
   }, [activePackage, focusByPackage, pagedPageSize, showNamesOnly])
 
   useEffect(() => {
-    if (vectorCandidates.length === 0) {
+    if (vectorSearchResults.length === 0) {
       setVectorFocusIndex(0)
       setVectorPage(0)
       return
     }
 
-    setVectorFocusIndex((value) => clamp(value, 0, vectorCandidates.length - 1))
-  }, [vectorCandidates.length])
+    setVectorFocusIndex((value) => clamp(value, 0, vectorSearchResults.length - 1))
+  }, [vectorSearchResults.length])
 
   useEffect(() => {
-    if (!vectorMode) {
+    if (!vectorResultsActive) {
       return
     }
 
@@ -941,7 +1345,20 @@ function App() {
     }
 
     setVectorPage(Math.floor(vectorFocusIndex / pagedPageSize))
-  }, [pagedPageSize, showNamesOnly, vectorFocusIndex, vectorMode])
+  }, [pagedPageSize, showNamesOnly, vectorFocusIndex, vectorResultsActive])
+
+  useEffect(() => {
+    if (!vectorResultsActive || mode !== 'image' || !focusedRef) {
+      return
+    }
+
+    const sidebarNodeId = vectorResultPackageNodeIdMap.get(focusedRef.packageId)
+    if (!sidebarNodeId || sidebarNodeId === selectedSidebarNodeId) {
+      return
+    }
+
+    setSelectedSidebarNodeId(sidebarNodeId)
+  }, [focusedRef, mode, selectedSidebarNodeId, vectorResultPackageNodeIdMap, vectorResultsActive])
 
   useEffect(() => {
     if (orderedRootScopedPackages.length === 0) {
@@ -962,17 +1379,27 @@ function App() {
       return
     }
 
-    const fallbackNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? flatSidebarNodes[0]?.id ?? null
+    let fallbackNodeId: string | null
+    if (vectorResultsActive) {
+      fallbackNodeId = (focusedRef ? vectorResultPackageNodeIdMap.get(focusedRef.packageId) ?? null : null) ?? vectorSidebarNodes[0]?.id ?? null
+    } else {
+      fallbackNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? flatSidebarNodes[0]?.id ?? null
+    }
+
     if (fallbackNodeId !== selectedSidebarNodeId) {
       setSelectedSidebarNodeId(fallbackNodeId)
     }
   }, [
     flatSidebarNodes,
+    focusedRef,
     imageSourceNodeIdMap,
     mode,
     selectedPackageId,
     selectedSidebarNodeId,
     sidebarNodeById,
+    vectorResultPackageNodeIdMap,
+    vectorResultsActive,
+    vectorSidebarNodes,
   ])
 
   useEffect(() => {
@@ -1006,6 +1433,13 @@ function App() {
     }
     ensureSidebarNodeVisible(selectedSidebarNodeId)
   }, [ensureSidebarNodeVisible, selectedSidebarNodeId, sidebarCollapsed, sidebarFocus])
+
+  useEffect(() => {
+    if (!vectorResultsActive || sidebarCollapsed || !selectedSidebarNodeId) {
+      return
+    }
+    ensureSidebarNodeVisible(selectedSidebarNodeId)
+  }, [ensureSidebarNodeVisible, selectedSidebarNodeId, sidebarCollapsed, vectorResultsActive])
 
   useEffect(() => {
     const enteringFullscreen = fullscreenActive && !wasFullscreenRef.current
@@ -1059,14 +1493,45 @@ function App() {
     return () => window.clearInterval(timer)
   }, [focusedVideo, goPlaylist, setVideoTime, videoPlaying, videoRate])
 
+  useEffect(() => {
+    if (mode !== 'image' && vectorMode) {
+      updateSettings({ vectorMode: false })
+    }
+  }, [mode, updateSettings, vectorMode])
+
+  useEffect(() => {
+    if (!vectorMode && searchPanelCollapsed) {
+      setSearchPanelCollapsed(false)
+    }
+  }, [searchPanelCollapsed, vectorMode])
+
+  useEffect(() => {
+    if (mode !== 'image' || !vectorMode || searchPanelCollapsed) {
+      return
+    }
+
+    const content = vectorPanelContentRef.current
+    if (!content) {
+      return
+    }
+
+    const rafId = window.requestAnimationFrame(() => {
+      const measured = clamp(Math.ceil(content.scrollHeight + 20), 120, 320)
+      if (Math.abs(measured - vectorPanelHeight) < 1) {
+        return
+      }
+      updateSettings({ vectorPanelHeight: measured })
+    })
+
+    return () => window.cancelAnimationFrame(rafId)
+  }, [featureTagPickerOpen, mode, searchPanelCollapsed, searchPanelMode, updateSettings, vectorMode, vectorPanelHeight])
+
   return (
     <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
       <AppHeader
         headerHeight={headerHeight}
         mode={mode}
-        vectorMode={vectorMode}
-        searchField={searchField}
-        searchText={searchText}
+        searchPanelOpen={vectorMode && mode === 'image'}
         currentGrade={currentGrade}
         thumbnailScaleLevel={displayThumbnailScaleLevel}
         canThumbnailScaleDown={canThumbnailScaleDown}
@@ -1080,9 +1545,14 @@ function App() {
         onImportFiles={openImportFilesDialog}
         onImportFolders={openImportFoldersDialog}
         onModeChange={(nextMode) => updateSettings({ mode: nextMode })}
-        onVectorModeChange={(enabled) => updateSettings({ vectorMode: enabled })}
-        onSearchFieldChange={(field) => updateSettings({ searchField: field })}
-        onSearchTextChange={(text) => updateSettings({ searchText: text })}
+        onToggleSearchPanel={() => {
+          const nextOpen = !vectorMode
+          updateSettings({ vectorMode: nextOpen })
+          if (nextOpen) {
+            setSearchPanelMode('vector')
+            setSearchPanelCollapsed(false)
+          }
+        }}
         onGradeChange={setPackageGrade}
         onThumbnailScaleDown={() => {
           updateSettings({ thumbnailScale: clamp(thumbnailScale + 1, 1, thumbnailScaleLevelCount) })
@@ -1126,7 +1596,7 @@ function App() {
               sidebarCountFontSize={sidebarCountFontSize}
               sidebarIndentStep={sidebarIndentStep}
               sidebarVerticalGap={sidebarVerticalGap}
-              currentRootLabel={currentRootLabel}
+              currentRootLabel={searchResultsMode ? '检索结果' : currentRootLabel}
               selectedSidebarNodeId={selectedSidebarNodeId}
               canSetCurrentRoot={canSetCurrentRoot}
               imageRootNodeId={imageRootNodeId}
@@ -1135,8 +1605,16 @@ function App() {
               videoTreeNodes={videoTreeForSidebar}
               selectedPackageId={selectedPackageId}
               selectedVideoId={selectedVideoId}
+              imageHighlightByNode={vectorResultsActive}
+              searchResultMode={searchResultsMode}
+              searchResultReadonly={searchResultsReadOnly}
+              canGoToFromSearchMode={vectorResultsActive ? Boolean(focusedRef) : featureSearchActive && Boolean(selectedSidebarNodeId)}
               playlistIds={playlistIds}
+              onGoToFromSearchMode={goToFromSearchMode}
               onSelectNode={(nodeId) => {
+                if (mode === 'image' && vectorResultsActive) {
+                  return
+                }
                 setSelectedSidebarNodeId(nodeId)
                 updateSettings({ sidebarFocus: 'sidebar' })
               }}
@@ -1171,7 +1649,8 @@ function App() {
             <div
               aria-label="调整 Sidebar 宽度"
               aria-orientation="vertical"
-              className="sidebar-splitter"
+              aria-disabled={layoutLocked}
+              className={`sidebar-splitter ${layoutLocked ? 'is-locked' : ''}`}
               role="separator"
               tabIndex={-1}
               onMouseDown={onStartSidebarResize}
@@ -1181,41 +1660,216 @@ function App() {
 
         <section
           className={`workspace ${sidebarFocus === 'main' ? 'is-focus' : ''}`}
+          ref={workspaceRef}
           style={{ width: sidebarCollapsed ? '100%' : `calc(${(1 - sidebarRatio) * 100}% - 8px)` }}
         >
           {mode === 'image' && vectorMode ? (
-            <div className="vector-panel" style={{ height: `${vectorPanelHeight}px` }}>
-              <div className="vector-top-row">
-                <strong>向量检索容器（虚拟）</strong>
-                <span>{`当前结果: ${vectorCandidates.length} 张`}</span>
-              </div>
-              <label>
-                阈值 {vectorThreshold.toFixed(2)}
-                <input
-                  max={0.98}
-                  min={0.2}
-                  step={0.01}
-                  type="range"
-                  value={vectorThreshold}
-                  onChange={(event) => updateSettings({ vectorThreshold: Number(event.target.value) })}
-                />
-              </label>
+            searchPanelCollapsed ? (
               <button
+                aria-label="展开检索容器"
+                className="search-panel-expand-btn"
                 type="button"
-                onClick={() => {
-                  console.info('模拟向量任务面板：手动触发重建 / 范围选择')
-                }}
+                onClick={() => setSearchPanelCollapsed(false)}
               >
-                打开向量任务面板（模拟）
+                <span className="search-panel-expand-tip">展开检索容器</span>
               </button>
-            </div>
+            ) : (
+              <div className="vector-panel" ref={vectorPanelRef} style={{ height: `${vectorPanelHeight}px` }}>
+                <div className="vector-panel-content" ref={vectorPanelContentRef}>
+                <div className="vector-top-row">
+                  <div className="search-mode-switch" role="group" aria-label="search-mode-switch">
+                    <button
+                      className={searchPanelMode === 'vector' ? 'is-active' : ''}
+                      type="button"
+                      onClick={() => setSearchPanelMode('vector')}
+                    >
+                      向量检索
+                    </button>
+                    <button
+                      className={searchPanelMode === 'feature' ? 'is-active' : ''}
+                      type="button"
+                      onClick={() => setSearchPanelMode('feature')}
+                    >
+                      特征检索
+                    </button>
+                  </div>
+
+                  <div className="vector-top-actions">
+                    <span>
+                      {searchPanelMode === 'vector'
+                        ? `当前结果: ${vectorSearchResults.length} 张`
+                        : `命中节点: ${scopedImageSources.length} 个`}
+                    </span>
+                    <button type="button" onClick={() => setSearchPanelCollapsed(true)}>
+                      折叠
+                    </button>
+                  </div>
+                </div>
+
+                {searchPanelMode === 'vector' ? (
+                  <>
+                    <div className="vector-controls">
+                      <button type="button" disabled={!focusedRef} onClick={runVectorSearch}>
+                        向量检索
+                      </button>
+                      <span>
+                        {focusedRef && focusedImagePackage
+                          ? `输入：${focusedImagePackage.displayName} #${(focusedImage?.ordinal ?? focusedRef.imageIndex + 1).toString()}`
+                          : '请先在缩略图中选中一张图片'}
+                      </span>
+                    </div>
+                    <label>
+                      相似度阈值 {vectorThreshold.toFixed(2)}
+                      <input
+                        max={0.98}
+                        min={0.2}
+                        step={0.01}
+                        type="range"
+                        value={vectorThreshold}
+                        onChange={(event) => updateSettings({ vectorThreshold: Number(event.target.value) })}
+                      />
+                    </label>
+                    <p className="vector-hint">修改阈值后需重新点击“向量检索”才会刷新结果。</p>
+                  </>
+                ) : (
+                  <div className="feature-controls">
+                    <label>
+                      名称
+                      <input
+                        placeholder="按名称模糊匹配"
+                        value={featureNameQuery}
+                        onChange={(event) => setFeatureNameQuery(event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      作品名
+                      <input
+                        placeholder="按作品名模糊匹配"
+                        value={featureWorkTitleQuery}
+                        onChange={(event) => setFeatureWorkTitleQuery(event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      社团
+                      <input
+                        list="feature-circle-options"
+                        placeholder="输入社团，支持自动补完"
+                        value={featureCircleQuery}
+                        onChange={(event) => setFeatureCircleQuery(event.target.value)}
+                      />
+                      <datalist id="feature-circle-options">
+                        {featureCircleOptions.map((item) => (
+                          <option key={item} value={item} />
+                        ))}
+                      </datalist>
+                    </label>
+                    <label>
+                      作者
+                      <input
+                        list="feature-author-options"
+                        placeholder="输入作者，支持自动补完"
+                        value={featureAuthorQuery}
+                        onChange={(event) => setFeatureAuthorQuery(event.target.value)}
+                      />
+                      <datalist id="feature-author-options">
+                        {featureAuthorOptions.map((item) => (
+                          <option key={item} value={item} />
+                        ))}
+                      </datalist>
+                    </label>
+
+                    <div className="feature-tags-group">
+                      <div className="feature-control-head">
+                        <strong>tags</strong>
+                        <div className="feature-control-actions">
+                          <button type="button" onClick={() => setFeatureTagPickerOpen((value) => !value)}>
+                            {featureTagPickerOpen ? '收起 tags' : '选择 tags'}
+                          </button>
+                          <button type="button" onClick={() => setFeatureTags([])}>
+                            清空 tags
+                          </button>
+                        </div>
+                      </div>
+
+                      {featureTagPickerOpen ? (
+                        <div className="feature-tags-popover" role="listbox" aria-label="tags 选择">
+                          {featureTagOptions.map((tag) => {
+                            const selected = featureTags.includes(tag)
+                            return (
+                              <button
+                                key={tag}
+                                aria-label={tag}
+                                aria-pressed={selected}
+                                className={selected ? 'is-active' : ''}
+                                type="button"
+                                onClick={() => {
+                                  setFeatureTags((previous) => {
+                                    if (previous.includes(tag)) {
+                                      return previous.filter((item) => item !== tag)
+                                    }
+                                    return [...previous, tag]
+                                  })
+                                }}
+                              >
+                                {tag}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      ) : null}
+
+                      <p className="feature-selection-result">
+                        {featureTags.length === 0 ? '未选择 tags' : `已选: ${featureTags.join(', ')}`}
+                      </p>
+                    </div>
+
+                    <div className="feature-rating-group">
+                      <strong>图包评分</strong>
+                      <div className="feature-rating-stars" role="group" aria-label="图包评分筛选">
+                        {[0, 1, 2, 3, 4, 5].map((score) => {
+                          const isActive = featureGradeFilter !== null && score <= featureGradeFilter
+                          return (
+                            <button
+                              key={score}
+                              aria-label={`图包评分 ${score} 分`}
+                              aria-pressed={featureGradeFilter === score}
+                              className={isActive ? 'is-active' : ''}
+                              style={{ color: `hsl(42deg ${35 + score * 13}% 48%)` }}
+                              type="button"
+                              onClick={() => setFeatureGradeFilter((current) => (current === score ? null : score))}
+                            >
+                              ★
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <p className="vector-hint">多字段组合按 AND 逻辑过滤，结果即时同步到 Sidebar 与主视图。</p>
+                  </div>
+                )}
+                </div>
+              </div>
+            )
+          ) : null}
+
+          {mode === 'image' && vectorMode && !searchPanelCollapsed ? (
+            <div
+              aria-label="调整检索容器高度"
+              aria-orientation="horizontal"
+              aria-disabled={layoutLocked}
+              className={`vector-splitter ${layoutLocked ? 'is-locked' : ''}`}
+              role="separator"
+              tabIndex={-1}
+              onMouseDown={onStartVectorPanelResize}
+            />
           ) : null}
 
           <div className="workspace-body" ref={workspaceBodyRef}>
             <main className="main-pane" style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - 8px)` }}>
               {mode === 'image' ? (
                 <ImageMainSection
-                  vectorMode={vectorMode}
+                  vectorMode={vectorResultsActive}
                   showNamesOnly={showNamesOnly}
                   activePackage={activePackage}
                   focusedRef={focusedRef}
@@ -1227,7 +1881,7 @@ function App() {
                   actualMediaHeight={actualMediaHeight}
                   thumbnailColumns={thumbnailColumns}
                   thumbnailGap={actualThumbnailGap}
-                  vectorCandidates={vectorCandidates}
+                  vectorCandidates={vectorSearchResults}
                   normalizedPageIndex={normalizedPageIndex}
                   imageTotalPages={imageTotalPages}
                   packageById={packageById}
@@ -1235,7 +1889,7 @@ function App() {
                   onToggleShowNamesOnly={() => updateSettings({ showNamesOnly: !showNamesOnly })}
                   onEnterFullscreen={() => setFullscreenActive(true)}
                   onSelectImage={(packageId, imageIndex, absoluteIndex) => {
-                    if (vectorMode) {
+                    if (vectorResultsActive) {
                       setVectorFocusIndex(absoluteIndex)
                     }
                     setImageFocus(packageId, imageIndex)
@@ -1245,7 +1899,7 @@ function App() {
                     if (showNamesOnly) {
                       return
                     }
-                    if (vectorMode) {
+                    if (vectorResultsActive) {
                       setVectorPage((value) => clamp(value - 1, 0, imageTotalPages - 1))
                       return
                     }
@@ -1258,7 +1912,7 @@ function App() {
                     if (showNamesOnly) {
                       return
                     }
-                    if (vectorMode) {
+                    if (vectorResultsActive) {
                       setVectorPage((value) => clamp(value + 1, 0, imageTotalPages - 1))
                       return
                     }
@@ -1340,7 +1994,8 @@ function App() {
               <div
                 aria-label="调整元数据面板宽度"
                 aria-orientation="vertical"
-                className="metadata-splitter"
+                aria-disabled={layoutLocked}
+                className={`metadata-splitter ${layoutLocked ? 'is-locked' : ''}`}
                 role="separator"
                 tabIndex={-1}
                 onMouseDown={onStartMetadataResize}
@@ -1452,8 +2107,10 @@ function App() {
       <SettingsPanel
         settingsOpen={settingsOpen}
         headerHeight={headerHeight}
+        settingsFontSize={settingsFontSize}
         sidebarRatio={sidebarRatio}
         sidebarMinWidth={sidebarMinWidth}
+        layoutLocked={layoutLocked}
         sidebarFontSize={sidebarFontSize}
         sidebarCountFontSize={sidebarCountFontSize}
         sidebarIndentStep={sidebarIndentStep}
@@ -1469,8 +2126,10 @@ function App() {
         shortcutConflicts={shortcutConflicts}
         onClose={() => updateSettings({ settingsOpen: false })}
         onHeaderHeightChange={(value) => updateSettings({ headerHeight: value })}
+        onSettingsFontSizeChange={(value) => updateSettings({ settingsFontSize: value })}
         onSidebarRatioChange={applySidebarRatio}
         onSidebarMinWidthChange={(value) => updateSettings({ sidebarMinWidth: value })}
+        onLayoutLockedChange={(value) => updateSettings({ layoutLocked: value })}
         onSidebarFontSizeChange={(value) => updateSettings({ sidebarFontSize: value })}
         onSidebarCountFontSizeChange={(value) => updateSettings({ sidebarCountFontSize: value })}
         onSidebarIndentStepChange={(value) => updateSettings({ sidebarIndentStep: value })}

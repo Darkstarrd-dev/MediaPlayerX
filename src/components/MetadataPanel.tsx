@@ -69,8 +69,8 @@ function MetadataPanel({
 
   if (metadataCollapsed) {
     return (
-      <button className="meta-restore" type="button" onClick={onExpand}>
-        展开元数据面板
+      <button aria-label="展开元数据面板" className="meta-restore" type="button" onClick={onExpand}>
+        <span className="meta-restore-tip">展开元数据面板</span>
       </button>
     )
   }
@@ -78,9 +78,8 @@ function MetadataPanel({
   return (
     <aside className={metadataPanelClassName} style={{ width: `${metadataRatio * 100}%` }}>
       <div className="metadata-head">
-        <strong>元数据面板</strong>
-        <button type="button" onClick={onCollapse}>
-          折叠
+        <button className="metadata-title-btn" type="button" onClick={onCollapse}>
+          元数据面板
         </button>
       </div>
 

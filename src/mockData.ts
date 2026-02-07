@@ -9,6 +9,29 @@ import type {
 } from './types'
 
 const COLORS = ['#dd6b66', '#d58b45', '#6da249', '#4aa6a1', '#4f86cf', '#8868d6']
+const EXTRA_TAG_POOL = [
+  'glow',
+  'vintage',
+  'soft-light',
+  'high-contrast',
+  'grain',
+  'cinematic',
+  'noir',
+  'pastel',
+  'warm-tone',
+  'cold-tone',
+  'mono',
+  'neon',
+]
+
+function hashText(value: string): number {
+  let hash = 2166136261
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
+}
 
 function makeMockDimensions(index: number): { width: number; height: number } {
   const profileIndex = index % 3
@@ -31,25 +54,62 @@ function makeMockDimensions(index: number): { width: number; height: number } {
   }
 }
 
+function makeFeatureVector(packageId: string, imageIndex: number, cluster: number): number[] {
+  const seed = hashText(`${packageId}:${imageIndex}:${cluster}`)
+  const clusterBias = (cluster + 1) * 0.11
+  const vector: number[] = []
+
+  for (let axis = 0; axis < 8; axis += 1) {
+    const axisWeight = axis + 1
+    const phaseA = (seed % 997 + axisWeight * 31) * 0.0153
+    const phaseB = (seed % 431 + axisWeight * 17) * 0.0224
+    const value =
+      Math.sin(phaseA + imageIndex * 0.19 + clusterBias) * 0.64 +
+      Math.cos(phaseB + imageIndex * 0.13 + clusterBias * axisWeight) * 0.36
+    vector.push(Number(value.toFixed(6)))
+  }
+
+  return vector
+}
+
 function makeImages(packageId: string, count: number, clusterOffset: number): ImageItem[] {
   const items: ImageItem[] = []
   for (let i = 0; i < count; i += 1) {
     const ordinal = i + 1
     const { width, height } = makeMockDimensions(i)
+    const cluster = (clusterOffset + i) % COLORS.length
     items.push({
       id: `${packageId}-img-${ordinal}`,
       ordinal,
       width,
       height,
       sizeKb: 180 + ((i * 37) % 780),
-      cluster: (clusterOffset + i) % COLORS.length,
-      color: COLORS[(clusterOffset + i) % COLORS.length],
+      cluster,
+      color: COLORS[cluster],
+      featureVector: makeFeatureVector(packageId, i, cluster),
     })
   }
   return items
 }
 
-export const IMAGE_PACKAGES: ImagePackage[] = [
+function withMockPackageMetadata(pkg: ImagePackage): ImagePackage {
+  const seed = hashText(`pkg-meta:${pkg.id}`)
+  const extraTagCount = 1 + (seed % 3)
+  const randomTags: string[] = []
+
+  for (let index = 0; index < extraTagCount; index += 1) {
+    const poolIndex = (seed + index * 7) % EXTRA_TAG_POOL.length
+    randomTags.push(EXTRA_TAG_POOL[poolIndex])
+  }
+
+  return {
+    ...pkg,
+    tags: Array.from(new Set([...pkg.tags, ...randomTags])),
+    mockGrade: seed % 6,
+  }
+}
+
+const BASE_IMAGE_PACKAGES: ImagePackage[] = [
   {
     id: 'pack-001',
     packageName: 'archive_001.zip',
@@ -220,7 +280,7 @@ export const IMAGE_PACKAGES: ImagePackage[] = [
   },
 ]
 
-export const IMAGE_DIRECTORY_SOURCES: ImagePackage[] = [
+const BASE_IMAGE_DIRECTORY_SOURCES: ImagePackage[] = [
   {
     id: 'dir-001',
     packageName: '[DIR] 仅图片目录',
@@ -487,6 +547,9 @@ export const IMAGE_DIRECTORY_SOURCES: ImagePackage[] = [
   },
 ]
 
+export const IMAGE_PACKAGES: ImagePackage[] = BASE_IMAGE_PACKAGES.map(withMockPackageMetadata)
+export const IMAGE_DIRECTORY_SOURCES: ImagePackage[] = BASE_IMAGE_DIRECTORY_SOURCES.map(withMockPackageMetadata)
+
 export const VIDEO_ITEMS: VideoItem[] = [
   {
     id: 'video-001',
@@ -719,23 +782,65 @@ export function findNodeById(nodes: SidebarNode[], id: string | null): SidebarNo
   return null
 }
 
-function scoreVector(anchor: FocusedImageRef, candidate: FocusedImageRef): number {
-  const packageDistance = anchor.packageId === candidate.packageId ? 0 : 0.12
-  const orderDistance = Math.abs(anchor.imageIndex - candidate.imageIndex) * 0.013
-  const hash = (anchor.packageId.length * 7 + candidate.packageId.length * 11 + candidate.imageIndex * 17) % 19
-  const entropy = hash * 0.01
-  return Math.max(0.05, 0.97 - packageDistance - orderDistance - entropy)
+function getImageVector(ref: FocusedImageRef, packageById: Map<string, ImagePackage>): number[] | null {
+  const pkg = packageById.get(ref.packageId)
+  const image = pkg?.images[ref.imageIndex]
+  if (!image) {
+    return null
+  }
+  return image.featureVector
+}
+
+function vectorMagnitude(vector: number[]): number {
+  return Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0))
+}
+
+function cosineSimilarity(source: number[], target: number[]): number {
+  if (source.length !== target.length || source.length === 0) {
+    return 0
+  }
+
+  const dot = source.reduce((sum, value, index) => sum + value * target[index], 0)
+  const sourceMagnitude = vectorMagnitude(source)
+  const targetMagnitude = vectorMagnitude(target)
+  if (sourceMagnitude === 0 || targetMagnitude === 0) {
+    return 0
+  }
+
+  return dot / (sourceMagnitude * targetMagnitude)
+}
+
+function scoreVector(anchorVector: number[], candidateVector: number[]): number {
+  const cosine = cosineSimilarity(anchorVector, candidateVector)
+  const normalized = (cosine + 1) / 2
+  return clampScore(normalized)
+}
+
+function clampScore(score: number): number {
+  if (!Number.isFinite(score)) {
+    return 0
+  }
+  return Math.min(1, Math.max(0, Number(score.toFixed(6))))
 }
 
 export function buildVectorCandidates(
   anchor: FocusedImageRef,
   allRefs: FocusedImageRef[],
+  packageById: Map<string, ImagePackage>,
 ): VectorCandidate[] {
+  const anchorVector = getImageVector(anchor, packageById)
+  if (!anchorVector) {
+    return []
+  }
+
   return allRefs
-    .map((ref) => ({
-      packageId: ref.packageId,
-      imageIndex: ref.imageIndex,
-      score: scoreVector(anchor, ref),
-    }))
+    .map((ref) => {
+      const candidateVector = getImageVector(ref, packageById)
+      return {
+        packageId: ref.packageId,
+        imageIndex: ref.imageIndex,
+        score: candidateVector ? scoreVector(anchorVector, candidateVector) : 0,
+      }
+    })
     .sort((a, b) => b.score - a.score)
 }

@@ -152,7 +152,7 @@ function ImageMainSection({
                   </div>
                   <div className="thumb-caption">
                     <strong>{`${pkg.displayName} #${image.ordinal}`}</strong>
-                    {vectorMode ? <small>{`score ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</small> : null}
+                    {vectorMode ? <small>{`相似度 ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</small> : null}
                   </div>
                 </button>
               )

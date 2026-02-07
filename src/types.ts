@@ -10,6 +10,7 @@ export interface ImageItem {
   sizeKb: number
   cluster: number
   color: string
+  featureVector: number[]
 }
 
 export interface ImagePackage {
@@ -22,6 +23,7 @@ export interface ImagePackage {
   circle: string
   author: string
   tags: string[]
+  mockGrade?: number
   images: ImageItem[]
 }
 
