@@ -1,16 +1,22 @@
 import {
+  enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
+  retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
   writePackageGradeResponseSchema,
+  type EnqueueImportTaskRequestDto,
+  type EnqueueImportTaskResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
+  type ReadImportTasksResponseDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadPlaylistResponseDto,
@@ -20,6 +26,8 @@ import {
   type ReadImageSidebarTreeResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
+  type RetryImportTaskRequestDto,
+  type RetryImportTaskResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
   type WritePlaylistRequestDto,
@@ -209,6 +217,42 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.writePlaylist(request), options)
     return writePlaylistResponseSchema.parse(response)
+  }
+
+  async enqueueImportTask(
+    request: EnqueueImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<EnqueueImportTaskResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.enqueueImportTask(request), options)
+    return enqueueImportTaskResponseSchema.parse(response)
+  }
+
+  async readImportTasks(options?: RepositoryRequestOptions): Promise<ReadImportTasksResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.readImportTasks(), options)
+    return readImportTasksResponseSchema.parse(response)
+  }
+
+  async retryImportTask(
+    request: RetryImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RetryImportTaskResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.retryImportTask(request), options)
+    return retryImportTaskResponseSchema.parse(response)
   }
 
   async readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto> {

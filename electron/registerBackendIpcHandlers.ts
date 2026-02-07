@@ -1,8 +1,11 @@
 import { ipcMain, protocol } from 'electron'
 
 import {
+  enqueueImportTaskRequestSchema,
+  enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
   readImageMetadataResponseSchema,
@@ -14,6 +17,8 @@ import {
   resolveMediaResourceResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
+  retryImportTaskRequestSchema,
+  retryImportTaskResponseSchema,
   writePlaylistRequestSchema,
   writePlaylistResponseSchema,
   writePackageGradeRequestSchema,
@@ -94,6 +99,23 @@ export function registerBackendIpcHandlers(): void {
     const request = writePlaylistRequestSchema.parse(payload)
     const response = await service.writePlaylist(request)
     return writePlaylistResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.enqueueImportTask, async (_event, payload: unknown) => {
+    const request = enqueueImportTaskRequestSchema.parse(payload)
+    const response = await service.enqueueImportTask(request)
+    return enqueueImportTaskResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readImportTasks, async () => {
+    const response = await service.readImportTasks()
+    return readImportTasksResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.retryImportTask, async (_event, payload: unknown) => {
+    const request = retryImportTaskRequestSchema.parse(payload)
+    const response = await service.retryImportTask(request)
+    return retryImportTaskResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readMediaAccessAudit, async () => {

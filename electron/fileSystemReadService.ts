@@ -6,19 +6,26 @@ import path from 'node:path'
 import { inflateRawSync } from 'node:zlib'
 
 import {
+  enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
+  retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
   writePackageGradeResponseSchema,
+  type EnqueueImportTaskRequestDto,
+  type EnqueueImportTaskResponseDto,
   type FeatureFilterDto,
   type FocusedImageRefDto,
   type ImageItemDto,
+  type ImportTaskDto,
+  type ImportTaskSourceDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
@@ -32,6 +39,8 @@ import {
   type ReadImageSidebarTreeResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
+  type RetryImportTaskRequestDto,
+  type RetryImportTaskResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
   type SidebarNodeDto,
@@ -1765,6 +1774,205 @@ export class FileSystemMediaReadService {
       video_ids: nextVideoIds,
       updated_at_ms: Date.now(),
     })
+  }
+
+  private toImportTaskDto(record: {
+    taskId: string
+    taskType: string
+    taskSource: string
+    sourcePaths: string[]
+    status: 'pending' | 'running' | 'completed' | 'failed'
+    progress: number
+    processedCount: number
+    totalCount: number
+    message: string | null
+    errorDetail: string | null
+    createdAtMs: number
+    updatedAtMs: number
+  }): ImportTaskDto {
+    const taskSource: ImportTaskSourceDto =
+      record.taskSource === 'dialog-folders' ||
+      record.taskSource === 'drag-drop' ||
+      record.taskSource === 'paste'
+        ? record.taskSource
+        : 'dialog-files'
+
+    return {
+      task_id: record.taskId,
+      task_type: 'import',
+      source: taskSource,
+      paths: record.sourcePaths,
+      status: record.status,
+      progress: Math.max(0, Math.min(1, record.progress)),
+      processed_count: Math.max(0, record.processedCount),
+      total_count: Math.max(0, record.totalCount),
+      message: record.message,
+      error_detail: record.errorDetail,
+      created_at_ms: record.createdAtMs,
+      updated_at_ms: record.updatedAtMs,
+    }
+  }
+
+  private buildImportTaskId(): string {
+    return `import-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`
+  }
+
+  private async inspectImportPath(candidatePath: string): Promise<{ ok: boolean; reason?: string }> {
+    const absolutePath = path.resolve(candidatePath)
+    if (!isPathInsideRoot(this.rootDir, absolutePath)) {
+      return { ok: false, reason: `路径越界: ${absolutePath}` }
+    }
+
+    const stat = await fs.stat(absolutePath).catch(() => null)
+    if (!stat) {
+      return { ok: false, reason: `路径不存在: ${absolutePath}` }
+    }
+
+    if (stat.isDirectory()) {
+      const readable = await fs.readdir(absolutePath).then(() => true).catch(() => false)
+      if (!readable) {
+        return { ok: false, reason: `目录不可读: ${absolutePath}` }
+      }
+      return { ok: true }
+    }
+
+    if (!stat.isFile()) {
+      return { ok: false, reason: `仅支持文件或目录: ${absolutePath}` }
+    }
+
+    const extension = path.extname(absolutePath).toLowerCase()
+    if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
+      return { ok: false, reason: `类型不支持: ${absolutePath}` }
+    }
+
+    return { ok: true }
+  }
+
+  private async runImportTask(taskId: string): Promise<ImportTaskDto> {
+    const existing = this.database.readTask(taskId)
+    if (!existing) {
+      throw new Error(`导入任务不存在: ${taskId}`)
+    }
+
+    const totalCount = existing.sourcePaths.length
+    const startedAtMs = Date.now()
+    this.database.upsertTask({
+      ...existing,
+      status: 'running',
+      progress: totalCount > 0 ? existing.processedCount / totalCount : 1,
+      message: '导入进行中',
+      errorDetail: null,
+      updatedAtMs: startedAtMs,
+    })
+
+    let processedCount = 0
+    let validCount = 0
+    const failedMessages: string[] = []
+
+    for (const sourcePath of existing.sourcePaths) {
+      const inspected = await this.inspectImportPath(sourcePath)
+      if (inspected.ok) {
+        validCount += 1
+      } else if (inspected.reason) {
+        failedMessages.push(inspected.reason)
+      }
+
+      processedCount += 1
+      this.database.upsertTask({
+        ...existing,
+        status: 'running',
+        progress: totalCount > 0 ? processedCount / totalCount : 1,
+        processedCount,
+        totalCount,
+        message: `导入进行中 ${processedCount}/${totalCount}`,
+        errorDetail: failedMessages.length > 0 ? failedMessages.slice(0, 3).join(' | ') : null,
+        updatedAtMs: Date.now(),
+      })
+    }
+
+    if (validCount > 0) {
+      this.invalidateCache()
+      await this.ensureSnapshotLoaded()
+    }
+
+    const finishedAtMs = Date.now()
+    const failedCount = Math.max(0, totalCount - validCount)
+    const status: ImportTaskDto['status'] = failedCount > 0 ? 'failed' : 'completed'
+    const message =
+      status === 'completed'
+        ? `导入完成，共 ${validCount} 项`
+        : `导入失败，成功 ${validCount} 项，失败 ${failedCount} 项`
+
+    this.database.upsertTask({
+      ...existing,
+      status,
+      progress: 1,
+      processedCount: totalCount,
+      totalCount,
+      message,
+      errorDetail: failedMessages.length > 0 ? failedMessages.join('\n') : null,
+      updatedAtMs: finishedAtMs,
+    })
+
+    const finalTask = this.database.readTask(taskId)
+    if (!finalTask) {
+      throw new Error(`导入任务状态丢失: ${taskId}`)
+    }
+    return this.toImportTaskDto(finalTask)
+  }
+
+  async enqueueImportTask(request: EnqueueImportTaskRequestDto): Promise<EnqueueImportTaskResponseDto> {
+    const now = Date.now()
+    const normalizedPaths = Array.from(new Set(request.paths.map((value) => value.trim()).filter(Boolean)))
+    if (normalizedPaths.length === 0) {
+      throw new Error('导入失败：路径列表为空')
+    }
+
+    const taskId = this.buildImportTaskId()
+    this.database.upsertTask({
+      taskId,
+      taskType: 'import',
+      taskSource: request.source,
+      sourcePaths: normalizedPaths,
+      status: 'pending',
+      progress: 0,
+      processedCount: 0,
+      totalCount: normalizedPaths.length,
+      message: '导入任务已入队',
+      errorDetail: null,
+      createdAtMs: now,
+      updatedAtMs: now,
+    })
+
+    const task = await this.runImportTask(taskId)
+    return enqueueImportTaskResponseSchema.parse({ task })
+  }
+
+  async readImportTasks(): Promise<{ tasks: ImportTaskDto[] }> {
+    const tasks = this.database.readTasks().map((record) => this.toImportTaskDto(record))
+    return readImportTasksResponseSchema.parse({ tasks })
+  }
+
+  async retryImportTask(request: RetryImportTaskRequestDto): Promise<RetryImportTaskResponseDto> {
+    const existing = this.database.readTask(request.task_id)
+    if (!existing) {
+      throw new Error(`导入重试失败：任务不存在 ${request.task_id}`)
+    }
+
+    const now = Date.now()
+    this.database.upsertTask({
+      ...existing,
+      status: 'pending',
+      progress: 0,
+      processedCount: 0,
+      totalCount: existing.sourcePaths.length,
+      message: '导入任务重试已入队',
+      errorDetail: null,
+      updatedAtMs: now,
+    })
+
+    const task = await this.runImportTask(request.task_id)
+    return retryImportTaskResponseSchema.parse({ task })
   }
 
   async resolveMediaResource(

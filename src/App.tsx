@@ -259,6 +259,11 @@ function App() {
     fileImportInputRef,
     folderImportInputRef,
     dragOverlayActive,
+    enqueuePending,
+    taskError,
+    importTasks,
+    retryImportTask,
+    clearTaskError,
     openImportFilesDialog,
     openImportFoldersDialog,
     onImportFilesSelected,
@@ -267,7 +272,7 @@ function App() {
     onDragOverImport,
     onDragLeaveImport,
     onDropImport,
-  } = useImportPipeline()
+  } = useImportPipeline({ repository: mediaRepository })
 
   const appBodyRef = useRef<HTMLDivElement>(null)
   const workspaceRef = useRef<HTMLElement>(null)
@@ -1529,6 +1534,50 @@ function App() {
         </section>
       ) : null}
 
+      {enqueuePending || taskError || importTasks.length > 0 ? (
+        <section className="import-task-panel" role="status" aria-live="polite">
+          <header>
+            <strong>导入任务</strong>
+            {enqueuePending ? <span>正在入队...</span> : null}
+          </header>
+          {taskError ? (
+            <p>
+              <span>{taskError}</span>
+              <button type="button" onClick={clearTaskError}>
+                清除
+              </button>
+            </p>
+          ) : null}
+          {importTasks.length > 0 ? (
+            <ul>
+              {importTasks.slice(0, 8).map((task) => {
+                const sourceLabel =
+                  task.source === 'dialog-folders'
+                    ? '文件夹'
+                    : task.source === 'drag-drop'
+                      ? '拖拽'
+                      : task.source === 'paste'
+                        ? '粘贴'
+                        : '文件'
+
+                return (
+                  <li key={task.task_id}>
+                    <span>{`${sourceLabel} | ${task.processed_count}/${task.total_count}`}</span>
+                    <span>{task.status}</span>
+                    <span>{task.message ?? '-'}</span>
+                    {task.status === 'failed' ? (
+                      <button type="button" onClick={() => void retryImportTask(task.task_id)}>
+                        重试
+                      </button>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
       <AppWorkspace
         mode={mode}
         headerHeight={headerHeight}
@@ -1695,8 +1744,8 @@ function App() {
       {dragOverlayActive ? (
         <div className="drop-overlay" aria-hidden="true">
           <div className="drop-overlay-card">
-            <strong>导入层占位</strong>
-            <p>检测到拖拽输入，后续将替换为 Shader/CSS 动画反馈</p>
+            <strong>拖拽导入</strong>
+            <p>释放鼠标后将自动入队并在上方显示任务状态</p>
           </div>
         </div>
       ) : null}

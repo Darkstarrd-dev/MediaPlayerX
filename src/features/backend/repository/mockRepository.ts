@@ -5,22 +5,29 @@ import {
   VIDEO_ITEMS,
 } from '../../../mockData'
 import {
+  enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
+  readImportTasksResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
   mediaAccessAuditResponseSchema,
   readPlaylistResponseSchema,
+  retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
   writePackageGradeResponseSchema,
+  type EnqueueImportTaskRequestDto,
+  type EnqueueImportTaskResponseDto,
   type FeatureFilterDto,
   type ImageItemDto,
   type ImagePackageDto,
+  type ImportTaskDto,
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
   type MediaLocatorDto,
+  type ReadImportTasksResponseDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadPlaylistResponseDto,
@@ -30,6 +37,8 @@ import {
   type ReadImageSidebarTreeResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
+  type RetryImportTaskRequestDto,
+  type RetryImportTaskResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
   type SidebarNodeDto,
@@ -317,6 +326,8 @@ function toDeterministicCoverColor(videoId: string): string {
 export class MockMediaRepository implements ReadonlyMediaRepository, SynchronousMediaRepository {
   private playlistIds = MOCK_LIBRARY_SNAPSHOT.videos.slice(0, 3).map((video) => video.id)
 
+  private importTasks: ImportTaskDto[] = []
+
   getInitialLibrarySnapshot(): LibrarySnapshotDto {
     return MOCK_LIBRARY_SNAPSHOT
   }
@@ -535,6 +546,74 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     options?: RepositoryRequestOptions,
   ): Promise<WritePlaylistResponseDto> {
     const response = this.writePlaylistSync(request)
+    return resolveAsync(response, options)
+  }
+
+  enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto {
+    const now = Date.now()
+    const task: ImportTaskDto = {
+      task_id: `mock-import-${now}-${Math.round(Math.random() * 10_000)}`,
+      task_type: 'import',
+      source: request.source,
+      paths: request.paths,
+      status: 'completed',
+      progress: 1,
+      processed_count: request.paths.length,
+      total_count: request.paths.length,
+      message: 'mock import completed',
+      error_detail: null,
+      created_at_ms: now,
+      updated_at_ms: now,
+    }
+
+    this.importTasks = [task, ...this.importTasks]
+    return enqueueImportTaskResponseSchema.parse({ task })
+  }
+
+  async enqueueImportTask(
+    request: EnqueueImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<EnqueueImportTaskResponseDto> {
+    const response = this.enqueueImportTaskSync(request)
+    return resolveAsync(response, options)
+  }
+
+  readImportTasksSync(): ReadImportTasksResponseDto {
+    return readImportTasksResponseSchema.parse({
+      tasks: this.importTasks,
+    })
+  }
+
+  async readImportTasks(options?: RepositoryRequestOptions): Promise<ReadImportTasksResponseDto> {
+    const response = this.readImportTasksSync()
+    return resolveAsync(response, options)
+  }
+
+  retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto {
+    const found = this.importTasks.find((task) => task.task_id === request.task_id)
+    if (!found) {
+      throw new Error(`mock 导入重试失败：task 不存在 ${request.task_id}`)
+    }
+
+    const updated: ImportTaskDto = {
+      ...found,
+      status: 'completed',
+      progress: 1,
+      processed_count: Math.max(found.processed_count, found.total_count),
+      message: 'mock import retried',
+      error_detail: null,
+      updated_at_ms: Date.now(),
+    }
+
+    this.importTasks = this.importTasks.map((task) => (task.task_id === request.task_id ? updated : task))
+    return retryImportTaskResponseSchema.parse({ task: updated })
+  }
+
+  async retryImportTask(
+    request: RetryImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RetryImportTaskResponseDto> {
+    const response = this.retryImportTaskSync(request)
     return resolveAsync(response, options)
   }
 

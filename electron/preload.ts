@@ -1,8 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 import {
+  enqueueImportTaskRequestSchema,
+  enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
   readImageMetadataResponseSchema,
@@ -14,6 +17,8 @@ import {
   resolveMediaResourceResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
+  retryImportTaskRequestSchema,
+  retryImportTaskResponseSchema,
   writePlaylistRequestSchema,
   writePlaylistResponseSchema,
   writePackageGradeRequestSchema,
@@ -64,6 +69,20 @@ const backendApi = {
     const parsed = writePlaylistRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePlaylist, parsed)
     return writePlaylistResponseSchema.parse(response)
+  },
+  enqueueImportTask: async (request: unknown) => {
+    const parsed = enqueueImportTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.enqueueImportTask, parsed)
+    return enqueueImportTaskResponseSchema.parse(response)
+  },
+  readImportTasks: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readImportTasks)
+    return readImportTasksResponseSchema.parse(response)
+  },
+  retryImportTask: async (request: unknown) => {
+    const parsed = retryImportTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.retryImportTask, parsed)
+    return retryImportTaskResponseSchema.parse(response)
   },
   readMediaAccessAudit: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readMediaAccessAudit)

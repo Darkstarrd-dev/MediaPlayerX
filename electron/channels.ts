@@ -8,6 +8,9 @@ export const BACKEND_CHANNELS = {
   saveVideoCover: 'backend:saveVideoCover',
   readPlaylist: 'backend:readPlaylist',
   writePlaylist: 'backend:writePlaylist',
+  enqueueImportTask: 'backend:enqueueImportTask',
+  readImportTasks: 'backend:readImportTasks',
+  retryImportTask: 'backend:retryImportTask',
   readMediaAccessAudit: 'backend:readMediaAccessAudit',
 } as const
 

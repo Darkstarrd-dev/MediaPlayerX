@@ -12,7 +12,7 @@ import {
 } from '../src/contracts/backend'
 
 const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
-const SCHEMA_VERSION = 1
+const SCHEMA_VERSION = 2
 
 interface SQLiteStatementLike {
   run(...params: unknown[]): unknown
@@ -36,6 +36,7 @@ export type ImportTaskStatus = 'pending' | 'running' | 'completed' | 'failed'
 export interface ImportTaskRecord {
   taskId: string
   taskType: string
+  taskSource: string
   sourcePaths: string[]
   status: ImportTaskStatus
   progress: number
@@ -235,6 +236,7 @@ export class MediaLibraryDatabase {
       CREATE TABLE IF NOT EXISTS task_log (
         task_id TEXT PRIMARY KEY,
         task_type TEXT NOT NULL,
+        task_source TEXT NOT NULL,
         source_paths_json TEXT NOT NULL,
         status TEXT NOT NULL,
         progress REAL NOT NULL,
@@ -248,6 +250,14 @@ export class MediaLibraryDatabase {
 
       CREATE INDEX IF NOT EXISTS idx_task_log_updated_at ON task_log(updated_at_ms DESC);
     `)
+
+    if (currentVersion < 2) {
+      try {
+        this.db.exec("ALTER TABLE task_log ADD COLUMN task_source TEXT NOT NULL DEFAULT 'dialog-files';")
+      } catch {
+        // ignore duplicated column on new databases
+      }
+    }
 
     this.db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`)
   }
@@ -726,6 +736,7 @@ export class MediaLibraryDatabase {
           INSERT INTO task_log (
             task_id,
             task_type,
+            task_source,
             source_paths_json,
             status,
             progress,
@@ -735,9 +746,10 @@ export class MediaLibraryDatabase {
             error_detail,
             created_at_ms,
             updated_at_ms
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(task_id) DO UPDATE SET
             task_type = excluded.task_type,
+            task_source = excluded.task_source,
             source_paths_json = excluded.source_paths_json,
             status = excluded.status,
             progress = excluded.progress,
@@ -751,6 +763,7 @@ export class MediaLibraryDatabase {
       .run(
         task.taskId,
         task.taskType,
+        task.taskSource,
         JSON.stringify(task.sourcePaths),
         task.status,
         clampProgress(task.progress),
@@ -770,6 +783,7 @@ export class MediaLibraryDatabase {
           SELECT
             task_id,
             task_type,
+            task_source,
             source_paths_json,
             status,
             progress,
@@ -787,6 +801,7 @@ export class MediaLibraryDatabase {
       | {
           task_id: string
           task_type: string
+          task_source: string
           source_paths_json: string
           status: ImportTaskStatus
           progress: number
@@ -806,6 +821,7 @@ export class MediaLibraryDatabase {
     return {
       taskId: row.task_id,
       taskType: row.task_type,
+      taskSource: row.task_source,
       sourcePaths: parseJson<string[]>(row.source_paths_json, []),
       status: row.status,
       progress: clampProgress(row.progress),
@@ -825,6 +841,7 @@ export class MediaLibraryDatabase {
           SELECT
             task_id,
             task_type,
+            task_source,
             source_paths_json,
             status,
             progress,
@@ -841,6 +858,7 @@ export class MediaLibraryDatabase {
       .all() as Array<{
       task_id: string
       task_type: string
+      task_source: string
       source_paths_json: string
       status: ImportTaskStatus
       progress: number
@@ -855,6 +873,7 @@ export class MediaLibraryDatabase {
     return rows.map((row) => ({
       taskId: row.task_id,
       taskType: row.task_type,
+      taskSource: row.task_source,
       sourcePaths: parseJson<string[]>(row.source_paths_json, []),
       status: row.status,
       progress: clampProgress(row.progress),

@@ -2,7 +2,10 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import type {
+  EnqueueImportTaskRequestDto,
+  EnqueueImportTaskResponseDto,
   LibrarySnapshotDto,
+  ReadImportTasksResponseDto,
   MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
@@ -13,6 +16,8 @@ import type {
   ReadImageSidebarTreeResponseDto,
   ResolveMediaResourceRequestDto,
   ResolveMediaResourceResponseDto,
+  RetryImportTaskRequestDto,
+  RetryImportTaskResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
   WritePlaylistRequestDto,
@@ -225,6 +230,59 @@ class CancellationAwareRepository implements ReadonlyMediaRepository {
     }
   }
 
+  async enqueueImportTask(
+    request: EnqueueImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<EnqueueImportTaskResponseDto> {
+    void options
+    return {
+      task: {
+        task_id: 'task-cancellation-aware',
+        task_type: 'import',
+        source: request.source,
+        paths: request.paths,
+        status: 'completed',
+        progress: 1,
+        processed_count: request.paths.length,
+        total_count: request.paths.length,
+        message: 'ok',
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    }
+  }
+
+  async readImportTasks(options?: RepositoryRequestOptions): Promise<ReadImportTasksResponseDto> {
+    void options
+    return {
+      tasks: [],
+    }
+  }
+
+  async retryImportTask(
+    request: RetryImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RetryImportTaskResponseDto> {
+    void options
+    return {
+      task: {
+        task_id: request.task_id,
+        task_type: 'import',
+        source: 'dialog-files',
+        paths: ['Z:/bench/retry.jpg'],
+        status: 'completed',
+        progress: 1,
+        processed_count: 1,
+        total_count: 1,
+        message: 'retried',
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    }
+  }
+
   async readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto> {
     void options
     return {
@@ -345,6 +403,59 @@ class RetrySnapshotRepository implements ReadonlyMediaRepository {
     return {
       video_ids: request.video_ids,
       updated_at_ms: Date.now(),
+    }
+  }
+
+  async enqueueImportTask(
+    request: EnqueueImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<EnqueueImportTaskResponseDto> {
+    void options
+    return {
+      task: {
+        task_id: 'task-retry-snapshot',
+        task_type: 'import',
+        source: request.source,
+        paths: request.paths,
+        status: 'completed',
+        progress: 1,
+        processed_count: request.paths.length,
+        total_count: request.paths.length,
+        message: 'ok',
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    }
+  }
+
+  async readImportTasks(options?: RepositoryRequestOptions): Promise<ReadImportTasksResponseDto> {
+    void options
+    return {
+      tasks: [],
+    }
+  }
+
+  async retryImportTask(
+    request: RetryImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RetryImportTaskResponseDto> {
+    void options
+    return {
+      task: {
+        task_id: request.task_id,
+        task_type: 'import',
+        source: 'dialog-files',
+        paths: ['Z:/bench/retry.jpg'],
+        status: 'completed',
+        progress: 1,
+        processed_count: 1,
+        total_count: 1,
+        message: 'retried',
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
     }
   }
 

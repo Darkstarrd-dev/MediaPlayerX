@@ -196,6 +196,46 @@ export const writePlaylistResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const importTaskStatusSchema = z.enum(['pending', 'running', 'completed', 'failed'])
+
+export const importTaskSourceSchema = z.enum(['dialog-files', 'dialog-folders', 'drag-drop', 'paste'])
+
+export const importTaskDtoSchema = z.object({
+  task_id: z.string().min(1),
+  task_type: z.literal('import'),
+  source: importTaskSourceSchema,
+  paths: z.array(z.string().min(1)),
+  status: importTaskStatusSchema,
+  progress: z.number().min(0).max(1),
+  processed_count: nonNegativeIntSchema,
+  total_count: nonNegativeIntSchema,
+  message: z.string().min(1).nullable(),
+  error_detail: z.string().min(1).nullable(),
+  created_at_ms: z.number().int().positive(),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const enqueueImportTaskRequestSchema = z.object({
+  source: importTaskSourceSchema,
+  paths: z.array(z.string().min(1)).min(1),
+})
+
+export const enqueueImportTaskResponseSchema = z.object({
+  task: importTaskDtoSchema,
+})
+
+export const readImportTasksResponseSchema = z.object({
+  tasks: z.array(importTaskDtoSchema),
+})
+
+export const retryImportTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+})
+
+export const retryImportTaskResponseSchema = z.object({
+  task: importTaskDtoSchema,
+})
+
 export const mediaAccessAuditResponseSchema = z.object({
   resolve_requests: nonNegativeIntSchema,
   resolve_granted: nonNegativeIntSchema,
@@ -233,4 +273,12 @@ export type SaveVideoCoverResponseDto = z.infer<typeof saveVideoCoverResponseSch
 export type ReadPlaylistResponseDto = z.infer<typeof readPlaylistResponseSchema>
 export type WritePlaylistRequestDto = z.infer<typeof writePlaylistRequestSchema>
 export type WritePlaylistResponseDto = z.infer<typeof writePlaylistResponseSchema>
+export type ImportTaskStatusDto = z.infer<typeof importTaskStatusSchema>
+export type ImportTaskSourceDto = z.infer<typeof importTaskSourceSchema>
+export type ImportTaskDto = z.infer<typeof importTaskDtoSchema>
+export type EnqueueImportTaskRequestDto = z.infer<typeof enqueueImportTaskRequestSchema>
+export type EnqueueImportTaskResponseDto = z.infer<typeof enqueueImportTaskResponseSchema>
+export type ReadImportTasksResponseDto = z.infer<typeof readImportTasksResponseSchema>
+export type RetryImportTaskRequestDto = z.infer<typeof retryImportTaskRequestSchema>
+export type RetryImportTaskResponseDto = z.infer<typeof retryImportTaskResponseSchema>
 export type MediaAccessAuditResponseDto = z.infer<typeof mediaAccessAuditResponseSchema>

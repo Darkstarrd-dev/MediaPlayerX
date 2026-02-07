@@ -74,6 +74,55 @@ select {
   padding: 2px 8px;
 }
 
+.import-task-panel {
+  border-bottom: 1px solid #c5d6de;
+  background: #edf6f9;
+  color: #173b47;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.import-task-panel header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.import-task-panel header strong {
+  font-size: 13px;
+}
+
+.import-task-panel p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.import-task-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.import-task-panel li {
+  display: grid;
+  grid-template-columns: minmax(90px, 140px) 90px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.import-task-panel button {
+  min-width: 58px;
+  padding: 2px 8px;
+}
+
 .app-header {
   display: flex;
   align-items: center;

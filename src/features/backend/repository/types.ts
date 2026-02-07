@@ -1,4 +1,9 @@
 import type {
+  EnqueueImportTaskRequestDto,
+  EnqueueImportTaskResponseDto,
+  ReadImportTasksResponseDto,
+  RetryImportTaskRequestDto,
+  RetryImportTaskResponseDto,
   LibrarySnapshotDto,
   MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
@@ -55,6 +60,15 @@ export interface ReadonlyMediaRepository {
     request: WritePlaylistRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePlaylistResponseDto>
+  enqueueImportTask(
+    request: EnqueueImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<EnqueueImportTaskResponseDto>
+  readImportTasks(options?: RepositoryRequestOptions): Promise<ReadImportTasksResponseDto>
+  retryImportTask(
+    request: RetryImportTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
 }
 
@@ -67,6 +81,9 @@ export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
   readPlaylistSync(): ReadPlaylistResponseDto
   writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto
+  enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto
+  readImportTasksSync(): ReadImportTasksResponseDto
+  retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto
   readMediaAccessAuditSync(): MediaAccessAuditResponseDto
 }
 
