@@ -29,6 +29,9 @@
 - 检索容器支持折叠后保持检索模式，顶部居中箭头按钮可快速恢复；向量/特征页切换时容器高度自动贴合控件。
 - 元数据面板展开态以标题“元数据面板”作为折叠入口，折叠态使用侧边箭头恢复展开。
 - Mock 数据已补充随机 tags 与图包评分初始值，用于检索与评分筛选验证。
+- 为控制复杂度，`App.tsx` 已进一步模块拆分：检索容器抽离为 `components/SearchPanel.tsx`，特征检索状态/过滤逻辑下沉到 `features/search/useFeatureSearch.ts`。
+- 主界面布局渲染层已从 `App.tsx` 抽离为 `components/AppWorkspace.tsx`，用于承载 Sidebar/Workspace/Main/Metadata 编排。
+- 本轮继续模块化：`features/app/useImageBrowserViewModel.ts` 聚合图片浏览核心视图模型，`features/app/useAppEffects.ts` 集中副作用同步链，`features/layout/usePaneResizers.ts` 统一分割条拖拽与比例归一化。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。

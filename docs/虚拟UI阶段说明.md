@@ -122,6 +122,11 @@
 - 已完成图包评分筛选样式收敛：改为 0~5 六档星级选项，按“选中第 N 档前序联动高亮”显示。
 - 已完成元数据面板折叠控件改版：展开态使用“元数据面板”标题本身折叠，折叠态保留侧边箭头恢复入口。
 - 已为 Mock 数据补充随机 tags 与图包评分初始值，用于特征检索与评分筛选测试。
+- 已完成新一轮 App 拆分：将检索 UI 抽离为 `components/SearchPanel.tsx`，并将特征检索状态与过滤逻辑下沉到 `features/search/useFeatureSearch.ts`，降低 `App.tsx` 复杂度。
+- 已继续拆分 `App.tsx`：将主界面结构编排（Sidebar + Workspace + Main + Metadata）抽离为 `components/AppWorkspace.tsx`，进一步收敛根组件体积。
+- 已完成浏览视图模型拆分：新增 `features/app/useImageBrowserViewModel.ts`，集中 `focusedRef/visibleImageRefs/分页/移动/跨包切换/评分`。
+- 已完成副作用链拆分：新增 `features/app/useAppEffects.ts`，集中 Sidebar/Vector/Autoplay/Fullscreen/Resize 等同步 `useEffect`。
+- 已完成分割条逻辑拆分：新增 `features/layout/usePaneResizers.ts`，统一 Sidebar/Metadata/SearchPanel 分割拖拽与比例归一化。
 - Main 与全屏专项修正均已收口，下一步进入交互细化与后端接入前稳定化阶段。
 
 ## 下一轮 Main 修正入口（本轮已完成）
