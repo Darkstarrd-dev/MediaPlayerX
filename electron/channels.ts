@@ -4,6 +4,9 @@ export const BACKEND_CHANNELS = {
   readImagePage: 'backend:readImagePage',
   readImageMetadata: 'backend:readImageMetadata',
   resolveMediaResource: 'backend:resolveMediaResource',
+  writePackageGrade: 'backend:writePackageGrade',
+  saveVideoCover: 'backend:saveVideoCover',
+  readMediaAccessAudit: 'backend:readMediaAccessAudit',
 } as const
 
 export const MEDIA_PROTOCOL_SCHEME = 'mediaplayerx-media'

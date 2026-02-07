@@ -1,5 +1,6 @@
 import type {
   LibrarySnapshotDto,
+  MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
   ReadImagePageRequestDto,
@@ -8,6 +9,10 @@ import type {
   ReadImageSidebarTreeResponseDto,
   ResolveMediaResourceRequestDto,
   ResolveMediaResourceResponseDto,
+  SaveVideoCoverRequestDto,
+  SaveVideoCoverResponseDto,
+  WritePackageGradeRequestDto,
+  WritePackageGradeResponseDto,
 } from '../../../contracts/backend'
 
 export interface RepositoryRequestOptions {
@@ -34,6 +39,15 @@ export interface ReadonlyMediaRepository {
     request: ResolveMediaResourceRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ResolveMediaResourceResponseDto>
+  writePackageGrade(
+    request: WritePackageGradeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageGradeResponseDto>
+  saveVideoCover(
+    request: SaveVideoCoverRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SaveVideoCoverResponseDto>
+  readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
 }
 
 export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
@@ -41,6 +55,9 @@ export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
   readImagePageSync(request: ReadImagePageRequestDto): ReadImagePageResponseDto
   readImageMetadataSync(request: ReadImageMetadataRequestDto): ReadImageMetadataResponseDto
   resolveMediaResourceSync(request: ResolveMediaResourceRequestDto): ResolveMediaResourceResponseDto
+  writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
+  saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
+  readMediaAccessAuditSync(): MediaAccessAuditResponseDto
 }
 
 export type RepositoryMode = 'mock' | 'real'

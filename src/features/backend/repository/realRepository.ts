@@ -1,9 +1,13 @@
 import {
   librarySnapshotDtoSchema,
+  mediaAccessAuditResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
+  saveVideoCoverResponseSchema,
+  writePackageGradeResponseSchema,
+  type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
@@ -13,6 +17,10 @@ import {
   type ReadImageSidebarTreeResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
+  type SaveVideoCoverRequestDto,
+  type SaveVideoCoverResponseDto,
+  type WritePackageGradeRequestDto,
+  type WritePackageGradeResponseDto,
 } from '../../../contracts/backend'
 import type { ReadonlyMediaRepository, RepositoryRequestOptions } from './types'
 
@@ -147,5 +155,41 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.resolveMediaResource(request), options)
     return resolveMediaResourceResponseSchema.parse(response)
+  }
+
+  async writePackageGrade(
+    request: WritePackageGradeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageGradeResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.writePackageGrade(request), options)
+    return writePackageGradeResponseSchema.parse(response)
+  }
+
+  async saveVideoCover(
+    request: SaveVideoCoverRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SaveVideoCoverResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.saveVideoCover(request), options)
+    return saveVideoCoverResponseSchema.parse(response)
+  }
+
+  async readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.readMediaAccessAudit(), options)
+    return mediaAccessAuditResponseSchema.parse(response)
   }
 }

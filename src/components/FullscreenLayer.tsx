@@ -55,6 +55,7 @@ interface FullscreenLayerProps {
   focusedImageSrc: string | null
   focusedVideo: VideoItem | null
   focusedVideoSrc: string | null
+  durationSec: number
   focusedVideoCoverColor: string
   videoTime: number
   videoPlaying: boolean
@@ -80,6 +81,7 @@ interface FullscreenLayerProps {
   onNextVideo: () => void
   onSeekVideo: (time: number) => void
   onVideoTimeUpdate: (time: number) => void
+  onVideoDurationDetected: (duration: number) => void
   onToggleVideoMute: () => void
   onChangeVideoVolume: (volume: number) => void
   onChangeVideoRate: (rate: number) => void
@@ -194,6 +196,7 @@ function FullscreenLayer({
   focusedImageSrc,
   focusedVideo,
   focusedVideoSrc,
+  durationSec,
   focusedVideoCoverColor,
   videoTime,
   videoPlaying,
@@ -219,6 +222,7 @@ function FullscreenLayer({
   onNextVideo,
   onSeekVideo,
   onVideoTimeUpdate,
+  onVideoDurationDetected,
   onToggleVideoMute,
   onChangeVideoVolume,
   onChangeVideoRate,
@@ -242,8 +246,7 @@ function FullscreenLayer({
   const focusedPane: PaneKey = fullscreenDisplay === 'dual' ? (fullscreenVideoFocus ? 'video' : 'image') : (singlePane ?? 'image')
   const zoomEnabled = fullscreenDisplay !== 'dual'
   const autoplayEnabledForFocus = mode === 'image' && focusedPane === 'image'
-  const durationSec = focusedVideo?.durationSec ?? 0
-  const clampedVideoTime = clamp(videoTime, 0, durationSec)
+  const clampedVideoTime = clamp(videoTime, 0, Math.max(0, durationSec))
 
   const imageAspect = focusedImage ? focusedImage.width / focusedImage.height : 1
   const videoAspect = focusedVideo ? focusedVideo.width / focusedVideo.height : 16 / 9
@@ -727,6 +730,10 @@ function FullscreenLayer({
                 onVideoTimeUpdate(currentTime)
               }}
               onLoadedMetadata={() => {
+                const duration = videoRef.current?.duration ?? 0
+                if (Number.isFinite(duration) && duration > 0) {
+                  onVideoDurationDetected(duration)
+                }
                 const currentTime = videoRef.current?.currentTime ?? 0
                 onVideoTimeUpdate(currentTime)
               }}

@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
 import { promises as fs } from 'node:fs'
@@ -10,6 +11,58 @@ import { FileSystemMediaReadService } from './fileSystemReadService'
 async function writeBinary(filePath: string, bytes: number[]): Promise<void> {
   await fs.mkdir(path.dirname(filePath), { recursive: true })
   await fs.writeFile(filePath, Buffer.from(bytes))
+}
+
+async function commandExists(command: string): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    const child = spawn(command, ['-version'], { windowsHide: true })
+    child.on('error', () => resolve(false))
+    child.on('close', (code) => resolve(code === 0))
+  })
+}
+
+async function createSampleVideo(videoPath: string): Promise<void> {
+  await fs.mkdir(path.dirname(videoPath), { recursive: true })
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(
+      'ffmpeg',
+      [
+        '-y',
+        '-v',
+        'error',
+        '-f',
+        'lavfi',
+        '-i',
+        'color=c=#224466:s=640x360:d=1.2',
+        '-f',
+        'lavfi',
+        '-i',
+        'anullsrc=channel_layout=stereo:sample_rate=44100',
+        '-shortest',
+        '-c:v',
+        'libx264',
+        '-pix_fmt',
+        'yuv420p',
+        '-c:a',
+        'aac',
+        videoPath,
+      ],
+      { windowsHide: true },
+    )
+
+    let stderr = ''
+    child.stderr.on('data', (chunk) => {
+      stderr += String(chunk)
+    })
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve()
+        return
+      }
+      reject(new Error(stderr || `ffmpeg failed: ${code}`))
+    })
+  })
 }
 
 async function writeStoredZip(
@@ -260,5 +313,105 @@ describe('FileSystemMediaReadService', () => {
         },
       }),
     ).rejects.toThrow(/entry 非法|entry 不在白名单/)
+  })
+
+  it('写链路可持久化评分与封面，失败时由调用端回滚', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-write-chain-'))
+    createdRoots.push(root)
+
+    await writeBinary(path.join(root, 'pkg', 'img_001.jpg'), [0xff, 0xd8, 0xff, 0xd9])
+    await writeBinary(path.join(root, 'video.mp4'), [0x00, 0x00, 0x00, 0x18])
+
+    const service = new FileSystemMediaReadService(root)
+    const snapshot = await service.readLibrarySnapshot()
+    const source = snapshot.image_directories[0]
+    const video = snapshot.videos[0]
+
+    expect(source).toBeTruthy()
+    expect(video).toBeTruthy()
+    if (!source || !video) {
+      throw new Error('snapshot missing source/video')
+    }
+
+    const grade = await service.writePackageGrade({
+      package_id: source.id,
+      grade: 5,
+    })
+    expect(grade.grade).toBe(5)
+
+    const cover = await service.saveVideoCover({
+      video_id: video.id,
+      time_sec: 0.3,
+      fallback_color: 'hsl(210, 44%, 40%)',
+    })
+    expect(cover.cover_color).toBe('hsl(210, 44%, 40%)')
+
+    const refreshed = await service.readLibrarySnapshot()
+    expect(refreshed.image_directories[0]?.mock_grade).toBe(5)
+    expect(refreshed.videos[0]?.cover_color).toBe('hsl(210, 44%, 40%)')
+  })
+
+  it('resolveMediaResource 输出审计统计（拒绝分类、token 命中/过期）', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-audit-'))
+    createdRoots.push(root)
+
+    const imagePath = path.join(root, 'inside.jpg')
+    await writeBinary(imagePath, [0xff, 0xd8, 0xff, 0xd9])
+    const service = new FileSystemMediaReadService(root)
+    await service.readLibrarySnapshot()
+
+    const allowed = await service.resolveMediaResource({
+      locator: {
+        kind: 'filesystem',
+        absolute_path: imagePath,
+        extension: '.jpg',
+        media_type: 'image',
+        mime_type: 'image/jpeg',
+      },
+    })
+    const token = decodeURIComponent(new URL(allowed.resource_url).pathname.replace(/^\//, ''))
+    await service.readMediaResourceByToken(token, null)
+
+    await expect(
+      service.resolveMediaResource({
+        locator: {
+          kind: 'filesystem',
+          absolute_path: path.join(root, '..', 'outside.jpg'),
+          extension: '.jpg',
+          media_type: 'image',
+          mime_type: 'image/jpeg',
+        },
+      }),
+    ).rejects.toThrow(/越界/)
+
+    const audit = await service.readMediaAccessAudit()
+    expect(audit.resolve_requests).toBeGreaterThanOrEqual(2)
+    expect(audit.resolve_granted).toBeGreaterThanOrEqual(1)
+    expect(audit.resolve_denied_by_reason.path_outside_root).toBeGreaterThanOrEqual(1)
+    expect(audit.token_hits).toBeGreaterThanOrEqual(1)
+  })
+
+  it('可通过 ffprobe 探测真实视频元数据并回填时长/分辨率', async () => {
+    if (!(await commandExists('ffmpeg')) || !(await commandExists('ffprobe'))) {
+      return
+    }
+
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-video-probe-'))
+    createdRoots.push(root)
+
+    const videoPath = path.join(root, 'sample.mp4')
+    await createSampleVideo(videoPath)
+
+    const service = new FileSystemMediaReadService(root)
+    const snapshot = await service.readLibrarySnapshot()
+    const video = snapshot.videos[0]
+
+    expect(video).toBeTruthy()
+    if (!video) {
+      throw new Error('video not found')
+    }
+    expect(video.duration_sec).toBeGreaterThan(0)
+    expect(video.width).toBe(640)
+    expect(video.height).toBe(360)
   })
 })

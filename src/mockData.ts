@@ -113,6 +113,14 @@ function buildMockVideoLocator(absolutePath: string): MediaLocator {
   }
 }
 
+function buildMockCoverColor(videoId: string): string {
+  let hash = 0
+  for (let index = 0; index < videoId.length; index += 1) {
+    hash = (hash * 31 + videoId.charCodeAt(index)) % 360
+  }
+  return `hsl(${hash}, 44%, 40%)`
+}
+
 function makeImages(packageId: string, count: number, clusterOffset: number): ImageItem[] {
   const items: ImageItem[] = []
   for (let i = 0; i < count; i += 1) {
@@ -612,6 +620,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 1920,
     height: 1080,
     sizeMb: 312,
+    coverColor: buildMockCoverColor('video-001'),
     mediaLocator: buildMockVideoLocator('X:/视频/项目A/teaser_city.mp4'),
   },
   {
@@ -623,6 +632,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 1920,
     height: 1080,
     sizeMb: 420,
+    coverColor: buildMockCoverColor('video-002'),
     mediaLocator: buildMockVideoLocator('X:/视频/项目A/teaser_forest.mp4'),
   },
   {
@@ -634,6 +644,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 1280,
     height: 720,
     sizeMb: 135,
+    coverColor: buildMockCoverColor('video-003'),
     mediaLocator: buildMockVideoLocator('X:/视频/项目B/scene_motion.mp4'),
   },
   {
@@ -645,6 +656,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 3840,
     height: 2160,
     sizeMb: 1180,
+    coverColor: buildMockCoverColor('video-004'),
     mediaLocator: buildMockVideoLocator('Z:/回放/2025/archive_cut_01.mp4'),
   },
   {
@@ -656,6 +668,7 @@ export const VIDEO_ITEMS: VideoItem[] = [
     width: 3840,
     height: 2160,
     sizeMb: 1035,
+    coverColor: buildMockCoverColor('video-005'),
     mediaLocator: buildMockVideoLocator('Z:/回放/2025/archive_cut_02.mp4'),
   },
 ]

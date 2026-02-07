@@ -45,6 +45,7 @@ import {
   mapLibrarySnapshotDto,
   useResolvedMediaUrls,
   useReadOnlyDataAccess,
+  useWriteDataAccess,
 } from './features/backend'
 import { useUiStore } from './store/useUiStore'
 import type {
@@ -222,6 +223,8 @@ function App() {
     setVideoMuted,
     videoCoverById,
     setVideoCoverById,
+    videoDurationById,
+    setVideoDurationById,
     fullscreenActive,
     setFullscreenActive,
     fullscreenDisplay,
@@ -241,7 +244,7 @@ function App() {
   } = useMediaState({
     initialVideoId: bootstrapVideos[0]?.id ?? '',
     initialPlaylistIds: bootstrapVideos.slice(0, 3).map((item) => item.id),
-    videoIds: bootstrapVideos.map((item) => item.id),
+    videos: bootstrapVideos,
   })
 
   const {
@@ -671,7 +674,6 @@ function App() {
     moveImageVertical,
     jumpImageBoundary,
     goPackage,
-    setPackageGrade,
     goPrevPage,
     goNextPage,
   } = useImageBrowserViewModel({
@@ -701,6 +703,12 @@ function App() {
     fullscreenActive,
   })
 
+  const backendWrite = useWriteDataAccess({
+    repository: mediaRepository,
+    setGradeByPackage,
+    setVideoCoverById,
+  })
+
   const backendPageSnapshot = backendRead.page.data ?? backendRead.page.snapshot
   const backendMetadataSnapshot = backendRead.metadata.data ?? backendRead.metadata.snapshot
   const activePackageForDisplay =
@@ -727,7 +735,30 @@ function App() {
       : metadataImagePackage
   const currentGradeEffective = imageFocusActive ? (backendMetadataSnapshot?.grade ?? currentGrade) : currentGrade
   const focusedVideo = videoById.get(selectedVideoId) ?? videosForSidebar[0] ?? null
-  const focusedVideoCoverColor = focusedVideo ? (videoCoverById[focusedVideo.id] ?? '#3f4b58') : '#3f4b58'
+  const focusedVideoDurationSec = focusedVideo
+    ? Math.max(0, videoDurationById[focusedVideo.id] ?? focusedVideo.durationSec)
+    : 0
+  const focusedVideoCoverColor = focusedVideo
+    ? (videoCoverById[focusedVideo.id] ?? focusedVideo.coverColor ?? '#3f4b58')
+    : '#3f4b58'
+  const focusedVideoEffective = focusedVideo
+    ? {
+        ...focusedVideo,
+        durationSec: focusedVideoDurationSec,
+        coverColor: focusedVideoCoverColor,
+      }
+    : null
+
+  const applyPackageGrade = useCallback(
+    (grade: number | null) => {
+      const targetPackageId = metadataImagePackageEffective?.id
+      if (!targetPackageId) {
+        return
+      }
+      void backendWrite.writePackageGrade(targetPackageId, grade)
+    },
+    [backendWrite, metadataImagePackageEffective],
+  )
 
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
     const targets: MediaResolveTarget[] = []
@@ -1017,7 +1048,7 @@ function App() {
       updateSettings({ autoPlayEnabled: !autoPlayEnabled })
     },
     onApplyAutoplayIntervalByIndex: applyAutoplayIntervalByIndex,
-    onSetPackageGrade: setPackageGrade,
+    onSetPackageGrade: applyPackageGrade,
     onToggleVideoPlaying: () => {
       setVideoPlaying((value) => !value)
     },
@@ -1226,7 +1257,7 @@ function App() {
   }
 
   const videoMainSectionProps = {
-    focusedVideo,
+    durationSec: focusedVideoDurationSec,
     videoTime,
     videoPlaying,
     videoRate,
@@ -1244,11 +1275,19 @@ function App() {
     onPrevVideo: () => goPlaylist(-1),
     onNextVideo: () => goPlaylist(1),
     onSeekVideo: (time: number) => {
-      const duration = focusedVideo?.durationSec ?? 0
-      setVideoTime(clamp(time, 0, duration))
+      setVideoTime(clamp(time, 0, focusedVideoDurationSec))
     },
     onVideoTimeUpdate: (time: number) => {
-      setVideoTime(time)
+      setVideoTime(clamp(time, 0, focusedVideoDurationSec))
+    },
+    onVideoDurationDetected: (duration: number) => {
+      if (!focusedVideo || !Number.isFinite(duration) || duration <= 0) {
+        return
+      }
+      setVideoDurationById((previous) => ({
+        ...previous,
+        [focusedVideo.id]: duration,
+      }))
     },
     onToggleMute: () => setVideoMuted((value) => !value),
     onChangeVolume: (volume: number) => {
@@ -1264,15 +1303,7 @@ function App() {
       }
 
       const color = makeRandomCoverColor()
-      setVideoCoverById((previous) => ({
-        ...previous,
-        [focusedVideo.id]: color,
-      }))
-      console.info('模拟 Save as cover', {
-        videoId: focusedVideo.id,
-        time: videoTime,
-        coverColor: color,
-      })
+      void backendWrite.saveVideoCover(focusedVideo.id, videoTime, color)
     },
     onEnterFullscreen: () => setFullscreenActive(true),
   }
@@ -1286,7 +1317,7 @@ function App() {
     focusedImageSrc: metadataImageSrc,
     focusedImagePackage: metadataImagePackageEffective,
     currentGrade: currentGradeEffective,
-    focusedVideo,
+    focusedVideo: focusedVideoEffective,
     metadataTab,
     playlistIds,
     selectedVideoId,
@@ -1380,6 +1411,22 @@ function App() {
           onRetry: backendRead.retryMetadata,
         }
       : null,
+    backendWrite.errors.grade
+      ? {
+          key: 'grade-write',
+          label: '评分写入',
+          message: backendWrite.errors.grade,
+          onRetry: backendWrite.clearGradeError,
+        }
+      : null,
+    backendWrite.errors.cover
+      ? {
+          key: 'cover-write',
+          label: '封面写入',
+          message: backendWrite.errors.cover,
+          onRetry: backendWrite.clearCoverError,
+        }
+      : null,
   ].filter((item): item is { key: string; label: string; message: string; onRetry: () => void } => Boolean(item))
 
   return (
@@ -1413,7 +1460,7 @@ function App() {
         onOpenVectorUniverse={() => {
           setVectorUniverseOpen(true)
         }}
-        onGradeChange={setPackageGrade}
+        onGradeChange={applyPackageGrade}
         onThumbnailScaleDown={() => {
           updateSettings({ thumbnailScale: clamp(thumbnailScale + 1, 1, thumbnailScaleLevelCount) })
         }}
@@ -1493,8 +1540,9 @@ function App() {
         fullscreenSplit={fullscreenSplit}
         focusedImage={focusedImage}
         focusedImageSrc={fullscreenImageSrc}
-        focusedVideo={focusedVideo}
+        focusedVideo={focusedVideoEffective}
         focusedVideoSrc={focusedVideoSrc}
+        durationSec={focusedVideoDurationSec}
         focusedVideoCoverColor={focusedVideoCoverColor}
         videoTime={videoTime}
         videoPlaying={videoPlaying}
@@ -1523,11 +1571,19 @@ function App() {
         onPrevVideo={() => goPlaylist(-1)}
         onNextVideo={() => goPlaylist(1)}
         onSeekVideo={(time) => {
-          const duration = focusedVideo?.durationSec ?? 0
-          setVideoTime(clamp(time, 0, duration))
+          setVideoTime(clamp(time, 0, focusedVideoDurationSec))
         }}
         onVideoTimeUpdate={(time) => {
-          setVideoTime(time)
+          setVideoTime(clamp(time, 0, focusedVideoDurationSec))
+        }}
+        onVideoDurationDetected={(duration) => {
+          if (!focusedVideo || !Number.isFinite(duration) || duration <= 0) {
+            return
+          }
+          setVideoDurationById((previous) => ({
+            ...previous,
+            [focusedVideo.id]: duration,
+          }))
         }}
         onToggleVideoMute={() => setVideoMuted((value) => !value)}
         onChangeVideoVolume={(volume) => {

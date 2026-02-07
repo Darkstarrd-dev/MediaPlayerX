@@ -67,6 +67,7 @@ export const videoItemDtoSchema = z.object({
   width: z.number().int().positive(),
   height: z.number().int().positive(),
   size_mb: nonNegativeIntSchema,
+  cover_color: z.string().min(1),
   media_locator: mediaLocatorDtoSchema,
 })
 
@@ -158,6 +159,44 @@ export const resolveMediaResourceResponseSchema = z.object({
   expires_at_ms: z.number().int().positive(),
 })
 
+export const writePackageGradeRequestSchema = z.object({
+  package_id: z.string().min(1),
+  grade: z.number().int().min(0).max(5).nullable(),
+})
+
+export const writePackageGradeResponseSchema = z.object({
+  package_id: z.string().min(1),
+  grade: z.number().int().min(0).max(5).nullable(),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const saveVideoCoverRequestSchema = z.object({
+  video_id: z.string().min(1),
+  time_sec: z.number().nonnegative(),
+  fallback_color: z.string().min(1).optional(),
+})
+
+export const saveVideoCoverResponseSchema = z.object({
+  video_id: z.string().min(1),
+  cover_color: z.string().min(1),
+  cover_image_path: z.string().min(1).nullable(),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const mediaAccessAuditResponseSchema = z.object({
+  resolve_requests: nonNegativeIntSchema,
+  resolve_granted: nonNegativeIntSchema,
+  resolve_denied_total: nonNegativeIntSchema,
+  resolve_denied_by_reason: z.record(z.string(), nonNegativeIntSchema),
+  token_reads: nonNegativeIntSchema,
+  token_hits: nonNegativeIntSchema,
+  token_misses: nonNegativeIntSchema,
+  token_expired: nonNegativeIntSchema,
+  token_cleanup_removed: nonNegativeIntSchema,
+  token_active: nonNegativeIntSchema,
+  generated_at_ms: z.number().int().positive(),
+})
+
 export type FeatureFilterDto = z.infer<typeof featureFilterDtoSchema>
 export type MediaLocatorDto = z.infer<typeof mediaLocatorDtoSchema>
 export type ImageItemDto = z.infer<typeof imageItemDtoSchema>
@@ -174,3 +213,8 @@ export type ReadImageMetadataRequestDto = z.infer<typeof readImageMetadataReques
 export type ReadImageMetadataResponseDto = z.infer<typeof readImageMetadataResponseSchema>
 export type ResolveMediaResourceRequestDto = z.infer<typeof resolveMediaResourceRequestSchema>
 export type ResolveMediaResourceResponseDto = z.infer<typeof resolveMediaResourceResponseSchema>
+export type WritePackageGradeRequestDto = z.infer<typeof writePackageGradeRequestSchema>
+export type WritePackageGradeResponseDto = z.infer<typeof writePackageGradeResponseSchema>
+export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>
+export type SaveVideoCoverResponseDto = z.infer<typeof saveVideoCoverResponseSchema>
+export type MediaAccessAuditResponseDto = z.infer<typeof mediaAccessAuditResponseSchema>

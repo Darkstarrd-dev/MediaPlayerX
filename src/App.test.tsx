@@ -295,8 +295,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByText(/第\s+\d+\s+\/\s+\d+\s+页/)).not.toBeInTheDocument()
   })
 
-  it('视频切换后回到封面暂停态，Save as cover 保存随机颜色', () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined)
+  it('视频切换后回到封面暂停态，Save as cover 走后端写链路并更新封面色', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
@@ -307,18 +306,20 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
     expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
 
+    const videoScreen = document.querySelector('.video-screen') as HTMLDivElement | null
+    expect(videoScreen).not.toBeNull()
+    const beforeBackground = videoScreen?.style.background
+
     fireEvent.click(screen.getByRole('button', { name: 'Save as cover' }))
-    expect(infoSpy).toHaveBeenCalled()
+
+    await waitFor(() => {
+      const currentBackground = (document.querySelector('.video-screen') as HTMLDivElement | null)?.style.background
+      expect(currentBackground).not.toBe(beforeBackground)
+    })
 
     const speedSlider = screen.getByRole('slider', { name: '倍速滑条' })
     fireEvent.change(speedSlider, { target: { value: '2.5' } })
     expect(screen.getByText('倍率 x2.50')).toBeInTheDocument()
-
-    const lastCall = infoSpy.mock.calls.at(-1)
-    expect(lastCall?.[0]).toBe('模拟 Save as cover')
-    expect(String(lastCall?.[1]?.coverColor ?? '')).toContain('hsl(')
-
-    infoSpy.mockRestore()
   })
 
   it('全屏默认按当前模式进入单显示，双显示切回单显示时恢复入口模式', () => {

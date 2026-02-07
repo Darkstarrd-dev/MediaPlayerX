@@ -36,6 +36,15 @@
    - Renderer 仅可消费 Main 颁发的受控 `resource_url`，禁止拼接本地路径直读。
    - Main 必须执行根目录白名单与路径穿越校验，压缩包 entry 必须做合法性校验。
 
+8. 压缩包归一化策略（强制）
+   - `rar/7z` 不参与直接渲染读取，统一策略为“解压 -> 转存 zip(store) -> 再进入扫描/渲染”。
+   - zip 若包含图片 entry 且压缩方式不是 `store/deflate`，统一策略为“解压 -> 图片转 webp(quality=90) -> 转存 zip(store)”。
+   - 不支持加密 zip 直接渲染，必须走归一化或拒绝读取并记录审计。
+
+9. 写链路一致性
+   - 图包评分、封面保存等写操作必须下沉到 Main，通过 IPC 契约完成。
+   - Renderer 允许 optimistic update，但失败必须 rollback，并保留可见错误信息。
+
 ## 实施顺序（必须按序）
 
 1. 固化接口

@@ -143,14 +143,19 @@ export function collectImageSourceIds(node: SidebarNode): string[] {
   return [...current, ...node.children.flatMap((child) => collectImageSourceIds(child))]
 }
 
-export function buildInitialVideoCoverMap(videoIds: string[]): Record<string, string> {
+export function buildInitialVideoCoverMap(videos: Array<Pick<VideoItem, 'id' | 'coverColor'>>): Record<string, string> {
   const map: Record<string, string> = {}
-  for (const id of videoIds) {
-    let hash = 0
-    for (let i = 0; i < id.length; i += 1) {
-      hash = (hash * 31 + id.charCodeAt(i)) % 360
+  for (const video of videos) {
+    if (video.coverColor) {
+      map[video.id] = video.coverColor
+      continue
     }
-    map[id] = `hsl(${hash}, 44%, 40%)`
+
+    let hash = 0
+    for (let i = 0; i < video.id.length; i += 1) {
+      hash = (hash * 31 + video.id.charCodeAt(i)) % 360
+    }
+    map[video.id] = `hsl(${hash}, 44%, 40%)`
   }
   return map
 }

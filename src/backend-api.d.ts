@@ -6,8 +6,13 @@ import type {
   ReadImagePageResponseDto,
   ReadImageSidebarTreeRequestDto,
   ReadImageSidebarTreeResponseDto,
+  MediaAccessAuditResponseDto,
   ResolveMediaResourceRequestDto,
   ResolveMediaResourceResponseDto,
+  SaveVideoCoverRequestDto,
+  SaveVideoCoverResponseDto,
+  WritePackageGradeRequestDto,
+  WritePackageGradeResponseDto,
 } from './contracts/backend'
 
 interface MediaPlayerBackendApi {
@@ -16,6 +21,9 @@ interface MediaPlayerBackendApi {
   readImagePage: (request: ReadImagePageRequestDto) => Promise<ReadImagePageResponseDto>
   readImageMetadata: (request: ReadImageMetadataRequestDto) => Promise<ReadImageMetadataResponseDto>
   resolveMediaResource: (request: ResolveMediaResourceRequestDto) => Promise<ResolveMediaResourceResponseDto>
+  writePackageGrade: (request: WritePackageGradeRequestDto) => Promise<WritePackageGradeResponseDto>
+  saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
+  readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
 }
 
 declare global {

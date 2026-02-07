@@ -107,6 +107,7 @@ export function mapVideoItemDto(video: VideoItemDto): VideoItem {
     width: video.width,
     height: video.height,
     sizeMb: video.size_mb,
+    coverColor: video.cover_color,
     mediaLocator: mapMediaLocatorDto(video.media_locator),
   }
 }

@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react'
 
-import type { VideoItem } from '../types'
 import { clamp, formatSeconds } from '../utils/ui'
 
 interface VideoMainSectionProps {
-  focusedVideo: VideoItem | null
+  durationSec: number
   videoTime: number
   videoPlaying: boolean
   videoRate: number
@@ -18,6 +17,7 @@ interface VideoMainSectionProps {
   onNextVideo: () => void
   onSeekVideo: (time: number) => void
   onVideoTimeUpdate: (time: number) => void
+  onVideoDurationDetected: (duration: number) => void
   onToggleMute: () => void
   onChangeVolume: (volume: number) => void
   onChangeRate: (rate: number) => void
@@ -26,7 +26,7 @@ interface VideoMainSectionProps {
 }
 
 function VideoMainSection({
-  focusedVideo,
+  durationSec,
   videoTime,
   videoPlaying,
   videoRate,
@@ -40,6 +40,7 @@ function VideoMainSection({
   onNextVideo,
   onSeekVideo,
   onVideoTimeUpdate,
+  onVideoDurationDetected,
   onToggleMute,
   onChangeVolume,
   onChangeRate,
@@ -47,8 +48,7 @@ function VideoMainSection({
   onEnterFullscreen,
 }: VideoMainSectionProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const durationSec = focusedVideo?.durationSec ?? 0
-  const clampedTime = Math.min(videoTime, durationSec)
+  const clampedTime = Math.min(videoTime, Math.max(0, durationSec))
 
   useEffect(() => {
     const video = videoRef.current
@@ -91,6 +91,10 @@ function VideoMainSection({
               onVideoTimeUpdate(currentTime)
             }}
             onLoadedMetadata={() => {
+              const duration = videoRef.current?.duration ?? 0
+              if (Number.isFinite(duration) && duration > 0) {
+                onVideoDurationDetected(duration)
+              }
               const currentTime = videoRef.current?.currentTime ?? 0
               onVideoTimeUpdate(currentTime)
             }}

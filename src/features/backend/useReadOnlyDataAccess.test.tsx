@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import type {
   LibrarySnapshotDto,
+  MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
   ReadImagePageRequestDto,
@@ -11,6 +12,10 @@ import type {
   ReadImageSidebarTreeResponseDto,
   ResolveMediaResourceRequestDto,
   ResolveMediaResourceResponseDto,
+  SaveVideoCoverRequestDto,
+  SaveVideoCoverResponseDto,
+  WritePackageGradeRequestDto,
+  WritePackageGradeResponseDto,
 } from '../../contracts/backend'
 import { useReadOnlyDataAccess } from './useReadOnlyDataAccess'
 import type { ReadonlyMediaRepository, RepositoryRequestOptions } from './repository'
@@ -173,6 +178,48 @@ class CancellationAwareRepository implements ReadonlyMediaRepository {
       expires_at_ms: Date.now() + 1_000,
     }
   }
+
+  async writePackageGrade(
+    request: WritePackageGradeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageGradeResponseDto> {
+    void options
+    return {
+      package_id: request.package_id,
+      grade: request.grade,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async saveVideoCover(
+    request: SaveVideoCoverRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SaveVideoCoverResponseDto> {
+    void options
+    return {
+      video_id: request.video_id,
+      cover_color: request.fallback_color ?? 'hsl(120, 44%, 40%)',
+      cover_image_path: null,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto> {
+    void options
+    return {
+      resolve_requests: 0,
+      resolve_granted: 0,
+      resolve_denied_total: 0,
+      resolve_denied_by_reason: {},
+      token_reads: 0,
+      token_hits: 0,
+      token_misses: 0,
+      token_expired: 0,
+      token_cleanup_removed: 0,
+      token_active: 0,
+      generated_at_ms: Date.now(),
+    }
+  }
 }
 
 class RetrySnapshotRepository implements ReadonlyMediaRepository {
@@ -234,6 +281,48 @@ class RetrySnapshotRepository implements ReadonlyMediaRepository {
       resource_url: 'about:blank#media',
       mime_type: 'image/jpeg',
       expires_at_ms: Date.now() + 1_000,
+    }
+  }
+
+  async writePackageGrade(
+    request: WritePackageGradeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageGradeResponseDto> {
+    void options
+    return {
+      package_id: request.package_id,
+      grade: request.grade,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async saveVideoCover(
+    request: SaveVideoCoverRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SaveVideoCoverResponseDto> {
+    void options
+    return {
+      video_id: request.video_id,
+      cover_color: request.fallback_color ?? 'hsl(120, 44%, 40%)',
+      cover_image_path: null,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto> {
+    void options
+    return {
+      resolve_requests: 0,
+      resolve_granted: 0,
+      resolve_denied_total: 0,
+      resolve_denied_by_reason: {},
+      token_reads: 0,
+      token_hits: 0,
+      token_misses: 0,
+      token_expired: 0,
+      token_cleanup_removed: 0,
+      token_active: 0,
+      generated_at_ms: Date.now(),
     }
   }
 }

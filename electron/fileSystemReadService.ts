@@ -1,19 +1,25 @@
 import { createHash, randomUUID } from 'node:crypto'
+import { spawn } from 'node:child_process'
 import { promises as fs } from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { inflateRawSync } from 'node:zlib'
 
 import {
   librarySnapshotDtoSchema,
+  mediaAccessAuditResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
+  saveVideoCoverResponseSchema,
+  writePackageGradeResponseSchema,
   type FeatureFilterDto,
   type FocusedImageRefDto,
   type ImageItemDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
+  type MediaAccessAuditResponseDto,
   type MediaLocatorDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
@@ -23,8 +29,12 @@ import {
   type ReadImageSidebarTreeResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
+  type SaveVideoCoverRequestDto,
+  type SaveVideoCoverResponseDto,
   type SidebarNodeDto,
   type VideoItemDto,
+  type WritePackageGradeRequestDto,
+  type WritePackageGradeResponseDto,
 } from '../src/contracts/backend'
 import { MEDIA_PROTOCOL_SCHEME } from './channels'
 
@@ -44,6 +54,53 @@ const ZIP_MAX_COMMENT_LENGTH = 0xffff
 
 const MEDIA_TOKEN_TTL_MS = 5 * 60 * 1000
 const ZIP_SCAN_TAIL_PADDING = 128
+const FFMPEG_BIN = process.env.MEDIA_PLAYERX_FFMPEG_BIN ?? 'ffmpeg'
+const FFPROBE_BIN = process.env.MEDIA_PLAYERX_FFPROBE_BIN ?? 'ffprobe'
+const ARCHIVE_EXTRACTOR_BIN = process.env.MEDIA_PLAYERX_ARCHIVE_EXTRACTOR_BIN ?? '7z'
+const ARCHIVE_NORMALIZE_DIR_NAME = '.mediaplayerx/normalized-archives'
+const STATE_FILE_RELATIVE_PATH = '.mediaplayerx/state/state.json'
+
+const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])
+
+type MediaAuditRejectReason =
+  | 'path_outside_root'
+  | 'filesystem_extension_mismatch'
+  | 'filesystem_media_type_not_allowed'
+  | 'filesystem_file_missing'
+  | 'archive_format_not_supported'
+  | 'archive_extension_invalid'
+  | 'archive_entry_illegal'
+  | 'archive_entry_not_allowlisted'
+  | 'archive_not_exists'
+
+interface ArchiveNormalizationResult {
+  normalizedArchivePath: string
+  strategy: 'none' | 'rar7z-to-zip-store' | 'zip-repack-webp90-store'
+}
+
+interface PersistedVideoCoverRecord {
+  coverColor: string
+  coverImagePath: string | null
+  updatedAtMs: number
+}
+
+interface PersistedServiceState {
+  version: 1
+  packageGrades: Record<string, number | null>
+  videoCovers: Record<string, PersistedVideoCoverRecord>
+}
+
+interface ServiceShellResult {
+  code: number
+  stdout: string
+  stderr: string
+}
+
+interface VideoProbeResult {
+  durationSec: number
+  width: number
+  height: number
+}
 
 interface FileRecord {
   absolutePath: string
@@ -77,6 +134,34 @@ export interface MediaProtocolResponsePayload {
 interface ByteRange {
   start: number
   end: number
+}
+
+interface MediaAccessAuditCounters {
+  resolveRequests: number
+  resolveGranted: number
+  resolveDeniedByReason: Record<string, number>
+  tokenReads: number
+  tokenHits: number
+  tokenMisses: number
+  tokenExpired: number
+  tokenCleanupRemoved: number
+}
+
+interface NormalizedArchiveCacheRecord {
+  sourcePath: string
+  sourceMtimeMs: number
+  sourceSizeBytes: number
+  normalizedArchivePath: string
+  strategy: ArchiveNormalizationResult['strategy']
+}
+
+class MediaAccessError extends Error {
+  readonly reason: MediaAuditRejectReason
+
+  constructor(reason: MediaAuditRejectReason, message: string) {
+    super(message)
+    this.reason = reason
+  }
 }
 
 function normalizePathKey(value: string): string {
@@ -431,6 +516,286 @@ function parseByteRange(rangeHeader: string | null, size: number): ByteRange | n
   }
 }
 
+function toSafeFsName(value: string): string {
+  return value.replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^_+/, '').slice(0, 96) || 'archive'
+}
+
+function toDeterministicCoverColor(videoId: string): string {
+  const hash = makeStableId('cover', videoId)
+  let hue = 0
+  for (let index = 0; index < hash.length; index += 1) {
+    hue = (hue * 31 + hash.charCodeAt(index)) % 360
+  }
+  return `hsl(${hue}, 44%, 40%)`
+}
+
+function createCrc32Table(): Uint32Array {
+  const table = new Uint32Array(256)
+  for (let index = 0; index < 256; index += 1) {
+    let c = index
+    for (let bit = 0; bit < 8; bit += 1) {
+      c = (c & 1) !== 0 ? (0xedb88320 ^ (c >>> 1)) >>> 0 : (c >>> 1) >>> 0
+    }
+    table[index] = c >>> 0
+  }
+  return table
+}
+
+const CRC32_TABLE = createCrc32Table()
+
+function crc32(buffer: Buffer): number {
+  let crc = 0xffffffff
+  for (let index = 0; index < buffer.length; index += 1) {
+    crc = CRC32_TABLE[(crc ^ buffer[index]) & 0xff] ^ (crc >>> 8)
+  }
+  return (crc ^ 0xffffffff) >>> 0
+}
+
+async function runProcess(command: string, args: string[], timeoutMs = 120_000): Promise<ServiceShellResult> {
+  return new Promise<ServiceShellResult>((resolve, reject) => {
+    const child = spawn(command, args, {
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+
+    let stdout = ''
+    let stderr = ''
+    let finished = false
+
+    const cleanup = () => {
+      if (finished) {
+        return
+      }
+      finished = true
+      clearTimeout(timeoutId)
+    }
+
+    const timeoutId = setTimeout(() => {
+      if (!finished) {
+        child.kill('SIGKILL')
+        cleanup()
+        reject(new Error(`命令执行超时: ${command}`))
+      }
+    }, timeoutMs)
+
+    child.stdout.on('data', (chunk) => {
+      stdout += String(chunk)
+    })
+    child.stderr.on('data', (chunk) => {
+      stderr += String(chunk)
+    })
+
+    child.on('error', (error) => {
+      cleanup()
+      reject(error)
+    })
+
+    child.on('close', (code) => {
+      cleanup()
+      resolve({
+        code: code ?? -1,
+        stdout,
+        stderr,
+      })
+    })
+  })
+}
+
+async function collectFilesRecursive(rootDir: string): Promise<Array<{ absolutePath: string; relativePath: string }>> {
+  const files: Array<{ absolutePath: string; relativePath: string }> = []
+  const queue = [rootDir]
+
+  while (queue.length > 0) {
+    const current = queue.pop()
+    if (!current) {
+      continue
+    }
+
+    const entries = await fs.readdir(current, { withFileTypes: true })
+    for (const entry of entries) {
+      const absolutePath = path.join(current, entry.name)
+      if (entry.isDirectory()) {
+        queue.push(absolutePath)
+        continue
+      }
+
+      if (!entry.isFile()) {
+        continue
+      }
+
+      files.push({
+        absolutePath,
+        relativePath: normalizePathKey(path.relative(rootDir, absolutePath)),
+      })
+    }
+  }
+
+  files.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
+  return files
+}
+
+async function extractZipWithPowerShell(sourceArchivePath: string, outputDir: string): Promise<void> {
+  const escapedSource = sourceArchivePath.replace(/'/g, "''")
+  const escapedOutput = outputDir.replace(/'/g, "''")
+  const script = `Expand-Archive -Path '${escapedSource}' -DestinationPath '${escapedOutput}' -Force`
+  const result = await runProcess('powershell.exe', ['-NoProfile', '-Command', script], 180_000)
+  if (result.code !== 0) {
+    throw new Error(result.stderr.trim() || `Expand-Archive 失败: ${sourceArchivePath}`)
+  }
+}
+
+async function extractArchiveWith7z(sourceArchivePath: string, outputDir: string): Promise<void> {
+  const result = await runProcess(ARCHIVE_EXTRACTOR_BIN, ['x', '-y', `-o${outputDir}`, sourceArchivePath], 300_000)
+  if (result.code !== 0) {
+    throw new Error(result.stderr.trim() || result.stdout.trim() || `7z 解压失败: ${sourceArchivePath}`)
+  }
+}
+
+async function convertDirectoryImagesToWebp90(rootDir: string): Promise<void> {
+  const files = await collectFilesRecursive(rootDir)
+  for (const file of files) {
+    const extension = path.extname(file.absolutePath).toLowerCase()
+    if (!IMAGE_EXTENSIONS_FOR_WEBP_CONVERT.has(extension)) {
+      continue
+    }
+
+    const outputPath = file.absolutePath.slice(0, file.absolutePath.length - extension.length) + '.webp'
+    const result = await runProcess(
+      FFMPEG_BIN,
+      ['-y', '-v', 'error', '-i', file.absolutePath, '-q:v', '90', outputPath],
+      120_000,
+    )
+    if (result.code !== 0) {
+      throw new Error(result.stderr.trim() || `ffmpeg 转 webp 失败: ${file.absolutePath}`)
+    }
+
+    if (outputPath !== file.absolutePath) {
+      await fs.rm(file.absolutePath, { force: true })
+    }
+  }
+}
+
+async function writeStoredZipFromDirectory(inputDir: string, outputZipPath: string): Promise<void> {
+  const entries = await collectFilesRecursive(inputDir)
+  const localChunks: Buffer[] = []
+  const centralChunks: Buffer[] = []
+  let cursor = 0
+
+  for (const entry of entries) {
+    const content = await fs.readFile(entry.absolutePath)
+    const normalizedName = normalizeArchiveEntryName(entry.relativePath)
+    if (!normalizedName) {
+      continue
+    }
+
+    const nameBuffer = Buffer.from(normalizedName, 'utf8')
+    const crc = crc32(content)
+
+    const localHeader = Buffer.alloc(30)
+    localHeader.writeUInt32LE(0x04034b50, 0)
+    localHeader.writeUInt16LE(20, 4)
+    localHeader.writeUInt16LE(0x0800, 6)
+    localHeader.writeUInt16LE(0, 8)
+    localHeader.writeUInt16LE(0, 10)
+    localHeader.writeUInt16LE(0, 12)
+    localHeader.writeUInt32LE(crc, 14)
+    localHeader.writeUInt32LE(content.length, 18)
+    localHeader.writeUInt32LE(content.length, 22)
+    localHeader.writeUInt16LE(nameBuffer.length, 26)
+    localHeader.writeUInt16LE(0, 28)
+
+    localChunks.push(localHeader, nameBuffer, content)
+
+    const centralHeader = Buffer.alloc(46)
+    centralHeader.writeUInt32LE(0x02014b50, 0)
+    centralHeader.writeUInt16LE(20, 4)
+    centralHeader.writeUInt16LE(20, 6)
+    centralHeader.writeUInt16LE(0x0800, 8)
+    centralHeader.writeUInt16LE(0, 10)
+    centralHeader.writeUInt16LE(0, 12)
+    centralHeader.writeUInt32LE(crc, 16)
+    centralHeader.writeUInt32LE(content.length, 20)
+    centralHeader.writeUInt32LE(content.length, 24)
+    centralHeader.writeUInt16LE(nameBuffer.length, 28)
+    centralHeader.writeUInt16LE(0, 30)
+    centralHeader.writeUInt16LE(0, 32)
+    centralHeader.writeUInt16LE(0, 34)
+    centralHeader.writeUInt16LE(0, 36)
+    centralHeader.writeUInt32LE(0, 38)
+    centralHeader.writeUInt32LE(cursor, 42)
+
+    centralChunks.push(centralHeader, nameBuffer)
+    cursor += localHeader.length + nameBuffer.length + content.length
+  }
+
+  const centralDirectoryBuffer = Buffer.concat(centralChunks)
+  const endOfCentralDirectory = Buffer.alloc(22)
+  endOfCentralDirectory.writeUInt32LE(0x06054b50, 0)
+  endOfCentralDirectory.writeUInt16LE(0, 4)
+  endOfCentralDirectory.writeUInt16LE(0, 6)
+  endOfCentralDirectory.writeUInt16LE(entries.length, 8)
+  endOfCentralDirectory.writeUInt16LE(entries.length, 10)
+  endOfCentralDirectory.writeUInt32LE(centralDirectoryBuffer.length, 12)
+  endOfCentralDirectory.writeUInt32LE(cursor, 16)
+  endOfCentralDirectory.writeUInt16LE(0, 20)
+
+  await fs.mkdir(path.dirname(outputZipPath), { recursive: true })
+  await fs.writeFile(outputZipPath, Buffer.concat([...localChunks, centralDirectoryBuffer, endOfCentralDirectory]))
+}
+
+function parseFfprobeJson(raw: string): VideoProbeResult | null {
+  try {
+    const parsed = JSON.parse(raw) as {
+      streams?: Array<{ width?: number; height?: number; duration?: string }>
+      format?: { duration?: string }
+    }
+    const stream = parsed.streams?.find((item) => Number.isFinite(item.width) && Number.isFinite(item.height))
+    const width = stream?.width && stream.width > 0 ? Math.round(stream.width) : null
+    const height = stream?.height && stream.height > 0 ? Math.round(stream.height) : null
+
+    const durationRaw = parsed.format?.duration ?? stream?.duration
+    const durationValue = durationRaw ? Number(durationRaw) : 0
+    const durationSec = Number.isFinite(durationValue) && durationValue > 0 ? durationValue : 0
+
+    if (!width || !height) {
+      return null
+    }
+
+    return {
+      durationSec,
+      width,
+      height,
+    }
+  } catch {
+    return null
+  }
+}
+
+async function probeVideoMetadata(videoPath: string): Promise<VideoProbeResult | null> {
+  const result = await runProcess(
+    FFPROBE_BIN,
+    [
+      '-v',
+      'error',
+      '-select_streams',
+      'v:0',
+      '-show_entries',
+      'stream=width,height,duration',
+      '-show_entries',
+      'format=duration',
+      '-of',
+      'json',
+      videoPath,
+    ],
+    2_000,
+  ).catch(() => null)
+
+  if (!result || result.code !== 0) {
+    return null
+  }
+  return parseFfprobeJson(result.stdout)
+}
+
 function buildImageSidebarTree(
   imagePackages: ImagePackageDto[],
   imageDirectories: ImagePackageDto[],
@@ -526,9 +891,19 @@ function buildImageSidebarTree(
 export class FileSystemMediaReadService {
   private readonly rootDir: string
 
+  private readonly normalizedArchiveRootDir: string
+
+  private readonly stateFilePath: string
+
+  private readonly coverOutputRootDir: string
+
   private snapshotCache: LibrarySnapshotDto | null = null
 
   private loadingPromise: Promise<LibrarySnapshotDto> | null = null
+
+  private stateLoadingPromise: Promise<void> | null = null
+
+  private stateReady = false
 
   private archiveEntryIndexByPath = new Map<string, Set<string>>()
 
@@ -536,8 +911,28 @@ export class FileSystemMediaReadService {
 
   private mediaTokenIndex = new Map<string, MediaTokenRecord>()
 
+  private normalizedArchiveCacheBySourcePath = new Map<string, NormalizedArchiveCacheRecord>()
+
+  private packageGradeOverridesBySourceId = new Map<string, number | null>()
+
+  private videoCoverOverridesByVideoId = new Map<string, PersistedVideoCoverRecord>()
+
+  private mediaAudit: MediaAccessAuditCounters = {
+    resolveRequests: 0,
+    resolveGranted: 0,
+    resolveDeniedByReason: {},
+    tokenReads: 0,
+    tokenHits: 0,
+    tokenMisses: 0,
+    tokenExpired: 0,
+    tokenCleanupRemoved: 0,
+  }
+
   constructor(rootDir: string) {
     this.rootDir = path.resolve(rootDir)
+    this.normalizedArchiveRootDir = path.join(this.rootDir, ARCHIVE_NORMALIZE_DIR_NAME)
+    this.stateFilePath = path.join(this.rootDir, STATE_FILE_RELATIVE_PATH)
+    this.coverOutputRootDir = path.join(this.rootDir, '.mediaplayerx', 'covers')
   }
 
   invalidateCache(): void {
@@ -545,21 +940,97 @@ export class FileSystemMediaReadService {
     this.archiveEntryIndexByPath.clear()
     this.zipEntryIndexByPath.clear()
     this.mediaTokenIndex.clear()
+    this.normalizedArchiveCacheBySourcePath.clear()
   }
 
   private cleanupExpiredTokens(): void {
     const now = Date.now()
+    let removed = 0
     for (const [token, record] of this.mediaTokenIndex) {
       if (record.expiresAtMs <= now) {
         this.mediaTokenIndex.delete(token)
+        removed += 1
       }
     }
+    this.mediaAudit.tokenCleanupRemoved += removed
+  }
+
+  private async ensureStateLoaded(): Promise<void> {
+    if (this.stateReady) {
+      return
+    }
+
+    if (!this.stateLoadingPromise) {
+      this.stateLoadingPromise = this.loadPersistedState().finally(() => {
+        this.stateReady = true
+        this.stateLoadingPromise = null
+      })
+    }
+
+    await this.stateLoadingPromise
+  }
+
+  private async loadPersistedState(): Promise<void> {
+    const raw = await fs.readFile(this.stateFilePath, 'utf8').catch(() => null)
+    if (!raw) {
+      return
+    }
+
+    let parsed: PersistedServiceState | null = null
+    try {
+      parsed = JSON.parse(raw) as PersistedServiceState
+    } catch {
+      parsed = null
+    }
+
+    if (!parsed || parsed.version !== 1) {
+      return
+    }
+
+    this.packageGradeOverridesBySourceId = new Map(Object.entries(parsed.packageGrades ?? {}))
+    this.videoCoverOverridesByVideoId = new Map(Object.entries(parsed.videoCovers ?? {}))
+  }
+
+  private async persistState(): Promise<void> {
+    const payload: PersistedServiceState = {
+      version: 1,
+      packageGrades: Object.fromEntries(this.packageGradeOverridesBySourceId),
+      videoCovers: Object.fromEntries(this.videoCoverOverridesByVideoId),
+    }
+
+    await fs.mkdir(path.dirname(this.stateFilePath), { recursive: true })
+    await fs.writeFile(this.stateFilePath, JSON.stringify(payload, null, 2), 'utf8')
+  }
+
+  private countResolveDenied(reason: MediaAuditRejectReason): void {
+    this.mediaAudit.resolveDeniedByReason[reason] = (this.mediaAudit.resolveDeniedByReason[reason] ?? 0) + 1
+  }
+
+  async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
+    this.cleanupExpiredTokens()
+
+    const deniedTotal = Object.values(this.mediaAudit.resolveDeniedByReason).reduce((sum, value) => sum + value, 0)
+    return mediaAccessAuditResponseSchema.parse({
+      resolve_requests: this.mediaAudit.resolveRequests,
+      resolve_granted: this.mediaAudit.resolveGranted,
+      resolve_denied_total: deniedTotal,
+      resolve_denied_by_reason: this.mediaAudit.resolveDeniedByReason,
+      token_reads: this.mediaAudit.tokenReads,
+      token_hits: this.mediaAudit.tokenHits,
+      token_misses: this.mediaAudit.tokenMisses,
+      token_expired: this.mediaAudit.tokenExpired,
+      token_cleanup_removed: this.mediaAudit.tokenCleanupRemoved,
+      token_active: this.mediaTokenIndex.size,
+      generated_at_ms: Date.now(),
+    })
   }
 
   private async ensureSnapshotLoaded(): Promise<LibrarySnapshotDto> {
     if (this.snapshotCache) {
       return this.snapshotCache
     }
+
+    await this.ensureStateLoaded()
 
     if (!this.loadingPromise) {
       this.loadingPromise = this.loadSnapshot().finally(() => {
@@ -590,6 +1061,9 @@ export class FileSystemMediaReadService {
       for (const entry of entries) {
         const absolutePath = path.join(current, entry.name)
         if (entry.isDirectory()) {
+          if (entry.name === '.mediaplayerx') {
+            continue
+          }
           queue.push(absolutePath)
           continue
         }
@@ -674,6 +1148,7 @@ export class FileSystemMediaReadService {
     const treePath = toTreePath(this.rootDir, directoryPath)
     const sourceId = makeStableId('dir', directoryPath)
     const displayName = path.basename(directoryPath) || treePath[treePath.length - 1] || sourceId
+    const persistedGrade = this.packageGradeOverridesBySourceId.get(sourceId)
 
     return {
       id: sourceId,
@@ -685,15 +1160,20 @@ export class FileSystemMediaReadService {
       circle: '未知',
       author: '未知',
       tags: [],
-      mock_grade: null,
+      mock_grade: persistedGrade ?? null,
       images: imageFiles.map((file, index) => this.createDirectoryImageItem(file, sourceId, index + 1)),
     }
   }
 
-  private createArchiveSource(file: FileRecord, imageEntries: ZipCentralEntry[]): ImagePackageDto {
+  private createArchiveSource(
+    file: FileRecord,
+    imageEntries: ZipCentralEntry[],
+    archivePathForMediaRead = file.absolutePath,
+  ): ImagePackageDto {
     const sourceId = makeStableId('pkg', file.absolutePath)
     const fileName = path.basename(file.absolutePath)
     const displayName = path.basename(file.absolutePath, file.extension)
+    const persistedGrade = this.packageGradeOverridesBySourceId.get(sourceId)
 
     const sortedEntries = [...imageEntries].sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
 
@@ -707,12 +1187,14 @@ export class FileSystemMediaReadService {
       circle: '未知',
       author: '未知',
       tags: [],
-      mock_grade: null,
-      images: sortedEntries.map((entry, index) => this.createArchiveImageItem(sourceId, file.absolutePath, entry, index + 1)),
+      mock_grade: persistedGrade ?? null,
+      images: sortedEntries.map((entry, index) =>
+        this.createArchiveImageItem(sourceId, archivePathForMediaRead, entry, index + 1),
+      ),
     }
   }
 
-  private createVideoSource(file: FileRecord): VideoItemDto {
+  private async createVideoSource(file: FileRecord): Promise<VideoItemDto> {
     const mediaLocator: MediaLocatorDto = {
       kind: 'filesystem',
       absolute_path: file.absolutePath,
@@ -721,16 +1203,170 @@ export class FileSystemMediaReadService {
       mime_type: detectMimeTypeByExtension(file.extension, 'video'),
     }
 
+    const videoId = makeStableId('vid', file.absolutePath)
+    const probe = await probeVideoMetadata(file.absolutePath).catch(() => null)
+    const coverRecord = this.videoCoverOverridesByVideoId.get(videoId)
+
     return {
-      id: makeStableId('vid', file.absolutePath),
+      id: videoId,
       file_name: path.basename(file.absolutePath),
       absolute_path: file.absolutePath,
       tree_path: toTreePath(this.rootDir, file.absolutePath),
-      duration_sec: 0,
-      width: 1920,
-      height: 1080,
+      duration_sec: Math.max(0, Math.round(probe?.durationSec ?? 0)),
+      width: probe?.width && probe.width > 0 ? probe.width : 1920,
+      height: probe?.height && probe.height > 0 ? probe.height : 1080,
       size_mb: toSafeSizeMb(file.sizeBytes),
+      cover_color: coverRecord?.coverColor ?? toDeterministicCoverColor(videoId),
       media_locator: mediaLocator,
+    }
+  }
+
+  private zipNeedsRepackWebp(entries: ZipCentralEntry[]): boolean {
+    for (const entry of entries) {
+      if (!IMAGE_EXTENSIONS.has(entry.extension)) {
+        continue
+      }
+
+      if ((entry.generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED) !== 0) {
+        return true
+      }
+      if (entry.compressionMethod !== ZIP_COMPRESSION_STORE && entry.compressionMethod !== ZIP_COMPRESSION_DEFLATE) {
+        return true
+      }
+    }
+    return false
+  }
+
+  private resolveNormalizedArchivePath(sourcePath: string, strategy: ArchiveNormalizationResult['strategy']): string {
+    const sourceKey = `${strategy}:${sourcePath}`
+    const hash = createHash('sha1').update(sourceKey).digest('hex').slice(0, 16)
+    const baseName = path.basename(sourcePath, path.extname(sourcePath))
+    const safeBaseName = toSafeFsName(baseName)
+    return path.join(this.normalizedArchiveRootDir, `${safeBaseName}-${hash}.zip`)
+  }
+
+  private async normalizeArchiveToZip(
+    sourceFile: FileRecord,
+    strategy: ArchiveNormalizationResult['strategy'],
+  ): Promise<ArchiveNormalizationResult> {
+    const sourceStat = await fs.stat(sourceFile.absolutePath)
+    const cached = this.normalizedArchiveCacheBySourcePath.get(sourceFile.absolutePath)
+    if (
+      cached &&
+      cached.sourceMtimeMs === sourceStat.mtimeMs &&
+      cached.sourceSizeBytes === sourceStat.size &&
+      cached.strategy === strategy
+    ) {
+      const exists = await fs.stat(cached.normalizedArchivePath).catch(() => null)
+      if (exists?.isFile()) {
+        return {
+          normalizedArchivePath: cached.normalizedArchivePath,
+          strategy,
+        }
+      }
+    }
+
+    const normalizedArchivePath = this.resolveNormalizedArchivePath(sourceFile.absolutePath, strategy)
+    const tempExtractDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-archive-normalize-'))
+
+    try {
+      await fs.mkdir(this.normalizedArchiveRootDir, { recursive: true })
+
+      if (strategy === 'rar7z-to-zip-store') {
+        await extractArchiveWith7z(sourceFile.absolutePath, tempExtractDir)
+      } else {
+        await extractZipWithPowerShell(sourceFile.absolutePath, tempExtractDir)
+        await convertDirectoryImagesToWebp90(tempExtractDir)
+      }
+
+      await writeStoredZipFromDirectory(tempExtractDir, normalizedArchivePath)
+
+      this.normalizedArchiveCacheBySourcePath.set(sourceFile.absolutePath, {
+        sourcePath: sourceFile.absolutePath,
+        sourceMtimeMs: sourceStat.mtimeMs,
+        sourceSizeBytes: sourceStat.size,
+        normalizedArchivePath,
+        strategy,
+      })
+
+      return {
+        normalizedArchivePath,
+        strategy,
+      }
+    } finally {
+      await fs.rm(tempExtractDir, { recursive: true, force: true })
+    }
+  }
+
+  private async prepareArchiveEntries(file: FileRecord): Promise<{
+    archivePathForMediaRead: string
+    imageEntries: ZipCentralEntry[]
+  }> {
+    if (file.extension === '.rar' || file.extension === '.7z') {
+      try {
+        const normalized = await this.normalizeArchiveToZip(file, 'rar7z-to-zip-store')
+        const entries = await scanZipCentralEntries(normalized.normalizedArchivePath)
+        const imageEntries = entries.filter((entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName))
+        return {
+          archivePathForMediaRead: normalized.normalizedArchivePath,
+          imageEntries,
+        }
+      } catch (error) {
+        console.warn('archive normalization failed (rar/7z)', {
+          archivePath: file.absolutePath,
+          reason: (error as Error).message,
+        })
+        return {
+          archivePathForMediaRead: file.absolutePath,
+          imageEntries: [],
+        }
+      }
+    }
+
+    if (file.extension !== '.zip') {
+      return {
+        archivePathForMediaRead: file.absolutePath,
+        imageEntries: [],
+      }
+    }
+
+    let sourceEntries: ZipCentralEntry[] = []
+    try {
+      sourceEntries = await scanZipCentralEntries(file.absolutePath)
+    } catch {
+      sourceEntries = []
+    }
+
+    const needsRepack = this.zipNeedsRepackWebp(sourceEntries)
+    if (!needsRepack) {
+      return {
+        archivePathForMediaRead: file.absolutePath,
+        imageEntries: sourceEntries.filter((entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName)),
+      }
+    }
+
+    try {
+      const normalized = await this.normalizeArchiveToZip(file, 'zip-repack-webp90-store')
+      const normalizedEntries = await scanZipCentralEntries(normalized.normalizedArchivePath)
+      return {
+        archivePathForMediaRead: normalized.normalizedArchivePath,
+        imageEntries: normalizedEntries.filter((entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName)),
+      }
+    } catch (error) {
+      console.warn('archive normalization failed (zip-repack)', {
+        archivePath: file.absolutePath,
+        reason: (error as Error).message,
+      })
+      return {
+        archivePathForMediaRead: file.absolutePath,
+        imageEntries: sourceEntries.filter(
+          (entry) =>
+            IMAGE_EXTENSIONS.has(entry.extension) &&
+            isSafeArchiveEntryName(entry.entryName) &&
+            (entry.generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED) === 0 &&
+            (entry.compressionMethod === ZIP_COMPRESSION_STORE || entry.compressionMethod === ZIP_COMPRESSION_DEFLATE),
+        ),
+      }
     }
   }
 
@@ -772,36 +1408,26 @@ export class FileSystemMediaReadService {
 
     const imagePackages: ImagePackageDto[] = []
     for (const archive of archives) {
-      if (archive.extension !== '.zip') {
-        imagePackages.push(this.createArchiveSource(archive, []))
-        continue
-      }
+      const prepared = await this.prepareArchiveEntries(archive)
+      const imageEntries = prepared.imageEntries.sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
 
-      let zipEntries: ZipCentralEntry[] = []
-      try {
-        zipEntries = await scanZipCentralEntries(archive.absolutePath)
-      } catch {
-        zipEntries = []
-      }
-
-      const imageEntries = zipEntries
-        .filter((entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName))
-        .sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
-
-      this.archiveEntryIndexByPath.set(archive.absolutePath, new Set(imageEntries.map((entry) => entry.entryName)))
+      this.archiveEntryIndexByPath.set(
+        prepared.archivePathForMediaRead,
+        new Set(imageEntries.map((entry) => entry.entryName)),
+      )
       this.zipEntryIndexByPath.set(
-        archive.absolutePath,
+        prepared.archivePathForMediaRead,
         new Map(imageEntries.map((entry) => [entry.entryName, entry])),
       )
 
-      imagePackages.push(this.createArchiveSource(archive, imageEntries))
+      imagePackages.push(this.createArchiveSource(archive, imageEntries, prepared.archivePathForMediaRead))
     }
 
     imagePackages.sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
-    const videoItems = videos
-      .map((file) => this.createVideoSource(file))
-      .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
+    const videoItems = (await Promise.all(videos.map((file) => this.createVideoSource(file)))).sort((left, right) =>
+      left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
+    )
 
     return librarySnapshotDtoSchema.parse({
       image_packages: imagePackages,
@@ -838,23 +1464,23 @@ export class FileSystemMediaReadService {
     if (locator.kind === 'filesystem') {
       const absolutePath = path.resolve(locator.absolute_path)
       if (!isPathInsideRoot(this.rootDir, absolutePath)) {
-        throw new Error(`媒体访问被拒绝（越界）: ${absolutePath}`)
+        throw new MediaAccessError('path_outside_root', `媒体访问被拒绝（越界）: ${absolutePath}`)
       }
 
       const extension = path.extname(absolutePath).toLowerCase()
       if (!extension || extension !== locator.extension.toLowerCase()) {
-        throw new Error(`媒体访问被拒绝（扩展名不一致）: ${absolutePath}`)
+        throw new MediaAccessError('filesystem_extension_mismatch', `媒体访问被拒绝（扩展名不一致）: ${absolutePath}`)
       }
 
       const extensionAllowed =
         locator.media_type === 'image' ? IMAGE_EXTENSIONS.has(extension) : VIDEO_EXTENSIONS.has(extension)
       if (!extensionAllowed) {
-        throw new Error(`媒体访问被拒绝（类型不允许）: ${absolutePath}`)
+        throw new MediaAccessError('filesystem_media_type_not_allowed', `媒体访问被拒绝（类型不允许）: ${absolutePath}`)
       }
 
       const stat = await fs.stat(absolutePath).catch(() => null)
       if (!stat || !stat.isFile()) {
-        throw new Error(`媒体访问失败（文件不存在）: ${absolutePath}`)
+        throw new MediaAccessError('filesystem_file_missing', `媒体访问失败（文件不存在）: ${absolutePath}`)
       }
 
       return {
@@ -866,23 +1492,32 @@ export class FileSystemMediaReadService {
 
     const archivePath = path.resolve(locator.archive_path)
     if (!isPathInsideRoot(this.rootDir, archivePath)) {
-      throw new Error(`压缩包媒体访问被拒绝（越界）: ${archivePath}`)
+      throw new MediaAccessError('path_outside_root', `压缩包媒体访问被拒绝（越界）: ${archivePath}`)
     }
+
+    const archiveStat = await fs.stat(archivePath).catch(() => null)
+    if (!archiveStat || !archiveStat.isFile()) {
+      throw new MediaAccessError('archive_not_exists', `压缩包媒体访问被拒绝（文件不存在）: ${archivePath}`)
+    }
+
     if (locator.archive_format !== 'zip') {
-      throw new Error(`压缩包媒体访问被拒绝（暂仅支持 zip）: ${archivePath}`)
+      throw new MediaAccessError('archive_format_not_supported', `压缩包媒体访问被拒绝（暂仅支持 zip）: ${archivePath}`)
     }
     if (path.extname(archivePath).toLowerCase() !== '.zip') {
-      throw new Error(`压缩包媒体访问被拒绝（扩展名异常）: ${archivePath}`)
+      throw new MediaAccessError('archive_extension_invalid', `压缩包媒体访问被拒绝（扩展名异常）: ${archivePath}`)
     }
 
     const normalizedEntryName = normalizeArchiveEntryName(locator.entry_name)
     if (!isSafeArchiveEntryName(normalizedEntryName)) {
-      throw new Error(`压缩包媒体访问被拒绝（entry 非法）: ${archivePath}`)
+      throw new MediaAccessError('archive_entry_illegal', `压缩包媒体访问被拒绝（entry 非法）: ${archivePath}`)
     }
 
     const allowedEntries = this.archiveEntryIndexByPath.get(archivePath)
     if (!allowedEntries || !allowedEntries.has(normalizedEntryName)) {
-      throw new Error(`压缩包媒体访问被拒绝（entry 不在白名单）: ${archivePath}::${normalizedEntryName}`)
+      throw new MediaAccessError(
+        'archive_entry_not_allowlisted',
+        `压缩包媒体访问被拒绝（entry 不在白名单）: ${archivePath}::${normalizedEntryName}`,
+      )
     }
 
     return {
@@ -976,6 +1611,46 @@ export class FileSystemMediaReadService {
     }
   }
 
+  private async captureVideoCoverImage(
+    videoPath: string,
+    videoId: string,
+    timeSec: number,
+  ): Promise<string | null> {
+    const safeTime = Number.isFinite(timeSec) ? Math.max(0, timeSec) : 0
+    const baseName = `${toSafeFsName(videoId)}-${Date.now()}.jpg`
+    const outputPath = path.join(this.coverOutputRootDir, baseName)
+    await fs.mkdir(this.coverOutputRootDir, { recursive: true })
+
+    const result = await runProcess(
+      FFMPEG_BIN,
+      [
+        '-y',
+        '-v',
+        'error',
+        '-ss',
+        String(safeTime),
+        '-i',
+        videoPath,
+        '-frames:v',
+        '1',
+        '-q:v',
+        '2',
+        outputPath,
+      ],
+      30_000,
+    ).catch(() => null)
+
+    if (!result || result.code !== 0) {
+      return null
+    }
+
+    const stat = await fs.stat(outputPath).catch(() => null)
+    if (!stat || !stat.isFile()) {
+      return null
+    }
+    return outputPath
+  }
+
   async readLibrarySnapshot(): Promise<LibrarySnapshotDto> {
     return this.ensureSnapshotLoaded()
   }
@@ -1057,13 +1732,80 @@ export class FileSystemMediaReadService {
     )
   }
 
+  async writePackageGrade(
+    request: WritePackageGradeRequestDto,
+  ): Promise<WritePackageGradeResponseDto> {
+    const snapshot = await this.ensureSnapshotLoaded()
+    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`写入评分失败：source 不存在 ${request.package_id}`)
+    }
+
+    source.mock_grade = request.grade
+    this.packageGradeOverridesBySourceId.set(request.package_id, request.grade)
+    await this.persistState()
+
+    return writePackageGradeResponseSchema.parse({
+      package_id: request.package_id,
+      grade: request.grade,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async saveVideoCover(
+    request: SaveVideoCoverRequestDto,
+  ): Promise<SaveVideoCoverResponseDto> {
+    const snapshot = await this.ensureSnapshotLoaded()
+    const video = snapshot.videos.find((item) => item.id === request.video_id)
+    if (!video) {
+      throw new Error(`保存封面失败：video 不存在 ${request.video_id}`)
+    }
+
+    const coverImagePath = await this.captureVideoCoverImage(video.absolute_path, video.id, request.time_sec)
+    const coverColor = request.fallback_color ?? video.cover_color ?? toDeterministicCoverColor(video.id)
+    const updatedAtMs = Date.now()
+
+    video.cover_color = coverColor
+    this.videoCoverOverridesByVideoId.set(video.id, {
+      coverColor,
+      coverImagePath,
+      updatedAtMs,
+    })
+    await this.persistState()
+
+    return saveVideoCoverResponseSchema.parse({
+      video_id: video.id,
+      cover_color: coverColor,
+      cover_image_path: coverImagePath,
+      updated_at_ms: updatedAtMs,
+    })
+  }
+
   async resolveMediaResource(
     request: ResolveMediaResourceRequestDto,
   ): Promise<ResolveMediaResourceResponseDto> {
     await this.ensureSnapshotLoaded()
     this.cleanupExpiredTokens()
 
-    const locator = await this.assertLocatorAllowed(request.locator)
+    this.mediaAudit.resolveRequests += 1
+
+    let locator: MediaLocatorDto
+    try {
+      locator = await this.assertLocatorAllowed(request.locator)
+    } catch (error) {
+      if (error instanceof MediaAccessError) {
+        this.countResolveDenied(error.reason)
+        console.warn('resolveMediaResource denied', {
+          reason: error.reason,
+          message: error.message,
+        })
+      } else {
+        this.countResolveDenied('filesystem_file_missing')
+      }
+      throw error
+    }
+
     const mimeType = locator.mime_type || detectMimeTypeByExtension(locator.extension, locator.media_type)
     const token = randomUUID()
     const expiresAtMs = Date.now() + MEDIA_TOKEN_TTL_MS
@@ -1073,6 +1815,8 @@ export class FileSystemMediaReadService {
       mimeType,
       expiresAtMs,
     })
+
+    this.mediaAudit.resolveGranted += 1
 
     return resolveMediaResourceResponseSchema.parse({
       resource_url: `${MEDIA_PROTOCOL_SCHEME}://resource/${encodeURIComponent(token)}`,
@@ -1086,12 +1830,21 @@ export class FileSystemMediaReadService {
     rangeHeader: string | null,
   ): Promise<MediaProtocolResponsePayload> {
     this.cleanupExpiredTokens()
+    this.mediaAudit.tokenReads += 1
 
     const record = this.mediaTokenIndex.get(token)
-    if (!record || record.expiresAtMs <= Date.now()) {
-      this.mediaTokenIndex.delete(token)
-      throw new Error('媒体资源令牌不存在或已过期')
+    if (!record) {
+      this.mediaAudit.tokenMisses += 1
+      throw new Error('媒体资源令牌不存在')
     }
+
+    if (record.expiresAtMs <= Date.now()) {
+      this.mediaAudit.tokenExpired += 1
+      this.mediaTokenIndex.delete(token)
+      throw new Error('媒体资源令牌已过期')
+    }
+
+    this.mediaAudit.tokenHits += 1
 
     const locator = record.locator
     if (locator.kind === 'filesystem') {

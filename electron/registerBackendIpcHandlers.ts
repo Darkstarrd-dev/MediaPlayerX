@@ -2,6 +2,7 @@ import { ipcMain, protocol } from 'electron'
 
 import {
   librarySnapshotDtoSchema,
+  mediaAccessAuditResponseSchema,
   readImageMetadataRequestSchema,
   readImageMetadataResponseSchema,
   readImagePageRequestSchema,
@@ -10,6 +11,10 @@ import {
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceRequestSchema,
   resolveMediaResourceResponseSchema,
+  saveVideoCoverRequestSchema,
+  saveVideoCoverResponseSchema,
+  writePackageGradeRequestSchema,
+  writePackageGradeResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { FileSystemMediaReadService } from './fileSystemReadService'
@@ -63,5 +68,22 @@ export function registerBackendIpcHandlers(): void {
     const request = resolveMediaResourceRequestSchema.parse(payload)
     const response = await service.resolveMediaResource(request)
     return resolveMediaResourceResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.writePackageGrade, async (_event, payload: unknown) => {
+    const request = writePackageGradeRequestSchema.parse(payload)
+    const response = await service.writePackageGrade(request)
+    return writePackageGradeResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.saveVideoCover, async (_event, payload: unknown) => {
+    const request = saveVideoCoverRequestSchema.parse(payload)
+    const response = await service.saveVideoCover(request)
+    return saveVideoCoverResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readMediaAccessAudit, async () => {
+    const response = await service.readMediaAccessAudit()
+    return mediaAccessAuditResponseSchema.parse(response)
   })
 }

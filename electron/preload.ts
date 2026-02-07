@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 
 import {
   librarySnapshotDtoSchema,
+  mediaAccessAuditResponseSchema,
   readImageMetadataRequestSchema,
   readImageMetadataResponseSchema,
   readImagePageRequestSchema,
@@ -10,6 +11,10 @@ import {
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceRequestSchema,
   resolveMediaResourceResponseSchema,
+  saveVideoCoverRequestSchema,
+  saveVideoCoverResponseSchema,
+  writePackageGradeRequestSchema,
+  writePackageGradeResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS } from './channels'
 
@@ -37,6 +42,20 @@ const backendApi = {
     const parsed = resolveMediaResourceRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.resolveMediaResource, parsed)
     return resolveMediaResourceResponseSchema.parse(response)
+  },
+  writePackageGrade: async (request: unknown) => {
+    const parsed = writePackageGradeRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePackageGrade, parsed)
+    return writePackageGradeResponseSchema.parse(response)
+  },
+  saveVideoCover: async (request: unknown) => {
+    const parsed = saveVideoCoverRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.saveVideoCover, parsed)
+    return saveVideoCoverResponseSchema.parse(response)
+  },
+  readMediaAccessAudit: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readMediaAccessAudit)
+    return mediaAccessAuditResponseSchema.parse(response)
   },
 }
 

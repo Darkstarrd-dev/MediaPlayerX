@@ -2,11 +2,12 @@ import { useCallback, useState, type Dispatch, type SetStateAction } from 'react
 
 import { buildInitialVideoCoverMap } from '../app/helpers'
 import { clamp } from '../../utils/ui'
+import type { VideoItem } from '../../types'
 
 interface UseMediaStateParams {
   initialVideoId: string
   initialPlaylistIds: string[]
-  videoIds: string[]
+  videos: VideoItem[]
 }
 
 interface UseMediaStateResult {
@@ -30,6 +31,8 @@ interface UseMediaStateResult {
   setVideoMuted: Dispatch<SetStateAction<boolean>>
   videoCoverById: Record<string, string>
   setVideoCoverById: Dispatch<SetStateAction<Record<string, string>>>
+  videoDurationById: Record<string, number>
+  setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
   fullscreenActive: boolean
   setFullscreenActive: Dispatch<SetStateAction<boolean>>
   fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
@@ -48,7 +51,7 @@ interface UseMediaStateResult {
   adjustVideoVolume: (delta: number) => void
 }
 
-export function useMediaState({ initialVideoId, initialPlaylistIds, videoIds }: UseMediaStateParams): UseMediaStateResult {
+export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: UseMediaStateParams): UseMediaStateResult {
   const [selectedVideoId, setSelectedVideoId] = useState(initialVideoId)
   const [playlistIds, setPlaylistIds] = useState<string[]>(initialPlaylistIds)
   const [metadataTab, setMetadataTab] = useState<'info' | 'playlist'>('info')
@@ -59,7 +62,10 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videoIds }: 
   const [videoRate, setVideoRate] = useState(1)
   const [videoVolume, setVideoVolume] = useState(60)
   const [videoMuted, setVideoMuted] = useState(false)
-  const [videoCoverById, setVideoCoverById] = useState<Record<string, string>>(() => buildInitialVideoCoverMap(videoIds))
+  const [videoCoverById, setVideoCoverById] = useState<Record<string, string>>(() => buildInitialVideoCoverMap(videos))
+  const [videoDurationById, setVideoDurationById] = useState<Record<string, number>>(() =>
+    Object.fromEntries(videos.map((video) => [video.id, Math.max(0, video.durationSec)])),
+  )
 
   const [fullscreenActive, setFullscreenActive] = useState(false)
   const [fullscreenDisplay, setFullscreenDisplay] = useState<'dual' | 'video-only' | 'image-only'>('dual')
@@ -124,6 +130,8 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videoIds }: 
     setVideoMuted,
     videoCoverById,
     setVideoCoverById,
+    videoDurationById,
+    setVideoDurationById,
     fullscreenActive,
     setFullscreenActive,
     fullscreenDisplay,

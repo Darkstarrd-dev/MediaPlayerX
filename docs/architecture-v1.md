@@ -16,6 +16,8 @@
 - Electron Main / Preload 已接入真实只读 I/O 与媒体访问协议白名单。
 - 媒体浏览链路已支持真实图片/视频渲染，虚拟数据仅作为回退与测试输入。
 - 扫描与重处理遵循性能门禁（双规并行 + Correctness 优先）。
+- Main 已接入写链路（评分/封面保存）与 optimistic rollback 协议契约。
+- 压缩包扫描接入归一化策略：`rar/7z -> zip(store)`；zip 非 `store/deflate` 图片条目 -> `webp(90)` 后转存 zip(store)。
 
 ### Electron Main 进程
 

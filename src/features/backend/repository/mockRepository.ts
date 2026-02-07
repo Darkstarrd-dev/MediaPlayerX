@@ -10,10 +10,14 @@ import {
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
+  mediaAccessAuditResponseSchema,
+  saveVideoCoverResponseSchema,
+  writePackageGradeResponseSchema,
   type FeatureFilterDto,
   type ImageItemDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
+  type MediaAccessAuditResponseDto,
   type MediaLocatorDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
@@ -23,8 +27,12 @@ import {
   type ReadImageSidebarTreeResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
+  type SaveVideoCoverRequestDto,
+  type SaveVideoCoverResponseDto,
   type SidebarNodeDto,
   type VideoItemDto,
+  type WritePackageGradeRequestDto,
+  type WritePackageGradeResponseDto,
 } from '../../../contracts/backend'
 import type { ImagePackage, MediaLocator, SidebarNode } from '../../../types'
 import type {
@@ -123,6 +131,7 @@ function toVideoItemDto(video: (typeof VIDEO_ITEMS)[number]): VideoItemDto {
     width: video.width,
     height: video.height,
     size_mb: video.sizeMb,
+    cover_color: video.coverColor,
     media_locator: toMediaLocatorDto(video.mediaLocator),
   }
 }
@@ -295,6 +304,11 @@ function toMockImageDataUrl(locator: MediaLocatorDto): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
+function toDeterministicCoverColor(videoId: string): string {
+  const hash = hashLocator(videoId)
+  return `hsl(${hash % 360}, 44%, 40%)`
+}
+
 export class MockMediaRepository implements ReadonlyMediaRepository, SynchronousMediaRepository {
   getInitialLibrarySnapshot(): LibrarySnapshotDto {
     return MOCK_LIBRARY_SNAPSHOT
@@ -434,6 +448,81 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     options?: RepositoryRequestOptions,
   ): Promise<ResolveMediaResourceResponseDto> {
     const response = this.resolveMediaResourceSync(request)
+    return resolveAsync(response, options)
+  }
+
+  writePackageGradeSync(
+    request: WritePackageGradeRequestDto,
+  ): WritePackageGradeResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`mock 仓库写入评分失败：source 不存在 ${request.package_id}`)
+    }
+
+    source.mock_grade = request.grade
+    return writePackageGradeResponseSchema.parse({
+      package_id: request.package_id,
+      grade: request.grade,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async writePackageGrade(
+    request: WritePackageGradeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageGradeResponseDto> {
+    const response = this.writePackageGradeSync(request)
+    return resolveAsync(response, options)
+  }
+
+  saveVideoCoverSync(
+    request: SaveVideoCoverRequestDto,
+  ): SaveVideoCoverResponseDto {
+    const video = MOCK_LIBRARY_SNAPSHOT.videos.find((item) => item.id === request.video_id)
+    if (!video) {
+      throw new Error(`mock 仓库保存封面失败：video 不存在 ${request.video_id}`)
+    }
+
+    const coverColor = request.fallback_color ?? video.cover_color ?? toDeterministicCoverColor(request.video_id)
+    video.cover_color = coverColor
+
+    return saveVideoCoverResponseSchema.parse({
+      video_id: request.video_id,
+      cover_color: coverColor,
+      cover_image_path: null,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async saveVideoCover(
+    request: SaveVideoCoverRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SaveVideoCoverResponseDto> {
+    const response = this.saveVideoCoverSync(request)
+    return resolveAsync(response, options)
+  }
+
+  readMediaAccessAuditSync(): MediaAccessAuditResponseDto {
+    return mediaAccessAuditResponseSchema.parse({
+      resolve_requests: 0,
+      resolve_granted: 0,
+      resolve_denied_total: 0,
+      resolve_denied_by_reason: {},
+      token_reads: 0,
+      token_hits: 0,
+      token_misses: 0,
+      token_expired: 0,
+      token_cleanup_removed: 0,
+      token_active: 0,
+      generated_at_ms: Date.now(),
+    })
+  }
+
+  async readMediaAccessAudit(
+    options?: RepositoryRequestOptions,
+  ): Promise<MediaAccessAuditResponseDto> {
+    const response = this.readMediaAccessAuditSync()
     return resolveAsync(response, options)
   }
 }

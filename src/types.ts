@@ -57,6 +57,7 @@ export interface VideoItem {
   width: number
   height: number
   sizeMb: number
+  coverColor: string
   mediaLocator: MediaLocator
 }
 

@@ -46,6 +46,10 @@
 - 新增 Main 白名单媒体访问协议：Renderer 仅可通过 `Repository -> preload bridge -> ipc` 获取受控 `resource_url`，禁止直连 Node/FS。
 - `FileSystemMediaReadService` 已支持 zip 压缩包轻扫（仅 entry name），扫描阶段不做全量解压、不依赖 entry size。
 - 已补充 Phase-2 集成测试：真实渲染链路、协议权限边界、压缩包轻扫与异常重试；`lint/test/build` 基线通过。
+- 新增视频元数据真实探测链路：Main 使用 `ffprobe` 探测时长/分辨率，Renderer 在 `loadedmetadata` 回传并校准进度显示。
+- 新增写链路下沉：图包评分与 `Save as cover` 通过 Main 写入；Renderer 采用 optimistic update + 失败回滚。
+- 新增 `resolveMediaResource` 审计统计：拒绝原因分类、token 命中/未命中/过期/清理计数可通过 IPC 读取。
+- 压缩包策略升级：`rar/7z` 统一走“解压 -> 转存 zip(store)”策略；zip 遇到非 `store/deflate` 图片条目时走“解压 -> webp(quality=90) -> zip(store)”归一化策略。
 - 扫描/重处理性能门禁改为双规并行：`Z:\bench`（实际负载回放） + `perf-data/<日期>-scan-dataset/input`（脚本生成全覆盖）。
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。

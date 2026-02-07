@@ -792,7 +792,8 @@ ${renderSuiteSection(syntheticSuite)}
 
 ## 执行说明
 
-- 压缩包字符支持验证范围：当前仅覆盖“压缩包路径名字符集”；不包含压缩包内文件名解析。
+- 压缩包验证范围：覆盖压缩包路径字符集 + zip entry name 轻扫一致性校验。
+- 归一化策略：rar/7z -> zip(store)；zip 图片条目若非 store/deflate 则转 webp(quality=90) 后转存 zip(store)。
 - 若全覆盖门禁未通过，相关扫描/重处理模块不得标记为“完成”。
 `
 }

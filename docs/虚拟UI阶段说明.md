@@ -45,6 +45,8 @@
 - 新增媒体定位模型 `MediaLocator`：统一表达文件系统文件与压缩包 entry。
 - Main 进程新增媒体协议白名单访问，拒绝越界路径与非法压缩包 entry。
 - 压缩包扫描升级为“entry name 轻扫”：扫描阶段仅读取目录索引，不全量解压。
+- 视频元数据接入 `ffprobe` 实探，播放器在 `loadedmetadata` 后进行时长校准。
+- 评分与封面保存已下沉到 Main 写链路，Renderer 采用 optimistic update + rollback。
 
 ## 当前代码结构（已完成 App 拆分）
 
