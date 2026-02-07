@@ -35,6 +35,15 @@
 - Header 已新增“向量宇宙”入口：可打开独立 Three.js 3D 漫游层（模拟阶段），当前实现为 billboard + 距离 LOD + tag 颜色映射 + 正前方 Raycast 命中选择，并已将控制参数接入设置面板 3D 设置页；向量宇宙范围与 Sidebar 当前范围保持一致，进入即自动捕捉鼠标，且以进入图片作为坐标原点。快捷键与 3D 控制映射现支持弹窗式新增/清除（键盘/鼠标/组合），并新增离散度与边界穿越控制。
 - 向量宇宙前端内容已阶段性完成：包含二次确认退出、全息球体位置控件（深度亮度、方向箭头、越界穿入）与设置面板参数化调节。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
+- 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
+- Repository 切换方式：通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 选择实现；默认 `mock`。
+- Electron 通道已从骨架升级到真实 Main 读服务：`registerBackendIpcHandlers` 现接入 `FileSystemMediaReadService`（文件系统适配），并在 IPC 入参与出参统一执行 Zod 校验。
+- Main/Sidebar 的特征筛选口径已收敛到 Repository SSOT，前端不再维护同构筛选副本。
+- 已补充 Repository/IPC 集成测试：覆盖超时、取消、重试、快照回退，并清理 `App.test.tsx` 的 act 告警输出。
+- 已新增真实文件性能门禁并完成首份基准报告：`docs/perf/2026-02-07-scan-benchmark.md`。
+- 扫描/重处理性能门禁改为双规并行：`Z:\bench`（实际负载回放） + `perf-data/<日期>-scan-dataset/input`（脚本生成全覆盖）。
+- 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
+- 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。
 - 仓库初始化以本目录文档为起点。

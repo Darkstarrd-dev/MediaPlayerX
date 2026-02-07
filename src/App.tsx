@@ -39,6 +39,11 @@ import { useMediaState } from './features/media/useMediaState'
 import { useFeatureSearch } from './features/search/useFeatureSearch'
 import { useSidebarNavigation } from './features/sidebar/useSidebarNavigation'
 import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
+import {
+  createMediaRepository,
+  mapLibrarySnapshotDto,
+  useReadOnlyDataAccess,
+} from './features/backend'
 import { useUiStore } from './store/useUiStore'
 import type {
   FocusedImageRef,
@@ -143,9 +148,32 @@ function App() {
     })),
   )
 
-  const imageSources = useMemo(() => [...IMAGE_PACKAGES, ...IMAGE_DIRECTORY_SOURCES], [])
+  const { repository: mediaRepository, mode: repositoryMode } = useMemo(() => createMediaRepository(), [])
+  const bootstrapLibrarySnapshot = useMemo(() => {
+    const snapshot = mediaRepository.getInitialLibrarySnapshot()
+    return snapshot ? mapLibrarySnapshotDto(snapshot) : null
+  }, [mediaRepository])
+  const imageSources = useMemo(
+    () =>
+      bootstrapLibrarySnapshot
+        ? [...bootstrapLibrarySnapshot.imagePackages, ...bootstrapLibrarySnapshot.imageDirectories]
+        : [...IMAGE_PACKAGES, ...IMAGE_DIRECTORY_SOURCES],
+    [bootstrapLibrarySnapshot],
+  )
+  const bootstrapImagePackages = useMemo(
+    () => bootstrapLibrarySnapshot?.imagePackages ?? IMAGE_PACKAGES,
+    [bootstrapLibrarySnapshot],
+  )
+  const bootstrapImageDirectories = useMemo(
+    () => bootstrapLibrarySnapshot?.imageDirectories ?? IMAGE_DIRECTORY_SOURCES,
+    [bootstrapLibrarySnapshot],
+  )
+  const bootstrapVideos = useMemo(
+    () => bootstrapLibrarySnapshot?.videos ?? VIDEO_ITEMS,
+    [bootstrapLibrarySnapshot],
+  )
   const packageById = useMemo(() => new Map(imageSources.map((source) => [source.id, source])), [imageSources])
-  const videoById = useMemo(() => new Map(VIDEO_ITEMS.map((video) => [video.id, video])), [])
+  const videoById = useMemo(() => new Map(bootstrapVideos.map((video) => [video.id, video])), [bootstrapVideos])
 
   const [selectedPackageId, setSelectedPackageId] = useState(imageSources[0]?.id ?? '')
   const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
@@ -209,9 +237,9 @@ function App() {
     adjustVideoRate,
     adjustVideoVolume,
   } = useMediaState({
-    initialVideoId: VIDEO_ITEMS[0]?.id ?? '',
-    initialPlaylistIds: VIDEO_ITEMS.slice(0, 3).map((item) => item.id),
-    videoIds: VIDEO_ITEMS.map((item) => item.id),
+    initialVideoId: bootstrapVideos[0]?.id ?? '',
+    initialPlaylistIds: bootstrapVideos.slice(0, 3).map((item) => item.id),
+    videoIds: bootstrapVideos.map((item) => item.id),
   })
 
   const {
@@ -261,21 +289,92 @@ function App() {
     featureCircleOptions,
     featureAuthorOptions,
     featureTagOptions,
-    scopedSearchPackages,
-    scopedSearchDirectories,
-    scopedImageSources,
   } = useFeatureSearch({
     mode,
     vectorMode,
     imageSources,
-    imagePackages: IMAGE_PACKAGES,
-    imageDirectories: IMAGE_DIRECTORY_SOURCES,
+  })
+
+  const vectorResultsActive = mode === 'image' && vectorMode && searchPanelMode === 'vector' && vectorSearchResults.length > 0
+  const searchResultsMode = vectorResultsActive || featureSearchActive
+  const searchResultsReadOnly = vectorResultsActive
+
+  const backendPageSize = useMemo(
+    () =>
+      computeThumbnailGridLayout({
+        gridWidth: gridSize.width,
+        gridHeight: gridSize.height,
+        thumbnailWidth,
+        thumbnailGap,
+        zoomLevel: thumbnailScale,
+      }).pageSize,
+    [gridSize.height, gridSize.width, thumbnailGap, thumbnailScale, thumbnailWidth],
+  )
+
+  const backendMetadataRequestRef = useMemo<FocusedImageRef | null>(() => {
+    if (mode !== 'image') {
+      return null
+    }
+
+    if (vectorResultsActive) {
+      const current = vectorSearchResults[clamp(vectorFocusIndex, 0, Math.max(0, vectorSearchResults.length - 1))]
+      return current
+        ? {
+            packageId: current.packageId,
+            imageIndex: current.imageIndex,
+          }
+        : null
+    }
+
+    if (!imageFocusActive || !selectedPackageId) {
+      return null
+    }
+
+    const selectedSource = packageById.get(selectedPackageId)
+    if (!selectedSource || selectedSource.images.length === 0) {
+      return null
+    }
+
+    return {
+      packageId: selectedPackageId,
+      imageIndex: clamp(focusByPackage[selectedPackageId] ?? 0, 0, selectedSource.images.length - 1),
+    }
+  }, [focusByPackage, imageFocusActive, mode, packageById, selectedPackageId, vectorFocusIndex, vectorResultsActive, vectorSearchResults])
+
+  const backendRead = useReadOnlyDataAccess({
+    repository: mediaRepository,
+    mode,
+    selectedSourceId: selectedPackageId || null,
+    pageIndex: showNamesOnly ? 0 : vectorResultsActive ? vectorPage : (pageByPackage[selectedPackageId] ?? 0),
+    pageSize: Math.max(1, backendPageSize),
+    showNamesOnly,
+    focusedRef: backendMetadataRequestRef,
+    vectorResultsActive,
+    featureNameQuery: featureSearchActive ? featureNameQuery : '',
+    featureWorkTitleQuery: featureSearchActive ? featureWorkTitleQuery : '',
+    featureCircleQuery: featureSearchActive ? featureCircleQuery : '',
+    featureAuthorQuery: featureSearchActive ? featureAuthorQuery : '',
+    featureTags: featureSearchActive ? featureTags : [],
+    featureGradeFilter: featureSearchActive ? featureGradeFilter : null,
     gradeByPackage,
   })
 
+  const sidebarSnapshot = backendRead.sidebar.data ?? backendRead.sidebar.snapshot
+  const scopedSearchPackagesEffective = sidebarSnapshot?.imagePackages ?? bootstrapImagePackages
+  const scopedSearchDirectoriesEffective = sidebarSnapshot?.imageDirectories ?? bootstrapImageDirectories
+  const scopedImageSourcesEffective = useMemo(
+    () => [...scopedSearchPackagesEffective, ...scopedSearchDirectoriesEffective],
+    [scopedSearchDirectoriesEffective, scopedSearchPackagesEffective],
+  )
+  const sidebarTreeSnapshot = sidebarSnapshot?.tree ?? null
+
+  const imageTreeRawLocal = useMemo(
+    () => buildImageSidebarTree(bootstrapImagePackages, bootstrapImageDirectories),
+    [bootstrapImageDirectories, bootstrapImagePackages],
+  )
   const imageTreeRaw = useMemo(
-    () => buildImageSidebarTree(scopedSearchPackages, scopedSearchDirectories),
-    [scopedSearchDirectories, scopedSearchPackages],
+    () => sidebarTreeSnapshot ?? imageTreeRawLocal,
+    [imageTreeRawLocal, sidebarTreeSnapshot],
   )
 
   const imageRootNode = useMemo(
@@ -285,14 +384,14 @@ function App() {
 
   const rootScopedPackageIds = useMemo(() => {
     if (!imageRootNode) {
-      return new Set(scopedImageSources.map((source) => source.id))
+      return new Set(scopedImageSourcesEffective.map((source) => source.id))
     }
     return new Set(collectImageSourceIds(imageRootNode))
-  }, [imageRootNode, scopedImageSources])
+  }, [imageRootNode, scopedImageSourcesEffective])
 
   const rootScopedPackages = useMemo(
-    () => scopedImageSources.filter((source) => rootScopedPackageIds.has(source.id)),
-    [scopedImageSources, rootScopedPackageIds],
+    () => scopedImageSourcesEffective.filter((source) => rootScopedPackageIds.has(source.id)),
+    [rootScopedPackageIds, scopedImageSourcesEffective],
   )
 
   const allScopedRefs = useMemo<FocusedImageRef[]>(() => {
@@ -304,10 +403,6 @@ function App() {
     }
     return refs
   }, [rootScopedPackages])
-
-  const vectorResultsActive = mode === 'image' && vectorMode && searchPanelMode === 'vector' && vectorSearchResults.length > 0
-  const searchResultsMode = vectorResultsActive || featureSearchActive
-  const searchResultsReadOnly = vectorResultsActive
 
   const imageTreeForSidebarNormal = useMemo(() => {
     if (!imageRootNode) {
@@ -388,7 +483,7 @@ function App() {
     return imageTreeForSidebarNormal
   }, [imageTreeForSidebarNormal, vectorResultsActive, vectorSidebarNodes])
 
-  const searchedVideos = useMemo(() => VIDEO_ITEMS, [])
+  const searchedVideos = useMemo(() => bootstrapVideos, [bootstrapVideos])
 
   const videoTreeRaw = useMemo(
     () =>
@@ -603,6 +698,32 @@ function App() {
     pagedPageSize,
     fullscreenActive,
   })
+
+  const backendPageSnapshot = backendRead.page.data ?? backendRead.page.snapshot
+  const backendMetadataSnapshot = backendRead.metadata.data ?? backendRead.metadata.snapshot
+  const activePackageForDisplay =
+    !vectorResultsActive && backendPageSnapshot?.sourceId
+      ? (packageById.get(backendPageSnapshot.sourceId) ?? activePackage)
+      : activePackage
+  const refsInPageEffective = !vectorResultsActive && backendPageSnapshot ? backendPageSnapshot.refs : refsInPage
+  const pageStartEffective =
+    !vectorResultsActive && backendPageSnapshot
+      ? backendPageSnapshot.pageIndex * Math.max(1, pagedPageSize)
+      : pageStart
+  const normalizedPageIndexEffective =
+    !vectorResultsActive && backendPageSnapshot ? backendPageSnapshot.pageIndex : normalizedPageIndex
+  const imageTotalPagesEffective =
+    !vectorResultsActive && backendPageSnapshot
+      ? (showNamesOnly
+          ? 1
+          : Math.max(1, Math.ceil(backendPageSnapshot.totalItems / Math.max(1, pagedPageSize))))
+      : imageTotalPages
+  const metadataImageEffective = imageFocusActive ? (backendMetadataSnapshot?.image ?? focusedImage) : focusedImage
+  const metadataImagePackageEffective =
+    imageFocusActive
+      ? (backendMetadataSnapshot?.package ?? metadataImagePackage)
+      : metadataImagePackage
+  const currentGradeEffective = imageFocusActive ? (backendMetadataSnapshot?.grade ?? currentGrade) : currentGrade
 
   const focusedVideo = videoById.get(selectedVideoId) ?? videosForSidebar[0] ?? null
   const focusedVideoCoverColor = focusedVideo ? (videoCoverById[focusedVideo.id] ?? '#3f4b58') : '#3f4b58'
@@ -957,7 +1078,7 @@ function App() {
     searchPanelMode,
     onSearchPanelModeChange: setSearchPanelMode,
     vectorResultCount: vectorSearchResults.length,
-    featureResultCount: scopedImageSources.length,
+    featureResultCount: scopedImageSourcesEffective.length,
     focusedRef,
     focusedImagePackage,
     focusedImageOrdinal: focusedImage?.ordinal ?? null,
@@ -998,19 +1119,19 @@ function App() {
   const imageMainSectionProps = {
     vectorMode: vectorResultsActive,
     showNamesOnly,
-    activePackage,
+    activePackage: activePackageForDisplay,
     focusedRef,
     focusedImageExists: Boolean(focusedImage),
     visibleImageRefs,
-    refsInPage,
-    pageStart,
+    refsInPage: refsInPageEffective,
+    pageStart: pageStartEffective,
     actualCellWidth,
     actualMediaHeight,
     thumbnailColumns,
     thumbnailGap: actualThumbnailGap,
     vectorCandidates: vectorSearchResults,
-    normalizedPageIndex,
-    imageTotalPages,
+    normalizedPageIndex: normalizedPageIndexEffective,
+    imageTotalPages: imageTotalPagesEffective,
     packageById,
     gridRef,
     onToggleShowNamesOnly: () => updateSettings({ showNamesOnly: !showNamesOnly }),
@@ -1078,9 +1199,9 @@ function App() {
     metadataCollapsed,
     metadataRatio,
     hasImageFocus: imageFocusActive,
-    focusedImage,
-    focusedImagePackage: metadataImagePackage,
-    currentGrade,
+    focusedImage: metadataImageEffective,
+    focusedImagePackage: metadataImagePackageEffective,
+    currentGrade: currentGradeEffective,
     focusedVideo,
     metadataTab,
     playlistIds,
@@ -1138,6 +1259,41 @@ function App() {
     </>
   )
 
+  const backendErrorRows = [
+    backendRead.errors.library
+      ? {
+          key: 'library',
+          label: '数据快照',
+          message: backendRead.errors.library,
+          onRetry: backendRead.retryLibrary,
+        }
+      : null,
+    backendRead.errors.sidebar
+      ? {
+          key: 'sidebar',
+          label: 'Sidebar 目录树',
+          message: backendRead.errors.sidebar,
+          onRetry: backendRead.retrySidebar,
+        }
+      : null,
+    backendRead.errors.page
+      ? {
+          key: 'page',
+          label: 'Main 分页列表',
+          message: backendRead.errors.page,
+          onRetry: backendRead.retryPage,
+        }
+      : null,
+    backendRead.errors.metadata
+      ? {
+          key: 'metadata',
+          label: 'Metadata 面板',
+          message: backendRead.errors.metadata,
+          onRetry: backendRead.retryMetadata,
+        }
+      : null,
+  ].filter((item): item is { key: string; label: string; message: string; onRetry: () => void } => Boolean(item))
+
   return (
     <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
       <AppHeader
@@ -1145,7 +1301,7 @@ function App() {
         mode={mode}
         searchPanelOpen={vectorMode && mode === 'image'}
         vectorUniverseOpen={vectorUniverseOpen}
-        currentGrade={currentGrade}
+        currentGrade={currentGradeEffective}
         thumbnailScaleLevel={displayThumbnailScaleLevel}
         canThumbnailScaleDown={canThumbnailScaleDown}
         canThumbnailScaleUp={canThumbnailScaleUp}
@@ -1195,6 +1351,24 @@ function App() {
         type="file"
         onChange={onImportFoldersSelected}
       />
+
+      {backendErrorRows.length > 0 ? (
+        <section className="backend-error-banner" role="status" aria-live="polite">
+          <header>
+            <strong>{`后端读取异常（${repositoryMode}）`}</strong>
+          </header>
+          <ul>
+            {backendErrorRows.map((row) => (
+              <li key={row.key}>
+                <span>{`${row.label}: ${row.message}`}</span>
+                <button type="button" onClick={row.onRetry}>
+                  重试
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <AppWorkspace
         mode={mode}

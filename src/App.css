@@ -39,6 +39,41 @@ select {
   color: var(--text-main);
 }
 
+.backend-error-banner {
+  border-bottom: 1px solid #d7a596;
+  background: #fdeee8;
+  color: #5f2a1e;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.backend-error-banner header strong {
+  font-size: 13px;
+}
+
+.backend-error-banner ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.backend-error-banner li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.backend-error-banner button {
+  min-width: 58px;
+  padding: 2px 8px;
+}
+
 .app-header {
   display: flex;
   align-items: center;
