@@ -1,6 +1,7 @@
 import type {
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
+  ReadRuntimeCapabilitiesResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
@@ -70,6 +71,7 @@ export interface ReadonlyMediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
+  readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
 }
 
 export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
@@ -85,6 +87,7 @@ export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
   readImportTasksSync(): ReadImportTasksResponseDto
   retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto
   readMediaAccessAuditSync(): MediaAccessAuditResponseDto
+  readRuntimeCapabilitiesSync(): ReadRuntimeCapabilitiesResponseDto
 }
 
 export type RepositoryMode = 'mock' | 'real'

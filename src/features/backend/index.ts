@@ -17,4 +17,5 @@ export {
 export { createMediaRepository } from './repository'
 export { useReadOnlyDataAccess } from './useReadOnlyDataAccess'
 export { useResolvedMediaUrls, type MediaResolveTarget } from './useResolvedMediaUrls'
+export { useRuntimeCapabilities } from './useRuntimeCapabilities'
 export { useWriteDataAccess } from './useWriteDataAccess'

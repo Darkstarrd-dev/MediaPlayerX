@@ -5,6 +5,7 @@ import {
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
@@ -87,6 +88,10 @@ const backendApi = {
   readMediaAccessAudit: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readMediaAccessAudit)
     return mediaAccessAuditResponseSchema.parse(response)
+  },
+  readRuntimeCapabilities: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeCapabilities)
+    return readRuntimeCapabilitiesResponseSchema.parse(response)
   },
 }
 

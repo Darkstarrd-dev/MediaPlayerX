@@ -118,7 +118,26 @@
 6. 结果落盘（强制）
    - 报告路径：`docs/perf/<日期>-scan-benchmark.md`。
    - 报告必须同时包含“实际负载回放”与“全覆盖门禁”两节结果。
-   - 未产生报告或报告未通过，不得将相关模块标记为“完成”。
+- 未产生报告或报告未通过，不得将相关模块标记为“完成”。
+
+## 运行时依赖预检与最小可用矩阵（MVP Matrix）
+
+### 预检要求
+
+- Main 必须提供运行时依赖预检接口，至少覆盖：`sharp`、`ffmpeg`、`ffprobe`、`7z`、`powershell`。
+- Renderer 必须可见展示降级状态（非静默降级）。
+- 依赖缺失时，必须走确定性回退路径，不允许随机失败。
+
+### 最小可用矩阵
+
+| 能力 | 依赖满足 | 缺失时状态 | 强制回退策略 |
+| --- | --- | --- | --- |
+| 文件系统图片/视频浏览 | 无 | available | 无需回退 |
+| 缩略图缓存（Sharp WebP） | `sharp` | degraded | 回退 `original` 变体 |
+| 视频元数据探测 | `ffprobe` | degraded | 使用默认时长/分辨率 |
+| 视频封面抓取 | `ffmpeg` | degraded | 仅保存颜色，不落盘封面图 |
+| `rar/7z` 归一化 | `7z` | unavailable | 跳过该类压缩包并记录告警 |
+| zip 非 `store/deflate` 重处理 | `ffmpeg + powershell` | degraded | 回退 safe-entry，仅加载可直接读取条目 |
 
 ## 当前模块化基线（接入前提）
 

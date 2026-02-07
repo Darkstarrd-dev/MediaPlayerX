@@ -2,6 +2,7 @@ import {
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataResponseSchema,
@@ -14,6 +15,7 @@ import {
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
+  type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
   type ReadImportTasksResponseDto,
@@ -263,5 +265,15 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.readMediaAccessAudit(), options)
     return mediaAccessAuditResponseSchema.parse(response)
+  }
+
+  async readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.readRuntimeCapabilities(), options)
+    return readRuntimeCapabilitiesResponseSchema.parse(response)
   }
 }

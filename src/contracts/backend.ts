@@ -243,6 +243,33 @@ export const retryImportTaskResponseSchema = z.object({
   task: importTaskDtoSchema,
 })
 
+export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
+
+export const runtimeCapabilityMatrixItemSchema = z.object({
+  capability: z.string().min(1),
+  status: runtimeCapabilityStatusSchema,
+  note: z.string().min(1),
+})
+
+export const readRuntimeCapabilitiesResponseSchema = z.object({
+  dependencies: z.object({
+    sharp: z.boolean(),
+    ffmpeg: z.boolean(),
+    ffprobe: z.boolean(),
+    seven_zip: z.boolean(),
+    powershell: z.boolean(),
+  }),
+  strategies: z.object({
+    thumbnail: z.enum(['sharp-webp-cache', 'original-fallback']),
+    video_probe: z.enum(['ffprobe', 'metadata-fallback']),
+    video_cover: z.enum(['ffmpeg', 'color-only-fallback']),
+    archive_rar_7z: z.enum(['normalize-to-zip-store', 'skip-unsupported']),
+    archive_zip_repack: z.enum(['repack-webp-store', 'safe-entry-fallback']),
+  }),
+  minimum_matrix: z.array(runtimeCapabilityMatrixItemSchema),
+  generated_at_ms: z.number().int().positive(),
+})
+
 export const mediaAccessAuditResponseSchema = z.object({
   resolve_requests: nonNegativeIntSchema,
   resolve_granted: nonNegativeIntSchema,
@@ -288,4 +315,7 @@ export type EnqueueImportTaskResponseDto = z.infer<typeof enqueueImportTaskRespo
 export type ReadImportTasksResponseDto = z.infer<typeof readImportTasksResponseSchema>
 export type RetryImportTaskRequestDto = z.infer<typeof retryImportTaskRequestSchema>
 export type RetryImportTaskResponseDto = z.infer<typeof retryImportTaskResponseSchema>
+export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
+export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
+export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>
 export type MediaAccessAuditResponseDto = z.infer<typeof mediaAccessAuditResponseSchema>

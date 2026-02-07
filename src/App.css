@@ -74,6 +74,36 @@ select {
   padding: 2px 8px;
 }
 
+.runtime-warning-banner {
+  border-bottom: 1px solid #d8c69b;
+  background: #fff7e7;
+  color: #5a3b12;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.runtime-warning-banner header strong {
+  font-size: 13px;
+}
+
+.runtime-warning-banner ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.runtime-warning-banner li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .import-task-panel {
   border-bottom: 1px solid #c5d6de;
   background: #edf6f9;

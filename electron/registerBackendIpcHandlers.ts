@@ -5,6 +5,7 @@ import {
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
+  readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
@@ -121,5 +122,10 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readMediaAccessAudit, async () => {
     const response = await service.readMediaAccessAudit()
     return mediaAccessAuditResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readRuntimeCapabilities, async () => {
+    const response = await service.readRuntimeCapabilities()
+    return readRuntimeCapabilitiesResponseSchema.parse(response)
   })
 }

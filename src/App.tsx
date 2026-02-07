@@ -45,6 +45,7 @@ import {
   type MediaResolveTarget,
   mapLibrarySnapshotDto,
   useResolvedMediaUrls,
+  useRuntimeCapabilities,
   useReadOnlyDataAccess,
   useWriteDataAccess,
 } from './features/backend'
@@ -720,6 +721,10 @@ function App() {
     repository: mediaRepository,
     setGradeByPackage,
     setVideoCoverById,
+  })
+
+  const runtimeCapabilities = useRuntimeCapabilities({
+    repository: mediaRepository,
   })
 
   const backendPageSnapshot = backendRead.page.data ?? backendRead.page.snapshot
@@ -1463,7 +1468,19 @@ function App() {
           onRetry: playlistPersistence.retryWrite,
         }
       : null,
+    runtimeCapabilities.error
+      ? {
+          key: 'runtime-capability',
+          label: '运行时依赖预检',
+          message: runtimeCapabilities.error,
+          onRetry: runtimeCapabilities.retry,
+        }
+      : null,
   ].filter((item): item is { key: string; label: string; message: string; onRetry: () => void } => Boolean(item))
+
+  const runtimeCapabilityWarnings = (runtimeCapabilities.data?.minimum_matrix ?? []).filter(
+    (item) => item.status !== 'available',
+  )
 
   return (
     <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
@@ -1535,6 +1552,22 @@ function App() {
                 <button type="button" onClick={row.onRetry}>
                   重试
                 </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {runtimeCapabilityWarnings.length > 0 ? (
+        <section className="runtime-warning-banner" role="status" aria-live="polite">
+          <header>
+            <strong>运行时降级策略已生效</strong>
+          </header>
+          <ul>
+            {runtimeCapabilityWarnings.map((item) => (
+              <li key={item.capability}>
+                <span>{`${item.capability} (${item.status})`}</span>
+                <span>{item.note}</span>
               </li>
             ))}
           </ul>

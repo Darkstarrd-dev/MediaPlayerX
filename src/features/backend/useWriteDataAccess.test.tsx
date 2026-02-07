@@ -7,6 +7,7 @@ import type {
   EnqueueImportTaskResponseDto,
   LibrarySnapshotDto,
   ReadImportTasksResponseDto,
+  ReadRuntimeCapabilitiesResponseDto,
   MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
@@ -201,6 +202,34 @@ class WritableRepositoryStub implements ReadonlyMediaRepository {
       token_expired: 0,
       token_cleanup_removed: 0,
       token_active: 0,
+      generated_at_ms: Date.now(),
+    }
+  }
+
+  async readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto> {
+    void options
+    return {
+      dependencies: {
+        sharp: true,
+        ffmpeg: true,
+        ffprobe: true,
+        seven_zip: true,
+        powershell: true,
+      },
+      strategies: {
+        thumbnail: 'sharp-webp-cache',
+        video_probe: 'ffprobe',
+        video_cover: 'ffmpeg',
+        archive_rar_7z: 'normalize-to-zip-store',
+        archive_zip_repack: 'repack-webp-store',
+      },
+      minimum_matrix: [
+        {
+          capability: '基础浏览（文件系统图片/视频）',
+          status: 'available',
+          note: 'all good',
+        },
+      ],
       generated_at_ms: Date.now(),
     }
   }

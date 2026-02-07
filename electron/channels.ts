@@ -11,6 +11,7 @@ export const BACKEND_CHANNELS = {
   enqueueImportTask: 'backend:enqueueImportTask',
   readImportTasks: 'backend:readImportTasks',
   retryImportTask: 'backend:retryImportTask',
+  readRuntimeCapabilities: 'backend:readRuntimeCapabilities',
   readMediaAccessAudit: 'backend:readMediaAccessAudit',
 } as const
 

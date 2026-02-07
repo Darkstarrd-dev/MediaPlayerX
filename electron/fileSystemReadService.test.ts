@@ -369,6 +369,25 @@ describe('FileSystemMediaReadService', () => {
     expect(cachedFiles.some((fileName) => fileName.endsWith('.webp'))).toBe(true)
   })
 
+  it('可输出运行时依赖预检与最小可用矩阵', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-runtime-cap-'))
+    createdRoots.push(root)
+
+    await writeTinyPng(path.join(root, 'sample.png'))
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+
+    const capabilities = await service.readRuntimeCapabilities()
+    expect(typeof capabilities.dependencies.sharp).toBe('boolean')
+    expect(typeof capabilities.dependencies.ffmpeg).toBe('boolean')
+    expect(typeof capabilities.dependencies.ffprobe).toBe('boolean')
+    expect(typeof capabilities.dependencies.seven_zip).toBe('boolean')
+    expect(typeof capabilities.dependencies.powershell).toBe('boolean')
+    expect(capabilities.minimum_matrix.length).toBeGreaterThan(0)
+    expect(capabilities.minimum_matrix.some((item) => item.capability.includes('rar/7z'))).toBe(true)
+  })
+
   it('写链路可持久化评分与封面，失败时由调用端回滚', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-write-chain-'))
     createdRoots.push(root)

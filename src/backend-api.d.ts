@@ -2,6 +2,7 @@ import type {
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   ReadImportTasksResponseDto,
+  ReadRuntimeCapabilitiesResponseDto,
   LibrarySnapshotDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
@@ -37,6 +38,7 @@ interface MediaPlayerBackendApi {
   readImportTasks: () => Promise<ReadImportTasksResponseDto>
   retryImportTask: (request: RetryImportTaskRequestDto) => Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
+  readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
 }
 
 declare global {
