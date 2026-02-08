@@ -71,9 +71,7 @@ import { collectMediaFiles, type FileRecord } from './fileSystemFileCollector'
 import {
   detectMimeTypeByExtension,
   makeStableId,
-  matchesFeatureFilter,
   normalizeAllowlistKey,
-  normalizeFeatureFilter,
   deriveVideoWorkTitleFromFileName,
   toAbsoluteTreePath,
   toDeterministicCoverColor,
@@ -103,12 +101,14 @@ import {
   type MediaProtocolStreamResponsePayload,
 } from './fileSystemMediaReaders'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
+import { filterSources as filterLibrarySources } from './fileSystemSourceFilter'
+import { maybeResolveThumbnailLocator } from './fileSystemThumbnailResolver'
+import { captureVideoCoverImage } from './fileSystemVideoCoverCapture'
 import {
   checkCommandAvailability,
   getSharpModule,
   probeImageDimensionsFromFile,
   probeVideoMetadata,
-  runProcess,
 } from './fileSystemRuntimeHelpers'
 import { buildImageSidebarTree } from './fileSystemSidebarTree'
 import { writeStoredZipFromDirectory } from './fileSystemZipStoreWriter'
@@ -142,12 +142,6 @@ const FFPROBE_BIN = process.env.MEDIA_PLAYERX_FFPROBE_BIN ?? 'ffprobe'
 const ARCHIVE_NORMALIZE_DIR_NAME = '.mediaplayerx/normalized-archives'
 const THUMBNAIL_CACHE_DIR_NAME = '.mediaplayerx/thumbnail-cache'
 const LEGACY_IMPORTS_DIR_NAME = 'imports'
-const THUMBNAIL_DEFAULT_MAX_EDGE = 320
-const THUMBNAIL_DEFAULT_QUALITY = 82
-const THUMBNAIL_MIN_EDGE = 64
-const THUMBNAIL_MAX_EDGE = 2048
-const THUMBNAIL_MIN_QUALITY = 50
-const THUMBNAIL_MAX_QUALITY = 95
 const DIRECTORY_SCAN_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_SCAN_CONCURRENCY, 16, 64)
 const ARCHIVE_SCAN_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_ARCHIVE_SCAN_CONCURRENCY, 10, 32)
 const ARCHIVE_NORMALIZE_IDLE_MS = resolveConcurrency(process.env.MEDIA_PLAYERX_ARCHIVE_NORMALIZE_IDLE_MS, 1800, 10_000)
@@ -191,11 +185,6 @@ interface NormalizedArchiveCacheRecord {
   strategy: ArchiveNormalizationResult['strategy']
 }
 
-interface ThumbnailRenderOptions {
-  maxEdge: number
-  quality: number
-}
-
 interface RuntimeDependencySnapshot {
   sharp: boolean
   ffmpeg: boolean
@@ -226,22 +215,6 @@ export interface LibraryChangedEventPayload {
 }
 
 type LibraryChangedListener = (payload: LibraryChangedEventPayload) => void
-
-function clampThumbnailMaxEdge(value: number | undefined): number {
-  if (!Number.isFinite(value)) {
-    return THUMBNAIL_DEFAULT_MAX_EDGE
-  }
-
-  return Math.max(THUMBNAIL_MIN_EDGE, Math.min(THUMBNAIL_MAX_EDGE, Math.round(value)))
-}
-
-function clampThumbnailQuality(value: number | undefined): number {
-  if (!Number.isFinite(value)) {
-    return THUMBNAIL_DEFAULT_QUALITY
-  }
-
-  return Math.max(THUMBNAIL_MIN_QUALITY, Math.min(THUMBNAIL_MAX_QUALITY, Math.round(value)))
-}
 
 export class FileSystemMediaReadService {
   private readonly rootDir: string
@@ -1221,137 +1194,6 @@ export class FileSystemMediaReadService {
     return this.database.readSnapshot()
   }
 
-  private filterSources(request: Pick<ReadImageSidebarTreeRequestDto, 'feature_filter' | 'grade_overrides'>): {
-    imagePackages: ImagePackageDto[]
-    imageDirectories: ImagePackageDto[]
-  } {
-    const snapshot = this.snapshotCache
-    if (!snapshot) {
-      return {
-        imagePackages: [],
-        imageDirectories: [],
-      }
-    }
-
-    const normalizedFilter = normalizeFeatureFilter(request.feature_filter)
-
-    return {
-      imagePackages: snapshot.image_packages.filter((source) =>
-        matchesFeatureFilter(source, normalizedFilter, request.grade_overrides),
-      ),
-      imageDirectories: snapshot.image_directories.filter((source) =>
-        matchesFeatureFilter(source, normalizedFilter, request.grade_overrides),
-      ),
-    }
-  }
-
-  private async captureVideoCoverImage(
-    videoPath: string,
-    videoId: string,
-    timeSec: number,
-  ): Promise<string | null> {
-    const runtimeDependencies = await this.ensureRuntimeDependencies()
-    if (!runtimeDependencies.ffmpeg) {
-      return null
-    }
-
-    const safeTime = Number.isFinite(timeSec) ? Math.max(0, timeSec) : 0
-    const baseName = `${toSafeFsName(videoId)}-${Date.now()}.jpg`
-    const outputPath = path.join(this.coverOutputRootDir, baseName)
-    await fs.mkdir(this.coverOutputRootDir, { recursive: true })
-
-    const result = await runProcess(
-      FFMPEG_BIN,
-      [
-        '-y',
-        '-v',
-        'error',
-        '-ss',
-        String(safeTime),
-        '-i',
-        videoPath,
-        '-frames:v',
-        '1',
-        '-q:v',
-        '2',
-        outputPath,
-      ],
-      30_000,
-    ).catch(() => null)
-
-    if (!result || result.code !== 0) {
-      return null
-    }
-
-    const stat = await fs.stat(outputPath).catch(() => null)
-    if (!stat || !stat.isFile()) {
-      return null
-    }
-    return outputPath
-  }
-
-  private resolveThumbnailOptionsFromRequest(
-    request: ResolveMediaResourceRequestDto,
-  ): ThumbnailRenderOptions | null {
-    if (request.preferred_variant !== 'thumbnail') {
-      return null
-    }
-    if (request.locator.media_type !== 'image') {
-      return null
-    }
-
-    return {
-      maxEdge: clampThumbnailMaxEdge(request.thumbnail?.max_edge),
-      quality: clampThumbnailQuality(request.thumbnail?.quality),
-    }
-  }
-
-  private async computeThumbnailCachePath(
-    locator: MediaLocatorDto,
-    options: ThumbnailRenderOptions,
-  ): Promise<string | null> {
-    if (locator.media_type !== 'image') {
-      return null
-    }
-
-    if (locator.kind === 'filesystem') {
-      const stat = await fs.stat(locator.absolute_path).catch(() => null)
-      if (!stat || !stat.isFile()) {
-        return null
-      }
-
-      const cacheKey = JSON.stringify({
-        variant: 'thumb',
-        kind: locator.kind,
-        path: locator.absolute_path,
-        mtimeMs: stat.mtimeMs,
-        size: stat.size,
-        maxEdge: options.maxEdge,
-        quality: options.quality,
-      })
-      const hash = createHash('sha1').update(cacheKey).digest('hex')
-      return path.join(this.thumbnailCacheRootDir, `${hash}.webp`)
-    }
-
-    const archiveStat = await fs.stat(locator.archive_path).catch(() => null)
-    if (!archiveStat || !archiveStat.isFile()) {
-      return null
-    }
-
-    const cacheKey = JSON.stringify({
-      variant: 'thumb',
-      kind: locator.kind,
-      archivePath: locator.archive_path,
-      entry: locator.entry_name,
-      mtimeMs: archiveStat.mtimeMs,
-      size: archiveStat.size,
-      maxEdge: options.maxEdge,
-      quality: options.quality,
-    })
-    const hash = createHash('sha1').update(cacheKey).digest('hex')
-    return path.join(this.thumbnailCacheRootDir, `${hash}.webp`)
-  }
-
   private async readImageBufferForThumbnail(locator: MediaLocatorDto): Promise<Buffer> {
     if (locator.kind === 'filesystem') {
       return fs.readFile(locator.absolute_path)
@@ -1359,79 +1201,6 @@ export class FileSystemMediaReadService {
 
     const payload = await readArchiveEntryMedia(locator, locator.mime_type, this.zipEntryIndexByPath)
     return Buffer.from(payload.body)
-  }
-
-  private async maybeResolveThumbnailLocator(
-    locator: MediaLocatorDto,
-    options: ThumbnailRenderOptions,
-  ): Promise<MediaLocatorDto | null> {
-    if (locator.media_type !== 'image') {
-      return null
-    }
-
-    const runtimeDependencies = await this.ensureRuntimeDependencies()
-    if (!runtimeDependencies.sharp) {
-      return null
-    }
-
-    const sharpModule = await getSharpModule()
-    if (!sharpModule?.default) {
-      return null
-    }
-
-    const cachePath = await this.computeThumbnailCachePath(locator, options)
-    if (!cachePath) {
-      return null
-    }
-
-    const cached = await fs.stat(cachePath).catch(() => null)
-    if (!cached || !cached.isFile()) {
-      const sourceBuffer = await this.readImageBufferForThumbnail(locator).catch(() => null)
-      if (!sourceBuffer || sourceBuffer.length === 0) {
-        return null
-      }
-
-      this.thumbnailRenderingInFlight += 1
-      try {
-        await fs.mkdir(this.thumbnailCacheRootDir, { recursive: true })
-        const tempPath = `${cachePath}.${process.pid}.${Date.now()}.tmp.webp`
-        const sharp = sharpModule.default
-
-        const generated = await sharp(sourceBuffer, { failOn: 'none' })
-          .rotate()
-          .resize({
-            width: options.maxEdge,
-            height: options.maxEdge,
-            fit: 'inside',
-            withoutEnlargement: true,
-          })
-          .webp({ quality: options.quality })
-          .toFile(tempPath)
-          .catch(() => null)
-
-        if (!generated) {
-          await fs.rm(tempPath, { force: true })
-          return null
-        }
-
-        await fs.rename(tempPath, cachePath).catch(async () => {
-          await fs.rm(tempPath, { force: true })
-        })
-      } finally {
-        this.thumbnailRenderingInFlight = Math.max(0, this.thumbnailRenderingInFlight - 1)
-        if (this.archiveNormalizationPendingHigh.size > 0 || this.archiveNormalizationPendingLow.size > 0) {
-          this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_RECHECK_MS)
-        }
-      }
-    }
-
-    return {
-      kind: 'filesystem',
-      absolute_path: cachePath,
-      extension: '.webp',
-      media_type: 'image',
-      mime_type: 'image/webp',
-    }
   }
 
   async readLibrarySnapshot(): Promise<LibrarySnapshotDto> {
@@ -1444,7 +1213,7 @@ export class FileSystemMediaReadService {
   ): Promise<ReadImageSidebarTreeResponseDto> {
     this.markInteractiveRead()
     await this.ensureSnapshotLoaded()
-    const filtered = this.filterSources(request)
+    const filtered = filterLibrarySources(this.snapshotCache, request)
 
     return readImageSidebarTreeResponseSchema.parse({
       image_packages: filtered.imagePackages,
@@ -1456,7 +1225,7 @@ export class FileSystemMediaReadService {
   async readImagePage(request: ReadImagePageRequestDto): Promise<ReadImagePageResponseDto> {
     this.markInteractiveRead()
     await this.ensureSnapshotLoaded()
-    const filtered = this.filterSources({
+    const filtered = filterLibrarySources(this.snapshotCache, {
       feature_filter: request.feature_filter,
       grade_overrides: request.grade_overrides,
     })
@@ -1618,12 +1387,20 @@ export class FileSystemMediaReadService {
     request: SaveVideoCoverRequestDto,
   ): Promise<SaveVideoCoverResponseDto> {
     const snapshot = await this.ensureSnapshotLoaded()
+    const runtimeDependencies = await this.ensureRuntimeDependencies()
     const video = snapshot.videos.find((item) => item.id === request.video_id)
     if (!video) {
       throw new Error(`保存封面失败：video 不存在 ${request.video_id}`)
     }
 
-    const coverImagePath = await this.captureVideoCoverImage(video.absolute_path, video.id, request.time_sec)
+    const coverImagePath = await captureVideoCoverImage({
+      videoPath: video.absolute_path,
+      videoId: video.id,
+      timeSec: request.time_sec,
+      ffmpegBin: FFMPEG_BIN,
+      coverOutputRootDir: this.coverOutputRootDir,
+      ffmpegAvailable: runtimeDependencies.ffmpeg,
+    })
     const coverColor = request.fallback_color ?? video.cover_color ?? toDeterministicCoverColor(video.id)
     const updatedAtMs = Date.now()
 
@@ -1871,12 +1648,25 @@ export class FileSystemMediaReadService {
       throw error
     }
 
-    const thumbnailOptions = this.resolveThumbnailOptionsFromRequest(request)
-    if (thumbnailOptions) {
-      const thumbnailLocator = await this.maybeResolveThumbnailLocator(locator, thumbnailOptions)
-      if (thumbnailLocator) {
-        locator = thumbnailLocator
-      }
+    const thumbnailLocator = await maybeResolveThumbnailLocator({
+      locator,
+      request,
+      thumbnailCacheRootDir: this.thumbnailCacheRootDir,
+      ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
+      readImageBufferForThumbnail: (targetLocator) => this.readImageBufferForThumbnail(targetLocator),
+      onRenderingStart: () => {
+        this.thumbnailRenderingInFlight += 1
+      },
+      onRenderingEnd: () => {
+        this.thumbnailRenderingInFlight = Math.max(0, this.thumbnailRenderingInFlight - 1)
+      },
+      hasPendingArchiveNormalization: () =>
+        this.archiveNormalizationPendingHigh.size > 0 || this.archiveNormalizationPendingLow.size > 0,
+      scheduleArchiveNormalizationDrain: (delayMs) => this.scheduleArchiveNormalizationDrain(delayMs),
+      archiveNormalizeRecheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
+    })
+    if (thumbnailLocator) {
+      locator = thumbnailLocator
     }
 
     const mimeType = locator.mime_type || detectMimeTypeByExtension(locator.extension, locator.media_type)

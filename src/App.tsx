@@ -37,6 +37,7 @@ import {
 } from './features/app/helpers'
 import { buildAppHeaderProps } from './features/app/buildAppHeaderProps'
 import { buildBackendErrorRows } from './features/app/buildBackendErrorRows'
+import { buildImageNodeLoadState } from './features/app/buildImageNodeLoadState'
 import { buildFullscreenLayerProps } from './features/app/buildFullscreenLayerProps'
 import { buildImageMainSectionProps } from './features/app/buildImageMainSectionProps'
 import { buildImportTaskPanelProps } from './features/app/buildImportTaskPanelProps'
@@ -45,6 +46,7 @@ import { buildMetadataPanelProps } from './features/app/buildMetadataPanelProps'
 import { buildSearchPanelProps } from './features/app/buildSearchPanelProps'
 import { buildSidebarPanelProps } from './features/app/buildSidebarPanelProps'
 import { buildSettingsPanelProps } from './features/app/buildSettingsPanelProps'
+import { buildVectorSidebarState } from './features/app/buildVectorSidebarState'
 import { buildVideoMainSectionProps } from './features/app/buildVideoMainSectionProps'
 import {
   buildCoverImageLocator,
@@ -657,51 +659,10 @@ function App() {
     return map
   }, [imageTreeForSidebarNormal])
 
-  const vectorSidebarState = useMemo(() => {
-    const resultCountByPackage = new Map<string, number>()
-    for (const candidate of vectorSearchResults) {
-      resultCountByPackage.set(candidate.packageId, (resultCountByPackage.get(candidate.packageId) ?? 0) + 1)
-    }
-
-    const leaves = Array.from(resultCountByPackage.keys())
-      .map((packageId) => {
-        const pkg = packageByIdEffective.get(packageId)
-        if (!pkg) {
-          return null
-        }
-        return {
-          id: packageId,
-          treePath: pkg.treePath,
-        }
-      })
-      .filter((leaf): leaf is { id: string; treePath: string[] } => Boolean(leaf))
-
-    const rawTree = buildSidebarTree(leaves, 'package')
-    const packageNodeIdMap = new Map<string, string>()
-
-    const decorateNodes = (nodes: SidebarNode[]): SidebarNode[] => {
-      return nodes.map((node) => {
-        const children = decorateNodes(node.children)
-        const selfResultCount = node.packageId ? (resultCountByPackage.get(node.packageId) ?? 0) : undefined
-
-        if (node.packageId) {
-          packageNodeIdMap.set(node.packageId, node.id)
-        }
-
-        return {
-          ...node,
-          children,
-          imageSourceId: node.packageId ?? node.imageSourceId,
-          directImageCount: selfResultCount,
-        }
-      })
-    }
-
-    return {
-      nodes: decorateNodes(rawTree),
-      packageNodeIdMap,
-    }
-  }, [packageByIdEffective, vectorSearchResults])
+  const vectorSidebarState = useMemo(
+    () => buildVectorSidebarState(vectorSearchResults, packageByIdEffective),
+    [packageByIdEffective, vectorSearchResults],
+  )
 
   const vectorSidebarNodes = vectorSidebarState.nodes
   const vectorResultPackageNodeIdMap = vectorSidebarState.packageNodeIdMap
@@ -713,62 +674,16 @@ function App() {
     return imageTreeForSidebarNormal
   }, [imageTreeForSidebarNormal, vectorResultsActive, vectorSidebarNodes])
 
-  const imageNodeLoadStateById = useMemo(() => {
-    const pendingPathSet = new Set(archiveLoadStatus.pendingArchivePaths.map((value) => normalizePathForCompare(value)))
-    const runningPath = archiveLoadStatus.runningArchivePath
-      ? normalizePathForCompare(archiveLoadStatus.runningArchivePath)
-      : null
-
-    const packageLoadStateBySourceId = new Map<string, 'pending' | 'running'>()
-
-    for (const source of scopedImageSourcesEffective) {
-      const normalizedPath = normalizePathForCompare(source.absolutePath)
-      const lowerPath = normalizedPath.toLowerCase()
-      const isRar7z = lowerPath.endsWith('.rar') || lowerPath.endsWith('.7z')
-      if (!isRar7z) {
-        continue
-      }
-
-      if (runningPath && normalizedPath === runningPath) {
-        packageLoadStateBySourceId.set(source.id, 'running')
-        continue
-      }
-
-      if (pendingPathSet.has(normalizedPath) || source.images.length === 0) {
-        packageLoadStateBySourceId.set(source.id, 'pending')
-      }
-    }
-
-    const nodeStateById: Record<string, 'pending' | 'running'> = {}
-    const walk = (nodes: SidebarNode[]): ('pending' | 'running' | null)[] =>
-      nodes.map((node) => {
-        let state: 'pending' | 'running' | null = null
-
-        if (node.imageSourceId) {
-          state = packageLoadStateBySourceId.get(node.imageSourceId) ?? null
-        }
-
-        const childStates = walk(node.children)
-        for (const childState of childStates) {
-          if (childState === 'running') {
-            state = 'running'
-            break
-          }
-          if (childState === 'pending' && !state) {
-            state = 'pending'
-          }
-        }
-
-        if (state) {
-          nodeStateById[node.id] = state
-        }
-
-        return state
-      })
-
-    walk(imageTreeForSidebar)
-    return nodeStateById
-  }, [archiveLoadStatus.pendingArchivePaths, archiveLoadStatus.runningArchivePath, imageTreeForSidebar, scopedImageSourcesEffective])
+  const imageNodeLoadStateById = useMemo(
+    () =>
+      buildImageNodeLoadState({
+        archiveLoadStatus,
+        imageTreeForSidebar,
+        scopedImageSources: scopedImageSourcesEffective,
+        normalizePathForCompare,
+      }),
+    [archiveLoadStatus, imageTreeForSidebar, scopedImageSourcesEffective],
+  )
 
   const searchedVideos = useMemo(() => videosEffective, [videosEffective])
 
