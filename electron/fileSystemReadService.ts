@@ -22,8 +22,6 @@ import {
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
-  writePackageMetadataResponseSchema,
-  writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
@@ -69,23 +67,26 @@ import {
   resolveArchiveReplacementZipPath,
 } from './archiveWasmExtractor'
 import {
-  deriveVideoWorkTitleFromFileName,
   detectMimeTypeByExtension,
   isPathInsideRoot,
   makeStableId,
   matchesFeatureFilter,
   normalizeAllowlistKey,
   normalizeFeatureFilter,
-  normalizeMetadataTags,
-  normalizeMetadataText,
   normalizePathKey,
-  syncPackageNameFromWorkTitle,
+  deriveVideoWorkTitleFromFileName,
   toAbsoluteTreePath,
   toDeterministicCoverColor,
   toSafeFsName,
   toSafeSizeKb,
   toSafeSizeMb,
 } from './fileSystemServiceHelpers'
+import {
+  applyPackageMetadataWrite,
+  applyVideoMetadataWrite,
+  type PersistedVideoMetadataRecord,
+} from './fileSystemMetadataWriters'
+import { executeImportTask } from './fileSystemImportTasks'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
 import {
   isSafeArchiveEntryName,
@@ -154,15 +155,6 @@ interface ArchiveNormalizationResult {
 interface PersistedVideoCoverRecord {
   coverColor: string
   coverImagePath: string | null
-  updatedAtMs: number
-}
-
-interface PersistedVideoMetadataRecord {
-  workTitle: string
-  circle: string
-  author: string
-  tags: string[]
-  grade: number | null
   updatedAtMs: number
 }
 
@@ -264,13 +256,6 @@ export interface LibraryChangedEventPayload {
 }
 
 type LibraryChangedListener = (payload: LibraryChangedEventPayload) => void
-
-interface ImportPathInspection {
-  absolutePath: string
-  insideRoot: boolean
-  kind: 'file' | 'directory'
-  extension: string | null
-}
 
 class MediaAccessError extends Error {
   readonly reason: MediaAuditRejectReason
@@ -2633,99 +2618,38 @@ export class FileSystemMediaReadService {
     request: WritePackageMetadataRequestDto,
   ): Promise<WritePackageMetadataResponseDto> {
     const snapshot = await this.ensureSnapshotLoaded()
-    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
-    const source = allSources.find((item) => item.id === request.package_id)
-    if (!source) {
-      throw new Error(`写入元数据失败：source 不存在 ${request.package_id}`)
-    }
-
-    const workTitle = normalizeMetadataText(request.work_title, source.work_title)
-    const circle = normalizeMetadataText(request.circle, source.circle)
-    const author = normalizeMetadataText(request.author, source.author)
-    const tags = normalizeMetadataTags(request.tags)
-
-    source.work_title = workTitle
-    source.circle = circle
-    source.author = author
-    source.tags = tags
-
-    if (request.sync_work_title_to_package_name) {
-      const synced = syncPackageNameFromWorkTitle(source, workTitle)
-      source.package_name = synced.packageName
-      source.display_name = synced.displayName
-    }
-
-    this.database.writeSourceMetadata(source.id, {
-      packageName: source.package_name,
-      displayName: source.display_name,
-      workTitle: source.work_title,
-      circle: source.circle,
-      author: source.author,
-      tags: source.tags,
+    const response = applyPackageMetadataWrite({
+      snapshot,
+      database: this.database,
+      request,
     })
 
-    const updatedAtMs = Date.now()
     this.emitLibraryChanged({
       reason: 'write-package-metadata',
-      updated_at_ms: updatedAtMs,
+      updated_at_ms: response.updated_at_ms,
     })
 
-    return writePackageMetadataResponseSchema.parse({
-      package: source,
-      updated_at_ms: updatedAtMs,
-    })
+    return response
   }
 
   async writeVideoMetadata(
     request: WriteVideoMetadataRequestDto,
   ): Promise<WriteVideoMetadataResponseDto> {
     const snapshot = await this.ensureSnapshotLoaded()
-    const video = snapshot.videos.find((item) => item.id === request.video_id)
-    if (!video) {
-      throw new Error(`写入视频元数据失败：video 不存在 ${request.video_id}`)
-    }
-
-    const defaultWorkTitle = deriveVideoWorkTitleFromFileName(video.file_name)
-    const workTitle = request.sync_file_name_to_work_title
-      ? defaultWorkTitle
-      : normalizeMetadataText(request.work_title, video.work_title)
-    const circle = normalizeMetadataText(request.circle, video.circle)
-    const author = normalizeMetadataText(request.author, video.author)
-    const tags = normalizeMetadataTags(request.tags)
-    const grade = typeof request.grade === 'undefined' ? video.grade ?? null : request.grade
-
-    video.work_title = workTitle
-    video.circle = circle
-    video.author = author
-    video.tags = tags
-    video.grade = grade
-
-    const updatedAtMs = Date.now()
-    this.videoMetadataOverridesByVideoId.set(video.id, {
-      workTitle,
-      circle,
-      author,
-      tags,
-      grade,
-      updatedAtMs,
+    const { response, persistedRecord } = applyVideoMetadataWrite({
+      snapshot,
+      database: this.database,
+      request,
     })
-    this.database.writeVideoMetadata(video.id, {
-      workTitle,
-      circle,
-      author,
-      tags,
-      grade,
-    })
+
+    this.videoMetadataOverridesByVideoId.set(response.video.id, persistedRecord)
 
     this.emitLibraryChanged({
       reason: 'write-video-metadata',
-      updated_at_ms: updatedAtMs,
+      updated_at_ms: response.updated_at_ms,
     })
 
-    return writeVideoMetadataResponseSchema.parse({
-      video,
-      updated_at_ms: updatedAtMs,
-    })
+    return response
   }
 
   async saveVideoCover(
@@ -2868,181 +2792,20 @@ export class FileSystemMediaReadService {
       })
   }
 
-  private async inspectImportPath(
-    candidatePath: string,
-  ): Promise<{ ok: true; inspection: ImportPathInspection } | { ok: false; reason: string }> {
-    const absolutePath = path.resolve(candidatePath)
-
-    const stat = await fs.stat(absolutePath).catch(() => null)
-    if (!stat) {
-      return { ok: false, reason: `路径不存在: ${absolutePath}` }
-    }
-
-    const insideRoot = isPathInsideRoot(this.rootDir, absolutePath)
-
-    if (stat.isDirectory()) {
-      const readable = await fs.readdir(absolutePath).then(() => true).catch(() => false)
-      if (!readable) {
-        return { ok: false, reason: `目录不可读: ${absolutePath}` }
-      }
-      return {
-        ok: true,
-        inspection: {
-          absolutePath,
-          insideRoot,
-          kind: 'directory',
-          extension: null,
-        },
-      }
-    }
-
-    if (!stat.isFile()) {
-      return { ok: false, reason: `仅支持文件或目录: ${absolutePath}` }
-    }
-
-    const extension = path.extname(absolutePath).toLowerCase()
-    if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
-      return { ok: false, reason: `类型不支持: ${absolutePath}` }
-    }
-
-    return {
-      ok: true,
-      inspection: {
-        absolutePath,
-        insideRoot,
-        kind: 'file',
-        extension,
-      },
-    }
-  }
-
   private async runImportTask(taskId: string): Promise<ImportTaskDto> {
-    const existing = this.database.readTask(taskId)
-    if (!existing) {
-      throw new Error(`导入任务不存在: ${taskId}`)
-    }
-
-    const totalCount = existing.sourcePaths.length
-    const startedAtMs = Date.now()
-    this.database.upsertTask({
-      ...existing,
-      status: 'running',
-      progress: totalCount > 0 ? existing.processedCount / totalCount : 1,
-      message: '导入进行中',
-      errorDetail: null,
-      updatedAtMs: startedAtMs,
+    const finalTask = await executeImportTask({
+      taskId,
+      rootDir: this.rootDir,
+      legacyImportsDirName: LEGACY_IMPORTS_DIR_NAME,
+      imageExtensions: IMAGE_EXTENSIONS,
+      videoExtensions: VIDEO_EXTENSIONS,
+      archiveExtensions: ARCHIVE_EXTENSIONS,
+      database: this.database,
+      invalidateCache: () => this.invalidateCache(),
+      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     })
 
-    let processedCount = 0
-    let acceptedCount = 0
-    const failedMessages: string[] = []
-
-    const internalMetaDir = path.join(this.rootDir, '.mediaplayerx')
-    const legacyImportsDir = path.join(this.rootDir, LEGACY_IMPORTS_DIR_NAME)
-
-    const existingImportSources = this.database.readImportSources()
-    const directoryMap = new Map<string, string>()
-    const fileMap = new Map<string, string>()
-
-    for (const value of existingImportSources.directories) {
-      const resolved = path.resolve(value)
-      directoryMap.set(normalizeAllowlistKey(resolved), resolved)
-    }
-    for (const value of existingImportSources.files) {
-      const resolved = path.resolve(value)
-      fileMap.set(normalizeAllowlistKey(resolved), resolved)
-    }
-
-    let addedDirectoryCount = 0
-    let addedFileCount = 0
-
-    for (const sourcePath of existing.sourcePaths) {
-      const inspected = await this.inspectImportPath(sourcePath)
-      if (inspected.ok) {
-        let pathSucceeded = true
-        try {
-          const { inspection } = inspected
-          const absolutePath = inspection.absolutePath
-
-          if (isPathInsideRoot(internalMetaDir, absolutePath) || isPathInsideRoot(legacyImportsDir, absolutePath)) {
-            pathSucceeded = false
-            failedMessages.push(`禁止导入内部目录: ${absolutePath}`)
-          } else if (inspection.kind === 'file') {
-            const key = normalizeAllowlistKey(absolutePath)
-            if (!fileMap.has(key)) {
-              fileMap.set(key, absolutePath)
-              addedFileCount += 1
-            }
-          } else if (inspection.kind === 'directory') {
-            const key = normalizeAllowlistKey(absolutePath)
-            if (!directoryMap.has(key)) {
-              directoryMap.set(key, absolutePath)
-              addedDirectoryCount += 1
-            }
-          }
-
-          if (pathSucceeded) {
-            acceptedCount += 1
-          }
-        } catch (error) {
-          const reason = error instanceof Error && error.message ? error.message : '未知错误'
-          failedMessages.push(`导入失败: ${inspected.inspection.absolutePath} (${reason})`)
-        }
-      } else {
-        failedMessages.push(inspected.reason)
-      }
-
-      processedCount += 1
-      this.database.upsertTask({
-        ...existing,
-        status: 'running',
-        progress: totalCount > 0 ? processedCount / totalCount : 1,
-        processedCount,
-        totalCount,
-        message: `导入进行中 ${processedCount}/${totalCount} | 新增引用 ${addedDirectoryCount + addedFileCount}`,
-        errorDetail: failedMessages.length > 0 ? failedMessages.slice(0, 3).join(' | ') : null,
-        updatedAtMs: Date.now(),
-      })
-    }
-
-    const addedTotal = addedDirectoryCount + addedFileCount
-    if (addedTotal > 0) {
-      this.database.writeImportSources({
-        directories: Array.from(directoryMap.values()),
-        files: Array.from(fileMap.values()),
-      })
-      this.invalidateCache()
-      await this.ensureSnapshotLoaded()
-
-      this.emitLibraryChanged({
-        reason: 'import-task-finished',
-        updated_at_ms: Date.now(),
-      })
-    }
-
-    const finishedAtMs = Date.now()
-    const failedCount = Math.max(0, totalCount - acceptedCount)
-    const status: ImportTaskDto['status'] = failedCount > 0 ? 'failed' : 'completed'
-    const message =
-      status === 'completed'
-        ? `导入完成，共 ${acceptedCount} 项，新增引用 ${addedTotal} 项（目录 ${addedDirectoryCount} + 文件 ${addedFileCount}）`
-        : `导入失败，成功 ${acceptedCount} 项，失败 ${failedCount} 项`
-
-    this.database.upsertTask({
-      ...existing,
-      status,
-      progress: 1,
-      processedCount: totalCount,
-      totalCount,
-      message,
-      errorDetail: failedMessages.length > 0 ? failedMessages.join('\n') : null,
-      updatedAtMs: finishedAtMs,
-    })
-
-    const finalTask = this.database.readTask(taskId)
-    if (!finalTask) {
-      throw new Error(`导入任务状态丢失: ${taskId}`)
-    }
     return this.toImportTaskDto(finalTask)
   }
 

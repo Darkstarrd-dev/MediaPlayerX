@@ -6,7 +6,7 @@ import { mediaLocatorFileName } from '../features/backend'
 
 const IS_TEST_MODE = import.meta.env.MODE === 'test'
 
-interface MetadataPanelProps {
+export interface MetadataPanelProps {
   mode: BrowserMode
   metadataCollapsed: boolean
   metadataRatio: number

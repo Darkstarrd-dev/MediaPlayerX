@@ -32,12 +32,14 @@ import {
   collectImageSourceIds,
   collectLeafIds,
 } from './features/app/helpers'
+import { buildMetadataPanelProps } from './features/app/buildMetadataPanelProps'
 import {
   buildCoverImageLocator,
   computeResponsiveZoomFactor,
   normalizePathForCompare,
   RESPONSIVE_ZOOM_EPSILON,
 } from './features/app/mediaPathUtils'
+import { useMetadataWriteBindings } from './features/app/useMetadataWriteBindings'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
 import { useImportPipeline } from './features/import/useImportPipeline'
@@ -1052,51 +1054,11 @@ function App() {
     [focusedVideo, focusedVideoCoverColor, focusedVideoCoverImagePath, focusedVideoDurationSec],
   )
 
-  const applyPackageGrade = useCallback(
-    (grade: number | null) => {
-      const targetPackageId = metadataImagePackageEffective?.id
-      if (!targetPackageId) {
-        return
-      }
-      void backendWrite.writePackageGrade(targetPackageId, grade)
-    },
-    [backendWrite, metadataImagePackageEffective],
-  )
-
-  const applyPackageMetadata = useCallback(
-    (payload: {
-      workTitle: string
-      circle: string
-      author: string
-      tags: string[]
-      syncWorkTitleToPackageName?: boolean
-    }) => {
-      const targetPackageId = metadataImagePackageEffective?.id
-      if (!targetPackageId || !backendWrite.writePackageMetadata) {
-        return
-      }
-      void backendWrite.writePackageMetadata(targetPackageId, payload)
-    },
-    [backendWrite, metadataImagePackageEffective],
-  )
-
-  const applyVideoMetadata = useCallback(
-    (payload: {
-      workTitle: string
-      circle: string
-      author: string
-      tags: string[]
-      grade?: number | null
-      syncFileNameToWorkTitle?: boolean
-    }) => {
-      const targetVideoId = focusedVideoEffective?.id
-      if (!targetVideoId || !backendWrite.writeVideoMetadata) {
-        return
-      }
-      void backendWrite.writeVideoMetadata(targetVideoId, payload)
-    },
-    [backendWrite, focusedVideoEffective],
-  )
+  const metadataWriteBindings = useMetadataWriteBindings({
+    backendWrite,
+    metadataImagePackageId: metadataImagePackageEffective?.id ?? null,
+    focusedVideoId: focusedVideoEffective?.id ?? null,
+  })
 
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
     const targetById = new Map<string, MediaResolveTarget>()
@@ -1501,7 +1463,7 @@ function App() {
       updateSettings({ autoPlayEnabled: !autoPlayEnabled })
     },
     onApplyAutoplayIntervalByIndex: applyAutoplayIntervalByIndex,
-    onSetPackageGrade: applyPackageGrade,
+    onSetPackageGrade: metadataWriteBindings.applyPackageGrade,
     onToggleVideoPlaying: () => {
       setVideoPlaying((value) => !value)
     },
@@ -1769,7 +1731,7 @@ function App() {
     onEnterFullscreen: () => setFullscreenActiveWithAutoStop(true),
   }
 
-  const metadataPanelProps = {
+  const metadataPanelProps = buildMetadataPanelProps({
     mode,
     metadataCollapsed,
     metadataRatio,
@@ -1779,7 +1741,7 @@ function App() {
     focusedImagePackage: metadataImagePackageEffective,
     currentGrade: currentGradeEffective,
     currentVideoGrade: focusedVideoEffective?.grade ?? null,
-    metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade,
+    metadataPending: metadataWriteBindings.metadataPending,
     focusedVideo: focusedVideoEffective,
     metadataTab,
     playlistIds,
@@ -1789,36 +1751,15 @@ function App() {
     videoMuted,
     videoRate,
     videoById: videoByIdEffective,
-    onCollapse: () => updateSettings({ metadataCollapsed: true }),
-    onExpand: () => updateSettings({ metadataCollapsed: false }),
-    onGradeChange: applyPackageGrade,
-    onSavePackageMetadata: applyPackageMetadata,
-    onSaveVideoMetadata: applyVideoMetadata,
+    updateSettings,
+    onGradeChange: metadataWriteBindings.applyPackageGrade,
+    onSavePackageMetadata: metadataWriteBindings.applyPackageMetadata,
+    onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
     onMetadataTabChange: setMetadataTab,
     onSelectVideo: selectVideoFromBrowser,
-    onRemoveVideoFromPlaylist: (videoId: string) => {
-      setPlaylistIds((previous) => previous.filter((id) => id !== videoId))
-    },
-    onDragStart: setDragVideoId,
-    onDropToVideo: (targetVideoId: string) => {
-      if (!dragVideoId || dragVideoId === targetVideoId) {
-        return
-      }
-
-      setPlaylistIds((previous) => {
-        const from = previous.indexOf(dragVideoId)
-        const to = previous.indexOf(targetVideoId)
-        if (from < 0 || to < 0) {
-          return previous
-        }
-
-        const next = [...previous]
-        next.splice(from, 1)
-        next.splice(to, 0, dragVideoId)
-        return next
-      })
-    },
-  }
+    setPlaylistIds,
+    setDragVideoId,
+  })
 
   const mainFooter = (
     <>
