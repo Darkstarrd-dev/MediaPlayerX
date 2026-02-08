@@ -68,10 +68,15 @@ interface MediaPlayerBenchApi {
   finish: (report: unknown) => Promise<MediaPlayerBenchFinishResponse>
 }
 
+interface MediaPlayerPlatformApi {
+  getPathForFile: (file: File) => string | null
+}
+
 declare global {
   interface Window {
     mediaPlayerBackend?: MediaPlayerBackendApi
     mediaPlayerBench?: MediaPlayerBenchApi
+    mediaPlayerPlatform?: MediaPlayerPlatformApi
   }
 }
 

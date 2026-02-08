@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
 import {
   clearDatabaseResponseSchema,
@@ -124,5 +124,23 @@ const benchApi = {
   },
 }
 
+const platformApi = {
+  getPathForFile: (file: File): string | null => {
+    try {
+      const getter = (webUtils as unknown as { getPathForFile?: (file: File) => unknown } | undefined)?.getPathForFile
+      const value = getter?.(file)
+      if (typeof value === 'string' && value.trim().length > 0) {
+        return value
+      }
+    } catch {
+      // ignore
+    }
+
+    const fallback = file as File & { path?: unknown }
+    return typeof fallback.path === 'string' && fallback.path.trim().length > 0 ? fallback.path : null
+  },
+}
+
 contextBridge.exposeInMainWorld('mediaPlayerBackend', backendApi)
 contextBridge.exposeInMainWorld('mediaPlayerBench', benchApi)
+contextBridge.exposeInMainWorld('mediaPlayerPlatform', platformApi)

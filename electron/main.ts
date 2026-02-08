@@ -181,10 +181,51 @@ function createMainWindow(): BrowserWindow {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      navigateOnDragDrop: false,
       backgroundThrottling: benchMode ? false : true,
       preload: resolvePreloadEntry(),
     },
   })
+
+  // Prevent the default Electron behavior where dropping a file onto the window
+  // navigates the current page to a file:// URL.
+  // This must be handled in the main process; renderer preventDefault alone is not reliable.
+  const entry = resolveRendererEntry()
+  const allowedOrigin = entry.type === 'url' ? new URL(entry.value).origin : null
+  const allowedFileBase =
+    entry.type === 'file'
+      ? (() => {
+          const url = pathToFileURL(entry.value)
+          url.search = ''
+          url.hash = ''
+          return url.toString()
+        })()
+      : null
+
+  window.webContents.on('will-navigate', (event, url) => {
+    if (allowedOrigin) {
+      try {
+        if (new URL(url).origin === allowedOrigin) {
+          return
+        }
+      } catch {
+        // fallthrough
+      }
+    }
+
+    if (allowedFileBase && url.startsWith(allowedFileBase)) {
+      return
+    }
+
+    event.preventDefault()
+  })
+
+  window.webContents.on('will-frame-navigate', (event, _url) => {
+    // Frame navigations are not expected in this app; block defensively.
+    event.preventDefault()
+  })
+
+  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
 
   if (benchMode) {
     try {
@@ -202,7 +243,6 @@ function createMainWindow(): BrowserWindow {
     })
   }
 
-  const entry = resolveRendererEntry()
   if (entry.type === 'url') {
     if (benchMode) {
       const url = new URL(entry.value)

@@ -45,6 +45,36 @@ function collectPathsFromDataTransfer(dataTransfer: DataTransfer | null): string
   return Array.from(new Set([...nativePaths, ...uriPaths, ...textPaths]))
 }
 
+function shouldShowDragOverlay(dataTransfer: DataTransfer | null): boolean {
+  if (!dataTransfer) {
+    return false
+  }
+
+  if (dataTransferHasFiles(dataTransfer)) {
+    return true
+  }
+
+  try {
+    const uriList = dataTransfer.getData('text/uri-list') ?? ''
+    const plainText = dataTransfer.getData('text/plain') ?? ''
+    return extractPathsFromClipboard(uriList).length > 0 || extractPathsFromClipboard(plainText).length > 0
+  } catch {
+    return false
+  }
+}
+
+type DragEventLike = DragEvent | { nativeEvent: DragEvent }
+
+function isEventImportHandled(event: DragEventLike): boolean {
+  const nativeEvent = 'nativeEvent' in event ? event.nativeEvent : event
+  return Boolean((nativeEvent as unknown as { __mpx_import_handled__?: boolean }).__mpx_import_handled__)
+}
+
+function markEventImportHandled(event: DragEventLike): void {
+  const nativeEvent = 'nativeEvent' in event ? event.nativeEvent : event
+  ;(nativeEvent as unknown as { __mpx_import_handled__?: boolean }).__mpx_import_handled__ = true
+}
+
 interface UseImportPipelineResult {
   fileImportInputRef: RefObject<HTMLInputElement | null>
   folderImportInputRef: RefObject<HTMLInputElement | null>
@@ -286,42 +316,56 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
   }, [enqueueImportPaths, repository])
 
   const onDragEnterImport: DragEventHandler<HTMLDivElement> = (event) => {
-    if (!dataTransferHasFiles(event.dataTransfer)) {
+    event.preventDefault()
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'copy'
+    }
+
+    if (!shouldShowDragOverlay(event.dataTransfer)) {
       return
     }
 
-    event.preventDefault()
     dragDepthRef.current += 1
     setDragOverlayActive(true)
   }
 
   const onDropImport: DragEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault()
+
+    if (isEventImportHandled(event)) {
+      dragDepthRef.current = 0
+      setDragOverlayActive(false)
+      return
+    }
+
     dragDepthRef.current = 0
     setDragOverlayActive(false)
 
     const mergedPaths = collectPathsFromDataTransfer(event.dataTransfer)
     if (mergedPaths.length === 0) {
+      if ((event.dataTransfer?.files?.length ?? 0) > 0) {
+        setTaskError('拖拽导入失败：未获取到本地绝对路径')
+      }
       return
     }
 
-    event.preventDefault()
+    markEventImportHandled(event)
     void enqueueImportPaths('drag-drop', mergedPaths)
   }
 
   const onDragOverImport: DragEventHandler<HTMLDivElement> = (event) => {
-    if (!dataTransferHasFiles(event.dataTransfer)) {
-      return
+    event.preventDefault()
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'copy'
     }
 
-    event.preventDefault()
-    event.dataTransfer.dropEffect = 'copy'
-    if (!dragOverlayActive) {
+    if (!dragOverlayActive && shouldShowDragOverlay(event.dataTransfer)) {
       setDragOverlayActive(true)
     }
   }
 
-  const onDragLeaveImport: DragEventHandler<HTMLDivElement> = (event) => {
-    if (!dataTransferHasFiles(event.dataTransfer)) {
+  const onDragLeaveImport: DragEventHandler<HTMLDivElement> = () => {
+    if (!dragOverlayActive) {
       return
     }
 
@@ -333,12 +377,12 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
 
   useEffect(() => {
     const onWindowDragEnter = (event: DragEvent) => {
-      if (!event.dataTransfer) {
-        return
+      event.preventDefault()
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'copy'
       }
 
-      event.preventDefault()
-      if (!dataTransferHasFiles(event.dataTransfer)) {
+      if (!shouldShowDragOverlay(event.dataTransfer)) {
         return
       }
 
@@ -347,31 +391,39 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
     }
 
     const onWindowDragOver = (event: DragEvent) => {
-      if (!event.dataTransfer) {
-        return
+      event.preventDefault()
+
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'copy'
       }
 
-      event.preventDefault()
-      event.dataTransfer.dropEffect = 'copy'
+      if (!dragOverlayActive && shouldShowDragOverlay(event.dataTransfer)) {
+        setDragOverlayActive(true)
+      }
     }
 
     const onWindowDrop = (event: DragEvent) => {
+      event.preventDefault()
+
+      if (isEventImportHandled(event)) {
+        dragDepthRef.current = 0
+        setDragOverlayActive(false)
+        return
+      }
+
+      dragDepthRef.current = 0
+      setDragOverlayActive(false)
+
       const mergedPaths = collectPathsFromDataTransfer(event.dataTransfer)
       if (mergedPaths.length === 0) {
         return
       }
 
-      event.preventDefault()
-      dragDepthRef.current = 0
-      setDragOverlayActive(false)
+      markEventImportHandled(event)
       void enqueueImportPaths('drag-drop', mergedPaths)
     }
 
-    const onWindowDragLeave = (event: DragEvent) => {
-      if (!event.dataTransfer || !dataTransferHasFiles(event.dataTransfer)) {
-        return
-      }
-
+    const onWindowDragLeave = () => {
       dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
       if (dragDepthRef.current === 0) {
         setDragOverlayActive(false)

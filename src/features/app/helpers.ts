@@ -26,7 +26,17 @@ export function serializeFile(file: File): {
 } {
   const source = file as BrowserFile
   const relativePath = source.webkitRelativePath?.trim() || undefined
-  const nativePath = typeof source.path === 'string' && source.path.trim() ? source.path : undefined
+  let nativePath = typeof source.path === 'string' && source.path.trim() ? source.path : undefined
+
+  if (!nativePath && typeof window !== 'undefined') {
+    const getter = window.mediaPlayerPlatform?.getPathForFile
+    if (typeof getter === 'function') {
+      const resolved = getter(file)
+      if (typeof resolved === 'string' && resolved.trim().length > 0) {
+        nativePath = resolved
+      }
+    }
+  }
 
   return {
     name: file.name,

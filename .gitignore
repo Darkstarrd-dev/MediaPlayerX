@@ -12,6 +12,9 @@ dist
 dist-electron
 dist-ssr
 perf-data
+bench-user-data
+docs/perf/runs
+docs/perf/ui-runs
 library
 *.sqlite
 *.sqlite-shm
