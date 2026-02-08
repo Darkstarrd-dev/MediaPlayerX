@@ -32,6 +32,7 @@ import {
   collectImageSourceIds,
   collectLeafIds,
 } from './features/app/helpers'
+import { buildBackendErrorRows } from './features/app/buildBackendErrorRows'
 import { buildMetadataPanelProps } from './features/app/buildMetadataPanelProps'
 import {
   buildCoverImageLocator,
@@ -40,6 +41,7 @@ import {
   RESPONSIVE_ZOOM_EPSILON,
 } from './features/app/mediaPathUtils'
 import { useMetadataWriteBindings } from './features/app/useMetadataWriteBindings'
+import { useImportTaskPanelState } from './features/app/useImportTaskPanelState'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
 import { useImportPipeline } from './features/import/useImportPipeline'
@@ -1785,88 +1787,12 @@ function App() {
     </>
   )
 
-  const backendErrorRows = [
-    backendRead.errors.library
-      ? {
-          key: 'library',
-          label: '数据快照',
-          message: backendRead.errors.library,
-          onRetry: backendRead.retryLibrary,
-        }
-      : null,
-    backendRead.errors.sidebar
-      ? {
-          key: 'sidebar',
-          label: 'Sidebar 目录树',
-          message: backendRead.errors.sidebar,
-          onRetry: backendRead.retrySidebar,
-        }
-      : null,
-    backendRead.errors.page
-      ? {
-          key: 'page',
-          label: 'Main 分页列表',
-          message: backendRead.errors.page,
-          onRetry: backendRead.retryPage,
-        }
-      : null,
-    backendRead.errors.metadata
-      ? {
-          key: 'metadata',
-          label: 'Metadata 面板',
-          message: backendRead.errors.metadata,
-          onRetry: backendRead.retryMetadata,
-        }
-      : null,
-    backendWrite.errors.grade
-      ? {
-          key: 'grade-write',
-          label: '评分写入',
-          message: backendWrite.errors.grade,
-          onRetry: backendWrite.clearGradeError,
-        }
-      : null,
-    backendWrite.errors.metadata
-      ? {
-          key: 'metadata-write',
-          label: '元数据写入',
-          message: backendWrite.errors.metadata,
-          onRetry: backendWrite.clearMetadataError,
-        }
-      : null,
-    backendWrite.errors.cover
-      ? {
-          key: 'cover-write',
-          label: '封面写入',
-          message: backendWrite.errors.cover,
-          onRetry: backendWrite.clearCoverError,
-        }
-      : null,
-    playlistPersistence.readError
-      ? {
-          key: 'playlist-read',
-          label: '播放列表读取',
-          message: playlistPersistence.readError,
-          onRetry: playlistPersistence.retryRead,
-        }
-      : null,
-    playlistPersistence.writeError
-      ? {
-          key: 'playlist-write',
-          label: '播放列表写入',
-          message: playlistPersistence.writeError,
-          onRetry: playlistPersistence.retryWrite,
-        }
-      : null,
-    runtimeCapabilities.error
-      ? {
-          key: 'runtime-capability',
-          label: '运行时依赖预检',
-          message: runtimeCapabilities.error,
-          onRetry: runtimeCapabilities.retry,
-        }
-      : null,
-  ].filter((item): item is { key: string; label: string; message: string; onRetry: () => void } => Boolean(item))
+  const backendErrorRows = buildBackendErrorRows({
+    backendRead,
+    backendWrite,
+    playlistPersistence,
+    runtimeCapabilities,
+  })
 
   const runtimeCapabilityWarnings = (runtimeCapabilities.data?.minimum_matrix ?? []).filter(
     (item) => item.status !== 'available',
@@ -1878,67 +1804,24 @@ function App() {
   const showRuntimeCapabilityWarnings =
     runtimeCapabilityWarnings.length > 0 && dismissedRuntimeWarningKey !== runtimeWarningKey
 
-  const visibleImportTasks = useMemo(
-    () => importTasks.filter((task) => !dismissedImportTaskIds[task.task_id]),
-    [dismissedImportTaskIds, importTasks],
-  )
-  const activeImportTasks = useMemo(
-    () => visibleImportTasks.filter((task) => task.status === 'pending' || task.status === 'running'),
-    [visibleImportTasks],
-  )
-  const finishedImportTasks = useMemo(
-    () => visibleImportTasks.filter((task) => task.status === 'completed' || task.status === 'failed'),
-    [visibleImportTasks],
-  )
-  const recentFinishedImportTasks = useMemo(() => finishedImportTasks.slice(0, 8), [finishedImportTasks])
-  const importTasksForPanel = useMemo(
-    () => [...activeImportTasks, ...recentFinishedImportTasks],
-    [activeImportTasks, recentFinishedImportTasks],
-  )
-  const normalizedPendingArchivePathSet = useMemo(
-    () => new Set(archiveLoadStatus.pendingArchivePaths.map((value) => normalizePathForCompare(value))),
-    [archiveLoadStatus.pendingArchivePaths],
-  )
-  const normalizedRunningArchivePath = archiveLoadStatus.runningArchivePath
-    ? normalizePathForCompare(archiveLoadStatus.runningArchivePath)
-    : null
-  const archiveLoadBusy = normalizedPendingArchivePathSet.size > 0 || normalizedRunningArchivePath !== null
-  const taskStatusLabel = enqueuePending || activeImportTasks.length > 0 || archiveLoadBusy ? '加载中' : '空闲'
-
-  const clearFinishedImportTasks = useCallback(() => {
-    setDismissedImportTaskIds((previous) => {
-      const next = { ...previous }
-      for (const task of finishedImportTasks) {
-        next[task.task_id] = true
-      }
-      return next
-    })
-  }, [finishedImportTasks])
-
-  const clearAllImportTasks = useCallback(() => {
-    setDismissedImportTaskIds((previous) => {
-      const next = { ...previous }
-      for (const task of visibleImportTasks) {
-        next[task.task_id] = true
-      }
-      return next
-    })
-  }, [visibleImportTasks])
-
-  const retryImportTaskFromPanel = useCallback(
-    (taskId: string) => {
-      setDismissedImportTaskIds((previous) => {
-        if (!(taskId in previous)) {
-          return previous
-        }
-        const next = { ...previous }
-        delete next[taskId]
-        return next
-      })
-      void retryImportTask(taskId)
-    },
-    [retryImportTask],
-  )
+  const {
+    activeImportTaskCount,
+    importTasksForPanel,
+    normalizedPendingArchivePathSet,
+    normalizedRunningArchivePath,
+    taskStatusLabel,
+    clearFinishedImportTasks,
+    clearAllImportTasks,
+    retryImportTaskFromPanel,
+  } = useImportTaskPanelState({
+    importTasks,
+    dismissedImportTaskIds,
+    setDismissedImportTaskIds,
+    enqueuePending,
+    archiveLoadStatus,
+    normalizePathForCompare,
+    retryImportTask,
+  })
 
   const clearDatabaseForDev = useCallback(() => {
     if (!mediaRepository.clearDatabase) {
@@ -2087,7 +1970,7 @@ function App() {
         <section className="import-task-panel" role="status" aria-live="polite">
           <header>
             <strong>导入任务</strong>
-            <span>{`进行中 ${activeImportTasks.length}`}</span>
+            <span>{`进行中 ${activeImportTaskCount}`}</span>
             <span>{`归一化排队 ${normalizedPendingArchivePathSet.size}`}</span>
             {normalizedRunningArchivePath ? <span>归一化处理中</span> : null}
             {enqueuePending ? <span>正在入队...</span> : null}

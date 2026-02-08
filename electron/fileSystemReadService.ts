@@ -1,9 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { spawn } from 'node:child_process'
-import { createReadStream, existsSync, promises as fs, type ReadStream } from 'node:fs'
+import { createReadStream, existsSync, promises as fs } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { Readable } from 'node:stream'
 import { Worker } from 'node:worker_threads'
 
 import {
@@ -49,7 +47,6 @@ import {
   type RetryImportTaskResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
-  type SidebarNodeDto,
   type VideoItemDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
@@ -88,6 +85,15 @@ import {
 } from './fileSystemMetadataWriters'
 import { executeImportTask } from './fileSystemImportTasks'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
+import {
+  checkCommandAvailability,
+  getSharpModule,
+  probeImageDimensionsFromFile,
+  probeVideoMetadata,
+  runProcess,
+} from './fileSystemRuntimeHelpers'
+import { buildImageSidebarTree } from './fileSystemSidebarTree'
+import { parseByteRange, toWebReadableStream } from './fileSystemStreamHelpers'
 import {
   isSafeArchiveEntryName,
   normalizeArchiveEntryName,
@@ -133,9 +139,6 @@ const ARCHIVE_NORMALIZE_RECHECK_MS = resolveConcurrency(process.env.MEDIA_PLAYER
 
 const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])
 
-type SharpModule = typeof import('sharp')
-let sharpModulePromise: Promise<SharpModule | null> | null = null
-
 type MediaAuditRejectReason =
   | 'path_outside_root'
   | 'filesystem_extension_mismatch'
@@ -156,18 +159,6 @@ interface PersistedVideoCoverRecord {
   coverColor: string
   coverImagePath: string | null
   updatedAtMs: number
-}
-
-interface ServiceShellResult {
-  code: number
-  stdout: string
-  stderr: string
-}
-
-interface VideoProbeResult {
-  durationSec: number
-  width: number
-  height: number
 }
 
 interface FileRecord {
@@ -195,11 +186,6 @@ export interface MediaProtocolStreamResponsePayload {
   status: number
   headers: Record<string, string>
   body: Uint8Array | ReadableStream<Uint8Array>
-}
-
-interface ByteRange {
-  start: number
-  end: number
 }
 
 interface MediaAccessAuditCounters {
@@ -266,70 +252,6 @@ class MediaAccessError extends Error {
   }
 }
 
-function parseByteRange(rangeHeader: string | null, size: number): ByteRange | null {
-  if (!rangeHeader || !rangeHeader.startsWith('bytes=')) {
-    return null
-  }
-
-  const rawRange = rangeHeader.slice('bytes='.length).split(',')[0]?.trim()
-  if (!rawRange) {
-    return null
-  }
-
-  const [startRaw, endRaw] = rawRange.split('-')
-  if (!startRaw && !endRaw) {
-    return null
-  }
-
-  if (!startRaw) {
-    const suffixLength = Number(endRaw)
-    if (!Number.isFinite(suffixLength) || suffixLength <= 0) {
-      return null
-    }
-    const start = Math.max(0, size - suffixLength)
-    return {
-      start,
-      end: size - 1,
-    }
-  }
-
-  const start = Number(startRaw)
-  const end = endRaw ? Number(endRaw) : size - 1
-  if (!Number.isFinite(start) || !Number.isFinite(end)) {
-    return null
-  }
-  if (start < 0 || end < 0 || start > end) {
-    return null
-  }
-  if (start >= size) {
-    return null
-  }
-
-  return {
-    start,
-    end: Math.min(end, size - 1),
-  }
-}
-
-function toWebReadableStream(stream: ReadStream, signal?: AbortSignal | null): ReadableStream<Uint8Array> {
-  if (signal) {
-    if (signal.aborted) {
-      stream.destroy(new Error('媒体读取已取消'))
-    } else {
-      const onAbort = () => {
-        stream.destroy(new Error('媒体读取已取消'))
-      }
-      signal.addEventListener('abort', onAbort, { once: true })
-      const cleanup = () => signal.removeEventListener('abort', onAbort)
-      stream.once('close', cleanup)
-      stream.once('end', cleanup)
-      stream.once('error', cleanup)
-    }
-  }
-
-  return Readable.toWeb(stream) as ReadableStream<Uint8Array>
-}
-
 async function parallelMapLimit<T, R>(
   items: readonly T[],
   concurrency: number,
@@ -379,87 +301,6 @@ function crc32(buffer: Buffer): number {
     crc = CRC32_TABLE[(crc ^ buffer[index]) & 0xff] ^ (crc >>> 8)
   }
   return (crc ^ 0xffffffff) >>> 0
-}
-
-async function runProcess(command: string, args: string[], timeoutMs = 120_000): Promise<ServiceShellResult> {
-  return new Promise<ServiceShellResult>((resolve, reject) => {
-    const child = spawn(command, args, {
-      windowsHide: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-
-    let stdout = ''
-    let stderr = ''
-    let finished = false
-
-    const cleanup = () => {
-      if (finished) {
-        return
-      }
-      finished = true
-      clearTimeout(timeoutId)
-    }
-
-    const timeoutId = setTimeout(() => {
-      if (!finished) {
-        child.kill('SIGKILL')
-        cleanup()
-        reject(new Error(`命令执行超时: ${command}`))
-      }
-    }, timeoutMs)
-
-    child.stdout.on('data', (chunk) => {
-      stdout += String(chunk)
-    })
-    child.stderr.on('data', (chunk) => {
-      stderr += String(chunk)
-    })
-
-    child.on('error', (error) => {
-      cleanup()
-      reject(error)
-    })
-
-    child.on('close', (code) => {
-      cleanup()
-      resolve({
-        code: code ?? -1,
-        stdout,
-        stderr,
-      })
-    })
-  })
-}
-
-async function checkCommandAvailability(command: string, args: string[]): Promise<boolean> {
-  const result = await runProcess(command, args, 8_000).catch(() => null)
-  return Boolean(result && result.code === 0)
-}
-
-async function getSharpModule(): Promise<SharpModule | null> {
-  if (!sharpModulePromise) {
-    sharpModulePromise = import('sharp').catch(() => null)
-  }
-  return sharpModulePromise
-}
-
-async function probeImageDimensionsFromFile(absolutePath: string): Promise<{ width: number; height: number }> {
-  const sharpModule = await getSharpModule()
-  if (!sharpModule?.default) {
-    return { width: 0, height: 0 }
-  }
-
-  const metadata = await sharpModule.default(absolutePath, { failOn: 'none' }).metadata().catch(() => null)
-  const width = Number(metadata?.width)
-  const height = Number(metadata?.height)
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
-    return { width: 0, height: 0 }
-  }
-
-  return {
-    width: Math.max(0, Math.round(width)),
-    height: Math.max(0, Math.round(height)),
-  }
 }
 
 function clampThumbnailMaxEdge(value: number | undefined): number {
@@ -611,151 +452,6 @@ async function writeStoredZipFromDirectory(inputDir: string, outputZipPath: stri
 
   await fs.mkdir(path.dirname(outputZipPath), { recursive: true })
   await fs.writeFile(outputZipPath, Buffer.concat([...localChunks, centralDirectoryBuffer, endOfCentralDirectory]))
-}
-
-function parseFfprobeJson(raw: string): VideoProbeResult | null {
-  try {
-    const parsed = JSON.parse(raw) as {
-      streams?: Array<{ width?: number; height?: number; duration?: string }>
-      format?: { duration?: string }
-    }
-    const stream = parsed.streams?.find((item) => Number.isFinite(item.width) && Number.isFinite(item.height))
-    const width = stream?.width && stream.width > 0 ? Math.round(stream.width) : null
-    const height = stream?.height && stream.height > 0 ? Math.round(stream.height) : null
-
-    const durationRaw = parsed.format?.duration ?? stream?.duration
-    const durationValue = durationRaw ? Number(durationRaw) : 0
-    const durationSec = Number.isFinite(durationValue) && durationValue > 0 ? durationValue : 0
-
-    if (!width || !height) {
-      return null
-    }
-
-    return {
-      durationSec,
-      width,
-      height,
-    }
-  } catch {
-    return null
-  }
-}
-
-async function probeVideoMetadata(videoPath: string): Promise<VideoProbeResult | null> {
-  const result = await runProcess(
-    FFPROBE_BIN,
-    [
-      '-v',
-      'error',
-      '-select_streams',
-      'v:0',
-      '-show_entries',
-      'stream=width,height,duration',
-      '-show_entries',
-      'format=duration',
-      '-of',
-      'json',
-      videoPath,
-    ],
-    2_000,
-  ).catch(() => null)
-
-  if (!result || result.code !== 0) {
-    return null
-  }
-  return parseFfprobeJson(result.stdout)
-}
-
-function buildImageSidebarTree(
-  imagePackages: ImagePackageDto[],
-  imageDirectories: ImagePackageDto[],
-): SidebarNodeDto[] {
-  const packageByPath = new Map<string, ImagePackageDto>()
-  const directoryByPath = new Map<string, ImagePackageDto>()
-
-  for (const pkg of imagePackages) {
-    packageByPath.set(pkg.tree_path.join('/'), pkg)
-  }
-  for (const directory of imageDirectories) {
-    directoryByPath.set(directory.tree_path.join('/'), directory)
-  }
-
-  const allLeafPaths = [
-    ...imagePackages.map((pkg) => pkg.tree_path),
-    ...imageDirectories.map((directory) => directory.tree_path),
-  ]
-
-  const rootMap = new Map<string, SidebarNodeDto>()
-  const nodeByPath = new Map<string, SidebarNodeDto>()
-
-  for (const sourcePath of allLeafPaths) {
-    for (let index = 0; index < sourcePath.length; index += 1) {
-      const segments = sourcePath.slice(0, index + 1)
-      const pathKey = segments.join('/')
-      if (nodeByPath.has(pathKey)) {
-        continue
-      }
-
-      const packageAtPath = packageByPath.get(pathKey)
-      const directoryAtPath = directoryByPath.get(pathKey)
-      const kind = packageAtPath ? 'package' : 'folder'
-
-      const node: SidebarNodeDto = {
-        id: `${kind}:${pathKey}`,
-        label: segments[segments.length - 1] ?? pathKey,
-        kind,
-        children: [],
-        path_key: pathKey,
-      }
-
-      if (packageAtPath) {
-        node.package_id = packageAtPath.id
-        node.image_source_id = packageAtPath.id
-        node.direct_image_count = packageAtPath.images.length
-      } else if (directoryAtPath) {
-        node.image_source_id = directoryAtPath.id
-        node.direct_image_count = directoryAtPath.images.length
-      }
-
-      nodeByPath.set(pathKey, node)
-
-      if (segments.length === 1) {
-        rootMap.set(pathKey, node)
-        continue
-      }
-
-      const parentPath = sourcePath.slice(0, index).join('/')
-      const parentNode = nodeByPath.get(parentPath)
-      if (parentNode) {
-        parentNode.children.push(node)
-      }
-    }
-  }
-
-  const sortNodes = (nodes: SidebarNodeDto[]) => {
-    nodes.sort((left, right) => {
-      const kindOrder: Record<SidebarNodeDto['kind'], number> = {
-        folder: 0,
-        package: 1,
-        video: 2,
-      }
-      const kindDelta = kindOrder[left.kind] - kindOrder[right.kind]
-      if (kindDelta !== 0) {
-        return kindDelta
-      }
-      return left.label.localeCompare(right.label, 'zh-CN')
-    })
-
-    for (const node of nodes) {
-      if (node.children.length > 0) {
-        sortNodes(node.children)
-      }
-    }
-  }
-
-  const roots = Array.from(rootMap.values())
-  sortNodes(roots)
-  return roots
 }
 
 export class FileSystemMediaReadService {
@@ -1741,7 +1437,7 @@ export class FileSystemMediaReadService {
 
     const videoId = makeStableId('vid', file.absolutePath)
     const runtimeDependencies = await this.ensureRuntimeDependencies()
-    const probe = runtimeDependencies.ffprobe ? await probeVideoMetadata(file.absolutePath).catch(() => null) : null
+    const probe = runtimeDependencies.ffprobe ? await probeVideoMetadata(file.absolutePath, FFPROBE_BIN).catch(() => null) : null
     const coverRecord = this.videoCoverOverridesByVideoId.get(videoId)
     const metadataRecord = this.videoMetadataOverridesByVideoId.get(videoId)
     const fileName = path.basename(file.absolutePath)
