@@ -2,6 +2,7 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -525,14 +526,14 @@ function FullscreenLayer({
     setDraggingPane(null)
   }, [fullscreenActive, fullscreenDisplay])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setImageTransform((previous) => {
       const aligned = applyAlignedOffset(previous, imageAlign, imageGeometry)
       return clampPaneTransform(aligned, imageGeometry)
     })
   }, [imageAlign, imageGeometry])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setVideoTransform((previous) => {
       const aligned = applyAlignedOffset(previous, videoAlign, videoGeometry)
       return clampPaneTransform(aligned, videoGeometry)
@@ -627,7 +628,11 @@ function FullscreenLayer({
               src={focusedImageSrc}
               alt={`图片 #${focusedImage?.ordinal ?? '-'}`}
               draggable={false}
+              onError={(event) => {
+                event.currentTarget.style.display = 'none'
+              }}
               onLoad={(event) => {
+                event.currentTarget.style.display = 'block'
                 const imageElement = event.currentTarget
                 if (imageElement.naturalWidth > 0 && imageElement.naturalHeight > 0) {
                   setLoadedImageAspect(imageElement.naturalWidth / imageElement.naturalHeight)
@@ -754,7 +759,17 @@ function FullscreenLayer({
           ) : null}
 
           {!videoPlaying && focusedVideoCoverImageSrc ? (
-            <img className="fullscreen-media-video-cover" src={focusedVideoCoverImageSrc} alt="视频封面" />
+            <img
+              className="fullscreen-media-video-cover"
+              src={focusedVideoCoverImageSrc}
+              alt="视频封面"
+              onLoad={(event) => {
+                event.currentTarget.style.display = 'block'
+              }}
+              onError={(event) => {
+                event.currentTarget.style.display = 'none'
+              }}
+            />
           ) : null}
 
           {!focusedVideoSrc ? <div className="fullscreen-media-empty">无可用视频源</div> : null}

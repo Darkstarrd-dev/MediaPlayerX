@@ -1,6 +1,8 @@
 import {
+  Suspense,
   useCallback,
   useEffect,
+  lazy,
   useMemo,
   useRef,
   useState,
@@ -12,7 +14,6 @@ import AppHeader from './components/AppHeader'
 import AppWorkspace from './components/AppWorkspace'
 import FullscreenLayer from './components/FullscreenLayer'
 import SettingsPanel from './components/SettingsPanel'
-import VectorUniverseOverlay from './components/VectorUniverseOverlay'
 import E2eBenchController from './bench/E2eBenchController'
 import {
   IMAGE_DIRECTORY_SOURCES,
@@ -61,10 +62,16 @@ import type {
 } from './types'
 import { clamp } from './utils/ui'
 
+const VectorUniverseOverlay = lazy(() => import('./components/VectorUniverseOverlay'))
+
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 const EMPTY_FEATURE_TAGS: string[] = []
 const RUNTIME_WARNING_DISMISS_STORAGE_KEY = 'mediaplayerx:runtime-warning-dismiss-key'
+const RESPONSIVE_ZOOM_BASE_WIDTH = 1600
+const RESPONSIVE_ZOOM_BASE_HEIGHT = 900
+const RESPONSIVE_ZOOM_MIN_FACTOR = 0.72
+const RESPONSIVE_ZOOM_EPSILON = 0.005
 const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -74,6 +81,17 @@ const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
   '.bmp': 'image/bmp',
 }
 type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
+
+function computeResponsiveZoomFactor(width: number, height: number): number {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return 1
+  }
+
+  const widthFactor = width / RESPONSIVE_ZOOM_BASE_WIDTH
+  const heightFactor = height / RESPONSIVE_ZOOM_BASE_HEIGHT
+  const factor = Math.min(widthFactor, heightFactor, 1)
+  return clamp(Number(factor.toFixed(4)), RESPONSIVE_ZOOM_MIN_FACTOR, 1)
+}
 
 function normalizePathForCompare(value: string): string {
   const normalized = value.trim().replace(/\\/g, '/')
@@ -410,6 +428,43 @@ function App() {
   const [appBodyWidth, setAppBodyWidth] = useState(0)
   const gridRef = useRef<HTMLDivElement>(null)
   const [gridSize, setGridSize] = useState({ width: 1200, height: 700 })
+  const responsiveZoomFactorRef = useRef(1)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.mediaPlayerView?.setZoomFactor) {
+      return
+    }
+
+    let rafId = 0
+    responsiveZoomFactorRef.current = 1
+
+    const applyZoom = () => {
+      const stableWidth = window.innerWidth * responsiveZoomFactorRef.current
+      const stableHeight = window.innerHeight * responsiveZoomFactorRef.current
+      const nextFactor = computeResponsiveZoomFactor(stableWidth, stableHeight)
+      if (Math.abs(nextFactor - responsiveZoomFactorRef.current) < RESPONSIVE_ZOOM_EPSILON) {
+        return
+      }
+
+      responsiveZoomFactorRef.current = nextFactor
+      window.mediaPlayerView?.setZoomFactor(nextFactor)
+    }
+
+    applyZoom()
+
+    const onResize = () => {
+      window.cancelAnimationFrame(rafId)
+      rafId = window.requestAnimationFrame(applyZoom)
+    }
+
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      window.cancelAnimationFrame(rafId)
+      responsiveZoomFactorRef.current = 1
+      window.mediaPlayerView?.setZoomFactor(1)
+    }
+  }, [])
   const {
     searchPanelMode,
     setSearchPanelMode,
@@ -2165,18 +2220,28 @@ function App() {
         onExit={() => setFullscreenActive(false)}
       />
 
-      <VectorUniverseOverlay
-        open={vectorUniverseOpen}
-        focusedRef={focusedRef}
-        imageSources={scopedImageSourcesEffective}
-        scopeRefs={vectorUniverseScopeRefs}
-        helperScale={vectorUniverseHelperScale}
-        sceneSettings={vectorUniverseSceneSettings}
-        widgetSize={vectorUniverseWidgetSize}
-        vectorControls={vectorControls}
-        onClose={() => setVectorUniverseOpen(false)}
-        onConfirmSelection={confirmVectorUniverseSelection}
-      />
+      {vectorUniverseOpen ? (
+        <Suspense
+          fallback={
+            <section className="vector-universe-overlay vector-universe-overlay-loading" role="dialog" aria-modal="true" aria-label="向量宇宙层">
+              <p className="vector-universe-overlay-tip">向量宇宙模块加载中...</p>
+            </section>
+          }
+        >
+          <VectorUniverseOverlay
+            open={vectorUniverseOpen}
+            focusedRef={focusedRef}
+            imageSources={scopedImageSourcesEffective}
+            scopeRefs={vectorUniverseScopeRefs}
+            helperScale={vectorUniverseHelperScale}
+            sceneSettings={vectorUniverseSceneSettings}
+            widgetSize={vectorUniverseWidgetSize}
+            vectorControls={vectorControls}
+            onClose={() => setVectorUniverseOpen(false)}
+            onConfirmSelection={confirmVectorUniverseSelection}
+          />
+        </Suspense>
+      ) : null}
 
       <SettingsPanel
         settingsOpen={settingsOpen}

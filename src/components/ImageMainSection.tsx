@@ -169,6 +169,12 @@ function ImageMainSection({
                           alt={`${pkg.displayName} #${image.ordinal}`}
                           loading="lazy"
                           draggable={false}
+                          onLoad={(event) => {
+                            event.currentTarget.style.display = 'block'
+                          }}
+                          onError={(event) => {
+                            event.currentTarget.style.display = 'none'
+                          }}
                         />
                       ) : (
                         <div className="thumb-media-empty" />

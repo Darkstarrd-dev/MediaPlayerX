@@ -97,6 +97,12 @@ function MetadataPanel({
                     src={focusedImageSrc}
                     alt={`${focusedImagePackage?.displayName ?? '图片'} #${focusedImage.ordinal}`}
                     draggable={false}
+                    onLoad={(event) => {
+                      event.currentTarget.style.display = 'block'
+                    }}
+                    onError={(event) => {
+                      event.currentTarget.style.display = 'none'
+                    }}
                   />
                 ) : (
                   <div

@@ -935,7 +935,7 @@ select {
   justify-content: center;
   align-content: center;
   gap: 8px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .thumb-card {
@@ -1104,15 +1104,26 @@ select {
   gap: 2px;
 }
 
-.metadata-image-caption strong,
-.metadata-image-caption span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.metadata-image-caption strong {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
 }
 
 .metadata-image-caption strong {
   color: var(--text-main);
+}
+
+.metadata-image-caption span {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
 }
 
 .metadata-image-media {
@@ -1738,6 +1749,16 @@ select {
     radial-gradient(circle at 85% 20%, rgba(118, 96, 201, 0.16), transparent 32%),
     #04070d;
   color: #e7f2ff;
+}
+
+.vector-universe-overlay-loading {
+  align-items: center;
+  justify-content: center;
+}
+
+.vector-universe-overlay-loading .vector-universe-overlay-tip {
+  position: static;
+  margin: 0;
 }
 
 .vector-universe-stage-wrap {

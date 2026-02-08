@@ -9,6 +9,12 @@ import { mapMediaLocatorToDto, mediaLocatorKey } from './mediaLocator'
 import type { ReadonlyMediaRepository } from './repository'
 
 const MEDIA_RESOLVE_TIMEOUT_MS = 8_000
+const CACHE_REFRESH_LEEWAY_MS = 15_000
+
+interface CachedMediaUrl {
+  resourceUrl: string
+  expiresAtMs: number
+}
 
 export interface MediaResolveTarget {
   targetId: string
@@ -101,7 +107,7 @@ export function useResolvedMediaUrls({
   targets,
   options,
 }: UseResolvedMediaUrlsParams): UseResolvedMediaUrlsResult {
-  const urlCacheByLocatorKeyRef = useRef(new Map<string, string>())
+  const urlCacheByLocatorKeyRef = useRef(new Map<string, CachedMediaUrl>())
 
   const applyMode = options?.applyMode === 'raf' ? 'raf' : 'immediate'
   const stateScope = options?.stateScope === 'active-only' ? 'active-only' : 'accumulate'
@@ -323,8 +329,16 @@ export function useResolvedMediaUrls({
     if (stateScope === 'active-only') {
       const nextUrls: Record<string, string> = {}
       for (const [requestKey, targetIds] of targetIdsByRequestKey) {
-        const cachedUrl = urlCacheByLocatorKeyRef.current.get(requestKey)
+        const cached = urlCacheByLocatorKeyRef.current.get(requestKey)
+        const now = Date.now()
+        const cachedUrl =
+          cached && cached.expiresAtMs > now + CACHE_REFRESH_LEEWAY_MS
+            ? cached.resourceUrl
+            : null
         if (!cachedUrl) {
+          if (cached) {
+            urlCacheByLocatorKeyRef.current.delete(requestKey)
+          }
           continue
         }
         for (const targetId of targetIds) {
@@ -395,7 +409,15 @@ export function useResolvedMediaUrls({
 
     const tasks: Array<() => Promise<void>> = []
     for (const [requestKey, targetIds] of targetIdsByRequestKey) {
-      const cachedUrl = urlCacheByLocatorKeyRef.current.get(requestKey)
+      const cached = urlCacheByLocatorKeyRef.current.get(requestKey)
+      const now = Date.now()
+      const cachedUrl =
+        cached && cached.expiresAtMs > now + CACHE_REFRESH_LEEWAY_MS
+          ? cached.resourceUrl
+          : null
+      if (cached && !cachedUrl) {
+        urlCacheByLocatorKeyRef.current.delete(requestKey)
+      }
       if (cachedUrl) {
         for (const targetId of targetIds) {
           applyUrl(targetId, cachedUrl)
@@ -415,7 +437,14 @@ export function useResolvedMediaUrls({
             signal: abortController.signal,
             timeoutMs: MEDIA_RESOLVE_TIMEOUT_MS,
           })
-          urlCacheByLocatorKeyRef.current.set(requestKey, response.resource_url)
+          const expiresAtMs =
+            Number.isFinite(response.expires_at_ms) && response.expires_at_ms > 0
+              ? response.expires_at_ms
+              : Date.now() + 60_000
+          urlCacheByLocatorKeyRef.current.set(requestKey, {
+            resourceUrl: response.resource_url,
+            expiresAtMs,
+          })
           for (const targetId of targetIds) {
             applyUrl(targetId, response.resource_url)
           }

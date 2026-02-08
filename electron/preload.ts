@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, webUtils } from 'electron'
+import { contextBridge, ipcRenderer, webFrame, webUtils } from 'electron'
 
 import {
   clearDatabaseResponseSchema,
@@ -160,6 +160,19 @@ const platformApi = {
   },
 }
 
+const viewApi = {
+  setZoomFactor: (value: number) => {
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed)) {
+      return
+    }
+
+    const clamped = Math.max(0.7, Math.min(1, parsed))
+    webFrame.setZoomFactor(clamped)
+  },
+}
+
 contextBridge.exposeInMainWorld('mediaPlayerBackend', backendApi)
 contextBridge.exposeInMainWorld('mediaPlayerBench', benchApi)
 contextBridge.exposeInMainWorld('mediaPlayerPlatform', platformApi)
+contextBridge.exposeInMainWorld('mediaPlayerView', viewApi)

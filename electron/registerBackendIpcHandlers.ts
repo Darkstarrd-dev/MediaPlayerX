@@ -64,9 +64,9 @@ function parseClipboardFileNameWBuffer(buffer: Buffer): string[] {
 export function registerBackendIpcHandlers(): void {
   const defaultLibraryRoot = path.join(app.getPath('pictures'), 'MediaPlayerXLibrary')
   const libraryRoot = path.resolve(process.env.MEDIA_PLAYERX_LIBRARY_ROOT ?? defaultLibraryRoot)
-  const service = new FileSystemMediaReadService(libraryRoot)
+  let service: FileSystemMediaReadService | null = null
 
-  service.onLibraryChanged((payload) => {
+  const broadcastLibraryChanged = (payload: { reason: string; updated_at_ms: number }) => {
     for (const window of BrowserWindow.getAllWindows()) {
       try {
         if (!window.isDestroyed()) {
@@ -76,7 +76,20 @@ export function registerBackendIpcHandlers(): void {
         // ignore send failures
       }
     }
-  })
+  }
+
+  const ensureService = (): FileSystemMediaReadService => {
+    if (service) {
+      return service
+    }
+
+    service = new FileSystemMediaReadService(libraryRoot)
+    service.onLibraryChanged((payload) => {
+      broadcastLibraryChanged(payload)
+    })
+
+    return service
+  }
 
   protocol.handle(MEDIA_PROTOCOL_SCHEME, async (request) => {
     const requestUrl = new URL(request.url)
@@ -86,7 +99,7 @@ export function registerBackendIpcHandlers(): void {
     }
 
     try {
-      const payload = await service.readMediaResourceByToken(token, request.headers.get('range'))
+      const payload = await ensureService().readMediaResourceByToken(token, request.headers.get('range'))
       return new Response(payload.body, {
         status: payload.status,
         headers: payload.headers,
@@ -97,54 +110,54 @@ export function registerBackendIpcHandlers(): void {
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readLibrarySnapshot, async () => {
-    const response = await service.readLibrarySnapshot()
+    const response = await ensureService().readLibrarySnapshot()
     return librarySnapshotDtoSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readImageSidebarTree, async (_event, payload: unknown) => {
     const request = readImageSidebarTreeRequestSchema.parse(payload)
-    const response = await service.readImageSidebarTree(request)
+    const response = await ensureService().readImageSidebarTree(request)
     return readImageSidebarTreeResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readImagePage, async (_event, payload: unknown) => {
     const request = readImagePageRequestSchema.parse(payload)
-    const response = await service.readImagePage(request)
+    const response = await ensureService().readImagePage(request)
     return readImagePageResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readImageMetadata, async (_event, payload: unknown) => {
     const request = readImageMetadataRequestSchema.parse(payload)
-    const response = await service.readImageMetadata(request)
+    const response = await ensureService().readImageMetadata(request)
     return readImageMetadataResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.resolveMediaResource, async (_event, payload: unknown) => {
     const request = resolveMediaResourceRequestSchema.parse(payload)
-    const response = await service.resolveMediaResource(request)
+    const response = await ensureService().resolveMediaResource(request)
     return resolveMediaResourceResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writePackageGrade, async (_event, payload: unknown) => {
     const request = writePackageGradeRequestSchema.parse(payload)
-    const response = await service.writePackageGrade(request)
+    const response = await ensureService().writePackageGrade(request)
     return writePackageGradeResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.saveVideoCover, async (_event, payload: unknown) => {
     const request = saveVideoCoverRequestSchema.parse(payload)
-    const response = await service.saveVideoCover(request)
+    const response = await ensureService().saveVideoCover(request)
     return saveVideoCoverResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readPlaylist, async () => {
-    const response = await service.readPlaylist()
+    const response = await ensureService().readPlaylist()
     return readPlaylistResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writePlaylist, async (_event, payload: unknown) => {
     const request = writePlaylistRequestSchema.parse(payload)
-    const response = await service.writePlaylist(request)
+    const response = await ensureService().writePlaylist(request)
     return writePlaylistResponseSchema.parse(response)
   })
 
@@ -196,38 +209,38 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.enqueueImportTask, async (_event, payload: unknown) => {
     const request = enqueueImportTaskRequestSchema.parse(payload)
-    const response = await service.enqueueImportTask(request)
+    const response = await ensureService().enqueueImportTask(request)
     return enqueueImportTaskResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readImportTasks, async () => {
-    const response = await service.readImportTasks()
+    const response = await ensureService().readImportTasks()
     return readImportTasksResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.retryImportTask, async (_event, payload: unknown) => {
     const request = retryImportTaskRequestSchema.parse(payload)
-    const response = await service.retryImportTask(request)
+    const response = await ensureService().retryImportTask(request)
     return retryImportTaskResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readMediaAccessAudit, async () => {
-    const response = await service.readMediaAccessAudit()
+    const response = await ensureService().readMediaAccessAudit()
     return mediaAccessAuditResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeCapabilities, async () => {
-    const response = await service.readRuntimeCapabilities()
+    const response = await ensureService().readRuntimeCapabilities()
     return readRuntimeCapabilitiesResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readArchiveLoadStatus, async () => {
-    const response = await service.readArchiveLoadStatus()
+    const response = await ensureService().readArchiveLoadStatus()
     return readArchiveLoadStatusResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.clearDatabase, async () => {
-    const response = await service.clearDatabase()
+    const response = await ensureService().clearDatabase()
     return clearDatabaseResponseSchema.parse(response)
   })
 }

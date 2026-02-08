@@ -77,11 +77,16 @@ interface MediaPlayerPlatformApi {
   getPathForFile: (file: File) => string | null
 }
 
+interface MediaPlayerViewApi {
+  setZoomFactor: (value: number) => void
+}
+
 declare global {
   interface Window {
     mediaPlayerBackend?: MediaPlayerBackendApi
     mediaPlayerBench?: MediaPlayerBenchApi
     mediaPlayerPlatform?: MediaPlayerPlatformApi
+    mediaPlayerView?: MediaPlayerViewApi
   }
 }
 

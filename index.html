@@ -5,9 +5,108 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ui-shell</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #f2eee7;
+      }
+
+      #root {
+        width: 100%;
+        height: 100%;
+      }
+
+      .boot-shell {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        color: #6a6358;
+        font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      }
+
+      .boot-shell__header {
+        height: 56px;
+        border-bottom: 1px solid #d6cfc1;
+        background: linear-gradient(120deg, #f4ebe0 0%, #f7f4ef 42%, #ece6d8 100%);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 14px;
+      }
+
+      .boot-shell__pill {
+        height: 24px;
+        border-radius: 999px;
+        background: #e3dacb;
+        opacity: 0.9;
+      }
+
+      .boot-shell__pill--logo {
+        width: 136px;
+      }
+
+      .boot-shell__pill--wide {
+        width: 88px;
+      }
+
+      .boot-shell__body {
+        min-height: 0;
+        flex: 1;
+        display: flex;
+        gap: 8px;
+        padding: 8px;
+      }
+
+      .boot-shell__sidebar,
+      .boot-shell__main,
+      .boot-shell__meta {
+        border: 1px solid #d6cfc1;
+        border-radius: 10px;
+        background: #fbf8f3;
+      }
+
+      .boot-shell__sidebar {
+        width: 24%;
+        min-width: 190px;
+      }
+
+      .boot-shell__main {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .boot-shell__meta {
+        width: 27%;
+        min-width: 210px;
+      }
+
+      .boot-shell__hint {
+        margin-top: 14px;
+        text-align: center;
+        font-size: 13px;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot-shell" aria-hidden="true">
+        <div class="boot-shell__header">
+          <div class="boot-shell__pill boot-shell__pill--logo"></div>
+          <div class="boot-shell__pill boot-shell__pill--wide"></div>
+          <div class="boot-shell__pill boot-shell__pill--wide"></div>
+        </div>
+        <div class="boot-shell__body">
+          <section class="boot-shell__sidebar"></section>
+          <main class="boot-shell__main"></main>
+          <aside class="boot-shell__meta"></aside>
+        </div>
+        <div class="boot-shell__hint">加载中...</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

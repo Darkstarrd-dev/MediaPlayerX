@@ -15,6 +15,7 @@ import {
   type VectorControlConflict,
   type VectorControlMap,
 } from '../vectorControls'
+import { DEFAULT_SETTINGS } from '../store/useUiStore'
 
 interface SettingsPanelProps {
   settingsOpen: boolean
@@ -93,6 +94,82 @@ const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
   { id: 'space3d', label: '3D 设置' },
 ]
 
+const SIZE_SCALE_CONFIG = {
+  headerHeight: {
+    base: DEFAULT_SETTINGS.headerHeight,
+    min: 48 / DEFAULT_SETTINGS.headerHeight,
+    max: 96 / DEFAULT_SETTINGS.headerHeight,
+    step: 0.01,
+  },
+  settingsFontSize: {
+    base: DEFAULT_SETTINGS.settingsFontSize,
+    min: 12 / DEFAULT_SETTINGS.settingsFontSize,
+    max: 24 / DEFAULT_SETTINGS.settingsFontSize,
+    step: 0.01,
+  },
+  sidebarMinWidth: {
+    base: DEFAULT_SETTINGS.sidebarMinWidth,
+    min: 80 / DEFAULT_SETTINGS.sidebarMinWidth,
+    max: 640 / DEFAULT_SETTINGS.sidebarMinWidth,
+    step: 0.01,
+  },
+  sidebarFontSize: {
+    base: DEFAULT_SETTINGS.sidebarFontSize,
+    min: 11 / DEFAULT_SETTINGS.sidebarFontSize,
+    max: 24 / DEFAULT_SETTINGS.sidebarFontSize,
+    step: 0.01,
+  },
+  sidebarCountFontSize: {
+    base: DEFAULT_SETTINGS.sidebarCountFontSize,
+    min: 10 / DEFAULT_SETTINGS.sidebarCountFontSize,
+    max: 22 / DEFAULT_SETTINGS.sidebarCountFontSize,
+    step: 0.01,
+  },
+  sidebarIndentStep: {
+    base: DEFAULT_SETTINGS.sidebarIndentStep,
+    min: 8 / DEFAULT_SETTINGS.sidebarIndentStep,
+    max: 48 / DEFAULT_SETTINGS.sidebarIndentStep,
+    step: 0.01,
+  },
+  sidebarVerticalGap: {
+    base: DEFAULT_SETTINGS.sidebarVerticalGap,
+    min: 0,
+    max: 24 / DEFAULT_SETTINGS.sidebarVerticalGap,
+    step: 0.01,
+  },
+  vectorPanelHeight: {
+    base: DEFAULT_SETTINGS.vectorPanelHeight,
+    min: 120 / DEFAULT_SETTINGS.vectorPanelHeight,
+    max: 320 / DEFAULT_SETTINGS.vectorPanelHeight,
+    step: 0.01,
+  },
+  thumbnailGap: {
+    base: DEFAULT_SETTINGS.thumbnailGap,
+    min: 0,
+    max: 24 / DEFAULT_SETTINGS.thumbnailGap,
+    step: 0.01,
+  },
+} as const
+
+type SizeScaleKey = keyof typeof SIZE_SCALE_CONFIG
+
+function toScale(key: SizeScaleKey, absoluteValue: number): number {
+  const config = SIZE_SCALE_CONFIG[key]
+  const raw = absoluteValue / config.base
+  const clamped = Math.max(config.min, Math.min(config.max, raw))
+  return Number(clamped.toFixed(2))
+}
+
+function toAbsolutePx(key: SizeScaleKey, scaleValue: number): number {
+  const config = SIZE_SCALE_CONFIG[key]
+  const clamped = Math.max(config.min, Math.min(config.max, scaleValue))
+  return Math.round(config.base * clamped)
+}
+
+function formatScale(value: number): string {
+  return `${value.toFixed(2)}x`
+}
+
 function SettingsPanel({
   settingsOpen,
   headerHeight,
@@ -159,6 +236,16 @@ function SettingsPanel({
   const [capturingTarget, setCapturingTarget] = useState<BindingTarget | null>(null)
   const [capturedCombo, setCapturedCombo] = useState('')
   const captureDialogRef = useRef<HTMLDivElement>(null)
+
+  const headerHeightScale = toScale('headerHeight', headerHeight)
+  const settingsFontSizeScale = toScale('settingsFontSize', settingsFontSize)
+  const sidebarMinWidthScale = toScale('sidebarMinWidth', sidebarMinWidth)
+  const sidebarFontSizeScale = toScale('sidebarFontSize', sidebarFontSize)
+  const sidebarCountFontSizeScale = toScale('sidebarCountFontSize', sidebarCountFontSize)
+  const sidebarIndentStepScale = toScale('sidebarIndentStep', sidebarIndentStep)
+  const sidebarVerticalGapScale = toScale('sidebarVerticalGap', sidebarVerticalGap)
+  const vectorPanelHeightScale = toScale('vectorPanelHeight', vectorPanelHeight)
+  const thumbnailGapScale = toScale('thumbnailGap', thumbnailGap)
 
   const shortcutLabelByAction = useMemo(
     () => new Map(SHORTCUT_DEFINITIONS.map((definition) => [definition.action, definition.label])),
@@ -288,44 +375,104 @@ function SettingsPanel({
             <input type="checkbox" checked={layoutLocked} onChange={(event) => onLayoutLockedChange(event.target.checked)} />
           </label>
           <label>
-            Header 高度 {headerHeight}px
-            <input max={96} min={48} type="range" value={headerHeight} onChange={(event) => onHeaderHeightChange(Number(event.target.value))} />
+            Header 高度系数 {formatScale(headerHeightScale)}（{headerHeight}px）
+            <input
+              max={SIZE_SCALE_CONFIG.headerHeight.max}
+              min={SIZE_SCALE_CONFIG.headerHeight.min}
+              step={SIZE_SCALE_CONFIG.headerHeight.step}
+              type="range"
+              value={headerHeightScale}
+              onChange={(event) => onHeaderHeightChange(toAbsolutePx('headerHeight', Number(event.target.value)))}
+            />
           </label>
           <label>
-            设置面板字体大小 {settingsFontSize}px
-            <input max={24} min={12} step={1} type="range" value={settingsFontSize} onChange={(event) => onSettingsFontSizeChange(Number(event.target.value))} />
+            设置面板字体系数 {formatScale(settingsFontSizeScale)}（{settingsFontSize}px）
+            <input
+              max={SIZE_SCALE_CONFIG.settingsFontSize.max}
+              min={SIZE_SCALE_CONFIG.settingsFontSize.min}
+              step={SIZE_SCALE_CONFIG.settingsFontSize.step}
+              type="range"
+              value={settingsFontSizeScale}
+              onChange={(event) => onSettingsFontSizeChange(toAbsolutePx('settingsFontSize', Number(event.target.value)))}
+            />
           </label>
           <label>
             Sidebar 比例 {(sidebarRatio * 100).toFixed(0)}%
             <input max={0.95} min={0} step={0.005} type="range" value={sidebarRatio} onChange={(event) => onSidebarRatioChange(Number(event.target.value))} />
           </label>
           <label>
-            Sidebar 最小宽度 {sidebarMinWidth}px
-            <input max={640} min={80} step={2} type="range" value={sidebarMinWidth} onChange={(event) => onSidebarMinWidthChange(Number(event.target.value))} />
+            Sidebar 最小宽度系数 {formatScale(sidebarMinWidthScale)}（{sidebarMinWidth}px）
+            <input
+              max={SIZE_SCALE_CONFIG.sidebarMinWidth.max}
+              min={SIZE_SCALE_CONFIG.sidebarMinWidth.min}
+              step={SIZE_SCALE_CONFIG.sidebarMinWidth.step}
+              type="range"
+              value={sidebarMinWidthScale}
+              onChange={(event) => onSidebarMinWidthChange(toAbsolutePx('sidebarMinWidth', Number(event.target.value)))}
+            />
           </label>
           <label>
-            Sidebar 字体大小 {sidebarFontSize}px
-            <input max={24} min={11} step={1} type="range" value={sidebarFontSize} onChange={(event) => onSidebarFontSizeChange(Number(event.target.value))} />
+            Sidebar 字体系数 {formatScale(sidebarFontSizeScale)}（{sidebarFontSize}px）
+            <input
+              max={SIZE_SCALE_CONFIG.sidebarFontSize.max}
+              min={SIZE_SCALE_CONFIG.sidebarFontSize.min}
+              step={SIZE_SCALE_CONFIG.sidebarFontSize.step}
+              type="range"
+              value={sidebarFontSizeScale}
+              onChange={(event) => onSidebarFontSizeChange(toAbsolutePx('sidebarFontSize', Number(event.target.value)))}
+            />
           </label>
           <label>
-            Sidebar 数字字号 {sidebarCountFontSize}px
-            <input max={22} min={10} step={1} type="range" value={sidebarCountFontSize} onChange={(event) => onSidebarCountFontSizeChange(Number(event.target.value))} />
+            Sidebar 数字字号系数 {formatScale(sidebarCountFontSizeScale)}（{sidebarCountFontSize}px）
+            <input
+              max={SIZE_SCALE_CONFIG.sidebarCountFontSize.max}
+              min={SIZE_SCALE_CONFIG.sidebarCountFontSize.min}
+              step={SIZE_SCALE_CONFIG.sidebarCountFontSize.step}
+              type="range"
+              value={sidebarCountFontSizeScale}
+              onChange={(event) =>
+                onSidebarCountFontSizeChange(toAbsolutePx('sidebarCountFontSize', Number(event.target.value)))
+              }
+            />
           </label>
           <label>
-            目录结构间隔 {sidebarIndentStep}px
-            <input max={48} min={8} step={1} type="range" value={sidebarIndentStep} onChange={(event) => onSidebarIndentStepChange(Number(event.target.value))} />
+            目录结构间隔系数 {formatScale(sidebarIndentStepScale)}（{sidebarIndentStep}px）
+            <input
+              max={SIZE_SCALE_CONFIG.sidebarIndentStep.max}
+              min={SIZE_SCALE_CONFIG.sidebarIndentStep.min}
+              step={SIZE_SCALE_CONFIG.sidebarIndentStep.step}
+              type="range"
+              value={sidebarIndentStepScale}
+              onChange={(event) => onSidebarIndentStepChange(toAbsolutePx('sidebarIndentStep', Number(event.target.value)))}
+            />
           </label>
           <label>
-            目录结构上下间隔 {sidebarVerticalGap}px
-            <input max={24} min={0} step={1} type="range" value={sidebarVerticalGap} onChange={(event) => onSidebarVerticalGapChange(Number(event.target.value))} />
+            目录结构上下间隔系数 {formatScale(sidebarVerticalGapScale)}（{sidebarVerticalGap}px）
+            <input
+              max={SIZE_SCALE_CONFIG.sidebarVerticalGap.max}
+              min={SIZE_SCALE_CONFIG.sidebarVerticalGap.min}
+              step={SIZE_SCALE_CONFIG.sidebarVerticalGap.step}
+              type="range"
+              value={sidebarVerticalGapScale}
+              onChange={(event) =>
+                onSidebarVerticalGapChange(toAbsolutePx('sidebarVerticalGap', Number(event.target.value)))
+              }
+            />
           </label>
           <label>
             元数据面板比例 {(metadataRatio * 100).toFixed(0)}%
             <input max={0.45} min={0.2} step={0.01} type="range" value={metadataRatio} onChange={(event) => onMetadataRatioChange(Number(event.target.value))} />
           </label>
           <label>
-            向量容器高度 {vectorPanelHeight}px
-            <input max={320} min={120} step={2} type="range" value={vectorPanelHeight} onChange={(event) => onVectorPanelHeightChange(Number(event.target.value))} />
+            向量容器高度系数 {formatScale(vectorPanelHeightScale)}（{vectorPanelHeight}px）
+            <input
+              max={SIZE_SCALE_CONFIG.vectorPanelHeight.max}
+              min={SIZE_SCALE_CONFIG.vectorPanelHeight.min}
+              step={SIZE_SCALE_CONFIG.vectorPanelHeight.step}
+              type="range"
+              value={vectorPanelHeightScale}
+              onChange={(event) => onVectorPanelHeightChange(toAbsolutePx('vectorPanelHeight', Number(event.target.value)))}
+            />
           </label>
         </div>
       )
@@ -336,8 +483,15 @@ function SettingsPanel({
         <div className="settings-block">
           <h3>模型参数</h3>
           <label>
-            缩略图间距 {thumbnailGap}px
-            <input max={24} min={0} step={1} type="range" value={thumbnailGap} onChange={(event) => onThumbnailGapChange(Number(event.target.value))} />
+            缩略图间距系数 {formatScale(thumbnailGapScale)}（{thumbnailGap}px）
+            <input
+              max={SIZE_SCALE_CONFIG.thumbnailGap.max}
+              min={SIZE_SCALE_CONFIG.thumbnailGap.min}
+              step={SIZE_SCALE_CONFIG.thumbnailGap.step}
+              type="range"
+              value={thumbnailGapScale}
+              onChange={(event) => onThumbnailGapChange(toAbsolutePx('thumbnailGap', Number(event.target.value)))}
+            />
           </label>
           <label>
             缩略图质量

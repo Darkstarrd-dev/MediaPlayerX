@@ -1464,7 +1464,9 @@ export class FileSystemMediaReadService {
     this.stateHydrated = false
     // Keep archive allowlists until next snapshot is ready.
     // This avoids transient "entry not allowlisted" errors while a rescan is in progress.
-    this.mediaTokenIndex.clear()
+    // Keep active media tokens until TTL expiry to avoid transient 404
+    // during background refreshes or libraryChanged fan-out.
+    this.cleanupExpiredTokens()
     this.normalizedArchiveCacheBySourcePath.clear()
   }
 
