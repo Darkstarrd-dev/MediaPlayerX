@@ -37,7 +37,7 @@
    - Main 必须执行根目录白名单与路径穿越校验，压缩包 entry 必须做合法性校验。
 
 8. 压缩包归一化策略（强制）
-   - `rar/7z` 不参与直接渲染读取，统一策略为“解压 -> 转存 zip(store) -> 再进入扫描/渲染”。
+   - `rar/7z` 不参与直接渲染读取，统一策略为“内存解包 -> 非 webp 图片转 webp(quality=90) -> 转存 zip(store) -> 再进入扫描/渲染”。
    - zip 若包含图片 entry 且压缩方式不是 `store/deflate`，统一策略为“解压 -> 图片转 webp(quality=90) -> 转存 zip(store)”。
    - 不支持加密 zip 直接渲染，必须走归一化或拒绝读取并记录审计。
 
@@ -136,7 +136,7 @@
 | 缩略图缓存（Sharp WebP） | `sharp` | degraded | 回退 `original` 变体 |
 | 视频元数据探测 | `ffprobe` | degraded | 使用默认时长/分辨率 |
 | 视频封面抓取 | `ffmpeg` | degraded | 仅保存颜色，不落盘封面图 |
-| `rar/7z` 归一化 | `node-unrar-js + 7z-wasm` | unavailable | 跳过该类压缩包并记录告警 |
+| `rar/7z` 归一化 | `sharp + node-unrar-js + 7z-wasm` | unavailable | 跳过该类压缩包并记录告警 |
 | zip 非 `store/deflate` 重处理 | `ffmpeg + powershell` | degraded | 回退 safe-entry，仅加载可直接读取条目 |
 
 ## 当前模块化基线（接入前提）

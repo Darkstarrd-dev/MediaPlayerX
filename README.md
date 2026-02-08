@@ -45,6 +45,6 @@ npm run test
 - `docs/requirements-v1.md`
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
-- `docs/虚拟UI阶段说明.md`
+- `docs/ref/虚拟UI阶段说明.md`（历史参考）
 
 文档为当前阶段单一事实源（SSOT）。

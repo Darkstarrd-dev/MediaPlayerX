@@ -8,10 +8,17 @@
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
-- `虚拟UI阶段说明.md`：当前阶段的目标、范围与验收方式（纯模拟交互）。
 - `backend-integration-guardrails.md`：后端接入阶段的强制规避方案与执行门禁。
 - `perf/2026-02-08-ui-perf-benchmark-plan.md`：UI 性能基准与选型结论（定型：R1-S1）。
 - `perf/2026-02-07-scan-benchmark.md`：扫描/索引性能基准报告。
+
+## 参考文档
+
+- `ref/虚拟UI阶段说明.md`：虚拟 UI 阶段过程记录（历史参考）。
+- `ref/3dwidgetsolution1.md`：3D 坐标控件方案草案 1（参考）。
+- `ref/3dwidgetsolution2.md`：3D 坐标控件方案草案 2（参考）。
+- `ref/scalesolution.html`：缩略图排布算法早期原型（历史参考）。
+- `ref/scalesolution2.tsx`：缩略图排布算法对照实现（历史参考）。
 
 ## 当前状态
 
@@ -41,7 +48,7 @@
 - Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。
 - Electron 通道已从骨架升级到真实 Main 读服务：`registerBackendIpcHandlers` 现接入 `FileSystemMediaReadService`（文件系统适配），并在 IPC 入参与出参统一执行 Zod 校验。
 - Main/Sidebar 的特征筛选口径已收敛到 Repository SSOT，前端不再维护同构筛选副本。
-- 已补充 Repository/IPC 集成测试：覆盖超时、取消、重试、快照回退，并清理 `App.test.tsx` 的 act 告警输出。
+- 已补充 Repository/IPC 集成测试：覆盖超时、取消、重试、快照回退；`App.test.tsx` 仍可能在 Vitest 输出非阻断性 `act(...)` 警告。
 - 已新增真实文件性能门禁并完成首份基准报告：`docs/perf/2026-02-07-scan-benchmark.md`。
 - 后端接入 Phase-2（真实媒体可用化）已落地：Main/Metadata/Fullscreen 由占位渲染切换为真实 `<img>/<video>` 渲染链路。
 - 新增媒体定位模型 `MediaLocator`（文件系统/压缩包统一表达），并在 DTO -> ViewModel 映射层收敛为 SSOT。
@@ -53,7 +60,7 @@
 - 后端存储已切换到 SQLite 基座：`migration/init/version`、`source/package`、`image`、`video`、`grade`、`cover`、`playlist`、`app_state`、`root_config`、`task_log` 已落地。
 - 读链路（snapshot/sidebar/page/metadata）已改为“扫描结果事务 upsert -> SQLite 查询回读”的 DB 优先路径，内存快照仅作为短生命周期缓存。
 - 播放列表已接入持久化链路：Renderer 通过 `Repository -> preload -> ipc` 读写播放列表，重启后恢复。
-- 导入链路已接入任务队列：文件/文件夹/拖拽/粘贴统一入队，任务状态持久化到 `task_log` 并在前端任务面板展示，失败可重试；导入为“纯引用”：库外路径不复制入库，仅登记引用并在原路径扫描/读取媒体；应用仅写入数据库与 `.mediaplayerx` 缓存。
+- 导入链路已接入任务队列：文件/文件夹/拖拽/粘贴统一入队，任务状态持久化到 `task_log` 并在前端任务面板展示，失败可重试；导入为“纯引用”：库外路径不复制入库，仅登记引用并在原路径扫描/读取媒体。
 - Electron 启动脚本已补齐：`npm run dev:desktop`（开发）与 `npm run desktop:start`（构建+启动）。
 - Electron 代理支持：可通过 `MEDIA_PLAYERX_PROXY_SERVER` / `MEDIA_PLAYERX_PROXY_BYPASS` 透传运行时代理配置（用于依赖联网能力或受限网络环境）。
 - 缩略图渲染链路已接入 Sharp WebP 缓存：Main 按请求变体生成并缓存缩略图，Renderer 缩略图网格优先读取 thumbnail 变体，Metadata/Fullscreen 保持 original 变体。
@@ -61,6 +68,10 @@
 - 新增运行时依赖预检：Main 启动后可输出 `sharp/ffmpeg/ffprobe/archive-wasm/powershell` 可用性，Renderer 在降级生效时展示可见告警；`rar/7z` 与 zip 重处理策略按依赖可用性自动收口。
 - 压缩包策略升级：`rar/7z` 统一走“内存解包 -> 非 webp 图片转 webp(quality=90) -> zip(store)”并在同目录原地替换为 `.zip`（成功后删除原始 `rar/7z`）；zip 遇到非 `store/deflate` 图片条目时走“解压 -> webp(quality=90) -> zip(store)”归一化策略。
 - 归一化调度策略：`rar/7z` 默认进入低优先级后台队列（等待交互空闲后执行，按 Sidebar 路径排序）；当用户显式打开某个 `rar/7z` 包时提升为高优先级并立即后台处理。
+- Header 已新增任务状态按钮（`加载中/空闲`）：位于 Logo 与模式切换之间，点击后才显示导入任务面板；任务面板默认隐藏。
+- Sidebar 已增加加载状态标记：左侧圆点表示 `pending`，高亮圆点与行背景表示 `running`，完成后不显示标记。
+- 缩略图网格显示策略已更新：卡片比例改为 `1:1`，卡片内不再显示 caption；caption 迁移到元数据预览区底部。
+- 纯文件名模式已改为展示真实值：文件大小使用真实字节换算，分辨率优先真实探测；未知值显示 `-`，不再使用 `1920x1080 / 0KB` 占位。
 - 扫描/重处理性能门禁改为双规并行：`Z:\bench`（实际负载回放） + `perf-data/<日期>-scan-dataset/input`（脚本生成全覆盖）。
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。
