@@ -37,8 +37,12 @@ import {
 } from './features/app/helpers'
 import { buildBackendErrorRows } from './features/app/buildBackendErrorRows'
 import { buildFullscreenLayerProps } from './features/app/buildFullscreenLayerProps'
+import { buildImageMainSectionProps } from './features/app/buildImageMainSectionProps'
 import { buildMetadataPanelProps } from './features/app/buildMetadataPanelProps'
+import { buildSearchPanelProps } from './features/app/buildSearchPanelProps'
+import { buildSidebarPanelProps } from './features/app/buildSidebarPanelProps'
 import { buildSettingsPanelProps } from './features/app/buildSettingsPanelProps'
+import { buildVideoMainSectionProps } from './features/app/buildVideoMainSectionProps'
 import {
   buildCoverImageLocator,
   computeResponsiveZoomFactor,
@@ -49,6 +53,7 @@ import { useMetadataWriteBindings } from './features/app/useMetadataWriteBinding
 import { useImportTaskPanelState } from './features/app/useImportTaskPanelState'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
+import { useDatabaseResetAction } from './features/app/useDatabaseResetAction'
 import { useRuntimeWarningDismiss } from './features/app/useRuntimeWarningDismiss'
 import { useImportPipeline } from './features/import/useImportPipeline'
 import { usePaneResizers } from './features/layout/usePaneResizers'
@@ -233,8 +238,6 @@ function App() {
     runningArchivePath: null,
     pendingArchivePaths: [],
   })
-  const [databaseResetPending, setDatabaseResetPending] = useState(false)
-  const [databaseResetError, setDatabaseResetError] = useState<string | null>(null)
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
     mode === 'video' ? 'video-only' : 'image-only',
   )
@@ -1533,7 +1536,7 @@ function App() {
     updateSettings,
   })
 
-  const sidebarPanelProps = {
+  const sidebarPanelProps = buildSidebarPanelProps({
     mode,
     sidebarFocus,
     sidebarRatio,
@@ -1542,7 +1545,8 @@ function App() {
     sidebarCountFontSize,
     sidebarIndentStep,
     sidebarVerticalGap,
-    currentRootLabel: searchResultsMode ? '检索结果' : currentRootLabel,
+    currentRootLabel,
+    searchResultsMode,
     selectedSidebarNodeId,
     canSetCurrentRoot,
     imageRootNodeId,
@@ -1552,132 +1556,93 @@ function App() {
     imageNodeLoadStateById,
     selectedPackageId,
     selectedVideoId,
-    imageHighlightByNode: vectorResultsActive,
-    searchResultMode: searchResultsMode,
-    searchResultReadonly: searchResultsReadOnly,
-    canGoToFromSearchMode: vectorResultsActive ? Boolean(focusedRef) : featureSearchActive && Boolean(selectedSidebarNodeId),
+    vectorResultsActive,
+    featureSearchActive,
+    searchResultsReadOnly,
+    focusedRef,
     playlistIds,
-    onGoToFromSearchMode: goToFromSearchMode,
-    onSelectNode: (nodeId: string) => {
-      if (mode === 'image' && vectorResultsActive) {
-        return
-      }
-      setSelectedSidebarNodeId(nodeId)
-      updateSettings({ sidebarFocus: 'sidebar' })
-    },
-    onSelectPackage: (packageId: string) => {
-      setSelectedPackageId(packageId)
-    },
-    onSelectVideo: (videoId: string) => {
-      selectVideoFromBrowser(videoId)
-    },
-    onCollapseSidebar: collapseSidebar,
-    onSetCurrentRoot: applyCurrentRootFromSelection,
-    onResetRoot: () => {
-      if (mode === 'image') {
-        updateSettings({ imageRootNodeId: null })
-        return
-      }
-      updateSettings({ videoRootNodeId: null })
-    },
-    onToggleVideoPlaylist: (videoId: string, checked: boolean) => {
-      setPlaylistIds((previous) => {
-        if (checked) {
-          if (previous.includes(videoId)) {
-            return previous
-          }
-          return [...previous, videoId]
-        }
-        return previous.filter((id) => id !== videoId)
-      })
-    },
-  }
+    goToFromSearchMode,
+    setSelectedSidebarNodeId,
+    updateSettings,
+    setSelectedPackageId,
+    selectVideoFromBrowser,
+    collapseSidebar,
+    applyCurrentRootFromSelection,
+    setPlaylistIds,
+  })
 
-  const searchPanelProps = {
-    visible: mode === 'image' && vectorMode,
-    collapsed: searchPanelCollapsed,
-    panelHeight: vectorPanelHeight,
-    panelRef: vectorPanelRef,
-    panelContentRef: vectorPanelContentRef,
+  const searchPanelProps = buildSearchPanelProps({
+    mode,
+    vectorMode,
+    searchPanelCollapsed,
+    setSearchPanelCollapsed,
+    vectorPanelHeight,
+    vectorPanelRef,
+    vectorPanelContentRef,
     searchPanelMode,
-    onSearchPanelModeChange: setSearchPanelMode,
-    vectorResultCount: vectorSearchResults.length,
+    setSearchPanelMode,
+    vectorSearchResultsCount: vectorSearchResults.length,
     featureResultCount: scopedImageSourcesEffective.length,
     focusedRef,
     focusedImagePackage,
     focusedImageOrdinal: focusedImage?.ordinal ?? null,
-    onRunVectorSearch: runVectorSearch,
+    runVectorSearch,
     vectorThreshold,
-    onVectorThresholdChange: (value: number) => updateSettings({ vectorThreshold: value }),
+    updateSettings,
     featureNameQuery,
-    onFeatureNameQueryChange: setFeatureNameQuery,
+    setFeatureNameQuery,
     featureWorkTitleQuery,
-    onFeatureWorkTitleQueryChange: setFeatureWorkTitleQuery,
+    setFeatureWorkTitleQuery,
     featureCircleQuery,
-    onFeatureCircleQueryChange: setFeatureCircleQuery,
+    setFeatureCircleQuery,
     featureAuthorQuery,
-    onFeatureAuthorQueryChange: setFeatureAuthorQuery,
+    setFeatureAuthorQuery,
     featureCircleOptions,
     featureAuthorOptions,
     featureTagOptions,
     featureTagPickerOpen,
-    onToggleFeatureTagPicker: () => setFeatureTagPickerOpen((value) => !value),
+    setFeatureTagPickerOpen,
     featureTags,
-    onClearFeatureTags: () => setFeatureTags([]),
-    onToggleFeatureTag: (tag: string) => {
-      setFeatureTags((previous) => {
-        if (previous.includes(tag)) {
-          return previous.filter((item) => item !== tag)
-        }
-        return [...previous, tag]
-      })
-    },
+    setFeatureTags,
     featureGradeFilter,
-    onFeatureGradeFilterChange: setFeatureGradeFilter,
-    onCollapse: () => setSearchPanelCollapsed(true),
-    onExpand: () => setSearchPanelCollapsed(false),
-    onStartResize: onStartVectorPanelResize,
+    setFeatureGradeFilter,
+    onStartVectorPanelResize,
     layoutLocked,
-  }
+  })
 
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
 
-  const imageMainSectionProps = {
-    vectorMode: vectorResultsActive,
+  const imageMainSectionProps = buildImageMainSectionProps({
+    vectorResultsActive,
     showNamesOnly,
-    loading: enableLoadingSkeleton ? backendRead.page.loading : false,
-    placeholderCount: Math.max(1, pagedPageSize),
+    backendPageLoading: backendRead.page.loading,
+    pagedPageSize,
     enableLoadingSkeleton,
-    activePackage: activePackageForDisplay,
+    activePackageForDisplay,
     focusedRef,
     focusedImageExists: Boolean(focusedImage),
     visibleImageRefs,
-    refsInPage: refsInPageEffective,
-    pageStart: pageStartEffective,
+    refsInPageEffective,
+    pageStartEffective,
     actualCellWidth,
     actualMediaHeight,
     thumbnailColumns,
-    thumbnailGap: actualThumbnailGap,
-    vectorCandidates: vectorSearchResults,
-    normalizedPageIndex: normalizedPageIndexEffective,
-    imageTotalPages: imageTotalPagesEffective,
-    packageById: packageByIdEffective,
-    imageUrlById: thumbnailImageUrlById,
+    actualThumbnailGap,
+    vectorSearchResults,
+    normalizedPageIndexEffective,
+    imageTotalPagesEffective,
+    packageByIdEffective,
+    thumbnailImageUrlById,
     gridRef,
-    onToggleShowNamesOnly: () => updateSettings({ showNamesOnly: !showNamesOnly }),
-    onEnterFullscreen: () => setFullscreenActiveWithAutoStop(true),
-    onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => {
-      if (vectorResultsActive) {
-        setVectorFocusIndex(absoluteIndex)
-      }
-      setImageFocus(packageId, imageIndex)
-      updateSettings({ sidebarFocus: 'main' })
-    },
-    onPrevPage: goPrevPage,
-    onNextPage: goNextPage,
-  }
+    updateSettings,
+    setFullscreenActiveWithAutoStop,
+    setVectorFocusIndex,
+    setImageFocus,
+    goPrevPage,
+    goNextPage,
+  })
 
-  const videoMainSectionProps = {
+  const videoMainSectionProps = buildVideoMainSectionProps({
     durationSec: focusedVideoDurationSec,
     videoTime,
     videoPlaying,
@@ -1688,47 +1653,17 @@ function App() {
     active: !fullscreenActive,
     coverColor: focusedVideoCoverColor,
     coverImageUrl: focusedVideoCoverImageSrc,
-    onTogglePlay: () => {
-      if (!focusedVideo) {
-        return
-      }
-      setVideoPlaying((value) => !value)
-    },
-    onPrevVideo: () => goPlaylist(-1),
-    onNextVideo: () => goPlaylist(1),
-    onSeekVideo: (time: number) => {
-      setVideoTime(clamp(time, 0, focusedVideoDurationSec))
-    },
-    onVideoTimeUpdate: (time: number) => {
-      setVideoTime(clamp(time, 0, focusedVideoDurationSec))
-    },
-    onVideoDurationDetected: (duration: number) => {
-      if (!focusedVideo || !Number.isFinite(duration) || duration <= 0) {
-        return
-      }
-      setVideoDurationById((previous) => ({
-        ...previous,
-        [focusedVideo.id]: duration,
-      }))
-    },
-    onToggleMute: () => setVideoMuted((value) => !value),
-    onChangeVolume: (volume: number) => {
-      setVideoMuted(false)
-      setVideoVolume(clamp(volume, 0, 100))
-    },
-    onChangeRate: (rate: number) => {
-      setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
-    },
-    onSaveCover: () => {
-      if (!focusedVideo) {
-        return
-      }
-
-      const color = focusedVideoCoverColor
-      void backendWrite.saveVideoCover(focusedVideo.id, videoTime, color)
-    },
-    onEnterFullscreen: () => setFullscreenActiveWithAutoStop(true),
-  }
+    focusedVideoId: focusedVideoEffective?.id ?? null,
+    setVideoPlaying,
+    goPlaylist,
+    setVideoTime,
+    setVideoDurationById,
+    setVideoMuted,
+    setVideoVolume,
+    setVideoRate,
+    saveVideoCover: backendWrite.saveVideoCover,
+    setFullscreenActiveWithAutoStop,
+  })
 
   const metadataPanelProps = buildMetadataPanelProps({
     mode,
@@ -1822,44 +1757,9 @@ function App() {
     retryImportTask,
   })
 
-  const clearDatabaseForDev = useCallback(() => {
-    if (!mediaRepository.clearDatabase) {
-      setDatabaseResetError('当前后端不支持清除数据库')
-      return
-    }
-
-    const confirmed =
-      typeof window === 'undefined'
-        ? true
-        : window.confirm(
-            '清除数据库将移除评分/封面/任务/播放列表缓存，并清空导入引用列表与缩略图/归一化缓存。仅建议开发调试使用，确认继续？',
-          )
-
-    if (!confirmed) {
-      return
-    }
-
-    setDatabaseResetPending(true)
-    setDatabaseResetError(null)
-
-    void mediaRepository
-      .clearDatabase({ timeoutMs: 15_000 })
-      .then(() => {
-        if (typeof window !== 'undefined') {
-          window.location.reload()
-        }
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Error && error.message.trim().length > 0) {
-          setDatabaseResetError(error.message)
-          return
-        }
-        setDatabaseResetError('清除数据库失败')
-      })
-      .finally(() => {
-        setDatabaseResetPending(false)
-      })
-  }, [mediaRepository])
+  const { databaseResetPending, databaseResetError, clearDatabaseForDev } = useDatabaseResetAction({
+    mediaRepository,
+  })
 
   const fullscreenLayerProps = buildFullscreenLayerProps({
     mode,
