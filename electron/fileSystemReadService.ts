@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { createReadStream, existsSync, promises as fs } from 'node:fs'
+import { existsSync, promises as fs } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { Worker } from 'node:worker_threads'
@@ -70,7 +70,6 @@ import {
 import { collectMediaFiles, type FileRecord } from './fileSystemFileCollector'
 import {
   detectMimeTypeByExtension,
-  isPathInsideRoot,
   makeStableId,
   matchesFeatureFilter,
   normalizeAllowlistKey,
@@ -89,6 +88,20 @@ import {
   type PersistedVideoMetadataRecord,
 } from './fileSystemMetadataWriters'
 import { executeImportTask } from './fileSystemImportTasks'
+import {
+  assertLocatorAllowed,
+  isPathAllowlisted,
+  MediaAccessError,
+  type MediaAuditRejectReason,
+} from './fileSystemMediaAccessGuard'
+import {
+  readArchiveEntryMedia,
+  readArchiveEntryMediaStream,
+  readFilesystemMedia,
+  readFilesystemMediaStream,
+  type MediaProtocolResponsePayload,
+  type MediaProtocolStreamResponsePayload,
+} from './fileSystemMediaReaders'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
 import {
   checkCommandAvailability,
@@ -98,12 +111,9 @@ import {
   runProcess,
 } from './fileSystemRuntimeHelpers'
 import { buildImageSidebarTree } from './fileSystemSidebarTree'
-import { parseByteRange, toWebReadableStream } from './fileSystemStreamHelpers'
 import { writeStoredZipFromDirectory } from './fileSystemZipStoreWriter'
 import {
   isSafeArchiveEntryName,
-  normalizeArchiveEntryName,
-  readZipEntryContent,
   scanZipCentralEntries,
   type ZipCentralEntry,
 } from './zipArchiveHelpers'
@@ -145,17 +155,6 @@ const ARCHIVE_NORMALIZE_RECHECK_MS = resolveConcurrency(process.env.MEDIA_PLAYER
 
 const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])
 
-type MediaAuditRejectReason =
-  | 'path_outside_root'
-  | 'filesystem_extension_mismatch'
-  | 'filesystem_media_type_not_allowed'
-  | 'filesystem_file_missing'
-  | 'archive_format_not_supported'
-  | 'archive_extension_invalid'
-  | 'archive_entry_illegal'
-  | 'archive_entry_not_allowlisted'
-  | 'archive_not_exists'
-
 interface ArchiveNormalizationResult {
   normalizedArchivePath: string
   strategy: 'zip-repack-webp90-store'
@@ -171,18 +170,6 @@ interface MediaTokenRecord {
   locator: MediaLocatorDto
   mimeType: string
   expiresAtMs: number
-}
-
-export interface MediaProtocolResponsePayload {
-  status: number
-  headers: Record<string, string>
-  body: Uint8Array
-}
-
-export interface MediaProtocolStreamResponsePayload {
-  status: number
-  headers: Record<string, string>
-  body: Uint8Array | ReadableStream<Uint8Array>
 }
 
 interface MediaAccessAuditCounters {
@@ -239,15 +226,6 @@ export interface LibraryChangedEventPayload {
 }
 
 type LibraryChangedListener = (payload: LibraryChangedEventPayload) => void
-
-class MediaAccessError extends Error {
-  readonly reason: MediaAuditRejectReason
-
-  constructor(reason: MediaAuditRejectReason, message: string) {
-    super(message)
-    this.reason = reason
-  }
-}
 
 function clampThumbnailMaxEdge(value: number | undefined): number {
   if (!Number.isFinite(value)) {
@@ -479,7 +457,14 @@ export class FileSystemMediaReadService {
     if (!this.isRar7zPath(sourceArchivePath)) {
       return false
     }
-    return this.isPathAllowlisted(sourceArchivePath)
+    return isPathAllowlisted(sourceArchivePath, {
+      rootDir: this.rootDir,
+      importDirectoryRoots: this.importDirectoryRoots,
+      importFileAllowlistKeys: this.importFileAllowlistKeys,
+      archiveEntryIndexByPath: this.archiveEntryIndexByPath,
+      imageExtensions: IMAGE_EXTENSIONS,
+      videoExtensions: VIDEO_EXTENSIONS,
+    })
   }
 
   private pruneArchiveNormalizationPendingSets(): void {
@@ -1260,270 +1245,6 @@ export class FileSystemMediaReadService {
     }
   }
 
-  private isPathAllowlisted(absolutePath: string): boolean {
-    if (isPathInsideRoot(this.rootDir, absolutePath)) {
-      return true
-    }
-
-    for (const root of this.importDirectoryRoots) {
-      if (isPathInsideRoot(root, absolutePath)) {
-        return true
-      }
-    }
-
-    const key = normalizeAllowlistKey(absolutePath)
-    return this.importFileAllowlistKeys.has(key)
-  }
-
-  private async assertLocatorAllowed(locator: MediaLocatorDto): Promise<MediaLocatorDto> {
-    if (locator.kind === 'filesystem') {
-      const absolutePath = path.resolve(locator.absolute_path)
-
-      if (!this.isPathAllowlisted(absolutePath)) {
-        throw new MediaAccessError('path_outside_root', `媒体访问被拒绝（未导入/未允许）: ${absolutePath}`)
-      }
-
-      const extension = path.extname(absolutePath).toLowerCase()
-      if (!extension || extension !== locator.extension.toLowerCase()) {
-        throw new MediaAccessError('filesystem_extension_mismatch', `媒体访问被拒绝（扩展名不一致）: ${absolutePath}`)
-      }
-
-      const extensionAllowed =
-        locator.media_type === 'image' ? IMAGE_EXTENSIONS.has(extension) : VIDEO_EXTENSIONS.has(extension)
-      if (!extensionAllowed) {
-        throw new MediaAccessError('filesystem_media_type_not_allowed', `媒体访问被拒绝（类型不允许）: ${absolutePath}`)
-      }
-
-      const stat = await fs.stat(absolutePath).catch(() => null)
-      if (!stat || !stat.isFile()) {
-        throw new MediaAccessError('filesystem_file_missing', `媒体访问失败（文件不存在）: ${absolutePath}`)
-      }
-
-      return {
-        ...locator,
-        absolute_path: absolutePath,
-        extension,
-      }
-    }
-
-    const archivePath = path.resolve(locator.archive_path)
-    if (!this.isPathAllowlisted(archivePath)) {
-      throw new MediaAccessError('path_outside_root', `压缩包媒体访问被拒绝（未导入/未允许）: ${archivePath}`)
-    }
-
-    const archiveStat = await fs.stat(archivePath).catch(() => null)
-    if (!archiveStat || !archiveStat.isFile()) {
-      throw new MediaAccessError('archive_not_exists', `压缩包媒体访问被拒绝（文件不存在）: ${archivePath}`)
-    }
-
-    if (locator.archive_format !== 'zip') {
-      throw new MediaAccessError('archive_format_not_supported', `压缩包媒体访问被拒绝（暂仅支持 zip）: ${archivePath}`)
-    }
-    if (path.extname(archivePath).toLowerCase() !== '.zip') {
-      throw new MediaAccessError('archive_extension_invalid', `压缩包媒体访问被拒绝（扩展名异常）: ${archivePath}`)
-    }
-
-    const normalizedEntryName = normalizeArchiveEntryName(locator.entry_name)
-    if (!isSafeArchiveEntryName(normalizedEntryName)) {
-      throw new MediaAccessError('archive_entry_illegal', `压缩包媒体访问被拒绝（entry 非法）: ${archivePath}`)
-    }
-
-    const allowedEntries = this.archiveEntryIndexByPath.get(archivePath)
-    if (!allowedEntries || !allowedEntries.has(normalizedEntryName)) {
-      throw new MediaAccessError(
-        'archive_entry_not_allowlisted',
-        `压缩包媒体访问被拒绝（entry 不在白名单）: ${archivePath}::${normalizedEntryName}`,
-      )
-    }
-
-    return {
-      ...locator,
-      archive_path: archivePath,
-      entry_name: normalizedEntryName,
-      extension: path.extname(normalizedEntryName).toLowerCase(),
-    }
-  }
-
-  private async readFilesystemMedia(
-    locator: Extract<MediaLocatorDto, { kind: 'filesystem' }>,
-    mimeType: string,
-    rangeHeader: string | null,
-  ): Promise<MediaProtocolResponsePayload> {
-    const filePath = locator.absolute_path
-    const stat = await fs.stat(filePath)
-    const size = stat.size
-
-    const requestedRange = parseByteRange(rangeHeader, size)
-    if (rangeHeader && !requestedRange) {
-      return {
-        status: 416,
-        headers: {
-          'content-type': mimeType,
-          'content-range': `bytes */${size}`,
-          'accept-ranges': 'bytes',
-          'cache-control': 'no-store',
-        },
-        body: new Uint8Array(0),
-      }
-    }
-
-    if (!requestedRange) {
-      const fileBuffer = await fs.readFile(filePath)
-      return {
-        status: 200,
-        headers: {
-          'content-type': mimeType,
-          'content-length': String(fileBuffer.length),
-          'accept-ranges': 'bytes',
-          'cache-control': 'no-store',
-        },
-        body: fileBuffer,
-      }
-    }
-
-    const { start, end } = requestedRange
-    const length = end - start + 1
-    const handle = await fs.open(filePath, 'r')
-    try {
-      const buffer = Buffer.alloc(length)
-      const { bytesRead } = await handle.read(buffer, 0, buffer.length, start)
-      const payload = bytesRead < buffer.length ? buffer.subarray(0, bytesRead) : buffer
-      return {
-        status: 206,
-        headers: {
-          'content-type': mimeType,
-          'content-length': String(payload.length),
-          'content-range': `bytes ${start}-${start + payload.length - 1}/${size}`,
-          'accept-ranges': 'bytes',
-          'cache-control': 'no-store',
-        },
-        body: payload,
-      }
-    } finally {
-      await handle.close()
-    }
-  }
-
-  private async readFilesystemMediaStream(
-    locator: Extract<MediaLocatorDto, { kind: 'filesystem' }>,
-    mimeType: string,
-    rangeHeader: string | null,
-    signal?: AbortSignal | null,
-  ): Promise<MediaProtocolStreamResponsePayload> {
-    const filePath = locator.absolute_path
-    const stat = await fs.stat(filePath)
-    const size = stat.size
-
-    const requestedRange = parseByteRange(rangeHeader, size)
-    if (rangeHeader && !requestedRange) {
-      return {
-        status: 416,
-        headers: {
-          'content-type': mimeType,
-          'content-range': `bytes */${size}`,
-          'accept-ranges': 'bytes',
-          'cache-control': 'no-store',
-        },
-        body: new Uint8Array(0),
-      }
-    }
-
-    if (!requestedRange) {
-      const stream = createReadStream(filePath)
-      return {
-        status: 200,
-        headers: {
-          'content-type': mimeType,
-          'content-length': String(size),
-          'accept-ranges': 'bytes',
-          'cache-control': 'no-store',
-        },
-        body: toWebReadableStream(stream, signal),
-      }
-    }
-
-    const { start, end } = requestedRange
-    const length = end - start + 1
-    const stream = createReadStream(filePath, { start, end })
-    return {
-      status: 206,
-      headers: {
-        'content-type': mimeType,
-        'content-length': String(length),
-        'content-range': `bytes ${start}-${end}/${size}`,
-        'accept-ranges': 'bytes',
-        'cache-control': 'no-store',
-      },
-      body: toWebReadableStream(stream, signal),
-    }
-  }
-
-  private async readArchiveEntryMedia(
-    locator: Extract<MediaLocatorDto, { kind: 'archive-entry' }>,
-    mimeType: string,
-  ): Promise<MediaProtocolResponsePayload> {
-    const archivePath = locator.archive_path
-    const entryMap = this.zipEntryIndexByPath.get(archivePath)
-    const entry = entryMap?.get(locator.entry_name)
-    if (!entry) {
-      throw new Error(`压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`)
-    }
-
-    const buffer = await readZipEntryContent(archivePath, entry)
-    return {
-      status: 200,
-      headers: {
-        'content-type': mimeType,
-        'content-length': String(buffer.length),
-        'cache-control': 'no-store',
-      },
-      body: buffer,
-    }
-  }
-
-  private async readArchiveEntryMediaStream(
-    locator: Extract<MediaLocatorDto, { kind: 'archive-entry' }>,
-    mimeType: string,
-    signal?: AbortSignal | null,
-  ): Promise<MediaProtocolStreamResponsePayload> {
-    const archivePath = locator.archive_path
-    const entryMap = this.zipEntryIndexByPath.get(archivePath)
-    const entry = entryMap?.get(locator.entry_name)
-    if (!entry) {
-      throw new Error(`压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`)
-    }
-
-    if ((entry.generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED) !== 0) {
-      throw new Error(`zip 条目被加密，当前不支持: ${archivePath} -> ${entry.entryName}`)
-    }
-
-    if (entry.compressionMethod === ZIP_COMPRESSION_STORE) {
-      const dataOffset = await readZipEntryDataOffset(archivePath, entry)
-      const end = dataOffset + entry.compressedSize - 1
-      const stream = createReadStream(archivePath, { start: dataOffset, end })
-      return {
-        status: 200,
-        headers: {
-          'content-type': mimeType,
-          'content-length': String(entry.compressedSize),
-          'cache-control': 'no-store',
-        },
-        body: toWebReadableStream(stream, signal),
-      }
-    }
-
-    const buffer = await readZipEntryContent(archivePath, entry)
-    return {
-      status: 200,
-      headers: {
-        'content-type': mimeType,
-        'content-length': String(buffer.length),
-        'cache-control': 'no-store',
-      },
-      body: buffer,
-    }
-  }
-
   private async captureVideoCoverImage(
     videoPath: string,
     videoId: string,
@@ -1636,7 +1357,7 @@ export class FileSystemMediaReadService {
       return fs.readFile(locator.absolute_path)
     }
 
-    const payload = await this.readArchiveEntryMedia(locator, locator.mime_type)
+    const payload = await readArchiveEntryMedia(locator, locator.mime_type, this.zipEntryIndexByPath)
     return Buffer.from(payload.body)
   }
 
@@ -2129,7 +1850,14 @@ export class FileSystemMediaReadService {
 
     let locator: MediaLocatorDto
     try {
-      locator = await this.assertLocatorAllowed(request.locator)
+      locator = await assertLocatorAllowed(request.locator, {
+        rootDir: this.rootDir,
+        importDirectoryRoots: this.importDirectoryRoots,
+        importFileAllowlistKeys: this.importFileAllowlistKeys,
+        archiveEntryIndexByPath: this.archiveEntryIndexByPath,
+        imageExtensions: IMAGE_EXTENSIONS,
+        videoExtensions: VIDEO_EXTENSIONS,
+      })
     } catch (error) {
       if (error instanceof MediaAccessError) {
         this.countResolveDenied(error.reason)
@@ -2178,10 +1906,10 @@ export class FileSystemMediaReadService {
 
     const locator = record.locator
     if (locator.kind === 'filesystem') {
-      return this.readFilesystemMedia(locator, record.mimeType, rangeHeader)
+      return readFilesystemMedia(locator, record.mimeType, rangeHeader)
     }
 
-    return this.readArchiveEntryMedia(locator, record.mimeType)
+    return readArchiveEntryMedia(locator, record.mimeType, this.zipEntryIndexByPath)
   }
 
   async readMediaResourceByTokenStream(
@@ -2193,10 +1921,10 @@ export class FileSystemMediaReadService {
 
     const locator = record.locator
     if (locator.kind === 'filesystem') {
-      return this.readFilesystemMediaStream(locator, record.mimeType, rangeHeader, signal)
+      return readFilesystemMediaStream(locator, record.mimeType, rangeHeader, signal)
     }
 
-    return this.readArchiveEntryMediaStream(locator, record.mimeType, signal)
+    return readArchiveEntryMediaStream(locator, record.mimeType, this.zipEntryIndexByPath, signal)
   }
 
   private requireMediaTokenRecord(token: string): MediaTokenRecord {

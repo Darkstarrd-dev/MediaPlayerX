@@ -35,9 +35,12 @@ import {
   collectImageSourceIds,
   collectLeafIds,
 } from './features/app/helpers'
+import { buildAppHeaderProps } from './features/app/buildAppHeaderProps'
 import { buildBackendErrorRows } from './features/app/buildBackendErrorRows'
 import { buildFullscreenLayerProps } from './features/app/buildFullscreenLayerProps'
 import { buildImageMainSectionProps } from './features/app/buildImageMainSectionProps'
+import { buildImportTaskPanelProps } from './features/app/buildImportTaskPanelProps'
+import { buildMainFooter } from './features/app/buildMainFooter'
 import { buildMetadataPanelProps } from './features/app/buildMetadataPanelProps'
 import { buildSearchPanelProps } from './features/app/buildSearchPanelProps'
 import { buildSidebarPanelProps } from './features/app/buildSidebarPanelProps'
@@ -1695,29 +1698,12 @@ function App() {
     setDragVideoId,
   })
 
-  const mainFooter = (
-    <>
-      {mode === 'image' && focusedImage && focusedImagePackage ? (
-        <>
-          <span>
-            {focusedImage.mediaLocator.kind === 'filesystem'
-              ? focusedImage.mediaLocator.absolutePath
-              : `${focusedImage.mediaLocator.archivePath} #${focusedImage.ordinal}`}
-          </span>
-          <span>{`${focusedImage.sizeKb}KB`}</span>
-          <span>{focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width}x${focusedImage.height}` : '-'}</span>
-        </>
-      ) : null}
-
-      {mode === 'video' && focusedVideo ? (
-        <>
-          <span>{focusedVideo.absolutePath}</span>
-          <span>{`${focusedVideo.sizeMb}MB`}</span>
-          <span>{`${focusedVideo.width}x${focusedVideo.height}`}</span>
-        </>
-      ) : null}
-    </>
-  )
+  const mainFooter = buildMainFooter({
+    mode,
+    focusedImage,
+    focusedImagePackage,
+    focusedVideo: focusedVideoEffective,
+  })
 
   const backendErrorRows = buildBackendErrorRows({
     backendRead,
@@ -1846,49 +1832,51 @@ function App() {
     clearDatabaseForDev,
   })
 
+  const appHeaderProps = buildAppHeaderProps({
+    headerHeight,
+    mode,
+    vectorMode,
+    vectorUniverseOpen,
+    displayThumbnailScaleLevel,
+    canThumbnailScaleDown,
+    canThumbnailScaleUp,
+    autoPlayEnabled,
+    autoPlayInterval,
+    importMenuOpen,
+    taskStatusLabel,
+    importTaskPanelOpen,
+    autoPlayPresets: AUTO_PLAY_PRESETS,
+    thumbnailScale,
+    thumbnailScaleLevelCount,
+    setImportMenuOpen,
+    setImportTaskPanelOpen,
+    openImportFilesDialog,
+    openImportFoldersDialog,
+    updateSettings,
+    setSearchPanelMode,
+    setSearchPanelCollapsed,
+    setVectorUniverseOpen,
+  })
+
+  const importTaskPanelProps = buildImportTaskPanelProps({
+    open: importTaskPanelOpen,
+    activeTaskCount: activeImportTaskCount,
+    pendingArchiveCount: normalizedPendingArchivePathSet.size,
+    runningArchive: Boolean(normalizedRunningArchivePath),
+    enqueuePending,
+    taskError,
+    tasks: importTasksForPanel,
+    setImportTaskPanelOpen,
+    clearFinishedImportTasks,
+    clearAllImportTasks,
+    clearTaskError,
+    retryImportTaskFromPanel,
+    setDismissedImportTaskIds,
+  })
+
   return (
     <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
-      <AppHeader
-        headerHeight={headerHeight}
-        mode={mode}
-        searchPanelOpen={vectorMode && mode === 'image'}
-        vectorUniverseOpen={vectorUniverseOpen}
-        thumbnailScaleLevel={displayThumbnailScaleLevel}
-        canThumbnailScaleDown={canThumbnailScaleDown}
-        canThumbnailScaleUp={canThumbnailScaleUp}
-        autoPlayEnabled={autoPlayEnabled}
-        autoPlayInterval={autoPlayInterval}
-        importMenuOpen={importMenuOpen}
-        taskStatusLabel={taskStatusLabel}
-        importTaskPanelOpen={importTaskPanelOpen}
-        autoPlayPresets={AUTO_PLAY_PRESETS}
-        onToggleImportMenu={() => setImportMenuOpen((value) => !value)}
-        onToggleImportTaskPanel={() => setImportTaskPanelOpen((value) => !value)}
-        onCloseImportMenu={() => setImportMenuOpen(false)}
-        onImportFiles={openImportFilesDialog}
-        onImportFolders={openImportFoldersDialog}
-        onModeChange={(nextMode) => updateSettings({ mode: nextMode })}
-        onToggleSearchPanel={() => {
-          const nextOpen = !vectorMode
-          updateSettings({ vectorMode: nextOpen })
-          if (nextOpen) {
-            setSearchPanelMode('vector')
-            setSearchPanelCollapsed(false)
-          }
-        }}
-        onOpenVectorUniverse={() => {
-          setVectorUniverseOpen(true)
-        }}
-        onThumbnailScaleDown={() => {
-          updateSettings({ thumbnailScale: clamp(thumbnailScale + 1, 1, thumbnailScaleLevelCount) })
-        }}
-        onThumbnailScaleUp={() => {
-          updateSettings({ thumbnailScale: clamp(thumbnailScale - 1, 1, thumbnailScaleLevelCount) })
-        }}
-        onAutoPlayEnabledChange={(enabled) => updateSettings({ autoPlayEnabled: enabled })}
-        onAutoPlayIntervalChange={(value) => updateSettings({ autoPlayInterval: value })}
-        onOpenSettings={() => updateSettings({ settingsOpen: true })}
-      />
+      <AppHeader {...appHeaderProps} />
 
       <input
         ref={fileImportInputRef}
@@ -1913,23 +1901,7 @@ function App() {
         onDismiss={runtimeWarningDismiss.dismiss}
       />
 
-      <ImportTaskPanel
-        open={importTaskPanelOpen}
-        activeTaskCount={activeImportTaskCount}
-        pendingArchiveCount={normalizedPendingArchivePathSet.size}
-        runningArchive={Boolean(normalizedRunningArchivePath)}
-        enqueuePending={enqueuePending}
-        taskError={taskError}
-        tasks={importTasksForPanel}
-        onClose={() => setImportTaskPanelOpen(false)}
-        onClearFinished={clearFinishedImportTasks}
-        onClearAll={clearAllImportTasks}
-        onClearError={clearTaskError}
-        onRetryTask={retryImportTaskFromPanel}
-        onRemoveTask={(taskId) => {
-          setDismissedImportTaskIds((previous) => ({ ...previous, [taskId]: true }))
-        }}
-      />
+      <ImportTaskPanel {...importTaskPanelProps} />
 
       <AppWorkspace
         mode={mode}

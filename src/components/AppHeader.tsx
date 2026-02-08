@@ -1,6 +1,6 @@
 import type { BrowserMode } from '../types'
 
-interface AppHeaderProps {
+export interface AppHeaderProps {
   headerHeight: number
   mode: BrowserMode
   searchPanelOpen: boolean

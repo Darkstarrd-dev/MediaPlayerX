@@ -144,7 +144,7 @@ export async function scanZipCentralEntries(archivePath: string): Promise<ZipCen
   }
 }
 
-async function readZipEntryDataOffset(archivePath: string, entry: ZipCentralEntry): Promise<number> {
+export async function readZipEntryDataOffset(archivePath: string, entry: ZipCentralEntry): Promise<number> {
   const handle = await fs.open(archivePath, 'r')
 
   try {

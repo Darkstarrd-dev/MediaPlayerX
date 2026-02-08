@@ -1,7 +1,7 @@
 import type { ImportTaskDto } from '../contracts/backend'
 import { clamp } from '../utils/ui'
 
-interface ImportTaskPanelProps {
+export interface ImportTaskPanelProps {
   open: boolean
   activeTaskCount: number
   pendingArchiveCount: number
