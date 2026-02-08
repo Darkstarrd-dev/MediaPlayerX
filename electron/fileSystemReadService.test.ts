@@ -96,6 +96,17 @@ async function waitForImportTaskDone(
   throw new Error(`import task timeout: ${taskId}`)
 }
 
+async function enqueueImportAndWait(
+  service: FileSystemMediaReadService,
+  source: 'dialog-files' | 'dialog-folders' | 'drag-drop' | 'paste',
+  paths: string[],
+): Promise<void> {
+  const queued = await service.enqueueImportTask({ source, paths })
+  expect(['pending', 'running', 'completed']).toContain(queued.task.status)
+  const done = await waitForImportTaskDone(service, queued.task.task_id)
+  expect(done.status).toBe('completed')
+}
+
 async function writeStoredZip(
   filePath: string,
   entries: Array<{ name: string; content: Buffer }>,
@@ -197,6 +208,7 @@ describe('FileSystemMediaReadService', () => {
 
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-folders', [root])
 
     const snapshot = await service.readLibrarySnapshot()
     expect(snapshot.image_directories.length).toBeGreaterThan(0)
@@ -268,6 +280,7 @@ describe('FileSystemMediaReadService', () => {
 
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-files', [insideImagePath])
     await service.readLibrarySnapshot()
 
     const allowed = await service.resolveMediaResource({
@@ -297,7 +310,7 @@ describe('FileSystemMediaReadService', () => {
           mime_type: 'image/jpeg',
         },
       }),
-    ).rejects.toThrow(/越界/)
+    ).rejects.toThrow(/未导入\/未允许|越界/)
   })
 
   it('压缩包轻扫仅使用 entry name，并可按白名单读取 zip 内图片', async () => {
@@ -313,6 +326,7 @@ describe('FileSystemMediaReadService', () => {
 
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-files', [zipPath])
     const snapshot = await service.readLibrarySnapshot()
     const packageDto = snapshot.image_packages.find((item) => item.absolute_path === zipPath)
 
@@ -364,6 +378,7 @@ describe('FileSystemMediaReadService', () => {
 
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-files', [imagePath])
     await service.readLibrarySnapshot()
 
     const resolved = await service.resolveMediaResource({
@@ -421,6 +436,7 @@ describe('FileSystemMediaReadService', () => {
 
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-folders', [root])
     const snapshot = await service.readLibrarySnapshot()
     const source = snapshot.image_directories[0]
     const video = snapshot.videos[0]
@@ -458,6 +474,7 @@ describe('FileSystemMediaReadService', () => {
 
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-folders', [root])
     const snapshot = await service.readLibrarySnapshot()
     const targetVideoIds = snapshot.videos.slice(0, 2).map((video) => video.id)
 
@@ -474,7 +491,7 @@ describe('FileSystemMediaReadService', () => {
     expect(restored.video_ids).toEqual(targetVideoIds)
   })
 
-  it('导入任务可将库外文件复制入库并完成刷新', async () => {
+  it('导入任务以纯引用登记库外文件并完成刷新', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-root-'))
     const outsideRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-source-'))
     createdRoots.push(root)
@@ -504,8 +521,8 @@ describe('FileSystemMediaReadService', () => {
     expect(doneTask.processed_count).toBe(1)
 
     const importedDirectory = path.join(root, 'imports', 'files')
-    const importedFiles = await fs.readdir(importedDirectory)
-    expect(importedFiles.some((fileName) => fileName.endsWith('.jpg'))).toBe(true)
+    const importedDirectoryStat = await fs.stat(importedDirectory).catch(() => null)
+    expect(importedDirectoryStat).toBeNull()
 
     const after = await service.readLibrarySnapshot()
     const afterImageCount = [...after.image_packages, ...after.image_directories].reduce(
@@ -513,6 +530,11 @@ describe('FileSystemMediaReadService', () => {
       0,
     )
     expect(afterImageCount).toBeGreaterThan(beforeImageCount)
+
+    const importedByReference = [...after.image_packages, ...after.image_directories]
+      .flatMap((source) => source.images)
+      .some((image) => image.media_locator.kind === 'filesystem' && image.media_locator.absolute_path === outsideImagePath)
+    expect(importedByReference).toBe(true)
   })
 
   it('resolveMediaResource 输出审计统计（拒绝分类、token 命中/过期）', async () => {
@@ -523,6 +545,7 @@ describe('FileSystemMediaReadService', () => {
     await writeBinary(imagePath, [0xff, 0xd8, 0xff, 0xd9])
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-files', [imagePath])
     await service.readLibrarySnapshot()
 
     const allowed = await service.resolveMediaResource({
@@ -547,7 +570,7 @@ describe('FileSystemMediaReadService', () => {
           mime_type: 'image/jpeg',
         },
       }),
-    ).rejects.toThrow(/越界/)
+    ).rejects.toThrow(/未导入\/未允许|越界/)
 
     const audit = await service.readMediaAccessAudit()
     expect(audit.resolve_requests).toBeGreaterThanOrEqual(2)
@@ -569,6 +592,7 @@ describe('FileSystemMediaReadService', () => {
 
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-files', [videoPath])
     const snapshot = await service.readLibrarySnapshot()
     const video = snapshot.videos[0]
 

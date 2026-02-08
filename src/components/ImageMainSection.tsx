@@ -60,7 +60,7 @@ function ImageMainSection({
   onPrevPage,
   onNextPage,
 }: ImageMainSectionProps) {
-  const showSkeleton = !showNamesOnly && enableLoadingSkeleton && loading
+  const showSkeleton = !showNamesOnly && enableLoadingSkeleton && loading && refsInPage.length === 0
 
   return (
     <>
@@ -71,11 +71,24 @@ function ImageMainSection({
             : `${activePackage?.displayName ?? '无图包'} (${visibleImageRefs.length} 张)`}
         </strong>
         <div className="toolbar-actions">
-          <button type="button" onClick={onToggleShowNamesOnly}>
-            {showNamesOnly ? '显示缩略图' : '纯文件名模式'}
+          <button
+            className={`toolbar-icon-btn ${showNamesOnly ? 'is-names-mode' : 'is-grid-mode'}`}
+            type="button"
+            aria-label={showNamesOnly ? '当前纯文件名模式，切换到缩略图模式' : '当前缩略图模式，切换到纯文件名模式'}
+            title={showNamesOnly ? '切换到缩略图模式' : '切换到纯文件名模式'}
+            onClick={onToggleShowNamesOnly}
+          >
+            <span aria-hidden="true">{showNamesOnly ? '≡' : '▦'}</span>
           </button>
-          <button type="button" onClick={onEnterFullscreen} disabled={!focusedImageExists}>
-            进入全屏
+          <button
+            className="toolbar-icon-btn"
+            type="button"
+            aria-label="进入全屏"
+            title="进入全屏"
+            onClick={onEnterFullscreen}
+            disabled={!focusedImageExists}
+          >
+            <span aria-hidden="true">⛶</span>
           </button>
         </div>
       </div>
@@ -169,12 +182,6 @@ function ImageMainSection({
                           alt={`${pkg.displayName} #${image.ordinal}`}
                           loading="lazy"
                           draggable={false}
-                          onLoad={(event) => {
-                            event.currentTarget.style.display = 'block'
-                          }}
-                          onError={(event) => {
-                            event.currentTarget.style.display = 'none'
-                          }}
                         />
                       ) : (
                         <div className="thumb-media-empty" />

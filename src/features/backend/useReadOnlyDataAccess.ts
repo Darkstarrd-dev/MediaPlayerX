@@ -15,6 +15,8 @@ import type { ReadonlyMediaRepository, SynchronousMediaRepository } from './repo
 import type { FocusedImageRef } from '../../types'
 
 const DEFAULT_IPC_TIMEOUT_MS = 8_000
+const PAGE_READ_DEBOUNCE_MS = 72
+const METADATA_READ_DEBOUNCE_MS = 84
 
 interface UseReadOnlyDataAccessParams {
   repository: ReadonlyMediaRepository
@@ -323,53 +325,56 @@ export function useReadOnlyDataAccess({
     const requestId = pageRequestIdRef.current + 1
     pageRequestIdRef.current = requestId
 
-    setPageState((previous) => ({
-      ...previous,
-      loading: true,
-      error: null,
-      requestId,
-    }))
+    const timeoutId = window.setTimeout(() => {
+      setPageState((previous) => ({
+        ...previous,
+        loading: true,
+        error: null,
+        requestId,
+      }))
 
-    repository
-      .readImagePage(
-        {
-          source_id: selectedSourceId,
-          page_index: Math.max(0, pageIndex),
-          page_size: Math.max(1, pageSize),
-          show_names_only: showNamesOnly,
-          feature_filter: featureFilter,
-          grade_overrides: gradeByPackage,
-        },
-        { signal: abortController.signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
-      )
-      .then((dto) => {
-        if (pageRequestIdRef.current !== requestId) {
-          return
-        }
+      repository
+        .readImagePage(
+          {
+            source_id: selectedSourceId,
+            page_index: Math.max(0, pageIndex),
+            page_size: Math.max(1, pageSize),
+            show_names_only: showNamesOnly,
+            feature_filter: featureFilter,
+            grade_overrides: gradeByPackage,
+          },
+          { signal: abortController.signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
+        )
+        .then((dto) => {
+          if (pageRequestIdRef.current !== requestId) {
+            return
+          }
 
-        const mapped = mapImagePageDto(dto)
-        setPageState({
-          data: mapped,
-          snapshot: mapped,
-          loading: false,
-          error: null,
-          requestId,
+          const mapped = mapImagePageDto(dto)
+          setPageState({
+            data: mapped,
+            snapshot: mapped,
+            loading: false,
+            error: null,
+            requestId,
+          })
         })
-      })
-      .catch((error: unknown) => {
-        if (pageRequestIdRef.current !== requestId || isAbortError(error)) {
-          return
-        }
-        setPageState((previous) => ({
-          ...previous,
-          data: previous.snapshot,
-          loading: false,
-          error: toErrorMessage(error),
-          requestId,
-        }))
-      })
+        .catch((error: unknown) => {
+          if (pageRequestIdRef.current !== requestId || isAbortError(error)) {
+            return
+          }
+          setPageState((previous) => ({
+            ...previous,
+            data: previous.snapshot,
+            loading: false,
+            error: toErrorMessage(error),
+            requestId,
+          }))
+        })
+    }, PAGE_READ_DEBOUNCE_MS)
 
     return () => {
+      window.clearTimeout(timeoutId)
       abortController.abort()
     }
   }, [featureFilter, gradeByPackage, isSynchronousTestMode, mode, pageIndex, pageRetryNonce, pageSize, repository, selectedSourceId, showNamesOnly, vectorResultsActive])
@@ -383,49 +388,52 @@ export function useReadOnlyDataAccess({
     const requestId = metadataRequestIdRef.current + 1
     metadataRequestIdRef.current = requestId
 
-    setMetadataState((previous) => ({
-      ...previous,
-      loading: true,
-      error: null,
-      requestId,
-    }))
+    const timeoutId = window.setTimeout(() => {
+      setMetadataState((previous) => ({
+        ...previous,
+        loading: true,
+        error: null,
+        requestId,
+      }))
 
-    repository
-      .readImageMetadata(
-        {
-          package_id: focusedRef.packageId,
-          image_index: focusedRef.imageIndex,
-        },
-        { signal: abortController.signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
-      )
-      .then((dto) => {
-        if (metadataRequestIdRef.current !== requestId) {
-          return
-        }
+      repository
+        .readImageMetadata(
+          {
+            package_id: focusedRef.packageId,
+            image_index: focusedRef.imageIndex,
+          },
+          { signal: abortController.signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
+        )
+        .then((dto) => {
+          if (metadataRequestIdRef.current !== requestId) {
+            return
+          }
 
-        const mapped = mapImageMetadataDto(dto)
-        setMetadataState({
-          data: mapped,
-          snapshot: mapped,
-          loading: false,
-          error: null,
-          requestId,
+          const mapped = mapImageMetadataDto(dto)
+          setMetadataState({
+            data: mapped,
+            snapshot: mapped,
+            loading: false,
+            error: null,
+            requestId,
+          })
         })
-      })
-      .catch((error: unknown) => {
-        if (metadataRequestIdRef.current !== requestId || isAbortError(error)) {
-          return
-        }
-        setMetadataState((previous) => ({
-          ...previous,
-          data: previous.snapshot,
-          loading: false,
-          error: toErrorMessage(error),
-          requestId,
-        }))
-      })
+        .catch((error: unknown) => {
+          if (metadataRequestIdRef.current !== requestId || isAbortError(error)) {
+            return
+          }
+          setMetadataState((previous) => ({
+            ...previous,
+            data: previous.snapshot,
+            loading: false,
+            error: toErrorMessage(error),
+            requestId,
+          }))
+        })
+    }, METADATA_READ_DEBOUNCE_MS)
 
     return () => {
+      window.clearTimeout(timeoutId)
       abortController.abort()
     }
   }, [focusedRef, isSynchronousTestMode, metadataRetryNonce, mode, repository, vectorResultsActive])

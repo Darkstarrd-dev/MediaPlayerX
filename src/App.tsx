@@ -72,6 +72,7 @@ const RESPONSIVE_ZOOM_BASE_WIDTH = 1600
 const RESPONSIVE_ZOOM_BASE_HEIGHT = 900
 const RESPONSIVE_ZOOM_MIN_FACTOR = 0.72
 const RESPONSIVE_ZOOM_EPSILON = 0.005
+const MEDIA_RESOLVE_MAX_CONCURRENT = 8
 const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -342,6 +343,7 @@ function App() {
     initialPlaylistIds: bootstrapVideos.slice(0, 3).map((item) => item.id),
     videos: bootstrapVideos,
   })
+  const previousFullscreenActiveRef = useRef(fullscreenActive)
 
   const playlistPersistence = usePlaylistPersistence({
     repository: mediaRepository,
@@ -1045,6 +1047,13 @@ function App() {
 
   const backendPageSnapshot = backendRead.page.data ?? backendRead.page.snapshot
   const backendMetadataSnapshot = backendRead.metadata.data ?? backendRead.metadata.snapshot
+  const metadataSnapshotMatchesFocus = Boolean(
+    imageFocusActive &&
+      focusedRef &&
+      backendMetadataSnapshot &&
+      backendMetadataSnapshot.package.id === focusedRef.packageId &&
+      backendMetadataSnapshot.image.id === focusedImage?.id,
+  )
   const activePackageForDisplay =
     !vectorResultsActive && backendPageSnapshot?.sourceId
       ? (packageByIdEffective.get(backendPageSnapshot.sourceId) ?? activePackage)
@@ -1062,12 +1071,16 @@ function App() {
           ? 1
           : Math.max(1, Math.ceil(backendPageSnapshot.totalItems / Math.max(1, pagedPageSize))))
       : imageTotalPages
-  const metadataImageEffective = imageFocusActive ? (backendMetadataSnapshot?.image ?? focusedImage) : focusedImage
+  const metadataImageEffective =
+    imageFocusActive && metadataSnapshotMatchesFocus ? backendMetadataSnapshot?.image ?? focusedImage : focusedImage
   const metadataImagePackageEffective =
-    imageFocusActive
+    imageFocusActive && metadataSnapshotMatchesFocus
       ? (backendMetadataSnapshot?.package ?? metadataImagePackage)
       : metadataImagePackage
-  const currentGradeEffective = imageFocusActive ? (backendMetadataSnapshot?.grade ?? currentGrade) : currentGrade
+  const currentGradeEffective =
+    imageFocusActive && metadataSnapshotMatchesFocus
+      ? (backendMetadataSnapshot?.grade ?? currentGrade)
+      : currentGrade
   const focusedVideo = videoByIdEffective.get(selectedVideoId) ?? videosForSidebar[0] ?? null
   const focusedVideoDurationSec = focusedVideo
     ? Math.max(0, videoDurationById[focusedVideo.id] ?? focusedVideo.durationSec)
@@ -1104,30 +1117,30 @@ function App() {
 
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
     const targetById = new Map<string, MediaResolveTarget>()
+    const priorityTargets: MediaResolveTarget[] = []
+    const normalTargets: MediaResolveTarget[] = []
     const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight)))
 
-    const upsertTarget = (target: MediaResolveTarget) => {
-      const previous = targetById.get(target.targetId)
-      if (!previous) {
-        targetById.set(target.targetId, target)
+    const pushTarget = (target: MediaResolveTarget, priority = false) => {
+      if (targetById.has(target.targetId)) {
         return
       }
-
-      const previousIsThumbnail = previous.variant === 'thumbnail'
-      const nextIsOriginal = target.variant !== 'thumbnail'
-      if (previousIsThumbnail && nextIsOriginal) {
-        targetById.set(target.targetId, target)
+      targetById.set(target.targetId, target)
+      if (priority) {
+        priorityTargets.push(target)
+      } else {
+        normalTargets.push(target)
       }
     }
 
-    const pushImageTarget = (ref: FocusedImageRef) => {
+    const pushThumbnailImageTarget = (ref: FocusedImageRef) => {
       const image = packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]
       if (!image) {
         return
       }
 
-      upsertTarget({
-        targetId: `image:${image.id}`,
+      pushTarget({
+        targetId: `image-thumb:${image.id}`,
         locator: image.mediaLocator,
         variant: 'thumbnail',
         thumbnailMaxEdge,
@@ -1135,74 +1148,129 @@ function App() {
       })
     }
 
-    for (const ref of refsInPageEffective) {
-      pushImageTarget(ref)
-    }
+    const pushOriginalImageTarget = (image: typeof focusedImage) => {
+      if (!image) {
+        return
+      }
 
-    if (metadataImageEffective && metadataImagePackageEffective) {
-      upsertTarget({
-        targetId: `image:${metadataImageEffective.id}`,
-        locator: metadataImageEffective.mediaLocator,
-        variant: 'original',
-      })
-    }
-
-    if (focusedImage && focusedImagePackage) {
-      upsertTarget({
-        targetId: `image:${focusedImage.id}`,
-        locator: focusedImage.mediaLocator,
-        variant: 'original',
-      })
-    }
-
-    if (focusedVideo) {
-      upsertTarget({
-        targetId: `video:${focusedVideo.id}`,
-        locator: focusedVideo.mediaLocator,
-        variant: 'original',
-      })
-
-      if (focusedVideoCoverImageLocator) {
-        upsertTarget({
-          targetId: `video-cover:${focusedVideo.id}`,
-          locator: focusedVideoCoverImageLocator,
+      pushTarget(
+        {
+          targetId: `image-original:${image.id}`,
+          locator: image.mediaLocator,
           variant: 'original',
-        })
+        },
+        true,
+      )
+    }
+
+    const pushOriginalImageTargetByRef = (ref: FocusedImageRef | null | undefined, priority = false) => {
+      if (!ref) {
+        return
+      }
+      const image = packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]
+      if (!image) {
+        return
+      }
+      pushTarget(
+        {
+          targetId: `image-original:${image.id}`,
+          locator: image.mediaLocator,
+          variant: 'original',
+        },
+        priority,
+      )
+    }
+
+    pushOriginalImageTarget(focusedImage)
+    pushOriginalImageTarget(metadataImageEffective)
+
+    if (focusedRef && orderedRootScopedImageRefs.length > 0) {
+      const focusedIndex = orderedRootScopedImageRefs.findIndex(
+        (ref) => ref.packageId === focusedRef.packageId && ref.imageIndex === focusedRef.imageIndex,
+      )
+      if (focusedIndex >= 0) {
+        const prefetchRadius = fullscreenActive ? 4 : 2
+        for (let offset = 1; offset <= prefetchRadius; offset += 1) {
+          pushOriginalImageTargetByRef(orderedRootScopedImageRefs[focusedIndex + offset], true)
+          pushOriginalImageTargetByRef(orderedRootScopedImageRefs[focusedIndex - offset], true)
+        }
       }
     }
 
-    return Array.from(targetById.values())
+    if (!showNamesOnly) {
+      for (const ref of refsInPageEffective) {
+        pushThumbnailImageTarget(ref)
+      }
+    }
+
+    if (focusedVideo) {
+      pushTarget(
+        {
+          targetId: `video:${focusedVideo.id}`,
+          locator: focusedVideo.mediaLocator,
+          variant: 'original',
+        },
+        true,
+      )
+
+      if (focusedVideoCoverImageLocator) {
+        pushTarget(
+          {
+            targetId: `video-cover:${focusedVideo.id}`,
+            locator: focusedVideoCoverImageLocator,
+            variant: 'original',
+          },
+          true,
+        )
+      }
+    }
+
+    return [...priorityTargets, ...normalTargets]
   }, [
     actualCellWidth,
     actualMediaHeight,
     focusedImage,
-    focusedImagePackage,
     focusedVideo,
     focusedVideoCoverImageLocator,
     metadataImageEffective,
-    metadataImagePackageEffective,
+    focusedRef,
+    fullscreenActive,
+    orderedRootScopedImageRefs,
     packageByIdEffective,
     refsInPageEffective,
+    showNamesOnly,
   ])
 
   const resolvedMedia = useResolvedMediaUrls({
     repository: mediaRepository,
     targets: mediaResolveTargets,
     options: benchSettings.enabled
-      ? benchSettings.resolvedMedia
-      : {
-          applyMode: 'immediate',
+        ? benchSettings.resolvedMedia
+        : {
+          applyMode: 'raf',
           stateScope: 'active-only',
+          maxConcurrent: MEDIA_RESOLVE_MAX_CONCURRENT,
         },
   })
 
-  const imageUrlById = useMemo<Record<string, string>>(() => {
+  const thumbnailImageUrlById = useMemo<Record<string, string>>(() => {
     const next: Record<string, string> = {}
     for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
-      if (!targetId.startsWith('image:')) {
+      if (!targetId.startsWith('image-thumb:')) {
         continue
       }
-      next[targetId.slice('image:'.length)] = url
+      next[targetId.slice('image-thumb:'.length)] = url
+    }
+    return next
+  }, [resolvedMedia.urlByTargetId])
+
+  const originalImageUrlById = useMemo<Record<string, string>>(() => {
+    const next: Record<string, string> = {}
+    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
+      if (!targetId.startsWith('image-original:')) {
+        continue
+      }
+      next[targetId.slice('image-original:'.length)] = url
     }
     return next
   }, [resolvedMedia.urlByTargetId])
@@ -1218,8 +1286,13 @@ function App() {
     return next
   }, [resolvedMedia.urlByTargetId])
 
-  const metadataImageSrc = metadataImageEffective ? (imageUrlById[metadataImageEffective.id] ?? null) : null
-  const fullscreenImageSrc = focusedImage ? (imageUrlById[focusedImage.id] ?? null) : null
+  const metadataImageSrc =
+    metadataImageEffective
+      ? (originalImageUrlById[metadataImageEffective.id] ?? thumbnailImageUrlById[metadataImageEffective.id] ?? null)
+      : null
+  const fullscreenImageSrc = focusedImage
+    ? (originalImageUrlById[focusedImage.id] ?? thumbnailImageUrlById[focusedImage.id] ?? null)
+    : null
   const focusedVideoSrc = focusedVideo ? (resolvedMedia.urlByTargetId[`video:${focusedVideo.id}`] ?? null) : null
   const focusedVideoCoverImageSrc = focusedVideo ? (videoCoverImageUrlById[focusedVideo.id] ?? null) : null
 
@@ -1393,6 +1466,21 @@ function App() {
     [normalImageSourceNodeIdMap, setImageFocus, setSearchPanelMode, updateSettings],
   )
 
+  useEffect(() => {
+    const previous = previousFullscreenActiveRef.current
+    if (previous && !fullscreenActive && autoPlayEnabled) {
+      updateSettings({ autoPlayEnabled: false })
+    }
+    previousFullscreenActiveRef.current = fullscreenActive
+  }, [autoPlayEnabled, fullscreenActive, updateSettings])
+
+  const setFullscreenActiveWithAutoStop = useCallback(
+    (value: boolean | ((previous: boolean) => boolean)) => {
+      setFullscreenActive(value)
+    },
+    [setFullscreenActive],
+  )
+
 
   useShortcutEngine({
     shortcuts,
@@ -1408,7 +1496,7 @@ function App() {
     hasFocusedImage: Boolean(focusedImage),
     handleSidebarNavigationKey,
     onSetImageFocusActive: setImageFocusActive,
-    onSetFullscreenActive: setFullscreenActive,
+    onSetFullscreenActive: setFullscreenActiveWithAutoStop,
     onToggleFullscreenPaneFocus: () => {
       if (fullscreenDisplay !== 'dual') {
         return
@@ -1630,10 +1718,10 @@ function App() {
     normalizedPageIndex: normalizedPageIndexEffective,
     imageTotalPages: imageTotalPagesEffective,
     packageById: packageByIdEffective,
-    imageUrlById,
+    imageUrlById: thumbnailImageUrlById,
     gridRef,
     onToggleShowNamesOnly: () => updateSettings({ showNamesOnly: !showNamesOnly }),
-    onEnterFullscreen: () => setFullscreenActive(true),
+    onEnterFullscreen: () => setFullscreenActiveWithAutoStop(true),
     onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => {
       if (vectorResultsActive) {
         setVectorFocusIndex(absoluteIndex)
@@ -1695,7 +1783,7 @@ function App() {
       const color = focusedVideoCoverColor
       void backendWrite.saveVideoCover(focusedVideo.id, videoTime, color)
     },
-    onEnterFullscreen: () => setFullscreenActive(true),
+    onEnterFullscreen: () => setFullscreenActiveWithAutoStop(true),
   }
 
   const metadataPanelProps = {
@@ -2217,7 +2305,7 @@ function App() {
         onChangeVideoRate={(rate) => {
           setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
         }}
-        onExit={() => setFullscreenActive(false)}
+        onExit={() => setFullscreenActiveWithAutoStop(false)}
       />
 
       {vectorUniverseOpen ? (

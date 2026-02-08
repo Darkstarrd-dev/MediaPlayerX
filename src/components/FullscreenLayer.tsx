@@ -106,6 +106,14 @@ const MAX_SPLIT = 0.8
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 4
 const ZOOM_STEP = 0.12
+const IS_TEST_MODE = import.meta.env.MODE === 'test'
+
+function resolveMediaAspect(width: number, height: number, fallback = 1): number {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return fallback
+  }
+  return width / height
+}
 
 function computeMediaGeometry(viewport: PaneViewportSize, aspect: number, zoom: number): MediaGeometry {
   const width = Math.max(1, viewport.width)
@@ -242,7 +250,9 @@ function FullscreenLayer({
   const [videoTransform, setVideoTransform] = useState<PaneTransform>(DEFAULT_PANE_TRANSFORM)
   const [imageAlign, setImageAlign] = useState<PaneAlign>(DEFAULT_PANE_ALIGN)
   const [videoAlign, setVideoAlign] = useState<PaneAlign>(DEFAULT_PANE_ALIGN)
-  const [loadedImageAspect, setLoadedImageAspect] = useState<number | null>(null)
+  const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
+  const [displayedImageAspect, setDisplayedImageAspect] = useState<number | null>(null)
+  const imagePreloadSeqRef = useRef(0)
   const [videoControlsVisible, setVideoControlsVisible] = useState(false)
   const [draggingPane, setDraggingPane] = useState<PaneKey | null>(null)
 
@@ -252,8 +262,8 @@ function FullscreenLayer({
   const autoplayEnabledForFocus = mode === 'image' && focusedPane === 'image'
   const clampedVideoTime = clamp(videoTime, 0, Math.max(0, durationSec))
 
-  const imageAspect = loadedImageAspect ?? (focusedImage ? focusedImage.width / focusedImage.height : 1)
-  const videoAspect = focusedVideo ? focusedVideo.width / focusedVideo.height : 16 / 9
+  const imageAspect = displayedImageAspect ?? resolveMediaAspect(focusedImage?.width ?? 0, focusedImage?.height ?? 0, 1)
+  const videoAspect = resolveMediaAspect(focusedVideo?.width ?? 0, focusedVideo?.height ?? 0, 16 / 9)
 
   const imageGeometry = useMemo(
     () => computeMediaGeometry(imageViewportSize, imageAspect, imageTransform.zoom),
@@ -453,8 +463,77 @@ function FullscreenLayer({
   )
 
   useEffect(() => {
-    setLoadedImageAspect(null)
-  }, [focusedImage?.id, focusedImageSrc])
+    if (IS_TEST_MODE) {
+      setDisplayedImageSrc(focusedImageSrc)
+      if (focusedImage && focusedImage.width > 0 && focusedImage.height > 0) {
+        setDisplayedImageAspect(focusedImage.width / focusedImage.height)
+      } else {
+        setDisplayedImageAspect(null)
+      }
+      return
+    }
+
+    imagePreloadSeqRef.current += 1
+    const sequence = imagePreloadSeqRef.current
+
+    if (!focusedImageSrc) {
+      setDisplayedImageSrc(null)
+      setDisplayedImageAspect(null)
+      return
+    }
+
+    if (focusedImageSrc === displayedImageSrc) {
+      return
+    }
+
+    let cancelled = false
+
+    const preview = new Image()
+    preview.decoding = 'async'
+    preview.src = focusedImageSrc
+
+    const commit = () => {
+      if (cancelled || imagePreloadSeqRef.current !== sequence) {
+        return
+      }
+      setDisplayedImageSrc(focusedImageSrc)
+      if (preview.naturalWidth > 0 && preview.naturalHeight > 0) {
+        setDisplayedImageAspect(preview.naturalWidth / preview.naturalHeight)
+      }
+    }
+
+    const fail = () => {
+      if (cancelled || imagePreloadSeqRef.current !== sequence) {
+        return
+      }
+    }
+
+    if (typeof preview.decode === 'function') {
+      void preview
+        .decode()
+        .then(() => {
+          commit()
+        })
+        .catch(() => {
+          if (preview.complete && preview.naturalWidth > 0 && preview.naturalHeight > 0) {
+            commit()
+            return
+          }
+          fail()
+        })
+    } else {
+      preview.onload = () => {
+        commit()
+      }
+      preview.onerror = () => {
+        fail()
+      }
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [displayedImageSrc, focusedImage, focusedImageSrc])
 
   useEffect(() => {
     if (!fullscreenActive) {
@@ -622,20 +701,16 @@ function FullscreenLayer({
             transform: `translate3d(${imageTransform.offsetX}px, ${imageTransform.offsetY}px, 0)`,
           }}
         >
-          {focusedImageSrc ? (
+          {displayedImageSrc ? (
             <img
               className="fullscreen-media-image-element"
-              src={focusedImageSrc}
+              src={displayedImageSrc}
               alt={`图片 #${focusedImage?.ordinal ?? '-'}`}
               draggable={false}
-              onError={(event) => {
-                event.currentTarget.style.display = 'none'
-              }}
               onLoad={(event) => {
-                event.currentTarget.style.display = 'block'
                 const imageElement = event.currentTarget
                 if (imageElement.naturalWidth > 0 && imageElement.naturalHeight > 0) {
-                  setLoadedImageAspect(imageElement.naturalWidth / imageElement.naturalHeight)
+                  setDisplayedImageAspect(imageElement.naturalWidth / imageElement.naturalHeight)
                 }
               }}
             />
@@ -763,12 +838,6 @@ function FullscreenLayer({
               className="fullscreen-media-video-cover"
               src={focusedVideoCoverImageSrc}
               alt="视频封面"
-              onLoad={(event) => {
-                event.currentTarget.style.display = 'block'
-              }}
-              onError={(event) => {
-                event.currentTarget.style.display = 'none'
-              }}
             />
           ) : null}
 

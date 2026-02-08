@@ -1,8 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { spawn } from 'node:child_process'
-import { existsSync, promises as fs } from 'node:fs'
+import { createReadStream, existsSync, promises as fs, type ReadStream } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { Readable } from 'node:stream'
 import { Worker } from 'node:worker_threads'
 import { inflateRawSync } from 'node:zlib'
 
@@ -174,6 +175,12 @@ export interface MediaProtocolResponsePayload {
   status: number
   headers: Record<string, string>
   body: Uint8Array
+}
+
+export interface MediaProtocolStreamResponsePayload {
+  status: number
+  headers: Record<string, string>
+  body: Uint8Array | ReadableStream<Uint8Array>
 }
 
 interface ByteRange {
@@ -549,7 +556,7 @@ async function scanZipCentralEntries(archivePath: string): Promise<ZipCentralEnt
   }
 }
 
-async function readZipEntryContent(archivePath: string, entry: ZipCentralEntry): Promise<Buffer> {
+async function readZipEntryDataOffset(archivePath: string, entry: ZipCentralEntry): Promise<number> {
   const handle = await fs.open(archivePath, 'r')
 
   try {
@@ -565,8 +572,17 @@ async function readZipEntryContent(archivePath: string, entry: ZipCentralEntry):
 
     const localFileNameLength = localHeader.readUInt16LE(26)
     const localExtraLength = localHeader.readUInt16LE(28)
-    const dataOffset = entry.localHeaderOffset + 30 + localFileNameLength + localExtraLength
+    return entry.localHeaderOffset + 30 + localFileNameLength + localExtraLength
+  } finally {
+    await handle.close()
+  }
+}
 
+async function readZipEntryContent(archivePath: string, entry: ZipCentralEntry): Promise<Buffer> {
+  const dataOffset = await readZipEntryDataOffset(archivePath, entry)
+  const handle = await fs.open(archivePath, 'r')
+
+  try {
     const compressedBuffer = Buffer.alloc(entry.compressedSize)
     const { bytesRead } = await handle.read(compressedBuffer, 0, compressedBuffer.length, dataOffset)
     if (bytesRead < compressedBuffer.length) {
@@ -634,6 +650,25 @@ function parseByteRange(rangeHeader: string | null, size: number): ByteRange | n
     start,
     end: Math.min(end, size - 1),
   }
+}
+
+function toWebReadableStream(stream: ReadStream, signal?: AbortSignal | null): ReadableStream<Uint8Array> {
+  if (signal) {
+    if (signal.aborted) {
+      stream.destroy(new Error('媒体读取已取消'))
+    } else {
+      const onAbort = () => {
+        stream.destroy(new Error('媒体读取已取消'))
+      }
+      signal.addEventListener('abort', onAbort, { once: true })
+      const cleanup = () => signal.removeEventListener('abort', onAbort)
+      stream.once('close', cleanup)
+      stream.once('end', cleanup)
+      stream.once('error', cleanup)
+    }
+  }
+
+  return Readable.toWeb(stream) as ReadableStream<Uint8Array>
 }
 
 function toSafeFsName(value: string): string {
@@ -2470,6 +2505,60 @@ export class FileSystemMediaReadService {
     }
   }
 
+  private async readFilesystemMediaStream(
+    locator: Extract<MediaLocatorDto, { kind: 'filesystem' }>,
+    mimeType: string,
+    rangeHeader: string | null,
+    signal?: AbortSignal | null,
+  ): Promise<MediaProtocolStreamResponsePayload> {
+    const filePath = locator.absolute_path
+    const stat = await fs.stat(filePath)
+    const size = stat.size
+
+    const requestedRange = parseByteRange(rangeHeader, size)
+    if (rangeHeader && !requestedRange) {
+      return {
+        status: 416,
+        headers: {
+          'content-type': mimeType,
+          'content-range': `bytes */${size}`,
+          'accept-ranges': 'bytes',
+          'cache-control': 'no-store',
+        },
+        body: new Uint8Array(0),
+      }
+    }
+
+    if (!requestedRange) {
+      const stream = createReadStream(filePath)
+      return {
+        status: 200,
+        headers: {
+          'content-type': mimeType,
+          'content-length': String(size),
+          'accept-ranges': 'bytes',
+          'cache-control': 'no-store',
+        },
+        body: toWebReadableStream(stream, signal),
+      }
+    }
+
+    const { start, end } = requestedRange
+    const length = end - start + 1
+    const stream = createReadStream(filePath, { start, end })
+    return {
+      status: 206,
+      headers: {
+        'content-type': mimeType,
+        'content-length': String(length),
+        'content-range': `bytes ${start}-${end}/${size}`,
+        'accept-ranges': 'bytes',
+        'cache-control': 'no-store',
+      },
+      body: toWebReadableStream(stream, signal),
+    }
+  }
+
   private async readArchiveEntryMedia(
     locator: Extract<MediaLocatorDto, { kind: 'archive-entry' }>,
     mimeType: string,
@@ -2479,6 +2568,49 @@ export class FileSystemMediaReadService {
     const entry = entryMap?.get(locator.entry_name)
     if (!entry) {
       throw new Error(`压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`)
+    }
+
+    const buffer = await readZipEntryContent(archivePath, entry)
+    return {
+      status: 200,
+      headers: {
+        'content-type': mimeType,
+        'content-length': String(buffer.length),
+        'cache-control': 'no-store',
+      },
+      body: buffer,
+    }
+  }
+
+  private async readArchiveEntryMediaStream(
+    locator: Extract<MediaLocatorDto, { kind: 'archive-entry' }>,
+    mimeType: string,
+    signal?: AbortSignal | null,
+  ): Promise<MediaProtocolStreamResponsePayload> {
+    const archivePath = locator.archive_path
+    const entryMap = this.zipEntryIndexByPath.get(archivePath)
+    const entry = entryMap?.get(locator.entry_name)
+    if (!entry) {
+      throw new Error(`压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`)
+    }
+
+    if ((entry.generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED) !== 0) {
+      throw new Error(`zip 条目被加密，当前不支持: ${archivePath} -> ${entry.entryName}`)
+    }
+
+    if (entry.compressionMethod === ZIP_COMPRESSION_STORE) {
+      const dataOffset = await readZipEntryDataOffset(archivePath, entry)
+      const end = dataOffset + entry.compressedSize - 1
+      const stream = createReadStream(archivePath, { start: dataOffset, end })
+      return {
+        status: 200,
+        headers: {
+          'content-type': mimeType,
+          'content-length': String(entry.compressedSize),
+          'cache-control': 'no-store',
+        },
+        body: toWebReadableStream(stream, signal),
+      }
     }
 
     const buffer = await readZipEntryContent(archivePath, entry)
@@ -3266,6 +3398,32 @@ export class FileSystemMediaReadService {
     token: string,
     rangeHeader: string | null,
   ): Promise<MediaProtocolResponsePayload> {
+    const record = this.requireMediaTokenRecord(token)
+
+    const locator = record.locator
+    if (locator.kind === 'filesystem') {
+      return this.readFilesystemMedia(locator, record.mimeType, rangeHeader)
+    }
+
+    return this.readArchiveEntryMedia(locator, record.mimeType)
+  }
+
+  async readMediaResourceByTokenStream(
+    token: string,
+    rangeHeader: string | null,
+    signal?: AbortSignal | null,
+  ): Promise<MediaProtocolStreamResponsePayload> {
+    const record = this.requireMediaTokenRecord(token)
+
+    const locator = record.locator
+    if (locator.kind === 'filesystem') {
+      return this.readFilesystemMediaStream(locator, record.mimeType, rangeHeader, signal)
+    }
+
+    return this.readArchiveEntryMediaStream(locator, record.mimeType, signal)
+  }
+
+  private requireMediaTokenRecord(token: string): MediaTokenRecord {
     this.cleanupExpiredTokens()
     this.mediaAudit.tokenReads += 1
 
@@ -3282,12 +3440,6 @@ export class FileSystemMediaReadService {
     }
 
     this.mediaAudit.tokenHits += 1
-
-    const locator = record.locator
-    if (locator.kind === 'filesystem') {
-      return this.readFilesystemMedia(locator, record.mimeType, rangeHeader)
-    }
-
-    return this.readArchiveEntryMedia(locator, record.mimeType)
+    return record
   }
 }

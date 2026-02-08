@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import {
   SHORTCUT_DEFINITIONS,
@@ -7,6 +7,8 @@ import {
   type ShortcutMap,
 } from '../../shortcuts'
 import { isEditableTarget } from '../../utils/ui'
+
+const IMAGE_NAV_REPEAT_MIN_INTERVAL_MS = 72
 
 type AlignDirection = 'up' | 'down' | 'left' | 'right'
 
@@ -71,6 +73,8 @@ export function useShortcutEngine({
   onAdjustVideoRate,
   onAdjustVideoVolume,
 }: UseShortcutEngineParams): void {
+  const lastImageNavAtRef = useRef(0)
+
   const executeShortcut = useCallback(
     (action: ShortcutAction) => {
       switch (action) {
@@ -330,6 +334,15 @@ export function useShortcutEngine({
 
       const imageNavigationActions: ShortcutAction[] = ['imagePrev', 'imageNext', 'imageFirst', 'imageLast']
       if (mode === 'image' && imageNavigationActions.includes(matchedDefinition.action)) {
+        if (event.repeat) {
+          const now = performance.now()
+          if (now - lastImageNavAtRef.current < IMAGE_NAV_REPEAT_MIN_INTERVAL_MS) {
+            event.preventDefault()
+            return
+          }
+          lastImageNavAtRef.current = now
+        }
+
         const activeElement = document.activeElement
         if (
           activeElement instanceof HTMLElement &&

@@ -1,6 +1,10 @@
+import { useEffect, useRef, useState } from 'react'
+
 import type { BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
 import { formatSeconds } from '../utils/ui'
 import { mediaLocatorFileName } from '../features/backend'
+
+const IS_TEST_MODE = import.meta.env.MODE === 'test'
 
 interface MetadataPanelProps {
   mode: BrowserMode
@@ -55,6 +59,64 @@ function MetadataPanel({
   onDragStart,
   onDropToVideo,
 }: MetadataPanelProps) {
+  const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
+  const imagePreloadSeqRef = useRef(0)
+
+  useEffect(() => {
+    if (IS_TEST_MODE) {
+      if (displayedImageSrc !== focusedImageSrc) {
+        setDisplayedImageSrc(focusedImageSrc)
+      }
+      return
+    }
+
+    imagePreloadSeqRef.current += 1
+    const sequence = imagePreloadSeqRef.current
+
+    if (!focusedImageSrc) {
+      setDisplayedImageSrc(null)
+      return
+    }
+
+    if (focusedImageSrc === displayedImageSrc) {
+      return
+    }
+
+    let cancelled = false
+    const preview = new Image()
+    preview.decoding = 'async'
+    preview.src = focusedImageSrc
+
+    const commit = () => {
+      if (cancelled || imagePreloadSeqRef.current !== sequence) {
+        return
+      }
+      setDisplayedImageSrc(focusedImageSrc)
+    }
+
+    if (typeof preview.decode === 'function') {
+      void preview
+        .decode()
+        .then(() => {
+          commit()
+        })
+        .catch(() => {
+          if (preview.complete && preview.naturalWidth > 0 && preview.naturalHeight > 0) {
+            commit()
+          }
+        })
+    } else {
+      preview.onload = () => {
+        commit()
+      }
+      preview.onerror = () => undefined
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [displayedImageSrc, focusedImageSrc])
+
   const imagePreviewSizing = (() => {
     if (!focusedImage) {
       return {}
@@ -91,18 +153,12 @@ function MetadataPanel({
           {hasImageFocus && focusedImage ? (
             <>
               <div className="metadata-image-canvas">
-                {focusedImageSrc ? (
+                {displayedImageSrc ? (
                   <img
                     className="metadata-image-real"
-                    src={focusedImageSrc}
+                    src={displayedImageSrc}
                     alt={`${focusedImagePackage?.displayName ?? '图片'} #${focusedImage.ordinal}`}
                     draggable={false}
-                    onLoad={(event) => {
-                      event.currentTarget.style.display = 'block'
-                    }}
-                    onError={(event) => {
-                      event.currentTarget.style.display = 'none'
-                    }}
                   />
                 ) : (
                   <div

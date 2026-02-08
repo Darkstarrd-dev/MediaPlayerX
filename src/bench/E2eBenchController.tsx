@@ -125,6 +125,7 @@ function E2eBenchController({
 
   const [phase, setPhase] = useState<Phase>('init')
   const [error, setError] = useState<string | null>(null)
+  const [stepDisplay, setStepDisplay] = useState(0)
 
   const phaseRef = useRef<Phase>('init')
   useEffect(() => {
@@ -419,6 +420,7 @@ function E2eBenchController({
     setPhase('browsing')
     directionRef.current = 1
     stepRef.current = 0
+    setStepDisplay(0)
     navRecordsRef.current = []
     pendingNavRef.current = null
     requestNavigation(0, pageIndex)
@@ -536,6 +538,7 @@ function E2eBenchController({
 
     pendingNavRef.current = null
     stepRef.current += 1
+    setStepDisplay(stepRef.current)
 
     if (stepRef.current >= tuning.browseSteps) {
       void finish('ok')
@@ -576,7 +579,7 @@ function E2eBenchController({
         maxWidth: 360,
       }}
     >
-      <div>{`E2E Bench | phase=${phase} | step=${stepRef.current}/${tuning.browseSteps} | page=${pageIndex ?? '-'} | loading=${pageLoading ? '1' : '0'}`}</div>
+      <div>{`E2E Bench | phase=${phase} | step=${stepDisplay}/${tuning.browseSteps} | page=${pageIndex ?? '-'} | loading=${pageLoading ? '1' : '0'}`}</div>
       {error ? <div style={{ marginTop: 6, color: '#b42318' }}>{error}</div> : null}
     </div>
   )

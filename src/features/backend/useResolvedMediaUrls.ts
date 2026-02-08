@@ -10,6 +10,7 @@ import type { ReadonlyMediaRepository } from './repository'
 
 const MEDIA_RESOLVE_TIMEOUT_MS = 8_000
 const CACHE_REFRESH_LEEWAY_MS = 15_000
+const DEFAULT_MAX_CONCURRENT = 8
 
 interface CachedMediaUrl {
   resourceUrl: string
@@ -115,7 +116,7 @@ export function useResolvedMediaUrls({
   const maxConcurrent =
     typeof maxConcurrentRaw === 'number' && Number.isFinite(maxConcurrentRaw) && maxConcurrentRaw > 0
       ? Math.max(1, Math.round(maxConcurrentRaw))
-      : Number.POSITIVE_INFINITY
+      : DEFAULT_MAX_CONCURRENT
 
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncResolveRepository(repository)
 

@@ -99,7 +99,11 @@ export function registerBackendIpcHandlers(): void {
     }
 
     try {
-      const payload = await ensureService().readMediaResourceByToken(token, request.headers.get('range'))
+      const payload = await ensureService().readMediaResourceByTokenStream(
+        token,
+        request.headers.get('range'),
+        request.signal,
+      )
       return new Response(payload.body, {
         status: payload.status,
         headers: payload.headers,
