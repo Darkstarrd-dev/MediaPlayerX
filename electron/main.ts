@@ -220,7 +220,7 @@ function createMainWindow(): BrowserWindow {
     event.preventDefault()
   })
 
-  window.webContents.on('will-frame-navigate', (event, _url) => {
+  window.webContents.on('will-frame-navigate', (event) => {
     // Frame navigations are not expected in this app; block defensively.
     event.preventDefault()
   })

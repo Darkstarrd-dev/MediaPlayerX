@@ -82,6 +82,7 @@ export interface ReadonlyMediaRepository {
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
+  onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void
 }
 
 export interface SynchronousMediaRepository extends ReadonlyMediaRepository {

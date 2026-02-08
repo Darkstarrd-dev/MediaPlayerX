@@ -58,8 +58,9 @@
 - Electron 代理支持：可通过 `MEDIA_PLAYERX_PROXY_SERVER` / `MEDIA_PLAYERX_PROXY_BYPASS` 透传运行时代理配置（用于依赖联网能力或受限网络环境）。
 - 缩略图渲染链路已接入 Sharp WebP 缓存：Main 按请求变体生成并缓存缩略图，Renderer 缩略图网格优先读取 thumbnail 变体，Metadata/Fullscreen 保持 original 变体。
 - 新增 `resolveMediaResource` 审计统计：拒绝原因分类、token 命中/未命中/过期/清理计数可通过 IPC 读取。
-- 新增运行时依赖预检：Main 启动后可输出 `sharp/ffmpeg/ffprobe/7z/powershell` 可用性，Renderer 在降级生效时展示可见告警；`rar/7z` 与 zip 重处理策略按依赖可用性自动收口。
-- 压缩包策略升级：`rar/7z` 统一走“解压 -> 转存 zip(store)”策略；zip 遇到非 `store/deflate` 图片条目时走“解压 -> webp(quality=90) -> zip(store)”归一化策略。
+- 新增运行时依赖预检：Main 启动后可输出 `sharp/ffmpeg/ffprobe/archive-wasm/powershell` 可用性，Renderer 在降级生效时展示可见告警；`rar/7z` 与 zip 重处理策略按依赖可用性自动收口。
+- 压缩包策略升级：`rar/7z` 统一走“内存解包 -> 非 webp 图片转 webp(quality=90) -> zip(store)”并在同目录原地替换为 `.zip`（成功后删除原始 `rar/7z`）；zip 遇到非 `store/deflate` 图片条目时走“解压 -> webp(quality=90) -> zip(store)”归一化策略。
+- 归一化调度策略：`rar/7z` 默认进入低优先级后台队列（等待交互空闲后执行，按 Sidebar 路径排序）；当用户显式打开某个 `rar/7z` 包时提升为高优先级并立即后台处理。
 - 扫描/重处理性能门禁改为双规并行：`Z:\bench`（实际负载回放） + `perf-data/<日期>-scan-dataset/input`（脚本生成全覆盖）。
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。

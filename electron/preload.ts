@@ -110,6 +110,20 @@ const backendApi = {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearDatabase)
     return clearDatabaseResponseSchema.parse(response)
   },
+  onLibraryChanged: (listener: (payload: unknown) => void) => {
+    const handler = (_event: unknown, payload: unknown) => {
+      try {
+        listener(payload)
+      } catch {
+        // ignore listener errors
+      }
+    }
+
+    ipcRenderer.on(BACKEND_CHANNELS.libraryChanged, handler)
+    return () => {
+      ipcRenderer.removeListener(BACKEND_CHANNELS.libraryChanged, handler)
+    }
+  },
 }
 
 const benchApi = {

@@ -124,7 +124,7 @@
 
 ### 预检要求
 
-- Main 必须提供运行时依赖预检接口，至少覆盖：`sharp`、`ffmpeg`、`ffprobe`、`7z`、`powershell`。
+- Main 必须提供运行时依赖预检接口，至少覆盖：`sharp`、`ffmpeg`、`ffprobe`、`archive-wasm`、`powershell`。
 - Renderer 必须可见展示降级状态（非静默降级）。
 - 依赖缺失时，必须走确定性回退路径，不允许随机失败。
 
@@ -136,10 +136,13 @@
 | 缩略图缓存（Sharp WebP） | `sharp` | degraded | 回退 `original` 变体 |
 | 视频元数据探测 | `ffprobe` | degraded | 使用默认时长/分辨率 |
 | 视频封面抓取 | `ffmpeg` | degraded | 仅保存颜色，不落盘封面图 |
-| `rar/7z` 归一化 | `7z` | unavailable | 跳过该类压缩包并记录告警 |
+| `rar/7z` 归一化 | `node-unrar-js + 7z-wasm` | unavailable | 跳过该类压缩包并记录告警 |
 | zip 非 `store/deflate` 重处理 | `ffmpeg + powershell` | degraded | 回退 safe-entry，仅加载可直接读取条目 |
 
 ## 当前模块化基线（接入前提）
+
+- `rar/7z` 归一化成功后，输出 `zip(store)` 必须写回源压缩包同目录并完成原地替换；仅在输出文件校验通过后删除原始 `rar/7z`。
+- `rar/7z` 归一化任务默认低优先级后台执行（等待空闲窗口，按 Sidebar 路径排序）；用户显式打开对应包时可提升为高优先级并立即后台处理。
 
 - `src/features/layout/thumbnailLayout.ts`：缩略图离散 9 级排布算法（`scalesolution2` 同源）。
 - `src/features/app/helpers.ts`：导入/检索/树遍历基础函数。

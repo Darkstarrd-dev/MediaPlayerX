@@ -1,4 +1,4 @@
-import { app, clipboard, dialog, ipcMain, protocol } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, protocol } from 'electron'
 import path from 'node:path'
 
 import {
@@ -64,6 +64,18 @@ export function registerBackendIpcHandlers(): void {
   const defaultLibraryRoot = path.join(app.getPath('pictures'), 'MediaPlayerXLibrary')
   const libraryRoot = path.resolve(process.env.MEDIA_PLAYERX_LIBRARY_ROOT ?? defaultLibraryRoot)
   const service = new FileSystemMediaReadService(libraryRoot)
+
+  service.onLibraryChanged((payload) => {
+    for (const window of BrowserWindow.getAllWindows()) {
+      try {
+        if (!window.isDestroyed()) {
+          window.webContents.send(BACKEND_CHANNELS.libraryChanged, payload)
+        }
+      } catch {
+        // ignore send failures
+      }
+    }
+  })
 
   protocol.handle(MEDIA_PROTOCOL_SCHEME, async (request) => {
     const requestUrl = new URL(request.url)

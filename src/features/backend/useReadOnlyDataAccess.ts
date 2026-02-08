@@ -446,6 +446,42 @@ export function useReadOnlyDataAccess({
     setMetadataRetryNonce((value) => value + 1)
   }, [])
 
+  const retryAllSlices = useCallback(() => {
+    setLibraryRetryNonce((value) => value + 1)
+    setSidebarRetryNonce((value) => value + 1)
+    setPageRetryNonce((value) => value + 1)
+    setMetadataRetryNonce((value) => value + 1)
+  }, [])
+
+  useEffect(() => {
+    if (isSynchronousTestMode || !repository.onLibraryChanged) {
+      return
+    }
+
+    let throttleTimer: ReturnType<typeof window.setTimeout> | null = null
+    const scheduleRefresh = () => {
+      if (throttleTimer !== null) {
+        return
+      }
+
+      throttleTimer = window.setTimeout(() => {
+        throttleTimer = null
+        retryAllSlices()
+      }, 120)
+    }
+
+    const unsubscribe = repository.onLibraryChanged(() => {
+      scheduleRefresh()
+    })
+
+    return () => {
+      if (throttleTimer !== null) {
+        window.clearTimeout(throttleTimer)
+      }
+      unsubscribe()
+    }
+  }, [isSynchronousTestMode, repository, retryAllSlices])
+
   const errors: BackendReadErrors = {
     library: libraryState.error,
     sidebar: sidebarState.error,

@@ -118,6 +118,15 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
     return null
   }
 
+  onLibraryChanged(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void {
+    const api = window.mediaPlayerBackend
+    if (!api?.onLibraryChanged) {
+      return () => undefined
+    }
+
+    return api.onLibraryChanged(listener)
+  }
+
   async readLibrarySnapshot(options?: RepositoryRequestOptions): Promise<LibrarySnapshotDto> {
     const api = window.mediaPlayerBackend
     if (!api) {

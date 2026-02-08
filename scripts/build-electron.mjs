@@ -18,6 +18,10 @@ const buildTargets = [
     entryPoints: ['electron/preload.ts'],
     outfile: 'dist-electron/preload.cjs',
   },
+  {
+    entryPoints: ['electron/archiveNormalizeWorker.ts'],
+    outfile: 'dist-electron/archiveNormalizeWorker.cjs',
+  },
 ]
 
 const sharedOptions = {
@@ -27,7 +31,7 @@ const sharedOptions = {
   platform: 'node',
   target: 'node22',
   sourcemap: true,
-  external: ['electron', 'sharp'],
+  external: ['electron', 'sharp', 'node-unrar-js', '7z-wasm'],
   logLevel: 'info',
 }
 

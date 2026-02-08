@@ -46,6 +46,9 @@ interface MediaPlayerBackendApi {
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
   clearDatabase: () => Promise<ClearDatabaseResponseDto>
+  onLibraryChanged?: (
+    listener: (payload: { reason: string; updated_at_ms: number }) => void,
+  ) => () => void
 }
 
 interface MediaPlayerBenchConfigResponse {
