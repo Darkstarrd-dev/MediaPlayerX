@@ -25,7 +25,6 @@ import {
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
   type FocusedImageRefDto,
-  type ImageItemDto,
   type ImportTaskDto,
   type ImportTaskSourceDto,
   type ImagePackageDto,
@@ -58,11 +57,17 @@ import {
   type WritePackageGradeResponseDto,
 } from '../src/contracts/backend'
 import { MEDIA_PROTOCOL_SCHEME } from './channels'
+import { parallelMapLimit } from './fileSystemAsyncUtils'
 import {
   normalizeArchiveToStoreZipInPlace,
   readArchiveWasmSupport,
   resolveArchiveReplacementZipPath,
 } from './archiveWasmExtractor'
+import {
+  convertDirectoryImagesToWebp90,
+  extractZipWithPowerShell,
+} from './fileSystemArchiveNormalizeHelpers'
+import { collectMediaFiles, type FileRecord } from './fileSystemFileCollector'
 import {
   detectMimeTypeByExtension,
   isPathInsideRoot,
@@ -70,7 +75,6 @@ import {
   matchesFeatureFilter,
   normalizeAllowlistKey,
   normalizeFeatureFilter,
-  normalizePathKey,
   deriveVideoWorkTitleFromFileName,
   toAbsoluteTreePath,
   toDeterministicCoverColor,
@@ -78,6 +82,7 @@ import {
   toSafeSizeKb,
   toSafeSizeMb,
 } from './fileSystemServiceHelpers'
+import { createArchiveSource, createDirectorySource } from './fileSystemSourceFactories'
 import {
   applyPackageMetadataWrite,
   applyVideoMetadataWrite,
@@ -94,6 +99,7 @@ import {
 } from './fileSystemRuntimeHelpers'
 import { buildImageSidebarTree } from './fileSystemSidebarTree'
 import { parseByteRange, toWebReadableStream } from './fileSystemStreamHelpers'
+import { writeStoredZipFromDirectory } from './fileSystemZipStoreWriter'
 import {
   isSafeArchiveEntryName,
   normalizeArchiveEntryName,
@@ -159,15 +165,6 @@ interface PersistedVideoCoverRecord {
   coverColor: string
   coverImagePath: string | null
   updatedAtMs: number
-}
-
-interface FileRecord {
-  absolutePath: string
-  relativePath: string
-  extension: string
-  sizeBytes: number
-  width: number
-  height: number
 }
 
 interface MediaTokenRecord {
@@ -252,57 +249,6 @@ class MediaAccessError extends Error {
   }
 }
 
-async function parallelMapLimit<T, R>(
-  items: readonly T[],
-  concurrency: number,
-  mapper: (item: T, index: number) => Promise<R>,
-): Promise<R[]> {
-  if (items.length === 0) {
-    return []
-  }
-
-  const workerCount = Math.max(1, Math.min(concurrency, items.length))
-  const results = new Array<R>(items.length)
-  let cursor = 0
-
-  const workers = Array.from({ length: workerCount }, async () => {
-    while (true) {
-      const index = cursor
-      cursor += 1
-      if (index >= items.length) {
-        return
-      }
-
-      results[index] = await mapper(items[index], index)
-    }
-  })
-
-  await Promise.all(workers)
-  return results
-}
-
-function createCrc32Table(): Uint32Array {
-  const table = new Uint32Array(256)
-  for (let index = 0; index < 256; index += 1) {
-    let c = index
-    for (let bit = 0; bit < 8; bit += 1) {
-      c = (c & 1) !== 0 ? (0xedb88320 ^ (c >>> 1)) >>> 0 : (c >>> 1) >>> 0
-    }
-    table[index] = c >>> 0
-  }
-  return table
-}
-
-const CRC32_TABLE = createCrc32Table()
-
-function crc32(buffer: Buffer): number {
-  let crc = 0xffffffff
-  for (let index = 0; index < buffer.length; index += 1) {
-    crc = CRC32_TABLE[(crc ^ buffer[index]) & 0xff] ^ (crc >>> 8)
-  }
-  return (crc ^ 0xffffffff) >>> 0
-}
-
 function clampThumbnailMaxEdge(value: number | undefined): number {
   if (!Number.isFinite(value)) {
     return THUMBNAIL_DEFAULT_MAX_EDGE
@@ -317,141 +263,6 @@ function clampThumbnailQuality(value: number | undefined): number {
   }
 
   return Math.max(THUMBNAIL_MIN_QUALITY, Math.min(THUMBNAIL_MAX_QUALITY, Math.round(value)))
-}
-
-async function collectFilesRecursive(rootDir: string): Promise<Array<{ absolutePath: string; relativePath: string }>> {
-  const files: Array<{ absolutePath: string; relativePath: string }> = []
-  const queue = [rootDir]
-
-  while (queue.length > 0) {
-    const current = queue.pop()
-    if (!current) {
-      continue
-    }
-
-    const entries = await fs.readdir(current, { withFileTypes: true })
-    for (const entry of entries) {
-      const absolutePath = path.join(current, entry.name)
-      if (entry.isDirectory()) {
-        queue.push(absolutePath)
-        continue
-      }
-
-      if (!entry.isFile()) {
-        continue
-      }
-
-      files.push({
-        absolutePath,
-        relativePath: normalizePathKey(path.relative(rootDir, absolutePath)),
-      })
-    }
-  }
-
-  files.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
-  return files
-}
-
-async function extractZipWithPowerShell(sourceArchivePath: string, outputDir: string): Promise<void> {
-  const escapedSource = sourceArchivePath.replace(/'/g, "''")
-  const escapedOutput = outputDir.replace(/'/g, "''")
-  const script = `Expand-Archive -Path '${escapedSource}' -DestinationPath '${escapedOutput}' -Force`
-  const result = await runProcess('powershell.exe', ['-NoProfile', '-Command', script], 180_000)
-  if (result.code !== 0) {
-    throw new Error(result.stderr.trim() || `Expand-Archive 失败: ${sourceArchivePath}`)
-  }
-}
-
-async function convertDirectoryImagesToWebp90(rootDir: string): Promise<void> {
-  const files = await collectFilesRecursive(rootDir)
-  for (const file of files) {
-    const extension = path.extname(file.absolutePath).toLowerCase()
-    if (!IMAGE_EXTENSIONS_FOR_WEBP_CONVERT.has(extension)) {
-      continue
-    }
-
-    const outputPath = file.absolutePath.slice(0, file.absolutePath.length - extension.length) + '.webp'
-    const result = await runProcess(
-      FFMPEG_BIN,
-      ['-y', '-v', 'error', '-i', file.absolutePath, '-q:v', '90', outputPath],
-      120_000,
-    )
-    if (result.code !== 0) {
-      throw new Error(result.stderr.trim() || `ffmpeg 转 webp 失败: ${file.absolutePath}`)
-    }
-
-    if (outputPath !== file.absolutePath) {
-      await fs.rm(file.absolutePath, { force: true })
-    }
-  }
-}
-
-async function writeStoredZipFromDirectory(inputDir: string, outputZipPath: string): Promise<void> {
-  const entries = await collectFilesRecursive(inputDir)
-  const localChunks: Buffer[] = []
-  const centralChunks: Buffer[] = []
-  let cursor = 0
-
-  for (const entry of entries) {
-    const content = await fs.readFile(entry.absolutePath)
-    const normalizedName = normalizeArchiveEntryName(entry.relativePath)
-    if (!normalizedName) {
-      continue
-    }
-
-    const nameBuffer = Buffer.from(normalizedName, 'utf8')
-    const crc = crc32(content)
-
-    const localHeader = Buffer.alloc(30)
-    localHeader.writeUInt32LE(0x04034b50, 0)
-    localHeader.writeUInt16LE(20, 4)
-    localHeader.writeUInt16LE(0x0800, 6)
-    localHeader.writeUInt16LE(0, 8)
-    localHeader.writeUInt16LE(0, 10)
-    localHeader.writeUInt16LE(0, 12)
-    localHeader.writeUInt32LE(crc, 14)
-    localHeader.writeUInt32LE(content.length, 18)
-    localHeader.writeUInt32LE(content.length, 22)
-    localHeader.writeUInt16LE(nameBuffer.length, 26)
-    localHeader.writeUInt16LE(0, 28)
-
-    localChunks.push(localHeader, nameBuffer, content)
-
-    const centralHeader = Buffer.alloc(46)
-    centralHeader.writeUInt32LE(0x02014b50, 0)
-    centralHeader.writeUInt16LE(20, 4)
-    centralHeader.writeUInt16LE(20, 6)
-    centralHeader.writeUInt16LE(0x0800, 8)
-    centralHeader.writeUInt16LE(0, 10)
-    centralHeader.writeUInt16LE(0, 12)
-    centralHeader.writeUInt32LE(crc, 16)
-    centralHeader.writeUInt32LE(content.length, 20)
-    centralHeader.writeUInt32LE(content.length, 24)
-    centralHeader.writeUInt16LE(nameBuffer.length, 28)
-    centralHeader.writeUInt16LE(0, 30)
-    centralHeader.writeUInt16LE(0, 32)
-    centralHeader.writeUInt16LE(0, 34)
-    centralHeader.writeUInt16LE(0, 36)
-    centralHeader.writeUInt32LE(0, 38)
-    centralHeader.writeUInt32LE(cursor, 42)
-
-    centralChunks.push(centralHeader, nameBuffer)
-    cursor += localHeader.length + nameBuffer.length + content.length
-  }
-
-  const centralDirectoryBuffer = Buffer.concat(centralChunks)
-  const endOfCentralDirectory = Buffer.alloc(22)
-  endOfCentralDirectory.writeUInt32LE(0x06054b50, 0)
-  endOfCentralDirectory.writeUInt16LE(0, 4)
-  endOfCentralDirectory.writeUInt16LE(0, 6)
-  endOfCentralDirectory.writeUInt16LE(entries.length, 8)
-  endOfCentralDirectory.writeUInt16LE(entries.length, 10)
-  endOfCentralDirectory.writeUInt32LE(centralDirectoryBuffer.length, 12)
-  endOfCentralDirectory.writeUInt32LE(cursor, 16)
-  endOfCentralDirectory.writeUInt16LE(0, 20)
-
-  await fs.mkdir(path.dirname(outputZipPath), { recursive: true })
-  await fs.writeFile(outputZipPath, Buffer.concat([...localChunks, centralDirectoryBuffer, endOfCentralDirectory]))
 }
 
 export class FileSystemMediaReadService {
@@ -1135,295 +946,18 @@ export class FileSystemMediaReadService {
   }
 
   private async collectFiles(): Promise<FileRecord[]> {
-    const rootStat = await fs.stat(this.rootDir).catch(() => null)
-    if (!rootStat || !rootStat.isDirectory()) {
-      throw new Error(`后端真实读服务失败：目录不存在或不可访问 -> ${this.rootDir}`)
-    }
-
     await this.ensureStateLoaded()
-
-    const directoryRoots = Array.from(new Set(this.importDirectoryRoots.map((value) => path.resolve(value))))
-    const explicitFiles = Array.from(new Set(this.importSources.files.map((value) => path.resolve(value))))
-
-    if (directoryRoots.length === 0 && explicitFiles.length === 0) {
-      return []
-    }
-
-    const internalMetaDir = path.join(this.rootDir, '.mediaplayerx')
-    const legacyImportsDir = path.join(this.rootDir, LEGACY_IMPORTS_DIR_NAME)
-
-    const files: FileRecord[] = []
-    const seen = new Set<string>()
-
-    const pushFile = (absolutePath: string, extension: string, sizeBytes: number, width = 0, height = 0) => {
-      const key = normalizeAllowlistKey(absolutePath)
-      if (seen.has(key)) {
-        return
-      }
-      seen.add(key)
-      files.push({
-        absolutePath,
-        relativePath: normalizePathKey(absolutePath),
-        extension,
-        sizeBytes,
-        width,
-        height,
-      })
-    }
-
-    let levelDirectories = directoryRoots
-
-    while (levelDirectories.length > 0) {
-      const nestedDirectories = await parallelMapLimit(levelDirectories, DIRECTORY_SCAN_CONCURRENCY, async (current) => {
-        const entries = await fs.readdir(current, { withFileTypes: true }).catch(() => null)
-        if (!entries) {
-          return []
-        }
-        const nextLevel: string[] = []
-        const pendingVideoRecords: Array<{ absolutePath: string; extension: string }> = []
-        const pendingImageOrArchiveRecords: Array<{ absolutePath: string; extension: string }> = []
-
-        for (const entry of entries) {
-          const absolutePath = path.join(current, entry.name)
-          if (entry.isDirectory()) {
-            const lowered = entry.name.toLowerCase()
-            if (lowered === '.mediaplayerx' || lowered === LEGACY_IMPORTS_DIR_NAME) {
-              continue
-            }
-            nextLevel.push(absolutePath)
-            continue
-          }
-
-          if (!entry.isFile()) {
-            continue
-          }
-
-          const extension = path.extname(entry.name).toLowerCase()
-          if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
-            continue
-          }
-
-          if (isPathInsideRoot(internalMetaDir, absolutePath) || isPathInsideRoot(legacyImportsDir, absolutePath)) {
-            continue
-          }
-
-          if (VIDEO_EXTENSIONS.has(extension)) {
-            pendingVideoRecords.push({ absolutePath, extension })
-            continue
-          }
-
-          pendingImageOrArchiveRecords.push({ absolutePath, extension })
-        }
-
-        if (pendingImageOrArchiveRecords.length > 0) {
-          const imageOrArchiveFiles = await parallelMapLimit(
-            pendingImageOrArchiveRecords,
-            DIRECTORY_SCAN_CONCURRENCY,
-            async (record) => {
-              const stat = await fs.stat(record.absolutePath).catch(() => null)
-              if (!stat || !stat.isFile()) {
-                return null
-              }
-
-              let width = 0
-              let height = 0
-              if (IMAGE_EXTENSIONS.has(record.extension)) {
-                const dimensions = await probeImageDimensionsFromFile(record.absolutePath)
-                width = dimensions.width
-                height = dimensions.height
-              }
-
-              return {
-                absolutePath: record.absolutePath,
-                extension: record.extension,
-                sizeBytes: stat.size,
-                width,
-                height,
-              }
-            },
-          )
-
-          for (const file of imageOrArchiveFiles) {
-            if (!file) {
-              continue
-            }
-            pushFile(file.absolutePath, file.extension, file.sizeBytes, file.width, file.height)
-          }
-        }
-
-        if (pendingVideoRecords.length > 0) {
-          const videoFiles = await parallelMapLimit(
-            pendingVideoRecords,
-            DIRECTORY_SCAN_CONCURRENCY,
-            async (videoRecord) => {
-              const stat = await fs.stat(videoRecord.absolutePath).catch(() => null)
-              return {
-                absolutePath: videoRecord.absolutePath,
-                extension: videoRecord.extension,
-                sizeBytes: stat?.size ?? 0,
-              }
-            },
-          )
-
-          for (const videoFile of videoFiles) {
-            pushFile(videoFile.absolutePath, videoFile.extension, videoFile.sizeBytes, 0, 0)
-          }
-        }
-
-        return nextLevel
-      })
-
-      levelDirectories = nestedDirectories.flat()
-    }
-
-    if (explicitFiles.length > 0) {
-      const resolvedFiles = await parallelMapLimit(explicitFiles, DIRECTORY_SCAN_CONCURRENCY, async (candidatePath) => {
-        const absolutePath = path.resolve(candidatePath)
-
-        if (isPathInsideRoot(internalMetaDir, absolutePath) || isPathInsideRoot(legacyImportsDir, absolutePath)) {
-          return null
-        }
-
-        const stat = await fs.stat(absolutePath).catch(() => null)
-        if (!stat || !stat.isFile()) {
-          return null
-        }
-
-        const extension = path.extname(absolutePath).toLowerCase()
-        if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
-          return null
-        }
-
-        let width = 0
-        let height = 0
-        if (IMAGE_EXTENSIONS.has(extension)) {
-          const dimensions = await probeImageDimensionsFromFile(absolutePath)
-          width = dimensions.width
-          height = dimensions.height
-        }
-
-        return {
-          absolutePath,
-          extension,
-          sizeBytes: stat.size,
-          width,
-          height,
-        }
-      })
-
-      for (const record of resolvedFiles) {
-        if (!record) {
-          continue
-        }
-        pushFile(record.absolutePath, record.extension, record.sizeBytes, record.width, record.height)
-      }
-    }
-
-    files.sort((left, right) => left.absolutePath.localeCompare(right.absolutePath, 'zh-CN'))
-    return files
-  }
-
-  private createDirectoryImageItem(record: FileRecord, sourceId: string, ordinal: number): ImageItemDto {
-    const cluster = ordinal % COLOR_PALETTE.length
-    const mediaLocator: MediaLocatorDto = {
-      kind: 'filesystem',
-      absolute_path: record.absolutePath,
-      extension: record.extension,
-      media_type: 'image',
-      mime_type: detectMimeTypeByExtension(record.extension, 'image'),
-    }
-
-    return {
-      id: makeStableId('img', `${sourceId}:${record.absolutePath}`),
-      ordinal,
-      width: record.width,
-      height: record.height,
-      size_kb: toSafeSizeKb(record.sizeBytes),
-      cluster,
-      color: COLOR_PALETTE[cluster] ?? '#4f86cf',
-      feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
-      media_locator: mediaLocator,
-    }
-  }
-
-  private createArchiveImageItem(
-    sourceId: string,
-    archivePath: string,
-    entry: ZipCentralEntry,
-    ordinal: number,
-  ): ImageItemDto {
-    const cluster = ordinal % COLOR_PALETTE.length
-    const mediaLocator: MediaLocatorDto = {
-      kind: 'archive-entry',
-      archive_path: archivePath,
-      archive_format: 'zip',
-      entry_name: entry.entryName,
-      extension: entry.extension,
-      media_type: 'image',
-      mime_type: detectMimeTypeByExtension(entry.extension, 'image'),
-    }
-
-    return {
-      id: makeStableId('img', `${sourceId}:${archivePath}::${entry.entryName}`),
-      ordinal,
-      width: 0,
-      height: 0,
-      size_kb: toSafeSizeKb(entry.uncompressedSize),
-      cluster,
-      color: COLOR_PALETTE[cluster] ?? '#4f86cf',
-      feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
-      media_locator: mediaLocator,
-    }
-  }
-
-  private createDirectorySource(directoryPath: string, imageFiles: FileRecord[]): ImagePackageDto {
-    const treePath = toAbsoluteTreePath(directoryPath)
-    const sourceId = makeStableId('dir', directoryPath)
-    const displayName = path.basename(directoryPath) || treePath[treePath.length - 1] || sourceId
-    const persistedGrade = this.packageGradeOverridesBySourceId.get(sourceId)
-
-    return {
-      id: sourceId,
-      package_name: displayName,
-      display_name: displayName,
-      absolute_path: directoryPath,
-      tree_path: treePath,
-      work_title: displayName,
-      circle: '未知',
-      author: '未知',
-      tags: [],
-      mock_grade: persistedGrade ?? null,
-      images: imageFiles.map((file, index) => this.createDirectoryImageItem(file, sourceId, index + 1)),
-    }
-  }
-
-  private createArchiveSource(
-    file: FileRecord,
-    imageEntries: ZipCentralEntry[],
-    archivePathForMediaRead = file.absolutePath,
-  ): ImagePackageDto {
-    const sourceId = makeStableId('pkg', file.absolutePath)
-    const fileName = path.basename(file.absolutePath)
-    const displayName = path.basename(file.absolutePath, file.extension)
-    const persistedGrade = this.packageGradeOverridesBySourceId.get(sourceId)
-
-    const sortedEntries = [...imageEntries].sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
-
-    return {
-      id: sourceId,
-      package_name: fileName,
-      display_name: displayName,
-      absolute_path: file.absolutePath,
-      tree_path: toAbsoluteTreePath(file.absolutePath),
-      work_title: displayName,
-      circle: '未知',
-      author: '未知',
-      tags: [],
-      mock_grade: persistedGrade ?? null,
-      images: sortedEntries.map((entry, index) =>
-        this.createArchiveImageItem(sourceId, archivePathForMediaRead, entry, index + 1),
-      ),
-    }
+    return collectMediaFiles({
+      rootDir: this.rootDir,
+      importDirectoryRoots: this.importDirectoryRoots,
+      importFiles: this.importSources.files,
+      legacyImportsDirName: LEGACY_IMPORTS_DIR_NAME,
+      directoryScanConcurrency: DIRECTORY_SCAN_CONCURRENCY,
+      imageExtensions: IMAGE_EXTENSIONS,
+      videoExtensions: VIDEO_EXTENSIONS,
+      archiveExtensions: ARCHIVE_EXTENSIONS,
+      probeImageDimensionsFromFile,
+    })
   }
 
   private async createVideoSource(file: FileRecord): Promise<VideoItemDto> {
@@ -1518,7 +1052,7 @@ export class FileSystemMediaReadService {
       await fs.mkdir(this.normalizedArchiveRootDir, { recursive: true })
 
       await extractZipWithPowerShell(sourceFile.absolutePath, tempExtractDir)
-      await convertDirectoryImagesToWebp90(tempExtractDir)
+      await convertDirectoryImagesToWebp90(tempExtractDir, FFMPEG_BIN, IMAGE_EXTENSIONS_FOR_WEBP_CONVERT)
 
       await writeStoredZipFromDirectory(tempExtractDir, normalizedArchivePath)
 
@@ -1641,7 +1175,12 @@ export class FileSystemMediaReadService {
     const imageDirectories = Array.from(directoryImageMap.entries())
       .map(([directoryPath, imageFiles]) => {
         imageFiles.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
-        return this.createDirectorySource(directoryPath, imageFiles)
+        return createDirectorySource({
+          directoryPath,
+          imageFiles,
+          colorPalette: COLOR_PALETTE,
+          packageGradeOverridesBySourceId: this.packageGradeOverridesBySourceId,
+        })
       })
       .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
@@ -1667,7 +1206,13 @@ export class FileSystemMediaReadService {
       )
 
       imagePackages.push(
-        this.createArchiveSource(prepared.archive, prepared.imageEntries, prepared.archivePathForMediaRead),
+        createArchiveSource({
+          file: prepared.archive,
+          imageEntries: prepared.imageEntries,
+          archivePathForMediaRead: prepared.archivePathForMediaRead,
+          colorPalette: COLOR_PALETTE,
+          packageGradeOverridesBySourceId: this.packageGradeOverridesBySourceId,
+        }),
       )
     }
 
