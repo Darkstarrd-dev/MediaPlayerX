@@ -24,6 +24,10 @@
 - 运行时依赖预检已落地：Main 暴露依赖可用性与降级策略矩阵（`sharp/ffmpeg/ffprobe/archive-wasm/powershell`），Renderer 在降级时显示告警。
 - `rar/7z` 归一化调度采用“双优先级队列”：默认低优先级（交互空闲后按路径排序执行），用户显式打开目标包时提升为高优先级后台处理。
 - Main 通过 `libraryChanged + archiveLoadStatus` 向 Renderer 推送/暴露归一化进度状态，UI 可在不阻塞交互的前提下显示 pending/running。
+- 代码结构重构（按职责块）已完成：
+  - Renderer 侧 `App` 退化为编排层，侧栏/检索/主区/全屏/设置/任务面板等 props 与状态导出到 `features/app/*` 与 `components/*`。
+  - Main 侧 `FileSystemMediaReadService` 退化为服务编排层，媒体访问校验、资源读取、缩略图渲染、封面抓取、源过滤、导入执行与归档辅助已独立模块化。
+  - 拆分后主文件维持在“可持续维护”区间：`src/App.tsx` ~1797 行，`electron/fileSystemReadService.ts` ~1740 行。
 
 ### Electron Main 进程
 

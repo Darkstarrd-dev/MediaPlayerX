@@ -43,6 +43,10 @@
 - 本轮继续模块化：`features/app/useImageBrowserViewModel.ts` 聚合图片浏览核心视图模型，`features/app/useAppEffects.ts` 集中副作用同步链，`features/layout/usePaneResizers.ts` 统一分割条拖拽与比例归一化。
 - Header 已新增“向量宇宙”入口：可打开独立 Three.js 3D 漫游层（模拟阶段），当前实现为 billboard + 距离 LOD + tag 颜色映射 + 正前方 Raycast 命中选择，并已将控制参数接入设置面板 3D 设置页；向量宇宙范围与 Sidebar 当前范围保持一致，进入即自动捕捉鼠标，且以进入图片作为坐标原点。快捷键与 3D 控制映射现支持弹窗式新增/清除（键盘/鼠标/组合），并新增离散度与边界穿越控制。
 - 向量宇宙前端内容已阶段性完成：包含二次确认退出、全息球体位置控件（深度亮度、方向箭头、越界穿入）与设置面板参数化调节。
+- 本轮“按职责块拆分”已完成并封版：
+  - `src/App.tsx` 主要保留编排职责，头部/任务面板/全屏/设置/侧栏与主区 props 构建、告警与导入面板、根范围与侧栏状态计算已下沉到独立模块。
+  - `electron/fileSystemReadService.ts` 主要保留服务编排职责，导入任务、媒体访问守卫、媒体读取、缩略图解析、封面抓取、源过滤与归档/文件收集辅助已拆到独立模块。
+  - 当前关键大文件规模：`src/App.tsx` 约 `1797` 行，`electron/fileSystemReadService.ts` 约 `1740` 行。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
 - Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。

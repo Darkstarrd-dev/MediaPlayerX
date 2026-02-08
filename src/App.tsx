@@ -1,8 +1,6 @@
 import {
-  Suspense,
   useCallback,
   useEffect,
-  lazy,
   useMemo,
   useRef,
   useState,
@@ -11,19 +9,19 @@ import { useShallow } from 'zustand/react/shallow'
 
 import './App.css'
 import AppHeader from './components/AppHeader'
+import AppTopBanners from './components/AppTopBanners'
 import AppWorkspace from './components/AppWorkspace'
+import DragImportOverlay from './components/DragImportOverlay'
+import E2eBenchSection from './components/E2eBenchSection'
 import FullscreenLayer from './components/FullscreenLayer'
-import BackendErrorBanner from './components/BackendErrorBanner'
-import ImportTaskPanel from './components/ImportTaskPanel'
-import RuntimeWarningBanner from './components/RuntimeWarningBanner'
+import ImportSourceInputs from './components/ImportSourceInputs'
 import SettingsPanel from './components/SettingsPanel'
-import E2eBenchController from './bench/E2eBenchController'
+import VectorUniverseSection from './components/VectorUniverseSection'
 import {
   IMAGE_DIRECTORY_SOURCES,
   IMAGE_PACKAGES,
   VIDEO_ITEMS,
   buildImageSidebarTree,
-  buildSidebarTree,
   buildVectorCandidates,
   findNodeById,
 } from './mockData'
@@ -31,10 +29,6 @@ import {
   findShortcutConflicts,
 } from './shortcuts'
 import { findVectorControlConflicts } from './vectorControls'
-import {
-  collectImageSourceIds,
-  collectLeafIds,
-} from './features/app/helpers'
 import { buildAppHeaderProps } from './features/app/buildAppHeaderProps'
 import { buildBackendErrorRows } from './features/app/buildBackendErrorRows'
 import { buildImageNodeLoadState } from './features/app/buildImageNodeLoadState'
@@ -56,10 +50,13 @@ import {
 } from './features/app/mediaPathUtils'
 import { useMetadataWriteBindings } from './features/app/useMetadataWriteBindings'
 import { useImportTaskPanelState } from './features/app/useImportTaskPanelState'
+import { useImageSidebarBaseState } from './features/app/useImageSidebarBaseState'
+import { useRootScopedImageData } from './features/app/useRootScopedImageData'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
 import { useDatabaseResetAction } from './features/app/useDatabaseResetAction'
 import { useRuntimeWarningDismiss } from './features/app/useRuntimeWarningDismiss'
+import { useVideoSidebarState } from './features/app/useVideoSidebarState'
 import { useImportPipeline } from './features/import/useImportPipeline'
 import { usePaneResizers } from './features/layout/usePaneResizers'
 import { computeThumbnailGridLayout } from './features/layout/thumbnailLayout'
@@ -82,12 +79,9 @@ import { useUiStore } from './store/useUiStore'
 import type {
   FocusedImageRef,
   ImagePackage,
-  SidebarNode,
   VectorCandidate,
 } from './types'
 import { clamp } from './utils/ui'
-
-const VectorUniverseOverlay = lazy(() => import('./components/VectorUniverseOverlay'))
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const SIDEBAR_COLLAPSE_RATIO = 0.03
@@ -614,50 +608,15 @@ function App() {
     [imageTreeRaw, imageRootNodeId],
   )
 
-  const rootScopedPackageIds = useMemo(() => {
-    if (!imageRootNode) {
-      return new Set(scopedImageSourcesEffective.map((source) => source.id))
-    }
-    return new Set(collectImageSourceIds(imageRootNode))
-  }, [imageRootNode, scopedImageSourcesEffective])
+  const { rootScopedPackageIds, rootScopedPackages, allScopedRefs } = useRootScopedImageData({
+    imageRootNode,
+    scopedImageSources: scopedImageSourcesEffective,
+  })
 
-  const rootScopedPackages = useMemo(
-    () => scopedImageSourcesEffective.filter((source) => rootScopedPackageIds.has(source.id)),
-    [rootScopedPackageIds, scopedImageSourcesEffective],
-  )
-
-  const allScopedRefs = useMemo<FocusedImageRef[]>(() => {
-    const refs: FocusedImageRef[] = []
-    for (const pkg of rootScopedPackages) {
-      pkg.images.forEach((_, imageIndex) => {
-        refs.push({ packageId: pkg.id, imageIndex })
-      })
-    }
-    return refs
-  }, [rootScopedPackages])
-
-  const imageTreeForSidebarNormal = useMemo(() => {
-    if (!imageRootNode) {
-      return imageTreeRaw
-    }
-    return [imageRootNode]
-  }, [imageRootNode, imageTreeRaw])
-
-  const normalImageSourceNodeIdMap = useMemo(() => {
-    const map = new Map<string, string>()
-    const walk = (nodes: SidebarNode[]) => {
-      for (const node of nodes) {
-        if (node.imageSourceId) {
-          map.set(node.imageSourceId, node.id)
-        }
-        if (node.children.length > 0) {
-          walk(node.children)
-        }
-      }
-    }
-    walk(imageTreeForSidebarNormal)
-    return map
-  }, [imageTreeForSidebarNormal])
+  const { imageTreeForSidebarNormal, normalImageSourceNodeIdMap } = useImageSidebarBaseState({
+    imageTreeRaw,
+    imageRootNode,
+  })
 
   const vectorSidebarState = useMemo(
     () => buildVectorSidebarState(vectorSearchResults, packageByIdEffective),
@@ -687,46 +646,10 @@ function App() {
 
   const searchedVideos = useMemo(() => videosEffective, [videosEffective])
 
-  const videoTreeRaw = useMemo(
-    () =>
-      buildSidebarTree(
-        searchedVideos.map((video) => ({
-          id: video.id,
-          treePath: video.treePath,
-        })),
-        'video',
-      ),
-    [searchedVideos],
-  )
-
-  const videoRootNode = useMemo(
-    () => findNodeById(videoTreeRaw, videoRootNodeId),
-    [videoRootNodeId, videoTreeRaw],
-  )
-
-  const rootScopedVideoIds = useMemo(() => {
-    if (!videoRootNode) {
-      return new Set(searchedVideos.map((video) => video.id))
-    }
-    return new Set(collectLeafIds(videoRootNode, 'video'))
-  }, [videoRootNode, searchedVideos])
-
-  const videosForSidebar = useMemo(
-    () => searchedVideos.filter((video) => rootScopedVideoIds.has(video.id)),
-    [rootScopedVideoIds, searchedVideos],
-  )
-
-  const videoTreeForSidebar = useMemo(
-    () =>
-      buildSidebarTree(
-        videosForSidebar.map((video) => ({
-          id: video.id,
-          treePath: video.treePath,
-        })),
-        'video',
-      ),
-    [videosForSidebar],
-  )
+  const { videoRootNode, rootScopedVideoIds, videosForSidebar, videoTreeForSidebar } = useVideoSidebarState({
+    videos: searchedVideos,
+    videoRootNodeId,
+  })
 
   const collapseSidebar = useCallback(() => {
     updateSettings({ sidebarRatio: 0, sidebarFocus: 'main' })
@@ -1793,30 +1716,21 @@ function App() {
     <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
       <AppHeader {...appHeaderProps} />
 
-      <input
-        ref={fileImportInputRef}
-        multiple
-        style={{ display: 'none' }}
-        type="file"
-        onChange={onImportFilesSelected}
-      />
-      <input
-        ref={folderImportInputRef}
-        multiple
-        style={{ display: 'none' }}
-        type="file"
-        onChange={onImportFoldersSelected}
+      <ImportSourceInputs
+        fileImportInputRef={fileImportInputRef}
+        folderImportInputRef={folderImportInputRef}
+        onImportFilesSelected={onImportFilesSelected}
+        onImportFoldersSelected={onImportFoldersSelected}
       />
 
-      <BackendErrorBanner rows={backendErrorRows} repositoryMode={repositoryMode} />
-
-      <RuntimeWarningBanner
-        visible={runtimeWarningDismiss.visible}
-        warnings={runtimeCapabilityWarnings}
-        onDismiss={runtimeWarningDismiss.dismiss}
+      <AppTopBanners
+        backendErrorRows={backendErrorRows}
+        repositoryMode={repositoryMode}
+        runtimeWarningVisible={runtimeWarningDismiss.visible}
+        runtimeCapabilityWarnings={runtimeCapabilityWarnings}
+        onDismissRuntimeWarning={runtimeWarningDismiss.dismiss}
+        importTaskPanelProps={importTaskPanelProps}
       />
-
-      <ImportTaskPanel {...importTaskPanelProps} />
 
       <AppWorkspace
         mode={mode}
@@ -1843,55 +1757,38 @@ function App() {
 
       <FullscreenLayer {...fullscreenLayerProps} />
 
-      {vectorUniverseOpen ? (
-        <Suspense
-          fallback={
-            <section className="vector-universe-overlay vector-universe-overlay-loading" role="dialog" aria-modal="true" aria-label="向量宇宙层">
-              <p className="vector-universe-overlay-tip">向量宇宙模块加载中...</p>
-            </section>
-          }
-        >
-          <VectorUniverseOverlay
-            open={vectorUniverseOpen}
-            focusedRef={focusedRef}
-            imageSources={scopedImageSourcesEffective}
-            scopeRefs={vectorUniverseScopeRefs}
-            helperScale={vectorUniverseHelperScale}
-            sceneSettings={vectorUniverseSceneSettings}
-            widgetSize={vectorUniverseWidgetSize}
-            vectorControls={vectorControls}
-            onClose={() => setVectorUniverseOpen(false)}
-            onConfirmSelection={confirmVectorUniverseSelection}
-          />
-        </Suspense>
-      ) : null}
+      <VectorUniverseSection
+        open={vectorUniverseOpen}
+        focusedRef={focusedRef}
+        imageSources={scopedImageSourcesEffective}
+        scopeRefs={vectorUniverseScopeRefs}
+        helperScale={vectorUniverseHelperScale}
+        sceneSettings={vectorUniverseSceneSettings}
+        widgetSize={vectorUniverseWidgetSize}
+        vectorControls={vectorControls}
+        onClose={() => setVectorUniverseOpen(false)}
+        onConfirmSelection={confirmVectorUniverseSelection}
+      />
 
       <SettingsPanel {...settingsPanelProps} />
 
-      {dragOverlayActive ? (
-        <div className="drop-overlay" aria-hidden="true">
-          <div className="drop-overlay-card">
-            <strong>拖拽导入</strong>
-            <p>释放鼠标后将自动入队并在上方显示任务状态</p>
-          </div>
-        </div>
-      ) : null}
+      <DragImportOverlay active={dragOverlayActive} />
 
-      {benchSettings.enabled && benchSettings.mode === 'e2e' ? (
-        <E2eBenchController
-          repository={mediaRepository}
-          mode={mode}
-          orderedPackages={orderedRootScopedPackages}
-          selectedPackageId={selectedPackageId}
-          setSelectedPackageId={setSelectedPackageId}
-          pageIndex={backendPageSnapshot?.pageIndex ?? null}
-          totalPages={imageTotalPagesEffective}
-          pageLoading={backendRead.page.loading}
-          refsInPageCount={refsInPageEffective.length}
-          goNextPage={goNextPage}
-          goPrevPage={goPrevPage}
-        />
-      ) : null}
+      <E2eBenchSection
+        enabled={benchSettings.enabled}
+        benchMode={benchSettings.mode}
+        repository={mediaRepository}
+        mode={mode}
+        orderedPackages={orderedRootScopedPackages}
+        selectedPackageId={selectedPackageId}
+        setSelectedPackageId={setSelectedPackageId}
+        pageIndex={backendPageSnapshot?.pageIndex ?? null}
+        totalPages={imageTotalPagesEffective}
+        pageLoading={backendRead.page.loading}
+        refsInPageCount={refsInPageEffective.length}
+        goNextPage={goNextPage}
+        goPrevPage={goPrevPage}
+      />
     </div>
   )
 }
