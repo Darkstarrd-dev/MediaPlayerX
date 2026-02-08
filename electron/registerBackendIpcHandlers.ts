@@ -11,6 +11,7 @@ import {
   pickImportPathsResponseSchema,
   readClipboardImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
+  readArchiveLoadStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
@@ -218,6 +219,11 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeCapabilities, async () => {
     const response = await service.readRuntimeCapabilities()
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readArchiveLoadStatus, async () => {
+    const response = await service.readArchiveLoadStatus()
+    return readArchiveLoadStatusResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.clearDatabase, async () => {

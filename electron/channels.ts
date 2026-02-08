@@ -16,6 +16,7 @@ export const BACKEND_CHANNELS = {
   readRuntimeCapabilities: 'backend:readRuntimeCapabilities',
   readMediaAccessAudit: 'backend:readMediaAccessAudit',
   clearDatabase: 'backend:clearDatabase',
+  readArchiveLoadStatus: 'backend:readArchiveLoadStatus',
   libraryChanged: 'backend:libraryChanged',
 } as const
 

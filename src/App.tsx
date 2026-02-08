@@ -75,6 +75,14 @@ const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
 }
 type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 
+function normalizePathForCompare(value: string): string {
+  const normalized = value.trim().replace(/\\/g, '/')
+  if (typeof window !== 'undefined' && /win/i.test(window.navigator.platform)) {
+    return normalized.toLowerCase()
+  }
+  return normalized
+}
+
 function buildCoverImageLocator(absolutePath: string | null | undefined): MediaLocator | null {
   if (!absolutePath) {
     return null
@@ -253,7 +261,14 @@ function App() {
     return value && value.trim().length > 0 ? value : null
   })
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
-  const [importPanelHidden, setImportPanelHidden] = useState(false)
+  const [importTaskPanelOpen, setImportTaskPanelOpen] = useState(false)
+  const [archiveLoadStatus, setArchiveLoadStatus] = useState<{
+    runningArchivePath: string | null
+    pendingArchivePaths: string[]
+  }>({
+    runningArchivePath: null,
+    pendingArchivePaths: [],
+  })
   const [databaseResetPending, setDatabaseResetPending] = useState(false)
   const [databaseResetError, setDatabaseResetError] = useState<string | null>(null)
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
@@ -335,6 +350,55 @@ function App() {
     onDragLeaveImport,
     onDropImport,
   } = useImportPipeline({ repository: mediaRepository })
+
+  useEffect(() => {
+    if (!mediaRepository.readArchiveLoadStatus) {
+      return
+    }
+
+    let disposed = false
+    let runningRequest = false
+
+    const refreshArchiveLoadStatus = async () => {
+      if (disposed || runningRequest) {
+        return
+      }
+
+      runningRequest = true
+      try {
+        const status = await mediaRepository.readArchiveLoadStatus?.({ timeoutMs: 3_000 })
+        if (!disposed && status) {
+          setArchiveLoadStatus({
+            runningArchivePath: status.running_archive_path,
+            pendingArchivePaths: status.pending_archive_paths,
+          })
+        }
+      } catch {
+        if (!disposed) {
+          setArchiveLoadStatus({
+            runningArchivePath: null,
+            pendingArchivePaths: [],
+          })
+        }
+      } finally {
+        runningRequest = false
+      }
+    }
+
+    void refreshArchiveLoadStatus()
+    const intervalId = window.setInterval(() => {
+      void refreshArchiveLoadStatus()
+    }, 900)
+    const unsubscribe = mediaRepository.onLibraryChanged?.(() => {
+      void refreshArchiveLoadStatus()
+    })
+
+    return () => {
+      disposed = true
+      window.clearInterval(intervalId)
+      unsubscribe?.()
+    }
+  }, [mediaRepository])
 
   const appBodyRef = useRef<HTMLDivElement>(null)
   const workspaceRef = useRef<HTMLElement>(null)
@@ -640,6 +704,63 @@ function App() {
     }
     return imageTreeForSidebarNormal
   }, [imageTreeForSidebarNormal, vectorResultsActive, vectorSidebarNodes])
+
+  const imageNodeLoadStateById = useMemo(() => {
+    const pendingPathSet = new Set(archiveLoadStatus.pendingArchivePaths.map((value) => normalizePathForCompare(value)))
+    const runningPath = archiveLoadStatus.runningArchivePath
+      ? normalizePathForCompare(archiveLoadStatus.runningArchivePath)
+      : null
+
+    const packageLoadStateBySourceId = new Map<string, 'pending' | 'running'>()
+
+    for (const source of scopedImageSourcesEffective) {
+      const normalizedPath = normalizePathForCompare(source.absolutePath)
+      const lowerPath = normalizedPath.toLowerCase()
+      const isRar7z = lowerPath.endsWith('.rar') || lowerPath.endsWith('.7z')
+      if (!isRar7z) {
+        continue
+      }
+
+      if (runningPath && normalizedPath === runningPath) {
+        packageLoadStateBySourceId.set(source.id, 'running')
+        continue
+      }
+
+      if (pendingPathSet.has(normalizedPath) || source.images.length === 0) {
+        packageLoadStateBySourceId.set(source.id, 'pending')
+      }
+    }
+
+    const nodeStateById: Record<string, 'pending' | 'running'> = {}
+    const walk = (nodes: SidebarNode[]): ('pending' | 'running' | null)[] =>
+      nodes.map((node) => {
+        let state: 'pending' | 'running' | null = null
+
+        if (node.imageSourceId) {
+          state = packageLoadStateBySourceId.get(node.imageSourceId) ?? null
+        }
+
+        const childStates = walk(node.children)
+        for (const childState of childStates) {
+          if (childState === 'running') {
+            state = 'running'
+            break
+          }
+          if (childState === 'pending' && !state) {
+            state = 'pending'
+          }
+        }
+
+        if (state) {
+          nodeStateById[node.id] = state
+        }
+
+        return state
+      })
+
+    walk(imageTreeForSidebar)
+    return nodeStateById
+  }, [archiveLoadStatus.pendingArchivePaths, archiveLoadStatus.runningArchivePath, imageTreeForSidebar, scopedImageSourcesEffective])
 
   const searchedVideos = useMemo(() => videosEffective, [videosEffective])
 
@@ -1341,6 +1462,7 @@ function App() {
     videoRootNodeId,
     imageTreeNodes: imageTreeForSidebar,
     videoTreeNodes: videoTreeForSidebar,
+    imageNodeLoadStateById,
     selectedPackageId,
     selectedVideoId,
     imageHighlightByNode: vectorResultsActive,
@@ -1577,7 +1699,7 @@ function App() {
               : `${focusedImage.mediaLocator.archivePath} #${focusedImage.ordinal}`}
           </span>
           <span>{`${focusedImage.sizeKb}KB`}</span>
-          <span>{`${focusedImage.width}x${focusedImage.height}`}</span>
+          <span>{focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width}x${focusedImage.height}` : '-'}</span>
         </>
       ) : null}
 
@@ -1693,13 +1815,15 @@ function App() {
     () => [...activeImportTasks, ...recentFinishedImportTasks],
     [activeImportTasks, recentFinishedImportTasks],
   )
-  const showImportTaskPanel = !importPanelHidden && (enqueuePending || taskError || importTasksForPanel.length > 0)
-
-  useEffect(() => {
-    if (enqueuePending || taskError || activeImportTasks.length > 0) {
-      setImportPanelHidden(false)
-    }
-  }, [activeImportTasks.length, enqueuePending, taskError])
+  const normalizedPendingArchivePathSet = useMemo(
+    () => new Set(archiveLoadStatus.pendingArchivePaths.map((value) => normalizePathForCompare(value))),
+    [archiveLoadStatus.pendingArchivePaths],
+  )
+  const normalizedRunningArchivePath = archiveLoadStatus.runningArchivePath
+    ? normalizePathForCompare(archiveLoadStatus.runningArchivePath)
+    : null
+  const archiveLoadBusy = normalizedPendingArchivePathSet.size > 0 || normalizedRunningArchivePath !== null
+  const taskStatusLabel = enqueuePending || activeImportTasks.length > 0 || archiveLoadBusy ? '加载中' : '空闲'
 
   const clearFinishedImportTasks = useCallback(() => {
     setDismissedImportTaskIds((previous) => {
@@ -1789,8 +1913,11 @@ function App() {
         autoPlayEnabled={autoPlayEnabled}
         autoPlayInterval={autoPlayInterval}
         importMenuOpen={importMenuOpen}
+        taskStatusLabel={taskStatusLabel}
+        importTaskPanelOpen={importTaskPanelOpen}
         autoPlayPresets={AUTO_PLAY_PRESETS}
         onToggleImportMenu={() => setImportMenuOpen((value) => !value)}
+        onToggleImportTaskPanel={() => setImportTaskPanelOpen((value) => !value)}
         onCloseImportMenu={() => setImportMenuOpen(false)}
         onImportFiles={openImportFilesDialog}
         onImportFolders={openImportFoldersDialog}
@@ -1878,14 +2005,16 @@ function App() {
         </section>
       ) : null}
 
-      {showImportTaskPanel ? (
+      {importTaskPanelOpen ? (
         <section className="import-task-panel" role="status" aria-live="polite">
           <header>
             <strong>导入任务</strong>
             <span>{`进行中 ${activeImportTasks.length}`}</span>
+            <span>{`归一化排队 ${normalizedPendingArchivePathSet.size}`}</span>
+            {normalizedRunningArchivePath ? <span>归一化处理中</span> : null}
             {enqueuePending ? <span>正在入队...</span> : null}
-            <button type="button" onClick={() => setImportPanelHidden(true)}>
-              隐藏
+            <button type="button" onClick={() => setImportTaskPanelOpen(false)}>
+              关闭
             </button>
             <button type="button" onClick={clearFinishedImportTasks}>
               清理已完成
@@ -1938,7 +2067,9 @@ function App() {
                 )
               })}
             </ul>
-          ) : null}
+          ) : (
+            <p>暂无导入任务。</p>
+          )}
         </section>
       ) : null}
 

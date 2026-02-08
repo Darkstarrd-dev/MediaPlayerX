@@ -5,6 +5,7 @@ import type {
   PickImportPathsRequestDto,
   PickImportPathsResponseDto,
   ReadClipboardImportPathsResponseDto,
+  ReadArchiveLoadStatusResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
@@ -81,6 +82,7 @@ export interface ReadonlyMediaRepository {
   ): Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
+  readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void
 }

@@ -12,8 +12,11 @@ interface AppHeaderProps {
   autoPlayEnabled: boolean
   autoPlayInterval: number
   importMenuOpen: boolean
+  taskStatusLabel: string
+  importTaskPanelOpen: boolean
   autoPlayPresets: number[]
   onToggleImportMenu: () => void
+  onToggleImportTaskPanel: () => void
   onCloseImportMenu: () => void
   onImportFiles: () => void
   onImportFolders: () => void
@@ -40,8 +43,11 @@ function AppHeader({
   autoPlayEnabled,
   autoPlayInterval,
   importMenuOpen,
+  taskStatusLabel,
+  importTaskPanelOpen,
   autoPlayPresets,
   onToggleImportMenu,
+  onToggleImportTaskPanel,
   onCloseImportMenu,
   onImportFiles,
   onImportFolders,
@@ -85,6 +91,14 @@ function AppHeader({
             </div>
           ) : null}
         </div>
+
+        <button
+          className={`task-status-btn ${taskStatusLabel === '加载中' ? 'is-busy' : 'is-idle'} ${importTaskPanelOpen ? 'is-open' : ''}`}
+          type="button"
+          onClick={onToggleImportTaskPanel}
+        >
+          {taskStatusLabel}
+        </button>
 
         <div className="mode-switch" role="group" aria-label="mode-switch">
           <button className={mode === 'image' ? 'is-active' : ''} type="button" onClick={() => onModeChange('image')}>

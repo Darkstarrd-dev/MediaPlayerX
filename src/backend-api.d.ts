@@ -5,6 +5,7 @@ import type {
   PickImportPathsRequestDto,
   PickImportPathsResponseDto,
   ReadClipboardImportPathsResponseDto,
+  ReadArchiveLoadStatusResponseDto,
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   LibrarySnapshotDto,
@@ -45,6 +46,7 @@ interface MediaPlayerBackendApi {
   retryImportTask: (request: RetryImportTaskRequestDto) => Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
+  readArchiveLoadStatus?: () => Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase: () => Promise<ClearDatabaseResponseDto>
   onLibraryChanged?: (
     listener: (payload: { reason: string; updated_at_ms: number }) => void,

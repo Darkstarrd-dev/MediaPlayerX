@@ -12,6 +12,7 @@ import {
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
   readImportTasksResponseSchema,
+  readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataResponseSchema,
@@ -38,6 +39,7 @@ import {
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
+  type ReadArchiveLoadStatusResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
   type ReadImageSidebarTreeRequestDto,
@@ -148,6 +150,8 @@ interface FileRecord {
   relativePath: string
   extension: string
   sizeBytes: number
+  width: number
+  height: number
 }
 
 interface ZipCentralEntry {
@@ -756,6 +760,25 @@ async function getSharpModule(): Promise<SharpModule | null> {
     sharpModulePromise = import('sharp').catch(() => null)
   }
   return sharpModulePromise
+}
+
+async function probeImageDimensionsFromFile(absolutePath: string): Promise<{ width: number; height: number }> {
+  const sharpModule = await getSharpModule()
+  if (!sharpModule?.default) {
+    return { width: 0, height: 0 }
+  }
+
+  const metadata = await sharpModule.default(absolutePath, { failOn: 'none' }).metadata().catch(() => null)
+  const width = Number(metadata?.width)
+  const height = Number(metadata?.height)
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return { width: 0, height: 0 }
+  }
+
+  return {
+    width: Math.max(0, Math.round(width)),
+    height: Math.max(0, Math.round(height)),
+  }
 }
 
 function clampThumbnailMaxEdge(value: number | undefined): number {
@@ -1624,6 +1647,28 @@ export class FileSystemMediaReadService {
     })
   }
 
+  async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {
+    await this.ensureStateLoaded()
+    this.pruneArchiveNormalizationPendingSets()
+
+    const pendingArchivePaths = Array.from(
+      new Set([...this.archiveNormalizationPendingHigh, ...this.archiveNormalizationPendingLow]),
+    )
+      .filter((value) => this.isArchiveNormalizationTargetEligible(value))
+      .sort((left, right) => left.localeCompare(right, 'zh-CN'))
+
+    const runningArchivePath =
+      this.archiveNormalizationRunningPath && this.isArchiveNormalizationTargetEligible(this.archiveNormalizationRunningPath)
+        ? this.archiveNormalizationRunningPath
+        : null
+
+    return readArchiveLoadStatusResponseSchema.parse({
+      running_archive_path: runningArchivePath,
+      pending_archive_paths: pendingArchivePaths,
+      updated_at_ms: Date.now(),
+    })
+  }
+
   async clearDatabase(): Promise<ClearDatabaseResponseDto> {
     this.database.clearDatabase()
 
@@ -1727,7 +1772,7 @@ export class FileSystemMediaReadService {
     const files: FileRecord[] = []
     const seen = new Set<string>()
 
-    const pushFile = (absolutePath: string, extension: string, sizeBytes: number) => {
+    const pushFile = (absolutePath: string, extension: string, sizeBytes: number, width = 0, height = 0) => {
       const key = normalizeAllowlistKey(absolutePath)
       if (seen.has(key)) {
         return
@@ -1738,6 +1783,8 @@ export class FileSystemMediaReadService {
         relativePath: normalizePathKey(absolutePath),
         extension,
         sizeBytes,
+        width,
+        height,
       })
     }
 
@@ -1750,7 +1797,8 @@ export class FileSystemMediaReadService {
           return []
         }
         const nextLevel: string[] = []
-        const pendingVideoRecords: Array<{ absolutePath: string; relativePath: string; extension: string }> = []
+        const pendingVideoRecords: Array<{ absolutePath: string; extension: string }> = []
+        const pendingImageOrArchiveRecords: Array<{ absolutePath: string; extension: string }> = []
 
         for (const entry of entries) {
           const absolutePath = path.join(current, entry.name)
@@ -1776,13 +1824,48 @@ export class FileSystemMediaReadService {
             continue
           }
 
-          const relativePath = normalizePathKey(absolutePath)
           if (VIDEO_EXTENSIONS.has(extension)) {
-            pendingVideoRecords.push({ absolutePath, relativePath, extension })
+            pendingVideoRecords.push({ absolutePath, extension })
             continue
           }
 
-          pushFile(absolutePath, extension, 0)
+          pendingImageOrArchiveRecords.push({ absolutePath, extension })
+        }
+
+        if (pendingImageOrArchiveRecords.length > 0) {
+          const imageOrArchiveFiles = await parallelMapLimit(
+            pendingImageOrArchiveRecords,
+            DIRECTORY_SCAN_CONCURRENCY,
+            async (record) => {
+              const stat = await fs.stat(record.absolutePath).catch(() => null)
+              if (!stat || !stat.isFile()) {
+                return null
+              }
+
+              let width = 0
+              let height = 0
+              if (IMAGE_EXTENSIONS.has(record.extension)) {
+                const dimensions = await probeImageDimensionsFromFile(record.absolutePath)
+                width = dimensions.width
+                height = dimensions.height
+              }
+
+              return {
+                absolutePath: record.absolutePath,
+                extension: record.extension,
+                sizeBytes: stat.size,
+                width,
+                height,
+              }
+            },
+          )
+
+          for (const file of imageOrArchiveFiles) {
+            if (!file) {
+              continue
+            }
+            pushFile(file.absolutePath, file.extension, file.sizeBytes, file.width, file.height)
+          }
         }
 
         if (pendingVideoRecords.length > 0) {
@@ -1800,7 +1883,7 @@ export class FileSystemMediaReadService {
           )
 
           for (const videoFile of videoFiles) {
-            pushFile(videoFile.absolutePath, videoFile.extension, videoFile.sizeBytes)
+            pushFile(videoFile.absolutePath, videoFile.extension, videoFile.sizeBytes, 0, 0)
           }
         }
 
@@ -1828,10 +1911,20 @@ export class FileSystemMediaReadService {
           return null
         }
 
+        let width = 0
+        let height = 0
+        if (IMAGE_EXTENSIONS.has(extension)) {
+          const dimensions = await probeImageDimensionsFromFile(absolutePath)
+          width = dimensions.width
+          height = dimensions.height
+        }
+
         return {
           absolutePath,
           extension,
-          sizeBytes: VIDEO_EXTENSIONS.has(extension) ? stat.size : 0,
+          sizeBytes: stat.size,
+          width,
+          height,
         }
       })
 
@@ -1839,7 +1932,7 @@ export class FileSystemMediaReadService {
         if (!record) {
           continue
         }
-        pushFile(record.absolutePath, record.extension, record.sizeBytes)
+        pushFile(record.absolutePath, record.extension, record.sizeBytes, record.width, record.height)
       }
     }
 
@@ -1860,8 +1953,8 @@ export class FileSystemMediaReadService {
     return {
       id: makeStableId('img', `${sourceId}:${record.absolutePath}`),
       ordinal,
-      width: 1920,
-      height: 1080,
+      width: record.width,
+      height: record.height,
       size_kb: toSafeSizeKb(record.sizeBytes),
       cluster,
       color: COLOR_PALETTE[cluster] ?? '#4f86cf',
@@ -1890,9 +1983,9 @@ export class FileSystemMediaReadService {
     return {
       id: makeStableId('img', `${sourceId}:${archivePath}::${entry.entryName}`),
       ordinal,
-      width: 1920,
-      height: 1080,
-      size_kb: 0,
+      width: 0,
+      height: 0,
+      size_kb: toSafeSizeKb(entry.uncompressedSize),
       cluster,
       color: COLOR_PALETTE[cluster] ?? '#4f86cf',
       feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
@@ -2673,13 +2766,22 @@ export class FileSystemMediaReadService {
     if (
       source &&
       image &&
-      image.size_kb <= 0 &&
       image.media_locator.kind === 'filesystem' &&
       image.media_locator.media_type === 'image'
     ) {
-      const stat = await fs.stat(image.media_locator.absolute_path).catch(() => null)
-      if (stat?.isFile()) {
-        image.size_kb = toSafeSizeKb(stat.size)
+      if (image.size_kb <= 0) {
+        const stat = await fs.stat(image.media_locator.absolute_path).catch(() => null)
+        if (stat?.isFile()) {
+          image.size_kb = toSafeSizeKb(stat.size)
+        }
+      }
+
+      if (image.width <= 0 || image.height <= 0) {
+        const dimensions = await probeImageDimensionsFromFile(image.media_locator.absolute_path)
+        if (dimensions.width > 0 && dimensions.height > 0) {
+          image.width = dimensions.width
+          image.height = dimensions.height
+        }
       }
     }
 

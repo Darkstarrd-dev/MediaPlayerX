@@ -5,6 +5,7 @@ import {
   mediaAccessAuditResponseSchema,
   pickImportPathsResponseSchema,
   readClipboardImportPathsResponseSchema,
+  readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -22,6 +23,7 @@ import {
   type PickImportPathsRequestDto,
   type PickImportPathsResponseDto,
   type ReadClipboardImportPathsResponseDto,
+  type ReadArchiveLoadStatusResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
@@ -389,6 +391,16 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.readRuntimeCapabilities(), options)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  }
+
+  async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api || !api.readArchiveLoadStatus) {
+      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+    }
+
+    const response = await withAbort(api.readArchiveLoadStatus(), options)
+    return readArchiveLoadStatusResponseSchema.parse(response)
   }
 
   async clearDatabase(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto> {

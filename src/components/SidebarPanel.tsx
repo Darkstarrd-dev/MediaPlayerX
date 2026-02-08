@@ -18,6 +18,7 @@ interface SidebarPanelProps {
   videoRootNodeId: string | null
   imageTreeNodes: SidebarNode[]
   videoTreeNodes: SidebarNode[]
+  imageNodeLoadStateById?: Record<string, 'pending' | 'running'>
   selectedPackageId: string
   selectedVideoId: string
   imageHighlightByNode?: boolean
@@ -51,6 +52,7 @@ function SidebarPanel({
   videoRootNodeId,
   imageTreeNodes,
   videoTreeNodes,
+  imageNodeLoadStateById = {},
   selectedPackageId,
   selectedVideoId,
   imageHighlightByNode = false,
@@ -77,14 +79,17 @@ function SidebarPanel({
         (imageHighlightByNode ? selectedSidebarNodeId === node.id : node.imageSourceId === selectedPackageId)
       const isActiveVideo = mode === 'video' && node.videoId === selectedVideoId
       const isKeyboardActive = selectedSidebarNodeId === node.id
+      const loadState = mode === 'image' ? imageNodeLoadStateById[node.id] : undefined
 
       const row = (
         <div
           key={node.id}
           data-sidebar-node-id={node.id}
-          className={`sidebar-row ${isActivePackage || isActiveVideo ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''}`}
+          className={`sidebar-row ${isActivePackage || isActiveVideo ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
           style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
         >
+          <span className={`sidebar-bullet ${loadState ? `is-${loadState}` : ''}`} aria-hidden="true" />
+
           <button
             className="sidebar-label"
             type="button"

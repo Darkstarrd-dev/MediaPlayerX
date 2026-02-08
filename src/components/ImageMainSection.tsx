@@ -108,7 +108,7 @@ function ImageMainSection({
                 >
                   <span>{`${pkg.displayName}/${fileName}`}</span>
                   <span>{`${image.sizeKb}KB`}</span>
-                  <span>{`${image.width} x ${image.height}`}</span>
+                  <span>{image.width > 0 && image.height > 0 ? `${image.width} x ${image.height}` : '-'}</span>
                 </button>
               )
             })}
@@ -132,11 +132,7 @@ function ImageMainSection({
                     style={{ width: `${actualCellWidth}px` }}
                   >
                     <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
-                      <div className="thumb-media" style={{ width: '100%', height: '100%', background: '#0e1116', opacity: 0.35 }} />
-                    </div>
-                    <div className="thumb-caption">
-                      <strong>加载中</strong>
-                      <small>{`#${index + 1}`}</small>
+                      <div className="thumb-media thumb-media-empty" style={{ width: '100%', height: '100%' }} />
                     </div>
                   </div>
                 ))
@@ -160,6 +156,10 @@ function ImageMainSection({
                   onClick={() => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex)}
                   onDoubleClick={onEnterFullscreen}
                 >
+                  <span className="visually-hidden">{`${pkg.displayName} #${image.ordinal}`}</span>
+                  {vectorMode ? (
+                    <span className="visually-hidden">{`相似度 ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</span>
+                  ) : null}
                   <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
                     <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
                       {imageSrc ? (
@@ -171,15 +171,9 @@ function ImageMainSection({
                           draggable={false}
                         />
                       ) : (
-                        <div className="thumb-media-fallback" style={{ background: image.color }}>
-                          <span>{`${image.width} x ${image.height}`}</span>
-                        </div>
+                        <div className="thumb-media-empty" />
                       )}
                     </div>
-                  </div>
-                  <div className="thumb-caption">
-                    <strong>{`${pkg.displayName} #${image.ordinal}`}</strong>
-                    {vectorMode ? <small>{`相似度 ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</small> : null}
                   </div>
                 </button>
               )

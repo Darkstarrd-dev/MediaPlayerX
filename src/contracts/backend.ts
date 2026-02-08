@@ -35,8 +35,8 @@ export const mediaLocatorDtoSchema = z.discriminatedUnion('kind', [
 export const imageItemDtoSchema = z.object({
   id: z.string().min(1),
   ordinal: z.number().int().positive(),
-  width: z.number().int().positive(),
-  height: z.number().int().positive(),
+  width: nonNegativeIntSchema,
+  height: nonNegativeIntSchema,
   size_kb: nonNegativeIntSchema,
   cluster: nonNegativeIntSchema,
   color: z.string().min(1),
@@ -261,6 +261,12 @@ export const clearDatabaseResponseSchema = z.object({
   cleared_at_ms: z.number().int().positive(),
 })
 
+export const readArchiveLoadStatusResponseSchema = z.object({
+  running_archive_path: z.string().min(1).nullable(),
+  pending_archive_paths: z.array(z.string().min(1)),
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -337,6 +343,7 @@ export type PickImportPathsRequestDto = z.infer<typeof pickImportPathsRequestSch
 export type PickImportPathsResponseDto = z.infer<typeof pickImportPathsResponseSchema>
 export type ReadClipboardImportPathsResponseDto = z.infer<typeof readClipboardImportPathsResponseSchema>
 export type ClearDatabaseResponseDto = z.infer<typeof clearDatabaseResponseSchema>
+export type ReadArchiveLoadStatusResponseDto = z.infer<typeof readArchiveLoadStatusResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

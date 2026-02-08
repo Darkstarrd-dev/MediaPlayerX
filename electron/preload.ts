@@ -9,6 +9,7 @@ import {
   pickImportPathsRequestSchema,
   pickImportPathsResponseSchema,
   readClipboardImportPathsResponseSchema,
+  readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -105,6 +106,10 @@ const backendApi = {
   readRuntimeCapabilities: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeCapabilities)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  },
+  readArchiveLoadStatus: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readArchiveLoadStatus)
+    return readArchiveLoadStatusResponseSchema.parse(response)
   },
   clearDatabase: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearDatabase)

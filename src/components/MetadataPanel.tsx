@@ -1,5 +1,6 @@
 import type { BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
 import { formatSeconds } from '../utils/ui'
+import { mediaLocatorFileName } from '../features/backend'
 
 interface MetadataPanelProps {
   mode: BrowserMode
@@ -88,27 +89,33 @@ function MetadataPanel({
       {mode === 'image' ? (
         <div className={imagePreviewClassName}>
           {hasImageFocus && focusedImage ? (
-            <div className="metadata-image-canvas">
-              {focusedImageSrc ? (
-                <img
-                  className="metadata-image-real"
-                  src={focusedImageSrc}
-                  alt={`${focusedImagePackage?.displayName ?? '图片'} #${focusedImage.ordinal}`}
-                  draggable={false}
-                />
-              ) : (
-                <div
-                  className="metadata-image-media"
-                  style={{
-                    background: focusedImage.color,
-                    aspectRatio: `${focusedImage.width} / ${focusedImage.height}`,
-                    ...imagePreviewSizing,
-                  }}
-                >
-                  <span>{`${focusedImage.width} x ${focusedImage.height}`}</span>
-                </div>
-              )}
-            </div>
+            <>
+              <div className="metadata-image-canvas">
+                {focusedImageSrc ? (
+                  <img
+                    className="metadata-image-real"
+                    src={focusedImageSrc}
+                    alt={`${focusedImagePackage?.displayName ?? '图片'} #${focusedImage.ordinal}`}
+                    draggable={false}
+                  />
+                ) : (
+                  <div
+                    className="metadata-image-media"
+                    style={{
+                      background: focusedImage.color,
+                      aspectRatio: `${focusedImage.width} / ${focusedImage.height}`,
+                      ...imagePreviewSizing,
+                    }}
+                  >
+                    <span>{`${focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width} x ${focusedImage.height}` : '-'}`}</span>
+                  </div>
+                )}
+              </div>
+              <div className="metadata-image-caption">
+                <strong>{`${focusedImagePackage?.displayName ?? '图片'} #${focusedImage.ordinal}`}</strong>
+                <span>{mediaLocatorFileName(focusedImage.mediaLocator)}</span>
+              </div>
+            </>
           ) : (
             <>
               <p>{`图包：${focusedImagePackage?.displayName ?? '-'}`}</p>

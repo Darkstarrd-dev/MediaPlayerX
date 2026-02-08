@@ -1,12 +1,12 @@
 import { clamp } from '../../utils/ui'
 
-const TARGET_RATIO = 3 / 4
+const TARGET_RATIO = 1
 const RATIO_TOLERANCE = 0.1
 const MIN_RATIO = TARGET_RATIO * (1 - RATIO_TOLERANCE)
 const MAX_RATIO = TARGET_RATIO * (1 + RATIO_TOLERANCE)
 const MIN_DIM = 36
 const DEDUP_THRESHOLD = 1.18
-const THUMBNAIL_CAPTION_HEIGHT = 52
+const THUMBNAIL_CAPTION_HEIGHT = 0
 
 export const THUMBNAIL_LEVEL_COUNT = 9
 export const THUMBNAIL_DEFAULT_LEVEL = 5
