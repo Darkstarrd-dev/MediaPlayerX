@@ -13,6 +13,9 @@ import './App.css'
 import AppHeader from './components/AppHeader'
 import AppWorkspace from './components/AppWorkspace'
 import FullscreenLayer from './components/FullscreenLayer'
+import BackendErrorBanner from './components/BackendErrorBanner'
+import ImportTaskPanel from './components/ImportTaskPanel'
+import RuntimeWarningBanner from './components/RuntimeWarningBanner'
 import SettingsPanel from './components/SettingsPanel'
 import E2eBenchController from './bench/E2eBenchController'
 import {
@@ -33,7 +36,9 @@ import {
   collectLeafIds,
 } from './features/app/helpers'
 import { buildBackendErrorRows } from './features/app/buildBackendErrorRows'
+import { buildFullscreenLayerProps } from './features/app/buildFullscreenLayerProps'
 import { buildMetadataPanelProps } from './features/app/buildMetadataPanelProps'
+import { buildSettingsPanelProps } from './features/app/buildSettingsPanelProps'
 import {
   buildCoverImageLocator,
   computeResponsiveZoomFactor,
@@ -44,6 +49,7 @@ import { useMetadataWriteBindings } from './features/app/useMetadataWriteBinding
 import { useImportTaskPanelState } from './features/app/useImportTaskPanelState'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
+import { useRuntimeWarningDismiss } from './features/app/useRuntimeWarningDismiss'
 import { useImportPipeline } from './features/import/useImportPipeline'
 import { usePaneResizers } from './features/layout/usePaneResizers'
 import { computeThumbnailGridLayout } from './features/layout/thumbnailLayout'
@@ -76,7 +82,6 @@ const VectorUniverseOverlay = lazy(() => import('./components/VectorUniverseOver
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 const EMPTY_FEATURE_TAGS: string[] = []
-const RUNTIME_WARNING_DISMISS_STORAGE_KEY = 'mediaplayerx:runtime-warning-dismiss-key'
 const MEDIA_RESOLVE_MAX_CONCURRENT = 8
 type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 
@@ -219,14 +224,6 @@ function App() {
   )
   const [importMenuOpen, setImportMenuOpen] = useState(false)
   const [vectorUniverseOpen, setVectorUniverseOpen] = useState(false)
-  const [dismissedRuntimeWarningKey, setDismissedRuntimeWarningKey] = useState<string | null>(() => {
-    if (typeof window === 'undefined') {
-      return null
-    }
-
-    const value = window.localStorage.getItem(RUNTIME_WARNING_DISMISS_STORAGE_KEY)
-    return value && value.trim().length > 0 ? value : null
-  })
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
   const [importTaskPanelOpen, setImportTaskPanelOpen] = useState(false)
   const [archiveLoadStatus, setArchiveLoadStatus] = useState<{
@@ -1801,8 +1798,10 @@ function App() {
     () => runtimeCapabilityWarnings.map((item) => `${item.capability}|${item.status}|${item.note}`).join('||'),
     [runtimeCapabilityWarnings],
   )
-  const showRuntimeCapabilityWarnings =
-    runtimeCapabilityWarnings.length > 0 && dismissedRuntimeWarningKey !== runtimeWarningKey
+  const runtimeWarningDismiss = useRuntimeWarningDismiss({
+    runtimeWarningKey,
+    warningCount: runtimeCapabilityWarnings.length,
+  })
 
   const {
     activeImportTaskCount,
@@ -1861,6 +1860,91 @@ function App() {
         setDatabaseResetPending(false)
       })
   }, [mediaRepository])
+
+  const fullscreenLayerProps = buildFullscreenLayerProps({
+    mode,
+    fullscreenActive,
+    showFullscreenFooter,
+    fullscreenDisplay,
+    fullscreenEntryDisplay,
+    fullscreenAlignRequest,
+    fullscreenSwapped,
+    fullscreenVideoFocus,
+    fullscreenSplit,
+    focusedImage,
+    focusedImageSrc: fullscreenImageSrc,
+    focusedVideo: focusedVideoEffective,
+    focusedVideoSrc,
+    focusedVideoCoverImageSrc,
+    durationSec: focusedVideoDurationSec,
+    focusedVideoCoverColor,
+    videoTime,
+    videoPlaying,
+    videoRate,
+    videoVolume,
+    videoMuted,
+    autoPlayEnabled,
+    autoPlayInterval,
+    autoPlayPresets: AUTO_PLAY_PRESETS,
+    updateSettings,
+    setVideoPlaying,
+    goPlaylist,
+    setVideoTime,
+    focusedVideoId: focusedVideoEffective?.id ?? null,
+    setVideoDurationById,
+    setVideoMuted,
+    setVideoVolume,
+    setVideoRate,
+    setFullscreenActiveWithAutoStop,
+    setShowFullscreenFooter,
+    setFullscreenDisplay,
+    setFullscreenSwapped,
+    setFullscreenVideoFocus,
+    setFullscreenSplit,
+    moveImage,
+    goPackage,
+  })
+
+  const settingsPanelProps = buildSettingsPanelProps({
+    settingsOpen,
+    headerHeight,
+    settingsFontSize,
+    sidebarRatio,
+    sidebarMinWidth,
+    layoutLocked,
+    sidebarFontSize,
+    sidebarCountFontSize,
+    sidebarIndentStep,
+    sidebarVerticalGap,
+    metadataRatio,
+    vectorPanelHeight,
+    thumbnailGap,
+    thumbnailQuality,
+    thumbnailWidth,
+    lmStudioEndpoint,
+    lmStudioModel,
+    vectorUniverseMoveSpeed,
+    vectorUniverseSprintMultiplier,
+    vectorUniverseLookSensitivity,
+    vectorUniverseRaycastDistance,
+    vectorUniverseHelperScale,
+    vectorUniverseDispersion,
+    vectorUniverseWidgetSize,
+    shortcuts,
+    shortcutConflicts,
+    vectorControls,
+    vectorControlConflicts,
+    databaseResetPending,
+    databaseResetError,
+    updateSettings,
+    applySidebarRatio,
+    applyMetadataRatio,
+    setShortcut,
+    setVectorControl,
+    resetShortcuts,
+    resetVectorControls,
+    clearDatabaseForDev,
+  })
 
   return (
     <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
@@ -1921,118 +2005,31 @@ function App() {
         onChange={onImportFoldersSelected}
       />
 
-      {backendErrorRows.length > 0 ? (
-        <section className="backend-error-banner" role="status" aria-live="polite">
-          <header>
-            <strong>{`后端读取异常（${repositoryMode}）`}</strong>
-          </header>
-          <ul>
-            {backendErrorRows.map((row) => (
-              <li key={row.key}>
-                <span>{`${row.label}: ${row.message}`}</span>
-                <button type="button" onClick={row.onRetry}>
-                  重试
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      <BackendErrorBanner rows={backendErrorRows} repositoryMode={repositoryMode} />
 
-      {showRuntimeCapabilityWarnings ? (
-        <section className="runtime-warning-banner" role="status" aria-live="polite">
-          <header>
-            <strong>运行时降级策略已生效</strong>
-            <button
-              type="button"
-              onClick={() => {
-                setDismissedRuntimeWarningKey(runtimeWarningKey)
-                if (typeof window !== 'undefined') {
-                  window.localStorage.setItem(RUNTIME_WARNING_DISMISS_STORAGE_KEY, runtimeWarningKey)
-                }
-              }}
-            >
-              忽略此告警
-            </button>
-          </header>
-          <ul>
-            {runtimeCapabilityWarnings.map((item) => (
-              <li key={item.capability}>
-                <span>{`${item.capability} (${item.status})`}</span>
-                <span>{item.note}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      <RuntimeWarningBanner
+        visible={runtimeWarningDismiss.visible}
+        warnings={runtimeCapabilityWarnings}
+        onDismiss={runtimeWarningDismiss.dismiss}
+      />
 
-      {importTaskPanelOpen ? (
-        <section className="import-task-panel" role="status" aria-live="polite">
-          <header>
-            <strong>导入任务</strong>
-            <span>{`进行中 ${activeImportTaskCount}`}</span>
-            <span>{`归一化排队 ${normalizedPendingArchivePathSet.size}`}</span>
-            {normalizedRunningArchivePath ? <span>归一化处理中</span> : null}
-            {enqueuePending ? <span>正在入队...</span> : null}
-            <button type="button" onClick={() => setImportTaskPanelOpen(false)}>
-              关闭
-            </button>
-            <button type="button" onClick={clearFinishedImportTasks}>
-              清理已完成
-            </button>
-            <button type="button" onClick={clearAllImportTasks}>
-              清空列表
-            </button>
-          </header>
-          {taskError ? (
-            <p>
-              <span>{taskError}</span>
-              <button type="button" onClick={clearTaskError}>
-                清除
-              </button>
-            </p>
-          ) : null}
-          {importTasksForPanel.length > 0 ? (
-            <ul>
-              {importTasksForPanel.map((task) => {
-                const sourceLabel =
-                  task.source === 'dialog-folders'
-                    ? '文件夹'
-                    : task.source === 'drag-drop'
-                      ? '拖拽'
-                      : task.source === 'paste'
-                        ? '粘贴'
-                        : '文件'
-                const progressPercent = Math.round(clamp(task.progress, 0, 1) * 100)
-
-                return (
-                  <li key={task.task_id}>
-                    <span>{`${sourceLabel} | ${task.processed_count}/${task.total_count}`}</span>
-                    <span>{task.status}</span>
-                    <progress max={100} value={progressPercent} />
-                    <span>{`${progressPercent}%`}</span>
-                    <span>{task.message ?? '-'}</span>
-                    {task.status === 'failed' ? (
-                      <button type="button" onClick={() => retryImportTaskFromPanel(task.task_id)}>
-                        重试
-                      </button>
-                    ) : task.status === 'completed' ? (
-                      <button
-                        type="button"
-                        onClick={() => setDismissedImportTaskIds((previous) => ({ ...previous, [task.task_id]: true }))}
-                      >
-                        移除
-                      </button>
-                    ) : null}
-                  </li>
-                )
-              })}
-            </ul>
-          ) : (
-            <p>暂无导入任务。</p>
-          )}
-        </section>
-      ) : null}
+      <ImportTaskPanel
+        open={importTaskPanelOpen}
+        activeTaskCount={activeImportTaskCount}
+        pendingArchiveCount={normalizedPendingArchivePathSet.size}
+        runningArchive={Boolean(normalizedRunningArchivePath)}
+        enqueuePending={enqueuePending}
+        taskError={taskError}
+        tasks={importTasksForPanel}
+        onClose={() => setImportTaskPanelOpen(false)}
+        onClearFinished={clearFinishedImportTasks}
+        onClearAll={clearAllImportTasks}
+        onClearError={clearTaskError}
+        onRetryTask={retryImportTaskFromPanel}
+        onRemoveTask={(taskId) => {
+          setDismissedImportTaskIds((previous) => ({ ...previous, [taskId]: true }))
+        }}
+      />
 
       <AppWorkspace
         mode={mode}
@@ -2057,74 +2054,7 @@ function App() {
         mainFooter={mainFooter}
       />
 
-      <FullscreenLayer
-        mode={mode}
-        fullscreenActive={fullscreenActive}
-        showFullscreenFooter={showFullscreenFooter}
-        fullscreenDisplay={fullscreenDisplay}
-        fullscreenEntryDisplay={fullscreenEntryDisplay}
-        fullscreenAlignRequest={fullscreenAlignRequest}
-        fullscreenSwapped={fullscreenSwapped}
-        fullscreenVideoFocus={fullscreenVideoFocus}
-        fullscreenSplit={fullscreenSplit}
-        focusedImage={focusedImage}
-        focusedImageSrc={fullscreenImageSrc}
-        focusedVideo={focusedVideoEffective}
-        focusedVideoSrc={focusedVideoSrc}
-        focusedVideoCoverImageSrc={focusedVideoCoverImageSrc}
-        durationSec={focusedVideoDurationSec}
-        focusedVideoCoverColor={focusedVideoCoverColor}
-        videoTime={videoTime}
-        videoPlaying={videoPlaying}
-        videoRate={videoRate}
-        videoVolume={videoVolume}
-        videoMuted={videoMuted}
-        autoPlayEnabled={autoPlayEnabled}
-        autoPlayInterval={autoPlayInterval}
-        autoPlayPresets={AUTO_PLAY_PRESETS}
-        onSetFooterVisible={setShowFullscreenFooter}
-        onSetDisplay={setFullscreenDisplay}
-        onToggleSwapSides={() => setFullscreenSwapped((value) => !value)}
-        onSetVideoFocus={setFullscreenVideoFocus}
-        onSetSplit={setFullscreenSplit}
-        onPrevImage={() => moveImage(-1)}
-        onNextImage={() => moveImage(1)}
-        onPrevPackage={() => goPackage(-1)}
-        onNextPackage={() => goPackage(1)}
-        onToggleAutoplay={() => {
-          updateSettings({ autoPlayEnabled: !autoPlayEnabled })
-        }}
-        onSetAutoplayInterval={(seconds) => {
-          updateSettings({ autoPlayInterval: seconds, autoPlayEnabled: true })
-        }}
-        onToggleVideoPlay={() => setVideoPlaying((value) => !value)}
-        onPrevVideo={() => goPlaylist(-1)}
-        onNextVideo={() => goPlaylist(1)}
-        onSeekVideo={(time) => {
-          setVideoTime(clamp(time, 0, focusedVideoDurationSec))
-        }}
-        onVideoTimeUpdate={(time) => {
-          setVideoTime(clamp(time, 0, focusedVideoDurationSec))
-        }}
-        onVideoDurationDetected={(duration) => {
-          if (!focusedVideo || !Number.isFinite(duration) || duration <= 0) {
-            return
-          }
-          setVideoDurationById((previous) => ({
-            ...previous,
-            [focusedVideo.id]: duration,
-          }))
-        }}
-        onToggleVideoMute={() => setVideoMuted((value) => !value)}
-        onChangeVideoVolume={(volume) => {
-          setVideoMuted(false)
-          setVideoVolume(clamp(volume, 0, 100))
-        }}
-        onChangeVideoRate={(rate) => {
-          setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
-        }}
-        onExit={() => setFullscreenActiveWithAutoStop(false)}
-      />
+      <FullscreenLayer {...fullscreenLayerProps} />
 
       {vectorUniverseOpen ? (
         <Suspense
@@ -2149,67 +2079,7 @@ function App() {
         </Suspense>
       ) : null}
 
-      <SettingsPanel
-        settingsOpen={settingsOpen}
-        headerHeight={headerHeight}
-        settingsFontSize={settingsFontSize}
-        sidebarRatio={sidebarRatio}
-        sidebarMinWidth={sidebarMinWidth}
-        layoutLocked={layoutLocked}
-        sidebarFontSize={sidebarFontSize}
-        sidebarCountFontSize={sidebarCountFontSize}
-        sidebarIndentStep={sidebarIndentStep}
-        sidebarVerticalGap={sidebarVerticalGap}
-        metadataRatio={metadataRatio}
-        vectorPanelHeight={vectorPanelHeight}
-        thumbnailGap={thumbnailGap}
-        thumbnailQuality={thumbnailQuality}
-        thumbnailWidth={thumbnailWidth}
-        lmStudioEndpoint={lmStudioEndpoint}
-        lmStudioModel={lmStudioModel}
-        vectorUniverseMoveSpeed={vectorUniverseMoveSpeed}
-        vectorUniverseSprintMultiplier={vectorUniverseSprintMultiplier}
-        vectorUniverseLookSensitivity={vectorUniverseLookSensitivity}
-        vectorUniverseRaycastDistance={vectorUniverseRaycastDistance}
-        vectorUniverseHelperScale={vectorUniverseHelperScale}
-        vectorUniverseDispersion={vectorUniverseDispersion}
-        vectorUniverseWidgetSize={vectorUniverseWidgetSize}
-        shortcuts={shortcuts}
-        shortcutConflicts={shortcutConflicts}
-        vectorControls={vectorControls}
-        vectorControlConflicts={vectorControlConflicts}
-        databaseResetPending={databaseResetPending}
-        databaseResetError={databaseResetError}
-        onClose={() => updateSettings({ settingsOpen: false })}
-        onHeaderHeightChange={(value) => updateSettings({ headerHeight: value })}
-        onSettingsFontSizeChange={(value) => updateSettings({ settingsFontSize: value })}
-        onSidebarRatioChange={applySidebarRatio}
-        onSidebarMinWidthChange={(value) => updateSettings({ sidebarMinWidth: value })}
-        onLayoutLockedChange={(value) => updateSettings({ layoutLocked: value })}
-        onSidebarFontSizeChange={(value) => updateSettings({ sidebarFontSize: value })}
-        onSidebarCountFontSizeChange={(value) => updateSettings({ sidebarCountFontSize: value })}
-        onSidebarIndentStepChange={(value) => updateSettings({ sidebarIndentStep: value })}
-        onSidebarVerticalGapChange={(value) => updateSettings({ sidebarVerticalGap: value })}
-        onMetadataRatioChange={applyMetadataRatio}
-        onVectorPanelHeightChange={(value) => updateSettings({ vectorPanelHeight: value })}
-        onThumbnailGapChange={(value) => updateSettings({ thumbnailGap: value })}
-        onThumbnailQualityChange={(value) => updateSettings({ thumbnailQuality: value })}
-        onThumbnailWidthChange={(value) => updateSettings({ thumbnailWidth: value })}
-        onLmStudioEndpointChange={(value) => updateSettings({ lmStudioEndpoint: value })}
-        onLmStudioModelChange={(value) => updateSettings({ lmStudioModel: value })}
-        onVectorUniverseMoveSpeedChange={(value) => updateSettings({ vectorUniverseMoveSpeed: value })}
-        onVectorUniverseSprintMultiplierChange={(value) => updateSettings({ vectorUniverseSprintMultiplier: value })}
-        onVectorUniverseLookSensitivityChange={(value) => updateSettings({ vectorUniverseLookSensitivity: value })}
-        onVectorUniverseRaycastDistanceChange={(value) => updateSettings({ vectorUniverseRaycastDistance: value })}
-        onVectorUniverseHelperScaleChange={(value) => updateSettings({ vectorUniverseHelperScale: value })}
-        onVectorUniverseDispersionChange={(value) => updateSettings({ vectorUniverseDispersion: value })}
-        onVectorUniverseWidgetSizeChange={(value) => updateSettings({ vectorUniverseWidgetSize: value })}
-        onSetShortcut={setShortcut}
-        onSetVectorControl={setVectorControl}
-        onResetShortcuts={resetShortcuts}
-        onResetVectorControls={resetVectorControls}
-        onClearDatabase={clearDatabaseForDev}
-      />
+      <SettingsPanel {...settingsPanelProps} />
 
       {dragOverlayActive ? (
         <div className="drop-overlay" aria-hidden="true">

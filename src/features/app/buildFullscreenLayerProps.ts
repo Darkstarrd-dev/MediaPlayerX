@@ -1,0 +1,123 @@
+import type { Dispatch, SetStateAction } from 'react'
+
+import type { AppSettings } from '../../contracts/settings'
+import type { FullscreenLayerProps } from '../../components/FullscreenLayer'
+import { clamp } from '../../utils/ui'
+import type { ImageItem, VideoItem } from '../../types'
+
+interface BuildFullscreenLayerPropsParams {
+  mode: FullscreenLayerProps['mode']
+  fullscreenActive: boolean
+  showFullscreenFooter: boolean
+  fullscreenDisplay: FullscreenLayerProps['fullscreenDisplay']
+  fullscreenEntryDisplay: FullscreenLayerProps['fullscreenEntryDisplay']
+  fullscreenAlignRequest: FullscreenLayerProps['fullscreenAlignRequest']
+  fullscreenSwapped: boolean
+  fullscreenVideoFocus: boolean
+  fullscreenSplit: number
+  focusedImage: ImageItem | null
+  focusedImageSrc: string | null
+  focusedVideo: VideoItem | null
+  focusedVideoSrc: string | null
+  focusedVideoCoverImageSrc: string | null
+  durationSec: number
+  focusedVideoCoverColor: string
+  videoTime: number
+  videoPlaying: boolean
+  videoRate: number
+  videoVolume: number
+  videoMuted: boolean
+  autoPlayEnabled: boolean
+  autoPlayInterval: number
+  autoPlayPresets: number[]
+  updateSettings: (patch: Partial<AppSettings>) => void
+  setVideoPlaying: Dispatch<SetStateAction<boolean>>
+  goPlaylist: (step: number) => void
+  setVideoTime: Dispatch<SetStateAction<number>>
+  focusedVideoId: string | null
+  setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
+  setVideoMuted: Dispatch<SetStateAction<boolean>>
+  setVideoVolume: Dispatch<SetStateAction<number>>
+  setVideoRate: Dispatch<SetStateAction<number>>
+  setFullscreenActiveWithAutoStop: (active: boolean) => void
+  setShowFullscreenFooter: (visible: boolean) => void
+  setFullscreenDisplay: Dispatch<SetStateAction<FullscreenLayerProps['fullscreenDisplay']>>
+  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>
+  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
+  setFullscreenSplit: Dispatch<SetStateAction<number>>
+  moveImage: (step: number) => void
+  goPackage: (step: number) => void
+}
+
+export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParams): FullscreenLayerProps {
+  return {
+    mode: params.mode,
+    fullscreenActive: params.fullscreenActive,
+    showFullscreenFooter: params.showFullscreenFooter,
+    fullscreenDisplay: params.fullscreenDisplay,
+    fullscreenEntryDisplay: params.fullscreenEntryDisplay,
+    fullscreenAlignRequest: params.fullscreenAlignRequest,
+    fullscreenSwapped: params.fullscreenSwapped,
+    fullscreenVideoFocus: params.fullscreenVideoFocus,
+    fullscreenSplit: params.fullscreenSplit,
+    focusedImage: params.focusedImage,
+    focusedImageSrc: params.focusedImageSrc,
+    focusedVideo: params.focusedVideo,
+    focusedVideoSrc: params.focusedVideoSrc,
+    focusedVideoCoverImageSrc: params.focusedVideoCoverImageSrc,
+    durationSec: params.durationSec,
+    focusedVideoCoverColor: params.focusedVideoCoverColor,
+    videoTime: params.videoTime,
+    videoPlaying: params.videoPlaying,
+    videoRate: params.videoRate,
+    videoVolume: params.videoVolume,
+    videoMuted: params.videoMuted,
+    autoPlayEnabled: params.autoPlayEnabled,
+    autoPlayInterval: params.autoPlayInterval,
+    autoPlayPresets: params.autoPlayPresets,
+    onSetFooterVisible: params.setShowFullscreenFooter,
+    onSetDisplay: params.setFullscreenDisplay,
+    onToggleSwapSides: () => params.setFullscreenSwapped((value) => !value),
+    onSetVideoFocus: params.setFullscreenVideoFocus,
+    onSetSplit: params.setFullscreenSplit,
+    onPrevImage: () => params.moveImage(-1),
+    onNextImage: () => params.moveImage(1),
+    onPrevPackage: () => params.goPackage(-1),
+    onNextPackage: () => params.goPackage(1),
+    onToggleAutoplay: () => {
+      params.updateSettings({ autoPlayEnabled: !params.autoPlayEnabled })
+    },
+    onSetAutoplayInterval: (seconds) => {
+      params.updateSettings({ autoPlayInterval: seconds, autoPlayEnabled: true })
+    },
+    onToggleVideoPlay: () => params.setVideoPlaying((value) => !value),
+    onPrevVideo: () => params.goPlaylist(-1),
+    onNextVideo: () => params.goPlaylist(1),
+    onSeekVideo: (time) => {
+      params.setVideoTime(clamp(time, 0, params.durationSec))
+    },
+    onVideoTimeUpdate: (time) => {
+      params.setVideoTime(clamp(time, 0, params.durationSec))
+    },
+    onVideoDurationDetected: (duration) => {
+      const focusedVideoId = params.focusedVideoId
+      if (!focusedVideoId || !Number.isFinite(duration) || duration <= 0) {
+        return
+      }
+
+      params.setVideoDurationById((previous) => ({
+        ...previous,
+        [focusedVideoId]: duration,
+      }))
+    },
+    onToggleVideoMute: () => params.setVideoMuted((value) => !value),
+    onChangeVideoVolume: (volume) => {
+      params.setVideoMuted(false)
+      params.setVideoVolume(clamp(volume, 0, 100))
+    },
+    onChangeVideoRate: (rate) => {
+      params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
+    },
+    onExit: () => params.setFullscreenActiveWithAutoStop(false),
+  }
+}

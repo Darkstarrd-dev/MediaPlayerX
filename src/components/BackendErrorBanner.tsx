@@ -1,0 +1,33 @@
+import type { RepositoryMode } from '../features/backend/repository'
+import type { BackendErrorRow } from '../features/app/buildBackendErrorRows'
+
+interface BackendErrorBannerProps {
+  rows: BackendErrorRow[]
+  repositoryMode: RepositoryMode
+}
+
+function BackendErrorBanner({ rows, repositoryMode }: BackendErrorBannerProps) {
+  if (rows.length === 0) {
+    return null
+  }
+
+  return (
+    <section className="backend-error-banner" role="status" aria-live="polite">
+      <header>
+        <strong>{`后端读取异常（${repositoryMode}）`}</strong>
+      </header>
+      <ul>
+        {rows.map((row) => (
+          <li key={row.key}>
+            <span>{`${row.label}: ${row.message}`}</span>
+            <button type="button" onClick={row.onRetry}>
+              重试
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+export default BackendErrorBanner

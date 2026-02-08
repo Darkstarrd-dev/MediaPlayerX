@@ -42,7 +42,7 @@ interface PaneAlign {
   y: AxisAlign
 }
 
-interface FullscreenLayerProps {
+export interface FullscreenLayerProps {
   mode: BrowserMode
   fullscreenActive: boolean
   showFullscreenFooter: boolean

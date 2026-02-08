@@ -17,7 +17,7 @@ import {
 } from '../vectorControls'
 import { DEFAULT_SETTINGS } from '../store/useUiStore'
 
-interface SettingsPanelProps {
+export interface SettingsPanelProps {
   settingsOpen: boolean
   headerHeight: number
   settingsFontSize: number
