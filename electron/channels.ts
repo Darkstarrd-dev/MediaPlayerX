@@ -18,6 +18,14 @@ export const BACKEND_CHANNELS = {
   clearDatabase: 'backend:clearDatabase',
 } as const
 
+export const BENCH_CHANNELS = {
+  readConfig: 'bench:readConfig',
+  ping: 'bench:ping',
+  finish: 'bench:finish',
+} as const
+
 export const MEDIA_PROTOCOL_SCHEME = 'mediaplayerx-media'
 
 export type BackendChannelName = (typeof BACKEND_CHANNELS)[keyof typeof BACKEND_CHANNELS]
+
+export type BenchChannelName = (typeof BENCH_CHANNELS)[keyof typeof BENCH_CHANNELS]

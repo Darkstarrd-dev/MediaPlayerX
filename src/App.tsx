@@ -13,6 +13,7 @@ import AppWorkspace from './components/AppWorkspace'
 import FullscreenLayer from './components/FullscreenLayer'
 import SettingsPanel from './components/SettingsPanel'
 import VectorUniverseOverlay from './components/VectorUniverseOverlay'
+import E2eBenchController from './bench/E2eBenchController'
 import {
   IMAGE_DIRECTORY_SOURCES,
   IMAGE_PACKAGES,
@@ -49,6 +50,7 @@ import {
   useReadOnlyDataAccess,
   useWriteDataAccess,
 } from './features/backend'
+import { getBenchSettings } from './features/perf/benchSettings'
 import { useUiStore } from './store/useUiStore'
 import type {
   FocusedImageRef,
@@ -104,6 +106,7 @@ function buildCoverImageLocator(absolutePath: string | null | undefined): MediaL
 }
 
 function App() {
+  const benchSettings = getBenchSettings()
   const {
     mode,
     vectorMode,
@@ -1009,6 +1012,12 @@ function App() {
   const resolvedMedia = useResolvedMediaUrls({
     repository: mediaRepository,
     targets: mediaResolveTargets,
+    options: benchSettings.enabled
+      ? benchSettings.resolvedMedia
+      : {
+          applyMode: 'immediate',
+          stateScope: 'active-only',
+        },
   })
 
   const imageUrlById = useMemo<Record<string, string>>(() => {
@@ -1271,6 +1280,7 @@ function App() {
     thumbnailScale,
     normalizedThumbnailScale,
     activePackage,
+    imageFocusActive,
     focusByPackage,
     pagedPageSize,
     vectorSearchResults,
@@ -1421,9 +1431,14 @@ function App() {
     layoutLocked,
   }
 
+  const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
+
   const imageMainSectionProps = {
     vectorMode: vectorResultsActive,
     showNamesOnly,
+    loading: enableLoadingSkeleton ? backendRead.page.loading : false,
+    placeholderCount: Math.max(1, pagedPageSize),
+    enableLoadingSkeleton,
     activePackage: activePackageForDisplay,
     focusedRef,
     focusedImageExists: Boolean(focusedImage),
@@ -1730,7 +1745,9 @@ function App() {
     const confirmed =
       typeof window === 'undefined'
         ? true
-        : window.confirm('清除数据库将移除评分/封面/任务/播放列表缓存。仅建议开发调试使用，确认继续？')
+        : window.confirm(
+            '清除数据库将移除评分/封面/任务/播放列表缓存，并清空导入引用列表与缩略图/归一化缓存。仅建议开发调试使用，确认继续？',
+          )
 
     if (!confirmed) {
       return
@@ -2099,6 +2116,22 @@ function App() {
             <p>释放鼠标后将自动入队并在上方显示任务状态</p>
           </div>
         </div>
+      ) : null}
+
+      {benchSettings.enabled && benchSettings.mode === 'e2e' ? (
+        <E2eBenchController
+          repository={mediaRepository}
+          mode={mode}
+          orderedPackages={orderedRootScopedPackages}
+          selectedPackageId={selectedPackageId}
+          setSelectedPackageId={setSelectedPackageId}
+          pageIndex={backendPageSnapshot?.pageIndex ?? null}
+          totalPages={imageTotalPagesEffective}
+          pageLoading={backendRead.page.loading}
+          refsInPageCount={refsInPageEffective.length}
+          goNextPage={goNextPage}
+          goPrevPage={goPrevPage}
+        />
       ) : null}
     </div>
   )

@@ -1,6 +1,9 @@
 import type { ComponentProps, MouseEvent as ReactMouseEvent, ReactNode, RefObject } from 'react'
+import { Profiler } from 'react'
 
 import type { BrowserMode } from '../types'
+import { benchOnReactRender } from '../features/perf/benchRecorder'
+import { getBenchSettings } from '../features/perf/benchSettings'
 import ImageMainSection from './ImageMainSection'
 import MetadataPanel from './MetadataPanel'
 import SearchPanel from './SearchPanel'
@@ -52,6 +55,49 @@ function AppWorkspace({
   metadataPanelProps,
   mainFooter,
 }: AppWorkspaceProps) {
+  const benchSettings = getBenchSettings()
+  const enableProfiler = Boolean(benchSettings.enabled && benchSettings.reactProfiler)
+
+  const sidebar = enableProfiler ? (
+    <Profiler id="SidebarPanel" onRender={benchOnReactRender}>
+      <SidebarPanel {...sidebarPanelProps} />
+    </Profiler>
+  ) : (
+    <SidebarPanel {...sidebarPanelProps} />
+  )
+
+  const searchPanel = enableProfiler ? (
+    <Profiler id="SearchPanel" onRender={benchOnReactRender}>
+      <SearchPanel {...searchPanelProps} />
+    </Profiler>
+  ) : (
+    <SearchPanel {...searchPanelProps} />
+  )
+
+  const mainSection = mode === 'image' ? (
+    enableProfiler ? (
+      <Profiler id="ImageMainSection" onRender={benchOnReactRender}>
+        <ImageMainSection {...imageMainSectionProps} />
+      </Profiler>
+    ) : (
+      <ImageMainSection {...imageMainSectionProps} />
+    )
+  ) : enableProfiler ? (
+    <Profiler id="VideoMainSection" onRender={benchOnReactRender}>
+      <VideoMainSection {...videoMainSectionProps} />
+    </Profiler>
+  ) : (
+    <VideoMainSection {...videoMainSectionProps} />
+  )
+
+  const metadataPanel = enableProfiler ? (
+    <Profiler id="MetadataPanel" onRender={benchOnReactRender}>
+      <MetadataPanel {...metadataPanelProps} />
+    </Profiler>
+  ) : (
+    <MetadataPanel {...metadataPanelProps} />
+  )
+
   return (
     <div className="app-body" ref={appBodyRef} style={{ height: `calc(100vh - ${headerHeight}px)` }}>
       {sidebarCollapsed ? (
@@ -60,7 +106,7 @@ function AppWorkspace({
         </button>
       ) : (
         <>
-          <SidebarPanel {...sidebarPanelProps} />
+          {sidebar}
 
           <div
             aria-label="调整 Sidebar 宽度"
@@ -79,11 +125,11 @@ function AppWorkspace({
         ref={workspaceRef}
         style={{ width: sidebarCollapsed ? '100%' : `calc(${(1 - sidebarRatio) * 100}% - 8px)` }}
       >
-        <SearchPanel {...searchPanelProps} />
+        {searchPanel}
 
         <div className="workspace-body" ref={workspaceBodyRef}>
           <main className="main-pane" style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - 8px)` }}>
-            {mode === 'image' ? <ImageMainSection {...imageMainSectionProps} /> : <VideoMainSection {...videoMainSectionProps} />}
+            {mainSection}
 
             <footer className="main-footer">{mainFooter}</footer>
           </main>
@@ -100,7 +146,7 @@ function AppWorkspace({
             />
           )}
 
-          <MetadataPanel {...metadataPanelProps} />
+          {metadataPanel}
         </div>
       </section>
     </div>

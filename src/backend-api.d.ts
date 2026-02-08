@@ -48,9 +48,30 @@ interface MediaPlayerBackendApi {
   clearDatabase: () => Promise<ClearDatabaseResponseDto>
 }
 
+interface MediaPlayerBenchConfigResponse {
+  bench: string | null
+  config: unknown
+  read_at_ms: number
+}
+
+interface MediaPlayerBenchPingResponse {
+  main_now_ms: number
+}
+
+interface MediaPlayerBenchFinishResponse {
+  output_path: string
+}
+
+interface MediaPlayerBenchApi {
+  readConfig: () => Promise<MediaPlayerBenchConfigResponse>
+  ping: () => Promise<MediaPlayerBenchPingResponse>
+  finish: (report: unknown) => Promise<MediaPlayerBenchFinishResponse>
+}
+
 declare global {
   interface Window {
     mediaPlayerBackend?: MediaPlayerBackendApi
+    mediaPlayerBench?: MediaPlayerBenchApi
   }
 }
 

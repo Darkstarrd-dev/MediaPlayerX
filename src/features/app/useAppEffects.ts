@@ -21,6 +21,7 @@ interface UseAppEffectsParams {
   thumbnailScale: number
   normalizedThumbnailScale: number
   activePackage: ImagePackage | null
+  imageFocusActive: boolean
   focusByPackage: Record<string, number>
   pagedPageSize: number
   vectorSearchResults: VectorCandidate[]
@@ -82,6 +83,7 @@ export function useAppEffects({
   thumbnailScale,
   normalizedThumbnailScale,
   activePackage,
+  imageFocusActive,
   focusByPackage,
   pagedPageSize,
   vectorSearchResults,
@@ -212,7 +214,7 @@ export function useAppEffects({
   }, [normalizedThumbnailScale, thumbnailScale, updateSettings])
 
   useEffect(() => {
-    if (!activePackage || showNamesOnly) {
+    if (!activePackage || showNamesOnly || !imageFocusActive) {
       return
     }
 
@@ -228,7 +230,7 @@ export function useAppEffects({
         [activePackage.id]: nextPage,
       }
     })
-  }, [activePackage, focusByPackage, pagedPageSize, setPageByPackage, showNamesOnly])
+  }, [activePackage, focusByPackage, imageFocusActive, pagedPageSize, setPageByPackage, showNamesOnly])
 
   useEffect(() => {
     if (vectorSearchResults.length === 0) {

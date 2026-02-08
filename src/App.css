@@ -885,6 +885,12 @@ select {
   transition: transform 0.15s ease;
 }
 
+.thumb-card.is-skeleton {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.82;
+}
+
 .thumb-card.is-focused {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(47, 111, 127, 0.18);
@@ -892,6 +898,10 @@ select {
 
 .thumb-card:hover {
   transform: translateY(-2px);
+}
+
+.thumb-card.is-skeleton:hover {
+  transform: none;
 }
 
 .thumb-card:focus,

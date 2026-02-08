@@ -308,6 +308,27 @@ export class MediaLibraryDatabase {
     return parseJson(row.state_json, fallback)
   }
 
+  readImportSources(): { directories: string[]; files: string[] } {
+    const state = this.readAppState<{ directories?: unknown; files?: unknown }>('import_sources_v1', {})
+    const directories = Array.isArray(state.directories)
+      ? state.directories.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+      : []
+    const files = Array.isArray(state.files)
+      ? state.files.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+      : []
+    return {
+      directories,
+      files,
+    }
+  }
+
+  writeImportSources(next: { directories: string[]; files: string[] }): void {
+    this.writeAppState('import_sources_v1', {
+      directories: Array.from(new Set(next.directories.map((value) => value.trim()).filter(Boolean))),
+      files: Array.from(new Set(next.files.map((value) => value.trim()).filter(Boolean))),
+    })
+  }
+
   replaceSnapshot(snapshot: LibrarySnapshotDto): void {
     const revision = Date.now()
 

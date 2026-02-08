@@ -1,8 +1,10 @@
 import { app, BrowserWindow, protocol } from 'electron'
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 import { MEDIA_PROTOCOL_SCHEME } from './channels'
+import { registerBenchIpcHandlers } from './registerBenchIpcHandlers'
 import { registerBackendIpcHandlers } from './registerBackendIpcHandlers'
 
 const __dirname = path.dirname(path.resolve(process.argv[1] ?? '.'))
@@ -56,6 +58,14 @@ function applyElectronProxy(): void {
   app.commandLine.appendSwitch('proxy-bypass-list', resolveProxyBypassList())
 }
 
+function resolveUserDataDir(): string | null {
+  const explicit = (process.env.MEDIA_PLAYERX_USER_DATA_DIR ?? '').trim()
+  if (explicit.length > 0) {
+    return path.resolve(explicit)
+  }
+  return null
+}
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: MEDIA_PROTOCOL_SCHEME,
@@ -71,6 +81,13 @@ protocol.registerSchemesAsPrivileged([
 
 applyElectronProxy()
 
+tryConfigureCrashDumpsDir()
+
+const userDataDir = resolveUserDataDir()
+if (userDataDir) {
+  app.setPath('userData', userDataDir)
+}
+
 function resolveRendererEntry(): { type: 'url' | 'file'; value: string } {
   if (process.env.VITE_DEV_SERVER_URL) {
     return {
@@ -83,6 +100,62 @@ function resolveRendererEntry(): { type: 'url' | 'file'; value: string } {
     type: 'file',
     value: path.join(__dirname, '../dist/index.html'),
   }
+}
+
+function resolveBenchMode(): string | null {
+  const value = (process.env.MEDIA_PLAYERX_BENCH ?? '').trim()
+  return value.length > 0 ? value : null
+}
+
+function resolveBenchOutDir(): string | null {
+  const raw = (process.env.MEDIA_PLAYERX_BENCH_OUT_DIR ?? '').trim()
+  return raw.length > 0 ? path.resolve(raw) : null
+}
+
+function resolveBenchIdentity(): { candidateId: string | null; runTag: string | null } {
+  const raw = (process.env.MEDIA_PLAYERX_BENCH_CONFIG_JSON ?? '').trim()
+  if (!raw) {
+    return { candidateId: null, runTag: null }
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as { candidateId?: unknown; runTag?: unknown }
+    const candidateId = typeof parsed.candidateId === 'string' ? parsed.candidateId : null
+    const runTag = typeof parsed.runTag === 'string' ? parsed.runTag : null
+    return { candidateId, runTag }
+  } catch {
+    return { candidateId: null, runTag: null }
+  }
+}
+
+function tryConfigureCrashDumpsDir(): void {
+  const benchMode = resolveBenchMode()
+  if (!benchMode) {
+    return
+  }
+
+  const outDir = resolveBenchOutDir()
+  if (!outDir) {
+    return
+  }
+
+  const identity = resolveBenchIdentity()
+  const safeCandidate = (identity.candidateId ?? 'unknown').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 64)
+  const safeRunTag = (identity.runTag ?? String(Date.now())).replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 96)
+  const crashDir = path.join(outDir, 'crash-dumps', `${safeCandidate}-${safeRunTag}`)
+
+  try {
+    mkdirSync(crashDir, { recursive: true })
+    app.setPath('crashDumps', crashDir)
+    console.log('[main] crashDumps configured', { crashDir })
+  } catch (error) {
+    console.warn('[main] crashDumps configure failed', { error: (error as Error).message })
+  }
+}
+
+function shouldOpenDevTools(): boolean {
+  const raw = (process.env.MEDIA_PLAYERX_BENCH_DEVTOOLS ?? '').trim().toLowerCase()
+  return raw === '1' || raw === 'true' || raw === 'yes'
 }
 
 function resolvePreloadEntry(): string {
@@ -98,6 +171,7 @@ function resolvePreloadEntry(): string {
 }
 
 function createMainWindow(): BrowserWindow {
+  const benchMode = resolveBenchMode()
   const window = new BrowserWindow({
     width: 1400,
     height: 920,
@@ -107,15 +181,66 @@ function createMainWindow(): BrowserWindow {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      backgroundThrottling: benchMode ? false : true,
       preload: resolvePreloadEntry(),
     },
   })
 
+  if (benchMode) {
+    try {
+      window.webContents.setBackgroundThrottling(false)
+    } catch {
+      // ignore
+    }
+    window.once('ready-to-show', () => {
+      try {
+        window.show()
+        window.focus()
+      } catch {
+        // ignore
+      }
+    })
+  }
+
   const entry = resolveRendererEntry()
   if (entry.type === 'url') {
-    void window.loadURL(entry.value)
+    if (benchMode) {
+      const url = new URL(entry.value)
+      url.searchParams.set('bench', benchMode)
+      void window.loadURL(url.toString())
+    } else {
+      void window.loadURL(entry.value)
+    }
   } else {
-    void window.loadFile(entry.value)
+    if (benchMode) {
+      const fileUrl = pathToFileURL(entry.value)
+      fileUrl.searchParams.set('bench', benchMode)
+      void window.loadURL(fileUrl.toString())
+    } else {
+      void window.loadFile(entry.value)
+    }
+  }
+
+  window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error('[main] did-fail-load', {
+      errorCode,
+      errorDescription,
+      validatedURL,
+    })
+  })
+
+  window.webContents.on('render-process-gone', (_event, details) => {
+    console.error('[main] render-process-gone', details)
+  })
+
+  window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    if (resolveBenchMode()) {
+      console.log('[renderer]', { level, message, line, sourceId })
+    }
+  })
+
+  if (benchMode && shouldOpenDevTools()) {
+    window.webContents.openDevTools({ mode: 'detach' })
   }
 
   return window
@@ -123,6 +248,7 @@ function createMainWindow(): BrowserWindow {
 
 app.whenReady().then(() => {
   registerBackendIpcHandlers()
+  registerBenchIpcHandlers()
   createMainWindow()
 
   app.on('activate', () => {

@@ -6,6 +6,9 @@ import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../types'
 interface ImageMainSectionProps {
   vectorMode: boolean
   showNamesOnly: boolean
+  loading: boolean
+  placeholderCount: number
+  enableLoadingSkeleton: boolean
   activePackage: ImagePackage | null
   focusedRef: FocusedImageRef | null
   focusedImageExists: boolean
@@ -32,6 +35,9 @@ interface ImageMainSectionProps {
 function ImageMainSection({
   vectorMode,
   showNamesOnly,
+  loading,
+  placeholderCount,
+  enableLoadingSkeleton,
   activePackage,
   focusedRef,
   focusedImageExists,
@@ -54,6 +60,8 @@ function ImageMainSection({
   onPrevPage,
   onNextPage,
 }: ImageMainSectionProps) {
+  const showSkeleton = !showNamesOnly && enableLoadingSkeleton && loading
+
   return (
     <>
       <div className="main-toolbar">
@@ -107,7 +115,7 @@ function ImageMainSection({
           </div>
         </div>
       ) : (
-        <>
+        <> 
           <div
             className="image-grid"
             ref={gridRef}
@@ -116,25 +124,28 @@ function ImageMainSection({
               gap: `${thumbnailGap}px`,
             }}
           >
-            {refsInPage.map((ref, pageIndex) => {
+            {showSkeleton
+              ? Array.from({ length: Math.max(1, placeholderCount) }).map((_, index) => (
+                  <div
+                    key={`skeleton-${index}`}
+                    className="thumb-card is-skeleton"
+                    style={{ width: `${actualCellWidth}px` }}
+                  >
+                    <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
+                      <div className="thumb-media" style={{ width: '100%', height: '100%', background: '#0e1116', opacity: 0.35 }} />
+                    </div>
+                    <div className="thumb-caption">
+                      <strong>加载中</strong>
+                      <small>{`#${index + 1}`}</small>
+                    </div>
+                  </div>
+                ))
+              : refsInPage.map((ref, pageIndex) => {
               const pkg = packageById.get(ref.packageId)
               const image = pkg?.images[ref.imageIndex]
               if (!pkg || !image) {
                 return null
               }
-
-              const imageRatio = image.width / image.height
-              const frameRatio = actualCellWidth / actualMediaHeight
-              const mediaSizing =
-                imageRatio >= frameRatio
-                  ? {
-                      width: '100%',
-                      aspectRatio: `${image.width} / ${image.height}`,
-                    }
-                  : {
-                      height: '100%',
-                      aspectRatio: `${image.width} / ${image.height}`,
-                    }
 
               const absoluteIndex = pageStart + pageIndex
               const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
@@ -150,7 +161,7 @@ function ImageMainSection({
                   onDoubleClick={onEnterFullscreen}
                 >
                   <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
-                    <div className="thumb-media" style={mediaSizing}>
+                    <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
                       {imageSrc ? (
                         <img
                           className="thumb-media-image"

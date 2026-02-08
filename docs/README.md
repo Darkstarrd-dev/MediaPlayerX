@@ -10,6 +10,8 @@
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
 - `虚拟UI阶段说明.md`：当前阶段的目标、范围与验收方式（纯模拟交互）。
 - `backend-integration-guardrails.md`：后端接入阶段的强制规避方案与执行门禁。
+- `perf/2026-02-08-ui-perf-benchmark-plan.md`：UI 性能基准与选型结论（定型：R1-S1）。
+- `perf/2026-02-07-scan-benchmark.md`：扫描/索引性能基准报告。
 
 ## 当前状态
 
@@ -51,7 +53,7 @@
 - 后端存储已切换到 SQLite 基座：`migration/init/version`、`source/package`、`image`、`video`、`grade`、`cover`、`playlist`、`app_state`、`root_config`、`task_log` 已落地。
 - 读链路（snapshot/sidebar/page/metadata）已改为“扫描结果事务 upsert -> SQLite 查询回读”的 DB 优先路径，内存快照仅作为短生命周期缓存。
 - 播放列表已接入持久化链路：Renderer 通过 `Repository -> preload -> ipc` 读写播放列表，重启后恢复。
-- 导入链路已接入任务队列：文件/文件夹/拖拽/粘贴统一入队，任务状态持久化到 `task_log` 并在前端任务面板展示，失败可重试；库外路径会复制到库内 `imports/` 再刷新索引。
+- 导入链路已接入任务队列：文件/文件夹/拖拽/粘贴统一入队，任务状态持久化到 `task_log` 并在前端任务面板展示，失败可重试；导入为“纯引用”：库外路径不复制入库，仅登记引用并在原路径扫描/读取媒体；应用仅写入数据库与 `.mediaplayerx` 缓存。
 - Electron 启动脚本已补齐：`npm run dev:desktop`（开发）与 `npm run desktop:start`（构建+启动）。
 - Electron 代理支持：可通过 `MEDIA_PLAYERX_PROXY_SERVER` / `MEDIA_PLAYERX_PROXY_BYPASS` 透传运行时代理配置（用于依赖联网能力或受限网络环境）。
 - 缩略图渲染链路已接入 Sharp WebP 缓存：Main 按请求变体生成并缓存缩略图，Renderer 缩略图网格优先读取 thumbnail 变体，Metadata/Fullscreen 保持 original 变体。

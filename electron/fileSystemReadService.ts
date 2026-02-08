@@ -87,8 +87,7 @@ const FFPROBE_BIN = process.env.MEDIA_PLAYERX_FFPROBE_BIN ?? 'ffprobe'
 const ARCHIVE_EXTRACTOR_BIN = process.env.MEDIA_PLAYERX_ARCHIVE_EXTRACTOR_BIN ?? '7z'
 const ARCHIVE_NORMALIZE_DIR_NAME = '.mediaplayerx/normalized-archives'
 const THUMBNAIL_CACHE_DIR_NAME = '.mediaplayerx/thumbnail-cache'
-const IMPORT_FILES_DIR_NAME = 'imports/files'
-const IMPORT_FOLDERS_DIR_NAME = 'imports/folders'
+const LEGACY_IMPORTS_DIR_NAME = 'imports'
 const THUMBNAIL_DEFAULT_MAX_EDGE = 320
 const THUMBNAIL_DEFAULT_QUALITY = 82
 const THUMBNAIL_MIN_EDGE = 64
@@ -97,7 +96,6 @@ const THUMBNAIL_MIN_QUALITY = 50
 const THUMBNAIL_MAX_QUALITY = 95
 const DIRECTORY_SCAN_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_SCAN_CONCURRENCY, 16, 64)
 const ARCHIVE_SCAN_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_ARCHIVE_SCAN_CONCURRENCY, 10, 32)
-const IMPORT_COPY_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_IMPORT_COPY_CONCURRENCY, 24, 128)
 
 const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])
 
@@ -225,23 +223,57 @@ function normalizePathKey(value: string): string {
   return value.split(path.sep).join('/')
 }
 
+function normalizeAllowlistKey(value: string): string {
+  const resolved = normalizePathKey(path.resolve(value))
+  return process.platform === 'win32' ? resolved.toLowerCase() : resolved
+}
+
 function makeStableId(prefix: string, value: string): string {
   const hash = createHash('sha1').update(value).digest('hex').slice(0, 12)
   return `${prefix}-${hash}`
 }
 
-function toTreePath(rootDir: string, targetPath: string): string[] {
-  const relative = normalizePathKey(path.relative(rootDir, targetPath))
-  const segments = relative
+function toAbsoluteTreePath(targetPath: string): string[] {
+  const resolved = normalizePathKey(path.resolve(targetPath))
+
+  // Windows drive path: C:/foo/bar
+  if (/^[a-zA-Z]:\//.test(resolved)) {
+    const drive = resolved.slice(0, 2)
+    const rest = resolved.slice(3)
+    const segments = rest
+      .split('/')
+      .map((segment) => segment.trim())
+      .filter(Boolean)
+    return segments.length > 0 ? [drive, ...segments] : [drive]
+  }
+
+  // Windows UNC path normalized by `normalizePathKey`: //server/share/folder
+  if (resolved.startsWith('//')) {
+    const parts = resolved
+      .split('/')
+      .map((segment) => segment.trim())
+      .filter(Boolean)
+    if (parts.length >= 2) {
+      const uncRoot = `//${parts[0]}/${parts[1]}`
+      return parts.length > 2 ? [uncRoot, ...parts.slice(2)] : [uncRoot]
+    }
+    return [resolved]
+  }
+
+  // POSIX: /foo/bar
+  if (resolved.startsWith('/')) {
+    const parts = resolved
+      .split('/')
+      .map((segment) => segment.trim())
+      .filter(Boolean)
+    return parts.length > 0 ? ['/', ...parts] : ['/']
+  }
+
+  const parts = resolved
     .split('/')
     .map((segment) => segment.trim())
     .filter(Boolean)
-
-  if (segments.length > 0) {
-    return segments
-  }
-
-  return [path.basename(targetPath)]
+  return parts.length > 0 ? parts : [path.basename(targetPath)]
 }
 
 function toSafeSizeKb(sizeBytes: number): number {
@@ -1009,10 +1041,6 @@ export class FileSystemMediaReadService {
 
   private readonly thumbnailCacheRootDir: string
 
-  private readonly importFilesRootDir: string
-
-  private readonly importFoldersRootDir: string
-
   private readonly coverOutputRootDir: string
 
   private readonly database: MediaLibraryDatabase
@@ -1034,6 +1062,12 @@ export class FileSystemMediaReadService {
   private packageGradeOverridesBySourceId = new Map<string, number | null>()
 
   private videoCoverOverridesByVideoId = new Map<string, PersistedVideoCoverRecord>()
+
+  private importSources: { directories: string[]; files: string[] } = { directories: [], files: [] }
+
+  private importDirectoryRoots: string[] = []
+
+  private importFileAllowlistKeys = new Set<string>()
 
   private mediaAudit: MediaAccessAuditCounters = {
     resolveRequests: 0,
@@ -1058,8 +1092,6 @@ export class FileSystemMediaReadService {
     this.rootDir = path.resolve(rootDir)
     this.normalizedArchiveRootDir = path.join(this.rootDir, ARCHIVE_NORMALIZE_DIR_NAME)
     this.thumbnailCacheRootDir = path.join(this.rootDir, THUMBNAIL_CACHE_DIR_NAME)
-    this.importFilesRootDir = path.join(this.rootDir, IMPORT_FILES_DIR_NAME)
-    this.importFoldersRootDir = path.join(this.rootDir, IMPORT_FOLDERS_DIR_NAME)
     this.coverOutputRootDir = path.join(this.rootDir, '.mediaplayerx', 'covers')
     this.database = new MediaLibraryDatabase(this.rootDir)
     this.recoverInterruptedImportTasks()
@@ -1091,8 +1123,8 @@ export class FileSystemMediaReadService {
   invalidateCache(): void {
     this.snapshotCache = null
     this.stateHydrated = false
-    this.archiveEntryIndexByPath.clear()
-    this.zipEntryIndexByPath.clear()
+    // Keep archive allowlists until next snapshot is ready.
+    // This avoids transient "entry not allowlisted" errors while a rescan is in progress.
     this.mediaTokenIndex.clear()
     this.normalizedArchiveCacheBySourcePath.clear()
   }
@@ -1120,6 +1152,28 @@ export class FileSystemMediaReadService {
 
     this.packageGradeOverridesBySourceId = this.database.readPackageGrades()
     this.videoCoverOverridesByVideoId = this.database.readVideoCovers()
+
+    const rawImportSources = this.database.readImportSources()
+    const directoryMap = new Map<string, string>()
+    const fileMap = new Map<string, string>()
+
+    for (const value of rawImportSources.directories) {
+      const resolved = path.resolve(value)
+      const key = normalizeAllowlistKey(resolved)
+      directoryMap.set(key, resolved)
+    }
+    for (const value of rawImportSources.files) {
+      const resolved = path.resolve(value)
+      const key = normalizeAllowlistKey(resolved)
+      fileMap.set(key, resolved)
+    }
+
+    this.importSources = {
+      directories: Array.from(directoryMap.values()),
+      files: Array.from(fileMap.values()),
+    }
+    this.importDirectoryRoots = this.importSources.directories
+    this.importFileAllowlistKeys = new Set(fileMap.keys())
     this.stateHydrated = true
   }
 
@@ -1217,8 +1271,22 @@ export class FileSystemMediaReadService {
 
   async clearDatabase(): Promise<ClearDatabaseResponseDto> {
     this.database.clearDatabase()
+
+    // Also clear imported library copies so "清除数据库" can reset the visible imported content.
+    // Keep runtime workspace directories themselves; only wipe their contents.
+    await Promise.all([
+      // Legacy copy-mode artifacts.
+      fs.rm(path.join(this.rootDir, LEGACY_IMPORTS_DIR_NAME), { recursive: true, force: true }),
+      fs.rm(this.coverOutputRootDir, { recursive: true, force: true }),
+      fs.rm(this.thumbnailCacheRootDir, { recursive: true, force: true }),
+      fs.rm(this.normalizedArchiveRootDir, { recursive: true, force: true }),
+    ])
+
     this.packageGradeOverridesBySourceId = new Map()
     this.videoCoverOverridesByVideoId = new Map()
+    this.importSources = { directories: [], files: [] }
+    this.importDirectoryRoots = []
+    this.importFileAllowlistKeys.clear()
     this.mediaTokenIndex.clear()
     this.runningImportTaskIds.clear()
     this.importTaskQueue = Promise.resolve()
@@ -1276,19 +1344,51 @@ export class FileSystemMediaReadService {
       throw new Error(`后端真实读服务失败：目录不存在或不可访问 -> ${this.rootDir}`)
     }
 
+    await this.ensureStateLoaded()
+
+    const directoryRoots = Array.from(new Set(this.importDirectoryRoots.map((value) => path.resolve(value))))
+    const explicitFiles = Array.from(new Set(this.importSources.files.map((value) => path.resolve(value))))
+
+    if (directoryRoots.length === 0 && explicitFiles.length === 0) {
+      return []
+    }
+
+    const internalMetaDir = path.join(this.rootDir, '.mediaplayerx')
+    const legacyImportsDir = path.join(this.rootDir, LEGACY_IMPORTS_DIR_NAME)
+
     const files: FileRecord[] = []
-    let levelDirectories = [this.rootDir]
+    const seen = new Set<string>()
+
+    const pushFile = (absolutePath: string, extension: string, sizeBytes: number) => {
+      const key = normalizeAllowlistKey(absolutePath)
+      if (seen.has(key)) {
+        return
+      }
+      seen.add(key)
+      files.push({
+        absolutePath,
+        relativePath: normalizePathKey(absolutePath),
+        extension,
+        sizeBytes,
+      })
+    }
+
+    let levelDirectories = directoryRoots
 
     while (levelDirectories.length > 0) {
       const nestedDirectories = await parallelMapLimit(levelDirectories, DIRECTORY_SCAN_CONCURRENCY, async (current) => {
-        const entries = await fs.readdir(current, { withFileTypes: true })
+        const entries = await fs.readdir(current, { withFileTypes: true }).catch(() => null)
+        if (!entries) {
+          return []
+        }
         const nextLevel: string[] = []
         const pendingVideoRecords: Array<{ absolutePath: string; relativePath: string; extension: string }> = []
 
         for (const entry of entries) {
           const absolutePath = path.join(current, entry.name)
           if (entry.isDirectory()) {
-            if (entry.name === '.mediaplayerx') {
+            const lowered = entry.name.toLowerCase()
+            if (lowered === '.mediaplayerx' || lowered === LEGACY_IMPORTS_DIR_NAME) {
               continue
             }
             nextLevel.push(absolutePath)
@@ -1304,18 +1404,17 @@ export class FileSystemMediaReadService {
             continue
           }
 
-          const relativePath = normalizePathKey(path.relative(this.rootDir, absolutePath))
+          if (isPathInsideRoot(internalMetaDir, absolutePath) || isPathInsideRoot(legacyImportsDir, absolutePath)) {
+            continue
+          }
+
+          const relativePath = normalizePathKey(absolutePath)
           if (VIDEO_EXTENSIONS.has(extension)) {
             pendingVideoRecords.push({ absolutePath, relativePath, extension })
             continue
           }
 
-          files.push({
-            absolutePath,
-            relativePath,
-            extension,
-            sizeBytes: 0,
-          })
+          pushFile(absolutePath, extension, 0)
         }
 
         if (pendingVideoRecords.length > 0) {
@@ -1326,14 +1425,15 @@ export class FileSystemMediaReadService {
               const stat = await fs.stat(videoRecord.absolutePath).catch(() => null)
               return {
                 absolutePath: videoRecord.absolutePath,
-                relativePath: videoRecord.relativePath,
                 extension: videoRecord.extension,
                 sizeBytes: stat?.size ?? 0,
               }
             },
           )
 
-          files.push(...videoFiles)
+          for (const videoFile of videoFiles) {
+            pushFile(videoFile.absolutePath, videoFile.extension, videoFile.sizeBytes)
+          }
         }
 
         return nextLevel
@@ -1342,7 +1442,40 @@ export class FileSystemMediaReadService {
       levelDirectories = nestedDirectories.flat()
     }
 
-    files.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
+    if (explicitFiles.length > 0) {
+      const resolvedFiles = await parallelMapLimit(explicitFiles, DIRECTORY_SCAN_CONCURRENCY, async (candidatePath) => {
+        const absolutePath = path.resolve(candidatePath)
+
+        if (isPathInsideRoot(internalMetaDir, absolutePath) || isPathInsideRoot(legacyImportsDir, absolutePath)) {
+          return null
+        }
+
+        const stat = await fs.stat(absolutePath).catch(() => null)
+        if (!stat || !stat.isFile()) {
+          return null
+        }
+
+        const extension = path.extname(absolutePath).toLowerCase()
+        if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
+          return null
+        }
+
+        return {
+          absolutePath,
+          extension,
+          sizeBytes: VIDEO_EXTENSIONS.has(extension) ? stat.size : 0,
+        }
+      })
+
+      for (const record of resolvedFiles) {
+        if (!record) {
+          continue
+        }
+        pushFile(record.absolutePath, record.extension, record.sizeBytes)
+      }
+    }
+
+    files.sort((left, right) => left.absolutePath.localeCompare(right.absolutePath, 'zh-CN'))
     return files
   }
 
@@ -1400,7 +1533,7 @@ export class FileSystemMediaReadService {
   }
 
   private createDirectorySource(directoryPath: string, imageFiles: FileRecord[]): ImagePackageDto {
-    const treePath = toTreePath(this.rootDir, directoryPath)
+    const treePath = toAbsoluteTreePath(directoryPath)
     const sourceId = makeStableId('dir', directoryPath)
     const displayName = path.basename(directoryPath) || treePath[treePath.length - 1] || sourceId
     const persistedGrade = this.packageGradeOverridesBySourceId.get(sourceId)
@@ -1437,7 +1570,7 @@ export class FileSystemMediaReadService {
       package_name: fileName,
       display_name: displayName,
       absolute_path: file.absolutePath,
-      tree_path: toTreePath(this.rootDir, file.absolutePath),
+      tree_path: toAbsoluteTreePath(file.absolutePath),
       work_title: displayName,
       circle: '未知',
       author: '未知',
@@ -1467,7 +1600,7 @@ export class FileSystemMediaReadService {
       id: videoId,
       file_name: path.basename(file.absolutePath),
       absolute_path: file.absolutePath,
-      tree_path: toTreePath(this.rootDir, file.absolutePath),
+      tree_path: toAbsoluteTreePath(file.absolutePath),
       duration_sec: Math.max(0, Math.round(probe?.durationSec ?? 0)),
       width: probe?.width && probe.width > 0 ? probe.width : 1920,
       height: probe?.height && probe.height > 0 ? probe.height : 1080,
@@ -1661,8 +1794,8 @@ export class FileSystemMediaReadService {
       }
     }
 
-    this.archiveEntryIndexByPath.clear()
-    this.zipEntryIndexByPath.clear()
+    const nextArchiveEntryIndexByPath = new Map<string, Set<string>>()
+    const nextZipEntryIndexByPath = new Map<string, Map<string, ZipCentralEntry>>()
 
     const imageDirectories = Array.from(directoryImageMap.entries())
       .map(([directoryPath, imageFiles]) => {
@@ -1683,11 +1816,11 @@ export class FileSystemMediaReadService {
 
     const imagePackages: ImagePackageDto[] = []
     for (const prepared of preparedArchives) {
-      this.archiveEntryIndexByPath.set(
+      nextArchiveEntryIndexByPath.set(
         prepared.archivePathForMediaRead,
         new Set(prepared.imageEntries.map((entry) => entry.entryName)),
       )
-      this.zipEntryIndexByPath.set(
+      nextZipEntryIndexByPath.set(
         prepared.archivePathForMediaRead,
         new Map(prepared.imageEntries.map((entry) => [entry.entryName, entry])),
       )
@@ -1708,6 +1841,10 @@ export class FileSystemMediaReadService {
       image_directories: imageDirectories,
       videos: videoItems,
     })
+
+    // Swap allowlists atomically with the new snapshot.
+    this.archiveEntryIndexByPath = nextArchiveEntryIndexByPath
+    this.zipEntryIndexByPath = nextZipEntryIndexByPath
 
     this.database.replaceSnapshot(scannedSnapshot)
     return this.database.readSnapshot()
@@ -1737,11 +1874,27 @@ export class FileSystemMediaReadService {
     }
   }
 
+  private isPathAllowlisted(absolutePath: string): boolean {
+    if (isPathInsideRoot(this.rootDir, absolutePath)) {
+      return true
+    }
+
+    for (const root of this.importDirectoryRoots) {
+      if (isPathInsideRoot(root, absolutePath)) {
+        return true
+      }
+    }
+
+    const key = normalizeAllowlistKey(absolutePath)
+    return this.importFileAllowlistKeys.has(key)
+  }
+
   private async assertLocatorAllowed(locator: MediaLocatorDto): Promise<MediaLocatorDto> {
     if (locator.kind === 'filesystem') {
       const absolutePath = path.resolve(locator.absolute_path)
-      if (!isPathInsideRoot(this.rootDir, absolutePath)) {
-        throw new MediaAccessError('path_outside_root', `媒体访问被拒绝（越界）: ${absolutePath}`)
+
+      if (!this.isPathAllowlisted(absolutePath)) {
+        throw new MediaAccessError('path_outside_root', `媒体访问被拒绝（未导入/未允许）: ${absolutePath}`)
       }
 
       const extension = path.extname(absolutePath).toLowerCase()
@@ -1768,8 +1921,8 @@ export class FileSystemMediaReadService {
     }
 
     const archivePath = path.resolve(locator.archive_path)
-    if (!isPathInsideRoot(this.rootDir, archivePath)) {
-      throw new MediaAccessError('path_outside_root', `压缩包媒体访问被拒绝（越界）: ${archivePath}`)
+    if (!this.isPathAllowlisted(archivePath)) {
+      throw new MediaAccessError('path_outside_root', `压缩包媒体访问被拒绝（未导入/未允许）: ${archivePath}`)
     }
 
     const archiveStat = await fs.stat(archivePath).catch(() => null)
@@ -2356,79 +2509,6 @@ export class FileSystemMediaReadService {
     }
   }
 
-  private async copyImportedFileIntoLibrary(sourceFilePath: string, extension: string): Promise<void> {
-    const sourceBaseName = path.basename(sourceFilePath, extension)
-    const stableSuffix = createHash('sha1').update(sourceFilePath).digest('hex').slice(0, 12)
-    const targetName = `${toSafeFsName(sourceBaseName)}-${stableSuffix}${extension}`
-    const targetPath = path.join(this.importFilesRootDir, targetName)
-
-    await fs.mkdir(this.importFilesRootDir, { recursive: true })
-    await fs.copyFile(sourceFilePath, targetPath)
-  }
-
-  private async copyImportedDirectoryIntoLibrary(
-    sourceDirectoryPath: string,
-    onProgress?: (copiedCount: number, totalCount: number) => void,
-  ): Promise<number> {
-    const sourceBaseName = path.basename(sourceDirectoryPath) || 'import-folder'
-    const stableSuffix = createHash('sha1').update(sourceDirectoryPath).digest('hex').slice(0, 12)
-    const targetRootPath = path.join(this.importFoldersRootDir, `${toSafeFsName(sourceBaseName)}-${stableSuffix}`)
-
-    await fs.rm(targetRootPath, { recursive: true, force: true })
-    await fs.mkdir(targetRootPath, { recursive: true })
-
-    const queue: Array<{ source: string; target: string }> = [{ source: sourceDirectoryPath, target: targetRootPath }]
-    const pendingCopies: Array<{ sourcePath: string; targetPath: string }> = []
-
-    while (queue.length > 0) {
-      const current = queue.pop()
-      if (!current) {
-        continue
-      }
-
-      const entries = await fs.readdir(current.source, { withFileTypes: true })
-      for (const entry of entries) {
-        const sourcePath = path.join(current.source, entry.name)
-        const targetPath = path.join(current.target, entry.name)
-
-        if (entry.isDirectory()) {
-          if (entry.name === '.mediaplayerx') {
-            continue
-          }
-
-          queue.push({ source: sourcePath, target: targetPath })
-          continue
-        }
-
-        if (!entry.isFile()) {
-          continue
-        }
-
-        const extension = path.extname(entry.name).toLowerCase()
-        if (!IMAGE_EXTENSIONS.has(extension) && !VIDEO_EXTENSIONS.has(extension) && !ARCHIVE_EXTENSIONS.has(extension)) {
-          continue
-        }
-
-        pendingCopies.push({ sourcePath, targetPath })
-      }
-    }
-
-    if (pendingCopies.length === 0) {
-      return 0
-    }
-
-    let copiedCount = 0
-    await parallelMapLimit(pendingCopies, IMPORT_COPY_CONCURRENCY, async (copyJob) => {
-      await fs.mkdir(path.dirname(copyJob.targetPath), { recursive: true })
-      await fs.copyFile(copyJob.sourcePath, copyJob.targetPath)
-      copiedCount += 1
-      onProgress?.(copiedCount, pendingCopies.length)
-      return undefined
-    })
-
-    return pendingCopies.length
-  }
-
   private async runImportTask(taskId: string): Promise<ImportTaskDto> {
     const existing = this.database.readTask(taskId)
     if (!existing) {
@@ -2447,9 +2527,27 @@ export class FileSystemMediaReadService {
     })
 
     let processedCount = 0
-    let successCount = 0
-    let copiedFileCount = 0
+    let acceptedCount = 0
     const failedMessages: string[] = []
+
+    const internalMetaDir = path.join(this.rootDir, '.mediaplayerx')
+    const legacyImportsDir = path.join(this.rootDir, LEGACY_IMPORTS_DIR_NAME)
+
+    const existingImportSources = this.database.readImportSources()
+    const directoryMap = new Map<string, string>()
+    const fileMap = new Map<string, string>()
+
+    for (const value of existingImportSources.directories) {
+      const resolved = path.resolve(value)
+      directoryMap.set(normalizeAllowlistKey(resolved), resolved)
+    }
+    for (const value of existingImportSources.files) {
+      const resolved = path.resolve(value)
+      fileMap.set(normalizeAllowlistKey(resolved), resolved)
+    }
+
+    let addedDirectoryCount = 0
+    let addedFileCount = 0
 
     for (const sourcePath of existing.sourcePaths) {
       const inspected = await this.inspectImportPath(sourcePath)
@@ -2457,43 +2555,27 @@ export class FileSystemMediaReadService {
         let pathSucceeded = true
         try {
           const { inspection } = inspected
-          if (!inspection.insideRoot) {
-            if (inspection.kind === 'file' && inspection.extension) {
-              await this.copyImportedFileIntoLibrary(inspection.absolutePath, inspection.extension)
-              copiedFileCount += 1
-            } else if (inspection.kind === 'directory') {
-              let lastProgressUpdateAtMs = 0
-              const copied = await this.copyImportedDirectoryIntoLibrary(inspection.absolutePath, (copiedCount, totalCopyCount) => {
-                const now = Date.now()
-                if (copiedCount < totalCopyCount && now - lastProgressUpdateAtMs < 150) {
-                  return
-                }
-                lastProgressUpdateAtMs = now
+          const absolutePath = inspection.absolutePath
 
-                const inPathProgress = totalCopyCount > 0 ? copiedCount / totalCopyCount : 1
-                const overallProgress = totalCount > 0 ? (processedCount + inPathProgress) / totalCount : 1
-                this.database.upsertTask({
-                  ...existing,
-                  status: 'running',
-                  progress: Math.max(0, Math.min(1, overallProgress)),
-                  processedCount,
-                  totalCount,
-                  message: `导入进行中 ${processedCount}/${totalCount} | 拷贝 ${copiedCount}/${totalCopyCount}`,
-                  errorDetail: failedMessages.length > 0 ? failedMessages.slice(0, 3).join(' | ') : null,
-                  updatedAtMs: now,
-                })
-              })
-              if (copied <= 0) {
-                pathSucceeded = false
-                failedMessages.push(`目录不包含可导入媒体: ${inspection.absolutePath}`)
-              } else {
-                copiedFileCount += copied
-              }
+          if (isPathInsideRoot(internalMetaDir, absolutePath) || isPathInsideRoot(legacyImportsDir, absolutePath)) {
+            pathSucceeded = false
+            failedMessages.push(`禁止导入内部目录: ${absolutePath}`)
+          } else if (inspection.kind === 'file') {
+            const key = normalizeAllowlistKey(absolutePath)
+            if (!fileMap.has(key)) {
+              fileMap.set(key, absolutePath)
+              addedFileCount += 1
+            }
+          } else if (inspection.kind === 'directory') {
+            const key = normalizeAllowlistKey(absolutePath)
+            if (!directoryMap.has(key)) {
+              directoryMap.set(key, absolutePath)
+              addedDirectoryCount += 1
             }
           }
 
           if (pathSucceeded) {
-            successCount += 1
+            acceptedCount += 1
           }
         } catch (error) {
           const reason = error instanceof Error && error.message ? error.message : '未知错误'
@@ -2510,24 +2592,29 @@ export class FileSystemMediaReadService {
         progress: totalCount > 0 ? processedCount / totalCount : 1,
         processedCount,
         totalCount,
-        message: `导入进行中 ${processedCount}/${totalCount}`,
+        message: `导入进行中 ${processedCount}/${totalCount} | 新增引用 ${addedDirectoryCount + addedFileCount}`,
         errorDetail: failedMessages.length > 0 ? failedMessages.slice(0, 3).join(' | ') : null,
         updatedAtMs: Date.now(),
       })
     }
 
-    if (successCount > 0) {
+    const addedTotal = addedDirectoryCount + addedFileCount
+    if (addedTotal > 0) {
+      this.database.writeImportSources({
+        directories: Array.from(directoryMap.values()),
+        files: Array.from(fileMap.values()),
+      })
       this.invalidateCache()
       await this.ensureSnapshotLoaded()
     }
 
     const finishedAtMs = Date.now()
-    const failedCount = Math.max(0, totalCount - successCount)
+    const failedCount = Math.max(0, totalCount - acceptedCount)
     const status: ImportTaskDto['status'] = failedCount > 0 ? 'failed' : 'completed'
     const message =
       status === 'completed'
-        ? `导入完成，共 ${successCount} 项，复制 ${copiedFileCount} 个媒体文件`
-        : `导入失败，成功 ${successCount} 项，失败 ${failedCount} 项`
+        ? `导入完成，共 ${acceptedCount} 项，新增引用 ${addedTotal} 项（目录 ${addedDirectoryCount} + 文件 ${addedFileCount}）`
+        : `导入失败，成功 ${acceptedCount} 项，失败 ${failedCount} 项`
 
     this.database.upsertTask({
       ...existing,

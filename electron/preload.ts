@@ -29,7 +29,7 @@ import {
   writePackageGradeRequestSchema,
   writePackageGradeResponseSchema,
 } from '../src/contracts/backend'
-import { BACKEND_CHANNELS } from './channels'
+import { BACKEND_CHANNELS, BENCH_CHANNELS } from './channels'
 
 const backendApi = {
   readLibrarySnapshot: async () => {
@@ -112,4 +112,17 @@ const backendApi = {
   },
 }
 
+const benchApi = {
+  readConfig: async () => {
+    return await ipcRenderer.invoke(BENCH_CHANNELS.readConfig)
+  },
+  ping: async () => {
+    return await ipcRenderer.invoke(BENCH_CHANNELS.ping)
+  },
+  finish: async (report: unknown) => {
+    return await ipcRenderer.invoke(BENCH_CHANNELS.finish, report)
+  },
+}
+
 contextBridge.exposeInMainWorld('mediaPlayerBackend', backendApi)
+contextBridge.exposeInMainWorld('mediaPlayerBench', benchApi)
