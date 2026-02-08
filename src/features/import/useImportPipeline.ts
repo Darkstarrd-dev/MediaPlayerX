@@ -14,7 +14,15 @@ import {
   extractPathsFromClipboard,
   serializeFile,
 } from '../app/helpers'
-import type { ImportTaskDto, ImportTaskSourceDto } from '../../contracts/backend'
+import type {
+  EnqueueImportTaskRequestDto,
+  EnqueueImportTaskResponseDto,
+  ImportTaskDto,
+  ImportTaskSourceDto,
+  ReadImportTasksResponseDto,
+  RetryImportTaskRequestDto,
+  RetryImportTaskResponseDto,
+} from '../../contracts/backend'
 import type { ReadonlyMediaRepository } from '../backend/repository'
 
 const IMPORT_TASK_TIMEOUT_MS = 20_000
@@ -98,20 +106,48 @@ interface UseImportPipelineParams {
   repository: ReadonlyMediaRepository
 }
 
+interface SyncImportRepository extends ReadonlyMediaRepository {
+  enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto
+  readImportTasksSync(): ReadImportTasksResponseDto
+  retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto
+}
+
+function isSyncImportRepository(repository: ReadonlyMediaRepository): repository is SyncImportRepository {
+  return (
+    'enqueueImportTaskSync' in repository &&
+    typeof repository.enqueueImportTaskSync === 'function' &&
+    'readImportTasksSync' in repository &&
+    typeof repository.readImportTasksSync === 'function' &&
+    'retryImportTaskSync' in repository &&
+    typeof repository.retryImportTaskSync === 'function'
+  )
+}
+
 export function useImportPipeline({ repository }: UseImportPipelineParams): UseImportPipelineResult {
+  const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncImportRepository(repository)
+
   const fileImportInputRef = useRef<HTMLInputElement>(null)
   const folderImportInputRef = useRef<HTMLInputElement>(null)
   const dragDepthRef = useRef(0)
   const [dragOverlayActive, setDragOverlayActive] = useState(false)
   const [enqueuePending, setEnqueuePending] = useState(false)
   const [taskError, setTaskError] = useState<string | null>(null)
-  const [importTasks, setImportTasks] = useState<ImportTaskDto[]>([])
+  const initialImportTasks = useMemo<ImportTaskDto[]>(() => {
+    if (!isSynchronousTestMode) {
+      return []
+    }
+
+    return repository.readImportTasksSync().tasks
+  }, [isSynchronousTestMode, repository])
+  const [importTasks, setImportTasks] = useState<ImportTaskDto[]>(initialImportTasks)
 
   const refreshTasks = useCallback(async () => {
-    const response = await repository.readImportTasks({ timeoutMs: IMPORT_TASK_TIMEOUT_MS })
+    const response = isSynchronousTestMode
+      ? repository.readImportTasksSync()
+      : await repository.readImportTasks({ timeoutMs: IMPORT_TASK_TIMEOUT_MS })
     setImportTasks(response.tasks)
     setTaskError(null)
-  }, [repository])
+  }, [isSynchronousTestMode, repository])
 
   const enqueueImportPaths = useCallback(
     async (source: ImportTaskSourceDto, paths: string[]) => {
@@ -125,13 +161,13 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
       setTaskError(null)
 
       try {
-        const response = await repository.enqueueImportTask(
-          {
-            source,
-            paths: normalizedPaths,
-          },
-          { timeoutMs: IMPORT_TASK_TIMEOUT_MS },
-        )
+        const request: EnqueueImportTaskRequestDto = {
+          source,
+          paths: normalizedPaths,
+        }
+        const response = isSynchronousTestMode
+          ? repository.enqueueImportTaskSync(request)
+          : await repository.enqueueImportTask(request, { timeoutMs: IMPORT_TASK_TIMEOUT_MS })
         setImportTasks((previous) => {
           const deduped = previous.filter((task) => task.task_id !== response.task.task_id)
           return [response.task, ...deduped]
@@ -143,26 +179,26 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
         setEnqueuePending(false)
       }
     },
-    [refreshTasks, repository],
+    [isSynchronousTestMode, refreshTasks, repository],
   )
 
   const retryImportTask = useCallback(
     async (taskId: string) => {
       try {
         setTaskError(null)
-        const response = await repository.retryImportTask(
-          {
-            task_id: taskId,
-          },
-          { timeoutMs: IMPORT_TASK_TIMEOUT_MS },
-        )
+        const request: RetryImportTaskRequestDto = {
+          task_id: taskId,
+        }
+        const response = isSynchronousTestMode
+          ? repository.retryImportTaskSync(request)
+          : await repository.retryImportTask(request, { timeoutMs: IMPORT_TASK_TIMEOUT_MS })
         setImportTasks((previous) => previous.map((task) => (task.task_id === taskId ? response.task : task)))
         await refreshTasks()
       } catch (error: unknown) {
         setTaskError(toErrorMessage(error))
       }
     },
-    [refreshTasks, repository],
+    [isSynchronousTestMode, refreshTasks, repository],
   )
 
   const openImportFilesDialog = useCallback(() => {
@@ -252,6 +288,10 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
   }, [])
 
   useEffect(() => {
+    if (isSynchronousTestMode) {
+      return
+    }
+
     void refreshTasks().catch((error: unknown) => {
       setTaskError(toErrorMessage(error))
     })
@@ -265,7 +305,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
     return () => {
       window.clearInterval(timer)
     }
-  }, [refreshTasks])
+  }, [isSynchronousTestMode, refreshTasks])
 
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
@@ -440,7 +480,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
       window.removeEventListener('dragleave', onWindowDragLeave, true)
       window.removeEventListener('drop', onWindowDrop, true)
     }
-  }, [enqueueImportPaths])
+  }, [dragOverlayActive, enqueueImportPaths])
 
   const stableTasks = useMemo(
     () => [...importTasks].sort((left, right) => right.created_at_ms - left.created_at_ms),

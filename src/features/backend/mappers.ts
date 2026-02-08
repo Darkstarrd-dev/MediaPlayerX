@@ -98,6 +98,7 @@ export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
 }
 
 export function mapVideoItemDto(video: VideoItemDto): VideoItem {
+  const fallbackWorkTitle = video.file_name.replace(/\.[^./\\]+$/, '')
   return {
     id: video.id,
     fileName: video.file_name,
@@ -109,6 +110,11 @@ export function mapVideoItemDto(video: VideoItemDto): VideoItem {
     sizeMb: video.size_mb,
     coverColor: video.cover_color,
     coverImagePath: video.cover_image_path ?? null,
+    workTitle: video.work_title?.trim().length ? video.work_title : fallbackWorkTitle,
+    circle: video.circle?.trim().length ? video.circle : '未知',
+    author: video.author?.trim().length ? video.author : '未知',
+    tags: [...(video.tags ?? [])],
+    grade: video.grade ?? null,
     mediaLocator: mapMediaLocatorDto(video.media_locator),
   }
 }

@@ -12,7 +12,7 @@ import {
 } from '../src/contracts/backend'
 
 const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
-const SCHEMA_VERSION = 2
+const SCHEMA_VERSION = 4
 
 interface SQLiteStatementLike {
   run(...params: unknown[]): unknown
@@ -86,6 +86,11 @@ interface VideoRow {
   media_locator_json: string
   cover_color: string | null
   cover_image_path: string | null
+  work_title: string | null
+  circle: string | null
+  author: string | null
+  tags_json: string | null
+  grade: number | null
 }
 
 function parseJson<T>(raw: string, fallback: T): T {
@@ -213,6 +218,17 @@ export class MediaLibraryDatabase {
         FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
       );
 
+      CREATE TABLE IF NOT EXISTS video_metadata (
+        video_id TEXT PRIMARY KEY,
+        work_title TEXT NOT NULL,
+        circle TEXT NOT NULL,
+        author TEXT NOT NULL,
+        tags_json TEXT NOT NULL,
+        grade INTEGER,
+        updated_at_ms INTEGER NOT NULL,
+        FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
+      );
+
       CREATE TABLE IF NOT EXISTS playlist_entry (
         video_id TEXT PRIMARY KEY,
         sort_index INTEGER NOT NULL,
@@ -255,6 +271,14 @@ export class MediaLibraryDatabase {
     if (currentVersion < 2) {
       try {
         this.db.exec("ALTER TABLE task_log ADD COLUMN task_source TEXT NOT NULL DEFAULT 'dialog-files';")
+      } catch {
+        // ignore duplicated column on new databases
+      }
+    }
+
+    if (currentVersion < 4) {
+      try {
+        this.db.exec('ALTER TABLE video_metadata ADD COLUMN grade INTEGER;')
       } catch {
         // ignore duplicated column on new databases
       }
@@ -350,14 +374,14 @@ export class MediaLibraryDatabase {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
           source_type = excluded.source_type,
-          package_name = excluded.package_name,
-          display_name = excluded.display_name,
+          package_name = media_source.package_name,
+          display_name = media_source.display_name,
           absolute_path = excluded.absolute_path,
           tree_path_json = excluded.tree_path_json,
-          work_title = excluded.work_title,
-          circle = excluded.circle,
-          author = excluded.author,
-          tags_json = excluded.tags_json,
+          work_title = media_source.work_title,
+          circle = media_source.circle,
+          author = media_source.author,
+          tags_json = media_source.tags_json,
           last_seen_revision = excluded.last_seen_revision,
           updated_at_ms = excluded.updated_at_ms
       `,
@@ -609,33 +633,47 @@ export class MediaLibraryDatabase {
             video.size_mb,
             video.media_locator_json,
             cover.cover_color,
-            cover.cover_image_path
+            cover.cover_image_path,
+            metadata.work_title,
+            metadata.circle,
+            metadata.author,
+            metadata.tags_json,
+            metadata.grade
           FROM video_item AS video
           LEFT JOIN video_cover AS cover ON cover.video_id = video.id
+          LEFT JOIN video_metadata AS metadata ON metadata.video_id = video.id
           ORDER BY video.absolute_path COLLATE NOCASE
         `,
       )
       .all() as VideoRow[]
 
-    const videos: VideoItemDto[] = videoRows.map((row) => ({
-      id: row.id,
-      file_name: row.file_name,
-      absolute_path: row.absolute_path,
-      tree_path: parseJson<string[]>(row.tree_path_json, [row.file_name]),
-      duration_sec: row.duration_sec,
-      width: row.width,
-      height: row.height,
-      size_mb: row.size_mb,
-      cover_color: row.cover_color ?? 'hsl(0, 0%, 36%)',
-      cover_image_path: row.cover_image_path,
-      media_locator: parseJson<MediaLocatorDto>(row.media_locator_json, {
-        kind: 'filesystem',
+    const videos: VideoItemDto[] = videoRows.map((row) => {
+      const defaultWorkTitle = row.file_name.replace(/\.[^./\\]+$/, '')
+      return {
+        id: row.id,
+        file_name: row.file_name,
         absolute_path: row.absolute_path,
-        extension: '.mp4',
-        media_type: 'video',
-        mime_type: 'video/mp4',
-      }),
-    }))
+        tree_path: parseJson<string[]>(row.tree_path_json, [row.file_name]),
+        duration_sec: row.duration_sec,
+        width: row.width,
+        height: row.height,
+        size_mb: row.size_mb,
+        cover_color: row.cover_color ?? 'hsl(0, 0%, 36%)',
+        cover_image_path: row.cover_image_path,
+        work_title: row.work_title && row.work_title.trim().length > 0 ? row.work_title : defaultWorkTitle,
+        circle: row.circle && row.circle.trim().length > 0 ? row.circle : '未知',
+        author: row.author && row.author.trim().length > 0 ? row.author : '未知',
+        tags: row.tags_json ? parseJson<string[]>(row.tags_json, []) : [],
+        grade: row.grade,
+        media_locator: parseJson<MediaLocatorDto>(row.media_locator_json, {
+          kind: 'filesystem',
+          absolute_path: row.absolute_path,
+          extension: '.mp4',
+          media_type: 'video',
+          mime_type: 'video/mp4',
+        }),
+      }
+    })
 
     return librarySnapshotDtoSchema.parse({
       image_packages: imagePackages,
@@ -684,6 +722,42 @@ export class MediaLibraryDatabase {
     )
   }
 
+  readVideoMetadata(): Map<
+    string,
+    { workTitle: string; circle: string; author: string; tags: string[]; grade: number | null; updatedAtMs: number }
+  > {
+    const rows = this.db
+      .prepare(
+        `
+          SELECT video_id, work_title, circle, author, tags_json, grade, updated_at_ms
+          FROM video_metadata
+        `,
+      )
+      .all() as Array<{
+      video_id: string
+      work_title: string
+      circle: string
+      author: string
+      tags_json: string
+      grade: number | null
+      updated_at_ms: number
+    }>
+
+    return new Map(
+      rows.map((row) => [
+        row.video_id,
+        {
+          workTitle: row.work_title,
+          circle: row.circle,
+          author: row.author,
+          tags: parseJson<string[]>(row.tags_json, []),
+          grade: row.grade,
+          updatedAtMs: row.updated_at_ms,
+        },
+      ]),
+    )
+  }
+
   writePackageGrade(sourceId: string, grade: number | null): void {
     this.db
       .prepare(
@@ -696,6 +770,44 @@ export class MediaLibraryDatabase {
         `,
       )
       .run(sourceId, grade, Date.now())
+  }
+
+  writeSourceMetadata(
+    sourceId: string,
+    payload: {
+      packageName: string
+      displayName: string
+      workTitle: string
+      circle: string
+      author: string
+      tags: string[]
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          UPDATE media_source
+          SET
+            package_name = ?,
+            display_name = ?,
+            work_title = ?,
+            circle = ?,
+            author = ?,
+            tags_json = ?,
+            updated_at_ms = ?
+          WHERE id = ?
+        `,
+      )
+      .run(
+        payload.packageName,
+        payload.displayName,
+        payload.workTitle,
+        payload.circle,
+        payload.author,
+        JSON.stringify(payload.tags),
+        Date.now(),
+        sourceId,
+      )
   }
 
   writeVideoCover(videoId: string, coverColor: string, coverImagePath: string | null): void {
@@ -711,6 +823,33 @@ export class MediaLibraryDatabase {
         `,
       )
       .run(videoId, coverColor, coverImagePath, Date.now())
+  }
+
+  writeVideoMetadata(
+    videoId: string,
+    payload: {
+      workTitle: string
+      circle: string
+      author: string
+      tags: string[]
+      grade: number | null
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO video_metadata (video_id, work_title, circle, author, tags_json, grade, updated_at_ms)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(video_id) DO UPDATE SET
+            work_title = excluded.work_title,
+            circle = excluded.circle,
+            author = excluded.author,
+            tags_json = excluded.tags_json,
+            grade = excluded.grade,
+            updated_at_ms = excluded.updated_at_ms
+        `,
+      )
+      .run(videoId, payload.workTitle, payload.circle, payload.author, JSON.stringify(payload.tags), payload.grade, Date.now())
   }
 
   readPlaylist(): string[] {
@@ -915,6 +1054,7 @@ export class MediaLibraryDatabase {
       this.db.prepare('DELETE FROM task_log').run()
       this.db.prepare('DELETE FROM playlist_entry').run()
       this.db.prepare('DELETE FROM video_cover').run()
+      this.db.prepare('DELETE FROM video_metadata').run()
       this.db.prepare('DELETE FROM package_grade').run()
       this.db.prepare('DELETE FROM image_item').run()
       this.db.prepare('DELETE FROM media_source').run()

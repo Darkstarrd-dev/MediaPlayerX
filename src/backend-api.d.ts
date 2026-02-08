@@ -25,6 +25,10 @@ import type {
   RetryImportTaskResponseDto,
   WritePlaylistRequestDto,
   WritePlaylistResponseDto,
+  WritePackageMetadataRequestDto,
+  WritePackageMetadataResponseDto,
+  WriteVideoMetadataRequestDto,
+  WriteVideoMetadataResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
 } from './contracts/backend'
@@ -36,6 +40,8 @@ interface MediaPlayerBackendApi {
   readImageMetadata: (request: ReadImageMetadataRequestDto) => Promise<ReadImageMetadataResponseDto>
   resolveMediaResource: (request: ResolveMediaResourceRequestDto) => Promise<ResolveMediaResourceResponseDto>
   writePackageGrade: (request: WritePackageGradeRequestDto) => Promise<WritePackageGradeResponseDto>
+  writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
+  writeVideoMetadata?: (request: WriteVideoMetadataRequestDto) => Promise<WriteVideoMetadataResponseDto>
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
   readPlaylist: () => Promise<ReadPlaylistResponseDto>
   writePlaylist: (request: WritePlaylistRequestDto) => Promise<WritePlaylistResponseDto>

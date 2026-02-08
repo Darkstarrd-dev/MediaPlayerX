@@ -28,6 +28,10 @@ import {
   retryImportTaskResponseSchema,
   writePlaylistRequestSchema,
   writePlaylistResponseSchema,
+  writePackageMetadataRequestSchema,
+  writePackageMetadataResponseSchema,
+  writeVideoMetadataRequestSchema,
+  writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
   writePackageGradeResponseSchema,
 } from '../src/contracts/backend'
@@ -146,6 +150,18 @@ export function registerBackendIpcHandlers(): void {
     const request = writePackageGradeRequestSchema.parse(payload)
     const response = await ensureService().writePackageGrade(request)
     return writePackageGradeResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.writePackageMetadata, async (_event, payload: unknown) => {
+    const request = writePackageMetadataRequestSchema.parse(payload)
+    const response = await ensureService().writePackageMetadata(request)
+    return writePackageMetadataResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.writeVideoMetadata, async (_event, payload: unknown) => {
+    const request = writeVideoMetadataRequestSchema.parse(payload)
+    const response = await ensureService().writeVideoMetadata(request)
+    return writeVideoMetadataResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.saveVideoCover, async (_event, payload: unknown) => {

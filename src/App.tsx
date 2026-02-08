@@ -1095,14 +1095,18 @@ function App() {
     () => buildCoverImageLocator(focusedVideoCoverImagePath),
     [focusedVideoCoverImagePath],
   )
-  const focusedVideoEffective = focusedVideo
-    ? {
-        ...focusedVideo,
-        durationSec: focusedVideoDurationSec,
-        coverColor: focusedVideoCoverColor,
-        coverImagePath: focusedVideoCoverImagePath,
-      }
-    : null
+  const focusedVideoEffective = useMemo(
+    () =>
+      focusedVideo
+        ? {
+            ...focusedVideo,
+            durationSec: focusedVideoDurationSec,
+            coverColor: focusedVideoCoverColor,
+            coverImagePath: focusedVideoCoverImagePath,
+          }
+        : null,
+    [focusedVideo, focusedVideoCoverColor, focusedVideoCoverImagePath, focusedVideoDurationSec],
+  )
 
   const applyPackageGrade = useCallback(
     (grade: number | null) => {
@@ -1113,6 +1117,41 @@ function App() {
       void backendWrite.writePackageGrade(targetPackageId, grade)
     },
     [backendWrite, metadataImagePackageEffective],
+  )
+
+  const applyPackageMetadata = useCallback(
+    (payload: {
+      workTitle: string
+      circle: string
+      author: string
+      tags: string[]
+      syncWorkTitleToPackageName?: boolean
+    }) => {
+      const targetPackageId = metadataImagePackageEffective?.id
+      if (!targetPackageId || !backendWrite.writePackageMetadata) {
+        return
+      }
+      void backendWrite.writePackageMetadata(targetPackageId, payload)
+    },
+    [backendWrite, metadataImagePackageEffective],
+  )
+
+  const applyVideoMetadata = useCallback(
+    (payload: {
+      workTitle: string
+      circle: string
+      author: string
+      tags: string[]
+      grade?: number | null
+      syncFileNameToWorkTitle?: boolean
+    }) => {
+      const targetVideoId = focusedVideoEffective?.id
+      if (!targetVideoId || !backendWrite.writeVideoMetadata) {
+        return
+      }
+      void backendWrite.writeVideoMetadata(targetVideoId, payload)
+    },
+    [backendWrite, focusedVideoEffective],
   )
 
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
@@ -1795,6 +1834,8 @@ function App() {
     focusedImageSrc: metadataImageSrc,
     focusedImagePackage: metadataImagePackageEffective,
     currentGrade: currentGradeEffective,
+    currentVideoGrade: focusedVideoEffective?.grade ?? null,
+    metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade,
     focusedVideo: focusedVideoEffective,
     metadataTab,
     playlistIds,
@@ -1806,6 +1847,9 @@ function App() {
     videoById: videoByIdEffective,
     onCollapse: () => updateSettings({ metadataCollapsed: true }),
     onExpand: () => updateSettings({ metadataCollapsed: false }),
+    onGradeChange: applyPackageGrade,
+    onSavePackageMetadata: applyPackageMetadata,
+    onSaveVideoMetadata: applyVideoMetadata,
     onMetadataTabChange: setMetadataTab,
     onSelectVideo: selectVideoFromBrowser,
     onRemoveVideoFromPlaylist: (videoId: string) => {
@@ -1895,6 +1939,14 @@ function App() {
           label: '评分写入',
           message: backendWrite.errors.grade,
           onRetry: backendWrite.clearGradeError,
+        }
+      : null,
+    backendWrite.errors.metadata
+      ? {
+          key: 'metadata-write',
+          label: '元数据写入',
+          message: backendWrite.errors.metadata,
+          onRetry: backendWrite.clearMetadataError,
         }
       : null,
     backendWrite.errors.cover
@@ -2049,7 +2101,6 @@ function App() {
         mode={mode}
         searchPanelOpen={vectorMode && mode === 'image'}
         vectorUniverseOpen={vectorUniverseOpen}
-        currentGrade={currentGradeEffective}
         thumbnailScaleLevel={displayThumbnailScaleLevel}
         canThumbnailScaleDown={canThumbnailScaleDown}
         canThumbnailScaleUp={canThumbnailScaleUp}
@@ -2076,7 +2127,6 @@ function App() {
         onOpenVectorUniverse={() => {
           setVectorUniverseOpen(true)
         }}
-        onGradeChange={applyPackageGrade}
         onThumbnailScaleDown={() => {
           updateSettings({ thumbnailScale: clamp(thumbnailScale + 1, 1, thumbnailScaleLevelCount) })
         }}

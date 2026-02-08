@@ -15,6 +15,8 @@ interface MetadataPanelProps {
   focusedImageSrc: string | null
   focusedImagePackage: ImagePackage | null
   currentGrade: number | null
+  currentVideoGrade: number | null
+  metadataPending: boolean
   focusedVideo: VideoItem | null
   metadataTab: 'info' | 'playlist'
   playlistIds: string[]
@@ -26,11 +28,49 @@ interface MetadataPanelProps {
   videoById: Map<string, VideoItem>
   onCollapse: () => void
   onExpand: () => void
+  onGradeChange: (grade: number | null) => void
+  onSavePackageMetadata: (payload: {
+    workTitle: string
+    circle: string
+    author: string
+    tags: string[]
+    syncWorkTitleToPackageName?: boolean
+  }) => void
+  onSaveVideoMetadata: (payload: {
+    workTitle: string
+    circle: string
+    author: string
+    tags: string[]
+    grade?: number | null
+    syncFileNameToWorkTitle?: boolean
+  }) => void
   onMetadataTabChange: (tab: 'info' | 'playlist') => void
   onSelectVideo: (videoId: string) => void
   onRemoveVideoFromPlaylist: (videoId: string) => void
   onDragStart: (videoId: string) => void
   onDropToVideo: (targetVideoId: string) => void
+}
+
+function parseTagsInput(value: string): string[] {
+  const next = new Set<string>()
+  for (const item of value.split(/[\n,，]/)) {
+    const normalized = item.trim()
+    if (normalized.length > 0) {
+      next.add(normalized)
+    }
+  }
+  return Array.from(next)
+}
+
+function resolveRatingByClientX(clientX: number, element: HTMLElement): number {
+  const rect = element.getBoundingClientRect()
+  if (rect.width <= 0) {
+    return 1
+  }
+  const relativeX = Math.max(0, Math.min(rect.width, clientX - rect.left))
+  const ratio = relativeX / rect.width
+  const rating = Math.floor(ratio * 5) + 1
+  return Math.max(1, Math.min(5, rating))
 }
 
 function MetadataPanel({
@@ -42,6 +82,8 @@ function MetadataPanel({
   focusedImageSrc,
   focusedImagePackage,
   currentGrade,
+  currentVideoGrade,
+  metadataPending,
   focusedVideo,
   metadataTab,
   playlistIds,
@@ -53,6 +95,9 @@ function MetadataPanel({
   videoById,
   onCollapse,
   onExpand,
+  onGradeChange,
+  onSavePackageMetadata,
+  onSaveVideoMetadata,
   onMetadataTabChange,
   onSelectVideo,
   onRemoveVideoFromPlaylist,
@@ -60,6 +105,17 @@ function MetadataPanel({
   onDropToVideo,
 }: MetadataPanelProps) {
   const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
+  const [showImagePreview, setShowImagePreview] = useState(true)
+  const [ratingDragging, setRatingDragging] = useState(false)
+  const [videoRatingDragging, setVideoRatingDragging] = useState(false)
+  const [workTitleDraft, setWorkTitleDraft] = useState('')
+  const [circleDraft, setCircleDraft] = useState('')
+  const [authorDraft, setAuthorDraft] = useState('')
+  const [tagsDraft, setTagsDraft] = useState('')
+  const [videoWorkTitleDraft, setVideoWorkTitleDraft] = useState('')
+  const [videoCircleDraft, setVideoCircleDraft] = useState('')
+  const [videoAuthorDraft, setVideoAuthorDraft] = useState('')
+  const [videoTagsDraft, setVideoTagsDraft] = useState('')
   const imagePreloadSeqRef = useRef(0)
 
   useEffect(() => {
@@ -117,6 +173,20 @@ function MetadataPanel({
     }
   }, [displayedImageSrc, focusedImageSrc])
 
+  useEffect(() => {
+    setWorkTitleDraft(focusedImagePackage?.workTitle ?? '')
+    setCircleDraft(focusedImagePackage?.circle ?? '')
+    setAuthorDraft(focusedImagePackage?.author ?? '')
+    setTagsDraft((focusedImagePackage?.tags ?? []).join(', '))
+  }, [focusedImagePackage?.id, focusedImagePackage?.workTitle, focusedImagePackage?.circle, focusedImagePackage?.author, focusedImagePackage?.tags])
+
+  useEffect(() => {
+    setVideoWorkTitleDraft(focusedVideo?.workTitle ?? '')
+    setVideoCircleDraft(focusedVideo?.circle ?? '')
+    setVideoAuthorDraft(focusedVideo?.author ?? '')
+    setVideoTagsDraft((focusedVideo?.tags ?? []).join(', '))
+  }, [focusedVideo?.id, focusedVideo?.workTitle, focusedVideo?.circle, focusedVideo?.author, focusedVideo?.tags])
+
   const imagePreviewSizing = (() => {
     if (!focusedImage) {
       return {}
@@ -131,6 +201,50 @@ function MetadataPanel({
 
   const imagePreviewClassName = hasImageFocus && focusedImage ? 'metadata-content metadata-content-focus' : 'metadata-content'
   const metadataPanelClassName = hasImageFocus && focusedImage ? 'metadata-panel is-image-focus' : 'metadata-panel'
+  const effectiveGrade = currentGrade
+  const effectiveVideoGrade = currentVideoGrade
+
+  const persistPackageMetadata = (syncWorkTitleToPackageName = false) => {
+    if (!focusedImagePackage) {
+      return
+    }
+
+    const workTitle = workTitleDraft.trim().length > 0 ? workTitleDraft.trim() : focusedImagePackage.workTitle
+    const circle = circleDraft.trim().length > 0 ? circleDraft.trim() : focusedImagePackage.circle
+    const author = authorDraft.trim().length > 0 ? authorDraft.trim() : focusedImagePackage.author
+    const tags = parseTagsInput(tagsDraft)
+
+    onSavePackageMetadata({
+      workTitle,
+      circle,
+      author,
+      tags,
+      syncWorkTitleToPackageName,
+    })
+  }
+
+  const persistVideoMetadata = (syncFileNameToWorkTitle = false, grade: number | null | undefined = undefined) => {
+    if (!focusedVideo) {
+      return
+    }
+
+    const workTitle =
+      videoWorkTitleDraft.trim().length > 0 ? videoWorkTitleDraft.trim() : focusedVideo.workTitle
+    const circle = videoCircleDraft.trim().length > 0 ? videoCircleDraft.trim() : focusedVideo.circle
+    const author = videoAuthorDraft.trim().length > 0 ? videoAuthorDraft.trim() : focusedVideo.author
+    const tags = parseTagsInput(videoTagsDraft)
+
+    onSaveVideoMetadata({
+      workTitle,
+      circle,
+      author,
+      tags,
+      grade,
+      syncFileNameToWorkTitle,
+    })
+  }
+
+  const showImageCanvas = mode === 'image' && showImagePreview && hasImageFocus && Boolean(focusedImage)
 
   if (metadataCollapsed) {
     return (
@@ -146,11 +260,23 @@ function MetadataPanel({
         <button className="metadata-title-btn" type="button" onClick={onCollapse}>
           元数据面板
         </button>
+
+        {mode === 'image' ? (
+          <button
+            className={`metadata-head-icon-btn ${showImagePreview ? 'is-image' : 'is-metadata'}`}
+            type="button"
+            aria-label={showImagePreview ? '切换到元数据显示' : '切换到原图显示'}
+            title={showImagePreview ? '切换到元数据显示' : '切换到原图显示'}
+            onClick={() => setShowImagePreview((value) => !value)}
+          >
+            <span aria-hidden="true">{showImagePreview ? '≣' : '▣'}</span>
+          </button>
+        ) : null}
       </div>
 
       {mode === 'image' ? (
         <div className={imagePreviewClassName}>
-          {hasImageFocus && focusedImage ? (
+          {showImageCanvas && focusedImage ? (
             <>
               <div className="metadata-image-canvas">
                 {displayedImageSrc ? (
@@ -179,18 +305,179 @@ function MetadataPanel({
               </div>
             </>
           ) : (
-            <>
-              <p>{`图包：${focusedImagePackage?.displayName ?? '-'}`}</p>
-              <p>{`作品名：${focusedImagePackage?.workTitle ?? '-'}`}</p>
-              <p>{`社团：${focusedImagePackage?.circle ?? '-'}`}</p>
-              <p>{`作者：${focusedImagePackage?.author ?? '-'}`}</p>
-              <p>{`Tags：${focusedImagePackage?.tags.join(', ') ?? '-'}`}</p>
-              <p>{`图包评分：${currentGrade === null ? '未评分' : currentGrade}`}</p>
-            </>
+            <div className="metadata-editor-shell">
+              <div className="feature-rating-group metadata-rating-group">
+                <strong>评分</strong>
+                <div
+                  className="metadata-rating-clear-zone"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="清空评分"
+                  onMouseDown={(event) => {
+                    if (metadataPending || event.button !== 0) {
+                      return
+                    }
+
+                    const target = event.target as HTMLElement
+                    if (target.closest('.metadata-rating-stars')) {
+                      return
+                    }
+
+                    onGradeChange(null)
+                  }}
+                  onKeyDown={(event) => {
+                    if (metadataPending) {
+                      return
+                    }
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      onGradeChange(null)
+                    }
+                  }}
+                >
+                <div
+                  className="feature-rating-stars metadata-rating-stars"
+                  role="group"
+                  aria-label="图包评分"
+                  onMouseDown={(event) => {
+                    if (metadataPending || event.button !== 0) {
+                      return
+                    }
+                    event.preventDefault()
+                    const score = resolveRatingByClientX(event.clientX, event.currentTarget)
+                    onGradeChange(score)
+                    setRatingDragging(true)
+                  }}
+                  onMouseMove={(event) => {
+                    if (!ratingDragging || metadataPending) {
+                      return
+                    }
+                    const score = resolveRatingByClientX(event.clientX, event.currentTarget)
+                    onGradeChange(score)
+                  }}
+                  onMouseUp={() => {
+                    setRatingDragging(false)
+                  }}
+                  onMouseLeave={() => {
+                    setRatingDragging(false)
+                  }}
+                >
+                  <button
+                    aria-label="图包评分 无评分"
+                    aria-pressed={effectiveGrade === null}
+                    className={`is-clear ${effectiveGrade === null ? 'is-active' : ''}`}
+                    type="button"
+                    disabled={metadataPending}
+                    onClick={() => {
+                      onGradeChange(null)
+                    }}
+                  >
+                    ×
+                  </button>
+
+                  {[1, 2, 3, 4, 5].map((score) => {
+                    const isActive = effectiveGrade !== null && score <= effectiveGrade
+                    return (
+                      <button
+                        key={score}
+                        aria-label={`图包评分 ${score} 星`}
+                        aria-pressed={effectiveGrade === score}
+                        className={isActive ? 'is-active' : ''}
+                        type="button"
+                        disabled={metadataPending}
+                        onClick={() => {
+                          onGradeChange(score)
+                        }}
+                      >
+                        {isActive ? '★' : '☆'}
+                      </button>
+                    )
+                  })}
+                </div>
+                </div>
+              </div>
+
+              {focusedImagePackage ? (
+                <div className="metadata-edit-grid">
+                  <label>
+                    <span>图包名</span>
+                    <input readOnly value={focusedImagePackage.packageName} />
+                  </label>
+
+                  <label>
+                    <span>作品名</span>
+                    <input
+                      value={workTitleDraft}
+                      onChange={(event) => setWorkTitleDraft(event.target.value)}
+                      onBlur={() => {
+                        persistPackageMetadata(false)
+                      }}
+                    />
+                  </label>
+
+                  <label>
+                    <span>社团</span>
+                    <input
+                      value={circleDraft}
+                      onChange={(event) => setCircleDraft(event.target.value)}
+                      onBlur={() => {
+                        persistPackageMetadata(false)
+                      }}
+                    />
+                  </label>
+
+                  <label>
+                    <span>作者</span>
+                    <input
+                      value={authorDraft}
+                      onChange={(event) => setAuthorDraft(event.target.value)}
+                      onBlur={() => {
+                        persistPackageMetadata(false)
+                      }}
+                    />
+                  </label>
+
+                  <label>
+                    <span>Tags</span>
+                    <input
+                      value={tagsDraft}
+                      placeholder="多个标签用逗号分隔"
+                      onChange={(event) => setTagsDraft(event.target.value)}
+                      onBlur={() => {
+                        persistPackageMetadata(false)
+                      }}
+                    />
+                  </label>
+
+                  <div className="metadata-edit-actions">
+                    <button
+                      type="button"
+                      disabled={metadataPending}
+                      onClick={() => {
+                        persistPackageMetadata(false)
+                      }}
+                    >
+                      保存
+                    </button>
+                    <button
+                      type="button"
+                      disabled={metadataPending}
+                      onClick={() => {
+                        persistPackageMetadata(true)
+                      }}
+                    >
+                      作品名同步图包名
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="metadata-empty-tip">当前无可编辑图包</p>
+              )}
+            </div>
           )}
         </div>
       ) : (
-        <div className="metadata-content">
+        <div className="metadata-content metadata-video-content">
           <div className="meta-tabs">
             <button className={metadataTab === 'info' ? 'is-active' : ''} type="button" onClick={() => onMetadataTabChange('info')}>
               视频信息
@@ -204,47 +491,212 @@ function MetadataPanel({
             </button>
           </div>
 
-          {metadataTab === 'info' && focusedVideo ? (
-            <>
-              <p>{`文件：${focusedVideo.fileName}`}</p>
-              <p>{`时长：${formatSeconds(focusedVideo.durationSec)}`}</p>
-              <p>{`分辨率：${focusedVideo.width}x${focusedVideo.height}`}</p>
-              <p>{`音量：${videoMuted ? '静音' : `${videoVolume}%`}`}</p>
-              <p>{`倍速：${videoRate.toFixed(2)}x`}</p>
-            </>
-          ) : null}
-
-          {metadataTab === 'playlist' ? (
-            <div className="playlist-list">
-              {playlistIds.map((videoId) => {
-                const video = videoById.get(videoId)
-                if (!video) {
-                  return null
-                }
-
-                return (
+          <div className="metadata-video-body">
+            {metadataTab === 'info' && focusedVideo ? (
+              <>
+                <div className="feature-rating-group metadata-rating-group">
+                  <strong>评分</strong>
                   <div
-                    key={videoId}
-                    className={`playlist-item ${selectedVideoId === videoId ? 'is-active' : ''}`}
-                    draggable
-                    onDragStart={() => onDragStart(videoId)}
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={() => {
-                      if (!dragVideoId || dragVideoId === videoId) {
+                    className="metadata-rating-clear-zone"
+                    role="button"
+                    tabIndex={0}
+                    aria-label="清空视频评分"
+                    onMouseDown={(event) => {
+                      if (metadataPending || event.button !== 0) {
                         return
                       }
-                      onDropToVideo(videoId)
+
+                      const target = event.target as HTMLElement
+                      if (target.closest('.metadata-rating-stars')) {
+                        return
+                      }
+
+                      persistVideoMetadata(false, null)
+                    }}
+                    onKeyDown={(event) => {
+                      if (metadataPending) {
+                        return
+                      }
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        persistVideoMetadata(false, null)
+                      }
                     }}
                   >
-                    <button type="button" onClick={() => onSelectVideo(videoId)}>
-                      {video.fileName}
-                    </button>
-                    <button type="button" onClick={() => onRemoveVideoFromPlaylist(videoId)}>
-                      删除
-                    </button>
+                    <div
+                      className="feature-rating-stars metadata-rating-stars"
+                      role="group"
+                      aria-label="视频评分"
+                      onMouseDown={(event) => {
+                        if (metadataPending || event.button !== 0) {
+                          return
+                        }
+                        event.preventDefault()
+                        const score = resolveRatingByClientX(event.clientX, event.currentTarget)
+                        persistVideoMetadata(false, score)
+                        setVideoRatingDragging(true)
+                      }}
+                      onMouseMove={(event) => {
+                        if (!videoRatingDragging || metadataPending) {
+                          return
+                        }
+                        const score = resolveRatingByClientX(event.clientX, event.currentTarget)
+                        persistVideoMetadata(false, score)
+                      }}
+                      onMouseUp={() => {
+                        setVideoRatingDragging(false)
+                      }}
+                      onMouseLeave={() => {
+                        setVideoRatingDragging(false)
+                      }}
+                    >
+                      <button
+                        aria-label="视频评分 无评分"
+                        aria-pressed={effectiveVideoGrade === null}
+                        className={`is-clear ${effectiveVideoGrade === null ? 'is-active' : ''}`}
+                        type="button"
+                        disabled={metadataPending}
+                        onClick={() => {
+                          persistVideoMetadata(false, null)
+                        }}
+                      >
+                        ×
+                      </button>
+
+                      {[1, 2, 3, 4, 5].map((score) => {
+                        const isActive = effectiveVideoGrade !== null && score <= effectiveVideoGrade
+                        return (
+                          <button
+                            key={score}
+                            aria-label={`视频评分 ${score} 星`}
+                            aria-pressed={effectiveVideoGrade === score}
+                            className={isActive ? 'is-active' : ''}
+                            type="button"
+                            disabled={metadataPending}
+                            onClick={() => {
+                              persistVideoMetadata(false, score)
+                            }}
+                          >
+                            {isActive ? '★' : '☆'}
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
-                )
-              })}
+                </div>
+
+                <div className="metadata-edit-grid metadata-video-grid">
+                  <label>
+                    <span>文件名</span>
+                    <input readOnly value={focusedVideo.fileName} />
+                  </label>
+                  <label>
+                    <span>作品名</span>
+                    <input
+                      value={videoWorkTitleDraft}
+                      onChange={(event) => setVideoWorkTitleDraft(event.target.value)}
+                      onBlur={() => {
+                        persistVideoMetadata(false)
+                      }}
+                    />
+                  </label>
+                  <label>
+                    <span>社团</span>
+                    <input
+                      value={videoCircleDraft}
+                      onChange={(event) => setVideoCircleDraft(event.target.value)}
+                      onBlur={() => {
+                        persistVideoMetadata(false)
+                      }}
+                    />
+                  </label>
+                  <label>
+                    <span>作者</span>
+                    <input
+                      value={videoAuthorDraft}
+                      onChange={(event) => setVideoAuthorDraft(event.target.value)}
+                      onBlur={() => {
+                        persistVideoMetadata(false)
+                      }}
+                    />
+                  </label>
+                  <label>
+                    <span>Tags</span>
+                    <input
+                      value={videoTagsDraft}
+                      placeholder="多个标签用逗号分隔"
+                      onChange={(event) => setVideoTagsDraft(event.target.value)}
+                      onBlur={() => {
+                        persistVideoMetadata(false)
+                      }}
+                    />
+                  </label>
+                </div>
+
+                <div className="metadata-edit-actions">
+                  <button
+                    type="button"
+                    disabled={metadataPending}
+                    onClick={() => {
+                      persistVideoMetadata(false)
+                    }}
+                  >
+                    保存
+                  </button>
+                  <button
+                    type="button"
+                    disabled={metadataPending}
+                    onClick={() => {
+                      persistVideoMetadata(true)
+                    }}
+                  >
+                    同步文件名到作品名
+                  </button>
+                </div>
+              </>
+            ) : null}
+
+            {metadataTab === 'playlist' ? (
+              <div className="playlist-list">
+                {playlistIds.map((videoId) => {
+                  const video = videoById.get(videoId)
+                  if (!video) {
+                    return null
+                  }
+
+                  return (
+                    <div
+                      key={videoId}
+                      className={`playlist-item ${selectedVideoId === videoId ? 'is-active' : ''}`}
+                      draggable
+                      onDragStart={() => onDragStart(videoId)}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={() => {
+                        if (!dragVideoId || dragVideoId === videoId) {
+                          return
+                        }
+                        onDropToVideo(videoId)
+                      }}
+                    >
+                      <button type="button" onClick={() => onSelectVideo(videoId)}>
+                        {video.fileName}
+                      </button>
+                      <button type="button" onClick={() => onRemoveVideoFromPlaylist(videoId)}>
+                        删除
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : null}
+          </div>
+
+          {focusedVideo ? (
+            <div className="metadata-video-stats">
+              <span>{`时长 ${formatSeconds(focusedVideo.durationSec)}`}</span>
+              <span>{`分辨率 ${focusedVideo.width}x${focusedVideo.height}`}</span>
+              <span>{`音量 ${videoMuted ? '静音' : `${videoVolume}%`}`}</span>
+              <span>{`倍速 ${videoRate.toFixed(2)}x`}</span>
             </div>
           ) : null}
         </div>

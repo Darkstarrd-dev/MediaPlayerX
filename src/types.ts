@@ -59,6 +59,11 @@ export interface VideoItem {
   sizeMb: number
   coverColor: string
   coverImagePath?: string | null
+  workTitle: string
+  circle: string
+  author: string
+  tags: string[]
+  grade: number | null
   mediaLocator: MediaLocator
 }
 

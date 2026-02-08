@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { ReadRuntimeCapabilitiesResponseDto } from '../../contracts/backend'
 import type { ReadonlyMediaRepository } from './repository'
@@ -23,13 +23,35 @@ interface UseRuntimeCapabilitiesResult {
   retry: () => void
 }
 
+interface SyncRuntimeCapabilityRepository extends ReadonlyMediaRepository {
+  readRuntimeCapabilitiesSync(): ReadRuntimeCapabilitiesResponseDto
+}
+
+function isSyncRuntimeCapabilityRepository(
+  repository: ReadonlyMediaRepository,
+): repository is SyncRuntimeCapabilityRepository {
+  return 'readRuntimeCapabilitiesSync' in repository && typeof repository.readRuntimeCapabilitiesSync === 'function'
+}
+
 export function useRuntimeCapabilities({ repository }: UseRuntimeCapabilitiesParams): UseRuntimeCapabilitiesResult {
-  const [data, setData] = useState<ReadRuntimeCapabilitiesResponseDto | null>(null)
+  const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncRuntimeCapabilityRepository(repository)
+  const syncInitialData = useMemo<ReadRuntimeCapabilitiesResponseDto | null>(() => {
+    if (!isSynchronousTestMode) {
+      return null
+    }
+    return repository.readRuntimeCapabilitiesSync()
+  }, [isSynchronousTestMode, repository])
+
+  const [data, setData] = useState<ReadRuntimeCapabilitiesResponseDto | null>(syncInitialData)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [retryNonce, setRetryNonce] = useState(0)
 
   useEffect(() => {
+    if (isSynchronousTestMode) {
+      return
+    }
+
     const abortController = new AbortController()
     let active = true
 
@@ -64,11 +86,20 @@ export function useRuntimeCapabilities({ repository }: UseRuntimeCapabilitiesPar
       active = false
       abortController.abort()
     }
-  }, [repository, retryNonce])
+  }, [isSynchronousTestMode, repository, retryNonce])
 
   const retry = useCallback(() => {
     setRetryNonce((value) => value + 1)
   }, [])
+
+  if (isSynchronousTestMode) {
+    return {
+      data: syncInitialData,
+      loading: false,
+      error: null,
+      retry: () => undefined,
+    }
+  }
 
   return {
     data,

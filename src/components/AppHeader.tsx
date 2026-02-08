@@ -5,7 +5,6 @@ interface AppHeaderProps {
   mode: BrowserMode
   searchPanelOpen: boolean
   vectorUniverseOpen: boolean
-  currentGrade: number | null
   thumbnailScaleLevel: number
   canThumbnailScaleDown: boolean
   canThumbnailScaleUp: boolean
@@ -23,7 +22,6 @@ interface AppHeaderProps {
   onModeChange: (mode: BrowserMode) => void
   onToggleSearchPanel: () => void
   onOpenVectorUniverse: () => void
-  onGradeChange: (grade: number | null) => void
   onThumbnailScaleDown: () => void
   onThumbnailScaleUp: () => void
   onAutoPlayEnabledChange: (enabled: boolean) => void
@@ -36,7 +34,6 @@ function AppHeader({
   mode,
   searchPanelOpen,
   vectorUniverseOpen,
-  currentGrade,
   thumbnailScaleLevel,
   canThumbnailScaleDown,
   canThumbnailScaleUp,
@@ -54,7 +51,6 @@ function AppHeader({
   onModeChange,
   onToggleSearchPanel,
   onOpenVectorUniverse,
-  onGradeChange,
   onThumbnailScaleDown,
   onThumbnailScaleUp,
   onAutoPlayEnabledChange,
@@ -128,17 +124,6 @@ function AppHeader({
       </div>
 
       <div className="header-right">
-        <div className="grade-control">
-          <button type="button">图包评分：{currentGrade === null ? '-' : currentGrade}</button>
-          <div className="grade-popover">
-            {[0, 1, 2, 3, 4, 5].map((grade) => (
-              <button key={grade} type="button" onClick={() => onGradeChange(grade === 0 ? null : grade)}>
-                {grade === 0 ? '清空' : `${grade} 星`}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div className="zoom-stepper" role="group" aria-label="缩略图缩放级别">
           <span>缩放级别</span>
           <button aria-label="缩小缩略图" disabled={!canThumbnailScaleDown} type="button" onClick={onThumbnailScaleDown}>

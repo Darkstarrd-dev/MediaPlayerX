@@ -70,6 +70,9 @@ function SidebarPanel({
   onToggleVideoPlaylist,
 }: SidebarPanelProps) {
   const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : Boolean(videoRootNodeId)
+  const showRootToggle = !(mode === 'image' && searchResultMode)
+  const rootToggleLabel = rootSet ? '恢复根目录' : '设为根'
+  const rootToggleIcon = rootSet ? '↺' : '⌖'
 
   const renderNodes = (nodes: SidebarNode[], depth = 0): ReactElement[] => {
     return nodes.flatMap((node) => {
@@ -158,20 +161,16 @@ function SidebarPanel({
             </button>
           ) : null}
 
-          {!rootSet && !(mode === 'image' && searchResultMode) ? (
-            <button type="button" disabled={!canSetCurrentRoot} onClick={onSetCurrentRoot}>
-              设为根
-            </button>
-          ) : null}
-
-          {mode === 'image' && imageRootNodeId && !searchResultMode ? (
-            <button type="button" onClick={onResetRoot}>
-              恢复
-            </button>
-          ) : null}
-          {mode === 'video' && videoRootNodeId ? (
-            <button type="button" onClick={onResetRoot}>
-              恢复
+          {showRootToggle ? (
+            <button
+              className={`sidebar-head-icon-btn ${rootSet ? 'is-root-set' : ''}`}
+              type="button"
+              aria-label={rootToggleLabel}
+              title={rootToggleLabel}
+              disabled={!rootSet && !canSetCurrentRoot}
+              onClick={rootSet ? onResetRoot : onSetCurrentRoot}
+            >
+              <span aria-hidden="true">{rootToggleIcon}</span>
             </button>
           ) : null}
         </div>

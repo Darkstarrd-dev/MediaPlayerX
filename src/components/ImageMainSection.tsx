@@ -65,7 +65,7 @@ function ImageMainSection({
   return (
     <>
       <div className="main-toolbar">
-        <strong>
+        <strong className="main-toolbar-title">
           {vectorMode
             ? '向量结果视图'
             : `${activePackage?.displayName ?? '无图包'} (${visibleImageRefs.length} 张)`}

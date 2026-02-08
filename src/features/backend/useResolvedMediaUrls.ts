@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type {
   ResolveMediaResourceRequestDto,
@@ -151,7 +151,7 @@ export function useResolvedMediaUrls({
   const pendingErrorUpdatesRef = useRef(new Map<string, string | null>())
   const flushHandleRef = useRef<{ rafId: number | null; timeoutId: number | null } | null>(null)
 
-  const flushPendingUpdates = () => {
+  const flushPendingUpdates = useCallback(() => {
     const urlUpdates = pendingUrlUpdatesRef.current
     const errorUpdates = pendingErrorUpdatesRef.current
     pendingUrlUpdatesRef.current = new Map()
@@ -191,9 +191,9 @@ export function useResolvedMediaUrls({
         return changed ? next : previous
       })
     }
-  }
+  }, [])
 
-  const scheduleFlush = () => {
+  const scheduleFlush = useCallback(() => {
     if (applyMode !== 'raf') {
       return
     }
@@ -234,7 +234,7 @@ export function useResolvedMediaUrls({
     handle.timeoutId = window.setTimeout(() => {
       flush()
     }, 50)
-  }
+  }, [applyMode, flushPendingUpdates])
 
   useEffect(() => {
     if (syncSnapshot) {
@@ -484,7 +484,7 @@ export function useResolvedMediaUrls({
       pendingUrlUpdatesRef.current.clear()
       pendingErrorUpdatesRef.current.clear()
     }
-  }, [applyMode, maxConcurrent, repository, stateScope, syncSnapshot, targets])
+  }, [applyMode, maxConcurrent, repository, scheduleFlush, stateScope, syncSnapshot, targets])
 
   if (syncSnapshot) {
     return syncSnapshot

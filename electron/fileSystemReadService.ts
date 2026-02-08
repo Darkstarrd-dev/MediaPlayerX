@@ -23,6 +23,8 @@ import {
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
+  writePackageMetadataResponseSchema,
+  writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
@@ -55,6 +57,10 @@ import {
   type VideoItemDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
+  type WritePackageMetadataRequestDto,
+  type WritePackageMetadataResponseDto,
+  type WriteVideoMetadataRequestDto,
+  type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
 } from '../src/contracts/backend'
@@ -131,6 +137,15 @@ interface ArchiveNormalizationResult {
 interface PersistedVideoCoverRecord {
   coverColor: string
   coverImagePath: string | null
+  updatedAtMs: number
+}
+
+interface PersistedVideoMetadataRecord {
+  workTitle: string
+  circle: string
+  author: string
+  tags: string[]
+  grade: number | null
   updatedAtMs: number
 }
 
@@ -234,6 +249,8 @@ export interface LibraryChangedEventPayload {
     | 'archive-normalize-failed'
     | 'clear-database'
     | 'write-package-grade'
+    | 'write-package-metadata'
+    | 'write-video-metadata'
     | 'write-video-cover'
     | 'write-playlist'
   updated_at_ms: number
@@ -387,6 +404,47 @@ function matchesFeatureFilter(
   }
 
   return true
+}
+
+function normalizeMetadataText(value: string, fallback: string): string {
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : fallback
+}
+
+function normalizeMetadataTags(tags: string[]): string[] {
+  const next = new Set<string>()
+  for (const rawTag of tags) {
+    const normalized = rawTag.trim()
+    if (normalized.length > 0) {
+      next.add(normalized)
+    }
+  }
+  return Array.from(next)
+}
+
+function syncPackageNameFromWorkTitle(source: ImagePackageDto, workTitle: string): { packageName: string; displayName: string } {
+  const fileName = path.basename(source.absolute_path)
+  const extension = path.extname(fileName)
+
+  if (extension.length > 0) {
+    return {
+      packageName: `${workTitle}${extension}`,
+      displayName: workTitle,
+    }
+  }
+
+  return {
+    packageName: workTitle,
+    displayName: workTitle,
+  }
+}
+
+function deriveVideoWorkTitleFromFileName(fileName: string): string {
+  const extension = path.extname(fileName)
+  if (extension.length <= 0) {
+    return fileName
+  }
+  return fileName.slice(0, -extension.length)
 }
 
 function isPathInsideRoot(rootDir: string, absolutePath: string): boolean {
@@ -1141,6 +1199,8 @@ export class FileSystemMediaReadService {
 
   private videoCoverOverridesByVideoId = new Map<string, PersistedVideoCoverRecord>()
 
+  private videoMetadataOverridesByVideoId = new Map<string, PersistedVideoMetadataRecord>()
+
   private importSources: { directories: string[]; files: string[] } = { directories: [], files: [] }
 
   private importDirectoryRoots: string[] = []
@@ -1533,6 +1593,7 @@ export class FileSystemMediaReadService {
 
     this.packageGradeOverridesBySourceId = this.database.readPackageGrades()
     this.videoCoverOverridesByVideoId = this.database.readVideoCovers()
+    this.videoMetadataOverridesByVideoId = this.database.readVideoMetadata()
 
     const rawImportSources = this.database.readImportSources()
     const directoryMap = new Map<string, string>()
@@ -1721,6 +1782,7 @@ export class FileSystemMediaReadService {
 
     this.packageGradeOverridesBySourceId = new Map()
     this.videoCoverOverridesByVideoId = new Map()
+    this.videoMetadataOverridesByVideoId = new Map()
     this.importSources = { directories: [], files: [] }
     this.importDirectoryRoots = []
     this.importFileAllowlistKeys.clear()
@@ -2093,10 +2155,13 @@ export class FileSystemMediaReadService {
     const runtimeDependencies = await this.ensureRuntimeDependencies()
     const probe = runtimeDependencies.ffprobe ? await probeVideoMetadata(file.absolutePath).catch(() => null) : null
     const coverRecord = this.videoCoverOverridesByVideoId.get(videoId)
+    const metadataRecord = this.videoMetadataOverridesByVideoId.get(videoId)
+    const fileName = path.basename(file.absolutePath)
+    const fallbackWorkTitle = deriveVideoWorkTitleFromFileName(fileName)
 
     return {
       id: videoId,
-      file_name: path.basename(file.absolutePath),
+      file_name: fileName,
       absolute_path: file.absolutePath,
       tree_path: toAbsoluteTreePath(file.absolutePath),
       duration_sec: Math.max(0, Math.round(probe?.durationSec ?? 0)),
@@ -2105,6 +2170,11 @@ export class FileSystemMediaReadService {
       size_mb: toSafeSizeMb(file.sizeBytes),
       cover_color: coverRecord?.coverColor ?? toDeterministicCoverColor(videoId),
       cover_image_path: coverRecord?.coverImagePath ?? null,
+      work_title: metadataRecord?.workTitle ?? fallbackWorkTitle,
+      circle: metadataRecord?.circle ?? '未知',
+      author: metadataRecord?.author ?? '未知',
+      tags: metadataRecord?.tags ?? [],
+      grade: metadataRecord?.grade ?? null,
       media_locator: mediaLocator,
     }
   }
@@ -2953,6 +3023,105 @@ export class FileSystemMediaReadService {
       package_id: request.package_id,
       grade: request.grade,
       updated_at_ms: Date.now(),
+    })
+  }
+
+  async writePackageMetadata(
+    request: WritePackageMetadataRequestDto,
+  ): Promise<WritePackageMetadataResponseDto> {
+    const snapshot = await this.ensureSnapshotLoaded()
+    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`写入元数据失败：source 不存在 ${request.package_id}`)
+    }
+
+    const workTitle = normalizeMetadataText(request.work_title, source.work_title)
+    const circle = normalizeMetadataText(request.circle, source.circle)
+    const author = normalizeMetadataText(request.author, source.author)
+    const tags = normalizeMetadataTags(request.tags)
+
+    source.work_title = workTitle
+    source.circle = circle
+    source.author = author
+    source.tags = tags
+
+    if (request.sync_work_title_to_package_name) {
+      const synced = syncPackageNameFromWorkTitle(source, workTitle)
+      source.package_name = synced.packageName
+      source.display_name = synced.displayName
+    }
+
+    this.database.writeSourceMetadata(source.id, {
+      packageName: source.package_name,
+      displayName: source.display_name,
+      workTitle: source.work_title,
+      circle: source.circle,
+      author: source.author,
+      tags: source.tags,
+    })
+
+    const updatedAtMs = Date.now()
+    this.emitLibraryChanged({
+      reason: 'write-package-metadata',
+      updated_at_ms: updatedAtMs,
+    })
+
+    return writePackageMetadataResponseSchema.parse({
+      package: source,
+      updated_at_ms: updatedAtMs,
+    })
+  }
+
+  async writeVideoMetadata(
+    request: WriteVideoMetadataRequestDto,
+  ): Promise<WriteVideoMetadataResponseDto> {
+    const snapshot = await this.ensureSnapshotLoaded()
+    const video = snapshot.videos.find((item) => item.id === request.video_id)
+    if (!video) {
+      throw new Error(`写入视频元数据失败：video 不存在 ${request.video_id}`)
+    }
+
+    const defaultWorkTitle = deriveVideoWorkTitleFromFileName(video.file_name)
+    const workTitle = request.sync_file_name_to_work_title
+      ? defaultWorkTitle
+      : normalizeMetadataText(request.work_title, video.work_title)
+    const circle = normalizeMetadataText(request.circle, video.circle)
+    const author = normalizeMetadataText(request.author, video.author)
+    const tags = normalizeMetadataTags(request.tags)
+    const grade = typeof request.grade === 'undefined' ? video.grade ?? null : request.grade
+
+    video.work_title = workTitle
+    video.circle = circle
+    video.author = author
+    video.tags = tags
+    video.grade = grade
+
+    const updatedAtMs = Date.now()
+    this.videoMetadataOverridesByVideoId.set(video.id, {
+      workTitle,
+      circle,
+      author,
+      tags,
+      grade,
+      updatedAtMs,
+    })
+    this.database.writeVideoMetadata(video.id, {
+      workTitle,
+      circle,
+      author,
+      tags,
+      grade,
+    })
+
+    this.emitLibraryChanged({
+      reason: 'write-video-metadata',
+      updated_at_ms: updatedAtMs,
+    })
+
+    return writeVideoMetadataResponseSchema.parse({
+      video,
+      updated_at_ms: updatedAtMs,
     })
   }
 

@@ -6,6 +6,17 @@ export default defineConfig(({ command }) => ({
   // Electron loads the production bundle via file://, so we need relative asset paths.
   base: command === 'build' ? './' : '/',
   plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'zustand'],
+          'vendor-three': ['three'],
+        },
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',

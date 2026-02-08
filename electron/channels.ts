@@ -5,6 +5,8 @@ export const BACKEND_CHANNELS = {
   readImageMetadata: 'backend:readImageMetadata',
   resolveMediaResource: 'backend:resolveMediaResource',
   writePackageGrade: 'backend:writePackageGrade',
+  writePackageMetadata: 'backend:writePackageMetadata',
+  writeVideoMetadata: 'backend:writeVideoMetadata',
   saveVideoCover: 'backend:saveVideoCover',
   readPlaylist: 'backend:readPlaylist',
   writePlaylist: 'backend:writePlaylist',

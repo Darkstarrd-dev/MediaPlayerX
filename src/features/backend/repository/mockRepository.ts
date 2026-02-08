@@ -21,6 +21,8 @@ import {
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
+  writePackageMetadataResponseSchema,
+  writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
@@ -54,6 +56,10 @@ import {
   type VideoItemDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
+  type WritePackageMetadataRequestDto,
+  type WritePackageMetadataResponseDto,
+  type WriteVideoMetadataRequestDto,
+  type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
 } from '../../../contracts/backend'
@@ -145,6 +151,7 @@ function toImagePackageDto(source: ImagePackage): ImagePackageDto {
 }
 
 function toVideoItemDto(video: (typeof VIDEO_ITEMS)[number]): VideoItemDto {
+  const fallbackWorkTitle = deriveWorkTitleFromFileName(video.fileName)
   return {
     id: video.id,
     file_name: video.fileName,
@@ -155,6 +162,12 @@ function toVideoItemDto(video: (typeof VIDEO_ITEMS)[number]): VideoItemDto {
     height: video.height,
     size_mb: video.sizeMb,
     cover_color: video.coverColor,
+    cover_image_path: video.coverImagePath ?? null,
+    work_title: video.workTitle ?? fallbackWorkTitle,
+    circle: video.circle ?? '未知',
+    author: video.author ?? '未知',
+    tags: [...(video.tags ?? [])],
+    grade: video.grade ?? null,
     media_locator: toMediaLocatorDto(video.mediaLocator),
   }
 }
@@ -197,6 +210,48 @@ function toImagePackageViewModel(dto: ImagePackageDto): ImagePackage {
       mediaLocator: toMediaLocatorViewModel(item.media_locator),
     })),
   }
+}
+
+function normalizeTextValue(value: string, fallback: string): string {
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : fallback
+}
+
+function normalizeTags(tags: string[]): string[] {
+  const next = new Set<string>()
+  for (const rawTag of tags) {
+    const normalized = rawTag.trim()
+    if (normalized.length > 0) {
+      next.add(normalized)
+    }
+  }
+  return Array.from(next)
+}
+
+function syncPackageNameFromWorkTitle(source: ImagePackageDto, workTitle: string): { packageName: string; displayName: string } {
+  const fileName = source.absolute_path.split(/[\\/]/).pop() ?? source.package_name
+  const dotIndex = fileName.lastIndexOf('.')
+  const extension = dotIndex > 0 ? fileName.slice(dotIndex) : ''
+
+  if (extension.length > 0) {
+    return {
+      packageName: `${workTitle}${extension}`,
+      displayName: workTitle,
+    }
+  }
+
+  return {
+    packageName: workTitle,
+    displayName: workTitle,
+  }
+}
+
+function deriveWorkTitleFromFileName(fileName: string): string {
+  const dotIndex = fileName.lastIndexOf('.')
+  if (dotIndex <= 0) {
+    return fileName
+  }
+  return fileName.slice(0, dotIndex)
 }
 
 function throwIfAborted(signal?: AbortSignal): void {
@@ -500,6 +555,75 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageGradeResponseDto> {
     const response = this.writePackageGradeSync(request)
+    return resolveAsync(response, options)
+  }
+
+  writePackageMetadataSync(
+    request: WritePackageMetadataRequestDto,
+  ): WritePackageMetadataResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`mock 仓库写入元数据失败：source 不存在 ${request.package_id}`)
+    }
+
+    const workTitle = normalizeTextValue(request.work_title, source.work_title)
+    source.work_title = workTitle
+    source.circle = normalizeTextValue(request.circle, source.circle)
+    source.author = normalizeTextValue(request.author, source.author)
+    source.tags = normalizeTags(request.tags)
+
+    if (request.sync_work_title_to_package_name) {
+      const synced = syncPackageNameFromWorkTitle(source, workTitle)
+      source.package_name = synced.packageName
+      source.display_name = synced.displayName
+    }
+
+    return writePackageMetadataResponseSchema.parse({
+      package: source,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async writePackageMetadata(
+    request: WritePackageMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageMetadataResponseDto> {
+    const response = this.writePackageMetadataSync(request)
+    return resolveAsync(response, options)
+  }
+
+  writeVideoMetadataSync(
+    request: WriteVideoMetadataRequestDto,
+  ): WriteVideoMetadataResponseDto {
+    const video = MOCK_LIBRARY_SNAPSHOT.videos.find((item) => item.id === request.video_id)
+    if (!video) {
+      throw new Error(`mock 仓库写入视频元数据失败：video 不存在 ${request.video_id}`)
+    }
+
+    const nextWorkTitle = request.sync_file_name_to_work_title
+      ? deriveWorkTitleFromFileName(video.file_name)
+      : normalizeTextValue(request.work_title, video.work_title)
+
+    video.work_title = nextWorkTitle
+    video.circle = normalizeTextValue(request.circle, video.circle)
+    video.author = normalizeTextValue(request.author, video.author)
+    video.tags = normalizeTags(request.tags)
+    if (typeof request.grade !== 'undefined') {
+      video.grade = request.grade
+    }
+
+    return writeVideoMetadataResponseSchema.parse({
+      video,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async writeVideoMetadata(
+    request: WriteVideoMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WriteVideoMetadataResponseDto> {
+    const response = this.writeVideoMetadataSync(request)
     return resolveAsync(response, options)
   }
 

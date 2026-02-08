@@ -69,6 +69,11 @@ export const videoItemDtoSchema = z.object({
   size_mb: nonNegativeIntSchema,
   cover_color: z.string().min(1),
   cover_image_path: z.string().min(1).nullable().optional(),
+  work_title: z.string().min(1),
+  circle: z.string().min(1),
+  author: z.string().min(1),
+  tags: z.array(z.string()),
+  grade: z.number().int().min(0).max(5).nullable().optional(),
   media_locator: mediaLocatorDtoSchema,
 })
 
@@ -175,6 +180,35 @@ export const writePackageGradeRequestSchema = z.object({
 export const writePackageGradeResponseSchema = z.object({
   package_id: z.string().min(1),
   grade: z.number().int().min(0).max(5).nullable(),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const writePackageMetadataRequestSchema = z.object({
+  package_id: z.string().min(1),
+  work_title: z.string().min(1),
+  circle: z.string().min(1),
+  author: z.string().min(1),
+  tags: z.array(z.string()),
+  sync_work_title_to_package_name: z.boolean().optional(),
+})
+
+export const writePackageMetadataResponseSchema = z.object({
+  package: imagePackageDtoSchema,
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const writeVideoMetadataRequestSchema = z.object({
+  video_id: z.string().min(1),
+  work_title: z.string().min(1),
+  circle: z.string().min(1),
+  author: z.string().min(1),
+  tags: z.array(z.string()),
+  grade: z.number().int().min(0).max(5).nullable().optional(),
+  sync_file_name_to_work_title: z.boolean().optional(),
+})
+
+export const writeVideoMetadataResponseSchema = z.object({
+  video: videoItemDtoSchema,
   updated_at_ms: z.number().int().positive(),
 })
 
@@ -326,6 +360,10 @@ export type ResolveMediaResourceRequestDto = z.infer<typeof resolveMediaResource
 export type ResolveMediaResourceResponseDto = z.infer<typeof resolveMediaResourceResponseSchema>
 export type WritePackageGradeRequestDto = z.infer<typeof writePackageGradeRequestSchema>
 export type WritePackageGradeResponseDto = z.infer<typeof writePackageGradeResponseSchema>
+export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
+export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
+export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>
+export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataResponseSchema>
 export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>
 export type SaveVideoCoverResponseDto = z.infer<typeof saveVideoCoverResponseSchema>
 export type ReadPlaylistResponseDto = z.infer<typeof readPlaylistResponseSchema>

@@ -229,7 +229,17 @@ function SearchPanel({
                 <div className="feature-rating-group">
                   <strong>图包评分</strong>
                   <div className="feature-rating-stars" role="group" aria-label="图包评分筛选">
-                    {[0, 1, 2, 3, 4, 5].map((score) => {
+                    <button
+                      aria-label="图包评分 无评分"
+                      aria-pressed={featureGradeFilter === null}
+                      className={`is-clear ${featureGradeFilter === null ? 'is-active' : ''}`}
+                      type="button"
+                      onClick={() => onFeatureGradeFilterChange(null)}
+                    >
+                      ×
+                    </button>
+
+                    {[1, 2, 3, 4, 5].map((score) => {
                       const isActive = featureGradeFilter !== null && score <= featureGradeFilter
                       return (
                         <button
@@ -241,7 +251,7 @@ function SearchPanel({
                           type="button"
                           onClick={() => onFeatureGradeFilterChange(featureGradeFilter === score ? null : score)}
                         >
-                          ★
+                          {isActive ? '★' : '☆'}
                         </button>
                       )
                     })}

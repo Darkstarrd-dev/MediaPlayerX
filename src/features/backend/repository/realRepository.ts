@@ -16,6 +16,8 @@ import {
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
+  writePackageMetadataResponseSchema,
+  writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
@@ -43,6 +45,10 @@ import {
   type SaveVideoCoverResponseDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
+  type WritePackageMetadataRequestDto,
+  type WritePackageMetadataResponseDto,
+  type WriteVideoMetadataRequestDto,
+  type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
 } from '../../../contracts/backend'
@@ -257,6 +263,32 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.writePackageGrade(request), options)
     return writePackageGradeResponseSchema.parse(response)
+  }
+
+  async writePackageMetadata(
+    request: WritePackageMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageMetadataResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.writePackageMetadata) {
+      throw new Error('真实后端通道不可用：writePackageMetadata 未注入')
+    }
+
+    const response = await withAbort(api.writePackageMetadata(request), options)
+    return writePackageMetadataResponseSchema.parse(response)
+  }
+
+  async writeVideoMetadata(
+    request: WriteVideoMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WriteVideoMetadataResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.writeVideoMetadata) {
+      throw new Error('真实后端通道不可用：writeVideoMetadata 未注入')
+    }
+
+    const response = await withAbort(api.writeVideoMetadata(request), options)
+    return writeVideoMetadataResponseSchema.parse(response)
   }
 
   async saveVideoCover(

@@ -27,6 +27,10 @@ import {
   retryImportTaskResponseSchema,
   writePlaylistRequestSchema,
   writePlaylistResponseSchema,
+  writePackageMetadataRequestSchema,
+  writePackageMetadataResponseSchema,
+  writeVideoMetadataRequestSchema,
+  writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
   writePackageGradeResponseSchema,
 } from '../src/contracts/backend'
@@ -61,6 +65,16 @@ const backendApi = {
     const parsed = writePackageGradeRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePackageGrade, parsed)
     return writePackageGradeResponseSchema.parse(response)
+  },
+  writePackageMetadata: async (request: unknown) => {
+    const parsed = writePackageMetadataRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePackageMetadata, parsed)
+    return writePackageMetadataResponseSchema.parse(response)
+  },
+  writeVideoMetadata: async (request: unknown) => {
+    const parsed = writeVideoMetadataRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writeVideoMetadata, parsed)
+    return writeVideoMetadataResponseSchema.parse(response)
   },
   saveVideoCover: async (request: unknown) => {
     const parsed = saveVideoCoverRequestSchema.parse(request)

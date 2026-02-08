@@ -460,9 +460,109 @@ describe('FileSystemMediaReadService', () => {
     })
     expect(cover.cover_color).toBe('hsl(210, 44%, 40%)')
 
+    const videoMetadata = await service.writeVideoMetadata({
+      video_id: video.id,
+      work_title: '视频新标题',
+      circle: '视频新社团',
+      author: '视频新作者',
+      tags: ['tag-a', 'tag-b', 'tag-a'],
+      grade: 4,
+    })
+    expect(videoMetadata.video.work_title).toBe('视频新标题')
+    expect(videoMetadata.video.circle).toBe('视频新社团')
+    expect(videoMetadata.video.author).toBe('视频新作者')
+    expect(videoMetadata.video.tags).toEqual(['tag-a', 'tag-b'])
+    expect(videoMetadata.video.grade).toBe(4)
+
     const refreshed = await service.readLibrarySnapshot()
     expect(refreshed.image_directories[0]?.mock_grade).toBe(5)
     expect(refreshed.videos[0]?.cover_color).toBe('hsl(210, 44%, 40%)')
+    expect(refreshed.videos[0]?.work_title).toBe('视频新标题')
+    expect(refreshed.videos[0]?.circle).toBe('视频新社团')
+    expect(refreshed.videos[0]?.author).toBe('视频新作者')
+    expect(refreshed.videos[0]?.tags).toEqual(['tag-a', 'tag-b'])
+    expect(refreshed.videos[0]?.grade).toBe(4)
+  })
+
+  it('视频元数据支持同步文件名到作品名并持久化', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-video-meta-sync-'))
+    createdRoots.push(root)
+
+    await writeBinary(path.join(root, 'clip_a.mp4'), [0x00, 0x00, 0x00, 0x18])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-files', [path.join(root, 'clip_a.mp4')])
+
+    const snapshot = await service.readLibrarySnapshot()
+    const video = snapshot.videos[0]
+    expect(video).toBeTruthy()
+    if (!video) {
+      throw new Error('video not found')
+    }
+
+    const updated = await service.writeVideoMetadata({
+      video_id: video.id,
+      work_title: '临时标题',
+      circle: '同步社团',
+      author: '同步作者',
+      tags: ['sync-tag'],
+      sync_file_name_to_work_title: true,
+    })
+
+    expect(updated.video.work_title).toBe('clip_a')
+    expect(updated.video.circle).toBe('同步社团')
+    expect(updated.video.author).toBe('同步作者')
+    expect(updated.video.tags).toEqual(['sync-tag'])
+
+    service.invalidateCache()
+    const refreshed = await service.readLibrarySnapshot()
+    expect(refreshed.videos[0]?.work_title).toBe('clip_a')
+    expect(refreshed.videos[0]?.circle).toBe('同步社团')
+    expect(refreshed.videos[0]?.author).toBe('同步作者')
+    expect(refreshed.videos[0]?.tags).toEqual(['sync-tag'])
+  })
+
+  it('写链路可写入图包元数据并按作品名同步图包名后缀', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-write-meta-'))
+    createdRoots.push(root)
+
+    const zipPath = path.join(root, 'meta_pkg.zip')
+    await writeStoredZip(zipPath, [{ name: '001.jpg', content: Buffer.from([0xff, 0xd8, 0xff, 0xd9]) }])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-files', [zipPath])
+
+    const snapshot = await service.readLibrarySnapshot()
+    const source = snapshot.image_packages.find((item) => item.absolute_path === zipPath)
+    expect(source).toBeTruthy()
+    if (!source) {
+      throw new Error('snapshot missing zip source')
+    }
+
+    const updated = await service.writePackageMetadata({
+      package_id: source.id,
+      work_title: '新的作品名',
+      circle: '新社团',
+      author: '新作者',
+      tags: ['tag-A', 'tag-B', 'tag-A'],
+      sync_work_title_to_package_name: true,
+    })
+
+    expect(updated.package.work_title).toBe('新的作品名')
+    expect(updated.package.circle).toBe('新社团')
+    expect(updated.package.author).toBe('新作者')
+    expect(updated.package.tags).toEqual(['tag-A', 'tag-B'])
+    expect(updated.package.package_name).toBe('新的作品名.zip')
+    expect(updated.package.display_name).toBe('新的作品名')
+
+    service.invalidateCache()
+    const refreshed = await service.readLibrarySnapshot()
+    const refreshedSource = refreshed.image_packages.find((item) => item.id === source.id)
+    expect(refreshedSource?.work_title).toBe('新的作品名')
+    expect(refreshedSource?.package_name).toBe('新的作品名.zip')
+    expect(refreshedSource?.display_name).toBe('新的作品名')
   })
 
   it('播放列表写入后可在服务重启后恢复', async () => {

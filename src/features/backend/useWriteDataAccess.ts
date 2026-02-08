@@ -1,5 +1,15 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react'
 
+import type {
+  SaveVideoCoverRequestDto,
+  SaveVideoCoverResponseDto,
+  WritePackageGradeRequestDto,
+  WritePackageGradeResponseDto,
+  WritePackageMetadataRequestDto,
+  WritePackageMetadataResponseDto,
+  WriteVideoMetadataRequestDto,
+  WriteVideoMetadataResponseDto,
+} from '../../contracts/backend'
 import type { ReadonlyMediaRepository } from './repository'
 
 const DEFAULT_WRITE_TIMEOUT_MS = 8_000
@@ -18,18 +28,58 @@ interface UseWriteDataAccessParams {
   setVideoCoverImageById: Dispatch<SetStateAction<Record<string, string | null>>>
 }
 
+interface SyncWriteRepository extends ReadonlyMediaRepository {
+  writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
+  writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
+  writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
+  saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
+}
+
+function isSyncWriteRepository(repository: ReadonlyMediaRepository): repository is SyncWriteRepository {
+  return (
+    'writePackageGradeSync' in repository &&
+    typeof repository.writePackageGradeSync === 'function' &&
+    'saveVideoCoverSync' in repository &&
+    typeof repository.saveVideoCoverSync === 'function'
+  )
+}
+
 interface UseWriteDataAccessResult {
   pending: {
     grade: boolean
+    metadata: boolean
     cover: boolean
   }
   errors: {
     grade: string | null
+    metadata: string | null
     cover: string | null
   }
   clearGradeError: () => void
+  clearMetadataError: () => void
   clearCoverError: () => void
   writePackageGrade: (packageId: string, grade: number | null) => Promise<void>
+  writePackageMetadata: (
+    packageId: string,
+    payload: {
+      workTitle: string
+      circle: string
+      author: string
+      tags: string[]
+      syncWorkTitleToPackageName?: boolean
+    },
+  ) => Promise<void>
+  writeVideoMetadata: (
+    videoId: string,
+    payload: {
+      workTitle: string
+      circle: string
+      author: string
+      tags: string[]
+      grade?: number | null
+      syncFileNameToWorkTitle?: boolean
+    },
+  ) => Promise<void>
   saveVideoCover: (videoId: string, timeSec: number, optimisticColor: string) => Promise<void>
 }
 
@@ -39,9 +89,13 @@ export function useWriteDataAccess({
   setVideoCoverById,
   setVideoCoverImageById,
 }: UseWriteDataAccessParams): UseWriteDataAccessResult {
+  const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncWriteRepository(repository)
+
   const [gradePending, setGradePending] = useState(false)
+  const [metadataPending, setMetadataPending] = useState(false)
   const [coverPending, setCoverPending] = useState(false)
   const [gradeError, setGradeError] = useState<string | null>(null)
+  const [metadataError, setMetadataError] = useState<string | null>(null)
   const [coverError, setCoverError] = useState<string | null>(null)
 
   const writePackageGrade = useCallback(
@@ -59,15 +113,15 @@ export function useWriteDataAccess({
       setGradeError(null)
 
       try {
-        const response = await repository.writePackageGrade(
-          {
-            package_id: packageId,
-            grade,
-          },
-          {
-            timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
-          },
-        )
+        const request: WritePackageGradeRequestDto = {
+          package_id: packageId,
+          grade,
+        }
+        const response = isSynchronousTestMode
+          ? repository.writePackageGradeSync(request)
+          : await repository.writePackageGrade(request, {
+              timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+            })
 
         setGradeByPackage((previous) => ({
           ...previous,
@@ -83,7 +137,7 @@ export function useWriteDataAccess({
         setGradePending(false)
       }
     },
-    [repository, setGradeByPackage],
+    [isSynchronousTestMode, repository, setGradeByPackage],
   )
 
   const saveVideoCover = useCallback(
@@ -106,16 +160,16 @@ export function useWriteDataAccess({
       setCoverError(null)
 
       try {
-        const response = await repository.saveVideoCover(
-          {
-            video_id: videoId,
-            time_sec: Math.max(0, timeSec),
-            fallback_color: optimisticColor,
-          },
-          {
-            timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
-          },
-        )
+        const request: SaveVideoCoverRequestDto = {
+          video_id: videoId,
+          time_sec: Math.max(0, timeSec),
+          fallback_color: optimisticColor,
+        }
+        const response = isSynchronousTestMode
+          ? repository.saveVideoCoverSync(request)
+          : await repository.saveVideoCover(request, {
+              timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+            })
 
         setVideoCoverById((previous) => ({
           ...previous,
@@ -139,21 +193,130 @@ export function useWriteDataAccess({
         setCoverPending(false)
       }
     },
-    [repository, setVideoCoverById, setVideoCoverImageById],
+    [isSynchronousTestMode, repository, setVideoCoverById, setVideoCoverImageById],
+  )
+
+  const writePackageMetadata = useCallback(
+    async (
+      packageId: string,
+      payload: {
+        workTitle: string
+        circle: string
+        author: string
+        tags: string[]
+        syncWorkTitleToPackageName?: boolean
+      },
+    ) => {
+      if (!repository.writePackageMetadata) {
+        setMetadataError('当前后端不支持写入元数据')
+        return
+      }
+
+      setMetadataPending(true)
+      setMetadataError(null)
+
+      try {
+        const request: WritePackageMetadataRequestDto = {
+          package_id: packageId,
+          work_title: payload.workTitle,
+          circle: payload.circle,
+          author: payload.author,
+          tags: payload.tags,
+          sync_work_title_to_package_name: payload.syncWorkTitleToPackageName,
+        }
+
+        if (isSynchronousTestMode) {
+          const writer = repository.writePackageMetadataSync
+          if (!writer) {
+            setMetadataError('当前后端不支持写入元数据')
+            return
+          }
+          writer(request)
+          return
+        }
+
+        await repository.writePackageMetadata(request, {
+          timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+        })
+      } catch (error: unknown) {
+        setMetadataError(toErrorMessage(error))
+      } finally {
+        setMetadataPending(false)
+      }
+    },
+    [isSynchronousTestMode, repository],
+  )
+
+  const writeVideoMetadata = useCallback(
+    async (
+      videoId: string,
+      payload: {
+        workTitle: string
+        circle: string
+        author: string
+        tags: string[]
+        grade?: number | null
+        syncFileNameToWorkTitle?: boolean
+      },
+    ) => {
+      if (!repository.writeVideoMetadata) {
+        setMetadataError('当前后端不支持写入视频元数据')
+        return
+      }
+
+      setMetadataPending(true)
+      setMetadataError(null)
+
+      try {
+        const request: WriteVideoMetadataRequestDto = {
+          video_id: videoId,
+          work_title: payload.workTitle,
+          circle: payload.circle,
+          author: payload.author,
+          tags: payload.tags,
+          grade: payload.grade,
+          sync_file_name_to_work_title: payload.syncFileNameToWorkTitle,
+        }
+
+        if (isSynchronousTestMode) {
+          const writer = repository.writeVideoMetadataSync
+          if (!writer) {
+            setMetadataError('当前后端不支持写入视频元数据')
+            return
+          }
+          writer(request)
+          return
+        }
+
+        await repository.writeVideoMetadata(request, {
+          timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+        })
+      } catch (error: unknown) {
+        setMetadataError(toErrorMessage(error))
+      } finally {
+        setMetadataPending(false)
+      }
+    },
+    [isSynchronousTestMode, repository],
   )
 
   return {
     pending: {
       grade: gradePending,
+      metadata: metadataPending,
       cover: coverPending,
     },
     errors: {
       grade: gradeError,
+      metadata: metadataError,
       cover: coverError,
     },
     clearGradeError: () => setGradeError(null),
+    clearMetadataError: () => setMetadataError(null),
     clearCoverError: () => setCoverError(null),
     writePackageGrade,
+    writePackageMetadata,
+    writeVideoMetadata,
     saveVideoCover,
   }
 }

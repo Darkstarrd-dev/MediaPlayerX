@@ -2,10 +2,12 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
+import { MockMediaRepository } from './features/backend/repository/mockRepository'
 import { resetUiStoreState } from './store/useUiStore'
 
 describe('MediaPlayer 虚拟 UI', () => {
   beforeEach(() => {
+    vi.restoreAllMocks()
     resetUiStoreState()
   })
 
@@ -72,15 +74,20 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(searchModeSwitchAfterExpand).toBeInTheDocument()
 
     fireEvent.click(within(searchModeSwitchAfterExpand).getByRole('button', { name: '特征检索' }))
-    expect(screen.getByLabelText('名称')).toBeInTheDocument()
-    expect(screen.getByLabelText('作品名')).toBeInTheDocument()
-    expect(screen.getByLabelText('社团')).toBeInTheDocument()
-    expect(screen.getByLabelText('作者')).toBeInTheDocument()
+    const featureControls = document.querySelector('.feature-controls') as HTMLElement | null
+    expect(featureControls).not.toBeNull()
+    const featureScope = within(featureControls as HTMLElement)
+    expect(featureScope.getByLabelText('名称')).toBeInTheDocument()
+    expect(featureScope.getByLabelText('作品名')).toBeInTheDocument()
+    expect(featureScope.getByLabelText('社团')).toBeInTheDocument()
+    expect(featureScope.getByLabelText('作者')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '选择 tags' })).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: '图包评分筛选' })).toBeInTheDocument()
+    const featureRatingGroup = screen.getByRole('group', { name: '图包评分筛选' })
+    expect(featureRatingGroup).toBeInTheDocument()
+    expect(within(featureRatingGroup).getByRole('button', { name: '图包评分 无评分' })).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('名称'), { target: { value: '002' } })
-    fireEvent.change(screen.getByLabelText('作者'), { target: { value: 'Nori' } })
+    fireEvent.change(featureScope.getByLabelText('名称'), { target: { value: '002' } })
+    fireEvent.change(featureScope.getByLabelText('作者'), { target: { value: 'Nori' } })
     fireEvent.click(screen.getByRole('button', { name: '选择 tags' }))
     fireEvent.click(screen.getByRole('button', { name: 'fog' }))
 
@@ -233,6 +240,74 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '元数据面板' })).toBeInTheDocument()
   })
 
+  it('元数据评分支持清空到空星，并可继续点击设星', async () => {
+    render(<App />)
+
+    const ratingGroup = screen.getByRole('group', { name: '图包评分' })
+    const readStars = () => within(ratingGroup).getAllByRole('button').map((button) => button.textContent)
+
+    fireEvent.click(screen.getByRole('button', { name: '图包评分 2 星' }))
+    expect(readStars()).toEqual(['×', '★', '★', '☆', '☆', '☆'])
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '图包评分 2 星' })).not.toBeDisabled()
+    })
+
+    fireEvent.mouseDown(screen.getByRole('button', { name: '清空评分' }), { button: 0 })
+    expect(readStars()).toEqual(['×', '☆', '☆', '☆', '☆', '☆'])
+  })
+
+  it('视频模式元数据包含评分与操作区，以及文件名/作品名/社团/作者/tags和底部状态区', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
+
+    expect(screen.getByLabelText('文件名')).toBeInTheDocument()
+    expect(screen.getByLabelText('作品名')).toBeInTheDocument()
+    expect(screen.getByLabelText('社团')).toBeInTheDocument()
+    expect(screen.getByLabelText('作者')).toBeInTheDocument()
+    expect(screen.getByLabelText('Tags')).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: '视频评分' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '视频评分 无评分' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '保存' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '同步文件名到作品名' })).toBeEnabled()
+    expect(document.querySelector('.metadata-video-stats')).not.toBeNull()
+  })
+
+  it('点击视频信息区保存会触发 writeVideoMetadata 调用', () => {
+    const writeVideoMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writeVideoMetadataSync')
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
+
+    fireEvent.change(screen.getByLabelText('作品名'), { target: { value: '新的视频作品名' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+
+    expect(writeVideoMetadataSpy).toHaveBeenCalled()
+    expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        work_title: '新的视频作品名',
+      }),
+    )
+  })
+
+  it('视频评分可点击并写入 grade', () => {
+    const writeVideoMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writeVideoMetadataSync')
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
+    fireEvent.click(screen.getByRole('button', { name: '视频评分 5 星' }))
+
+    expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        grade: 5,
+      }),
+    )
+  })
+
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {
     render(<App />)
 
@@ -245,13 +320,13 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('鼠标点击与键盘方向键共享 focus，Esc 可清空 focus', () => {
     render(<App />)
 
-    expect(screen.getByText('图包：幻旅系列 001')).toBeInTheDocument()
+    expect(screen.getByLabelText('图包名')).toBeInTheDocument()
 
     const firstThumbButton = screen.getByText('幻旅系列 001 #1').closest('button')
     expect(firstThumbButton).not.toBeNull()
     fireEvent.click(firstThumbButton as HTMLButtonElement)
 
-    expect(screen.queryByText('图包：幻旅系列 001')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('图包名')).not.toBeInTheDocument()
     expect(screen.getByText(/archive_001\.zip #1/)).toBeInTheDocument()
 
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
@@ -259,7 +334,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
     expect(screen.queryByText(/archive_001\.zip #/)).not.toBeInTheDocument()
-    expect(screen.getByText('图包：幻旅系列 001')).toBeInTheDocument()
+    expect(screen.getByLabelText('图包名')).toBeInTheDocument()
   })
 
   it('方向键上下按网格移动，到边界时钳制到首末项', () => {

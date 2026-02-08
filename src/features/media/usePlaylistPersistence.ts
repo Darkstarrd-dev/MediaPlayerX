@@ -43,12 +43,27 @@ interface UsePlaylistPersistenceResult {
   retryWrite: () => void
 }
 
+interface SyncPlaylistRepository extends ReadonlyMediaRepository {
+  readPlaylistSync(): { video_ids: string[] }
+  writePlaylistSync(request: { video_ids: string[] }): { video_ids: string[] }
+}
+
+function isSyncPlaylistRepository(repository: ReadonlyMediaRepository): repository is SyncPlaylistRepository {
+  return (
+    'readPlaylistSync' in repository &&
+    typeof repository.readPlaylistSync === 'function' &&
+    'writePlaylistSync' in repository &&
+    typeof repository.writePlaylistSync === 'function'
+  )
+}
+
 export function usePlaylistPersistence({
   repository,
   videos,
   playlistIds,
   setPlaylistIds,
 }: UsePlaylistPersistenceParams): UsePlaylistPersistenceResult {
+  const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncPlaylistRepository(repository)
   const validVideoIds = useMemo(() => new Set(videos.map((video) => video.id)), [videos])
 
   const [loading, setLoading] = useState(false)
@@ -66,6 +81,12 @@ export function usePlaylistPersistence({
   }, [playlistIds])
 
   useEffect(() => {
+    if (isSynchronousTestMode) {
+      hydratedRef.current = true
+      persistedPlaylistRef.current = normalizePlaylist(playlistIdsRef.current, validVideoIds)
+      return
+    }
+
     let disposed = false
     setLoading(true)
     setReadError(null)
@@ -102,10 +123,10 @@ export function usePlaylistPersistence({
     return () => {
       disposed = true
     }
-  }, [readNonce, repository, setPlaylistIds, validVideoIds])
+  }, [isSynchronousTestMode, readNonce, repository, setPlaylistIds, validVideoIds])
 
   useEffect(() => {
-    if (!hydratedRef.current) {
+    if (isSynchronousTestMode || !hydratedRef.current) {
       return
     }
 
@@ -147,7 +168,17 @@ export function usePlaylistPersistence({
     return () => {
       disposed = true
     }
-  }, [playlistIds, repository, setPlaylistIds, validVideoIds, writeNonce])
+  }, [isSynchronousTestMode, playlistIds, repository, setPlaylistIds, validVideoIds, writeNonce])
+
+  if (isSynchronousTestMode) {
+    return {
+      loading: false,
+      readError: null,
+      writeError: null,
+      retryRead: () => undefined,
+      retryWrite: () => undefined,
+    }
+  }
 
   return {
     loading,

@@ -24,6 +24,8 @@ import type {
   SaveVideoCoverResponseDto,
   WritePlaylistRequestDto,
   WritePlaylistResponseDto,
+  WritePackageMetadataRequestDto,
+  WritePackageMetadataResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
 } from '../../contracts/backend'
@@ -35,12 +37,18 @@ class WritableRepositoryStub implements ReadonlyMediaRepository {
 
   private shouldFailCover = false
 
+  private shouldFailMetadata = false
+
   setFailGrade(enabled: boolean): void {
     this.shouldFailGrade = enabled
   }
 
   setFailCover(enabled: boolean): void {
     this.shouldFailCover = enabled
+  }
+
+  setFailMetadata(enabled: boolean): void {
+    this.shouldFailMetadata = enabled
   }
 
   getInitialLibrarySnapshot(): LibrarySnapshotDto | null {
@@ -98,6 +106,32 @@ class WritableRepositoryStub implements ReadonlyMediaRepository {
     return {
       package_id: request.package_id,
       grade: request.grade,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async writePackageMetadata(
+    request: WritePackageMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageMetadataResponseDto> {
+    void options
+    if (this.shouldFailMetadata) {
+      throw new Error('write-metadata-failed')
+    }
+    return {
+      package: {
+        id: request.package_id,
+        package_name: request.sync_work_title_to_package_name ? `${request.work_title}.zip` : 'archive_001.zip',
+        display_name: request.sync_work_title_to_package_name ? request.work_title : 'archive_001',
+        absolute_path: 'Z:/mock/archive_001.zip',
+        tree_path: ['archive_001.zip'],
+        work_title: request.work_title,
+        circle: request.circle,
+        author: request.author,
+        tags: request.tags,
+        mock_grade: 4,
+        images: [],
+      },
       updated_at_ms: Date.now(),
     }
   }
@@ -322,6 +356,13 @@ describe('useWriteDataAccess', () => {
 
     await act(async () => {
       await result.current.write.writePackageGrade('pkg', 5)
+      await result.current.write.writePackageMetadata('pkg', {
+        workTitle: '新作',
+        circle: '社团A',
+        author: '作者B',
+        tags: ['tag1', 'tag2'],
+        syncWorkTitleToPackageName: true,
+      })
       await result.current.write.saveVideoCover('video', 1.5, 'hsl(120, 44%, 40%)')
     })
 
@@ -330,6 +371,39 @@ describe('useWriteDataAccess', () => {
       expect(result.current.videoCoverById.video).toBe('hsl(120, 44%, 40%)')
     })
     expect(result.current.write.errors.grade).toBeNull()
+    expect(result.current.write.errors.metadata).toBeNull()
     expect(result.current.write.errors.cover).toBeNull()
+  })
+
+  it('元数据写入失败会回填错误状态', async () => {
+    const repository = new WritableRepositoryStub()
+    repository.setFailMetadata(true)
+
+    const { result } = renderHook(() => {
+      const [, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
+      const [, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
+      const [, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
+      const write = useWriteDataAccess({
+        repository,
+        setGradeByPackage,
+        setVideoCoverById,
+        setVideoCoverImageById,
+      })
+
+      return {
+        write,
+      }
+    })
+
+    await act(async () => {
+      await result.current.write.writePackageMetadata('pkg', {
+        workTitle: '新作',
+        circle: '社团A',
+        author: '作者B',
+        tags: ['tag1'],
+      })
+    })
+
+    expect(result.current.write.errors.metadata).toBe('write-metadata-failed')
   })
 })
