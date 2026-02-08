@@ -32,6 +32,12 @@ import {
   collectImageSourceIds,
   collectLeafIds,
 } from './features/app/helpers'
+import {
+  buildCoverImageLocator,
+  computeResponsiveZoomFactor,
+  normalizePathForCompare,
+  RESPONSIVE_ZOOM_EPSILON,
+} from './features/app/mediaPathUtils'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
 import { useImportPipeline } from './features/import/useImportPipeline'
@@ -56,7 +62,6 @@ import { useUiStore } from './store/useUiStore'
 import type {
   FocusedImageRef,
   ImagePackage,
-  MediaLocator,
   SidebarNode,
   VectorCandidate,
 } from './types'
@@ -68,69 +73,8 @@ const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 const EMPTY_FEATURE_TAGS: string[] = []
 const RUNTIME_WARNING_DISMISS_STORAGE_KEY = 'mediaplayerx:runtime-warning-dismiss-key'
-const RESPONSIVE_ZOOM_BASE_WIDTH = 1600
-const RESPONSIVE_ZOOM_BASE_HEIGHT = 900
-const RESPONSIVE_ZOOM_MIN_FACTOR = 0.72
-const RESPONSIVE_ZOOM_EPSILON = 0.005
 const MEDIA_RESOLVE_MAX_CONCURRENT = 8
-const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.gif': 'image/gif',
-  '.bmp': 'image/bmp',
-}
 type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
-
-function computeResponsiveZoomFactor(width: number, height: number): number {
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
-    return 1
-  }
-
-  const widthFactor = width / RESPONSIVE_ZOOM_BASE_WIDTH
-  const heightFactor = height / RESPONSIVE_ZOOM_BASE_HEIGHT
-  const factor = Math.min(widthFactor, heightFactor, 1)
-  return clamp(Number(factor.toFixed(4)), RESPONSIVE_ZOOM_MIN_FACTOR, 1)
-}
-
-function normalizePathForCompare(value: string): string {
-  const normalized = value.trim().replace(/\\/g, '/')
-  if (typeof window !== 'undefined' && /win/i.test(window.navigator.platform)) {
-    return normalized.toLowerCase()
-  }
-  return normalized
-}
-
-function buildCoverImageLocator(absolutePath: string | null | undefined): MediaLocator | null {
-  if (!absolutePath) {
-    return null
-  }
-
-  const trimmed = absolutePath.trim()
-  if (trimmed.length === 0) {
-    return null
-  }
-
-  const extensionMatch = trimmed.match(/(\.[^./\\]+)$/)
-  const extension = extensionMatch?.[1]?.toLowerCase()
-  if (!extension) {
-    return null
-  }
-
-  const mimeType = IMAGE_MIME_BY_EXTENSION[extension]
-  if (!mimeType) {
-    return null
-  }
-
-  return {
-    kind: 'filesystem',
-    absolutePath: trimmed,
-    extension,
-    mediaType: 'image',
-    mimeType,
-  }
-}
 
 function App() {
   const benchSettings = getBenchSettings()

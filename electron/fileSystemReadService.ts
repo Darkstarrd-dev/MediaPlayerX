@@ -5,7 +5,6 @@ import os from 'node:os'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 import { Worker } from 'node:worker_threads'
-import { inflateRawSync } from 'node:zlib'
 
 import {
   clearDatabaseResponseSchema,
@@ -29,7 +28,6 @@ import {
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
-  type FeatureFilterDto,
   type FocusedImageRefDto,
   type ImageItemDto,
   type ImportTaskDto,
@@ -70,7 +68,32 @@ import {
   readArchiveWasmSupport,
   resolveArchiveReplacementZipPath,
 } from './archiveWasmExtractor'
+import {
+  deriveVideoWorkTitleFromFileName,
+  detectMimeTypeByExtension,
+  isPathInsideRoot,
+  makeStableId,
+  matchesFeatureFilter,
+  normalizeAllowlistKey,
+  normalizeFeatureFilter,
+  normalizeMetadataTags,
+  normalizeMetadataText,
+  normalizePathKey,
+  syncPackageNameFromWorkTitle,
+  toAbsoluteTreePath,
+  toDeterministicCoverColor,
+  toSafeFsName,
+  toSafeSizeKb,
+  toSafeSizeMb,
+} from './fileSystemServiceHelpers'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
+import {
+  isSafeArchiveEntryName,
+  normalizeArchiveEntryName,
+  readZipEntryContent,
+  scanZipCentralEntries,
+  type ZipCentralEntry,
+} from './zipArchiveHelpers'
 
 function resolveConcurrency(rawValue: string | undefined, fallback: number, max: number): number {
   const parsed = Number(rawValue)
@@ -86,17 +109,11 @@ const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mkv', '.mov'])
 const ARCHIVE_EXTENSIONS = new Set(['.zip', '.rar', '.7z'])
 const COLOR_PALETTE = ['#dd6b66', '#d58b45', '#6da249', '#4aa6a1', '#4f86cf', '#8868d6']
 
-const ZIP_END_OF_CENTRAL_DIR_SIGNATURE = 0x06054b50
-const ZIP_CENTRAL_FILE_HEADER_SIGNATURE = 0x02014b50
-const ZIP_LOCAL_FILE_HEADER_SIGNATURE = 0x04034b50
-const ZIP_GENERAL_PURPOSE_FLAG_UTF8 = 0x0800
 const ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED = 0x0001
 const ZIP_COMPRESSION_STORE = 0
 const ZIP_COMPRESSION_DEFLATE = 8
-const ZIP_MAX_COMMENT_LENGTH = 0xffff
 
 const MEDIA_TOKEN_TTL_MS = 5 * 60 * 1000
-const ZIP_SCAN_TAIL_PADDING = 128
 const FFMPEG_BIN = process.env.MEDIA_PLAYERX_FFMPEG_BIN ?? 'ffmpeg'
 const FFPROBE_BIN = process.env.MEDIA_PLAYERX_FFPROBE_BIN ?? 'ffprobe'
 const ARCHIVE_NORMALIZE_DIR_NAME = '.mediaplayerx/normalized-archives'
@@ -168,16 +185,6 @@ interface FileRecord {
   sizeBytes: number
   width: number
   height: number
-}
-
-interface ZipCentralEntry {
-  entryName: string
-  extension: string
-  compressedSize: number
-  uncompressedSize: number
-  compressionMethod: number
-  generalPurposeBitFlag: number
-  localHeaderOffset: number
 }
 
 interface MediaTokenRecord {
@@ -274,397 +281,6 @@ class MediaAccessError extends Error {
   }
 }
 
-function normalizePathKey(value: string): string {
-  return value.split(path.sep).join('/')
-}
-
-function normalizeAllowlistKey(value: string): string {
-  const resolved = normalizePathKey(path.resolve(value))
-  return process.platform === 'win32' ? resolved.toLowerCase() : resolved
-}
-
-function makeStableId(prefix: string, value: string): string {
-  const hash = createHash('sha1').update(value).digest('hex').slice(0, 12)
-  return `${prefix}-${hash}`
-}
-
-function toAbsoluteTreePath(targetPath: string): string[] {
-  const resolved = normalizePathKey(path.resolve(targetPath))
-
-  // Windows drive path: C:/foo/bar
-  if (/^[a-zA-Z]:\//.test(resolved)) {
-    const drive = resolved.slice(0, 2)
-    const rest = resolved.slice(3)
-    const segments = rest
-      .split('/')
-      .map((segment) => segment.trim())
-      .filter(Boolean)
-    return segments.length > 0 ? [drive, ...segments] : [drive]
-  }
-
-  // Windows UNC path normalized by `normalizePathKey`: //server/share/folder
-  if (resolved.startsWith('//')) {
-    const parts = resolved
-      .split('/')
-      .map((segment) => segment.trim())
-      .filter(Boolean)
-    if (parts.length >= 2) {
-      const uncRoot = `//${parts[0]}/${parts[1]}`
-      return parts.length > 2 ? [uncRoot, ...parts.slice(2)] : [uncRoot]
-    }
-    return [resolved]
-  }
-
-  // POSIX: /foo/bar
-  if (resolved.startsWith('/')) {
-    const parts = resolved
-      .split('/')
-      .map((segment) => segment.trim())
-      .filter(Boolean)
-    return parts.length > 0 ? ['/', ...parts] : ['/']
-  }
-
-  const parts = resolved
-    .split('/')
-    .map((segment) => segment.trim())
-    .filter(Boolean)
-  return parts.length > 0 ? parts : [path.basename(targetPath)]
-}
-
-function toSafeSizeKb(sizeBytes: number): number {
-  return Math.max(0, Math.ceil(sizeBytes / 1024))
-}
-
-function toSafeSizeMb(sizeBytes: number): number {
-  return Math.max(0, Math.ceil(sizeBytes / (1024 * 1024)))
-}
-
-function pickSourceGrade(
-  sourceId: string,
-  sourceFallbackGrade: number | null,
-  gradeOverrides?: Record<string, number | null>,
-): number | null {
-  if (!gradeOverrides) {
-    return sourceFallbackGrade
-  }
-
-  return sourceId in gradeOverrides ? gradeOverrides[sourceId] ?? null : sourceFallbackGrade
-}
-
-function normalizeFeatureFilter(filter: FeatureFilterDto): FeatureFilterDto {
-  return {
-    name_query: filter.name_query.trim().toLowerCase(),
-    work_title_query: filter.work_title_query.trim().toLowerCase(),
-    circle_query: filter.circle_query.trim().toLowerCase(),
-    author_query: filter.author_query.trim().toLowerCase(),
-    tags: filter.tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean),
-    grade: filter.grade,
-  }
-}
-
-function matchesFeatureFilter(
-  source: ImagePackageDto,
-  filter: FeatureFilterDto,
-  gradeOverrides?: Record<string, number | null>,
-): boolean {
-  if (filter.name_query) {
-    const matched = [source.package_name, source.display_name].some((text) =>
-      text.toLowerCase().includes(filter.name_query),
-    )
-    if (!matched) {
-      return false
-    }
-  }
-
-  if (filter.work_title_query && !source.work_title.toLowerCase().includes(filter.work_title_query)) {
-    return false
-  }
-
-  if (filter.circle_query && !source.circle.toLowerCase().includes(filter.circle_query)) {
-    return false
-  }
-
-  if (filter.author_query && !source.author.toLowerCase().includes(filter.author_query)) {
-    return false
-  }
-
-  if (filter.tags.length > 0) {
-    const lowerTags = source.tags.map((tag) => tag.toLowerCase())
-    const tagsMatched = filter.tags.every((tag) => lowerTags.includes(tag))
-    if (!tagsMatched) {
-      return false
-    }
-  }
-
-  if (filter.grade !== null) {
-    const gradeValue = pickSourceGrade(source.id, source.mock_grade, gradeOverrides) ?? 0
-    if (gradeValue !== filter.grade) {
-      return false
-    }
-  }
-
-  return true
-}
-
-function normalizeMetadataText(value: string, fallback: string): string {
-  const normalized = value.trim()
-  return normalized.length > 0 ? normalized : fallback
-}
-
-function normalizeMetadataTags(tags: string[]): string[] {
-  const next = new Set<string>()
-  for (const rawTag of tags) {
-    const normalized = rawTag.trim()
-    if (normalized.length > 0) {
-      next.add(normalized)
-    }
-  }
-  return Array.from(next)
-}
-
-function syncPackageNameFromWorkTitle(source: ImagePackageDto, workTitle: string): { packageName: string; displayName: string } {
-  const fileName = path.basename(source.absolute_path)
-  const extension = path.extname(fileName)
-
-  if (extension.length > 0) {
-    return {
-      packageName: `${workTitle}${extension}`,
-      displayName: workTitle,
-    }
-  }
-
-  return {
-    packageName: workTitle,
-    displayName: workTitle,
-  }
-}
-
-function deriveVideoWorkTitleFromFileName(fileName: string): string {
-  const extension = path.extname(fileName)
-  if (extension.length <= 0) {
-    return fileName
-  }
-  return fileName.slice(0, -extension.length)
-}
-
-function isPathInsideRoot(rootDir: string, absolutePath: string): boolean {
-  const relative = path.relative(rootDir, absolutePath)
-  if (relative.length === 0) {
-    return true
-  }
-  return !relative.startsWith('..') && !path.isAbsolute(relative)
-}
-
-function normalizeArchiveEntryName(value: string): string {
-  const normalized = value.replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '')
-  return normalized
-}
-
-function isSafeArchiveEntryName(value: string): boolean {
-  if (!value || value.includes('\u0000')) {
-    return false
-  }
-  if (value.startsWith('/') || value.startsWith('\\')) {
-    return false
-  }
-  if (/^[a-zA-Z]:/.test(value)) {
-    return false
-  }
-
-  const segments = value.split('/')
-  return segments.every((segment) => segment !== '..')
-}
-
-function detectMimeTypeByExtension(extension: string, mediaType: 'image' | 'video'): string {
-  const lowerExt = extension.toLowerCase()
-  if (mediaType === 'image') {
-    if (lowerExt === '.jpg' || lowerExt === '.jpeg') {
-      return 'image/jpeg'
-    }
-    if (lowerExt === '.png') {
-      return 'image/png'
-    }
-    if (lowerExt === '.webp') {
-      return 'image/webp'
-    }
-    if (lowerExt === '.gif') {
-      return 'image/gif'
-    }
-    if (lowerExt === '.bmp') {
-      return 'image/bmp'
-    }
-    return 'application/octet-stream'
-  }
-
-  if (lowerExt === '.mp4') {
-    return 'video/mp4'
-  }
-  if (lowerExt === '.webm') {
-    return 'video/webm'
-  }
-  if (lowerExt === '.mkv') {
-    return 'video/x-matroska'
-  }
-  if (lowerExt === '.mov') {
-    return 'video/quicktime'
-  }
-  return 'application/octet-stream'
-}
-
-function findSignatureBackward(buffer: Buffer, signature: number): number {
-  for (let index = buffer.length - 4; index >= 0; index -= 1) {
-    if (buffer.readUInt32LE(index) === signature) {
-      return index
-    }
-  }
-  return -1
-}
-
-function decodeZipEntryName(bytes: Buffer, utf8: boolean): string {
-  if (utf8) {
-    return bytes.toString('utf8')
-  }
-  return bytes.toString('latin1')
-}
-
-async function scanZipCentralEntries(archivePath: string): Promise<ZipCentralEntry[]> {
-  const handle = await fs.open(archivePath, 'r')
-
-  try {
-    const stat = await handle.stat()
-    if (stat.size < 22) {
-      return []
-    }
-
-    const tailSize = Math.min(stat.size, ZIP_MAX_COMMENT_LENGTH + 22 + ZIP_SCAN_TAIL_PADDING)
-    const tailOffset = stat.size - tailSize
-    const tailBuffer = Buffer.alloc(tailSize)
-    await handle.read(tailBuffer, 0, tailSize, tailOffset)
-
-    const endOfCentralDirIndex = findSignatureBackward(tailBuffer, ZIP_END_OF_CENTRAL_DIR_SIGNATURE)
-    if (endOfCentralDirIndex < 0) {
-      throw new Error(`zip 中央目录缺失: ${archivePath}`)
-    }
-
-    const centralDirectorySize = tailBuffer.readUInt32LE(endOfCentralDirIndex + 12)
-    const centralDirectoryOffset = tailBuffer.readUInt32LE(endOfCentralDirIndex + 16)
-
-    if (centralDirectorySize === 0xffffffff || centralDirectoryOffset === 0xffffffff) {
-      throw new Error(`zip64 归档暂不支持: ${archivePath}`)
-    }
-    if (centralDirectoryOffset + centralDirectorySize > stat.size) {
-      throw new Error(`zip 中央目录越界: ${archivePath}`)
-    }
-
-    const centralBuffer = Buffer.alloc(centralDirectorySize)
-    await handle.read(centralBuffer, 0, centralDirectorySize, centralDirectoryOffset)
-
-    const entries: ZipCentralEntry[] = []
-    let cursor = 0
-    while (cursor + 46 <= centralBuffer.length) {
-      const signature = centralBuffer.readUInt32LE(cursor)
-      if (signature !== ZIP_CENTRAL_FILE_HEADER_SIGNATURE) {
-        break
-      }
-
-      const generalPurposeBitFlag = centralBuffer.readUInt16LE(cursor + 8)
-      const compressionMethod = centralBuffer.readUInt16LE(cursor + 10)
-      const compressedSize = centralBuffer.readUInt32LE(cursor + 20)
-      const uncompressedSize = centralBuffer.readUInt32LE(cursor + 24)
-      const fileNameLength = centralBuffer.readUInt16LE(cursor + 28)
-      const extraLength = centralBuffer.readUInt16LE(cursor + 30)
-      const commentLength = centralBuffer.readUInt16LE(cursor + 32)
-      const localHeaderOffset = centralBuffer.readUInt32LE(cursor + 42)
-
-      const fileNameStart = cursor + 46
-      const fileNameEnd = fileNameStart + fileNameLength
-      if (fileNameEnd > centralBuffer.length) {
-        break
-      }
-
-      const fileNameBuffer = centralBuffer.subarray(fileNameStart, fileNameEnd)
-      const entryName = normalizeArchiveEntryName(
-        decodeZipEntryName(fileNameBuffer, (generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_UTF8) !== 0),
-      )
-
-      const nextCursor = fileNameEnd + extraLength + commentLength
-      if (nextCursor > centralBuffer.length) {
-        break
-      }
-      cursor = nextCursor
-
-      if (!entryName || entryName.endsWith('/')) {
-        continue
-      }
-
-      entries.push({
-        entryName,
-        extension: path.extname(entryName).toLowerCase(),
-        compressedSize,
-        uncompressedSize,
-        compressionMethod,
-        generalPurposeBitFlag,
-        localHeaderOffset,
-      })
-    }
-
-    return entries
-  } finally {
-    await handle.close()
-  }
-}
-
-async function readZipEntryDataOffset(archivePath: string, entry: ZipCentralEntry): Promise<number> {
-  const handle = await fs.open(archivePath, 'r')
-
-  try {
-    const localHeader = Buffer.alloc(30)
-    const { bytesRead: localHeaderBytesRead } = await handle.read(localHeader, 0, localHeader.length, entry.localHeaderOffset)
-    if (localHeaderBytesRead < localHeader.length) {
-      throw new Error(`zip 条目本地头部读取失败: ${archivePath} -> ${entry.entryName}`)
-    }
-
-    if (localHeader.readUInt32LE(0) !== ZIP_LOCAL_FILE_HEADER_SIGNATURE) {
-      throw new Error(`zip 条目本地头部签名异常: ${archivePath} -> ${entry.entryName}`)
-    }
-
-    const localFileNameLength = localHeader.readUInt16LE(26)
-    const localExtraLength = localHeader.readUInt16LE(28)
-    return entry.localHeaderOffset + 30 + localFileNameLength + localExtraLength
-  } finally {
-    await handle.close()
-  }
-}
-
-async function readZipEntryContent(archivePath: string, entry: ZipCentralEntry): Promise<Buffer> {
-  const dataOffset = await readZipEntryDataOffset(archivePath, entry)
-  const handle = await fs.open(archivePath, 'r')
-
-  try {
-    const compressedBuffer = Buffer.alloc(entry.compressedSize)
-    const { bytesRead } = await handle.read(compressedBuffer, 0, compressedBuffer.length, dataOffset)
-    if (bytesRead < compressedBuffer.length) {
-      throw new Error(`zip 条目压缩数据读取不完整: ${archivePath} -> ${entry.entryName}`)
-    }
-
-    if ((entry.generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED) !== 0) {
-      throw new Error(`zip 条目被加密，当前不支持: ${archivePath} -> ${entry.entryName}`)
-    }
-
-    if (entry.compressionMethod === ZIP_COMPRESSION_STORE) {
-      return compressedBuffer
-    }
-
-    if (entry.compressionMethod === ZIP_COMPRESSION_DEFLATE) {
-      return inflateRawSync(compressedBuffer)
-    }
-
-    throw new Error(`zip 条目压缩方式不支持(${entry.compressionMethod}): ${archivePath} -> ${entry.entryName}`)
-  } finally {
-    await handle.close()
-  }
-}
-
 function parseByteRange(rangeHeader: string | null, size: number): ByteRange | null {
   if (!rangeHeader || !rangeHeader.startsWith('bytes=')) {
     return null
@@ -727,19 +343,6 @@ function toWebReadableStream(stream: ReadStream, signal?: AbortSignal | null): R
   }
 
   return Readable.toWeb(stream) as ReadableStream<Uint8Array>
-}
-
-function toSafeFsName(value: string): string {
-  return value.replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^_+/, '').slice(0, 96) || 'archive'
-}
-
-function toDeterministicCoverColor(videoId: string): string {
-  const hash = makeStableId('cover', videoId)
-  let hue = 0
-  for (let index = 0; index < hash.length; index += 1) {
-    hue = (hue * 31 + hash.charCodeAt(index)) % 360
-  }
-  return `hsl(${hue}, 44%, 40%)`
 }
 
 async function parallelMapLimit<T, R>(
