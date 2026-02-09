@@ -701,10 +701,23 @@ export const VIDEO_ITEMS: VideoItem[] = [
 interface LeafInput {
   id: string
   treePath: string[]
+  leafLabel?: string
 }
 
 function pathKeyOf(segments: string[]): string {
   return segments.join('/')
+}
+
+function normalizeNodeLabelCompare(value: string): string {
+  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
+}
+
+function shouldPreferWorkTitleLabel(packageName: string, workTitle: string): boolean {
+  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle)
+  if (normalizedWorkTitle.length === 0) {
+    return false
+  }
+  return normalizeNodeLabelCompare(packageName) !== normalizedWorkTitle
 }
 
 function sortNodes(nodes: SidebarNode[]): void {
@@ -760,10 +773,16 @@ export function buildImageSidebarTree(
       const packageAtPath = packageByPath.get(pathKey)
       const directoryAtPath = directoryByPath.get(pathKey)
       const nodeKind: SidebarNodeKind = packageAtPath ? 'package' : 'folder'
+      const sourceAtPath = packageAtPath ?? directoryAtPath
+      let label = segments[segments.length - 1]
+
+      if (sourceAtPath && shouldPreferWorkTitleLabel(sourceAtPath.packageName, sourceAtPath.workTitle)) {
+        label = sourceAtPath.workTitle
+      }
 
       const node: SidebarNode = {
         id: `${nodeKind}:${pathKey}`,
-        label: segments[segments.length - 1],
+        label,
         kind: nodeKind,
         children: [],
         pathKey,
@@ -826,7 +845,7 @@ export function buildSidebarTree(
 
       const node: SidebarNode = {
         id: nodeId,
-        label: segment,
+        label: isLeaf && typeof leaf.leafLabel === 'string' && leaf.leafLabel.trim().length > 0 ? leaf.leafLabel : segment,
         kind: nextNodeKind,
         children: [],
         pathKey,

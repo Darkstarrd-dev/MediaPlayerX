@@ -17,6 +17,18 @@ interface UseVideoSidebarStateResult {
   videoTreeForSidebar: SidebarNode[]
 }
 
+function normalizeNodeLabelCompare(value: string): string {
+  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
+}
+
+function shouldUseWorkTitleLabel(fileName: string, workTitle: string): boolean {
+  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle)
+  if (normalizedWorkTitle.length === 0) {
+    return false
+  }
+  return normalizeNodeLabelCompare(fileName) !== normalizedWorkTitle
+}
+
 export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSidebarStateParams): UseVideoSidebarStateResult {
   const videoTreeRaw = useMemo(
     () =>
@@ -24,6 +36,7 @@ export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSideba
         videos.map((video) => ({
           id: video.id,
           treePath: video.treePath,
+          leafLabel: shouldUseWorkTitleLabel(video.fileName, video.workTitle) ? video.workTitle : undefined,
         })),
         'video',
       ),
@@ -46,6 +59,7 @@ export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSideba
       videosForSidebar.map((video) => ({
         id: video.id,
         treePath: video.treePath,
+        leafLabel: shouldUseWorkTitleLabel(video.fileName, video.workTitle) ? video.workTitle : undefined,
       })),
       'video',
     )

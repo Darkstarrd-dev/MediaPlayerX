@@ -266,8 +266,8 @@ export function useResolvedMediaUrls({
 
     if (targets.length === 0) {
       if (stateScope === 'active-only') {
-        setUrlByTargetId({})
-        setErrorByTargetId({})
+        setUrlByTargetId((previous) => (Object.keys(previous).length === 0 ? previous : {}))
+        setErrorByTargetId((previous) => (Object.keys(previous).length === 0 ? previous : {}))
       }
       return
     }

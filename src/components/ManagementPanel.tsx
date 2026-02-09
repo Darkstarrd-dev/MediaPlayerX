@@ -21,7 +21,6 @@ interface ManagementPanelProps {
   onHide: () => void
   onUnhide: () => void
   onClearSelection: () => void
-  onCollapse: () => void
   onExpand: () => void
   onStartResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   layoutLocked: boolean
@@ -46,7 +45,6 @@ function ManagementPanel({
   onHide,
   onUnhide,
   onClearSelection,
-  onCollapse,
   onExpand,
   onStartResize,
   layoutLocked,
@@ -62,7 +60,7 @@ function ManagementPanel({
           <span className="search-panel-expand-tip">展开管理容器</span>
         </button>
       ) : (
-        <div className="vector-panel manage-panel" ref={panelRef} style={{ height: `${panelHeight}px` }}>
+        <div className="vector-panel manage-panel" ref={panelRef} style={{ maxHeight: `${panelHeight}px` }}>
           <div className="vector-panel-content" ref={panelContentRef}>
             <p className="manage-panel-summary">
               {activeSelectionScope === 'sidebar'
@@ -84,9 +82,6 @@ function ManagementPanel({
               </button>
               <button className="feature-action-btn" type="button" disabled={pending} onClick={onClearSelection}>
                 清空选择
-              </button>
-              <button className="vector-collapse-btn" type="button" onClick={onCollapse}>
-                折叠
               </button>
             </div>
 

@@ -134,6 +134,46 @@ export function mapSidebarNodeDto(node: SidebarNodeDto): SidebarNode {
   }
 }
 
+function normalizeNodeLabelCompare(value: string): string {
+  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
+}
+
+function resolvePreferredWorkTitleLabel(packageName: string, workTitle: string, fallbackLabel: string): string {
+  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle)
+  if (normalizedWorkTitle.length === 0) {
+    return fallbackLabel
+  }
+  if (normalizeNodeLabelCompare(packageName) === normalizedWorkTitle) {
+    return fallbackLabel
+  }
+  return workTitle
+}
+
+function mapSidebarNodeDtoWithSourceLabel(node: SidebarNodeDto, sourceById: Map<string, ImagePackage>): SidebarNode {
+  const mappedChildren = (node.children as SidebarNodeDto[]).map((child) => mapSidebarNodeDtoWithSourceLabel(child, sourceById))
+  let label = node.label
+
+  const sourceId = node.package_id ?? node.image_source_id
+  if (sourceId) {
+    const source = sourceById.get(sourceId)
+    if (source) {
+      label = resolvePreferredWorkTitleLabel(source.packageName, source.workTitle, label)
+    }
+  }
+
+  return {
+    id: node.id,
+    label,
+    kind: node.kind,
+    children: mappedChildren,
+    packageId: node.package_id,
+    videoId: node.video_id,
+    imageSourceId: node.image_source_id,
+    directImageCount: node.direct_image_count,
+    pathKey: node.path_key,
+  }
+}
+
 export function mapFocusedImageRefDto(ref: FocusedImageRefDto): FocusedImageRef {
   return {
     packageId: ref.package_id,
@@ -150,10 +190,17 @@ export function mapLibrarySnapshotDto(snapshot: LibrarySnapshotDto): LibrarySnap
 }
 
 export function mapImageSidebarTreeDto(response: ReadImageSidebarTreeResponseDto): ImageSidebarTreeViewModel {
+  const imagePackages = response.image_packages.map(mapImagePackageDto)
+  const imageDirectories = response.image_directories.map(mapImagePackageDto)
+  const sourceById = new Map<string, ImagePackage>([
+    ...imagePackages.map((source) => [source.id, source] as const),
+    ...imageDirectories.map((source) => [source.id, source] as const),
+  ])
+
   return {
-    imagePackages: response.image_packages.map(mapImagePackageDto),
-    imageDirectories: response.image_directories.map(mapImagePackageDto),
-    tree: response.tree.map(mapSidebarNodeDto),
+    imagePackages,
+    imageDirectories,
+    tree: response.tree.map((node) => mapSidebarNodeDtoWithSourceLabel(node, sourceById)),
   }
 }
 

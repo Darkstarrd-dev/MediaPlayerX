@@ -388,7 +388,7 @@ function ImageMainSection({
       ) : (
         <> 
           <div
-            className="image-grid"
+            className={`image-grid ${manageMode ? 'is-manage' : ''}`}
             ref={gridRef}
             onMouseDown={manageMode ? startThumbnailDragToggle : undefined}
             style={{

@@ -20,6 +20,24 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
   })
 
+  it('应用启动阶段不会触发 Maximum update depth exceeded', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    render(<App />)
+
+    for (let i = 0; i < 3; i += 1) {
+      fireEvent(window, new Event('resize'))
+    }
+
+    await waitFor(() => {
+      const hasMaxDepthError = consoleErrorSpy.mock.calls.some((call) => {
+        const message = call.map((item) => String(item)).join(' ')
+        return message.includes('Maximum update depth exceeded')
+      })
+      expect(hasMaxDepthError).toBe(false)
+    })
+  })
+
   it('管理模式可展开管理容器并与检索容器互斥', () => {
     render(<App />)
 
@@ -29,6 +47,20 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '管理' }))
     expect(screen.getByRole('button', { name: '删除' })).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'search-mode-switch' })).not.toBeInTheDocument()
+  })
+
+  it('Sidebar 包节点在包名与作品名不一致时显示作品名', () => {
+    render(<App />)
+
+    expect(screen.getAllByRole('button', { name: '海岸线合集' }).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: 'coastline_album.zip' })).toBeNull()
+  })
+
+  it('Sidebar 目录源节点在图包名与作品名不一致时显示作品名', () => {
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: '目录直读：仅图片目录' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '仅图片目录' })).toBeNull()
   })
 
   it('管理模式删除确认弹窗需勾选不可逆确认后才能提交', async () => {
@@ -100,6 +132,35 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect((checker as HTMLInputElement).checked).toBe(false)
   })
 
+  it('管理模式在紧凑窗口下保持稳定：无最大更新深度报错、无折叠按钮、缩略图容器不可滚动', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelector('.image-grid.is-manage')).not.toBeNull()
+    })
+
+    expect(screen.queryByRole('button', { name: '折叠' })).toBeNull()
+
+    const grid = document.querySelector('.image-grid.is-manage') as HTMLElement | null
+    expect(grid).not.toBeNull()
+    expect(grid?.classList.contains('is-manage')).toBe(true)
+
+    for (let i = 0; i < 5; i += 1) {
+      fireEvent(window, new Event('resize'))
+    }
+
+    await waitFor(() => {
+      const hasMaxDepthError = consoleErrorSpy.mock.calls.some((call) => {
+        const message = call.map((item) => String(item)).join(' ')
+        return message.includes('Maximum update depth exceeded')
+      })
+      expect(hasMaxDepthError).toBe(false)
+    })
+  })
+
   it('隐藏项在非管理模式不可见', async () => {
     render(<App />)
 
@@ -144,6 +205,23 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     await waitFor(() => {
       expect(screen.queryAllByText('幻旅系列 001 #1').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('main-footer 始终显示，focus 清空后显示当前 Sidebar 路径', async () => {
+    render(<App />)
+
+    const footer = document.querySelector('.main-footer') as HTMLElement | null
+    expect(footer).not.toBeNull()
+    expect((footer?.textContent ?? '').trim().length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: '目录直读：画廊A' }))
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+
+    await waitFor(() => {
+      const footerSpans = document.querySelectorAll('.main-footer span')
+      expect(footerSpans.length).toBeGreaterThanOrEqual(1)
+      expect(footerSpans[0]?.textContent ?? '').toContain('X盘/收藏/画廊A')
     })
   })
 

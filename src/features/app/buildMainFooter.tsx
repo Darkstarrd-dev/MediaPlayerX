@@ -7,30 +7,40 @@ interface BuildMainFooterParams {
   focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
   focusedVideo: VideoItem | null
+  sidebarFocusedPath: string | null
 }
 
-export function buildMainFooter({ mode, focusedImage, focusedImagePackage, focusedVideo }: BuildMainFooterParams): ReactNode {
+export function buildMainFooter({
+  mode,
+  focusedImage,
+  focusedImagePackage,
+  focusedVideo,
+  sidebarFocusedPath,
+}: BuildMainFooterParams): ReactNode {
+  let primary = sidebarFocusedPath ?? '-'
+  let secondary = '-'
+  let tertiary = '-'
+
+  if (mode === 'image' && focusedImage && focusedImagePackage) {
+    primary =
+      focusedImage.mediaLocator.kind === 'filesystem'
+        ? focusedImage.mediaLocator.absolutePath
+        : `${focusedImage.mediaLocator.archivePath} #${focusedImage.ordinal}`
+    secondary = `${focusedImage.sizeKb}KB`
+    tertiary = focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width}x${focusedImage.height}` : '-'
+  }
+
+  if (mode === 'video' && focusedVideo) {
+    primary = focusedVideo.absolutePath
+    secondary = `${focusedVideo.sizeMb}MB`
+    tertiary = `${focusedVideo.width}x${focusedVideo.height}`
+  }
+
   return (
     <>
-      {mode === 'image' && focusedImage && focusedImagePackage ? (
-        <>
-          <span>
-            {focusedImage.mediaLocator.kind === 'filesystem'
-              ? focusedImage.mediaLocator.absolutePath
-              : `${focusedImage.mediaLocator.archivePath} #${focusedImage.ordinal}`}
-          </span>
-          <span>{`${focusedImage.sizeKb}KB`}</span>
-          <span>{focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width}x${focusedImage.height}` : '-'}</span>
-        </>
-      ) : null}
-
-      {mode === 'video' && focusedVideo ? (
-        <>
-          <span>{focusedVideo.absolutePath}</span>
-          <span>{`${focusedVideo.sizeMb}MB`}</span>
-          <span>{`${focusedVideo.width}x${focusedVideo.height}`}</span>
-        </>
-      ) : null}
+      <span>{primary}</span>
+      <span>{secondary}</span>
+      <span>{tertiary}</span>
     </>
   )
 }

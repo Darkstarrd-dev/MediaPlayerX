@@ -6,6 +6,18 @@ interface VectorSidebarState {
   packageNodeIdMap: Map<string, string>
 }
 
+function normalizeNodeLabelCompare(value: string): string {
+  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
+}
+
+function shouldUseWorkTitleLabel(packageName: string, workTitle: string): boolean {
+  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle)
+  if (normalizedWorkTitle.length === 0) {
+    return false
+  }
+  return normalizeNodeLabelCompare(packageName) !== normalizedWorkTitle
+}
+
 export function buildVectorSidebarState(
   vectorSearchResults: VectorCandidate[],
   packageById: Map<string, ImagePackage>,
@@ -15,18 +27,19 @@ export function buildVectorSidebarState(
     resultCountByPackage.set(candidate.packageId, (resultCountByPackage.get(candidate.packageId) ?? 0) + 1)
   }
 
-  const leaves = Array.from(resultCountByPackage.keys())
-    .map((packageId) => {
-      const pkg = packageById.get(packageId)
-      if (!pkg) {
-        return null
-      }
-      return {
-        id: packageId,
-        treePath: pkg.treePath,
-      }
+  const leaves: Array<{ id: string; treePath: string[]; leafLabel?: string }> = []
+  for (const packageId of resultCountByPackage.keys()) {
+    const pkg = packageById.get(packageId)
+    if (!pkg) {
+      continue
+    }
+
+    leaves.push({
+      id: packageId,
+      treePath: pkg.treePath,
+      leafLabel: shouldUseWorkTitleLabel(pkg.packageName, pkg.workTitle) ? pkg.workTitle : undefined,
     })
-    .filter((leaf): leaf is { id: string; treePath: string[] } => Boolean(leaf))
+  }
 
   const rawTree = buildSidebarTree(leaves, 'package')
   const packageNodeIdMap = new Map<string, string>()

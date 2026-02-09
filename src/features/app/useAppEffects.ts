@@ -140,7 +140,11 @@ export function useAppEffects({
       if (!target) {
         return
       }
-      setAppBodyWidth(target.contentRect.width)
+      const nextWidth = Math.round(target.contentRect.width)
+      if (nextWidth <= 0) {
+        return
+      }
+      setAppBodyWidth((previous) => (Math.abs(previous - nextWidth) < 1 ? previous : nextWidth))
     })
 
     observer.observe(appBodyRef.current)
@@ -162,7 +166,14 @@ export function useAppEffects({
         return
       }
 
-      setGridSize({ width, height })
+      const nextWidth = Math.round(width)
+      const nextHeight = Math.round(height)
+      setGridSize((previous) => {
+        if (Math.abs(previous.width - nextWidth) < 1 && Math.abs(previous.height - nextHeight) < 1) {
+          return previous
+        }
+        return { width: nextWidth, height: nextHeight }
+      })
     }
 
     const initialRect = target.getBoundingClientRect()

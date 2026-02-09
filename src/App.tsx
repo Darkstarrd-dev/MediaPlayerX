@@ -1780,6 +1780,7 @@ function App() {
     focusedImage,
     focusedImagePackage,
     focusedVideo: focusedVideoEffective,
+    sidebarFocusedPath: selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null) : null,
   })
 
   const runtimeCapabilityWarnings = (runtimeCapabilities.data?.minimum_matrix ?? []).filter(

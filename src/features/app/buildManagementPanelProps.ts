@@ -45,7 +45,6 @@ export function buildManagementPanelProps(params: BuildManagementPanelPropsParam
     onHide: params.onHide,
     onUnhide: params.onUnhide,
     onClearSelection: params.onClearSelection,
-    onCollapse: () => params.setSearchPanelCollapsed(true),
     onExpand: () => params.setSearchPanelCollapsed(false),
     onStartResize: params.onStartVectorPanelResize,
     layoutLocked: params.layoutLocked,
