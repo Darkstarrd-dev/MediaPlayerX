@@ -8,6 +8,7 @@
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
 - `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案。
+- `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（待开发）。
 - `ui/theme-system-v1.md`：主题系统 CSS 契约与开发规范 (SSOT)。
 - `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
@@ -83,6 +84,7 @@
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
+- 管理模式“LLM 广告图片审核”已完成方案设计与任务拆解，详见 `management-llm-ad-review-plan-v1.md`（当前未开发）。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。
 - 仓库初始化以本目录文档为起点。
 

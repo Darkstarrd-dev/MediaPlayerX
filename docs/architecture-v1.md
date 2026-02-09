@@ -28,6 +28,7 @@
   - Renderer 侧 `App` 退化为编排层，侧栏/检索/主区/全屏/设置/任务面板等 props 与状态导出到 `features/app/*` 与 `components/*`。
   - Main 侧 `FileSystemMediaReadService` 退化为服务编排层，媒体访问校验、资源读取、缩略图渲染、封面抓取、源过滤、导入执行与归档辅助已独立模块化。
   - 拆分后主文件维持在“可持续维护”区间：`src/App.tsx` ~1797 行，`electron/fileSystemReadService.ts` ~1740 行。
+- 管理模式广告图片审核 (LLM Ad Review) 已完成方案设计（待开发），将按 `Renderer -> Repository -> Main/Worker` 纵向切片接入。
 
 ### Electron Main 进程
 
@@ -57,6 +58,15 @@
 - 向量 Worker：批处理调度与 LM Studio Embedding 调用。
 - 压缩包维护 Worker：转换、重打包、重命名、重排序任务。
 - 视频 Worker：元数据提取与手动封面持久化。
+- 管理审核 Worker（待开发）：管理模式选区图片抽样、LLM 审核、疑似广告结果回传。
+
+## 待开发模块：管理模式 LLM 广告审核
+
+- 输入：管理模式当前勾选对象（Sidebar 节点或图片条目）映射出的图片集合。
+- 审核链路：Main/Worker 调用 LLM 接口执行广告检测，返回“疑似广告候选”而非直接删除。
+- 人工确认：Renderer 展示候选清单，用户确认后复用既有删除接口执行物理删除。
+- 缓存策略：新增“已确认删除图片哈希”记录，用于后续同图快速命中、跳过 LLM。
+- 详细计划与阶段拆解见 `docs/management-llm-ad-review-plan-v1.md`。
 
 ## 模块边界
 
