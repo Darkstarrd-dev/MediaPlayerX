@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-interface DangerConfirmDialogProps {
+export interface DangerConfirmDialogProps {
   open: boolean
   title: string
   description: string

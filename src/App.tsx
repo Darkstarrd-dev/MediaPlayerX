@@ -20,6 +20,8 @@ import {
   normalizePathForCompare,
 } from './features/app/mediaPathUtils'
 import { useMetadataWriteBindings } from './features/app/useMetadataWriteBindings'
+import { buildE2eBenchSectionProps } from './features/app/buildE2eBenchSectionProps'
+import { buildManageDeleteDialogProps } from './features/app/buildManageDeleteDialogProps'
 import { useAppSettingsStore } from './features/app/useAppSettingsStore'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useArchiveLoadStatus } from './features/app/useArchiveLoadStatus'
@@ -953,6 +955,29 @@ function App() {
     toggleSidebarNodeChecked,
   })
 
+  const manageDeleteDialogProps = buildManageDeleteDialogProps({
+    open: deleteConfirmOpen,
+    pending: backendWrite.pending.manage,
+    confirmManageDelete,
+    setDeleteConfirmOpen,
+  })
+
+  const e2eBenchSectionProps = buildE2eBenchSectionProps({
+    enabled: benchSettings.enabled,
+    benchMode: benchSettings.mode,
+    repository: mediaRepository,
+    mode,
+    orderedPackages: orderedRootScopedPackages,
+    selectedPackageId,
+    setSelectedPackageId,
+    pageIndex: backendPageSnapshot?.pageIndex ?? null,
+    totalPages: imageTotalPagesEffective,
+    pageLoading: backendRead.page.loading,
+    refsInPageCount: refsInPageEffective.length,
+    goNextPage,
+    goPrevPage,
+  })
+
   return (
     <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
       <AppHeader {...appHeaderProps} />
@@ -1003,37 +1028,11 @@ function App() {
 
       <SettingsPanel {...settingsPanelProps} />
 
-      <DangerConfirmDialog
-        open={deleteConfirmOpen}
-        title="永久删除确认"
-        description="该操作将永久删除当前选中的文件/目录/压缩包条目，并同步移除数据库记录与缩略图缓存，且会删除源文件本身。"
-        acknowledgeLabel="我了解此操作将永久不可逆地删除选中数据"
-        confirmLabel="确定删除"
-        cancelLabel="取消"
-        pending={backendWrite.pending.manage}
-        onConfirm={() => {
-          void confirmManageDelete()
-        }}
-        onCancel={() => setDeleteConfirmOpen(false)}
-      />
+      <DangerConfirmDialog {...manageDeleteDialogProps} />
 
       <DragImportOverlay active={dragOverlayActive} />
 
-      <E2eBenchSection
-        enabled={benchSettings.enabled}
-        benchMode={benchSettings.mode}
-        repository={mediaRepository}
-        mode={mode}
-        orderedPackages={orderedRootScopedPackages}
-        selectedPackageId={selectedPackageId}
-        setSelectedPackageId={setSelectedPackageId}
-        pageIndex={backendPageSnapshot?.pageIndex ?? null}
-        totalPages={imageTotalPagesEffective}
-        pageLoading={backendRead.page.loading}
-        refsInPageCount={refsInPageEffective.length}
-        goNextPage={goNextPage}
-        goPrevPage={goPrevPage}
-      />
+      <E2eBenchSection {...e2eBenchSectionProps} />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import E2eBenchController, { type E2eBenchControllerProps } from '../bench/E2eBenchController'
 
-interface E2eBenchSectionProps extends E2eBenchControllerProps {
+export interface E2eBenchSectionProps extends E2eBenchControllerProps {
   enabled: boolean
   benchMode: string | null
 }
