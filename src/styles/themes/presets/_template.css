@@ -19,6 +19,13 @@
   --mpx-range-thumb-size: 14px;
   --mpx-range-thumb-bg: #...;
   --mpx-range-thumb-border: #...;
+  --mpx-checkbox-size: 16px;
+  --mpx-checkbox-radius: 4px;
+  --mpx-checkbox-bg: #...;
+  --mpx-checkbox-border: #...;
+  --mpx-checkbox-check: #...;
+  --mpx-checkbox-checked-bg: #...;
+  --mpx-checkbox-checked-border: #...;
 
   /* Surfaces */
   --mpx-bg-app: #...;
@@ -83,4 +90,7 @@
 
   /* Optional: Override component aliases if needed */
   /* --mpx-header-bg: ...; */
+  /* --mpx-video-screen-bg: ...; */
+  /* --mpx-video-empty-bg: ...; */
+  /* --mpx-video-empty-text: ...; */
 }

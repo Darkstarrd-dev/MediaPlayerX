@@ -42,6 +42,7 @@
 - 图标规格：`--mpx-icon-button-size`、`--mpx-icon-size`
 - 滚动条：`--mpx-scrollbar-size`、`--mpx-scrollbar-radius`、`--mpx-scrollbar-track-bg`、`--mpx-scrollbar-thumb-bg`、`--mpx-scrollbar-thumb-hover-bg`
 - 滑块：`--mpx-range-track-height`、`--mpx-range-track-bg`、`--mpx-range-thumb-size`、`--mpx-range-thumb-bg`、`--mpx-range-thumb-border`
+- 复选框：`--mpx-checkbox-size`、`--mpx-checkbox-radius`、`--mpx-checkbox-bg`、`--mpx-checkbox-border`、`--mpx-checkbox-check`、`--mpx-checkbox-checked-bg`、`--mpx-checkbox-checked-border`
 
 ### C. Semantic Colors（语义颜色）
 - Surfaces：`--mpx-bg-app`、`--mpx-bg-workspace`、`--mpx-bg-panel`、`--mpx-bg-elevated`、`--mpx-bg-hover`、`--mpx-bg-selected`、`--mpx-bg-muted`、`--mpx-bg-tooltip`
@@ -57,7 +58,7 @@
 - `--mpx-splitter-track-bg` / `--mpx-splitter-handle-bg` / `--mpx-splitter-handle-hover-bg`
 - `--mpx-card-focus-ring`
 - `--mpx-fullscreen-bg` / `--mpx-fullscreen-footer-bg`
-- `--mpx-video-screen-bg`
+- `--mpx-video-screen-bg` / `--mpx-video-empty-bg` / `--mpx-video-empty-text`
 
 ## 5. 组件映射表（重点）
 - 头部按钮（检索/设置/缩放按钮）-> `--mpx-control-*` + `--mpx-btn-secondary-*`
@@ -67,6 +68,8 @@
 - 通用滚动容器 -> `--mpx-scrollbar-*`
 - range 控件（阈值/播放进度/音量）-> `--mpx-range-*`
 - select/option -> `--mpx-input-bg`、`--mpx-input-text`
+- checkbox（布局锁定/播放列表勾选）-> `--mpx-checkbox-*`
+- 视频无源占位（无可用视频源）-> `--mpx-video-empty-bg`、`--mpx-video-empty-text`
 
 ## 6. 新主题最小 token 集（建议首版必须覆盖）
 - `--mpx-bg-app`、`--mpx-bg-panel`、`--mpx-bg-elevated`
@@ -79,6 +82,8 @@
 - `--mpx-icon-button-size`、`--mpx-icon-size`
 - `--mpx-scrollbar-track-bg`、`--mpx-scrollbar-thumb-bg`、`--mpx-scrollbar-thumb-hover-bg`
 - `--mpx-range-track-bg`、`--mpx-range-thumb-bg`
+- `--mpx-checkbox-bg`、`--mpx-checkbox-border`、`--mpx-checkbox-check`、`--mpx-checkbox-checked-bg`
+- `--mpx-video-empty-bg`、`--mpx-video-empty-text`
 
 ## 7. 视觉 QA 清单
 - [ ] 所有 banner（error/warning/task）文字与背景达到 WCAG AA。
@@ -88,10 +93,13 @@
 - [ ] select 与 option 的前景/背景对比稳定（浅色与深色主题均成立）。
 - [ ] 滚动条（track/thumb/hover）与主题风格一致，不遮挡内容。
 - [ ] range 滑块轨道与圆点在深浅背景都可定位。
+- [ ] checkbox 未选中/选中/聚焦态与主题一致。
+- [ ] 视频无源占位（无可用视频源）背景与文本可读。
 - [ ] 缩略图与检索容器无明显滚动条闪烁，滚轮/触控板仍可滚动。
 - [ ] 图标按钮尺寸、字重、密度与整体风格一致。
 
 ## 8. 当前预设主题
+- `atelier-signal`：控件样式验证主题（用于验证尺寸/圆角/滑块/checkbox 覆盖）
 - `swiss-cobalt`：专业浅色
 - `neon-rift`：霓虹深色
 - `aurora-sand`：暖色编辑风

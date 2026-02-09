@@ -33,6 +33,14 @@
   --mpx-range-thumb-bg: #2e6f7f;
   --mpx-range-thumb-border: #ffffff;
 
+  --mpx-checkbox-size: 16px;
+  --mpx-checkbox-radius: 4px;
+  --mpx-checkbox-bg: var(--mpx-input-bg);
+  --mpx-checkbox-border: var(--mpx-input-border);
+  --mpx-checkbox-check: var(--mpx-accent-contrast);
+  --mpx-checkbox-checked-bg: var(--mpx-accent);
+  --mpx-checkbox-checked-border: var(--mpx-accent);
+
   /* Default Semantic (Parchment-like base) */
   --mpx-bg-app: #f2eee7;
   --mpx-bg-workspace: #f3f0ea;
@@ -111,4 +119,6 @@
   --mpx-fullscreen-bg: #060708;
   --mpx-fullscreen-footer-bg: rgba(10, 12, 14, 0.86);
   --mpx-video-screen-bg: linear-gradient(135deg, #2d2f33, #212022);
+  --mpx-video-empty-bg: var(--mpx-video-screen-bg);
+  --mpx-video-empty-text: var(--mpx-text-inverse);
 }

@@ -404,7 +404,16 @@ export function useAppEffects({
     }
 
     const rafId = window.requestAnimationFrame(() => {
-      const measured = clamp(Math.ceil(content.scrollHeight + 20), 120, 320)
+      const panel = content.parentElement
+      const styles = panel ? window.getComputedStyle(panel) : null
+      const readPx = (value: string | undefined) => {
+        const parsed = Number.parseFloat(value ?? '')
+        return Number.isFinite(parsed) ? parsed : 0
+      }
+      const chromeHeight = styles
+        ? readPx(styles.paddingTop) + readPx(styles.paddingBottom) + readPx(styles.borderTopWidth) + readPx(styles.borderBottomWidth)
+        : 20
+      const measured = clamp(Math.ceil(content.scrollHeight + chromeHeight + 2), 120, 360)
       if (Math.abs(measured - vectorPanelHeight) < 1) {
         return
       }

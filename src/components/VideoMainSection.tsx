@@ -51,6 +51,11 @@ function VideoMainSection({
 }: VideoMainSectionProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const clampedTime = Math.min(videoTime, Math.max(0, durationSec))
+  const videoScreenBackground = !videoSourceUrl
+    ? 'var(--mpx-video-empty-bg)'
+    : videoPlaying
+      ? 'var(--mpx-video-screen-bg)'
+      : coverColor
 
   useEffect(() => {
     const video = videoRef.current
@@ -80,7 +85,7 @@ function VideoMainSection({
 
   return (
     <div className="video-preview">
-      <div className="video-screen" style={{ background: videoPlaying ? 'linear-gradient(135deg, #2d2f33, #212022)' : coverColor }}>
+      <div className="video-screen" style={{ background: videoScreenBackground }}>
         {videoSourceUrl ? (
           <video
             ref={videoRef}
