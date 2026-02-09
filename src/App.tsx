@@ -22,7 +22,6 @@ import {
   IMAGE_PACKAGES,
   VIDEO_ITEMS,
   buildImageSidebarTree,
-  buildVectorCandidates,
   findNodeById,
 } from './mockData'
 import {
@@ -44,7 +43,6 @@ import { buildSettingsPanelProps } from './features/app/buildSettingsPanelProps'
 import { buildVectorSidebarState } from './features/app/buildVectorSidebarState'
 import { buildVideoMainSectionProps } from './features/app/buildVideoMainSectionProps'
 import {
-  buildCoverImageLocator,
   normalizePathForCompare,
 } from './features/app/mediaPathUtils'
 import { useMetadataWriteBindings } from './features/app/useMetadataWriteBindings'
@@ -55,9 +53,12 @@ import { useAppSettingsStore } from './features/app/useAppSettingsStore'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useArchiveLoadStatus } from './features/app/useArchiveLoadStatus'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
+import { useEffectiveDisplayState } from './features/app/useEffectiveDisplayState'
+import { useManageModeActions } from './features/app/useManageModeActions'
 import { useDatabaseResetAction } from './features/app/useDatabaseResetAction'
 import { useResponsiveZoomEffect } from './features/app/useResponsiveZoomEffect'
 import { useResolvedMediaState } from './features/app/useResolvedMediaState'
+import { useSearchAndVectorActions } from './features/app/useSearchAndVectorActions'
 import { useRuntimeWarningDismiss } from './features/app/useRuntimeWarningDismiss'
 import { useSettingsPersistence } from './features/app/useSettingsPersistence'
 import { useVideoSidebarState } from './features/app/useVideoSidebarState'
@@ -757,155 +758,74 @@ function App() {
     setVideoCoverImageById,
   })
 
-  const toggleManageMode = useCallback(() => {
-    const nextOpen = !manageMode
-    setManageMode(nextOpen)
-    setDeleteConfirmOpen(false)
-    setManageOperationHint(null)
-    clearAllSelections()
-
-    if (nextOpen) {
-      setVectorSearchResults([])
-      setVectorFocusIndex(0)
-      setVectorPage(0)
-      setSearchPanelMode('vector')
-      setSearchPanelCollapsed(false)
-      updateSettings({ vectorMode: false, sidebarFocus: 'main' })
-    }
-  }, [
-    clearAllSelections,
+  const {
+    toggleManageMode,
+    runManageHideAction,
+    requestManageDelete,
+    confirmManageDelete,
+  } = useManageModeActions({
+    mode,
     manageMode,
-    setSearchPanelCollapsed,
+    imageCheckedIds,
+    sidebarCheckedNodeIds,
+    backendWrite,
+    clearAllSelections,
+    setManageMode,
+    setDeleteConfirmOpen,
+    setManageOperationHint,
+    setVectorSearchResults,
+    setVectorFocusIndex,
+    setVectorPage,
     setSearchPanelMode,
+    setSearchPanelCollapsed,
     updateSettings,
-  ])
-
-  const runManageHideAction = useCallback(
-    async (hidden: boolean) => {
-      if (mode !== 'image') {
-        setManageOperationHint('当前模式不支持隐藏/取消隐藏')
-        return
-      }
-      if (imageCheckedIds.length === 0) {
-        setManageOperationHint('请先在缩略图/文件名区域选择图片')
-        return
-      }
-
-      try {
-        const response = await backendWrite.setImageHidden(imageCheckedIds, hidden)
-        setManageOperationHint(
-          `${hidden ? '隐藏' : '取消隐藏'}完成：${response.updated_count} 项`,
-        )
-      } catch (error) {
-        setManageOperationHint(error instanceof Error ? error.message : String(error))
-      }
-    },
-    [backendWrite, imageCheckedIds, mode],
-  )
-
-  const requestManageDelete = useCallback(() => {
-    if (sidebarCheckedNodeIds.length === 0 && imageCheckedIds.length === 0) {
-      setManageOperationHint('请先选择需要删除的节点或图片')
-      return
-    }
-
-    setDeleteConfirmOpen(true)
-  }, [imageCheckedIds.length, sidebarCheckedNodeIds.length])
-
-  const confirmManageDelete = useCallback(async () => {
-    setDeleteConfirmOpen(false)
-    setManageOperationHint(null)
-
-    try {
-      if (sidebarCheckedNodeIds.length > 0) {
-        const response = await backendWrite.deleteSidebarNodes(sidebarCheckedNodeIds)
-        const failedCount = response.failed.length
-        setManageOperationHint(
-          failedCount > 0
-            ? `已删除 ${response.deleted_count} 项，失败 ${failedCount} 项`
-            : `已删除 ${response.deleted_count} 项`,
-        )
-      } else if (imageCheckedIds.length > 0) {
-        const response = await backendWrite.deleteImageItems(imageCheckedIds)
-        const failedCount = response.failed.length
-        setManageOperationHint(
-          failedCount > 0
-            ? `已删除 ${response.deleted_count} 张，失败 ${failedCount} 项`
-            : `已删除 ${response.deleted_count} 张`,
-        )
-      }
-      clearAllSelections()
-    } catch (error) {
-      setManageOperationHint(error instanceof Error ? error.message : String(error))
-    }
-  }, [backendWrite, clearAllSelections, imageCheckedIds, sidebarCheckedNodeIds])
+  })
 
   const runtimeCapabilities = useRuntimeCapabilities({
     repository: mediaRepository,
   })
 
-  const backendPageSnapshot = backendRead.page.data ?? backendRead.page.snapshot
-  const backendMetadataSnapshot = backendRead.metadata.data ?? backendRead.metadata.snapshot
-  const metadataSnapshotMatchesFocus = Boolean(
-    imageFocusActive &&
-      focusedRef &&
-      backendMetadataSnapshot &&
-      backendMetadataSnapshot.package.id === focusedRef.packageId &&
-      backendMetadataSnapshot.image.id === focusedImage?.id,
-  )
-  const activePackageForDisplay =
-    !vectorResultsActive && backendPageSnapshot?.sourceId
-      ? (packageByIdEffective.get(backendPageSnapshot.sourceId) ?? activePackage)
-      : activePackage
-  const refsInPageEffective = !vectorResultsActive && backendPageSnapshot ? backendPageSnapshot.refs : refsInPage
-  const pageStartEffective =
-    !vectorResultsActive && backendPageSnapshot
-      ? backendPageSnapshot.pageIndex * Math.max(1, pagedPageSize)
-      : pageStart
-  const normalizedPageIndexEffective =
-    !vectorResultsActive && backendPageSnapshot ? backendPageSnapshot.pageIndex : normalizedPageIndex
-  const imageTotalPagesEffective =
-    !vectorResultsActive && backendPageSnapshot
-      ? (showNamesOnly
-          ? 1
-          : Math.max(1, Math.ceil(backendPageSnapshot.totalItems / Math.max(1, pagedPageSize))))
-      : imageTotalPages
-  const metadataImageEffective =
-    imageFocusActive && metadataSnapshotMatchesFocus ? backendMetadataSnapshot?.image ?? focusedImage : focusedImage
-  const metadataImagePackageEffective =
-    imageFocusActive && metadataSnapshotMatchesFocus
-      ? (backendMetadataSnapshot?.package ?? metadataImagePackage)
-      : metadataImagePackage
-  const currentGradeEffective =
-    imageFocusActive && metadataSnapshotMatchesFocus
-      ? (backendMetadataSnapshot?.grade ?? currentGrade)
-      : currentGrade
-  const focusedVideo = videoByIdEffective.get(selectedVideoId) ?? videosForSidebar[0] ?? null
-  const focusedVideoDurationSec = focusedVideo
-    ? Math.max(0, videoDurationById[focusedVideo.id] ?? focusedVideo.durationSec)
-    : 0
-  const focusedVideoCoverColor = focusedVideo
-    ? (videoCoverById[focusedVideo.id] ?? focusedVideo.coverColor ?? '#3f4b58')
-    : '#3f4b58'
-  const focusedVideoCoverImagePath = focusedVideo
-    ? (videoCoverImageById[focusedVideo.id] ?? focusedVideo.coverImagePath ?? null)
-    : null
-  const focusedVideoCoverImageLocator = useMemo(
-    () => buildCoverImageLocator(focusedVideoCoverImagePath),
-    [focusedVideoCoverImagePath],
-  )
-  const focusedVideoEffective = useMemo(
-    () =>
-      focusedVideo
-        ? {
-            ...focusedVideo,
-            durationSec: focusedVideoDurationSec,
-            coverColor: focusedVideoCoverColor,
-            coverImagePath: focusedVideoCoverImagePath,
-          }
-        : null,
-    [focusedVideo, focusedVideoCoverColor, focusedVideoCoverImagePath, focusedVideoDurationSec],
-  )
+  const {
+    backendPageSnapshot,
+    activePackageForDisplay,
+    refsInPageEffective,
+    pageStartEffective,
+    normalizedPageIndexEffective,
+    imageTotalPagesEffective,
+    metadataImageEffective,
+    metadataImagePackageEffective,
+    currentGradeEffective,
+    focusedVideo,
+    focusedVideoDurationSec,
+    focusedVideoCoverColor,
+    focusedVideoCoverImageLocator,
+    focusedVideoEffective,
+  } = useEffectiveDisplayState({
+    backendPageData: backendRead.page.data,
+    backendPageSnapshot: backendRead.page.snapshot,
+    backendMetadataData: backendRead.metadata.data,
+    backendMetadataSnapshot: backendRead.metadata.snapshot,
+    vectorResultsActive,
+    imageFocusActive,
+    focusedRef,
+    focusedImage,
+    activePackage,
+    refsInPage,
+    pageStart,
+    normalizedPageIndex,
+    imageTotalPages,
+    pagedPageSize,
+    showNamesOnly,
+    packageById: packageByIdEffective,
+    metadataImagePackage,
+    currentGrade,
+    selectedVideoId,
+    videoById: videoByIdEffective,
+    videosForSidebar,
+    videoDurationById,
+    videoCoverById,
+    videoCoverImageById,
+  })
 
   const metadataWriteBindings = useMetadataWriteBindings({
     backendWrite,
@@ -958,113 +878,33 @@ function App() {
     }))
   }, [])
 
-  const runVectorSearch = useCallback(() => {
-    if (mode !== 'image' || !focusedRef) {
-      return
-    }
-
-    const rankedCandidates = buildVectorCandidates(focusedRef, allScopedRefs, packageByIdEffective)
-    const anchorCandidate = rankedCandidates[0]
-    if (!anchorCandidate) {
-      setVectorSearchResults([])
-      return
-    }
-
-    const filteredResults = [
-      anchorCandidate,
-      ...rankedCandidates.slice(1).filter((candidate) => candidate.score >= vectorThreshold),
-    ]
-
-    setVectorSearchResults(filteredResults)
-    setVectorFocusIndex(0)
-    setVectorPage(0)
-    setSearchPanelMode('vector')
-    setImageFocus(anchorCandidate.packageId, anchorCandidate.imageIndex)
-    updateSettings({ vectorMode: true, sidebarFocus: 'main' })
-  }, [allScopedRefs, focusedRef, mode, packageByIdEffective, setImageFocus, setSearchPanelMode, updateSettings, vectorThreshold])
-
-  const goToFromSearchMode = useCallback(() => {
-    if (mode !== 'image') {
-      return
-    }
-
-    if (vectorResultsActive) {
-      if (!focusedRef) {
-        return
-      }
-
-      const targetPackageId = focusedRef.packageId
-      const targetNodeId = normalImageSourceNodeIdMap.get(targetPackageId) ?? null
-
-      setSelectedPackageId(targetPackageId)
-      setImageFocus(targetPackageId, focusedRef.imageIndex)
-      setVectorSearchResults([])
-      setVectorFocusIndex(0)
-      setVectorPage(0)
-      setSearchPanelMode('vector')
-      updateSettings({ vectorMode: false, sidebarFocus: 'main' })
-
-      if (targetNodeId) {
-        setSelectedSidebarNodeId(targetNodeId)
-      }
-      return
-    }
-
-    if (featureSearchActive) {
-      const targetNodeId = selectedSidebarNodeId
-      setVectorSearchResults([])
-      setVectorFocusIndex(0)
-      setVectorPage(0)
-      setSearchPanelMode('vector')
-      updateSettings({ vectorMode: false, sidebarFocus: 'main' })
-      if (targetNodeId) {
-        setSelectedSidebarNodeId(targetNodeId)
-      }
-    }
-  }, [
-    featureSearchActive,
-    focusedRef,
+  const {
+    runVectorSearch,
+    goToFromSearchMode,
+    confirmVectorUniverseSelection,
+    vectorUniverseScopeRefs,
+  } = useSearchAndVectorActions({
     mode,
-    normalImageSourceNodeIdMap,
-    selectedSidebarNodeId,
-    setImageFocus,
-    setSearchPanelMode,
-    updateSettings,
+    focusedRef,
+    allScopedRefs,
+    packageById: packageByIdEffective,
+    vectorThreshold,
+    vectorSearchResults,
     vectorResultsActive,
-  ])
-
-  const vectorUniverseScopeRefs = useMemo<FocusedImageRef[]>(() => {
-    if (vectorResultsActive) {
-      const refs: FocusedImageRef[] = []
-      const seen = new Set<string>()
-
-      for (const candidate of vectorSearchResults) {
-        const key = `${candidate.packageId}:${candidate.imageIndex}`
-        if (seen.has(key)) {
-          continue
-        }
-        seen.add(key)
-        refs.push({
-          packageId: candidate.packageId,
-          imageIndex: candidate.imageIndex,
-        })
-      }
-
-      return refs
-    }
-
-    const refs: FocusedImageRef[] = []
-    for (const pkg of orderedRootScopedPackages) {
-      pkg.images.forEach((_, imageIndex) => {
-        refs.push({
-          packageId: pkg.id,
-          imageIndex,
-        })
-      })
-    }
-
-    return refs
-  }, [orderedRootScopedPackages, vectorResultsActive, vectorSearchResults])
+    featureSearchActive,
+    selectedSidebarNodeId,
+    normalImageSourceNodeIdMap,
+    orderedRootScopedPackages,
+    setSelectedPackageId,
+    setSelectedSidebarNodeId,
+    setVectorSearchResults,
+    setVectorFocusIndex,
+    setVectorPage,
+    setSearchPanelMode,
+    setVectorUniverseOpen,
+    setImageFocus,
+    updateSettings,
+  })
 
   const vectorUniverseSceneSettings = useMemo(
     () => ({
@@ -1081,30 +921,6 @@ function App() {
       vectorUniverseRaycastDistance,
       vectorUniverseSprintMultiplier,
     ],
-  )
-
-  const confirmVectorUniverseSelection = useCallback(
-    (ref: FocusedImageRef) => {
-      const targetNodeId = normalImageSourceNodeIdMap.get(ref.packageId) ?? null
-
-      setVectorUniverseOpen(false)
-      setVectorSearchResults([])
-      setVectorFocusIndex(0)
-      setVectorPage(0)
-      setSearchPanelMode('vector')
-
-      updateSettings({
-        mode: 'image',
-        vectorMode: false,
-        sidebarFocus: 'main',
-      })
-
-      setImageFocus(ref.packageId, ref.imageIndex)
-      if (targetNodeId) {
-        setSelectedSidebarNodeId(targetNodeId)
-      }
-    },
-    [normalImageSourceNodeIdMap, setImageFocus, setSearchPanelMode, updateSettings],
   )
 
   useEffect(() => {
