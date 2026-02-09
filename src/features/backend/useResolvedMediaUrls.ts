@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type {
-  ResolveMediaResourceRequestDto,
-  ResolveMediaResourceResponseDto,
-} from '../../contracts/backend'
-import type { MediaLocator } from '../../types'
-import { mapMediaLocatorToDto, mediaLocatorKey } from './mediaLocator'
+import {
+  buildRequestKey,
+  buildResolveRequest,
+  isAbortError,
+  isSyncResolveRepository,
+  runTasksWithConcurrency,
+  toErrorMessage,
+  type MediaResolveTarget,
+} from './mediaResolveUtils'
 import type { ReadonlyMediaRepository } from './repository'
 
 const MEDIA_RESOLVE_TIMEOUT_MS = 8_000
@@ -23,14 +26,6 @@ interface CachedResolveFailure {
   message: string
   failureCount: number
   nextRetryAtMs: number
-}
-
-export interface MediaResolveTarget {
-  targetId: string
-  locator: MediaLocator | null
-  variant?: 'original' | 'thumbnail'
-  thumbnailMaxEdge?: number
-  thumbnailQuality?: number
 }
 
 export interface UseResolvedMediaUrlsOptions {
@@ -59,57 +54,6 @@ interface UseResolvedMediaUrlsResult {
   errorByTargetId: Record<string, string>
 }
 
-interface SyncResolveRepository extends ReadonlyMediaRepository {
-  resolveMediaResourceSync(request: ResolveMediaResourceRequestDto): ResolveMediaResourceResponseDto
-}
-
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message
-  }
-  return '媒体 URL 解析失败'
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'AbortError'
-}
-
-function isSyncResolveRepository(repository: ReadonlyMediaRepository): repository is SyncResolveRepository {
-  return 'resolveMediaResourceSync' in repository && typeof repository.resolveMediaResourceSync === 'function'
-}
-
-function buildRequestKey(target: MediaResolveTarget): string | null {
-  if (!target.locator) {
-    return null
-  }
-
-  const base = mediaLocatorKey(target.locator)
-  if (target.variant !== 'thumbnail') {
-    return `${base}|variant:original`
-  }
-
-  const maxEdge = Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320)))
-  const quality = Math.max(50, Math.min(95, Math.round(target.thumbnailQuality ?? 82)))
-  return `${base}|variant:thumbnail|max:${maxEdge}|q:${quality}`
-}
-
-function buildResolveRequest(target: MediaResolveTarget): ResolveMediaResourceRequestDto {
-  if (target.variant === 'thumbnail') {
-    return {
-      locator: mapMediaLocatorToDto(target.locator as MediaLocator),
-      preferred_variant: 'thumbnail',
-      thumbnail: {
-        max_edge: Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320))),
-        quality: Math.max(50, Math.min(95, Math.round(target.thumbnailQuality ?? 82))),
-      },
-    }
-  }
-
-  return {
-    locator: mapMediaLocatorToDto(target.locator as MediaLocator),
-    preferred_variant: 'original',
-  }
-}
 
 export function useResolvedMediaUrls({
   repository,
@@ -402,35 +346,6 @@ export function useResolvedMediaUrls({
       })
     }
 
-    const runTasksWithConcurrency = async (tasks: Array<() => Promise<void>>) => {
-      if (tasks.length === 0) {
-        return
-      }
-
-      const limit = Number.isFinite(maxConcurrent) ? Math.max(1, Math.min(tasks.length, maxConcurrent)) : tasks.length
-      let cursor = 0
-      const inFlight = new Set<Promise<void>>()
-
-      const launchMore = () => {
-        while (!abortController.signal.aborted && inFlight.size < limit && cursor < tasks.length) {
-          const task = tasks[cursor]
-          cursor += 1
-          const promise = task()
-            .catch(() => undefined)
-            .finally(() => {
-              inFlight.delete(promise)
-            })
-          inFlight.add(promise)
-        }
-      }
-
-      launchMore()
-      while (!abortController.signal.aborted && inFlight.size > 0) {
-        await Promise.race(inFlight)
-        launchMore()
-      }
-    }
-
     const tasks: Array<() => Promise<void>> = []
     for (const [requestKey, targetIds] of targetIdsByRequestKey) {
       const cached = urlCacheByLocatorKeyRef.current.get(requestKey)
@@ -505,7 +420,7 @@ export function useResolvedMediaUrls({
       })
     }
 
-    void runTasksWithConcurrency(tasks)
+    void runTasksWithConcurrency(tasks, maxConcurrent, abortController.signal)
 
     return () => {
       active = false
