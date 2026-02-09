@@ -6,7 +6,7 @@ import type { VectorUniverseSceneSettings } from '../features/vector-universe/ty
 
 const VectorUniverseOverlay = lazy(() => import('./VectorUniverseOverlay'))
 
-interface VectorUniverseSectionProps {
+export interface VectorUniverseSectionProps {
   open: boolean
   focusedRef: FocusedImageRef | null
   imageSources: ImagePackage[]

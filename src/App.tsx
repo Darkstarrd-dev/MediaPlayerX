@@ -31,10 +31,10 @@ import { usePersistedAppSettings } from './features/app/usePersistedAppSettings'
 import { useRepositoryBootstrapData } from './features/app/useRepositoryBootstrapData'
 import { useResponsiveZoomEffect } from './features/app/useResponsiveZoomEffect'
 import { useResolvedMediaState } from './features/app/useResolvedMediaState'
-import { useSearchAndVectorActions } from './features/app/useSearchAndVectorActions'
 import { useAppSidebarScopeState } from './features/app/useAppSidebarScopeState'
 import { useAppWorkspaceProps } from './features/app/useAppWorkspaceProps'
 import { useFullscreenPlaybackBindings } from './features/app/useFullscreenPlaybackBindings'
+import { useVectorUniverseBindings } from './features/app/useVectorUniverseBindings'
 import { useImportPipeline } from './features/import/useImportPipeline'
 import { usePaneResizers } from './features/layout/usePaneResizers'
 import { computeThumbnailGridLayout } from './features/layout/thumbnailLayout'
@@ -587,9 +587,8 @@ function App() {
   const {
     runVectorSearch,
     goToFromSearchMode,
-    confirmVectorUniverseSelection,
-    vectorUniverseScopeRefs,
-  } = useSearchAndVectorActions({
+    vectorUniverseSectionProps,
+  } = useVectorUniverseBindings({
     mode,
     focusedRef,
     allScopedRefs,
@@ -607,27 +606,20 @@ function App() {
     setVectorFocusIndex,
     setVectorPage,
     setSearchPanelMode,
+    vectorUniverseOpen,
     setVectorUniverseOpen,
     setImageFocus,
     updateSettings,
+    scopedImageSourcesEffective,
+    vectorUniverseMoveSpeed,
+    vectorUniverseSprintMultiplier,
+    vectorUniverseLookSensitivity,
+    vectorUniverseRaycastDistance,
+    vectorUniverseDispersion,
+    vectorUniverseHelperScale,
+    vectorUniverseWidgetSize,
+    vectorControls,
   })
-
-  const vectorUniverseSceneSettings = useMemo(
-    () => ({
-      moveSpeed: vectorUniverseMoveSpeed,
-      sprintMultiplier: vectorUniverseSprintMultiplier,
-      lookSensitivity: vectorUniverseLookSensitivity,
-      raycastDistance: vectorUniverseRaycastDistance,
-      dispersion: vectorUniverseDispersion,
-    }),
-    [
-      vectorUniverseDispersion,
-      vectorUniverseLookSensitivity,
-      vectorUniverseMoveSpeed,
-      vectorUniverseRaycastDistance,
-      vectorUniverseSprintMultiplier,
-    ],
-  )
 
 
   useShortcutEngine({
@@ -1007,18 +999,7 @@ function App() {
 
       <FullscreenLayer {...fullscreenLayerProps} />
 
-      <VectorUniverseSection
-        open={vectorUniverseOpen}
-        focusedRef={focusedRef}
-        imageSources={scopedImageSourcesEffective}
-        scopeRefs={vectorUniverseScopeRefs}
-        helperScale={vectorUniverseHelperScale}
-        sceneSettings={vectorUniverseSceneSettings}
-        widgetSize={vectorUniverseWidgetSize}
-        vectorControls={vectorControls}
-        onClose={() => setVectorUniverseOpen(false)}
-        onConfirmSelection={confirmVectorUniverseSelection}
-      />
+      <VectorUniverseSection {...vectorUniverseSectionProps} />
 
       <SettingsPanel {...settingsPanelProps} />
 
