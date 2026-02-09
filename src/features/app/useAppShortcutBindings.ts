@@ -1,0 +1,115 @@
+import type { Dispatch, SetStateAction } from 'react'
+
+import type { ImageItem } from '../../types'
+import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
+import type { FullscreenAlignDirection } from './useFullscreenPlaybackBindings'
+import { useShortcutEngine } from '../shortcuts/useShortcutEngine'
+
+type ShortcutEngineParams = Parameters<typeof useShortcutEngine>[0]
+
+interface UseAppShortcutBindingsParams {
+  shortcuts: ShortcutEngineParams['shortcuts']
+  vectorUniverseOpen: boolean
+  mode: ShortcutEngineParams['mode']
+  vectorResultsActive: boolean
+  settingsOpen: boolean
+  sidebarFocus: ShortcutEngineParams['sidebarFocus']
+  fullscreenActive: boolean
+  fullscreenDisplay: ShortcutEngineParams['fullscreenDisplay']
+  imageFocusActive: boolean
+  videoShortcutActive: boolean
+  focusedImage: ImageItem | null
+  handleSidebarNavigationKey: ShortcutEngineParams['handleSidebarNavigationKey']
+  setImageFocusActive: Dispatch<SetStateAction<boolean>>
+  setFullscreenActiveWithAutoStop: ShortcutEngineParams['onSetFullscreenActive']
+  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
+  moveImage: ShortcutEngineParams['onMoveImage']
+  moveImageVertical: ShortcutEngineParams['onMoveImageVertical']
+  jumpImageBoundary: ShortcutEngineParams['onJumpImageBoundary']
+  goPackage: ShortcutEngineParams['onGoPackage']
+  requestFullscreenAlign: (direction: FullscreenAlignDirection) => void
+  autoPlayEnabled: boolean
+  applyAutoplayIntervalByIndex: ShortcutEngineParams['onApplyAutoplayIntervalByIndex']
+  applyPackageGrade: ShortcutEngineParams['onSetPackageGrade']
+  setVideoPlaying: Dispatch<SetStateAction<boolean>>
+  goPlaylist: ShortcutEngineParams['onGoPlaylist']
+  adjustVideoRate: ShortcutEngineParams['onAdjustVideoRate']
+  adjustVideoVolume: ShortcutEngineParams['onAdjustVideoVolume']
+  updateSettings: AppSettingsStoreSnapshot['updateSettings']
+}
+
+export function useAppShortcutBindings({
+  shortcuts,
+  vectorUniverseOpen,
+  mode,
+  vectorResultsActive,
+  settingsOpen,
+  sidebarFocus,
+  fullscreenActive,
+  fullscreenDisplay,
+  imageFocusActive,
+  videoShortcutActive,
+  focusedImage,
+  handleSidebarNavigationKey,
+  setImageFocusActive,
+  setFullscreenActiveWithAutoStop,
+  setFullscreenVideoFocus,
+  moveImage,
+  moveImageVertical,
+  jumpImageBoundary,
+  goPackage,
+  requestFullscreenAlign,
+  autoPlayEnabled,
+  applyAutoplayIntervalByIndex,
+  applyPackageGrade,
+  setVideoPlaying,
+  goPlaylist,
+  adjustVideoRate,
+  adjustVideoVolume,
+  updateSettings,
+}: UseAppShortcutBindingsParams) {
+  useShortcutEngine({
+    shortcuts,
+    suspended: vectorUniverseOpen,
+    mode,
+    vectorMode: vectorResultsActive,
+    settingsOpen,
+    sidebarFocus,
+    fullscreenActive,
+    fullscreenDisplay,
+    imageFocusActive,
+    videoShortcutActive,
+    hasFocusedImage: Boolean(focusedImage),
+    handleSidebarNavigationKey,
+    onSetImageFocusActive: setImageFocusActive,
+    onSetFullscreenActive: setFullscreenActiveWithAutoStop,
+    onToggleFullscreenPaneFocus: () => {
+      if (fullscreenDisplay !== 'dual') {
+        return
+      }
+      setFullscreenVideoFocus((value) => !value)
+    },
+    onToggleSidebarFocus: () => {
+      if (vectorResultsActive) {
+        return
+      }
+      updateSettings({ sidebarFocus: sidebarFocus === 'sidebar' ? 'main' : 'sidebar' })
+    },
+    onMoveImage: moveImage,
+    onMoveImageVertical: moveImageVertical,
+    onJumpImageBoundary: jumpImageBoundary,
+    onGoPackage: goPackage,
+    onAlignFocus: requestFullscreenAlign,
+    onToggleAutoplay: () => {
+      updateSettings({ autoPlayEnabled: !autoPlayEnabled })
+    },
+    onApplyAutoplayIntervalByIndex: applyAutoplayIntervalByIndex,
+    onSetPackageGrade: applyPackageGrade,
+    onToggleVideoPlaying: () => {
+      setVideoPlaying((value) => !value)
+    },
+    onGoPlaylist: goPlaylist,
+    onAdjustVideoRate: adjustVideoRate,
+    onAdjustVideoVolume: adjustVideoVolume,
+  })
+}

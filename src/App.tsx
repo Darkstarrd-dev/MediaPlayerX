@@ -34,6 +34,7 @@ import { useRepositoryBootstrapData } from './features/app/useRepositoryBootstra
 import { useResponsiveZoomEffect } from './features/app/useResponsiveZoomEffect'
 import { useResolvedMediaState } from './features/app/useResolvedMediaState'
 import { useAppSidebarScopeState } from './features/app/useAppSidebarScopeState'
+import { useAppShortcutBindings } from './features/app/useAppShortcutBindings'
 import { useAppWorkspaceProps } from './features/app/useAppWorkspaceProps'
 import { useFullscreenPlaybackBindings } from './features/app/useFullscreenPlaybackBindings'
 import { useVectorUniverseBindings } from './features/app/useVectorUniverseBindings'
@@ -43,7 +44,6 @@ import { computeThumbnailGridLayout } from './features/layout/thumbnailLayout'
 import { useMediaState } from './features/media/useMediaState'
 import { usePlaylistPersistence } from './features/media/usePlaylistPersistence'
 import { useFeatureSearch } from './features/search/useFeatureSearch'
-import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
 import {
   useRuntimeCapabilities,
   useReadOnlyDataAccess,
@@ -624,49 +624,35 @@ function App() {
   })
 
 
-  useShortcutEngine({
+  useAppShortcutBindings({
     shortcuts,
-    suspended: vectorUniverseOpen,
+    vectorUniverseOpen,
     mode,
-    vectorMode: vectorResultsActive,
+    vectorResultsActive,
     settingsOpen,
     sidebarFocus,
     fullscreenActive,
     fullscreenDisplay,
     imageFocusActive,
     videoShortcutActive,
-    hasFocusedImage: Boolean(focusedImage),
+    focusedImage,
     handleSidebarNavigationKey,
-    onSetImageFocusActive: setImageFocusActive,
-    onSetFullscreenActive: setFullscreenActiveWithAutoStop,
-    onToggleFullscreenPaneFocus: () => {
-      if (fullscreenDisplay !== 'dual') {
-        return
-      }
-      setFullscreenVideoFocus((value) => !value)
-    },
-    onToggleSidebarFocus: () => {
-      if (vectorResultsActive) {
-        return
-      }
-      updateSettings({ sidebarFocus: sidebarFocus === 'sidebar' ? 'main' : 'sidebar' })
-    },
-    onMoveImage: moveImage,
-    onMoveImageVertical: moveImageVertical,
-    onJumpImageBoundary: jumpImageBoundary,
-    onGoPackage: goPackage,
-    onAlignFocus: requestFullscreenAlign,
-    onToggleAutoplay: () => {
-      updateSettings({ autoPlayEnabled: !autoPlayEnabled })
-    },
-    onApplyAutoplayIntervalByIndex: applyAutoplayIntervalByIndex,
-    onSetPackageGrade: metadataWriteBindings.applyPackageGrade,
-    onToggleVideoPlaying: () => {
-      setVideoPlaying((value) => !value)
-    },
-    onGoPlaylist: goPlaylist,
-    onAdjustVideoRate: adjustVideoRate,
-    onAdjustVideoVolume: adjustVideoVolume,
+    setImageFocusActive,
+    setFullscreenActiveWithAutoStop,
+    setFullscreenVideoFocus,
+    moveImage,
+    moveImageVertical,
+    jumpImageBoundary,
+    goPackage,
+    requestFullscreenAlign,
+    autoPlayEnabled,
+    applyAutoplayIntervalByIndex,
+    applyPackageGrade: metadataWriteBindings.applyPackageGrade,
+    setVideoPlaying,
+    goPlaylist,
+    adjustVideoRate,
+    adjustVideoVolume,
+    updateSettings,
   })
 
   useAppEffects({
