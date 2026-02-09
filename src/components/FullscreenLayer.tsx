@@ -13,6 +13,7 @@ import {
 import type { BrowserMode, ImageItem, VideoItem } from '../types'
 import { clamp, formatSeconds } from '../utils/ui'
 import { FullscreenFooter } from './fullscreen/FullscreenFooter'
+import { FullscreenImagePane, FullscreenVideoPane } from './fullscreen/FullscreenPanes'
 import {
   FullscreenVideoControlRow,
   FullscreenVideoProgressRow,
@@ -573,44 +574,26 @@ function FullscreenLayer({
   const videoPaneClassName = `fullscreen-pane fullscreen-video${fullscreenDisplay === 'dual' && fullscreenVideoFocus ? ' is-pane-focus' : ''}`
 
   const imagePane = (
-    <section
-      ref={imagePaneRef}
+    <FullscreenImagePane
+      paneRef={imagePaneRef}
       className={imagePaneClassName}
-      style={{ flex: imageRatio }}
-      onClick={() => {
-        if (fullscreenDisplay === 'dual') {
-          onSetVideoFocus(false)
-        }
-      }}
+      flex={imageRatio}
+      fullscreenDisplay={fullscreenDisplay}
+      singlePane={singlePane}
+      draggingPane={draggingPane}
+      imageGeometry={imageGeometry}
+      imageTransform={imageTransform}
+      displayedImageSrc={displayedImageSrc}
+      focusedImageOrdinal={focusedImage?.ordinal ?? null}
+      onSetVideoFocus={onSetVideoFocus}
       onWheel={(event) => handlePaneWheel('image', event)}
       onMouseDown={(event) => startPaneDrag('image', event)}
-    >
-      <div className={`fullscreen-stage ${singlePane === 'image' ? 'is-draggable' : ''} ${draggingPane === 'image' ? 'is-dragging' : ''}`}>
-        <div
-          className="fullscreen-media fullscreen-media-image"
-          style={{
-            width: `${imageGeometry.width}px`,
-            height: `${imageGeometry.height}px`,
-            transform: `translate3d(${imageTransform.offsetX}px, ${imageTransform.offsetY}px, 0)`,
-          }}
-        >
-          {displayedImageSrc ? (
-            <img
-              className="fullscreen-media-image-element"
-              src={displayedImageSrc}
-              alt={`图片 #${focusedImage?.ordinal ?? '-'}`}
-              draggable={false}
-              onLoad={(event) => {
-                const imageElement = event.currentTarget
-                if (imageElement.naturalWidth > 0 && imageElement.naturalHeight > 0) {
-                  setDisplayedImageAspect(imageElement.naturalWidth / imageElement.naturalHeight)
-                }
-              }}
-            />
-          ) : null}
-        </div>
-      </div>
-    </section>
+      onImageNaturalSize={(naturalWidth, naturalHeight) => {
+        if (naturalWidth > 0 && naturalHeight > 0) {
+          setDisplayedImageAspect(naturalWidth / naturalHeight)
+        }
+      }}
+    />
   )
 
   const videoProgressRowProps = {
@@ -644,85 +627,35 @@ function FullscreenLayer({
   )
 
   const videoPane = (
-    <section
-      ref={videoPaneRef}
+    <FullscreenVideoPane
+      paneRef={videoPaneRef}
+      videoRef={videoRef}
       className={videoPaneClassName}
-      style={{ flex: videoRatio }}
-      onClick={() => {
-        if (fullscreenDisplay === 'dual') {
-          onSetVideoFocus(true)
-        }
-      }}
+      flex={videoRatio}
+      fullscreenDisplay={fullscreenDisplay}
+      singlePane={singlePane}
+      draggingPane={draggingPane}
+      videoGeometry={videoGeometry}
+      videoTransform={videoTransform}
+      videoPlaying={videoPlaying}
+      focusedVideoSrc={focusedVideoSrc}
+      focusedVideoCoverImageSrc={focusedVideoCoverImageSrc}
+      focusedVideoCoverColor={focusedVideoCoverColor}
+      videoControlsVisible={videoControlsVisible}
+      videoControlsAtTop={videoControlsAtTop}
+      videoControlsTop={videoControlsTop}
+      videoControlsLeft={videoControlsLeft}
+      videoControlsWidth={videoControlsWidth}
+      controlsRows={controlsRows}
+      onSetVideoFocus={onSetVideoFocus}
       onWheel={(event) => handlePaneWheel('video', event)}
       onMouseDown={(event) => startPaneDrag('video', event)}
-      onMouseEnter={() => setVideoControlsVisible(true)}
-      onMouseMove={() => setVideoControlsVisible(true)}
-      onMouseLeave={() => setVideoControlsVisible(false)}
-    >
-      <div
-        className={`fullscreen-stage ${singlePane === 'video' || fullscreenDisplay === 'dual' ? 'is-draggable' : ''} ${draggingPane === 'video' ? 'is-dragging' : ''}`}
-      >
-        <div
-          className="fullscreen-media fullscreen-media-video"
-          style={{
-            width: `${videoGeometry.width}px`,
-            height: `${videoGeometry.height}px`,
-            transform: `translate3d(${videoTransform.offsetX}px, ${videoTransform.offsetY}px, 0)`,
-            background: videoPlaying ? 'linear-gradient(145deg, #232830, #15191f)' : focusedVideoCoverColor,
-          }}
-        >
-          {focusedVideoSrc ? (
-            <video
-              ref={videoRef}
-              className="fullscreen-media-video-element"
-              style={{ opacity: videoPlaying ? 1 : 0 }}
-              src={focusedVideoSrc}
-              preload="metadata"
-              playsInline
-              onTimeUpdate={() => {
-                const currentTime = videoRef.current?.currentTime ?? 0
-                onVideoTimeUpdate(currentTime)
-              }}
-              onLoadedMetadata={() => {
-                const duration = videoRef.current?.duration ?? 0
-                if (Number.isFinite(duration) && duration > 0) {
-                  onVideoDurationDetected(duration)
-                }
-                const currentTime = videoRef.current?.currentTime ?? 0
-                onVideoTimeUpdate(currentTime)
-              }}
-              onEnded={() => {
-                onVideoTimeUpdate(0)
-                onNextVideo()
-              }}
-            />
-          ) : null}
-
-          {!videoPlaying && focusedVideoCoverImageSrc ? (
-            <img
-              className="fullscreen-media-video-cover"
-              src={focusedVideoCoverImageSrc}
-              alt="视频封面"
-            />
-          ) : null}
-
-          {!focusedVideoSrc ? <div className="fullscreen-media-empty">无可用视频源</div> : null}
-        </div>
-
-        {fullscreenDisplay === 'dual' && videoControlsVisible ? (
-          <div
-            className={`fullscreen-video-controls ${videoControlsAtTop ? 'is-top' : 'is-bottom'}`}
-            style={{
-              top: `${videoControlsTop}px`,
-              left: `${videoControlsLeft}px`,
-              width: `${videoControlsWidth}px`,
-            }}
-          >
-            {controlsRows}
-          </div>
-        ) : null}
-      </div>
-    </section>
+      onShowControls={() => setVideoControlsVisible(true)}
+      onHideControls={() => setVideoControlsVisible(false)}
+      onVideoTimeUpdate={onVideoTimeUpdate}
+      onVideoDurationDetected={onVideoDurationDetected}
+      onNextVideo={onNextVideo}
+    />
   )
 
   const footerImageInfo = focusedImage
