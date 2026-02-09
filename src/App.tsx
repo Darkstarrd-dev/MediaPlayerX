@@ -18,9 +18,6 @@ import ImportSourceInputs from './components/ImportSourceInputs'
 import SettingsPanel from './components/SettingsPanel'
 import VectorUniverseSection from './components/VectorUniverseSection'
 import {
-  IMAGE_DIRECTORY_SOURCES,
-  IMAGE_PACKAGES,
-  VIDEO_ITEMS,
   buildImageSidebarTree,
   findNodeById,
 } from './mockData'
@@ -56,9 +53,11 @@ import { useImageBrowserViewModel } from './features/app/useImageBrowserViewMode
 import { useEffectiveDisplayState } from './features/app/useEffectiveDisplayState'
 import { useManageModeActions } from './features/app/useManageModeActions'
 import { useDatabaseResetAction } from './features/app/useDatabaseResetAction'
+import { useRepositoryBootstrapData } from './features/app/useRepositoryBootstrapData'
 import { useResponsiveZoomEffect } from './features/app/useResponsiveZoomEffect'
 import { useResolvedMediaState } from './features/app/useResolvedMediaState'
 import { useSearchAndVectorActions } from './features/app/useSearchAndVectorActions'
+import { useScopedImageSourceStateSync } from './features/app/useScopedImageSourceStateSync'
 import { useRuntimeWarningDismiss } from './features/app/useRuntimeWarningDismiss'
 import { useSettingsPersistence } from './features/app/useSettingsPersistence'
 import { useVideoSidebarState } from './features/app/useVideoSidebarState'
@@ -72,8 +71,6 @@ import { useManageSelection } from './features/management/useManageSelection'
 import { useSidebarNavigation } from './features/sidebar/useSidebarNavigation'
 import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
 import {
-  createMediaRepository,
-  mapLibrarySnapshotDto,
   useRuntimeCapabilities,
   useReadOnlyDataAccess,
   useWriteDataAccess,
@@ -142,36 +139,15 @@ function App() {
     resetVectorControls,
   } = useAppSettingsStore()
 
-  const { repository: mediaRepository, mode: repositoryMode } = useMemo(() => createMediaRepository(), [])
-  const bootstrapLibrarySnapshot = useMemo(() => {
-    const snapshot = mediaRepository.getInitialLibrarySnapshot()
-    return snapshot ? mapLibrarySnapshotDto(snapshot) : null
-  }, [mediaRepository])
-  const fallbackImagePackages = useMemo(() => (repositoryMode === 'real' ? [] : IMAGE_PACKAGES), [repositoryMode])
-  const fallbackImageDirectories = useMemo(
-    () => (repositoryMode === 'real' ? [] : IMAGE_DIRECTORY_SOURCES),
-    [repositoryMode],
-  )
-  const fallbackVideos = useMemo(() => (repositoryMode === 'real' ? [] : VIDEO_ITEMS), [repositoryMode])
-  const imageSources = useMemo(
-    () =>
-      bootstrapLibrarySnapshot
-        ? [...bootstrapLibrarySnapshot.imagePackages, ...bootstrapLibrarySnapshot.imageDirectories]
-        : [...fallbackImagePackages, ...fallbackImageDirectories],
-    [bootstrapLibrarySnapshot, fallbackImageDirectories, fallbackImagePackages],
-  )
-  const bootstrapImagePackages = useMemo(
-    () => bootstrapLibrarySnapshot?.imagePackages ?? fallbackImagePackages,
-    [bootstrapLibrarySnapshot, fallbackImagePackages],
-  )
-  const bootstrapImageDirectories = useMemo(
-    () => bootstrapLibrarySnapshot?.imageDirectories ?? fallbackImageDirectories,
-    [bootstrapLibrarySnapshot, fallbackImageDirectories],
-  )
-  const bootstrapVideos = useMemo(
-    () => bootstrapLibrarySnapshot?.videos ?? fallbackVideos,
-    [bootstrapLibrarySnapshot, fallbackVideos],
-  )
+  const {
+    mediaRepository,
+    repositoryMode,
+    bootstrapLibrarySnapshot,
+    imageSources,
+    bootstrapImagePackages,
+    bootstrapImageDirectories,
+    bootstrapVideos,
+  } = useRepositoryBootstrapData()
   const [selectedPackageId, setSelectedPackageId] = useState(imageSources[0]?.id ?? '')
   const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
   const [imageFocusActive, setImageFocusActive] = useState(false)
@@ -403,81 +379,12 @@ function App() {
   const videoByIdEffective = useMemo(() => new Map(videosEffective.map((video) => [video.id, video])), [videosEffective])
   const sidebarTreeSnapshot = sidebarSnapshot?.tree ?? null
 
-  useEffect(() => {
-    const nextSourceIds = new Set(scopedImageSourcesEffective.map((source) => source.id))
-
-    setFocusByPackage((previous) => {
-      const next: Record<string, number> = {}
-      let changed = false
-
-      for (const source of scopedImageSourcesEffective) {
-        const hadPrev = Object.prototype.hasOwnProperty.call(previous, source.id)
-        const prevValue = previous[source.id] ?? 0
-        const nextValue = clamp(prevValue, 0, Math.max(0, source.images.length - 1))
-        next[source.id] = nextValue
-        if (!hadPrev || nextValue !== prevValue) {
-          changed = true
-        }
-      }
-
-      for (const key of Object.keys(previous)) {
-        if (!nextSourceIds.has(key)) {
-          changed = true
-          break
-        }
-      }
-
-      return changed ? next : previous
-    })
-
-    setPageByPackage((previous) => {
-      const next: Record<string, number> = {}
-      let changed = false
-
-      for (const source of scopedImageSourcesEffective) {
-        const hadPrev = Object.prototype.hasOwnProperty.call(previous, source.id)
-        const prevValue = previous[source.id] ?? 0
-        const nextValue = Math.max(0, prevValue)
-        next[source.id] = nextValue
-        if (!hadPrev || nextValue !== prevValue) {
-          changed = true
-        }
-      }
-
-      for (const key of Object.keys(previous)) {
-        if (!nextSourceIds.has(key)) {
-          changed = true
-          break
-        }
-      }
-
-      return changed ? next : previous
-    })
-
-    setGradeByPackage((previous) => {
-      const next: Record<string, number | null> = {}
-      let changed = false
-
-      for (const source of scopedImageSourcesEffective) {
-        if (Object.prototype.hasOwnProperty.call(previous, source.id)) {
-          next[source.id] = previous[source.id] ?? null
-          continue
-        }
-
-        next[source.id] = source.mockGrade ?? null
-        changed = true
-      }
-
-      for (const key of Object.keys(previous)) {
-        if (!nextSourceIds.has(key)) {
-          changed = true
-          break
-        }
-      }
-
-      return changed ? next : previous
-    })
-  }, [scopedImageSourcesEffective])
+  useScopedImageSourceStateSync({
+    scopedImageSources: scopedImageSourcesEffective,
+    setFocusByPackage,
+    setPageByPackage,
+    setGradeByPackage,
+  })
 
   const imageTreeRawLocal = useMemo(
     () => buildImageSidebarTree(bootstrapImagePackages, bootstrapImageDirectories),
