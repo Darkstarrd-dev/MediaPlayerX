@@ -14,6 +14,8 @@ import type { BrowserMode, ImageItem, VideoItem } from '../types'
 import { clamp, formatSeconds } from '../utils/ui'
 import { FullscreenFooter } from './fullscreen/FullscreenFooter'
 import { FullscreenImagePane, FullscreenVideoPane } from './fullscreen/FullscreenPanes'
+import { useFullscreenImageSource } from './fullscreen/useFullscreenImageSource'
+import { useFullscreenViewportSize } from './fullscreen/useFullscreenViewportSize'
 import {
   FullscreenVideoControlRow,
   FullscreenVideoProgressRow,
@@ -34,7 +36,6 @@ import {
   type PaneAlign,
   type PaneKey,
   type PaneTransform,
-  type PaneViewportSize,
 } from './fullscreen/paneMath'
 
 export interface FullscreenLayerProps {
@@ -84,8 +85,6 @@ export interface FullscreenLayerProps {
   onChangeVideoRate: (rate: number) => void
   onExit: () => void
 }
-const IS_TEST_MODE = import.meta.env.MODE === 'test'
-
 function FullscreenLayer({
   mode,
   fullscreenActive,
@@ -138,15 +137,21 @@ function FullscreenLayer({
   const videoPaneRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  const [imageViewportSize, setImageViewportSize] = useState<PaneViewportSize>({ width: 1, height: 1 })
-  const [videoViewportSize, setVideoViewportSize] = useState<PaneViewportSize>({ width: 1, height: 1 })
+  const { imageViewportSize, videoViewportSize } = useFullscreenViewportSize({
+    fullscreenActive,
+    fullscreenDisplay,
+    fullscreenSwapped,
+    imagePaneRef,
+    videoPaneRef,
+  })
   const [imageTransform, setImageTransform] = useState<PaneTransform>(DEFAULT_PANE_TRANSFORM)
   const [videoTransform, setVideoTransform] = useState<PaneTransform>(DEFAULT_PANE_TRANSFORM)
   const [imageAlign, setImageAlign] = useState<PaneAlign>(DEFAULT_PANE_ALIGN)
   const [videoAlign, setVideoAlign] = useState<PaneAlign>(DEFAULT_PANE_ALIGN)
-  const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
-  const [displayedImageAspect, setDisplayedImageAspect] = useState<number | null>(null)
-  const imagePreloadSeqRef = useRef(0)
+  const { displayedImageSrc, displayedImageAspect, setDisplayedImageAspect } = useFullscreenImageSource({
+    focusedImageSrc,
+    focusedImage,
+  })
   const [videoControlsVisible, setVideoControlsVisible] = useState(false)
   const [draggingPane, setDraggingPane] = useState<PaneKey | null>(null)
 
@@ -357,79 +362,6 @@ function FullscreenLayer({
   )
 
   useEffect(() => {
-    if (IS_TEST_MODE) {
-      setDisplayedImageSrc(focusedImageSrc)
-      if (focusedImage && focusedImage.width > 0 && focusedImage.height > 0) {
-        setDisplayedImageAspect(focusedImage.width / focusedImage.height)
-      } else {
-        setDisplayedImageAspect(null)
-      }
-      return
-    }
-
-    imagePreloadSeqRef.current += 1
-    const sequence = imagePreloadSeqRef.current
-
-    if (!focusedImageSrc) {
-      setDisplayedImageSrc(null)
-      setDisplayedImageAspect(null)
-      return
-    }
-
-    if (focusedImageSrc === displayedImageSrc) {
-      return
-    }
-
-    let cancelled = false
-
-    const preview = new Image()
-    preview.decoding = 'async'
-    preview.src = focusedImageSrc
-
-    const commit = () => {
-      if (cancelled || imagePreloadSeqRef.current !== sequence) {
-        return
-      }
-      setDisplayedImageSrc(focusedImageSrc)
-      if (preview.naturalWidth > 0 && preview.naturalHeight > 0) {
-        setDisplayedImageAspect(preview.naturalWidth / preview.naturalHeight)
-      }
-    }
-
-    const fail = () => {
-      if (cancelled || imagePreloadSeqRef.current !== sequence) {
-        return
-      }
-    }
-
-    if (typeof preview.decode === 'function') {
-      void preview
-        .decode()
-        .then(() => {
-          commit()
-        })
-        .catch(() => {
-          if (preview.complete && preview.naturalWidth > 0 && preview.naturalHeight > 0) {
-            commit()
-            return
-          }
-          fail()
-        })
-    } else {
-      preview.onload = () => {
-        commit()
-      }
-      preview.onerror = () => {
-        fail()
-      }
-    }
-
-    return () => {
-      cancelled = true
-    }
-  }, [displayedImageSrc, focusedImage, focusedImageSrc])
-
-  useEffect(() => {
     if (!fullscreenActive) {
       return
     }
@@ -449,39 +381,8 @@ function FullscreenLayer({
     if (!fullscreenActive) {
       setVideoControlsVisible(false)
       setDraggingPane(null)
-      return
     }
-
-    const observers: ResizeObserver[] = []
-
-    const observePane = (element: HTMLElement | null, setter: (size: PaneViewportSize) => void) => {
-      if (!element) {
-        return
-      }
-
-      const updateSize = () => {
-        const rect = element.getBoundingClientRect()
-        setter({
-          width: Math.max(1, rect.width),
-          height: Math.max(1, rect.height),
-        })
-      }
-
-      updateSize()
-      const observer = new ResizeObserver(() => updateSize())
-      observer.observe(element)
-      observers.push(observer)
-    }
-
-    observePane(imagePaneRef.current, setImageViewportSize)
-    observePane(videoPaneRef.current, setVideoViewportSize)
-
-    return () => {
-      for (const observer of observers) {
-        observer.disconnect()
-      }
-    }
-  }, [fullscreenActive, fullscreenDisplay, fullscreenSwapped])
+  }, [fullscreenActive])
 
   useEffect(() => {
     if (!fullscreenActive) {
