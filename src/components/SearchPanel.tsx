@@ -116,7 +116,7 @@ function SearchPanel({
 
               <div className="vector-top-actions">
                 <span>{searchPanelMode === 'vector' ? `当前结果: ${vectorResultCount} 张` : `命中节点: ${featureResultCount} 个`}</span>
-                <button type="button" onClick={onCollapse}>
+                <button className="vector-collapse-btn" type="button" onClick={onCollapse}>
                   折叠
                 </button>
               </div>
@@ -125,7 +125,7 @@ function SearchPanel({
             {searchPanelMode === 'vector' ? (
               <>
                 <div className="vector-controls">
-                  <button type="button" disabled={!focusedRef} onClick={onRunVectorSearch}>
+                  <button className="vector-search-btn" type="button" disabled={!focusedRef} onClick={onRunVectorSearch}>
                     向量检索
                   </button>
                   <span>
@@ -151,11 +151,17 @@ function SearchPanel({
               <div className="feature-controls">
                 <label>
                   名称
-                  <input placeholder="按名称模糊匹配" value={featureNameQuery} onChange={(event) => onFeatureNameQueryChange(event.target.value)} />
+                  <input
+                    className="feature-query-input"
+                    placeholder="按名称模糊匹配"
+                    value={featureNameQuery}
+                    onChange={(event) => onFeatureNameQueryChange(event.target.value)}
+                  />
                 </label>
                 <label>
                   作品名
                   <input
+                    className="feature-query-input"
                     placeholder="按作品名模糊匹配"
                     value={featureWorkTitleQuery}
                     onChange={(event) => onFeatureWorkTitleQueryChange(event.target.value)}
@@ -164,6 +170,7 @@ function SearchPanel({
                 <label>
                   社团
                   <input
+                    className="feature-query-input"
                     list="feature-circle-options"
                     placeholder="输入社团，支持自动补完"
                     value={featureCircleQuery}
@@ -178,6 +185,7 @@ function SearchPanel({
                 <label>
                   作者
                   <input
+                    className="feature-query-input"
                     list="feature-author-options"
                     placeholder="输入作者，支持自动补完"
                     value={featureAuthorQuery}
@@ -194,10 +202,10 @@ function SearchPanel({
                   <div className="feature-control-head">
                     <strong>tags</strong>
                     <div className="feature-control-actions">
-                      <button type="button" onClick={onToggleFeatureTagPicker}>
+                      <button className="feature-action-btn" type="button" onClick={onToggleFeatureTagPicker}>
                         {featureTagPickerOpen ? '收起 tags' : '选择 tags'}
                       </button>
-                      <button type="button" onClick={onClearFeatureTags}>
+                      <button className="feature-action-btn" type="button" onClick={onClearFeatureTags}>
                         清空 tags
                       </button>
                     </div>

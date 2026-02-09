@@ -126,11 +126,23 @@ function AppHeader({
       <div className="header-right">
         <div className="zoom-stepper" role="group" aria-label="缩略图缩放级别">
           <span>缩放级别</span>
-          <button aria-label="缩小缩略图" disabled={!canThumbnailScaleDown} type="button" onClick={onThumbnailScaleDown}>
+          <button
+            aria-label="缩小缩略图"
+            className="zoom-stepper-btn"
+            disabled={!canThumbnailScaleDown}
+            type="button"
+            onClick={onThumbnailScaleDown}
+          >
             -
           </button>
           <span>{thumbnailScaleLevel}</span>
-          <button aria-label="放大缩略图" disabled={!canThumbnailScaleUp} type="button" onClick={onThumbnailScaleUp}>
+          <button
+            aria-label="放大缩略图"
+            className="zoom-stepper-btn"
+            disabled={!canThumbnailScaleUp}
+            type="button"
+            onClick={onThumbnailScaleUp}
+          >
             +
           </button>
         </div>
@@ -150,7 +162,7 @@ function AppHeader({
           ))}
         </select>
 
-        <button type="button" onClick={onOpenSettings}>
+        <button className="header-settings-btn" type="button" onClick={onOpenSettings}>
           设置
         </button>
       </div>

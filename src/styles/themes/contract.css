@@ -11,6 +11,28 @@
   --mpx-radius-xl: 14px;
   --mpx-radius-pill: 9999px;
 
+  --mpx-panel-head-height: 54px;
+  --mpx-control-radius: 8px;
+  --mpx-control-border-width: 1px;
+  --mpx-control-height: 34px;
+  --mpx-control-padding-x: 9px;
+  --mpx-control-font-weight: 600;
+
+  --mpx-icon-button-size: 34px;
+  --mpx-icon-size: 17px;
+
+  --mpx-scrollbar-size: 10px;
+  --mpx-scrollbar-radius: 999px;
+  --mpx-scrollbar-track-bg: #ece5d9;
+  --mpx-scrollbar-thumb-bg: #b7ab95;
+  --mpx-scrollbar-thumb-hover-bg: #2e6f7f;
+
+  --mpx-range-track-height: 6px;
+  --mpx-range-track-bg: #d6cfc1;
+  --mpx-range-thumb-size: 14px;
+  --mpx-range-thumb-bg: #2e6f7f;
+  --mpx-range-thumb-border: #ffffff;
+
   /* Default Semantic (Parchment-like base) */
   --mpx-bg-app: #f2eee7;
   --mpx-bg-workspace: #f3f0ea;
@@ -40,6 +62,9 @@
   --mpx-input-text: #2e2a22;
   --mpx-input-focus-bg: #ffffff;
   --mpx-input-focus-border: #2e6f7f;
+  --mpx-input-readonly-bg: #f8f5ef;
+  --mpx-input-readonly-text: #6b6356;
+  --mpx-input-readonly-border: #d6cfc1;
 
   --mpx-btn-primary-bg: #2e6f7f;
   --mpx-btn-primary-text: #ffffff;

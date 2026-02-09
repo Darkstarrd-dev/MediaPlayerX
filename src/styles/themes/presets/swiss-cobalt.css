@@ -3,6 +3,22 @@
 :root[data-mpx-theme="swiss-cobalt"] {
   color-scheme: light;
 
+  --mpx-control-radius: 8px;
+  --mpx-control-height: 34px;
+  --mpx-control-padding-x: 9px;
+  --mpx-control-font-weight: 600;
+  --mpx-icon-button-size: 34px;
+  --mpx-icon-size: 16px;
+  --mpx-scrollbar-size: 10px;
+  --mpx-scrollbar-track-bg: #eef2f7;
+  --mpx-scrollbar-thumb-bg: #cbd5e1;
+  --mpx-scrollbar-thumb-hover-bg: #2563eb;
+  --mpx-range-track-height: 6px;
+  --mpx-range-track-bg: #dbe4f0;
+  --mpx-range-thumb-size: 14px;
+  --mpx-range-thumb-bg: #2563eb;
+  --mpx-range-thumb-border: #ffffff;
+
   --mpx-bg-app: #f8fafc;
   --mpx-bg-workspace: #f1f5f9;
   --mpx-bg-panel: #ffffff;
@@ -26,6 +42,11 @@
   --mpx-input-bg: #ffffff;
   --mpx-input-border: #e2e8f0;
   --mpx-input-text: #1e293b;
+  --mpx-input-focus-bg: #ffffff;
+  --mpx-input-focus-border: #2563eb;
+  --mpx-input-readonly-bg: #f8fafc;
+  --mpx-input-readonly-text: #64748b;
+  --mpx-input-readonly-border: #e2e8f0;
 
   --mpx-btn-primary-bg: #2563eb;
   --mpx-btn-primary-text: #ffffff;

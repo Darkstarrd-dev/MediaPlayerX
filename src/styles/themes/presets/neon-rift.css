@@ -3,6 +3,22 @@
 :root[data-mpx-theme="neon-rift"] {
   color-scheme: dark;
 
+  --mpx-control-radius: 10px;
+  --mpx-control-height: 36px;
+  --mpx-control-padding-x: 10px;
+  --mpx-control-font-weight: 700;
+  --mpx-icon-button-size: 36px;
+  --mpx-icon-size: 18px;
+  --mpx-scrollbar-size: 9px;
+  --mpx-scrollbar-track-bg: #12122a;
+  --mpx-scrollbar-thumb-bg: #3b2a67;
+  --mpx-scrollbar-thumb-hover-bg: #7c3aed;
+  --mpx-range-track-height: 5px;
+  --mpx-range-track-bg: #2f2f5b;
+  --mpx-range-thumb-size: 15px;
+  --mpx-range-thumb-bg: #8b5cf6;
+  --mpx-range-thumb-border: #121225;
+
   --mpx-bg-app: #0f0f23;
   --mpx-bg-workspace: #0b0b1a;
   --mpx-bg-panel: #16162d;
@@ -26,6 +42,11 @@
   --mpx-input-bg: #1f1f3a;
   --mpx-input-border: #2d2d4a;
   --mpx-input-text: #e2e8f0;
+  --mpx-input-focus-bg: #26264a;
+  --mpx-input-focus-border: #7c3aed;
+  --mpx-input-readonly-bg: #171732;
+  --mpx-input-readonly-text: #9da9bc;
+  --mpx-input-readonly-border: #2d2d4a;
 
   --mpx-btn-primary-bg: #7c3aed;
   --mpx-btn-primary-text: #ffffff;

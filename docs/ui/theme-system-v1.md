@@ -1,76 +1,98 @@
 # Theme System V1 规范手册 (SSOT)
 
-本文档是 MediaPlayer 主题系统的唯一事实来源。主题开发者应仅依靠本文档和 CSS 契约文件进行开发。
+本文档是 MediaPlayer 主题系统的唯一事实来源。主题开发者应仅依靠本文档和 `src/styles/themes/contract.css` 进行开发。
 
 ## 1. 核心原理
-- **基于属性切换**：通过在 `html` 根元素设置 `data-mpx-theme="<themeId>"` 激活。
-- **纯 CSS 驱动**：新增主题只需在指定目录下增加 `.css` 文件，无需修改 TypeScript 代码。
-- **Token 隔离**：组件样式只引用 `--mpx-*` 开头的变量，禁止硬编码颜色。
+- **属性切换**：通过在 `html` 设置 `data-mpx-theme="<themeId>"` 激活主题。
+- **纯 CSS 驱动**：新增主题只需在 `src/styles/themes/presets/` 下新增 CSS 文件。
+- **Token 隔离**：组件层样式只消费 `--mpx-*` token，禁止硬编码视觉值（颜色/尺寸/圆角等）。
+- **颜色 + 形态统一**：主题不只控制颜色，也控制按钮体积、图标尺寸、滚动条、滑块等交互原件。
 
-## 2. 文件目录结构
-- `src/styles/themes/contract.css`：Token 定义与默认回退值。
-- `src/styles/themes/presets/*.css`：预设主题文件（自动加载）。
-- `src/styles/themes/presets/_template.css`：新增主题模板。
+## 2. 文件结构
+- `src/styles/themes/contract.css`：token 契约与默认值
+- `src/styles/themes/index.css`：主题入口（导入契约与预设）
+- `src/styles/themes/presets/*.css`：主题预设
+- `src/styles/themes/presets/_template.css`：新主题模板
 
 ## 3. 开发流程
-1. **创建文件**：在 `src/styles/themes/presets/` 下新建 `my-theme.css`。
-2. **定义作用域**：
-   ```css
-   :root[data-mpx-theme="my-theme"] {
-     color-scheme: dark; /* 或 light */
-     /* 按契约填充 token */
-   }
-   ```
-3. **验证结果**：在“设置 -> theme 设置”中选择该主题。
+1. 在 `src/styles/themes/presets/` 创建 `my-theme.css`。
+2. 定义作用域并填充 token：
 
-## 4. Token 契约清单
+```css
+:root[data-mpx-theme="my-theme"] {
+  color-scheme: dark; /* 或 light */
+  /* 按契约覆盖 token */
+}
+```
 
-### A. 基础 (Foundations)
-- `--mpx-font-ui`：UI 主字体
-- `--mpx-font-mono`：等宽字体
-- `--mpx-radius-sm` / `md` / `lg` / `xl` / `pill`
-- `--mpx-shadow-panel`：面板投影
-- `--mpx-shadow-popover`：弹出层投影
+3. 在设置面板选择该主题，检查颜色与控件形态是否一致。
 
-### B. 语义色 (Semantic Colors)
-#### Surfaces
-- `--mpx-bg-app`：应用底层背景
-- `--mpx-bg-workspace`：工作区背景
-- `--mpx-bg-panel`：侧栏/面板背景
-- `--mpx-bg-elevated`：悬浮/卡片背景
-- `--mpx-bg-hover`：悬停反馈色
-- `--mpx-bg-selected`：选中项背景
-- `--mpx-bg-muted`：弱化背景
-#### Text
-- `--mpx-text-1`：主文本
-- `--mpx-text-2`：次要文本
-- `--mpx-text-3`：禁用/提示文本
-- `--mpx-text-inverse`：反色文本
-#### Borders
-- `--mpx-border-1`：普通分割线
-- `--mpx-border-2`：强边框
-- `--mpx-border-focus`：聚焦边框色
-#### Accent
-- `--mpx-accent`：品牌/强调色
-- `--mpx-accent-contrast`：强调色上的文本色
-- `--mpx-accent-soft`：强调色弱化背景
-#### Status
-- `--mpx-status-danger-bg` / `border` / `text`
-- `--mpx-status-warning-bg` / `border` / `text`
-- `--mpx-status-info-bg` / `border` / `text`
-- `--mpx-status-success-bg` / `border` / `text`
+## 4. Token 分层
 
-### C. 组件别名 (Component Aliases)
-这些 token 默认指向语义色，可按需覆盖以微调特定组件。
-- `--mpx-header-bg`：顶部导航栏背景
-- `--mpx-sidebar-bullet-pending` / `running`
-- `--mpx-splitter-track-bg` / `handle-bg`
+### A. Foundations（基础）
+- 字体：`--mpx-font-ui`、`--mpx-font-mono`
+- 圆角：`--mpx-radius-sm` / `md` / `lg` / `xl` / `pill`
+- 阴影：`--mpx-shadow-panel`、`--mpx-shadow-popover`
+- 面板维度：`--mpx-panel-head-height`
+
+### B. Non-Color Style（非颜色样式）
+- 控件尺寸：`--mpx-control-height`、`--mpx-control-padding-x`
+- 控件形态：`--mpx-control-radius`、`--mpx-control-border-width`
+- 控件字重：`--mpx-control-font-weight`
+- 图标规格：`--mpx-icon-button-size`、`--mpx-icon-size`
+- 滚动条：`--mpx-scrollbar-size`、`--mpx-scrollbar-radius`、`--mpx-scrollbar-track-bg`、`--mpx-scrollbar-thumb-bg`、`--mpx-scrollbar-thumb-hover-bg`
+- 滑块：`--mpx-range-track-height`、`--mpx-range-track-bg`、`--mpx-range-thumb-size`、`--mpx-range-thumb-bg`、`--mpx-range-thumb-border`
+
+### C. Semantic Colors（语义颜色）
+- Surfaces：`--mpx-bg-app`、`--mpx-bg-workspace`、`--mpx-bg-panel`、`--mpx-bg-elevated`、`--mpx-bg-hover`、`--mpx-bg-selected`、`--mpx-bg-muted`、`--mpx-bg-tooltip`
+- Text：`--mpx-text-1`、`--mpx-text-2`、`--mpx-text-3`、`--mpx-text-heading`、`--mpx-text-inverse`
+- Borders：`--mpx-border-1`、`--mpx-border-2`、`--mpx-border-focus`
+- Accent：`--mpx-accent`、`--mpx-accent-contrast`、`--mpx-accent-soft`
+- Status：`danger|warning|info|success|busy|idle` 的 `bg/border/text`
+- Form：`--mpx-input-*`、`--mpx-btn-primary-*`、`--mpx-btn-secondary-*`
+
+### D. Component Aliases（组件别名）
+- `--mpx-header-bg`
+- `--mpx-sidebar-bullet-pending` / `--mpx-sidebar-bullet-running`
+- `--mpx-splitter-track-bg` / `--mpx-splitter-handle-bg` / `--mpx-splitter-handle-hover-bg`
 - `--mpx-card-focus-ring`
-- `--mpx-fullscreen-footer-bg`
+- `--mpx-fullscreen-bg` / `--mpx-fullscreen-footer-bg`
+- `--mpx-video-screen-bg`
 
-## 5. 验收清单
-- [ ] 所有 Banner (Error/Warning/Task) 背景与文字对比度符合 WCAG AA。
-- [ ] 侧栏激活行在当前背景下清晰可辨。
-- [ ] 向量检索/特征检索分割条在 hover 时有视觉反馈。
-- [ ] 全屏模式下的控制按钮在深色/浅色图背景下均可读。
-- [ ] 3D 向量宇宙的 HUD 面板不刺眼。
+## 5. 组件映射表（重点）
+- 头部按钮（检索/设置/缩放按钮）-> `--mpx-control-*` + `--mpx-btn-secondary-*`
+- 向量检索与特征检索操作按钮 -> `--mpx-control-*` + `--mpx-btn-secondary-*`
+- 特征查询输入框 -> `--mpx-control-*` + `--mpx-input-*`
+- 侧栏/工具栏图标按钮 -> `--mpx-icon-button-size`、`--mpx-icon-size`
+- 通用滚动容器 -> `--mpx-scrollbar-*`
+- range 控件（阈值/播放进度/音量）-> `--mpx-range-*`
+- select/option -> `--mpx-input-bg`、`--mpx-input-text`
+
+## 6. 新主题最小 token 集（建议首版必须覆盖）
+- `--mpx-bg-app`、`--mpx-bg-panel`、`--mpx-bg-elevated`
+- `--mpx-text-1`、`--mpx-text-2`、`--mpx-text-heading`
+- `--mpx-border-1`、`--mpx-border-2`、`--mpx-border-focus`
+- `--mpx-accent`、`--mpx-accent-soft`、`--mpx-accent-contrast`
+- `--mpx-input-bg`、`--mpx-input-border`、`--mpx-input-text`、`--mpx-input-focus-border`
+- `--mpx-btn-primary-bg`、`--mpx-btn-primary-text`、`--mpx-btn-secondary-bg`、`--mpx-btn-secondary-border`、`--mpx-btn-secondary-text`
+- `--mpx-control-radius`、`--mpx-control-height`、`--mpx-control-font-weight`
+- `--mpx-icon-button-size`、`--mpx-icon-size`
+- `--mpx-scrollbar-track-bg`、`--mpx-scrollbar-thumb-bg`、`--mpx-scrollbar-thumb-hover-bg`
+- `--mpx-range-track-bg`、`--mpx-range-thumb-bg`
+
+## 7. 视觉 QA 清单
+- [ ] 所有 banner（error/warning/task）文字与背景达到 WCAG AA。
+- [ ] 主/次文本在 panel、elevated、muted 背景上可读。
+- [ ] 头部与检索区按钮在默认/hover/active/disabled 都有清晰状态。
+- [ ] 特征查询输入框 focus 态可感知，且不刺眼。
+- [ ] select 与 option 的前景/背景对比稳定（浅色与深色主题均成立）。
+- [ ] 滚动条（track/thumb/hover）与主题风格一致，不遮挡内容。
+- [ ] range 滑块轨道与圆点在深浅背景都可定位。
+- [ ] 缩略图与检索容器无明显滚动条闪烁，滚轮/触控板仍可滚动。
+- [ ] 图标按钮尺寸、字重、密度与整体风格一致。
+
+## 8. 当前预设主题
+- `swiss-cobalt`：专业浅色
+- `neon-rift`：霓虹深色
+- `aurora-sand`：暖色编辑风
+- `matrix-mint`：青绿科技暗色
