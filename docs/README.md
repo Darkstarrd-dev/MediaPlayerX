@@ -7,6 +7,7 @@
 - `requirements-v1.md`：V1 需求范围与行为冻结。
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
+- `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案。
 - `ui/theme-system-v1.md`：主题系统 CSS 契约与开发规范 (SSOT)。
 - `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。

@@ -45,6 +45,7 @@ npm run test
 - `docs/requirements-v1.md`
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
+- `docs/vector-retrieval-plan-v1.md`
 - `docs/ref/虚拟UI阶段说明.md`（历史参考）
 - `docs/ui/theme-playground.html`（主题开发调试页）
 
