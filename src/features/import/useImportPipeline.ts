@@ -9,11 +9,6 @@ import {
   type RefObject,
 } from 'react'
 
-import {
-  dataTransferHasFiles,
-  extractPathsFromClipboard,
-  serializeFile,
-} from '../app/helpers'
 import type {
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
@@ -24,6 +19,9 @@ import type {
   RetryImportTaskResponseDto,
 } from '../../contracts/backend'
 import type { ReadonlyMediaRepository } from '../backend/repository'
+import { collectNativePaths } from './importPathUtils'
+import { useImportDragOverlay } from './useImportDragOverlay'
+import { useImportPaste } from './useImportPaste'
 
 const IMPORT_TASK_TIMEOUT_MS = 20_000
 const IMPORT_TASK_POLL_INTERVAL_MS = 1_500
@@ -33,54 +31,6 @@ function toErrorMessage(error: unknown): string {
     return error.message
   }
   return '导入任务失败'
-}
-
-function collectNativePaths(files: File[]): string[] {
-  const paths = files
-    .map((file) => serializeFile(file).path)
-    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-  return Array.from(new Set(paths))
-}
-
-function collectPathsFromDataTransfer(dataTransfer: DataTransfer | null): string[] {
-  if (!dataTransfer) {
-    return []
-  }
-
-  const nativePaths = collectNativePaths(Array.from(dataTransfer.files ?? []))
-  const uriPaths = extractPathsFromClipboard(dataTransfer.getData('text/uri-list') ?? '')
-  const textPaths = extractPathsFromClipboard(dataTransfer.getData('text/plain') ?? '')
-  return Array.from(new Set([...nativePaths, ...uriPaths, ...textPaths]))
-}
-
-function shouldShowDragOverlay(dataTransfer: DataTransfer | null): boolean {
-  if (!dataTransfer) {
-    return false
-  }
-
-  if (dataTransferHasFiles(dataTransfer)) {
-    return true
-  }
-
-  try {
-    const uriList = dataTransfer.getData('text/uri-list') ?? ''
-    const plainText = dataTransfer.getData('text/plain') ?? ''
-    return extractPathsFromClipboard(uriList).length > 0 || extractPathsFromClipboard(plainText).length > 0
-  } catch {
-    return false
-  }
-}
-
-type DragEventLike = DragEvent | { nativeEvent: DragEvent }
-
-function isEventImportHandled(event: DragEventLike): boolean {
-  const nativeEvent = 'nativeEvent' in event ? event.nativeEvent : event
-  return Boolean((nativeEvent as unknown as { __mpx_import_handled__?: boolean }).__mpx_import_handled__)
-}
-
-function markEventImportHandled(event: DragEventLike): void {
-  const nativeEvent = 'nativeEvent' in event ? event.nativeEvent : event
-  ;(nativeEvent as unknown as { __mpx_import_handled__?: boolean }).__mpx_import_handled__ = true
 }
 
 interface UseImportPipelineResult {
@@ -128,10 +78,11 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
 
   const fileImportInputRef = useRef<HTMLInputElement>(null)
   const folderImportInputRef = useRef<HTMLInputElement>(null)
-  const dragDepthRef = useRef(0)
-  const [dragOverlayActive, setDragOverlayActive] = useState(false)
   const [enqueuePending, setEnqueuePending] = useState(false)
   const [taskError, setTaskError] = useState<string | null>(null)
+  const handleImportError = useCallback((error: unknown) => {
+    setTaskError(toErrorMessage(error))
+  }, [])
   const initialImportTasks = useMemo<ImportTaskDto[]>(() => {
     if (!isSynchronousTestMode) {
       return []
@@ -174,7 +125,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
         })
         await refreshTasks()
       } catch (error: unknown) {
-        setTaskError(toErrorMessage(error))
+        handleImportError(error)
       } finally {
         setEnqueuePending(false)
       }
@@ -195,10 +146,10 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
         setImportTasks((previous) => previous.map((task) => (task.task_id === taskId ? response.task : task)))
         await refreshTasks()
       } catch (error: unknown) {
-        setTaskError(toErrorMessage(error))
+        handleImportError(error)
       }
     },
-    [isSynchronousTestMode, refreshTasks, repository],
+    [handleImportError, isSynchronousTestMode, refreshTasks, repository],
   )
 
   const openImportFilesDialog = useCallback(() => {
@@ -226,9 +177,9 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
         }
       })
       .catch((error: unknown) => {
-        setTaskError(toErrorMessage(error))
+        handleImportError(error)
       })
-  }, [enqueueImportPaths, repository])
+  }, [enqueueImportPaths, handleImportError, repository])
 
   const openImportFoldersDialog = useCallback(() => {
     const picker = repository.pickImportPaths
@@ -255,9 +206,9 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
         }
       })
       .catch((error: unknown) => {
-        setTaskError(toErrorMessage(error))
+        handleImportError(error)
       })
-  }, [enqueueImportPaths, repository])
+  }, [enqueueImportPaths, handleImportError, repository])
 
   const onImportFilesSelected = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])
@@ -293,194 +244,48 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
     }
 
     void refreshTasks().catch((error: unknown) => {
-      setTaskError(toErrorMessage(error))
+      handleImportError(error)
     })
 
     const timer = window.setInterval(() => {
       void refreshTasks().catch((error: unknown) => {
-        setTaskError(toErrorMessage(error))
+        handleImportError(error)
       })
     }, IMPORT_TASK_POLL_INTERVAL_MS)
 
     return () => {
       window.clearInterval(timer)
     }
-  }, [isSynchronousTestMode, refreshTasks])
+  }, [handleImportError, isSynchronousTestMode, refreshTasks])
 
-  useEffect(() => {
-    const onPaste = (event: ClipboardEvent) => {
-      if (!document.hasFocus()) {
-        return
-      }
+  const enqueuePastePaths = useCallback(
+    (paths: string[]) => {
+      void enqueueImportPaths('paste', paths)
+    },
+    [enqueueImportPaths],
+  )
+  const enqueueDragDropPaths = useCallback(
+    (paths: string[]) => {
+      void enqueueImportPaths('drag-drop', paths)
+    },
+    [enqueueImportPaths],
+  )
+  const handleDragPathResolveFailed = useCallback(() => {
+    setTaskError('拖拽导入失败：未获取到本地绝对路径')
+  }, [])
 
-      const activeElement = document.activeElement as HTMLElement | null
-      if (
-        activeElement &&
-        (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable)
-      ) {
-        return
-      }
+  useImportPaste({
+    repository,
+    timeoutMs: IMPORT_TASK_TIMEOUT_MS,
+    enqueuePastePaths,
+    onError: handleImportError,
+  })
 
-      const pastedFiles = Array.from(event.clipboardData?.files ?? [])
-      const text = event.clipboardData?.getData('text') ?? ''
-      const uriList = event.clipboardData?.getData('text/uri-list') ?? ''
-      const pastedPaths = Array.from(new Set([...extractPathsFromClipboard(text), ...extractPathsFromClipboard(uriList)]))
-
-      const filePaths = collectNativePaths(pastedFiles)
-      const mergedPaths = Array.from(new Set([...filePaths, ...pastedPaths]))
-      if (mergedPaths.length > 0) {
-        event.preventDefault()
-        void enqueueImportPaths('paste', mergedPaths)
-        return
-      }
-
-      const clipboardReader = repository.readClipboardImportPaths
-      if (!clipboardReader) {
-        return
-      }
-
-      event.preventDefault()
-      void clipboardReader({ timeoutMs: IMPORT_TASK_TIMEOUT_MS })
-        .then((response) => {
-          if (response.paths.length > 0) {
-            void enqueueImportPaths('paste', response.paths)
-          }
-        })
-        .catch((error: unknown) => {
-          setTaskError(toErrorMessage(error))
-        })
-    }
-
-    window.addEventListener('paste', onPaste)
-    return () => window.removeEventListener('paste', onPaste)
-  }, [enqueueImportPaths, repository])
-
-  const onDragEnterImport: DragEventHandler<HTMLDivElement> = (event) => {
-    event.preventDefault()
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'copy'
-    }
-
-    if (!shouldShowDragOverlay(event.dataTransfer)) {
-      return
-    }
-
-    dragDepthRef.current += 1
-    setDragOverlayActive(true)
-  }
-
-  const onDropImport: DragEventHandler<HTMLDivElement> = (event) => {
-    event.preventDefault()
-
-    if (isEventImportHandled(event)) {
-      dragDepthRef.current = 0
-      setDragOverlayActive(false)
-      return
-    }
-
-    dragDepthRef.current = 0
-    setDragOverlayActive(false)
-
-    const mergedPaths = collectPathsFromDataTransfer(event.dataTransfer)
-    if (mergedPaths.length === 0) {
-      if ((event.dataTransfer?.files?.length ?? 0) > 0) {
-        setTaskError('拖拽导入失败：未获取到本地绝对路径')
-      }
-      return
-    }
-
-    markEventImportHandled(event)
-    void enqueueImportPaths('drag-drop', mergedPaths)
-  }
-
-  const onDragOverImport: DragEventHandler<HTMLDivElement> = (event) => {
-    event.preventDefault()
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'copy'
-    }
-
-    if (!dragOverlayActive && shouldShowDragOverlay(event.dataTransfer)) {
-      setDragOverlayActive(true)
-    }
-  }
-
-  const onDragLeaveImport: DragEventHandler<HTMLDivElement> = () => {
-    if (!dragOverlayActive) {
-      return
-    }
-
-    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
-    if (dragDepthRef.current === 0) {
-      setDragOverlayActive(false)
-    }
-  }
-
-  useEffect(() => {
-    const onWindowDragEnter = (event: DragEvent) => {
-      event.preventDefault()
-      if (event.dataTransfer) {
-        event.dataTransfer.dropEffect = 'copy'
-      }
-
-      if (!shouldShowDragOverlay(event.dataTransfer)) {
-        return
-      }
-
-      dragDepthRef.current += 1
-      setDragOverlayActive(true)
-    }
-
-    const onWindowDragOver = (event: DragEvent) => {
-      event.preventDefault()
-
-      if (event.dataTransfer) {
-        event.dataTransfer.dropEffect = 'copy'
-      }
-
-      if (!dragOverlayActive && shouldShowDragOverlay(event.dataTransfer)) {
-        setDragOverlayActive(true)
-      }
-    }
-
-    const onWindowDrop = (event: DragEvent) => {
-      event.preventDefault()
-
-      if (isEventImportHandled(event)) {
-        dragDepthRef.current = 0
-        setDragOverlayActive(false)
-        return
-      }
-
-      dragDepthRef.current = 0
-      setDragOverlayActive(false)
-
-      const mergedPaths = collectPathsFromDataTransfer(event.dataTransfer)
-      if (mergedPaths.length === 0) {
-        return
-      }
-
-      markEventImportHandled(event)
-      void enqueueImportPaths('drag-drop', mergedPaths)
-    }
-
-    const onWindowDragLeave = () => {
-      dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
-      if (dragDepthRef.current === 0) {
-        setDragOverlayActive(false)
-      }
-    }
-
-    window.addEventListener('dragenter', onWindowDragEnter, true)
-    window.addEventListener('dragover', onWindowDragOver, true)
-    window.addEventListener('dragleave', onWindowDragLeave, true)
-    window.addEventListener('drop', onWindowDrop, true)
-    return () => {
-      window.removeEventListener('dragenter', onWindowDragEnter, true)
-      window.removeEventListener('dragover', onWindowDragOver, true)
-      window.removeEventListener('dragleave', onWindowDragLeave, true)
-      window.removeEventListener('drop', onWindowDrop, true)
-    }
-  }, [dragOverlayActive, enqueueImportPaths])
+  const { dragOverlayActive, onDragEnterImport, onDragOverImport, onDragLeaveImport, onDropImport } =
+    useImportDragOverlay({
+      enqueueDragDropPaths,
+      onPathResolveFailed: handleDragPathResolveFailed,
+    })
 
   const stableTasks = useMemo(
     () => [...importTasks].sort((left, right) => right.created_at_ms - left.created_at_ms),
