@@ -1,0 +1,31 @@
+/* Template for new themes */
+
+:root[data-mpx-theme="template-id"] {
+  color-scheme: light; /* or dark */
+
+  /* Surfaces */
+  --mpx-bg-app: #...;
+  --mpx-bg-workspace: #...;
+  --mpx-bg-panel: #...;
+  --mpx-bg-elevated: #...;
+  --mpx-bg-hover: ...;
+  --mpx-bg-selected: ...;
+  --mpx-bg-muted: #...;
+
+  /* Text */
+  --mpx-text-1: #...;
+  --mpx-text-2: #...;
+  --mpx-text-3: #...;
+
+  /* Borders */
+  --mpx-border-1: #...;
+  --mpx-border-2: #...;
+  --mpx-border-focus: #...;
+
+  /* Accent */
+  --mpx-accent: #...;
+  --mpx-accent-soft: ...;
+
+  /* Optional: Override component aliases if needed */
+  /* --mpx-header-bg: ...; */
+}

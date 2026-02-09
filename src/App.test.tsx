@@ -565,7 +565,8 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore)
 
     fireEvent.click(screen.getByRole('button', { name: 'theme 设置' }))
-    expect(screen.getByText('theme 设置（占位）')).toBeInTheDocument()
+    expect(screen.getByText('主题方案')).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: '主题方案' })).toHaveValue('swiss-cobalt')
 
     fireEvent.click(screen.getByRole('button', { name: '3D 设置' }))
     expect(screen.getByText('3D 设置（向量宇宙）')).toBeInTheDocument()

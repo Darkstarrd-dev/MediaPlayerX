@@ -1,0 +1,7 @@
+/* Global Theme Entry */
+
+@import './contract.css';
+
+/* Import all presets */
+@import './presets/swiss-cobalt.css';
+@import './presets/neon-rift.css';

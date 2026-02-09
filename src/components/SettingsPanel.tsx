@@ -9,6 +9,7 @@ import {
   type ShortcutConflict,
   type ShortcutMap,
 } from '../shortcuts'
+import { listThemes } from '../features/theme/themeRegistry'
 import {
   VECTOR_CONTROL_DEFINITIONS,
   type VectorControlAction,
@@ -19,6 +20,7 @@ import { DEFAULT_SETTINGS } from '../store/useUiStore'
 
 export interface SettingsPanelProps {
   settingsOpen: boolean
+  themeId: string
   headerHeight: number
   settingsFontSize: number
   sidebarRatio: number
@@ -49,6 +51,7 @@ export interface SettingsPanelProps {
   databaseResetPending: boolean
   databaseResetError: string | null
   onClose: () => void
+  onThemeChange: (value: string) => void
   onHeaderHeightChange: (value: number) => void
   onSettingsFontSizeChange: (value: number) => void
   onSidebarRatioChange: (value: number) => void
@@ -172,6 +175,7 @@ function formatScale(value: number): string {
 
 function SettingsPanel({
   settingsOpen,
+  themeId,
   headerHeight,
   settingsFontSize,
   sidebarRatio,
@@ -202,6 +206,7 @@ function SettingsPanel({
   databaseResetPending,
   databaseResetError,
   onClose,
+  onThemeChange,
   onHeaderHeightChange,
   onSettingsFontSizeChange,
   onSidebarRatioChange,
@@ -558,18 +563,22 @@ function SettingsPanel({
     }
 
     if (activeSection === 'theme') {
+      const themes = listThemes()
       return (
         <div className="settings-block">
-          <h3>theme 设置（占位）</h3>
-          <p className="settings-placeholder">预留：后续用于主题色板、字体体系与控件风格映射配置。</p>
-          <label>
-            主题方案（预留）
-            <input disabled type="text" value="coming-soon" readOnly />
-          </label>
-          <label>
-            动效强度（预留）
-            <input disabled type="range" min={0} max={100} value={40} readOnly />
-          </label>
+          <h3>theme 设置</h3>
+          <p className="settings-placeholder">
+            在此选择应用主题方案。您可以向 <code>src/styles/themes/presets/</code> 目录添加 CSS
+            文件来增加新主题。
+          </p>
+          <label htmlFor="theme-select">主题方案</label>
+          <select id="theme-select" value={themeId} onChange={(event) => onThemeChange(event.target.value)}>
+            {themes.map((theme) => (
+              <option key={theme.id} value={theme.id}>
+                {theme.label}
+              </option>
+            ))}
+          </select>
         </div>
       )
     }

@@ -19,6 +19,8 @@ import {
   writePackageMetadataResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
+  readAppStateResponseSchema,
+  writeAppStateResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
@@ -51,6 +53,10 @@ import {
   type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
+  type ReadAppStateRequestDto,
+  type ReadAppStateResponseDto,
+  type WriteAppStateRequestDto,
+  type WriteAppStateResponseDto,
 } from '../../../contracts/backend'
 import type { ReadonlyMediaRepository, RepositoryRequestOptions } from './types'
 import { benchRecordIpcTiming } from '../../perf/benchRecorder'
@@ -428,11 +434,37 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {
     const api = window.mediaPlayerBackend
     if (!api || !api.readArchiveLoadStatus) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
+      throw new Error('真实后端通道不可用：readArchiveLoadStatus 未注入')
     }
 
     const response = await withAbort(api.readArchiveLoadStatus(), options)
     return readArchiveLoadStatusResponseSchema.parse(response)
+  }
+
+  async readAppState(
+    request: ReadAppStateRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadAppStateResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api || !api.readAppState) {
+      throw new Error('真实后端通道不可用：readAppState 未注入')
+    }
+
+    const response = await withAbort(api.readAppState(request), options)
+    return readAppStateResponseSchema.parse(response)
+  }
+
+  async writeAppState(
+    request: WriteAppStateRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WriteAppStateResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api || !api.writeAppState) {
+      throw new Error('真实后端通道不可用：writeAppState 未注入')
+    }
+
+    const response = await withAbort(api.writeAppState(request), options)
+    return writeAppStateResponseSchema.parse(response)
   }
 
   async clearDatabase(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto> {

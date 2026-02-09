@@ -24,6 +24,10 @@ import {
   writePackageMetadataResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
+  type ReadAppStateRequestDto,
+  type ReadAppStateResponseDto,
+  type WriteAppStateRequestDto,
+  type WriteAppStateResponseDto,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
@@ -674,12 +678,19 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     })
   }
 
-  async writePlaylist(
-    request: WritePlaylistRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<WritePlaylistResponseDto> {
+  async writePlaylist(request: WritePlaylistRequestDto): Promise<WritePlaylistResponseDto> {
     const response = this.writePlaylistSync(request)
-    return resolveAsync(response, options)
+    return resolveAsync(response)
+  }
+
+  async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> {
+    const val = localStorage.getItem(`mpx_mock_state_${request.state_key}`)
+    return { state_json: val ?? request.fallback_json ?? 'null' }
+  }
+
+  async writeAppState(request: WriteAppStateRequestDto): Promise<WriteAppStateResponseDto> {
+    localStorage.setItem(`mpx_mock_state_${request.state_key}`, request.state_json)
+    return { updated_at_ms: Date.now() }
   }
 
   pickImportPathsSync(request: PickImportPathsRequestDto): PickImportPathsResponseDto {

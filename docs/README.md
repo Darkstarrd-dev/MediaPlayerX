@@ -7,6 +7,7 @@
 - `requirements-v1.md`：V1 需求范围与行为冻结。
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
+- `ui/theme-system-v1.md`：主题系统 CSS 契约与开发规范 (SSOT)。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
 - `backend-integration-guardrails.md`：后端接入阶段的强制规避方案与执行门禁。
 - `perf/2026-02-08-ui-perf-benchmark-plan.md`：UI 性能基准与选型结论（定型：R1-S1）。

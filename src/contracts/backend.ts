@@ -301,6 +301,24 @@ export const readArchiveLoadStatusResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const readAppStateRequestSchema = z.object({
+  state_key: z.string().min(1),
+  fallback_json: z.string().optional(),
+})
+
+export const readAppStateResponseSchema = z.object({
+  state_json: z.string(),
+})
+
+export const writeAppStateRequestSchema = z.object({
+  state_key: z.string().min(1),
+  state_json: z.string().min(1),
+})
+
+export const writeAppStateResponseSchema = z.object({
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -382,6 +400,10 @@ export type PickImportPathsResponseDto = z.infer<typeof pickImportPathsResponseS
 export type ReadClipboardImportPathsResponseDto = z.infer<typeof readClipboardImportPathsResponseSchema>
 export type ClearDatabaseResponseDto = z.infer<typeof clearDatabaseResponseSchema>
 export type ReadArchiveLoadStatusResponseDto = z.infer<typeof readArchiveLoadStatusResponseSchema>
+export type ReadAppStateRequestDto = z.infer<typeof readAppStateRequestSchema>
+export type ReadAppStateResponseDto = z.infer<typeof readAppStateResponseSchema>
+export type WriteAppStateRequestDto = z.infer<typeof writeAppStateRequestSchema>
+export type WriteAppStateResponseDto = z.infer<typeof writeAppStateResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

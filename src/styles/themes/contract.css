@@ -1,0 +1,68 @@
+/* MediaPlayer Theme System Contract */
+
+:root {
+  /* Foundations */
+  --mpx-font-ui: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --mpx-font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+  --mpx-radius-sm: 4px;
+  --mpx-radius-md: 8px;
+  --mpx-radius-lg: 10px;
+  --mpx-radius-xl: 14px;
+  --mpx-radius-pill: 9999px;
+
+  /* Default Semantic (Parchment-like base) */
+  --mpx-bg-app: #f2eee7;
+  --mpx-bg-workspace: #f3f0ea;
+  --mpx-bg-panel: #fbf8f3;
+  --mpx-bg-elevated: #ffffff;
+  --mpx-bg-hover: rgba(46, 111, 127, 0.06);
+  --mpx-bg-selected: #e6f1f4;
+  --mpx-bg-muted: #f9f6ef;
+  --mpx-bg-tooltip: rgba(0, 0, 0, 0.85);
+
+  --mpx-text-1: #2e2a22;
+  --mpx-text-2: #6a6358;
+  --mpx-text-3: #9f937f;
+  --mpx-text-inverse: #ffffff;
+
+  --mpx-border-1: #d6cfc1;
+  --mpx-border-2: #b7ab95;
+  --mpx-border-focus: #2e6f7f;
+
+  --mpx-accent: #2e6f7f;
+  --mpx-accent-contrast: #ffffff;
+  --mpx-accent-soft: #dcecf0;
+
+  --mpx-status-danger-bg: #fdeee8;
+  --mpx-status-danger-border: #d7a596;
+  --mpx-status-danger-text: #5f2a1e;
+
+  --mpx-status-warning-bg: #fff7e7;
+  --mpx-status-warning-border: #d8c69b;
+  --mpx-status-warning-text: #5a3b12;
+
+  --mpx-status-info-bg: #edf6f9;
+  --mpx-status-info-border: #c5d6de;
+  --mpx-status-info-text: #173b47;
+
+  --mpx-status-success-bg: #ebf7ee;
+  --mpx-status-success-border: #97d4a9;
+  --mpx-status-success-text: #1e4620;
+
+  --mpx-shadow-panel: 0 10px 26px rgba(60, 48, 30, 0.14);
+  --mpx-shadow-popover: 0 8px 20px rgba(0, 0, 0, 0.12);
+
+  /* Component Aliases (Default mappings) */
+  --mpx-header-bg: linear-gradient(120deg, #f4ebe0 0%, #f7f4ef 42%, #ece6d8 100%);
+  --mpx-header-border: var(--mpx-border-1);
+  --mpx-sidebar-bullet-pending: #94a3ad;
+  --mpx-sidebar-bullet-running: #2fb36e;
+  --mpx-splitter-track-bg: linear-gradient(180deg, rgba(181, 171, 149, 0.16), rgba(181, 171, 149, 0.02));
+  --mpx-splitter-handle-bg: rgba(183, 171, 149, 0.72);
+  --mpx-splitter-handle-hover-bg: rgba(46, 111, 127, 0.9);
+  --mpx-card-focus-ring: rgba(47, 111, 127, 0.18);
+  --mpx-fullscreen-bg: #060708;
+  --mpx-fullscreen-footer-bg: rgba(10, 12, 14, 0.86);
+  --mpx-video-screen-bg: linear-gradient(135deg, #2d2f33, #212022);
+}

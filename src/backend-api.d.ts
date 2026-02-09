@@ -31,6 +31,10 @@ import type {
   WriteVideoMetadataResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
+  ReadAppStateRequestDto,
+  ReadAppStateResponseDto,
+  WriteAppStateRequestDto,
+  WriteAppStateResponseDto,
 } from './contracts/backend'
 
 interface MediaPlayerBackendApi {
@@ -45,6 +49,8 @@ interface MediaPlayerBackendApi {
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
   readPlaylist: () => Promise<ReadPlaylistResponseDto>
   writePlaylist: (request: WritePlaylistRequestDto) => Promise<WritePlaylistResponseDto>
+  readAppState?: (request: ReadAppStateRequestDto) => Promise<ReadAppStateResponseDto>
+  writeAppState?: (request: WriteAppStateRequestDto) => Promise<WriteAppStateResponseDto>
   pickImportPaths: (request: PickImportPathsRequestDto) => Promise<PickImportPathsResponseDto>
   readClipboardImportPaths: () => Promise<ReadClipboardImportPathsResponseDto>
   enqueueImportTask: (request: EnqueueImportTaskRequestDto) => Promise<EnqueueImportTaskResponseDto>

@@ -31,6 +31,10 @@ import type {
   WriteVideoMetadataResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
+  ReadAppStateRequestDto,
+  ReadAppStateResponseDto,
+  WriteAppStateRequestDto,
+  WriteAppStateResponseDto,
 } from '../../../contracts/backend'
 
 export interface RepositoryRequestOptions {
@@ -78,6 +82,14 @@ export interface ReadonlyMediaRepository {
     request: WritePlaylistRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePlaylistResponseDto>
+  readAppState?(
+    request: ReadAppStateRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadAppStateResponseDto>
+  writeAppState?(
+    request: WriteAppStateRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WriteAppStateResponseDto>
   pickImportPaths?(
     request: PickImportPathsRequestDto,
     options?: RepositoryRequestOptions,

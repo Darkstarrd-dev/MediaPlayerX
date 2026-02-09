@@ -34,6 +34,10 @@ import {
   writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
   writePackageGradeResponseSchema,
+  readAppStateRequestSchema,
+  readAppStateResponseSchema,
+  writeAppStateRequestSchema,
+  writeAppStateResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { FileSystemMediaReadService } from './fileSystemReadService'
@@ -257,6 +261,18 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readArchiveLoadStatus, async () => {
     const response = await ensureService().readArchiveLoadStatus()
     return readArchiveLoadStatusResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readAppState, async (_event, payload: unknown) => {
+    const request = readAppStateRequestSchema.parse(payload)
+    const response = await ensureService().readAppState(request)
+    return readAppStateResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.writeAppState, async (_event, payload: unknown) => {
+    const request = writeAppStateRequestSchema.parse(payload)
+    const response = await ensureService().writeAppState(request)
+    return writeAppStateResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.clearDatabase, async () => {

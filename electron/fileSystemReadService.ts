@@ -1736,4 +1736,20 @@ export class FileSystemMediaReadService {
     this.mediaAudit.tokenHits += 1
     return record
   }
+
+  async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> {
+    this.markInteractiveRead()
+    const state = this.database.readAppState<unknown>(request.state_key, null)
+    return readAppStateResponseSchema.parse({
+      state_json: state !== null ? JSON.stringify(state) : (request.fallback_json ?? 'null'),
+    })
+  }
+
+  async writeAppState(request: WriteAppStateRequestDto): Promise<WriteAppStateResponseDto> {
+    this.markInteractiveRead()
+    this.database.writeAppState(request.state_key, JSON.parse(request.state_json))
+    return writeAppStateResponseSchema.parse({
+      updated_at_ms: Date.now(),
+    })
+  }
 }

@@ -19,3 +19,9 @@ export { useReadOnlyDataAccess } from './useReadOnlyDataAccess'
 export { useResolvedMediaUrls, type MediaResolveTarget } from './useResolvedMediaUrls'
 export { useRuntimeCapabilities } from './useRuntimeCapabilities'
 export { useWriteDataAccess } from './useWriteDataAccess'
+export type {
+  ReadAppStateRequestDto,
+  ReadAppStateResponseDto,
+  WriteAppStateRequestDto,
+  WriteAppStateResponseDto,
+} from '../../contracts/backend'

@@ -56,6 +56,7 @@ import { useAppEffects } from './features/app/useAppEffects'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
 import { useDatabaseResetAction } from './features/app/useDatabaseResetAction'
 import { useRuntimeWarningDismiss } from './features/app/useRuntimeWarningDismiss'
+import { useSettingsPersistence } from './features/app/useSettingsPersistence'
 import { useVideoSidebarState } from './features/app/useVideoSidebarState'
 import { useImportPipeline } from './features/import/useImportPipeline'
 import { usePaneResizers } from './features/layout/usePaneResizers'
@@ -112,10 +113,13 @@ function App() {
     metadataCollapsed,
     autoPlayEnabled,
     autoPlayInterval,
+    searchField,
+    searchText,
     vectorThreshold,
     sidebarFocus,
     imageRootNodeId,
     videoRootNodeId,
+    themeId,
     thumbnailQuality,
     thumbnailWidth,
     lmStudioEndpoint,
@@ -156,10 +160,13 @@ function App() {
       metadataCollapsed: state.metadataCollapsed,
       autoPlayEnabled: state.autoPlayEnabled,
       autoPlayInterval: state.autoPlayInterval,
+      searchField: state.searchField,
+      searchText: state.searchText,
       vectorThreshold: state.vectorThreshold,
       sidebarFocus: state.sidebarFocus,
       imageRootNodeId: state.imageRootNodeId,
       videoRootNodeId: state.videoRootNodeId,
+      themeId: state.themeId,
       thumbnailQuality: state.thumbnailQuality,
       thumbnailWidth: state.thumbnailWidth,
       lmStudioEndpoint: state.lmStudioEndpoint,
@@ -1361,6 +1368,7 @@ function App() {
     searchPanelMode,
     vectorPanelHeight,
     featureTagPickerOpen,
+    themeId,
     setAppBodyWidth,
     setGridSize,
     setVectorFocusIndex,
@@ -1374,6 +1382,51 @@ function App() {
     setFullscreenVideoFocus,
     setFullscreenSwapped,
     setShowFullscreenFooter,
+    updateSettings,
+  })
+
+  useSettingsPersistence({
+    settings: {
+      mode,
+      vectorMode,
+      settingsOpen,
+      headerHeight,
+      settingsFontSize,
+      sidebarRatio,
+      sidebarMinWidth,
+      layoutLocked,
+      sidebarFontSize,
+      sidebarCountFontSize,
+      sidebarIndentStep,
+      sidebarVerticalGap,
+      metadataRatio,
+      vectorPanelHeight,
+      thumbnailScale,
+      thumbnailGap,
+      showNamesOnly,
+      metadataCollapsed,
+      autoPlayEnabled,
+      autoPlayInterval,
+      searchField,
+      searchText,
+      vectorThreshold,
+      sidebarFocus,
+      imageRootNodeId,
+      videoRootNodeId,
+      themeId,
+      thumbnailQuality,
+      thumbnailWidth,
+      lmStudioEndpoint,
+      lmStudioModel,
+      vectorUniverseMoveSpeed,
+      vectorUniverseSprintMultiplier,
+      vectorUniverseLookSensitivity,
+      vectorUniverseRaycastDistance,
+      vectorUniverseHelperScale,
+      vectorUniverseDispersion,
+      vectorUniverseWidgetSize,
+    },
+    repository: mediaRepository,
     updateSettings,
   })
 
@@ -1631,6 +1684,7 @@ function App() {
 
   const settingsPanelProps = buildSettingsPanelProps({
     settingsOpen,
+    themeId,
     headerHeight,
     settingsFontSize,
     sidebarRatio,

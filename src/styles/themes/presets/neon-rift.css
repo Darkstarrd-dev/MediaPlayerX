@@ -1,0 +1,36 @@
+/* Theme: Neon Rift (Retro-Futuristic Dark) */
+
+:root[data-mpx-theme="neon-rift"] {
+  color-scheme: dark;
+
+  --mpx-bg-app: #0f0f23;
+  --mpx-bg-workspace: #0b0b1a;
+  --mpx-bg-panel: #16162d;
+  --mpx-bg-elevated: #1f1f3a;
+  --mpx-bg-hover: rgba(124, 58, 237, 0.15);
+  --mpx-bg-selected: rgba(124, 58, 237, 0.25);
+  --mpx-bg-muted: #11112b;
+
+  --mpx-text-1: #e2e8f0;
+  --mpx-text-2: #94a3b8;
+  --mpx-text-3: #64748b;
+
+  --mpx-border-1: #2d2d4a;
+  --mpx-border-2: #4c1d95;
+  --mpx-border-focus: #7c3aed;
+
+  --mpx-accent: #7c3aed;
+  --mpx-accent-soft: rgba(124, 58, 237, 0.2);
+
+  --mpx-status-danger-bg: #450a0a;
+  --mpx-status-danger-text: #fecaca;
+  --mpx-status-success-bg: #064e3b;
+  --mpx-status-success-text: #a7f3d0;
+
+  --mpx-header-bg: #16162d;
+  --mpx-shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.4);
+  --mpx-splitter-track-bg: #0b0b1a;
+  --mpx-splitter-handle-bg: #4c1d95;
+  --mpx-splitter-handle-hover-bg: #7c3aed;
+  --mpx-card-focus-ring: rgba(124, 58, 237, 0.5);
+}

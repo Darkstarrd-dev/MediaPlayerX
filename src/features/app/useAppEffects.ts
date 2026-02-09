@@ -50,6 +50,7 @@ interface UseAppEffectsParams {
   searchPanelMode: 'vector' | 'feature'
   vectorPanelHeight: number
   featureTagPickerOpen: boolean
+  themeId: string
   setAppBodyWidth: Dispatch<SetStateAction<number>>
   setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>
   setVectorFocusIndex: Dispatch<SetStateAction<number>>
@@ -112,6 +113,7 @@ export function useAppEffects({
   searchPanelMode,
   vectorPanelHeight,
   featureTagPickerOpen,
+  themeId,
   setAppBodyWidth,
   setGridSize,
   setVectorFocusIndex,
@@ -420,4 +422,8 @@ export function useAppEffects({
     vectorPanelContentRef,
     vectorPanelHeight,
   ])
+
+  useEffect(() => {
+    document.documentElement.dataset.mpxTheme = themeId
+  }, [themeId])
 }

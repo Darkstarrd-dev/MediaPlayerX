@@ -33,6 +33,10 @@ import {
   writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
   writePackageGradeResponseSchema,
+  readAppStateRequestSchema,
+  readAppStateResponseSchema,
+  writeAppStateRequestSchema,
+  writeAppStateResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, BENCH_CHANNELS } from './channels'
 
@@ -124,6 +128,16 @@ const backendApi = {
   readArchiveLoadStatus: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readArchiveLoadStatus)
     return readArchiveLoadStatusResponseSchema.parse(response)
+  },
+  readAppState: async (request: unknown) => {
+    const parsed = readAppStateRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readAppState, parsed)
+    return readAppStateResponseSchema.parse(response)
+  },
+  writeAppState: async (request: unknown) => {
+    const parsed = writeAppStateRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writeAppState, parsed)
+    return writeAppStateResponseSchema.parse(response)
   },
   clearDatabase: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearDatabase)
