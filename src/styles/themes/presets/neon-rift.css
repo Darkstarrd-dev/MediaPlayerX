@@ -14,6 +14,7 @@
   --mpx-text-1: #e2e8f0;
   --mpx-text-2: #94a3b8;
   --mpx-text-3: #64748b;
+  --mpx-text-heading: #f8fafc;
 
   --mpx-border-1: #2d2d4a;
   --mpx-border-2: #4c1d95;
@@ -21,6 +22,16 @@
 
   --mpx-accent: #7c3aed;
   --mpx-accent-soft: rgba(124, 58, 237, 0.2);
+
+  --mpx-input-bg: #1f1f3a;
+  --mpx-input-border: #2d2d4a;
+  --mpx-input-text: #e2e8f0;
+
+  --mpx-btn-primary-bg: #7c3aed;
+  --mpx-btn-primary-text: #ffffff;
+  --mpx-btn-secondary-bg: #1f1f3a;
+  --mpx-btn-secondary-border: #4c1d95;
+  --mpx-btn-secondary-text: #e2e8f0;
 
   --mpx-status-danger-bg: #450a0a;
   --mpx-status-danger-text: #fecaca;
@@ -33,4 +44,12 @@
   --mpx-splitter-handle-bg: #4c1d95;
   --mpx-splitter-handle-hover-bg: #7c3aed;
   --mpx-card-focus-ring: rgba(124, 58, 237, 0.5);
+
+  --mpx-status-busy-bg: #4c1d95;
+  --mpx-status-busy-border: #7c3aed;
+  --mpx-status-busy-text: #e2e8f0;
+
+  --mpx-status-idle-bg: #16162d;
+  --mpx-status-idle-border: #2d2d4a;
+  --mpx-status-idle-text: #94a3b8;
 }

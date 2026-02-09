@@ -14,6 +14,7 @@
   --mpx-text-1: #1e293b;
   --mpx-text-2: #475569;
   --mpx-text-3: #94a3b8;
+  --mpx-text-heading: #0f172a;
 
   --mpx-border-1: #e2e8f0;
   --mpx-border-2: #cbd5e1;
@@ -22,8 +23,26 @@
   --mpx-accent: #2563eb;
   --mpx-accent-soft: #dbeafe;
 
+  --mpx-input-bg: #ffffff;
+  --mpx-input-border: #e2e8f0;
+  --mpx-input-text: #1e293b;
+
+  --mpx-btn-primary-bg: #2563eb;
+  --mpx-btn-primary-text: #ffffff;
+  --mpx-btn-secondary-bg: #ffffff;
+  --mpx-btn-secondary-border: #cbd5e1;
+  --mpx-btn-secondary-text: #1e293b;
+
   --mpx-header-bg: #ffffff;
   --mpx-shadow-panel: 0 4px 12px rgba(0, 0, 0, 0.05);
   --mpx-splitter-track-bg: #f1f5f9;
   --mpx-splitter-handle-bg: #cbd5e1;
+
+  --mpx-status-busy-bg: #fffbeb;
+  --mpx-status-busy-border: #fcd34d;
+  --mpx-status-busy-text: #92400e;
+
+  --mpx-status-idle-bg: #f8fafc;
+  --mpx-status-idle-border: #e2e8f0;
+  --mpx-status-idle-text: #64748b;
 }
