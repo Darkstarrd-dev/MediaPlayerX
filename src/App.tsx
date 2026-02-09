@@ -6,16 +6,7 @@ import {
 } from 'react'
 
 import './App.css'
-import AppHeader from './components/AppHeader'
-import AppTopBanners from './components/AppTopBanners'
-import AppWorkspace from './components/AppWorkspace'
-import DangerConfirmDialog from './components/DangerConfirmDialog'
-import DragImportOverlay from './components/DragImportOverlay'
-import E2eBenchSection from './components/E2eBenchSection'
-import FullscreenLayer from './components/FullscreenLayer'
-import ImportSourceInputs from './components/ImportSourceInputs'
-import SettingsPanel from './components/SettingsPanel'
-import VectorUniverseSection from './components/VectorUniverseSection'
+import AppShell from './components/AppShell'
 import {
   normalizePathForCompare,
 } from './features/app/mediaPathUtils'
@@ -964,62 +955,63 @@ function App() {
     goPrevPage,
   })
 
+  const importSourceInputsProps = {
+    fileImportInputRef,
+    folderImportInputRef,
+    onImportFilesSelected,
+    onImportFoldersSelected,
+  }
+
+  const appTopBannersProps = {
+    backendErrorRows: bannerBackendErrorRows,
+    repositoryMode,
+    runtimeWarningVisible: runtimeWarningDismiss.visible,
+    runtimeCapabilityWarnings,
+    onDismissRuntimeWarning: runtimeWarningDismiss.dismiss,
+    importTaskPanelProps,
+  }
+
+  const appWorkspaceProps = {
+    mode,
+    headerHeight,
+    sidebarCollapsed,
+    sidebarFocus,
+    sidebarRatio,
+    metadataCollapsed,
+    metadataRatio,
+    layoutLocked,
+    appBodyRef,
+    workspaceRef,
+    workspaceBodyRef,
+    onExpandSidebar,
+    onStartSidebarResize,
+    onStartMetadataResize,
+    sidebarPanelProps,
+    searchPanelProps,
+    managementPanelProps,
+    imageMainSectionProps,
+    videoMainSectionProps,
+    metadataPanelProps,
+    mainFooter,
+  }
+
   return (
-    <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
-      <AppHeader {...appHeaderProps} />
-
-      <ImportSourceInputs
-        fileImportInputRef={fileImportInputRef}
-        folderImportInputRef={folderImportInputRef}
-        onImportFilesSelected={onImportFilesSelected}
-        onImportFoldersSelected={onImportFoldersSelected}
-      />
-
-      <AppTopBanners
-        backendErrorRows={bannerBackendErrorRows}
-        repositoryMode={repositoryMode}
-        runtimeWarningVisible={runtimeWarningDismiss.visible}
-        runtimeCapabilityWarnings={runtimeCapabilityWarnings}
-        onDismissRuntimeWarning={runtimeWarningDismiss.dismiss}
-        importTaskPanelProps={importTaskPanelProps}
-      />
-
-      <AppWorkspace
-        mode={mode}
-        headerHeight={headerHeight}
-        sidebarCollapsed={sidebarCollapsed}
-        sidebarFocus={sidebarFocus}
-        sidebarRatio={sidebarRatio}
-        metadataCollapsed={metadataCollapsed}
-        metadataRatio={metadataRatio}
-        layoutLocked={layoutLocked}
-        appBodyRef={appBodyRef}
-        workspaceRef={workspaceRef}
-        workspaceBodyRef={workspaceBodyRef}
-        onExpandSidebar={onExpandSidebar}
-        onStartSidebarResize={onStartSidebarResize}
-        onStartMetadataResize={onStartMetadataResize}
-        sidebarPanelProps={sidebarPanelProps}
-        searchPanelProps={searchPanelProps}
-        managementPanelProps={managementPanelProps}
-        imageMainSectionProps={imageMainSectionProps}
-        videoMainSectionProps={videoMainSectionProps}
-        metadataPanelProps={metadataPanelProps}
-        mainFooter={mainFooter}
-      />
-
-      <FullscreenLayer {...fullscreenLayerProps} />
-
-      <VectorUniverseSection {...vectorUniverseSectionProps} />
-
-      <SettingsPanel {...settingsPanelProps} />
-
-      <DangerConfirmDialog {...manageDeleteDialogProps} />
-
-      <DragImportOverlay active={dragOverlayActive} />
-
-      <E2eBenchSection {...e2eBenchSectionProps} />
-    </div>
+    <AppShell
+      onDragEnterImport={onDragEnterImport}
+      onDragLeaveImport={onDragLeaveImport}
+      onDragOverImport={onDragOverImport}
+      onDropImport={onDropImport}
+      appHeaderProps={appHeaderProps}
+      importSourceInputsProps={importSourceInputsProps}
+      appTopBannersProps={appTopBannersProps}
+      appWorkspaceProps={appWorkspaceProps}
+      fullscreenLayerProps={fullscreenLayerProps}
+      vectorUniverseSectionProps={vectorUniverseSectionProps}
+      settingsPanelProps={settingsPanelProps}
+      manageDeleteDialogProps={manageDeleteDialogProps}
+      dragOverlayActive={dragOverlayActive}
+      e2eBenchSectionProps={e2eBenchSectionProps}
+    />
   )
 }
 
