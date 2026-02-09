@@ -1,21 +1,26 @@
 import { useEffect, useState, type RefObject } from 'react'
 import * as THREE from 'three'
 
-import {
-  mouseButtonToToken,
-  normalizeShortcutBinding,
-  shortcutMatches,
-  shortcutMouseMatches,
-} from '../../shortcuts'
 import { clamp } from '../../utils/ui'
-import { resolveVectorUniverseLod } from './lod'
+import type { VectorControlMap } from '../../vectorControls'
 import { buildSceneGraph } from './sceneGraphBuilder'
+import { createSceneInputController } from './sceneInputController'
+import {
+  applyCameraMovement,
+  createCameraHudSync,
+  createForwardRaycastSync,
+  createLodSync,
+} from './sceneRuntimeSync'
+import {
+  DEFAULT_CAMERA_FORWARD,
+  DEFAULT_CAMERA_POSITION,
+  DEFAULT_LOD_COUNTS,
+  DEFAULT_WORLD_HALF_EXTENT,
+  resetVectorUniverseSceneState,
+} from './sceneStateDefaults'
 import {
   hasWebGLSupport,
   normalizeSceneSettings,
-  toPositionTuple,
-  tupleChanged,
-  wrapCoordinate,
 } from './sceneHelpers'
 import type {
   VectorUniverseLodCounts,
@@ -24,7 +29,6 @@ import type {
   VectorUniverseSceneSettings,
   VectorUniverseSceneState,
 } from './types'
-import type { VectorControlMap } from '../../vectorControls'
 
 export { buildVectorUniverseNodes, buildVectorUniverseNodesByScope } from './nodeBuilder'
 
@@ -33,16 +37,6 @@ const MAX_PITCH = Math.PI / 2 - 0.02
 const LOD_SYNC_INTERVAL_MS = 80
 const HUD_SYNC_INTERVAL_MS = 120
 const RAYCAST_SYNC_INTERVAL_MS = 60
-
-const DEFAULT_LOD_COUNTS: VectorUniverseLodCounts = {
-  far: 0,
-  mid: 0,
-  near: 0,
-}
-
-const DEFAULT_CAMERA_POSITION: [number, number, number] = [0, 0, 0]
-const DEFAULT_CAMERA_FORWARD: [number, number, number] = [0, 0, -1]
-const DEFAULT_WORLD_HALF_EXTENT = 40
 
 interface UseVectorUniverseSceneParams {
   open: boolean
@@ -74,30 +68,28 @@ export function useVectorUniverseScene({
   const [targetNodeId, setTargetNodeId] = useState<string | null>(null)
 
   useEffect(() => {
+    const resetSceneState = () => {
+      resetVectorUniverseSceneState({
+        setRendererReady,
+        setPointerLocked,
+        setFocusLod,
+        setLodCounts,
+        setWorldHalfExtent,
+        setCameraPosition,
+        setCameraForward,
+        setCameraYaw,
+        setTargetNodeId,
+      })
+    }
+
     if (!open) {
-      setRendererReady(false)
-      setPointerLocked(false)
-      setFocusLod(null)
-      setLodCounts(DEFAULT_LOD_COUNTS)
-      setWorldHalfExtent(DEFAULT_WORLD_HALF_EXTENT)
-      setCameraPosition(DEFAULT_CAMERA_POSITION)
-      setCameraForward(DEFAULT_CAMERA_FORWARD)
-      setCameraYaw(0)
-      setTargetNodeId(null)
+      resetSceneState()
       return
     }
 
     const host = containerRef.current
     if (!host || !hasWebGLSupport()) {
-      setRendererReady(false)
-      setPointerLocked(false)
-      setFocusLod(null)
-      setLodCounts(DEFAULT_LOD_COUNTS)
-      setWorldHalfExtent(DEFAULT_WORLD_HALF_EXTENT)
-      setCameraPosition(DEFAULT_CAMERA_POSITION)
-      setCameraForward(DEFAULT_CAMERA_FORWARD)
-      setCameraYaw(0)
-      setTargetNodeId(null)
+      resetSceneState()
       return
     }
 
@@ -113,15 +105,7 @@ export function useVectorUniverseScene({
     try {
       rendererInstance = new THREE.WebGLRenderer({ antialias: true, alpha: false })
     } catch {
-      setRendererReady(false)
-      setPointerLocked(false)
-      setFocusLod(null)
-      setLodCounts(DEFAULT_LOD_COUNTS)
-      setWorldHalfExtent(DEFAULT_WORLD_HALF_EXTENT)
-      setCameraPosition(DEFAULT_CAMERA_POSITION)
-      setCameraForward(DEFAULT_CAMERA_FORWARD)
-      setCameraYaw(0)
-      setTargetNodeId(null)
+      resetSceneState()
       return
     }
 
@@ -180,14 +164,6 @@ export function useVectorUniverseScene({
     let yaw = initialEuler.y
     let pitch = initialEuler.x
 
-    let moveUpActive = false
-    let moveDownActive = false
-    let moveLeftActive = false
-    let moveRightActive = false
-    let accelerateActive = false
-    let mouseForward = false
-    let mouseBackward = false
-
     const forward = new THREE.Vector3()
     const right = new THREE.Vector3()
     const up = new THREE.Vector3()
@@ -195,153 +171,14 @@ export function useVectorUniverseScene({
     const rayDirection = new THREE.Vector3()
     const raycaster = new THREE.Raycaster()
 
-    const clearInputs = () => {
-      moveUpActive = false
-      moveDownActive = false
-      moveLeftActive = false
-      moveRightActive = false
-      accelerateActive = false
-      mouseForward = false
-      mouseBackward = false
-    }
-
-    const bindingContainsMouseButton = (binding: string, button: number): boolean => {
-      const normalized = normalizeShortcutBinding(binding)
-      if (!normalized) {
-        return false
-      }
-
-      const token = mouseButtonToToken(button)
-      return normalized.split('|').some((combo) => combo.endsWith(token))
-    }
-
-    let pointerRelockTimer = 0
-    let pointerRelockRaf = 0
-    let pointerAutoLockEnabled = true
-
-    const syncPointerLock = () => {
-      const isLocked = document.pointerLockElement === canvas
-      setPointerLocked((previous) => (previous === isLocked ? previous : isLocked))
-      if (!isLocked) {
-        mouseForward = false
-        mouseBackward = false
-
-        if (pointerAutoLockEnabled) {
-          pointerRelockTimer = window.setTimeout(() => {
-            requestPointerLock()
-          }, 0)
-        }
-      }
-    }
-
-    const requestPointerLock = () => {
-      if (document.pointerLockElement === canvas) {
-        return
-      }
-
-      if (!canvas.isConnected || canvas.ownerDocument !== document) {
-        return
-      }
-
-      const request = (canvas as HTMLCanvasElement & { requestPointerLock?: () => void }).requestPointerLock
-      if (!request) {
-        return
-      }
-
-      try {
-        const maybePromise = request.call(canvas) as unknown
-        if (
-          typeof maybePromise === 'object' &&
-          maybePromise !== null &&
-          'catch' in maybePromise &&
-          typeof (maybePromise as { catch: (handler: () => void) => void }).catch === 'function'
-        ) {
-          ;(maybePromise as { catch: (handler: () => void) => void }).catch(() => undefined)
-        }
-      } catch {
-        return
-      }
-    }
-
-    const scheduleAutoPointerLock = () => {
-      if (!pointerAutoLockEnabled || document.pointerLockElement === canvas) {
-        return
-      }
-
-      pointerRelockRaf = window.requestAnimationFrame(() => {
-        requestPointerLock()
-      })
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      let matched = false
-
-      if (shortcutMatches(controls.moveUp, event)) {
-        matched = true
-        if (controlsEnabled) {
-          moveUpActive = true
-        }
-      }
-      if (shortcutMatches(controls.moveDown, event)) {
-        matched = true
-        if (controlsEnabled) {
-          moveDownActive = true
-        }
-      }
-      if (shortcutMatches(controls.moveLeft, event)) {
-        matched = true
-        if (controlsEnabled) {
-          moveLeftActive = true
-        }
-      }
-      if (shortcutMatches(controls.moveRight, event)) {
-        matched = true
-        if (controlsEnabled) {
-          moveRightActive = true
-        }
-      }
-      if (shortcutMatches(controls.accelerate, event)) {
-        matched = true
-        if (controlsEnabled) {
-          accelerateActive = true
-        }
-      }
-
-      if (matched) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-    }
-
-    const onKeyUp = (event: KeyboardEvent) => {
-      let matched = false
-
-      if (shortcutMatches(controls.moveUp, event)) {
-        matched = true
-        moveUpActive = false
-      }
-      if (shortcutMatches(controls.moveDown, event)) {
-        matched = true
-        moveDownActive = false
-      }
-      if (shortcutMatches(controls.moveLeft, event)) {
-        matched = true
-        moveLeftActive = false
-      }
-      if (shortcutMatches(controls.moveRight, event)) {
-        matched = true
-        moveRightActive = false
-      }
-      if (shortcutMatches(controls.accelerate, event)) {
-        matched = true
-        accelerateActive = false
-      }
-
-      if (matched) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-    }
+    const inputController = createSceneInputController({
+      canvas,
+      controls,
+      controlsEnabled,
+      onPointerLockChange: (isLocked) => {
+        setPointerLocked((previous) => (previous === isLocked ? previous : isLocked))
+      },
+    })
 
     const onMouseMove = (event: MouseEvent) => {
       if (document.pointerLockElement !== canvas) {
@@ -352,184 +189,53 @@ export function useVectorUniverseScene({
       pitch = clamp(pitch - event.movementY * sceneSettings.lookSensitivity, -MAX_PITCH, MAX_PITCH)
     }
 
-    const onMouseDown = (event: MouseEvent) => {
-      requestPointerLock()
-
-      let matched = false
-
-      if (shortcutMouseMatches(controls.moveForward, event)) {
-        matched = true
-        if (controlsEnabled) {
-          mouseForward = true
-        }
-      }
-      if (shortcutMouseMatches(controls.moveBackward, event)) {
-        matched = true
-        if (controlsEnabled) {
-          mouseBackward = true
-        }
-      }
-
-      if (matched) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-
-      if (!controlsEnabled) {
-        return
-      }
-    }
-
-    const onMouseUp = (event: MouseEvent) => {
-      if (shortcutMouseMatches(controls.moveForward, event) || bindingContainsMouseButton(controls.moveForward, event.button)) {
-        mouseForward = false
-      }
-
-      if (shortcutMouseMatches(controls.moveBackward, event) || bindingContainsMouseButton(controls.moveBackward, event.button)) {
-        mouseBackward = false
-      }
-    }
-
-    const onCanvasContextMenu = (event: MouseEvent) => {
-      event.preventDefault()
-    }
-
-    const onWindowFocus = () => {
-      scheduleAutoPointerLock()
-    }
-
-    window.addEventListener('keydown', onKeyDown, true)
-    window.addEventListener('keyup', onKeyUp, true)
     document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('pointerlockchange', syncPointerLock)
-    document.addEventListener('pointerlockerror', syncPointerLock)
-    window.addEventListener('mouseup', onMouseUp, true)
-    window.addEventListener('blur', clearInputs)
-    window.addEventListener('focus', onWindowFocus)
-    canvas.addEventListener('click', requestPointerLock)
-    canvas.addEventListener('mousedown', onMouseDown)
-    canvas.addEventListener('contextmenu', onCanvasContextMenu)
+    inputController.scheduleAutoPointerLock()
 
-    scheduleAutoPointerLock()
-
-    let lastCounts = DEFAULT_LOD_COUNTS
-    let lastFocusLod: VectorUniverseLodLevel | null = null
-    let lastTargetId: string | null = null
-    let lastCameraPosition: [number, number, number] = DEFAULT_CAMERA_POSITION
-    let lastCameraForward: [number, number, number] = DEFAULT_CAMERA_FORWARD
-    let lastCameraYaw = yaw
     let previousFrameTime = performance.now()
     let frameId = 0
     let lastLodSyncAt = 0
     let lastRaycastSyncAt = 0
     let lastCameraSyncAt = 0
 
-    setCameraYaw(Number(yaw.toFixed(6)))
+    const initialYaw = Number(yaw.toFixed(6))
+    setCameraYaw(initialYaw)
 
-    const syncLod = () => {
-      const nextCounts: VectorUniverseLodCounts = {
-        far: 0,
-        mid: 0,
-        near: 0,
-      }
-      let nextFocusLod: VectorUniverseLodLevel | null = null
+    const syncLod = createLodSync({
+      entries,
+      camera,
+      focusNodeId,
+      setLodCounts,
+      setFocusLod,
+      initialCounts: DEFAULT_LOD_COUNTS,
+      initialFocusLod: null,
+    })
 
-      for (const entry of entries) {
-        const distance = camera.position.distanceTo(entry.position)
-        const lodLevel = resolveVectorUniverseLod(distance)
-        nextCounts[lodLevel] += 1
+    const syncForwardRaycast = createForwardRaycastSync({
+      controlsEnabled,
+      camera,
+      rayDirection,
+      raycaster,
+      raycastTargets,
+      entryByObject,
+      selectionFrame,
+      raycastDistance: sceneSettings.raycastDistance,
+      setTargetNodeId,
+      initialTargetNodeId: null,
+    })
 
-        entry.point.visible = lodLevel === 'far'
-        entry.thumbnail.visible = lodLevel === 'mid' || lodLevel === 'near'
-        entry.resolutionLabel.visible = lodLevel === 'near'
-
-        if (entry.node.id === focusNodeId) {
-          nextFocusLod = lodLevel
-        }
-      }
-
-      const countsChanged =
-        nextCounts.far !== lastCounts.far ||
-        nextCounts.mid !== lastCounts.mid ||
-        nextCounts.near !== lastCounts.near
-
-      if (countsChanged) {
-        lastCounts = nextCounts
-        setLodCounts(nextCounts)
-      }
-
-      if (nextFocusLod !== lastFocusLod) {
-        lastFocusLod = nextFocusLod
-        setFocusLod(nextFocusLod)
-      }
-    }
-
-    const syncForwardRaycast = () => {
-      if (!controlsEnabled) {
-        selectionFrame.visible = false
-        if (lastTargetId !== null) {
-          lastTargetId = null
-          setTargetNodeId(null)
-        }
-        return
-      }
-
-      camera.updateMatrixWorld(true)
-      camera.getWorldDirection(rayDirection).normalize()
-      raycaster.set(camera.position, rayDirection)
-      raycaster.camera = camera
-      raycaster.near = 0
-      raycaster.far = sceneSettings.raycastDistance
-
-      const intersections = raycaster.intersectObjects(raycastTargets, false)
-      const firstValid = intersections.find((item) => item.distance <= sceneSettings.raycastDistance)
-      const targetEntry = firstValid ? entryByObject.get(firstValid.object) ?? null : null
-
-      if (targetEntry) {
-        selectionFrame.visible = true
-        selectionFrame.position.copy(targetEntry.thumbnail.position)
-        selectionFrame.scale.set(targetEntry.thumbnail.scale.x * 1.16, targetEntry.thumbnail.scale.y * 1.16, 1)
-      } else {
-        selectionFrame.visible = false
-      }
-
-      const nextTargetId = targetEntry?.node.id ?? null
-      if (nextTargetId !== lastTargetId) {
-        lastTargetId = nextTargetId
-        setTargetNodeId(nextTargetId)
-      }
-    }
+    const cameraHudSync = createCameraHudSync({
+      camera,
+      setCameraPosition,
+      setCameraForward,
+      setCameraYaw,
+      initialCameraPosition: DEFAULT_CAMERA_POSITION,
+      initialCameraForward: DEFAULT_CAMERA_FORWARD,
+      initialCameraYaw: initialYaw,
+    })
 
     const syncCameraPosition = () => {
-      const nextPosition = toPositionTuple([
-        camera.position.x,
-        camera.position.y,
-        camera.position.z,
-      ])
-      const nextForward = toPositionTuple([
-        -Math.sin(yaw) * Math.cos(pitch),
-        Math.sin(pitch),
-        -Math.cos(yaw) * Math.cos(pitch),
-      ])
-
-      const nextYaw = Number(yaw.toFixed(6))
-      const yawChanged = Math.abs(nextYaw - lastCameraYaw) > 0.001
-      if (yawChanged) {
-        lastCameraYaw = nextYaw
-        setCameraYaw(nextYaw)
-      }
-
-      if (tupleChanged(nextForward, lastCameraForward)) {
-        lastCameraForward = nextForward
-        setCameraForward(nextForward)
-      }
-
-      if (!tupleChanged(nextPosition, lastCameraPosition)) {
-        return
-      }
-
-      lastCameraPosition = nextPosition
-      setCameraPosition(nextPosition)
+      cameraHudSync.sync(yaw, pitch)
     }
 
     const renderFrame = (timestamp: number) => {
@@ -539,46 +245,18 @@ export function useVectorUniverseScene({
       camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'))
       camera.updateMatrixWorld()
 
-      if (controlsEnabled && (moveUpActive || moveDownActive || moveLeftActive || moveRightActive || mouseForward || mouseBackward)) {
-        forward.setFromMatrixColumn(camera.matrixWorld, 2).multiplyScalar(-1).normalize()
-        right.setFromMatrixColumn(camera.matrixWorld, 0).normalize()
-        up.setFromMatrixColumn(camera.matrixWorld, 1).normalize()
-
-        movement.set(0, 0, 0)
-
-        if (moveUpActive) {
-          movement.add(up)
-        }
-        if (moveDownActive) {
-          movement.sub(up)
-        }
-        if (moveRightActive) {
-          movement.add(right)
-        }
-        if (moveLeftActive) {
-          movement.sub(right)
-        }
-        if (mouseForward) {
-          movement.add(forward)
-        }
-        if (mouseBackward) {
-          movement.sub(forward)
-        }
-
-        if (movement.lengthSq() > 0) {
-          movement.normalize()
-          const speedMultiplier = accelerateActive
-            ? sceneSettings.sprintMultiplier
-            : 1
-
-          camera.position.addScaledVector(movement, sceneSettings.moveSpeed * speedMultiplier * deltaSeconds)
-          camera.position.set(
-            wrapCoordinate(camera.position.x, universeHalfExtent),
-            wrapCoordinate(camera.position.y, universeHalfExtent),
-            wrapCoordinate(camera.position.z, universeHalfExtent),
-          )
-        }
-      }
+      applyCameraMovement({
+        camera,
+        controlsEnabled,
+        inputState: inputController.state,
+        sceneSettings,
+        universeHalfExtent,
+        deltaSeconds,
+        forward,
+        right,
+        up,
+        movement,
+      })
 
       if (timestamp - lastLodSyncAt >= LOD_SYNC_INTERVAL_MS) {
         lastLodSyncAt = timestamp
@@ -607,23 +285,9 @@ export function useVectorUniverseScene({
     frameId = window.requestAnimationFrame(renderFrame)
 
     return () => {
-      pointerAutoLockEnabled = false
       window.cancelAnimationFrame(frameId)
-      window.cancelAnimationFrame(pointerRelockRaf)
-      window.clearTimeout(pointerRelockTimer)
-
-      window.removeEventListener('keydown', onKeyDown, true)
-      window.removeEventListener('keyup', onKeyUp, true)
       document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('pointerlockchange', syncPointerLock)
-      document.removeEventListener('pointerlockerror', syncPointerLock)
-      window.removeEventListener('mouseup', onMouseUp, true)
-      window.removeEventListener('blur', clearInputs)
-      window.removeEventListener('focus', onWindowFocus)
-
-      canvas.removeEventListener('click', requestPointerLock)
-      canvas.removeEventListener('mousedown', onMouseDown)
-      canvas.removeEventListener('contextmenu', onCanvasContextMenu)
+      inputController.dispose()
 
       resizeObserver.disconnect()
 
