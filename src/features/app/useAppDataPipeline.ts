@@ -3,8 +3,7 @@ import {
   useMemo,
 } from 'react'
 
-import { buildE2eBenchSectionProps } from './buildE2eBenchSectionProps'
-import { buildManageDeleteDialogProps } from './buildManageDeleteDialogProps'
+import { useAppShellProps } from './useAppShellProps'
 import {
   normalizePathForCompare,
 } from './mediaPathUtils'
@@ -942,46 +941,8 @@ export function useAppDataPipeline() {
     toggleSidebarNodeChecked,
   })
 
-  const manageDeleteDialogProps = buildManageDeleteDialogProps({
-    open: deleteConfirmOpen,
-    pending: backendWrite.pending.manage,
-    confirmManageDelete,
-    setDeleteConfirmOpen,
-  })
-
-  const e2eBenchSectionProps = buildE2eBenchSectionProps({
-    enabled: benchSettings.enabled,
-    benchMode: benchSettings.mode,
-    repository: mediaRepository,
-    mode,
-    orderedPackages: orderedRootScopedPackages,
-    selectedPackageId,
-    setSelectedPackageId,
-    pageIndex: backendPageSnapshot?.pageIndex ?? null,
-    totalPages: imageTotalPagesEffective,
-    pageLoading: backendRead.page.loading,
-    refsInPageCount: refsInPageEffective.length,
-    goNextPage,
-    goPrevPage,
-  })
-
-  const importSourceInputsProps = {
-    fileImportInputRef,
-    folderImportInputRef,
-    onImportFilesSelected,
-    onImportFoldersSelected,
-  }
-
-  const appTopBannersProps = {
-    backendErrorRows: bannerBackendErrorRows,
+  const shellProps = useAppShellProps({
     repositoryMode,
-    runtimeWarningVisible: runtimeWarningDismiss.visible,
-    runtimeCapabilityWarnings,
-    onDismissRuntimeWarning: runtimeWarningDismiss.dismiss,
-    importTaskPanelProps,
-  }
-
-  const appWorkspaceProps = {
     mode,
     headerHeight,
     sidebarCollapsed,
@@ -996,29 +957,60 @@ export function useAppDataPipeline() {
     onExpandSidebar,
     onStartSidebarResize,
     onStartMetadataResize,
-    sidebarPanelProps,
-    searchPanelProps,
-    managementPanelProps,
-    imageMainSectionProps,
-    videoMainSectionProps,
-    metadataPanelProps,
-    mainFooter,
-  }
+    topLayerState: {
+      bannerBackendErrorRows,
+      runtimeCapabilityWarnings,
+      runtimeWarningDismiss,
+      fullscreenLayerProps,
+      settingsPanelProps,
+      appHeaderProps,
+      importTaskPanelProps,
+    },
+    workspaceState: {
+      sidebarPanelProps,
+      searchPanelProps,
+      managementPanelProps,
+      imageMainSectionProps,
+      videoMainSectionProps,
+      metadataPanelProps,
+      mainFooter,
+    },
+    vectorUniverseSectionProps,
+    importInputs: {
+      fileImportInputRef,
+      folderImportInputRef,
+      onImportFilesSelected,
+      onImportFoldersSelected,
+    },
+    dragOverlayActive,
+    manageDeleteDialogParams: {
+      open: deleteConfirmOpen,
+      pending: backendWrite.pending.manage,
+      confirmManageDelete,
+      setDeleteConfirmOpen,
+    },
+    e2eBenchSectionParams: {
+      enabled: benchSettings.enabled,
+      benchMode: benchSettings.mode,
+      repository: mediaRepository,
+      mode,
+      orderedPackages: orderedRootScopedPackages,
+      selectedPackageId,
+      setSelectedPackageId,
+      pageIndex: backendPageSnapshot?.pageIndex ?? null,
+      totalPages: imageTotalPagesEffective,
+      pageLoading: backendRead.page.loading,
+      refsInPageCount: refsInPageEffective.length,
+      goNextPage,
+      goPrevPage,
+    },
+  })
 
   return {
     onDragEnterImport,
     onDragLeaveImport,
     onDragOverImport,
     onDropImport,
-    appHeaderProps,
-    importSourceInputsProps,
-    appTopBannersProps,
-    appWorkspaceProps,
-    fullscreenLayerProps,
-    vectorUniverseSectionProps,
-    settingsPanelProps,
-    manageDeleteDialogProps,
-    dragOverlayActive,
-    e2eBenchSectionProps,
+    ...shellProps,
   }
 }
