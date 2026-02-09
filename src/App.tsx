@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useShallow } from 'zustand/react/shallow'
 
 import './App.css'
 import AppHeader from './components/AppHeader'
@@ -46,17 +45,19 @@ import { buildVectorSidebarState } from './features/app/buildVectorSidebarState'
 import { buildVideoMainSectionProps } from './features/app/buildVideoMainSectionProps'
 import {
   buildCoverImageLocator,
-  computeResponsiveZoomFactor,
   normalizePathForCompare,
-  RESPONSIVE_ZOOM_EPSILON,
 } from './features/app/mediaPathUtils'
 import { useMetadataWriteBindings } from './features/app/useMetadataWriteBindings'
 import { useImportTaskPanelState } from './features/app/useImportTaskPanelState'
 import { useImageSidebarBaseState } from './features/app/useImageSidebarBaseState'
 import { useRootScopedImageData } from './features/app/useRootScopedImageData'
+import { useAppSettingsStore } from './features/app/useAppSettingsStore'
 import { useAppEffects } from './features/app/useAppEffects'
+import { useArchiveLoadStatus } from './features/app/useArchiveLoadStatus'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
 import { useDatabaseResetAction } from './features/app/useDatabaseResetAction'
+import { useResponsiveZoomEffect } from './features/app/useResponsiveZoomEffect'
+import { useResolvedMediaState } from './features/app/useResolvedMediaState'
 import { useRuntimeWarningDismiss } from './features/app/useRuntimeWarningDismiss'
 import { useSettingsPersistence } from './features/app/useSettingsPersistence'
 import { useVideoSidebarState } from './features/app/useVideoSidebarState'
@@ -71,15 +72,12 @@ import { useSidebarNavigation } from './features/sidebar/useSidebarNavigation'
 import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
 import {
   createMediaRepository,
-  type MediaResolveTarget,
   mapLibrarySnapshotDto,
-  useResolvedMediaUrls,
   useRuntimeCapabilities,
   useReadOnlyDataAccess,
   useWriteDataAccess,
 } from './features/backend'
 import { getBenchSettings } from './features/perf/benchSettings'
-import { useUiStore } from './store/useUiStore'
 import type {
   FocusedImageRef,
   ImagePackage,
@@ -141,55 +139,7 @@ function App() {
     setVectorControl,
     resetShortcuts,
     resetVectorControls,
-  } = useUiStore(
-    useShallow((state) => ({
-      mode: state.mode,
-      vectorMode: state.vectorMode,
-      settingsOpen: state.settingsOpen,
-      headerHeight: state.headerHeight,
-      settingsFontSize: state.settingsFontSize,
-      sidebarRatio: state.sidebarRatio,
-      sidebarMinWidth: state.sidebarMinWidth,
-      layoutLocked: state.layoutLocked,
-      sidebarFontSize: state.sidebarFontSize,
-      sidebarCountFontSize: state.sidebarCountFontSize,
-      sidebarIndentStep: state.sidebarIndentStep,
-      sidebarVerticalGap: state.sidebarVerticalGap,
-      metadataRatio: state.metadataRatio,
-      vectorPanelHeight: state.vectorPanelHeight,
-      thumbnailScale: state.thumbnailScale,
-      thumbnailGap: state.thumbnailGap,
-      showNamesOnly: state.showNamesOnly,
-      metadataCollapsed: state.metadataCollapsed,
-      autoPlayEnabled: state.autoPlayEnabled,
-      autoPlayInterval: state.autoPlayInterval,
-      searchField: state.searchField,
-      searchText: state.searchText,
-      vectorThreshold: state.vectorThreshold,
-      sidebarFocus: state.sidebarFocus,
-      imageRootNodeId: state.imageRootNodeId,
-      videoRootNodeId: state.videoRootNodeId,
-      themeId: state.themeId,
-      thumbnailQuality: state.thumbnailQuality,
-      thumbnailWidth: state.thumbnailWidth,
-      lmStudioEndpoint: state.lmStudioEndpoint,
-      lmStudioModel: state.lmStudioModel,
-      vectorUniverseMoveSpeed: state.vectorUniverseMoveSpeed,
-      vectorUniverseSprintMultiplier: state.vectorUniverseSprintMultiplier,
-      vectorUniverseLookSensitivity: state.vectorUniverseLookSensitivity,
-      vectorUniverseRaycastDistance: state.vectorUniverseRaycastDistance,
-      vectorUniverseHelperScale: state.vectorUniverseHelperScale,
-      vectorUniverseDispersion: state.vectorUniverseDispersion,
-      vectorUniverseWidgetSize: state.vectorUniverseWidgetSize,
-      shortcuts: state.shortcuts,
-      vectorControls: state.vectorControls,
-      updateSettings: state.updateSettings,
-      setShortcut: state.setShortcut,
-      setVectorControl: state.setVectorControl,
-      resetShortcuts: state.resetShortcuts,
-      resetVectorControls: state.resetVectorControls,
-    })),
-  )
+  } = useAppSettingsStore()
 
   const { repository: mediaRepository, mode: repositoryMode } = useMemo(() => createMediaRepository(), [])
   const bootstrapLibrarySnapshot = useMemo(() => {
@@ -243,13 +193,7 @@ function App() {
   const [vectorUniverseOpen, setVectorUniverseOpen] = useState(false)
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
   const [importTaskPanelOpen, setImportTaskPanelOpen] = useState(false)
-  const [archiveLoadStatus, setArchiveLoadStatus] = useState<{
-    runningArchivePath: string | null
-    pendingArchivePaths: string[]
-  }>({
-    runningArchivePath: null,
-    pendingArchivePaths: [],
-  })
+  const archiveLoadStatus = useArchiveLoadStatus({ repository: mediaRepository })
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
     mode === 'video' ? 'video-only' : 'image-only',
   )
@@ -331,55 +275,6 @@ function App() {
     onDropImport,
   } = useImportPipeline({ repository: mediaRepository })
 
-  useEffect(() => {
-    if (!mediaRepository.readArchiveLoadStatus) {
-      return
-    }
-
-    let disposed = false
-    let runningRequest = false
-
-    const refreshArchiveLoadStatus = async () => {
-      if (disposed || runningRequest) {
-        return
-      }
-
-      runningRequest = true
-      try {
-        const status = await mediaRepository.readArchiveLoadStatus?.({ timeoutMs: 3_000 })
-        if (!disposed && status) {
-          setArchiveLoadStatus({
-            runningArchivePath: status.running_archive_path,
-            pendingArchivePaths: status.pending_archive_paths,
-          })
-        }
-      } catch {
-        if (!disposed) {
-          setArchiveLoadStatus({
-            runningArchivePath: null,
-            pendingArchivePaths: [],
-          })
-        }
-      } finally {
-        runningRequest = false
-      }
-    }
-
-    void refreshArchiveLoadStatus()
-    const intervalId = window.setInterval(() => {
-      void refreshArchiveLoadStatus()
-    }, 900)
-    const unsubscribe = mediaRepository.onLibraryChanged?.(() => {
-      void refreshArchiveLoadStatus()
-    })
-
-    return () => {
-      disposed = true
-      window.clearInterval(intervalId)
-      unsubscribe?.()
-    }
-  }, [mediaRepository])
-
   const appBodyRef = useRef<HTMLDivElement>(null)
   const workspaceRef = useRef<HTMLElement>(null)
   const workspaceBodyRef = useRef<HTMLDivElement>(null)
@@ -390,43 +285,9 @@ function App() {
   const [appBodyWidth, setAppBodyWidth] = useState(0)
   const gridRef = useRef<HTMLDivElement>(null)
   const [gridSize, setGridSize] = useState({ width: 1200, height: 700 })
-  const responsiveZoomFactorRef = useRef(1)
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.mediaPlayerView?.setZoomFactor) {
-      return
-    }
+  useResponsiveZoomEffect()
 
-    let rafId = 0
-    responsiveZoomFactorRef.current = 1
-
-    const applyZoom = () => {
-      const stableWidth = window.innerWidth * responsiveZoomFactorRef.current
-      const stableHeight = window.innerHeight * responsiveZoomFactorRef.current
-      const nextFactor = computeResponsiveZoomFactor(stableWidth, stableHeight)
-      if (Math.abs(nextFactor - responsiveZoomFactorRef.current) < RESPONSIVE_ZOOM_EPSILON) {
-        return
-      }
-
-      responsiveZoomFactorRef.current = nextFactor
-      window.mediaPlayerView?.setZoomFactor(nextFactor)
-    }
-
-    applyZoom()
-
-    const onResize = () => {
-      window.cancelAnimationFrame(rafId)
-      rafId = window.requestAnimationFrame(applyZoom)
-    }
-
-    window.addEventListener('resize', onResize)
-    return () => {
-      window.removeEventListener('resize', onResize)
-      window.cancelAnimationFrame(rafId)
-      responsiveZoomFactorRef.current = 1
-      window.mediaPlayerView?.setZoomFactor(1)
-    }
-  }, [])
   const {
     searchPanelMode,
     setSearchPanelMode,
@@ -1052,186 +913,29 @@ function App() {
     focusedVideoId: focusedVideoEffective?.id ?? null,
   })
 
-  const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
-    const targetById = new Map<string, MediaResolveTarget>()
-    const priorityTargets: MediaResolveTarget[] = []
-    const normalTargets: MediaResolveTarget[] = []
-    const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight)))
-
-    const pushTarget = (target: MediaResolveTarget, priority = false) => {
-      if (targetById.has(target.targetId)) {
-        return
-      }
-      targetById.set(target.targetId, target)
-      if (priority) {
-        priorityTargets.push(target)
-      } else {
-        normalTargets.push(target)
-      }
-    }
-
-    const pushThumbnailImageTarget = (ref: FocusedImageRef) => {
-      const image = packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]
-      if (!image) {
-        return
-      }
-
-      pushTarget({
-        targetId: `image-thumb:${image.id}`,
-        locator: image.mediaLocator,
-        variant: 'thumbnail',
-        thumbnailMaxEdge,
-        thumbnailQuality: 82,
-      })
-    }
-
-    const pushOriginalImageTarget = (image: typeof focusedImage) => {
-      if (!image) {
-        return
-      }
-
-      pushTarget(
-        {
-          targetId: `image-original:${image.id}`,
-          locator: image.mediaLocator,
-          variant: 'original',
-        },
-        true,
-      )
-    }
-
-    const pushOriginalImageTargetByRef = (ref: FocusedImageRef | null | undefined, priority = false) => {
-      if (!ref) {
-        return
-      }
-      const image = packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]
-      if (!image) {
-        return
-      }
-      pushTarget(
-        {
-          targetId: `image-original:${image.id}`,
-          locator: image.mediaLocator,
-          variant: 'original',
-        },
-        priority,
-      )
-    }
-
-    pushOriginalImageTarget(focusedImage)
-    pushOriginalImageTarget(metadataImageEffective)
-
-    if (focusedRef && orderedRootScopedImageRefs.length > 0) {
-      const focusedIndex = orderedRootScopedImageRefs.findIndex(
-        (ref) => ref.packageId === focusedRef.packageId && ref.imageIndex === focusedRef.imageIndex,
-      )
-      if (focusedIndex >= 0) {
-        const prefetchRadius = fullscreenActive ? 4 : 2
-        for (let offset = 1; offset <= prefetchRadius; offset += 1) {
-          pushOriginalImageTargetByRef(orderedRootScopedImageRefs[focusedIndex + offset], true)
-          pushOriginalImageTargetByRef(orderedRootScopedImageRefs[focusedIndex - offset], true)
-        }
-      }
-    }
-
-    if (!showNamesOnly) {
-      for (const ref of refsInPageEffective) {
-        pushThumbnailImageTarget(ref)
-      }
-    }
-
-    if (focusedVideo) {
-      pushTarget(
-        {
-          targetId: `video:${focusedVideo.id}`,
-          locator: focusedVideo.mediaLocator,
-          variant: 'original',
-        },
-        true,
-      )
-
-      if (focusedVideoCoverImageLocator) {
-        pushTarget(
-          {
-            targetId: `video-cover:${focusedVideo.id}`,
-            locator: focusedVideoCoverImageLocator,
-            variant: 'original',
-          },
-          true,
-        )
-      }
-    }
-
-    return [...priorityTargets, ...normalTargets]
-  }, [
+  const {
+    thumbnailImageUrlById,
+    metadataImageSrc,
+    fullscreenImageSrc,
+    focusedVideoSrc,
+    focusedVideoCoverImageSrc,
+  } = useResolvedMediaState({
+    repository: mediaRepository,
+    benchSettings,
+    maxConcurrent: MEDIA_RESOLVE_MAX_CONCURRENT,
     actualCellWidth,
     actualMediaHeight,
+    packageById: packageByIdEffective,
     focusedImage,
+    metadataImage: metadataImageEffective,
+    focusedRef,
+    orderedRootScopedImageRefs,
+    fullscreenActive,
+    showNamesOnly,
+    refsInPage: refsInPageEffective,
     focusedVideo,
     focusedVideoCoverImageLocator,
-    metadataImageEffective,
-    focusedRef,
-    fullscreenActive,
-    orderedRootScopedImageRefs,
-    packageByIdEffective,
-    refsInPageEffective,
-    showNamesOnly,
-  ])
-
-  const resolvedMedia = useResolvedMediaUrls({
-    repository: mediaRepository,
-    targets: mediaResolveTargets,
-    options: benchSettings.enabled
-        ? benchSettings.resolvedMedia
-        : {
-          applyMode: 'raf',
-          stateScope: 'active-only',
-          maxConcurrent: MEDIA_RESOLVE_MAX_CONCURRENT,
-        },
   })
-
-  const thumbnailImageUrlById = useMemo<Record<string, string>>(() => {
-    const next: Record<string, string> = {}
-    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
-      if (!targetId.startsWith('image-thumb:')) {
-        continue
-      }
-      next[targetId.slice('image-thumb:'.length)] = url
-    }
-    return next
-  }, [resolvedMedia.urlByTargetId])
-
-  const originalImageUrlById = useMemo<Record<string, string>>(() => {
-    const next: Record<string, string> = {}
-    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
-      if (!targetId.startsWith('image-original:')) {
-        continue
-      }
-      next[targetId.slice('image-original:'.length)] = url
-    }
-    return next
-  }, [resolvedMedia.urlByTargetId])
-
-  const videoCoverImageUrlById = useMemo<Record<string, string>>(() => {
-    const next: Record<string, string> = {}
-    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
-      if (!targetId.startsWith('video-cover:')) {
-        continue
-      }
-      next[targetId.slice('video-cover:'.length)] = url
-    }
-    return next
-  }, [resolvedMedia.urlByTargetId])
-
-  const metadataImageSrc =
-    metadataImageEffective
-      ? (originalImageUrlById[metadataImageEffective.id] ?? thumbnailImageUrlById[metadataImageEffective.id] ?? null)
-      : null
-  const fullscreenImageSrc = focusedImage
-    ? (originalImageUrlById[focusedImage.id] ?? thumbnailImageUrlById[focusedImage.id] ?? null)
-    : null
-  const focusedVideoSrc = focusedVideo ? (resolvedMedia.urlByTargetId[`video:${focusedVideo.id}`] ?? null) : null
-  const focusedVideoCoverImageSrc = focusedVideo ? (videoCoverImageUrlById[focusedVideo.id] ?? null) : null
 
   const shortcutConflicts = useMemo(() => findShortcutConflicts(shortcuts), [shortcuts])
   const vectorControlConflicts = useMemo(() => findVectorControlConflicts(vectorControls), [vectorControls])
