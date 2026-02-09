@@ -12,35 +12,28 @@ import {
 
 import type { BrowserMode, ImageItem, VideoItem } from '../types'
 import { clamp, formatSeconds } from '../utils/ui'
-
-type PaneKey = 'image' | 'video'
-type AlignDirection = 'up' | 'down' | 'left' | 'right'
-type AxisAlign = 'center' | 'start' | 'end' | 'free'
-
-interface PaneTransform {
-  zoom: number
-  offsetX: number
-  offsetY: number
-}
-
-interface PaneViewportSize {
-  width: number
-  height: number
-}
-
-interface MediaGeometry {
-  width: number
-  height: number
-  diffX: number
-  diffY: number
-  maxOffsetX: number
-  maxOffsetY: number
-}
-
-interface PaneAlign {
-  x: AxisAlign
-  y: AxisAlign
-}
+import {
+  FullscreenVideoControlRow,
+  FullscreenVideoProgressRow,
+} from './fullscreen/FullscreenVideoControls'
+import {
+  applyAlignedOffset,
+  clampPaneTransform,
+  computeMediaGeometry,
+  DEFAULT_PANE_ALIGN,
+  DEFAULT_PANE_TRANSFORM,
+  MAX_SPLIT,
+  MAX_ZOOM,
+  MIN_SPLIT,
+  MIN_ZOOM,
+  resolveMediaAspect,
+  ZOOM_STEP,
+  type AlignDirection,
+  type PaneAlign,
+  type PaneKey,
+  type PaneTransform,
+  type PaneViewportSize,
+} from './fullscreen/paneMath'
 
 export interface FullscreenLayerProps {
   mode: BrowserMode
@@ -89,108 +82,7 @@ export interface FullscreenLayerProps {
   onChangeVideoRate: (rate: number) => void
   onExit: () => void
 }
-
-const DEFAULT_PANE_TRANSFORM: PaneTransform = {
-  zoom: 1,
-  offsetX: 0,
-  offsetY: 0,
-}
-
-const DEFAULT_PANE_ALIGN: PaneAlign = {
-  x: 'center',
-  y: 'center',
-}
-
-const MIN_SPLIT = 0.2
-const MAX_SPLIT = 0.8
-const MIN_ZOOM = 0.2
-const MAX_ZOOM = 4
-const ZOOM_STEP = 0.12
 const IS_TEST_MODE = import.meta.env.MODE === 'test'
-
-function resolveMediaAspect(width: number, height: number, fallback = 1): number {
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
-    return fallback
-  }
-  return width / height
-}
-
-function computeMediaGeometry(viewport: PaneViewportSize, aspect: number, zoom: number): MediaGeometry {
-  const width = Math.max(1, viewport.width)
-  const height = Math.max(1, viewport.height)
-  const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 1
-  const safeZoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM)
-
-  const viewportRatio = width / height
-  const fitByWidth = viewportRatio <= safeAspect
-  const fitWidth = fitByWidth ? width : height * safeAspect
-  const fitHeight = fitByWidth ? width / safeAspect : height
-  const mediaWidth = fitWidth * safeZoom
-  const mediaHeight = fitHeight * safeZoom
-
-  const diffX = mediaWidth - width
-  const diffY = mediaHeight - height
-
-  return {
-    width: mediaWidth,
-    height: mediaHeight,
-    diffX,
-    diffY,
-    maxOffsetX: Math.abs(diffX) / 2,
-    maxOffsetY: Math.abs(diffY) / 2,
-  }
-}
-
-function applyAlignedOffset(transform: PaneTransform, align: PaneAlign, geometry: MediaGeometry): PaneTransform {
-  let nextOffsetX = transform.offsetX
-  let nextOffsetY = transform.offsetY
-
-  if (align.x === 'center') {
-    nextOffsetX = 0
-  } else if (align.x === 'start') {
-    nextOffsetX = geometry.diffX / 2
-  } else if (align.x === 'end') {
-    nextOffsetX = -geometry.diffX / 2
-  }
-
-  if (align.y === 'center') {
-    nextOffsetY = 0
-  } else if (align.y === 'start') {
-    nextOffsetY = geometry.diffY / 2
-  } else if (align.y === 'end') {
-    nextOffsetY = -geometry.diffY / 2
-  }
-
-  if (Math.abs(nextOffsetX - transform.offsetX) < 0.0001 && Math.abs(nextOffsetY - transform.offsetY) < 0.0001) {
-    return transform
-  }
-
-  return {
-    ...transform,
-    offsetX: nextOffsetX,
-    offsetY: nextOffsetY,
-  }
-}
-
-function clampPaneTransform(transform: PaneTransform, geometry: MediaGeometry): PaneTransform {
-  const nextZoom = clamp(transform.zoom, MIN_ZOOM, MAX_ZOOM)
-  const nextOffsetX = clamp(transform.offsetX, -geometry.maxOffsetX, geometry.maxOffsetX)
-  const nextOffsetY = clamp(transform.offsetY, -geometry.maxOffsetY, geometry.maxOffsetY)
-
-  if (
-    Math.abs(nextZoom - transform.zoom) < 0.0001 &&
-    Math.abs(nextOffsetX - transform.offsetX) < 0.0001 &&
-    Math.abs(nextOffsetY - transform.offsetY) < 0.0001
-  ) {
-    return transform
-  }
-
-  return {
-    zoom: nextZoom,
-    offsetX: nextOffsetX,
-    offsetY: nextOffsetY,
-  }
-}
 
 function FullscreenLayer({
   mode,
@@ -720,63 +612,35 @@ function FullscreenLayer({
     </section>
   )
 
-  const progressRow = (
-    <div className="fullscreen-video-controls-row is-progress" key="progress">
-      <span>{`${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}</span>
-      <input
-        aria-label="全屏视频进度滑条"
-        max={Math.max(0, durationSec)}
-        min={0}
-        step={0.1}
-        type="range"
-        value={clampedVideoTime}
-        onChange={(event) => onSeekVideo(Number(event.target.value))}
-      />
-    </div>
-  )
+  const videoProgressRowProps = {
+    clampedVideoTime,
+    durationSec,
+    onSeekVideo,
+  }
+  const videoControlRowProps = {
+    videoPlaying,
+    videoMuted,
+    videoVolume,
+    videoRate,
+    onToggleVideoPlay,
+    onPrevVideo,
+    onNextVideo,
+    onToggleVideoMute,
+    onChangeVideoVolume,
+    onChangeVideoRate,
+  }
 
-  const controlRow = (
-    <div className="fullscreen-video-controls-row is-controls" key="controls">
-      <button type="button" onClick={onToggleVideoPlay}>
-        {videoPlaying ? '暂停' : '播放'}
-      </button>
-      <button type="button" onClick={onPrevVideo}>
-        上一个
-      </button>
-      <button type="button" onClick={onNextVideo}>
-        下一个
-      </button>
-      <button type="button" onClick={onToggleVideoMute}>
-        {videoMuted ? '取消静音' : '静音'}
-      </button>
-      <label>
-        音量 {videoMuted ? '0%' : `${videoVolume}%`}
-        <input
-          aria-label="全屏视频音量滑条"
-          max={100}
-          min={0}
-          step={1}
-          type="range"
-          value={videoMuted ? 0 : videoVolume}
-          onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
-        />
-      </label>
-      <label>
-        倍速 x{videoRate.toFixed(2)}
-        <input
-          aria-label="全屏视频倍速滑条"
-          max={4}
-          min={0.1}
-          step={0.1}
-          type="range"
-          value={videoRate}
-          onChange={(event) => onChangeVideoRate(Number(event.target.value))}
-        />
-      </label>
-    </div>
+  const controlsRows = videoControlsAtTop ? (
+    <>
+      <FullscreenVideoControlRow {...videoControlRowProps} />
+      <FullscreenVideoProgressRow {...videoProgressRowProps} />
+    </>
+  ) : (
+    <>
+      <FullscreenVideoProgressRow {...videoProgressRowProps} />
+      <FullscreenVideoControlRow {...videoControlRowProps} />
+    </>
   )
-
-  const controlsRows = videoControlsAtTop ? [controlRow, progressRow] : [progressRow, controlRow]
 
   const videoPane = (
     <section
@@ -912,56 +776,8 @@ function FullscreenLayer({
         <footer className="fullscreen-footer">
           {fullscreenDisplay === 'video-only' ? (
             <div className="fullscreen-footer-video-controls">
-              <div className="fullscreen-video-controls-row is-progress">
-                <span>{`${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}</span>
-                <input
-                  aria-label="全屏视频进度滑条"
-                  max={Math.max(0, durationSec)}
-                  min={0}
-                  step={0.1}
-                  type="range"
-                  value={clampedVideoTime}
-                  onChange={(event) => onSeekVideo(Number(event.target.value))}
-                />
-              </div>
-              <div className="fullscreen-video-controls-row is-controls">
-                <button type="button" onClick={onToggleVideoPlay}>
-                  {videoPlaying ? '暂停' : '播放'}
-                </button>
-                <button type="button" onClick={onPrevVideo}>
-                  上一个
-                </button>
-                <button type="button" onClick={onNextVideo}>
-                  下一个
-                </button>
-                <button type="button" onClick={onToggleVideoMute}>
-                  {videoMuted ? '取消静音' : '静音'}
-                </button>
-                <label>
-                  音量 {videoMuted ? '0%' : `${videoVolume}%`}
-                  <input
-                    aria-label="全屏视频音量滑条"
-                    max={100}
-                    min={0}
-                    step={1}
-                    type="range"
-                    value={videoMuted ? 0 : videoVolume}
-                    onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
-                  />
-                </label>
-                <label>
-                  倍速 x{videoRate.toFixed(2)}
-                  <input
-                    aria-label="全屏视频倍速滑条"
-                    max={4}
-                    min={0.1}
-                    step={0.1}
-                    type="range"
-                    value={videoRate}
-                    onChange={(event) => onChangeVideoRate(Number(event.target.value))}
-                  />
-                </label>
-              </div>
+              <FullscreenVideoProgressRow {...videoProgressRowProps} />
+              <FullscreenVideoControlRow {...videoControlRowProps} />
             </div>
           ) : null}
 
