@@ -955,6 +955,12 @@ select option {
   gap: 10px;
 }
 
+.manage-panel-summary {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
 .manage-panel-hint {
   margin: 0;
   color: var(--mpx-status-busy-text);

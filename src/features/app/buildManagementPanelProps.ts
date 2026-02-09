@@ -32,7 +32,6 @@ export function buildManagementPanelProps(params: BuildManagementPanelPropsParam
     panelHeight: params.vectorPanelHeight,
     panelRef: params.vectorPanelRef,
     panelContentRef: params.vectorPanelContentRef,
-    mode: params.mode,
     sidebarSelectedCount: params.sidebarSelectedCount,
     imageSelectedCount: params.imageSelectedCount,
     activeSelectionScope: params.activeSelectionScope,

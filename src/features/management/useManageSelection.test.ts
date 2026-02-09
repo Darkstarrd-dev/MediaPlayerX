@@ -5,9 +5,10 @@ import { useManageSelection } from './useManageSelection'
 
 describe('useManageSelection', () => {
   it('支持 Sidebar shift 区间选择', () => {
+    const flatSidebarNodeIds = ['folder:a', 'folder:b', 'package:c', 'video:d']
     const { result } = renderHook(() =>
       useManageSelection({
-        flatSidebarNodeIds: ['folder:a', 'folder:b', 'package:c', 'video:d'],
+        flatSidebarNodeIds,
       }),
     )
 
@@ -24,9 +25,10 @@ describe('useManageSelection', () => {
   })
 
   it('Sidebar 与图片选择保持互斥', () => {
+    const flatSidebarNodeIds = ['folder:a', 'package:b']
     const { result } = renderHook(() =>
       useManageSelection({
-        flatSidebarNodeIds: ['folder:a', 'package:b'],
+        flatSidebarNodeIds,
       }),
     )
 
@@ -54,9 +56,10 @@ describe('useManageSelection', () => {
   })
 
   it('图片框选支持追加并自动去重', () => {
+    const flatSidebarNodeIds: string[] = []
     const { result } = renderHook(() =>
       useManageSelection({
-        flatSidebarNodeIds: [],
+        flatSidebarNodeIds,
       }),
     )
 
@@ -73,12 +76,14 @@ describe('useManageSelection', () => {
   })
 
   it('选中父节点会级联选中子节点，再次点击父节点会取消整组', () => {
+    const flatSidebarNodeIds = ['folder:parent', 'folder:child-1', 'folder:child-2']
+    const sidebarDescendantNodeIdsById = new Map([
+      ['folder:parent', ['folder:child-1', 'folder:child-2']],
+    ])
     const { result } = renderHook(() =>
       useManageSelection({
-        flatSidebarNodeIds: ['folder:parent', 'folder:child-1', 'folder:child-2'],
-        sidebarDescendantNodeIdsById: new Map([
-          ['folder:parent', ['folder:child-1', 'folder:child-2']],
-        ]),
+        flatSidebarNodeIds,
+        sidebarDescendantNodeIdsById,
       }),
     )
 

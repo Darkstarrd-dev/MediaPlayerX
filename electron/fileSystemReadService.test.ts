@@ -689,6 +689,51 @@ describe('FileSystemMediaReadService', () => {
     expect(idStillExists).toBe(false)
   })
 
+  it('管理删除图片部分失败时返回 deleted_count 与 failed[] 明细', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-delete-image-partial-'))
+    createdRoots.push(root)
+
+    const imagePathA = path.join(root, 'gallery', 'a.jpg')
+    await writeBinary(imagePathA, [0xff, 0xd8, 0xff, 0xd9])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-folders', [root])
+
+    const snapshotBefore = await service.readLibrarySnapshot()
+    const source = snapshotBefore.image_directories.find(
+      (item) => path.resolve(item.absolute_path) === path.resolve(path.join(root, 'gallery')),
+    )
+    expect(source).toBeTruthy()
+    if (!source) {
+      throw new Error('source not found')
+    }
+
+    const targetImage = source.images[0]
+    expect(targetImage).toBeTruthy()
+    if (!targetImage) {
+      throw new Error('target image not found')
+    }
+
+    const missingImageId = 'missing-image-id'
+    const result = await service.deleteImageItems({
+      image_ids: [targetImage.id, missingImageId],
+    })
+
+    expect(result.deleted_count).toBe(1)
+    expect(result.failed).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          image_id: missingImageId,
+          reason: 'image not found',
+        }),
+      ]),
+    )
+
+    const removedStat = await fs.stat(imagePathA).catch(() => null)
+    expect(removedStat).toBeNull()
+  })
+
   it('管理删除 Sidebar 文件夹节点不会抛 isPathInsideRoot 异常并移除节点', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-delete-folder-'))
     createdRoots.push(root)
@@ -745,6 +790,57 @@ describe('FileSystemMediaReadService', () => {
       (item) => path.resolve(item.absolute_path) === path.resolve(folderPath),
     )
     expect(nodeStillExists).toBe(false)
+  })
+
+  it('管理删除 Sidebar 节点部分失败时返回 deleted_count 与 failed[] 明细', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-delete-sidebar-partial-'))
+    createdRoots.push(root)
+
+    const folderPath = path.join(root, 'to-delete')
+    await writeBinary(path.join(folderPath, 'img_01.jpg'), [0xff, 0xd8, 0xff, 0xd9])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-folders', [root])
+
+    const sidebarBefore = await service.readImageSidebarTree({
+      feature_filter: {
+        name_query: '',
+        work_title_query: '',
+        circle_query: '',
+        author_query: '',
+        tags: [],
+        grade: null,
+      },
+      grade_overrides: {},
+    })
+
+    const targetSource = sidebarBefore.image_directories.find(
+      (item) => path.resolve(item.absolute_path) === path.resolve(folderPath),
+    )
+    expect(targetSource).toBeTruthy()
+    if (!targetSource) {
+      throw new Error('target source not found')
+    }
+
+    const targetNodeId = `folder:${targetSource.tree_path.join('/')}`
+    const missingNodeId = 'package:missing/path'
+    const result = await service.deleteSidebarNodes({
+      node_ids: [targetNodeId, missingNodeId],
+    })
+
+    expect(result.deleted_count).toBeGreaterThanOrEqual(1)
+    expect(result.failed).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          node_id: missingNodeId,
+          reason: 'node not found',
+        }),
+      ]),
+    )
+
+    const folderStat = await fs.stat(folderPath).catch(() => null)
+    expect(folderStat).toBeNull()
   })
 
   it('管理删除压缩包中的图片后会刷新 zip 条目白名单并保留剩余条目可读', async () => {

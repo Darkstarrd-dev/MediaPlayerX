@@ -45,6 +45,7 @@
    - 图包评分、封面保存等写操作必须下沉到 Main，通过 IPC 契约完成。
    - 播放列表读写同样必须下沉到 Main，通过 IPC 契约完成，不允许 Renderer 本地持久化分叉。
    - Renderer 允许 optimistic update，但失败必须 rollback，并保留可见错误信息。
+   - 管理删除写链路必须返回结构化 `failed[]` 明细（禁止仅返回布尔值）；Renderer 必须展示“删除成功数 + 失败数”，并将“部分失败”与“整体异常”区分处理。
 
 10. SQLite 基座约束
    - 读链路（snapshot/sidebar/page/metadata）必须以 SQLite 为单一事实源，内存仅作为临时缓存。

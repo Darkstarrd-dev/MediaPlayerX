@@ -735,6 +735,8 @@ function App() {
     return next
   }, [flatSidebarNodes])
 
+  const flatSidebarNodeIds = useMemo(() => flatSidebarNodes.map((node) => node.id), [flatSidebarNodes])
+
   const {
     sidebarCheckedNodeIds,
     sidebarCheckedNodeIdSet,
@@ -746,7 +748,7 @@ function App() {
     toggleImageChecked,
     replaceImageCheckedIds,
   } = useManageSelection({
-    flatSidebarNodeIds: flatSidebarNodes.map((node) => node.id),
+    flatSidebarNodeIds,
     validImageIdSet,
     sidebarDescendantNodeIdsById,
   })

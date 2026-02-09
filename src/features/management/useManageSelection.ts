@@ -37,7 +37,13 @@ export function useManageSelection({
 
   useEffect(() => {
     const validNodeSet = new Set(flatSidebarNodeIds)
-    setSidebarCheckedNodeIds((previous) => previous.filter((nodeId) => validNodeSet.has(nodeId)))
+    setSidebarCheckedNodeIds((previous) => {
+      const next = previous.filter((nodeId) => validNodeSet.has(nodeId))
+      if (next.length === previous.length && next.every((nodeId, index) => nodeId === previous[index])) {
+        return previous
+      }
+      return next
+    })
     setSidebarAnchorNodeId((previous) => (previous && validNodeSet.has(previous) ? previous : null))
   }, [flatSidebarNodeIds])
 
@@ -45,7 +51,13 @@ export function useManageSelection({
     if (!validImageIdSet) {
       return
     }
-    setImageCheckedIds((previous) => previous.filter((imageId) => validImageIdSet.has(imageId)))
+    setImageCheckedIds((previous) => {
+      const next = previous.filter((imageId) => validImageIdSet.has(imageId))
+      if (next.length === previous.length && next.every((imageId, index) => imageId === previous[index])) {
+        return previous
+      }
+      return next
+    })
   }, [validImageIdSet])
 
   const toggleSidebarNodeChecked = useCallback(

@@ -730,4 +730,217 @@ describe('useReadOnlyDataAccess', () => {
       expect.anything(),
     )
   })
+
+  it('includeHidden 从 true 切换到 false 时会驱动 Sidebar/Page/Metadata 同步收敛', async () => {
+    const snapshot = createLibrarySnapshot()
+    const source = snapshot.image_packages[0]
+    if (!source) {
+      throw new Error('mock source not found')
+    }
+
+    const baseImage = source.images[0]
+    if (!baseImage || baseImage.media_locator.kind !== 'filesystem') {
+      throw new Error('mock base image not found')
+    }
+
+    const hiddenImageId = `${source.id}-img-hidden`
+    const hiddenImage: typeof baseImage = {
+      ...baseImage,
+      id: hiddenImageId,
+      ordinal: 2,
+      hidden: true,
+      media_locator: {
+        ...baseImage.media_locator,
+        absolute_path: baseImage.media_locator.absolute_path.replace('.jpg', '_hidden.jpg'),
+      },
+    }
+    source.images = [{ ...baseImage, hidden: false }, hiddenImage]
+
+    const toVisibleSource = (includeHidden: boolean) => ({
+      ...source,
+      images: includeHidden ? source.images : source.images.filter((image) => !(image.hidden ?? false)),
+    })
+
+    const readImageSidebarTree = vi.fn(async (request: ReadImageSidebarTreeRequestDto): Promise<ReadImageSidebarTreeResponseDto> => {
+      const visibleSource = toVisibleSource(request.include_hidden ?? false)
+      return createSidebarResponse(visibleSource)
+    })
+
+    const readImagePage = vi.fn(async (request: ReadImagePageRequestDto): Promise<ReadImagePageResponseDto> => {
+      const visibleSource = toVisibleSource(request.include_hidden ?? false)
+      return {
+        source_id: visibleSource.id,
+        total_items: visibleSource.images.length,
+        page_index: request.page_index,
+        page_size: request.page_size,
+        refs: visibleSource.images.map((_, index) => ({
+          package_id: visibleSource.id,
+          image_index: index,
+        })),
+      }
+    })
+
+    const readImageMetadata = vi.fn(
+      async (request: ReadImageMetadataRequestDto): Promise<ReadImageMetadataResponseDto> => {
+        const includeHidden = request.include_hidden ?? false
+        const targetImage = source.images[request.image_index]
+        if (!targetImage) {
+          return null
+        }
+        if (!includeHidden && (targetImage.hidden ?? false)) {
+          return null
+        }
+
+        const visibleSource = toVisibleSource(includeHidden)
+        const visibleImage = visibleSource.images.find((image) => image.id === targetImage.id)
+        if (!visibleImage) {
+          return null
+        }
+
+        return {
+          package: visibleSource,
+          image: visibleImage,
+          grade: visibleSource.mock_grade,
+        }
+      },
+    )
+
+    const repository: ReadonlyMediaRepository = {
+      getInitialLibrarySnapshot: () => snapshot,
+      readLibrarySnapshot: async () => snapshot,
+      readImageSidebarTree,
+      readImagePage,
+      readImageMetadata,
+      resolveMediaResource: async () => ({
+        resource_url: 'about:blank#media',
+        mime_type: 'image/jpeg',
+        expires_at_ms: Date.now() + 1_000,
+      }),
+      writePackageGrade: async (request: WritePackageGradeRequestDto) => ({
+        package_id: request.package_id,
+        grade: request.grade,
+        updated_at_ms: Date.now(),
+      }),
+      saveVideoCover: async (request: SaveVideoCoverRequestDto) => ({
+        video_id: request.video_id,
+        cover_color: request.fallback_color ?? 'hsl(120, 44%, 40%)',
+        cover_image_path: null,
+        updated_at_ms: Date.now(),
+      }),
+      readPlaylist: async () => ({
+        video_ids: [],
+      }),
+      writePlaylist: async (request: WritePlaylistRequestDto) => ({
+        video_ids: request.video_ids,
+        updated_at_ms: Date.now(),
+      }),
+      enqueueImportTask: async (request: EnqueueImportTaskRequestDto) => ({
+        task: {
+          task_id: 'task-include-hidden-toggle',
+          task_type: 'import',
+          source: request.source,
+          paths: request.paths,
+          status: 'completed',
+          progress: 1,
+          processed_count: request.paths.length,
+          total_count: request.paths.length,
+          message: 'ok',
+          error_detail: null,
+          created_at_ms: Date.now(),
+          updated_at_ms: Date.now(),
+        },
+      }),
+      readImportTasks: async () => ({
+        tasks: [],
+      }),
+      retryImportTask: async (request: RetryImportTaskRequestDto) => ({
+        task: {
+          task_id: request.task_id,
+          task_type: 'import',
+          source: 'dialog-files',
+          paths: ['Z:/bench/retry.jpg'],
+          status: 'completed',
+          progress: 1,
+          processed_count: 1,
+          total_count: 1,
+          message: 'retried',
+          error_detail: null,
+          created_at_ms: Date.now(),
+          updated_at_ms: Date.now(),
+        },
+      }),
+      readMediaAccessAudit: async () => ({
+        resolve_requests: 0,
+        resolve_granted: 0,
+        resolve_denied_total: 0,
+        resolve_denied_by_reason: {},
+        token_reads: 0,
+        token_hits: 0,
+        token_misses: 0,
+        token_expired: 0,
+        token_cleanup_removed: 0,
+        token_active: 0,
+        generated_at_ms: Date.now(),
+      }),
+      readRuntimeCapabilities: async () => ({
+        dependencies: {
+          sharp: true,
+          ffmpeg: true,
+          ffprobe: true,
+          seven_zip: true,
+          powershell: true,
+        },
+        strategies: {
+          thumbnail: 'sharp-webp-cache',
+          video_probe: 'ffprobe',
+          video_cover: 'ffmpeg',
+          archive_rar_7z: 'normalize-to-zip-store',
+          archive_zip_repack: 'repack-webp-store',
+        },
+        minimum_matrix: [],
+        generated_at_ms: Date.now(),
+      }),
+    }
+
+    const { result, rerender } = renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository, {
+        includeHidden: true,
+        focusedRef: {
+          packageId: source.id,
+          imageIndex: 1,
+        },
+      }),
+    })
+
+    await waitFor(() => {
+      expect(result.current.page.data?.totalItems).toBe(2)
+      expect(result.current.metadata.data?.image.id).toBe(hiddenImageId)
+    })
+
+    rerender(
+      createHookParams(repository, {
+        includeHidden: false,
+        focusedRef: {
+          packageId: source.id,
+          imageIndex: 1,
+        },
+      }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.page.data?.totalItems).toBe(1)
+      expect(result.current.metadata.data).toBeNull()
+    })
+
+    const sidebarIncludeHiddenValues = readImageSidebarTree.mock.calls.map(([request]) => request.include_hidden)
+    const pageIncludeHiddenValues = readImagePage.mock.calls.map(([request]) => request.include_hidden)
+    const metadataIncludeHiddenValues = readImageMetadata.mock.calls.map(([request]) => request.include_hidden)
+
+    expect(sidebarIncludeHiddenValues).toContain(true)
+    expect(sidebarIncludeHiddenValues).toContain(false)
+    expect(pageIncludeHiddenValues).toContain(true)
+    expect(pageIncludeHiddenValues).toContain(false)
+    expect(metadataIncludeHiddenValues).toContain(true)
+    expect(metadataIncludeHiddenValues).toContain(false)
+  })
 })

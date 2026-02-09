@@ -1,7 +1,6 @@
 import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
 
 import type { BackendErrorRow } from '../features/app/buildBackendErrorRows'
-import type { BrowserMode } from '../types'
 
 interface ManagementPanelProps {
   visible: boolean
@@ -9,7 +8,6 @@ interface ManagementPanelProps {
   panelHeight: number
   panelRef: RefObject<HTMLDivElement | null>
   panelContentRef: RefObject<HTMLDivElement | null>
-  mode: BrowserMode
   sidebarSelectedCount: number
   imageSelectedCount: number
   activeSelectionScope: 'sidebar' | 'image' | null
@@ -35,7 +33,6 @@ function ManagementPanel({
   panelHeight,
   panelRef,
   panelContentRef,
-  mode,
   sidebarSelectedCount,
   imageSelectedCount,
   activeSelectionScope,
@@ -67,26 +64,13 @@ function ManagementPanel({
       ) : (
         <div className="vector-panel manage-panel" ref={panelRef} style={{ height: `${panelHeight}px` }}>
           <div className="vector-panel-content" ref={panelContentRef}>
-            <div className="vector-top-row">
-              <div className="search-mode-switch" role="group" aria-label="manage-mode-switch">
-                <button className="is-active" type="button">
-                  管理模式
-                </button>
-              </div>
-
-              <div className="vector-top-actions">
-                <span>
-                  {activeSelectionScope === 'sidebar'
-                    ? `已选目录节点: ${sidebarSelectedCount}`
-                    : activeSelectionScope === 'image'
-                      ? `已选媒体条目: ${imageSelectedCount}`
-                      : '未选择条目'}
-                </span>
-                <button className="vector-collapse-btn" type="button" onClick={onCollapse}>
-                  折叠
-                </button>
-              </div>
-            </div>
+            <p className="manage-panel-summary">
+              {activeSelectionScope === 'sidebar'
+                ? `已选目录节点: ${sidebarSelectedCount}`
+                : activeSelectionScope === 'image'
+                  ? `已选媒体条目: ${imageSelectedCount}`
+                  : '未选择条目'}
+            </p>
 
             <div className="vector-controls manage-panel-actions">
               <button className="vector-search-btn" type="button" disabled={!canDelete || pending} onClick={onDelete}>
@@ -101,13 +85,10 @@ function ManagementPanel({
               <button className="feature-action-btn" type="button" disabled={pending} onClick={onClearSelection}>
                 清空选择
               </button>
+              <button className="vector-collapse-btn" type="button" onClick={onCollapse}>
+                折叠
+              </button>
             </div>
-
-            <p className="vector-hint">
-              {mode === 'image'
-                ? 'Sidebar 与缩略图/文件名选择互斥：任一侧新选择会自动清空另一侧。'
-                : '视频模式下仅支持 Sidebar 节点选择与删除。'}
-            </p>
 
             {operationHint ? <p className="manage-panel-hint">{operationHint}</p> : null}
 
