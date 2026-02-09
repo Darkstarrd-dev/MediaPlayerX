@@ -1,8 +1,6 @@
 import {
   useCallback,
   useMemo,
-  useRef,
-  useState,
 } from 'react'
 
 import { buildE2eBenchSectionProps } from './buildE2eBenchSectionProps'
@@ -26,6 +24,7 @@ import { useAppSidebarScopeState } from './useAppSidebarScopeState'
 import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppWorkspaceProps } from './useAppWorkspaceProps'
 import { useFullscreenPlaybackBindings } from './useFullscreenPlaybackBindings'
+import { useAppSessionState } from './useAppSessionState'
 import { useVectorUniverseBindings } from './useVectorUniverseBindings'
 import { useImportPipeline } from '../import/useImportPipeline'
 import { usePaneResizers } from '../layout/usePaneResizers'
@@ -39,10 +38,7 @@ import {
   useWriteDataAccess,
 } from '../backend'
 import { getBenchSettings } from '../perf/benchSettings'
-import type {
-  FocusedImageRef,
-  VectorCandidate,
-} from '../../types'
+import type { FocusedImageRef } from '../../types'
 import { clamp } from '../../utils/ui'
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
@@ -96,32 +92,59 @@ export function useAppController() {
     bootstrapImageDirectories,
     bootstrapVideos,
   } = useRepositoryBootstrapData()
-  const [selectedPackageId, setSelectedPackageId] = useState(imageSources[0]?.id ?? '')
-  const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
-  const [imageFocusActive, setImageFocusActive] = useState(false)
-  const [focusByPackage, setFocusByPackage] = useState<Record<string, number>>(() =>
-    Object.fromEntries(imageSources.map((source) => [source.id, 0])),
-  )
-  const [pageByPackage, setPageByPackage] = useState<Record<string, number>>(() =>
-    Object.fromEntries(imageSources.map((source) => [source.id, 0])),
-  )
-  const [vectorSearchResults, setVectorSearchResults] = useState<VectorCandidate[]>([])
-  const [vectorFocusIndex, setVectorFocusIndex] = useState(0)
-  const [vectorPage, setVectorPage] = useState(0)
-  const [gradeByPackage, setGradeByPackage] = useState<Record<string, number | null>>(() =>
-    Object.fromEntries(imageSources.map((source) => [source.id, source.mockGrade ?? null])),
-  )
-  const [manageMode, setManageMode] = useState(false)
-  const [manageOperationHint, setManageOperationHint] = useState<string | null>(null)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [importMenuOpen, setImportMenuOpen] = useState(false)
-  const [vectorUniverseOpen, setVectorUniverseOpen] = useState(false)
-  const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
-  const [importTaskPanelOpen, setImportTaskPanelOpen] = useState(false)
+  const {
+    selectedPackageId,
+    setSelectedPackageId,
+    selectedSidebarNodeId,
+    setSelectedSidebarNodeId,
+    imageFocusActive,
+    setImageFocusActive,
+    focusByPackage,
+    setFocusByPackage,
+    pageByPackage,
+    setPageByPackage,
+    vectorSearchResults,
+    setVectorSearchResults,
+    vectorFocusIndex,
+    setVectorFocusIndex,
+    vectorPage,
+    setVectorPage,
+    gradeByPackage,
+    setGradeByPackage,
+    manageMode,
+    setManageMode,
+    manageOperationHint,
+    setManageOperationHint,
+    deleteConfirmOpen,
+    setDeleteConfirmOpen,
+    importMenuOpen,
+    setImportMenuOpen,
+    vectorUniverseOpen,
+    setVectorUniverseOpen,
+    dismissedImportTaskIds,
+    setDismissedImportTaskIds,
+    importTaskPanelOpen,
+    setImportTaskPanelOpen,
+    fullscreenEntryDisplay,
+    setFullscreenEntryDisplay,
+    appBodyRef,
+    workspaceRef,
+    workspaceBodyRef,
+    vectorPanelRef,
+    vectorPanelContentRef,
+    wasFullscreenRef,
+    lastExpandedSidebarRatioRef,
+    appBodyWidth,
+    setAppBodyWidth,
+    gridRef,
+    gridSize,
+    setGridSize,
+  } = useAppSessionState({
+    imageSources,
+    mode,
+    sidebarRatio,
+  })
   const archiveLoadStatus = useArchiveLoadStatus({ repository: mediaRepository })
-  const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
-    mode === 'video' ? 'video-only' : 'image-only',
-  )
 
   const {
     selectedVideoId,
@@ -194,17 +217,6 @@ export function useAppController() {
     onDragLeaveImport,
     onDropImport,
   } = useImportPipeline({ repository: mediaRepository })
-
-  const appBodyRef = useRef<HTMLDivElement>(null)
-  const workspaceRef = useRef<HTMLElement>(null)
-  const workspaceBodyRef = useRef<HTMLDivElement>(null)
-  const vectorPanelRef = useRef<HTMLDivElement>(null)
-  const vectorPanelContentRef = useRef<HTMLDivElement>(null)
-  const wasFullscreenRef = useRef(false)
-  const lastExpandedSidebarRatioRef = useRef(sidebarRatio >= SIDEBAR_COLLAPSE_RATIO ? sidebarRatio : 0.26)
-  const [appBodyWidth, setAppBodyWidth] = useState(0)
-  const gridRef = useRef<HTMLDivElement>(null)
-  const [gridSize, setGridSize] = useState({ width: 1200, height: 700 })
 
   useResponsiveZoomEffect()
 
