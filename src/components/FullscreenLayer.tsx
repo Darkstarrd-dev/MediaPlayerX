@@ -12,6 +12,7 @@ import {
 
 import type { BrowserMode, ImageItem, VideoItem } from '../types'
 import { clamp, formatSeconds } from '../utils/ui'
+import { FullscreenFooter } from './fullscreen/FullscreenFooter'
 import {
   FullscreenVideoControlRow,
   FullscreenVideoProgressRow,
@@ -773,88 +774,51 @@ function FullscreenLayer({
       </div>
 
       {showFullscreenFooter ? (
-        <footer className="fullscreen-footer">
-          {fullscreenDisplay === 'video-only' ? (
-            <div className="fullscreen-footer-video-controls">
-              <FullscreenVideoProgressRow {...videoProgressRowProps} />
-              <FullscreenVideoControlRow {...videoControlRowProps} />
-            </div>
-          ) : null}
-
-          <div className="fullscreen-meta-line">{footerInfoText}</div>
-          <div className="fullscreen-group">
-            <button className={fullscreenDisplay === 'dual' ? 'is-active' : ''} type="button" onClick={toggleDualDisplay}>
-              {fullscreenDisplay === 'dual' ? '单显示' : '双显示'}
-            </button>
-            <button type="button" disabled={fullscreenDisplay !== 'dual'} onClick={onToggleSwapSides}>
-              调换左右
-            </button>
-            <span className="fullscreen-focus-text">
-              {fullscreenDisplay === 'dual' ? `焦点：${fullscreenVideoFocus ? '视频' : '图片'}（点击区域或 Tab 切换）` : '焦点：单显示'}
-            </span>
-          </div>
-
-          <div className="fullscreen-group">
-            <button type="button" onClick={() => stepFocusedPane(-1)}>
-              上一页
-            </button>
-            <button type="button" onClick={() => stepFocusedPane(1)}>
-              下一页
-            </button>
-            <button type="button" disabled={mode !== 'image'} onClick={onPrevPackage}>
-              上个包
-            </button>
-            <button type="button" disabled={mode !== 'image'} onClick={onNextPackage}>
-              下个包
-            </button>
-            <button type="button" disabled={!autoplayEnabledForFocus} onClick={onToggleAutoplay}>
-              {autoPlayEnabled ? '停止自动播放' : '自动播放'}
-            </button>
-            <label className="fullscreen-inline-field">
-              速度
-              <select
-                aria-label="全屏自动播放速度"
-                disabled={!autoplayEnabledForFocus}
-                value={autoPlayInterval}
-                onChange={(event) => onSetAutoplayInterval(Number(event.target.value))}
-              >
-                {autoPlayPresets.map((seconds) => (
-                  <option key={seconds} value={seconds}>
-                    {`${seconds}s`}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="fullscreen-group">
-            <button type="button" onClick={() => alignFocusedPane('up')}>
-              上对齐
-            </button>
-            <button type="button" onClick={() => alignFocusedPane('down')}>
-              下对齐
-            </button>
-            <button type="button" onClick={() => alignFocusedPane('left')}>
-              左对齐
-            </button>
-            <button type="button" onClick={() => alignFocusedPane('right')}>
-              右对齐
-            </button>
-            <button type="button" disabled={!zoomEnabled} onClick={() => singlePane && adjustPaneZoom(singlePane, -ZOOM_STEP)}>
-              缩小
-            </button>
-            <span className="fullscreen-zoom-text">{zoomEnabled ? `${zoomPercent}%` : '-'}</span>
-            <button type="button" disabled={!zoomEnabled} onClick={() => singlePane && adjustPaneZoom(singlePane, ZOOM_STEP)}>
-              放大
-            </button>
-            <button type="button" disabled={!zoomEnabled} onClick={resetSinglePane}>
-              Reset
-            </button>
-            <button type="button" onClick={onExit}>
-              退出全屏
-            </button>
-          </div>
-        </footer>
+        <FullscreenFooter
+          mode={mode}
+          fullscreenDisplay={fullscreenDisplay}
+          fullscreenVideoFocus={fullscreenVideoFocus}
+          footerInfoText={footerInfoText}
+          clampedVideoTime={clampedVideoTime}
+          durationSec={durationSec}
+          videoPlaying={videoPlaying}
+          videoMuted={videoMuted}
+          videoVolume={videoVolume}
+          videoRate={videoRate}
+          autoplayEnabledForFocus={autoplayEnabledForFocus}
+          autoPlayEnabled={autoPlayEnabled}
+          autoPlayInterval={autoPlayInterval}
+          autoPlayPresets={autoPlayPresets}
+          zoomEnabled={zoomEnabled}
+          zoomPercent={zoomPercent}
+          onSeekVideo={onSeekVideo}
+          onToggleVideoPlay={onToggleVideoPlay}
+          onPrevVideo={onPrevVideo}
+          onNextVideo={onNextVideo}
+          onToggleVideoMute={onToggleVideoMute}
+          onChangeVideoVolume={onChangeVideoVolume}
+          onChangeVideoRate={onChangeVideoRate}
+          onToggleDualDisplay={toggleDualDisplay}
+          onToggleSwapSides={onToggleSwapSides}
+          onStepFocusedPane={stepFocusedPane}
+          onPrevPackage={onPrevPackage}
+          onNextPackage={onNextPackage}
+          onToggleAutoplay={onToggleAutoplay}
+          onSetAutoplayInterval={onSetAutoplayInterval}
+          onAlignFocusedPane={alignFocusedPane}
+          onZoomOut={() => {
+            if (singlePane) {
+              adjustPaneZoom(singlePane, -ZOOM_STEP)
+            }
+          }}
+          onZoomIn={() => {
+            if (singlePane) {
+              adjustPaneZoom(singlePane, ZOOM_STEP)
+            }
+          }}
+          onResetSinglePane={resetSinglePane}
+          onExit={onExit}
+        />
       ) : null}
     </div>
   )
