@@ -844,7 +844,7 @@ function FullscreenLayer({
           {!focusedVideoSrc ? <div className="fullscreen-media-empty">无可用视频源</div> : null}
         </div>
 
-        {videoControlsVisible ? (
+        {fullscreenDisplay === 'dual' && videoControlsVisible ? (
           <div
             className={`fullscreen-video-controls ${videoControlsAtTop ? 'is-top' : 'is-bottom'}`}
             style={{
@@ -910,6 +910,61 @@ function FullscreenLayer({
 
       {showFullscreenFooter ? (
         <footer className="fullscreen-footer">
+          {fullscreenDisplay === 'video-only' ? (
+            <div className="fullscreen-footer-video-controls">
+              <div className="fullscreen-video-controls-row is-progress">
+                <span>{`${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}</span>
+                <input
+                  aria-label="全屏视频进度滑条"
+                  max={Math.max(0, durationSec)}
+                  min={0}
+                  step={0.1}
+                  type="range"
+                  value={clampedVideoTime}
+                  onChange={(event) => onSeekVideo(Number(event.target.value))}
+                />
+              </div>
+              <div className="fullscreen-video-controls-row is-controls">
+                <button type="button" onClick={onToggleVideoPlay}>
+                  {videoPlaying ? '暂停' : '播放'}
+                </button>
+                <button type="button" onClick={onPrevVideo}>
+                  上一个
+                </button>
+                <button type="button" onClick={onNextVideo}>
+                  下一个
+                </button>
+                <button type="button" onClick={onToggleVideoMute}>
+                  {videoMuted ? '取消静音' : '静音'}
+                </button>
+                <label>
+                  音量 {videoMuted ? '0%' : `${videoVolume}%`}
+                  <input
+                    aria-label="全屏视频音量滑条"
+                    max={100}
+                    min={0}
+                    step={1}
+                    type="range"
+                    value={videoMuted ? 0 : videoVolume}
+                    onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
+                  />
+                </label>
+                <label>
+                  倍速 x{videoRate.toFixed(2)}
+                  <input
+                    aria-label="全屏视频倍速滑条"
+                    max={4}
+                    min={0.1}
+                    step={0.1}
+                    type="range"
+                    value={videoRate}
+                    onChange={(event) => onChangeVideoRate(Number(event.target.value))}
+                  />
+                </label>
+              </div>
+            </div>
+          ) : null}
+
           <div className="fullscreen-meta-line">{footerInfoText}</div>
           <div className="fullscreen-group">
             <button className={fullscreenDisplay === 'dual' ? 'is-active' : ''} type="button" onClick={toggleDualDisplay}>

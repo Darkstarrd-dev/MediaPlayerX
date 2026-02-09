@@ -1810,6 +1810,8 @@ select option {
 .video-screen {
   flex: 1;
   min-height: 200px;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1836,6 +1838,7 @@ select option {
   height: 100%;
   object-fit: contain;
   z-index: 0;
+  pointer-events: none;
 }
 
 .video-screen-hud {
@@ -1843,6 +1846,7 @@ select option {
   left: 12px;
   right: 12px;
   bottom: 12px;
+  z-index: 3;
   border: 1px solid rgba(129, 145, 163, 0.48);
   border-radius: 10px;
   background: rgba(10, 14, 20, 0.72);
@@ -2167,13 +2171,32 @@ select option {
 }
 
 .fullscreen-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
   border-top: 1px solid var(--mpx-border-1);
   background: var(--mpx-fullscreen-footer-bg);
   backdrop-filter: blur(4px);
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
+}
+
+.fullscreen-footer-video-controls {
+  width: 100%;
+  border: 1px solid rgba(103, 122, 148, 0.72);
+  border-radius: 10px;
+  background: rgba(8, 12, 16, 0.82);
+  backdrop-filter: blur(5px);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .fullscreen-meta-line {

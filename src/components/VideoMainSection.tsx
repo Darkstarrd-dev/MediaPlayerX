@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { clamp, formatSeconds } from '../utils/ui'
 
@@ -50,12 +50,25 @@ function VideoMainSection({
   onEnterFullscreen,
 }: VideoMainSectionProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false)
   const clampedTime = Math.min(videoTime, Math.max(0, durationSec))
+  const showCover = Boolean(videoSourceUrl && !videoPlaying && !hasPlayedCurrentSource)
+  const showVideoFrame = Boolean(videoSourceUrl && (videoPlaying || hasPlayedCurrentSource))
   const videoScreenBackground = !videoSourceUrl
     ? 'var(--mpx-video-empty-bg)'
-    : videoPlaying
-      ? 'var(--mpx-video-screen-bg)'
-      : coverColor
+    : showCover
+      ? coverColor
+      : 'var(--mpx-video-screen-bg)'
+
+  useEffect(() => {
+    setHasPlayedCurrentSource(false)
+  }, [videoSourceUrl])
+
+  useEffect(() => {
+    if (videoPlaying && videoSourceUrl) {
+      setHasPlayedCurrentSource(true)
+    }
+  }, [videoPlaying, videoSourceUrl])
 
   useEffect(() => {
     const video = videoRef.current
@@ -90,7 +103,7 @@ function VideoMainSection({
           <video
             ref={videoRef}
             className="video-screen-media"
-            style={{ opacity: videoPlaying ? 1 : 0 }}
+            style={{ opacity: showVideoFrame ? 1 : 0 }}
             src={videoSourceUrl}
             preload="metadata"
             playsInline
@@ -113,15 +126,19 @@ function VideoMainSection({
           />
         ) : null}
 
-        {!videoPlaying && coverImageUrl ? <img className="video-screen-cover-image" src={coverImageUrl} alt="视频封面" /> : null}
+        {showCover && coverImageUrl ? <img className="video-screen-cover-image" src={coverImageUrl} alt="视频封面" /> : null}
 
-        <div className="video-screen-hud">
-          {videoPlaying ? (
-            <span>{`真实视频 ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
-          ) : (
-            <span>{`封面态（待播放） ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
-          )}
-        </div>
+        {videoSourceUrl ? (
+          <div className="video-screen-hud">
+            {videoPlaying ? (
+              <span>{`真实视频 ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
+            ) : showCover ? (
+              <span>{`封面态（待播放） ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
+            ) : (
+              <span>{`暂停 ${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
+            )}
+          </div>
+        ) : null}
 
         {!videoSourceUrl ? (
           <div className="video-screen-empty">

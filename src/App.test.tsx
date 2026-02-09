@@ -407,12 +407,16 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
-  it('视频切换后回到封面暂停态，Save as cover 走后端写链路并保持封面态', async () => {
+  it('视频播放后暂停保留当前画面，切换视频后回到封面态，Save as cover 走后端写链路并保持封面态', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
     fireEvent.click(screen.getByRole('button', { name: '播放' }))
     expect(screen.getByRole('button', { name: '暂停' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '暂停' }))
+    expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
+    expect(screen.queryByText(/封面态（待播放）/)).not.toBeInTheDocument()
 
     fireEvent.click(screen.getAllByRole('button', { name: 'teaser_forest.mp4' })[0])
     expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
@@ -498,7 +502,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(readToolbarTitle()).not.toBe(titleBeforeFooterPackage)
   })
 
-  it('视频模式进入全屏默认单视频，悬浮控件按视频位置贴顶/贴底并支持 Alt+方向键对齐', () => {
+  it('视频模式单视频时将控件并入底部 footer，双显示时保留悬浮控件自适应', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
@@ -507,14 +511,25 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getAllByText(/封面态（待播放）/).length).toBeGreaterThan(0)
     expect(screen.queryByLabelText('调整全屏分屏比例')).not.toBeInTheDocument()
 
-    const videoPane = document.querySelector('.fullscreen-video')
-    expect(videoPane).not.toBeNull()
-    fireEvent.mouseEnter(videoPane as Element)
-    expect(screen.getByLabelText('全屏视频进度滑条')).toBeInTheDocument()
-
     const fullscreenLayer = document.querySelector('.fullscreen-layer')
     expect(fullscreenLayer).not.toBeNull()
     fireEvent.mouseMove(fullscreenLayer as Element, { clientY: window.innerHeight - 4 })
+
+    const fullscreenFooter = document.querySelector('.fullscreen-footer') as HTMLElement | null
+    expect(fullscreenFooter).not.toBeNull()
+    const footerVideoControls = fullscreenFooter?.querySelector('.fullscreen-footer-video-controls') as HTMLElement | null
+    expect(footerVideoControls).not.toBeNull()
+    expect(fullscreenFooter?.firstElementChild?.classList.contains('fullscreen-footer-video-controls')).toBe(true)
+    expect(screen.getByLabelText('全屏视频进度滑条')).toBeInTheDocument()
+    expect(document.querySelector('.fullscreen-stage .fullscreen-video-controls')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: '双显示' }))
+
+    const videoPane = document.querySelector('.fullscreen-video')
+    expect(videoPane).not.toBeNull()
+    fireEvent.mouseEnter(videoPane as Element)
+
+    expect(document.querySelector('.fullscreen-stage .fullscreen-video-controls')).not.toBeNull()
     const rowsDefault = Array.from(document.querySelectorAll('.fullscreen-video-controls-row'))
     expect(rowsDefault[0]?.classList.contains('is-progress')).toBe(true)
 
@@ -526,7 +541,6 @@ describe('MediaPlayer 虚拟 UI', () => {
     const rowsTopAlign = Array.from(document.querySelectorAll('.fullscreen-video-controls-row'))
     expect(rowsTopAlign[0]?.classList.contains('is-progress')).toBe(true)
 
-    fireEvent.click(screen.getByRole('button', { name: '双显示' }))
     const dualVideoStage = document.querySelector('.fullscreen-video .fullscreen-stage')
     const dualVideoMedia = document.querySelector('.fullscreen-video .fullscreen-media-video') as HTMLElement
     const dualImageStage = document.querySelector('.fullscreen-image .fullscreen-stage')
