@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -35,6 +34,7 @@ import { useResolvedMediaState } from './features/app/useResolvedMediaState'
 import { useSearchAndVectorActions } from './features/app/useSearchAndVectorActions'
 import { useAppSidebarScopeState } from './features/app/useAppSidebarScopeState'
 import { useAppWorkspaceProps } from './features/app/useAppWorkspaceProps'
+import { useFullscreenPlaybackBindings } from './features/app/useFullscreenPlaybackBindings'
 import { useImportPipeline } from './features/import/useImportPipeline'
 import { usePaneResizers } from './features/layout/usePaneResizers'
 import { computeThumbnailGridLayout } from './features/layout/thumbnailLayout'
@@ -58,7 +58,6 @@ const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 const EMPTY_FEATURE_TAGS: string[] = []
 const MEDIA_RESOLVE_MAX_CONCURRENT = 8
-type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 
 function App() {
   const benchSettings = getBenchSettings()
@@ -132,10 +131,6 @@ function App() {
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
     mode === 'video' ? 'video-only' : 'image-only',
   )
-  const [fullscreenAlignRequest, setFullscreenAlignRequest] = useState<{
-    id: number
-    direction: FullscreenAlignDirection
-  } | null>(null)
 
   const {
     selectedVideoId,
@@ -182,7 +177,6 @@ function App() {
     initialPlaylistIds: bootstrapVideos.slice(0, 3).map((item) => item.id),
     videos: bootstrapVideos,
   })
-  const previousFullscreenActiveRef = useRef(fullscreenActive)
 
   const playlistPersistence = usePlaylistPersistence({
     repository: mediaRepository,
@@ -574,23 +568,21 @@ function App() {
     focusedVideoCoverImageLocator,
   })
 
-  const videoShortcutActive =
-    fullscreenActive && (fullscreenDisplay === 'video-only' || (fullscreenDisplay === 'dual' && fullscreenVideoFocus))
-
-  const applyAutoplayIntervalByIndex = useCallback(
-    (index: 0 | 1 | 2 | 3 | 4) => {
-      const seconds = AUTO_PLAY_PRESETS[index]
-      updateSettings({ autoPlayInterval: seconds, autoPlayEnabled: true })
-    },
-    [updateSettings],
-  )
-
-  const requestFullscreenAlign = useCallback((direction: FullscreenAlignDirection) => {
-    setFullscreenAlignRequest((previous) => ({
-      id: (previous?.id ?? 0) + 1,
-      direction,
-    }))
-  }, [])
+  const {
+    videoShortcutActive,
+    fullscreenAlignRequest,
+    applyAutoplayIntervalByIndex,
+    requestFullscreenAlign,
+    setFullscreenActiveWithAutoStop,
+  } = useFullscreenPlaybackBindings({
+    fullscreenActive,
+    fullscreenDisplay,
+    fullscreenVideoFocus,
+    autoPlayEnabled,
+    updateSettings,
+    setFullscreenActive,
+    autoPlayPresets: AUTO_PLAY_PRESETS,
+  })
 
   const {
     runVectorSearch,
@@ -635,21 +627,6 @@ function App() {
       vectorUniverseRaycastDistance,
       vectorUniverseSprintMultiplier,
     ],
-  )
-
-  useEffect(() => {
-    const previous = previousFullscreenActiveRef.current
-    if (previous && !fullscreenActive && autoPlayEnabled) {
-      updateSettings({ autoPlayEnabled: false })
-    }
-    previousFullscreenActiveRef.current = fullscreenActive
-  }, [autoPlayEnabled, fullscreenActive, updateSettings])
-
-  const setFullscreenActiveWithAutoStop = useCallback(
-    (value: boolean | ((previous: boolean) => boolean)) => {
-      setFullscreenActive(value)
-    },
-    [setFullscreenActive],
   )
 
 
