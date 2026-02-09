@@ -1,6 +1,7 @@
 import { useEffect, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
+import { resolveThemeId } from '../theme/themeRegistry'
 import type { BrowserMode, FocusedImageRef, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import { clamp } from '../../utils/ui'
 
@@ -433,6 +434,10 @@ export function useAppEffects({
   ])
 
   useEffect(() => {
-    document.documentElement.dataset.mpxTheme = themeId
-  }, [themeId])
+    const nextThemeId = resolveThemeId(themeId)
+    if (nextThemeId !== themeId) {
+      updateSettings({ themeId: nextThemeId })
+    }
+    document.documentElement.dataset.mpxTheme = nextThemeId
+  }, [themeId, updateSettings])
 }

@@ -5,12 +5,14 @@
 ## 1. 核心原理
 - **属性切换**：通过在 `html` 设置 `data-mpx-theme="<themeId>"` 激活主题。
 - **纯 CSS 驱动**：新增主题只需在 `src/styles/themes/presets/` 下新增 CSS 文件。
+- **预设自动发现**：运行时自动加载 `presets/*.css`；删除某个预设文件不会导致应用启动失败。
 - **Token 隔离**：组件层样式只消费 `--mpx-*` token，禁止硬编码视觉值（颜色/尺寸/圆角等）。
 - **颜色 + 形态统一**：主题不只控制颜色，也控制按钮体积、图标尺寸、滚动条、滑块等交互原件。
 
 ## 2. 文件结构
 - `src/styles/themes/contract.css`：token 契约与默认值
-- `src/styles/themes/index.css`：主题入口（导入契约与预设）
+- `src/styles/themes/index.css`：主题入口（导入契约）
+- `src/features/theme/themeRegistry.ts`：预设自动发现与主题兜底解析
 - `src/styles/themes/presets/*.css`：主题预设
 - `src/styles/themes/presets/_template.css`：新主题模板
 
@@ -26,6 +28,19 @@
 ```
 
 3. 在设置面板选择该主题，检查颜色与控件形态是否一致。
+
+注：若历史持久化中的 `themeId` 对应预设已被删除，系统会自动回退到当前可用列表中的第一个主题（或默认主题），不报错。
+
+### 3.1 Theme Playground
+- 页面文件：`docs/ui/theme-playground.html`
+- 作用：集中展示当前主题系统涉及的控件与状态（按钮/输入/checkbox/range/滚动条/视频占位/全屏等）。
+- 用法：打开 HTML，输入 theme id 并应用，然后编辑 `src/styles/themes/presets/*.css`，刷新页面观察效果。
+
+### 3.2 Theme 开发最小素材
+仅依赖以下三者即可生成主题（不需要读取其它文件）：
+- `docs/ui/theme-system-v1.md`
+- `src/styles/themes/presets/_template.css`
+- `docs/ui/theme-playground.html`
 
 ## 4. Token 分层
 
@@ -99,8 +114,5 @@
 - [ ] 图标按钮尺寸、字重、密度与整体风格一致。
 
 ## 8. 当前预设主题
-- `atelier-signal`：控件样式验证主题（用于验证尺寸/圆角/滑块/checkbox 覆盖）
-- `swiss-cobalt`：专业浅色
-- `neon-rift`：霓虹深色
-- `aurora-sand`：暖色编辑风
-- `matrix-mint`：青绿科技暗色
+- 预设主题以 `src/styles/themes/presets/*.css`（排除 `_template.css`）为准。
+- 当前目录示例：`aurora-sand`、`catppuccin-mocha`、`dracula-dark`、`geist-light`、`github-dimmed`、`gruvbox-dark`、`linear-dark`、`nord-dark`、`rose-pine`、`solarized-dark`、`tokyo-night`。

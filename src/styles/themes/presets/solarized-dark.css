@@ -1,0 +1,116 @@
+/* Theme: Solarized Dark */
+
+:root[data-mpx-theme="solarized-dark"] {
+  color-scheme: dark;
+
+  /* --- Foundations --- */
+  --mpx-control-radius: 4px;
+  --mpx-control-height: 34px;
+  --mpx-control-padding-x: 12px;
+  --mpx-control-font-weight: 600;
+  
+  --mpx-icon-button-size: 34px;
+  --mpx-icon-size: 16px;
+  
+  /* Scrollbars */
+  --mpx-scrollbar-size: 10px;
+  --mpx-scrollbar-radius: 0px;
+  --mpx-scrollbar-track-bg: #002b36;
+  --mpx-scrollbar-thumb-bg: #586e75;
+  --mpx-scrollbar-thumb-hover-bg: #657b83;
+
+  /* Ranges / Sliders */
+  --mpx-range-track-height: 4px;
+  --mpx-range-track-bg: #586e75;
+  --mpx-range-thumb-size: 14px;
+  --mpx-range-thumb-bg: #2aa198;
+  --mpx-range-thumb-border: #2aa198;
+
+  /* Checkboxes */
+  --mpx-checkbox-size: 16px;
+  --mpx-checkbox-radius: 2px;
+  --mpx-checkbox-bg: #073642;
+  --mpx-checkbox-border: #586e75;
+  --mpx-checkbox-check: #fdf6e3;
+  --mpx-checkbox-checked-bg: #2aa198;
+  --mpx-checkbox-checked-border: #2aa198;
+
+  /* --- Semantic Colors --- */
+  
+  /* Surfaces */
+  --mpx-bg-app: #002b36;
+  --mpx-bg-workspace: #073642;
+  --mpx-bg-panel: #002b36;
+  --mpx-bg-elevated: #073642;
+  --mpx-bg-hover: #073642;
+  --mpx-bg-selected: #586e75;
+  --mpx-bg-muted: #073642;
+  --mpx-bg-tooltip: #073642;
+
+  /* Text */
+  --mpx-text-1: #93a1a1;
+  --mpx-text-2: #839496;
+  --mpx-text-3: #586e75;
+  --mpx-text-heading: #fdf6e3;
+  --mpx-text-inverse: #002b36;
+
+  /* Borders */
+  --mpx-border-1: #073642;
+  --mpx-border-2: #586e75;
+  --mpx-border-focus: #268bd2;
+
+  /* Accent */
+  --mpx-accent: #268bd2;
+  --mpx-accent-soft: rgba(38, 139, 210, 0.1);
+  --mpx-accent-contrast: #fdf6e3;
+
+  /* Inputs */
+  --mpx-input-bg: #073642;
+  --mpx-input-border: #586e75;
+  --mpx-input-text: #93a1a1;
+  --mpx-input-focus-bg: #073642;
+  --mpx-input-focus-border: #268bd2;
+  --mpx-input-readonly-bg: #002b36;
+  --mpx-input-readonly-text: #586e75;
+  --mpx-input-readonly-border: #073642;
+
+  /* Buttons */
+  --mpx-btn-primary-bg: #2aa198;
+  --mpx-btn-primary-text: #fdf6e3;
+  --mpx-btn-secondary-bg: #073642;
+  --mpx-btn-secondary-border: #586e75;
+  --mpx-btn-secondary-text: #93a1a1;
+
+  /* Status */
+  --mpx-status-danger-bg: rgba(220, 50, 47, 0.1);
+  --mpx-status-danger-border: #dc322f;
+  --mpx-status-danger-text: #dc322f;
+  
+  --mpx-status-warning-bg: rgba(181, 137, 0, 0.1);
+  --mpx-status-warning-border: #b58900;
+  --mpx-status-warning-text: #b58900;
+  
+  --mpx-status-info-bg: rgba(38, 139, 210, 0.1);
+  --mpx-status-info-border: #268bd2;
+  --mpx-status-info-text: #268bd2;
+  
+  --mpx-status-success-bg: rgba(133, 153, 0, 0.1);
+  --mpx-status-success-border: #859900;
+  --mpx-status-success-text: #859900;
+  
+  --mpx-status-busy-bg: #073642;
+  --mpx-status-busy-border: #586e75;
+  --mpx-status-busy-text: #839496;
+  
+  --mpx-status-idle-bg: #002b36;
+  --mpx-status-idle-border: #073642;
+  --mpx-status-idle-text: #586e75;
+
+  /* Component Aliases (Optional overrides) */
+  --mpx-header-bg: #002b36;
+  --mpx-video-screen-bg: #000000;
+  --mpx-video-empty-bg: #073642;
+  --mpx-video-empty-text: #586e75;
+  --mpx-shadow-panel: 0 6px 16px rgba(0, 0, 0, 0.2);
+  --mpx-card-focus-ring: rgba(38, 139, 210, 0.1);
+}

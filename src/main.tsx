@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './features/theme/themeRegistry'
 import App from './App.tsx'
 import BenchRoot from './bench/BenchRoot.tsx'
 

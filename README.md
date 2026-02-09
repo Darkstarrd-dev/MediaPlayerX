@@ -46,5 +46,6 @@ npm run test
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
 - `docs/ref/虚拟UI阶段说明.md`（历史参考）
+- `docs/ui/theme-playground.html`（主题开发调试页）
 
 文档为当前阶段单一事实源（SSOT）。

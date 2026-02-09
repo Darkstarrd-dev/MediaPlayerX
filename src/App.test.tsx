@@ -566,7 +566,9 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'theme 设置' }))
     expect(screen.getByText('主题方案')).toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: '主题方案' })).toHaveValue('swiss-cobalt')
+    const themeSelect = screen.getByRole('combobox', { name: '主题方案' }) as HTMLSelectElement
+    expect(themeSelect.value.length).toBeGreaterThan(0)
+    expect(Array.from(themeSelect.options).some((option) => option.value === themeSelect.value)).toBe(true)
 
     fireEvent.click(screen.getByRole('button', { name: '3D 设置' }))
     expect(screen.getByText('3D 设置（向量宇宙）')).toBeInTheDocument()

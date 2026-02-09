@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en" data-mpx-theme="aurora-sand">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MediaPlayer Theme Playground</title>
+    <link rel="stylesheet" href="../../src/styles/themes/index.css" />
+    <link id="theme-preset-link" rel="stylesheet" href="../../src/styles/themes/presets/aurora-sand.css" />
+    <link rel="stylesheet" href="../../src/App.css" />
+    <style>
+      .theme-playground {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .playground-toolbar {
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-radius-lg);
+        background: var(--mpx-bg-panel);
+        box-shadow: var(--mpx-shadow-panel);
+        padding: 12px 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 12px;
+        align-items: center;
+      }
+
+      .playground-toolbar strong {
+        margin-right: 6px;
+        color: var(--mpx-text-heading);
+      }
+
+      .playground-toolbar label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--mpx-text-2);
+      }
+
+      .playground-toolbar input,
+      .playground-toolbar select {
+        border: var(--control-border-width) solid var(--mpx-input-border);
+        border-radius: var(--control-radius);
+        background: var(--mpx-input-bg);
+        color: var(--mpx-input-text);
+        min-height: var(--control-height);
+        padding: 0 var(--control-padding-x);
+      }
+
+      .playground-toolbar button {
+        border: var(--control-border-width) solid var(--mpx-btn-secondary-border);
+        border-radius: var(--control-radius);
+        min-height: var(--control-height);
+        background: var(--mpx-btn-secondary-bg);
+        color: var(--mpx-btn-secondary-text);
+        font-weight: var(--control-font-weight);
+        padding: 0 var(--control-padding-x);
+        cursor: pointer;
+      }
+
+      .playground-hint {
+        color: var(--mpx-text-3);
+        font-size: 12px;
+      }
+
+      .playground-section {
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-radius-lg);
+        background: var(--mpx-bg-panel);
+        box-shadow: var(--mpx-shadow-panel);
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .playground-section h3 {
+        margin: 0;
+        font-size: 14px;
+        color: var(--mpx-text-heading);
+      }
+
+      .playground-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 12px;
+      }
+
+      .playground-app {
+        height: auto;
+        min-height: 680px;
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--mpx-shadow-panel);
+      }
+
+      .playground-app .app-body {
+        height: auto;
+        min-height: 520px;
+      }
+
+      .playground-scroll {
+        border: 1px solid var(--mpx-border-1);
+        border-radius: 10px;
+        background: var(--mpx-bg-elevated);
+        padding: 10px;
+        max-height: 160px;
+        overflow: auto;
+        display: grid;
+        gap: 6px;
+      }
+
+      .playground-scroll span {
+        padding: 6px 8px;
+        border-radius: 8px;
+        background: var(--mpx-bg-muted);
+        color: var(--mpx-text-2);
+      }
+
+      .theme-playground .drop-overlay,
+      .theme-playground .fullscreen-layer,
+      .theme-playground .settings-mask,
+      .theme-playground .vector-universe-overlay {
+        position: relative;
+        inset: auto;
+        z-index: 1;
+        height: 260px;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .theme-playground .settings-panel {
+        width: 100%;
+        height: 100%;
+      }
+
+      .theme-playground .fullscreen-content {
+        position: absolute;
+        inset: 0;
+      }
+
+      .theme-playground .vector-universe-stage-wrap {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="theme-playground">
+      <div class="playground-toolbar">
+        <strong>Theme Playground</strong>
+        <label>
+          Theme ID
+          <input id="theme-input" type="text" value="aurora-sand" />
+        </label>
+        <label>
+          Preset
+          <select id="theme-select">
+            <option value="aurora-sand">aurora-sand</option>
+            <option value="catppuccin-mocha">catppuccin-mocha</option>
+            <option value="dracula-dark">dracula-dark</option>
+            <option value="geist-light">geist-light</option>
+            <option value="github-dimmed">github-dimmed</option>
+            <option value="gruvbox-dark">gruvbox-dark</option>
+            <option value="linear-dark">linear-dark</option>
+            <option value="nord-dark">nord-dark</option>
+            <option value="rose-pine">rose-pine</option>
+            <option value="solarized-dark">solarized-dark</option>
+            <option value="tokyo-night">tokyo-night</option>
+          </select>
+        </label>
+        <button id="apply-theme" type="button">Apply theme</button>
+        <span class="playground-hint">Edit src/styles/themes/presets/*.css and refresh.</span>
+      </div>
+
+      <section class="playground-section">
+        <h3>App Shell</h3>
+        <div class="app playground-app">
+          <header class="app-header" style="height: 56px;">
+            <div class="header-left">
+              <div class="logo-wrap">
+                <button class="logo-btn" type="button">MediaPlayerX</button>
+                <div class="import-menu">
+                  <button type="button">Import files</button>
+                  <button type="button">Import folders</button>
+                </div>
+              </div>
+
+              <button class="task-status-btn is-busy is-open" type="button">Loading</button>
+
+              <div class="mode-switch" role="group" aria-label="mode-switch">
+                <button class="is-active" type="button">Image</button>
+                <button type="button">Video</button>
+              </div>
+
+              <button class="search-trigger-btn is-active" type="button">Search</button>
+              <button class="search-trigger-btn vector-universe-trigger" type="button">Vector Universe</button>
+            </div>
+
+            <div class="header-right">
+              <div class="zoom-stepper" role="group" aria-label="zoom">
+                <span>Zoom</span>
+                <button class="zoom-stepper-btn" type="button">-</button>
+                <span>3</span>
+                <button class="zoom-stepper-btn" type="button">+</button>
+              </div>
+
+              <label class="inline-switch">
+                <input type="checkbox" checked />
+                Auto-play
+              </label>
+
+              <select>
+                <option>1s</option>
+                <option>2s</option>
+                <option>4s</option>
+              </select>
+
+              <button class="header-settings-btn" type="button">Settings</button>
+            </div>
+          </header>
+
+          <div class="app-body">
+            <aside class="sidebar" style="width: 240px; min-width: 200px;">
+              <div class="sidebar-head">
+                <button class="sidebar-title-btn" type="button">Library</button>
+                <div class="sidebar-head-actions">
+                  <button type="button">Go to</button>
+                  <button class="sidebar-head-icon-btn is-root-set" type="button">ROOT</button>
+                </div>
+              </div>
+              <div class="sidebar-tree" style="display: flex; flex-direction: column; gap: 4px;">
+                <div class="sidebar-row is-active" style="padding-left: 10px;">
+                  <span class="sidebar-bullet is-running" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Project Alpha</button>
+                  <span class="sidebar-count" style="font-size: 12px;">18</span>
+                </div>
+                <div class="sidebar-row" style="padding-left: 24px;">
+                  <span class="sidebar-bullet is-pending" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Set 01</button>
+                  <span class="sidebar-count" style="font-size: 12px;">6</span>
+                </div>
+                <div class="sidebar-row" style="padding-left: 24px;">
+                  <span class="sidebar-bullet" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Set 02</button>
+                  <input type="checkbox" checked />
+                </div>
+                <div class="sidebar-row" style="padding-left: 10px;">
+                  <span class="sidebar-bullet" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Archive</button>
+                  <span class="sidebar-count" style="font-size: 12px;">42</span>
+                </div>
+              </div>
+            </aside>
+
+            <section class="workspace">
+              <div class="vector-panel" style="height: 240px;">
+                <div class="vector-panel-content">
+                  <div class="vector-top-row">
+                    <div class="search-mode-switch" role="group">
+                      <button class="is-active" type="button">Vector Search</button>
+                      <button type="button">Feature Search</button>
+                    </div>
+                    <div class="vector-top-actions">
+                      <span>Results: 24</span>
+                      <button class="vector-collapse-btn" type="button">Collapse</button>
+                    </div>
+                  </div>
+                  <div class="vector-controls">
+                    <button class="vector-search-btn" type="button">Run Vector</button>
+                    <span>Input: Package A #12</span>
+                  </div>
+                  <label>
+                    Threshold 0.62
+                    <input type="range" min="0.2" max="0.98" step="0.01" value="0.62" />
+                  </label>
+                  <p class="vector-hint">Adjust threshold and rerun to refresh results.</p>
+                </div>
+              </div>
+
+              <div class="vector-splitter"></div>
+
+              <div class="workspace-body">
+                <main class="main-pane" style="width: calc(100% - 320px);">
+                  <div class="main-toolbar">
+                    <strong class="main-toolbar-title">Package A (18 items)</strong>
+                    <div class="toolbar-actions">
+                      <button class="toolbar-icon-btn is-grid-mode" type="button">GRID</button>
+                      <button class="toolbar-icon-btn" type="button">FULL</button>
+                    </div>
+                  </div>
+
+                  <div class="image-grid">
+                    <button class="thumb-card is-focused" style="width: 140px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media" style="width: 100%; height: 100%;">
+                          <div class="thumb-media-empty"></div>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="thumb-card" style="width: 140px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media" style="width: 100%; height: 100%;">
+                          <div class="thumb-media-empty"></div>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="thumb-card" style="width: 140px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media" style="width: 100%; height: 100%;">
+                          <div class="thumb-media-empty"></div>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="thumb-card is-skeleton" style="width: 140px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media thumb-media-empty" style="width: 100%; height: 100%;"></div>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div class="pager-line">
+                    <button type="button">Prev</button>
+                    <span>Page 1 / 4</span>
+                    <button type="button">Next</button>
+                  </div>
+
+                  <footer class="main-footer">
+                    <span>Footer note with long text to check overflow behavior.</span>
+                    <span>Loaded 128 files</span>
+                  </footer>
+                </main>
+
+                <div class="metadata-splitter"></div>
+
+                <aside class="metadata-panel" style="width: 300px;">
+                  <div class="metadata-head">
+                    <button class="metadata-title-btn" type="button">Metadata</button>
+                    <button class="metadata-head-icon-btn is-image" type="button">VIEW</button>
+                  </div>
+
+                  <div class="metadata-content">
+                    <div class="feature-rating-group metadata-rating-group">
+                      <strong>Rating</strong>
+                      <div class="feature-rating-stars metadata-rating-stars" role="group">
+                        <button class="is-clear" type="button">x</button>
+                        <button class="is-active" type="button">*</button>
+                        <button class="is-active" type="button">*</button>
+                        <button type="button">o</button>
+                        <button type="button">o</button>
+                      </div>
+                    </div>
+
+                    <div class="metadata-edit-grid">
+                      <label>
+                        <span>Package</span>
+                        <input readOnly value="package-001" />
+                      </label>
+                      <label>
+                        <span>Title</span>
+                        <input value="Sample work" />
+                      </label>
+                      <label>
+                        <span>Circle</span>
+                        <input value="Circle Name" />
+                      </label>
+                      <label>
+                        <span>Author</span>
+                        <input value="Author" />
+                      </label>
+                      <label>
+                        <span>Tags</span>
+                        <input value="tag-a, tag-b" />
+                      </label>
+                    </div>
+
+                    <div class="metadata-edit-actions">
+                      <button type="button">Save</button>
+                      <button type="button">Sync title</button>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="playground-section">
+        <h3>Search Panel (Feature Mode)</h3>
+        <div class="vector-panel" style="height: 300px;">
+          <div class="vector-panel-content">
+            <div class="vector-top-row">
+              <div class="search-mode-switch" role="group">
+                <button type="button">Vector Search</button>
+                <button class="is-active" type="button">Feature Search</button>
+              </div>
+              <div class="vector-top-actions">
+                <span>Matches: 12 nodes</span>
+                <button class="vector-collapse-btn" type="button">Collapse</button>
+              </div>
+            </div>
+
+            <div class="feature-controls">
+              <label>
+                Name
+                <input class="feature-query-input" placeholder="Search by name" value="" />
+              </label>
+              <label>
+                Title
+                <input class="feature-query-input" placeholder="Search by title" value="" />
+              </label>
+              <label>
+                Circle
+                <input class="feature-query-input" list="feature-circle-options" placeholder="Circle" />
+                <datalist id="feature-circle-options">
+                  <option value="Circle A"></option>
+                  <option value="Circle B"></option>
+                </datalist>
+              </label>
+              <label>
+                Author
+                <input class="feature-query-input" list="feature-author-options" placeholder="Author" />
+                <datalist id="feature-author-options">
+                  <option value="Author A"></option>
+                  <option value="Author B"></option>
+                </datalist>
+              </label>
+
+              <div class="feature-tags-group">
+                <div class="feature-control-head">
+                  <strong>Tags</strong>
+                  <div class="feature-control-actions">
+                    <button class="feature-action-btn" type="button">Pick tags</button>
+                    <button class="feature-action-btn" type="button">Clear</button>
+                  </div>
+                </div>
+                <div class="feature-tags-popover" role="listbox">
+                  <button class="is-active" type="button">tag-a</button>
+                  <button type="button">tag-b</button>
+                  <button class="is-active" type="button">tag-c</button>
+                  <button type="button">tag-d</button>
+                </div>
+                <p class="feature-selection-result">Selected: tag-a, tag-c</p>
+              </div>
+
+              <div class="feature-rating-group">
+                <strong>Package rating</strong>
+                <div class="feature-rating-stars" role="group">
+                  <button class="is-clear" type="button">x</button>
+                  <button class="is-active" type="button">*</button>
+                  <button class="is-active" type="button">*</button>
+                  <button type="button">o</button>
+                  <button type="button">o</button>
+                </div>
+              </div>
+
+              <p class="vector-hint">Combined filters use AND logic.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="playground-section">
+        <h3>Video Preview</h3>
+        <div class="video-preview" style="min-height: 260px;">
+          <div class="video-screen" style="background: var(--mpx-video-screen-bg);">
+            <div class="video-screen-empty">No video source</div>
+            <div class="video-screen-hud">
+              <span>Cover state 00:00 / 02:10</span>
+            </div>
+          </div>
+          <div class="video-progress-line">
+            <span>00:00 / 02:10</span>
+            <input type="range" min="0" max="120" value="45" />
+          </div>
+          <div class="video-controls">
+            <button type="button">Play</button>
+            <button type="button">Prev</button>
+            <button type="button">Next</button>
+            <button type="button">Save cover</button>
+            <button type="button">Mute</button>
+            <label class="video-volume-inline">
+              <span>Volume</span>
+              <span>60%</span>
+              <input type="range" min="0" max="100" value="60" />
+            </label>
+            <label class="video-rate-inline">
+              <span>Rate x1.25</span>
+              <input type="range" min="0.1" max="4" step="0.1" value="1.25" />
+            </label>
+            <button class="video-fullscreen-btn" type="button">Fullscreen</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="playground-section">
+        <h3>Tabs, Playlist, Lists</h3>
+        <div class="meta-tabs">
+          <button class="is-active" type="button">Info</button>
+          <button type="button">Playlist</button>
+        </div>
+        <div class="playlist-list">
+          <div class="playlist-item is-active">
+            <button type="button">video-001.mp4</button>
+            <button type="button">Remove</button>
+          </div>
+          <div class="playlist-item">
+            <button type="button">video-002.mp4</button>
+            <button type="button">Remove</button>
+          </div>
+        </div>
+
+        <div class="name-list" style="height: 180px;">
+          <div class="name-list-header">
+            <span>File</span>
+            <span>Size</span>
+            <span>Resolution</span>
+          </div>
+          <div class="name-list-body">
+            <button class="name-list-row is-focused" type="button">
+              <span>alpha/001.png</span>
+              <span>820KB</span>
+              <span>1920 x 1080</span>
+            </button>
+            <button class="name-list-row" type="button">
+              <span>alpha/002.png</span>
+              <span>640KB</span>
+              <span>1280 x 720</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="playground-section">
+        <h3>Settings Panel</h3>
+        <div class="settings-mask">
+          <section class="settings-panel">
+            <div class="settings-head">
+              <h2>Settings</h2>
+              <button type="button">Close</button>
+            </div>
+            <div class="settings-shell">
+              <aside class="settings-side">
+                <button class="is-active" type="button">Layout</button>
+                <button type="button">Theme</button>
+                <button type="button">Shortcuts</button>
+              </aside>
+              <main class="settings-main">
+                <div class="settings-block">
+                  <label class="settings-toggle-row">
+                    <span>Layout lock</span>
+                    <input type="checkbox" checked />
+                  </label>
+                  <label>
+                    Header height
+                    <input type="range" min="0" max="1" step="0.01" value="0.5" />
+                  </label>
+                  <label>
+                    Sidebar min width
+                    <input type="range" min="0" max="1" step="0.01" value="0.4" />
+                  </label>
+                  <label>
+                    LM Studio endpoint
+                    <input type="text" value="http://127.0.0.1:1234/v1/embeddings" />
+                  </label>
+                  <div class="settings-shortcuts-head">
+                    <strong>Shortcut bindings</strong>
+                    <button type="button">Reset</button>
+                  </div>
+                  <div class="shortcut-list">
+                    <label class="shortcut-row">
+                      <span>Toggle fullscreen</span>
+                      <button class="shortcut-binding-trigger" type="button">F</button>
+                    </label>
+                    <label class="shortcut-row">
+                      <span>Next item</span>
+                      <button class="shortcut-binding-trigger" type="button">Right</button>
+                    </label>
+                  </div>
+                  <ul class="binding-chip-list">
+                    <li>Ctrl+K</li>
+                    <li>Alt+Mouse1</li>
+                    <li>Shift+F</li>
+                  </ul>
+                </div>
+              </main>
+            </div>
+            <div class="settings-floating-mask">
+              <section class="settings-floating-panel">
+                <h3>Capture shortcut</h3>
+                <p class="settings-placeholder">Press a key combo.</p>
+                <p class="binding-capture-preview">Ctrl + Shift + A</p>
+                <div class="settings-floating-actions">
+                  <button type="button">Add</button>
+                  <button type="button">Cancel</button>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="playground-section">
+        <h3>Fullscreen + Overlays</h3>
+        <div class="playground-grid">
+          <div class="fullscreen-layer">
+            <div class="fullscreen-content">
+              <div class="fullscreen-single-pane">
+                <div class="fullscreen-pane is-pane-focus">
+                  <div class="fullscreen-stage">
+                    <div class="fullscreen-media">
+                      <span>Fullscreen media</span>
+                      <small>placeholder state</small>
+                    </div>
+                    <div class="fullscreen-video-controls is-bottom">
+                      <div class="fullscreen-video-controls-row is-progress">
+                        <span>00:00 / 02:10</span>
+                        <input type="range" min="0" max="120" value="45" />
+                      </div>
+                      <div class="fullscreen-video-controls-row is-controls">
+                        <button type="button">Play</button>
+                        <button class="is-active" type="button">Loop</button>
+                        <label>
+                          Volume
+                          <input type="range" min="0" max="100" value="60" />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="fullscreen-footer">
+              <div class="fullscreen-group">
+                <button class="is-active" type="button">Dual</button>
+                <button type="button">Image</button>
+                <button type="button">Video</button>
+                <select>
+                  <option>Fit</option>
+                  <option>Fill</option>
+                </select>
+              </div>
+              <div class="fullscreen-meta-line">Package A / 001.jpg</div>
+            </div>
+          </div>
+
+          <div class="drop-overlay">
+            <div class="drop-overlay-card">
+              <strong>Drop files</strong>
+              <p>Drag media here to import into the library.</p>
+            </div>
+          </div>
+
+          <div class="vector-universe-overlay">
+            <div class="vector-universe-stage-wrap">
+              <button class="vector-universe-close-btn" type="button">Exit</button>
+              <div class="vector-universe-stage">
+                <canvas class="vector-universe-canvas"></canvas>
+              </div>
+              <div class="vector-universe-widget">
+                <strong>HUD</strong>
+                <p>Position</p>
+                <canvas class="vector-universe-widget-canvas"></canvas>
+              </div>
+              <p class="vector-universe-overlay-tip">Hold mouse to orbit</p>
+              <div class="vector-universe-hud">
+                <p>Speed <span>1.0x</span></p>
+                <p>Raycast <span>18m</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="playground-section">
+        <h3>Banners + Scrollbars</h3>
+        <div class="backend-error-banner">
+          <header>
+            <strong>Backend error</strong>
+            <button type="button">Dismiss</button>
+          </header>
+          <ul>
+            <li>Failed to read media cache.</li>
+            <li>Retry in 5 seconds.</li>
+          </ul>
+        </div>
+        <div class="runtime-warning-banner">
+          <header>
+            <strong>Runtime warning</strong>
+            <button type="button">Fix</button>
+          </header>
+          <ul>
+            <li>LM Studio endpoint unreachable.</li>
+            <li>Vector search disabled.</li>
+          </ul>
+        </div>
+        <div class="playground-scroll">
+          <span>Scrollable item 01</span>
+          <span>Scrollable item 02</span>
+          <span>Scrollable item 03</span>
+          <span>Scrollable item 04</span>
+          <span>Scrollable item 05</span>
+          <span>Scrollable item 06</span>
+          <span>Scrollable item 07</span>
+          <span>Scrollable item 08</span>
+          <span>Scrollable item 09</span>
+          <span>Scrollable item 10</span>
+          <span>Scrollable item 11</span>
+          <span>Scrollable item 12</span>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const themeInput = document.getElementById('theme-input');
+      const themeSelect = document.getElementById('theme-select');
+      const applyButton = document.getElementById('apply-theme');
+      const presetLink = document.getElementById('theme-preset-link');
+
+      const applyTheme = (value) => {
+        const trimmed = (value || '').trim();
+        if (!trimmed) {
+          return;
+        }
+        document.documentElement.dataset.mpxTheme = trimmed;
+        presetLink?.setAttribute('href', `../../src/styles/themes/presets/${trimmed}.css`);
+        themeInput.value = trimmed;
+        if ([...themeSelect.options].some((opt) => opt.value === trimmed)) {
+          themeSelect.value = trimmed;
+        } else {
+          themeSelect.value = '';
+        }
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const initialTheme = params.get('theme') || themeInput.value;
+      applyTheme(initialTheme);
+
+      themeSelect.addEventListener('change', (event) => {
+        applyTheme(event.target.value);
+      });
+
+      applyButton.addEventListener('click', () => {
+        applyTheme(themeInput.value);
+      });
+
+      themeInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          applyTheme(themeInput.value);
+        }
+      });
+    </script>
+  </body>
+</html>

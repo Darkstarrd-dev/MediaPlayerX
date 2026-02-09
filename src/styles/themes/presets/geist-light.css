@@ -1,0 +1,116 @@
+/* Theme: Geist Light */
+
+:root[data-mpx-theme="geist-light"] {
+  color-scheme: light;
+
+  /* --- Foundations --- */
+  --mpx-control-radius: 6px;
+  --mpx-control-height: 32px;
+  --mpx-control-padding-x: 10px;
+  --mpx-control-font-weight: 500;
+  
+  --mpx-icon-button-size: 32px;
+  --mpx-icon-size: 16px;
+  
+  /* Scrollbars */
+  --mpx-scrollbar-size: 10px;
+  --mpx-scrollbar-radius: 5px;
+  --mpx-scrollbar-track-bg: #ffffff;
+  --mpx-scrollbar-thumb-bg: #eaeaea;
+  --mpx-scrollbar-thumb-hover-bg: #999999;
+
+  /* Ranges / Sliders */
+  --mpx-range-track-height: 4px;
+  --mpx-range-track-bg: #eaeaea;
+  --mpx-range-thumb-size: 16px;
+  --mpx-range-thumb-bg: #000000;
+  --mpx-range-thumb-border: #000000;
+
+  /* Checkboxes */
+  --mpx-checkbox-size: 16px;
+  --mpx-checkbox-radius: 4px;
+  --mpx-checkbox-bg: #ffffff;
+  --mpx-checkbox-border: #eaeaea;
+  --mpx-checkbox-check: #ffffff;
+  --mpx-checkbox-checked-bg: #000000;
+  --mpx-checkbox-checked-border: #000000;
+
+  /* --- Semantic Colors --- */
+  
+  /* Surfaces */
+  --mpx-bg-app: #ffffff;
+  --mpx-bg-workspace: #fafafa;
+  --mpx-bg-panel: #ffffff;
+  --mpx-bg-elevated: #ffffff;
+  --mpx-bg-hover: #fafafa;
+  --mpx-bg-selected: #fafafa;
+  --mpx-bg-muted: #fafafa;
+  --mpx-bg-tooltip: #000000;
+
+  /* Text */
+  --mpx-text-1: #000000;
+  --mpx-text-2: #666666;
+  --mpx-text-3: #888888;
+  --mpx-text-heading: #000000;
+  --mpx-text-inverse: #ffffff;
+
+  /* Borders */
+  --mpx-border-1: #eaeaea;
+  --mpx-border-2: #fafafa;
+  --mpx-border-focus: #000000;
+
+  /* Accent */
+  --mpx-accent: #000000;
+  --mpx-accent-soft: #fafafa;
+  --mpx-accent-contrast: #ffffff;
+
+  /* Inputs */
+  --mpx-input-bg: #ffffff;
+  --mpx-input-border: #eaeaea;
+  --mpx-input-text: #000000;
+  --mpx-input-focus-bg: #ffffff;
+  --mpx-input-focus-border: #000000;
+  --mpx-input-readonly-bg: #fafafa;
+  --mpx-input-readonly-text: #888888;
+  --mpx-input-readonly-border: #eaeaea;
+
+  /* Buttons */
+  --mpx-btn-primary-bg: #000000;
+  --mpx-btn-primary-text: #ffffff;
+  --mpx-btn-secondary-bg: #ffffff;
+  --mpx-btn-secondary-border: #eaeaea;
+  --mpx-btn-secondary-text: #000000;
+
+  /* Status */
+  --mpx-status-danger-bg: #fff5f5;
+  --mpx-status-danger-border: #ff0000;
+  --mpx-status-danger-text: #ff0000;
+  
+  --mpx-status-warning-bg: #fffaf0;
+  --mpx-status-warning-border: #f5a623;
+  --mpx-status-warning-text: #f5a623;
+  
+  --mpx-status-info-bg: #f0f7ff;
+  --mpx-status-info-border: #0070f3;
+  --mpx-status-info-text: #0070f3;
+  
+  --mpx-status-success-bg: #f0fff4;
+  --mpx-status-success-border: #007600;
+  --mpx-status-success-text: #007600;
+  
+  --mpx-status-busy-bg: #fafafa;
+  --mpx-status-busy-border: #eaeaea;
+  --mpx-status-busy-text: #666666;
+  
+  --mpx-status-idle-bg: #ffffff;
+  --mpx-status-idle-border: #fafafa;
+  --mpx-status-idle-text: #888888;
+
+  /* Component Aliases (Optional overrides) */
+  --mpx-header-bg: #ffffff;
+  --mpx-video-screen-bg: #000000;
+  --mpx-video-empty-bg: #fafafa;
+  --mpx-video-empty-text: #888888;
+  --mpx-shadow-panel: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --mpx-card-focus-ring: #fafafa;
+}

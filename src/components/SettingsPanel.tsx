@@ -9,7 +9,7 @@ import {
   type ShortcutConflict,
   type ShortcutMap,
 } from '../shortcuts'
-import { listThemes } from '../features/theme/themeRegistry'
+import { listThemes, resolveThemeIdFromThemes } from '../features/theme/themeRegistry'
 import {
   VECTOR_CONTROL_DEFINITIONS,
   type VectorControlAction,
@@ -564,6 +564,7 @@ function SettingsPanel({
 
     if (activeSection === 'theme') {
       const themes = listThemes()
+      const selectedThemeId = resolveThemeIdFromThemes(themeId, themes)
       return (
         <div className="settings-block">
           <h3>theme 设置</h3>
@@ -572,7 +573,7 @@ function SettingsPanel({
             文件来增加新主题。
           </p>
           <label htmlFor="theme-select">主题方案</label>
-          <select id="theme-select" value={themeId} onChange={(event) => onThemeChange(event.target.value)}>
+          <select id="theme-select" value={selectedThemeId} onChange={(event) => onThemeChange(event.target.value)}>
             {themes.map((theme) => (
               <option key={theme.id} value={theme.id}>
                 {theme.label}
