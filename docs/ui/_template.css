@@ -1,0 +1,96 @@
+/* Template for new themes */
+
+:root[data-mpx-theme="template-id"] {
+  color-scheme: light; /* or dark */
+
+  /* Control shape/size */
+  --mpx-control-radius: 8px;
+  --mpx-control-height: 34px;
+  --mpx-control-padding-x: 9px;
+  --mpx-control-font-weight: 600;
+  --mpx-icon-button-size: 34px;
+  --mpx-icon-size: 17px;
+  --mpx-scrollbar-size: 10px;
+  --mpx-scrollbar-track-bg: #...;
+  --mpx-scrollbar-thumb-bg: #...;
+  --mpx-scrollbar-thumb-hover-bg: #...;
+  --mpx-range-track-height: 6px;
+  --mpx-range-track-bg: #...;
+  --mpx-range-thumb-size: 14px;
+  --mpx-range-thumb-bg: #...;
+  --mpx-range-thumb-border: #...;
+  --mpx-checkbox-size: 16px;
+  --mpx-checkbox-radius: 4px;
+  --mpx-checkbox-bg: #...;
+  --mpx-checkbox-border: #...;
+  --mpx-checkbox-check: #...;
+  --mpx-checkbox-checked-bg: #...;
+  --mpx-checkbox-checked-border: #...;
+
+  /* Surfaces */
+  --mpx-bg-app: #...;
+  --mpx-bg-workspace: #...;
+  --mpx-bg-panel: #...;
+  --mpx-bg-elevated: #...;
+  --mpx-bg-hover: ...;
+  --mpx-bg-selected: ...;
+  --mpx-bg-muted: #...;
+
+  /* Text */
+  --mpx-text-1: #...;
+  --mpx-text-2: #...;
+  --mpx-text-3: #...;
+  --mpx-text-heading: #...;
+
+  /* Borders */
+  --mpx-border-1: #...;
+  --mpx-border-2: #...;
+  --mpx-border-focus: #...;
+
+  /* Accent */
+  --mpx-accent: #...;
+  --mpx-accent-soft: ...;
+
+  /* Inputs */
+  --mpx-input-bg: #...;
+  --mpx-input-border: #...;
+  --mpx-input-text: #...;
+  --mpx-input-focus-bg: #...;
+  --mpx-input-focus-border: #...;
+  --mpx-input-readonly-bg: #...;
+  --mpx-input-readonly-text: #...;
+  --mpx-input-readonly-border: #...;
+
+  /* Buttons */
+  --mpx-btn-primary-bg: #...;
+  --mpx-btn-primary-text: #...;
+  --mpx-btn-secondary-bg: #...;
+  --mpx-btn-secondary-border: #...;
+  --mpx-btn-secondary-text: #...;
+
+  /* Status */
+  --mpx-status-danger-bg: #...;
+  --mpx-status-danger-border: #...;
+  --mpx-status-danger-text: #...;
+  --mpx-status-warning-bg: #...;
+  --mpx-status-warning-border: #...;
+  --mpx-status-warning-text: #...;
+  --mpx-status-info-bg: #...;
+  --mpx-status-info-border: #...;
+  --mpx-status-info-text: #...;
+  --mpx-status-success-bg: #...;
+  --mpx-status-success-border: #...;
+  --mpx-status-success-text: #...;
+  --mpx-status-busy-bg: #...;
+  --mpx-status-busy-border: #...;
+  --mpx-status-busy-text: #...;
+  --mpx-status-idle-bg: #...;
+  --mpx-status-idle-border: #...;
+  --mpx-status-idle-text: #...;
+
+  /* Optional: Override component aliases if needed */
+  /* --mpx-header-bg: ...; */
+  /* --mpx-video-screen-bg: ...; */
+  /* --mpx-video-empty-bg: ...; */
+  /* --mpx-video-empty-text: ...; */
+}

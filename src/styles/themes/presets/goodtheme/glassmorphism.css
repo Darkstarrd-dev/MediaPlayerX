@@ -1,0 +1,100 @@
+/* Glassmorphism Theme */
+
+:root[data-mpx-theme="glassmorphism"] {
+  color-scheme: light;
+
+  /* Control shape/size */
+  --mpx-control-radius: 16px;
+  --mpx-control-height: 36px;
+  --mpx-control-padding-x: 12px;
+  --mpx-control-font-weight: 500;
+  --mpx-icon-button-size: 36px;
+  --mpx-icon-size: 18px;
+  --mpx-scrollbar-size: 8px;
+  --mpx-scrollbar-radius: 4px;
+  --mpx-scrollbar-track-bg: rgba(255, 255, 255, 0.2);
+  --mpx-scrollbar-thumb-bg: rgba(108, 93, 211, 0.5);
+  --mpx-scrollbar-thumb-hover-bg: rgba(108, 93, 211, 0.8);
+  --mpx-range-track-height: 6px;
+  --mpx-range-track-bg: rgba(255, 255, 255, 0.4);
+  --mpx-range-thumb-size: 16px;
+  --mpx-range-thumb-bg: #6C5DD3;
+  --mpx-range-thumb-border: #FFFFFF;
+  --mpx-checkbox-size: 18px;
+  --mpx-checkbox-radius: 6px;
+  --mpx-checkbox-bg: rgba(255, 255, 255, 0.5);
+  --mpx-checkbox-border: rgba(255, 255, 255, 0.8);
+  --mpx-checkbox-check: #6C5DD3;
+  --mpx-checkbox-checked-bg: rgba(255, 255, 255, 0.9);
+  --mpx-checkbox-checked-border: #6C5DD3;
+
+  /* Surfaces */
+  --mpx-bg-app: #B8C6DB;
+  --mpx-bg-workspace: rgba(255, 255, 255, 0.15);
+  --mpx-bg-panel: rgba(255, 255, 255, 0.45);
+  --mpx-bg-elevated: rgba(255, 255, 255, 0.65);
+  --mpx-bg-hover: rgba(255, 255, 255, 0.6);
+  --mpx-bg-selected: rgba(108, 93, 211, 0.2);
+  --mpx-bg-muted: rgba(255, 255, 255, 0.3);
+  --mpx-bg-tooltip: rgba(45, 55, 72, 0.9);
+
+  /* Text */
+  --mpx-text-1: #2D3748;
+  --mpx-text-2: #4A5568;
+  --mpx-text-3: #718096;
+  --mpx-text-heading: #1A202C;
+  --mpx-text-inverse: #FFFFFF;
+
+  /* Borders */
+  --mpx-border-1: rgba(255, 255, 255, 0.6);
+  --mpx-border-2: rgba(255, 255, 255, 0.4);
+  --mpx-border-focus: #6C5DD3;
+
+  /* Accent */
+  --mpx-accent: #6C5DD3;
+  --mpx-accent-soft: rgba(108, 93, 211, 0.1);
+  --mpx-accent-contrast: #FFFFFF;
+
+  /* Inputs */
+  --mpx-input-bg: rgba(255, 255, 255, 0.3);
+  --mpx-input-border: rgba(255, 255, 255, 0.6);
+  --mpx-input-text: #2D3748;
+  --mpx-input-focus-bg: rgba(255, 255, 255, 0.6);
+  --mpx-input-focus-border: #6C5DD3;
+  --mpx-input-readonly-bg: rgba(255, 255, 255, 0.1);
+  --mpx-input-readonly-text: #718096;
+  --mpx-input-readonly-border: rgba(255, 255, 255, 0.3);
+
+  /* Buttons */
+  --mpx-btn-primary-bg: #6C5DD3;
+  --mpx-btn-primary-text: #FFFFFF;
+  --mpx-btn-secondary-bg: rgba(255, 255, 255, 0.4);
+  --mpx-btn-secondary-border: rgba(255, 255, 255, 0.6);
+  --mpx-btn-secondary-text: #2D3748;
+
+  /* Status */
+  --mpx-status-danger-bg: rgba(245, 101, 101, 0.2);
+  --mpx-status-danger-border: rgba(245, 101, 101, 0.4);
+  --mpx-status-danger-text: #C53030;
+  --mpx-status-warning-bg: rgba(237, 137, 54, 0.2);
+  --mpx-status-warning-border: rgba(237, 137, 54, 0.4);
+  --mpx-status-warning-text: #C05621;
+  --mpx-status-info-bg: rgba(66, 153, 225, 0.2);
+  --mpx-status-info-border: rgba(66, 153, 225, 0.4);
+  --mpx-status-info-text: #2B6CB0;
+  --mpx-status-success-bg: rgba(72, 187, 120, 0.2);
+  --mpx-status-success-border: rgba(72, 187, 120, 0.4);
+  --mpx-status-success-text: #2F855A;
+  --mpx-status-busy-bg: rgba(160, 174, 192, 0.2);
+  --mpx-status-busy-border: rgba(160, 174, 192, 0.4);
+  --mpx-status-busy-text: #4A5568;
+  --mpx-status-idle-bg: rgba(203, 213, 224, 0.2);
+  --mpx-status-idle-border: rgba(203, 213, 224, 0.4);
+  --mpx-status-idle-text: #718096;
+
+  /* Component Aliases */
+  --mpx-header-bg: rgba(255, 255, 255, 0.45);
+  --mpx-video-screen-bg: #000000;
+  --mpx-video-empty-bg: rgba(255, 255, 255, 0.3);
+  --mpx-video-empty-text: #718096;
+}
