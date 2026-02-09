@@ -14,13 +14,13 @@ interface UseSearchAndVectorActionsParams {
   mode: BrowserMode
   focusedRef: FocusedImageRef | null
   allScopedRefs: FocusedImageRef[]
-  packageById: ReadonlyMap<string, ImagePackage>
+  packageById: Map<string, ImagePackage>
   vectorThreshold: number
   vectorSearchResults: VectorCandidate[]
   vectorResultsActive: boolean
   featureSearchActive: boolean
   selectedSidebarNodeId: string | null
-  normalImageSourceNodeIdMap: ReadonlyMap<string, string>
+  normalImageSourceNodeIdMap: Map<string, string>
   orderedRootScopedPackages: ImagePackage[]
   setSelectedPackageId: Dispatch<SetStateAction<string>>
   setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>

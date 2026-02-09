@@ -11,6 +11,8 @@ import {
 } from './mediaResolveUtils'
 import type { ReadonlyMediaRepository } from './repository'
 
+export type { MediaResolveTarget } from './mediaResolveUtils'
+
 const MEDIA_RESOLVE_TIMEOUT_MS = 8_000
 const CACHE_REFRESH_LEEWAY_MS = 15_000
 const DEFAULT_MAX_CONCURRENT = 8

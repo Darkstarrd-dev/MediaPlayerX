@@ -1,4 +1,6 @@
 import { listThemes, resolveThemeIdFromThemes } from '../../features/theme/themeRegistry'
+import type { JSX } from 'react'
+
 import type { ShortcutConflict } from '../../shortcuts'
 import type { VectorControlConflict } from '../../vectorControls'
 import {

@@ -53,3 +53,5 @@ export function useAppSettingsStore() {
     })),
   )
 }
+
+export type AppSettingsStoreSnapshot = ReturnType<typeof useAppSettingsStore>

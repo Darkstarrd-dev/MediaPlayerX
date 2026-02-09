@@ -18,57 +18,29 @@ import ImportSourceInputs from './components/ImportSourceInputs'
 import SettingsPanel from './components/SettingsPanel'
 import VectorUniverseSection from './components/VectorUniverseSection'
 import {
-  buildImageSidebarTree,
-  findNodeById,
-} from './mockData'
-import {
-  findShortcutConflicts,
-} from './shortcuts'
-import { findVectorControlConflicts } from './vectorControls'
-import { buildAppHeaderProps } from './features/app/buildAppHeaderProps'
-import { buildBackendErrorRows } from './features/app/buildBackendErrorRows'
-import { buildImageNodeLoadState } from './features/app/buildImageNodeLoadState'
-import { buildFullscreenLayerProps } from './features/app/buildFullscreenLayerProps'
-import { buildImageMainSectionProps } from './features/app/buildImageMainSectionProps'
-import { buildImportTaskPanelProps } from './features/app/buildImportTaskPanelProps'
-import { buildMainFooter } from './features/app/buildMainFooter'
-import { buildManagementPanelProps } from './features/app/buildManagementPanelProps'
-import { buildMetadataPanelProps } from './features/app/buildMetadataPanelProps'
-import { buildSearchPanelProps } from './features/app/buildSearchPanelProps'
-import { buildSidebarPanelProps } from './features/app/buildSidebarPanelProps'
-import { buildSettingsPanelProps } from './features/app/buildSettingsPanelProps'
-import { buildVectorSidebarState } from './features/app/buildVectorSidebarState'
-import { buildVideoMainSectionProps } from './features/app/buildVideoMainSectionProps'
-import {
   normalizePathForCompare,
 } from './features/app/mediaPathUtils'
 import { useMetadataWriteBindings } from './features/app/useMetadataWriteBindings'
-import { useImportTaskPanelState } from './features/app/useImportTaskPanelState'
-import { useImageSidebarBaseState } from './features/app/useImageSidebarBaseState'
-import { useRootScopedImageData } from './features/app/useRootScopedImageData'
 import { useAppSettingsStore } from './features/app/useAppSettingsStore'
 import { useAppEffects } from './features/app/useAppEffects'
 import { useArchiveLoadStatus } from './features/app/useArchiveLoadStatus'
 import { useImageBrowserViewModel } from './features/app/useImageBrowserViewModel'
 import { useEffectiveDisplayState } from './features/app/useEffectiveDisplayState'
 import { useManageModeActions } from './features/app/useManageModeActions'
-import { useDatabaseResetAction } from './features/app/useDatabaseResetAction'
+import { useAppTopLayerState } from './features/app/useAppTopLayerState'
+import { usePersistedAppSettings } from './features/app/usePersistedAppSettings'
 import { useRepositoryBootstrapData } from './features/app/useRepositoryBootstrapData'
 import { useResponsiveZoomEffect } from './features/app/useResponsiveZoomEffect'
 import { useResolvedMediaState } from './features/app/useResolvedMediaState'
 import { useSearchAndVectorActions } from './features/app/useSearchAndVectorActions'
-import { useScopedImageSourceStateSync } from './features/app/useScopedImageSourceStateSync'
-import { useRuntimeWarningDismiss } from './features/app/useRuntimeWarningDismiss'
-import { useSettingsPersistence } from './features/app/useSettingsPersistence'
-import { useVideoSidebarState } from './features/app/useVideoSidebarState'
+import { useAppSidebarScopeState } from './features/app/useAppSidebarScopeState'
+import { useAppWorkspaceProps } from './features/app/useAppWorkspaceProps'
 import { useImportPipeline } from './features/import/useImportPipeline'
 import { usePaneResizers } from './features/layout/usePaneResizers'
 import { computeThumbnailGridLayout } from './features/layout/thumbnailLayout'
 import { useMediaState } from './features/media/useMediaState'
 import { usePlaylistPersistence } from './features/media/usePlaylistPersistence'
 import { useFeatureSearch } from './features/search/useFeatureSearch'
-import { useManageSelection } from './features/management/useManageSelection'
-import { useSidebarNavigation } from './features/sidebar/useSidebarNavigation'
 import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
 import {
   useRuntimeCapabilities,
@@ -78,7 +50,6 @@ import {
 import { getBenchSettings } from './features/perf/benchSettings'
 import type {
   FocusedImageRef,
-  ImagePackage,
   VectorCandidate,
 } from './types'
 import { clamp } from './utils/ui'
@@ -91,19 +62,15 @@ type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 
 function App() {
   const benchSettings = getBenchSettings()
+  const appSettings = useAppSettingsStore()
   const {
     mode,
     vectorMode,
     settingsOpen,
     headerHeight,
-    settingsFontSize,
     sidebarRatio,
     sidebarMinWidth,
     layoutLocked,
-    sidebarFontSize,
-    sidebarCountFontSize,
-    sidebarIndentStep,
-    sidebarVerticalGap,
     metadataRatio,
     vectorPanelHeight,
     thumbnailScale,
@@ -112,17 +79,12 @@ function App() {
     metadataCollapsed,
     autoPlayEnabled,
     autoPlayInterval,
-    searchField,
-    searchText,
     vectorThreshold,
     sidebarFocus,
     imageRootNodeId,
     videoRootNodeId,
     themeId,
-    thumbnailQuality,
     thumbnailWidth,
-    lmStudioEndpoint,
-    lmStudioModel,
     vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier,
     vectorUniverseLookSensitivity,
@@ -133,11 +95,7 @@ function App() {
     shortcuts,
     vectorControls,
     updateSettings,
-    setShortcut,
-    setVectorControl,
-    resetShortcuts,
-    resetVectorControls,
-  } = useAppSettingsStore()
+  } = appSettings
 
   const {
     mediaRepository,
@@ -354,100 +312,20 @@ function App() {
     gradeByPackage,
   })
 
-  const sidebarSnapshot = backendRead.sidebar.data ?? backendRead.sidebar.snapshot
-  const scopedSearchPackagesEffective = sidebarSnapshot?.imagePackages ?? bootstrapImagePackages
-  const scopedSearchDirectoriesEffective = sidebarSnapshot?.imageDirectories ?? bootstrapImageDirectories
-  const scopedImageSourcesEffective = useMemo(
-    () => [...scopedSearchPackagesEffective, ...scopedSearchDirectoriesEffective],
-    [scopedSearchDirectoriesEffective, scopedSearchPackagesEffective],
-  )
-  const librarySnapshotEffective = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
-  const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos
-  const packageByIdEffective = useMemo(
-    () => new Map(scopedImageSourcesEffective.map((source) => [source.id, source])),
-    [scopedImageSourcesEffective],
-  )
-  const validImageIdSet = useMemo(() => {
-    const next = new Set<string>()
-    for (const source of scopedImageSourcesEffective) {
-      for (const image of source.images) {
-        next.add(image.id)
-      }
-    }
-    return next
-  }, [scopedImageSourcesEffective])
-  const videoByIdEffective = useMemo(() => new Map(videosEffective.map((video) => [video.id, video])), [videosEffective])
-  const sidebarTreeSnapshot = sidebarSnapshot?.tree ?? null
-
-  useScopedImageSourceStateSync({
-    scopedImageSources: scopedImageSourcesEffective,
-    setFocusByPackage,
-    setPageByPackage,
-    setGradeByPackage,
-  })
-
-  const imageTreeRawLocal = useMemo(
-    () => buildImageSidebarTree(bootstrapImagePackages, bootstrapImageDirectories),
-    [bootstrapImageDirectories, bootstrapImagePackages],
-  )
-  const imageTreeRaw = useMemo(
-    () => sidebarTreeSnapshot ?? imageTreeRawLocal,
-    [imageTreeRawLocal, sidebarTreeSnapshot],
-  )
-
-  const imageRootNode = useMemo(
-    () => findNodeById(imageTreeRaw, imageRootNodeId),
-    [imageTreeRaw, imageRootNodeId],
-  )
-
-  const { rootScopedPackageIds, rootScopedPackages, allScopedRefs } = useRootScopedImageData({
-    imageRootNode,
-    scopedImageSources: scopedImageSourcesEffective,
-  })
-
-  const { imageTreeForSidebarNormal, normalImageSourceNodeIdMap } = useImageSidebarBaseState({
-    imageTreeRaw,
-    imageRootNode,
-  })
-
-  const vectorSidebarState = useMemo(
-    () => buildVectorSidebarState(vectorSearchResults, packageByIdEffective),
-    [packageByIdEffective, vectorSearchResults],
-  )
-
-  const vectorSidebarNodes = vectorSidebarState.nodes
-  const vectorResultPackageNodeIdMap = vectorSidebarState.packageNodeIdMap
-
-  const imageTreeForSidebar = useMemo(() => {
-    if (vectorResultsActive) {
-      return vectorSidebarNodes
-    }
-    return imageTreeForSidebarNormal
-  }, [imageTreeForSidebarNormal, vectorResultsActive, vectorSidebarNodes])
-
-  const imageNodeLoadStateById = useMemo(
-    () =>
-      buildImageNodeLoadState({
-        archiveLoadStatus,
-        imageTreeForSidebar,
-        scopedImageSources: scopedImageSourcesEffective,
-        normalizePathForCompare,
-      }),
-    [archiveLoadStatus, imageTreeForSidebar, scopedImageSourcesEffective],
-  )
-
-  const searchedVideos = useMemo(() => videosEffective, [videosEffective])
-
-  const { videoRootNode, rootScopedVideoIds, videosForSidebar, videoTreeForSidebar } = useVideoSidebarState({
-    videos: searchedVideos,
-    videoRootNodeId,
-  })
-
-  const collapseSidebar = useCallback(() => {
-    updateSettings({ sidebarRatio: 0, sidebarFocus: 'main' })
-  }, [updateSettings])
-
   const {
+    scopedImageSourcesEffective,
+    packageByIdEffective,
+    videoByIdEffective,
+    imageTreeForSidebar,
+    imageNodeLoadStateById,
+    videosForSidebar,
+    videoTreeForSidebar,
+    rootScopedVideoIds,
+    rootScopedPackageIds,
+    allScopedRefs,
+    normalImageSourceNodeIdMap,
+    vectorSidebarNodes,
+    vectorResultPackageNodeIdMap,
     flatSidebarNodes,
     sidebarNodeById,
     imageSourceNodeIdMap,
@@ -457,56 +335,6 @@ function App() {
     applyCurrentRootFromSelection,
     ensureSidebarNodeVisible,
     handleSidebarNavigationKey,
-  } = useSidebarNavigation({
-    mode,
-    imageTreeForSidebar,
-    videoTreeForSidebar,
-    imageRootNode,
-    videoRootNode,
-    selectedSidebarNodeId,
-    appBodyRef,
-    onSetSelectedSidebarNodeId: setSelectedSidebarNodeId,
-    onSelectPackage: setSelectedPackageId,
-    onSelectVideo: selectVideoFromBrowser,
-    onSetSidebarFocusMain: () => {
-      updateSettings({ sidebarFocus: 'main' })
-    },
-    onSetImageRootNodeId: (nodeId) => {
-      updateSettings({ imageRootNodeId: nodeId })
-    },
-    onSetVideoRootNodeId: (nodeId) => {
-      updateSettings({ videoRootNodeId: nodeId })
-    },
-  })
-
-  const sidebarDescendantNodeIdsById = useMemo(() => {
-    const next = new Map<string, string[]>()
-    const collectDescendantIds = (node: (typeof flatSidebarNodes)[number]): string[] => {
-      const descendants: string[] = []
-      const walk = (children: typeof node.children) => {
-        for (const child of children) {
-          descendants.push(child.id)
-          if (child.children.length > 0) {
-            walk(child.children)
-          }
-        }
-      }
-
-      if (node.children.length > 0) {
-        walk(node.children)
-      }
-      return descendants
-    }
-
-    for (const node of flatSidebarNodes) {
-      next.set(node.id, collectDescendantIds(node))
-    }
-    return next
-  }, [flatSidebarNodes])
-
-  const flatSidebarNodeIds = useMemo(() => flatSidebarNodes.map((node) => node.id), [flatSidebarNodes])
-
-  const {
     sidebarCheckedNodeIds,
     sidebarCheckedNodeIdSet,
     imageCheckedIds,
@@ -516,52 +344,34 @@ function App() {
     toggleSidebarNodeChecked,
     toggleImageChecked,
     replaceImageCheckedIds,
-  } = useManageSelection({
-    flatSidebarNodeIds,
-    validImageIdSet,
-    sidebarDescendantNodeIdsById,
+    orderedRootScopedPackages,
+    orderedRootScopedImageRefs,
+  } = useAppSidebarScopeState({
+    backendRead,
+    mode,
+    bootstrapLibrarySnapshot,
+    bootstrapImagePackages,
+    bootstrapImageDirectories,
+    bootstrapVideos,
+    vectorSearchResults,
+    vectorResultsActive,
+    archiveLoadStatus,
+    imageRootNodeId,
+    videoRootNodeId,
+    selectedSidebarNodeId,
+    appBodyRef,
+    setSelectedSidebarNodeId,
+    setSelectedPackageId,
+    selectVideoFromBrowser,
+    setFocusByPackage,
+    setPageByPackage,
+    setGradeByPackage,
+    updateSettings,
   })
 
-  const sidebarOrderedImageSourceIds = useMemo(() => {
-    const orderedIds: string[] = []
-    const seen = new Set<string>()
-
-    for (const node of flatSidebarNodes) {
-      const sourceId = node.imageSourceId
-      if (!sourceId || seen.has(sourceId)) {
-        continue
-      }
-      if (!rootScopedPackageIds.has(sourceId) || !packageByIdEffective.has(sourceId)) {
-        continue
-      }
-      seen.add(sourceId)
-      orderedIds.push(sourceId)
-    }
-
-    if (orderedIds.length > 0) {
-      return orderedIds
-    }
-
-    return rootScopedPackages.map((pkg) => pkg.id)
-  }, [flatSidebarNodes, packageByIdEffective, rootScopedPackageIds, rootScopedPackages])
-
-  const orderedRootScopedPackages = useMemo(
-    () =>
-      sidebarOrderedImageSourceIds
-        .map((sourceId) => packageByIdEffective.get(sourceId))
-        .filter((pkg): pkg is ImagePackage => Boolean(pkg)),
-    [packageByIdEffective, sidebarOrderedImageSourceIds],
-  )
-
-  const orderedRootScopedImageRefs = useMemo<FocusedImageRef[]>(() => {
-    const refs: FocusedImageRef[] = []
-    for (const pkg of orderedRootScopedPackages) {
-      pkg.images.forEach((_, imageIndex) => {
-        refs.push({ packageId: pkg.id, imageIndex })
-      })
-    }
-    return refs
-  }, [orderedRootScopedPackages])
+  const collapseSidebar = useCallback(() => {
+    updateSettings({ sidebarRatio: 0, sidebarFocus: 'main' })
+  }, [updateSettings])
 
   const {
     sidebarCollapsed,
@@ -764,9 +574,6 @@ function App() {
     focusedVideoCoverImageLocator,
   })
 
-  const shortcutConflicts = useMemo(() => findShortcutConflicts(shortcuts), [shortcuts])
-  const vectorControlConflicts = useMemo(() => findVectorControlConflicts(vectorControls), [vectorControls])
-
   const videoShortcutActive =
     fullscreenActive && (fullscreenDisplay === 'video-only' || (fullscreenDisplay === 'dual' && fullscreenVideoFocus))
 
@@ -954,90 +761,105 @@ function App() {
     updateSettings,
   })
 
-  useSettingsPersistence({
-    settings: {
-      mode,
-      vectorMode,
-      settingsOpen,
-      headerHeight,
-      settingsFontSize,
-      sidebarRatio,
-      sidebarMinWidth,
-      layoutLocked,
-      sidebarFontSize,
-      sidebarCountFontSize,
-      sidebarIndentStep,
-      sidebarVerticalGap,
-      metadataRatio,
-      vectorPanelHeight,
-      thumbnailScale,
-      thumbnailGap,
-      showNamesOnly,
-      metadataCollapsed,
-      autoPlayEnabled,
-      autoPlayInterval,
-      searchField,
-      searchText,
-      vectorThreshold,
-      sidebarFocus,
-      imageRootNodeId,
-      videoRootNodeId,
-      themeId,
-      thumbnailQuality,
-      thumbnailWidth,
-      lmStudioEndpoint,
-      lmStudioModel,
-      vectorUniverseMoveSpeed,
-      vectorUniverseSprintMultiplier,
-      vectorUniverseLookSensitivity,
-      vectorUniverseRaycastDistance,
-      vectorUniverseHelperScale,
-      vectorUniverseDispersion,
-      vectorUniverseWidgetSize,
-    },
+  usePersistedAppSettings({
+    settings: appSettings,
     repository: mediaRepository,
-    updateSettings,
   })
 
-  const sidebarPanelProps = buildSidebarPanelProps({
+  const {
+    bannerBackendErrorRows,
+    managementErrorRows,
+    runtimeCapabilityWarnings,
+    runtimeWarningDismiss,
+    fullscreenLayerProps,
+    settingsPanelProps,
+    appHeaderProps,
+    importTaskPanelProps,
+  } = useAppTopLayerState({
+    appSettings,
+    mediaRepository,
+    backendRead,
+    backendWrite,
+    playlistPersistence,
+    runtimeCapabilities,
+    autoPlayPresets: AUTO_PLAY_PRESETS,
     mode,
-    sidebarFocus,
-    sidebarRatio,
-    sidebarMinWidth,
-    sidebarFontSize,
-    sidebarCountFontSize,
-    sidebarIndentStep,
-    sidebarVerticalGap,
-    currentRootLabel,
-    searchResultsMode,
-    selectedSidebarNodeId,
-    canSetCurrentRoot,
-    imageRootNodeId,
-    videoRootNodeId,
-    imageTreeNodes: imageTreeForSidebar,
-    videoTreeNodes: videoTreeForSidebar,
-    imageNodeLoadStateById,
-    selectedPackageId,
-    selectedVideoId,
-    vectorResultsActive,
-    featureSearchActive,
-    searchResultsReadOnly,
     manageMode,
-    checkedSidebarNodeIdSet: sidebarCheckedNodeIdSet,
-    focusedRef,
-    playlistIds,
-    goToFromSearchMode,
-    setSelectedSidebarNodeId,
-    updateSettings,
-    setSelectedPackageId,
-    selectVideoFromBrowser,
-    collapseSidebar,
-    applyCurrentRootFromSelection,
-    setPlaylistIds,
-    onToggleManageNode: toggleSidebarNodeChecked,
+    vectorUniverseOpen,
+    displayThumbnailScaleLevel,
+    thumbnailScaleLevelCount,
+    canThumbnailScaleDown,
+    canThumbnailScaleUp,
+    importMenuOpen,
+    importTaskPanelOpen,
+    setImportMenuOpen,
+    setImportTaskPanelOpen,
+    openImportFilesDialog,
+    openImportFoldersDialog,
+    setSearchPanelMode,
+    setSearchPanelCollapsed,
+    setVectorUniverseOpen,
+    onToggleManageMode: toggleManageMode,
+    importTasks,
+    dismissedImportTaskIds,
+    setDismissedImportTaskIds,
+    enqueuePending,
+    archiveLoadStatus,
+    normalizePathForCompare,
+    retryImportTask,
+    taskError,
+    clearTaskError,
+    fullscreenActive,
+    showFullscreenFooter,
+    fullscreenDisplay,
+    fullscreenEntryDisplay,
+    fullscreenAlignRequest,
+    fullscreenSwapped,
+    fullscreenVideoFocus,
+    fullscreenSplit,
+    focusedImage,
+    fullscreenImageSrc,
+    focusedVideo: focusedVideoEffective,
+    focusedVideoSrc,
+    focusedVideoCoverImageSrc,
+    focusedVideoDurationSec,
+    focusedVideoCoverColor,
+    videoTime,
+    videoPlaying,
+    videoRate,
+    videoVolume,
+    videoMuted,
+    setVideoPlaying,
+    goPlaylist,
+    setVideoTime,
+    setVideoDurationById,
+    setVideoMuted,
+    setVideoVolume,
+    setVideoRate,
+    setFullscreenActiveWithAutoStop,
+    setShowFullscreenFooter,
+    setFullscreenDisplay,
+    setFullscreenSwapped,
+    setFullscreenVideoFocus,
+    setFullscreenSplit,
+    moveImage,
+    goPackage,
+    applySidebarRatio,
+    applyMetadataRatio,
+    focusedVideoEffectiveId: focusedVideoEffective?.id ?? null,
   })
 
-  const searchPanelProps = buildSearchPanelProps({
+  const {
+    sidebarPanelProps,
+    searchPanelProps,
+    managementPanelProps,
+    imageMainSectionProps,
+    videoMainSectionProps,
+    metadataPanelProps,
+    mainFooter,
+  } = useAppWorkspaceProps({
+    appSettings,
+    benchSettings,
     mode,
     vectorMode,
     manageMode,
@@ -1048,14 +870,12 @@ function App() {
     vectorPanelContentRef,
     searchPanelMode,
     setSearchPanelMode,
-    vectorSearchResultsCount: vectorSearchResults.length,
-    featureResultCount: scopedImageSourcesEffective.length,
+    vectorSearchResults,
+    scopedImageSourcesEffective,
     focusedRef,
+    focusedImage,
     focusedImagePackage,
-    focusedImageOrdinal: focusedImage?.ordinal ?? null,
     runVectorSearch,
-    vectorThreshold,
-    updateSettings,
     featureNameQuery,
     setFeatureNameQuery,
     featureWorkTitleQuery,
@@ -1075,55 +895,21 @@ function App() {
     setFeatureGradeFilter,
     onStartVectorPanelResize,
     layoutLocked,
-  })
-
-  const backendErrorRows = buildBackendErrorRows({
-    backendRead,
-    backendWrite,
-    playlistPersistence,
-    runtimeCapabilities,
-  })
-
-  const managementErrorRows = manageMode ? backendErrorRows.filter((row) => row.key === 'manage-write') : []
-  const bannerBackendErrorRows = backendErrorRows.filter((row) => row.key !== 'manage-write')
-
-  const managementPanelProps = buildManagementPanelProps({
-    mode,
-    manageMode,
-    searchPanelCollapsed,
-    setSearchPanelCollapsed,
-    vectorPanelHeight,
-    vectorPanelRef,
-    vectorPanelContentRef,
-    sidebarSelectedCount: sidebarCheckedNodeIds.length,
-    imageSelectedCount: imageCheckedIds.length,
+    currentRootLabel,
+    managementErrorRows,
+    sidebarCheckedNodeIds,
+    imageCheckedIds,
     activeSelectionScope,
-    pending: backendWrite.pending.manage,
-    operationHint: manageOperationHint,
-    errorRows: managementErrorRows,
-    onDelete: requestManageDelete,
-    onHide: () => {
-      void runManageHideAction(true)
-    },
-    onUnhide: () => {
-      void runManageHideAction(false)
-    },
-    onClearSelection: clearAllSelections,
-    onStartVectorPanelResize,
-    layoutLocked,
-  })
-
-  const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
-
-  const imageMainSectionProps = buildImageMainSectionProps({
+    backendWrite,
+    manageOperationHint,
+    requestManageDelete,
+    runManageHideAction,
+    clearAllSelections,
     vectorResultsActive,
     showNamesOnly,
     backendPageLoading: backendRead.page.loading,
     pagedPageSize,
-    enableLoadingSkeleton,
     activePackageForDisplay,
-    focusedRef,
-    focusedImageExists: Boolean(focusedImage),
     visibleImageRefs,
     refsInPageEffective,
     pageStartEffective,
@@ -1131,36 +917,30 @@ function App() {
     actualMediaHeight,
     thumbnailColumns,
     actualThumbnailGap,
-    vectorSearchResults,
     normalizedPageIndexEffective,
     imageTotalPagesEffective,
     packageByIdEffective,
     thumbnailImageUrlById,
     gridRef,
-    manageMode,
-    checkedImageIdSet: imageCheckedIdSet,
-    updateSettings,
+    imageCheckedIdSet,
     setFullscreenActiveWithAutoStop,
     setVectorFocusIndex,
     setImageFocus,
-    onToggleImageChecked: toggleImageChecked,
-    onReplaceCheckedImages: replaceImageCheckedIds,
+    toggleImageChecked,
+    replaceImageCheckedIds,
     goPrevPage,
     goNextPage,
-  })
-
-  const videoMainSectionProps = buildVideoMainSectionProps({
-    durationSec: focusedVideoDurationSec,
+    focusedVideoDurationSec,
     videoTime,
     videoPlaying,
     videoRate,
     videoVolume,
     videoMuted,
-    videoSourceUrl: focusedVideoSrc,
-    active: !fullscreenActive,
-    coverColor: focusedVideoCoverColor,
-    coverImageUrl: focusedVideoCoverImageSrc,
-    focusedVideoId: focusedVideoEffective?.id ?? null,
+    focusedVideoSrc,
+    fullscreenActive,
+    focusedVideoCoverColor,
+    focusedVideoCoverImageSrc,
+    focusedVideoEffective,
     setVideoPlaying,
     goPlaylist,
     setVideoTime,
@@ -1168,211 +948,40 @@ function App() {
     setVideoMuted,
     setVideoVolume,
     setVideoRate,
-    saveVideoCover: backendWrite.saveVideoCover,
-    setFullscreenActiveWithAutoStop,
-  })
-
-  const metadataPanelProps = buildMetadataPanelProps({
-    mode,
-    metadataCollapsed,
-    metadataRatio,
-    hasImageFocus: imageFocusActive,
-    focusedImage: metadataImageEffective,
-    focusedImageSrc: metadataImageSrc,
-    focusedImagePackage: metadataImagePackageEffective,
-    currentGrade: currentGradeEffective,
-    currentVideoGrade: focusedVideoEffective?.grade ?? null,
-    metadataPending: metadataWriteBindings.metadataPending,
-    focusedVideo: focusedVideoEffective,
+    imageFocusActive,
+    metadataImageEffective,
+    metadataImageSrc,
+    metadataImagePackageEffective,
+    currentGradeEffective,
+    metadataWriteBindings,
     metadataTab,
     playlistIds,
     selectedVideoId,
     dragVideoId,
-    videoVolume,
-    videoMuted,
-    videoRate,
-    videoById: videoByIdEffective,
-    updateSettings,
-    onGradeChange: metadataWriteBindings.applyPackageGrade,
-    onSavePackageMetadata: metadataWriteBindings.applyPackageMetadata,
-    onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
-    onMetadataTabChange: setMetadataTab,
-    onSelectVideo: selectVideoFromBrowser,
+    videoByIdEffective,
+    setMetadataTab,
+    selectVideoFromBrowser,
     setPlaylistIds,
     setDragVideoId,
-  })
-
-  const mainFooter = buildMainFooter({
-    mode,
-    focusedImage,
-    focusedImagePackage,
-    focusedVideo: focusedVideoEffective,
-    sidebarFocusedPath: selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null) : null,
-  })
-
-  const runtimeCapabilityWarnings = (runtimeCapabilities.data?.minimum_matrix ?? []).filter(
-    (item) => item.status !== 'available',
-  )
-  const runtimeWarningKey = useMemo(
-    () => runtimeCapabilityWarnings.map((item) => `${item.capability}|${item.status}|${item.note}`).join('||'),
-    [runtimeCapabilityWarnings],
-  )
-  const runtimeWarningDismiss = useRuntimeWarningDismiss({
-    runtimeWarningKey,
-    warningCount: runtimeCapabilityWarnings.length,
-  })
-
-  const {
-    activeImportTaskCount,
-    importTasksForPanel,
-    normalizedPendingArchivePathSet,
-    normalizedRunningArchivePath,
-    taskStatusLabel,
-    clearFinishedImportTasks,
-    clearAllImportTasks,
-    retryImportTaskFromPanel,
-  } = useImportTaskPanelState({
-    importTasks,
-    dismissedImportTaskIds,
-    setDismissedImportTaskIds,
-    enqueuePending,
-    archiveLoadStatus,
-    normalizePathForCompare,
-    retryImportTask,
-  })
-
-  const { databaseResetPending, databaseResetError, clearDatabaseForDev } = useDatabaseResetAction({
-    mediaRepository,
-  })
-
-  const fullscreenLayerProps = buildFullscreenLayerProps({
-    mode,
-    fullscreenActive,
-    showFullscreenFooter,
-    fullscreenDisplay,
-    fullscreenEntryDisplay,
-    fullscreenAlignRequest,
-    fullscreenSwapped,
-    fullscreenVideoFocus,
-    fullscreenSplit,
-    focusedImage,
-    focusedImageSrc: fullscreenImageSrc,
-    focusedVideo: focusedVideoEffective,
-    focusedVideoSrc,
-    focusedVideoCoverImageSrc,
-    durationSec: focusedVideoDurationSec,
-    focusedVideoCoverColor,
-    videoTime,
-    videoPlaying,
-    videoRate,
-    videoVolume,
-    videoMuted,
-    autoPlayEnabled,
-    autoPlayInterval,
-    autoPlayPresets: AUTO_PLAY_PRESETS,
-    updateSettings,
-    setVideoPlaying,
-    goPlaylist,
-    setVideoTime,
-    focusedVideoId: focusedVideoEffective?.id ?? null,
-    setVideoDurationById,
-    setVideoMuted,
-    setVideoVolume,
-    setVideoRate,
-    setFullscreenActiveWithAutoStop,
-    setShowFullscreenFooter,
-    setFullscreenDisplay,
-    setFullscreenSwapped,
-    setFullscreenVideoFocus,
-    setFullscreenSplit,
-    moveImage,
-    goPackage,
-  })
-
-  const settingsPanelProps = buildSettingsPanelProps({
-    settingsOpen,
-    themeId,
-    headerHeight,
-    settingsFontSize,
-    sidebarRatio,
-    sidebarMinWidth,
-    layoutLocked,
-    sidebarFontSize,
-    sidebarCountFontSize,
-    sidebarIndentStep,
-    sidebarVerticalGap,
-    metadataRatio,
-    vectorPanelHeight,
-    thumbnailGap,
-    thumbnailQuality,
-    thumbnailWidth,
-    lmStudioEndpoint,
-    lmStudioModel,
-    vectorUniverseMoveSpeed,
-    vectorUniverseSprintMultiplier,
-    vectorUniverseLookSensitivity,
-    vectorUniverseRaycastDistance,
-    vectorUniverseHelperScale,
-    vectorUniverseDispersion,
-    vectorUniverseWidgetSize,
-    shortcuts,
-    shortcutConflicts,
-    vectorControls,
-    vectorControlConflicts,
-    databaseResetPending,
-    databaseResetError,
-    updateSettings,
-    applySidebarRatio,
-    applyMetadataRatio,
-    setShortcut,
-    setVectorControl,
-    resetShortcuts,
-    resetVectorControls,
-    clearDatabaseForDev,
-  })
-
-  const appHeaderProps = buildAppHeaderProps({
-    headerHeight,
-    mode,
-    vectorMode,
-    manageMode,
-    vectorUniverseOpen,
-    displayThumbnailScaleLevel,
-    canThumbnailScaleDown,
-    canThumbnailScaleUp,
-    autoPlayEnabled,
-    autoPlayInterval,
-    importMenuOpen,
-    taskStatusLabel,
-    importTaskPanelOpen,
-    autoPlayPresets: AUTO_PLAY_PRESETS,
-    thumbnailScale,
-    thumbnailScaleLevelCount,
-    setImportMenuOpen,
-    setImportTaskPanelOpen,
-    openImportFilesDialog,
-    openImportFoldersDialog,
-    updateSettings,
-    setSearchPanelMode,
-    setSearchPanelCollapsed,
-    setVectorUniverseOpen,
-    onToggleManageMode: toggleManageMode,
-  })
-
-  const importTaskPanelProps = buildImportTaskPanelProps({
-    open: importTaskPanelOpen,
-    activeTaskCount: activeImportTaskCount,
-    pendingArchiveCount: normalizedPendingArchivePathSet.size,
-    runningArchive: Boolean(normalizedRunningArchivePath),
-    enqueuePending,
-    taskError,
-    tasks: importTasksForPanel,
-    setImportTaskPanelOpen,
-    clearFinishedImportTasks,
-    clearAllImportTasks,
-    clearTaskError,
-    retryImportTaskFromPanel,
-    setDismissedImportTaskIds,
+    sidebarNodeById,
+    selectedSidebarNodeId,
+    searchResultsMode,
+    canSetCurrentRoot,
+    imageRootNodeId,
+    videoRootNodeId,
+    imageTreeForSidebar,
+    videoTreeForSidebar,
+    imageNodeLoadStateById,
+    selectedPackageId,
+    featureSearchActive,
+    searchResultsReadOnly,
+    sidebarCheckedNodeIdSet,
+    goToFromSearchMode,
+    setSelectedSidebarNodeId,
+    setSelectedPackageId,
+    collapseSidebar,
+    applyCurrentRootFromSelection,
+    toggleSidebarNodeChecked,
   })
 
   return (
