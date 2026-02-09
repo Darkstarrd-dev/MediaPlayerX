@@ -21,6 +21,7 @@ const METADATA_READ_DEBOUNCE_MS = 84
 interface UseReadOnlyDataAccessParams {
   repository: ReadonlyMediaRepository
   mode: 'image' | 'video'
+  includeHidden: boolean
   selectedSourceId: string | null
   pageIndex: number
   pageSize: number
@@ -104,6 +105,7 @@ function isSynchronousRepository(repository: ReadonlyMediaRepository): repositor
 export function useReadOnlyDataAccess({
   repository,
   mode,
+  includeHidden,
   selectedSourceId,
   pageIndex,
   pageSize,
@@ -169,6 +171,7 @@ export function useReadOnlyDataAccess({
         ? repository.readImageSidebarTreeSync({
             feature_filter: featureFilter,
             grade_overrides: gradeByPackage,
+            include_hidden: includeHidden,
           })
         : null
     const pageDto =
@@ -178,17 +181,19 @@ export function useReadOnlyDataAccess({
             page_index: Math.max(0, pageIndex),
             page_size: Math.max(1, pageSize),
             show_names_only: showNamesOnly,
+            include_hidden: includeHidden,
             feature_filter: featureFilter,
             grade_overrides: gradeByPackage,
           })
         : null
     const metadataDto =
       mode === 'image' && focusedRef && !vectorResultsActive
-        ? repository.readImageMetadataSync({
-            package_id: focusedRef.packageId,
-            image_index: focusedRef.imageIndex,
-          })
-        : null
+          ? repository.readImageMetadataSync({
+              package_id: focusedRef.packageId,
+              image_index: focusedRef.imageIndex,
+              include_hidden: includeHidden,
+            })
+          : null
 
     return {
       libraryData: initialLibrarySnapshot,
@@ -200,6 +205,7 @@ export function useReadOnlyDataAccess({
     featureFilter,
     focusedRef,
     gradeByPackage,
+    includeHidden,
     initialLibrarySnapshot,
     isSynchronousTestMode,
     mode,
@@ -276,14 +282,15 @@ export function useReadOnlyDataAccess({
       requestId,
     }))
 
-    repository
-      .readImageSidebarTree(
-        {
-          feature_filter: featureFilter,
-          grade_overrides: gradeByPackage,
-        },
-        { signal: abortController.signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
-      )
+      repository
+        .readImageSidebarTree(
+          {
+            feature_filter: featureFilter,
+            grade_overrides: gradeByPackage,
+            include_hidden: includeHidden,
+          },
+          { signal: abortController.signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
+        )
       .then((dto) => {
         if (sidebarRequestIdRef.current !== requestId) {
           return
@@ -314,7 +321,7 @@ export function useReadOnlyDataAccess({
     return () => {
       abortController.abort()
     }
-  }, [featureFilter, gradeByPackage, isSynchronousTestMode, mode, repository, sidebarRetryNonce])
+  }, [featureFilter, gradeByPackage, includeHidden, isSynchronousTestMode, mode, repository, sidebarRetryNonce])
 
   useEffect(() => {
     if (isSynchronousTestMode || mode !== 'image' || vectorResultsActive) {
@@ -340,6 +347,7 @@ export function useReadOnlyDataAccess({
             page_index: Math.max(0, pageIndex),
             page_size: Math.max(1, pageSize),
             show_names_only: showNamesOnly,
+            include_hidden: includeHidden,
             feature_filter: featureFilter,
             grade_overrides: gradeByPackage,
           },
@@ -377,7 +385,7 @@ export function useReadOnlyDataAccess({
       window.clearTimeout(timeoutId)
       abortController.abort()
     }
-  }, [featureFilter, gradeByPackage, isSynchronousTestMode, mode, pageIndex, pageRetryNonce, pageSize, repository, selectedSourceId, showNamesOnly, vectorResultsActive])
+  }, [featureFilter, gradeByPackage, includeHidden, isSynchronousTestMode, mode, pageIndex, pageRetryNonce, pageSize, repository, selectedSourceId, showNamesOnly, vectorResultsActive])
 
   useEffect(() => {
     if (isSynchronousTestMode || mode !== 'image' || !focusedRef || vectorResultsActive) {
@@ -401,6 +409,7 @@ export function useReadOnlyDataAccess({
           {
             package_id: focusedRef.packageId,
             image_index: focusedRef.imageIndex,
+            include_hidden: includeHidden,
           },
           { signal: abortController.signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
         )
@@ -436,7 +445,7 @@ export function useReadOnlyDataAccess({
       window.clearTimeout(timeoutId)
       abortController.abort()
     }
-  }, [focusedRef, isSynchronousTestMode, metadataRetryNonce, mode, repository, vectorResultsActive])
+  }, [focusedRef, includeHidden, isSynchronousTestMode, metadataRetryNonce, mode, repository, vectorResultsActive])
 
   const retryLibrary = useCallback(() => {
     setLibraryRetryNonce((value) => value + 1)

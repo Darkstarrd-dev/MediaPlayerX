@@ -21,9 +21,7 @@ import {
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
   writePackageGradeResponseSchema,
-  readAppStateRequestSchema,
   readAppStateResponseSchema,
-  writeAppStateRequestSchema,
   writeAppStateResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
@@ -50,6 +48,12 @@ import {
   type RetryImportTaskResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
+  type SetImageHiddenRequestDto,
+  type SetImageHiddenResponseDto,
+  type DeleteImageItemsRequestDto,
+  type DeleteImageItemsResponseDto,
+  type DeleteSidebarNodesRequestDto,
+  type DeleteSidebarNodesResponseDto,
   type VideoItemDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
@@ -74,6 +78,7 @@ import {
 import { collectMediaFiles, type FileRecord } from './fileSystemFileCollector'
 import {
   detectMimeTypeByExtension,
+  isPathInsideRoot,
   makeStableId,
   normalizeAllowlistKey,
   deriveVideoWorkTitleFromFileName,
@@ -115,9 +120,10 @@ import {
   probeVideoMetadata,
 } from './fileSystemRuntimeHelpers'
 import { buildImageSidebarTree } from './fileSystemSidebarTree'
-import { writeStoredZipFromDirectory } from './fileSystemZipStoreWriter'
+import { writeStoredZipFromDirectory, writeStoredZipFromEntries } from './fileSystemZipStoreWriter'
 import {
   isSafeArchiveEntryName,
+  readZipEntryContent,
   scanZipCentralEntries,
   type ZipCentralEntry,
 } from './zipArchiveHelpers'
@@ -204,6 +210,76 @@ interface ArchiveNormalizationTaskState {
   updatedAtMs: number
 }
 
+interface ParsedSidebarNodeRef {
+  kind: 'folder' | 'package' | 'video'
+  pathKey: string
+}
+
+function parseSidebarNodeId(nodeId: string): ParsedSidebarNodeRef | null {
+  const delimiterIndex = nodeId.indexOf(':')
+  if (delimiterIndex <= 0) {
+    return null
+  }
+
+  const rawKind = nodeId.slice(0, delimiterIndex)
+  if (rawKind !== 'folder' && rawKind !== 'package' && rawKind !== 'video') {
+    return null
+  }
+
+  const pathKey = nodeId.slice(delimiterIndex + 1)
+  if (pathKey.length === 0) {
+    return null
+  }
+
+  return {
+    kind: rawKind,
+    pathKey,
+  }
+}
+
+function pathKeyHasPrefix(pathKey: string, prefix: string): boolean {
+  if (pathKey === prefix) {
+    return true
+  }
+  return pathKey.startsWith(`${prefix}/`)
+}
+
+function resolveAbsolutePathFromPathKey(pathKey: string): string {
+  if (/^[a-zA-Z]:$/.test(pathKey)) {
+    return path.resolve(`${pathKey}${path.sep}`)
+  }
+  return path.resolve(pathKey)
+}
+
+function isFileSystemRootPath(targetPath: string): boolean {
+  const resolved = path.resolve(targetPath)
+  const root = path.parse(resolved).root
+  return normalizeAllowlistKey(resolved) === normalizeAllowlistKey(root)
+}
+
+function filterHiddenImagesFromSource(source: ImagePackageDto, includeHidden: boolean): ImagePackageDto {
+  if (includeHidden) {
+    return source
+  }
+
+  const visibleImages = source.images.filter((image) => !(image.hidden ?? false))
+  if (visibleImages.length === source.images.length) {
+    return source
+  }
+
+  return {
+    ...source,
+    images: visibleImages,
+  }
+}
+
+function filterHiddenImagesFromSources(sources: ImagePackageDto[], includeHidden: boolean): ImagePackageDto[] {
+  if (includeHidden) {
+    return sources
+  }
+  return sources.map((source) => filterHiddenImagesFromSource(source, includeHidden))
+}
+
 export interface LibraryChangedEventPayload {
   reason:
     | 'import-task-finished'
@@ -215,6 +291,9 @@ export interface LibraryChangedEventPayload {
     | 'write-video-metadata'
     | 'write-video-cover'
     | 'write-playlist'
+    | 'manage-hide'
+    | 'manage-delete-image-items'
+    | 'manage-delete-sidebar-nodes'
   updated_at_ms: number
 }
 
@@ -267,6 +346,8 @@ export class FileSystemMediaReadService {
     tokenExpired: 0,
     tokenCleanupRemoved: 0,
   }
+
+  private resolveDeniedLogAtByKey = new Map<string, number>()
 
   private runtimeDependencySnapshot: RuntimeDependencySnapshot | null = null
 
@@ -710,6 +791,112 @@ export class FileSystemMediaReadService {
     })
   }
 
+  private async removeImportSourcePaths(pathsToRemove: string[]): Promise<void> {
+    await this.ensureStateLoaded()
+    if (pathsToRemove.length === 0) {
+      return
+    }
+
+    const removeRoots = pathsToRemove.map((value) => path.resolve(value))
+    const shouldRemovePath = (candidatePath: string): boolean => {
+      const resolvedCandidatePath = path.resolve(candidatePath)
+      return removeRoots.some(
+        (rootPath) =>
+          normalizeAllowlistKey(rootPath) === normalizeAllowlistKey(resolvedCandidatePath) ||
+          isPathInsideRoot(rootPath, resolvedCandidatePath),
+      )
+    }
+
+    const nextDirectories = this.importSources.directories
+      .map((value) => path.resolve(value))
+      .filter((value) => !shouldRemovePath(value))
+    const nextFiles = this.importSources.files
+      .map((value) => path.resolve(value))
+      .filter((value) => !shouldRemovePath(value))
+
+    const currentDirectoriesKey = this.importSources.directories.map((value) => normalizeAllowlistKey(path.resolve(value))).join('|')
+    const nextDirectoriesKey = nextDirectories.map((value) => normalizeAllowlistKey(value)).join('|')
+    const currentFilesKey = this.importSources.files.map((value) => normalizeAllowlistKey(path.resolve(value))).join('|')
+    const nextFilesKey = nextFiles.map((value) => normalizeAllowlistKey(value)).join('|')
+
+    if (currentDirectoriesKey === nextDirectoriesKey && currentFilesKey === nextFilesKey) {
+      return
+    }
+
+    this.importSources = {
+      directories: nextDirectories,
+      files: nextFiles,
+    }
+    this.importDirectoryRoots = nextDirectories
+    this.importFileAllowlistKeys = new Set(nextFiles.map((value) => normalizeAllowlistKey(value)))
+
+    this.database.writeImportSources({
+      directories: nextDirectories,
+      files: nextFiles,
+    })
+  }
+
+  private syncSnapshotFromDatabase(): LibrarySnapshotDto {
+    const snapshot = this.database.readSnapshot()
+    this.snapshotCache = snapshot
+    return snapshot
+  }
+
+  private async refreshArchiveIndexesForPaths(archivePaths: Iterable<string>): Promise<void> {
+    const normalizedPaths = Array.from(new Set(Array.from(archivePaths).map((value) => path.resolve(value))))
+    for (const archivePath of normalizedPaths) {
+      const stat = await fs.stat(archivePath).catch(() => null)
+      if (!stat || !stat.isFile()) {
+        this.archiveEntryIndexByPath.delete(archivePath)
+        this.zipEntryIndexByPath.delete(archivePath)
+        continue
+      }
+
+      const centralEntries = await scanZipCentralEntries(archivePath).catch(() => null)
+      if (!centralEntries) {
+        this.archiveEntryIndexByPath.delete(archivePath)
+        this.zipEntryIndexByPath.delete(archivePath)
+        continue
+      }
+
+      const imageEntries = centralEntries.filter(
+        (entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName),
+      )
+
+      this.archiveEntryIndexByPath.set(archivePath, new Set(imageEntries.map((entry) => entry.entryName)))
+      this.zipEntryIndexByPath.set(
+        archivePath,
+        new Map(imageEntries.map((entry) => [entry.entryName, entry] as const)),
+      )
+    }
+  }
+
+  private pruneArchiveIndexesByDeletedRoots(deletedPaths: Iterable<string>): void {
+    const roots = Array.from(new Set(Array.from(deletedPaths).map((value) => path.resolve(value))))
+    if (roots.length === 0) {
+      return
+    }
+
+    const shouldPrunePath = (archivePath: string): boolean => {
+      const resolvedArchivePath = path.resolve(archivePath)
+      return roots.some(
+        (rootPath) =>
+          normalizeAllowlistKey(rootPath) === normalizeAllowlistKey(resolvedArchivePath) ||
+          isPathInsideRoot(rootPath, resolvedArchivePath),
+      )
+    }
+
+    for (const archivePath of Array.from(this.archiveEntryIndexByPath.keys())) {
+      if (!shouldPrunePath(archivePath)) {
+        continue
+      }
+      this.archiveEntryIndexByPath.delete(archivePath)
+      this.zipEntryIndexByPath.delete(archivePath)
+      this.normalizedArchiveCacheBySourcePath.delete(archivePath)
+      this.archiveNormalizationStateBySourcePath.delete(archivePath)
+    }
+  }
+
   private async loadRuntimeDependencies(): Promise<RuntimeDependencySnapshot> {
     const [sharpModule, ffmpeg, ffprobe, archiveWasm, powershell] = await Promise.all([
       getSharpModule(),
@@ -869,6 +1056,22 @@ export class FileSystemMediaReadService {
 
   private countResolveDenied(reason: MediaAuditRejectReason): void {
     this.mediaAudit.resolveDeniedByReason[reason] = (this.mediaAudit.resolveDeniedByReason[reason] ?? 0) + 1
+  }
+
+  private shouldLogResolveDenied(reason: MediaAuditRejectReason, pathHint: string): boolean {
+    const now = Date.now()
+    const key = `${reason}|${normalizeAllowlistKey(pathHint)}`
+    const previousAt = this.resolveDeniedLogAtByKey.get(key)
+    if (typeof previousAt === 'number' && now - previousAt < 2_500) {
+      return false
+    }
+    this.resolveDeniedLogAtByKey.set(key, now)
+
+    if (this.resolveDeniedLogAtByKey.size > 2_048) {
+      this.resolveDeniedLogAtByKey.clear()
+    }
+
+    return true
   }
 
   async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
@@ -1217,18 +1420,22 @@ export class FileSystemMediaReadService {
   ): Promise<ReadImageSidebarTreeResponseDto> {
     this.markInteractiveRead()
     await this.ensureSnapshotLoaded()
+    const includeHidden = request.include_hidden ?? false
     const filtered = filterLibrarySources(this.snapshotCache, request)
+    const filteredPackages = filterHiddenImagesFromSources(filtered.imagePackages, includeHidden)
+    const filteredDirectories = filterHiddenImagesFromSources(filtered.imageDirectories, includeHidden)
 
     return readImageSidebarTreeResponseSchema.parse({
-      image_packages: filtered.imagePackages,
-      image_directories: filtered.imageDirectories,
-      tree: buildImageSidebarTree(filtered.imagePackages, filtered.imageDirectories),
+      image_packages: filteredPackages,
+      image_directories: filteredDirectories,
+      tree: buildImageSidebarTree(filteredPackages, filteredDirectories),
     })
   }
 
   async readImagePage(request: ReadImagePageRequestDto): Promise<ReadImagePageResponseDto> {
     this.markInteractiveRead()
     await this.ensureSnapshotLoaded()
+    const includeHidden = request.include_hidden ?? false
     const filtered = filterLibrarySources(this.snapshotCache, {
       feature_filter: request.feature_filter,
       grade_overrides: request.grade_overrides,
@@ -1258,14 +1465,15 @@ export class FileSystemMediaReadService {
       })
     }
 
-    const totalItems = selectedSource.images.length
+    const selectedSourceVisible = filterHiddenImagesFromSource(selectedSource, includeHidden)
+    const totalItems = selectedSourceVisible.images.length
     const pageSize = request.show_names_only ? Math.max(1, totalItems) : request.page_size
     const maxPageIndex = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
     const pageIndex = request.show_names_only ? 0 : Math.min(request.page_index, maxPageIndex)
     const pageStart = pageIndex * pageSize
     const pageEnd = pageStart + pageSize
 
-    const refs: FocusedImageRefDto[] = selectedSource.images
+    const refs: FocusedImageRefDto[] = selectedSourceVisible.images
       .slice(pageStart, pageEnd)
       .map((_, index) => ({
         package_id: selectedSource.id,
@@ -1285,13 +1493,15 @@ export class FileSystemMediaReadService {
     request: ReadImageMetadataRequestDto,
   ): Promise<ReadImageMetadataResponseDto> {
     this.markInteractiveRead()
+    const includeHidden = request.include_hidden ?? false
     const snapshot = await this.ensureSnapshotLoaded()
     const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
     const source = allSources.find((item) => item.id === request.package_id)
-    const image = source?.images[request.image_index]
+    const visibleSource = source ? filterHiddenImagesFromSource(source, includeHidden) : null
+    const image = visibleSource?.images[request.image_index]
 
     if (
-      source &&
+      visibleSource &&
       image &&
       image.media_locator.kind === 'filesystem' &&
       image.media_locator.media_type === 'image'
@@ -1313,11 +1523,11 @@ export class FileSystemMediaReadService {
     }
 
     return readImageMetadataResponseSchema.parse(
-      source && image
+      visibleSource && image
         ? {
-            package: source,
+            package: visibleSource,
             image,
-            grade: source.mock_grade,
+            grade: visibleSource.mock_grade,
           }
         : null,
     )
@@ -1347,6 +1557,479 @@ export class FileSystemMediaReadService {
       grade: request.grade,
       updated_at_ms: Date.now(),
     })
+  }
+
+  async setImageHidden(
+    request: SetImageHiddenRequestDto,
+  ): Promise<SetImageHiddenResponseDto> {
+    await this.ensureStateLoaded()
+    const normalizedImageIds = Array.from(new Set(request.image_ids.map((value) => value.trim()).filter(Boolean)))
+    if (normalizedImageIds.length === 0) {
+      throw new Error('设置隐藏失败：未提供图片 id')
+    }
+
+    const updatedCount = this.database.setImagesHidden(normalizedImageIds, request.hidden)
+    if (updatedCount > 0) {
+      this.syncSnapshotFromDatabase()
+      this.emitLibraryChanged({
+        reason: 'manage-hide',
+        updated_at_ms: Date.now(),
+      })
+    }
+
+    return {
+      updated_count: updatedCount,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  private async repackArchiveWithoutEntries(
+    archivePath: string,
+    deletedEntryNames: Set<string>,
+  ): Promise<void> {
+    const allEntries = await scanZipCentralEntries(archivePath)
+    const keepEntries = allEntries.filter((entry) => !deletedEntryNames.has(entry.entryName))
+
+    const zipEntries: Array<{ entryName: string; content: Buffer }> = []
+    for (const entry of keepEntries) {
+      const content = await readZipEntryContent(archivePath, entry)
+      zipEntries.push({
+        entryName: entry.entryName,
+        content,
+      })
+    }
+
+    const tempPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-tmp.zip`
+    const backupPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-bak`
+
+    await writeStoredZipFromEntries(tempPath, zipEntries)
+    await scanZipCentralEntries(tempPath)
+
+    await fs.rename(archivePath, backupPath)
+    let replaced = false
+    try {
+      await fs.rename(tempPath, archivePath)
+      replaced = true
+      await fs.rm(backupPath, { force: true })
+    } finally {
+      if (!replaced) {
+        await fs.rename(backupPath, archivePath).catch(() => undefined)
+      }
+      await fs.rm(tempPath, { force: true }).catch(() => undefined)
+    }
+  }
+
+  async deleteImageItems(
+    request: DeleteImageItemsRequestDto,
+  ): Promise<DeleteImageItemsResponseDto> {
+    const normalizedImageIds = Array.from(new Set(request.image_ids.map((value) => value.trim()).filter(Boolean)))
+    if (normalizedImageIds.length === 0) {
+      throw new Error('删除失败：未提供图片 id')
+    }
+
+    const snapshot = await this.ensureSnapshotLoaded()
+    await this.ensureStateLoaded()
+
+    const sourceById = new Map<string, ImagePackageDto>([
+      ...snapshot.image_packages.map((source) => [source.id, source] as const),
+      ...snapshot.image_directories.map((source) => [source.id, source] as const),
+    ])
+    const mediaAccessContext = {
+      rootDir: this.rootDir,
+      importDirectoryRoots: this.importDirectoryRoots,
+      importFileAllowlistKeys: this.importFileAllowlistKeys,
+      archiveEntryIndexByPath: this.archiveEntryIndexByPath,
+      imageExtensions: IMAGE_EXTENSIONS,
+      videoExtensions: VIDEO_EXTENSIONS,
+    }
+
+    const imageById = new Map<string, { image: ImagePackageDto['images'][number]; source: ImagePackageDto }>()
+    for (const source of sourceById.values()) {
+      for (const image of source.images) {
+        imageById.set(image.id, { image, source })
+      }
+    }
+
+    const failed: Array<{ image_id: string; reason: string }> = []
+    const filesystemImageIdsByPath = new Map<string, Set<string>>()
+    const archiveEntriesToDelete = new Map<string, Set<string>>()
+    const archiveImageIdsByPath = new Map<string, Map<string, Set<string>>>()
+    const importPathsToRemove = new Set<string>()
+
+    for (const imageId of normalizedImageIds) {
+      const found = imageById.get(imageId)
+      if (!found) {
+        failed.push({
+          image_id: imageId,
+          reason: 'image not found',
+        })
+        continue
+      }
+
+      const locator = found.image.media_locator
+      if (locator.kind === 'filesystem') {
+        const absolutePath = path.resolve(locator.absolute_path)
+        if (!isPathAllowlisted(absolutePath, mediaAccessContext)) {
+          failed.push({
+            image_id: imageId,
+            reason: 'path outside allowlist',
+          })
+          continue
+        }
+        const imageIds = filesystemImageIdsByPath.get(absolutePath) ?? new Set<string>()
+        imageIds.add(imageId)
+        filesystemImageIdsByPath.set(absolutePath, imageIds)
+        continue
+      }
+
+      if (locator.archive_format !== 'zip') {
+        failed.push({
+          image_id: imageId,
+          reason: 'archive format not supported',
+        })
+        continue
+      }
+
+      const archivePath = path.resolve(locator.archive_path)
+      if (!isPathAllowlisted(archivePath, mediaAccessContext)) {
+        failed.push({
+          image_id: imageId,
+          reason: 'archive path outside allowlist',
+        })
+        continue
+      }
+      const entryName = locator.entry_name
+      if (!entryName || !isSafeArchiveEntryName(entryName)) {
+        failed.push({
+          image_id: imageId,
+          reason: 'archive entry illegal',
+        })
+        continue
+      }
+
+      const entrySet = archiveEntriesToDelete.get(archivePath) ?? new Set<string>()
+      entrySet.add(entryName)
+      archiveEntriesToDelete.set(archivePath, entrySet)
+
+      const imageIdsByEntry = archiveImageIdsByPath.get(archivePath) ?? new Map<string, Set<string>>()
+      const imageIds = imageIdsByEntry.get(entryName) ?? new Set<string>()
+      imageIds.add(imageId)
+      imageIdsByEntry.set(entryName, imageIds)
+      archiveImageIdsByPath.set(archivePath, imageIdsByEntry)
+    }
+
+    const deletedImageIds = new Set<string>()
+    const changedArchivePaths = new Set<string>()
+
+    for (const [absolutePath, imageIds] of filesystemImageIdsByPath) {
+      try {
+        await fs.rm(absolutePath, { force: true })
+        for (const imageId of imageIds) {
+          deletedImageIds.add(imageId)
+        }
+        if (this.importFileAllowlistKeys.has(normalizeAllowlistKey(absolutePath))) {
+          importPathsToRemove.add(absolutePath)
+        }
+      } catch (error) {
+        const reason = error instanceof Error && error.message ? error.message : String(error)
+        for (const imageId of imageIds) {
+          failed.push({
+            image_id: imageId,
+            reason,
+          })
+        }
+      }
+    }
+
+    for (const [archivePath, entryNames] of archiveEntriesToDelete) {
+      try {
+        await this.repackArchiveWithoutEntries(archivePath, entryNames)
+        changedArchivePaths.add(archivePath)
+
+        const imageIdsByEntry = archiveImageIdsByPath.get(archivePath) ?? new Map<string, Set<string>>()
+        for (const entryName of entryNames) {
+          const imageIds = imageIdsByEntry.get(entryName)
+          if (!imageIds) {
+            continue
+          }
+          for (const imageId of imageIds) {
+            deletedImageIds.add(imageId)
+          }
+        }
+
+        if (this.importFileAllowlistKeys.has(normalizeAllowlistKey(archivePath))) {
+          const source = Array.from(sourceById.values()).find(
+            (item) => path.resolve(item.absolute_path) === archivePath,
+          )
+          if (source) {
+            const remainingEntries = source.images.filter(
+              (image) => image.media_locator.kind === 'archive-entry' && !entryNames.has(image.media_locator.entry_name),
+            )
+            if (remainingEntries.length === 0) {
+              importPathsToRemove.add(archivePath)
+            }
+          }
+        }
+      } catch (error) {
+        const reason = error instanceof Error && error.message ? error.message : String(error)
+        const imageIdsByEntry = archiveImageIdsByPath.get(archivePath) ?? new Map<string, Set<string>>()
+        for (const entryName of entryNames) {
+          const imageIds = imageIdsByEntry.get(entryName)
+          if (!imageIds) {
+            continue
+          }
+          for (const imageId of imageIds) {
+            failed.push({
+              image_id: imageId,
+              reason,
+            })
+          }
+        }
+      }
+    }
+
+    if (deletedImageIds.size > 0) {
+      this.database.deleteImageItems(Array.from(deletedImageIds))
+      this.syncSnapshotFromDatabase()
+      await this.refreshArchiveIndexesForPaths(changedArchivePaths)
+    }
+
+    if (importPathsToRemove.size > 0) {
+      await this.removeImportSourcePaths(Array.from(importPathsToRemove))
+    }
+
+    const deletedCount = deletedImageIds.size
+    if (deletedCount > 0) {
+      await fs.rm(this.thumbnailCacheRootDir, { recursive: true, force: true }).catch(() => undefined)
+      this.emitLibraryChanged({
+        reason: 'manage-delete-image-items',
+        updated_at_ms: Date.now(),
+      })
+    }
+
+    return {
+      deleted_count: deletedCount,
+      failed,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async deleteSidebarNodes(
+    request: DeleteSidebarNodesRequestDto,
+  ): Promise<DeleteSidebarNodesResponseDto> {
+    const normalizedNodeIds = Array.from(new Set(request.node_ids.map((value) => value.trim()).filter(Boolean)))
+    if (normalizedNodeIds.length === 0) {
+      throw new Error('删除失败：未提供节点 id')
+    }
+
+    const parsedTargets = normalizedNodeIds.map((nodeId) => {
+      const parsed = parseSidebarNodeId(nodeId)
+      return {
+        nodeId,
+        parsed,
+        matched: false,
+      }
+    })
+
+    const failed: Array<{ node_id: string; reason: string }> = []
+    const validTargets = parsedTargets.filter((target) => {
+      if (target.parsed) {
+        return true
+      }
+      failed.push({
+        node_id: target.nodeId,
+        reason: 'invalid node id',
+      })
+      return false
+    })
+
+    await this.ensureStateLoaded()
+    const snapshot = await this.ensureSnapshotLoaded()
+    const mediaAccessContext = {
+      rootDir: this.rootDir,
+      importDirectoryRoots: this.importDirectoryRoots,
+      importFileAllowlistKeys: this.importFileAllowlistKeys,
+      archiveEntryIndexByPath: this.archiveEntryIndexByPath,
+      imageExtensions: IMAGE_EXTENSIONS,
+      videoExtensions: VIDEO_EXTENSIONS,
+    }
+
+    const selectedPaths = new Set<string>()
+    const nodeIdsBySelectedPath = new Map<string, Set<string>>()
+    const importPathsToRemove = new Set<string>()
+
+    const rememberSelectedPath = (absolutePath: string, nodeId: string) => {
+      const resolvedPath = path.resolve(absolutePath)
+      selectedPaths.add(resolvedPath)
+      const nodeIds = nodeIdsBySelectedPath.get(resolvedPath) ?? new Set<string>()
+      nodeIds.add(nodeId)
+      nodeIdsBySelectedPath.set(resolvedPath, nodeIds)
+    }
+
+    for (const target of validTargets) {
+      const parsed = target.parsed
+      if (!parsed || parsed.kind !== 'folder') {
+        continue
+      }
+      const folderPath = resolveAbsolutePathFromPathKey(parsed.pathKey)
+      rememberSelectedPath(folderPath, target.nodeId)
+      target.matched = true
+    }
+
+    const markMatchedAndSelect = (pathKey: string, kind: 'package' | 'directory' | 'video', absolutePath: string): boolean => {
+      for (const target of validTargets) {
+        const parsed = target.parsed
+        if (!parsed) {
+          continue
+        }
+
+        if (parsed.kind === 'folder') {
+          if (pathKeyHasPrefix(pathKey, parsed.pathKey)) {
+            target.matched = true
+            rememberSelectedPath(absolutePath, target.nodeId)
+            return true
+          }
+          continue
+        }
+
+        if (parsed.kind === 'package' && kind === 'package' && pathKey === parsed.pathKey) {
+          target.matched = true
+          rememberSelectedPath(absolutePath, target.nodeId)
+          return true
+        }
+
+        if (parsed.kind === 'video' && kind === 'video' && pathKey === parsed.pathKey) {
+          target.matched = true
+          rememberSelectedPath(absolutePath, target.nodeId)
+          return true
+        }
+      }
+
+      return false
+    }
+
+    for (const source of snapshot.image_packages) {
+      const pathKey = source.tree_path.join('/')
+      markMatchedAndSelect(pathKey, 'package', source.absolute_path)
+    }
+
+    for (const source of snapshot.image_directories) {
+      const pathKey = source.tree_path.join('/')
+      markMatchedAndSelect(pathKey, 'directory', source.absolute_path)
+    }
+
+    for (const video of snapshot.videos) {
+      const pathKey = video.tree_path.join('/')
+      markMatchedAndSelect(pathKey, 'video', video.absolute_path)
+    }
+
+    for (const target of validTargets) {
+      if (!target.matched) {
+        failed.push({
+          node_id: target.nodeId,
+          reason: 'node not found',
+        })
+      }
+    }
+
+    const sortedPaths = Array.from(selectedPaths).sort((left, right) => left.length - right.length)
+    const prunedPaths: string[] = []
+    for (const candidatePath of sortedPaths) {
+      if (prunedPaths.some((existingPath) => isPathInsideRoot(existingPath, candidatePath))) {
+        continue
+      }
+      prunedPaths.push(candidatePath)
+    }
+
+    let deletedCount = 0
+    const pathsToPurgeFromSnapshot = new Set<string>()
+    for (const absolutePath of prunedPaths) {
+      try {
+        if (isFileSystemRootPath(absolutePath)) {
+          const nodeIds = nodeIdsBySelectedPath.get(absolutePath) ?? new Set<string>()
+          for (const nodeId of nodeIds) {
+            failed.push({
+              node_id: nodeId,
+              reason: 'refuse to delete filesystem root',
+            })
+          }
+          continue
+        }
+
+        if (!isPathAllowlisted(absolutePath, mediaAccessContext)) {
+          const nodeIds = nodeIdsBySelectedPath.get(absolutePath) ?? new Set<string>()
+          for (const nodeId of nodeIds) {
+            failed.push({
+              node_id: nodeId,
+              reason: 'path outside allowlist',
+            })
+          }
+          continue
+        }
+
+        let stat: { isDirectory: () => boolean; isFile: () => boolean } | null = null
+        try {
+          stat = await fs.stat(absolutePath)
+        } catch (error) {
+          const maybeFsError = error as NodeJS.ErrnoException
+          if (maybeFsError?.code !== 'ENOENT') {
+            throw error
+          }
+        }
+
+        if (!stat) {
+          pathsToPurgeFromSnapshot.add(absolutePath)
+          importPathsToRemove.add(absolutePath)
+          continue
+        }
+        if (stat.isDirectory()) {
+          await fs.rm(absolutePath, { recursive: true, force: true })
+          deletedCount += 1
+          pathsToPurgeFromSnapshot.add(absolutePath)
+          importPathsToRemove.add(absolutePath)
+          continue
+        }
+        if (stat.isFile()) {
+          await fs.rm(absolutePath, { force: true })
+          deletedCount += 1
+          pathsToPurgeFromSnapshot.add(absolutePath)
+          importPathsToRemove.add(absolutePath)
+        }
+      } catch (error) {
+        const reason = error instanceof Error && error.message ? error.message : String(error)
+        const nodeIds = nodeIdsBySelectedPath.get(absolutePath) ?? new Set<string>()
+        for (const nodeId of nodeIds) {
+          failed.push({
+            node_id: nodeId,
+            reason,
+          })
+        }
+      }
+    }
+
+    if (pathsToPurgeFromSnapshot.size > 0) {
+      this.database.deleteSnapshotEntriesByPaths(Array.from(pathsToPurgeFromSnapshot))
+      this.syncSnapshotFromDatabase()
+      this.pruneArchiveIndexesByDeletedRoots(pathsToPurgeFromSnapshot)
+    }
+
+    if (importPathsToRemove.size > 0) {
+      await this.removeImportSourcePaths(Array.from(importPathsToRemove))
+    }
+
+    if (pathsToPurgeFromSnapshot.size > 0) {
+      await fs.rm(this.thumbnailCacheRootDir, { recursive: true, force: true }).catch(() => undefined)
+      this.emitLibraryChanged({
+        reason: 'manage-delete-sidebar-nodes',
+        updated_at_ms: Date.now(),
+      })
+    }
+
+    return {
+      deleted_count: deletedCount,
+      failed,
+      updated_at_ms: Date.now(),
+    }
   }
 
   async writePackageMetadata(
@@ -1642,10 +2325,14 @@ export class FileSystemMediaReadService {
     } catch (error) {
       if (error instanceof MediaAccessError) {
         this.countResolveDenied(error.reason)
-        console.warn('resolveMediaResource denied', {
-          reason: error.reason,
-          message: error.message,
-        })
+        const pathHint =
+          request.locator.kind === 'filesystem' ? request.locator.absolute_path : request.locator.archive_path
+        if (this.shouldLogResolveDenied(error.reason, pathHint)) {
+          console.warn('resolveMediaResource denied', {
+            reason: error.reason,
+            message: error.message,
+          })
+        }
       } else {
         this.countResolveDenied('filesystem_file_missing')
       }

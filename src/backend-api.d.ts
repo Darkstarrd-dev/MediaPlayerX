@@ -29,6 +29,12 @@ import type {
   WritePackageMetadataResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
+  SetImageHiddenRequestDto,
+  SetImageHiddenResponseDto,
+  DeleteImageItemsRequestDto,
+  DeleteImageItemsResponseDto,
+  DeleteSidebarNodesRequestDto,
+  DeleteSidebarNodesResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
   ReadAppStateRequestDto,
@@ -44,6 +50,9 @@ interface MediaPlayerBackendApi {
   readImageMetadata: (request: ReadImageMetadataRequestDto) => Promise<ReadImageMetadataResponseDto>
   resolveMediaResource: (request: ResolveMediaResourceRequestDto) => Promise<ResolveMediaResourceResponseDto>
   writePackageGrade: (request: WritePackageGradeRequestDto) => Promise<WritePackageGradeResponseDto>
+  setImageHidden?: (request: SetImageHiddenRequestDto) => Promise<SetImageHiddenResponseDto>
+  deleteImageItems?: (request: DeleteImageItemsRequestDto) => Promise<DeleteImageItemsResponseDto>
+  deleteSidebarNodes?: (request: DeleteSidebarNodesRequestDto) => Promise<DeleteSidebarNodesResponseDto>
   writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
   writeVideoMetadata?: (request: WriteVideoMetadataRequestDto) => Promise<WriteVideoMetadataResponseDto>
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>

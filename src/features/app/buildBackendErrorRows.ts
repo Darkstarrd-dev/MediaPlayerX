@@ -23,10 +23,12 @@ interface BuildBackendErrorRowsParams {
       grade: string | null
       metadata: string | null
       cover: string | null
+      manage: string | null
     }
     clearGradeError: () => void
     clearMetadataError: () => void
     clearCoverError: () => void
+    clearManageError: () => void
   }
   playlistPersistence: {
     readError: string | null
@@ -101,6 +103,14 @@ export function buildBackendErrorRows({
           label: '封面写入',
           message: backendWrite.errors.cover,
           onRetry: backendWrite.clearCoverError,
+        }
+      : null,
+    backendWrite.errors.manage
+      ? {
+          key: 'manage-write',
+          label: '管理操作',
+          message: backendWrite.errors.manage,
+          onRetry: backendWrite.clearManageError,
         }
       : null,
     playlistPersistence.readError

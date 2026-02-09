@@ -42,6 +42,7 @@ export const imageItemDtoSchema = z.object({
   color: z.string().min(1),
   feature_vector: z.array(z.number()),
   media_locator: mediaLocatorDtoSchema,
+  hidden: z.boolean().optional(),
 })
 
 export const imagePackageDtoSchema = z.object({
@@ -117,6 +118,7 @@ export const gradeOverrideMapSchema = z.record(z.string(), z.number().int().min(
 export const readImageSidebarTreeRequestSchema = z.object({
   feature_filter: featureFilterDtoSchema,
   grade_overrides: gradeOverrideMapSchema.optional(),
+  include_hidden: z.boolean().optional(),
 })
 
 export const readImageSidebarTreeResponseSchema = z.object({
@@ -130,6 +132,7 @@ export const readImagePageRequestSchema = z.object({
   page_index: nonNegativeIntSchema,
   page_size: z.number().int().positive(),
   show_names_only: z.boolean(),
+  include_hidden: z.boolean().optional(),
   feature_filter: featureFilterDtoSchema,
   grade_overrides: gradeOverrideMapSchema.optional(),
 })
@@ -145,6 +148,7 @@ export const readImagePageResponseSchema = z.object({
 export const readImageMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
   image_index: nonNegativeIntSchema,
+  include_hidden: z.boolean().optional(),
 })
 
 export const readImageMetadataResponseSchema = z
@@ -180,6 +184,46 @@ export const writePackageGradeRequestSchema = z.object({
 export const writePackageGradeResponseSchema = z.object({
   package_id: z.string().min(1),
   grade: z.number().int().min(0).max(5).nullable(),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const setImageHiddenRequestSchema = z.object({
+  image_ids: z.array(z.string().min(1)).min(1),
+  hidden: z.boolean(),
+})
+
+export const setImageHiddenResponseSchema = z.object({
+  updated_count: nonNegativeIntSchema,
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const deleteImageItemsRequestSchema = z.object({
+  image_ids: z.array(z.string().min(1)).min(1),
+})
+
+export const deleteImageItemsResponseSchema = z.object({
+  deleted_count: nonNegativeIntSchema,
+  failed: z.array(
+    z.object({
+      image_id: z.string().min(1),
+      reason: z.string().min(1),
+    }),
+  ),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const deleteSidebarNodesRequestSchema = z.object({
+  node_ids: z.array(z.string().min(1)).min(1),
+})
+
+export const deleteSidebarNodesResponseSchema = z.object({
+  deleted_count: nonNegativeIntSchema,
+  failed: z.array(
+    z.object({
+      node_id: z.string().min(1),
+      reason: z.string().min(1),
+    }),
+  ),
   updated_at_ms: z.number().int().positive(),
 })
 
@@ -378,6 +422,12 @@ export type ResolveMediaResourceRequestDto = z.infer<typeof resolveMediaResource
 export type ResolveMediaResourceResponseDto = z.infer<typeof resolveMediaResourceResponseSchema>
 export type WritePackageGradeRequestDto = z.infer<typeof writePackageGradeRequestSchema>
 export type WritePackageGradeResponseDto = z.infer<typeof writePackageGradeResponseSchema>
+export type SetImageHiddenRequestDto = z.infer<typeof setImageHiddenRequestSchema>
+export type SetImageHiddenResponseDto = z.infer<typeof setImageHiddenResponseSchema>
+export type DeleteImageItemsRequestDto = z.infer<typeof deleteImageItemsRequestSchema>
+export type DeleteImageItemsResponseDto = z.infer<typeof deleteImageItemsResponseSchema>
+export type DeleteSidebarNodesRequestDto = z.infer<typeof deleteSidebarNodesRequestSchema>
+export type DeleteSidebarNodesResponseDto = z.infer<typeof deleteSidebarNodesResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
 export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
 export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>

@@ -3,6 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { useState } from 'react'
 
 import type {
+  DeleteImageItemsRequestDto,
+  DeleteImageItemsResponseDto,
+  DeleteSidebarNodesRequestDto,
+  DeleteSidebarNodesResponseDto,
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   LibrarySnapshotDto,
@@ -22,6 +26,8 @@ import type {
   RetryImportTaskResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
+  SetImageHiddenRequestDto,
+  SetImageHiddenResponseDto,
   WritePlaylistRequestDto,
   WritePlaylistResponseDto,
   WritePackageMetadataRequestDto,
@@ -39,6 +45,8 @@ class WritableRepositoryStub implements ReadonlyMediaRepository {
 
   private shouldFailMetadata = false
 
+  private shouldFailManage = false
+
   setFailGrade(enabled: boolean): void {
     this.shouldFailGrade = enabled
   }
@@ -49,6 +57,10 @@ class WritableRepositoryStub implements ReadonlyMediaRepository {
 
   setFailMetadata(enabled: boolean): void {
     this.shouldFailMetadata = enabled
+  }
+
+  setFailManage(enabled: boolean): void {
+    this.shouldFailManage = enabled
   }
 
   getInitialLibrarySnapshot(): LibrarySnapshotDto | null {
@@ -148,6 +160,53 @@ class WritableRepositoryStub implements ReadonlyMediaRepository {
       video_id: request.video_id,
       cover_color: request.fallback_color ?? 'hsl(120, 44%, 40%)',
       cover_image_path: null,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async setImageHidden(
+    request: SetImageHiddenRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetImageHiddenResponseDto> {
+    void options
+    if (this.shouldFailManage) {
+      throw new Error('manage-failed')
+    }
+
+    return {
+      updated_count: request.image_ids.length,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async deleteImageItems(
+    request: DeleteImageItemsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<DeleteImageItemsResponseDto> {
+    void options
+    if (this.shouldFailManage) {
+      throw new Error('manage-failed')
+    }
+
+    return {
+      deleted_count: request.image_ids.length,
+      failed: [],
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async deleteSidebarNodes(
+    request: DeleteSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<DeleteSidebarNodesResponseDto> {
+    void options
+    if (this.shouldFailManage) {
+      throw new Error('manage-failed')
+    }
+
+    return {
+      deleted_count: request.node_ids.length,
+      failed: [],
       updated_at_ms: Date.now(),
     }
   }
@@ -405,5 +464,72 @@ describe('useWriteDataAccess', () => {
     })
 
     expect(result.current.write.errors.metadata).toBe('write-metadata-failed')
+  })
+
+  it('管理写链路失败会设置 manage 错误并可清理', async () => {
+    const repository = new WritableRepositoryStub()
+    repository.setFailManage(true)
+
+    const { result } = renderHook(() => {
+      const [, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
+      const [, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
+      const [, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
+      const write = useWriteDataAccess({
+        repository,
+        setGradeByPackage,
+        setVideoCoverById,
+        setVideoCoverImageById,
+      })
+
+      return {
+        write,
+      }
+    })
+
+    await act(async () => {
+      await expect(result.current.write.setImageHidden(['img-1'], true)).rejects.toThrow('manage-failed')
+    })
+
+    expect(result.current.write.errors.manage).toBe('manage-failed')
+    expect(result.current.write.pending.manage).toBe(false)
+
+    act(() => {
+      result.current.write.clearManageError()
+    })
+    expect(result.current.write.errors.manage).toBeNull()
+  })
+
+  it('管理写链路成功返回计数并保持 manage 错误为空', async () => {
+    const repository = new WritableRepositoryStub()
+
+    const { result } = renderHook(() => {
+      const [, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
+      const [, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
+      const [, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
+      const write = useWriteDataAccess({
+        repository,
+        setGradeByPackage,
+        setVideoCoverById,
+        setVideoCoverImageById,
+      })
+
+      return {
+        write,
+      }
+    })
+
+    await act(async () => {
+      const hiddenResult = await result.current.write.setImageHidden(['img-1', 'img-2'], true)
+      expect(hiddenResult.updated_count).toBe(2)
+
+      const deleteImageResult = await result.current.write.deleteImageItems(['img-1'])
+      expect(deleteImageResult.deleted_count).toBe(1)
+
+      const deleteNodeResult = await result.current.write.deleteSidebarNodes(['folder:root'])
+      expect(deleteNodeResult.deleted_count).toBe(1)
+    })
+
+    expect(result.current.write.errors.manage).toBeNull()
+    expect(result.current.write.pending.manage).toBe(false)
   })
 })

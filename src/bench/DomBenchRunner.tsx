@@ -276,6 +276,10 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             packageById={packageById}
             imageUrlById={imageUrlById}
             gridRef={gridRef}
+            manageMode={false}
+            checkedImageIds={new Set()}
+            onToggleImageChecked={() => undefined}
+            onReplaceCheckedImages={() => undefined}
             onToggleShowNamesOnly={() => undefined}
             onEnterFullscreen={() => undefined}
             onSelectImage={() => undefined}

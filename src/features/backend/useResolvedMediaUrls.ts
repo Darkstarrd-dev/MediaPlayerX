@@ -11,10 +11,18 @@ import type { ReadonlyMediaRepository } from './repository'
 const MEDIA_RESOLVE_TIMEOUT_MS = 8_000
 const CACHE_REFRESH_LEEWAY_MS = 15_000
 const DEFAULT_MAX_CONCURRENT = 8
+const FAILURE_RETRY_BASE_MS = 3_000
+const FAILURE_RETRY_MAX_MS = 20_000
 
 interface CachedMediaUrl {
   resourceUrl: string
   expiresAtMs: number
+}
+
+interface CachedResolveFailure {
+  message: string
+  failureCount: number
+  nextRetryAtMs: number
 }
 
 export interface MediaResolveTarget {
@@ -109,6 +117,7 @@ export function useResolvedMediaUrls({
   options,
 }: UseResolvedMediaUrlsParams): UseResolvedMediaUrlsResult {
   const urlCacheByLocatorKeyRef = useRef(new Map<string, CachedMediaUrl>())
+  const failedRequestByKeyRef = useRef(new Map<string, CachedResolveFailure>())
 
   const applyMode = options?.applyMode === 'raf' ? 'raf' : 'immediate'
   const stateScope = options?.stateScope === 'active-only' ? 'active-only' : 'accumulate'
@@ -146,6 +155,20 @@ export function useResolvedMediaUrls({
 
   const [urlByTargetId, setUrlByTargetId] = useState<Record<string, string>>({})
   const [errorByTargetId, setErrorByTargetId] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (!repository.onLibraryChanged) {
+      return
+    }
+
+    const unsubscribe = repository.onLibraryChanged(() => {
+      urlCacheByLocatorKeyRef.current.clear()
+      failedRequestByKeyRef.current.clear()
+      setErrorByTargetId({})
+    })
+
+    return unsubscribe
+  }, [repository])
 
   const pendingUrlUpdatesRef = useRef(new Map<string, string>())
   const pendingErrorUpdatesRef = useRef(new Map<string, string | null>())
@@ -420,8 +443,17 @@ export function useResolvedMediaUrls({
         urlCacheByLocatorKeyRef.current.delete(requestKey)
       }
       if (cachedUrl) {
+        failedRequestByKeyRef.current.delete(requestKey)
         for (const targetId of targetIds) {
           applyUrl(targetId, cachedUrl)
+        }
+        continue
+      }
+
+      const failedRecord = failedRequestByKeyRef.current.get(requestKey)
+      if (failedRecord && failedRecord.nextRetryAtMs > now) {
+        for (const targetId of targetIds) {
+          applyError(targetId, failedRecord.message)
         }
         continue
       }
@@ -446,6 +478,7 @@ export function useResolvedMediaUrls({
             resourceUrl: response.resource_url,
             expiresAtMs,
           })
+          failedRequestByKeyRef.current.delete(requestKey)
           for (const targetId of targetIds) {
             applyUrl(targetId, response.resource_url)
           }
@@ -454,6 +487,17 @@ export function useResolvedMediaUrls({
             return
           }
           const message = toErrorMessage(error)
+          const previousFailure = failedRequestByKeyRef.current.get(requestKey)
+          const failureCount = (previousFailure?.failureCount ?? 0) + 1
+          const retryDelayMs = Math.min(
+            FAILURE_RETRY_MAX_MS,
+            FAILURE_RETRY_BASE_MS * Math.max(1, 2 ** Math.max(0, failureCount - 1)),
+          )
+          failedRequestByKeyRef.current.set(requestKey, {
+            message,
+            failureCount,
+            nextRetryAtMs: Date.now() + retryDelayMs,
+          })
           for (const targetId of targetIds) {
             applyError(targetId, message)
           }

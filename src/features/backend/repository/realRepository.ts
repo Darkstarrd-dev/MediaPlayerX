@@ -19,6 +19,9 @@ import {
   writePackageMetadataResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
+  setImageHiddenResponseSchema,
+  deleteImageItemsResponseSchema,
+  deleteSidebarNodesResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
   type EnqueueImportTaskRequestDto,
@@ -51,6 +54,12 @@ import {
   type WritePackageMetadataResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
+  type SetImageHiddenRequestDto,
+  type SetImageHiddenResponseDto,
+  type DeleteImageItemsRequestDto,
+  type DeleteImageItemsResponseDto,
+  type DeleteSidebarNodesRequestDto,
+  type DeleteSidebarNodesResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
   type ReadAppStateRequestDto,
@@ -269,6 +278,45 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.writePackageGrade(request), options)
     return writePackageGradeResponseSchema.parse(response)
+  }
+
+  async setImageHidden(
+    request: SetImageHiddenRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetImageHiddenResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.setImageHidden) {
+      throw new Error('真实后端通道不可用：setImageHidden 未注入')
+    }
+
+    const response = await withAbort(api.setImageHidden(request), options)
+    return setImageHiddenResponseSchema.parse(response)
+  }
+
+  async deleteImageItems(
+    request: DeleteImageItemsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<DeleteImageItemsResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.deleteImageItems) {
+      throw new Error('真实后端通道不可用：deleteImageItems 未注入')
+    }
+
+    const response = await withAbort(api.deleteImageItems(request), options)
+    return deleteImageItemsResponseSchema.parse(response)
+  }
+
+  async deleteSidebarNodes(
+    request: DeleteSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<DeleteSidebarNodesResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.deleteSidebarNodes) {
+      throw new Error('真实后端通道不可用：deleteSidebarNodes 未注入')
+    }
+
+    const response = await withAbort(api.deleteSidebarNodes(request), options)
+    return deleteSidebarNodesResponseSchema.parse(response)
   }
 
   async writePackageMetadata(

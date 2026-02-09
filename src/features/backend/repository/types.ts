@@ -7,6 +7,10 @@ import type {
   ReadClipboardImportPathsResponseDto,
   ReadArchiveLoadStatusResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
+  DeleteImageItemsRequestDto,
+  DeleteImageItemsResponseDto,
+  DeleteSidebarNodesRequestDto,
+  DeleteSidebarNodesResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
@@ -29,6 +33,8 @@ import type {
   WritePackageMetadataResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
+  SetImageHiddenRequestDto,
+  SetImageHiddenResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
   ReadAppStateRequestDto,
@@ -65,6 +71,18 @@ export interface ReadonlyMediaRepository {
     request: WritePackageGradeRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageGradeResponseDto>
+  setImageHidden?(
+    request: SetImageHiddenRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetImageHiddenResponseDto>
+  deleteImageItems?(
+    request: DeleteImageItemsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<DeleteImageItemsResponseDto>
+  deleteSidebarNodes?(
+    request: DeleteSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<DeleteSidebarNodesResponseDto>
   writePackageMetadata?(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -117,6 +135,9 @@ export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
   readImageMetadataSync(request: ReadImageMetadataRequestDto): ReadImageMetadataResponseDto
   resolveMediaResourceSync(request: ResolveMediaResourceRequestDto): ResolveMediaResourceResponseDto
   writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
+  setImageHiddenSync?(request: SetImageHiddenRequestDto): SetImageHiddenResponseDto
+  deleteImageItemsSync?(request: DeleteImageItemsRequestDto): DeleteImageItemsResponseDto
+  deleteSidebarNodesSync?(request: DeleteSidebarNodesRequestDto): DeleteSidebarNodesResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto

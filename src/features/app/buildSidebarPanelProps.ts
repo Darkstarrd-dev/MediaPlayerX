@@ -26,6 +26,8 @@ interface BuildSidebarPanelPropsParams {
   vectorResultsActive: boolean
   featureSearchActive: boolean
   searchResultsReadOnly: boolean
+  manageMode: boolean
+  checkedSidebarNodeIdSet: Set<string>
   focusedRef: { packageId: string; imageIndex: number } | null
   playlistIds: string[]
   goToFromSearchMode: () => void
@@ -36,6 +38,7 @@ interface BuildSidebarPanelPropsParams {
   collapseSidebar: () => void
   applyCurrentRootFromSelection: () => void
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
+  onToggleManageNode: (nodeId: string, shiftKey: boolean) => void
 }
 
 export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
@@ -61,6 +64,8 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     imageHighlightByNode: params.vectorResultsActive,
     searchResultMode: params.searchResultsMode,
     searchResultReadonly: params.searchResultsReadOnly,
+    manageMode: params.manageMode,
+    checkedSidebarNodeIds: params.checkedSidebarNodeIdSet,
     canGoToFromSearchMode: params.vectorResultsActive
       ? Boolean(params.focusedRef)
       : params.featureSearchActive && Boolean(params.selectedSidebarNodeId),
@@ -96,5 +101,6 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
         return previous.filter((id) => id !== videoId)
       })
     },
+    onToggleManageNode: params.onToggleManageNode,
   }
 }

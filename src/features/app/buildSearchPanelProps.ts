@@ -6,6 +6,7 @@ import type { ImagePackage } from '../../types'
 interface BuildSearchPanelPropsParams {
   mode: AppSettings['mode']
   vectorMode: boolean
+  manageMode: boolean
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   vectorPanelHeight: number
@@ -44,7 +45,7 @@ interface BuildSearchPanelPropsParams {
 
 export function buildSearchPanelProps(params: BuildSearchPanelPropsParams) {
   return {
-    visible: params.mode === 'image' && params.vectorMode,
+    visible: params.mode === 'image' && params.vectorMode && !params.manageMode,
     collapsed: params.searchPanelCollapsed,
     panelHeight: params.vectorPanelHeight,
     panelRef: params.vectorPanelRef,

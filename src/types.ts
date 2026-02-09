@@ -32,6 +32,7 @@ export interface ImageItem {
   color: string
   featureVector: number[]
   mediaLocator: MediaLocator
+  hidden?: boolean
 }
 
 export interface ImagePackage {

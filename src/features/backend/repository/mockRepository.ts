@@ -6,6 +6,8 @@ import {
 } from '../../../mockData'
 import {
   clearDatabaseResponseSchema,
+  deleteImageItemsResponseSchema,
+  deleteSidebarNodesResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   pickImportPathsResponseSchema,
@@ -20,6 +22,7 @@ import {
   readPlaylistResponseSchema,
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
+  setImageHiddenResponseSchema,
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
   writeVideoMetadataResponseSchema,
@@ -32,6 +35,10 @@ import {
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
   type FeatureFilterDto,
+  type DeleteImageItemsRequestDto,
+  type DeleteImageItemsResponseDto,
+  type DeleteSidebarNodesRequestDto,
+  type DeleteSidebarNodesResponseDto,
   type ImageItemDto,
   type ImagePackageDto,
   type ImportTaskDto,
@@ -56,6 +63,8 @@ import {
   type RetryImportTaskResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
+  type SetImageHiddenRequestDto,
+  type SetImageHiddenResponseDto,
   type SidebarNodeDto,
   type VideoItemDto,
   type WritePlaylistRequestDto,
@@ -135,6 +144,7 @@ function toImageItemDto(item: ImagePackage['images'][number]): ImageItemDto {
     color: item.color,
     feature_vector: [...item.featureVector],
     media_locator: toMediaLocatorDto(item.mediaLocator),
+    hidden: item.hidden ?? false,
   }
 }
 
@@ -212,6 +222,7 @@ function toImagePackageViewModel(dto: ImagePackageDto): ImagePackage {
       color: item.color,
       featureVector: [...item.feature_vector],
       mediaLocator: toMediaLocatorViewModel(item.media_locator),
+      hidden: item.hidden ?? false,
     })),
   }
 }
@@ -354,6 +365,71 @@ function filterSources(
   }
 }
 
+function filterHiddenImagesForSource(source: ImagePackageDto, includeHidden: boolean): ImagePackageDto {
+  if (includeHidden) {
+    return source
+  }
+
+  const visibleImages = source.images.filter((image) => !(image.hidden ?? false))
+  if (visibleImages.length === source.images.length) {
+    return source
+  }
+
+  return {
+    ...source,
+    images: visibleImages,
+  }
+}
+
+function filterHiddenSources(
+  sources: ImagePackageDto[],
+  includeHidden: boolean,
+): ImagePackageDto[] {
+  if (includeHidden) {
+    return sources
+  }
+  return sources.map((source) => filterHiddenImagesForSource(source, includeHidden))
+}
+
+function parseSidebarNodePath(nodeId: string): { kind: 'folder' | 'package' | 'video'; pathKey: string } | null {
+  const delimiterIndex = nodeId.indexOf(':')
+  if (delimiterIndex <= 0) {
+    return null
+  }
+
+  const kind = nodeId.slice(0, delimiterIndex)
+  if (kind !== 'folder' && kind !== 'package' && kind !== 'video') {
+    return null
+  }
+
+  const pathKey = nodeId.slice(delimiterIndex + 1)
+  if (pathKey.length === 0) {
+    return null
+  }
+
+  return {
+    kind,
+    pathKey,
+  }
+}
+
+function normalizePathKeyForMatch(pathSegments: string[]): string {
+  return pathSegments.join('/')
+}
+
+function pathHasPrefix(pathValue: string, prefix: string): boolean {
+  if (pathValue === prefix) {
+    return true
+  }
+  return pathValue.startsWith(`${prefix}/`)
+}
+
+function renumberSourceImages(source: ImagePackageDto): void {
+  source.images.forEach((image, index) => {
+    image.ordinal = index + 1
+  })
+}
+
 async function resolveAsync<T>(value: T, options?: RepositoryRequestOptions): Promise<T> {
   throwIfAborted(options?.signal)
   await Promise.resolve()
@@ -407,15 +483,18 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
   readImageSidebarTreeSync(
     request: ReadImageSidebarTreeRequestDto,
   ): ReadImageSidebarTreeResponseDto {
+    const includeHidden = request.include_hidden ?? false
     const filtered = filterSources(request)
+    const filteredPackages = filterHiddenSources(filtered.imagePackages, includeHidden)
+    const filteredDirectories = filterHiddenSources(filtered.imageDirectories, includeHidden)
     const tree = buildImageSidebarTree(
-      filtered.imagePackages.map(toImagePackageViewModel),
-      filtered.imageDirectories.map(toImagePackageViewModel),
+      filteredPackages.map(toImagePackageViewModel),
+      filteredDirectories.map(toImagePackageViewModel),
     ).map(toSidebarNodeDto)
 
     return readImageSidebarTreeResponseSchema.parse({
-      image_packages: filtered.imagePackages,
-      image_directories: filtered.imageDirectories,
+      image_packages: filteredPackages,
+      image_directories: filteredDirectories,
       tree,
     })
   }
@@ -432,6 +511,7 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
   readImagePageSync(
     request: ReadImagePageRequestDto,
   ): ReadImagePageResponseDto {
+    const includeHidden = request.include_hidden ?? false
     const filtered = filterSources({
       feature_filter: request.feature_filter,
       grade_overrides: request.grade_overrides,
@@ -451,14 +531,15 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
       })
     }
 
-    const totalItems = selectedSource.images.length
+    const selectedSourceVisible = filterHiddenImagesForSource(selectedSource, includeHidden)
+    const totalItems = selectedSourceVisible.images.length
     const pageSize = request.show_names_only ? Math.max(1, totalItems) : request.page_size
     const maxPageIndex = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
     const pageIndex = request.show_names_only ? 0 : Math.min(request.page_index, maxPageIndex)
     const pageStart = pageIndex * pageSize
     const pageEnd = pageStart + pageSize
 
-    const refs = selectedSource.images
+    const refs = selectedSourceVisible.images
       .slice(pageStart, pageEnd)
       .map((_: ImageItemDto, index: number) => ({
         package_id: selectedSource.id,
@@ -486,16 +567,18 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
   readImageMetadataSync(
     request: ReadImageMetadataRequestDto,
   ): ReadImageMetadataResponseDto {
+    const includeHidden = request.include_hidden ?? false
     const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
     const source = allSources.find((item) => item.id === request.package_id)
-    const image = source?.images[request.image_index]
+    const visibleSource = source ? filterHiddenImagesForSource(source, includeHidden) : null
+    const image = visibleSource?.images[request.image_index]
 
     return readImageMetadataResponseSchema.parse(
-      source && image
+      visibleSource && image
         ? {
-            package: source,
+            package: visibleSource,
             image,
-            grade: source.mock_grade,
+            grade: visibleSource.mock_grade,
           }
         : null,
     )
@@ -559,6 +642,186 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageGradeResponseDto> {
     const response = this.writePackageGradeSync(request)
+    return resolveAsync(response, options)
+  }
+
+  setImageHiddenSync(
+    request: SetImageHiddenRequestDto,
+  ): SetImageHiddenResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const targetImageIds = new Set(request.image_ids)
+    const touchedImageIds = new Set<string>()
+
+    for (const source of allSources) {
+      for (const image of source.images) {
+        if (!targetImageIds.has(image.id)) {
+          continue
+        }
+        image.hidden = request.hidden
+        touchedImageIds.add(image.id)
+      }
+    }
+
+    return setImageHiddenResponseSchema.parse({
+      updated_count: touchedImageIds.size,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async setImageHidden(
+    request: SetImageHiddenRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetImageHiddenResponseDto> {
+    const response = this.setImageHiddenSync(request)
+    return resolveAsync(response, options)
+  }
+
+  deleteImageItemsSync(
+    request: DeleteImageItemsRequestDto,
+  ): DeleteImageItemsResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const targetImageIds = new Set(request.image_ids)
+    const deletedImageIds = new Set<string>()
+
+    for (const source of allSources) {
+      const nextImages = source.images.filter((image) => {
+        if (!targetImageIds.has(image.id)) {
+          return true
+        }
+        deletedImageIds.add(image.id)
+        return false
+      })
+
+      if (nextImages.length !== source.images.length) {
+        source.images = nextImages
+        renumberSourceImages(source)
+      }
+    }
+
+    const failed = request.image_ids
+      .filter((imageId) => !deletedImageIds.has(imageId))
+      .map((imageId) => ({
+        image_id: imageId,
+        reason: 'image not found',
+      }))
+
+    return deleteImageItemsResponseSchema.parse({
+      deleted_count: deletedImageIds.size,
+      failed,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async deleteImageItems(
+    request: DeleteImageItemsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<DeleteImageItemsResponseDto> {
+    const response = this.deleteImageItemsSync(request)
+    return resolveAsync(response, options)
+  }
+
+  deleteSidebarNodesSync(
+    request: DeleteSidebarNodesRequestDto,
+  ): DeleteSidebarNodesResponseDto {
+    const parsedTargets = request.node_ids.map((nodeId) => {
+      const parsed = parseSidebarNodePath(nodeId)
+      return {
+        nodeId,
+        parsed,
+        matched: false,
+      }
+    })
+
+    const failed: Array<{ node_id: string; reason: string }> = []
+    const validTargets = parsedTargets.filter((target) => {
+      if (target.parsed) {
+        return true
+      }
+      failed.push({
+        node_id: target.nodeId,
+        reason: 'invalid node id',
+      })
+      return false
+    })
+
+    const matchesTarget = (pathKey: string, kind: 'package' | 'directory' | 'video') => {
+      for (const target of validTargets) {
+        const parsed = target.parsed
+        if (!parsed) {
+          continue
+        }
+
+        if (parsed.kind === 'folder') {
+          if (pathHasPrefix(pathKey, parsed.pathKey)) {
+            target.matched = true
+            return true
+          }
+          continue
+        }
+
+        if (parsed.kind === 'package' && kind === 'package' && pathKey === parsed.pathKey) {
+          target.matched = true
+          return true
+        }
+
+        if (parsed.kind === 'video' && kind === 'video' && pathKey === parsed.pathKey) {
+          target.matched = true
+          return true
+        }
+      }
+
+      return false
+    }
+
+    const prevPackageCount = MOCK_LIBRARY_SNAPSHOT.image_packages.length
+    const prevDirectoryCount = MOCK_LIBRARY_SNAPSHOT.image_directories.length
+    const prevVideoCount = MOCK_LIBRARY_SNAPSHOT.videos.length
+
+    MOCK_LIBRARY_SNAPSHOT.image_packages = MOCK_LIBRARY_SNAPSHOT.image_packages.filter((source) => {
+      const pathKey = normalizePathKeyForMatch(source.tree_path)
+      return !matchesTarget(pathKey, 'package')
+    })
+
+    MOCK_LIBRARY_SNAPSHOT.image_directories = MOCK_LIBRARY_SNAPSHOT.image_directories.filter((source) => {
+      const pathKey = normalizePathKeyForMatch(source.tree_path)
+      return !matchesTarget(pathKey, 'directory')
+    })
+
+    MOCK_LIBRARY_SNAPSHOT.videos = MOCK_LIBRARY_SNAPSHOT.videos.filter((video) => {
+      const pathKey = normalizePathKeyForMatch(video.tree_path)
+      return !matchesTarget(pathKey, 'video')
+    })
+
+    const remainingVideoIds = new Set(MOCK_LIBRARY_SNAPSHOT.videos.map((video) => video.id))
+    this.playlistIds = this.playlistIds.filter((videoId) => remainingVideoIds.has(videoId))
+
+    for (const target of validTargets) {
+      if (target.matched) {
+        continue
+      }
+      failed.push({
+        node_id: target.nodeId,
+        reason: 'node not found',
+      })
+    }
+
+    const deletedCount =
+      (prevPackageCount - MOCK_LIBRARY_SNAPSHOT.image_packages.length) +
+      (prevDirectoryCount - MOCK_LIBRARY_SNAPSHOT.image_directories.length) +
+      (prevVideoCount - MOCK_LIBRARY_SNAPSHOT.videos.length)
+
+    return deleteSidebarNodesResponseSchema.parse({
+      deleted_count: Math.max(0, deletedCount),
+      failed,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async deleteSidebarNodes(
+    request: DeleteSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<DeleteSidebarNodesResponseDto> {
+    const response = this.deleteSidebarNodesSync(request)
     return resolveAsync(response, options)
   }
 

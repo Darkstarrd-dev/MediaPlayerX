@@ -35,6 +35,7 @@ function createDirectoryImageItem(
     color: colorPalette[cluster] ?? '#4f86cf',
     feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
     media_locator: mediaLocator,
+    hidden: false,
   }
 }
 
@@ -66,6 +67,7 @@ function createArchiveImageItem(
     color: colorPalette[cluster] ?? '#4f86cf',
     feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
     media_locator: mediaLocator,
+    hidden: false,
   }
 }
 

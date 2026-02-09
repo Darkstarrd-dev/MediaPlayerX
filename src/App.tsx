@@ -11,6 +11,7 @@ import './App.css'
 import AppHeader from './components/AppHeader'
 import AppTopBanners from './components/AppTopBanners'
 import AppWorkspace from './components/AppWorkspace'
+import DangerConfirmDialog from './components/DangerConfirmDialog'
 import DragImportOverlay from './components/DragImportOverlay'
 import E2eBenchSection from './components/E2eBenchSection'
 import FullscreenLayer from './components/FullscreenLayer'
@@ -36,6 +37,7 @@ import { buildFullscreenLayerProps } from './features/app/buildFullscreenLayerPr
 import { buildImageMainSectionProps } from './features/app/buildImageMainSectionProps'
 import { buildImportTaskPanelProps } from './features/app/buildImportTaskPanelProps'
 import { buildMainFooter } from './features/app/buildMainFooter'
+import { buildManagementPanelProps } from './features/app/buildManagementPanelProps'
 import { buildMetadataPanelProps } from './features/app/buildMetadataPanelProps'
 import { buildSearchPanelProps } from './features/app/buildSearchPanelProps'
 import { buildSidebarPanelProps } from './features/app/buildSidebarPanelProps'
@@ -64,6 +66,7 @@ import { computeThumbnailGridLayout } from './features/layout/thumbnailLayout'
 import { useMediaState } from './features/media/useMediaState'
 import { usePlaylistPersistence } from './features/media/usePlaylistPersistence'
 import { useFeatureSearch } from './features/search/useFeatureSearch'
+import { useManageSelection } from './features/management/useManageSelection'
 import { useSidebarNavigation } from './features/sidebar/useSidebarNavigation'
 import { useShortcutEngine } from './features/shortcuts/useShortcutEngine'
 import {
@@ -233,6 +236,9 @@ function App() {
   const [gradeByPackage, setGradeByPackage] = useState<Record<string, number | null>>(() =>
     Object.fromEntries(imageSources.map((source) => [source.id, source.mockGrade ?? null])),
   )
+  const [manageMode, setManageMode] = useState(false)
+  const [manageOperationHint, setManageOperationHint] = useState<string | null>(null)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [importMenuOpen, setImportMenuOpen] = useState(false)
   const [vectorUniverseOpen, setVectorUniverseOpen] = useState(false)
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
@@ -494,6 +500,7 @@ function App() {
   const backendRead = useReadOnlyDataAccess({
     repository: mediaRepository,
     mode,
+    includeHidden: manageMode && mode === 'image',
     selectedSourceId: selectedPackageId || null,
     pageIndex: showNamesOnly ? 0 : vectorResultsActive ? vectorPage : (pageByPackage[selectedPackageId] ?? 0),
     pageSize: Math.max(1, backendPageSize),
@@ -522,6 +529,15 @@ function App() {
     () => new Map(scopedImageSourcesEffective.map((source) => [source.id, source])),
     [scopedImageSourcesEffective],
   )
+  const validImageIdSet = useMemo(() => {
+    const next = new Set<string>()
+    for (const source of scopedImageSourcesEffective) {
+      for (const image of source.images) {
+        next.add(image.id)
+      }
+    }
+    return next
+  }, [scopedImageSourcesEffective])
   const videoByIdEffective = useMemo(() => new Map(videosEffective.map((video) => [video.id, video])), [videosEffective])
   const sidebarTreeSnapshot = sidebarSnapshot?.tree ?? null
 
@@ -694,6 +710,47 @@ function App() {
     },
   })
 
+  const sidebarDescendantNodeIdsById = useMemo(() => {
+    const next = new Map<string, string[]>()
+    const collectDescendantIds = (node: (typeof flatSidebarNodes)[number]): string[] => {
+      const descendants: string[] = []
+      const walk = (children: typeof node.children) => {
+        for (const child of children) {
+          descendants.push(child.id)
+          if (child.children.length > 0) {
+            walk(child.children)
+          }
+        }
+      }
+
+      if (node.children.length > 0) {
+        walk(node.children)
+      }
+      return descendants
+    }
+
+    for (const node of flatSidebarNodes) {
+      next.set(node.id, collectDescendantIds(node))
+    }
+    return next
+  }, [flatSidebarNodes])
+
+  const {
+    sidebarCheckedNodeIds,
+    sidebarCheckedNodeIdSet,
+    imageCheckedIds,
+    imageCheckedIdSet,
+    activeSelectionScope,
+    clearAllSelections,
+    toggleSidebarNodeChecked,
+    toggleImageChecked,
+    replaceImageCheckedIds,
+  } = useManageSelection({
+    flatSidebarNodeIds: flatSidebarNodes.map((node) => node.id),
+    validImageIdSet,
+    sidebarDescendantNodeIdsById,
+  })
+
   const sidebarOrderedImageSourceIds = useMemo(() => {
     const orderedIds: string[] = []
     const seen = new Set<string>()
@@ -836,6 +893,89 @@ function App() {
     setVideoCoverById,
     setVideoCoverImageById,
   })
+
+  const toggleManageMode = useCallback(() => {
+    const nextOpen = !manageMode
+    setManageMode(nextOpen)
+    setDeleteConfirmOpen(false)
+    setManageOperationHint(null)
+    clearAllSelections()
+
+    if (nextOpen) {
+      setVectorSearchResults([])
+      setVectorFocusIndex(0)
+      setVectorPage(0)
+      setSearchPanelMode('vector')
+      setSearchPanelCollapsed(false)
+      updateSettings({ vectorMode: false, sidebarFocus: 'main' })
+    }
+  }, [
+    clearAllSelections,
+    manageMode,
+    setSearchPanelCollapsed,
+    setSearchPanelMode,
+    updateSettings,
+  ])
+
+  const runManageHideAction = useCallback(
+    async (hidden: boolean) => {
+      if (mode !== 'image') {
+        setManageOperationHint('当前模式不支持隐藏/取消隐藏')
+        return
+      }
+      if (imageCheckedIds.length === 0) {
+        setManageOperationHint('请先在缩略图/文件名区域选择图片')
+        return
+      }
+
+      try {
+        const response = await backendWrite.setImageHidden(imageCheckedIds, hidden)
+        setManageOperationHint(
+          `${hidden ? '隐藏' : '取消隐藏'}完成：${response.updated_count} 项`,
+        )
+      } catch (error) {
+        setManageOperationHint(error instanceof Error ? error.message : String(error))
+      }
+    },
+    [backendWrite, imageCheckedIds, mode],
+  )
+
+  const requestManageDelete = useCallback(() => {
+    if (sidebarCheckedNodeIds.length === 0 && imageCheckedIds.length === 0) {
+      setManageOperationHint('请先选择需要删除的节点或图片')
+      return
+    }
+
+    setDeleteConfirmOpen(true)
+  }, [imageCheckedIds.length, sidebarCheckedNodeIds.length])
+
+  const confirmManageDelete = useCallback(async () => {
+    setDeleteConfirmOpen(false)
+    setManageOperationHint(null)
+
+    try {
+      if (sidebarCheckedNodeIds.length > 0) {
+        const response = await backendWrite.deleteSidebarNodes(sidebarCheckedNodeIds)
+        const failedCount = response.failed.length
+        setManageOperationHint(
+          failedCount > 0
+            ? `已删除 ${response.deleted_count} 项，失败 ${failedCount} 项`
+            : `已删除 ${response.deleted_count} 项`,
+        )
+      } else if (imageCheckedIds.length > 0) {
+        const response = await backendWrite.deleteImageItems(imageCheckedIds)
+        const failedCount = response.failed.length
+        setManageOperationHint(
+          failedCount > 0
+            ? `已删除 ${response.deleted_count} 张，失败 ${failedCount} 项`
+            : `已删除 ${response.deleted_count} 张`,
+        )
+      }
+      clearAllSelections()
+    } catch (error) {
+      setManageOperationHint(error instanceof Error ? error.message : String(error))
+    }
+  }, [backendWrite, clearAllSelections, imageCheckedIds, sidebarCheckedNodeIds])
 
   const runtimeCapabilities = useRuntimeCapabilities({
     repository: mediaRepository,
@@ -1453,6 +1593,8 @@ function App() {
     vectorResultsActive,
     featureSearchActive,
     searchResultsReadOnly,
+    manageMode,
+    checkedSidebarNodeIdSet: sidebarCheckedNodeIdSet,
     focusedRef,
     playlistIds,
     goToFromSearchMode,
@@ -1463,11 +1605,13 @@ function App() {
     collapseSidebar,
     applyCurrentRootFromSelection,
     setPlaylistIds,
+    onToggleManageNode: toggleSidebarNodeChecked,
   })
 
   const searchPanelProps = buildSearchPanelProps({
     mode,
     vectorMode,
+    manageMode,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
     vectorPanelHeight,
@@ -1504,6 +1648,42 @@ function App() {
     layoutLocked,
   })
 
+  const backendErrorRows = buildBackendErrorRows({
+    backendRead,
+    backendWrite,
+    playlistPersistence,
+    runtimeCapabilities,
+  })
+
+  const managementErrorRows = manageMode ? backendErrorRows.filter((row) => row.key === 'manage-write') : []
+  const bannerBackendErrorRows = backendErrorRows.filter((row) => row.key !== 'manage-write')
+
+  const managementPanelProps = buildManagementPanelProps({
+    mode,
+    manageMode,
+    searchPanelCollapsed,
+    setSearchPanelCollapsed,
+    vectorPanelHeight,
+    vectorPanelRef,
+    vectorPanelContentRef,
+    sidebarSelectedCount: sidebarCheckedNodeIds.length,
+    imageSelectedCount: imageCheckedIds.length,
+    activeSelectionScope,
+    pending: backendWrite.pending.manage,
+    operationHint: manageOperationHint,
+    errorRows: managementErrorRows,
+    onDelete: requestManageDelete,
+    onHide: () => {
+      void runManageHideAction(true)
+    },
+    onUnhide: () => {
+      void runManageHideAction(false)
+    },
+    onClearSelection: clearAllSelections,
+    onStartVectorPanelResize,
+    layoutLocked,
+  })
+
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
 
   const imageMainSectionProps = buildImageMainSectionProps({
@@ -1528,10 +1708,14 @@ function App() {
     packageByIdEffective,
     thumbnailImageUrlById,
     gridRef,
+    manageMode,
+    checkedImageIdSet: imageCheckedIdSet,
     updateSettings,
     setFullscreenActiveWithAutoStop,
     setVectorFocusIndex,
     setImageFocus,
+    onToggleImageChecked: toggleImageChecked,
+    onReplaceCheckedImages: replaceImageCheckedIds,
     goPrevPage,
     goNextPage,
   })
@@ -1594,13 +1778,6 @@ function App() {
     focusedImage,
     focusedImagePackage,
     focusedVideo: focusedVideoEffective,
-  })
-
-  const backendErrorRows = buildBackendErrorRows({
-    backendRead,
-    backendWrite,
-    playlistPersistence,
-    runtimeCapabilities,
   })
 
   const runtimeCapabilityWarnings = (runtimeCapabilities.data?.minimum_matrix ?? []).filter(
@@ -1728,6 +1905,7 @@ function App() {
     headerHeight,
     mode,
     vectorMode,
+    manageMode,
     vectorUniverseOpen,
     displayThumbnailScaleLevel,
     canThumbnailScaleDown,
@@ -1748,6 +1926,7 @@ function App() {
     setSearchPanelMode,
     setSearchPanelCollapsed,
     setVectorUniverseOpen,
+    onToggleManageMode: toggleManageMode,
   })
 
   const importTaskPanelProps = buildImportTaskPanelProps({
@@ -1778,7 +1957,7 @@ function App() {
       />
 
       <AppTopBanners
-        backendErrorRows={backendErrorRows}
+        backendErrorRows={bannerBackendErrorRows}
         repositoryMode={repositoryMode}
         runtimeWarningVisible={runtimeWarningDismiss.visible}
         runtimeCapabilityWarnings={runtimeCapabilityWarnings}
@@ -1803,6 +1982,7 @@ function App() {
         onStartMetadataResize={onStartMetadataResize}
         sidebarPanelProps={sidebarPanelProps}
         searchPanelProps={searchPanelProps}
+        managementPanelProps={managementPanelProps}
         imageMainSectionProps={imageMainSectionProps}
         videoMainSectionProps={videoMainSectionProps}
         metadataPanelProps={metadataPanelProps}
@@ -1825,6 +2005,20 @@ function App() {
       />
 
       <SettingsPanel {...settingsPanelProps} />
+
+      <DangerConfirmDialog
+        open={deleteConfirmOpen}
+        title="永久删除确认"
+        description="该操作将永久删除当前选中的文件/目录/压缩包条目，并同步移除数据库记录与缩略图缓存，且会删除源文件本身。"
+        acknowledgeLabel="我了解此操作将永久不可逆地删除选中数据"
+        confirmLabel="确定删除"
+        cancelLabel="取消"
+        pending={backendWrite.pending.manage}
+        onConfirm={() => {
+          void confirmManageDelete()
+        }}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
 
       <DragImportOverlay active={dragOverlayActive} />
 

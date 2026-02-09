@@ -22,6 +22,12 @@ import {
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceRequestSchema,
   resolveMediaResourceResponseSchema,
+  setImageHiddenRequestSchema,
+  setImageHiddenResponseSchema,
+  deleteImageItemsRequestSchema,
+  deleteImageItemsResponseSchema,
+  deleteSidebarNodesRequestSchema,
+  deleteSidebarNodesResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -154,6 +160,24 @@ export function registerBackendIpcHandlers(): void {
     const request = writePackageGradeRequestSchema.parse(payload)
     const response = await ensureService().writePackageGrade(request)
     return writePackageGradeResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.setImageHidden, async (_event, payload: unknown) => {
+    const request = setImageHiddenRequestSchema.parse(payload)
+    const response = await ensureService().setImageHidden(request)
+    return setImageHiddenResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.deleteImageItems, async (_event, payload: unknown) => {
+    const request = deleteImageItemsRequestSchema.parse(payload)
+    const response = await ensureService().deleteImageItems(request)
+    return deleteImageItemsResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.deleteSidebarNodes, async (_event, payload: unknown) => {
+    const request = deleteSidebarNodesRequestSchema.parse(payload)
+    const response = await ensureService().deleteSidebarNodes(request)
+    return deleteSidebarNodesResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writePackageMetadata, async (_event, payload: unknown) => {

@@ -78,6 +78,7 @@ export function mapImageItemDto(item: ImageItemDto): ImageItem {
     color: item.color,
     featureVector: [...item.feature_vector],
     mediaLocator: mapMediaLocatorDto(item.media_locator),
+    hidden: item.hidden ?? false,
   }
 }
 

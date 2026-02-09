@@ -811,6 +811,15 @@ select option {
   min-height: 34px;
 }
 
+.sidebar-row.is-manage {
+  grid-template-columns: 18px 10px minmax(0, 1fr) auto;
+}
+
+.sidebar-manage-checker {
+  margin: 0;
+  justify-self: start;
+}
+
 .sidebar-bullet {
   width: 8px;
   height: 8px;
@@ -936,6 +945,51 @@ select option {
   flex-direction: column;
   gap: 10px;
   overflow: hidden;
+}
+
+.manage-panel {
+  background: var(--mpx-bg-muted);
+}
+
+.manage-panel-actions {
+  gap: 10px;
+}
+
+.manage-panel-hint {
+  margin: 0;
+  color: var(--mpx-status-busy-text);
+  font-size: 12px;
+}
+
+.manage-error-list {
+  display: grid;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--mpx-danger-border) 70%, transparent);
+  background: color-mix(in srgb, var(--mpx-danger-bg) 80%, transparent);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.manage-error-list > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.manage-error-list > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.manage-error-list > ul > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .vector-panel-content {
@@ -1259,6 +1313,44 @@ select option {
   cursor: pointer;
   text-align: left;
   transition: transform 0.15s ease;
+}
+
+.thumb-card.is-manage {
+  position: relative;
+  padding-top: 26px;
+  cursor: default;
+}
+
+.thumb-card.is-manage.is-hidden {
+  opacity: 0.64;
+}
+
+.thumb-card-main {
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+.manage-image-checker {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  margin: 0;
+}
+
+.manage-hidden-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+  background: var(--mpx-status-warning-bg);
+  color: var(--mpx-status-warning-text);
 }
 
 .thumb-card.is-skeleton {
@@ -1664,6 +1756,42 @@ select option {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.name-list.is-manage .name-list-header,
+.name-list.is-manage .name-list-row {
+  grid-template-columns: 24px minmax(0, 1fr) 120px 140px;
+}
+
+.name-list-row.is-manage {
+  padding: 0 12px;
+}
+
+.name-list-row.is-manage.is-hidden {
+  opacity: 0.64;
+}
+
+.name-list-row-main {
+  border: 0;
+  padding: 9px 0;
+  margin: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 140px;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.manage-selection-marquee {
+  position: fixed;
+  border: 1px solid var(--mpx-accent);
+  background: color-mix(in srgb, var(--mpx-accent) 14%, transparent);
+  pointer-events: none;
+  z-index: 6;
+  border-radius: 6px;
 }
 
 .meta-tabs {
@@ -2648,6 +2776,22 @@ select option {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.manage-confirm-dialog {
+  width: min(640px, 94%);
+}
+
+.manage-confirm-description {
+  margin: 0;
+  color: var(--mpx-text-1);
+  line-height: 1.5;
+}
+
+.manage-confirm-ack {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .settings-floating-panel h3 {

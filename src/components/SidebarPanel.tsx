@@ -25,6 +25,8 @@ interface SidebarPanelProps {
   searchResultMode?: boolean
   searchResultReadonly?: boolean
   canGoToFromSearchMode?: boolean
+  manageMode?: boolean
+  checkedSidebarNodeIds?: ReadonlySet<string>
   playlistIds: string[]
   onSelectNode: (nodeId: string) => void
   onSelectPackage: (packageId: string) => void
@@ -34,6 +36,7 @@ interface SidebarPanelProps {
   onGoToFromSearchMode: () => void
   onResetRoot: () => void
   onToggleVideoPlaylist: (videoId: string, checked: boolean) => void
+  onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void
 }
 
 function SidebarPanel({
@@ -59,6 +62,8 @@ function SidebarPanel({
   searchResultMode = false,
   searchResultReadonly = false,
   canGoToFromSearchMode = false,
+  manageMode = false,
+  checkedSidebarNodeIds,
   playlistIds,
   onSelectNode,
   onSelectPackage,
@@ -68,7 +73,9 @@ function SidebarPanel({
   onGoToFromSearchMode,
   onResetRoot,
   onToggleVideoPlaylist,
+  onToggleManageNode,
 }: SidebarPanelProps) {
+  const checkedNodes = checkedSidebarNodeIds ?? new Set<string>()
   const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : Boolean(videoRootNodeId)
   const showRootToggle = !(mode === 'image' && searchResultMode)
   const rootToggleLabel = rootSet ? '恢复根目录' : '设为根'
@@ -88,9 +95,21 @@ function SidebarPanel({
         <div
           key={node.id}
           data-sidebar-node-id={node.id}
-          className={`sidebar-row ${isActivePackage || isActiveVideo ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
+          className={`sidebar-row ${manageMode ? 'is-manage' : ''} ${isActivePackage || isActiveVideo ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
           style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
         >
+          {manageMode ? (
+            <input
+              className="sidebar-manage-checker"
+              aria-label={`manage-node-${node.id}`}
+              checked={checkedNodes.has(node.id)}
+              type="checkbox"
+              onChange={(event) => {
+                onToggleManageNode?.(node.id, (event.nativeEvent as MouseEvent).shiftKey)
+              }}
+            />
+          ) : null}
+
           <span className={`sidebar-bullet ${loadState ? `is-${loadState}` : ''}`} aria-hidden="true" />
 
           <button

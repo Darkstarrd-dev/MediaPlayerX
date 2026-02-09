@@ -25,10 +25,14 @@ interface BuildImageMainSectionPropsParams {
   packageByIdEffective: Map<string, ImagePackage>
   thumbnailImageUrlById: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
+  manageMode: boolean
+  checkedImageIdSet: Set<string>
   updateSettings: (patch: Partial<AppSettings>) => void
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   setVectorFocusIndex: (value: number) => void
   setImageFocus: (packageId: string, imageIndex: number) => void
+  onToggleImageChecked: (imageId: string, checked?: boolean) => void
+  onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   goPrevPage: () => void
   goNextPage: () => void
 }
@@ -56,6 +60,10 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     packageById: params.packageByIdEffective,
     imageUrlById: params.thumbnailImageUrlById,
     gridRef: params.gridRef,
+    manageMode: params.manageMode,
+    checkedImageIds: params.checkedImageIdSet,
+    onToggleImageChecked: params.onToggleImageChecked,
+    onReplaceCheckedImages: params.onReplaceCheckedImages,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
     onEnterFullscreen: () => params.setFullscreenActiveWithAutoStop(true),
     onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => {

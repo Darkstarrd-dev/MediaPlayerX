@@ -18,6 +18,11 @@ function createCrc32Table(): Uint32Array {
 
 const CRC32_TABLE = createCrc32Table()
 
+export interface StoredZipEntryInput {
+  entryName: string
+  content: Buffer
+}
+
 function crc32(buffer: Buffer): number {
   let crc = 0xffffffff
   for (let index = 0; index < buffer.length; index += 1) {
@@ -60,18 +65,31 @@ export async function collectFilesRecursive(rootDir: string): Promise<Array<{ ab
 }
 
 export async function writeStoredZipFromDirectory(inputDir: string, outputZipPath: string): Promise<void> {
-  const entries = await collectFilesRecursive(inputDir)
+  const files = await collectFilesRecursive(inputDir)
+  const entries: StoredZipEntryInput[] = []
+  for (const file of files) {
+    entries.push({
+      entryName: file.relativePath,
+      content: await fs.readFile(file.absolutePath),
+    })
+  }
+
+  await writeStoredZipFromEntries(outputZipPath, entries)
+}
+
+function buildStoredZipBuffer(entries: StoredZipEntryInput[]): Buffer {
   const localChunks: Buffer[] = []
   const centralChunks: Buffer[] = []
   let cursor = 0
+  let writtenCount = 0
 
   for (const entry of entries) {
-    const content = await fs.readFile(entry.absolutePath)
-    const normalizedName = normalizeArchiveEntryName(entry.relativePath)
+    const normalizedName = normalizeArchiveEntryName(entry.entryName)
     if (!normalizedName) {
       continue
     }
 
+    const content = entry.content
     const nameBuffer = Buffer.from(normalizedName, 'utf8')
     const crc = crc32(content)
 
@@ -110,6 +128,7 @@ export async function writeStoredZipFromDirectory(inputDir: string, outputZipPat
 
     centralChunks.push(centralHeader, nameBuffer)
     cursor += localHeader.length + nameBuffer.length + content.length
+    writtenCount += 1
   }
 
   const centralDirectoryBuffer = Buffer.concat(centralChunks)
@@ -117,12 +136,17 @@ export async function writeStoredZipFromDirectory(inputDir: string, outputZipPat
   endOfCentralDirectory.writeUInt32LE(0x06054b50, 0)
   endOfCentralDirectory.writeUInt16LE(0, 4)
   endOfCentralDirectory.writeUInt16LE(0, 6)
-  endOfCentralDirectory.writeUInt16LE(entries.length, 8)
-  endOfCentralDirectory.writeUInt16LE(entries.length, 10)
+  endOfCentralDirectory.writeUInt16LE(writtenCount, 8)
+  endOfCentralDirectory.writeUInt16LE(writtenCount, 10)
   endOfCentralDirectory.writeUInt32LE(centralDirectoryBuffer.length, 12)
   endOfCentralDirectory.writeUInt32LE(cursor, 16)
   endOfCentralDirectory.writeUInt16LE(0, 20)
 
+  return Buffer.concat([...localChunks, centralDirectoryBuffer, endOfCentralDirectory])
+}
+
+export async function writeStoredZipFromEntries(outputZipPath: string, entries: StoredZipEntryInput[]): Promise<void> {
+  const zipBuffer = buildStoredZipBuffer(entries)
   await fs.mkdir(path.dirname(outputZipPath), { recursive: true })
-  await fs.writeFile(outputZipPath, Buffer.concat([...localChunks, centralDirectoryBuffer, endOfCentralDirectory]))
+  await fs.writeFile(outputZipPath, zipBuffer)
 }

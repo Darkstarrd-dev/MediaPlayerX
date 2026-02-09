@@ -5,6 +5,7 @@ import type { BrowserMode } from '../types'
 import { benchOnReactRender } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
 import ImageMainSection from './ImageMainSection'
+import ManagementPanel from './ManagementPanel'
 import MetadataPanel from './MetadataPanel'
 import SearchPanel from './SearchPanel'
 import SidebarPanel from './SidebarPanel'
@@ -27,6 +28,7 @@ interface AppWorkspaceProps {
   onStartMetadataResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   sidebarPanelProps: ComponentProps<typeof SidebarPanel>
   searchPanelProps: ComponentProps<typeof SearchPanel>
+  managementPanelProps: ComponentProps<typeof ManagementPanel>
   imageMainSectionProps: ComponentProps<typeof ImageMainSection>
   videoMainSectionProps: ComponentProps<typeof VideoMainSection>
   metadataPanelProps: ComponentProps<typeof MetadataPanel>
@@ -50,6 +52,7 @@ function AppWorkspace({
   onStartMetadataResize,
   sidebarPanelProps,
   searchPanelProps,
+  managementPanelProps,
   imageMainSectionProps,
   videoMainSectionProps,
   metadataPanelProps,
@@ -72,6 +75,14 @@ function AppWorkspace({
     </Profiler>
   ) : (
     <SearchPanel {...searchPanelProps} />
+  )
+
+  const managementPanel = enableProfiler ? (
+    <Profiler id="ManagementPanel" onRender={benchOnReactRender}>
+      <ManagementPanel {...managementPanelProps} />
+    </Profiler>
+  ) : (
+    <ManagementPanel {...managementPanelProps} />
   )
 
   const mainSection = mode === 'image' ? (
@@ -126,6 +137,7 @@ function AppWorkspace({
         style={{ width: sidebarCollapsed ? '100%' : `calc(${(1 - sidebarRatio) * 100}% - 8px)` }}
       >
         {searchPanel}
+        {managementPanel}
 
         <div className="workspace-body" ref={workspaceBodyRef}>
           <main className="main-pane" style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - 8px)` }}>

@@ -1,8 +1,11 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react'
 
 import type {
+  DeleteImageItemsResponseDto,
+  DeleteSidebarNodesResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
+  SetImageHiddenResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
   WritePackageMetadataRequestDto,
@@ -49,16 +52,22 @@ interface UseWriteDataAccessResult {
     grade: boolean
     metadata: boolean
     cover: boolean
+    manage: boolean
   }
   errors: {
     grade: string | null
     metadata: string | null
     cover: string | null
+    manage: string | null
   }
   clearGradeError: () => void
   clearMetadataError: () => void
   clearCoverError: () => void
+  clearManageError: () => void
   writePackageGrade: (packageId: string, grade: number | null) => Promise<void>
+  setImageHidden: (imageIds: string[], hidden: boolean) => Promise<SetImageHiddenResponseDto>
+  deleteImageItems: (imageIds: string[]) => Promise<DeleteImageItemsResponseDto>
+  deleteSidebarNodes: (nodeIds: string[]) => Promise<DeleteSidebarNodesResponseDto>
   writePackageMetadata: (
     packageId: string,
     payload: {
@@ -94,9 +103,11 @@ export function useWriteDataAccess({
   const [gradePending, setGradePending] = useState(false)
   const [metadataPending, setMetadataPending] = useState(false)
   const [coverPending, setCoverPending] = useState(false)
+  const [managePending, setManagePending] = useState(false)
   const [gradeError, setGradeError] = useState<string | null>(null)
   const [metadataError, setMetadataError] = useState<string | null>(null)
   const [coverError, setCoverError] = useState<string | null>(null)
+  const [manageError, setManageError] = useState<string | null>(null)
 
   const writePackageGrade = useCallback(
     async (packageId: string, grade: number | null) => {
@@ -300,21 +311,133 @@ export function useWriteDataAccess({
     [isSynchronousTestMode, repository],
   )
 
+  const setImageHidden = useCallback(
+    async (imageIds: string[], hidden: boolean): Promise<SetImageHiddenResponseDto> => {
+      if (!repository.setImageHidden) {
+        throw new Error('当前后端不支持隐藏管理操作')
+      }
+
+      const normalizedIds = Array.from(new Set(imageIds.map((id) => id.trim()).filter(Boolean)))
+      if (normalizedIds.length === 0) {
+        throw new Error('请选择需要隐藏/取消隐藏的图片')
+      }
+
+      setManagePending(true)
+      setManageError(null)
+
+      try {
+        const response = await repository.setImageHidden(
+          {
+            image_ids: normalizedIds,
+            hidden,
+          },
+          {
+            timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+          },
+        )
+        return response
+      } catch (error: unknown) {
+        const message = toErrorMessage(error)
+        setManageError(message)
+        throw new Error(message)
+      } finally {
+        setManagePending(false)
+      }
+    },
+    [repository],
+  )
+
+  const deleteImageItems = useCallback(
+    async (imageIds: string[]): Promise<DeleteImageItemsResponseDto> => {
+      if (!repository.deleteImageItems) {
+        throw new Error('当前后端不支持删除图片操作')
+      }
+
+      const normalizedIds = Array.from(new Set(imageIds.map((id) => id.trim()).filter(Boolean)))
+      if (normalizedIds.length === 0) {
+        throw new Error('请选择需要删除的图片')
+      }
+
+      setManagePending(true)
+      setManageError(null)
+
+      try {
+        const response = await repository.deleteImageItems(
+          {
+            image_ids: normalizedIds,
+          },
+          {
+            timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+          },
+        )
+        return response
+      } catch (error: unknown) {
+        const message = toErrorMessage(error)
+        setManageError(message)
+        throw new Error(message)
+      } finally {
+        setManagePending(false)
+      }
+    },
+    [repository],
+  )
+
+  const deleteSidebarNodes = useCallback(
+    async (nodeIds: string[]): Promise<DeleteSidebarNodesResponseDto> => {
+      if (!repository.deleteSidebarNodes) {
+        throw new Error('当前后端不支持删除目录操作')
+      }
+
+      const normalizedIds = Array.from(new Set(nodeIds.map((id) => id.trim()).filter(Boolean)))
+      if (normalizedIds.length === 0) {
+        throw new Error('请选择需要删除的目录节点')
+      }
+
+      setManagePending(true)
+      setManageError(null)
+
+      try {
+        const response = await repository.deleteSidebarNodes(
+          {
+            node_ids: normalizedIds,
+          },
+          {
+            timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+          },
+        )
+        return response
+      } catch (error: unknown) {
+        const message = toErrorMessage(error)
+        setManageError(message)
+        throw new Error(message)
+      } finally {
+        setManagePending(false)
+      }
+    },
+    [repository],
+  )
+
   return {
     pending: {
       grade: gradePending,
       metadata: metadataPending,
       cover: coverPending,
+      manage: managePending,
     },
     errors: {
       grade: gradeError,
       metadata: metadataError,
       cover: coverError,
+      manage: manageError,
     },
     clearGradeError: () => setGradeError(null),
     clearMetadataError: () => setMetadataError(null),
     clearCoverError: () => setCoverError(null),
+    clearManageError: () => setManageError(null),
     writePackageGrade,
+    setImageHidden,
+    deleteImageItems,
+    deleteSidebarNodes,
     writePackageMetadata,
     writeVideoMetadata,
     saveVideoCover,

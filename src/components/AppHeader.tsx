@@ -4,6 +4,7 @@ export interface AppHeaderProps {
   headerHeight: number
   mode: BrowserMode
   searchPanelOpen: boolean
+  manageMode: boolean
   vectorUniverseOpen: boolean
   thumbnailScaleLevel: number
   canThumbnailScaleDown: boolean
@@ -21,6 +22,7 @@ export interface AppHeaderProps {
   onImportFolders: () => void
   onModeChange: (mode: BrowserMode) => void
   onToggleSearchPanel: () => void
+  onToggleManageMode: () => void
   onOpenVectorUniverse: () => void
   onThumbnailScaleDown: () => void
   onThumbnailScaleUp: () => void
@@ -33,6 +35,7 @@ function AppHeader({
   headerHeight,
   mode,
   searchPanelOpen,
+  manageMode,
   vectorUniverseOpen,
   thumbnailScaleLevel,
   canThumbnailScaleDown,
@@ -50,6 +53,7 @@ function AppHeader({
   onImportFolders,
   onModeChange,
   onToggleSearchPanel,
+  onToggleManageMode,
   onOpenVectorUniverse,
   onThumbnailScaleDown,
   onThumbnailScaleUp,
@@ -107,11 +111,19 @@ function AppHeader({
 
         <button
           className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
-          disabled={mode !== 'image'}
+          disabled={mode !== 'image' || manageMode}
           type="button"
           onClick={onToggleSearchPanel}
         >
           检索
+        </button>
+
+        <button
+          className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`}
+          type="button"
+          onClick={onToggleManageMode}
+        >
+          管理
         </button>
 
         <button

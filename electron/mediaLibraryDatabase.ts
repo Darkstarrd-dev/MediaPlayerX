@@ -10,9 +10,10 @@ import {
   type MediaLocatorDto,
   type VideoItemDto,
 } from '../src/contracts/backend'
+import { isPathInsideRoot, normalizeAllowlistKey } from './fileSystemServiceHelpers'
 
 const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
-const SCHEMA_VERSION = 4
+const SCHEMA_VERSION = 5
 
 interface SQLiteStatementLike {
   run(...params: unknown[]): unknown
@@ -72,6 +73,7 @@ interface ImageRow {
   color: string
   feature_vector_json: string
   media_locator_json: string
+  hidden: number
 }
 
 interface VideoRow {
@@ -179,6 +181,7 @@ export class MediaLibraryDatabase {
         color TEXT NOT NULL,
         feature_vector_json TEXT NOT NULL,
         media_locator_json TEXT NOT NULL,
+        hidden INTEGER NOT NULL DEFAULT 0,
         last_seen_revision INTEGER NOT NULL,
         updated_at_ms INTEGER NOT NULL,
         FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE,
@@ -279,6 +282,14 @@ export class MediaLibraryDatabase {
     if (currentVersion < 4) {
       try {
         this.db.exec('ALTER TABLE video_metadata ADD COLUMN grade INTEGER;')
+      } catch {
+        // ignore duplicated column on new databases
+      }
+    }
+
+    if (currentVersion < 5) {
+      try {
+        this.db.exec('ALTER TABLE image_item ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0;')
       } catch {
         // ignore duplicated column on new databases
       }
@@ -400,9 +411,10 @@ export class MediaLibraryDatabase {
           color,
           feature_vector_json,
           media_locator_json,
+          hidden,
           last_seen_revision,
           updated_at_ms
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
           source_id = excluded.source_id,
           ordinal = excluded.ordinal,
@@ -413,6 +425,7 @@ export class MediaLibraryDatabase {
           color = excluded.color,
           feature_vector_json = excluded.feature_vector_json,
           media_locator_json = excluded.media_locator_json,
+          hidden = image_item.hidden,
           last_seen_revision = excluded.last_seen_revision,
           updated_at_ms = excluded.updated_at_ms
       `,
@@ -505,6 +518,7 @@ export class MediaLibraryDatabase {
             image.color,
             JSON.stringify(image.feature_vector),
             JSON.stringify(image.media_locator),
+            image.hidden ? 1 : 0,
             revision,
             now,
           )
@@ -568,7 +582,8 @@ export class MediaLibraryDatabase {
           cluster,
           color,
           feature_vector_json,
-          media_locator_json
+          media_locator_json,
+          hidden
         FROM image_item
         WHERE source_id = ?
         ORDER BY ordinal ASC
@@ -596,6 +611,7 @@ export class MediaLibraryDatabase {
           media_type: 'image',
           mime_type: 'image/jpeg',
         }),
+        hidden: imageRow.hidden !== 0,
       }))
 
       const source: ImagePackageDto = {
@@ -770,6 +786,197 @@ export class MediaLibraryDatabase {
         `,
       )
       .run(sourceId, grade, Date.now())
+  }
+
+  setImagesHidden(imageIds: string[], hidden: boolean): number {
+    const normalizedIds = Array.from(new Set(imageIds.map((value) => value.trim()).filter(Boolean)))
+    if (normalizedIds.length === 0) {
+      return 0
+    }
+
+    const update = this.db.prepare(
+      `
+        UPDATE image_item
+        SET hidden = ?, updated_at_ms = ?
+        WHERE id = ?
+      `,
+    )
+
+    const updatedAtMs = Date.now()
+    let touched = 0
+    this.runInTransaction(() => {
+      for (const imageId of normalizedIds) {
+        const result = update.run(hidden ? 1 : 0, updatedAtMs, imageId) as { changes?: number } | undefined
+        if ((result?.changes ?? 0) > 0) {
+          touched += 1
+        }
+      }
+    })
+
+    return touched
+  }
+
+  deleteImageItems(imageIds: string[]): { deletedCount: number; touchedSourceIds: string[] } {
+    const normalizedIds = Array.from(new Set(imageIds.map((value) => value.trim()).filter(Boolean)))
+    if (normalizedIds.length === 0) {
+      return {
+        deletedCount: 0,
+        touchedSourceIds: [],
+      }
+    }
+
+    const selectImageSource = this.db.prepare(
+      `
+        SELECT source_id
+        FROM image_item
+        WHERE id = ?
+      `,
+    )
+    const deleteImage = this.db.prepare(
+      `
+        DELETE FROM image_item
+        WHERE id = ?
+      `,
+    )
+    const selectImagesBySource = this.db.prepare(
+      `
+        SELECT id, ordinal
+        FROM image_item
+        WHERE source_id = ?
+        ORDER BY ordinal ASC
+      `,
+    )
+    const updateImageOrdinal = this.db.prepare(
+      `
+        UPDATE image_item
+        SET ordinal = ?, updated_at_ms = ?
+        WHERE id = ?
+      `,
+    )
+    const deleteEmptySource = this.db.prepare(
+      `
+        DELETE FROM media_source
+        WHERE id = ?
+          AND NOT EXISTS (
+            SELECT 1
+            FROM image_item
+            WHERE source_id = ?
+          )
+      `,
+    )
+
+    let deletedCount = 0
+    const touchedSourceIds = new Set<string>()
+    this.runInTransaction(() => {
+      for (const imageId of normalizedIds) {
+        const sourceRow = selectImageSource.get(imageId) as { source_id?: string } | undefined
+        if (!sourceRow?.source_id) {
+          continue
+        }
+
+        touchedSourceIds.add(sourceRow.source_id)
+        const result = deleteImage.run(imageId) as { changes?: number } | undefined
+        deletedCount += result?.changes ?? 0
+      }
+
+      const updatedAtMs = Date.now()
+      for (const sourceId of touchedSourceIds) {
+        const rows = selectImagesBySource.all(sourceId) as Array<{ id: string; ordinal: number }>
+        for (let index = 0; index < rows.length; index += 1) {
+          const row = rows[index]
+          const nextOrdinal = index + 1
+          if (row.ordinal === nextOrdinal) {
+            continue
+          }
+          updateImageOrdinal.run(nextOrdinal, updatedAtMs, row.id)
+        }
+
+        deleteEmptySource.run(sourceId, sourceId)
+      }
+    })
+
+    return {
+      deletedCount,
+      touchedSourceIds: Array.from(touchedSourceIds),
+    }
+  }
+
+  deleteSnapshotEntriesByPaths(paths: string[]): { deletedSourceCount: number; deletedVideoCount: number } {
+    const normalizedRoots = Array.from(new Set(paths.map((value) => path.resolve(value)).filter(Boolean)))
+    if (normalizedRoots.length === 0) {
+      return {
+        deletedSourceCount: 0,
+        deletedVideoCount: 0,
+      }
+    }
+
+    const sourceRows = this.db
+      .prepare(
+        `
+          SELECT id, absolute_path
+          FROM media_source
+        `,
+      )
+      .all() as Array<{ id: string; absolute_path: string }>
+    const videoRows = this.db
+      .prepare(
+        `
+          SELECT id, absolute_path
+          FROM video_item
+        `,
+      )
+      .all() as Array<{ id: string; absolute_path: string }>
+
+    const matchesAnyRoot = (candidatePath: string): boolean => {
+      const resolvedCandidate = path.resolve(candidatePath)
+      return normalizedRoots.some(
+        (rootPath) =>
+          normalizeAllowlistKey(rootPath) === normalizeAllowlistKey(resolvedCandidate) ||
+          isPathInsideRoot(rootPath, resolvedCandidate),
+      )
+    }
+
+    const sourceIdsToDelete = sourceRows.filter((row) => matchesAnyRoot(row.absolute_path)).map((row) => row.id)
+    const videoIdsToDelete = videoRows.filter((row) => matchesAnyRoot(row.absolute_path)).map((row) => row.id)
+
+    if (sourceIdsToDelete.length === 0 && videoIdsToDelete.length === 0) {
+      return {
+        deletedSourceCount: 0,
+        deletedVideoCount: 0,
+      }
+    }
+
+    const deleteSourceById = this.db.prepare(
+      `
+        DELETE FROM media_source
+        WHERE id = ?
+      `,
+    )
+    const deleteVideoById = this.db.prepare(
+      `
+        DELETE FROM video_item
+        WHERE id = ?
+      `,
+    )
+
+    let deletedSourceCount = 0
+    let deletedVideoCount = 0
+    this.runInTransaction(() => {
+      for (const sourceId of sourceIdsToDelete) {
+        const result = deleteSourceById.run(sourceId) as { changes?: number } | undefined
+        deletedSourceCount += result?.changes ?? 0
+      }
+
+      for (const videoId of videoIdsToDelete) {
+        const result = deleteVideoById.run(videoId) as { changes?: number } | undefined
+        deletedVideoCount += result?.changes ?? 0
+      }
+    })
+
+    return {
+      deletedSourceCount,
+      deletedVideoCount,
+    }
   }
 
   writeSourceMetadata(

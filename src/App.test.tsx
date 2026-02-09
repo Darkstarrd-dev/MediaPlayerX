@@ -20,6 +20,118 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
   })
 
+  it('管理模式可展开管理容器并与检索容器互斥', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '检索' }))
+    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    expect(screen.getByRole('group', { name: 'manage-mode-switch' })).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).not.toBeInTheDocument()
+  })
+
+  it('管理模式删除确认弹窗需勾选不可逆确认后才能提交', async () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+    })
+
+    const firstSidebarChecker = document.querySelector('.sidebar-manage-checker') as HTMLInputElement | null
+    expect(firstSidebarChecker).not.toBeNull()
+    fireEvent.click(firstSidebarChecker as HTMLInputElement)
+
+    fireEvent.click(screen.getByRole('button', { name: '删除' }))
+    expect(screen.getByRole('dialog', { name: '永久删除确认' })).toBeInTheDocument()
+
+    const confirmButton = screen.getByRole('button', { name: '确定删除' }) as HTMLButtonElement
+    expect(confirmButton.disabled).toBe(true)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
+    expect(confirmButton.disabled).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    expect(screen.queryByRole('dialog', { name: '永久删除确认' })).not.toBeInTheDocument()
+  })
+
+  it('管理模式下 Sidebar 与主视图 checker 互斥，且视频模式可进入管理', async () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    expect((document.querySelector('.sidebar-manage-checker') as HTMLInputElement).checked).toBe(true)
+
+    fireEvent.click(document.querySelector('.manage-image-checker') as HTMLInputElement)
+    expect((document.querySelector('.manage-image-checker') as HTMLInputElement).checked).toBe(true)
+    expect((document.querySelector('.sidebar-manage-checker') as HTMLInputElement).checked).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    expect(screen.getByRole('group', { name: 'manage-mode-switch' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '隐藏' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '取消隐藏' })).toBeDisabled()
+  })
+
+  it('管理模式下点击缩略图即可切换 checker 状态', async () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelector('.thumb-card-main')).not.toBeNull()
+    })
+
+    const checker = document.querySelector('.manage-image-checker') as HTMLInputElement | null
+    const thumbCardMain = document.querySelector('.thumb-card-main') as HTMLButtonElement | null
+    expect(checker).not.toBeNull()
+    expect(thumbCardMain).not.toBeNull()
+
+    fireEvent.mouseDown(thumbCardMain as HTMLButtonElement, { button: 0 })
+    fireEvent.mouseUp(window)
+    expect((checker as HTMLInputElement).checked).toBe(true)
+
+    fireEvent.mouseDown(thumbCardMain as HTMLButtonElement, { button: 0 })
+    fireEvent.mouseUp(window)
+    expect((checker as HTMLInputElement).checked).toBe(false)
+  })
+
+  it('管理异常显示在管理容器中并支持清除，不占用顶部异常横幅', async () => {
+    vi.spyOn(MockMediaRepository.prototype, 'deleteSidebarNodesSync').mockImplementation(() => {
+      throw new Error('manage-delete-failed')
+    })
+
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+    })
+    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+
+    fireEvent.click(screen.getByRole('button', { name: '删除' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
+    fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/管理操作: manage-delete-failed/)).toBeInTheDocument()
+    })
+
+    expect(document.querySelector('.backend-error-banner')).toBeNull()
+
+    const manageErrorList = document.querySelector('.manage-error-list') as HTMLElement | null
+    expect(manageErrorList).not.toBeNull()
+    fireEvent.click(within(manageErrorList as HTMLElement).getByRole('button', { name: '清除' }))
+
+    await waitFor(() => {
+      expect(screen.queryByText(/管理操作: manage-delete-failed/)).not.toBeInTheDocument()
+    })
+  })
+
   it('真实渲染链路可输出可渲染媒体 URL（Main/Metadata/Fullscreen）', async () => {
     render(<App />)
 

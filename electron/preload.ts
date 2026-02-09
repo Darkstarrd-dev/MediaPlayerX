@@ -21,6 +21,12 @@ import {
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceRequestSchema,
   resolveMediaResourceResponseSchema,
+  setImageHiddenRequestSchema,
+  setImageHiddenResponseSchema,
+  deleteImageItemsRequestSchema,
+  deleteImageItemsResponseSchema,
+  deleteSidebarNodesRequestSchema,
+  deleteSidebarNodesResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -69,6 +75,21 @@ const backendApi = {
     const parsed = writePackageGradeRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePackageGrade, parsed)
     return writePackageGradeResponseSchema.parse(response)
+  },
+  setImageHidden: async (request: unknown) => {
+    const parsed = setImageHiddenRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.setImageHidden, parsed)
+    return setImageHiddenResponseSchema.parse(response)
+  },
+  deleteImageItems: async (request: unknown) => {
+    const parsed = deleteImageItemsRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.deleteImageItems, parsed)
+    return deleteImageItemsResponseSchema.parse(response)
+  },
+  deleteSidebarNodes: async (request: unknown) => {
+    const parsed = deleteSidebarNodesRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.deleteSidebarNodes, parsed)
+    return deleteSidebarNodesResponseSchema.parse(response)
   },
   writePackageMetadata: async (request: unknown) => {
     const parsed = writePackageMetadataRequestSchema.parse(request)
