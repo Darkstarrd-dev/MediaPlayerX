@@ -126,6 +126,9 @@ import {
   LibrarySnapshotService,
   type PersistedVideoCoverRecord,
 } from './services/file-system-read/librarySnapshotService'
+import { ManagementMutationService } from './services/file-system-read/managementMutationService'
+import { MediaResourceService } from './services/file-system-read/mediaResourceService'
+import { LibraryReadWriteService } from './services/file-system-read/libraryReadWriteService'
 import {
   RuntimeDependencyService,
   type RuntimeDependencySnapshot,
@@ -168,107 +171,6 @@ const ARCHIVE_NORMALIZE_IDLE_MS = resolveConcurrency(process.env.MEDIA_PLAYERX_A
 const ARCHIVE_NORMALIZE_RECHECK_MS = resolveConcurrency(process.env.MEDIA_PLAYERX_ARCHIVE_NORMALIZE_RECHECK_MS, 400, 5_000)
 
 const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])
-
-interface ArchiveNormalizationResult {
-  normalizedArchivePath: string
-  strategy: 'zip-repack-webp90-store'
-}
-
-interface PersistedVideoCoverRecord {
-  coverColor: string
-  coverImagePath: string | null
-  updatedAtMs: number
-}
-
-interface MediaAccessAuditCounters {
-  resolveRequests: number
-  resolveGranted: number
-  resolveDeniedByReason: Record<string, number>
-}
-
-interface NormalizedArchiveCacheRecord {
-  sourcePath: string
-  sourceMtimeMs: number
-  sourceSizeBytes: number
-  normalizedArchivePath: string
-  strategy: ArchiveNormalizationResult['strategy']
-}
-
-interface ArchiveNormalizationTaskState {
-  status: 'pending' | 'running' | 'completed' | 'failed'
-  error: string | null
-  updatedAtMs: number
-}
-
-interface ParsedSidebarNodeRef {
-  kind: 'folder' | 'package' | 'video'
-  pathKey: string
-}
-
-function parseSidebarNodeId(nodeId: string): ParsedSidebarNodeRef | null {
-  const delimiterIndex = nodeId.indexOf(':')
-  if (delimiterIndex <= 0) {
-    return null
-  }
-
-  const rawKind = nodeId.slice(0, delimiterIndex)
-  if (rawKind !== 'folder' && rawKind !== 'package' && rawKind !== 'video') {
-    return null
-  }
-
-  const pathKey = nodeId.slice(delimiterIndex + 1)
-  if (pathKey.length === 0) {
-    return null
-  }
-
-  return {
-    kind: rawKind,
-    pathKey,
-  }
-}
-
-function pathKeyHasPrefix(pathKey: string, prefix: string): boolean {
-  if (pathKey === prefix) {
-    return true
-  }
-  return pathKey.startsWith(`${prefix}/`)
-}
-
-function resolveAbsolutePathFromPathKey(pathKey: string): string {
-  if (/^[a-zA-Z]:$/.test(pathKey)) {
-    return path.resolve(`${pathKey}${path.sep}`)
-  }
-  return path.resolve(pathKey)
-}
-
-function isFileSystemRootPath(targetPath: string): boolean {
-  const resolved = path.resolve(targetPath)
-  const root = path.parse(resolved).root
-  return normalizeAllowlistKey(resolved) === normalizeAllowlistKey(root)
-}
-
-function filterHiddenImagesFromSource(source: ImagePackageDto, includeHidden: boolean): ImagePackageDto {
-  if (includeHidden) {
-    return source
-  }
-
-  const visibleImages = source.images.filter((image) => !(image.hidden ?? false))
-  if (visibleImages.length === source.images.length) {
-    return source
-  }
-
-  return {
-    ...source,
-    images: visibleImages,
-  }
-}
-
-function filterHiddenImagesFromSources(sources: ImagePackageDto[], includeHidden: boolean): ImagePackageDto[] {
-  if (includeHidden) {
-    return sources
-  }
-  return sources.map((source) => filterHiddenImagesFromSource(source, includeHidden))
-}
 
 export interface LibraryChangedEventPayload {
   reason:
@@ -319,14 +221,6 @@ export class FileSystemMediaReadService {
 
   private readonly importPathRegistry = new ImportPathRegistry()
 
-  private mediaAudit: MediaAccessAuditCounters = {
-    resolveRequests: 0,
-    resolveGranted: 0,
-    resolveDeniedByReason: {},
-  }
-
-  private resolveDeniedLogAtByKey = new Map<string, number>()
-
   private readonly runtimeDependencyService = new RuntimeDependencyService(FFMPEG_BIN, FFPROBE_BIN)
 
   private readonly eventBus = new ServiceEventBus<FileSystemReadServiceEvents>()
@@ -336,6 +230,12 @@ export class FileSystemMediaReadService {
   private readonly librarySnapshotService: LibrarySnapshotService
 
   private readonly importTaskService: ImportTaskService
+
+  private readonly libraryReadWriteService: LibraryReadWriteService
+
+  private readonly managementMutationService: ManagementMutationService
+
+  private readonly mediaResourceService: MediaResourceService
 
   constructor(rootDir: string) {
     this.rootDir = path.resolve(rootDir)
@@ -395,6 +295,54 @@ export class FileSystemMediaReadService {
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     })
+
+    this.libraryReadWriteService = new LibraryReadWriteService({
+      database: this.database,
+      ffmpegBin: FFMPEG_BIN,
+      coverOutputRootDir: this.coverOutputRootDir,
+      packageGradeOverridesBySourceId: this.packageGradeOverridesBySourceId,
+      videoCoverOverridesByVideoId: this.videoCoverOverridesByVideoId,
+      videoMetadataOverridesByVideoId: this.videoMetadataOverridesByVideoId,
+      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
+      markInteractiveRead: () => this.markInteractiveRead(),
+      isRar7zPath: (filePath) => this.isRar7zPath(filePath),
+      queueRar7zNormalization: (sourceArchivePath, priority) => this.queueRar7zNormalization(sourceArchivePath, priority),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as LibraryChangedEventPayload),
+    })
+
+    this.managementMutationService = new ManagementMutationService({
+      rootDir: this.rootDir,
+      thumbnailCacheRootDir: this.thumbnailCacheRootDir,
+      database: this.database,
+      importPathRegistry: this.importPathRegistry,
+      ensureStateLoaded: () => this.ensureStateLoaded(),
+      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      syncSnapshotFromDatabase: () => this.syncSnapshotFromDatabase(),
+      refreshArchiveIndexesForPaths: (archivePaths) => this.refreshArchiveIndexesForPaths(archivePaths),
+      pruneArchiveIndexesByDeletedRoots: (deletedPaths) => this.pruneArchiveIndexesByDeletedRoots(deletedPaths),
+      removeImportSourcePaths: (pathsToRemove) => this.removeImportSourcePaths(pathsToRemove),
+      buildMediaAccessContext: () => this.buildMediaAccessContext(),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as LibraryChangedEventPayload),
+    })
+
+    this.mediaResourceService = new MediaResourceService({
+      mediaProtocolScheme: MEDIA_PROTOCOL_SCHEME,
+      thumbnailCacheRootDir: this.thumbnailCacheRootDir,
+      archiveNormalizeRecheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
+      mediaTokenService: this.mediaTokenService,
+      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      markInteractiveRead: () => this.markInteractiveRead(),
+      buildMediaAccessContext: () => this.buildMediaAccessContext(),
+      ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
+      readImageBufferForThumbnail: (locator) => this.readImageBufferForThumbnail(locator),
+      onThumbnailRenderingStart: () => this.archiveNormalizationService.onThumbnailRenderingStart(),
+      onThumbnailRenderingEnd: () => this.archiveNormalizationService.onThumbnailRenderingEnd(),
+      hasPendingArchiveNormalization: () => this.archiveNormalizationService.hasPending(),
+      scheduleArchiveNormalizationDrain: (delayMs) => this.scheduleArchiveNormalizationDrain(delayMs),
+      getZipEntryIndexByPath: () => this.librarySnapshotService.getZipEntryIndexByPath(),
+    })
+
     this.importTaskService.recoverInterruptedImportTasks()
   }
 
@@ -573,43 +521,8 @@ export class FileSystemMediaReadService {
     })
   }
 
-  private countResolveDenied(reason: MediaAuditRejectReason): void {
-    this.mediaAudit.resolveDeniedByReason[reason] = (this.mediaAudit.resolveDeniedByReason[reason] ?? 0) + 1
-  }
-
-  private shouldLogResolveDenied(reason: MediaAuditRejectReason, pathHint: string): boolean {
-    const now = Date.now()
-    const key = `${reason}|${normalizeAllowlistKey(pathHint)}`
-    const previousAt = this.resolveDeniedLogAtByKey.get(key)
-    if (typeof previousAt === 'number' && now - previousAt < 2_500) {
-      return false
-    }
-    this.resolveDeniedLogAtByKey.set(key, now)
-
-    if (this.resolveDeniedLogAtByKey.size > 2_048) {
-      this.resolveDeniedLogAtByKey.clear()
-    }
-
-    return true
-  }
-
   async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
-    const tokenAudit = this.mediaTokenService.readAuditSnapshot()
-
-    const deniedTotal = Object.values(this.mediaAudit.resolveDeniedByReason).reduce((sum, value) => sum + value, 0)
-    return mediaAccessAuditResponseSchema.parse({
-      resolve_requests: this.mediaAudit.resolveRequests,
-      resolve_granted: this.mediaAudit.resolveGranted,
-      resolve_denied_total: deniedTotal,
-      resolve_denied_by_reason: this.mediaAudit.resolveDeniedByReason,
-      token_reads: tokenAudit.tokenReads,
-      token_hits: tokenAudit.tokenHits,
-      token_misses: tokenAudit.tokenMisses,
-      token_expired: tokenAudit.tokenExpired,
-      token_cleanup_removed: tokenAudit.tokenCleanupRemoved,
-      token_active: tokenAudit.tokenActive,
-      generated_at_ms: Date.now(),
-    })
+    return this.mediaResourceService.readMediaAccessAudit()
   }
 
   private async ensureSnapshotLoaded(): Promise<LibrarySnapshotDto> {
@@ -628,708 +541,67 @@ export class FileSystemMediaReadService {
   async readImageSidebarTree(
     request: ReadImageSidebarTreeRequestDto,
   ): Promise<ReadImageSidebarTreeResponseDto> {
-    this.markInteractiveRead()
-    const snapshot = await this.ensureSnapshotLoaded()
-    const includeHidden = request.include_hidden ?? false
-    const filtered = filterLibrarySources(snapshot, request)
-    const filteredPackages = filterHiddenImagesFromSources(filtered.imagePackages, includeHidden)
-    const filteredDirectories = filterHiddenImagesFromSources(filtered.imageDirectories, includeHidden)
-
-    return readImageSidebarTreeResponseSchema.parse({
-      image_packages: filteredPackages,
-      image_directories: filteredDirectories,
-      tree: buildImageSidebarTree(filteredPackages, filteredDirectories),
-    })
+    return this.libraryReadWriteService.readImageSidebarTree(request)
   }
 
   async readImagePage(request: ReadImagePageRequestDto): Promise<ReadImagePageResponseDto> {
-    this.markInteractiveRead()
-    const snapshot = await this.ensureSnapshotLoaded()
-    const includeHidden = request.include_hidden ?? false
-    const filtered = filterLibrarySources(snapshot, {
-      feature_filter: request.feature_filter,
-      grade_overrides: request.grade_overrides,
-    })
-
-    const allSources = [...filtered.imagePackages, ...filtered.imageDirectories]
-    const selectedById = request.source_id ? allSources.find((source) => source.id === request.source_id) : null
-    const selectedSource =
-      selectedById ?? allSources.find((source) => source.images.length > 0) ?? allSources[0] ?? null
-
-    if (
-      request.source_id &&
-      selectedSource &&
-      selectedSource.images.length === 0 &&
-      this.isRar7zPath(selectedSource.absolute_path)
-    ) {
-      this.queueRar7zNormalization(selectedSource.absolute_path, 'high')
-    }
-
-    if (!selectedSource) {
-      return readImagePageResponseSchema.parse({
-        source_id: null,
-        total_items: 0,
-        page_index: 0,
-        page_size: request.page_size,
-        refs: [],
-      })
-    }
-
-    const selectedSourceVisible = filterHiddenImagesFromSource(selectedSource, includeHidden)
-    const totalItems = selectedSourceVisible.images.length
-    const pageSize = request.show_names_only ? Math.max(1, totalItems) : request.page_size
-    const maxPageIndex = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
-    const pageIndex = request.show_names_only ? 0 : Math.min(request.page_index, maxPageIndex)
-    const pageStart = pageIndex * pageSize
-    const pageEnd = pageStart + pageSize
-
-    const refs: FocusedImageRefDto[] = selectedSourceVisible.images
-      .slice(pageStart, pageEnd)
-      .map((_, index) => ({
-        package_id: selectedSource.id,
-        image_index: pageStart + index,
-      }))
-
-    return readImagePageResponseSchema.parse({
-      source_id: selectedSource.id,
-      total_items: totalItems,
-      page_index: pageIndex,
-      page_size: request.page_size,
-      refs,
-    })
+    return this.libraryReadWriteService.readImagePage(request)
   }
 
   async readImageMetadata(
     request: ReadImageMetadataRequestDto,
   ): Promise<ReadImageMetadataResponseDto> {
-    this.markInteractiveRead()
-    const includeHidden = request.include_hidden ?? false
-    const snapshot = await this.ensureSnapshotLoaded()
-    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
-    const source = allSources.find((item) => item.id === request.package_id)
-    const visibleSource = source ? filterHiddenImagesFromSource(source, includeHidden) : null
-    const image = visibleSource?.images[request.image_index]
-
-    if (
-      visibleSource &&
-      image &&
-      image.media_locator.kind === 'filesystem' &&
-      image.media_locator.media_type === 'image'
-    ) {
-      if (image.size_kb <= 0) {
-        const stat = await fs.stat(image.media_locator.absolute_path).catch(() => null)
-        if (stat?.isFile()) {
-          image.size_kb = toSafeSizeKb(stat.size)
-        }
-      }
-
-      if (image.width <= 0 || image.height <= 0) {
-        const dimensions = await probeImageDimensionsFromFile(image.media_locator.absolute_path)
-        if (dimensions.width > 0 && dimensions.height > 0) {
-          image.width = dimensions.width
-          image.height = dimensions.height
-        }
-      }
-    }
-
-    return readImageMetadataResponseSchema.parse(
-      visibleSource && image
-        ? {
-            package: visibleSource,
-            image,
-            grade: visibleSource.mock_grade,
-          }
-        : null,
-    )
+    return this.libraryReadWriteService.readImageMetadata(request)
   }
 
   async writePackageGrade(
     request: WritePackageGradeRequestDto,
   ): Promise<WritePackageGradeResponseDto> {
-    const snapshot = await this.ensureSnapshotLoaded()
-    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
-    const source = allSources.find((item) => item.id === request.package_id)
-    if (!source) {
-      throw new Error(`写入评分失败：source 不存在 ${request.package_id}`)
-    }
-
-    source.mock_grade = request.grade
-    this.packageGradeOverridesBySourceId.set(request.package_id, request.grade)
-    this.database.writePackageGrade(request.package_id, request.grade)
-
-    this.emitLibraryChanged({
-      reason: 'write-package-grade',
-      updated_at_ms: Date.now(),
-    })
-
-    return writePackageGradeResponseSchema.parse({
-      package_id: request.package_id,
-      grade: request.grade,
-      updated_at_ms: Date.now(),
-    })
+    return this.libraryReadWriteService.writePackageGrade(request)
   }
 
   async setImageHidden(
     request: SetImageHiddenRequestDto,
   ): Promise<SetImageHiddenResponseDto> {
-    await this.ensureStateLoaded()
-    const normalizedImageIds = Array.from(new Set(request.image_ids.map((value) => value.trim()).filter(Boolean)))
-    if (normalizedImageIds.length === 0) {
-      throw new Error('设置隐藏失败：未提供图片 id')
-    }
-
-    const updatedCount = this.database.setImagesHidden(normalizedImageIds, request.hidden)
-    if (updatedCount > 0) {
-      this.syncSnapshotFromDatabase()
-      this.emitLibraryChanged({
-        reason: 'manage-hide',
-        updated_at_ms: Date.now(),
-      })
-    }
-
-    return {
-      updated_count: updatedCount,
-      updated_at_ms: Date.now(),
-    }
-  }
-
-  private async repackArchiveWithoutEntries(
-    archivePath: string,
-    deletedEntryNames: Set<string>,
-  ): Promise<void> {
-    const allEntries = await scanZipCentralEntries(archivePath)
-    const keepEntries = allEntries.filter((entry) => !deletedEntryNames.has(entry.entryName))
-
-    const zipEntries: Array<{ entryName: string; content: Buffer }> = []
-    for (const entry of keepEntries) {
-      const content = await readZipEntryContent(archivePath, entry)
-      zipEntries.push({
-        entryName: entry.entryName,
-        content,
-      })
-    }
-
-    const tempPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-tmp.zip`
-    const backupPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-bak`
-
-    await writeStoredZipFromEntries(tempPath, zipEntries)
-    await scanZipCentralEntries(tempPath)
-
-    await fs.rename(archivePath, backupPath)
-    let replaced = false
-    try {
-      await fs.rename(tempPath, archivePath)
-      replaced = true
-      await fs.rm(backupPath, { force: true })
-    } finally {
-      if (!replaced) {
-        await fs.rename(backupPath, archivePath).catch(() => undefined)
-      }
-      await fs.rm(tempPath, { force: true }).catch(() => undefined)
-    }
+    return this.managementMutationService.setImageHidden(request)
   }
 
   async deleteImageItems(
     request: DeleteImageItemsRequestDto,
   ): Promise<DeleteImageItemsResponseDto> {
-    const normalizedImageIds = Array.from(new Set(request.image_ids.map((value) => value.trim()).filter(Boolean)))
-    if (normalizedImageIds.length === 0) {
-      throw new Error('删除失败：未提供图片 id')
-    }
-
-    const snapshot = await this.ensureSnapshotLoaded()
-    await this.ensureStateLoaded()
-
-    const sourceById = new Map<string, ImagePackageDto>([
-      ...snapshot.image_packages.map((source) => [source.id, source] as const),
-      ...snapshot.image_directories.map((source) => [source.id, source] as const),
-    ])
-    const mediaAccessContext = this.buildMediaAccessContext()
-
-    const imageById = new Map<string, { image: ImagePackageDto['images'][number]; source: ImagePackageDto }>()
-    for (const source of sourceById.values()) {
-      for (const image of source.images) {
-        imageById.set(image.id, { image, source })
-      }
-    }
-
-    const failed: Array<{ image_id: string; reason: string }> = []
-    const filesystemImageIdsByPath = new Map<string, Set<string>>()
-    const archiveEntriesToDelete = new Map<string, Set<string>>()
-    const archiveImageIdsByPath = new Map<string, Map<string, Set<string>>>()
-    const importPathsToRemove = new Set<string>()
-
-    for (const imageId of normalizedImageIds) {
-      const found = imageById.get(imageId)
-      if (!found) {
-        failed.push({
-          image_id: imageId,
-          reason: 'image not found',
-        })
-        continue
-      }
-
-      const locator = found.image.media_locator
-      if (locator.kind === 'filesystem') {
-        const absolutePath = path.resolve(locator.absolute_path)
-        if (!isPathAllowlisted(absolutePath, mediaAccessContext)) {
-          failed.push({
-            image_id: imageId,
-            reason: 'path outside allowlist',
-          })
-          continue
-        }
-        const imageIds = filesystemImageIdsByPath.get(absolutePath) ?? new Set<string>()
-        imageIds.add(imageId)
-        filesystemImageIdsByPath.set(absolutePath, imageIds)
-        continue
-      }
-
-      if (locator.archive_format !== 'zip') {
-        failed.push({
-          image_id: imageId,
-          reason: 'archive format not supported',
-        })
-        continue
-      }
-
-      const archivePath = path.resolve(locator.archive_path)
-      if (!isPathAllowlisted(archivePath, mediaAccessContext)) {
-        failed.push({
-          image_id: imageId,
-          reason: 'archive path outside allowlist',
-        })
-        continue
-      }
-      const entryName = locator.entry_name
-      if (!entryName || !isSafeArchiveEntryName(entryName)) {
-        failed.push({
-          image_id: imageId,
-          reason: 'archive entry illegal',
-        })
-        continue
-      }
-
-      const entrySet = archiveEntriesToDelete.get(archivePath) ?? new Set<string>()
-      entrySet.add(entryName)
-      archiveEntriesToDelete.set(archivePath, entrySet)
-
-      const imageIdsByEntry = archiveImageIdsByPath.get(archivePath) ?? new Map<string, Set<string>>()
-      const imageIds = imageIdsByEntry.get(entryName) ?? new Set<string>()
-      imageIds.add(imageId)
-      imageIdsByEntry.set(entryName, imageIds)
-      archiveImageIdsByPath.set(archivePath, imageIdsByEntry)
-    }
-
-    const deletedImageIds = new Set<string>()
-    const changedArchivePaths = new Set<string>()
-
-    for (const [absolutePath, imageIds] of filesystemImageIdsByPath) {
-      try {
-        await fs.rm(absolutePath, { force: true })
-        for (const imageId of imageIds) {
-          deletedImageIds.add(imageId)
-        }
-        if (this.importPathRegistry.hasImportFile(absolutePath)) {
-          importPathsToRemove.add(absolutePath)
-        }
-      } catch (error) {
-        const reason = error instanceof Error && error.message ? error.message : String(error)
-        for (const imageId of imageIds) {
-          failed.push({
-            image_id: imageId,
-            reason,
-          })
-        }
-      }
-    }
-
-    for (const [archivePath, entryNames] of archiveEntriesToDelete) {
-      try {
-        await this.repackArchiveWithoutEntries(archivePath, entryNames)
-        changedArchivePaths.add(archivePath)
-
-        const imageIdsByEntry = archiveImageIdsByPath.get(archivePath) ?? new Map<string, Set<string>>()
-        for (const entryName of entryNames) {
-          const imageIds = imageIdsByEntry.get(entryName)
-          if (!imageIds) {
-            continue
-          }
-          for (const imageId of imageIds) {
-            deletedImageIds.add(imageId)
-          }
-        }
-
-        if (this.importPathRegistry.hasImportFile(archivePath)) {
-          const source = Array.from(sourceById.values()).find(
-            (item) => path.resolve(item.absolute_path) === archivePath,
-          )
-          if (source) {
-            const remainingEntries = source.images.filter(
-              (image) => image.media_locator.kind === 'archive-entry' && !entryNames.has(image.media_locator.entry_name),
-            )
-            if (remainingEntries.length === 0) {
-              importPathsToRemove.add(archivePath)
-            }
-          }
-        }
-      } catch (error) {
-        const reason = error instanceof Error && error.message ? error.message : String(error)
-        const imageIdsByEntry = archiveImageIdsByPath.get(archivePath) ?? new Map<string, Set<string>>()
-        for (const entryName of entryNames) {
-          const imageIds = imageIdsByEntry.get(entryName)
-          if (!imageIds) {
-            continue
-          }
-          for (const imageId of imageIds) {
-            failed.push({
-              image_id: imageId,
-              reason,
-            })
-          }
-        }
-      }
-    }
-
-    if (deletedImageIds.size > 0) {
-      this.database.deleteImageItems(Array.from(deletedImageIds))
-      this.syncSnapshotFromDatabase()
-      await this.refreshArchiveIndexesForPaths(changedArchivePaths)
-    }
-
-    if (importPathsToRemove.size > 0) {
-      await this.removeImportSourcePaths(Array.from(importPathsToRemove))
-    }
-
-    const deletedCount = deletedImageIds.size
-    if (deletedCount > 0) {
-      await fs.rm(this.thumbnailCacheRootDir, { recursive: true, force: true }).catch(() => undefined)
-      this.emitLibraryChanged({
-        reason: 'manage-delete-image-items',
-        updated_at_ms: Date.now(),
-      })
-    }
-
-    return {
-      deleted_count: deletedCount,
-      failed,
-      updated_at_ms: Date.now(),
-    }
+    return this.managementMutationService.deleteImageItems(request)
   }
 
   async deleteSidebarNodes(
     request: DeleteSidebarNodesRequestDto,
   ): Promise<DeleteSidebarNodesResponseDto> {
-    const normalizedNodeIds = Array.from(new Set(request.node_ids.map((value) => value.trim()).filter(Boolean)))
-    if (normalizedNodeIds.length === 0) {
-      throw new Error('删除失败：未提供节点 id')
-    }
-
-    const parsedTargets = normalizedNodeIds.map((nodeId) => {
-      const parsed = parseSidebarNodeId(nodeId)
-      return {
-        nodeId,
-        parsed,
-        matched: false,
-      }
-    })
-
-    const failed: Array<{ node_id: string; reason: string }> = []
-    const validTargets = parsedTargets.filter((target) => {
-      if (target.parsed) {
-        return true
-      }
-      failed.push({
-        node_id: target.nodeId,
-        reason: 'invalid node id',
-      })
-      return false
-    })
-
-    await this.ensureStateLoaded()
-    const snapshot = await this.ensureSnapshotLoaded()
-    const mediaAccessContext = this.buildMediaAccessContext()
-
-    const selectedPaths = new Set<string>()
-    const nodeIdsBySelectedPath = new Map<string, Set<string>>()
-    const importPathsToRemove = new Set<string>()
-
-    const rememberSelectedPath = (absolutePath: string, nodeId: string) => {
-      const resolvedPath = path.resolve(absolutePath)
-      selectedPaths.add(resolvedPath)
-      const nodeIds = nodeIdsBySelectedPath.get(resolvedPath) ?? new Set<string>()
-      nodeIds.add(nodeId)
-      nodeIdsBySelectedPath.set(resolvedPath, nodeIds)
-    }
-
-    for (const target of validTargets) {
-      const parsed = target.parsed
-      if (!parsed || parsed.kind !== 'folder') {
-        continue
-      }
-      const folderPath = resolveAbsolutePathFromPathKey(parsed.pathKey)
-      rememberSelectedPath(folderPath, target.nodeId)
-      target.matched = true
-    }
-
-    const markMatchedAndSelect = (pathKey: string, kind: 'package' | 'directory' | 'video', absolutePath: string): boolean => {
-      for (const target of validTargets) {
-        const parsed = target.parsed
-        if (!parsed) {
-          continue
-        }
-
-        if (parsed.kind === 'folder') {
-          if (pathKeyHasPrefix(pathKey, parsed.pathKey)) {
-            target.matched = true
-            rememberSelectedPath(absolutePath, target.nodeId)
-            return true
-          }
-          continue
-        }
-
-        if (parsed.kind === 'package' && kind === 'package' && pathKey === parsed.pathKey) {
-          target.matched = true
-          rememberSelectedPath(absolutePath, target.nodeId)
-          return true
-        }
-
-        if (parsed.kind === 'video' && kind === 'video' && pathKey === parsed.pathKey) {
-          target.matched = true
-          rememberSelectedPath(absolutePath, target.nodeId)
-          return true
-        }
-      }
-
-      return false
-    }
-
-    for (const source of snapshot.image_packages) {
-      const pathKey = source.tree_path.join('/')
-      markMatchedAndSelect(pathKey, 'package', source.absolute_path)
-    }
-
-    for (const source of snapshot.image_directories) {
-      const pathKey = source.tree_path.join('/')
-      markMatchedAndSelect(pathKey, 'directory', source.absolute_path)
-    }
-
-    for (const video of snapshot.videos) {
-      const pathKey = video.tree_path.join('/')
-      markMatchedAndSelect(pathKey, 'video', video.absolute_path)
-    }
-
-    for (const target of validTargets) {
-      if (!target.matched) {
-        failed.push({
-          node_id: target.nodeId,
-          reason: 'node not found',
-        })
-      }
-    }
-
-    const sortedPaths = Array.from(selectedPaths).sort((left, right) => left.length - right.length)
-    const prunedPaths: string[] = []
-    for (const candidatePath of sortedPaths) {
-      if (prunedPaths.some((existingPath) => isPathInsideRoot(existingPath, candidatePath))) {
-        continue
-      }
-      prunedPaths.push(candidatePath)
-    }
-
-    let deletedCount = 0
-    const pathsToPurgeFromSnapshot = new Set<string>()
-    for (const absolutePath of prunedPaths) {
-      try {
-        if (isFileSystemRootPath(absolutePath)) {
-          const nodeIds = nodeIdsBySelectedPath.get(absolutePath) ?? new Set<string>()
-          for (const nodeId of nodeIds) {
-            failed.push({
-              node_id: nodeId,
-              reason: 'refuse to delete filesystem root',
-            })
-          }
-          continue
-        }
-
-        if (!isPathAllowlisted(absolutePath, mediaAccessContext)) {
-          const nodeIds = nodeIdsBySelectedPath.get(absolutePath) ?? new Set<string>()
-          for (const nodeId of nodeIds) {
-            failed.push({
-              node_id: nodeId,
-              reason: 'path outside allowlist',
-            })
-          }
-          continue
-        }
-
-        let stat: { isDirectory: () => boolean; isFile: () => boolean } | null = null
-        try {
-          stat = await fs.stat(absolutePath)
-        } catch (error) {
-          const maybeFsError = error as NodeJS.ErrnoException
-          if (maybeFsError?.code !== 'ENOENT') {
-            throw error
-          }
-        }
-
-        if (!stat) {
-          pathsToPurgeFromSnapshot.add(absolutePath)
-          importPathsToRemove.add(absolutePath)
-          continue
-        }
-        if (stat.isDirectory()) {
-          await fs.rm(absolutePath, { recursive: true, force: true })
-          deletedCount += 1
-          pathsToPurgeFromSnapshot.add(absolutePath)
-          importPathsToRemove.add(absolutePath)
-          continue
-        }
-        if (stat.isFile()) {
-          await fs.rm(absolutePath, { force: true })
-          deletedCount += 1
-          pathsToPurgeFromSnapshot.add(absolutePath)
-          importPathsToRemove.add(absolutePath)
-        }
-      } catch (error) {
-        const reason = error instanceof Error && error.message ? error.message : String(error)
-        const nodeIds = nodeIdsBySelectedPath.get(absolutePath) ?? new Set<string>()
-        for (const nodeId of nodeIds) {
-          failed.push({
-            node_id: nodeId,
-            reason,
-          })
-        }
-      }
-    }
-
-    if (pathsToPurgeFromSnapshot.size > 0) {
-      this.database.deleteSnapshotEntriesByPaths(Array.from(pathsToPurgeFromSnapshot))
-      this.syncSnapshotFromDatabase()
-      this.pruneArchiveIndexesByDeletedRoots(pathsToPurgeFromSnapshot)
-    }
-
-    if (importPathsToRemove.size > 0) {
-      await this.removeImportSourcePaths(Array.from(importPathsToRemove))
-    }
-
-    if (pathsToPurgeFromSnapshot.size > 0) {
-      await fs.rm(this.thumbnailCacheRootDir, { recursive: true, force: true }).catch(() => undefined)
-      this.emitLibraryChanged({
-        reason: 'manage-delete-sidebar-nodes',
-        updated_at_ms: Date.now(),
-      })
-    }
-
-    return {
-      deleted_count: deletedCount,
-      failed,
-      updated_at_ms: Date.now(),
-    }
+    return this.managementMutationService.deleteSidebarNodes(request)
   }
 
   async writePackageMetadata(
     request: WritePackageMetadataRequestDto,
   ): Promise<WritePackageMetadataResponseDto> {
-    const snapshot = await this.ensureSnapshotLoaded()
-    const response = applyPackageMetadataWrite({
-      snapshot,
-      database: this.database,
-      request,
-    })
-
-    this.emitLibraryChanged({
-      reason: 'write-package-metadata',
-      updated_at_ms: response.updated_at_ms,
-    })
-
-    return response
+    return this.libraryReadWriteService.writePackageMetadata(request)
   }
 
   async writeVideoMetadata(
     request: WriteVideoMetadataRequestDto,
   ): Promise<WriteVideoMetadataResponseDto> {
-    const snapshot = await this.ensureSnapshotLoaded()
-    const { response, persistedRecord } = applyVideoMetadataWrite({
-      snapshot,
-      database: this.database,
-      request,
-    })
-
-    this.videoMetadataOverridesByVideoId.set(response.video.id, persistedRecord)
-
-    this.emitLibraryChanged({
-      reason: 'write-video-metadata',
-      updated_at_ms: response.updated_at_ms,
-    })
-
-    return response
+    return this.libraryReadWriteService.writeVideoMetadata(request)
   }
 
   async saveVideoCover(
     request: SaveVideoCoverRequestDto,
   ): Promise<SaveVideoCoverResponseDto> {
-    const snapshot = await this.ensureSnapshotLoaded()
-    const runtimeDependencies = await this.ensureRuntimeDependencies()
-    const video = snapshot.videos.find((item) => item.id === request.video_id)
-    if (!video) {
-      throw new Error(`保存封面失败：video 不存在 ${request.video_id}`)
-    }
-
-    const coverImagePath = await captureVideoCoverImage({
-      videoPath: video.absolute_path,
-      videoId: video.id,
-      timeSec: request.time_sec,
-      ffmpegBin: FFMPEG_BIN,
-      coverOutputRootDir: this.coverOutputRootDir,
-      ffmpegAvailable: runtimeDependencies.ffmpeg,
-    })
-    const coverColor = request.fallback_color ?? video.cover_color ?? toDeterministicCoverColor(video.id)
-    const updatedAtMs = Date.now()
-
-    video.cover_color = coverColor
-    video.cover_image_path = coverImagePath
-    this.videoCoverOverridesByVideoId.set(video.id, {
-      coverColor,
-      coverImagePath,
-      updatedAtMs,
-    })
-    this.database.writeVideoCover(video.id, coverColor, coverImagePath)
-
-    this.emitLibraryChanged({
-      reason: 'write-video-cover',
-      updated_at_ms: Date.now(),
-    })
-
-    return saveVideoCoverResponseSchema.parse({
-      video_id: video.id,
-      cover_color: coverColor,
-      cover_image_path: coverImagePath,
-      updated_at_ms: updatedAtMs,
-    })
+    return this.libraryReadWriteService.saveVideoCover(request)
   }
 
   async readPlaylist(): Promise<ReadPlaylistResponseDto> {
-    await this.ensureSnapshotLoaded()
-    const videoIds = this.database.readPlaylist()
-    return readPlaylistResponseSchema.parse({
-      video_ids: videoIds,
-    })
+    return this.libraryReadWriteService.readPlaylist()
   }
 
   async writePlaylist(request: WritePlaylistRequestDto): Promise<WritePlaylistResponseDto> {
-    await this.ensureSnapshotLoaded()
-    const nextVideoIds = this.database.writePlaylist(request.video_ids)
-
-    this.emitLibraryChanged({
-      reason: 'write-playlist',
-      updated_at_ms: Date.now(),
-    })
-
-    return writePlaylistResponseSchema.parse({
-      video_ids: nextVideoIds,
-      updated_at_ms: Date.now(),
-    })
+    return this.libraryReadWriteService.writePlaylist(request)
   }
 
   async enqueueImportTask(request: EnqueueImportTaskRequestDto): Promise<EnqueueImportTaskResponseDto> {
@@ -1347,76 +619,14 @@ export class FileSystemMediaReadService {
   async resolveMediaResource(
     request: ResolveMediaResourceRequestDto,
   ): Promise<ResolveMediaResourceResponseDto> {
-    this.markInteractiveRead()
-    await this.ensureSnapshotLoaded()
-    this.cleanupExpiredTokens()
-
-    this.mediaAudit.resolveRequests += 1
-
-    let locator: MediaLocatorDto
-    try {
-      locator = await assertLocatorAllowed(request.locator, this.buildMediaAccessContext())
-    } catch (error) {
-      if (error instanceof MediaAccessError) {
-        this.countResolveDenied(error.reason)
-        const pathHint =
-          request.locator.kind === 'filesystem' ? request.locator.absolute_path : request.locator.archive_path
-        if (this.shouldLogResolveDenied(error.reason, pathHint)) {
-          console.warn('resolveMediaResource denied', {
-            reason: error.reason,
-            message: error.message,
-          })
-        }
-      } else {
-        this.countResolveDenied('filesystem_file_missing')
-      }
-      throw error
-    }
-
-    const thumbnailLocator = await maybeResolveThumbnailLocator({
-      locator,
-      request,
-      thumbnailCacheRootDir: this.thumbnailCacheRootDir,
-      ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
-      readImageBufferForThumbnail: (targetLocator) => this.readImageBufferForThumbnail(targetLocator),
-      onRenderingStart: () => {
-        this.archiveNormalizationService.onThumbnailRenderingStart()
-      },
-      onRenderingEnd: () => {
-        this.archiveNormalizationService.onThumbnailRenderingEnd()
-      },
-      hasPendingArchiveNormalization: () => this.archiveNormalizationService.hasPending(),
-      scheduleArchiveNormalizationDrain: (delayMs) => this.scheduleArchiveNormalizationDrain(delayMs),
-      archiveNormalizeRecheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
-    })
-    if (thumbnailLocator) {
-      locator = thumbnailLocator
-    }
-
-    const mimeType = locator.mime_type || detectMimeTypeByExtension(locator.extension, locator.media_type)
-    const { token, expiresAtMs } = this.mediaTokenService.issueToken(locator, mimeType)
-
-    this.mediaAudit.resolveGranted += 1
-
-    return resolveMediaResourceResponseSchema.parse({
-      resource_url: `${MEDIA_PROTOCOL_SCHEME}://resource/${encodeURIComponent(token)}`,
-      mime_type: mimeType,
-      expires_at_ms: expiresAtMs,
-    })
+    return this.mediaResourceService.resolveMediaResource(request)
   }
 
   async readMediaResourceByToken(
     token: string,
     rangeHeader: string | null,
   ): Promise<MediaProtocolResponsePayload> {
-    const record = this.requireMediaTokenRecord(token)
-
-    const locator = record.locator
-    if (locator.kind === 'filesystem') {
-      return readFilesystemMedia(locator, record.mimeType, rangeHeader)
-    }
-
-    return readArchiveEntryMedia(locator, record.mimeType, this.librarySnapshotService.getZipEntryIndexByPath())
+    return this.mediaResourceService.readMediaResourceByToken(token, rangeHeader)
   }
 
   async readMediaResourceByTokenStream(
@@ -1424,38 +634,14 @@ export class FileSystemMediaReadService {
     rangeHeader: string | null,
     signal?: AbortSignal | null,
   ): Promise<MediaProtocolStreamResponsePayload> {
-    const record = this.requireMediaTokenRecord(token)
-
-    const locator = record.locator
-    if (locator.kind === 'filesystem') {
-      return readFilesystemMediaStream(locator, record.mimeType, rangeHeader, signal)
-    }
-
-    return readArchiveEntryMediaStream(
-      locator,
-      record.mimeType,
-      this.librarySnapshotService.getZipEntryIndexByPath(),
-      signal,
-    )
-  }
-
-  private requireMediaTokenRecord(token: string): MediaTokenRecord {
-    return this.mediaTokenService.requireRecord(token)
+    return this.mediaResourceService.readMediaResourceByTokenStream(token, rangeHeader, signal)
   }
 
   async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> {
-    this.markInteractiveRead()
-    const state = this.database.readAppState<unknown>(request.state_key, null)
-    return readAppStateResponseSchema.parse({
-      state_json: state !== null ? JSON.stringify(state) : (request.fallback_json ?? 'null'),
-    })
+    return this.libraryReadWriteService.readAppState(request)
   }
 
   async writeAppState(request: WriteAppStateRequestDto): Promise<WriteAppStateResponseDto> {
-    this.markInteractiveRead()
-    this.database.writeAppState(request.state_key, JSON.parse(request.state_json))
-    return writeAppStateResponseSchema.parse({
-      updated_at_ms: Date.now(),
-    })
+    return this.libraryReadWriteService.writeAppState(request)
   }
 }
