@@ -37,6 +37,7 @@ interface UseAppWorkspacePropsParams {
   mode: BrowserMode
   vectorMode: boolean
   manageMode: boolean
+  metadataManageMode: boolean
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   vectorPanelHeight: number
@@ -166,6 +167,7 @@ export function useAppWorkspaceProps({
   mode,
   vectorMode,
   manageMode,
+  metadataManageMode,
   searchPanelCollapsed,
   setSearchPanelCollapsed,
   vectorPanelHeight,
@@ -512,6 +514,23 @@ export function useAppWorkspaceProps({
     setFullscreenActiveWithAutoStop,
   })
 
+  const applyMetadataFeatureSearch = (patch: {
+    workTitle?: string
+    circle?: string
+    author?: string
+    tag?: string
+  }) => {
+    appSettings.updateSettings({ vectorMode: true, sidebarFocus: 'main' })
+    setSearchPanelMode('feature')
+    setSearchPanelCollapsed(false)
+    setFeatureNameQuery('')
+    setFeatureWorkTitleQuery(patch.workTitle ?? '')
+    setFeatureCircleQuery(patch.circle ?? '')
+    setFeatureAuthorQuery(patch.author ?? '')
+    setFeatureTags(patch.tag ? [patch.tag] : [])
+    setFeatureGradeFilter(null)
+  }
+
   const metadataPanelProps = buildMetadataPanelProps({
     mode,
     metadataCollapsed: appSettings.metadataCollapsed,
@@ -523,6 +542,7 @@ export function useAppWorkspaceProps({
     currentGrade: currentGradeEffective,
     currentVideoGrade: focusedVideoEffective?.grade ?? null,
     metadataPending: metadataWriteBindings.metadataPending,
+    editable: metadataManageMode,
     focusedVideo: focusedVideoEffective,
     metadataTab,
     playlistIds,
@@ -536,6 +556,18 @@ export function useAppWorkspaceProps({
     onGradeChange: metadataWriteBindings.applyPackageGrade,
     onSavePackageMetadata: metadataWriteBindings.applyPackageMetadata,
     onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
+    onSearchByWorkTitle: (value) => {
+      applyMetadataFeatureSearch({ workTitle: value })
+    },
+    onSearchByCircle: (value) => {
+      applyMetadataFeatureSearch({ circle: value })
+    },
+    onSearchByAuthor: (value) => {
+      applyMetadataFeatureSearch({ author: value })
+    },
+    onSearchByTag: (value) => {
+      applyMetadataFeatureSearch({ tag: value })
+    },
     onMetadataTabChange: setMetadataTab,
     onSelectVideo: selectVideoFromBrowser,
     setPlaylistIds,

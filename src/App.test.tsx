@@ -472,7 +472,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.change(featureScope.getByLabelText('名称'), { target: { value: '002' } })
     fireEvent.change(featureScope.getByLabelText('作者'), { target: { value: 'Nori' } })
     fireEvent.click(screen.getByRole('button', { name: '选择 tags' }))
-    fireEvent.click(screen.getByRole('button', { name: 'fog' }))
+    fireEvent.click(featureScope.getByRole('button', { name: 'fog' }))
 
     fireEvent.click(screen.getByRole('button', { name: '图包评分 3 分' }))
     expect(screen.getByRole('button', { name: '图包评分 1 分' }).classList.contains('is-active')).toBe(true)
@@ -645,6 +645,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
   it('元数据评分支持清空到空星，并可继续点击设星', async () => {
     render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
 
     const ratingGroup = screen.getByRole('group', { name: '图包评分' })
     const readStars = () => within(ratingGroup).getAllByRole('button').map((button) => button.textContent)
@@ -660,7 +661,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(readStars()).toEqual(['×', '☆', '☆', '☆', '☆', '☆'])
   })
 
-  it('视频模式元数据包含评分与操作区，以及文件名/作品名/社团/作者/tags和底部状态区', () => {
+  it('视频模式元数据默认只读，包含评分与操作区及底部状态区', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
@@ -670,11 +671,11 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText('作品名')).toBeInTheDocument()
     expect(screen.getByLabelText('社团')).toBeInTheDocument()
     expect(screen.getByLabelText('作者')).toBeInTheDocument()
-    expect(screen.getByLabelText('Tags')).toBeInTheDocument()
+    expect(screen.getByText('Tags')).toBeInTheDocument()
     expect(screen.getByRole('group', { name: '视频评分' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '视频评分 无评分' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: '保存' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: '同步文件名到作品名' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '视频评分 无评分' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '保存' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '同步文件名到作品名' })).toBeDisabled()
     expect(document.querySelector('.metadata-video-stats')).not.toBeNull()
   })
 
@@ -683,6 +684,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
     fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
 
     fireEvent.change(screen.getByLabelText('作品名'), { target: { value: '新的视频作品名' } })
@@ -701,6 +703,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
     fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
     fireEvent.click(screen.getByRole('button', { name: '视频评分 5 星' }))
 
@@ -709,6 +712,19 @@ describe('MediaPlayer 虚拟 UI', () => {
         grade: 5,
       }),
     )
+  })
+
+  it('默认只读元数据点击作品名可打开特征检索并注入筛选值', () => {
+    render(<App />)
+
+    const workTitleLabel = screen.getByText('作品名').closest('label') as HTMLElement
+    const workTitleChip = within(workTitleLabel).getByRole('button') as HTMLButtonElement
+    const chipText = workTitleChip.textContent?.trim() ?? ''
+    fireEvent.click(workTitleChip)
+
+    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+    const featureControls = document.querySelector('.feature-controls') as HTMLElement
+    expect(within(featureControls).getByLabelText('作品名')).toHaveValue(chipText)
   })
 
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {

@@ -17,6 +17,7 @@ export interface MetadataPanelProps {
   currentGrade: number | null
   currentVideoGrade: number | null
   metadataPending: boolean
+  editable: boolean
   focusedVideo: VideoItem | null
   metadataTab: 'info' | 'playlist'
   playlistIds: string[]
@@ -44,6 +45,10 @@ export interface MetadataPanelProps {
     grade?: number | null
     syncFileNameToWorkTitle?: boolean
   }) => void
+  onSearchByWorkTitle: (value: string) => void
+  onSearchByCircle: (value: string) => void
+  onSearchByAuthor: (value: string) => void
+  onSearchByTag: (value: string) => void
   onMetadataTabChange: (tab: 'info' | 'playlist') => void
   onSelectVideo: (videoId: string) => void
   onRemoveVideoFromPlaylist: (videoId: string) => void
@@ -73,6 +78,7 @@ function MetadataPanel({
   currentGrade,
   currentVideoGrade,
   metadataPending,
+  editable,
   focusedVideo,
   metadataTab,
   playlistIds,
@@ -87,6 +93,10 @@ function MetadataPanel({
   onGradeChange,
   onSavePackageMetadata,
   onSaveVideoMetadata,
+  onSearchByWorkTitle,
+  onSearchByCircle,
+  onSearchByAuthor,
+  onSearchByTag,
   onMetadataTabChange,
   onSelectVideo,
   onRemoveVideoFromPlaylist,
@@ -268,6 +278,7 @@ function MetadataPanel({
           displayedImageSrc={displayedImageSrc}
           imagePreviewSizing={imagePreviewSizing}
           metadataPending={metadataPending}
+          editable={editable}
           currentGrade={currentGrade}
           workTitleDraft={workTitleDraft}
           circleDraft={circleDraft}
@@ -279,12 +290,17 @@ function MetadataPanel({
           onTagsDraftChange={setTagsDraft}
           onPersistPackageMetadata={persistPackageMetadata}
           onGradeChange={onGradeChange}
+          onSearchByWorkTitle={onSearchByWorkTitle}
+          onSearchByCircle={onSearchByCircle}
+          onSearchByAuthor={onSearchByAuthor}
+          onSearchByTag={onSearchByTag}
         />
       ) : (
         <MetadataVideoEditor
           metadataTab={metadataTab}
           focusedVideo={focusedVideo}
           metadataPending={metadataPending}
+          editable={editable}
           currentVideoGrade={currentVideoGrade}
           videoWorkTitleDraft={videoWorkTitleDraft}
           videoCircleDraft={videoCircleDraft}
@@ -303,6 +319,10 @@ function MetadataPanel({
           onVideoAuthorDraftChange={setVideoAuthorDraft}
           onVideoTagsDraftChange={setVideoTagsDraft}
           onPersistVideoMetadata={persistVideoMetadata}
+          onSearchByWorkTitle={onSearchByWorkTitle}
+          onSearchByCircle={onSearchByCircle}
+          onSearchByAuthor={onSearchByAuthor}
+          onSearchByTag={onSearchByTag}
           onSelectVideo={onSelectVideo}
           onRemoveVideoFromPlaylist={onRemoveVideoFromPlaylist}
           onDragStart={onDragStart}

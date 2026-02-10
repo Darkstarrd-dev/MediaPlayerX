@@ -16,6 +16,7 @@ interface BuildMetadataPanelPropsParams {
   currentGrade: number | null
   currentVideoGrade: number | null
   metadataPending: boolean
+  editable: boolean
   focusedVideo: VideoItem | null
   metadataTab: MetadataPanelProps['metadataTab']
   playlistIds: string[]
@@ -31,6 +32,10 @@ interface BuildMetadataPanelPropsParams {
   onSaveVideoMetadata: (payload: VideoMetadataWritePayload) => void
   onMetadataTabChange: (tab: MetadataPanelProps['metadataTab']) => void
   onSelectVideo: (videoId: string) => void
+  onSearchByWorkTitle: (value: string) => void
+  onSearchByCircle: (value: string) => void
+  onSearchByAuthor: (value: string) => void
+  onSearchByTag: (value: string) => void
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
   setDragVideoId: Dispatch<SetStateAction<string | null>>
 }
@@ -47,6 +52,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     currentGrade: params.currentGrade,
     currentVideoGrade: params.currentVideoGrade,
     metadataPending: params.metadataPending,
+    editable: params.editable,
     focusedVideo: params.focusedVideo,
     metadataTab: params.metadataTab,
     playlistIds: params.playlistIds,
@@ -61,6 +67,10 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onGradeChange: params.onGradeChange,
     onSavePackageMetadata: params.onSavePackageMetadata,
     onSaveVideoMetadata: params.onSaveVideoMetadata,
+    onSearchByWorkTitle: params.onSearchByWorkTitle,
+    onSearchByCircle: params.onSearchByCircle,
+    onSearchByAuthor: params.onSearchByAuthor,
+    onSearchByTag: params.onSearchByTag,
     onMetadataTabChange: params.onMetadataTabChange,
     onSelectVideo: params.onSelectVideo,
     onRemoveVideoFromPlaylist: (videoId: string) => {

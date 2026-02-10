@@ -6,6 +6,7 @@ interface MetadataVideoEditorProps {
   metadataTab: 'info' | 'playlist'
   focusedVideo: VideoItem | null
   metadataPending: boolean
+  editable: boolean
   currentVideoGrade: number | null
   videoWorkTitleDraft: string
   videoCircleDraft: string
@@ -24,6 +25,10 @@ interface MetadataVideoEditorProps {
   onVideoAuthorDraftChange: (value: string) => void
   onVideoTagsDraftChange: (value: string) => void
   onPersistVideoMetadata: (syncFileNameToWorkTitle?: boolean, grade?: number | null) => void
+  onSearchByWorkTitle: (value: string) => void
+  onSearchByCircle: (value: string) => void
+  onSearchByAuthor: (value: string) => void
+  onSearchByTag: (value: string) => void
   onSelectVideo: (videoId: string) => void
   onRemoveVideoFromPlaylist: (videoId: string) => void
   onDragStart: (videoId: string) => void
@@ -34,6 +39,7 @@ export function MetadataVideoEditor({
   metadataTab,
   focusedVideo,
   metadataPending,
+  editable,
   currentVideoGrade,
   videoWorkTitleDraft,
   videoCircleDraft,
@@ -52,11 +58,20 @@ export function MetadataVideoEditor({
   onVideoAuthorDraftChange,
   onVideoTagsDraftChange,
   onPersistVideoMetadata,
+  onSearchByWorkTitle,
+  onSearchByCircle,
+  onSearchByAuthor,
+  onSearchByTag,
   onSelectVideo,
   onRemoveVideoFromPlaylist,
   onDragStart,
   onDropToVideo,
 }: MetadataVideoEditorProps) {
+  const readOnlyTags = videoTagsDraft
+    .split(/[,，]/)
+    .map((tag) => tag.trim())
+    .filter((tag, index, arr) => tag.length > 0 && arr.indexOf(tag) === index)
+
   return (
     <div className="metadata-content metadata-video-content">
       <div className="meta-tabs">
@@ -79,7 +94,7 @@ export function MetadataVideoEditor({
               title="评分"
               groupAriaLabel="视频评分"
               clearAriaLabel="清空视频评分"
-              pending={metadataPending}
+              pending={metadataPending || !editable}
               value={currentVideoGrade}
               onChange={(grade) => {
                 onPersistVideoMetadata(false, grade)
@@ -93,51 +108,93 @@ export function MetadataVideoEditor({
               </label>
               <label>
                 <span>作品名</span>
-                <input
-                  value={videoWorkTitleDraft}
-                  onChange={(event) => onVideoWorkTitleDraftChange(event.target.value)}
-                  onBlur={() => {
-                    onPersistVideoMetadata(false)
-                  }}
-                />
+                {editable ? (
+                  <input
+                    value={videoWorkTitleDraft}
+                    onChange={(event) => onVideoWorkTitleDraftChange(event.target.value)}
+                    onBlur={() => {
+                      onPersistVideoMetadata(false)
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    disabled={videoWorkTitleDraft.trim().length === 0}
+                    onClick={() => onSearchByWorkTitle(videoWorkTitleDraft.trim())}
+                  >
+                    {videoWorkTitleDraft.trim() || '-'}
+                  </button>
+                )}
               </label>
               <label>
                 <span>社团</span>
-                <input
-                  value={videoCircleDraft}
-                  onChange={(event) => onVideoCircleDraftChange(event.target.value)}
-                  onBlur={() => {
-                    onPersistVideoMetadata(false)
-                  }}
-                />
+                {editable ? (
+                  <input
+                    value={videoCircleDraft}
+                    onChange={(event) => onVideoCircleDraftChange(event.target.value)}
+                    onBlur={() => {
+                      onPersistVideoMetadata(false)
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    disabled={videoCircleDraft.trim().length === 0}
+                    onClick={() => onSearchByCircle(videoCircleDraft.trim())}
+                  >
+                    {videoCircleDraft.trim() || '-'}
+                  </button>
+                )}
               </label>
               <label>
                 <span>作者</span>
-                <input
-                  value={videoAuthorDraft}
-                  onChange={(event) => onVideoAuthorDraftChange(event.target.value)}
-                  onBlur={() => {
-                    onPersistVideoMetadata(false)
-                  }}
-                />
+                {editable ? (
+                  <input
+                    value={videoAuthorDraft}
+                    onChange={(event) => onVideoAuthorDraftChange(event.target.value)}
+                    onBlur={() => {
+                      onPersistVideoMetadata(false)
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    disabled={videoAuthorDraft.trim().length === 0}
+                    onClick={() => onSearchByAuthor(videoAuthorDraft.trim())}
+                  >
+                    {videoAuthorDraft.trim() || '-'}
+                  </button>
+                )}
               </label>
               <label>
                 <span>Tags</span>
-                <input
-                  value={videoTagsDraft}
-                  placeholder="多个标签用逗号分隔"
-                  onChange={(event) => onVideoTagsDraftChange(event.target.value)}
-                  onBlur={() => {
-                    onPersistVideoMetadata(false)
-                  }}
-                />
+                {editable ? (
+                  <input
+                    value={videoTagsDraft}
+                    placeholder="多个标签用逗号分隔"
+                    onChange={(event) => onVideoTagsDraftChange(event.target.value)}
+                    onBlur={() => {
+                      onPersistVideoMetadata(false)
+                    }}
+                  />
+                ) : (
+                  <div>
+                    {readOnlyTags.length > 0
+                      ? readOnlyTags.map((tag) => (
+                          <button key={tag} type="button" onClick={() => onSearchByTag(tag)}>
+                            {tag}
+                          </button>
+                        ))
+                      : '-'}
+                  </div>
+                )}
               </label>
             </div>
 
             <div className="metadata-edit-actions">
               <button
                 type="button"
-                disabled={metadataPending}
+                disabled={metadataPending || !editable}
                 onClick={() => {
                   onPersistVideoMetadata(false)
                 }}
@@ -146,7 +203,7 @@ export function MetadataVideoEditor({
               </button>
               <button
                 type="button"
-                disabled={metadataPending}
+                disabled={metadataPending || !editable}
                 onClick={() => {
                   onPersistVideoMetadata(true)
                 }}

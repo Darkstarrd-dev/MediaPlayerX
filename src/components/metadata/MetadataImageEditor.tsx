@@ -10,6 +10,7 @@ interface MetadataImageEditorProps {
   displayedImageSrc: string | null
   imagePreviewSizing: { width?: string; height?: string }
   metadataPending: boolean
+  editable: boolean
   currentGrade: number | null
   workTitleDraft: string
   circleDraft: string
@@ -21,6 +22,10 @@ interface MetadataImageEditorProps {
   onTagsDraftChange: (value: string) => void
   onPersistPackageMetadata: (syncWorkTitleToPackageName?: boolean) => void
   onGradeChange: (grade: number | null) => void
+  onSearchByWorkTitle: (value: string) => void
+  onSearchByCircle: (value: string) => void
+  onSearchByAuthor: (value: string) => void
+  onSearchByTag: (value: string) => void
 }
 
 export function MetadataImageEditor({
@@ -31,6 +36,7 @@ export function MetadataImageEditor({
   displayedImageSrc,
   imagePreviewSizing,
   metadataPending,
+  editable,
   currentGrade,
   workTitleDraft,
   circleDraft,
@@ -42,7 +48,16 @@ export function MetadataImageEditor({
   onTagsDraftChange,
   onPersistPackageMetadata,
   onGradeChange,
+  onSearchByWorkTitle,
+  onSearchByCircle,
+  onSearchByAuthor,
+  onSearchByTag,
 }: MetadataImageEditorProps) {
+  const readOnlyTags = tagsDraft
+    .split(/[,，]/)
+    .map((tag) => tag.trim())
+    .filter((tag, index, arr) => tag.length > 0 && arr.indexOf(tag) === index)
+
   return (
     <div className={contentClassName}>
       {showImageCanvas && focusedImage ? (
@@ -79,7 +94,7 @@ export function MetadataImageEditor({
             title="评分"
             groupAriaLabel="图包评分"
             clearAriaLabel="清空评分"
-            pending={metadataPending}
+            pending={metadataPending || !editable}
             value={currentGrade}
             onChange={onGradeChange}
           />
@@ -93,53 +108,95 @@ export function MetadataImageEditor({
 
               <label>
                 <span>作品名</span>
-                <input
-                  value={workTitleDraft}
-                  onChange={(event) => onWorkTitleDraftChange(event.target.value)}
-                  onBlur={() => {
-                    onPersistPackageMetadata(false)
-                  }}
-                />
+                {editable ? (
+                  <input
+                    value={workTitleDraft}
+                    onChange={(event) => onWorkTitleDraftChange(event.target.value)}
+                    onBlur={() => {
+                      onPersistPackageMetadata(false)
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    disabled={workTitleDraft.trim().length === 0}
+                    onClick={() => onSearchByWorkTitle(workTitleDraft.trim())}
+                  >
+                    {workTitleDraft.trim() || '-'}
+                  </button>
+                )}
               </label>
 
               <label>
                 <span>社团</span>
-                <input
-                  value={circleDraft}
-                  onChange={(event) => onCircleDraftChange(event.target.value)}
-                  onBlur={() => {
-                    onPersistPackageMetadata(false)
-                  }}
-                />
+                {editable ? (
+                  <input
+                    value={circleDraft}
+                    onChange={(event) => onCircleDraftChange(event.target.value)}
+                    onBlur={() => {
+                      onPersistPackageMetadata(false)
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    disabled={circleDraft.trim().length === 0}
+                    onClick={() => onSearchByCircle(circleDraft.trim())}
+                  >
+                    {circleDraft.trim() || '-'}
+                  </button>
+                )}
               </label>
 
               <label>
                 <span>作者</span>
-                <input
-                  value={authorDraft}
-                  onChange={(event) => onAuthorDraftChange(event.target.value)}
-                  onBlur={() => {
-                    onPersistPackageMetadata(false)
-                  }}
-                />
+                {editable ? (
+                  <input
+                    value={authorDraft}
+                    onChange={(event) => onAuthorDraftChange(event.target.value)}
+                    onBlur={() => {
+                      onPersistPackageMetadata(false)
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    disabled={authorDraft.trim().length === 0}
+                    onClick={() => onSearchByAuthor(authorDraft.trim())}
+                  >
+                    {authorDraft.trim() || '-'}
+                  </button>
+                )}
               </label>
 
               <label>
                 <span>Tags</span>
-                <input
-                  value={tagsDraft}
-                  placeholder="多个标签用逗号分隔"
-                  onChange={(event) => onTagsDraftChange(event.target.value)}
-                  onBlur={() => {
-                    onPersistPackageMetadata(false)
-                  }}
-                />
+                {editable ? (
+                  <input
+                    value={tagsDraft}
+                    placeholder="多个标签用逗号分隔"
+                    onChange={(event) => onTagsDraftChange(event.target.value)}
+                    onBlur={() => {
+                      onPersistPackageMetadata(false)
+                    }}
+                  />
+                ) : (
+                  <div>
+                    {readOnlyTags.length > 0
+                      ? readOnlyTags.map((tag) => (
+                          <button key={tag} type="button" onClick={() => onSearchByTag(tag)}>
+                            {tag}
+                          </button>
+                        ))
+                      : '-'}
+                  </div>
+                )}
               </label>
 
               <div className="metadata-edit-actions">
                 <button
                   type="button"
-                  disabled={metadataPending}
+                  disabled={metadataPending || !editable}
                   onClick={() => {
                     onPersistPackageMetadata(false)
                   }}
@@ -148,7 +205,7 @@ export function MetadataImageEditor({
                 </button>
                 <button
                   type="button"
-                  disabled={metadataPending}
+                  disabled={metadataPending || !editable}
                   onClick={() => {
                     onPersistPackageMetadata(true)
                   }}
