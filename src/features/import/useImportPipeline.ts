@@ -130,7 +130,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
         setEnqueuePending(false)
       }
     },
-    [isSynchronousTestMode, refreshTasks, repository],
+    [handleImportError, isSynchronousTestMode, refreshTasks, repository],
   )
 
   const retryImportTask = useCallback(
