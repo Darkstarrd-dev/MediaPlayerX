@@ -1,8 +1,8 @@
 import { type RefObject } from 'react'
 
 import { mediaLocatorFileName } from '../features/backend'
+import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../types'
-import { useManageSelectionInteractions } from './image-main/useManageSelectionInteractions'
 
 interface ImageMainSectionProps {
   vectorMode: boolean
@@ -70,7 +70,7 @@ function ImageMainSection({
   onNextPage,
 }: ImageMainSectionProps) {
   const showSkeleton = !showNamesOnly && enableLoadingSkeleton && loading && refsInPage.length === 0
-  const { marqueeStyle, startMarqueeSelection, startThumbnailDragToggle } = useManageSelectionInteractions({
+  const { marqueeStyle, startMarqueeSelection, startThumbnailDragToggle } = useManageImageSelectionInteractions({
     manageMode,
     onReplaceCheckedImages,
     onToggleImageChecked,
@@ -133,6 +133,9 @@ function ImageMainSection({
                   <div
                     key={`${ref.packageId}-${ref.imageIndex}`}
                     data-manage-image-id={image.id}
+                    data-manage-package-id={ref.packageId}
+                    data-manage-image-index={String(ref.imageIndex)}
+                    data-manage-absolute-index={String(absoluteIndex)}
                     className={`name-list-row is-manage ${image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''}`}
                   >
                     <input
