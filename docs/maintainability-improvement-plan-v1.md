@@ -1,13 +1,13 @@
 # 可维护性与稳定性改进计划 V1
 
-> 文档状态：进行中（当前阶段：收口）
-> 执行清单：`docs/maintainability-improvement-execution-v1.md`（临时）
+> 文档状态：已完成（2026-02-10）
+> 执行清单：`docs/maintainability-improvement-execution-v1.md` 已按计划移除
 
 ## 0. 文档定位
 
 - 本文档用于固化当前阶段最值得执行的工程改进项，目标是优先降低数据损坏与安全回归风险。
 - 计划依据：`docs/architecture-v1.md` 与 `docs/backend-integration-guardrails.md` 的既有约束。
-- 本文档为长期保留文档；阶段执行细节记录在临时文档 `docs/maintainability-improvement-execution-v1.md`。
+- 本文档为长期保留文档；阶段执行细节曾记录于临时文档 `docs/maintainability-improvement-execution-v1.md`（已移除）。
 
 ## 1. 目标与范围
 
@@ -98,7 +98,6 @@
 - 阶段完成后同步更新：
   - `docs/README.md` 当前状态
   - `docs/architecture-v1.md` 测试策略对齐
-  - `docs/maintainability-improvement-execution-v1.md` 勾选状态
 
 ## 5. 文档协作约定
 

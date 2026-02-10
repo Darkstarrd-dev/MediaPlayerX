@@ -143,10 +143,10 @@
 - 集成测试：SQLite + LanceDB + 文件系统联动链路。
 - E2E：保持用户手动执行的脚本化检查清单。
 
-## 可维护性与稳定性改进专项（进行中）
+## 可维护性与稳定性改进专项（已完成）
 
 - 专项计划文档：`docs/maintainability-improvement-plan-v1.md`（长期保留）。
-- 专项实施文档：`docs/maintainability-improvement-execution-v1.md`（临时，计划完成后删除）。
+- 专项实施文档：`docs/maintainability-improvement-execution-v1.md`（临时文档，已移除）。
 - 执行优先级：
   - P0：SQLite 存储层与媒体访问安全守卫测试。
   - P1：核心编排链路集成测试与 `build*Props` 纯函数测试。
