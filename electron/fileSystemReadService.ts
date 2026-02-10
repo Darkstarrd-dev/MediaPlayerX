@@ -120,6 +120,12 @@ import { buildImageSidebarTree } from './fileSystemSidebarTree'
 import { writeStoredZipFromDirectory, writeStoredZipFromEntries } from './fileSystemZipStoreWriter'
 import { MediaTokenService, type MediaTokenRecord } from './services/file-system-read/mediaTokenService'
 import { ImportPathRegistry } from './services/file-system-read/importPathRegistry'
+import { ArchiveNormalizationService } from './services/file-system-read/archiveNormalizationService'
+import { ImportTaskService } from './services/file-system-read/importTaskService'
+import {
+  LibrarySnapshotService,
+  type PersistedVideoCoverRecord,
+} from './services/file-system-read/librarySnapshotService'
 import {
   RuntimeDependencyService,
   type RuntimeDependencySnapshot,
@@ -301,19 +307,9 @@ export class FileSystemMediaReadService {
 
   private readonly database: MediaLibraryDatabase
 
-  private snapshotCache: LibrarySnapshotDto | null = null
-
-  private loadingPromise: Promise<LibrarySnapshotDto> | null = null
-
   private stateHydrated = false
 
-  private archiveEntryIndexByPath = new Map<string, Set<string>>()
-
-  private zipEntryIndexByPath = new Map<string, Map<string, ZipCentralEntry>>()
-
   private readonly mediaTokenService = new MediaTokenService(MEDIA_TOKEN_TTL_MS)
-
-  private normalizedArchiveCacheBySourcePath = new Map<string, NormalizedArchiveCacheRecord>()
 
   private packageGradeOverridesBySourceId = new Map<string, number | null>()
 
@@ -333,27 +329,13 @@ export class FileSystemMediaReadService {
 
   private readonly runtimeDependencyService = new RuntimeDependencyService(FFMPEG_BIN, FFPROBE_BIN)
 
-  private archiveNormalizationPendingLow = new Set<string>()
-
-  private archiveNormalizationPendingHigh = new Set<string>()
-
-  private archiveNormalizationRunningPath: string | null = null
-
-  private archiveNormalizationDrainTimer: ReturnType<typeof setTimeout> | null = null
-
-  private lastInteractiveReadAtMs = Date.now()
-
-  private thumbnailRenderingInFlight = 0
-
-  private archiveNormalizationStateBySourcePath = new Map<string, ArchiveNormalizationTaskState>()
-
-  private archiveNormalizeWorkerScriptPath: string | null = null
-
   private readonly eventBus = new ServiceEventBus<FileSystemReadServiceEvents>()
 
-  private importTaskQueue: Promise<void> = Promise.resolve()
+  private readonly archiveNormalizationService: ArchiveNormalizationService
 
-  private runningImportTaskIds = new Set<string>()
+  private readonly librarySnapshotService: LibrarySnapshotService
+
+  private readonly importTaskService: ImportTaskService
 
   constructor(rootDir: string) {
     this.rootDir = path.resolve(rootDir)
@@ -361,30 +343,59 @@ export class FileSystemMediaReadService {
     this.thumbnailCacheRootDir = path.join(this.rootDir, THUMBNAIL_CACHE_DIR_NAME)
     this.coverOutputRootDir = path.join(this.rootDir, '.mediaplayerx', 'covers')
     this.database = new MediaLibraryDatabase(this.rootDir)
-    this.recoverInterruptedImportTasks()
-  }
 
-  private recoverInterruptedImportTasks(): void {
-    const tasks = this.database.readTasks()
-    if (tasks.length === 0) {
-      return
-    }
+    this.archiveNormalizationService = new ArchiveNormalizationService({
+      idleMs: ARCHIVE_NORMALIZE_IDLE_MS,
+      recheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
+      isTargetEligible: (sourceArchivePath) => this.isArchiveNormalizationTargetEligible(sourceArchivePath),
+      hasRunningImportTasks: () => this.importTaskService.hasRunningImportTasks(),
+      isSnapshotLoading: () => this.librarySnapshotService.isSnapshotLoading(),
+      onArchiveNormalized: async (sourceArchivePath, outputZipPath) => {
+        await this.replaceImportedFileSourcePath(sourceArchivePath, outputZipPath)
+        this.invalidateCache()
+      },
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
+      emitArchiveLoadStatusChanged: (payload) => this.emitArchiveLoadStatusChanged(payload),
+    })
 
-    const now = Date.now()
-    for (const task of tasks) {
-      if (task.taskType !== 'import' || (task.status !== 'pending' && task.status !== 'running')) {
-        continue
-      }
+    this.librarySnapshotService = new LibrarySnapshotService({
+      rootDir: this.rootDir,
+      normalizedArchiveRootDir: this.normalizedArchiveRootDir,
+      legacyImportsDirName: LEGACY_IMPORTS_DIR_NAME,
+      database: this.database,
+      importPathRegistry: this.importPathRegistry,
+      imageExtensions: IMAGE_EXTENSIONS,
+      videoExtensions: VIDEO_EXTENSIONS,
+      archiveExtensions: ARCHIVE_EXTENSIONS,
+      colorPalette: COLOR_PALETTE,
+      imageExtensionsForWebpConvert: IMAGE_EXTENSIONS_FOR_WEBP_CONVERT,
+      directoryScanConcurrency: DIRECTORY_SCAN_CONCURRENCY,
+      archiveScanConcurrency: ARCHIVE_SCAN_CONCURRENCY,
+      ffmpegBin: FFMPEG_BIN,
+      ffprobeBin: FFPROBE_BIN,
+      zipGeneralPurposeFlagEncrypted: ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED,
+      zipCompressionStore: ZIP_COMPRESSION_STORE,
+      zipCompressionDeflate: ZIP_COMPRESSION_DEFLATE,
+      ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
+      queueRar7zNormalization: (sourceArchivePath, priority) =>
+        this.archiveNormalizationService.queueRar7zNormalization(sourceArchivePath, priority),
+      getPackageGradeOverridesBySourceId: () => this.packageGradeOverridesBySourceId,
+      getVideoCoverOverridesByVideoId: () => this.videoCoverOverridesByVideoId,
+      getVideoMetadataOverridesByVideoId: () => this.videoMetadataOverridesByVideoId,
+    })
 
-      this.database.upsertTask({
-        ...task,
-        status: 'failed',
-        progress: task.totalCount > 0 ? task.processedCount / task.totalCount : 1,
-        message: task.status === 'running' ? '导入任务已中断，请重试' : '导入任务未执行，请重试',
-        errorDetail: task.errorDetail ?? '应用重启导致任务中断',
-        updatedAtMs: now,
-      })
-    }
+    this.importTaskService = new ImportTaskService({
+      rootDir: this.rootDir,
+      legacyImportsDirName: LEGACY_IMPORTS_DIR_NAME,
+      imageExtensions: IMAGE_EXTENSIONS,
+      videoExtensions: VIDEO_EXTENSIONS,
+      archiveExtensions: ARCHIVE_EXTENSIONS,
+      database: this.database,
+      invalidateCache: () => this.invalidateCache(),
+      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
+    })
+    this.importTaskService.recoverInterruptedImportTasks()
   }
 
   onLibraryChanged(listener: LibraryChangedListener): () => void {
@@ -403,86 +414,8 @@ export class FileSystemMediaReadService {
     this.eventBus.emit('archiveLoadStatus', payload)
   }
 
-  private resolveArchiveNormalizeWorkerScriptPath(): string | null {
-    if (this.archiveNormalizeWorkerScriptPath) {
-      return this.archiveNormalizeWorkerScriptPath
-    }
-
-    const mainEntry = process.argv[1] ? path.resolve(process.argv[1]) : ''
-    const candidates: string[] = []
-    if (mainEntry) {
-      candidates.push(path.join(path.dirname(mainEntry), 'archiveNormalizeWorker.cjs'))
-    }
-
-    candidates.push(path.join(process.cwd(), 'dist-electron', 'archiveNormalizeWorker.cjs'))
-
-    for (const candidate of candidates) {
-      if (!existsSync(candidate)) {
-        continue
-      }
-      this.archiveNormalizeWorkerScriptPath = candidate
-      return candidate
-    }
-
-    return null
-  }
-
-  private async runRar7zNormalizationJob(sourceArchivePath: string): Promise<string> {
-    const workerPath = this.resolveArchiveNormalizeWorkerScriptPath()
-    if (!workerPath) {
-      const normalized = await normalizeArchiveToStoreZipInPlace(sourceArchivePath, {
-        webpQuality: 90,
-      })
-      return normalized.outputZipPath
-    }
-
-    return await new Promise<string>((resolve, reject) => {
-      const worker = new Worker(workerPath, {
-        workerData: {
-          sourceArchivePath,
-          webpQuality: 90,
-        },
-      })
-
-      let settled = false
-      const finish = (error: Error | null, outputZipPath: string | null) => {
-        if (settled) {
-          return
-        }
-        settled = true
-        if (error) {
-          reject(error)
-        } else {
-          resolve(outputZipPath ?? resolveArchiveReplacementZipPath(sourceArchivePath))
-        }
-      }
-
-      worker.once('message', (payload: unknown) => {
-        const message = payload as { ok?: boolean; error?: string; outputZipPath?: string }
-        if (message?.ok) {
-          finish(null, typeof message.outputZipPath === 'string' ? message.outputZipPath : null)
-          return
-        }
-        finish(new Error(message?.error ?? `archive normalization worker failed: ${sourceArchivePath}`), null)
-      })
-
-      worker.once('error', (error) => {
-        finish(error, null)
-      })
-
-      worker.once('exit', (code) => {
-        if (!settled && code !== 0) {
-          finish(new Error(`archive normalization worker exit ${code} for ${sourceArchivePath}`), null)
-        }
-      })
-    })
-  }
-
   private markInteractiveRead(): void {
-    this.lastInteractiveReadAtMs = Date.now()
-    if (this.archiveNormalizationPendingHigh.size === 0 && this.archiveNormalizationPendingLow.size > 0) {
-      this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_IDLE_MS)
-    }
+    this.archiveNormalizationService.onInteractiveRead()
   }
 
   private isRar7zPath(filePath: string): boolean {
@@ -495,7 +428,7 @@ export class FileSystemMediaReadService {
       rootDir: this.rootDir,
       importDirectoryRoots: this.importPathRegistry.getImportDirectoryRoots(),
       importFileAllowlistKeys: this.importPathRegistry.getImportFileAllowlistKeys(),
-      archiveEntryIndexByPath: this.archiveEntryIndexByPath,
+      archiveEntryIndexByPath: this.librarySnapshotService.getArchiveEntryIndexByPath(),
       imageExtensions: IMAGE_EXTENSIONS,
       videoExtensions: VIDEO_EXTENSIONS,
     }
@@ -508,195 +441,26 @@ export class FileSystemMediaReadService {
     return isPathAllowlisted(sourceArchivePath, this.buildMediaAccessContext())
   }
 
-  private pruneArchiveNormalizationPendingSets(): void {
-    for (const candidate of this.archiveNormalizationPendingHigh) {
-      if (!this.isArchiveNormalizationTargetEligible(candidate)) {
-        this.archiveNormalizationPendingHigh.delete(candidate)
-      }
-    }
-    for (const candidate of this.archiveNormalizationPendingLow) {
-      if (!this.isArchiveNormalizationTargetEligible(candidate)) {
-        this.archiveNormalizationPendingLow.delete(candidate)
-      }
-    }
-  }
-
-  private pickNextArchiveNormalizationTarget(): { path: string; priority: 'high' | 'low' } | null {
-    this.pruneArchiveNormalizationPendingSets()
-
-    if (this.archiveNormalizationPendingHigh.size > 0) {
-      const next = this.archiveNormalizationPendingHigh.values().next().value
-      if (typeof next === 'string') {
-        return { path: next, priority: 'high' }
-      }
-    }
-
-    if (this.archiveNormalizationPendingLow.size > 0) {
-      const sorted = Array.from(this.archiveNormalizationPendingLow).sort((left, right) =>
-        left.localeCompare(right, 'zh-CN'),
-      )
-      const next = sorted[0]
-      if (next) {
-        return { path: next, priority: 'low' }
-      }
-    }
-
-    return null
-  }
-
   private scheduleArchiveNormalizationDrain(delayMs = 0): void {
-    if (this.archiveNormalizationDrainTimer !== null) {
-      clearTimeout(this.archiveNormalizationDrainTimer)
-      this.archiveNormalizationDrainTimer = null
-    }
-
-    this.archiveNormalizationDrainTimer = setTimeout(() => {
-      this.archiveNormalizationDrainTimer = null
-      void this.drainArchiveNormalizationQueue()
-    }, Math.max(0, delayMs))
-  }
-
-  private shouldDelayLowPriorityNormalization(nowMs: number): boolean {
-    if (this.runningImportTaskIds.size > 0) {
-      return true
-    }
-    if (this.thumbnailRenderingInFlight > 0) {
-      return true
-    }
-    if (this.loadingPromise) {
-      return true
-    }
-    return nowMs - this.lastInteractiveReadAtMs < ARCHIVE_NORMALIZE_IDLE_MS
-  }
-
-  private shouldDelayHighPriorityNormalization(): boolean {
-    if (this.runningImportTaskIds.size > 0) {
-      return true
-    }
-    if (this.loadingPromise) {
-      return true
-    }
-    return false
-  }
-
-  private async drainArchiveNormalizationQueue(): Promise<void> {
-    if (this.archiveNormalizationRunningPath) {
-      return
-    }
-
-    const nextTarget = this.pickNextArchiveNormalizationTarget()
-    if (!nextTarget) {
-      return
-    }
-
-    if (nextTarget.priority === 'low' && this.shouldDelayLowPriorityNormalization(Date.now())) {
-      this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_RECHECK_MS)
-      return
-    }
-    if (nextTarget.priority === 'high' && this.shouldDelayHighPriorityNormalization()) {
-      this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_RECHECK_MS)
-      return
-    }
-
-    const resolvedPath = nextTarget.path
-    this.archiveNormalizationPendingHigh.delete(resolvedPath)
-    this.archiveNormalizationPendingLow.delete(resolvedPath)
-    this.archiveNormalizationRunningPath = resolvedPath
-
-    this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
-      status: 'running',
-      error: null,
-      updatedAtMs: Date.now(),
-    })
-    this.emitArchiveLoadStatusChanged(this.buildArchiveLoadStatusPayload())
-
-    try {
-      const outputZipPath = await this.runRar7zNormalizationJob(resolvedPath)
-      await this.replaceImportedFileSourcePath(resolvedPath, outputZipPath)
-      this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
-        status: 'completed',
-        error: null,
-        updatedAtMs: Date.now(),
-      })
-      this.emitArchiveLoadStatusChanged(this.buildArchiveLoadStatusPayload())
-      this.invalidateCache()
-      this.emitLibraryChanged({
-        reason: 'archive-normalized',
-        updated_at_ms: Date.now(),
-      })
-    } catch (error) {
-      const reason = error instanceof Error && error.message ? error.message : String(error)
-      this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
-        status: 'failed',
-        error: reason,
-        updatedAtMs: Date.now(),
-      })
-      this.emitArchiveLoadStatusChanged(this.buildArchiveLoadStatusPayload())
-      console.warn('archive normalization failed (rar/7z)', {
-        archivePath: resolvedPath,
-        reason,
-      })
-      this.emitLibraryChanged({
-        reason: 'archive-normalize-failed',
-        updated_at_ms: Date.now(),
-      })
-    } finally {
-      this.archiveNormalizationRunningPath = null
-      this.emitArchiveLoadStatusChanged(this.buildArchiveLoadStatusPayload())
-      if (this.archiveNormalizationPendingHigh.size > 0 || this.archiveNormalizationPendingLow.size > 0) {
-        this.scheduleArchiveNormalizationDrain(0)
-      }
-    }
+    this.archiveNormalizationService.scheduleDrain(delayMs)
   }
 
   private queueRar7zNormalization(sourceArchivePath: string, priority: 'low' | 'high' = 'low'): void {
-    const resolvedPath = path.resolve(sourceArchivePath)
-    if (!this.isArchiveNormalizationTargetEligible(resolvedPath)) {
-      return
-    }
-
-    const state = this.archiveNormalizationStateBySourcePath.get(resolvedPath)
-    if (state?.status === 'running' || state?.status === 'completed') {
-      return
-    }
-
-    this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
-      status: 'pending',
-      error: null,
-      updatedAtMs: Date.now(),
-    })
-
-    if (priority === 'high') {
-      this.archiveNormalizationPendingLow.delete(resolvedPath)
-      this.archiveNormalizationPendingHigh.add(resolvedPath)
-      this.emitArchiveLoadStatusChanged(this.buildArchiveLoadStatusPayload())
-      this.scheduleArchiveNormalizationDrain(0)
-      return
-    }
-
-    if (!this.archiveNormalizationPendingHigh.has(resolvedPath)) {
-      this.archiveNormalizationPendingLow.add(resolvedPath)
-    }
-    this.emitArchiveLoadStatusChanged(this.buildArchiveLoadStatusPayload())
-    this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_RECHECK_MS)
+    this.archiveNormalizationService.queueRar7zNormalization(sourceArchivePath, priority)
   }
 
   invalidateCache(): void {
-    this.snapshotCache = null
+    this.librarySnapshotService.invalidateCache()
     this.stateHydrated = false
     // Keep archive allowlists until next snapshot is ready.
     // This avoids transient "entry not allowlisted" errors while a rescan is in progress.
     // Keep active media tokens until TTL expiry to avoid transient 404
     // during background refreshes or libraryChanged fan-out.
     this.cleanupExpiredTokens()
-    this.normalizedArchiveCacheBySourcePath.clear()
   }
 
   dispose(): void {
-    if (this.archiveNormalizationDrainTimer !== null) {
-      clearTimeout(this.archiveNormalizationDrainTimer)
-      this.archiveNormalizationDrainTimer = null
-    }
+    this.archiveNormalizationService.dispose()
     this.eventBus.clear()
     this.database.dispose()
   }
@@ -749,64 +513,17 @@ export class FileSystemMediaReadService {
   }
 
   private syncSnapshotFromDatabase(): LibrarySnapshotDto {
-    const snapshot = this.database.readSnapshot()
-    this.snapshotCache = snapshot
-    return snapshot
+    return this.librarySnapshotService.syncSnapshotFromDatabase()
   }
 
   private async refreshArchiveIndexesForPaths(archivePaths: Iterable<string>): Promise<void> {
-    const normalizedPaths = Array.from(new Set(Array.from(archivePaths).map((value) => path.resolve(value))))
-    for (const archivePath of normalizedPaths) {
-      const stat = await fs.stat(archivePath).catch(() => null)
-      if (!stat || !stat.isFile()) {
-        this.archiveEntryIndexByPath.delete(archivePath)
-        this.zipEntryIndexByPath.delete(archivePath)
-        continue
-      }
-
-      const centralEntries = await scanZipCentralEntries(archivePath).catch(() => null)
-      if (!centralEntries) {
-        this.archiveEntryIndexByPath.delete(archivePath)
-        this.zipEntryIndexByPath.delete(archivePath)
-        continue
-      }
-
-      const imageEntries = centralEntries.filter(
-        (entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName),
-      )
-
-      this.archiveEntryIndexByPath.set(archivePath, new Set(imageEntries.map((entry) => entry.entryName)))
-      this.zipEntryIndexByPath.set(
-        archivePath,
-        new Map(imageEntries.map((entry) => [entry.entryName, entry] as const)),
-      )
-    }
+    await this.librarySnapshotService.refreshArchiveIndexesForPaths(archivePaths)
   }
 
   private pruneArchiveIndexesByDeletedRoots(deletedPaths: Iterable<string>): void {
-    const roots = Array.from(new Set(Array.from(deletedPaths).map((value) => path.resolve(value))))
-    if (roots.length === 0) {
-      return
-    }
-
-    const shouldPrunePath = (archivePath: string): boolean => {
-      const resolvedArchivePath = path.resolve(archivePath)
-      return roots.some(
-        (rootPath) =>
-          normalizeAllowlistKey(rootPath) === normalizeAllowlistKey(resolvedArchivePath) ||
-          isPathInsideRoot(rootPath, resolvedArchivePath),
-      )
-    }
-
-    for (const archivePath of Array.from(this.archiveEntryIndexByPath.keys())) {
-      if (!shouldPrunePath(archivePath)) {
-        continue
-      }
-      this.archiveEntryIndexByPath.delete(archivePath)
-      this.zipEntryIndexByPath.delete(archivePath)
-      this.normalizedArchiveCacheBySourcePath.delete(archivePath)
-      this.archiveNormalizationStateBySourcePath.delete(archivePath)
-    }
+    this.librarySnapshotService.pruneArchiveIndexesByDeletedRoots(deletedPaths, (archivePath) =>
+      this.archiveNormalizationService.deleteStateByPath(archivePath),
+    )
   }
 
   private async ensureRuntimeDependencies(): Promise<RuntimeDependencySnapshot> {
@@ -817,29 +534,9 @@ export class FileSystemMediaReadService {
     return this.runtimeDependencyService.readRuntimeCapabilities()
   }
 
-  private buildArchiveLoadStatusPayload(): ReadArchiveLoadStatusResponseDto {
-    const pendingArchivePaths = Array.from(
-      new Set([...this.archiveNormalizationPendingHigh, ...this.archiveNormalizationPendingLow]),
-    )
-      .filter((value) => this.isArchiveNormalizationTargetEligible(value))
-      .sort((left, right) => left.localeCompare(right, 'zh-CN'))
-
-    const runningArchivePath =
-      this.archiveNormalizationRunningPath && this.isArchiveNormalizationTargetEligible(this.archiveNormalizationRunningPath)
-        ? this.archiveNormalizationRunningPath
-        : null
-
-    return readArchiveLoadStatusResponseSchema.parse({
-      running_archive_path: runningArchivePath,
-      pending_archive_paths: pendingArchivePaths,
-      updated_at_ms: Date.now(),
-    })
-  }
-
   async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {
     await this.ensureStateLoaded()
-    this.pruneArchiveNormalizationPendingSets()
-    return this.buildArchiveLoadStatusPayload()
+    return this.archiveNormalizationService.readArchiveLoadStatus()
   }
 
   async clearDatabase(): Promise<ClearDatabaseResponseDto> {
@@ -859,18 +556,10 @@ export class FileSystemMediaReadService {
     this.videoCoverOverridesByVideoId = new Map()
     this.videoMetadataOverridesByVideoId = new Map()
     this.importPathRegistry.clear()
-    this.archiveNormalizationPendingLow.clear()
-    this.archiveNormalizationPendingHigh.clear()
-    this.archiveNormalizationRunningPath = null
-    this.archiveNormalizationStateBySourcePath.clear()
-    if (this.archiveNormalizationDrainTimer !== null) {
-      clearTimeout(this.archiveNormalizationDrainTimer)
-      this.archiveNormalizationDrainTimer = null
-    }
+    this.archiveNormalizationService.clear()
     this.mediaTokenService.clearActiveTokens()
-    this.runningImportTaskIds.clear()
-    this.importTaskQueue = Promise.resolve()
-    this.emitArchiveLoadStatusChanged(this.buildArchiveLoadStatusPayload())
+    this.importTaskService.clearRuntimeState()
+    this.librarySnapshotService.clearRuntimeState()
     this.invalidateCache()
 
     this.emitLibraryChanged({
@@ -924,320 +613,11 @@ export class FileSystemMediaReadService {
   }
 
   private async ensureSnapshotLoaded(): Promise<LibrarySnapshotDto> {
-    if (this.snapshotCache) {
-      return this.snapshotCache
-    }
-
-    await this.ensureStateLoaded()
-
-    if (!this.loadingPromise) {
-      this.loadingPromise = this.loadSnapshot().finally(() => {
-        this.loadingPromise = null
-      })
-    }
-
-    this.snapshotCache = await this.loadingPromise
-    return this.snapshotCache
-  }
-
-  private async collectFiles(): Promise<FileRecord[]> {
-    await this.ensureStateLoaded()
-    return collectMediaFiles({
-      rootDir: this.rootDir,
-      importDirectoryRoots: this.importPathRegistry.getImportDirectoryRoots(),
-      importFiles: this.importPathRegistry.getImportFilePaths(),
-      legacyImportsDirName: LEGACY_IMPORTS_DIR_NAME,
-      directoryScanConcurrency: DIRECTORY_SCAN_CONCURRENCY,
-      imageExtensions: IMAGE_EXTENSIONS,
-      videoExtensions: VIDEO_EXTENSIONS,
-      archiveExtensions: ARCHIVE_EXTENSIONS,
-      probeImageDimensionsFromFile,
-    })
-  }
-
-  private async createVideoSource(file: FileRecord): Promise<VideoItemDto> {
-    const mediaLocator: MediaLocatorDto = {
-      kind: 'filesystem',
-      absolute_path: file.absolutePath,
-      extension: file.extension,
-      media_type: 'video',
-      mime_type: detectMimeTypeByExtension(file.extension, 'video'),
-    }
-
-    const videoId = makeStableId('vid', file.absolutePath)
-    const runtimeDependencies = await this.ensureRuntimeDependencies()
-    const probe = runtimeDependencies.ffprobe ? await probeVideoMetadata(file.absolutePath, FFPROBE_BIN).catch(() => null) : null
-    const coverRecord = this.videoCoverOverridesByVideoId.get(videoId)
-    const metadataRecord = this.videoMetadataOverridesByVideoId.get(videoId)
-    const fileName = path.basename(file.absolutePath)
-    const fallbackWorkTitle = deriveVideoWorkTitleFromFileName(fileName)
-
-    return {
-      id: videoId,
-      file_name: fileName,
-      absolute_path: file.absolutePath,
-      tree_path: toAbsoluteTreePath(file.absolutePath),
-      duration_sec: Math.max(0, Math.round(probe?.durationSec ?? 0)),
-      width: probe?.width && probe.width > 0 ? probe.width : 1920,
-      height: probe?.height && probe.height > 0 ? probe.height : 1080,
-      size_mb: toSafeSizeMb(file.sizeBytes),
-      cover_color: coverRecord?.coverColor ?? toDeterministicCoverColor(videoId),
-      cover_image_path: coverRecord?.coverImagePath ?? null,
-      work_title: metadataRecord?.workTitle ?? fallbackWorkTitle,
-      circle: metadataRecord?.circle ?? '未知',
-      author: metadataRecord?.author ?? '未知',
-      tags: metadataRecord?.tags ?? [],
-      grade: metadataRecord?.grade ?? null,
-      media_locator: mediaLocator,
-    }
-  }
-
-  private zipNeedsRepackWebp(entries: ZipCentralEntry[]): boolean {
-    for (const entry of entries) {
-      if (!IMAGE_EXTENSIONS.has(entry.extension)) {
-        continue
-      }
-
-      if ((entry.generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED) !== 0) {
-        return true
-      }
-      if (entry.compressionMethod !== ZIP_COMPRESSION_STORE && entry.compressionMethod !== ZIP_COMPRESSION_DEFLATE) {
-        return true
-      }
-    }
-    return false
-  }
-
-  private resolveNormalizedArchivePath(sourcePath: string, strategy: ArchiveNormalizationResult['strategy']): string {
-    const sourceKey = `${strategy}:${sourcePath}`
-    const hash = createHash('sha1').update(sourceKey).digest('hex').slice(0, 16)
-    const baseName = path.basename(sourcePath, path.extname(sourcePath))
-    const safeBaseName = toSafeFsName(baseName)
-    return path.join(this.normalizedArchiveRootDir, `${safeBaseName}-${hash}.zip`)
-  }
-
-  private async normalizeArchiveToZip(sourceFile: FileRecord): Promise<ArchiveNormalizationResult> {
-    const strategy: ArchiveNormalizationResult['strategy'] = 'zip-repack-webp90-store'
-    const runtimeDependencies = await this.ensureRuntimeDependencies()
-    if (!runtimeDependencies.powershell || !runtimeDependencies.ffmpeg) {
-      throw new Error('archive normalize skipped: powershell/ffmpeg unavailable')
-    }
-
-    const sourceStat = await fs.stat(sourceFile.absolutePath)
-    const cached = this.normalizedArchiveCacheBySourcePath.get(sourceFile.absolutePath)
-    if (
-      cached &&
-      cached.sourceMtimeMs === sourceStat.mtimeMs &&
-      cached.sourceSizeBytes === sourceStat.size &&
-      cached.strategy === strategy
-    ) {
-      const exists = await fs.stat(cached.normalizedArchivePath).catch(() => null)
-      if (exists?.isFile()) {
-        return {
-          normalizedArchivePath: cached.normalizedArchivePath,
-          strategy,
-        }
-      }
-    }
-
-    const normalizedArchivePath = this.resolveNormalizedArchivePath(sourceFile.absolutePath, strategy)
-    const tempExtractDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-archive-normalize-'))
-
-    try {
-      await fs.mkdir(this.normalizedArchiveRootDir, { recursive: true })
-
-      await extractZipWithPowerShell(sourceFile.absolutePath, tempExtractDir)
-      await convertDirectoryImagesToWebp90(tempExtractDir, FFMPEG_BIN, IMAGE_EXTENSIONS_FOR_WEBP_CONVERT)
-
-      await writeStoredZipFromDirectory(tempExtractDir, normalizedArchivePath)
-
-      this.normalizedArchiveCacheBySourcePath.set(sourceFile.absolutePath, {
-        sourcePath: sourceFile.absolutePath,
-        sourceMtimeMs: sourceStat.mtimeMs,
-        sourceSizeBytes: sourceStat.size,
-        normalizedArchivePath,
-        strategy,
-      })
-
-      return {
-        normalizedArchivePath,
-        strategy,
-      }
-    } finally {
-      await fs.rm(tempExtractDir, { recursive: true, force: true })
-    }
-  }
-
-  private async prepareArchiveEntries(file: FileRecord): Promise<{
-    archivePathForMediaRead: string
-    imageEntries: ZipCentralEntry[]
-  }> {
-    if (file.extension === '.rar' || file.extension === '.7z') {
-      const replacementZipPath = resolveArchiveReplacementZipPath(file.absolutePath)
-      const replacementStat = await fs.stat(replacementZipPath).catch(() => null)
-
-      if (replacementStat?.isFile()) {
-        const entries = await scanZipCentralEntries(replacementZipPath).catch(() => [])
-        return {
-          archivePathForMediaRead: replacementZipPath,
-          imageEntries: entries.filter((entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName)),
-        }
-      }
-
-      this.queueRar7zNormalization(file.absolutePath)
-      return {
-        archivePathForMediaRead: file.absolutePath,
-        imageEntries: [],
-      }
-    }
-
-    if (file.extension !== '.zip') {
-      return {
-        archivePathForMediaRead: file.absolutePath,
-        imageEntries: [],
-      }
-    }
-
-    let sourceEntries: ZipCentralEntry[] = []
-    try {
-      sourceEntries = await scanZipCentralEntries(file.absolutePath)
-    } catch {
-      sourceEntries = []
-    }
-
-    const needsRepack = this.zipNeedsRepackWebp(sourceEntries)
-    if (!needsRepack) {
-      return {
-        archivePathForMediaRead: file.absolutePath,
-        imageEntries: sourceEntries.filter((entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName)),
-      }
-    }
-
-    try {
-      const normalized = await this.normalizeArchiveToZip(file)
-      const normalizedEntries = await scanZipCentralEntries(normalized.normalizedArchivePath)
-      return {
-        archivePathForMediaRead: normalized.normalizedArchivePath,
-        imageEntries: normalizedEntries.filter((entry) => IMAGE_EXTENSIONS.has(entry.extension) && isSafeArchiveEntryName(entry.entryName)),
-      }
-    } catch (error) {
-      console.warn('archive normalization failed (zip-repack)', {
-        archivePath: file.absolutePath,
-        reason: (error as Error).message,
-      })
-      return {
-        archivePathForMediaRead: file.absolutePath,
-        imageEntries: sourceEntries.filter(
-          (entry) =>
-            IMAGE_EXTENSIONS.has(entry.extension) &&
-            isSafeArchiveEntryName(entry.entryName) &&
-            (entry.generalPurposeBitFlag & ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED) === 0 &&
-            (entry.compressionMethod === ZIP_COMPRESSION_STORE || entry.compressionMethod === ZIP_COMPRESSION_DEFLATE),
-        ),
-      }
-    }
-  }
-
-  private async loadSnapshot(): Promise<LibrarySnapshotDto> {
-    const files = await this.collectFiles()
-
-    const directoryImageMap = new Map<string, FileRecord[]>()
-    const archives: FileRecord[] = []
-    const videos: FileRecord[] = []
-
-    for (const file of files) {
-      if (IMAGE_EXTENSIONS.has(file.extension)) {
-        const directoryPath = path.dirname(file.absolutePath)
-        const list = directoryImageMap.get(directoryPath) ?? []
-        list.push(file)
-        directoryImageMap.set(directoryPath, list)
-        continue
-      }
-
-      if (ARCHIVE_EXTENSIONS.has(file.extension)) {
-        archives.push(file)
-        continue
-      }
-
-      if (VIDEO_EXTENSIONS.has(file.extension)) {
-        videos.push(file)
-      }
-    }
-
-    const nextArchiveEntryIndexByPath = new Map<string, Set<string>>()
-    const nextZipEntryIndexByPath = new Map<string, Map<string, ZipCentralEntry>>()
-
-    const imageDirectories = Array.from(directoryImageMap.entries())
-      .map(([directoryPath, imageFiles]) => {
-        imageFiles.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
-        return createDirectorySource({
-          directoryPath,
-          imageFiles,
-          colorPalette: COLOR_PALETTE,
-          packageGradeOverridesBySourceId: this.packageGradeOverridesBySourceId,
-        })
-      })
-      .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
-
-    const preparedArchives = await parallelMapLimit(archives, ARCHIVE_SCAN_CONCURRENCY, async (archive) => {
-      const prepared = await this.prepareArchiveEntries(archive)
-      const imageEntries = prepared.imageEntries.sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
-      return {
-        archive,
-        archivePathForMediaRead: prepared.archivePathForMediaRead,
-        imageEntries,
-      }
-    })
-
-    const imagePackages: ImagePackageDto[] = []
-    for (const prepared of preparedArchives) {
-      nextArchiveEntryIndexByPath.set(
-        prepared.archivePathForMediaRead,
-        new Set(prepared.imageEntries.map((entry) => entry.entryName)),
-      )
-      nextZipEntryIndexByPath.set(
-        prepared.archivePathForMediaRead,
-        new Map(prepared.imageEntries.map((entry) => [entry.entryName, entry])),
-      )
-
-      imagePackages.push(
-        createArchiveSource({
-          file: prepared.archive,
-          imageEntries: prepared.imageEntries,
-          archivePathForMediaRead: prepared.archivePathForMediaRead,
-          colorPalette: COLOR_PALETTE,
-          packageGradeOverridesBySourceId: this.packageGradeOverridesBySourceId,
-        }),
-      )
-    }
-
-    imagePackages.sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
-
-    const videoItems = (await Promise.all(videos.map((file) => this.createVideoSource(file)))).sort((left, right) =>
-      left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
-    )
-
-    const scannedSnapshot = librarySnapshotDtoSchema.parse({
-      image_packages: imagePackages,
-      image_directories: imageDirectories,
-      videos: videoItems,
-    })
-
-    // Swap allowlists atomically with the new snapshot.
-    this.archiveEntryIndexByPath = nextArchiveEntryIndexByPath
-    this.zipEntryIndexByPath = nextZipEntryIndexByPath
-
-    this.database.replaceSnapshot(scannedSnapshot)
-    return this.database.readSnapshot()
+    return this.librarySnapshotService.ensureSnapshotLoaded(() => this.ensureStateLoaded())
   }
 
   private async readImageBufferForThumbnail(locator: MediaLocatorDto): Promise<Buffer> {
-    if (locator.kind === 'filesystem') {
-      return fs.readFile(locator.absolute_path)
-    }
-
-    const payload = await readArchiveEntryMedia(locator, locator.mime_type, this.zipEntryIndexByPath)
-    return Buffer.from(payload.body)
+    return this.librarySnapshotService.readImageBufferForThumbnail(locator)
   }
 
   async readLibrarySnapshot(): Promise<LibrarySnapshotDto> {
@@ -1249,9 +629,9 @@ export class FileSystemMediaReadService {
     request: ReadImageSidebarTreeRequestDto,
   ): Promise<ReadImageSidebarTreeResponseDto> {
     this.markInteractiveRead()
-    await this.ensureSnapshotLoaded()
+    const snapshot = await this.ensureSnapshotLoaded()
     const includeHidden = request.include_hidden ?? false
-    const filtered = filterLibrarySources(this.snapshotCache, request)
+    const filtered = filterLibrarySources(snapshot, request)
     const filteredPackages = filterHiddenImagesFromSources(filtered.imagePackages, includeHidden)
     const filteredDirectories = filterHiddenImagesFromSources(filtered.imageDirectories, includeHidden)
 
@@ -1264,9 +644,9 @@ export class FileSystemMediaReadService {
 
   async readImagePage(request: ReadImagePageRequestDto): Promise<ReadImagePageResponseDto> {
     this.markInteractiveRead()
-    await this.ensureSnapshotLoaded()
+    const snapshot = await this.ensureSnapshotLoaded()
     const includeHidden = request.include_hidden ?? false
-    const filtered = filterLibrarySources(this.snapshotCache, {
+    const filtered = filterLibrarySources(snapshot, {
       feature_filter: request.feature_filter,
       grade_overrides: request.grade_overrides,
     })
@@ -1952,171 +1332,16 @@ export class FileSystemMediaReadService {
     })
   }
 
-  private toImportTaskDto(record: {
-    taskId: string
-    taskType: string
-    taskSource: string
-    sourcePaths: string[]
-    status: 'pending' | 'running' | 'completed' | 'failed'
-    progress: number
-    processedCount: number
-    totalCount: number
-    message: string | null
-    errorDetail: string | null
-    createdAtMs: number
-    updatedAtMs: number
-  }): ImportTaskDto {
-    const taskSource: ImportTaskSourceDto =
-      record.taskSource === 'dialog-folders' ||
-      record.taskSource === 'drag-drop' ||
-      record.taskSource === 'paste'
-        ? record.taskSource
-        : 'dialog-files'
-
-    return {
-      task_id: record.taskId,
-      task_type: 'import',
-      source: taskSource,
-      paths: record.sourcePaths,
-      status: record.status,
-      progress: Math.max(0, Math.min(1, record.progress)),
-      processed_count: Math.max(0, record.processedCount),
-      total_count: Math.max(0, record.totalCount),
-      message: record.message,
-      error_detail: record.errorDetail,
-      created_at_ms: record.createdAtMs,
-      updated_at_ms: record.updatedAtMs,
-    }
-  }
-
-  private buildImportTaskId(): string {
-    return `import-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`
-  }
-
-  private scheduleImportTask(taskId: string): void {
-    if (this.runningImportTaskIds.has(taskId)) {
-      return
-    }
-
-    this.runningImportTaskIds.add(taskId)
-    this.importTaskQueue = this.importTaskQueue
-      .catch(() => undefined)
-      .then(async () => {
-        try {
-          await this.runImportTask(taskId)
-        } catch (error) {
-          const reason = error instanceof Error && error.message ? error.message : '未知错误'
-          let existing: ReturnType<MediaLibraryDatabase['readTask']>
-          try {
-            existing = this.database.readTask(taskId)
-          } catch {
-            existing = null
-          }
-          if (existing) {
-            this.database.upsertTask({
-              ...existing,
-              status: 'failed',
-              progress: 1,
-              processedCount: existing.totalCount,
-              totalCount: existing.totalCount,
-              message: '导入任务执行失败',
-              errorDetail: reason,
-              updatedAtMs: Date.now(),
-            })
-          }
-          console.error('import task execution failed', {
-            taskId,
-            reason,
-          })
-        } finally {
-          this.runningImportTaskIds.delete(taskId)
-        }
-      })
-  }
-
-  private async runImportTask(taskId: string): Promise<ImportTaskDto> {
-    const finalTask = await executeImportTask({
-      taskId,
-      rootDir: this.rootDir,
-      legacyImportsDirName: LEGACY_IMPORTS_DIR_NAME,
-      imageExtensions: IMAGE_EXTENSIONS,
-      videoExtensions: VIDEO_EXTENSIONS,
-      archiveExtensions: ARCHIVE_EXTENSIONS,
-      database: this.database,
-      invalidateCache: () => this.invalidateCache(),
-      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
-    })
-
-    return this.toImportTaskDto(finalTask)
-  }
-
   async enqueueImportTask(request: EnqueueImportTaskRequestDto): Promise<EnqueueImportTaskResponseDto> {
-    const now = Date.now()
-    const normalizedPaths = Array.from(new Set(request.paths.map((value) => value.trim()).filter(Boolean)))
-    if (normalizedPaths.length === 0) {
-      throw new Error('导入失败：路径列表为空')
-    }
-
-    const taskId = this.buildImportTaskId()
-    this.database.upsertTask({
-      taskId,
-      taskType: 'import',
-      taskSource: request.source,
-      sourcePaths: normalizedPaths,
-      status: 'pending',
-      progress: 0,
-      processedCount: 0,
-      totalCount: normalizedPaths.length,
-      message: '导入任务已入队',
-      errorDetail: null,
-      createdAtMs: now,
-      updatedAtMs: now,
-    })
-
-    this.scheduleImportTask(taskId)
-
-    const queued = this.database.readTask(taskId)
-    if (!queued) {
-      throw new Error(`导入任务状态丢失: ${taskId}`)
-    }
-
-    const task = this.toImportTaskDto(queued)
-    return enqueueImportTaskResponseSchema.parse({ task })
+    return this.importTaskService.enqueueImportTask(request)
   }
 
   async readImportTasks(): Promise<{ tasks: ImportTaskDto[] }> {
-    const tasks = this.database.readTasks().map((record) => this.toImportTaskDto(record))
-    return readImportTasksResponseSchema.parse({ tasks })
+    return this.importTaskService.readImportTasks()
   }
 
   async retryImportTask(request: RetryImportTaskRequestDto): Promise<RetryImportTaskResponseDto> {
-    const existing = this.database.readTask(request.task_id)
-    if (!existing) {
-      throw new Error(`导入重试失败：任务不存在 ${request.task_id}`)
-    }
-
-    const now = Date.now()
-    this.database.upsertTask({
-      ...existing,
-      status: 'pending',
-      progress: 0,
-      processedCount: 0,
-      totalCount: existing.sourcePaths.length,
-      message: '导入任务重试已入队',
-      errorDetail: null,
-      updatedAtMs: now,
-    })
-
-    this.scheduleImportTask(request.task_id)
-
-    const queued = this.database.readTask(request.task_id)
-    if (!queued) {
-      throw new Error(`导入任务状态丢失: ${request.task_id}`)
-    }
-
-    const task = this.toImportTaskDto(queued)
-    return retryImportTaskResponseSchema.parse({ task })
+    return this.importTaskService.retryImportTask(request)
   }
 
   async resolveMediaResource(
@@ -2155,13 +1380,12 @@ export class FileSystemMediaReadService {
       ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
       readImageBufferForThumbnail: (targetLocator) => this.readImageBufferForThumbnail(targetLocator),
       onRenderingStart: () => {
-        this.thumbnailRenderingInFlight += 1
+        this.archiveNormalizationService.onThumbnailRenderingStart()
       },
       onRenderingEnd: () => {
-        this.thumbnailRenderingInFlight = Math.max(0, this.thumbnailRenderingInFlight - 1)
+        this.archiveNormalizationService.onThumbnailRenderingEnd()
       },
-      hasPendingArchiveNormalization: () =>
-        this.archiveNormalizationPendingHigh.size > 0 || this.archiveNormalizationPendingLow.size > 0,
+      hasPendingArchiveNormalization: () => this.archiveNormalizationService.hasPending(),
       scheduleArchiveNormalizationDrain: (delayMs) => this.scheduleArchiveNormalizationDrain(delayMs),
       archiveNormalizeRecheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
     })
@@ -2192,7 +1416,7 @@ export class FileSystemMediaReadService {
       return readFilesystemMedia(locator, record.mimeType, rangeHeader)
     }
 
-    return readArchiveEntryMedia(locator, record.mimeType, this.zipEntryIndexByPath)
+    return readArchiveEntryMedia(locator, record.mimeType, this.librarySnapshotService.getZipEntryIndexByPath())
   }
 
   async readMediaResourceByTokenStream(
@@ -2207,7 +1431,12 @@ export class FileSystemMediaReadService {
       return readFilesystemMediaStream(locator, record.mimeType, rangeHeader, signal)
     }
 
-    return readArchiveEntryMediaStream(locator, record.mimeType, this.zipEntryIndexByPath, signal)
+    return readArchiveEntryMediaStream(
+      locator,
+      record.mimeType,
+      this.librarySnapshotService.getZipEntryIndexByPath(),
+      signal,
+    )
   }
 
   private requireMediaTokenRecord(token: string): MediaTokenRecord {
