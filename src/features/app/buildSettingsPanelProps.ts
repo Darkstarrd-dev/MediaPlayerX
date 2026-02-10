@@ -20,11 +20,6 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
-  adReviewStrategyMode: 'all' | 'head-tail'
-  adReviewHeadN: number
-  adReviewTailN: number
-  adReviewTailStopCleanStreak: number
-  adReviewMaxConcurrency: number
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
   vectorUniverseLookSensitivity: number
@@ -68,11 +63,6 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailWidth: params.thumbnailWidth,
     lmStudioEndpoint: params.lmStudioEndpoint,
     lmStudioModel: params.lmStudioModel,
-    adReviewStrategyMode: params.adReviewStrategyMode,
-    adReviewHeadN: params.adReviewHeadN,
-    adReviewTailN: params.adReviewTailN,
-    adReviewTailStopCleanStreak: params.adReviewTailStopCleanStreak,
-    adReviewMaxConcurrency: params.adReviewMaxConcurrency,
     vectorUniverseMoveSpeed: params.vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier: params.vectorUniverseSprintMultiplier,
     vectorUniverseLookSensitivity: params.vectorUniverseLookSensitivity,
@@ -104,11 +94,6 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
     onLmStudioEndpointChange: (value) => params.updateSettings({ lmStudioEndpoint: value }),
     onLmStudioModelChange: (value) => params.updateSettings({ lmStudioModel: value }),
-    onAdReviewStrategyModeChange: (value) => params.updateSettings({ adReviewStrategyMode: value }),
-    onAdReviewHeadNChange: (value) => params.updateSettings({ adReviewHeadN: value }),
-    onAdReviewTailNChange: (value) => params.updateSettings({ adReviewTailN: value }),
-    onAdReviewTailStopCleanStreakChange: (value) => params.updateSettings({ adReviewTailStopCleanStreak: value }),
-    onAdReviewMaxConcurrencyChange: (value) => params.updateSettings({ adReviewMaxConcurrency: value }),
     onVectorUniverseMoveSpeedChange: (value) => params.updateSettings({ vectorUniverseMoveSpeed: value }),
     onVectorUniverseSprintMultiplierChange: (value) => params.updateSettings({ vectorUniverseSprintMultiplier: value }),
     onVectorUniverseLookSensitivityChange: (value) => params.updateSettings({ vectorUniverseLookSensitivity: value }),

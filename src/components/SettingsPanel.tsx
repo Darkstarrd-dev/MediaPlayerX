@@ -40,11 +40,6 @@ export interface SettingsPanelProps {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
-  adReviewStrategyMode: 'all' | 'head-tail'
-  adReviewHeadN: number
-  adReviewTailN: number
-  adReviewTailStopCleanStreak: number
-  adReviewMaxConcurrency: number
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
   vectorUniverseLookSensitivity: number
@@ -76,11 +71,6 @@ export interface SettingsPanelProps {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
-  onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
-  onAdReviewHeadNChange: (value: number) => void
-  onAdReviewTailNChange: (value: number) => void
-  onAdReviewTailStopCleanStreakChange: (value: number) => void
-  onAdReviewMaxConcurrencyChange: (value: number) => void
   onVectorUniverseMoveSpeedChange: (value: number) => void
   onVectorUniverseSprintMultiplierChange: (value: number) => void
   onVectorUniverseLookSensitivityChange: (value: number) => void
@@ -127,11 +117,6 @@ function SettingsPanel({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
-  adReviewStrategyMode,
-  adReviewHeadN,
-  adReviewTailN,
-  adReviewTailStopCleanStreak,
-  adReviewMaxConcurrency,
   vectorUniverseMoveSpeed,
   vectorUniverseSprintMultiplier,
   vectorUniverseLookSensitivity,
@@ -163,11 +148,6 @@ function SettingsPanel({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
-  onAdReviewStrategyModeChange,
-  onAdReviewHeadNChange,
-  onAdReviewTailNChange,
-  onAdReviewTailStopCleanStreakChange,
-  onAdReviewMaxConcurrencyChange,
   onVectorUniverseMoveSpeedChange,
   onVectorUniverseSprintMultiplierChange,
   onVectorUniverseLookSensitivityChange,
@@ -342,11 +322,6 @@ function SettingsPanel({
     thumbnailWidth,
     lmStudioEndpoint,
     lmStudioModel,
-    adReviewStrategyMode,
-    adReviewHeadN,
-    adReviewTailN,
-    adReviewTailStopCleanStreak,
-    adReviewMaxConcurrency,
     themeId,
     vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier,
@@ -380,11 +355,6 @@ function SettingsPanel({
     onThumbnailWidthChange,
     onLmStudioEndpointChange,
     onLmStudioModelChange,
-    onAdReviewStrategyModeChange,
-    onAdReviewHeadNChange,
-    onAdReviewTailNChange,
-    onAdReviewTailStopCleanStreakChange,
-    onAdReviewMaxConcurrencyChange,
     onThemeChange,
     onVectorUniverseMoveSpeedChange,
     onVectorUniverseSprintMultiplierChange,

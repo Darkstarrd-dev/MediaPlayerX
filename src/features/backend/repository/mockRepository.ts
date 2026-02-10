@@ -49,6 +49,7 @@ import {
   type ReadManageAdReviewTaskResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type ManageAdReviewImageSourceDto,
   type ManageAdReviewSourceDistributionDto,
   type ManageAdReviewTaskAuditDto,
   type ManageAdReviewTaskDto,
@@ -467,8 +468,8 @@ function hashLocator(value: string): number {
   return hash >>> 0
 }
 
-const DEFAULT_AD_REVIEW_MAX_CONCURRENCY = 2
-const MAX_AD_REVIEW_MAX_CONCURRENCY = 8
+const DEFAULT_AD_REVIEW_MAX_CONCURRENCY = 4
+const MAX_AD_REVIEW_MAX_CONCURRENCY = 12
 
 function normalizeAdReviewExecution(request: StartManageAdReviewRequestDto): ManageAdReviewTaskExecutionDto {
   const strategy = request.strategy
@@ -483,7 +484,10 @@ function normalizeAdReviewExecution(request: StartManageAdReviewRequestDto): Man
         }
 
   const maxConcurrency = Number.isFinite(request.max_concurrency)
-    ? Math.min(MAX_AD_REVIEW_MAX_CONCURRENCY, Math.max(1, Math.floor(request.max_concurrency as number)))
+    ? Math.min(
+        MAX_AD_REVIEW_MAX_CONCURRENCY,
+        Math.max(DEFAULT_AD_REVIEW_MAX_CONCURRENCY, Math.floor(request.max_concurrency as number)),
+      )
     : DEFAULT_AD_REVIEW_MAX_CONCURRENCY
 
   return manageAdReviewTaskExecutionSchema.parse({
@@ -961,29 +965,65 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
       }
     }
 
-    const candidates = selectedImageIds
+    const selectedEntries = selectedImageIds
       .map((imageId) => imageById.get(imageId))
       .filter((item): item is { source: ImagePackageDto; image: ImageItemDto } => Boolean(item))
-      .filter(({ image }) => image.ordinal % 2 === 1)
-      .map(({ source, image }) => ({
+
+    const imageSourceById: Record<string, ManageAdReviewImageSourceDto> = {}
+    const candidates: ManageAdReviewTaskDto['candidates'] = []
+    let knownHashHits = 0
+    let llmSuspected = 0
+    let llmClean = 0
+    let strategySkipped = 0
+
+    for (const { source, image } of selectedEntries) {
+      let imageSource: ManageAdReviewImageSourceDto
+      if (image.ordinal % 7 === 0) {
+        imageSource = 'strategy-skip'
+        strategySkipped += 1
+      } else if (image.ordinal % 4 === 0) {
+        imageSource = 'known-hash'
+        knownHashHits += 1
+      } else {
+        imageSource = 'llm'
+        if (image.ordinal % 2 === 1) {
+          llmSuspected += 1
+        } else {
+          llmClean += 1
+        }
+      }
+
+      imageSourceById[image.id] = imageSource
+
+      const shouldBeCandidate = imageSource === 'known-hash' || (imageSource === 'llm' && image.ordinal % 2 === 1)
+      if (!shouldBeCandidate) {
+        continue
+      }
+
+      candidates.push({
         image_id: image.id,
         package_id: source.id,
         package_name: source.package_name,
         display_name: source.display_name,
         ordinal: image.ordinal,
-        file_name: image.media_locator.kind === 'filesystem' ? image.media_locator.absolute_path.split(/[\\/]/).pop() ?? null : image.media_locator.entry_name,
-        reason: 'mock_llm_suspected',
-        source: 'llm' as const,
+        file_name:
+          image.media_locator.kind === 'filesystem'
+            ? image.media_locator.absolute_path.split(/[\\/]/).pop() ?? null
+            : image.media_locator.entry_name,
+        reason: imageSource === 'known-hash' ? 'mock_known_hash_hit' : 'mock_llm_suspected',
+        source: imageSource === 'known-hash' ? 'known-hash' : 'llm',
         hash: hashLocator(`${source.id}:${image.id}`).toString(16).padStart(8, '0'),
-      }))
+      })
+    }
 
     const now = Date.now()
     const taskId = `mock-manage-ad-review-${now}-${Math.round(Math.random() * 10_000)}`
     const execution = normalizeAdReviewExecution(request)
     const sourceDistribution = createAdReviewSourceDistribution({
-      knownHash: 0,
-      llmSuspected: candidates.length,
-      llmClean: Math.max(0, selectedImageIds.length - candidates.length),
+      knownHash: knownHashHits,
+      llmSuspected,
+      llmClean,
+      strategySkipped,
     })
 
     const task: ManageAdReviewTaskDto = {
@@ -994,8 +1034,10 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
       reviewed_count: selectedImageIds.length,
       suspected_count: candidates.length,
       failed_count: 0,
-      known_hash_hits: 0,
-      llm_calls: selectedImageIds.length,
+      known_hash_hits: knownHashHits,
+      llm_calls: llmSuspected + llmClean,
+      scope_image_ids: selectedImageIds,
+      image_source_by_id: imageSourceById,
       execution,
       audit: buildAdReviewAudit(sourceDistribution, candidates.length, selectedImageIds.length),
       message: candidates.length > 0 ? `审核完成：疑似 ${candidates.length} 张` : '审核完成：未发现疑似广告',
@@ -1052,10 +1094,17 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     const deletedSet = new Set(normalizedIds.filter((imageId) => !failedSet.has(imageId)))
 
     const now = Date.now()
+    const nextImageSourceById = { ...task.image_source_by_id }
+    for (const imageId of deletedSet) {
+      delete nextImageSourceById[imageId]
+    }
+
     const nextTask: ManageAdReviewTaskDto = {
       ...task,
       candidates: task.candidates.filter((item) => !deletedSet.has(item.image_id)),
       suspected_count: task.candidates.filter((item) => !deletedSet.has(item.image_id)).length,
+      scope_image_ids: task.scope_image_ids.filter((imageId) => !deletedSet.has(imageId)),
+      image_source_by_id: nextImageSourceById,
       updated_at_ms: now,
       message: deletedSet.size > 0 ? `已删除 ${deletedSet.size} 张疑似广告` : task.message,
     }

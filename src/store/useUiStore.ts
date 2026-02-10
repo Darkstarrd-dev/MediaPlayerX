@@ -49,7 +49,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   adReviewHeadN: 8,
   adReviewTailN: 8,
   adReviewTailStopCleanStreak: 6,
-  adReviewMaxConcurrency: 2,
+  adReviewMaxConcurrency: 4,
   vectorUniverseMoveSpeed: 24,
   vectorUniverseSprintMultiplier: 2.25,
   vectorUniverseLookSensitivity: 0.0019,

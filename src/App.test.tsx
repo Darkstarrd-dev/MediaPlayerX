@@ -319,7 +319,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByText(/管理操作:/)).not.toBeInTheDocument()
   })
 
-  it('管理模式广告审核支持候选复核与确认删除', async () => {
+  it('管理模式广告审核支持缩略图复核与确认删除', async () => {
     vi.spyOn(MockMediaRepository.prototype, 'deleteImageItemsSync').mockImplementation((request) => ({
       deleted_count: request.image_ids.length,
       failed: [],
@@ -333,28 +333,41 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
     })
 
+    expect(screen.getByRole('group', { name: '广告审核策略切换' })).toBeInTheDocument()
+    expect(screen.getByLabelText('广告审核并发')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'head-tail' }))
+    expect(screen.getByText('头部窗口样本数')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('广告审核并发'), { target: { value: '6' } })
+    fireEvent.click(screen.getByRole('button', { name: 'all' }))
+
     fireEvent.click(document.querySelector('.manage-image-checker') as HTMLInputElement)
     fireEvent.click(screen.getByRole('button', { name: '广告审核' }))
 
     await waitFor(() => {
       expect(screen.getByText('待复核')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: '删除勾选候选' })).toBeInTheDocument()
-      expect(screen.getByText(/策略 all \| 并发 2/)).toBeInTheDocument()
+      expect(screen.getByText(/策略 all \| 并发 6/)).toBeInTheDocument()
       expect(screen.getByText(/来源 known-hash 0/)).toBeInTheDocument()
       expect(screen.getByText(/命中率 LLM/)).toBeInTheDocument()
     })
 
-    const candidateCheckbox = screen.getAllByRole('checkbox', { name: /ad-review-candidate-/ })[0] as HTMLInputElement
-    expect(candidateCheckbox.checked).toBe(true)
+    expect(screen.queryByRole('checkbox', { name: /ad-review-candidate-/ })).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: '删除勾选候选' }))
-    expect(screen.getByRole('dialog', { name: '广告审核删除确认' })).toBeInTheDocument()
+    const checkedBoxes = Array.from(document.querySelectorAll('.manage-image-checker')).filter((node) =>
+      (node as HTMLInputElement).checked,
+    )
+    expect(checkedBoxes.length).toBeGreaterThan(0)
 
-    fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除勾选的疑似广告图片' }))
+    fireEvent.click(screen.getByRole('button', { name: '隐藏未勾选图片' }))
+    expect(screen.getByRole('button', { name: '显示全部图片' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '删除' }))
+    expect(screen.getByRole('dialog', { name: '永久删除确认' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
     fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: '广告审核删除确认' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('dialog', { name: '永久删除确认' })).not.toBeInTheDocument()
       expect(screen.getAllByText('已删除 1 张疑似广告').length).toBeGreaterThan(0)
     })
   })
@@ -918,12 +931,8 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore)
 
     fireEvent.click(screen.getByRole('button', { name: '模型参数' }))
-    expect(screen.getByLabelText('广告审核策略')).toBeInTheDocument()
-    expect(screen.getByLabelText('审核并发')).toBeInTheDocument()
-    fireEvent.change(screen.getByLabelText('广告审核策略'), { target: { value: 'head-tail' } })
-    expect(screen.getByLabelText('头部窗口样本数')).toBeInTheDocument()
-    expect(screen.getByLabelText('尾部窗口样本数')).toBeInTheDocument()
-    expect(screen.getByLabelText('尾部停止 clean 连续数')).toBeInTheDocument()
+    expect(screen.queryByLabelText('广告审核策略')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('审核并发')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'theme 设置' }))
     expect(screen.getByText('主题方案')).toBeInTheDocument()

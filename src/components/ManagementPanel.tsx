@@ -1,8 +1,11 @@
-import { useEffect, useState, type MouseEvent as ReactMouseEvent, type RefObject } from 'react'
+import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
 
 import type { BackendErrorRow } from '../features/app/buildBackendErrorRows'
 import type { ManageAdReviewTaskDto } from '../contracts/backend'
-import DangerConfirmDialog from './DangerConfirmDialog'
+
+const AD_REVIEW_CONCURRENCY_OPTIONS = Array.from({ length: 9 }, (_, index) => index + 4)
+const AD_REVIEW_WINDOW_OPTIONS = Array.from({ length: 201 }, (_, index) => index)
+const AD_REVIEW_STREAK_OPTIONS = Array.from({ length: 200 }, (_, index) => index + 1)
 
 function resolveAdReviewStatusLabel(status: ManageAdReviewTaskDto['status']): string {
   if (status === 'running') {
@@ -55,12 +58,20 @@ interface ManagementPanelProps {
   onClearSelection: () => void
   adReviewPending: boolean
   adReviewTask: ManageAdReviewTaskDto | null
-  adReviewSelectedImageIds: string[]
+  adReviewHideUncheckedNonChecked: boolean
+  hasCheckedAdReviewCandidates: boolean
+  adReviewStrategyMode: 'all' | 'head-tail'
+  adReviewMaxConcurrency: number
+  adReviewHeadN: number
+  adReviewTailN: number
+  adReviewTailStopCleanStreak: number
   onStartAdReview: () => void
-  onToggleAdReviewCandidate: (imageId: string, checked?: boolean) => void
-  onSelectAllAdReviewCandidates: () => void
-  onClearAdReviewCandidates: () => void
-  onDeleteAdReviewCandidates: () => void
+  onToggleHideUncheckedNonChecked: () => void
+  onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
+  onAdReviewMaxConcurrencyChange: (value: number) => void
+  onAdReviewHeadNChange: (value: number) => void
+  onAdReviewTailNChange: (value: number) => void
+  onAdReviewTailStopCleanStreakChange: (value: number) => void
   onDismissAdReviewTask: () => void
   onExpand: () => void
   onStartResize: (event: ReactMouseEvent<HTMLDivElement>) => void
@@ -89,25 +100,25 @@ function ManagementPanel({
   onClearSelection,
   adReviewPending,
   adReviewTask,
-  adReviewSelectedImageIds,
+  adReviewHideUncheckedNonChecked,
+  hasCheckedAdReviewCandidates,
+  adReviewStrategyMode,
+  adReviewMaxConcurrency,
+  adReviewHeadN,
+  adReviewTailN,
+  adReviewTailStopCleanStreak,
   onStartAdReview,
-  onToggleAdReviewCandidate,
-  onSelectAllAdReviewCandidates,
-  onClearAdReviewCandidates,
-  onDeleteAdReviewCandidates,
+  onToggleHideUncheckedNonChecked,
+  onAdReviewStrategyModeChange,
+  onAdReviewMaxConcurrencyChange,
+  onAdReviewHeadNChange,
+  onAdReviewTailNChange,
+  onAdReviewTailStopCleanStreakChange,
   onDismissAdReviewTask,
   onExpand,
   onStartResize,
   layoutLocked,
 }: ManagementPanelProps) {
-  const [adReviewDeleteConfirmOpen, setAdReviewDeleteConfirmOpen] = useState(false)
-
-  useEffect(() => {
-    if (!adReviewTask || adReviewTask.status !== 'review') {
-      setAdReviewDeleteConfirmOpen(false)
-    }
-  }, [adReviewTask])
-
   if (!visible) {
     return null
   }
@@ -152,6 +163,80 @@ function ManagementPanel({
               </button>
             </div>
 
+            <section className="manage-ad-review-params">
+              <header>
+                <strong>广告审核参数</strong>
+              </header>
+              <div className="manage-ad-review-strategy-toggle" role="group" aria-label="广告审核策略切换">
+                <button
+                  className={adReviewStrategyMode === 'all' ? 'is-active' : ''}
+                  type="button"
+                  onClick={() => onAdReviewStrategyModeChange('all')}
+                >
+                  all
+                </button>
+                <button
+                  className={adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}
+                  type="button"
+                  onClick={() => onAdReviewStrategyModeChange('head-tail')}
+                >
+                  head-tail
+                </button>
+              </div>
+              <label>
+                审核并发
+                <select
+                  aria-label="广告审核并发"
+                  value={adReviewMaxConcurrency}
+                  onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}
+                >
+                  {AD_REVIEW_CONCURRENCY_OPTIONS.map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {adReviewStrategyMode === 'head-tail' ? (
+                <>
+                  <label>
+                    头部窗口样本数
+                    <select value={adReviewHeadN} onChange={(event) => onAdReviewHeadNChange(Number(event.target.value))}>
+                      {AD_REVIEW_WINDOW_OPTIONS.map((value) => (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    尾部窗口样本数
+                    <select value={adReviewTailN} onChange={(event) => onAdReviewTailNChange(Number(event.target.value))}>
+                      {AD_REVIEW_WINDOW_OPTIONS.map((value) => (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    尾部停止 clean 连续数
+                    <select
+                      value={adReviewTailStopCleanStreak}
+                      onChange={(event) => onAdReviewTailStopCleanStreakChange(Number(event.target.value))}
+                    >
+                      {AD_REVIEW_STREAK_OPTIONS.map((value) => (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </>
+              ) : null}
+            </section>
+
             {operationHint ? <p className="manage-panel-hint">{operationHint}</p> : null}
 
             {adReviewTask ? (
@@ -179,66 +264,28 @@ function ManagementPanel({
                     </p>
                   </div>
                 ) : null}
-                {adReviewTask.message ? <p className="manage-ad-review-message">{adReviewTask.message}</p> : null}
-                {adReviewTask.error_detail ? <p className="manage-ad-review-error">{adReviewTask.error_detail}</p> : null}
+
+                <p className="manage-ad-review-message">
+                  {adReviewTask.status === 'review'
+                    ? `疑似候选 ${adReviewTask.candidates.length} 张，已同步到缩略图勾选。请在缩略图校正后使用上方“删除”执行清除。`
+                    : adReviewTask.message ?? '广告审核任务进行中'}
+                </p>
 
                 {adReviewTask.status === 'review' ? (
-                  <>
-                    <div className="manage-ad-review-actions">
-                      <button
-                        className="feature-action-btn"
-                        type="button"
-                        disabled={adReviewPending || adReviewTask.candidates.length === 0}
-                        onClick={onSelectAllAdReviewCandidates}
-                      >
-                        全选候选
-                      </button>
-                      <button
-                        className="feature-action-btn"
-                        type="button"
-                        disabled={adReviewPending || adReviewSelectedImageIds.length === 0}
-                        onClick={onClearAdReviewCandidates}
-                      >
-                        清空候选
-                      </button>
-                      <button
-                        className="vector-search-btn"
-                        type="button"
-                        disabled={adReviewPending || adReviewSelectedImageIds.length === 0}
-                        onClick={() => setAdReviewDeleteConfirmOpen(true)}
-                      >
-                        删除勾选候选
-                      </button>
-                      <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
-                        关闭结果
-                      </button>
-                    </div>
-
-                    {adReviewTask.candidates.length > 0 ? (
-                      <ul className="manage-ad-review-list">
-                        {adReviewTask.candidates.map((candidate) => {
-                          const checked = adReviewSelectedImageIds.includes(candidate.image_id)
-                          return (
-                            <li key={candidate.image_id}>
-                              <label>
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  aria-label={`ad-review-candidate-${candidate.image_id}`}
-                                  onChange={(event) => onToggleAdReviewCandidate(candidate.image_id, event.target.checked)}
-                                />
-                                <span>{`${candidate.display_name} #${candidate.ordinal}`}</span>
-                              </label>
-                              <span>{candidate.reason}</span>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    ) : (
-                      <p className="manage-ad-review-empty">未发现疑似广告图片</p>
-                    )}
-                  </>
+                  <div className="manage-ad-review-actions">
+                    <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onToggleHideUncheckedNonChecked}>
+                      {adReviewHideUncheckedNonChecked ? '显示全部图片' : '隐藏未勾选图片'}
+                    </button>
+                    <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
+                      关闭结果
+                    </button>
+                    <span className={`manage-ad-review-selection-tag ${hasCheckedAdReviewCandidates ? 'is-active' : ''}`}>
+                      {hasCheckedAdReviewCandidates ? '已勾选候选可删除' : '未勾选候选'}
+                    </span>
+                  </div>
                 ) : null}
+
+                {adReviewTask.error_detail ? <p className="manage-ad-review-error">{adReviewTask.error_detail}</p> : null}
               </section>
             ) : null}
 
@@ -286,21 +333,6 @@ function ManagementPanel({
           onMouseDown={onStartResize}
         />
       ) : null}
-
-      <DangerConfirmDialog
-        open={adReviewDeleteConfirmOpen}
-        title="广告审核删除确认"
-        description="该操作将永久删除已勾选的疑似广告图片，并同步更新当前审核结果列表。"
-        acknowledgeLabel="我了解此操作将永久不可逆地删除勾选的疑似广告图片"
-        confirmLabel="确定删除"
-        cancelLabel="取消"
-        pending={adReviewPending}
-        onConfirm={() => {
-          onDeleteAdReviewCandidates()
-          setAdReviewDeleteConfirmOpen(false)
-        }}
-        onCancel={() => setAdReviewDeleteConfirmOpen(false)}
-      />
     </>
   )
 }

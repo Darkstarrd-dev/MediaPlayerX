@@ -31,6 +31,9 @@ interface ImageMainSectionProps {
   onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
   manageMode: boolean
   checkedImageIds: ReadonlySet<string>
+  adReviewScopeImageIds: ReadonlySet<string>
+  adReviewLlmReviewedImageIds: ReadonlySet<string>
+  adReviewNonLlmReviewedImageIds: ReadonlySet<string>
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   onPrevPage: () => void
@@ -61,6 +64,9 @@ function ImageMainSection({
   gridRef,
   manageMode,
   checkedImageIds,
+  adReviewScopeImageIds,
+  adReviewLlmReviewedImageIds,
+  adReviewNonLlmReviewedImageIds,
   onToggleImageChecked,
   onReplaceCheckedImages,
   onToggleShowNamesOnly,
@@ -116,7 +122,17 @@ function ImageMainSection({
             <span>文件大小</span>
             <span>分辨率</span>
           </div>
-          <div className="name-list-body" onMouseDown={startMarqueeSelection}>
+          <div
+            className="name-list-body"
+            onMouseDown={startMarqueeSelection}
+            onWheel={
+              manageMode
+                ? (event) => {
+                    event.preventDefault()
+                  }
+                : undefined
+            }
+          >
             {visibleImageRefs.map((ref, absoluteIndex) => {
               const pkg = packageById.get(ref.packageId)
               const image = pkg?.images[ref.imageIndex]
@@ -127,6 +143,10 @@ function ImageMainSection({
               const fileName = mediaLocatorFileName(image.mediaLocator)
               const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
               const isChecked = checkedImageIds.has(image.id)
+              const inAdReviewScope = adReviewScopeImageIds.has(image.id)
+              const isAdReviewLlmReviewed = adReviewLlmReviewedImageIds.has(image.id)
+              const isAdReviewNonLlmReviewed = adReviewNonLlmReviewedImageIds.has(image.id)
+              const isAdReviewPending = inAdReviewScope && !isAdReviewLlmReviewed && !isAdReviewNonLlmReviewed
 
               if (manageMode) {
                 return (
@@ -136,7 +156,7 @@ function ImageMainSection({
                     data-manage-package-id={ref.packageId}
                     data-manage-image-index={String(ref.imageIndex)}
                     data-manage-absolute-index={String(absoluteIndex)}
-                    className={`name-list-row is-manage ${image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''}`}
+                    className={`name-list-row is-manage ${image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${inAdReviewScope ? 'is-ad-review-scope' : ''} ${isAdReviewPending ? 'is-ad-review-pending' : ''} ${isAdReviewLlmReviewed ? 'is-ad-reviewed-llm' : ''} ${isAdReviewNonLlmReviewed ? 'is-ad-reviewed-non-llm' : ''}`}
                   >
                     <input
                       className="manage-image-checker"
@@ -176,11 +196,18 @@ function ImageMainSection({
           </div>
         </div>
       ) : (
-        <> 
+        <>
           <div
             className={`image-grid ${manageMode ? 'is-manage' : ''}`}
             ref={gridRef}
             onMouseDown={manageMode ? startThumbnailDragToggle : undefined}
+            onWheel={
+              manageMode
+                ? (event) => {
+                    event.preventDefault()
+                  }
+                : undefined
+            }
             style={{
               gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
               gap: `${thumbnailGap}px`,
@@ -205,22 +232,26 @@ function ImageMainSection({
                 return null
               }
 
-               const absoluteIndex = pageStart + pageIndex
-               const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
-               const imageSrc = imageUrlById[image.id] ?? ''
-               const isChecked = checkedImageIds.has(image.id)
+                const absoluteIndex = pageStart + pageIndex
+                const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
+                const imageSrc = imageUrlById[image.id] ?? ''
+                const isChecked = checkedImageIds.has(image.id)
+                const inAdReviewScope = adReviewScopeImageIds.has(image.id)
+                const isAdReviewLlmReviewed = adReviewLlmReviewedImageIds.has(image.id)
+                const isAdReviewNonLlmReviewed = adReviewNonLlmReviewedImageIds.has(image.id)
+                const isAdReviewPending = inAdReviewScope && !isAdReviewLlmReviewed && !isAdReviewNonLlmReviewed
 
-               if (manageMode) {
-                 return (
+                if (manageMode) {
+                  return (
                    <div
                       key={`${ref.packageId}-${ref.imageIndex}`}
                       data-manage-image-id={image.id}
                       data-manage-package-id={ref.packageId}
                       data-manage-image-index={String(ref.imageIndex)}
                       data-manage-absolute-index={String(absoluteIndex)}
-                      className={`thumb-card is-manage ${image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''}`}
-                      style={{ width: `${actualCellWidth}px` }}
-                    >
+                       className={`thumb-card is-manage ${image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${inAdReviewScope ? 'is-ad-review-scope' : ''} ${isAdReviewPending ? 'is-ad-review-pending' : ''} ${isAdReviewLlmReviewed ? 'is-ad-reviewed-llm' : ''} ${isAdReviewNonLlmReviewed ? 'is-ad-reviewed-non-llm' : ''}`}
+                       style={{ width: `${actualCellWidth}px` }}
+                     >
                       <input
                         className="manage-image-checker"
                        aria-label={`manage-image-${image.id}`}
@@ -295,15 +326,17 @@ function ImageMainSection({
              })}
           </div>
 
-          <div className="pager-line">
-            <button type="button" onClick={onPrevPage}>
-              上一页
-            </button>
-            <span>{`第 ${normalizedPageIndex + 1} / ${imageTotalPages} 页`}</span>
-            <button type="button" onClick={onNextPage}>
-              下一页
-            </button>
-          </div>
+          {imageTotalPages > 1 ? (
+            <div className="pager-line">
+              <button type="button" onClick={onPrevPage}>
+                上一页
+              </button>
+              <span>{`第 ${normalizedPageIndex + 1} / ${imageTotalPages} 页`}</span>
+              <button type="button" onClick={onNextPage}>
+                下一页
+              </button>
+            </div>
+          ) : null}
         </>
       )}
 

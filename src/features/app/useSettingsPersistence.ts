@@ -10,6 +10,22 @@ interface UseSettingsPersistenceParams {
 
 const SETTINGS_STATE_KEY = 'ui_settings_v1'
 
+function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
+  if (!value || typeof value !== 'object') {
+    return {}
+  }
+
+  const next = {
+    ...(value as Record<string, unknown>),
+  }
+
+  if (typeof next.adReviewMaxConcurrency === 'number' && Number.isFinite(next.adReviewMaxConcurrency)) {
+    next.adReviewMaxConcurrency = Math.max(4, Math.min(12, Math.floor(next.adReviewMaxConcurrency)))
+  }
+
+  return next as Partial<AppSettings>
+}
+
 export function useSettingsPersistence({
   settings,
   repository,
@@ -32,7 +48,7 @@ export function useSettingsPersistence({
             const parsed = JSON.parse(response.state_json)
             // Only update if we haven't modified settings locally yet (or just apply it once)
             if (!isHydratedRef.current) {
-              updateSettings(parsed)
+              updateSettings(normalizePersistedSettings(parsed))
             }
           } catch (e) {
             console.warn('Failed to parse persisted settings', e)

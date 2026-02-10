@@ -14,6 +14,7 @@ import {
   type ImagePackageDto,
   type LibrarySnapshotDto,
   type ManageAdReviewCandidateDto,
+  type ManageAdReviewImageSourceDto,
   type ManageAdReviewSourceDistributionDto,
   type ManageAdReviewTaskAuditDto,
   type ManageAdReviewTaskDto,
@@ -31,8 +32,8 @@ import type { ManageAdReviewDecision } from '../../manageAdReview'
 import { type ZipCentralEntry } from '../../zipArchiveHelpers'
 
 const KNOWN_HASHES_STATE_KEY = 'manage_ad_review_known_hashes_v1'
-const DEFAULT_REVIEW_MAX_CONCURRENCY = 2
-const REVIEW_MAX_CONCURRENCY_LIMIT = 8
+const DEFAULT_REVIEW_MAX_CONCURRENCY = 4
+const REVIEW_MAX_CONCURRENCY_LIMIT = 12
 
 interface ParsedSidebarNodeRef {
   kind: 'folder' | 'package' | 'video'
@@ -116,6 +117,27 @@ function toImageFileName(image: ImageItemDto): string | null {
   return path.basename(image.media_locator.entry_name)
 }
 
+function normalizeImageSource(source: ManageAdReviewDecision['source']): ManageAdReviewImageSourceDto {
+  if (source === 'llm-error') {
+    return 'llm-error'
+  }
+  if (source === 'strategy-skip') {
+    return 'strategy-skip'
+  }
+  if (source === 'known-hash') {
+    return 'known-hash'
+  }
+  return 'llm'
+}
+
+function buildImageSourceById(decisions: ManageAdReviewDecision[]): Record<string, ManageAdReviewImageSourceDto> {
+  const next: Record<string, ManageAdReviewImageSourceDto> = {}
+  for (const decision of decisions) {
+    next[decision.imageId] = normalizeImageSource(decision.source)
+  }
+  return next
+}
+
 function createEmptySourceDistribution(): ManageAdReviewSourceDistributionDto {
   return {
     known_hash: 0,
@@ -148,7 +170,7 @@ function normalizeMaxConcurrency(value: number | undefined): number {
     return DEFAULT_REVIEW_MAX_CONCURRENCY
   }
 
-  return Math.min(REVIEW_MAX_CONCURRENCY_LIMIT, Math.max(1, Math.floor(value as number)))
+  return Math.min(REVIEW_MAX_CONCURRENCY_LIMIT, Math.max(DEFAULT_REVIEW_MAX_CONCURRENCY, Math.floor(value as number)))
 }
 
 function normalizeTaskExecution(request: StartManageAdReviewRequestDto): ManageAdReviewTaskExecutionDto {
@@ -257,6 +279,8 @@ export class ManageAdReviewService {
       failed_count: 0,
       known_hash_hits: 0,
       llm_calls: 0,
+      scope_image_ids: selectedImageIds,
+      image_source_by_id: {},
       execution,
       audit: toTaskAudit({
         sourceDistribution: createEmptySourceDistribution(),
@@ -326,10 +350,17 @@ export class ManageAdReviewService {
     }
 
     const deletedImageIdSet = new Set(deletedImageIds)
+    const nextImageSourceById = { ...runtimeTask.task.image_source_by_id }
+    for (const imageId of deletedImageIds) {
+      delete nextImageSourceById[imageId]
+    }
+
     runtimeTask.task = {
       ...runtimeTask.task,
       candidates: runtimeTask.task.candidates.filter((item) => !deletedImageIdSet.has(item.image_id)),
       suspected_count: runtimeTask.task.candidates.filter((item) => !deletedImageIdSet.has(item.image_id)).length,
+      scope_image_ids: runtimeTask.task.scope_image_ids.filter((imageId) => !deletedImageIdSet.has(imageId)),
+      image_source_by_id: nextImageSourceById,
       updated_at_ms: Date.now(),
       message:
         deletedImageIds.length > 0
@@ -494,6 +525,11 @@ export class ManageAdReviewService {
               nextSourceDistribution.llm_clean +
               nextSourceDistribution.llm_failed
 
+            const nextImageSourceById: Record<string, ManageAdReviewImageSourceDto> = {
+              ...currentTask.task.image_source_by_id,
+              [event.imageId]: normalizeImageSource(event.source),
+            }
+
             currentTask.task = {
               ...currentTask.task,
               reviewed_count: reviewedCount,
@@ -501,6 +537,7 @@ export class ManageAdReviewService {
               failed_count: failedCount,
               known_hash_hits: nextSourceDistribution.known_hash,
               llm_calls: llmCalls,
+              image_source_by_id: nextImageSourceById,
               audit: toTaskAudit({
                 sourceDistribution: nextSourceDistribution,
                 suspectedCount,
@@ -515,6 +552,7 @@ export class ManageAdReviewService {
 
       const candidates = this.buildCandidates(result.items, imageById)
       const sourceDistribution = buildSourceDistribution(result.items)
+      const imageSourceById = buildImageSourceById(result.items)
       runtimeTask.candidateHashByImageId = new Map(candidates.map((candidate) => [candidate.image_id, candidate.hash]))
       runtimeTask.task = {
         ...runtimeTask.task,
@@ -525,6 +563,7 @@ export class ManageAdReviewService {
         failed_count: result.summary.failed,
         known_hash_hits: result.summary.knownHashHits,
         llm_calls: result.summary.llmCalls,
+        image_source_by_id: imageSourceById,
         audit: toTaskAudit({
           sourceDistribution,
           suspectedCount: result.summary.suspected,

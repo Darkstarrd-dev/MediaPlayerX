@@ -231,6 +231,13 @@ export const manageAdReviewSelectionScopeSchema = z.enum(['image', 'sidebar'])
 
 export const manageAdReviewDecisionSourceSchema = z.enum(['known-hash', 'llm'])
 
+export const manageAdReviewImageSourceSchema = z.enum([
+  'known-hash',
+  'llm',
+  'llm-error',
+  'strategy-skip',
+])
+
 export const manageAdReviewTaskStatusSchema = z.enum(['running', 'review', 'failed'])
 
 export const manageAdReviewAllStrategySchema = z.object({
@@ -251,7 +258,7 @@ export const manageAdReviewStrategySchema = z.discriminatedUnion('mode', [
 
 export const manageAdReviewTaskExecutionSchema = z.object({
   strategy: manageAdReviewStrategySchema,
-  max_concurrency: z.number().int().min(1).max(8),
+  max_concurrency: z.number().int().min(4).max(12),
 })
 
 export const manageAdReviewSourceDistributionSchema = z.object({
@@ -290,6 +297,8 @@ export const manageAdReviewTaskSchema = z.object({
   failed_count: nonNegativeIntSchema,
   known_hash_hits: nonNegativeIntSchema,
   llm_calls: nonNegativeIntSchema,
+  scope_image_ids: z.array(z.string().min(1)),
+  image_source_by_id: z.record(z.string(), manageAdReviewImageSourceSchema),
   execution: manageAdReviewTaskExecutionSchema.optional(),
   audit: manageAdReviewTaskAuditSchema.optional(),
   message: z.string().min(1).nullable(),
@@ -306,7 +315,7 @@ export const startManageAdReviewRequestSchema = z.object({
   llm_endpoint: z.string().min(1),
   llm_model: z.string().min(1),
   strategy: manageAdReviewStrategySchema.optional(),
-  max_concurrency: z.number().int().min(1).max(8).optional(),
+  max_concurrency: z.number().int().min(4).max(12).optional(),
 })
 
 export const startManageAdReviewResponseSchema = z.object({
@@ -541,6 +550,7 @@ export type DeleteSidebarNodesRequestDto = z.infer<typeof deleteSidebarNodesRequ
 export type DeleteSidebarNodesResponseDto = z.infer<typeof deleteSidebarNodesResponseSchema>
 export type ManageAdReviewSelectionScopeDto = z.infer<typeof manageAdReviewSelectionScopeSchema>
 export type ManageAdReviewDecisionSourceDto = z.infer<typeof manageAdReviewDecisionSourceSchema>
+export type ManageAdReviewImageSourceDto = z.infer<typeof manageAdReviewImageSourceSchema>
 export type ManageAdReviewTaskStatusDto = z.infer<typeof manageAdReviewTaskStatusSchema>
 export type ManageAdReviewAllStrategyDto = z.infer<typeof manageAdReviewAllStrategySchema>
 export type ManageAdReviewHeadTailStrategyDto = z.infer<typeof manageAdReviewHeadTailStrategySchema>

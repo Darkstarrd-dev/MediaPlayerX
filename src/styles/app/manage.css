@@ -54,13 +54,8 @@
   gap: 10px;
 }
 
-.image-grid.is-manage {
-  overflow: hidden;
-}
-
 .thumb-card.is-manage {
   position: relative;
-  padding-top: 26px;
   cursor: default;
 }
 
@@ -70,15 +65,15 @@
 
 .manage-image-checker {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 8px;
+  left: 8px;
   z-index: 2;
   margin: 0;
 }
 
 .manage-hidden-badge {
   position: absolute;
-  top: 6px;
+  top: 8px;
   right: 8px;
   border-radius: 999px;
   padding: 1px 8px;
@@ -98,6 +93,70 @@
 
 .name-list-row.is-manage.is-hidden {
   opacity: 0.64;
+}
+
+.thumb-card.is-manage.is-ad-review-scope,
+.name-list-row.is-manage.is-ad-review-scope {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mpx-accent) 36%, transparent);
+}
+
+.thumb-card.is-manage.is-ad-review-pending,
+.name-list-row.is-manage.is-ad-review-pending {
+  opacity: 0.58;
+}
+
+.thumb-card.is-manage.is-ad-reviewed-llm,
+.name-list-row.is-manage.is-ad-reviewed-llm {
+  border-color: color-mix(in srgb, var(--mpx-accent) 54%, var(--mpx-border-1));
+  background: color-mix(in srgb, var(--mpx-accent-soft) 36%, var(--mpx-bg-elevated));
+}
+
+.thumb-card.is-manage.is-ad-reviewed-non-llm,
+.name-list-row.is-manage.is-ad-reviewed-non-llm {
+  border-color: color-mix(in srgb, var(--mpx-status-warning-text) 45%, var(--mpx-border-1));
+  background: color-mix(in srgb, var(--mpx-status-warning-bg) 36%, var(--mpx-bg-elevated));
+}
+
+.manage-ad-review-params {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--mpx-border-1);
+  background: var(--mpx-bg-panel);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.manage-ad-review-params > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.manage-ad-review-params > label {
+  display: grid;
+  gap: 6px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.manage-ad-review-strategy-toggle {
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.manage-ad-review-strategy-toggle > button {
+  border: 0;
+  background: var(--mpx-bg-elevated);
+  color: var(--text-main);
+  padding: 5px 10px;
+}
+
+.manage-ad-review-strategy-toggle > button.is-active {
+  background: var(--accent-soft);
+  color: var(--mpx-accent);
 }
 
 .manage-ad-review {
@@ -171,38 +230,23 @@
 .manage-ad-review-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-}
-
-.manage-ad-review-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 6px;
-  max-height: 180px;
-  overflow: auto;
-}
-
-.manage-ad-review-list > li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-}
-
-.manage-ad-review-list > li > label {
-  display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-width: 0;
 }
 
-.manage-ad-review-list > li > label > span,
-.manage-ad-review-list > li > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.manage-ad-review-selection-tag {
+  border: 1px dashed var(--mpx-border-1);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  color: var(--mpx-text-2);
+}
+
+.manage-ad-review-selection-tag.is-active {
+  border-style: solid;
+  border-color: var(--mpx-accent);
+  color: var(--mpx-accent);
+  background: var(--accent-soft);
 }
 
 .manage-selection-marquee {

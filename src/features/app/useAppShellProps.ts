@@ -10,7 +10,7 @@ import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData
 
 interface UseAppShellPropsParams {
   repositoryMode: RepositoryBootstrapDataResult['repositoryMode']
-  mode: Parameters<typeof useAppWorkspaceProps>[0]['mode']
+  mode: 'image' | 'video'
   headerHeight: number
   sidebarCollapsed: boolean
   sidebarFocus: 'sidebar' | 'main'

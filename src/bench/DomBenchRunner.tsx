@@ -278,6 +278,9 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             gridRef={gridRef}
             manageMode={false}
             checkedImageIds={new Set()}
+            adReviewScopeImageIds={new Set()}
+            adReviewLlmReviewedImageIds={new Set()}
+            adReviewNonLlmReviewedImageIds={new Set()}
             onToggleImageChecked={() => undefined}
             onReplaceCheckedImages={() => undefined}
             onToggleShowNamesOnly={() => undefined}

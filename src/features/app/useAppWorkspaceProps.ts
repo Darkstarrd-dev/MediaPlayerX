@@ -387,15 +387,39 @@ export function useAppWorkspaceProps({
     onClearSelection: clearAllSelections,
     adReviewPending: manageAdReview.pending,
     adReviewTask: manageAdReview.task,
-    adReviewSelectedImageIds: manageAdReview.selectedCandidateIds,
+    adReviewHideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
+    hasCheckedAdReviewCandidates: manageAdReview.hasCheckedCandidateSelection,
+    adReviewStrategyMode: appSettings.adReviewStrategyMode,
+    adReviewMaxConcurrency: appSettings.adReviewMaxConcurrency,
+    adReviewHeadN: appSettings.adReviewHeadN,
+    adReviewTailN: appSettings.adReviewTailN,
+    adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
     onStartAdReview: () => {
       void manageAdReview.startManageAdReview()
     },
-    onToggleAdReviewCandidate: manageAdReview.toggleCandidate,
-    onSelectAllAdReviewCandidates: manageAdReview.selectAllCandidates,
-    onClearAdReviewCandidates: manageAdReview.clearCandidateSelection,
-    onDeleteAdReviewCandidates: () => {
-      void manageAdReview.confirmDeleteSelectedCandidates()
+    onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
+    onAdReviewStrategyModeChange: (value) => {
+      appSettings.updateSettings({ adReviewStrategyMode: value })
+    },
+    onAdReviewMaxConcurrencyChange: (value) => {
+      appSettings.updateSettings({
+        adReviewMaxConcurrency: Math.max(4, Math.min(12, Math.floor(value))),
+      })
+    },
+    onAdReviewHeadNChange: (value) => {
+      appSettings.updateSettings({
+        adReviewHeadN: Math.max(0, Math.min(200, Math.floor(value))),
+      })
+    },
+    onAdReviewTailNChange: (value) => {
+      appSettings.updateSettings({
+        adReviewTailN: Math.max(0, Math.min(200, Math.floor(value))),
+      })
+    },
+    onAdReviewTailStopCleanStreakChange: (value) => {
+      appSettings.updateSettings({
+        adReviewTailStopCleanStreak: Math.max(1, Math.min(200, Math.floor(value))),
+      })
     },
     onDismissAdReviewTask: manageAdReview.dismissTask,
     onStartVectorPanelResize,
@@ -403,6 +427,18 @@ export function useAppWorkspaceProps({
   })
 
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
+
+  const refsInPageForDisplay =
+    manageMode && manageAdReview.hideUncheckedNonChecked
+      ? refsInPageEffective.filter((ref) => {
+          const imageId = packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]?.id
+          return Boolean(imageId && imageCheckedIdSet.has(imageId))
+        })
+      : refsInPageEffective
+
+  const adReviewScopeImageIdSet = new Set(manageAdReview.scopeImageIds)
+  const adReviewLlmReviewedImageIdSet = new Set(manageAdReview.llmReviewedImageIds)
+  const adReviewNonLlmReviewedImageIdSet = new Set(manageAdReview.nonLlmReviewedImageIds)
 
   const imageMainSectionProps = buildImageMainSectionProps({
     vectorResultsActive,
@@ -414,7 +450,7 @@ export function useAppWorkspaceProps({
     focusedRef,
     focusedImageExists: Boolean(focusedImage),
     visibleImageRefs,
-    refsInPageEffective,
+    refsInPageEffective: refsInPageForDisplay,
     pageStartEffective,
     actualCellWidth,
     actualMediaHeight,
@@ -428,6 +464,9 @@ export function useAppWorkspaceProps({
     gridRef,
     manageMode,
     checkedImageIdSet: imageCheckedIdSet,
+    adReviewScopeImageIdSet,
+    adReviewLlmReviewedImageIdSet,
+    adReviewNonLlmReviewedImageIdSet,
     updateSettings: appSettings.updateSettings,
     setFullscreenActiveWithAutoStop,
     setVectorFocusIndex,

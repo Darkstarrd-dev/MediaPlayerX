@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useManageModeActions } from './useManageModeActions'
 import { useManageAdReviewActions } from './useManageAdReviewActions'
 import { useEffectiveDisplayState } from './useEffectiveDisplayState'
@@ -161,6 +163,7 @@ export function useAppDisplayAndEffects({
     imageCheckedIds,
     activeSelectionScope,
     clearAllSelections,
+    replaceImageCheckedIds,
     orderedRootScopedPackages,
     orderedRootScopedImageRefs,
     normalizedThumbnailScale,
@@ -301,8 +304,25 @@ export function useAppDisplayAndEffects({
     adReviewTailStopCleanStreak,
     adReviewMaxConcurrency,
     clearAllSelections,
+    replaceImageCheckedIds,
     setManageOperationHint,
   })
+
+  const confirmManageDeleteWithAdReview = useCallback(async () => {
+    const reviewTask = manageAdReview.task
+    const shouldRouteToAdReviewDelete =
+      reviewTask?.status === 'review' &&
+      imageCheckedIds.some((imageId) => reviewTask.candidates.some((candidate) => candidate.image_id === imageId))
+
+    if (shouldRouteToAdReviewDelete) {
+      setDeleteConfirmOpen(false)
+      setManageOperationHint(null)
+      await manageAdReview.confirmDeleteSelectedCandidates()
+      return
+    }
+
+    await confirmManageDelete()
+  }, [confirmManageDelete, imageCheckedIds, manageAdReview, setDeleteConfirmOpen, setManageOperationHint])
 
   const runtimeCapabilities = useRuntimeCapabilities({
     repository: mediaRepository,
@@ -451,7 +471,7 @@ export function useAppDisplayAndEffects({
     toggleManageMode,
     runManageHideAction,
     requestManageDelete,
-    confirmManageDelete,
+    confirmManageDelete: confirmManageDeleteWithAdReview,
     manageAdReview,
     runtimeCapabilities,
     backendPageSnapshot,

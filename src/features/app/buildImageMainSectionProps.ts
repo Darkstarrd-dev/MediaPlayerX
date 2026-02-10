@@ -27,6 +27,9 @@ interface BuildImageMainSectionPropsParams {
   gridRef: RefObject<HTMLDivElement | null>
   manageMode: boolean
   checkedImageIdSet: Set<string>
+  adReviewScopeImageIdSet: Set<string>
+  adReviewLlmReviewedImageIdSet: Set<string>
+  adReviewNonLlmReviewedImageIdSet: Set<string>
   updateSettings: (patch: Partial<AppSettings>) => void
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   setVectorFocusIndex: (value: number) => void
@@ -62,6 +65,9 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     gridRef: params.gridRef,
     manageMode: params.manageMode,
     checkedImageIds: params.checkedImageIdSet,
+    adReviewScopeImageIds: params.adReviewScopeImageIdSet,
+    adReviewLlmReviewedImageIds: params.adReviewLlmReviewedImageIdSet,
+    adReviewNonLlmReviewedImageIds: params.adReviewNonLlmReviewedImageIdSet,
     onToggleImageChecked: params.onToggleImageChecked,
     onReplaceCheckedImages: params.onReplaceCheckedImages,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),

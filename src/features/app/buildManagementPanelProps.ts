@@ -24,12 +24,20 @@ interface BuildManagementPanelPropsParams {
   onClearSelection: () => void
   adReviewPending: boolean
   adReviewTask: ManageAdReviewTaskDto | null
-  adReviewSelectedImageIds: string[]
+  adReviewHideUncheckedNonChecked: boolean
+  hasCheckedAdReviewCandidates: boolean
+  adReviewStrategyMode: 'all' | 'head-tail'
+  adReviewMaxConcurrency: number
+  adReviewHeadN: number
+  adReviewTailN: number
+  adReviewTailStopCleanStreak: number
   onStartAdReview: () => void
-  onToggleAdReviewCandidate: (imageId: string, checked?: boolean) => void
-  onSelectAllAdReviewCandidates: () => void
-  onClearAdReviewCandidates: () => void
-  onDeleteAdReviewCandidates: () => void
+  onToggleHideUncheckedNonChecked: () => void
+  onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
+  onAdReviewMaxConcurrencyChange: (value: number) => void
+  onAdReviewHeadNChange: (value: number) => void
+  onAdReviewTailNChange: (value: number) => void
+  onAdReviewTailStopCleanStreakChange: (value: number) => void
   onDismissAdReviewTask: () => void
   onStartVectorPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   layoutLocked: boolean
@@ -58,12 +66,20 @@ export function buildManagementPanelProps(params: BuildManagementPanelPropsParam
     onClearSelection: params.onClearSelection,
     adReviewPending: params.adReviewPending,
     adReviewTask: params.adReviewTask,
-    adReviewSelectedImageIds: params.adReviewSelectedImageIds,
+    adReviewHideUncheckedNonChecked: params.adReviewHideUncheckedNonChecked,
+    hasCheckedAdReviewCandidates: params.hasCheckedAdReviewCandidates,
+    adReviewStrategyMode: params.adReviewStrategyMode,
+    adReviewMaxConcurrency: params.adReviewMaxConcurrency,
+    adReviewHeadN: params.adReviewHeadN,
+    adReviewTailN: params.adReviewTailN,
+    adReviewTailStopCleanStreak: params.adReviewTailStopCleanStreak,
     onStartAdReview: params.onStartAdReview,
-    onToggleAdReviewCandidate: params.onToggleAdReviewCandidate,
-    onSelectAllAdReviewCandidates: params.onSelectAllAdReviewCandidates,
-    onClearAdReviewCandidates: params.onClearAdReviewCandidates,
-    onDeleteAdReviewCandidates: params.onDeleteAdReviewCandidates,
+    onToggleHideUncheckedNonChecked: params.onToggleHideUncheckedNonChecked,
+    onAdReviewStrategyModeChange: params.onAdReviewStrategyModeChange,
+    onAdReviewMaxConcurrencyChange: params.onAdReviewMaxConcurrencyChange,
+    onAdReviewHeadNChange: params.onAdReviewHeadNChange,
+    onAdReviewTailNChange: params.onAdReviewTailNChange,
+    onAdReviewTailStopCleanStreakChange: params.onAdReviewTailStopCleanStreakChange,
     onDismissAdReviewTask: params.onDismissAdReviewTask,
     onExpand: () => params.setSearchPanelCollapsed(false),
     onStartResize: params.onStartVectorPanelResize,

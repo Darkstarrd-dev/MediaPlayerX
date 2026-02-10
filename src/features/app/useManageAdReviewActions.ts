@@ -23,17 +23,20 @@ interface UseManageAdReviewActionsParams {
   adReviewTailStopCleanStreak: number
   adReviewMaxConcurrency: number
   clearAllSelections: () => void
+  replaceImageCheckedIds: (imageIds: string[], append?: boolean) => void
   setManageOperationHint: (message: string | null) => void
 }
 
 interface UseManageAdReviewActionsResult {
   task: ManageAdReviewTaskDto | null
   pending: boolean
-  selectedCandidateIds: string[]
+  hideUncheckedNonChecked: boolean
+  hasCheckedCandidateSelection: boolean
+  scopeImageIds: string[]
+  llmReviewedImageIds: string[]
+  nonLlmReviewedImageIds: string[]
   startManageAdReview: () => Promise<void>
-  toggleCandidate: (imageId: string, checked?: boolean) => void
-  selectAllCandidates: () => void
-  clearCandidateSelection: () => void
+  toggleHideUncheckedNonChecked: () => void
   confirmDeleteSelectedCandidates: () => Promise<void>
   dismissTask: () => void
 }
@@ -53,11 +56,12 @@ export function useManageAdReviewActions({
   adReviewTailStopCleanStreak,
   adReviewMaxConcurrency,
   clearAllSelections,
+  replaceImageCheckedIds,
   setManageOperationHint,
 }: UseManageAdReviewActionsParams): UseManageAdReviewActionsResult {
   const [task, setTask] = useState<ManageAdReviewTaskDto | null>(null)
   const [pending, setPending] = useState(false)
-  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([])
+  const [hideUncheckedNonChecked, setHideUncheckedNonChecked] = useState(false)
   const pollingTimerRef = useRef<ReturnType<typeof window.setInterval> | null>(null)
   const previousTaskStatusRef = useRef<ManageAdReviewTaskDto['status'] | null>(null)
 
@@ -82,7 +86,7 @@ export function useManageAdReviewActions({
     if (!manageMode || mode !== 'image') {
       disposePolling()
       setTask(null)
-      setSelectedCandidateIds([])
+      setHideUncheckedNonChecked(false)
       previousTaskStatusRef.current = null
     }
   }, [disposePolling, manageMode, mode])
@@ -97,11 +101,14 @@ export function useManageAdReviewActions({
   useEffect(() => {
     const currentStatus = task?.status ?? null
     const previousStatus = previousTaskStatusRef.current
-    if (task && task.status === 'review' && previousStatus === 'running') {
-      setSelectedCandidateIds(task.candidates.map((candidate) => candidate.image_id))
+    if (task && task.status === 'review' && previousStatus !== 'review') {
+      replaceImageCheckedIds(
+        task.candidates.map((candidate) => candidate.image_id),
+        false,
+      )
     }
     previousTaskStatusRef.current = currentStatus
-  }, [task])
+  }, [replaceImageCheckedIds, task])
 
   useEffect(() => {
     const readManageAdReviewTask = repository.readManageAdReviewTask
@@ -121,7 +128,7 @@ export function useManageAdReviewActions({
           if (!response.task) {
             disposePolling()
             setTask(null)
-            setSelectedCandidateIds([])
+            setHideUncheckedNonChecked(false)
             return
           }
 
@@ -174,6 +181,7 @@ export function useManageAdReviewActions({
     const imageIds = activeScope === 'image' ? imageCheckedIds : []
     const nodeIds = activeScope === 'sidebar' ? sidebarCheckedNodeIds : []
 
+    setHideUncheckedNonChecked(false)
     setPending(true)
     setManageOperationHint('广告审核任务已启动')
     try {
@@ -191,7 +199,7 @@ export function useManageAdReviewActions({
             }
 
       const maxConcurrency = Number.isFinite(adReviewMaxConcurrency)
-        ? Math.max(1, Math.floor(adReviewMaxConcurrency))
+        ? Math.max(4, Math.min(12, Math.floor(adReviewMaxConcurrency)))
         : undefined
 
       const response = await repository.startManageAdReview(
@@ -208,12 +216,11 @@ export function useManageAdReviewActions({
       )
 
       setTask(response.task)
-      setSelectedCandidateIds(response.task.candidates.map((candidate) => candidate.image_id))
       setManageOperationHint(response.task.message ?? '广告审核任务已启动')
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       setTask(null)
-      setSelectedCandidateIds([])
+      setHideUncheckedNonChecked(false)
       setManageOperationHint(`广告审核启动失败：${message}`)
     } finally {
       setPending(false)
@@ -235,26 +242,41 @@ export function useManageAdReviewActions({
     sidebarCheckedNodeIds,
   ])
 
-  const toggleCandidate = useCallback((imageId: string, checked?: boolean) => {
-    setSelectedCandidateIds((previous) => {
-      const next = new Set(previous)
-      const shouldCheck = typeof checked === 'boolean' ? checked : !next.has(imageId)
-      if (shouldCheck) {
-        next.add(imageId)
-      } else {
-        next.delete(imageId)
-      }
-      return Array.from(next)
-    })
+  const toggleHideUncheckedNonChecked = useCallback(() => {
+    setHideUncheckedNonChecked((previous) => !previous)
   }, [])
 
-  const selectAllCandidates = useCallback(() => {
-    setSelectedCandidateIds(task?.candidates.map((candidate) => candidate.image_id) ?? [])
+  const selectedCandidateIds = useMemo(() => {
+    if (!task || task.status !== 'review') {
+      return []
+    }
+
+    const candidateIdSet = new Set(task.candidates.map((candidate) => candidate.image_id))
+    return imageCheckedIds.filter((imageId) => candidateIdSet.has(imageId))
+  }, [imageCheckedIds, task])
+
+  const hasCheckedCandidateSelection = selectedCandidateIds.length > 0
+
+  const scopeImageIds = task?.scope_image_ids ?? []
+  const llmReviewedImageIds = useMemo(() => {
+    if (!task) {
+      return []
+    }
+
+    return Object.entries(task.image_source_by_id)
+      .filter(([, source]) => source === 'llm' || source === 'llm-error')
+      .map(([imageId]) => imageId)
   }, [task])
 
-  const clearCandidateSelection = useCallback(() => {
-    setSelectedCandidateIds([])
-  }, [])
+  const nonLlmReviewedImageIds = useMemo(() => {
+    if (!task) {
+      return []
+    }
+
+    return Object.entries(task.image_source_by_id)
+      .filter(([, source]) => source === 'known-hash' || source === 'strategy-skip')
+      .map(([imageId]) => imageId)
+  }, [task])
 
   const confirmDeleteSelectedCandidates = useCallback(async () => {
     if (!repository.confirmManageAdReviewDelete) {
@@ -285,9 +307,18 @@ export function useManageAdReviewActions({
       )
 
       setTask(response.task)
-      setSelectedCandidateIds(response.task.candidates.map((candidate) => candidate.image_id))
+
       if (response.deleted_count > 0) {
         clearAllSelections()
+      }
+
+      replaceImageCheckedIds(
+        response.task.candidates.map((candidate) => candidate.image_id),
+        false,
+      )
+
+      if (response.deleted_count > 0) {
+        setHideUncheckedNonChecked(true)
       }
 
       if (response.failed.length > 0) {
@@ -301,22 +332,31 @@ export function useManageAdReviewActions({
     } finally {
       setPending(false)
     }
-  }, [clearAllSelections, repository, selectedCandidateIds, setManageOperationHint, task])
+  }, [
+    clearAllSelections,
+    replaceImageCheckedIds,
+    repository,
+    selectedCandidateIds,
+    setManageOperationHint,
+    task,
+  ])
 
   const dismissTask = useCallback(() => {
     disposePolling()
     setTask(null)
-    setSelectedCandidateIds([])
+    setHideUncheckedNonChecked(false)
   }, [disposePolling])
 
   return {
     task,
     pending,
-    selectedCandidateIds,
+    hideUncheckedNonChecked,
+    hasCheckedCandidateSelection,
+    scopeImageIds,
+    llmReviewedImageIds,
+    nonLlmReviewedImageIds,
     startManageAdReview,
-    toggleCandidate,
-    selectAllCandidates,
-    clearCandidateSelection,
+    toggleHideUncheckedNonChecked,
     confirmDeleteSelectedCandidates,
     dismissTask,
   }
