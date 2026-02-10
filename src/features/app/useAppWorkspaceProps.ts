@@ -286,6 +286,11 @@ export function useAppWorkspaceProps({
   applyCurrentRootFromSelection,
   toggleSidebarNodeChecked,
 }: UseAppWorkspacePropsParams) {
+  /**
+   * Workspace 层只做视图模型组装：
+   * - 输入是上游状态层已收敛的读写能力；
+   * - 输出是 Sidebar/Main/Metadata 的稳定 props。
+   */
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
     sidebarFocus: appSettings.sidebarFocus,

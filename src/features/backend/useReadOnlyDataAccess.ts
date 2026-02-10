@@ -135,6 +135,7 @@ export function useReadOnlyDataAccess({
     [featureAuthorQuery, featureCircleQuery, featureGradeFilter, featureNameQuery, featureTags, featureWorkTitleQuery],
   )
 
+  // 测试模式允许走同步仓储，目的是让 hook 在单测中稳定复现请求时序并避免异步抖动。
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSynchronousRepository(repository)
 
   const syncSnapshot = useMemo(() => {

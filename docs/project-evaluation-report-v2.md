@@ -205,9 +205,9 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 4. **代码质量底线保持**：在代码量增长 63% 的情况下，仍然保持零 `any` / 零 `as any` / 零 TODO/FIXME
 5. **dist/ 清理**：移除了 vendor JS 文件（3,959 行 → 26 行），项目更干净
 
-### 6.2 未改进的
+### 6.2 持续优化（非阻断）
 
-1. **内联文档覆盖仍偏低** — 已补充关键策略注释，但尚未形成系统化覆盖
+1. **内联文档持续补齐** — 关键编排与契约链路已补充注释，后续按新增复杂模块增量维护
 
 ---
 
@@ -227,13 +227,9 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 
 ## 8. 下一步建议
 
-鉴于 P0/P1 已整改到位，建议重新排序剩余工作：
+本轮待办项已清零；后续仅保留持续性维护：新增复杂编排或跨模块契约时同步补充内联注释。
 
 已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移；`useAppDisplayAndEffects` 已拆分为 `useAppManageBindings + useAppDisplayResources`；关键策略 why 注释（归档规范化、Token TTL、白名单守卫）已补充；`src/features/*` barrel export 已补齐；`ReadonlyMediaRepository` 已更名为 `MediaRepository`；`BrowserMode/MediaType` 已在 app/backend/sidebar/shortcuts 等层统一复用。
-
-| 优先级 | 建议 | 投入 | 收益 |
-|--------|------|------|------|
-| **P3** | 继续扩展内联注释覆盖（复杂编排与跨模块契约） | 低 | 中 — 降低维护与交接成本 |
 
 ---
 
