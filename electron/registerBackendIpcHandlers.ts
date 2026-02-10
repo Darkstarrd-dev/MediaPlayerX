@@ -28,6 +28,12 @@ import {
   deleteImageItemsResponseSchema,
   deleteSidebarNodesRequestSchema,
   deleteSidebarNodesResponseSchema,
+  startManageAdReviewRequestSchema,
+  startManageAdReviewResponseSchema,
+  readManageAdReviewTaskRequestSchema,
+  readManageAdReviewTaskResponseSchema,
+  confirmManageAdReviewDeleteRequestSchema,
+  confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -178,6 +184,24 @@ export function registerBackendIpcHandlers(): void {
     const request = deleteSidebarNodesRequestSchema.parse(payload)
     const response = await ensureService().deleteSidebarNodes(request)
     return deleteSidebarNodesResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.startManageAdReview, async (_event, payload: unknown) => {
+    const request = startManageAdReviewRequestSchema.parse(payload)
+    const response = await ensureService().startManageAdReview(request)
+    return startManageAdReviewResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readManageAdReviewTask, async (_event, payload: unknown) => {
+    const request = readManageAdReviewTaskRequestSchema.parse(payload)
+    const response = await ensureService().readManageAdReviewTask(request)
+    return readManageAdReviewTaskResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.confirmManageAdReviewDelete, async (_event, payload: unknown) => {
+    const request = confirmManageAdReviewDeleteRequestSchema.parse(payload)
+    const response = await ensureService().confirmManageAdReviewDelete(request)
+    return confirmManageAdReviewDeleteResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writePackageMetadata, async (_event, payload: unknown) => {

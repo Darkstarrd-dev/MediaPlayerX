@@ -1,4 +1,5 @@
 import { useAppWorkspaceProps } from './useAppWorkspaceProps'
+import type { BackendErrorRow } from './buildBackendErrorRows'
 import type { useAppRuntimeSources } from './useAppRuntimeSources'
 import type { useAppReadAndNavigation } from './useAppReadAndNavigation'
 import type { useAppDisplayAndEffects } from './useAppDisplayAndEffects'
@@ -7,7 +8,7 @@ interface UseAppWorkspaceBindingsParams {
   runtimeSources: ReturnType<typeof useAppRuntimeSources>
   readNavigationState: ReturnType<typeof useAppReadAndNavigation>
   displayState: ReturnType<typeof useAppDisplayAndEffects>
-  managementErrorRows: Array<{ source: string; message: string }>
+  managementErrorRows: BackendErrorRow[]
 }
 
 export function useAppWorkspaceBindings({
@@ -131,10 +132,13 @@ export function useAppWorkspaceBindings({
     orderedRootScopedPackages,
   } = readNavigationState
 
+  void orderedRootScopedPackages
+
   const {
     backendWrite,
     runManageHideAction,
     requestManageDelete,
+    manageAdReview,
     metadataWriteBindings,
     thumbnailImageUrlById,
     metadataImageSrc,
@@ -203,6 +207,7 @@ export function useAppWorkspaceBindings({
     manageOperationHint,
     requestManageDelete,
     runManageHideAction,
+    manageAdReview,
     clearAllSelections,
     vectorResultsActive,
     showNamesOnly: appSettings.showNamesOnly,

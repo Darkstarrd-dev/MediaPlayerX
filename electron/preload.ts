@@ -27,6 +27,12 @@ import {
   deleteImageItemsResponseSchema,
   deleteSidebarNodesRequestSchema,
   deleteSidebarNodesResponseSchema,
+  startManageAdReviewRequestSchema,
+  startManageAdReviewResponseSchema,
+  readManageAdReviewTaskRequestSchema,
+  readManageAdReviewTaskResponseSchema,
+  confirmManageAdReviewDeleteRequestSchema,
+  confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -90,6 +96,21 @@ const backendApi = {
     const parsed = deleteSidebarNodesRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.deleteSidebarNodes, parsed)
     return deleteSidebarNodesResponseSchema.parse(response)
+  },
+  startManageAdReview: async (request: unknown) => {
+    const parsed = startManageAdReviewRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.startManageAdReview, parsed)
+    return startManageAdReviewResponseSchema.parse(response)
+  },
+  readManageAdReviewTask: async (request: unknown) => {
+    const parsed = readManageAdReviewTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readManageAdReviewTask, parsed)
+    return readManageAdReviewTaskResponseSchema.parse(response)
+  },
+  confirmManageAdReviewDelete: async (request: unknown) => {
+    const parsed = confirmManageAdReviewDeleteRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.confirmManageAdReviewDelete, parsed)
+    return confirmManageAdReviewDeleteResponseSchema.parse(response)
   },
   writePackageMetadata: async (request: unknown) => {
     const parsed = writePackageMetadataRequestSchema.parse(request)

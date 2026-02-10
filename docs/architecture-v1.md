@@ -32,7 +32,7 @@
   - 当前关键入口文件规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
 - 管理模式图片选择交互接线已完成：`ImageMainSection` 已统一改用 `useManageImageSelectionInteractions`，旧实现已移除。
 - 大文件拆分已完成：`src/App.css` 已拆分为 `src/styles/app/*` 聚合样式，`electron/mediaLibraryDatabase.ts` 已拆分为 Facade + stores（schema/snapshot/metadata/playlist/task/app state）。
-- 管理模式广告图片审核 (LLM Ad Review) 已完成 core 模块（`electron/manageAdReview/*`），当前待按 `Renderer -> Repository -> Main/Worker` 完成纵向接线。
+- 管理模式广告图片审核 (LLM Ad Review) 已完成纵向接线：`Renderer -> Repository -> preload/ipc -> Main service -> manageAdReview core` 全链路可用。
 
 ### Electron Main 进程
 
@@ -62,16 +62,17 @@
 - 向量 Worker：批处理调度与 LM Studio Embedding 调用。
 - 压缩包维护 Worker：转换、重打包、重命名、重排序任务。
 - 视频 Worker：元数据提取与手动封面持久化。
-- 管理审核 Worker（开发中）：core 能力已落地（策略引擎/LLM 客户端/哈希短路/并发控制），待完成 IPC 与 UI 接入。
+- 管理审核能力：已接入管理模式审核任务链路（任务启动/轮询/人工复核/确认删除），并复用现有删除写链路。
 
-## 开发中模块：管理模式 LLM 广告审核（Core 已完成）
+## 管理模式 LLM 广告审核（已接线完成）
 
 - 输入：管理模式当前勾选对象（Sidebar 节点或图片条目）映射出的图片集合。
 - 审核链路：Main/Worker 调用 LLM 接口执行广告检测，返回“疑似广告候选”而非直接删除。
 - 人工确认：Renderer 展示候选清单，用户确认后复用既有删除接口执行物理删除。
 - 缓存策略：新增“已确认删除图片哈希”记录，用于后续同图快速命中、跳过 LLM。
 - 已完成（core）：`adReviewEngine`、`openAiVisionClient`、`jsonExtract`、`hashStore`、`concurrency` 与对应单测。
-- 待完成（integration）：contracts/preload/ipc/repository 接线，管理面板审核列表与确认删除闭环。
+- 已完成（integration）：contracts/preload/ipc/repository 接线，管理面板审核列表、任务轮询、危险确认删除与结果回写闭环。
+- 已完成（persistence）：确认删除项的哈希写入 `app_state`，后续同图命中可走 known-hash 短路。
 - 详细计划与阶段拆解见 `docs/management-llm-ad-review-plan-v1.md`。
 
 ## 模块边界
@@ -141,3 +142,13 @@
 - 组件测试：核心面板行为与模式切换。
 - 集成测试：SQLite + LanceDB + 文件系统联动链路。
 - E2E：保持用户手动执行的脚本化检查清单。
+
+## 可维护性与稳定性改进专项（进行中）
+
+- 专项计划文档：`docs/maintainability-improvement-plan-v1.md`（长期保留）。
+- 专项实施文档：`docs/maintainability-improvement-execution-v1.md`（临时，计划完成后删除）。
+- 执行优先级：
+  - P0：SQLite 存储层与媒体访问安全守卫测试。
+  - P1：核心编排链路集成测试与 `build*Props` 纯函数测试。
+  - P2（可选）：跨模块边界类型接口收口，降低签名级联风险。
+- 阶段门禁：每阶段结束均需通过 `npm run lint`、`npm run test`、`npm run build`。

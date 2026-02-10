@@ -22,6 +22,9 @@ import {
   setImageHiddenResponseSchema,
   deleteImageItemsResponseSchema,
   deleteSidebarNodesResponseSchema,
+  startManageAdReviewResponseSchema,
+  readManageAdReviewTaskResponseSchema,
+  confirmManageAdReviewDeleteResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
   type EnqueueImportTaskRequestDto,
@@ -60,6 +63,12 @@ import {
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
+  type StartManageAdReviewRequestDto,
+  type StartManageAdReviewResponseDto,
+  type ReadManageAdReviewTaskRequestDto,
+  type ReadManageAdReviewTaskResponseDto,
+  type ConfirmManageAdReviewDeleteRequestDto,
+  type ConfirmManageAdReviewDeleteResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
   type ReadAppStateRequestDto,
@@ -317,6 +326,45 @@ export class RealMediaRepository implements ReadonlyMediaRepository {
 
     const response = await withAbort(api.deleteSidebarNodes(request), options)
     return deleteSidebarNodesResponseSchema.parse(response)
+  }
+
+  async startManageAdReview(
+    request: StartManageAdReviewRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartManageAdReviewResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.startManageAdReview) {
+      throw new Error('真实后端通道不可用：startManageAdReview 未注入')
+    }
+
+    const response = await withAbort(api.startManageAdReview(request), options)
+    return startManageAdReviewResponseSchema.parse(response)
+  }
+
+  async readManageAdReviewTask(
+    request: ReadManageAdReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageAdReviewTaskResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.readManageAdReviewTask) {
+      throw new Error('真实后端通道不可用：readManageAdReviewTask 未注入')
+    }
+
+    const response = await withAbort(api.readManageAdReviewTask(request), options)
+    return readManageAdReviewTaskResponseSchema.parse(response)
+  }
+
+  async confirmManageAdReviewDelete(
+    request: ConfirmManageAdReviewDeleteRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.confirmManageAdReviewDelete) {
+      throw new Error('真实后端通道不可用：confirmManageAdReviewDelete 未注入')
+    }
+
+    const response = await withAbort(api.confirmManageAdReviewDelete(request), options)
+    return confirmManageAdReviewDeleteResponseSchema.parse(response)
   }
 
   async writePackageMetadata(

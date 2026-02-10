@@ -8,6 +8,9 @@ import {
   clearDatabaseResponseSchema,
   deleteImageItemsResponseSchema,
   deleteSidebarNodesResponseSchema,
+  startManageAdReviewResponseSchema,
+  readManageAdReviewTaskResponseSchema,
+  confirmManageAdReviewDeleteResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   pickImportPathsResponseSchema,
@@ -39,6 +42,13 @@ import {
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
+  type StartManageAdReviewRequestDto,
+  type StartManageAdReviewResponseDto,
+  type ReadManageAdReviewTaskRequestDto,
+  type ReadManageAdReviewTaskResponseDto,
+  type ConfirmManageAdReviewDeleteRequestDto,
+  type ConfirmManageAdReviewDeleteResponseDto,
+  type ManageAdReviewTaskDto,
   type ImageItemDto,
   type ImagePackageDto,
   type ImportTaskDto,
@@ -472,6 +482,8 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
 
   private importTasks: ImportTaskDto[] = []
 
+  private manageAdReviewTasks = new Map<string, ManageAdReviewTaskDto>()
+
   getInitialLibrarySnapshot(): LibrarySnapshotDto {
     return MOCK_LIBRARY_SNAPSHOT
   }
@@ -825,6 +837,176 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
     return resolveAsync(response, options)
   }
 
+  private resolveManageAdReviewImageIds(request: StartManageAdReviewRequestDto): string[] {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const imageById = new Map<string, { source: ImagePackageDto; image: ImageItemDto }>()
+    for (const source of allSources) {
+      for (const image of source.images) {
+        imageById.set(image.id, { source, image })
+      }
+    }
+
+    if (request.selection_scope === 'image') {
+      return Array.from(
+        new Set(
+          (request.image_ids ?? []).map((value) => value.trim()).filter((value) => value.length > 0 && imageById.has(value)),
+        ),
+      )
+    }
+
+    const selected = new Set<string>()
+    const parsedTargets = (request.node_ids ?? [])
+      .map((nodeId) => parseSidebarNodePath(nodeId))
+      .filter((value): value is { kind: 'folder' | 'package' | 'video'; pathKey: string } => Boolean(value))
+
+    for (const source of allSources) {
+      const sourcePathKey = normalizePathKeyForMatch(source.tree_path)
+      let matched = false
+      for (const target of parsedTargets) {
+        if (target.kind === 'folder' && pathHasPrefix(sourcePathKey, target.pathKey)) {
+          matched = true
+          break
+        }
+        if (target.kind === 'package' && sourcePathKey === target.pathKey) {
+          matched = true
+          break
+        }
+      }
+
+      if (!matched) {
+        continue
+      }
+
+      for (const image of source.images) {
+        selected.add(image.id)
+      }
+    }
+
+    return Array.from(selected)
+  }
+
+  startManageAdReviewSync(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto {
+    const selectedImageIds = this.resolveManageAdReviewImageIds(request)
+    if (selectedImageIds.length === 0) {
+      throw new Error('广告审核失败：未选中图片')
+    }
+
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const imageById = new Map<string, { source: ImagePackageDto; image: ImageItemDto }>()
+    for (const source of allSources) {
+      for (const image of source.images) {
+        imageById.set(image.id, { source, image })
+      }
+    }
+
+    const candidates = selectedImageIds
+      .map((imageId) => imageById.get(imageId))
+      .filter((item): item is { source: ImagePackageDto; image: ImageItemDto } => Boolean(item))
+      .filter(({ image }) => image.ordinal % 2 === 1)
+      .map(({ source, image }) => ({
+        image_id: image.id,
+        package_id: source.id,
+        package_name: source.package_name,
+        display_name: source.display_name,
+        ordinal: image.ordinal,
+        file_name: image.media_locator.kind === 'filesystem' ? image.media_locator.absolute_path.split(/[\\/]/).pop() ?? null : image.media_locator.entry_name,
+        reason: 'mock_llm_suspected',
+        source: 'llm' as const,
+        hash: hashLocator(`${source.id}:${image.id}`).toString(16).padStart(8, '0'),
+      }))
+
+    const now = Date.now()
+    const taskId = `mock-manage-ad-review-${now}-${Math.round(Math.random() * 10_000)}`
+    const task: ManageAdReviewTaskDto = {
+      task_id: taskId,
+      status: 'review',
+      progress: 1,
+      total_count: selectedImageIds.length,
+      reviewed_count: selectedImageIds.length,
+      suspected_count: candidates.length,
+      failed_count: 0,
+      known_hash_hits: 0,
+      llm_calls: selectedImageIds.length,
+      message: candidates.length > 0 ? `审核完成：疑似 ${candidates.length} 张` : '审核完成：未发现疑似广告',
+      error_detail: null,
+      candidates,
+      created_at_ms: now,
+      updated_at_ms: now,
+    }
+
+    this.manageAdReviewTasks.set(taskId, task)
+    return startManageAdReviewResponseSchema.parse({ task })
+  }
+
+  async startManageAdReview(
+    request: StartManageAdReviewRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartManageAdReviewResponseDto> {
+    const response = this.startManageAdReviewSync(request)
+    return resolveAsync(response, options)
+  }
+
+  readManageAdReviewTaskSync(request: ReadManageAdReviewTaskRequestDto): ReadManageAdReviewTaskResponseDto {
+    return readManageAdReviewTaskResponseSchema.parse({
+      task: this.manageAdReviewTasks.get(request.task_id) ?? null,
+    })
+  }
+
+  async readManageAdReviewTask(
+    request: ReadManageAdReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageAdReviewTaskResponseDto> {
+    const response = this.readManageAdReviewTaskSync(request)
+    return resolveAsync(response, options)
+  }
+
+  confirmManageAdReviewDeleteSync(
+    request: ConfirmManageAdReviewDeleteRequestDto,
+  ): ConfirmManageAdReviewDeleteResponseDto {
+    const task = this.manageAdReviewTasks.get(request.task_id)
+    if (!task) {
+      throw new Error(`广告审核删除失败：任务不存在 ${request.task_id}`)
+    }
+
+    const candidateIds = new Set(task.candidates.map((item) => item.image_id))
+    const normalizedIds = Array.from(
+      new Set(request.image_ids.map((value) => value.trim()).filter((value) => value.length > 0 && candidateIds.has(value))),
+    )
+    if (normalizedIds.length === 0) {
+      throw new Error('广告审核删除失败：未选中候选项')
+    }
+
+    const deleteResult = this.deleteImageItemsSync({ image_ids: normalizedIds })
+    const failedSet = new Set(deleteResult.failed.map((item) => item.image_id))
+    const deletedSet = new Set(normalizedIds.filter((imageId) => !failedSet.has(imageId)))
+
+    const now = Date.now()
+    const nextTask: ManageAdReviewTaskDto = {
+      ...task,
+      candidates: task.candidates.filter((item) => !deletedSet.has(item.image_id)),
+      suspected_count: task.candidates.filter((item) => !deletedSet.has(item.image_id)).length,
+      updated_at_ms: now,
+      message: deletedSet.size > 0 ? `已删除 ${deletedSet.size} 张疑似广告` : task.message,
+    }
+
+    this.manageAdReviewTasks.set(task.task_id, nextTask)
+
+    return confirmManageAdReviewDeleteResponseSchema.parse({
+      task: nextTask,
+      deleted_count: deleteResult.deleted_count,
+      failed: deleteResult.failed,
+      updated_at_ms: now,
+    })
+  }
+
+  async confirmManageAdReviewDelete(
+    request: ConfirmManageAdReviewDeleteRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
+    const response = this.confirmManageAdReviewDeleteSync(request)
+    return resolveAsync(response, options)
+  }
+
   writePackageMetadataSync(
     request: WritePackageMetadataRequestDto,
   ): WritePackageMetadataResponseDto {
@@ -1110,6 +1292,7 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
   clearDatabaseSync(): ClearDatabaseResponseDto {
     this.playlistIds = []
     this.importTasks = []
+    this.manageAdReviewTasks.clear()
 
     return clearDatabaseResponseSchema.parse({
       cleared: true,

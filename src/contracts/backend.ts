@@ -227,6 +227,78 @@ export const deleteSidebarNodesResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const manageAdReviewSelectionScopeSchema = z.enum(['image', 'sidebar'])
+
+export const manageAdReviewDecisionSourceSchema = z.enum(['known-hash', 'llm'])
+
+export const manageAdReviewTaskStatusSchema = z.enum(['running', 'review', 'failed'])
+
+export const manageAdReviewCandidateSchema = z.object({
+  image_id: z.string().min(1),
+  package_id: z.string().min(1),
+  package_name: z.string().min(1),
+  display_name: z.string().min(1),
+  ordinal: z.number().int().positive(),
+  file_name: z.string().min(1).nullable(),
+  reason: z.string().min(1),
+  source: manageAdReviewDecisionSourceSchema,
+  hash: z.string().min(1),
+})
+
+export const manageAdReviewTaskSchema = z.object({
+  task_id: z.string().min(1),
+  status: manageAdReviewTaskStatusSchema,
+  progress: z.number().min(0).max(1),
+  total_count: nonNegativeIntSchema,
+  reviewed_count: nonNegativeIntSchema,
+  suspected_count: nonNegativeIntSchema,
+  failed_count: nonNegativeIntSchema,
+  known_hash_hits: nonNegativeIntSchema,
+  llm_calls: nonNegativeIntSchema,
+  message: z.string().min(1).nullable(),
+  error_detail: z.string().min(1).nullable(),
+  candidates: z.array(manageAdReviewCandidateSchema),
+  created_at_ms: z.number().int().positive(),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const startManageAdReviewRequestSchema = z.object({
+  selection_scope: manageAdReviewSelectionScopeSchema,
+  image_ids: z.array(z.string().min(1)).optional(),
+  node_ids: z.array(z.string().min(1)).optional(),
+  llm_endpoint: z.string().min(1),
+  llm_model: z.string().min(1),
+})
+
+export const startManageAdReviewResponseSchema = z.object({
+  task: manageAdReviewTaskSchema,
+})
+
+export const readManageAdReviewTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+})
+
+export const readManageAdReviewTaskResponseSchema = z.object({
+  task: manageAdReviewTaskSchema.nullable(),
+})
+
+export const confirmManageAdReviewDeleteRequestSchema = z.object({
+  task_id: z.string().min(1),
+  image_ids: z.array(z.string().min(1)).min(1),
+})
+
+export const confirmManageAdReviewDeleteResponseSchema = z.object({
+  task: manageAdReviewTaskSchema,
+  deleted_count: nonNegativeIntSchema,
+  failed: z.array(
+    z.object({
+      image_id: z.string().min(1),
+      reason: z.string().min(1),
+    }),
+  ),
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const writePackageMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
   work_title: z.string().min(1),
@@ -428,6 +500,17 @@ export type DeleteImageItemsRequestDto = z.infer<typeof deleteImageItemsRequestS
 export type DeleteImageItemsResponseDto = z.infer<typeof deleteImageItemsResponseSchema>
 export type DeleteSidebarNodesRequestDto = z.infer<typeof deleteSidebarNodesRequestSchema>
 export type DeleteSidebarNodesResponseDto = z.infer<typeof deleteSidebarNodesResponseSchema>
+export type ManageAdReviewSelectionScopeDto = z.infer<typeof manageAdReviewSelectionScopeSchema>
+export type ManageAdReviewDecisionSourceDto = z.infer<typeof manageAdReviewDecisionSourceSchema>
+export type ManageAdReviewTaskStatusDto = z.infer<typeof manageAdReviewTaskStatusSchema>
+export type ManageAdReviewCandidateDto = z.infer<typeof manageAdReviewCandidateSchema>
+export type ManageAdReviewTaskDto = z.infer<typeof manageAdReviewTaskSchema>
+export type StartManageAdReviewRequestDto = z.infer<typeof startManageAdReviewRequestSchema>
+export type StartManageAdReviewResponseDto = z.infer<typeof startManageAdReviewResponseSchema>
+export type ReadManageAdReviewTaskRequestDto = z.infer<typeof readManageAdReviewTaskRequestSchema>
+export type ReadManageAdReviewTaskResponseDto = z.infer<typeof readManageAdReviewTaskResponseSchema>
+export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManageAdReviewDeleteRequestSchema>
+export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
 export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
 export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>

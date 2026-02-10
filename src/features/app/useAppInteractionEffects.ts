@@ -91,6 +91,8 @@ export function useAppInteractionEffects({
     selectVideoFromBrowser,
   } = mediaState
 
+  void videoPlaying
+
   const {
     searchPanelMode,
     searchPanelCollapsed,

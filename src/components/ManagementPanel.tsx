@@ -1,6 +1,18 @@
-import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
+import { useEffect, useState, type MouseEvent as ReactMouseEvent, type RefObject } from 'react'
 
 import type { BackendErrorRow } from '../features/app/buildBackendErrorRows'
+import type { ManageAdReviewTaskDto } from '../contracts/backend'
+import DangerConfirmDialog from './DangerConfirmDialog'
+
+function resolveAdReviewStatusLabel(status: ManageAdReviewTaskDto['status']): string {
+  if (status === 'running') {
+    return '审核中'
+  }
+  if (status === 'failed') {
+    return '失败'
+  }
+  return '待复核'
+}
 
 interface ManagementPanelProps {
   visible: boolean
@@ -17,10 +29,20 @@ interface ManagementPanelProps {
   canDelete: boolean
   canHide: boolean
   canUnhide: boolean
+  canStartAdReview: boolean
   onDelete: () => void
   onHide: () => void
   onUnhide: () => void
   onClearSelection: () => void
+  adReviewPending: boolean
+  adReviewTask: ManageAdReviewTaskDto | null
+  adReviewSelectedImageIds: string[]
+  onStartAdReview: () => void
+  onToggleAdReviewCandidate: (imageId: string, checked?: boolean) => void
+  onSelectAllAdReviewCandidates: () => void
+  onClearAdReviewCandidates: () => void
+  onDeleteAdReviewCandidates: () => void
+  onDismissAdReviewTask: () => void
   onExpand: () => void
   onStartResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   layoutLocked: boolean
@@ -41,14 +63,32 @@ function ManagementPanel({
   canDelete,
   canHide,
   canUnhide,
+  canStartAdReview,
   onDelete,
   onHide,
   onUnhide,
   onClearSelection,
+  adReviewPending,
+  adReviewTask,
+  adReviewSelectedImageIds,
+  onStartAdReview,
+  onToggleAdReviewCandidate,
+  onSelectAllAdReviewCandidates,
+  onClearAdReviewCandidates,
+  onDeleteAdReviewCandidates,
+  onDismissAdReviewTask,
   onExpand,
   onStartResize,
   layoutLocked,
 }: ManagementPanelProps) {
+  const [adReviewDeleteConfirmOpen, setAdReviewDeleteConfirmOpen] = useState(false)
+
+  useEffect(() => {
+    if (!adReviewTask || adReviewTask.status !== 'review') {
+      setAdReviewDeleteConfirmOpen(false)
+    }
+  }, [adReviewTask])
+
   if (!visible) {
     return null
   }
@@ -83,9 +123,92 @@ function ManagementPanel({
               <button className="feature-action-btn" type="button" disabled={pending} onClick={onClearSelection}>
                 清空选择
               </button>
+              <button
+                className="feature-action-btn"
+                type="button"
+                disabled={!canStartAdReview || pending || adReviewPending || adReviewTask?.status === 'running'}
+                onClick={onStartAdReview}
+              >
+                广告审核
+              </button>
             </div>
 
             {operationHint ? <p className="manage-panel-hint">{operationHint}</p> : null}
+
+            {adReviewTask ? (
+              <section className="manage-ad-review" aria-live="polite">
+                <header>
+                  <strong>广告审核</strong>
+                  <span className={`manage-ad-review-status is-${adReviewTask.status}`}>
+                    {resolveAdReviewStatusLabel(adReviewTask.status)}
+                  </span>
+                </header>
+
+                <p className="manage-ad-review-progress">
+                  {`进度 ${Math.round(adReviewTask.progress * 100)}% (${adReviewTask.reviewed_count}/${adReviewTask.total_count})`}
+                </p>
+                {adReviewTask.message ? <p className="manage-ad-review-message">{adReviewTask.message}</p> : null}
+                {adReviewTask.error_detail ? <p className="manage-ad-review-error">{adReviewTask.error_detail}</p> : null}
+
+                {adReviewTask.status === 'review' ? (
+                  <>
+                    <div className="manage-ad-review-actions">
+                      <button
+                        className="feature-action-btn"
+                        type="button"
+                        disabled={adReviewPending || adReviewTask.candidates.length === 0}
+                        onClick={onSelectAllAdReviewCandidates}
+                      >
+                        全选候选
+                      </button>
+                      <button
+                        className="feature-action-btn"
+                        type="button"
+                        disabled={adReviewPending || adReviewSelectedImageIds.length === 0}
+                        onClick={onClearAdReviewCandidates}
+                      >
+                        清空候选
+                      </button>
+                      <button
+                        className="vector-search-btn"
+                        type="button"
+                        disabled={adReviewPending || adReviewSelectedImageIds.length === 0}
+                        onClick={() => setAdReviewDeleteConfirmOpen(true)}
+                      >
+                        删除勾选候选
+                      </button>
+                      <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
+                        关闭结果
+                      </button>
+                    </div>
+
+                    {adReviewTask.candidates.length > 0 ? (
+                      <ul className="manage-ad-review-list">
+                        {adReviewTask.candidates.map((candidate) => {
+                          const checked = adReviewSelectedImageIds.includes(candidate.image_id)
+                          return (
+                            <li key={candidate.image_id}>
+                              <label>
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  aria-label={`ad-review-candidate-${candidate.image_id}`}
+                                  onChange={(event) => onToggleAdReviewCandidate(candidate.image_id, event.target.checked)}
+                                />
+                                <span>{`${candidate.display_name} #${candidate.ordinal}`}</span>
+                              </label>
+                              <span>{candidate.reason}</span>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="manage-ad-review-empty">未发现疑似广告图片</p>
+                    )}
+                  </>
+                ) : null}
+              </section>
+            ) : null}
 
             {errorRows.length > 0 ? (
               <section className="manage-error-list" aria-live="polite">
@@ -131,6 +254,21 @@ function ManagementPanel({
           onMouseDown={onStartResize}
         />
       ) : null}
+
+      <DangerConfirmDialog
+        open={adReviewDeleteConfirmOpen}
+        title="广告审核删除确认"
+        description="该操作将永久删除已勾选的疑似广告图片，并同步更新当前审核结果列表。"
+        acknowledgeLabel="我了解此操作将永久不可逆地删除勾选的疑似广告图片"
+        confirmLabel="确定删除"
+        cancelLabel="取消"
+        pending={adReviewPending}
+        onConfirm={() => {
+          onDeleteAdReviewCandidates()
+          setAdReviewDeleteConfirmOpen(false)
+        }}
+        onCancel={() => setAdReviewDeleteConfirmOpen(false)}
+      />
     </>
   )
 }

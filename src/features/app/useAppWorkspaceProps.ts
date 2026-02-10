@@ -9,6 +9,7 @@ import { buildSearchPanelProps } from './buildSearchPanelProps'
 import { buildSidebarPanelProps } from './buildSidebarPanelProps'
 import { buildVideoMainSectionProps } from './buildVideoMainSectionProps'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
+import type { useManageAdReviewActions } from './useManageAdReviewActions'
 import type { useMetadataWriteBindings } from './useMetadataWriteBindings'
 import type { useWriteDataAccess } from '../backend'
 import type {
@@ -76,6 +77,7 @@ interface UseAppWorkspacePropsParams {
   manageOperationHint: string | null
   requestManageDelete: () => void
   runManageHideAction: (hidden: boolean) => Promise<void>
+  manageAdReview: ReturnType<typeof useManageAdReviewActions>
   clearAllSelections: () => void
   vectorResultsActive: boolean
   showNamesOnly: boolean
@@ -203,6 +205,7 @@ export function useAppWorkspaceProps({
   manageOperationHint,
   requestManageDelete,
   runManageHideAction,
+  manageAdReview,
   clearAllSelections,
   vectorResultsActive,
   showNamesOnly,
@@ -382,6 +385,19 @@ export function useAppWorkspaceProps({
       void runManageHideAction(false)
     },
     onClearSelection: clearAllSelections,
+    adReviewPending: manageAdReview.pending,
+    adReviewTask: manageAdReview.task,
+    adReviewSelectedImageIds: manageAdReview.selectedCandidateIds,
+    onStartAdReview: () => {
+      void manageAdReview.startManageAdReview()
+    },
+    onToggleAdReviewCandidate: manageAdReview.toggleCandidate,
+    onSelectAllAdReviewCandidates: manageAdReview.selectAllCandidates,
+    onClearAdReviewCandidates: manageAdReview.clearCandidateSelection,
+    onDeleteAdReviewCandidates: () => {
+      void manageAdReview.confirmDeleteSelectedCandidates()
+    },
+    onDismissAdReviewTask: manageAdReview.dismissTask,
     onStartVectorPanelResize,
     layoutLocked,
   })

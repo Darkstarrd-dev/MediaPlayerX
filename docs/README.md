@@ -8,7 +8,9 @@
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
 - `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案。
-- `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（进行中，Core 已完成）。
+- `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（已接线完成，保留优化项）。
+- `maintainability-improvement-plan-v1.md`：可维护性与稳定性改进计划（进行中，长期保留）。
+- `maintainability-improvement-execution-v1.md`：可维护性与稳定性改进实施清单（临时文档，计划完成后删除）。
 - `ui/theme-system-v1.md`：主题系统 CSS 契约与开发规范 (SSOT)。
 - `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
@@ -55,7 +57,7 @@
 - Main 领域服务已成型：`mediaTokenService`、`runtimeDependencyService`、`serviceEventBus`、`importPathRegistry`、`archiveNormalizationService`、`librarySnapshotService`、`importTaskService`、`libraryReadWriteService`、`managementMutationService`、`mediaResourceService`。
 - 管理模式图片选择交互接线已完成：`ImageMainSection` 已切换到 `useManageImageSelectionInteractions`，重复 Hook 实现已移除。
 - 大文件拆分已完成：`src/App.css` 已改为样式聚合入口并拆分到 `src/styles/app/*`，`electron/mediaLibraryDatabase.ts` 已收敛为 Facade 并委托到职责子模块。
-- 当前拆分待办聚焦一项：管理模式 LLM 广告审核从 core 模块接入到 contracts/preload/ipc/repository/UI。
+- 管理模式 LLM 广告审核纵向接线已完成：contracts/preload/ipc/repository/UI 全链路可用，支持“启动审核 -> 轮询进度/结果 -> 人工复核 -> 确认删除”。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
 - Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。
@@ -89,7 +91,8 @@
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
-- 管理模式“LLM 广告图片审核”已完成 core 模块：`electron/manageAdReview/*`（引擎/客户端/哈希缓存/并发与测试）；当前待接入 contracts/preload/ipc/repository/UI。
+- 可维护性与稳定性改进计划已立项：当前进入 `Phase 0`（测试矩阵与夹具准备），执行清单见 `maintainability-improvement-execution-v1.md`。
+- 管理模式“LLM 广告图片审核”已完成接入：在管理面板提供审核入口与候选复核列表；删除前需危险确认，删除后将候选哈希写入 `app_state`（known-hash）用于后续命中短路。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。
 - 仓库初始化以本目录文档为起点。
 

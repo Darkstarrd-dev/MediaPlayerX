@@ -33,7 +33,12 @@ import {
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
-  type VideoItemDto,
+  type StartManageAdReviewRequestDto,
+  type StartManageAdReviewResponseDto,
+  type ReadManageAdReviewTaskRequestDto,
+  type ReadManageAdReviewTaskResponseDto,
+  type ConfirmManageAdReviewDeleteRequestDto,
+  type ConfirmManageAdReviewDeleteResponseDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
@@ -91,6 +96,7 @@ import {
   type PersistedVideoCoverRecord,
 } from './services/file-system-read/librarySnapshotService'
 import { ManagementMutationService } from './services/file-system-read/managementMutationService'
+import { ManageAdReviewService } from './services/file-system-read/manageAdReviewService'
 import { MediaResourceService } from './services/file-system-read/mediaResourceService'
 import { LibraryReadWriteService } from './services/file-system-read/libraryReadWriteService'
 import {
@@ -135,6 +141,8 @@ export class FileSystemMediaReadService {
   private readonly libraryReadWriteService: LibraryReadWriteService
 
   private readonly managementMutationService: ManagementMutationService
+
+  private readonly manageAdReviewService: ManageAdReviewService
 
   private readonly mediaResourceService: MediaResourceService
 
@@ -225,6 +233,14 @@ export class FileSystemMediaReadService {
       removeImportSourcePaths: (pathsToRemove) => this.removeImportSourcePaths(pathsToRemove),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as LibraryChangedEventPayload),
+    })
+
+    this.manageAdReviewService = new ManageAdReviewService({
+      database: this.database,
+      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      buildMediaAccessContext: () => this.buildMediaAccessContext(),
+      getZipEntryIndexByPath: () => this.librarySnapshotService.getZipEntryIndexByPath(),
+      deleteImageItems: (request) => this.managementMutationService.deleteImageItems(request),
     })
 
     this.mediaResourceService = new MediaResourceService({
@@ -477,6 +493,24 @@ export class FileSystemMediaReadService {
     request: DeleteSidebarNodesRequestDto,
   ): Promise<DeleteSidebarNodesResponseDto> {
     return this.managementMutationService.deleteSidebarNodes(request)
+  }
+
+  async startManageAdReview(
+    request: StartManageAdReviewRequestDto,
+  ): Promise<StartManageAdReviewResponseDto> {
+    return this.manageAdReviewService.startManageAdReview(request)
+  }
+
+  async readManageAdReviewTask(
+    request: ReadManageAdReviewTaskRequestDto,
+  ): Promise<ReadManageAdReviewTaskResponseDto> {
+    return this.manageAdReviewService.readManageAdReviewTask(request)
+  }
+
+  async confirmManageAdReviewDelete(
+    request: ConfirmManageAdReviewDeleteRequestDto,
+  ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
+    return this.manageAdReviewService.confirmManageAdReviewDelete(request)
   }
 
   async writePackageMetadata(

@@ -43,7 +43,7 @@ import { filterSources as filterLibrarySources } from '../../fileSystemSourceFil
 import { probeImageDimensionsFromFile } from '../../fileSystemRuntimeHelpers'
 import { buildImageSidebarTree } from '../../fileSystemSidebarTree'
 import { captureVideoCoverImage } from '../../fileSystemVideoCoverCapture'
-import { deriveVideoWorkTitleFromFileName, toDeterministicCoverColor, toSafeSizeKb } from '../../fileSystemServiceHelpers'
+import { toDeterministicCoverColor, toSafeSizeKb } from '../../fileSystemServiceHelpers'
 import { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
 import type { PersistedVideoCoverRecord } from './librarySnapshotService'
 import type { RuntimeDependencySnapshot } from './runtimeDependencyService'

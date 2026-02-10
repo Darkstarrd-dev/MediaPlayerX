@@ -29,6 +29,12 @@ import type {
   WritePackageMetadataResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
+  StartManageAdReviewRequestDto,
+  StartManageAdReviewResponseDto,
+  ReadManageAdReviewTaskRequestDto,
+  ReadManageAdReviewTaskResponseDto,
+  ConfirmManageAdReviewDeleteRequestDto,
+  ConfirmManageAdReviewDeleteResponseDto,
   SetImageHiddenRequestDto,
   SetImageHiddenResponseDto,
   DeleteImageItemsRequestDto,
@@ -53,6 +59,11 @@ interface MediaPlayerBackendApi {
   setImageHidden?: (request: SetImageHiddenRequestDto) => Promise<SetImageHiddenResponseDto>
   deleteImageItems?: (request: DeleteImageItemsRequestDto) => Promise<DeleteImageItemsResponseDto>
   deleteSidebarNodes?: (request: DeleteSidebarNodesRequestDto) => Promise<DeleteSidebarNodesResponseDto>
+  startManageAdReview?: (request: StartManageAdReviewRequestDto) => Promise<StartManageAdReviewResponseDto>
+  readManageAdReviewTask?: (request: ReadManageAdReviewTaskRequestDto) => Promise<ReadManageAdReviewTaskResponseDto>
+  confirmManageAdReviewDelete?: (
+    request: ConfirmManageAdReviewDeleteRequestDto,
+  ) => Promise<ConfirmManageAdReviewDeleteResponseDto>
   writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
   writeVideoMetadata?: (request: WriteVideoMetadataRequestDto) => Promise<WriteVideoMetadataResponseDto>
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>

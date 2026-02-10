@@ -319,6 +319,43 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByText(/管理操作:/)).not.toBeInTheDocument()
   })
 
+  it('管理模式广告审核支持候选复核与确认删除', async () => {
+    vi.spyOn(MockMediaRepository.prototype, 'deleteImageItemsSync').mockImplementation((request) => ({
+      deleted_count: request.image_ids.length,
+      failed: [],
+      updated_at_ms: Date.now(),
+    }))
+
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(document.querySelector('.manage-image-checker') as HTMLInputElement)
+    fireEvent.click(screen.getByRole('button', { name: '广告审核' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('待复核')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: '删除勾选候选' })).toBeInTheDocument()
+    })
+
+    const candidateCheckbox = screen.getAllByRole('checkbox', { name: /ad-review-candidate-/ })[0] as HTMLInputElement
+    expect(candidateCheckbox.checked).toBe(true)
+
+    fireEvent.click(screen.getByRole('button', { name: '删除勾选候选' }))
+    expect(screen.getByRole('dialog', { name: '广告审核删除确认' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除勾选的疑似广告图片' }))
+    fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: '广告审核删除确认' })).not.toBeInTheDocument()
+      expect(screen.getAllByText('已删除 1 张疑似广告').length).toBeGreaterThan(0)
+    })
+  })
+
   it('真实渲染链路可输出可渲染媒体 URL（Main/Metadata/Fullscreen）', async () => {
     render(<App />)
 

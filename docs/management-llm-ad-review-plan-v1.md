@@ -1,9 +1,9 @@
-# 管理模式 LLM 广告图片审核模块实施计划 V1（进行中）
+# 管理模式 LLM 广告图片审核模块实施计划 V1（接线已完成，持续优化）
 
 ## 0. 文档定位
 
 - 本文档用于固化“管理模式广告图片审核 (LLM Ad Review)”的实施方案与拆解顺序。
-- 当前状态：已完成 core 模块实现，尚未完成 contracts/preload/ipc/repository/UI 接线。
+- 当前状态：core + contracts/preload/ipc/repository/UI 接线已完成，进入优化与稳态维护阶段。
 - 目标产出：可执行的任务清单 + 合约草案 + 验收标准，作为后续开发基线。
 
 ## 当前进度（基于 git）
@@ -18,14 +18,19 @@
   - `hashStore.ts`：`sha256` 与内存哈希仓库实现。
   - `concurrency.ts`：并发控制与取消断言。
 - 已补齐单测：`adReviewEngine/jsonExtract/openAiVisionClient/concurrency`。
+- 已完成纵向接线：
+  - contracts：审核任务 DTO/schema（start/read/confirm）
+  - preload/ipc：新增三条审核通道并统一 Zod 校验
+  - repository：mock/real 双实现对齐
+  - UI：管理容器新增“广告审核”入口、任务状态、候选复核与危险确认删除
+  - Main：新增 `manageAdReviewService`，打通选区映射、LLM 调用、任务轮询、确认删除闭环
+- 已落地哈希持久化：确认删除候选写入 `app_state`（known-hash）并参与后续短路命中。
 
 ### 待办
 
-- contracts：补齐审核任务相关 DTO 与 schema。
-- preload/ipc：新增审核任务启动、轮询、确认删除通道。
-- repository：扩展 mock/real 接口并保持 API 对齐。
-- UI：管理容器新增审核入口、候选复核列表与确认删除交互。
-- 持久化：`KnownHashStore` 从内存实现切换为 SQLite 或 `app_state`。
+- 性能与策略优化：按需暴露 `head-tail` 策略参数与并发参数，补充大批量样本下的压测基准。
+- 观测增强：补充审核任务审计字段（来源分布、命中率）与 UI 可视化。
+- 文档维护：后续功能迭代持续同步本计划与 `README/architecture/interaction/guardrails`。
 
 ## 1. 目标与范围
 
@@ -129,10 +134,10 @@
 ### 阶段进度
 
 - [x] Phase 0（Core）：核心引擎、客户端、并发/哈希、单测。
-- [ ] Phase 1（Contracts/IPC Skeleton）：合约与骨架接线。
-- [ ] Phase 2（Execution Wiring）：Main/Worker 审核任务接入。
-- [ ] Phase 3（Human Review + Delete）：人工复核与删除闭环。
-- [ ] Phase 4（Persistence + Optimization）：持久化与策略优化。
+- [x] Phase 1（Contracts/IPC Skeleton）：合约与骨架接线。
+- [x] Phase 2（Execution Wiring）：Main/Worker 审核任务接入。
+- [x] Phase 3（Human Review + Delete）：人工复核与删除闭环。
+- [x] Phase 4（Persistence + Optimization）：已完成持久化（known-hash），策略优化持续迭代。
 
 ### Phase 1：合约与骨架
 

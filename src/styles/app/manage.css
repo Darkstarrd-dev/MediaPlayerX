@@ -100,6 +100,92 @@
   opacity: 0.64;
 }
 
+.manage-ad-review {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--mpx-border-1);
+  background: var(--mpx-bg-panel);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.manage-ad-review > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.manage-ad-review-status {
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.manage-ad-review-status.is-running {
+  background: var(--mpx-status-busy-bg);
+  color: var(--mpx-status-busy-text);
+}
+
+.manage-ad-review-status.is-review {
+  background: var(--mpx-status-warning-bg);
+  color: var(--mpx-status-warning-text);
+}
+
+.manage-ad-review-status.is-failed {
+  background: var(--mpx-status-danger-bg);
+  color: var(--mpx-status-danger-text);
+}
+
+.manage-ad-review-progress,
+.manage-ad-review-message,
+.manage-ad-review-error,
+.manage-ad-review-empty {
+  margin: 0;
+  font-size: 12px;
+}
+
+.manage-ad-review-error {
+  color: var(--mpx-status-danger-text);
+}
+
+.manage-ad-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.manage-ad-review-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.manage-ad-review-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.manage-ad-review-list > li > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.manage-ad-review-list > li > label > span,
+.manage-ad-review-list > li > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .manage-selection-marquee {
   position: fixed;
   border: 1px solid var(--mpx-accent);
