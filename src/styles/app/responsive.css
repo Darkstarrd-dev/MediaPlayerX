@@ -1,0 +1,19 @@
+@media (max-width: 1280px) {
+  .search-box {
+    min-width: 180px;
+  }
+
+  .settings-shell {
+    flex-direction: column;
+    display: flex;
+  }
+
+  .settings-side {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .feature-controls {
+    grid-template-columns: 1fr;
+  }
+}
