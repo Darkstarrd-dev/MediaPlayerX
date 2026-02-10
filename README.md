@@ -55,7 +55,6 @@ npm run test
 
 ## 计划待办
 
-- [ ] 在模块边界定义显式接口，逐步替代 `ReturnType<typeof>` 隐式契约（62 处）
 - [ ] 拆分 `useAppDisplayAndEffects`（477 行）为 2-3 个职责更明确的子 hook
 - [ ] 将 `app/helpers.ts` 中的跨界工具函数迁移至 `src/utils/`
 - [ ] 为非显而易见的设计决策补充 why 注释（归档规范化策略、Token TTL 取值、安全守卫白名单规则等）
