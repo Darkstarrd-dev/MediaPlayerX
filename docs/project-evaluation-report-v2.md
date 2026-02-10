@@ -232,7 +232,7 @@ Hook复杂度        B       B      ━━━━━━━━
 
 鉴于 P0/P1 已整改到位，建议重新排序剩余工作：
 
-已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移。
+已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移；`useAppDisplayAndEffects` 已拆分为 `useAppManageBindings + useAppDisplayResources`。
 
 | 优先级 | 建议 | 投入 | 收益 |
 |--------|------|------|------|

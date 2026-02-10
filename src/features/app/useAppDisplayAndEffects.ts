@@ -1,23 +1,16 @@
-import { useCallback } from 'react'
-
-import { useManageModeActions } from './useManageModeActions'
-import { useManageAdReviewActions } from './useManageAdReviewActions'
-import { useEffectiveDisplayState } from './useEffectiveDisplayState'
-import { useMetadataWriteBindings } from './useMetadataWriteBindings'
-import { useResolvedMediaState } from './useResolvedMediaState'
-import { useFullscreenPlaybackBindings } from './useFullscreenPlaybackBindings'
-import { useVectorUniverseBindings } from './useVectorUniverseBindings'
+import { useAppDisplayResources } from './useAppDisplayResources'
 import { useAppInteractionEffects } from './useAppInteractionEffects'
+import { useAppManageBindings } from './useAppManageBindings'
+import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { AppSessionStateResult } from './useAppSessionState'
+import { useFullscreenPlaybackBindings } from './useFullscreenPlaybackBindings'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
+import { useVectorUniverseBindings } from './useVectorUniverseBindings'
 import type { MediaStateResult } from '../media/useMediaState'
-import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
-import { useRuntimeCapabilities, useWriteDataAccess } from '../backend'
 import type { UiBenchSettings } from '../perf/benchSettings'
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
-const MEDIA_RESOLVE_MAX_CONCURRENT = 8
 
 interface UseAppDisplayAndEffectsParams {
   appSettings: AppSettingsStoreSnapshot
@@ -38,17 +31,8 @@ export function useAppDisplayAndEffects({
 }: UseAppDisplayAndEffectsParams) {
   const {
     mode,
-    vectorMode,
-    settingsOpen,
-    sidebarRatio,
-    vectorPanelHeight,
-    thumbnailScale,
-    showNamesOnly,
     autoPlayEnabled,
-    autoPlayInterval,
     vectorThreshold,
-    sidebarFocus,
-    themeId,
     vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier,
     vectorUniverseLookSensitivity,
@@ -56,348 +40,60 @@ export function useAppDisplayAndEffects({
     vectorUniverseHelperScale,
     vectorUniverseDispersion,
     vectorUniverseWidgetSize,
-    lmStudioEndpoint,
-    lmStudioModel,
-    adReviewStrategyMode,
-    adReviewHeadN,
-    adReviewTailN,
-    adReviewTailStopCleanStreak,
-    adReviewMaxConcurrency,
-    shortcuts,
     vectorControls,
     updateSettings,
   } = appSettings
 
   const {
     selectedPackageId,
-    setSelectedPackageId,
     selectedSidebarNodeId,
+    setSelectedPackageId,
     setSelectedSidebarNodeId,
-    imageFocusActive,
-    setImageFocusActive,
-    focusByPackage,
-    setPageByPackage,
     setVectorSearchResults,
     setVectorFocusIndex,
     setVectorPage,
-    setGradeByPackage,
-    manageMode,
-    setManageMode,
-    manageOperationHint,
-    setManageOperationHint,
-    setDeleteConfirmOpen,
     vectorUniverseOpen,
     setVectorUniverseOpen,
-    appBodyRef,
-    vectorPanelContentRef,
-    wasFullscreenRef,
-    lastExpandedSidebarRatioRef,
-    setAppBodyWidth,
-    gridRef,
-    setGridSize,
-    fullscreenEntryDisplay,
-    setFullscreenEntryDisplay,
+    vectorSearchResults,
   } = sessionState
 
   const {
-    selectedVideoId,
-    videoPlaying,
-    setVideoPlaying,
-    videoTime,
-    setVideoTime,
-    videoRate,
-    setVideoRate,
-    videoVolume,
-    setVideoVolume,
-    videoMuted,
-    setVideoMuted,
-    videoCoverById,
-    setVideoCoverById,
-    videoCoverImageById,
-    setVideoCoverImageById,
-    videoDurationById,
-    setVideoDurationById,
     fullscreenActive,
-    setFullscreenActive,
     fullscreenDisplay,
-    setFullscreenDisplay,
-    fullscreenSwapped,
-    setFullscreenSwapped,
     fullscreenVideoFocus,
-    setFullscreenVideoFocus,
-    fullscreenSplit,
-    setFullscreenSplit,
-    showFullscreenFooter,
-    setShowFullscreenFooter,
-    goPlaylist,
-    selectVideoFromBrowser,
-    adjustVideoRate,
-    adjustVideoVolume,
+    setFullscreenActive,
   } = mediaState
 
   const {
     searchPanelMode,
-    searchPanelCollapsed,
-    setSearchPanelCollapsed,
     setSearchPanelMode,
     featureSearchActive,
-    featureTagPickerOpen,
     vectorResultsActive,
-    backendRead,
     scopedImageSourcesEffective,
     packageByIdEffective,
-    videoByIdEffective,
-    rootScopedVideoIds,
-    rootScopedPackageIds,
     allScopedRefs,
     normalImageSourceNodeIdMap,
-    vectorSidebarNodes,
-    vectorResultPackageNodeIdMap,
-    flatSidebarNodes,
-    sidebarNodeById,
-    imageSourceNodeIdMap,
-    videoNodeIdMap,
-    videosForSidebar,
-    ensureSidebarNodeVisible,
-    sidebarCheckedNodeIds,
-    imageCheckedIds,
-    activeSelectionScope,
-    clearAllSelections,
-    replaceImageCheckedIds,
     orderedRootScopedPackages,
-    orderedRootScopedImageRefs,
-    normalizedThumbnailScale,
-    actualCellWidth,
-    actualMediaHeight,
-    pagedPageSize,
-    activePackage,
     focusedRef,
-    focusedImage,
-    focusedImagePackage,
-    metadataImagePackage,
-    currentGrade,
-    refsInPage,
     setImageFocus,
-    moveImage,
-    moveImageVertical,
-    jumpImageBoundary,
-    goPackage,
-    goPrevPage,
-    goNextPage,
-    handleSidebarNavigationKey,
-    orderedRootScopedPackages: orderedPackages,
   } = readNavigationState
 
-  void [
-    vectorMode,
-    settingsOpen,
-    sidebarRatio,
-    vectorPanelHeight,
-    thumbnailScale,
-    autoPlayInterval,
-    sidebarFocus,
-    themeId,
-    shortcuts,
-    selectedPackageId,
-    setImageFocusActive,
-    focusByPackage,
-    setPageByPackage,
-    manageOperationHint,
-    appBodyRef,
-    vectorPanelContentRef,
-    wasFullscreenRef,
-    lastExpandedSidebarRatioRef,
-    setAppBodyWidth,
-    gridRef,
-    setGridSize,
-    fullscreenEntryDisplay,
-    setFullscreenEntryDisplay,
-    videoPlaying,
-    setVideoPlaying,
-    videoTime,
-    setVideoTime,
-    videoRate,
-    setVideoRate,
-    videoVolume,
-    setVideoVolume,
-    videoMuted,
-    setVideoMuted,
-    setVideoDurationById,
-    setFullscreenDisplay,
-    fullscreenSwapped,
-    setFullscreenSwapped,
-    setFullscreenVideoFocus,
-    fullscreenSplit,
-    setFullscreenSplit,
-    showFullscreenFooter,
-    setShowFullscreenFooter,
-    goPlaylist,
-    selectVideoFromBrowser,
-    adjustVideoRate,
-    adjustVideoVolume,
-    searchPanelMode,
-    searchPanelCollapsed,
-    featureTagPickerOpen,
-    rootScopedVideoIds,
-    rootScopedPackageIds,
-    vectorSidebarNodes,
-    vectorResultPackageNodeIdMap,
-    flatSidebarNodes,
-    sidebarNodeById,
-    imageSourceNodeIdMap,
-    videoNodeIdMap,
-    ensureSidebarNodeVisible,
-    orderedRootScopedPackages,
-    normalizedThumbnailScale,
-    focusedImagePackage,
-    moveImage,
-    moveImageVertical,
-    jumpImageBoundary,
-    goPackage,
-    goPrevPage,
-    goNextPage,
-    handleSidebarNavigationKey,
-  ]
-
-  const backendWrite = useWriteDataAccess({
-    repository: mediaRepository,
-    setGradeByPackage,
-    setVideoCoverById,
-    setVideoCoverImageById,
+  const manageBindings = useAppManageBindings({
+    appSettings,
+    mediaRepository,
+    sessionState,
+    mediaState,
+    readNavigationState,
   })
 
-  const {
-    toggleManageMode,
-    runManageHideAction,
-    requestManageDelete,
-    confirmManageDelete,
-  } = useManageModeActions({
-    mode,
-    manageMode,
-    imageCheckedIds,
-    sidebarCheckedNodeIds,
-    backendWrite,
-    clearAllSelections,
-    setManageMode,
-    setDeleteConfirmOpen,
-    setManageOperationHint,
-    setVectorSearchResults,
-    setVectorFocusIndex,
-    setVectorPage,
-    setSearchPanelMode,
-    setSearchPanelCollapsed,
-    updateSettings,
-  })
-
-  const manageAdReview = useManageAdReviewActions({
-    repository: mediaRepository,
-    mode,
-    manageMode,
-    activeSelectionScope,
-    imageCheckedIds,
-    sidebarCheckedNodeIds,
-    llmEndpoint: lmStudioEndpoint,
-    llmModel: lmStudioModel,
-    adReviewStrategyMode,
-    adReviewHeadN,
-    adReviewTailN,
-    adReviewTailStopCleanStreak,
-    adReviewMaxConcurrency,
-    clearAllSelections,
-    replaceImageCheckedIds,
-    setManageOperationHint,
-  })
-
-  const confirmManageDeleteWithAdReview = useCallback(async () => {
-    const reviewTask = manageAdReview.task
-    const shouldRouteToAdReviewDelete =
-      reviewTask?.status === 'review' &&
-      imageCheckedIds.some((imageId) => reviewTask.candidates.some((candidate) => candidate.image_id === imageId))
-
-    if (shouldRouteToAdReviewDelete) {
-      setDeleteConfirmOpen(false)
-      setManageOperationHint(null)
-      await manageAdReview.confirmDeleteSelectedCandidates()
-      return
-    }
-
-    await confirmManageDelete()
-  }, [confirmManageDelete, imageCheckedIds, manageAdReview, setDeleteConfirmOpen, setManageOperationHint])
-
-  const runtimeCapabilities = useRuntimeCapabilities({
-    repository: mediaRepository,
-  })
-
-  const {
-    backendPageSnapshot,
-    activePackageForDisplay,
-    refsInPageEffective,
-    pageStartEffective,
-    normalizedPageIndexEffective,
-    imageTotalPagesEffective,
-    metadataImageEffective,
-    metadataImagePackageEffective,
-    currentGradeEffective,
-    focusedVideo,
-    focusedVideoDurationSec,
-    focusedVideoCoverColor,
-    focusedVideoCoverImageLocator,
-    focusedVideoEffective,
-  } = useEffectiveDisplayState({
-    backendPageData: backendRead.page.data,
-    backendPageSnapshot: backendRead.page.snapshot,
-    backendMetadataData: backendRead.metadata.data,
-    backendMetadataSnapshot: backendRead.metadata.snapshot,
-    vectorResultsActive,
-    imageFocusActive,
-    focusedRef,
-    focusedImage,
-    activePackage,
-    refsInPage,
-    pageStart: readNavigationState.pageStart,
-    normalizedPageIndex: readNavigationState.normalizedPageIndex,
-    imageTotalPages: readNavigationState.imageTotalPages,
-    pagedPageSize,
-    showNamesOnly,
-    packageById: packageByIdEffective,
-    metadataImagePackage,
-    currentGrade,
-    selectedVideoId,
-    videoById: videoByIdEffective,
-    videosForSidebar,
-    videoDurationById,
-    videoCoverById,
-    videoCoverImageById,
-  })
-
-  const metadataWriteBindings = useMetadataWriteBindings({
-    backendWrite,
-    metadataImagePackageId: metadataImagePackageEffective?.id ?? null,
-    focusedVideoId: focusedVideoEffective?.id ?? null,
-  })
-
-  const {
-    thumbnailImageUrlById,
-    metadataImageSrc,
-    fullscreenImageSrc,
-    focusedVideoSrc,
-    focusedVideoCoverImageSrc,
-  } = useResolvedMediaState({
-    repository: mediaRepository,
+  const displayResources = useAppDisplayResources({
+    appSettings,
     benchSettings,
-    maxConcurrent: MEDIA_RESOLVE_MAX_CONCURRENT,
-    actualCellWidth,
-    actualMediaHeight,
-    packageById: packageByIdEffective,
-    focusedImage,
-    metadataImage: metadataImageEffective,
-    focusedRef,
-    orderedRootScopedImageRefs,
-    fullscreenActive,
-    showNamesOnly,
-    refsInPage: refsInPageEffective,
-    focusedVideo,
-    focusedVideoCoverImageLocator,
+    mediaRepository,
+    sessionState,
+    mediaState,
+    readNavigationState,
+    manageBindings,
   })
 
   const {
@@ -426,12 +122,12 @@ export function useAppDisplayAndEffects({
     allScopedRefs,
     packageById: packageByIdEffective,
     vectorThreshold,
-    vectorSearchResults: sessionState.vectorSearchResults,
+    vectorSearchResults,
     vectorResultsActive,
     featureSearchActive,
     selectedSidebarNodeId,
     normalImageSourceNodeIdMap,
-    orderedRootScopedPackages: orderedPackages,
+    orderedRootScopedPackages,
     setSelectedPackageId,
     setSelectedSidebarNodeId,
     setVectorSearchResults,
@@ -463,37 +159,12 @@ export function useAppDisplayAndEffects({
     requestFullscreenAlign,
     applyAutoplayIntervalByIndex,
     setFullscreenActiveWithAutoStop,
-    applyPackageGrade: metadataWriteBindings.applyPackageGrade,
+    applyPackageGrade: displayResources.metadataWriteBindings.applyPackageGrade,
   })
 
   return {
-    backendWrite,
-    toggleManageMode,
-    runManageHideAction,
-    requestManageDelete,
-    confirmManageDelete: confirmManageDeleteWithAdReview,
-    manageAdReview,
-    runtimeCapabilities,
-    backendPageSnapshot,
-    activePackageForDisplay,
-    refsInPageEffective,
-    pageStartEffective,
-    normalizedPageIndexEffective,
-    imageTotalPagesEffective,
-    metadataImageEffective,
-    metadataImagePackageEffective,
-    currentGradeEffective,
-    focusedVideo,
-    focusedVideoDurationSec,
-    focusedVideoCoverColor,
-    focusedVideoCoverImageLocator,
-    focusedVideoEffective,
-    metadataWriteBindings,
-    thumbnailImageUrlById,
-    metadataImageSrc,
-    fullscreenImageSrc,
-    focusedVideoSrc,
-    focusedVideoCoverImageSrc,
+    ...manageBindings,
+    ...displayResources,
     videoShortcutActive,
     fullscreenAlignRequest,
     applyAutoplayIntervalByIndex,
