@@ -43,6 +43,7 @@ describe('buildSidebarPanelProps', () => {
       featureSearchActive: false,
       searchResultsReadOnly: true,
       manageMode: false,
+      metadataManageMode: false,
       checkedSidebarNodeIdSet: new Set<string>(),
       focusedRef: null,
       playlistIds: [],
@@ -93,6 +94,7 @@ describe('buildSidebarPanelProps', () => {
       featureSearchActive: true,
       searchResultsReadOnly: false,
       manageMode: false,
+      metadataManageMode: false,
       checkedSidebarNodeIdSet: new Set<string>(),
       focusedRef: null,
       playlistIds: ['video-2'],
@@ -118,5 +120,48 @@ describe('buildSidebarPanelProps', () => {
     props.onToggleVideoPlaylist('video-2', false)
     const removeUpdater = setPlaylistIds.mock.calls[1]?.[0] as ((value: string[]) => string[]) | undefined
     expect(removeUpdater?.(['video-1', 'video-2'])).toEqual(['video-1'])
+  })
+
+  it('元数据管理模式开启时也会展示 Sidebar checker', () => {
+    const props = buildSidebarPanelProps({
+      mode: 'image',
+      sidebarFocus: 'sidebar',
+      sidebarRatio: 0.3,
+      sidebarMinWidth: 220,
+      sidebarFontSize: 14,
+      sidebarCountFontSize: 12,
+      sidebarIndentStep: 16,
+      sidebarVerticalGap: 4,
+      currentRootLabel: '当前根',
+      searchResultsMode: false,
+      selectedSidebarNodeId: null,
+      canSetCurrentRoot: true,
+      imageRootNodeId: null,
+      videoRootNodeId: null,
+      imageTreeNodes: [SIDEBAR_NODE_FIXTURE],
+      videoTreeNodes: [],
+      imageNodeLoadStateById: {},
+      selectedPackageId: 'pkg-1',
+      selectedVideoId: '',
+      vectorResultsActive: false,
+      featureSearchActive: false,
+      searchResultsReadOnly: false,
+      manageMode: false,
+      metadataManageMode: true,
+      checkedSidebarNodeIdSet: new Set<string>(),
+      focusedRef: null,
+      playlistIds: [],
+      goToFromSearchMode: vi.fn(),
+      setSelectedSidebarNodeId: vi.fn(),
+      updateSettings: vi.fn(),
+      setSelectedPackageId: vi.fn(),
+      selectVideoFromBrowser: vi.fn(),
+      collapseSidebar: vi.fn(),
+      applyCurrentRootFromSelection: vi.fn(),
+      setPlaylistIds: vi.fn(),
+      onToggleManageNode: vi.fn(),
+    })
+
+    expect(props.manageMode).toBe(true)
   })
 })

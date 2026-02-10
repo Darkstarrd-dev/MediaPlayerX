@@ -319,6 +319,7 @@ export function useAppWorkspaceProps({
     featureSearchActive,
     searchResultsReadOnly,
     manageMode,
+    metadataManageMode,
     checkedSidebarNodeIdSet: sidebarCheckedNodeIdSet,
     focusedRef,
     playlistIds,

@@ -27,6 +27,7 @@ interface BuildSidebarPanelPropsParams {
   featureSearchActive: boolean
   searchResultsReadOnly: boolean
   manageMode: boolean
+  metadataManageMode: boolean
   checkedSidebarNodeIdSet: Set<string>
   focusedRef: { packageId: string; imageIndex: number } | null
   playlistIds: string[]
@@ -64,7 +65,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     imageHighlightByNode: params.vectorResultsActive,
     searchResultMode: params.searchResultsMode,
     searchResultReadonly: params.searchResultsReadOnly,
-    manageMode: params.manageMode,
+    manageMode: params.manageMode || params.metadataManageMode,
     checkedSidebarNodeIds: params.checkedSidebarNodeIdSet,
     canGoToFromSearchMode: params.vectorResultsActive
       ? Boolean(params.focusedRef)

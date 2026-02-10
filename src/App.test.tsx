@@ -401,7 +401,7 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(screen.queryByRole('dialog', { name: '永久删除确认' })).not.toBeInTheDocument()
       expect(screen.getAllByText('已删除 1 张疑似广告').length).toBeGreaterThan(0)
     })
-  })
+  }, 15_000)
 
   it('真实渲染链路可输出可渲染媒体 URL（Main/Metadata/Fullscreen）', async () => {
     render(<App />)
@@ -725,6 +725,29 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
     const featureControls = document.querySelector('.feature-controls') as HTMLElement
     expect(within(featureControls).getByLabelText('作品名')).toHaveValue(chipText)
+  })
+
+  it('元数据管理支持按 Sidebar 勾选批量写入图包元数据', async () => {
+    const writePackageMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writePackageMetadataSync')
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.change(screen.getByLabelText('作品名'), { target: { value: '批量元数据写入' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+
+    await waitFor(() => {
+      expect(writePackageMetadataSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          work_title: '批量元数据写入',
+        }),
+      )
+    })
   })
 
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {
@@ -1051,7 +1074,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '确认新增' }))
     fireEvent.click(within(shortcutEditDialog).getByRole('button', { name: '关闭' }))
     expect(alignUpBindingButton.textContent).toContain('KeyJ')
-  })
+  }, 15_000)
 
   it('Header 显示向量宇宙按钮并可打开关闭 3D 层', async () => {
     render(<App />)

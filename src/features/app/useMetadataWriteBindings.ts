@@ -1,5 +1,7 @@
 import { useCallback } from 'react'
 
+import type { SidebarNode } from '../../types'
+
 export interface PackageMetadataWritePayload {
   workTitle: string
   circle: string
@@ -18,6 +20,7 @@ export interface VideoMetadataWritePayload {
 }
 
 interface UseMetadataWriteBindingsParams {
+  metadataManageMode: boolean
   backendWrite: {
     pending: {
       metadata: boolean
@@ -29,6 +32,9 @@ interface UseMetadataWriteBindingsParams {
   }
   metadataImagePackageId: string | null
   focusedVideoId: string | null
+  sidebarCheckedNodeIds: string[]
+  sidebarNodeById: Map<string, SidebarNode>
+  setManageOperationHint: (value: string | null) => void
 }
 
 interface UseMetadataWriteBindingsResult {
@@ -39,38 +45,130 @@ interface UseMetadataWriteBindingsResult {
 }
 
 export function useMetadataWriteBindings({
+  metadataManageMode,
   backendWrite,
   metadataImagePackageId,
   focusedVideoId,
+  sidebarCheckedNodeIds,
+  sidebarNodeById,
+  setManageOperationHint,
 }: UseMetadataWriteBindingsParams): UseMetadataWriteBindingsResult {
+  const collectBatchTargets = useCallback(() => {
+    const packageIds = new Set<string>()
+    const videoIds = new Set<string>()
+
+    const visitNode = (node: SidebarNode) => {
+      if (node.packageId) {
+        packageIds.add(node.packageId)
+      }
+      if (node.imageSourceId) {
+        packageIds.add(node.imageSourceId)
+      }
+      if (node.videoId) {
+        videoIds.add(node.videoId)
+      }
+      for (const child of node.children) {
+        visitNode(child)
+      }
+    }
+
+    for (const nodeId of sidebarCheckedNodeIds) {
+      const node = sidebarNodeById.get(nodeId)
+      if (!node) {
+        continue
+      }
+      visitNode(node)
+    }
+
+    return {
+      packageIds: Array.from(packageIds),
+      videoIds: Array.from(videoIds),
+    }
+  }, [sidebarCheckedNodeIds, sidebarNodeById])
+
+  const runBatchWrite = useCallback(
+    async (targetIds: string[], applyWrite: (targetId: string) => Promise<void>) => {
+      let successCount = 0
+      let failedCount = 0
+
+      for (const targetId of targetIds) {
+        try {
+          await applyWrite(targetId)
+          successCount += 1
+        } catch {
+          failedCount += 1
+        }
+      }
+
+      setManageOperationHint(
+        failedCount > 0
+          ? `元数据批量写入完成：成功 ${successCount} 项，失败 ${failedCount} 项`
+          : `元数据批量写入完成：成功 ${successCount} 项`,
+      )
+    },
+    [setManageOperationHint],
+  )
+
   const applyPackageGrade = useCallback(
     (grade: number | null) => {
+      if (metadataManageMode) {
+        const { packageIds } = collectBatchTargets()
+        if (packageIds.length > 0) {
+          void runBatchWrite(packageIds, (packageId) => backendWrite.writePackageGrade(packageId, grade))
+          return
+        }
+      }
+
       if (!metadataImagePackageId) {
         return
       }
       void backendWrite.writePackageGrade(metadataImagePackageId, grade)
     },
-    [backendWrite, metadataImagePackageId],
+    [backendWrite, collectBatchTargets, metadataImagePackageId, metadataManageMode, runBatchWrite],
   )
 
   const applyPackageMetadata = useCallback(
     (payload: PackageMetadataWritePayload) => {
-      if (!metadataImagePackageId || !backendWrite.writePackageMetadata) {
+      if (!backendWrite.writePackageMetadata) {
+        return
+      }
+
+      if (metadataManageMode) {
+        const { packageIds } = collectBatchTargets()
+        if (packageIds.length > 0) {
+          void runBatchWrite(packageIds, (packageId) => backendWrite.writePackageMetadata!(packageId, payload))
+          return
+        }
+      }
+
+      if (!metadataImagePackageId) {
         return
       }
       void backendWrite.writePackageMetadata(metadataImagePackageId, payload)
     },
-    [backendWrite, metadataImagePackageId],
+    [backendWrite, collectBatchTargets, metadataImagePackageId, metadataManageMode, runBatchWrite],
   )
 
   const applyVideoMetadata = useCallback(
     (payload: VideoMetadataWritePayload) => {
-      if (!focusedVideoId || !backendWrite.writeVideoMetadata) {
+      if (!backendWrite.writeVideoMetadata) {
+        return
+      }
+
+      if (metadataManageMode) {
+        const { videoIds } = collectBatchTargets()
+        if (videoIds.length > 0) {
+          void runBatchWrite(videoIds, (videoId) => backendWrite.writeVideoMetadata!(videoId, payload))
+          return
+        }
+      }
+
+      if (!focusedVideoId) {
         return
       }
       void backendWrite.writeVideoMetadata(focusedVideoId, payload)
     },
-    [backendWrite, focusedVideoId],
+    [backendWrite, collectBatchTargets, focusedVideoId, metadataManageMode, runBatchWrite],
   )
 
   return {

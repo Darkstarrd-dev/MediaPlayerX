@@ -31,7 +31,7 @@ export function useAppDisplayResources({
   manageBindings,
 }: UseAppDisplayResourcesParams) {
   const { showNamesOnly } = appSettings
-  const { imageFocusActive } = sessionState
+  const { imageFocusActive, metadataManageMode, setManageOperationHint } = sessionState
 
   const {
     selectedVideoId,
@@ -60,6 +60,8 @@ export function useAppDisplayResources({
     actualCellWidth,
     actualMediaHeight,
     orderedRootScopedImageRefs,
+    sidebarCheckedNodeIds,
+    sidebarNodeById,
   } = readNavigationState
 
   const {
@@ -105,9 +107,13 @@ export function useAppDisplayResources({
   })
 
   const metadataWriteBindings = useMetadataWriteBindings({
+    metadataManageMode,
     backendWrite: manageBindings.backendWrite,
     metadataImagePackageId: metadataImagePackageEffective?.id ?? null,
     focusedVideoId: focusedVideoEffective?.id ?? null,
+    sidebarCheckedNodeIds,
+    sidebarNodeById,
+    setManageOperationHint,
   })
 
   const {
