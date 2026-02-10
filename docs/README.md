@@ -9,6 +9,7 @@
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
 - `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案。
 - `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（待开发）。
+- `fileSystemReadService-split-guide.md`：`electron/fileSystemReadService.ts` 低风险拆分执行说明（临时文档，拆分完成后移除）。
 - `ui/theme-system-v1.md`：主题系统 CSS 契约与开发规范 (SSOT)。
 - `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
@@ -48,9 +49,11 @@
 - Header 已新增“向量宇宙”入口：可打开独立 Three.js 3D 漫游层（模拟阶段），当前实现为 billboard + 距离 LOD + tag 颜色映射 + 正前方 Raycast 命中选择，并已将控制参数接入设置面板 3D 设置页；向量宇宙范围与 Sidebar 当前范围保持一致，进入即自动捕捉鼠标，且以进入图片作为坐标原点。快捷键与 3D 控制映射现支持弹窗式新增/清除（键盘/鼠标/组合），并新增离散度与边界穿越控制。
 - 向量宇宙前端内容已阶段性完成：包含二次确认退出、全息球体位置控件（深度亮度、方向箭头、越界穿入）与设置面板参数化调节。
 - 本轮“按职责块拆分”已完成并封版：
-  - `src/App.tsx` 主要保留编排职责，头部/任务面板/全屏/设置/侧栏与主区 props 构建、告警与导入面板、根范围与侧栏状态计算已下沉到独立模块。
-  - `electron/fileSystemReadService.ts` 主要保留服务编排职责，导入任务、媒体访问守卫、媒体读取、缩略图解析、封面抓取、源过滤与归档/文件收集辅助已拆到独立模块。
-  - 当前关键大文件规模：`src/App.tsx` 约 `1797` 行，`electron/fileSystemReadService.ts` 约 `1740` 行。
+  - Renderer 入口链路已收敛：`src/App.tsx` -> `useAppController` -> `useAppDataPipeline`，入口仅保留薄编排职责。
+  - Renderer 侧新增分层编排基线：`RuntimeSources / ReadState / NavigationState / DisplayAndEffects / TopLayerBindings / WorkspaceBindings / ViewComposition`，后续新功能必须沿该模式扩展。
+  - 当前关键入口规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
+  - Main 侧 `electron/fileSystemReadService.ts` 仍为后续重点拆分目标（当前约 `2446` 行），需继续避免形成新的 God Class。
+- 待处理事项：执行 `electron/fileSystemReadService.ts` 低风险拆分（先拆 Token/Runtime/EventBus/ImportPathRegistry，保持 Facade 对外 API 不变），详见 `docs/fileSystemReadService-split-guide.md`。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
 - Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。

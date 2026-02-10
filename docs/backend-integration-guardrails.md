@@ -48,8 +48,13 @@
    - 管理删除写链路必须返回结构化 `failed[]` 明细（禁止仅返回布尔值）；Renderer 必须展示“删除成功数 + 失败数”，并将“部分失败”与“整体异常”区分处理。
 
 10. SQLite 基座约束
-   - 读链路（snapshot/sidebar/page/metadata）必须以 SQLite 为单一事实源，内存仅作为临时缓存。
-   - 扫描结果必须使用事务 upsert，并同步删除/失效条目，禁止仅依赖进程内状态恢复。
+    - 读链路（snapshot/sidebar/page/metadata）必须以 SQLite 为单一事实源，内存仅作为临时缓存。
+    - 扫描结果必须使用事务 upsert，并同步删除/失效条目，禁止仅依赖进程内状态恢复。
+
+11. 反 God Class / God Hook 约束
+    - 新增功能禁止把“数据读取 + 状态编排 + UI 组装 + 副作用”堆在单个文件。
+    - `App` 入口链路（`src/App.tsx`、`useAppController`、`useAppDataPipeline`）仅保留编排，不承载业务细节。
+    - 同一文件若同时出现跨层职责并持续膨胀，必须先拆分再继续叠加需求。
 
 ## 实施顺序（必须按序）
 
@@ -76,6 +81,8 @@
 - 禁止绕过测试直接替换核心状态流。
 - 禁止在未更新文档时提交后端接入改动。
 - 禁止在 Renderer 直接构造 `file://` 或自定义协议路径绕过 Repository。
+- 禁止将新增需求直接堆到 `src/App.tsx`、`useAppController`、`useAppDataPipeline`。
+- 禁止在单文件内混合“Read State + Navigation State + Display/Effects + View Composition”四层职责。
 
 ## 提交门禁 (Definition of Done, DoD)
 
@@ -167,11 +174,26 @@
 - `rar/7z` 归一化成功后，输出 `zip(store)` 必须写回源压缩包同目录并完成原地替换；仅在输出文件校验通过后删除原始 `rar/7z`。
 - `rar/7z` 归一化任务默认低优先级后台执行（等待空闲窗口，按 Sidebar 路径排序）；用户显式打开对应包时可提升为高优先级并立即后台处理。
 
-- `src/features/layout/thumbnailLayout.ts`：缩略图离散 9 级排布算法（`scalesolution2` 同源）。
-- `src/features/app/helpers.ts`：导入/检索/树遍历基础函数。
-- `src/features/shortcuts/useShortcutEngine.ts`：快捷键解析与路由。
-- `src/features/sidebar/useSidebarNavigation.ts`：Sidebar 键盘导航与选中策略。
-- `src/features/import/useImportPipeline.ts`：导入文件/文件夹、拖拽、粘贴输入管线。
-- `src/features/media/useMediaState.ts`：视频/全屏/播放列表核心状态。
+- Renderer 入口链路：
+  - `src/App.tsx`（壳层入口）
+  - `src/features/app/useAppController.ts`（薄控制器）
+  - `src/features/app/useAppDataPipeline.ts`（薄编排）
+
+- Renderer 分层编排基线（新增功能必须复用）：
+  - `src/features/app/useAppRuntimeSources.ts`
+  - `src/features/app/useAppReadState.ts`
+  - `src/features/app/useAppNavigationState.ts`
+  - `src/features/app/useAppReadAndNavigation.ts`
+  - `src/features/app/useAppDisplayAndEffects.ts`
+  - `src/features/app/useAppInteractionEffects.ts`
+  - `src/features/app/useAppTopLayerBindings.ts`
+  - `src/features/app/useAppWorkspaceBindings.ts`
+  - `src/features/app/useAppViewComposition.ts`
+
+- 现有基础能力模块（保持职责不回退）：
+  - `src/features/layout/thumbnailLayout.ts`
+  - `src/features/import/useImportPipeline.ts`
+  - `src/features/media/useMediaState.ts`
+  - `src/features/shortcuts/useShortcutEngine.ts`
 
 后续接入真实后端时，必须在以上边界内扩展，不得破坏模块职责。

@@ -25,9 +25,11 @@
 - `rar/7z` 归一化调度采用“双优先级队列”：默认低优先级（交互空闲后按路径排序执行），用户显式打开目标包时提升为高优先级后台处理。
 - Main 通过 `libraryChanged + archiveLoadStatus` 向 Renderer 推送/暴露归一化进度状态，UI 可在不阻塞交互的前提下显示 pending/running。
 - 代码结构重构（按职责块）已完成：
-  - Renderer 侧 `App` 退化为编排层，侧栏/检索/主区/全屏/设置/任务面板等 props 与状态导出到 `features/app/*` 与 `components/*`。
-  - Main 侧 `FileSystemMediaReadService` 退化为服务编排层，媒体访问校验、资源读取、缩略图渲染、封面抓取、源过滤、导入执行与归档辅助已独立模块化。
-  - 拆分后主文件维持在“可持续维护”区间：`src/App.tsx` ~1797 行，`electron/fileSystemReadService.ts` ~1740 行。
+  - Renderer 侧入口已收敛为薄编排：`src/App.tsx` -> `useAppController` -> `useAppDataPipeline`。
+  - `useAppDataPipeline` 仅保留编排职责；运行时源、读链路、导航链路、显示/副作用、顶部层绑定、工作区绑定、视图组装已拆到独立 hooks。
+  - Main 侧 `FileSystemMediaReadService` 仍是下一阶段重点拆分目标（当前约 `2446` 行），需继续按服务职责拆分并保持对外 Facade 不变。
+  - 待处理执行文档：`docs/fileSystemReadService-split-guide.md`（临时；拆分完成后移除）。
+  - 当前关键入口文件规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
 - 管理模式广告图片审核 (LLM Ad Review) 已完成方案设计（待开发），将按 `Renderer -> Repository -> Main/Worker` 纵向切片接入。
 
 ### Electron Main 进程
@@ -76,6 +78,18 @@
 - `ui`：React 页面/组件与纯 UI 状态。
 
 模块之间不得直接读取彼此内部实现，必须通过接口合约交互。
+
+## Renderer 模块化约束（新增功能强制）
+
+- 新功能必须沿现有“薄入口 + 分层编排”模式扩展，不得将复杂逻辑回填到 `src/App.tsx`、`useAppController`、`useAppDataPipeline`。
+- 推荐分层顺序：
+  - `useAppRuntimeSources`：基础来源（settings/repository/session/media/import）。
+  - `useAppReadState`：查询条件、筛选状态、只读请求触发。
+  - `useAppNavigationState`：Sidebar/分页/focus/布局导航。
+  - `useAppDisplayAndEffects`：显示态聚合、写链路、全屏与交互副作用。
+  - `useAppTopLayerBindings` / `useAppWorkspaceBindings` / `useAppViewComposition`：UI 绑定与壳层 props 组装。
+- 新能力需要“读 + 写 + UI”时，必须按垂直切片落到对应层，不允许单文件同时承载数据请求、导航状态、UI 组装三类职责。
+- 代码评审门禁：出现新 God Class/God Hook（单文件混合多层职责、难以单测）时，不允许合并；需先按层拆分再提交。
 
 ## 数据模型策略
 
