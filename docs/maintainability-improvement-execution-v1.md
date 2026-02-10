@@ -11,7 +11,7 @@
 
 ## 1. 总体里程碑
 
-- [ ] Phase 0：测试矩阵与夹具准备
+- [x] Phase 0：测试矩阵与夹具准备
 - [ ] Phase 1：SQLite 存储层测试（P0）
 - [ ] Phase 2：媒体访问安全守卫测试（P0）
 - [ ] Phase 3：核心编排链路集成测试（P1）
@@ -23,15 +23,36 @@
 
 目标：固化“先测什么、怎么测、在哪里测”。
 
-- [ ] 输出测试矩阵（场景 -> 断言 -> 测试文件）。
-- [ ] 明确共享 fixture 位置与命名规范（临时目录、样本文件、数据库路径）。
-- [ ] 固化最小回归命令与执行顺序：`npm run lint` -> `npm run test` -> `npm run build`。
-- [ ] 为后续 Phase 1/2 预留可复用测试工具（如 `electron/test-utils/*`，按实际需要落地）。
+- [x] 输出测试矩阵（场景 -> 断言 -> 测试文件）。
+- [x] 明确共享 fixture 位置与命名规范（临时目录、样本文件、数据库路径）。
+- [x] 固化最小回归命令与执行顺序：`npm run lint` -> `npm run test` -> `npm run build`。
+- [x] 为后续 Phase 1/2 预留可复用测试工具（如 `electron/test-utils/*`，按实际需要落地）。
 
 交付物：
 
 - 可执行的矩阵清单（本文件 2~4 节）。
 - 需要新增的测试文件路径草案。
+
+测试矩阵（V1）：
+
+| 目标链路 | 关键场景 | 主要断言 | 测试文件 |
+| --- | --- | --- | --- |
+| SQLite 存储层 | schema 迁移幂等 | `user_version` 正确且重复迁移不破坏表结构 | `electron/mediaLibrarySchema.test.ts` |
+| SQLite 快照读写 | upsert + stale 清理 | 第二次 replace 后旧 source/image/video 被清理 | `electron/mediaLibrarySnapshotStore.test.ts` |
+| SQLite 元数据/播放列表/任务 | 写后读一致 | grade/cover/playlist/task 字段可回读且归一化生效 | `electron/mediaLibraryMetadataStore.test.ts` / `electron/mediaLibraryPlaylistStore.test.ts` / `electron/mediaLibraryTaskStore.test.ts` |
+| 媒体访问守卫 | 路径与 entry 边界 | 越界拒绝、非法 entry 拒绝、白名单命中通过 | `electron/fileSystemMediaAccessGuard.test.ts` |
+| token 生命周期 | 命中/未命中/过期/清理 | 审计计数与异常消息符合预期 | `electron/services/file-system-read/mediaTokenService.test.ts` |
+| 核心编排读链路 | 取消旧请求 + 防覆盖 | 后发请求结果保留，旧响应不覆盖 | `src/features/app/useAppDataPipeline.integration.test.tsx` |
+| 核心编排写链路 | optimistic + rollback | 失败后状态回滚且错误可见 | `src/features/app/useAppDisplayAndEffects.integration.test.tsx` |
+| 面板切换一致性 | 管理/检索互斥 | 切换后关键 props 与可见性正确 | `src/features/app/useAppDataPipeline.integration.test.tsx` |
+| 纯函数映射 | 边界值/空态 | builder 输出稳定且回调行为正确 | `src/features/app/build*Props.test.ts` |
+
+夹具与约定：
+
+- 复用夹具入口：`electron/test-utils/mediaLibraryFixtures.ts`。
+- 临时目录规则：统一使用 `createTempMediaRoot('mpx-test-*')`，测试结束调用 `cleanupTempMediaRoot`。
+- 数据样本规则：优先使用 `createLibrarySnapshotFixture` 生成最小可用快照，避免每个测试重复手写 DTO。
+- 回归顺序：阶段内先跑新增测试，再执行 `npm run lint` -> `npm run test` -> `npm run build`。
 
 ### Phase 1：SQLite 存储层测试（P0）
 
@@ -144,7 +165,8 @@
 
 - [x] 建立本实施文档。
 - [x] 与计划文档建立双向约束（长期计划 + 临时执行清单）。
-- [ ] Phase 0 实施中。
+- [x] Phase 0 完成：补齐测试矩阵、落地夹具入口 `electron/test-utils/mediaLibraryFixtures.ts`。
+- [x] Phase 0 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
 
 ## 5. 结束与移除规则
 
