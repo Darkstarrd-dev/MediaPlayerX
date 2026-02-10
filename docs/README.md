@@ -91,7 +91,7 @@
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
-- 可维护性与稳定性改进计划已立项：`Phase 0` 已完成，当前进入 `Phase 1`（SQLite 存储层测试），执行清单见 `maintainability-improvement-execution-v1.md`。
+- 可维护性与稳定性改进计划已立项：`Phase 1` 已完成，当前进入 `Phase 2`（媒体访问安全守卫测试），执行清单见 `maintainability-improvement-execution-v1.md`。
 - 管理模式“LLM 广告图片审核”已完成接入：在管理面板提供审核入口与候选复核列表；删除前需危险确认，删除后将候选哈希写入 `app_state`（known-hash）用于后续命中短路。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。
 - 仓库初始化以本目录文档为起点。

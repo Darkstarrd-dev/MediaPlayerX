@@ -12,7 +12,7 @@
 ## 1. 总体里程碑
 
 - [x] Phase 0：测试矩阵与夹具准备
-- [ ] Phase 1：SQLite 存储层测试（P0）
+- [x] Phase 1：SQLite 存储层测试（P0）
 - [ ] Phase 2：媒体访问安全守卫测试（P0）
 - [ ] Phase 3：核心编排链路集成测试（P1）
 - [ ] Phase 4：纯函数测试与接口收口（P1/P2）
@@ -60,25 +60,25 @@
 
 建议落地文件（按实际结构微调）：
 
-- [ ] `electron/mediaLibraryDatabase.test.ts`
-- [ ] `electron/mediaLibrarySchema.test.ts`
-- [ ] `electron/mediaLibrarySnapshotStore.test.ts`
-- [ ] `electron/mediaLibraryMetadataStore.test.ts`
-- [ ] `electron/mediaLibraryPlaylistStore.test.ts`
-- [ ] `electron/mediaLibraryTaskStore.test.ts`
-- [ ] `electron/mediaLibraryAppStateStore.test.ts`
+- [x] `electron/mediaLibraryDatabase.test.ts`
+- [x] `electron/mediaLibrarySchema.test.ts`
+- [x] `electron/mediaLibrarySnapshotStore.test.ts`
+- [x] `electron/mediaLibraryMetadataStore.test.ts`
+- [x] `electron/mediaLibraryPlaylistStore.test.ts`
+- [x] `electron/mediaLibraryTaskStore.test.ts`
+- [x] `electron/mediaLibraryAppStateStore.test.ts`
 
 必测场景：
 
-- [ ] 数据库初始化与 `user_version` 迁移幂等。
-- [ ] snapshot upsert 后查询一致性（含 stale 清理）。
-- [ ] 评分/封面/播放列表/任务日志写入后重启恢复。
-- [ ] 异常输入与回滚分支（保持数据完整性）。
+- [x] 数据库初始化与 `user_version` 迁移幂等。
+- [x] snapshot upsert 后查询一致性（含 stale 清理）。
+- [x] 评分/封面/播放列表/任务日志写入后重启恢复。
+- [x] 异常输入与回滚分支（保持数据完整性）。
 
 阶段验收：
 
-- [ ] 以上新增测试在本机可重复通过。
-- [ ] 不破坏现有 `electron/fileSystemReadService.test.ts` 通过率。
+- [x] 以上新增测试在本机可重复通过。
+- [x] 不破坏现有 `electron/fileSystemReadService.test.ts` 通过率。
 
 ### Phase 2：媒体访问安全守卫测试（P0）
 
@@ -167,6 +167,8 @@
 - [x] 与计划文档建立双向约束（长期计划 + 临时执行清单）。
 - [x] Phase 0 完成：补齐测试矩阵、落地夹具入口 `electron/test-utils/mediaLibraryFixtures.ts`。
 - [x] Phase 0 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
+- [x] Phase 1 完成：新增 SQLite 存储层 7 个测试文件并覆盖 migration/snapshot/metadata/playlist/task/app_state/database facade。
+- [x] Phase 1 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
 
 ## 5. 结束与移除规则
 
