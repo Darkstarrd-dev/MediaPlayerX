@@ -1,0 +1,91 @@
+import { describe, expect, it, vi } from 'vitest'
+
+import { buildAppHeaderProps } from './buildAppHeaderProps'
+
+describe('buildAppHeaderProps', () => {
+  it('向量检索开关会同步展开检索面板并切到 vector 模式', () => {
+    const setSearchPanelMode = vi.fn()
+    const setSearchPanelCollapsed = vi.fn()
+    const updateSettings = vi.fn()
+
+    const props = buildAppHeaderProps({
+      headerHeight: 56,
+      mode: 'image',
+      vectorMode: false,
+      manageMode: false,
+      vectorUniverseOpen: false,
+      displayThumbnailScaleLevel: 3,
+      canThumbnailScaleDown: true,
+      canThumbnailScaleUp: true,
+      autoPlayEnabled: false,
+      autoPlayInterval: 3,
+      importMenuOpen: false,
+      taskStatusLabel: '空闲',
+      importTaskPanelOpen: false,
+      autoPlayPresets: [1, 2, 3],
+      thumbnailScale: 3,
+      thumbnailScaleLevelCount: 5,
+      setImportMenuOpen: vi.fn(),
+      setImportTaskPanelOpen: vi.fn(),
+      openImportFilesDialog: vi.fn(),
+      openImportFoldersDialog: vi.fn(),
+      updateSettings,
+      setSearchPanelMode,
+      setSearchPanelCollapsed,
+      setVectorUniverseOpen: vi.fn(),
+      onToggleManageMode: vi.fn(),
+    })
+
+    expect(props.searchPanelOpen).toBe(false)
+    props.onToggleSearchPanel()
+
+    expect(updateSettings).toHaveBeenCalledWith({ vectorMode: true })
+    expect(setSearchPanelMode).toHaveBeenCalledWith('vector')
+    expect(setSearchPanelCollapsed).toHaveBeenCalledWith(false)
+  })
+
+  it('缩略图等级调节会执行 clamp，导入菜单开关使用函数式 setter', () => {
+    const updateSettings = vi.fn()
+    const setImportMenuOpen = vi.fn()
+
+    const props = buildAppHeaderProps({
+      headerHeight: 56,
+      mode: 'image',
+      vectorMode: true,
+      manageMode: false,
+      vectorUniverseOpen: false,
+      displayThumbnailScaleLevel: 1,
+      canThumbnailScaleDown: true,
+      canThumbnailScaleUp: false,
+      autoPlayEnabled: false,
+      autoPlayInterval: 3,
+      importMenuOpen: true,
+      taskStatusLabel: '空闲',
+      importTaskPanelOpen: false,
+      autoPlayPresets: [1, 2, 3],
+      thumbnailScale: 1,
+      thumbnailScaleLevelCount: 5,
+      setImportMenuOpen,
+      setImportTaskPanelOpen: vi.fn(),
+      openImportFilesDialog: vi.fn(),
+      openImportFoldersDialog: vi.fn(),
+      updateSettings,
+      setSearchPanelMode: vi.fn(),
+      setSearchPanelCollapsed: vi.fn(),
+      setVectorUniverseOpen: vi.fn(),
+      onToggleManageMode: vi.fn(),
+    })
+
+    props.onThumbnailScaleUp()
+    expect(updateSettings).toHaveBeenLastCalledWith({ thumbnailScale: 1 })
+
+    props.onThumbnailScaleDown()
+    expect(updateSettings).toHaveBeenLastCalledWith({ thumbnailScale: 2 })
+
+    props.onToggleImportMenu()
+    const updater = setImportMenuOpen.mock.calls[0]?.[0] as ((value: boolean) => boolean) | undefined
+    expect(typeof updater).toBe('function')
+    expect(updater?.(true)).toBe(false)
+    expect(updater?.(false)).toBe(true)
+  })
+})

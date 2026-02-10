@@ -1,0 +1,122 @@
+import { describe, expect, it, vi } from 'vitest'
+
+import type { SidebarNode } from '../../types'
+import { buildSidebarPanelProps } from './buildSidebarPanelProps'
+
+const SIDEBAR_NODE_FIXTURE: SidebarNode = {
+  id: 'package:pkg-1.zip',
+  label: 'pkg-1.zip',
+  kind: 'package',
+  children: [],
+  packageId: 'pkg-1',
+  imageSourceId: 'pkg-1',
+  directImageCount: 2,
+  pathKey: 'pkg-1.zip',
+}
+
+describe('buildSidebarPanelProps', () => {
+  it('检索结果模式下固定根标题，向量结果模式阻断图片侧栏选中', () => {
+    const setSelectedSidebarNodeId = vi.fn()
+    const updateSettings = vi.fn()
+
+    const props = buildSidebarPanelProps({
+      mode: 'image',
+      sidebarFocus: 'sidebar',
+      sidebarRatio: 0.3,
+      sidebarMinWidth: 220,
+      sidebarFontSize: 14,
+      sidebarCountFontSize: 12,
+      sidebarIndentStep: 16,
+      sidebarVerticalGap: 4,
+      currentRootLabel: '当前根',
+      searchResultsMode: true,
+      selectedSidebarNodeId: 'package:pkg-1.zip',
+      canSetCurrentRoot: true,
+      imageRootNodeId: null,
+      videoRootNodeId: null,
+      imageTreeNodes: [SIDEBAR_NODE_FIXTURE],
+      videoTreeNodes: [],
+      imageNodeLoadStateById: {},
+      selectedPackageId: 'pkg-1',
+      selectedVideoId: '',
+      vectorResultsActive: true,
+      featureSearchActive: false,
+      searchResultsReadOnly: true,
+      manageMode: false,
+      checkedSidebarNodeIdSet: new Set<string>(),
+      focusedRef: null,
+      playlistIds: [],
+      goToFromSearchMode: vi.fn(),
+      setSelectedSidebarNodeId,
+      updateSettings,
+      setSelectedPackageId: vi.fn(),
+      selectVideoFromBrowser: vi.fn(),
+      collapseSidebar: vi.fn(),
+      applyCurrentRootFromSelection: vi.fn(),
+      setPlaylistIds: vi.fn(),
+      onToggleManageNode: vi.fn(),
+    })
+
+    expect(props.currentRootLabel).toBe('检索结果')
+    expect(props.canGoToFromSearchMode).toBe(false)
+
+    props.onSelectNode('folder:ignored')
+    expect(setSelectedSidebarNodeId).not.toHaveBeenCalled()
+    expect(updateSettings).not.toHaveBeenCalled()
+  })
+
+  it('可按模式重置 root，并支持播放列表 toggle 增删', () => {
+    const setPlaylistIds = vi.fn()
+    const updateSettings = vi.fn()
+
+    const props = buildSidebarPanelProps({
+      mode: 'video',
+      sidebarFocus: 'sidebar',
+      sidebarRatio: 0.3,
+      sidebarMinWidth: 220,
+      sidebarFontSize: 14,
+      sidebarCountFontSize: 12,
+      sidebarIndentStep: 16,
+      sidebarVerticalGap: 4,
+      currentRootLabel: null,
+      searchResultsMode: false,
+      selectedSidebarNodeId: null,
+      canSetCurrentRoot: true,
+      imageRootNodeId: null,
+      videoRootNodeId: 'video:root',
+      imageTreeNodes: [],
+      videoTreeNodes: [SIDEBAR_NODE_FIXTURE],
+      imageNodeLoadStateById: {},
+      selectedPackageId: '',
+      selectedVideoId: 'video-1',
+      vectorResultsActive: false,
+      featureSearchActive: true,
+      searchResultsReadOnly: false,
+      manageMode: false,
+      checkedSidebarNodeIdSet: new Set<string>(),
+      focusedRef: null,
+      playlistIds: ['video-2'],
+      goToFromSearchMode: vi.fn(),
+      setSelectedSidebarNodeId: vi.fn(),
+      updateSettings,
+      setSelectedPackageId: vi.fn(),
+      selectVideoFromBrowser: vi.fn(),
+      collapseSidebar: vi.fn(),
+      applyCurrentRootFromSelection: vi.fn(),
+      setPlaylistIds,
+      onToggleManageNode: vi.fn(),
+    })
+
+    props.onResetRoot()
+    expect(updateSettings).toHaveBeenCalledWith({ videoRootNodeId: null })
+
+    props.onToggleVideoPlaylist('video-1', true)
+    const addUpdater = setPlaylistIds.mock.calls[0]?.[0] as ((value: string[]) => string[]) | undefined
+    expect(addUpdater?.(['video-2'])).toEqual(['video-2', 'video-1'])
+    expect(addUpdater?.(['video-1', 'video-2'])).toEqual(['video-1', 'video-2'])
+
+    props.onToggleVideoPlaylist('video-2', false)
+    const removeUpdater = setPlaylistIds.mock.calls[1]?.[0] as ((value: string[]) => string[]) | undefined
+    expect(removeUpdater?.(['video-1', 'video-2'])).toEqual(['video-1'])
+  })
+})

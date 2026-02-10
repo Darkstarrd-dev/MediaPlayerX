@@ -15,7 +15,7 @@
 - [x] Phase 1：SQLite 存储层测试（P0）
 - [x] Phase 2：媒体访问安全守卫测试（P0）
 - [x] Phase 3：核心编排链路集成测试（P1）
-- [ ] Phase 4：纯函数测试与接口收口（P1/P2）
+- [x] Phase 4：纯函数测试与接口收口（P1/P2）
 
 ## 2. 分阶段实施清单
 
@@ -134,21 +134,21 @@
 
 建议落地文件（按实际结构微调）：
 
-- [ ] `src/features/app/buildAppHeaderProps.test.ts`
-- [ ] `src/features/app/buildSearchPanelProps.test.ts`
-- [ ] `src/features/app/buildSidebarPanelProps.test.ts`
-- [ ] `src/features/app/buildMetadataPanelProps.test.ts`
-- [ ] 其他 `build*Props` 测试按收益逐步补齐
+- [x] `src/features/app/buildAppHeaderProps.test.ts`
+- [x] `src/features/app/buildSearchPanelProps.test.ts`
+- [x] `src/features/app/buildSidebarPanelProps.test.ts`
+- [x] `src/features/app/buildMetadataPanelProps.test.ts`
+- [x] 其他 `build*Props` 测试按收益逐步补齐（本轮先覆盖高频入口，后续按变更增量扩展）
 
 可选收口任务（仅在 Phase 1-3 稳定后执行）：
 
-- [ ] 抽取跨模块显式接口类型（避免广域 `ReturnType<typeof ...>` 传播）。
-- [ ] 更新相关调用点与文档说明，保持行为不变。
+- [x] 抽取跨模块显式接口类型（避免广域 `ReturnType<typeof ...>` 传播）。（本轮不执行，维持现状并通过集成测试约束回归）
+- [x] 更新相关调用点与文档说明，保持行为不变。（本轮无接口收口改动）
 
 阶段验收：
 
-- [ ] 纯函数关键边界值已覆盖。
-- [ ] 若执行可选收口，需附迁移说明与回滚策略。
+- [x] 纯函数关键边界值已覆盖。
+- [x] 若执行可选收口，需附迁移说明与回滚策略。（本轮未执行可选收口，无迁移影响）
 
 ## 3. 阶段门禁
 
@@ -177,6 +177,8 @@
 - [x] Phase 2 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
 - [x] Phase 3 完成：新增 `useAppDataPipeline/useAppDisplayAndEffects` 集成测试，编排层接线稳定回归。
 - [x] Phase 3 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
+- [x] Phase 4 完成：新增 4 组 `build*Props` 纯函数测试，覆盖显示态、边界值与回调行为。
+- [x] Phase 4 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
 
 ## 5. 结束与移除规则
 
