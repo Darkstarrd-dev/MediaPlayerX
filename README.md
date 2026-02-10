@@ -57,7 +57,7 @@ npm run test
 
 - [x] 拆分 `useAppDisplayAndEffects`（477 行）为 2-3 个职责更明确的子 hook
 - [x] 为非显而易见的设计决策补充 why 注释（归档规范化策略、Token TTL 取值、安全守卫白名单规则等）
-- [ ] 为各特性模块添加 barrel export（`index.ts`）
+- [x] 为各特性模块添加 barrel export（`index.ts`）
 - [ ] 重命名 `ReadonlyMediaRepository` 或拆分为独立的读/写接口
 
 > 以上待办事项来源于项目评估报告，详见 `docs/project-evaluation-report-v2.md` 第 8 节。

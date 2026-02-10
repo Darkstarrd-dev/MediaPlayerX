@@ -146,7 +146,7 @@
 | P2 | 迁移 `app/helpers.ts` 至共享 `utils/` | **已完成** | 已迁移到 `src/utils/mediaHelpers.ts`，跨界导入清零 |
 | P2 | 重命名 `ReadonlyMediaRepository` | **未改** | 仍含 10+ 写方法 |
 | P3 | 添加 JSDoc 注释 | **已完成（关键路径）** | 已为归档规范化、Token TTL、白名单守卫补充 why 注释 |
-| P3 | 为各特性模块添加 barrel export | **未改** | 仅 backend/ 有 index.ts |
+| P3 | 为各特性模块添加 barrel export | **已完成** | `src/features/*` 已补齐模块入口 `index.ts` |
 
 ---
 
@@ -209,7 +209,7 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 
 1. **P2/P3 架构建议已开始推进**（`ReturnType` 主链路收口 + `helpers` 迁移已完成）
 2. **内联文档覆盖仍偏低** — 已补充关键策略注释，但尚未形成系统化覆盖
-3. **特性模块封装缺失** — 11 个特性模块中仅 1 个有 barrel export
+3. **媒体类型扩展改造尚未推进** — image/video 语义仍存在多处硬编码
 4. **Repository 命名语义仍不精确** — `ReadonlyMediaRepository` 仍包含写接口
 
 ---
@@ -232,11 +232,10 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 
 鉴于 P0/P1 已整改到位，建议重新排序剩余工作：
 
-已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移；`useAppDisplayAndEffects` 已拆分为 `useAppManageBindings + useAppDisplayResources`；关键策略 why 注释（归档规范化、Token TTL、白名单守卫）已补充。
+已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移；`useAppDisplayAndEffects` 已拆分为 `useAppManageBindings + useAppDisplayResources`；关键策略 why 注释（归档规范化、Token TTL、白名单守卫）已补充；`src/features/*` barrel export 已补齐。
 
 | 优先级 | 建议 | 投入 | 收益 |
 |--------|------|------|------|
-| **P3** | 为各特性模块添加 barrel export（`index.ts`） | 低 | 低 — 减少内部路径耦合 |
 | **P3** | 重命名 `ReadonlyMediaRepository` → `MediaRepository` 或拆分读写接口 | 低 | 低 — 语义清晰度 |
 
 ---
@@ -259,7 +258,7 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 | TODO/FIXME 数 | 0 | **0** |
 | `ReturnType<typeof>` 使用数 | ~60 | **跨 hook 主链路已收口（见 `410d456`）** |
 | 跨界导入（app/helpers → 其他） | 3 | **0** |
-| 有 barrel export 的特性模块数 | 1/12 | **1/12** |
+| 有 barrel export 的特性模块数 | 1/12 | **12/12** |
 | 测试基础设施文件 | 1 (setup.ts) | **3** (+fixtures +harness) |
 | 最大源码文件 | 549 行 | **1,307 行** (mockRepository.ts) |
 | 最大测试文件 | 1,026 行 | **1,062 行** (App.test.tsx) |
