@@ -1293,8 +1293,8 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
       throw new Error(`mock 仓库自动标签失败：source 不存在 ${request.package_id}`)
     }
 
-    if (request.model_path.toLowerCase().includes('fail') || request.range_config_path.toLowerCase().includes('fail')) {
-      throw new Error('mock 自动标签失败：模型或范围配置不可用')
+    if (request.model_path.toLowerCase().includes('fail')) {
+      throw new Error('mock 自动标签失败：模型不可用')
     }
 
     const threshold = Math.max(1, Math.floor(request.occurrence_threshold))

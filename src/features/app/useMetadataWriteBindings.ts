@@ -22,8 +22,11 @@ export interface VideoMetadataWritePayload {
 interface UseMetadataWriteBindingsParams {
   metadataManageMode: boolean
   autoTagModelPath: string
-  autoTagRangeConfigPath: string
   autoTagOccurrenceThreshold: number
+  autoTagGeneralMinScore: number
+  autoTagCharacterMinScore: number
+  autoTagIncludeRating: boolean
+  autoTagRatingMinScore: number
   backendWrite: {
     pending: {
       metadata: boolean
@@ -35,8 +38,11 @@ interface UseMetadataWriteBindingsParams {
       packageId: string,
       payload: {
         modelPath: string
-        rangeConfigPath: string
         occurrenceThreshold: number
+        generalMinScore: number
+        characterMinScore: number
+        includeRating: boolean
+        ratingMinScore: number
       },
     ) => Promise<{ generated_tags: string[]; analyzed_images: number }>
     writeVideoMetadata?: (videoId: string, payload: VideoMetadataWritePayload) => Promise<void>
@@ -59,8 +65,11 @@ interface UseMetadataWriteBindingsResult {
 export function useMetadataWriteBindings({
   metadataManageMode,
   autoTagModelPath,
-  autoTagRangeConfigPath,
   autoTagOccurrenceThreshold,
+  autoTagGeneralMinScore,
+  autoTagCharacterMinScore,
+  autoTagIncludeRating,
+  autoTagRatingMinScore,
   backendWrite,
   metadataImagePackageId,
   focusedVideoId,
@@ -176,18 +185,23 @@ export function useMetadataWriteBindings({
     }
 
     const modelPath = autoTagModelPath.trim()
-    const rangeConfigPath = autoTagRangeConfigPath.trim()
     const threshold = Math.max(1, Math.min(200, Math.floor(autoTagOccurrenceThreshold)))
-    if (!modelPath || !rangeConfigPath) {
-      setManageOperationHint('自动标签失败：请先在设置中填写模型路径与范围配置 JSON')
+    const generalMinScore = Math.max(0, Math.min(1, autoTagGeneralMinScore))
+    const characterMinScore = Math.max(0, Math.min(1, autoTagCharacterMinScore))
+    const ratingMinScore = Math.max(0, Math.min(1, autoTagRatingMinScore))
+    if (!modelPath) {
+      setManageOperationHint('自动标签失败：请先在设置中填写模型路径')
       return
     }
 
     const runForPackage = (packageId: string) =>
       autoTagWriter(packageId, {
         modelPath,
-        rangeConfigPath,
         occurrenceThreshold: threshold,
+        generalMinScore,
+        characterMinScore,
+        includeRating: autoTagIncludeRating,
+        ratingMinScore,
       })
 
     if (metadataManageMode) {
@@ -220,7 +234,10 @@ export function useMetadataWriteBindings({
   }, [
     autoTagModelPath,
     autoTagOccurrenceThreshold,
-    autoTagRangeConfigPath,
+    autoTagGeneralMinScore,
+    autoTagCharacterMinScore,
+    autoTagIncludeRating,
+    autoTagRatingMinScore,
     backendWrite.generatePackageAutoTags,
     collectBatchTargets,
     metadataImagePackageId,

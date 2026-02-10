@@ -754,8 +754,11 @@ describe('MediaPlayer 虚拟 UI', () => {
     const generatePackageAutoTagsSpy = vi.spyOn(MockMediaRepository.prototype, 'generatePackageAutoTagsSync')
     useUiStore.setState({
       wdSwinTaggerModelPath: 'Z:/mock/wd/model.onnx',
-      wdSwinTaggerAutoTagRangeConfigPath: 'Z:/mock/wd/ranges.json',
       wdSwinTaggerAutoTagOccurrenceThreshold: 3,
+      wdSwinTaggerAutoTagGeneralMinScore: 0.35,
+      wdSwinTaggerAutoTagCharacterMinScore: 0.75,
+      wdSwinTaggerAutoTagIncludeRating: true,
+      wdSwinTaggerAutoTagRatingMinScore: 0.5,
     })
 
     render(<App />)
@@ -773,8 +776,11 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(generatePackageAutoTagsSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           model_path: 'Z:/mock/wd/model.onnx',
-          range_config_path: 'Z:/mock/wd/ranges.json',
           occurrence_threshold: 3,
+          general_min_score: 0.35,
+          character_min_score: 0.75,
+          include_rating: true,
+          rating_min_score: 0.5,
         }),
       )
     })
@@ -1055,6 +1061,12 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText('LM Studio Endpoint')).toBeInTheDocument()
     expect(screen.getByLabelText('视觉模型端口')).toBeInTheDocument()
     expect(screen.getByLabelText('模型文件路径')).toBeInTheDocument()
+    expect(screen.getByLabelText('自动标签出现阈值（Occurrence）')).toHaveValue(2)
+    expect(screen.getByLabelText('General 分数阈值')).toHaveValue(0.35)
+    expect(screen.getByLabelText('Character 分数阈值')).toHaveValue(0.75)
+    expect(screen.getByLabelText('包含 Rating 标签')).not.toBeChecked()
+    expect(screen.getByLabelText('Rating 分数阈值')).toHaveValue(0.5)
+    expect(screen.getByLabelText('General 分数阈值').closest('label')).toHaveAttribute('title')
     expect(screen.getByRole('button', { name: '测试wd模型连接' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '缩略图设置' }))

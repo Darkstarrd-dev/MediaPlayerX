@@ -398,8 +398,11 @@ export const writePackageMetadataResponseSchema = z.object({
 export const generatePackageAutoTagsRequestSchema = z.object({
   package_id: z.string().min(1),
   model_path: z.string().min(1),
-  range_config_path: z.string().min(1),
   occurrence_threshold: z.number().int().min(1).max(200),
+  general_min_score: z.number().min(0).max(1),
+  character_min_score: z.number().min(0).max(1),
+  include_rating: z.boolean(),
+  rating_min_score: z.number().min(0).max(1),
 })
 
 export const generatePackageAutoTagsResponseSchema = z.object({

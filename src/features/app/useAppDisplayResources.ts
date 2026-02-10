@@ -109,8 +109,11 @@ export function useAppDisplayResources({
   const metadataWriteBindings = useMetadataWriteBindings({
     metadataManageMode,
     autoTagModelPath: appSettings.wdSwinTaggerModelPath,
-    autoTagRangeConfigPath: appSettings.wdSwinTaggerAutoTagRangeConfigPath,
     autoTagOccurrenceThreshold: appSettings.wdSwinTaggerAutoTagOccurrenceThreshold,
+    autoTagGeneralMinScore: appSettings.wdSwinTaggerAutoTagGeneralMinScore,
+    autoTagCharacterMinScore: appSettings.wdSwinTaggerAutoTagCharacterMinScore,
+    autoTagIncludeRating: appSettings.wdSwinTaggerAutoTagIncludeRating,
+    autoTagRatingMinScore: appSettings.wdSwinTaggerAutoTagRatingMinScore,
     backendWrite: manageBindings.backendWrite,
     metadataImagePackageId: metadataImagePackageEffective?.id ?? null,
     focusedVideoId: focusedVideoEffective?.id ?? null,

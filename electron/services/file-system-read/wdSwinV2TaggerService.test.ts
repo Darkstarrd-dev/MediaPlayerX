@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type * as ort from 'onnxruntime-node'
 
 import {
-  parseAutoTagRangeRules,
+  buildAutoTagRangesByCategory,
   resolveWarmupInputSpec,
   selectTagsByRanges,
 } from './wdSwinV2TaggerService'
@@ -45,27 +45,51 @@ describe('resolveWarmupInputSpec', () => {
   })
 })
 
-describe('parseAutoTagRangeRules', () => {
-  it('支持 start_index/end_index/min_score 结构', () => {
-    const rules = parseAutoTagRangeRules({
-      ranges: [
-        { start_index: 5, end_index: 8, min_score: 0.55 },
-        { start_index: 0, end_index: 2, min_score: 0.35 },
+describe('buildAutoTagRangesByCategory', () => {
+  it('根据 category 与阈值配置自动生成区间', () => {
+    const rules = buildAutoTagRangesByCategory(
+      [
+        { name: 'general', category: '9' },
+        { name: 'sensitive', category: '9' },
+        { name: '1girl', category: '0' },
+        { name: 'solo', category: '0' },
+        { name: 'azusa', category: '4' },
+        { name: 'mio', category: '4' },
       ],
-    })
+      {
+        occurrenceThreshold: 2,
+        generalMinScore: 0.35,
+        characterMinScore: 0.75,
+        includeRating: false,
+        ratingMinScore: 0.5,
+      },
+    )
 
     expect(rules).toEqual([
-      { startIndex: 0, endIndex: 2, minScore: 0.35 },
-      { startIndex: 5, endIndex: 8, minScore: 0.55 },
+      { startIndex: 2, endIndex: 3, minScore: 0.35 },
+      { startIndex: 4, endIndex: 5, minScore: 0.75 },
     ])
   })
 
-  it('不合法区间配置会抛出错误', () => {
-    expect(() =>
-      parseAutoTagRangeRules({
-        ranges: [{ start_index: 8, end_index: 2, min_score: 0.5 }],
-      }),
-    ).toThrow(/end_index 不能小于 start_index/)
+  it('开启 rating 后会纳入 rating 区间', () => {
+    const rules = buildAutoTagRangesByCategory(
+      [
+        { name: 'general', category: '9' },
+        { name: '1girl', category: '0' },
+      ],
+      {
+        occurrenceThreshold: 1,
+        generalMinScore: 0.35,
+        characterMinScore: 0.75,
+        includeRating: true,
+        ratingMinScore: 0.42,
+      },
+    )
+
+    expect(rules).toEqual([
+      { startIndex: 0, endIndex: 0, minScore: 0.42 },
+      { startIndex: 1, endIndex: 1, minScore: 0.35 },
+    ])
   })
 })
 

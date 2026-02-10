@@ -85,8 +85,11 @@ interface UseWriteDataAccessResult {
     packageId: string,
     payload: {
       modelPath: string
-      rangeConfigPath: string
       occurrenceThreshold: number
+      generalMinScore: number
+      characterMinScore: number
+      includeRating: boolean
+      ratingMinScore: number
     },
   ) => Promise<GeneratePackageAutoTagsResponseDto>
   writeVideoMetadata: (
@@ -274,8 +277,11 @@ export function useWriteDataAccess({
       packageId: string,
       payload: {
         modelPath: string
-        rangeConfigPath: string
         occurrenceThreshold: number
+        generalMinScore: number
+        characterMinScore: number
+        includeRating: boolean
+        ratingMinScore: number
       },
     ): Promise<GeneratePackageAutoTagsResponseDto> => {
       if (!repository.generatePackageAutoTags) {
@@ -291,8 +297,11 @@ export function useWriteDataAccess({
         const request: GeneratePackageAutoTagsRequestDto = {
           package_id: packageId,
           model_path: payload.modelPath,
-          range_config_path: payload.rangeConfigPath,
           occurrence_threshold: Math.max(1, Math.min(200, Math.floor(payload.occurrenceThreshold))),
+          general_min_score: Math.max(0, Math.min(1, payload.generalMinScore)),
+          character_min_score: Math.max(0, Math.min(1, payload.characterMinScore)),
+          include_rating: payload.includeRating,
+          rating_min_score: Math.max(0, Math.min(1, payload.ratingMinScore)),
         }
 
         if (isSynchronousTestMode) {

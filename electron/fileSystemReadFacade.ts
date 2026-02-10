@@ -570,8 +570,11 @@ export class FileSystemMediaReadService {
 
     const generated = await this.wdSwinV2TaggerService.generateTagsForPackage({
       modelPath: request.model_path,
-      rangeConfigPath: request.range_config_path,
       occurrenceThreshold: request.occurrence_threshold,
+      generalMinScore: request.general_min_score,
+      characterMinScore: request.character_min_score,
+      includeRating: request.include_rating,
+      ratingMinScore: request.rating_min_score,
       imageLocators: visibleLocators,
       readImageBuffer: async (locator) => this.readImageBufferForThumbnail(locator),
     })

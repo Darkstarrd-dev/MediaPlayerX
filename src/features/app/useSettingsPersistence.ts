@@ -41,6 +41,31 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     )
   }
 
+  if (
+    typeof next.wdSwinTaggerAutoTagGeneralMinScore === 'number' &&
+    Number.isFinite(next.wdSwinTaggerAutoTagGeneralMinScore)
+  ) {
+    next.wdSwinTaggerAutoTagGeneralMinScore = Math.max(0, Math.min(1, next.wdSwinTaggerAutoTagGeneralMinScore))
+  }
+
+  if (
+    typeof next.wdSwinTaggerAutoTagCharacterMinScore === 'number' &&
+    Number.isFinite(next.wdSwinTaggerAutoTagCharacterMinScore)
+  ) {
+    next.wdSwinTaggerAutoTagCharacterMinScore = Math.max(0, Math.min(1, next.wdSwinTaggerAutoTagCharacterMinScore))
+  }
+
+  if (
+    typeof next.wdSwinTaggerAutoTagRatingMinScore === 'number' &&
+    Number.isFinite(next.wdSwinTaggerAutoTagRatingMinScore)
+  ) {
+    next.wdSwinTaggerAutoTagRatingMinScore = Math.max(0, Math.min(1, next.wdSwinTaggerAutoTagRatingMinScore))
+  }
+
+  if (typeof next.wdSwinTaggerAutoTagIncludeRating !== 'boolean') {
+    delete next.wdSwinTaggerAutoTagIncludeRating
+  }
+
   return next as Partial<AppSettings>
 }
 

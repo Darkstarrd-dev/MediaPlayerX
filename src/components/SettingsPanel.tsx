@@ -42,8 +42,11 @@ export interface SettingsPanelProps {
   lmStudioEndpoint: string
   lmStudioModel: string
   wdSwinTaggerModelPath: string
-  wdSwinTaggerAutoTagRangeConfigPath: string
   wdSwinTaggerAutoTagOccurrenceThreshold: number
+  wdSwinTaggerAutoTagGeneralMinScore: number
+  wdSwinTaggerAutoTagCharacterMinScore: number
+  wdSwinTaggerAutoTagIncludeRating: boolean
+  wdSwinTaggerAutoTagRatingMinScore: number
   wdSwinTaggerTestPending: boolean
   wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
@@ -84,8 +87,11 @@ export interface SettingsPanelProps {
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
   onWdSwinTaggerModelPathChange: (value: string) => void
-  onWdSwinTaggerAutoTagRangeConfigPathChange: (value: string) => void
   onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
+  onWdSwinTaggerAutoTagGeneralMinScoreChange: (value: number) => void
+  onWdSwinTaggerAutoTagCharacterMinScoreChange: (value: number) => void
+  onWdSwinTaggerAutoTagIncludeRatingChange: (value: boolean) => void
+  onWdSwinTaggerAutoTagRatingMinScoreChange: (value: number) => void
   onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
@@ -139,8 +145,11 @@ function SettingsPanel({
   lmStudioEndpoint,
   lmStudioModel,
   wdSwinTaggerModelPath,
-  wdSwinTaggerAutoTagRangeConfigPath,
   wdSwinTaggerAutoTagOccurrenceThreshold,
+  wdSwinTaggerAutoTagGeneralMinScore,
+  wdSwinTaggerAutoTagCharacterMinScore,
+  wdSwinTaggerAutoTagIncludeRating,
+  wdSwinTaggerAutoTagRatingMinScore,
   wdSwinTaggerTestPending,
   wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
@@ -181,8 +190,11 @@ function SettingsPanel({
   onLmStudioEndpointChange,
   onLmStudioModelChange,
   onWdSwinTaggerModelPathChange,
-  onWdSwinTaggerAutoTagRangeConfigPathChange,
   onWdSwinTaggerAutoTagOccurrenceThresholdChange,
+  onWdSwinTaggerAutoTagGeneralMinScoreChange,
+  onWdSwinTaggerAutoTagCharacterMinScoreChange,
+  onWdSwinTaggerAutoTagIncludeRatingChange,
+  onWdSwinTaggerAutoTagRatingMinScoreChange,
   onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
@@ -362,8 +374,11 @@ function SettingsPanel({
     lmStudioEndpoint,
     lmStudioModel,
     wdSwinTaggerModelPath,
-    wdSwinTaggerAutoTagRangeConfigPath,
     wdSwinTaggerAutoTagOccurrenceThreshold,
+    wdSwinTaggerAutoTagGeneralMinScore,
+    wdSwinTaggerAutoTagCharacterMinScore,
+    wdSwinTaggerAutoTagIncludeRating,
+    wdSwinTaggerAutoTagRatingMinScore,
     wdSwinTaggerTestPending,
     wdSwinTaggerTestMessage,
     adReviewVisionEndpoint,
@@ -406,8 +421,11 @@ function SettingsPanel({
     onLmStudioEndpointChange,
     onLmStudioModelChange,
     onWdSwinTaggerModelPathChange,
-    onWdSwinTaggerAutoTagRangeConfigPathChange,
     onWdSwinTaggerAutoTagOccurrenceThresholdChange,
+    onWdSwinTaggerAutoTagGeneralMinScoreChange,
+    onWdSwinTaggerAutoTagCharacterMinScoreChange,
+    onWdSwinTaggerAutoTagIncludeRatingChange,
+    onWdSwinTaggerAutoTagRatingMinScoreChange,
     onTestWdSwinTaggerModel,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,

@@ -44,8 +44,11 @@ interface RenderSettingsMainSectionParams {
   lmStudioEndpoint: string
   lmStudioModel: string
   wdSwinTaggerModelPath: string
-  wdSwinTaggerAutoTagRangeConfigPath: string
   wdSwinTaggerAutoTagOccurrenceThreshold: number
+  wdSwinTaggerAutoTagGeneralMinScore: number
+  wdSwinTaggerAutoTagCharacterMinScore: number
+  wdSwinTaggerAutoTagIncludeRating: boolean
+  wdSwinTaggerAutoTagRatingMinScore: number
   wdSwinTaggerTestPending: boolean
   wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
@@ -88,8 +91,11 @@ interface RenderSettingsMainSectionParams {
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
   onWdSwinTaggerModelPathChange: (value: string) => void
-  onWdSwinTaggerAutoTagRangeConfigPathChange: (value: string) => void
   onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
+  onWdSwinTaggerAutoTagGeneralMinScoreChange: (value: number) => void
+  onWdSwinTaggerAutoTagCharacterMinScoreChange: (value: number) => void
+  onWdSwinTaggerAutoTagIncludeRatingChange: (value: boolean) => void
+  onWdSwinTaggerAutoTagRatingMinScoreChange: (value: number) => void
   onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
@@ -134,8 +140,11 @@ export function renderSettingsMainSection({
   lmStudioEndpoint,
   lmStudioModel,
   wdSwinTaggerModelPath,
-  wdSwinTaggerAutoTagRangeConfigPath,
   wdSwinTaggerAutoTagOccurrenceThreshold,
+  wdSwinTaggerAutoTagGeneralMinScore,
+  wdSwinTaggerAutoTagCharacterMinScore,
+  wdSwinTaggerAutoTagIncludeRating,
+  wdSwinTaggerAutoTagRatingMinScore,
   wdSwinTaggerTestPending,
   wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
@@ -178,8 +187,11 @@ export function renderSettingsMainSection({
   onLmStudioEndpointChange,
   onLmStudioModelChange,
   onWdSwinTaggerModelPathChange,
-  onWdSwinTaggerAutoTagRangeConfigPathChange,
   onWdSwinTaggerAutoTagOccurrenceThresholdChange,
+  onWdSwinTaggerAutoTagGeneralMinScoreChange,
+  onWdSwinTaggerAutoTagCharacterMinScoreChange,
+  onWdSwinTaggerAutoTagIncludeRatingChange,
+  onWdSwinTaggerAutoTagRatingMinScoreChange,
   onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
@@ -358,22 +370,58 @@ export function renderSettingsMainSection({
               onChange={(event) => onWdSwinTaggerModelPathChange(event.target.value)}
             />
           </label>
-          <label>
-            自动标签范围配置 JSON
-            <input
-              type="text"
-              value={wdSwinTaggerAutoTagRangeConfigPath}
-              onChange={(event) => onWdSwinTaggerAutoTagRangeConfigPathChange(event.target.value)}
-            />
-          </label>
-          <label>
-            自动标签出现阈值
+          <label title="一个标签至少在多少张图片中命中后才会写入元数据 tags。">
+            自动标签出现阈值（Occurrence）
             <input
               min={1}
               max={200}
               type="number"
               value={wdSwinTaggerAutoTagOccurrenceThreshold}
               onChange={(event) => onWdSwinTaggerAutoTagOccurrenceThresholdChange(Number(event.target.value))}
+            />
+          </label>
+          <label title="General 标签（category=0）的单图分数阈值，0~1，分数越高越严格。">
+            General 分数阈值
+            <input
+              min={0}
+              max={1}
+              step={0.01}
+              type="number"
+              value={wdSwinTaggerAutoTagGeneralMinScore}
+              onChange={(event) => onWdSwinTaggerAutoTagGeneralMinScoreChange(Number(event.target.value))}
+            />
+          </label>
+          <label title="Character 标签（category=4）的单图分数阈值，0~1，建议高于 General。">
+            Character 分数阈值
+            <input
+              min={0}
+              max={1}
+              step={0.01}
+              type="number"
+              value={wdSwinTaggerAutoTagCharacterMinScore}
+              onChange={(event) => onWdSwinTaggerAutoTagCharacterMinScoreChange(Number(event.target.value))}
+            />
+          </label>
+          <label
+            className="settings-toggle-row"
+            title="是否把 rating 标签（general/sensitive/questionable/explicit）写入元数据 tags。"
+          >
+            <span>包含 Rating 标签</span>
+            <input
+              type="checkbox"
+              checked={wdSwinTaggerAutoTagIncludeRating}
+              onChange={(event) => onWdSwinTaggerAutoTagIncludeRatingChange(event.target.checked)}
+            />
+          </label>
+          <label title="Rating 标签（category=9）的单图分数阈值，0~1。">
+            Rating 分数阈值
+            <input
+              min={0}
+              max={1}
+              step={0.01}
+              type="number"
+              value={wdSwinTaggerAutoTagRatingMinScore}
+              onChange={(event) => onWdSwinTaggerAutoTagRatingMinScoreChange(Number(event.target.value))}
             />
           </label>
           <div className="settings-test-row">
@@ -387,6 +435,7 @@ export function renderSettingsMainSection({
             </span>
           </div>
           <p className="settings-placeholder">默认按模型 metadata 自适应输入布局（NCHW/NHWC）做 warmup 推理，用于校验模型可加载与可执行。</p>
+          <p className="settings-placeholder">自动标签阈值按 selected_tags 中的 category 自动映射，无需额外 JSON 范围配置文件。</p>
         </fieldset>
       </div>
     )

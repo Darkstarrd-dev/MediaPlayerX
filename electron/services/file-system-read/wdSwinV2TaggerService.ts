@@ -15,7 +15,7 @@ const DEFAULT_TEST_TIMEOUT_MS = 30_000
 const WARMUP_DEFAULT_IMAGE_SIZE = 448
 const WARMUP_DEFAULT_BATCH = 1
 const WARMUP_DEFAULT_CHANNELS = 3
-const TAGS_CSV_FILE_NAME = 'selected_tags.csv'
+const TAGS_TABLE_FILE_NAMES = ['selected_tags.csv', 'selected_tags.txt'] as const
 
 interface AutoTagScoreRangeRule {
   startIndex: number
@@ -23,10 +23,26 @@ interface AutoTagScoreRangeRule {
   minScore: number
 }
 
+interface AutoTagThresholdConfig {
+  occurrenceThreshold: number
+  generalMinScore: number
+  characterMinScore: number
+  includeRating: boolean
+  ratingMinScore: number
+}
+
+interface TagDefinitionRecord {
+  name: string
+  category: string | null
+}
+
 interface GenerateTagsForPackageRequest {
   modelPath: string
-  rangeConfigPath: string
   occurrenceThreshold: number
+  generalMinScore: number
+  characterMinScore: number
+  includeRating: boolean
+  ratingMinScore: number
   imageLocators: MediaLocatorDto[]
   readImageBuffer: (locator: MediaLocatorDto) => Promise<Buffer>
 }
@@ -267,9 +283,36 @@ function normalizeOutputShape(dims: readonly number[] | undefined): number[] | n
   return normalized
 }
 
-async function readTagCountFromCsv(csvPath: string): Promise<number | null> {
+async function findTagTablePath(modelDirectory: string): Promise<string | null> {
+  for (const fileName of TAGS_TABLE_FILE_NAMES) {
+    const candidatePath = path.join(modelDirectory, fileName)
+    try {
+      await fs.access(candidatePath)
+      return candidatePath
+    } catch {
+      // continue checking the next candidate
+    }
+  }
+  return null
+}
+
+async function resolveTagTablePath(modelDirectory: string): Promise<string> {
+  const tablePath = await findTagTablePath(modelDirectory)
+  if (tablePath) {
+    return tablePath
+  }
+
+  throw new Error(`自动标签失败：未找到标签表（${TAGS_TABLE_FILE_NAMES.join(' / ')}）`)
+}
+
+async function readTagCountFromTagTable(modelDirectory: string): Promise<number | null> {
+  const tablePath = await findTagTablePath(modelDirectory)
+  if (!tablePath) {
+    return null
+  }
+
   try {
-    const content = await fs.readFile(csvPath, 'utf8')
+    const content = await fs.readFile(tablePath, 'utf8')
     const lines = content
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -420,63 +463,82 @@ function parseCsvLine(line: string): string[] {
   return fields
 }
 
-export function parseAutoTagRangeRules(raw: unknown): AutoTagScoreRangeRule[] {
-  if (!raw || typeof raw !== 'object') {
-    throw new Error('自动标签失败：范围配置 JSON 无效')
+function normalizeScoreThreshold(value: number, fallback: number): number {
+  if (!Number.isFinite(value)) {
+    return fallback
   }
-
-  const rangesRaw = (raw as { ranges?: unknown }).ranges
-  if (!Array.isArray(rangesRaw) || rangesRaw.length === 0) {
-    throw new Error('自动标签失败：范围配置缺少 ranges')
-  }
-
-  const parsed: AutoTagScoreRangeRule[] = rangesRaw.map((item, index) => {
-    if (!item || typeof item !== 'object') {
-      throw new Error(`自动标签失败：ranges[${index}] 不是对象`)
-    }
-
-    const startRaw = (item as { start_index?: unknown; startIndex?: unknown }).start_index ??
-      (item as { start_index?: unknown; startIndex?: unknown }).startIndex
-    const endRaw = (item as { end_index?: unknown; endIndex?: unknown }).end_index ??
-      (item as { end_index?: unknown; endIndex?: unknown }).endIndex
-    const minScoreRaw = (item as { min_score?: unknown; minScore?: unknown }).min_score ??
-      (item as { min_score?: unknown; minScore?: unknown }).minScore
-
-    const startIndex = Number(startRaw)
-    const endIndex = Number(endRaw)
-    const minScore = Number(minScoreRaw)
-
-    if (!Number.isFinite(startIndex) || Math.floor(startIndex) !== startIndex || startIndex < 0) {
-      throw new Error(`自动标签失败：ranges[${index}].start_index 无效`)
-    }
-    if (!Number.isFinite(endIndex) || Math.floor(endIndex) !== endIndex || endIndex < 0) {
-      throw new Error(`自动标签失败：ranges[${index}].end_index 无效`)
-    }
-    if (endIndex < startIndex) {
-      throw new Error(`自动标签失败：ranges[${index}] end_index 不能小于 start_index`)
-    }
-    if (!Number.isFinite(minScore) || minScore < 0 || minScore > 1) {
-      throw new Error(`自动标签失败：ranges[${index}].min_score 必须在 0..1`)
-    }
-
-    return {
-      startIndex,
-      endIndex,
-      minScore,
-    }
-  })
-
-  return parsed.sort((left, right) => left.startIndex - right.startIndex)
+  return Math.max(0, Math.min(1, value))
 }
 
-async function readAutoTagRangeRules(configPath: string): Promise<AutoTagScoreRangeRule[]> {
-  const content = await fs.readFile(configPath, 'utf8')
-  const json = JSON.parse(content) as unknown
-  return parseAutoTagRangeRules(json)
+function resolveCategoryThreshold(
+  categoryRaw: string | null,
+  config: AutoTagThresholdConfig,
+): number | null {
+  const category = (categoryRaw ?? '').trim().toLowerCase()
+  if (category === '0' || category === 'general') {
+    return config.generalMinScore
+  }
+  if (category === '4' || category === 'character') {
+    return config.characterMinScore
+  }
+  if (category === '9' || category === 'rating') {
+    return config.includeRating ? config.ratingMinScore : null
+  }
+  return null
 }
 
-async function readTagLabelsFromCsv(csvPath: string): Promise<string[]> {
-  const content = await fs.readFile(csvPath, 'utf8')
+export function buildAutoTagRangesByCategory(
+  tagDefinitions: TagDefinitionRecord[],
+  config: AutoTagThresholdConfig,
+): AutoTagScoreRangeRule[] {
+  const ranges: AutoTagScoreRangeRule[] = []
+  let currentStart = -1
+  let currentMinScore = 0
+
+  for (let index = 0; index < tagDefinitions.length; index += 1) {
+    const minScore = resolveCategoryThreshold(tagDefinitions[index]?.category ?? null, config)
+    if (minScore === null) {
+      if (currentStart >= 0) {
+        ranges.push({
+          startIndex: currentStart,
+          endIndex: index - 1,
+          minScore: currentMinScore,
+        })
+        currentStart = -1
+      }
+      continue
+    }
+
+    if (currentStart < 0) {
+      currentStart = index
+      currentMinScore = minScore
+      continue
+    }
+
+    if (minScore !== currentMinScore) {
+      ranges.push({
+        startIndex: currentStart,
+        endIndex: index - 1,
+        minScore: currentMinScore,
+      })
+      currentStart = index
+      currentMinScore = minScore
+    }
+  }
+
+  if (currentStart >= 0) {
+    ranges.push({
+      startIndex: currentStart,
+      endIndex: tagDefinitions.length - 1,
+      minScore: currentMinScore,
+    })
+  }
+
+  return ranges
+}
+
+async function readTagDefinitionsFromTable(tagTablePath: string): Promise<TagDefinitionRecord[]> {
+  const content = await fs.readFile(tagTablePath, 'utf8')
   const lines = content
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -487,22 +549,39 @@ async function readTagLabelsFromCsv(csvPath: string): Promise<string[]> {
   }
 
   const firstLineFields = parseCsvLine(lines[0]).map((field) => field.trim())
-  const headerIndex = firstLineFields.findIndex((field) => field.toLowerCase() === 'name')
-  const hasHeader = headerIndex >= 0 || firstLineFields.some((field) => field.toLowerCase().includes('tag'))
-  const nameFieldIndex = headerIndex >= 0 ? headerIndex : (firstLineFields.length > 1 ? 1 : 0)
+  const normalizedHeader = firstLineFields.map((field) => field.toLowerCase())
+  const hasHeader =
+    normalizedHeader.includes('name') ||
+    normalizedHeader.includes('tag_id') ||
+    normalizedHeader.includes('category')
+
+  const nameFieldIndex = hasHeader
+    ? Math.max(0, normalizedHeader.indexOf('name'))
+    : firstLineFields.length > 1
+      ? 1
+      : 0
+  const categoryFieldIndex = hasHeader
+    ? normalizedHeader.indexOf('category')
+    : firstLineFields.length > 2
+      ? 2
+      : -1
   const startLineIndex = hasHeader ? 1 : 0
 
-  const labels: string[] = []
+  const definitions: TagDefinitionRecord[] = []
   for (let lineIndex = startLineIndex; lineIndex < lines.length; lineIndex += 1) {
     const fields = parseCsvLine(lines[lineIndex]).map((field) => field.trim())
     const name = (fields[nameFieldIndex] ?? fields[0] ?? '').trim()
     if (name.length === 0) {
       continue
     }
-    labels.push(name)
+    const category = categoryFieldIndex >= 0 ? (fields[categoryFieldIndex] ?? '').trim() : ''
+    definitions.push({
+      name,
+      category: category.length > 0 ? category : null,
+    })
   }
 
-  return labels
+  return definitions
 }
 
 function decodeOutputTensorValues(tensor: ort.Tensor): number[] {
@@ -661,28 +740,31 @@ export class WdSwinV2TaggerService {
 
   async generateTagsForPackage(request: GenerateTagsForPackageRequest): Promise<GenerateTagsForPackageResult> {
     const modelPathRaw = request.modelPath.trim()
-    const rangeConfigPathRaw = request.rangeConfigPath.trim()
     const normalizedModelPath = path.resolve(modelPathRaw)
-    const normalizedRangeConfigPath = path.resolve(rangeConfigPathRaw)
-    const occurrenceThreshold = Math.max(1, Math.floor(request.occurrenceThreshold))
+    const modelDirectory = path.dirname(normalizedModelPath)
+    const thresholdConfig: AutoTagThresholdConfig = {
+      occurrenceThreshold: Math.max(1, Math.floor(request.occurrenceThreshold)),
+      generalMinScore: normalizeScoreThreshold(request.generalMinScore, 0.35),
+      characterMinScore: normalizeScoreThreshold(request.characterMinScore, 0.75),
+      includeRating: Boolean(request.includeRating),
+      ratingMinScore: normalizeScoreThreshold(request.ratingMinScore, 0.5),
+    }
 
     if (!modelPathRaw) {
       throw new Error('自动标签失败：模型路径不能为空')
     }
-    if (!rangeConfigPathRaw) {
-      throw new Error('自动标签失败：范围配置路径不能为空')
-    }
 
     await fs.access(normalizedModelPath)
-    await fs.access(normalizedRangeConfigPath)
-
-    const [tagLabels, ranges] = await Promise.all([
-      readTagLabelsFromCsv(path.join(path.dirname(normalizedModelPath), TAGS_CSV_FILE_NAME)),
-      readAutoTagRangeRules(normalizedRangeConfigPath),
-    ])
+    const tagTablePath = await resolveTagTablePath(modelDirectory)
+    const tagDefinitions = await readTagDefinitionsFromTable(tagTablePath)
+    const ranges = buildAutoTagRangesByCategory(tagDefinitions, thresholdConfig)
+    const tagLabels = tagDefinitions.map((item) => item.name)
 
     if (tagLabels.length === 0) {
-      throw new Error('自动标签失败：selected_tags.csv 为空或不可解析')
+      throw new Error('自动标签失败：标签表为空或不可解析')
+    }
+    if (ranges.length === 0) {
+      throw new Error('自动标签失败：标签表中未找到可用分类区间')
     }
 
     const session = await ort.InferenceSession.create(normalizedModelPath)
@@ -717,7 +799,7 @@ export class WdSwinV2TaggerService {
     }
 
     const generatedTags = Array.from(tagOccurrence.entries())
-      .filter(([, count]) => count >= occurrenceThreshold)
+      .filter(([, count]) => count >= thresholdConfig.occurrenceThreshold)
       .sort((left, right) => {
         if (right[1] !== left[1]) {
           return right[1] - left[1]
@@ -792,7 +874,7 @@ export class WdSwinV2TaggerService {
 
     const outputTensor = outputMap[outputName]
     const outputShape = normalizeOutputShape(outputTensor?.dims)
-    const csvTagCount = await readTagCountFromCsv(path.join(path.dirname(modelPath), TAGS_CSV_FILE_NAME))
+    const csvTagCount = await readTagCountFromTagTable(path.dirname(modelPath))
     const outputTagCount = outputShape && outputShape.length > 0 ? outputShape[outputShape.length - 1] : null
     const tagCount = csvTagCount ?? outputTagCount ?? null
     const provider =
