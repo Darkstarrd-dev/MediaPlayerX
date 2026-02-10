@@ -13,6 +13,7 @@ describe('buildAppHeaderProps', () => {
       mode: 'image',
       vectorMode: false,
       manageMode: false,
+      metadataManageMode: false,
       vectorUniverseOpen: false,
       displayThumbnailScaleLevel: 3,
       canThumbnailScaleDown: true,
@@ -34,6 +35,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed,
       setVectorUniverseOpen: vi.fn(),
       onToggleManageMode: vi.fn(),
+      onToggleMetadataManageMode: vi.fn(),
     })
 
     expect(props.searchPanelOpen).toBe(false)
@@ -54,6 +56,7 @@ describe('buildAppHeaderProps', () => {
       mode: 'video',
       vectorMode: false,
       manageMode: false,
+      metadataManageMode: false,
       vectorUniverseOpen: false,
       displayThumbnailScaleLevel: 3,
       canThumbnailScaleDown: true,
@@ -75,6 +78,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed,
       setVectorUniverseOpen: vi.fn(),
       onToggleManageMode: vi.fn(),
+      onToggleMetadataManageMode: vi.fn(),
     })
 
     props.onToggleSearchPanel()
@@ -93,6 +97,7 @@ describe('buildAppHeaderProps', () => {
       mode: 'image',
       vectorMode: true,
       manageMode: false,
+      metadataManageMode: false,
       vectorUniverseOpen: false,
       displayThumbnailScaleLevel: 1,
       canThumbnailScaleDown: true,
@@ -114,6 +119,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed: vi.fn(),
       setVectorUniverseOpen: vi.fn(),
       onToggleManageMode: vi.fn(),
+      onToggleMetadataManageMode: vi.fn(),
     })
 
     props.onThumbnailScaleUp()
@@ -127,5 +133,40 @@ describe('buildAppHeaderProps', () => {
     expect(typeof updater).toBe('function')
     expect(updater?.(true)).toBe(false)
     expect(updater?.(false)).toBe(true)
+  })
+
+  it('元数据管理模式开启时，检索按钮保持关闭态', () => {
+    const props = buildAppHeaderProps({
+      headerHeight: 56,
+      mode: 'image',
+      vectorMode: true,
+      manageMode: false,
+      metadataManageMode: true,
+      vectorUniverseOpen: false,
+      displayThumbnailScaleLevel: 3,
+      canThumbnailScaleDown: true,
+      canThumbnailScaleUp: true,
+      autoPlayEnabled: false,
+      autoPlayInterval: 3,
+      importMenuOpen: false,
+      taskStatusLabel: '空闲',
+      importTaskPanelOpen: false,
+      autoPlayPresets: [1, 2, 3],
+      thumbnailScale: 3,
+      thumbnailScaleLevelCount: 5,
+      setImportMenuOpen: vi.fn(),
+      setImportTaskPanelOpen: vi.fn(),
+      openImportFilesDialog: vi.fn(),
+      openImportFoldersDialog: vi.fn(),
+      updateSettings: vi.fn(),
+      setSearchPanelMode: vi.fn(),
+      setSearchPanelCollapsed: vi.fn(),
+      setVectorUniverseOpen: vi.fn(),
+      onToggleManageMode: vi.fn(),
+      onToggleMetadataManageMode: vi.fn(),
+    })
+
+    expect(props.searchPanelOpen).toBe(false)
+    expect(props.metadataManageMode).toBe(true)
   })
 })

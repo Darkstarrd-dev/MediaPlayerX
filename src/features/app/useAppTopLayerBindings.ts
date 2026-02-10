@@ -39,6 +39,7 @@ export function useAppTopLayerBindings({
 
   const {
     manageMode,
+    metadataManageMode,
     importMenuOpen,
     setImportMenuOpen,
     vectorUniverseOpen,
@@ -92,6 +93,7 @@ export function useAppTopLayerBindings({
   const {
     backendWrite,
     toggleManageMode,
+    toggleMetadataManageMode,
     runtimeCapabilities,
     focusedVideoDurationSec,
     focusedVideoCoverColor,
@@ -113,6 +115,7 @@ export function useAppTopLayerBindings({
     autoPlayPresets: AUTO_PLAY_PRESETS,
     mode,
     manageMode,
+    metadataManageMode,
     vectorUniverseOpen,
     displayThumbnailScaleLevel,
     thumbnailScaleLevelCount,
@@ -128,6 +131,7 @@ export function useAppTopLayerBindings({
     setSearchPanelCollapsed: readNavigationState.setSearchPanelCollapsed,
     setVectorUniverseOpen,
     onToggleManageMode: toggleManageMode,
+    onToggleMetadataManageMode: toggleMetadataManageMode,
     importTasks: importState.importTasks,
     dismissedImportTaskIds,
     setDismissedImportTaskIds,

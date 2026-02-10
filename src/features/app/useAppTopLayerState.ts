@@ -44,6 +44,7 @@ interface UseAppTopLayerStateParams {
   autoPlayPresets: number[]
   mode: BrowserMode
   manageMode: boolean
+  metadataManageMode: boolean
   vectorUniverseOpen: boolean
   displayThumbnailScaleLevel: number
   thumbnailScaleLevelCount: number
@@ -59,6 +60,7 @@ interface UseAppTopLayerStateParams {
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   setVectorUniverseOpen: Dispatch<SetStateAction<boolean>>
   onToggleManageMode: () => void
+  onToggleMetadataManageMode: () => void
   importTasks: ImportTaskDto[]
   dismissedImportTaskIds: Record<string, true>
   setDismissedImportTaskIds: Dispatch<SetStateAction<Record<string, true>>>
@@ -121,6 +123,7 @@ export function useAppTopLayerState({
   autoPlayPresets,
   mode,
   manageMode,
+  metadataManageMode,
   vectorUniverseOpen,
   displayThumbnailScaleLevel,
   thumbnailScaleLevelCount,
@@ -136,6 +139,7 @@ export function useAppTopLayerState({
   setSearchPanelCollapsed,
   setVectorUniverseOpen,
   onToggleManageMode,
+  onToggleMetadataManageMode,
   importTasks,
   dismissedImportTaskIds,
   setDismissedImportTaskIds,
@@ -435,6 +439,7 @@ export function useAppTopLayerState({
     mode,
     vectorMode: appSettings.vectorMode,
     manageMode,
+    metadataManageMode,
     vectorUniverseOpen,
     displayThumbnailScaleLevel,
     canThumbnailScaleDown,
@@ -456,6 +461,7 @@ export function useAppTopLayerState({
     setSearchPanelCollapsed,
     setVectorUniverseOpen,
     onToggleManageMode,
+    onToggleMetadataManageMode,
   })
 
   const importTaskPanelProps = buildImportTaskPanelProps({

@@ -18,11 +18,13 @@ interface ManageWriteAccess {
 interface UseManageModeActionsParams {
   mode: BrowserMode
   manageMode: boolean
+  metadataManageMode: boolean
   imageCheckedIds: string[]
   sidebarCheckedNodeIds: string[]
   backendWrite: ManageWriteAccess
   clearAllSelections: () => void
   setManageMode: Dispatch<SetStateAction<boolean>>
+  setMetadataManageMode: Dispatch<SetStateAction<boolean>>
   setDeleteConfirmOpen: Dispatch<SetStateAction<boolean>>
   setManageOperationHint: Dispatch<SetStateAction<string | null>>
   setVectorSearchResults: Dispatch<SetStateAction<VectorCandidate[]>>
@@ -43,11 +45,13 @@ interface UseManageModeActionsResult {
 export function useManageModeActions({
   mode,
   manageMode,
+  metadataManageMode,
   imageCheckedIds,
   sidebarCheckedNodeIds,
   backendWrite,
   clearAllSelections,
   setManageMode,
+  setMetadataManageMode,
   setDeleteConfirmOpen,
   setManageOperationHint,
   setVectorSearchResults,
@@ -65,6 +69,9 @@ export function useManageModeActions({
     clearAllSelections()
 
     if (nextOpen) {
+      if (metadataManageMode) {
+        setMetadataManageMode(false)
+      }
       setVectorSearchResults([])
       setVectorFocusIndex(0)
       setVectorPage(0)
@@ -75,9 +82,11 @@ export function useManageModeActions({
   }, [
     clearAllSelections,
     manageMode,
+    metadataManageMode,
     setDeleteConfirmOpen,
     setManageMode,
     setManageOperationHint,
+    setMetadataManageMode,
     setSearchPanelCollapsed,
     setSearchPanelMode,
     setVectorFocusIndex,

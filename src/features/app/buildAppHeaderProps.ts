@@ -9,6 +9,7 @@ interface BuildAppHeaderPropsParams {
   mode: AppSettings['mode']
   vectorMode: boolean
   manageMode: boolean
+  metadataManageMode: boolean
   vectorUniverseOpen: boolean
   displayThumbnailScaleLevel: number
   canThumbnailScaleDown: boolean
@@ -30,14 +31,16 @@ interface BuildAppHeaderPropsParams {
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   setVectorUniverseOpen: Dispatch<SetStateAction<boolean>>
   onToggleManageMode: () => void
+  onToggleMetadataManageMode: () => void
 }
 
 export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeaderProps {
   return {
     headerHeight: params.headerHeight,
     mode: params.mode,
-    searchPanelOpen: params.vectorMode && !params.manageMode,
+    searchPanelOpen: params.vectorMode && !params.manageMode && !params.metadataManageMode,
     manageMode: params.manageMode,
+    metadataManageMode: params.metadataManageMode,
     vectorUniverseOpen: params.vectorUniverseOpen,
     thumbnailScaleLevel: params.displayThumbnailScaleLevel,
     canThumbnailScaleDown: params.canThumbnailScaleDown,
@@ -63,6 +66,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
       }
     },
     onToggleManageMode: params.onToggleManageMode,
+    onToggleMetadataManageMode: params.onToggleMetadataManageMode,
     onOpenVectorUniverse: () => {
       params.setVectorUniverseOpen(true)
     },

@@ -6,6 +6,7 @@ import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { AppSessionStateResult } from './useAppSessionState'
 import { useManageAdReviewActions } from './useManageAdReviewActions'
 import { useManageModeActions } from './useManageModeActions'
+import { useMetadataManageModeActions } from './useMetadataManageModeActions'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
 import type { MediaStateResult } from '../media/useMediaState'
 
@@ -39,7 +40,9 @@ export function useAppManageBindings({
   const {
     setGradeByPackage,
     manageMode,
+    metadataManageMode,
     setManageMode,
+    setMetadataManageMode,
     setManageOperationHint,
     setDeleteConfirmOpen,
     setVectorSearchResults,
@@ -74,11 +77,30 @@ export function useAppManageBindings({
   } = useManageModeActions({
     mode,
     manageMode,
+    metadataManageMode,
     imageCheckedIds,
     sidebarCheckedNodeIds,
     backendWrite,
     clearAllSelections,
     setManageMode,
+    setMetadataManageMode,
+    setDeleteConfirmOpen,
+    setManageOperationHint,
+    setVectorSearchResults,
+    setVectorFocusIndex,
+    setVectorPage,
+    setSearchPanelMode,
+    setSearchPanelCollapsed,
+    updateSettings,
+  })
+
+  const { toggleMetadataManageMode } = useMetadataManageModeActions({
+    mode,
+    manageMode,
+    metadataManageMode,
+    clearAllSelections,
+    setManageMode,
+    setMetadataManageMode,
     setDeleteConfirmOpen,
     setManageOperationHint,
     setVectorSearchResults,
@@ -131,6 +153,7 @@ export function useAppManageBindings({
   return {
     backendWrite,
     toggleManageMode,
+    toggleMetadataManageMode,
     runManageHideAction,
     requestManageDelete,
     confirmManageDelete: confirmManageDeleteWithAdReview,

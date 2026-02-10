@@ -44,9 +44,27 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '检索' }))
     expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
     expect(screen.getByRole('button', { name: '删除' })).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'search-mode-switch' })).not.toBeInTheDocument()
+  })
+
+  it('文件管理与元数据管理互斥，且都会禁用检索按钮', () => {
+    render(<App />)
+
+    const searchButton = screen.getByRole('button', { name: '检索' }) as HTMLButtonElement
+    const fileManageButton = screen.getByRole('button', { name: '文件管理' })
+    const metadataManageButton = screen.getByRole('button', { name: '元数据管理' })
+
+    fireEvent.click(metadataManageButton)
+    expect(searchButton.disabled).toBe(true)
+    expect(metadataManageButton.classList.contains('is-active')).toBe(true)
+    expect(fileManageButton.classList.contains('is-active')).toBe(false)
+
+    fireEvent.click(fileManageButton)
+    expect(searchButton.disabled).toBe(true)
+    expect(fileManageButton.classList.contains('is-active')).toBe(true)
+    expect(metadataManageButton.classList.contains('is-active')).toBe(false)
   })
 
   it('Sidebar 包节点在包名与作品名不一致时显示作品名', () => {
@@ -65,7 +83,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
   it('管理模式删除确认弹窗需勾选不可逆确认后才能提交', async () => {
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
@@ -90,7 +108,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
   it('管理模式下 Sidebar 与主视图 checker 互斥，且视频模式可进入管理', async () => {
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
@@ -112,7 +130,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
   it('管理模式下点击缩略图即可切换 checker 状态', async () => {
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelector('.thumb-card-main')).not.toBeNull()
@@ -136,7 +154,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelector('.image-grid.is-manage')).not.toBeNull()
@@ -166,7 +184,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     expect(screen.queryAllByText('幻旅系列 001 #1').length).toBeGreaterThan(0)
 
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
@@ -179,13 +197,13 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(screen.getByText('隐藏完成：1 项')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(screen.queryByText('幻旅系列 001 #1')).not.toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(screen.queryAllByText('幻旅系列 001 #1').length).toBeGreaterThan(0)
@@ -201,7 +219,7 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(screen.getByText('取消隐藏完成：1 项')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(screen.queryAllByText('幻旅系列 001 #1').length).toBeGreaterThan(0)
@@ -231,7 +249,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
 
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
@@ -270,7 +288,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     }))
 
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
@@ -301,7 +319,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     }))
 
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
@@ -333,7 +351,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
 
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
       expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)

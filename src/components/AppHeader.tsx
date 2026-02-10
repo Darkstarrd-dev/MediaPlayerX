@@ -5,6 +5,7 @@ export interface AppHeaderProps {
   mode: BrowserMode
   searchPanelOpen: boolean
   manageMode: boolean
+  metadataManageMode: boolean
   vectorUniverseOpen: boolean
   thumbnailScaleLevel: number
   canThumbnailScaleDown: boolean
@@ -23,6 +24,7 @@ export interface AppHeaderProps {
   onModeChange: (mode: BrowserMode) => void
   onToggleSearchPanel: () => void
   onToggleManageMode: () => void
+  onToggleMetadataManageMode: () => void
   onOpenVectorUniverse: () => void
   onThumbnailScaleDown: () => void
   onThumbnailScaleUp: () => void
@@ -36,6 +38,7 @@ function AppHeader({
   mode,
   searchPanelOpen,
   manageMode,
+  metadataManageMode,
   vectorUniverseOpen,
   thumbnailScaleLevel,
   canThumbnailScaleDown,
@@ -54,6 +57,7 @@ function AppHeader({
   onModeChange,
   onToggleSearchPanel,
   onToggleManageMode,
+  onToggleMetadataManageMode,
   onOpenVectorUniverse,
   onThumbnailScaleDown,
   onThumbnailScaleUp,
@@ -111,7 +115,7 @@ function AppHeader({
 
         <button
           className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
-          disabled={manageMode}
+          disabled={manageMode || metadataManageMode}
           type="button"
           onClick={onToggleSearchPanel}
         >
@@ -123,7 +127,15 @@ function AppHeader({
           type="button"
           onClick={onToggleManageMode}
         >
-          管理
+          文件管理
+        </button>
+
+        <button
+          className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`}
+          type="button"
+          onClick={onToggleMetadataManageMode}
+        >
+          元数据管理
         </button>
 
         <button

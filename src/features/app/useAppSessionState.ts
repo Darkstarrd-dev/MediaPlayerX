@@ -31,6 +31,7 @@ export function useAppSessionState({
     Object.fromEntries(imageSources.map((source) => [source.id, source.mockGrade ?? null])),
   )
   const [manageMode, setManageMode] = useState(false)
+  const [metadataManageMode, setMetadataManageMode] = useState(false)
   const [manageOperationHint, setManageOperationHint] = useState<string | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [importMenuOpen, setImportMenuOpen] = useState(false)
@@ -73,6 +74,8 @@ export function useAppSessionState({
     setGradeByPackage,
     manageMode,
     setManageMode,
+    metadataManageMode,
+    setMetadataManageMode,
     manageOperationHint,
     setManageOperationHint,
     deleteConfirmOpen,
