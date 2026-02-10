@@ -53,9 +53,9 @@
   - 当前关键入口规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
   - Main 侧 `fileSystemReadService` 拆分阶段已完成：`electron/fileSystemReadService.ts` 已收敛为 Facade 入口（`2` 行），核心编排迁移到 `electron/fileSystemReadFacade.ts`（约 `548` 行）并委托到领域服务。
 - Main 领域服务已成型：`mediaTokenService`、`runtimeDependencyService`、`serviceEventBus`、`importPathRegistry`、`archiveNormalizationService`、`librarySnapshotService`、`importTaskService`、`libraryReadWriteService`、`managementMutationService`、`mediaResourceService`。
-- 当前拆分待办聚焦两项：
-  - 管理模式图片选择交互 Hook 抽离接线（`useManageImageSelectionInteractions`）。
-  - 管理模式 LLM 广告审核从 core 模块接入到 contracts/preload/ipc/repository/UI。
+- 管理模式图片选择交互接线已完成：`ImageMainSection` 已切换到 `useManageImageSelectionInteractions`，重复 Hook 实现已移除。
+- 大文件拆分已完成：`src/App.css` 已改为样式聚合入口并拆分到 `src/styles/app/*`，`electron/mediaLibraryDatabase.ts` 已收敛为 Facade 并委托到职责子模块。
+- 当前拆分待办聚焦一项：管理模式 LLM 广告审核从 core 模块接入到 contracts/preload/ipc/repository/UI。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
 - Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。

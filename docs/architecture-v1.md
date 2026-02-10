@@ -30,6 +30,8 @@
   - Main 侧 `FileSystemMediaReadService` 拆分已完成：`electron/fileSystemReadService.ts` 收敛为 Facade 入口（`2` 行），`electron/fileSystemReadFacade.ts` 负责组装并委托领域服务（约 `548` 行）。
   - `fileSystemReadService` 领域服务拆分已落地：Token、Runtime、EventBus、ImportPathRegistry、ArchiveNormalization、LibrarySnapshot、ImportTask、LibraryReadWrite、ManagementMutation、MediaResource。
   - 当前关键入口文件规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
+- 管理模式图片选择交互接线已完成：`ImageMainSection` 已统一改用 `useManageImageSelectionInteractions`，旧实现已移除。
+- 大文件拆分已完成：`src/App.css` 已拆分为 `src/styles/app/*` 聚合样式，`electron/mediaLibraryDatabase.ts` 已拆分为 Facade + stores（schema/snapshot/metadata/playlist/task/app state）。
 - 管理模式广告图片审核 (LLM Ad Review) 已完成 core 模块（`electron/manageAdReview/*`），当前待按 `Renderer -> Repository -> Main/Worker` 完成纵向接线。
 
 ### Electron Main 进程
