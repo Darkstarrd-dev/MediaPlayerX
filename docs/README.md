@@ -9,7 +9,6 @@
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
 - `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案。
 - `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（进行中，Core 已完成）。
-- `fileSystemReadService-split-guide.md`：`electron/fileSystemReadService.ts` 低风险拆分执行说明（临时文档，拆分完成后移除）。
 - `ui/theme-system-v1.md`：主题系统 CSS 契约与开发规范 (SSOT)。
 - `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
@@ -52,13 +51,11 @@
   - Renderer 入口链路已收敛：`src/App.tsx` -> `useAppController` -> `useAppDataPipeline`，入口仅保留薄编排职责。
   - Renderer 侧新增分层编排基线：`RuntimeSources / ReadState / NavigationState / DisplayAndEffects / TopLayerBindings / WorkspaceBindings / ViewComposition`，后续新功能必须沿该模式扩展。
   - 当前关键入口规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
-  - Main 侧 `electron/fileSystemReadService.ts` 低风险拆分 L1~L4 已完成（Token/Runtime/EventBus/ImportPathRegistry），当前约 `2250+` 行，仍需继续避免形成新的 God Class。
-- 模块拆分进度（基于最近 git 记录）已进入下半场：Renderer/App 链路拆分已完成，Main 侧 `fileSystemReadService` 已完成低风险拆分并转入中高风险拆分阶段。
-- 当前拆分待办聚焦三项：
-  - `electron/fileSystemReadService.ts` 中高风险拆分（管理删除事务、扫描器、归一化执行器、解析器），保持 Facade 对外 API 不变。
+  - Main 侧 `fileSystemReadService` 拆分阶段已完成：`electron/fileSystemReadService.ts` 已收敛为 Facade 入口（`2` 行），核心编排迁移到 `electron/fileSystemReadFacade.ts`（约 `548` 行）并委托到领域服务。
+- Main 领域服务已成型：`mediaTokenService`、`runtimeDependencyService`、`serviceEventBus`、`importPathRegistry`、`archiveNormalizationService`、`librarySnapshotService`、`importTaskService`、`libraryReadWriteService`、`managementMutationService`、`mediaResourceService`。
+- 当前拆分待办聚焦两项：
   - 管理模式图片选择交互 Hook 抽离接线（`useManageImageSelectionInteractions`）。
   - 管理模式 LLM 广告审核从 core 模块接入到 contracts/preload/ipc/repository/UI。
-- 待处理事项：继续执行 `electron/fileSystemReadService.ts` 中高风险拆分，详见 `docs/fileSystemReadService-split-guide.md`。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
 - Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。
