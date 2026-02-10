@@ -1,0 +1,388 @@
+import { useManageModeActions } from './useManageModeActions'
+import { useEffectiveDisplayState } from './useEffectiveDisplayState'
+import { useMetadataWriteBindings } from './useMetadataWriteBindings'
+import { useResolvedMediaState } from './useResolvedMediaState'
+import { useFullscreenPlaybackBindings } from './useFullscreenPlaybackBindings'
+import { useVectorUniverseBindings } from './useVectorUniverseBindings'
+import { useAppInteractionEffects } from './useAppInteractionEffects'
+import type { useAppSettingsStore } from './useAppSettingsStore'
+import type { useAppSessionState } from './useAppSessionState'
+import type { useRepositoryBootstrapData } from './useRepositoryBootstrapData'
+import type { useMediaState } from '../media/useMediaState'
+import type { useAppReadAndNavigation } from './useAppReadAndNavigation'
+import { useRuntimeCapabilities, useWriteDataAccess } from '../backend'
+import { getBenchSettings } from '../perf/benchSettings'
+
+const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
+const MEDIA_RESOLVE_MAX_CONCURRENT = 8
+
+interface UseAppDisplayAndEffectsParams {
+  appSettings: ReturnType<typeof useAppSettingsStore>
+  benchSettings: ReturnType<typeof getBenchSettings>
+  mediaRepository: ReturnType<typeof useRepositoryBootstrapData>['mediaRepository']
+  sessionState: ReturnType<typeof useAppSessionState>
+  mediaState: ReturnType<typeof useMediaState>
+  readNavigationState: ReturnType<typeof useAppReadAndNavigation>
+}
+
+export function useAppDisplayAndEffects({
+  appSettings,
+  benchSettings,
+  mediaRepository,
+  sessionState,
+  mediaState,
+  readNavigationState,
+}: UseAppDisplayAndEffectsParams) {
+  const {
+    mode,
+    vectorMode,
+    settingsOpen,
+    sidebarRatio,
+    vectorPanelHeight,
+    thumbnailScale,
+    showNamesOnly,
+    autoPlayEnabled,
+    autoPlayInterval,
+    vectorThreshold,
+    sidebarFocus,
+    themeId,
+    vectorUniverseMoveSpeed,
+    vectorUniverseSprintMultiplier,
+    vectorUniverseLookSensitivity,
+    vectorUniverseRaycastDistance,
+    vectorUniverseHelperScale,
+    vectorUniverseDispersion,
+    vectorUniverseWidgetSize,
+    shortcuts,
+    vectorControls,
+    updateSettings,
+  } = appSettings
+
+  const {
+    selectedPackageId,
+    setSelectedPackageId,
+    selectedSidebarNodeId,
+    setSelectedSidebarNodeId,
+    imageFocusActive,
+    setImageFocusActive,
+    focusByPackage,
+    setPageByPackage,
+    setVectorSearchResults,
+    setVectorFocusIndex,
+    setVectorPage,
+    setGradeByPackage,
+    manageMode,
+    setManageMode,
+    manageOperationHint,
+    setManageOperationHint,
+    setDeleteConfirmOpen,
+    vectorUniverseOpen,
+    setVectorUniverseOpen,
+    appBodyRef,
+    vectorPanelContentRef,
+    wasFullscreenRef,
+    lastExpandedSidebarRatioRef,
+    setAppBodyWidth,
+    gridRef,
+    setGridSize,
+    fullscreenEntryDisplay,
+    setFullscreenEntryDisplay,
+  } = sessionState
+
+  const {
+    selectedVideoId,
+    videoPlaying,
+    setVideoPlaying,
+    videoTime,
+    setVideoTime,
+    videoRate,
+    setVideoRate,
+    videoVolume,
+    setVideoVolume,
+    videoMuted,
+    setVideoMuted,
+    videoCoverById,
+    setVideoCoverById,
+    videoCoverImageById,
+    setVideoCoverImageById,
+    videoDurationById,
+    setVideoDurationById,
+    fullscreenActive,
+    setFullscreenActive,
+    fullscreenDisplay,
+    setFullscreenDisplay,
+    fullscreenSwapped,
+    setFullscreenSwapped,
+    fullscreenVideoFocus,
+    setFullscreenVideoFocus,
+    fullscreenSplit,
+    setFullscreenSplit,
+    showFullscreenFooter,
+    setShowFullscreenFooter,
+    goPlaylist,
+    selectVideoFromBrowser,
+    adjustVideoRate,
+    adjustVideoVolume,
+  } = mediaState
+
+  const {
+    searchPanelMode,
+    searchPanelCollapsed,
+    setSearchPanelCollapsed,
+    setSearchPanelMode,
+    featureSearchActive,
+    featureTagPickerOpen,
+    vectorResultsActive,
+    backendRead,
+    scopedImageSourcesEffective,
+    packageByIdEffective,
+    videoByIdEffective,
+    rootScopedVideoIds,
+    rootScopedPackageIds,
+    allScopedRefs,
+    normalImageSourceNodeIdMap,
+    vectorSidebarNodes,
+    vectorResultPackageNodeIdMap,
+    flatSidebarNodes,
+    sidebarNodeById,
+    imageSourceNodeIdMap,
+    videoNodeIdMap,
+    videosForSidebar,
+    ensureSidebarNodeVisible,
+    sidebarCheckedNodeIds,
+    imageCheckedIds,
+    activeSelectionScope,
+    clearAllSelections,
+    orderedRootScopedPackages,
+    orderedRootScopedImageRefs,
+    normalizedThumbnailScale,
+    actualCellWidth,
+    actualMediaHeight,
+    pagedPageSize,
+    activePackage,
+    focusedRef,
+    focusedImage,
+    focusedImagePackage,
+    metadataImagePackage,
+    currentGrade,
+    refsInPage,
+    setImageFocus,
+    moveImage,
+    moveImageVertical,
+    jumpImageBoundary,
+    goPackage,
+    goPrevPage,
+    goNextPage,
+    handleSidebarNavigationKey,
+    orderedRootScopedPackages: orderedPackages,
+  } = readNavigationState
+
+  const backendWrite = useWriteDataAccess({
+    repository: mediaRepository,
+    setGradeByPackage,
+    setVideoCoverById,
+    setVideoCoverImageById,
+  })
+
+  const {
+    toggleManageMode,
+    runManageHideAction,
+    requestManageDelete,
+    confirmManageDelete,
+  } = useManageModeActions({
+    mode,
+    manageMode,
+    imageCheckedIds,
+    sidebarCheckedNodeIds,
+    backendWrite,
+    clearAllSelections,
+    setManageMode,
+    setDeleteConfirmOpen,
+    setManageOperationHint,
+    setVectorSearchResults,
+    setVectorFocusIndex,
+    setVectorPage,
+    setSearchPanelMode,
+    setSearchPanelCollapsed,
+    updateSettings,
+  })
+
+  const runtimeCapabilities = useRuntimeCapabilities({
+    repository: mediaRepository,
+  })
+
+  const {
+    backendPageSnapshot,
+    activePackageForDisplay,
+    refsInPageEffective,
+    pageStartEffective,
+    normalizedPageIndexEffective,
+    imageTotalPagesEffective,
+    metadataImageEffective,
+    metadataImagePackageEffective,
+    currentGradeEffective,
+    focusedVideo,
+    focusedVideoDurationSec,
+    focusedVideoCoverColor,
+    focusedVideoCoverImageLocator,
+    focusedVideoEffective,
+  } = useEffectiveDisplayState({
+    backendPageData: backendRead.page.data,
+    backendPageSnapshot: backendRead.page.snapshot,
+    backendMetadataData: backendRead.metadata.data,
+    backendMetadataSnapshot: backendRead.metadata.snapshot,
+    vectorResultsActive,
+    imageFocusActive,
+    focusedRef,
+    focusedImage,
+    activePackage,
+    refsInPage,
+    pageStart: readNavigationState.pageStart,
+    normalizedPageIndex: readNavigationState.normalizedPageIndex,
+    imageTotalPages: readNavigationState.imageTotalPages,
+    pagedPageSize,
+    showNamesOnly,
+    packageById: packageByIdEffective,
+    metadataImagePackage,
+    currentGrade,
+    selectedVideoId,
+    videoById: videoByIdEffective,
+    videosForSidebar,
+    videoDurationById,
+    videoCoverById,
+    videoCoverImageById,
+  })
+
+  const metadataWriteBindings = useMetadataWriteBindings({
+    backendWrite,
+    metadataImagePackageId: metadataImagePackageEffective?.id ?? null,
+    focusedVideoId: focusedVideoEffective?.id ?? null,
+  })
+
+  const {
+    thumbnailImageUrlById,
+    metadataImageSrc,
+    fullscreenImageSrc,
+    focusedVideoSrc,
+    focusedVideoCoverImageSrc,
+  } = useResolvedMediaState({
+    repository: mediaRepository,
+    benchSettings,
+    maxConcurrent: MEDIA_RESOLVE_MAX_CONCURRENT,
+    actualCellWidth,
+    actualMediaHeight,
+    packageById: packageByIdEffective,
+    focusedImage,
+    metadataImage: metadataImageEffective,
+    focusedRef,
+    orderedRootScopedImageRefs,
+    fullscreenActive,
+    showNamesOnly,
+    refsInPage: refsInPageEffective,
+    focusedVideo,
+    focusedVideoCoverImageLocator,
+  })
+
+  const {
+    videoShortcutActive,
+    fullscreenAlignRequest,
+    applyAutoplayIntervalByIndex,
+    requestFullscreenAlign,
+    setFullscreenActiveWithAutoStop,
+  } = useFullscreenPlaybackBindings({
+    fullscreenActive,
+    fullscreenDisplay,
+    fullscreenVideoFocus,
+    autoPlayEnabled,
+    updateSettings,
+    setFullscreenActive,
+    autoPlayPresets: AUTO_PLAY_PRESETS,
+  })
+
+  const {
+    runVectorSearch,
+    goToFromSearchMode,
+    vectorUniverseSectionProps,
+  } = useVectorUniverseBindings({
+    mode,
+    focusedRef,
+    allScopedRefs,
+    packageById: packageByIdEffective,
+    vectorThreshold,
+    vectorSearchResults: sessionState.vectorSearchResults,
+    vectorResultsActive,
+    featureSearchActive,
+    selectedSidebarNodeId,
+    normalImageSourceNodeIdMap,
+    orderedRootScopedPackages: orderedPackages,
+    setSelectedPackageId,
+    setSelectedSidebarNodeId,
+    setVectorSearchResults,
+    setVectorFocusIndex,
+    setVectorPage,
+    setSearchPanelMode,
+    vectorUniverseOpen,
+    setVectorUniverseOpen,
+    setImageFocus,
+    updateSettings,
+    scopedImageSourcesEffective,
+    vectorUniverseMoveSpeed,
+    vectorUniverseSprintMultiplier,
+    vectorUniverseLookSensitivity,
+    vectorUniverseRaycastDistance,
+    vectorUniverseDispersion,
+    vectorUniverseHelperScale,
+    vectorUniverseWidgetSize,
+    vectorControls,
+  })
+
+  useAppInteractionEffects({
+    appSettings,
+    mediaRepository,
+    sessionState,
+    mediaState,
+    readNavigationState,
+    videoShortcutActive,
+    requestFullscreenAlign,
+    applyAutoplayIntervalByIndex,
+    setFullscreenActiveWithAutoStop,
+    applyPackageGrade: metadataWriteBindings.applyPackageGrade,
+  })
+
+  return {
+    backendWrite,
+    toggleManageMode,
+    runManageHideAction,
+    requestManageDelete,
+    confirmManageDelete,
+    runtimeCapabilities,
+    backendPageSnapshot,
+    activePackageForDisplay,
+    refsInPageEffective,
+    pageStartEffective,
+    normalizedPageIndexEffective,
+    imageTotalPagesEffective,
+    metadataImageEffective,
+    metadataImagePackageEffective,
+    currentGradeEffective,
+    focusedVideo,
+    focusedVideoDurationSec,
+    focusedVideoCoverColor,
+    focusedVideoCoverImageLocator,
+    focusedVideoEffective,
+    metadataWriteBindings,
+    thumbnailImageUrlById,
+    metadataImageSrc,
+    fullscreenImageSrc,
+    focusedVideoSrc,
+    focusedVideoCoverImageSrc,
+    videoShortcutActive,
+    fullscreenAlignRequest,
+    applyAutoplayIntervalByIndex,
+    requestFullscreenAlign,
+    setFullscreenActiveWithAutoStop,
+    runVectorSearch,
+    goToFromSearchMode,
+    vectorUniverseSectionProps,
+  }
+}
