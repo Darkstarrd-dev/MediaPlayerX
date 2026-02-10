@@ -41,8 +41,14 @@ const KNOWN_HASHES_STATE_KEY = 'manage_ad_review_known_hashes_v1'
 const DEFAULT_REVIEW_MAX_CONCURRENCY = 4
 const REVIEW_MAX_CONCURRENCY_LIMIT = 12
 const DEFAULT_VISION_TEST_TIMEOUT_MS = 12_000
-const TINY_TEST_IMAGE_PNG_BASE64 =
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO6JfqsAAAAASUVORK5CYII='
+const MAX_VISION_TEST_IMAGE_BYTES = 12 * 1024 * 1024
+const VISION_TEST_SYSTEM_PROMPT =
+  'You are validating vision-model color recognition. Return JSON only: {"is_ad": false, "reason": "<dominant color>"}. The reason must be the dominant color you see in the image.'
+const VISION_TEST_USER_PROMPT =
+  'What is the dominant color of this image? Return JSON only with is_ad and reason.'
+const INVALID_DESCRIPTION_PATTERN =
+  /(cannot|can\'t|unable|not able|as an ai|无法|不能|看不到|无法查看|无法识别|无法描述)/i
+const RED_COLOR_PATTERN = /\b(red|crimson|scarlet|ruby|maroon|reddish)\b|红色?|赤红|绯红|#?ff0000/i
 
 interface ParsedSidebarNodeRef {
   kind: 'folder' | 'package' | 'video'
@@ -262,8 +268,35 @@ function buildSourceDistribution(decisions: ManageAdReviewDecision[]): ManageAdR
   return distribution
 }
 
-function buildVisionTestImageBytes(): Uint8Array {
-  return new Uint8Array(Buffer.from(TINY_TEST_IMAGE_PNG_BASE64, 'base64'))
+function decodeVisionTestImageBytes(base64Value: string): Uint8Array {
+  const normalizedBase64 = base64Value.trim().replace(/^data:[^;]+;base64,/i, '')
+  if (!normalizedBase64) {
+    throw new Error('模型测试失败：测试图片数据缺失')
+  }
+
+  const imageBytes = new Uint8Array(Buffer.from(normalizedBase64, 'base64'))
+  if (imageBytes.length === 0) {
+    throw new Error('模型测试失败：测试图片无效')
+  }
+
+  if (imageBytes.length > MAX_VISION_TEST_IMAGE_BYTES) {
+    throw new Error('模型测试失败：测试图片过大')
+  }
+
+  return imageBytes
+}
+
+function isValidVisionDescription(value: string): boolean {
+  const normalized = value.trim()
+  if (normalized.length < 2) {
+    return false
+  }
+
+  if (INVALID_DESCRIPTION_PATTERN.test(normalized)) {
+    return false
+  }
+
+  return RED_COLOR_PATTERN.test(normalized)
 }
 
 export class ManageAdReviewService {
@@ -366,21 +399,31 @@ export class ManageAdReviewService {
       : DEFAULT_VISION_TEST_TIMEOUT_MS
 
     try {
+      const imageBytes = decodeVisionTestImageBytes(request.image_base64)
       const client = new OpenAiVisionClient({
         endpoint: request.llm_endpoint,
         model: request.llm_model,
         apiKey: process.env.MEDIA_PLAYERX_LLM_API_KEY,
         timeoutMs,
+        systemPrompt: VISION_TEST_SYSTEM_PROMPT,
+        userPrompt: VISION_TEST_USER_PROMPT,
       })
 
       const detection = await client.detectAd({
-        imageBytes: buildVisionTestImageBytes(),
+        imageBytes,
       })
 
       const normalizedReason = detection.reason.trim()
+      if (!isValidVisionDescription(normalizedReason)) {
+        return testAdReviewVisionModelResponseSchema.parse({
+          ok: false,
+          message: '模型测试失败：模型未返回红色作为图片颜色',
+        })
+      }
+
       return testAdReviewVisionModelResponseSchema.parse({
         ok: true,
-        message: normalizedReason ? `模型响应正常：${normalizedReason.slice(0, 120)}` : '模型响应正常',
+        message: '模型响应正常',
       })
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error)

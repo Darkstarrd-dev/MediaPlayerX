@@ -341,6 +341,7 @@ export const pauseManageAdReviewTaskResponseSchema = z.object({
 export const testAdReviewVisionModelRequestSchema = z.object({
   llm_endpoint: z.string().min(1),
   llm_model: z.string().min(1),
+  image_base64: z.string().min(1),
   timeout_ms: z.number().int().min(1_000).max(60_000).optional(),
 })
 

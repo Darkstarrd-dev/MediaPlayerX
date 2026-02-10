@@ -31,6 +31,9 @@ import type {
 type SearchPanelMode = 'vector' | 'feature'
 type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 
+const VISION_TEST_RED_IMAGE_BASE64 =
+  '/9j/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCABkAGQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAcJ/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AnQBDGqYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q=='
+
 interface UseAppTopLayerStateParams {
   appSettings: AppSettingsStoreSnapshot
   mediaRepository: MediaRepository
@@ -263,6 +266,7 @@ export function useAppTopLayerState({
         {
           llm_endpoint: normalizedEndpoint,
           llm_model: normalizedModel,
+          image_base64: VISION_TEST_RED_IMAGE_BASE64,
           timeout_ms: 12_000,
         },
         { timeoutMs: 15_000 },

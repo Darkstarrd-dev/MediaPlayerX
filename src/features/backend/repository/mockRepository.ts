@@ -1117,10 +1117,18 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
   ): TestAdReviewVisionModelResponseDto {
     const endpoint = request.llm_endpoint.trim()
     const model = request.llm_model.trim()
+    const imageBase64 = request.image_base64.trim()
     if (!endpoint || !model) {
       return testAdReviewVisionModelResponseSchema.parse({
         ok: false,
         message: '模型测试失败：端口和模型ID不能为空',
+      })
+    }
+
+    if (!imageBase64) {
+      return testAdReviewVisionModelResponseSchema.parse({
+        ok: false,
+        message: '模型测试失败：测试图片数据缺失',
       })
     }
 
@@ -1133,7 +1141,7 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
 
     return testAdReviewVisionModelResponseSchema.parse({
       ok: true,
-      message: '模型响应正常：mock 连接成功',
+      message: '模型响应正常',
     })
   }
 
