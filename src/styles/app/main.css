@@ -11,6 +11,7 @@
   backdrop-filter: var(--mpx-main-backdrop-filter);
   transform: var(--mpx-main-transform);
   transition: var(--mpx-main-transition);
+  overflow: hidden;
 }
 
 .main-toolbar {
@@ -21,9 +22,9 @@
   height: var(--panel-head-height);
   min-height: var(--panel-head-height);
   flex-shrink: 0;
-  margin: -10px -10px 0;
-  padding: 0 10px;
-  background: var(--mpx-bg-panel);
+  margin: calc(-1 * var(--mpx-main-padding)) calc(-1 * var(--mpx-main-padding)) 0;
+  padding: 0 var(--mpx-main-padding);
+  background: transparent;
   border-bottom: 1px solid var(--mpx-border-1);
 }
 
@@ -247,6 +248,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .video-screen {

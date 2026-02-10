@@ -54,9 +54,12 @@
   opacity: 1;
 }
 
-.sidebar.is-focus,
-.workspace.is-focus {
+.sidebar.is-focus {
   box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.workspace.is-focus {
+  box-shadow: none;
 }
 
 .sidebar-head {
@@ -181,20 +184,13 @@
   min-width: var(--mpx-splitter-width);
   cursor: col-resize;
   position: relative;
-  background: var(--mpx-splitter-track-bg);
+  background: transparent;
 }
 
 .sidebar-splitter::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--mpx-splitter-handle-bg);
-  border-radius: 2px;
+  content: none;
 }
 
 .sidebar-splitter:hover::after {
-  background: var(--mpx-splitter-handle-hover-bg);
+  content: none;
 }

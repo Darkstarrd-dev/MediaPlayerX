@@ -226,6 +226,8 @@
   font-size: 18px;
   line-height: 1;
   opacity: 0.32;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .feature-rating-stars button.is-clear {
@@ -251,22 +253,15 @@
   min-height: var(--mpx-splitter-width);
   cursor: row-resize;
   position: relative;
-  background: var(--mpx-splitter-track-bg);
+  background: transparent;
 }
 
 .vector-splitter::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--mpx-splitter-handle-bg);
-  border-radius: 2px;
+  content: none;
 }
 
 .vector-splitter:hover::after {
-  background: var(--mpx-splitter-handle-hover-bg);
+  content: none;
 }
 
 .vector-universe-overlay {
