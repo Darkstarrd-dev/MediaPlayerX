@@ -8,6 +8,7 @@ import {
   clearDatabaseResponseSchema,
   deleteImageItemsResponseSchema,
   deleteSidebarNodesResponseSchema,
+  manageAdReviewTaskExecutionSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
@@ -48,7 +49,10 @@ import {
   type ReadManageAdReviewTaskResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type ManageAdReviewSourceDistributionDto,
+  type ManageAdReviewTaskAuditDto,
   type ManageAdReviewTaskDto,
+  type ManageAdReviewTaskExecutionDto,
   type ImageItemDto,
   type ImagePackageDto,
   type ImportTaskDto,
@@ -461,6 +465,64 @@ function hashLocator(value: string): number {
     hash = Math.imul(hash, 16777619)
   }
   return hash >>> 0
+}
+
+const DEFAULT_AD_REVIEW_MAX_CONCURRENCY = 2
+const MAX_AD_REVIEW_MAX_CONCURRENCY = 8
+
+function normalizeAdReviewExecution(request: StartManageAdReviewRequestDto): ManageAdReviewTaskExecutionDto {
+  const strategy = request.strategy
+  const normalizedStrategy: ManageAdReviewTaskExecutionDto['strategy'] =
+    !strategy || strategy.mode === 'all'
+      ? { mode: 'all' }
+      : {
+          mode: 'head-tail',
+          head_n: Math.max(0, Math.floor(strategy.head_n)),
+          tail_n: Math.max(0, Math.floor(strategy.tail_n)),
+          tail_stop_clean_streak: Math.max(1, Math.floor(strategy.tail_stop_clean_streak)),
+        }
+
+  const maxConcurrency = Number.isFinite(request.max_concurrency)
+    ? Math.min(MAX_AD_REVIEW_MAX_CONCURRENCY, Math.max(1, Math.floor(request.max_concurrency as number)))
+    : DEFAULT_AD_REVIEW_MAX_CONCURRENCY
+
+  return manageAdReviewTaskExecutionSchema.parse({
+    strategy: normalizedStrategy,
+    max_concurrency: maxConcurrency,
+  })
+}
+
+function createAdReviewSourceDistribution(params: {
+  knownHash: number
+  llmSuspected: number
+  llmClean: number
+  llmFailed?: number
+  strategySkipped?: number
+}): ManageAdReviewSourceDistributionDto {
+  return {
+    known_hash: Math.max(0, Math.floor(params.knownHash)),
+    llm_suspected: Math.max(0, Math.floor(params.llmSuspected)),
+    llm_clean: Math.max(0, Math.floor(params.llmClean)),
+    llm_failed: Math.max(0, Math.floor(params.llmFailed ?? 0)),
+    strategy_skipped: Math.max(0, Math.floor(params.strategySkipped ?? 0)),
+  }
+}
+
+function buildAdReviewAudit(
+  sourceDistribution: ManageAdReviewSourceDistributionDto,
+  suspectedCount: number,
+  totalCount: number,
+): ManageAdReviewTaskAuditDto {
+  const llmCalls =
+    sourceDistribution.llm_suspected +
+    sourceDistribution.llm_clean +
+    sourceDistribution.llm_failed
+
+  return {
+    source_distribution: sourceDistribution,
+    llm_hit_rate: llmCalls > 0 ? sourceDistribution.llm_suspected / llmCalls : 0,
+    overall_hit_rate: totalCount > 0 ? suspectedCount / totalCount : 0,
+  }
 }
 
 function toMockImageDataUrl(locator: MediaLocatorDto): string {
@@ -917,6 +979,13 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
 
     const now = Date.now()
     const taskId = `mock-manage-ad-review-${now}-${Math.round(Math.random() * 10_000)}`
+    const execution = normalizeAdReviewExecution(request)
+    const sourceDistribution = createAdReviewSourceDistribution({
+      knownHash: 0,
+      llmSuspected: candidates.length,
+      llmClean: Math.max(0, selectedImageIds.length - candidates.length),
+    })
+
     const task: ManageAdReviewTaskDto = {
       task_id: taskId,
       status: 'review',
@@ -927,6 +996,8 @@ export class MockMediaRepository implements ReadonlyMediaRepository, Synchronous
       failed_count: 0,
       known_hash_hits: 0,
       llm_calls: selectedImageIds.length,
+      execution,
+      audit: buildAdReviewAudit(sourceDistribution, candidates.length, selectedImageIds.length),
       message: candidates.length > 0 ? `审核完成：疑似 ${candidates.length} 张` : '审核完成：未发现疑似广告',
       error_detail: null,
       candidates,

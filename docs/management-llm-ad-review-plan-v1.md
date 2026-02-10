@@ -3,7 +3,7 @@
 ## 0. 文档定位
 
 - 本文档用于固化“管理模式广告图片审核 (LLM Ad Review)”的实施方案与拆解顺序。
-- 当前状态：core + contracts/preload/ipc/repository/UI 接线已完成，进入优化与稳态维护阶段。
+- 当前状态：core + contracts/preload/ipc/repository/UI 接线与首轮优化（策略参数化、审计可视化）已完成，进入稳态维护阶段。
 - 目标产出：可执行的任务清单 + 合约草案 + 验收标准，作为后续开发基线。
 
 ## 当前进度（基于 git）
@@ -25,12 +25,14 @@
   - UI：管理容器新增“广告审核”入口、任务状态、候选复核与危险确认删除
   - Main：新增 `manageAdReviewService`，打通选区映射、LLM 调用、任务轮询、确认删除闭环
 - 已落地哈希持久化：确认删除候选写入 `app_state`（known-hash）并参与后续短路命中。
+- 已完成策略参数化：Renderer 可配置并透传 `all/head-tail` 策略与 `max_concurrency`，Main 统一归一化后执行。
+- 已完成审计增强：任务 DTO 增加 `execution/audit` 字段，输出来源分布与命中率，并在管理面板可视化。
+- 已完成文档同步：`README/requirements/architecture/interaction/backend-integration-guardrails` 已对齐。
 
-### 待办
+### 持续优化项（下一轮）
 
-- 性能与策略优化：按需暴露 `head-tail` 策略参数与并发参数，补充大批量样本下的压测基准。
-- 观测增强：补充审核任务审计字段（来源分布、命中率）与 UI 可视化。
-- 文档维护：后续功能迭代持续同步本计划与 `README/architecture/interaction/guardrails`。
+- 大批量样本压测：在真实数据集上补齐策略矩阵与并发矩阵基准（冷/热各 3 轮），沉淀到 `docs/perf/*`。
+- 继续保持文档与代码一致：后续功能迭代持续同步本计划与 `README/architecture/interaction/guardrails`。
 
 ## 1. 目标与范围
 
@@ -137,7 +139,7 @@
 - [x] Phase 1（Contracts/IPC Skeleton）：合约与骨架接线。
 - [x] Phase 2（Execution Wiring）：Main/Worker 审核任务接入。
 - [x] Phase 3（Human Review + Delete）：人工复核与删除闭环。
-- [x] Phase 4（Persistence + Optimization）：已完成持久化（known-hash），策略优化持续迭代。
+- [x] Phase 4（Persistence + Optimization）：已完成持久化（known-hash）、策略参数化与审计可视化。
 
 ### Phase 1：合约与骨架
 
@@ -160,8 +162,8 @@
 ### Phase 4：哈希缓存与策略优化
 
 - 接入 `sha256` 命中跳过 LLM。
-- 可选加入头尾窗口策略与并发参数化。
-- 补齐审计字段与设置项持久化。
+- 已接入头尾窗口策略与并发参数化（Renderer 设置 -> DTO -> Main 归一化 -> 引擎执行）。
+- 已补齐审计字段与 UI 可视化（来源分布、LLM/总体命中率）。
 
 ## 7. 验证与测试计划
 

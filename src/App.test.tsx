@@ -339,6 +339,9 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(screen.getByText('待复核')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: '删除勾选候选' })).toBeInTheDocument()
+      expect(screen.getByText(/策略 all \| 并发 2/)).toBeInTheDocument()
+      expect(screen.getByText(/来源 known-hash 0/)).toBeInTheDocument()
+      expect(screen.getByText(/命中率 LLM/)).toBeInTheDocument()
     })
 
     const candidateCheckbox = screen.getAllByRole('checkbox', { name: /ad-review-candidate-/ })[0] as HTMLInputElement
@@ -913,6 +916,14 @@ describe('MediaPlayer 虚拟 UI', () => {
     const fontSizeBefore = settingsPanel?.style.fontSize
     fireEvent.change(settingsFontSlider, { target: { value: '1.2' } })
     expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore)
+
+    fireEvent.click(screen.getByRole('button', { name: '模型参数' }))
+    expect(screen.getByLabelText('广告审核策略')).toBeInTheDocument()
+    expect(screen.getByLabelText('审核并发')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('广告审核策略'), { target: { value: 'head-tail' } })
+    expect(screen.getByLabelText('头部窗口样本数')).toBeInTheDocument()
+    expect(screen.getByLabelText('尾部窗口样本数')).toBeInTheDocument()
+    expect(screen.getByLabelText('尾部停止 clean 连续数')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'theme 设置' }))
     expect(screen.getByText('主题方案')).toBeInTheDocument()

@@ -107,9 +107,11 @@
 4. 缓存与可追踪性
    - “已确认删除图片哈希”需持久化（SQLite 或 `app_state`），并记录来源与更新时间。
    - 审核失败、超时、降级需在 UI 可见，不允许静默吞错。
+   - 审核任务需回传可观测字段：来源分布（known-hash/llm/skip）与命中率（LLM/overall），用于回归与压测对比。
 
 5. 合约一致性
    - 新增审核相关 IPC 请求/响应必须走 Zod schema 校验。
+   - `startManageAdReview` 的策略/并发参数必须显式透传并在 Main 统一归一化（禁止 Renderer 与 Main 口径分叉）。
    - DTO -> ViewModel 映射必须在适配层显式完成，禁止 UI 直接消费后端原始结构。
 
 ## 真实文件性能门禁（扫描/重处理强制）

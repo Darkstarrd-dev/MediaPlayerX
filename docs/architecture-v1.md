@@ -68,11 +68,13 @@
 
 - 输入：管理模式当前勾选对象（Sidebar 节点或图片条目）映射出的图片集合。
 - 审核链路：Main/Worker 调用 LLM 接口执行广告检测，返回“疑似广告候选”而非直接删除。
+- 执行参数：Renderer 通过 `startManageAdReview` 透传策略与并发配置（`all/head-tail`、`max_concurrency`），Main 统一归一化后下发引擎。
 - 人工确认：Renderer 展示候选清单，用户确认后复用既有删除接口执行物理删除。
 - 缓存策略：新增“已确认删除图片哈希”记录，用于后续同图快速命中、跳过 LLM。
 - 已完成（core）：`adReviewEngine`、`openAiVisionClient`、`jsonExtract`、`hashStore`、`concurrency` 与对应单测。
 - 已完成（integration）：contracts/preload/ipc/repository 接线，管理面板审核列表、任务轮询、危险确认删除与结果回写闭环。
 - 已完成（persistence）：确认删除项的哈希写入 `app_state`，后续同图命中可走 known-hash 短路。
+- 已完成（observability）：审核任务 DTO 新增 `execution/audit` 字段，包含来源分布（known-hash/llm/skip）与命中率（LLM/overall），并在管理面板可视化。
 - 详细计划与阶段拆解见 `docs/management-llm-ad-review-plan-v1.md`。
 
 ## 模块边界

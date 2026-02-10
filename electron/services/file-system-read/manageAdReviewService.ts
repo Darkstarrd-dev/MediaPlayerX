@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import {
   confirmManageAdReviewDeleteResponseSchema,
+  manageAdReviewTaskExecutionSchema,
   readManageAdReviewTaskResponseSchema,
   startManageAdReviewResponseSchema,
   type ConfirmManageAdReviewDeleteRequestDto,
@@ -13,7 +14,10 @@ import {
   type ImagePackageDto,
   type LibrarySnapshotDto,
   type ManageAdReviewCandidateDto,
+  type ManageAdReviewSourceDistributionDto,
+  type ManageAdReviewTaskAuditDto,
   type ManageAdReviewTaskDto,
+  type ManageAdReviewTaskExecutionDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
   type StartManageAdReviewRequestDto,
@@ -27,6 +31,8 @@ import type { ManageAdReviewDecision } from '../../manageAdReview'
 import { type ZipCentralEntry } from '../../zipArchiveHelpers'
 
 const KNOWN_HASHES_STATE_KEY = 'manage_ad_review_known_hashes_v1'
+const DEFAULT_REVIEW_MAX_CONCURRENCY = 2
+const REVIEW_MAX_CONCURRENCY_LIMIT = 8
 
 interface ParsedSidebarNodeRef {
   kind: 'folder' | 'package' | 'video'
@@ -110,6 +116,119 @@ function toImageFileName(image: ImageItemDto): string | null {
   return path.basename(image.media_locator.entry_name)
 }
 
+function createEmptySourceDistribution(): ManageAdReviewSourceDistributionDto {
+  return {
+    known_hash: 0,
+    llm_suspected: 0,
+    llm_clean: 0,
+    llm_failed: 0,
+    strategy_skipped: 0,
+  }
+}
+
+function toTaskAudit(params: {
+  sourceDistribution: ManageAdReviewSourceDistributionDto
+  suspectedCount: number
+  totalCount: number
+}): ManageAdReviewTaskAuditDto {
+  const llmCalls =
+    params.sourceDistribution.llm_suspected +
+    params.sourceDistribution.llm_clean +
+    params.sourceDistribution.llm_failed
+
+  return {
+    source_distribution: params.sourceDistribution,
+    llm_hit_rate: llmCalls > 0 ? params.sourceDistribution.llm_suspected / llmCalls : 0,
+    overall_hit_rate: params.totalCount > 0 ? params.suspectedCount / params.totalCount : 0,
+  }
+}
+
+function normalizeMaxConcurrency(value: number | undefined): number {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_REVIEW_MAX_CONCURRENCY
+  }
+
+  return Math.min(REVIEW_MAX_CONCURRENCY_LIMIT, Math.max(1, Math.floor(value as number)))
+}
+
+function normalizeTaskExecution(request: StartManageAdReviewRequestDto): ManageAdReviewTaskExecutionDto {
+  const strategy = request.strategy
+  const normalizedStrategy: ManageAdReviewTaskExecutionDto['strategy'] =
+    !strategy || strategy.mode === 'all'
+      ? { mode: 'all' }
+      : {
+          mode: 'head-tail',
+          head_n: Math.max(0, Math.floor(strategy.head_n)),
+          tail_n: Math.max(0, Math.floor(strategy.tail_n)),
+          tail_stop_clean_streak: Math.max(1, Math.floor(strategy.tail_stop_clean_streak)),
+        }
+
+  return manageAdReviewTaskExecutionSchema.parse({
+    strategy: normalizedStrategy,
+    max_concurrency: normalizeMaxConcurrency(request.max_concurrency),
+  })
+}
+
+function toEngineStrategy(execution: ManageAdReviewTaskExecutionDto) {
+  if (execution.strategy.mode === 'head-tail') {
+    return {
+      mode: 'head-tail' as const,
+      headN: execution.strategy.head_n,
+      tailN: execution.strategy.tail_n,
+      tailStopCleanStreak: execution.strategy.tail_stop_clean_streak,
+    }
+  }
+
+  return {
+    mode: 'all' as const,
+  }
+}
+
+function applyDecisionToSourceDistribution(
+  current: ManageAdReviewSourceDistributionDto,
+  decision: Pick<ManageAdReviewDecision, 'source' | 'status'>,
+): ManageAdReviewSourceDistributionDto {
+  const next: ManageAdReviewSourceDistributionDto = {
+    ...current,
+  }
+
+  if (decision.source === 'known-hash') {
+    next.known_hash += 1
+    return next
+  }
+
+  if (decision.source === 'llm-error') {
+    next.llm_failed += 1
+    return next
+  }
+
+  if (decision.source === 'strategy-skip') {
+    next.strategy_skipped += 1
+    return next
+  }
+
+  if (decision.status === 'suspected') {
+    next.llm_suspected += 1
+    return next
+  }
+
+  if (decision.status === 'clean') {
+    next.llm_clean += 1
+    return next
+  }
+
+  next.llm_failed += 1
+  return next
+}
+
+function buildSourceDistribution(decisions: ManageAdReviewDecision[]): ManageAdReviewSourceDistributionDto {
+  let distribution = createEmptySourceDistribution()
+  for (const decision of decisions) {
+    distribution = applyDecisionToSourceDistribution(distribution, decision)
+  }
+  return distribution
+}
+
 export class ManageAdReviewService {
   private readonly tasks = new Map<string, RuntimeTaskState>()
 
@@ -127,6 +246,7 @@ export class ManageAdReviewService {
 
     const now = Date.now()
     const taskId = `manage-ad-review-${now}-${Math.round(Math.random() * 1_000_000)}`
+    const execution = normalizeTaskExecution(request)
     const task: ManageAdReviewTaskDto = {
       task_id: taskId,
       status: 'running',
@@ -137,6 +257,12 @@ export class ManageAdReviewService {
       failed_count: 0,
       known_hash_hits: 0,
       llm_calls: 0,
+      execution,
+      audit: toTaskAudit({
+        sourceDistribution: createEmptySourceDistribution(),
+        suspectedCount: 0,
+        totalCount: selectedImageIds.length,
+      }),
       message: '广告审核任务进行中',
       error_detail: null,
       candidates: [],
@@ -303,6 +429,7 @@ export class ManageAdReviewService {
         model: request.llm_model,
         apiKey: process.env.MEDIA_PLAYERX_LLM_API_KEY,
       })
+      const taskExecution = runtimeTask.task.execution ?? normalizeTaskExecution(request)
 
       const groupedBySource = new Map<string, Array<{ source: ImagePackageDto; image: ImageItemDto }>>()
       for (const imageId of selectedImageIds) {
@@ -339,7 +466,8 @@ export class ManageAdReviewService {
               // confirmed 删除后再持久化，审核阶段不写入 known-hash。
             },
           },
-          concurrency: 2,
+          concurrency: taskExecution.max_concurrency,
+          strategy: toEngineStrategy(taskExecution),
           onEvent: (event) => {
             const currentTask = this.tasks.get(taskId)
             if (!currentTask || currentTask.task.status !== 'running') {
@@ -353,12 +481,31 @@ export class ManageAdReviewService {
             const reviewedCount = Math.min(currentTask.task.total_count, currentTask.task.reviewed_count + 1)
             const suspectedCount = currentTask.task.suspected_count + (event.status === 'suspected' ? 1 : 0)
             const failedCount = currentTask.task.failed_count + (event.status === 'failed' ? 1 : 0)
+            const nextSourceDistribution = applyDecisionToSourceDistribution(
+              currentTask.task.audit?.source_distribution ?? createEmptySourceDistribution(),
+              {
+                source: event.source,
+                status: event.status,
+              },
+            )
+
+            const llmCalls =
+              nextSourceDistribution.llm_suspected +
+              nextSourceDistribution.llm_clean +
+              nextSourceDistribution.llm_failed
 
             currentTask.task = {
               ...currentTask.task,
               reviewed_count: reviewedCount,
               suspected_count: suspectedCount,
               failed_count: failedCount,
+              known_hash_hits: nextSourceDistribution.known_hash,
+              llm_calls: llmCalls,
+              audit: toTaskAudit({
+                sourceDistribution: nextSourceDistribution,
+                suspectedCount,
+                totalCount: currentTask.task.total_count,
+              }),
               progress: currentTask.task.total_count > 0 ? reviewedCount / currentTask.task.total_count : 1,
               updated_at_ms: Date.now(),
             }
@@ -367,6 +514,7 @@ export class ManageAdReviewService {
       )
 
       const candidates = this.buildCandidates(result.items, imageById)
+      const sourceDistribution = buildSourceDistribution(result.items)
       runtimeTask.candidateHashByImageId = new Map(candidates.map((candidate) => [candidate.image_id, candidate.hash]))
       runtimeTask.task = {
         ...runtimeTask.task,
@@ -377,6 +525,11 @@ export class ManageAdReviewService {
         failed_count: result.summary.failed,
         known_hash_hits: result.summary.knownHashHits,
         llm_calls: result.summary.llmCalls,
+        audit: toTaskAudit({
+          sourceDistribution,
+          suspectedCount: result.summary.suspected,
+          totalCount: result.summary.total,
+        }),
         message:
           candidates.length > 0
             ? `审核完成：疑似 ${candidates.length} 张`

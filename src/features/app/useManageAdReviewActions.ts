@@ -17,6 +17,11 @@ interface UseManageAdReviewActionsParams {
   sidebarCheckedNodeIds: string[]
   llmEndpoint: string
   llmModel: string
+  adReviewStrategyMode: 'all' | 'head-tail'
+  adReviewHeadN: number
+  adReviewTailN: number
+  adReviewTailStopCleanStreak: number
+  adReviewMaxConcurrency: number
   clearAllSelections: () => void
   setManageOperationHint: (message: string | null) => void
 }
@@ -42,6 +47,11 @@ export function useManageAdReviewActions({
   sidebarCheckedNodeIds,
   llmEndpoint,
   llmModel,
+  adReviewStrategyMode,
+  adReviewHeadN,
+  adReviewTailN,
+  adReviewTailStopCleanStreak,
+  adReviewMaxConcurrency,
   clearAllSelections,
   setManageOperationHint,
 }: UseManageAdReviewActionsParams): UseManageAdReviewActionsResult {
@@ -167,6 +177,23 @@ export function useManageAdReviewActions({
     setPending(true)
     setManageOperationHint('广告审核任务已启动')
     try {
+      const normalizedStrategyMode = adReviewStrategyMode === 'head-tail' ? 'head-tail' : 'all'
+      const strategy =
+        normalizedStrategyMode === 'head-tail'
+          ? {
+              mode: 'head-tail' as const,
+              head_n: Math.max(0, Math.floor(adReviewHeadN)),
+              tail_n: Math.max(0, Math.floor(adReviewTailN)),
+              tail_stop_clean_streak: Math.max(1, Math.floor(adReviewTailStopCleanStreak)),
+            }
+          : {
+              mode: 'all' as const,
+            }
+
+      const maxConcurrency = Number.isFinite(adReviewMaxConcurrency)
+        ? Math.max(1, Math.floor(adReviewMaxConcurrency))
+        : undefined
+
       const response = await repository.startManageAdReview(
         {
           selection_scope: activeScope,
@@ -174,6 +201,8 @@ export function useManageAdReviewActions({
           node_ids: nodeIds,
           llm_endpoint: llmEndpoint,
           llm_model: llmModel,
+          strategy,
+          max_concurrency: maxConcurrency,
         },
         { timeoutMs: REVIEW_START_TIMEOUT_MS },
       )
@@ -192,6 +221,11 @@ export function useManageAdReviewActions({
   }, [
     activeScope,
     imageCheckedIds,
+    adReviewHeadN,
+    adReviewMaxConcurrency,
+    adReviewStrategyMode,
+    adReviewTailN,
+    adReviewTailStopCleanStreak,
     llmEndpoint,
     llmModel,
     manageMode,

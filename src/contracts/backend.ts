@@ -233,6 +233,41 @@ export const manageAdReviewDecisionSourceSchema = z.enum(['known-hash', 'llm'])
 
 export const manageAdReviewTaskStatusSchema = z.enum(['running', 'review', 'failed'])
 
+export const manageAdReviewAllStrategySchema = z.object({
+  mode: z.literal('all'),
+})
+
+export const manageAdReviewHeadTailStrategySchema = z.object({
+  mode: z.literal('head-tail'),
+  head_n: nonNegativeIntSchema,
+  tail_n: nonNegativeIntSchema,
+  tail_stop_clean_streak: z.number().int().min(1).max(200),
+})
+
+export const manageAdReviewStrategySchema = z.discriminatedUnion('mode', [
+  manageAdReviewAllStrategySchema,
+  manageAdReviewHeadTailStrategySchema,
+])
+
+export const manageAdReviewTaskExecutionSchema = z.object({
+  strategy: manageAdReviewStrategySchema,
+  max_concurrency: z.number().int().min(1).max(8),
+})
+
+export const manageAdReviewSourceDistributionSchema = z.object({
+  known_hash: nonNegativeIntSchema,
+  llm_suspected: nonNegativeIntSchema,
+  llm_clean: nonNegativeIntSchema,
+  llm_failed: nonNegativeIntSchema,
+  strategy_skipped: nonNegativeIntSchema,
+})
+
+export const manageAdReviewTaskAuditSchema = z.object({
+  source_distribution: manageAdReviewSourceDistributionSchema,
+  llm_hit_rate: z.number().min(0).max(1),
+  overall_hit_rate: z.number().min(0).max(1),
+})
+
 export const manageAdReviewCandidateSchema = z.object({
   image_id: z.string().min(1),
   package_id: z.string().min(1),
@@ -255,6 +290,8 @@ export const manageAdReviewTaskSchema = z.object({
   failed_count: nonNegativeIntSchema,
   known_hash_hits: nonNegativeIntSchema,
   llm_calls: nonNegativeIntSchema,
+  execution: manageAdReviewTaskExecutionSchema.optional(),
+  audit: manageAdReviewTaskAuditSchema.optional(),
   message: z.string().min(1).nullable(),
   error_detail: z.string().min(1).nullable(),
   candidates: z.array(manageAdReviewCandidateSchema),
@@ -268,6 +305,8 @@ export const startManageAdReviewRequestSchema = z.object({
   node_ids: z.array(z.string().min(1)).optional(),
   llm_endpoint: z.string().min(1),
   llm_model: z.string().min(1),
+  strategy: manageAdReviewStrategySchema.optional(),
+  max_concurrency: z.number().int().min(1).max(8).optional(),
 })
 
 export const startManageAdReviewResponseSchema = z.object({
@@ -503,6 +542,12 @@ export type DeleteSidebarNodesResponseDto = z.infer<typeof deleteSidebarNodesRes
 export type ManageAdReviewSelectionScopeDto = z.infer<typeof manageAdReviewSelectionScopeSchema>
 export type ManageAdReviewDecisionSourceDto = z.infer<typeof manageAdReviewDecisionSourceSchema>
 export type ManageAdReviewTaskStatusDto = z.infer<typeof manageAdReviewTaskStatusSchema>
+export type ManageAdReviewAllStrategyDto = z.infer<typeof manageAdReviewAllStrategySchema>
+export type ManageAdReviewHeadTailStrategyDto = z.infer<typeof manageAdReviewHeadTailStrategySchema>
+export type ManageAdReviewStrategyDto = z.infer<typeof manageAdReviewStrategySchema>
+export type ManageAdReviewTaskExecutionDto = z.infer<typeof manageAdReviewTaskExecutionSchema>
+export type ManageAdReviewSourceDistributionDto = z.infer<typeof manageAdReviewSourceDistributionSchema>
+export type ManageAdReviewTaskAuditDto = z.infer<typeof manageAdReviewTaskAuditSchema>
 export type ManageAdReviewCandidateDto = z.infer<typeof manageAdReviewCandidateSchema>
 export type ManageAdReviewTaskDto = z.infer<typeof manageAdReviewTaskSchema>
 export type StartManageAdReviewRequestDto = z.infer<typeof startManageAdReviewRequestSchema>

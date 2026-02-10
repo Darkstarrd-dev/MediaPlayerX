@@ -14,6 +14,25 @@ function resolveAdReviewStatusLabel(status: ManageAdReviewTaskDto['status']): st
   return '待复核'
 }
 
+function formatPercent(value: number): string {
+  const normalized = Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0
+  return `${(normalized * 100).toFixed(1)}%`
+}
+
+function resolveAdReviewExecutionLabel(task: ManageAdReviewTaskDto): string | null {
+  if (!task.execution) {
+    return null
+  }
+
+  const strategy = task.execution.strategy
+  const strategyLabel =
+    strategy.mode === 'head-tail'
+      ? `head-tail(h=${strategy.head_n}, t=${strategy.tail_n}, stop=${strategy.tail_stop_clean_streak})`
+      : 'all'
+
+  return `策略 ${strategyLabel} | 并发 ${task.execution.max_concurrency}`
+}
+
 interface ManagementPanelProps {
   visible: boolean
   collapsed: boolean
@@ -147,6 +166,19 @@ function ManagementPanel({
                 <p className="manage-ad-review-progress">
                   {`进度 ${Math.round(adReviewTask.progress * 100)}% (${adReviewTask.reviewed_count}/${adReviewTask.total_count})`}
                 </p>
+                {resolveAdReviewExecutionLabel(adReviewTask) ? (
+                  <p className="manage-ad-review-config">{resolveAdReviewExecutionLabel(adReviewTask)}</p>
+                ) : null}
+                {adReviewTask.audit ? (
+                  <div className="manage-ad-review-audit">
+                    <p className="manage-ad-review-audit-line">
+                      {`来源 known-hash ${adReviewTask.audit.source_distribution.known_hash} | llm(疑似/正常/失败) ${adReviewTask.audit.source_distribution.llm_suspected}/${adReviewTask.audit.source_distribution.llm_clean}/${adReviewTask.audit.source_distribution.llm_failed} | strategy-skip ${adReviewTask.audit.source_distribution.strategy_skipped}`}
+                    </p>
+                    <p className="manage-ad-review-audit-line">
+                      {`命中率 LLM ${formatPercent(adReviewTask.audit.llm_hit_rate)} | 总体 ${formatPercent(adReviewTask.audit.overall_hit_rate)}`}
+                    </p>
+                  </div>
+                ) : null}
                 {adReviewTask.message ? <p className="manage-ad-review-message">{adReviewTask.message}</p> : null}
                 {adReviewTask.error_detail ? <p className="manage-ad-review-error">{adReviewTask.error_detail}</p> : null}
 

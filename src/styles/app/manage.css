@@ -138,11 +138,30 @@
 }
 
 .manage-ad-review-progress,
+.manage-ad-review-config,
 .manage-ad-review-message,
 .manage-ad-review-error,
 .manage-ad-review-empty {
   margin: 0;
   font-size: 12px;
+}
+
+.manage-ad-review-config {
+  color: var(--mpx-text-2);
+}
+
+.manage-ad-review-audit {
+  display: grid;
+  gap: 4px;
+  border: 1px dashed var(--mpx-border-1);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.manage-ad-review-audit-line {
+  margin: 0;
+  font-size: 12px;
+  color: var(--mpx-text-2);
 }
 
 .manage-ad-review-error {

@@ -38,6 +38,11 @@ interface RenderSettingsMainSectionParams {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  adReviewStrategyMode: 'all' | 'head-tail'
+  adReviewHeadN: number
+  adReviewTailN: number
+  adReviewTailStopCleanStreak: number
+  adReviewMaxConcurrency: number
   themeId: string
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
@@ -71,6 +76,11 @@ interface RenderSettingsMainSectionParams {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
+  onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
+  onAdReviewHeadNChange: (value: number) => void
+  onAdReviewTailNChange: (value: number) => void
+  onAdReviewTailStopCleanStreakChange: (value: number) => void
+  onAdReviewMaxConcurrencyChange: (value: number) => void
   onThemeChange: (value: string) => void
   onVectorUniverseMoveSpeedChange: (value: number) => void
   onVectorUniverseSprintMultiplierChange: (value: number) => void
@@ -109,6 +119,11 @@ export function renderSettingsMainSection({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
+  adReviewStrategyMode,
+  adReviewHeadN,
+  adReviewTailN,
+  adReviewTailStopCleanStreak,
+  adReviewMaxConcurrency,
   themeId,
   vectorUniverseMoveSpeed,
   vectorUniverseSprintMultiplier,
@@ -142,6 +157,11 @@ export function renderSettingsMainSection({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
+  onAdReviewStrategyModeChange,
+  onAdReviewHeadNChange,
+  onAdReviewTailNChange,
+  onAdReviewTailStopCleanStreakChange,
+  onAdReviewMaxConcurrencyChange,
   onThemeChange,
   onVectorUniverseMoveSpeedChange,
   onVectorUniverseSprintMultiplierChange,
@@ -291,6 +311,66 @@ export function renderSettingsMainSection({
           Embedding 模型
           <input type="text" value={lmStudioModel} onChange={(event) => onLmStudioModelChange(event.target.value)} />
         </label>
+        <fieldset className="settings-subsection">
+          <legend>广告审核参数</legend>
+          <label>
+            审核策略
+            <select
+              aria-label="广告审核策略"
+              value={adReviewStrategyMode}
+              onChange={(event) =>
+                onAdReviewStrategyModeChange(event.target.value === 'head-tail' ? 'head-tail' : 'all')
+              }
+            >
+              <option value="all">全量（all）</option>
+              <option value="head-tail">头尾（head-tail）</option>
+            </select>
+          </label>
+          <label>
+            审核并发
+            <input
+              min={1}
+              max={8}
+              type="number"
+              value={adReviewMaxConcurrency}
+              onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}
+            />
+          </label>
+          {adReviewStrategyMode === 'head-tail' ? (
+            <>
+              <label>
+                头部窗口样本数
+                <input
+                  min={0}
+                  max={200}
+                  type="number"
+                  value={adReviewHeadN}
+                  onChange={(event) => onAdReviewHeadNChange(Number(event.target.value))}
+                />
+              </label>
+              <label>
+                尾部窗口样本数
+                <input
+                  min={0}
+                  max={200}
+                  type="number"
+                  value={adReviewTailN}
+                  onChange={(event) => onAdReviewTailNChange(Number(event.target.value))}
+                />
+              </label>
+              <label>
+                尾部停止 clean 连续数
+                <input
+                  min={1}
+                  max={200}
+                  type="number"
+                  value={adReviewTailStopCleanStreak}
+                  onChange={(event) => onAdReviewTailStopCleanStreakChange(Number(event.target.value))}
+                />
+              </label>
+            </>
+          ) : null}
+        </fieldset>
       </div>
     )
   }
