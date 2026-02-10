@@ -49,6 +49,13 @@ interface UseAppSidebarScopeStateParams {
   bootstrapVideos: VideoItem[]
   vectorSearchResults: VectorCandidate[]
   vectorResultsActive: boolean
+  featureSearchActive: boolean
+  featureNameQuery: string
+  featureWorkTitleQuery: string
+  featureCircleQuery: string
+  featureAuthorQuery: string
+  featureTags: string[]
+  featureGradeFilter: number | null
   archiveLoadStatus: {
     runningArchivePath: string | null
     pendingArchivePaths: string[]
@@ -117,6 +124,13 @@ export function useAppSidebarScopeState({
   bootstrapVideos,
   vectorSearchResults,
   vectorResultsActive,
+  featureSearchActive,
+  featureNameQuery,
+  featureWorkTitleQuery,
+  featureCircleQuery,
+  featureAuthorQuery,
+  featureTags,
+  featureGradeFilter,
   archiveLoadStatus,
   imageRootNodeId,
   videoRootNodeId,
@@ -215,7 +229,66 @@ export function useAppSidebarScopeState({
     [archiveLoadStatus, imageTreeForSidebar, scopedImageSourcesEffective],
   )
 
-  const searchedVideos = useMemo(() => videosEffective, [videosEffective])
+  const normalizedVideoFeatureFilter = useMemo(
+    () => ({
+      nameQuery: featureNameQuery.trim().toLocaleLowerCase('zh-CN'),
+      workTitleQuery: featureWorkTitleQuery.trim().toLocaleLowerCase('zh-CN'),
+      circleQuery: featureCircleQuery.trim().toLocaleLowerCase('zh-CN'),
+      authorQuery: featureAuthorQuery.trim().toLocaleLowerCase('zh-CN'),
+      tags: featureTags.map((tag) => tag.trim().toLocaleLowerCase('zh-CN')).filter(Boolean),
+      grade: featureGradeFilter,
+    }),
+    [featureAuthorQuery, featureCircleQuery, featureGradeFilter, featureNameQuery, featureTags, featureWorkTitleQuery],
+  )
+
+  const searchedVideos = useMemo(() => {
+    if (mode !== 'video' || !featureSearchActive) {
+      return videosEffective
+    }
+
+    const textIncludes = (value: string, query: string) =>
+      query.length === 0 || value.toLocaleLowerCase('zh-CN').includes(query)
+
+    return videosEffective.filter((video) => {
+      if (normalizedVideoFeatureFilter.nameQuery.length > 0) {
+        const matched =
+          textIncludes(video.fileName, normalizedVideoFeatureFilter.nameQuery) ||
+          textIncludes(video.absolutePath, normalizedVideoFeatureFilter.nameQuery)
+        if (!matched) {
+          return false
+        }
+      }
+
+      if (!textIncludes(video.workTitle, normalizedVideoFeatureFilter.workTitleQuery)) {
+        return false
+      }
+
+      if (!textIncludes(video.circle, normalizedVideoFeatureFilter.circleQuery)) {
+        return false
+      }
+
+      if (!textIncludes(video.author, normalizedVideoFeatureFilter.authorQuery)) {
+        return false
+      }
+
+      if (normalizedVideoFeatureFilter.tags.length > 0) {
+        const lowerTags = video.tags.map((tag) => tag.toLocaleLowerCase('zh-CN'))
+        const matched = normalizedVideoFeatureFilter.tags.every((tag) => lowerTags.includes(tag))
+        if (!matched) {
+          return false
+        }
+      }
+
+      if (normalizedVideoFeatureFilter.grade !== null) {
+        const grade = video.grade ?? 0
+        if (grade !== normalizedVideoFeatureFilter.grade) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [featureSearchActive, mode, normalizedVideoFeatureFilter, videosEffective])
 
   const { videoRootNode, rootScopedVideoIds, videosForSidebar, videoTreeForSidebar } = useVideoSidebarState({
     videos: searchedVideos,

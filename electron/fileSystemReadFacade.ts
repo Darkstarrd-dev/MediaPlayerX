@@ -41,6 +41,8 @@ import {
   type PauseManageAdReviewTaskResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
+  type TestWdSwinTaggerModelRequestDto,
+  type TestWdSwinTaggerModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type WritePlaylistRequestDto,
@@ -108,6 +110,7 @@ import {
   type RuntimeDependencySnapshot,
 } from './services/file-system-read/runtimeDependencyService'
 import { ServiceEventBus } from './services/file-system-read/serviceEventBus'
+import { WdSwinV2TaggerService } from './services/file-system-read/wdSwinV2TaggerService'
 
 export class FileSystemMediaReadService {
   private readonly rootDir: string
@@ -147,6 +150,8 @@ export class FileSystemMediaReadService {
   private readonly managementMutationService: ManagementMutationService
 
   private readonly manageAdReviewService: ManageAdReviewService
+
+  private readonly wdSwinV2TaggerService: WdSwinV2TaggerService
 
   private readonly mediaResourceService: MediaResourceService
 
@@ -246,6 +251,8 @@ export class FileSystemMediaReadService {
       getZipEntryIndexByPath: () => this.librarySnapshotService.getZipEntryIndexByPath(),
       deleteImageItems: (request) => this.managementMutationService.deleteImageItems(request),
     })
+
+    this.wdSwinV2TaggerService = new WdSwinV2TaggerService()
 
     this.mediaResourceService = new MediaResourceService({
       mediaProtocolScheme: MEDIA_PROTOCOL_SCHEME,
@@ -521,6 +528,12 @@ export class FileSystemMediaReadService {
     request: TestAdReviewVisionModelRequestDto,
   ): Promise<TestAdReviewVisionModelResponseDto> {
     return this.manageAdReviewService.testAdReviewVisionModel(request)
+  }
+
+  async testWdSwinTaggerModel(
+    request: TestWdSwinTaggerModelRequestDto,
+  ): Promise<TestWdSwinTaggerModelResponseDto> {
+    return this.wdSwinV2TaggerService.testModel(request)
   }
 
   async confirmManageAdReviewDelete(

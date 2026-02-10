@@ -46,6 +46,7 @@ interface UseAppWorkspacePropsParams {
   setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
   vectorSearchResults: VectorCandidate[]
   scopedImageSourcesEffective: ImagePackage[]
+  videosForSidebarCount: number
   focusedRef: FocusedImageRef | null
   focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
@@ -174,6 +175,7 @@ export function useAppWorkspaceProps({
   setSearchPanelMode,
   vectorSearchResults,
   scopedImageSourcesEffective,
+  videosForSidebarCount,
   focusedRef,
   focusedImage,
   focusedImagePackage,
@@ -341,7 +343,7 @@ export function useAppWorkspaceProps({
     searchPanelMode,
     setSearchPanelMode,
     vectorSearchResultsCount: vectorSearchResults.length,
-    featureResultCount: scopedImageSourcesEffective.length,
+    featureResultCount: mode === 'video' ? videosForSidebarCount : scopedImageSourcesEffective.length,
     focusedRef,
     focusedImagePackage,
     focusedImageOrdinal: focusedImage?.ordinal ?? null,

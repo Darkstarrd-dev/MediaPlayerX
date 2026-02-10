@@ -20,6 +20,9 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  wdSwinTaggerModelPath: string
+  wdSwinTaggerTestPending: boolean
+  wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -47,6 +50,7 @@ interface BuildSettingsPanelPropsParams {
   resetVectorControls: () => void
   clearDatabaseForDev: () => void
   testAdReviewVisionModel: () => void
+  testWdSwinTaggerModel: () => void
 }
 
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
@@ -69,6 +73,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailWidth: params.thumbnailWidth,
     lmStudioEndpoint: params.lmStudioEndpoint,
     lmStudioModel: params.lmStudioModel,
+    wdSwinTaggerModelPath: params.wdSwinTaggerModelPath,
+    wdSwinTaggerTestPending: params.wdSwinTaggerTestPending,
+    wdSwinTaggerTestMessage: params.wdSwinTaggerTestMessage,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
     adReviewVisionModel: params.adReviewVisionModel,
     adReviewVisionVerified: params.adReviewVisionVerified,
@@ -105,6 +112,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
     onLmStudioEndpointChange: (value) => params.updateSettings({ lmStudioEndpoint: value }),
     onLmStudioModelChange: (value) => params.updateSettings({ lmStudioModel: value }),
+    onWdSwinTaggerModelPathChange: (value) => params.updateSettings({ wdSwinTaggerModelPath: value }),
+    onTestWdSwinTaggerModel: params.testWdSwinTaggerModel,
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({
         adReviewVisionEndpoint: value,

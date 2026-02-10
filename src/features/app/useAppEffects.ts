@@ -400,13 +400,7 @@ export function useAppEffects({
   }, [autoPlayEnabled, autoPlayInterval, mode, moveImage])
 
   useEffect(() => {
-    if (mode !== 'image' && vectorMode) {
-      updateSettings({ vectorMode: false })
-    }
-  }, [mode, updateSettings, vectorMode])
-
-  useEffect(() => {
-    if (mode !== 'image' || !vectorMode || searchPanelCollapsed) {
+    if (!vectorMode || searchPanelCollapsed) {
       return
     }
 
@@ -435,7 +429,6 @@ export function useAppEffects({
     return () => window.cancelAnimationFrame(rafId)
   }, [
     featureTagPickerOpen,
-    mode,
     searchPanelCollapsed,
     searchPanelMode,
     updateSettings,

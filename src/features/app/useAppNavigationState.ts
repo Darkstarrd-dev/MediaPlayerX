@@ -87,6 +87,13 @@ export function useAppNavigationState({
   const {
     backendRead,
     searchPanelCollapsed,
+    featureSearchActive,
+    featureNameQuery,
+    featureWorkTitleQuery,
+    featureCircleQuery,
+    featureAuthorQuery,
+    featureTags,
+    featureGradeFilter,
     vectorResultsActive,
   } = readState
 
@@ -133,6 +140,13 @@ export function useAppNavigationState({
     bootstrapVideos,
     vectorSearchResults,
     vectorResultsActive,
+    featureSearchActive,
+    featureNameQuery,
+    featureWorkTitleQuery,
+    featureCircleQuery,
+    featureAuthorQuery,
+    featureTags,
+    featureGradeFilter,
     archiveLoadStatus,
     imageRootNodeId,
     videoRootNodeId,

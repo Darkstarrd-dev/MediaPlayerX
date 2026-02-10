@@ -34,6 +34,7 @@ export function useAppReadState({
   const {
     mediaRepository,
     imageSources,
+    bootstrapVideos,
   } = repositoryBootstrap
 
   const {
@@ -76,6 +77,7 @@ export function useAppReadState({
     mode,
     vectorMode,
     imageSources,
+    videos: bootstrapVideos,
   })
 
   const vectorResultsActive = mode === 'image' && vectorMode && searchPanelMode === 'vector' && vectorSearchResults.length > 0

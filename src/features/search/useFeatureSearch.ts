@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import type { BrowserMode, ImagePackage } from '../../types'
+import type { BrowserMode, ImagePackage, VideoItem } from '../../types'
 
 type SearchPanelMode = 'vector' | 'feature'
 
@@ -8,12 +8,14 @@ interface UseFeatureSearchParams {
   mode: BrowserMode
   vectorMode: boolean
   imageSources: ImagePackage[]
+  videos: VideoItem[]
 }
 
 export function useFeatureSearch({
   mode,
   vectorMode,
   imageSources,
+  videos,
 }: UseFeatureSearchParams) {
   const [searchPanelMode, setSearchPanelMode] = useState<SearchPanelMode>('vector')
   const [featureNameQuery, setFeatureNameQuery] = useState('')
@@ -37,21 +39,33 @@ export function useFeatureSearch({
     }
   }, [searchPanelCollapsed, vectorMode])
 
-  const featureSearchActive = mode === 'image' && vectorMode && searchPanelMode === 'feature'
+  useEffect(() => {
+    if (mode === 'video' && searchPanelMode === 'vector') {
+      setSearchPanelMode('feature')
+    }
+  }, [mode, searchPanelMode])
+
+  const featureSearchActive = vectorMode && searchPanelMode === 'feature'
 
   const featureCircleOptions = useMemo(
-    () => Array.from(new Set(imageSources.map((source) => source.circle))).sort((a, b) => a.localeCompare(b, 'zh-CN')),
-    [imageSources],
+    () =>
+      Array.from(new Set((mode === 'image' ? imageSources.map((source) => source.circle) : videos.map((video) => video.circle))))
+        .sort((a, b) => a.localeCompare(b, 'zh-CN')),
+    [imageSources, mode, videos],
   )
 
   const featureAuthorOptions = useMemo(
-    () => Array.from(new Set(imageSources.map((source) => source.author))).sort((a, b) => a.localeCompare(b, 'zh-CN')),
-    [imageSources],
+    () =>
+      Array.from(new Set((mode === 'image' ? imageSources.map((source) => source.author) : videos.map((video) => video.author))))
+        .sort((a, b) => a.localeCompare(b, 'zh-CN')),
+    [imageSources, mode, videos],
   )
 
   const featureTagOptions = useMemo(
-    () => Array.from(new Set(imageSources.flatMap((source) => source.tags))).sort((a, b) => a.localeCompare(b, 'zh-CN')),
-    [imageSources],
+    () =>
+      Array.from(new Set(mode === 'image' ? imageSources.flatMap((source) => source.tags) : videos.flatMap((video) => video.tags)))
+        .sort((a, b) => a.localeCompare(b, 'zh-CN')),
+    [imageSources, mode, videos],
   )
 
   return {

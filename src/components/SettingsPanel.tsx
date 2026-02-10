@@ -40,6 +40,9 @@ export interface SettingsPanelProps {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  wdSwinTaggerModelPath: string
+  wdSwinTaggerTestPending: boolean
+  wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -76,6 +79,8 @@ export interface SettingsPanelProps {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
+  onWdSwinTaggerModelPathChange: (value: string) => void
+  onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -126,6 +131,9 @@ function SettingsPanel({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
+  wdSwinTaggerModelPath,
+  wdSwinTaggerTestPending,
+  wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -162,6 +170,8 @@ function SettingsPanel({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
+  onWdSwinTaggerModelPathChange,
+  onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -339,6 +349,9 @@ function SettingsPanel({
     thumbnailWidth,
     lmStudioEndpoint,
     lmStudioModel,
+    wdSwinTaggerModelPath,
+    wdSwinTaggerTestPending,
+    wdSwinTaggerTestMessage,
     adReviewVisionEndpoint,
     adReviewVisionModel,
     adReviewVisionVerified,
@@ -377,6 +390,8 @@ function SettingsPanel({
     onThumbnailWidthChange,
     onLmStudioEndpointChange,
     onLmStudioModelChange,
+    onWdSwinTaggerModelPathChange,
+    onTestWdSwinTaggerModel,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,

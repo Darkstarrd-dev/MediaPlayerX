@@ -13,6 +13,7 @@ export const BACKEND_CHANNELS = {
   pauseManageAdReviewTask: 'backend:pauseManageAdReviewTask',
   confirmManageAdReviewDelete: 'backend:confirmManageAdReviewDelete',
   testAdReviewVisionModel: 'backend:testAdReviewVisionModel',
+  testWdSwinTaggerModel: 'backend:testWdSwinTaggerModel',
   writePackageMetadata: 'backend:writePackageMetadata',
   writeVideoMetadata: 'backend:writeVideoMetadata',
   saveVideoCover: 'backend:saveVideoCover',

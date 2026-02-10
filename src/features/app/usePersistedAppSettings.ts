@@ -44,6 +44,7 @@ export function usePersistedAppSettings({
       thumbnailWidth: settings.thumbnailWidth,
       lmStudioEndpoint: settings.lmStudioEndpoint,
       lmStudioModel: settings.lmStudioModel,
+      wdSwinTaggerModelPath: settings.wdSwinTaggerModelPath,
       adReviewVisionEndpoint: settings.adReviewVisionEndpoint,
       adReviewVisionModel: settings.adReviewVisionModel,
       adReviewVisionVerified: settings.adReviewVisionVerified,

@@ -111,7 +111,7 @@ function AppHeader({
 
         <button
           className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
-          disabled={mode !== 'image' || manageMode}
+          disabled={manageMode}
           type="button"
           onClick={onToggleSearchPanel}
         >

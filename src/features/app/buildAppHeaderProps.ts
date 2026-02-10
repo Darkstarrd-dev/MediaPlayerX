@@ -36,7 +36,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
   return {
     headerHeight: params.headerHeight,
     mode: params.mode,
-    searchPanelOpen: params.vectorMode && params.mode === 'image' && !params.manageMode,
+    searchPanelOpen: params.vectorMode && !params.manageMode,
     manageMode: params.manageMode,
     vectorUniverseOpen: params.vectorUniverseOpen,
     thumbnailScaleLevel: params.displayThumbnailScaleLevel,
@@ -58,7 +58,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
       const nextOpen = !params.vectorMode
       params.updateSettings({ vectorMode: nextOpen })
       if (nextOpen) {
-        params.setSearchPanelMode('vector')
+        params.setSearchPanelMode(params.mode === 'video' ? 'feature' : 'vector')
         params.setSearchPanelCollapsed(false)
       }
     },

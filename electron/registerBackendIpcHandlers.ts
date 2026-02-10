@@ -36,6 +36,8 @@ import {
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelRequestSchema,
   testAdReviewVisionModelResponseSchema,
+  testWdSwinTaggerModelRequestSchema,
+  testWdSwinTaggerModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
@@ -212,6 +214,12 @@ export function registerBackendIpcHandlers(): void {
     const request = testAdReviewVisionModelRequestSchema.parse(payload)
     const response = await ensureService().testAdReviewVisionModel(request)
     return testAdReviewVisionModelResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.testWdSwinTaggerModel, async (_event, payload: unknown) => {
+    const request = testWdSwinTaggerModelRequestSchema.parse(payload)
+    const response = await ensureService().testWdSwinTaggerModel(request)
+    return testWdSwinTaggerModelResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.confirmManageAdReviewDelete, async (_event, payload: unknown) => {

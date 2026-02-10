@@ -10,6 +10,7 @@ interface SearchPanelProps {
   panelHeight: number
   panelRef: RefObject<HTMLDivElement | null>
   panelContentRef: RefObject<HTMLDivElement | null>
+  showVectorSearch: boolean
   searchPanelMode: SearchPanelMode
   onSearchPanelModeChange: (mode: SearchPanelMode) => void
   vectorResultCount: number
@@ -50,6 +51,7 @@ function SearchPanel({
   panelHeight,
   panelRef,
   panelContentRef,
+  showVectorSearch,
   searchPanelMode,
   onSearchPanelModeChange,
   vectorResultCount,
@@ -97,32 +99,42 @@ function SearchPanel({
         <div className="vector-panel" ref={panelRef} style={{ height: `${panelHeight}px` }}>
           <div className="vector-panel-content" ref={panelContentRef}>
             <div className="vector-top-row">
-              <div className="search-mode-switch" role="group" aria-label="search-mode-switch">
-                <button
-                  className={searchPanelMode === 'vector' ? 'is-active' : ''}
-                  type="button"
-                  onClick={() => onSearchPanelModeChange('vector')}
-                >
-                  向量检索
-                </button>
-                <button
-                  className={searchPanelMode === 'feature' ? 'is-active' : ''}
-                  type="button"
-                  onClick={() => onSearchPanelModeChange('feature')}
-                >
-                  特征检索
-                </button>
-              </div>
+              {showVectorSearch ? (
+                <div className="search-mode-switch" role="group" aria-label="search-mode-switch">
+                  <button
+                    className={searchPanelMode === 'vector' ? 'is-active' : ''}
+                    type="button"
+                    onClick={() => onSearchPanelModeChange('vector')}
+                  >
+                    向量检索
+                  </button>
+                  <button
+                    className={searchPanelMode === 'feature' ? 'is-active' : ''}
+                    type="button"
+                    onClick={() => onSearchPanelModeChange('feature')}
+                  >
+                    特征检索
+                  </button>
+                </div>
+              ) : (
+                <div className="search-mode-switch is-single" aria-label="search-mode-feature-only">
+                  <span>特征检索</span>
+                </div>
+              )}
 
               <div className="vector-top-actions">
-                <span>{searchPanelMode === 'vector' ? `当前结果: ${vectorResultCount} 张` : `命中节点: ${featureResultCount} 个`}</span>
+                <span>
+                  {showVectorSearch && searchPanelMode === 'vector'
+                    ? `当前结果: ${vectorResultCount} 张`
+                    : `命中节点: ${featureResultCount} 个`}
+                </span>
                 <button className="vector-collapse-btn" type="button" onClick={onCollapse}>
                   折叠
                 </button>
               </div>
             </div>
 
-            {searchPanelMode === 'vector' ? (
+            {showVectorSearch && searchPanelMode === 'vector' ? (
               <>
                 <div className="vector-controls">
                   <button className="vector-search-btn" type="button" disabled={!focusedRef} onClick={onRunVectorSearch}>

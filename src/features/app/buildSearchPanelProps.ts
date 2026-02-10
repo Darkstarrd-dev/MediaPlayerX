@@ -45,11 +45,12 @@ interface BuildSearchPanelPropsParams {
 
 export function buildSearchPanelProps(params: BuildSearchPanelPropsParams) {
   return {
-    visible: params.mode === 'image' && params.vectorMode && !params.manageMode,
+    visible: params.vectorMode && !params.manageMode,
     collapsed: params.searchPanelCollapsed,
     panelHeight: params.vectorPanelHeight,
     panelRef: params.vectorPanelRef,
     panelContentRef: params.vectorPanelContentRef,
+    showVectorSearch: params.mode === 'image',
     searchPanelMode: params.searchPanelMode,
     onSearchPanelModeChange: params.setSearchPanelMode,
     vectorResultCount: params.vectorSearchResultsCount,

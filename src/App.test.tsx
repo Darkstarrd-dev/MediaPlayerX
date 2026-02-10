@@ -574,6 +574,26 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '设为根' })).toBeInTheDocument()
   }, 15_000)
 
+  it('视频模式检索面板仅展示特征检索', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.click(screen.getByRole('button', { name: '检索' }))
+
+    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '向量检索' })).toBeNull()
+    expect(screen.queryByText(/当前结果:/)).toBeNull()
+    expect(screen.getByText(/命中节点:/)).toBeInTheDocument()
+
+    const featureControls = document.querySelector('.feature-controls') as HTMLElement | null
+    expect(featureControls).not.toBeNull()
+    const featureScope = within(featureControls as HTMLElement)
+    expect(featureScope.getByLabelText('名称')).toBeInTheDocument()
+    expect(featureScope.getByLabelText('作品名')).toBeInTheDocument()
+    expect(featureScope.getByLabelText('社团')).toBeInTheDocument()
+    expect(featureScope.getByLabelText('作者')).toBeInTheDocument()
+  })
+
   it('布局锁定开启后，主界面分割条拖动失效', () => {
     render(<App />)
 
@@ -947,6 +967,8 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: 'LLM模型设置' }))
     expect(screen.getByLabelText('LM Studio Endpoint')).toBeInTheDocument()
     expect(screen.getByLabelText('视觉模型端口')).toBeInTheDocument()
+    expect(screen.getByLabelText('模型文件路径')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '测试wd模型连接' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '缩略图设置' }))
     expect(screen.getByLabelText(/缩略图间距系数/)).toBeInTheDocument()

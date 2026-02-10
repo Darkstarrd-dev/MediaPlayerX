@@ -350,6 +350,20 @@ export const testAdReviewVisionModelResponseSchema = z.object({
   message: z.string().min(1),
 })
 
+export const testWdSwinTaggerModelRequestSchema = z.object({
+  model_path: z.string().min(1),
+  timeout_ms: z.number().int().min(3_000).max(120_000).optional(),
+})
+
+export const testWdSwinTaggerModelResponseSchema = z.object({
+  ok: z.boolean(),
+  message: z.string().min(1),
+  provider: z.string().min(1).nullable(),
+  output_shape: z.array(z.number().int().positive()).nullable(),
+  tag_count: z.number().int().nonnegative().nullable(),
+  elapsed_ms: z.number().int().nonnegative().nullable(),
+})
+
 export const confirmManageAdReviewDeleteRequestSchema = z.object({
   task_id: z.string().min(1),
   image_ids: z.array(z.string().min(1)).min(1),
@@ -588,6 +602,8 @@ export type PauseManageAdReviewTaskRequestDto = z.infer<typeof pauseManageAdRevi
 export type PauseManageAdReviewTaskResponseDto = z.infer<typeof pauseManageAdReviewTaskResponseSchema>
 export type TestAdReviewVisionModelRequestDto = z.infer<typeof testAdReviewVisionModelRequestSchema>
 export type TestAdReviewVisionModelResponseDto = z.infer<typeof testAdReviewVisionModelResponseSchema>
+export type TestWdSwinTaggerModelRequestDto = z.infer<typeof testWdSwinTaggerModelRequestSchema>
+export type TestWdSwinTaggerModelResponseDto = z.infer<typeof testWdSwinTaggerModelResponseSchema>
 export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManageAdReviewDeleteRequestSchema>
 export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>

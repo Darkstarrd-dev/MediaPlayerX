@@ -36,6 +36,7 @@ export const appSettingsSchema = z.object({
   thumbnailWidth: z.number().min(128).max(2048),
   lmStudioEndpoint: z.string().min(1),
   lmStudioModel: z.string().min(1),
+  wdSwinTaggerModelPath: z.string().max(1024),
   adReviewVisionEndpoint: z.string().max(512),
   adReviewVisionModel: z.string().max(256),
   adReviewVisionVerified: z.boolean(),

@@ -35,6 +35,8 @@ import {
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelRequestSchema,
   testAdReviewVisionModelResponseSchema,
+  testWdSwinTaggerModelRequestSchema,
+  testWdSwinTaggerModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
@@ -120,6 +122,11 @@ const backendApi = {
     const parsed = testAdReviewVisionModelRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.testAdReviewVisionModel, parsed)
     return testAdReviewVisionModelResponseSchema.parse(response)
+  },
+  testWdSwinTaggerModel: async (request: unknown) => {
+    const parsed = testWdSwinTaggerModelRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.testWdSwinTaggerModel, parsed)
+    return testWdSwinTaggerModelResponseSchema.parse(response)
   },
   confirmManageAdReviewDelete: async (request: unknown) => {
     const parsed = confirmManageAdReviewDeleteRequestSchema.parse(request)

@@ -26,6 +26,7 @@ import {
   readManageAdReviewTaskResponseSchema,
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelResponseSchema,
+  testWdSwinTaggerModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
@@ -73,6 +74,8 @@ import {
   type PauseManageAdReviewTaskResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
+  type TestWdSwinTaggerModelRequestDto,
+  type TestWdSwinTaggerModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type WritePackageGradeRequestDto,
@@ -384,6 +387,19 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.testAdReviewVisionModel(request), options)
     return testAdReviewVisionModelResponseSchema.parse(response)
+  }
+
+  async testWdSwinTaggerModel(
+    request: TestWdSwinTaggerModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<TestWdSwinTaggerModelResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.testWdSwinTaggerModel) {
+      throw new Error('真实后端通道不可用：testWdSwinTaggerModel 未注入')
+    }
+
+    const response = await withAbort(api.testWdSwinTaggerModel(request), options)
+    return testWdSwinTaggerModelResponseSchema.parse(response)
   }
 
   async confirmManageAdReviewDelete(

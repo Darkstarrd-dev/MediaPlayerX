@@ -36,6 +36,7 @@ export function useAppSettingsStore() {
       thumbnailWidth: state.thumbnailWidth,
       lmStudioEndpoint: state.lmStudioEndpoint,
       lmStudioModel: state.lmStudioModel,
+      wdSwinTaggerModelPath: state.wdSwinTaggerModelPath,
       adReviewVisionEndpoint: state.adReviewVisionEndpoint,
       adReviewVisionModel: state.adReviewVisionModel,
       adReviewVisionVerified: state.adReviewVisionVerified,

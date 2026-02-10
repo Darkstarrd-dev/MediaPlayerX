@@ -37,6 +37,8 @@ import type {
   PauseManageAdReviewTaskResponseDto,
   TestAdReviewVisionModelRequestDto,
   TestAdReviewVisionModelResponseDto,
+  TestWdSwinTaggerModelRequestDto,
+  TestWdSwinTaggerModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
   SetImageHiddenRequestDto,
@@ -71,6 +73,9 @@ interface MediaPlayerBackendApi {
   testAdReviewVisionModel?: (
     request: TestAdReviewVisionModelRequestDto,
   ) => Promise<TestAdReviewVisionModelResponseDto>
+  testWdSwinTaggerModel?: (
+    request: TestWdSwinTaggerModelRequestDto,
+  ) => Promise<TestWdSwinTaggerModelResponseDto>
   confirmManageAdReviewDelete?: (
     request: ConfirmManageAdReviewDeleteRequestDto,
   ) => Promise<ConfirmManageAdReviewDeleteResponseDto>

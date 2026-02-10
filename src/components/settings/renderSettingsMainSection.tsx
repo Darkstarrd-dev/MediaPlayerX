@@ -38,6 +38,9 @@ interface RenderSettingsMainSectionParams {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  wdSwinTaggerModelPath: string
+  wdSwinTaggerTestPending: boolean
+  wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -76,6 +79,8 @@ interface RenderSettingsMainSectionParams {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
+  onWdSwinTaggerModelPathChange: (value: string) => void
+  onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -117,6 +122,9 @@ export function renderSettingsMainSection({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
+  wdSwinTaggerModelPath,
+  wdSwinTaggerTestPending,
+  wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -155,6 +163,8 @@ export function renderSettingsMainSection({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
+  onWdSwinTaggerModelPathChange,
+  onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -319,6 +329,29 @@ export function renderSettingsMainSection({
             </span>
           </div>
           <p className="settings-placeholder">通过测试后，管理模式中将显示“AI广告审核”按钮。</p>
+        </fieldset>
+
+        <fieldset className="settings-subsection">
+          <legend>wd-swinv2-tagger-v3（本地 ONNX Runtime）</legend>
+          <label>
+            模型文件路径
+            <input
+              type="text"
+              value={wdSwinTaggerModelPath}
+              onChange={(event) => onWdSwinTaggerModelPathChange(event.target.value)}
+            />
+          </label>
+          <div className="settings-test-row">
+            <button type="button" disabled={wdSwinTaggerTestPending} aria-label="测试wd模型连接" onClick={onTestWdSwinTaggerModel}>
+              {wdSwinTaggerTestPending ? '测试中...' : '测试 wd 模型'}
+            </button>
+            <span
+              className={`settings-test-status ${wdSwinTaggerTestMessage && !wdSwinTaggerTestMessage.startsWith('模型测试失败') ? 'is-ok' : 'is-pending'}`}
+            >
+              {wdSwinTaggerTestMessage ?? '未测试'}
+            </span>
+          </div>
+          <p className="settings-placeholder">默认按 [1,3,448,448] 输入做 warmup 推理，用于校验模型可加载与可执行。</p>
         </fieldset>
       </div>
     )

@@ -238,10 +238,16 @@ export function useAppTopLayerState({
   const vectorControlConflicts = useMemo(() => findVectorControlConflicts(appSettings.vectorControls), [appSettings.vectorControls])
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
   const [adReviewVisionTestMessage, setAdReviewVisionTestMessage] = useState<string | null>(null)
+  const [wdSwinTaggerTestPending, setWdSwinTaggerTestPending] = useState(false)
+  const [wdSwinTaggerTestMessage, setWdSwinTaggerTestMessage] = useState<string | null>(null)
 
   useEffect(() => {
     setAdReviewVisionTestMessage(null)
   }, [appSettings.adReviewVisionEndpoint, appSettings.adReviewVisionModel])
+
+  useEffect(() => {
+    setWdSwinTaggerTestMessage(null)
+  }, [appSettings.wdSwinTaggerModelPath])
 
   const testAdReviewVisionModel = useCallback(async () => {
     const testVisionModel = mediaRepository.testAdReviewVisionModel
@@ -291,6 +297,42 @@ export function useAppTopLayerState({
     appSettings.updateSettings,
     mediaRepository,
   ])
+
+  const testWdSwinTaggerModel = useCallback(async () => {
+    const testWdModel = mediaRepository.testWdSwinTaggerModel
+    if (!testWdModel) {
+      setWdSwinTaggerTestMessage('当前后端不支持 wd 模型测试')
+      return
+    }
+
+    const normalizedModelPath = appSettings.wdSwinTaggerModelPath.trim()
+    if (!normalizedModelPath) {
+      setWdSwinTaggerTestMessage('请先填写 wd 模型路径')
+      return
+    }
+
+    setWdSwinTaggerTestPending(true)
+    setWdSwinTaggerTestMessage('测试中...')
+    try {
+      const response = await testWdModel(
+        {
+          model_path: normalizedModelPath,
+          timeout_ms: 45_000,
+        },
+        { timeoutMs: 50_000 },
+      )
+
+      appSettings.updateSettings({
+        wdSwinTaggerModelPath: normalizedModelPath,
+      })
+      setWdSwinTaggerTestMessage(response.message)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      setWdSwinTaggerTestMessage(`模型测试失败：${message}`)
+    } finally {
+      setWdSwinTaggerTestPending(false)
+    }
+  }, [appSettings.updateSettings, appSettings.wdSwinTaggerModelPath, mediaRepository])
 
   const fullscreenLayerProps = buildFullscreenLayerProps({
     mode,
@@ -355,6 +397,9 @@ export function useAppTopLayerState({
     thumbnailWidth: appSettings.thumbnailWidth,
     lmStudioEndpoint: appSettings.lmStudioEndpoint,
     lmStudioModel: appSettings.lmStudioModel,
+    wdSwinTaggerModelPath: appSettings.wdSwinTaggerModelPath,
+    wdSwinTaggerTestPending,
+    wdSwinTaggerTestMessage,
     adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,
     adReviewVisionModel: appSettings.adReviewVisionModel,
     adReviewVisionVerified: appSettings.adReviewVisionVerified,
@@ -382,6 +427,7 @@ export function useAppTopLayerState({
     resetVectorControls: appSettings.resetVectorControls,
     clearDatabaseForDev,
     testAdReviewVisionModel,
+    testWdSwinTaggerModel,
   })
 
   const appHeaderProps = buildAppHeaderProps({

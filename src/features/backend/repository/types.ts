@@ -19,6 +19,8 @@ import type {
   PauseManageAdReviewTaskResponseDto,
   TestAdReviewVisionModelRequestDto,
   TestAdReviewVisionModelResponseDto,
+  TestWdSwinTaggerModelRequestDto,
+  TestWdSwinTaggerModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
   ReadImportTasksResponseDto,
@@ -109,6 +111,10 @@ export interface MediaRepository {
     request: TestAdReviewVisionModelRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<TestAdReviewVisionModelResponseDto>
+  testWdSwinTaggerModel?(
+    request: TestWdSwinTaggerModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<TestWdSwinTaggerModelResponseDto>
   confirmManageAdReviewDelete?(
     request: ConfirmManageAdReviewDeleteRequestDto,
     options?: RepositoryRequestOptions,
@@ -172,6 +178,7 @@ export interface SynchronousMediaRepository extends MediaRepository {
   readManageAdReviewTaskSync?(request: ReadManageAdReviewTaskRequestDto): ReadManageAdReviewTaskResponseDto
   pauseManageAdReviewTaskSync?(request: PauseManageAdReviewTaskRequestDto): PauseManageAdReviewTaskResponseDto
   testAdReviewVisionModelSync?(request: TestAdReviewVisionModelRequestDto): TestAdReviewVisionModelResponseDto
+  testWdSwinTaggerModelSync?(request: TestWdSwinTaggerModelRequestDto): TestWdSwinTaggerModelResponseDto
   confirmManageAdReviewDeleteSync?(
     request: ConfirmManageAdReviewDeleteRequestDto,
   ): ConfirmManageAdReviewDeleteResponseDto

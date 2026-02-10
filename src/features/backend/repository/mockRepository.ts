@@ -13,6 +13,7 @@ import {
   readManageAdReviewTaskResponseSchema,
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelResponseSchema,
+  testWdSwinTaggerModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
@@ -53,6 +54,8 @@ import {
   type PauseManageAdReviewTaskResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
+  type TestWdSwinTaggerModelRequestDto,
+  type TestWdSwinTaggerModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type ManageAdReviewImageSourceDto,
@@ -1150,6 +1153,50 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<TestAdReviewVisionModelResponseDto> {
     const response = this.testAdReviewVisionModelSync(request)
+    return resolveAsync(response, options)
+  }
+
+  testWdSwinTaggerModelSync(
+    request: TestWdSwinTaggerModelRequestDto,
+  ): TestWdSwinTaggerModelResponseDto {
+    const modelPath = request.model_path.trim()
+    if (!modelPath) {
+      return testWdSwinTaggerModelResponseSchema.parse({
+        ok: false,
+        message: '模型测试失败：模型路径不能为空',
+        provider: null,
+        output_shape: null,
+        tag_count: null,
+        elapsed_ms: null,
+      })
+    }
+
+    if (modelPath.toLowerCase().includes('fail')) {
+      return testWdSwinTaggerModelResponseSchema.parse({
+        ok: false,
+        message: '模型测试失败：mock 模型加载失败',
+        provider: null,
+        output_shape: null,
+        tag_count: null,
+        elapsed_ms: null,
+      })
+    }
+
+    return testWdSwinTaggerModelResponseSchema.parse({
+      ok: true,
+      message: 'wd-swinv2 模型可用（mock）',
+      provider: 'cpu',
+      output_shape: [1, 9083],
+      tag_count: 9083,
+      elapsed_ms: 12,
+    })
+  }
+
+  async testWdSwinTaggerModel(
+    request: TestWdSwinTaggerModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<TestWdSwinTaggerModelResponseDto> {
+    const response = this.testWdSwinTaggerModelSync(request)
     return resolveAsync(response, options)
   }
 

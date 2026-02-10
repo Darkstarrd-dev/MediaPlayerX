@@ -31,7 +31,7 @@ const sharedOptions = {
   platform: 'node',
   target: 'node22',
   sourcemap: true,
-  external: ['electron', 'sharp', 'node-unrar-js', '7z-wasm'],
+  external: ['electron', 'sharp', 'node-unrar-js', '7z-wasm', 'onnxruntime-node'],
   logLevel: 'info',
 }
 

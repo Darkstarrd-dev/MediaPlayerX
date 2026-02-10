@@ -64,6 +64,7 @@ describe('buildSearchPanelProps', () => {
     })
 
     expect(props.visible).toBe(true)
+    expect(props.showVectorSearch).toBe(true)
     props.onVectorThresholdChange(0.9)
     expect(updateSettings).toHaveBeenCalledWith({ vectorThreshold: 0.9 })
 
@@ -122,7 +123,8 @@ describe('buildSearchPanelProps', () => {
       layoutLocked: true,
     })
 
-    expect(props.visible).toBe(false)
+    expect(props.visible).toBe(true)
+    expect(props.showVectorSearch).toBe(false)
 
     props.onToggleFeatureTag('tag-a')
     const tagUpdater = setFeatureTags.mock.calls[0]?.[0] as ((value: string[]) => string[]) | undefined
