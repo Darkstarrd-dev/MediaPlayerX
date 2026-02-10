@@ -97,6 +97,7 @@ import {
   assertLocatorAllowed,
   isPathAllowlisted,
   MediaAccessError,
+  type MediaAccessGuardContext,
   type MediaAuditRejectReason,
 } from './fileSystemMediaAccessGuard'
 import {
@@ -118,6 +119,7 @@ import {
 import { buildImageSidebarTree } from './fileSystemSidebarTree'
 import { writeStoredZipFromDirectory, writeStoredZipFromEntries } from './fileSystemZipStoreWriter'
 import { MediaTokenService, type MediaTokenRecord } from './services/file-system-read/mediaTokenService'
+import { ImportPathRegistry } from './services/file-system-read/importPathRegistry'
 import {
   RuntimeDependencyService,
   type RuntimeDependencySnapshot,
@@ -319,11 +321,7 @@ export class FileSystemMediaReadService {
 
   private videoMetadataOverridesByVideoId = new Map<string, PersistedVideoMetadataRecord>()
 
-  private importSources: { directories: string[]; files: string[] } = { directories: [], files: [] }
-
-  private importDirectoryRoots: string[] = []
-
-  private importFileAllowlistKeys = new Set<string>()
+  private readonly importPathRegistry = new ImportPathRegistry()
 
   private mediaAudit: MediaAccessAuditCounters = {
     resolveRequests: 0,
@@ -492,18 +490,22 @@ export class FileSystemMediaReadService {
     return extension === '.rar' || extension === '.7z'
   }
 
+  private buildMediaAccessContext(): MediaAccessGuardContext {
+    return {
+      rootDir: this.rootDir,
+      importDirectoryRoots: this.importPathRegistry.getImportDirectoryRoots(),
+      importFileAllowlistKeys: this.importPathRegistry.getImportFileAllowlistKeys(),
+      archiveEntryIndexByPath: this.archiveEntryIndexByPath,
+      imageExtensions: IMAGE_EXTENSIONS,
+      videoExtensions: VIDEO_EXTENSIONS,
+    }
+  }
+
   private isArchiveNormalizationTargetEligible(sourceArchivePath: string): boolean {
     if (!this.isRar7zPath(sourceArchivePath)) {
       return false
     }
-    return isPathAllowlisted(sourceArchivePath, {
-      rootDir: this.rootDir,
-      importDirectoryRoots: this.importDirectoryRoots,
-      importFileAllowlistKeys: this.importFileAllowlistKeys,
-      archiveEntryIndexByPath: this.archiveEntryIndexByPath,
-      imageExtensions: IMAGE_EXTENSIONS,
-      videoExtensions: VIDEO_EXTENSIONS,
-    })
+    return isPathAllowlisted(sourceArchivePath, this.buildMediaAccessContext())
   }
 
   private pruneArchiveNormalizationPendingSets(): void {
@@ -713,105 +715,36 @@ export class FileSystemMediaReadService {
     this.videoMetadataOverridesByVideoId = this.database.readVideoMetadata()
 
     const rawImportSources = this.database.readImportSources()
-    const directoryMap = new Map<string, string>()
-    const fileMap = new Map<string, string>()
-
-    for (const value of rawImportSources.directories) {
-      const resolved = path.resolve(value)
-      const key = normalizeAllowlistKey(resolved)
-      directoryMap.set(key, resolved)
-    }
-    for (const value of rawImportSources.files) {
-      const resolved = path.resolve(value)
-      const key = normalizeAllowlistKey(resolved)
-      fileMap.set(key, resolved)
-    }
-
-    this.importSources = {
-      directories: Array.from(directoryMap.values()),
-      files: Array.from(fileMap.values()),
-    }
-    this.importDirectoryRoots = this.importSources.directories
-    this.importFileAllowlistKeys = new Set(fileMap.keys())
+    this.importPathRegistry.hydrate(rawImportSources)
     this.stateHydrated = true
   }
 
   private async replaceImportedFileSourcePath(sourceArchivePath: string, outputZipPath: string): Promise<void> {
     await this.ensureStateLoaded()
 
-    const sourceKey = normalizeAllowlistKey(sourceArchivePath)
-    if (!this.importFileAllowlistKeys.has(sourceKey)) {
+    const didReplace = this.importPathRegistry.replaceImportedFileSourcePath(sourceArchivePath, outputZipPath)
+    if (!didReplace) {
       return
     }
 
-    const nextFilesMap = new Map<string, string>()
-    for (const filePath of this.importSources.files) {
-      const key = normalizeAllowlistKey(filePath)
-      if (key === sourceKey) {
-        continue
-      }
-      nextFilesMap.set(key, path.resolve(filePath))
-    }
-
-    const resolvedOutputPath = path.resolve(outputZipPath)
-    const outputKey = normalizeAllowlistKey(resolvedOutputPath)
-    nextFilesMap.set(outputKey, resolvedOutputPath)
-
-    const nextFiles = Array.from(nextFilesMap.values())
-    this.importSources = {
-      directories: [...this.importSources.directories],
-      files: nextFiles,
-    }
-    this.importFileAllowlistKeys = new Set(nextFilesMap.keys())
-
+    const nextSources = this.importPathRegistry.getImportSources()
     this.database.writeImportSources({
-      directories: this.importSources.directories,
-      files: nextFiles,
+      directories: nextSources.directories,
+      files: nextSources.files,
     })
   }
 
   private async removeImportSourcePaths(pathsToRemove: string[]): Promise<void> {
     await this.ensureStateLoaded()
-    if (pathsToRemove.length === 0) {
+    const didRemove = this.importPathRegistry.removeImportSourcePaths(pathsToRemove)
+    if (!didRemove) {
       return
     }
 
-    const removeRoots = pathsToRemove.map((value) => path.resolve(value))
-    const shouldRemovePath = (candidatePath: string): boolean => {
-      const resolvedCandidatePath = path.resolve(candidatePath)
-      return removeRoots.some(
-        (rootPath) =>
-          normalizeAllowlistKey(rootPath) === normalizeAllowlistKey(resolvedCandidatePath) ||
-          isPathInsideRoot(rootPath, resolvedCandidatePath),
-      )
-    }
-
-    const nextDirectories = this.importSources.directories
-      .map((value) => path.resolve(value))
-      .filter((value) => !shouldRemovePath(value))
-    const nextFiles = this.importSources.files
-      .map((value) => path.resolve(value))
-      .filter((value) => !shouldRemovePath(value))
-
-    const currentDirectoriesKey = this.importSources.directories.map((value) => normalizeAllowlistKey(path.resolve(value))).join('|')
-    const nextDirectoriesKey = nextDirectories.map((value) => normalizeAllowlistKey(value)).join('|')
-    const currentFilesKey = this.importSources.files.map((value) => normalizeAllowlistKey(path.resolve(value))).join('|')
-    const nextFilesKey = nextFiles.map((value) => normalizeAllowlistKey(value)).join('|')
-
-    if (currentDirectoriesKey === nextDirectoriesKey && currentFilesKey === nextFilesKey) {
-      return
-    }
-
-    this.importSources = {
-      directories: nextDirectories,
-      files: nextFiles,
-    }
-    this.importDirectoryRoots = nextDirectories
-    this.importFileAllowlistKeys = new Set(nextFiles.map((value) => normalizeAllowlistKey(value)))
-
+    const nextSources = this.importPathRegistry.getImportSources()
     this.database.writeImportSources({
-      directories: nextDirectories,
-      files: nextFiles,
+      directories: nextSources.directories,
+      files: nextSources.files,
     })
   }
 
@@ -925,9 +858,7 @@ export class FileSystemMediaReadService {
     this.packageGradeOverridesBySourceId = new Map()
     this.videoCoverOverridesByVideoId = new Map()
     this.videoMetadataOverridesByVideoId = new Map()
-    this.importSources = { directories: [], files: [] }
-    this.importDirectoryRoots = []
-    this.importFileAllowlistKeys.clear()
+    this.importPathRegistry.clear()
     this.archiveNormalizationPendingLow.clear()
     this.archiveNormalizationPendingHigh.clear()
     this.archiveNormalizationRunningPath = null
@@ -1013,8 +944,8 @@ export class FileSystemMediaReadService {
     await this.ensureStateLoaded()
     return collectMediaFiles({
       rootDir: this.rootDir,
-      importDirectoryRoots: this.importDirectoryRoots,
-      importFiles: this.importSources.files,
+      importDirectoryRoots: this.importPathRegistry.getImportDirectoryRoots(),
+      importFiles: this.importPathRegistry.getImportFilePaths(),
       legacyImportsDirName: LEGACY_IMPORTS_DIR_NAME,
       directoryScanConcurrency: DIRECTORY_SCAN_CONCURRENCY,
       imageExtensions: IMAGE_EXTENSIONS,
@@ -1533,14 +1464,7 @@ export class FileSystemMediaReadService {
       ...snapshot.image_packages.map((source) => [source.id, source] as const),
       ...snapshot.image_directories.map((source) => [source.id, source] as const),
     ])
-    const mediaAccessContext = {
-      rootDir: this.rootDir,
-      importDirectoryRoots: this.importDirectoryRoots,
-      importFileAllowlistKeys: this.importFileAllowlistKeys,
-      archiveEntryIndexByPath: this.archiveEntryIndexByPath,
-      imageExtensions: IMAGE_EXTENSIONS,
-      videoExtensions: VIDEO_EXTENSIONS,
-    }
+    const mediaAccessContext = this.buildMediaAccessContext()
 
     const imageById = new Map<string, { image: ImagePackageDto['images'][number]; source: ImagePackageDto }>()
     for (const source of sourceById.values()) {
@@ -1626,7 +1550,7 @@ export class FileSystemMediaReadService {
         for (const imageId of imageIds) {
           deletedImageIds.add(imageId)
         }
-        if (this.importFileAllowlistKeys.has(normalizeAllowlistKey(absolutePath))) {
+        if (this.importPathRegistry.hasImportFile(absolutePath)) {
           importPathsToRemove.add(absolutePath)
         }
       } catch (error) {
@@ -1656,7 +1580,7 @@ export class FileSystemMediaReadService {
           }
         }
 
-        if (this.importFileAllowlistKeys.has(normalizeAllowlistKey(archivePath))) {
+        if (this.importPathRegistry.hasImportFile(archivePath)) {
           const source = Array.from(sourceById.values()).find(
             (item) => path.resolve(item.absolute_path) === archivePath,
           )
@@ -1744,14 +1668,7 @@ export class FileSystemMediaReadService {
 
     await this.ensureStateLoaded()
     const snapshot = await this.ensureSnapshotLoaded()
-    const mediaAccessContext = {
-      rootDir: this.rootDir,
-      importDirectoryRoots: this.importDirectoryRoots,
-      importFileAllowlistKeys: this.importFileAllowlistKeys,
-      archiveEntryIndexByPath: this.archiveEntryIndexByPath,
-      imageExtensions: IMAGE_EXTENSIONS,
-      videoExtensions: VIDEO_EXTENSIONS,
-    }
+    const mediaAccessContext = this.buildMediaAccessContext()
 
     const selectedPaths = new Set<string>()
     const nodeIdsBySelectedPath = new Map<string, Set<string>>()
@@ -2213,14 +2130,7 @@ export class FileSystemMediaReadService {
 
     let locator: MediaLocatorDto
     try {
-      locator = await assertLocatorAllowed(request.locator, {
-        rootDir: this.rootDir,
-        importDirectoryRoots: this.importDirectoryRoots,
-        importFileAllowlistKeys: this.importFileAllowlistKeys,
-        archiveEntryIndexByPath: this.archiveEntryIndexByPath,
-        imageExtensions: IMAGE_EXTENSIONS,
-        videoExtensions: VIDEO_EXTENSIONS,
-      })
+      locator = await assertLocatorAllowed(request.locator, this.buildMediaAccessContext())
     } catch (error) {
       if (error instanceof MediaAccessError) {
         this.countResolveDenied(error.reason)

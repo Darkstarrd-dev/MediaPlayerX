@@ -13,8 +13,8 @@
 ## 进度快照（基于 git，2026-02-10）
 
 - 总体模块拆分已完成约 50%：Renderer/App 链路拆分已完成并合入主线。
-- 当前文档覆盖的 Main 拆分（`fileSystemReadService`）尚未进入 L1~L4 实施阶段。
-- 结论：进入下半场时，优先执行本文件 L1~L4，避免 Main 继续累积 God Class 复杂度。
+- 当前文档覆盖的 Main 低风险拆分 L1~L4 已完成并接线：`mediaTokenService`、`runtimeDependencyService`、`serviceEventBus`、`importPathRegistry`。
+- 结论：下一步进入中高风险拆分（管理删除事务、扫描器、归一化执行器、解析器），继续收敛 Facade 纯度。
 
 ## 非目标
 
@@ -65,11 +65,11 @@
 
 ## 待办清单
 
-- [ ] L1 抽离 `mediaTokenService`
-- [ ] L2 抽离 `runtimeDependencyService`
-- [ ] L3 抽离 `serviceEventBus`
-- [ ] L4 抽离 `importPathRegistry`
-- [ ] 低风险阶段完成后复核 `fileSystemReadService.ts` 行数与 Facade 纯度
+- [x] L1 抽离 `mediaTokenService`
+- [x] L2 抽离 `runtimeDependencyService`
+- [x] L3 抽离 `serviceEventBus`
+- [x] L4 抽离 `importPathRegistry`
+- [x] 低风险阶段完成后复核 `fileSystemReadService.ts` 行数与 Facade 纯度（当前约 `2250+` 行，仍需继续拆分）
 
 ## 并行拆分提醒
 

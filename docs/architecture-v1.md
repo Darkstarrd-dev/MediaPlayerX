@@ -27,7 +27,7 @@
 - 代码结构重构（按职责块）已完成：
   - Renderer 侧入口已收敛为薄编排：`src/App.tsx` -> `useAppController` -> `useAppDataPipeline`。
   - `useAppDataPipeline` 仅保留编排职责；运行时源、读链路、导航链路、显示/副作用、顶部层绑定、工作区绑定、视图组装已拆到独立 hooks。
-  - Main 侧 `FileSystemMediaReadService` 仍是下一阶段重点拆分目标（当前约 `2446` 行），需继续按服务职责拆分并保持对外 Facade 不变。
+  - Main 侧 `FileSystemMediaReadService` 已完成低风险拆分 L1~L4（Token/Runtime/EventBus/ImportPathRegistry），当前约 `2250+` 行；下一阶段继续按服务职责执行中高风险拆分并保持对外 Facade 不变。
   - 待处理执行文档：`docs/fileSystemReadService-split-guide.md`（临时；拆分完成后移除）。
   - 当前关键入口文件规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
 - 管理模式广告图片审核 (LLM Ad Review) 已完成 core 模块（`electron/manageAdReview/*`），当前待按 `Renderer -> Repository -> Main/Worker` 完成纵向接线。

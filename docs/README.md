@@ -52,13 +52,13 @@
   - Renderer 入口链路已收敛：`src/App.tsx` -> `useAppController` -> `useAppDataPipeline`，入口仅保留薄编排职责。
   - Renderer 侧新增分层编排基线：`RuntimeSources / ReadState / NavigationState / DisplayAndEffects / TopLayerBindings / WorkspaceBindings / ViewComposition`，后续新功能必须沿该模式扩展。
   - 当前关键入口规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
-  - Main 侧 `electron/fileSystemReadService.ts` 仍为后续重点拆分目标（当前约 `2446` 行），需继续避免形成新的 God Class。
-- 模块拆分进度（基于最近 git 记录）已进入“约 50%”：Renderer/App 链路拆分已完成，Main 侧 `fileSystemReadService` 拆分仍待执行。
+  - Main 侧 `electron/fileSystemReadService.ts` 低风险拆分 L1~L4 已完成（Token/Runtime/EventBus/ImportPathRegistry），当前约 `2250+` 行，仍需继续避免形成新的 God Class。
+- 模块拆分进度（基于最近 git 记录）已进入下半场：Renderer/App 链路拆分已完成，Main 侧 `fileSystemReadService` 已完成低风险拆分并转入中高风险拆分阶段。
 - 当前拆分待办聚焦三项：
-  - `electron/fileSystemReadService.ts` 低风险拆分 L1~L4（Token/Runtime/EventBus/ImportPathRegistry）。
+  - `electron/fileSystemReadService.ts` 中高风险拆分（管理删除事务、扫描器、归一化执行器、解析器），保持 Facade 对外 API 不变。
   - 管理模式图片选择交互 Hook 抽离接线（`useManageImageSelectionInteractions`）。
   - 管理模式 LLM 广告审核从 core 模块接入到 contracts/preload/ipc/repository/UI。
-- 待处理事项：执行 `electron/fileSystemReadService.ts` 低风险拆分（先拆 Token/Runtime/EventBus/ImportPathRegistry，保持 Facade 对外 API 不变），详见 `docs/fileSystemReadService-split-guide.md`。
+- 待处理事项：继续执行 `electron/fileSystemReadService.ts` 中高风险拆分，详见 `docs/fileSystemReadService-split-guide.md`。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
 - Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。
