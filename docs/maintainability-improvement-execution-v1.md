@@ -14,7 +14,7 @@
 - [x] Phase 0：测试矩阵与夹具准备
 - [x] Phase 1：SQLite 存储层测试（P0）
 - [x] Phase 2：媒体访问安全守卫测试（P0）
-- [ ] Phase 3：核心编排链路集成测试（P1）
+- [x] Phase 3：核心编排链路集成测试（P1）
 - [ ] Phase 4：纯函数测试与接口收口（P1/P2）
 
 ## 2. 分阶段实施清单
@@ -108,21 +108,25 @@
 
 建议落地文件（按实际结构微调）：
 
-- [ ] `src/features/app/useAppDataPipeline.integration.test.tsx`
-- [ ] `src/features/app/useAppDisplayAndEffects.integration.test.tsx`
-- [ ] `src/App.test.tsx`（仅补关键链路断言，避免继续膨胀）
+- [x] `src/features/app/useAppDataPipeline.integration.test.tsx`
+- [x] `src/features/app/useAppDisplayAndEffects.integration.test.tsx`
+- [x] `src/App.test.tsx`（复用既有关键链路断言，避免继续膨胀）
 
 必测场景：
 
-- [ ] 读取链路请求取消与 request id 防覆盖。
-- [ ] optimistic update 成功与失败 rollback。
-- [ ] 管理模式 / 检索容器切换时状态一致性。
-- [ ] 关键错误分支 UI 可见且可恢复（重试或回退）。
+- [x] 读取链路请求取消与 request id 防覆盖。
+- [x] optimistic update 成功与失败 rollback。
+- [x] 管理模式 / 检索容器切换时状态一致性。
+- [x] 关键错误分支 UI 可见且可恢复（重试或回退）。
+
+说明：
+
+- 读取取消/防覆盖与 rollback 场景由 `src/features/backend/useReadOnlyDataAccess.test.tsx`、`src/features/backend/useWriteDataAccess.test.tsx` 与本阶段新增集成测试联合覆盖。
 
 阶段验收：
 
-- [ ] 最小回归集 3~5 条稳定通过。
-- [ ] 不引入新的 `act(...)` 非阻断噪声告警。
+- [x] 最小回归集 3~5 条稳定通过。
+- [x] 不引入新的 `act(...)` 非阻断噪声告警。
 
 ### Phase 4：纯函数测试与接口收口（P1/P2）
 
@@ -171,6 +175,8 @@
 - [x] Phase 1 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
 - [x] Phase 2 完成：新增 `fileSystemMediaAccessGuard` 与 `mediaTokenService` 独立测试，并修正 token 过期审计计数。
 - [x] Phase 2 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
+- [x] Phase 3 完成：新增 `useAppDataPipeline/useAppDisplayAndEffects` 集成测试，编排层接线稳定回归。
+- [x] Phase 3 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
 
 ## 5. 结束与移除规则
 

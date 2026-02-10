@@ -1,6 +1,6 @@
 # 可维护性与稳定性改进计划 V1
 
-> 文档状态：进行中（当前阶段：Phase 3）
+> 文档状态：进行中（当前阶段：Phase 4）
 > 执行清单：`docs/maintainability-improvement-execution-v1.md`（临时）
 
 ## 0. 文档定位
