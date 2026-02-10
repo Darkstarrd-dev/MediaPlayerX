@@ -29,6 +29,7 @@ interface ArchiveNormalizationServiceOptions {
 }
 
 export class ArchiveNormalizationService {
+  // 低优先级队列用于后台归一化（空闲窗口执行），高优先级用于“用户刚打开目标包”时抢占执行。
   private archiveNormalizationPendingLow = new Set<string>()
 
   private archiveNormalizationPendingHigh = new Set<string>()
@@ -188,6 +189,7 @@ export class ArchiveNormalizationService {
     }
 
     if (this.archiveNormalizationPendingLow.size > 0) {
+      // 低优先级按路径排序保证可复现与可观测（同数据集下执行顺序稳定）。
       const sorted = Array.from(this.archiveNormalizationPendingLow).sort((left, right) =>
         left.localeCompare(right, 'zh-CN'),
       )
@@ -201,6 +203,7 @@ export class ArchiveNormalizationService {
   }
 
   private shouldDelayLowPriorityNormalization(nowMs: number): boolean {
+    // 低优先级任务必须让位于交互链路：导入、缩略图生成、快照加载或刚发生用户读取时都延后。
     if (this.options.hasRunningImportTasks()) {
       return true
     }
@@ -214,6 +217,7 @@ export class ArchiveNormalizationService {
   }
 
   private shouldDelayHighPriorityNormalization(): boolean {
+    // 高优先级仅在“系统关键写读任务正在进行”时延后，避免与导入/快照事务竞争。
     if (this.options.hasRunningImportTasks()) {
       return true
     }

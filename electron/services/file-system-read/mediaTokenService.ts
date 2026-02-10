@@ -64,6 +64,7 @@ export class MediaTokenService {
 
     const record = this.mediaTokenIndex.get(token)
     if (!record) {
+      // miss 分支也执行清理，避免无效 token 高频探测导致过期记录长期滞留。
       this.cleanupExpiredTokens(nowMs)
       this.tokenMisses += 1
       throw new Error('媒体资源令牌不存在')

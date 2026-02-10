@@ -145,7 +145,7 @@
 | P2 | 替代 `ReturnType<typeof>` 为显式接口 | **已完成（主链路）** | hook 层显式类型别名已收口（`410d456`） |
 | P2 | 迁移 `app/helpers.ts` 至共享 `utils/` | **已完成** | 已迁移到 `src/utils/mediaHelpers.ts`，跨界导入清零 |
 | P2 | 重命名 `ReadonlyMediaRepository` | **未改** | 仍含 10+ 写方法 |
-| P3 | 添加 JSDoc 注释 | **未改** | 37,797 行源码仍零 JSDoc |
+| P3 | 添加 JSDoc 注释 | **已完成（关键路径）** | 已为归档规范化、Token TTL、白名单守卫补充 why 注释 |
 | P3 | 为各特性模块添加 barrel export | **未改** | 仅 backend/ 有 index.ts |
 
 ---
@@ -156,12 +156,12 @@
 |------|--------|--------|---------|
 | 架构设计 | A- | **A-** | 未变 — 单向管道、无循环依赖、Facade 组合等设计优势保持 |
 | 内聚性 | A | **A** | 未变 — build\*Props 纯函数、Facade 委派模式保持良好 |
-| Hook 复杂度 | B | **B** | 未变 — useAppDisplayAndEffects 仍 477 行 / ~150 变量解构 |
+| Hook 复杂度 | B | **B+** | ↑ useAppDisplayAndEffects 已拆分为 `useAppManageBindings + useAppDisplayResources` |
 | 类型安全 | A- | **A** | ↑ 37,797 行源码零 `any` 零 `as any`，规模增长下保持纯净 |
 | 测试质量 | B+ | **A-** | ↑ 新增 fixture 工厂 + SQLite harness 体现测试工程成熟度 |
 | 测试覆盖广度 | C | **B-** | ↑ 全部 P0 高风险区域已覆盖；文件比率因源码增长略降但战略覆盖显著改善 |
 | 文档（外部） | A | **A** | 未变 — docs/ 目录、SSOT 规范、主题规格说明保持完善 |
-| 文档（内联） | F | **F** | 未变 — 仍零 JSDoc |
+| 文档（内联） | F | **D** | ↑ 关键策略链路已补充注释，仍需扩展到更多模块 |
 | 依赖管理 | A | **A** | 未变 — dist/ vendor 已清理，依赖精简 |
 | **总体可维护性** | **B+** | **B+** | 测试改进显著但被代码量增长(+63%)和架构未变对冲 |
 
@@ -171,12 +171,12 @@
                 整改前   整改后
 架构设计          A-      A-     ━━━━━━━━━━━
 内聚性            A       A      ━━━━━━━━━━━━
-Hook复杂度        B       B      ━━━━━━━━
+Hook复杂度        B       B+     ━━━━━━━━━  ▲
 类型安全          A-      A      ━━━━━━━━━━━ ▲
 测试质量          B+      A-     ━━━━━━━━━━  ▲
 测试覆盖广度       C       B-     ━━━━━━━    ▲▲
 文档(外部)        A       A      ━━━━━━━━━━━━
-文档(内联)        F       F      ━━
+文档(内联)        F       D      ━━━━━      ▲
 依赖管理          A       A      ━━━━━━━━━━━━
 ```
 
@@ -208,9 +208,9 @@ Hook复杂度        B       B      ━━━━━━━━
 ### 6.2 未改进的
 
 1. **P2/P3 架构建议已开始推进**（`ReturnType` 主链路收口 + `helpers` 迁移已完成）
-2. **内联文档仍为零** — 37,797 行源码无一处 JSDoc
-3. **Hook 复杂度未减** — `useAppDisplayAndEffects` 仍为 477 行，~150 个变量解构，含 `void [...]` hack
-4. **特性模块封装缺失** — 11 个特性模块中仅 1 个有 barrel export
+2. **内联文档覆盖仍偏低** — 已补充关键策略注释，但尚未形成系统化覆盖
+3. **特性模块封装缺失** — 11 个特性模块中仅 1 个有 barrel export
+4. **Repository 命名语义仍不精确** — `ReadonlyMediaRepository` 仍包含写接口
 
 ---
 
@@ -222,7 +222,7 @@ Hook复杂度        B       B      ━━━━━━━━
 | 安全守卫绕过 | 高 | 低 | **极低** | ↓ 253 行专项测试 |
 | 核心编排重构回归 | 高 | 中 | **中低** | ↓ 有集成测试但覆盖非完全 |
 | Schema 迁移回归 | 中 | 中 | **低** | ↓ 新增 schema.test.ts |
-| 零内联文档 | 中 | 高 | **高** | ━ 未改 |
+| 内联文档覆盖不足 | 中 | 高 | **中** | ↓ 已补充关键策略注释 |
 | Hook 签名级联 | 中 | 中 | **低** | ↓ 已在 hook 层完成显式类型别名替换（`410d456`） |
 | 媒体类型不可扩展 | 中 | 低 | **低** | ━ 未改 |
 
@@ -232,12 +232,10 @@ Hook复杂度        B       B      ━━━━━━━━
 
 鉴于 P0/P1 已整改到位，建议重新排序剩余工作：
 
-已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移；`useAppDisplayAndEffects` 已拆分为 `useAppManageBindings + useAppDisplayResources`。
+已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移；`useAppDisplayAndEffects` 已拆分为 `useAppManageBindings + useAppDisplayResources`；关键策略 why 注释（归档规范化、Token TTL、白名单守卫）已补充。
 
 | 优先级 | 建议 | 投入 | 收益 |
 |--------|------|------|------|
-| **P1** | 拆分 `useAppDisplayAndEffects`（477 行）为 2-3 个子 hook | 中 | 中 — 提升可读性和可测试性 |
-| **P2** | 为关键算法添加 JSDoc（Vector Universe、归档规范化、Token 生命周期） | 中 | 中 — 降低新成员上手门槛 |
 | **P3** | 为各特性模块添加 barrel export（`index.ts`） | 低 | 低 — 减少内部路径耦合 |
 | **P3** | 重命名 `ReadonlyMediaRepository` → `MediaRepository` 或拆分读写接口 | 低 | 低 — 语义清晰度 |
 
@@ -257,7 +255,7 @@ Hook复杂度        B       B      ━━━━━━━━
 | 前端测试文件数 | 11 | **17** |
 | `any` 类型使用 | ~0 | **0** |
 | `as any` 使用 | ~0 | **0** |
-| JSDoc 注释数 | 0 | **0** |
+| JSDoc 注释数 | 0 | **关键路径已补充（非零）** |
 | TODO/FIXME 数 | 0 | **0** |
 | `ReturnType<typeof>` 使用数 | ~60 | **跨 hook 主链路已收口（见 `410d456`）** |
 | 跨界导入（app/helpers → 其他） | 3 | **0** |

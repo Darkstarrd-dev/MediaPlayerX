@@ -35,6 +35,14 @@ export interface MediaAccessGuardContext {
   videoExtensions: ReadonlySet<string>
 }
 
+/**
+ * 白名单按“目录授权优先、文件授权兜底”收敛：
+ * 1) rootDir: 已入库根目录下的所有媒体；
+ * 2) importDirectoryRoots: 用户临时导入目录（纯引用）下的媒体；
+ * 3) importFileAllowlistKeys: 单文件导入场景的精确授权键。
+ *
+ * 该顺序保证了最小权限原则：目录授权用于连续浏览，文件授权用于最小暴露。
+ */
 export function isPathAllowlisted(absolutePath: string, context: MediaAccessGuardContext): boolean {
   if (isPathInsideRoot(context.rootDir, absolutePath)) {
     return true
@@ -103,6 +111,7 @@ export async function assertLocatorAllowed(
     throw new MediaAccessError('archive_extension_invalid', `压缩包媒体访问被拒绝（扩展名异常）: ${archivePath}`)
   }
 
+  // entry 名必须先归一化再校验，避免同义路径绕过（例如不同分隔符、冗余 ./）。
   const normalizedEntryName = normalizeArchiveEntryName(locator.entry_name)
   if (!isSafeArchiveEntryName(normalizedEntryName)) {
     throw new MediaAccessError('archive_entry_illegal', `压缩包媒体访问被拒绝（entry 非法）: ${archivePath}`)

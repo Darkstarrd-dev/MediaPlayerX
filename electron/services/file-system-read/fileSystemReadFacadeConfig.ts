@@ -21,6 +21,11 @@ export const ZIP_COMPRESSION_STORE = 0
 
 export const ZIP_COMPRESSION_DEFLATE = 8
 
+/**
+ * 令牌有效期取 5 分钟：
+ * - 足够覆盖翻页/全屏/重试等短会话的连续资源请求，避免频繁 401 风格失败。
+ * - 又不会长期暴露可复用 token，把资源 URL 泄漏后的可利用窗口限制在可控范围。
+ */
 export const MEDIA_TOKEN_TTL_MS = 5 * 60 * 1000
 
 export const FFMPEG_BIN = process.env.MEDIA_PLAYERX_FFMPEG_BIN ?? 'ffmpeg'
