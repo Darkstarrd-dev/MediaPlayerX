@@ -556,6 +556,7 @@ export function useAppWorkspaceProps({
     updateSettings: appSettings.updateSettings,
     onGradeChange: metadataWriteBindings.applyPackageGrade,
     onSavePackageMetadata: metadataWriteBindings.applyPackageMetadata,
+    onGeneratePackageAutoTags: metadataWriteBindings.applyPackageAutoTags,
     onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
     onSearchByWorkTitle: (value) => {
       applyMetadataFeatureSearch({ workTitle: value })

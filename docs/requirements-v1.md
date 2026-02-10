@@ -73,7 +73,15 @@
 
 - 模型路径可在设置面板配置，默认值：`Z:/Playground/CurrentWorking/wd-swinv2-tagger-v3/model.onnx`。
 - Electron 主进程支持通过 ONNX Runtime (`onnxruntime-node`) 执行本地 warmup 推理测试。
-- 测试通过标准：模型可加载、可完成一次 `[1,3,448,448]` 输入推理，并返回输出维度信息。
+- 测试通过标准：模型可加载、可按模型输入 metadata 自适应布局（`NCHW`/`NHWC`）完成一次 warmup 推理，并返回输出维度信息。
+
+### 自动标签生成（Auto Tags）
+
+- 自动标签由本地 `wd-swinv2-tagger-v3` 推理结果生成。
+- 范围规则来自可配置 JSON（`start_index/end_index/min_score`）。
+- 仅统计命中范围且分数达阈值的标签。
+- 标签最终写入采用“出现次数阈值”过滤（`occurrence_threshold`）。
+- 在“元数据管理”模式可对单图包或 Sidebar 勾选范围执行批量自动标签。
 
 ## 元数据与人工整理
 

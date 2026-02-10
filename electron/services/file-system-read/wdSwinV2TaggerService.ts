@@ -4,16 +4,37 @@ import path from 'node:path'
 import * as ort from 'onnxruntime-node'
 
 import {
+  type MediaLocatorDto,
   testWdSwinTaggerModelResponseSchema,
   type TestWdSwinTaggerModelRequestDto,
   type TestWdSwinTaggerModelResponseDto,
 } from '../../../src/contracts/backend'
+import { getSharpModule } from '../../fileSystemRuntimeHelpers'
 
 const DEFAULT_TEST_TIMEOUT_MS = 30_000
 const WARMUP_DEFAULT_IMAGE_SIZE = 448
 const WARMUP_DEFAULT_BATCH = 1
 const WARMUP_DEFAULT_CHANNELS = 3
 const TAGS_CSV_FILE_NAME = 'selected_tags.csv'
+
+interface AutoTagScoreRangeRule {
+  startIndex: number
+  endIndex: number
+  minScore: number
+}
+
+interface GenerateTagsForPackageRequest {
+  modelPath: string
+  rangeConfigPath: string
+  occurrenceThreshold: number
+  imageLocators: MediaLocatorDto[]
+  readImageBuffer: (locator: MediaLocatorDto) => Promise<Buffer>
+}
+
+interface GenerateTagsForPackageResult {
+  generatedTags: string[]
+  analyzedImages: number
+}
 
 type WarmupLayout = 'nchw' | 'nhwc'
 type WarmupTensorType =
@@ -266,6 +287,333 @@ async function readTagCountFromCsv(csvPath: string): Promise<number | null> {
   }
 }
 
+function toFloat16Bits(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+
+  const floatView = new Float32Array(1)
+  const intView = new Uint32Array(floatView.buffer)
+  floatView[0] = value
+  const bits = intView[0]
+
+  const sign = (bits >>> 31) & 0x1
+  const exponent = (bits >>> 23) & 0xff
+  const mantissa = bits & 0x7fffff
+
+  if (exponent === 0xff) {
+    if (mantissa !== 0) {
+      return (sign << 15) | 0x7e00
+    }
+    return (sign << 15) | 0x7c00
+  }
+
+  let halfExponent = exponent - 127 + 15
+  if (halfExponent >= 0x1f) {
+    return (sign << 15) | 0x7c00
+  }
+
+  if (halfExponent <= 0) {
+    if (halfExponent < -10) {
+      return sign << 15
+    }
+
+    const shifted = (mantissa | 0x800000) >>> (1 - halfExponent)
+    const rounded = (shifted + 0x1000) >>> 13
+    return (sign << 15) | rounded
+  }
+
+  const roundedMantissa = (mantissa + 0x1000) >>> 13
+  if (roundedMantissa === 0x400) {
+    halfExponent += 1
+    if (halfExponent >= 0x1f) {
+      return (sign << 15) | 0x7c00
+    }
+    return (sign << 15) | (halfExponent << 10)
+  }
+
+  return (sign << 15) | (halfExponent << 10) | roundedMantissa
+}
+
+function fromFloat16Bits(bits: number): number {
+  const sign = (bits & 0x8000) !== 0 ? -1 : 1
+  const exponent = (bits >>> 10) & 0x1f
+  const mantissa = bits & 0x3ff
+
+  if (exponent === 0) {
+    if (mantissa === 0) {
+      return sign * 0
+    }
+    return sign * (mantissa / 0x400) * 2 ** -14
+  }
+
+  if (exponent === 0x1f) {
+    if (mantissa === 0) {
+      return sign * Number.POSITIVE_INFINITY
+    }
+    return Number.NaN
+  }
+
+  return sign * (1 + mantissa / 0x400) * 2 ** (exponent - 15)
+}
+
+function normalizeColorValue(type: WarmupTensorType, normalized: number): number {
+  if (type === 'float16') {
+    return toFloat16Bits(normalized)
+  }
+  if (type === 'float32' || type === 'float64') {
+    return normalized
+  }
+  if (type === 'int8') {
+    return Math.max(-128, Math.min(127, Math.round(normalized * 127)))
+  }
+  if (type === 'uint8' || type === 'bool') {
+    return Math.max(0, Math.min(255, Math.round((normalized + 1) * 127.5)))
+  }
+  if (type === 'int16') {
+    return Math.max(-32768, Math.min(32767, Math.round(normalized * 32767)))
+  }
+  if (type === 'uint16') {
+    return Math.max(0, Math.min(65535, Math.round((normalized + 1) * 32767.5)))
+  }
+  if (type === 'int32') {
+    return Math.round(normalized * 2147483647)
+  }
+  if (type === 'uint32') {
+    return Math.round((normalized + 1) * 2147483647.5)
+  }
+  return normalized
+}
+
+function normalizePixelToModelValue(rawChannelValue: number): number {
+  return rawChannelValue / 127.5 - 1
+}
+
+function parseCsvLine(line: string): string[] {
+  const fields: string[] = []
+  let current = ''
+  let inQuotes = false
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index]
+
+    if (char === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        current += '"'
+        index += 1
+      } else {
+        inQuotes = !inQuotes
+      }
+      continue
+    }
+
+    if (char === ',' && !inQuotes) {
+      fields.push(current)
+      current = ''
+      continue
+    }
+
+    current += char
+  }
+
+  fields.push(current)
+  return fields
+}
+
+export function parseAutoTagRangeRules(raw: unknown): AutoTagScoreRangeRule[] {
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('自动标签失败：范围配置 JSON 无效')
+  }
+
+  const rangesRaw = (raw as { ranges?: unknown }).ranges
+  if (!Array.isArray(rangesRaw) || rangesRaw.length === 0) {
+    throw new Error('自动标签失败：范围配置缺少 ranges')
+  }
+
+  const parsed: AutoTagScoreRangeRule[] = rangesRaw.map((item, index) => {
+    if (!item || typeof item !== 'object') {
+      throw new Error(`自动标签失败：ranges[${index}] 不是对象`)
+    }
+
+    const startRaw = (item as { start_index?: unknown; startIndex?: unknown }).start_index ??
+      (item as { start_index?: unknown; startIndex?: unknown }).startIndex
+    const endRaw = (item as { end_index?: unknown; endIndex?: unknown }).end_index ??
+      (item as { end_index?: unknown; endIndex?: unknown }).endIndex
+    const minScoreRaw = (item as { min_score?: unknown; minScore?: unknown }).min_score ??
+      (item as { min_score?: unknown; minScore?: unknown }).minScore
+
+    const startIndex = Number(startRaw)
+    const endIndex = Number(endRaw)
+    const minScore = Number(minScoreRaw)
+
+    if (!Number.isFinite(startIndex) || Math.floor(startIndex) !== startIndex || startIndex < 0) {
+      throw new Error(`自动标签失败：ranges[${index}].start_index 无效`)
+    }
+    if (!Number.isFinite(endIndex) || Math.floor(endIndex) !== endIndex || endIndex < 0) {
+      throw new Error(`自动标签失败：ranges[${index}].end_index 无效`)
+    }
+    if (endIndex < startIndex) {
+      throw new Error(`自动标签失败：ranges[${index}] end_index 不能小于 start_index`)
+    }
+    if (!Number.isFinite(minScore) || minScore < 0 || minScore > 1) {
+      throw new Error(`自动标签失败：ranges[${index}].min_score 必须在 0..1`)
+    }
+
+    return {
+      startIndex,
+      endIndex,
+      minScore,
+    }
+  })
+
+  return parsed.sort((left, right) => left.startIndex - right.startIndex)
+}
+
+async function readAutoTagRangeRules(configPath: string): Promise<AutoTagScoreRangeRule[]> {
+  const content = await fs.readFile(configPath, 'utf8')
+  const json = JSON.parse(content) as unknown
+  return parseAutoTagRangeRules(json)
+}
+
+async function readTagLabelsFromCsv(csvPath: string): Promise<string[]> {
+  const content = await fs.readFile(csvPath, 'utf8')
+  const lines = content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+
+  if (lines.length === 0) {
+    return []
+  }
+
+  const firstLineFields = parseCsvLine(lines[0]).map((field) => field.trim())
+  const headerIndex = firstLineFields.findIndex((field) => field.toLowerCase() === 'name')
+  const hasHeader = headerIndex >= 0 || firstLineFields.some((field) => field.toLowerCase().includes('tag'))
+  const nameFieldIndex = headerIndex >= 0 ? headerIndex : (firstLineFields.length > 1 ? 1 : 0)
+  const startLineIndex = hasHeader ? 1 : 0
+
+  const labels: string[] = []
+  for (let lineIndex = startLineIndex; lineIndex < lines.length; lineIndex += 1) {
+    const fields = parseCsvLine(lines[lineIndex]).map((field) => field.trim())
+    const name = (fields[nameFieldIndex] ?? fields[0] ?? '').trim()
+    if (name.length === 0) {
+      continue
+    }
+    labels.push(name)
+  }
+
+  return labels
+}
+
+function decodeOutputTensorValues(tensor: ort.Tensor): number[] {
+  if (tensor.type === 'float16' && tensor.data instanceof Uint16Array) {
+    return Array.from(tensor.data, (value) => fromFloat16Bits(value))
+  }
+
+  if (ArrayBuffer.isView(tensor.data)) {
+    return Array.from(tensor.data as ArrayLike<number>, (value) => Number(value))
+  }
+
+  return []
+}
+
+async function buildImageInputTensor(
+  imageBuffer: Buffer,
+  metadata: ort.InferenceSession.ValueMetadata | undefined,
+): Promise<ort.Tensor> {
+  const spec = resolveWarmupInputSpec(metadata)
+  const [batch, dim1, dim2, dim3] = spec.dims
+  const width = spec.layout === 'nchw' ? dim3 : dim2
+  const height = spec.layout === 'nchw' ? dim2 : dim1
+  const channels = spec.layout === 'nchw' ? dim1 : dim3
+
+  const sharpModule = await getSharpModule()
+  if (!sharpModule?.default) {
+    throw new Error('自动标签失败：Sharp 不可用，无法预处理图片')
+  }
+
+  const resized = await sharpModule
+    .default(imageBuffer, { failOn: 'none' })
+    .removeAlpha()
+    .resize(width, height, { fit: 'fill' })
+    .raw()
+    .toBuffer()
+
+  const imageSize = width * height
+  const totalLength = batch * imageSize * channels
+  const data = createWarmupTypedArray(spec.type, totalLength)
+
+  const readChannel = (pixelOffset: number, channel: number): number => {
+    if (channel < 3) {
+      return resized[pixelOffset + channel] ?? 0
+    }
+    return 0
+  }
+
+  if (spec.layout === 'nchw') {
+    const imageVolume = channels * imageSize
+    for (let batchIndex = 0; batchIndex < batch; batchIndex += 1) {
+      const batchOffset = batchIndex * imageVolume
+      for (let pixelIndex = 0; pixelIndex < imageSize; pixelIndex += 1) {
+        const pixelOffset = pixelIndex * 3
+        for (let channel = 0; channel < channels; channel += 1) {
+          const value = normalizeColorValue(
+            spec.type,
+            normalizePixelToModelValue(readChannel(pixelOffset, channel)),
+          )
+          data[batchOffset + channel * imageSize + pixelIndex] = value
+        }
+      }
+    }
+  } else {
+    const imageVolume = imageSize * channels
+    for (let batchIndex = 0; batchIndex < batch; batchIndex += 1) {
+      const batchOffset = batchIndex * imageVolume
+      for (let pixelIndex = 0; pixelIndex < imageSize; pixelIndex += 1) {
+        const srcPixelOffset = pixelIndex * 3
+        const dstPixelOffset = batchOffset + pixelIndex * channels
+        for (let channel = 0; channel < channels; channel += 1) {
+          const value = normalizeColorValue(
+            spec.type,
+            normalizePixelToModelValue(readChannel(srcPixelOffset, channel)),
+          )
+          data[dstPixelOffset + channel] = value
+        }
+      }
+    }
+  }
+
+  return new ort.Tensor(spec.type, data, spec.dims)
+}
+
+export function selectTagsByRanges(
+  scores: number[],
+  tagLabels: string[],
+  ranges: AutoTagScoreRangeRule[],
+): string[] {
+  if (scores.length === 0 || tagLabels.length === 0 || ranges.length === 0) {
+    return []
+  }
+
+  const selected = new Set<string>()
+  const lastIndex = Math.min(scores.length, tagLabels.length) - 1
+
+  for (const range of ranges) {
+    const start = Math.max(0, Math.min(lastIndex, range.startIndex))
+    const end = Math.max(start, Math.min(lastIndex, range.endIndex))
+    for (let index = start; index <= end; index += 1) {
+      if (scores[index] >= range.minScore) {
+        const tag = tagLabels[index]?.trim()
+        if (tag) {
+          selected.add(tag)
+        }
+      }
+    }
+  }
+
+  return Array.from(selected)
+}
+
 export class WdSwinV2TaggerService {
   async testModel(request: TestWdSwinTaggerModelRequestDto): Promise<TestWdSwinTaggerModelResponseDto> {
     const modelPathRaw = request.model_path.trim()
@@ -309,6 +657,115 @@ export class WdSwinV2TaggerService {
         elapsed_ms: Date.now() - startedAt,
       })
     }
+  }
+
+  async generateTagsForPackage(request: GenerateTagsForPackageRequest): Promise<GenerateTagsForPackageResult> {
+    const modelPathRaw = request.modelPath.trim()
+    const rangeConfigPathRaw = request.rangeConfigPath.trim()
+    const normalizedModelPath = path.resolve(modelPathRaw)
+    const normalizedRangeConfigPath = path.resolve(rangeConfigPathRaw)
+    const occurrenceThreshold = Math.max(1, Math.floor(request.occurrenceThreshold))
+
+    if (!modelPathRaw) {
+      throw new Error('自动标签失败：模型路径不能为空')
+    }
+    if (!rangeConfigPathRaw) {
+      throw new Error('自动标签失败：范围配置路径不能为空')
+    }
+
+    await fs.access(normalizedModelPath)
+    await fs.access(normalizedRangeConfigPath)
+
+    const [tagLabels, ranges] = await Promise.all([
+      readTagLabelsFromCsv(path.join(path.dirname(normalizedModelPath), TAGS_CSV_FILE_NAME)),
+      readAutoTagRangeRules(normalizedRangeConfigPath),
+    ])
+
+    if (tagLabels.length === 0) {
+      throw new Error('自动标签失败：selected_tags.csv 为空或不可解析')
+    }
+
+    const session = await ort.InferenceSession.create(normalizedModelPath)
+    const inputName = session.inputNames[0]
+    if (!inputName) {
+      throw new Error('自动标签失败：模型输入为空')
+    }
+
+    const inputMetadata = session.inputMetadata.find((item) => item.name === inputName)
+    const tagOccurrence = new Map<string, number>()
+    let analyzedImages = 0
+
+    for (const locator of request.imageLocators) {
+      const imageBuffer = await request.readImageBuffer(locator).catch(() => null)
+      if (!imageBuffer || imageBuffer.length === 0) {
+        continue
+      }
+
+      const tags = await this.runSingleImageTagInference({
+        session,
+        inputName,
+        inputMetadata,
+        imageBuffer,
+        tagLabels,
+        ranges,
+      })
+
+      analyzedImages += 1
+      for (const tag of tags) {
+        tagOccurrence.set(tag, (tagOccurrence.get(tag) ?? 0) + 1)
+      }
+    }
+
+    const generatedTags = Array.from(tagOccurrence.entries())
+      .filter(([, count]) => count >= occurrenceThreshold)
+      .sort((left, right) => {
+        if (right[1] !== left[1]) {
+          return right[1] - left[1]
+        }
+        return left[0].localeCompare(right[0], 'zh-CN')
+      })
+      .map(([tag]) => tag)
+
+    return {
+      generatedTags,
+      analyzedImages,
+    }
+  }
+
+  private async runSingleImageTagInference(params: {
+    session: ort.InferenceSession
+    inputName: string
+    inputMetadata: ort.InferenceSession.ValueMetadata | undefined
+    imageBuffer: Buffer
+    tagLabels: string[]
+    ranges: AutoTagScoreRangeRule[]
+  }): Promise<string[]> {
+    const tensor = await buildImageInputTensor(params.imageBuffer, params.inputMetadata)
+    const outputMap = await params.session.run({
+      [params.inputName]: tensor,
+    })
+
+    const outputName = params.session.outputNames[0] ?? Object.keys(outputMap)[0]
+    if (!outputName) {
+      return []
+    }
+
+    const outputTensor = outputMap[outputName]
+    if (!outputTensor) {
+      return []
+    }
+
+    const values = decodeOutputTensorValues(outputTensor)
+    if (values.length === 0) {
+      return []
+    }
+
+    const outputShape = normalizeOutputShape(outputTensor.dims)
+    const batchSize = outputShape && outputShape.length > 1 ? Math.max(1, outputShape[0]) : 1
+    const stride = Math.max(1, Math.floor(values.length / batchSize))
+    const firstBatchScores = values.slice(0, stride)
+
+    return selectTagsByRanges(firstBatchScores, params.tagLabels, params.ranges)
   }
 
   private async runWarmup(modelPath: string): Promise<{

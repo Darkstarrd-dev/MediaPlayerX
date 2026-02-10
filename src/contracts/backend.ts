@@ -395,6 +395,20 @@ export const writePackageMetadataResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const generatePackageAutoTagsRequestSchema = z.object({
+  package_id: z.string().min(1),
+  model_path: z.string().min(1),
+  range_config_path: z.string().min(1),
+  occurrence_threshold: z.number().int().min(1).max(200),
+})
+
+export const generatePackageAutoTagsResponseSchema = z.object({
+  package: imagePackageDtoSchema,
+  generated_tags: z.array(z.string()),
+  analyzed_images: nonNegativeIntSchema,
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const writeVideoMetadataRequestSchema = z.object({
   video_id: z.string().min(1),
   work_title: z.string().min(1),
@@ -608,6 +622,8 @@ export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManage
 export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
 export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
+export type GeneratePackageAutoTagsRequestDto = z.infer<typeof generatePackageAutoTagsRequestSchema>
+export type GeneratePackageAutoTagsResponseDto = z.infer<typeof generatePackageAutoTagsResponseSchema>
 export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>
 export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataResponseSchema>
 export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>

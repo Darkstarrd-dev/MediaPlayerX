@@ -3,9 +3,12 @@ import path from 'node:path'
 
 import {
   clearDatabaseResponseSchema,
+  generatePackageAutoTagsResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
+  type GeneratePackageAutoTagsRequestDto,
+  type GeneratePackageAutoTagsResponseDto,
   type ImportTaskDto,
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
@@ -66,7 +69,10 @@ import {
   type MediaProtocolStreamResponsePayload,
 } from './fileSystemMediaReaders'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
-import { type PersistedVideoMetadataRecord } from './fileSystemMetadataWriters'
+import {
+  applyPackageMetadataWrite,
+  type PersistedVideoMetadataRecord,
+} from './fileSystemMetadataWriters'
 import { MediaTokenService } from './services/file-system-read/mediaTokenService'
 import { ImportPathRegistry } from './services/file-system-read/importPathRegistry'
 import {
@@ -546,6 +552,53 @@ export class FileSystemMediaReadService {
     request: WritePackageMetadataRequestDto,
   ): Promise<WritePackageMetadataResponseDto> {
     return this.libraryReadWriteService.writePackageMetadata(request)
+  }
+
+  async generatePackageAutoTags(
+    request: GeneratePackageAutoTagsRequestDto,
+  ): Promise<GeneratePackageAutoTagsResponseDto> {
+    const snapshot = await this.ensureSnapshotLoaded()
+    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`自动标签失败：source 不存在 ${request.package_id}`)
+    }
+
+    const visibleLocators = source.images
+      .filter((image) => !(image.hidden ?? false))
+      .map((image) => image.media_locator)
+
+    const generated = await this.wdSwinV2TaggerService.generateTagsForPackage({
+      modelPath: request.model_path,
+      rangeConfigPath: request.range_config_path,
+      occurrenceThreshold: request.occurrence_threshold,
+      imageLocators: visibleLocators,
+      readImageBuffer: async (locator) => this.readImageBufferForThumbnail(locator),
+    })
+
+    const metadataWritten = applyPackageMetadataWrite({
+      snapshot,
+      database: this.database,
+      request: {
+        package_id: source.id,
+        work_title: source.work_title,
+        circle: source.circle,
+        author: source.author,
+        tags: generated.generatedTags,
+      },
+    })
+
+    this.emitLibraryChanged({
+      reason: 'generate-package-auto-tags',
+      updated_at_ms: metadataWritten.updated_at_ms,
+    })
+
+    return generatePackageAutoTagsResponseSchema.parse({
+      package: metadataWritten.package,
+      generated_tags: generated.generatedTags,
+      analyzed_images: generated.analyzedImages,
+      updated_at_ms: metadataWritten.updated_at_ms,
+    })
   }
 
   async writeVideoMetadata(

@@ -10,6 +10,8 @@ import type {
   WritePackageGradeResponseDto,
   WritePackageMetadataRequestDto,
   WritePackageMetadataResponseDto,
+  GeneratePackageAutoTagsRequestDto,
+  GeneratePackageAutoTagsResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
 } from '../../contracts/backend'
@@ -34,6 +36,7 @@ interface UseWriteDataAccessParams {
 interface SyncWriteRepository extends MediaRepository {
   writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
+  generatePackageAutoTagsSync?(request: GeneratePackageAutoTagsRequestDto): GeneratePackageAutoTagsResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
 }
@@ -78,6 +81,14 @@ interface UseWriteDataAccessResult {
       syncWorkTitleToPackageName?: boolean
     },
   ) => Promise<void>
+  generatePackageAutoTags: (
+    packageId: string,
+    payload: {
+      modelPath: string
+      rangeConfigPath: string
+      occurrenceThreshold: number
+    },
+  ) => Promise<GeneratePackageAutoTagsResponseDto>
   writeVideoMetadata: (
     videoId: string,
     payload: {
@@ -251,6 +262,56 @@ export function useWriteDataAccess({
         })
       } catch (error: unknown) {
         setMetadataError(toErrorMessage(error))
+      } finally {
+        setMetadataPending(false)
+      }
+    },
+    [isSynchronousTestMode, repository],
+  )
+
+  const generatePackageAutoTags = useCallback(
+    async (
+      packageId: string,
+      payload: {
+        modelPath: string
+        rangeConfigPath: string
+        occurrenceThreshold: number
+      },
+    ): Promise<GeneratePackageAutoTagsResponseDto> => {
+      if (!repository.generatePackageAutoTags) {
+        const message = '当前后端不支持自动标签'
+        setMetadataError(message)
+        throw new Error(message)
+      }
+
+      setMetadataPending(true)
+      setMetadataError(null)
+
+      try {
+        const request: GeneratePackageAutoTagsRequestDto = {
+          package_id: packageId,
+          model_path: payload.modelPath,
+          range_config_path: payload.rangeConfigPath,
+          occurrence_threshold: Math.max(1, Math.min(200, Math.floor(payload.occurrenceThreshold))),
+        }
+
+        if (isSynchronousTestMode) {
+          const writer = repository.generatePackageAutoTagsSync
+          if (!writer) {
+            const message = '当前后端不支持自动标签'
+            setMetadataError(message)
+            throw new Error(message)
+          }
+          return writer(request)
+        }
+
+        return await repository.generatePackageAutoTags(request, {
+          timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+        })
+      } catch (error: unknown) {
+        const message = toErrorMessage(error)
+        setMetadataError(message)
+        throw new Error(message)
       } finally {
         setMetadataPending(false)
       }
@@ -439,6 +500,7 @@ export function useWriteDataAccess({
     deleteImageItems,
     deleteSidebarNodes,
     writePackageMetadata,
+    generatePackageAutoTags,
     writeVideoMetadata,
     saveVideoCover,
   }

@@ -45,6 +45,8 @@ export function usePersistedAppSettings({
       lmStudioEndpoint: settings.lmStudioEndpoint,
       lmStudioModel: settings.lmStudioModel,
       wdSwinTaggerModelPath: settings.wdSwinTaggerModelPath,
+      wdSwinTaggerAutoTagRangeConfigPath: settings.wdSwinTaggerAutoTagRangeConfigPath,
+      wdSwinTaggerAutoTagOccurrenceThreshold: settings.wdSwinTaggerAutoTagOccurrenceThreshold,
       adReviewVisionEndpoint: settings.adReviewVisionEndpoint,
       adReviewVisionModel: settings.adReviewVisionModel,
       adReviewVisionVerified: settings.adReviewVisionVerified,

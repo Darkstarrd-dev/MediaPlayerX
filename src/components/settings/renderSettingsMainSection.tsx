@@ -39,6 +39,8 @@ interface RenderSettingsMainSectionParams {
   lmStudioEndpoint: string
   lmStudioModel: string
   wdSwinTaggerModelPath: string
+  wdSwinTaggerAutoTagRangeConfigPath: string
+  wdSwinTaggerAutoTagOccurrenceThreshold: number
   wdSwinTaggerTestPending: boolean
   wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
@@ -80,6 +82,8 @@ interface RenderSettingsMainSectionParams {
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
   onWdSwinTaggerModelPathChange: (value: string) => void
+  onWdSwinTaggerAutoTagRangeConfigPathChange: (value: string) => void
+  onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
   onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
@@ -123,6 +127,8 @@ export function renderSettingsMainSection({
   lmStudioEndpoint,
   lmStudioModel,
   wdSwinTaggerModelPath,
+  wdSwinTaggerAutoTagRangeConfigPath,
+  wdSwinTaggerAutoTagOccurrenceThreshold,
   wdSwinTaggerTestPending,
   wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
@@ -164,6 +170,8 @@ export function renderSettingsMainSection({
   onLmStudioEndpointChange,
   onLmStudioModelChange,
   onWdSwinTaggerModelPathChange,
+  onWdSwinTaggerAutoTagRangeConfigPathChange,
+  onWdSwinTaggerAutoTagOccurrenceThresholdChange,
   onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
@@ -341,6 +349,24 @@ export function renderSettingsMainSection({
               onChange={(event) => onWdSwinTaggerModelPathChange(event.target.value)}
             />
           </label>
+          <label>
+            自动标签范围配置 JSON
+            <input
+              type="text"
+              value={wdSwinTaggerAutoTagRangeConfigPath}
+              onChange={(event) => onWdSwinTaggerAutoTagRangeConfigPathChange(event.target.value)}
+            />
+          </label>
+          <label>
+            自动标签出现阈值
+            <input
+              min={1}
+              max={200}
+              type="number"
+              value={wdSwinTaggerAutoTagOccurrenceThreshold}
+              onChange={(event) => onWdSwinTaggerAutoTagOccurrenceThresholdChange(Number(event.target.value))}
+            />
+          </label>
           <div className="settings-test-row">
             <button type="button" disabled={wdSwinTaggerTestPending} aria-label="测试wd模型连接" onClick={onTestWdSwinTaggerModel}>
               {wdSwinTaggerTestPending ? '测试中...' : '测试 wd 模型'}
@@ -351,7 +377,7 @@ export function renderSettingsMainSection({
               {wdSwinTaggerTestMessage ?? '未测试'}
             </span>
           </div>
-          <p className="settings-placeholder">默认按 [1,3,448,448] 输入做 warmup 推理，用于校验模型可加载与可执行。</p>
+          <p className="settings-placeholder">默认按模型 metadata 自适应输入布局（NCHW/NHWC）做 warmup 推理，用于校验模型可加载与可执行。</p>
         </fieldset>
       </div>
     )

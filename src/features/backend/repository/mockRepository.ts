@@ -32,6 +32,7 @@ import {
   setImageHiddenResponseSchema,
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
+  generatePackageAutoTagsResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type ReadAppStateRequestDto,
@@ -95,6 +96,8 @@ import {
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
   type WritePackageMetadataResponseDto,
+  type GeneratePackageAutoTagsRequestDto,
+  type GeneratePackageAutoTagsResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
@@ -1281,11 +1284,49 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     })
   }
 
+  generatePackageAutoTagsSync(
+    request: GeneratePackageAutoTagsRequestDto,
+  ): GeneratePackageAutoTagsResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`mock 仓库自动标签失败：source 不存在 ${request.package_id}`)
+    }
+
+    if (request.model_path.toLowerCase().includes('fail') || request.range_config_path.toLowerCase().includes('fail')) {
+      throw new Error('mock 自动标签失败：模型或范围配置不可用')
+    }
+
+    const threshold = Math.max(1, Math.floor(request.occurrence_threshold))
+    const analyzedImages = source.images.length
+    const generatedTags =
+      analyzedImages === 0
+        ? []
+        : [`auto-tag-${Math.min(analyzedImages, threshold)}`, `source-${source.images.length}`]
+
+    source.tags = generatedTags
+
+    return generatePackageAutoTagsResponseSchema.parse({
+      package: source,
+      generated_tags: generatedTags,
+      analyzed_images: analyzedImages,
+      updated_at_ms: Date.now(),
+    })
+  }
+
   async writePackageMetadata(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageMetadataResponseDto> {
     const response = this.writePackageMetadataSync(request)
+    return resolveAsync(response, options)
+  }
+
+  async generatePackageAutoTags(
+    request: GeneratePackageAutoTagsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<GeneratePackageAutoTagsResponseDto> {
+    const response = this.generatePackageAutoTagsSync(request)
     return resolveAsync(response, options)
   }
 

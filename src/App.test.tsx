@@ -750,6 +750,36 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
+  it('元数据管理支持按设置参数触发自动标签批量生成', async () => {
+    const generatePackageAutoTagsSpy = vi.spyOn(MockMediaRepository.prototype, 'generatePackageAutoTagsSync')
+    useUiStore.setState({
+      wdSwinTaggerModelPath: 'Z:/mock/wd/model.onnx',
+      wdSwinTaggerAutoTagRangeConfigPath: 'Z:/mock/wd/ranges.json',
+      wdSwinTaggerAutoTagOccurrenceThreshold: 3,
+    })
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.click(screen.getByRole('button', { name: '自动生成标签' }))
+
+    await waitFor(() => {
+      expect(generatePackageAutoTagsSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model_path: 'Z:/mock/wd/model.onnx',
+          range_config_path: 'Z:/mock/wd/ranges.json',
+          occurrence_threshold: 3,
+        }),
+      )
+    })
+  })
+
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {
     render(<App />)
 

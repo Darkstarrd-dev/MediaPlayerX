@@ -21,6 +21,8 @@ interface BuildSettingsPanelPropsParams {
   lmStudioEndpoint: string
   lmStudioModel: string
   wdSwinTaggerModelPath: string
+  wdSwinTaggerAutoTagRangeConfigPath: string
+  wdSwinTaggerAutoTagOccurrenceThreshold: number
   wdSwinTaggerTestPending: boolean
   wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
@@ -74,6 +76,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     lmStudioEndpoint: params.lmStudioEndpoint,
     lmStudioModel: params.lmStudioModel,
     wdSwinTaggerModelPath: params.wdSwinTaggerModelPath,
+    wdSwinTaggerAutoTagRangeConfigPath: params.wdSwinTaggerAutoTagRangeConfigPath,
+    wdSwinTaggerAutoTagOccurrenceThreshold: params.wdSwinTaggerAutoTagOccurrenceThreshold,
     wdSwinTaggerTestPending: params.wdSwinTaggerTestPending,
     wdSwinTaggerTestMessage: params.wdSwinTaggerTestMessage,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
@@ -113,6 +117,10 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onLmStudioEndpointChange: (value) => params.updateSettings({ lmStudioEndpoint: value }),
     onLmStudioModelChange: (value) => params.updateSettings({ lmStudioModel: value }),
     onWdSwinTaggerModelPathChange: (value) => params.updateSettings({ wdSwinTaggerModelPath: value }),
+    onWdSwinTaggerAutoTagRangeConfigPathChange: (value) =>
+      params.updateSettings({ wdSwinTaggerAutoTagRangeConfigPath: value }),
+    onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value) =>
+      params.updateSettings({ wdSwinTaggerAutoTagOccurrenceThreshold: Math.max(1, Math.min(200, Math.floor(value))) }),
     onTestWdSwinTaggerModel: params.testWdSwinTaggerModel,
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({

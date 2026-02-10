@@ -21,6 +21,9 @@ export interface VideoMetadataWritePayload {
 
 interface UseMetadataWriteBindingsParams {
   metadataManageMode: boolean
+  autoTagModelPath: string
+  autoTagRangeConfigPath: string
+  autoTagOccurrenceThreshold: number
   backendWrite: {
     pending: {
       metadata: boolean
@@ -28,6 +31,14 @@ interface UseMetadataWriteBindingsParams {
     }
     writePackageGrade: (packageId: string, grade: number | null) => Promise<void>
     writePackageMetadata?: (packageId: string, payload: PackageMetadataWritePayload) => Promise<void>
+    generatePackageAutoTags?: (
+      packageId: string,
+      payload: {
+        modelPath: string
+        rangeConfigPath: string
+        occurrenceThreshold: number
+      },
+    ) => Promise<{ generated_tags: string[]; analyzed_images: number }>
     writeVideoMetadata?: (videoId: string, payload: VideoMetadataWritePayload) => Promise<void>
   }
   metadataImagePackageId: string | null
@@ -41,11 +52,15 @@ interface UseMetadataWriteBindingsResult {
   metadataPending: boolean
   applyPackageGrade: (grade: number | null) => void
   applyPackageMetadata: (payload: PackageMetadataWritePayload) => void
+  applyPackageAutoTags: () => void
   applyVideoMetadata: (payload: VideoMetadataWritePayload) => void
 }
 
 export function useMetadataWriteBindings({
   metadataManageMode,
+  autoTagModelPath,
+  autoTagRangeConfigPath,
+  autoTagOccurrenceThreshold,
   backendWrite,
   metadataImagePackageId,
   focusedVideoId,
@@ -87,7 +102,11 @@ export function useMetadataWriteBindings({
   }, [sidebarCheckedNodeIds, sidebarNodeById])
 
   const runBatchWrite = useCallback(
-    async (targetIds: string[], applyWrite: (targetId: string) => Promise<void>) => {
+    async (
+      targetIds: string[],
+      applyWrite: (targetId: string) => Promise<void>,
+      summaryLabel = '元数据批量写入完成',
+    ) => {
       let successCount = 0
       let failedCount = 0
 
@@ -102,8 +121,8 @@ export function useMetadataWriteBindings({
 
       setManageOperationHint(
         failedCount > 0
-          ? `元数据批量写入完成：成功 ${successCount} 项，失败 ${failedCount} 项`
-          : `元数据批量写入完成：成功 ${successCount} 项`,
+          ? `${summaryLabel}：成功 ${successCount} 项，失败 ${failedCount} 项`
+          : `${summaryLabel}：成功 ${successCount} 项`,
       )
     },
     [setManageOperationHint],
@@ -149,6 +168,67 @@ export function useMetadataWriteBindings({
     [backendWrite, collectBatchTargets, metadataImagePackageId, metadataManageMode, runBatchWrite],
   )
 
+  const applyPackageAutoTags = useCallback(() => {
+    const autoTagWriter = backendWrite.generatePackageAutoTags
+    if (!autoTagWriter) {
+      setManageOperationHint('自动标签失败：当前后端不支持该能力')
+      return
+    }
+
+    const modelPath = autoTagModelPath.trim()
+    const rangeConfigPath = autoTagRangeConfigPath.trim()
+    const threshold = Math.max(1, Math.min(200, Math.floor(autoTagOccurrenceThreshold)))
+    if (!modelPath || !rangeConfigPath) {
+      setManageOperationHint('自动标签失败：请先在设置中填写模型路径与范围配置 JSON')
+      return
+    }
+
+    const runForPackage = (packageId: string) =>
+      autoTagWriter(packageId, {
+        modelPath,
+        rangeConfigPath,
+        occurrenceThreshold: threshold,
+      })
+
+    if (metadataManageMode) {
+      const { packageIds } = collectBatchTargets()
+      if (packageIds.length > 0) {
+        void runBatchWrite(
+          packageIds,
+          async (packageId) => {
+            await runForPackage(packageId)
+          },
+          '自动标签批量执行完成',
+        )
+        return
+      }
+    }
+
+    if (!metadataImagePackageId) {
+      setManageOperationHint('自动标签失败：当前无可用图包')
+      return
+    }
+
+    void runForPackage(metadataImagePackageId)
+      .then((response) => {
+        setManageOperationHint(`自动标签完成：生成 ${response.generated_tags.length} 个标签，分析 ${response.analyzed_images} 张图片`)
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error)
+        setManageOperationHint(`自动标签失败：${message}`)
+      })
+  }, [
+    autoTagModelPath,
+    autoTagOccurrenceThreshold,
+    autoTagRangeConfigPath,
+    backendWrite.generatePackageAutoTags,
+    collectBatchTargets,
+    metadataImagePackageId,
+    metadataManageMode,
+    runBatchWrite,
+    setManageOperationHint,
+  ])
+
   const applyVideoMetadata = useCallback(
     (payload: VideoMetadataWritePayload) => {
       if (!backendWrite.writeVideoMetadata) {
@@ -175,6 +255,7 @@ export function useMetadataWriteBindings({
     metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade,
     applyPackageGrade,
     applyPackageMetadata,
+    applyPackageAutoTags,
     applyVideoMetadata,
   }
 }

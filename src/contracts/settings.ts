@@ -37,6 +37,8 @@ export const appSettingsSchema = z.object({
   lmStudioEndpoint: z.string().min(1),
   lmStudioModel: z.string().min(1),
   wdSwinTaggerModelPath: z.string().max(1024),
+  wdSwinTaggerAutoTagRangeConfigPath: z.string().max(1024),
+  wdSwinTaggerAutoTagOccurrenceThreshold: z.number().int().min(1).max(200),
   adReviewVisionEndpoint: z.string().max(512),
   adReviewVisionModel: z.string().max(256),
   adReviewVisionVerified: z.boolean(),

@@ -41,6 +41,8 @@ export interface SettingsPanelProps {
   lmStudioEndpoint: string
   lmStudioModel: string
   wdSwinTaggerModelPath: string
+  wdSwinTaggerAutoTagRangeConfigPath: string
+  wdSwinTaggerAutoTagOccurrenceThreshold: number
   wdSwinTaggerTestPending: boolean
   wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
@@ -80,6 +82,8 @@ export interface SettingsPanelProps {
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
   onWdSwinTaggerModelPathChange: (value: string) => void
+  onWdSwinTaggerAutoTagRangeConfigPathChange: (value: string) => void
+  onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
   onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
@@ -132,6 +136,8 @@ function SettingsPanel({
   lmStudioEndpoint,
   lmStudioModel,
   wdSwinTaggerModelPath,
+  wdSwinTaggerAutoTagRangeConfigPath,
+  wdSwinTaggerAutoTagOccurrenceThreshold,
   wdSwinTaggerTestPending,
   wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
@@ -171,6 +177,8 @@ function SettingsPanel({
   onLmStudioEndpointChange,
   onLmStudioModelChange,
   onWdSwinTaggerModelPathChange,
+  onWdSwinTaggerAutoTagRangeConfigPathChange,
+  onWdSwinTaggerAutoTagOccurrenceThresholdChange,
   onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
@@ -350,6 +358,8 @@ function SettingsPanel({
     lmStudioEndpoint,
     lmStudioModel,
     wdSwinTaggerModelPath,
+    wdSwinTaggerAutoTagRangeConfigPath,
+    wdSwinTaggerAutoTagOccurrenceThreshold,
     wdSwinTaggerTestPending,
     wdSwinTaggerTestMessage,
     adReviewVisionEndpoint,
@@ -391,6 +401,8 @@ function SettingsPanel({
     onLmStudioEndpointChange,
     onLmStudioModelChange,
     onWdSwinTaggerModelPathChange,
+    onWdSwinTaggerAutoTagRangeConfigPathChange,
+    onWdSwinTaggerAutoTagOccurrenceThresholdChange,
     onTestWdSwinTaggerModel,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,

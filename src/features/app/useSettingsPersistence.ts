@@ -23,6 +23,16 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     next.adReviewMaxConcurrency = Math.max(4, Math.min(12, Math.floor(next.adReviewMaxConcurrency)))
   }
 
+  if (
+    typeof next.wdSwinTaggerAutoTagOccurrenceThreshold === 'number' &&
+    Number.isFinite(next.wdSwinTaggerAutoTagOccurrenceThreshold)
+  ) {
+    next.wdSwinTaggerAutoTagOccurrenceThreshold = Math.max(
+      1,
+      Math.min(200, Math.floor(next.wdSwinTaggerAutoTagOccurrenceThreshold)),
+    )
+  }
+
   return next as Partial<AppSettings>
 }
 

@@ -47,6 +47,8 @@ import {
   writePlaylistResponseSchema,
   writePackageMetadataRequestSchema,
   writePackageMetadataResponseSchema,
+  generatePackageAutoTagsRequestSchema,
+  generatePackageAutoTagsResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
@@ -137,6 +139,11 @@ const backendApi = {
     const parsed = writePackageMetadataRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePackageMetadata, parsed)
     return writePackageMetadataResponseSchema.parse(response)
+  },
+  generatePackageAutoTags: async (request: unknown) => {
+    const parsed = generatePackageAutoTagsRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.generatePackageAutoTags, parsed)
+    return generatePackageAutoTagsResponseSchema.parse(response)
   },
   writeVideoMetadata: async (request: unknown) => {
     const parsed = writeVideoMetadataRequestSchema.parse(request)

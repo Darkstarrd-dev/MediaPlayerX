@@ -37,6 +37,8 @@ export function useAppSettingsStore() {
       lmStudioEndpoint: state.lmStudioEndpoint,
       lmStudioModel: state.lmStudioModel,
       wdSwinTaggerModelPath: state.wdSwinTaggerModelPath,
+      wdSwinTaggerAutoTagRangeConfigPath: state.wdSwinTaggerAutoTagRangeConfigPath,
+      wdSwinTaggerAutoTagOccurrenceThreshold: state.wdSwinTaggerAutoTagOccurrenceThreshold,
       adReviewVisionEndpoint: state.adReviewVisionEndpoint,
       adReviewVisionModel: state.adReviewVisionModel,
       adReviewVisionVerified: state.adReviewVisionVerified,

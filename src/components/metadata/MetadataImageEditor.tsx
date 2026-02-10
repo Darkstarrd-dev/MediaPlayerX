@@ -21,6 +21,7 @@ interface MetadataImageEditorProps {
   onAuthorDraftChange: (value: string) => void
   onTagsDraftChange: (value: string) => void
   onPersistPackageMetadata: (syncWorkTitleToPackageName?: boolean) => void
+  onGeneratePackageAutoTags: () => void
   onGradeChange: (grade: number | null) => void
   onSearchByWorkTitle: (value: string) => void
   onSearchByCircle: (value: string) => void
@@ -47,6 +48,7 @@ export function MetadataImageEditor({
   onAuthorDraftChange,
   onTagsDraftChange,
   onPersistPackageMetadata,
+  onGeneratePackageAutoTags,
   onGradeChange,
   onSearchByWorkTitle,
   onSearchByCircle,
@@ -211,6 +213,13 @@ export function MetadataImageEditor({
                   }}
                 >
                   作品名同步图包名
+                </button>
+                <button
+                  type="button"
+                  disabled={metadataPending || !editable}
+                  onClick={onGeneratePackageAutoTags}
+                >
+                  自动生成标签
                 </button>
               </div>
             </div>

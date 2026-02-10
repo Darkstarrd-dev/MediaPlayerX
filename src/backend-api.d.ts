@@ -27,6 +27,8 @@ import type {
   WritePlaylistResponseDto,
   WritePackageMetadataRequestDto,
   WritePackageMetadataResponseDto,
+  GeneratePackageAutoTagsRequestDto,
+  GeneratePackageAutoTagsResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
   StartManageAdReviewRequestDto,
@@ -80,6 +82,7 @@ interface MediaPlayerBackendApi {
     request: ConfirmManageAdReviewDeleteRequestDto,
   ) => Promise<ConfirmManageAdReviewDeleteResponseDto>
   writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
+  generatePackageAutoTags?: (request: GeneratePackageAutoTagsRequestDto) => Promise<GeneratePackageAutoTagsResponseDto>
   writeVideoMetadata?: (request: WriteVideoMetadataRequestDto) => Promise<WriteVideoMetadataResponseDto>
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
   readPlaylist: () => Promise<ReadPlaylistResponseDto>

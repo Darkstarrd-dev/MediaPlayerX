@@ -402,6 +402,8 @@ export function useAppTopLayerState({
     lmStudioEndpoint: appSettings.lmStudioEndpoint,
     lmStudioModel: appSettings.lmStudioModel,
     wdSwinTaggerModelPath: appSettings.wdSwinTaggerModelPath,
+    wdSwinTaggerAutoTagRangeConfigPath: appSettings.wdSwinTaggerAutoTagRangeConfigPath,
+    wdSwinTaggerAutoTagOccurrenceThreshold: appSettings.wdSwinTaggerAutoTagOccurrenceThreshold,
     wdSwinTaggerTestPending,
     wdSwinTaggerTestMessage,
     adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,

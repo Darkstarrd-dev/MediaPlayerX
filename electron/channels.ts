@@ -15,6 +15,7 @@ export const BACKEND_CHANNELS = {
   testAdReviewVisionModel: 'backend:testAdReviewVisionModel',
   testWdSwinTaggerModel: 'backend:testWdSwinTaggerModel',
   writePackageMetadata: 'backend:writePackageMetadata',
+  generatePackageAutoTags: 'backend:generatePackageAutoTags',
   writeVideoMetadata: 'backend:writeVideoMetadata',
   saveVideoCover: 'backend:saveVideoCover',
   readPlaylist: 'backend:readPlaylist',
