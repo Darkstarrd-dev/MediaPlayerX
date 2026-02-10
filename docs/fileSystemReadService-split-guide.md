@@ -10,6 +10,12 @@
 - 保持对外 IPC 行为与返回结构不变（不改调用方契约）。
 - 在不改变用户可见行为的前提下，先完成低风险拆分。
 
+## 进度快照（基于 git，2026-02-10）
+
+- 总体模块拆分已完成约 50%：Renderer/App 链路拆分已完成并合入主线。
+- 当前文档覆盖的 Main 拆分（`fileSystemReadService`）尚未进入 L1~L4 实施阶段。
+- 结论：进入下半场时，优先执行本文件 L1~L4，避免 Main 继续累积 God Class 复杂度。
+
 ## 非目标
 
 - 不改 Mock 体系与 Renderer 侧调用方式。
@@ -64,6 +70,11 @@
 - [ ] L3 抽离 `serviceEventBus`
 - [ ] L4 抽离 `importPathRegistry`
 - [ ] 低风险阶段完成后复核 `fileSystemReadService.ts` 行数与 Facade 纯度
+
+## 并行拆分提醒
+
+- `src/features/management/useManageImageSelectionInteractions.ts` 已生成为管理模式交互抽离候选模块，当前尚未接线。
+- 若先完成 Main L1~L4，可在不改 UI 行为前提下并行补齐该 Hook 接线与对应测试。
 
 ## 完成标准与文档移除条件
 

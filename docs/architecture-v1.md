@@ -30,7 +30,7 @@
   - Main 侧 `FileSystemMediaReadService` 仍是下一阶段重点拆分目标（当前约 `2446` 行），需继续按服务职责拆分并保持对外 Facade 不变。
   - 待处理执行文档：`docs/fileSystemReadService-split-guide.md`（临时；拆分完成后移除）。
   - 当前关键入口文件规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
-- 管理模式广告图片审核 (LLM Ad Review) 已完成方案设计（待开发），将按 `Renderer -> Repository -> Main/Worker` 纵向切片接入。
+- 管理模式广告图片审核 (LLM Ad Review) 已完成 core 模块（`electron/manageAdReview/*`），当前待按 `Renderer -> Repository -> Main/Worker` 完成纵向接线。
 
 ### Electron Main 进程
 
@@ -60,14 +60,16 @@
 - 向量 Worker：批处理调度与 LM Studio Embedding 调用。
 - 压缩包维护 Worker：转换、重打包、重命名、重排序任务。
 - 视频 Worker：元数据提取与手动封面持久化。
-- 管理审核 Worker（待开发）：管理模式选区图片抽样、LLM 审核、疑似广告结果回传。
+- 管理审核 Worker（开发中）：core 能力已落地（策略引擎/LLM 客户端/哈希短路/并发控制），待完成 IPC 与 UI 接入。
 
-## 待开发模块：管理模式 LLM 广告审核
+## 开发中模块：管理模式 LLM 广告审核（Core 已完成）
 
 - 输入：管理模式当前勾选对象（Sidebar 节点或图片条目）映射出的图片集合。
 - 审核链路：Main/Worker 调用 LLM 接口执行广告检测，返回“疑似广告候选”而非直接删除。
 - 人工确认：Renderer 展示候选清单，用户确认后复用既有删除接口执行物理删除。
 - 缓存策略：新增“已确认删除图片哈希”记录，用于后续同图快速命中、跳过 LLM。
+- 已完成（core）：`adReviewEngine`、`openAiVisionClient`、`jsonExtract`、`hashStore`、`concurrency` 与对应单测。
+- 待完成（integration）：contracts/preload/ipc/repository 接线，管理面板审核列表与确认删除闭环。
 - 详细计划与阶段拆解见 `docs/management-llm-ad-review-plan-v1.md`。
 
 ## 模块边界

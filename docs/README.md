@@ -8,7 +8,7 @@
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
 - `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案。
-- `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（待开发）。
+- `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（进行中，Core 已完成）。
 - `fileSystemReadService-split-guide.md`：`electron/fileSystemReadService.ts` 低风险拆分执行说明（临时文档，拆分完成后移除）。
 - `ui/theme-system-v1.md`：主题系统 CSS 契约与开发规范 (SSOT)。
 - `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
@@ -53,6 +53,11 @@
   - Renderer 侧新增分层编排基线：`RuntimeSources / ReadState / NavigationState / DisplayAndEffects / TopLayerBindings / WorkspaceBindings / ViewComposition`，后续新功能必须沿该模式扩展。
   - 当前关键入口规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
   - Main 侧 `electron/fileSystemReadService.ts` 仍为后续重点拆分目标（当前约 `2446` 行），需继续避免形成新的 God Class。
+- 模块拆分进度（基于最近 git 记录）已进入“约 50%”：Renderer/App 链路拆分已完成，Main 侧 `fileSystemReadService` 拆分仍待执行。
+- 当前拆分待办聚焦三项：
+  - `electron/fileSystemReadService.ts` 低风险拆分 L1~L4（Token/Runtime/EventBus/ImportPathRegistry）。
+  - 管理模式图片选择交互 Hook 抽离接线（`useManageImageSelectionInteractions`）。
+  - 管理模式 LLM 广告审核从 core 模块接入到 contracts/preload/ipc/repository/UI。
 - 待处理事项：执行 `electron/fileSystemReadService.ts` 低风险拆分（先拆 Token/Runtime/EventBus/ImportPathRegistry，保持 Facade 对外 API 不变），详见 `docs/fileSystemReadService-split-guide.md`。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
@@ -87,7 +92,7 @@
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
-- 管理模式“LLM 广告图片审核”已完成方案设计与任务拆解，详见 `management-llm-ad-review-plan-v1.md`（当前未开发）。
+- 管理模式“LLM 广告图片审核”已完成 core 模块：`electron/manageAdReview/*`（引擎/客户端/哈希缓存/并发与测试）；当前待接入 contracts/preload/ipc/repository/UI。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。
 - 仓库初始化以本目录文档为起点。
 

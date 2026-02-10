@@ -1,10 +1,31 @@
-# 管理模式 LLM 广告图片审核模块实施计划 V1（待开发）
+# 管理模式 LLM 广告图片审核模块实施计划 V1（进行中）
 
 ## 0. 文档定位
 
 - 本文档用于固化“管理模式广告图片审核 (LLM Ad Review)”的实施方案与拆解顺序。
-- 当前状态：仅完成方案设计，尚未进入代码实现。
+- 当前状态：已完成 core 模块实现，尚未完成 contracts/preload/ipc/repository/UI 接线。
 - 目标产出：可执行的任务清单 + 合约草案 + 验收标准，作为后续开发基线。
+
+## 当前进度（基于 git）
+
+### 已完成
+
+- Core 模块目录已落地：`electron/manageAdReview/`。
+- 已实现：
+  - `adReviewEngine.ts`：审核主流程、`all/head-tail` 策略、known-hash 短路、取消控制。
+  - `openAiVisionClient.ts`：OpenAI 兼容视觉调用、`/embeddings -> /chat/completions` 归一化、超时与错误处理。
+  - `jsonExtract.ts`：JSON 结果鲁棒解析（code fence/夹杂文本/兜底）。
+  - `hashStore.ts`：`sha256` 与内存哈希仓库实现。
+  - `concurrency.ts`：并发控制与取消断言。
+- 已补齐单测：`adReviewEngine/jsonExtract/openAiVisionClient/concurrency`。
+
+### 待办
+
+- contracts：补齐审核任务相关 DTO 与 schema。
+- preload/ipc：新增审核任务启动、轮询、确认删除通道。
+- repository：扩展 mock/real 接口并保持 API 对齐。
+- UI：管理容器新增审核入口、候选复核列表与确认删除交互。
+- 持久化：`KnownHashStore` 从内存实现切换为 SQLite 或 `app_state`。
 
 ## 1. 目标与范围
 
@@ -104,6 +125,14 @@
 8. 对确认删除项写入哈希缓存。
 
 ## 6. 开发阶段拆解
+
+### 阶段进度
+
+- [x] Phase 0（Core）：核心引擎、客户端、并发/哈希、单测。
+- [ ] Phase 1（Contracts/IPC Skeleton）：合约与骨架接线。
+- [ ] Phase 2（Execution Wiring）：Main/Worker 审核任务接入。
+- [ ] Phase 3（Human Review + Delete）：人工复核与删除闭环。
+- [ ] Phase 4（Persistence + Optimization）：持久化与策略优化。
 
 ### Phase 1：合约与骨架
 
