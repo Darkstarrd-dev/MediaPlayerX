@@ -60,11 +60,11 @@ export class MediaTokenService {
   }
 
   requireRecord(token: string, nowMs = Date.now()): MediaTokenRecord {
-    this.cleanupExpiredTokens(nowMs)
     this.tokenReads += 1
 
     const record = this.mediaTokenIndex.get(token)
     if (!record) {
+      this.cleanupExpiredTokens(nowMs)
       this.tokenMisses += 1
       throw new Error('媒体资源令牌不存在')
     }
@@ -72,9 +72,11 @@ export class MediaTokenService {
     if (record.expiresAtMs <= nowMs) {
       this.tokenExpired += 1
       this.mediaTokenIndex.delete(token)
+      this.cleanupExpiredTokens(nowMs)
       throw new Error('媒体资源令牌已过期')
     }
 
+    this.cleanupExpiredTokens(nowMs)
     this.tokenHits += 1
     return record
   }

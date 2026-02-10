@@ -13,7 +13,7 @@
 
 - [x] Phase 0：测试矩阵与夹具准备
 - [x] Phase 1：SQLite 存储层测试（P0）
-- [ ] Phase 2：媒体访问安全守卫测试（P0）
+- [x] Phase 2：媒体访问安全守卫测试（P0）
 - [ ] Phase 3：核心编排链路集成测试（P1）
 - [ ] Phase 4：纯函数测试与接口收口（P1/P2）
 
@@ -86,21 +86,21 @@
 
 建议落地文件（按实际结构微调）：
 
-- [ ] `electron/fileSystemMediaAccessGuard.test.ts`
-- [ ] `electron/services/file-system-read/mediaTokenService.test.ts`
-- [ ] （可选）在 `electron/fileSystemReadService.test.ts` 增补守卫回归场景
+- [x] `electron/fileSystemMediaAccessGuard.test.ts`
+- [x] `electron/services/file-system-read/mediaTokenService.test.ts`
+- [x] （可选）在 `electron/fileSystemReadService.test.ts` 增补守卫回归场景（本轮不新增，沿用既有集成用例作为回归补位）
 
 必测场景：
 
-- [ ] 根目录白名单命中与越界拒绝。
-- [ ] archive entry 非法路径拒绝（如 `../`）。
-- [ ] token 命中/未命中/过期/清理计数正确。
-- [ ] `original/thumbnail` 变体边界和错误提示可见。
+- [x] 根目录白名单命中与越界拒绝。
+- [x] archive entry 非法路径拒绝（如 `../`）。
+- [x] token 命中/未命中/过期/清理计数正确。
+- [x] `original/thumbnail` 变体边界和错误提示可见。
 
 阶段验收：
 
-- [ ] 拒绝原因分类可在测试中稳定断言。
-- [ ] 资源访问协议边界不回退。
+- [x] 拒绝原因分类可在测试中稳定断言。
+- [x] 资源访问协议边界不回退。
 
 ### Phase 3：核心编排链路集成测试（P1）
 
@@ -169,6 +169,8 @@
 - [x] Phase 0 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
 - [x] Phase 1 完成：新增 SQLite 存储层 7 个测试文件并覆盖 migration/snapshot/metadata/playlist/task/app_state/database facade。
 - [x] Phase 1 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
+- [x] Phase 2 完成：新增 `fileSystemMediaAccessGuard` 与 `mediaTokenService` 独立测试，并修正 token 过期审计计数。
+- [x] Phase 2 门禁执行完成：`npm run lint`（1 条既有 warning，不阻断）/ `npm run test` / `npm run build` 通过。
 
 ## 5. 结束与移除规则
 
