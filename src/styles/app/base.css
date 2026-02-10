@@ -16,6 +16,10 @@
   --control-height: var(--mpx-control-height);
   --control-padding-x: var(--mpx-control-padding-x);
   --control-font-weight: var(--mpx-control-font-weight);
+  --card-radius: var(--mpx-card-radius);
+  --card-shadow: var(--mpx-card-shadow);
+  --card-border-width: var(--mpx-card-border-width);
+  --splitter-width: var(--mpx-splitter-width);
 }
 
 .sidebar-head strong,
@@ -38,7 +42,7 @@ body {
   min-width: 960px;
   font-family: var(--mpx-font-ui);
   color: var(--text-main);
-  background: radial-gradient(circle at top right, var(--mpx-bg-muted), var(--mpx-bg-app) 70%);
+  background: var(--mpx-bg-body);
 }
 
 * {
@@ -74,6 +78,20 @@ select {
 button {
   border-radius: var(--control-radius);
   font-weight: var(--control-font-weight);
+  box-shadow: var(--mpx-control-shadow);
+  backdrop-filter: var(--mpx-control-backdrop-filter);
+  transition: var(--mpx-control-transition);
+}
+
+button:hover {
+  transform: var(--mpx-control-hover-transform);
+  box-shadow: var(--mpx-control-hover-shadow);
+  backdrop-filter: var(--mpx-control-hover-backdrop-filter);
+}
+
+button:active {
+  transform: var(--mpx-control-active-transform);
+  box-shadow: var(--mpx-control-active-shadow);
 }
 
 input:not([type='checkbox']):not([type='radio']):not([type='range']),

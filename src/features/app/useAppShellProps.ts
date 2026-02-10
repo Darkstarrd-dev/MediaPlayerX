@@ -12,7 +12,6 @@ import type { BrowserMode } from '../../types'
 interface UseAppShellPropsParams {
   repositoryMode: RepositoryBootstrapDataResult['repositoryMode']
   mode: BrowserMode
-  headerHeight: number
   sidebarCollapsed: boolean
   sidebarFocus: 'sidebar' | 'main'
   sidebarRatio: number
@@ -49,7 +48,6 @@ interface UseAppShellPropsParams {
 export function useAppShellProps({
   repositoryMode,
   mode,
-  headerHeight,
   sidebarCollapsed,
   sidebarFocus,
   sidebarRatio,
@@ -91,7 +89,6 @@ export function useAppShellProps({
 
   const appWorkspaceProps = {
     mode,
-    headerHeight,
     sidebarCollapsed,
     sidebarFocus,
     sidebarRatio,

@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import { DEFAULT_THEME_ID, resolveThemeIdFromThemes, type ThemeInfo } from './themeRegistry'
+import {
+  DEFAULT_PALETTE_ID,
+  DEFAULT_STYLE_ID,
+  DEFAULT_THEME_ID,
+  resolvePaletteIdFromPalettes,
+  resolveStyleIdFromStyles,
+  resolveThemeIdFromThemes,
+  type PaletteInfo,
+  type StyleInfo,
+  type ThemeInfo,
+} from './themeRegistry'
 
 describe('resolveThemeIdFromThemes', () => {
   const themes: ThemeInfo[] = [
@@ -18,5 +28,43 @@ describe('resolveThemeIdFromThemes', () => {
 
   it('falls back to default theme when no preset exists', () => {
     expect(resolveThemeIdFromThemes('missing-theme', [])).toBe(DEFAULT_THEME_ID)
+  })
+})
+
+describe('resolveStyleIdFromStyles', () => {
+  const styles: StyleInfo[] = [
+    { id: 'flush', label: 'Flush' },
+    { id: 'liquid-glass', label: 'Liquid Glass' },
+  ]
+
+  it('keeps current style when still available', () => {
+    expect(resolveStyleIdFromStyles('liquid-glass', styles)).toBe('liquid-glass')
+  })
+
+  it('falls back to first available style when current style is missing', () => {
+    expect(resolveStyleIdFromStyles('missing-style', styles)).toBe('flush')
+  })
+
+  it('falls back to default style when no style preset exists', () => {
+    expect(resolveStyleIdFromStyles('missing-style', [])).toBe(DEFAULT_STYLE_ID)
+  })
+})
+
+describe('resolvePaletteIdFromPalettes', () => {
+  const palettes: PaletteInfo[] = [
+    { id: 'parchment', label: 'Parchment' },
+    { id: 'tokyo-night', label: 'Tokyo Night' },
+  ]
+
+  it('keeps current palette when still available', () => {
+    expect(resolvePaletteIdFromPalettes('tokyo-night', palettes)).toBe('tokyo-night')
+  })
+
+  it('falls back to first available palette when current palette is missing', () => {
+    expect(resolvePaletteIdFromPalettes('missing-palette', palettes)).toBe('parchment')
+  })
+
+  it('falls back to default palette when no palette preset exists', () => {
+    expect(resolvePaletteIdFromPalettes('missing-palette', [])).toBe(DEFAULT_PALETTE_ID)
   })
 })

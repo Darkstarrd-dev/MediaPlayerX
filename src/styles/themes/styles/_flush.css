@@ -1,0 +1,81 @@
+/*
+ * Style preset: flush
+ *
+ * This baseline style mirrors the contract defaults.
+ * It exists so styleId="flush" is explicit and extensible.
+ *
+ * Design intent:
+ * - no extra spacing around panels
+ * - no rounded panel chrome by default
+ * - no decorative shadows / transforms / blur
+ * - fast and minimal control interactions
+ */
+
+:root[data-mpx-style="flush"] {
+  /* Global layout scaffold */
+  --mpx-layout-padding: 0px;
+  --mpx-splitter-width: 8px;
+  --mpx-bg-body: radial-gradient(circle at top right, var(--mpx-bg-muted), var(--mpx-bg-app) 70%);
+
+  /* Shared panel geometry/effects */
+  --mpx-panel-radius: 0px;
+  --mpx-panel-border-width: 1px;
+  --mpx-panel-border-style: solid;
+  --mpx-panel-shadow: none;
+  --mpx-panel-backdrop-filter: none;
+  --mpx-panel-transform: none;
+  --mpx-panel-transition: none;
+  --mpx-panel-padding: 10px;
+
+  /* Sidebar overrides (inherits panel defaults) */
+  --mpx-sidebar-radius: var(--mpx-panel-radius);
+  --mpx-sidebar-border-width: var(--mpx-panel-border-width);
+  --mpx-sidebar-border-style: var(--mpx-panel-border-style);
+  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+  --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-sidebar-transform: var(--mpx-panel-transform);
+  --mpx-sidebar-transition: var(--mpx-panel-transition);
+  --mpx-sidebar-padding: 0px;
+
+  /* Main overrides (inherits panel defaults) */
+  --mpx-main-radius: var(--mpx-panel-radius);
+  --mpx-main-border-width: var(--mpx-panel-border-width);
+  --mpx-main-border-style: var(--mpx-panel-border-style);
+  --mpx-main-shadow: var(--mpx-panel-shadow);
+  --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-main-transform: var(--mpx-panel-transform);
+  --mpx-main-transition: var(--mpx-panel-transition);
+  --mpx-main-padding: var(--mpx-panel-padding);
+
+  /* Metadata overrides (inherits panel defaults) */
+  --mpx-metadata-radius: var(--mpx-panel-radius);
+  --mpx-metadata-border-width: var(--mpx-panel-border-width);
+  --mpx-metadata-border-style: var(--mpx-panel-border-style);
+  --mpx-metadata-shadow: var(--mpx-panel-shadow);
+  --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-metadata-transform: var(--mpx-panel-transform);
+  --mpx-metadata-transition: var(--mpx-panel-transition);
+  --mpx-metadata-padding: var(--mpx-panel-padding);
+
+  /* Header chrome */
+  --mpx-header-radius: 0px;
+  --mpx-header-shadow: none;
+  --mpx-header-margin: 0px;
+  --mpx-header-border-width: 1px;
+  --mpx-header-backdrop-filter: none;
+
+  /* Inner card geometry */
+  --mpx-card-radius: 10px;
+  --mpx-card-shadow: none;
+  --mpx-card-border-width: 1px;
+
+  /* Control motion/effects */
+  --mpx-control-shadow: none;
+  --mpx-control-backdrop-filter: none;
+  --mpx-control-transition: 0.15s ease;
+  --mpx-control-hover-transform: none;
+  --mpx-control-hover-shadow: none;
+  --mpx-control-hover-backdrop-filter: none;
+  --mpx-control-active-transform: none;
+  --mpx-control-active-shadow: none;
+}

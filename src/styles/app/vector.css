@@ -247,8 +247,8 @@
 }
 
 .vector-splitter {
-  height: 8px;
-  min-height: 8px;
+  height: var(--mpx-splitter-width);
+  min-height: var(--mpx-splitter-width);
   cursor: row-resize;
   position: relative;
   background: var(--mpx-splitter-track-bg);

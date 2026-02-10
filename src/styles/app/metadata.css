@@ -25,8 +25,8 @@
 }
 
 .metadata-splitter {
-  width: 8px;
-  min-width: 8px;
+  width: var(--mpx-splitter-width);
+  min-width: var(--mpx-splitter-width);
   cursor: col-resize;
   position: relative;
   background: var(--mpx-splitter-track-bg);
@@ -48,11 +48,16 @@
 }
 
 .metadata-panel {
-  border-left: 1px solid var(--line);
-  background: var(--mpx-bg-panel);
-  padding: 10px;
+  border-left: var(--mpx-metadata-border-width) var(--mpx-metadata-border-style) var(--line);
+  background: var(--mpx-metadata-bg);
+  padding: var(--mpx-metadata-padding);
   min-width: 180px;
   overflow: auto;
+  border-radius: var(--mpx-metadata-radius);
+  box-shadow: var(--mpx-metadata-shadow);
+  backdrop-filter: var(--mpx-metadata-backdrop-filter);
+  transform: var(--mpx-metadata-transform);
+  transition: var(--mpx-metadata-transition);
 }
 
 .metadata-panel.is-image-focus {
@@ -164,7 +169,7 @@
 
 .metadata-rating-group {
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--mpx-card-radius);
   background: var(--mpx-bg-elevated);
   padding: 8px 10px;
 }
@@ -214,7 +219,7 @@
 
 .metadata-edit-grid {
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--mpx-card-radius);
   background: var(--mpx-bg-elevated);
   padding: 10px;
   display: flex;

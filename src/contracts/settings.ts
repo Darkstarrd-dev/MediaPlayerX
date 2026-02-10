@@ -32,6 +32,8 @@ export const appSettingsSchema = z.object({
   imageRootNodeId: z.string().nullable(),
   videoRootNodeId: z.string().nullable(),
   themeId: z.string().min(1),
+  styleId: z.string().min(1).default('flush'),
+  paletteId: z.string().min(1).default('parchment'),
   thumbnailQuality: z.number().min(1).max(100),
   thumbnailWidth: z.number().min(128).max(2048),
   lmStudioEndpoint: z.string().min(1),

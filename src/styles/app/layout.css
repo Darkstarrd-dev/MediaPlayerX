@@ -12,11 +12,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 14px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: var(--mpx-header-border-width) solid var(--line);
   background: var(--header-bg);
   position: relative;
   z-index: 4;
   gap: 14px;
+  border-radius: var(--mpx-header-radius);
+  box-shadow: var(--mpx-header-shadow);
+  margin: var(--mpx-header-margin);
+  backdrop-filter: var(--mpx-header-backdrop-filter);
 }
 
 .header-left,
@@ -199,9 +203,11 @@
 
 .app-body {
   display: flex;
+  flex: 1;
   width: 100%;
   min-height: 0;
   position: relative;
+  padding: var(--mpx-layout-padding);
 }
 
 .workspace {

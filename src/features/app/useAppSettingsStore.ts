@@ -32,6 +32,8 @@ export function useAppSettingsStore() {
       imageRootNodeId: state.imageRootNodeId,
       videoRootNodeId: state.videoRootNodeId,
       themeId: state.themeId,
+      styleId: state.styleId,
+      paletteId: state.paletteId,
       thumbnailQuality: state.thumbnailQuality,
       thumbnailWidth: state.thumbnailWidth,
       lmStudioEndpoint: state.lmStudioEndpoint,

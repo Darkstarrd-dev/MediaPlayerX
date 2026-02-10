@@ -104,6 +104,8 @@ describe('useAppDisplayAndEffects integration', () => {
       vectorThreshold: 0.42,
       sidebarFocus: 'sidebar',
       themeId: 'ocean',
+      styleId: 'flush',
+      paletteId: 'ocean',
       vectorUniverseMoveSpeed: 1,
       vectorUniverseSprintMultiplier: 1.4,
       vectorUniverseLookSensitivity: 1,

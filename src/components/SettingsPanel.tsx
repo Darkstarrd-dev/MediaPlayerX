@@ -23,7 +23,8 @@ import { toScale } from './settings/settingsScale'
 
 export interface SettingsPanelProps {
   settingsOpen: boolean
-  themeId: string
+  styleId: string
+  paletteId: string
   headerHeight: number
   settingsFontSize: number
   sidebarRatio: number
@@ -64,7 +65,8 @@ export interface SettingsPanelProps {
   databaseResetPending: boolean
   databaseResetError: string | null
   onClose: () => void
-  onThemeChange: (value: string) => void
+  onStyleChange: (value: string) => void
+  onPaletteChange: (value: string) => void
   onHeaderHeightChange: (value: number) => void
   onSettingsFontSizeChange: (value: number) => void
   onSidebarRatioChange: (value: number) => void
@@ -118,7 +120,8 @@ const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
 
 function SettingsPanel({
   settingsOpen,
-  themeId,
+  styleId,
+  paletteId,
   headerHeight,
   settingsFontSize,
   sidebarRatio,
@@ -159,7 +162,8 @@ function SettingsPanel({
   databaseResetPending,
   databaseResetError,
   onClose,
-  onThemeChange,
+  onStyleChange,
+  onPaletteChange,
   onHeaderHeightChange,
   onSettingsFontSizeChange,
   onSidebarRatioChange,
@@ -367,7 +371,8 @@ function SettingsPanel({
     adReviewVisionVerified,
     adReviewVisionTestPending,
     adReviewVisionTestMessage,
-    themeId,
+    styleId,
+    paletteId,
     vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier,
     vectorUniverseLookSensitivity,
@@ -407,7 +412,8 @@ function SettingsPanel({
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,
-    onThemeChange,
+    onStyleChange,
+    onPaletteChange,
     onVectorUniverseMoveSpeedChange,
     onVectorUniverseSprintMultiplierChange,
     onVectorUniverseLookSensitivityChange,

@@ -1,0 +1,94 @@
+/* Palette: Tokyo Night (migrated from presets/tokyo-night.css) */
+
+:root[data-mpx-palette="tokyo-night"] {
+  color-scheme: dark;
+
+  --mpx-palette-surface: #24283b;
+  --mpx-palette-base: #1a1b26;
+  --mpx-palette-accent-raw: #7aa2f7;
+  --mpx-palette-text-raw: #c0caf5;
+  --mpx-palette-shadow-color: rgba(0, 0, 0, 0.3);
+
+  --mpx-scrollbar-track-bg: #1a1b26;
+  --mpx-scrollbar-thumb-bg: #414868;
+  --mpx-scrollbar-thumb-hover-bg: #565f89;
+
+  --mpx-range-track-bg: #414868;
+  --mpx-range-thumb-bg: #7aa2f7;
+  --mpx-range-thumb-border: #7aa2f7;
+
+  --mpx-checkbox-bg: #1a1b26;
+  --mpx-checkbox-border: #565f89;
+  --mpx-checkbox-check: #1a1b26;
+  --mpx-checkbox-checked-bg: #7aa2f7;
+  --mpx-checkbox-checked-border: #7aa2f7;
+
+  --mpx-bg-app: #1a1b26;
+  --mpx-bg-workspace: #16161e;
+  --mpx-bg-panel: #24283b;
+  --mpx-bg-elevated: #414868;
+  --mpx-bg-hover: rgba(122, 162, 247, 0.1);
+  --mpx-bg-selected: rgba(122, 162, 247, 0.2);
+  --mpx-bg-muted: #24283b;
+  --mpx-bg-tooltip: #15161e;
+
+  --mpx-text-1: #c0caf5;
+  --mpx-text-2: #a9b1d6;
+  --mpx-text-3: #565f89;
+  --mpx-text-heading: #c0caf5;
+  --mpx-text-inverse: #1a1b26;
+
+  --mpx-border-1: #414868;
+  --mpx-border-2: #24283b;
+  --mpx-border-focus: #7aa2f7;
+
+  --mpx-accent: #7aa2f7;
+  --mpx-accent-soft: rgba(122, 162, 247, 0.15);
+  --mpx-accent-contrast: #1a1b26;
+
+  --mpx-input-bg: #16161e;
+  --mpx-input-border: #414868;
+  --mpx-input-text: #c0caf5;
+  --mpx-input-focus-bg: #16161e;
+  --mpx-input-focus-border: #7aa2f7;
+  --mpx-input-readonly-bg: #24283b;
+  --mpx-input-readonly-text: #565f89;
+  --mpx-input-readonly-border: #414868;
+
+  --mpx-btn-primary-bg: #7aa2f7;
+  --mpx-btn-primary-text: #1a1b26;
+  --mpx-btn-secondary-bg: #24283b;
+  --mpx-btn-secondary-border: #414868;
+  --mpx-btn-secondary-text: #c0caf5;
+
+  --mpx-status-danger-bg: rgba(247, 118, 142, 0.1);
+  --mpx-status-danger-border: #f7768e;
+  --mpx-status-danger-text: #f7768e;
+
+  --mpx-status-warning-bg: rgba(224, 175, 104, 0.1);
+  --mpx-status-warning-border: #e0af68;
+  --mpx-status-warning-text: #e0af68;
+
+  --mpx-status-info-bg: rgba(122, 162, 247, 0.1);
+  --mpx-status-info-border: #7aa2f7;
+  --mpx-status-info-text: #7aa2f7;
+
+  --mpx-status-success-bg: rgba(158, 206, 106, 0.1);
+  --mpx-status-success-border: #9ece6a;
+  --mpx-status-success-text: #9ece6a;
+
+  --mpx-status-busy-bg: #24283b;
+  --mpx-status-busy-border: #565f89;
+  --mpx-status-busy-text: #a9b1d6;
+
+  --mpx-status-idle-bg: #1a1b26;
+  --mpx-status-idle-border: #24283b;
+  --mpx-status-idle-text: #565f89;
+
+  --mpx-header-bg: #24283b;
+  --mpx-video-screen-bg: #000000;
+  --mpx-video-empty-bg: #24283b;
+  --mpx-video-empty-text: #565f89;
+  --mpx-shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --mpx-card-focus-ring: rgba(122, 162, 247, 0.15);
+}

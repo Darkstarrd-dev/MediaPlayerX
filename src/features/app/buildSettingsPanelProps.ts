@@ -3,7 +3,8 @@ import type { SettingsPanelProps } from '../../components/SettingsPanel'
 
 interface BuildSettingsPanelPropsParams {
   settingsOpen: boolean
-  themeId: string
+  styleId: string
+  paletteId: string
   headerHeight: number
   settingsFontSize: number
   sidebarRatio: number
@@ -58,7 +59,8 @@ interface BuildSettingsPanelPropsParams {
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
   return {
     settingsOpen: params.settingsOpen,
-    themeId: params.themeId,
+    styleId: params.styleId,
+    paletteId: params.paletteId,
     headerHeight: params.headerHeight,
     settingsFontSize: params.settingsFontSize,
     sidebarRatio: params.sidebarRatio,
@@ -99,7 +101,12 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     databaseResetPending: params.databaseResetPending,
     databaseResetError: params.databaseResetError,
     onClose: () => params.updateSettings({ settingsOpen: false }),
-    onThemeChange: (value) => params.updateSettings({ themeId: value }),
+    onStyleChange: (value) => params.updateSettings({ styleId: value }),
+    onPaletteChange: (value) =>
+      params.updateSettings({
+        paletteId: value,
+        themeId: value,
+      }),
     onHeaderHeightChange: (value) => params.updateSettings({ headerHeight: value }),
     onSettingsFontSizeChange: (value) => params.updateSettings({ settingsFontSize: value }),
     onSidebarRatioChange: params.applySidebarRatio,

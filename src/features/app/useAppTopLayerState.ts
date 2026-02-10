@@ -384,7 +384,8 @@ export function useAppTopLayerState({
 
   const settingsPanelProps = buildSettingsPanelProps({
     settingsOpen: appSettings.settingsOpen,
-    themeId: appSettings.themeId,
+    styleId: appSettings.styleId,
+    paletteId: appSettings.paletteId,
     headerHeight: appSettings.headerHeight,
     settingsFontSize: appSettings.settingsFontSize,
     sidebarRatio: appSettings.sidebarRatio,

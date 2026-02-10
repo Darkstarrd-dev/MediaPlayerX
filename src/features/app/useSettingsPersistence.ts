@@ -19,6 +19,14 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     ...(value as Record<string, unknown>),
   }
 
+  const rawStyleId = typeof next.styleId === 'string' ? next.styleId.trim() : ''
+  const rawPaletteId = typeof next.paletteId === 'string' ? next.paletteId.trim() : ''
+  const rawThemeId = typeof next.themeId === 'string' ? next.themeId.trim() : ''
+
+  next.styleId = rawStyleId || 'flush'
+  next.paletteId = rawPaletteId || rawThemeId || 'parchment'
+  next.themeId = next.paletteId
+
   if (typeof next.adReviewMaxConcurrency === 'number' && Number.isFinite(next.adReviewMaxConcurrency)) {
     next.adReviewMaxConcurrency = Math.max(4, Math.min(12, Math.floor(next.adReviewMaxConcurrency)))
   }

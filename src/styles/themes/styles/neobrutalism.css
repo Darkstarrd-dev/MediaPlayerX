@@ -1,0 +1,76 @@
+/*
+ * Style preset: neobrutalism
+ *
+ * Visual language:
+ * - thick borders
+ * - hard offset shadows
+ * - sharp corners
+ * - snappy/no easing transitions
+ */
+
+:root[data-mpx-style="neobrutalism"] {
+  --mpx-layout-padding: 8px;
+  --mpx-splitter-width: 16px;
+  --mpx-bg-body: var(--mpx-bg-app);
+
+  --mpx-panel-radius: 2px;
+  --mpx-panel-border-width: 3px;
+  --mpx-panel-border-style: solid;
+  --mpx-panel-shadow: 4px 4px 0px var(--mpx-palette-shadow-color);
+  --mpx-panel-backdrop-filter: none;
+  --mpx-panel-transform: none;
+  --mpx-panel-transition: none;
+  --mpx-panel-padding: 8px;
+
+  --mpx-sidebar-radius: var(--mpx-panel-radius);
+  --mpx-sidebar-border-width: var(--mpx-panel-border-width);
+  --mpx-sidebar-border-style: var(--mpx-panel-border-style);
+  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+  --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-sidebar-transform: var(--mpx-panel-transform);
+  --mpx-sidebar-transition: var(--mpx-panel-transition);
+  --mpx-sidebar-padding: 0px;
+
+  --mpx-main-radius: var(--mpx-panel-radius);
+  --mpx-main-border-width: var(--mpx-panel-border-width);
+  --mpx-main-border-style: var(--mpx-panel-border-style);
+  --mpx-main-shadow: var(--mpx-panel-shadow);
+  --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-main-transform: var(--mpx-panel-transform);
+  --mpx-main-transition: var(--mpx-panel-transition);
+  --mpx-main-padding: var(--mpx-panel-padding);
+
+  --mpx-metadata-radius: var(--mpx-panel-radius);
+  --mpx-metadata-border-width: var(--mpx-panel-border-width);
+  --mpx-metadata-border-style: var(--mpx-panel-border-style);
+  --mpx-metadata-shadow: var(--mpx-panel-shadow);
+  --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-metadata-transform: var(--mpx-panel-transform);
+  --mpx-metadata-transition: var(--mpx-panel-transition);
+  --mpx-metadata-padding: var(--mpx-panel-padding);
+
+  --mpx-header-radius: 2px;
+  --mpx-header-shadow: 4px 4px 0px var(--mpx-palette-shadow-color);
+  --mpx-header-margin: 8px 8px 0px;
+  --mpx-header-border-width: 3px;
+  --mpx-header-backdrop-filter: none;
+
+  --mpx-card-radius: 2px;
+  --mpx-card-shadow: 3px 3px 0px var(--mpx-palette-shadow-color);
+  --mpx-card-border-width: 2px;
+
+  --mpx-control-radius: 2px;
+  --mpx-control-border-width: 2px;
+  --mpx-control-shadow: 2px 2px 0px var(--mpx-palette-shadow-color);
+  --mpx-control-backdrop-filter: none;
+  --mpx-control-transition: none;
+  --mpx-control-hover-transform: translate(-2px, -2px);
+  --mpx-control-hover-shadow: 4px 4px 0px var(--mpx-palette-shadow-color);
+  --mpx-control-hover-backdrop-filter: none;
+  --mpx-control-active-transform: translate(1px, 1px);
+  --mpx-control-active-shadow: 1px 1px 0px var(--mpx-palette-shadow-color);
+
+  --mpx-splitter-track-bg: transparent;
+  --mpx-splitter-handle-bg: transparent;
+  --mpx-splitter-handle-hover-bg: var(--mpx-palette-accent-raw);
+}

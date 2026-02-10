@@ -13,7 +13,6 @@ import VideoMainSection from './VideoMainSection'
 
 interface AppWorkspaceProps {
   mode: BrowserMode
-  headerHeight: number
   sidebarCollapsed: boolean
   sidebarFocus: 'sidebar' | 'main'
   sidebarRatio: number
@@ -37,7 +36,6 @@ interface AppWorkspaceProps {
 
 function AppWorkspace({
   mode,
-  headerHeight,
   sidebarCollapsed,
   sidebarFocus,
   sidebarRatio,
@@ -110,7 +108,7 @@ function AppWorkspace({
   )
 
   return (
-    <div className="app-body" ref={appBodyRef} style={{ height: `calc(100vh - ${headerHeight}px)` }}>
+    <div className="app-body" ref={appBodyRef}>
       {sidebarCollapsed ? (
         <button aria-label="展开目录" className="sidebar-expand-btn" type="button" onClick={onExpandSidebar}>
           <span className="sidebar-expand-tip">展开目录</span>
@@ -134,13 +132,16 @@ function AppWorkspace({
       <section
         className={`workspace ${sidebarFocus === 'main' ? 'is-focus' : ''}`}
         ref={workspaceRef}
-        style={{ width: sidebarCollapsed ? '100%' : `calc(${(1 - sidebarRatio) * 100}% - 8px)` }}
+        style={{ width: sidebarCollapsed ? '100%' : `calc(${(1 - sidebarRatio) * 100}% - var(--mpx-splitter-width))` }}
       >
         {searchPanel}
         {managementPanel}
 
         <div className="workspace-body" ref={workspaceBodyRef}>
-          <main className="main-pane" style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - 8px)` }}>
+          <main
+            className="main-pane"
+            style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - var(--mpx-splitter-width))` }}
+          >
             {mainSection}
 
             <footer className="main-footer">{mainFooter}</footer>

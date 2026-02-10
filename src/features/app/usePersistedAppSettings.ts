@@ -40,6 +40,8 @@ export function usePersistedAppSettings({
       imageRootNodeId: settings.imageRootNodeId,
       videoRootNodeId: settings.videoRootNodeId,
       themeId: settings.themeId,
+      styleId: settings.styleId,
+      paletteId: settings.paletteId,
       thumbnailQuality: settings.thumbnailQuality,
       thumbnailWidth: settings.thumbnailWidth,
       lmStudioEndpoint: settings.lmStudioEndpoint,

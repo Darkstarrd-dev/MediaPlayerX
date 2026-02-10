@@ -1,4 +1,9 @@
-import { listThemes, resolveThemeIdFromThemes } from '../../features/theme/themeRegistry'
+import {
+  listPalettes,
+  listStyles,
+  resolvePaletteIdFromPalettes,
+  resolveStyleIdFromStyles,
+} from '../../features/theme/themeRegistry'
 import type { JSX } from 'react'
 
 import type { ShortcutConflict } from '../../shortcuts'
@@ -48,7 +53,8 @@ interface RenderSettingsMainSectionParams {
   adReviewVisionVerified: boolean
   adReviewVisionTestPending: boolean
   adReviewVisionTestMessage: string | null
-  themeId: string
+  styleId: string
+  paletteId: string
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
   vectorUniverseLookSensitivity: number
@@ -88,7 +94,8 @@ interface RenderSettingsMainSectionParams {
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
-  onThemeChange: (value: string) => void
+  onStyleChange: (value: string) => void
+  onPaletteChange: (value: string) => void
   onVectorUniverseMoveSpeedChange: (value: number) => void
   onVectorUniverseSprintMultiplierChange: (value: number) => void
   onVectorUniverseLookSensitivityChange: (value: number) => void
@@ -136,7 +143,8 @@ export function renderSettingsMainSection({
   adReviewVisionVerified,
   adReviewVisionTestPending,
   adReviewVisionTestMessage,
-  themeId,
+  styleId,
+  paletteId,
   vectorUniverseMoveSpeed,
   vectorUniverseSprintMultiplier,
   vectorUniverseLookSensitivity,
@@ -176,7 +184,8 @@ export function renderSettingsMainSection({
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
-  onThemeChange,
+  onStyleChange,
+  onPaletteChange,
   onVectorUniverseMoveSpeedChange,
   onVectorUniverseSprintMultiplierChange,
   onVectorUniverseLookSensitivityChange,
@@ -455,20 +464,31 @@ export function renderSettingsMainSection({
   }
 
   if (activeSection === 'theme') {
-    const themes = listThemes()
-    const selectedThemeId = resolveThemeIdFromThemes(themeId, themes)
+    const styles = listStyles()
+    const palettes = listPalettes()
+    const selectedStyleId = resolveStyleIdFromStyles(styleId, styles)
+    const selectedPaletteId = resolvePaletteIdFromPalettes(paletteId, palettes)
+
     return (
       <div className="settings-block">
-        <h3>theme 设置</h3>
+        <h3>主题设置</h3>
         <p className="settings-placeholder">
-          在此选择应用主题方案。您可以向 <code>src/styles/themes/presets/</code> 目录添加 CSS
-          文件来增加新主题。
+          主题已拆分为 style（布局/效果）和 palette（配色）。您可以向 <code>src/styles/themes/styles/</code> 与{' '}
+          <code>src/styles/themes/palettes/</code> 添加 CSS 文件扩展预设。
         </p>
-        <label htmlFor="theme-select">主题方案</label>
-        <select id="theme-select" value={selectedThemeId} onChange={(event) => onThemeChange(event.target.value)}>
-          {themes.map((theme) => (
-            <option key={theme.id} value={theme.id}>
-              {theme.label}
+        <label htmlFor="theme-style-select">Style</label>
+        <select id="theme-style-select" value={selectedStyleId} onChange={(event) => onStyleChange(event.target.value)}>
+          {styles.map((style) => (
+            <option key={style.id} value={style.id}>
+              {style.label}
+            </option>
+          ))}
+        </select>
+        <label htmlFor="theme-palette-select">Palette</label>
+        <select id="theme-palette-select" value={selectedPaletteId} onChange={(event) => onPaletteChange(event.target.value)}>
+          {palettes.map((palette) => (
+            <option key={palette.id} value={palette.id}>
+              {palette.label}
             </option>
           ))}
         </select>

@@ -1,7 +1,7 @@
 import { useEffect, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
-import { resolveThemeId } from '../theme/themeRegistry'
+import { resolvePaletteId, resolveStyleId } from '../theme/themeRegistry'
 import type { BrowserMode, FocusedImageRef, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import { clamp } from '../../utils/ui'
 
@@ -51,6 +51,8 @@ interface UseAppEffectsParams {
   searchPanelMode: 'vector' | 'feature'
   vectorPanelHeight: number
   featureTagPickerOpen: boolean
+  styleId: string
+  paletteId: string
   themeId: string
   setAppBodyWidth: Dispatch<SetStateAction<number>>
   setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>
@@ -114,6 +116,8 @@ export function useAppEffects({
   searchPanelMode,
   vectorPanelHeight,
   featureTagPickerOpen,
+  styleId,
+  paletteId,
   themeId,
   setAppBodyWidth,
   setGridSize,
@@ -438,10 +442,20 @@ export function useAppEffects({
   ])
 
   useEffect(() => {
-    const nextThemeId = resolveThemeId(themeId)
-    if (nextThemeId !== themeId) {
-      updateSettings({ themeId: nextThemeId })
+    const nextStyleId = resolveStyleId(styleId)
+    const nextPaletteId = resolvePaletteId(paletteId)
+    const nextThemeId = nextPaletteId
+
+    if (nextStyleId !== styleId || nextPaletteId !== paletteId || nextThemeId !== themeId) {
+      updateSettings({
+        styleId: nextStyleId,
+        paletteId: nextPaletteId,
+        themeId: nextThemeId,
+      })
     }
+
+    document.documentElement.dataset.mpxStyle = nextStyleId
+    document.documentElement.dataset.mpxPalette = nextPaletteId
     document.documentElement.dataset.mpxTheme = nextThemeId
-  }, [themeId, updateSettings])
+  }, [paletteId, styleId, themeId, updateSettings])
 }

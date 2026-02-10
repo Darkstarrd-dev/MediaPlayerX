@@ -31,7 +31,6 @@ export function useAppViewComposition({
 
   const {
     mode,
-    headerHeight,
     sidebarRatio,
     metadataCollapsed,
     metadataRatio,
@@ -65,7 +64,6 @@ export function useAppViewComposition({
   const shellProps = useAppShellProps({
     repositoryMode,
     mode,
-    headerHeight,
     sidebarCollapsed: readNavigationState.sidebarCollapsed,
     sidebarFocus,
     sidebarRatio,

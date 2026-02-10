@@ -1,0 +1,94 @@
+/* Palette: Gruvbox Dark (migrated from presets/gruvbox-dark.css) */
+
+:root[data-mpx-palette="gruvbox-dark"] {
+  color-scheme: dark;
+
+  --mpx-palette-surface: #282828;
+  --mpx-palette-base: #1d2021;
+  --mpx-palette-accent-raw: #fe8019;
+  --mpx-palette-text-raw: #ebdbb2;
+  --mpx-palette-shadow-color: rgba(0, 0, 0, 0.5);
+
+  --mpx-scrollbar-track-bg: #1d2021;
+  --mpx-scrollbar-thumb-bg: #504945;
+  --mpx-scrollbar-thumb-hover-bg: #665c54;
+
+  --mpx-range-track-bg: #3c3836;
+  --mpx-range-thumb-bg: #fabd2f;
+  --mpx-range-thumb-border: #fabd2f;
+
+  --mpx-checkbox-bg: #1d2021;
+  --mpx-checkbox-border: #665c54;
+  --mpx-checkbox-check: #fbf1c7;
+  --mpx-checkbox-checked-bg: #fabd2f;
+  --mpx-checkbox-checked-border: #fabd2f;
+
+  --mpx-bg-app: #1d2021;
+  --mpx-bg-workspace: #000000;
+  --mpx-bg-panel: #282828;
+  --mpx-bg-elevated: #3c3836;
+  --mpx-bg-hover: #3c3836;
+  --mpx-bg-selected: #504945;
+  --mpx-bg-muted: #282828;
+  --mpx-bg-tooltip: #1d2021;
+
+  --mpx-text-1: #ebdbb2;
+  --mpx-text-2: #d5c4a1;
+  --mpx-text-3: #a89984;
+  --mpx-text-heading: #fbf1c7;
+  --mpx-text-inverse: #1d2021;
+
+  --mpx-border-1: #3c3836;
+  --mpx-border-2: #504945;
+  --mpx-border-focus: #fe8019;
+
+  --mpx-accent: #fe8019;
+  --mpx-accent-soft: rgba(254, 128, 25, 0.15);
+  --mpx-accent-contrast: #1d2021;
+
+  --mpx-input-bg: #1d2021;
+  --mpx-input-border: #504945;
+  --mpx-input-text: #ebdbb2;
+  --mpx-input-focus-bg: #1d2021;
+  --mpx-input-focus-border: #fe8019;
+  --mpx-input-readonly-bg: #282828;
+  --mpx-input-readonly-text: #a89984;
+  --mpx-input-readonly-border: #3c3836;
+
+  --mpx-btn-primary-bg: #fabd2f;
+  --mpx-btn-primary-text: #1d2021;
+  --mpx-btn-secondary-bg: #3c3836;
+  --mpx-btn-secondary-border: #504945;
+  --mpx-btn-secondary-text: #ebdbb2;
+
+  --mpx-status-danger-bg: rgba(204, 36, 29, 0.1);
+  --mpx-status-danger-border: #cc241d;
+  --mpx-status-danger-text: #cc241d;
+
+  --mpx-status-warning-bg: rgba(215, 153, 33, 0.1);
+  --mpx-status-warning-border: #d79921;
+  --mpx-status-warning-text: #d79921;
+
+  --mpx-status-info-bg: rgba(69, 133, 136, 0.1);
+  --mpx-status-info-border: #458588;
+  --mpx-status-info-text: #458588;
+
+  --mpx-status-success-bg: rgba(152, 151, 26, 0.1);
+  --mpx-status-success-border: #98971a;
+  --mpx-status-success-text: #98971a;
+
+  --mpx-status-busy-bg: #282828;
+  --mpx-status-busy-border: #3c3836;
+  --mpx-status-busy-text: #a89984;
+
+  --mpx-status-idle-bg: #1d2021;
+  --mpx-status-idle-border: #282828;
+  --mpx-status-idle-text: #928374;
+
+  --mpx-header-bg: #282828;
+  --mpx-video-screen-bg: #000000;
+  --mpx-video-empty-bg: #282828;
+  --mpx-video-empty-text: #a89984;
+  --mpx-shadow-panel: 0 8px 16px rgba(0, 0, 0, 0.5);
+  --mpx-card-focus-ring: rgba(254, 128, 25, 0.15);
+}

@@ -47,7 +47,7 @@ const VISION_TEST_SYSTEM_PROMPT =
 const VISION_TEST_USER_PROMPT =
   'What is the dominant color of this image? Return JSON only with is_ad and reason.'
 const INVALID_DESCRIPTION_PATTERN =
-  /(cannot|can\'t|unable|not able|as an ai|无法|不能|看不到|无法查看|无法识别|无法描述)/i
+  /(cannot|can't|unable|not able|as an ai|无法|不能|看不到|无法查看|无法识别|无法描述)/i
 const RED_COLOR_PATTERN = /\b(red|crimson|scarlet|ruby|maroon|reddish)\b|红色?|赤红|绯红|#?ff0000/i
 
 interface ParsedSidebarNodeRef {

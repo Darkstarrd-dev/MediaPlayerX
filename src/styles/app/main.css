@@ -3,9 +3,14 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--mpx-bg-panel);
-  padding: 10px;
+  background: var(--mpx-main-bg);
+  padding: var(--mpx-main-padding);
   gap: 8px;
+  border-radius: var(--mpx-main-radius);
+  box-shadow: var(--mpx-main-shadow);
+  backdrop-filter: var(--mpx-main-backdrop-filter);
+  transform: var(--mpx-main-transform);
+  transition: var(--mpx-main-transition);
 }
 
 .main-toolbar {
@@ -36,8 +41,8 @@
 .image-grid {
   min-height: 0;
   flex: 1;
-  border: 1px solid var(--mpx-border-1);
-  border-radius: 10px;
+  border: var(--mpx-card-border-width) solid var(--mpx-border-1);
+  border-radius: var(--mpx-card-radius);
   background: var(--mpx-bg-workspace);
   padding: 8px;
   display: grid;
@@ -55,13 +60,14 @@
 }
 
 .thumb-card {
-  border: 1px solid var(--mpx-border-1);
-  border-radius: 10px;
+  border: var(--mpx-card-border-width) solid var(--mpx-border-1);
+  border-radius: var(--mpx-card-radius);
   padding: 5px;
   background: var(--mpx-bg-elevated);
   cursor: pointer;
   text-align: left;
   transition: transform 0.15s ease;
+  box-shadow: var(--mpx-card-shadow);
 }
 
 .thumb-card-main {
@@ -85,7 +91,8 @@
 }
 
 .thumb-card:hover {
-  transform: translateY(-2px);
+  transform: var(--mpx-control-hover-transform);
+  box-shadow: var(--mpx-control-hover-shadow);
 }
 
 .thumb-card.is-skeleton:hover {
@@ -158,7 +165,7 @@
   min-height: 0;
   flex: 1;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--mpx-card-radius);
   background: var(--mpx-bg-elevated);
   display: flex;
   flex-direction: column;
@@ -234,7 +241,7 @@
 
 .video-preview {
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--mpx-card-radius);
   background: var(--mpx-bg-elevated);
   min-height: 0;
   flex: 1;

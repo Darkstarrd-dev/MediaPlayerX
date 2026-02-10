@@ -1,3 +1,23 @@
 /* Global Theme Entry */
 
 @import './contract.css';
+
+/* Palette presets (color layer) */
+@import './palettes/parchment.css';
+@import './palettes/ocean-blue.css';
+@import './palettes/aurora-sand.css';
+@import './palettes/catppuccin-mocha.css';
+@import './palettes/dracula-dark.css';
+@import './palettes/geist-light.css';
+@import './palettes/github-dimmed.css';
+@import './palettes/gruvbox-dark.css';
+@import './palettes/linear-dark.css';
+@import './palettes/nord-dark.css';
+@import './palettes/rose-pine.css';
+@import './palettes/solarized-dark.css';
+@import './palettes/tokyo-night.css';
+
+/* Style presets (layout/effect layer) */
+@import './styles/_flush.css';
+@import './styles/liquid-glass.css';
+@import './styles/neobrutalism.css';

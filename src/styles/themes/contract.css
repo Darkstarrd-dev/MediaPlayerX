@@ -121,4 +121,87 @@
   --mpx-video-screen-bg: linear-gradient(135deg, #2d2f33, #212022);
   --mpx-video-empty-bg: var(--mpx-video-screen-bg);
   --mpx-video-empty-text: var(--mpx-text-inverse);
+
+  /* ========================================================
+   * E. Layout Structure — Style 控制的布局效果 token
+   * ======================================================== */
+
+  /* 全局布局 */
+  --mpx-layout-padding: 0px;
+  --mpx-splitter-width: 8px;
+  --mpx-bg-body: radial-gradient(circle at top right, var(--mpx-bg-muted), var(--mpx-bg-app) 70%);
+
+  /* 面板共享基底 */
+  --mpx-panel-radius: 0px;
+  --mpx-panel-border-width: 1px;
+  --mpx-panel-border-style: solid;
+  --mpx-panel-shadow: none;
+  --mpx-panel-backdrop-filter: none;
+  --mpx-panel-transform: none;
+  --mpx-panel-transition: none;
+  --mpx-panel-padding: 10px;
+
+  /* Sidebar 覆写（默认继承 panel） */
+  --mpx-sidebar-radius: var(--mpx-panel-radius);
+  --mpx-sidebar-border-width: var(--mpx-panel-border-width);
+  --mpx-sidebar-border-style: var(--mpx-panel-border-style);
+  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+  --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-sidebar-transform: var(--mpx-panel-transform);
+  --mpx-sidebar-transition: var(--mpx-panel-transition);
+  --mpx-sidebar-padding: 0px;
+  --mpx-sidebar-bg: var(--mpx-bg-panel);
+
+  /* Main 覆写 */
+  --mpx-main-radius: var(--mpx-panel-radius);
+  --mpx-main-border-width: var(--mpx-panel-border-width);
+  --mpx-main-border-style: var(--mpx-panel-border-style);
+  --mpx-main-shadow: var(--mpx-panel-shadow);
+  --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-main-transform: var(--mpx-panel-transform);
+  --mpx-main-transition: var(--mpx-panel-transition);
+  --mpx-main-padding: var(--mpx-panel-padding);
+  --mpx-main-bg: var(--mpx-bg-panel);
+
+  /* Metadata 覆写 */
+  --mpx-metadata-radius: var(--mpx-panel-radius);
+  --mpx-metadata-border-width: var(--mpx-panel-border-width);
+  --mpx-metadata-border-style: var(--mpx-panel-border-style);
+  --mpx-metadata-shadow: var(--mpx-panel-shadow);
+  --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-metadata-transform: var(--mpx-panel-transform);
+  --mpx-metadata-transition: var(--mpx-panel-transition);
+  --mpx-metadata-padding: var(--mpx-panel-padding);
+  --mpx-metadata-bg: var(--mpx-bg-panel);
+
+  /* Header 独立 */
+  --mpx-header-radius: 0px;
+  --mpx-header-shadow: none;
+  --mpx-header-margin: 0px;
+  --mpx-header-border-width: 1px;
+  --mpx-header-backdrop-filter: none;
+
+  /* 内卡统一 */
+  --mpx-card-radius: 10px;
+  --mpx-card-shadow: none;
+  --mpx-card-border-width: 1px;
+
+  /* 控件视觉效果 */
+  --mpx-control-shadow: none;
+  --mpx-control-backdrop-filter: none;
+  --mpx-control-transition: 0.15s ease;
+  --mpx-control-hover-transform: none;
+  --mpx-control-hover-shadow: none;
+  --mpx-control-hover-backdrop-filter: none;
+  --mpx-control-active-transform: none;
+  --mpx-control-active-shadow: none;
+
+  /* ========================================================
+   * F. Palette 原始色导出（默认 parchment 配色）
+   * ======================================================== */
+  --mpx-palette-surface: #fbf8f3;
+  --mpx-palette-base: #f2eee7;
+  --mpx-palette-accent-raw: #2e6f7f;
+  --mpx-palette-text-raw: #2e2a22;
+  --mpx-palette-shadow-color: rgba(60, 48, 30, 0.15);
 }

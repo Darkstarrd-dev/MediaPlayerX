@@ -1,5 +1,8 @@
 # Theme System V1 规范手册 (SSOT)
 
+> **DEPRECATED**
+> Theme System V1 已废弃；请使用 `docs/ui/theme-system-v2.md`。
+
 本文档是 MediaPlayer 主题系统的唯一事实来源。主题开发者应仅依靠本文档和 `src/styles/themes/contract.css` 进行开发。
 
 ## 1. 核心原理

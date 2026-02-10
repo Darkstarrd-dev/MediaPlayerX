@@ -1,9 +1,14 @@
 .sidebar {
-  border-right: 1px solid var(--line);
-  background: var(--bg-panel);
+  border-right: var(--mpx-sidebar-border-width) var(--mpx-sidebar-border-style) var(--line);
+  background: var(--mpx-sidebar-bg);
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s;
+  transition: var(--mpx-sidebar-transition);
+  border-radius: var(--mpx-sidebar-radius);
+  box-shadow: var(--mpx-sidebar-shadow);
+  backdrop-filter: var(--mpx-sidebar-backdrop-filter);
+  transform: var(--mpx-sidebar-transform);
+  padding: var(--mpx-sidebar-padding);
 }
 
 .sidebar-expand-btn {
@@ -172,8 +177,8 @@
 }
 
 .sidebar-splitter {
-  width: 8px;
-  min-width: 8px;
+  width: var(--mpx-splitter-width);
+  min-width: var(--mpx-splitter-width);
   cursor: col-resize;
   position: relative;
   background: var(--mpx-splitter-track-bg);
