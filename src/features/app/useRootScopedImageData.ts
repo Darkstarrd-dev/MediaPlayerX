@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import type { FocusedImageRef, ImagePackage, SidebarNode } from '../../types'
-import { collectImageSourceIds } from './helpers'
+import { collectImageSourceIds } from '../../utils/mediaHelpers'
 
 interface UseRootScopedImageDataParams {
   imageRootNode: SidebarNode | null

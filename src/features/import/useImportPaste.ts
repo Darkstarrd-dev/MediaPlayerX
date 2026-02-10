@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { extractPathsFromClipboard } from '../app/helpers'
+import { extractPathsFromClipboard } from '../../utils/mediaHelpers'
 import type { ReadonlyMediaRepository } from '../backend/repository'
 import { collectNativePaths } from './importPathUtils'
 

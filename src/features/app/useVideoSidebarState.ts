@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { buildSidebarTree, findNodeById } from '../../mockData'
 import type { SidebarNode, VideoItem } from '../../types'
-import { collectLeafIds } from './helpers'
+import { collectLeafIds } from '../../utils/mediaHelpers'
 
 interface UseVideoSidebarStateParams {
   videos: VideoItem[]

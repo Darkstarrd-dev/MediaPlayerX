@@ -1,7 +1,7 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react'
 
-import { buildInitialVideoCoverImageMap, buildInitialVideoCoverMap } from '../app/helpers'
 import { clamp } from '../../utils/ui'
+import { buildInitialVideoCoverImageMap, buildInitialVideoCoverMap } from '../../utils/mediaHelpers'
 import type { VideoItem } from '../../types'
 
 interface UseMediaStateParams {

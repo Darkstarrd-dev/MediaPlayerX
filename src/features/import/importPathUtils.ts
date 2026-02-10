@@ -2,7 +2,7 @@ import {
   dataTransferHasFiles,
   extractPathsFromClipboard,
   serializeFile,
-} from '../app/helpers'
+} from '../../utils/mediaHelpers'
 
 export function collectNativePaths(files: File[]): string[] {
   const paths = files

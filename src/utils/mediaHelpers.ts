@@ -1,4 +1,4 @@
-import type { ImagePackage, SearchField, SidebarNode, VideoItem } from '../../types'
+import type { ImagePackage, SearchField, SidebarNode, VideoItem } from '../types'
 
 type BrowserFile = File & {
   path?: string
