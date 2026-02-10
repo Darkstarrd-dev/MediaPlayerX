@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 
 import { extractPathsFromClipboard } from '../../utils/mediaHelpers'
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { MediaRepository } from '../backend/repository'
 import { collectNativePaths } from './importPathUtils'
 
 interface UseImportPasteParams {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
   timeoutMs: number
   enqueuePastePaths: (paths: string[]) => void
   onError: (error: unknown) => void

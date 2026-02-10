@@ -1,6 +1,6 @@
 import { Profiler, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
-import type { ReadonlyMediaRepository } from '../features/backend/repository'
+import type { MediaRepository } from '../features/backend/repository'
 import { useResolvedMediaUrls } from '../features/backend/useResolvedMediaUrls'
 import { benchEnd, benchMark, benchOnReactRender } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
@@ -21,7 +21,7 @@ function resolveNumber(value: unknown, fallback: number, min = 1, max = 10_000):
 
 const ONE_PIXEL_DATA_URL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
 
-function buildFakeRepository(params: { minDelayMs: number; maxDelayMs: number }): ReadonlyMediaRepository {
+function buildFakeRepository(params: { minDelayMs: number; maxDelayMs: number }): MediaRepository {
   const min = Math.max(0, params.minDelayMs)
   const max = Math.max(min, params.maxDelayMs)
 
@@ -52,7 +52,7 @@ function buildFakeRepository(params: { minDelayMs: number; maxDelayMs: number })
     readImageMetadata: async () => {
       throw new Error('not_implemented')
     },
-    resolveMediaResource: resolveMediaResource as unknown as ReadonlyMediaRepository['resolveMediaResource'],
+    resolveMediaResource: resolveMediaResource as unknown as MediaRepository['resolveMediaResource'],
     writePackageGrade: async () => {
       throw new Error('not_implemented')
     },

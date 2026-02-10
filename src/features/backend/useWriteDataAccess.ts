@@ -13,7 +13,7 @@ import type {
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
 } from '../../contracts/backend'
-import type { ReadonlyMediaRepository } from './repository'
+import type { MediaRepository } from './repository'
 
 const DEFAULT_WRITE_TIMEOUT_MS = 8_000
 
@@ -25,20 +25,20 @@ function toErrorMessage(error: unknown): string {
 }
 
 interface UseWriteDataAccessParams {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
   setGradeByPackage: Dispatch<SetStateAction<Record<string, number | null>>>
   setVideoCoverById: Dispatch<SetStateAction<Record<string, string>>>
   setVideoCoverImageById: Dispatch<SetStateAction<Record<string, string | null>>>
 }
 
-interface SyncWriteRepository extends ReadonlyMediaRepository {
+interface SyncWriteRepository extends MediaRepository {
   writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
 }
 
-function isSyncWriteRepository(repository: ReadonlyMediaRepository): repository is SyncWriteRepository {
+function isSyncWriteRepository(repository: MediaRepository): repository is SyncWriteRepository {
   return (
     'writePackageGradeSync' in repository &&
     typeof repository.writePackageGradeSync === 'function' &&

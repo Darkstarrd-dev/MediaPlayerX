@@ -35,10 +35,10 @@ import type {
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
 } from '../../contracts/backend'
-import type { ReadonlyMediaRepository, RepositoryRequestOptions } from './repository'
+import type { MediaRepository, RepositoryRequestOptions } from './repository'
 import { useWriteDataAccess } from './useWriteDataAccess'
 
-class WritableRepositoryStub implements ReadonlyMediaRepository {
+class WritableRepositoryStub implements MediaRepository {
   private shouldFailGrade = false
 
   private shouldFailCover = false

@@ -18,7 +18,7 @@ import type {
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
 } from '../../contracts/backend'
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { MediaRepository } from '../backend/repository'
 import { collectNativePaths } from './importPathUtils'
 import { useImportDragOverlay } from './useImportDragOverlay'
 import { useImportPaste } from './useImportPaste'
@@ -53,16 +53,16 @@ interface UseImportPipelineResult {
 }
 
 interface UseImportPipelineParams {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
 }
 
-interface SyncImportRepository extends ReadonlyMediaRepository {
+interface SyncImportRepository extends MediaRepository {
   enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto
   readImportTasksSync(): ReadImportTasksResponseDto
   retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto
 }
 
-function isSyncImportRepository(repository: ReadonlyMediaRepository): repository is SyncImportRepository {
+function isSyncImportRepository(repository: MediaRepository): repository is SyncImportRepository {
   return (
     'enqueueImportTaskSync' in repository &&
     typeof repository.enqueueImportTaskSync === 'function' &&

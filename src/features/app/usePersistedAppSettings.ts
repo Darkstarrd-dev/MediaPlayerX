@@ -1,10 +1,10 @@
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { MediaRepository } from '../backend/repository'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import { useSettingsPersistence } from './useSettingsPersistence'
 
 interface UsePersistedAppSettingsParams {
   settings: AppSettingsStoreSnapshot
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
 }
 
 export function usePersistedAppSettings({

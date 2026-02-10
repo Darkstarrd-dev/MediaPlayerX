@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import type { ReadonlyMediaRepository } from './repository'
+import type { MediaRepository } from './repository'
 import { type MediaResolveTarget, useResolvedMediaUrls } from './useResolvedMediaUrls'
 
 function createFailingRepository() {
@@ -21,7 +21,7 @@ function createFailingRepository() {
         }
       }
     },
-  } as unknown as ReadonlyMediaRepository
+  } as unknown as MediaRepository
 
   return {
     repository,

@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react'
 
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { MediaRepository } from '../backend/repository'
 
 interface UseDatabaseResetActionParams {
-  mediaRepository: ReadonlyMediaRepository
+  mediaRepository: MediaRepository
 }
 
 interface UseDatabaseResetActionResult {

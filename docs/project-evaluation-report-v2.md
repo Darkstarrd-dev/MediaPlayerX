@@ -144,7 +144,7 @@
 |---|------|------|---------|
 | P2 | 替代 `ReturnType<typeof>` 为显式接口 | **已完成（主链路）** | hook 层显式类型别名已收口（`410d456`） |
 | P2 | 迁移 `app/helpers.ts` 至共享 `utils/` | **已完成** | 已迁移到 `src/utils/mediaHelpers.ts`，跨界导入清零 |
-| P2 | 重命名 `ReadonlyMediaRepository` | **未改** | 仍含 10+ 写方法 |
+| P2 | 重命名 `ReadonlyMediaRepository` | **已完成** | 已统一更名为 `MediaRepository` |
 | P3 | 添加 JSDoc 注释 | **已完成（关键路径）** | 已为归档规范化、Token TTL、白名单守卫补充 why 注释 |
 | P3 | 为各特性模块添加 barrel export | **已完成** | `src/features/*` 已补齐模块入口 `index.ts` |
 
@@ -190,8 +190,8 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 | 新增导入源 | B | **B** | 未变 — 路径透明处理 |
 | 新增 IPC 通道 | C+ | **C+** | 未变 — 仍需改 5-6 文件 |
 | 数据库演化 | B- | **B** | ↑ 新增 mediaLibrarySchema.test.ts 提供迁移回归保障 |
-| 新增媒体类型 | D | **D** | 未变 — image/video 硬编码在 6 层 |
-| **总体可扩展性** | **B-** | **B-** | 未触及扩展性架构模式 |
+| 新增媒体类型 | D | **C** | ↑ `BrowserMode/MediaType` 已收敛为类型单源并在多层复用 |
+| **总体可扩展性** | **B-** | **B** | ↑ 消除多层重复硬编码，扩展入口更集中 |
 
 ---
 
@@ -207,10 +207,7 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 
 ### 6.2 未改进的
 
-1. **P2/P3 架构建议已开始推进**（`ReturnType` 主链路收口 + `helpers` 迁移已完成）
-2. **内联文档覆盖仍偏低** — 已补充关键策略注释，但尚未形成系统化覆盖
-3. **媒体类型扩展改造尚未推进** — image/video 语义仍存在多处硬编码
-4. **Repository 命名语义仍不精确** — `ReadonlyMediaRepository` 仍包含写接口
+1. **内联文档覆盖仍偏低** — 已补充关键策略注释，但尚未形成系统化覆盖
 
 ---
 
@@ -224,7 +221,7 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 | Schema 迁移回归 | 中 | 中 | **低** | ↓ 新增 schema.test.ts |
 | 内联文档覆盖不足 | 中 | 高 | **中** | ↓ 已补充关键策略注释 |
 | Hook 签名级联 | 中 | 中 | **低** | ↓ 已在 hook 层完成显式类型别名替换（`410d456`） |
-| 媒体类型不可扩展 | 中 | 低 | **低** | ━ 未改 |
+| 媒体类型不可扩展 | 中 | 低 | **极低** | ↓ BrowserMode/MediaType 已收敛 |
 
 ---
 
@@ -232,11 +229,11 @@ Hook复杂度        B       B+     ━━━━━━━━━  ▲
 
 鉴于 P0/P1 已整改到位，建议重新排序剩余工作：
 
-已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移；`useAppDisplayAndEffects` 已拆分为 `useAppManageBindings + useAppDisplayResources`；关键策略 why 注释（归档规范化、Token TTL、白名单守卫）已补充；`src/features/*` barrel export 已补齐。
+已完成项（可从待办移除）：`410d456` 完成 hook 层 `ReturnType<typeof>` 主链路收口；本轮完成 `app/helpers.ts -> src/utils/mediaHelpers.ts` 迁移；`useAppDisplayAndEffects` 已拆分为 `useAppManageBindings + useAppDisplayResources`；关键策略 why 注释（归档规范化、Token TTL、白名单守卫）已补充；`src/features/*` barrel export 已补齐；`ReadonlyMediaRepository` 已更名为 `MediaRepository`；`BrowserMode/MediaType` 已在 app/backend/sidebar/shortcuts 等层统一复用。
 
 | 优先级 | 建议 | 投入 | 收益 |
 |--------|------|------|------|
-| **P3** | 重命名 `ReadonlyMediaRepository` → `MediaRepository` 或拆分读写接口 | 低 | 低 — 语义清晰度 |
+| **P3** | 继续扩展内联注释覆盖（复杂编排与跨模块契约） | 低 | 中 — 降低维护与交接成本 |
 
 ---
 

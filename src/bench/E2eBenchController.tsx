@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
-import type { ReadonlyMediaRepository } from '../features/backend/repository'
+import type { MediaRepository } from '../features/backend/repository'
 import { benchEnd, benchMark } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
 import type { BrowserMode, ImagePackage } from '../types'
@@ -66,7 +66,7 @@ function summarize(values: number[]) {
 }
 
 export interface E2eBenchControllerProps {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
   mode: BrowserMode
   orderedPackages: ImagePackage[]
   selectedPackageId: string

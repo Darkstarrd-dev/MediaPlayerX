@@ -6,10 +6,10 @@ import {
 
 import { findShortcutConflicts } from '../../shortcuts'
 import { findVectorControlConflicts } from '../../vectorControls'
-import type { ImageItem, VideoItem } from '../../types'
+import type { BrowserMode, ImageItem, VideoItem } from '../../types'
 import type { ImportTaskDto } from '../../contracts/backend'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { MediaRepository } from '../backend/repository'
 import { buildAppHeaderProps } from './buildAppHeaderProps'
 import { buildBackendErrorRows } from './buildBackendErrorRows'
 import { buildFullscreenLayerProps } from './buildFullscreenLayerProps'
@@ -30,13 +30,13 @@ type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 
 interface UseAppTopLayerStateParams {
   appSettings: AppSettingsStoreSnapshot
-  mediaRepository: ReadonlyMediaRepository
+  mediaRepository: MediaRepository
   backendRead: ReadOnlyDataAccessResult
   backendWrite: WriteDataAccessResult
   playlistPersistence: PlaylistPersistenceResult
   runtimeCapabilities: RuntimeCapabilitiesResult
   autoPlayPresets: number[]
-  mode: 'image' | 'video'
+  mode: BrowserMode
   manageMode: boolean
   vectorUniverseOpen: boolean
   displayThumbnailScaleLevel: number

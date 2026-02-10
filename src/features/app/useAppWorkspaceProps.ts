@@ -13,6 +13,7 @@ import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 import type { WriteDataAccessResult } from '../backend'
 import type {
+  BrowserMode,
   FocusedImageRef,
   ImageItem,
   ImagePackage,
@@ -33,7 +34,7 @@ type SearchPanelMode = 'vector' | 'feature'
 interface UseAppWorkspacePropsParams {
   appSettings: AppSettingsStoreSnapshot
   benchSettings: UiBenchSettings
-  mode: 'image' | 'video'
+  mode: BrowserMode
   vectorMode: boolean
   manageMode: boolean
   searchPanelCollapsed: boolean

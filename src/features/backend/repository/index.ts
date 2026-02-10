@@ -2,7 +2,7 @@ export { createMediaRepository } from './createRepository'
 export { MockMediaRepository } from './mockRepository'
 export { RealMediaRepository } from './realRepository'
 export type {
-  ReadonlyMediaRepository,
+  MediaRepository,
   RepositoryMode,
   RepositoryRequestOptions,
   SynchronousMediaRepository,

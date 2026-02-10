@@ -1,4 +1,8 @@
-export type BrowserMode = 'image' | 'video'
+export const MEDIA_TYPES = ['image', 'video'] as const
+
+export type BrowserMode = (typeof MEDIA_TYPES)[number]
+
+export type MediaType = BrowserMode
 
 export type SearchField = 'all' | 'name' | 'workTitle' | 'circle' | 'author' | 'tags'
 
@@ -6,7 +10,7 @@ export interface FileSystemMediaLocator {
   kind: 'filesystem'
   absolutePath: string
   extension: string
-  mediaType: 'image' | 'video'
+  mediaType: MediaType
   mimeType: string
 }
 
@@ -16,7 +20,7 @@ export interface ArchiveEntryMediaLocator {
   archiveFormat: 'zip' | 'rar' | '7z'
   entryName: string
   extension: string
-  mediaType: 'image' | 'video'
+  mediaType: MediaType
   mimeType: string
 }
 

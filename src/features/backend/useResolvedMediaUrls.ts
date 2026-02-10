@@ -9,7 +9,7 @@ import {
   toErrorMessage,
   type MediaResolveTarget,
 } from './mediaResolveUtils'
-import type { ReadonlyMediaRepository } from './repository'
+import type { MediaRepository } from './repository'
 
 export type { MediaResolveTarget } from './mediaResolveUtils'
 
@@ -46,7 +46,7 @@ export interface UseResolvedMediaUrlsOptions {
 }
 
 interface UseResolvedMediaUrlsParams {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
   targets: MediaResolveTarget[]
   options?: UseResolvedMediaUrlsOptions
 }

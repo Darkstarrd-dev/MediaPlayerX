@@ -93,7 +93,7 @@ import {
 } from '../../../contracts/backend'
 import type { ImagePackage, MediaLocator, SidebarNode } from '../../../types'
 import type {
-  ReadonlyMediaRepository,
+  MediaRepository,
   RepositoryRequestOptions,
   SynchronousMediaRepository,
 } from './types'
@@ -543,7 +543,7 @@ function toDeterministicCoverColor(videoId: string): string {
   return `hsl(${hash % 360}, 44%, 40%)`
 }
 
-export class MockMediaRepository implements ReadonlyMediaRepository, SynchronousMediaRepository {
+export class MockMediaRepository implements MediaRepository, SynchronousMediaRepository {
   private playlistIds = MOCK_LIBRARY_SNAPSHOT.videos.slice(0, 3).map((video) => video.id)
 
   private importTasks: ImportTaskDto[] = []

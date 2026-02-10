@@ -27,7 +27,7 @@ import type {
   WritePackageGradeResponseDto,
 } from '../../contracts/backend'
 import { useReadOnlyDataAccess } from './useReadOnlyDataAccess'
-import type { ReadonlyMediaRepository, RepositoryRequestOptions } from './repository'
+import type { MediaRepository, RepositoryRequestOptions } from './repository'
 
 function createAbortError(): Error {
   const error = new Error('aborted')
@@ -96,7 +96,7 @@ function createSidebarResponse(packageDto: ReturnType<typeof createPackageDto>):
   }
 }
 
-function createHookParams(repository: ReadonlyMediaRepository, overrides?: Partial<Parameters<typeof useReadOnlyDataAccess>[0]>) {
+function createHookParams(repository: MediaRepository, overrides?: Partial<Parameters<typeof useReadOnlyDataAccess>[0]>) {
   return {
     repository,
     mode: 'image' as const,
@@ -118,7 +118,7 @@ function createHookParams(repository: ReadonlyMediaRepository, overrides?: Parti
   }
 }
 
-class CancellationAwareRepository implements ReadonlyMediaRepository {
+class CancellationAwareRepository implements MediaRepository {
   private readonly snapshot = createLibrarySnapshot()
 
   getInitialLibrarySnapshot(): LibrarySnapshotDto {
@@ -331,7 +331,7 @@ class CancellationAwareRepository implements ReadonlyMediaRepository {
   }
 }
 
-class RetrySnapshotRepository implements ReadonlyMediaRepository {
+class RetrySnapshotRepository implements MediaRepository {
   private readonly snapshot = createLibrarySnapshot()
 
   private sidebarCallCount = 0
@@ -610,7 +610,7 @@ describe('useReadOnlyDataAccess', () => {
       },
     )
 
-    const repository: ReadonlyMediaRepository = {
+    const repository: MediaRepository = {
       getInitialLibrarySnapshot: () => snapshot,
       readLibrarySnapshot: async () => snapshot,
       readImageSidebarTree,
@@ -805,7 +805,7 @@ describe('useReadOnlyDataAccess', () => {
       },
     )
 
-    const repository: ReadonlyMediaRepository = {
+    const repository: MediaRepository = {
       getInitialLibrarySnapshot: () => snapshot,
       readLibrarySnapshot: async () => snapshot,
       readImageSidebarTree,

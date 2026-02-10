@@ -54,7 +54,7 @@ export interface RepositoryRequestOptions {
   timeoutMs?: number
 }
 
-export interface ReadonlyMediaRepository {
+export interface MediaRepository {
   getInitialLibrarySnapshot(): LibrarySnapshotDto | null
   readLibrarySnapshot(options?: RepositoryRequestOptions): Promise<LibrarySnapshotDto>
   readImageSidebarTree(
@@ -147,7 +147,7 @@ export interface ReadonlyMediaRepository {
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void
 }
 
-export interface SynchronousMediaRepository extends ReadonlyMediaRepository {
+export interface SynchronousMediaRepository extends MediaRepository {
   readImageSidebarTreeSync(request: ReadImageSidebarTreeRequestDto): ReadImageSidebarTreeResponseDto
   readImagePageSync(request: ReadImagePageRequestDto): ReadImagePageResponseDto
   readImageMetadataSync(request: ReadImageMetadataRequestDto): ReadImageMetadataResponseDto

@@ -1,10 +1,10 @@
 import { useCallback, useMemo, type RefObject } from 'react'
 
-import type { SidebarNode } from '../../types'
+import type { BrowserMode, SidebarNode } from '../../types'
 import { clamp } from '../../utils/ui'
 
 interface UseSidebarNavigationParams {
-  mode: 'image' | 'video'
+  mode: BrowserMode
   imageTreeForSidebar: SidebarNode[]
   videoTreeForSidebar: SidebarNode[]
   imageRootNode: SidebarNode | null

@@ -76,7 +76,7 @@ import {
   type WriteAppStateRequestDto,
   type WriteAppStateResponseDto,
 } from '../../../contracts/backend'
-import type { ReadonlyMediaRepository, RepositoryRequestOptions } from './types'
+import type { MediaRepository, RepositoryRequestOptions } from './types'
 import { benchRecordIpcTiming } from '../../perf/benchRecorder'
 
 function createAbortError(): Error {
@@ -145,7 +145,7 @@ async function withAbort<T>(
   })
 }
 
-export class RealMediaRepository implements ReadonlyMediaRepository {
+export class RealMediaRepository implements MediaRepository {
   getInitialLibrarySnapshot(): LibrarySnapshotDto | null {
     return null
   }

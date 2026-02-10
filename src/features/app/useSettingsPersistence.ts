@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
 import type { AppSettings } from '../../contracts/settings'
-import type { ReadonlyMediaRepository } from '../backend/repository/types'
+import type { MediaRepository } from '../backend/repository/types'
 
 interface UseSettingsPersistenceParams {
   settings: AppSettings
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
   updateSettings: (patch: Partial<AppSettings>) => void
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { MediaRepository } from '../backend/repository'
 import type { VideoItem } from '../../types'
 
 const DEFAULT_PLAYLIST_TIMEOUT_MS = 8_000
@@ -29,7 +29,7 @@ function toErrorMessage(error: unknown): string {
 }
 
 interface UsePlaylistPersistenceParams {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
   videos: VideoItem[]
   playlistIds: string[]
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
@@ -43,12 +43,12 @@ interface UsePlaylistPersistenceResult {
   retryWrite: () => void
 }
 
-interface SyncPlaylistRepository extends ReadonlyMediaRepository {
+interface SyncPlaylistRepository extends MediaRepository {
   readPlaylistSync(): { video_ids: string[] }
   writePlaylistSync(request: { video_ids: string[] }): { video_ids: string[] }
 }
 
-function isSyncPlaylistRepository(repository: ReadonlyMediaRepository): repository is SyncPlaylistRepository {
+function isSyncPlaylistRepository(repository: MediaRepository): repository is SyncPlaylistRepository {
   return (
     'readPlaylistSync' in repository &&
     typeof repository.readPlaylistSync === 'function' &&

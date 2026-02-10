@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ManageAdReviewTaskDto } from '../../contracts/backend'
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { BrowserMode } from '../../types'
+import type { MediaRepository } from '../backend/repository'
 
 const REVIEW_POLL_INTERVAL_MS = 1_000
 const REVIEW_START_TIMEOUT_MS = 60_000
@@ -9,8 +10,8 @@ const REVIEW_READ_TIMEOUT_MS = 10_000
 const REVIEW_DELETE_TIMEOUT_MS = 20_000
 
 interface UseManageAdReviewActionsParams {
-  repository: ReadonlyMediaRepository
-  mode: 'image' | 'video'
+  repository: MediaRepository
+  mode: BrowserMode
   manageMode: boolean
   activeSelectionScope: 'sidebar' | 'image' | null
   imageCheckedIds: string[]

@@ -6,6 +6,7 @@ import {
   type ShortcutAction,
   type ShortcutMap,
 } from '../../shortcuts'
+import type { BrowserMode } from '../../types'
 import { isEditableTarget } from '../../utils/ui'
 
 const IMAGE_NAV_REPEAT_MIN_INTERVAL_MS = 72
@@ -15,7 +16,7 @@ type AlignDirection = 'up' | 'down' | 'left' | 'right'
 interface UseShortcutEngineParams {
   shortcuts: ShortcutMap
   suspended?: boolean
-  mode: 'image' | 'video'
+  mode: BrowserMode
   vectorMode: boolean
   settingsOpen: boolean
   sidebarFocus: 'sidebar' | 'main'

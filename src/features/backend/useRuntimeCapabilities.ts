@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { ReadRuntimeCapabilitiesResponseDto } from '../../contracts/backend'
-import type { ReadonlyMediaRepository } from './repository'
+import type { MediaRepository } from './repository'
 
 const RUNTIME_CAPABILITY_TIMEOUT_MS = 6_000
 
@@ -13,7 +13,7 @@ function toErrorMessage(error: unknown): string {
 }
 
 interface UseRuntimeCapabilitiesParams {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
 }
 
 interface UseRuntimeCapabilitiesResult {
@@ -23,12 +23,12 @@ interface UseRuntimeCapabilitiesResult {
   retry: () => void
 }
 
-interface SyncRuntimeCapabilityRepository extends ReadonlyMediaRepository {
+interface SyncRuntimeCapabilityRepository extends MediaRepository {
   readRuntimeCapabilitiesSync(): ReadRuntimeCapabilitiesResponseDto
 }
 
 function isSyncRuntimeCapabilityRepository(
-  repository: ReadonlyMediaRepository,
+  repository: MediaRepository,
 ): repository is SyncRuntimeCapabilityRepository {
   return 'readRuntimeCapabilitiesSync' in repository && typeof repository.readRuntimeCapabilitiesSync === 'function'
 }

@@ -1,6 +1,6 @@
 import { MockMediaRepository } from './mockRepository'
 import { RealMediaRepository } from './realRepository'
-import type { ReadonlyMediaRepository, RepositoryMode } from './types'
+import type { MediaRepository, RepositoryMode } from './types'
 
 function resolveRepositoryMode(): RepositoryMode {
   const configuredMode = import.meta.env.VITE_MEDIA_REPOSITORY_MODE
@@ -18,7 +18,7 @@ function resolveRepositoryMode(): RepositoryMode {
 }
 
 export function createMediaRepository(): {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
   mode: RepositoryMode
 } {
   const mode = resolveRepositoryMode()

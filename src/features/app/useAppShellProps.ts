@@ -7,10 +7,11 @@ import type { AppWorkspacePropsResult } from './useAppWorkspaceProps'
 import type { VectorUniverseBindingsResult } from './useVectorUniverseBindings'
 import type { ImportPipelineResult } from '../import/useImportPipeline'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
+import type { BrowserMode } from '../../types'
 
 interface UseAppShellPropsParams {
   repositoryMode: RepositoryBootstrapDataResult['repositoryMode']
-  mode: 'image' | 'video'
+  mode: BrowserMode
   headerHeight: number
   sidebarCollapsed: boolean
   sidebarFocus: 'sidebar' | 'main'

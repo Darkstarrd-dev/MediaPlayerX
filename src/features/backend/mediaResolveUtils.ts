@@ -4,7 +4,7 @@ import type {
 } from '../../contracts/backend'
 import type { MediaLocator } from '../../types'
 import { mapMediaLocatorToDto, mediaLocatorKey } from './mediaLocator'
-import type { ReadonlyMediaRepository } from './repository'
+import type { MediaRepository } from './repository'
 
 export interface MediaResolveTarget {
   targetId: string
@@ -14,7 +14,7 @@ export interface MediaResolveTarget {
   thumbnailQuality?: number
 }
 
-export interface SyncResolveRepository extends ReadonlyMediaRepository {
+export interface SyncResolveRepository extends MediaRepository {
   resolveMediaResourceSync(request: ResolveMediaResourceRequestDto): ResolveMediaResourceResponseDto
 }
 
@@ -29,7 +29,7 @@ export function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError'
 }
 
-export function isSyncResolveRepository(repository: ReadonlyMediaRepository): repository is SyncResolveRepository {
+export function isSyncResolveRepository(repository: MediaRepository): repository is SyncResolveRepository {
   return 'resolveMediaResourceSync' in repository && typeof repository.resolveMediaResourceSync === 'function'
 }
 

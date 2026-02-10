@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { MediaRepository } from '../backend/repository'
 
 export interface ArchiveLoadStatusState {
   runningArchivePath: string | null
@@ -13,7 +13,7 @@ const EMPTY_ARCHIVE_LOAD_STATUS: ArchiveLoadStatusState = {
 }
 
 interface UseArchiveLoadStatusParams {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
 }
 
 export function useArchiveLoadStatus({ repository }: UseArchiveLoadStatusParams): ArchiveLoadStatusState {

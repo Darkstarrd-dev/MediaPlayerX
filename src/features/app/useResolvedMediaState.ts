@@ -4,7 +4,7 @@ import {
   type MediaResolveTarget,
   useResolvedMediaUrls,
 } from '../backend'
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { MediaRepository } from '../backend/repository'
 import type { UiBenchSettings } from '../perf/benchSettings'
 import type {
   FocusedImageRef,
@@ -15,7 +15,7 @@ import type {
 } from '../../types'
 
 interface UseResolvedMediaStateParams {
-  repository: ReadonlyMediaRepository
+  repository: MediaRepository
   benchSettings: UiBenchSettings
   maxConcurrent: number
   actualCellWidth: number

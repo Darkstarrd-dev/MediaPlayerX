@@ -16,16 +16,16 @@ import {
   scheduleReadSlice,
   type ReadSliceState,
 } from './readSliceUtils'
-import type { ReadonlyMediaRepository, SynchronousMediaRepository } from './repository'
-import type { FocusedImageRef } from '../../types'
+import type { MediaRepository, SynchronousMediaRepository } from './repository'
+import type { BrowserMode, FocusedImageRef } from '../../types'
 
 const DEFAULT_IPC_TIMEOUT_MS = 8_000
 const PAGE_READ_DEBOUNCE_MS = 72
 const METADATA_READ_DEBOUNCE_MS = 84
 
 interface UseReadOnlyDataAccessParams {
-  repository: ReadonlyMediaRepository
-  mode: 'image' | 'video'
+  repository: MediaRepository
+  mode: BrowserMode
   includeHidden: boolean
   selectedSourceId: string | null
   pageIndex: number
@@ -67,7 +67,7 @@ function buildFeatureFilter(params: {
   }
 }
 
-function isSynchronousRepository(repository: ReadonlyMediaRepository): repository is SynchronousMediaRepository {
+function isSynchronousRepository(repository: MediaRepository): repository is SynchronousMediaRepository {
   return (
     'readImageSidebarTreeSync' in repository &&
     typeof repository.readImageSidebarTreeSync === 'function' &&

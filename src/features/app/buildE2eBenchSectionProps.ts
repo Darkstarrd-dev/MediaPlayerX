@@ -1,14 +1,14 @@
 import type { Dispatch, SetStateAction } from 'react'
 
 import type { E2eBenchSectionProps } from '../../components/E2eBenchSection'
-import type { ImagePackage } from '../../types'
-import type { ReadonlyMediaRepository } from '../backend/repository'
+import type { BrowserMode, ImagePackage } from '../../types'
+import type { MediaRepository } from '../backend/repository'
 
 interface BuildE2eBenchSectionPropsParams {
   enabled: boolean
   benchMode: string | null
-  repository: ReadonlyMediaRepository
-  mode: 'image' | 'video'
+  repository: MediaRepository
+  mode: BrowserMode
   orderedPackages: ImagePackage[]
   selectedPackageId: string
   setSelectedPackageId: Dispatch<SetStateAction<string>>
