@@ -9,7 +9,7 @@ import {
   toAbsolutePx,
 } from './settingsScale'
 
-export type SettingsSection = 'layout' | 'model' | 'database' | 'shortcuts' | 'theme' | 'space3d'
+export type SettingsSection = 'layout' | 'model' | 'thumbnail' | 'database' | 'shortcuts' | 'theme' | 'space3d'
 
 interface RenderSettingsMainSectionParams {
   activeSection: SettingsSection
@@ -38,6 +38,11 @@ interface RenderSettingsMainSectionParams {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  adReviewVisionEndpoint: string
+  adReviewVisionModel: string
+  adReviewVisionVerified: boolean
+  adReviewVisionTestPending: boolean
+  adReviewVisionTestMessage: string | null
   themeId: string
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
@@ -71,6 +76,9 @@ interface RenderSettingsMainSectionParams {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
+  onAdReviewVisionEndpointChange: (value: string) => void
+  onAdReviewVisionModelChange: (value: string) => void
+  onTestAdReviewVisionModel: () => void
   onThemeChange: (value: string) => void
   onVectorUniverseMoveSpeedChange: (value: number) => void
   onVectorUniverseSprintMultiplierChange: (value: number) => void
@@ -109,6 +117,11 @@ export function renderSettingsMainSection({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
+  adReviewVisionEndpoint,
+  adReviewVisionModel,
+  adReviewVisionVerified,
+  adReviewVisionTestPending,
+  adReviewVisionTestMessage,
   themeId,
   vectorUniverseMoveSpeed,
   vectorUniverseSprintMultiplier,
@@ -142,6 +155,9 @@ export function renderSettingsMainSection({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
+  onAdReviewVisionEndpointChange,
+  onAdReviewVisionModelChange,
+  onTestAdReviewVisionModel,
   onThemeChange,
   onVectorUniverseMoveSpeedChange,
   onVectorUniverseSprintMultiplierChange,
@@ -263,7 +279,55 @@ export function renderSettingsMainSection({
   if (activeSection === 'model') {
     return (
       <div className="settings-block">
-        <h3>模型参数</h3>
+        <h3>LLM模型设置</h3>
+        <fieldset className="settings-subsection">
+          <legend>向量检索（LM Studio）</legend>
+          <label>
+            LM Studio Endpoint
+            <input type="text" value={lmStudioEndpoint} onChange={(event) => onLmStudioEndpointChange(event.target.value)} />
+          </label>
+          <label>
+            Embedding 模型ID
+            <input type="text" value={lmStudioModel} onChange={(event) => onLmStudioModelChange(event.target.value)} />
+          </label>
+        </fieldset>
+
+        <fieldset className="settings-subsection">
+          <legend>AI广告审核视觉模型</legend>
+          <label>
+            视觉模型端口
+            <input
+              type="text"
+              value={adReviewVisionEndpoint}
+              onChange={(event) => onAdReviewVisionEndpointChange(event.target.value)}
+            />
+          </label>
+          <label>
+            视觉模型ID
+            <input
+              type="text"
+              value={adReviewVisionModel}
+              onChange={(event) => onAdReviewVisionModelChange(event.target.value)}
+            />
+          </label>
+          <div className="settings-test-row">
+            <button type="button" disabled={adReviewVisionTestPending} aria-label="测试视觉模型连接" onClick={onTestAdReviewVisionModel}>
+              {adReviewVisionTestPending ? '测试中...' : '测试'}
+            </button>
+            <span className={`settings-test-status ${adReviewVisionVerified ? 'is-ok' : 'is-pending'}`}>
+              {adReviewVisionTestMessage ?? (adReviewVisionVerified ? '已通过测试' : '未测试')}
+            </span>
+          </div>
+          <p className="settings-placeholder">通过测试后，管理模式中将显示“AI广告审核”按钮。</p>
+        </fieldset>
+      </div>
+    )
+  }
+
+  if (activeSection === 'thumbnail') {
+    return (
+      <div className="settings-block">
+        <h3>缩略图设置</h3>
         <label>
           缩略图间距系数 {formatScale(thumbnailGapScale)}（{thumbnailGap}px）
           <input
@@ -282,14 +346,6 @@ export function renderSettingsMainSection({
         <label>
           缩略图宽度
           <input max={2048} min={128} type="number" value={thumbnailWidth} onChange={(event) => onThumbnailWidthChange(Number(event.target.value))} />
-        </label>
-        <label>
-          LM Studio Endpoint
-          <input type="text" value={lmStudioEndpoint} onChange={(event) => onLmStudioEndpointChange(event.target.value)} />
-        </label>
-        <label>
-          Embedding 模型
-          <input type="text" value={lmStudioModel} onChange={(event) => onLmStudioModelChange(event.target.value)} />
         </label>
       </div>
     )

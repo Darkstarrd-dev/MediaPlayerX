@@ -21,8 +21,14 @@ import {
   type ManageAdReviewTaskExecutionDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
+  pauseManageAdReviewTaskResponseSchema,
+  testAdReviewVisionModelResponseSchema,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
+  type PauseManageAdReviewTaskRequestDto,
+  type PauseManageAdReviewTaskResponseDto,
+  type TestAdReviewVisionModelRequestDto,
+  type TestAdReviewVisionModelResponseDto,
 } from '../../../src/contracts/backend'
 import { assertLocatorAllowed, type MediaAccessGuardContext } from '../../fileSystemMediaAccessGuard'
 import { readArchiveEntryMedia } from '../../fileSystemMediaReaders'
@@ -34,6 +40,9 @@ import { type ZipCentralEntry } from '../../zipArchiveHelpers'
 const KNOWN_HASHES_STATE_KEY = 'manage_ad_review_known_hashes_v1'
 const DEFAULT_REVIEW_MAX_CONCURRENCY = 4
 const REVIEW_MAX_CONCURRENCY_LIMIT = 12
+const DEFAULT_VISION_TEST_TIMEOUT_MS = 12_000
+const TINY_TEST_IMAGE_PNG_BASE64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO6JfqsAAAAASUVORK5CYII='
 
 interface ParsedSidebarNodeRef {
   kind: 'folder' | 'package' | 'video'
@@ -51,6 +60,8 @@ interface ManageAdReviewServiceOptions {
 interface RuntimeTaskState {
   task: ManageAdReviewTaskDto
   candidateHashByImageId: Map<string, string>
+  abortController: AbortController | null
+  pauseRequested: boolean
 }
 
 interface ImageEntryRef {
@@ -251,6 +262,10 @@ function buildSourceDistribution(decisions: ManageAdReviewDecision[]): ManageAdR
   return distribution
 }
 
+function buildVisionTestImageBytes(): Uint8Array {
+  return new Uint8Array(Buffer.from(TINY_TEST_IMAGE_PNG_BASE64, 'base64'))
+}
+
 export class ManageAdReviewService {
   private readonly tasks = new Map<string, RuntimeTaskState>()
 
@@ -297,6 +312,8 @@ export class ManageAdReviewService {
     const runtimeTask: RuntimeTaskState = {
       task,
       candidateHashByImageId: new Map<string, string>(),
+      abortController: new AbortController(),
+      pauseRequested: false,
     }
     this.tasks.set(taskId, runtimeTask)
 
@@ -314,6 +331,64 @@ export class ManageAdReviewService {
     return readManageAdReviewTaskResponseSchema.parse({
       task: runtimeTask?.task ?? null,
     })
+  }
+
+  async pauseManageAdReviewTask(
+    request: PauseManageAdReviewTaskRequestDto,
+  ): Promise<PauseManageAdReviewTaskResponseDto> {
+    const runtimeTask = this.tasks.get(request.task_id)
+    if (!runtimeTask) {
+      throw new Error(`AI广告审核暂停失败：任务不存在 ${request.task_id}`)
+    }
+
+    if (runtimeTask.task.status === 'running') {
+      runtimeTask.pauseRequested = true
+      runtimeTask.abortController?.abort()
+      runtimeTask.task = {
+        ...runtimeTask.task,
+        status: 'paused',
+        message: 'AI广告审核已暂停',
+        error_detail: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    return pauseManageAdReviewTaskResponseSchema.parse({
+      task: runtimeTask.task,
+    })
+  }
+
+  async testAdReviewVisionModel(
+    request: TestAdReviewVisionModelRequestDto,
+  ): Promise<TestAdReviewVisionModelResponseDto> {
+    const timeoutMs = Number.isFinite(request.timeout_ms)
+      ? Math.max(1_000, Math.min(60_000, Math.floor(request.timeout_ms as number)))
+      : DEFAULT_VISION_TEST_TIMEOUT_MS
+
+    try {
+      const client = new OpenAiVisionClient({
+        endpoint: request.llm_endpoint,
+        model: request.llm_model,
+        apiKey: process.env.MEDIA_PLAYERX_LLM_API_KEY,
+        timeoutMs,
+      })
+
+      const detection = await client.detectAd({
+        imageBytes: buildVisionTestImageBytes(),
+      })
+
+      const normalizedReason = detection.reason.trim()
+      return testAdReviewVisionModelResponseSchema.parse({
+        ok: true,
+        message: normalizedReason ? `模型响应正常：${normalizedReason.slice(0, 120)}` : '模型响应正常',
+      })
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      return testAdReviewVisionModelResponseSchema.parse({
+        ok: false,
+        message: `模型测试失败：${reason}`,
+      })
+    }
   }
 
   async confirmManageAdReviewDelete(
@@ -453,6 +528,12 @@ export class ManageAdReviewService {
       return
     }
 
+    runtimeTask.pauseRequested = false
+    if (!runtimeTask.abortController || runtimeTask.abortController.signal.aborted) {
+      runtimeTask.abortController = new AbortController()
+    }
+    const runSignal = runtimeTask.abortController.signal
+
     try {
       const knownHashes = this.readKnownHashes()
       const client = new OpenAiVisionClient({
@@ -499,6 +580,7 @@ export class ManageAdReviewService {
           },
           concurrency: taskExecution.max_concurrency,
           strategy: toEngineStrategy(taskExecution),
+          signal: runSignal,
           onEvent: (event) => {
             const currentTask = this.tasks.get(taskId)
             if (!currentTask || currentTask.task.status !== 'running') {
@@ -577,15 +659,31 @@ export class ManageAdReviewService {
         candidates,
         updated_at_ms: Date.now(),
       }
+      runtimeTask.pauseRequested = false
     } catch (error) {
+      const isAbortError = error instanceof Error && error.name === 'AbortError'
+      if (isAbortError && (runtimeTask.pauseRequested || runtimeTask.task.status === 'paused')) {
+        runtimeTask.task = {
+          ...runtimeTask.task,
+          status: 'paused',
+          message: 'AI广告审核已暂停',
+          error_detail: null,
+          updated_at_ms: Date.now(),
+        }
+        return
+      }
+
       const reason = error instanceof Error ? error.message : String(error)
       runtimeTask.task = {
         ...runtimeTask.task,
         status: 'failed',
-        message: '广告审核失败',
+        message: 'AI广告审核失败',
         error_detail: reason,
         updated_at_ms: Date.now(),
       }
+    } finally {
+      runtimeTask.abortController = null
+      runtimeTask.pauseRequested = false
     }
   }
 

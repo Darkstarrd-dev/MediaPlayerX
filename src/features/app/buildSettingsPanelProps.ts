@@ -20,6 +20,11 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  adReviewVisionEndpoint: string
+  adReviewVisionModel: string
+  adReviewVisionVerified: boolean
+  adReviewVisionTestPending: boolean
+  adReviewVisionTestMessage: string | null
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
   vectorUniverseLookSensitivity: number
@@ -41,6 +46,7 @@ interface BuildSettingsPanelPropsParams {
   resetShortcuts: () => void
   resetVectorControls: () => void
   clearDatabaseForDev: () => void
+  testAdReviewVisionModel: () => void
 }
 
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
@@ -63,6 +69,11 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailWidth: params.thumbnailWidth,
     lmStudioEndpoint: params.lmStudioEndpoint,
     lmStudioModel: params.lmStudioModel,
+    adReviewVisionEndpoint: params.adReviewVisionEndpoint,
+    adReviewVisionModel: params.adReviewVisionModel,
+    adReviewVisionVerified: params.adReviewVisionVerified,
+    adReviewVisionTestPending: params.adReviewVisionTestPending,
+    adReviewVisionTestMessage: params.adReviewVisionTestMessage,
     vectorUniverseMoveSpeed: params.vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier: params.vectorUniverseSprintMultiplier,
     vectorUniverseLookSensitivity: params.vectorUniverseLookSensitivity,
@@ -94,6 +105,17 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
     onLmStudioEndpointChange: (value) => params.updateSettings({ lmStudioEndpoint: value }),
     onLmStudioModelChange: (value) => params.updateSettings({ lmStudioModel: value }),
+    onAdReviewVisionEndpointChange: (value) =>
+      params.updateSettings({
+        adReviewVisionEndpoint: value,
+        adReviewVisionVerified: false,
+      }),
+    onAdReviewVisionModelChange: (value) =>
+      params.updateSettings({
+        adReviewVisionModel: value,
+        adReviewVisionVerified: false,
+      }),
+    onTestAdReviewVisionModel: params.testAdReviewVisionModel,
     onVectorUniverseMoveSpeedChange: (value) => params.updateSettings({ vectorUniverseMoveSpeed: value }),
     onVectorUniverseSprintMultiplierChange: (value) => params.updateSettings({ vectorUniverseSprintMultiplier: value }),
     onVectorUniverseLookSensitivityChange: (value) => params.updateSettings({ vectorUniverseLookSensitivity: value }),

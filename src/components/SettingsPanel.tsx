@@ -40,6 +40,11 @@ export interface SettingsPanelProps {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  adReviewVisionEndpoint: string
+  adReviewVisionModel: string
+  adReviewVisionVerified: boolean
+  adReviewVisionTestPending: boolean
+  adReviewVisionTestMessage: string | null
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
   vectorUniverseLookSensitivity: number
@@ -71,6 +76,9 @@ export interface SettingsPanelProps {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
+  onAdReviewVisionEndpointChange: (value: string) => void
+  onAdReviewVisionModelChange: (value: string) => void
+  onTestAdReviewVisionModel: () => void
   onVectorUniverseMoveSpeedChange: (value: number) => void
   onVectorUniverseSprintMultiplierChange: (value: number) => void
   onVectorUniverseLookSensitivityChange: (value: number) => void
@@ -91,7 +99,8 @@ type BindingTarget =
 
 const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
   { id: 'layout', label: '布局参数' },
-  { id: 'model', label: '模型参数' },
+  { id: 'model', label: 'LLM模型设置' },
+  { id: 'thumbnail', label: '缩略图设置' },
   { id: 'database', label: '数据库设置' },
   { id: 'shortcuts', label: '快捷键设置' },
   { id: 'theme', label: 'theme 设置' },
@@ -117,6 +126,11 @@ function SettingsPanel({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
+  adReviewVisionEndpoint,
+  adReviewVisionModel,
+  adReviewVisionVerified,
+  adReviewVisionTestPending,
+  adReviewVisionTestMessage,
   vectorUniverseMoveSpeed,
   vectorUniverseSprintMultiplier,
   vectorUniverseLookSensitivity,
@@ -148,6 +162,9 @@ function SettingsPanel({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
+  onAdReviewVisionEndpointChange,
+  onAdReviewVisionModelChange,
+  onTestAdReviewVisionModel,
   onVectorUniverseMoveSpeedChange,
   onVectorUniverseSprintMultiplierChange,
   onVectorUniverseLookSensitivityChange,
@@ -322,6 +339,11 @@ function SettingsPanel({
     thumbnailWidth,
     lmStudioEndpoint,
     lmStudioModel,
+    adReviewVisionEndpoint,
+    adReviewVisionModel,
+    adReviewVisionVerified,
+    adReviewVisionTestPending,
+    adReviewVisionTestMessage,
     themeId,
     vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier,
@@ -355,6 +377,9 @@ function SettingsPanel({
     onThumbnailWidthChange,
     onLmStudioEndpointChange,
     onLmStudioModelChange,
+    onAdReviewVisionEndpointChange,
+    onAdReviewVisionModelChange,
+    onTestAdReviewVisionModel,
     onThemeChange,
     onVectorUniverseMoveSpeedChange,
     onVectorUniverseSprintMultiplierChange,
@@ -373,7 +398,8 @@ function SettingsPanel({
     <div className="settings-mask" role="dialog" aria-modal="true">
       <section className="settings-panel" style={{ fontSize: `${settingsFontSize}px` }}>
         <div className="settings-head">
-          <h2>设置面板（虚拟）</h2>
+          <span className="settings-head-spacer" aria-hidden="true" />
+          <h2>设置面板</h2>
           <button type="button" onClick={onClose}>关闭</button>
         </div>
 

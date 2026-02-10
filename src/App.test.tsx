@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
 import { MockMediaRepository } from './features/backend/repository/mockRepository'
-import { resetUiStoreState } from './store/useUiStore'
+import { resetUiStoreState, useUiStore } from './store/useUiStore'
 
 describe('MediaPlayer 虚拟 UI', () => {
   beforeEach(() => {
@@ -319,12 +319,18 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByText(/管理操作:/)).not.toBeInTheDocument()
   })
 
-  it('管理模式广告审核支持缩略图复核与确认删除', async () => {
+  it('管理模式AI广告审核支持缩略图复核与确认删除', async () => {
     vi.spyOn(MockMediaRepository.prototype, 'deleteImageItemsSync').mockImplementation((request) => ({
       deleted_count: request.image_ids.length,
       failed: [],
       updated_at_ms: Date.now(),
     }))
+
+    useUiStore.setState({
+      adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
+      adReviewVisionModel: 'mock-vision-model',
+      adReviewVisionVerified: true,
+    })
 
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: '管理' }))
@@ -333,15 +339,22 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
     })
 
-    expect(screen.getByRole('group', { name: '广告审核策略切换' })).toBeInTheDocument()
-    expect(screen.getByLabelText('广告审核并发')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'head-tail' }))
-    expect(screen.getByText('头部窗口样本数')).toBeInTheDocument()
-    fireEvent.change(screen.getByLabelText('广告审核并发'), { target: { value: '6' } })
-    fireEvent.click(screen.getByRole('button', { name: 'all' }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'AI广告审核' })).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'AI广告审核' }))
+
+    expect(screen.getByRole('group', { name: 'AI广告审核控制' })).toBeInTheDocument()
+    expect(screen.getByLabelText('AI广告审核并发')).toBeInTheDocument()
+    const strategyToggleButton = screen.getByRole('button', { name: 'AI广告审核策略切换' })
+    fireEvent.click(strategyToggleButton)
+    expect(screen.getByLabelText('AI广告审核头部窗口样本数')).toBeEnabled()
+    fireEvent.change(screen.getByLabelText('AI广告审核并发'), { target: { value: '6' } })
+    fireEvent.click(strategyToggleButton)
+    expect(screen.getByLabelText('AI广告审核头部窗口样本数')).toBeDisabled()
 
     fireEvent.click(document.querySelector('.manage-image-checker') as HTMLInputElement)
-    fireEvent.click(screen.getByRole('button', { name: '广告审核' }))
+    fireEvent.click(screen.getByRole('button', { name: '执行AI广告审核' }))
 
     await waitFor(() => {
       expect(screen.getByText('待复核')).toBeInTheDocument()
@@ -920,7 +933,8 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(settingsPanel).not.toBeNull()
 
     expect(screen.getByRole('button', { name: '布局参数' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '模型参数' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'LLM模型设置' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '缩略图设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '快捷键设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'theme 设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '3D 设置' })).toBeInTheDocument()
@@ -930,9 +944,14 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.change(settingsFontSlider, { target: { value: '1.2' } })
     expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore)
 
-    fireEvent.click(screen.getByRole('button', { name: '模型参数' }))
-    expect(screen.queryByLabelText('广告审核策略')).not.toBeInTheDocument()
-    expect(screen.queryByLabelText('审核并发')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'LLM模型设置' }))
+    expect(screen.getByLabelText('LM Studio Endpoint')).toBeInTheDocument()
+    expect(screen.getByLabelText('视觉模型端口')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '缩略图设置' }))
+    expect(screen.getByLabelText(/缩略图间距系数/)).toBeInTheDocument()
+    expect(screen.getByLabelText('缩略图质量')).toBeInTheDocument()
+    expect(screen.getByLabelText('缩略图宽度')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'theme 设置' }))
     expect(screen.getByText('主题方案')).toBeInTheDocument()

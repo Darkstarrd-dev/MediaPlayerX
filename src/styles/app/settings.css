@@ -99,9 +99,24 @@
 .settings-head {
   border-bottom: 1px solid var(--line);
   padding: 10px 14px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+}
+
+.settings-head h2 {
+  margin: 0;
+  text-align: center;
+}
+
+.settings-head button {
+  justify-self: end;
+}
+
+.settings-head-spacer {
+  width: 1px;
+  height: 1px;
 }
 
 .settings-shell {
@@ -229,6 +244,22 @@
 .settings-danger-text {
   margin: 0;
   color: var(--mpx-status-danger-text);
+}
+
+.settings-test-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.settings-test-status {
+  font-size: 12px;
+  color: var(--mpx-text-2);
+}
+
+.settings-test-status.is-ok {
+  color: var(--mpx-status-success-text);
 }
 
 .settings-shortcuts-head {

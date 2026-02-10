@@ -11,6 +11,12 @@
   gap: 10px;
 }
 
+.manage-panel-actions .feature-action-btn.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--mpx-accent);
+}
+
 .manage-panel-summary {
   margin: 0;
   color: var(--text-dim);
@@ -132,31 +138,61 @@
   justify-content: space-between;
 }
 
-.manage-ad-review-params > label {
+.manage-ad-review-controls-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.manage-ad-review-icon-btn {
+  width: var(--mpx-icon-button-size);
+  height: var(--mpx-icon-button-size);
+  min-width: var(--mpx-icon-button-size);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--mpx-bg-elevated);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  font-size: var(--mpx-icon-size);
+}
+
+.manage-ad-review-icon-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--mpx-accent);
+  border-color: var(--mpx-accent);
+}
+
+.manage-ad-review-exec-btn.is-running {
+  background: var(--mpx-status-warning-bg);
+  color: var(--mpx-status-warning-text);
+  border-color: var(--mpx-status-warning-border);
+}
+
+.manage-ad-review-inline-field {
   display: grid;
-  gap: 6px;
+  gap: 4px;
+  min-width: 88px;
   color: var(--text-dim);
   font-size: 12px;
 }
 
-.manage-ad-review-strategy-toggle {
-  display: inline-flex;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  overflow: hidden;
-  width: fit-content;
+.manage-ad-review-inline-field-wide {
+  min-width: 118px;
 }
 
-.manage-ad-review-strategy-toggle > button {
-  border: 0;
-  background: var(--mpx-bg-elevated);
-  color: var(--text-main);
-  padding: 5px 10px;
+.manage-ad-review-inline-field.is-disabled {
+  opacity: 0.6;
 }
 
-.manage-ad-review-strategy-toggle > button.is-active {
-  background: var(--accent-soft);
-  color: var(--mpx-accent);
+.manage-ad-review-inline-field > select {
+  min-height: 30px;
 }
 
 .manage-ad-review {
@@ -184,6 +220,11 @@
 .manage-ad-review-status.is-running {
   background: var(--mpx-status-busy-bg);
   color: var(--mpx-status-busy-text);
+}
+
+.manage-ad-review-status.is-paused {
+  background: var(--mpx-bg-muted);
+  color: var(--mpx-text-2);
 }
 
 .manage-ad-review-status.is-review {

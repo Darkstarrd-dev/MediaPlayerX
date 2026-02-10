@@ -238,7 +238,7 @@ export const manageAdReviewImageSourceSchema = z.enum([
   'strategy-skip',
 ])
 
-export const manageAdReviewTaskStatusSchema = z.enum(['running', 'review', 'failed'])
+export const manageAdReviewTaskStatusSchema = z.enum(['running', 'paused', 'review', 'failed'])
 
 export const manageAdReviewAllStrategySchema = z.object({
   mode: z.literal('all'),
@@ -328,6 +328,25 @@ export const readManageAdReviewTaskRequestSchema = z.object({
 
 export const readManageAdReviewTaskResponseSchema = z.object({
   task: manageAdReviewTaskSchema.nullable(),
+})
+
+export const pauseManageAdReviewTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+})
+
+export const pauseManageAdReviewTaskResponseSchema = z.object({
+  task: manageAdReviewTaskSchema,
+})
+
+export const testAdReviewVisionModelRequestSchema = z.object({
+  llm_endpoint: z.string().min(1),
+  llm_model: z.string().min(1),
+  timeout_ms: z.number().int().min(1_000).max(60_000).optional(),
+})
+
+export const testAdReviewVisionModelResponseSchema = z.object({
+  ok: z.boolean(),
+  message: z.string().min(1),
 })
 
 export const confirmManageAdReviewDeleteRequestSchema = z.object({
@@ -564,6 +583,10 @@ export type StartManageAdReviewRequestDto = z.infer<typeof startManageAdReviewRe
 export type StartManageAdReviewResponseDto = z.infer<typeof startManageAdReviewResponseSchema>
 export type ReadManageAdReviewTaskRequestDto = z.infer<typeof readManageAdReviewTaskRequestSchema>
 export type ReadManageAdReviewTaskResponseDto = z.infer<typeof readManageAdReviewTaskResponseSchema>
+export type PauseManageAdReviewTaskRequestDto = z.infer<typeof pauseManageAdReviewTaskRequestSchema>
+export type PauseManageAdReviewTaskResponseDto = z.infer<typeof pauseManageAdReviewTaskResponseSchema>
+export type TestAdReviewVisionModelRequestDto = z.infer<typeof testAdReviewVisionModelRequestSchema>
+export type TestAdReviewVisionModelResponseDto = z.infer<typeof testAdReviewVisionModelResponseSchema>
 export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManageAdReviewDeleteRequestSchema>
 export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>

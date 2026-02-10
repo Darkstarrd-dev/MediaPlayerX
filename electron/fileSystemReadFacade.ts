@@ -37,6 +37,10 @@ import {
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
+  type PauseManageAdReviewTaskRequestDto,
+  type PauseManageAdReviewTaskResponseDto,
+  type TestAdReviewVisionModelRequestDto,
+  type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type WritePlaylistRequestDto,
@@ -505,6 +509,18 @@ export class FileSystemMediaReadService {
     request: ReadManageAdReviewTaskRequestDto,
   ): Promise<ReadManageAdReviewTaskResponseDto> {
     return this.manageAdReviewService.readManageAdReviewTask(request)
+  }
+
+  async pauseManageAdReviewTask(
+    request: PauseManageAdReviewTaskRequestDto,
+  ): Promise<PauseManageAdReviewTaskResponseDto> {
+    return this.manageAdReviewService.pauseManageAdReviewTask(request)
+  }
+
+  async testAdReviewVisionModel(
+    request: TestAdReviewVisionModelRequestDto,
+  ): Promise<TestAdReviewVisionModelResponseDto> {
+    return this.manageAdReviewService.testAdReviewVisionModel(request)
   }
 
   async confirmManageAdReviewDelete(

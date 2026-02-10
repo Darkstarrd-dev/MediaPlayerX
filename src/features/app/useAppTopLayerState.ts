@@ -1,5 +1,8 @@
 import {
+  useCallback,
+  useEffect,
   useMemo,
+  useState,
   type Dispatch,
   type SetStateAction,
 } from 'react'
@@ -230,6 +233,60 @@ export function useAppTopLayerState({
 
   const shortcutConflicts = useMemo(() => findShortcutConflicts(appSettings.shortcuts), [appSettings.shortcuts])
   const vectorControlConflicts = useMemo(() => findVectorControlConflicts(appSettings.vectorControls), [appSettings.vectorControls])
+  const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
+  const [adReviewVisionTestMessage, setAdReviewVisionTestMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    setAdReviewVisionTestMessage(null)
+  }, [appSettings.adReviewVisionEndpoint, appSettings.adReviewVisionModel])
+
+  const testAdReviewVisionModel = useCallback(async () => {
+    const testVisionModel = mediaRepository.testAdReviewVisionModel
+    if (!testVisionModel) {
+      appSettings.updateSettings({ adReviewVisionVerified: false })
+      setAdReviewVisionTestMessage('当前后端不支持视觉模型测试')
+      return
+    }
+
+    const normalizedEndpoint = appSettings.adReviewVisionEndpoint.trim()
+    const normalizedModel = appSettings.adReviewVisionModel.trim()
+    if (!normalizedEndpoint || !normalizedModel) {
+      appSettings.updateSettings({ adReviewVisionVerified: false })
+      setAdReviewVisionTestMessage('请先填写视觉模型端口和模型ID')
+      return
+    }
+
+    setAdReviewVisionTestPending(true)
+    setAdReviewVisionTestMessage('测试中...')
+    try {
+      const response = await testVisionModel(
+        {
+          llm_endpoint: normalizedEndpoint,
+          llm_model: normalizedModel,
+          timeout_ms: 12_000,
+        },
+        { timeoutMs: 15_000 },
+      )
+
+      appSettings.updateSettings({
+        adReviewVisionEndpoint: normalizedEndpoint,
+        adReviewVisionModel: normalizedModel,
+        adReviewVisionVerified: response.ok,
+      })
+      setAdReviewVisionTestMessage(response.message)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      appSettings.updateSettings({ adReviewVisionVerified: false })
+      setAdReviewVisionTestMessage(`模型测试失败：${message}`)
+    } finally {
+      setAdReviewVisionTestPending(false)
+    }
+  }, [
+    appSettings.adReviewVisionEndpoint,
+    appSettings.adReviewVisionModel,
+    appSettings.updateSettings,
+    mediaRepository,
+  ])
 
   const fullscreenLayerProps = buildFullscreenLayerProps({
     mode,
@@ -294,6 +351,11 @@ export function useAppTopLayerState({
     thumbnailWidth: appSettings.thumbnailWidth,
     lmStudioEndpoint: appSettings.lmStudioEndpoint,
     lmStudioModel: appSettings.lmStudioModel,
+    adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,
+    adReviewVisionModel: appSettings.adReviewVisionModel,
+    adReviewVisionVerified: appSettings.adReviewVisionVerified,
+    adReviewVisionTestPending,
+    adReviewVisionTestMessage,
     vectorUniverseMoveSpeed: appSettings.vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier: appSettings.vectorUniverseSprintMultiplier,
     vectorUniverseLookSensitivity: appSettings.vectorUniverseLookSensitivity,
@@ -315,6 +377,7 @@ export function useAppTopLayerState({
     resetShortcuts: appSettings.resetShortcuts,
     resetVectorControls: appSettings.resetVectorControls,
     clearDatabaseForDev,
+    testAdReviewVisionModel,
   })
 
   const appHeaderProps = buildAppHeaderProps({

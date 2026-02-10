@@ -32,6 +32,10 @@ import {
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskRequestSchema,
   readManageAdReviewTaskResponseSchema,
+  pauseManageAdReviewTaskRequestSchema,
+  pauseManageAdReviewTaskResponseSchema,
+  testAdReviewVisionModelRequestSchema,
+  testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
@@ -196,6 +200,18 @@ export function registerBackendIpcHandlers(): void {
     const request = readManageAdReviewTaskRequestSchema.parse(payload)
     const response = await ensureService().readManageAdReviewTask(request)
     return readManageAdReviewTaskResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.pauseManageAdReviewTask, async (_event, payload: unknown) => {
+    const request = pauseManageAdReviewTaskRequestSchema.parse(payload)
+    const response = await ensureService().pauseManageAdReviewTask(request)
+    return pauseManageAdReviewTaskResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.testAdReviewVisionModel, async (_event, payload: unknown) => {
+    const request = testAdReviewVisionModelRequestSchema.parse(payload)
+    const response = await ensureService().testAdReviewVisionModel(request)
+    return testAdReviewVisionModelResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.confirmManageAdReviewDelete, async (_event, payload: unknown) => {

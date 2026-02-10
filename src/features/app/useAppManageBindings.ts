@@ -26,8 +26,8 @@ export function useAppManageBindings({
 }: UseAppManageBindingsParams) {
   const {
     mode,
-    lmStudioEndpoint,
-    lmStudioModel,
+    adReviewVisionEndpoint,
+    adReviewVisionModel,
     adReviewStrategyMode,
     adReviewHeadN,
     adReviewTailN,
@@ -96,8 +96,8 @@ export function useAppManageBindings({
     activeSelectionScope,
     imageCheckedIds,
     sidebarCheckedNodeIds,
-    llmEndpoint: lmStudioEndpoint,
-    llmModel: lmStudioModel,
+    llmEndpoint: adReviewVisionEndpoint,
+    llmModel: adReviewVisionModel,
     adReviewStrategyMode,
     adReviewHeadN,
     adReviewTailN,

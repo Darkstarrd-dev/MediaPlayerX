@@ -1,4 +1,4 @@
-import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
+import { useEffect, useState, type MouseEvent as ReactMouseEvent, type RefObject } from 'react'
 
 import type { BackendErrorRow } from '../features/app/buildBackendErrorRows'
 import type { ManageAdReviewTaskDto } from '../contracts/backend'
@@ -10,6 +10,9 @@ const AD_REVIEW_STREAK_OPTIONS = Array.from({ length: 200 }, (_, index) => index
 function resolveAdReviewStatusLabel(status: ManageAdReviewTaskDto['status']): string {
   if (status === 'running') {
     return '审核中'
+  }
+  if (status === 'paused') {
+    return '已暂停'
   }
   if (status === 'failed') {
     return '失败'
@@ -51,7 +54,8 @@ interface ManagementPanelProps {
   canDelete: boolean
   canHide: boolean
   canUnhide: boolean
-  canStartAdReview: boolean
+  adReviewFeatureVisible: boolean
+  canExecuteAdReview: boolean
   onDelete: () => void
   onHide: () => void
   onUnhide: () => void
@@ -66,6 +70,7 @@ interface ManagementPanelProps {
   adReviewTailN: number
   adReviewTailStopCleanStreak: number
   onStartAdReview: () => void
+  onPauseAdReview: () => void
   onToggleHideUncheckedNonChecked: () => void
   onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
   onAdReviewMaxConcurrencyChange: (value: number) => void
@@ -93,7 +98,8 @@ function ManagementPanel({
   canDelete,
   canHide,
   canUnhide,
-  canStartAdReview,
+  adReviewFeatureVisible,
+  canExecuteAdReview,
   onDelete,
   onHide,
   onUnhide,
@@ -108,6 +114,7 @@ function ManagementPanel({
   adReviewTailN,
   adReviewTailStopCleanStreak,
   onStartAdReview,
+  onPauseAdReview,
   onToggleHideUncheckedNonChecked,
   onAdReviewStrategyModeChange,
   onAdReviewMaxConcurrencyChange,
@@ -119,6 +126,15 @@ function ManagementPanel({
   onStartResize,
   layoutLocked,
 }: ManagementPanelProps) {
+  const [adReviewPanelOpen, setAdReviewPanelOpen] = useState(false)
+  const adReviewRunning = adReviewTask?.status === 'running'
+
+  useEffect(() => {
+    if (!visible || !adReviewFeatureVisible) {
+      setAdReviewPanelOpen(false)
+    }
+  }, [adReviewFeatureVisible, visible])
+
   if (!visible) {
     return null
   }
@@ -153,76 +169,105 @@ function ManagementPanel({
               <button className="feature-action-btn" type="button" disabled={pending} onClick={onClearSelection}>
                 清空选择
               </button>
-              <button
-                className="feature-action-btn"
-                type="button"
-                disabled={!canStartAdReview || pending || adReviewPending || adReviewTask?.status === 'running'}
-                onClick={onStartAdReview}
-              >
-                广告审核
-              </button>
+              {adReviewFeatureVisible ? (
+                <button
+                  className={`feature-action-btn ${adReviewPanelOpen ? 'is-active' : ''}`}
+                  type="button"
+                  disabled={pending || adReviewPending}
+                  onClick={() => setAdReviewPanelOpen((previous) => !previous)}
+                >
+                  {adReviewPanelOpen ? '关闭AI审核' : 'AI广告审核'}
+                </button>
+              ) : null}
             </div>
 
-            <section className="manage-ad-review-params">
-              <header>
-                <strong>广告审核参数</strong>
-              </header>
-              <div className="manage-ad-review-strategy-toggle" role="group" aria-label="广告审核策略切换">
-                <button
-                  className={adReviewStrategyMode === 'all' ? 'is-active' : ''}
-                  type="button"
-                  onClick={() => onAdReviewStrategyModeChange('all')}
-                >
-                  all
-                </button>
-                <button
-                  className={adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}
-                  type="button"
-                  onClick={() => onAdReviewStrategyModeChange('head-tail')}
-                >
-                  head-tail
-                </button>
-              </div>
-              <label>
-                审核并发
-                <select
-                  aria-label="广告审核并发"
-                  value={adReviewMaxConcurrency}
-                  onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}
-                >
-                  {AD_REVIEW_CONCURRENCY_OPTIONS.map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            {adReviewFeatureVisible && adReviewPanelOpen ? (
+              <section className="manage-ad-review-params">
+                <header>
+                  <strong>AI广告审核参数</strong>
+                </header>
+                <div className="manage-ad-review-controls-row" role="group" aria-label="AI广告审核控制">
+                  <button
+                    className={`manage-ad-review-icon-btn ${adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}`}
+                    type="button"
+                    aria-label="AI广告审核策略切换"
+                    title={
+                      adReviewStrategyMode === 'head-tail'
+                        ? '当前策略：头尾抽样。点击切换为全量审核'
+                        : '当前策略：全量审核。点击切换为头尾抽样'
+                    }
+                    onClick={() => onAdReviewStrategyModeChange(adReviewStrategyMode === 'head-tail' ? 'all' : 'head-tail')}
+                  >
+                    <span aria-hidden="true">{adReviewStrategyMode === 'head-tail' ? '⇵' : '∞'}</span>
+                  </button>
 
-              {adReviewStrategyMode === 'head-tail' ? (
-                <>
-                  <label>
-                    头部窗口样本数
-                    <select value={adReviewHeadN} onChange={(event) => onAdReviewHeadNChange(Number(event.target.value))}>
-                      {AD_REVIEW_WINDOW_OPTIONS.map((value) => (
-                        <option key={value} value={value}>
-                          {value}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    尾部窗口样本数
-                    <select value={adReviewTailN} onChange={(event) => onAdReviewTailNChange(Number(event.target.value))}>
-                      {AD_REVIEW_WINDOW_OPTIONS.map((value) => (
-                        <option key={value} value={value}>
-                          {value}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    尾部停止 clean 连续数
+                  <button
+                    className={`manage-ad-review-icon-btn manage-ad-review-exec-btn ${adReviewRunning ? 'is-running' : ''}`}
+                    type="button"
+                    aria-label={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
+                    title={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
+                    disabled={adReviewPending || (!adReviewRunning && !canExecuteAdReview)}
+                    onClick={adReviewRunning ? onPauseAdReview : onStartAdReview}
+                  >
+                    <span aria-hidden="true">{adReviewRunning ? '⏸' : '▶'}</span>
+                  </button>
+
+                  <label className="manage-ad-review-inline-field">
+                    <span>并发</span>
                     <select
+                      aria-label="AI广告审核并发"
+                      value={adReviewMaxConcurrency}
+                      onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}
+                    >
+                      {AD_REVIEW_CONCURRENCY_OPTIONS.map((value) => (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
+                    <span>头部</span>
+                    <select
+                      aria-label="AI广告审核头部窗口样本数"
+                      disabled={adReviewStrategyMode !== 'head-tail'}
+                      value={adReviewHeadN}
+                      onChange={(event) => onAdReviewHeadNChange(Number(event.target.value))}
+                    >
+                      {AD_REVIEW_WINDOW_OPTIONS.map((value) => (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
+                    <span>尾部</span>
+                    <select
+                      aria-label="AI广告审核尾部窗口样本数"
+                      disabled={adReviewStrategyMode !== 'head-tail'}
+                      value={adReviewTailN}
+                      onChange={(event) => onAdReviewTailNChange(Number(event.target.value))}
+                    >
+                      {AD_REVIEW_WINDOW_OPTIONS.map((value) => (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label
+                    className={`manage-ad-review-inline-field manage-ad-review-inline-field-wide ${
+                      adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''
+                    }`}
+                  >
+                    <span>停止 clean</span>
+                    <select
+                      aria-label="AI广告审核尾部停止clean连续数"
+                      disabled={adReviewStrategyMode !== 'head-tail'}
                       value={adReviewTailStopCleanStreak}
                       onChange={(event) => onAdReviewTailStopCleanStreakChange(Number(event.target.value))}
                     >
@@ -233,16 +278,16 @@ function ManagementPanel({
                       ))}
                     </select>
                   </label>
-                </>
-              ) : null}
-            </section>
+                </div>
+              </section>
+            ) : null}
 
             {operationHint ? <p className="manage-panel-hint">{operationHint}</p> : null}
 
-            {adReviewTask ? (
+            {adReviewFeatureVisible && adReviewPanelOpen && adReviewTask ? (
               <section className="manage-ad-review" aria-live="polite">
                 <header>
-                  <strong>广告审核</strong>
+                  <strong>AI广告审核</strong>
                   <span className={`manage-ad-review-status is-${adReviewTask.status}`}>
                     {resolveAdReviewStatusLabel(adReviewTask.status)}
                   </span>
@@ -268,7 +313,7 @@ function ManagementPanel({
                 <p className="manage-ad-review-message">
                   {adReviewTask.status === 'review'
                     ? `疑似候选 ${adReviewTask.candidates.length} 张，已同步到缩略图勾选。请在缩略图校正后使用上方“删除”执行清除。`
-                    : adReviewTask.message ?? '广告审核任务进行中'}
+                    : adReviewTask.message ?? 'AI广告审核任务进行中'}
                 </p>
 
                 {adReviewTask.status === 'review' ? (

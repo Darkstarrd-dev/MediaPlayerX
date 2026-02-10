@@ -7,6 +7,7 @@ import type { MediaRepository } from '../backend/repository'
 const REVIEW_POLL_INTERVAL_MS = 1_000
 const REVIEW_START_TIMEOUT_MS = 60_000
 const REVIEW_READ_TIMEOUT_MS = 10_000
+const REVIEW_PAUSE_TIMEOUT_MS = 10_000
 const REVIEW_DELETE_TIMEOUT_MS = 20_000
 
 interface UseManageAdReviewActionsParams {
@@ -37,6 +38,7 @@ interface UseManageAdReviewActionsResult {
   llmReviewedImageIds: string[]
   nonLlmReviewedImageIds: string[]
   startManageAdReview: () => Promise<void>
+  pauseManageAdReview: () => Promise<void>
   toggleHideUncheckedNonChecked: () => void
   confirmDeleteSelectedCandidates: () => Promise<void>
   dismissTask: () => void
@@ -145,13 +147,13 @@ export function useManageAdReviewActions({
               ? {
                   ...previous,
                   status: 'failed',
-                  message: '广告审核任务读取失败',
+                  message: 'AI广告审核任务读取失败',
                   error_detail: message,
                   updated_at_ms: Date.now(),
                 }
               : previous,
           )
-          setManageOperationHint(`广告审核读取失败：${message}`)
+          setManageOperationHint(`AI广告审核读取失败：${message}`)
         }
       })()
     }, REVIEW_POLL_INTERVAL_MS)
@@ -163,11 +165,11 @@ export function useManageAdReviewActions({
 
   const startManageAdReview = useCallback(async () => {
     if (!repository.startManageAdReview) {
-      setManageOperationHint('当前后端不支持广告审核')
+      setManageOperationHint('当前后端不支持AI广告审核')
       return
     }
     if (mode !== 'image') {
-      setManageOperationHint('广告审核仅支持图片模式')
+      setManageOperationHint('AI广告审核仅支持图片模式')
       return
     }
     if (!manageMode) {
@@ -179,12 +181,19 @@ export function useManageAdReviewActions({
       return
     }
 
+    const normalizedEndpoint = llmEndpoint.trim()
+    const normalizedModel = llmModel.trim()
+    if (!normalizedEndpoint || !normalizedModel) {
+      setManageOperationHint('请先在设置面板配置并测试AI广告审核视觉模型')
+      return
+    }
+
     const imageIds = activeScope === 'image' ? imageCheckedIds : []
     const nodeIds = activeScope === 'sidebar' ? sidebarCheckedNodeIds : []
 
     setHideUncheckedNonChecked(false)
     setPending(true)
-    setManageOperationHint('广告审核任务已启动')
+    setManageOperationHint('AI广告审核任务已启动')
     try {
       const normalizedStrategyMode = adReviewStrategyMode === 'head-tail' ? 'head-tail' : 'all'
       const strategy =
@@ -208,8 +217,8 @@ export function useManageAdReviewActions({
           selection_scope: activeScope,
           image_ids: imageIds,
           node_ids: nodeIds,
-          llm_endpoint: llmEndpoint,
-          llm_model: llmModel,
+          llm_endpoint: normalizedEndpoint,
+          llm_model: normalizedModel,
           strategy,
           max_concurrency: maxConcurrency,
         },
@@ -217,12 +226,12 @@ export function useManageAdReviewActions({
       )
 
       setTask(response.task)
-      setManageOperationHint(response.task.message ?? '广告审核任务已启动')
+      setManageOperationHint(response.task.message ?? 'AI广告审核任务已启动')
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       setTask(null)
       setHideUncheckedNonChecked(false)
-      setManageOperationHint(`广告审核启动失败：${message}`)
+      setManageOperationHint(`AI广告审核启动失败：${message}`)
     } finally {
       setPending(false)
     }
@@ -242,6 +251,33 @@ export function useManageAdReviewActions({
     setManageOperationHint,
     sidebarCheckedNodeIds,
   ])
+
+  const pauseManageAdReview = useCallback(async () => {
+    if (!repository.pauseManageAdReviewTask) {
+      setManageOperationHint('当前后端不支持AI广告审核暂停')
+      return
+    }
+
+    if (!task || task.status !== 'running') {
+      setManageOperationHint('当前无可暂停的AI广告审核任务')
+      return
+    }
+
+    setPending(true)
+    try {
+      const response = await repository.pauseManageAdReviewTask(
+        { task_id: task.task_id },
+        { timeoutMs: REVIEW_PAUSE_TIMEOUT_MS },
+      )
+      setTask(response.task)
+      setManageOperationHint(response.task.message ?? 'AI广告审核已暂停')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      setManageOperationHint(`AI广告审核暂停失败：${message}`)
+    } finally {
+      setPending(false)
+    }
+  }, [repository, setManageOperationHint, task])
 
   const toggleHideUncheckedNonChecked = useCallback(() => {
     setHideUncheckedNonChecked((previous) => !previous)
@@ -281,15 +317,15 @@ export function useManageAdReviewActions({
 
   const confirmDeleteSelectedCandidates = useCallback(async () => {
     if (!repository.confirmManageAdReviewDelete) {
-      setManageOperationHint('当前后端不支持广告审核删除')
+      setManageOperationHint('当前后端不支持AI广告审核删除')
       return
     }
     if (!task) {
-      setManageOperationHint('暂无可删除的广告审核结果')
+      setManageOperationHint('暂无可删除的AI广告审核结果')
       return
     }
     if (task.status !== 'review') {
-      setManageOperationHint('广告审核尚未完成，请稍候')
+      setManageOperationHint('AI广告审核尚未完成，请稍候')
       return
     }
     if (selectedCandidateIds.length === 0) {
@@ -329,7 +365,7 @@ export function useManageAdReviewActions({
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      setManageOperationHint(`广告审核删除失败：${message}`)
+      setManageOperationHint(`AI广告审核删除失败：${message}`)
     } finally {
       setPending(false)
     }
@@ -357,6 +393,7 @@ export function useManageAdReviewActions({
     llmReviewedImageIds,
     nonLlmReviewedImageIds,
     startManageAdReview,
+    pauseManageAdReview,
     toggleHideUncheckedNonChecked,
     confirmDeleteSelectedCandidates,
     dismissTask,

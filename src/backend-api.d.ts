@@ -33,6 +33,10 @@ import type {
   StartManageAdReviewResponseDto,
   ReadManageAdReviewTaskRequestDto,
   ReadManageAdReviewTaskResponseDto,
+  PauseManageAdReviewTaskRequestDto,
+  PauseManageAdReviewTaskResponseDto,
+  TestAdReviewVisionModelRequestDto,
+  TestAdReviewVisionModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
   SetImageHiddenRequestDto,
@@ -61,6 +65,12 @@ interface MediaPlayerBackendApi {
   deleteSidebarNodes?: (request: DeleteSidebarNodesRequestDto) => Promise<DeleteSidebarNodesResponseDto>
   startManageAdReview?: (request: StartManageAdReviewRequestDto) => Promise<StartManageAdReviewResponseDto>
   readManageAdReviewTask?: (request: ReadManageAdReviewTaskRequestDto) => Promise<ReadManageAdReviewTaskResponseDto>
+  pauseManageAdReviewTask?: (
+    request: PauseManageAdReviewTaskRequestDto,
+  ) => Promise<PauseManageAdReviewTaskResponseDto>
+  testAdReviewVisionModel?: (
+    request: TestAdReviewVisionModelRequestDto,
+  ) => Promise<TestAdReviewVisionModelResponseDto>
   confirmManageAdReviewDelete?: (
     request: ConfirmManageAdReviewDeleteRequestDto,
   ) => Promise<ConfirmManageAdReviewDeleteResponseDto>

@@ -22,6 +22,7 @@ interface BuildManagementPanelPropsParams {
   onHide: () => void
   onUnhide: () => void
   onClearSelection: () => void
+  adReviewFeatureEnabled: boolean
   adReviewPending: boolean
   adReviewTask: ManageAdReviewTaskDto | null
   adReviewHideUncheckedNonChecked: boolean
@@ -32,6 +33,7 @@ interface BuildManagementPanelPropsParams {
   adReviewTailN: number
   adReviewTailStopCleanStreak: number
   onStartAdReview: () => void
+  onPauseAdReview: () => void
   onToggleHideUncheckedNonChecked: () => void
   onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
   onAdReviewMaxConcurrencyChange: (value: number) => void
@@ -44,6 +46,9 @@ interface BuildManagementPanelPropsParams {
 }
 
 export function buildManagementPanelProps(params: BuildManagementPanelPropsParams) {
+  const hasSelection = params.sidebarSelectedCount > 0 || params.imageSelectedCount > 0
+  const adReviewFeatureVisible = params.mode === 'image' && params.adReviewFeatureEnabled
+
   return {
     visible: params.manageMode,
     collapsed: params.searchPanelCollapsed,
@@ -56,10 +61,11 @@ export function buildManagementPanelProps(params: BuildManagementPanelPropsParam
     pending: params.pending,
     operationHint: params.operationHint,
     errorRows: params.errorRows,
-    canDelete: params.sidebarSelectedCount > 0 || params.imageSelectedCount > 0,
+    canDelete: hasSelection,
     canHide: params.mode === 'image' && params.imageSelectedCount > 0,
     canUnhide: params.mode === 'image' && params.imageSelectedCount > 0,
-    canStartAdReview: params.mode === 'image' && (params.sidebarSelectedCount > 0 || params.imageSelectedCount > 0),
+    adReviewFeatureVisible,
+    canExecuteAdReview: adReviewFeatureVisible && hasSelection,
     onDelete: params.onDelete,
     onHide: params.onHide,
     onUnhide: params.onUnhide,
@@ -74,6 +80,7 @@ export function buildManagementPanelProps(params: BuildManagementPanelPropsParam
     adReviewTailN: params.adReviewTailN,
     adReviewTailStopCleanStreak: params.adReviewTailStopCleanStreak,
     onStartAdReview: params.onStartAdReview,
+    onPauseAdReview: params.onPauseAdReview,
     onToggleHideUncheckedNonChecked: params.onToggleHideUncheckedNonChecked,
     onAdReviewStrategyModeChange: params.onAdReviewStrategyModeChange,
     onAdReviewMaxConcurrencyChange: params.onAdReviewMaxConcurrencyChange,

@@ -391,6 +391,7 @@ export function useAppWorkspaceProps({
       void runManageHideAction(false)
     },
     onClearSelection: clearAllSelections,
+    adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
     adReviewPending: manageAdReview.pending,
     adReviewTask: manageAdReview.task,
     adReviewHideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
@@ -402,6 +403,9 @@ export function useAppWorkspaceProps({
     adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
     onStartAdReview: () => {
       void manageAdReview.startManageAdReview()
+    },
+    onPauseAdReview: () => {
+      void manageAdReview.pauseManageAdReview()
     },
     onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
     onAdReviewStrategyModeChange: (value) => {

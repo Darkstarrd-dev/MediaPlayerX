@@ -45,7 +45,6 @@ export function useAppDisplayAndEffects({
   } = appSettings
 
   const {
-    selectedPackageId,
     selectedSidebarNodeId,
     setSelectedPackageId,
     setSelectedSidebarNodeId,
@@ -65,7 +64,6 @@ export function useAppDisplayAndEffects({
   } = mediaState
 
   const {
-    searchPanelMode,
     setSearchPanelMode,
     featureSearchActive,
     vectorResultsActive,

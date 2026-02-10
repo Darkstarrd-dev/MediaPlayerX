@@ -11,6 +11,8 @@ import {
   manageAdReviewTaskExecutionSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskResponseSchema,
+  pauseManageAdReviewTaskResponseSchema,
+  testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
@@ -47,6 +49,10 @@ import {
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
+  type PauseManageAdReviewTaskRequestDto,
+  type PauseManageAdReviewTaskResponseDto,
+  type TestAdReviewVisionModelRequestDto,
+  type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type ManageAdReviewImageSourceDto,
@@ -1070,6 +1076,72 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<ReadManageAdReviewTaskResponseDto> {
     const response = this.readManageAdReviewTaskSync(request)
+    return resolveAsync(response, options)
+  }
+
+  pauseManageAdReviewTaskSync(
+    request: PauseManageAdReviewTaskRequestDto,
+  ): PauseManageAdReviewTaskResponseDto {
+    const task = this.manageAdReviewTasks.get(request.task_id)
+    if (!task) {
+      throw new Error(`AI广告审核暂停失败：任务不存在 ${request.task_id}`)
+    }
+
+    const nextTask: ManageAdReviewTaskDto =
+      task.status === 'running'
+        ? {
+            ...task,
+            status: 'paused',
+            message: 'AI广告审核已暂停',
+            error_detail: null,
+            updated_at_ms: Date.now(),
+          }
+        : task
+
+    this.manageAdReviewTasks.set(nextTask.task_id, nextTask)
+    return pauseManageAdReviewTaskResponseSchema.parse({
+      task: nextTask,
+    })
+  }
+
+  async pauseManageAdReviewTask(
+    request: PauseManageAdReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PauseManageAdReviewTaskResponseDto> {
+    const response = this.pauseManageAdReviewTaskSync(request)
+    return resolveAsync(response, options)
+  }
+
+  testAdReviewVisionModelSync(
+    request: TestAdReviewVisionModelRequestDto,
+  ): TestAdReviewVisionModelResponseDto {
+    const endpoint = request.llm_endpoint.trim()
+    const model = request.llm_model.trim()
+    if (!endpoint || !model) {
+      return testAdReviewVisionModelResponseSchema.parse({
+        ok: false,
+        message: '模型测试失败：端口和模型ID不能为空',
+      })
+    }
+
+    if (endpoint.toLowerCase().includes('fail') || model.toLowerCase().includes('fail')) {
+      return testAdReviewVisionModelResponseSchema.parse({
+        ok: false,
+        message: '模型测试失败：mock 连接失败',
+      })
+    }
+
+    return testAdReviewVisionModelResponseSchema.parse({
+      ok: true,
+      message: '模型响应正常：mock 连接成功',
+    })
+  }
+
+  async testAdReviewVisionModel(
+    request: TestAdReviewVisionModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<TestAdReviewVisionModelResponseDto> {
+    const response = this.testAdReviewVisionModelSync(request)
     return resolveAsync(response, options)
   }
 

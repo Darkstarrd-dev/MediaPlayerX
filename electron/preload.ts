@@ -31,6 +31,10 @@ import {
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskRequestSchema,
   readManageAdReviewTaskResponseSchema,
+  pauseManageAdReviewTaskRequestSchema,
+  pauseManageAdReviewTaskResponseSchema,
+  testAdReviewVisionModelRequestSchema,
+  testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
@@ -106,6 +110,16 @@ const backendApi = {
     const parsed = readManageAdReviewTaskRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readManageAdReviewTask, parsed)
     return readManageAdReviewTaskResponseSchema.parse(response)
+  },
+  pauseManageAdReviewTask: async (request: unknown) => {
+    const parsed = pauseManageAdReviewTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pauseManageAdReviewTask, parsed)
+    return pauseManageAdReviewTaskResponseSchema.parse(response)
+  },
+  testAdReviewVisionModel: async (request: unknown) => {
+    const parsed = testAdReviewVisionModelRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.testAdReviewVisionModel, parsed)
+    return testAdReviewVisionModelResponseSchema.parse(response)
   },
   confirmManageAdReviewDelete: async (request: unknown) => {
     const parsed = confirmManageAdReviewDeleteRequestSchema.parse(request)

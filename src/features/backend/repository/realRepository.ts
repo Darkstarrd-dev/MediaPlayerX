@@ -24,6 +24,8 @@ import {
   deleteSidebarNodesResponseSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskResponseSchema,
+  pauseManageAdReviewTaskResponseSchema,
+  testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
@@ -67,6 +69,10 @@ import {
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
+  type PauseManageAdReviewTaskRequestDto,
+  type PauseManageAdReviewTaskResponseDto,
+  type TestAdReviewVisionModelRequestDto,
+  type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type WritePackageGradeRequestDto,
@@ -352,6 +358,32 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.readManageAdReviewTask(request), options)
     return readManageAdReviewTaskResponseSchema.parse(response)
+  }
+
+  async pauseManageAdReviewTask(
+    request: PauseManageAdReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PauseManageAdReviewTaskResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.pauseManageAdReviewTask) {
+      throw new Error('真实后端通道不可用：pauseManageAdReviewTask 未注入')
+    }
+
+    const response = await withAbort(api.pauseManageAdReviewTask(request), options)
+    return pauseManageAdReviewTaskResponseSchema.parse(response)
+  }
+
+  async testAdReviewVisionModel(
+    request: TestAdReviewVisionModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<TestAdReviewVisionModelResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.testAdReviewVisionModel) {
+      throw new Error('真实后端通道不可用：testAdReviewVisionModel 未注入')
+    }
+
+    const response = await withAbort(api.testAdReviewVisionModel(request), options)
+    return testAdReviewVisionModelResponseSchema.parse(response)
   }
 
   async confirmManageAdReviewDelete(

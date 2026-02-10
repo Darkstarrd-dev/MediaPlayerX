@@ -15,6 +15,10 @@ import type {
   StartManageAdReviewResponseDto,
   ReadManageAdReviewTaskRequestDto,
   ReadManageAdReviewTaskResponseDto,
+  PauseManageAdReviewTaskRequestDto,
+  PauseManageAdReviewTaskResponseDto,
+  TestAdReviewVisionModelRequestDto,
+  TestAdReviewVisionModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
   ReadImportTasksResponseDto,
@@ -97,6 +101,14 @@ export interface MediaRepository {
     request: ReadManageAdReviewTaskRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ReadManageAdReviewTaskResponseDto>
+  pauseManageAdReviewTask?(
+    request: PauseManageAdReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PauseManageAdReviewTaskResponseDto>
+  testAdReviewVisionModel?(
+    request: TestAdReviewVisionModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<TestAdReviewVisionModelResponseDto>
   confirmManageAdReviewDelete?(
     request: ConfirmManageAdReviewDeleteRequestDto,
     options?: RepositoryRequestOptions,
@@ -158,6 +170,8 @@ export interface SynchronousMediaRepository extends MediaRepository {
   deleteSidebarNodesSync?(request: DeleteSidebarNodesRequestDto): DeleteSidebarNodesResponseDto
   startManageAdReviewSync?(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto
   readManageAdReviewTaskSync?(request: ReadManageAdReviewTaskRequestDto): ReadManageAdReviewTaskResponseDto
+  pauseManageAdReviewTaskSync?(request: PauseManageAdReviewTaskRequestDto): PauseManageAdReviewTaskResponseDto
+  testAdReviewVisionModelSync?(request: TestAdReviewVisionModelRequestDto): TestAdReviewVisionModelResponseDto
   confirmManageAdReviewDeleteSync?(
     request: ConfirmManageAdReviewDeleteRequestDto,
   ): ConfirmManageAdReviewDeleteResponseDto
