@@ -389,3 +389,5 @@ export function useReadOnlyDataAccess({
     retryMetadata,
   }
 }
+
+export type ReadOnlyDataAccessResult = ReturnType<typeof useReadOnlyDataAccess>

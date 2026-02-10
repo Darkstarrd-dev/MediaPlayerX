@@ -1,14 +1,14 @@
 import { useAppShellProps } from './useAppShellProps'
 import { useAppTopLayerBindings } from './useAppTopLayerBindings'
 import { useAppWorkspaceBindings } from './useAppWorkspaceBindings'
-import type { useAppRuntimeSources } from './useAppRuntimeSources'
-import type { useAppReadAndNavigation } from './useAppReadAndNavigation'
-import type { useAppDisplayAndEffects } from './useAppDisplayAndEffects'
+import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
+import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
+import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
 
 interface UseAppViewCompositionParams {
-  runtimeSources: ReturnType<typeof useAppRuntimeSources>
-  readNavigationState: ReturnType<typeof useAppReadAndNavigation>
-  displayState: ReturnType<typeof useAppDisplayAndEffects>
+  runtimeSources: AppRuntimeSourcesResult
+  readNavigationState: AppReadAndNavigationResult
+  displayState: AppDisplayAndEffectsResult
 }
 
 export function useAppViewComposition({

@@ -108,3 +108,5 @@ export function useRuntimeCapabilities({ repository }: UseRuntimeCapabilitiesPar
     retry,
   }
 }
+
+export type RuntimeCapabilitiesResult = ReturnType<typeof useRuntimeCapabilities>

@@ -9,9 +9,9 @@ import { buildSearchPanelProps } from './buildSearchPanelProps'
 import { buildSidebarPanelProps } from './buildSidebarPanelProps'
 import { buildVideoMainSectionProps } from './buildVideoMainSectionProps'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
-import type { useManageAdReviewActions } from './useManageAdReviewActions'
-import type { useMetadataWriteBindings } from './useMetadataWriteBindings'
-import type { useWriteDataAccess } from '../backend'
+import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
+import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
+import type { WriteDataAccessResult } from '../backend'
 import type {
   FocusedImageRef,
   ImageItem,
@@ -73,11 +73,11 @@ interface UseAppWorkspacePropsParams {
   sidebarCheckedNodeIds: string[]
   imageCheckedIds: string[]
   activeSelectionScope: 'image' | 'sidebar' | null
-  backendWrite: ReturnType<typeof useWriteDataAccess>
+  backendWrite: WriteDataAccessResult
   manageOperationHint: string | null
   requestManageDelete: () => void
   runManageHideAction: (hidden: boolean) => Promise<void>
-  manageAdReview: ReturnType<typeof useManageAdReviewActions>
+  manageAdReview: ManageAdReviewActionsResult
   clearAllSelections: () => void
   vectorResultsActive: boolean
   showNamesOnly: boolean
@@ -127,7 +127,7 @@ interface UseAppWorkspacePropsParams {
   metadataImageSrc: string | null
   metadataImagePackageEffective: ImagePackage | null
   currentGradeEffective: number | null
-  metadataWriteBindings: ReturnType<typeof useMetadataWriteBindings>
+  metadataWriteBindings: MetadataWriteBindingsResult
   metadataTab: 'info' | 'playlist'
   playlistIds: string[]
   selectedVideoId: string
@@ -509,3 +509,5 @@ export function useAppWorkspaceProps({
     mainFooter,
   }
 }
+
+export type AppWorkspacePropsResult = ReturnType<typeof useAppWorkspaceProps>

@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import type { useAppSettingsStore } from './useAppSettingsStore'
-import type { useAppSessionState } from './useAppSessionState'
-import type { useRepositoryBootstrapData } from './useRepositoryBootstrapData'
-import type { useArchiveLoadStatus } from './useArchiveLoadStatus'
-import type { useMediaState } from '../media/useMediaState'
-import type { useAppReadState } from './useAppReadState'
+import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
+import type { AppSessionStateResult } from './useAppSessionState'
+import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
+import type { ArchiveLoadStatusResult } from './useArchiveLoadStatus'
+import type { MediaStateResult } from '../media/useMediaState'
+import type { AppReadStateResult } from './useAppReadState'
 import { useAppSidebarScopeState } from './useAppSidebarScopeState'
 import { usePaneResizers } from '../layout/usePaneResizers'
 import { computeThumbnailGridLayout } from '../layout/thumbnailLayout'
@@ -14,12 +14,12 @@ import { useImageBrowserViewModel } from './useImageBrowserViewModel'
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 
 interface UseAppNavigationStateParams {
-  appSettings: ReturnType<typeof useAppSettingsStore>
-  sessionState: ReturnType<typeof useAppSessionState>
-  repositoryBootstrap: ReturnType<typeof useRepositoryBootstrapData>
-  archiveLoadStatus: ReturnType<typeof useArchiveLoadStatus>
-  mediaState: Pick<ReturnType<typeof useMediaState>, 'selectVideoFromBrowser' | 'fullscreenActive'>
-  readState: ReturnType<typeof useAppReadState>
+  appSettings: AppSettingsStoreSnapshot
+  sessionState: AppSessionStateResult
+  repositoryBootstrap: RepositoryBootstrapDataResult
+  archiveLoadStatus: ArchiveLoadStatusResult
+  mediaState: Pick<MediaStateResult, 'selectVideoFromBrowser' | 'fullscreenActive'>
+  readState: AppReadStateResult
 }
 
 export function useAppNavigationState({

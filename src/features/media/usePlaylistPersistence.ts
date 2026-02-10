@@ -188,3 +188,5 @@ export function usePlaylistPersistence({
     retryWrite: () => setWriteNonce((value) => value + 1),
   }
 }
+
+export type PlaylistPersistenceResult = ReturnType<typeof usePlaylistPersistence>

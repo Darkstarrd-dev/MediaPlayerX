@@ -311,3 +311,5 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
     onDropImport,
   }
 }
+
+export type ImportPipelineResult = ReturnType<typeof useImportPipeline>

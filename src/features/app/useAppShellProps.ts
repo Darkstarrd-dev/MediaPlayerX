@@ -2,14 +2,14 @@ import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
 
 import { buildE2eBenchSectionProps } from './buildE2eBenchSectionProps'
 import { buildManageDeleteDialogProps } from './buildManageDeleteDialogProps'
-import type { useAppTopLayerState } from './useAppTopLayerState'
-import type { useAppWorkspaceProps } from './useAppWorkspaceProps'
-import type { useVectorUniverseBindings } from './useVectorUniverseBindings'
-import type { useImportPipeline } from '../import/useImportPipeline'
-import type { useRepositoryBootstrapData } from './useRepositoryBootstrapData'
+import type { AppTopLayerStateResult } from './useAppTopLayerState'
+import type { AppWorkspacePropsResult } from './useAppWorkspaceProps'
+import type { VectorUniverseBindingsResult } from './useVectorUniverseBindings'
+import type { ImportPipelineResult } from '../import/useImportPipeline'
+import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
 
 interface UseAppShellPropsParams {
-  repositoryMode: ReturnType<typeof useRepositoryBootstrapData>['repositoryMode']
+  repositoryMode: RepositoryBootstrapDataResult['repositoryMode']
   mode: Parameters<typeof useAppWorkspaceProps>[0]['mode']
   headerHeight: number
   sidebarCollapsed: boolean
@@ -25,7 +25,7 @@ interface UseAppShellPropsParams {
   onStartSidebarResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   onStartMetadataResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   topLayerState: Pick<
-    ReturnType<typeof useAppTopLayerState>,
+    AppTopLayerStateResult,
     | 'bannerBackendErrorRows'
     | 'runtimeCapabilityWarnings'
     | 'runtimeWarningDismiss'
@@ -34,13 +34,13 @@ interface UseAppShellPropsParams {
     | 'appHeaderProps'
     | 'importTaskPanelProps'
   >
-  workspaceState: ReturnType<typeof useAppWorkspaceProps>
-  vectorUniverseSectionProps: ReturnType<typeof useVectorUniverseBindings>['vectorUniverseSectionProps']
+  workspaceState: AppWorkspacePropsResult
+  vectorUniverseSectionProps: VectorUniverseBindingsResult['vectorUniverseSectionProps']
   importInputs: Pick<
-    ReturnType<typeof useImportPipeline>,
+    ImportPipelineResult,
     'fileImportInputRef' | 'folderImportInputRef' | 'onImportFilesSelected' | 'onImportFoldersSelected'
   >
-  dragOverlayActive: ReturnType<typeof useImportPipeline>['dragOverlayActive']
+  dragOverlayActive: ImportPipelineResult['dragOverlayActive']
   manageDeleteDialogParams: Parameters<typeof buildManageDeleteDialogProps>[0]
   e2eBenchSectionParams: Parameters<typeof buildE2eBenchSectionProps>[0]
 }

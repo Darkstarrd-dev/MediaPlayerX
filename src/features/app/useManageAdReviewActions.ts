@@ -321,3 +321,5 @@ export function useManageAdReviewActions({
     dismissTask,
   }
 }
+
+export type ManageAdReviewActionsResult = ReturnType<typeof useManageAdReviewActions>

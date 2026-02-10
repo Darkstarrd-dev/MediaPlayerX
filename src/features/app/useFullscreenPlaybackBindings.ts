@@ -75,3 +75,5 @@ export function useFullscreenPlaybackBindings({
     setFullscreenActiveWithAutoStop,
   }
 }
+
+export type FullscreenPlaybackBindingsResult = ReturnType<typeof useFullscreenPlaybackBindings>

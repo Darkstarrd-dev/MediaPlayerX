@@ -8,6 +8,7 @@ import type {
   FocusedImageRef,
   ImageItem,
   ImagePackage,
+  MediaLocator,
   VideoItem,
 } from '../../types'
 import { buildCoverImageLocator } from './mediaPathUtils'
@@ -52,7 +53,7 @@ interface UseEffectiveDisplayStateResult {
   focusedVideo: VideoItem | null
   focusedVideoDurationSec: number
   focusedVideoCoverColor: string
-  focusedVideoCoverImageLocator: ReturnType<typeof buildCoverImageLocator>
+  focusedVideoCoverImageLocator: MediaLocator | null
   focusedVideoEffective: VideoItem | null
 }
 
@@ -166,3 +167,5 @@ export function useEffectiveDisplayState({
     focusedVideoEffective,
   }
 }
+
+export type EffectiveDisplayStateResult = ReturnType<typeof useEffectiveDisplayState>

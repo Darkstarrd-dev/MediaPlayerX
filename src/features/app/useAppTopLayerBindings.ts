@@ -2,16 +2,16 @@ import {
   normalizePathForCompare,
 } from './mediaPathUtils'
 import { useAppTopLayerState } from './useAppTopLayerState'
-import type { useAppRuntimeSources } from './useAppRuntimeSources'
-import type { useAppReadAndNavigation } from './useAppReadAndNavigation'
-import type { useAppDisplayAndEffects } from './useAppDisplayAndEffects'
+import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
+import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
+import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 
 interface UseAppTopLayerBindingsParams {
-  runtimeSources: ReturnType<typeof useAppRuntimeSources>
-  readNavigationState: ReturnType<typeof useAppReadAndNavigation>
-  displayState: ReturnType<typeof useAppDisplayAndEffects>
+  runtimeSources: AppRuntimeSourcesResult
+  readNavigationState: AppReadAndNavigationResult
+  displayState: AppDisplayAndEffectsResult
 }
 
 export function useAppTopLayerBindings({

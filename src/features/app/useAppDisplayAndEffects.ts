@@ -6,24 +6,24 @@ import { useResolvedMediaState } from './useResolvedMediaState'
 import { useFullscreenPlaybackBindings } from './useFullscreenPlaybackBindings'
 import { useVectorUniverseBindings } from './useVectorUniverseBindings'
 import { useAppInteractionEffects } from './useAppInteractionEffects'
-import type { useAppSettingsStore } from './useAppSettingsStore'
-import type { useAppSessionState } from './useAppSessionState'
-import type { useRepositoryBootstrapData } from './useRepositoryBootstrapData'
-import type { useMediaState } from '../media/useMediaState'
-import type { useAppReadAndNavigation } from './useAppReadAndNavigation'
+import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
+import type { AppSessionStateResult } from './useAppSessionState'
+import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
+import type { MediaStateResult } from '../media/useMediaState'
+import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import { useRuntimeCapabilities, useWriteDataAccess } from '../backend'
-import { getBenchSettings } from '../perf/benchSettings'
+import type { UiBenchSettings } from '../perf/benchSettings'
 
 const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
 const MEDIA_RESOLVE_MAX_CONCURRENT = 8
 
 interface UseAppDisplayAndEffectsParams {
-  appSettings: ReturnType<typeof useAppSettingsStore>
-  benchSettings: ReturnType<typeof getBenchSettings>
-  mediaRepository: ReturnType<typeof useRepositoryBootstrapData>['mediaRepository']
-  sessionState: ReturnType<typeof useAppSessionState>
-  mediaState: ReturnType<typeof useMediaState>
-  readNavigationState: ReturnType<typeof useAppReadAndNavigation>
+  appSettings: AppSettingsStoreSnapshot
+  benchSettings: UiBenchSettings
+  mediaRepository: RepositoryBootstrapDataResult['mediaRepository']
+  sessionState: AppSessionStateResult
+  mediaState: MediaStateResult
+  readNavigationState: AppReadAndNavigationResult
 }
 
 export function useAppDisplayAndEffects({
@@ -484,3 +484,5 @@ export function useAppDisplayAndEffects({
     vectorUniverseSectionProps,
   }
 }
+
+export type AppDisplayAndEffectsResult = ReturnType<typeof useAppDisplayAndEffects>

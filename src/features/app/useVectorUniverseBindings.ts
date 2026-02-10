@@ -151,3 +151,5 @@ export function useVectorUniverseBindings({
     vectorUniverseSectionProps,
   }
 }
+
+export type VectorUniverseBindingsResult = ReturnType<typeof useVectorUniverseBindings>

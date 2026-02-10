@@ -443,3 +443,5 @@ export function useWriteDataAccess({
     saveVideoCover,
   }
 }
+
+export type WriteDataAccessResult = ReturnType<typeof useWriteDataAccess>

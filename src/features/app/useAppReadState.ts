@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
-import type { useAppSettingsStore } from './useAppSettingsStore'
-import type { useAppSessionState } from './useAppSessionState'
-import type { useRepositoryBootstrapData } from './useRepositoryBootstrapData'
+import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
+import type { AppSessionStateResult } from './useAppSessionState'
+import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
 import { useFeatureSearch } from '../search/useFeatureSearch'
 import { useReadOnlyDataAccess } from '../backend'
 import { computeThumbnailGridLayout } from '../layout/thumbnailLayout'
@@ -12,9 +12,9 @@ import { clamp } from '../../utils/ui'
 const EMPTY_FEATURE_TAGS: string[] = []
 
 interface UseAppReadStateParams {
-  appSettings: ReturnType<typeof useAppSettingsStore>
-  sessionState: ReturnType<typeof useAppSessionState>
-  repositoryBootstrap: ReturnType<typeof useRepositoryBootstrapData>
+  appSettings: AppSettingsStoreSnapshot
+  sessionState: AppSessionStateResult
+  repositoryBootstrap: RepositoryBootstrapDataResult
 }
 
 export function useAppReadState({
@@ -167,3 +167,5 @@ export function useAppReadState({
     backendRead,
   }
 }
+
+export type AppReadStateResult = ReturnType<typeof useAppReadState>

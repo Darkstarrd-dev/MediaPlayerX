@@ -157,3 +157,5 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
     adjustVideoVolume,
   }
 }
+
+export type MediaStateResult = ReturnType<typeof useMediaState>

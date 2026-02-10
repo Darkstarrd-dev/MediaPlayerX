@@ -15,10 +15,10 @@ export {
   mediaLocatorKey,
 } from './mediaLocator'
 export { createMediaRepository } from './repository'
-export { useReadOnlyDataAccess } from './useReadOnlyDataAccess'
+export { useReadOnlyDataAccess, type ReadOnlyDataAccessResult } from './useReadOnlyDataAccess'
 export { useResolvedMediaUrls, type MediaResolveTarget } from './useResolvedMediaUrls'
-export { useRuntimeCapabilities } from './useRuntimeCapabilities'
-export { useWriteDataAccess } from './useWriteDataAccess'
+export { useRuntimeCapabilities, type RuntimeCapabilitiesResult } from './useRuntimeCapabilities'
+export { useWriteDataAccess, type WriteDataAccessResult } from './useWriteDataAccess'
 export type {
   ReadAppStateRequestDto,
   ReadAppStateResponseDto,

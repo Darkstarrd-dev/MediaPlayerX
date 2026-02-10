@@ -80,3 +80,5 @@ export function useMetadataWriteBindings({
     applyVideoMetadata,
   }
 }
+
+export type MetadataWriteBindingsResult = ReturnType<typeof useMetadataWriteBindings>

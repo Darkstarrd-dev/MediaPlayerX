@@ -1,13 +1,13 @@
 import { useAppWorkspaceProps } from './useAppWorkspaceProps'
 import type { BackendErrorRow } from './buildBackendErrorRows'
-import type { useAppRuntimeSources } from './useAppRuntimeSources'
-import type { useAppReadAndNavigation } from './useAppReadAndNavigation'
-import type { useAppDisplayAndEffects } from './useAppDisplayAndEffects'
+import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
+import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
+import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
 
 interface UseAppWorkspaceBindingsParams {
-  runtimeSources: ReturnType<typeof useAppRuntimeSources>
-  readNavigationState: ReturnType<typeof useAppReadAndNavigation>
-  displayState: ReturnType<typeof useAppDisplayAndEffects>
+  runtimeSources: AppRuntimeSourcesResult
+  readNavigationState: AppReadAndNavigationResult
+  displayState: AppDisplayAndEffectsResult
   managementErrorRows: BackendErrorRow[]
 }
 

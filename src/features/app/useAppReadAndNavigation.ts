@@ -1,17 +1,17 @@
 import { useAppNavigationState } from './useAppNavigationState'
 import { useAppReadState } from './useAppReadState'
-import type { useAppSettingsStore } from './useAppSettingsStore'
-import type { useAppSessionState } from './useAppSessionState'
-import type { useRepositoryBootstrapData } from './useRepositoryBootstrapData'
-import type { useArchiveLoadStatus } from './useArchiveLoadStatus'
-import type { useMediaState } from '../media/useMediaState'
+import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
+import type { AppSessionStateResult } from './useAppSessionState'
+import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
+import type { ArchiveLoadStatusResult } from './useArchiveLoadStatus'
+import type { MediaStateResult } from '../media/useMediaState'
 
 interface UseAppReadAndNavigationParams {
-  appSettings: ReturnType<typeof useAppSettingsStore>
-  sessionState: ReturnType<typeof useAppSessionState>
-  repositoryBootstrap: ReturnType<typeof useRepositoryBootstrapData>
-  archiveLoadStatus: ReturnType<typeof useArchiveLoadStatus>
-  mediaState: Pick<ReturnType<typeof useMediaState>, 'selectVideoFromBrowser' | 'fullscreenActive'>
+  appSettings: AppSettingsStoreSnapshot
+  sessionState: AppSessionStateResult
+  repositoryBootstrap: RepositoryBootstrapDataResult
+  archiveLoadStatus: ArchiveLoadStatusResult
+  mediaState: Pick<MediaStateResult, 'selectVideoFromBrowser' | 'fullscreenActive'>
 }
 
 export function useAppReadAndNavigation({
@@ -41,3 +41,5 @@ export function useAppReadAndNavigation({
     ...navigationState,
   }
 }
+
+export type AppReadAndNavigationResult = ReturnType<typeof useAppReadAndNavigation>

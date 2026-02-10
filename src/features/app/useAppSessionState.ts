@@ -101,3 +101,5 @@ export function useAppSessionState({
     setGridSize,
   }
 }
+
+export type AppSessionStateResult = ReturnType<typeof useAppSessionState>

@@ -1,27 +1,27 @@
 import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppEffects } from './useAppEffects'
 import { usePersistedAppSettings } from './usePersistedAppSettings'
-import type { useAppSettingsStore } from './useAppSettingsStore'
-import type { useAppSessionState } from './useAppSessionState'
-import type { useRepositoryBootstrapData } from './useRepositoryBootstrapData'
-import type { useMediaState } from '../media/useMediaState'
-import type { useAppReadAndNavigation } from './useAppReadAndNavigation'
-import type { useFullscreenPlaybackBindings } from './useFullscreenPlaybackBindings'
-import type { useMetadataWriteBindings } from './useMetadataWriteBindings'
+import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
+import type { AppSessionStateResult } from './useAppSessionState'
+import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
+import type { MediaStateResult } from '../media/useMediaState'
+import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
+import type { FullscreenPlaybackBindingsResult } from './useFullscreenPlaybackBindings'
+import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 
 interface UseAppInteractionEffectsParams {
-  appSettings: ReturnType<typeof useAppSettingsStore>
-  mediaRepository: ReturnType<typeof useRepositoryBootstrapData>['mediaRepository']
-  sessionState: ReturnType<typeof useAppSessionState>
-  mediaState: ReturnType<typeof useMediaState>
-  readNavigationState: ReturnType<typeof useAppReadAndNavigation>
+  appSettings: AppSettingsStoreSnapshot
+  mediaRepository: RepositoryBootstrapDataResult['mediaRepository']
+  sessionState: AppSessionStateResult
+  mediaState: MediaStateResult
+  readNavigationState: AppReadAndNavigationResult
   videoShortcutActive: boolean
-  requestFullscreenAlign: ReturnType<typeof useFullscreenPlaybackBindings>['requestFullscreenAlign']
-  applyAutoplayIntervalByIndex: ReturnType<typeof useFullscreenPlaybackBindings>['applyAutoplayIntervalByIndex']
-  setFullscreenActiveWithAutoStop: ReturnType<typeof useFullscreenPlaybackBindings>['setFullscreenActiveWithAutoStop']
-  applyPackageGrade: ReturnType<typeof useMetadataWriteBindings>['applyPackageGrade']
+  requestFullscreenAlign: FullscreenPlaybackBindingsResult['requestFullscreenAlign']
+  applyAutoplayIntervalByIndex: FullscreenPlaybackBindingsResult['applyAutoplayIntervalByIndex']
+  setFullscreenActiveWithAutoStop: FullscreenPlaybackBindingsResult['setFullscreenActiveWithAutoStop']
+  applyPackageGrade: MetadataWriteBindingsResult['applyPackageGrade']
 }
 
 export function useAppInteractionEffects({

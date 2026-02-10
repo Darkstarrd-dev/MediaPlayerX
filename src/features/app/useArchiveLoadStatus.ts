@@ -68,3 +68,5 @@ export function useArchiveLoadStatus({ repository }: UseArchiveLoadStatusParams)
 
   return archiveLoadStatus
 }
+
+export type ArchiveLoadStatusResult = ReturnType<typeof useArchiveLoadStatus>

@@ -52,3 +52,5 @@ export function useRepositoryBootstrapData() {
     bootstrapVideos,
   }
 }
+
+export type RepositoryBootstrapDataResult = ReturnType<typeof useRepositoryBootstrapData>

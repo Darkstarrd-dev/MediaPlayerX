@@ -18,11 +18,11 @@ import { buildSettingsPanelProps } from './buildSettingsPanelProps'
 import { useDatabaseResetAction } from './useDatabaseResetAction'
 import { useImportTaskPanelState } from './useImportTaskPanelState'
 import { useRuntimeWarningDismiss } from './useRuntimeWarningDismiss'
-import type { usePlaylistPersistence } from '../media/usePlaylistPersistence'
+import type { PlaylistPersistenceResult } from '../media/usePlaylistPersistence'
 import type {
-  useReadOnlyDataAccess,
-  useRuntimeCapabilities,
-  useWriteDataAccess,
+  ReadOnlyDataAccessResult,
+  RuntimeCapabilitiesResult,
+  WriteDataAccessResult,
 } from '../backend'
 
 type SearchPanelMode = 'vector' | 'feature'
@@ -31,10 +31,10 @@ type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 interface UseAppTopLayerStateParams {
   appSettings: AppSettingsStoreSnapshot
   mediaRepository: ReadonlyMediaRepository
-  backendRead: ReturnType<typeof useReadOnlyDataAccess>
-  backendWrite: ReturnType<typeof useWriteDataAccess>
-  playlistPersistence: ReturnType<typeof usePlaylistPersistence>
-  runtimeCapabilities: ReturnType<typeof useRuntimeCapabilities>
+  backendRead: ReadOnlyDataAccessResult
+  backendWrite: WriteDataAccessResult
+  playlistPersistence: PlaylistPersistenceResult
+  runtimeCapabilities: RuntimeCapabilitiesResult
   autoPlayPresets: number[]
   mode: 'image' | 'video'
   manageMode: boolean
@@ -372,3 +372,5 @@ export function useAppTopLayerState({
     importTaskPanelProps,
   }
 }
+
+export type AppTopLayerStateResult = ReturnType<typeof useAppTopLayerState>

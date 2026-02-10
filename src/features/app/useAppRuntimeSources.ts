@@ -48,3 +48,5 @@ export function useAppRuntimeSources() {
     archiveLoadStatus,
   }
 }
+
+export type AppRuntimeSourcesResult = ReturnType<typeof useAppRuntimeSources>
