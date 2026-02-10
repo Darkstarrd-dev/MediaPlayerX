@@ -48,5 +48,18 @@ npm run test
 - `docs/vector-retrieval-plan-v1.md`
 - `docs/ref/虚拟UI阶段说明.md`（历史参考）
 - `docs/ui/theme-playground.html`（主题开发调试页）
+- `docs/project-evaluation-report.md`（项目评估报告·初版）
+- `docs/project-evaluation-report-v2.md`（项目评估报告·整改后第二版）
 
 文档为当前阶段单一事实源（SSOT）。
+
+## 计划待办
+
+- [ ] 在模块边界定义显式接口，逐步替代 `ReturnType<typeof>` 隐式契约（62 处）
+- [ ] 拆分 `useAppDisplayAndEffects`（477 行）为 2-3 个职责更明确的子 hook
+- [ ] 将 `app/helpers.ts` 中的跨界工具函数迁移至 `src/utils/`
+- [ ] 为非显而易见的设计决策补充 why 注释（归档规范化策略、Token TTL 取值、安全守卫白名单规则等）
+- [ ] 为各特性模块添加 barrel export（`index.ts`）
+- [ ] 重命名 `ReadonlyMediaRepository` 或拆分为独立的读/写接口
+
+> 以上待办事项来源于项目评估报告，详见 `docs/project-evaluation-report-v2.md` 第 8 节。
