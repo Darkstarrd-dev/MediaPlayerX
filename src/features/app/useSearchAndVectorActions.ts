@@ -19,6 +19,7 @@ interface UseSearchAndVectorActionsParams {
   vectorSearchResults: VectorCandidate[]
   vectorResultsActive: boolean
   featureSearchActive: boolean
+  quickFeatureSearchActive: boolean
   selectedSidebarNodeId: string | null
   normalImageSourceNodeIdMap: Map<string, string>
   orderedRootScopedPackages: ImagePackage[]
@@ -30,6 +31,7 @@ interface UseSearchAndVectorActionsParams {
   setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
   setVectorUniverseOpen: Dispatch<SetStateAction<boolean>>
   setImageFocus: (packageId: string, imageIndex: number) => void
+  clearQuickFeatureSearch: () => void
   updateSettings: (patch: { mode?: BrowserMode; vectorMode?: boolean; sidebarFocus?: 'sidebar' | 'main' }) => void
 }
 
@@ -49,6 +51,7 @@ export function useSearchAndVectorActions({
   vectorSearchResults,
   vectorResultsActive,
   featureSearchActive,
+  quickFeatureSearchActive,
   selectedSidebarNodeId,
   normalImageSourceNodeIdMap,
   orderedRootScopedPackages,
@@ -60,6 +63,7 @@ export function useSearchAndVectorActions({
   setSearchPanelMode,
   setVectorUniverseOpen,
   setImageFocus,
+  clearQuickFeatureSearch,
   updateSettings,
 }: UseSearchAndVectorActionsParams): UseSearchAndVectorActionsResult {
   const runVectorSearch = useCallback(() => {
@@ -119,6 +123,9 @@ export function useSearchAndVectorActions({
       setVectorPage(0)
       setSearchPanelMode('vector')
       updateSettings({ vectorMode: false, sidebarFocus: 'main' })
+      if (quickFeatureSearchActive) {
+        clearQuickFeatureSearch()
+      }
 
       if (targetNodeId) {
         setSelectedSidebarNodeId(targetNodeId)
@@ -128,6 +135,9 @@ export function useSearchAndVectorActions({
 
     if (featureSearchActive) {
       const targetNodeId = selectedSidebarNodeId
+      if (quickFeatureSearchActive) {
+        clearQuickFeatureSearch()
+      }
       setVectorSearchResults([])
       setVectorFocusIndex(0)
       setVectorPage(0)
@@ -142,6 +152,8 @@ export function useSearchAndVectorActions({
     focusedRef,
     mode,
     normalImageSourceNodeIdMap,
+    quickFeatureSearchActive,
+    clearQuickFeatureSearch,
     selectedSidebarNodeId,
     setImageFocus,
     setSearchPanelMode,

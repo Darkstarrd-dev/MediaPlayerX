@@ -56,6 +56,13 @@ export function useAppReadState({
     searchPanelCollapsed,
     setSearchPanelCollapsed,
     featureSearchActive,
+    quickFeatureSearchActive,
+    quickFeatureWorkTitleQuery,
+    quickFeatureCircleQuery,
+    quickFeatureAuthorQuery,
+    quickFeatureTags,
+    applyQuickFeatureSearch,
+    clearQuickFeatureSearch,
     featureNameQuery,
     setFeatureNameQuery,
     featureWorkTitleQuery,
@@ -80,8 +87,29 @@ export function useAppReadState({
     videos: bootstrapVideos,
   })
 
+  const quickFeatureSearchEnabled = mode === 'image' && quickFeatureSearchActive
+  const featureSearchActiveEffective = featureSearchActive || quickFeatureSearchEnabled
+  const featureNameQueryEffective = featureSearchActive ? featureNameQuery : ''
+  const featureWorkTitleQueryEffective = featureSearchActive
+    ? featureWorkTitleQuery
+    : quickFeatureSearchEnabled
+      ? quickFeatureWorkTitleQuery
+      : ''
+  const featureCircleQueryEffective = featureSearchActive
+    ? featureCircleQuery
+    : quickFeatureSearchEnabled
+      ? quickFeatureCircleQuery
+      : ''
+  const featureAuthorQueryEffective = featureSearchActive
+    ? featureAuthorQuery
+    : quickFeatureSearchEnabled
+      ? quickFeatureAuthorQuery
+      : ''
+  const featureTagsEffective = featureSearchActive ? featureTags : quickFeatureSearchEnabled ? quickFeatureTags : EMPTY_FEATURE_TAGS
+  const featureGradeFilterEffective = featureSearchActive ? featureGradeFilter : null
+
   const vectorResultsActive = mode === 'image' && vectorMode && searchPanelMode === 'vector' && vectorSearchResults.length > 0
-  const searchResultsMode = vectorResultsActive || featureSearchActive
+  const searchResultsMode = vectorResultsActive || featureSearchActiveEffective
   const searchResultsReadOnly = vectorResultsActive
 
   const backendPageSize = useMemo(
@@ -131,12 +159,12 @@ export function useAppReadState({
     showNamesOnly,
     focusedRef: backendMetadataRequestRef,
     vectorResultsActive,
-    featureNameQuery: featureSearchActive ? featureNameQuery : '',
-    featureWorkTitleQuery: featureSearchActive ? featureWorkTitleQuery : '',
-    featureCircleQuery: featureSearchActive ? featureCircleQuery : '',
-    featureAuthorQuery: featureSearchActive ? featureAuthorQuery : '',
-    featureTags: featureSearchActive ? featureTags : EMPTY_FEATURE_TAGS,
-    featureGradeFilter: featureSearchActive ? featureGradeFilter : null,
+    featureNameQuery: featureNameQueryEffective,
+    featureWorkTitleQuery: featureWorkTitleQueryEffective,
+    featureCircleQuery: featureCircleQueryEffective,
+    featureAuthorQuery: featureAuthorQueryEffective,
+    featureTags: featureTagsEffective,
+    featureGradeFilter: featureGradeFilterEffective,
     gradeByPackage,
   })
 
@@ -145,7 +173,10 @@ export function useAppReadState({
     setSearchPanelMode,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
-    featureSearchActive,
+    featureSearchActive: featureSearchActiveEffective,
+    quickFeatureSearchActive,
+    applyQuickFeatureSearch,
+    clearQuickFeatureSearch,
     featureNameQuery,
     setFeatureNameQuery,
     featureWorkTitleQuery,

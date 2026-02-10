@@ -1,8 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { BrowserMode, ImagePackage, VideoItem } from '../../types'
 
 type SearchPanelMode = 'vector' | 'feature'
+
+interface QuickFeatureSearchPatch {
+  workTitle?: string
+  circle?: string
+  author?: string
+  tag?: string
+}
 
 interface UseFeatureSearchParams {
   mode: BrowserMode
@@ -26,6 +33,10 @@ export function useFeatureSearch({
   const [featureGradeFilter, setFeatureGradeFilter] = useState<number | null>(null)
   const [featureTagPickerOpen, setFeatureTagPickerOpen] = useState(false)
   const [searchPanelCollapsed, setSearchPanelCollapsed] = useState(false)
+  const [quickFeatureWorkTitleQuery, setQuickFeatureWorkTitleQuery] = useState('')
+  const [quickFeatureCircleQuery, setQuickFeatureCircleQuery] = useState('')
+  const [quickFeatureAuthorQuery, setQuickFeatureAuthorQuery] = useState('')
+  const [quickFeatureTags, setQuickFeatureTags] = useState<string[]>([])
 
   useEffect(() => {
     if (!vectorMode || searchPanelMode !== 'feature') {
@@ -46,6 +57,41 @@ export function useFeatureSearch({
   }, [mode, searchPanelMode])
 
   const featureSearchActive = vectorMode && searchPanelMode === 'feature'
+  const quickFeatureSearchActive =
+    quickFeatureWorkTitleQuery.length > 0 ||
+    quickFeatureCircleQuery.length > 0 ||
+    quickFeatureAuthorQuery.length > 0 ||
+    quickFeatureTags.length > 0
+
+  const clearQuickFeatureSearch = useCallback(() => {
+    setQuickFeatureWorkTitleQuery('')
+    setQuickFeatureCircleQuery('')
+    setQuickFeatureAuthorQuery('')
+    setQuickFeatureTags([])
+  }, [])
+
+  const applyQuickFeatureSearch = useCallback(
+    (patch: QuickFeatureSearchPatch) => {
+      const nextWorkTitle = patch.workTitle?.trim() ?? ''
+      const nextCircle = patch.circle?.trim() ?? ''
+      const nextAuthor = patch.author?.trim() ?? ''
+      const nextTag = patch.tag?.trim() ?? ''
+      const nextTags = nextTag.length > 0 ? [nextTag] : []
+
+      const hasFilter =
+        nextWorkTitle.length > 0 || nextCircle.length > 0 || nextAuthor.length > 0 || nextTags.length > 0
+      if (!hasFilter) {
+        clearQuickFeatureSearch()
+        return
+      }
+
+      setQuickFeatureWorkTitleQuery(nextWorkTitle)
+      setQuickFeatureCircleQuery(nextCircle)
+      setQuickFeatureAuthorQuery(nextAuthor)
+      setQuickFeatureTags(nextTags)
+    },
+    [clearQuickFeatureSearch],
+  )
 
   const featureCircleOptions = useMemo(
     () =>
@@ -74,6 +120,13 @@ export function useFeatureSearch({
     searchPanelCollapsed,
     setSearchPanelCollapsed,
     featureSearchActive,
+    quickFeatureSearchActive,
+    quickFeatureWorkTitleQuery,
+    quickFeatureCircleQuery,
+    quickFeatureAuthorQuery,
+    quickFeatureTags,
+    applyQuickFeatureSearch,
+    clearQuickFeatureSearch,
     featureNameQuery,
     setFeatureNameQuery,
     featureWorkTitleQuery,

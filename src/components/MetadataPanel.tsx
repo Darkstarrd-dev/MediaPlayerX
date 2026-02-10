@@ -17,6 +17,7 @@ export interface MetadataPanelProps {
   currentGrade: number | null
   currentVideoGrade: number | null
   metadataPending: boolean
+  autoTagPending: boolean
   editable: boolean
   focusedVideo: VideoItem | null
   metadataTab: 'info' | 'playlist'
@@ -79,6 +80,7 @@ function MetadataPanel({
   currentGrade,
   currentVideoGrade,
   metadataPending,
+  autoTagPending,
   editable,
   focusedVideo,
   metadataTab,
@@ -280,6 +282,7 @@ function MetadataPanel({
           displayedImageSrc={displayedImageSrc}
           imagePreviewSizing={imagePreviewSizing}
           metadataPending={metadataPending}
+          autoTagPending={autoTagPending}
           editable={editable}
           currentGrade={currentGrade}
           workTitleDraft={workTitleDraft}

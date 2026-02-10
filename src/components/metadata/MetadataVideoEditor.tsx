@@ -58,7 +58,6 @@ export function MetadataVideoEditor({
   onVideoAuthorDraftChange,
   onVideoTagsDraftChange,
   onPersistVideoMetadata,
-  onSearchByWorkTitle,
   onSearchByCircle,
   onSearchByAuthor,
   onSearchByTag,
@@ -117,13 +116,7 @@ export function MetadataVideoEditor({
                     }}
                   />
                 ) : (
-                  <button
-                    type="button"
-                    disabled={videoWorkTitleDraft.trim().length === 0}
-                    onClick={() => onSearchByWorkTitle(videoWorkTitleDraft.trim())}
-                  >
-                    {videoWorkTitleDraft.trim() || '-'}
-                  </button>
+                  <input readOnly value={videoWorkTitleDraft.trim() || '-'} />
                 )}
               </label>
               <label>
@@ -178,7 +171,7 @@ export function MetadataVideoEditor({
                     }}
                   />
                 ) : (
-                  <div>
+                  <div className="metadata-tag-chip-list">
                     {readOnlyTags.length > 0
                       ? readOnlyTags.map((tag) => (
                           <button key={tag} type="button" onClick={() => onSearchByTag(tag)}>
@@ -191,26 +184,28 @@ export function MetadataVideoEditor({
               </label>
             </div>
 
-            <div className="metadata-edit-actions">
-              <button
-                type="button"
-                disabled={metadataPending || !editable}
-                onClick={() => {
-                  onPersistVideoMetadata(false)
-                }}
-              >
-                保存
-              </button>
-              <button
-                type="button"
-                disabled={metadataPending || !editable}
-                onClick={() => {
-                  onPersistVideoMetadata(true)
-                }}
-              >
-                同步文件名到作品名
-              </button>
-            </div>
+            {editable ? (
+              <div className="metadata-edit-actions">
+                <button
+                  type="button"
+                  disabled={metadataPending}
+                  onClick={() => {
+                    onPersistVideoMetadata(false)
+                  }}
+                >
+                  保存
+                </button>
+                <button
+                  type="button"
+                  disabled={metadataPending}
+                  onClick={() => {
+                    onPersistVideoMetadata(true)
+                  }}
+                >
+                  同步文件名到作品名
+                </button>
+              </div>
+            ) : null}
           </>
         ) : null}
 

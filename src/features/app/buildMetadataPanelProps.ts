@@ -16,6 +16,7 @@ interface BuildMetadataPanelPropsParams {
   currentGrade: number | null
   currentVideoGrade: number | null
   metadataPending: boolean
+  autoTagPending: boolean
   editable: boolean
   focusedVideo: VideoItem | null
   metadataTab: MetadataPanelProps['metadataTab']
@@ -53,6 +54,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     currentGrade: params.currentGrade,
     currentVideoGrade: params.currentVideoGrade,
     metadataPending: params.metadataPending,
+    autoTagPending: params.autoTagPending,
     editable: params.editable,
     focusedVideo: params.focusedVideo,
     metadataTab: params.metadataTab,

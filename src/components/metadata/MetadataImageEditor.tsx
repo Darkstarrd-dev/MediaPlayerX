@@ -10,6 +10,7 @@ interface MetadataImageEditorProps {
   displayedImageSrc: string | null
   imagePreviewSizing: { width?: string; height?: string }
   metadataPending: boolean
+  autoTagPending: boolean
   editable: boolean
   currentGrade: number | null
   workTitleDraft: string
@@ -37,6 +38,7 @@ export function MetadataImageEditor({
   displayedImageSrc,
   imagePreviewSizing,
   metadataPending,
+  autoTagPending,
   editable,
   currentGrade,
   workTitleDraft,
@@ -50,7 +52,6 @@ export function MetadataImageEditor({
   onPersistPackageMetadata,
   onGeneratePackageAutoTags,
   onGradeChange,
-  onSearchByWorkTitle,
   onSearchByCircle,
   onSearchByAuthor,
   onSearchByTag,
@@ -119,13 +120,7 @@ export function MetadataImageEditor({
                     }}
                   />
                 ) : (
-                  <button
-                    type="button"
-                    disabled={workTitleDraft.trim().length === 0}
-                    onClick={() => onSearchByWorkTitle(workTitleDraft.trim())}
-                  >
-                    {workTitleDraft.trim() || '-'}
-                  </button>
+                  <input readOnly value={workTitleDraft.trim() || '-'} />
                 )}
               </label>
 
@@ -183,7 +178,7 @@ export function MetadataImageEditor({
                     }}
                   />
                 ) : (
-                  <div>
+                  <div className="metadata-tag-chip-list">
                     {readOnlyTags.length > 0
                       ? readOnlyTags.map((tag) => (
                           <button key={tag} type="button" onClick={() => onSearchByTag(tag)}>
@@ -195,33 +190,31 @@ export function MetadataImageEditor({
                 )}
               </label>
 
-              <div className="metadata-edit-actions">
-                <button
-                  type="button"
-                  disabled={metadataPending || !editable}
-                  onClick={() => {
-                    onPersistPackageMetadata(false)
-                  }}
-                >
-                  保存
-                </button>
-                <button
-                  type="button"
-                  disabled={metadataPending || !editable}
-                  onClick={() => {
-                    onPersistPackageMetadata(true)
-                  }}
-                >
-                  作品名同步图包名
-                </button>
-                <button
-                  type="button"
-                  disabled={metadataPending || !editable}
-                  onClick={onGeneratePackageAutoTags}
-                >
-                  自动生成标签
-                </button>
-              </div>
+              {editable ? (
+                <div className="metadata-edit-actions">
+                  <button
+                    type="button"
+                    disabled={metadataPending}
+                    onClick={() => {
+                      onPersistPackageMetadata(false)
+                    }}
+                  >
+                    保存
+                  </button>
+                  <button
+                    type="button"
+                    disabled={metadataPending}
+                    onClick={() => {
+                      onPersistPackageMetadata(true)
+                    }}
+                  >
+                    作品名同步图包名
+                  </button>
+                  <button type="button" disabled={metadataPending || autoTagPending} onClick={onGeneratePackageAutoTags}>
+                    {autoTagPending ? '自动生成标签中...' : '自动生成标签'}
+                  </button>
+                </div>
+              ) : null}
             </div>
           ) : (
             <p className="metadata-empty-tip">当前无可编辑图包</p>

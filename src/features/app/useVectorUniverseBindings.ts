@@ -17,6 +17,7 @@ interface UseVectorUniverseBindingsParams {
   vectorSearchResults: VectorCandidate[]
   vectorResultsActive: boolean
   featureSearchActive: boolean
+  quickFeatureSearchActive: boolean
   selectedSidebarNodeId: string | null
   normalImageSourceNodeIdMap: Map<string, string>
   orderedRootScopedPackages: ImagePackage[]
@@ -29,6 +30,7 @@ interface UseVectorUniverseBindingsParams {
   vectorUniverseOpen: boolean
   setVectorUniverseOpen: Dispatch<SetStateAction<boolean>>
   setImageFocus: (packageId: string, imageIndex: number) => void
+  clearQuickFeatureSearch: () => void
   updateSettings: AppSettingsStoreSnapshot['updateSettings']
   scopedImageSourcesEffective: ImagePackage[]
   vectorUniverseMoveSpeed: number
@@ -50,6 +52,7 @@ export function useVectorUniverseBindings({
   vectorSearchResults,
   vectorResultsActive,
   featureSearchActive,
+  quickFeatureSearchActive,
   selectedSidebarNodeId,
   normalImageSourceNodeIdMap,
   orderedRootScopedPackages,
@@ -62,6 +65,7 @@ export function useVectorUniverseBindings({
   vectorUniverseOpen,
   setVectorUniverseOpen,
   setImageFocus,
+  clearQuickFeatureSearch,
   updateSettings,
   scopedImageSourcesEffective,
   vectorUniverseMoveSpeed,
@@ -87,6 +91,7 @@ export function useVectorUniverseBindings({
     vectorSearchResults,
     vectorResultsActive,
     featureSearchActive,
+    quickFeatureSearchActive,
     selectedSidebarNodeId,
     normalImageSourceNodeIdMap,
     orderedRootScopedPackages,
@@ -98,6 +103,7 @@ export function useVectorUniverseBindings({
     setSearchPanelMode,
     setVectorUniverseOpen,
     setImageFocus,
+    clearQuickFeatureSearch,
     updateSettings,
   })
 

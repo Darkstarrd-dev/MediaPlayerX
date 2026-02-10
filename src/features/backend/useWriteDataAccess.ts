@@ -18,6 +18,7 @@ import type {
 import type { MediaRepository } from './repository'
 
 const DEFAULT_WRITE_TIMEOUT_MS = 8_000
+const AUTO_TAG_WRITE_TIMEOUT_MS = 300_000
 
 function toErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
@@ -315,7 +316,7 @@ export function useWriteDataAccess({
         }
 
         return await repository.generatePackageAutoTags(request, {
-          timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+          timeoutMs: AUTO_TAG_WRITE_TIMEOUT_MS,
         })
       } catch (error: unknown) {
         const message = toErrorMessage(error)

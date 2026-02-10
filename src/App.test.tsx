@@ -524,7 +524,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByText('向量结果视图')).toBeInTheDocument()
     expect(screen.getAllByText(/相似度 1\.00/).length).toBeGreaterThan(0)
     expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '转到' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
     expect(document.querySelector('.main-footer span')?.textContent ?? '').toContain('#')
 
     const countBeforeThresholdChange = readResultCount()
@@ -586,9 +586,9 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.keyDown(window, { key: 'Tab', code: 'Tab' })
     expect(document.querySelector('.sidebar.is-focus')).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: '转到' }))
+    fireEvent.click(screen.getByRole('button', { name: '返回' }))
     expect(screen.queryByText('向量结果视图')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '转到' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '返回' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: '设为根' })).toBeInTheDocument()
   }, 15_000)
 
@@ -674,8 +674,8 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByText('Tags')).toBeInTheDocument()
     expect(screen.getByRole('group', { name: '视频评分' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '视频评分 无评分' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: '保存' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: '同步文件名到作品名' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: '保存' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '同步文件名到作品名' })).toBeNull()
     expect(document.querySelector('.metadata-video-stats')).not.toBeNull()
   })
 
@@ -714,17 +714,20 @@ describe('MediaPlayer 虚拟 UI', () => {
     )
   })
 
-  it('默认只读元数据点击作品名可打开特征检索并注入筛选值', () => {
+  it('默认只读元数据点击社团可静默触发检索并通过返回按钮清空', () => {
     render(<App />)
 
-    const workTitleLabel = screen.getByText('作品名').closest('label') as HTMLElement
-    const workTitleChip = within(workTitleLabel).getByRole('button') as HTMLButtonElement
-    const chipText = workTitleChip.textContent?.trim() ?? ''
-    fireEvent.click(workTitleChip)
+    const circleLabel = screen.getByText('社团').closest('label') as HTMLElement
+    const circleChip = within(circleLabel).getByRole('button') as HTMLButtonElement
+    fireEvent.click(circleChip)
 
-    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
-    const featureControls = document.querySelector('.feature-controls') as HTMLElement
-    expect(within(featureControls).getByLabelText('作品名')).toHaveValue(chipText)
+    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '返回' }))
+    expect(screen.queryByRole('button', { name: '检索结果' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '返回' })).toBeNull()
   })
 
   it('元数据管理支持按 Sidebar 勾选批量写入图包元数据', async () => {

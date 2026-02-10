@@ -175,8 +175,15 @@ function SidebarPanel({
 
         <div className="sidebar-head-actions">
           {mode === 'image' && searchResultMode ? (
-            <button type="button" disabled={!canGoToFromSearchMode} onClick={onGoToFromSearchMode}>
-              转到
+            <button
+              className="sidebar-head-icon-btn"
+              type="button"
+              aria-label="返回"
+              title="返回"
+              disabled={!canGoToFromSearchMode}
+              onClick={onGoToFromSearchMode}
+            >
+              <span aria-hidden="true">←</span>
             </button>
           ) : null}
 

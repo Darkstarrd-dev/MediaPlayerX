@@ -69,7 +69,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     checkedSidebarNodeIds: params.checkedSidebarNodeIdSet,
     canGoToFromSearchMode: params.vectorResultsActive
       ? Boolean(params.focusedRef)
-      : params.featureSearchActive && Boolean(params.selectedSidebarNodeId),
+      : params.featureSearchActive,
     playlistIds: params.playlistIds,
     onGoToFromSearchMode: params.goToFromSearchMode,
     onSelectNode: (nodeId: string) => {

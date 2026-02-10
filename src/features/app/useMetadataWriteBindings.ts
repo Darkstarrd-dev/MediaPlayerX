@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import type { SidebarNode } from '../../types'
 
@@ -56,6 +56,7 @@ interface UseMetadataWriteBindingsParams {
 
 interface UseMetadataWriteBindingsResult {
   metadataPending: boolean
+  autoTagPending: boolean
   applyPackageGrade: (grade: number | null) => void
   applyPackageMetadata: (payload: PackageMetadataWritePayload) => void
   applyPackageAutoTags: () => void
@@ -77,6 +78,8 @@ export function useMetadataWriteBindings({
   sidebarNodeById,
   setManageOperationHint,
 }: UseMetadataWriteBindingsParams): UseMetadataWriteBindingsResult {
+  const [autoTagPending, setAutoTagPending] = useState(false)
+
   const collectBatchTargets = useCallback(() => {
     const packageIds = new Set<string>()
     const videoIds = new Set<string>()
@@ -178,6 +181,10 @@ export function useMetadataWriteBindings({
   )
 
   const applyPackageAutoTags = useCallback(() => {
+    if (autoTagPending) {
+      return
+    }
+
     const autoTagWriter = backendWrite.generatePackageAutoTags
     if (!autoTagWriter) {
       setManageOperationHint('自动标签失败：当前后端不支持该能力')
@@ -207,6 +214,7 @@ export function useMetadataWriteBindings({
     if (metadataManageMode) {
       const { packageIds } = collectBatchTargets()
       if (packageIds.length > 0) {
+        setAutoTagPending(true)
         void runBatchWrite(
           packageIds,
           async (packageId) => {
@@ -214,6 +222,10 @@ export function useMetadataWriteBindings({
           },
           '自动标签批量执行完成',
         )
+          .catch(() => undefined)
+          .finally(() => {
+            setAutoTagPending(false)
+          })
         return
       }
     }
@@ -223,6 +235,7 @@ export function useMetadataWriteBindings({
       return
     }
 
+    setAutoTagPending(true)
     void runForPackage(metadataImagePackageId)
       .then((response) => {
         setManageOperationHint(`自动标签完成：生成 ${response.generated_tags.length} 个标签，分析 ${response.analyzed_images} 张图片`)
@@ -231,7 +244,11 @@ export function useMetadataWriteBindings({
         const message = error instanceof Error ? error.message : String(error)
         setManageOperationHint(`自动标签失败：${message}`)
       })
+      .finally(() => {
+        setAutoTagPending(false)
+      })
   }, [
+    autoTagPending,
     autoTagModelPath,
     autoTagOccurrenceThreshold,
     autoTagGeneralMinScore,
@@ -269,7 +286,8 @@ export function useMetadataWriteBindings({
   )
 
   return {
-    metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade,
+    metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade || autoTagPending,
+    autoTagPending,
     applyPackageGrade,
     applyPackageMetadata,
     applyPackageAutoTags,

@@ -256,6 +256,13 @@
   border-color: var(--mpx-input-readonly-border);
 }
 
+.metadata-tag-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
 .metadata-edit-actions {
   display: flex;
   align-items: center;

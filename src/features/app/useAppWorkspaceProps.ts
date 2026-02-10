@@ -63,6 +63,7 @@ interface UseAppWorkspacePropsParams {
   featureCircleOptions: string[]
   featureAuthorOptions: string[]
   featureTagOptions: string[]
+  applyQuickFeatureSearch: (patch: { workTitle?: string; circle?: string; author?: string; tag?: string }) => void
   featureTagPickerOpen: boolean
   setFeatureTagPickerOpen: Dispatch<SetStateAction<boolean>>
   featureTags: string[]
@@ -193,6 +194,7 @@ export function useAppWorkspaceProps({
   featureCircleOptions,
   featureAuthorOptions,
   featureTagOptions,
+  applyQuickFeatureSearch,
   featureTagPickerOpen,
   setFeatureTagPickerOpen,
   featureTags,
@@ -521,15 +523,10 @@ export function useAppWorkspaceProps({
     author?: string
     tag?: string
   }) => {
-    appSettings.updateSettings({ vectorMode: true, sidebarFocus: 'main' })
-    setSearchPanelMode('feature')
-    setSearchPanelCollapsed(false)
-    setFeatureNameQuery('')
-    setFeatureWorkTitleQuery(patch.workTitle ?? '')
-    setFeatureCircleQuery(patch.circle ?? '')
-    setFeatureAuthorQuery(patch.author ?? '')
-    setFeatureTags(patch.tag ? [patch.tag] : [])
-    setFeatureGradeFilter(null)
+    if (mode !== 'image') {
+      return
+    }
+    applyQuickFeatureSearch(patch)
   }
 
   const metadataPanelProps = buildMetadataPanelProps({
@@ -543,6 +540,7 @@ export function useAppWorkspaceProps({
     currentGrade: currentGradeEffective,
     currentVideoGrade: focusedVideoEffective?.grade ?? null,
     metadataPending: metadataWriteBindings.metadataPending,
+    autoTagPending: metadataWriteBindings.autoTagPending,
     editable: metadataManageMode,
     focusedVideo: focusedVideoEffective,
     metadataTab,
