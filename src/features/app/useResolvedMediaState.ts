@@ -27,6 +27,9 @@ interface UseResolvedMediaStateParams {
   orderedRootScopedImageRefs: FocusedImageRef[]
   fullscreenActive: boolean
   showNamesOnly: boolean
+  visibleImageRefs: FocusedImageRef[]
+  pageStart: number
+  pagedPageSize: number
   refsInPage: FocusedImageRef[]
   focusedVideo: VideoItem | null
   focusedVideoCoverImageLocator: MediaLocator | null
@@ -53,6 +56,9 @@ export function useResolvedMediaState({
   orderedRootScopedImageRefs,
   fullscreenActive,
   showNamesOnly,
+  visibleImageRefs,
+  pageStart,
+  pagedPageSize,
   refsInPage,
   focusedVideo,
   focusedVideoCoverImageLocator,
@@ -143,6 +149,19 @@ export function useResolvedMediaState({
       for (const ref of refsInPage) {
         pushThumbnailImageTarget(ref)
       }
+
+      const prevPageStart = Math.max(0, pageStart - pagedPageSize)
+      const nextPageStart = pageStart + pagedPageSize
+      const prevPageRefs = visibleImageRefs.slice(prevPageStart, prevPageStart + pagedPageSize)
+      const nextPageRefs = visibleImageRefs.slice(nextPageStart, nextPageStart + pagedPageSize)
+
+      for (const ref of prevPageRefs) {
+        pushThumbnailImageTarget(ref)
+      }
+
+      for (const ref of nextPageRefs) {
+        pushThumbnailImageTarget(ref)
+      }
     }
 
     if (focusedVideo) {
@@ -178,9 +197,12 @@ export function useResolvedMediaState({
     focusedRef,
     fullscreenActive,
     orderedRootScopedImageRefs,
+    pageStart,
+    pagedPageSize,
     packageById,
     refsInPage,
     showNamesOnly,
+    visibleImageRefs,
   ])
 
   const resolvedMedia = useResolvedMediaUrls({

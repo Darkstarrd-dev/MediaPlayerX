@@ -666,6 +666,33 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(readStars()).toEqual(['×', '☆', '☆', '☆', '☆', '☆'])
   })
 
+  it('图片模式只读元数据评分可用并可写入', async () => {
+    const writePackageGradeSpy = vi.spyOn(MockMediaRepository.prototype, 'writePackageGradeSync')
+    render(<App />)
+
+    const ratingGroup = screen.getByRole('group', { name: '图包评分' })
+    const ratingThreeStar = within(ratingGroup).getByRole('button', { name: '图包评分 3 星' }) as HTMLButtonElement
+    expect(ratingThreeStar.disabled).toBe(false)
+
+    fireEvent.click(ratingThreeStar)
+    expect(writePackageGradeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        grade: 3,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(ratingThreeStar.disabled).toBe(false)
+    })
+
+    fireEvent.mouseDown(screen.getByRole('button', { name: '清空评分' }), { button: 0 })
+    expect(writePackageGradeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        grade: null,
+      }),
+    )
+  })
+
   it('视频模式元数据默认只读，包含评分与操作区及底部状态区', () => {
     render(<App />)
 

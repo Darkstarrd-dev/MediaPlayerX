@@ -107,7 +107,11 @@ export function useResolvedMediaUrls({
       return
     }
 
-    const unsubscribe = repository.onLibraryChanged(() => {
+    const unsubscribe = repository.onLibraryChanged((payload) => {
+      if (payload.reason === 'write-package-grade') {
+        return
+      }
+
       urlCacheByLocatorKeyRef.current.clear()
       failedRequestByKeyRef.current.clear()
       setErrorByTargetId({})

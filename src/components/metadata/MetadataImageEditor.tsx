@@ -97,7 +97,7 @@ export function MetadataImageEditor({
             title="评分"
             groupAriaLabel="图包评分"
             clearAriaLabel="清空评分"
-            pending={metadataPending || !editable}
+            pending={metadataPending}
             value={currentGrade}
             onChange={onGradeChange}
           />

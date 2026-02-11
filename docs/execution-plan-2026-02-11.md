@@ -97,14 +97,14 @@
 
 任务清单：
 
-- [ ] 图片模式评分在只读元数据可用（评分不等于元数据编辑）：
+- [x] 图片模式评分在只读元数据可用（评分不等于元数据编辑）：
   - UI 侧把评分的 disabled 条件与 `editable` 解耦。
   - 参考文件：`src/components/metadata/MetadataImageEditor.tsx`
-- [ ] 评分写入不触发缩略图页刷新：
+- [x] 评分写入不触发缩略图页刷新：
   - 根据 `libraryChanged.reason=write-package-grade` 做最小刷新，避免 page/sidebar 读链路重跑。
   - 仅在“按评分筛选”启用时才把 `grade_overrides` 作为读请求依赖。
   - 参考文件：`electron/services/file-system-read/libraryReadWriteService.ts`、`src/features/backend/useReadOnlyDataAccess.ts`、`src/features/app/useAppReadState.ts`
-- [ ] 缩略图翻页 buffer：预渲染上一页/下一页 (prefetch)：
+- [x] 缩略图翻页 buffer：预渲染上一页/下一页 (prefetch)：
   - 在缩略图 resolve 阶段扩展 targets：当前页 + 前后各一页（受并发上限控制）。
   - 参考文件：`src/features/app/useResolvedMediaState.ts`、`src/features/backend/useResolvedMediaUrls.ts`
 

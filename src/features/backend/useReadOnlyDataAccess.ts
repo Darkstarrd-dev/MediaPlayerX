@@ -135,6 +135,11 @@ export function useReadOnlyDataAccess({
     [featureAuthorQuery, featureCircleQuery, featureGradeFilter, featureNameQuery, featureTags, featureWorkTitleQuery],
   )
 
+  const gradeOverridesForRead = useMemo(
+    () => (featureGradeFilter === null ? undefined : gradeByPackage),
+    [featureGradeFilter, gradeByPackage],
+  )
+
   // 测试模式允许走同步仓储，目的是让 hook 在单测中稳定复现请求时序并避免异步抖动。
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSynchronousRepository(repository)
 
@@ -147,7 +152,7 @@ export function useReadOnlyDataAccess({
       mode === 'image'
         ? repository.readImageSidebarTreeSync({
             feature_filter: featureFilter,
-            grade_overrides: gradeByPackage,
+            grade_overrides: gradeOverridesForRead,
             include_hidden: includeHidden,
           })
         : null
@@ -160,7 +165,7 @@ export function useReadOnlyDataAccess({
             show_names_only: showNamesOnly,
             include_hidden: includeHidden,
             feature_filter: featureFilter,
-            grade_overrides: gradeByPackage,
+            grade_overrides: gradeOverridesForRead,
           })
         : null
     const metadataDto =
@@ -181,7 +186,7 @@ export function useReadOnlyDataAccess({
   }, [
     featureFilter,
     focusedRef,
-    gradeByPackage,
+    gradeOverridesForRead,
     includeHidden,
     initialLibrarySnapshot,
     isSynchronousTestMode,
@@ -219,14 +224,14 @@ export function useReadOnlyDataAccess({
         repository.readImageSidebarTree(
           {
             feature_filter: featureFilter,
-            grade_overrides: gradeByPackage,
+            grade_overrides: gradeOverridesForRead,
             include_hidden: includeHidden,
           },
           { signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
         ),
       mapDto: mapImageSidebarTreeDto,
     })
-  }, [featureFilter, gradeByPackage, includeHidden, isSynchronousTestMode, mode, repository, sidebarRetryNonce])
+  }, [featureFilter, gradeOverridesForRead, includeHidden, isSynchronousTestMode, mode, repository, sidebarRetryNonce])
 
   useEffect(() => {
     if (isSynchronousTestMode || mode !== 'image' || vectorResultsActive) {
@@ -246,13 +251,13 @@ export function useReadOnlyDataAccess({
             show_names_only: showNamesOnly,
             include_hidden: includeHidden,
             feature_filter: featureFilter,
-            grade_overrides: gradeByPackage,
+            grade_overrides: gradeOverridesForRead,
           },
           { signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
         ),
       mapDto: mapImagePageDto,
     })
-  }, [featureFilter, gradeByPackage, includeHidden, isSynchronousTestMode, mode, pageIndex, pageRetryNonce, pageSize, repository, selectedSourceId, showNamesOnly, vectorResultsActive])
+  }, [featureFilter, gradeOverridesForRead, includeHidden, isSynchronousTestMode, mode, pageIndex, pageRetryNonce, pageSize, repository, selectedSourceId, showNamesOnly, vectorResultsActive])
 
   useEffect(() => {
     if (isSynchronousTestMode || mode !== 'image' || !focusedRef || vectorResultsActive) {
@@ -305,19 +310,41 @@ export function useReadOnlyDataAccess({
     }
 
     let throttleTimer: ReturnType<typeof window.setTimeout> | null = null
-    const scheduleRefresh = () => {
+    let queuedRefreshScope: 'all' | 'grade-dependent' | null = null
+
+    const scheduleRefresh = (scope: 'all' | 'grade-dependent') => {
+      queuedRefreshScope = queuedRefreshScope === 'all' || scope === 'all' ? 'all' : 'grade-dependent'
+
       if (throttleTimer !== null) {
         return
       }
 
       throttleTimer = window.setTimeout(() => {
         throttleTimer = null
-        retryAllSlices()
+        const scopeToRun = queuedRefreshScope
+        queuedRefreshScope = null
+
+        if (scopeToRun === 'all') {
+          retryAllSlices()
+          return
+        }
+
+        if (scopeToRun === 'grade-dependent') {
+          retrySidebar()
+          retryPage()
+        }
       }, 120)
     }
 
-    const unsubscribe = repository.onLibraryChanged(() => {
-      scheduleRefresh()
+    const unsubscribe = repository.onLibraryChanged((payload) => {
+      if (payload.reason === 'write-package-grade') {
+        if (featureGradeFilter !== null) {
+          scheduleRefresh('grade-dependent')
+        }
+        return
+      }
+
+      scheduleRefresh('all')
     })
 
     return () => {
@@ -326,7 +353,7 @@ export function useReadOnlyDataAccess({
       }
       unsubscribe()
     }
-  }, [isSynchronousTestMode, repository, retryAllSlices])
+  }, [featureGradeFilter, isSynchronousTestMode, repository, retryAllSlices, retryPage, retrySidebar])
 
   const errors: BackendReadErrors = {
     library: libraryState.error,
