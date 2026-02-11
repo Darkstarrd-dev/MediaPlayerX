@@ -132,15 +132,31 @@ type BindingTarget =
   | { kind: 'shortcut'; action: ShortcutAction; label: string }
   | { kind: 'vector'; action: VectorControlAction; label: string }
 
+const MOUSE_CAPTURE_PRESETS: Array<{ label: string; combo: string }> = [
+  { label: '鼠标左键', combo: 'MouseLeft' },
+  { label: '鼠标中键', combo: 'MouseMiddle' },
+  { label: '鼠标右键', combo: 'MouseRight' },
+  { label: '鼠标后退键', combo: 'MouseBack' },
+  { label: '鼠标前进键', combo: 'MouseForward' },
+]
+
 const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
-  { id: 'layout', label: '布局参数' },
+  { id: 'layout', label: '界面设置' },
   { id: 'model', label: 'LLM模型设置' },
-  { id: 'thumbnail', label: '缩略图设置' },
   { id: 'database', label: '数据库设置' },
   { id: 'shortcuts', label: '快捷键设置' },
-  { id: 'theme', label: 'theme 设置' },
   { id: 'space3d', label: '3D 设置' },
 ]
+
+function resolveSettingsSection(raw: unknown): SettingsSection {
+  if (raw === 'layout' || raw === 'model' || raw === 'database' || raw === 'shortcuts' || raw === 'space3d') {
+    return raw
+  }
+  if (raw === 'theme' || raw === 'thumbnail') {
+    return 'layout'
+  }
+  return 'layout'
+}
 
 function SettingsPanel({
   settingsOpen,
@@ -246,7 +262,8 @@ function SettingsPanel({
   onClearDatabase,
   onRefreshRuntimeInfo,
 }: SettingsPanelProps) {
-  const [activeSection, setActiveSection] = useState<SettingsSection>('layout')
+  const [activeSectionRaw, setActiveSection] = useState<SettingsSection>('layout')
+  const activeSection = resolveSettingsSection(activeSectionRaw)
   const [bindingTarget, setBindingTarget] = useState<BindingTarget | null>(null)
   const [capturingTarget, setCapturingTarget] = useState<BindingTarget | null>(null)
   const [capturedCombo, setCapturedCombo] = useState('')
@@ -293,6 +310,13 @@ function SettingsPanel({
   }, [settingsOpen])
 
   useEffect(() => {
+    const normalized = resolveSettingsSection(activeSectionRaw)
+    if (normalized !== activeSectionRaw) {
+      setActiveSection(normalized)
+    }
+  }, [activeSectionRaw])
+
+  useEffect(() => {
     if (!capturingTarget) {
       return
     }
@@ -309,8 +333,8 @@ function SettingsPanel({
     }
 
     const onMouseDown = (event: MouseEvent) => {
-      const targetNode = event.target as Node | null
-      if (targetNode && captureDialogRef.current?.contains(targetNode)) {
+      const targetElement = event.target as HTMLElement | null
+      if (targetElement?.closest('[data-capture-ignore="true"]')) {
         return
       }
 
@@ -532,6 +556,7 @@ function SettingsPanel({
               <div className="settings-floating-actions">
                 <button
                   type="button"
+                  data-capture-ignore="true"
                   onClick={() => {
                     setCapturedCombo('')
                     setCapturingTarget(bindingTarget)
@@ -539,9 +564,10 @@ function SettingsPanel({
                 >
                   新增
                 </button>
-                <button type="button" onClick={() => setBinding(bindingTarget, '')}>清除</button>
+                <button type="button" data-capture-ignore="true" onClick={() => setBinding(bindingTarget, '')}>清除</button>
                 <button
                   type="button"
+                  data-capture-ignore="true"
                   onClick={() => {
                     setBindingTarget(null)
                     setCapturingTarget(null)
@@ -561,9 +587,27 @@ function SettingsPanel({
               <h3>录入快捷键</h3>
               <p className="settings-placeholder">按下键盘/鼠标（支持组合键）。</p>
               <p className="binding-capture-preview">{capturedCombo || '等待输入...'}</p>
+              <div className="binding-mouse-presets" data-capture-ignore="true">
+                <span>快速选择鼠标事件</span>
+                <div className="binding-mouse-preset-list">
+                  {MOUSE_CAPTURE_PRESETS.map((preset) => (
+                    <button
+                      key={preset.combo}
+                      type="button"
+                      data-capture-ignore="true"
+                      onClick={() => {
+                        setCapturedCombo(preset.combo)
+                      }}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="settings-floating-actions">
                 <button
                   type="button"
+                  data-capture-ignore="true"
                   disabled={!capturedCombo}
                   onClick={() => {
                     const existingBinding = getBinding(capturingTarget)
@@ -577,6 +621,7 @@ function SettingsPanel({
                 </button>
                 <button
                   type="button"
+                  data-capture-ignore="true"
                   onClick={() => {
                     setCapturingTarget(null)
                     setCapturedCombo('')

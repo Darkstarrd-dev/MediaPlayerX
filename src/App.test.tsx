@@ -1124,6 +1124,27 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(readToolbarTitle()).not.toBe(titleBeforeFooterPackage)
   })
 
+  it('全屏模式支持鼠标滚轮上下翻页', () => {
+    render(<App />)
+
+    fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
+    fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
+
+    const fullscreenImagePane = document.querySelector('.fullscreen-image') as HTMLElement | null
+    expect(fullscreenImagePane).not.toBeNull()
+
+    const readFullscreenImageAlt = () =>
+      (document.querySelector('.fullscreen-media-image-element') as HTMLImageElement | null)?.getAttribute('alt') ?? ''
+
+    const imageBeforeWheelDown = readFullscreenImageAlt()
+    fireEvent.wheel(fullscreenImagePane as HTMLElement, { deltaY: 120 })
+    const imageAfterWheelDown = readFullscreenImageAlt()
+    expect(imageAfterWheelDown).not.toBe(imageBeforeWheelDown)
+
+    fireEvent.wheel(fullscreenImagePane as HTMLElement, { deltaY: -120 })
+    expect(readFullscreenImageAlt()).toBe(imageBeforeWheelDown)
+  })
+
   it('视频模式单视频时将控件并入底部 footer，双显示时保留悬浮控件自适应', () => {
     render(<App />)
 
@@ -1182,19 +1203,35 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(Number(yOffset ?? '0')).not.toBe(0)
   })
 
-  it('设置面板按 side/main 分栏并包含向量宇宙参数与全屏对齐快捷键配置', () => {
+  it('设置面板按 side/main 分栏并包含界面设置聚合与快捷键鼠标录入', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '设置' }))
     const settingsPanel = document.querySelector('.settings-panel') as HTMLElement | null
     expect(settingsPanel).not.toBeNull()
 
-    expect(screen.getByRole('button', { name: '布局参数' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '界面设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'LLM模型设置' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '缩略图设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '快捷键设置' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'theme 设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '3D 设置' })).toBeInTheDocument()
+
+    expect(screen.queryByRole('button', { name: '缩略图设置' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'theme 设置' })).toBeNull()
+
+    expect(screen.getByText('主题设置')).toBeInTheDocument()
+    expect(screen.getByText('缩略图设置')).toBeInTheDocument()
+    expect(screen.getByText('布局参数')).toBeInTheDocument()
+
+    const styleSelect = screen.getByRole('combobox', { name: 'Style' }) as HTMLSelectElement
+    const paletteSelect = screen.getByRole('combobox', { name: 'Palette' }) as HTMLSelectElement
+    expect(styleSelect.value.length).toBeGreaterThan(0)
+    expect(Array.from(styleSelect.options).some((option) => option.value === styleSelect.value)).toBe(true)
+    expect(paletteSelect.value.length).toBeGreaterThan(0)
+    expect(Array.from(paletteSelect.options).some((option) => option.value === paletteSelect.value)).toBe(true)
+
+    expect(screen.getByLabelText(/缩略图间距系数/)).toBeInTheDocument()
+    expect(screen.getByLabelText('缩略图质量')).toBeInTheDocument()
+    expect(screen.getByLabelText('缩略图宽度')).toBeInTheDocument()
 
     const settingsFontSlider = screen.getByLabelText(/设置面板字体系数/)
     const fontSizeBefore = settingsPanel?.style.fontSize
@@ -1213,21 +1250,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText('General 分数阈值').closest('label')).toHaveAttribute('title')
     expect(screen.getByRole('button', { name: '测试wd模型连接' })).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: '缩略图设置' }))
-    expect(screen.getByLabelText(/缩略图间距系数/)).toBeInTheDocument()
-    expect(screen.getByLabelText('缩略图质量')).toBeInTheDocument()
-    expect(screen.getByLabelText('缩略图宽度')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'theme 设置' }))
-    const styleSelect = screen.getByRole('combobox', { name: 'Style' }) as HTMLSelectElement
-    const paletteSelect = screen.getByRole('combobox', { name: 'Palette' }) as HTMLSelectElement
-    expect(styleSelect.value.length).toBeGreaterThan(0)
-    expect(Array.from(styleSelect.options).some((option) => option.value === styleSelect.value)).toBe(true)
-    expect(paletteSelect.value.length).toBeGreaterThan(0)
-    expect(Array.from(paletteSelect.options).some((option) => option.value === paletteSelect.value)).toBe(true)
-
     fireEvent.click(screen.getByRole('button', { name: '3D 设置' }))
-    expect(screen.getByText('3D 设置（向量宇宙）')).toBeInTheDocument()
     expect(screen.getByText('向量宇宙：前进')).toBeInTheDocument()
 
     const moveSpeedSlider = screen.getByLabelText(/移动速度/)
@@ -1258,10 +1281,11 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(within(shortcutEditDialog).getByRole('button', { name: '清除' }))
     expect(screen.getByText('当前未设置快捷键。')).toBeInTheDocument()
     fireEvent.click(within(shortcutEditDialog).getByRole('button', { name: '新增' }))
-    fireEvent.keyDown(window, { key: 'j', code: 'KeyJ' })
+    const captureDialog = screen.getByRole('dialog', { name: '录入快捷键' })
+    fireEvent.click(within(captureDialog).getByRole('button', { name: '鼠标右键' }))
     fireEvent.click(screen.getByRole('button', { name: '确认新增' }))
     fireEvent.click(within(shortcutEditDialog).getByRole('button', { name: '关闭' }))
-    expect(alignUpBindingButton.textContent).toContain('KeyJ')
+    expect(alignUpBindingButton.textContent).toContain('MouseRight')
   }, 15_000)
 
   it('Header 显示向量宇宙按钮并可打开关闭 3D 层', async () => {

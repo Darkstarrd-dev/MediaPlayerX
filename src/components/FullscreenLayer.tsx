@@ -244,14 +244,53 @@ function FullscreenLayer({
 
   const handlePaneWheel = useCallback(
     (pane: PaneKey, event: ReactWheelEvent<HTMLElement>) => {
-      if (!zoomEnabled || !singlePane || pane !== singlePane || !event.ctrlKey) {
+      const target = event.target
+      if (
+        target instanceof HTMLElement &&
+        target.closest('input, select, textarea, button, .fullscreen-video-controls, .fullscreen-footer')
+      ) {
+        return
+      }
+
+      if (zoomEnabled && singlePane && pane === singlePane && event.ctrlKey) {
+        event.preventDefault()
+        adjustPaneZoom(pane, event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP)
+        return
+      }
+
+      if (event.ctrlKey || Math.abs(event.deltaY) < 8) {
         return
       }
 
       event.preventDefault()
-      adjustPaneZoom(pane, event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP)
+
+      const stepTargetPane: PaneKey = fullscreenDisplay === 'dual' ? pane : focusedPane
+      if (event.deltaY > 0) {
+        if (stepTargetPane === 'video') {
+          onNextVideo()
+          return
+        }
+        onNextImage()
+        return
+      }
+
+      if (stepTargetPane === 'video') {
+        onPrevVideo()
+        return
+      }
+      onPrevImage()
     },
-    [adjustPaneZoom, singlePane, zoomEnabled],
+    [
+      adjustPaneZoom,
+      focusedPane,
+      fullscreenDisplay,
+      onNextImage,
+      onNextVideo,
+      onPrevImage,
+      onPrevVideo,
+      singlePane,
+      zoomEnabled,
+    ],
   )
 
   const startPaneDrag = useCallback(
