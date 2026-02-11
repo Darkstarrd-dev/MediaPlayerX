@@ -4,6 +4,7 @@
 
 ## 文档索引
 
+- `implementation-plan-2026-02-11.md`：本轮实施计划（临时）。
 - `requirements-v1.md`：V1 需求范围与行为冻结。
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。

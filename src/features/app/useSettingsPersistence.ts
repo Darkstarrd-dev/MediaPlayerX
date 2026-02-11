@@ -105,6 +105,36 @@ export function useSettingsPersistence({
   const isHydratedRef = useRef(false)
   const lastSavedJsonRef = useRef('')
 
+  const initialSettingsRef = useRef<AppSettings | null>(null)
+  if (!initialSettingsRef.current) {
+    initialSettingsRef.current = settings
+  }
+
+  const latestSettingsRef = useRef(settings)
+  useEffect(() => {
+    latestSettingsRef.current = settings
+  }, [settings])
+
+  const buildHydrationPatch = (persisted: Partial<AppSettings>): Partial<AppSettings> => {
+    const initial = initialSettingsRef.current
+    const latest = latestSettingsRef.current
+    if (!initial) {
+      return persisted
+    }
+
+    const next: Partial<AppSettings> = {}
+    for (const key of Object.keys(persisted) as Array<keyof AppSettings>) {
+      if (typeof persisted[key] === 'undefined') {
+        continue
+      }
+      // 若用户（或其他逻辑）在水合完成前已修改过某个 key，则不允许旧持久化值覆盖它。
+      if (Object.is(latest[key], initial[key])) {
+        next[key] = persisted[key]
+      }
+    }
+    return next
+  }
+
   // Hydrate from DB on mount
   useEffect(() => {
     if (!repository.readAppState) {
@@ -119,7 +149,7 @@ export function useSettingsPersistence({
             const parsed = JSON.parse(response.state_json)
             // Only update if we haven't modified settings locally yet (or just apply it once)
             if (!isHydratedRef.current) {
-              updateSettings(normalizePersistedSettings(parsed))
+              updateSettings(buildHydrationPatch(normalizePersistedSettings(parsed)))
             }
           } catch (e) {
             console.warn('Failed to parse persisted settings', e)

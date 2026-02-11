@@ -1211,7 +1211,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(settingsPanel).not.toBeNull()
 
     expect(screen.getByRole('button', { name: '界面设置' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'LLM模型设置' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'AI模型设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '快捷键设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '3D 设置' })).toBeInTheDocument()
 
@@ -1238,7 +1238,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.change(settingsFontSlider, { target: { value: '1.2' } })
     expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore)
 
-    fireEvent.click(screen.getByRole('button', { name: 'LLM模型设置' }))
+    fireEvent.click(screen.getByRole('button', { name: 'AI模型设置' }))
     expect(screen.getByLabelText('LM Studio Endpoint')).toBeInTheDocument()
     expect(screen.getByLabelText('视觉模型端口')).toBeInTheDocument()
     expect(screen.getByLabelText('模型文件路径')).toBeInTheDocument()

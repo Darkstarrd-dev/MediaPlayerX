@@ -149,7 +149,7 @@ const MOUSE_CAPTURE_PRESETS: Array<{ label: string; combo: string }> = [
 
 const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
   { id: 'layout', label: '界面设置' },
-  { id: 'model', label: 'LLM模型设置' },
+  { id: 'model', label: 'AI模型设置' },
   { id: 'database', label: '数据库设置' },
   { id: 'shortcuts', label: '快捷键设置' },
   { id: 'space3d', label: '3D 设置' },

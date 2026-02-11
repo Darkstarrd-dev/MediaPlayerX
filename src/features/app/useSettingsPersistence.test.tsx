@@ -1,4 +1,5 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { DEFAULT_SETTINGS } from '../../store/useUiStore'
@@ -64,6 +65,64 @@ describe('useSettingsPersistence', () => {
           visionAutoTagTimeoutMs: 120_000,
         }),
       )
+    })
+  })
+
+  it('does not overwrite local changes made before hydration resolves', async () => {
+    const deferred: { resolve: (value: unknown) => void } = {
+      resolve: () => void 0,
+    }
+    const readAppState = vi.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          deferred.resolve = resolve
+        }),
+    )
+
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+
+    function useHarness() {
+      const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+      const updateSettings = (patch: Parameters<typeof useSettingsPersistence>[0]['updateSettings'] extends (arg: infer A) => void ? A : never) => {
+        setSettings((prev) => ({
+          ...prev,
+          ...patch,
+        }))
+      }
+
+      useSettingsPersistence({
+        settings,
+        repository,
+        updateSettings,
+      })
+
+      return {
+        settings,
+        updateSettings,
+      }
+    }
+
+    const { result } = renderHook(() => useHarness())
+
+    act(() => {
+      result.current.updateSettings({
+        lmStudioEndpoint: 'http://localhost:1234/v1/embeddings',
+        lmStudioModel: 'local-new-model',
+      })
+    })
+
+    deferred.resolve({
+      state_json: JSON.stringify({
+        lmStudioEndpoint: 'http://127.0.0.1:1234/v1/embeddings',
+        lmStudioModel: 'persisted-old-model',
+      }),
+    })
+
+    await waitFor(() => {
+      expect(result.current.settings.lmStudioEndpoint).toBe('http://localhost:1234/v1/embeddings')
+      expect(result.current.settings.lmStudioModel).toBe('local-new-model')
     })
   })
 })

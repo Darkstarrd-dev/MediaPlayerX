@@ -42,6 +42,7 @@ npm run test
 ## 文档入口
 
 - `docs/README.md`
+- `docs/implementation-plan-2026-02-11.md`
 - `docs/requirements-v1.md`
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
