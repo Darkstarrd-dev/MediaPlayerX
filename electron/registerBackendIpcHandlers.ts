@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import {
   clearDatabaseResponseSchema,
+  clearVectorDataResponseSchema,
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
@@ -12,6 +13,7 @@ import {
   readClipboardImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
+  readVectorDataStatusResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -68,6 +70,7 @@ import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { MediaAccessError } from './fileSystemMediaAccessGuard'
 import { FileSystemMediaReadService } from './fileSystemReadService'
 import { DATABASE_RELATIVE_PATH } from './mediaLibrarySchema'
+import { THUMBNAIL_CACHE_DIR_NAME } from './services/file-system-read/fileSystemReadFacadeConfig'
 
 const MEDIA_ACCESS_FALLBACK_URL = 'data:application/octet-stream;base64,'
 const MEDIA_ACCESS_FALLBACK_TTL_MS = 60_000
@@ -378,7 +381,9 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeInfo, async () => {
     const userDataPath = app.getPath('userData')
-    const databasePath = path.resolve(userDataPath, DATABASE_RELATIVE_PATH)
+    const databasePath = path.resolve(libraryRoot, DATABASE_RELATIVE_PATH)
+    const vectorStorePath = `${databasePath}#image_item.feature_vector_json`
+    const thumbnailCachePath = path.resolve(libraryRoot, THUMBNAIL_CACHE_DIR_NAME)
 
     return readRuntimeInfoResponseSchema.parse({
       app_version: app.getVersion(),
@@ -388,7 +393,14 @@ export function registerBackendIpcHandlers(): void {
       user_data_path: userDataPath,
       library_root: libraryRoot,
       database_path: databasePath,
+      vector_store_path: vectorStorePath,
+      thumbnail_cache_path: thumbnailCachePath,
     })
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readVectorDataStatus, async () => {
+    const response = await ensureService().readVectorDataStatus()
+    return readVectorDataStatusResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readArchiveLoadStatus, async () => {
@@ -411,5 +423,10 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.clearDatabase, async () => {
     const response = await ensureService().clearDatabase()
     return clearDatabaseResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.clearVectorData, async () => {
+    const response = await ensureService().clearVectorData()
+    return clearVectorDataResponseSchema.parse(response)
   })
 }

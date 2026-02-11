@@ -2,6 +2,8 @@ import path from 'node:path'
 
 import {
   librarySnapshotDtoSchema,
+  readVectorDataStatusResponseSchema,
+  type ReadVectorDataStatusResponseDto,
   type ImageItemDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
@@ -421,6 +423,60 @@ export class MediaLibrarySnapshotStore {
     })
 
     return touched
+  }
+
+  readVectorDataStatus(): ReadVectorDataStatusResponseDto {
+    const rows = this.db
+      .prepare(
+        `
+          SELECT feature_vector_json
+          FROM image_item
+        `,
+      )
+      .all() as Array<{ feature_vector_json: string }>
+
+    let embeddedImages = 0
+    let vectorDimension = 0
+
+    for (const row of rows) {
+      const vector = parseJson<number[]>(row.feature_vector_json, [])
+      if (!Array.isArray(vector) || vector.length === 0) {
+        continue
+      }
+
+      const hasNonZeroValue = vector.some((value) => Number.isFinite(value) && Math.abs(value) > 1e-12)
+      if (!hasNonZeroValue) {
+        continue
+      }
+
+      embeddedImages += 1
+      if (vectorDimension === 0) {
+        vectorDimension = vector.length
+      }
+    }
+
+    const totalImages = rows.length
+    return readVectorDataStatusResponseSchema.parse({
+      total_images: totalImages,
+      embedded_images: embeddedImages,
+      pending_images: Math.max(0, totalImages - embeddedImages),
+      vector_dimension: vectorDimension,
+      generated_at_ms: Date.now(),
+    })
+  }
+
+  clearImageFeatureVectors(): number {
+    const update = this.db.prepare(
+      `
+        UPDATE image_item
+        SET feature_vector_json = ?, updated_at_ms = ?
+        WHERE feature_vector_json <> ?
+      `,
+    )
+
+    const clearedAtMs = Date.now()
+    const result = update.run(JSON.stringify([]), clearedAtMs, JSON.stringify([])) as { changes?: number } | undefined
+    return result?.changes ?? 0
   }
 
   deleteImageItems(imageIds: string[]): { deletedCount: number; touchedSourceIds: string[] } {

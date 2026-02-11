@@ -1,5 +1,6 @@
 import {
   clearDatabaseResponseSchema,
+  clearVectorDataResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
@@ -7,6 +8,7 @@ import {
   readClipboardImportPathsResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
+  readVectorDataStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataResponseSchema,
@@ -36,11 +38,13 @@ import {
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
+  type ClearVectorDataResponseDto,
   type PickImportPathsRequestDto,
   type PickImportPathsResponseDto,
   type ReadClipboardImportPathsResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
+  type ReadVectorDataStatusResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
   type ReadImportTasksResponseDto,
@@ -623,6 +627,16 @@ export class RealMediaRepository implements MediaRepository {
     return readRuntimeCapabilitiesResponseSchema.parse(response)
   }
 
+  async readVectorDataStatus(options?: RepositoryRequestOptions): Promise<ReadVectorDataStatusResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.readVectorDataStatus) {
+      throw new Error('真实后端通道不可用：readVectorDataStatus 未注入')
+    }
+
+    const response = await withAbort(api.readVectorDataStatus(), options)
+    return readVectorDataStatusResponseSchema.parse(response)
+  }
+
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {
     const api = window.mediaPlayerBackend
     if (!api || !api.readArchiveLoadStatus) {
@@ -667,5 +681,15 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.clearDatabase(), options)
     return clearDatabaseResponseSchema.parse(response)
+  }
+
+  async clearVectorData(options?: RepositoryRequestOptions): Promise<ClearVectorDataResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.clearVectorData) {
+      throw new Error('真实后端通道不可用：clearVectorData 未注入')
+    }
+
+    const response = await withAbort(api.clearVectorData(), options)
+    return clearVectorDataResponseSchema.parse(response)
   }
 }

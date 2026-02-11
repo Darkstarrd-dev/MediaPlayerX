@@ -1,5 +1,6 @@
 import type {
   ClearDatabaseResponseDto,
+  ClearVectorDataResponseDto,
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   PickImportPathsRequestDto,
@@ -9,6 +10,7 @@ import type {
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   ReadRuntimeInfoResponseDto,
+  ReadVectorDataStatusResponseDto,
   LibrarySnapshotDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
@@ -108,8 +110,10 @@ interface MediaPlayerBackendApi {
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
   readRuntimeInfo?: () => Promise<ReadRuntimeInfoResponseDto>
+  readVectorDataStatus?: () => Promise<ReadVectorDataStatusResponseDto>
   readArchiveLoadStatus?: () => Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase: () => Promise<ClearDatabaseResponseDto>
+  clearVectorData?: () => Promise<ClearVectorDataResponseDto>
   onLibraryChanged?: (
     listener: (payload: { reason: string; updated_at_ms: number }) => void,
   ) => () => void

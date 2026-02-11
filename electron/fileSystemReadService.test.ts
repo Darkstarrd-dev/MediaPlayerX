@@ -1074,19 +1074,26 @@ describe('FileSystemMediaReadService', () => {
 
     const originalFetch = globalThis.fetch
     let embeddingCalls = 0
+    const embeddingBatchSizes: number[] = []
     globalThis.fetch = (async (_input, init) => {
       embeddingCalls += 1
       const body = JSON.parse(String(init?.body ?? '{}')) as { input?: unknown }
-      const inputText = typeof body.input === 'string' ? body.input : ''
-      const seed = inputText.includes('ordinal=2') ? 2 : 1
+      const inputs = Array.isArray(body.input)
+        ? body.input.filter((item): item is string => typeof item === 'string')
+        : typeof body.input === 'string'
+          ? [body.input]
+          : []
+      embeddingBatchSizes.push(inputs.length)
 
       return new Response(
         JSON.stringify({
-          data: [
-            {
+          data: inputs.map((inputText, index) => {
+            const seed = inputText.includes('ordinal=2') ? 2 : 1
+            return {
+              index,
               embedding: [seed, seed + 0.1, seed + 0.2, seed + 0.3],
-            },
-          ],
+            }
+          }),
         }),
         {
           status: 200,
@@ -1107,7 +1114,7 @@ describe('FileSystemMediaReadService', () => {
         package_id: source.id,
         embedding_endpoint: 'http://127.0.0.1:1234/v1/embeddings',
         embedding_model: 'qwen3-vl-embedding',
-        max_concurrency: 2,
+        max_concurrency: 1,
         max_retries: 0,
         timeout_ms: 30_000,
       })
@@ -1116,7 +1123,8 @@ describe('FileSystemMediaReadService', () => {
       expect(response.embedded_images).toBe(2)
       expect(response.failed_images).toBe(0)
       expect(response.vector_dimension).toBe(4)
-      expect(embeddingCalls).toBe(2)
+      expect(embeddingCalls).toBe(1)
+      expect(embeddingBatchSizes).toEqual([2])
 
       const latestSnapshot = await service.readLibrarySnapshot()
       const latestSource = [...latestSnapshot.image_packages, ...latestSnapshot.image_directories].find(

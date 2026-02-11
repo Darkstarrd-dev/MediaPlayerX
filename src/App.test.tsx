@@ -1250,6 +1250,15 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText('General 分数阈值').closest('label')).toHaveAttribute('title')
     expect(screen.getByRole('button', { name: '测试wd模型连接' })).toBeInTheDocument()
 
+    fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))
+    expect(screen.getByText('数据库目录设置')).toBeInTheDocument()
+    expect(screen.getByLabelText('SQL 库路径')).toBeInTheDocument()
+    expect(screen.getByLabelText('向量库路径')).toBeInTheDocument()
+    expect(screen.getByLabelText('缩略图目录')).toBeInTheDocument()
+    expect(screen.getByText('向量数据管理')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /刷新向量统计|统计读取中/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '清空向量数据' })).toBeInTheDocument()
+
     fireEvent.click(screen.getByRole('button', { name: '3D 设置' }))
     expect(screen.getByText('向量宇宙：前进')).toBeInTheDocument()
 

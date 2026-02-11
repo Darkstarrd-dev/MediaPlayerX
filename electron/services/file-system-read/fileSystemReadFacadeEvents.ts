@@ -6,6 +6,7 @@ export interface LibraryChangedEventPayload {
     | 'archive-normalized'
     | 'archive-normalize-failed'
     | 'clear-database'
+    | 'clear-vector-data'
     | 'write-package-grade'
     | 'write-package-metadata'
     | 'generate-package-auto-tags'

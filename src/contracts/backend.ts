@@ -548,6 +548,19 @@ export const clearDatabaseResponseSchema = z.object({
   cleared_at_ms: z.number().int().positive(),
 })
 
+export const readVectorDataStatusResponseSchema = z.object({
+  total_images: nonNegativeIntSchema,
+  embedded_images: nonNegativeIntSchema,
+  pending_images: nonNegativeIntSchema,
+  vector_dimension: nonNegativeIntSchema,
+  generated_at_ms: z.number().int().positive(),
+})
+
+export const clearVectorDataResponseSchema = z.object({
+  cleared_images: nonNegativeIntSchema,
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const readArchiveLoadStatusResponseSchema = z.object({
   running_archive_path: z.string().min(1).nullable(),
   pending_archive_paths: z.array(z.string().min(1)),
@@ -607,6 +620,8 @@ export const readRuntimeInfoResponseSchema = z.object({
   user_data_path: z.string().min(1),
   library_root: z.string().min(1),
   database_path: z.string().min(1),
+  vector_store_path: z.string().min(1),
+  thumbnail_cache_path: z.string().min(1),
 })
 
 export const mediaAccessAuditResponseSchema = z.object({
@@ -698,6 +713,8 @@ export type PickImportPathsRequestDto = z.infer<typeof pickImportPathsRequestSch
 export type PickImportPathsResponseDto = z.infer<typeof pickImportPathsResponseSchema>
 export type ReadClipboardImportPathsResponseDto = z.infer<typeof readClipboardImportPathsResponseSchema>
 export type ClearDatabaseResponseDto = z.infer<typeof clearDatabaseResponseSchema>
+export type ReadVectorDataStatusResponseDto = z.infer<typeof readVectorDataStatusResponseSchema>
+export type ClearVectorDataResponseDto = z.infer<typeof clearVectorDataResponseSchema>
 export type ReadArchiveLoadStatusResponseDto = z.infer<typeof readArchiveLoadStatusResponseSchema>
 export type ReadAppStateRequestDto = z.infer<typeof readAppStateRequestSchema>
 export type ReadAppStateResponseDto = z.infer<typeof readAppStateResponseSchema>

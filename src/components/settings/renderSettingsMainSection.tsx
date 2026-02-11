@@ -4,7 +4,7 @@ import {
   resolvePaletteIdFromPalettes,
   resolveStyleIdFromStyles,
 } from '../../features/theme/themeRegistry'
-import type { ReadRuntimeInfoResponseDto } from '../../contracts/backend'
+import type { ReadRuntimeInfoResponseDto, ReadVectorDataStatusResponseDto } from '../../contracts/backend'
 import type { RepositoryMode } from '../../features/backend/repository'
 import type { JSX } from 'react'
 
@@ -78,6 +78,11 @@ interface RenderSettingsMainSectionParams {
   vectorLabelByAction: Map<string, string>
   databaseResetPending: boolean
   databaseResetError: string | null
+  vectorDataStatusLoading: boolean
+  vectorDataStatusError: string | null
+  vectorDataStatus: ReadVectorDataStatusResponseDto | null
+  vectorDataClearPending: boolean
+  vectorDataClearError: string | null
   repositoryMode: RepositoryMode
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -128,6 +133,8 @@ interface RenderSettingsMainSectionParams {
   onVectorUniverseWidgetSizeChange: (value: number) => void
   onClearDatabase: () => void
   onRefreshRuntimeInfo: () => void
+  onRefreshVectorDataStatus: () => void
+  onClearVectorData: () => void
 }
 
 export function renderSettingsMainSection({
@@ -190,6 +197,11 @@ export function renderSettingsMainSection({
   vectorLabelByAction,
   databaseResetPending,
   databaseResetError,
+  vectorDataStatusLoading,
+  vectorDataStatusError,
+  vectorDataStatus,
+  vectorDataClearPending,
+  vectorDataClearError,
   repositoryMode,
   backendBridgeInjected,
   runtimeInfoLoading,
@@ -240,6 +252,8 @@ export function renderSettingsMainSection({
   onVectorUniverseWidgetSizeChange,
   onClearDatabase,
   onRefreshRuntimeInfo,
+  onRefreshVectorDataStatus,
+  onClearVectorData,
 }: RenderSettingsMainSectionParams): JSX.Element {
   if (activeSection === 'layout') {
     const styles = listStyles()
@@ -620,6 +634,9 @@ export function renderSettingsMainSection({
   if (activeSection === 'database') {
     const rendererIsProd = import.meta.env.PROD
     const bridgeMissingInProduction = rendererIsProd && repositoryMode === 'real' && !backendBridgeInjected
+    const databasePath = runtimeInfo?.database_path ?? ''
+    const vectorStorePath = runtimeInfo?.vector_store_path ?? ''
+    const thumbnailCachePath = runtimeInfo?.thumbnail_cache_path ?? ''
 
     return (
       <div className="settings-block">
@@ -631,6 +648,48 @@ export function renderSettingsMainSection({
           </button>
         </label>
         {databaseResetError ? <p className="settings-danger-text">{databaseResetError}</p> : null}
+
+        <fieldset className="settings-subsection">
+          <legend>数据库目录设置</legend>
+          <p className="settings-placeholder">默认展示当前运行时实际路径，可用于快速核对 SQL 库、向量库与缩略图缓存目录。</p>
+          <label>
+            SQL 库路径
+            <input type="text" value={databasePath} readOnly placeholder="读取运行时诊断后显示" />
+          </label>
+          <label>
+            向量库路径
+            <input type="text" value={vectorStorePath} readOnly placeholder="读取运行时诊断后显示" />
+          </label>
+          <label>
+            缩略图目录
+            <input type="text" value={thumbnailCachePath} readOnly placeholder="读取运行时诊断后显示" />
+          </label>
+        </fieldset>
+
+        <fieldset className="settings-subsection">
+          <legend>向量数据管理</legend>
+          <p className="settings-placeholder">支持查看向量覆盖率，并一键清空所有图片向量（不影响原图与元数据）。</p>
+          <div className="settings-runtime-grid">
+            <span>图片总数</span>
+            <code>{vectorDataStatus ? vectorDataStatus.total_images : '-'}</code>
+            <span>已嵌入</span>
+            <code>{vectorDataStatus ? vectorDataStatus.embedded_images : '-'}</code>
+            <span>待生成</span>
+            <code>{vectorDataStatus ? vectorDataStatus.pending_images : '-'}</code>
+            <span>向量维度</span>
+            <code>{vectorDataStatus ? vectorDataStatus.vector_dimension : '-'}</code>
+          </div>
+          <div className="settings-runtime-actions">
+            <button type="button" disabled={vectorDataStatusLoading} onClick={onRefreshVectorDataStatus}>
+              {vectorDataStatusLoading ? '统计读取中...' : '刷新向量统计'}
+            </button>
+            <button type="button" className="settings-danger-btn" disabled={vectorDataClearPending} onClick={onClearVectorData}>
+              {vectorDataClearPending ? '清空中...' : '清空向量数据'}
+            </button>
+          </div>
+          {vectorDataStatusError ? <p className="settings-danger-text">{vectorDataStatusError}</p> : null}
+          {vectorDataClearError ? <p className="settings-danger-text">{vectorDataClearError}</p> : null}
+        </fieldset>
 
         <fieldset className="settings-subsection">
           <legend>运行时诊断</legend>

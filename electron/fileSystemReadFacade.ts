@@ -3,12 +3,14 @@ import path from 'node:path'
 
 import {
   clearDatabaseResponseSchema,
+  clearVectorDataResponseSchema,
   generatePackageAutoTagsResponseSchema,
   generatePackageAutoTagsVisionResponseSchema,
   generatePackageEmbeddingsResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
+  type ClearVectorDataResponseDto,
   type GeneratePackageAutoTagsRequestDto,
   type GeneratePackageAutoTagsResponseDto,
   type GeneratePackageAutoTagsVisionRequestDto,
@@ -18,6 +20,7 @@ import {
   type ImportTaskDto,
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
+  type ReadVectorDataStatusResponseDto,
   type MediaLocatorDto,
   type ReadPlaylistResponseDto,
   type ReadAppStateRequestDto,
@@ -309,25 +312,43 @@ function toFiniteNumberArray(value: unknown): number[] {
   return normalized
 }
 
-function extractEmbeddingVectorFromResponseBody(responseBody: unknown): number[] {
+function extractEmbeddingVectorsFromResponseBody(responseBody: unknown): number[][] {
   if (!responseBody || typeof responseBody !== 'object') {
     throw new Error('Embedding 响应格式错误：缺少 JSON 对象')
   }
 
   const data = (responseBody as { data?: unknown }).data
   if (Array.isArray(data) && data.length > 0) {
-    const first = data[0]
-    if (first && typeof first === 'object') {
-      const vector = toFiniteNumberArray((first as { embedding?: unknown }).embedding)
-      if (vector.length > 0) {
-        return vector
+    const vectorsWithIndex: Array<{ index: number; vector: number[] }> = []
+
+    for (let dataIndex = 0; dataIndex < data.length; dataIndex += 1) {
+      const item = data[dataIndex]
+      if (!item || typeof item !== 'object') {
+        throw new Error('Embedding 响应格式错误：data 项不是对象')
       }
+
+      const vector = toFiniteNumberArray((item as { embedding?: unknown }).embedding)
+      if (vector.length === 0) {
+        throw new Error('Embedding 响应格式错误：embedding 向量为空')
+      }
+
+      const rawIndex = (item as { index?: unknown }).index
+      const normalizedIndex = Number.isFinite(rawIndex)
+        ? Math.max(0, Math.floor(Number(rawIndex)))
+        : dataIndex
+      vectorsWithIndex.push({
+        index: normalizedIndex,
+        vector,
+      })
     }
+
+    vectorsWithIndex.sort((left, right) => left.index - right.index)
+    return vectorsWithIndex.map((item) => item.vector)
   }
 
   const directVector = toFiniteNumberArray((responseBody as { embedding?: unknown }).embedding)
   if (directVector.length > 0) {
-    return directVector
+    return [directVector]
   }
 
   throw new Error('Embedding 响应格式错误：未找到 embedding 向量')
@@ -352,13 +373,13 @@ function buildImageEmbeddingInput(source: ImageSourceForEmbedding, image: ImageI
   ].join('\n')
 }
 
-async function requestImageEmbeddingVector(params: {
+async function requestImageEmbeddingVectors(params: {
   endpoint: string
   model: string
-  input: string
+  input: string | string[]
   timeoutMs: number
   apiKey: string
-}): Promise<number[]> {
+}): Promise<number[][]> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => {
     controller.abort()
@@ -400,7 +421,7 @@ async function requestImageEmbeddingVector(params: {
     throw new Error(`Embedding 响应不是合法 JSON: ${bodyText.slice(0, 300)}`)
   }
 
-  return extractEmbeddingVectorFromResponseBody(responseBody)
+  return extractEmbeddingVectorsFromResponseBody(responseBody)
 }
 
 async function runWithConcurrency<T>(
@@ -766,6 +787,27 @@ export class FileSystemMediaReadService {
     })
   }
 
+  async readVectorDataStatus(): Promise<ReadVectorDataStatusResponseDto> {
+    return this.database.readVectorDataStatus()
+  }
+
+  async clearVectorData(): Promise<ClearVectorDataResponseDto> {
+    const clearedImages = this.database.clearImageFeatureVectors()
+    const updatedAtMs = Date.now()
+
+    if (clearedImages > 0) {
+      this.emitLibraryChanged({
+        reason: 'clear-vector-data',
+        updated_at_ms: updatedAtMs,
+      })
+    }
+
+    return clearVectorDataResponseSchema.parse({
+      cleared_images: clearedImages,
+      updated_at_ms: updatedAtMs,
+    })
+  }
+
   async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
     return this.mediaResourceService.readMediaAccessAudit()
   }
@@ -1042,34 +1084,61 @@ export class FileSystemMediaReadService {
       : DEFAULT_PACKAGE_EMBEDDING_MAX_RETRIES
 
     const visibleImages = source.images.filter((image) => !(image.hidden ?? false))
+    const embeddingTargets = visibleImages.map((image) => ({
+      image,
+      input: buildImageEmbeddingInput(source, image),
+    }))
+    const batchCount = Math.max(1, Math.min(maxConcurrency, embeddingTargets.length))
+    const embeddingBatches: Array<Array<{ image: ImageItemForEmbedding; input: string }>> = Array.from(
+      { length: batchCount },
+      () => [],
+    )
+    for (let targetIndex = 0; targetIndex < embeddingTargets.length; targetIndex += 1) {
+      const batchIndex = targetIndex % batchCount
+      embeddingBatches[batchIndex]!.push(embeddingTargets[targetIndex]!)
+    }
+
     const vectorByImageId = new Map<string, number[]>()
     const apiKey = process.env.MEDIA_PLAYERX_LLM_API_KEY?.trim() || 'lm-studio'
     let vectorDimension = 0
 
-    await runWithConcurrency(visibleImages, maxConcurrency, async (image) => {
-      const input = buildImageEmbeddingInput(source, image)
-
+    await runWithConcurrency(embeddingBatches, batchCount, async (batch) => {
+      if (batch.length === 0) {
+        return
+      }
       for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
         try {
-          const vector = await requestImageEmbeddingVector({
+          const vectors = await requestImageEmbeddingVectors({
             endpoint: normalizedEndpoint,
             model: normalizedModel,
-            input,
+            input: batch.map((item) => item.input),
             timeoutMs,
             apiKey,
           })
-          if (vector.length === 0) {
-            throw new Error('embedding 向量为空')
+          if (vectors.length !== batch.length) {
+            throw new Error(`embedding 数量不一致：期望 ${batch.length}，实际 ${vectors.length}`)
           }
 
-          if (vectorDimension === 0) {
-            vectorDimension = vector.length
-          }
-          if (vector.length !== vectorDimension) {
-            throw new Error(`embedding 维度不一致：${vector.length}`)
+          for (let vectorIndex = 0; vectorIndex < vectors.length; vectorIndex += 1) {
+            const vector = vectors[vectorIndex]!
+            if (vector.length === 0) {
+              throw new Error('embedding 向量为空')
+            }
+
+            if (vectorDimension === 0) {
+              vectorDimension = vector.length
+            }
+            if (vector.length !== vectorDimension) {
+              throw new Error(`embedding 维度不一致：${vector.length}`)
+            }
+
+            const target = batch[vectorIndex]
+            if (!target) {
+              throw new Error('embedding 映射失败：batch 越界')
+            }
+            vectorByImageId.set(target.image.id, vector)
           }
 
-          vectorByImageId.set(image.id, vector)
           return
         } catch {
           if (attempt >= maxRetries) {

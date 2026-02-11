@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ReadRuntimeInfoResponseDto } from '../contracts/backend'
+import type { ReadRuntimeInfoResponseDto, ReadVectorDataStatusResponseDto } from '../contracts/backend'
 import type { RepositoryMode } from '../features/backend/repository'
 import {
   appendShortcutBinding,
@@ -74,6 +74,11 @@ export interface SettingsPanelProps {
   vectorControlConflicts: VectorControlConflict[]
   databaseResetPending: boolean
   databaseResetError: string | null
+  vectorDataStatusLoading: boolean
+  vectorDataStatusError: string | null
+  vectorDataStatus: ReadVectorDataStatusResponseDto | null
+  vectorDataClearPending: boolean
+  vectorDataClearError: string | null
   repositoryMode: RepositoryMode
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -126,6 +131,8 @@ export interface SettingsPanelProps {
   onResetVectorControls: () => void
   onClearDatabase: () => void
   onRefreshRuntimeInfo: () => void
+  onRefreshVectorDataStatus: () => void
+  onClearVectorData: () => void
 }
 
 type BindingTarget =
@@ -209,6 +216,11 @@ function SettingsPanel({
   vectorControlConflicts,
   databaseResetPending,
   databaseResetError,
+  vectorDataStatusLoading,
+  vectorDataStatusError,
+  vectorDataStatus,
+  vectorDataClearPending,
+  vectorDataClearError,
   repositoryMode,
   backendBridgeInjected,
   runtimeInfoLoading,
@@ -261,6 +273,8 @@ function SettingsPanel({
   onResetVectorControls,
   onClearDatabase,
   onRefreshRuntimeInfo,
+  onRefreshVectorDataStatus,
+  onClearVectorData,
 }: SettingsPanelProps) {
   const [activeSectionRaw, setActiveSection] = useState<SettingsSection>('layout')
   const activeSection = resolveSettingsSection(activeSectionRaw)
@@ -464,6 +478,11 @@ function SettingsPanel({
     vectorLabelByAction,
     databaseResetPending,
     databaseResetError,
+    vectorDataStatusLoading,
+    vectorDataStatusError,
+    vectorDataStatus,
+    vectorDataClearPending,
+    vectorDataClearError,
     repositoryMode,
     backendBridgeInjected,
     runtimeInfoLoading,
@@ -514,6 +533,8 @@ function SettingsPanel({
     onVectorUniverseWidgetSizeChange,
     onClearDatabase,
     onRefreshRuntimeInfo,
+    onRefreshVectorDataStatus,
+    onClearVectorData,
   })
 
   const currentBinding = bindingTarget ? getBinding(bindingTarget) : ''

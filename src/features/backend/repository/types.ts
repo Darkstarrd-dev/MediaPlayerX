@@ -1,5 +1,6 @@
 import type {
   ClearDatabaseResponseDto,
+  ClearVectorDataResponseDto,
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   PickImportPathsRequestDto,
@@ -7,6 +8,7 @@ import type {
   ReadClipboardImportPathsResponseDto,
   ReadArchiveLoadStatusResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
+  ReadVectorDataStatusResponseDto,
   DeleteImageItemsRequestDto,
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
@@ -178,8 +180,10 @@ export interface MediaRepository {
   ): Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
+  readVectorDataStatus?(options?: RepositoryRequestOptions): Promise<ReadVectorDataStatusResponseDto>
   readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
+  clearVectorData?(options?: RepositoryRequestOptions): Promise<ClearVectorDataResponseDto>
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void
 }
 
@@ -219,7 +223,9 @@ export interface SynchronousMediaRepository extends MediaRepository {
   retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto
   readMediaAccessAuditSync(): MediaAccessAuditResponseDto
   readRuntimeCapabilitiesSync(): ReadRuntimeCapabilitiesResponseDto
+  readVectorDataStatusSync?(): ReadVectorDataStatusResponseDto
   clearDatabaseSync?(): ClearDatabaseResponseDto
+  clearVectorDataSync?(): ClearVectorDataResponseDto
 }
 
 export type RepositoryMode = 'mock' | 'real'

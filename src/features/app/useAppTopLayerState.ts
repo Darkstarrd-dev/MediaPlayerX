@@ -257,7 +257,18 @@ export function useAppTopLayerState({
     retryImportTask,
   })
 
-  const { databaseResetPending, databaseResetError, clearDatabaseForDev } = useDatabaseResetAction({
+  const {
+    databaseResetPending,
+    databaseResetError,
+    clearDatabaseForDev,
+    vectorDataStatusLoading,
+    vectorDataStatusError,
+    vectorDataStatus,
+    vectorDataClearPending,
+    vectorDataClearError,
+    refreshVectorDataStatus,
+    clearVectorDataForDev,
+  } = useDatabaseResetAction({
     mediaRepository,
   })
 
@@ -456,6 +467,11 @@ export function useAppTopLayerState({
     vectorControlConflicts,
     databaseResetPending,
     databaseResetError,
+    vectorDataStatusLoading,
+    vectorDataStatusError,
+    vectorDataStatus,
+    vectorDataClearPending,
+    vectorDataClearError,
     repositoryMode,
     backendBridgeInjected: runtimeInfoDiagnostics.backendBridgeInjected,
     runtimeInfoLoading: runtimeInfoDiagnostics.loading,
@@ -470,6 +486,8 @@ export function useAppTopLayerState({
     resetShortcuts: appSettings.resetShortcuts,
     resetVectorControls: appSettings.resetVectorControls,
     clearDatabaseForDev,
+    refreshVectorDataStatus,
+    clearVectorDataForDev,
     testAdReviewVisionModel,
     testWdSwinTaggerModel,
   })

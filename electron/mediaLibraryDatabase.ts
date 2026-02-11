@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 
-import type { LibrarySnapshotDto } from '../src/contracts/backend'
+import type { LibrarySnapshotDto, ReadVectorDataStatusResponseDto } from '../src/contracts/backend'
 import { MediaLibraryAppStateStore } from './mediaLibraryAppStateStore'
 import type { ImportTaskRecord, SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 import { MediaLibraryMetadataStore } from './mediaLibraryMetadataStore'
@@ -118,6 +118,14 @@ export class MediaLibraryDatabase {
 
   writeImageFeatureVectors(items: Array<{ imageId: string; featureVector: number[] }>): number {
     return this.snapshotStore.writeImageFeatureVectors(items)
+  }
+
+  readVectorDataStatus(): ReadVectorDataStatusResponseDto {
+    return this.snapshotStore.readVectorDataStatus()
+  }
+
+  clearImageFeatureVectors(): number {
+    return this.snapshotStore.clearImageFeatureVectors()
   }
 
   setImagesHidden(imageIds: string[], hidden: boolean): number {

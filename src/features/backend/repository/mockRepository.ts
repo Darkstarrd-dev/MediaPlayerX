@@ -6,6 +6,7 @@ import {
 } from '../../../mockData'
 import {
   clearDatabaseResponseSchema,
+  clearVectorDataResponseSchema,
   deleteImageItemsResponseSchema,
   deleteSidebarNodesResponseSchema,
   manageAdReviewTaskExecutionSchema,
@@ -21,6 +22,7 @@ import {
   readClipboardImportPathsResponseSchema,
   readImportTasksResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
+  readVectorDataStatusResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
@@ -44,6 +46,7 @@ import {
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
+  type ClearVectorDataResponseDto,
   type FeatureFilterDto,
   type DeleteImageItemsRequestDto,
   type DeleteImageItemsResponseDto,
@@ -77,6 +80,7 @@ import {
   type ReadClipboardImportPathsResponseDto,
   type ReadImportTasksResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
+  type ReadVectorDataStatusResponseDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadPlaylistResponseDto,
@@ -1687,6 +1691,67 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<ReadRuntimeCapabilitiesResponseDto> {
     const response = this.readRuntimeCapabilitiesSync()
+    return resolveAsync(response, options)
+  }
+
+  readVectorDataStatusSync(): ReadVectorDataStatusResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const allImages = allSources.flatMap((source) => source.images)
+
+    let embeddedImages = 0
+    let vectorDimension = 0
+    for (const image of allImages) {
+      const vector = image.feature_vector ?? []
+      if (!Array.isArray(vector) || vector.length === 0) {
+        continue
+      }
+      const hasNonZeroValue = vector.some((value) => Number.isFinite(value) && Math.abs(value) > 1e-12)
+      if (!hasNonZeroValue) {
+        continue
+      }
+      embeddedImages += 1
+      if (vectorDimension === 0) {
+        vectorDimension = vector.length
+      }
+    }
+
+    const totalImages = allImages.length
+    return readVectorDataStatusResponseSchema.parse({
+      total_images: totalImages,
+      embedded_images: embeddedImages,
+      pending_images: Math.max(0, totalImages - embeddedImages),
+      vector_dimension: vectorDimension,
+      generated_at_ms: Date.now(),
+    })
+  }
+
+  async readVectorDataStatus(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadVectorDataStatusResponseDto> {
+    const response = this.readVectorDataStatusSync()
+    return resolveAsync(response, options)
+  }
+
+  clearVectorDataSync(): ClearVectorDataResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    let clearedImages = 0
+    for (const source of allSources) {
+      for (const image of source.images) {
+        if ((image.feature_vector ?? []).length > 0) {
+          clearedImages += 1
+        }
+        image.feature_vector = []
+      }
+    }
+
+    return clearVectorDataResponseSchema.parse({
+      cleared_images: clearedImages,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async clearVectorData(options?: RepositoryRequestOptions): Promise<ClearVectorDataResponseDto> {
+    const response = this.clearVectorDataSync()
     return resolveAsync(response, options)
   }
 

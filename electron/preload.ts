@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer, webFrame, webUtils } from 'electron'
 
 import {
   clearDatabaseResponseSchema,
+  clearVectorDataResponseSchema,
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
@@ -12,6 +13,7 @@ import {
   readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
+  readVectorDataStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
@@ -214,6 +216,10 @@ const backendApi = {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeInfo)
     return readRuntimeInfoResponseSchema.parse(response)
   },
+  readVectorDataStatus: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readVectorDataStatus)
+    return readVectorDataStatusResponseSchema.parse(response)
+  },
   readArchiveLoadStatus: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readArchiveLoadStatus)
     return readArchiveLoadStatusResponseSchema.parse(response)
@@ -231,6 +237,10 @@ const backendApi = {
   clearDatabase: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearDatabase)
     return clearDatabaseResponseSchema.parse(response)
+  },
+  clearVectorData: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearVectorData)
+    return clearVectorDataResponseSchema.parse(response)
   },
   onLibraryChanged: (listener: (payload: unknown) => void) => {
     const handler = (_event: unknown, payload: unknown) => {

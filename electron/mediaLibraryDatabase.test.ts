@@ -156,4 +156,34 @@ describe('MediaLibraryDatabase', () => {
     expect(database.readTasks()).toEqual([])
     expect(database.readAppState('ui', { theme: 'fallback' })).toEqual({ theme: 'fallback' })
   })
+
+  it('向量数据状态可统计并支持清空向量', async () => {
+    const root = await createTempMediaRoot('mpx-db-vector-clear-')
+    roots.push(root)
+
+    const snapshot = createLibrarySnapshotFixture({
+      packageAbsolutePath: `${root}/pkg-fixture.zip`,
+      directoryAbsolutePath: `${root}/gallery-fixture`,
+      videoAbsolutePath: `${root}/video-fixture.mp4`,
+    })
+
+    const database = new MediaLibraryDatabase(root)
+    disposers.push(() => database.dispose())
+    database.replaceSnapshot(snapshot)
+
+    const statusBefore = database.readVectorDataStatus()
+    expect(statusBefore.total_images).toBe(4)
+    expect(statusBefore.embedded_images).toBe(2)
+    expect(statusBefore.pending_images).toBe(2)
+    expect(statusBefore.vector_dimension).toBe(4)
+
+    const clearedImages = database.clearImageFeatureVectors()
+    expect(clearedImages).toBe(4)
+
+    const statusAfter = database.readVectorDataStatus()
+    expect(statusAfter.total_images).toBe(4)
+    expect(statusAfter.embedded_images).toBe(0)
+    expect(statusAfter.pending_images).toBe(4)
+    expect(statusAfter.vector_dimension).toBe(0)
+  })
 })

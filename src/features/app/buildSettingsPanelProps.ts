@@ -52,6 +52,11 @@ interface BuildSettingsPanelPropsParams {
   vectorControlConflicts: SettingsPanelProps['vectorControlConflicts']
   databaseResetPending: boolean
   databaseResetError: string | null
+  vectorDataStatusLoading: boolean
+  vectorDataStatusError: string | null
+  vectorDataStatus: SettingsPanelProps['vectorDataStatus']
+  vectorDataClearPending: boolean
+  vectorDataClearError: string | null
   repositoryMode: SettingsPanelProps['repositoryMode']
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -66,6 +71,8 @@ interface BuildSettingsPanelPropsParams {
   resetShortcuts: () => void
   resetVectorControls: () => void
   clearDatabaseForDev: () => void
+  refreshVectorDataStatus: () => void
+  clearVectorDataForDev: () => void
   testAdReviewVisionModel: () => void
   testWdSwinTaggerModel: () => void
 }
@@ -122,6 +129,11 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     vectorControlConflicts: params.vectorControlConflicts,
     databaseResetPending: params.databaseResetPending,
     databaseResetError: params.databaseResetError,
+    vectorDataStatusLoading: params.vectorDataStatusLoading,
+    vectorDataStatusError: params.vectorDataStatusError,
+    vectorDataStatus: params.vectorDataStatus,
+    vectorDataClearPending: params.vectorDataClearPending,
+    vectorDataClearError: params.vectorDataClearError,
     repositoryMode: params.repositoryMode,
     backendBridgeInjected: params.backendBridgeInjected,
     runtimeInfoLoading: params.runtimeInfoLoading,
@@ -195,5 +207,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onResetShortcuts: params.resetShortcuts,
     onResetVectorControls: params.resetVectorControls,
     onClearDatabase: params.clearDatabaseForDev,
+    onRefreshVectorDataStatus: params.refreshVectorDataStatus,
+    onClearVectorData: params.clearVectorDataForDev,
   }
 }
