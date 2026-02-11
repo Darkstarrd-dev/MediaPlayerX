@@ -87,7 +87,7 @@ export function useAppReadState({
     videos: bootstrapVideos,
   })
 
-  const quickFeatureSearchEnabled = mode === 'image' && quickFeatureSearchActive
+  const quickFeatureSearchEnabled = quickFeatureSearchActive
   const featureSearchActiveEffective = featureSearchActive || quickFeatureSearchEnabled
   const featureNameQueryEffective = featureSearchActive ? featureNameQuery : ''
   const featureWorkTitleQueryEffective = featureSearchActive
@@ -179,16 +179,22 @@ export function useAppReadState({
     clearQuickFeatureSearch,
     featureNameQuery,
     setFeatureNameQuery,
+    featureNameQueryEffective,
     featureWorkTitleQuery,
     setFeatureWorkTitleQuery,
+    featureWorkTitleQueryEffective,
     featureCircleQuery,
     setFeatureCircleQuery,
+    featureCircleQueryEffective,
     featureAuthorQuery,
     setFeatureAuthorQuery,
+    featureAuthorQueryEffective,
     featureTags,
     setFeatureTags,
+    featureTagsEffective,
     featureGradeFilter,
     setFeatureGradeFilter,
+    featureGradeFilterEffective,
     featureTagPickerOpen,
     setFeatureTagPickerOpen,
     featureCircleOptions,

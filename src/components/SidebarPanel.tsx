@@ -174,7 +174,7 @@ function SidebarPanel({
         </button>
 
         <div className="sidebar-head-actions">
-          {mode === 'image' && searchResultMode ? (
+          {searchResultMode ? (
             <button
               className="sidebar-head-icon-btn"
               type="button"

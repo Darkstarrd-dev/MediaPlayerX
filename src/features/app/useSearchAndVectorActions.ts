@@ -104,6 +104,23 @@ export function useSearchAndVectorActions({
   ])
 
   const goToFromSearchMode = useCallback(() => {
+    if (mode === 'video') {
+      if (!featureSearchActive) {
+        return
+      }
+
+      if (quickFeatureSearchActive) {
+        clearQuickFeatureSearch()
+      }
+
+      setVectorSearchResults([])
+      setVectorFocusIndex(0)
+      setVectorPage(0)
+      setSearchPanelMode('feature')
+      updateSettings({ vectorMode: false, sidebarFocus: 'main' })
+      return
+    }
+
     if (mode !== 'image') {
       return
     }

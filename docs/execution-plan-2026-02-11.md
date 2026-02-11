@@ -77,11 +77,11 @@
 
 任务清单：
 
-- [ ] 视频模式支持静默检索：
+- [x] 视频模式支持静默检索：
   - 元数据面板点击社团/作者/tag -> 进入检索结果态（Sidebar 变更），不展开检索面板。
   - Sidebar 提供“返回”按钮清空静默筛选。
   - 参考文件：`src/features/search/useFeatureSearch.ts`、`src/features/app/useAppReadState.ts`、`src/features/app/useAppWorkspaceProps.ts`、`src/components/SidebarPanel.tsx`、`src/features/app/useSearchAndVectorActions.ts`
-- [ ] 三模式按钮从“互斥禁用”改为“自动切换”：
+- [x] 三模式按钮从“互斥禁用”改为“自动切换”：
   - 点击任意模式按钮：关闭当前模式（含必要状态清理）并打开目标模式。
   - 不再出现“另一个按钮不可点击”。
   - 参考文件：`src/components/AppHeader.tsx`、`src/features/app/buildAppHeaderProps.ts`、`src/features/app/useManageModeActions.ts`、`src/features/app/useMetadataManageModeActions.ts`

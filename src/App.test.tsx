@@ -49,7 +49,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByRole('group', { name: 'search-mode-switch' })).not.toBeInTheDocument()
   })
 
-  it('文件管理与元数据管理互斥，且都会禁用检索按钮', () => {
+  it('文件管理与元数据管理互斥，且可一键切换到检索模式', () => {
     render(<App />)
 
     const searchButton = screen.getByRole('button', { name: '检索' }) as HTMLButtonElement
@@ -57,14 +57,19 @@ describe('MediaPlayer 虚拟 UI', () => {
     const metadataManageButton = screen.getByRole('button', { name: '元数据管理' })
 
     fireEvent.click(metadataManageButton)
-    expect(searchButton.disabled).toBe(true)
+    expect(searchButton.disabled).toBe(false)
     expect(metadataManageButton.classList.contains('is-active')).toBe(true)
     expect(fileManageButton.classList.contains('is-active')).toBe(false)
 
-    fireEvent.click(fileManageButton)
-    expect(searchButton.disabled).toBe(true)
-    expect(fileManageButton.classList.contains('is-active')).toBe(true)
+    fireEvent.click(searchButton)
+    expect(searchButton.classList.contains('is-active')).toBe(true)
     expect(metadataManageButton.classList.contains('is-active')).toBe(false)
+    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+
+    fireEvent.click(fileManageButton)
+    expect(searchButton.classList.contains('is-active')).toBe(false)
+    expect(fileManageButton.classList.contains('is-active')).toBe(true)
+    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
   })
 
   it('Sidebar 包节点在包名与作品名不一致时显示作品名', () => {
@@ -716,6 +721,24 @@ describe('MediaPlayer 虚拟 UI', () => {
 
   it('默认只读元数据点击社团可静默触发检索并通过返回按钮清空', () => {
     render(<App />)
+
+    const circleLabel = screen.getByText('社团').closest('label') as HTMLElement
+    const circleChip = within(circleLabel).getByRole('button') as HTMLButtonElement
+    fireEvent.click(circleChip)
+
+    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '返回' }))
+    expect(screen.queryByRole('button', { name: '检索结果' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '返回' })).toBeNull()
+  })
+
+  it('视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
 
     const circleLabel = screen.getByText('社团').closest('label') as HTMLElement
     const circleChip = within(circleLabel).getByRole('button') as HTMLButtonElement

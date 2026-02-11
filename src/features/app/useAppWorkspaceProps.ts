@@ -523,9 +523,6 @@ export function useAppWorkspaceProps({
     author?: string
     tag?: string
   }) => {
-    if (mode !== 'image') {
-      return
-    }
     applyQuickFeatureSearch(patch)
   }
 

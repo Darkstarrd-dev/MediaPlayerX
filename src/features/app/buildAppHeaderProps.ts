@@ -58,7 +58,14 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     onImportFolders: params.openImportFoldersDialog,
     onModeChange: (nextMode) => params.updateSettings({ mode: nextMode }),
     onToggleSearchPanel: () => {
-      const nextOpen = !params.vectorMode
+      if (params.manageMode) {
+        params.onToggleManageMode()
+      }
+      if (params.metadataManageMode) {
+        params.onToggleMetadataManageMode()
+      }
+
+      const nextOpen = params.manageMode || params.metadataManageMode ? true : !params.vectorMode
       params.updateSettings({ vectorMode: nextOpen })
       if (nextOpen) {
         params.setSearchPanelMode(params.mode === 'video' ? 'feature' : 'vector')
