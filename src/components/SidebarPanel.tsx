@@ -77,7 +77,7 @@ function SidebarPanel({
 }: SidebarPanelProps) {
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>()
   const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : Boolean(videoRootNodeId)
-  const showRootToggle = !(mode === 'image' && searchResultMode)
+  const showRootToggle = !searchResultMode
   const rootToggleLabel = rootSet ? '恢复根目录' : '设为根'
   const rootToggleIcon = rootSet ? '↺' : '⌖'
 

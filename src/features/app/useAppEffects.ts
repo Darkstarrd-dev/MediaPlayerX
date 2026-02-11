@@ -332,6 +332,9 @@ export function useAppEffects({
 
   useEffect(() => {
     if (videosForSidebar.length === 0) {
+      if (selectedVideoId !== '') {
+        selectVideoFromBrowser('')
+      }
       return
     }
 

@@ -42,7 +42,6 @@ npm run test
 ## 文档入口
 
 - `docs/README.md`
-- `docs/execution-plan-2026-02-11.md`（临时执行方案，完成后删除）
 - `docs/requirements-v1.md`
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
@@ -51,6 +50,7 @@ npm run test
 - `docs/ui/theme-playground.html`（主题开发调试页）
 - `docs/project-evaluation-report.md`（项目评估报告·初版）
 - `docs/project-evaluation-report-v2.md`（项目评估报告·整改后第二版）
+- `docs/project-evaluation-report-v3.md`（项目评估报告·第三版，含最新规模与质量基线）
 
 文档为当前阶段单一事实源（SSOT）。
 

@@ -33,7 +33,6 @@ interface UseEffectiveDisplayStateParams {
   metadataImagePackage: ImagePackage | null
   currentGrade: number | null
   selectedVideoId: string
-  videoById: ReadonlyMap<string, VideoItem>
   videosForSidebar: VideoItem[]
   videoDurationById: Record<string, number>
   videoCoverById: Record<string, string>
@@ -77,7 +76,6 @@ export function useEffectiveDisplayState({
   metadataImagePackage,
   currentGrade,
   selectedVideoId,
-  videoById,
   videosForSidebar,
   videoDurationById,
   videoCoverById,
@@ -123,7 +121,12 @@ export function useEffectiveDisplayState({
       ? (effectiveMetadataSnapshot?.grade ?? currentGrade)
       : currentGrade
 
-  const focusedVideo = videoById.get(selectedVideoId) ?? videosForSidebar[0] ?? null
+  const scopedVideoById = useMemo(
+    () => new Map(videosForSidebar.map((video) => [video.id, video])),
+    [videosForSidebar],
+  )
+
+  const focusedVideo = scopedVideoById.get(selectedVideoId) ?? videosForSidebar[0] ?? null
   const focusedVideoDurationSec = focusedVideo
     ? Math.max(0, videoDurationById[focusedVideo.id] ?? focusedVideo.durationSec)
     : 0

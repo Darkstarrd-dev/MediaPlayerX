@@ -65,8 +65,12 @@ import {
   writeAppStateResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
+import { MediaAccessError } from './fileSystemMediaAccessGuard'
 import { FileSystemMediaReadService } from './fileSystemReadService'
 import { DATABASE_RELATIVE_PATH } from './mediaLibrarySchema'
+
+const MEDIA_ACCESS_FALLBACK_URL = 'data:application/octet-stream;base64,'
+const MEDIA_ACCESS_FALLBACK_TTL_MS = 60_000
 
 function extractLikelyPaths(raw: string): string[] {
   const tokens = raw
@@ -172,8 +176,24 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.resolveMediaResource, async (_event, payload: unknown) => {
     const request = resolveMediaResourceRequestSchema.parse(payload)
-    const response = await ensureService().resolveMediaResource(request)
-    return resolveMediaResourceResponseSchema.parse(response)
+    try {
+      const response = await ensureService().resolveMediaResource(request)
+      return resolveMediaResourceResponseSchema.parse(response)
+    } catch (error) {
+      if (!(error instanceof MediaAccessError)) {
+        throw error
+      }
+
+      console.warn('resolveMediaResource fallback', {
+        reason: error.reason,
+      })
+
+      return resolveMediaResourceResponseSchema.parse({
+        resource_url: MEDIA_ACCESS_FALLBACK_URL,
+        mime_type: 'application/octet-stream',
+        expires_at_ms: Date.now() + MEDIA_ACCESS_FALLBACK_TTL_MS,
+      })
+    }
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writePackageGrade, async (_event, payload: unknown) => {

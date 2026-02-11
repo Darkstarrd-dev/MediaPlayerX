@@ -57,6 +57,7 @@ export function useAppManageBindings({
     sidebarCheckedNodeIds,
     activeSelectionScope,
     clearAllSelections,
+    clearQuickFeatureSearch,
     replaceImageCheckedIds,
     setSearchPanelMode,
     setSearchPanelCollapsed,
@@ -91,6 +92,7 @@ export function useAppManageBindings({
     setVectorPage,
     setSearchPanelMode,
     setSearchPanelCollapsed,
+    clearQuickFeatureSearch,
     updateSettings,
   })
 
@@ -108,6 +110,7 @@ export function useAppManageBindings({
     setVectorPage,
     setSearchPanelMode,
     setSearchPanelCollapsed,
+    clearQuickFeatureSearch,
     updateSettings,
   })
 

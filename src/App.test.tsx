@@ -484,8 +484,10 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '图包评分 4 分' }).classList.contains('is-active')).toBe(false)
     fireEvent.click(screen.getByRole('button', { name: '图包评分 3 分' }))
 
-    expect(screen.getByText(/archive_002\.zip/)).toBeInTheDocument()
-    expect(screen.queryByText(/archive_001\.zip/)).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/archive_002\.zip/)).toBeInTheDocument()
+      expect(screen.queryByText(/archive_001\.zip/)).not.toBeInTheDocument()
+    })
 
     fireEvent.click(within(searchModeSwitchAfterExpand).getByRole('button', { name: '向量检索' }))
 
@@ -756,10 +758,12 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
     expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '设为根' })).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: '返回' }))
     expect(screen.queryByRole('button', { name: '检索结果' })).toBeNull()
     expect(screen.queryByRole('button', { name: '返回' })).toBeNull()
+    expect(screen.getByRole('button', { name: '设为根' })).toBeInTheDocument()
   })
 
   it('视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空', () => {
@@ -774,10 +778,12 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
     expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '设为根' })).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: '返回' }))
     expect(screen.queryByRole('button', { name: '检索结果' })).toBeNull()
     expect(screen.queryByRole('button', { name: '返回' })).toBeNull()
+    expect(screen.getByRole('button', { name: '设为根' })).toBeInTheDocument()
   })
 
   it('元数据管理支持按 Sidebar 勾选批量写入图包元数据', async () => {

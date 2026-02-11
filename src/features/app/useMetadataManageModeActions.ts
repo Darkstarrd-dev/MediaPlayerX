@@ -18,6 +18,7 @@ interface UseMetadataManageModeActionsParams {
   setVectorPage: Dispatch<SetStateAction<number>>
   setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
+  clearQuickFeatureSearch: () => void
   updateSettings: (patch: { vectorMode?: boolean; sidebarFocus?: 'sidebar' | 'main' }) => void
 }
 
@@ -39,6 +40,7 @@ export function useMetadataManageModeActions({
   setVectorPage,
   setSearchPanelMode,
   setSearchPanelCollapsed,
+  clearQuickFeatureSearch,
   updateSettings,
 }: UseMetadataManageModeActionsParams): UseMetadataManageModeActionsResult {
   const toggleMetadataManageMode = useCallback(() => {
@@ -57,9 +59,11 @@ export function useMetadataManageModeActions({
       setVectorPage(0)
       setSearchPanelMode(mode === 'video' ? 'feature' : 'vector')
       setSearchPanelCollapsed(false)
+      clearQuickFeatureSearch()
       updateSettings({ vectorMode: false, sidebarFocus: 'main' })
     }
   }, [
+    clearQuickFeatureSearch,
     clearAllSelections,
     manageMode,
     metadataManageMode,

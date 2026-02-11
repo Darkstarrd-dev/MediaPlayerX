@@ -32,6 +32,7 @@ interface UseManageModeActionsParams {
   setVectorPage: Dispatch<SetStateAction<number>>
   setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
+  clearQuickFeatureSearch: () => void
   updateSettings: (patch: { vectorMode?: boolean; sidebarFocus?: 'sidebar' | 'main' }) => void
 }
 
@@ -59,6 +60,7 @@ export function useManageModeActions({
   setVectorPage,
   setSearchPanelMode,
   setSearchPanelCollapsed,
+  clearQuickFeatureSearch,
   updateSettings,
 }: UseManageModeActionsParams): UseManageModeActionsResult {
   const toggleManageMode = useCallback(() => {
@@ -77,9 +79,11 @@ export function useManageModeActions({
       setVectorPage(0)
       setSearchPanelMode('vector')
       setSearchPanelCollapsed(false)
+      clearQuickFeatureSearch()
       updateSettings({ vectorMode: false, sidebarFocus: 'main' })
     }
   }, [
+    clearQuickFeatureSearch,
     clearAllSelections,
     manageMode,
     metadataManageMode,

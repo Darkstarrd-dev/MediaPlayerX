@@ -4,13 +4,15 @@
 
 ## 文档索引
 
-- `execution-plan-2026-02-11.md`：执行方案（临时，完成后删除）。
 - `requirements-v1.md`：V1 需求范围与行为冻结。
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
 - `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案。
 - `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（已接线并完成策略参数化/审计可视化）。
 - `maintainability-improvement-plan-v1.md`：可维护性与稳定性改进计划（已完成，长期保留）。
+- `project-evaluation-report.md`：项目评估报告初版（历史基线）。
+- `project-evaluation-report-v2.md`：项目评估报告第二版（整改后复评）。
+- `project-evaluation-report-v3.md`：项目评估报告第三版（最新规模与质量评估）。
 - `ui/theme-system-v1.md`：主题系统 V1 CSS 契约与开发规范（已废弃，见 V2）。
 - `ui/theme-system-v2.md`：主题系统 V2 规范手册 (SSOT)——Style × Palette 二维模型、完整 token 参考、应用布局结构、开发指南。
 - `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
@@ -93,7 +95,7 @@
 - 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
 - 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。
 - 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
-- 主题系统 V2 已完成：Style × Palette 二维模型（视觉风格与配色方案独立选择）已落地，新增 ~54 个 layout/effect token（容器几何、控件视觉效果、交互动效），Token 总量 ~134 个；手册文档见 `docs/ui/theme-system-v2.md`。
+- 主题系统 V2 已完成：Style × Palette 二维模型（视觉风格与配色方案独立选择）已落地，新增播放器控件专用 token（固定深色半透明语义），Token 总量约 ~148 个；手册文档见 `docs/ui/theme-system-v2.md`。
 - 可维护性与稳定性改进计划已完成：Phase 0~4 全部落地，临时实施文档已移除。
 - 管理模式“LLM 广告图片审核”已完成接入并完成首轮优化：支持审核策略（`all/head-tail`）与并发参数透传；管理面板新增审核审计可视化（来源分布、LLM/总体命中率）；删除后继续将候选哈希写入 `app_state`（known-hash）用于后续命中短路。
 - 大 I/O 性能压测按具体实施阶段执行，不提前进行。

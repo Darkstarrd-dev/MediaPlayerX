@@ -46,7 +46,8 @@
   padding: var(--mpx-metadata-padding);
   min-width: 180px;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
   border-radius: var(--mpx-metadata-radius);
   box-shadow: var(--mpx-metadata-shadow);
   backdrop-filter: var(--mpx-metadata-backdrop-filter);
