@@ -3,13 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "dist-electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "dev:desktop": "node scripts/electron-dev.mjs",
     "build": "tsc -b && vite build",
     "build:electron": "node scripts/build-electron.mjs",
-    "desktop:build": "npm run build && npm run build:electron",
-    "desktop:start": "npm run desktop:build && node scripts/electron-start.mjs",
+    "desktop:bundle": "npm run build && npm run build:electron",
+    "desktop:pack": "npx electron-builder --win nsis --x64",
+    "desktop:build": "npm run desktop:bundle && npm run desktop:pack",
+    "desktop:start": "npm run desktop:bundle && node scripts/electron-start.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "bench:streaming": "node scripts/streaming-ingest-benchmark.mjs",
@@ -56,5 +59,38 @@
     "vite": "^7.2.4",
     "vitest": "^4.0.18",
     "yauzl": "^3.2.0"
+  },
+  "build": {
+    "appId": "com.darkstarrd.mediaplayerx",
+    "productName": "MediaPlayerX",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "node_modules/**",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }
