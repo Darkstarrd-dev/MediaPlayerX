@@ -9,6 +9,10 @@ import {
   mediaAccessAuditResponseSchema,
   pickImportPathsRequestSchema,
   pickImportPathsResponseSchema,
+  pickFilePathRequestSchema,
+  pickFilePathResponseSchema,
+  pickDirectoryPathRequestSchema,
+  pickDirectoryPathResponseSchema,
   readClipboardImportPathsResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
@@ -192,6 +196,16 @@ const backendApi = {
     const parsed = pickImportPathsRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pickImportPaths, parsed)
     return pickImportPathsResponseSchema.parse(response)
+  },
+  pickFilePath: async (request: unknown) => {
+    const parsed = pickFilePathRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pickFilePath, parsed)
+    return pickFilePathResponseSchema.parse(response)
+  },
+  pickDirectoryPath: async (request: unknown) => {
+    const parsed = pickDirectoryPathRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pickDirectoryPath, parsed)
+    return pickDirectoryPathResponseSchema.parse(response)
   },
   readClipboardImportPaths: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readClipboardImportPaths)

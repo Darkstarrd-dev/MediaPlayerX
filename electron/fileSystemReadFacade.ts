@@ -1033,7 +1033,51 @@ export class FileSystemMediaReadService {
   }
 
   private async ensureSnapshotLoaded(): Promise<LibrarySnapshotDto> {
-    return this.librarySnapshotService.ensureSnapshotLoaded(() => this.ensureStateLoaded())
+    const snapshot = await this.librarySnapshotService.ensureSnapshotLoaded(() => this.ensureStateLoaded())
+    return this.pruneMissingSnapshotEntries(snapshot)
+  }
+
+  private async pathExists(targetPath: string): Promise<boolean> {
+    const stat = await fs.stat(targetPath).catch(() => null)
+    return Boolean(stat)
+  }
+
+  private async pruneMissingSnapshotEntries(snapshot: LibrarySnapshotDto): Promise<LibrarySnapshotDto> {
+    const missingPaths = new Set<string>()
+    const imageSources = [...snapshot.image_packages, ...snapshot.image_directories]
+
+    for (const source of imageSources) {
+      if (!(await this.pathExists(source.absolute_path))) {
+        missingPaths.add(source.absolute_path)
+      }
+    }
+
+    for (const video of snapshot.videos) {
+      if (!(await this.pathExists(video.absolute_path))) {
+        missingPaths.add(video.absolute_path)
+      }
+    }
+
+    if (missingPaths.size === 0) {
+      return snapshot
+    }
+
+    const pathsToPrune = Array.from(missingPaths)
+    const deleted = this.database.deleteSnapshotEntriesByPaths(pathsToPrune)
+    if (deleted.deletedSourceCount === 0 && deleted.deletedVideoCount === 0) {
+      return snapshot
+    }
+
+    this.pruneArchiveIndexesByDeletedRoots(pathsToPrune)
+    await this.removeImportSourcePaths(pathsToPrune)
+    const nextSnapshot = this.syncSnapshotFromDatabase()
+
+    this.emitLibraryChanged({
+      reason: 'auto-prune-missing-sources',
+      updated_at_ms: Date.now(),
+    })
+
+    return nextSnapshot
   }
 
   private async readImageBufferForThumbnail(locator: MediaLocatorDto): Promise<Buffer> {

@@ -10,6 +10,10 @@ import {
   mediaAccessAuditResponseSchema,
   pickImportPathsRequestSchema,
   pickImportPathsResponseSchema,
+  pickFilePathRequestSchema,
+  pickFilePathResponseSchema,
+  pickDirectoryPathRequestSchema,
+  pickDirectoryPathResponseSchema,
   readClipboardImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
@@ -335,6 +339,35 @@ export function registerBackendIpcHandlers(): void {
 
     return pickImportPathsResponseSchema.parse({
       paths: result.canceled ? [] : result.filePaths,
+    })
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.pickFilePath, async (_event, payload: unknown) => {
+    const request = pickFilePathRequestSchema.parse(payload)
+    const result = await dialog.showOpenDialog({
+      title: request.title ?? '选择文件',
+      defaultPath: request.default_path,
+      properties: ['openFile', 'dontAddToRecent'],
+      filters: request.filters,
+    })
+
+    return pickFilePathResponseSchema.parse({
+      canceled: result.canceled,
+      path: result.canceled ? null : (result.filePaths[0] ?? null),
+    })
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.pickDirectoryPath, async (_event, payload: unknown) => {
+    const request = pickDirectoryPathRequestSchema.parse(payload)
+    const result = await dialog.showOpenDialog({
+      title: request.title ?? '选择目录',
+      defaultPath: request.default_path,
+      properties: ['openDirectory', 'dontAddToRecent'],
+    })
+
+    return pickDirectoryPathResponseSchema.parse({
+      canceled: result.canceled,
+      path: result.canceled ? null : (result.filePaths[0] ?? null),
     })
   })
 

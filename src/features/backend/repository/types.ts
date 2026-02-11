@@ -5,6 +5,10 @@ import type {
   EnqueueImportTaskResponseDto,
   PickImportPathsRequestDto,
   PickImportPathsResponseDto,
+  PickFilePathRequestDto,
+  PickFilePathResponseDto,
+  PickDirectoryPathRequestDto,
+  PickDirectoryPathResponseDto,
   ReadClipboardImportPathsResponseDto,
   ReadArchiveLoadStatusResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
@@ -174,6 +178,14 @@ export interface MediaRepository {
     request: PickImportPathsRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PickImportPathsResponseDto>
+  pickFilePath?(
+    request: PickFilePathRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickFilePathResponseDto>
+  pickDirectoryPath?(
+    request: PickDirectoryPathRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickDirectoryPathResponseDto>
   readClipboardImportPaths?(options?: RepositoryRequestOptions): Promise<ReadClipboardImportPathsResponseDto>
   enqueueImportTask(
     request: EnqueueImportTaskRequestDto,
@@ -224,6 +236,8 @@ export interface SynchronousMediaRepository extends MediaRepository {
   readPlaylistSync(): ReadPlaylistResponseDto
   writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto
   pickImportPathsSync?(request: PickImportPathsRequestDto): PickImportPathsResponseDto
+  pickFilePathSync?(request: PickFilePathRequestDto): PickFilePathResponseDto
+  pickDirectoryPathSync?(request: PickDirectoryPathRequestDto): PickDirectoryPathResponseDto
   readClipboardImportPathsSync?(): ReadClipboardImportPathsResponseDto
   enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto
   readImportTasksSync(): ReadImportTasksResponseDto

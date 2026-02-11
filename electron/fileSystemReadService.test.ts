@@ -591,6 +591,39 @@ describe('FileSystemMediaReadService', () => {
     expect(restored.video_ids).toEqual(targetVideoIds)
   })
 
+  it('读取快照时会自动清理磁盘已删除的 source/video 并广播变更', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-auto-prune-missing-'))
+    createdRoots.push(root)
+
+    const imageDirectory = path.join(root, 'gallery')
+    const videoPath = path.join(root, 'clip.mp4')
+    await writeBinary(path.join(imageDirectory, 'a.jpg'), [0xff, 0xd8, 0xff, 0xd9])
+    await writeBinary(videoPath, [0x00, 0x00, 0x00, 0x18])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-folders', [root])
+
+    const before = await service.readLibrarySnapshot()
+    expect(before.image_directories.length).toBeGreaterThan(0)
+    expect(before.videos.length).toBeGreaterThan(0)
+
+    const eventPayloads: Array<{ reason: string; updated_at_ms: number }> = []
+    const unsubscribe = service.onLibraryChanged((payload) => {
+      eventPayloads.push(payload)
+    })
+
+    await fs.rm(imageDirectory, { recursive: true, force: true })
+    await fs.rm(videoPath, { force: true })
+
+    const after = await service.readLibrarySnapshot()
+    unsubscribe()
+
+    expect(after.image_directories).toHaveLength(0)
+    expect(after.videos).toHaveLength(0)
+    expect(eventPayloads.some((payload) => payload.reason === 'auto-prune-missing-sources')).toBe(true)
+  })
+
   it('导入任务以纯引用登记库外文件并完成刷新', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-root-'))
     const outsideRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-source-'))

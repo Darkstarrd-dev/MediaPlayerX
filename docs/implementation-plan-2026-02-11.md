@@ -103,6 +103,8 @@
 
 ## P3 路径选择：用文件/目录选择器替代手动输入（或只读展示）
 
+状态（2026-02-11）：已完成。
+
 范围：
 
 - wd tagger ONNX 模型路径：文件选择
@@ -144,6 +146,8 @@
 - `feat: add file and directory pickers for settings paths`
 
 ## P4 快捷键设置：补齐展示与滚轮绑定
+
+状态（2026-02-11）：已完成。
 
 目标：
 
@@ -200,6 +204,8 @@
 
 - `fix: make esc and right-click exit consistent`
 
+状态（2026-02-11）：已完成。
+
 ## P6 管理面板：AI广告审核区域高度自适应
 
 目标：
@@ -222,6 +228,8 @@
 提交点：
 
 - `fix: auto-expand management panel for ad review controls`
+
+状态（2026-02-11）：已完成。
 
 ## P7 Embedding 调用仍不正常：加可复现最小测试与修正
 
@@ -277,11 +285,13 @@
 测试：
 
 - `npm run test`
-- 增补 snapshot store 单测：写入一条 source/video 后模拟文件不存在 -> 执行清理 -> 断言删除。
+- 增补 `electron/fileSystemReadService.test.ts` 集成用例：写入一条 source/video 后模拟文件不存在 -> 读取快照触发清理 -> 断言删除与 `libraryChanged`。
 
 提交点：
 
 - `feat: auto-prune missing sources from database`
+
+状态（2026-02-11）：已完成。
 
 ## 阶段收束（完成 P0-P8 后）
 

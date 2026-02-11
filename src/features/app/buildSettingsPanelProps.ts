@@ -78,6 +78,11 @@ interface BuildSettingsPanelPropsParams {
   testEmbeddingModel: () => void
   testAdReviewVisionModel: () => void
   testWdSwinTaggerModel: () => void
+  pickWdSwinTaggerModelPath: () => void
+  pickVisionAutoTagCsvPath: () => void
+  pickDatabaseDirectoryPath: () => void
+  pickVectorStoreDirectoryPath: () => void
+  pickThumbnailCacheDirectoryPath: () => void
 }
 
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
@@ -169,7 +174,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onLmStudioEndpointChange: (value) => params.updateSettings({ lmStudioEndpoint: value }),
     onLmStudioModelChange: (value) => params.updateSettings({ lmStudioModel: value }),
     onTestEmbeddingModel: params.testEmbeddingModel,
-    onWdSwinTaggerModelPathChange: (value) => params.updateSettings({ wdSwinTaggerModelPath: value }),
+    onPickWdSwinTaggerModelPath: params.pickWdSwinTaggerModelPath,
     onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value) =>
       params.updateSettings({ wdSwinTaggerAutoTagOccurrenceThreshold: Math.max(1, Math.min(200, Math.floor(value))) }),
     onWdSwinTaggerAutoTagGeneralMinScoreChange: (value) =>
@@ -180,7 +185,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       params.updateSettings({ wdSwinTaggerAutoTagIncludeRating: value }),
     onWdSwinTaggerAutoTagRatingMinScoreChange: (value) =>
       params.updateSettings({ wdSwinTaggerAutoTagRatingMinScore: Math.max(0, Math.min(1, value)) }),
-    onVisionAutoTagCsvPathChange: (value) => params.updateSettings({ visionAutoTagCsvPath: value }),
+    onPickVisionAutoTagCsvPath: params.pickVisionAutoTagCsvPath,
     onVisionAutoTagSampleImageCountChange: (value) =>
       params.updateSettings({ visionAutoTagSampleImageCount: Math.max(1, Math.min(24, Math.floor(value))) }),
     onVisionAutoTagOccurrenceThresholdChange: (value) =>
@@ -213,6 +218,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onResetShortcuts: params.resetShortcuts,
     onResetVectorControls: params.resetVectorControls,
     onClearDatabase: params.clearDatabaseForDev,
+    onPickDatabaseDirectoryPath: params.pickDatabaseDirectoryPath,
+    onPickVectorStoreDirectoryPath: params.pickVectorStoreDirectoryPath,
+    onPickThumbnailCacheDirectoryPath: params.pickThumbnailCacheDirectoryPath,
     onRefreshVectorDataStatus: params.refreshVectorDataStatus,
     onClearVectorData: params.clearVectorDataForDev,
   }

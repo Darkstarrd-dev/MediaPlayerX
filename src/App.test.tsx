@@ -111,6 +111,78 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByRole('dialog', { name: '永久删除确认' })).not.toBeInTheDocument()
   })
 
+  it('Esc 按优先级先关闭删除确认，再关闭管理面板', async () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.click(screen.getByRole('button', { name: '删除' }))
+    expect(screen.getByRole('dialog', { name: '永久删除确认' })).toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    expect(screen.queryByRole('dialog', { name: '永久删除确认' })).toBeNull()
+    expect(screen.getByRole('button', { name: '删除' })).toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    expect(screen.queryByRole('button', { name: '删除' })).toBeNull()
+  })
+
+  it('Esc 与右键可关闭设置与检索面板，且主区右键不误关闭检索', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    expect(screen.getByRole('dialog', { name: '设置面板' })).toBeInTheDocument()
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    expect(screen.queryByRole('dialog', { name: '设置面板' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    const settingsMask = document.querySelector('.settings-mask') as HTMLElement | null
+    expect(settingsMask).not.toBeNull()
+    fireEvent.mouseDown(settingsMask as HTMLElement, { button: 2 })
+    expect(screen.queryByRole('dialog', { name: '设置面板' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: '检索' }))
+    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+
+    const mainPane = document.querySelector('.main-pane') as HTMLElement | null
+    expect(mainPane).not.toBeNull()
+    fireEvent.mouseDown(mainPane as HTMLElement, { button: 2 })
+    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+
+    const searchPanel = document.querySelector('[data-overlay-close="search-panel"]') as HTMLElement | null
+    expect(searchPanel).not.toBeNull()
+    fireEvent.mouseDown(searchPanel as HTMLElement, { button: 2 })
+    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
+  })
+
+  it('Esc 关闭元数据管理，右键关闭全屏层', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    expect(screen.getByRole('button', { name: '同步名称' })).toBeInTheDocument()
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    expect(screen.queryByRole('button', { name: '同步名称' })).toBeNull()
+
+    fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
+    fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
+
+    await waitFor(() => {
+      expect(document.querySelector('.fullscreen-layer')).not.toBeNull()
+    })
+
+    const fullscreenLayer = document.querySelector('.fullscreen-layer') as HTMLElement | null
+    expect(fullscreenLayer).not.toBeNull()
+    fireEvent.mouseDown(fullscreenLayer as HTMLElement, { button: 2 })
+
+    await waitFor(() => {
+      expect(document.querySelector('.fullscreen-layer')).toBeNull()
+    })
+  })
+
   it('管理模式下 Sidebar 与主视图 checker 互斥，且视频模式可进入管理', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
@@ -365,7 +437,13 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'AI广告审核' })).toBeInTheDocument()
     })
+    const managePanel = document.querySelector('.manage-panel') as HTMLElement | null
+    expect(managePanel).not.toBeNull()
+    const panelHeightBefore = Number.parseFloat((managePanel as HTMLElement).style.height || '0')
     fireEvent.click(screen.getByRole('button', { name: 'AI广告审核' }))
+
+    const panelHeightAfter = Number.parseFloat((managePanel as HTMLElement).style.height || '0')
+    expect(panelHeightAfter).toBeGreaterThanOrEqual(panelHeightBefore)
 
     expect(screen.getByRole('group', { name: 'AI广告审核控制' })).toBeInTheDocument()
     expect(screen.getByLabelText('AI广告审核并发')).toBeInTheDocument()
@@ -939,6 +1017,22 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByText(/archive_001\.zip #2/)).toBeInTheDocument()
   })
 
+  it('快捷键支持将滚轮下绑定为下一张图片', () => {
+    const current = useUiStore.getState().shortcuts
+    useUiStore.setState({
+      shortcuts: {
+        ...current,
+        imageNext: 'WheelDown',
+      },
+    })
+
+    render(<App />)
+
+    expect(screen.queryByText(/archive_001\.zip #1/)).not.toBeInTheDocument()
+    fireEvent.wheel(window, { deltaY: 80 })
+    expect(screen.getByText(/archive_001\.zip #2/)).toBeInTheDocument()
+  })
+
   it('鼠标点击与键盘方向键共享 focus，Esc 可清空 focus', () => {
     render(<App />)
 
@@ -1242,6 +1336,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText('LM Studio Endpoint')).toBeInTheDocument()
     expect(screen.getByLabelText('视觉模型端口')).toBeInTheDocument()
     expect(screen.getByLabelText('模型文件路径')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '选择ONNX文件' })).toBeInTheDocument()
     expect(screen.getByLabelText('自动标签出现阈值（Occurrence）')).toHaveValue(2)
     expect(screen.getByLabelText('General 分数阈值')).toHaveValue(0.35)
     expect(screen.getByLabelText('Character 分数阈值')).toHaveValue(0.75)
@@ -1250,12 +1345,16 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText('General 分数阈值').closest('label')).toHaveAttribute('title')
     expect(screen.getByRole('button', { name: '测试向量模型连接' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '测试wd模型连接' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '选择CSV文件' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))
     expect(screen.getByText('数据库目录设置')).toBeInTheDocument()
     expect(screen.getByLabelText('SQL 库路径')).toBeInTheDocument()
     expect(screen.getByLabelText('向量库路径')).toBeInTheDocument()
     expect(screen.getByLabelText('缩略图目录')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '选择SQL目录' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '选择向量目录' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '选择缩略图目录' })).toBeInTheDocument()
     expect(screen.getByText('向量数据管理')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /刷新向量统计|统计读取中/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '清空向量数据' })).toBeInTheDocument()
@@ -1294,9 +1393,49 @@ describe('MediaPlayer 虚拟 UI', () => {
     const captureDialog = screen.getByRole('dialog', { name: '录入快捷键' })
     fireEvent.click(within(captureDialog).getByRole('button', { name: '鼠标右键' }))
     fireEvent.click(screen.getByRole('button', { name: '确认新增' }))
+    fireEvent.click(within(shortcutEditDialog).getByRole('button', { name: '新增' }))
+    const wheelCaptureDialog = screen.getByRole('dialog', { name: '录入快捷键' })
+    fireEvent.click(within(wheelCaptureDialog).getByRole('button', { name: '滚轮下' }))
+    fireEvent.click(screen.getByRole('button', { name: '确认新增' }))
     fireEvent.click(within(shortcutEditDialog).getByRole('button', { name: '关闭' }))
     expect(alignUpBindingButton.textContent).toContain('MouseRight')
+    expect(alignUpBindingButton.textContent).toContain('WheelDown')
   }, 15_000)
+
+  it('AI 模型路径选择器可写回设置并触发数据库目录选择', async () => {
+    const pickFilePathSpy = vi.spyOn(MockMediaRepository.prototype, 'pickFilePathSync').mockImplementation((request) => {
+      if (request.title?.includes('ONNX')) {
+        return { canceled: false, path: 'Z:/picked/wd/model.onnx' }
+      }
+      if (request.title?.includes('CSV')) {
+        return { canceled: false, path: 'Z:/picked/tags/allowed.csv' }
+      }
+      return { canceled: true, path: null }
+    })
+    const pickDirectoryPathSpy = vi.spyOn(MockMediaRepository.prototype, 'pickDirectoryPathSync')
+
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    fireEvent.click(screen.getByRole('button', { name: 'AI模型设置' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '选择ONNX文件' }))
+    fireEvent.click(screen.getByRole('button', { name: '选择CSV文件' }))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('模型文件路径')).toHaveValue('Z:/picked/wd/model.onnx')
+      expect(screen.getByLabelText('标签范围 CSV 路径')).toHaveValue('Z:/picked/tags/allowed.csv')
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))
+    fireEvent.click(screen.getByRole('button', { name: '选择SQL目录' }))
+    fireEvent.click(screen.getByRole('button', { name: '选择向量目录' }))
+    fireEvent.click(screen.getByRole('button', { name: '选择缩略图目录' }))
+
+    await waitFor(() => {
+      expect(pickFilePathSpy).toHaveBeenCalledTimes(2)
+      expect(pickDirectoryPathSpy).toHaveBeenCalledTimes(3)
+    })
+  })
 
   it('Header 显示向量宇宙按钮并可打开关闭 3D 层', async () => {
     render(<App />)

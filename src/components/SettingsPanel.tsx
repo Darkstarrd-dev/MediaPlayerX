@@ -6,6 +6,7 @@ import {
   appendShortcutBinding,
   keyboardEventToCombo,
   mouseEventToCombo,
+  wheelEventToCombo,
   SHORTCUT_DEFINITIONS,
   type ShortcutAction,
   type ShortcutConflict,
@@ -106,13 +107,13 @@ export interface SettingsPanelProps {
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
   onTestEmbeddingModel: () => void
-  onWdSwinTaggerModelPathChange: (value: string) => void
+  onPickWdSwinTaggerModelPath: () => void
   onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
   onWdSwinTaggerAutoTagGeneralMinScoreChange: (value: number) => void
   onWdSwinTaggerAutoTagCharacterMinScoreChange: (value: number) => void
   onWdSwinTaggerAutoTagIncludeRatingChange: (value: boolean) => void
   onWdSwinTaggerAutoTagRatingMinScoreChange: (value: number) => void
-  onVisionAutoTagCsvPathChange: (value: string) => void
+  onPickVisionAutoTagCsvPath: () => void
   onVisionAutoTagSampleImageCountChange: (value: number) => void
   onVisionAutoTagOccurrenceThresholdChange: (value: number) => void
   onVisionAutoTagTemperatureChange: (value: number) => void
@@ -133,6 +134,9 @@ export interface SettingsPanelProps {
   onResetShortcuts: () => void
   onResetVectorControls: () => void
   onClearDatabase: () => void
+  onPickDatabaseDirectoryPath: () => void
+  onPickVectorStoreDirectoryPath: () => void
+  onPickThumbnailCacheDirectoryPath: () => void
   onRefreshRuntimeInfo: () => void
   onRefreshVectorDataStatus: () => void
   onClearVectorData: () => void
@@ -148,6 +152,8 @@ const MOUSE_CAPTURE_PRESETS: Array<{ label: string; combo: string }> = [
   { label: '鼠标右键', combo: 'MouseRight' },
   { label: '鼠标后退键', combo: 'MouseBack' },
   { label: '鼠标前进键', combo: 'MouseForward' },
+  { label: '滚轮上', combo: 'WheelUp' },
+  { label: '滚轮下', combo: 'WheelDown' },
 ]
 
 const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
@@ -251,13 +257,13 @@ function SettingsPanel({
   onLmStudioEndpointChange,
   onLmStudioModelChange,
   onTestEmbeddingModel,
-  onWdSwinTaggerModelPathChange,
+  onPickWdSwinTaggerModelPath,
   onWdSwinTaggerAutoTagOccurrenceThresholdChange,
   onWdSwinTaggerAutoTagGeneralMinScoreChange,
   onWdSwinTaggerAutoTagCharacterMinScoreChange,
   onWdSwinTaggerAutoTagIncludeRatingChange,
   onWdSwinTaggerAutoTagRatingMinScoreChange,
-  onVisionAutoTagCsvPathChange,
+  onPickVisionAutoTagCsvPath,
   onVisionAutoTagSampleImageCountChange,
   onVisionAutoTagOccurrenceThresholdChange,
   onVisionAutoTagTemperatureChange,
@@ -278,6 +284,9 @@ function SettingsPanel({
   onResetShortcuts,
   onResetVectorControls,
   onClearDatabase,
+  onPickDatabaseDirectoryPath,
+  onPickVectorStoreDirectoryPath,
+  onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
   onRefreshVectorDataStatus,
   onClearVectorData,
@@ -368,11 +377,29 @@ function SettingsPanel({
       setCapturedCombo(combo)
     }
 
+    const onWheel = (event: WheelEvent) => {
+      const targetElement = event.target as HTMLElement | null
+      if (targetElement?.closest('[data-capture-ignore="true"]')) {
+        return
+      }
+
+      const combo = wheelEventToCombo(event)
+      if (!combo) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      setCapturedCombo(combo)
+    }
+
     window.addEventListener('keydown', onKeyDown, true)
     window.addEventListener('mousedown', onMouseDown, true)
+    window.addEventListener('wheel', onWheel, true)
     return () => {
       window.removeEventListener('keydown', onKeyDown, true)
       window.removeEventListener('mousedown', onMouseDown, true)
+      window.removeEventListener('wheel', onWheel, true)
     }
   }, [capturingTarget])
 
@@ -516,13 +543,13 @@ function SettingsPanel({
     onLmStudioEndpointChange,
     onLmStudioModelChange,
     onTestEmbeddingModel,
-    onWdSwinTaggerModelPathChange,
+    onPickWdSwinTaggerModelPath,
     onWdSwinTaggerAutoTagOccurrenceThresholdChange,
     onWdSwinTaggerAutoTagGeneralMinScoreChange,
     onWdSwinTaggerAutoTagCharacterMinScoreChange,
     onWdSwinTaggerAutoTagIncludeRatingChange,
     onWdSwinTaggerAutoTagRatingMinScoreChange,
-    onVisionAutoTagCsvPathChange,
+    onPickVisionAutoTagCsvPath,
     onVisionAutoTagSampleImageCountChange,
     onVisionAutoTagOccurrenceThresholdChange,
     onVisionAutoTagTemperatureChange,
@@ -541,6 +568,9 @@ function SettingsPanel({
     onVectorUniverseDispersionChange,
     onVectorUniverseWidgetSizeChange,
     onClearDatabase,
+    onPickDatabaseDirectoryPath,
+    onPickVectorStoreDirectoryPath,
+    onPickThumbnailCacheDirectoryPath,
     onRefreshRuntimeInfo,
     onRefreshVectorDataStatus,
     onClearVectorData,
@@ -550,7 +580,7 @@ function SettingsPanel({
   const currentCombos = currentBinding ? currentBinding.split('|') : []
 
   return (
-    <div className="settings-mask" role="dialog" aria-modal="true">
+    <div className="settings-mask" role="dialog" aria-modal="true" aria-label="设置面板" data-overlay-close="settings">
       <section className="settings-panel" style={{ fontSize: `${settingsFontSize}px` }}>
         <div className="settings-head">
           <span className="settings-head-spacer" aria-hidden="true" />

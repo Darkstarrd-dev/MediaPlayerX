@@ -35,6 +35,31 @@ type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
 const VISION_TEST_RED_IMAGE_BASE64 =
   '/9j/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCABkAGQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAcJ/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AnQBDGqYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q=='
 
+function normalizeOptionalPath(value: string): string | undefined {
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
+
+function toDirectoryDefaultPath(value: string): string | undefined {
+  const normalized = normalizeOptionalPath(value)
+  if (!normalized) {
+    return undefined
+  }
+
+  const withoutFragment = normalized.split('#')[0].trim()
+  if (!withoutFragment) {
+    return undefined
+  }
+
+  const normalizedSlashes = withoutFragment.replace(/\\/g, '/')
+  const lastSlashIndex = normalizedSlashes.lastIndexOf('/')
+  if (lastSlashIndex < 2) {
+    return withoutFragment
+  }
+
+  return withoutFragment.slice(0, lastSlashIndex)
+}
+
 interface UseAppTopLayerStateParams {
   appSettings: AppSettingsStoreSnapshot
   mediaRepository: MediaRepository
@@ -417,6 +442,77 @@ export function useAppTopLayerState({
     }
   }, [appSettings.updateSettings, appSettings.wdSwinTaggerModelPath, mediaRepository])
 
+  const pickWdSwinTaggerModelPath = useCallback(async () => {
+    if (!mediaRepository.pickFilePath) {
+      return
+    }
+
+    const response = await mediaRepository.pickFilePath({
+      title: '选择 wd ONNX 模型文件',
+      default_path: normalizeOptionalPath(appSettings.wdSwinTaggerModelPath),
+      filters: [{ name: 'ONNX 模型', extensions: ['onnx'] }],
+    })
+
+    if (!response.canceled && response.path) {
+      appSettings.updateSettings({
+        wdSwinTaggerModelPath: response.path,
+      })
+    }
+  }, [appSettings.updateSettings, appSettings.wdSwinTaggerModelPath, mediaRepository])
+
+  const pickVisionAutoTagCsvPath = useCallback(async () => {
+    if (!mediaRepository.pickFilePath) {
+      return
+    }
+
+    const response = await mediaRepository.pickFilePath({
+      title: '选择标签范围 CSV 文件',
+      default_path: normalizeOptionalPath(appSettings.visionAutoTagCsvPath),
+      filters: [{ name: 'CSV 文件', extensions: ['csv'] }],
+    })
+
+    if (!response.canceled && response.path) {
+      appSettings.updateSettings({
+        visionAutoTagCsvPath: response.path,
+      })
+    }
+  }, [appSettings.updateSettings, appSettings.visionAutoTagCsvPath, mediaRepository])
+
+  const pickRuntimeDirectory = useCallback(
+    async (title: string, defaultPath: string | undefined) => {
+      if (!mediaRepository.pickDirectoryPath) {
+        return
+      }
+
+      await mediaRepository.pickDirectoryPath({
+        title,
+        default_path: defaultPath,
+      })
+    },
+    [mediaRepository],
+  )
+
+  const pickDatabaseDirectoryPath = useCallback(async () => {
+    await pickRuntimeDirectory(
+      '选择 SQL 库目录',
+      toDirectoryDefaultPath(runtimeInfoDiagnostics.data?.database_path ?? ''),
+    )
+  }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.database_path])
+
+  const pickVectorStoreDirectoryPath = useCallback(async () => {
+    await pickRuntimeDirectory(
+      '选择向量库目录',
+      toDirectoryDefaultPath(runtimeInfoDiagnostics.data?.vector_store_path ?? ''),
+    )
+  }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.vector_store_path])
+
+  const pickThumbnailCacheDirectoryPath = useCallback(async () => {
+    await pickRuntimeDirectory(
+      '选择缩略图缓存目录',
+      normalizeOptionalPath(runtimeInfoDiagnostics.data?.thumbnail_cache_path ?? ''),
+    )
+  }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.thumbnail_cache_path])
+
   const fullscreenLayerProps = buildFullscreenLayerProps({
     mode,
     fullscreenActive,
@@ -538,6 +634,11 @@ export function useAppTopLayerState({
     testEmbeddingModel,
     testAdReviewVisionModel,
     testWdSwinTaggerModel,
+    pickWdSwinTaggerModelPath,
+    pickVisionAutoTagCsvPath,
+    pickDatabaseDirectoryPath,
+    pickVectorStoreDirectoryPath,
+    pickThumbnailCacheDirectoryPath,
   })
 
   const appHeaderProps = buildAppHeaderProps({

@@ -36,7 +36,7 @@ function DangerConfirmDialog({
   }
 
   return (
-    <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={title} data-overlay-close="delete-confirm">
       <section className="settings-floating-panel manage-confirm-dialog">
         <h3>{title}</h3>
         <p className="manage-confirm-description">{description}</p>

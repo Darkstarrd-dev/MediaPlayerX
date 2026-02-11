@@ -128,6 +128,7 @@ function ManagementPanel({
 }: ManagementPanelProps) {
   const [adReviewPanelOpen, setAdReviewPanelOpen] = useState(false)
   const adReviewRunning = adReviewTask?.status === 'running'
+  const effectivePanelHeight = adReviewPanelOpen ? Math.max(panelHeight, 320) : panelHeight
 
   useEffect(() => {
     if (!visible || !adReviewFeatureVisible) {
@@ -146,7 +147,12 @@ function ManagementPanel({
           <span className="search-panel-expand-tip">展开管理容器</span>
         </button>
       ) : (
-        <div className="vector-panel manage-panel" ref={panelRef} style={{ maxHeight: `${panelHeight}px` }}>
+        <div
+          className="vector-panel manage-panel"
+          ref={panelRef}
+          style={{ height: `${effectivePanelHeight}px` }}
+          data-overlay-close="manage-panel"
+        >
           <div className="vector-panel-content" ref={panelContentRef}>
             <p className="manage-panel-summary">
               {activeSelectionScope === 'sidebar'

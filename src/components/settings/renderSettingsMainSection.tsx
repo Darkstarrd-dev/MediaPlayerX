@@ -110,13 +110,13 @@ interface RenderSettingsMainSectionParams {
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
   onTestEmbeddingModel: () => void
-  onWdSwinTaggerModelPathChange: (value: string) => void
+  onPickWdSwinTaggerModelPath: () => void
   onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
   onWdSwinTaggerAutoTagGeneralMinScoreChange: (value: number) => void
   onWdSwinTaggerAutoTagCharacterMinScoreChange: (value: number) => void
   onWdSwinTaggerAutoTagIncludeRatingChange: (value: boolean) => void
   onWdSwinTaggerAutoTagRatingMinScoreChange: (value: number) => void
-  onVisionAutoTagCsvPathChange: (value: string) => void
+  onPickVisionAutoTagCsvPath: () => void
   onVisionAutoTagSampleImageCountChange: (value: number) => void
   onVisionAutoTagOccurrenceThresholdChange: (value: number) => void
   onVisionAutoTagTemperatureChange: (value: number) => void
@@ -135,6 +135,9 @@ interface RenderSettingsMainSectionParams {
   onVectorUniverseDispersionChange: (value: number) => void
   onVectorUniverseWidgetSizeChange: (value: number) => void
   onClearDatabase: () => void
+  onPickDatabaseDirectoryPath: () => void
+  onPickVectorStoreDirectoryPath: () => void
+  onPickThumbnailCacheDirectoryPath: () => void
   onRefreshRuntimeInfo: () => void
   onRefreshVectorDataStatus: () => void
   onClearVectorData: () => void
@@ -232,13 +235,13 @@ export function renderSettingsMainSection({
   onLmStudioEndpointChange,
   onLmStudioModelChange,
   onTestEmbeddingModel,
-  onWdSwinTaggerModelPathChange,
+  onPickWdSwinTaggerModelPath,
   onWdSwinTaggerAutoTagOccurrenceThresholdChange,
   onWdSwinTaggerAutoTagGeneralMinScoreChange,
   onWdSwinTaggerAutoTagCharacterMinScoreChange,
   onWdSwinTaggerAutoTagIncludeRatingChange,
   onWdSwinTaggerAutoTagRatingMinScoreChange,
-  onVisionAutoTagCsvPathChange,
+  onPickVisionAutoTagCsvPath,
   onVisionAutoTagSampleImageCountChange,
   onVisionAutoTagOccurrenceThresholdChange,
   onVisionAutoTagTemperatureChange,
@@ -257,6 +260,9 @@ export function renderSettingsMainSection({
   onVectorUniverseDispersionChange,
   onVectorUniverseWidgetSizeChange,
   onClearDatabase,
+  onPickDatabaseDirectoryPath,
+  onPickVectorStoreDirectoryPath,
+  onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
   onRefreshVectorDataStatus,
   onClearVectorData,
@@ -487,11 +493,10 @@ export function renderSettingsMainSection({
           <legend>wd-swinv2-tagger-v3（本地 ONNX Runtime）</legend>
           <label>
             模型文件路径
-            <input
-              type="text"
-              value={wdSwinTaggerModelPath}
-              onChange={(event) => onWdSwinTaggerModelPathChange(event.target.value)}
-            />
+            <div className="settings-inline-field">
+              <input type="text" value={wdSwinTaggerModelPath} readOnly placeholder="请选择 ONNX 模型文件" />
+              <button type="button" onClick={onPickWdSwinTaggerModelPath}>选择ONNX文件</button>
+            </div>
           </label>
           <label title="一个标签至少在多少张图片中命中后才会写入元数据 tags。">
             自动标签出现阈值（Occurrence）
@@ -565,11 +570,10 @@ export function renderSettingsMainSection({
           <legend>视觉模型标签生成（元数据管理）</legend>
           <label>
             标签范围 CSV 路径
-            <input
-              type="text"
-              value={visionAutoTagCsvPath}
-              onChange={(event) => onVisionAutoTagCsvPathChange(event.target.value)}
-            />
+            <div className="settings-inline-field">
+              <input type="text" value={visionAutoTagCsvPath} readOnly placeholder="请选择 CSV 文件" />
+              <button type="button" onClick={onPickVisionAutoTagCsvPath}>选择CSV文件</button>
+            </div>
           </label>
           <label title="每个图包抽样多少张图片发送给视觉模型。">
             抽样图片数
@@ -668,17 +672,27 @@ export function renderSettingsMainSection({
         <fieldset className="settings-subsection">
           <legend>数据库目录设置</legend>
           <p className="settings-placeholder">默认展示当前运行时实际路径，可用于快速核对 SQL 库、向量库与缩略图缓存目录。</p>
+          <p className="settings-placeholder">选择目录仅用于快速定位，不会修改运行时路径。</p>
           <label>
             SQL 库路径
-            <input type="text" value={databasePath} readOnly placeholder="读取运行时诊断后显示" />
+            <div className="settings-inline-field">
+              <input type="text" value={databasePath} readOnly placeholder="读取运行时诊断后显示" />
+              <button type="button" onClick={onPickDatabaseDirectoryPath}>选择SQL目录</button>
+            </div>
           </label>
           <label>
             向量库路径
-            <input type="text" value={vectorStorePath} readOnly placeholder="读取运行时诊断后显示" />
+            <div className="settings-inline-field">
+              <input type="text" value={vectorStorePath} readOnly placeholder="读取运行时诊断后显示" />
+              <button type="button" onClick={onPickVectorStoreDirectoryPath}>选择向量目录</button>
+            </div>
           </label>
           <label>
             缩略图目录
-            <input type="text" value={thumbnailCachePath} readOnly placeholder="读取运行时诊断后显示" />
+            <div className="settings-inline-field">
+              <input type="text" value={thumbnailCachePath} readOnly placeholder="读取运行时诊断后显示" />
+              <button type="button" onClick={onPickThumbnailCacheDirectoryPath}>选择缩略图目录</button>
+            </div>
           </label>
         </fieldset>
 

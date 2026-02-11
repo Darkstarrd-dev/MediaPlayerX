@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import {
   SHORTCUT_DEFINITIONS,
   shortcutMatches,
+  shortcutWheelMatches,
   type ShortcutAction,
   type ShortcutMap,
 } from '../../shortcuts'
@@ -378,4 +379,54 @@ export function useShortcutEngine({
     vectorMode,
     videoShortcutActive,
   ])
+
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      if (suspended) {
+        return
+      }
+
+      if (settingsOpen && isEditableTarget(event.target)) {
+        return
+      }
+
+      if (isEditableTarget(event.target)) {
+        return
+      }
+
+      const allowedScopes = new Set(['global'])
+      if (videoShortcutActive) {
+        allowedScopes.add('video')
+      }
+
+      const matchedDefinition = SHORTCUT_DEFINITIONS.find((definition) => {
+        if (!allowedScopes.has(definition.scope)) {
+          return false
+        }
+        return shortcutWheelMatches(shortcuts[definition.action], event)
+      })
+
+      if (!matchedDefinition) {
+        return
+      }
+
+      const imageNavigationActions: ShortcutAction[] = ['imagePrev', 'imageNext', 'imageFirst', 'imageLast']
+      if (mode === 'image' && imageNavigationActions.includes(matchedDefinition.action)) {
+        const now = performance.now()
+        if (now - lastImageNavAtRef.current < IMAGE_NAV_REPEAT_MIN_INTERVAL_MS) {
+          event.preventDefault()
+          return
+        }
+        lastImageNavAtRef.current = now
+      }
+
+      event.preventDefault()
+      executeShortcut(matchedDefinition.action)
+    }
+
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      window.removeEventListener('wheel', handleWheel)
+    }
+  }, [executeShortcut, mode, settingsOpen, shortcuts, suspended, videoShortcutActive])
 }

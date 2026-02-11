@@ -5,6 +5,10 @@ import type {
   EnqueueImportTaskResponseDto,
   PickImportPathsRequestDto,
   PickImportPathsResponseDto,
+  PickFilePathRequestDto,
+  PickFilePathResponseDto,
+  PickDirectoryPathRequestDto,
+  PickDirectoryPathResponseDto,
   ReadClipboardImportPathsResponseDto,
   ReadArchiveLoadStatusResponseDto,
   ReadImportTasksResponseDto,
@@ -108,6 +112,8 @@ interface MediaPlayerBackendApi {
   readAppState?: (request: ReadAppStateRequestDto) => Promise<ReadAppStateResponseDto>
   writeAppState?: (request: WriteAppStateRequestDto) => Promise<WriteAppStateResponseDto>
   pickImportPaths: (request: PickImportPathsRequestDto) => Promise<PickImportPathsResponseDto>
+  pickFilePath?: (request: PickFilePathRequestDto) => Promise<PickFilePathResponseDto>
+  pickDirectoryPath?: (request: PickDirectoryPathRequestDto) => Promise<PickDirectoryPathResponseDto>
   readClipboardImportPaths: () => Promise<ReadClipboardImportPathsResponseDto>
   enqueueImportTask: (request: EnqueueImportTaskRequestDto) => Promise<EnqueueImportTaskResponseDto>
   readImportTasks: () => Promise<ReadImportTasksResponseDto>

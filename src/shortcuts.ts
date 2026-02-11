@@ -149,6 +149,8 @@ function normalizeToken(raw: string): string {
   if (lower === 'mousemiddle' || lower === 'middlemouse') return 'MouseMiddle'
   if (lower === 'mouseback' || lower === 'x1mouse') return 'MouseBack'
   if (lower === 'mouseforward' || lower === 'x2mouse') return 'MouseForward'
+  if (lower === 'wheelup' || lower === 'scrollup' || lower === 'mousewheelup') return 'WheelUp'
+  if (lower === 'wheeldown' || lower === 'scrolldown' || lower === 'mousewheeldown') return 'WheelDown'
 
   if (lower === 'left') return 'ArrowLeft'
   if (lower === 'right') return 'ArrowRight'
@@ -249,6 +251,29 @@ export function mouseEventToCombo(event: Pick<MouseEvent, 'button' | 'ctrlKey' |
   return normalizeSingleCombo([...base, mouseButtonToToken(event.button)].join('+'))
 }
 
+export function wheelEventToCombo(
+  event: Pick<WheelEvent, 'deltaY' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'>,
+): string {
+  let wheelToken = ''
+  if (event.deltaY < 0) {
+    wheelToken = 'WheelUp'
+  } else if (event.deltaY > 0) {
+    wheelToken = 'WheelDown'
+  }
+
+  if (!wheelToken) {
+    return ''
+  }
+
+  const base: string[] = []
+  if (event.ctrlKey) base.push('Ctrl')
+  if (event.altKey) base.push('Alt')
+  if (event.shiftKey) base.push('Shift')
+  if (event.metaKey) base.push('Meta')
+
+  return normalizeSingleCombo([...base, wheelToken].join('+'))
+}
+
 export function shortcutMatches(binding: string, event: KeyboardEvent): boolean {
   const normalized = normalizeShortcutBinding(binding)
   if (!normalized) {
@@ -269,6 +294,23 @@ export function shortcutMouseMatches(
   }
 
   const combo = mouseEventToCombo(event)
+  return normalized.split('|').some((part) => part === combo)
+}
+
+export function shortcutWheelMatches(
+  binding: string,
+  event: Pick<WheelEvent, 'deltaY' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'>,
+): boolean {
+  const normalized = normalizeShortcutBinding(binding)
+  if (!normalized) {
+    return false
+  }
+
+  const combo = wheelEventToCombo(event)
+  if (!combo) {
+    return false
+  }
+
   return normalized.split('|').some((part) => part === combo)
 }
 

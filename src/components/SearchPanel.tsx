@@ -96,7 +96,7 @@ function SearchPanel({
           <span className="search-panel-expand-tip">展开检索容器</span>
         </button>
       ) : (
-        <div className="vector-panel" ref={panelRef} style={{ height: `${panelHeight}px` }}>
+        <div className="vector-panel" ref={panelRef} style={{ height: `${panelHeight}px` }} data-overlay-close="search-panel">
           <div className="vector-panel-content" ref={panelContentRef}>
             <div className="vector-top-row">
               {showVectorSearch ? (

@@ -5,6 +5,8 @@ import {
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
   pickImportPathsResponseSchema,
+  pickFilePathResponseSchema,
+  pickDirectoryPathResponseSchema,
   readClipboardImportPathsResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
@@ -42,6 +44,10 @@ import {
   type ClearVectorDataResponseDto,
   type PickImportPathsRequestDto,
   type PickImportPathsResponseDto,
+  type PickFilePathRequestDto,
+  type PickFilePathResponseDto,
+  type PickDirectoryPathRequestDto,
+  type PickDirectoryPathResponseDto,
   type ReadClipboardImportPathsResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
@@ -556,6 +562,32 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.pickImportPaths(request), options)
     return pickImportPathsResponseSchema.parse(response)
+  }
+
+  async pickFilePath(
+    request: PickFilePathRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickFilePathResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.pickFilePath) {
+      throw new Error('真实后端通道不可用：pickFilePath 未注入')
+    }
+
+    const response = await withAbort(api.pickFilePath(request), options)
+    return pickFilePathResponseSchema.parse(response)
+  }
+
+  async pickDirectoryPath(
+    request: PickDirectoryPathRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickDirectoryPathResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.pickDirectoryPath) {
+      throw new Error('真实后端通道不可用：pickDirectoryPath 未注入')
+    }
+
+    const response = await withAbort(api.pickDirectoryPath(request), options)
+    return pickDirectoryPathResponseSchema.parse(response)
   }
 
   async readClipboardImportPaths(options?: RepositoryRequestOptions): Promise<ReadClipboardImportPathsResponseDto> {

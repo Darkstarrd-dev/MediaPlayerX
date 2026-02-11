@@ -20,6 +20,8 @@ import {
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   pickImportPathsResponseSchema,
+  pickFilePathResponseSchema,
+  pickDirectoryPathResponseSchema,
   readClipboardImportPathsResponseSchema,
   readImportTasksResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
@@ -80,6 +82,10 @@ import {
   type MediaLocatorDto,
   type PickImportPathsRequestDto,
   type PickImportPathsResponseDto,
+  type PickFilePathRequestDto,
+  type PickFilePathResponseDto,
+  type PickDirectoryPathRequestDto,
+  type PickDirectoryPathResponseDto,
   type ReadClipboardImportPathsResponseDto,
   type ReadImportTasksResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
@@ -1591,6 +1597,38 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<PickImportPathsResponseDto> {
     const response = this.pickImportPathsSync(request)
+    return resolveAsync(response, options)
+  }
+
+  pickFilePathSync(request: PickFilePathRequestDto): PickFilePathResponseDto {
+    void request
+    return pickFilePathResponseSchema.parse({
+      canceled: true,
+      path: null,
+    })
+  }
+
+  async pickFilePath(
+    request: PickFilePathRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickFilePathResponseDto> {
+    const response = this.pickFilePathSync(request)
+    return resolveAsync(response, options)
+  }
+
+  pickDirectoryPathSync(request: PickDirectoryPathRequestDto): PickDirectoryPathResponseDto {
+    void request
+    return pickDirectoryPathResponseSchema.parse({
+      canceled: true,
+      path: null,
+    })
+  }
+
+  async pickDirectoryPath(
+    request: PickDirectoryPathRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PickDirectoryPathResponseDto> {
+    const response = this.pickDirectoryPathSync(request)
     return resolveAsync(response, options)
   }
 

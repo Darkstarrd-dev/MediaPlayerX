@@ -614,6 +614,7 @@ function FullscreenLayer({
   return (
     <div
       className="fullscreen-layer"
+      data-overlay-close="fullscreen"
       onMouseMove={(event) => {
         onSetFooterVisible(event.clientY > window.innerHeight * 0.8)
       }}

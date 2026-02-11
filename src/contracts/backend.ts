@@ -550,6 +550,32 @@ export const pickImportPathsResponseSchema = z.object({
   paths: z.array(z.string().min(1)),
 })
 
+export const fileDialogFilterSchema = z.object({
+  name: z.string().min(1),
+  extensions: z.array(z.string().min(1)).min(1),
+})
+
+export const pickFilePathRequestSchema = z.object({
+  title: z.string().min(1).optional(),
+  default_path: z.string().min(1).optional(),
+  filters: z.array(fileDialogFilterSchema).optional(),
+})
+
+export const pickFilePathResponseSchema = z.object({
+  canceled: z.boolean(),
+  path: z.string().min(1).nullable(),
+})
+
+export const pickDirectoryPathRequestSchema = z.object({
+  title: z.string().min(1).optional(),
+  default_path: z.string().min(1).optional(),
+})
+
+export const pickDirectoryPathResponseSchema = z.object({
+  canceled: z.boolean(),
+  path: z.string().min(1).nullable(),
+})
+
 export const readClipboardImportPathsResponseSchema = z.object({
   paths: z.array(z.string().min(1)),
 })
@@ -724,6 +750,11 @@ export type RetryImportTaskRequestDto = z.infer<typeof retryImportTaskRequestSch
 export type RetryImportTaskResponseDto = z.infer<typeof retryImportTaskResponseSchema>
 export type PickImportPathsRequestDto = z.infer<typeof pickImportPathsRequestSchema>
 export type PickImportPathsResponseDto = z.infer<typeof pickImportPathsResponseSchema>
+export type FileDialogFilterDto = z.infer<typeof fileDialogFilterSchema>
+export type PickFilePathRequestDto = z.infer<typeof pickFilePathRequestSchema>
+export type PickFilePathResponseDto = z.infer<typeof pickFilePathResponseSchema>
+export type PickDirectoryPathRequestDto = z.infer<typeof pickDirectoryPathRequestSchema>
+export type PickDirectoryPathResponseDto = z.infer<typeof pickDirectoryPathResponseSchema>
 export type ReadClipboardImportPathsResponseDto = z.infer<typeof readClipboardImportPathsResponseSchema>
 export type ClearDatabaseResponseDto = z.infer<typeof clearDatabaseResponseSchema>
 export type ReadVectorDataStatusResponseDto = z.infer<typeof readVectorDataStatusResponseSchema>

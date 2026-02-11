@@ -24,6 +24,8 @@ export const BACKEND_CHANNELS = {
   readPlaylist: 'backend:readPlaylist',
   writePlaylist: 'backend:writePlaylist',
   pickImportPaths: 'backend:pickImportPaths',
+  pickFilePath: 'backend:pickFilePath',
+  pickDirectoryPath: 'backend:pickDirectoryPath',
   readClipboardImportPaths: 'backend:readClipboardImportPaths',
   enqueueImportTask: 'backend:enqueueImportTask',
   readImportTasks: 'backend:readImportTasks',

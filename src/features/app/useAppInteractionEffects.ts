@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppEffects } from './useAppEffects'
 import { usePersistedAppSettings } from './usePersistedAppSettings'
@@ -75,6 +77,13 @@ export function useAppInteractionEffects({
     setSelectedPackageId,
     setSelectedSidebarNodeId,
     setFullscreenEntryDisplay,
+    manageMode,
+    metadataManageMode,
+    deleteConfirmOpen,
+    setManageMode,
+    setMetadataManageMode,
+    setDeleteConfirmOpen,
+    setManageOperationHint,
   } = sessionState
 
   const {
@@ -122,7 +131,160 @@ export function useAppInteractionEffects({
     moveImageVertical,
     jumpImageBoundary,
     goPackage,
+    clearAllSelections,
   } = readNavigationState
+
+  useEffect(() => {
+    const searchPanelOpen = vectorMode && !manageMode && !metadataManageMode
+
+    const closeManagePanel = () => {
+      if (!manageMode) {
+        return false
+      }
+      setManageMode(false)
+      setDeleteConfirmOpen(false)
+      setManageOperationHint(null)
+      clearAllSelections()
+      return true
+    }
+
+    const closeMetadataManagePanel = () => {
+      if (!metadataManageMode) {
+        return false
+      }
+      setMetadataManageMode(false)
+      setDeleteConfirmOpen(false)
+      setManageOperationHint(null)
+      clearAllSelections()
+      return true
+    }
+
+    const closeSearchPanel = () => {
+      if (!searchPanelOpen) {
+        return false
+      }
+      updateSettings({ vectorMode: false })
+      return true
+    }
+
+    const closeSettingsPanel = () => {
+      if (!settingsOpen) {
+        return false
+      }
+      updateSettings({ settingsOpen: false })
+      return true
+    }
+
+    const closeDeleteConfirm = () => {
+      if (!deleteConfirmOpen) {
+        return false
+      }
+      setDeleteConfirmOpen(false)
+      return true
+    }
+
+    const closeFullscreenLayer = () => {
+      if (!fullscreenActive) {
+        return false
+      }
+      setFullscreenActiveWithAutoStop(false)
+      return true
+    }
+
+    const closeTopLayerByPriority = () => {
+      if (closeDeleteConfirm()) {
+        return true
+      }
+      if (closeSettingsPanel()) {
+        return true
+      }
+      if (closeSearchPanel()) {
+        return true
+      }
+      if (closeManagePanel()) {
+        return true
+      }
+      if (closeMetadataManagePanel()) {
+        return true
+      }
+      if (closeFullscreenLayer()) {
+        return true
+      }
+      return false
+    }
+
+    const closeLayerByRoot = (layer: string) => {
+      if (layer === 'delete-confirm') {
+        return closeDeleteConfirm()
+      }
+      if (layer === 'settings') {
+        return closeSettingsPanel()
+      }
+      if (layer === 'search-panel') {
+        return closeSearchPanel()
+      }
+      if (layer === 'manage-panel') {
+        return closeManagePanel()
+      }
+      if (layer === 'metadata-manage-panel') {
+        return closeMetadataManagePanel()
+      }
+      if (layer === 'fullscreen') {
+        return closeFullscreenLayer()
+      }
+      return false
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return
+      }
+
+      if (closeTopLayerByPriority()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    }
+
+    const onMouseDown = (event: MouseEvent) => {
+      if (event.button !== 2) {
+        return
+      }
+
+      const target = event.target as HTMLElement | null
+      const layerRoot = target?.closest('[data-overlay-close]')
+      const layer = layerRoot?.getAttribute('data-overlay-close')
+      if (!layer) {
+        return
+      }
+
+      if (closeLayerByRoot(layer)) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown, true)
+    window.addEventListener('mousedown', onMouseDown, true)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true)
+      window.removeEventListener('mousedown', onMouseDown, true)
+    }
+  }, [
+    clearAllSelections,
+    deleteConfirmOpen,
+    fullscreenActive,
+    manageMode,
+    metadataManageMode,
+    setDeleteConfirmOpen,
+    setFullscreenActiveWithAutoStop,
+    setManageMode,
+    setManageOperationHint,
+    setMetadataManageMode,
+    settingsOpen,
+    updateSettings,
+    vectorMode,
+  ])
 
   useAppShortcutBindings({
     shortcuts,

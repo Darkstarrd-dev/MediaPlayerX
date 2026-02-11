@@ -253,6 +253,17 @@
   min-height: 38px;
 }
 
+.settings-inline-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-inline-field > button {
+  white-space: nowrap;
+}
+
 .settings-danger-btn {
   align-self: flex-start;
   min-width: 120px;

@@ -86,7 +86,12 @@ function MetadataManagementPanel({
           <span className="search-panel-expand-tip">展开元数据管理容器</span>
         </button>
       ) : (
-        <div className="vector-panel metadata-manage-panel" ref={panelRef} style={{ maxHeight: `${panelHeight}px` }}>
+        <div
+          className="vector-panel metadata-manage-panel"
+          ref={panelRef}
+          style={{ maxHeight: `${panelHeight}px` }}
+          data-overlay-close="metadata-manage-panel"
+        >
           <div className="vector-panel-content" ref={panelContentRef}>
             <div className="vector-controls metadata-manage-actions">
               <button className="feature-action-btn" type="button" disabled={syncNameDisabled} onClick={onSyncName}>
