@@ -84,9 +84,13 @@
   - 在 LM Studio embedding endpoint/model 两个输入旁增加“测试”按钮与状态文案。
   - 后端新增 `testEmbeddingModel`（命名以现有 contracts 风格为准）：
     - 请求：`{ endpoint, model }`
-    - 行为：向 endpoint 发一个最小 embeddings 请求（例如 `input: ["ping"]`），只校验返回结构/向量维度可解析即可。
+    - 行为：优先用硬编码 base64 图片构造 data URL（`data:image/...;base64,...`），对 `/v1/embeddings` 尝试 `input: [{type:"image_url", ...}]` 与 `messages: [...]` 两种格式；仅校验返回结构/向量维度可解析即可。
     - 响应：`{ ok, message }`，message 用于在设置面板展示。
 - mockRepository 提供同步/异步测试实现（固定返回 ok 或基于 endpoint/model 是否为空）。
+
+备注（未完成，待继续处理）：
+
+- 视觉 embedding 与纯文本 embedding 可能不一致（LM Studio 是否支持图片 embedding 也依版本而定）。当前先覆盖“视觉 payload”测试链路，后续需要补齐“纯文本 embedding 测试/模式选择”，并与实际生成 embedding 的链路对齐。
 
 测试：
 

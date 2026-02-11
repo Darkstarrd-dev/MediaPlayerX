@@ -269,6 +269,13 @@ const DEFAULT_PACKAGE_EMBEDDING_TIMEOUT_MS = 45_000
 const DEFAULT_PACKAGE_EMBEDDING_MAX_CONCURRENCY = 4
 const DEFAULT_PACKAGE_EMBEDDING_MAX_RETRIES = 1
 
+const EMBEDDING_MODEL_TEST_CACHE_SUCCESS_TTL_MS = 10 * 60_000
+const EMBEDDING_MODEL_TEST_CACHE_FAILURE_TTL_MS = 15_000
+
+const EMBEDDING_MODEL_TEST_RED_IMAGE_BASE64 =
+  '/9j/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCABkAGQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAcJ/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AnQBDGqYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q=='
+const EMBEDDING_MODEL_TEST_RED_IMAGE_DATA_URL = `data:image/jpeg;base64,${EMBEDDING_MODEL_TEST_RED_IMAGE_BASE64}`
+
 function normalizeEmbeddingsUrl(endpoint: string): string {
   const trimmed = endpoint.trim()
   if (!trimmed) {
@@ -551,6 +558,23 @@ async function requestImageEmbeddingVectors(params: {
   timeoutMs: number
   apiKey: string
 }): Promise<number[][]> {
+  return requestEmbeddingVectors({
+    endpoint: params.endpoint,
+    timeoutMs: params.timeoutMs,
+    apiKey: params.apiKey,
+    body: {
+      model: params.model,
+      input: params.input,
+    },
+  })
+}
+
+async function requestEmbeddingVectors(params: {
+  endpoint: string
+  body: Record<string, unknown>
+  timeoutMs: number
+  apiKey: string
+}): Promise<number[][]> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => {
     controller.abort()
@@ -564,10 +588,7 @@ async function requestImageEmbeddingVectors(params: {
         Authorization: `Bearer ${params.apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: params.model,
-        input: params.input,
-      }),
+      body: JSON.stringify(params.body),
       signal: controller.signal,
     })
   } catch (error: unknown) {
@@ -582,7 +603,27 @@ async function requestImageEmbeddingVectors(params: {
 
   const bodyText = await response.text()
   if (!response.ok) {
-    throw new Error(`Embedding 请求失败: HTTP ${response.status} ${response.statusText} - ${bodyText.slice(0, 300)}`)
+    let detail = bodyText.slice(0, 300)
+    try {
+      const parsed = JSON.parse(bodyText)
+      const rawError =
+        (parsed as { error?: unknown; message?: unknown }).error ??
+        (parsed as { message?: unknown }).message
+      if (typeof rawError === 'string' && rawError.trim()) {
+        detail = rawError.trim().slice(0, 300)
+      } else if (rawError && typeof rawError === 'object') {
+        const nestedMessage =
+          (rawError as { message?: unknown; detail?: unknown }).message ??
+          (rawError as { detail?: unknown }).detail
+        if (typeof nestedMessage === 'string' && nestedMessage.trim()) {
+          detail = nestedMessage.trim().slice(0, 300)
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    throw new Error(`Embedding 请求失败: HTTP ${response.status} ${response.statusText} - ${detail}`)
   }
 
   let responseBody: unknown
@@ -641,6 +682,14 @@ export class FileSystemMediaReadService {
   private videoCoverOverridesByVideoId = new Map<string, PersistedVideoCoverRecord>()
 
   private videoMetadataOverridesByVideoId = new Map<string, PersistedVideoMetadataRecord>()
+
+  private readonly embeddingModelTestCache = new Map<
+    string,
+    {
+      tested_at_ms: number
+      response: TestEmbeddingModelResponseDto
+    }
+  >()
 
   private readonly importPathRegistry = new ImportPathRegistry()
 
@@ -1082,48 +1131,151 @@ export class FileSystemMediaReadService {
       : 12_000
     const apiKey = process.env.MEDIA_PLAYERX_LLM_API_KEY?.trim() || 'lm-studio'
 
+    let normalizedEmbeddingsEndpoint = ''
     try {
-      const normalizedModelsEndpoint = normalizeModelsUrl(request.embedding_endpoint)
-      const catalog = await requestModelCatalog({
-        endpoint: normalizedModelsEndpoint,
-        timeoutMs,
-        apiKey,
-      })
-
-      const exact = catalog.find((item) => item.id === normalizedModel)
-      const fallback = catalog.find((item) => item.id.toLowerCase() === normalizedModel.toLowerCase())
-      const matched = exact ?? fallback
-      if (!matched) {
-        const preview = catalog
-          .slice(0, 6)
-          .map((item) => item.id)
-          .join(', ')
-        return testEmbeddingModelResponseSchema.parse({
-          ok: false,
-          message: `模型测试失败：模型ID未出现在 /models 列表中（已发现：${preview || '空'}）`,
-        })
-      }
-
-      const capability = resolveEmbeddingCapability(matched.payload)
-      if (capability === 'non-embedding') {
-        return testEmbeddingModelResponseSchema.parse({
-          ok: false,
-          message: '模型测试失败：模型在服务端元数据中被标注为非 embedding',
-        })
-      }
-
-      const capabilityMessage =
-        capability === 'embedding' ? '已确认 embedding 能力' : '未返回能力字段，按模型存在性通过'
-      return testEmbeddingModelResponseSchema.parse({
-        ok: true,
-        message: `模型连接正常（仅校验 /models，不触发推理；${capabilityMessage}）`,
-      })
+      normalizedEmbeddingsEndpoint = normalizeEmbeddingsUrl(request.embedding_endpoint)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       return testEmbeddingModelResponseSchema.parse({
         ok: false,
         message: `模型测试失败：${message}`,
       })
+    }
+
+    const cacheKey = `${normalizedEmbeddingsEndpoint}@@${normalizedModel}`
+    const now = Date.now()
+    const cached = this.embeddingModelTestCache.get(cacheKey)
+    if (cached) {
+      const ttlMs = cached.response.ok
+        ? EMBEDDING_MODEL_TEST_CACHE_SUCCESS_TTL_MS
+        : EMBEDDING_MODEL_TEST_CACHE_FAILURE_TTL_MS
+      if (now - cached.tested_at_ms < ttlMs) {
+        return testEmbeddingModelResponseSchema.parse(cached.response)
+      }
+    }
+
+    let capabilityHint: EmbeddingCapability = 'unknown'
+
+    try {
+      // 先做一次 /models 轻校验：若模型 ID 都不存在，则无需触发 embedding 推理加载。
+      try {
+        const normalizedModelsEndpoint = normalizeModelsUrl(normalizedEmbeddingsEndpoint)
+        const catalog = await requestModelCatalog({
+          endpoint: normalizedModelsEndpoint,
+          timeoutMs: Math.min(8_000, timeoutMs),
+          apiKey,
+        })
+
+        const exact = catalog.find((item) => item.id === normalizedModel)
+        const fallback = catalog.find((item) => item.id.toLowerCase() === normalizedModel.toLowerCase())
+        const matched = exact ?? fallback
+        if (!matched) {
+          const preview = catalog
+            .slice(0, 6)
+            .map((item) => item.id)
+            .join(', ')
+          const response = testEmbeddingModelResponseSchema.parse({
+            ok: false,
+            message: `模型测试失败：模型ID未出现在 /models 列表中（已发现：${preview || '空'}）`,
+          })
+          this.embeddingModelTestCache.set(cacheKey, {
+            tested_at_ms: now,
+            response,
+          })
+          return response
+        }
+
+        capabilityHint = resolveEmbeddingCapability(matched.payload)
+      } catch {
+        // ignore /models failures, continue to real embedding test
+      }
+
+      const imageDataUrl = EMBEDDING_MODEL_TEST_RED_IMAGE_DATA_URL
+
+      let vectors: number[][]
+      let formatHint = 'input'
+      try {
+        vectors = await requestEmbeddingVectors({
+          endpoint: normalizedEmbeddingsEndpoint,
+          timeoutMs,
+          apiKey,
+          body: {
+            model: normalizedModel,
+            input: [
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageDataUrl,
+                },
+              },
+            ],
+          },
+        })
+      } catch (firstError) {
+        const firstMessage = firstError instanceof Error ? firstError.message : String(firstError)
+        formatHint = 'messages'
+        try {
+          vectors = await requestEmbeddingVectors({
+            endpoint: normalizedEmbeddingsEndpoint,
+            timeoutMs,
+            apiKey,
+            body: {
+              model: normalizedModel,
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    {
+                      type: 'image_url',
+                      image_url: {
+                        url: imageDataUrl,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          })
+        } catch (secondError) {
+          const secondMessage = secondError instanceof Error ? secondError.message : String(secondError)
+          throw new Error(`图片 embedding 不支持（input/messages 均失败）：${firstMessage}；${secondMessage}`)
+        }
+      }
+
+      const vector = vectors[0]
+      if (!vector || vector.length === 0) {
+        const response = testEmbeddingModelResponseSchema.parse({
+          ok: false,
+          message: '模型测试失败：embedding 向量为空',
+        })
+        this.embeddingModelTestCache.set(cacheKey, {
+          tested_at_ms: now,
+          response,
+        })
+        return response
+      }
+
+      const response = testEmbeddingModelResponseSchema.parse({
+        ok: true,
+        message: `模型响应正常（image embedding 维度 ${vector.length}；format=${formatHint}；models=${capabilityHint}）`,
+      })
+      this.embeddingModelTestCache.set(cacheKey, {
+        tested_at_ms: now,
+        response,
+      })
+      return response
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      const response = testEmbeddingModelResponseSchema.parse({
+        ok: false,
+        message: `模型测试失败：${message}`,
+      })
+
+      this.embeddingModelTestCache.set(cacheKey, {
+        tested_at_ms: now,
+        response,
+      })
+      return response
     }
   }
 
