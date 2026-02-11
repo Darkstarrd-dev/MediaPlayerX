@@ -16,8 +16,6 @@ interface BuildMetadataPanelPropsParams {
   currentGrade: number | null
   currentVideoGrade: number | null
   metadataPending: boolean
-  autoTagPending: boolean
-  embeddingPending: boolean
   editable: boolean
   focusedVideo: VideoItem | null
   metadataTab: MetadataPanelProps['metadataTab']
@@ -31,9 +29,6 @@ interface BuildMetadataPanelPropsParams {
   updateSettings: (patch: Partial<AppSettings>) => void
   onGradeChange: (grade: number | null) => void
   onSavePackageMetadata: (payload: PackageMetadataWritePayload) => void
-  onGeneratePackageAutoTags: () => void
-  onGeneratePackageAutoTagsVision: () => void
-  onGeneratePackageEmbeddings: () => void
   onSaveVideoMetadata: (payload: VideoMetadataWritePayload) => void
   onMetadataTabChange: (tab: MetadataPanelProps['metadataTab']) => void
   onSelectVideo: (videoId: string) => void
@@ -57,8 +52,6 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     currentGrade: params.currentGrade,
     currentVideoGrade: params.currentVideoGrade,
     metadataPending: params.metadataPending,
-    autoTagPending: params.autoTagPending,
-    embeddingPending: params.embeddingPending,
     editable: params.editable,
     focusedVideo: params.focusedVideo,
     metadataTab: params.metadataTab,
@@ -73,9 +66,6 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onExpand: () => params.updateSettings({ metadataCollapsed: false }),
     onGradeChange: params.onGradeChange,
     onSavePackageMetadata: params.onSavePackageMetadata,
-    onGeneratePackageAutoTags: params.onGeneratePackageAutoTags,
-    onGeneratePackageAutoTagsVision: params.onGeneratePackageAutoTagsVision,
-    onGeneratePackageEmbeddings: params.onGeneratePackageEmbeddings,
     onSaveVideoMetadata: params.onSaveVideoMetadata,
     onSearchByWorkTitle: params.onSearchByWorkTitle,
     onSearchByCircle: params.onSearchByCircle,

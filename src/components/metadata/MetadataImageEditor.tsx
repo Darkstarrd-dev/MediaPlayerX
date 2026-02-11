@@ -1,4 +1,6 @@
 import { mediaLocatorFileName } from '../../features/backend'
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
+
 import type { ImageItem, ImagePackage } from '../../types'
 import { MetadataRatingGroup } from './MetadataRatingGroup'
 
@@ -10,8 +12,6 @@ interface MetadataImageEditorProps {
   displayedImageSrc: string | null
   imagePreviewSizing: { width?: string; height?: string }
   metadataPending: boolean
-  autoTagPending: boolean
-  embeddingPending: boolean
   editable: boolean
   currentGrade: number | null
   workTitleDraft: string
@@ -22,10 +22,10 @@ interface MetadataImageEditorProps {
   onCircleDraftChange: (value: string) => void
   onAuthorDraftChange: (value: string) => void
   onTagsDraftChange: (value: string) => void
-  onPersistPackageMetadata: (syncWorkTitleToPackageName?: boolean) => void
-  onGeneratePackageAutoTags: () => void
-  onGeneratePackageAutoTagsVision: () => void
-  onGeneratePackageEmbeddings: () => void
+  onSubmitPackageWorkTitle: (value: string) => void
+  onSubmitPackageCircle: (value: string) => void
+  onSubmitPackageAuthor: (value: string) => void
+  onSubmitPackageTags: (value: string) => void
   onGradeChange: (grade: number | null) => void
   onSearchByWorkTitle: (value: string) => void
   onSearchByCircle: (value: string) => void
@@ -41,8 +41,6 @@ export function MetadataImageEditor({
   displayedImageSrc,
   imagePreviewSizing,
   metadataPending,
-  autoTagPending,
-  embeddingPending,
   editable,
   currentGrade,
   workTitleDraft,
@@ -53,10 +51,10 @@ export function MetadataImageEditor({
   onCircleDraftChange,
   onAuthorDraftChange,
   onTagsDraftChange,
-  onPersistPackageMetadata,
-  onGeneratePackageAutoTags,
-  onGeneratePackageAutoTagsVision,
-  onGeneratePackageEmbeddings,
+  onSubmitPackageWorkTitle,
+  onSubmitPackageCircle,
+  onSubmitPackageAuthor,
+  onSubmitPackageTags,
   onGradeChange,
   onSearchByCircle,
   onSearchByAuthor,
@@ -66,6 +64,17 @@ export function MetadataImageEditor({
     .split(/[,，]/)
     .map((tag) => tag.trim())
     .filter((tag, index, arr) => tag.length > 0 && arr.indexOf(tag) === index)
+
+  const commitOnEnter = (
+    event: ReactKeyboardEvent<HTMLInputElement>,
+    onCommit: (value: string) => void,
+  ) => {
+    if (event.key !== 'Enter') {
+      return
+    }
+    event.preventDefault()
+    onCommit(event.currentTarget.value)
+  }
 
   return (
     <div className={contentClassName}>
@@ -121,8 +130,8 @@ export function MetadataImageEditor({
                   <input
                     value={workTitleDraft}
                     onChange={(event) => onWorkTitleDraftChange(event.target.value)}
-                    onBlur={() => {
-                      onPersistPackageMetadata(false)
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitPackageWorkTitle)
                     }}
                   />
                 ) : (
@@ -136,8 +145,8 @@ export function MetadataImageEditor({
                   <input
                     value={circleDraft}
                     onChange={(event) => onCircleDraftChange(event.target.value)}
-                    onBlur={() => {
-                      onPersistPackageMetadata(false)
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitPackageCircle)
                     }}
                   />
                 ) : (
@@ -157,8 +166,8 @@ export function MetadataImageEditor({
                   <input
                     value={authorDraft}
                     onChange={(event) => onAuthorDraftChange(event.target.value)}
-                    onBlur={() => {
-                      onPersistPackageMetadata(false)
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitPackageAuthor)
                     }}
                   />
                 ) : (
@@ -179,8 +188,8 @@ export function MetadataImageEditor({
                     value={tagsDraft}
                     placeholder="多个标签用逗号分隔"
                     onChange={(event) => onTagsDraftChange(event.target.value)}
-                    onBlur={() => {
-                      onPersistPackageMetadata(false)
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitPackageTags)
                     }}
                   />
                 ) : (
@@ -195,38 +204,6 @@ export function MetadataImageEditor({
                   </div>
                 )}
               </label>
-
-              {editable ? (
-                <div className="metadata-edit-actions">
-                  <button
-                    type="button"
-                    disabled={metadataPending}
-                    onClick={() => {
-                      onPersistPackageMetadata(false)
-                    }}
-                  >
-                    保存
-                  </button>
-                  <button
-                    type="button"
-                    disabled={metadataPending}
-                    onClick={() => {
-                      onPersistPackageMetadata(true)
-                    }}
-                  >
-                    作品名同步图包名
-                  </button>
-                  <button type="button" disabled={metadataPending || autoTagPending} onClick={onGeneratePackageAutoTags}>
-                    {autoTagPending ? '自动生成标签中...' : '自动生成标签'}
-                  </button>
-                  <button type="button" disabled={metadataPending || autoTagPending} onClick={onGeneratePackageAutoTagsVision}>
-                    {autoTagPending ? '视觉标签生成中...' : '视觉模型生成标签'}
-                  </button>
-                  <button type="button" disabled={metadataPending || embeddingPending} onClick={onGeneratePackageEmbeddings}>
-                    {embeddingPending ? '嵌入生成中...' : '生成嵌入向量'}
-                  </button>
-                </div>
-              ) : null}
             </div>
           ) : (
             <p className="metadata-empty-tip">当前无可编辑图包</p>

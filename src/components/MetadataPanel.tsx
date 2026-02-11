@@ -17,8 +17,6 @@ export interface MetadataPanelProps {
   currentGrade: number | null
   currentVideoGrade: number | null
   metadataPending: boolean
-  autoTagPending: boolean
-  embeddingPending: boolean
   editable: boolean
   focusedVideo: VideoItem | null
   metadataTab: 'info' | 'playlist'
@@ -33,20 +31,17 @@ export interface MetadataPanelProps {
   onExpand: () => void
   onGradeChange: (grade: number | null) => void
   onSavePackageMetadata: (payload: {
-    workTitle: string
-    circle: string
-    author: string
-    tags: string[]
+    workTitle?: string
+    circle?: string
+    author?: string
+    tags?: string[]
     syncWorkTitleToPackageName?: boolean
   }) => void
-  onGeneratePackageAutoTags: () => void
-  onGeneratePackageAutoTagsVision: () => void
-  onGeneratePackageEmbeddings: () => void
   onSaveVideoMetadata: (payload: {
-    workTitle: string
-    circle: string
-    author: string
-    tags: string[]
+    workTitle?: string
+    circle?: string
+    author?: string
+    tags?: string[]
     grade?: number | null
     syncFileNameToWorkTitle?: boolean
   }) => void
@@ -83,8 +78,6 @@ function MetadataPanel({
   currentGrade,
   currentVideoGrade,
   metadataPending,
-  autoTagPending,
-  embeddingPending,
   editable,
   focusedVideo,
   metadataTab,
@@ -99,9 +92,6 @@ function MetadataPanel({
   onExpand,
   onGradeChange,
   onSavePackageMetadata,
-  onGeneratePackageAutoTags,
-  onGeneratePackageAutoTagsVision,
-  onGeneratePackageEmbeddings,
   onSaveVideoMetadata,
   onSearchByWorkTitle,
   onSearchByCircle,
@@ -209,43 +199,119 @@ function MetadataPanel({
   const imagePreviewClassName = hasImageFocus && focusedImage ? 'metadata-content metadata-content-focus' : 'metadata-content'
   const metadataPanelClassName = hasImageFocus && focusedImage ? 'metadata-panel is-image-focus' : 'metadata-panel'
 
-  const persistPackageMetadata = (syncWorkTitleToPackageName = false) => {
+  const persistPackageWorkTitle = (rawValue: string) => {
     if (!focusedImagePackage) {
       return
     }
-
-    const workTitle = workTitleDraft.trim().length > 0 ? workTitleDraft.trim() : focusedImagePackage.workTitle
-    const circle = circleDraft.trim().length > 0 ? circleDraft.trim() : focusedImagePackage.circle
-    const author = authorDraft.trim().length > 0 ? authorDraft.trim() : focusedImagePackage.author
-    const tags = parseTagsInput(tagsDraft)
+    const workTitle = rawValue.trim()
+    if (workTitle.length === 0) {
+      return
+    }
 
     onSavePackageMetadata({
       workTitle,
-      circle,
-      author,
-      tags,
-      syncWorkTitleToPackageName,
     })
   }
 
-  const persistVideoMetadata = (syncFileNameToWorkTitle = false, grade: number | null | undefined = undefined) => {
+  const persistPackageCircle = (rawValue: string) => {
+    if (!focusedImagePackage) {
+      return
+    }
+    const circle = rawValue.trim()
+    if (circle.length === 0) {
+      return
+    }
+
+    onSavePackageMetadata({
+      circle,
+    })
+  }
+
+  const persistPackageAuthor = (rawValue: string) => {
+    if (!focusedImagePackage) {
+      return
+    }
+    const author = rawValue.trim()
+    if (author.length === 0) {
+      return
+    }
+
+    onSavePackageMetadata({
+      author,
+    })
+  }
+
+  const persistPackageTags = (rawValue: string) => {
+    if (!focusedImagePackage) {
+      return
+    }
+    const tags = parseTagsInput(rawValue)
+
+    onSavePackageMetadata({
+      tags,
+    })
+  }
+
+  const persistVideoWorkTitle = (rawValue: string) => {
+    if (!focusedVideo) {
+      return
+    }
+    const workTitle = rawValue.trim()
+    if (workTitle.length === 0) {
+      return
+    }
+
+    onSaveVideoMetadata({
+      workTitle,
+    })
+  }
+
+  const persistVideoCircle = (rawValue: string) => {
+    if (!focusedVideo) {
+      return
+    }
+    const circle = rawValue.trim()
+    if (circle.length === 0) {
+      return
+    }
+
+    onSaveVideoMetadata({
+      circle,
+    })
+  }
+
+  const persistVideoAuthor = (rawValue: string) => {
+    if (!focusedVideo) {
+      return
+    }
+    const author = rawValue.trim()
+    if (author.length === 0) {
+      return
+    }
+
+    onSaveVideoMetadata({
+      author,
+    })
+  }
+
+  const persistVideoTags = (rawValue: string) => {
+    if (!focusedVideo) {
+      return
+    }
+    const tags = parseTagsInput(rawValue)
+
+    onSaveVideoMetadata({
+      tags,
+    })
+  }
+
+  const persistVideoGrade = (grade: number | null) => {
     if (!focusedVideo) {
       return
     }
 
-    const workTitle =
-      videoWorkTitleDraft.trim().length > 0 ? videoWorkTitleDraft.trim() : focusedVideo.workTitle
-    const circle = videoCircleDraft.trim().length > 0 ? videoCircleDraft.trim() : focusedVideo.circle
-    const author = videoAuthorDraft.trim().length > 0 ? videoAuthorDraft.trim() : focusedVideo.author
-    const tags = parseTagsInput(videoTagsDraft)
-
     onSaveVideoMetadata({
-      workTitle,
-      circle,
-      author,
-      tags,
       grade,
-      syncFileNameToWorkTitle,
     })
   }
 
@@ -288,8 +354,6 @@ function MetadataPanel({
           displayedImageSrc={displayedImageSrc}
           imagePreviewSizing={imagePreviewSizing}
           metadataPending={metadataPending}
-          autoTagPending={autoTagPending}
-          embeddingPending={embeddingPending}
           editable={editable}
           currentGrade={currentGrade}
           workTitleDraft={workTitleDraft}
@@ -300,10 +364,10 @@ function MetadataPanel({
           onCircleDraftChange={setCircleDraft}
           onAuthorDraftChange={setAuthorDraft}
           onTagsDraftChange={setTagsDraft}
-          onPersistPackageMetadata={persistPackageMetadata}
-          onGeneratePackageAutoTags={onGeneratePackageAutoTags}
-          onGeneratePackageAutoTagsVision={onGeneratePackageAutoTagsVision}
-          onGeneratePackageEmbeddings={onGeneratePackageEmbeddings}
+          onSubmitPackageWorkTitle={persistPackageWorkTitle}
+          onSubmitPackageCircle={persistPackageCircle}
+          onSubmitPackageAuthor={persistPackageAuthor}
+          onSubmitPackageTags={persistPackageTags}
           onGradeChange={onGradeChange}
           onSearchByWorkTitle={onSearchByWorkTitle}
           onSearchByCircle={onSearchByCircle}
@@ -333,7 +397,11 @@ function MetadataPanel({
           onVideoCircleDraftChange={setVideoCircleDraft}
           onVideoAuthorDraftChange={setVideoAuthorDraft}
           onVideoTagsDraftChange={setVideoTagsDraft}
-          onPersistVideoMetadata={persistVideoMetadata}
+          onSubmitVideoWorkTitle={persistVideoWorkTitle}
+          onSubmitVideoCircle={persistVideoCircle}
+          onSubmitVideoAuthor={persistVideoAuthor}
+          onSubmitVideoTags={persistVideoTags}
+          onVideoGradeChange={persistVideoGrade}
           onSearchByWorkTitle={onSearchByWorkTitle}
           onSearchByCircle={onSearchByCircle}
           onSearchByAuthor={onSearchByAuthor}

@@ -1,23 +1,42 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-import type { SidebarNode } from '../../types'
+import type { ImagePackage, SidebarNode, VideoItem } from '../../types'
 
 export interface PackageMetadataWritePayload {
-  workTitle: string
-  circle: string
-  author: string
-  tags: string[]
+  workTitle?: string
+  circle?: string
+  author?: string
+  tags?: string[]
   syncWorkTitleToPackageName?: boolean
 }
 
 export interface VideoMetadataWritePayload {
-  workTitle: string
-  circle: string
-  author: string
-  tags: string[]
+  workTitle?: string
+  circle?: string
+  author?: string
+  tags?: string[]
   grade?: number | null
   syncFileNameToWorkTitle?: boolean
 }
+
+type MetadataTaskKind = 'auto-tags' | 'vision-tags' | 'embeddings'
+type MetadataTaskStatus = 'idle' | 'running' | 'paused'
+
+interface MetadataTaskProgressState {
+  kind: MetadataTaskKind | null
+  status: MetadataTaskStatus
+  processed: number
+  total: number
+}
+
+const IDLE_TASK_PROGRESS: MetadataTaskProgressState = {
+  kind: null,
+  status: 'idle',
+  processed: 0,
+  total: 0,
+}
+
+const TASK_POLL_INTERVAL_MS = 120
 
 interface UseMetadataWriteBindingsParams {
   metadataManageMode: boolean
@@ -42,7 +61,16 @@ interface UseMetadataWriteBindingsParams {
       grade: boolean
     }
     writePackageGrade: (packageId: string, grade: number | null) => Promise<void>
-    writePackageMetadata?: (packageId: string, payload: PackageMetadataWritePayload) => Promise<void>
+    writePackageMetadata?: (
+      packageId: string,
+      payload: {
+        workTitle: string
+        circle: string
+        author: string
+        tags: string[]
+        syncWorkTitleToPackageName?: boolean
+      },
+    ) => Promise<void>
     generatePackageAutoTags?: (
       packageId: string,
       payload: {
@@ -76,8 +104,20 @@ interface UseMetadataWriteBindingsParams {
         timeoutMs: number
       },
     ) => Promise<{ analyzed_images: number; embedded_images: number; failed_images: number; vector_dimension: number }>
-    writeVideoMetadata?: (videoId: string, payload: VideoMetadataWritePayload) => Promise<void>
+    writeVideoMetadata?: (
+      videoId: string,
+      payload: {
+        workTitle: string
+        circle: string
+        author: string
+        tags: string[]
+        grade?: number | null
+        syncFileNameToWorkTitle?: boolean
+      },
+    ) => Promise<void>
   }
+  packageById: Map<string, ImagePackage>
+  videoById: Map<string, VideoItem>
   metadataImagePackageId: string | null
   focusedVideoId: string | null
   sidebarCheckedNodeIds: string[]
@@ -89,12 +129,51 @@ interface UseMetadataWriteBindingsResult {
   metadataPending: boolean
   autoTagPending: boolean
   embeddingPending: boolean
+  metadataTaskKind: MetadataTaskKind | null
+  metadataTaskStatus: MetadataTaskStatus
+  metadataTaskProcessed: number
+  metadataTaskTotal: number
+  stopMetadataTask: () => void
   applyPackageGrade: (grade: number | null) => void
   applyPackageMetadata: (payload: PackageMetadataWritePayload) => void
+  applyPackageSyncName: () => void
   applyPackageAutoTags: () => void
   applyPackageAutoTagsVision: () => void
   applyPackageEmbeddings: () => void
   applyVideoMetadata: (payload: VideoMetadataWritePayload) => void
+  applyVideoSyncName: () => void
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
+function normalizeTextPatch(value: string | undefined, fallback: string): string {
+  if (value === undefined) {
+    return fallback
+  }
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : fallback
+}
+
+function normalizeTags(tags: string[]): string[] {
+  const next = new Set<string>()
+  for (const rawTag of tags) {
+    const normalized = rawTag.trim()
+    if (normalized.length > 0) {
+      next.add(normalized)
+    }
+  }
+  return Array.from(next)
+}
+
+function normalizeTagsPatch(tags: string[] | undefined, fallback: string[]): string[] {
+  if (!tags) {
+    return fallback
+  }
+  return normalizeTags(tags)
 }
 
 export function useMetadataWriteBindings({
@@ -115,14 +194,21 @@ export function useMetadataWriteBindings({
   embeddingEndpoint,
   embeddingModel,
   backendWrite,
+  packageById,
+  videoById,
   metadataImagePackageId,
   focusedVideoId,
   sidebarCheckedNodeIds,
   sidebarNodeById,
   setManageOperationHint,
 }: UseMetadataWriteBindingsParams): UseMetadataWriteBindingsResult {
-  const [autoTagPending, setAutoTagPending] = useState(false)
-  const [embeddingPending, setEmbeddingPending] = useState(false)
+  const [taskProgress, setTaskProgress] = useState<MetadataTaskProgressState>(IDLE_TASK_PROGRESS)
+
+  const taskEpochRef = useRef(0)
+  const taskPausedRef = useRef(false)
+  const taskStopRequestedRef = useRef(false)
+
+  const isTaskRunActive = useCallback((runId: number) => taskEpochRef.current === runId, [])
 
   const collectBatchTargets = useCallback(() => {
     const packageIds = new Set<string>()
@@ -157,6 +243,28 @@ export function useMetadataWriteBindings({
     }
   }, [sidebarCheckedNodeIds, sidebarNodeById])
 
+  const resolvePackageTargets = useCallback((): string[] => {
+    if (metadataManageMode) {
+      const { packageIds } = collectBatchTargets()
+      if (packageIds.length > 0) {
+        return packageIds
+      }
+    }
+
+    return metadataImagePackageId ? [metadataImagePackageId] : []
+  }, [collectBatchTargets, metadataImagePackageId, metadataManageMode])
+
+  const resolveVideoTargets = useCallback((): string[] => {
+    if (metadataManageMode) {
+      const { videoIds } = collectBatchTargets()
+      if (videoIds.length > 0) {
+        return videoIds
+      }
+    }
+
+    return focusedVideoId ? [focusedVideoId] : []
+  }, [collectBatchTargets, focusedVideoId, metadataManageMode])
+
   const runBatchWrite = useCallback(
     async (
       targetIds: string[],
@@ -184,48 +292,273 @@ export function useMetadataWriteBindings({
     [setManageOperationHint],
   )
 
-  const applyPackageGrade = useCallback(
-    (grade: number | null) => {
-      if (metadataManageMode) {
-        const { packageIds } = collectBatchTargets()
-        if (packageIds.length > 0) {
-          void runBatchWrite(packageIds, (packageId) => backendWrite.writePackageGrade(packageId, grade))
-          return
-        }
+  const buildPackageMetadataPayload = useCallback(
+    (packageId: string, payload: PackageMetadataWritePayload) => {
+      const source = packageById.get(packageId)
+      if (!source) {
+        return null
       }
 
-      if (!metadataImagePackageId) {
+      return {
+        workTitle: normalizeTextPatch(payload.workTitle, source.workTitle),
+        circle: normalizeTextPatch(payload.circle, source.circle),
+        author: normalizeTextPatch(payload.author, source.author),
+        tags: normalizeTagsPatch(payload.tags, source.tags),
+        syncWorkTitleToPackageName: payload.syncWorkTitleToPackageName,
+      }
+    },
+    [packageById],
+  )
+
+  const buildVideoMetadataPayload = useCallback(
+    (videoId: string, payload: VideoMetadataWritePayload) => {
+      const source = videoById.get(videoId)
+      if (!source) {
+        return null
+      }
+
+      return {
+        workTitle: normalizeTextPatch(payload.workTitle, source.workTitle),
+        circle: normalizeTextPatch(payload.circle, source.circle),
+        author: normalizeTextPatch(payload.author, source.author),
+        tags: normalizeTagsPatch(payload.tags, source.tags),
+        grade: payload.grade,
+        syncFileNameToWorkTitle: payload.syncFileNameToWorkTitle,
+      }
+    },
+    [videoById],
+  )
+
+  const applyPackageGrade = useCallback(
+    (grade: number | null) => {
+      const packageIds = resolvePackageTargets()
+      if (packageIds.length > 0) {
+        void runBatchWrite(packageIds, (packageId) => backendWrite.writePackageGrade(packageId, grade))
         return
       }
-      void backendWrite.writePackageGrade(metadataImagePackageId, grade)
+
+      setManageOperationHint('评分写入失败：当前无可用图包')
     },
-    [backendWrite, collectBatchTargets, metadataImagePackageId, metadataManageMode, runBatchWrite],
+    [backendWrite, resolvePackageTargets, runBatchWrite, setManageOperationHint],
   )
 
   const applyPackageMetadata = useCallback(
     (payload: PackageMetadataWritePayload) => {
-      if (!backendWrite.writePackageMetadata) {
+      const writer = backendWrite.writePackageMetadata
+      if (!writer) {
         return
       }
 
-      if (metadataManageMode) {
-        const { packageIds } = collectBatchTargets()
-        if (packageIds.length > 0) {
-          void runBatchWrite(packageIds, (packageId) => backendWrite.writePackageMetadata!(packageId, payload))
+      const packageIds = resolvePackageTargets()
+      if (packageIds.length === 0) {
+        setManageOperationHint('元数据写入失败：当前无可用图包')
+        return
+      }
+
+      void runBatchWrite(
+        packageIds,
+        async (packageId) => {
+          const mergedPayload = buildPackageMetadataPayload(packageId, payload)
+          if (!mergedPayload) {
+            throw new Error(`package_not_found:${packageId}`)
+          }
+          await writer(packageId, mergedPayload)
+        },
+        '元数据批量写入完成',
+      )
+    },
+    [backendWrite.writePackageMetadata, buildPackageMetadataPayload, resolvePackageTargets, runBatchWrite, setManageOperationHint],
+  )
+
+  const applyVideoMetadata = useCallback(
+    (payload: VideoMetadataWritePayload) => {
+      const writer = backendWrite.writeVideoMetadata
+      if (!writer) {
+        return
+      }
+
+      const videoIds = resolveVideoTargets()
+      if (videoIds.length === 0) {
+        setManageOperationHint('视频元数据写入失败：当前无可用视频')
+        return
+      }
+
+      void runBatchWrite(
+        videoIds,
+        async (videoId) => {
+          const mergedPayload = buildVideoMetadataPayload(videoId, payload)
+          if (!mergedPayload) {
+            throw new Error(`video_not_found:${videoId}`)
+          }
+          await writer(videoId, mergedPayload)
+        },
+        '视频元数据批量写入完成',
+      )
+    },
+    [backendWrite.writeVideoMetadata, buildVideoMetadataPayload, resolveVideoTargets, runBatchWrite, setManageOperationHint],
+  )
+
+  const applyPackageSyncName = useCallback(() => {
+    applyPackageMetadata({
+      syncWorkTitleToPackageName: true,
+    })
+  }, [applyPackageMetadata])
+
+  const applyVideoSyncName = useCallback(() => {
+    applyVideoMetadata({
+      syncFileNameToWorkTitle: true,
+    })
+  }, [applyVideoMetadata])
+
+  const toggleTaskRunState = useCallback(
+    (kind: MetadataTaskKind): boolean => {
+      if (taskProgress.kind !== kind) {
+        return false
+      }
+
+      if (taskProgress.status === 'running') {
+        taskPausedRef.current = true
+        setTaskProgress((previous) =>
+          previous.kind === kind
+            ? {
+                ...previous,
+                status: 'paused',
+              }
+            : previous,
+        )
+        return true
+      }
+
+      if (taskProgress.status === 'paused') {
+        taskPausedRef.current = false
+        setTaskProgress((previous) =>
+          previous.kind === kind
+            ? {
+                ...previous,
+                status: 'running',
+              }
+            : previous,
+        )
+        return true
+      }
+
+      return false
+    },
+    [taskProgress.kind, taskProgress.status],
+  )
+
+  const stopMetadataTask = useCallback(() => {
+    if (!taskProgress.kind) {
+      return
+    }
+
+    taskStopRequestedRef.current = true
+    taskPausedRef.current = false
+    taskEpochRef.current += 1
+    setTaskProgress(IDLE_TASK_PROGRESS)
+    setManageOperationHint('处理中断：将在当前图包处理完成后停止')
+  }, [setManageOperationHint, taskProgress.kind])
+
+  const runPackageTask = useCallback(
+    (
+      params: {
+        kind: MetadataTaskKind
+        targets: string[]
+        progressLabel: string
+        runForPackage: (packageId: string) => Promise<void>
+        buildDoneHint: (summary: {
+          successCount: number
+          failedCount: number
+          processedCount: number
+        }) => string
+      },
+    ) => {
+      const runId = taskEpochRef.current + 1
+      taskEpochRef.current = runId
+      taskPausedRef.current = false
+      taskStopRequestedRef.current = false
+
+      setTaskProgress({
+        kind: params.kind,
+        status: 'running',
+        processed: 0,
+        total: params.targets.length,
+      })
+
+      void (async () => {
+        let successCount = 0
+        let failedCount = 0
+        let processedCount = 0
+
+        for (let index = 0; index < params.targets.length; index += 1) {
+          if (!isTaskRunActive(runId) || taskStopRequestedRef.current) {
+            return
+          }
+
+          while (isTaskRunActive(runId) && taskPausedRef.current && !taskStopRequestedRef.current) {
+            await sleep(TASK_POLL_INTERVAL_MS)
+          }
+
+          if (!isTaskRunActive(runId) || taskStopRequestedRef.current) {
+            return
+          }
+
+          const packageId = params.targets[index]!
+          try {
+            await params.runForPackage(packageId)
+            successCount += 1
+          } catch {
+            failedCount += 1
+          }
+
+          processedCount = index + 1
+
+          if (!isTaskRunActive(runId)) {
+            return
+          }
+
+          setTaskProgress((previous) =>
+            previous.kind === params.kind
+              ? {
+                  ...previous,
+                  processed: processedCount,
+                }
+              : previous,
+          )
+
+          setManageOperationHint(`${params.progressLabel}进度 ${processedCount}/${params.targets.length}`)
+        }
+
+        if (!isTaskRunActive(runId)) {
           return
         }
-      }
 
-      if (!metadataImagePackageId) {
-        return
-      }
-      void backendWrite.writePackageMetadata(metadataImagePackageId, payload)
+        setTaskProgress(IDLE_TASK_PROGRESS)
+        setManageOperationHint(
+          params.buildDoneHint({
+            successCount,
+            failedCount,
+            processedCount,
+          }),
+        )
+      })().catch((error: unknown) => {
+        if (!isTaskRunActive(runId)) {
+          return
+        }
+
+        const message = error instanceof Error && error.message.trim().length > 0 ? error.message : '未知错误'
+        setTaskProgress(IDLE_TASK_PROGRESS)
+        setManageOperationHint(`${params.progressLabel}失败：${message}`)
+      })
     },
-    [backendWrite, collectBatchTargets, metadataImagePackageId, metadataManageMode, runBatchWrite],
+    [isTaskRunActive, setManageOperationHint],
   )
 
   const applyPackageAutoTags = useCallback(() => {
-    if (autoTagPending) {
+    if (toggleTaskRunState('auto-tags')) {
+      return
+    }
+    if (taskProgress.kind && taskProgress.kind !== 'auto-tags') {
       return
     }
 
@@ -240,75 +573,57 @@ export function useMetadataWriteBindings({
     const generalMinScore = Math.max(0, Math.min(1, autoTagGeneralMinScore))
     const characterMinScore = Math.max(0, Math.min(1, autoTagCharacterMinScore))
     const ratingMinScore = Math.max(0, Math.min(1, autoTagRatingMinScore))
+
     if (!modelPath) {
       setManageOperationHint('自动标签失败：请先在设置中填写模型路径')
       return
     }
 
-    const runForPackage = (packageId: string) =>
-      autoTagWriter(packageId, {
-        modelPath,
-        occurrenceThreshold: threshold,
-        generalMinScore,
-        characterMinScore,
-        includeRating: autoTagIncludeRating,
-        ratingMinScore,
-      })
-
-    if (metadataManageMode) {
-      const { packageIds } = collectBatchTargets()
-      if (packageIds.length > 0) {
-        setAutoTagPending(true)
-        void runBatchWrite(
-          packageIds,
-          async (packageId) => {
-            await runForPackage(packageId)
-          },
-          '自动标签批量执行完成',
-        )
-          .catch(() => undefined)
-          .finally(() => {
-            setAutoTagPending(false)
-          })
-        return
-      }
-    }
-
-    if (!metadataImagePackageId) {
+    const packageIds = resolvePackageTargets()
+    if (packageIds.length === 0) {
       setManageOperationHint('自动标签失败：当前无可用图包')
       return
     }
 
-    setAutoTagPending(true)
-    void runForPackage(metadataImagePackageId)
-      .then((response) => {
-        setManageOperationHint(`自动标签完成：生成 ${response.generated_tags.length} 个标签，分析 ${response.analyzed_images} 张图片`)
-      })
-      .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : String(error)
-        setManageOperationHint(`自动标签失败：${message}`)
-      })
-      .finally(() => {
-        setAutoTagPending(false)
-      })
+    runPackageTask({
+      kind: 'auto-tags',
+      targets: packageIds,
+      progressLabel: '自动标签',
+      runForPackage: async (packageId) => {
+        await autoTagWriter(packageId, {
+          modelPath,
+          occurrenceThreshold: threshold,
+          generalMinScore,
+          characterMinScore,
+          includeRating: autoTagIncludeRating,
+          ratingMinScore,
+        })
+      },
+      buildDoneHint: ({ successCount, failedCount, processedCount }) =>
+        failedCount > 0
+          ? `自动标签批量完成：已处理 ${processedCount} 项，成功 ${successCount} 项，失败 ${failedCount} 项`
+          : `自动标签批量完成：已处理 ${processedCount} 项`,
+    })
   }, [
-    autoTagPending,
+    autoTagCharacterMinScore,
+    autoTagGeneralMinScore,
+    autoTagIncludeRating,
     autoTagModelPath,
     autoTagOccurrenceThreshold,
-    autoTagGeneralMinScore,
-    autoTagCharacterMinScore,
-    autoTagIncludeRating,
     autoTagRatingMinScore,
     backendWrite.generatePackageAutoTags,
-    collectBatchTargets,
-    metadataImagePackageId,
-    metadataManageMode,
-    runBatchWrite,
+    resolvePackageTargets,
+    runPackageTask,
     setManageOperationHint,
+    taskProgress.kind,
+    toggleTaskRunState,
   ])
 
   const applyPackageAutoTagsVision = useCallback(() => {
-    if (autoTagPending) {
+    if (toggleTaskRunState('vision-tags')) {
+      return
+    }
+    if (taskProgress.kind && taskProgress.kind !== 'vision-tags') {
       return
     }
 
@@ -335,65 +650,39 @@ export function useMetadataWriteBindings({
       return
     }
 
-    const runForPackage = (packageId: string) =>
-      autoTagWriter(packageId, {
-        tagsCsvPath: normalizedCsvPath,
-        llmEndpoint: normalizedEndpoint,
-        llmModel: normalizedModel,
-        sampleImageCount,
-        occurrenceThreshold,
-        temperature,
-        timeoutMs,
-      })
-
-    if (metadataManageMode) {
-      const { packageIds } = collectBatchTargets()
-      if (packageIds.length > 0) {
-        setAutoTagPending(true)
-        void runBatchWrite(
-          packageIds,
-          async (packageId) => {
-            await runForPackage(packageId)
-          },
-          '视觉自动标签批量执行完成',
-        )
-          .catch(() => undefined)
-          .finally(() => {
-            setAutoTagPending(false)
-          })
-        return
-      }
-    }
-
-    if (!metadataImagePackageId) {
+    const packageIds = resolvePackageTargets()
+    if (packageIds.length === 0) {
       setManageOperationHint('视觉自动标签失败：当前无可用图包')
       return
     }
 
-    setAutoTagPending(true)
-    void runForPackage(metadataImagePackageId)
-      .then((response) => {
-        const droppedSummary = response.dropped_tags.length > 0 ? `，丢弃 ${response.dropped_tags.length} 个越界标签` : ''
-        const invalidSummary = response.invalid_response_images > 0 ? `，无效响应 ${response.invalid_response_images} 张` : ''
-        setManageOperationHint(
-          `视觉自动标签完成：生成 ${response.generated_tags.length} 个标签，分析 ${response.analyzed_images} 张图片${droppedSummary}${invalidSummary}`,
-        )
-      })
-      .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : String(error)
-        setManageOperationHint(`视觉自动标签失败：${message}`)
-      })
-      .finally(() => {
-        setAutoTagPending(false)
-      })
+    runPackageTask({
+      kind: 'vision-tags',
+      targets: packageIds,
+      progressLabel: '视觉标签',
+      runForPackage: async (packageId) => {
+        await autoTagWriter(packageId, {
+          tagsCsvPath: normalizedCsvPath,
+          llmEndpoint: normalizedEndpoint,
+          llmModel: normalizedModel,
+          sampleImageCount,
+          occurrenceThreshold,
+          temperature,
+          timeoutMs,
+        })
+      },
+      buildDoneHint: ({ successCount, failedCount, processedCount }) =>
+        failedCount > 0
+          ? `视觉自动标签批量完成：已处理 ${processedCount} 项，成功 ${successCount} 项，失败 ${failedCount} 项`
+          : `视觉自动标签批量完成：已处理 ${processedCount} 项`,
+    })
   }, [
-    autoTagPending,
     backendWrite.generatePackageAutoTagsVision,
-    collectBatchTargets,
-    metadataImagePackageId,
-    metadataManageMode,
-    runBatchWrite,
+    resolvePackageTargets,
+    runPackageTask,
     setManageOperationHint,
+    taskProgress.kind,
+    toggleTaskRunState,
     visionAutoTagCsvPath,
     visionAutoTagEndpoint,
     visionAutoTagModel,
@@ -404,7 +693,10 @@ export function useMetadataWriteBindings({
   ])
 
   const applyPackageEmbeddings = useCallback(() => {
-    if (embeddingPending || autoTagPending) {
+    if (toggleTaskRunState('embeddings')) {
+      return
+    }
+    if (taskProgress.kind && taskProgress.kind !== 'embeddings') {
       return
     }
 
@@ -421,125 +713,71 @@ export function useMetadataWriteBindings({
       return
     }
 
-    const maxConcurrency = 4
-    const maxRetries = 1
-    const timeoutMs = 45_000
-
-    const runForPackage = (packageId: string) =>
-      embeddingWriter(packageId, {
-        embeddingEndpoint: normalizedEndpoint,
-        embeddingModel: normalizedModel,
-        maxConcurrency,
-        maxRetries,
-        timeoutMs,
-      })
-
-    if (metadataManageMode) {
-      const { packageIds } = collectBatchTargets()
-      if (packageIds.length > 0) {
-        setEmbeddingPending(true)
-        void (async () => {
-          let analyzedTotal = 0
-          let embeddedTotal = 0
-          let failedTotal = 0
-          let failedPackages = 0
-
-          for (let index = 0; index < packageIds.length; index += 1) {
-            const packageId = packageIds[index]!
-            try {
-              const response = await runForPackage(packageId)
-              analyzedTotal += response.analyzed_images
-              embeddedTotal += response.embedded_images
-              failedTotal += response.failed_images
-              setManageOperationHint(
-                `嵌入生成进度 ${index + 1}/${packageIds.length}：已写入 ${embeddedTotal}/${analyzedTotal} 张`,
-              )
-            } catch {
-              failedPackages += 1
-            }
-          }
-
-          const packageFailureSummary =
-            failedPackages > 0 ? `，图包失败 ${failedPackages} 个` : ''
-          setManageOperationHint(
-            `嵌入生成批量完成：写入 ${embeddedTotal}/${analyzedTotal} 张，失败 ${failedTotal} 张${packageFailureSummary}`,
-          )
-        })()
-          .catch(() => undefined)
-          .finally(() => {
-            setEmbeddingPending(false)
-          })
-        return
-      }
-    }
-
-    if (!metadataImagePackageId) {
+    const packageIds = resolvePackageTargets()
+    if (packageIds.length === 0) {
       setManageOperationHint('嵌入生成失败：当前无可用图包')
       return
     }
 
-    setEmbeddingPending(true)
-    void runForPackage(metadataImagePackageId)
-      .then((response) => {
-        setManageOperationHint(
-          `嵌入生成完成：写入 ${response.embedded_images}/${response.analyzed_images} 张，失败 ${response.failed_images} 张，向量维度 ${response.vector_dimension}`,
-        )
-      })
-      .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : String(error)
-        setManageOperationHint(`嵌入生成失败：${message}`)
-      })
-      .finally(() => {
-        setEmbeddingPending(false)
-      })
+    const maxConcurrency = 4
+    const maxRetries = 1
+    const timeoutMs = 45_000
+    let analyzedTotal = 0
+    let embeddedTotal = 0
+    let failedImagesTotal = 0
+
+    runPackageTask({
+      kind: 'embeddings',
+      targets: packageIds,
+      progressLabel: '嵌入生成',
+      runForPackage: async (packageId) => {
+        const response = await embeddingWriter(packageId, {
+          embeddingEndpoint: normalizedEndpoint,
+          embeddingModel: normalizedModel,
+          maxConcurrency,
+          maxRetries,
+          timeoutMs,
+        })
+        analyzedTotal += response.analyzed_images
+        embeddedTotal += response.embedded_images
+        failedImagesTotal += response.failed_images
+      },
+      buildDoneHint: ({ failedCount, processedCount }) => {
+        const packageFailureSummary = failedCount > 0 ? `，图包失败 ${failedCount} 个` : ''
+        return `嵌入生成批量完成：已处理 ${processedCount} 项，写入 ${embeddedTotal}/${analyzedTotal} 张，失败 ${failedImagesTotal} 张${packageFailureSummary}`
+      },
+    })
   }, [
-    autoTagPending,
     backendWrite.generatePackageEmbeddings,
-    collectBatchTargets,
     embeddingEndpoint,
     embeddingModel,
-    embeddingPending,
-    metadataImagePackageId,
-    metadataManageMode,
+    resolvePackageTargets,
+    runPackageTask,
     setManageOperationHint,
+    taskProgress.kind,
+    toggleTaskRunState,
   ])
 
-  const applyVideoMetadata = useCallback(
-    (payload: VideoMetadataWritePayload) => {
-      if (!backendWrite.writeVideoMetadata) {
-        return
-      }
-
-      if (metadataManageMode) {
-        const { videoIds } = collectBatchTargets()
-        if (videoIds.length > 0) {
-          void runBatchWrite(videoIds, (videoId) => backendWrite.writeVideoMetadata!(videoId, payload))
-          return
-        }
-      }
-
-      if (!focusedVideoId) {
-        return
-      }
-      void backendWrite.writeVideoMetadata(focusedVideoId, payload)
-    },
-    [backendWrite, collectBatchTargets, focusedVideoId, metadataManageMode, runBatchWrite],
-  )
+  const autoTagPending = taskProgress.kind === 'auto-tags' || taskProgress.kind === 'vision-tags'
+  const embeddingPending = taskProgress.kind === 'embeddings'
 
   return {
-    metadataPending:
-      backendWrite.pending.metadata ||
-      backendWrite.pending.grade ||
-      autoTagPending ||
-      embeddingPending,
+    metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade || autoTagPending || embeddingPending,
     autoTagPending,
     embeddingPending,
+    metadataTaskKind: taskProgress.kind,
+    metadataTaskStatus: taskProgress.status,
+    metadataTaskProcessed: taskProgress.processed,
+    metadataTaskTotal: taskProgress.total,
+    stopMetadataTask,
     applyPackageGrade,
     applyPackageMetadata,
+    applyPackageSyncName,
     applyPackageAutoTags,
     applyPackageAutoTagsVision,
     applyPackageEmbeddings,
     applyVideoMetadata,
+    applyVideoSyncName,
   }
 }
 

@@ -11,6 +11,27 @@
   gap: 10px;
 }
 
+.metadata-manage-panel {
+  background: var(--mpx-bg-muted);
+  height: auto;
+}
+
+.metadata-manage-actions {
+  gap: 10px;
+}
+
+.metadata-manage-actions .feature-action-btn.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--mpx-accent);
+}
+
+.metadata-manage-progress {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
 .manage-panel-actions .feature-action-btn.is-active {
   background: var(--accent-soft);
   border-color: var(--accent);

@@ -6,6 +6,7 @@ import { benchOnReactRender } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
 import ImageMainSection from './ImageMainSection'
 import ManagementPanel from './ManagementPanel'
+import MetadataManagementPanel from './MetadataManagementPanel'
 import MetadataPanel from './MetadataPanel'
 import SearchPanel from './SearchPanel'
 import SidebarPanel from './SidebarPanel'
@@ -28,6 +29,7 @@ interface AppWorkspaceProps {
   sidebarPanelProps: ComponentProps<typeof SidebarPanel>
   searchPanelProps: ComponentProps<typeof SearchPanel>
   managementPanelProps: ComponentProps<typeof ManagementPanel>
+  metadataManagementPanelProps: ComponentProps<typeof MetadataManagementPanel>
   imageMainSectionProps: ComponentProps<typeof ImageMainSection>
   videoMainSectionProps: ComponentProps<typeof VideoMainSection>
   metadataPanelProps: ComponentProps<typeof MetadataPanel>
@@ -51,6 +53,7 @@ function AppWorkspace({
   sidebarPanelProps,
   searchPanelProps,
   managementPanelProps,
+  metadataManagementPanelProps,
   imageMainSectionProps,
   videoMainSectionProps,
   metadataPanelProps,
@@ -81,6 +84,14 @@ function AppWorkspace({
     </Profiler>
   ) : (
     <ManagementPanel {...managementPanelProps} />
+  )
+
+  const metadataManagementPanel = enableProfiler ? (
+    <Profiler id="MetadataManagementPanel" onRender={benchOnReactRender}>
+      <MetadataManagementPanel {...metadataManagementPanelProps} />
+    </Profiler>
+  ) : (
+    <MetadataManagementPanel {...metadataManagementPanelProps} />
   )
 
   const mainSection = mode === 'image' ? (
@@ -136,6 +147,7 @@ function AppWorkspace({
       >
         {searchPanel}
         {managementPanel}
+        {metadataManagementPanel}
 
         <div className="workspace-body" ref={workspaceBodyRef}>
           <main

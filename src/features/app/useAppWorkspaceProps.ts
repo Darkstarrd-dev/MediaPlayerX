@@ -4,6 +4,7 @@ import {
 import type { BackendErrorRow } from './buildBackendErrorRows'
 import { buildMainFooter } from './buildMainFooter'
 import { buildManagementPanelProps } from './buildManagementPanelProps'
+import { buildMetadataManagementPanelProps } from './buildMetadataManagementPanelProps'
 import { buildMetadataPanelProps } from './buildMetadataPanelProps'
 import { buildSearchPanelProps } from './buildSearchPanelProps'
 import { buildSidebarPanelProps } from './buildSidebarPanelProps'
@@ -443,6 +444,35 @@ export function useAppWorkspaceProps({
     layoutLocked,
   })
 
+  const metadataManagementPanelProps = buildMetadataManagementPanelProps({
+    mode,
+    metadataManageMode,
+    searchPanelCollapsed,
+    setSearchPanelCollapsed,
+    vectorPanelHeight,
+    vectorPanelRef,
+    vectorPanelContentRef,
+    metadataPending: metadataWriteBindings.metadataPending,
+    operationHint: manageOperationHint,
+    taskKind: metadataWriteBindings.metadataTaskKind,
+    taskStatus: metadataWriteBindings.metadataTaskStatus,
+    taskProcessed: metadataWriteBindings.metadataTaskProcessed,
+    taskTotal: metadataWriteBindings.metadataTaskTotal,
+    onSyncName: () => {
+      if (mode === 'image') {
+        metadataWriteBindings.applyPackageSyncName()
+        return
+      }
+      metadataWriteBindings.applyVideoSyncName()
+    },
+    onAutoTags: metadataWriteBindings.applyPackageAutoTags,
+    onVisionTags: metadataWriteBindings.applyPackageAutoTagsVision,
+    onEmbeddings: metadataWriteBindings.applyPackageEmbeddings,
+    onStopTask: metadataWriteBindings.stopMetadataTask,
+    onStartVectorPanelResize,
+    layoutLocked,
+  })
+
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
 
   const refsInPageForDisplay =
@@ -537,8 +567,6 @@ export function useAppWorkspaceProps({
     currentGrade: currentGradeEffective,
     currentVideoGrade: focusedVideoEffective?.grade ?? null,
     metadataPending: metadataWriteBindings.metadataPending,
-    autoTagPending: metadataWriteBindings.autoTagPending,
-    embeddingPending: metadataWriteBindings.embeddingPending,
     editable: metadataManageMode,
     focusedVideo: focusedVideoEffective,
     metadataTab,
@@ -552,9 +580,6 @@ export function useAppWorkspaceProps({
     updateSettings: appSettings.updateSettings,
     onGradeChange: metadataWriteBindings.applyPackageGrade,
     onSavePackageMetadata: metadataWriteBindings.applyPackageMetadata,
-    onGeneratePackageAutoTags: metadataWriteBindings.applyPackageAutoTags,
-    onGeneratePackageAutoTagsVision: metadataWriteBindings.applyPackageAutoTagsVision,
-    onGeneratePackageEmbeddings: metadataWriteBindings.applyPackageEmbeddings,
     onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
     onSearchByWorkTitle: (value) => {
       applyMetadataFeatureSearch({ workTitle: value })
@@ -586,6 +611,7 @@ export function useAppWorkspaceProps({
     sidebarPanelProps,
     searchPanelProps,
     managementPanelProps,
+    metadataManagementPanelProps,
     imageMainSectionProps,
     videoMainSectionProps,
     metadataPanelProps,

@@ -1,3 +1,5 @@
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
+
 import type { VideoItem } from '../../types'
 import { formatSeconds } from '../../utils/ui'
 import { MetadataRatingGroup } from './MetadataRatingGroup'
@@ -24,7 +26,11 @@ interface MetadataVideoEditorProps {
   onVideoCircleDraftChange: (value: string) => void
   onVideoAuthorDraftChange: (value: string) => void
   onVideoTagsDraftChange: (value: string) => void
-  onPersistVideoMetadata: (syncFileNameToWorkTitle?: boolean, grade?: number | null) => void
+  onSubmitVideoWorkTitle: (value: string) => void
+  onSubmitVideoCircle: (value: string) => void
+  onSubmitVideoAuthor: (value: string) => void
+  onSubmitVideoTags: (value: string) => void
+  onVideoGradeChange: (grade: number | null) => void
   onSearchByWorkTitle: (value: string) => void
   onSearchByCircle: (value: string) => void
   onSearchByAuthor: (value: string) => void
@@ -57,7 +63,11 @@ export function MetadataVideoEditor({
   onVideoCircleDraftChange,
   onVideoAuthorDraftChange,
   onVideoTagsDraftChange,
-  onPersistVideoMetadata,
+  onSubmitVideoWorkTitle,
+  onSubmitVideoCircle,
+  onSubmitVideoAuthor,
+  onSubmitVideoTags,
+  onVideoGradeChange,
   onSearchByCircle,
   onSearchByAuthor,
   onSearchByTag,
@@ -70,6 +80,17 @@ export function MetadataVideoEditor({
     .split(/[,，]/)
     .map((tag) => tag.trim())
     .filter((tag, index, arr) => tag.length > 0 && arr.indexOf(tag) === index)
+
+  const commitOnEnter = (
+    event: ReactKeyboardEvent<HTMLInputElement>,
+    onCommit: (value: string) => void,
+  ) => {
+    if (event.key !== 'Enter') {
+      return
+    }
+    event.preventDefault()
+    onCommit(event.currentTarget.value)
+  }
 
   return (
     <div className="metadata-content metadata-video-content">
@@ -95,9 +116,7 @@ export function MetadataVideoEditor({
               clearAriaLabel="清空视频评分"
               pending={metadataPending || !editable}
               value={currentVideoGrade}
-              onChange={(grade) => {
-                onPersistVideoMetadata(false, grade)
-              }}
+              onChange={onVideoGradeChange}
             />
 
             <div className="metadata-edit-grid metadata-video-grid">
@@ -111,8 +130,8 @@ export function MetadataVideoEditor({
                   <input
                     value={videoWorkTitleDraft}
                     onChange={(event) => onVideoWorkTitleDraftChange(event.target.value)}
-                    onBlur={() => {
-                      onPersistVideoMetadata(false)
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitVideoWorkTitle)
                     }}
                   />
                 ) : (
@@ -125,8 +144,8 @@ export function MetadataVideoEditor({
                   <input
                     value={videoCircleDraft}
                     onChange={(event) => onVideoCircleDraftChange(event.target.value)}
-                    onBlur={() => {
-                      onPersistVideoMetadata(false)
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitVideoCircle)
                     }}
                   />
                 ) : (
@@ -145,8 +164,8 @@ export function MetadataVideoEditor({
                   <input
                     value={videoAuthorDraft}
                     onChange={(event) => onVideoAuthorDraftChange(event.target.value)}
-                    onBlur={() => {
-                      onPersistVideoMetadata(false)
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitVideoAuthor)
                     }}
                   />
                 ) : (
@@ -166,8 +185,8 @@ export function MetadataVideoEditor({
                     value={videoTagsDraft}
                     placeholder="多个标签用逗号分隔"
                     onChange={(event) => onVideoTagsDraftChange(event.target.value)}
-                    onBlur={() => {
-                      onPersistVideoMetadata(false)
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitVideoTags)
                     }}
                   />
                 ) : (
@@ -183,29 +202,6 @@ export function MetadataVideoEditor({
                 )}
               </label>
             </div>
-
-            {editable ? (
-              <div className="metadata-edit-actions">
-                <button
-                  type="button"
-                  disabled={metadataPending}
-                  onClick={() => {
-                    onPersistVideoMetadata(false)
-                  }}
-                >
-                  保存
-                </button>
-                <button
-                  type="button"
-                  disabled={metadataPending}
-                  onClick={() => {
-                    onPersistVideoMetadata(true)
-                  }}
-                >
-                  同步文件名到作品名
-                </button>
-              </div>
-            ) : null}
           </>
         ) : null}
 

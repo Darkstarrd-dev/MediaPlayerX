@@ -640,6 +640,19 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(widthAfterLock).toBe(widthBeforeLock)
   })
 
+  it('元数据管理使用顶部展开容器承载批处理按钮与进度', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+
+    expect(screen.getByRole('button', { name: '同步名称' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '自动生成标签' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '视觉模型生成标签' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '生成嵌入向量' })).toBeInTheDocument()
+    expect(screen.getByText('执行进度：0/0')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '保存' })).toBeNull()
+  })
+
   it('元数据面板标题可折叠，并可恢复展开', () => {
     render(<App />)
 
@@ -713,7 +726,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(document.querySelector('.metadata-video-stats')).not.toBeNull()
   })
 
-  it('点击视频信息区保存会触发 writeVideoMetadata 调用', () => {
+  it('视频信息字段回车会触发 writeVideoMetadata 调用', () => {
     const writeVideoMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writeVideoMetadataSync')
     render(<App />)
 
@@ -721,8 +734,9 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
     fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
 
-    fireEvent.change(screen.getByLabelText('作品名'), { target: { value: '新的视频作品名' } })
-    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    const workTitleInput = screen.getByLabelText('作品名') as HTMLInputElement
+    fireEvent.change(workTitleInput, { target: { value: '新的视频作品名' } })
+    fireEvent.keyDown(workTitleInput, { key: 'Enter', code: 'Enter' })
 
     expect(writeVideoMetadataSpy).toHaveBeenCalled()
     expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
@@ -786,7 +800,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '设为根' })).toBeInTheDocument()
   })
 
-  it('元数据管理支持按 Sidebar 勾选批量写入图包元数据', async () => {
+  it('元数据管理支持按字段回车批量写入，不覆盖未提交字段', async () => {
     const writePackageMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writePackageMetadataSync')
     render(<App />)
 
@@ -797,16 +811,18 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
 
     fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
-    fireEvent.change(screen.getByLabelText('作品名'), { target: { value: '批量元数据写入' } })
-    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    const circleInput = screen.getByLabelText('社团') as HTMLInputElement
+    fireEvent.change(circleInput, { target: { value: '批量社团更名' } })
+    fireEvent.keyDown(circleInput, { key: 'Enter', code: 'Enter' })
 
     await waitFor(() => {
-      expect(writePackageMetadataSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          work_title: '批量元数据写入',
-        }),
-      )
+      expect(writePackageMetadataSpy).toHaveBeenCalled()
     })
+
+    const payloads = writePackageMetadataSpy.mock.calls.map((call) => call[0])
+    expect(payloads.every((payload) => payload.circle === '批量社团更名')).toBe(true)
+    expect(new Set(payloads.map((payload) => payload.package_id)).size).toBeGreaterThan(1)
+    expect(new Set(payloads.map((payload) => payload.author)).size).toBeGreaterThan(1)
   })
 
   it('元数据管理支持按设置参数触发自动标签批量生成', async () => {
