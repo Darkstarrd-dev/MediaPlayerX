@@ -1,0 +1,1900 @@
+<!doctype html>
+<html lang="zh" data-mpx-style="flush" data-mpx-palette="parchment">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Theme Mock — MediaPlayerX V2 开发辅助</title>
+
+    <!-- V2 主题入口：contract + 全部 palettes + 全部 styles -->
+    <link rel="stylesheet" href="../../src/styles/themes/index.css" />
+    <!-- 组件层样式 -->
+    <link rel="stylesheet" href="../../src/App.css" />
+
+    <style>
+      /* ====================================================================
+       *  页面自身布局（不依赖 app 样式，独立于 app 运行）
+       * ==================================================================== */
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: var(--mpx-font-ui);
+        font-size: 14px;
+        color: var(--mpx-text-1);
+        background: var(--mpx-bg-body);
+        min-height: 100vh;
+      }
+
+      .mock-page {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+
+      /* ---------- 控制面板 ---------- */
+      .mock-control-bar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        border: 1px solid var(--mpx-border-2);
+        border-radius: var(--mpx-radius-lg);
+        background: var(--mpx-bg-elevated);
+        box-shadow: var(--mpx-shadow-panel);
+        padding: 10px 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: center;
+      }
+      .mock-control-bar .mock-title {
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--mpx-text-heading);
+        margin-right: 4px;
+      }
+      .mock-control-bar label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--mpx-text-2);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .mock-control-bar select,
+      .mock-control-bar input[type="text"] {
+        border: var(--mpx-control-border-width) solid var(--mpx-input-border);
+        border-radius: var(--mpx-control-radius);
+        background: var(--mpx-input-bg);
+        color: var(--mpx-input-text);
+        min-height: var(--mpx-control-height);
+        padding: 0 var(--mpx-control-padding-x);
+        font-size: 13px;
+      }
+      .mock-control-bar select:focus,
+      .mock-control-bar input:focus {
+        border-color: var(--mpx-input-focus-border);
+        outline: none;
+      }
+      .mock-control-bar button {
+        border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
+        border-radius: var(--mpx-control-radius);
+        min-height: var(--mpx-control-height);
+        background: var(--mpx-btn-secondary-bg);
+        color: var(--mpx-btn-secondary-text);
+        font-weight: var(--mpx-control-font-weight);
+        padding: 0 var(--mpx-control-padding-x);
+        cursor: pointer;
+        font-size: 13px;
+        transition: var(--mpx-control-transition);
+      }
+      .mock-control-bar button:hover {
+        background: var(--mpx-bg-hover);
+      }
+      .mock-control-bar button.is-active {
+        background: var(--mpx-btn-primary-bg);
+        color: var(--mpx-btn-primary-text);
+        border-color: var(--mpx-btn-primary-bg);
+      }
+      .mock-sep {
+        width: 1px;
+        height: 24px;
+        background: var(--mpx-border-1);
+        flex-shrink: 0;
+      }
+      .mock-preset-group {
+        display: flex;
+        gap: 4px;
+      }
+      .mock-module-filter {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-control-radius);
+        background: var(--mpx-bg-panel);
+        padding: 4px 6px;
+        flex-wrap: wrap;
+      }
+      .mock-module-title {
+        font-size: 12px;
+        color: var(--mpx-text-2);
+        font-weight: 600;
+      }
+      .mock-module-options {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .mock-module-options label {
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-radius-sm);
+        background: var(--mpx-bg-elevated);
+        padding: 2px 6px;
+        font-size: 12px;
+        color: var(--mpx-text-2);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .mock-module-options input {
+        margin: 0;
+        width: 13px;
+        height: 13px;
+        accent-color: var(--mpx-accent);
+      }
+      .mock-module-actions {
+        display: inline-flex;
+        gap: 4px;
+      }
+      .mock-module-actions button {
+        min-height: 24px;
+        padding: 0 8px;
+        font-size: 12px;
+      }
+      .mock-module-summary {
+        font-size: 12px;
+        color: var(--mpx-text-3);
+      }
+      .mock-hint {
+        font-size: 12px;
+        color: var(--mpx-text-3);
+        margin-left: auto;
+      }
+
+      /* ---------- 各 Section 容器 ---------- */
+      .mock-section {
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-radius-lg);
+        background: var(--mpx-bg-panel);
+        box-shadow: var(--mpx-shadow-panel);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .mock-section[hidden] {
+        display: none !important;
+      }
+      .mock-section > h3 {
+        margin: 0;
+        font-size: 14px;
+        color: var(--mpx-text-heading);
+        border-bottom: 1px solid var(--mpx-border-1);
+        padding-bottom: 6px;
+      }
+      .mock-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      .mock-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .mock-label {
+        font-size: 12px;
+        color: var(--mpx-text-3);
+        letter-spacing: 0.3px;
+      }
+
+      /* ---------- App Shell mock：固定高度模拟 ---------- */
+      .mock-app-shell {
+        height: auto;
+        min-height: 640px;
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--mpx-shadow-panel);
+      }
+      .mock-app-shell .app-body {
+        height: auto;
+        min-height: 500px;
+      }
+
+      /* ---------- Overlay section mock：转为 relative ---------- */
+      .mock-page .drop-overlay,
+      .mock-page .fullscreen-layer,
+      .mock-page .settings-mask,
+      .mock-page .vector-universe-overlay {
+        position: relative;
+        inset: auto;
+        z-index: 1;
+        height: 280px;
+        border-radius: var(--mpx-radius-lg);
+        overflow: hidden;
+      }
+      .mock-page .settings-panel {
+        width: 100%;
+        height: 100%;
+      }
+      .mock-page .fullscreen-content {
+        position: absolute;
+        inset: 0;
+      }
+      .mock-page .vector-universe-stage-wrap {
+        height: 100%;
+      }
+      .mock-overlay-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 12px;
+      }
+
+      /* ---------- Status swatches ---------- */
+      .mock-status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 8px;
+      }
+      .mock-status-swatch {
+        border-radius: var(--mpx-radius-md);
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .mock-status-swatch strong {
+        font-size: 13px;
+      }
+      .mock-status-swatch span {
+        font-size: 12px;
+        opacity: .85;
+      }
+
+      /* ---------- Control showcase ---------- */
+      .mock-controls-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 14px;
+      }
+      .mock-control-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-card-radius);
+        background: var(--mpx-bg-elevated);
+      }
+      .mock-control-cell > strong {
+        font-size: 13px;
+        color: var(--mpx-text-heading);
+      }
+      .mock-control-cell button {
+        border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
+        border-radius: var(--mpx-control-radius);
+        min-height: var(--mpx-control-height);
+        padding: 0 var(--mpx-control-padding-x);
+        font-weight: var(--mpx-control-font-weight);
+        font-size: 13px;
+        cursor: pointer;
+        transition: var(--mpx-control-transition);
+        box-shadow: var(--mpx-control-shadow);
+        backdrop-filter: var(--mpx-control-backdrop-filter);
+      }
+      .mock-control-cell button:hover {
+        transform: var(--mpx-control-hover-transform);
+        box-shadow: var(--mpx-control-hover-shadow);
+      }
+      .mock-control-cell button:active {
+        transform: var(--mpx-control-active-transform);
+        box-shadow: var(--mpx-control-active-shadow);
+      }
+      .mock-control-cell .btn-primary {
+        background: var(--mpx-btn-primary-bg);
+        color: var(--mpx-btn-primary-text);
+        border-color: var(--mpx-btn-primary-bg);
+      }
+      .mock-control-cell .btn-secondary {
+        background: var(--mpx-btn-secondary-bg);
+        color: var(--mpx-btn-secondary-text);
+      }
+      .mock-control-cell .btn-disabled {
+        background: var(--mpx-bg-muted);
+        color: var(--mpx-text-3);
+        border-color: var(--mpx-border-1);
+        cursor: not-allowed;
+        opacity: .6;
+      }
+      .mock-control-cell input[type="text"],
+      .mock-control-cell input[type="url"] {
+        border: var(--mpx-control-border-width) solid var(--mpx-input-border);
+        border-radius: var(--mpx-control-radius);
+        min-height: var(--mpx-control-height);
+        padding: 0 var(--mpx-control-padding-x);
+        background: var(--mpx-input-bg);
+        color: var(--mpx-input-text);
+        font-size: 13px;
+        width: 100%;
+      }
+      .mock-control-cell input[type="text"]:focus,
+      .mock-control-cell input[type="url"]:focus {
+        border-color: var(--mpx-input-focus-border);
+        background: var(--mpx-input-focus-bg);
+        outline: none;
+      }
+      .mock-control-cell input[readonly] {
+        background: var(--mpx-input-readonly-bg);
+        color: var(--mpx-input-readonly-text);
+        border-color: var(--mpx-input-readonly-border);
+      }
+      .mock-control-cell input[type="range"] {
+        width: 100%;
+        accent-color: var(--mpx-accent);
+      }
+      .mock-control-cell input[type="checkbox"] {
+        width: var(--mpx-checkbox-size);
+        height: var(--mpx-checkbox-size);
+        accent-color: var(--mpx-checkbox-checked-bg);
+      }
+      .mock-control-cell select {
+        border: var(--mpx-control-border-width) solid var(--mpx-input-border);
+        border-radius: var(--mpx-control-radius);
+        min-height: var(--mpx-control-height);
+        padding: 0 var(--mpx-control-padding-x);
+        background: var(--mpx-input-bg);
+        color: var(--mpx-input-text);
+        font-size: 13px;
+      }
+
+      /* ---------- 滚动条测试区 ---------- */
+      .mock-scroll-box {
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-card-radius);
+        background: var(--mpx-bg-elevated);
+        padding: 10px;
+        max-height: 140px;
+        overflow: auto;
+        display: grid;
+        gap: 4px;
+      }
+      .mock-scroll-box span {
+        padding: 5px 8px;
+        border-radius: var(--mpx-radius-sm);
+        background: var(--mpx-bg-muted);
+        color: var(--mpx-text-2);
+        font-size: 13px;
+      }
+
+      /* ---------- Token 实时预览面板 ---------- */
+      .mock-token-panel {
+        display: none;
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-radius-lg);
+        background: var(--mpx-bg-elevated);
+        padding: 12px;
+        font-family: var(--mpx-font-mono);
+        font-size: 12px;
+        max-height: 260px;
+        overflow: auto;
+        line-height: 1.7;
+        color: var(--mpx-text-2);
+      }
+      .mock-token-panel.is-open { display: block; }
+      .mock-token-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .mock-token-swatch {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        border: 1px solid var(--mpx-border-1);
+        flex-shrink: 0;
+      }
+      .mock-token-name { color: var(--mpx-accent); }
+      .mock-token-val  { color: var(--mpx-text-3); margin-left: auto; }
+
+      /* ---------- QA 清单 ---------- */
+      .mock-qa-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .mock-qa-progress {
+        font-size: 12px;
+        color: var(--mpx-text-2);
+        margin-right: auto;
+      }
+      .mock-qa-toolbar button {
+        border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
+        border-radius: var(--mpx-control-radius);
+        min-height: var(--mpx-control-height);
+        background: var(--mpx-btn-secondary-bg);
+        color: var(--mpx-btn-secondary-text);
+        font-weight: var(--mpx-control-font-weight);
+        padding: 0 var(--mpx-control-padding-x);
+        cursor: pointer;
+      }
+      .mock-qa-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 12px;
+      }
+      .mock-qa-group {
+        border: 1px solid var(--mpx-border-1);
+        border-radius: var(--mpx-card-radius);
+        background: var(--mpx-bg-elevated);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .mock-qa-group > strong {
+        font-size: 13px;
+        color: var(--mpx-text-heading);
+      }
+      .mock-qa-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--mpx-text-1);
+      }
+      .mock-qa-item input {
+        margin-top: 2px;
+        width: var(--mpx-checkbox-size);
+        height: var(--mpx-checkbox-size);
+      }
+
+
+      /* ====================================================================
+       *  调试模式样式
+       * ==================================================================== */
+
+      /* 通用 debug badge mixin — 通过 ::before 注入标签 */
+      :root[data-debug="true"] .app-header,
+      :root[data-debug="true"] .sidebar,
+      :root[data-debug="true"] .sidebar-splitter,
+      :root[data-debug="true"] .main-pane,
+      :root[data-debug="true"] .main-toolbar,
+      :root[data-debug="true"] .image-grid,
+      :root[data-debug="true"] .thumb-card,
+      :root[data-debug="true"] .main-footer,
+      :root[data-debug="true"] .metadata-splitter,
+      :root[data-debug="true"] .metadata-panel,
+      :root[data-debug="true"] .vector-panel,
+      :root[data-debug="true"] .pager-line,
+      :root[data-debug="true"] .name-list,
+      :root[data-debug="true"] .settings-mask,
+      :root[data-debug="true"] .fullscreen-layer,
+      :root[data-debug="true"] .drop-overlay,
+      :root[data-debug="true"] .vector-universe-overlay,
+      :root[data-debug="true"] .video-preview,
+      :root[data-debug="true"] .backend-error-banner,
+      :root[data-debug="true"] .runtime-warning-banner,
+      :root[data-debug="true"] .workspace,
+      :root[data-debug="true"] .workspace-body,
+      :root[data-debug="true"] .metadata-content,
+      :root[data-debug="true"] .sidebar-tree,
+      :root[data-debug="true"] .video-controls {
+        position: relative;
+      }
+
+      :root[data-debug="true"] .app-header::before,
+      :root[data-debug="true"] .sidebar::before,
+      :root[data-debug="true"] .sidebar-splitter::before,
+      :root[data-debug="true"] .main-pane::before,
+      :root[data-debug="true"] .main-toolbar::before,
+      :root[data-debug="true"] .image-grid::before,
+      :root[data-debug="true"] .main-footer::before,
+      :root[data-debug="true"] .metadata-splitter::before,
+      :root[data-debug="true"] .metadata-panel::before,
+      :root[data-debug="true"] .vector-panel::before,
+      :root[data-debug="true"] .pager-line::before,
+      :root[data-debug="true"] .name-list::before,
+      :root[data-debug="true"] .settings-mask::before,
+      :root[data-debug="true"] .fullscreen-layer::before,
+      :root[data-debug="true"] .drop-overlay::before,
+      :root[data-debug="true"] .vector-universe-overlay::before,
+      :root[data-debug="true"] .video-preview::before,
+      :root[data-debug="true"] .backend-error-banner::before,
+      :root[data-debug="true"] .runtime-warning-banner::before,
+      :root[data-debug="true"] .workspace::before,
+      :root[data-debug="true"] .workspace-body::before,
+      :root[data-debug="true"] .metadata-content::before,
+      :root[data-debug="true"] .sidebar-tree::before,
+      :root[data-debug="true"] .video-controls::before {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        font-size: 9px;
+        font-weight: 700;
+        font-family: var(--mpx-font-mono);
+        padding: 1px 4px;
+        border-radius: 0 0 0 4px;
+        z-index: 90;
+        pointer-events: none;
+        line-height: 1.3;
+        letter-spacing: .5px;
+      }
+
+      /* --- 各区域独立色彩 + badge --- */
+      :root[data-debug="true"] .app-header {
+        outline: 2px dashed rgba(220, 40, 40, .7);
+        background-image: linear-gradient(rgba(255, 0, 0, .10), rgba(255, 0, 0, .10)) !important;
+      }
+      :root[data-debug="true"] .app-header::before {
+        content: 'HEADER';
+        background: rgba(220, 40, 40, .85);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .sidebar {
+        outline: 2px dashed rgba(0, 80, 255, .7);
+        background-image: linear-gradient(rgba(0, 80, 255, .10), rgba(0, 80, 255, .10)) !important;
+      }
+      :root[data-debug="true"] .sidebar::before {
+        content: 'SIDEBAR';
+        background: rgba(0, 80, 255, .85);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .sidebar-tree {
+        outline: 1px dashed rgba(0, 60, 200, .5);
+      }
+      :root[data-debug="true"] .sidebar-tree::before {
+        content: 'TREE';
+        background: rgba(0, 60, 200, .75);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .sidebar-splitter {
+        outline: 2px dashed rgba(200, 180, 0, .8);
+        background: rgba(255, 200, 0, .30) !important;
+      }
+      :root[data-debug="true"] .sidebar-splitter::before {
+        content: 'SP';
+        background: rgba(200, 160, 0, .9);
+        color: #fff;
+        top: 50%;
+        right: auto;
+        left: 0;
+        transform: translateY(-50%);
+        border-radius: 0 4px 4px 0;
+      }
+
+      :root[data-debug="true"] .workspace {
+        outline: 2px dashed rgba(100, 100, 100, .4);
+      }
+      :root[data-debug="true"] .workspace::before {
+        content: 'WORKSPACE';
+        background: rgba(100, 100, 100, .65);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .workspace-body {
+        outline: 1px dashed rgba(100, 100, 100, .3);
+      }
+      :root[data-debug="true"] .workspace-body::before {
+        content: 'WORK-BODY';
+        background: rgba(100, 100, 100, .5);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .main-pane {
+        outline: 2px dashed rgba(0, 180, 0, .6);
+        background-image: linear-gradient(rgba(0, 180, 0, .08), rgba(0, 180, 0, .08)) !important;
+      }
+      :root[data-debug="true"] .main-pane::before {
+        content: 'MAIN';
+        background: rgba(0, 160, 0, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .main-toolbar {
+        outline: 1px dashed rgba(0, 180, 180, .7);
+      }
+      :root[data-debug="true"] .main-toolbar::before {
+        content: 'TOOLBAR';
+        background: rgba(0, 160, 160, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .image-grid {
+        outline: 1px dashed rgba(0, 200, 200, .5);
+      }
+      :root[data-debug="true"] .image-grid::before {
+        content: 'GRID';
+        background: rgba(0, 180, 180, .7);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .thumb-card {
+        outline: 1px dashed rgba(255, 100, 180, .6) !important;
+      }
+
+      :root[data-debug="true"] .main-footer {
+        outline: 1px dashed rgba(160, 80, 20, .7);
+      }
+      :root[data-debug="true"] .main-footer::before {
+        content: 'FOOTER';
+        background: rgba(160, 80, 20, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .metadata-splitter {
+        outline: 2px dashed rgba(200, 180, 0, .8);
+        background: rgba(255, 200, 0, .30) !important;
+      }
+      :root[data-debug="true"] .metadata-splitter::before {
+        content: 'SP';
+        background: rgba(200, 160, 0, .9);
+        color: #fff;
+        top: 50%;
+        right: auto;
+        left: 0;
+        transform: translateY(-50%);
+        border-radius: 0 4px 4px 0;
+      }
+
+      :root[data-debug="true"] .metadata-panel {
+        outline: 2px dashed rgba(140, 0, 200, .6);
+        background-image: linear-gradient(rgba(140, 0, 200, .08), rgba(140, 0, 200, .08)) !important;
+      }
+      :root[data-debug="true"] .metadata-panel::before {
+        content: 'METADATA';
+        background: rgba(140, 0, 200, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .metadata-content {
+        outline: 1px dashed rgba(160, 0, 220, .4);
+      }
+      :root[data-debug="true"] .metadata-content::before {
+        content: 'META-BODY';
+        background: rgba(160, 0, 220, .65);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .vector-panel {
+        outline: 2px dashed rgba(255, 140, 0, .7);
+        background-image: linear-gradient(rgba(255, 140, 0, .10), rgba(255, 140, 0, .10)) !important;
+      }
+      :root[data-debug="true"] .vector-panel::before {
+        content: 'SEARCH';
+        background: rgba(230, 120, 0, .85);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .pager-line {
+        outline: 1px dashed rgba(180, 200, 0, .7);
+      }
+      :root[data-debug="true"] .pager-line::before {
+        content: 'PAGER';
+        background: rgba(160, 180, 0, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .name-list {
+        outline: 1px dashed rgba(100, 60, 200, .6);
+      }
+      :root[data-debug="true"] .name-list::before {
+        content: 'LIST';
+        background: rgba(100, 60, 200, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .video-preview {
+        outline: 2px dashed rgba(80, 20, 120, .6);
+      }
+      :root[data-debug="true"] .video-preview::before {
+        content: 'VIDEO';
+        background: rgba(80, 20, 120, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .video-controls {
+        outline: 1px dashed rgba(120, 40, 160, .5);
+      }
+      :root[data-debug="true"] .video-controls::before {
+        content: 'VID-CTRL';
+        background: rgba(120, 40, 160, .7);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .settings-mask {
+        outline: 2px dashed rgba(200, 0, 100, .6);
+      }
+      :root[data-debug="true"] .settings-mask::before {
+        content: 'SETTINGS';
+        background: rgba(200, 0, 100, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .fullscreen-layer {
+        outline: 2px dashed rgba(0, 0, 120, .6);
+      }
+      :root[data-debug="true"] .fullscreen-layer::before {
+        content: 'FULLSCREEN';
+        background: rgba(0, 0, 120, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .drop-overlay {
+        outline: 2px dashed rgba(0, 160, 80, .6);
+      }
+      :root[data-debug="true"] .drop-overlay::before {
+        content: 'DROP';
+        background: rgba(0, 160, 80, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .vector-universe-overlay {
+        outline: 2px dashed rgba(0, 120, 180, .6);
+      }
+      :root[data-debug="true"] .vector-universe-overlay::before {
+        content: 'VEC-UNIV';
+        background: rgba(0, 120, 180, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .backend-error-banner {
+        outline: 2px dashed rgba(220, 60, 40, .6);
+      }
+      :root[data-debug="true"] .backend-error-banner::before {
+        content: 'ERR-BANNER';
+        background: rgba(220, 60, 40, .8);
+        color: #fff;
+      }
+
+      :root[data-debug="true"] .runtime-warning-banner {
+        outline: 2px dashed rgba(220, 160, 0, .6);
+      }
+      :root[data-debug="true"] .runtime-warning-banner::before {
+        content: 'WARN-BANNER';
+        background: rgba(200, 140, 0, .85);
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mock-page">
+
+      <!-- ================================================================
+           控制面板
+           ================================================================ -->
+      <div class="mock-control-bar">
+        <span class="mock-title">Theme Mock</span>
+
+        <label>
+          Style
+          <select id="ctl-style">
+            <option value="flush">flush (默认)</option>
+            <option value="liquid-glass">liquid-glass</option>
+            <option value="neobrutalism">neobrutalism</option>
+          </select>
+        </label>
+
+        <label>
+          Palette
+          <select id="ctl-palette">
+            <option value="parchment">parchment (默认)</option>
+            <option value="ocean-blue">ocean-blue</option>
+            <option value="aurora-sand">aurora-sand</option>
+            <option value="catppuccin-mocha">catppuccin-mocha</option>
+            <option value="dracula-dark">dracula-dark</option>
+            <option value="geist-light">geist-light</option>
+            <option value="github-dimmed">github-dimmed</option>
+            <option value="gruvbox-dark">gruvbox-dark</option>
+            <option value="linear-dark">linear-dark</option>
+            <option value="nord-dark">nord-dark</option>
+            <option value="rose-pine">rose-pine</option>
+            <option value="solarized-dark">solarized-dark</option>
+            <option value="tokyo-night">tokyo-night</option>
+          </select>
+        </label>
+
+        <div class="mock-module-filter">
+          <span class="mock-module-title">Modules</span>
+          <div class="mock-module-options">
+            <label><input type="checkbox" data-module-check value="app-shell" checked />A</label>
+            <label><input type="checkbox" data-module-check value="search" checked />B</label>
+            <label><input type="checkbox" data-module-check value="video" checked />C</label>
+            <label><input type="checkbox" data-module-check value="list" checked />D</label>
+            <label><input type="checkbox" data-module-check value="settings" checked />E</label>
+            <label><input type="checkbox" data-module-check value="overlays" checked />F</label>
+            <label><input type="checkbox" data-module-check value="status" checked />G</label>
+            <label><input type="checkbox" data-module-check value="controls" checked />H</label>
+            <label><input type="checkbox" data-module-check value="qa" checked />I</label>
+          </div>
+          <div class="mock-module-actions">
+            <button id="ctl-module-all" type="button">全选</button>
+            <button id="ctl-module-core" type="button">仅核心</button>
+          </div>
+          <span id="ctl-module-summary" class="mock-module-summary">9/9</span>
+        </div>
+
+        <div class="mock-sep"></div>
+
+        <button id="ctl-debug" type="button">Debug OFF</button>
+        <button id="ctl-tokens" type="button">Tokens</button>
+
+        <div class="mock-sep"></div>
+
+        <div class="mock-preset-group">
+          <button type="button" data-preset="flush,parchment">flush×parchment</button>
+          <button type="button" data-preset="liquid-glass,ocean-blue">glass×ocean</button>
+          <button type="button" data-preset="neobrutalism,tokyo-night">brut×tokyo</button>
+          <button type="button" data-preset="liquid-glass,catppuccin-mocha">glass×catppuccin</button>
+        </div>
+
+        <span class="mock-hint">?style=...&palette=...&modules=app-shell,search&debug=1</span>
+      </div>
+
+      <!-- Token 预览面板（默认折叠） -->
+      <div id="token-panel" class="mock-token-panel"></div>
+
+
+      <!-- ================================================================
+           A. App Shell — 完整布局模拟
+           ================================================================ -->
+      <section class="mock-section" data-module="app-shell">
+        <h3>A. App Shell — 完整布局</h3>
+        <div class="app mock-app-shell">
+          <!-- Header -->
+          <header class="app-header" style="height: 56px;">
+            <div class="header-left">
+              <div class="logo-wrap">
+                <button class="logo-btn" type="button">MediaPlayerX</button>
+                <div class="import-menu">
+                  <button type="button">Import files</button>
+                  <button type="button">Import folders</button>
+                </div>
+              </div>
+              <button class="task-status-btn is-busy is-open" type="button">Loading</button>
+              <div class="mode-switch" role="group" aria-label="mode-switch">
+                <button class="is-active" type="button">Image</button>
+                <button type="button">Video</button>
+              </div>
+              <button class="search-trigger-btn is-active" type="button">Search</button>
+              <button class="search-trigger-btn vector-universe-trigger" type="button">Vector Universe</button>
+            </div>
+            <div class="header-right">
+              <div class="zoom-stepper" role="group" aria-label="zoom">
+                <span>Zoom</span>
+                <button class="zoom-stepper-btn" type="button">-</button>
+                <span>3</span>
+                <button class="zoom-stepper-btn" type="button">+</button>
+              </div>
+              <label class="inline-switch">
+                <input type="checkbox" checked />
+                Auto-play
+              </label>
+              <select>
+                <option>1s</option>
+                <option>2s</option>
+                <option>4s</option>
+              </select>
+              <button class="header-settings-btn" type="button">Settings</button>
+            </div>
+          </header>
+
+          <!-- Body -->
+          <div class="app-body">
+            <!-- Sidebar -->
+            <aside class="sidebar" style="width: 230px; min-width: 200px;">
+              <div class="sidebar-head">
+                <button class="sidebar-title-btn" type="button">Library</button>
+                <div class="sidebar-head-actions">
+                  <button type="button">Go to</button>
+                  <button class="sidebar-head-icon-btn is-root-set" type="button">ROOT</button>
+                </div>
+              </div>
+              <div class="sidebar-tree" style="display: flex; flex-direction: column; gap: 4px;">
+                <div class="sidebar-row is-active" style="padding-left: 10px;">
+                  <span class="sidebar-bullet is-running" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Project Alpha</button>
+                  <span class="sidebar-count" style="font-size: 12px;">18</span>
+                </div>
+                <div class="sidebar-row" style="padding-left: 24px;">
+                  <span class="sidebar-bullet is-pending" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Set 01</button>
+                  <span class="sidebar-count" style="font-size: 12px;">6</span>
+                </div>
+                <div class="sidebar-row" style="padding-left: 24px;">
+                  <span class="sidebar-bullet" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Set 02</button>
+                  <input type="checkbox" checked />
+                </div>
+                <div class="sidebar-row" style="padding-left: 10px;">
+                  <span class="sidebar-bullet" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Archive</button>
+                  <span class="sidebar-count" style="font-size: 12px;">42</span>
+                </div>
+                <div class="sidebar-row" style="padding-left: 10px;">
+                  <span class="sidebar-bullet" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Draft Works</button>
+                  <span class="sidebar-count" style="font-size: 12px;">7</span>
+                </div>
+                <div class="sidebar-row" style="padding-left: 24px;">
+                  <span class="sidebar-bullet is-pending" aria-hidden="true"></span>
+                  <button class="sidebar-label" type="button" style="font-size: 14px;">Sketch A</button>
+                  <span class="sidebar-count" style="font-size: 12px;">3</span>
+                </div>
+              </div>
+            </aside>
+
+            <div class="sidebar-splitter"></div>
+
+            <!-- Workspace -->
+            <section class="workspace">
+              <!-- Search panel -->
+              <div class="vector-panel" style="height: 120px;">
+                <div class="vector-panel-content">
+                  <div class="vector-top-row">
+                    <div class="search-mode-switch" role="group">
+                      <button class="is-active" type="button">Vector Search</button>
+                      <button type="button">Feature Search</button>
+                    </div>
+                    <div class="vector-top-actions">
+                      <span>Results: 24</span>
+                      <button class="vector-collapse-btn" type="button">Collapse</button>
+                    </div>
+                  </div>
+                  <div class="vector-controls">
+                    <button class="vector-search-btn" type="button">Run Vector</button>
+                    <span>Input: Package A #12</span>
+                  </div>
+                  <label>
+                    Threshold 0.62
+                    <input type="range" min="0.2" max="0.98" step="0.01" value="0.62" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="vector-splitter"></div>
+
+              <!-- Workspace body -->
+              <div class="workspace-body">
+                <!-- Main pane -->
+                <main class="main-pane" style="width: calc(100% - 300px);">
+                  <div class="main-toolbar">
+                    <strong class="main-toolbar-title">Package A (18 items)</strong>
+                    <div class="toolbar-actions">
+                      <button class="toolbar-icon-btn is-grid-mode" type="button">GRID</button>
+                      <button class="toolbar-icon-btn" type="button">LIST</button>
+                      <button class="toolbar-icon-btn" type="button">FULL</button>
+                    </div>
+                  </div>
+
+                  <!-- Image grid -->
+                  <div class="image-grid">
+                    <button class="thumb-card is-focused" style="width: 130px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media" style="width: 100%; height: 100%;">
+                          <div class="thumb-media-empty"></div>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="thumb-card" style="width: 130px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media" style="width: 100%; height: 100%;">
+                          <div class="thumb-media-empty"></div>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="thumb-card" style="width: 130px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media" style="width: 100%; height: 100%;">
+                          <div class="thumb-media-empty"></div>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="thumb-card is-skeleton" style="width: 130px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media thumb-media-empty" style="width: 100%; height: 100%;"></div>
+                      </div>
+                    </button>
+                    <button class="thumb-card" style="width: 130px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media" style="width: 100%; height: 100%;">
+                          <div class="thumb-media-empty"></div>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="thumb-card" style="width: 130px;" type="button">
+                      <div class="thumb-placeholder" style="aspect-ratio: 1 / 1;">
+                        <div class="thumb-media" style="width: 100%; height: 100%;">
+                          <div class="thumb-media-empty"></div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
+                  <!-- Pager -->
+                  <div class="pager-line">
+                    <button type="button">Prev</button>
+                    <span>Page 1 / 4</span>
+                    <button type="button">Next</button>
+                  </div>
+
+                  <!-- Footer -->
+                  <footer class="main-footer">
+                    <span>Footer: focus item detail text with overflow check.</span>
+                    <span>Loaded 128 files</span>
+                  </footer>
+                </main>
+
+                <div class="metadata-splitter"></div>
+
+                <!-- Metadata panel -->
+                <aside class="metadata-panel" style="width: 280px;">
+                  <div class="metadata-head">
+                    <button class="metadata-title-btn" type="button">Metadata</button>
+                    <button class="metadata-head-icon-btn is-image" type="button">VIEW</button>
+                  </div>
+                  <div class="metadata-content">
+                    <div class="feature-rating-group metadata-rating-group">
+                      <strong>Rating</strong>
+                      <div class="feature-rating-stars metadata-rating-stars" role="group">
+                        <button class="is-clear" type="button">x</button>
+                        <button class="is-active" type="button">★</button>
+                        <button class="is-active" type="button">★</button>
+                        <button class="is-active" type="button">★</button>
+                        <button type="button">☆</button>
+                        <button type="button">☆</button>
+                      </div>
+                    </div>
+                    <div class="metadata-edit-grid">
+                      <label><span>Package</span><input readOnly value="package-001" /></label>
+                      <label><span>Title</span><input value="Sample work" /></label>
+                      <label><span>Circle</span><input value="Circle Name" /></label>
+                      <label><span>Author</span><input value="Author" /></label>
+                      <label><span>Tags</span><input value="tag-a, tag-b, tag-c" /></label>
+                    </div>
+                    <div class="metadata-edit-actions">
+                      <button type="button">Save</button>
+                      <button type="button">Sync title</button>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           B. Search Panel — Feature 模式
+           ================================================================ -->
+      <section class="mock-section" data-module="search">
+        <h3>B. Search Panel (Feature Mode)</h3>
+        <div class="vector-panel" style="height: 300px;">
+          <div class="vector-panel-content">
+            <div class="vector-top-row">
+              <div class="search-mode-switch" role="group">
+                <button type="button">Vector Search</button>
+                <button class="is-active" type="button">Feature Search</button>
+              </div>
+              <div class="vector-top-actions">
+                <span>Matches: 12 nodes</span>
+                <button class="vector-collapse-btn" type="button">Collapse</button>
+              </div>
+            </div>
+            <div class="feature-controls">
+              <label>Name <input class="feature-query-input" placeholder="Search by name" value="" /></label>
+              <label>Title <input class="feature-query-input" placeholder="Search by title" value="" /></label>
+              <label>Circle <input class="feature-query-input" list="fc-circle" placeholder="Circle" />
+                <datalist id="fc-circle"><option value="Circle A"></option><option value="Circle B"></option></datalist>
+              </label>
+              <label>Author <input class="feature-query-input" list="fc-author" placeholder="Author" />
+                <datalist id="fc-author"><option value="Author A"></option><option value="Author B"></option></datalist>
+              </label>
+              <div class="feature-tags-group">
+                <div class="feature-control-head">
+                  <strong>Tags</strong>
+                  <div class="feature-control-actions">
+                    <button class="feature-action-btn" type="button">Pick tags</button>
+                    <button class="feature-action-btn" type="button">Clear</button>
+                  </div>
+                </div>
+                <div class="feature-tags-popover" role="listbox">
+                  <button class="is-active" type="button">tag-a</button>
+                  <button type="button">tag-b</button>
+                  <button class="is-active" type="button">tag-c</button>
+                  <button type="button">tag-d</button>
+                  <button type="button">tag-e</button>
+                </div>
+                <p class="feature-selection-result">Selected: tag-a, tag-c</p>
+              </div>
+              <div class="feature-rating-group">
+                <strong>Package rating</strong>
+                <div class="feature-rating-stars" role="group">
+                  <button class="is-clear" type="button">x</button>
+                  <button class="is-active" type="button">★</button>
+                  <button class="is-active" type="button">★</button>
+                  <button type="button">☆</button>
+                  <button type="button">☆</button>
+                  <button type="button">☆</button>
+                </div>
+              </div>
+              <p class="vector-hint">Combined filters use AND logic.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           C. Video Preview
+           ================================================================ -->
+      <section class="mock-section" data-module="video">
+        <h3>C. Video Preview</h3>
+        <div class="video-preview" style="min-height: 260px;">
+          <div class="video-screen" style="background: var(--mpx-video-screen-bg);">
+            <div class="video-screen-empty">No video source</div>
+            <div class="video-screen-hud"><span>Cover state 00:00 / 02:10</span></div>
+          </div>
+          <div class="video-progress-line">
+            <span>00:00 / 02:10</span>
+            <input type="range" min="0" max="120" value="45" />
+          </div>
+          <div class="video-controls">
+            <button type="button">Play</button>
+            <button type="button">Prev</button>
+            <button type="button">Next</button>
+            <button type="button">Save cover</button>
+            <button type="button">Mute</button>
+            <label class="video-volume-inline">
+              <span>Volume</span><span>60%</span>
+              <input type="range" min="0" max="100" value="60" />
+            </label>
+            <label class="video-rate-inline">
+              <span>Rate x1.25</span>
+              <input type="range" min="0.1" max="4" step="0.1" value="1.25" />
+            </label>
+            <button class="video-fullscreen-btn" type="button">Fullscreen</button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           D. Tabs / List View / Playlist
+           ================================================================ -->
+      <section class="mock-section" data-module="list">
+        <h3>D. List View, Tabs, Playlist</h3>
+        <div class="mock-row">
+          <div class="mock-col" style="flex: 1; min-width: 280px;">
+            <div class="meta-tabs">
+              <button class="is-active" type="button">Info</button>
+              <button type="button">Playlist</button>
+            </div>
+            <div class="playlist-list">
+              <div class="playlist-item is-active">
+                <button type="button">video-001.mp4</button>
+                <button type="button">Remove</button>
+              </div>
+              <div class="playlist-item">
+                <button type="button">video-002.mp4</button>
+                <button type="button">Remove</button>
+              </div>
+              <div class="playlist-item">
+                <button type="button">video-003.mp4</button>
+                <button type="button">Remove</button>
+              </div>
+            </div>
+          </div>
+          <div class="mock-col" style="flex: 2; min-width: 360px;">
+            <div class="name-list" style="height: 200px;">
+              <div class="name-list-header">
+                <span>File</span>
+                <span>Size</span>
+                <span>Resolution</span>
+              </div>
+              <div class="name-list-body">
+                <button class="name-list-row is-focused" type="button">
+                  <span>alpha/001.png</span><span>820KB</span><span>1920 x 1080</span>
+                </button>
+                <button class="name-list-row" type="button">
+                  <span>alpha/002.png</span><span>640KB</span><span>1280 x 720</span>
+                </button>
+                <button class="name-list-row" type="button">
+                  <span>alpha/003.webp</span><span>1.2MB</span><span>2560 x 1440</span>
+                </button>
+                <button class="name-list-row" type="button">
+                  <span>beta/cover.jpg</span><span>380KB</span><span>1024 x 768</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           E. Settings Panel
+           ================================================================ -->
+      <section class="mock-section" data-module="settings">
+        <h3>E. Settings Panel</h3>
+        <div class="settings-mask">
+          <section class="settings-panel">
+            <div class="settings-head">
+              <h2>Settings</h2>
+              <button type="button">Close</button>
+            </div>
+            <div class="settings-shell">
+              <aside class="settings-side">
+                <button class="is-active" type="button">Layout</button>
+                <button type="button">Theme</button>
+                <button type="button">3D</button>
+                <button type="button">Shortcuts</button>
+              </aside>
+              <main class="settings-main">
+                <div class="settings-block">
+                  <label class="settings-toggle-row">
+                    <span>Layout lock</span>
+                    <input type="checkbox" checked />
+                  </label>
+                  <label>Header height <input type="range" min="0" max="1" step="0.01" value="0.5" /></label>
+                  <label>Sidebar min width <input type="range" min="0" max="1" step="0.01" value="0.4" /></label>
+                  <label>Settings font size <input type="range" min="12" max="20" step="1" value="14" /></label>
+                  <label>LM Studio endpoint
+                    <input type="text" value="http://127.0.0.1:1234/v1/embeddings" />
+                  </label>
+                  <div class="settings-shortcuts-head">
+                    <strong>Shortcut bindings</strong>
+                    <button type="button">Reset</button>
+                  </div>
+                  <div class="shortcut-list">
+                    <label class="shortcut-row">
+                      <span>Toggle fullscreen</span>
+                      <button class="shortcut-binding-trigger" type="button">F</button>
+                    </label>
+                    <label class="shortcut-row">
+                      <span>Next item</span>
+                      <button class="shortcut-binding-trigger" type="button">Right</button>
+                    </label>
+                    <label class="shortcut-row">
+                      <span>Previous item</span>
+                      <button class="shortcut-binding-trigger" type="button">Left</button>
+                    </label>
+                  </div>
+                  <ul class="binding-chip-list">
+                    <li>Ctrl+K</li>
+                    <li>Alt+Mouse1</li>
+                    <li>Shift+F</li>
+                  </ul>
+                </div>
+              </main>
+            </div>
+            <div class="settings-floating-mask">
+              <section class="settings-floating-panel">
+                <h3>Capture shortcut</h3>
+                <p class="settings-placeholder">Press a key combo.</p>
+                <p class="binding-capture-preview">Ctrl + Shift + A</p>
+                <div class="settings-floating-actions">
+                  <button type="button">Add</button>
+                  <button type="button">Cancel</button>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           F. Overlays — Fullscreen / Drop / Vector Universe
+           ================================================================ -->
+      <section class="mock-section" data-module="overlays">
+        <h3>F. Overlays (Fullscreen / Drop / Vector Universe)</h3>
+        <div class="mock-overlay-grid">
+          <!-- Fullscreen -->
+          <div class="fullscreen-layer">
+            <div class="fullscreen-content">
+              <div class="fullscreen-single-pane">
+                <div class="fullscreen-pane is-pane-focus">
+                  <div class="fullscreen-stage">
+                    <div class="fullscreen-media">
+                      <span>Fullscreen media</span>
+                      <small>placeholder state</small>
+                    </div>
+                    <div class="fullscreen-video-controls is-bottom">
+                      <div class="fullscreen-video-controls-row is-progress">
+                        <span>00:00 / 02:10</span>
+                        <input type="range" min="0" max="120" value="45" />
+                      </div>
+                      <div class="fullscreen-video-controls-row is-controls">
+                        <button type="button">Play</button>
+                        <button class="is-active" type="button">Loop</button>
+                        <label>Volume <input type="range" min="0" max="100" value="60" /></label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="fullscreen-footer">
+              <div class="fullscreen-group">
+                <button class="is-active" type="button">Dual</button>
+                <button type="button">Image</button>
+                <button type="button">Video</button>
+                <select><option>Fit</option><option>Fill</option></select>
+              </div>
+              <div class="fullscreen-meta-line">Package A / 001.jpg</div>
+            </div>
+          </div>
+
+          <!-- Drop overlay -->
+          <div class="drop-overlay">
+            <div class="drop-overlay-card">
+              <strong>Drop files</strong>
+              <p>Drag media here to import into the library.</p>
+            </div>
+          </div>
+
+          <!-- Vector Universe -->
+          <div class="vector-universe-overlay">
+            <div class="vector-universe-stage-wrap">
+              <button class="vector-universe-close-btn" type="button">Exit</button>
+              <div class="vector-universe-stage">
+                <canvas class="vector-universe-canvas"></canvas>
+              </div>
+              <div class="vector-universe-widget">
+                <strong>HUD</strong>
+                <p>Position</p>
+                <canvas class="vector-universe-widget-canvas"></canvas>
+              </div>
+              <p class="vector-universe-overlay-tip">Hold mouse to orbit</p>
+              <div class="vector-universe-hud">
+                <p>Speed <span>1.0x</span></p>
+                <p>Raycast <span>18m</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           G. Banners & Status
+           ================================================================ -->
+      <section class="mock-section" data-module="status">
+        <h3>G. Banners & Status</h3>
+
+        <div class="backend-error-banner">
+          <header>
+            <strong>Backend error</strong>
+            <button type="button">Dismiss</button>
+          </header>
+          <ul>
+            <li>Failed to read media cache.</li>
+            <li>Retry in 5 seconds.</li>
+          </ul>
+        </div>
+
+        <div class="runtime-warning-banner">
+          <header>
+            <strong>Runtime warning</strong>
+            <button type="button">Fix</button>
+          </header>
+          <ul>
+            <li>LM Studio endpoint unreachable.</li>
+            <li>Vector search disabled.</li>
+          </ul>
+        </div>
+
+        <div class="mock-status-grid">
+          <div class="mock-status-swatch" style="background: var(--mpx-status-danger-bg); border: 1px solid var(--mpx-status-danger-border); color: var(--mpx-status-danger-text);">
+            <strong>Danger</strong><span>--mpx-status-danger-*</span>
+          </div>
+          <div class="mock-status-swatch" style="background: var(--mpx-status-warning-bg); border: 1px solid var(--mpx-status-warning-border); color: var(--mpx-status-warning-text);">
+            <strong>Warning</strong><span>--mpx-status-warning-*</span>
+          </div>
+          <div class="mock-status-swatch" style="background: var(--mpx-status-info-bg); border: 1px solid var(--mpx-status-info-border); color: var(--mpx-status-info-text);">
+            <strong>Info</strong><span>--mpx-status-info-*</span>
+          </div>
+          <div class="mock-status-swatch" style="background: var(--mpx-status-success-bg); border: 1px solid var(--mpx-status-success-border); color: var(--mpx-status-success-text);">
+            <strong>Success</strong><span>--mpx-status-success-*</span>
+          </div>
+          <div class="mock-status-swatch" style="background: var(--mpx-status-busy-bg); border: 1px solid var(--mpx-status-busy-border); color: var(--mpx-status-busy-text);">
+            <strong>Busy</strong><span>--mpx-status-busy-*</span>
+          </div>
+          <div class="mock-status-swatch" style="background: var(--mpx-status-idle-bg); border: 1px solid var(--mpx-status-idle-border); color: var(--mpx-status-idle-text);">
+            <strong>Idle</strong><span>--mpx-status-idle-*</span>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           H. Control Showcase
+           ================================================================ -->
+      <section class="mock-section" data-module="controls">
+        <h3>H. Control Showcase</h3>
+        <div class="mock-controls-grid">
+
+          <!-- Buttons -->
+          <div class="mock-control-cell">
+            <strong>Buttons</strong>
+            <button class="btn-primary" type="button">Primary</button>
+            <button class="btn-secondary" type="button">Secondary</button>
+            <button class="btn-disabled" type="button" disabled>Disabled</button>
+          </div>
+
+          <!-- Inputs -->
+          <div class="mock-control-cell">
+            <strong>Inputs</strong>
+            <span class="mock-label">Normal</span>
+            <input type="text" placeholder="Type here..." value="Normal input" />
+            <span class="mock-label">Focus (click to test)</span>
+            <input type="text" value="Click me to focus" />
+            <span class="mock-label">Readonly</span>
+            <input type="text" readonly value="Readonly value" />
+          </div>
+
+          <!-- Range slider -->
+          <div class="mock-control-cell">
+            <strong>Range Slider</strong>
+            <input type="range" min="0" max="100" value="40" />
+            <input type="range" min="0" max="100" value="75" />
+          </div>
+
+          <!-- Checkbox -->
+          <div class="mock-control-cell">
+            <strong>Checkbox</strong>
+            <label style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" checked /> Checked
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" /> Unchecked
+            </label>
+          </div>
+
+          <!-- Select -->
+          <div class="mock-control-cell">
+            <strong>Select</strong>
+            <select>
+              <option>Option A</option>
+              <option>Option B</option>
+              <option>Option C</option>
+            </select>
+          </div>
+
+          <!-- Scrollbar -->
+          <div class="mock-control-cell">
+            <strong>Scrollbar</strong>
+            <div class="mock-scroll-box">
+              <span>Item 01</span><span>Item 02</span><span>Item 03</span>
+              <span>Item 04</span><span>Item 05</span><span>Item 06</span>
+              <span>Item 07</span><span>Item 08</span><span>Item 09</span>
+              <span>Item 10</span><span>Item 11</span><span>Item 12</span>
+            </div>
+          </div>
+
+          <!-- Accent / Text colors -->
+          <div class="mock-control-cell">
+            <strong>Text & Accent</strong>
+            <span style="color: var(--mpx-text-heading);">Heading text (--mpx-text-heading)</span>
+            <span style="color: var(--mpx-text-1);">Primary text (--mpx-text-1)</span>
+            <span style="color: var(--mpx-text-2);">Secondary text (--mpx-text-2)</span>
+            <span style="color: var(--mpx-text-3);">Tertiary text (--mpx-text-3)</span>
+            <span style="background: var(--mpx-accent); color: var(--mpx-accent-contrast); padding: 4px 10px; border-radius: var(--mpx-control-radius);">Accent (--mpx-accent)</span>
+            <span style="background: var(--mpx-accent-soft); color: var(--mpx-accent); padding: 4px 10px; border-radius: var(--mpx-control-radius);">Accent soft (--mpx-accent-soft)</span>
+          </div>
+
+          <!-- Surface colors -->
+          <div class="mock-control-cell">
+            <strong>Surfaces</strong>
+            <div style="display: grid; gap: 4px;">
+              <span style="background: var(--mpx-bg-app); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--mpx-border-1);">bg-app</span>
+              <span style="background: var(--mpx-bg-workspace); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--mpx-border-1);">bg-workspace</span>
+              <span style="background: var(--mpx-bg-panel); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--mpx-border-1);">bg-panel</span>
+              <span style="background: var(--mpx-bg-elevated); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--mpx-border-1);">bg-elevated</span>
+              <span style="background: var(--mpx-bg-hover); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--mpx-border-1);">bg-hover</span>
+              <span style="background: var(--mpx-bg-selected); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--mpx-border-1);">bg-selected</span>
+              <span style="background: var(--mpx-bg-muted); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--mpx-border-1);">bg-muted</span>
+              <span style="background: var(--mpx-bg-tooltip); color: var(--mpx-text-inverse); padding: 6px 10px; border-radius: 4px;">bg-tooltip</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           I. QA Checklist
+           ================================================================ -->
+      <section class="mock-section" data-module="qa">
+        <h3>I. Theme QA Checklist</h3>
+
+        <div class="mock-qa-toolbar">
+          <span id="qa-progress" class="mock-qa-progress">进度：0 / 0</span>
+          <button id="qa-check-all" type="button">全部勾选</button>
+          <button id="qa-clear-all" type="button">全部清空</button>
+          <button id="qa-export" type="button">导出 Markdown</button>
+        </div>
+
+        <div class="mock-qa-grid">
+          <div class="mock-qa-group">
+            <strong>配色验证（Palette）</strong>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-banner" /> Banner 文本与背景对比可读</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-text" /> 主/次文本在 panel 和 elevated 背景可读</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-button" /> 按钮默认/hover/active/disabled 状态区分清晰</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-input-focus" /> 输入框 focus 态可感知且不过度刺眼</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-select" /> select/option 前景和背景对比稳定</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-scrollbar" /> 滚动条 track/thumb/hover 与主题一致</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-range" /> range 轨道与滑块在深浅背景都清晰</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-checkbox" /> checkbox 未选中/选中/聚焦态清晰</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-video-empty" /> 视频空态背景与文本对比可读</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="palette-rating" /> 评分星级在选中/未选中态对比足够</label>
+          </div>
+
+          <div class="mock-qa-group">
+            <strong>布局效果验证（Style）</strong>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-panel-shape" /> 面板间距/圆角/阴影符合 style 预期</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-splitter" /> splitter 在当前 style 下仍可辨识和拖动</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-header-margin" /> header margin 不导致溢出或跳动</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-card" /> 内卡圆角与外层面板视觉协调</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-hover-active" /> hover/active 效果在按钮与卡片都生效</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-backdrop" /> backdrop-filter 在深浅 palette 下有效</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-transform" /> transform 未导致内容裁切</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-layout-lock" /> 布局锁定相关控件在样式下无异常</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="style-fullscreen" /> fullscreen 配色正常且不受 layout token 破坏</label>
+          </div>
+
+          <div class="mock-qa-group">
+            <strong>组合验证（Style × Palette）</strong>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="combo-light" /> 至少验证 1 个浅色 palette 组合</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="combo-dark" /> 至少验证 1 个深色 palette 组合</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="combo-mix" /> color-mix 派生色在深浅 palette 下都合理</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="combo-shadow" /> 阴影可见度在深浅 palette 下都可接受</label>
+            <label class="mock-qa-item"><input type="checkbox" data-qa-id="combo-share" /> 已通过 URL 参数记录可复现场景</label>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /.mock-page -->
+
+
+    <!-- ================================================================
+         JavaScript 逻辑
+         ================================================================ -->
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => [...document.querySelectorAll(s)];
+      const html = document.documentElement;
+
+      const ctlStyle = $('#ctl-style');
+      const ctlPalette = $('#ctl-palette');
+      const ctlModuleAll = $('#ctl-module-all');
+      const ctlModuleCore = $('#ctl-module-core');
+      const ctlModuleSummary = $('#ctl-module-summary');
+      const moduleChecks = $$('[data-module-check]');
+      const ctlDebug = $('#ctl-debug');
+      const ctlTokens = $('#ctl-tokens');
+      const tokenPanel = $('#token-panel');
+      const mockSections = $$('.mock-section[data-module]');
+      const ALL_MODULE_IDS = moduleChecks.map((item) => item.value);
+      const CORE_MODULE_IDS = ['app-shell', 'search', 'video', 'settings'];
+
+      const qaProgress = $('#qa-progress');
+      const qaCheckAll = $('#qa-check-all');
+      const qaClearAll = $('#qa-clear-all');
+      const qaExport = $('#qa-export');
+      const qaItems = $$('[data-qa-id]');
+      const QA_STORAGE_KEY = 'mpx-theme-mock-qa-v1';
+
+      /* ---------- 核心：切换 Style / Palette ---------- */
+      function applyStyle(id) {
+        html.dataset.mpxStyle = id;
+        ctlStyle.value = id;
+      }
+      function applyPalette(id) {
+        html.dataset.mpxPalette = id;
+        ctlPalette.value = id;
+      }
+      function getSelectedModules() {
+        return moduleChecks.filter((item) => item.checked).map((item) => item.value);
+      }
+      function applyModules(moduleIds) {
+        const wanted = new Set(moduleIds.filter((id) => ALL_MODULE_IDS.includes(id)));
+        const finalIds = wanted.size > 0 ? [...wanted] : [...ALL_MODULE_IDS];
+
+        moduleChecks.forEach((item) => {
+          item.checked = finalIds.includes(item.value);
+        });
+
+        mockSections.forEach((section) => {
+          section.hidden = !finalIds.includes(section.dataset.module);
+        });
+
+        ctlModuleSummary.textContent = `${finalIds.length}/${ALL_MODULE_IDS.length}`;
+      }
+
+      ctlStyle.addEventListener('change', (e) => applyStyle(e.target.value));
+      ctlPalette.addEventListener('change', (e) => applyPalette(e.target.value));
+
+      moduleChecks.forEach((item) => {
+        item.addEventListener('change', () => {
+          applyModules(getSelectedModules());
+          syncUrl();
+        });
+      });
+
+      ctlModuleAll.addEventListener('click', () => {
+        applyModules(ALL_MODULE_IDS);
+        syncUrl();
+      });
+
+      ctlModuleCore.addEventListener('click', () => {
+        applyModules(CORE_MODULE_IDS);
+        syncUrl();
+      });
+
+      /* ---------- 快捷预设按钮 ---------- */
+      $$('[data-preset]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const [s, p] = btn.dataset.preset.split(',');
+          applyStyle(s);
+          applyPalette(p);
+          updateTokenPanel();
+          syncUrl();
+        });
+      });
+
+      /* ---------- Debug 模式 ---------- */
+      let debugOn = false;
+      function setDebug(on) {
+        debugOn = on;
+        if (on) {
+          html.dataset.debug = 'true';
+          ctlDebug.textContent = 'Debug ON';
+          ctlDebug.classList.add('is-active');
+        } else {
+          delete html.dataset.debug;
+          ctlDebug.textContent = 'Debug OFF';
+          ctlDebug.classList.remove('is-active');
+        }
+      }
+      ctlDebug.addEventListener('click', () => {
+        setDebug(!debugOn);
+        syncUrl();
+      });
+
+      /* ---------- Token 面板 ---------- */
+      const TOKEN_LIST = [
+        '--mpx-bg-app', '--mpx-bg-workspace', '--mpx-bg-panel', '--mpx-bg-elevated',
+        '--mpx-bg-hover', '--mpx-bg-selected', '--mpx-bg-muted',
+        '--mpx-text-1', '--mpx-text-2', '--mpx-text-3', '--mpx-text-heading',
+        '--mpx-border-1', '--mpx-border-2', '--mpx-border-focus',
+        '--mpx-accent', '--mpx-accent-contrast', '--mpx-accent-soft',
+        '--mpx-input-bg', '--mpx-input-border', '--mpx-input-focus-border',
+        '--mpx-btn-primary-bg', '--mpx-btn-primary-text',
+        '--mpx-btn-secondary-bg', '--mpx-btn-secondary-border',
+        '--mpx-header-bg',
+        '--mpx-palette-surface', '--mpx-palette-base', '--mpx-palette-accent-raw',
+        '--mpx-panel-radius', '--mpx-panel-shadow', '--mpx-panel-backdrop-filter',
+        '--mpx-layout-padding', '--mpx-splitter-width',
+        '--mpx-card-radius', '--mpx-control-radius',
+        '--mpx-control-hover-transform', '--mpx-control-active-transform',
+      ];
+
+      let tokensOpen = false;
+      function updateTokenPanel() {
+        const cs = getComputedStyle(html);
+        tokenPanel.innerHTML = TOKEN_LIST.map((t) => {
+          const v = cs.getPropertyValue(t).trim() || '(unset)';
+          const isColor = !v.includes('px') && !v.includes('none') && !v.includes('ease')
+            && !v.includes('gradient') && !v.includes('scale') && !v.includes('blur')
+            && !v.includes('unset');
+          const swatch = isColor
+            ? `<span class="mock-token-swatch" style="background:${v}"></span>`
+            : '';
+          return `<div class="mock-token-row">${swatch}<span class="mock-token-name">${t}</span><span class="mock-token-val">${v}</span></div>`;
+        }).join('');
+      }
+
+      ctlTokens.addEventListener('click', () => {
+        tokensOpen = !tokensOpen;
+        tokenPanel.classList.toggle('is-open', tokensOpen);
+        if (tokensOpen) updateTokenPanel();
+      });
+
+      /* ---------- QA 清单 ---------- */
+      function updateQaProgress() {
+        const total = qaItems.length;
+        const checked = qaItems.filter((item) => item.checked).length;
+        qaProgress.textContent = `进度：${checked} / ${total}`;
+      }
+
+      function saveQaState() {
+        try {
+          const snapshot = {};
+          qaItems.forEach((item) => {
+            snapshot[item.dataset.qaId] = item.checked;
+          });
+          localStorage.setItem(QA_STORAGE_KEY, JSON.stringify(snapshot));
+        } catch (_err) {
+          /* no-op */
+        }
+      }
+
+      function loadQaState() {
+        try {
+          const raw = localStorage.getItem(QA_STORAGE_KEY);
+          if (!raw) return;
+          const snapshot = JSON.parse(raw);
+          qaItems.forEach((item) => {
+            if (Object.prototype.hasOwnProperty.call(snapshot, item.dataset.qaId)) {
+              item.checked = Boolean(snapshot[item.dataset.qaId]);
+            }
+          });
+        } catch (_err) {
+          /* no-op */
+        }
+      }
+
+      qaItems.forEach((item) => {
+        item.addEventListener('change', () => {
+          saveQaState();
+          updateQaProgress();
+        });
+      });
+
+      qaCheckAll.addEventListener('click', () => {
+        qaItems.forEach((item) => {
+          item.checked = true;
+        });
+        saveQaState();
+        updateQaProgress();
+      });
+
+      qaClearAll.addEventListener('click', () => {
+        qaItems.forEach((item) => {
+          item.checked = false;
+        });
+        saveQaState();
+        updateQaProgress();
+      });
+
+      function buildTimestamp() {
+        const now = new Date();
+        const pad = (num) => String(num).padStart(2, '0');
+        return [
+          now.getFullYear(),
+          pad(now.getMonth() + 1),
+          pad(now.getDate()),
+          '_',
+          pad(now.getHours()),
+          pad(now.getMinutes()),
+          pad(now.getSeconds()),
+        ].join('');
+      }
+
+      function buildQaMarkdown() {
+        const selectedModules = getSelectedModules();
+        const checkedCount = qaItems.filter((item) => item.checked).length;
+
+        const lines = [
+          '# Theme QA Report',
+          '',
+          `- Time: ${new Date().toLocaleString()}`,
+          `- Style: \`${ctlStyle.value}\``,
+          `- Palette: \`${ctlPalette.value}\``,
+          `- Debug: ${debugOn ? 'ON' : 'OFF'}`,
+          `- Modules: ${selectedModules.map((id) => `\`${id}\``).join(', ')}`,
+          `- Progress: ${checkedCount}/${qaItems.length}`,
+          '',
+        ];
+
+        $$('.mock-qa-group').forEach((group) => {
+          const title = group.querySelector('strong')?.textContent?.trim() || 'Checklist';
+          lines.push(`## ${title}`);
+          lines.push('');
+
+          group.querySelectorAll('[data-qa-id]').forEach((item) => {
+            const text = item.parentElement.textContent.replace(/\s+/g, ' ').trim();
+            lines.push(`- [${item.checked ? 'x' : ' '}] ${text}`);
+          });
+
+          lines.push('');
+        });
+
+        return lines.join('\n');
+      }
+
+      function downloadMarkdown(filename, content) {
+        const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      qaExport.addEventListener('click', async () => {
+        const markdown = buildQaMarkdown();
+        const filename = `theme-qa-${ctlStyle.value}-${ctlPalette.value}-${buildTimestamp()}.md`;
+        downloadMarkdown(filename, markdown);
+
+        let tip = '已导出 Markdown';
+        try {
+          await navigator.clipboard.writeText(markdown);
+          tip = '已导出并复制到剪贴板';
+        } catch (_err) {
+          /* no-op */
+        }
+
+        const original = qaExport.textContent;
+        qaExport.textContent = tip;
+        setTimeout(() => {
+          qaExport.textContent = original;
+        }, 1200);
+      });
+
+      /* ---------- URL 参数同步 ---------- */
+      function syncUrl() {
+        const p = new URLSearchParams();
+        p.set('style', ctlStyle.value);
+        p.set('palette', ctlPalette.value);
+        p.set('modules', getSelectedModules().join(','));
+        if (debugOn) p.set('debug', '1');
+        history.replaceState(null, '', '?' + p.toString());
+      }
+
+      ctlStyle.addEventListener('change', () => { syncUrl(); if (tokensOpen) updateTokenPanel(); });
+      ctlPalette.addEventListener('change', () => { syncUrl(); if (tokensOpen) updateTokenPanel(); });
+
+      /* ---------- 初始化：从 URL 参数读取 ---------- */
+      (function init() {
+        const params = new URLSearchParams(location.search);
+        const s = params.get('style');
+        const p = params.get('palette');
+        const m = params.get('modules') || params.get('module');
+        const d = params.get('debug');
+
+        if (s && [...ctlStyle.options].some((o) => o.value === s)) applyStyle(s);
+        if (p && [...ctlPalette.options].some((o) => o.value === p)) applyPalette(p);
+
+        if (m) {
+          const parsed = m === 'all'
+            ? [...ALL_MODULE_IDS]
+            : m.split(',').map((item) => item.trim()).filter(Boolean);
+          applyModules(parsed);
+        } else {
+          applyModules(ALL_MODULE_IDS);
+        }
+
+        if (d === '1') setDebug(true);
+
+        loadQaState();
+        updateQaProgress();
+      })();
+    </script>
+  </body>
+</html>

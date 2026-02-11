@@ -14,6 +14,7 @@
 - `ui/theme-system-v1.md`：主题系统 V1 CSS 契约与开发规范（已废弃，见 V2）。
 - `ui/theme-system-v2.md`：主题系统 V2 规范手册 (SSOT)——Style × Palette 二维模型、完整 token 参考、应用布局结构、开发指南。
 - `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
+- `ui/theme-mock.html`：主题开发辅助页（独立于 app，覆盖主要界面元素，支持 Style × Palette 组合预览与 debug 区域着色）。
 - `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
 - `backend-integration-guardrails.md`：后端接入阶段的强制规避方案与执行门禁。
 - `perf/2026-02-08-ui-perf-benchmark-plan.md`：UI 性能基准与选型结论（定型：R1-S1）。
