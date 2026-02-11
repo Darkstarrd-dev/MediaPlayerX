@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Metadata Explorer (Final)</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #ff4081;
+            --border-color: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        #top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        input[type="text"] {
+            background: #2d2d2d;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 0.9em;
+        }
+        
+        button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+
+        #results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            flex-grow: 1;
+            min-height: 0; 
+        }
+        
+        .result-column {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .col-header {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #252525;
+        }
+        
+        .header-title {
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            padding-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .header-nhentai .header-title { color: #ed2553; }
+        .header-ehentai .header-title { color: #a83232; }
+        .header-parser .header-title { color: #0083ca; }
+
+        .header-nhentai { border-top: 4px solid #ed2553; }
+        .header-ehentai { border-top: 4px solid #7e161c; }
+        .header-parser { border-top: 4px solid #0083ca; }
+
+        .input-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .input-label {
+            font-size: 0.75em;
+            color: #888;
+            width: 30px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .col-content {
+            padding: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        /* List View (Text Only) */
+        .result-list-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #2a2a2a;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .result-list-item:hover { background: #333; }
+        .list-title { font-size: 0.95em; font-weight: bold; margin-bottom: 4px; line-height: 1.3; color: #ddd; }
+        .list-meta { font-size: 0.8em; color: #888; display: flex; justify-content: space-between; }
+        .list-id { font-family: monospace; color: var(--accent-color); }
+
+        /* Detail View */
+        .detail-view { display: flex; flex-direction: column; height: 100%; padding: 15px; box-sizing: border-box; }
+        .back-btn { background: #444; margin-bottom: 15px; align-self: flex-start; padding: 4px 10px; font-size: 0.8em; }
+        
+        .detail-header { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .title { font-size: 1.2em; font-weight: bold; margin-bottom: 5px; line-height: 1.3; color: #fff; }
+        .original-title { color: #888; font-size: 0.9em; }
+        
+        .meta-table { width: 100%; font-size: 0.9em; border-collapse: collapse; margin-bottom: 15px; }
+        .meta-table td { padding: 4px 0; vertical-align: top; border-bottom: 1px solid #2a2a2a; }
+        .meta-label { color: #888; width: 80px; font-weight: 500; }
+        .meta-val { color: #ddd; word-break: break-all; font-family: monospace; }
+        
+        .tags-container { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 15px; }
+        .tag { background: #333; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; color: #ccc; border: 1px solid #444; }
+
+        .parse-btn {
+            background: #0083ca;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .parse-btn:hover { background: #005f9e; }
+
+        .state-loading { color: #aaa; text-align: center; margin-top: 50px; }
+        .state-error { color: #ff5252; text-align: center; margin-top: 20px; border: 1px dashed #ff5252; padding: 10px; font-size: 0.9em; word-break: break-all; }
+        .state-empty { color: #666; text-align: center; margin-top: 50px; font-style: italic; }
+
+        #config-panel {
+            display: none;
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: #252525;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            width: 300px;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="top-bar">
+        <h2 style="margin:0">Metadata Explorer</h2>
+        <div style="display:flex; gap:10px; flex-grow:1; max-width:600px; margin-left:20px;">
+            <input type="text" id="global-input" placeholder="Global Search (Keyword / ID / Link)..." value="boku no seishun wa inaka no okaa-san datta">
+            <button onclick="searchAll()">Search All</button>
+        </div>
+        <button onclick="toggleConfig()" style="background:#444">⚙️ Config</button>
+    </div>
+
+    <div id="config-panel">
+        <label>SOCKS5 Proxy:</label>
+        <input type="text" id="config-proxy" value="socks5://127.0.0.1:2080" style="width:100%; margin-bottom:10px;">
+        <label>EH Cookies (sl=dm_1 default):</label>
+        <textarea id="config-cookies" style="width:100%; height:60px; background:#333; color:white; border:1px solid #555;">sl=dm_1</textarea>
+    </div>
+
+    <div id="results-grid">
+        <!-- NHentai Column -->
+        <div class="result-column">
+            <div class="col-header header-nhentai">
+                <div class="header-title">Nhentai</div>
+                <div class="input-group">
+                    <span class="input-label">ID</span>
+                    <input type="text" id="input-nhentai-id" placeholder="123456">
+                    <button onclick="searchSingle('nhentai', 'id')">Go</button>
+                </div>
+                <div class="input-group">
+                    <span class="input-label">Text</span>
+                    <input type="text" id="input-nhentai-text" placeholder="Keywords">
+                    <button onclick="searchSingle('nhentai', 'text')">Search</button>
+                </div>
+            </div>
+            <div id="col-nhentai" class="col-content">
+                <div class="state-empty">Ready</div>
+            </div>
+        </div>
+
+        <!-- E-Hentai Column -->
+        <div class="result-column">
+            <div class="col-header header-ehentai">
+                <div class="header-title">E-Hentai</div>
+                <div class="input-group">
+                    <span class="input-label">ID</span>
+                    <input type="text" id="input-ehentai-id" placeholder="gid (needs token)">
+                    <button onclick="searchSingle('ehentai', 'id')">Go</button>
+                </div>
+                <div class="input-group">
+                    <span class="input-label">Text</span>
+                    <input type="text" id="input-ehentai-text" placeholder="Keywords / Link">
+                    <button onclick="searchSingle('ehentai', 'text')">Search</button>
+                </div>
+            </div>
+            <div id="col-ehentai" class="col-content">
+                <div class="state-empty">Ready</div>
+            </div>
+        </div>
+
+        <!-- Parser Output Column -->
+        <div class="result-column">
+            <div class="col-header header-parser">
+                <div class="header-title">Data Parser</div>
+            </div>
+            <div id="col-parser" class="col-content" style="padding:15px;">
+                <div class="state-empty">Select a result and click "Parse Data"</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CACHE = { nhentai: [], ehentai: [] };
+
+        function toggleConfig() {
+            const p = document.getElementById('config-panel');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function getConfig() {
+            return {
+                proxy: document.getElementById('config-proxy').value,
+                cookies: document.getElementById('config-cookies').value
+            };
+        }
+
+        async function searchAll() {
+            const input = document.getElementById('global-input').value.trim();
+            if (!input) return;
+
+            const isId = /^\d+$/.test(input);
+            ['nhentai', 'ehentai'].forEach(src => {
+                const type = isId ? 'id' : 'text';
+                document.getElementById(`input-${src}-${type}`).value = input;
+                renderLoading(src);
+            });
+
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input, ...getConfig() })
+                });
+                const json = await response.json();
+                
+                if (json.success) {
+                    processResults('nhentai', json.results.nhentai);
+                    processResults('ehentai', json.results.ehentai);
+                } else {
+                    alert('System Error: ' + json.error);
+                }
+            } catch (e) {
+                alert('Network Error: ' + e.message);
+            }
+        }
+
+        async function searchSingle(source, type) {
+            const inputId = `input-${source}-${type}`;
+            const input = document.getElementById(inputId).value.trim();
+            if (!input) return;
+
+            renderLoading(source);
+
+            try {
+                const response = await fetch('/api/search/single', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input, source, ...getConfig() })
+                });
+                const json = await response.json();
+                processResults(source, json);
+
+            } catch (e) {
+                renderError(source, e.message);
+            }
+        }
+
+        function processResults(source, result) {
+            if (!result.success) {
+                renderError(source, result.message);
+                return;
+            }
+
+            const data = result.data; 
+            CACHE[source] = data; 
+
+            if (!data || data.length === 0) {
+                document.getElementById(`col-${source}`).innerHTML = `<div class="state-empty">No Data Found</div>`;
+                return;
+            }
+
+            if (data.length === 1) {
+                renderDetail(source, data[0]);
+            } else {
+                renderList(source, data);
+            }
+        }
+
+        function renderLoading(source) {
+            document.getElementById(`col-${source}`).innerHTML = '<div class="state-loading">Searching...</div>';
+        }
+
+        function renderError(source, msg) {
+            document.getElementById(`col-${source}`).innerHTML = `<div class="state-error">${msg}</div>`;
+        }
+
+        function renderList(source, items) {
+            const container = document.getElementById(`col-${source}`);
+            let html = `<div style="padding:10px; font-size:0.8em; color:#888; border-bottom:1px solid #333;">Found ${items.length} results:</div>`;
+            
+            items.forEach((item, index) => {
+                html += `
+                    <div class="result-list-item" onclick="showDetailFromCache('${source}', ${index})">
+                        <div class="list-title">${item.title}</div>
+                        <div class="list-meta">
+                            <span class="list-id">#${item.id}</span>
+                            <span>${item.pages ? item.pages + 'P' : ''}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.showDetailFromCache = function(source, index) {
+            const item = CACHE[source][index];
+            renderDetail(source, item, true); 
+        }
+
+        // --- Parsing Logic ---
+        function parseTitle(fullTitle) {
+            if (!fullTitle) return { title: "", group: "", artist: "" };
+            
+            let group = "";
+            let artist = "";
+            let title = fullTitle;
+
+            const groupMatch = fullTitle.match(/\[([^\]]+)\]/);
+            if (groupMatch) {
+                const groupBlock = groupMatch[1];
+                const artistMatch = groupBlock.match(/^(.+?)\s*\((.+?)\)$/);
+                if (artistMatch) {
+                    group = artistMatch[1];
+                    artist = artistMatch[2];
+                } else {
+                    group = groupBlock;
+                }
+
+                const firstBracketEnd = fullTitle.indexOf(']');
+                if (firstBracketEnd !== -1) {
+                    let rest = fullTitle.substring(firstBracketEnd + 1).trim();
+                    title = rest;
+                }
+            }
+            return { group, artist, title };
+        }
+
+        function formatDate(ts) {
+            if (!ts) return "";
+            try {
+                let date;
+                if (/^\d+$/.test(ts)) {
+                    date = new Date(parseInt(ts) * 1000);
+                } else {
+                    date = new Date(ts);
+                }
+                return date.toISOString().split('T')[0]; // YYYY-MM-DD
+            } catch(e) { return ts; }
+        }
+
+        window.parseToHitomi = function(source, index) {
+            const data = CACHE[source] ? CACHE[source][index] : null;
+            if (!data) return;
+            const raw = (data.raw || data); 
+            
+            // 1. Source Construction
+            const sourceObj = {};
+            sourceObj["site"] = source;
+            sourceObj["url"] = data.url;
+            sourceObj["id"] = data.id;
+            
+            // Token logic: Nhentai needs empty string, EH needs token
+            let tokenVal = "";
+            if (source === 'ehentai') {
+                tokenVal = data.token || (data.url ? data.url.split('/')[5] : "");
+            }
+            // Explicitly set token field for both sources
+            sourceObj["token"] = tokenVal;
+
+            // 2. Parse Titles
+            let engFull = (source === 'ehentai') ? raw.title : (raw.title.pretty || raw.title.english);
+            let jpnFull = (source === 'ehentai') ? raw.title_jpn : (raw.title.japanese || "");
+            
+            let engArtist = "", engGroup = "";
+            let jpnArtist = "", jpnGroup = "";
+            let engTitleParsed = "", jpnTitleParsed = "";
+
+            if (source === 'nhentai') {
+                const artistTags = (raw.tags || []).filter(t => t.type === 'artist').map(t => t.name);
+                const groupTags = (raw.tags || []).filter(t => t.type === 'group').map(t => t.name);
+                
+                engArtist = artistTags.join(', ');
+                engGroup = groupTags.join(', ');
+                
+                const tParsed = parseTitle(engFull);
+                engTitleParsed = tParsed.title; 
+                if (!engArtist) engArtist = tParsed.artist;
+                if (!engGroup) engGroup = tParsed.group;
+
+                const jParsed = parseTitle(jpnFull);
+                jpnArtist = jParsed.artist;
+                jpnGroup = jParsed.group;
+                jpnTitleParsed = jParsed.title;
+
+            } else {
+                const engP = parseTitle(engFull);
+                engArtist = engP.artist;
+                engGroup = engP.group;
+                engTitleParsed = engP.title;
+
+                const jpnP = parseTitle(jpnFull);
+                jpnArtist = jpnP.artist;
+                jpnGroup = jpnP.group;
+                jpnTitleParsed = jpnP.title;
+            }
+
+            // 3. Tags (Normalized with parody/character default)
+            let tags = [];
+            if (source === 'ehentai') {
+                tags = raw.tags || [];
+            } else {
+                (raw.tags || []).forEach(t => {
+                    tags.push(`${t.type}:${t.name}`);
+                });
+            }
+
+            // Initialize mandatory fields
+            const tagMap = {
+                "parody": "",
+                "character": ""
+            };
+            const keysToExclude = ['group', 'artist', 'category', 'language']; 
+
+            tags.forEach(tagStr => {
+                const parts = tagStr.split(':');
+                if (parts.length < 2) return;
+                const ns = parts[0];
+                const val = parts.slice(1).join(':');
+
+                if (keysToExclude.includes(ns)) return;
+
+                if (!tagMap[ns]) {
+                    tagMap[ns] = val;
+                } else {
+                    if (tagMap[ns] === "") {
+                        tagMap[ns] = val;
+                    } else {
+                        tagMap[ns] += `, ${val}`; 
+                    }
+                }
+            });
+
+            // 4. Stats
+            const stats = {};
+            const postedVal = (source === 'nhentai') ? raw.upload_date : raw.posted;
+            
+            if (source === 'nhentai') {
+                stats["favorited"] = raw.num_favorites ? String(raw.num_favorites) : "0";
+            } else {
+                stats["rating"] = raw.rating || "";
+            }
+
+            // 5. Final Object
+            const output = {};
+            
+            output["source"] = sourceObj;
+            
+            output["title"] = engTitleParsed;
+            output["title_jpn"] = jpnTitleParsed;
+            output["thumb"] = data.cover; // Add Thumb
+            output["artist"] = engArtist;
+            output["group"] = engGroup;
+            output["artist_jpn"] = jpnArtist;
+            output["group_jpn"] = jpnGroup;
+            output["posted"] = formatDate(postedVal);
+            
+            Object.assign(output, stats);
+            output["tags"] = tagMap;
+
+            const container = document.getElementById('col-parser');
+            // Show only JSON
+            container.innerHTML = `
+                <textarea style="width:100%; height:500px; font-family:monospace; font-size:0.85em; background:#111; color:#a6e22e; border:1px solid #333; padding:10px;">${JSON.stringify(output, null, 2)}</textarea>
+            `;
+        }
+
+        function renderDetail(source, data, showBack = false) {
+            let dataIndex = 0;
+            if (CACHE[source]) {
+                dataIndex = CACHE[source].indexOf(data);
+                if (dataIndex === -1) dataIndex = 0; 
+            }
+
+            const container = document.getElementById(`col-${source}`);
+            const tagsHtml = (data.tags || []).slice(0, 15).map(t => `<span class="tag">${t}</span>`).join('');
+            
+            const backBtn = showBack ? `<button class="back-btn" onclick="renderList('${source}', CACHE['${source}'])">← Back to List</button>` : '';
+
+            // Extended Metadata Table
+            let metaRows = `
+                <tr><td class="meta-label">ID</td><td class="meta-val">${data.id}</td></tr>
+                <tr><td class="meta-label">Pages</td><td class="meta-val">${data.pages || '?'}</td></tr>
+            `;
+
+            if (source === 'ehentai') {
+                const tokenVal = data.token || (data.url ? data.url.split('/')[5] : '?');
+                metaRows += `
+                    <tr><td class="meta-label">Token</td><td class="meta-val" style="color:#8bc34a; font-family:monospace;">${tokenVal}</td></tr>
+                    <tr><td class="meta-label">Category</td><td class="meta-val">${data.category || '-'}</td></tr>
+                    <tr><td class="meta-label">Size</td><td class="meta-val">${data.filesize || '-'}</td></tr>
+                    <tr><td class="meta-label">Rating</td><td class="meta-val">${data.rating || '-'}</td></tr>
+                `;
+            } else if (source === 'nhentai') {
+                metaRows += `
+                    <tr><td class="meta-label">Favs</td><td class="meta-val">${data.favorited || '-'}</td></tr>
+                    <tr><td class="meta-label">Posted</td><td class="meta-val">${formatDate(data.posted)}</td></tr>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="detail-view">
+                    ${backBtn}
+                    
+                    <div class="detail-header">
+                        <div class="title"><a href="${data.url}" target="_blank" style="color:white;text-decoration:none">${data.title}</a></div>
+                        <div class="original-title">${data.original_title || ''}</div>
+                    </div>
+                    
+                    <table class="meta-table">
+                        ${metaRows}
+                    </table>
+                    
+                    <button class="parse-btn" onclick="parseToHitomi('${source}', ${dataIndex})">Parse Data</button>
+
+                    <div class="tags-container" style="margin-top:15px;">
+                        ${tagsHtml}
+                    </div>
+                    
+                    <textarea style="width:100%; height:120px; margin-top:10px; font-size:0.8em; background:#111; color:#aaa; border:none; resize:vertical;">${JSON.stringify(data.raw || data, null, 2)}</textarea>
+                </div>
+            `;
+        }
+
+        // Enter key handlers
+        ['nhentai', 'ehentai'].forEach(src => {
+            ['id', 'text'].forEach(type => {
+                document.getElementById(`input-${src}-${type}`).addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') searchSingle(src, type);
+                });
+            });
+        });
+        document.getElementById('global-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') searchAll();
+        });
+
+    </script>
+</body>
+</html>
