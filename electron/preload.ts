@@ -11,6 +11,7 @@ import {
   readClipboardImportPathsResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
+  readRuntimeInfoResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
@@ -194,6 +195,10 @@ const backendApi = {
   readRuntimeCapabilities: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeCapabilities)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  },
+  readRuntimeInfo: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeInfo)
+    return readRuntimeInfoResponseSchema.parse(response)
   },
   readArchiveLoadStatus: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readArchiveLoadStatus)

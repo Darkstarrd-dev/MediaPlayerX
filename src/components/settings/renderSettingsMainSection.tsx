@@ -4,6 +4,8 @@ import {
   resolvePaletteIdFromPalettes,
   resolveStyleIdFromStyles,
 } from '../../features/theme/themeRegistry'
+import type { ReadRuntimeInfoResponseDto } from '../../contracts/backend'
+import type { RepositoryMode } from '../../features/backend/repository'
 import type { JSX } from 'react'
 
 import type { ShortcutConflict } from '../../shortcuts'
@@ -71,6 +73,11 @@ interface RenderSettingsMainSectionParams {
   vectorLabelByAction: Map<string, string>
   databaseResetPending: boolean
   databaseResetError: string | null
+  repositoryMode: RepositoryMode
+  backendBridgeInjected: boolean
+  runtimeInfoLoading: boolean
+  runtimeInfoError: string | null
+  runtimeInfo: ReadRuntimeInfoResponseDto | null
   renderBindingRows: (kind: 'shortcut' | 'vector') => JSX.Element
   onResetShortcuts: () => void
   onResetVectorControls: () => void
@@ -110,6 +117,7 @@ interface RenderSettingsMainSectionParams {
   onVectorUniverseDispersionChange: (value: number) => void
   onVectorUniverseWidgetSizeChange: (value: number) => void
   onClearDatabase: () => void
+  onRefreshRuntimeInfo: () => void
 }
 
 export function renderSettingsMainSection({
@@ -167,6 +175,11 @@ export function renderSettingsMainSection({
   vectorLabelByAction,
   databaseResetPending,
   databaseResetError,
+  repositoryMode,
+  backendBridgeInjected,
+  runtimeInfoLoading,
+  runtimeInfoError,
+  runtimeInfo,
   renderBindingRows,
   onResetShortcuts,
   onResetVectorControls,
@@ -206,6 +219,7 @@ export function renderSettingsMainSection({
   onVectorUniverseDispersionChange,
   onVectorUniverseWidgetSizeChange,
   onClearDatabase,
+  onRefreshRuntimeInfo,
 }: RenderSettingsMainSectionParams): JSX.Element {
   if (activeSection === 'layout') {
     return (
@@ -497,6 +511,9 @@ export function renderSettingsMainSection({
   }
 
   if (activeSection === 'database') {
+    const rendererIsProd = import.meta.env.PROD
+    const bridgeMissingInProduction = rendererIsProd && repositoryMode === 'real' && !backendBridgeInjected
+
     return (
       <div className="settings-block">
         <h3>数据库设置</h3>
@@ -508,6 +525,42 @@ export function renderSettingsMainSection({
           </button>
         </label>
         {databaseResetError ? <p className="settings-danger-text">{databaseResetError}</p> : null}
+
+        <fieldset className="settings-subsection">
+          <legend>运行时诊断</legend>
+          <p className="settings-placeholder">用于排查 EXE 与 dev:desktop 的后端桥接与数据路径差异。</p>
+          <div className="settings-runtime-grid">
+            <span>Renderer PROD</span>
+            <code>{rendererIsProd ? 'true' : 'false'}</code>
+            <span>Repository 模式</span>
+            <code>{repositoryMode}</code>
+            <span>Backend Bridge</span>
+            <code>{backendBridgeInjected ? 'true' : 'false'}</code>
+            <span>App 版本</span>
+            <code>{runtimeInfo?.app_version ?? '-'}</code>
+            <span>Main isPackaged</span>
+            <code>{typeof runtimeInfo?.is_packaged === 'boolean' ? String(runtimeInfo.is_packaged) : '-'}</code>
+            <span>平台/架构</span>
+            <code>{runtimeInfo ? `${runtimeInfo.platform}/${runtimeInfo.arch}` : '-'}</code>
+            <span>UserData 路径</span>
+            <code>{runtimeInfo?.user_data_path ?? '-'}</code>
+            <span>Library Root</span>
+            <code>{runtimeInfo?.library_root ?? '-'}</code>
+            <span>数据库路径</span>
+            <code>{runtimeInfo?.database_path ?? '-'}</code>
+          </div>
+          <div className="settings-runtime-actions">
+            <button type="button" disabled={runtimeInfoLoading} onClick={onRefreshRuntimeInfo}>
+              {runtimeInfoLoading ? '诊断读取中...' : '刷新诊断'}
+            </button>
+          </div>
+          {runtimeInfoError ? <p className="settings-danger-text">{runtimeInfoError}</p> : null}
+          {bridgeMissingInProduction ? (
+            <p className="settings-danger-text">
+              当前为生产构建且未检测到后端桥接，已禁用 mock 回退。请检查打包产物中的 preload 注入链路。
+            </p>
+          ) : null}
+        </fieldset>
       </div>
     )
   }

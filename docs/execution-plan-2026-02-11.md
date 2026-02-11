@@ -33,7 +33,7 @@
 
 - 仓库模式：mock/real 两套 Repository。
   - `VITE_MEDIA_REPOSITORY_MODE=mock|real` 可强制指定。
-  - 未指定时：若检测到 `window.mediaPlayerBackend`（preload bridge 注入）则使用 real，否则使用 mock。
+  - 未指定时：开发构建若检测到 `window.mediaPlayerBackend`（preload bridge 注入）则使用 real，否则使用 mock；生产/打包构建默认强制 real，禁止静默回退到 mock。
 - 静默检索 (silent search)：不展开检索面板、不写入检索面板输入控件，但驱动读链路进入“检索结果”视图，并提供 Sidebar “返回”按钮清空。
 - 库变更事件：Main 侧通过 IPC 发出 `libraryChanged`（带 `reason`），Renderer 侧据此决定刷新粒度。
 
@@ -53,11 +53,11 @@
 
 任务清单：
 
-- [ ] 增加“运行时诊断信息”并在 UI 可见：
+- [x] 增加“运行时诊断信息”并在 UI 可见：
   - 诊断项至少包含：repository 模式、`window.mediaPlayerBackend` 是否存在、应用版本、数据库路径（或可推导信息）。
   - 建议：新增 IPC `getRuntimeInfo`（或等价）并在设置面板/状态栏展示。
   - 参考文件：`electron/preload.ts`、`electron/registerBackendIpcHandlers.ts`、`src/features/backend/repository/createRepository.ts`、`src/components/settings/*`
-- [ ] 生产/打包环境禁止静默 mock fallback：
+- [x] 生产/打包环境禁止静默 mock fallback：
   - 若未检测到 backend bridge：在 UI banner 明确报错（可附“如何修复”提示），而不是继续用 mock。
   - 参考文件：`src/features/backend/repository/createRepository.ts`
 - [ ] 确认打包产物加载正确的 preload：

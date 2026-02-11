@@ -31,6 +31,7 @@ export function useAppTopLayerBindings({
 
   const {
     mediaRepository,
+    repositoryMode,
   } = repositoryBootstrap
 
   const {
@@ -108,6 +109,7 @@ export function useAppTopLayerBindings({
   return useAppTopLayerState({
     appSettings,
     mediaRepository,
+    repositoryMode,
     backendRead,
     backendWrite,
     playlistPersistence,

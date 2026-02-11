@@ -7,7 +7,28 @@ import { MEDIA_PROTOCOL_SCHEME } from './channels'
 import { registerBenchIpcHandlers } from './registerBenchIpcHandlers'
 import { registerBackendIpcHandlers } from './registerBackendIpcHandlers'
 
-const __dirname = path.dirname(path.resolve(process.argv[1] ?? '.'))
+function collectAppRootCandidates(): string[] {
+  const candidates = new Set<string>()
+
+  try {
+    const appPath = app.getAppPath()
+    if (appPath.trim().length > 0) {
+      candidates.add(path.resolve(appPath))
+    }
+  } catch {
+    // ignore app path probing errors
+  }
+
+  const argvEntry = process.argv[1]
+  if (typeof argvEntry === 'string' && argvEntry.trim().length > 0) {
+    const entryDir = path.dirname(path.resolve(argvEntry))
+    candidates.add(path.resolve(entryDir, '..'))
+    candidates.add(entryDir)
+  }
+
+  candidates.add(path.resolve(process.cwd()))
+  return Array.from(candidates)
+}
 
 function normalizeProxyServer(rawValue: string | undefined): string | null {
   const value = (rawValue ?? '').trim()
@@ -96,9 +117,28 @@ function resolveRendererEntry(): { type: 'url' | 'file'; value: string } {
     }
   }
 
+  const rendererRelativeCandidates = [
+    ['dist', 'index.html'],
+    ['..', 'dist', 'index.html'],
+  ] as const
+
+  for (const root of collectAppRootCandidates()) {
+    for (const relativeCandidate of rendererRelativeCandidates) {
+      const candidate = path.resolve(root, ...relativeCandidate)
+      if (existsSync(candidate)) {
+        return {
+          type: 'file',
+          value: candidate,
+        }
+      }
+    }
+  }
+
+  const fallbackRoot = collectAppRootCandidates()[0] ?? path.resolve(process.cwd())
+
   return {
     type: 'file',
-    value: path.join(__dirname, '../dist/index.html'),
+    value: path.join(fallbackRoot, 'dist', 'index.html'),
   }
 }
 
@@ -159,15 +199,23 @@ function shouldOpenDevTools(): boolean {
 }
 
 function resolvePreloadEntry(): string {
-  const candidates = ['preload.cjs', 'preload.js', 'preload.ts']
-  for (const candidate of candidates) {
-    const resolved = path.join(__dirname, candidate)
-    if (existsSync(resolved)) {
-      return resolved
+  const roots = collectAppRootCandidates()
+  const fileNames = ['preload.cjs', 'preload.js', 'preload.ts']
+  const relativeDirs = ['dist-electron', '']
+
+  for (const root of roots) {
+    for (const relativeDir of relativeDirs) {
+      for (const fileName of fileNames) {
+        const resolved = path.join(root, relativeDir, fileName)
+        if (existsSync(resolved)) {
+          return resolved
+        }
+      }
     }
   }
 
-  return path.join(__dirname, 'preload.cjs')
+  const fallbackRoot = roots[0] ?? path.resolve(process.cwd())
+  return path.join(fallbackRoot, 'dist-electron', 'preload.cjs')
 }
 
 function createMainWindow(): BrowserWindow {

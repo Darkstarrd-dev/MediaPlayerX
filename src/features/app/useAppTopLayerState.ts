@@ -12,7 +12,7 @@ import { findVectorControlConflicts } from '../../vectorControls'
 import type { BrowserMode, ImageItem, VideoItem } from '../../types'
 import type { ImportTaskDto } from '../../contracts/backend'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
-import type { MediaRepository } from '../backend/repository'
+import type { MediaRepository, RepositoryMode } from '../backend/repository'
 import { buildAppHeaderProps } from './buildAppHeaderProps'
 import { buildBackendErrorRows } from './buildBackendErrorRows'
 import { buildFullscreenLayerProps } from './buildFullscreenLayerProps'
@@ -20,6 +20,7 @@ import { buildImportTaskPanelProps } from './buildImportTaskPanelProps'
 import { buildSettingsPanelProps } from './buildSettingsPanelProps'
 import { useDatabaseResetAction } from './useDatabaseResetAction'
 import { useImportTaskPanelState } from './useImportTaskPanelState'
+import { useRuntimeInfoDiagnostics } from './useRuntimeInfoDiagnostics'
 import { useRuntimeWarningDismiss } from './useRuntimeWarningDismiss'
 import type { PlaylistPersistenceResult } from '../media/usePlaylistPersistence'
 import type {
@@ -37,6 +38,7 @@ const VISION_TEST_RED_IMAGE_BASE64 =
 interface UseAppTopLayerStateParams {
   appSettings: AppSettingsStoreSnapshot
   mediaRepository: MediaRepository
+  repositoryMode: RepositoryMode
   backendRead: ReadOnlyDataAccessResult
   backendWrite: WriteDataAccessResult
   playlistPersistence: PlaylistPersistenceResult
@@ -116,6 +118,7 @@ interface UseAppTopLayerStateParams {
 export function useAppTopLayerState({
   appSettings,
   mediaRepository,
+  repositoryMode,
   backendRead,
   backendWrite,
   playlistPersistence,
@@ -200,8 +203,28 @@ export function useAppTopLayerState({
     runtimeCapabilities,
   })
 
+  const runtimeInfoDiagnostics = useRuntimeInfoDiagnostics()
+
+  const bridgeMissingInProduction =
+    import.meta.env.PROD &&
+    repositoryMode === 'real' &&
+    !runtimeInfoDiagnostics.backendBridgeInjected
+
+  const bridgeMissingRow = bridgeMissingInProduction
+    ? {
+        key: 'backend-bridge',
+        label: '后端桥接',
+        message:
+          '生产构建未检测到后端桥接（window.mediaPlayerBackend），已禁用 mock 回退。请检查 Electron preload 注入链路。',
+        onRetry: runtimeInfoDiagnostics.retry,
+      }
+    : null
+
   const managementErrorRows = manageMode ? backendErrorRows.filter((row) => row.key === 'manage-write') : []
-  const bannerBackendErrorRows = backendErrorRows.filter((row) => row.key !== 'manage-write')
+  const bannerBackendErrorRows = [
+    bridgeMissingRow,
+    ...backendErrorRows.filter((row) => row.key !== 'manage-write'),
+  ].filter((row): row is NonNullable<typeof row> => Boolean(row))
 
   const runtimeCapabilityWarnings = (runtimeCapabilities.data?.minimum_matrix ?? []).filter(
     (item) => item.status !== 'available',
@@ -428,6 +451,12 @@ export function useAppTopLayerState({
     vectorControlConflicts,
     databaseResetPending,
     databaseResetError,
+    repositoryMode,
+    backendBridgeInjected: runtimeInfoDiagnostics.backendBridgeInjected,
+    runtimeInfoLoading: runtimeInfoDiagnostics.loading,
+    runtimeInfoError: runtimeInfoDiagnostics.error,
+    runtimeInfo: runtimeInfoDiagnostics.data,
+    refreshRuntimeInfo: runtimeInfoDiagnostics.retry,
     updateSettings: appSettings.updateSettings,
     applySidebarRatio,
     applyMetadataRatio,

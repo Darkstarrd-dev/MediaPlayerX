@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import type { ReadRuntimeInfoResponseDto } from '../contracts/backend'
+import type { RepositoryMode } from '../features/backend/repository'
 import {
   appendShortcutBinding,
   keyboardEventToCombo,
@@ -67,6 +69,11 @@ export interface SettingsPanelProps {
   vectorControlConflicts: VectorControlConflict[]
   databaseResetPending: boolean
   databaseResetError: string | null
+  repositoryMode: RepositoryMode
+  backendBridgeInjected: boolean
+  runtimeInfoLoading: boolean
+  runtimeInfoError: string | null
+  runtimeInfo: ReadRuntimeInfoResponseDto | null
   onClose: () => void
   onStyleChange: (value: string) => void
   onPaletteChange: (value: string) => void
@@ -108,6 +115,7 @@ export interface SettingsPanelProps {
   onResetShortcuts: () => void
   onResetVectorControls: () => void
   onClearDatabase: () => void
+  onRefreshRuntimeInfo: () => void
 }
 
 type BindingTarget =
@@ -170,6 +178,11 @@ function SettingsPanel({
   vectorControlConflicts,
   databaseResetPending,
   databaseResetError,
+  repositoryMode,
+  backendBridgeInjected,
+  runtimeInfoLoading,
+  runtimeInfoError,
+  runtimeInfo,
   onClose,
   onStyleChange,
   onPaletteChange,
@@ -211,6 +224,7 @@ function SettingsPanel({
   onResetShortcuts,
   onResetVectorControls,
   onClearDatabase,
+  onRefreshRuntimeInfo,
 }: SettingsPanelProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>('layout')
   const [bindingTarget, setBindingTarget] = useState<BindingTarget | null>(null)
@@ -401,6 +415,11 @@ function SettingsPanel({
     vectorLabelByAction,
     databaseResetPending,
     databaseResetError,
+    repositoryMode,
+    backendBridgeInjected,
+    runtimeInfoLoading,
+    runtimeInfoError,
+    runtimeInfo,
     renderBindingRows,
     onResetShortcuts,
     onResetVectorControls,
@@ -440,6 +459,7 @@ function SettingsPanel({
     onVectorUniverseDispersionChange,
     onVectorUniverseWidgetSizeChange,
     onClearDatabase,
+    onRefreshRuntimeInfo,
   })
 
   const currentBinding = bindingTarget ? getBinding(bindingTarget) : ''

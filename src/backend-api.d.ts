@@ -8,6 +8,7 @@ import type {
   ReadArchiveLoadStatusResponseDto,
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
+  ReadRuntimeInfoResponseDto,
   LibrarySnapshotDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
@@ -96,6 +97,7 @@ interface MediaPlayerBackendApi {
   retryImportTask: (request: RetryImportTaskRequestDto) => Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
+  readRuntimeInfo?: () => Promise<ReadRuntimeInfoResponseDto>
   readArchiveLoadStatus?: () => Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase: () => Promise<ClearDatabaseResponseDto>
   onLibraryChanged?: (

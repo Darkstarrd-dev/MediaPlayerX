@@ -561,6 +561,16 @@ export const readRuntimeCapabilitiesResponseSchema = z.object({
   generated_at_ms: z.number().int().positive(),
 })
 
+export const readRuntimeInfoResponseSchema = z.object({
+  app_version: z.string().min(1),
+  is_packaged: z.boolean(),
+  platform: z.string().min(1),
+  arch: z.string().min(1),
+  user_data_path: z.string().min(1),
+  library_root: z.string().min(1),
+  database_path: z.string().min(1),
+})
+
 export const mediaAccessAuditResponseSchema = z.object({
   resolve_requests: nonNegativeIntSchema,
   resolve_granted: nonNegativeIntSchema,
@@ -654,4 +664,5 @@ export type WriteAppStateResponseDto = z.infer<typeof writeAppStateResponseSchem
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>
+export type ReadRuntimeInfoResponseDto = z.infer<typeof readRuntimeInfoResponseSchema>
 export type MediaAccessAuditResponseDto = z.infer<typeof mediaAccessAuditResponseSchema>

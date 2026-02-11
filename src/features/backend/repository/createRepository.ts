@@ -2,19 +2,38 @@ import { MockMediaRepository } from './mockRepository'
 import { RealMediaRepository } from './realRepository'
 import type { MediaRepository, RepositoryMode } from './types'
 
-function resolveRepositoryMode(): RepositoryMode {
-  const configuredMode = import.meta.env.VITE_MEDIA_REPOSITORY_MODE
-  if (typeof configuredMode === 'string' && configuredMode.trim().length > 0) {
-    const mode = configuredMode.trim().toLowerCase()
-    return mode === 'real' ? 'real' : 'mock'
+function parseConfiguredMode(rawValue: unknown): RepositoryMode | null {
+  if (typeof rawValue !== 'string') {
+    return null
   }
 
-  if (typeof window !== 'undefined' && window.mediaPlayerBackend) {
+  const normalized = rawValue.trim().toLowerCase()
+  if (!normalized) {
+    return null
+  }
+
+  return normalized === 'real' ? 'real' : 'mock'
+}
+
+function detectBackendBridge(): boolean {
+  return typeof window !== 'undefined' && typeof window.mediaPlayerBackend !== 'undefined'
+}
+
+function resolveRepositoryMode(): RepositoryMode {
+  const configuredMode = parseConfiguredMode(import.meta.env.VITE_MEDIA_REPOSITORY_MODE)
+  if (configuredMode) {
+    return configuredMode
+  }
+
+  if (detectBackendBridge()) {
     return 'real'
   }
 
-  const mode = String(configuredMode ?? 'mock').trim().toLowerCase()
-  return mode === 'real' ? 'real' : 'mock'
+  if (import.meta.env.PROD) {
+    return 'real'
+  }
+
+  return 'mock'
 }
 
 export function createMediaRepository(): {

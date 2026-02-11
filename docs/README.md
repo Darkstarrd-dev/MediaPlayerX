@@ -61,7 +61,7 @@
 - 管理模式 LLM 广告审核纵向接线已完成：contracts/preload/ipc/repository/UI 全链路可用，支持“启动审核 -> 轮询进度/结果 -> 人工复核 -> 确认删除”。
 - 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
 - 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
-- Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时若检测到 `window.mediaPlayerBackend` 则自动走 `real`。
+- Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时开发环境在检测到 `window.mediaPlayerBackend` 后走 `real`（否则 `mock`），生产构建默认强制 `real` 并禁止静默回退到 `mock`。
 - Electron 通道已从骨架升级到真实 Main 读服务：`registerBackendIpcHandlers` 现接入 `FileSystemMediaReadService`（文件系统适配），并在 IPC 入参与出参统一执行 Zod 校验。
 - Main/Sidebar 的特征筛选口径已收敛到 Repository SSOT，前端不再维护同构筛选副本。
 - 已补充 Repository/IPC 集成测试：覆盖超时、取消、重试、快照回退；`App.test.tsx` 仍可能在 Vitest 输出非阻断性 `act(...)` 警告。

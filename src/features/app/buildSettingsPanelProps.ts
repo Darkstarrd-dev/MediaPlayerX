@@ -47,6 +47,12 @@ interface BuildSettingsPanelPropsParams {
   vectorControlConflicts: SettingsPanelProps['vectorControlConflicts']
   databaseResetPending: boolean
   databaseResetError: string | null
+  repositoryMode: SettingsPanelProps['repositoryMode']
+  backendBridgeInjected: boolean
+  runtimeInfoLoading: boolean
+  runtimeInfoError: string | null
+  runtimeInfo: SettingsPanelProps['runtimeInfo']
+  refreshRuntimeInfo: () => void
   updateSettings: (patch: Partial<AppSettings>) => void
   applySidebarRatio: (value: number) => void
   applyMetadataRatio: (value: number) => void
@@ -106,6 +112,12 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     vectorControlConflicts: params.vectorControlConflicts,
     databaseResetPending: params.databaseResetPending,
     databaseResetError: params.databaseResetError,
+    repositoryMode: params.repositoryMode,
+    backendBridgeInjected: params.backendBridgeInjected,
+    runtimeInfoLoading: params.runtimeInfoLoading,
+    runtimeInfoError: params.runtimeInfoError,
+    runtimeInfo: params.runtimeInfo,
+    onRefreshRuntimeInfo: params.refreshRuntimeInfo,
     onClose: () => params.updateSettings({ settingsOpen: false }),
     onStyleChange: (value) => params.updateSettings({ styleId: value }),
     onPaletteChange: (value) =>

@@ -246,6 +246,36 @@
   color: var(--mpx-status-danger-text);
 }
 
+.settings-runtime-grid {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: start;
+}
+
+.settings-runtime-grid > span {
+  color: var(--text-dim);
+}
+
+.settings-runtime-grid > code {
+  display: block;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: var(--mpx-input-bg);
+  color: var(--mpx-input-text);
+  font-family: var(--mpx-font-mono);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.settings-runtime-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .settings-test-row {
   display: flex;
   align-items: center;

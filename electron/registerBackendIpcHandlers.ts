@@ -11,6 +11,7 @@ import {
   pickImportPathsResponseSchema,
   readClipboardImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
+  readRuntimeInfoResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -61,6 +62,7 @@ import {
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { FileSystemMediaReadService } from './fileSystemReadService'
+import { DATABASE_RELATIVE_PATH } from './mediaLibrarySchema'
 
 function extractLikelyPaths(raw: string): string[] {
   const tokens = raw
@@ -336,6 +338,21 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeCapabilities, async () => {
     const response = await ensureService().readRuntimeCapabilities()
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readRuntimeInfo, async () => {
+    const userDataPath = app.getPath('userData')
+    const databasePath = path.resolve(userDataPath, DATABASE_RELATIVE_PATH)
+
+    return readRuntimeInfoResponseSchema.parse({
+      app_version: app.getVersion(),
+      is_packaged: app.isPackaged,
+      platform: process.platform,
+      arch: process.arch,
+      user_data_path: userDataPath,
+      library_root: libraryRoot,
+      database_path: databasePath,
+    })
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readArchiveLoadStatus, async () => {
