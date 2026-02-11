@@ -64,6 +64,7 @@ import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { MediaAccessError } from './fileSystemMediaAccessGuard'
 import { FileSystemMediaReadService } from './fileSystemReadService'
 import { DATABASE_RELATIVE_PATH } from './mediaLibrarySchema'
+import { isRuntimeDiagnosticsVerboseEnabled, logRuntimeDiagnostic, serializeUnknownError } from './runtimeDiagnostics'
 import { THUMBNAIL_CACHE_DIR_NAME } from './services/file-system-read/fileSystemReadFacadeConfig'
 
 const MEDIA_ACCESS_FALLBACK_URL = 'data:application/octet-stream;base64,'
@@ -100,6 +101,9 @@ export function registerBackendIpcHandlers(): void {
   const defaultLibraryRoot = path.join(app.getPath('pictures'), 'MediaPlayerXLibrary')
   const libraryRoot = path.resolve(process.env.MEDIA_PLAYERX_LIBRARY_ROOT ?? defaultLibraryRoot)
   let service: FileSystemMediaReadService | null = null
+  let protocolReadFailureCount = 0
+  let resolveMediaResourceCount = 0
+  let resolveMediaResourceFailureCount = 0
 
   const broadcastLibraryChanged = (payload: { reason: string; updated_at_ms: number }) => {
     for (const window of BrowserWindow.getAllWindows()) {
@@ -143,7 +147,16 @@ export function registerBackendIpcHandlers(): void {
         status: payload.status,
         headers: payload.headers,
       })
-    } catch {
+    } catch (error) {
+      protocolReadFailureCount += 1
+      if (isRuntimeDiagnosticsVerboseEnabled() || protocolReadFailureCount <= 10 || protocolReadFailureCount % 50 === 0) {
+        logRuntimeDiagnostic('media-protocol-read-failed', {
+          count: protocolReadFailureCount,
+          tokenPrefix: token.slice(0, 8),
+          hasRangeHeader: Boolean(request.headers.get('range')),
+          error: serializeUnknownError(error),
+        }, 'warn')
+      }
       return new Response('media not found', { status: 404 })
     }
   })
@@ -173,11 +186,30 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.resolveMediaResource, async (_event, payload: unknown) => {
     const request = resolveMediaResourceRequestSchema.parse(payload)
+    resolveMediaResourceCount += 1
     try {
       const response = await ensureService().resolveMediaResource(request)
+      if (isRuntimeDiagnosticsVerboseEnabled() && resolveMediaResourceCount % 200 === 0) {
+        const audit = await ensureService().readMediaAccessAudit()
+        logRuntimeDiagnostic('resolve-media-resource-audit', {
+          requestCount: resolveMediaResourceCount,
+          failureCount: resolveMediaResourceFailureCount,
+          audit,
+        })
+      }
       return resolveMediaResourceResponseSchema.parse(response)
     } catch (error) {
       if (!(error instanceof MediaAccessError)) {
+        resolveMediaResourceFailureCount += 1
+        if (isRuntimeDiagnosticsVerboseEnabled() || resolveMediaResourceFailureCount <= 10 || resolveMediaResourceFailureCount % 50 === 0) {
+          logRuntimeDiagnostic('resolve-media-resource-error', {
+            requestCount: resolveMediaResourceCount,
+            failureCount: resolveMediaResourceFailureCount,
+            locatorKind: request.locator.kind,
+            preferredVariant: request.preferred_variant,
+            error: serializeUnknownError(error),
+          }, 'warn')
+        }
         throw error
       }
 

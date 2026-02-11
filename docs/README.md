@@ -11,6 +11,7 @@
 - `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案（历史参考，当前架构不采用）。
 - `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（已接线并完成策略参数化/审计可视化）。
 - `maintainability-improvement-plan-v1.md`：可维护性与稳定性改进计划（已完成，长期保留）。
+- `stability-note-2026-02-12-sidebar-switch-crash.md`：Sidebar 高频切换闪退问题记录与临时修复说明。
 - `project-evaluation-report.md`：项目评估报告初版（历史基线）。
 - `project-evaluation-report-v2.md`：项目评估报告第二版（整改后复评）。
 - `project-evaluation-report-v3.md`：项目评估报告第三版（最新规模与质量评估）。
@@ -34,6 +35,7 @@
 ## 当前状态
 
 - 2026-02-11 架构重构已完成：向量模型/Embedding/wd-swin 自动标签链路已移除，检索入口仅保留特征检索容器，设置仅保留 AI 广告审核视觉模型相关项。
+- 2026-02-12 稳定性修复已上线：针对 Sidebar 高频切换触发的缩略图异常与闪退风险，已在主进程缩略图链路加入并发限流与同目标任务去重，并接入运行时诊断日志。
 - 向量宇宙仍保留，但节点定位改为基于 tags/work 元数据的稳定语义哈希，不再依赖 `featureVector`。
 - 下方出现的向量检索/Embedding 相关条目均为历史阶段记录，仅用于追溯，不代表当前实现。
 - 产品范围已冻结到交互规范版本 `v1.5`。

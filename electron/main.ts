@@ -6,6 +6,12 @@ import { pathToFileURL } from 'node:url'
 import { MEDIA_PROTOCOL_SCHEME } from './channels'
 import { registerBenchIpcHandlers } from './registerBenchIpcHandlers'
 import { registerBackendIpcHandlers } from './registerBackendIpcHandlers'
+import {
+  getRuntimeDiagnosticsLogPath,
+  isRuntimeDiagnosticsVerboseEnabled,
+  logRuntimeDiagnostic,
+  serializeUnknownError,
+} from './runtimeDiagnostics'
 
 function collectAppRootCandidates(): string[] {
   const candidates = new Set<string>()
@@ -310,15 +316,40 @@ function createMainWindow(): BrowserWindow {
   }
 
   window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    console.error('[main] did-fail-load', {
-      errorCode,
-      errorDescription,
-      validatedURL,
-    })
+    logRuntimeDiagnostic(
+      'renderer-did-fail-load',
+      {
+        errorCode,
+        errorDescription,
+        validatedURL,
+        webContentsId: window.webContents.id,
+      },
+      'error',
+      true,
+    )
   })
 
   window.webContents.on('render-process-gone', (_event, details) => {
-    console.error('[main] render-process-gone', details)
+    const appMetrics = app.getAppMetrics().map((metric) => ({
+      pid: metric.pid,
+      type: metric.type,
+      memory: metric.memory,
+      creationTime: metric.creationTime,
+      cpu: metric.cpu,
+    }))
+
+    logRuntimeDiagnostic(
+      'renderer-process-gone',
+      {
+        details,
+        webContentsId: window.webContents.id,
+        currentUrl: window.webContents.getURL(),
+        memoryUsage: process.memoryUsage(),
+        appMetrics,
+      },
+      'error',
+      true,
+    )
   })
 
   window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
@@ -335,9 +366,31 @@ function createMainWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
+  logRuntimeDiagnostic(
+    'app-ready',
+    {
+      diagnosticsLogPath: getRuntimeDiagnosticsLogPath(),
+      isPackaged: app.isPackaged,
+      versions: process.versions,
+    },
+    'info',
+    true,
+  )
+
   registerBackendIpcHandlers()
   registerBenchIpcHandlers()
   createMainWindow()
+
+  if (isRuntimeDiagnosticsVerboseEnabled()) {
+    const timer = setInterval(() => {
+      logRuntimeDiagnostic('heartbeat', {
+        memoryUsage: process.memoryUsage(),
+        windowCount: BrowserWindow.getAllWindows().length,
+      })
+    }, 10_000)
+
+    timer.unref?.()
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -350,4 +403,16 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('child-process-gone', (_event, details) => {
+  logRuntimeDiagnostic('child-process-gone', { details, memoryUsage: process.memoryUsage() }, 'error', true)
+})
+
+process.on('uncaughtException', (error) => {
+  logRuntimeDiagnostic('uncaught-exception', { error: serializeUnknownError(error) }, 'error', true)
+})
+
+process.on('unhandledRejection', (reason) => {
+  logRuntimeDiagnostic('unhandled-rejection', { reason: serializeUnknownError(reason) }, 'error', true)
 })
