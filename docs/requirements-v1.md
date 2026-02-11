@@ -12,8 +12,7 @@
 - 类型与校验：TypeScript + Zod
 - 测试：Vitest（单元 + 组件），E2E 由用户按脚本执行
 - 元数据与运行时数据库：SQLite
-- 向量数据库：LanceDB
-- Embedding 接入端点：LM Studio（可配置）
+- 检索索引：SQLite + 元数据字段（名称/作品名/社团/作者/tags/评分）
 
 ## 平台与存储范围
 
@@ -56,34 +55,15 @@
 ## 检索能力
 
 - 文本检索：覆盖文件名/图包名及元数据字段。
-- 向量检索：全图片级（不是仅图包级）。
-- 相似阈值可调。
-- 向量模式默认关闭。
-- 视频模式检索仅保留特征检索（名称/作品名/社团/作者/tags/评分），不展示向量检索控件。
+- 特征检索：名称/作品名/社团/作者/tags/评分。
+- 不提供向量检索控件。
 - 视频模式特征检索结果受当前 Sidebar 根目录范围约束。
 
-## Embedding 策略
+## 标签与元数据策略
 
-- Embedding 模型不写死在代码中。
-- 默认接入 LM Studio 端点，相关参数可配置。
-- V1 采用单活跃模型策略。
-- 切换模型时执行向量索引重建。
-
-## 本地标签模型（wd-swinv2-tagger-v3）
-
-- 模型路径可在设置面板配置，默认值：`Z:/Playground/CurrentWorking/wd-swinv2-tagger-v3/model.onnx`。
-- 标签表文件支持 `selected_tags.csv` 或 `selected_tags.txt`（与模型同目录）。
-- Electron 主进程支持通过 ONNX Runtime (`onnxruntime-node`) 执行本地 warmup 推理测试。
-- 测试通过标准：模型可加载、可按模型输入 metadata 自适应布局（`NCHW`/`NHWC`）完成一次 warmup 推理，并返回输出维度信息。
-
-### 自动标签生成（Auto Tags）
-
-- 自动标签由本地 `wd-swinv2-tagger-v3` 推理结果生成。
-- 阈值由设置面板直接配置（General / Character / Rating）。
-- 索引范围由 `selected_tags` 的 `category` 自动映射，无需额外 JSON 范围文件。
-- 仅统计命中分类阈值且分数达标的标签。
-- 标签最终写入采用“出现次数阈值”过滤（`occurrence_threshold`）。
-- 在“元数据管理”模式可对单图包或 Sidebar 勾选范围执行批量自动标签。
+- 标签与检索以已入库元数据为准，不依赖本地 ONNX 自动标签模型。
+- 元数据管理保留人工整理与写回流程，不包含自动标签批处理入口。
+- AI 模型设置仅保留广告审核视觉模型配置与连通性测试。
 
 ## 元数据与人工整理
 

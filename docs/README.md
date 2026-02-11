@@ -8,7 +8,7 @@
 - `requirements-v1.md`：V1 需求范围与行为冻结。
 - `architecture-v1.md`：运行时架构、模块边界与数据流。
 - `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
-- `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案。
+- `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案（历史参考，当前架构不采用）。
 - `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（已接线并完成策略参数化/审计可视化）。
 - `maintainability-improvement-plan-v1.md`：可维护性与稳定性改进计划（已完成，长期保留）。
 - `project-evaluation-report.md`：项目评估报告初版（历史基线）。
@@ -33,6 +33,9 @@
 
 ## 当前状态
 
+- 2026-02-11 架构重构已完成：向量模型/Embedding/wd-swin 自动标签链路已移除，检索入口仅保留特征检索容器，设置仅保留 AI 广告审核视觉模型相关项。
+- 向量宇宙仍保留，但节点定位改为基于 tags/work 元数据的稳定语义哈希，不再依赖 `featureVector`。
+- 下方出现的向量检索/Embedding 相关条目均为历史阶段记录，仅用于追溯，不代表当前实现。
 - 产品范围已冻结到交互规范版本 `v1.5`。
 - 向量检索与特征检索已实装；当前开发阶段转为 `implementation-plan-2026-02-11.md` 中的 Embedding 模型调试与 AI 模型设置可用性收尾。
 - 虚拟 UI 脚手架与首版交互已落地，且已完成 `App.tsx` 的模块化拆分。
