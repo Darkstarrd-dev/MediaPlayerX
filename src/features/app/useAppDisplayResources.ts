@@ -122,6 +122,8 @@ export function useAppDisplayResources({
     visionAutoTagTimeoutMs: appSettings.visionAutoTagTimeoutMs,
     visionAutoTagEndpoint: appSettings.adReviewVisionEndpoint,
     visionAutoTagModel: appSettings.adReviewVisionModel,
+    embeddingEndpoint: appSettings.lmStudioEndpoint,
+    embeddingModel: appSettings.lmStudioModel,
     backendWrite: manageBindings.backendWrite,
     metadataImagePackageId: metadataImagePackageEffective?.id ?? null,
     focusedVideoId: focusedVideoEffective?.id ?? null,

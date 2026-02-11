@@ -538,6 +538,7 @@ export function useAppWorkspaceProps({
     currentVideoGrade: focusedVideoEffective?.grade ?? null,
     metadataPending: metadataWriteBindings.metadataPending,
     autoTagPending: metadataWriteBindings.autoTagPending,
+    embeddingPending: metadataWriteBindings.embeddingPending,
     editable: metadataManageMode,
     focusedVideo: focusedVideoEffective,
     metadataTab,
@@ -553,6 +554,7 @@ export function useAppWorkspaceProps({
     onSavePackageMetadata: metadataWriteBindings.applyPackageMetadata,
     onGeneratePackageAutoTags: metadataWriteBindings.applyPackageAutoTags,
     onGeneratePackageAutoTagsVision: metadataWriteBindings.applyPackageAutoTagsVision,
+    onGeneratePackageEmbeddings: metadataWriteBindings.applyPackageEmbeddings,
     onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
     onSearchByWorkTitle: (value) => {
       applyMetadataFeatureSearch({ workTitle: value })

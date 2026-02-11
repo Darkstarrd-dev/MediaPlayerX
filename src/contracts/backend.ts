@@ -432,6 +432,24 @@ export const generatePackageAutoTagsVisionResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const generatePackageEmbeddingsRequestSchema = z.object({
+  package_id: z.string().min(1),
+  embedding_endpoint: z.string().min(1),
+  embedding_model: z.string().min(1),
+  max_concurrency: z.number().int().min(1).max(8).optional(),
+  max_retries: z.number().int().min(0).max(4).optional(),
+  timeout_ms: z.number().int().min(3_000).max(120_000).optional(),
+})
+
+export const generatePackageEmbeddingsResponseSchema = z.object({
+  package: imagePackageDtoSchema,
+  analyzed_images: nonNegativeIntSchema,
+  embedded_images: nonNegativeIntSchema,
+  failed_images: nonNegativeIntSchema,
+  vector_dimension: nonNegativeIntSchema,
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const writeVideoMetadataRequestSchema = z.object({
   video_id: z.string().min(1),
   work_title: z.string().min(1),
@@ -659,6 +677,8 @@ export type GeneratePackageAutoTagsRequestDto = z.infer<typeof generatePackageAu
 export type GeneratePackageAutoTagsResponseDto = z.infer<typeof generatePackageAutoTagsResponseSchema>
 export type GeneratePackageAutoTagsVisionRequestDto = z.infer<typeof generatePackageAutoTagsVisionRequestSchema>
 export type GeneratePackageAutoTagsVisionResponseDto = z.infer<typeof generatePackageAutoTagsVisionResponseSchema>
+export type GeneratePackageEmbeddingsRequestDto = z.infer<typeof generatePackageEmbeddingsRequestSchema>
+export type GeneratePackageEmbeddingsResponseDto = z.infer<typeof generatePackageEmbeddingsResponseSchema>
 export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>
 export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataResponseSchema>
 export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>

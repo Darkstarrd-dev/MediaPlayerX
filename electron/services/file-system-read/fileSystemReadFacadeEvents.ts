@@ -10,6 +10,7 @@ export interface LibraryChangedEventPayload {
     | 'write-package-metadata'
     | 'generate-package-auto-tags'
     | 'generate-package-auto-tags-vision'
+    | 'generate-package-embeddings'
     | 'write-video-metadata'
     | 'write-video-cover'
     | 'write-playlist'

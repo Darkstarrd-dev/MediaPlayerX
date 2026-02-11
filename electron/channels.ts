@@ -17,6 +17,7 @@ export const BACKEND_CHANNELS = {
   writePackageMetadata: 'backend:writePackageMetadata',
   generatePackageAutoTags: 'backend:generatePackageAutoTags',
   generatePackageAutoTagsVision: 'backend:generatePackageAutoTagsVision',
+  generatePackageEmbeddings: 'backend:generatePackageEmbeddings',
   writeVideoMetadata: 'backend:writeVideoMetadata',
   saveVideoCover: 'backend:saveVideoCover',
   readPlaylist: 'backend:readPlaylist',

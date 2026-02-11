@@ -116,6 +116,10 @@ export class MediaLibraryDatabase {
     this.metadataStore.writePackageGrade(sourceId, grade)
   }
 
+  writeImageFeatureVectors(items: Array<{ imageId: string; featureVector: number[] }>): number {
+    return this.snapshotStore.writeImageFeatureVectors(items)
+  }
+
   setImagesHidden(imageIds: string[], hidden: boolean): number {
     return this.snapshotStore.setImagesHidden(imageIds, hidden)
   }

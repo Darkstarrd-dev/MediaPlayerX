@@ -34,6 +34,8 @@ interface UseMetadataWriteBindingsParams {
   visionAutoTagTimeoutMs: number
   visionAutoTagEndpoint: string
   visionAutoTagModel: string
+  embeddingEndpoint: string
+  embeddingModel: string
   backendWrite: {
     pending: {
       metadata: boolean
@@ -64,6 +66,16 @@ interface UseMetadataWriteBindingsParams {
         timeoutMs: number
       },
     ) => Promise<{ generated_tags: string[]; analyzed_images: number; dropped_tags: string[]; invalid_response_images: number }>
+    generatePackageEmbeddings?: (
+      packageId: string,
+      payload: {
+        embeddingEndpoint: string
+        embeddingModel: string
+        maxConcurrency: number
+        maxRetries: number
+        timeoutMs: number
+      },
+    ) => Promise<{ analyzed_images: number; embedded_images: number; failed_images: number; vector_dimension: number }>
     writeVideoMetadata?: (videoId: string, payload: VideoMetadataWritePayload) => Promise<void>
   }
   metadataImagePackageId: string | null
@@ -76,10 +88,12 @@ interface UseMetadataWriteBindingsParams {
 interface UseMetadataWriteBindingsResult {
   metadataPending: boolean
   autoTagPending: boolean
+  embeddingPending: boolean
   applyPackageGrade: (grade: number | null) => void
   applyPackageMetadata: (payload: PackageMetadataWritePayload) => void
   applyPackageAutoTags: () => void
   applyPackageAutoTagsVision: () => void
+  applyPackageEmbeddings: () => void
   applyVideoMetadata: (payload: VideoMetadataWritePayload) => void
 }
 
@@ -98,6 +112,8 @@ export function useMetadataWriteBindings({
   visionAutoTagTimeoutMs,
   visionAutoTagEndpoint,
   visionAutoTagModel,
+  embeddingEndpoint,
+  embeddingModel,
   backendWrite,
   metadataImagePackageId,
   focusedVideoId,
@@ -106,6 +122,7 @@ export function useMetadataWriteBindings({
   setManageOperationHint,
 }: UseMetadataWriteBindingsParams): UseMetadataWriteBindingsResult {
   const [autoTagPending, setAutoTagPending] = useState(false)
+  const [embeddingPending, setEmbeddingPending] = useState(false)
 
   const collectBatchTargets = useCallback(() => {
     const packageIds = new Set<string>()
@@ -386,6 +403,107 @@ export function useMetadataWriteBindings({
     visionAutoTagTimeoutMs,
   ])
 
+  const applyPackageEmbeddings = useCallback(() => {
+    if (embeddingPending || autoTagPending) {
+      return
+    }
+
+    const embeddingWriter = backendWrite.generatePackageEmbeddings
+    if (!embeddingWriter) {
+      setManageOperationHint('嵌入生成失败：当前后端不支持该能力')
+      return
+    }
+
+    const normalizedEndpoint = embeddingEndpoint.trim()
+    const normalizedModel = embeddingModel.trim()
+    if (!normalizedEndpoint || !normalizedModel) {
+      setManageOperationHint('嵌入生成失败：请先在设置中填写 LM Studio Endpoint 与 Embedding 模型ID')
+      return
+    }
+
+    const maxConcurrency = 4
+    const maxRetries = 1
+    const timeoutMs = 45_000
+
+    const runForPackage = (packageId: string) =>
+      embeddingWriter(packageId, {
+        embeddingEndpoint: normalizedEndpoint,
+        embeddingModel: normalizedModel,
+        maxConcurrency,
+        maxRetries,
+        timeoutMs,
+      })
+
+    if (metadataManageMode) {
+      const { packageIds } = collectBatchTargets()
+      if (packageIds.length > 0) {
+        setEmbeddingPending(true)
+        void (async () => {
+          let analyzedTotal = 0
+          let embeddedTotal = 0
+          let failedTotal = 0
+          let failedPackages = 0
+
+          for (let index = 0; index < packageIds.length; index += 1) {
+            const packageId = packageIds[index]!
+            try {
+              const response = await runForPackage(packageId)
+              analyzedTotal += response.analyzed_images
+              embeddedTotal += response.embedded_images
+              failedTotal += response.failed_images
+              setManageOperationHint(
+                `嵌入生成进度 ${index + 1}/${packageIds.length}：已写入 ${embeddedTotal}/${analyzedTotal} 张`,
+              )
+            } catch {
+              failedPackages += 1
+            }
+          }
+
+          const packageFailureSummary =
+            failedPackages > 0 ? `，图包失败 ${failedPackages} 个` : ''
+          setManageOperationHint(
+            `嵌入生成批量完成：写入 ${embeddedTotal}/${analyzedTotal} 张，失败 ${failedTotal} 张${packageFailureSummary}`,
+          )
+        })()
+          .catch(() => undefined)
+          .finally(() => {
+            setEmbeddingPending(false)
+          })
+        return
+      }
+    }
+
+    if (!metadataImagePackageId) {
+      setManageOperationHint('嵌入生成失败：当前无可用图包')
+      return
+    }
+
+    setEmbeddingPending(true)
+    void runForPackage(metadataImagePackageId)
+      .then((response) => {
+        setManageOperationHint(
+          `嵌入生成完成：写入 ${response.embedded_images}/${response.analyzed_images} 张，失败 ${response.failed_images} 张，向量维度 ${response.vector_dimension}`,
+        )
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error)
+        setManageOperationHint(`嵌入生成失败：${message}`)
+      })
+      .finally(() => {
+        setEmbeddingPending(false)
+      })
+  }, [
+    autoTagPending,
+    backendWrite.generatePackageEmbeddings,
+    collectBatchTargets,
+    embeddingEndpoint,
+    embeddingModel,
+    embeddingPending,
+    metadataImagePackageId,
+    metadataManageMode,
+    setManageOperationHint,
+  ])
+
   const applyVideoMetadata = useCallback(
     (payload: VideoMetadataWritePayload) => {
       if (!backendWrite.writeVideoMetadata) {
@@ -409,12 +527,18 @@ export function useMetadataWriteBindings({
   )
 
   return {
-    metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade || autoTagPending,
+    metadataPending:
+      backendWrite.pending.metadata ||
+      backendWrite.pending.grade ||
+      autoTagPending ||
+      embeddingPending,
     autoTagPending,
+    embeddingPending,
     applyPackageGrade,
     applyPackageMetadata,
     applyPackageAutoTags,
     applyPackageAutoTagsVision,
+    applyPackageEmbeddings,
     applyVideoMetadata,
   }
 }

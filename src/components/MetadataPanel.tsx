@@ -18,6 +18,7 @@ export interface MetadataPanelProps {
   currentVideoGrade: number | null
   metadataPending: boolean
   autoTagPending: boolean
+  embeddingPending: boolean
   editable: boolean
   focusedVideo: VideoItem | null
   metadataTab: 'info' | 'playlist'
@@ -40,6 +41,7 @@ export interface MetadataPanelProps {
   }) => void
   onGeneratePackageAutoTags: () => void
   onGeneratePackageAutoTagsVision: () => void
+  onGeneratePackageEmbeddings: () => void
   onSaveVideoMetadata: (payload: {
     workTitle: string
     circle: string
@@ -82,6 +84,7 @@ function MetadataPanel({
   currentVideoGrade,
   metadataPending,
   autoTagPending,
+  embeddingPending,
   editable,
   focusedVideo,
   metadataTab,
@@ -98,6 +101,7 @@ function MetadataPanel({
   onSavePackageMetadata,
   onGeneratePackageAutoTags,
   onGeneratePackageAutoTagsVision,
+  onGeneratePackageEmbeddings,
   onSaveVideoMetadata,
   onSearchByWorkTitle,
   onSearchByCircle,
@@ -285,6 +289,7 @@ function MetadataPanel({
           imagePreviewSizing={imagePreviewSizing}
           metadataPending={metadataPending}
           autoTagPending={autoTagPending}
+          embeddingPending={embeddingPending}
           editable={editable}
           currentGrade={currentGrade}
           workTitleDraft={workTitleDraft}
@@ -298,6 +303,7 @@ function MetadataPanel({
           onPersistPackageMetadata={persistPackageMetadata}
           onGeneratePackageAutoTags={onGeneratePackageAutoTags}
           onGeneratePackageAutoTagsVision={onGeneratePackageAutoTagsVision}
+          onGeneratePackageEmbeddings={onGeneratePackageEmbeddings}
           onGradeChange={onGradeChange}
           onSearchByWorkTitle={onSearchByWorkTitle}
           onSearchByCircle={onSearchByCircle}

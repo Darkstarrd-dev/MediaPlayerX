@@ -877,6 +877,37 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
+  it('元数据管理支持按设置参数触发嵌入向量批量生成', async () => {
+    const generatePackageEmbeddingsSpy = vi.spyOn(MockMediaRepository.prototype, 'generatePackageEmbeddingsSync')
+    useUiStore.setState({
+      lmStudioEndpoint: 'http://127.0.0.1:1234/v1/embeddings',
+      lmStudioModel: 'qwen3-vl-embedding',
+    })
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.click(screen.getByRole('button', { name: '生成嵌入向量' }))
+
+    await waitFor(() => {
+      expect(generatePackageEmbeddingsSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          embedding_endpoint: 'http://127.0.0.1:1234/v1/embeddings',
+          embedding_model: 'qwen3-vl-embedding',
+          max_concurrency: 4,
+          max_retries: 1,
+          timeout_ms: 45000,
+        }),
+      )
+    })
+  })
+
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {
     render(<App />)
 

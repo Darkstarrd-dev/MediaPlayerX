@@ -34,6 +34,7 @@ import {
   writePackageMetadataResponseSchema,
   generatePackageAutoTagsResponseSchema,
   generatePackageAutoTagsVisionResponseSchema,
+  generatePackageEmbeddingsResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type ReadAppStateRequestDto,
@@ -101,6 +102,8 @@ import {
   type GeneratePackageAutoTagsResponseDto,
   type GeneratePackageAutoTagsVisionRequestDto,
   type GeneratePackageAutoTagsVisionResponseDto,
+  type GeneratePackageEmbeddingsRequestDto,
+  type GeneratePackageEmbeddingsResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
@@ -481,6 +484,17 @@ function hashLocator(value: string): number {
     hash = Math.imul(hash, 16777619)
   }
   return hash >>> 0
+}
+
+function buildDeterministicEmbedding(seedInput: string, dimension = 16): number[] {
+  let seed = hashLocator(seedInput)
+  const vector: number[] = []
+  for (let index = 0; index < dimension; index += 1) {
+    seed = (Math.imul(seed ^ 0x9e3779b9, 1664525) + 1013904223) >>> 0
+    const normalized = (seed / 0xffffffff) * 2 - 1
+    vector.push(Number(normalized.toFixed(6)))
+  }
+  return vector
 }
 
 const DEFAULT_AD_REVIEW_MAX_CONCURRENCY = 4
@@ -1359,6 +1373,44 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     })
   }
 
+  generatePackageEmbeddingsSync(
+    request: GeneratePackageEmbeddingsRequestDto,
+  ): GeneratePackageEmbeddingsResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`mock 生成嵌入失败：source 不存在 ${request.package_id}`)
+    }
+
+    const endpoint = request.embedding_endpoint.trim().toLowerCase()
+    const model = request.embedding_model.trim().toLowerCase()
+    if (!endpoint || !model) {
+      throw new Error('mock 生成嵌入失败：embedding endpoint 与 model 不能为空')
+    }
+    if (endpoint.includes('fail') || model.includes('fail')) {
+      throw new Error('mock 生成嵌入失败：embedding 服务不可用')
+    }
+
+    const analyzedImages = source.images.length
+    const vectorDimension = analyzedImages > 0 ? 16 : 0
+
+    for (const image of source.images) {
+      image.feature_vector = buildDeterministicEmbedding(
+        `${request.embedding_model}|${source.id}|${image.id}|${image.ordinal}|${image.width}x${image.height}`,
+        vectorDimension,
+      )
+    }
+
+    return generatePackageEmbeddingsResponseSchema.parse({
+      package: source,
+      analyzed_images: analyzedImages,
+      embedded_images: analyzedImages,
+      failed_images: 0,
+      vector_dimension: vectorDimension,
+      updated_at_ms: Date.now(),
+    })
+  }
+
   async writePackageMetadata(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -1380,6 +1432,14 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<GeneratePackageAutoTagsVisionResponseDto> {
     const response = this.generatePackageAutoTagsVisionSync(request)
+    return resolveAsync(response, options)
+  }
+
+  async generatePackageEmbeddings(
+    request: GeneratePackageEmbeddingsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<GeneratePackageEmbeddingsResponseDto> {
+    const response = this.generatePackageEmbeddingsSync(request)
     return resolveAsync(response, options)
   }
 

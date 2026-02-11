@@ -11,6 +11,7 @@ interface MetadataImageEditorProps {
   imagePreviewSizing: { width?: string; height?: string }
   metadataPending: boolean
   autoTagPending: boolean
+  embeddingPending: boolean
   editable: boolean
   currentGrade: number | null
   workTitleDraft: string
@@ -24,6 +25,7 @@ interface MetadataImageEditorProps {
   onPersistPackageMetadata: (syncWorkTitleToPackageName?: boolean) => void
   onGeneratePackageAutoTags: () => void
   onGeneratePackageAutoTagsVision: () => void
+  onGeneratePackageEmbeddings: () => void
   onGradeChange: (grade: number | null) => void
   onSearchByWorkTitle: (value: string) => void
   onSearchByCircle: (value: string) => void
@@ -40,6 +42,7 @@ export function MetadataImageEditor({
   imagePreviewSizing,
   metadataPending,
   autoTagPending,
+  embeddingPending,
   editable,
   currentGrade,
   workTitleDraft,
@@ -53,6 +56,7 @@ export function MetadataImageEditor({
   onPersistPackageMetadata,
   onGeneratePackageAutoTags,
   onGeneratePackageAutoTagsVision,
+  onGeneratePackageEmbeddings,
   onGradeChange,
   onSearchByCircle,
   onSearchByAuthor,
@@ -217,6 +221,9 @@ export function MetadataImageEditor({
                   </button>
                   <button type="button" disabled={metadataPending || autoTagPending} onClick={onGeneratePackageAutoTagsVision}>
                     {autoTagPending ? '视觉标签生成中...' : '视觉模型生成标签'}
+                  </button>
+                  <button type="button" disabled={metadataPending || embeddingPending} onClick={onGeneratePackageEmbeddings}>
+                    {embeddingPending ? '嵌入生成中...' : '生成嵌入向量'}
                   </button>
                 </div>
               ) : null}

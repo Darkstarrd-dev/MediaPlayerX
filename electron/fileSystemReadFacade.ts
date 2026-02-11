@@ -5,6 +5,7 @@ import {
   clearDatabaseResponseSchema,
   generatePackageAutoTagsResponseSchema,
   generatePackageAutoTagsVisionResponseSchema,
+  generatePackageEmbeddingsResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
@@ -12,6 +13,8 @@ import {
   type GeneratePackageAutoTagsResponseDto,
   type GeneratePackageAutoTagsVisionRequestDto,
   type GeneratePackageAutoTagsVisionResponseDto,
+  type GeneratePackageEmbeddingsRequestDto,
+  type GeneratePackageEmbeddingsResponseDto,
   type ImportTaskDto,
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
@@ -232,6 +235,8 @@ function parseVisionTagsFromReason(reason: string): string[] {
 }
 
 type ImageItemForVisionTag = LibrarySnapshotDto['image_packages'][number]['images'][number]
+type ImageSourceForEmbedding = LibrarySnapshotDto['image_packages'][number]
+type ImageItemForEmbedding = ImageSourceForEmbedding['images'][number]
 
 function pickSampleImages(images: ImageItemForVisionTag[], sampleCount: number): ImageItemForVisionTag[] {
   const safeCount = Math.max(1, Math.floor(sampleCount))
@@ -252,6 +257,176 @@ function pickSampleImages(images: ImageItemForVisionTag[], sampleCount: number):
 
   const sortedIndexes = Array.from(pickedIndexes).sort((a, b) => a - b)
   return sortedIndexes.slice(0, safeCount).map((index) => images[index]!).filter(Boolean)
+}
+
+const DEFAULT_PACKAGE_EMBEDDING_TIMEOUT_MS = 45_000
+const DEFAULT_PACKAGE_EMBEDDING_MAX_CONCURRENCY = 4
+const DEFAULT_PACKAGE_EMBEDDING_MAX_RETRIES = 1
+
+function normalizeEmbeddingsUrl(endpoint: string): string {
+  const trimmed = endpoint.trim()
+  if (!trimmed) {
+    throw new Error('Embedding endpoint 不能为空')
+  }
+
+  const rewritePath = (pathnameInput: string): string => {
+    const pathname = pathnameInput.replace(/\/+$/, '')
+    if (pathname.endsWith('/embeddings')) {
+      return pathname
+    }
+    if (pathname.endsWith('/chat/completions')) {
+      return pathname.replace(/\/chat\/completions$/, '/embeddings')
+    }
+    if (pathname.endsWith('/v1')) {
+      return `${pathname}/embeddings`
+    }
+    return `${pathname}/embeddings`
+  }
+
+  try {
+    const parsed = new URL(trimmed)
+    parsed.pathname = rewritePath(parsed.pathname)
+    parsed.search = ''
+    parsed.hash = ''
+    return parsed.toString()
+  } catch {
+    return rewritePath(trimmed)
+  }
+}
+
+function toFiniteNumberArray(value: unknown): number[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  const normalized: number[] = []
+  for (const item of value) {
+    const numeric = typeof item === 'number' ? item : Number(item)
+    if (Number.isFinite(numeric)) {
+      normalized.push(numeric)
+    }
+  }
+  return normalized
+}
+
+function extractEmbeddingVectorFromResponseBody(responseBody: unknown): number[] {
+  if (!responseBody || typeof responseBody !== 'object') {
+    throw new Error('Embedding 响应格式错误：缺少 JSON 对象')
+  }
+
+  const data = (responseBody as { data?: unknown }).data
+  if (Array.isArray(data) && data.length > 0) {
+    const first = data[0]
+    if (first && typeof first === 'object') {
+      const vector = toFiniteNumberArray((first as { embedding?: unknown }).embedding)
+      if (vector.length > 0) {
+        return vector
+      }
+    }
+  }
+
+  const directVector = toFiniteNumberArray((responseBody as { embedding?: unknown }).embedding)
+  if (directVector.length > 0) {
+    return directVector
+  }
+
+  throw new Error('Embedding 响应格式错误：未找到 embedding 向量')
+}
+
+function buildImageEmbeddingInput(source: ImageSourceForEmbedding, image: ImageItemForEmbedding): string {
+  const locatorLabel =
+    image.media_locator.kind === 'filesystem'
+      ? path.basename(image.media_locator.absolute_path)
+      : image.media_locator.entry_name
+  const tags = source.tags.join(', ')
+
+  return [
+    `package=${source.display_name}`,
+    `work=${source.work_title}`,
+    `circle=${source.circle}`,
+    `author=${source.author}`,
+    `tags=${tags}`,
+    `image=${locatorLabel}`,
+    `ordinal=${image.ordinal}`,
+    `resolution=${image.width}x${image.height}`,
+  ].join('\n')
+}
+
+async function requestImageEmbeddingVector(params: {
+  endpoint: string
+  model: string
+  input: string
+  timeoutMs: number
+  apiKey: string
+}): Promise<number[]> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => {
+    controller.abort()
+  }, params.timeoutMs)
+
+  let response: Response
+  try {
+    response = await fetch(params.endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${params.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: params.model,
+        input: params.input,
+      }),
+      signal: controller.signal,
+    })
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Embedding 请求超时: ${params.timeoutMs}ms`)
+    }
+    const message = error instanceof Error ? error.message : String(error)
+    throw new Error(`Embedding 请求失败: ${message}`)
+  } finally {
+    clearTimeout(timeoutId)
+  }
+
+  const bodyText = await response.text()
+  if (!response.ok) {
+    throw new Error(`Embedding 请求失败: HTTP ${response.status} ${response.statusText} - ${bodyText.slice(0, 300)}`)
+  }
+
+  let responseBody: unknown
+  try {
+    responseBody = JSON.parse(bodyText)
+  } catch {
+    throw new Error(`Embedding 响应不是合法 JSON: ${bodyText.slice(0, 300)}`)
+  }
+
+  return extractEmbeddingVectorFromResponseBody(responseBody)
+}
+
+async function runWithConcurrency<T>(
+  items: T[],
+  maxConcurrency: number,
+  worker: (item: T, index: number) => Promise<void>,
+): Promise<void> {
+  if (items.length === 0) {
+    return
+  }
+
+  const safeConcurrency = Math.max(1, Math.floor(maxConcurrency))
+  let index = 0
+
+  const runners = Array.from({ length: Math.min(safeConcurrency, items.length) }, async () => {
+    while (true) {
+      const currentIndex = index
+      index += 1
+      if (currentIndex >= items.length) {
+        return
+      }
+      await worker(items[currentIndex]!, currentIndex)
+    }
+  })
+
+  await Promise.all(runners)
 }
 
 export class FileSystemMediaReadService {
@@ -837,6 +1012,106 @@ export class FileSystemMediaReadService {
       dropped_tags: Array.from(droppedTags).sort((left, right) => left.localeCompare(right, 'zh-CN')),
       invalid_response_images: invalidResponseImages,
       updated_at_ms: metadataWritten.updated_at_ms,
+    })
+  }
+
+  async generatePackageEmbeddings(
+    request: GeneratePackageEmbeddingsRequestDto,
+  ): Promise<GeneratePackageEmbeddingsResponseDto> {
+    const snapshot = await this.ensureSnapshotLoaded()
+    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`生成嵌入失败：source 不存在 ${request.package_id}`)
+    }
+
+    const normalizedEndpoint = normalizeEmbeddingsUrl(request.embedding_endpoint)
+    const normalizedModel = request.embedding_model.trim()
+    if (!normalizedModel) {
+      throw new Error('生成嵌入失败：模型ID不能为空')
+    }
+
+    const timeoutMs = Number.isFinite(request.timeout_ms)
+      ? Math.max(3_000, Math.min(120_000, Math.floor(request.timeout_ms as number)))
+      : DEFAULT_PACKAGE_EMBEDDING_TIMEOUT_MS
+    const maxConcurrency = Number.isFinite(request.max_concurrency)
+      ? Math.max(1, Math.min(8, Math.floor(request.max_concurrency as number)))
+      : DEFAULT_PACKAGE_EMBEDDING_MAX_CONCURRENCY
+    const maxRetries = Number.isFinite(request.max_retries)
+      ? Math.max(0, Math.min(4, Math.floor(request.max_retries as number)))
+      : DEFAULT_PACKAGE_EMBEDDING_MAX_RETRIES
+
+    const visibleImages = source.images.filter((image) => !(image.hidden ?? false))
+    const vectorByImageId = new Map<string, number[]>()
+    const apiKey = process.env.MEDIA_PLAYERX_LLM_API_KEY?.trim() || 'lm-studio'
+    let vectorDimension = 0
+
+    await runWithConcurrency(visibleImages, maxConcurrency, async (image) => {
+      const input = buildImageEmbeddingInput(source, image)
+
+      for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+        try {
+          const vector = await requestImageEmbeddingVector({
+            endpoint: normalizedEndpoint,
+            model: normalizedModel,
+            input,
+            timeoutMs,
+            apiKey,
+          })
+          if (vector.length === 0) {
+            throw new Error('embedding 向量为空')
+          }
+
+          if (vectorDimension === 0) {
+            vectorDimension = vector.length
+          }
+          if (vector.length !== vectorDimension) {
+            throw new Error(`embedding 维度不一致：${vector.length}`)
+          }
+
+          vectorByImageId.set(image.id, vector)
+          return
+        } catch {
+          if (attempt >= maxRetries) {
+            return
+          }
+        }
+      }
+    })
+
+    const embeddingWrites = source.images
+      .map((image) => {
+        const vector = vectorByImageId.get(image.id)
+        if (!vector) {
+          return null
+        }
+        image.feature_vector = vector
+        return {
+          imageId: image.id,
+          featureVector: vector,
+        }
+      })
+      .filter((item): item is { imageId: string; featureVector: number[] } => Boolean(item))
+
+    const embeddedImages = this.database.writeImageFeatureVectors(embeddingWrites)
+    const analyzedImages = visibleImages.length
+    const failedImages = Math.max(0, analyzedImages - embeddedImages)
+    const updatedAtMs = Date.now()
+
+    if (embeddedImages > 0) {
+      this.emitLibraryChanged({
+        reason: 'generate-package-embeddings',
+        updated_at_ms: updatedAtMs,
+      })
+    }
+
+    return generatePackageEmbeddingsResponseSchema.parse({
+      package: source,
+      analyzed_images: analyzedImages,
+      embedded_images: embeddedImages,
+      failed_images: failedImages,
+      vector_dimension: vectorDimension,
+      updated_at_ms: updatedAtMs,
     })
   }
 

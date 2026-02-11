@@ -47,6 +47,8 @@ import type {
   GeneratePackageAutoTagsResponseDto,
   GeneratePackageAutoTagsVisionRequestDto,
   GeneratePackageAutoTagsVisionResponseDto,
+  GeneratePackageEmbeddingsRequestDto,
+  GeneratePackageEmbeddingsResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
   SetImageHiddenRequestDto,
@@ -135,6 +137,10 @@ export interface MediaRepository {
     request: GeneratePackageAutoTagsVisionRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<GeneratePackageAutoTagsVisionResponseDto>
+  generatePackageEmbeddings?(
+    request: GeneratePackageEmbeddingsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<GeneratePackageEmbeddingsResponseDto>
   writeVideoMetadata?(
     request: WriteVideoMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -199,6 +205,9 @@ export interface SynchronousMediaRepository extends MediaRepository {
   generatePackageAutoTagsVisionSync?(
     request: GeneratePackageAutoTagsVisionRequestDto,
   ): GeneratePackageAutoTagsVisionResponseDto
+  generatePackageEmbeddingsSync?(
+    request: GeneratePackageEmbeddingsRequestDto,
+  ): GeneratePackageEmbeddingsResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
   readPlaylistSync(): ReadPlaylistResponseDto

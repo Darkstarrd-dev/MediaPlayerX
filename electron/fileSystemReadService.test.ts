@@ -1054,6 +1054,89 @@ describe('FileSystemMediaReadService', () => {
     }
   })
 
+  it('嵌入生成会写入向量并触发库变更事件', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-generate-embeddings-'))
+    createdRoots.push(root)
+
+    await writeTinyPng(path.join(root, 'embed-001.png'))
+    await writeTinyPng(path.join(root, 'embed-002.png'))
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-folders', [root])
+
+    const snapshot = await service.readLibrarySnapshot()
+    const source = [...snapshot.image_packages, ...snapshot.image_directories].find((item) => item.images.length >= 2)
+    expect(source).toBeTruthy()
+    if (!source) {
+      throw new Error('source not found for package embeddings')
+    }
+
+    const originalFetch = globalThis.fetch
+    let embeddingCalls = 0
+    globalThis.fetch = (async (_input, init) => {
+      embeddingCalls += 1
+      const body = JSON.parse(String(init?.body ?? '{}')) as { input?: unknown }
+      const inputText = typeof body.input === 'string' ? body.input : ''
+      const seed = inputText.includes('ordinal=2') ? 2 : 1
+
+      return new Response(
+        JSON.stringify({
+          data: [
+            {
+              embedding: [seed, seed + 0.1, seed + 0.2, seed + 0.3],
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      )
+    }) as typeof fetch
+
+    const eventPayloads: Array<{ reason: string; updated_at_ms: number }> = []
+    const unsubscribe = service.onLibraryChanged((payload) => {
+      eventPayloads.push(payload)
+    })
+
+    try {
+      const response = await service.generatePackageEmbeddings({
+        package_id: source.id,
+        embedding_endpoint: 'http://127.0.0.1:1234/v1/embeddings',
+        embedding_model: 'qwen3-vl-embedding',
+        max_concurrency: 2,
+        max_retries: 0,
+        timeout_ms: 30_000,
+      })
+
+      expect(response.analyzed_images).toBe(2)
+      expect(response.embedded_images).toBe(2)
+      expect(response.failed_images).toBe(0)
+      expect(response.vector_dimension).toBe(4)
+      expect(embeddingCalls).toBe(2)
+
+      const latestSnapshot = await service.readLibrarySnapshot()
+      const latestSource = [...latestSnapshot.image_packages, ...latestSnapshot.image_directories].find(
+        (item) => item.id === source.id,
+      )
+
+      expect(latestSource).toBeTruthy()
+      if (!latestSource) {
+        throw new Error('latest source missing after embedding write')
+      }
+
+      expect(latestSource.images[0]?.feature_vector).toEqual([1, 1.1, 1.2, 1.3])
+      expect(latestSource.images[1]?.feature_vector).toEqual([2, 2.1, 2.2, 2.3])
+      expect(eventPayloads.some((payload) => payload.reason === 'generate-package-embeddings')).toBe(true)
+    } finally {
+      unsubscribe()
+      globalThis.fetch = originalFetch
+    }
+  })
+
   it('可通过 ffprobe 探测真实视频元数据并回填时长/分辨率', async () => {
     if (!(await commandExists('ffmpeg')) || !(await commandExists('ffprobe'))) {
       return

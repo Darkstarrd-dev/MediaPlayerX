@@ -32,6 +32,8 @@ import type {
   GeneratePackageAutoTagsResponseDto,
   GeneratePackageAutoTagsVisionRequestDto,
   GeneratePackageAutoTagsVisionResponseDto,
+  GeneratePackageEmbeddingsRequestDto,
+  GeneratePackageEmbeddingsResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
   StartManageAdReviewRequestDto,
@@ -89,6 +91,9 @@ interface MediaPlayerBackendApi {
   generatePackageAutoTagsVision?: (
     request: GeneratePackageAutoTagsVisionRequestDto,
   ) => Promise<GeneratePackageAutoTagsVisionResponseDto>
+  generatePackageEmbeddings?: (
+    request: GeneratePackageEmbeddingsRequestDto,
+  ) => Promise<GeneratePackageEmbeddingsResponseDto>
   writeVideoMetadata?: (request: WriteVideoMetadataRequestDto) => Promise<WriteVideoMetadataResponseDto>
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
   readPlaylist: () => Promise<ReadPlaylistResponseDto>

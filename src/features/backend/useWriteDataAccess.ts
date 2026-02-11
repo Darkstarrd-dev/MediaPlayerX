@@ -14,6 +14,8 @@ import type {
   GeneratePackageAutoTagsResponseDto,
   GeneratePackageAutoTagsVisionRequestDto,
   GeneratePackageAutoTagsVisionResponseDto,
+  GeneratePackageEmbeddingsRequestDto,
+  GeneratePackageEmbeddingsResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
 } from '../../contracts/backend'
@@ -21,6 +23,7 @@ import type { MediaRepository } from './repository'
 
 const DEFAULT_WRITE_TIMEOUT_MS = 8_000
 const AUTO_TAG_WRITE_TIMEOUT_MS = 300_000
+const EMBEDDING_WRITE_TIMEOUT_MS = 300_000
 
 function toErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
@@ -43,6 +46,9 @@ interface SyncWriteRepository extends MediaRepository {
   generatePackageAutoTagsVisionSync?(
     request: GeneratePackageAutoTagsVisionRequestDto,
   ): GeneratePackageAutoTagsVisionResponseDto
+  generatePackageEmbeddingsSync?(
+    request: GeneratePackageEmbeddingsRequestDto,
+  ): GeneratePackageEmbeddingsResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
 }
@@ -110,6 +116,16 @@ interface UseWriteDataAccessResult {
       timeoutMs: number
     },
   ) => Promise<GeneratePackageAutoTagsVisionResponseDto>
+  generatePackageEmbeddings: (
+    packageId: string,
+    payload: {
+      embeddingEndpoint: string
+      embeddingModel: string
+      maxConcurrency: number
+      maxRetries: number
+      timeoutMs: number
+    },
+  ) => Promise<GeneratePackageEmbeddingsResponseDto>
   writeVideoMetadata: (
     videoId: string,
     payload: {
@@ -404,6 +420,60 @@ export function useWriteDataAccess({
     [isSynchronousTestMode, repository],
   )
 
+  const generatePackageEmbeddings = useCallback(
+    async (
+      packageId: string,
+      payload: {
+        embeddingEndpoint: string
+        embeddingModel: string
+        maxConcurrency: number
+        maxRetries: number
+        timeoutMs: number
+      },
+    ): Promise<GeneratePackageEmbeddingsResponseDto> => {
+      if (!repository.generatePackageEmbeddings) {
+        const message = '当前后端不支持生成嵌入向量'
+        setMetadataError(message)
+        throw new Error(message)
+      }
+
+      setMetadataPending(true)
+      setMetadataError(null)
+
+      try {
+        const request: GeneratePackageEmbeddingsRequestDto = {
+          package_id: packageId,
+          embedding_endpoint: payload.embeddingEndpoint,
+          embedding_model: payload.embeddingModel,
+          max_concurrency: Math.max(1, Math.min(8, Math.floor(payload.maxConcurrency))),
+          max_retries: Math.max(0, Math.min(4, Math.floor(payload.maxRetries))),
+          timeout_ms: Math.max(3_000, Math.min(120_000, Math.floor(payload.timeoutMs))),
+        }
+
+        if (isSynchronousTestMode) {
+          const writer = repository.generatePackageEmbeddingsSync
+          if (!writer) {
+            const message = '当前后端不支持生成嵌入向量'
+            setMetadataError(message)
+            throw new Error(message)
+          }
+          return writer(request)
+        }
+
+        return await repository.generatePackageEmbeddings(request, {
+          timeoutMs: EMBEDDING_WRITE_TIMEOUT_MS,
+        })
+      } catch (error: unknown) {
+        const message = toErrorMessage(error)
+        setMetadataError(message)
+        throw new Error(message)
+      } finally {
+        setMetadataPending(false)
+      }
+    },
+    [isSynchronousTestMode, repository],
+  )
+
   const writeVideoMetadata = useCallback(
     async (
       videoId: string,
@@ -587,6 +657,7 @@ export function useWriteDataAccess({
     writePackageMetadata,
     generatePackageAutoTags,
     generatePackageAutoTagsVision,
+    generatePackageEmbeddings,
     writeVideoMetadata,
     saveVideoCover,
   }

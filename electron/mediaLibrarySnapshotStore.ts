@@ -380,6 +380,49 @@ export class MediaLibrarySnapshotStore {
     return touched
   }
 
+  writeImageFeatureVectors(items: Array<{ imageId: string; featureVector: number[] }>): number {
+    const normalizedItems = Array.from(
+      new Map(
+        items
+          .map((item) => ({
+            imageId: item.imageId.trim(),
+            featureVector: item.featureVector,
+          }))
+          .filter((item) => item.imageId.length > 0)
+          .map((item) => [item.imageId, item.featureVector]),
+      ).entries(),
+    ).map(([imageId, featureVector]) => ({ imageId, featureVector }))
+
+    if (normalizedItems.length === 0) {
+      return 0
+    }
+
+    const update = this.db.prepare(
+      `
+        UPDATE image_item
+        SET feature_vector_json = ?, updated_at_ms = ?
+        WHERE id = ?
+      `,
+    )
+
+    const updatedAtMs = Date.now()
+    let touched = 0
+    this.runInTransaction(() => {
+      for (const item of normalizedItems) {
+        const result = update.run(
+          JSON.stringify(item.featureVector),
+          updatedAtMs,
+          item.imageId,
+        ) as { changes?: number } | undefined
+        if ((result?.changes ?? 0) > 0) {
+          touched += 1
+        }
+      }
+    })
+
+    return touched
+  }
+
   deleteImageItems(imageIds: string[]): { deletedCount: number; touchedSourceIds: string[] } {
     const normalizedIds = Array.from(new Set(imageIds.map((value) => value.trim()).filter(Boolean)))
     if (normalizedIds.length === 0) {

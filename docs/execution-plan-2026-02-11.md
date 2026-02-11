@@ -136,12 +136,12 @@
 
 任务清单：
 
-- [ ] 后端新增写接口：`generatePackageEmbeddings`（或按勾选批量的 API）
+- [x] 后端新增写接口：`generatePackageEmbeddings`（或按勾选批量的 API）
   - 输入：package_id(s)、LM Studio endpoint、embedding model、并发/重试/超时。
   - 写入：更新 `feature_vector_json`。
   - 事件：完成后 emit `libraryChanged`（reason 单独定义）。
-- [ ] UI：元数据管理新增按钮 + pending + 进度/统计。
-- [ ] 回归：向量检索排序不再全相同，向量宇宙分布可见变化。
+- [x] UI：元数据管理新增按钮 + pending + 进度/统计。
+- [x] 回归：向量检索排序不再全相同，向量宇宙分布可见变化。
 
 验收（DoD）：
 

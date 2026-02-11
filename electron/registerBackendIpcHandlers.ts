@@ -53,6 +53,8 @@ import {
   generatePackageAutoTagsResponseSchema,
   generatePackageAutoTagsVisionRequestSchema,
   generatePackageAutoTagsVisionResponseSchema,
+  generatePackageEmbeddingsRequestSchema,
+  generatePackageEmbeddingsResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
@@ -250,6 +252,12 @@ export function registerBackendIpcHandlers(): void {
     const request = generatePackageAutoTagsVisionRequestSchema.parse(payload)
     const response = await ensureService().generatePackageAutoTagsVision(request)
     return generatePackageAutoTagsVisionResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.generatePackageEmbeddings, async (_event, payload: unknown) => {
+    const request = generatePackageEmbeddingsRequestSchema.parse(payload)
+    const response = await ensureService().generatePackageEmbeddings(request)
+    return generatePackageEmbeddingsResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writeVideoMetadata, async (_event, payload: unknown) => {
