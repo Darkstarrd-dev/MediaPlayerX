@@ -13,6 +13,199 @@ import {
   serializeUnknownError,
 } from './runtimeDiagnostics'
 
+const STARTUP_SPLASH_TIMEOUT_MS = 12_000
+
+function renderStartupSplashHtml(): string {
+  return `<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MediaPlayerX</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #efe7dc;
+      }
+
+      .splash {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at 18% 20%, #f6e9da 0%, transparent 46%), radial-gradient(circle at 82% 16%, #e2dccf 0%, transparent 42%), linear-gradient(160deg, #f5eee3 0%, #ece3d5 52%, #e8dece 100%);
+      }
+
+      .card {
+        width: min(520px, calc(100vw - 48px));
+        border-radius: 16px;
+        padding: 24px 24px 20px;
+        background: rgba(255, 250, 243, 0.9);
+        border: 1px solid rgba(170, 147, 120, 0.35);
+        box-shadow: 0 16px 36px rgba(72, 54, 33, 0.16);
+      }
+
+      .brand {
+        margin: 0;
+        font: 700 21px/1.25 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        color: #2c1d11;
+        letter-spacing: 0.2px;
+      }
+
+      .desc {
+        margin: 8px 0 0;
+        font: 500 13px/1.4 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        color: #6f5740;
+      }
+
+      .track {
+        margin-top: 16px;
+        position: relative;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(171, 140, 108, 0.24);
+        overflow: hidden;
+      }
+
+      .track::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 42%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #c9703a 0%, #cc7e44 56%, #d4965f 100%);
+        animation: loading 1.4s ease-in-out infinite;
+      }
+
+      .hint {
+        margin-top: 12px;
+        font: 500 12px/1.4 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        color: #73573d;
+      }
+
+      @keyframes loading {
+        0% {
+          transform: translateX(-130%);
+        }
+
+        50% {
+          transform: translateX(90%);
+        }
+
+        100% {
+          transform: translateX(220%);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="splash" aria-label="MediaPlayerX 启动页">
+      <section class="card" role="status" aria-live="polite">
+        <h1 class="brand">MediaPlayerX</h1>
+        <p class="desc">正在初始化渲染进程与媒体索引</p>
+        <div class="track" aria-hidden="true"></div>
+        <p class="hint">启动中，请稍候...</p>
+      </section>
+    </main>
+  </body>
+</html>`
+}
+
+function createStartupSplashWindow(): BrowserWindow {
+  const splashWindow = new BrowserWindow({
+    width: 700,
+    height: 430,
+    minWidth: 700,
+    minHeight: 430,
+    maxWidth: 700,
+    maxHeight: 430,
+    show: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    frame: false,
+    autoHideMenuBar: true,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    backgroundColor: '#efe7dc',
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      backgroundThrottling: false,
+    },
+  })
+
+  splashWindow.setMenuBarVisibility(false)
+  splashWindow.once('ready-to-show', () => {
+    logRuntimeDiagnostic('startup-splash-ready', { windowId: splashWindow.webContents.id }, 'info', true)
+    if (!splashWindow.isDestroyed()) {
+      splashWindow.show()
+    }
+  })
+
+  const html = renderStartupSplashHtml()
+  void splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
+
+  return splashWindow
+}
+
+function bindStartupWindowTransition(mainWindow: BrowserWindow, splashWindow: BrowserWindow | null): void {
+  let revealed = false
+  let fallbackTimer: ReturnType<typeof setTimeout> | null = null
+
+  const revealMainWindow = (reason: 'ready-to-show' | 'timeout' | 'did-fail-load') => {
+    if (revealed) {
+      return
+    }
+    revealed = true
+
+    if (fallbackTimer) {
+      clearTimeout(fallbackTimer)
+      fallbackTimer = null
+    }
+
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.show()
+      mainWindow.focus()
+    }
+
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.close()
+    }
+
+    logRuntimeDiagnostic('startup-main-revealed', { reason, windowId: mainWindow.webContents.id }, 'info', true)
+  }
+
+  mainWindow.once('ready-to-show', () => {
+    revealMainWindow('ready-to-show')
+  })
+
+  mainWindow.webContents.once('did-fail-load', () => {
+    revealMainWindow('did-fail-load')
+  })
+
+  fallbackTimer = setTimeout(() => {
+    revealMainWindow('timeout')
+  }, STARTUP_SPLASH_TIMEOUT_MS)
+  fallbackTimer.unref?.()
+
+  mainWindow.once('closed', () => {
+    if (fallbackTimer) {
+      clearTimeout(fallbackTimer)
+    }
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.destroy()
+    }
+  })
+}
+
 function collectAppRootCandidates(): string[] {
   const candidates = new Set<string>()
 
@@ -231,6 +424,9 @@ function createMainWindow(): BrowserWindow {
     height: 920,
     minWidth: 1080,
     minHeight: 680,
+    show: false,
+    paintWhenInitiallyHidden: true,
+    backgroundColor: '#f2eee7',
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -281,6 +477,18 @@ function createMainWindow(): BrowserWindow {
 
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
 
+  window.webContents.once('dom-ready', () => {
+    logRuntimeDiagnostic('startup-main-dom-ready', { windowId: window.webContents.id }, 'info', true)
+  })
+
+  window.webContents.once('did-finish-load', () => {
+    logRuntimeDiagnostic('startup-main-did-finish-load', { windowId: window.webContents.id }, 'info', true)
+  })
+
+  window.once('ready-to-show', () => {
+    logRuntimeDiagnostic('startup-main-ready-to-show', { windowId: window.webContents.id }, 'info', true)
+  })
+
   if (benchMode) {
     try {
       window.webContents.setBackgroundThrottling(false)
@@ -298,6 +506,7 @@ function createMainWindow(): BrowserWindow {
   }
 
   if (entry.type === 'url') {
+    logRuntimeDiagnostic('startup-main-load-url', { target: entry.value }, 'info', true)
     if (benchMode) {
       const url = new URL(entry.value)
       url.searchParams.set('bench', benchMode)
@@ -306,6 +515,7 @@ function createMainWindow(): BrowserWindow {
       void window.loadURL(entry.value)
     }
   } else {
+    logRuntimeDiagnostic('startup-main-load-file', { target: entry.value }, 'info', true)
     if (benchMode) {
       const fileUrl = pathToFileURL(entry.value)
       fileUrl.searchParams.set('bench', benchMode)
@@ -365,6 +575,18 @@ function createMainWindow(): BrowserWindow {
   return window
 }
 
+function openMainWindow(): BrowserWindow {
+  const benchMode = resolveBenchMode()
+  const splashWindow = benchMode ? null : createStartupSplashWindow()
+  const mainWindow = createMainWindow()
+
+  if (!benchMode) {
+    bindStartupWindowTransition(mainWindow, splashWindow)
+  }
+
+  return mainWindow
+}
+
 app.whenReady().then(() => {
   logRuntimeDiagnostic(
     'app-ready',
@@ -379,7 +601,7 @@ app.whenReady().then(() => {
 
   registerBackendIpcHandlers()
   registerBenchIpcHandlers()
-  createMainWindow()
+  openMainWindow()
 
   if (isRuntimeDiagnosticsVerboseEnabled()) {
     const timer = setInterval(() => {
@@ -394,7 +616,7 @@ app.whenReady().then(() => {
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createMainWindow()
+      openMainWindow()
     }
   })
 })

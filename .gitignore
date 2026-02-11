@@ -11,6 +11,7 @@ node_modules
 dist
 dist-electron
 dist-ssr
+release/
 perf-data
 bench-user-data
 docs/perf/runs

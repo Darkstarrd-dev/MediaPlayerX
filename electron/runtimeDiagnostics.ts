@@ -7,6 +7,14 @@ const VERBOSE_DEBUG_ENABLED = /^(1|true|yes)$/i.test((process.env.MEDIA_PLAYERX_
 
 let runtimeLogPathCache: string | null = null
 
+function shouldEmitRuntimeDiagnostics(force: boolean): boolean {
+  if (app.isPackaged) {
+    return false
+  }
+
+  return force || VERBOSE_DEBUG_ENABLED
+}
+
 function toErrorObject(error: unknown): Record<string, unknown> {
   if (error instanceof Error) {
     return {
@@ -34,7 +42,7 @@ function resolveRuntimeLogPath(): string {
 }
 
 export function isRuntimeDiagnosticsVerboseEnabled(): boolean {
-  return VERBOSE_DEBUG_ENABLED
+  return !app.isPackaged && VERBOSE_DEBUG_ENABLED
 }
 
 export function getRuntimeDiagnosticsLogPath(): string {
@@ -47,7 +55,7 @@ export function logRuntimeDiagnostic(
   level: 'info' | 'warn' | 'error' = 'info',
   force = false,
 ): void {
-  if (!force && !VERBOSE_DEBUG_ENABLED) {
+  if (!shouldEmitRuntimeDiagnostics(force)) {
     return
   }
 
