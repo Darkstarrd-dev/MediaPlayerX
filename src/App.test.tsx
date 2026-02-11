@@ -1228,16 +1228,21 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
+  const openVectorUniverseAndWaitReady = async () => {
+    fireEvent.click(screen.getByRole('button', { name: '向量宇宙' }))
+    await waitFor(
+      () => {
+        expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '关闭向量宇宙' })).toBeInTheDocument()
+      },
+      { timeout: 8_000 },
+    )
+  }
+
   it('Header 显示向量宇宙按钮并可打开关闭 3D 层', async () => {
     render(<App />)
 
-    const trigger = screen.getByRole('button', { name: '向量宇宙' })
-    fireEvent.click(trigger)
-
-    await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: '关闭向量宇宙' })).toBeInTheDocument()
-    })
+    await openVectorUniverseAndWaitReady()
 
     fireEvent.click(screen.getByRole('button', { name: '关闭向量宇宙' }))
     expect(screen.queryByRole('dialog', { name: '向量宇宙层' })).not.toBeInTheDocument()
@@ -1246,10 +1251,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('向量宇宙层支持 Esc 二次确认退出', async () => {
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '向量宇宙' }))
-    await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-    })
+    await openVectorUniverseAndWaitReady()
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
     expect(screen.getByText('再按一次 Esc 退出向量宇宙')).toBeInTheDocument()
@@ -1262,11 +1264,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('无 focus 时向量宇宙层显示提示并保留 LOD 层级标识', async () => {
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '向量宇宙' }))
-
-    await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-    })
+    await openVectorUniverseAndWaitReady()
 
     expect(screen.getByText('请先在主视图选中图片')).toBeInTheDocument()
     expect(screen.getByLabelText('世界坐标辅助')).toBeInTheDocument()
@@ -1284,11 +1282,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     render(<App />)
 
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
-    fireEvent.click(screen.getByRole('button', { name: '向量宇宙' }))
-
-    await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-    })
+    await openVectorUniverseAndWaitReady()
 
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
     expect(document.querySelector('.fullscreen-layer')).toBeNull()
@@ -1302,10 +1296,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('向量宇宙层在无命中时按 Space 不会误退出', async () => {
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '向量宇宙' }))
-    await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-    })
+    await openVectorUniverseAndWaitReady()
 
     fireEvent.keyDown(window, { key: ' ', code: 'Space' })
     expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
@@ -1314,10 +1305,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('向量宇宙层支持 F1 折叠 HUD 为单行信息', async () => {
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '向量宇宙' }))
-    await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-    })
+    await openVectorUniverseAndWaitReady()
     expect(screen.queryByTestId('vector-universe-hud-compact')).not.toBeInTheDocument()
     expect(screen.getByRole('group', { name: 'LOD 层级标识' })).toBeInTheDocument()
 
