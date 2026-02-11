@@ -14,6 +14,7 @@ export const BACKEND_CHANNELS = {
   confirmManageAdReviewDelete: 'backend:confirmManageAdReviewDelete',
   testAdReviewVisionModel: 'backend:testAdReviewVisionModel',
   writePackageMetadata: 'backend:writePackageMetadata',
+  searchExternalMetadata: 'backend:searchExternalMetadata',
   writeVideoMetadata: 'backend:writeVideoMetadata',
   saveVideoCover: 'backend:saveVideoCover',
   readPlaylist: 'backend:readPlaylist',

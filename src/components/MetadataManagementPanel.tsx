@@ -1,4 +1,7 @@
-import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
+import { useState, type MouseEvent as ReactMouseEvent, type RefObject } from 'react'
+
+import MetadataFetchPanel from './metadata/MetadataFetchPanel'
+import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
 
 interface MetadataManagementPanelProps {
   visible: boolean
@@ -9,9 +12,13 @@ interface MetadataManagementPanelProps {
   metadataPending: boolean
   operationHint: string | null
   onSyncName: () => void
+  onSaveParsedMetadata: (parsed: ParsedExternalMetadata) => Promise<void>
   onExpand: () => void
   onStartResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   layoutLocked: boolean
+  defaultFetchText: string
+  proxyServer: string
+  targetPackageLabel: string
 }
 
 function MetadataManagementPanel({
@@ -23,10 +30,16 @@ function MetadataManagementPanel({
   metadataPending,
   operationHint,
   onSyncName,
+  onSaveParsedMetadata,
   onExpand,
   onStartResize,
   layoutLocked,
+  defaultFetchText,
+  proxyServer,
+  targetPackageLabel,
 }: MetadataManagementPanelProps) {
+  const [fetchPanelOpen, setFetchPanelOpen] = useState(false)
+
   if (!visible) {
     return null
   }
@@ -51,6 +64,9 @@ function MetadataManagementPanel({
               <button className="feature-action-btn" type="button" disabled={syncNameDisabled} onClick={onSyncName}>
                 同步名称
               </button>
+              <button className="feature-action-btn" type="button" onClick={() => setFetchPanelOpen(true)}>
+                获取元数据
+              </button>
             </div>
 
             {operationHint ? <p className="manage-panel-hint">{operationHint}</p> : null}
@@ -69,6 +85,16 @@ function MetadataManagementPanel({
           onMouseDown={onStartResize}
         />
       ) : null}
+
+      <MetadataFetchPanel
+        open={fetchPanelOpen}
+        defaultText={defaultFetchText}
+        proxyServer={proxyServer}
+        metadataPending={metadataPending}
+        targetPackageLabel={targetPackageLabel}
+        onClose={() => setFetchPanelOpen(false)}
+        onSaveParsedMetadata={onSaveParsedMetadata}
+      />
     </>
   )
 }

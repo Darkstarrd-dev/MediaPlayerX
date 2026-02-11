@@ -36,6 +36,7 @@ export function useAppSettingsStore() {
       paletteId: state.paletteId,
       thumbnailQuality: state.thumbnailQuality,
       thumbnailWidth: state.thumbnailWidth,
+      proxyServer: state.proxyServer,
       adReviewVisionEndpoint: state.adReviewVisionEndpoint,
       adReviewVisionModel: state.adReviewVisionModel,
       adReviewVisionVerified: state.adReviewVisionVerified,

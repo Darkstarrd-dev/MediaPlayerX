@@ -52,8 +52,6 @@ interface BuildImageMainSectionPropsParams {
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
   onClearManageSelection: () => void
-  metadataPending: boolean
-  onMetadataSyncName: () => void
   goPrevPage: () => void
   goNextPage: () => void
 }
@@ -104,8 +102,6 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onManageUnhide: params.onManageUnhide,
     onToggleAdReviewPanel: params.onToggleAdReviewPanel,
     onClearManageSelection: params.onClearManageSelection,
-    metadataPending: params.metadataPending,
-    onMetadataSyncName: params.onMetadataSyncName,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
     onEnterFullscreen: () => params.setFullscreenActiveWithAutoStop(true),
     onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => {

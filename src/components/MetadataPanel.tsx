@@ -365,8 +365,7 @@ function MetadataPanel({
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
-      const matched = event.key.match(/^[a-zA-Z0-9]$/)
-      const shouldTrap = event.key === 'Escape' || Boolean(matched)
+      const shouldTrap = event.key === 'Escape' || /^[a-zA-Z0-9]$/.test(event.key)
       if (!shouldTrap) {
         return
       }
@@ -381,6 +380,10 @@ function MetadataPanel({
         return
       }
 
+      const matched = event.key.match(/^[a-zA-Z0-9]$/)
+      if (!matched) {
+        return
+      }
       const jumpKey = matched[0].toUpperCase()
       const container = featureTagGroupsRef.current
       if (!container) {

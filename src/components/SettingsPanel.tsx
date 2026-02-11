@@ -42,6 +42,7 @@ export interface SettingsPanelProps {
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
+  proxyServer: string
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -82,6 +83,7 @@ export interface SettingsPanelProps {
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
+  onProxyServerChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -152,6 +154,7 @@ function SettingsPanel({
   thumbnailGap,
   thumbnailQuality,
   thumbnailWidth,
+  proxyServer,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -192,6 +195,7 @@ function SettingsPanel({
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onThumbnailWidthChange,
+  onProxyServerChange,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -396,6 +400,7 @@ function SettingsPanel({
     thumbnailGapScale,
     thumbnailQuality,
     thumbnailWidth,
+    proxyServer,
     adReviewVisionEndpoint,
     adReviewVisionModel,
     adReviewVisionVerified,
@@ -438,6 +443,7 @@ function SettingsPanel({
     onThumbnailGapChange,
     onThumbnailQualityChange,
     onThumbnailWidthChange,
+    onProxyServerChange,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,

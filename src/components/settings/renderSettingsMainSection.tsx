@@ -43,6 +43,7 @@ interface RenderSettingsMainSectionParams {
   thumbnailGapScale: number
   thumbnailQuality: number
   thumbnailWidth: number
+  proxyServer: string
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -85,6 +86,7 @@ interface RenderSettingsMainSectionParams {
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
+  onProxyServerChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -128,6 +130,7 @@ export function renderSettingsMainSection({
   thumbnailGapScale,
   thumbnailQuality,
   thumbnailWidth,
+  proxyServer,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -170,6 +173,7 @@ export function renderSettingsMainSection({
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onThumbnailWidthChange,
+  onProxyServerChange,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -452,6 +456,20 @@ export function renderSettingsMainSection({
               <input type="text" value={thumbnailCachePath} readOnly placeholder="读取运行时诊断后显示" />
               <button type="button" onClick={onPickThumbnailCacheDirectoryPath}>选择缩略图目录</button>
             </div>
+          </label>
+        </fieldset>
+
+        <fieldset className="settings-subsection">
+          <legend>网络代理设置</legend>
+          <p className="settings-placeholder">用于元数据抓取链路，支持 socks5:// 与 http(s)://。</p>
+          <label>
+            代理服务器
+            <input
+              type="text"
+              value={proxyServer}
+              placeholder="例如 socks5://127.0.0.1:2080"
+              onChange={(event) => onProxyServerChange(event.target.value)}
+            />
           </label>
         </fieldset>
 

@@ -52,8 +52,6 @@ interface ImageMainSectionProps {
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
   onClearManageSelection: () => void
-  metadataPending: boolean
-  onMetadataSyncName: () => void
   onPrevPage: () => void
   onNextPage: () => void
 }
@@ -103,8 +101,6 @@ function ImageMainSection({
   onManageUnhide,
   onToggleAdReviewPanel,
   onClearManageSelection,
-  metadataPending,
-  onMetadataSyncName,
   onToggleShowNamesOnly,
   onEnterFullscreen,
   onSelectImage,
@@ -164,9 +160,6 @@ function ImageMainSection({
           <>
             <strong className="main-toolbar-title">元数据管理</strong>
             <div className="toolbar-actions toolbar-actions-manage">
-              <button className="feature-action-btn" type="button" disabled={metadataPending} onClick={onMetadataSyncName}>
-                同步名称
-              </button>
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>
           </>

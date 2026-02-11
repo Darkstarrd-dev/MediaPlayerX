@@ -10,6 +10,13 @@ export interface PackageMetadataWritePayload {
   syncWorkTitleToPackageName?: boolean
 }
 
+export interface ParsedExternalMetadataSavePayload {
+  title: string
+  group: string
+  artist: string
+  tags: Record<string, string>
+}
+
 export interface VideoMetadataWritePayload {
   workTitle?: string
   circle?: string
@@ -62,6 +69,7 @@ interface UseMetadataWriteBindingsResult {
   metadataPending: boolean
   applyPackageGrade: (grade: number | null) => void
   applyPackageMetadata: (payload: PackageMetadataWritePayload) => void
+  applyPackageMetadataById: (packageId: string, payload: PackageMetadataWritePayload) => Promise<void>
   applyPackageSyncName: () => void
   applyVideoMetadata: (payload: VideoMetadataWritePayload) => void
   applyVideoSyncName: () => void
@@ -302,10 +310,29 @@ export function useMetadataWriteBindings({
     })
   }, [applyVideoMetadata])
 
+  const applyPackageMetadataById = useCallback(
+    async (packageId: string, payload: PackageMetadataWritePayload) => {
+      const writer = backendWrite.writePackageMetadata
+      if (!writer) {
+        throw new Error('当前后端不支持写入元数据')
+      }
+
+      const mergedPayload = buildPackageMetadataPayload(packageId, payload)
+      if (!mergedPayload) {
+        throw new Error(`package_not_found:${packageId}`)
+      }
+
+      await writer(packageId, mergedPayload)
+      setManageOperationHint('元数据写入完成：成功 1 项')
+    },
+    [backendWrite.writePackageMetadata, buildPackageMetadataPayload, setManageOperationHint],
+  )
+
   return {
     metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade,
     applyPackageGrade,
     applyPackageMetadata,
+    applyPackageMetadataById,
     applyPackageSyncName,
     applyVideoMetadata,
     applyVideoSyncName,

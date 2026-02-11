@@ -256,6 +256,7 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
           <ImageMainSection
             vectorMode={false}
             showNamesOnly={false}
+            metadataManageMode={false}
             loading={false}
             placeholderCount={domConfig.targetCount}
             enableLoadingSkeleton={false}
@@ -276,12 +277,27 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             imageUrlById={imageUrlById}
             gridRef={gridRef}
             manageMode={false}
+            sidebarSelectedCount={0}
+            imageSelectedCount={0}
+            activeSelectionScope={null}
+            pendingManageAction={false}
+            manageOperationHint={null}
+            canManageDelete={false}
+            canManageHide={false}
+            canManageUnhide={false}
+            adReviewFeatureEnabled={false}
+            adReviewPanelOpen={false}
             checkedImageIds={new Set()}
             adReviewScopeImageIds={new Set()}
             adReviewLlmReviewedImageIds={new Set()}
             adReviewNonLlmReviewedImageIds={new Set()}
             onToggleImageChecked={() => undefined}
             onReplaceCheckedImages={() => undefined}
+            onManageDelete={() => undefined}
+            onManageHide={() => undefined}
+            onManageUnhide={() => undefined}
+            onToggleAdReviewPanel={() => undefined}
+            onClearManageSelection={() => undefined}
             onToggleShowNamesOnly={() => undefined}
             onEnterFullscreen={() => undefined}
             onSelectImage={() => undefined}

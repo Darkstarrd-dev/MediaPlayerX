@@ -25,10 +25,14 @@
   },
   "dependencies": {
     "7z-wasm": "^1.2.0",
+    "axios": "^1.13.0",
+    "cheerio": "^1.1.2",
+    "https-proxy-agent": "^7.0.6",
     "node-unrar-js": "^2.0.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "sharp": "^0.34.5",
+    "socks-proxy-agent": "^8.0.5",
     "three": "^0.182.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"

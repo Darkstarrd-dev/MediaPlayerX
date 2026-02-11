@@ -33,6 +33,7 @@ import {
   setImageHiddenResponseSchema,
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
+  searchExternalMetadataResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type ReadAppStateRequestDto,
@@ -98,6 +99,8 @@ import {
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
   type WritePackageMetadataResponseDto,
+  type SearchExternalMetadataRequestDto,
+  type SearchExternalMetadataResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
@@ -1245,6 +1248,47 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageMetadataResponseDto> {
     const response = this.writePackageMetadataSync(request)
+    return resolveAsync(response, options)
+  }
+
+  searchExternalMetadataSync(
+    request: SearchExternalMetadataRequestDto,
+  ): SearchExternalMetadataResponseDto {
+    const text = request.input_text?.trim() || request.input_id?.trim() || ''
+    if (!text) {
+      return searchExternalMetadataResponseSchema.parse({ items: [] })
+    }
+
+    const mockItem = {
+      source: request.source ?? 'nhentai',
+      id: request.input_id?.trim() || '114514',
+      title: text,
+      title_original: null,
+      cover: null,
+      url: 'https://example.com/mock-metadata',
+      token: request.source === 'ehentai' ? 'mocktoken' : '',
+      tags: ['language:chinese', 'parody:original'],
+      pages: 1,
+      posted: null,
+      rating: null,
+      favorited: null,
+      raw: {
+        mock: true,
+        input_text: request.input_text ?? '',
+        input_id: request.input_id ?? '',
+      },
+    }
+
+    return searchExternalMetadataResponseSchema.parse({
+      items: [mockItem],
+    })
+  }
+
+  async searchExternalMetadata(
+    request: SearchExternalMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SearchExternalMetadataResponseDto> {
+    const response = this.searchExternalMetadataSync(request)
     return resolveAsync(response, options)
   }
 

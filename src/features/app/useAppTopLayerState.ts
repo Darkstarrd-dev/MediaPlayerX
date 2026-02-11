@@ -438,6 +438,7 @@ export function useAppTopLayerState({
     thumbnailGap: appSettings.thumbnailGap,
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailWidth: appSettings.thumbnailWidth,
+    proxyServer: appSettings.proxyServer,
     adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,
     adReviewVisionModel: appSettings.adReviewVisionModel,
     adReviewVisionVerified: appSettings.adReviewVisionVerified,

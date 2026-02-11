@@ -19,6 +19,7 @@ interface BuildSettingsPanelPropsParams {
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
+  proxyServer: string
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -75,6 +76,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
     thumbnailWidth: params.thumbnailWidth,
+    proxyServer: params.proxyServer,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
     adReviewVisionModel: params.adReviewVisionModel,
     adReviewVisionVerified: params.adReviewVisionVerified,
@@ -120,6 +122,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailGapChange: (value) => params.updateSettings({ thumbnailGap: value }),
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
+    onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({
         adReviewVisionEndpoint: value,

@@ -159,6 +159,24 @@ function normalizeFeatureTags(values: string[]): string[] {
     .filter(Boolean)
 }
 
+function flattenExternalTags(value: Record<string, string>): string[] {
+  const tags: string[] = []
+  for (const [namespace, raw] of Object.entries(value)) {
+    const normalizedNamespace = namespace.trim()
+    if (!normalizedNamespace) {
+      continue
+    }
+    const parts = raw
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+    for (const part of parts) {
+      tags.push(`${normalizedNamespace}:${part}`)
+    }
+  }
+  return Array.from(new Set(tags))
+}
+
 export function useAppWorkspaceProps({
   appSettings,
   benchSettings,
@@ -453,8 +471,26 @@ export function useAppWorkspaceProps({
       }
       metadataWriteBindings.applyVideoSyncName()
     },
+    onSaveParsedMetadata: async (parsed) => {
+      if (mode !== 'image') {
+        throw new Error('当前模式不支持写入图包元数据')
+      }
+      const packageId = metadataImagePackageEffective?.id
+      if (!packageId) {
+        throw new Error('当前无可用图包，无法保存')
+      }
+      await metadataWriteBindings.applyPackageMetadataById(packageId, {
+        workTitle: parsed.title,
+        circle: parsed.group,
+        author: parsed.artist,
+        tags: flattenExternalTags(parsed.tags),
+      })
+    },
     onStartVectorPanelResize,
     layoutLocked,
+    targetPackageName: metadataImagePackageEffective?.packageName ?? '',
+    targetPackageLabel: metadataImagePackageEffective?.displayName ?? '-',
+    proxyServer: appSettings.proxyServer,
   })
 
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
@@ -524,14 +560,6 @@ export function useAppWorkspaceProps({
     },
     onToggleAdReviewPanel: () => setAdReviewPanelOpen((value) => !value),
     onClearManageSelection: clearAllSelections,
-    metadataPending: metadataWriteBindings.metadataPending,
-    onMetadataSyncName: () => {
-      if (mode === 'image') {
-        metadataWriteBindings.applyPackageSyncName()
-        return
-      }
-      metadataWriteBindings.applyVideoSyncName()
-    },
     goPrevPage,
     goNextPage,
   })
@@ -555,14 +583,6 @@ export function useAppWorkspaceProps({
       void runManageHideAction(false)
     },
     onClearManageSelection: clearAllSelections,
-    metadataPending: metadataWriteBindings.metadataPending,
-    onMetadataSyncName: () => {
-      if (mode === 'image') {
-        metadataWriteBindings.applyPackageSyncName()
-        return
-      }
-      metadataWriteBindings.applyVideoSyncName()
-    },
     durationSec: focusedVideoDurationSec,
     videoTime,
     videoPlaying,

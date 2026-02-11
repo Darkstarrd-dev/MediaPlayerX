@@ -32,6 +32,8 @@ import type {
   WritePlaylistResponseDto,
   WritePackageMetadataRequestDto,
   WritePackageMetadataResponseDto,
+  SearchExternalMetadataRequestDto,
+  SearchExternalMetadataResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
   StartManageAdReviewRequestDto,
@@ -80,6 +82,7 @@ interface MediaPlayerBackendApi {
     request: ConfirmManageAdReviewDeleteRequestDto,
   ) => Promise<ConfirmManageAdReviewDeleteResponseDto>
   writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
+  searchExternalMetadata?: (request: SearchExternalMetadataRequestDto) => Promise<SearchExternalMetadataResponseDto>
   writeVideoMetadata?: (request: WriteVideoMetadataRequestDto) => Promise<WriteVideoMetadataResponseDto>
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
   readPlaylist: () => Promise<ReadPlaylistResponseDto>

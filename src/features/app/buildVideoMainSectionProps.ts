@@ -17,8 +17,6 @@ interface BuildVideoMainSectionPropsParams {
   onManageHide: () => void
   onManageUnhide: () => void
   onClearManageSelection: () => void
-  metadataPending: boolean
-  onMetadataSyncName: () => void
   durationSec: number
   videoTime: number
   videoPlaying: boolean
@@ -57,8 +55,6 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     onManageHide: params.onManageHide,
     onManageUnhide: params.onManageUnhide,
     onClearManageSelection: params.onClearManageSelection,
-    metadataPending: params.metadataPending,
-    onMetadataSyncName: params.onMetadataSyncName,
     durationSec: params.durationSec,
     videoTime: params.videoTime,
     videoPlaying: params.videoPlaying,

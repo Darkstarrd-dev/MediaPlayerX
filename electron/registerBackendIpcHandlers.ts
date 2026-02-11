@@ -51,6 +51,8 @@ import {
   writePlaylistResponseSchema,
   writePackageMetadataRequestSchema,
   writePackageMetadataResponseSchema,
+  searchExternalMetadataRequestSchema,
+  searchExternalMetadataResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
@@ -66,6 +68,7 @@ import { FileSystemMediaReadService } from './fileSystemReadService'
 import { DATABASE_RELATIVE_PATH } from './mediaLibrarySchema'
 import { isRuntimeDiagnosticsVerboseEnabled, logRuntimeDiagnostic, serializeUnknownError } from './runtimeDiagnostics'
 import { THUMBNAIL_CACHE_DIR_NAME } from './services/file-system-read/fileSystemReadFacadeConfig'
+import { MetadataScraperService } from './services/metadata/metadataScraperService'
 
 const MEDIA_ACCESS_FALLBACK_URL = 'data:application/octet-stream;base64,'
 const MEDIA_ACCESS_FALLBACK_TTL_MS = 60_000
@@ -104,6 +107,9 @@ export function registerBackendIpcHandlers(): void {
   let protocolReadFailureCount = 0
   let resolveMediaResourceCount = 0
   let resolveMediaResourceFailureCount = 0
+  const metadataScraper = new MetadataScraperService({
+    defaultProxyServer: process.env.MEDIA_PLAYERX_PROXY_SERVER,
+  })
 
   const broadcastLibraryChanged = (payload: { reason: string; updated_at_ms: number }) => {
     for (const window of BrowserWindow.getAllWindows()) {
@@ -283,6 +289,12 @@ export function registerBackendIpcHandlers(): void {
     const request = writePackageMetadataRequestSchema.parse(payload)
     const response = await ensureService().writePackageMetadata(request)
     return writePackageMetadataResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.searchExternalMetadata, async (_event, payload: unknown) => {
+    const request = searchExternalMetadataRequestSchema.parse(payload)
+    const response = await metadataScraper.search(request)
+    return searchExternalMetadataResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writeVideoMetadata, async (_event, payload: unknown) => {

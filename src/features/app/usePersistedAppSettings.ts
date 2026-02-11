@@ -44,6 +44,7 @@ export function usePersistedAppSettings({
       paletteId: settings.paletteId,
       thumbnailQuality: settings.thumbnailQuality,
       thumbnailWidth: settings.thumbnailWidth,
+      proxyServer: settings.proxyServer,
       adReviewVisionEndpoint: settings.adReviewVisionEndpoint,
       adReviewVisionModel: settings.adReviewVisionModel,
       adReviewVisionVerified: settings.adReviewVisionVerified,

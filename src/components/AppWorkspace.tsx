@@ -6,10 +6,10 @@ import { benchOnReactRender } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
 import ImageMainSection from './ImageMainSection'
 import MetadataPanel from './MetadataPanel'
+import MetadataManagementPanel from './MetadataManagementPanel'
 import SidebarPanel from './SidebarPanel'
 import VideoMainSection from './VideoMainSection'
 import type ManagementPanel from './ManagementPanel'
-import type MetadataManagementPanel from './MetadataManagementPanel'
 import type SearchPanel from './SearchPanel'
 
 interface AppWorkspaceProps {
@@ -51,6 +51,7 @@ function AppWorkspace({
   onStartSidebarResize,
   onStartMetadataResize,
   sidebarPanelProps,
+  metadataManagementPanelProps,
   imageMainSectionProps,
   videoMainSectionProps,
   metadataPanelProps,
@@ -119,6 +120,8 @@ function AppWorkspace({
         style={{ width: sidebarCollapsed ? '100%' : `calc(${(1 - sidebarRatio) * 100}% - var(--mpx-splitter-width))` }}
       >
         <div className="workspace-body" ref={workspaceBodyRef}>
+          <MetadataManagementPanel {...metadataManagementPanelProps} />
+
           <main
             className="main-pane"
             style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - var(--mpx-splitter-width))` }}

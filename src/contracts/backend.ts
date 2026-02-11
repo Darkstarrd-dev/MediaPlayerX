@@ -375,6 +375,33 @@ export const writePackageMetadataRequestSchema = z.object({
   sync_work_title_to_package_name: z.boolean().optional(),
 })
 
+export const searchExternalMetadataRequestSchema = z.object({
+  input_text: z.string().optional(),
+  input_id: z.string().optional(),
+  source: z.enum(['nhentai', 'ehentai']).optional(),
+  proxy_server: z.string().optional(),
+})
+
+export const externalMetadataResultItemSchema = z.object({
+  source: z.enum(['nhentai', 'ehentai']),
+  id: z.string().min(1),
+  title: z.string().min(1),
+  title_original: z.string().nullable().optional(),
+  cover: z.string().nullable().optional(),
+  url: z.string().min(1),
+  token: z.string().nullable().optional(),
+  tags: z.array(z.string()),
+  pages: z.number().int().positive().nullable().optional(),
+  posted: z.string().nullable().optional(),
+  rating: z.string().nullable().optional(),
+  favorited: z.number().int().nonnegative().nullable().optional(),
+  raw: z.unknown(),
+})
+
+export const searchExternalMetadataResponseSchema = z.object({
+  items: z.array(externalMetadataResultItemSchema),
+})
+
 export const writePackageMetadataResponseSchema = z.object({
   package: imagePackageDtoSchema,
   updated_at_ms: z.number().int().positive(),
@@ -628,6 +655,9 @@ export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManage
 export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
 export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
+export type SearchExternalMetadataRequestDto = z.infer<typeof searchExternalMetadataRequestSchema>
+export type ExternalMetadataResultItemDto = z.infer<typeof externalMetadataResultItemSchema>
+export type SearchExternalMetadataResponseDto = z.infer<typeof searchExternalMetadataResponseSchema>
 export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>
 export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataResponseSchema>
 export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>

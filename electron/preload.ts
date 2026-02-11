@@ -50,6 +50,8 @@ import {
   writePlaylistResponseSchema,
   writePackageMetadataRequestSchema,
   writePackageMetadataResponseSchema,
+  searchExternalMetadataRequestSchema,
+  searchExternalMetadataResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
@@ -135,6 +137,11 @@ const backendApi = {
     const parsed = writePackageMetadataRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePackageMetadata, parsed)
     return writePackageMetadataResponseSchema.parse(response)
+  },
+  searchExternalMetadata: async (request: unknown) => {
+    const parsed = searchExternalMetadataRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.searchExternalMetadata, parsed)
+    return searchExternalMetadataResponseSchema.parse(response)
   },
   writeVideoMetadata: async (request: unknown) => {
     const parsed = writeVideoMetadataRequestSchema.parse(request)
