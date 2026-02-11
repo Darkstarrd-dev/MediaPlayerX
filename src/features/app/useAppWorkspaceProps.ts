@@ -13,15 +13,7 @@ import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 import type { WriteDataAccessResult } from '../backend'
-import type {
-  BrowserMode,
-  FocusedImageRef,
-  ImageItem,
-  ImagePackage,
-  SidebarNode,
-  VectorCandidate,
-  VideoItem,
-} from '../../types'
+import type { BrowserMode, FocusedImageRef, ImageItem, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import type { UiBenchSettings } from '../perf/benchSettings'
 import type {
   Dispatch,
@@ -29,8 +21,6 @@ import type {
   RefObject,
   SetStateAction,
 } from 'react'
-
-type SearchPanelMode = 'vector' | 'feature'
 
 interface UseAppWorkspacePropsParams {
   appSettings: AppSettingsStoreSnapshot
@@ -44,15 +34,12 @@ interface UseAppWorkspacePropsParams {
   vectorPanelHeight: number
   vectorPanelRef: RefObject<HTMLDivElement | null>
   vectorPanelContentRef: RefObject<HTMLDivElement | null>
-  searchPanelMode: SearchPanelMode
-  setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
   vectorSearchResults: VectorCandidate[]
   scopedImageSourcesEffective: ImagePackage[]
   videosForSidebarCount: number
   focusedRef: FocusedImageRef | null
   focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
-  runVectorSearch: () => void
   featureNameQuery: string
   setFeatureNameQuery: Dispatch<SetStateAction<string>>
   featureWorkTitleQuery: string
@@ -175,15 +162,12 @@ export function useAppWorkspaceProps({
   vectorPanelHeight,
   vectorPanelRef,
   vectorPanelContentRef,
-  searchPanelMode,
-  setSearchPanelMode,
   vectorSearchResults,
   scopedImageSourcesEffective,
   videosForSidebarCount,
   focusedRef,
   focusedImage,
   focusedImagePackage,
-  runVectorSearch,
   featureNameQuery,
   setFeatureNameQuery,
   featureWorkTitleQuery,
@@ -338,7 +322,6 @@ export function useAppWorkspaceProps({
   })
 
   const searchPanelProps = buildSearchPanelProps({
-    mode,
     vectorMode,
     manageMode,
     searchPanelCollapsed,
@@ -346,16 +329,7 @@ export function useAppWorkspaceProps({
     vectorPanelHeight,
     vectorPanelRef,
     vectorPanelContentRef,
-    searchPanelMode,
-    setSearchPanelMode,
-    vectorSearchResultsCount: vectorSearchResults.length,
     featureResultCount: mode === 'video' ? videosForSidebarCount : scopedImageSourcesEffective.length,
-    focusedRef,
-    focusedImagePackage,
-    focusedImageOrdinal: focusedImage?.ordinal ?? null,
-    runVectorSearch,
-    vectorThreshold: appSettings.vectorThreshold,
-    updateSettings: appSettings.updateSettings,
     featureNameQuery,
     setFeatureNameQuery,
     featureWorkTitleQuery,
@@ -445,7 +419,6 @@ export function useAppWorkspaceProps({
   })
 
   const metadataManagementPanelProps = buildMetadataManagementPanelProps({
-    mode,
     metadataManageMode,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
@@ -454,10 +427,6 @@ export function useAppWorkspaceProps({
     vectorPanelContentRef,
     metadataPending: metadataWriteBindings.metadataPending,
     operationHint: manageOperationHint,
-    taskKind: metadataWriteBindings.metadataTaskKind,
-    taskStatus: metadataWriteBindings.metadataTaskStatus,
-    taskProcessed: metadataWriteBindings.metadataTaskProcessed,
-    taskTotal: metadataWriteBindings.metadataTaskTotal,
     onSyncName: () => {
       if (mode === 'image') {
         metadataWriteBindings.applyPackageSyncName()
@@ -465,10 +434,6 @@ export function useAppWorkspaceProps({
       }
       metadataWriteBindings.applyVideoSyncName()
     },
-    onAutoTags: metadataWriteBindings.applyPackageAutoTags,
-    onVisionTags: metadataWriteBindings.applyPackageAutoTagsVision,
-    onEmbeddings: metadataWriteBindings.applyPackageEmbeddings,
-    onStopTask: metadataWriteBindings.stopMetadataTask,
     onStartVectorPanelResize,
     layoutLocked,
   })

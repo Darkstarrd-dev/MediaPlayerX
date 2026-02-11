@@ -32,10 +32,6 @@ import type {
   WritePlaylistResponseDto,
   WritePackageMetadataRequestDto,
   WritePackageMetadataResponseDto,
-  GeneratePackageAutoTagsVisionRequestDto,
-  GeneratePackageAutoTagsVisionResponseDto,
-  GeneratePackageEmbeddingsRequestDto,
-  GeneratePackageEmbeddingsResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
 } from '../../contracts/backend'
@@ -51,10 +47,6 @@ class WritableRepositoryStub implements MediaRepository {
 
   private shouldFailManage = false
 
-  private lastVisionAutoTagRequest: GeneratePackageAutoTagsVisionRequestDto | null = null
-
-  private lastEmbeddingRequest: GeneratePackageEmbeddingsRequestDto | null = null
-
   setFailGrade(enabled: boolean): void {
     this.shouldFailGrade = enabled
   }
@@ -69,14 +61,6 @@ class WritableRepositoryStub implements MediaRepository {
 
   setFailManage(enabled: boolean): void {
     this.shouldFailManage = enabled
-  }
-
-  getLastVisionAutoTagRequest(): GeneratePackageAutoTagsVisionRequestDto | null {
-    return this.lastVisionAutoTagRequest
-  }
-
-  getLastEmbeddingRequest(): GeneratePackageEmbeddingsRequestDto | null {
-    return this.lastEmbeddingRequest
   }
 
   getInitialLibrarySnapshot(): LibrarySnapshotDto | null {
@@ -160,70 +144,6 @@ class WritableRepositoryStub implements MediaRepository {
         mock_grade: 4,
         images: [],
       },
-      updated_at_ms: Date.now(),
-    }
-  }
-
-  async generatePackageAutoTagsVision(
-    request: GeneratePackageAutoTagsVisionRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageAutoTagsVisionResponseDto> {
-    void options
-    if (this.shouldFailMetadata) {
-      throw new Error('write-metadata-failed')
-    }
-
-    this.lastVisionAutoTagRequest = request
-    return {
-      package: {
-        id: request.package_id,
-        package_name: 'archive_001.zip',
-        display_name: 'archive_001',
-        absolute_path: 'Z:/mock/archive_001.zip',
-        tree_path: ['archive_001.zip'],
-        work_title: 'archive_001',
-        circle: '未知',
-        author: '未知',
-        tags: ['vision_tag'],
-        mock_grade: 4,
-        images: [],
-      },
-      generated_tags: ['vision_tag'],
-      analyzed_images: request.sample_image_count,
-      dropped_tags: ['out_of_scope_tag'],
-      invalid_response_images: 1,
-      updated_at_ms: Date.now(),
-    }
-  }
-
-  async generatePackageEmbeddings(
-    request: GeneratePackageEmbeddingsRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageEmbeddingsResponseDto> {
-    void options
-    if (this.shouldFailMetadata) {
-      throw new Error('write-metadata-failed')
-    }
-
-    this.lastEmbeddingRequest = request
-    return {
-      package: {
-        id: request.package_id,
-        package_name: 'archive_001.zip',
-        display_name: 'archive_001',
-        absolute_path: 'Z:/mock/archive_001.zip',
-        tree_path: ['archive_001.zip'],
-        work_title: 'archive_001',
-        circle: '未知',
-        author: '未知',
-        tags: ['vision_tag'],
-        mock_grade: 4,
-        images: [],
-      },
-      analyzed_images: 6,
-      embedded_images: 5,
-      failed_images: 1,
-      vector_dimension: 16,
       updated_at_ms: Date.now(),
     }
   }
@@ -544,111 +464,6 @@ describe('useWriteDataAccess', () => {
     })
 
     expect(result.current.write.errors.metadata).toBe('write-metadata-failed')
-  })
-
-  it('视觉自动标签写入会透传参数并返回审计字段', async () => {
-    const repository = new WritableRepositoryStub()
-
-    const { result } = renderHook(() => {
-      const [, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
-      const [, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
-      const [, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
-      const write = useWriteDataAccess({
-        repository,
-        setGradeByPackage,
-        setVideoCoverById,
-        setVideoCoverImageById,
-      })
-
-      return {
-        write,
-      }
-    })
-
-    let response: GeneratePackageAutoTagsVisionResponseDto | undefined
-    await act(async () => {
-      response = await result.current.write.generatePackageAutoTagsVision('pkg', {
-        tagsCsvPath: 'Z:/mock/tags-range.csv',
-        llmEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
-        llmModel: 'qwen2.5-vl',
-        sampleImageCount: 7,
-        occurrenceThreshold: 2,
-        temperature: 0,
-        timeoutMs: 45000,
-      })
-    })
-
-    if (!response) {
-      throw new Error('vision auto tags response missing')
-    }
-
-    expect(repository.getLastVisionAutoTagRequest()).toEqual(
-      expect.objectContaining({
-        package_id: 'pkg',
-        tags_csv_path: 'Z:/mock/tags-range.csv',
-        llm_endpoint: 'http://127.0.0.1:1234/v1/chat/completions',
-        llm_model: 'qwen2.5-vl',
-        sample_image_count: 7,
-        occurrence_threshold: 2,
-        temperature: 0,
-        timeout_ms: 45000,
-      }),
-    )
-    expect(response.generated_tags).toEqual(['vision_tag'])
-    expect(response.dropped_tags).toEqual(['out_of_scope_tag'])
-    expect(response.invalid_response_images).toBe(1)
-    expect(result.current.write.errors.metadata).toBeNull()
-  })
-
-  it('嵌入生成写入会透传参数并返回统计字段', async () => {
-    const repository = new WritableRepositoryStub()
-
-    const { result } = renderHook(() => {
-      const [, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
-      const [, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
-      const [, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
-      const write = useWriteDataAccess({
-        repository,
-        setGradeByPackage,
-        setVideoCoverById,
-        setVideoCoverImageById,
-      })
-
-      return {
-        write,
-      }
-    })
-
-    let response: GeneratePackageEmbeddingsResponseDto | undefined
-    await act(async () => {
-      response = await result.current.write.generatePackageEmbeddings('pkg', {
-        embeddingEndpoint: 'http://127.0.0.1:1234/v1/embeddings',
-        embeddingModel: 'qwen3-vl-embedding',
-        maxConcurrency: 4,
-        maxRetries: 1,
-        timeoutMs: 60000,
-      })
-    })
-
-    if (!response) {
-      throw new Error('package embeddings response missing')
-    }
-
-    expect(repository.getLastEmbeddingRequest()).toEqual(
-      expect.objectContaining({
-        package_id: 'pkg',
-        embedding_endpoint: 'http://127.0.0.1:1234/v1/embeddings',
-        embedding_model: 'qwen3-vl-embedding',
-        max_concurrency: 4,
-        max_retries: 1,
-        timeout_ms: 60000,
-      }),
-    )
-    expect(response.analyzed_images).toBe(6)
-    expect(response.embedded_images).toBe(5)
-    expect(response.failed_images).toBe(1)
-    expect(response.vector_dimension).toBe(16)
-    expect(result.current.write.errors.metadata).toBeNull()
   })
 
   it('管理写链路失败会设置 manage 错误并可清理', async () => {

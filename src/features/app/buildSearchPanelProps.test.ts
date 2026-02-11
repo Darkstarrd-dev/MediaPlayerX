@@ -1,30 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { ImagePackage } from '../../types'
 import { buildSearchPanelProps } from './buildSearchPanelProps'
 
-const IMAGE_PACKAGE_FIXTURE: ImagePackage = {
-  id: 'pkg-1',
-  packageName: 'pkg-1.zip',
-  displayName: 'pkg-1',
-  absolutePath: 'D:/pkg-1.zip',
-  treePath: ['pkg-1.zip'],
-  workTitle: 'pkg-1',
-  circle: '未知',
-  author: '未知',
-  tags: [],
-  mockGrade: 0,
-  images: [],
-}
-
 describe('buildSearchPanelProps', () => {
-  it('可见性与筛选更新回调符合当前模式约束', () => {
-    const updateSettings = vi.fn()
+  it('可见性与折叠行为符合检索容器规则', () => {
     const setSearchPanelCollapsed = vi.fn()
-    const setFeatureTagPickerOpen = vi.fn()
 
     const props = buildSearchPanelProps({
-      mode: 'image',
       vectorMode: true,
       manageMode: false,
       searchPanelCollapsed: false,
@@ -32,16 +14,7 @@ describe('buildSearchPanelProps', () => {
       vectorPanelHeight: 240,
       vectorPanelRef: { current: null },
       vectorPanelContentRef: { current: null },
-      searchPanelMode: 'feature',
-      setSearchPanelMode: vi.fn(),
-      vectorSearchResultsCount: 3,
       featureResultCount: 2,
-      focusedRef: { packageId: 'pkg-1', imageIndex: 0 },
-      focusedImagePackage: IMAGE_PACKAGE_FIXTURE,
-      focusedImageOrdinal: 1,
-      runVectorSearch: vi.fn(),
-      vectorThreshold: 0.42,
-      updateSettings,
       featureNameQuery: '',
       setFeatureNameQuery: vi.fn(),
       featureWorkTitleQuery: '',
@@ -54,7 +27,7 @@ describe('buildSearchPanelProps', () => {
       featureAuthorOptions: ['B'],
       featureTagOptions: ['tag-1'],
       featureTagPickerOpen: false,
-      setFeatureTagPickerOpen,
+      setFeatureTagPickerOpen: vi.fn(),
       featureTags: ['tag-1'],
       setFeatureTags: vi.fn(),
       featureGradeFilter: null,
@@ -64,27 +37,16 @@ describe('buildSearchPanelProps', () => {
     })
 
     expect(props.visible).toBe(true)
-    expect(props.showVectorSearch).toBe(true)
-    props.onVectorThresholdChange(0.9)
-    expect(updateSettings).toHaveBeenCalledWith({ vectorThreshold: 0.9 })
-
     props.onCollapse()
     props.onExpand()
     expect(setSearchPanelCollapsed).toHaveBeenNthCalledWith(1, true)
     expect(setSearchPanelCollapsed).toHaveBeenNthCalledWith(2, false)
-
-    props.onToggleFeatureTagPicker()
-    const pickerUpdater = setFeatureTagPickerOpen.mock.calls[0]?.[0] as
-      | ((value: boolean) => boolean)
-      | undefined
-    expect(pickerUpdater?.(false)).toBe(true)
   })
 
   it('tag 切换逻辑支持添加与移除，clear 会写空数组', () => {
     const setFeatureTags = vi.fn()
 
     const props = buildSearchPanelProps({
-      mode: 'video',
       vectorMode: true,
       manageMode: false,
       searchPanelCollapsed: true,
@@ -92,16 +54,7 @@ describe('buildSearchPanelProps', () => {
       vectorPanelHeight: 240,
       vectorPanelRef: { current: null },
       vectorPanelContentRef: { current: null },
-      searchPanelMode: 'feature',
-      setSearchPanelMode: vi.fn(),
-      vectorSearchResultsCount: 0,
       featureResultCount: 0,
-      focusedRef: null,
-      focusedImagePackage: null,
-      focusedImageOrdinal: null,
-      runVectorSearch: vi.fn(),
-      vectorThreshold: 0.5,
-      updateSettings: vi.fn(),
       featureNameQuery: '',
       setFeatureNameQuery: vi.fn(),
       featureWorkTitleQuery: '',
@@ -122,9 +75,6 @@ describe('buildSearchPanelProps', () => {
       onStartVectorPanelResize: vi.fn(),
       layoutLocked: true,
     })
-
-    expect(props.visible).toBe(true)
-    expect(props.showVectorSearch).toBe(false)
 
     props.onToggleFeatureTag('tag-a')
     const tagUpdater = setFeatureTags.mock.calls[0]?.[0] as ((value: string[]) => string[]) | undefined

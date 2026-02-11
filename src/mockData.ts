@@ -135,7 +135,6 @@ function makeImages(packageId: string, count: number, clusterOffset: number): Im
       sizeKb: 180 + ((i * 37) % 780),
       cluster,
       color: COLORS[cluster],
-      featureVector: makeFeatureVector(packageId, i, cluster),
       mediaLocator: {
         kind: 'filesystem',
         absolutePath: `mock:///${packageId}/${ordinal}.jpg`,
@@ -902,7 +901,7 @@ function getImageVector(ref: FocusedImageRef, packageById: Map<string, ImagePack
   if (!image) {
     return null
   }
-  return image.featureVector
+  return makeFeatureVector(ref.packageId, ref.imageIndex, image.cluster)
 }
 
 function vectorMagnitude(vector: number[]): number {

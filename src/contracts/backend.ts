@@ -40,7 +40,6 @@ export const imageItemDtoSchema = z.object({
   size_kb: nonNegativeIntSchema,
   cluster: nonNegativeIntSchema,
   color: z.string().min(1),
-  feature_vector: z.array(z.number()),
   media_locator: mediaLocatorDtoSchema,
   hidden: z.boolean().optional(),
 })
@@ -350,31 +349,6 @@ export const testAdReviewVisionModelResponseSchema = z.object({
   message: z.string().min(1),
 })
 
-export const testWdSwinTaggerModelRequestSchema = z.object({
-  model_path: z.string().min(1),
-  timeout_ms: z.number().int().min(3_000).max(120_000).optional(),
-})
-
-export const testWdSwinTaggerModelResponseSchema = z.object({
-  ok: z.boolean(),
-  message: z.string().min(1),
-  provider: z.string().min(1).nullable(),
-  output_shape: z.array(z.number().int().positive()).nullable(),
-  tag_count: z.number().int().nonnegative().nullable(),
-  elapsed_ms: z.number().int().nonnegative().nullable(),
-})
-
-export const testEmbeddingModelRequestSchema = z.object({
-  embedding_endpoint: z.string().min(1),
-  embedding_model: z.string().min(1),
-  timeout_ms: z.number().int().min(1_000).max(60_000).optional(),
-})
-
-export const testEmbeddingModelResponseSchema = z.object({
-  ok: z.boolean(),
-  message: z.string().min(1),
-})
-
 export const confirmManageAdReviewDeleteRequestSchema = z.object({
   task_id: z.string().min(1),
   image_ids: z.array(z.string().min(1)).min(1),
@@ -403,61 +377,6 @@ export const writePackageMetadataRequestSchema = z.object({
 
 export const writePackageMetadataResponseSchema = z.object({
   package: imagePackageDtoSchema,
-  updated_at_ms: z.number().int().positive(),
-})
-
-export const generatePackageAutoTagsRequestSchema = z.object({
-  package_id: z.string().min(1),
-  model_path: z.string().min(1),
-  occurrence_threshold: z.number().int().min(1).max(200),
-  general_min_score: z.number().min(0).max(1),
-  character_min_score: z.number().min(0).max(1),
-  include_rating: z.boolean(),
-  rating_min_score: z.number().min(0).max(1),
-})
-
-export const generatePackageAutoTagsResponseSchema = z.object({
-  package: imagePackageDtoSchema,
-  generated_tags: z.array(z.string()),
-  analyzed_images: nonNegativeIntSchema,
-  updated_at_ms: z.number().int().positive(),
-})
-
-export const generatePackageAutoTagsVisionRequestSchema = z.object({
-  package_id: z.string().min(1),
-  tags_csv_path: z.string().min(1),
-  llm_endpoint: z.string().min(1),
-  llm_model: z.string().min(1),
-  sample_image_count: z.number().int().min(1).max(24),
-  occurrence_threshold: z.number().int().min(1).max(24),
-  temperature: z.number().min(0).max(1),
-  timeout_ms: z.number().int().min(3_000).max(120_000).optional(),
-})
-
-export const generatePackageAutoTagsVisionResponseSchema = z.object({
-  package: imagePackageDtoSchema,
-  generated_tags: z.array(z.string()),
-  analyzed_images: nonNegativeIntSchema,
-  dropped_tags: z.array(z.string()),
-  invalid_response_images: nonNegativeIntSchema,
-  updated_at_ms: z.number().int().positive(),
-})
-
-export const generatePackageEmbeddingsRequestSchema = z.object({
-  package_id: z.string().min(1),
-  embedding_endpoint: z.string().min(1),
-  embedding_model: z.string().min(1),
-  max_concurrency: z.number().int().min(1).max(8).optional(),
-  max_retries: z.number().int().min(0).max(4).optional(),
-  timeout_ms: z.number().int().min(3_000).max(120_000).optional(),
-})
-
-export const generatePackageEmbeddingsResponseSchema = z.object({
-  package: imagePackageDtoSchema,
-  analyzed_images: nonNegativeIntSchema,
-  embedded_images: nonNegativeIntSchema,
-  failed_images: nonNegativeIntSchema,
-  vector_dimension: nonNegativeIntSchema,
   updated_at_ms: z.number().int().positive(),
 })
 
@@ -585,19 +504,6 @@ export const clearDatabaseResponseSchema = z.object({
   cleared_at_ms: z.number().int().positive(),
 })
 
-export const readVectorDataStatusResponseSchema = z.object({
-  total_images: nonNegativeIntSchema,
-  embedded_images: nonNegativeIntSchema,
-  pending_images: nonNegativeIntSchema,
-  vector_dimension: nonNegativeIntSchema,
-  generated_at_ms: z.number().int().positive(),
-})
-
-export const clearVectorDataResponseSchema = z.object({
-  cleared_images: nonNegativeIntSchema,
-  updated_at_ms: z.number().int().positive(),
-})
-
 export const readArchiveLoadStatusResponseSchema = z.object({
   running_archive_path: z.string().min(1).nullable(),
   pending_archive_paths: z.array(z.string().min(1)),
@@ -657,7 +563,6 @@ export const readRuntimeInfoResponseSchema = z.object({
   user_data_path: z.string().min(1),
   library_root: z.string().min(1),
   database_path: z.string().min(1),
-  vector_store_path: z.string().min(1),
   thumbnail_cache_path: z.string().min(1),
 })
 
@@ -719,20 +624,10 @@ export type PauseManageAdReviewTaskRequestDto = z.infer<typeof pauseManageAdRevi
 export type PauseManageAdReviewTaskResponseDto = z.infer<typeof pauseManageAdReviewTaskResponseSchema>
 export type TestAdReviewVisionModelRequestDto = z.infer<typeof testAdReviewVisionModelRequestSchema>
 export type TestAdReviewVisionModelResponseDto = z.infer<typeof testAdReviewVisionModelResponseSchema>
-export type TestWdSwinTaggerModelRequestDto = z.infer<typeof testWdSwinTaggerModelRequestSchema>
-export type TestWdSwinTaggerModelResponseDto = z.infer<typeof testWdSwinTaggerModelResponseSchema>
-export type TestEmbeddingModelRequestDto = z.infer<typeof testEmbeddingModelRequestSchema>
-export type TestEmbeddingModelResponseDto = z.infer<typeof testEmbeddingModelResponseSchema>
 export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManageAdReviewDeleteRequestSchema>
 export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
 export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
-export type GeneratePackageAutoTagsRequestDto = z.infer<typeof generatePackageAutoTagsRequestSchema>
-export type GeneratePackageAutoTagsResponseDto = z.infer<typeof generatePackageAutoTagsResponseSchema>
-export type GeneratePackageAutoTagsVisionRequestDto = z.infer<typeof generatePackageAutoTagsVisionRequestSchema>
-export type GeneratePackageAutoTagsVisionResponseDto = z.infer<typeof generatePackageAutoTagsVisionResponseSchema>
-export type GeneratePackageEmbeddingsRequestDto = z.infer<typeof generatePackageEmbeddingsRequestSchema>
-export type GeneratePackageEmbeddingsResponseDto = z.infer<typeof generatePackageEmbeddingsResponseSchema>
 export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>
 export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataResponseSchema>
 export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>
@@ -757,8 +652,6 @@ export type PickDirectoryPathRequestDto = z.infer<typeof pickDirectoryPathReques
 export type PickDirectoryPathResponseDto = z.infer<typeof pickDirectoryPathResponseSchema>
 export type ReadClipboardImportPathsResponseDto = z.infer<typeof readClipboardImportPathsResponseSchema>
 export type ClearDatabaseResponseDto = z.infer<typeof clearDatabaseResponseSchema>
-export type ReadVectorDataStatusResponseDto = z.infer<typeof readVectorDataStatusResponseSchema>
-export type ClearVectorDataResponseDto = z.infer<typeof clearVectorDataResponseSchema>
 export type ReadArchiveLoadStatusResponseDto = z.infer<typeof readArchiveLoadStatusResponseSchema>
 export type ReadAppStateRequestDto = z.infer<typeof readAppStateRequestSchema>
 export type ReadAppStateResponseDto = z.infer<typeof readAppStateResponseSchema>

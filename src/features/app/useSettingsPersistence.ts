@@ -31,69 +31,6 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     next.adReviewMaxConcurrency = Math.max(4, Math.min(12, Math.floor(next.adReviewMaxConcurrency)))
   }
 
-  if (
-    typeof next.wdSwinTaggerAutoTagOccurrenceThreshold === 'number' &&
-    Number.isFinite(next.wdSwinTaggerAutoTagOccurrenceThreshold)
-  ) {
-    next.wdSwinTaggerAutoTagOccurrenceThreshold = Math.max(
-      1,
-      Math.min(200, Math.floor(next.wdSwinTaggerAutoTagOccurrenceThreshold)),
-    )
-  }
-
-  if (
-    typeof next.wdSwinTaggerAutoTagGeneralMinScore === 'number' &&
-    Number.isFinite(next.wdSwinTaggerAutoTagGeneralMinScore)
-  ) {
-    next.wdSwinTaggerAutoTagGeneralMinScore = Math.max(0, Math.min(1, next.wdSwinTaggerAutoTagGeneralMinScore))
-  }
-
-  if (
-    typeof next.wdSwinTaggerAutoTagCharacterMinScore === 'number' &&
-    Number.isFinite(next.wdSwinTaggerAutoTagCharacterMinScore)
-  ) {
-    next.wdSwinTaggerAutoTagCharacterMinScore = Math.max(0, Math.min(1, next.wdSwinTaggerAutoTagCharacterMinScore))
-  }
-
-  if (
-    typeof next.wdSwinTaggerAutoTagRatingMinScore === 'number' &&
-    Number.isFinite(next.wdSwinTaggerAutoTagRatingMinScore)
-  ) {
-    next.wdSwinTaggerAutoTagRatingMinScore = Math.max(0, Math.min(1, next.wdSwinTaggerAutoTagRatingMinScore))
-  }
-
-  if (typeof next.wdSwinTaggerAutoTagIncludeRating !== 'boolean') {
-    delete next.wdSwinTaggerAutoTagIncludeRating
-  }
-
-  if (
-    typeof next.visionAutoTagSampleImageCount === 'number' &&
-    Number.isFinite(next.visionAutoTagSampleImageCount)
-  ) {
-    next.visionAutoTagSampleImageCount = Math.max(1, Math.min(24, Math.floor(next.visionAutoTagSampleImageCount)))
-  }
-
-  if (
-    typeof next.visionAutoTagOccurrenceThreshold === 'number' &&
-    Number.isFinite(next.visionAutoTagOccurrenceThreshold)
-  ) {
-    next.visionAutoTagOccurrenceThreshold = Math.max(1, Math.min(24, Math.floor(next.visionAutoTagOccurrenceThreshold)))
-  }
-
-  if (
-    typeof next.visionAutoTagTemperature === 'number' &&
-    Number.isFinite(next.visionAutoTagTemperature)
-  ) {
-    next.visionAutoTagTemperature = Math.max(0, Math.min(1, next.visionAutoTagTemperature))
-  }
-
-  if (
-    typeof next.visionAutoTagTimeoutMs === 'number' &&
-    Number.isFinite(next.visionAutoTagTimeoutMs)
-  ) {
-    next.visionAutoTagTimeoutMs = Math.max(3_000, Math.min(120_000, Math.floor(next.visionAutoTagTimeoutMs)))
-  }
-
   return next as Partial<AppSettings>
 }
 

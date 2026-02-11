@@ -1,6 +1,5 @@
 import type {
   ClearDatabaseResponseDto,
-  ClearVectorDataResponseDto,
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   PickImportPathsRequestDto,
@@ -14,7 +13,6 @@ import type {
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   ReadRuntimeInfoResponseDto,
-  ReadVectorDataStatusResponseDto,
   LibrarySnapshotDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
@@ -34,12 +32,6 @@ import type {
   WritePlaylistResponseDto,
   WritePackageMetadataRequestDto,
   WritePackageMetadataResponseDto,
-  GeneratePackageAutoTagsRequestDto,
-  GeneratePackageAutoTagsResponseDto,
-  GeneratePackageAutoTagsVisionRequestDto,
-  GeneratePackageAutoTagsVisionResponseDto,
-  GeneratePackageEmbeddingsRequestDto,
-  GeneratePackageEmbeddingsResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
   StartManageAdReviewRequestDto,
@@ -50,10 +42,6 @@ import type {
   PauseManageAdReviewTaskResponseDto,
   TestAdReviewVisionModelRequestDto,
   TestAdReviewVisionModelResponseDto,
-  TestWdSwinTaggerModelRequestDto,
-  TestWdSwinTaggerModelResponseDto,
-  TestEmbeddingModelRequestDto,
-  TestEmbeddingModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
   SetImageHiddenRequestDto,
@@ -88,23 +76,10 @@ interface MediaPlayerBackendApi {
   testAdReviewVisionModel?: (
     request: TestAdReviewVisionModelRequestDto,
   ) => Promise<TestAdReviewVisionModelResponseDto>
-  testWdSwinTaggerModel?: (
-    request: TestWdSwinTaggerModelRequestDto,
-  ) => Promise<TestWdSwinTaggerModelResponseDto>
-  testEmbeddingModel?: (
-    request: TestEmbeddingModelRequestDto,
-  ) => Promise<TestEmbeddingModelResponseDto>
   confirmManageAdReviewDelete?: (
     request: ConfirmManageAdReviewDeleteRequestDto,
   ) => Promise<ConfirmManageAdReviewDeleteResponseDto>
   writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
-  generatePackageAutoTags?: (request: GeneratePackageAutoTagsRequestDto) => Promise<GeneratePackageAutoTagsResponseDto>
-  generatePackageAutoTagsVision?: (
-    request: GeneratePackageAutoTagsVisionRequestDto,
-  ) => Promise<GeneratePackageAutoTagsVisionResponseDto>
-  generatePackageEmbeddings?: (
-    request: GeneratePackageEmbeddingsRequestDto,
-  ) => Promise<GeneratePackageEmbeddingsResponseDto>
   writeVideoMetadata?: (request: WriteVideoMetadataRequestDto) => Promise<WriteVideoMetadataResponseDto>
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
   readPlaylist: () => Promise<ReadPlaylistResponseDto>
@@ -121,10 +96,8 @@ interface MediaPlayerBackendApi {
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
   readRuntimeInfo?: () => Promise<ReadRuntimeInfoResponseDto>
-  readVectorDataStatus?: () => Promise<ReadVectorDataStatusResponseDto>
   readArchiveLoadStatus?: () => Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase: () => Promise<ClearDatabaseResponseDto>
-  clearVectorData?: () => Promise<ClearVectorDataResponseDto>
   onLibraryChanged?: (
     listener: (payload: { reason: string; updated_at_ms: number }) => void,
   ) => () => void

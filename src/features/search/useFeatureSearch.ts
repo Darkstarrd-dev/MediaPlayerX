@@ -24,7 +24,7 @@ export function useFeatureSearch({
   imageSources,
   videos,
 }: UseFeatureSearchParams) {
-  const [searchPanelMode, setSearchPanelMode] = useState<SearchPanelMode>('vector')
+  const [searchPanelMode, setSearchPanelMode] = useState<SearchPanelMode>('feature')
   const [featureNameQuery, setFeatureNameQuery] = useState('')
   const [featureWorkTitleQuery, setFeatureWorkTitleQuery] = useState('')
   const [featureCircleQuery, setFeatureCircleQuery] = useState('')
@@ -45,16 +45,16 @@ export function useFeatureSearch({
   }, [searchPanelMode, vectorMode])
 
   useEffect(() => {
+    if (searchPanelMode !== 'feature') {
+      setSearchPanelMode('feature')
+    }
+  }, [searchPanelMode])
+
+  useEffect(() => {
     if (!vectorMode && searchPanelCollapsed) {
       setSearchPanelCollapsed(false)
     }
   }, [searchPanelCollapsed, vectorMode])
-
-  useEffect(() => {
-    if (mode === 'video' && searchPanelMode === 'vector') {
-      setSearchPanelMode('feature')
-    }
-  }, [mode, searchPanelMode])
 
   const featureSearchActive = vectorMode && searchPanelMode === 'feature'
   const quickFeatureSearchActive =

@@ -42,11 +42,11 @@ describe('MediaPlayer 虚拟 UI', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '检索' }))
-    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+    expect(screen.getByLabelText('名称')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
     expect(screen.getByRole('button', { name: '删除' })).toBeInTheDocument()
-    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('名称')).not.toBeInTheDocument()
   })
 
   it('文件管理与元数据管理互斥，且可一键切换到检索模式', () => {
@@ -64,12 +64,12 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(searchButton)
     expect(searchButton.classList.contains('is-active')).toBe(true)
     expect(metadataManageButton.classList.contains('is-active')).toBe(false)
-    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+    expect(screen.getByLabelText('名称')).toBeInTheDocument()
 
     fireEvent.click(fileManageButton)
     expect(searchButton.classList.contains('is-active')).toBe(false)
     expect(fileManageButton.classList.contains('is-active')).toBe(true)
-    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
+    expect(screen.queryByLabelText('名称')).toBeNull()
   })
 
   it('Sidebar 包节点在包名与作品名不一致时显示作品名', () => {
@@ -146,17 +146,17 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByRole('dialog', { name: '设置面板' })).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: '检索' }))
-    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+    expect(screen.getByLabelText('名称')).toBeInTheDocument()
 
     const mainPane = document.querySelector('.main-pane') as HTMLElement | null
     expect(mainPane).not.toBeNull()
     fireEvent.mouseDown(mainPane as HTMLElement, { button: 2 })
-    expect(screen.getByRole('group', { name: 'search-mode-switch' })).toBeInTheDocument()
+    expect(screen.getByLabelText('名称')).toBeInTheDocument()
 
     const searchPanel = document.querySelector('[data-overlay-close="search-panel"]') as HTMLElement | null
     expect(searchPanel).not.toBeNull()
     fireEvent.mouseDown(searchPanel as HTMLElement, { button: 2 })
-    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
+    expect(screen.queryByLabelText('名称')).toBeNull()
   })
 
   it('Esc 关闭元数据管理，右键关闭全屏层', async () => {
@@ -523,51 +523,27 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
-  it('检索面板支持向量/特征检索切换、分割条拖拽与检索模式下 Sidebar 只读联动', async () => {
+  it('检索面板支持特征检索、分割条拖拽与折叠恢复', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '检索' }))
-    const searchModeSwitch = screen.getByRole('group', { name: 'search-mode-switch' })
-    expect(within(searchModeSwitch).getByRole('button', { name: '向量检索' })).toBeInTheDocument()
-    expect(within(searchModeSwitch).getByRole('button', { name: '特征检索' })).toBeInTheDocument()
-    expect(screen.getByText('当前结果: 0 张')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: '折叠' }))
-    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '展开检索容器' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: '展开检索容器' }))
-    const searchModeSwitchAfterExpand = screen.getByRole('group', { name: 'search-mode-switch' })
-    expect(searchModeSwitchAfterExpand).toBeInTheDocument()
-
-    fireEvent.click(within(searchModeSwitchAfterExpand).getByRole('button', { name: '特征检索' }))
     const featureControls = document.querySelector('.feature-controls') as HTMLElement | null
     expect(featureControls).not.toBeNull()
     const featureScope = within(featureControls as HTMLElement)
-    expect(featureScope.getByLabelText('名称')).toBeInTheDocument()
-    expect(featureScope.getByLabelText('作品名')).toBeInTheDocument()
-    expect(featureScope.getByLabelText('社团')).toBeInTheDocument()
-    expect(featureScope.getByLabelText('作者')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '选择 tags' })).toBeInTheDocument()
-    const featureRatingGroup = screen.getByRole('group', { name: '图包评分筛选' })
-    expect(featureRatingGroup).toBeInTheDocument()
-    expect(within(featureRatingGroup).getByRole('button', { name: '图包评分 无评分' })).toBeInTheDocument()
+    expect(featureScope.getByPlaceholderText('按名称模糊匹配')).toBeInTheDocument()
+    expect(featureScope.getByPlaceholderText('按作品名模糊匹配')).toBeInTheDocument()
+    expect(screen.getByText(/命中节点:/)).toBeInTheDocument()
 
-    fireEvent.change(featureScope.getByLabelText('名称'), { target: { value: '002' } })
-    fireEvent.change(featureScope.getByLabelText('作者'), { target: { value: 'Nori' } })
-    fireEvent.click(screen.getByRole('button', { name: '选择 tags' }))
-    fireEvent.click(featureScope.getByRole('button', { name: 'fog' }))
+    fireEvent.click(screen.getByRole('button', { name: '折叠' }))
+    expect(screen.queryByLabelText('名称')).toBeNull()
+    expect(screen.getByRole('button', { name: '展开检索容器' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '展开检索容器' }))
+    expect(screen.getByLabelText('名称')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: '图包评分 3 分' }))
-    expect(screen.getByRole('button', { name: '图包评分 1 分' }).classList.contains('is-active')).toBe(true)
-    expect(screen.getByRole('button', { name: '图包评分 4 分' }).classList.contains('is-active')).toBe(false)
-    fireEvent.click(screen.getByRole('button', { name: '图包评分 3 分' }))
-
-    await waitFor(() => {
-      expect(screen.getByText(/archive_002\.zip/)).toBeInTheDocument()
-      expect(screen.queryByText(/archive_001\.zip/)).not.toBeInTheDocument()
-    })
-
-    fireEvent.click(within(searchModeSwitchAfterExpand).getByRole('button', { name: '向量检索' }))
+    fireEvent.change(featureScope.getByPlaceholderText('按名称模糊匹配'), { target: { value: '002' } })
+    fireEvent.change(featureScope.getByPlaceholderText('输入作者，支持自动补完'), { target: { value: 'Nori' } })
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
 
     const workspace = document.querySelector('.workspace') as HTMLElement | null
     expect(workspace).not.toBeNull()
@@ -585,96 +561,12 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     const vectorPanel = document.querySelector('.vector-panel') as HTMLElement | null
     expect(vectorPanel).not.toBeNull()
-    const vectorHeightBefore = vectorPanel!.style.height
+    const panelHeightBefore = vectorPanel!.style.height
     const vectorSplitter = screen.getByRole('separator', { name: '调整检索容器高度' })
     fireEvent.mouseDown(vectorSplitter, { clientY: 164 })
     fireEvent.mouseMove(window, { clientY: 260 })
     fireEvent.mouseUp(window)
-    expect(vectorPanel!.style.height).not.toBe(vectorHeightBefore)
-
-    const firstThumbButton = document.querySelector('.thumb-card') as HTMLButtonElement | null
-    expect(firstThumbButton).not.toBeNull()
-    fireEvent.click(firstThumbButton as HTMLButtonElement)
-
-    const vectorSearchAction = document.querySelector('.vector-controls button') as HTMLButtonElement | null
-    expect(vectorSearchAction).not.toBeNull()
-    fireEvent.click(vectorSearchAction as HTMLButtonElement)
-
-    const readResultCount = () => {
-      const text = screen.getByText(/当前结果:/).textContent ?? ''
-      const matched = text.match(/(\d+)/)
-      return Number(matched?.[1] ?? '0')
-    }
-
-    expect(screen.getByText('向量结果视图')).toBeInTheDocument()
-    expect(screen.getAllByText(/相似度 1\.00/).length).toBeGreaterThan(0)
-    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
-    expect(document.querySelector('.main-footer span')?.textContent ?? '').toContain('#')
-
-    const countBeforeThresholdChange = readResultCount()
-    const thresholdSlider = screen.getByRole('slider', { name: /相似度阈值/ })
-    fireEvent.change(thresholdSlider, { target: { value: '0.95' } })
-    expect(readResultCount()).toBe(countBeforeThresholdChange)
-
-    fireEvent.click(vectorSearchAction as HTMLButtonElement)
-    const countAfterSearch = readResultCount()
-    expect(countAfterSearch).toBeLessThanOrEqual(countBeforeThresholdChange)
-
-    fireEvent.click(screen.getByRole('button', { name: '向量宇宙' }))
-    await waitFor(() => {
-      expect(screen.getByTestId('vector-universe-scope-count')).toHaveTextContent(String(countAfterSearch))
-      expect(screen.getByRole('button', { name: '关闭向量宇宙' })).toBeInTheDocument()
-    })
-    fireEvent.click(screen.getByRole('button', { name: '关闭向量宇宙' }))
-
-    const folderRows = Array.from(document.querySelectorAll<HTMLElement>('.sidebar-row[data-sidebar-node-id^="folder:"]'))
-    expect(folderRows.length).toBeGreaterThan(0)
-    for (const row of folderRows) {
-      expect(row.querySelector('.sidebar-count')).toBeNull()
-    }
-
-    const sidebarTree = document.querySelector('.sidebar-tree') as HTMLElement | null
-    expect(sidebarTree).not.toBeNull()
-    const sidebarRows = Array.from(sidebarTree!.querySelectorAll<HTMLElement>('[data-sidebar-node-id]'))
-    expect(sidebarRows.length).toBeGreaterThan(0)
-
-    Object.defineProperty(sidebarTree!, 'clientHeight', { configurable: true, value: 36 })
-    Object.defineProperty(sidebarTree!, 'scrollHeight', { configurable: true, value: sidebarRows.length * 28 })
-
-    sidebarRows.forEach((row, index) => {
-      Object.defineProperty(row, 'offsetTop', { configurable: true, value: index * 28 })
-      Object.defineProperty(row, 'offsetHeight', { configurable: true, value: 28 })
-    })
-
-    sidebarTree!.scrollTop = 0
-    for (let index = 0; index < 60; index += 1) {
-      fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
-    }
-
-    await waitFor(() => {
-      expect(sidebarTree!.scrollTop).toBeGreaterThan(0)
-    })
-
-    fireEvent.keyDown(window, { key: 'Home', code: 'Home' })
-
-    const readFocusedPath = () => document.querySelector('.main-footer span')?.textContent ?? ''
-    const focusedBeforeSidebarClick = readFocusedPath()
-    expect(focusedBeforeSidebarClick).toContain('#')
-
-    const firstSidebarLabel = document.querySelector('.sidebar-tree .sidebar-label') as HTMLElement | null
-    expect(firstSidebarLabel).not.toBeNull()
-    fireEvent.click(firstSidebarLabel as HTMLElement)
-    expect(readFocusedPath()).toBe(focusedBeforeSidebarClick)
-
-    expect(document.querySelector('.sidebar.is-focus')).toBeNull()
-    fireEvent.keyDown(window, { key: 'Tab', code: 'Tab' })
-    expect(document.querySelector('.sidebar.is-focus')).toBeNull()
-
-    fireEvent.click(screen.getByRole('button', { name: '返回' }))
-    expect(screen.queryByText('向量结果视图')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '返回' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '设为根' })).toBeInTheDocument()
+    expect(vectorPanel!.style.height).not.toBe(panelHeightBefore)
   }, 15_000)
 
   it('视频模式检索面板仅展示特征检索', () => {
@@ -718,16 +610,15 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(widthAfterLock).toBe(widthBeforeLock)
   })
 
-  it('元数据管理使用顶部展开容器承载批处理按钮与进度', () => {
+  it('元数据管理使用顶部展开容器承载同步名称动作', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
 
     expect(screen.getByRole('button', { name: '同步名称' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '自动生成标签' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '视觉模型生成标签' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '生成嵌入向量' })).toBeInTheDocument()
-    expect(screen.getByText('执行进度：0/0')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '自动生成标签' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '视觉模型生成标签' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '生成嵌入向量' })).toBeNull()
     expect(screen.queryByRole('button', { name: '保存' })).toBeNull()
   })
 
@@ -903,109 +794,18 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(new Set(payloads.map((payload) => payload.author)).size).toBeGreaterThan(1)
   })
 
-  it('元数据管理支持按设置参数触发自动标签批量生成', async () => {
-    const generatePackageAutoTagsSpy = vi.spyOn(MockMediaRepository.prototype, 'generatePackageAutoTagsSync')
-    useUiStore.setState({
-      wdSwinTaggerModelPath: 'Z:/mock/wd/model.onnx',
-      wdSwinTaggerAutoTagOccurrenceThreshold: 3,
-      wdSwinTaggerAutoTagGeneralMinScore: 0.35,
-      wdSwinTaggerAutoTagCharacterMinScore: 0.75,
-      wdSwinTaggerAutoTagIncludeRating: true,
-      wdSwinTaggerAutoTagRatingMinScore: 0.5,
-    })
-
+  it('元数据管理面板已移除自动标签与嵌入按钮，仅保留同步名称', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+      expect(screen.getByRole('button', { name: '同步名称' })).toBeInTheDocument()
     })
 
-    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
-    fireEvent.click(screen.getByRole('button', { name: '自动生成标签' }))
-
-    await waitFor(() => {
-      expect(generatePackageAutoTagsSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model_path: 'Z:/mock/wd/model.onnx',
-          occurrence_threshold: 3,
-          general_min_score: 0.35,
-          character_min_score: 0.75,
-          include_rating: true,
-          rating_min_score: 0.5,
-        }),
-      )
-    })
-  })
-
-  it('元数据管理支持按设置参数触发视觉模型标签批量生成', async () => {
-    const generatePackageAutoTagsVisionSpy = vi.spyOn(MockMediaRepository.prototype, 'generatePackageAutoTagsVisionSync')
-    useUiStore.setState({
-      adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
-      adReviewVisionModel: 'qwen2.5-vl-instruct',
-      visionAutoTagCsvPath: 'Z:/mock/tags-range.csv',
-      visionAutoTagSampleImageCount: 6,
-      visionAutoTagOccurrenceThreshold: 2,
-      visionAutoTagTemperature: 0,
-      visionAutoTagTimeoutMs: 30000,
-    })
-
-    render(<App />)
-
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
-
-    await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
-    })
-
-    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
-    fireEvent.click(screen.getByRole('button', { name: '视觉模型生成标签' }))
-
-    await waitFor(() => {
-      expect(generatePackageAutoTagsVisionSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          tags_csv_path: 'Z:/mock/tags-range.csv',
-          llm_endpoint: 'http://127.0.0.1:1234/v1/chat/completions',
-          llm_model: 'qwen2.5-vl-instruct',
-          sample_image_count: 6,
-          occurrence_threshold: 2,
-          temperature: 0,
-          timeout_ms: 30000,
-        }),
-      )
-    })
-  })
-
-  it('元数据管理支持按设置参数触发嵌入向量批量生成', async () => {
-    const generatePackageEmbeddingsSpy = vi.spyOn(MockMediaRepository.prototype, 'generatePackageEmbeddingsSync')
-    useUiStore.setState({
-      lmStudioEndpoint: 'http://127.0.0.1:1234/v1/embeddings',
-      lmStudioModel: 'qwen3-vl-embedding',
-    })
-
-    render(<App />)
-
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
-
-    await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
-    })
-
-    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
-    fireEvent.click(screen.getByRole('button', { name: '生成嵌入向量' }))
-
-    await waitFor(() => {
-      expect(generatePackageEmbeddingsSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          embedding_endpoint: 'http://127.0.0.1:1234/v1/embeddings',
-          embedding_model: 'qwen3-vl-embedding',
-          max_concurrency: 4,
-          max_retries: 1,
-          timeout_ms: 45000,
-        }),
-      )
-    })
+    expect(screen.queryByRole('button', { name: '自动生成标签' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '视觉模型生成标签' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '生成嵌入向量' })).toBeNull()
   })
 
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {
@@ -1333,31 +1133,20 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore)
 
     fireEvent.click(screen.getByRole('button', { name: 'AI模型设置' }))
-    expect(screen.getByLabelText('LM Studio Endpoint')).toBeInTheDocument()
     expect(screen.getByLabelText('视觉模型端口')).toBeInTheDocument()
-    expect(screen.getByLabelText('模型文件路径')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '选择ONNX文件' })).toBeInTheDocument()
-    expect(screen.getByLabelText('自动标签出现阈值（Occurrence）')).toHaveValue(2)
-    expect(screen.getByLabelText('General 分数阈值')).toHaveValue(0.35)
-    expect(screen.getByLabelText('Character 分数阈值')).toHaveValue(0.75)
-    expect(screen.getByLabelText('包含 Rating 标签')).not.toBeChecked()
-    expect(screen.getByLabelText('Rating 分数阈值')).toHaveValue(0.5)
-    expect(screen.getByLabelText('General 分数阈值').closest('label')).toHaveAttribute('title')
-    expect(screen.getByRole('button', { name: '测试向量模型连接' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '测试wd模型连接' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '选择CSV文件' })).toBeInTheDocument()
+    expect(screen.getByLabelText('视觉模型ID')).toBeInTheDocument()
+    expect(screen.queryByLabelText('LM Studio Endpoint')).toBeNull()
+    expect(screen.queryByRole('button', { name: '选择ONNX文件' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '选择CSV文件' })).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))
     expect(screen.getByText('数据库目录设置')).toBeInTheDocument()
     expect(screen.getByLabelText('SQL 库路径')).toBeInTheDocument()
-    expect(screen.getByLabelText('向量库路径')).toBeInTheDocument()
     expect(screen.getByLabelText('缩略图目录')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '选择SQL目录' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '选择向量目录' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '选择缩略图目录' })).toBeInTheDocument()
-    expect(screen.getByText('向量数据管理')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /刷新向量统计|统计读取中/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '清空向量数据' })).toBeInTheDocument()
+    expect(screen.queryByText('向量数据管理')).toBeNull()
+    expect(screen.queryByRole('button', { name: '选择向量目录' })).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: '3D 设置' }))
     expect(screen.getByText('向量宇宙：前进')).toBeInTheDocument()
@@ -1402,38 +1191,17 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(alignUpBindingButton.textContent).toContain('WheelDown')
   }, 15_000)
 
-  it('AI 模型路径选择器可写回设置并触发数据库目录选择', async () => {
-    const pickFilePathSpy = vi.spyOn(MockMediaRepository.prototype, 'pickFilePathSync').mockImplementation((request) => {
-      if (request.title?.includes('ONNX')) {
-        return { canceled: false, path: 'Z:/picked/wd/model.onnx' }
-      }
-      if (request.title?.includes('CSV')) {
-        return { canceled: false, path: 'Z:/picked/tags/allowed.csv' }
-      }
-      return { canceled: true, path: null }
-    })
+  it('数据库目录选择器可触发 SQL 与缩略图目录选择', async () => {
     const pickDirectoryPathSpy = vi.spyOn(MockMediaRepository.prototype, 'pickDirectoryPathSync')
 
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: '设置' }))
-    fireEvent.click(screen.getByRole('button', { name: 'AI模型设置' }))
-
-    fireEvent.click(screen.getByRole('button', { name: '选择ONNX文件' }))
-    fireEvent.click(screen.getByRole('button', { name: '选择CSV文件' }))
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('模型文件路径')).toHaveValue('Z:/picked/wd/model.onnx')
-      expect(screen.getByLabelText('标签范围 CSV 路径')).toHaveValue('Z:/picked/tags/allowed.csv')
-    })
-
     fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))
     fireEvent.click(screen.getByRole('button', { name: '选择SQL目录' }))
-    fireEvent.click(screen.getByRole('button', { name: '选择向量目录' }))
     fireEvent.click(screen.getByRole('button', { name: '选择缩略图目录' }))
 
     await waitFor(() => {
-      expect(pickFilePathSpy).toHaveBeenCalledTimes(2)
-      expect(pickDirectoryPathSpy).toHaveBeenCalledTimes(3)
+      expect(pickDirectoryPathSpy).toHaveBeenCalledTimes(2)
     })
   })
 

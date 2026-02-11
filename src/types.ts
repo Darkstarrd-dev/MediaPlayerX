@@ -34,7 +34,6 @@ export interface ImageItem {
   sizeKb: number
   cluster: number
   color: string
-  featureVector: number[]
   mediaLocator: MediaLocator
   hidden?: boolean
 }

@@ -46,7 +46,6 @@ function createPackageWithImages(imageCount: number): ImagePackage {
       sizeKb: 120,
       cluster: 0,
       color: '#999999',
-      featureVector: [0, 0, 0, 0],
       mediaLocator: {
         kind: 'filesystem',
         absolutePath: `Z:/bench/img-${index}.jpg`,

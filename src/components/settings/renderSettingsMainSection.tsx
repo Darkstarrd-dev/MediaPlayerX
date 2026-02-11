@@ -4,7 +4,7 @@ import {
   resolvePaletteIdFromPalettes,
   resolveStyleIdFromStyles,
 } from '../../features/theme/themeRegistry'
-import type { ReadRuntimeInfoResponseDto, ReadVectorDataStatusResponseDto } from '../../contracts/backend'
+import type { ReadRuntimeInfoResponseDto } from '../../contracts/backend'
 import type { RepositoryMode } from '../../features/backend/repository'
 import type { JSX } from 'react'
 
@@ -43,23 +43,6 @@ interface RenderSettingsMainSectionParams {
   thumbnailGapScale: number
   thumbnailQuality: number
   thumbnailWidth: number
-  lmStudioEndpoint: string
-  lmStudioModel: string
-  embeddingModelTestPending: boolean
-  embeddingModelTestMessage: string | null
-  wdSwinTaggerModelPath: string
-  wdSwinTaggerAutoTagOccurrenceThreshold: number
-  wdSwinTaggerAutoTagGeneralMinScore: number
-  wdSwinTaggerAutoTagCharacterMinScore: number
-  wdSwinTaggerAutoTagIncludeRating: boolean
-  wdSwinTaggerAutoTagRatingMinScore: number
-  visionAutoTagCsvPath: string
-  visionAutoTagSampleImageCount: number
-  visionAutoTagOccurrenceThreshold: number
-  visionAutoTagTemperature: number
-  visionAutoTagTimeoutMs: number
-  wdSwinTaggerTestPending: boolean
-  wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -80,11 +63,6 @@ interface RenderSettingsMainSectionParams {
   vectorLabelByAction: Map<string, string>
   databaseResetPending: boolean
   databaseResetError: string | null
-  vectorDataStatusLoading: boolean
-  vectorDataStatusError: string | null
-  vectorDataStatus: ReadVectorDataStatusResponseDto | null
-  vectorDataClearPending: boolean
-  vectorDataClearError: string | null
   repositoryMode: RepositoryMode
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -107,21 +85,6 @@ interface RenderSettingsMainSectionParams {
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
-  onLmStudioEndpointChange: (value: string) => void
-  onLmStudioModelChange: (value: string) => void
-  onTestEmbeddingModel: () => void
-  onPickWdSwinTaggerModelPath: () => void
-  onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
-  onWdSwinTaggerAutoTagGeneralMinScoreChange: (value: number) => void
-  onWdSwinTaggerAutoTagCharacterMinScoreChange: (value: number) => void
-  onWdSwinTaggerAutoTagIncludeRatingChange: (value: boolean) => void
-  onWdSwinTaggerAutoTagRatingMinScoreChange: (value: number) => void
-  onPickVisionAutoTagCsvPath: () => void
-  onVisionAutoTagSampleImageCountChange: (value: number) => void
-  onVisionAutoTagOccurrenceThresholdChange: (value: number) => void
-  onVisionAutoTagTemperatureChange: (value: number) => void
-  onVisionAutoTagTimeoutMsChange: (value: number) => void
-  onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -136,11 +99,8 @@ interface RenderSettingsMainSectionParams {
   onVectorUniverseWidgetSizeChange: (value: number) => void
   onClearDatabase: () => void
   onPickDatabaseDirectoryPath: () => void
-  onPickVectorStoreDirectoryPath: () => void
   onPickThumbnailCacheDirectoryPath: () => void
   onRefreshRuntimeInfo: () => void
-  onRefreshVectorDataStatus: () => void
-  onClearVectorData: () => void
 }
 
 export function renderSettingsMainSection({
@@ -168,23 +128,6 @@ export function renderSettingsMainSection({
   thumbnailGapScale,
   thumbnailQuality,
   thumbnailWidth,
-  lmStudioEndpoint,
-  lmStudioModel,
-  embeddingModelTestPending,
-  embeddingModelTestMessage,
-  wdSwinTaggerModelPath,
-  wdSwinTaggerAutoTagOccurrenceThreshold,
-  wdSwinTaggerAutoTagGeneralMinScore,
-  wdSwinTaggerAutoTagCharacterMinScore,
-  wdSwinTaggerAutoTagIncludeRating,
-  wdSwinTaggerAutoTagRatingMinScore,
-  visionAutoTagCsvPath,
-  visionAutoTagSampleImageCount,
-  visionAutoTagOccurrenceThreshold,
-  visionAutoTagTemperature,
-  visionAutoTagTimeoutMs,
-  wdSwinTaggerTestPending,
-  wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -205,11 +148,6 @@ export function renderSettingsMainSection({
   vectorLabelByAction,
   databaseResetPending,
   databaseResetError,
-  vectorDataStatusLoading,
-  vectorDataStatusError,
-  vectorDataStatus,
-  vectorDataClearPending,
-  vectorDataClearError,
   repositoryMode,
   backendBridgeInjected,
   runtimeInfoLoading,
@@ -232,21 +170,6 @@ export function renderSettingsMainSection({
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onThumbnailWidthChange,
-  onLmStudioEndpointChange,
-  onLmStudioModelChange,
-  onTestEmbeddingModel,
-  onPickWdSwinTaggerModelPath,
-  onWdSwinTaggerAutoTagOccurrenceThresholdChange,
-  onWdSwinTaggerAutoTagGeneralMinScoreChange,
-  onWdSwinTaggerAutoTagCharacterMinScoreChange,
-  onWdSwinTaggerAutoTagIncludeRatingChange,
-  onWdSwinTaggerAutoTagRatingMinScoreChange,
-  onPickVisionAutoTagCsvPath,
-  onVisionAutoTagSampleImageCountChange,
-  onVisionAutoTagOccurrenceThresholdChange,
-  onVisionAutoTagTemperatureChange,
-  onVisionAutoTagTimeoutMsChange,
-  onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -261,11 +184,8 @@ export function renderSettingsMainSection({
   onVectorUniverseWidgetSizeChange,
   onClearDatabase,
   onPickDatabaseDirectoryPath,
-  onPickVectorStoreDirectoryPath,
   onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
-  onRefreshVectorDataStatus,
-  onClearVectorData,
 }: RenderSettingsMainSectionParams): JSX.Element {
   if (activeSection === 'layout') {
     const styles = listStyles()
@@ -439,28 +359,6 @@ export function renderSettingsMainSection({
     return (
       <div className="settings-block">
         <fieldset className="settings-subsection">
-          <legend>向量检索（LM Studio）</legend>
-          <label>
-            LM Studio Endpoint
-            <input type="text" value={lmStudioEndpoint} onChange={(event) => onLmStudioEndpointChange(event.target.value)} />
-          </label>
-          <label>
-            Embedding 模型ID
-            <input type="text" value={lmStudioModel} onChange={(event) => onLmStudioModelChange(event.target.value)} />
-          </label>
-          <div className="settings-test-row">
-            <button type="button" disabled={embeddingModelTestPending} aria-label="测试向量模型连接" onClick={onTestEmbeddingModel}>
-              {embeddingModelTestPending ? '测试中...' : '测试'}
-            </button>
-            <span
-              className={`settings-test-status ${embeddingModelTestMessage && !embeddingModelTestMessage.startsWith('模型测试失败') ? 'is-ok' : 'is-pending'}`}
-            >
-              {embeddingModelTestMessage ?? '未测试'}
-            </span>
-          </div>
-        </fieldset>
-
-        <fieldset className="settings-subsection">
           <legend>AI广告审核视觉模型</legend>
           <label>
             视觉模型端口
@@ -487,137 +385,6 @@ export function renderSettingsMainSection({
             </span>
           </div>
           <p className="settings-placeholder">通过测试后，管理模式中将显示“AI广告审核”按钮。</p>
-        </fieldset>
-
-        <fieldset className="settings-subsection">
-          <legend>wd-swinv2-tagger-v3（本地 ONNX Runtime）</legend>
-          <label>
-            模型文件路径
-            <div className="settings-inline-field">
-              <input type="text" value={wdSwinTaggerModelPath} readOnly placeholder="请选择 ONNX 模型文件" />
-              <button type="button" onClick={onPickWdSwinTaggerModelPath}>选择ONNX文件</button>
-            </div>
-          </label>
-          <label title="一个标签至少在多少张图片中命中后才会写入元数据 tags。">
-            自动标签出现阈值（Occurrence）
-            <input
-              min={1}
-              max={200}
-              type="number"
-              value={wdSwinTaggerAutoTagOccurrenceThreshold}
-              onChange={(event) => onWdSwinTaggerAutoTagOccurrenceThresholdChange(Number(event.target.value))}
-            />
-          </label>
-          <label title="General 标签（category=0）的单图分数阈值，0~1，分数越高越严格。">
-            General 分数阈值
-            <input
-              min={0}
-              max={1}
-              step={0.01}
-              type="number"
-              value={wdSwinTaggerAutoTagGeneralMinScore}
-              onChange={(event) => onWdSwinTaggerAutoTagGeneralMinScoreChange(Number(event.target.value))}
-            />
-          </label>
-          <label title="Character 标签（category=4）的单图分数阈值，0~1，建议高于 General。">
-            Character 分数阈值
-            <input
-              min={0}
-              max={1}
-              step={0.01}
-              type="number"
-              value={wdSwinTaggerAutoTagCharacterMinScore}
-              onChange={(event) => onWdSwinTaggerAutoTagCharacterMinScoreChange(Number(event.target.value))}
-            />
-          </label>
-          <label
-            className="settings-toggle-row"
-            title="是否把 rating 标签（general/sensitive/questionable/explicit）写入元数据 tags。"
-          >
-            <span>包含 Rating 标签</span>
-            <input
-              type="checkbox"
-              checked={wdSwinTaggerAutoTagIncludeRating}
-              onChange={(event) => onWdSwinTaggerAutoTagIncludeRatingChange(event.target.checked)}
-            />
-          </label>
-          <label title="Rating 标签（category=9）的单图分数阈值，0~1。">
-            Rating 分数阈值
-            <input
-              min={0}
-              max={1}
-              step={0.01}
-              type="number"
-              value={wdSwinTaggerAutoTagRatingMinScore}
-              onChange={(event) => onWdSwinTaggerAutoTagRatingMinScoreChange(Number(event.target.value))}
-            />
-          </label>
-          <div className="settings-test-row">
-            <button type="button" disabled={wdSwinTaggerTestPending} aria-label="测试wd模型连接" onClick={onTestWdSwinTaggerModel}>
-              {wdSwinTaggerTestPending ? '测试中...' : '测试'}
-            </button>
-            <span
-              className={`settings-test-status ${wdSwinTaggerTestMessage && !wdSwinTaggerTestMessage.startsWith('模型测试失败') ? 'is-ok' : 'is-pending'}`}
-            >
-              {wdSwinTaggerTestMessage ?? '未测试'}
-            </span>
-          </div>
-          <p className="settings-placeholder">默认按模型 metadata 自适应输入布局（NCHW/NHWC）做 warmup 推理，用于校验模型可加载与可执行。</p>
-          <p className="settings-placeholder">自动标签阈值按 selected_tags 中的 category 自动映射，无需额外 JSON 范围配置文件。</p>
-        </fieldset>
-
-        <fieldset className="settings-subsection">
-          <legend>视觉模型标签生成（元数据管理）</legend>
-          <label>
-            标签范围 CSV 路径
-            <div className="settings-inline-field">
-              <input type="text" value={visionAutoTagCsvPath} readOnly placeholder="请选择 CSV 文件" />
-              <button type="button" onClick={onPickVisionAutoTagCsvPath}>选择CSV文件</button>
-            </div>
-          </label>
-          <label title="每个图包抽样多少张图片发送给视觉模型。">
-            抽样图片数
-            <input
-              min={1}
-              max={24}
-              type="number"
-              value={visionAutoTagSampleImageCount}
-              onChange={(event) => onVisionAutoTagSampleImageCountChange(Number(event.target.value))}
-            />
-          </label>
-          <label title="标签至少在多少张抽样图片中出现后才写入。">
-            出现阈值
-            <input
-              min={1}
-              max={24}
-              type="number"
-              value={visionAutoTagOccurrenceThreshold}
-              onChange={(event) => onVisionAutoTagOccurrenceThresholdChange(Number(event.target.value))}
-            />
-          </label>
-          <label title="视觉模型 temperature 参数，范围 0~1。">
-            温度
-            <input
-              min={0}
-              max={1}
-              step={0.01}
-              type="number"
-              value={visionAutoTagTemperature}
-              onChange={(event) => onVisionAutoTagTemperatureChange(Number(event.target.value))}
-            />
-          </label>
-          <label title="单次视觉请求超时（毫秒）。">
-            请求超时（ms）
-            <input
-              min={3000}
-              max={120000}
-              step={500}
-              type="number"
-              value={visionAutoTagTimeoutMs}
-              onChange={(event) => onVisionAutoTagTimeoutMsChange(Number(event.target.value))}
-            />
-          </label>
-          <p className="settings-placeholder">复用“AI广告审核视觉模型”的 Endpoint 与模型ID，执行时会对模型返回 JSON 严格校验并仅保留 CSV 范围内标签。</p>
         </fieldset>
       </div>
     )
@@ -655,7 +422,6 @@ export function renderSettingsMainSection({
     const rendererIsProd = import.meta.env.PROD
     const bridgeMissingInProduction = rendererIsProd && repositoryMode === 'real' && !backendBridgeInjected
     const databasePath = runtimeInfo?.database_path ?? ''
-    const vectorStorePath = runtimeInfo?.vector_store_path ?? ''
     const thumbnailCachePath = runtimeInfo?.thumbnail_cache_path ?? ''
 
     return (
@@ -671,7 +437,7 @@ export function renderSettingsMainSection({
 
         <fieldset className="settings-subsection">
           <legend>数据库目录设置</legend>
-          <p className="settings-placeholder">默认展示当前运行时实际路径，可用于快速核对 SQL 库、向量库与缩略图缓存目录。</p>
+          <p className="settings-placeholder">默认展示当前运行时实际路径，可用于快速核对 SQL 库与缩略图缓存目录。</p>
           <p className="settings-placeholder">选择目录仅用于快速定位，不会修改运行时路径。</p>
           <label>
             SQL 库路径
@@ -681,44 +447,12 @@ export function renderSettingsMainSection({
             </div>
           </label>
           <label>
-            向量库路径
-            <div className="settings-inline-field">
-              <input type="text" value={vectorStorePath} readOnly placeholder="读取运行时诊断后显示" />
-              <button type="button" onClick={onPickVectorStoreDirectoryPath}>选择向量目录</button>
-            </div>
-          </label>
-          <label>
             缩略图目录
             <div className="settings-inline-field">
               <input type="text" value={thumbnailCachePath} readOnly placeholder="读取运行时诊断后显示" />
               <button type="button" onClick={onPickThumbnailCacheDirectoryPath}>选择缩略图目录</button>
             </div>
           </label>
-        </fieldset>
-
-        <fieldset className="settings-subsection">
-          <legend>向量数据管理</legend>
-          <p className="settings-placeholder">支持查看向量覆盖率，并一键清空所有图片向量（不影响原图与元数据）。</p>
-          <div className="settings-runtime-grid">
-            <span>图片总数</span>
-            <code>{vectorDataStatus ? vectorDataStatus.total_images : '-'}</code>
-            <span>已嵌入</span>
-            <code>{vectorDataStatus ? vectorDataStatus.embedded_images : '-'}</code>
-            <span>待生成</span>
-            <code>{vectorDataStatus ? vectorDataStatus.pending_images : '-'}</code>
-            <span>向量维度</span>
-            <code>{vectorDataStatus ? vectorDataStatus.vector_dimension : '-'}</code>
-          </div>
-          <div className="settings-runtime-actions">
-            <button type="button" disabled={vectorDataStatusLoading} onClick={onRefreshVectorDataStatus}>
-              {vectorDataStatusLoading ? '统计读取中...' : '刷新向量统计'}
-            </button>
-            <button type="button" className="settings-danger-btn" disabled={vectorDataClearPending} onClick={onClearVectorData}>
-              {vectorDataClearPending ? '清空中...' : '清空向量数据'}
-            </button>
-          </div>
-          {vectorDataStatusError ? <p className="settings-danger-text">{vectorDataStatusError}</p> : null}
-          {vectorDataClearError ? <p className="settings-danger-text">{vectorDataClearError}</p> : null}
         </fieldset>
 
         <fieldset className="settings-subsection">

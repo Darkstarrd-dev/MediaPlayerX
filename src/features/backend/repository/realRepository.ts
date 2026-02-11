@@ -1,6 +1,5 @@
 import {
   clearDatabaseResponseSchema,
-  clearVectorDataResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
   mediaAccessAuditResponseSchema,
@@ -10,7 +9,6 @@ import {
   readClipboardImportPathsResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
-  readVectorDataStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataResponseSchema,
@@ -21,9 +19,6 @@ import {
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
-  generatePackageAutoTagsResponseSchema,
-  generatePackageAutoTagsVisionResponseSchema,
-  generatePackageEmbeddingsResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   setImageHiddenResponseSchema,
@@ -33,15 +28,12 @@ import {
   readManageAdReviewTaskResponseSchema,
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelResponseSchema,
-  testWdSwinTaggerModelResponseSchema,
-  testEmbeddingModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
-  type ClearVectorDataResponseDto,
   type PickImportPathsRequestDto,
   type PickImportPathsResponseDto,
   type PickFilePathRequestDto,
@@ -51,7 +43,6 @@ import {
   type ReadClipboardImportPathsResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
-  type ReadVectorDataStatusResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
   type ReadImportTasksResponseDto,
@@ -72,12 +63,6 @@ import {
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
   type WritePackageMetadataResponseDto,
-  type GeneratePackageAutoTagsRequestDto,
-  type GeneratePackageAutoTagsResponseDto,
-  type GeneratePackageAutoTagsVisionRequestDto,
-  type GeneratePackageAutoTagsVisionResponseDto,
-  type GeneratePackageEmbeddingsRequestDto,
-  type GeneratePackageEmbeddingsResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
   type SetImageHiddenRequestDto,
@@ -94,10 +79,6 @@ import {
   type PauseManageAdReviewTaskResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
-  type TestWdSwinTaggerModelRequestDto,
-  type TestWdSwinTaggerModelResponseDto,
-  type TestEmbeddingModelRequestDto,
-  type TestEmbeddingModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type WritePackageGradeRequestDto,
@@ -411,32 +392,6 @@ export class RealMediaRepository implements MediaRepository {
     return testAdReviewVisionModelResponseSchema.parse(response)
   }
 
-  async testWdSwinTaggerModel(
-    request: TestWdSwinTaggerModelRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<TestWdSwinTaggerModelResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.testWdSwinTaggerModel) {
-      throw new Error('真实后端通道不可用：testWdSwinTaggerModel 未注入')
-    }
-
-    const response = await withAbort(api.testWdSwinTaggerModel(request), options)
-    return testWdSwinTaggerModelResponseSchema.parse(response)
-  }
-
-  async testEmbeddingModel(
-    request: TestEmbeddingModelRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<TestEmbeddingModelResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.testEmbeddingModel) {
-      throw new Error('真实后端通道不可用：testEmbeddingModel 未注入')
-    }
-
-    const response = await withAbort(api.testEmbeddingModel(request), options)
-    return testEmbeddingModelResponseSchema.parse(response)
-  }
-
   async confirmManageAdReviewDelete(
     request: ConfirmManageAdReviewDeleteRequestDto,
     options?: RepositoryRequestOptions,
@@ -461,45 +416,6 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.writePackageMetadata(request), options)
     return writePackageMetadataResponseSchema.parse(response)
-  }
-
-  async generatePackageAutoTags(
-    request: GeneratePackageAutoTagsRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageAutoTagsResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.generatePackageAutoTags) {
-      throw new Error('真实后端通道不可用：generatePackageAutoTags 未注入')
-    }
-
-    const response = await withAbort(api.generatePackageAutoTags(request), options)
-    return generatePackageAutoTagsResponseSchema.parse(response)
-  }
-
-  async generatePackageAutoTagsVision(
-    request: GeneratePackageAutoTagsVisionRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageAutoTagsVisionResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.generatePackageAutoTagsVision) {
-      throw new Error('真实后端通道不可用：generatePackageAutoTagsVision 未注入')
-    }
-
-    const response = await withAbort(api.generatePackageAutoTagsVision(request), options)
-    return generatePackageAutoTagsVisionResponseSchema.parse(response)
-  }
-
-  async generatePackageEmbeddings(
-    request: GeneratePackageEmbeddingsRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageEmbeddingsResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.generatePackageEmbeddings) {
-      throw new Error('真实后端通道不可用：generatePackageEmbeddings 未注入')
-    }
-
-    const response = await withAbort(api.generatePackageEmbeddings(request), options)
-    return generatePackageEmbeddingsResponseSchema.parse(response)
   }
 
   async writeVideoMetadata(
@@ -675,16 +591,6 @@ export class RealMediaRepository implements MediaRepository {
     return readRuntimeCapabilitiesResponseSchema.parse(response)
   }
 
-  async readVectorDataStatus(options?: RepositoryRequestOptions): Promise<ReadVectorDataStatusResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.readVectorDataStatus) {
-      throw new Error('真实后端通道不可用：readVectorDataStatus 未注入')
-    }
-
-    const response = await withAbort(api.readVectorDataStatus(), options)
-    return readVectorDataStatusResponseSchema.parse(response)
-  }
-
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {
     const api = window.mediaPlayerBackend
     if (!api || !api.readArchiveLoadStatus) {
@@ -729,15 +635,5 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.clearDatabase(), options)
     return clearDatabaseResponseSchema.parse(response)
-  }
-
-  async clearVectorData(options?: RepositoryRequestOptions): Promise<ClearVectorDataResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.clearVectorData) {
-      throw new Error('真实后端通道不可用：clearVectorData 未注入')
-    }
-
-    const response = await withAbort(api.clearVectorData(), options)
-    return clearVectorDataResponseSchema.parse(response)
   }
 }

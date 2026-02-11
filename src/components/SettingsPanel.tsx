@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ReadRuntimeInfoResponseDto, ReadVectorDataStatusResponseDto } from '../contracts/backend'
+import type { ReadRuntimeInfoResponseDto } from '../contracts/backend'
 import type { RepositoryMode } from '../features/backend/repository'
 import {
   appendShortcutBinding,
@@ -42,23 +42,6 @@ export interface SettingsPanelProps {
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
-  lmStudioEndpoint: string
-  lmStudioModel: string
-  embeddingModelTestPending: boolean
-  embeddingModelTestMessage: string | null
-  wdSwinTaggerModelPath: string
-  wdSwinTaggerAutoTagOccurrenceThreshold: number
-  wdSwinTaggerAutoTagGeneralMinScore: number
-  wdSwinTaggerAutoTagCharacterMinScore: number
-  wdSwinTaggerAutoTagIncludeRating: boolean
-  wdSwinTaggerAutoTagRatingMinScore: number
-  visionAutoTagCsvPath: string
-  visionAutoTagSampleImageCount: number
-  visionAutoTagOccurrenceThreshold: number
-  visionAutoTagTemperature: number
-  visionAutoTagTimeoutMs: number
-  wdSwinTaggerTestPending: boolean
-  wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -77,11 +60,6 @@ export interface SettingsPanelProps {
   vectorControlConflicts: VectorControlConflict[]
   databaseResetPending: boolean
   databaseResetError: string | null
-  vectorDataStatusLoading: boolean
-  vectorDataStatusError: string | null
-  vectorDataStatus: ReadVectorDataStatusResponseDto | null
-  vectorDataClearPending: boolean
-  vectorDataClearError: string | null
   repositoryMode: RepositoryMode
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -104,21 +82,6 @@ export interface SettingsPanelProps {
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
-  onLmStudioEndpointChange: (value: string) => void
-  onLmStudioModelChange: (value: string) => void
-  onTestEmbeddingModel: () => void
-  onPickWdSwinTaggerModelPath: () => void
-  onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
-  onWdSwinTaggerAutoTagGeneralMinScoreChange: (value: number) => void
-  onWdSwinTaggerAutoTagCharacterMinScoreChange: (value: number) => void
-  onWdSwinTaggerAutoTagIncludeRatingChange: (value: boolean) => void
-  onWdSwinTaggerAutoTagRatingMinScoreChange: (value: number) => void
-  onPickVisionAutoTagCsvPath: () => void
-  onVisionAutoTagSampleImageCountChange: (value: number) => void
-  onVisionAutoTagOccurrenceThresholdChange: (value: number) => void
-  onVisionAutoTagTemperatureChange: (value: number) => void
-  onVisionAutoTagTimeoutMsChange: (value: number) => void
-  onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -135,11 +98,8 @@ export interface SettingsPanelProps {
   onResetVectorControls: () => void
   onClearDatabase: () => void
   onPickDatabaseDirectoryPath: () => void
-  onPickVectorStoreDirectoryPath: () => void
   onPickThumbnailCacheDirectoryPath: () => void
   onRefreshRuntimeInfo: () => void
-  onRefreshVectorDataStatus: () => void
-  onClearVectorData: () => void
 }
 
 type BindingTarget =
@@ -192,23 +152,6 @@ function SettingsPanel({
   thumbnailGap,
   thumbnailQuality,
   thumbnailWidth,
-  lmStudioEndpoint,
-  lmStudioModel,
-  embeddingModelTestPending,
-  embeddingModelTestMessage,
-  wdSwinTaggerModelPath,
-  wdSwinTaggerAutoTagOccurrenceThreshold,
-  wdSwinTaggerAutoTagGeneralMinScore,
-  wdSwinTaggerAutoTagCharacterMinScore,
-  wdSwinTaggerAutoTagIncludeRating,
-  wdSwinTaggerAutoTagRatingMinScore,
-  visionAutoTagCsvPath,
-  visionAutoTagSampleImageCount,
-  visionAutoTagOccurrenceThreshold,
-  visionAutoTagTemperature,
-  visionAutoTagTimeoutMs,
-  wdSwinTaggerTestPending,
-  wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -227,11 +170,6 @@ function SettingsPanel({
   vectorControlConflicts,
   databaseResetPending,
   databaseResetError,
-  vectorDataStatusLoading,
-  vectorDataStatusError,
-  vectorDataStatus,
-  vectorDataClearPending,
-  vectorDataClearError,
   repositoryMode,
   backendBridgeInjected,
   runtimeInfoLoading,
@@ -254,21 +192,6 @@ function SettingsPanel({
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onThumbnailWidthChange,
-  onLmStudioEndpointChange,
-  onLmStudioModelChange,
-  onTestEmbeddingModel,
-  onPickWdSwinTaggerModelPath,
-  onWdSwinTaggerAutoTagOccurrenceThresholdChange,
-  onWdSwinTaggerAutoTagGeneralMinScoreChange,
-  onWdSwinTaggerAutoTagCharacterMinScoreChange,
-  onWdSwinTaggerAutoTagIncludeRatingChange,
-  onWdSwinTaggerAutoTagRatingMinScoreChange,
-  onPickVisionAutoTagCsvPath,
-  onVisionAutoTagSampleImageCountChange,
-  onVisionAutoTagOccurrenceThresholdChange,
-  onVisionAutoTagTemperatureChange,
-  onVisionAutoTagTimeoutMsChange,
-  onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -285,11 +208,8 @@ function SettingsPanel({
   onResetVectorControls,
   onClearDatabase,
   onPickDatabaseDirectoryPath,
-  onPickVectorStoreDirectoryPath,
   onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
-  onRefreshVectorDataStatus,
-  onClearVectorData,
 }: SettingsPanelProps) {
   const [activeSectionRaw, setActiveSection] = useState<SettingsSection>('layout')
   const activeSection = resolveSettingsSection(activeSectionRaw)
@@ -476,23 +396,6 @@ function SettingsPanel({
     thumbnailGapScale,
     thumbnailQuality,
     thumbnailWidth,
-    lmStudioEndpoint,
-    lmStudioModel,
-    embeddingModelTestPending,
-    embeddingModelTestMessage,
-    wdSwinTaggerModelPath,
-    wdSwinTaggerAutoTagOccurrenceThreshold,
-    wdSwinTaggerAutoTagGeneralMinScore,
-    wdSwinTaggerAutoTagCharacterMinScore,
-    wdSwinTaggerAutoTagIncludeRating,
-    wdSwinTaggerAutoTagRatingMinScore,
-    visionAutoTagCsvPath,
-    visionAutoTagSampleImageCount,
-    visionAutoTagOccurrenceThreshold,
-    visionAutoTagTemperature,
-    visionAutoTagTimeoutMs,
-    wdSwinTaggerTestPending,
-    wdSwinTaggerTestMessage,
     adReviewVisionEndpoint,
     adReviewVisionModel,
     adReviewVisionVerified,
@@ -513,11 +416,6 @@ function SettingsPanel({
     vectorLabelByAction,
     databaseResetPending,
     databaseResetError,
-    vectorDataStatusLoading,
-    vectorDataStatusError,
-    vectorDataStatus,
-    vectorDataClearPending,
-    vectorDataClearError,
     repositoryMode,
     backendBridgeInjected,
     runtimeInfoLoading,
@@ -540,21 +438,6 @@ function SettingsPanel({
     onThumbnailGapChange,
     onThumbnailQualityChange,
     onThumbnailWidthChange,
-    onLmStudioEndpointChange,
-    onLmStudioModelChange,
-    onTestEmbeddingModel,
-    onPickWdSwinTaggerModelPath,
-    onWdSwinTaggerAutoTagOccurrenceThresholdChange,
-    onWdSwinTaggerAutoTagGeneralMinScoreChange,
-    onWdSwinTaggerAutoTagCharacterMinScoreChange,
-    onWdSwinTaggerAutoTagIncludeRatingChange,
-    onWdSwinTaggerAutoTagRatingMinScoreChange,
-    onPickVisionAutoTagCsvPath,
-    onVisionAutoTagSampleImageCountChange,
-    onVisionAutoTagOccurrenceThresholdChange,
-    onVisionAutoTagTemperatureChange,
-    onVisionAutoTagTimeoutMsChange,
-    onTestWdSwinTaggerModel,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,
@@ -569,11 +452,8 @@ function SettingsPanel({
     onVectorUniverseWidgetSizeChange,
     onClearDatabase,
     onPickDatabaseDirectoryPath,
-    onPickVectorStoreDirectoryPath,
     onPickThumbnailCacheDirectoryPath,
     onRefreshRuntimeInfo,
-    onRefreshVectorDataStatus,
-    onClearVectorData,
   })
 
   const currentBinding = bindingTarget ? getBinding(bindingTarget) : ''

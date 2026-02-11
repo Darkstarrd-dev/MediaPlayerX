@@ -71,8 +71,6 @@ export function useAppWorkspaceBindings({
   } = mediaState
 
   const {
-    searchPanelMode,
-    setSearchPanelMode,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
     featureSearchActive,
@@ -151,7 +149,6 @@ export function useAppWorkspaceBindings({
     focusedVideoSrc,
     focusedVideoCoverImageSrc,
     setFullscreenActiveWithAutoStop,
-    runVectorSearch,
     goToFromSearchMode,
     activePackageForDisplay,
     refsInPageEffective,
@@ -175,15 +172,12 @@ export function useAppWorkspaceBindings({
     vectorPanelHeight: appSettings.vectorPanelHeight,
     vectorPanelRef,
     vectorPanelContentRef,
-    searchPanelMode,
-    setSearchPanelMode,
     vectorSearchResults: sessionState.vectorSearchResults,
     scopedImageSourcesEffective,
     videosForSidebarCount: videosForSidebar.length,
     focusedRef,
     focusedImage,
     focusedImagePackage,
-    runVectorSearch,
     featureNameQuery,
     setFeatureNameQuery,
     featureWorkTitleQuery,

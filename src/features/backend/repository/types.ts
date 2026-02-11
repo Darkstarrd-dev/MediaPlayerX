@@ -1,6 +1,5 @@
 import type {
   ClearDatabaseResponseDto,
-  ClearVectorDataResponseDto,
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   PickImportPathsRequestDto,
@@ -12,7 +11,6 @@ import type {
   ReadClipboardImportPathsResponseDto,
   ReadArchiveLoadStatusResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
-  ReadVectorDataStatusResponseDto,
   DeleteImageItemsRequestDto,
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
@@ -25,10 +23,6 @@ import type {
   PauseManageAdReviewTaskResponseDto,
   TestAdReviewVisionModelRequestDto,
   TestAdReviewVisionModelResponseDto,
-  TestWdSwinTaggerModelRequestDto,
-  TestWdSwinTaggerModelResponseDto,
-  TestEmbeddingModelRequestDto,
-  TestEmbeddingModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
   ReadImportTasksResponseDto,
@@ -51,12 +45,6 @@ import type {
   WritePlaylistResponseDto,
   WritePackageMetadataRequestDto,
   WritePackageMetadataResponseDto,
-  GeneratePackageAutoTagsRequestDto,
-  GeneratePackageAutoTagsResponseDto,
-  GeneratePackageAutoTagsVisionRequestDto,
-  GeneratePackageAutoTagsVisionResponseDto,
-  GeneratePackageEmbeddingsRequestDto,
-  GeneratePackageEmbeddingsResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
   SetImageHiddenRequestDto,
@@ -125,14 +113,6 @@ export interface MediaRepository {
     request: TestAdReviewVisionModelRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<TestAdReviewVisionModelResponseDto>
-  testWdSwinTaggerModel?(
-    request: TestWdSwinTaggerModelRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<TestWdSwinTaggerModelResponseDto>
-  testEmbeddingModel?(
-    request: TestEmbeddingModelRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<TestEmbeddingModelResponseDto>
   confirmManageAdReviewDelete?(
     request: ConfirmManageAdReviewDeleteRequestDto,
     options?: RepositoryRequestOptions,
@@ -141,18 +121,6 @@ export interface MediaRepository {
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageMetadataResponseDto>
-  generatePackageAutoTags?(
-    request: GeneratePackageAutoTagsRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageAutoTagsResponseDto>
-  generatePackageAutoTagsVision?(
-    request: GeneratePackageAutoTagsVisionRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageAutoTagsVisionResponseDto>
-  generatePackageEmbeddings?(
-    request: GeneratePackageEmbeddingsRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageEmbeddingsResponseDto>
   writeVideoMetadata?(
     request: WriteVideoMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -198,10 +166,8 @@ export interface MediaRepository {
   ): Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
-  readVectorDataStatus?(options?: RepositoryRequestOptions): Promise<ReadVectorDataStatusResponseDto>
   readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
-  clearVectorData?(options?: RepositoryRequestOptions): Promise<ClearVectorDataResponseDto>
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void
 }
 
@@ -218,19 +184,10 @@ export interface SynchronousMediaRepository extends MediaRepository {
   readManageAdReviewTaskSync?(request: ReadManageAdReviewTaskRequestDto): ReadManageAdReviewTaskResponseDto
   pauseManageAdReviewTaskSync?(request: PauseManageAdReviewTaskRequestDto): PauseManageAdReviewTaskResponseDto
   testAdReviewVisionModelSync?(request: TestAdReviewVisionModelRequestDto): TestAdReviewVisionModelResponseDto
-  testWdSwinTaggerModelSync?(request: TestWdSwinTaggerModelRequestDto): TestWdSwinTaggerModelResponseDto
-  testEmbeddingModelSync?(request: TestEmbeddingModelRequestDto): TestEmbeddingModelResponseDto
   confirmManageAdReviewDeleteSync?(
     request: ConfirmManageAdReviewDeleteRequestDto,
   ): ConfirmManageAdReviewDeleteResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
-  generatePackageAutoTagsSync?(request: GeneratePackageAutoTagsRequestDto): GeneratePackageAutoTagsResponseDto
-  generatePackageAutoTagsVisionSync?(
-    request: GeneratePackageAutoTagsVisionRequestDto,
-  ): GeneratePackageAutoTagsVisionResponseDto
-  generatePackageEmbeddingsSync?(
-    request: GeneratePackageEmbeddingsRequestDto,
-  ): GeneratePackageEmbeddingsResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
   readPlaylistSync(): ReadPlaylistResponseDto
@@ -244,9 +201,7 @@ export interface SynchronousMediaRepository extends MediaRepository {
   retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto
   readMediaAccessAuditSync(): MediaAccessAuditResponseDto
   readRuntimeCapabilitiesSync(): ReadRuntimeCapabilitiesResponseDto
-  readVectorDataStatusSync?(): ReadVectorDataStatusResponseDto
   clearDatabaseSync?(): ClearDatabaseResponseDto
-  clearVectorDataSync?(): ClearVectorDataResponseDto
 }
 
 export type RepositoryMode = 'mock' | 'real'

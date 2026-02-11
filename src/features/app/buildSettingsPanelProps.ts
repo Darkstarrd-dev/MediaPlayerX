@@ -19,23 +19,6 @@ interface BuildSettingsPanelPropsParams {
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
-  lmStudioEndpoint: string
-  lmStudioModel: string
-  embeddingModelTestPending: boolean
-  embeddingModelTestMessage: string | null
-  wdSwinTaggerModelPath: string
-  wdSwinTaggerAutoTagOccurrenceThreshold: number
-  wdSwinTaggerAutoTagGeneralMinScore: number
-  wdSwinTaggerAutoTagCharacterMinScore: number
-  wdSwinTaggerAutoTagIncludeRating: boolean
-  wdSwinTaggerAutoTagRatingMinScore: number
-  visionAutoTagCsvPath: string
-  visionAutoTagSampleImageCount: number
-  visionAutoTagOccurrenceThreshold: number
-  visionAutoTagTemperature: number
-  visionAutoTagTimeoutMs: number
-  wdSwinTaggerTestPending: boolean
-  wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -54,11 +37,6 @@ interface BuildSettingsPanelPropsParams {
   vectorControlConflicts: SettingsPanelProps['vectorControlConflicts']
   databaseResetPending: boolean
   databaseResetError: string | null
-  vectorDataStatusLoading: boolean
-  vectorDataStatusError: string | null
-  vectorDataStatus: SettingsPanelProps['vectorDataStatus']
-  vectorDataClearPending: boolean
-  vectorDataClearError: string | null
   repositoryMode: SettingsPanelProps['repositoryMode']
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -73,15 +51,8 @@ interface BuildSettingsPanelPropsParams {
   resetShortcuts: () => void
   resetVectorControls: () => void
   clearDatabaseForDev: () => void
-  refreshVectorDataStatus: () => void
-  clearVectorDataForDev: () => void
-  testEmbeddingModel: () => void
   testAdReviewVisionModel: () => void
-  testWdSwinTaggerModel: () => void
-  pickWdSwinTaggerModelPath: () => void
-  pickVisionAutoTagCsvPath: () => void
   pickDatabaseDirectoryPath: () => void
-  pickVectorStoreDirectoryPath: () => void
   pickThumbnailCacheDirectoryPath: () => void
 }
 
@@ -104,23 +75,6 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
     thumbnailWidth: params.thumbnailWidth,
-    lmStudioEndpoint: params.lmStudioEndpoint,
-    lmStudioModel: params.lmStudioModel,
-    embeddingModelTestPending: params.embeddingModelTestPending,
-    embeddingModelTestMessage: params.embeddingModelTestMessage,
-    wdSwinTaggerModelPath: params.wdSwinTaggerModelPath,
-    wdSwinTaggerAutoTagOccurrenceThreshold: params.wdSwinTaggerAutoTagOccurrenceThreshold,
-    wdSwinTaggerAutoTagGeneralMinScore: params.wdSwinTaggerAutoTagGeneralMinScore,
-    wdSwinTaggerAutoTagCharacterMinScore: params.wdSwinTaggerAutoTagCharacterMinScore,
-    wdSwinTaggerAutoTagIncludeRating: params.wdSwinTaggerAutoTagIncludeRating,
-    wdSwinTaggerAutoTagRatingMinScore: params.wdSwinTaggerAutoTagRatingMinScore,
-    visionAutoTagCsvPath: params.visionAutoTagCsvPath,
-    visionAutoTagSampleImageCount: params.visionAutoTagSampleImageCount,
-    visionAutoTagOccurrenceThreshold: params.visionAutoTagOccurrenceThreshold,
-    visionAutoTagTemperature: params.visionAutoTagTemperature,
-    visionAutoTagTimeoutMs: params.visionAutoTagTimeoutMs,
-    wdSwinTaggerTestPending: params.wdSwinTaggerTestPending,
-    wdSwinTaggerTestMessage: params.wdSwinTaggerTestMessage,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
     adReviewVisionModel: params.adReviewVisionModel,
     adReviewVisionVerified: params.adReviewVisionVerified,
@@ -139,11 +93,6 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     vectorControlConflicts: params.vectorControlConflicts,
     databaseResetPending: params.databaseResetPending,
     databaseResetError: params.databaseResetError,
-    vectorDataStatusLoading: params.vectorDataStatusLoading,
-    vectorDataStatusError: params.vectorDataStatusError,
-    vectorDataStatus: params.vectorDataStatus,
-    vectorDataClearPending: params.vectorDataClearPending,
-    vectorDataClearError: params.vectorDataClearError,
     repositoryMode: params.repositoryMode,
     backendBridgeInjected: params.backendBridgeInjected,
     runtimeInfoLoading: params.runtimeInfoLoading,
@@ -171,30 +120,6 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailGapChange: (value) => params.updateSettings({ thumbnailGap: value }),
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
-    onLmStudioEndpointChange: (value) => params.updateSettings({ lmStudioEndpoint: value }),
-    onLmStudioModelChange: (value) => params.updateSettings({ lmStudioModel: value }),
-    onTestEmbeddingModel: params.testEmbeddingModel,
-    onPickWdSwinTaggerModelPath: params.pickWdSwinTaggerModelPath,
-    onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value) =>
-      params.updateSettings({ wdSwinTaggerAutoTagOccurrenceThreshold: Math.max(1, Math.min(200, Math.floor(value))) }),
-    onWdSwinTaggerAutoTagGeneralMinScoreChange: (value) =>
-      params.updateSettings({ wdSwinTaggerAutoTagGeneralMinScore: Math.max(0, Math.min(1, value)) }),
-    onWdSwinTaggerAutoTagCharacterMinScoreChange: (value) =>
-      params.updateSettings({ wdSwinTaggerAutoTagCharacterMinScore: Math.max(0, Math.min(1, value)) }),
-    onWdSwinTaggerAutoTagIncludeRatingChange: (value) =>
-      params.updateSettings({ wdSwinTaggerAutoTagIncludeRating: value }),
-    onWdSwinTaggerAutoTagRatingMinScoreChange: (value) =>
-      params.updateSettings({ wdSwinTaggerAutoTagRatingMinScore: Math.max(0, Math.min(1, value)) }),
-    onPickVisionAutoTagCsvPath: params.pickVisionAutoTagCsvPath,
-    onVisionAutoTagSampleImageCountChange: (value) =>
-      params.updateSettings({ visionAutoTagSampleImageCount: Math.max(1, Math.min(24, Math.floor(value))) }),
-    onVisionAutoTagOccurrenceThresholdChange: (value) =>
-      params.updateSettings({ visionAutoTagOccurrenceThreshold: Math.max(1, Math.min(24, Math.floor(value))) }),
-    onVisionAutoTagTemperatureChange: (value) =>
-      params.updateSettings({ visionAutoTagTemperature: Math.max(0, Math.min(1, value)) }),
-    onVisionAutoTagTimeoutMsChange: (value) =>
-      params.updateSettings({ visionAutoTagTimeoutMs: Math.max(3_000, Math.min(120_000, Math.floor(value))) }),
-    onTestWdSwinTaggerModel: params.testWdSwinTaggerModel,
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({
         adReviewVisionEndpoint: value,
@@ -219,9 +144,6 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onResetVectorControls: params.resetVectorControls,
     onClearDatabase: params.clearDatabaseForDev,
     onPickDatabaseDirectoryPath: params.pickDatabaseDirectoryPath,
-    onPickVectorStoreDirectoryPath: params.pickVectorStoreDirectoryPath,
     onPickThumbnailCacheDirectoryPath: params.pickThumbnailCacheDirectoryPath,
-    onRefreshVectorDataStatus: params.refreshVectorDataStatus,
-    onClearVectorData: params.clearVectorDataForDev,
   }
 }

@@ -3,7 +3,6 @@ import path from 'node:path'
 
 import {
   clearDatabaseResponseSchema,
-  clearVectorDataResponseSchema,
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
@@ -17,7 +16,6 @@ import {
   readClipboardImportPathsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
-  readVectorDataStatusResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -43,10 +41,6 @@ import {
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelRequestSchema,
   testAdReviewVisionModelResponseSchema,
-  testWdSwinTaggerModelRequestSchema,
-  testWdSwinTaggerModelResponseSchema,
-  testEmbeddingModelRequestSchema,
-  testEmbeddingModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
@@ -57,12 +51,6 @@ import {
   writePlaylistResponseSchema,
   writePackageMetadataRequestSchema,
   writePackageMetadataResponseSchema,
-  generatePackageAutoTagsRequestSchema,
-  generatePackageAutoTagsResponseSchema,
-  generatePackageAutoTagsVisionRequestSchema,
-  generatePackageAutoTagsVisionResponseSchema,
-  generatePackageEmbeddingsRequestSchema,
-  generatePackageEmbeddingsResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
@@ -253,18 +241,6 @@ export function registerBackendIpcHandlers(): void {
     return testAdReviewVisionModelResponseSchema.parse(response)
   })
 
-  ipcMain.handle(BACKEND_CHANNELS.testWdSwinTaggerModel, async (_event, payload: unknown) => {
-    const request = testWdSwinTaggerModelRequestSchema.parse(payload)
-    const response = await ensureService().testWdSwinTaggerModel(request)
-    return testWdSwinTaggerModelResponseSchema.parse(response)
-  })
-
-  ipcMain.handle(BACKEND_CHANNELS.testEmbeddingModel, async (_event, payload: unknown) => {
-    const request = testEmbeddingModelRequestSchema.parse(payload)
-    const response = await ensureService().testEmbeddingModel(request)
-    return testEmbeddingModelResponseSchema.parse(response)
-  })
-
   ipcMain.handle(BACKEND_CHANNELS.confirmManageAdReviewDelete, async (_event, payload: unknown) => {
     const request = confirmManageAdReviewDeleteRequestSchema.parse(payload)
     const response = await ensureService().confirmManageAdReviewDelete(request)
@@ -275,24 +251,6 @@ export function registerBackendIpcHandlers(): void {
     const request = writePackageMetadataRequestSchema.parse(payload)
     const response = await ensureService().writePackageMetadata(request)
     return writePackageMetadataResponseSchema.parse(response)
-  })
-
-  ipcMain.handle(BACKEND_CHANNELS.generatePackageAutoTags, async (_event, payload: unknown) => {
-    const request = generatePackageAutoTagsRequestSchema.parse(payload)
-    const response = await ensureService().generatePackageAutoTags(request)
-    return generatePackageAutoTagsResponseSchema.parse(response)
-  })
-
-  ipcMain.handle(BACKEND_CHANNELS.generatePackageAutoTagsVision, async (_event, payload: unknown) => {
-    const request = generatePackageAutoTagsVisionRequestSchema.parse(payload)
-    const response = await ensureService().generatePackageAutoTagsVision(request)
-    return generatePackageAutoTagsVisionResponseSchema.parse(response)
-  })
-
-  ipcMain.handle(BACKEND_CHANNELS.generatePackageEmbeddings, async (_event, payload: unknown) => {
-    const request = generatePackageEmbeddingsRequestSchema.parse(payload)
-    const response = await ensureService().generatePackageEmbeddings(request)
-    return generatePackageEmbeddingsResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writeVideoMetadata, async (_event, payload: unknown) => {
@@ -423,7 +381,6 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeInfo, async () => {
     const userDataPath = app.getPath('userData')
     const databasePath = path.resolve(libraryRoot, DATABASE_RELATIVE_PATH)
-    const vectorStorePath = `${databasePath}#image_item.feature_vector_json`
     const thumbnailCachePath = path.resolve(libraryRoot, THUMBNAIL_CACHE_DIR_NAME)
 
     return readRuntimeInfoResponseSchema.parse({
@@ -434,14 +391,8 @@ export function registerBackendIpcHandlers(): void {
       user_data_path: userDataPath,
       library_root: libraryRoot,
       database_path: databasePath,
-      vector_store_path: vectorStorePath,
       thumbnail_cache_path: thumbnailCachePath,
     })
-  })
-
-  ipcMain.handle(BACKEND_CHANNELS.readVectorDataStatus, async () => {
-    const response = await ensureService().readVectorDataStatus()
-    return readVectorDataStatusResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readArchiveLoadStatus, async () => {
@@ -464,10 +415,5 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.clearDatabase, async () => {
     const response = await ensureService().clearDatabase()
     return clearDatabaseResponseSchema.parse(response)
-  })
-
-  ipcMain.handle(BACKEND_CHANNELS.clearVectorData, async () => {
-    const response = await ensureService().clearVectorData()
-    return clearVectorDataResponseSchema.parse(response)
   })
 }

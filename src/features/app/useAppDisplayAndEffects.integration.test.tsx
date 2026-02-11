@@ -113,8 +113,6 @@ describe('useAppDisplayAndEffects integration', () => {
       vectorUniverseHelperScale: 1,
       vectorUniverseDispersion: 1,
       vectorUniverseWidgetSize: 1,
-      lmStudioEndpoint: 'http://localhost:1234',
-      lmStudioModel: 'model-a',
       shortcuts: {},
       vectorControls: {},
       updateSettings,

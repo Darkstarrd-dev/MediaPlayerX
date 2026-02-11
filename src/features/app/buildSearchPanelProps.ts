@@ -1,10 +1,6 @@
 import type { Dispatch, MouseEvent as ReactMouseEvent, RefObject, SetStateAction } from 'react'
 
-import type { AppSettings } from '../../contracts/settings'
-import type { ImagePackage } from '../../types'
-
 interface BuildSearchPanelPropsParams {
-  mode: AppSettings['mode']
   vectorMode: boolean
   manageMode: boolean
   searchPanelCollapsed: boolean
@@ -12,16 +8,7 @@ interface BuildSearchPanelPropsParams {
   vectorPanelHeight: number
   vectorPanelRef: RefObject<HTMLDivElement | null>
   vectorPanelContentRef: RefObject<HTMLDivElement | null>
-  searchPanelMode: 'vector' | 'feature'
-  setSearchPanelMode: (mode: 'vector' | 'feature') => void
-  vectorSearchResultsCount: number
   featureResultCount: number
-  focusedRef: { packageId: string; imageIndex: number } | null
-  focusedImagePackage: ImagePackage | null
-  focusedImageOrdinal: number | null
-  runVectorSearch: () => void
-  vectorThreshold: number
-  updateSettings: (patch: Partial<AppSettings>) => void
   featureNameQuery: string
   setFeatureNameQuery: (value: string) => void
   featureWorkTitleQuery: string
@@ -50,17 +37,7 @@ export function buildSearchPanelProps(params: BuildSearchPanelPropsParams) {
     panelHeight: params.vectorPanelHeight,
     panelRef: params.vectorPanelRef,
     panelContentRef: params.vectorPanelContentRef,
-    showVectorSearch: params.mode === 'image',
-    searchPanelMode: params.searchPanelMode,
-    onSearchPanelModeChange: params.setSearchPanelMode,
-    vectorResultCount: params.vectorSearchResultsCount,
     featureResultCount: params.featureResultCount,
-    focusedRef: params.focusedRef,
-    focusedImagePackage: params.focusedImagePackage,
-    focusedImageOrdinal: params.focusedImageOrdinal,
-    onRunVectorSearch: params.runVectorSearch,
-    vectorThreshold: params.vectorThreshold,
-    onVectorThresholdChange: (value: number) => params.updateSettings({ vectorThreshold: value }),
     featureNameQuery: params.featureNameQuery,
     onFeatureNameQueryChange: params.setFeatureNameQuery,
     featureWorkTitleQuery: params.featureWorkTitleQuery,

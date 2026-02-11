@@ -29,7 +29,6 @@ function createLibrarySnapshotDto(): LibrarySnapshotDto {
             size_kb: 100,
             cluster: 0,
             color: '#dd6b66',
-            feature_vector: [0, 0, 0, 0, 0, 0, 0, 0],
             media_locator: {
               kind: 'filesystem',
               absolute_path: 'Z:/bench/archive_001.zip',

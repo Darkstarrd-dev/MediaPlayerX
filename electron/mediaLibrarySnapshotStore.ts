@@ -2,8 +2,6 @@ import path from 'node:path'
 
 import {
   librarySnapshotDtoSchema,
-  readVectorDataStatusResponseSchema,
-  type ReadVectorDataStatusResponseDto,
   type ImageItemDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
@@ -163,6 +161,7 @@ export class MediaLibrarySnapshotStore {
         )
 
         for (const image of source.images) {
+          const imageVector = (image as { feature_vector?: unknown }).feature_vector
           upsertImage.run(
             image.id,
             source.id,
@@ -172,7 +171,7 @@ export class MediaLibrarySnapshotStore {
             image.size_kb,
             image.cluster,
             image.color,
-            JSON.stringify(image.feature_vector),
+            JSON.stringify(Array.isArray(imageVector) ? imageVector : []),
             JSON.stringify(image.media_locator),
             image.hidden ? 1 : 0,
             revision,
@@ -380,103 +379,6 @@ export class MediaLibrarySnapshotStore {
     })
 
     return touched
-  }
-
-  writeImageFeatureVectors(items: Array<{ imageId: string; featureVector: number[] }>): number {
-    const normalizedItems = Array.from(
-      new Map(
-        items
-          .map((item) => ({
-            imageId: item.imageId.trim(),
-            featureVector: item.featureVector,
-          }))
-          .filter((item) => item.imageId.length > 0)
-          .map((item) => [item.imageId, item.featureVector]),
-      ).entries(),
-    ).map(([imageId, featureVector]) => ({ imageId, featureVector }))
-
-    if (normalizedItems.length === 0) {
-      return 0
-    }
-
-    const update = this.db.prepare(
-      `
-        UPDATE image_item
-        SET feature_vector_json = ?, updated_at_ms = ?
-        WHERE id = ?
-      `,
-    )
-
-    const updatedAtMs = Date.now()
-    let touched = 0
-    this.runInTransaction(() => {
-      for (const item of normalizedItems) {
-        const result = update.run(
-          JSON.stringify(item.featureVector),
-          updatedAtMs,
-          item.imageId,
-        ) as { changes?: number } | undefined
-        if ((result?.changes ?? 0) > 0) {
-          touched += 1
-        }
-      }
-    })
-
-    return touched
-  }
-
-  readVectorDataStatus(): ReadVectorDataStatusResponseDto {
-    const rows = this.db
-      .prepare(
-        `
-          SELECT feature_vector_json
-          FROM image_item
-        `,
-      )
-      .all() as Array<{ feature_vector_json: string }>
-
-    let embeddedImages = 0
-    let vectorDimension = 0
-
-    for (const row of rows) {
-      const vector = parseJson<number[]>(row.feature_vector_json, [])
-      if (!Array.isArray(vector) || vector.length === 0) {
-        continue
-      }
-
-      const hasNonZeroValue = vector.some((value) => Number.isFinite(value) && Math.abs(value) > 1e-12)
-      if (!hasNonZeroValue) {
-        continue
-      }
-
-      embeddedImages += 1
-      if (vectorDimension === 0) {
-        vectorDimension = vector.length
-      }
-    }
-
-    const totalImages = rows.length
-    return readVectorDataStatusResponseSchema.parse({
-      total_images: totalImages,
-      embedded_images: embeddedImages,
-      pending_images: Math.max(0, totalImages - embeddedImages),
-      vector_dimension: vectorDimension,
-      generated_at_ms: Date.now(),
-    })
-  }
-
-  clearImageFeatureVectors(): number {
-    const update = this.db.prepare(
-      `
-        UPDATE image_item
-        SET feature_vector_json = ?, updated_at_ms = ?
-        WHERE feature_vector_json <> ?
-      `,
-    )
-
-    const clearedAtMs = Date.now()
-    const result = update.run(JSON.stringify([]), clearedAtMs, JSON.stringify([])) as { changes?: number } | undefined
-    return result?.changes ?? 0
   }
 
   deleteImageItems(imageIds: string[]): { deletedCount: number; touchedSourceIds: string[] } {

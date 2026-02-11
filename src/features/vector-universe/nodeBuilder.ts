@@ -20,18 +20,41 @@ function toPositionTuple(value: [number, number, number]): [number, number, numb
   ]
 }
 
+function normalizeUnit(seed: number): number {
+  return ((seed & 0xffff) / 0xffff) * 2 - 1
+}
+
+function buildSemanticSeed(
+  packageId: string,
+  imageIndex: number,
+  tags: string[],
+  workTitle: string,
+  circle: string,
+  author: string,
+): string {
+  const sortedTags = [...tags].map((tag) => tag.trim()).filter(Boolean).sort((a, b) => a.localeCompare(b))
+  return [packageId, String(imageIndex), workTitle.trim(), circle.trim(), author.trim(), ...sortedTags].join('|')
+}
+
 function createNodePosition(
   packageId: string,
   packageIndex: number,
   imageIndex: number,
-  featureVector: number[],
+  tags: string[],
+  workTitle: string,
+  circle: string,
+  author: string,
 ): [number, number, number] {
   const seed = hashText(`${packageId}:${imageIndex}`)
-  const fx = featureVector[0] ?? 0
-  const fy = featureVector[1] ?? 0
-  const fz = featureVector[2] ?? 0
-  const fw = featureVector[3] ?? 0
-  const fv = featureVector[4] ?? 0
+  const semanticSeed = hashText(buildSemanticSeed(packageId, imageIndex, tags, workTitle, circle, author))
+  const semanticSeed2 = hashText(`${semanticSeed}:${packageIndex}`)
+  const semanticSeed3 = hashText(`${semanticSeed2}:${seed}`)
+
+  const sx = normalizeUnit(semanticSeed)
+  const sy = normalizeUnit(semanticSeed2)
+  const sz = normalizeUnit(semanticSeed3)
+  const sw = normalizeUnit(semanticSeed ^ semanticSeed2)
+  const sv = normalizeUnit(semanticSeed2 ^ semanticSeed3)
 
   const orbitRadius = 20 + (packageIndex % 9) * 7
   const orbitAngle = packageIndex * 0.71 + imageIndex * 0.19 + ((seed & 1023) / 1023) * Math.PI
@@ -39,9 +62,9 @@ function createNodePosition(
   const jitterY = (((seed >>> 8) & 255) / 255 - 0.5) * 8
   const jitterZ = (((seed >>> 16) & 255) / 255 - 0.5) * 6
 
-  const x = fx * 58 + fw * 24 + Math.cos(orbitAngle) * orbitRadius + jitterX
-  const y = fy * 34 + fv * 12 + jitterY
-  const z = fz * 58 + fw * 18 + Math.sin(orbitAngle) * orbitRadius + jitterZ
+  const x = sx * 58 + sw * 24 + Math.cos(orbitAngle) * orbitRadius + jitterX
+  const y = sy * 34 + sv * 12 + jitterY
+  const z = sz * 58 + sw * 18 + Math.sin(orbitAngle) * orbitRadius + jitterZ
 
   return toPositionTuple([x, y, z])
 }
@@ -94,7 +117,10 @@ export function buildVectorUniverseNodesByScope(
       originSource.id,
       originPackageIndex,
       originRef.imageIndex,
-      originImage.featureVector,
+      originSource.tags,
+      originSource.workTitle,
+      originSource.circle,
+      originSource.author,
     )
   }
 
@@ -121,7 +147,15 @@ export function buildVectorUniverseNodesByScope(
     seen.add(nodeId)
 
     const packageIndex = packageIndexById.get(source.id) ?? 0
-    const rawPosition = createNodePosition(source.id, packageIndex, ref.imageIndex, image.featureVector)
+    const rawPosition = createNodePosition(
+      source.id,
+      packageIndex,
+      ref.imageIndex,
+      source.tags,
+      source.workTitle,
+      source.circle,
+      source.author,
+    )
     const normalizedPosition = toPositionTuple([
       (rawPosition[0] - originPosition[0]) * normalizedDispersion,
       (rawPosition[1] - originPosition[1]) * normalizedDispersion,

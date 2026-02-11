@@ -286,13 +286,6 @@ export function useAppTopLayerState({
     databaseResetPending,
     databaseResetError,
     clearDatabaseForDev,
-    vectorDataStatusLoading,
-    vectorDataStatusError,
-    vectorDataStatus,
-    vectorDataClearPending,
-    vectorDataClearError,
-    refreshVectorDataStatus,
-    clearVectorDataForDev,
   } = useDatabaseResetAction({
     mediaRepository,
   })
@@ -300,71 +293,16 @@ export function useAppTopLayerState({
   const shortcutConflicts = useMemo(() => findShortcutConflicts(appSettings.shortcuts), [appSettings.shortcuts])
   const vectorControlConflicts = useMemo(() => findVectorControlConflicts(appSettings.vectorControls), [appSettings.vectorControls])
   const {
-    lmStudioEndpoint,
-    lmStudioModel,
     adReviewVisionEndpoint,
     adReviewVisionModel,
-    wdSwinTaggerModelPath,
-    visionAutoTagCsvPath,
     updateSettings,
   } = appSettings
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
   const [adReviewVisionTestMessage, setAdReviewVisionTestMessage] = useState<string | null>(null)
-  const [embeddingModelTestPending, setEmbeddingModelTestPending] = useState(false)
-  const [embeddingModelTestMessage, setEmbeddingModelTestMessage] = useState<string | null>(null)
-  const [wdSwinTaggerTestPending, setWdSwinTaggerTestPending] = useState(false)
-  const [wdSwinTaggerTestMessage, setWdSwinTaggerTestMessage] = useState<string | null>(null)
-
-  useEffect(() => {
-    setEmbeddingModelTestMessage(null)
-  }, [lmStudioEndpoint, lmStudioModel])
 
   useEffect(() => {
     setAdReviewVisionTestMessage(null)
   }, [adReviewVisionEndpoint, adReviewVisionModel])
-
-  useEffect(() => {
-    setWdSwinTaggerTestMessage(null)
-  }, [wdSwinTaggerModelPath])
-
-  const testEmbeddingModel = useCallback(async () => {
-    const testEmbedding = mediaRepository.testEmbeddingModel
-    if (!testEmbedding) {
-      setEmbeddingModelTestMessage('当前后端不支持向量模型测试')
-      return
-    }
-
-    const normalizedEndpoint = lmStudioEndpoint.trim()
-    const normalizedModel = lmStudioModel.trim()
-    if (!normalizedEndpoint || !normalizedModel) {
-      setEmbeddingModelTestMessage('请先填写向量模型端口和模型ID')
-      return
-    }
-
-    setEmbeddingModelTestPending(true)
-    setEmbeddingModelTestMessage('测试中...')
-    try {
-      const response = await testEmbedding(
-        {
-          embedding_endpoint: normalizedEndpoint,
-          embedding_model: normalizedModel,
-          timeout_ms: 12_000,
-        },
-        { timeoutMs: 15_000 },
-      )
-
-      updateSettings({
-        lmStudioEndpoint: normalizedEndpoint,
-        lmStudioModel: normalizedModel,
-      })
-      setEmbeddingModelTestMessage(response.message)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      setEmbeddingModelTestMessage(`模型测试失败：${message}`)
-    } finally {
-      setEmbeddingModelTestPending(false)
-    }
-  }, [lmStudioEndpoint, lmStudioModel, mediaRepository, updateSettings])
 
   const testAdReviewVisionModel = useCallback(async () => {
     const testVisionModel = mediaRepository.testAdReviewVisionModel
@@ -410,78 +348,6 @@ export function useAppTopLayerState({
     }
   }, [adReviewVisionEndpoint, adReviewVisionModel, mediaRepository, updateSettings])
 
-  const testWdSwinTaggerModel = useCallback(async () => {
-    const testWdModel = mediaRepository.testWdSwinTaggerModel
-    if (!testWdModel) {
-      setWdSwinTaggerTestMessage('当前后端不支持 wd 模型测试')
-      return
-    }
-
-    const normalizedModelPath = wdSwinTaggerModelPath.trim()
-    if (!normalizedModelPath) {
-      setWdSwinTaggerTestMessage('请先填写 wd 模型路径')
-      return
-    }
-
-    setWdSwinTaggerTestPending(true)
-    setWdSwinTaggerTestMessage('测试中...')
-    try {
-      const response = await testWdModel(
-        {
-          model_path: normalizedModelPath,
-          timeout_ms: 45_000,
-        },
-        { timeoutMs: 50_000 },
-      )
-
-      updateSettings({
-        wdSwinTaggerModelPath: normalizedModelPath,
-      })
-      setWdSwinTaggerTestMessage(response.message)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      setWdSwinTaggerTestMessage(`模型测试失败：${message}`)
-    } finally {
-      setWdSwinTaggerTestPending(false)
-    }
-  }, [mediaRepository, updateSettings, wdSwinTaggerModelPath])
-
-  const pickWdSwinTaggerModelPath = useCallback(async () => {
-    if (!mediaRepository.pickFilePath) {
-      return
-    }
-
-    const response = await mediaRepository.pickFilePath({
-      title: '选择 wd ONNX 模型文件',
-      default_path: normalizeOptionalPath(wdSwinTaggerModelPath),
-      filters: [{ name: 'ONNX 模型', extensions: ['onnx'] }],
-    })
-
-    if (!response.canceled && response.path) {
-      updateSettings({
-        wdSwinTaggerModelPath: response.path,
-      })
-    }
-  }, [mediaRepository, updateSettings, wdSwinTaggerModelPath])
-
-  const pickVisionAutoTagCsvPath = useCallback(async () => {
-    if (!mediaRepository.pickFilePath) {
-      return
-    }
-
-    const response = await mediaRepository.pickFilePath({
-      title: '选择标签范围 CSV 文件',
-      default_path: normalizeOptionalPath(visionAutoTagCsvPath),
-      filters: [{ name: 'CSV 文件', extensions: ['csv'] }],
-    })
-
-    if (!response.canceled && response.path) {
-      updateSettings({
-        visionAutoTagCsvPath: response.path,
-      })
-    }
-  }, [mediaRepository, updateSettings, visionAutoTagCsvPath])
-
   const pickRuntimeDirectory = useCallback(
     async (title: string, defaultPath: string | undefined) => {
       if (!mediaRepository.pickDirectoryPath) {
@@ -502,13 +368,6 @@ export function useAppTopLayerState({
       toDirectoryDefaultPath(runtimeInfoDiagnostics.data?.database_path ?? ''),
     )
   }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.database_path])
-
-  const pickVectorStoreDirectoryPath = useCallback(async () => {
-    await pickRuntimeDirectory(
-      '选择向量库目录',
-      toDirectoryDefaultPath(runtimeInfoDiagnostics.data?.vector_store_path ?? ''),
-    )
-  }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.vector_store_path])
 
   const pickThumbnailCacheDirectoryPath = useCallback(async () => {
     await pickRuntimeDirectory(
@@ -579,23 +438,6 @@ export function useAppTopLayerState({
     thumbnailGap: appSettings.thumbnailGap,
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailWidth: appSettings.thumbnailWidth,
-    lmStudioEndpoint: appSettings.lmStudioEndpoint,
-    lmStudioModel: appSettings.lmStudioModel,
-    embeddingModelTestPending,
-    embeddingModelTestMessage,
-    wdSwinTaggerModelPath: appSettings.wdSwinTaggerModelPath,
-    wdSwinTaggerAutoTagOccurrenceThreshold: appSettings.wdSwinTaggerAutoTagOccurrenceThreshold,
-    wdSwinTaggerAutoTagGeneralMinScore: appSettings.wdSwinTaggerAutoTagGeneralMinScore,
-    wdSwinTaggerAutoTagCharacterMinScore: appSettings.wdSwinTaggerAutoTagCharacterMinScore,
-    wdSwinTaggerAutoTagIncludeRating: appSettings.wdSwinTaggerAutoTagIncludeRating,
-    wdSwinTaggerAutoTagRatingMinScore: appSettings.wdSwinTaggerAutoTagRatingMinScore,
-    visionAutoTagCsvPath: appSettings.visionAutoTagCsvPath,
-    visionAutoTagSampleImageCount: appSettings.visionAutoTagSampleImageCount,
-    visionAutoTagOccurrenceThreshold: appSettings.visionAutoTagOccurrenceThreshold,
-    visionAutoTagTemperature: appSettings.visionAutoTagTemperature,
-    visionAutoTagTimeoutMs: appSettings.visionAutoTagTimeoutMs,
-    wdSwinTaggerTestPending,
-    wdSwinTaggerTestMessage,
     adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,
     adReviewVisionModel: appSettings.adReviewVisionModel,
     adReviewVisionVerified: appSettings.adReviewVisionVerified,
@@ -614,11 +456,6 @@ export function useAppTopLayerState({
     vectorControlConflicts,
     databaseResetPending,
     databaseResetError,
-    vectorDataStatusLoading,
-    vectorDataStatusError,
-    vectorDataStatus,
-    vectorDataClearPending,
-    vectorDataClearError,
     repositoryMode,
     backendBridgeInjected: runtimeInfoDiagnostics.backendBridgeInjected,
     runtimeInfoLoading: runtimeInfoDiagnostics.loading,
@@ -633,15 +470,8 @@ export function useAppTopLayerState({
     resetShortcuts: appSettings.resetShortcuts,
     resetVectorControls: appSettings.resetVectorControls,
     clearDatabaseForDev,
-    refreshVectorDataStatus,
-    clearVectorDataForDev,
-    testEmbeddingModel,
     testAdReviewVisionModel,
-    testWdSwinTaggerModel,
-    pickWdSwinTaggerModelPath,
-    pickVisionAutoTagCsvPath,
     pickDatabaseDirectoryPath,
-    pickVectorStoreDirectoryPath,
     pickThumbnailCacheDirectoryPath,
   })
 

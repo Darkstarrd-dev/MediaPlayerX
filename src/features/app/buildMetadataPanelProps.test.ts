@@ -11,7 +11,6 @@ const IMAGE_FIXTURE: ImageItem = {
   sizeKb: 256,
   cluster: 0,
   color: '#335577',
-  featureVector: [0, 0, 0, 0],
   mediaLocator: {
     kind: 'filesystem',
     absolutePath: 'D:/img-1.jpg',

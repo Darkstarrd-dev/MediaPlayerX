@@ -111,7 +111,6 @@ function buildPackage(targetCount: number): ImagePackage {
       sizeKb: 0,
       cluster: 0,
       color: index % 2 === 0 ? '#4f86cf' : '#d58b45',
-      featureVector: [],
       mediaLocator: buildLocator(index),
     })
   }

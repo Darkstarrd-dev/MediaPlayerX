@@ -34,14 +34,11 @@ describe('useSettingsPersistence', () => {
     })
   })
 
-  it('hydrates and clamps visual auto-tag settings into safe ranges', async () => {
+  it('hydrates and clamps ad review settings into safe ranges', async () => {
     const updateSettings = vi.fn()
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
-        visionAutoTagSampleImageCount: 99,
-        visionAutoTagOccurrenceThreshold: -3,
-        visionAutoTagTemperature: 1.6,
-        visionAutoTagTimeoutMs: 999_999,
+        adReviewMaxConcurrency: 99,
       }),
     })
     const repository = {
@@ -59,10 +56,7 @@ describe('useSettingsPersistence', () => {
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(
         expect.objectContaining({
-          visionAutoTagSampleImageCount: 24,
-          visionAutoTagOccurrenceThreshold: 1,
-          visionAutoTagTemperature: 1,
-          visionAutoTagTimeoutMs: 120_000,
+          adReviewMaxConcurrency: 12,
         }),
       )
     })
@@ -108,21 +102,21 @@ describe('useSettingsPersistence', () => {
 
     act(() => {
       result.current.updateSettings({
-        lmStudioEndpoint: 'http://localhost:1234/v1/embeddings',
-        lmStudioModel: 'local-new-model',
+        adReviewVisionEndpoint: 'http://localhost:1234/v1/chat/completions',
+        adReviewVisionModel: 'local-new-model',
       })
     })
 
     deferred.resolve({
       state_json: JSON.stringify({
-        lmStudioEndpoint: 'http://127.0.0.1:1234/v1/embeddings',
-        lmStudioModel: 'persisted-old-model',
+        adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
+        adReviewVisionModel: 'persisted-old-model',
       }),
     })
 
     await waitFor(() => {
-      expect(result.current.settings.lmStudioEndpoint).toBe('http://localhost:1234/v1/embeddings')
-      expect(result.current.settings.lmStudioModel).toBe('local-new-model')
+      expect(result.current.settings.adReviewVisionEndpoint).toBe('http://localhost:1234/v1/chat/completions')
+      expect(result.current.settings.adReviewVisionModel).toBe('local-new-model')
     })
   })
 })

@@ -1,26 +1,12 @@
 import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
 
-import type { FocusedImageRef, ImagePackage } from '../types'
-
-type SearchPanelMode = 'vector' | 'feature'
-
 interface SearchPanelProps {
   visible: boolean
   collapsed: boolean
   panelHeight: number
   panelRef: RefObject<HTMLDivElement | null>
   panelContentRef: RefObject<HTMLDivElement | null>
-  showVectorSearch: boolean
-  searchPanelMode: SearchPanelMode
-  onSearchPanelModeChange: (mode: SearchPanelMode) => void
-  vectorResultCount: number
   featureResultCount: number
-  focusedRef: FocusedImageRef | null
-  focusedImagePackage: ImagePackage | null
-  focusedImageOrdinal: number | null
-  onRunVectorSearch: () => void
-  vectorThreshold: number
-  onVectorThresholdChange: (value: number) => void
   featureNameQuery: string
   onFeatureNameQueryChange: (value: string) => void
   featureWorkTitleQuery: string
@@ -51,17 +37,7 @@ function SearchPanel({
   panelHeight,
   panelRef,
   panelContentRef,
-  showVectorSearch,
-  searchPanelMode,
-  onSearchPanelModeChange,
-  vectorResultCount,
   featureResultCount,
-  focusedRef,
-  focusedImagePackage,
-  focusedImageOrdinal,
-  onRunVectorSearch,
-  vectorThreshold,
-  onVectorThresholdChange,
   featureNameQuery,
   onFeatureNameQueryChange,
   featureWorkTitleQuery,
@@ -99,68 +75,14 @@ function SearchPanel({
         <div className="vector-panel" ref={panelRef} style={{ height: `${panelHeight}px` }} data-overlay-close="search-panel">
           <div className="vector-panel-content" ref={panelContentRef}>
             <div className="vector-top-row">
-              {showVectorSearch ? (
-                <div className="search-mode-switch" role="group" aria-label="search-mode-switch">
-                  <button
-                    className={searchPanelMode === 'vector' ? 'is-active' : ''}
-                    type="button"
-                    onClick={() => onSearchPanelModeChange('vector')}
-                  >
-                    向量检索
-                  </button>
-                  <button
-                    className={searchPanelMode === 'feature' ? 'is-active' : ''}
-                    type="button"
-                    onClick={() => onSearchPanelModeChange('feature')}
-                  >
-                    特征检索
-                  </button>
-                </div>
-              ) : (
-                <div className="search-mode-switch is-single" aria-label="search-mode-feature-only">
-                  <span>特征检索</span>
-                </div>
-              )}
-
               <div className="vector-top-actions">
-                <span>
-                  {showVectorSearch && searchPanelMode === 'vector'
-                    ? `当前结果: ${vectorResultCount} 张`
-                    : `命中节点: ${featureResultCount} 个`}
-                </span>
+                <span>{`命中节点: ${featureResultCount} 个`}</span>
                 <button className="vector-collapse-btn" type="button" onClick={onCollapse}>
                   折叠
                 </button>
               </div>
             </div>
-
-            {showVectorSearch && searchPanelMode === 'vector' ? (
-              <>
-                <div className="vector-controls">
-                  <button className="vector-search-btn" type="button" disabled={!focusedRef} onClick={onRunVectorSearch}>
-                    向量检索
-                  </button>
-                  <span>
-                    {focusedRef && focusedImagePackage
-                      ? `输入：${focusedImagePackage.displayName} #${(focusedImageOrdinal ?? focusedRef.imageIndex + 1).toString()}`
-                      : '请先在缩略图中选中一张图片'}
-                  </span>
-                </div>
-                <label>
-                  相似度阈值 {vectorThreshold.toFixed(2)}
-                  <input
-                    max={0.98}
-                    min={0.2}
-                    step={0.01}
-                    type="range"
-                    value={vectorThreshold}
-                    onChange={(event) => onVectorThresholdChange(Number(event.target.value))}
-                  />
-                </label>
-                <p className="vector-hint">修改阈值后需重新点击“向量检索”才会刷新结果。</p>
-              </>
-            ) : (
-              <div className="feature-controls">
+            <div className="feature-controls">
                 <label>
                   名称
                   <input
@@ -280,7 +202,6 @@ function SearchPanel({
 
                 <p className="vector-hint">多字段组合按 AND 逻辑过滤，结果即时同步到 Sidebar 与主视图。</p>
               </div>
-            )}
           </div>
         </div>
       )}

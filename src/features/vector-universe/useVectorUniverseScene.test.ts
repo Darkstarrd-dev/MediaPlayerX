@@ -24,7 +24,6 @@ function createPackage(id: string, imageCount: number): ImagePackage {
       sizeKb: 100,
       cluster: 0,
       color: '#4B88DA',
-      featureVector: [index * 0.1, 0.1, 0.2, 0.3, 0.4],
       mediaLocator: {
         kind: 'filesystem',
         absolutePath: `Z:/mock/${id}/img_${index + 1}.jpg`,

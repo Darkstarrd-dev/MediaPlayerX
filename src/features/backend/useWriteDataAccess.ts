@@ -10,20 +10,12 @@ import type {
   WritePackageGradeResponseDto,
   WritePackageMetadataRequestDto,
   WritePackageMetadataResponseDto,
-  GeneratePackageAutoTagsRequestDto,
-  GeneratePackageAutoTagsResponseDto,
-  GeneratePackageAutoTagsVisionRequestDto,
-  GeneratePackageAutoTagsVisionResponseDto,
-  GeneratePackageEmbeddingsRequestDto,
-  GeneratePackageEmbeddingsResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
 } from '../../contracts/backend'
 import type { MediaRepository } from './repository'
 
 const DEFAULT_WRITE_TIMEOUT_MS = 8_000
-const AUTO_TAG_WRITE_TIMEOUT_MS = 300_000
-const EMBEDDING_WRITE_TIMEOUT_MS = 300_000
 
 function toErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
@@ -42,13 +34,6 @@ interface UseWriteDataAccessParams {
 interface SyncWriteRepository extends MediaRepository {
   writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
-  generatePackageAutoTagsSync?(request: GeneratePackageAutoTagsRequestDto): GeneratePackageAutoTagsResponseDto
-  generatePackageAutoTagsVisionSync?(
-    request: GeneratePackageAutoTagsVisionRequestDto,
-  ): GeneratePackageAutoTagsVisionResponseDto
-  generatePackageEmbeddingsSync?(
-    request: GeneratePackageEmbeddingsRequestDto,
-  ): GeneratePackageEmbeddingsResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
 }
@@ -93,39 +78,6 @@ interface UseWriteDataAccessResult {
       syncWorkTitleToPackageName?: boolean
     },
   ) => Promise<void>
-  generatePackageAutoTags: (
-    packageId: string,
-    payload: {
-      modelPath: string
-      occurrenceThreshold: number
-      generalMinScore: number
-      characterMinScore: number
-      includeRating: boolean
-      ratingMinScore: number
-    },
-  ) => Promise<GeneratePackageAutoTagsResponseDto>
-  generatePackageAutoTagsVision: (
-    packageId: string,
-    payload: {
-      tagsCsvPath: string
-      llmEndpoint: string
-      llmModel: string
-      sampleImageCount: number
-      occurrenceThreshold: number
-      temperature: number
-      timeoutMs: number
-    },
-  ) => Promise<GeneratePackageAutoTagsVisionResponseDto>
-  generatePackageEmbeddings: (
-    packageId: string,
-    payload: {
-      embeddingEndpoint: string
-      embeddingModel: string
-      maxConcurrency: number
-      maxRetries: number
-      timeoutMs: number
-    },
-  ) => Promise<GeneratePackageEmbeddingsResponseDto>
   writeVideoMetadata: (
     videoId: string,
     payload: {
@@ -299,174 +251,6 @@ export function useWriteDataAccess({
         })
       } catch (error: unknown) {
         setMetadataError(toErrorMessage(error))
-      } finally {
-        setMetadataPending(false)
-      }
-    },
-    [isSynchronousTestMode, repository],
-  )
-
-  const generatePackageAutoTags = useCallback(
-    async (
-      packageId: string,
-      payload: {
-        modelPath: string
-        occurrenceThreshold: number
-        generalMinScore: number
-        characterMinScore: number
-        includeRating: boolean
-        ratingMinScore: number
-      },
-    ): Promise<GeneratePackageAutoTagsResponseDto> => {
-      if (!repository.generatePackageAutoTags) {
-        const message = '当前后端不支持自动标签'
-        setMetadataError(message)
-        throw new Error(message)
-      }
-
-      setMetadataPending(true)
-      setMetadataError(null)
-
-      try {
-        const request: GeneratePackageAutoTagsRequestDto = {
-          package_id: packageId,
-          model_path: payload.modelPath,
-          occurrence_threshold: Math.max(1, Math.min(200, Math.floor(payload.occurrenceThreshold))),
-          general_min_score: Math.max(0, Math.min(1, payload.generalMinScore)),
-          character_min_score: Math.max(0, Math.min(1, payload.characterMinScore)),
-          include_rating: payload.includeRating,
-          rating_min_score: Math.max(0, Math.min(1, payload.ratingMinScore)),
-        }
-
-        if (isSynchronousTestMode) {
-          const writer = repository.generatePackageAutoTagsSync
-          if (!writer) {
-            const message = '当前后端不支持自动标签'
-            setMetadataError(message)
-            throw new Error(message)
-          }
-          return writer(request)
-        }
-
-        return await repository.generatePackageAutoTags(request, {
-          timeoutMs: AUTO_TAG_WRITE_TIMEOUT_MS,
-        })
-      } catch (error: unknown) {
-        const message = toErrorMessage(error)
-        setMetadataError(message)
-        throw new Error(message)
-      } finally {
-        setMetadataPending(false)
-      }
-    },
-    [isSynchronousTestMode, repository],
-  )
-
-  const generatePackageAutoTagsVision = useCallback(
-    async (
-      packageId: string,
-      payload: {
-        tagsCsvPath: string
-        llmEndpoint: string
-        llmModel: string
-        sampleImageCount: number
-        occurrenceThreshold: number
-        temperature: number
-        timeoutMs: number
-      },
-    ): Promise<GeneratePackageAutoTagsVisionResponseDto> => {
-      if (!repository.generatePackageAutoTagsVision) {
-        const message = '当前后端不支持视觉自动标签'
-        setMetadataError(message)
-        throw new Error(message)
-      }
-
-      setMetadataPending(true)
-      setMetadataError(null)
-
-      try {
-        const request: GeneratePackageAutoTagsVisionRequestDto = {
-          package_id: packageId,
-          tags_csv_path: payload.tagsCsvPath,
-          llm_endpoint: payload.llmEndpoint,
-          llm_model: payload.llmModel,
-          sample_image_count: Math.max(1, Math.min(24, Math.floor(payload.sampleImageCount))),
-          occurrence_threshold: Math.max(1, Math.min(24, Math.floor(payload.occurrenceThreshold))),
-          temperature: Math.max(0, Math.min(1, payload.temperature)),
-          timeout_ms: Math.max(3_000, Math.min(120_000, Math.floor(payload.timeoutMs))),
-        }
-
-        if (isSynchronousTestMode) {
-          const writer = repository.generatePackageAutoTagsVisionSync
-          if (!writer) {
-            const message = '当前后端不支持视觉自动标签'
-            setMetadataError(message)
-            throw new Error(message)
-          }
-          return writer(request)
-        }
-
-        return await repository.generatePackageAutoTagsVision(request, {
-          timeoutMs: AUTO_TAG_WRITE_TIMEOUT_MS,
-        })
-      } catch (error: unknown) {
-        const message = toErrorMessage(error)
-        setMetadataError(message)
-        throw new Error(message)
-      } finally {
-        setMetadataPending(false)
-      }
-    },
-    [isSynchronousTestMode, repository],
-  )
-
-  const generatePackageEmbeddings = useCallback(
-    async (
-      packageId: string,
-      payload: {
-        embeddingEndpoint: string
-        embeddingModel: string
-        maxConcurrency: number
-        maxRetries: number
-        timeoutMs: number
-      },
-    ): Promise<GeneratePackageEmbeddingsResponseDto> => {
-      if (!repository.generatePackageEmbeddings) {
-        const message = '当前后端不支持生成嵌入向量'
-        setMetadataError(message)
-        throw new Error(message)
-      }
-
-      setMetadataPending(true)
-      setMetadataError(null)
-
-      try {
-        const request: GeneratePackageEmbeddingsRequestDto = {
-          package_id: packageId,
-          embedding_endpoint: payload.embeddingEndpoint,
-          embedding_model: payload.embeddingModel,
-          max_concurrency: Math.max(1, Math.min(8, Math.floor(payload.maxConcurrency))),
-          max_retries: Math.max(0, Math.min(4, Math.floor(payload.maxRetries))),
-          timeout_ms: Math.max(3_000, Math.min(120_000, Math.floor(payload.timeoutMs))),
-        }
-
-        if (isSynchronousTestMode) {
-          const writer = repository.generatePackageEmbeddingsSync
-          if (!writer) {
-            const message = '当前后端不支持生成嵌入向量'
-            setMetadataError(message)
-            throw new Error(message)
-          }
-          return writer(request)
-        }
-
-        return await repository.generatePackageEmbeddings(request, {
-          timeoutMs: EMBEDDING_WRITE_TIMEOUT_MS,
-        })
-      } catch (error: unknown) {
-        const message = toErrorMessage(error)
-        setMetadataError(message)
-        throw new Error(message)
       } finally {
         setMetadataPending(false)
       }
@@ -655,9 +439,6 @@ export function useWriteDataAccess({
     deleteImageItems,
     deleteSidebarNodes,
     writePackageMetadata,
-    generatePackageAutoTags,
-    generatePackageAutoTagsVision,
-    generatePackageEmbeddings,
     writeVideoMetadata,
     saveVideoCover,
   }

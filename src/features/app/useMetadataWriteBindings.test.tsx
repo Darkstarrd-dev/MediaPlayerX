@@ -66,17 +66,6 @@ function createSidebarRootWithPackages(packageIds: string[]): SidebarNode {
   }
 }
 
-function createDeferred<T = void>() {
-  let resolve!: (value: T | PromiseLike<T>) => void
-  const promise = new Promise<T>((resolver) => {
-    resolve = resolver
-  })
-  return {
-    promise,
-    resolve,
-  }
-}
-
 describe('useMetadataWriteBindings', () => {
   it('批量字段提交会合并原值，仅覆盖回车提交字段', async () => {
     const packageA = createImagePackage('pkg-a', {
@@ -98,21 +87,6 @@ describe('useMetadataWriteBindings', () => {
     const { result } = renderHook(() =>
       useMetadataWriteBindings({
         metadataManageMode: true,
-        autoTagModelPath: 'Z:/mock/model.onnx',
-        autoTagOccurrenceThreshold: 3,
-        autoTagGeneralMinScore: 0.35,
-        autoTagCharacterMinScore: 0.75,
-        autoTagIncludeRating: true,
-        autoTagRatingMinScore: 0.5,
-        visionAutoTagCsvPath: 'Z:/mock/tags.csv',
-        visionAutoTagSampleImageCount: 6,
-        visionAutoTagOccurrenceThreshold: 2,
-        visionAutoTagTemperature: 0,
-        visionAutoTagTimeoutMs: 30000,
-        visionAutoTagEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
-        visionAutoTagModel: 'qwen2.5-vl-instruct',
-        embeddingEndpoint: 'http://127.0.0.1:1234/v1/embeddings',
-        embeddingModel: 'qwen3-vl-embedding',
         backendWrite: {
           pending: {
             metadata: false,
@@ -165,89 +139,42 @@ describe('useMetadataWriteBindings', () => {
     )
   })
 
-  it('自动标签任务支持运行中暂停/继续，并可停止后回到空闲态', async () => {
+  it('同步名称会以已有元数据为基础触发批量写入', async () => {
     const packageA = createImagePackage('pkg-a')
-    const packageB = createImagePackage('pkg-b')
-    const sidebarRoot = createSidebarRootWithPackages([packageA.id, packageB.id])
-    const deferred = createDeferred<void>()
-
-    const generatePackageAutoTags = vi.fn().mockImplementation(async () => {
-      await deferred.promise
-      return {
-        generated_tags: [],
-        analyzed_images: 0,
-      }
-    })
+    const writePackageMetadata = vi.fn().mockResolvedValue(undefined)
 
     const { result } = renderHook(() =>
       useMetadataWriteBindings({
-        metadataManageMode: true,
-        autoTagModelPath: 'Z:/mock/model.onnx',
-        autoTagOccurrenceThreshold: 3,
-        autoTagGeneralMinScore: 0.35,
-        autoTagCharacterMinScore: 0.75,
-        autoTagIncludeRating: true,
-        autoTagRatingMinScore: 0.5,
-        visionAutoTagCsvPath: 'Z:/mock/tags.csv',
-        visionAutoTagSampleImageCount: 6,
-        visionAutoTagOccurrenceThreshold: 2,
-        visionAutoTagTemperature: 0,
-        visionAutoTagTimeoutMs: 30000,
-        visionAutoTagEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
-        visionAutoTagModel: 'qwen2.5-vl-instruct',
-        embeddingEndpoint: 'http://127.0.0.1:1234/v1/embeddings',
-        embeddingModel: 'qwen3-vl-embedding',
+        metadataManageMode: false,
         backendWrite: {
-          pending: {
-            metadata: false,
-            grade: false,
-          },
+          pending: { metadata: false, grade: false },
           writePackageGrade: vi.fn().mockResolvedValue(undefined),
-          writePackageMetadata: vi.fn().mockResolvedValue(undefined),
-          generatePackageAutoTags,
+          writePackageMetadata,
           writeVideoMetadata: vi.fn().mockResolvedValue(undefined),
         },
-        packageById: new Map([
-          [packageA.id, packageA],
-          [packageB.id, packageB],
-        ]),
-        videoById: new Map<string, VideoItem>([['video-a', createVideo('video-a')]]),
+        packageById: new Map([[packageA.id, packageA]]),
+        videoById: new Map<string, VideoItem>(),
         metadataImagePackageId: packageA.id,
-        focusedVideoId: 'video-a',
-        sidebarCheckedNodeIds: [sidebarRoot.id],
-        sidebarNodeById: new Map([[sidebarRoot.id, sidebarRoot]]),
+        focusedVideoId: null,
+        sidebarCheckedNodeIds: [],
+        sidebarNodeById: new Map(),
         setManageOperationHint: vi.fn(),
       }),
     )
 
     act(() => {
-      result.current.applyPackageAutoTags()
-    })
-    expect(result.current.metadataTaskKind).toBe('auto-tags')
-    expect(result.current.metadataTaskStatus).toBe('running')
-    expect(generatePackageAutoTags).toHaveBeenCalledTimes(1)
-
-    act(() => {
-      result.current.applyPackageAutoTags()
-    })
-    expect(result.current.metadataTaskStatus).toBe('paused')
-
-    act(() => {
-      result.current.applyPackageAutoTags()
-    })
-    expect(result.current.metadataTaskStatus).toBe('running')
-
-    act(() => {
-      result.current.stopMetadataTask()
-    })
-    expect(result.current.metadataTaskKind).toBeNull()
-    expect(result.current.metadataTaskStatus).toBe('idle')
-
-    await act(async () => {
-      deferred.resolve()
-      await Promise.resolve()
+      result.current.applyPackageSyncName()
     })
 
-    expect(generatePackageAutoTags).toHaveBeenCalledTimes(1)
+    await waitFor(() => {
+      expect(writePackageMetadata).toHaveBeenCalledTimes(1)
+    })
+
+    expect(writePackageMetadata).toHaveBeenCalledWith(
+      packageA.id,
+      expect.objectContaining({
+        syncWorkTitleToPackageName: true,
+      }),
+    )
   })
 })

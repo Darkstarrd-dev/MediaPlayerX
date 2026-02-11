@@ -6,7 +6,6 @@ import {
 } from '../../../mockData'
 import {
   clearDatabaseResponseSchema,
-  clearVectorDataResponseSchema,
   deleteImageItemsResponseSchema,
   deleteSidebarNodesResponseSchema,
   manageAdReviewTaskExecutionSchema,
@@ -14,8 +13,6 @@ import {
   readManageAdReviewTaskResponseSchema,
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelResponseSchema,
-  testWdSwinTaggerModelResponseSchema,
-  testEmbeddingModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
@@ -25,7 +22,6 @@ import {
   readClipboardImportPathsResponseSchema,
   readImportTasksResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
-  readVectorDataStatusResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
@@ -37,9 +33,6 @@ import {
   setImageHiddenResponseSchema,
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
-  generatePackageAutoTagsResponseSchema,
-  generatePackageAutoTagsVisionResponseSchema,
-  generatePackageEmbeddingsResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type ReadAppStateRequestDto,
@@ -49,7 +42,6 @@ import {
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
-  type ClearVectorDataResponseDto,
   type FeatureFilterDto,
   type DeleteImageItemsRequestDto,
   type DeleteImageItemsResponseDto,
@@ -63,10 +55,6 @@ import {
   type PauseManageAdReviewTaskResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
-  type TestWdSwinTaggerModelRequestDto,
-  type TestWdSwinTaggerModelResponseDto,
-  type TestEmbeddingModelRequestDto,
-  type TestEmbeddingModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type ManageAdReviewImageSourceDto,
@@ -89,7 +77,6 @@ import {
   type ReadClipboardImportPathsResponseDto,
   type ReadImportTasksResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
-  type ReadVectorDataStatusResponseDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadPlaylistResponseDto,
@@ -111,12 +98,6 @@ import {
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
   type WritePackageMetadataResponseDto,
-  type GeneratePackageAutoTagsRequestDto,
-  type GeneratePackageAutoTagsResponseDto,
-  type GeneratePackageAutoTagsVisionRequestDto,
-  type GeneratePackageAutoTagsVisionResponseDto,
-  type GeneratePackageEmbeddingsRequestDto,
-  type GeneratePackageEmbeddingsResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
@@ -188,7 +169,6 @@ function toImageItemDto(item: ImagePackage['images'][number]): ImageItemDto {
     size_kb: item.sizeKb,
     cluster: item.cluster,
     color: item.color,
-    feature_vector: [...item.featureVector],
     media_locator: toMediaLocatorDto(item.mediaLocator),
     hidden: item.hidden ?? false,
   }
@@ -266,7 +246,6 @@ function toImagePackageViewModel(dto: ImagePackageDto): ImagePackage {
       sizeKb: item.size_kb,
       cluster: item.cluster,
       color: item.color,
-      featureVector: [...item.feature_vector],
       mediaLocator: toMediaLocatorViewModel(item.media_locator),
       hidden: item.hidden ?? false,
     })),
@@ -499,16 +478,6 @@ function hashLocator(value: string): number {
   return hash >>> 0
 }
 
-function buildDeterministicEmbedding(seedInput: string, dimension = 16): number[] {
-  let seed = hashLocator(seedInput)
-  const vector: number[] = []
-  for (let index = 0; index < dimension; index += 1) {
-    seed = (Math.imul(seed ^ 0x9e3779b9, 1664525) + 1013904223) >>> 0
-    const normalized = (seed / 0xffffffff) * 2 - 1
-    vector.push(Number(normalized.toFixed(6)))
-  }
-  return vector
-}
 
 const DEFAULT_AD_REVIEW_MAX_CONCURRENCY = 4
 const MAX_AD_REVIEW_MAX_CONCURRENCY = 12
@@ -1189,82 +1158,6 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     return resolveAsync(response, options)
   }
 
-  testWdSwinTaggerModelSync(
-    request: TestWdSwinTaggerModelRequestDto,
-  ): TestWdSwinTaggerModelResponseDto {
-    const modelPath = request.model_path.trim()
-    if (!modelPath) {
-      return testWdSwinTaggerModelResponseSchema.parse({
-        ok: false,
-        message: '模型测试失败：模型路径不能为空',
-        provider: null,
-        output_shape: null,
-        tag_count: null,
-        elapsed_ms: null,
-      })
-    }
-
-    if (modelPath.toLowerCase().includes('fail')) {
-      return testWdSwinTaggerModelResponseSchema.parse({
-        ok: false,
-        message: '模型测试失败：mock 模型加载失败',
-        provider: null,
-        output_shape: null,
-        tag_count: null,
-        elapsed_ms: null,
-      })
-    }
-
-    return testWdSwinTaggerModelResponseSchema.parse({
-      ok: true,
-      message: 'wd-swinv2 模型可用（mock）',
-      provider: 'cpu',
-      output_shape: [1, 9083],
-      tag_count: 9083,
-      elapsed_ms: 12,
-    })
-  }
-
-  async testWdSwinTaggerModel(
-    request: TestWdSwinTaggerModelRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<TestWdSwinTaggerModelResponseDto> {
-    const response = this.testWdSwinTaggerModelSync(request)
-    return resolveAsync(response, options)
-  }
-
-  testEmbeddingModelSync(
-    request: TestEmbeddingModelRequestDto,
-  ): TestEmbeddingModelResponseDto {
-    const endpoint = request.embedding_endpoint.trim()
-    const model = request.embedding_model.trim()
-    if (!endpoint || !model) {
-      return testEmbeddingModelResponseSchema.parse({
-        ok: false,
-        message: '模型测试失败：端口和模型ID不能为空',
-      })
-    }
-
-    if (endpoint.toLowerCase().includes('fail') || model.toLowerCase().includes('fail')) {
-      return testEmbeddingModelResponseSchema.parse({
-        ok: false,
-        message: '模型测试失败：mock embedding 连接失败',
-      })
-    }
-
-    return testEmbeddingModelResponseSchema.parse({
-      ok: true,
-      message: 'Embedding 模型可用（mock，维度 1024）',
-    })
-  }
-
-  async testEmbeddingModel(
-    request: TestEmbeddingModelRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<TestEmbeddingModelResponseDto> {
-    const response = this.testEmbeddingModelSync(request)
-    return resolveAsync(response, options)
-  }
 
   confirmManageAdReviewDeleteSync(
     request: ConfirmManageAdReviewDeleteRequestDto,
@@ -1347,116 +1240,6 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     })
   }
 
-  generatePackageAutoTagsSync(
-    request: GeneratePackageAutoTagsRequestDto,
-  ): GeneratePackageAutoTagsResponseDto {
-    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
-    const source = allSources.find((item) => item.id === request.package_id)
-    if (!source) {
-      throw new Error(`mock 仓库自动标签失败：source 不存在 ${request.package_id}`)
-    }
-
-    if (request.model_path.toLowerCase().includes('fail')) {
-      throw new Error('mock 自动标签失败：模型不可用')
-    }
-
-    const threshold = Math.max(1, Math.floor(request.occurrence_threshold))
-    const analyzedImages = source.images.length
-    const generatedTags =
-      analyzedImages === 0
-        ? []
-        : [`auto-tag-${Math.min(analyzedImages, threshold)}`, `source-${source.images.length}`]
-
-    source.tags = generatedTags
-
-    return generatePackageAutoTagsResponseSchema.parse({
-      package: source,
-      generated_tags: generatedTags,
-      analyzed_images: analyzedImages,
-      updated_at_ms: Date.now(),
-    })
-  }
-
-  generatePackageAutoTagsVisionSync(
-    request: GeneratePackageAutoTagsVisionRequestDto,
-  ): GeneratePackageAutoTagsVisionResponseDto {
-    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
-    const source = allSources.find((item) => item.id === request.package_id)
-    if (!source) {
-      throw new Error(`mock 视觉自动标签失败：source 不存在 ${request.package_id}`)
-    }
-
-    const normalizedCsvPath = request.tags_csv_path.trim().toLowerCase()
-    if (!normalizedCsvPath) {
-      throw new Error('mock 视觉自动标签失败：标签范围 CSV 路径不能为空')
-    }
-    if (normalizedCsvPath.includes('fail')) {
-      throw new Error('mock 视觉自动标签失败：CSV 读取失败')
-    }
-
-    const sampleCount = Math.max(1, Math.min(24, Math.floor(request.sample_image_count)))
-    const threshold = Math.max(1, Math.min(24, Math.floor(request.occurrence_threshold)))
-    const analyzedImages = Math.min(source.images.length, sampleCount)
-
-    const tagSeed = source.display_name
-      .toLowerCase()
-      .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '_')
-      .replace(/^_+|_+$/g, '')
-    const generatedTags =
-      analyzedImages === 0
-        ? []
-        : [`vision_${tagSeed || 'package'}`, `vision_count_${Math.max(1, Math.min(analyzedImages, threshold))}`]
-
-    source.tags = generatedTags
-
-    return generatePackageAutoTagsVisionResponseSchema.parse({
-      package: source,
-      generated_tags: generatedTags,
-      analyzed_images: analyzedImages,
-      dropped_tags: [],
-      invalid_response_images: 0,
-      updated_at_ms: Date.now(),
-    })
-  }
-
-  generatePackageEmbeddingsSync(
-    request: GeneratePackageEmbeddingsRequestDto,
-  ): GeneratePackageEmbeddingsResponseDto {
-    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
-    const source = allSources.find((item) => item.id === request.package_id)
-    if (!source) {
-      throw new Error(`mock 生成嵌入失败：source 不存在 ${request.package_id}`)
-    }
-
-    const endpoint = request.embedding_endpoint.trim().toLowerCase()
-    const model = request.embedding_model.trim().toLowerCase()
-    if (!endpoint || !model) {
-      throw new Error('mock 生成嵌入失败：embedding endpoint 与 model 不能为空')
-    }
-    if (endpoint.includes('fail') || model.includes('fail')) {
-      throw new Error('mock 生成嵌入失败：embedding 服务不可用')
-    }
-
-    const analyzedImages = source.images.length
-    const vectorDimension = analyzedImages > 0 ? 16 : 0
-
-    for (const image of source.images) {
-      image.feature_vector = buildDeterministicEmbedding(
-        `${request.embedding_model}|${source.id}|${image.id}|${image.ordinal}|${image.width}x${image.height}`,
-        vectorDimension,
-      )
-    }
-
-    return generatePackageEmbeddingsResponseSchema.parse({
-      package: source,
-      analyzed_images: analyzedImages,
-      embedded_images: analyzedImages,
-      failed_images: 0,
-      vector_dimension: vectorDimension,
-      updated_at_ms: Date.now(),
-    })
-  }
-
   async writePackageMetadata(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -1465,29 +1248,6 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     return resolveAsync(response, options)
   }
 
-  async generatePackageAutoTags(
-    request: GeneratePackageAutoTagsRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageAutoTagsResponseDto> {
-    const response = this.generatePackageAutoTagsSync(request)
-    return resolveAsync(response, options)
-  }
-
-  async generatePackageAutoTagsVision(
-    request: GeneratePackageAutoTagsVisionRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageAutoTagsVisionResponseDto> {
-    const response = this.generatePackageAutoTagsVisionSync(request)
-    return resolveAsync(response, options)
-  }
-
-  async generatePackageEmbeddings(
-    request: GeneratePackageEmbeddingsRequestDto,
-    options?: RepositoryRequestOptions,
-  ): Promise<GeneratePackageEmbeddingsResponseDto> {
-    const response = this.generatePackageEmbeddingsSync(request)
-    return resolveAsync(response, options)
-  }
 
   writeVideoMetadataSync(
     request: WriteVideoMetadataRequestDto,
@@ -1765,67 +1525,6 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<ReadRuntimeCapabilitiesResponseDto> {
     const response = this.readRuntimeCapabilitiesSync()
-    return resolveAsync(response, options)
-  }
-
-  readVectorDataStatusSync(): ReadVectorDataStatusResponseDto {
-    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
-    const allImages = allSources.flatMap((source) => source.images)
-
-    let embeddedImages = 0
-    let vectorDimension = 0
-    for (const image of allImages) {
-      const vector = image.feature_vector ?? []
-      if (!Array.isArray(vector) || vector.length === 0) {
-        continue
-      }
-      const hasNonZeroValue = vector.some((value) => Number.isFinite(value) && Math.abs(value) > 1e-12)
-      if (!hasNonZeroValue) {
-        continue
-      }
-      embeddedImages += 1
-      if (vectorDimension === 0) {
-        vectorDimension = vector.length
-      }
-    }
-
-    const totalImages = allImages.length
-    return readVectorDataStatusResponseSchema.parse({
-      total_images: totalImages,
-      embedded_images: embeddedImages,
-      pending_images: Math.max(0, totalImages - embeddedImages),
-      vector_dimension: vectorDimension,
-      generated_at_ms: Date.now(),
-    })
-  }
-
-  async readVectorDataStatus(
-    options?: RepositoryRequestOptions,
-  ): Promise<ReadVectorDataStatusResponseDto> {
-    const response = this.readVectorDataStatusSync()
-    return resolveAsync(response, options)
-  }
-
-  clearVectorDataSync(): ClearVectorDataResponseDto {
-    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
-    let clearedImages = 0
-    for (const source of allSources) {
-      for (const image of source.images) {
-        if ((image.feature_vector ?? []).length > 0) {
-          clearedImages += 1
-        }
-        image.feature_vector = []
-      }
-    }
-
-    return clearVectorDataResponseSchema.parse({
-      cleared_images: clearedImages,
-      updated_at_ms: Date.now(),
-    })
-  }
-
-  async clearVectorData(options?: RepositoryRequestOptions): Promise<ClearVectorDataResponseDto> {
-    const response = this.clearVectorDataSync()
     return resolveAsync(response, options)
   }
 

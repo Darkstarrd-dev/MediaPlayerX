@@ -2,7 +2,6 @@ import { contextBridge, ipcRenderer, webFrame, webUtils } from 'electron'
 
 import {
   clearDatabaseResponseSchema,
-  clearVectorDataResponseSchema,
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
@@ -17,7 +16,6 @@ import {
   readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
-  readVectorDataStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
@@ -42,10 +40,6 @@ import {
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelRequestSchema,
   testAdReviewVisionModelResponseSchema,
-  testWdSwinTaggerModelRequestSchema,
-  testWdSwinTaggerModelResponseSchema,
-  testEmbeddingModelRequestSchema,
-  testEmbeddingModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
@@ -56,12 +50,6 @@ import {
   writePlaylistResponseSchema,
   writePackageMetadataRequestSchema,
   writePackageMetadataResponseSchema,
-  generatePackageAutoTagsRequestSchema,
-  generatePackageAutoTagsResponseSchema,
-  generatePackageAutoTagsVisionRequestSchema,
-  generatePackageAutoTagsVisionResponseSchema,
-  generatePackageEmbeddingsRequestSchema,
-  generatePackageEmbeddingsResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeRequestSchema,
@@ -138,16 +126,6 @@ const backendApi = {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.testAdReviewVisionModel, parsed)
     return testAdReviewVisionModelResponseSchema.parse(response)
   },
-  testWdSwinTaggerModel: async (request: unknown) => {
-    const parsed = testWdSwinTaggerModelRequestSchema.parse(request)
-    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.testWdSwinTaggerModel, parsed)
-    return testWdSwinTaggerModelResponseSchema.parse(response)
-  },
-  testEmbeddingModel: async (request: unknown) => {
-    const parsed = testEmbeddingModelRequestSchema.parse(request)
-    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.testEmbeddingModel, parsed)
-    return testEmbeddingModelResponseSchema.parse(response)
-  },
   confirmManageAdReviewDelete: async (request: unknown) => {
     const parsed = confirmManageAdReviewDeleteRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.confirmManageAdReviewDelete, parsed)
@@ -157,21 +135,6 @@ const backendApi = {
     const parsed = writePackageMetadataRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePackageMetadata, parsed)
     return writePackageMetadataResponseSchema.parse(response)
-  },
-  generatePackageAutoTags: async (request: unknown) => {
-    const parsed = generatePackageAutoTagsRequestSchema.parse(request)
-    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.generatePackageAutoTags, parsed)
-    return generatePackageAutoTagsResponseSchema.parse(response)
-  },
-  generatePackageAutoTagsVision: async (request: unknown) => {
-    const parsed = generatePackageAutoTagsVisionRequestSchema.parse(request)
-    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.generatePackageAutoTagsVision, parsed)
-    return generatePackageAutoTagsVisionResponseSchema.parse(response)
-  },
-  generatePackageEmbeddings: async (request: unknown) => {
-    const parsed = generatePackageEmbeddingsRequestSchema.parse(request)
-    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.generatePackageEmbeddings, parsed)
-    return generatePackageEmbeddingsResponseSchema.parse(response)
   },
   writeVideoMetadata: async (request: unknown) => {
     const parsed = writeVideoMetadataRequestSchema.parse(request)
@@ -237,10 +200,6 @@ const backendApi = {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeInfo)
     return readRuntimeInfoResponseSchema.parse(response)
   },
-  readVectorDataStatus: async () => {
-    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readVectorDataStatus)
-    return readVectorDataStatusResponseSchema.parse(response)
-  },
   readArchiveLoadStatus: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readArchiveLoadStatus)
     return readArchiveLoadStatusResponseSchema.parse(response)
@@ -258,10 +217,6 @@ const backendApi = {
   clearDatabase: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearDatabase)
     return clearDatabaseResponseSchema.parse(response)
-  },
-  clearVectorData: async () => {
-    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearVectorData)
-    return clearVectorDataResponseSchema.parse(response)
   },
   onLibraryChanged: (listener: (payload: unknown) => void) => {
     const handler = (_event: unknown, payload: unknown) => {
