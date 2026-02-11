@@ -45,7 +45,7 @@ export const SIZE_SCALE_CONFIG = {
   },
   vectorPanelHeight: {
     base: DEFAULT_SETTINGS.vectorPanelHeight,
-    min: 120 / DEFAULT_SETTINGS.vectorPanelHeight,
+    min: 80 / DEFAULT_SETTINGS.vectorPanelHeight,
     max: 360 / DEFAULT_SETTINGS.vectorPanelHeight,
     step: 0.01,
   },

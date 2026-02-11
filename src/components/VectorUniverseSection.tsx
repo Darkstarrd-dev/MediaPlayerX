@@ -1,10 +1,7 @@
-import { Suspense, lazy } from 'react'
-
 import type { FocusedImageRef, ImagePackage } from '../types'
 import type { VectorControlMap } from '../vectorControls'
 import type { VectorUniverseSceneSettings } from '../features/vector-universe/types'
-
-const VectorUniverseOverlay = lazy(() => import('./VectorUniverseOverlay'))
+import VectorUniverseOverlay from './VectorUniverseOverlay'
 
 export interface VectorUniverseSectionProps {
   open: boolean
@@ -36,26 +33,18 @@ function VectorUniverseSection({
   }
 
   return (
-    <Suspense
-      fallback={
-        <section className="vector-universe-overlay vector-universe-overlay-loading" role="dialog" aria-modal="true" aria-label="向量宇宙层">
-          <p className="vector-universe-overlay-tip">向量宇宙模块加载中...</p>
-        </section>
-      }
-    >
-      <VectorUniverseOverlay
-        open={open}
-        focusedRef={focusedRef}
-        imageSources={imageSources}
-        scopeRefs={scopeRefs}
-        helperScale={helperScale}
-        sceneSettings={sceneSettings}
-        widgetSize={widgetSize}
-        vectorControls={vectorControls}
-        onClose={onClose}
-        onConfirmSelection={onConfirmSelection}
-      />
-    </Suspense>
+    <VectorUniverseOverlay
+      open={open}
+      focusedRef={focusedRef}
+      imageSources={imageSources}
+      scopeRefs={scopeRefs}
+      helperScale={helperScale}
+      sceneSettings={sceneSettings}
+      widgetSize={widgetSize}
+      vectorControls={vectorControls}
+      onClose={onClose}
+      onConfirmSelection={onConfirmSelection}
+    />
   )
 }
 

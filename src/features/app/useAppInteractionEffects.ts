@@ -82,6 +82,7 @@ export function useAppInteractionEffects({
     deleteConfirmOpen,
     setManageMode,
     setMetadataManageMode,
+    setAdReviewPanelOpen,
     setDeleteConfirmOpen,
     setManageOperationHint,
   } = sessionState
@@ -142,6 +143,7 @@ export function useAppInteractionEffects({
         return false
       }
       setManageMode(false)
+      setAdReviewPanelOpen(false)
       setDeleteConfirmOpen(false)
       setManageOperationHint(null)
       clearAllSelections()
@@ -153,6 +155,7 @@ export function useAppInteractionEffects({
         return false
       }
       setMetadataManageMode(false)
+      setAdReviewPanelOpen(false)
       setDeleteConfirmOpen(false)
       setManageOperationHint(null)
       clearAllSelections()
@@ -236,6 +239,9 @@ export function useAppInteractionEffects({
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
+      if (featureTagPickerOpen) {
+        return
+      }
       if (event.key !== 'Escape') {
         return
       }
@@ -247,6 +253,9 @@ export function useAppInteractionEffects({
     }
 
     const onMouseDown = (event: MouseEvent) => {
+      if (featureTagPickerOpen) {
+        return
+      }
       if (event.button !== 2) {
         return
       }
@@ -278,17 +287,20 @@ export function useAppInteractionEffects({
     metadataManageMode,
     setDeleteConfirmOpen,
     setFullscreenActiveWithAutoStop,
+    setAdReviewPanelOpen,
     setManageMode,
     setManageOperationHint,
     setMetadataManageMode,
     settingsOpen,
     updateSettings,
     vectorMode,
+    featureTagPickerOpen,
   ])
 
   useAppShortcutBindings({
     shortcuts,
     vectorUniverseOpen,
+    featureTagPickerOpen,
     mode,
     vectorResultsActive,
     settingsOpen,
@@ -359,6 +371,8 @@ export function useAppInteractionEffects({
     autoPlayInterval,
     moveImage,
     vectorMode,
+    manageMode,
+    metadataManageMode,
     searchPanelCollapsed,
     searchPanelMode,
     vectorPanelHeight,

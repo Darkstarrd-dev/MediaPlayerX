@@ -101,6 +101,7 @@ function VectorUniverseWidget({
       canvas,
       antialias: true,
       alpha: false,
+      premultipliedAlpha: false,
     })
     renderer.setSize(safeSize, safeSize, false)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))

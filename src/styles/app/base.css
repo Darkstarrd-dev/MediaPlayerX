@@ -392,6 +392,34 @@ select option {
   flex-shrink: 0;
 }
 
+.toolbar-actions-manage {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.main-toolbar-summary {
+  min-width: 0;
+  margin-left: auto;
+  text-align: right;
+  color: var(--text-dim);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.main-toolbar-hint {
+  color: var(--text-dim);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.toolbar-actions .feature-action-btn.is-active {
+  border-color: color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-border-2));
+  background: color-mix(in srgb, var(--mpx-accent-soft) 64%, var(--mpx-bg-muted));
+  color: var(--text-main);
+}
+
 .toolbar-actions .toolbar-icon-btn {
   width: var(--mpx-icon-button-size);
   height: var(--mpx-icon-button-size);

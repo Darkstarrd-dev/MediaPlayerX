@@ -29,6 +29,8 @@ interface UseAppWorkspacePropsParams {
   vectorMode: boolean
   manageMode: boolean
   metadataManageMode: boolean
+  adReviewPanelOpen: boolean
+  setAdReviewPanelOpen: Dispatch<SetStateAction<boolean>>
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   vectorPanelHeight: number
@@ -150,6 +152,13 @@ interface UseAppWorkspacePropsParams {
   toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void
 }
 
+function normalizeFeatureTags(values: string[]): string[] {
+  return values
+    .flatMap((value) => value.split(/[\n,，;；|/]+/g))
+    .map((value) => value.trim())
+    .filter(Boolean)
+}
+
 export function useAppWorkspaceProps({
   appSettings,
   benchSettings,
@@ -157,6 +166,8 @@ export function useAppWorkspaceProps({
   vectorMode,
   manageMode,
   metadataManageMode,
+  adReviewPanelOpen,
+  setAdReviewPanelOpen,
   searchPanelCollapsed,
   setSearchPanelCollapsed,
   vectorPanelHeight,
@@ -282,6 +293,14 @@ export function useAppWorkspaceProps({
    * - 输入是上游状态层已收敛的读写能力；
    * - 输出是 Sidebar/Main/Metadata 的稳定 props。
    */
+  const featureTagOptionsEffective = Array.from(
+    new Set(
+      normalizeFeatureTags(
+        mode === 'image' ? scopedImageSourcesEffective.flatMap((source) => source.tags) : featureTagOptions,
+      ),
+    ),
+  ).sort((left, right) => left.localeCompare(right, 'zh-CN'))
+
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
     sidebarFocus: appSettings.sidebarFocus,
@@ -340,7 +359,7 @@ export function useAppWorkspaceProps({
     setFeatureAuthorQuery,
     featureCircleOptions,
     featureAuthorOptions,
-    featureTagOptions,
+    featureTagOptions: featureTagOptionsEffective,
     featureTagPickerOpen,
     setFeatureTagPickerOpen,
     featureTags,
@@ -455,6 +474,7 @@ export function useAppWorkspaceProps({
   const imageMainSectionProps = buildImageMainSectionProps({
     vectorResultsActive,
     showNamesOnly,
+    metadataManageMode,
     backendPageLoading,
     pagedPageSize,
     enableLoadingSkeleton,
@@ -475,6 +495,16 @@ export function useAppWorkspaceProps({
     thumbnailImageUrlById,
     gridRef,
     manageMode,
+    sidebarSelectedCount: sidebarCheckedNodeIds.length,
+    imageSelectedCount: imageCheckedIds.length,
+    activeSelectionScope,
+    pendingManageAction: backendWrite.pending.manage,
+    manageOperationHint,
+    canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    canManageHide: mode === 'image' && imageCheckedIds.length > 0,
+    canManageUnhide: mode === 'image' && imageCheckedIds.length > 0,
+    adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
+    adReviewPanelOpen,
     checkedImageIdSet: imageCheckedIdSet,
     adReviewScopeImageIdSet,
     adReviewLlmReviewedImageIdSet,
@@ -485,11 +515,54 @@ export function useAppWorkspaceProps({
     setImageFocus,
     onToggleImageChecked: toggleImageChecked,
     onReplaceCheckedImages: replaceImageCheckedIds,
+    onManageDelete: requestManageDelete,
+    onManageHide: () => {
+      void runManageHideAction(true)
+    },
+    onManageUnhide: () => {
+      void runManageHideAction(false)
+    },
+    onToggleAdReviewPanel: () => setAdReviewPanelOpen((value) => !value),
+    onClearManageSelection: clearAllSelections,
+    metadataPending: metadataWriteBindings.metadataPending,
+    onMetadataSyncName: () => {
+      if (mode === 'image') {
+        metadataWriteBindings.applyPackageSyncName()
+        return
+      }
+      metadataWriteBindings.applyVideoSyncName()
+    },
     goPrevPage,
     goNextPage,
   })
 
   const videoMainSectionProps = buildVideoMainSectionProps({
+    manageMode,
+    metadataManageMode,
+    sidebarSelectedCount: sidebarCheckedNodeIds.length,
+    imageSelectedCount: imageCheckedIds.length,
+    activeSelectionScope,
+    pendingManageAction: backendWrite.pending.manage,
+    manageOperationHint,
+    canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    canManageHide: mode === 'image' && imageCheckedIds.length > 0,
+    canManageUnhide: mode === 'image' && imageCheckedIds.length > 0,
+    onManageDelete: requestManageDelete,
+    onManageHide: () => {
+      void runManageHideAction(true)
+    },
+    onManageUnhide: () => {
+      void runManageHideAction(false)
+    },
+    onClearManageSelection: clearAllSelections,
+    metadataPending: metadataWriteBindings.metadataPending,
+    onMetadataSyncName: () => {
+      if (mode === 'image') {
+        metadataWriteBindings.applyPackageSyncName()
+        return
+      }
+      metadataWriteBindings.applyVideoSyncName()
+    },
     durationSec: focusedVideoDurationSec,
     videoTime,
     videoPlaying,
@@ -523,6 +596,73 @@ export function useAppWorkspaceProps({
 
   const metadataPanelProps = buildMetadataPanelProps({
     mode,
+    manageMode,
+    searchModeActive: vectorMode && !manageMode && !metadataManageMode,
+    featureResultCount: mode === 'video' ? videosForSidebarCount : scopedImageSourcesEffective.length,
+    featureNameQuery,
+    onFeatureNameQueryChange: setFeatureNameQuery,
+    featureWorkTitleQuery,
+    onFeatureWorkTitleQueryChange: setFeatureWorkTitleQuery,
+    featureCircleQuery,
+    onFeatureCircleQueryChange: setFeatureCircleQuery,
+    featureAuthorQuery,
+    onFeatureAuthorQueryChange: setFeatureAuthorQuery,
+    featureCircleOptions,
+    featureAuthorOptions,
+    featureTagOptions: featureTagOptionsEffective,
+    featureTagPickerOpen,
+    onToggleFeatureTagPicker: () => setFeatureTagPickerOpen((value) => !value),
+    featureTags,
+    onSetFeatureTags: (tags) => {
+      const normalized = Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean)))
+      setFeatureTags(normalized)
+    },
+    onClearFeatureTags: () => setFeatureTags([]),
+    featureGradeFilter,
+    onFeatureGradeFilterChange: setFeatureGradeFilter,
+    adReviewFeatureVisible: appSettings.adReviewVisionVerified,
+    adReviewPanelOpen,
+    canExecuteAdReview: (activeSelectionScope === 'sidebar' && sidebarCheckedNodeIds.length > 0) || imageCheckedIds.length > 0,
+    adReviewPending: manageAdReview.pending,
+    adReviewTask: manageAdReview.task,
+    adReviewHideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
+    hasCheckedAdReviewCandidates: manageAdReview.hasCheckedCandidateSelection,
+    adReviewStrategyMode: appSettings.adReviewStrategyMode,
+    adReviewMaxConcurrency: appSettings.adReviewMaxConcurrency,
+    adReviewHeadN: appSettings.adReviewHeadN,
+    adReviewTailN: appSettings.adReviewTailN,
+    adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
+    onStartAdReview: () => {
+      void manageAdReview.startManageAdReview()
+    },
+    onPauseAdReview: () => {
+      void manageAdReview.pauseManageAdReview()
+    },
+    onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
+    onAdReviewStrategyModeChange: (value) => {
+      appSettings.updateSettings({ adReviewStrategyMode: value })
+    },
+    onAdReviewMaxConcurrencyChange: (value) => {
+      appSettings.updateSettings({
+        adReviewMaxConcurrency: Math.max(4, Math.min(12, Math.floor(value))),
+      })
+    },
+    onAdReviewHeadNChange: (value) => {
+      appSettings.updateSettings({
+        adReviewHeadN: Math.max(0, Math.min(200, Math.floor(value))),
+      })
+    },
+    onAdReviewTailNChange: (value) => {
+      appSettings.updateSettings({
+        adReviewTailN: Math.max(0, Math.min(200, Math.floor(value))),
+      })
+    },
+    onAdReviewTailStopCleanStreakChange: (value) => {
+      appSettings.updateSettings({
+        adReviewTailStopCleanStreak: Math.max(1, Math.min(200, Math.floor(value))),
+      })
+    },
+    onDismissAdReviewTask: manageAdReview.dismissTask,
     metadataCollapsed: appSettings.metadataCollapsed,
     metadataRatio: appSettings.metadataRatio,
     hasImageFocus: imageFocusActive,

@@ -181,10 +181,6 @@ export function useManageImageSelectionInteractions({
         return
       }
 
-      if (target.closest('.manage-image-checker')) {
-        return
-      }
-
       const findCardFromElement = (element: Element | null): HTMLElement | null => {
         if (!(element instanceof Element)) {
           return null

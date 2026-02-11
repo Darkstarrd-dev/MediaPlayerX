@@ -6,6 +6,7 @@ import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../../types
 interface BuildImageMainSectionPropsParams {
   vectorResultsActive: boolean
   showNamesOnly: boolean
+  metadataManageMode: boolean
   backendPageLoading: boolean
   pagedPageSize: number
   enableLoadingSkeleton: boolean
@@ -26,6 +27,16 @@ interface BuildImageMainSectionPropsParams {
   thumbnailImageUrlById: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
   manageMode: boolean
+  sidebarSelectedCount: number
+  imageSelectedCount: number
+  activeSelectionScope: 'sidebar' | 'image' | null
+  pendingManageAction: boolean
+  manageOperationHint: string | null
+  canManageDelete: boolean
+  canManageHide: boolean
+  canManageUnhide: boolean
+  adReviewFeatureEnabled: boolean
+  adReviewPanelOpen: boolean
   checkedImageIdSet: Set<string>
   adReviewScopeImageIdSet: Set<string>
   adReviewLlmReviewedImageIdSet: Set<string>
@@ -36,6 +47,13 @@ interface BuildImageMainSectionPropsParams {
   setImageFocus: (packageId: string, imageIndex: number) => void
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
+  onManageDelete: () => void
+  onManageHide: () => void
+  onManageUnhide: () => void
+  onToggleAdReviewPanel: () => void
+  onClearManageSelection: () => void
+  metadataPending: boolean
+  onMetadataSyncName: () => void
   goPrevPage: () => void
   goNextPage: () => void
 }
@@ -44,6 +62,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
   return {
     vectorMode: params.vectorResultsActive,
     showNamesOnly: params.showNamesOnly,
+    metadataManageMode: params.metadataManageMode,
     loading: params.enableLoadingSkeleton ? params.backendPageLoading : false,
     placeholderCount: Math.max(1, params.pagedPageSize),
     enableLoadingSkeleton: params.enableLoadingSkeleton,
@@ -64,12 +83,29 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     imageUrlById: params.thumbnailImageUrlById,
     gridRef: params.gridRef,
     manageMode: params.manageMode,
+    sidebarSelectedCount: params.sidebarSelectedCount,
+    imageSelectedCount: params.imageSelectedCount,
+    activeSelectionScope: params.activeSelectionScope,
+    pendingManageAction: params.pendingManageAction,
+    manageOperationHint: params.manageOperationHint,
+    canManageDelete: params.canManageDelete,
+    canManageHide: params.canManageHide,
+    canManageUnhide: params.canManageUnhide,
+    adReviewFeatureEnabled: params.adReviewFeatureEnabled,
+    adReviewPanelOpen: params.adReviewPanelOpen,
     checkedImageIds: params.checkedImageIdSet,
     adReviewScopeImageIds: params.adReviewScopeImageIdSet,
     adReviewLlmReviewedImageIds: params.adReviewLlmReviewedImageIdSet,
     adReviewNonLlmReviewedImageIds: params.adReviewNonLlmReviewedImageIdSet,
     onToggleImageChecked: params.onToggleImageChecked,
     onReplaceCheckedImages: params.onReplaceCheckedImages,
+    onManageDelete: params.onManageDelete,
+    onManageHide: params.onManageHide,
+    onManageUnhide: params.onManageUnhide,
+    onToggleAdReviewPanel: params.onToggleAdReviewPanel,
+    onClearManageSelection: params.onClearManageSelection,
+    metadataPending: params.metadataPending,
+    onMetadataSyncName: params.onMetadataSyncName,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
     onEnterFullscreen: () => params.setFullscreenActiveWithAutoStop(true),
     onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => {

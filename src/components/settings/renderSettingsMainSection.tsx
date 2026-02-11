@@ -384,7 +384,7 @@ export function renderSettingsMainSection({
               {adReviewVisionTestMessage ?? (adReviewVisionVerified ? '已通过测试' : '未测试')}
             </span>
           </div>
-          <p className="settings-placeholder">通过测试后，管理模式中将显示“AI广告审核”按钮。</p>
+          <p className="settings-placeholder">通过测试后，文件管理模式主工具栏会显示“广告审核”按钮。</p>
         </fieldset>
       </div>
     )

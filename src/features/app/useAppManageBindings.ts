@@ -43,11 +43,9 @@ export function useAppManageBindings({
     metadataManageMode,
     setManageMode,
     setMetadataManageMode,
+    setAdReviewPanelOpen,
     setManageOperationHint,
     setDeleteConfirmOpen,
-    setVectorSearchResults,
-    setVectorFocusIndex,
-    setVectorPage,
   } = sessionState
 
   const { setVideoCoverById, setVideoCoverImageById } = mediaState
@@ -57,10 +55,7 @@ export function useAppManageBindings({
     sidebarCheckedNodeIds,
     activeSelectionScope,
     clearAllSelections,
-    clearQuickFeatureSearch,
     replaceImageCheckedIds,
-    setSearchPanelMode,
-    setSearchPanelCollapsed,
   } = readNavigationState
 
   const backendWrite = useWriteDataAccess({
@@ -85,32 +80,21 @@ export function useAppManageBindings({
     clearAllSelections,
     setManageMode,
     setMetadataManageMode,
+    setAdReviewPanelOpen,
     setDeleteConfirmOpen,
     setManageOperationHint,
-    setVectorSearchResults,
-    setVectorFocusIndex,
-    setVectorPage,
-    setSearchPanelMode,
-    setSearchPanelCollapsed,
-    clearQuickFeatureSearch,
     updateSettings,
   })
 
   const { toggleMetadataManageMode } = useMetadataManageModeActions({
-    mode,
     manageMode,
     metadataManageMode,
     clearAllSelections,
     setManageMode,
     setMetadataManageMode,
+    setAdReviewPanelOpen,
     setDeleteConfirmOpen,
     setManageOperationHint,
-    setVectorSearchResults,
-    setVectorFocusIndex,
-    setVectorPage,
-    setSearchPanelMode,
-    setSearchPanelCollapsed,
-    clearQuickFeatureSearch,
     updateSettings,
   })
 

@@ -91,22 +91,40 @@ export function useEffectiveDisplayState({
       effectiveMetadataSnapshot.image.id === focusedImage?.id,
   )
 
+  const pageSnapshotMatchesActivePackage =
+    !effectivePageSnapshot ||
+    effectivePageSnapshot.sourceId === null ||
+    !activePackage ||
+    effectivePageSnapshot.sourceId === activePackage.id
+
+  const pageSnapshotForDisplay =
+    !vectorResultsActive && effectivePageSnapshot && pageSnapshotMatchesActivePackage
+      ? effectivePageSnapshot
+      : null
+
+  const normalizeRefs = (refs: FocusedImageRef[]): FocusedImageRef[] =>
+    refs.filter((ref) => {
+      const pkg = packageById.get(ref.packageId)
+      return Boolean(pkg && ref.imageIndex >= 0 && ref.imageIndex < pkg.images.length)
+    })
+
   const activePackageForDisplay =
-    !vectorResultsActive && effectivePageSnapshot?.sourceId
-      ? (packageById.get(effectivePageSnapshot.sourceId) ?? activePackage)
+    pageSnapshotForDisplay?.sourceId
+      ? (packageById.get(pageSnapshotForDisplay.sourceId) ?? activePackage)
       : activePackage
-  const refsInPageEffective = !vectorResultsActive && effectivePageSnapshot ? effectivePageSnapshot.refs : refsInPage
+  const refsInPageEffectiveRaw = pageSnapshotForDisplay?.refs ?? refsInPage
+  const refsInPageEffective = normalizeRefs(refsInPageEffectiveRaw)
   const pageStartEffective =
-    !vectorResultsActive && effectivePageSnapshot
-      ? effectivePageSnapshot.pageIndex * Math.max(1, pagedPageSize)
+    pageSnapshotForDisplay
+      ? pageSnapshotForDisplay.pageIndex * Math.max(1, pagedPageSize)
       : pageStart
   const normalizedPageIndexEffective =
-    !vectorResultsActive && effectivePageSnapshot ? effectivePageSnapshot.pageIndex : normalizedPageIndex
+    pageSnapshotForDisplay ? pageSnapshotForDisplay.pageIndex : normalizedPageIndex
   const imageTotalPagesEffective =
-    !vectorResultsActive && effectivePageSnapshot
+    pageSnapshotForDisplay
       ? (showNamesOnly
           ? 1
-          : Math.max(1, Math.ceil(effectivePageSnapshot.totalItems / Math.max(1, pagedPageSize))))
+          : Math.max(1, Math.ceil(pageSnapshotForDisplay.totalItems / Math.max(1, pagedPageSize))))
       : imageTotalPages
   const metadataImageEffective =
     imageFocusActive && metadataSnapshotMatchesFocus
@@ -154,7 +172,7 @@ export function useEffectiveDisplayState({
   )
 
   return {
-    backendPageSnapshot: effectivePageSnapshot,
+    backendPageSnapshot: pageSnapshotForDisplay,
     activePackageForDisplay,
     refsInPageEffective,
     pageStartEffective,

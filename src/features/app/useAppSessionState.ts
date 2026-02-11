@@ -36,6 +36,7 @@ export function useAppSessionState({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [importMenuOpen, setImportMenuOpen] = useState(false)
   const [vectorUniverseOpen, setVectorUniverseOpen] = useState(false)
+  const [adReviewPanelOpen, setAdReviewPanelOpen] = useState(false)
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
   const [importTaskPanelOpen, setImportTaskPanelOpen] = useState(false)
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
@@ -84,6 +85,8 @@ export function useAppSessionState({
     setImportMenuOpen,
     vectorUniverseOpen,
     setVectorUniverseOpen,
+    adReviewPanelOpen,
+    setAdReviewPanelOpen,
     dismissedImportTaskIds,
     setDismissedImportTaskIds,
     importTaskPanelOpen,

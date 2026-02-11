@@ -5,6 +5,9 @@ import { resolvePaletteId, resolveStyleId } from '../theme/themeRegistry'
 import type { BrowserMode, FocusedImageRef, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import { clamp } from '../../utils/ui'
 
+const TOP_PANEL_MIN_HEIGHT = 80
+const TOP_PANEL_MAX_HEIGHT = 360
+
 interface UseAppEffectsParams {
   appBodyRef: RefObject<HTMLDivElement | null>
   gridRef: RefObject<HTMLDivElement | null>
@@ -47,6 +50,8 @@ interface UseAppEffectsParams {
   autoPlayInterval: number
   moveImage: (delta: number) => void
   vectorMode: boolean
+  manageMode: boolean
+  metadataManageMode: boolean
   searchPanelCollapsed: boolean
   searchPanelMode: 'vector' | 'feature'
   vectorPanelHeight: number
@@ -112,6 +117,8 @@ export function useAppEffects({
   autoPlayInterval,
   moveImage,
   vectorMode,
+  manageMode,
+  metadataManageMode,
   searchPanelCollapsed,
   searchPanelMode,
   vectorPanelHeight,
@@ -406,8 +413,10 @@ export function useAppEffects({
     return () => window.clearInterval(timer)
   }, [autoPlayEnabled, autoPlayInterval, mode, moveImage])
 
+  const activeTopPanelKind = manageMode ? 'manage' : metadataManageMode ? 'metadata' : vectorMode ? 'search' : 'none'
+
   useEffect(() => {
-    if (!vectorMode || searchPanelCollapsed) {
+    if (searchPanelCollapsed || activeTopPanelKind === 'none') {
       return
     }
 
@@ -416,7 +425,7 @@ export function useAppEffects({
       return
     }
 
-    const rafId = window.requestAnimationFrame(() => {
+    const measurePanelHeight = () => {
       const panel = content.parentElement
       const styles = panel ? window.getComputedStyle(panel) : null
       const readPx = (value: string | undefined) => {
@@ -426,20 +435,29 @@ export function useAppEffects({
       const chromeHeight = styles
         ? readPx(styles.paddingTop) + readPx(styles.paddingBottom) + readPx(styles.borderTopWidth) + readPx(styles.borderBottomWidth)
         : 20
-      const measured = clamp(Math.ceil(content.scrollHeight + chromeHeight + 2), 120, 360)
+      const measured = clamp(Math.ceil(content.scrollHeight + chromeHeight + 1), TOP_PANEL_MIN_HEIGHT, TOP_PANEL_MAX_HEIGHT)
       if (Math.abs(measured - vectorPanelHeight) < 1) {
         return
       }
       updateSettings({ vectorPanelHeight: measured })
-    })
+    }
 
-    return () => window.cancelAnimationFrame(rafId)
+    const rafId = window.requestAnimationFrame(measurePanelHeight)
+    const observer = new ResizeObserver(() => {
+      measurePanelHeight()
+    })
+    observer.observe(content)
+
+    return () => {
+      window.cancelAnimationFrame(rafId)
+      observer.disconnect()
+    }
   }, [
+    activeTopPanelKind,
     featureTagPickerOpen,
     searchPanelCollapsed,
     searchPanelMode,
     updateSettings,
-    vectorMode,
     vectorPanelContentRef,
     vectorPanelHeight,
   ])

@@ -81,6 +81,7 @@ export function useSettingsPersistence({
   // Hydrate from DB on mount
   useEffect(() => {
     if (!repository.readAppState) {
+      isHydratedRef.current = true
       return
     }
 

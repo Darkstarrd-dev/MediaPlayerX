@@ -18,6 +18,13 @@ interface UseFeatureSearchParams {
   videos: VideoItem[]
 }
 
+function normalizeTagsFromValues(values: string[]): string[] {
+  return values
+    .flatMap((value) => value.split(/[\n,，;；|/]+/g))
+    .map((value) => value.trim())
+    .filter(Boolean)
+}
+
 export function useFeatureSearch({
   mode,
   vectorMode,
@@ -109,8 +116,13 @@ export function useFeatureSearch({
 
   const featureTagOptions = useMemo(
     () =>
-      Array.from(new Set(mode === 'image' ? imageSources.flatMap((source) => source.tags) : videos.flatMap((video) => video.tags)))
-        .sort((a, b) => a.localeCompare(b, 'zh-CN')),
+      Array.from(
+        new Set(
+          normalizeTagsFromValues(
+            mode === 'image' ? imageSources.flatMap((source) => source.tags) : videos.flatMap((video) => video.tags),
+          ),
+        ),
+      ).sort((a, b) => a.localeCompare(b, 'zh-CN')),
     [imageSources, mode, videos],
   )
 

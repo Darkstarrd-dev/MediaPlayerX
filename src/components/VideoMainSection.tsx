@@ -3,6 +3,22 @@ import { useEffect, useRef, useState } from 'react'
 import { clamp, formatSeconds } from '../utils/ui'
 
 interface VideoMainSectionProps {
+  manageMode: boolean
+  metadataManageMode: boolean
+  sidebarSelectedCount: number
+  imageSelectedCount: number
+  activeSelectionScope: 'sidebar' | 'image' | null
+  pendingManageAction: boolean
+  manageOperationHint: string | null
+  canManageDelete: boolean
+  canManageHide: boolean
+  canManageUnhide: boolean
+  onManageDelete: () => void
+  onManageHide: () => void
+  onManageUnhide: () => void
+  onClearManageSelection: () => void
+  metadataPending: boolean
+  onMetadataSyncName: () => void
   durationSec: number
   videoTime: number
   videoPlaying: boolean
@@ -27,6 +43,22 @@ interface VideoMainSectionProps {
 }
 
 function VideoMainSection({
+  manageMode,
+  metadataManageMode,
+  sidebarSelectedCount,
+  imageSelectedCount,
+  activeSelectionScope,
+  pendingManageAction,
+  manageOperationHint,
+  canManageDelete,
+  canManageHide,
+  canManageUnhide,
+  onManageDelete,
+  onManageHide,
+  onManageUnhide,
+  onClearManageSelection,
+  metadataPending,
+  onMetadataSyncName,
   durationSec,
   videoTime,
   videoPlaying,
@@ -59,6 +91,12 @@ function VideoMainSection({
     : showCover
       ? coverColor
       : 'var(--mpx-video-screen-bg)'
+  const manageSummary =
+    activeSelectionScope === 'sidebar'
+      ? `已选目录节点: ${sidebarSelectedCount}`
+      : activeSelectionScope === 'image'
+        ? `已选媒体条目: ${imageSelectedCount}`
+        : '未选择条目'
 
   useEffect(() => {
     setHasPlayedCurrentSource(false)
@@ -98,6 +136,43 @@ function VideoMainSection({
 
   return (
     <div className="video-preview">
+      <div className="main-toolbar">
+        {manageMode ? (
+          <>
+            <div className="toolbar-actions toolbar-actions-manage">
+              <button className="vector-search-btn" type="button" disabled={!canManageDelete || pendingManageAction} onClick={onManageDelete}>
+                删除
+              </button>
+              <button className="feature-action-btn" type="button" disabled={!canManageHide || pendingManageAction} onClick={onManageHide}>
+                隐藏
+              </button>
+              <button className="feature-action-btn" type="button" disabled={!canManageUnhide || pendingManageAction} onClick={onManageUnhide}>
+                取消隐藏
+              </button>
+              <button className="feature-action-btn" type="button" disabled={pendingManageAction} onClick={onClearManageSelection}>
+                清空选择
+              </button>
+              {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
+            </div>
+            <strong className="main-toolbar-summary" title={manageSummary}>
+              {manageSummary}
+            </strong>
+          </>
+        ) : metadataManageMode ? (
+          <>
+            <strong className="main-toolbar-title">元数据管理</strong>
+            <div className="toolbar-actions toolbar-actions-manage">
+              <button className="feature-action-btn" type="button" disabled={metadataPending} onClick={onMetadataSyncName}>
+                同步名称
+              </button>
+              {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
+            </div>
+          </>
+        ) : (
+          <strong className="main-toolbar-title">视频预览</strong>
+        )}
+      </div>
+
       <div className="video-screen" style={{ background: videoScreenBackground }}>
         {videoSourceUrl ? (
           <video

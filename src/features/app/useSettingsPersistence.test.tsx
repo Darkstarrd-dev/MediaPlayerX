@@ -119,4 +119,46 @@ describe('useSettingsPersistence', () => {
       expect(result.current.settings.adReviewVisionModel).toBe('local-new-model')
     })
   })
+
+  it('still persists settings when readAppState is unavailable', async () => {
+    vi.useFakeTimers()
+    const writeAppState = vi.fn().mockResolvedValue({})
+    const repository = {
+      writeAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+
+    function useHarness() {
+      const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+      const updateSettings = (patch: Parameters<typeof useSettingsPersistence>[0]['updateSettings'] extends (arg: infer A) => void ? A : never) => {
+        setSettings((prev) => ({
+          ...prev,
+          ...patch,
+        }))
+      }
+
+      useSettingsPersistence({
+        settings,
+        repository,
+        updateSettings,
+      })
+
+      return {
+        settings,
+        updateSettings,
+      }
+    }
+
+    const { result } = renderHook(() => useHarness())
+
+    act(() => {
+      result.current.updateSettings({ adReviewVisionModel: 'persist-model' })
+      vi.advanceTimersByTime(1200)
+    })
+
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(writeAppState).toHaveBeenCalledTimes(1)
+
+    vi.useRealTimers()
+  })
 })

@@ -7,6 +7,7 @@ import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../types'
 interface ImageMainSectionProps {
   vectorMode: boolean
   showNamesOnly: boolean
+  metadataManageMode: boolean
   loading: boolean
   placeholderCount: number
   enableLoadingSkeleton: boolean
@@ -30,12 +31,29 @@ interface ImageMainSectionProps {
   onEnterFullscreen: () => void
   onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
   manageMode: boolean
+  sidebarSelectedCount: number
+  imageSelectedCount: number
+  activeSelectionScope: 'sidebar' | 'image' | null
+  pendingManageAction: boolean
+  manageOperationHint: string | null
+  canManageDelete: boolean
+  canManageHide: boolean
+  canManageUnhide: boolean
+  adReviewFeatureEnabled: boolean
+  adReviewPanelOpen: boolean
   checkedImageIds: ReadonlySet<string>
   adReviewScopeImageIds: ReadonlySet<string>
   adReviewLlmReviewedImageIds: ReadonlySet<string>
   adReviewNonLlmReviewedImageIds: ReadonlySet<string>
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
+  onManageDelete: () => void
+  onManageHide: () => void
+  onManageUnhide: () => void
+  onToggleAdReviewPanel: () => void
+  onClearManageSelection: () => void
+  metadataPending: boolean
+  onMetadataSyncName: () => void
   onPrevPage: () => void
   onNextPage: () => void
 }
@@ -43,6 +61,7 @@ interface ImageMainSectionProps {
 function ImageMainSection({
   vectorMode,
   showNamesOnly,
+  metadataManageMode,
   loading,
   placeholderCount,
   enableLoadingSkeleton,
@@ -63,12 +82,29 @@ function ImageMainSection({
   imageUrlById,
   gridRef,
   manageMode,
+  sidebarSelectedCount,
+  imageSelectedCount,
+  activeSelectionScope,
+  pendingManageAction,
+  manageOperationHint,
+  canManageDelete,
+  canManageHide,
+  canManageUnhide,
+  adReviewFeatureEnabled,
+  adReviewPanelOpen,
   checkedImageIds,
   adReviewScopeImageIds,
   adReviewLlmReviewedImageIds,
   adReviewNonLlmReviewedImageIds,
   onToggleImageChecked,
   onReplaceCheckedImages,
+  onManageDelete,
+  onManageHide,
+  onManageUnhide,
+  onToggleAdReviewPanel,
+  onClearManageSelection,
+  metadataPending,
+  onMetadataSyncName,
   onToggleShowNamesOnly,
   onEnterFullscreen,
   onSelectImage,
@@ -83,55 +119,102 @@ function ImageMainSection({
     onSelectImage,
   })
 
+  const manageSummary =
+    activeSelectionScope === 'sidebar'
+      ? `已选目录节点: ${sidebarSelectedCount}`
+      : activeSelectionScope === 'image'
+        ? `已选媒体条目: ${imageSelectedCount}`
+        : '未选择条目'
+
   return (
     <>
       <div className="main-toolbar">
-        <strong className="main-toolbar-title">
-          {vectorMode
-            ? '向量结果视图'
-            : `${activePackage?.displayName ?? '无图包'} (${visibleImageRefs.length} 张)`}
-        </strong>
-        <div className="toolbar-actions">
-          <button
-            className={`toolbar-icon-btn ${showNamesOnly ? 'is-names-mode' : 'is-grid-mode'}`}
-            type="button"
-            aria-label={showNamesOnly ? '当前纯文件名模式，切换到缩略图模式' : '当前缩略图模式，切换到纯文件名模式'}
-            title={showNamesOnly ? '切换到缩略图模式' : '切换到纯文件名模式'}
-            onClick={onToggleShowNamesOnly}
-          >
-            <span aria-hidden="true">{showNamesOnly ? '≡' : '▦'}</span>
-          </button>
-          <button
-            className="toolbar-icon-btn"
-            type="button"
-            aria-label="进入全屏"
-            title="进入全屏"
-            onClick={onEnterFullscreen}
-            disabled={!focusedImageExists}
-          >
-            <span aria-hidden="true">⛶</span>
-          </button>
-        </div>
+        {manageMode ? (
+          <>
+            <div className="toolbar-actions toolbar-actions-manage">
+              <button className="vector-search-btn" type="button" disabled={!canManageDelete || pendingManageAction} onClick={onManageDelete}>
+                删除
+              </button>
+              {adReviewFeatureEnabled ? (
+                <button
+                  className={`feature-action-btn ${adReviewPanelOpen ? 'is-active' : ''}`}
+                  type="button"
+                  disabled={pendingManageAction}
+                  onClick={onToggleAdReviewPanel}
+                >
+                  广告审核
+                </button>
+              ) : null}
+              <button className="feature-action-btn" type="button" disabled={!canManageHide || pendingManageAction} onClick={onManageHide}>
+                隐藏
+              </button>
+              <button className="feature-action-btn" type="button" disabled={!canManageUnhide || pendingManageAction} onClick={onManageUnhide}>
+                取消隐藏
+              </button>
+              <button className="feature-action-btn" type="button" disabled={pendingManageAction} onClick={onClearManageSelection}>
+                清空选择
+              </button>
+              {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
+            </div>
+            <strong className="main-toolbar-summary" title={manageSummary}>
+              {manageSummary}
+            </strong>
+          </>
+        ) : metadataManageMode ? (
+          <>
+            <strong className="main-toolbar-title">元数据管理</strong>
+            <div className="toolbar-actions toolbar-actions-manage">
+              <button className="feature-action-btn" type="button" disabled={metadataPending} onClick={onMetadataSyncName}>
+                同步名称
+              </button>
+              {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
+            </div>
+          </>
+        ) : (
+          <>
+            <strong className="main-toolbar-title">
+              {vectorMode
+                ? '检索结果视图'
+                : `${activePackage?.displayName ?? '无图包'} (${visibleImageRefs.length} 张)`}
+            </strong>
+            <div className="toolbar-actions">
+              <button
+                className={`toolbar-icon-btn ${showNamesOnly ? 'is-names-mode' : 'is-grid-mode'}`}
+                type="button"
+                aria-label={showNamesOnly ? '当前纯文件名模式，切换到缩略图模式' : '当前缩略图模式，切换到纯文件名模式'}
+                title={showNamesOnly ? '切换到缩略图模式' : '切换到纯文件名模式'}
+                onClick={onToggleShowNamesOnly}
+              >
+                <span aria-hidden="true">{showNamesOnly ? '≡' : '▦'}</span>
+              </button>
+              <button
+                className="toolbar-icon-btn"
+                type="button"
+                aria-label="进入全屏"
+                title="进入全屏"
+                onClick={onEnterFullscreen}
+                disabled={!focusedImageExists}
+              >
+                <span aria-hidden="true">⛶</span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {showNamesOnly ? (
         <div className={`name-list ${manageMode ? 'is-manage' : ''}`} ref={gridRef}>
           <div className="name-list-header">
-            {manageMode ? <span aria-hidden="true" /> : null}
             <span>文件名</span>
             <span>文件大小</span>
             <span>分辨率</span>
           </div>
           <div
             className="name-list-body"
-            onMouseDown={startMarqueeSelection}
-            onWheel={
-              manageMode
-                ? (event) => {
-                    event.preventDefault()
-                  }
-                : undefined
-            }
+            onMouseDown={(event) => {
+              startMarqueeSelection(event)
+              startThumbnailDragToggle(event)
+            }}
           >
             {visibleImageRefs.map((ref, absoluteIndex) => {
               const pkg = packageById.get(ref.packageId)
@@ -147,50 +230,26 @@ function ImageMainSection({
               const isAdReviewLlmReviewed = adReviewLlmReviewedImageIds.has(image.id)
               const isAdReviewNonLlmReviewed = adReviewNonLlmReviewedImageIds.has(image.id)
               const isAdReviewPending = inAdReviewScope && !isAdReviewLlmReviewed && !isAdReviewNonLlmReviewed
-
-              if (manageMode) {
-                return (
-                  <div
-                    key={`${ref.packageId}-${ref.imageIndex}`}
-                    data-manage-image-id={image.id}
-                    data-manage-package-id={ref.packageId}
-                    data-manage-image-index={String(ref.imageIndex)}
-                    data-manage-absolute-index={String(absoluteIndex)}
-                    className={`name-list-row is-manage ${image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${inAdReviewScope ? 'is-ad-review-scope' : ''} ${isAdReviewPending ? 'is-ad-review-pending' : ''} ${isAdReviewLlmReviewed ? 'is-ad-reviewed-llm' : ''} ${isAdReviewNonLlmReviewed ? 'is-ad-reviewed-non-llm' : ''}`}
-                  >
-                    <input
-                      className="manage-image-checker"
-                      aria-label={`manage-image-${image.id}`}
-                      checked={isChecked}
-                      type="checkbox"
-                      onChange={(event) => onToggleImageChecked(image.id, event.target.checked)}
-                    />
-                    <button
-                      className="name-list-row-main"
-                      type="button"
-                      onClick={() => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex)}
-                      onDoubleClick={onEnterFullscreen}
-                    >
-                      <span>{`${image.hidden ? '[隐藏] ' : ''}${pkg.displayName}/${fileName}`}</span>
-                      <span>{`${image.sizeKb}KB`}</span>
-                      <span>{image.width > 0 && image.height > 0 ? `${image.width} x ${image.height}` : '-'}</span>
-                    </button>
-                  </div>
-                )
-              }
-
               return (
-                <button
+                <div
                   key={`${ref.packageId}-${ref.imageIndex}`}
-                  className={`name-list-row ${isFocused ? 'is-focused' : ''}`}
-                  type="button"
-                  onClick={() => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex)}
-                  onDoubleClick={onEnterFullscreen}
+                  data-manage-image-id={image.id}
+                  data-manage-package-id={ref.packageId}
+                  data-manage-image-index={String(ref.imageIndex)}
+                  data-manage-absolute-index={String(absoluteIndex)}
+                  className={`name-list-row ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${manageMode && image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${manageMode && inAdReviewScope ? 'is-ad-review-scope' : ''} ${manageMode && isAdReviewPending ? 'is-ad-review-pending' : ''} ${manageMode && isAdReviewLlmReviewed ? 'is-ad-reviewed-llm' : ''} ${manageMode && isAdReviewNonLlmReviewed ? 'is-ad-reviewed-non-llm' : ''}`}
                 >
-                  <span>{`${pkg.displayName}/${fileName}`}</span>
-                  <span>{`${image.sizeKb}KB`}</span>
-                  <span>{image.width > 0 && image.height > 0 ? `${image.width} x ${image.height}` : '-'}</span>
-                </button>
+                  <button
+                    className="name-list-row-main"
+                    type="button"
+                    onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
+                    onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
+                  >
+                    <span>{`${manageMode && image.hidden ? '[隐藏] ' : ''}${pkg.displayName}/${fileName}`}</span>
+                    <span>{`${image.sizeKb}KB`}</span>
+                    <span>{image.width > 0 && image.height > 0 ? `${image.width} x ${image.height}` : '-'}</span>
+                  </button>
+                </div>
               )
             })}
           </div>
@@ -201,13 +260,6 @@ function ImageMainSection({
             className={`image-grid ${manageMode ? 'is-manage' : ''}`}
             ref={gridRef}
             onMouseDown={manageMode ? startThumbnailDragToggle : undefined}
-            onWheel={
-              manageMode
-                ? (event) => {
-                    event.preventDefault()
-                  }
-                : undefined
-            }
             style={{
               gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
               gap: `${thumbnailGap}px`,
@@ -240,90 +292,46 @@ function ImageMainSection({
                 const isAdReviewLlmReviewed = adReviewLlmReviewedImageIds.has(image.id)
                 const isAdReviewNonLlmReviewed = adReviewNonLlmReviewedImageIds.has(image.id)
                 const isAdReviewPending = inAdReviewScope && !isAdReviewLlmReviewed && !isAdReviewNonLlmReviewed
-
-                if (manageMode) {
-                  return (
-                   <div
-                      key={`${ref.packageId}-${ref.imageIndex}`}
-                      data-manage-image-id={image.id}
-                      data-manage-package-id={ref.packageId}
-                      data-manage-image-index={String(ref.imageIndex)}
-                      data-manage-absolute-index={String(absoluteIndex)}
-                       className={`thumb-card is-manage ${image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${inAdReviewScope ? 'is-ad-review-scope' : ''} ${isAdReviewPending ? 'is-ad-review-pending' : ''} ${isAdReviewLlmReviewed ? 'is-ad-reviewed-llm' : ''} ${isAdReviewNonLlmReviewed ? 'is-ad-reviewed-non-llm' : ''}`}
-                       style={{ width: `${actualCellWidth}px` }}
-                     >
-                      <input
-                        className="manage-image-checker"
-                       aria-label={`manage-image-${image.id}`}
-                        checked={isChecked}
-                        type="checkbox"
-                        onMouseDown={(event) => {
-                          event.stopPropagation()
-                        }}
-                        onChange={(event) => onToggleImageChecked(image.id, event.target.checked)}
-                      />
-                     <button
-                       className="thumb-card-main"
-                       type="button"
-                       onClick={() => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex)}
-                       onDoubleClick={onEnterFullscreen}
-                     >
-                       {image.hidden ? <span className="manage-hidden-badge">已隐藏</span> : null}
-                       <span className="visually-hidden">{`${pkg.displayName} #${image.ordinal}`}</span>
-                       {vectorMode ? (
-                         <span className="visually-hidden">{`相似度 ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</span>
-                       ) : null}
-                       <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
-                         <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
-                           {imageSrc ? (
-                             <img
-                               className="thumb-media-image"
-                               src={imageSrc}
-                               alt={`${pkg.displayName} #${image.ordinal}`}
-                               loading="lazy"
-                               draggable={false}
-                             />
-                           ) : (
-                             <div className="thumb-media-empty" />
-                           )}
-                         </div>
-                       </div>
-                     </button>
-                   </div>
-                 )
-               }
-
-               return (
-                 <button
-                   key={`${ref.packageId}-${ref.imageIndex}`}
-                   className={`thumb-card ${isFocused ? 'is-focused' : ''}`}
-                   style={{ width: `${actualCellWidth}px` }}
-                   type="button"
-                   onClick={() => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex)}
-                   onDoubleClick={onEnterFullscreen}
-                 >
-                   <span className="visually-hidden">{`${pkg.displayName} #${image.ordinal}`}</span>
-                   {vectorMode ? (
-                     <span className="visually-hidden">{`相似度 ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</span>
-                   ) : null}
-                   <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
-                     <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
-                       {imageSrc ? (
-                         <img
-                           className="thumb-media-image"
-                           src={imageSrc}
-                           alt={`${pkg.displayName} #${image.ordinal}`}
-                           loading="lazy"
-                           draggable={false}
-                         />
-                       ) : (
-                         <div className="thumb-media-empty" />
-                       )}
-                     </div>
-                   </div>
-                 </button>
-               )
-             })}
+                return (
+                  <div
+                    key={`${ref.packageId}-${ref.imageIndex}`}
+                    data-manage-image-id={image.id}
+                    data-manage-package-id={ref.packageId}
+                    data-manage-image-index={String(ref.imageIndex)}
+                    data-manage-absolute-index={String(absoluteIndex)}
+                    className={`thumb-card ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${manageMode && image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${manageMode && inAdReviewScope ? 'is-ad-review-scope' : ''} ${manageMode && isAdReviewPending ? 'is-ad-review-pending' : ''} ${manageMode && isAdReviewLlmReviewed ? 'is-ad-reviewed-llm' : ''} ${manageMode && isAdReviewNonLlmReviewed ? 'is-ad-reviewed-non-llm' : ''}`}
+                    style={{ width: `${actualCellWidth}px` }}
+                  >
+                    <button
+                      className="thumb-card-main"
+                      type="button"
+                      onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
+                      onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
+                    >
+                      {manageMode && image.hidden ? <span className="manage-hidden-badge">已隐藏</span> : null}
+                      <span className="visually-hidden">{`${pkg.displayName} #${image.ordinal}`}</span>
+                      {vectorMode ? (
+                        <span className="visually-hidden">{`相似度 ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</span>
+                      ) : null}
+                      <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
+                        <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
+                          {imageSrc ? (
+                            <img
+                              className="thumb-media-image"
+                              src={imageSrc}
+                              alt={`${pkg.displayName} #${image.ordinal}`}
+                              loading="lazy"
+                              draggable={false}
+                            />
+                          ) : (
+                            <div className="thumb-media-empty" />
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                )
+              })}
           </div>
 
           {imageTotalPages > 1 ? (

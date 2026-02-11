@@ -1,5 +1,10 @@
 .sidebar-row.is-manage {
-  grid-template-columns: 18px 10px minmax(0, 1fr) auto;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+}
+
+.sidebar-row.is-manage.is-selected {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mpx-accent) 88%, #ffffff);
+  background: color-mix(in srgb, var(--mpx-accent-soft) 58%, var(--mpx-bg-selected));
 }
 
 .manage-panel {
@@ -86,6 +91,13 @@
   cursor: default;
 }
 
+.thumb-card.is-manage.is-selected,
+.name-list-row.is-manage.is-selected {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mpx-accent) 92%, #ffffff);
+  border-color: color-mix(in srgb, var(--mpx-accent) 78%, var(--mpx-border-1));
+  background: color-mix(in srgb, var(--mpx-accent-soft) 46%, var(--mpx-bg-elevated));
+}
+
 .thumb-card.is-manage.is-hidden {
   opacity: 0.64;
 }
@@ -107,11 +119,6 @@
   font-size: 11px;
   background: var(--mpx-status-warning-bg);
   color: var(--mpx-status-warning-text);
-}
-
-.name-list.is-manage .name-list-header,
-.name-list.is-manage .name-list-row {
-  grid-template-columns: 24px minmax(0, 1fr) 120px 140px;
 }
 
 .name-list-row.is-manage {

@@ -7,6 +7,48 @@ import type { PackageMetadataWritePayload, VideoMetadataWritePayload } from './u
 
 interface BuildMetadataPanelPropsParams {
   mode: MetadataPanelProps['mode']
+  manageMode: boolean
+  searchModeActive: boolean
+  featureResultCount: number
+  featureNameQuery: string
+  onFeatureNameQueryChange: (value: string) => void
+  featureWorkTitleQuery: string
+  onFeatureWorkTitleQueryChange: (value: string) => void
+  featureCircleQuery: string
+  onFeatureCircleQueryChange: (value: string) => void
+  featureAuthorQuery: string
+  onFeatureAuthorQueryChange: (value: string) => void
+  featureCircleOptions: string[]
+  featureAuthorOptions: string[]
+  featureTagOptions: string[]
+  featureTagPickerOpen: boolean
+  onToggleFeatureTagPicker: () => void
+  featureTags: string[]
+  onSetFeatureTags: (tags: string[]) => void
+  onClearFeatureTags: () => void
+  featureGradeFilter: number | null
+  onFeatureGradeFilterChange: (value: number | null) => void
+  adReviewFeatureVisible: boolean
+  adReviewPanelOpen: boolean
+  canExecuteAdReview: boolean
+  adReviewPending: boolean
+  adReviewTask: MetadataPanelProps['adReviewTask']
+  adReviewHideUncheckedNonChecked: boolean
+  hasCheckedAdReviewCandidates: boolean
+  adReviewStrategyMode: 'all' | 'head-tail'
+  adReviewMaxConcurrency: number
+  adReviewHeadN: number
+  adReviewTailN: number
+  adReviewTailStopCleanStreak: number
+  onStartAdReview: () => void
+  onPauseAdReview: () => void
+  onToggleHideUncheckedNonChecked: () => void
+  onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
+  onAdReviewMaxConcurrencyChange: (value: number) => void
+  onAdReviewHeadNChange: (value: number) => void
+  onAdReviewTailNChange: (value: number) => void
+  onAdReviewTailStopCleanStreakChange: (value: number) => void
+  onDismissAdReviewTask: () => void
   metadataCollapsed: boolean
   metadataRatio: number
   hasImageFocus: boolean
@@ -43,6 +85,48 @@ interface BuildMetadataPanelPropsParams {
 export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): MetadataPanelProps {
   return {
     mode: params.mode,
+    manageMode: params.manageMode,
+    searchModeActive: params.searchModeActive,
+    featureResultCount: params.featureResultCount,
+    featureNameQuery: params.featureNameQuery,
+    onFeatureNameQueryChange: params.onFeatureNameQueryChange,
+    featureWorkTitleQuery: params.featureWorkTitleQuery,
+    onFeatureWorkTitleQueryChange: params.onFeatureWorkTitleQueryChange,
+    featureCircleQuery: params.featureCircleQuery,
+    onFeatureCircleQueryChange: params.onFeatureCircleQueryChange,
+    featureAuthorQuery: params.featureAuthorQuery,
+    onFeatureAuthorQueryChange: params.onFeatureAuthorQueryChange,
+    featureCircleOptions: params.featureCircleOptions,
+    featureAuthorOptions: params.featureAuthorOptions,
+    featureTagOptions: params.featureTagOptions,
+    featureTagPickerOpen: params.featureTagPickerOpen,
+    onToggleFeatureTagPicker: params.onToggleFeatureTagPicker,
+    featureTags: params.featureTags,
+    onSetFeatureTags: params.onSetFeatureTags,
+    onClearFeatureTags: params.onClearFeatureTags,
+    featureGradeFilter: params.featureGradeFilter,
+    onFeatureGradeFilterChange: params.onFeatureGradeFilterChange,
+    adReviewFeatureVisible: params.adReviewFeatureVisible,
+    adReviewPanelOpen: params.adReviewPanelOpen,
+    canExecuteAdReview: params.canExecuteAdReview,
+    adReviewPending: params.adReviewPending,
+    adReviewTask: params.adReviewTask,
+    adReviewHideUncheckedNonChecked: params.adReviewHideUncheckedNonChecked,
+    hasCheckedAdReviewCandidates: params.hasCheckedAdReviewCandidates,
+    adReviewStrategyMode: params.adReviewStrategyMode,
+    adReviewMaxConcurrency: params.adReviewMaxConcurrency,
+    adReviewHeadN: params.adReviewHeadN,
+    adReviewTailN: params.adReviewTailN,
+    adReviewTailStopCleanStreak: params.adReviewTailStopCleanStreak,
+    onStartAdReview: params.onStartAdReview,
+    onPauseAdReview: params.onPauseAdReview,
+    onToggleHideUncheckedNonChecked: params.onToggleHideUncheckedNonChecked,
+    onAdReviewStrategyModeChange: params.onAdReviewStrategyModeChange,
+    onAdReviewMaxConcurrencyChange: params.onAdReviewMaxConcurrencyChange,
+    onAdReviewHeadNChange: params.onAdReviewHeadNChange,
+    onAdReviewTailNChange: params.onAdReviewTailNChange,
+    onAdReviewTailStopCleanStreakChange: params.onAdReviewTailStopCleanStreakChange,
+    onDismissAdReviewTask: params.onDismissAdReviewTask,
     metadataCollapsed: params.metadataCollapsed,
     metadataRatio: params.metadataRatio,
     hasImageFocus: params.hasImageFocus,

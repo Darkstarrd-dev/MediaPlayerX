@@ -95,28 +95,20 @@ function SidebarPanel({
         <div
           key={node.id}
           data-sidebar-node-id={node.id}
-          className={`sidebar-row ${manageMode ? 'is-manage' : ''} ${isActivePackage || isActiveVideo ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
+          className={`sidebar-row ${manageMode ? 'is-manage' : ''} ${checkedNodes.has(node.id) ? 'is-selected' : ''} ${isActivePackage || isActiveVideo ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
           style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
         >
-          {manageMode ? (
-            <input
-              className="sidebar-manage-checker"
-              aria-label={`manage-node-${node.id}`}
-              checked={checkedNodes.has(node.id)}
-              type="checkbox"
-              onChange={(event) => {
-                onToggleManageNode?.(node.id, (event.nativeEvent as MouseEvent).shiftKey)
-              }}
-            />
-          ) : null}
-
           <span className={`sidebar-bullet ${loadState ? `is-${loadState}` : ''}`} aria-hidden="true" />
 
           <button
             className="sidebar-label"
             type="button"
             style={{ fontSize: `${sidebarFontSize}px` }}
-            onClick={() => {
+            onClick={(event) => {
+              if (manageMode) {
+                onToggleManageNode?.(node.id, event.shiftKey)
+                return
+              }
               if (mode === 'image' && searchResultReadonly) {
                 return
               }

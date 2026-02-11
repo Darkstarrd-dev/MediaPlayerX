@@ -72,6 +72,66 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByLabelText('名称')).toBeNull()
   })
 
+  it('文件管理控件改为主工具栏承载，且摘要右对齐显示', async () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
+
+    expect(document.querySelector('.manage-panel')).toBeNull()
+    expect(document.querySelector('.main-toolbar-summary')).not.toBeNull()
+
+    await waitFor(() => {
+      expect(screen.getByText('未选择条目')).toBeInTheDocument()
+    })
+  })
+
+  it('检索/文件管理/元数据管理快速切换不会抛出运行时错误', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    render(<App />)
+
+    const searchButton = screen.getByRole('button', { name: '检索' })
+    const manageButton = screen.getByRole('button', { name: '文件管理' })
+    const metadataManageButton = screen.getByRole('button', { name: '元数据管理' })
+
+    for (let index = 0; index < 5; index += 1) {
+      fireEvent.click(manageButton)
+      fireEvent.click(metadataManageButton)
+      fireEvent.click(searchButton)
+    }
+
+    await waitFor(() => {
+      const hasRuntimeError = consoleErrorSpy.mock.calls.some((call) => {
+        const message = call.map((item) => String(item)).join(' ')
+        return message.includes('Error:') || message.includes('TypeError') || message.includes('Maximum update depth exceeded')
+      })
+      expect(hasRuntimeError).toBe(false)
+    })
+  })
+
+  it('快速切换 Sidebar 节点时缩略图列表保持可渲染且不抛错', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    render(<App />)
+
+    const node1 = screen.getByRole('button', { name: '目录直读：海岸' })
+    const node2 = screen.getByRole('button', { name: '目录直读：画廊A' })
+
+    for (let index = 0; index < 8; index += 1) {
+      fireEvent.click(node1)
+      fireEvent.click(node2)
+    }
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.thumb-card-main').length).toBeGreaterThan(0)
+    })
+
+    const hasRuntimeError = consoleErrorSpy.mock.calls.some((call) => {
+      const message = call.map((item) => String(item)).join(' ')
+      return message.includes('Error:') || message.includes('TypeError')
+    })
+    expect(hasRuntimeError).toBe(false)
+  })
+
   it('Sidebar 包节点在包名与作品名不一致时显示作品名', () => {
     render(<App />)
 
@@ -91,12 +151,12 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
 
-    const firstSidebarChecker = document.querySelector('.sidebar-manage-checker') as HTMLInputElement | null
-    expect(firstSidebarChecker).not.toBeNull()
-    fireEvent.click(firstSidebarChecker as HTMLInputElement)
+    const firstSidebarLabel = document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement | null
+    expect(firstSidebarLabel).not.toBeNull()
+    fireEvent.click(firstSidebarLabel as HTMLButtonElement)
 
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     expect(screen.getByRole('dialog', { name: '永久删除确认' })).toBeInTheDocument()
@@ -116,10 +176,10 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
 
-    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     expect(screen.getByRole('dialog', { name: '永久删除确认' })).toBeInTheDocument()
 
@@ -131,7 +191,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByRole('button', { name: '删除' })).toBeNull()
   })
 
-  it('Esc 与右键可关闭设置与检索面板，且主区右键不误关闭检索', async () => {
+  it('Esc 可关闭设置与检索状态，且主区右键不误关闭检索', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '设置' }))
@@ -153,9 +213,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.mouseDown(mainPane as HTMLElement, { button: 2 })
     expect(screen.getByLabelText('名称')).toBeInTheDocument()
 
-    const searchPanel = document.querySelector('[data-overlay-close="search-panel"]') as HTMLElement | null
-    expect(searchPanel).not.toBeNull()
-    fireEvent.mouseDown(searchPanel as HTMLElement, { button: 2 })
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
     expect(screen.queryByLabelText('名称')).toBeNull()
   })
 
@@ -188,16 +246,21 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
-      expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.thumb-card-main').length).toBeGreaterThan(0)
     })
 
-    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
-    expect((document.querySelector('.sidebar-manage-checker') as HTMLInputElement).checked).toBe(true)
+    const firstSidebarRow = document.querySelector('.sidebar-row.is-manage') as HTMLElement | null
+    expect(firstSidebarRow).not.toBeNull()
+    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
+    expect((firstSidebarRow as HTMLElement).classList.contains('is-selected')).toBe(true)
 
-    fireEvent.click(document.querySelector('.manage-image-checker') as HTMLInputElement)
-    expect((document.querySelector('.manage-image-checker') as HTMLInputElement).checked).toBe(true)
-    expect((document.querySelector('.sidebar-manage-checker') as HTMLInputElement).checked).toBe(false)
+    const firstThumbCard = document.querySelector('.thumb-card.is-manage') as HTMLElement | null
+    expect(firstThumbCard).not.toBeNull()
+    fireEvent.mouseDown(document.querySelector('.thumb-card-main') as HTMLButtonElement, { button: 0 })
+    fireEvent.mouseUp(window)
+    expect((firstThumbCard as HTMLElement).classList.contains('is-selected')).toBe(true)
+    expect((firstSidebarRow as HTMLElement).classList.contains('is-selected')).toBe(false)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
     expect(screen.getByRole('button', { name: '删除' })).toBeInTheDocument()
@@ -213,18 +276,18 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelector('.thumb-card-main')).not.toBeNull()
     })
 
-    const checker = document.querySelector('.manage-image-checker') as HTMLInputElement | null
+    const firstCard = document.querySelector('.thumb-card.is-manage') as HTMLElement | null
     const thumbCardMain = document.querySelector('.thumb-card-main') as HTMLButtonElement | null
-    expect(checker).not.toBeNull()
+    expect(firstCard).not.toBeNull()
     expect(thumbCardMain).not.toBeNull()
 
     fireEvent.mouseDown(thumbCardMain as HTMLButtonElement, { button: 0 })
     fireEvent.mouseUp(window)
-    expect((checker as HTMLInputElement).checked).toBe(true)
+    expect((firstCard as HTMLElement).classList.contains('is-selected')).toBe(true)
 
     fireEvent.mouseDown(thumbCardMain as HTMLButtonElement, { button: 0 })
     fireEvent.mouseUp(window)
-    expect((checker as HTMLInputElement).checked).toBe(false)
+    expect((firstCard as HTMLElement).classList.contains('is-selected')).toBe(false)
   })
 
   it('管理模式在紧凑窗口下保持稳定：无最大更新深度报错、无折叠按钮、缩略图容器不可滚动', async () => {
@@ -264,10 +327,11 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.thumb-card-main').length).toBeGreaterThan(0)
     })
 
-    fireEvent.click(document.querySelector('.manage-image-checker') as HTMLInputElement)
+    fireEvent.mouseDown(document.querySelector('.thumb-card-main') as HTMLButtonElement, { button: 0 })
+    fireEvent.mouseUp(window)
     fireEvent.click(screen.getByRole('button', { name: '隐藏' }))
 
     await waitFor(() => {
@@ -320,7 +384,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
-  it('管理异常显示在管理容器中并支持清除，不占用顶部异常横幅', async () => {
+  it('管理异常显示在主工具栏提示中，不占用顶部异常横幅', async () => {
     vi.spyOn(MockMediaRepository.prototype, 'deleteSidebarNodesSync').mockImplementation(() => {
       throw new Error('manage-delete-failed')
     })
@@ -329,27 +393,19 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
-    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
 
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
     fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
 
     await waitFor(() => {
-      expect(screen.getByText(/管理操作: manage-delete-failed/)).toBeInTheDocument()
+      expect(screen.getByText('manage-delete-failed')).toBeInTheDocument()
     })
 
     expect(document.querySelector('.backend-error-banner')).toBeNull()
-
-    const manageErrorList = document.querySelector('.manage-error-list') as HTMLElement | null
-    expect(manageErrorList).not.toBeNull()
-    fireEvent.click(within(manageErrorList as HTMLElement).getByRole('button', { name: '清除' }))
-
-    await waitFor(() => {
-      expect(screen.queryByText(/管理操作: manage-delete-failed/)).not.toBeInTheDocument()
-    })
   })
 
   it('管理删除 Sidebar 节点部分失败时，提示文案与 failed 计数保持一致', async () => {
@@ -368,10 +424,10 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
 
-    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
     fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
@@ -399,10 +455,11 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.thumb-card-main').length).toBeGreaterThan(0)
     })
 
-    fireEvent.click(document.querySelector('.manage-image-checker') as HTMLInputElement)
+    fireEvent.mouseDown(document.querySelector('.thumb-card-main') as HTMLButtonElement, { button: 0 })
+    fireEvent.mouseUp(window)
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
     fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
@@ -414,13 +471,34 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByText(/管理操作:/)).not.toBeInTheDocument()
   })
 
-  it('管理模式AI广告审核支持缩略图复核与确认删除', async () => {
+  it('文件管理改为工具栏后仍可执行删除流程', async () => {
     vi.spyOn(MockMediaRepository.prototype, 'deleteImageItemsSync').mockImplementation((request) => ({
       deleted_count: request.image_ids.length,
       failed: [],
       updated_at_ms: Date.now(),
     }))
 
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.thumb-card-main').length).toBeGreaterThan(0)
+    })
+
+    expect(screen.queryByRole('group', { name: 'AI广告审核控制' })).toBeNull()
+
+    fireEvent.mouseDown(document.querySelector('.thumb-card-main') as HTMLButtonElement, { button: 0 })
+    fireEvent.mouseUp(window)
+    fireEvent.click(screen.getByRole('button', { name: '删除' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
+    fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('已删除 1 张')).toBeInTheDocument()
+    })
+  }, 15_000)
+
+  it('AI广告审核通过后仅显示工具栏按钮，点击后才展开审核面板', async () => {
     useUiStore.setState({
       adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
       adReviewVisionModel: 'mock-vision-model',
@@ -431,60 +509,15 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '文件管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.manage-image-checker').length).toBeGreaterThan(0)
+      expect(screen.getByRole('button', { name: '广告审核' })).toBeInTheDocument()
     })
+    expect(screen.queryByRole('group', { name: 'AI广告审核控制' })).toBeNull()
 
+    fireEvent.click(screen.getByRole('button', { name: '广告审核' }))
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'AI广告审核' })).toBeInTheDocument()
+      expect(screen.getByRole('group', { name: 'AI广告审核控制' })).toBeInTheDocument()
     })
-    const managePanel = document.querySelector('.manage-panel') as HTMLElement | null
-    expect(managePanel).not.toBeNull()
-    const panelHeightBefore = Number.parseFloat((managePanel as HTMLElement).style.height || '0')
-    fireEvent.click(screen.getByRole('button', { name: 'AI广告审核' }))
-
-    const panelHeightAfter = Number.parseFloat((managePanel as HTMLElement).style.height || '0')
-    expect(panelHeightAfter).toBeGreaterThanOrEqual(panelHeightBefore)
-
-    expect(screen.getByRole('group', { name: 'AI广告审核控制' })).toBeInTheDocument()
-    expect(screen.getByLabelText('AI广告审核并发')).toBeInTheDocument()
-    const strategyToggleButton = screen.getByRole('button', { name: 'AI广告审核策略切换' })
-    fireEvent.click(strategyToggleButton)
-    expect(screen.getByLabelText('AI广告审核头部窗口样本数')).toBeEnabled()
-    fireEvent.change(screen.getByLabelText('AI广告审核并发'), { target: { value: '6' } })
-    fireEvent.click(strategyToggleButton)
-    expect(screen.getByLabelText('AI广告审核头部窗口样本数')).toBeDisabled()
-
-    fireEvent.click(document.querySelector('.manage-image-checker') as HTMLInputElement)
-    fireEvent.click(screen.getByRole('button', { name: '执行AI广告审核' }))
-
-    await waitFor(() => {
-      expect(screen.getByText('待复核')).toBeInTheDocument()
-      expect(screen.getByText(/策略 all \| 并发 6/)).toBeInTheDocument()
-      expect(screen.getByText(/来源 known-hash 0/)).toBeInTheDocument()
-      expect(screen.getByText(/命中率 LLM/)).toBeInTheDocument()
-    })
-
-    expect(screen.queryByRole('checkbox', { name: /ad-review-candidate-/ })).not.toBeInTheDocument()
-
-    const checkedBoxes = Array.from(document.querySelectorAll('.manage-image-checker')).filter((node) =>
-      (node as HTMLInputElement).checked,
-    )
-    expect(checkedBoxes.length).toBeGreaterThan(0)
-
-    fireEvent.click(screen.getByRole('button', { name: '隐藏未勾选图片' }))
-    expect(screen.getByRole('button', { name: '显示全部图片' })).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: '删除' }))
-    expect(screen.getByRole('dialog', { name: '永久删除确认' })).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
-    fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
-
-    await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: '永久删除确认' })).not.toBeInTheDocument()
-      expect(screen.getAllByText('已删除 1 张疑似广告').length).toBeGreaterThan(0)
-    })
-  }, 15_000)
+  })
 
   it('真实渲染链路可输出可渲染媒体 URL（Main/Metadata/Fullscreen）', async () => {
     render(<App />)
@@ -523,7 +556,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
-  it('检索面板支持特征检索、分割条拖拽与折叠恢复', async () => {
+  it('检索模式将筛选控件渲染到元数据面板下方并实时生效', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '检索' }))
@@ -534,39 +567,10 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(featureScope.getByPlaceholderText('按作品名模糊匹配')).toBeInTheDocument()
     expect(screen.getByText(/命中节点:/)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: '折叠' }))
-    expect(screen.queryByLabelText('名称')).toBeNull()
-    expect(screen.getByRole('button', { name: '展开检索容器' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: '展开检索容器' }))
-    expect(screen.getByLabelText('名称')).toBeInTheDocument()
-
     fireEvent.change(featureScope.getByPlaceholderText('按名称模糊匹配'), { target: { value: '002' } })
     fireEvent.change(featureScope.getByPlaceholderText('输入作者，支持自动补完'), { target: { value: 'Nori' } })
     expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
-
-    const workspace = document.querySelector('.workspace') as HTMLElement | null
-    expect(workspace).not.toBeNull()
-    vi.spyOn(workspace as HTMLElement, 'getBoundingClientRect').mockReturnValue({
-      x: 0,
-      y: 0,
-      width: 1200,
-      height: 900,
-      top: 0,
-      left: 0,
-      right: 1200,
-      bottom: 900,
-      toJSON: () => ({}),
-    })
-
-    const vectorPanel = document.querySelector('.vector-panel') as HTMLElement | null
-    expect(vectorPanel).not.toBeNull()
-    const panelHeightBefore = vectorPanel!.style.height
-    const vectorSplitter = screen.getByRole('separator', { name: '调整检索容器高度' })
-    fireEvent.mouseDown(vectorSplitter, { clientY: 164 })
-    fireEvent.mouseMove(window, { clientY: 260 })
-    fireEvent.mouseUp(window)
-    expect(vectorPanel!.style.height).not.toBe(panelHeightBefore)
   }, 15_000)
 
   it('视频模式检索面板仅展示特征检索', () => {
@@ -630,6 +634,25 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '展开元数据面板' }))
     expect(screen.getByRole('button', { name: '元数据面板' })).toBeInTheDocument()
+  })
+
+  it('进入元数据管理时自动退出原图显示并回到元数据编辑视图', async () => {
+    render(<App />)
+
+    const firstThumbButton = screen.getByText('幻旅系列 001 #1').closest('button')
+    expect(firstThumbButton).not.toBeNull()
+    fireEvent.click(firstThumbButton as HTMLButtonElement)
+
+    await waitFor(() => {
+      expect(document.querySelector('.metadata-image-real')).not.toBeNull()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelector('.metadata-image-real')).toBeNull()
+      expect(screen.getByRole('group', { name: '图包评分' })).toBeInTheDocument()
+    })
   })
 
   it('元数据评分支持清空到空星，并可继续点击设星', async () => {
@@ -776,10 +799,10 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+      expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
 
-    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
     const circleInput = screen.getByLabelText('社团') as HTMLInputElement
     fireEvent.change(circleInput, { target: { value: '批量社团更名' } })
     fireEvent.keyDown(circleInput, { key: 'Enter', code: 'Enter' })

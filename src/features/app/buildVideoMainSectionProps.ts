@@ -3,6 +3,22 @@ import type { Dispatch, SetStateAction } from 'react'
 import { clamp } from '../../utils/ui'
 
 interface BuildVideoMainSectionPropsParams {
+  manageMode: boolean
+  metadataManageMode: boolean
+  sidebarSelectedCount: number
+  imageSelectedCount: number
+  activeSelectionScope: 'sidebar' | 'image' | null
+  pendingManageAction: boolean
+  manageOperationHint: string | null
+  canManageDelete: boolean
+  canManageHide: boolean
+  canManageUnhide: boolean
+  onManageDelete: () => void
+  onManageHide: () => void
+  onManageUnhide: () => void
+  onClearManageSelection: () => void
+  metadataPending: boolean
+  onMetadataSyncName: () => void
   durationSec: number
   videoTime: number
   videoPlaying: boolean
@@ -27,6 +43,22 @@ interface BuildVideoMainSectionPropsParams {
 
 export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsParams) {
   return {
+    manageMode: params.manageMode,
+    metadataManageMode: params.metadataManageMode,
+    sidebarSelectedCount: params.sidebarSelectedCount,
+    imageSelectedCount: params.imageSelectedCount,
+    activeSelectionScope: params.activeSelectionScope,
+    pendingManageAction: params.pendingManageAction,
+    manageOperationHint: params.manageOperationHint,
+    canManageDelete: params.canManageDelete,
+    canManageHide: params.canManageHide,
+    canManageUnhide: params.canManageUnhide,
+    onManageDelete: params.onManageDelete,
+    onManageHide: params.onManageHide,
+    onManageUnhide: params.onManageUnhide,
+    onClearManageSelection: params.onClearManageSelection,
+    metadataPending: params.metadataPending,
+    onMetadataSyncName: params.onMetadataSyncName,
     durationSec: params.durationSec,
     videoTime: params.videoTime,
     videoPlaying: params.videoPlaying,

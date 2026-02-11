@@ -186,7 +186,7 @@ export function usePaneResizers({
         return
       }
 
-      const minHeight = 120
+      const minHeight = 80
       const maxHeight = Math.max(minHeight, Math.min(360, Math.floor(rect.height - 120)))
       const nextHeight = clamp(Math.round(clientY - rect.top), minHeight, maxHeight)
       if (Math.abs(nextHeight - vectorPanelHeight) < 1) {

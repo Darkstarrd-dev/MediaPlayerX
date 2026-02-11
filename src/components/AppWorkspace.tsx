@@ -5,12 +5,12 @@ import type { BrowserMode } from '../types'
 import { benchOnReactRender } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
 import ImageMainSection from './ImageMainSection'
-import ManagementPanel from './ManagementPanel'
-import MetadataManagementPanel from './MetadataManagementPanel'
 import MetadataPanel from './MetadataPanel'
-import SearchPanel from './SearchPanel'
 import SidebarPanel from './SidebarPanel'
 import VideoMainSection from './VideoMainSection'
+import type ManagementPanel from './ManagementPanel'
+import type MetadataManagementPanel from './MetadataManagementPanel'
+import type SearchPanel from './SearchPanel'
 
 interface AppWorkspaceProps {
   mode: BrowserMode
@@ -51,9 +51,6 @@ function AppWorkspace({
   onStartSidebarResize,
   onStartMetadataResize,
   sidebarPanelProps,
-  searchPanelProps,
-  managementPanelProps,
-  metadataManagementPanelProps,
   imageMainSectionProps,
   videoMainSectionProps,
   metadataPanelProps,
@@ -68,30 +65,6 @@ function AppWorkspace({
     </Profiler>
   ) : (
     <SidebarPanel {...sidebarPanelProps} />
-  )
-
-  const searchPanel = enableProfiler ? (
-    <Profiler id="SearchPanel" onRender={benchOnReactRender}>
-      <SearchPanel {...searchPanelProps} />
-    </Profiler>
-  ) : (
-    <SearchPanel {...searchPanelProps} />
-  )
-
-  const managementPanel = enableProfiler ? (
-    <Profiler id="ManagementPanel" onRender={benchOnReactRender}>
-      <ManagementPanel {...managementPanelProps} />
-    </Profiler>
-  ) : (
-    <ManagementPanel {...managementPanelProps} />
-  )
-
-  const metadataManagementPanel = enableProfiler ? (
-    <Profiler id="MetadataManagementPanel" onRender={benchOnReactRender}>
-      <MetadataManagementPanel {...metadataManagementPanelProps} />
-    </Profiler>
-  ) : (
-    <MetadataManagementPanel {...metadataManagementPanelProps} />
   )
 
   const mainSection = mode === 'image' ? (
@@ -145,10 +118,6 @@ function AppWorkspace({
         ref={workspaceRef}
         style={{ width: sidebarCollapsed ? '100%' : `calc(${(1 - sidebarRatio) * 100}% - var(--mpx-splitter-width))` }}
       >
-        {searchPanel}
-        {managementPanel}
-        {metadataManagementPanel}
-
         <div className="workspace-body" ref={workspaceBodyRef}>
           <main
             className="main-pane"

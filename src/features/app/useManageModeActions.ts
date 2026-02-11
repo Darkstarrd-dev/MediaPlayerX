@@ -5,9 +5,7 @@ import type {
   DeleteSidebarNodesResponseDto,
   SetImageHiddenResponseDto,
 } from '../../contracts/backend'
-import type { BrowserMode, VectorCandidate } from '../../types'
-
-type SearchPanelMode = 'vector' | 'feature'
+import type { BrowserMode } from '../../types'
 
 interface ManageWriteAccess {
   setImageHidden: (imageIds: string[], hidden: boolean) => Promise<SetImageHiddenResponseDto>
@@ -25,14 +23,9 @@ interface UseManageModeActionsParams {
   clearAllSelections: () => void
   setManageMode: Dispatch<SetStateAction<boolean>>
   setMetadataManageMode: Dispatch<SetStateAction<boolean>>
+  setAdReviewPanelOpen: Dispatch<SetStateAction<boolean>>
   setDeleteConfirmOpen: Dispatch<SetStateAction<boolean>>
   setManageOperationHint: Dispatch<SetStateAction<string | null>>
-  setVectorSearchResults: Dispatch<SetStateAction<VectorCandidate[]>>
-  setVectorFocusIndex: Dispatch<SetStateAction<number>>
-  setVectorPage: Dispatch<SetStateAction<number>>
-  setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
-  setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
-  clearQuickFeatureSearch: () => void
   updateSettings: (patch: { vectorMode?: boolean; sidebarFocus?: 'sidebar' | 'main' }) => void
 }
 
@@ -53,19 +46,15 @@ export function useManageModeActions({
   clearAllSelections,
   setManageMode,
   setMetadataManageMode,
+  setAdReviewPanelOpen,
   setDeleteConfirmOpen,
   setManageOperationHint,
-  setVectorSearchResults,
-  setVectorFocusIndex,
-  setVectorPage,
-  setSearchPanelMode,
-  setSearchPanelCollapsed,
-  clearQuickFeatureSearch,
   updateSettings,
 }: UseManageModeActionsParams): UseManageModeActionsResult {
   const toggleManageMode = useCallback(() => {
     const nextOpen = !manageMode
     setManageMode(nextOpen)
+    setAdReviewPanelOpen(false)
     setDeleteConfirmOpen(false)
     setManageOperationHint(null)
     clearAllSelections()
@@ -74,16 +63,10 @@ export function useManageModeActions({
       if (metadataManageMode) {
         setMetadataManageMode(false)
       }
-      setVectorSearchResults([])
-      setVectorFocusIndex(0)
-      setVectorPage(0)
-      setSearchPanelMode('vector')
-      setSearchPanelCollapsed(false)
-      clearQuickFeatureSearch()
       updateSettings({ vectorMode: false, sidebarFocus: 'main' })
     }
   }, [
-    clearQuickFeatureSearch,
+    setAdReviewPanelOpen,
     clearAllSelections,
     manageMode,
     metadataManageMode,
@@ -91,11 +74,6 @@ export function useManageModeActions({
     setManageMode,
     setManageOperationHint,
     setMetadataManageMode,
-    setSearchPanelCollapsed,
-    setSearchPanelMode,
-    setVectorFocusIndex,
-    setVectorPage,
-    setVectorSearchResults,
     updateSettings,
   ])
 

@@ -103,7 +103,7 @@ export function useVectorUniverseScene({
 
     let rendererInstance: THREE.WebGLRenderer
     try {
-      rendererInstance = new THREE.WebGLRenderer({ antialias: true, alpha: false })
+      rendererInstance = new THREE.WebGLRenderer({ antialias: true, alpha: false, premultipliedAlpha: false })
     } catch {
       resetSceneState()
       return
