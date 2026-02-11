@@ -23,7 +23,7 @@ export function FullscreenVideoProgressRow({
 }: Pick<FullscreenVideoControlRowsProps, 'clampedVideoTime' | 'durationSec' | 'onSeekVideo'>) {
   return (
     <div className="fullscreen-video-controls-row is-progress">
-      <span>{`${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}</span>
+      <span className="video-progress-time">{`${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}</span>
       <input
         aria-label="全屏视频进度滑条"
         max={Math.max(0, durationSec)}
@@ -51,19 +51,19 @@ export function FullscreenVideoControlRow({
 }: Omit<FullscreenVideoControlRowsProps, 'clampedVideoTime' | 'durationSec' | 'onSeekVideo'>) {
   return (
     <div className="fullscreen-video-controls-row is-controls">
-      <button type="button" onClick={onToggleVideoPlay}>
+      <button className="video-action-btn video-action-play" type="button" onClick={onToggleVideoPlay}>
         {videoPlaying ? '暂停' : '播放'}
       </button>
-      <button type="button" onClick={onPrevVideo}>
+      <button className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
         上一个
       </button>
-      <button type="button" onClick={onNextVideo}>
+      <button className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
         下一个
       </button>
-      <button type="button" onClick={onToggleVideoMute}>
+      <button className="video-action-btn video-action-mute" type="button" onClick={onToggleVideoMute}>
         {videoMuted ? '取消静音' : '静音'}
       </button>
-      <label>
+      <label className="player-inline-field">
         音量 {videoMuted ? '0%' : `${videoVolume}%`}
         <input
           aria-label="全屏视频音量滑条"
@@ -75,7 +75,7 @@ export function FullscreenVideoControlRow({
           onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
         />
       </label>
-      <label>
+      <label className="player-inline-field">
         倍速 x{videoRate.toFixed(2)}
         <input
           aria-label="全屏视频倍速滑条"

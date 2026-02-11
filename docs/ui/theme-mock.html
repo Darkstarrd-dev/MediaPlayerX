@@ -1156,24 +1156,32 @@
             <div class="video-screen-hud"><span>Cover state 00:00 / 02:10</span></div>
           </div>
           <div class="video-progress-line">
-            <span>00:00 / 02:10</span>
+            <span class="video-progress-time">00:00 / 02:10</span>
             <input type="range" min="0" max="120" value="45" />
           </div>
           <div class="video-controls">
-            <button type="button">Play</button>
-            <button type="button">Prev</button>
-            <button type="button">Next</button>
-            <button type="button">Save cover</button>
-            <button type="button">Mute</button>
-            <label class="video-volume-inline">
-              <span>Volume</span><span>60%</span>
-              <input type="range" min="0" max="100" value="60" />
-            </label>
-            <label class="video-rate-inline">
-              <span>Rate x1.25</span>
-              <input type="range" min="0.1" max="4" step="0.1" value="1.25" />
-            </label>
-            <button class="video-fullscreen-btn" type="button">Fullscreen</button>
+            <div class="video-controls-group is-transport">
+              <button class="video-action-btn video-action-play" type="button">Play</button>
+              <button class="video-action-btn video-action-prev" type="button">Prev</button>
+              <button class="video-action-btn video-action-next" type="button">Next</button>
+            </div>
+            <div class="video-controls-group is-audio">
+              <button class="video-action-btn video-action-mute" type="button">Mute</button>
+              <label class="video-volume-inline player-inline-field">
+                <span>Volume</span><span>60%</span>
+                <input type="range" min="0" max="100" value="60" />
+              </label>
+            </div>
+            <div class="video-controls-group is-rate">
+              <label class="video-rate-inline player-inline-field">
+                <span>Rate x1.25</span>
+                <input type="range" min="0.1" max="4" step="0.1" value="1.25" />
+              </label>
+            </div>
+            <div class="video-controls-group is-utility">
+              <button class="video-action-btn video-action-save-cover" type="button">Save cover</button>
+              <button class="video-action-btn video-action-fullscreen video-fullscreen-btn" type="button">Fullscreen</button>
+            </div>
           </div>
         </div>
       </section>
@@ -1322,13 +1330,16 @@
                     </div>
                     <div class="fullscreen-video-controls is-bottom">
                       <div class="fullscreen-video-controls-row is-progress">
-                        <span>00:00 / 02:10</span>
+                        <span class="video-progress-time">00:00 / 02:10</span>
                         <input type="range" min="0" max="120" value="45" />
                       </div>
                       <div class="fullscreen-video-controls-row is-controls">
-                        <button type="button">Play</button>
-                        <button class="is-active" type="button">Loop</button>
-                        <label>Volume <input type="range" min="0" max="100" value="60" /></label>
+                        <button class="video-action-btn video-action-play" type="button">Play</button>
+                        <button class="video-action-btn video-action-prev" type="button">Prev</button>
+                        <button class="video-action-btn video-action-next" type="button">Next</button>
+                        <button class="video-action-btn video-action-mute" type="button">Mute</button>
+                        <label class="player-inline-field">Volume <input type="range" min="0" max="100" value="60" /></label>
+                        <label class="player-inline-field">Rate <input type="range" min="0.1" max="4" step="0.1" value="1.25" /></label>
                       </div>
                     </div>
                   </div>
@@ -1694,6 +1705,11 @@
         '--mpx-btn-primary-bg', '--mpx-btn-primary-text',
         '--mpx-btn-secondary-bg', '--mpx-btn-secondary-border',
         '--mpx-header-bg',
+        '--mpx-player-surface-bg', '--mpx-player-surface-border',
+        '--mpx-player-surface-text', '--mpx-player-surface-text-muted',
+        '--mpx-player-hud-bg', '--mpx-player-hud-border', '--mpx-player-hud-text',
+        '--mpx-player-btn-bg', '--mpx-player-btn-border', '--mpx-player-btn-text',
+        '--mpx-player-btn-hover-bg', '--mpx-player-btn-active-bg', '--mpx-player-btn-active-border',
         '--mpx-palette-surface', '--mpx-palette-base', '--mpx-palette-accent-raw',
         '--mpx-panel-radius', '--mpx-panel-shadow', '--mpx-panel-backdrop-filter',
         '--mpx-layout-padding', '--mpx-splitter-width',

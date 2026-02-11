@@ -164,7 +164,7 @@ export function FullscreenVideoPane({
             width: `${videoGeometry.width}px`,
             height: `${videoGeometry.height}px`,
             transform: `translate3d(${videoTransform.offsetX}px, ${videoTransform.offsetY}px, 0)`,
-            background: videoPlaying ? 'linear-gradient(145deg, #232830, #15191f)' : focusedVideoCoverColor,
+            background: videoPlaying ? 'var(--mpx-video-screen-bg)' : focusedVideoCoverColor,
           }}
         >
           {focusedVideoSrc ? (
