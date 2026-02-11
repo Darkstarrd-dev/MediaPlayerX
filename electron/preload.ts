@@ -40,6 +40,8 @@ import {
   testAdReviewVisionModelResponseSchema,
   testWdSwinTaggerModelRequestSchema,
   testWdSwinTaggerModelResponseSchema,
+  testEmbeddingModelRequestSchema,
+  testEmbeddingModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
   saveVideoCoverRequestSchema,
@@ -136,6 +138,11 @@ const backendApi = {
     const parsed = testWdSwinTaggerModelRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.testWdSwinTaggerModel, parsed)
     return testWdSwinTaggerModelResponseSchema.parse(response)
+  },
+  testEmbeddingModel: async (request: unknown) => {
+    const parsed = testEmbeddingModelRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.testEmbeddingModel, parsed)
+    return testEmbeddingModelResponseSchema.parse(response)
   },
   confirmManageAdReviewDelete: async (request: unknown) => {
     const parsed = confirmManageAdReviewDeleteRequestSchema.parse(request)

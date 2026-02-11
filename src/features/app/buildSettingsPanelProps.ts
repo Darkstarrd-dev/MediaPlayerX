@@ -21,6 +21,8 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  embeddingModelTestPending: boolean
+  embeddingModelTestMessage: string | null
   wdSwinTaggerModelPath: string
   wdSwinTaggerAutoTagOccurrenceThreshold: number
   wdSwinTaggerAutoTagGeneralMinScore: number
@@ -73,6 +75,7 @@ interface BuildSettingsPanelPropsParams {
   clearDatabaseForDev: () => void
   refreshVectorDataStatus: () => void
   clearVectorDataForDev: () => void
+  testEmbeddingModel: () => void
   testAdReviewVisionModel: () => void
   testWdSwinTaggerModel: () => void
 }
@@ -98,6 +101,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailWidth: params.thumbnailWidth,
     lmStudioEndpoint: params.lmStudioEndpoint,
     lmStudioModel: params.lmStudioModel,
+    embeddingModelTestPending: params.embeddingModelTestPending,
+    embeddingModelTestMessage: params.embeddingModelTestMessage,
     wdSwinTaggerModelPath: params.wdSwinTaggerModelPath,
     wdSwinTaggerAutoTagOccurrenceThreshold: params.wdSwinTaggerAutoTagOccurrenceThreshold,
     wdSwinTaggerAutoTagGeneralMinScore: params.wdSwinTaggerAutoTagGeneralMinScore,
@@ -163,6 +168,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
     onLmStudioEndpointChange: (value) => params.updateSettings({ lmStudioEndpoint: value }),
     onLmStudioModelChange: (value) => params.updateSettings({ lmStudioModel: value }),
+    onTestEmbeddingModel: params.testEmbeddingModel,
     onWdSwinTaggerModelPathChange: (value) => params.updateSettings({ wdSwinTaggerModelPath: value }),
     onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value) =>
       params.updateSettings({ wdSwinTaggerAutoTagOccurrenceThreshold: Math.max(1, Math.min(200, Math.floor(value))) }),

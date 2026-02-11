@@ -14,6 +14,7 @@ export const BACKEND_CHANNELS = {
   confirmManageAdReviewDelete: 'backend:confirmManageAdReviewDelete',
   testAdReviewVisionModel: 'backend:testAdReviewVisionModel',
   testWdSwinTaggerModel: 'backend:testWdSwinTaggerModel',
+  testEmbeddingModel: 'backend:testEmbeddingModel',
   writePackageMetadata: 'backend:writePackageMetadata',
   generatePackageAutoTags: 'backend:generatePackageAutoTags',
   generatePackageAutoTagsVision: 'backend:generatePackageAutoTagsVision',

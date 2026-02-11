@@ -276,8 +276,14 @@ export function useAppTopLayerState({
   const vectorControlConflicts = useMemo(() => findVectorControlConflicts(appSettings.vectorControls), [appSettings.vectorControls])
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
   const [adReviewVisionTestMessage, setAdReviewVisionTestMessage] = useState<string | null>(null)
+  const [embeddingModelTestPending, setEmbeddingModelTestPending] = useState(false)
+  const [embeddingModelTestMessage, setEmbeddingModelTestMessage] = useState<string | null>(null)
   const [wdSwinTaggerTestPending, setWdSwinTaggerTestPending] = useState(false)
   const [wdSwinTaggerTestMessage, setWdSwinTaggerTestMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    setEmbeddingModelTestMessage(null)
+  }, [appSettings.lmStudioEndpoint, appSettings.lmStudioModel])
 
   useEffect(() => {
     setAdReviewVisionTestMessage(null)
@@ -286,6 +292,45 @@ export function useAppTopLayerState({
   useEffect(() => {
     setWdSwinTaggerTestMessage(null)
   }, [appSettings.wdSwinTaggerModelPath])
+
+  const testEmbeddingModel = useCallback(async () => {
+    const testEmbedding = mediaRepository.testEmbeddingModel
+    if (!testEmbedding) {
+      setEmbeddingModelTestMessage('当前后端不支持向量模型测试')
+      return
+    }
+
+    const normalizedEndpoint = appSettings.lmStudioEndpoint.trim()
+    const normalizedModel = appSettings.lmStudioModel.trim()
+    if (!normalizedEndpoint || !normalizedModel) {
+      setEmbeddingModelTestMessage('请先填写向量模型端口和模型ID')
+      return
+    }
+
+    setEmbeddingModelTestPending(true)
+    setEmbeddingModelTestMessage('测试中...')
+    try {
+      const response = await testEmbedding(
+        {
+          embedding_endpoint: normalizedEndpoint,
+          embedding_model: normalizedModel,
+          timeout_ms: 12_000,
+        },
+        { timeoutMs: 15_000 },
+      )
+
+      appSettings.updateSettings({
+        lmStudioEndpoint: normalizedEndpoint,
+        lmStudioModel: normalizedModel,
+      })
+      setEmbeddingModelTestMessage(response.message)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      setEmbeddingModelTestMessage(`模型测试失败：${message}`)
+    } finally {
+      setEmbeddingModelTestPending(false)
+    }
+  }, [appSettings.lmStudioEndpoint, appSettings.lmStudioModel, appSettings.updateSettings, mediaRepository])
 
   const testAdReviewVisionModel = useCallback(async () => {
     const testVisionModel = mediaRepository.testAdReviewVisionModel
@@ -436,6 +481,8 @@ export function useAppTopLayerState({
     thumbnailWidth: appSettings.thumbnailWidth,
     lmStudioEndpoint: appSettings.lmStudioEndpoint,
     lmStudioModel: appSettings.lmStudioModel,
+    embeddingModelTestPending,
+    embeddingModelTestMessage,
     wdSwinTaggerModelPath: appSettings.wdSwinTaggerModelPath,
     wdSwinTaggerAutoTagOccurrenceThreshold: appSettings.wdSwinTaggerAutoTagOccurrenceThreshold,
     wdSwinTaggerAutoTagGeneralMinScore: appSettings.wdSwinTaggerAutoTagGeneralMinScore,
@@ -488,6 +535,7 @@ export function useAppTopLayerState({
     clearDatabaseForDev,
     refreshVectorDataStatus,
     clearVectorDataForDev,
+    testEmbeddingModel,
     testAdReviewVisionModel,
     testWdSwinTaggerModel,
   })

@@ -1248,6 +1248,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText('包含 Rating 标签')).not.toBeChecked()
     expect(screen.getByLabelText('Rating 分数阈值')).toHaveValue(0.5)
     expect(screen.getByLabelText('General 分数阈值').closest('label')).toHaveAttribute('title')
+    expect(screen.getByRole('button', { name: '测试向量模型连接' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '测试wd模型连接' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))

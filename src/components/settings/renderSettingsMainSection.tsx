@@ -45,6 +45,8 @@ interface RenderSettingsMainSectionParams {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  embeddingModelTestPending: boolean
+  embeddingModelTestMessage: string | null
   wdSwinTaggerModelPath: string
   wdSwinTaggerAutoTagOccurrenceThreshold: number
   wdSwinTaggerAutoTagGeneralMinScore: number
@@ -107,6 +109,7 @@ interface RenderSettingsMainSectionParams {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
+  onTestEmbeddingModel: () => void
   onWdSwinTaggerModelPathChange: (value: string) => void
   onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
   onWdSwinTaggerAutoTagGeneralMinScoreChange: (value: number) => void
@@ -164,6 +167,8 @@ export function renderSettingsMainSection({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
+  embeddingModelTestPending,
+  embeddingModelTestMessage,
   wdSwinTaggerModelPath,
   wdSwinTaggerAutoTagOccurrenceThreshold,
   wdSwinTaggerAutoTagGeneralMinScore,
@@ -226,6 +231,7 @@ export function renderSettingsMainSection({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
+  onTestEmbeddingModel,
   onWdSwinTaggerModelPathChange,
   onWdSwinTaggerAutoTagOccurrenceThresholdChange,
   onWdSwinTaggerAutoTagGeneralMinScoreChange,
@@ -436,6 +442,16 @@ export function renderSettingsMainSection({
             Embedding 模型ID
             <input type="text" value={lmStudioModel} onChange={(event) => onLmStudioModelChange(event.target.value)} />
           </label>
+          <div className="settings-test-row">
+            <button type="button" disabled={embeddingModelTestPending} aria-label="测试向量模型连接" onClick={onTestEmbeddingModel}>
+              {embeddingModelTestPending ? '测试中...' : '测试'}
+            </button>
+            <span
+              className={`settings-test-status ${embeddingModelTestMessage && !embeddingModelTestMessage.startsWith('模型测试失败') ? 'is-ok' : 'is-pending'}`}
+            >
+              {embeddingModelTestMessage ?? '未测试'}
+            </span>
+          </div>
         </fieldset>
 
         <fieldset className="settings-subsection">
@@ -533,7 +549,7 @@ export function renderSettingsMainSection({
           </label>
           <div className="settings-test-row">
             <button type="button" disabled={wdSwinTaggerTestPending} aria-label="测试wd模型连接" onClick={onTestWdSwinTaggerModel}>
-              {wdSwinTaggerTestPending ? '测试中...' : '测试 wd 模型'}
+              {wdSwinTaggerTestPending ? '测试中...' : '测试'}
             </button>
             <span
               className={`settings-test-status ${wdSwinTaggerTestMessage && !wdSwinTaggerTestMessage.startsWith('模型测试失败') ? 'is-ok' : 'is-pending'}`}

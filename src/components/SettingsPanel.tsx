@@ -43,6 +43,8 @@ export interface SettingsPanelProps {
   thumbnailWidth: number
   lmStudioEndpoint: string
   lmStudioModel: string
+  embeddingModelTestPending: boolean
+  embeddingModelTestMessage: string | null
   wdSwinTaggerModelPath: string
   wdSwinTaggerAutoTagOccurrenceThreshold: number
   wdSwinTaggerAutoTagGeneralMinScore: number
@@ -103,6 +105,7 @@ export interface SettingsPanelProps {
   onThumbnailWidthChange: (value: number) => void
   onLmStudioEndpointChange: (value: string) => void
   onLmStudioModelChange: (value: string) => void
+  onTestEmbeddingModel: () => void
   onWdSwinTaggerModelPathChange: (value: string) => void
   onWdSwinTaggerAutoTagOccurrenceThresholdChange: (value: number) => void
   onWdSwinTaggerAutoTagGeneralMinScoreChange: (value: number) => void
@@ -185,6 +188,8 @@ function SettingsPanel({
   thumbnailWidth,
   lmStudioEndpoint,
   lmStudioModel,
+  embeddingModelTestPending,
+  embeddingModelTestMessage,
   wdSwinTaggerModelPath,
   wdSwinTaggerAutoTagOccurrenceThreshold,
   wdSwinTaggerAutoTagGeneralMinScore,
@@ -245,6 +250,7 @@ function SettingsPanel({
   onThumbnailWidthChange,
   onLmStudioEndpointChange,
   onLmStudioModelChange,
+  onTestEmbeddingModel,
   onWdSwinTaggerModelPathChange,
   onWdSwinTaggerAutoTagOccurrenceThresholdChange,
   onWdSwinTaggerAutoTagGeneralMinScoreChange,
@@ -445,6 +451,8 @@ function SettingsPanel({
     thumbnailWidth,
     lmStudioEndpoint,
     lmStudioModel,
+    embeddingModelTestPending,
+    embeddingModelTestMessage,
     wdSwinTaggerModelPath,
     wdSwinTaggerAutoTagOccurrenceThreshold,
     wdSwinTaggerAutoTagGeneralMinScore,
@@ -507,6 +515,7 @@ function SettingsPanel({
     onThumbnailWidthChange,
     onLmStudioEndpointChange,
     onLmStudioModelChange,
+    onTestEmbeddingModel,
     onWdSwinTaggerModelPathChange,
     onWdSwinTaggerAutoTagOccurrenceThresholdChange,
     onWdSwinTaggerAutoTagGeneralMinScoreChange,

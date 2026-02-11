@@ -7,6 +7,7 @@ import {
   generatePackageAutoTagsResponseSchema,
   generatePackageAutoTagsVisionResponseSchema,
   generatePackageEmbeddingsResponseSchema,
+  testEmbeddingModelResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
@@ -55,6 +56,8 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type TestWdSwinTaggerModelRequestDto,
   type TestWdSwinTaggerModelResponseDto,
+  type TestEmbeddingModelRequestDto,
+  type TestEmbeddingModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type WritePlaylistRequestDto,
@@ -295,6 +298,174 @@ function normalizeEmbeddingsUrl(endpoint: string): string {
   } catch {
     return rewritePath(trimmed)
   }
+}
+
+function normalizeModelsUrl(endpoint: string): string {
+  const trimmed = endpoint.trim()
+  if (!trimmed) {
+    throw new Error('模型列表 endpoint 不能为空')
+  }
+
+  const rewritePath = (pathnameInput: string): string => {
+    const pathname = pathnameInput.replace(/\/+$/, '')
+    if (pathname.endsWith('/models')) {
+      return pathname
+    }
+    if (pathname.endsWith('/embeddings')) {
+      return pathname.replace(/\/embeddings$/, '/models')
+    }
+    if (pathname.endsWith('/chat/completions')) {
+      return pathname.replace(/\/chat\/completions$/, '/models')
+    }
+    if (pathname.endsWith('/v1')) {
+      return `${pathname}/models`
+    }
+    return `${pathname}/models`
+  }
+
+  try {
+    const parsed = new URL(trimmed)
+    parsed.pathname = rewritePath(parsed.pathname)
+    parsed.search = ''
+    parsed.hash = ''
+    return parsed.toString()
+  } catch {
+    return rewritePath(trimmed)
+  }
+}
+
+interface OpenAiModelCatalogItem {
+  id: string
+  payload: Record<string, unknown>
+}
+
+type EmbeddingCapability = 'embedding' | 'non-embedding' | 'unknown'
+
+function extractModelCatalogFromResponseBody(responseBody: unknown): OpenAiModelCatalogItem[] {
+  if (!responseBody || typeof responseBody !== 'object') {
+    throw new Error('模型列表响应格式错误：缺少 JSON 对象')
+  }
+
+  const data = (responseBody as { data?: unknown }).data
+  if (!Array.isArray(data)) {
+    throw new Error('模型列表响应格式错误：缺少 data 数组')
+  }
+
+  const items = data
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null
+      }
+      const payload = item as Record<string, unknown>
+      const id = typeof payload.id === 'string' ? payload.id.trim() : ''
+      if (!id) {
+        return null
+      }
+      return {
+        id,
+        payload,
+      }
+    })
+    .filter((item): item is OpenAiModelCatalogItem => Boolean(item))
+
+  if (items.length === 0) {
+    throw new Error('模型列表响应格式错误：data 中无有效模型')
+  }
+
+  return items
+}
+
+function resolveEmbeddingCapability(payload: Record<string, unknown>): EmbeddingCapability {
+  const booleanKeys = [
+    'embedding',
+    'embeddings',
+    'is_embedding',
+    'is_embedding_model',
+    'supports_embedding',
+    'supports_embeddings',
+  ]
+
+  for (const key of booleanKeys) {
+    const value = payload[key]
+    if (typeof value === 'boolean') {
+      return value ? 'embedding' : 'non-embedding'
+    }
+  }
+
+  const extractStrings = (value: unknown): string[] => {
+    if (typeof value === 'string') {
+      return [value]
+    }
+    if (Array.isArray(value)) {
+      return value.filter((item): item is string => typeof item === 'string')
+    }
+    if (value && typeof value === 'object') {
+      return Object.values(value)
+        .filter((item): item is string => typeof item === 'string')
+    }
+    return []
+  }
+
+  const capabilityTexts: string[] = []
+  for (const key of ['capability', 'capabilities', 'task', 'tasks', 'modality', 'modalities', 'type', 'model_type']) {
+    capabilityTexts.push(...extractStrings(payload[key]))
+  }
+  if (payload.architecture && typeof payload.architecture === 'object') {
+    capabilityTexts.push(...extractStrings((payload.architecture as Record<string, unknown>).type))
+  }
+
+  const normalized = capabilityTexts.map((value) => value.toLowerCase())
+  if (normalized.some((value) => value.includes('embedding'))) {
+    return 'embedding'
+  }
+  if (normalized.some((value) => value.includes('chat') || value.includes('completion') || value.includes('generate'))) {
+    return 'non-embedding'
+  }
+  return 'unknown'
+}
+
+async function requestModelCatalog(params: {
+  endpoint: string
+  timeoutMs: number
+  apiKey: string
+}): Promise<OpenAiModelCatalogItem[]> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => {
+    controller.abort()
+  }, params.timeoutMs)
+
+  let response: Response
+  try {
+    response = await fetch(params.endpoint, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${params.apiKey}`,
+      },
+      signal: controller.signal,
+    })
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`模型列表请求超时: ${params.timeoutMs}ms`)
+    }
+    const message = error instanceof Error ? error.message : String(error)
+    throw new Error(`模型列表请求失败: ${message}`)
+  } finally {
+    clearTimeout(timeoutId)
+  }
+
+  const bodyText = await response.text()
+  if (!response.ok) {
+    throw new Error(`模型列表请求失败: HTTP ${response.status} ${response.statusText} - ${bodyText.slice(0, 300)}`)
+  }
+
+  let responseBody: unknown
+  try {
+    responseBody = JSON.parse(bodyText)
+  } catch {
+    throw new Error(`模型列表响应不是合法 JSON: ${bodyText.slice(0, 300)}`)
+  }
+
+  return extractModelCatalogFromResponseBody(responseBody)
 }
 
 function toFiniteNumberArray(value: unknown): number[] {
@@ -893,6 +1064,67 @@ export class FileSystemMediaReadService {
     request: TestWdSwinTaggerModelRequestDto,
   ): Promise<TestWdSwinTaggerModelResponseDto> {
     return this.wdSwinV2TaggerService.testModel(request)
+  }
+
+  async testEmbeddingModel(
+    request: TestEmbeddingModelRequestDto,
+  ): Promise<TestEmbeddingModelResponseDto> {
+    const normalizedModel = request.embedding_model.trim()
+    if (!normalizedModel) {
+      return testEmbeddingModelResponseSchema.parse({
+        ok: false,
+        message: '模型测试失败：模型ID不能为空',
+      })
+    }
+
+    const timeoutMs = Number.isFinite(request.timeout_ms)
+      ? Math.max(3_000, Math.min(60_000, Math.floor(request.timeout_ms as number)))
+      : 12_000
+    const apiKey = process.env.MEDIA_PLAYERX_LLM_API_KEY?.trim() || 'lm-studio'
+
+    try {
+      const normalizedModelsEndpoint = normalizeModelsUrl(request.embedding_endpoint)
+      const catalog = await requestModelCatalog({
+        endpoint: normalizedModelsEndpoint,
+        timeoutMs,
+        apiKey,
+      })
+
+      const exact = catalog.find((item) => item.id === normalizedModel)
+      const fallback = catalog.find((item) => item.id.toLowerCase() === normalizedModel.toLowerCase())
+      const matched = exact ?? fallback
+      if (!matched) {
+        const preview = catalog
+          .slice(0, 6)
+          .map((item) => item.id)
+          .join(', ')
+        return testEmbeddingModelResponseSchema.parse({
+          ok: false,
+          message: `模型测试失败：模型ID未出现在 /models 列表中（已发现：${preview || '空'}）`,
+        })
+      }
+
+      const capability = resolveEmbeddingCapability(matched.payload)
+      if (capability === 'non-embedding') {
+        return testEmbeddingModelResponseSchema.parse({
+          ok: false,
+          message: '模型测试失败：模型在服务端元数据中被标注为非 embedding',
+        })
+      }
+
+      const capabilityMessage =
+        capability === 'embedding' ? '已确认 embedding 能力' : '未返回能力字段，按模型存在性通过'
+      return testEmbeddingModelResponseSchema.parse({
+        ok: true,
+        message: `模型连接正常（仅校验 /models，不触发推理；${capabilityMessage}）`,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      return testEmbeddingModelResponseSchema.parse({
+        ok: false,
+        message: `模型测试失败：${message}`,
+      })
+    }
   }
 
   async confirmManageAdReviewDelete(

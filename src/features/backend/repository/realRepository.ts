@@ -32,6 +32,7 @@ import {
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelResponseSchema,
   testWdSwinTaggerModelResponseSchema,
+  testEmbeddingModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
@@ -89,6 +90,8 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type TestWdSwinTaggerModelRequestDto,
   type TestWdSwinTaggerModelResponseDto,
+  type TestEmbeddingModelRequestDto,
+  type TestEmbeddingModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type WritePackageGradeRequestDto,
@@ -413,6 +416,19 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.testWdSwinTaggerModel(request), options)
     return testWdSwinTaggerModelResponseSchema.parse(response)
+  }
+
+  async testEmbeddingModel(
+    request: TestEmbeddingModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<TestEmbeddingModelResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.testEmbeddingModel) {
+      throw new Error('真实后端通道不可用：testEmbeddingModel 未注入')
+    }
+
+    const response = await withAbort(api.testEmbeddingModel(request), options)
+    return testEmbeddingModelResponseSchema.parse(response)
   }
 
   async confirmManageAdReviewDelete(

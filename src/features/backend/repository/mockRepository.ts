@@ -15,6 +15,7 @@ import {
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelResponseSchema,
   testWdSwinTaggerModelResponseSchema,
+  testEmbeddingModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
@@ -62,6 +63,8 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type TestWdSwinTaggerModelRequestDto,
   type TestWdSwinTaggerModelResponseDto,
+  type TestEmbeddingModelRequestDto,
+  type TestEmbeddingModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
   type ManageAdReviewImageSourceDto,
@@ -1221,6 +1224,39 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<TestWdSwinTaggerModelResponseDto> {
     const response = this.testWdSwinTaggerModelSync(request)
+    return resolveAsync(response, options)
+  }
+
+  testEmbeddingModelSync(
+    request: TestEmbeddingModelRequestDto,
+  ): TestEmbeddingModelResponseDto {
+    const endpoint = request.embedding_endpoint.trim()
+    const model = request.embedding_model.trim()
+    if (!endpoint || !model) {
+      return testEmbeddingModelResponseSchema.parse({
+        ok: false,
+        message: '模型测试失败：端口和模型ID不能为空',
+      })
+    }
+
+    if (endpoint.toLowerCase().includes('fail') || model.toLowerCase().includes('fail')) {
+      return testEmbeddingModelResponseSchema.parse({
+        ok: false,
+        message: '模型测试失败：mock embedding 连接失败',
+      })
+    }
+
+    return testEmbeddingModelResponseSchema.parse({
+      ok: true,
+      message: 'Embedding 模型可用（mock，维度 1024）',
+    })
+  }
+
+  async testEmbeddingModel(
+    request: TestEmbeddingModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<TestEmbeddingModelResponseDto> {
+    const response = this.testEmbeddingModelSync(request)
     return resolveAsync(response, options)
   }
 
