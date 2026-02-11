@@ -27,6 +27,11 @@ interface BuildSettingsPanelPropsParams {
   wdSwinTaggerAutoTagCharacterMinScore: number
   wdSwinTaggerAutoTagIncludeRating: boolean
   wdSwinTaggerAutoTagRatingMinScore: number
+  visionAutoTagCsvPath: string
+  visionAutoTagSampleImageCount: number
+  visionAutoTagOccurrenceThreshold: number
+  visionAutoTagTemperature: number
+  visionAutoTagTimeoutMs: number
   wdSwinTaggerTestPending: boolean
   wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
@@ -92,6 +97,11 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     wdSwinTaggerAutoTagCharacterMinScore: params.wdSwinTaggerAutoTagCharacterMinScore,
     wdSwinTaggerAutoTagIncludeRating: params.wdSwinTaggerAutoTagIncludeRating,
     wdSwinTaggerAutoTagRatingMinScore: params.wdSwinTaggerAutoTagRatingMinScore,
+    visionAutoTagCsvPath: params.visionAutoTagCsvPath,
+    visionAutoTagSampleImageCount: params.visionAutoTagSampleImageCount,
+    visionAutoTagOccurrenceThreshold: params.visionAutoTagOccurrenceThreshold,
+    visionAutoTagTemperature: params.visionAutoTagTemperature,
+    visionAutoTagTimeoutMs: params.visionAutoTagTimeoutMs,
     wdSwinTaggerTestPending: params.wdSwinTaggerTestPending,
     wdSwinTaggerTestMessage: params.wdSwinTaggerTestMessage,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
@@ -152,6 +162,15 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       params.updateSettings({ wdSwinTaggerAutoTagIncludeRating: value }),
     onWdSwinTaggerAutoTagRatingMinScoreChange: (value) =>
       params.updateSettings({ wdSwinTaggerAutoTagRatingMinScore: Math.max(0, Math.min(1, value)) }),
+    onVisionAutoTagCsvPathChange: (value) => params.updateSettings({ visionAutoTagCsvPath: value }),
+    onVisionAutoTagSampleImageCountChange: (value) =>
+      params.updateSettings({ visionAutoTagSampleImageCount: Math.max(1, Math.min(24, Math.floor(value))) }),
+    onVisionAutoTagOccurrenceThresholdChange: (value) =>
+      params.updateSettings({ visionAutoTagOccurrenceThreshold: Math.max(1, Math.min(24, Math.floor(value))) }),
+    onVisionAutoTagTemperatureChange: (value) =>
+      params.updateSettings({ visionAutoTagTemperature: Math.max(0, Math.min(1, value)) }),
+    onVisionAutoTagTimeoutMsChange: (value) =>
+      params.updateSettings({ visionAutoTagTimeoutMs: Math.max(3_000, Math.min(120_000, Math.floor(value))) }),
     onTestWdSwinTaggerModel: params.testWdSwinTaggerModel,
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({

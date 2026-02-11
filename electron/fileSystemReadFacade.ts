@@ -4,11 +4,14 @@ import path from 'node:path'
 import {
   clearDatabaseResponseSchema,
   generatePackageAutoTagsResponseSchema,
+  generatePackageAutoTagsVisionResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
   type GeneratePackageAutoTagsRequestDto,
   type GeneratePackageAutoTagsResponseDto,
+  type GeneratePackageAutoTagsVisionRequestDto,
+  type GeneratePackageAutoTagsVisionResponseDto,
   type ImportTaskDto,
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
@@ -73,6 +76,7 @@ import {
   applyPackageMetadataWrite,
   type PersistedVideoMetadataRecord,
 } from './fileSystemMetadataWriters'
+import { OpenAiVisionClient, normalizeChatCompletionsUrl } from './manageAdReview'
 import { MediaTokenService } from './services/file-system-read/mediaTokenService'
 import { ImportPathRegistry } from './services/file-system-read/importPathRegistry'
 import {
@@ -117,6 +121,138 @@ import {
 } from './services/file-system-read/runtimeDependencyService'
 import { ServiceEventBus } from './services/file-system-read/serviceEventBus'
 import { WdSwinV2TaggerService } from './services/file-system-read/wdSwinV2TaggerService'
+
+const DEFAULT_VISION_AUTO_TAG_TIMEOUT_MS = 45_000
+const VISION_AUTO_TAG_SYSTEM_PROMPT =
+  'You are an image tagging model. Return JSON only in this exact format: {"is_ad": false, "reason": "tag_1,tag_2"}. The reason field must be a comma-separated tag list. Do not include explanations.'
+const VISION_AUTO_TAG_USER_PROMPT =
+  'Describe this image with concise danbooru-style tags. Return JSON only with is_ad and reason. Put tags in reason separated by commas.'
+const VISION_TAG_HEADER_KEYS = new Set([
+  'tag',
+  'tags',
+  'name',
+  'tagname',
+  'label',
+  'labels',
+  'biaoqian',
+  'biaoqianming',
+])
+
+function normalizeVisionTagValue(value: string): string {
+  return value
+    .trim()
+    .replace(/^['"`]+|['"`]+$/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+}
+
+function normalizeVisionHeaderKey(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, '')
+}
+
+function parseCsvLine(line: string): string[] {
+  const cells: string[] = []
+  let current = ''
+  let inQuotes = false
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index]
+    if (char === '"') {
+      const next = line[index + 1]
+      if (inQuotes && next === '"') {
+        current += '"'
+        index += 1
+      } else {
+        inQuotes = !inQuotes
+      }
+      continue
+    }
+
+    if (char === ',' && !inQuotes) {
+      cells.push(current)
+      current = ''
+      continue
+    }
+
+    current += char
+  }
+
+  cells.push(current)
+  return cells
+}
+
+async function loadAllowedVisionTags(csvPathInput: string): Promise<Set<string>> {
+  const normalizedPath = path.resolve(csvPathInput)
+  const raw = await fs.readFile(normalizedPath, 'utf8')
+  const rows = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => parseCsvLine(line))
+    .filter((cells) => cells.length > 0)
+
+  if (rows.length === 0) {
+    throw new Error('视觉自动标签失败：CSV 内容为空')
+  }
+
+  const header = rows[0] ?? []
+  const matchedHeaderIndex = header.findIndex((cell) => VISION_TAG_HEADER_KEYS.has(normalizeVisionHeaderKey(cell)))
+  const tagColumnIndex = matchedHeaderIndex >= 0 ? matchedHeaderIndex : 0
+  const dataStartIndex = matchedHeaderIndex >= 0 ? 1 : 0
+
+  const allowedTags = new Set<string>()
+  for (let rowIndex = dataStartIndex; rowIndex < rows.length; rowIndex += 1) {
+    const row = rows[rowIndex]
+    if (!row) {
+      continue
+    }
+    const rawValue = row[tagColumnIndex] ?? row[0] ?? ''
+    const normalized = normalizeVisionTagValue(rawValue)
+    if (normalized) {
+      allowedTags.add(normalized)
+    }
+  }
+
+  if (allowedTags.size === 0) {
+    throw new Error('视觉自动标签失败：CSV 未解析到可用标签')
+  }
+
+  return allowedTags
+}
+
+function parseVisionTagsFromReason(reason: string): string[] {
+  const parts = reason
+    .split(/[\n,，;；|]+/)
+    .map((part) => normalizeVisionTagValue(part))
+    .filter(Boolean)
+  return Array.from(new Set(parts))
+}
+
+type ImageItemForVisionTag = LibrarySnapshotDto['image_packages'][number]['images'][number]
+
+function pickSampleImages(images: ImageItemForVisionTag[], sampleCount: number): ImageItemForVisionTag[] {
+  const safeCount = Math.max(1, Math.floor(sampleCount))
+  if (images.length <= safeCount) {
+    return images
+  }
+
+  if (safeCount === 1) {
+    return [images[0]!]
+  }
+
+  const pickedIndexes = new Set<number>()
+  const maxIndex = images.length - 1
+  for (let offset = 0; offset < safeCount; offset += 1) {
+    const ratio = offset / (safeCount - 1)
+    pickedIndexes.add(Math.round(maxIndex * ratio))
+  }
+
+  const sortedIndexes = Array.from(pickedIndexes).sort((a, b) => a - b)
+  return sortedIndexes.slice(0, safeCount).map((index) => images[index]!).filter(Boolean)
+}
 
 export class FileSystemMediaReadService {
   private readonly rootDir: string
@@ -600,6 +736,106 @@ export class FileSystemMediaReadService {
       package: metadataWritten.package,
       generated_tags: generated.generatedTags,
       analyzed_images: generated.analyzedImages,
+      updated_at_ms: metadataWritten.updated_at_ms,
+    })
+  }
+
+  async generatePackageAutoTagsVision(
+    request: GeneratePackageAutoTagsVisionRequestDto,
+  ): Promise<GeneratePackageAutoTagsVisionResponseDto> {
+    const snapshot = await this.ensureSnapshotLoaded()
+    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`视觉自动标签失败：source 不存在 ${request.package_id}`)
+    }
+
+    const allowedTags = await loadAllowedVisionTags(request.tags_csv_path)
+    const normalizedEndpoint = normalizeChatCompletionsUrl(request.llm_endpoint)
+    const normalizedModel = request.llm_model.trim()
+    if (!normalizedModel) {
+      throw new Error('视觉自动标签失败：模型ID不能为空')
+    }
+
+    const timeoutMs = Number.isFinite(request.timeout_ms)
+      ? Math.max(3_000, Math.min(120_000, Math.floor(request.timeout_ms as number)))
+      : DEFAULT_VISION_AUTO_TAG_TIMEOUT_MS
+    const sampleImageCount = Math.max(1, Math.min(24, Math.floor(request.sample_image_count)))
+    const occurrenceThreshold = Math.max(1, Math.min(24, Math.floor(request.occurrence_threshold)))
+    const temperature = Math.max(0, Math.min(1, request.temperature))
+
+    const visibleImages = source.images.filter((image) => !(image.hidden ?? false))
+    const sampledImages = pickSampleImages(visibleImages, sampleImageCount)
+
+    const client = new OpenAiVisionClient({
+      endpoint: normalizedEndpoint,
+      model: normalizedModel,
+      apiKey: process.env.MEDIA_PLAYERX_LLM_API_KEY,
+      timeoutMs,
+      temperature,
+      systemPrompt: VISION_AUTO_TAG_SYSTEM_PROMPT,
+      userPrompt: VISION_AUTO_TAG_USER_PROMPT,
+    })
+
+    const tagCountByValue = new Map<string, number>()
+    const droppedTags = new Set<string>()
+    let invalidResponseImages = 0
+
+    for (const image of sampledImages) {
+      try {
+        const imageBytes = await this.readImageBufferForThumbnail(image.media_locator)
+        const detection = await client.detectAd({ imageBytes })
+        const tags = parseVisionTagsFromReason(detection.reason)
+        if (tags.length === 0) {
+          invalidResponseImages += 1
+          continue
+        }
+
+        for (const tag of tags) {
+          if (allowedTags.has(tag)) {
+            tagCountByValue.set(tag, (tagCountByValue.get(tag) ?? 0) + 1)
+            continue
+          }
+          droppedTags.add(tag)
+        }
+      } catch {
+        invalidResponseImages += 1
+      }
+    }
+
+    const generatedTags = Array.from(tagCountByValue.entries())
+      .filter(([, count]) => count >= occurrenceThreshold)
+      .sort((left, right) => {
+        if (left[1] !== right[1]) {
+          return right[1] - left[1]
+        }
+        return left[0].localeCompare(right[0], 'zh-CN')
+      })
+      .map(([tag]) => tag)
+
+    const metadataWritten = applyPackageMetadataWrite({
+      snapshot,
+      database: this.database,
+      request: {
+        package_id: source.id,
+        work_title: source.work_title,
+        circle: source.circle,
+        author: source.author,
+        tags: generatedTags,
+      },
+    })
+
+    this.emitLibraryChanged({
+      reason: 'generate-package-auto-tags-vision',
+      updated_at_ms: metadataWritten.updated_at_ms,
+    })
+
+    return generatePackageAutoTagsVisionResponseSchema.parse({
+      package: metadataWritten.package,
+      generated_tags: generatedTags,
+      analyzed_images: sampledImages.length,
+      dropped_tags: Array.from(droppedTags).sort((left, right) => left.localeCompare(right, 'zh-CN')),
+      invalid_response_images: invalidResponseImages,
       updated_at_ms: metadataWritten.updated_at_ms,
     })
   }

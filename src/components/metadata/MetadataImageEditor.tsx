@@ -23,6 +23,7 @@ interface MetadataImageEditorProps {
   onTagsDraftChange: (value: string) => void
   onPersistPackageMetadata: (syncWorkTitleToPackageName?: boolean) => void
   onGeneratePackageAutoTags: () => void
+  onGeneratePackageAutoTagsVision: () => void
   onGradeChange: (grade: number | null) => void
   onSearchByWorkTitle: (value: string) => void
   onSearchByCircle: (value: string) => void
@@ -51,6 +52,7 @@ export function MetadataImageEditor({
   onTagsDraftChange,
   onPersistPackageMetadata,
   onGeneratePackageAutoTags,
+  onGeneratePackageAutoTagsVision,
   onGradeChange,
   onSearchByCircle,
   onSearchByAuthor,
@@ -212,6 +214,9 @@ export function MetadataImageEditor({
                   </button>
                   <button type="button" disabled={metadataPending || autoTagPending} onClick={onGeneratePackageAutoTags}>
                     {autoTagPending ? '自动生成标签中...' : '自动生成标签'}
+                  </button>
+                  <button type="button" disabled={metadataPending || autoTagPending} onClick={onGeneratePackageAutoTagsVision}>
+                    {autoTagPending ? '视觉标签生成中...' : '视觉模型生成标签'}
                   </button>
                 </div>
               ) : null}

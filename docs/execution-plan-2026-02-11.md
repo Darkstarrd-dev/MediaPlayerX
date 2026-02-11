@@ -119,12 +119,12 @@
 
 任务清单：
 
-- [ ] 新增设置项：CSV 路径（tag 范围）+ 视觉模型 endpoint/model（复用或新增字段）。
-- [ ] 新增后端写接口：`generatePackageAutoTagsVision`（命名可调整）
+- [x] 新增设置项：CSV 路径（tag 范围）+ 视觉模型 endpoint/model（复用或新增字段）。
+- [x] 新增后端写接口：`generatePackageAutoTagsVision`（命名可调整）
   - 输入：package_id、csv_path、endpoint、model、策略参数（抽样张数/温度/超时等）。
   - 输出：generated_tags、analyzed_images、updated_at_ms。
-- [ ] 视觉模型返回 JSON 严格校验：只接受范围内 tags，超出则丢弃并记录审计信息。
-- [ ] UI：新增按钮与 pending 状态；支持 Sidebar 勾选批量。
+- [x] 视觉模型返回 JSON 严格校验：只接受范围内 tags，超出则丢弃并记录审计信息。
+- [x] UI：新增按钮与 pending 状态；支持 Sidebar 勾选批量。
 
 验收（DoD）：
 

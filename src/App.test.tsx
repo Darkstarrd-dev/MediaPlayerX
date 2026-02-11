@@ -839,6 +839,44 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
+  it('元数据管理支持按设置参数触发视觉模型标签批量生成', async () => {
+    const generatePackageAutoTagsVisionSpy = vi.spyOn(MockMediaRepository.prototype, 'generatePackageAutoTagsVisionSync')
+    useUiStore.setState({
+      adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
+      adReviewVisionModel: 'qwen2.5-vl-instruct',
+      visionAutoTagCsvPath: 'Z:/mock/tags-range.csv',
+      visionAutoTagSampleImageCount: 6,
+      visionAutoTagOccurrenceThreshold: 2,
+      visionAutoTagTemperature: 0,
+      visionAutoTagTimeoutMs: 30000,
+    })
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.sidebar-manage-checker').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(document.querySelector('.sidebar-manage-checker') as HTMLInputElement)
+    fireEvent.click(screen.getByRole('button', { name: '视觉模型生成标签' }))
+
+    await waitFor(() => {
+      expect(generatePackageAutoTagsVisionSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tags_csv_path: 'Z:/mock/tags-range.csv',
+          llm_endpoint: 'http://127.0.0.1:1234/v1/chat/completions',
+          llm_model: 'qwen2.5-vl-instruct',
+          sample_image_count: 6,
+          occurrence_threshold: 2,
+          temperature: 0,
+          timeout_ms: 30000,
+        }),
+      )
+    })
+  })
+
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {
     render(<App />)
 

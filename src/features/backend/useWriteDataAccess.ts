@@ -12,6 +12,8 @@ import type {
   WritePackageMetadataResponseDto,
   GeneratePackageAutoTagsRequestDto,
   GeneratePackageAutoTagsResponseDto,
+  GeneratePackageAutoTagsVisionRequestDto,
+  GeneratePackageAutoTagsVisionResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
 } from '../../contracts/backend'
@@ -38,6 +40,9 @@ interface SyncWriteRepository extends MediaRepository {
   writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
   generatePackageAutoTagsSync?(request: GeneratePackageAutoTagsRequestDto): GeneratePackageAutoTagsResponseDto
+  generatePackageAutoTagsVisionSync?(
+    request: GeneratePackageAutoTagsVisionRequestDto,
+  ): GeneratePackageAutoTagsVisionResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
 }
@@ -93,6 +98,18 @@ interface UseWriteDataAccessResult {
       ratingMinScore: number
     },
   ) => Promise<GeneratePackageAutoTagsResponseDto>
+  generatePackageAutoTagsVision: (
+    packageId: string,
+    payload: {
+      tagsCsvPath: string
+      llmEndpoint: string
+      llmModel: string
+      sampleImageCount: number
+      occurrenceThreshold: number
+      temperature: number
+      timeoutMs: number
+    },
+  ) => Promise<GeneratePackageAutoTagsVisionResponseDto>
   writeVideoMetadata: (
     videoId: string,
     payload: {
@@ -329,6 +346,64 @@ export function useWriteDataAccess({
     [isSynchronousTestMode, repository],
   )
 
+  const generatePackageAutoTagsVision = useCallback(
+    async (
+      packageId: string,
+      payload: {
+        tagsCsvPath: string
+        llmEndpoint: string
+        llmModel: string
+        sampleImageCount: number
+        occurrenceThreshold: number
+        temperature: number
+        timeoutMs: number
+      },
+    ): Promise<GeneratePackageAutoTagsVisionResponseDto> => {
+      if (!repository.generatePackageAutoTagsVision) {
+        const message = '当前后端不支持视觉自动标签'
+        setMetadataError(message)
+        throw new Error(message)
+      }
+
+      setMetadataPending(true)
+      setMetadataError(null)
+
+      try {
+        const request: GeneratePackageAutoTagsVisionRequestDto = {
+          package_id: packageId,
+          tags_csv_path: payload.tagsCsvPath,
+          llm_endpoint: payload.llmEndpoint,
+          llm_model: payload.llmModel,
+          sample_image_count: Math.max(1, Math.min(24, Math.floor(payload.sampleImageCount))),
+          occurrence_threshold: Math.max(1, Math.min(24, Math.floor(payload.occurrenceThreshold))),
+          temperature: Math.max(0, Math.min(1, payload.temperature)),
+          timeout_ms: Math.max(3_000, Math.min(120_000, Math.floor(payload.timeoutMs))),
+        }
+
+        if (isSynchronousTestMode) {
+          const writer = repository.generatePackageAutoTagsVisionSync
+          if (!writer) {
+            const message = '当前后端不支持视觉自动标签'
+            setMetadataError(message)
+            throw new Error(message)
+          }
+          return writer(request)
+        }
+
+        return await repository.generatePackageAutoTagsVision(request, {
+          timeoutMs: AUTO_TAG_WRITE_TIMEOUT_MS,
+        })
+      } catch (error: unknown) {
+        const message = toErrorMessage(error)
+        setMetadataError(message)
+        throw new Error(message)
+      } finally {
+        setMetadataPending(false)
+      }
+    },
+    [isSynchronousTestMode, repository],
+  )
+
   const writeVideoMetadata = useCallback(
     async (
       videoId: string,
@@ -511,6 +586,7 @@ export function useWriteDataAccess({
     deleteSidebarNodes,
     writePackageMetadata,
     generatePackageAutoTags,
+    generatePackageAutoTagsVision,
     writeVideoMetadata,
     saveVideoCover,
   }

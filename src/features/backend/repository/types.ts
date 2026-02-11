@@ -45,6 +45,8 @@ import type {
   WritePackageMetadataResponseDto,
   GeneratePackageAutoTagsRequestDto,
   GeneratePackageAutoTagsResponseDto,
+  GeneratePackageAutoTagsVisionRequestDto,
+  GeneratePackageAutoTagsVisionResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
   SetImageHiddenRequestDto,
@@ -129,6 +131,10 @@ export interface MediaRepository {
     request: GeneratePackageAutoTagsRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<GeneratePackageAutoTagsResponseDto>
+  generatePackageAutoTagsVision?(
+    request: GeneratePackageAutoTagsVisionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<GeneratePackageAutoTagsVisionResponseDto>
   writeVideoMetadata?(
     request: WriteVideoMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -190,6 +196,9 @@ export interface SynchronousMediaRepository extends MediaRepository {
   ): ConfirmManageAdReviewDeleteResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
   generatePackageAutoTagsSync?(request: GeneratePackageAutoTagsRequestDto): GeneratePackageAutoTagsResponseDto
+  generatePackageAutoTagsVisionSync?(
+    request: GeneratePackageAutoTagsVisionRequestDto,
+  ): GeneratePackageAutoTagsVisionResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
   readPlaylistSync(): ReadPlaylistResponseDto

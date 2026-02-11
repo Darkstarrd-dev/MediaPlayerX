@@ -66,6 +66,34 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.wdSwinTaggerAutoTagIncludeRating
   }
 
+  if (
+    typeof next.visionAutoTagSampleImageCount === 'number' &&
+    Number.isFinite(next.visionAutoTagSampleImageCount)
+  ) {
+    next.visionAutoTagSampleImageCount = Math.max(1, Math.min(24, Math.floor(next.visionAutoTagSampleImageCount)))
+  }
+
+  if (
+    typeof next.visionAutoTagOccurrenceThreshold === 'number' &&
+    Number.isFinite(next.visionAutoTagOccurrenceThreshold)
+  ) {
+    next.visionAutoTagOccurrenceThreshold = Math.max(1, Math.min(24, Math.floor(next.visionAutoTagOccurrenceThreshold)))
+  }
+
+  if (
+    typeof next.visionAutoTagTemperature === 'number' &&
+    Number.isFinite(next.visionAutoTagTemperature)
+  ) {
+    next.visionAutoTagTemperature = Math.max(0, Math.min(1, next.visionAutoTagTemperature))
+  }
+
+  if (
+    typeof next.visionAutoTagTimeoutMs === 'number' &&
+    Number.isFinite(next.visionAutoTagTimeoutMs)
+  ) {
+    next.visionAutoTagTimeoutMs = Math.max(3_000, Math.min(120_000, Math.floor(next.visionAutoTagTimeoutMs)))
+  }
+
   return next as Partial<AppSettings>
 }
 

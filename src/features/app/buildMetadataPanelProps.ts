@@ -31,6 +31,7 @@ interface BuildMetadataPanelPropsParams {
   onGradeChange: (grade: number | null) => void
   onSavePackageMetadata: (payload: PackageMetadataWritePayload) => void
   onGeneratePackageAutoTags: () => void
+  onGeneratePackageAutoTagsVision: () => void
   onSaveVideoMetadata: (payload: VideoMetadataWritePayload) => void
   onMetadataTabChange: (tab: MetadataPanelProps['metadataTab']) => void
   onSelectVideo: (videoId: string) => void
@@ -70,6 +71,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onGradeChange: params.onGradeChange,
     onSavePackageMetadata: params.onSavePackageMetadata,
     onGeneratePackageAutoTags: params.onGeneratePackageAutoTags,
+    onGeneratePackageAutoTagsVision: params.onGeneratePackageAutoTagsVision,
     onSaveVideoMetadata: params.onSaveVideoMetadata,
     onSearchByWorkTitle: params.onSearchByWorkTitle,
     onSearchByCircle: params.onSearchByCircle,

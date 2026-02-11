@@ -49,6 +49,11 @@ export interface SettingsPanelProps {
   wdSwinTaggerAutoTagCharacterMinScore: number
   wdSwinTaggerAutoTagIncludeRating: boolean
   wdSwinTaggerAutoTagRatingMinScore: number
+  visionAutoTagCsvPath: string
+  visionAutoTagSampleImageCount: number
+  visionAutoTagOccurrenceThreshold: number
+  visionAutoTagTemperature: number
+  visionAutoTagTimeoutMs: number
   wdSwinTaggerTestPending: boolean
   wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
@@ -99,6 +104,11 @@ export interface SettingsPanelProps {
   onWdSwinTaggerAutoTagCharacterMinScoreChange: (value: number) => void
   onWdSwinTaggerAutoTagIncludeRatingChange: (value: boolean) => void
   onWdSwinTaggerAutoTagRatingMinScoreChange: (value: number) => void
+  onVisionAutoTagCsvPathChange: (value: string) => void
+  onVisionAutoTagSampleImageCountChange: (value: number) => void
+  onVisionAutoTagOccurrenceThresholdChange: (value: number) => void
+  onVisionAutoTagTemperatureChange: (value: number) => void
+  onVisionAutoTagTimeoutMsChange: (value: number) => void
   onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
@@ -158,6 +168,11 @@ function SettingsPanel({
   wdSwinTaggerAutoTagCharacterMinScore,
   wdSwinTaggerAutoTagIncludeRating,
   wdSwinTaggerAutoTagRatingMinScore,
+  visionAutoTagCsvPath,
+  visionAutoTagSampleImageCount,
+  visionAutoTagOccurrenceThreshold,
+  visionAutoTagTemperature,
+  visionAutoTagTimeoutMs,
   wdSwinTaggerTestPending,
   wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
@@ -208,6 +223,11 @@ function SettingsPanel({
   onWdSwinTaggerAutoTagCharacterMinScoreChange,
   onWdSwinTaggerAutoTagIncludeRatingChange,
   onWdSwinTaggerAutoTagRatingMinScoreChange,
+  onVisionAutoTagCsvPathChange,
+  onVisionAutoTagSampleImageCountChange,
+  onVisionAutoTagOccurrenceThresholdChange,
+  onVisionAutoTagTemperatureChange,
+  onVisionAutoTagTimeoutMsChange,
   onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
@@ -393,6 +413,11 @@ function SettingsPanel({
     wdSwinTaggerAutoTagCharacterMinScore,
     wdSwinTaggerAutoTagIncludeRating,
     wdSwinTaggerAutoTagRatingMinScore,
+    visionAutoTagCsvPath,
+    visionAutoTagSampleImageCount,
+    visionAutoTagOccurrenceThreshold,
+    visionAutoTagTemperature,
+    visionAutoTagTimeoutMs,
     wdSwinTaggerTestPending,
     wdSwinTaggerTestMessage,
     adReviewVisionEndpoint,
@@ -445,6 +470,11 @@ function SettingsPanel({
     onWdSwinTaggerAutoTagCharacterMinScoreChange,
     onWdSwinTaggerAutoTagIncludeRatingChange,
     onWdSwinTaggerAutoTagRatingMinScoreChange,
+    onVisionAutoTagCsvPathChange,
+    onVisionAutoTagSampleImageCountChange,
+    onVisionAutoTagOccurrenceThresholdChange,
+    onVisionAutoTagTemperatureChange,
+    onVisionAutoTagTimeoutMsChange,
     onTestWdSwinTaggerModel,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,

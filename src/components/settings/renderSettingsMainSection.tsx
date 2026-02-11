@@ -51,6 +51,11 @@ interface RenderSettingsMainSectionParams {
   wdSwinTaggerAutoTagCharacterMinScore: number
   wdSwinTaggerAutoTagIncludeRating: boolean
   wdSwinTaggerAutoTagRatingMinScore: number
+  visionAutoTagCsvPath: string
+  visionAutoTagSampleImageCount: number
+  visionAutoTagOccurrenceThreshold: number
+  visionAutoTagTemperature: number
+  visionAutoTagTimeoutMs: number
   wdSwinTaggerTestPending: boolean
   wdSwinTaggerTestMessage: string | null
   adReviewVisionEndpoint: string
@@ -103,6 +108,11 @@ interface RenderSettingsMainSectionParams {
   onWdSwinTaggerAutoTagCharacterMinScoreChange: (value: number) => void
   onWdSwinTaggerAutoTagIncludeRatingChange: (value: boolean) => void
   onWdSwinTaggerAutoTagRatingMinScoreChange: (value: number) => void
+  onVisionAutoTagCsvPathChange: (value: string) => void
+  onVisionAutoTagSampleImageCountChange: (value: number) => void
+  onVisionAutoTagOccurrenceThresholdChange: (value: number) => void
+  onVisionAutoTagTemperatureChange: (value: number) => void
+  onVisionAutoTagTimeoutMsChange: (value: number) => void
   onTestWdSwinTaggerModel: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
@@ -153,6 +163,11 @@ export function renderSettingsMainSection({
   wdSwinTaggerAutoTagCharacterMinScore,
   wdSwinTaggerAutoTagIncludeRating,
   wdSwinTaggerAutoTagRatingMinScore,
+  visionAutoTagCsvPath,
+  visionAutoTagSampleImageCount,
+  visionAutoTagOccurrenceThreshold,
+  visionAutoTagTemperature,
+  visionAutoTagTimeoutMs,
   wdSwinTaggerTestPending,
   wdSwinTaggerTestMessage,
   adReviewVisionEndpoint,
@@ -205,6 +220,11 @@ export function renderSettingsMainSection({
   onWdSwinTaggerAutoTagCharacterMinScoreChange,
   onWdSwinTaggerAutoTagIncludeRatingChange,
   onWdSwinTaggerAutoTagRatingMinScoreChange,
+  onVisionAutoTagCsvPathChange,
+  onVisionAutoTagSampleImageCountChange,
+  onVisionAutoTagOccurrenceThresholdChange,
+  onVisionAutoTagTemperatureChange,
+  onVisionAutoTagTimeoutMsChange,
   onTestWdSwinTaggerModel,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
@@ -450,6 +470,61 @@ export function renderSettingsMainSection({
           </div>
           <p className="settings-placeholder">默认按模型 metadata 自适应输入布局（NCHW/NHWC）做 warmup 推理，用于校验模型可加载与可执行。</p>
           <p className="settings-placeholder">自动标签阈值按 selected_tags 中的 category 自动映射，无需额外 JSON 范围配置文件。</p>
+        </fieldset>
+
+        <fieldset className="settings-subsection">
+          <legend>视觉模型标签生成（元数据管理）</legend>
+          <label>
+            标签范围 CSV 路径
+            <input
+              type="text"
+              value={visionAutoTagCsvPath}
+              onChange={(event) => onVisionAutoTagCsvPathChange(event.target.value)}
+            />
+          </label>
+          <label title="每个图包抽样多少张图片发送给视觉模型。">
+            抽样图片数
+            <input
+              min={1}
+              max={24}
+              type="number"
+              value={visionAutoTagSampleImageCount}
+              onChange={(event) => onVisionAutoTagSampleImageCountChange(Number(event.target.value))}
+            />
+          </label>
+          <label title="标签至少在多少张抽样图片中出现后才写入。">
+            出现阈值
+            <input
+              min={1}
+              max={24}
+              type="number"
+              value={visionAutoTagOccurrenceThreshold}
+              onChange={(event) => onVisionAutoTagOccurrenceThresholdChange(Number(event.target.value))}
+            />
+          </label>
+          <label title="视觉模型 temperature 参数，范围 0~1。">
+            温度
+            <input
+              min={0}
+              max={1}
+              step={0.01}
+              type="number"
+              value={visionAutoTagTemperature}
+              onChange={(event) => onVisionAutoTagTemperatureChange(Number(event.target.value))}
+            />
+          </label>
+          <label title="单次视觉请求超时（毫秒）。">
+            请求超时（ms）
+            <input
+              min={3000}
+              max={120000}
+              step={500}
+              type="number"
+              value={visionAutoTagTimeoutMs}
+              onChange={(event) => onVisionAutoTagTimeoutMsChange(Number(event.target.value))}
+            />
+          </label>
+          <p className="settings-placeholder">复用“AI广告审核视觉模型”的 Endpoint 与模型ID，执行时会对模型返回 JSON 严格校验并仅保留 CSV 范围内标签。</p>
         </fieldset>
       </div>
     )

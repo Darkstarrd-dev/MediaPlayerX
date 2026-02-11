@@ -39,6 +39,7 @@ export interface MetadataPanelProps {
     syncWorkTitleToPackageName?: boolean
   }) => void
   onGeneratePackageAutoTags: () => void
+  onGeneratePackageAutoTagsVision: () => void
   onSaveVideoMetadata: (payload: {
     workTitle: string
     circle: string
@@ -96,6 +97,7 @@ function MetadataPanel({
   onGradeChange,
   onSavePackageMetadata,
   onGeneratePackageAutoTags,
+  onGeneratePackageAutoTagsVision,
   onSaveVideoMetadata,
   onSearchByWorkTitle,
   onSearchByCircle,
@@ -295,6 +297,7 @@ function MetadataPanel({
           onTagsDraftChange={setTagsDraft}
           onPersistPackageMetadata={persistPackageMetadata}
           onGeneratePackageAutoTags={onGeneratePackageAutoTags}
+          onGeneratePackageAutoTagsVision={onGeneratePackageAutoTagsVision}
           onGradeChange={onGradeChange}
           onSearchByWorkTitle={onSearchByWorkTitle}
           onSearchByCircle={onSearchByCircle}

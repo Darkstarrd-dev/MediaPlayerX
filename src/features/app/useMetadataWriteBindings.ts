@@ -27,6 +27,13 @@ interface UseMetadataWriteBindingsParams {
   autoTagCharacterMinScore: number
   autoTagIncludeRating: boolean
   autoTagRatingMinScore: number
+  visionAutoTagCsvPath: string
+  visionAutoTagSampleImageCount: number
+  visionAutoTagOccurrenceThreshold: number
+  visionAutoTagTemperature: number
+  visionAutoTagTimeoutMs: number
+  visionAutoTagEndpoint: string
+  visionAutoTagModel: string
   backendWrite: {
     pending: {
       metadata: boolean
@@ -45,6 +52,18 @@ interface UseMetadataWriteBindingsParams {
         ratingMinScore: number
       },
     ) => Promise<{ generated_tags: string[]; analyzed_images: number }>
+    generatePackageAutoTagsVision?: (
+      packageId: string,
+      payload: {
+        tagsCsvPath: string
+        llmEndpoint: string
+        llmModel: string
+        sampleImageCount: number
+        occurrenceThreshold: number
+        temperature: number
+        timeoutMs: number
+      },
+    ) => Promise<{ generated_tags: string[]; analyzed_images: number; dropped_tags: string[]; invalid_response_images: number }>
     writeVideoMetadata?: (videoId: string, payload: VideoMetadataWritePayload) => Promise<void>
   }
   metadataImagePackageId: string | null
@@ -60,6 +79,7 @@ interface UseMetadataWriteBindingsResult {
   applyPackageGrade: (grade: number | null) => void
   applyPackageMetadata: (payload: PackageMetadataWritePayload) => void
   applyPackageAutoTags: () => void
+  applyPackageAutoTagsVision: () => void
   applyVideoMetadata: (payload: VideoMetadataWritePayload) => void
 }
 
@@ -71,6 +91,13 @@ export function useMetadataWriteBindings({
   autoTagCharacterMinScore,
   autoTagIncludeRating,
   autoTagRatingMinScore,
+  visionAutoTagCsvPath,
+  visionAutoTagSampleImageCount,
+  visionAutoTagOccurrenceThreshold,
+  visionAutoTagTemperature,
+  visionAutoTagTimeoutMs,
+  visionAutoTagEndpoint,
+  visionAutoTagModel,
   backendWrite,
   metadataImagePackageId,
   focusedVideoId,
@@ -263,6 +290,102 @@ export function useMetadataWriteBindings({
     setManageOperationHint,
   ])
 
+  const applyPackageAutoTagsVision = useCallback(() => {
+    if (autoTagPending) {
+      return
+    }
+
+    const autoTagWriter = backendWrite.generatePackageAutoTagsVision
+    if (!autoTagWriter) {
+      setManageOperationHint('视觉自动标签失败：当前后端不支持该能力')
+      return
+    }
+
+    const normalizedCsvPath = visionAutoTagCsvPath.trim()
+    const normalizedEndpoint = visionAutoTagEndpoint.trim()
+    const normalizedModel = visionAutoTagModel.trim()
+    const sampleImageCount = Math.max(1, Math.min(24, Math.floor(visionAutoTagSampleImageCount)))
+    const occurrenceThreshold = Math.max(1, Math.min(24, Math.floor(visionAutoTagOccurrenceThreshold)))
+    const temperature = Math.max(0, Math.min(1, visionAutoTagTemperature))
+    const timeoutMs = Math.max(3_000, Math.min(120_000, Math.floor(visionAutoTagTimeoutMs)))
+
+    if (!normalizedCsvPath) {
+      setManageOperationHint('视觉自动标签失败：请先在设置中填写标签范围 CSV 路径')
+      return
+    }
+    if (!normalizedEndpoint || !normalizedModel) {
+      setManageOperationHint('视觉自动标签失败：请先在设置中填写视觉模型端口和模型ID')
+      return
+    }
+
+    const runForPackage = (packageId: string) =>
+      autoTagWriter(packageId, {
+        tagsCsvPath: normalizedCsvPath,
+        llmEndpoint: normalizedEndpoint,
+        llmModel: normalizedModel,
+        sampleImageCount,
+        occurrenceThreshold,
+        temperature,
+        timeoutMs,
+      })
+
+    if (metadataManageMode) {
+      const { packageIds } = collectBatchTargets()
+      if (packageIds.length > 0) {
+        setAutoTagPending(true)
+        void runBatchWrite(
+          packageIds,
+          async (packageId) => {
+            await runForPackage(packageId)
+          },
+          '视觉自动标签批量执行完成',
+        )
+          .catch(() => undefined)
+          .finally(() => {
+            setAutoTagPending(false)
+          })
+        return
+      }
+    }
+
+    if (!metadataImagePackageId) {
+      setManageOperationHint('视觉自动标签失败：当前无可用图包')
+      return
+    }
+
+    setAutoTagPending(true)
+    void runForPackage(metadataImagePackageId)
+      .then((response) => {
+        const droppedSummary = response.dropped_tags.length > 0 ? `，丢弃 ${response.dropped_tags.length} 个越界标签` : ''
+        const invalidSummary = response.invalid_response_images > 0 ? `，无效响应 ${response.invalid_response_images} 张` : ''
+        setManageOperationHint(
+          `视觉自动标签完成：生成 ${response.generated_tags.length} 个标签，分析 ${response.analyzed_images} 张图片${droppedSummary}${invalidSummary}`,
+        )
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error)
+        setManageOperationHint(`视觉自动标签失败：${message}`)
+      })
+      .finally(() => {
+        setAutoTagPending(false)
+      })
+  }, [
+    autoTagPending,
+    backendWrite.generatePackageAutoTagsVision,
+    collectBatchTargets,
+    metadataImagePackageId,
+    metadataManageMode,
+    runBatchWrite,
+    setManageOperationHint,
+    visionAutoTagCsvPath,
+    visionAutoTagEndpoint,
+    visionAutoTagModel,
+    visionAutoTagOccurrenceThreshold,
+    visionAutoTagSampleImageCount,
+    visionAutoTagTemperature,
+    visionAutoTagTimeoutMs,
+  ])
+
   const applyVideoMetadata = useCallback(
     (payload: VideoMetadataWritePayload) => {
       if (!backendWrite.writeVideoMetadata) {
@@ -291,6 +414,7 @@ export function useMetadataWriteBindings({
     applyPackageGrade,
     applyPackageMetadata,
     applyPackageAutoTags,
+    applyPackageAutoTagsVision,
     applyVideoMetadata,
   }
 }

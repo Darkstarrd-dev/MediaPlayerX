@@ -18,6 +18,7 @@ import {
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
   generatePackageAutoTagsResponseSchema,
+  generatePackageAutoTagsVisionResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   setImageHiddenResponseSchema,
@@ -61,6 +62,8 @@ import {
   type WritePackageMetadataResponseDto,
   type GeneratePackageAutoTagsRequestDto,
   type GeneratePackageAutoTagsResponseDto,
+  type GeneratePackageAutoTagsVisionRequestDto,
+  type GeneratePackageAutoTagsVisionResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
   type SetImageHiddenRequestDto,
@@ -442,6 +445,19 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.generatePackageAutoTags(request), options)
     return generatePackageAutoTagsResponseSchema.parse(response)
+  }
+
+  async generatePackageAutoTagsVision(
+    request: GeneratePackageAutoTagsVisionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<GeneratePackageAutoTagsVisionResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.generatePackageAutoTagsVision) {
+      throw new Error('真实后端通道不可用：generatePackageAutoTagsVision 未注入')
+    }
+
+    const response = await withAbort(api.generatePackageAutoTagsVision(request), options)
+    return generatePackageAutoTagsVisionResponseSchema.parse(response)
   }
 
   async writeVideoMetadata(

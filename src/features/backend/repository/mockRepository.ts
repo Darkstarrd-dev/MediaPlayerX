@@ -33,6 +33,7 @@ import {
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
   generatePackageAutoTagsResponseSchema,
+  generatePackageAutoTagsVisionResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
   type ReadAppStateRequestDto,
@@ -98,6 +99,8 @@ import {
   type WritePackageMetadataResponseDto,
   type GeneratePackageAutoTagsRequestDto,
   type GeneratePackageAutoTagsResponseDto,
+  type GeneratePackageAutoTagsVisionRequestDto,
+  type GeneratePackageAutoTagsVisionResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
@@ -1314,6 +1317,48 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     })
   }
 
+  generatePackageAutoTagsVisionSync(
+    request: GeneratePackageAutoTagsVisionRequestDto,
+  ): GeneratePackageAutoTagsVisionResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`mock 视觉自动标签失败：source 不存在 ${request.package_id}`)
+    }
+
+    const normalizedCsvPath = request.tags_csv_path.trim().toLowerCase()
+    if (!normalizedCsvPath) {
+      throw new Error('mock 视觉自动标签失败：标签范围 CSV 路径不能为空')
+    }
+    if (normalizedCsvPath.includes('fail')) {
+      throw new Error('mock 视觉自动标签失败：CSV 读取失败')
+    }
+
+    const sampleCount = Math.max(1, Math.min(24, Math.floor(request.sample_image_count)))
+    const threshold = Math.max(1, Math.min(24, Math.floor(request.occurrence_threshold)))
+    const analyzedImages = Math.min(source.images.length, sampleCount)
+
+    const tagSeed = source.display_name
+      .toLowerCase()
+      .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+    const generatedTags =
+      analyzedImages === 0
+        ? []
+        : [`vision_${tagSeed || 'package'}`, `vision_count_${Math.max(1, Math.min(analyzedImages, threshold))}`]
+
+    source.tags = generatedTags
+
+    return generatePackageAutoTagsVisionResponseSchema.parse({
+      package: source,
+      generated_tags: generatedTags,
+      analyzed_images: analyzedImages,
+      dropped_tags: [],
+      invalid_response_images: 0,
+      updated_at_ms: Date.now(),
+    })
+  }
+
   async writePackageMetadata(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -1327,6 +1372,14 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<GeneratePackageAutoTagsResponseDto> {
     const response = this.generatePackageAutoTagsSync(request)
+    return resolveAsync(response, options)
+  }
+
+  async generatePackageAutoTagsVision(
+    request: GeneratePackageAutoTagsVisionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<GeneratePackageAutoTagsVisionResponseDto> {
+    const response = this.generatePackageAutoTagsVisionSync(request)
     return resolveAsync(response, options)
   }
 
