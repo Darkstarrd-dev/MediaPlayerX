@@ -106,7 +106,7 @@ export function useSettingsPersistence({
   const lastSavedJsonRef = useRef('')
 
   const initialSettingsRef = useRef<AppSettings | null>(null)
-  if (!initialSettingsRef.current) {
+  if (initialSettingsRef.current == null) {
     initialSettingsRef.current = settings
   }
 
@@ -123,14 +123,20 @@ export function useSettingsPersistence({
     }
 
     const next: Partial<AppSettings> = {}
-    for (const key of Object.keys(persisted) as Array<keyof AppSettings>) {
-      if (typeof persisted[key] === 'undefined') {
-        continue
+    const applyHydrationKey = <K extends keyof AppSettings>(key: K): void => {
+      const persistedValue = persisted[key]
+      if (typeof persistedValue === 'undefined') {
+        return
       }
+
       // 若用户（或其他逻辑）在水合完成前已修改过某个 key，则不允许旧持久化值覆盖它。
       if (Object.is(latest[key], initial[key])) {
-        next[key] = persisted[key]
+        next[key] = persistedValue
       }
+    }
+
+    for (const key of Object.keys(persisted) as Array<keyof AppSettings>) {
+      applyHydrationKey(key)
     }
     return next
   }

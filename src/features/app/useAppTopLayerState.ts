@@ -299,6 +299,15 @@ export function useAppTopLayerState({
 
   const shortcutConflicts = useMemo(() => findShortcutConflicts(appSettings.shortcuts), [appSettings.shortcuts])
   const vectorControlConflicts = useMemo(() => findVectorControlConflicts(appSettings.vectorControls), [appSettings.vectorControls])
+  const {
+    lmStudioEndpoint,
+    lmStudioModel,
+    adReviewVisionEndpoint,
+    adReviewVisionModel,
+    wdSwinTaggerModelPath,
+    visionAutoTagCsvPath,
+    updateSettings,
+  } = appSettings
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
   const [adReviewVisionTestMessage, setAdReviewVisionTestMessage] = useState<string | null>(null)
   const [embeddingModelTestPending, setEmbeddingModelTestPending] = useState(false)
@@ -308,15 +317,15 @@ export function useAppTopLayerState({
 
   useEffect(() => {
     setEmbeddingModelTestMessage(null)
-  }, [appSettings.lmStudioEndpoint, appSettings.lmStudioModel])
+  }, [lmStudioEndpoint, lmStudioModel])
 
   useEffect(() => {
     setAdReviewVisionTestMessage(null)
-  }, [appSettings.adReviewVisionEndpoint, appSettings.adReviewVisionModel])
+  }, [adReviewVisionEndpoint, adReviewVisionModel])
 
   useEffect(() => {
     setWdSwinTaggerTestMessage(null)
-  }, [appSettings.wdSwinTaggerModelPath])
+  }, [wdSwinTaggerModelPath])
 
   const testEmbeddingModel = useCallback(async () => {
     const testEmbedding = mediaRepository.testEmbeddingModel
@@ -325,8 +334,8 @@ export function useAppTopLayerState({
       return
     }
 
-    const normalizedEndpoint = appSettings.lmStudioEndpoint.trim()
-    const normalizedModel = appSettings.lmStudioModel.trim()
+    const normalizedEndpoint = lmStudioEndpoint.trim()
+    const normalizedModel = lmStudioModel.trim()
     if (!normalizedEndpoint || !normalizedModel) {
       setEmbeddingModelTestMessage('请先填写向量模型端口和模型ID')
       return
@@ -344,7 +353,7 @@ export function useAppTopLayerState({
         { timeoutMs: 15_000 },
       )
 
-      appSettings.updateSettings({
+      updateSettings({
         lmStudioEndpoint: normalizedEndpoint,
         lmStudioModel: normalizedModel,
       })
@@ -355,20 +364,20 @@ export function useAppTopLayerState({
     } finally {
       setEmbeddingModelTestPending(false)
     }
-  }, [appSettings.lmStudioEndpoint, appSettings.lmStudioModel, appSettings.updateSettings, mediaRepository])
+  }, [lmStudioEndpoint, lmStudioModel, mediaRepository, updateSettings])
 
   const testAdReviewVisionModel = useCallback(async () => {
     const testVisionModel = mediaRepository.testAdReviewVisionModel
     if (!testVisionModel) {
-      appSettings.updateSettings({ adReviewVisionVerified: false })
+      updateSettings({ adReviewVisionVerified: false })
       setAdReviewVisionTestMessage('当前后端不支持视觉模型测试')
       return
     }
 
-    const normalizedEndpoint = appSettings.adReviewVisionEndpoint.trim()
-    const normalizedModel = appSettings.adReviewVisionModel.trim()
+    const normalizedEndpoint = adReviewVisionEndpoint.trim()
+    const normalizedModel = adReviewVisionModel.trim()
     if (!normalizedEndpoint || !normalizedModel) {
-      appSettings.updateSettings({ adReviewVisionVerified: false })
+      updateSettings({ adReviewVisionVerified: false })
       setAdReviewVisionTestMessage('请先填写视觉模型端口和模型ID')
       return
     }
@@ -386,7 +395,7 @@ export function useAppTopLayerState({
         { timeoutMs: 15_000 },
       )
 
-      appSettings.updateSettings({
+      updateSettings({
         adReviewVisionEndpoint: normalizedEndpoint,
         adReviewVisionModel: normalizedModel,
         adReviewVisionVerified: response.ok,
@@ -394,17 +403,12 @@ export function useAppTopLayerState({
       setAdReviewVisionTestMessage(response.message)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      appSettings.updateSettings({ adReviewVisionVerified: false })
+      updateSettings({ adReviewVisionVerified: false })
       setAdReviewVisionTestMessage(`模型测试失败：${message}`)
     } finally {
       setAdReviewVisionTestPending(false)
     }
-  }, [
-    appSettings.adReviewVisionEndpoint,
-    appSettings.adReviewVisionModel,
-    appSettings.updateSettings,
-    mediaRepository,
-  ])
+  }, [adReviewVisionEndpoint, adReviewVisionModel, mediaRepository, updateSettings])
 
   const testWdSwinTaggerModel = useCallback(async () => {
     const testWdModel = mediaRepository.testWdSwinTaggerModel
@@ -413,7 +417,7 @@ export function useAppTopLayerState({
       return
     }
 
-    const normalizedModelPath = appSettings.wdSwinTaggerModelPath.trim()
+    const normalizedModelPath = wdSwinTaggerModelPath.trim()
     if (!normalizedModelPath) {
       setWdSwinTaggerTestMessage('请先填写 wd 模型路径')
       return
@@ -430,7 +434,7 @@ export function useAppTopLayerState({
         { timeoutMs: 50_000 },
       )
 
-      appSettings.updateSettings({
+      updateSettings({
         wdSwinTaggerModelPath: normalizedModelPath,
       })
       setWdSwinTaggerTestMessage(response.message)
@@ -440,7 +444,7 @@ export function useAppTopLayerState({
     } finally {
       setWdSwinTaggerTestPending(false)
     }
-  }, [appSettings.updateSettings, appSettings.wdSwinTaggerModelPath, mediaRepository])
+  }, [mediaRepository, updateSettings, wdSwinTaggerModelPath])
 
   const pickWdSwinTaggerModelPath = useCallback(async () => {
     if (!mediaRepository.pickFilePath) {
@@ -449,16 +453,16 @@ export function useAppTopLayerState({
 
     const response = await mediaRepository.pickFilePath({
       title: '选择 wd ONNX 模型文件',
-      default_path: normalizeOptionalPath(appSettings.wdSwinTaggerModelPath),
+      default_path: normalizeOptionalPath(wdSwinTaggerModelPath),
       filters: [{ name: 'ONNX 模型', extensions: ['onnx'] }],
     })
 
     if (!response.canceled && response.path) {
-      appSettings.updateSettings({
+      updateSettings({
         wdSwinTaggerModelPath: response.path,
       })
     }
-  }, [appSettings.updateSettings, appSettings.wdSwinTaggerModelPath, mediaRepository])
+  }, [mediaRepository, updateSettings, wdSwinTaggerModelPath])
 
   const pickVisionAutoTagCsvPath = useCallback(async () => {
     if (!mediaRepository.pickFilePath) {
@@ -467,16 +471,16 @@ export function useAppTopLayerState({
 
     const response = await mediaRepository.pickFilePath({
       title: '选择标签范围 CSV 文件',
-      default_path: normalizeOptionalPath(appSettings.visionAutoTagCsvPath),
+      default_path: normalizeOptionalPath(visionAutoTagCsvPath),
       filters: [{ name: 'CSV 文件', extensions: ['csv'] }],
     })
 
     if (!response.canceled && response.path) {
-      appSettings.updateSettings({
+      updateSettings({
         visionAutoTagCsvPath: response.path,
       })
     }
-  }, [appSettings.updateSettings, appSettings.visionAutoTagCsvPath, mediaRepository])
+  }, [mediaRepository, updateSettings, visionAutoTagCsvPath])
 
   const pickRuntimeDirectory = useCallback(
     async (title: string, defaultPath: string | undefined) => {
