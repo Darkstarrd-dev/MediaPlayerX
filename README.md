@@ -42,6 +42,7 @@ npm run test
 ## 文档入口
 
 - `docs/README.md`
+- `docs/execution-plan-2026-02-11.md`（临时执行方案，完成后删除）
 - `docs/requirements-v1.md`
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
