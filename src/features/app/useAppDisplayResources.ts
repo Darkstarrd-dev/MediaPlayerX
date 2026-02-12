@@ -1,5 +1,6 @@
 import { useEffectiveDisplayState } from './useEffectiveDisplayState'
 import { useMetadataWriteBindings } from './useMetadataWriteBindings'
+import { buildCoverImageLocator } from './mediaPathUtils'
 import { useResolvedMediaState } from './useResolvedMediaState'
 import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
@@ -45,6 +46,7 @@ export function useAppDisplayResources({
     backendRead,
     vectorResultsActive,
     packageByIdEffective,
+    scopedImageSourcesEffective,
     videoByIdEffective,
     videosForSidebar,
     focusedRef,
@@ -124,6 +126,7 @@ export function useAppDisplayResources({
     fullscreenImageSrc,
     focusedVideoSrc,
     focusedVideoCoverImageSrc,
+    sourceCoverImageUrlBySourceId,
   } = useResolvedMediaState({
     repository: mediaRepository,
     benchSettings,
@@ -143,6 +146,18 @@ export function useAppDisplayResources({
     refsInPage: refsInPageEffective,
     focusedVideo,
     focusedVideoCoverImageLocator,
+    sourceCoverLocators: scopedImageSourcesEffective
+      .map((source) => {
+        const locator = buildCoverImageLocator(source.sourceCover?.coverImagePath ?? null)
+        if (!locator) {
+          return null
+        }
+        return {
+          sourceId: source.id,
+          locator,
+        }
+      })
+      .filter((item): item is { sourceId: string; locator: NonNullable<ReturnType<typeof buildCoverImageLocator>> } => Boolean(item)),
   })
 
   return {
@@ -166,6 +181,7 @@ export function useAppDisplayResources({
     fullscreenImageSrc,
     focusedVideoSrc,
     focusedVideoCoverImageSrc,
+    sourceCoverImageUrlBySourceId,
   }
 }
 

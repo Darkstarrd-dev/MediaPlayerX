@@ -89,6 +89,7 @@ interface UseAppWorkspacePropsParams {
   imageTotalPagesEffective: number
   packageByIdEffective: Map<string, ImagePackage>
   thumbnailImageUrlById: Record<string, string>
+  sourceCoverImageUrlBySourceId: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
   imageCheckedIdSet: Set<string>
   setFullscreenActiveWithAutoStop: (value: boolean | ((previous: boolean) => boolean)) => void
@@ -131,7 +132,7 @@ interface UseAppWorkspacePropsParams {
   selectVideoFromBrowser: (videoId: string) => void
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
   setDragVideoId: Dispatch<SetStateAction<string | null>>
-  sidebarNodeById: Map<string, { pathKey: string }>
+  sidebarNodeById: Map<string, SidebarNode>
   selectedSidebarNodeId: string | null
   searchResultsMode: boolean
   canSetCurrentRoot: boolean
@@ -244,6 +245,7 @@ export function useAppWorkspaceProps({
   imageTotalPagesEffective,
   packageByIdEffective,
   thumbnailImageUrlById,
+  sourceCoverImageUrlBySourceId,
   gridRef,
   imageCheckedIdSet,
   setFullscreenActiveWithAutoStop,
@@ -485,6 +487,24 @@ export function useAppWorkspaceProps({
         author: parsed.artist,
         tags: flattenExternalTags(parsed.tags),
       })
+      await metadataWriteBindings.applyPackageExternalMetadataById(packageId, {
+        sourceSite: parsed.source.site,
+        sourceUrl: parsed.source.url,
+        sourceRemoteId: parsed.source.id,
+        sourceToken: parsed.source.token,
+        title: parsed.title,
+        titleJpn: parsed.title_jpn,
+        group: parsed.group,
+        groupJpn: parsed.group_jpn,
+        artist: parsed.artist,
+        artistJpn: parsed.artist_jpn,
+        posted: parsed.posted,
+        rating: parsed.rating,
+        favorited: parsed.favorited,
+        thumbUrl: parsed.thumb,
+        tags: parsed.tags,
+        rawJson: JSON.stringify(parsed),
+      })
     },
     onStartVectorPanelResize,
     layoutLocked,
@@ -494,6 +514,47 @@ export function useAppWorkspaceProps({
   })
 
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
+
+  const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
+  const nodeBrowseMode =
+    mode === 'image' &&
+    !vectorResultsActive &&
+    !metadataManageMode &&
+    !manageMode &&
+    Boolean(selectedSidebarNode && selectedSidebarNode.imageNodeType === 'folder' && selectedSidebarNode.children.length > 0)
+
+  const resolveNodePreviewSourceId = (node: SidebarNode): string | null => {
+    if (node.imageSourceId) {
+      return node.imageSourceId
+    }
+    for (const child of node.children) {
+      const found = resolveNodePreviewSourceId(child)
+      if (found) {
+        return found
+      }
+    }
+    return null
+  }
+
+  const nodeBrowseItems = nodeBrowseMode
+    ? (selectedSidebarNode?.children ?? []).map((child) => {
+        const previewSourceId = resolveNodePreviewSourceId(child)
+        const previewSource = previewSourceId ? packageByIdEffective.get(previewSourceId) : null
+        const fallbackImageId = previewSource?.images[0]?.id
+        const coverImageUrl =
+          (previewSourceId ? sourceCoverImageUrlBySourceId[previewSourceId] : null) ??
+          (fallbackImageId ? thumbnailImageUrlById[fallbackImageId] ?? null : null)
+
+        return {
+          nodeId: child.id,
+          imageSourceId: child.imageSourceId,
+          label: child.label,
+          packageCount: child.descendantPackageCount ?? (child.imageNodeType === 'package' ? 1 : 0),
+          imageCount: child.descendantImageCount ?? child.directImageCount ?? 0,
+          coverImageUrl,
+        }
+      })
+    : []
 
   const refsInPageForDisplay =
     manageMode && manageAdReview.hideUncheckedNonChecked
@@ -562,6 +623,15 @@ export function useAppWorkspaceProps({
     onClearManageSelection: clearAllSelections,
     goPrevPage,
     goNextPage,
+    nodeBrowseMode,
+    nodeBrowseLabel: nodeBrowseMode ? (selectedSidebarNode?.label ?? '节点浏览') : '',
+    nodeBrowseItems,
+    onSelectNodeBrowseItem: (nodeId, imageSourceId) => {
+      setSelectedSidebarNodeId(nodeId)
+      if (imageSourceId) {
+        setSelectedPackageId(imageSourceId)
+      }
+    },
   })
 
   const videoMainSectionProps = buildVideoMainSectionProps({

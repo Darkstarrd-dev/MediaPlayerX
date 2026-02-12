@@ -54,6 +54,17 @@ interface BuildImageMainSectionPropsParams {
   onClearManageSelection: () => void
   goPrevPage: () => void
   goNextPage: () => void
+  nodeBrowseMode: boolean
+  nodeBrowseLabel: string
+  nodeBrowseItems: Array<{
+    nodeId: string
+    imageSourceId?: string
+    label: string
+    packageCount: number
+    imageCount: number
+    coverImageUrl: string | null
+  }>
+  onSelectNodeBrowseItem: (nodeId: string, imageSourceId?: string) => void
 }
 
 export function buildImageMainSectionProps(params: BuildImageMainSectionPropsParams) {
@@ -113,5 +124,9 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     },
     onPrevPage: params.goPrevPage,
     onNextPage: params.goNextPage,
+    nodeBrowseMode: params.nodeBrowseMode,
+    nodeBrowseLabel: params.nodeBrowseLabel,
+    nodeBrowseItems: params.nodeBrowseItems,
+    onSelectNodeBrowseItem: params.onSelectNodeBrowseItem,
   }
 }

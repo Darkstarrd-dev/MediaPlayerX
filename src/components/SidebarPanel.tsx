@@ -84,6 +84,7 @@ function SidebarPanel({
   const renderNodes = (nodes: SidebarNode[], depth = 0): ReactElement[] => {
     return nodes.flatMap((node) => {
       const isFolder = node.kind === 'folder'
+      const imageNodeType = node.imageNodeType ?? (isFolder ? 'folder' : 'package')
       const isActivePackage =
         mode === 'image' &&
         (imageHighlightByNode ? selectedSidebarNodeId === node.id : node.imageSourceId === selectedPackageId)
@@ -133,15 +134,14 @@ function SidebarPanel({
             />
           ) : null}
 
-          {mode === 'image' && isFolder && node.directImageCount ? (
-            <span className="sidebar-count" style={{ fontSize: `${sidebarCountFontSize}px` }}>
-              {node.directImageCount}
-            </span>
-          ) : null}
-
-          {mode === 'image' && !isFolder && node.imageSourceId ? (
-            <span className="sidebar-count" style={{ fontSize: `${sidebarCountFontSize}px` }}>
-              {node.directImageCount ?? 0}
+          {mode === 'image' ? (
+            <span className="sidebar-counts" style={{ fontSize: `${sidebarCountFontSize}px` }}>
+              <span className={`sidebar-count sidebar-count-packages ${imageNodeType === 'package' ? 'is-leaf' : ''}`}>
+                包 {node.descendantPackageCount ?? (imageNodeType === 'package' ? 1 : 0)}
+              </span>
+              <span className={`sidebar-count sidebar-count-images ${imageNodeType === 'directory' ? 'is-leaf' : ''}`}>
+                图 {node.descendantImageCount ?? node.directImageCount ?? 0}
+              </span>
             </span>
           ) : null}
         </div>

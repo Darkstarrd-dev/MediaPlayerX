@@ -54,6 +54,17 @@ interface ImageMainSectionProps {
   onClearManageSelection: () => void
   onPrevPage: () => void
   onNextPage: () => void
+  nodeBrowseMode?: boolean
+  nodeBrowseLabel?: string
+  nodeBrowseItems?: Array<{
+    nodeId: string
+    imageSourceId?: string
+    label: string
+    packageCount: number
+    imageCount: number
+    coverImageUrl: string | null
+  }>
+  onSelectNodeBrowseItem?: (nodeId: string, imageSourceId?: string) => void
 }
 
 function ImageMainSection({
@@ -106,6 +117,10 @@ function ImageMainSection({
   onSelectImage,
   onPrevPage,
   onNextPage,
+  nodeBrowseMode = false,
+  nodeBrowseLabel = '',
+  nodeBrowseItems = [],
+  onSelectNodeBrowseItem,
 }: ImageMainSectionProps) {
   const showSkeleton = !showNamesOnly && enableLoadingSkeleton && loading && refsInPage.length === 0
   const { marqueeStyle, startMarqueeSelection, startThumbnailDragToggle } = useManageImageSelectionInteractions({
@@ -166,9 +181,11 @@ function ImageMainSection({
         ) : (
           <>
             <strong className="main-toolbar-title">
-              {vectorMode
-                ? '检索结果视图'
-                : `${activePackage?.displayName ?? '无图包'} (${visibleImageRefs.length} 张)`}
+              {nodeBrowseMode
+                ? `${nodeBrowseLabel || '节点浏览'} (${nodeBrowseItems.length} 项)`
+                : vectorMode
+                  ? '检索结果视图'
+                  : `${activePackage?.displayName ?? '无图包'} (${visibleImageRefs.length} 张)`}
             </strong>
             <div className="toolbar-actions">
               <button
@@ -195,7 +212,46 @@ function ImageMainSection({
         )}
       </div>
 
-      {showNamesOnly ? (
+      {nodeBrowseMode ? (
+        <div
+          className="image-grid node-browse-grid"
+          ref={gridRef}
+          style={{
+            gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
+            gap: `${thumbnailGap}px`,
+          }}
+        >
+          {nodeBrowseItems.map((item) => (
+            <div key={item.nodeId} className="thumb-card" style={{ width: `${actualCellWidth}px` }}>
+              <button
+                className="thumb-card-main"
+                type="button"
+                onClick={() => onSelectNodeBrowseItem?.(item.nodeId, item.imageSourceId)}
+              >
+                <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
+                  <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
+                    {item.coverImageUrl ? (
+                      <img
+                        className="thumb-media-image"
+                        src={item.coverImageUrl}
+                        alt={item.label}
+                        loading="lazy"
+                        draggable={false}
+                      />
+                    ) : (
+                      <div className="thumb-media-empty" />
+                    )}
+                  </div>
+                </div>
+                <div className="node-browse-caption">
+                  <strong>{item.label}</strong>
+                  <span>{`包 ${item.packageCount} · 图 ${item.imageCount}`}</span>
+                </div>
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : showNamesOnly ? (
         <div className={`name-list ${manageMode ? 'is-manage' : ''}`} ref={gridRef}>
           <div className="name-list-header">
             <span>文件名</span>

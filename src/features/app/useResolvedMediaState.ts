@@ -33,6 +33,7 @@ interface UseResolvedMediaStateParams {
   refsInPage: FocusedImageRef[]
   focusedVideo: VideoItem | null
   focusedVideoCoverImageLocator: MediaLocator | null
+  sourceCoverLocators?: Array<{ sourceId: string; locator: MediaLocator }>
 }
 
 interface UseResolvedMediaStateResult {
@@ -41,6 +42,7 @@ interface UseResolvedMediaStateResult {
   fullscreenImageSrc: string | null
   focusedVideoSrc: string | null
   focusedVideoCoverImageSrc: string | null
+  sourceCoverImageUrlBySourceId: Record<string, string>
 }
 
 export function useResolvedMediaState({
@@ -62,6 +64,7 @@ export function useResolvedMediaState({
   refsInPage,
   focusedVideo,
   focusedVideoCoverImageLocator,
+  sourceCoverLocators = [],
 }: UseResolvedMediaStateParams): UseResolvedMediaStateResult {
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
     const targetById = new Map<string, MediaResolveTarget>()
@@ -186,6 +189,17 @@ export function useResolvedMediaState({
       }
     }
 
+    for (const sourceCover of sourceCoverLocators) {
+      pushTarget(
+        {
+          targetId: `source-cover:${sourceCover.sourceId}`,
+          locator: sourceCover.locator,
+          variant: 'original',
+        },
+        true,
+      )
+    }
+
     return [...priorityTargets, ...normalTargets]
   }, [
     actualCellWidth,
@@ -202,6 +216,7 @@ export function useResolvedMediaState({
     packageById,
     refsInPage,
     showNamesOnly,
+    sourceCoverLocators,
     visibleImageRefs,
   ])
 
@@ -250,6 +265,17 @@ export function useResolvedMediaState({
     return next
   }, [resolvedMedia.urlByTargetId])
 
+  const sourceCoverImageUrlBySourceId = useMemo<Record<string, string>>(() => {
+    const next: Record<string, string> = {}
+    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
+      if (!targetId.startsWith('source-cover:')) {
+        continue
+      }
+      next[targetId.slice('source-cover:'.length)] = url
+    }
+    return next
+  }, [resolvedMedia.urlByTargetId])
+
   const metadataImageSrc = metadataImage
     ? (originalImageUrlById[metadataImage.id] ?? thumbnailImageUrlById[metadataImage.id] ?? null)
     : null
@@ -265,5 +291,6 @@ export function useResolvedMediaState({
     fullscreenImageSrc,
     focusedVideoSrc,
     focusedVideoCoverImageSrc,
+    sourceCoverImageUrlBySourceId,
   }
 }
