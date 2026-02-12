@@ -1004,12 +1004,96 @@ describe('MediaPlayer 虚拟 UI', () => {
     )
   })
 
-  it('默认只读元数据点击社团可静默触发检索并通过返回按钮清空', () => {
+  it('默认只读元数据作品名标题复制当前值，点击值不触发切换', async () => {
+    const writeText = vi.fn(async () => undefined)
+    Object.defineProperty(window.navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    })
+
     render(<App />)
 
-    const circleLabel = screen.getByText('社团').closest('label') as HTMLElement
-    const circleChip = within(circleLabel).getByRole('button') as HTMLButtonElement
-    fireEvent.click(circleChip)
+    const workTitleField = screen
+      .getAllByText('作品名')
+      .find((node) => node.classList.contains('metadata-field-name')) as HTMLElement
+    const workTitleLabel = workTitleField.closest('label') as HTMLElement
+    const workTitleValue = workTitleLabel.querySelector('.metadata-localized-value') as HTMLElement
+    const workTitleLangButton = within(workTitleLabel).getByRole('button') as HTMLButtonElement
+    const beforeLang = workTitleLangButton.textContent
+    const beforeValue = workTitleValue.textContent?.trim() ?? ''
+
+    fireEvent.click(workTitleField)
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(beforeValue)
+    })
+
+    fireEvent.click(workTitleValue)
+
+    expect((within(workTitleLabel).getByRole('button') as HTMLButtonElement).textContent).toBe(beforeLang)
+    expect(workTitleValue.textContent?.trim() ?? '').toBe(beforeValue)
+    expect(screen.queryByRole('button', { name: '检索结果' })).toBeNull()
+  })
+
+  it('默认只读元数据作者与社团标题点击复制当前值', async () => {
+    const writeText = vi.fn(async () => undefined)
+    Object.defineProperty(window.navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    })
+
+    render(<App />)
+
+    const authorFieldName = screen.getAllByText('作者').find((node) =>
+      node.classList.contains('metadata-field-name'),
+    ) as HTMLElement
+    const authorLabel = authorFieldName.closest('label') as HTMLElement
+    const authorValue = authorLabel.querySelector('.metadata-localized-value') as HTMLElement
+    fireEvent.click(authorFieldName)
+
+    const circleFieldName = screen.getAllByText('社团').find((node) =>
+      node.classList.contains('metadata-field-name'),
+    ) as HTMLElement
+    const circleLabel = circleFieldName.closest('label') as HTMLElement
+    const circleValue = circleLabel.querySelector('.metadata-localized-value') as HTMLElement
+    fireEvent.click(circleFieldName)
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenNthCalledWith(1, authorValue.textContent?.trim() ?? '')
+      expect(writeText).toHaveBeenNthCalledWith(2, circleValue.textContent?.trim() ?? '')
+    })
+  })
+
+  it('默认只读元数据点击作者值可静默触发检索并通过返回按钮清空', () => {
+    render(<App />)
+
+    const authorFieldName = screen.getAllByText('作者').find((node) =>
+      node.classList.contains('metadata-field-name'),
+    ) as HTMLElement
+    const authorLabel = authorFieldName.closest('label') as HTMLElement
+    const authorValue = authorLabel.querySelector('.metadata-localized-value.is-clickable') as HTMLElement
+    fireEvent.click(authorValue)
+
+    expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '设为根' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: '返回' }))
+    expect(screen.queryByRole('button', { name: '检索结果' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '返回' })).toBeNull()
+    expect(screen.getByRole('button', { name: '设为根' })).toBeInTheDocument()
+  })
+
+  it('默认只读元数据点击社团值可静默触发检索并通过返回按钮清空', () => {
+    render(<App />)
+
+    const circleFieldName = screen.getAllByText('社团').find((node) =>
+      node.classList.contains('metadata-field-name'),
+    ) as HTMLElement
+    const circleLabel = circleFieldName.closest('label') as HTMLElement
+    const circleValue = circleLabel.querySelector('.metadata-localized-value.is-clickable') as HTMLElement
+    fireEvent.click(circleValue)
 
     expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
     expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()

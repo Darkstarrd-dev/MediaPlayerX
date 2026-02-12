@@ -270,9 +270,13 @@ function splitTagValues(raw: string): string[] {
     .filter(Boolean)
 }
 
-function flattenTagValues(tags: Record<string, string>): string[] {
+function flattenTagValuesExcluding(tags: Record<string, string>, excludedNamespaces: string[]): string[] {
+  const excluded = new Set(excludedNamespaces)
   const values: string[] = []
-  for (const raw of Object.values(tags)) {
+  for (const [namespace, raw] of Object.entries(tags)) {
+    if (excluded.has(namespace)) {
+      continue
+    }
     values.push(...splitTagValues(raw))
   }
   return Array.from(new Set(values))
@@ -313,6 +317,59 @@ function resolveEvaluationDisplayValue(draft: ParsedMetadataDraft): string {
     return `${rating} / ${favorited}`
   }
   return rating || favorited || '-'
+}
+
+function resolveSourceSiteLabel(site: ParsedSourceSite): string {
+  if (site === 'nhentai') {
+    return 'Nhentai'
+  }
+  if (site === 'ehentai') {
+    return 'Ehentai'
+  }
+  return 'Other'
+}
+
+function resolveLanguageLabel(preferJpn: boolean, jpnValue: string, enValue: string): 'JP' | 'EN' | '-' {
+  const jpn = jpnValue.trim()
+  const en = enValue.trim()
+  if (!jpn && !en) {
+    return '-'
+  }
+  if (!jpn) {
+    return 'EN'
+  }
+  if (!en) {
+    return 'JP'
+  }
+  return preferJpn ? 'JP' : 'EN'
+}
+
+async function copyTextValue(rawValue: string): Promise<void> {
+  const value = rawValue.trim()
+  if (!value) {
+    return
+  }
+
+  const clipboard = globalThis.navigator?.clipboard
+  if (clipboard?.writeText) {
+    await clipboard.writeText(value)
+    return
+  }
+
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.setAttribute('readonly', 'true')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  textarea.style.pointerEvents = 'none'
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(textarea)
 }
 
 function updateTagNamespace(
@@ -428,7 +485,6 @@ export function MetadataImageEditor({
   onSubmitPackageTags,
   onSubmitParsedMetadata,
   onGradeChange,
-  onSearchByWorkTitle,
   onSearchByCircle,
   onSearchByAuthor,
   onSearchByTag,
@@ -458,7 +514,7 @@ export function MetadataImageEditor({
   }, [parsedDraft.tagsJson])
 
   const readOnlyTags = useMemo(() => {
-    const parsedValues = flattenTagValues(parsedTagMap)
+    const parsedValues = flattenTagValuesExcluding(parsedTagMap, ['parody', 'character'])
     if (parsedValues.length > 0) {
       return parsedValues
     }
@@ -468,13 +524,7 @@ export function MetadataImageEditor({
       .filter((tag, index, arr) => tag.length > 0 && arr.indexOf(tag) === index)
   }, [parsedTagMap, tagsDraft])
 
-  const sourceLabel =
-    parsedDraft.sourceSite === 'nhentai'
-      ? 'NH'
-      : parsedDraft.sourceSite === 'ehentai'
-        ? 'EH'
-        : 'OTH'
-  const sourceDisplayValue = parsedDraft.sourceId ? `${sourceLabel} #${parsedDraft.sourceId}` : sourceLabel
+  const sourceDisplayValue = resolveSourceSiteLabel(parsedDraft.sourceSite)
 
   const resolvedTitle = useMemo(() => {
     const primary = preferTitleJpn ? parsedDraft.titleJpn : parsedDraft.title
@@ -494,9 +544,28 @@ export function MetadataImageEditor({
     return primary.trim() || fallback.trim() || '-'
   }, [parsedDraft.group, parsedDraft.groupJpn, preferGroupJpn])
 
+  const titleLangLabel = useMemo(
+    () => resolveLanguageLabel(preferTitleJpn, parsedDraft.titleJpn, parsedDraft.title),
+    [parsedDraft.title, parsedDraft.titleJpn, preferTitleJpn],
+  )
+  const authorLangLabel = useMemo(
+    () => resolveLanguageLabel(preferAuthorJpn, parsedDraft.artistJpn, parsedDraft.artist),
+    [parsedDraft.artist, parsedDraft.artistJpn, preferAuthorJpn],
+  )
+  const groupLangLabel = useMemo(
+    () => resolveLanguageLabel(preferGroupJpn, parsedDraft.groupJpn, parsedDraft.group),
+    [parsedDraft.group, parsedDraft.groupJpn, preferGroupJpn],
+  )
+  const hasDualTitle = parsedDraft.title.trim().length > 0 && parsedDraft.titleJpn.trim().length > 0
+  const hasDualAuthor = parsedDraft.artist.trim().length > 0 && parsedDraft.artistJpn.trim().length > 0
+  const hasDualGroup = parsedDraft.group.trim().length > 0 && parsedDraft.groupJpn.trim().length > 0
+  const titleToggleLabel = titleLangLabel === 'EN' ? 'EN' : 'JP'
+  const authorToggleLabel = authorLangLabel === 'EN' ? 'EN' : 'JP'
+  const groupToggleLabel = groupLangLabel === 'EN' ? 'EN' : 'JP'
+  const ratingFavoritedDisplayValue = `${parsedDraft.rating.trim() || '-'} / ${parsedDraft.favorited.trim() || '-'}`
+
   const parodyValues = useMemo(() => splitTagValues(parsedTagMap.parody ?? ''), [parsedTagMap])
   const characterValues = useMemo(() => splitTagValues(parsedTagMap.character ?? ''), [parsedTagMap])
-  const externalTagValues = useMemo(() => flattenTagValues(parsedTagMap), [parsedTagMap])
   const editableParodyValue = useMemo(() => joinTagValues(parsedTagMap.parody ?? ''), [parsedTagMap])
   const editableCharacterValue = useMemo(() => joinTagValues(parsedTagMap.character ?? ''), [parsedTagMap])
   const editableTagsValue = useMemo(
@@ -536,6 +605,46 @@ export function MetadataImageEditor({
       return
     }
     window.open(targetUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  const copyResolvedTitle = () => {
+    const value = resolvedTitle.trim()
+    if (!value || value === '-') {
+      return
+    }
+    void copyTextValue(value)
+  }
+
+  const copyResolvedAuthor = () => {
+    const value = resolvedAuthor.trim()
+    if (!value || value === '-') {
+      return
+    }
+    void copyTextValue(value)
+  }
+
+  const copyResolvedGroup = () => {
+    const value = resolvedGroup.trim()
+    if (!value || value === '-') {
+      return
+    }
+    void copyTextValue(value)
+  }
+
+  const searchResolvedAuthor = () => {
+    const value = resolvedAuthor.trim()
+    if (!value || value === '-') {
+      return
+    }
+    onSearchByAuthor(value)
+  }
+
+  const searchResolvedGroup = () => {
+    const value = resolvedGroup.trim()
+    if (!value || value === '-') {
+      return
+    }
+    onSearchByCircle(value)
   }
 
   return (
@@ -589,36 +698,141 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>作品名</span>
-                    <button
-                      type="button"
-                      disabled={resolvedTitle.trim().length === 0 || resolvedTitle === '-'}
-                      onClick={() => onSearchByWorkTitle(resolvedTitle.trim())}
+                    <span
+                      className="metadata-field-name"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        copyResolvedTitle()
+                      }}
                     >
-                      {resolvedTitle}
-                    </button>
+                      作品名
+                    </span>
+                    <div className="metadata-localized-field">
+                      <p className="metadata-localized-value" onClick={(e) => e.preventDefault()}>
+                        {resolvedTitle}
+                      </p>
+                      <button
+                        type="button"
+                        className="metadata-lang-toggle-btn"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          if (!hasDualTitle) {
+                            return
+                          }
+                          setPreferTitleJpn((value) => !value)
+                        }}
+                      >
+                        {titleToggleLabel}
+                      </button>
+                    </div>
                   </label>
 
                   <label>
-                    <span>社团</span>
-                    <button
-                      type="button"
-                      disabled={resolvedGroup.trim().length === 0 || resolvedGroup === '-'}
-                      onClick={() => onSearchByCircle(resolvedGroup.trim())}
+                    <span
+                      className="metadata-field-name"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        copyResolvedAuthor()
+                      }}
                     >
-                      {resolvedGroup}
-                    </button>
+                      作者
+                    </span>
+                    <div className="metadata-localized-field">
+                      <p
+                        className="metadata-localized-value is-clickable"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          searchResolvedAuthor()
+                        }}
+                      >
+                        {resolvedAuthor}
+                      </p>
+                      <button
+                        type="button"
+                        className="metadata-lang-toggle-btn"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          if (!hasDualAuthor) {
+                            return
+                          }
+                          setPreferAuthorJpn((value) => !value)
+                        }}
+                      >
+                        {authorToggleLabel}
+                      </button>
+                    </div>
                   </label>
 
                   <label>
-                    <span>作者</span>
-                    <button
-                      type="button"
-                      disabled={resolvedAuthor.trim().length === 0 || resolvedAuthor === '-'}
-                      onClick={() => onSearchByAuthor(resolvedAuthor.trim())}
+                    <span
+                      className="metadata-field-name"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        copyResolvedGroup()
+                      }}
                     >
-                      {resolvedAuthor}
-                    </button>
+                      社团
+                    </span>
+                    <div className="metadata-localized-field">
+                      <p
+                        className="metadata-localized-value is-clickable"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          searchResolvedGroup()
+                        }}
+                      >
+                        {resolvedGroup}
+                      </p>
+                      <button
+                        type="button"
+                        className="metadata-lang-toggle-btn"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          if (!hasDualGroup) {
+                            return
+                          }
+                          setPreferGroupJpn((value) => !value)
+                        }}
+                      >
+                        {groupToggleLabel}
+                      </button>
+                    </div>
+                  </label>
+
+                  <label>
+                    <span>发布时间</span>
+                    <input readOnly value={parsedDraft.posted.trim() || '-'} />
+                  </label>
+
+                  <label>
+                    <span>评分/收藏</span>
+                    <input readOnly value={ratingFavoritedDisplayValue} />
+                  </label>
+
+                  <label>
+                    <span>系列名</span>
+                    <div className="metadata-tag-chip-list">
+                      {parodyValues.length > 0
+                        ? parodyValues.map((tag) => (
+                            <button key={`parody-${tag}`} type="button" onClick={() => onSearchByTag(tag)}>
+                              {tag}
+                            </button>
+                          ))
+                        : '-'}
+                    </div>
+                  </label>
+
+                  <label>
+                    <span>角色名</span>
+                    <div className="metadata-tag-chip-list">
+                      {characterValues.length > 0
+                        ? characterValues.map((tag) => (
+                            <button key={`character-${tag}`} type="button" onClick={() => onSearchByTag(tag)}>
+                              {tag}
+                            </button>
+                          ))
+                        : '-'}
+                    </div>
                   </label>
 
                   <label>
@@ -632,6 +846,17 @@ export function MetadataImageEditor({
                           ))
                         : '-'}
                     </div>
+                  </label>
+
+                  <label>
+                    <span>来源</span>
+                    <button
+                      type="button"
+                      disabled={!parsedDraft.sourceUrl.trim()}
+                      onClick={openSourceInBrowser}
+                    >
+                      {sourceDisplayValue}
+                    </button>
                   </label>
                 </>
               ) : null}
@@ -958,108 +1183,7 @@ export function MetadataImageEditor({
 
                   {parsedError ? <p className="metadata-inline-error">{parsedError}</p> : null}
                 </>
-              ) : (
-                <>
-                  <label>
-                    <span>来源</span>
-                    <button
-                      type="button"
-                      disabled={!parsedDraft.sourceUrl.trim()}
-                      onClick={openSourceInBrowser}
-                    >
-                      {sourceDisplayValue}
-                    </button>
-                  </label>
-
-                  <label>
-                    <span>来源标题</span>
-                    <button
-                      type="button"
-                      disabled={!(parsedDraft.title.trim() && parsedDraft.titleJpn.trim())}
-                      onClick={() => {
-                        setPreferTitleJpn((value) => !value)
-                      }}
-                    >
-                      {resolvedTitle}
-                    </button>
-                  </label>
-
-                  <label>
-                    <span>来源作者</span>
-                    <button
-                      type="button"
-                      disabled={!(parsedDraft.artist.trim() && parsedDraft.artistJpn.trim())}
-                      onClick={() => {
-                        setPreferAuthorJpn((value) => !value)
-                      }}
-                    >
-                      {resolvedAuthor}
-                    </button>
-                  </label>
-
-                  <label>
-                    <span>来源社团</span>
-                    <button
-                      type="button"
-                      disabled={!(parsedDraft.group.trim() && parsedDraft.groupJpn.trim())}
-                      onClick={() => {
-                        setPreferGroupJpn((value) => !value)
-                      }}
-                    >
-                      {resolvedGroup}
-                    </button>
-                  </label>
-
-                  <label>
-                    <span>发布时间</span>
-                    <input readOnly value={parsedDraft.posted.trim() || '-'} />
-                  </label>
-
-                  <label>
-                    <span>评分/收藏</span>
-                    <input readOnly value={`${parsedDraft.rating.trim() || '-'} / ${parsedDraft.favorited.trim() || '-'}`} />
-                  </label>
-
-                  <label>
-                    <span>Parody</span>
-                    <div className="metadata-tag-chip-list">
-                      {parodyValues.length > 0
-                        ? parodyValues.map((tag) => (
-                            <button key={`parody-${tag}`} type="button" onClick={() => onSearchByTag(tag)}>
-                              {tag}
-                            </button>
-                          ))
-                        : '-'}
-                    </div>
-                  </label>
-
-                  <label>
-                    <span>Character</span>
-                    <div className="metadata-tag-chip-list">
-                      {characterValues.length > 0
-                        ? characterValues.map((tag) => (
-                            <button key={`character-${tag}`} type="button" onClick={() => onSearchByTag(tag)}>
-                              {tag}
-                            </button>
-                          ))
-                        : '-'}
-                    </div>
-                  </label>
-
-                  <label>
-                    <span>外部标签</span>
-                    <div className="metadata-tag-chip-list">
-                      {externalTagValues.length > 0
-                        ? externalTagValues.map((tag) => (
-                            <button key={`external-tag-${tag}`} type="button" onClick={() => onSearchByTag(tag)}>
-                              {tag}
-                            </button>
-                          ))
-                        : '-'}
-                    </div>
-                  </label>
-                </>
-              )}
+              ) : null}
             </div>
           ) : (
             <p className="metadata-empty-tip">当前无可编辑图包</p>
