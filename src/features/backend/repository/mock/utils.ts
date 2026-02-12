@@ -267,7 +267,7 @@ export function parseSidebarNodePath(nodeId: string): {
   }
 
   return {
-    kind: kind as any,
+    kind,
     pathKey,
   }
 }

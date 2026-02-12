@@ -1585,7 +1585,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     window.mediaPlayerBackend = {
       setRuntimeStoragePaths,
       readRuntimeInfo,
-    } as any
+    } as unknown as typeof window.mediaPlayerBackend
 
     fireEvent.click(screen.getByRole('button', { name: '设置' }))
     fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))

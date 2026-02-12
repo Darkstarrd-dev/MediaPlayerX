@@ -11,6 +11,7 @@ import { MediaResourceService } from '../services/file-system-read/mediaResource
 import { RuntimeDependencyService } from '../services/file-system-read/runtimeDependencyService'
 import { ServiceEventBus } from '../services/file-system-read/serviceEventBus'
 import { LibraryChangedEventPayload } from '../services/file-system-read/fileSystemReadFacadeEvents'
+import type { ClearDatabaseResponseDto, LibrarySnapshotDto } from '../../src/contracts/backend'
 
 export interface FileSystemFacadeContext {
   rootDir: string
@@ -31,8 +32,9 @@ export interface FileSystemFacadeContext {
   eventBus: ServiceEventBus
 
   ensureStateLoaded: () => Promise<void>
-  ensureSnapshotLoaded: () => Promise<any>
+  ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>
   invalidateCache: () => void
   emitLibraryChanged: (payload: LibraryChangedEventPayload) => void
   markInteractiveRead: () => void
+  clearDatabase: () => Promise<ClearDatabaseResponseDto>
 }

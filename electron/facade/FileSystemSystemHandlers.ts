@@ -14,6 +14,8 @@ import {
   type ReadAppStateResponseDto,
   type WriteAppStateRequestDto,
   type WriteAppStateResponseDto,
+  type SearchExternalMetadataRequestDto,
+  type SearchExternalMetadataResponseDto,
 } from '../../src/contracts/backend'
 import { FileSystemFacadeContext } from './types'
 import { MediaProtocolResponsePayload, MediaProtocolStreamResponsePayload } from '../fileSystemMediaReaders'
@@ -72,7 +74,7 @@ export class FileSystemSystemHandlers {
     return this.context.mediaResourceService.readMediaResourceByTokenStream(token, rangeHeader, signal)
   }
 
-  async searchExternalMetadata(request: any): Promise<any> {
+  async searchExternalMetadata(request: SearchExternalMetadataRequestDto): Promise<SearchExternalMetadataResponseDto> {
     return this.context.libraryReadWriteService.searchExternalMetadata(request)
   }
 }

@@ -7,6 +7,8 @@ import {
   testAdReviewVisionModelResponseSchema,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type DeleteImageItemsRequestDto,
+  type DeleteImageItemsResponseDto,
   type ImageItemDto,
   type ImagePackageDto,
   type ManageAdReviewImageSourceDto,
@@ -315,7 +317,7 @@ export class MockAdReviewHandlers {
 
   confirmManageAdReviewDeleteSync(
     request: ConfirmManageAdReviewDeleteRequestDto,
-    deleteImageItemsSync: (req: any) => any,
+    deleteImageItemsSync: (req: DeleteImageItemsRequestDto) => DeleteImageItemsResponseDto,
   ): ConfirmManageAdReviewDeleteResponseDto {
     const task = this.state.manageAdReviewTasks.get(request.task_id)
     if (!task) {
@@ -331,7 +333,7 @@ export class MockAdReviewHandlers {
     }
 
     const deleteResult = deleteImageItemsSync({ image_ids: normalizedIds })
-    const failedSet = new Set(deleteResult.failed.map((item: any) => item.image_id))
+    const failedSet = new Set(deleteResult.failed.map((item) => item.image_id))
     const deletedSet = new Set(normalizedIds.filter((imageId) => !failedSet.has(imageId)))
 
     const now = Date.now()

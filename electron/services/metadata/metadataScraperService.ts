@@ -395,7 +395,13 @@ function buildEhentaiCookieHeader(rawCookies: string | undefined): string {
 }
 
 function parseCookieMap(rawCookies: string): Map<string, string> {
-  const sanitized = rawCookies.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim()
+  const sanitized = Array.from(rawCookies)
+    .map((char) => {
+      const code = char.charCodeAt(0)
+      return code < 0x20 || code === 0x7f ? ' ' : char
+    })
+    .join('')
+    .trim()
   const map = new Map<string, string>()
   for (const segment of sanitized.split(';')) {
     const token = segment.trim()

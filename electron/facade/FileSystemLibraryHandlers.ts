@@ -16,6 +16,8 @@ import {
   type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
+  type SaveVideoCoverRequestDto,
+  type SaveVideoCoverResponseDto,
   type LibrarySnapshotDto,
 } from '../../src/contracts/backend'
 import { FileSystemFacadeContext } from './types'
@@ -69,8 +71,8 @@ export class FileSystemLibraryHandlers {
   }
 
   async saveVideoCover(
-    request: any,
-  ): Promise<any> {
+    request: SaveVideoCoverRequestDto,
+  ): Promise<SaveVideoCoverResponseDto> {
     return this.context.libraryReadWriteService.saveVideoCover(request)
   }
 

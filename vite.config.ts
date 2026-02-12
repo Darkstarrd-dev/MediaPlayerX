@@ -12,7 +12,6 @@ export default defineConfig(({ command }) => ({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'zustand'],
-          'vendor-three': ['three'],
         },
       },
     },

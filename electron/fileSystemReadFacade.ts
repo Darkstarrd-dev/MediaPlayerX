@@ -8,7 +8,6 @@ import {
   type ImportTaskDto,
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
-  type MediaLocatorDto,
   type ReadPlaylistResponseDto,
   type ReadAppStateRequestDto,
   type ReadAppStateResponseDto,
@@ -26,6 +25,8 @@ import {
   type RetryImportTaskResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
+  type SearchExternalMetadataRequestDto,
+  type SearchExternalMetadataResponseDto,
   type SetImageHiddenRequestDto,
   type SetImageHiddenResponseDto,
   type DeleteImageItemsRequestDto,
@@ -168,7 +169,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       hasRunningImportTasks: () => this.importTaskService.hasRunningImportTasks(),
       isSnapshotLoading: () => this.librarySnapshotService.isSnapshotLoading(),
       onArchiveNormalized: (sourcePath, outputPath) => this.replaceImportedFileSourcePath(sourcePath, outputPath),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as any),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
       emitArchiveLoadStatusChanged: (payload) => this.eventBus.emit('archiveLoadStatusChanged', payload),
     })
 
@@ -193,8 +194,8 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       ensureRuntimeDependencies: () => this.runtimeDependencyService.ensureRuntimeDependencies(),
       queueRar7zNormalization: (path, priority) => this.queueRar7zNormalization(path, priority),
       getPackageGradeOverridesBySourceId: () => this.database.readPackageGrades(),
-      getVideoCoverOverridesByVideoId: () => this.database.readVideoCovers() as any,
-      getVideoMetadataOverridesByVideoId: () => this.database.readVideoMetadata() as any,
+      getVideoCoverOverridesByVideoId: () => this.database.readVideoCovers(),
+      getVideoMetadataOverridesByVideoId: () => this.database.readVideoMetadata(),
     })
 
     this.importTaskService = new ImportTaskService({
@@ -206,7 +207,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       database: this.database,
       invalidateCache: () => this.invalidateCache(),
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as any),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     })
 
     this.libraryReadWriteService = new LibraryReadWriteService({
@@ -214,14 +215,14 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       ffmpegBin: FFMPEG_BIN,
       coverOutputRootDir: this.coverOutputRootDir,
       packageGradeOverridesBySourceId: this.database.readPackageGrades(),
-      videoCoverOverridesByVideoId: this.database.readVideoCovers() as any,
-      videoMetadataOverridesByVideoId: this.database.readVideoMetadata() as any,
+      videoCoverOverridesByVideoId: this.database.readVideoCovers(),
+      videoMetadataOverridesByVideoId: this.database.readVideoMetadata(),
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
       ensureRuntimeDependencies: () => this.runtimeDependencyService.ensureRuntimeDependencies(),
       markInteractiveRead: () => this.markInteractiveRead(),
       isRar7zPath: (filePath) => this.isRar7zPath(filePath),
       queueRar7zNormalization: (path, priority) => this.queueRar7zNormalization(path, priority),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as any),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     })
 
     this.managementMutationService = new ManagementMutationService({
@@ -236,7 +237,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       pruneArchiveIndexesByDeletedRoots: (paths) => this.pruneArchiveIndexesByDeletedRoots(paths),
       removeImportSourcePaths: (paths) => this.removeImportSourcePaths(paths),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as any),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     })
 
     this.manageAdReviewService = new ManageAdReviewService({
@@ -597,7 +598,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     return this.systemHandlers.writeAppState(request)
   }
 
-  async searchExternalMetadata(request: any): Promise<any> {
+  async searchExternalMetadata(request: SearchExternalMetadataRequestDto): Promise<SearchExternalMetadataResponseDto> {
     return this.systemHandlers.searchExternalMetadata(request)
   }
 }

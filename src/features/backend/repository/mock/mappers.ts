@@ -5,7 +5,7 @@ import {
   type SidebarNodeDto,
   type VideoItemDto,
 } from '../../../../contracts/backend'
-import { type ImagePackage, type MediaLocator, type SidebarNode } from '../../../../types'
+import { type ImagePackage, type MediaLocator, type SidebarNode, type VideoItem } from '../../../../types'
 import { deriveWorkTitleFromFileName } from './utils'
 
 export function toMediaLocatorDto(locator: MediaLocator): MediaLocatorDto {
@@ -82,7 +82,7 @@ export function toImagePackageDto(source: ImagePackage): ImagePackageDto {
   }
 }
 
-export function toVideoItemDto(video: any): VideoItemDto {
+export function toVideoItemDto(video: VideoItem): VideoItemDto {
   const fallbackWorkTitle = deriveWorkTitleFromFileName(video.fileName)
   return {
     id: video.id,
