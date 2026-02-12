@@ -109,6 +109,8 @@ import { FileSystemSystemHandlers } from './facade/FileSystemSystemHandlers'
 
 export interface FileSystemMediaReadServiceOptions {
   rootDir: string
+  databaseFilePath?: string
+  thumbnailCacheRootDir?: string
   onLibraryChanged?: LibraryChangedListener
   onArchiveLoadStatusChanged?: ArchiveLoadStatusListener
 }
@@ -142,10 +144,13 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     const options = typeof optionsOrRootDir === 'string' ? { rootDir: optionsOrRootDir } : optionsOrRootDir
     this.rootDir = path.resolve(options.rootDir)
     this.coverOutputRootDir = path.join(this.rootDir, 'covers')
-    this.thumbnailCacheRootDir = path.join(this.rootDir, THUMBNAIL_CACHE_DIR_NAME)
+    this.thumbnailCacheRootDir = path.resolve(options.thumbnailCacheRootDir ?? path.join(this.rootDir, THUMBNAIL_CACHE_DIR_NAME))
     this.normalizedArchiveRootDir = path.join(this.rootDir, ARCHIVE_NORMALIZE_DIR_NAME)
 
-    this.database = new MediaLibraryDatabase(this.rootDir)
+    this.database = new MediaLibraryDatabase({
+      rootDir: this.rootDir,
+      databaseFilePath: options.databaseFilePath,
+    })
     this.eventBus = new ServiceEventBus()
 
     if (options.onLibraryChanged) {

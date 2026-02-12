@@ -16,6 +16,8 @@ import {
   readArchiveLoadStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
+  setRuntimeStoragePathsRequestSchema,
+  setRuntimeStoragePathsResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   readImageMetadataRequestSchema,
@@ -213,6 +215,11 @@ const backendApi = {
   readRuntimeInfo: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeInfo)
     return readRuntimeInfoResponseSchema.parse(response)
+  },
+  setRuntimeStoragePaths: async (request: unknown) => {
+    const parsed = setRuntimeStoragePathsRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.setRuntimeStoragePaths, parsed)
+    return setRuntimeStoragePathsResponseSchema.parse(response)
   },
   readArchiveLoadStatus: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readArchiveLoadStatus)

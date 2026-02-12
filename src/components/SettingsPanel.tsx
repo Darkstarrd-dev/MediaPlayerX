@@ -63,6 +63,8 @@ export interface SettingsPanelProps {
   vectorControlConflicts: VectorControlConflict[]
   databaseResetPending: boolean
   databaseResetError: string | null
+  runtimePathUpdatePending: boolean
+  runtimePathUpdateMessage: string | null
   repositoryMode: RepositoryMode
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -178,6 +180,8 @@ function SettingsPanel({
   vectorControlConflicts,
   databaseResetPending,
   databaseResetError,
+  runtimePathUpdatePending,
+  runtimePathUpdateMessage,
   repositoryMode,
   backendBridgeInjected,
   runtimeInfoLoading,
@@ -429,6 +433,8 @@ function SettingsPanel({
     vectorLabelByAction,
     databaseResetPending,
     databaseResetError,
+    runtimePathUpdatePending,
+    runtimePathUpdateMessage,
     repositoryMode,
     backendBridgeInjected,
     runtimeInfoLoading,

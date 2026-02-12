@@ -1,11 +1,15 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { useState } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DEFAULT_SETTINGS } from '../../store/useUiStore'
 import { useSettingsPersistence } from './useSettingsPersistence'
 
 describe('useSettingsPersistence', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('migrates legacy themeId into styleId + paletteId on hydration', async () => {
     const updateSettings = vi.fn()
     const readAppState = vi.fn().mockResolvedValue({
@@ -160,5 +164,55 @@ describe('useSettingsPersistence', () => {
     expect(writeAppState).toHaveBeenCalledTimes(1)
 
     vi.useRealTimers()
+  })
+
+  it('flushes pending settings before window unload', async () => {
+    vi.useFakeTimers()
+    const writeAppState = vi.fn().mockResolvedValue({})
+    const repository = {
+      writeAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+
+    function useHarness() {
+      const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+      const updateSettings = (patch: Parameters<typeof useSettingsPersistence>[0]['updateSettings'] extends (arg: infer A) => void ? A : never) => {
+        setSettings((prev) => ({
+          ...prev,
+          ...patch,
+        }))
+      }
+
+      useSettingsPersistence({
+        settings,
+        repository,
+        updateSettings,
+      })
+
+      return {
+        settings,
+        updateSettings,
+      }
+    }
+
+    const { result } = renderHook(() => useHarness())
+    await Promise.resolve()
+
+    act(() => {
+      result.current.updateSettings({ headerHeight: 72 })
+    })
+
+    act(() => {
+      window.dispatchEvent(new Event('beforeunload'))
+    })
+
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(writeAppState).toHaveBeenCalledTimes(1)
+    expect(writeAppState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        state_key: 'ui_settings_v1',
+      }),
+    )
+    expect(writeAppState.mock.calls[0][0].state_json).toContain('"headerHeight":72')
   })
 })

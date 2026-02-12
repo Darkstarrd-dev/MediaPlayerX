@@ -66,6 +66,8 @@ interface RenderSettingsMainSectionParams {
   vectorLabelByAction: Map<string, string>
   databaseResetPending: boolean
   databaseResetError: string | null
+  runtimePathUpdatePending: boolean
+  runtimePathUpdateMessage: string | null
   repositoryMode: RepositoryMode
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -156,6 +158,8 @@ export function renderSettingsMainSection({
   vectorLabelByAction,
   databaseResetPending,
   databaseResetError,
+  runtimePathUpdatePending,
+  runtimePathUpdateMessage,
   repositoryMode,
   backendBridgeInjected,
   runtimeInfoLoading,
@@ -451,22 +455,27 @@ export function renderSettingsMainSection({
 
         <fieldset className="settings-subsection">
           <legend>数据库目录设置</legend>
-          <p className="settings-placeholder">默认展示当前运行时实际路径，可用于快速核对 SQL 库与缩略图缓存目录。</p>
-          <p className="settings-placeholder">选择目录仅用于快速定位，不会修改运行时路径。</p>
+          <p className="settings-placeholder">选择后会立即保存目录配置，重启后自动沿用。</p>
+          <p className="settings-placeholder">若当前数据库已有内容，切换 SQL 目录时会自动迁移数据库文件。</p>
           <label>
             SQL 库路径
             <div className="settings-inline-field">
               <input type="text" value={databasePath} readOnly placeholder="读取运行时诊断后显示" />
-              <button type="button" onClick={onPickDatabaseDirectoryPath}>选择SQL目录</button>
+              <button type="button" disabled={runtimePathUpdatePending} onClick={onPickDatabaseDirectoryPath}>
+                {runtimePathUpdatePending ? '保存中...' : '选择SQL目录'}
+              </button>
             </div>
           </label>
           <label>
             缩略图目录
             <div className="settings-inline-field">
               <input type="text" value={thumbnailCachePath} readOnly placeholder="读取运行时诊断后显示" />
-              <button type="button" onClick={onPickThumbnailCacheDirectoryPath}>选择缩略图目录</button>
+              <button type="button" disabled={runtimePathUpdatePending} onClick={onPickThumbnailCacheDirectoryPath}>
+                {runtimePathUpdatePending ? '保存中...' : '选择缩略图目录'}
+              </button>
             </div>
           </label>
+          {runtimePathUpdateMessage ? <p className="settings-placeholder">{runtimePathUpdateMessage}</p> : null}
         </fieldset>
 
         <fieldset className="settings-subsection">

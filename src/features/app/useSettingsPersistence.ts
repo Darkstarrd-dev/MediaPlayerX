@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { AppSettings } from '../../contracts/settings'
 import type { MediaRepository } from '../backend/repository/types'
 
@@ -41,6 +41,7 @@ export function useSettingsPersistence({
 }: UseSettingsPersistenceParams) {
   const isHydratedRef = useRef(false)
   const lastSavedJsonRef = useRef('')
+  const pendingJsonRef = useRef<string | null>(null)
 
   const initialSettingsRef = useRef<AppSettings | null>(null)
   if (initialSettingsRef.current == null) {
@@ -108,6 +109,25 @@ export function useSettingsPersistence({
   }, [repository, updateSettings])
 
   // Persist to DB on change
+  const persistSettingsJson = useCallback(
+    async (json: string): Promise<void> => {
+      if (!repository.writeAppState) {
+        return
+      }
+
+      try {
+        await repository.writeAppState({
+          state_key: SETTINGS_STATE_KEY,
+          state_json: json,
+        })
+        lastSavedJsonRef.current = json
+      } catch (err) {
+        console.warn('Failed to persist settings to DB', err)
+      }
+    },
+    [repository],
+  )
+
   useEffect(() => {
     if (!isHydratedRef.current || !repository.writeAppState) {
       return
@@ -115,27 +135,40 @@ export function useSettingsPersistence({
 
     const currentJson = JSON.stringify(settings)
     if (currentJson === lastSavedJsonRef.current) {
+      pendingJsonRef.current = null
       return
     }
 
+    pendingJsonRef.current = currentJson
+
     const timer = window.setTimeout(() => {
-      const write = repository.writeAppState
-      if (!write) {
+      const jsonToPersist = pendingJsonRef.current
+      if (!jsonToPersist) {
         return
       }
 
-      write({
-          state_key: SETTINGS_STATE_KEY,
-          state_json: currentJson,
-        })
-        .then(() => {
-          lastSavedJsonRef.current = currentJson
-        })
-        .catch((err) => {
-          console.warn('Failed to persist settings to DB', err)
-        })
-    }, 1000) // Debounce persistence
+      pendingJsonRef.current = null
+      void persistSettingsJson(jsonToPersist)
+    }, 300)
 
     return () => clearTimeout(timer)
-  }, [settings, repository])
+  }, [settings, repository, persistSettingsJson])
+
+  useEffect(() => {
+    const flushPending = () => {
+      const pending = pendingJsonRef.current
+      if (!pending || pending === lastSavedJsonRef.current) {
+        return
+      }
+
+      pendingJsonRef.current = null
+      void persistSettingsJson(pending)
+    }
+
+    window.addEventListener('beforeunload', flushPending)
+    return () => {
+      flushPending()
+      window.removeEventListener('beforeunload', flushPending)
+    }
+  }, [persistSettingsJson])
 }

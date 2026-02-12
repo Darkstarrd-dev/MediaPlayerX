@@ -57,16 +57,11 @@ export class FileSystemSystemHandlers {
   }
 
   async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> {
-    await this.context.ensureStateLoaded()
-    const record = this.context.database.readAppState(request.state_key)
-    return { state_json: record?.state_json ?? request.fallback_json ?? 'null' }
+    return this.context.libraryReadWriteService.readAppState(request)
   }
 
   async writeAppState(request: WriteAppStateRequestDto): Promise<WriteAppStateResponseDto> {
-    await this.context.ensureStateLoaded()
-    const updatedAtMs = Date.now()
-    this.context.database.writeAppState(request.state_key, JSON.parse(request.state_json))
-    return { updated_at_ms: updatedAtMs }
+    return this.context.libraryReadWriteService.writeAppState(request)
   }
 
   async readMediaResourceByToken(token: string, rangeHeader: string | null): Promise<MediaProtocolResponsePayload> {

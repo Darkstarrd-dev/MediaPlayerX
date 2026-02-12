@@ -40,6 +40,8 @@ interface BuildSettingsPanelPropsParams {
   vectorControlConflicts: SettingsPanelProps['vectorControlConflicts']
   databaseResetPending: boolean
   databaseResetError: string | null
+  runtimePathUpdatePending: boolean
+  runtimePathUpdateMessage: string | null
   repositoryMode: SettingsPanelProps['repositoryMode']
   backendBridgeInjected: boolean
   runtimeInfoLoading: boolean
@@ -100,6 +102,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     vectorControlConflicts: params.vectorControlConflicts,
     databaseResetPending: params.databaseResetPending,
     databaseResetError: params.databaseResetError,
+    runtimePathUpdatePending: params.runtimePathUpdatePending,
+    runtimePathUpdateMessage: params.runtimePathUpdateMessage,
     repositoryMode: params.repositoryMode,
     backendBridgeInjected: params.backendBridgeInjected,
     runtimeInfoLoading: params.runtimeInfoLoading,

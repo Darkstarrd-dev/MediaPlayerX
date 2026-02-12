@@ -652,6 +652,22 @@ export const readRuntimeInfoResponseSchema = z.object({
   thumbnail_cache_path: z.string().min(1),
 })
 
+export const setRuntimeStoragePathsRequestSchema = z
+  .object({
+    database_dir: z.string().min(1).optional(),
+    thumbnail_cache_dir: z.string().min(1).optional(),
+  })
+  .refine((value) => Boolean(value.database_dir || value.thumbnail_cache_dir), {
+    message: 'database_dir / thumbnail_cache_dir 至少提供一个',
+  })
+
+export const setRuntimeStoragePathsResponseSchema = z.object({
+  database_path: z.string().min(1),
+  thumbnail_cache_path: z.string().min(1),
+  moved_database: z.boolean(),
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const mediaAccessAuditResponseSchema = z.object({
   resolve_requests: nonNegativeIntSchema,
   resolve_granted: nonNegativeIntSchema,
@@ -752,4 +768,6 @@ export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusS
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>
 export type ReadRuntimeInfoResponseDto = z.infer<typeof readRuntimeInfoResponseSchema>
+export type SetRuntimeStoragePathsRequestDto = z.infer<typeof setRuntimeStoragePathsRequestSchema>
+export type SetRuntimeStoragePathsResponseDto = z.infer<typeof setRuntimeStoragePathsResponseSchema>
 export type MediaAccessAuditResponseDto = z.infer<typeof mediaAccessAuditResponseSchema>

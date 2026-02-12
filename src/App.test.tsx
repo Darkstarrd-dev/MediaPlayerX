@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
@@ -10,6 +10,8 @@ describe('MediaPlayer 虚拟 UI', () => {
     vi.restoreAllMocks()
     resetUiStoreState()
     window.mediaPlayerBackend = undefined
+    window.localStorage.clear()
+    window.sessionStorage.clear()
   })
 
   it('支持图片/视频模式切换', () => {
@@ -1354,6 +1356,96 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(pickDirectoryPathSpy).toHaveBeenCalledTimes(2)
     })
+  })
+
+  it('数据库目录设置会调用后端路径持久化并显示反馈', async () => {
+    const pickDirectoryPathSpy = vi
+      .spyOn(MockMediaRepository.prototype, 'pickDirectoryPathSync')
+      .mockImplementation((request) => ({
+        canceled: false,
+        path: request.title?.includes('SQL') ? 'D:/media-db' : 'D:/media-thumb-cache',
+      }))
+
+    const setRuntimeStoragePaths = vi
+      .fn()
+      .mockResolvedValueOnce({
+        database_path: 'D:/media-db/library.sqlite',
+        thumbnail_cache_path: 'C:/legacy-thumb-cache',
+        moved_database: true,
+        updated_at_ms: Date.now(),
+      })
+      .mockResolvedValueOnce({
+        database_path: 'D:/media-db/library.sqlite',
+        thumbnail_cache_path: 'D:/media-thumb-cache',
+        moved_database: false,
+        updated_at_ms: Date.now(),
+      })
+
+    const readRuntimeInfo = vi.fn().mockResolvedValue({
+      app_version: '0.0.0-test',
+      is_packaged: false,
+      platform: 'win32',
+      arch: 'x64',
+      user_data_path: 'C:/Users/test/AppData/Roaming/MediaPlayerX',
+      library_root: 'C:/Users/test/Pictures/MediaPlayerXLibrary',
+      database_path: 'D:/media-db/library.sqlite',
+      thumbnail_cache_path: 'D:/media-thumb-cache',
+    })
+
+    render(<App />)
+
+    window.mediaPlayerBackend = {
+      setRuntimeStoragePaths,
+      readRuntimeInfo,
+    } as any
+
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '选择SQL目录' }))
+    await waitFor(() => {
+      expect(setRuntimeStoragePaths).toHaveBeenCalledWith({ database_dir: 'D:/media-db' })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '选择缩略图目录' }))
+    await waitFor(() => {
+      expect(setRuntimeStoragePaths).toHaveBeenCalledWith({ thumbnail_cache_dir: 'D:/media-thumb-cache' })
+    })
+
+    expect(pickDirectoryPathSpy).toHaveBeenCalledTimes(2)
+    await waitFor(() => {
+      expect(screen.getByText(/目录已保存/)).toBeInTheDocument()
+    })
+  })
+
+  it('AI模型保存会持久化测试通过状态', async () => {
+    const writeAppStateSpy = vi.spyOn(MockMediaRepository.prototype, 'writeAppState')
+
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    fireEvent.click(screen.getByRole('button', { name: 'AI模型设置' }))
+
+    act(() => {
+      useUiStore.getState().updateSettings({
+        adReviewVisionModel: 'mock-vision-model',
+        adReviewVisionVerified: true,
+      })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '保存视觉模型配置' }))
+    await waitFor(() => {
+      expect(screen.getByText('视觉模型配置已保存')).toBeInTheDocument()
+    })
+
+    const hasPersistedVerifiedTrue = writeAppStateSpy.mock.calls.some(([request]) => {
+      try {
+        const parsed = JSON.parse(request.state_json) as Record<string, unknown>
+        return parsed.adReviewVisionVerified === true
+      } catch {
+        return false
+      }
+    })
+    expect(hasPersistedVerifiedTrue).toBe(true)
   })
 
   const openVectorUniverseAndWaitReady = async () => {

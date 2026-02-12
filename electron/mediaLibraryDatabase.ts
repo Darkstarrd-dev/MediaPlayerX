@@ -18,6 +18,11 @@ const { DatabaseSync } = require('node:sqlite') as {
 
 export type { ImportTaskRecord, ImportTaskStatus } from './mediaLibraryDatabaseTypes'
 
+interface MediaLibraryDatabaseOptions {
+  rootDir: string
+  databaseFilePath?: string
+}
+
 export class MediaLibraryDatabase {
   private readonly db: SQLiteDatabaseLike
 
@@ -33,8 +38,15 @@ export class MediaLibraryDatabase {
 
   private disposed = false
 
-  constructor(rootDir: string) {
-    const dbPath = path.join(rootDir, DATABASE_RELATIVE_PATH)
+  constructor(optionsOrRootDir: MediaLibraryDatabaseOptions | string) {
+    const options =
+      typeof optionsOrRootDir === 'string'
+        ? { rootDir: optionsOrRootDir }
+        : optionsOrRootDir
+    const rootDir = path.resolve(options.rootDir)
+    const dbPath = options.databaseFilePath
+      ? path.resolve(options.databaseFilePath)
+      : path.join(rootDir, DATABASE_RELATIVE_PATH)
     mkdirSync(path.dirname(dbPath), { recursive: true })
     this.db = new DatabaseSync(dbPath)
     this.db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;')
