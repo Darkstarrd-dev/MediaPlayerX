@@ -2,7 +2,6 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
 import {
-  clearDatabaseResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
@@ -66,7 +65,6 @@ import {
   type MediaProtocolStreamResponsePayload,
 } from './fileSystemMediaReaders'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
-import { type PersistedVideoMetadataRecord } from './fileSystemMetadataWriters'
 import { MediaTokenService } from './services/file-system-read/mediaTokenService'
 import { ImportPathRegistry } from './services/file-system-read/importPathRegistry'
 import {
@@ -97,67 +95,66 @@ import {
   type LibraryChangedListener,
 } from './services/file-system-read/fileSystemReadFacadeEvents'
 import { ImportTaskService } from './services/file-system-read/importTaskService'
-import {
-  LibrarySnapshotService,
-  type PersistedVideoCoverRecord,
-} from './services/file-system-read/librarySnapshotService'
+import { LibraryReadWriteService } from './services/file-system-read/libraryReadWriteService'
+import { LibrarySnapshotService } from './services/file-system-read/librarySnapshotService'
 import { ManagementMutationService } from './services/file-system-read/managementMutationService'
 import { ManageAdReviewService } from './services/file-system-read/manageAdReviewService'
 import { MediaResourceService } from './services/file-system-read/mediaResourceService'
-import { LibraryReadWriteService } from './services/file-system-read/libraryReadWriteService'
-import {
-  RuntimeDependencyService,
-  type RuntimeDependencySnapshot,
-} from './services/file-system-read/runtimeDependencyService'
+import { RuntimeDependencyService } from './services/file-system-read/runtimeDependencyService'
 import { ServiceEventBus } from './services/file-system-read/serviceEventBus'
+import { FileSystemFacadeContext } from './facade/types'
+import { FileSystemLibraryHandlers } from './facade/FileSystemLibraryHandlers'
+import { FileSystemManagementHandlers } from './facade/FileSystemManagementHandlers'
+import { FileSystemSystemHandlers } from './facade/FileSystemSystemHandlers'
 
-export class FileSystemMediaReadService {
+export interface FileSystemMediaReadServiceOptions {
+  rootDir: string
+  onLibraryChanged?: LibraryChangedListener
+  onArchiveLoadStatusChanged?: ArchiveLoadStatusListener
+}
+
+export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private readonly rootDir: string
-
+  private readonly coverOutputRootDir: string
+  private readonly thumbnailCacheRootDir: string
   private readonly normalizedArchiveRootDir: string
 
-  private readonly thumbnailCacheRootDir: string
-
-  private readonly coverOutputRootDir: string
-
   private readonly database: MediaLibraryDatabase
+  private readonly mediaTokenService: MediaTokenService
+  private readonly importPathRegistry: ImportPathRegistry
+  private readonly archiveNormalizationService: ArchiveNormalizationService
+  private readonly importTaskService: ImportTaskService
+  private readonly libraryReadWriteService: LibraryReadWriteService
+  private readonly librarySnapshotService: LibrarySnapshotService
+  private readonly managementMutationService: ManagementMutationService
+  private readonly manageAdReviewService: ManageAdReviewService
+  private readonly mediaResourceService: MediaResourceService
+  private readonly runtimeDependencyService: RuntimeDependencyService
+  private readonly eventBus: ServiceEventBus
+
+  private readonly libraryHandlers: FileSystemLibraryHandlers
+  private readonly managementHandlers: FileSystemManagementHandlers
+  private readonly systemHandlers: FileSystemSystemHandlers
 
   private stateHydrated = false
 
-  private readonly mediaTokenService = new MediaTokenService(MEDIA_TOKEN_TTL_MS)
-
-  private packageGradeOverridesBySourceId = new Map<string, number | null>()
-
-  private videoCoverOverridesByVideoId = new Map<string, PersistedVideoCoverRecord>()
-
-  private videoMetadataOverridesByVideoId = new Map<string, PersistedVideoMetadataRecord>()
-
-  private readonly importPathRegistry = new ImportPathRegistry()
-
-  private readonly runtimeDependencyService = new RuntimeDependencyService(FFMPEG_BIN, FFPROBE_BIN)
-
-  private readonly eventBus = new ServiceEventBus<FileSystemReadServiceEvents>()
-
-  private readonly archiveNormalizationService: ArchiveNormalizationService
-
-  private readonly librarySnapshotService: LibrarySnapshotService
-
-  private readonly importTaskService: ImportTaskService
-
-  private readonly libraryReadWriteService: LibraryReadWriteService
-
-  private readonly managementMutationService: ManagementMutationService
-
-  private readonly manageAdReviewService: ManageAdReviewService
-
-  private readonly mediaResourceService: MediaResourceService
-
-  constructor(rootDir: string) {
-    this.rootDir = path.resolve(rootDir)
-    this.normalizedArchiveRootDir = path.join(this.rootDir, ARCHIVE_NORMALIZE_DIR_NAME)
+  constructor(optionsOrRootDir: FileSystemMediaReadServiceOptions | string) {
+    const options = typeof optionsOrRootDir === 'string' ? { rootDir: optionsOrRootDir } : optionsOrRootDir
+    this.rootDir = path.resolve(options.rootDir)
+    this.coverOutputRootDir = path.join(this.rootDir, 'covers')
     this.thumbnailCacheRootDir = path.join(this.rootDir, THUMBNAIL_CACHE_DIR_NAME)
-    this.coverOutputRootDir = path.join(this.rootDir, '.mediaplayerx', 'covers')
+    this.normalizedArchiveRootDir = path.join(this.rootDir, ARCHIVE_NORMALIZE_DIR_NAME)
+
     this.database = new MediaLibraryDatabase(this.rootDir)
+    this.eventBus = new ServiceEventBus()
+
+    if (options.onLibraryChanged) {
+      this.eventBus.on('libraryChanged', options.onLibraryChanged)
+    }
+
+    this.mediaTokenService = new MediaTokenService(MEDIA_TOKEN_TTL_MS)
+    this.importPathRegistry = new ImportPathRegistry()
+    this.runtimeDependencyService = new RuntimeDependencyService(FFMPEG_BIN, FFPROBE_BIN)
 
     this.archiveNormalizationService = new ArchiveNormalizationService({
       idleMs: ARCHIVE_NORMALIZE_IDLE_MS,
@@ -165,12 +162,9 @@ export class FileSystemMediaReadService {
       isTargetEligible: (sourceArchivePath) => this.isArchiveNormalizationTargetEligible(sourceArchivePath),
       hasRunningImportTasks: () => this.importTaskService.hasRunningImportTasks(),
       isSnapshotLoading: () => this.librarySnapshotService.isSnapshotLoading(),
-      onArchiveNormalized: async (sourceArchivePath, outputZipPath) => {
-        await this.replaceImportedFileSourcePath(sourceArchivePath, outputZipPath)
-        this.invalidateCache()
-      },
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
-      emitArchiveLoadStatusChanged: (payload) => this.emitArchiveLoadStatusChanged(payload),
+      onArchiveNormalized: (sourcePath, outputPath) => this.replaceImportedFileSourcePath(sourcePath, outputPath),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as any),
+      emitArchiveLoadStatusChanged: (payload) => this.eventBus.emit('archiveLoadStatusChanged', payload),
     })
 
     this.librarySnapshotService = new LibrarySnapshotService({
@@ -191,12 +185,11 @@ export class FileSystemMediaReadService {
       zipGeneralPurposeFlagEncrypted: ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED,
       zipCompressionStore: ZIP_COMPRESSION_STORE,
       zipCompressionDeflate: ZIP_COMPRESSION_DEFLATE,
-      ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
-      queueRar7zNormalization: (sourceArchivePath, priority) =>
-        this.archiveNormalizationService.queueRar7zNormalization(sourceArchivePath, priority),
-      getPackageGradeOverridesBySourceId: () => this.packageGradeOverridesBySourceId,
-      getVideoCoverOverridesByVideoId: () => this.videoCoverOverridesByVideoId,
-      getVideoMetadataOverridesByVideoId: () => this.videoMetadataOverridesByVideoId,
+      ensureRuntimeDependencies: () => this.runtimeDependencyService.ensureRuntimeDependencies(),
+      queueRar7zNormalization: (path, priority) => this.queueRar7zNormalization(path, priority),
+      getPackageGradeOverridesBySourceId: () => this.database.readPackageGrades(),
+      getVideoCoverOverridesByVideoId: () => this.database.readVideoCovers() as any,
+      getVideoMetadataOverridesByVideoId: () => this.database.readVideoMetadata() as any,
     })
 
     this.importTaskService = new ImportTaskService({
@@ -208,22 +201,22 @@ export class FileSystemMediaReadService {
       database: this.database,
       invalidateCache: () => this.invalidateCache(),
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as any),
     })
 
     this.libraryReadWriteService = new LibraryReadWriteService({
       database: this.database,
       ffmpegBin: FFMPEG_BIN,
       coverOutputRootDir: this.coverOutputRootDir,
-      packageGradeOverridesBySourceId: this.packageGradeOverridesBySourceId,
-      videoCoverOverridesByVideoId: this.videoCoverOverridesByVideoId,
-      videoMetadataOverridesByVideoId: this.videoMetadataOverridesByVideoId,
+      packageGradeOverridesBySourceId: this.database.readPackageGrades(),
+      videoCoverOverridesByVideoId: this.database.readVideoCovers() as any,
+      videoMetadataOverridesByVideoId: this.database.readVideoMetadata() as any,
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
-      ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
+      ensureRuntimeDependencies: () => this.runtimeDependencyService.ensureRuntimeDependencies(),
       markInteractiveRead: () => this.markInteractiveRead(),
       isRar7zPath: (filePath) => this.isRar7zPath(filePath),
-      queueRar7zNormalization: (sourceArchivePath, priority) => this.queueRar7zNormalization(sourceArchivePath, priority),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as LibraryChangedEventPayload),
+      queueRar7zNormalization: (path, priority) => this.queueRar7zNormalization(path, priority),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as any),
     })
 
     this.managementMutationService = new ManagementMutationService({
@@ -234,11 +227,11 @@ export class FileSystemMediaReadService {
       ensureStateLoaded: () => this.ensureStateLoaded(),
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
       syncSnapshotFromDatabase: () => this.syncSnapshotFromDatabase(),
-      refreshArchiveIndexesForPaths: (archivePaths) => this.refreshArchiveIndexesForPaths(archivePaths),
-      pruneArchiveIndexesByDeletedRoots: (deletedPaths) => this.pruneArchiveIndexesByDeletedRoots(deletedPaths),
-      removeImportSourcePaths: (pathsToRemove) => this.removeImportSourcePaths(pathsToRemove),
+      refreshArchiveIndexesForPaths: (paths) => this.refreshArchiveIndexesForPaths(paths),
+      pruneArchiveIndexesByDeletedRoots: (paths) => this.pruneArchiveIndexesByDeletedRoots(paths),
+      removeImportSourcePaths: (paths) => this.removeImportSourcePaths(paths),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as LibraryChangedEventPayload),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload as any),
     })
 
     this.manageAdReviewService = new ManageAdReviewService({
@@ -246,7 +239,7 @@ export class FileSystemMediaReadService {
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
       getZipEntryIndexByPath: () => this.librarySnapshotService.getZipEntryIndexByPath(),
-      deleteImageItems: (request) => this.managementMutationService.deleteImageItems(request),
+      deleteImageItems: (request) => this.deleteImageItems(request),
     })
 
     this.mediaResourceService = new MediaResourceService({
@@ -257,16 +250,43 @@ export class FileSystemMediaReadService {
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
       markInteractiveRead: () => this.markInteractiveRead(),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
-      ensureRuntimeDependencies: () => this.ensureRuntimeDependencies(),
-      readImageBufferForThumbnail: (locator) => this.readImageBufferForThumbnail(locator),
-      onThumbnailRenderingStart: () => this.archiveNormalizationService.onThumbnailRenderingStart(),
-      onThumbnailRenderingEnd: () => this.archiveNormalizationService.onThumbnailRenderingEnd(),
+      ensureRuntimeDependencies: () => this.runtimeDependencyService.ensureRuntimeDependencies(),
+      readImageBufferForThumbnail: (locator) => this.librarySnapshotService.readImageBufferForThumbnail(locator),
+      onThumbnailRenderingStart: () => this.emitLibraryChanged({ reason: 'thumbnail-rendering-start', updated_at_ms: Date.now() }),
+      onThumbnailRenderingEnd: () => this.emitLibraryChanged({ reason: 'thumbnail-rendering-end', updated_at_ms: Date.now() }),
       hasPendingArchiveNormalization: () => this.archiveNormalizationService.hasPending(),
-      scheduleArchiveNormalizationDrain: (delayMs) => this.scheduleArchiveNormalizationDrain(delayMs),
+      scheduleArchiveNormalizationDrain: (delay) => this.scheduleArchiveNormalizationDrain(delay),
       getZipEntryIndexByPath: () => this.librarySnapshotService.getZipEntryIndexByPath(),
     })
 
-    this.importTaskService.recoverInterruptedImportTasks()
+    const context: FileSystemFacadeContext = {
+      rootDir: this.rootDir,
+      coverOutputRootDir: this.coverOutputRootDir,
+      thumbnailCacheRootDir: this.thumbnailCacheRootDir,
+      normalizedArchiveRootDir: this.normalizedArchiveRootDir,
+      database: this.database,
+      mediaTokenService: this.mediaTokenService,
+      importPathRegistry: this.importPathRegistry,
+      archiveNormalizationService: this.archiveNormalizationService,
+      importTaskService: this.importTaskService,
+      libraryReadWriteService: this.libraryReadWriteService,
+      librarySnapshotService: this.librarySnapshotService,
+      managementMutationService: this.managementMutationService,
+      manageAdReviewService: this.manageAdReviewService,
+      mediaResourceService: this.mediaResourceService,
+      runtimeDependencyService: this.runtimeDependencyService,
+      eventBus: this.eventBus,
+      ensureStateLoaded: () => this.ensureStateLoaded(),
+      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      invalidateCache: () => this.invalidateCache(),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
+      markInteractiveRead: () => this.markInteractiveRead(),
+      clearDatabase: () => this.clearDatabase(),
+    }
+
+    this.libraryHandlers = new FileSystemLibraryHandlers(context)
+    this.managementHandlers = new FileSystemManagementHandlers(context)
+    this.systemHandlers = new FileSystemSystemHandlers(context)
   }
 
   onLibraryChanged(listener: LibraryChangedListener): () => void {
@@ -274,24 +294,30 @@ export class FileSystemMediaReadService {
   }
 
   onArchiveLoadStatusChanged(listener: ArchiveLoadStatusListener): () => void {
-    return this.eventBus.on('archiveLoadStatus', listener)
+    return this.eventBus.on('archiveLoadStatusChanged', listener)
   }
 
   private emitLibraryChanged(payload: LibraryChangedEventPayload): void {
     this.eventBus.emit('libraryChanged', payload)
-  }
-
-  private emitArchiveLoadStatusChanged(payload: ReadArchiveLoadStatusResponseDto): void {
-    this.eventBus.emit('archiveLoadStatus', payload)
+    if (payload.reason !== 'import-task-updated' && payload.reason !== 'archive-load-status-updated') {
+      this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_IDLE_MS)
+    }
   }
 
   private markInteractiveRead(): void {
-    this.archiveNormalizationService.onInteractiveRead()
+    this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_IDLE_MS)
   }
 
-  private isRar7zPath(filePath: string): boolean {
-    const extension = path.extname(filePath).toLowerCase()
-    return extension === '.rar' || extension === '.7z'
+  private isRar7zPath(targetPath: string): boolean {
+    const ext = path.extname(targetPath).toLowerCase()
+    return ext === '.rar' || ext === '.7z'
+  }
+
+  private isArchiveNormalizationTargetEligible(sourceArchivePath: string): boolean {
+    if (!this.isRar7zPath(sourceArchivePath)) {
+      return false
+    }
+    return isPathAllowlisted(sourceArchivePath, this.buildMediaAccessContext())
   }
 
   private buildMediaAccessContext(): MediaAccessGuardContext {
@@ -305,29 +331,24 @@ export class FileSystemMediaReadService {
     }
   }
 
-  private isArchiveNormalizationTargetEligible(sourceArchivePath: string): boolean {
+  private queueRar7zNormalization(sourceArchivePath: string, priority: 'low' | 'high' = 'low'): void {
     if (!this.isRar7zPath(sourceArchivePath)) {
-      return false
+      return
     }
-    return isPathAllowlisted(sourceArchivePath, this.buildMediaAccessContext())
+    if (!isPathAllowlisted(sourceArchivePath, this.buildMediaAccessContext())) {
+      return
+    }
+    this.archiveNormalizationService.queueRar7zNormalization(sourceArchivePath, priority)
   }
 
   private scheduleArchiveNormalizationDrain(delayMs = 0): void {
     this.archiveNormalizationService.scheduleDrain(delayMs)
   }
 
-  private queueRar7zNormalization(sourceArchivePath: string, priority: 'low' | 'high' = 'low'): void {
-    this.archiveNormalizationService.queueRar7zNormalization(sourceArchivePath, priority)
-  }
-
   invalidateCache(): void {
     this.librarySnapshotService.invalidateCache()
     this.stateHydrated = false
-    // Keep archive allowlists until next snapshot is ready.
-    // This avoids transient "entry not allowlisted" errors while a rescan is in progress.
-    // Keep active media tokens until TTL expiry to avoid transient 404
-    // during background refreshes or libraryChanged fan-out.
-    this.cleanupExpiredTokens()
+    this.mediaTokenService.cleanupExpiredTokens()
   }
 
   dispose(): void {
@@ -336,51 +357,30 @@ export class FileSystemMediaReadService {
     this.database.dispose()
   }
 
-  private cleanupExpiredTokens(): void {
-    this.mediaTokenService.cleanupExpiredTokens()
-  }
-
   private async ensureStateLoaded(): Promise<void> {
     if (this.stateHydrated) {
       return
     }
-
-    this.packageGradeOverridesBySourceId = this.database.readPackageGrades()
-    this.videoCoverOverridesByVideoId = this.database.readVideoCovers()
-    this.videoMetadataOverridesByVideoId = this.database.readVideoMetadata()
-
-    const rawImportSources = this.database.readImportSources()
-    this.importPathRegistry.hydrate(rawImportSources)
+    this.importPathRegistry.hydrate(this.database.readImportSources())
     this.stateHydrated = true
   }
 
   private async replaceImportedFileSourcePath(sourceArchivePath: string, outputZipPath: string): Promise<void> {
     await this.ensureStateLoaded()
-
     const didReplace = this.importPathRegistry.replaceImportedFileSourcePath(sourceArchivePath, outputZipPath)
-    if (!didReplace) {
-      return
+    if (didReplace) {
+      const nextSources = this.importPathRegistry.getImportSources()
+      this.database.writeImportSources({ directories: nextSources.directories, files: nextSources.files })
     }
-
-    const nextSources = this.importPathRegistry.getImportSources()
-    this.database.writeImportSources({
-      directories: nextSources.directories,
-      files: nextSources.files,
-    })
   }
 
   private async removeImportSourcePaths(pathsToRemove: string[]): Promise<void> {
     await this.ensureStateLoaded()
     const didRemove = this.importPathRegistry.removeImportSourcePaths(pathsToRemove)
-    if (!didRemove) {
-      return
+    if (didRemove) {
+      const nextSources = this.importPathRegistry.getImportSources()
+      this.database.writeImportSources({ directories: nextSources.directories, files: nextSources.files })
     }
-
-    const nextSources = this.importPathRegistry.getImportSources()
-    this.database.writeImportSources({
-      directories: nextSources.directories,
-      files: nextSources.files,
-    })
   }
 
   private syncSnapshotFromDatabase(): LibrarySnapshotDto {
@@ -395,59 +395,6 @@ export class FileSystemMediaReadService {
     this.librarySnapshotService.pruneArchiveIndexesByDeletedRoots(deletedPaths, (archivePath) =>
       this.archiveNormalizationService.deleteStateByPath(archivePath),
     )
-  }
-
-  private async ensureRuntimeDependencies(): Promise<RuntimeDependencySnapshot> {
-    return this.runtimeDependencyService.ensureRuntimeDependencies()
-  }
-
-  async readRuntimeCapabilities(): Promise<ReadRuntimeCapabilitiesResponseDto> {
-    return this.runtimeDependencyService.readRuntimeCapabilities()
-  }
-
-  async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {
-    await this.ensureStateLoaded()
-    return this.archiveNormalizationService.readArchiveLoadStatus()
-  }
-
-  async clearDatabase(): Promise<ClearDatabaseResponseDto> {
-    this.database.clearDatabase()
-
-    // Clear runtime artifacts and caches so "清除数据库" can reset visible imported content.
-    // Keep runtime workspace directories themselves; only wipe their contents.
-    await Promise.all([
-      // Legacy copy-mode artifacts.
-      fs.rm(path.join(this.rootDir, LEGACY_IMPORTS_DIR_NAME), { recursive: true, force: true }),
-      fs.rm(this.coverOutputRootDir, { recursive: true, force: true }),
-      fs.rm(this.thumbnailCacheRootDir, { recursive: true, force: true }),
-      fs.rm(this.normalizedArchiveRootDir, { recursive: true, force: true }),
-    ])
-
-    this.packageGradeOverridesBySourceId = new Map()
-    this.videoCoverOverridesByVideoId = new Map()
-    this.videoMetadataOverridesByVideoId = new Map()
-    this.importPathRegistry.clear()
-    this.archiveNormalizationService.clear()
-    this.mediaTokenService.clearActiveTokens()
-    this.importTaskService.clearRuntimeState()
-    this.librarySnapshotService.clearRuntimeState()
-    this.invalidateCache()
-
-    this.emitLibraryChanged({
-      reason: 'clear-database',
-      updated_at_ms: Date.now(),
-    })
-
-    return clearDatabaseResponseSchema.parse({
-      cleared: true,
-      cleared_at_ms: Date.now(),
-    })
-  }
-
-
-
-  async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
-    return this.mediaResourceService.readMediaAccessAudit()
   }
 
   private async ensureSnapshotLoaded(): Promise<LibrarySnapshotDto> {
@@ -469,7 +416,6 @@ export class FileSystemMediaReadService {
         missingPaths.add(source.absolute_path)
       }
     }
-
     for (const video of snapshot.videos) {
       if (!(await this.pathExists(video.absolute_path))) {
         missingPaths.add(video.absolute_path)
@@ -498,160 +444,155 @@ export class FileSystemMediaReadService {
     return nextSnapshot
   }
 
-  private async readImageBufferForThumbnail(locator: MediaLocatorDto): Promise<Buffer> {
-    return this.librarySnapshotService.readImageBufferForThumbnail(locator)
+  async clearDatabase(): Promise<ClearDatabaseResponseDto> {
+    this.database.clearDatabase()
+    await Promise.all([
+      fs.rm(path.join(this.rootDir, LEGACY_IMPORTS_DIR_NAME), { recursive: true, force: true }),
+      fs.rm(this.coverOutputRootDir, { recursive: true, force: true }),
+      fs.rm(this.thumbnailCacheRootDir, { recursive: true, force: true }),
+      fs.rm(this.normalizedArchiveRootDir, { recursive: true, force: true }),
+    ])
+
+    this.importPathRegistry.clear()
+    this.archiveNormalizationService.clear()
+    this.mediaTokenService.clearActiveTokens()
+    this.importTaskService.clearRuntimeState()
+    this.librarySnapshotService.clearRuntimeState()
+    this.invalidateCache()
+
+    this.emitLibraryChanged({
+      reason: 'clear-database',
+      updated_at_ms: Date.now(),
+    })
+
+    return {
+      cleared: true,
+      cleared_at_ms: Date.now(),
+    }
   }
 
+  // Delegate handlers
   async readLibrarySnapshot(): Promise<LibrarySnapshotDto> {
-    this.markInteractiveRead()
-    return this.ensureSnapshotLoaded()
+    return this.libraryHandlers.readLibrarySnapshot()
   }
 
-  async readImageSidebarTree(
-    request: ReadImageSidebarTreeRequestDto,
-  ): Promise<ReadImageSidebarTreeResponseDto> {
-    return this.libraryReadWriteService.readImageSidebarTree(request)
+  async readImageSidebarTree(request: ReadImageSidebarTreeRequestDto): Promise<ReadImageSidebarTreeResponseDto> {
+    return this.libraryHandlers.readImageSidebarTree(request)
   }
 
   async readImagePage(request: ReadImagePageRequestDto): Promise<ReadImagePageResponseDto> {
-    return this.libraryReadWriteService.readImagePage(request)
+    return this.libraryHandlers.readImagePage(request)
   }
 
-  async readImageMetadata(
-    request: ReadImageMetadataRequestDto,
-  ): Promise<ReadImageMetadataResponseDto> {
-    return this.libraryReadWriteService.readImageMetadata(request)
+  async readImageMetadata(request: ReadImageMetadataRequestDto): Promise<ReadImageMetadataResponseDto> {
+    return this.libraryHandlers.readImageMetadata(request)
   }
 
-  async writePackageGrade(
-    request: WritePackageGradeRequestDto,
-  ): Promise<WritePackageGradeResponseDto> {
-    return this.libraryReadWriteService.writePackageGrade(request)
+  async writePackageGrade(request: WritePackageGradeRequestDto): Promise<WritePackageGradeResponseDto> {
+    return this.libraryHandlers.writePackageGrade(request)
   }
 
-  async setImageHidden(
-    request: SetImageHiddenRequestDto,
-  ): Promise<SetImageHiddenResponseDto> {
-    return this.managementMutationService.setImageHidden(request)
+  async setImageHidden(request: SetImageHiddenRequestDto): Promise<SetImageHiddenResponseDto> {
+    return this.managementHandlers.setImageHidden(request)
   }
 
-  async deleteImageItems(
-    request: DeleteImageItemsRequestDto,
-  ): Promise<DeleteImageItemsResponseDto> {
-    return this.managementMutationService.deleteImageItems(request)
+  async deleteImageItems(request: DeleteImageItemsRequestDto): Promise<DeleteImageItemsResponseDto> {
+    return this.managementHandlers.deleteImageItems(request)
   }
 
-  async deleteSidebarNodes(
-    request: DeleteSidebarNodesRequestDto,
-  ): Promise<DeleteSidebarNodesResponseDto> {
-    return this.managementMutationService.deleteSidebarNodes(request)
+  async deleteSidebarNodes(request: DeleteSidebarNodesRequestDto): Promise<DeleteSidebarNodesResponseDto> {
+    return this.managementHandlers.deleteSidebarNodes(request)
   }
 
-  async startManageAdReview(
-    request: StartManageAdReviewRequestDto,
-  ): Promise<StartManageAdReviewResponseDto> {
-    return this.manageAdReviewService.startManageAdReview(request)
+  async startManageAdReview(request: StartManageAdReviewRequestDto): Promise<StartManageAdReviewResponseDto> {
+    return this.managementHandlers.startManageAdReview(request)
   }
 
-  async readManageAdReviewTask(
-    request: ReadManageAdReviewTaskRequestDto,
-  ): Promise<ReadManageAdReviewTaskResponseDto> {
-    return this.manageAdReviewService.readManageAdReviewTask(request)
+  async readManageAdReviewTask(request: ReadManageAdReviewTaskRequestDto): Promise<ReadManageAdReviewTaskResponseDto> {
+    return this.managementHandlers.readManageAdReviewTask(request)
   }
 
-  async pauseManageAdReviewTask(
-    request: PauseManageAdReviewTaskRequestDto,
-  ): Promise<PauseManageAdReviewTaskResponseDto> {
-    return this.manageAdReviewService.pauseManageAdReviewTask(request)
+  async pauseManageAdReviewTask(request: PauseManageAdReviewTaskRequestDto): Promise<PauseManageAdReviewTaskResponseDto> {
+    return this.managementHandlers.pauseManageAdReviewTask(request)
   }
 
-  async testAdReviewVisionModel(
-    request: TestAdReviewVisionModelRequestDto,
-  ): Promise<TestAdReviewVisionModelResponseDto> {
-    return this.manageAdReviewService.testAdReviewVisionModel(request)
+  async testAdReviewVisionModel(request: TestAdReviewVisionModelRequestDto): Promise<TestAdReviewVisionModelResponseDto> {
+    return this.managementHandlers.testAdReviewVisionModel(request)
   }
 
-
-
-  async confirmManageAdReviewDelete(
-    request: ConfirmManageAdReviewDeleteRequestDto,
-  ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
-    return this.manageAdReviewService.confirmManageAdReviewDelete(request)
+  async confirmManageAdReviewDelete(request: ConfirmManageAdReviewDeleteRequestDto): Promise<ConfirmManageAdReviewDeleteResponseDto> {
+    return this.managementHandlers.confirmManageAdReviewDelete(request)
   }
 
-  async writePackageMetadata(
-    request: WritePackageMetadataRequestDto,
-  ): Promise<WritePackageMetadataResponseDto> {
-    return this.libraryReadWriteService.writePackageMetadata(request)
+  async writePackageMetadata(request: WritePackageMetadataRequestDto): Promise<WritePackageMetadataResponseDto> {
+    return this.libraryHandlers.writePackageMetadata(request)
   }
 
-  async writePackageExternalMetadata(
-    request: WritePackageExternalMetadataRequestDto,
-  ): Promise<WritePackageExternalMetadataResponseDto> {
-    return this.libraryReadWriteService.writePackageExternalMetadata(request)
+  async writePackageExternalMetadata(request: WritePackageExternalMetadataRequestDto): Promise<WritePackageExternalMetadataResponseDto> {
+    return this.libraryHandlers.writePackageExternalMetadata(request)
   }
 
-
-
-
-  async writeVideoMetadata(
-    request: WriteVideoMetadataRequestDto,
-  ): Promise<WriteVideoMetadataResponseDto> {
-    return this.libraryReadWriteService.writeVideoMetadata(request)
+  async writeVideoMetadata(request: WriteVideoMetadataRequestDto): Promise<WriteVideoMetadataResponseDto> {
+    return this.libraryHandlers.writeVideoMetadata(request)
   }
 
-  async saveVideoCover(
-    request: SaveVideoCoverRequestDto,
-  ): Promise<SaveVideoCoverResponseDto> {
-    return this.libraryReadWriteService.saveVideoCover(request)
+  async saveVideoCover(request: SaveVideoCoverRequestDto): Promise<SaveVideoCoverResponseDto> {
+    return this.libraryHandlers.saveVideoCover(request)
   }
 
   async readPlaylist(): Promise<ReadPlaylistResponseDto> {
-    return this.libraryReadWriteService.readPlaylist()
+    return this.libraryHandlers.readPlaylist()
   }
 
   async writePlaylist(request: WritePlaylistRequestDto): Promise<WritePlaylistResponseDto> {
-    return this.libraryReadWriteService.writePlaylist(request)
+    return this.libraryHandlers.writePlaylist(request)
   }
 
   async enqueueImportTask(request: EnqueueImportTaskRequestDto): Promise<EnqueueImportTaskResponseDto> {
-    return this.importTaskService.enqueueImportTask(request)
+    return this.systemHandlers.enqueueImportTask(request)
   }
 
   async readImportTasks(): Promise<{ tasks: ImportTaskDto[] }> {
-    return this.importTaskService.readImportTasks()
+    return this.systemHandlers.readImportTasks()
   }
 
   async retryImportTask(request: RetryImportTaskRequestDto): Promise<RetryImportTaskResponseDto> {
-    return this.importTaskService.retryImportTask(request)
+    return this.systemHandlers.retryImportTask(request)
   }
 
-  async resolveMediaResource(
-    request: ResolveMediaResourceRequestDto,
-  ): Promise<ResolveMediaResourceResponseDto> {
-    return this.mediaResourceService.resolveMediaResource(request)
+  async resolveMediaResource(request: ResolveMediaResourceRequestDto): Promise<ResolveMediaResourceResponseDto> {
+    return this.systemHandlers.resolveMediaResource(request)
   }
 
-  async readMediaResourceByToken(
-    token: string,
-    rangeHeader: string | null,
-  ): Promise<MediaProtocolResponsePayload> {
-    return this.mediaResourceService.readMediaResourceByToken(token, rangeHeader)
+  async readMediaResourceByToken(token: string, rangeHeader: string | null): Promise<MediaProtocolResponsePayload> {
+    return this.systemHandlers.readMediaResourceByToken(token, rangeHeader)
   }
 
-  async readMediaResourceByTokenStream(
-    token: string,
-    rangeHeader: string | null,
-    signal?: AbortSignal | null,
-  ): Promise<MediaProtocolStreamResponsePayload> {
-    return this.mediaResourceService.readMediaResourceByTokenStream(token, rangeHeader, signal)
+  async readMediaResourceByTokenStream(token: string, rangeHeader: string | null, signal?: AbortSignal | null): Promise<MediaProtocolStreamResponsePayload> {
+    return this.systemHandlers.readMediaResourceByTokenStream(token, rangeHeader, signal)
+  }
+
+  async readRuntimeCapabilities(): Promise<ReadRuntimeCapabilitiesResponseDto> {
+    return this.systemHandlers.readRuntimeCapabilities()
+  }
+
+  async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {
+    return this.systemHandlers.readArchiveLoadStatus()
+  }
+
+  async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
+    return this.systemHandlers.readMediaAccessAudit()
   }
 
   async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> {
-    return this.libraryReadWriteService.readAppState(request)
+    return this.systemHandlers.readAppState(request)
   }
 
   async writeAppState(request: WriteAppStateRequestDto): Promise<WriteAppStateResponseDto> {
-    return this.libraryReadWriteService.writeAppState(request)
+    return this.systemHandlers.writeAppState(request)
+  }
+
+  async searchExternalMetadata(request: any): Promise<any> {
+    return this.systemHandlers.searchExternalMetadata(request)
   }
 }
