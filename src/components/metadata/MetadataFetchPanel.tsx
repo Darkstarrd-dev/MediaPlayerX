@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ExternalMetadataResultItemDto } from '../../contracts/backend'
 import {
@@ -24,6 +24,75 @@ interface SourceLists {
   ehentai: ExternalMetadataResultItemDto[]
 }
 
+interface SourceTextMap {
+  nhentai: string
+  ehentai: string
+}
+
+interface SourceParsedMap {
+  nhentai: ParsedExternalMetadata | null
+  ehentai: ParsedExternalMetadata | null
+}
+
+interface SourcePreviewCollapseMap {
+  nhentai: {
+    request: boolean
+    response: boolean
+  }
+  ehentai: {
+    request: boolean
+    response: boolean
+  }
+}
+
+const SOURCE_KEYS: MetadataSource[] = ['nhentai', 'ehentai']
+
+function createEmptySourceLists(): SourceLists {
+  return { nhentai: [], ehentai: [] }
+}
+
+function createInitialSelectedIndexBySource(): Record<MetadataSource, number> {
+  return {
+    nhentai: 0,
+    ehentai: 0,
+  }
+}
+
+function createEmptySourceTextMap(): SourceTextMap {
+  return {
+    nhentai: '',
+    ehentai: '',
+  }
+}
+
+function createEmptyParsedBySource(): SourceParsedMap {
+  return {
+    nhentai: null,
+    ehentai: null,
+  }
+}
+
+function createInitialPreviewCollapseBySource(): SourcePreviewCollapseMap {
+  return {
+    nhentai: {
+      request: false,
+      response: false,
+    },
+    ehentai: {
+      request: false,
+      response: false,
+    },
+  }
+}
+
+function getSourceDisplayLabel(source: MetadataSource): string {
+  return source === 'nhentai' ? 'Nhentai' : 'E-Hentai'
+}
+
+function getSourceShortLabel(source: MetadataSource): string {
+  return source === 'nhentai' ? 'NH' : 'EH'
+}
+
 function buildErrorPayload(error: unknown): Record<string, unknown> {
   if (!(error instanceof Error)) {
     return {
@@ -38,6 +107,32 @@ function buildErrorPayload(error: unknown): Record<string, unknown> {
   }
 }
 
+interface AutoSizeReadonlyTextareaProps {
+  id: string
+  label: string
+  value: string
+}
+
+function AutoSizeReadonlyTextarea({ id, label, value }: AutoSizeReadonlyTextareaProps) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+
+  useEffect(() => {
+    if (!textareaRef.current) {
+      return
+    }
+    textareaRef.current.style.height = '0px'
+    const nextHeight = Math.max(120, textareaRef.current.scrollHeight)
+    textareaRef.current.style.height = `${nextHeight}px`
+  }, [value])
+
+  return (
+    <label className="metadata-fetch-preview-field" htmlFor={id}>
+      <span>{label}</span>
+      <textarea id={id} ref={textareaRef} readOnly value={value} />
+    </label>
+  )
+}
+
 function MetadataFetchPanel({
   open,
   defaultText,
@@ -48,20 +143,22 @@ function MetadataFetchPanel({
   onSaveParsedMetadata,
 }: MetadataFetchPanelProps) {
   const [sourceMode, setSourceMode] = useState<SourceMode>('all')
-  const [inputText, setInputText] = useState(defaultText)
   const [inputId, setInputId] = useState('')
+  const [inputText, setInputText] = useState(defaultText)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [sourceLists, setSourceLists] = useState<SourceLists>({ nhentai: [], ehentai: [] })
+  const [sourceLists, setSourceLists] = useState<SourceLists>(createEmptySourceLists())
   const [selectedSource, setSelectedSource] = useState<MetadataSource>('nhentai')
-  const [selectedIndexBySource, setSelectedIndexBySource] = useState<Record<MetadataSource, number>>({
-    nhentai: 0,
-    ehentai: 0,
-  })
-  const [requestPreview, setRequestPreview] = useState('')
-  const [responsePreview, setResponsePreview] = useState('')
-  const [parsed, setParsed] = useState<ParsedExternalMetadata | null>(null)
+  const [selectedIndexBySource, setSelectedIndexBySource] = useState<Record<MetadataSource, number>>(
+    createInitialSelectedIndexBySource(),
+  )
+  const [requestPreviewBySource, setRequestPreviewBySource] = useState<SourceTextMap>(createEmptySourceTextMap())
+  const [responsePreviewBySource, setResponsePreviewBySource] = useState<SourceTextMap>(createEmptySourceTextMap())
+  const [parsedBySource, setParsedBySource] = useState<SourceParsedMap>(createEmptyParsedBySource())
+  const [previewCollapseBySource, setPreviewCollapseBySource] = useState<SourcePreviewCollapseMap>(
+    createInitialPreviewCollapseBySource(),
+  )
 
   useEffect(() => {
     if (!open) {
@@ -69,12 +166,13 @@ function MetadataFetchPanel({
     }
     setInputText(defaultText)
     setInputId('')
-    setSourceLists({ nhentai: [], ehentai: [] })
+    setSourceLists(createEmptySourceLists())
     setSelectedSource('nhentai')
-    setSelectedIndexBySource({ nhentai: 0, ehentai: 0 })
-    setRequestPreview('')
-    setResponsePreview('')
-    setParsed(null)
+    setSelectedIndexBySource(createInitialSelectedIndexBySource())
+    setRequestPreviewBySource(createEmptySourceTextMap())
+    setResponsePreviewBySource(createEmptySourceTextMap())
+    setParsedBySource(createEmptyParsedBySource())
+    setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
     setError(null)
   }, [defaultText, open])
 
@@ -98,113 +196,168 @@ function MetadataFetchPanel({
     }
   }, [onClose, open])
 
-  const selectedList = sourceLists[selectedSource]
-  const selectedItem = selectedList[selectedIndexBySource[selectedSource] ?? 0] ?? null
+  const selectedItemBySource: Record<MetadataSource, ExternalMetadataResultItemDto | null> = useMemo(
+    () => ({
+      nhentai: sourceLists.nhentai[selectedIndexBySource.nhentai ?? 0] ?? null,
+      ehentai: sourceLists.ehentai[selectedIndexBySource.ehentai ?? 0] ?? null,
+    }),
+    [selectedIndexBySource, sourceLists],
+  )
+
+  const selectedItem = selectedItemBySource[selectedSource]
   const resultCount = sourceLists.nhentai.length + sourceLists.ehentai.length
+  const selectedParsed = parsedBySource[selectedSource]
+
+  const previewRawBySource: SourceTextMap = useMemo(
+    () => ({
+      nhentai: selectedItemBySource.nhentai ? JSON.stringify(selectedItemBySource.nhentai.raw, null, 2) : '',
+      ehentai: selectedItemBySource.ehentai ? JSON.stringify(selectedItemBySource.ehentai.raw, null, 2) : '',
+    }),
+    [selectedItemBySource],
+  )
+
+  const previewParsedBySource: SourceTextMap = useMemo(
+    () => ({
+      nhentai: parsedBySource.nhentai ? JSON.stringify(parsedBySource.nhentai, null, 2) : '',
+      ehentai: parsedBySource.ehentai ? JSON.stringify(parsedBySource.ehentai, null, 2) : '',
+    }),
+    [parsedBySource],
+  )
 
   const canSearch = inputText.trim().length > 0 || inputId.trim().length > 0
   const canParse = Boolean(selectedItem)
-  const canSave = Boolean(parsed) && !saving && !metadataPending
-
-  const previewRaw = useMemo(() => {
-    if (!selectedItem) {
-      return ''
-    }
-    return JSON.stringify(selectedItem.raw, null, 2)
-  }, [selectedItem])
-
-  const previewParsed = useMemo(() => {
-    if (!parsed) {
-      return ''
-    }
-    return JSON.stringify(parsed, null, 2)
-  }, [parsed])
+  const canSave = Boolean(selectedParsed) && !saving && !metadataPending
 
   if (!open) {
     return null
   }
 
   const runSearch = async () => {
-    const requestPayload = {
+    const requestBase = {
       input_text: inputText.trim() || undefined,
       input_id: inputId.trim() || undefined,
-      source: sourceMode === 'all' ? undefined : sourceMode,
       proxy_server: proxyServer.trim() || undefined,
     }
+    const targetSources: MetadataSource[] = sourceMode === 'all' ? SOURCE_KEYS : [sourceMode]
 
     const api = window.mediaPlayerBackend
-    if (!api?.searchExternalMetadata) {
-      setRequestPreview(JSON.stringify(requestPayload, null, 2))
-      setResponsePreview(
-        JSON.stringify(
+    const searchExternalMetadata = api?.searchExternalMetadata
+    if (!searchExternalMetadata) {
+      const nextRequestPreviewBySource = createEmptySourceTextMap()
+      const nextResponsePreviewBySource = createEmptySourceTextMap()
+
+      for (const source of targetSources) {
+        nextRequestPreviewBySource[source] = JSON.stringify({ ...requestBase, source }, null, 2)
+        nextResponsePreviewBySource[source] = JSON.stringify(
           {
             message: '当前后端不支持元数据检索',
             code: 'backend_unavailable',
           },
           null,
           2,
-        ),
-      )
-      setSourceLists({ nhentai: [], ehentai: [] })
-      setSelectedIndexBySource({ nhentai: 0, ehentai: 0 })
+        )
+      }
+
+      setRequestPreviewBySource(nextRequestPreviewBySource)
+      setResponsePreviewBySource(nextResponsePreviewBySource)
+      setSourceLists(createEmptySourceLists())
+      setSelectedIndexBySource(createInitialSelectedIndexBySource())
+      setParsedBySource(createEmptyParsedBySource())
+      setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
       setError('当前后端不支持元数据检索')
       return
     }
 
     setLoading(true)
     setError(null)
-    setParsed(null)
-    setRequestPreview(JSON.stringify(requestPayload, null, 2))
+    setParsedBySource(createEmptyParsedBySource())
+    setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
 
     try {
-      const response = await api.searchExternalMetadata(requestPayload)
-      const nhentai = response.items.filter((item) => item.source === 'nhentai')
-      const ehentai = response.items.filter((item) => item.source === 'ehentai')
+      const nextSourceLists = createEmptySourceLists()
+      const nextRequestPreviewBySource = createEmptySourceTextMap()
+      const nextResponsePreviewBySource = createEmptySourceTextMap()
+      const searchErrors: string[] = []
 
-      setSourceLists({ nhentai, ehentai })
-      setSelectedIndexBySource({ nhentai: 0, ehentai: 0 })
-      setResponsePreview(JSON.stringify(response, null, 2))
+      await Promise.all(
+        targetSources.map(async (source) => {
+          const requestPayload = { ...requestBase, source }
+          nextRequestPreviewBySource[source] = JSON.stringify(requestPayload, null, 2)
 
-      if (nhentai.length > 0) {
-        setSelectedSource('nhentai')
-      } else if (ehentai.length > 0) {
-        setSelectedSource('ehentai')
-      }
+          try {
+            const response = await searchExternalMetadata(requestPayload)
+            nextSourceLists[source] = response.items.filter((item) => item.source === source)
+            nextResponsePreviewBySource[source] = JSON.stringify(response, null, 2)
+          } catch (searchError) {
+            nextResponsePreviewBySource[source] = JSON.stringify(buildErrorPayload(searchError), null, 2)
+            searchErrors.push(`${getSourceShortLabel(source)}: ${searchError instanceof Error ? searchError.message : '检索失败'}`)
+          }
+        }),
+      )
 
-      if (response.items.length === 0) {
+      setSourceLists(nextSourceLists)
+      setSelectedIndexBySource(createInitialSelectedIndexBySource())
+      setRequestPreviewBySource(nextRequestPreviewBySource)
+      setResponsePreviewBySource(nextResponsePreviewBySource)
+
+      const nextSelectedSource: MetadataSource =
+        nextSourceLists[selectedSource].length > 0
+          ? selectedSource
+          : nextSourceLists.nhentai.length > 0
+            ? 'nhentai'
+            : nextSourceLists.ehentai.length > 0
+              ? 'ehentai'
+              : 'nhentai'
+      setSelectedSource(nextSelectedSource)
+
+      if (searchErrors.length > 0) {
+        setError(searchErrors.join(' | '))
+      } else if (nextSourceLists.nhentai.length + nextSourceLists.ehentai.length === 0) {
         setError('未检索到结果')
       }
-    } catch (searchError) {
-      setSourceLists({ nhentai: [], ehentai: [] })
-      setSelectedIndexBySource({ nhentai: 0, ehentai: 0 })
-      setResponsePreview(JSON.stringify(buildErrorPayload(searchError), null, 2))
-      setError(searchError instanceof Error ? searchError.message : '检索失败')
     } finally {
       setLoading(false)
     }
   }
 
   const runParse = () => {
-    if (!selectedItem) {
+    const source = selectedSource
+    const currentItem = selectedItemBySource[source]
+    if (!currentItem) {
       return
     }
+
     try {
-      setParsed(parseExternalMetadataToHitomi(selectedItem))
+      const nextParsed = parseExternalMetadataToHitomi(currentItem)
+      setParsedBySource((previous) => ({
+        ...previous,
+        [source]: nextParsed,
+      }))
+      setPreviewCollapseBySource((previous) => ({
+        ...previous,
+        [source]: {
+          request: true,
+          response: true,
+        },
+      }))
       setError(null)
     } catch (parseError) {
-      setParsed(null)
+      setParsedBySource((previous) => ({
+        ...previous,
+        [source]: null,
+      }))
       setError(parseError instanceof Error ? parseError.message : '解析失败')
     }
   }
 
   const runSave = async () => {
-    if (!parsed) {
+    if (!selectedParsed) {
       return
     }
     setSaving(true)
     setError(null)
     try {
-      await onSaveParsedMetadata(parsed)
+      await onSaveParsedMetadata(selectedParsed)
       onClose()
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : '保存失败')
@@ -224,50 +377,64 @@ function MetadataFetchPanel({
           </button>
         </header>
 
-        <div className="metadata-fetch-shell">
+        <div className="metadata-fetch-shell settings-block">
           <p className="settings-placeholder">目标图包：{targetPackageLabel || '-'} </p>
 
-          <div className="metadata-fetch-input-grid">
-            <label>
-              来源
-              <select value={sourceMode} onChange={(event) => setSourceMode(event.target.value as SourceMode)}>
-                <option value="all">全部</option>
-                <option value="nhentai">Nhentai</option>
-                <option value="ehentai">E-Hentai</option>
-              </select>
-            </label>
-            <label>
-              Text
-              <input
-                type="text"
-                value={inputText}
-                onChange={(event) => setInputText(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    void runSearch()
-                  }
-                }}
-              />
-            </label>
-            <label>
-              ID
-              <input
-                type="text"
-                value={inputId}
-                onChange={(event) => setInputId(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    void runSearch()
-                  }
-                }}
-              />
-            </label>
-          </div>
+          <fieldset className="settings-subsection metadata-fetch-search-section">
+            <legend>检索参数</legend>
+            <div className="metadata-fetch-input-grid">
+              <div className="metadata-fetch-source-picker">
+                <span>来源</span>
+                <div className="mode-switch metadata-fetch-source-switch" role="group" aria-label="metadata-fetch-source-switch">
+                  <button type="button" className={sourceMode === 'nhentai' ? 'is-active' : ''} onClick={() => setSourceMode('nhentai')}>
+                    NH
+                  </button>
+                  <button type="button" className={sourceMode === 'ehentai' ? 'is-active' : ''} onClick={() => setSourceMode('ehentai')}>
+                    EH
+                  </button>
+                  <button type="button" className={sourceMode === 'all' ? 'is-active' : ''} onClick={() => setSourceMode('all')}>
+                    ALL
+                  </button>
+                </div>
+              </div>
+
+              <label>
+                检索ID
+                <input
+                  type="text"
+                  value={inputId}
+                  onChange={(event) => setInputId(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      void runSearch()
+                    }
+                  }}
+                />
+              </label>
+
+              <label>
+                检索关键字
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={(event) => setInputText(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      void runSearch()
+                    }
+                  }}
+                />
+              </label>
+
+              <div className="metadata-fetch-search-action">
+                <button type="button" disabled={!canSearch || loading} onClick={() => void runSearch()}>
+                  {loading ? '检索中...' : '检索'}
+                </button>
+              </div>
+            </div>
+          </fieldset>
 
           <div className="settings-floating-actions metadata-fetch-actions">
-            <button type="button" disabled={!canSearch || loading} onClick={() => void runSearch()}>
-              {loading ? '检索中...' : '检索'}
-            </button>
             <button type="button" disabled={!canParse} onClick={runParse}>
               解析
             </button>
@@ -279,79 +446,124 @@ function MetadataFetchPanel({
           {error ? <p className="settings-danger-text">{error}</p> : null}
 
           <div className="metadata-fetch-results">
-            <section className="metadata-fetch-source-column">
-              <header>
-                <strong>Nhentai</strong>
-                <span>{`${sourceLists.nhentai.length} 条`}</span>
-              </header>
-              <ul className="metadata-fetch-result-list">
-                {sourceLists.nhentai.map((item, index) => (
-                  <li key={`nhentai-${item.id}-${index}`}>
-                    <button
-                      type="button"
-                      className={selectedSource === 'nhentai' && index === (selectedIndexBySource.nhentai ?? 0) ? 'is-active' : ''}
-                      onClick={() => {
-                        setSelectedSource('nhentai')
-                        setSelectedIndexBySource((previous) => ({ ...previous, nhentai: index }))
-                        setParsed(null)
-                      }}
-                    >
-                      <strong>{item.title}</strong>
-                      <span>{`#${item.id}`}</span>
-                    </button>
-                  </li>
-                ))}
-                {sourceLists.nhentai.length === 0 ? <li className="metadata-fetch-empty">无结果</li> : null}
-              </ul>
-            </section>
+            {SOURCE_KEYS.map((source) => {
+              const list = sourceLists[source]
+              const selectedIndex = selectedIndexBySource[source] ?? 0
+              const isActiveSource = selectedSource === source
+              const requestCollapsed = previewCollapseBySource[source].request
+              const responseCollapsed = previewCollapseBySource[source].response
 
-            <section className="metadata-fetch-source-column">
-              <header>
-                <strong>E-Hentai</strong>
-                <span>{`${sourceLists.ehentai.length} 条`}</span>
-              </header>
-              <ul className="metadata-fetch-result-list">
-                {sourceLists.ehentai.map((item, index) => (
-                  <li key={`ehentai-${item.id}-${index}`}>
-                    <button
-                      type="button"
-                      className={selectedSource === 'ehentai' && index === (selectedIndexBySource.ehentai ?? 0) ? 'is-active' : ''}
-                      onClick={() => {
-                        setSelectedSource('ehentai')
-                        setSelectedIndexBySource((previous) => ({ ...previous, ehentai: index }))
-                        setParsed(null)
-                      }}
-                    >
-                      <strong>{item.title}</strong>
-                      <span>{`#${item.id}`}</span>
-                    </button>
-                  </li>
-                ))}
-                {sourceLists.ehentai.length === 0 ? <li className="metadata-fetch-empty">无结果</li> : null}
-              </ul>
-            </section>
+              return (
+                <section
+                  key={source}
+                  className={`metadata-fetch-source-column ${isActiveSource ? 'is-active' : ''}`}
+                  data-source={source}
+                >
+                  <header>
+                    <strong>{getSourceDisplayLabel(source)}</strong>
+                    <span>{`${list.length} 条`}</span>
+                  </header>
+
+                  <ul className="metadata-fetch-result-list">
+                    {list.map((item, index) => (
+                      <li key={`${source}-${item.id}-${index}`}>
+                        <button
+                          type="button"
+                          className={isActiveSource && index === selectedIndex ? 'is-active' : ''}
+                          onClick={() => {
+                            setSelectedSource(source)
+                            setSelectedIndexBySource((previous) => ({
+                              ...previous,
+                              [source]: index,
+                            }))
+                            setParsedBySource((previous) => ({
+                              ...previous,
+                              [source]: null,
+                            }))
+                            setPreviewCollapseBySource((previous) => ({
+                              ...previous,
+                              [source]: {
+                                request: false,
+                                response: false,
+                              },
+                            }))
+                          }}
+                        >
+                          <strong>{item.title}</strong>
+                          <span>{`#${item.id}`}</span>
+                        </button>
+                      </li>
+                    ))}
+                    {list.length === 0 ? <li className="metadata-fetch-empty">无结果</li> : null}
+                  </ul>
+
+                  <div className="metadata-fetch-preview-stack">
+                    <section className="metadata-fetch-preview-card">
+                      <button
+                        type="button"
+                        className="metadata-fetch-preview-toggle"
+                        onClick={() => {
+                          setPreviewCollapseBySource((previous) => ({
+                            ...previous,
+                            [source]: {
+                              ...previous[source],
+                              request: !previous[source].request,
+                            },
+                          }))
+                        }}
+                      >
+                        <span>Request Body</span>
+                        <span>{requestCollapsed ? '展开' : '折叠'}</span>
+                      </button>
+                      {!requestCollapsed ? (
+                        <AutoSizeReadonlyTextarea
+                          id={`${source}-request-body`}
+                          label="Request Body"
+                          value={requestPreviewBySource[source]}
+                        />
+                      ) : null}
+                    </section>
+
+                    <section className="metadata-fetch-preview-card">
+                      <button
+                        type="button"
+                        className="metadata-fetch-preview-toggle"
+                        onClick={() => {
+                          setPreviewCollapseBySource((previous) => ({
+                            ...previous,
+                            [source]: {
+                              ...previous[source],
+                              response: !previous[source].response,
+                            },
+                          }))
+                        }}
+                      >
+                        <span>Response Body</span>
+                        <span>{responseCollapsed ? '展开' : '折叠'}</span>
+                      </button>
+                      {!responseCollapsed ? (
+                        <AutoSizeReadonlyTextarea
+                          id={`${source}-response-body`}
+                          label="Response Body"
+                          value={responsePreviewBySource[source]}
+                        />
+                      ) : null}
+                    </section>
+
+                    <section className="metadata-fetch-preview-card">
+                      <AutoSizeReadonlyTextarea id={`${source}-raw`} label="Raw" value={previewRawBySource[source]} />
+                    </section>
+
+                    <section className="metadata-fetch-preview-card">
+                      <AutoSizeReadonlyTextarea id={`${source}-parsed`} label="Parsed" value={previewParsedBySource[source]} />
+                    </section>
+                  </div>
+                </section>
+              )
+            })}
           </div>
 
-          <p className="metadata-fetch-total">{`总结果 ${resultCount} 条，当前来源 ${selectedSource}`}</p>
-
-          <div className="metadata-fetch-preview-grid">
-            <label>
-              Request Body
-              <textarea readOnly value={requestPreview} />
-            </label>
-            <label>
-              Response Body
-              <textarea readOnly value={responsePreview} />
-            </label>
-            <label>
-              Raw
-              <textarea readOnly value={previewRaw} />
-            </label>
-            <label>
-              Parsed
-              <textarea readOnly value={previewParsed} />
-            </label>
-          </div>
+          <p className="metadata-fetch-total">{`总结果 ${resultCount} 条，当前来源 ${getSourceDisplayLabel(selectedSource)}`}</p>
         </div>
       </section>
     </div>

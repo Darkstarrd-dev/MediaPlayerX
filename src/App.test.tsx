@@ -630,17 +630,39 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByRole('button', { name: '保存' })).toBeNull()
   })
 
-  it('获取元数据弹窗展示双源结果列与请求响应预览', async () => {
+  it('获取元数据弹窗展示双源结果列与分源请求响应预览', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
     fireEvent.click(screen.getByRole('button', { name: '获取元数据' }))
 
-    window.mediaPlayerBackend = {
-      searchExternalMetadata: vi.fn(async () => ({
+    const searchExternalMetadata = vi.fn(async (request: { source?: 'nhentai' | 'ehentai' }) => {
+      if (request.source === 'ehentai') {
+        return {
+          items: [
+            {
+              source: 'ehentai' as const,
+              id: '1919810',
+              title: '[Circle] mock-eh-title',
+              title_original: null,
+              cover: null,
+              url: 'https://example.com/eh/1919810',
+              token: 'token1919810',
+              tags: ['parody:original'],
+              pages: 1,
+              posted: null,
+              rating: null,
+              favorited: null,
+              raw: { source: 'ehentai', mock: true },
+            },
+          ],
+        }
+      }
+
+      return {
         items: [
           {
-            source: 'nhentai',
+            source: 'nhentai' as const,
             id: '114514',
             title: 'mock-nh-title',
             title_original: null,
@@ -654,39 +676,45 @@ describe('MediaPlayer 虚拟 UI', () => {
             favorited: null,
             raw: { source: 'nhentai', mock: true },
           },
-          {
-            source: 'ehentai',
-            id: '1919810',
-            title: '[Circle] mock-eh-title',
-            title_original: null,
-            cover: null,
-            url: 'https://example.com/eh/1919810',
-            token: 'token1919810',
-            tags: ['parody:original'],
-            pages: 1,
-            posted: null,
-            rating: null,
-            favorited: null,
-            raw: { source: 'ehentai', mock: true },
-          },
         ],
-      })),
+      }
+    })
+
+    window.mediaPlayerBackend = {
+      searchExternalMetadata,
     } as unknown as typeof window.mediaPlayerBackend
 
     const dialog = screen.getByRole('dialog', { name: '获取元数据' })
     const scope = within(dialog)
 
     expect(dialog.querySelectorAll('.metadata-fetch-source-column').length).toBe(2)
-    expect(scope.getByLabelText('Request Body')).toBeInTheDocument()
-    expect(scope.getByLabelText('Response Body')).toBeInTheDocument()
 
     fireEvent.click(scope.getByRole('button', { name: '检索' }))
 
     await waitFor(() => {
-      const requestBody = scope.getByLabelText('Request Body') as HTMLTextAreaElement
-      const responseBody = scope.getByLabelText('Response Body') as HTMLTextAreaElement
-      expect(requestBody.value).toContain('input_text')
-      expect(responseBody.value).toContain('"items"')
+      expect(searchExternalMetadata).toHaveBeenCalledTimes(2)
+    })
+
+    const calledSources = searchExternalMetadata.mock.calls.map((call) => call[0]?.source)
+    expect(calledSources).toEqual(expect.arrayContaining(['nhentai', 'ehentai']))
+
+    const nhColumn = dialog.querySelector('[data-source="nhentai"]') as HTMLElement | null
+    const ehColumn = dialog.querySelector('[data-source="ehentai"]') as HTMLElement | null
+    expect(nhColumn).not.toBeNull()
+    expect(ehColumn).not.toBeNull()
+
+    await waitFor(() => {
+      const nhScope = within(nhColumn as HTMLElement)
+      const ehScope = within(ehColumn as HTMLElement)
+      const nhRequest = nhScope.getByLabelText('Request Body') as HTMLTextAreaElement
+      const nhResponse = nhScope.getByLabelText('Response Body') as HTMLTextAreaElement
+      const ehRequest = ehScope.getByLabelText('Request Body') as HTMLTextAreaElement
+      const ehResponse = ehScope.getByLabelText('Response Body') as HTMLTextAreaElement
+
+      expect(nhRequest.value).toContain('"source": "nhentai"')
+      expect(nhResponse.value).toContain('"source": "nhentai"')
+      expect(ehRequest.value).toContain('"source": "ehentai"')
+      expect(ehResponse.value).toContain('"source": "ehentai"')
     })
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
@@ -695,64 +723,95 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
-  it('获取元数据支持按来源过滤并可解析 ehentai 结果', async () => {
+  it('获取元数据支持按来源过滤、回车检索并可解析 ehentai 结果', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
     fireEvent.click(screen.getByRole('button', { name: '获取元数据' }))
 
-    window.mediaPlayerBackend = {
-      searchExternalMetadata: vi.fn(async () => ({
-        items: [
-          {
-            source: 'ehentai',
-            id: '1919810',
-            title: '[Circle] mock-eh-title',
-            title_original: '[サークル] mock-eh-title-jpn',
-            cover: null,
-            url: 'https://e-hentai.org/g/1919810/mocktoken/',
+    const searchExternalMetadata = vi.fn(async () => ({
+      items: [
+        {
+          source: 'ehentai' as const,
+          id: '1919810',
+          title: '[Circle] mock-eh-title',
+          title_original: '[サークル] mock-eh-title-jpn',
+          cover: null,
+          url: 'https://e-hentai.org/g/1919810/mocktoken/',
+          token: 'mocktoken',
+          tags: ['parody:original', 'female:big breasts'],
+          pages: 12,
+          posted: '1700000000',
+          rating: '4.8',
+          favorited: null,
+          raw: {
+            gid: '1919810',
             token: 'mocktoken',
-            tags: ['parody:original', 'female:big breasts'],
-            pages: 12,
-            posted: '1700000000',
-            rating: '4.8',
-            favorited: null,
-            raw: {
-              gid: '1919810',
-              token: 'mocktoken',
-              title: '[Circle] mock-eh-title',
-              title_jpn: '[サークル] mock-eh-title-jpn',
-            },
+            title: '[Circle] mock-eh-title',
+            title_jpn: '[サークル] mock-eh-title-jpn',
           },
-        ],
-      })),
+        },
+      ],
+    }))
+
+    window.mediaPlayerBackend = {
+      searchExternalMetadata,
     } as unknown as typeof window.mediaPlayerBackend
 
     const dialog = screen.getByRole('dialog', { name: '获取元数据' })
     const scope = within(dialog)
 
-    const sourceSelect = scope.getByRole('combobox', { name: '来源' }) as HTMLSelectElement
-    fireEvent.change(sourceSelect, { target: { value: 'ehentai' } })
-    await waitFor(() => {
-      expect(sourceSelect.value).toBe('ehentai')
-    })
-    fireEvent.click(scope.getByRole('button', { name: '检索' }))
+    fireEvent.click(scope.getByRole('button', { name: 'EH' }))
+
+    const idInput = scope.getByLabelText('检索ID') as HTMLInputElement
+    fireEvent.change(idInput, { target: { value: '1919810' } })
+    fireEvent.keyDown(idInput, { key: 'Enter', code: 'Enter' })
 
     await waitFor(() => {
-      const requestBody = scope.getByLabelText('Request Body') as HTMLTextAreaElement
-      const responseBody = scope.getByLabelText('Response Body') as HTMLTextAreaElement
-      expect(requestBody.value).toContain('"source": "ehentai"')
-      expect(responseBody.value).toContain('"source": "ehentai"')
+      expect(searchExternalMetadata).toHaveBeenCalledTimes(1)
     })
 
-    const ehColumn = dialog.querySelectorAll('.metadata-fetch-source-column')[1] as HTMLElement
-    expect(within(ehColumn).getAllByRole('button').length).toBeGreaterThan(0)
+    expect(searchExternalMetadata).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: 'ehentai',
+        input_id: '1919810',
+      }),
+    )
+
+    const nhColumn = dialog.querySelector('[data-source="nhentai"]') as HTMLElement | null
+    const ehColumn = dialog.querySelector('[data-source="ehentai"]') as HTMLElement | null
+    expect(nhColumn).not.toBeNull()
+    expect(ehColumn).not.toBeNull()
+
+    await waitFor(() => {
+      const nhScope = within(nhColumn as HTMLElement)
+      const ehScope = within(ehColumn as HTMLElement)
+      const nhRequest = nhScope.getByLabelText('Request Body') as HTMLTextAreaElement
+      const nhResponse = nhScope.getByLabelText('Response Body') as HTMLTextAreaElement
+      const ehRequest = ehScope.getByLabelText('Request Body') as HTMLTextAreaElement
+      const ehResponse = ehScope.getByLabelText('Response Body') as HTMLTextAreaElement
+
+      expect(nhRequest.value).toBe('')
+      expect(nhResponse.value).toBe('')
+      expect(ehRequest.value).toContain('"source": "ehentai"')
+      expect(ehResponse.value).toContain('"source": "ehentai"')
+    })
 
     fireEvent.click(scope.getByRole('button', { name: '解析' }))
 
     await waitFor(() => {
-      const parsed = scope.getByLabelText('Parsed') as HTMLTextAreaElement
+      const parsed = within(ehColumn as HTMLElement).getByLabelText('Parsed') as HTMLTextAreaElement
       expect(parsed.value).toContain('"site": "ehentai"')
+    })
+
+    await waitFor(() => {
+      expect(within(ehColumn as HTMLElement).queryByLabelText('Request Body')).toBeNull()
+      expect(within(ehColumn as HTMLElement).queryByLabelText('Response Body')).toBeNull()
+    })
+
+    fireEvent.click(within(ehColumn as HTMLElement).getByRole('button', { name: /Request Body/ }))
+    await waitFor(() => {
+      expect(within(ehColumn as HTMLElement).getByLabelText('Request Body')).toBeInTheDocument()
     })
   })
 
