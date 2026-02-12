@@ -8,6 +8,7 @@ export interface LibraryChangedEventPayload {
     | 'clear-database'
     | 'write-package-grade'
     | 'write-package-metadata'
+    | 'write-package-external-metadata'
     | 'write-video-metadata'
     | 'write-video-cover'
     | 'write-playlist'

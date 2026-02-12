@@ -163,19 +163,18 @@ export function mapSidebarNodeDto(node: SidebarNodeDto): SidebarNode {
   }
 }
 
-function normalizeNodeLabelCompare(value: string): string {
-  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
-}
+function resolvePreferredSidebarTitle(source: ImagePackage): string | null {
+  const jpnTitle = source.externalMetadata?.titleJpn?.trim() ?? ''
+  if (jpnTitle.length > 0) {
+    return jpnTitle
+  }
 
-function resolvePreferredWorkTitleLabel(packageName: string, workTitle: string, fallbackLabel: string): string {
-  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle)
-  if (normalizedWorkTitle.length === 0) {
-    return fallbackLabel
+  const enTitle = source.externalMetadata?.title?.trim() ?? ''
+  if (enTitle.length > 0) {
+    return enTitle
   }
-  if (normalizeNodeLabelCompare(packageName) === normalizedWorkTitle) {
-    return fallbackLabel
-  }
-  return workTitle
+
+  return null
 }
 
 function mapSidebarNodeDtoWithSourceLabel(node: SidebarNodeDto, sourceById: Map<string, ImagePackage>): SidebarNode {
@@ -186,7 +185,10 @@ function mapSidebarNodeDtoWithSourceLabel(node: SidebarNodeDto, sourceById: Map<
   if (sourceId) {
     const source = sourceById.get(sourceId)
     if (source) {
-      label = resolvePreferredWorkTitleLabel(source.packageName, source.workTitle, label)
+      const preferredTitle = resolvePreferredSidebarTitle(source)
+      if (preferredTitle) {
+        label = preferredTitle
+      }
     }
   }
 

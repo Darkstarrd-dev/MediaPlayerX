@@ -841,6 +841,53 @@ describe('useReadOnlyDataAccess', () => {
     expect(repository.readImageMetadata).toHaveBeenCalledTimes(metadataCallsBefore)
   })
 
+  it('元数据管理挂起刷新时，元数据写事件不会刷新缩略图相关切片，退出后补一次全量刷新', async () => {
+    const repository = new GradeRefreshTrackingRepository()
+
+    const { rerender } = renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository, {
+        featureGradeFilter: 3,
+        gradeByPackage: { 'pkg-base': 3 },
+        suspendLibraryChangedRefresh: true,
+      }),
+    })
+
+    await waitFor(() => {
+      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1)
+      expect(repository.readImagePage).toHaveBeenCalledTimes(1)
+      expect(repository.readImageMetadata).toHaveBeenCalledTimes(1)
+    })
+
+    const sidebarCallsBefore = repository.readImageSidebarTree.mock.calls.length
+    const pageCallsBefore = repository.readImagePage.mock.calls.length
+    const metadataCallsBefore = repository.readImageMetadata.mock.calls.length
+
+    await act(async () => {
+      repository.emitLibraryChanged('write-package-grade')
+      repository.emitLibraryChanged('write-package-metadata')
+      repository.emitLibraryChanged('write-package-external-metadata')
+      await new Promise((resolve) => setTimeout(resolve, 220))
+    })
+
+    expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(sidebarCallsBefore)
+    expect(repository.readImagePage).toHaveBeenCalledTimes(pageCallsBefore)
+    expect(repository.readImageMetadata).toHaveBeenCalledTimes(metadataCallsBefore)
+
+    rerender(
+      createHookParams(repository, {
+        featureGradeFilter: 3,
+        gradeByPackage: { 'pkg-base': 3 },
+        suspendLibraryChangedRefresh: false,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(repository.readImageSidebarTree.mock.calls.length).toBeGreaterThan(sidebarCallsBefore)
+      expect(repository.readImagePage.mock.calls.length).toBeGreaterThan(pageCallsBefore)
+      expect(repository.readImageMetadata.mock.calls.length).toBeGreaterThan(metadataCallsBefore)
+    })
+  })
+
   it('筛选切换时可取消旧请求，且旧响应不会覆盖新状态', async () => {
     const repository = new CancellationAwareRepository()
     const { result, rerender } = renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {

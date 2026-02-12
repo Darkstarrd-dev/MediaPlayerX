@@ -108,7 +108,12 @@ export function useResolvedMediaUrls({
     }
 
     const unsubscribe = repository.onLibraryChanged((payload) => {
-      if (payload.reason === 'write-package-grade') {
+      if (
+        payload.reason === 'write-package-grade' ||
+        payload.reason === 'write-package-metadata' ||
+        payload.reason === 'write-package-external-metadata' ||
+        payload.reason === 'write-video-metadata'
+      ) {
         return
       }
 

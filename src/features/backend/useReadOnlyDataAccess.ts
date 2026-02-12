@@ -27,6 +27,7 @@ interface UseReadOnlyDataAccessParams {
   repository: MediaRepository
   mode: BrowserMode
   includeHidden: boolean
+  suspendLibraryChangedRefresh?: boolean
   selectedSourceId: string | null
   pageIndex: number
   pageSize: number
@@ -82,6 +83,7 @@ export function useReadOnlyDataAccess({
   repository,
   mode,
   includeHidden,
+  suspendLibraryChangedRefresh = false,
   selectedSourceId,
   pageIndex,
   pageSize,
@@ -116,6 +118,7 @@ export function useReadOnlyDataAccess({
   const sidebarRequestIdRef = useRef(0)
   const pageRequestIdRef = useRef(0)
   const metadataRequestIdRef = useRef(0)
+  const deferredAllRefreshRef = useRef(false)
 
   const [libraryRetryNonce, setLibraryRetryNonce] = useState(0)
   const [sidebarRetryNonce, setSidebarRetryNonce] = useState(0)
@@ -337,6 +340,16 @@ export function useReadOnlyDataAccess({
     }
 
     const unsubscribe = repository.onLibraryChanged((payload) => {
+      const isMetadataManageWriteReason =
+        payload.reason === 'write-package-grade' ||
+        payload.reason === 'write-package-metadata' ||
+        payload.reason === 'write-package-external-metadata'
+
+      if (suspendLibraryChangedRefresh && isMetadataManageWriteReason) {
+        deferredAllRefreshRef.current = true
+        return
+      }
+
       if (payload.reason === 'write-package-grade') {
         if (featureGradeFilter !== null) {
           scheduleRefresh('grade-dependent')
@@ -353,7 +366,15 @@ export function useReadOnlyDataAccess({
       }
       unsubscribe()
     }
-  }, [featureGradeFilter, isSynchronousTestMode, repository, retryAllSlices, retryPage, retrySidebar])
+  }, [featureGradeFilter, isSynchronousTestMode, repository, retryAllSlices, retryPage, retrySidebar, suspendLibraryChangedRefresh])
+
+  useEffect(() => {
+    if (isSynchronousTestMode || suspendLibraryChangedRefresh || !deferredAllRefreshRef.current) {
+      return
+    }
+    deferredAllRefreshRef.current = false
+    retryAllSlices()
+  }, [isSynchronousTestMode, retryAllSlices, suspendLibraryChangedRefresh])
 
   const errors: BackendReadErrors = {
     library: libraryState.error,

@@ -47,6 +47,7 @@ export function useAppReadState({
     vectorPage,
     gradeByPackage,
     manageMode,
+    metadataManageMode,
     gridSize,
   } = sessionState
 
@@ -153,6 +154,7 @@ export function useAppReadState({
     repository: mediaRepository,
     mode,
     includeHidden: manageMode && mode === 'image',
+    suspendLibraryChangedRefresh: metadataManageMode,
     selectedSourceId: selectedPackageId || null,
     pageIndex: showNamesOnly ? 0 : vectorResultsActive ? vectorPage : (pageByPackage[selectedPackageId] ?? 0),
     pageSize: Math.max(1, backendPageSize),

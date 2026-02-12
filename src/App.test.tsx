@@ -116,8 +116,8 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     render(<App />)
 
-    const node1 = screen.getByRole('button', { name: '目录直读：海岸' })
-    const node2 = screen.getByRole('button', { name: '目录直读：画廊A' })
+    const node1 = screen.getByRole('button', { name: '海岸' })
+    const node2 = screen.getByRole('button', { name: '画廊A' })
 
     for (let index = 0; index < 8; index += 1) {
       fireEvent.click(node1)
@@ -135,18 +135,18 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(hasRuntimeError).toBe(false)
   })
 
-  it('Sidebar 包节点在包名与作品名不一致时显示作品名', () => {
+  it('Sidebar 包节点在无英文/日文标题时显示文件名', () => {
     render(<App />)
 
-    expect(screen.getAllByRole('button', { name: '海岸线合集' }).length).toBeGreaterThan(0)
-    expect(screen.queryByRole('button', { name: 'coastline_album.zip' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'coastline_album.zip' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '海岸线合集' })).toBeNull()
   })
 
-  it('Sidebar 目录源节点在图包名与作品名不一致时显示作品名', () => {
+  it('Sidebar 目录源节点在无英文/日文标题时显示目录名', () => {
     render(<App />)
 
-    expect(screen.getByRole('button', { name: '目录直读：仅图片目录' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '仅图片目录' })).toBeNull()
+    expect(screen.getByRole('button', { name: '仅图片目录' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '目录直读：仅图片目录' })).toBeNull()
   })
 
   it('管理模式删除确认弹窗需勾选不可逆确认后才能提交', async () => {
@@ -377,7 +377,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(footer).not.toBeNull()
     expect((footer?.textContent ?? '').trim().length).toBeGreaterThan(0)
 
-    fireEvent.click(screen.getByRole('button', { name: '目录直读：画廊A' }))
+    fireEvent.click(screen.getByRole('button', { name: '画廊A' }))
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
 
     await waitFor(() => {

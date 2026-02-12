@@ -707,16 +707,18 @@ function pathKeyOf(segments: string[]): string {
   return segments.join('/')
 }
 
-function normalizeNodeLabelCompare(value: string): string {
-  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
-}
-
-function shouldPreferWorkTitleLabel(packageName: string, workTitle: string): boolean {
-  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle)
-  if (normalizedWorkTitle.length === 0) {
-    return false
+function resolvePreferredSidebarTitle(source: ImagePackage): string | null {
+  const jpnTitle = source.externalMetadata?.titleJpn?.trim() ?? ''
+  if (jpnTitle.length > 0) {
+    return jpnTitle
   }
-  return normalizeNodeLabelCompare(packageName) !== normalizedWorkTitle
+
+  const enTitle = source.externalMetadata?.title?.trim() ?? ''
+  if (enTitle.length > 0) {
+    return enTitle
+  }
+
+  return null
 }
 
 function sortNodes(nodes: SidebarNode[]): void {
@@ -776,8 +778,9 @@ export function buildImageSidebarTree(
       const sourceAtPath = packageAtPath ?? directoryAtPath
       let label = segments[segments.length - 1]
 
-      if (sourceAtPath && shouldPreferWorkTitleLabel(sourceAtPath.packageName, sourceAtPath.workTitle)) {
-        label = sourceAtPath.workTitle
+      const preferredSidebarTitle = sourceAtPath ? resolvePreferredSidebarTitle(sourceAtPath) : null
+      if (preferredSidebarTitle) {
+        label = preferredSidebarTitle
       }
 
       const node: SidebarNode = {

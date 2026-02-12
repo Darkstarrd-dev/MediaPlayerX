@@ -6,16 +6,18 @@ interface VectorSidebarState {
   packageNodeIdMap: Map<string, string>
 }
 
-function normalizeNodeLabelCompare(value: string): string {
-  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
-}
-
-function shouldUseWorkTitleLabel(packageName: string, workTitle: string): boolean {
-  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle)
-  if (normalizedWorkTitle.length === 0) {
-    return false
+function resolvePreferredSidebarTitle(pkg: ImagePackage): string | undefined {
+  const jpnTitle = pkg.externalMetadata?.titleJpn?.trim() ?? ''
+  if (jpnTitle.length > 0) {
+    return jpnTitle
   }
-  return normalizeNodeLabelCompare(packageName) !== normalizedWorkTitle
+
+  const enTitle = pkg.externalMetadata?.title?.trim() ?? ''
+  if (enTitle.length > 0) {
+    return enTitle
+  }
+
+  return undefined
 }
 
 export function buildVectorSidebarState(
@@ -37,7 +39,7 @@ export function buildVectorSidebarState(
     leaves.push({
       id: packageId,
       treePath: pkg.treePath,
-      leafLabel: shouldUseWorkTitleLabel(pkg.packageName, pkg.workTitle) ? pkg.workTitle : undefined,
+      leafLabel: resolvePreferredSidebarTitle(pkg),
     })
   }
 

@@ -163,4 +163,48 @@ describe('useResolvedMediaUrls', () => {
 
     expect(resolveMediaResource).toHaveBeenCalledTimes(1)
   })
+
+  it('元数据写入事件不会清空失败退避窗口', async () => {
+    const { repository, resolveMediaResource, emitLibraryChanged } = createFailingRepository()
+
+    const { rerender } = renderHook(
+      ({ targets }: { targets: MediaResolveTarget[] }) =>
+        useResolvedMediaUrls({
+          repository,
+          targets,
+        }),
+      {
+        initialProps: {
+          targets: [baseTarget],
+        },
+      },
+    )
+
+    await waitFor(() => {
+      expect(resolveMediaResource).toHaveBeenCalledTimes(1)
+    })
+
+    rerender({
+      targets: [{ ...baseTarget }],
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80))
+    })
+    expect(resolveMediaResource).toHaveBeenCalledTimes(1)
+
+    act(() => {
+      emitLibraryChanged('write-package-metadata')
+      emitLibraryChanged('write-package-external-metadata')
+      emitLibraryChanged('write-video-metadata')
+    })
+
+    rerender({
+      targets: [{ ...baseTarget }],
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80))
+    })
+
+    expect(resolveMediaResource).toHaveBeenCalledTimes(1)
+  })
 })
