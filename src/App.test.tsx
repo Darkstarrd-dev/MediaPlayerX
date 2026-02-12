@@ -9,6 +9,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
     resetUiStoreState()
+    window.mediaPlayerBackend = undefined
   })
 
   it('支持图片/视频模式切换', () => {
@@ -614,16 +615,143 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(widthAfterLock).toBe(widthBeforeLock)
   })
 
-  it('元数据管理使用顶部展开容器承载同步名称动作', () => {
+  it('元数据管理使用主工具栏承载同步名称与获取元数据动作', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
 
     expect(screen.getByRole('button', { name: '同步名称' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '获取元数据' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '自动生成标签' })).toBeNull()
     expect(screen.queryByRole('button', { name: '视觉模型生成标签' })).toBeNull()
     expect(screen.queryByRole('button', { name: '生成嵌入向量' })).toBeNull()
     expect(screen.queryByRole('button', { name: '保存' })).toBeNull()
+  })
+
+  it('获取元数据弹窗展示双源结果列与请求响应预览', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '获取元数据' }))
+
+    window.mediaPlayerBackend = {
+      searchExternalMetadata: vi.fn(async () => ({
+        items: [
+          {
+            source: 'nhentai',
+            id: '114514',
+            title: 'mock-nh-title',
+            title_original: null,
+            cover: null,
+            url: 'https://example.com/nh/114514',
+            token: '',
+            tags: ['language:chinese'],
+            pages: 1,
+            posted: null,
+            rating: null,
+            favorited: null,
+            raw: { source: 'nhentai', mock: true },
+          },
+          {
+            source: 'ehentai',
+            id: '1919810',
+            title: '[Circle] mock-eh-title',
+            title_original: null,
+            cover: null,
+            url: 'https://example.com/eh/1919810',
+            token: 'token1919810',
+            tags: ['parody:original'],
+            pages: 1,
+            posted: null,
+            rating: null,
+            favorited: null,
+            raw: { source: 'ehentai', mock: true },
+          },
+        ],
+      })),
+    } as unknown as typeof window.mediaPlayerBackend
+
+    const dialog = screen.getByRole('dialog', { name: '获取元数据' })
+    const scope = within(dialog)
+
+    expect(dialog.querySelectorAll('.metadata-fetch-source-column').length).toBe(2)
+    expect(scope.getByLabelText('Request Body')).toBeInTheDocument()
+    expect(scope.getByLabelText('Response Body')).toBeInTheDocument()
+
+    fireEvent.click(scope.getByRole('button', { name: '检索' }))
+
+    await waitFor(() => {
+      const requestBody = scope.getByLabelText('Request Body') as HTMLTextAreaElement
+      const responseBody = scope.getByLabelText('Response Body') as HTMLTextAreaElement
+      expect(requestBody.value).toContain('input_text')
+      expect(responseBody.value).toContain('"items"')
+    })
+
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: '获取元数据' })).toBeNull()
+    })
+  })
+
+  it('获取元数据支持按来源过滤并可解析 ehentai 结果', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(screen.getByRole('button', { name: '获取元数据' }))
+
+    window.mediaPlayerBackend = {
+      searchExternalMetadata: vi.fn(async () => ({
+        items: [
+          {
+            source: 'ehentai',
+            id: '1919810',
+            title: '[Circle] mock-eh-title',
+            title_original: '[サークル] mock-eh-title-jpn',
+            cover: null,
+            url: 'https://e-hentai.org/g/1919810/mocktoken/',
+            token: 'mocktoken',
+            tags: ['parody:original', 'female:big breasts'],
+            pages: 12,
+            posted: '1700000000',
+            rating: '4.8',
+            favorited: null,
+            raw: {
+              gid: '1919810',
+              token: 'mocktoken',
+              title: '[Circle] mock-eh-title',
+              title_jpn: '[サークル] mock-eh-title-jpn',
+            },
+          },
+        ],
+      })),
+    } as unknown as typeof window.mediaPlayerBackend
+
+    const dialog = screen.getByRole('dialog', { name: '获取元数据' })
+    const scope = within(dialog)
+
+    const sourceSelect = scope.getByRole('combobox', { name: '来源' }) as HTMLSelectElement
+    fireEvent.change(sourceSelect, { target: { value: 'ehentai' } })
+    await waitFor(() => {
+      expect(sourceSelect.value).toBe('ehentai')
+    })
+    fireEvent.click(scope.getByRole('button', { name: '检索' }))
+
+    await waitFor(() => {
+      const requestBody = scope.getByLabelText('Request Body') as HTMLTextAreaElement
+      const responseBody = scope.getByLabelText('Response Body') as HTMLTextAreaElement
+      expect(requestBody.value).toContain('"source": "ehentai"')
+      expect(responseBody.value).toContain('"source": "ehentai"')
+    })
+
+    const ehColumn = dialog.querySelectorAll('.metadata-fetch-source-column')[1] as HTMLElement
+    expect(within(ehColumn).getAllByRole('button').length).toBeGreaterThan(0)
+
+    fireEvent.click(scope.getByRole('button', { name: '解析' }))
+
+    await waitFor(() => {
+      const parsed = scope.getByLabelText('Parsed') as HTMLTextAreaElement
+      expect(parsed.value).toContain('"site": "ehentai"')
+    })
   })
 
   it('元数据面板标题可折叠，并可恢复展开', () => {

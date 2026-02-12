@@ -4,6 +4,13 @@ export function buildImageSidebarTree(
   imagePackages: ImagePackageDto[],
   imageDirectories: ImagePackageDto[],
 ): SidebarNodeDto[] {
+  const countVisibleImages = (source: ImagePackageDto | undefined): number => {
+    if (!source) {
+      return 0
+    }
+    return source.images.reduce((count, image) => (image.hidden ? count : count + 1), 0)
+  }
+
   const packageByPath = new Map<string, ImagePackageDto>()
   const directoryByPath = new Map<string, ImagePackageDto>()
 
@@ -44,10 +51,10 @@ export function buildImageSidebarTree(
       if (packageAtPath) {
         node.package_id = packageAtPath.id
         node.image_source_id = packageAtPath.id
-        node.direct_image_count = packageAtPath.images.length
+        node.direct_image_count = countVisibleImages(packageAtPath)
       } else if (directoryAtPath) {
         node.image_source_id = directoryAtPath.id
-        node.direct_image_count = directoryAtPath.images.length
+        node.direct_image_count = countVisibleImages(directoryAtPath)
       }
 
       nodeByPath.set(pathKey, node)
@@ -65,9 +72,12 @@ export function buildImageSidebarTree(
     }
   }
 
-  const hydrateAggregateCounts = (nodes: SidebarNodeDto[]): { packageCount: number; imageCount: number } => {
+  const hydrateAggregateCounts = (
+    nodes: SidebarNodeDto[],
+  ): { packageCount: number; imageCount: number; nodeCount: number } => {
     let packageCount = 0
     let imageCount = 0
+    let nodeCount = 0
 
     for (const node of nodes) {
       const childAggregate = hydrateAggregateCounts(node.children)
@@ -79,14 +89,17 @@ export function buildImageSidebarTree(
 
       node.descendant_package_count = totalPackageCount
       node.descendant_image_count = totalImageCount
+      node.descendant_node_count = childAggregate.nodeCount
 
       packageCount += totalPackageCount
       imageCount += totalImageCount
+      nodeCount += childAggregate.nodeCount + 1
     }
 
     return {
       packageCount,
       imageCount,
+      nodeCount,
     }
   }
 

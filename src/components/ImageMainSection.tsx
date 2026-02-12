@@ -1,8 +1,10 @@
-import { type RefObject } from 'react'
+import { useState, type RefObject } from 'react'
 
 import { mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
+import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../types'
+import MetadataFetchPanel from './metadata/MetadataFetchPanel'
 
 interface ImageMainSectionProps {
   vectorMode: boolean
@@ -30,6 +32,12 @@ interface ImageMainSectionProps {
   onToggleShowNamesOnly: () => void
   onEnterFullscreen: () => void
   onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
+  metadataPending: boolean
+  metadataTargetPackageLabel: string
+  metadataFetchDefaultText: string
+  metadataProxyServer: string
+  onMetadataSyncName: () => void
+  onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
   manageMode: boolean
   sidebarSelectedCount: number
   imageSelectedCount: number
@@ -59,9 +67,11 @@ interface ImageMainSectionProps {
   nodeBrowseItems?: Array<{
     nodeId: string
     imageSourceId?: string
+    imageNodeType: 'folder' | 'package' | 'directory'
     label: string
     packageCount: number
     imageCount: number
+    descendantNodeCount: number
     coverImageUrl: string | null
   }>
   onSelectNodeBrowseItem?: (nodeId: string, imageSourceId?: string) => void
@@ -115,6 +125,12 @@ function ImageMainSection({
   onToggleShowNamesOnly,
   onEnterFullscreen,
   onSelectImage,
+  metadataPending,
+  metadataTargetPackageLabel,
+  metadataFetchDefaultText,
+  metadataProxyServer,
+  onMetadataSyncName,
+  onMetadataSaveParsed,
   onPrevPage,
   onNextPage,
   nodeBrowseMode = false,
@@ -122,6 +138,7 @@ function ImageMainSection({
   nodeBrowseItems = [],
   onSelectNodeBrowseItem,
 }: ImageMainSectionProps) {
+  const [metadataFetchOpen, setMetadataFetchOpen] = useState(false)
   const showSkeleton = !showNamesOnly && enableLoadingSkeleton && loading && refsInPage.length === 0
   const { marqueeStyle, startMarqueeSelection, startThumbnailDragToggle } = useManageImageSelectionInteractions({
     manageMode,
@@ -175,6 +192,12 @@ function ImageMainSection({
           <>
             <strong className="main-toolbar-title">元数据管理</strong>
             <div className="toolbar-actions toolbar-actions-manage">
+              <button className="feature-action-btn" type="button" disabled={metadataPending} onClick={onMetadataSyncName}>
+                同步名称
+              </button>
+              <button className="feature-action-btn" type="button" onClick={() => setMetadataFetchOpen(true)}>
+                获取元数据
+              </button>
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>
           </>
@@ -245,7 +268,9 @@ function ImageMainSection({
                 </div>
                 <div className="node-browse-caption">
                   <strong>{item.label}</strong>
-                  <span>{`包 ${item.packageCount} · 图 ${item.imageCount}`}</span>
+                  <span>
+                    {item.imageNodeType === 'folder' ? `包含节点 ${item.descendantNodeCount}` : `图片 ${item.imageCount}`}
+                  </span>
                 </div>
               </button>
             </div>
@@ -408,6 +433,16 @@ function ImageMainSection({
           }}
         />
       ) : null}
+
+      <MetadataFetchPanel
+        open={metadataFetchOpen}
+        defaultText={metadataFetchDefaultText}
+        proxyServer={metadataProxyServer}
+        metadataPending={metadataPending}
+        targetPackageLabel={metadataTargetPackageLabel}
+        onClose={() => setMetadataFetchOpen(false)}
+        onSaveParsedMetadata={onMetadataSaveParsed}
+      />
     </>
   )
 }

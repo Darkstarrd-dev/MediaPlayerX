@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
+import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../../types'
 
 interface BuildImageMainSectionPropsParams {
@@ -45,6 +46,12 @@ interface BuildImageMainSectionPropsParams {
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   setVectorFocusIndex: (value: number) => void
   setImageFocus: (packageId: string, imageIndex: number) => void
+  metadataPending: boolean
+  metadataTargetPackageLabel: string
+  metadataFetchDefaultText: string
+  metadataProxyServer: string
+  onMetadataSyncName: () => void
+  onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   onManageDelete: () => void
@@ -59,9 +66,11 @@ interface BuildImageMainSectionPropsParams {
   nodeBrowseItems: Array<{
     nodeId: string
     imageSourceId?: string
+    imageNodeType: 'folder' | 'package' | 'directory'
     label: string
     packageCount: number
     imageCount: number
+    descendantNodeCount: number
     coverImageUrl: string | null
   }>
   onSelectNodeBrowseItem: (nodeId: string, imageSourceId?: string) => void
@@ -122,6 +131,12 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
       params.setImageFocus(packageId, imageIndex)
       params.updateSettings({ sidebarFocus: 'main' })
     },
+    metadataPending: params.metadataPending,
+    metadataTargetPackageLabel: params.metadataTargetPackageLabel,
+    metadataFetchDefaultText: params.metadataFetchDefaultText,
+    metadataProxyServer: params.metadataProxyServer,
+    onMetadataSyncName: params.onMetadataSyncName,
+    onMetadataSaveParsed: params.onMetadataSaveParsed,
     onPrevPage: params.goPrevPage,
     onNextPage: params.goNextPage,
     nodeBrowseMode: params.nodeBrowseMode,

@@ -344,22 +344,52 @@
 }
 
 .metadata-fetch-panel {
-  width: min(1080px, 96vw);
-  max-height: 86vh;
+  width: min(1280px, 96vw);
+  height: min(88vh, 900px);
   overflow: hidden;
+}
+
+.metadata-fetch-head h2 {
+  font-size: 18px;
+}
+
+.metadata-fetch-shell {
+  min-height: 0;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  overflow: auto;
 }
 
 .metadata-fetch-input-grid {
   display: grid;
   gap: 8px;
-  grid-template-columns: 180px minmax(0, 1fr) minmax(0, 220px);
+  grid-template-columns: 180px minmax(0, 1fr) minmax(0, 240px);
+}
+
+.metadata-fetch-actions {
+  justify-content: flex-start;
 }
 
 .metadata-fetch-results {
   display: grid;
-  grid-template-columns: minmax(260px, 30%) 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  min-height: 360px;
+  min-height: 280px;
+}
+
+.metadata-fetch-source-column {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.metadata-fetch-source-column > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-dim);
+  font-size: 12px;
 }
 
 .metadata-fetch-result-list {
@@ -403,6 +433,12 @@
   padding: 10px;
 }
 
+.metadata-fetch-total {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
 .metadata-fetch-preview-grid {
   min-width: 0;
   display: grid;
@@ -412,7 +448,7 @@
 
 .metadata-fetch-preview-grid textarea {
   width: 100%;
-  min-height: 320px;
+  min-height: 220px;
   resize: vertical;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -426,6 +462,7 @@
 @media (max-width: 960px) {
   .metadata-fetch-panel {
     width: min(96vw, 96vw);
+    height: min(92vh, 92vh);
   }
 
   .metadata-fetch-input-grid {

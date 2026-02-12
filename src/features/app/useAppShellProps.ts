@@ -104,7 +104,6 @@ export function useAppShellProps({
     sidebarPanelProps: workspaceState.sidebarPanelProps,
     searchPanelProps: workspaceState.searchPanelProps,
     managementPanelProps: workspaceState.managementPanelProps,
-    metadataManagementPanelProps: workspaceState.metadataManagementPanelProps,
     imageMainSectionProps: workspaceState.imageMainSectionProps,
     videoMainSectionProps: workspaceState.videoMainSectionProps,
     metadataPanelProps: workspaceState.metadataPanelProps,

@@ -37,6 +37,8 @@ interface BuildVideoMainSectionPropsParams {
   setVideoRate: Dispatch<SetStateAction<number>>
   saveVideoCover: (videoId: string, timeSec: number, color: string) => Promise<void>
   setFullscreenActiveWithAutoStop: (value: boolean) => void
+  metadataPending: boolean
+  onMetadataSyncName: () => void
 }
 
 export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsParams) {
@@ -65,6 +67,8 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     active: params.active,
     coverColor: params.coverColor,
     coverImageUrl: params.coverImageUrl,
+    metadataPending: params.metadataPending,
+    onMetadataSyncName: params.onMetadataSyncName,
     onTogglePlay: () => {
       if (!params.focusedVideoId) {
         return

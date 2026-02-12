@@ -9,6 +9,7 @@ import { buildMetadataPanelProps } from './buildMetadataPanelProps'
 import { buildSearchPanelProps } from './buildSearchPanelProps'
 import { buildSidebarPanelProps } from './buildSidebarPanelProps'
 import { buildVideoMainSectionProps } from './buildVideoMainSectionProps'
+import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
@@ -457,6 +458,48 @@ export function useAppWorkspaceProps({
     layoutLocked,
   })
 
+  const applyMetadataSyncName = () => {
+    if (mode === 'image') {
+      metadataWriteBindings.applyPackageSyncName()
+      return
+    }
+    metadataWriteBindings.applyVideoSyncName()
+  }
+
+  const saveParsedMetadata = async (parsed: ParsedExternalMetadata) => {
+    if (mode !== 'image') {
+      throw new Error('当前模式不支持写入图包元数据')
+    }
+    const packageId = metadataImagePackageEffective?.id
+    if (!packageId) {
+      throw new Error('当前无可用图包，无法保存')
+    }
+    await metadataWriteBindings.applyPackageMetadataById(packageId, {
+      workTitle: parsed.title,
+      circle: parsed.group,
+      author: parsed.artist,
+      tags: flattenExternalTags(parsed.tags),
+    })
+    await metadataWriteBindings.applyPackageExternalMetadataById(packageId, {
+      sourceSite: parsed.source.site,
+      sourceUrl: parsed.source.url,
+      sourceRemoteId: parsed.source.id,
+      sourceToken: parsed.source.token,
+      title: parsed.title,
+      titleJpn: parsed.title_jpn,
+      group: parsed.group,
+      groupJpn: parsed.group_jpn,
+      artist: parsed.artist,
+      artistJpn: parsed.artist_jpn,
+      posted: parsed.posted,
+      rating: parsed.rating,
+      favorited: parsed.favorited,
+      thumbUrl: parsed.thumb,
+      tags: parsed.tags,
+      rawJson: JSON.stringify(parsed),
+    })
+  }
+
   const metadataManagementPanelProps = buildMetadataManagementPanelProps({
     metadataManageMode,
     searchPanelCollapsed,
@@ -466,46 +509,8 @@ export function useAppWorkspaceProps({
     vectorPanelContentRef,
     metadataPending: metadataWriteBindings.metadataPending,
     operationHint: manageOperationHint,
-    onSyncName: () => {
-      if (mode === 'image') {
-        metadataWriteBindings.applyPackageSyncName()
-        return
-      }
-      metadataWriteBindings.applyVideoSyncName()
-    },
-    onSaveParsedMetadata: async (parsed) => {
-      if (mode !== 'image') {
-        throw new Error('当前模式不支持写入图包元数据')
-      }
-      const packageId = metadataImagePackageEffective?.id
-      if (!packageId) {
-        throw new Error('当前无可用图包，无法保存')
-      }
-      await metadataWriteBindings.applyPackageMetadataById(packageId, {
-        workTitle: parsed.title,
-        circle: parsed.group,
-        author: parsed.artist,
-        tags: flattenExternalTags(parsed.tags),
-      })
-      await metadataWriteBindings.applyPackageExternalMetadataById(packageId, {
-        sourceSite: parsed.source.site,
-        sourceUrl: parsed.source.url,
-        sourceRemoteId: parsed.source.id,
-        sourceToken: parsed.source.token,
-        title: parsed.title,
-        titleJpn: parsed.title_jpn,
-        group: parsed.group,
-        groupJpn: parsed.group_jpn,
-        artist: parsed.artist,
-        artistJpn: parsed.artist_jpn,
-        posted: parsed.posted,
-        rating: parsed.rating,
-        favorited: parsed.favorited,
-        thumbUrl: parsed.thumb,
-        tags: parsed.tags,
-        rawJson: JSON.stringify(parsed),
-      })
-    },
+    onSyncName: applyMetadataSyncName,
+    onSaveParsedMetadata: saveParsedMetadata,
     onStartVectorPanelResize,
     layoutLocked,
     targetPackageName: metadataImagePackageEffective?.packageName ?? '',
@@ -538,9 +543,13 @@ export function useAppWorkspaceProps({
 
   const nodeBrowseItems = nodeBrowseMode
     ? (selectedSidebarNode?.children ?? []).map((child) => {
-        const previewSourceId = resolveNodePreviewSourceId(child)
+        const hasOwnImages = child.imageNodeType === 'package' || child.imageNodeType === 'directory'
+        const previewSourceId = hasOwnImages ? (child.imageSourceId ?? resolveNodePreviewSourceId(child)) : resolveNodePreviewSourceId(child)
         const previewSource = previewSourceId ? packageByIdEffective.get(previewSourceId) : null
-        const fallbackImageId = previewSource?.images[0]?.id
+        const fallbackImageId = previewSource?.images.find((image) => !image.hidden)?.id
+        const visibleImageCount = previewSource
+          ? previewSource.images.reduce((count, image) => (image.hidden ? count : count + 1), 0)
+          : child.directImageCount ?? 0
         const coverImageUrl =
           (previewSourceId ? sourceCoverImageUrlBySourceId[previewSourceId] : null) ??
           (fallbackImageId ? thumbnailImageUrlById[fallbackImageId] ?? null : null)
@@ -548,9 +557,11 @@ export function useAppWorkspaceProps({
         return {
           nodeId: child.id,
           imageSourceId: child.imageSourceId,
+          imageNodeType: child.imageNodeType ?? 'folder',
           label: child.label,
-          packageCount: child.descendantPackageCount ?? (child.imageNodeType === 'package' ? 1 : 0),
-          imageCount: child.descendantImageCount ?? child.directImageCount ?? 0,
+          packageCount: child.descendantPackageCount ?? 0,
+          imageCount: hasOwnImages ? visibleImageCount : child.descendantImageCount ?? 0,
+          descendantNodeCount: child.descendantNodeCount ?? child.children.length,
           coverImageUrl,
         }
       })
@@ -610,6 +621,12 @@ export function useAppWorkspaceProps({
     setFullscreenActiveWithAutoStop,
     setVectorFocusIndex,
     setImageFocus,
+    metadataPending: metadataWriteBindings.metadataPending,
+    metadataTargetPackageLabel: metadataImagePackageEffective?.displayName ?? '-',
+    metadataFetchDefaultText: metadataManagementPanelProps.defaultFetchText,
+    metadataProxyServer: appSettings.proxyServer,
+    onMetadataSyncName: applyMetadataSyncName,
+    onMetadataSaveParsed: saveParsedMetadata,
     onToggleImageChecked: toggleImageChecked,
     onReplaceCheckedImages: replaceImageCheckedIds,
     onManageDelete: requestManageDelete,
@@ -673,6 +690,8 @@ export function useAppWorkspaceProps({
     setVideoRate,
     saveVideoCover: backendWrite.saveVideoCover,
     setFullscreenActiveWithAutoStop,
+    metadataPending: metadataWriteBindings.metadataPending,
+    onMetadataSyncName: applyMetadataSyncName,
   })
 
   const applyMetadataFeatureSearch = (patch: {
@@ -806,7 +825,6 @@ export function useAppWorkspaceProps({
     sidebarPanelProps,
     searchPanelProps,
     managementPanelProps,
-    metadataManagementPanelProps,
     imageMainSectionProps,
     videoMainSectionProps,
     metadataPanelProps,

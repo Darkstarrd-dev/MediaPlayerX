@@ -120,6 +120,7 @@ export const sidebarNodeDtoSchema: z.ZodType<{
   direct_image_count?: number
   descendant_package_count?: number
   descendant_image_count?: number
+  descendant_node_count?: number
   path_key: string
 }> = z.lazy(() =>
   z.object({
@@ -134,6 +135,7 @@ export const sidebarNodeDtoSchema: z.ZodType<{
     direct_image_count: nonNegativeIntSchema.optional(),
     descendant_package_count: nonNegativeIntSchema.optional(),
     descendant_image_count: nonNegativeIntSchema.optional(),
+    descendant_node_count: nonNegativeIntSchema.optional(),
     path_key: z.string().min(1),
   }),
 )

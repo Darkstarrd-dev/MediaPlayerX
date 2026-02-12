@@ -301,6 +301,12 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             onToggleShowNamesOnly={() => undefined}
             onEnterFullscreen={() => undefined}
             onSelectImage={() => undefined}
+            metadataPending={false}
+            metadataTargetPackageLabel={pkg.displayName}
+            metadataFetchDefaultText={pkg.packageName}
+            metadataProxyServer={''}
+            onMetadataSyncName={() => undefined}
+            onMetadataSaveParsed={async () => undefined}
             onPrevPage={() => undefined}
             onNextPage={() => undefined}
           />

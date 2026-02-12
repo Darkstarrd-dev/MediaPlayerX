@@ -107,6 +107,7 @@ export interface SidebarNode {
   directImageCount?: number
   descendantPackageCount?: number
   descendantImageCount?: number
+  descendantNodeCount?: number
   pathKey: string
 }
 

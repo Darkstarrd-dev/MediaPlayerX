@@ -91,6 +91,9 @@ function SidebarPanel({
       const isActiveVideo = mode === 'video' && node.videoId === selectedVideoId
       const isKeyboardActive = selectedSidebarNodeId === node.id
       const loadState = mode === 'image' ? imageNodeLoadStateById[node.id] : undefined
+      const hasOwnImages = imageNodeType === 'package' || imageNodeType === 'directory'
+      const visibleImageCount = node.directImageCount ?? 0
+      const descendantNodeCount = node.descendantNodeCount ?? node.children.length
 
       const row = (
         <div
@@ -136,11 +139,8 @@ function SidebarPanel({
 
           {mode === 'image' ? (
             <span className="sidebar-counts" style={{ fontSize: `${sidebarCountFontSize}px` }}>
-              <span className={`sidebar-count sidebar-count-packages ${imageNodeType === 'package' ? 'is-leaf' : ''}`}>
-                包 {node.descendantPackageCount ?? (imageNodeType === 'package' ? 1 : 0)}
-              </span>
-              <span className={`sidebar-count sidebar-count-images ${imageNodeType === 'directory' ? 'is-leaf' : ''}`}>
-                图 {node.descendantImageCount ?? node.directImageCount ?? 0}
+              <span className={`sidebar-count ${hasOwnImages ? 'sidebar-count-images is-leaf' : 'sidebar-count-packages'}`}>
+                {hasOwnImages ? `图 ${visibleImageCount}` : `节点 ${descendantNodeCount}`}
               </span>
             </span>
           ) : null}

@@ -158,6 +158,7 @@ export function mapSidebarNodeDto(node: SidebarNodeDto): SidebarNode {
     directImageCount: node.direct_image_count,
     descendantPackageCount: node.descendant_package_count,
     descendantImageCount: node.descendant_image_count,
+    descendantNodeCount: node.descendant_node_count,
     pathKey: node.path_key,
   }
 }
@@ -201,6 +202,7 @@ function mapSidebarNodeDtoWithSourceLabel(node: SidebarNodeDto, sourceById: Map<
     directImageCount: node.direct_image_count,
     descendantPackageCount: node.descendant_package_count,
     descendantImageCount: node.descendant_image_count,
+    descendantNodeCount: node.descendant_node_count,
     pathKey: node.path_key,
   }
 }
