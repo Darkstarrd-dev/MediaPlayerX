@@ -463,24 +463,6 @@
   flex: 1;
 }
 
-.metadata-video-stats {
-  margin-top: 10px;
-  border-top: 1px solid var(--mpx-border-1);
-  padding-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 10px;
-  color: var(--mpx-text-2);
-  font-size: 12px;
-}
-
-.metadata-video-stats span {
-  border: 1px solid var(--mpx-border-1);
-  border-radius: 999px;
-  padding: 3px 10px;
-  background: var(--mpx-bg-muted);
-}
-
 .metadata-search-section {
   margin-top: 10px;
   border-top: 1px solid var(--mpx-border-1);

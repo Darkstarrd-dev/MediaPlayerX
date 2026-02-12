@@ -20,6 +20,8 @@ export const BACKEND_CHANNELS = {
   saveVideoCover: 'backend:saveVideoCover',
   readPlaylist: 'backend:readPlaylist',
   writePlaylist: 'backend:writePlaylist',
+  listVideoSubtitles: 'backend:listVideoSubtitles',
+  prepareSubtitleTrack: 'backend:prepareSubtitleTrack',
   pickImportPaths: 'backend:pickImportPaths',
   pickFilePath: 'backend:pickFilePath',
   pickDirectoryPath: 'backend:pickDirectoryPath',

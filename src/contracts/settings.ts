@@ -19,6 +19,7 @@ export const appSettingsSchema = z.object({
   sidebarVerticalGap: z.number().min(0).max(24),
   metadataRatio: z.number().min(0.2).max(0.45),
   vectorPanelHeight: z.number().min(80).max(360),
+  fullscreenVideoControlsMaxWidth: z.number().min(640).max(1920),
   thumbnailScale: z.number().min(1).max(9),
   thumbnailGap: z.number().min(0).max(24),
   showNamesOnly: z.boolean(),

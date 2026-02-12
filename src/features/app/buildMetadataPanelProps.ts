@@ -65,9 +65,6 @@ interface BuildMetadataPanelPropsParams {
   playlistIds: string[]
   selectedVideoId: string
   dragVideoId: string | null
-  videoVolume: number
-  videoMuted: boolean
-  videoRate: number
   videoById: Map<string, VideoItem>
   updateSettings: (patch: Partial<AppSettings>) => void
   onGradeChange: (grade: number | null) => void
@@ -144,9 +141,6 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     playlistIds: params.playlistIds,
     selectedVideoId: params.selectedVideoId,
     dragVideoId: params.dragVideoId,
-    videoVolume: params.videoVolume,
-    videoMuted: params.videoMuted,
-    videoRate: params.videoRate,
     videoById: params.videoById,
     onCollapse: () => params.updateSettings({ metadataCollapsed: true }),
     onExpand: () => params.updateSettings({ metadataCollapsed: false }),

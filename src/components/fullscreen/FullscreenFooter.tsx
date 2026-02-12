@@ -1,34 +1,17 @@
 import type { BrowserMode } from '../../types'
 import type { AlignDirection } from './paneMath'
-import {
-  FullscreenVideoControlRow,
-  FullscreenVideoProgressRow,
-} from './FullscreenVideoControls'
 
 interface FullscreenFooterProps {
   mode: BrowserMode
   fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
   fullscreenVideoFocus: boolean
   footerInfoText: string
-  clampedVideoTime: number
-  durationSec: number
-  videoPlaying: boolean
-  videoMuted: boolean
-  videoVolume: number
-  videoRate: number
   autoplayEnabledForFocus: boolean
   autoPlayEnabled: boolean
   autoPlayInterval: number
   autoPlayPresets: number[]
   zoomEnabled: boolean
   zoomPercent: number
-  onSeekVideo: (time: number) => void
-  onToggleVideoPlay: () => void
-  onPrevVideo: () => void
-  onNextVideo: () => void
-  onToggleVideoMute: () => void
-  onChangeVideoVolume: (volume: number) => void
-  onChangeVideoRate: (rate: number) => void
   onToggleDualDisplay: () => void
   onToggleSwapSides: () => void
   onStepFocusedPane: (delta: -1 | 1) => void
@@ -48,25 +31,12 @@ export function FullscreenFooter({
   fullscreenDisplay,
   fullscreenVideoFocus,
   footerInfoText,
-  clampedVideoTime,
-  durationSec,
-  videoPlaying,
-  videoMuted,
-  videoVolume,
-  videoRate,
   autoplayEnabledForFocus,
   autoPlayEnabled,
   autoPlayInterval,
   autoPlayPresets,
   zoomEnabled,
   zoomPercent,
-  onSeekVideo,
-  onToggleVideoPlay,
-  onPrevVideo,
-  onNextVideo,
-  onToggleVideoMute,
-  onChangeVideoVolume,
-  onChangeVideoRate,
   onToggleDualDisplay,
   onToggleSwapSides,
   onStepFocusedPane,
@@ -80,33 +50,8 @@ export function FullscreenFooter({
   onResetSinglePane,
   onExit,
 }: FullscreenFooterProps) {
-  const videoProgressRowProps = {
-    clampedVideoTime,
-    durationSec,
-    onSeekVideo,
-  }
-  const videoControlRowProps = {
-    videoPlaying,
-    videoMuted,
-    videoVolume,
-    videoRate,
-    onToggleVideoPlay,
-    onPrevVideo,
-    onNextVideo,
-    onToggleVideoMute,
-    onChangeVideoVolume,
-    onChangeVideoRate,
-  }
-
   return (
     <footer className="fullscreen-footer">
-      {fullscreenDisplay === 'video-only' ? (
-        <div className="fullscreen-footer-video-controls">
-          <FullscreenVideoProgressRow {...videoProgressRowProps} />
-          <FullscreenVideoControlRow {...videoControlRowProps} />
-        </div>
-      ) : null}
-
       <div className="fullscreen-meta-line">{footerInfoText}</div>
       <div className="fullscreen-group">
         <button className={fullscreenDisplay === 'dual' ? 'is-active' : ''} type="button" onClick={onToggleDualDisplay}>

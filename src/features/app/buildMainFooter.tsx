@@ -32,8 +32,7 @@ export function buildMainFooter({
 
   if (mode === 'video' && focusedVideo) {
     primary = focusedVideo.absolutePath
-    secondary = `${focusedVideo.sizeMb}MB`
-    tertiary = `${focusedVideo.width}x${focusedVideo.height}`
+    return <span>{primary}</span>
   }
 
   return (

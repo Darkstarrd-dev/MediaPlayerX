@@ -43,10 +43,10 @@ export const SIZE_SCALE_CONFIG = {
     max: 24 / DEFAULT_SETTINGS.sidebarVerticalGap,
     step: 0.01,
   },
-  vectorPanelHeight: {
-    base: DEFAULT_SETTINGS.vectorPanelHeight,
-    min: 80 / DEFAULT_SETTINGS.vectorPanelHeight,
-    max: 360 / DEFAULT_SETTINGS.vectorPanelHeight,
+  fullscreenVideoControlsMaxWidth: {
+    base: DEFAULT_SETTINGS.fullscreenVideoControlsMaxWidth,
+    min: 640 / DEFAULT_SETTINGS.fullscreenVideoControlsMaxWidth,
+    max: 1920 / DEFAULT_SETTINGS.fullscreenVideoControlsMaxWidth,
     step: 0.01,
   },
   thumbnailGap: {

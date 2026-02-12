@@ -21,6 +21,7 @@ function createBaseContext(rootDir: string): MediaAccessGuardContext {
     archiveEntryIndexByPath: new Map<string, Set<string>>(),
     imageExtensions: new Set(['.jpg', '.png', '.webp']),
     videoExtensions: new Set(['.mp4', '.webm']),
+    subtitleExtensions: new Set(['.vtt', '.srt', '.ass', '.ssa']),
   }
 }
 

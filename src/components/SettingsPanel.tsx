@@ -32,7 +32,7 @@ export interface SettingsPanelProps {
   sidebarIndentStep: number
   sidebarVerticalGap: number
   metadataRatio: number
-  vectorPanelHeight: number
+  fullscreenVideoControlsMaxWidth: number
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
@@ -69,7 +69,7 @@ export interface SettingsPanelProps {
   onSidebarIndentStepChange: (value: number) => void
   onSidebarVerticalGapChange: (value: number) => void
   onMetadataRatioChange: (value: number) => void
-  onVectorPanelHeightChange: (value: number) => void
+  onFullscreenVideoControlsMaxWidthChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
@@ -130,7 +130,7 @@ function SettingsPanel({
   sidebarIndentStep,
   sidebarVerticalGap,
   metadataRatio,
-  vectorPanelHeight,
+  fullscreenVideoControlsMaxWidth,
   thumbnailGap,
   thumbnailQuality,
   thumbnailWidth,
@@ -167,7 +167,7 @@ function SettingsPanel({
   onSidebarIndentStepChange,
   onSidebarVerticalGapChange,
   onMetadataRatioChange,
-  onVectorPanelHeightChange,
+  onFullscreenVideoControlsMaxWidthChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onThumbnailWidthChange,
@@ -198,7 +198,7 @@ function SettingsPanel({
   const sidebarCountFontSizeScale = toScale('sidebarCountFontSize', sidebarCountFontSize)
   const sidebarIndentStepScale = toScale('sidebarIndentStep', sidebarIndentStep)
   const sidebarVerticalGapScale = toScale('sidebarVerticalGap', sidebarVerticalGap)
-  const vectorPanelHeightScale = toScale('vectorPanelHeight', vectorPanelHeight)
+  const fullscreenVideoControlsMaxWidthScale = toScale('fullscreenVideoControlsMaxWidth', fullscreenVideoControlsMaxWidth)
   const thumbnailGapScale = toScale('thumbnailGap', thumbnailGap)
 
   const shortcutLabelByAction = useMemo(
@@ -335,8 +335,8 @@ function SettingsPanel({
     sidebarVerticalGap,
     sidebarVerticalGapScale,
     metadataRatio,
-    vectorPanelHeight,
-    vectorPanelHeightScale,
+    fullscreenVideoControlsMaxWidth,
+    fullscreenVideoControlsMaxWidthScale,
     thumbnailGap,
     thumbnailGapScale,
     thumbnailQuality,
@@ -375,7 +375,7 @@ function SettingsPanel({
     onSidebarIndentStepChange,
     onSidebarVerticalGapChange,
     onMetadataRatioChange,
-    onVectorPanelHeightChange,
+    onFullscreenVideoControlsMaxWidthChange,
     onThumbnailGapChange,
     onThumbnailQualityChange,
     onThumbnailWidthChange,

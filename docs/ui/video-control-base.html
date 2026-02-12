@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video Control Base</title>
+    <style>
+      /* --- Theme Variables --- */
+      :root {
+        /* State 1: Light Component (v4) on Dark Background */
+        --page-bg: #1a1a1a; /* Dark background for contrast */
+        
+        /* Component Variables (Light/v4) */
+        --shell-bg: #e6e7ee;
+        --text-main: #444;
+        --text-muted: #555;
+        --text-dim: #888;
+        --shadow-dark: #d1d1d1;
+        --shadow-light: #ffffff;
+        --accent-fill: #333;
+        --border-color: rgba(255,255,255,0.5);
+        --inset-bg: #e6e7ee;
+        
+        /* Popup */
+        --popup-bg: #e6e7ee;
+        --popup-hover: rgba(0,0,0,0.05);
+      }
+
+      [data-theme="inverted"] {
+        /* State 2: Dark Component (v6) on Light Background */
+        --page-bg: #f0f2f5; /* Light background for contrast */
+        
+        /* Component Variables (Dark/v6) */
+        --shell-bg: #292d32;
+        --text-main: #cfcfcf;
+        --text-muted: #cfcfcf;
+        --text-dim: #666;
+        --shadow-dark: #1e2125;
+        --shadow-light: #34393f;
+        --accent-fill: #ff9f43; /* Amber accent */
+        --border-color: #4a3c2e; /* Warm brown border */
+        --inset-bg: #26292e;
+        
+        /* Popup */
+        --popup-bg: #292d32;
+        --popup-hover: rgba(255,255,255,0.1);
+      }
+
+      /* --- Base Reset & Layout --- */
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 40px;
+        background: var(--page-bg); /* Use page background variable */
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        transition: background 0.3s ease;
+      }
+
+      /* Theme Toggle Button */
+      #theme-toggle-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        background: var(--shell-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+      }
+      #theme-toggle-btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.05);
+      }
+      
+      /* --- Common Structure --- */
+      .controls-shell {
+        width: 100%;
+        max-width: 800px;
+        padding: 16px 24px;
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: all 0.3s ease;
+        
+        background: var(--shell-bg); /* Component background */
+        border-radius: 8px;
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+      }
+
+      .progress-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .time-display {
+        font-family: 'SF Mono', 'Roboto Mono', monospace;
+        font-size: 12px;
+        white-space: nowrap;
+        min-width: 100px;
+        color: var(--text-main);
+      }
+      .progress-track {
+        flex: 1;
+        height: 6px;
+        cursor: pointer;
+        position: relative;
+        border-radius: 2px;
+        box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
+        background: var(--shell-bg);
+        display: flex;
+        align-items: center;
+      }
+      .progress-fill {
+        height: 100%;
+        width: 35%;
+        position: relative;
+        background: var(--accent-fill);
+        border-radius: 2px;
+      }
+      .progress-thumb {
+        width: 14px; height: 14px; border-radius: 50%;
+        background: var(--shell-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: 1px 1px 3px var(--shadow-dark);
+        position: absolute; 
+        left: 35%; /* Match fill width */
+        transform: translateX(-50%);
+        z-index: 2;
+      }
+      
+      .controls-row {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr; /* Left - Center - Right */
+        align-items: center;
+        gap: 16px;
+      }
+
+      .group-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-self: start;
+        padding: 6px 12px;
+        /* Modified: Inset shadow */
+        box-shadow: inset 2px 2px 3px var(--shadow-dark), inset -2px -2px 3px var(--shadow-light);
+        border-radius: 6px;
+        background: var(--shell-bg);
+      }
+      
+      .group-center {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        justify-self: center;
+      }
+
+      .group-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-self: end;
+        /* Modified: Match group-left style */
+        padding: 6px 12px;
+        box-shadow: inset 2px 2px 3px var(--shadow-dark), inset -2px -2px 3px var(--shadow-light);
+        border-radius: 6px;
+        background: var(--shell-bg);
+      }
+
+      button {
+        border: none; outline: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s ease;
+        font-family: inherit; font-weight: 600;
+        background: var(--shell-bg); 
+        border-radius: 6px; 
+        color: var(--text-muted);
+      }
+      
+      .btn-ctrl { width: 32px; height: 32px; border-radius: 8px; }
+      .btn-text { height: 32px; padding: 0 8px; border-radius: 8px; font-size: 12px; }
+      
+      .btn-round { 
+        width: 40px; height: 40px; 
+        border-radius: 12px;
+        box-shadow: 2px 2px 3px var(--shadow-dark), -2px -2px 3px var(--shadow-light);
+      }
+      
+      .btn-round.lg { width: 56px; height: 56px; font-size: 20px; }
+      
+      .btn-round:active, .btn-ctrl:active, .btn-text:active { 
+        box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); 
+      }
+      
+      /* Active state text color handling */
+      :root .btn-round:active, :root .btn-ctrl:active, :root .btn-text:active { color: inherit; }
+      [data-theme="inverted"] .btn-round:active, [data-theme="inverted"] .btn-ctrl:active, [data-theme="inverted"] .btn-text:active { color: var(--accent-fill); }
+
+      .icon { width: 18px; height: 18px; fill: currentColor; }
+      .icon-lg { width: 24px; height: 24px; fill: currentColor; }
+
+      /* --- Popups (Ported from v4) --- */
+      .has-popup { position: relative; }
+      .popup {
+        position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+        background: var(--shell-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: none;
+        padding: 6px; border-radius: 6px;
+        min-width: 100px;
+        display: none; flex-direction: column; gap: 2px;
+        z-index: 20;
+        opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+        transform: translateX(-50%) translateY(10px);
+      }
+      .has-popup:hover .popup { 
+        display: flex; opacity: 1; pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+      }
+      
+      .popup-item {
+        padding: 6px 10px; font-size: 11px; border-radius: 4px; cursor: pointer;
+        display: flex; justify-content: space-between; align-items: center;
+        color: var(--text-main);
+      }
+      .popup-item:hover { background: var(--inset-bg); color: var(--accent-fill); }
+      .popup-item.active { background: var(--inset-bg); color: var(--accent-fill); font-weight: bold; }
+      
+      .popup-header {
+        padding: 4px 8px; font-size: 10px; text-transform: uppercase; color: var(--text-dim); opacity: 0.6;
+        border-bottom: 1px solid var(--border-color); margin-bottom: 2px;
+      }
+
+      /* Vertical Volume Slider */
+      .popup.vol-popup {
+        min-width: auto; width: 40px; height: 120px;
+        padding: 10px 0; align-items: center;
+      }
+      .vol-track-v {
+        width: 6px; height: 100%; border-radius: 3px; position: relative;
+        background: var(--inset-bg);
+        box-shadow: inset 1px 1px 3px var(--shadow-dark), inset -1px -1px 3px var(--shadow-light);
+        display: flex; align-items: flex-end;
+      }
+      .vol-fill-v {
+        width: 100%; height: 60%; border-radius: 3px;
+        background: var(--accent-fill);
+      }
+      .vol-thumb-v {
+        width: 14px; height: 14px; border-radius: 50%;
+        background: var(--shell-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: 1px 1px 3px var(--shadow-dark);
+        position: absolute; left: 50%; bottom: 60%;
+        transform: translate(-50%, 50%);
+      }
+
+    </style>
+  </head>
+  <body>
+    <!-- SVG Library -->
+    <svg style="display:none;">
+      <defs>
+        <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></symbol>
+        <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></symbol>
+        <symbol id="i-next" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></symbol>
+        <symbol id="i-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></symbol>
+        <symbol id="i-full" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></symbol>
+        <symbol id="i-cc" viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z"/></symbol>
+        <symbol id="i-list" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></symbol>
+        <symbol id="i-dual" viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H5V7h6v10zm8 0h-6V7h6v10z"/></symbol>
+        <symbol id="i-camera" viewBox="0 0 24 24"><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/><circle cx="12" cy="12" r="3.2"/></symbol>
+        <symbol id="i-aspect" viewBox="0 0 24 24"><path d="M19 12h-2v3h-3v2h5v-5zM7 9h3V7H5v5h2V9zm14-6H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02z"/></symbol>
+      </defs>
+    </svg>
+
+    <button id="theme-toggle-btn" onclick="toggleTheme()">Switch Theme</button>
+
+    <div class="controls-shell">
+      <div class="progress-row">
+        <span class="time-display">00:12 / 02:10</span>
+        <div class="progress-track">
+          <div class="progress-fill"></div>
+          <div class="progress-thumb"></div>
+        </div>
+      </div>
+      <div class="controls-row">
+        <div class="group-left">
+          
+          <!-- Volume Popup -->
+          <div class="has-popup">
+            <button class="btn-ctrl"><svg class="icon"><use href="#i-vol"/></svg></button>
+            <div class="popup vol-popup">
+              <div class="vol-track-v">
+                <div class="vol-fill-v"></div>
+                <div class="vol-thumb-v"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Subtitle Popup -->
+          <div class="has-popup">
+            <button class="btn-ctrl"><svg class="icon"><use href="#i-cc"/></svg></button>
+            <div class="popup">
+              <div class="popup-header">Subtitles</div>
+              <div class="popup-item">Off</div>
+              <div class="popup-item active">Chinese</div>
+              <div class="popup-item">English</div>
+            </div>
+          </div>
+
+          <!-- Speed Popup -->
+          <div class="has-popup">
+            <button class="btn-text">1.0x</button>
+            <div class="popup">
+              <div class="popup-header">Speed</div>
+              <div class="popup-item">0.5x</div>
+              <div class="popup-item active">1.0x</div>
+              <div class="popup-item">1.5x</div>
+              <div class="popup-item">2.0x</div>
+            </div>
+          </div>
+          
+          <button class="btn-ctrl"><svg class="icon"><use href="#i-full"/></svg></button>
+        </div>
+        <div class="group-center">
+          <button class="btn-round prev"><svg class="icon"><use href="#i-prev"/></svg></button>
+          <button class="btn-round lg play"><svg class="icon-lg"><use href="#i-play"/></svg></button>
+          <button class="btn-round next"><svg class="icon"><use href="#i-next"/></svg></button>
+        </div>
+        <div class="group-right">
+          
+          <!-- Aspect Ratio (Fit/Stretch) -->
+          <div class="has-popup">
+            <button class="btn-ctrl"><svg class="icon"><use href="#i-aspect"/></svg></button>
+            <div class="popup" style="right: 0; left: auto; transform: translateY(10px);">
+              <div class="popup-header">Aspect</div>
+              <div class="popup-item active">Fit</div>
+              <div class="popup-item">Stretch</div>
+              <div class="popup-item">Original</div>
+            </div>
+          </div>
+
+          <!-- Camera Button -->
+          <button class="btn-ctrl"><svg class="icon"><use href="#i-camera"/></svg></button>
+          <button class="btn-ctrl"><svg class="icon"><use href="#i-dual"/></svg></button>
+          
+          <!-- Playlist Popup -->
+          <div class="has-popup">
+            <button class="btn-ctrl"><svg class="icon"><use href="#i-list"/></svg></button>
+            <div class="popup" style="width: 200px; right: 0; left: auto; transform: translateY(10px);">
+              <div class="popup-header">Playlist (3)</div>
+              <div class="popup-item active">Current Video.mp4</div>
+              <div class="popup-item">Next Video.mp4</div>
+              <div class="popup-item">Another Video.mp4</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function toggleTheme() {
+        const body = document.body;
+        if (body.hasAttribute('data-theme')) {
+          body.removeAttribute('data-theme');
+        } else {
+          body.setAttribute('data-theme', 'inverted');
+        }
+      }
+    </script>
+  </body>
+</html>

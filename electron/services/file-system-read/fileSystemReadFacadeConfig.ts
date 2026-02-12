@@ -11,6 +11,8 @@ export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif
 
 export const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mkv', '.mov'])
 
+export const SUBTITLE_EXTENSIONS = new Set(['.vtt', '.srt', '.ass', '.ssa'])
+
 export const ARCHIVE_EXTENSIONS = new Set(['.zip', '.rar', '.7z'])
 
 export const COLOR_PALETTE = ['#dd6b66', '#d58b45', '#6da249', '#4aa6a1', '#4f86cf', '#8868d6']

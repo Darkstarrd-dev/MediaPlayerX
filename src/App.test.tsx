@@ -20,7 +20,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '检索' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
 
-    expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
   })
 
   it('应用启动阶段不会触发 Maximum update depth exceeded', async () => {
@@ -950,7 +950,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     )
   })
 
-  it('视频模式元数据默认只读，包含评分与操作区及底部状态区', () => {
+  it('视频模式元数据默认只读，包含评分与操作区', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
@@ -965,7 +965,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '视频评分 无评分' })).toBeDisabled()
     expect(screen.queryByRole('button', { name: '保存' })).toBeNull()
     expect(screen.queryByRole('button', { name: '同步文件名到作品名' })).toBeNull()
-    expect(document.querySelector('.metadata-video-stats')).not.toBeNull()
+    expect(document.querySelector('.metadata-video-stats')).toBeNull()
   })
 
   it('视频信息字段回车会触发 writeVideoMetadata 调用', () => {
@@ -1289,22 +1289,20 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '暂停' }))
     expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
-    expect(screen.queryByText(/封面态（待播放）/)).not.toBeInTheDocument()
+    expect(document.querySelector('.video-screen-cover-image')).toBeNull()
 
     fireEvent.click(screen.getAllByRole('button', { name: 'teaser_forest.mp4' })[0])
     expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
-    expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Save as cover' }))
 
     await waitFor(() => {
-      expect(screen.getByText(/封面态（待播放）/)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
     })
 
-    const speedSlider = screen.getByRole('slider', { name: '倍速滑条' })
-    fireEvent.change(speedSlider, { target: { value: '2.5' } })
-    expect(screen.getByText('倍率 x2.50')).toBeInTheDocument()
+    fireEvent.mouseEnter(screen.getByRole('button', { name: '倍速 x1.00' }))
+    fireEvent.click(screen.getByRole('button', { name: '2x' }))
+    expect(screen.getByRole('button', { name: '倍速 x2.00' })).toBeInTheDocument()
   })
 
   it('全屏默认按当前模式进入单显示，双显示切回单显示时恢复入口模式', () => {
@@ -1329,7 +1327,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '单显示' }))
     expect(screen.queryByLabelText('调整全屏分屏比例')).not.toBeInTheDocument()
     expect(screen.getByAltText('图片 #2')).toBeInTheDocument()
-    expect(screen.queryByText(/封面态（待播放）/)).not.toBeInTheDocument()
+    expect(document.querySelector('.video-screen-cover-image')).toBeNull()
 
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
     expect(screen.queryByAltText('图片 #2')).not.toBeInTheDocument()
@@ -1396,44 +1394,48 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(readFullscreenImageAlt()).toBe(imageBeforeWheelDown)
   })
 
-  it('视频模式单视频时将控件并入底部 footer，双显示时保留悬浮控件自适应', () => {
+  it('视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
 
-    expect(screen.getAllByText(/封面态（待播放）/).length).toBeGreaterThan(0)
+    expect(document.querySelector('.fullscreen-media-video-element')).not.toBeNull()
     expect(screen.queryByLabelText('调整全屏分屏比例')).not.toBeInTheDocument()
 
     const fullscreenLayer = document.querySelector('.fullscreen-layer')
     expect(fullscreenLayer).not.toBeNull()
-    fireEvent.mouseMove(fullscreenLayer as Element, { clientY: window.innerHeight - 4 })
+    const singleVideoPane = document.querySelector('.fullscreen-video')
+    expect(singleVideoPane).not.toBeNull()
+    fireEvent.mouseEnter(singleVideoPane as Element)
 
     const fullscreenFooter = document.querySelector('.fullscreen-footer') as HTMLElement | null
-    expect(fullscreenFooter).not.toBeNull()
-    const footerVideoControls = fullscreenFooter?.querySelector('.fullscreen-footer-video-controls') as HTMLElement | null
-    expect(footerVideoControls).not.toBeNull()
-    expect(fullscreenFooter?.firstElementChild?.classList.contains('fullscreen-footer-video-controls')).toBe(true)
+    expect(fullscreenFooter).toBeNull()
+    const floatingControls = document.querySelector('.fullscreen-stage .fullscreen-video-controls') as HTMLElement | null
+    expect(floatingControls).not.toBeNull()
+    expect(floatingControls?.querySelector('.video-controls-shell')).not.toBeNull()
     expect(screen.getByLabelText('全屏视频进度滑条')).toBeInTheDocument()
-    expect(document.querySelector('.fullscreen-stage .fullscreen-video-controls')).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: '双显示' }))
+    fireEvent.click(screen.getByRole('button', { name: '独立/复合' }))
 
     const videoPane = document.querySelector('.fullscreen-video')
     expect(videoPane).not.toBeNull()
     fireEvent.mouseEnter(videoPane as Element)
 
-    expect(document.querySelector('.fullscreen-stage .fullscreen-video-controls')).not.toBeNull()
-    const rowsDefault = Array.from(document.querySelectorAll('.fullscreen-video-controls-row'))
-    expect(rowsDefault[0]?.classList.contains('is-progress')).toBe(true)
+    const dualFloatingControls = document.querySelector('.fullscreen-stage .fullscreen-video-controls') as HTMLElement | null
+    expect(dualFloatingControls).not.toBeNull()
+    const shellDefault = dualFloatingControls?.querySelector('.fullscreen-video-controls-shell') as HTMLElement | null
+    expect(shellDefault?.firstElementChild?.classList.contains('video-controls-progress')).toBe(true)
 
     fireEvent.keyDown(window, { key: 'ArrowDown', code: 'ArrowDown', altKey: true })
-    const rowsBottomAlign = Array.from(document.querySelectorAll('.fullscreen-video-controls-row'))
-    expect(rowsBottomAlign[0]?.classList.contains('is-controls')).toBe(true)
+    const shellAfterAlignDown = dualFloatingControls?.querySelector('.fullscreen-video-controls-shell') as HTMLElement | null
+    expect(shellAfterAlignDown?.querySelector('.video-controls-progress')).not.toBeNull()
+    expect(shellAfterAlignDown?.querySelector('.video-controls-row')).not.toBeNull()
 
     fireEvent.keyDown(window, { key: 'ArrowUp', code: 'ArrowUp', altKey: true })
-    const rowsTopAlign = Array.from(document.querySelectorAll('.fullscreen-video-controls-row'))
-    expect(rowsTopAlign[0]?.classList.contains('is-progress')).toBe(true)
+    const shellAfterAlignUp = dualFloatingControls?.querySelector('.fullscreen-video-controls-shell') as HTMLElement | null
+    expect(shellAfterAlignUp?.querySelector('.video-controls-progress')).not.toBeNull()
+    expect(shellAfterAlignUp?.querySelector('.video-controls-row')).not.toBeNull()
 
     const dualVideoStage = document.querySelector('.fullscreen-video .fullscreen-stage')
     const dualVideoMedia = document.querySelector('.fullscreen-video .fullscreen-media-video') as HTMLElement

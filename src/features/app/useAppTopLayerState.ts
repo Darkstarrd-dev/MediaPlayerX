@@ -23,6 +23,7 @@ import { useImportTaskPanelState } from './useImportTaskPanelState'
 import { useRuntimeInfoDiagnostics } from './useRuntimeInfoDiagnostics'
 import { useRuntimeWarningDismiss } from './useRuntimeWarningDismiss'
 import type { PlaylistPersistenceResult } from '../media/usePlaylistPersistence'
+import type { VideoFitMode } from '../media/videoFitMode'
 import type {
   ReadOnlyDataAccessResult,
   RuntimeCapabilitiesResult,
@@ -110,6 +111,12 @@ interface UseAppTopLayerStateParams {
   fullscreenImageSrc: string | null
   focusedVideo: VideoItem | null
   focusedVideoSrc: string | null
+  subtitleTrackUrl: string | null
+  subtitleVisible: boolean
+  subtitleLoading: boolean
+  subtitleMessage: string | null
+  subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
+  selectedSubtitleId: string | null
   focusedVideoCoverImageSrc: string | null
   focusedVideoDurationSec: number
   focusedVideoCoverColor: string
@@ -118,13 +125,22 @@ interface UseAppTopLayerStateParams {
   videoRate: number
   videoVolume: number
   videoMuted: boolean
+  videoFitMode: VideoFitMode
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: (step: number) => void
+  playlistIds: string[]
+  selectedVideoId: string
+  videoById: Map<string, VideoItem>
+  selectVideoFromBrowser: (videoId: string) => void
   setVideoTime: Dispatch<SetStateAction<number>>
   setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
   setVideoMuted: Dispatch<SetStateAction<boolean>>
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
+  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  cycleVideoFitMode: () => void
+  setSubtitleVisible: Dispatch<SetStateAction<boolean>>
+  selectSubtitleById: (subtitleId: string) => Promise<void>
   setFullscreenActiveWithAutoStop: (value: boolean | ((previous: boolean) => boolean)) => void
   setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>
   setFullscreenDisplay: Dispatch<SetStateAction<'image-only' | 'video-only' | 'dual'>>
@@ -185,6 +201,12 @@ export function useAppTopLayerState({
   fullscreenImageSrc,
   focusedVideo,
   focusedVideoSrc,
+  subtitleTrackUrl,
+  subtitleVisible,
+  subtitleLoading,
+  subtitleMessage,
+  subtitleOptions,
+  selectedSubtitleId,
   focusedVideoCoverImageSrc,
   focusedVideoDurationSec,
   focusedVideoCoverColor,
@@ -193,13 +215,22 @@ export function useAppTopLayerState({
   videoRate,
   videoVolume,
   videoMuted,
+  videoFitMode,
   setVideoPlaying,
   goPlaylist,
+  playlistIds,
+  selectedVideoId,
+  videoById,
+  selectVideoFromBrowser,
   setVideoTime,
   setVideoDurationById,
   setVideoMuted,
   setVideoVolume,
   setVideoRate,
+  setVideoFitMode,
+  cycleVideoFitMode,
+  setSubtitleVisible,
+  selectSubtitleById,
   setFullscreenActiveWithAutoStop,
   setShowFullscreenFooter,
   setFullscreenDisplay,
@@ -475,6 +506,12 @@ export function useAppTopLayerState({
     focusedImageSrc: fullscreenImageSrc,
     focusedVideo,
     focusedVideoSrc,
+    subtitleTrackUrl,
+    subtitleVisible,
+    subtitleLoading,
+    subtitleMessage,
+    subtitleOptions,
+    selectedSubtitleId,
     focusedVideoCoverImageSrc,
     durationSec: focusedVideoDurationSec,
     focusedVideoCoverColor,
@@ -483,18 +520,29 @@ export function useAppTopLayerState({
     videoRate,
     videoVolume,
     videoMuted,
+    videoFitMode,
+    fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
     autoPlayEnabled: appSettings.autoPlayEnabled,
     autoPlayInterval: appSettings.autoPlayInterval,
     autoPlayPresets,
     updateSettings: appSettings.updateSettings,
     setVideoPlaying,
     goPlaylist,
+    playlistIds,
+    selectedVideoId,
+    videoById,
+    selectVideoFromBrowser,
     setVideoTime,
     focusedVideoId: focusedVideoEffectiveId,
     setVideoDurationById,
     setVideoMuted,
     setVideoVolume,
     setVideoRate,
+    setVideoFitMode,
+    cycleVideoFitMode,
+    setSubtitleVisible,
+    selectSubtitleById,
+    saveVideoCover: backendWrite.saveVideoCover,
     setFullscreenActiveWithAutoStop,
     setShowFullscreenFooter,
     setFullscreenDisplay,
@@ -519,7 +567,7 @@ export function useAppTopLayerState({
     sidebarIndentStep: appSettings.sidebarIndentStep,
     sidebarVerticalGap: appSettings.sidebarVerticalGap,
     metadataRatio: appSettings.metadataRatio,
-    vectorPanelHeight: appSettings.vectorPanelHeight,
+    fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
     thumbnailGap: appSettings.thumbnailGap,
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailWidth: appSettings.thumbnailWidth,

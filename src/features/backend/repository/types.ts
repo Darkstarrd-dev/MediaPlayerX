@@ -32,6 +32,10 @@ import type {
   MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
+  ListVideoSubtitlesRequestDto,
+  ListVideoSubtitlesResponseDto,
+  PrepareSubtitleTrackRequestDto,
+  PrepareSubtitleTrackResponseDto,
   ReadPlaylistResponseDto,
   ReadImagePageRequestDto,
   ReadImagePageResponseDto,
@@ -146,6 +150,14 @@ export interface MediaRepository {
     request: WritePlaylistRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePlaylistResponseDto>
+  listVideoSubtitles?(
+    request: ListVideoSubtitlesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ListVideoSubtitlesResponseDto>
+  prepareSubtitleTrack?(
+    request: PrepareSubtitleTrackRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PrepareSubtitleTrackResponseDto>
   readAppState?(
     request: ReadAppStateRequestDto,
     options?: RepositoryRequestOptions,
@@ -208,6 +220,8 @@ export interface SynchronousMediaRepository extends MediaRepository {
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
   readPlaylistSync(): ReadPlaylistResponseDto
   writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto
+  listVideoSubtitlesSync?(request: ListVideoSubtitlesRequestDto): ListVideoSubtitlesResponseDto
+  prepareSubtitleTrackSync?(request: PrepareSubtitleTrackRequestDto): PrepareSubtitleTrackResponseDto
   pickImportPathsSync?(request: PickImportPathsRequestDto): PickImportPathsResponseDto
   pickFilePathSync?(request: PickFilePathRequestDto): PickFilePathResponseDto
   pickDirectoryPathSync?(request: PickDirectoryPathRequestDto): PickDirectoryPathResponseDto

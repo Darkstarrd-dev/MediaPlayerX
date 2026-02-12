@@ -4,6 +4,7 @@ import type { AppSettings } from '../../contracts/settings'
 import type { FullscreenLayerProps } from '../../components/FullscreenLayer'
 import { clamp } from '../../utils/ui'
 import type { ImageItem, VideoItem } from '../../types'
+import type { VideoFitMode } from '../media/videoFitMode'
 
 interface BuildFullscreenLayerPropsParams {
   mode: FullscreenLayerProps['mode']
@@ -19,6 +20,12 @@ interface BuildFullscreenLayerPropsParams {
   focusedImageSrc: string | null
   focusedVideo: VideoItem | null
   focusedVideoSrc: string | null
+  subtitleTrackUrl: string | null
+  subtitleVisible: boolean
+  subtitleLoading: boolean
+  subtitleMessage: string | null
+  subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
+  selectedSubtitleId: string | null
   focusedVideoCoverImageSrc: string | null
   durationSec: number
   focusedVideoCoverColor: string
@@ -27,18 +34,29 @@ interface BuildFullscreenLayerPropsParams {
   videoRate: number
   videoVolume: number
   videoMuted: boolean
+  videoFitMode: VideoFitMode
+  fullscreenVideoControlsMaxWidth: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
   autoPlayPresets: number[]
   updateSettings: (patch: Partial<AppSettings>) => void
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: (step: number) => void
+  playlistIds: string[]
+  selectedVideoId: string
+  videoById: Map<string, VideoItem>
+  selectVideoFromBrowser: (videoId: string) => void
   setVideoTime: Dispatch<SetStateAction<number>>
   focusedVideoId: string | null
   setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
   setVideoMuted: Dispatch<SetStateAction<boolean>>
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
+  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  cycleVideoFitMode: () => void
+  setSubtitleVisible: Dispatch<SetStateAction<boolean>>
+  selectSubtitleById: (subtitleId: string) => Promise<void>
+  saveVideoCover: (videoId: string, timeSec: number, color: string) => Promise<void>
   setFullscreenActiveWithAutoStop: (active: boolean) => void
   setShowFullscreenFooter: (visible: boolean) => void
   setFullscreenDisplay: Dispatch<SetStateAction<FullscreenLayerProps['fullscreenDisplay']>>
@@ -64,6 +82,12 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     focusedImageSrc: params.focusedImageSrc,
     focusedVideo: params.focusedVideo,
     focusedVideoSrc: params.focusedVideoSrc,
+    subtitleTrackUrl: params.subtitleTrackUrl,
+    subtitleVisible: params.subtitleVisible,
+    subtitleLoading: params.subtitleLoading,
+    subtitleMessage: params.subtitleMessage,
+    subtitleOptions: params.subtitleOptions,
+    selectedSubtitleId: params.selectedSubtitleId,
     focusedVideoCoverImageSrc: params.focusedVideoCoverImageSrc,
     durationSec: params.durationSec,
     focusedVideoCoverColor: params.focusedVideoCoverColor,
@@ -72,6 +96,8 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     videoRate: params.videoRate,
     videoVolume: params.videoVolume,
     videoMuted: params.videoMuted,
+    videoFitMode: params.videoFitMode,
+    fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     autoPlayEnabled: params.autoPlayEnabled,
     autoPlayInterval: params.autoPlayInterval,
     autoPlayPresets: params.autoPlayPresets,
@@ -93,6 +119,25 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     onToggleVideoPlay: () => params.setVideoPlaying((value) => !value),
     onPrevVideo: () => params.goPlaylist(-1),
     onNextVideo: () => params.goPlaylist(1),
+    onToggleSubtitle: () => {
+      params.setSubtitleVisible((value) => !value)
+    },
+    onSelectSubtitle: (subtitleId) => {
+      void params.selectSubtitleById(subtitleId)
+    },
+    playlistEntries: params.playlistIds.map((videoId) => ({
+      id: videoId,
+      label: params.videoById.get(videoId)?.fileName ?? videoId,
+    })),
+    selectedVideoId: params.selectedVideoId,
+    onSelectVideo: params.selectVideoFromBrowser,
+    onSaveCover: () => {
+      const focusedVideoId = params.focusedVideoId
+      if (!focusedVideoId) {
+        return
+      }
+      void params.saveVideoCover(focusedVideoId, params.videoTime, params.focusedVideoCoverColor)
+    },
     onSeekVideo: (time) => {
       params.setVideoTime(clamp(time, 0, params.durationSec))
     },
@@ -117,6 +162,10 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     },
     onChangeVideoRate: (rate) => {
       params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
+    },
+    onCycleVideoFitMode: params.cycleVideoFitMode,
+    onSetVideoFitMode: (mode) => {
+      params.setVideoFitMode(mode)
     },
     onExit: () => params.setFullscreenActiveWithAutoStop(false),
   }

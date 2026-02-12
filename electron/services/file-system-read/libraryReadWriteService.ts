@@ -4,6 +4,8 @@ import path from 'node:path'
 import axios from 'axios'
 
 import {
+  listVideoSubtitlesResponseSchema,
+  prepareSubtitleTrackResponseSchema,
   readAppStateResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
@@ -16,6 +18,11 @@ import {
   writePlaylistResponseSchema,
   type ImagePackageDto,
   type LibrarySnapshotDto,
+  type ListVideoSubtitlesRequestDto,
+  type ListVideoSubtitlesResponseDto,
+  type MediaLocatorDto,
+  type PrepareSubtitleTrackRequestDto,
+  type PrepareSubtitleTrackResponseDto,
   type ReadAppStateRequestDto,
   type ReadAppStateResponseDto,
   type ReadImageMetadataRequestDto,
@@ -46,15 +53,16 @@ import {
   type PersistedVideoMetadataRecord,
 } from '../../fileSystemMetadataWriters'
 import { filterSources as filterLibrarySources } from '../../fileSystemSourceFilter'
-import { probeImageDimensionsFromFile } from '../../fileSystemRuntimeHelpers'
+import { probeImageDimensionsFromFile, runProcess } from '../../fileSystemRuntimeHelpers'
 import { buildImageSidebarTree } from '../../fileSystemSidebarTree'
 import { captureVideoCoverImage } from '../../fileSystemVideoCoverCapture'
-import { toDeterministicCoverColor, toSafeSizeKb } from '../../fileSystemServiceHelpers'
+import { detectMimeTypeByExtension, makeStableId, toDeterministicCoverColor, toSafeSizeKb } from '../../fileSystemServiceHelpers'
 import { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
 import type { PersistedVideoCoverRecord } from './librarySnapshotService'
 import type { RuntimeDependencySnapshot } from './runtimeDependencyService'
 
 const SOURCE_COVER_EXT_ALLOWLIST = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'])
+const SUBTITLE_EXTENSIONS = new Set(['.vtt', '.srt', '.ass', '.ssa'])
 
 function normalizeExternalMetadataText(value: string | undefined): string {
   return value?.trim() ?? ''
@@ -106,6 +114,7 @@ interface LibraryReadWriteServiceOptions {
   database: MediaLibraryDatabase
   ffmpegBin: string
   coverOutputRootDir: string
+  rootDir: string
   packageGradeOverridesBySourceId: Map<string, number | null>
   videoCoverOverridesByVideoId: Map<string, PersistedVideoCoverRecord>
   videoMetadataOverridesByVideoId: Map<string, PersistedVideoMetadataRecord>
@@ -119,6 +128,17 @@ interface LibraryReadWriteServiceOptions {
 
 export class LibraryReadWriteService {
   constructor(private readonly options: LibraryReadWriteServiceOptions) {}
+
+  private async convertSubtitleToVtt(sourcePath: string, subtitleId: string): Promise<string> {
+    const outputDir = path.join(this.options.rootDir, '.mediaplayerx', 'subtitle-cache')
+    const outputPath = path.join(outputDir, `${makeStableId('subtitle', subtitleId)}.vtt`)
+    await fs.mkdir(outputDir, { recursive: true })
+    const result = await runProcess(this.options.ffmpegBin, ['-y', '-i', sourcePath, outputPath], 20_000)
+    if (result.code !== 0) {
+      throw new Error(result.stderr.trim() || `字幕转换失败: ${sourcePath}`)
+    }
+    return outputPath
+  }
 
   async readImageSidebarTree(
     request: ReadImageSidebarTreeRequestDto,
@@ -447,6 +467,94 @@ export class LibraryReadWriteService {
     return writePlaylistResponseSchema.parse({
       video_ids: nextVideoIds,
       updated_at_ms: Date.now(),
+    })
+  }
+
+  async listVideoSubtitles(request: ListVideoSubtitlesRequestDto): Promise<ListVideoSubtitlesResponseDto> {
+    this.options.markInteractiveRead()
+    const [snapshot, runtimeDependencies] = await Promise.all([
+      this.options.ensureSnapshotLoaded(),
+      this.options.ensureRuntimeDependencies(),
+    ])
+    const video = snapshot.videos.find((item) => item.id === request.video_id)
+    if (!video) {
+      throw new Error(`读取字幕失败：video 不存在 ${request.video_id}`)
+    }
+
+    const videoDir = path.dirname(video.absolute_path)
+    const videoStem = path.basename(video.absolute_path, path.extname(video.absolute_path)).toLowerCase()
+    const entries = await fs.readdir(videoDir, { withFileTypes: true }).catch(() => [])
+
+    const subtitles = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => {
+        const ext = path.extname(entry.name).toLowerCase()
+        if (!SUBTITLE_EXTENSIONS.has(ext)) {
+          return null
+        }
+        const absolutePath = path.join(videoDir, entry.name)
+        const format = ext.slice(1) as 'vtt' | 'srt' | 'ass' | 'ssa'
+        const locator: MediaLocatorDto = {
+          kind: 'filesystem',
+          absolute_path: absolutePath,
+          extension: ext,
+          media_type: 'subtitle',
+          mime_type: detectMimeTypeByExtension(ext, 'subtitle'),
+        }
+
+        return {
+          id: makeStableId('subtitle', absolutePath),
+          label: entry.name,
+          source: 'external' as const,
+          format,
+          locator,
+          score: path.basename(entry.name, ext).toLowerCase() === videoStem ? 0 : 1,
+        }
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .sort((left, right) => (left.score - right.score) || left.label.localeCompare(right.label, 'zh-CN'))
+      .map((item) => ({
+        id: item.id,
+        label: item.label,
+        source: item.source,
+        format: item.format,
+        locator: item.locator,
+      }))
+
+    return listVideoSubtitlesResponseSchema.parse({
+      subtitles,
+      ffmpeg_available: runtimeDependencies.ffmpeg,
+    })
+  }
+
+  async prepareSubtitleTrack(request: PrepareSubtitleTrackRequestDto): Promise<PrepareSubtitleTrackResponseDto> {
+    this.options.markInteractiveRead()
+    if (request.locator.kind !== 'filesystem' || request.locator.media_type !== 'subtitle') {
+      throw new Error('字幕准备失败：仅支持文件系统字幕')
+    }
+
+    if (request.format === 'vtt') {
+      return prepareSubtitleTrackResponseSchema.parse({
+        locator: request.locator,
+        converted: false,
+      })
+    }
+
+    const runtimeDependencies = await this.options.ensureRuntimeDependencies()
+    if (!runtimeDependencies.ffmpeg) {
+      throw new Error('字幕准备失败：ffmpeg 不可用，无法转换为 vtt')
+    }
+
+    const outputPath = await this.convertSubtitleToVtt(request.locator.absolute_path, request.subtitle_id)
+    return prepareSubtitleTrackResponseSchema.parse({
+      locator: {
+        kind: 'filesystem',
+        absolute_path: outputPath,
+        extension: '.vtt',
+        media_type: 'subtitle',
+        mime_type: 'text/vtt',
+      },
+      converted: true,
     })
   }
 

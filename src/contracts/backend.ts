@@ -18,7 +18,7 @@ export const mediaLocatorDtoSchema = z.discriminatedUnion('kind', [
     kind: z.literal('filesystem'),
     absolute_path: z.string().min(1),
     extension: z.string().min(1),
-    media_type: z.enum(['image', 'video']),
+    media_type: z.enum(['image', 'video', 'subtitle']),
     mime_type: z.string().min(1),
   }),
   z.object({
@@ -27,7 +27,7 @@ export const mediaLocatorDtoSchema = z.discriminatedUnion('kind', [
     archive_format: z.enum(['zip', 'rar', '7z']),
     entry_name: z.string().min(1),
     extension: z.string().min(1),
-    media_type: z.enum(['image', 'video']),
+    media_type: z.enum(['image', 'video', 'subtitle']),
     mime_type: z.string().min(1),
   }),
 ])
@@ -518,6 +518,36 @@ export const readPlaylistResponseSchema = z.object({
   video_ids: z.array(z.string().min(1)),
 })
 
+export const subtitleFormatDtoSchema = z.enum(['vtt', 'srt', 'ass', 'ssa'])
+
+export const subtitleSourceDtoSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  source: z.enum(['external']),
+  format: subtitleFormatDtoSchema,
+  locator: mediaLocatorDtoSchema,
+})
+
+export const listVideoSubtitlesRequestSchema = z.object({
+  video_id: z.string().min(1),
+})
+
+export const listVideoSubtitlesResponseSchema = z.object({
+  subtitles: z.array(subtitleSourceDtoSchema),
+  ffmpeg_available: z.boolean(),
+})
+
+export const prepareSubtitleTrackRequestSchema = z.object({
+  subtitle_id: z.string().min(1),
+  locator: mediaLocatorDtoSchema,
+  format: subtitleFormatDtoSchema,
+})
+
+export const prepareSubtitleTrackResponseSchema = z.object({
+  locator: mediaLocatorDtoSchema,
+  converted: z.boolean(),
+})
+
 export const writePlaylistRequestSchema = z.object({
   video_ids: z.array(z.string().min(1)),
 })
@@ -770,6 +800,12 @@ export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataRes
 export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>
 export type SaveVideoCoverResponseDto = z.infer<typeof saveVideoCoverResponseSchema>
 export type ReadPlaylistResponseDto = z.infer<typeof readPlaylistResponseSchema>
+export type SubtitleFormatDto = z.infer<typeof subtitleFormatDtoSchema>
+export type SubtitleSourceDto = z.infer<typeof subtitleSourceDtoSchema>
+export type ListVideoSubtitlesRequestDto = z.infer<typeof listVideoSubtitlesRequestSchema>
+export type ListVideoSubtitlesResponseDto = z.infer<typeof listVideoSubtitlesResponseSchema>
+export type PrepareSubtitleTrackRequestDto = z.infer<typeof prepareSubtitleTrackRequestSchema>
+export type PrepareSubtitleTrackResponseDto = z.infer<typeof prepareSubtitleTrackResponseSchema>
 export type WritePlaylistRequestDto = z.infer<typeof writePlaylistRequestSchema>
 export type WritePlaylistResponseDto = z.infer<typeof writePlaylistResponseSchema>
 export type ImportTaskStatusDto = z.infer<typeof importTaskStatusSchema>

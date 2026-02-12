@@ -1,8 +1,10 @@
-export const MEDIA_TYPES = ['image', 'video'] as const
+export const BROWSER_MODES = ['image', 'video'] as const
 
-export type BrowserMode = (typeof MEDIA_TYPES)[number]
+export const MEDIA_TYPES = ['image', 'video', 'subtitle'] as const
 
-export type MediaType = BrowserMode
+export type BrowserMode = (typeof BROWSER_MODES)[number]
+
+export type MediaType = (typeof MEDIA_TYPES)[number]
 
 export type SearchField = 'all' | 'name' | 'workTitle' | 'circle' | 'author' | 'tags'
 

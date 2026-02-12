@@ -20,6 +20,10 @@ import {
   setRuntimeStoragePathsResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
+  listVideoSubtitlesRequestSchema,
+  listVideoSubtitlesResponseSchema,
+  prepareSubtitleTrackRequestSchema,
+  prepareSubtitleTrackResponseSchema,
   readImageMetadataRequestSchema,
   readImageMetadataResponseSchema,
   readImagePageRequestSchema,
@@ -172,6 +176,16 @@ const backendApi = {
     const parsed = writePlaylistRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writePlaylist, parsed)
     return writePlaylistResponseSchema.parse(response)
+  },
+  listVideoSubtitles: async (request: unknown) => {
+    const parsed = listVideoSubtitlesRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.listVideoSubtitles, parsed)
+    return listVideoSubtitlesResponseSchema.parse(response)
+  },
+  prepareSubtitleTrack: async (request: unknown) => {
+    const parsed = prepareSubtitleTrackRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.prepareSubtitleTrack, parsed)
+    return prepareSubtitleTrackResponseSchema.parse(response)
   },
   pickImportPaths: async (request: unknown) => {
     const parsed = pickImportPathsRequestSchema.parse(request)

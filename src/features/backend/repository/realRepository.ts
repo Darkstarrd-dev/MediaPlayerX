@@ -11,6 +11,8 @@ import {
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
+  listVideoSubtitlesResponseSchema,
+  prepareSubtitleTrackResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
   readImageSidebarTreeResponseSchema,
@@ -51,6 +53,10 @@ import {
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadPlaylistResponseDto,
+  type ListVideoSubtitlesRequestDto,
+  type ListVideoSubtitlesResponseDto,
+  type PrepareSubtitleTrackRequestDto,
+  type PrepareSubtitleTrackResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
   type ReadImageSidebarTreeRequestDto,
@@ -497,6 +503,32 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.writePlaylist(request), options)
     return writePlaylistResponseSchema.parse(response)
+  }
+
+  async listVideoSubtitles(
+    request: ListVideoSubtitlesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ListVideoSubtitlesResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.listVideoSubtitles) {
+      throw new Error('真实后端通道不可用：listVideoSubtitles 未注入')
+    }
+
+    const response = await withAbort(api.listVideoSubtitles(request), options)
+    return listVideoSubtitlesResponseSchema.parse(response)
+  }
+
+  async prepareSubtitleTrack(
+    request: PrepareSubtitleTrackRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PrepareSubtitleTrackResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.prepareSubtitleTrack) {
+      throw new Error('真实后端通道不可用：prepareSubtitleTrack 未注入')
+    }
+
+    const response = await withAbort(api.prepareSubtitleTrack(request), options)
+    return prepareSubtitleTrackResponseSchema.parse(response)
   }
 
   async pickImportPaths(

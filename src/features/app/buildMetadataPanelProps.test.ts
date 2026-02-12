@@ -124,9 +124,6 @@ describe('buildMetadataPanelProps', () => {
       playlistIds: ['video-a', 'video-b'],
       selectedVideoId: 'video-a',
       dragVideoId: null,
-      videoVolume: 1,
-      videoMuted: false,
-      videoRate: 1,
       videoById: new Map([
         ['video-a', VIDEO_FIXTURE],
         ['video-b', { ...VIDEO_FIXTURE, id: 'video-b', fileName: 'video-b.mp4', workTitle: 'video-b' }],
@@ -221,9 +218,6 @@ describe('buildMetadataPanelProps', () => {
       playlistIds: ['video-a', 'video-b', 'video-c'],
       selectedVideoId: 'video-a',
       dragVideoId: 'video-b',
-      videoVolume: 1,
-      videoMuted: false,
-      videoRate: 1,
       videoById: new Map([
         ['video-a', VIDEO_FIXTURE],
         ['video-b', { ...VIDEO_FIXTURE, id: 'video-b', fileName: 'video-b.mp4', workTitle: 'video-b' }],

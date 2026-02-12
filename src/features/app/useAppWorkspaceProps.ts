@@ -16,6 +16,7 @@ import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 import type { WriteDataAccessResult } from '../backend'
 import type { BrowserMode, FocusedImageRef, ImageItem, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import type { UiBenchSettings } from '../perf/benchSettings'
+import type { VideoFitMode } from '../media/videoFitMode'
 import type {
   Dispatch,
   MouseEvent,
@@ -106,7 +107,16 @@ interface UseAppWorkspacePropsParams {
   videoRate: number
   videoVolume: number
   videoMuted: boolean
+  videoFitMode: VideoFitMode
   focusedVideoSrc: string | null
+  subtitleTrackUrl: string | null
+  subtitleVisible: boolean
+  subtitleLoading: boolean
+  subtitleMessage: string | null
+  subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
+  selectedSubtitleId: string | null
+  setSubtitleVisible: Dispatch<SetStateAction<boolean>>
+  selectSubtitleById: (subtitleId: string) => Promise<void>
   fullscreenActive: boolean
   focusedVideoCoverColor: string
   focusedVideoCoverImageSrc: string | null
@@ -118,6 +128,8 @@ interface UseAppWorkspacePropsParams {
   setVideoMuted: Dispatch<SetStateAction<boolean>>
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
+  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  cycleVideoFitMode: () => void
   imageFocusActive: boolean
   metadataImageEffective: ImageItem | null
   metadataImageSrc: string | null
@@ -274,7 +286,16 @@ export function useAppWorkspaceProps({
   videoRate,
   videoVolume,
   videoMuted,
+  videoFitMode,
   focusedVideoSrc,
+  subtitleTrackUrl,
+  subtitleVisible,
+  subtitleLoading,
+  subtitleMessage,
+  subtitleOptions,
+  selectedSubtitleId,
+  setSubtitleVisible,
+  selectSubtitleById,
   fullscreenActive,
   focusedVideoCoverColor,
   focusedVideoCoverImageSrc,
@@ -286,6 +307,8 @@ export function useAppWorkspaceProps({
   setVideoMuted,
   setVideoVolume,
   setVideoRate,
+  setVideoFitMode,
+  cycleVideoFitMode,
   imageFocusActive,
   metadataImageEffective,
   metadataImageSrc,
@@ -695,11 +718,22 @@ export function useAppWorkspaceProps({
     videoRate,
     videoVolume,
     videoMuted,
+    videoFitMode,
     videoSourceUrl: focusedVideoSrc,
+    subtitleTrackUrl,
+    subtitleVisible,
+    subtitleLoading,
+    subtitleMessage,
+    subtitleOptions,
+    selectedSubtitleId,
+    setSubtitleVisible,
+    selectSubtitleById,
+    fullscreenActive,
     active: !fullscreenActive,
     coverColor: focusedVideoCoverColor,
     coverImageUrl: focusedVideoCoverImageSrc,
     focusedVideoId: focusedVideoEffective?.id ?? null,
+    focusedVideo: focusedVideoEffective,
     setVideoPlaying,
     goPlaylist,
     setVideoTime,
@@ -707,6 +741,8 @@ export function useAppWorkspaceProps({
     setVideoMuted,
     setVideoVolume,
     setVideoRate,
+    setVideoFitMode,
+    cycleVideoFitMode,
     saveVideoCover: backendWrite.saveVideoCover,
     setFullscreenActiveWithAutoStop,
     metadataPending: metadataWriteBindings.metadataPending,
@@ -806,9 +842,6 @@ export function useAppWorkspaceProps({
     playlistIds,
     selectedVideoId,
     dragVideoId,
-    videoVolume,
-    videoMuted,
-    videoRate,
     videoById: videoByIdEffective,
     updateSettings: appSettings.updateSettings,
     onGradeChange: metadataWriteBindings.applyPackageGrade,

@@ -24,6 +24,10 @@ import type {
   ReadImageSidebarTreeResponseDto,
   MediaAccessAuditResponseDto,
   ReadPlaylistResponseDto,
+  ListVideoSubtitlesRequestDto,
+  ListVideoSubtitlesResponseDto,
+  PrepareSubtitleTrackRequestDto,
+  PrepareSubtitleTrackResponseDto,
   ResolveMediaResourceRequestDto,
   ResolveMediaResourceResponseDto,
   SaveVideoCoverRequestDto,
@@ -96,6 +100,8 @@ interface MediaPlayerBackendApi {
   saveVideoCover: (request: SaveVideoCoverRequestDto) => Promise<SaveVideoCoverResponseDto>
   readPlaylist: () => Promise<ReadPlaylistResponseDto>
   writePlaylist: (request: WritePlaylistRequestDto) => Promise<WritePlaylistResponseDto>
+  listVideoSubtitles?: (request: ListVideoSubtitlesRequestDto) => Promise<ListVideoSubtitlesResponseDto>
+  prepareSubtitleTrack?: (request: PrepareSubtitleTrackRequestDto) => Promise<PrepareSubtitleTrackResponseDto>
   readAppState?: (request: ReadAppStateRequestDto) => Promise<ReadAppStateResponseDto>
   writeAppState?: (request: WriteAppStateRequestDto) => Promise<WriteAppStateResponseDto>
   openExternalUrl?: (request: OpenExternalUrlRequestDto) => Promise<OpenExternalUrlResponseDto>

@@ -32,6 +32,10 @@ import {
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ReadImportTasksResponseDto,
+  type ListVideoSubtitlesRequestDto,
+  type ListVideoSubtitlesResponseDto,
+  type PrepareSubtitleTrackRequestDto,
+  type PrepareSubtitleTrackResponseDto,
   type ReadPlaylistResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type ResolveMediaResourceRequestDto,
@@ -320,6 +324,35 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
 
   async writePlaylist(request: WritePlaylistRequestDto): Promise<WritePlaylistResponseDto> {
     return resolveAsync(this.writePlaylistSync(request))
+  }
+
+  listVideoSubtitlesSync(request: ListVideoSubtitlesRequestDto): ListVideoSubtitlesResponseDto {
+    void request
+    return {
+      subtitles: [],
+      ffmpeg_available: false,
+    }
+  }
+
+  async listVideoSubtitles(
+    request: ListVideoSubtitlesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ListVideoSubtitlesResponseDto> {
+    return resolveAsync(this.listVideoSubtitlesSync(request), options)
+  }
+
+  prepareSubtitleTrackSync(request: PrepareSubtitleTrackRequestDto): PrepareSubtitleTrackResponseDto {
+    return {
+      locator: request.locator,
+      converted: false,
+    }
+  }
+
+  async prepareSubtitleTrack(
+    request: PrepareSubtitleTrackRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PrepareSubtitleTrackResponseDto> {
+    return resolveAsync(this.prepareSubtitleTrackSync(request), options)
   }
 
   async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> {

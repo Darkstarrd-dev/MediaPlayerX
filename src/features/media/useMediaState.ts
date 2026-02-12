@@ -3,6 +3,7 @@ import { useCallback, useState, type Dispatch, type SetStateAction } from 'react
 import { clamp } from '../../utils/ui'
 import { buildInitialVideoCoverImageMap, buildInitialVideoCoverMap } from '../../utils/mediaHelpers'
 import type { VideoItem } from '../../types'
+import { cycleVideoFitMode, type VideoFitMode } from './videoFitMode'
 
 interface UseMediaStateParams {
   initialVideoId: string
@@ -29,6 +30,8 @@ interface UseMediaStateResult {
   setVideoVolume: Dispatch<SetStateAction<number>>
   videoMuted: boolean
   setVideoMuted: Dispatch<SetStateAction<boolean>>
+  videoFitMode: VideoFitMode
+  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
   videoCoverById: Record<string, string>
   setVideoCoverById: Dispatch<SetStateAction<Record<string, string>>>
   videoCoverImageById: Record<string, string | null>
@@ -51,6 +54,7 @@ interface UseMediaStateResult {
   selectVideoFromBrowser: (videoId: string) => void
   adjustVideoRate: (delta: number) => void
   adjustVideoVolume: (delta: number) => void
+  cycleVideoFitMode: () => void
 }
 
 export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: UseMediaStateParams): UseMediaStateResult {
@@ -64,6 +68,7 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
   const [videoRate, setVideoRate] = useState(1)
   const [videoVolume, setVideoVolume] = useState(60)
   const [videoMuted, setVideoMuted] = useState(false)
+  const [videoFitMode, setVideoFitMode] = useState<VideoFitMode>('contain')
   const [videoCoverById, setVideoCoverById] = useState<Record<string, string>>(() => buildInitialVideoCoverMap(videos))
   const [videoCoverImageById, setVideoCoverImageById] = useState<Record<string, string | null>>(() =>
     buildInitialVideoCoverImageMap(videos),
@@ -114,6 +119,10 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
     setVideoVolume((value) => clamp(value + delta, 0, 100))
   }, [])
 
+  const cycleVideoFitModeState = useCallback(() => {
+    setVideoFitMode((value) => cycleVideoFitMode(value))
+  }, [])
+
   return {
     selectedVideoId,
     setSelectedVideoId,
@@ -133,6 +142,8 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
     setVideoVolume,
     videoMuted,
     setVideoMuted,
+    videoFitMode,
+    setVideoFitMode,
     videoCoverById,
     setVideoCoverById,
     videoCoverImageById,
@@ -155,6 +166,7 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
     selectVideoFromBrowser,
     adjustVideoRate,
     adjustVideoVolume,
+    cycleVideoFitMode: cycleVideoFitModeState,
   }
 }
 

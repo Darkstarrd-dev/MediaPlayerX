@@ -5,6 +5,7 @@ import type {
   WheelEvent as ReactWheelEvent,
 } from 'react'
 
+import type { VideoFitMode } from '../../features/media/videoFitMode'
 import type { MediaGeometry, PaneKey, PaneTransform } from './paneMath'
 
 interface FullscreenImagePaneProps {
@@ -94,6 +95,8 @@ interface FullscreenVideoPaneProps {
   focusedVideoSrc: string | null
   focusedVideoCoverImageSrc: string | null
   focusedVideoCoverColor: string
+  subtitleTrackUrl: string | null
+  videoFitMode: VideoFitMode
   videoControlsVisible: boolean
   videoControlsAtTop: boolean
   videoControlsTop: number
@@ -124,6 +127,8 @@ export function FullscreenVideoPane({
   focusedVideoSrc,
   focusedVideoCoverImageSrc,
   focusedVideoCoverColor,
+  subtitleTrackUrl,
+  videoFitMode,
   videoControlsVisible,
   videoControlsAtTop,
   videoControlsTop,
@@ -151,8 +156,6 @@ export function FullscreenVideoPane({
       }}
       onWheel={onWheel}
       onMouseDown={onMouseDown}
-      onMouseEnter={onShowControls}
-      onMouseMove={onShowControls}
       onMouseLeave={onHideControls}
     >
       <div
@@ -171,7 +174,11 @@ export function FullscreenVideoPane({
             <video
               ref={videoRef}
               className="fullscreen-media-video-element"
-              style={{ opacity: videoPlaying ? 1 : 0 }}
+              style={{
+                opacity: videoPlaying ? 1 : 0,
+                objectFit: videoFitMode === 'original' ? 'none' : videoFitMode,
+                objectPosition: 'center center',
+              }}
               src={focusedVideoSrc}
               preload="metadata"
               playsInline
@@ -191,12 +198,18 @@ export function FullscreenVideoPane({
                 onVideoTimeUpdate(0)
                 onNextVideo()
               }}
-            />
+            >
+              {subtitleTrackUrl ? <track default kind="subtitles" label="字幕" src={subtitleTrackUrl} /> : null}
+            </video>
           ) : null}
 
           {!videoPlaying && focusedVideoCoverImageSrc ? (
             <img
               className="fullscreen-media-video-cover"
+              style={{
+                objectFit: videoFitMode === 'original' ? 'none' : videoFitMode,
+                objectPosition: 'center center',
+              }}
               src={focusedVideoCoverImageSrc}
               alt="视频封面"
             />
@@ -205,17 +218,31 @@ export function FullscreenVideoPane({
           {!focusedVideoSrc ? <div className="fullscreen-media-empty">无可用视频源</div> : null}
         </div>
 
-        {fullscreenDisplay === 'dual' && videoControlsVisible ? (
-          <div
-            className={`fullscreen-video-controls ${videoControlsAtTop ? 'is-top' : 'is-bottom'}`}
-            style={{
-              top: `${videoControlsTop}px`,
-              left: `${videoControlsLeft}px`,
-              width: `${videoControlsWidth}px`,
-            }}
-          >
-            {controlsRows}
-          </div>
+        {fullscreenDisplay !== 'image-only' ? (
+          <>
+            <div
+              className={`fullscreen-video-controls-hotzone ${videoControlsAtTop ? 'is-top' : 'is-bottom'}`}
+              style={{
+                top: `${videoControlsTop}px`,
+                left: `${videoControlsLeft}px`,
+                width: `${videoControlsWidth}px`,
+              }}
+              onMouseEnter={onShowControls}
+              onMouseLeave={onHideControls}
+            />
+            <div
+              className={`fullscreen-video-controls ${videoControlsAtTop ? 'is-top' : 'is-bottom'} ${videoControlsVisible ? 'is-visible' : ''}`}
+              style={{
+                top: `${videoControlsTop}px`,
+                left: `${videoControlsLeft}px`,
+                width: `${videoControlsWidth}px`,
+              }}
+              onMouseEnter={onShowControls}
+              onMouseLeave={onHideControls}
+            >
+              {controlsRows}
+            </div>
+          </>
         ) : null}
       </div>
     </section>

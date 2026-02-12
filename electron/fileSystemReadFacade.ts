@@ -9,6 +9,10 @@ import {
   type LibrarySnapshotDto,
   type MediaAccessAuditResponseDto,
   type ReadPlaylistResponseDto,
+  type ListVideoSubtitlesRequestDto,
+  type ListVideoSubtitlesResponseDto,
+  type PrepareSubtitleTrackRequestDto,
+  type PrepareSubtitleTrackResponseDto,
   type ReadAppStateRequestDto,
   type ReadAppStateResponseDto,
   type ReadImageMetadataRequestDto,
@@ -82,6 +86,7 @@ import {
   IMAGE_EXTENSIONS_FOR_WEBP_CONVERT,
   LEGACY_IMPORTS_DIR_NAME,
   MEDIA_TOKEN_TTL_MS,
+  SUBTITLE_EXTENSIONS,
   THUMBNAIL_CACHE_DIR_NAME,
   VIDEO_EXTENSIONS,
   ZIP_COMPRESSION_DEFLATE,
@@ -214,6 +219,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       database: this.database,
       ffmpegBin: FFMPEG_BIN,
       coverOutputRootDir: this.coverOutputRootDir,
+      rootDir: this.rootDir,
       packageGradeOverridesBySourceId: this.database.readPackageGrades(),
       videoCoverOverridesByVideoId: this.database.readVideoCovers(),
       videoMetadataOverridesByVideoId: this.database.readVideoMetadata(),
@@ -334,6 +340,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       archiveEntryIndexByPath: this.librarySnapshotService.getArchiveEntryIndexByPath(),
       imageExtensions: IMAGE_EXTENSIONS,
       videoExtensions: VIDEO_EXTENSIONS,
+      subtitleExtensions: SUBTITLE_EXTENSIONS,
     }
   }
 
@@ -552,6 +559,14 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async writePlaylist(request: WritePlaylistRequestDto): Promise<WritePlaylistResponseDto> {
     return this.libraryHandlers.writePlaylist(request)
+  }
+
+  async listVideoSubtitles(request: ListVideoSubtitlesRequestDto): Promise<ListVideoSubtitlesResponseDto> {
+    return this.libraryHandlers.listVideoSubtitles(request)
+  }
+
+  async prepareSubtitleTrack(request: PrepareSubtitleTrackRequestDto): Promise<PrepareSubtitleTrackResponseDto> {
+    return this.libraryHandlers.prepareSubtitleTrack(request)
   }
 
   async enqueueImportTask(request: EnqueueImportTaskRequestDto): Promise<EnqueueImportTaskResponseDto> {

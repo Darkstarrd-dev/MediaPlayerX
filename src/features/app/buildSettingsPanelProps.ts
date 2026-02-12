@@ -15,7 +15,7 @@ interface BuildSettingsPanelPropsParams {
   sidebarIndentStep: number
   sidebarVerticalGap: number
   metadataRatio: number
-  vectorPanelHeight: number
+  fullscreenVideoControlsMaxWidth: number
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
@@ -67,7 +67,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     sidebarIndentStep: params.sidebarIndentStep,
     sidebarVerticalGap: params.sidebarVerticalGap,
     metadataRatio: params.metadataRatio,
-    vectorPanelHeight: params.vectorPanelHeight,
+    fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
     thumbnailWidth: params.thumbnailWidth,
@@ -109,7 +109,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onSidebarIndentStepChange: (value) => params.updateSettings({ sidebarIndentStep: value }),
     onSidebarVerticalGapChange: (value) => params.updateSettings({ sidebarVerticalGap: value }),
     onMetadataRatioChange: params.applyMetadataRatio,
-    onVectorPanelHeightChange: (value) => params.updateSettings({ vectorPanelHeight: value }),
+    onFullscreenVideoControlsMaxWidthChange: (value) => params.updateSettings({ fullscreenVideoControlsMaxWidth: value }),
     onThumbnailGapChange: (value) => params.updateSettings({ thumbnailGap: value }),
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),

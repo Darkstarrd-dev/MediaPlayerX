@@ -1,6 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react'
 
 import { clamp } from '../../utils/ui'
+import type { VideoItem } from '../../types'
+import type { VideoFitMode } from '../media/videoFitMode'
 
 interface BuildVideoMainSectionPropsParams {
   manageMode: boolean
@@ -23,11 +25,14 @@ interface BuildVideoMainSectionPropsParams {
   videoRate: number
   videoVolume: number
   videoMuted: boolean
+  videoFitMode: VideoFitMode
   videoSourceUrl: string | null
+  fullscreenActive: boolean
   active: boolean
   coverColor: string
   coverImageUrl: string | null
   focusedVideoId: string | null
+  focusedVideo: VideoItem | null
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: (step: number) => void
   setVideoTime: Dispatch<SetStateAction<number>>
@@ -35,10 +40,20 @@ interface BuildVideoMainSectionPropsParams {
   setVideoMuted: Dispatch<SetStateAction<boolean>>
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
+  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  cycleVideoFitMode: () => void
   saveVideoCover: (videoId: string, timeSec: number, color: string) => Promise<void>
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   metadataPending: boolean
   onMetadataSyncName: () => void
+  subtitleVisible: boolean
+  subtitleTrackUrl: string | null
+  subtitleLoading: boolean
+  subtitleMessage: string | null
+  subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
+  selectedSubtitleId: string | null
+  setSubtitleVisible: Dispatch<SetStateAction<boolean>>
+  selectSubtitleById: (subtitleId: string) => Promise<void>
 }
 
 export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsParams) {
@@ -63,12 +78,20 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     videoRate: params.videoRate,
     videoVolume: params.videoVolume,
     videoMuted: params.videoMuted,
+    videoFitMode: params.videoFitMode,
     videoSourceUrl: params.videoSourceUrl,
+    fullscreenActive: params.fullscreenActive,
     active: params.active,
-    coverColor: params.coverColor,
     coverImageUrl: params.coverImageUrl,
+    focusedVideo: params.focusedVideo,
     metadataPending: params.metadataPending,
     onMetadataSyncName: params.onMetadataSyncName,
+    subtitleVisible: params.subtitleVisible,
+    subtitleTrackUrl: params.subtitleTrackUrl,
+    subtitleLoading: params.subtitleLoading,
+    subtitleMessage: params.subtitleMessage,
+    subtitleOptions: params.subtitleOptions,
+    selectedSubtitleId: params.selectedSubtitleId,
     onTogglePlay: () => {
       if (!params.focusedVideoId) {
         return
@@ -101,6 +124,16 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     },
     onChangeRate: (rate: number) => {
       params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
+    },
+    onCycleVideoFitMode: params.cycleVideoFitMode,
+    onSetVideoFitMode: (mode: VideoFitMode) => {
+      params.setVideoFitMode(mode)
+    },
+    onToggleSubtitle: () => {
+      params.setSubtitleVisible((value) => !value)
+    },
+    onSelectSubtitle: (subtitleId: string) => {
+      void params.selectSubtitleById(subtitleId)
     },
     onSaveCover: () => {
       if (!params.focusedVideoId) {

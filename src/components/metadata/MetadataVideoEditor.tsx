@@ -1,7 +1,6 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import type { VideoItem } from '../../types'
-import { formatSeconds } from '../../utils/ui'
 import { MetadataRatingGroup } from './MetadataRatingGroup'
 
 interface MetadataVideoEditorProps {
@@ -18,9 +17,6 @@ interface MetadataVideoEditorProps {
   selectedVideoId: string
   dragVideoId: string | null
   videoById: Map<string, VideoItem>
-  videoVolume: number
-  videoMuted: boolean
-  videoRate: number
   onMetadataTabChange: (tab: 'info' | 'playlist') => void
   onVideoWorkTitleDraftChange: (value: string) => void
   onVideoCircleDraftChange: (value: string) => void
@@ -55,9 +51,6 @@ export function MetadataVideoEditor({
   selectedVideoId,
   dragVideoId,
   videoById,
-  videoVolume,
-  videoMuted,
-  videoRate,
   onMetadataTabChange,
   onVideoWorkTitleDraftChange,
   onVideoCircleDraftChange,
@@ -239,15 +232,6 @@ export function MetadataVideoEditor({
           </div>
         ) : null}
       </div>
-
-      {focusedVideo ? (
-        <div className="metadata-video-stats">
-          <span>{`时长 ${formatSeconds(focusedVideo.durationSec)}`}</span>
-          <span>{`分辨率 ${focusedVideo.width}x${focusedVideo.height}`}</span>
-          <span>{`音量 ${videoMuted ? '静音' : `${videoVolume}%`}`}</span>
-          <span>{`倍速 ${videoRate.toFixed(2)}x`}</span>
-        </div>
-      ) : null}
     </div>
   )
 }

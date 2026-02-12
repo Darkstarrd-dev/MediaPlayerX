@@ -12,13 +12,13 @@ import {
 
 import type { BrowserMode, ImageItem, VideoItem } from '../types'
 import { clamp, formatSeconds } from '../utils/ui'
+import type { VideoFitMode } from '../features/media/videoFitMode'
 import { FullscreenFooter } from './fullscreen/FullscreenFooter'
 import { FullscreenImagePane, FullscreenVideoPane } from './fullscreen/FullscreenPanes'
 import { useFullscreenImageSource } from './fullscreen/useFullscreenImageSource'
 import { useFullscreenViewportSize } from './fullscreen/useFullscreenViewportSize'
 import {
-  FullscreenVideoControlRow,
-  FullscreenVideoProgressRow,
+  FullscreenVideoControlsShell,
 } from './fullscreen/FullscreenVideoControls'
 import {
   applyAlignedOffset,
@@ -38,6 +38,8 @@ import {
   type PaneTransform,
 } from './fullscreen/paneMath'
 
+const DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH = 980
+
 export interface FullscreenLayerProps {
   mode: BrowserMode
   fullscreenActive: boolean
@@ -52,6 +54,12 @@ export interface FullscreenLayerProps {
   focusedImageSrc: string | null
   focusedVideo: VideoItem | null
   focusedVideoSrc: string | null
+  subtitleTrackUrl: string | null
+  subtitleVisible: boolean
+  subtitleLoading: boolean
+  subtitleMessage: string | null
+  subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
+  selectedSubtitleId: string | null
   focusedVideoCoverImageSrc: string | null
   durationSec: number
   focusedVideoCoverColor: string
@@ -60,6 +68,8 @@ export interface FullscreenLayerProps {
   videoRate: number
   videoVolume: number
   videoMuted: boolean
+  videoFitMode: VideoFitMode
+  fullscreenVideoControlsMaxWidth: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
   autoPlayPresets: number[]
@@ -77,12 +87,20 @@ export interface FullscreenLayerProps {
   onToggleVideoPlay: () => void
   onPrevVideo: () => void
   onNextVideo: () => void
+  onToggleSubtitle: () => void
+  onSelectSubtitle: (subtitleId: string) => void
+  playlistEntries: Array<{ id: string; label: string }>
+  selectedVideoId: string
+  onSelectVideo: (videoId: string) => void
+  onSaveCover: () => void
   onSeekVideo: (time: number) => void
   onVideoTimeUpdate: (time: number) => void
   onVideoDurationDetected: (duration: number) => void
   onToggleVideoMute: () => void
   onChangeVideoVolume: (volume: number) => void
   onChangeVideoRate: (rate: number) => void
+  onCycleVideoFitMode: () => void
+  onSetVideoFitMode: (mode: VideoFitMode) => void
   onExit: () => void
 }
 function FullscreenLayer({
@@ -99,6 +117,12 @@ function FullscreenLayer({
   focusedImageSrc,
   focusedVideo,
   focusedVideoSrc,
+  subtitleTrackUrl,
+  subtitleVisible,
+  subtitleLoading,
+  subtitleMessage,
+  subtitleOptions,
+  selectedSubtitleId,
   focusedVideoCoverImageSrc,
   durationSec,
   focusedVideoCoverColor,
@@ -107,6 +131,8 @@ function FullscreenLayer({
   videoRate,
   videoVolume,
   videoMuted,
+  videoFitMode,
+  fullscreenVideoControlsMaxWidth,
   autoPlayEnabled,
   autoPlayInterval,
   autoPlayPresets,
@@ -124,18 +150,27 @@ function FullscreenLayer({
   onToggleVideoPlay,
   onPrevVideo,
   onNextVideo,
+  onToggleSubtitle,
+  onSelectSubtitle,
+  playlistEntries,
+  selectedVideoId,
+  onSelectVideo,
+  onSaveCover,
   onSeekVideo,
   onVideoTimeUpdate,
   onVideoDurationDetected,
   onToggleVideoMute,
   onChangeVideoVolume,
   onChangeVideoRate,
+  onCycleVideoFitMode,
+  onSetVideoFitMode,
   onExit,
 }: FullscreenLayerProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const imagePaneRef = useRef<HTMLElement>(null)
   const videoPaneRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const hideVideoControlsTimerRef = useRef<number | null>(null)
 
   const { imageViewportSize, videoViewportSize } = useFullscreenViewportSize({
     fullscreenActive,
@@ -420,8 +455,39 @@ function FullscreenLayer({
     if (!fullscreenActive) {
       setVideoControlsVisible(false)
       setDraggingPane(null)
+      if (hideVideoControlsTimerRef.current !== null) {
+        window.clearTimeout(hideVideoControlsTimerRef.current)
+        hideVideoControlsTimerRef.current = null
+      }
     }
   }, [fullscreenActive])
+
+  useEffect(
+    () => () => {
+      if (hideVideoControlsTimerRef.current !== null) {
+        window.clearTimeout(hideVideoControlsTimerRef.current)
+      }
+    },
+    [],
+  )
+
+  const showVideoControls = useCallback(() => {
+    if (hideVideoControlsTimerRef.current !== null) {
+      window.clearTimeout(hideVideoControlsTimerRef.current)
+      hideVideoControlsTimerRef.current = null
+    }
+    setVideoControlsVisible(true)
+  }, [])
+
+  const hideVideoControls = useCallback(() => {
+    if (hideVideoControlsTimerRef.current !== null) {
+      window.clearTimeout(hideVideoControlsTimerRef.current)
+    }
+    hideVideoControlsTimerRef.current = window.setTimeout(() => {
+      setVideoControlsVisible(false)
+      hideVideoControlsTimerRef.current = null
+    }, 150)
+  }, [])
 
   useEffect(() => {
     if (!fullscreenActive) {
@@ -480,6 +546,17 @@ function FullscreenLayer({
     }
   }, [clampedVideoTime, focusedVideoSrc, fullscreenActive, fullscreenDisplay, videoMuted, videoPlaying, videoRate, videoVolume])
 
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) {
+      return
+    }
+    const mode = subtitleVisible && subtitleTrackUrl ? 'showing' : 'hidden'
+    for (let index = 0; index < video.textTracks.length; index += 1) {
+      video.textTracks[index].mode = mode
+    }
+  }, [subtitleTrackUrl, subtitleVisible])
+
   if (!fullscreenActive) {
     return null
   }
@@ -493,8 +570,6 @@ function FullscreenLayer({
 
   const videoMediaTop = (videoViewportSize.height - videoGeometry.height) / 2 + videoTransform.offsetY
   const videoMediaBottom = videoMediaTop + videoGeometry.height
-  const videoMediaLeft = (videoViewportSize.width - videoGeometry.width) / 2 + videoTransform.offsetX
-
   const topGap = videoMediaTop
   const bottomGap = videoViewportSize.height - videoMediaBottom
   const videoControlsAtTop = bottomGap < topGap
@@ -504,11 +579,13 @@ function FullscreenLayer({
   const controlsPreferredTop = videoControlsAtTop ? videoMediaTop - controlsBlockHeight - 8 : videoMediaBottom + 8
   const videoControlsTop = clamp(Math.round(controlsPreferredTop), 8, controlsMaxTop)
 
-  const controlsMaxWidth = Math.max(120, videoViewportSize.width - 16)
+  const controlsWidthCap = clamp(fullscreenVideoControlsMaxWidth, 640, 1920) || DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH
+  const controlsMaxWidth = Math.max(120, Math.min(videoViewportSize.width - 16, controlsWidthCap))
   const controlsPreferredWidth = Math.max(120, videoGeometry.width - 16)
   const videoControlsWidth = Math.min(controlsPreferredWidth, controlsMaxWidth)
   const controlsMaxLeft = Math.max(8, videoViewportSize.width - videoControlsWidth - 8)
-  const videoControlsLeft = clamp(Math.round(videoMediaLeft + 8), 8, controlsMaxLeft)
+  const centeredControlsLeft = Math.round((videoViewportSize.width - videoControlsWidth) / 2)
+  const videoControlsLeft = clamp(centeredControlsLeft, 8, controlsMaxLeft)
 
   const imagePaneClassName = `fullscreen-pane fullscreen-image${fullscreenDisplay === 'dual' && !fullscreenVideoFocus ? ' is-pane-focus' : ''}`
   const videoPaneClassName = `fullscreen-pane fullscreen-video${fullscreenDisplay === 'dual' && fullscreenVideoFocus ? ' is-pane-focus' : ''}`
@@ -536,34 +613,38 @@ function FullscreenLayer({
     />
   )
 
-  const videoProgressRowProps = {
-    clampedVideoTime,
-    durationSec,
-    onSeekVideo,
-  }
-  const videoControlRowProps = {
-    videoPlaying,
-    videoMuted,
-    videoVolume,
-    videoRate,
-    onToggleVideoPlay,
-    onPrevVideo,
-    onNextVideo,
-    onToggleVideoMute,
-    onChangeVideoVolume,
-    onChangeVideoRate,
-  }
-
-  const controlsRows = videoControlsAtTop ? (
-    <>
-      <FullscreenVideoControlRow {...videoControlRowProps} />
-      <FullscreenVideoProgressRow {...videoProgressRowProps} />
-    </>
-  ) : (
-    <>
-      <FullscreenVideoProgressRow {...videoProgressRowProps} />
-      <FullscreenVideoControlRow {...videoControlRowProps} />
-    </>
+  const controlsRows = (
+    <FullscreenVideoControlsShell
+      clampedVideoTime={clampedVideoTime}
+      durationSec={durationSec}
+      videoPlaying={videoPlaying}
+      videoMuted={videoMuted}
+      videoFitMode={videoFitMode}
+      videoVolume={videoVolume}
+      videoRate={videoRate}
+      subtitleVisible={subtitleVisible}
+      subtitleLoading={subtitleLoading}
+      subtitleMessage={subtitleMessage}
+      subtitleOptions={subtitleOptions}
+      selectedSubtitleId={selectedSubtitleId}
+      playlistEntries={playlistEntries}
+      selectedVideoId={selectedVideoId}
+      onSeekVideo={onSeekVideo}
+      onToggleVideoPlay={onToggleVideoPlay}
+      onPrevVideo={onPrevVideo}
+      onNextVideo={onNextVideo}
+      onToggleVideoMute={onToggleVideoMute}
+      onToggleSubtitle={onToggleSubtitle}
+      onSelectSubtitle={onSelectSubtitle}
+      onChangeVideoVolume={onChangeVideoVolume}
+      onChangeVideoRate={onChangeVideoRate}
+      onCycleVideoFitMode={onCycleVideoFitMode}
+      onSetVideoFitMode={onSetVideoFitMode}
+      onToggleDualDisplay={toggleDualDisplay}
+      onSelectVideo={onSelectVideo}
+      onSaveCover={onSaveCover}
+      onExit={onExit}
+    />
   )
 
   const videoPane = (
@@ -581,6 +662,8 @@ function FullscreenLayer({
       focusedVideoSrc={focusedVideoSrc}
       focusedVideoCoverImageSrc={focusedVideoCoverImageSrc}
       focusedVideoCoverColor={focusedVideoCoverColor}
+      subtitleTrackUrl={subtitleVisible ? subtitleTrackUrl : null}
+      videoFitMode={videoFitMode}
       videoControlsVisible={videoControlsVisible}
       videoControlsAtTop={videoControlsAtTop}
       videoControlsTop={videoControlsTop}
@@ -590,8 +673,8 @@ function FullscreenLayer({
       onSetVideoFocus={onSetVideoFocus}
       onWheel={(event) => handlePaneWheel('video', event)}
       onMouseDown={(event) => startPaneDrag('video', event)}
-      onShowControls={() => setVideoControlsVisible(true)}
-      onHideControls={() => setVideoControlsVisible(false)}
+      onShowControls={showVideoControls}
+      onHideControls={hideVideoControls}
       onVideoTimeUpdate={onVideoTimeUpdate}
       onVideoDurationDetected={onVideoDurationDetected}
       onNextVideo={onNextVideo}
@@ -620,7 +703,7 @@ function FullscreenLayer({
       }}
       onMouseLeave={() => {
         onSetFooterVisible(false)
-        setVideoControlsVisible(false)
+        hideVideoControls()
       }}
     >
       <div className="fullscreen-content" ref={contentRef}>
@@ -647,31 +730,18 @@ function FullscreenLayer({
         )}
       </div>
 
-      {showFullscreenFooter ? (
+      {showFullscreenFooter && fullscreenDisplay !== 'video-only' ? (
         <FullscreenFooter
           mode={mode}
           fullscreenDisplay={fullscreenDisplay}
           fullscreenVideoFocus={fullscreenVideoFocus}
           footerInfoText={footerInfoText}
-          clampedVideoTime={clampedVideoTime}
-          durationSec={durationSec}
-          videoPlaying={videoPlaying}
-          videoMuted={videoMuted}
-          videoVolume={videoVolume}
-          videoRate={videoRate}
           autoplayEnabledForFocus={autoplayEnabledForFocus}
           autoPlayEnabled={autoPlayEnabled}
           autoPlayInterval={autoPlayInterval}
           autoPlayPresets={autoPlayPresets}
           zoomEnabled={zoomEnabled}
           zoomPercent={zoomPercent}
-          onSeekVideo={onSeekVideo}
-          onToggleVideoPlay={onToggleVideoPlay}
-          onPrevVideo={onPrevVideo}
-          onNextVideo={onNextVideo}
-          onToggleVideoMute={onToggleVideoMute}
-          onChangeVideoVolume={onChangeVideoVolume}
-          onChangeVideoRate={onChangeVideoRate}
           onToggleDualDisplay={toggleDualDisplay}
           onToggleSwapSides={onToggleSwapSides}
           onStepFocusedPane={stepFocusedPane}

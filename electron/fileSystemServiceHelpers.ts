@@ -211,7 +211,7 @@ export function isPathInsideRoot(rootDir: string, absolutePath: string): boolean
   return !relative.startsWith('..') && !path.isAbsolute(relative)
 }
 
-export function detectMimeTypeByExtension(extension: string, mediaType: 'image' | 'video'): string {
+export function detectMimeTypeByExtension(extension: string, mediaType: 'image' | 'video' | 'subtitle'): string {
   const lowerExt = extension.toLowerCase()
   if (mediaType === 'image') {
     if (lowerExt === '.jpg' || lowerExt === '.jpeg') {
@@ -232,17 +232,30 @@ export function detectMimeTypeByExtension(extension: string, mediaType: 'image' 
     return 'application/octet-stream'
   }
 
-  if (lowerExt === '.mp4') {
-    return 'video/mp4'
+  if (mediaType === 'video') {
+    if (lowerExt === '.mp4') {
+      return 'video/mp4'
+    }
+    if (lowerExt === '.webm') {
+      return 'video/webm'
+    }
+    if (lowerExt === '.mkv') {
+      return 'video/x-matroska'
+    }
+    if (lowerExt === '.mov') {
+      return 'video/quicktime'
+    }
+    return 'application/octet-stream'
   }
-  if (lowerExt === '.webm') {
-    return 'video/webm'
+
+  if (lowerExt === '.vtt') {
+    return 'text/vtt'
   }
-  if (lowerExt === '.mkv') {
-    return 'video/x-matroska'
+  if (lowerExt === '.srt') {
+    return 'application/x-subrip'
   }
-  if (lowerExt === '.mov') {
-    return 'video/quicktime'
+  if (lowerExt === '.ass' || lowerExt === '.ssa') {
+    return 'text/x-ssa'
   }
   return 'application/octet-stream'
 }

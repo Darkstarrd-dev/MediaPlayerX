@@ -6,6 +6,10 @@ import {
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ReadPlaylistResponseDto,
+  type ListVideoSubtitlesRequestDto,
+  type ListVideoSubtitlesResponseDto,
+  type PrepareSubtitleTrackRequestDto,
+  type PrepareSubtitleTrackResponseDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
@@ -82,5 +86,13 @@ export class FileSystemLibraryHandlers {
 
   async writePlaylist(request: WritePlaylistRequestDto): Promise<WritePlaylistResponseDto> {
     return this.context.libraryReadWriteService.writePlaylist(request)
+  }
+
+  async listVideoSubtitles(request: ListVideoSubtitlesRequestDto): Promise<ListVideoSubtitlesResponseDto> {
+    return this.context.libraryReadWriteService.listVideoSubtitles(request)
+  }
+
+  async prepareSubtitleTrack(request: PrepareSubtitleTrackRequestDto): Promise<PrepareSubtitleTrackResponseDto> {
+    return this.context.libraryReadWriteService.prepareSubtitleTrack(request)
   }
 }

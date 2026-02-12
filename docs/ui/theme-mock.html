@@ -1153,34 +1153,36 @@
         <div class="video-preview" style="min-height: 260px;">
           <div class="video-screen" style="background: var(--mpx-video-screen-bg);">
             <div class="video-screen-empty">No video source</div>
-            <div class="video-screen-hud"><span>Cover state 00:00 / 02:10</span></div>
           </div>
-          <div class="video-progress-line">
-            <span class="video-progress-time">00:00 / 02:10</span>
-            <input type="range" min="0" max="120" value="45" />
-          </div>
-          <div class="video-controls">
-            <div class="video-controls-group is-transport">
-              <button class="video-action-btn video-action-play" type="button">Play</button>
-              <button class="video-action-btn video-action-prev" type="button">Prev</button>
-              <button class="video-action-btn video-action-next" type="button">Next</button>
+          <div class="video-controls-shell">
+            <div class="video-controls-progress">
+              <span class="video-progress-time">00:00 / 02:10</span>
+              <input type="range" min="0" max="120" value="45" />
             </div>
-            <div class="video-controls-group is-audio">
-              <button class="video-action-btn video-action-mute" type="button">Mute</button>
-              <label class="video-volume-inline player-inline-field">
-                <span>Volume</span><span>60%</span>
-                <input type="range" min="0" max="100" value="60" />
-              </label>
-            </div>
-            <div class="video-controls-group is-rate">
-              <label class="video-rate-inline player-inline-field">
-                <span>Rate x1.25</span>
-                <input type="range" min="0.1" max="4" step="0.1" value="1.25" />
-              </label>
-            </div>
-            <div class="video-controls-group is-utility">
-              <button class="video-action-btn video-action-save-cover" type="button">Save cover</button>
-              <button class="video-action-btn video-action-fullscreen video-fullscreen-btn" type="button">Fullscreen</button>
+            <div class="video-controls-row video-controls">
+              <div class="video-controls-group is-left">
+                <div class="video-ctrl-popover is-open">
+                  <button class="video-action-btn video-action-mute" type="button">Mute</button>
+                  <div class="video-ctrl-panel" role="dialog">
+                    <span class="video-ctrl-panel-title">音量</span>
+                    <input class="video-ctrl-volume-range" type="range" min="0" max="100" value="60" />
+                  </div>
+                </div>
+                <button class="video-action-btn video-action-subtitle" type="button">字幕</button>
+                <button class="video-action-btn video-action-speed" type="button">倍速 x1.25</button>
+                <button class="video-action-btn video-action-fullscreen video-fullscreen-btn" type="button">F 全屏</button>
+                <button class="video-action-btn video-action-fit" type="button">适应</button>
+              </div>
+              <div class="video-controls-group is-center">
+                <button class="video-action-btn video-action-prev" type="button">上一个</button>
+                <button class="video-action-btn video-action-play" type="button">播放</button>
+                <button class="video-action-btn video-action-next" type="button">下一个</button>
+              </div>
+              <div class="video-controls-group is-right">
+                <button class="video-action-btn video-action-save-cover" type="button">Save as cover</button>
+                <button class="video-action-btn video-action-dual" type="button" disabled>独立/复合</button>
+                <button class="video-action-btn video-action-playlist" type="button" disabled>播放列表</button>
+              </div>
             </div>
           </div>
         </div>

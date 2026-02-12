@@ -36,8 +36,8 @@ interface RenderSettingsMainSectionParams {
   sidebarVerticalGap: number
   sidebarVerticalGapScale: number
   metadataRatio: number
-  vectorPanelHeight: number
-  vectorPanelHeightScale: number
+  fullscreenVideoControlsMaxWidth: number
+  fullscreenVideoControlsMaxWidthScale: number
   thumbnailGap: number
   thumbnailGapScale: number
   thumbnailQuality: number
@@ -76,7 +76,7 @@ interface RenderSettingsMainSectionParams {
   onSidebarIndentStepChange: (value: number) => void
   onSidebarVerticalGapChange: (value: number) => void
   onMetadataRatioChange: (value: number) => void
-  onVectorPanelHeightChange: (value: number) => void
+  onFullscreenVideoControlsMaxWidthChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
@@ -113,8 +113,8 @@ export function renderSettingsMainSection({
   sidebarVerticalGap,
   sidebarVerticalGapScale,
   metadataRatio,
-  vectorPanelHeight,
-  vectorPanelHeightScale,
+  fullscreenVideoControlsMaxWidth,
+  fullscreenVideoControlsMaxWidthScale,
   thumbnailGap,
   thumbnailGapScale,
   thumbnailQuality,
@@ -153,7 +153,7 @@ export function renderSettingsMainSection({
   onSidebarIndentStepChange,
   onSidebarVerticalGapChange,
   onMetadataRatioChange,
-  onVectorPanelHeightChange,
+  onFullscreenVideoControlsMaxWidthChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onThumbnailWidthChange,
@@ -323,14 +323,16 @@ export function renderSettingsMainSection({
             <input max={0.45} min={0.2} step={0.01} type="range" value={metadataRatio} onChange={(event) => onMetadataRatioChange(Number(event.target.value))} />
           </label>
           <label>
-            向量容器高度系数 {formatScale(vectorPanelHeightScale)}（{vectorPanelHeight}px）
+            全屏视频控件最大宽度系数 {formatScale(fullscreenVideoControlsMaxWidthScale)}（{fullscreenVideoControlsMaxWidth}px）
             <input
-              max={SIZE_SCALE_CONFIG.vectorPanelHeight.max}
-              min={SIZE_SCALE_CONFIG.vectorPanelHeight.min}
-              step={SIZE_SCALE_CONFIG.vectorPanelHeight.step}
+              max={SIZE_SCALE_CONFIG.fullscreenVideoControlsMaxWidth.max}
+              min={SIZE_SCALE_CONFIG.fullscreenVideoControlsMaxWidth.min}
+              step={SIZE_SCALE_CONFIG.fullscreenVideoControlsMaxWidth.step}
               type="range"
-              value={vectorPanelHeightScale}
-              onChange={(event) => onVectorPanelHeightChange(toAbsolutePx('vectorPanelHeight', Number(event.target.value)))}
+              value={fullscreenVideoControlsMaxWidthScale}
+              onChange={(event) =>
+                onFullscreenVideoControlsMaxWidthChange(toAbsolutePx('fullscreenVideoControlsMaxWidth', Number(event.target.value)))
+              }
             />
           </label>
         </section>

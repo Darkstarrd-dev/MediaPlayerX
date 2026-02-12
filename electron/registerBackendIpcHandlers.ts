@@ -22,6 +22,10 @@ import {
   readArchiveLoadStatusResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
+  listVideoSubtitlesRequestSchema,
+  listVideoSubtitlesResponseSchema,
+  prepareSubtitleTrackRequestSchema,
+  prepareSubtitleTrackResponseSchema,
   readImageMetadataRequestSchema,
   readImageMetadataResponseSchema,
   readImagePageRequestSchema,
@@ -461,6 +465,18 @@ export function registerBackendIpcHandlers(): void {
     const request = writePlaylistRequestSchema.parse(payload)
     const response = await ensureService().writePlaylist(request)
     return writePlaylistResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.listVideoSubtitles, async (_event, payload: unknown) => {
+    const request = listVideoSubtitlesRequestSchema.parse(payload)
+    const response = await ensureService().listVideoSubtitles(request)
+    return listVideoSubtitlesResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.prepareSubtitleTrack, async (_event, payload: unknown) => {
+    const request = prepareSubtitleTrackRequestSchema.parse(payload)
+    const response = await ensureService().prepareSubtitleTrack(request)
+    return prepareSubtitleTrackResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.pickImportPaths, async (_event, payload: unknown) => {

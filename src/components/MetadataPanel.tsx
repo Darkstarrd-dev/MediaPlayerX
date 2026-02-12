@@ -78,9 +78,6 @@ export interface MetadataPanelProps {
   playlistIds: string[]
   selectedVideoId: string
   dragVideoId: string | null
-  videoVolume: number
-  videoMuted: boolean
-  videoRate: number
   videoById: Map<string, VideoItem>
   onCollapse: () => void
   onExpand: () => void
@@ -171,9 +168,6 @@ function MetadataPanel({
   playlistIds,
   selectedVideoId,
   dragVideoId,
-  videoVolume,
-  videoMuted,
-  videoRate,
   videoById,
   onCollapse,
   onExpand,
@@ -577,9 +571,6 @@ function MetadataPanel({
           selectedVideoId={selectedVideoId}
           dragVideoId={dragVideoId}
           videoById={videoById}
-          videoVolume={videoVolume}
-          videoMuted={videoMuted}
-          videoRate={videoRate}
           onMetadataTabChange={onMetadataTabChange}
           onVideoWorkTitleDraftChange={setVideoWorkTitleDraft}
           onVideoCircleDraftChange={setVideoCircleDraft}
