@@ -393,6 +393,10 @@
   min-width: 58px;
 }
 
+.metadata-fetch-source-switch > button.is-active {
+  color: var(--mpx-accent);
+}
+
 .metadata-fetch-search-action {
   justify-self: end;
 }
@@ -403,6 +407,11 @@
 
 .metadata-fetch-actions {
   justify-content: flex-end;
+}
+
+.metadata-fetch-actions-inline {
+  justify-content: flex-start;
+  margin-top: -2px;
 }
 
 .metadata-fetch-results {

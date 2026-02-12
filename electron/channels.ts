@@ -35,6 +35,7 @@ export const BACKEND_CHANNELS = {
   readArchiveLoadStatus: 'backend:readArchiveLoadStatus',
   readAppState: 'backend:readAppState',
   writeAppState: 'backend:writeAppState',
+  openExternalUrl: 'backend:openExternalUrl',
   libraryChanged: 'backend:libraryChanged',
 } as const
 

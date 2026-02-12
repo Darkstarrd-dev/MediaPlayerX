@@ -179,6 +179,18 @@ function flattenExternalTags(value: Record<string, string>): string[] {
   return Array.from(new Set(tags))
 }
 
+function flattenExternalTagValues(value: Record<string, string>): string[] {
+  const tags: string[] = []
+  for (const raw of Object.values(value)) {
+    const parts = raw
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+    tags.push(...parts)
+  }
+  return Array.from(new Set(tags))
+}
+
 export function useAppWorkspaceProps({
   appSettings,
   benchSettings,
@@ -317,7 +329,12 @@ export function useAppWorkspaceProps({
   const featureTagOptionsEffective = Array.from(
     new Set(
       normalizeFeatureTags(
-        mode === 'image' ? scopedImageSourcesEffective.flatMap((source) => source.tags) : featureTagOptions,
+        mode === 'image'
+          ? scopedImageSourcesEffective.flatMap((source) => [
+              ...source.tags,
+              ...flattenExternalTagValues(source.externalMetadata?.tags ?? {}),
+            ])
+          : featureTagOptions,
       ),
     ),
   ).sort((left, right) => left.localeCompare(right, 'zh-CN'))
@@ -516,6 +533,7 @@ export function useAppWorkspaceProps({
     targetPackageName: metadataImagePackageEffective?.packageName ?? '',
     targetPackageLabel: metadataImagePackageEffective?.displayName ?? '-',
     proxyServer: appSettings.proxyServer,
+    ehentaiCookies: appSettings.ehentaiCookies,
   })
 
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
@@ -625,6 +643,7 @@ export function useAppWorkspaceProps({
     metadataTargetPackageLabel: metadataImagePackageEffective?.displayName ?? '-',
     metadataFetchDefaultText: metadataManagementPanelProps.defaultFetchText,
     metadataProxyServer: appSettings.proxyServer,
+    metadataEhentaiCookies: appSettings.ehentaiCookies,
     onMetadataSyncName: applyMetadataSyncName,
     onMetadataSaveParsed: saveParsedMetadata,
     onToggleImageChecked: toggleImageChecked,

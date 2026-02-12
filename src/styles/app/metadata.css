@@ -257,6 +257,21 @@
   border-color: var(--mpx-input-readonly-border);
 }
 
+.metadata-edit-grid button {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.metadata-edit-grid button:disabled {
+  color: var(--mpx-input-readonly-text);
+  background: var(--mpx-input-readonly-bg);
+  border-color: var(--mpx-input-readonly-border);
+}
+
 .metadata-tag-chip-list {
   display: flex;
   flex-wrap: wrap;

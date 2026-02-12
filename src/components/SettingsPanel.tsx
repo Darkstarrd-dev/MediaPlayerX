@@ -43,6 +43,7 @@ export interface SettingsPanelProps {
   thumbnailQuality: number
   thumbnailWidth: number
   proxyServer: string
+  ehentaiCookies: string
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -88,6 +89,7 @@ export interface SettingsPanelProps {
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
   onProxyServerChange: (value: string) => void
+  onEhentaiCookiesChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -160,6 +162,7 @@ function SettingsPanel({
   thumbnailQuality,
   thumbnailWidth,
   proxyServer,
+  ehentaiCookies,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -205,6 +208,7 @@ function SettingsPanel({
   onThumbnailQualityChange,
   onThumbnailWidthChange,
   onProxyServerChange,
+  onEhentaiCookiesChange,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -411,6 +415,7 @@ function SettingsPanel({
     thumbnailQuality,
     thumbnailWidth,
     proxyServer,
+    ehentaiCookies,
     adReviewVisionEndpoint,
     adReviewVisionModel,
     adReviewVisionVerified,
@@ -458,6 +463,7 @@ function SettingsPanel({
     onThumbnailQualityChange,
     onThumbnailWidthChange,
     onProxyServerChange,
+    onEhentaiCookiesChange,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,

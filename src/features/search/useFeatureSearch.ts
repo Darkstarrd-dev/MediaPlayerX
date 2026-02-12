@@ -141,7 +141,7 @@ export function useFeatureSearch({
                       .split(',')
                       .map((value) => value.trim())
                       .filter(Boolean)
-                      .map((value) => `${namespace}:${value}`),
+                      .flatMap((value) => [value, `${namespace}:${value}`]),
                   ),
                 )
               : []),

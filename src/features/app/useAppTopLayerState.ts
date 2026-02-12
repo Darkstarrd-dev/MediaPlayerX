@@ -530,6 +530,7 @@ export function useAppTopLayerState({
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailWidth: appSettings.thumbnailWidth,
     proxyServer: appSettings.proxyServer,
+    ehentaiCookies: appSettings.ehentaiCookies,
     adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,
     adReviewVisionModel: appSettings.adReviewVisionModel,
     adReviewVisionVerified: appSettings.adReviewVisionVerified,

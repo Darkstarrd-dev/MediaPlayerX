@@ -17,6 +17,7 @@ interface BuildMetadataManagementPanelPropsParams {
   targetPackageName: string
   targetPackageLabel: string
   proxyServer: string
+  ehentaiCookies: string
 }
 
 function stripArchiveSuffix(value: string): string {
@@ -39,6 +40,7 @@ export function buildMetadataManagementPanelProps(params: BuildMetadataManagemen
     layoutLocked: params.layoutLocked,
     defaultFetchText: stripArchiveSuffix(params.targetPackageName),
     proxyServer: params.proxyServer,
+    ehentaiCookies: params.ehentaiCookies,
     targetPackageLabel: params.targetPackageLabel,
   }
 }

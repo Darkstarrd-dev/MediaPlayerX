@@ -414,6 +414,25 @@ export const searchExternalMetadataRequestSchema = z.object({
   input_id: z.string().optional(),
   source: z.enum(['nhentai', 'ehentai']).optional(),
   proxy_server: z.string().optional(),
+  ehentai_cookies: z.string().optional(),
+})
+
+export const searchExternalMetadataDebugStepSchema = z.object({
+  at_ms: z.number().int().nonnegative(),
+  stage: z.string().min(1),
+  message: z.string().min(1),
+  request: z.unknown().optional(),
+  response: z.unknown().optional(),
+})
+
+export const searchExternalMetadataDebugSchema = z.object({
+  source: z.enum(['nhentai', 'ehentai']),
+  started_at_ms: z.number().int().nonnegative(),
+  finished_at_ms: z.number().int().nonnegative(),
+  success: z.boolean(),
+  result_count: nonNegativeIntSchema,
+  error_message: z.string().min(1).optional(),
+  steps: z.array(searchExternalMetadataDebugStepSchema),
 })
 
 export const externalMetadataResultItemSchema = z.object({
@@ -434,6 +453,7 @@ export const externalMetadataResultItemSchema = z.object({
 
 export const searchExternalMetadataResponseSchema = z.object({
   items: z.array(externalMetadataResultItemSchema),
+  debug: searchExternalMetadataDebugSchema.optional(),
 })
 
 export const writePackageMetadataResponseSchema = z.object({
@@ -614,6 +634,14 @@ export const writeAppStateResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const openExternalUrlRequestSchema = z.object({
+  url: z.string().url(),
+})
+
+export const openExternalUrlResponseSchema = z.object({
+  ok: z.boolean(),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -734,6 +762,8 @@ export type WritePackageExternalMetadataRequestDto = z.infer<typeof writePackage
 export type WritePackageExternalMetadataResponseDto = z.infer<typeof writePackageExternalMetadataResponseSchema>
 export type SearchExternalMetadataRequestDto = z.infer<typeof searchExternalMetadataRequestSchema>
 export type ExternalMetadataResultItemDto = z.infer<typeof externalMetadataResultItemSchema>
+export type SearchExternalMetadataDebugStepDto = z.infer<typeof searchExternalMetadataDebugStepSchema>
+export type SearchExternalMetadataDebugDto = z.infer<typeof searchExternalMetadataDebugSchema>
 export type SearchExternalMetadataResponseDto = z.infer<typeof searchExternalMetadataResponseSchema>
 export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>
 export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataResponseSchema>
@@ -764,6 +794,8 @@ export type ReadAppStateRequestDto = z.infer<typeof readAppStateRequestSchema>
 export type ReadAppStateResponseDto = z.infer<typeof readAppStateResponseSchema>
 export type WriteAppStateRequestDto = z.infer<typeof writeAppStateRequestSchema>
 export type WriteAppStateResponseDto = z.infer<typeof writeAppStateResponseSchema>
+export type OpenExternalUrlRequestDto = z.infer<typeof openExternalUrlRequestSchema>
+export type OpenExternalUrlResponseDto = z.infer<typeof openExternalUrlResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

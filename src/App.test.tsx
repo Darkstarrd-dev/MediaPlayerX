@@ -656,6 +656,21 @@ describe('MediaPlayer 虚拟 UI', () => {
               raw: { source: 'ehentai', mock: true },
             },
           ],
+          debug: {
+            source: 'ehentai' as const,
+            started_at_ms: 1,
+            finished_at_ms: 2,
+            success: true,
+            result_count: 1,
+            steps: [
+              {
+                at_ms: 1,
+                stage: 'ehentai.search-page.request',
+                message: '开始请求',
+                request: { url: 'https://e-hentai.org/' },
+              },
+            ],
+          },
         }
       }
 
@@ -677,6 +692,21 @@ describe('MediaPlayer 虚拟 UI', () => {
             raw: { source: 'nhentai', mock: true },
           },
         ],
+        debug: {
+          source: 'nhentai' as const,
+          started_at_ms: 1,
+          finished_at_ms: 2,
+          success: true,
+          result_count: 1,
+          steps: [
+            {
+              at_ms: 1,
+              stage: 'nhentai.gallery.request',
+              message: '开始请求',
+              request: { url: 'https://nhentai.net/api/gallery/114514' },
+            },
+          ],
+        },
       }
     })
 
@@ -708,13 +738,17 @@ describe('MediaPlayer 虚拟 UI', () => {
       const ehScope = within(ehColumn as HTMLElement)
       const nhRequest = nhScope.getByLabelText('Request Body') as HTMLTextAreaElement
       const nhResponse = nhScope.getByLabelText('Response Body') as HTMLTextAreaElement
+      const nhDebug = nhScope.getByLabelText('Debug Trace') as HTMLTextAreaElement
       const ehRequest = ehScope.getByLabelText('Request Body') as HTMLTextAreaElement
       const ehResponse = ehScope.getByLabelText('Response Body') as HTMLTextAreaElement
+      const ehDebug = ehScope.getByLabelText('Debug Trace') as HTMLTextAreaElement
 
       expect(nhRequest.value).toContain('"source": "nhentai"')
       expect(nhResponse.value).toContain('"source": "nhentai"')
+      expect(nhDebug.value).toContain('"nhentai.gallery.request"')
       expect(ehRequest.value).toContain('"source": "ehentai"')
       expect(ehResponse.value).toContain('"source": "ehentai"')
+      expect(ehDebug.value).toContain('"ehentai.search-page.request"')
     })
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
@@ -725,6 +759,13 @@ describe('MediaPlayer 虚拟 UI', () => {
 
   it('获取元数据支持按来源过滤、回车检索并可解析 ehentai 结果', async () => {
     render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    fireEvent.click(screen.getByRole('button', { name: '数据库设置' }))
+    fireEvent.change(screen.getByLabelText('E-Hentai Cookies'), {
+      target: { value: 'ipb_member_id=123; ipb_pass_hash=abc' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '关闭' }))
 
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
     fireEvent.click(screen.getByRole('button', { name: '获取元数据' }))
@@ -752,6 +793,21 @@ describe('MediaPlayer 虚拟 UI', () => {
           },
         },
       ],
+      debug: {
+        source: 'ehentai' as const,
+        started_at_ms: 1,
+        finished_at_ms: 2,
+        success: true,
+        result_count: 1,
+        steps: [
+          {
+            at_ms: 1,
+            stage: 'ehentai.gdata.response',
+            message: '请求成功',
+            response: { status: 200 },
+          },
+        ],
+      },
     }))
 
     window.mediaPlayerBackend = {
@@ -771,12 +827,13 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(searchExternalMetadata).toHaveBeenCalledTimes(1)
     })
 
-    expect(searchExternalMetadata).toHaveBeenCalledWith(
-      expect.objectContaining({
-        source: 'ehentai',
-        input_id: '1919810',
-      }),
-    )
+      expect(searchExternalMetadata).toHaveBeenCalledWith(
+        expect.objectContaining({
+          source: 'ehentai',
+          input_id: '1919810',
+          ehentai_cookies: 'ipb_member_id=123; ipb_pass_hash=abc',
+        }),
+      )
 
     const nhColumn = dialog.querySelector('[data-source="nhentai"]') as HTMLElement | null
     const ehColumn = dialog.querySelector('[data-source="ehentai"]') as HTMLElement | null
@@ -788,16 +845,20 @@ describe('MediaPlayer 虚拟 UI', () => {
       const ehScope = within(ehColumn as HTMLElement)
       const nhRequest = nhScope.getByLabelText('Request Body') as HTMLTextAreaElement
       const nhResponse = nhScope.getByLabelText('Response Body') as HTMLTextAreaElement
+      const nhDebug = nhScope.getByLabelText('Debug Trace') as HTMLTextAreaElement
       const ehRequest = ehScope.getByLabelText('Request Body') as HTMLTextAreaElement
       const ehResponse = ehScope.getByLabelText('Response Body') as HTMLTextAreaElement
+      const ehDebug = ehScope.getByLabelText('Debug Trace') as HTMLTextAreaElement
 
       expect(nhRequest.value).toBe('')
       expect(nhResponse.value).toBe('')
+      expect(nhDebug.value).toBe('')
       expect(ehRequest.value).toContain('"source": "ehentai"')
       expect(ehResponse.value).toContain('"source": "ehentai"')
+      expect(ehDebug.value).toContain('"ehentai.gdata.response"')
     })
 
-    fireEvent.click(scope.getByRole('button', { name: '解析' }))
+    fireEvent.click(within(ehColumn as HTMLElement).getByRole('button', { name: '解析' }))
 
     await waitFor(() => {
       const parsed = within(ehColumn as HTMLElement).getByLabelText('Parsed') as HTMLTextAreaElement

@@ -20,6 +20,7 @@ interface BuildSettingsPanelPropsParams {
   thumbnailQuality: number
   thumbnailWidth: number
   proxyServer: string
+  ehentaiCookies: string
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -82,6 +83,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailQuality: params.thumbnailQuality,
     thumbnailWidth: params.thumbnailWidth,
     proxyServer: params.proxyServer,
+    ehentaiCookies: params.ehentaiCookies,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
     adReviewVisionModel: params.adReviewVisionModel,
     adReviewVisionVerified: params.adReviewVisionVerified,
@@ -132,6 +134,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
     onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),
+    onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({
         adReviewVisionEndpoint: value,

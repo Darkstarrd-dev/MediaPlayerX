@@ -44,6 +44,7 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     thumbnailQuality: settings.thumbnailQuality,
     thumbnailWidth: settings.thumbnailWidth,
     proxyServer: settings.proxyServer,
+    ehentaiCookies: settings.ehentaiCookies,
     adReviewVisionEndpoint: settings.adReviewVisionEndpoint,
     adReviewVisionModel: settings.adReviewVisionModel,
     adReviewVisionVerified: settings.adReviewVisionVerified,

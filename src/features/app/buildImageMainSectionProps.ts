@@ -50,6 +50,7 @@ interface BuildImageMainSectionPropsParams {
   metadataTargetPackageLabel: string
   metadataFetchDefaultText: string
   metadataProxyServer: string
+  metadataEhentaiCookies: string
   onMetadataSyncName: () => void
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
@@ -135,6 +136,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     metadataTargetPackageLabel: params.metadataTargetPackageLabel,
     metadataFetchDefaultText: params.metadataFetchDefaultText,
     metadataProxyServer: params.metadataProxyServer,
+    metadataEhentaiCookies: params.metadataEhentaiCookies,
     onMetadataSyncName: params.onMetadataSyncName,
     onMetadataSaveParsed: params.onMetadataSaveParsed,
     onPrevPage: params.goPrevPage,

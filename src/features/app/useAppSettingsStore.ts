@@ -37,6 +37,7 @@ export function useAppSettingsStore() {
       thumbnailQuality: state.thumbnailQuality,
       thumbnailWidth: state.thumbnailWidth,
       proxyServer: state.proxyServer,
+      ehentaiCookies: state.ehentaiCookies,
       adReviewVisionEndpoint: state.adReviewVisionEndpoint,
       adReviewVisionModel: state.adReviewVisionModel,
       adReviewVisionVerified: state.adReviewVisionVerified,

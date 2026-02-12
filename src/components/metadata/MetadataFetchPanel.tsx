@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ExternalMetadataResultItemDto } from '../../contracts/backend'
+import type { ExternalMetadataResultItemDto, SearchExternalMetadataDebugDto } from '../../contracts/backend'
 import {
   parseExternalMetadataToHitomi,
   type ParsedExternalMetadata,
@@ -10,6 +10,7 @@ interface MetadataFetchPanelProps {
   open: boolean
   defaultText: string
   proxyServer: string
+  ehentaiCookies: string
   metadataPending: boolean
   targetPackageLabel: string
   onClose: () => void
@@ -29,6 +30,11 @@ interface SourceTextMap {
   ehentai: string
 }
 
+interface SourceDebugMap {
+  nhentai: SearchExternalMetadataDebugDto | null
+  ehentai: SearchExternalMetadataDebugDto | null
+}
+
 interface SourceParsedMap {
   nhentai: ParsedExternalMetadata | null
   ehentai: ParsedExternalMetadata | null
@@ -36,12 +42,18 @@ interface SourceParsedMap {
 
 interface SourcePreviewCollapseMap {
   nhentai: {
+    debug: boolean
     request: boolean
     response: boolean
+    raw: boolean
+    parsed: boolean
   }
   ehentai: {
+    debug: boolean
     request: boolean
     response: boolean
+    raw: boolean
+    parsed: boolean
   }
 }
 
@@ -65,6 +77,13 @@ function createEmptySourceTextMap(): SourceTextMap {
   }
 }
 
+function createEmptySourceDebugMap(): SourceDebugMap {
+  return {
+    nhentai: null,
+    ehentai: null,
+  }
+}
+
 function createEmptyParsedBySource(): SourceParsedMap {
   return {
     nhentai: null,
@@ -75,12 +94,18 @@ function createEmptyParsedBySource(): SourceParsedMap {
 function createInitialPreviewCollapseBySource(): SourcePreviewCollapseMap {
   return {
     nhentai: {
+      debug: false,
       request: false,
       response: false,
+      raw: true,
+      parsed: true,
     },
     ehentai: {
+      debug: false,
       request: false,
       response: false,
+      raw: true,
+      parsed: true,
     },
   }
 }
@@ -137,6 +162,7 @@ function MetadataFetchPanel({
   open,
   defaultText,
   proxyServer,
+  ehentaiCookies,
   metadataPending,
   targetPackageLabel,
   onClose,
@@ -155,6 +181,7 @@ function MetadataFetchPanel({
   )
   const [requestPreviewBySource, setRequestPreviewBySource] = useState<SourceTextMap>(createEmptySourceTextMap())
   const [responsePreviewBySource, setResponsePreviewBySource] = useState<SourceTextMap>(createEmptySourceTextMap())
+  const [debugBySource, setDebugBySource] = useState<SourceDebugMap>(createEmptySourceDebugMap())
   const [parsedBySource, setParsedBySource] = useState<SourceParsedMap>(createEmptyParsedBySource())
   const [previewCollapseBySource, setPreviewCollapseBySource] = useState<SourcePreviewCollapseMap>(
     createInitialPreviewCollapseBySource(),
@@ -171,6 +198,7 @@ function MetadataFetchPanel({
     setSelectedIndexBySource(createInitialSelectedIndexBySource())
     setRequestPreviewBySource(createEmptySourceTextMap())
     setResponsePreviewBySource(createEmptySourceTextMap())
+    setDebugBySource(createEmptySourceDebugMap())
     setParsedBySource(createEmptyParsedBySource())
     setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
     setError(null)
@@ -204,9 +232,7 @@ function MetadataFetchPanel({
     [selectedIndexBySource, sourceLists],
   )
 
-  const selectedItem = selectedItemBySource[selectedSource]
   const resultCount = sourceLists.nhentai.length + sourceLists.ehentai.length
-  const selectedParsed = parsedBySource[selectedSource]
 
   const previewRawBySource: SourceTextMap = useMemo(
     () => ({
@@ -224,10 +250,15 @@ function MetadataFetchPanel({
     [parsedBySource],
   )
 
-  const canSearch = inputText.trim().length > 0 || inputId.trim().length > 0
-  const canParse = Boolean(selectedItem)
-  const canSave = Boolean(selectedParsed) && !saving && !metadataPending
+  const previewDebugBySource: SourceTextMap = useMemo(
+    () => ({
+      nhentai: debugBySource.nhentai ? JSON.stringify(debugBySource.nhentai, null, 2) : '',
+      ehentai: debugBySource.ehentai ? JSON.stringify(debugBySource.ehentai, null, 2) : '',
+    }),
+    [debugBySource],
+  )
 
+  const canSearch = inputText.trim().length > 0 || inputId.trim().length > 0
   if (!open) {
     return null
   }
@@ -238,7 +269,15 @@ function MetadataFetchPanel({
       input_id: inputId.trim() || undefined,
       proxy_server: proxyServer.trim() || undefined,
     }
+    const ehentaiCookieText = ehentaiCookies.trim()
     const targetSources: MetadataSource[] = sourceMode === 'all' ? SOURCE_KEYS : [sourceMode]
+    const buildRequestPayload = (source: MetadataSource) => {
+      return {
+        ...requestBase,
+        source,
+        ...(source === 'ehentai' && ehentaiCookieText ? { ehentai_cookies: ehentaiCookieText } : {}),
+      }
+    }
 
     const api = window.mediaPlayerBackend
     const searchExternalMetadata = api?.searchExternalMetadata
@@ -247,7 +286,7 @@ function MetadataFetchPanel({
       const nextResponsePreviewBySource = createEmptySourceTextMap()
 
       for (const source of targetSources) {
-        nextRequestPreviewBySource[source] = JSON.stringify({ ...requestBase, source }, null, 2)
+        nextRequestPreviewBySource[source] = JSON.stringify(buildRequestPayload(source), null, 2)
         nextResponsePreviewBySource[source] = JSON.stringify(
           {
             message: '当前后端不支持元数据检索',
@@ -262,6 +301,7 @@ function MetadataFetchPanel({
       setResponsePreviewBySource(nextResponsePreviewBySource)
       setSourceLists(createEmptySourceLists())
       setSelectedIndexBySource(createInitialSelectedIndexBySource())
+      setDebugBySource(createEmptySourceDebugMap())
       setParsedBySource(createEmptyParsedBySource())
       setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
       setError('当前后端不支持元数据检索')
@@ -270,6 +310,7 @@ function MetadataFetchPanel({
 
     setLoading(true)
     setError(null)
+    setDebugBySource(createEmptySourceDebugMap())
     setParsedBySource(createEmptyParsedBySource())
     setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
 
@@ -277,17 +318,19 @@ function MetadataFetchPanel({
       const nextSourceLists = createEmptySourceLists()
       const nextRequestPreviewBySource = createEmptySourceTextMap()
       const nextResponsePreviewBySource = createEmptySourceTextMap()
+      const nextDebugBySource = createEmptySourceDebugMap()
       const searchErrors: string[] = []
 
       await Promise.all(
         targetSources.map(async (source) => {
-          const requestPayload = { ...requestBase, source }
+          const requestPayload = buildRequestPayload(source)
           nextRequestPreviewBySource[source] = JSON.stringify(requestPayload, null, 2)
 
           try {
             const response = await searchExternalMetadata(requestPayload)
             nextSourceLists[source] = response.items.filter((item) => item.source === source)
             nextResponsePreviewBySource[source] = JSON.stringify(response, null, 2)
+            nextDebugBySource[source] = response.debug ?? null
           } catch (searchError) {
             nextResponsePreviewBySource[source] = JSON.stringify(buildErrorPayload(searchError), null, 2)
             searchErrors.push(`${getSourceShortLabel(source)}: ${searchError instanceof Error ? searchError.message : '检索失败'}`)
@@ -299,6 +342,7 @@ function MetadataFetchPanel({
       setSelectedIndexBySource(createInitialSelectedIndexBySource())
       setRequestPreviewBySource(nextRequestPreviewBySource)
       setResponsePreviewBySource(nextResponsePreviewBySource)
+      setDebugBySource(nextDebugBySource)
 
       const nextSelectedSource: MetadataSource =
         nextSourceLists[selectedSource].length > 0
@@ -320,8 +364,7 @@ function MetadataFetchPanel({
     }
   }
 
-  const runParse = () => {
-    const source = selectedSource
+  const runParse = (source: MetadataSource) => {
     const currentItem = selectedItemBySource[source]
     if (!currentItem) {
       return
@@ -336,8 +379,11 @@ function MetadataFetchPanel({
       setPreviewCollapseBySource((previous) => ({
         ...previous,
         [source]: {
+          debug: true,
           request: true,
           response: true,
+          raw: false,
+          parsed: false,
         },
       }))
       setError(null)
@@ -350,7 +396,8 @@ function MetadataFetchPanel({
     }
   }
 
-  const runSave = async () => {
+  const runSave = async (source: MetadataSource) => {
+    const selectedParsed = parsedBySource[source]
     if (!selectedParsed) {
       return
     }
@@ -434,15 +481,6 @@ function MetadataFetchPanel({
             </div>
           </fieldset>
 
-          <div className="settings-floating-actions metadata-fetch-actions">
-            <button type="button" disabled={!canParse} onClick={runParse}>
-              解析
-            </button>
-            <button type="button" disabled={!canSave} onClick={() => void runSave()}>
-              {saving ? '保存中...' : '保存'}
-            </button>
-          </div>
-
           {error ? <p className="settings-danger-text">{error}</p> : null}
 
           <div className="metadata-fetch-results">
@@ -450,8 +488,13 @@ function MetadataFetchPanel({
               const list = sourceLists[source]
               const selectedIndex = selectedIndexBySource[source] ?? 0
               const isActiveSource = selectedSource === source
+              const debugCollapsed = previewCollapseBySource[source].debug
               const requestCollapsed = previewCollapseBySource[source].request
               const responseCollapsed = previewCollapseBySource[source].response
+              const rawCollapsed = previewCollapseBySource[source].raw
+              const parsedCollapsed = previewCollapseBySource[source].parsed
+              const canParse = Boolean(selectedItemBySource[source])
+              const canSave = Boolean(parsedBySource[source]) && !saving && !metadataPending
 
               return (
                 <section
@@ -463,6 +506,29 @@ function MetadataFetchPanel({
                     <strong>{getSourceDisplayLabel(source)}</strong>
                     <span>{`${list.length} 条`}</span>
                   </header>
+
+                  <div className="settings-floating-actions metadata-fetch-actions metadata-fetch-actions-inline">
+                    <button
+                      type="button"
+                      disabled={!canParse}
+                      onClick={() => {
+                        setSelectedSource(source)
+                        runParse(source)
+                      }}
+                    >
+                      解析
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!canSave}
+                      onClick={() => {
+                        setSelectedSource(source)
+                        void runSave(source)
+                      }}
+                    >
+                      {saving && selectedSource === source ? '保存中...' : '保存'}
+                    </button>
+                  </div>
 
                   <ul className="metadata-fetch-result-list">
                     {list.map((item, index) => (
@@ -483,8 +549,11 @@ function MetadataFetchPanel({
                             setPreviewCollapseBySource((previous) => ({
                               ...previous,
                               [source]: {
+                                debug: false,
                                 request: false,
                                 response: false,
+                                raw: false,
+                                parsed: true,
                               },
                             }))
                           }}
@@ -498,6 +567,76 @@ function MetadataFetchPanel({
                   </ul>
 
                   <div className="metadata-fetch-preview-stack">
+                    <section className="metadata-fetch-preview-card">
+                      <button
+                        type="button"
+                        className="metadata-fetch-preview-toggle"
+                        onClick={() => {
+                          setPreviewCollapseBySource((previous) => ({
+                            ...previous,
+                            [source]: {
+                              ...previous[source],
+                              debug: !previous[source].debug,
+                            },
+                          }))
+                        }}
+                      >
+                        <span>Debug Trace</span>
+                        <span>{debugCollapsed ? '展开' : '折叠'}</span>
+                      </button>
+                      {!debugCollapsed ? (
+                        <AutoSizeReadonlyTextarea
+                          id={`${source}-debug-trace`}
+                          label="Debug Trace"
+                          value={previewDebugBySource[source]}
+                        />
+                      ) : null}
+                    </section>
+
+                    <section className="metadata-fetch-preview-card">
+                      <button
+                        type="button"
+                        className="metadata-fetch-preview-toggle"
+                        onClick={() => {
+                          setPreviewCollapseBySource((previous) => ({
+                            ...previous,
+                            [source]: {
+                              ...previous[source],
+                              parsed: !previous[source].parsed,
+                            },
+                          }))
+                        }}
+                      >
+                        <span>Parsed</span>
+                        <span>{parsedCollapsed ? '展开' : '折叠'}</span>
+                      </button>
+                      {!parsedCollapsed ? (
+                        <AutoSizeReadonlyTextarea id={`${source}-parsed`} label="Parsed" value={previewParsedBySource[source]} />
+                      ) : null}
+                    </section>
+
+                    <section className="metadata-fetch-preview-card">
+                      <button
+                        type="button"
+                        className="metadata-fetch-preview-toggle"
+                        onClick={() => {
+                          setPreviewCollapseBySource((previous) => ({
+                            ...previous,
+                            [source]: {
+                              ...previous[source],
+                              raw: !previous[source].raw,
+                            },
+                          }))
+                        }}
+                      >
+                        <span>Raw</span>
+                        <span>{rawCollapsed ? '展开' : '折叠'}</span>
+                      </button>
+                      {!rawCollapsed ? (
+                        <AutoSizeReadonlyTextarea id={`${source}-raw`} label="Raw" value={previewRawBySource[source]} />
+                      ) : null}
+                    </section>
+
                     <section className="metadata-fetch-preview-card">
                       <button
                         type="button"
@@ -548,14 +687,6 @@ function MetadataFetchPanel({
                           value={responsePreviewBySource[source]}
                         />
                       ) : null}
-                    </section>
-
-                    <section className="metadata-fetch-preview-card">
-                      <AutoSizeReadonlyTextarea id={`${source}-raw`} label="Raw" value={previewRawBySource[source]} />
-                    </section>
-
-                    <section className="metadata-fetch-preview-card">
-                      <AutoSizeReadonlyTextarea id={`${source}-parsed`} label="Parsed" value={previewParsedBySource[source]} />
                     </section>
                   </div>
                 </section>

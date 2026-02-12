@@ -18,6 +18,7 @@ interface MetadataManagementPanelProps {
   layoutLocked: boolean
   defaultFetchText: string
   proxyServer: string
+  ehentaiCookies: string
   targetPackageLabel: string
 }
 
@@ -36,6 +37,7 @@ function MetadataManagementPanel({
   layoutLocked,
   defaultFetchText,
   proxyServer,
+  ehentaiCookies,
   targetPackageLabel,
 }: MetadataManagementPanelProps) {
   const [fetchPanelOpen, setFetchPanelOpen] = useState(false)
@@ -90,6 +92,7 @@ function MetadataManagementPanel({
         open={fetchPanelOpen}
         defaultText={defaultFetchText}
         proxyServer={proxyServer}
+        ehentaiCookies={ehentaiCookies}
         metadataPending={metadataPending}
         targetPackageLabel={targetPackageLabel}
         onClose={() => setFetchPanelOpen(false)}

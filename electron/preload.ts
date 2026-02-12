@@ -64,6 +64,8 @@ import {
   readAppStateResponseSchema,
   writeAppStateRequestSchema,
   writeAppStateResponseSchema,
+  openExternalUrlRequestSchema,
+  openExternalUrlResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, BENCH_CHANNELS } from './channels'
 
@@ -234,6 +236,11 @@ const backendApi = {
     const parsed = writeAppStateRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.writeAppState, parsed)
     return writeAppStateResponseSchema.parse(response)
+  },
+  openExternalUrl: async (request: unknown) => {
+    const parsed = openExternalUrlRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.openExternalUrl, parsed)
+    return openExternalUrlResponseSchema.parse(response)
   },
   clearDatabase: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearDatabase)

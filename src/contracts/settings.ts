@@ -37,6 +37,7 @@ export const appSettingsSchema = z.object({
   thumbnailQuality: z.number().min(1).max(100),
   thumbnailWidth: z.number().min(128).max(2048),
   proxyServer: z.string().max(512),
+  ehentaiCookies: z.string().max(4096),
   adReviewVisionEndpoint: z.string().max(512),
   adReviewVisionModel: z.string().max(256),
   adReviewVisionVerified: z.boolean(),

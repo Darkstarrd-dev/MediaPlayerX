@@ -62,6 +62,8 @@ import type {
   ReadAppStateResponseDto,
   WriteAppStateRequestDto,
   WriteAppStateResponseDto,
+  OpenExternalUrlRequestDto,
+  OpenExternalUrlResponseDto,
 } from './contracts/backend'
 
 interface MediaPlayerBackendApi {
@@ -96,6 +98,7 @@ interface MediaPlayerBackendApi {
   writePlaylist: (request: WritePlaylistRequestDto) => Promise<WritePlaylistResponseDto>
   readAppState?: (request: ReadAppStateRequestDto) => Promise<ReadAppStateResponseDto>
   writeAppState?: (request: WriteAppStateRequestDto) => Promise<WriteAppStateResponseDto>
+  openExternalUrl?: (request: OpenExternalUrlRequestDto) => Promise<OpenExternalUrlResponseDto>
   pickImportPaths: (request: PickImportPathsRequestDto) => Promise<PickImportPathsResponseDto>
   pickFilePath?: (request: PickFilePathRequestDto) => Promise<PickFilePathResponseDto>
   pickDirectoryPath?: (request: PickDirectoryPathRequestDto) => Promise<PickDirectoryPathResponseDto>

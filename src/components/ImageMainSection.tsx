@@ -36,6 +36,7 @@ interface ImageMainSectionProps {
   metadataTargetPackageLabel: string
   metadataFetchDefaultText: string
   metadataProxyServer: string
+  metadataEhentaiCookies: string
   onMetadataSyncName: () => void
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
   manageMode: boolean
@@ -129,6 +130,7 @@ function ImageMainSection({
   metadataTargetPackageLabel,
   metadataFetchDefaultText,
   metadataProxyServer,
+  metadataEhentaiCookies,
   onMetadataSyncName,
   onMetadataSaveParsed,
   onPrevPage,
@@ -438,6 +440,7 @@ function ImageMainSection({
         open={metadataFetchOpen}
         defaultText={metadataFetchDefaultText}
         proxyServer={metadataProxyServer}
+        ehentaiCookies={metadataEhentaiCookies}
         metadataPending={metadataPending}
         targetPackageLabel={metadataTargetPackageLabel}
         onClose={() => setMetadataFetchOpen(false)}

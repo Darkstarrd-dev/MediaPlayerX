@@ -1,4 +1,4 @@
-import { app, BrowserWindow, clipboard, dialog, ipcMain, protocol } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, protocol, shell } from 'electron'
 import { promises as fs, readFileSync } from 'node:fs'
 import path from 'node:path'
 
@@ -66,6 +66,8 @@ import {
   readAppStateResponseSchema,
   writeAppStateRequestSchema,
   writeAppStateResponseSchema,
+  openExternalUrlRequestSchema,
+  openExternalUrlResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { MediaAccessError } from './fileSystemMediaAccessGuard'
@@ -641,6 +643,12 @@ export function registerBackendIpcHandlers(): void {
     const request = writeAppStateRequestSchema.parse(payload)
     const response = await ensureService().writeAppState(request)
     return writeAppStateResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.openExternalUrl, async (_event, payload: unknown) => {
+    const request = openExternalUrlRequestSchema.parse(payload)
+    await shell.openExternal(request.url)
+    return openExternalUrlResponseSchema.parse({ ok: true })
   })
 
   ipcMain.handle(BACKEND_CHANNELS.clearDatabase, async () => {

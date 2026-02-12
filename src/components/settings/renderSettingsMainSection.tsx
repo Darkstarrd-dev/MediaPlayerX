@@ -44,6 +44,7 @@ interface RenderSettingsMainSectionParams {
   thumbnailQuality: number
   thumbnailWidth: number
   proxyServer: string
+  ehentaiCookies: string
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -91,6 +92,7 @@ interface RenderSettingsMainSectionParams {
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
   onProxyServerChange: (value: string) => void
+  onEhentaiCookiesChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -136,6 +138,7 @@ export function renderSettingsMainSection({
   thumbnailQuality,
   thumbnailWidth,
   proxyServer,
+  ehentaiCookies,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -183,6 +186,7 @@ export function renderSettingsMainSection({
   onThumbnailQualityChange,
   onThumbnailWidthChange,
   onProxyServerChange,
+  onEhentaiCookiesChange,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -488,6 +492,15 @@ export function renderSettingsMainSection({
               value={proxyServer}
               placeholder="例如 socks5://127.0.0.1:2080"
               onChange={(event) => onProxyServerChange(event.target.value)}
+            />
+          </label>
+          <label>
+            E-Hentai Cookies
+            <input
+              type="text"
+              value={ehentaiCookies}
+              placeholder="例如 ipb_member_id=xxx; ipb_pass_hash=xxx"
+              onChange={(event) => onEhentaiCookiesChange(event.target.value)}
             />
           </label>
         </fieldset>

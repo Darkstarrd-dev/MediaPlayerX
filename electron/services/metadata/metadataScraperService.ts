@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance } from 'axios'
+import axios, { type AxiosInstance, type AxiosResponse } from 'axios'
 import { load as loadHtml } from 'cheerio'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { SocksProxyAgent } from 'socks-proxy-agent'
@@ -10,7 +10,8 @@ import type {
 } from '../../../src/contracts/backend'
 
 const DEFAULT_TIMEOUT_MS = 25_000
-const DEFAULT_COOKIES = 'sl=dm_1'
+const DEFAULT_EHENTAI_COOKIES = 'sl=dm_1; nw=1'
+const PROXY_FALLBACK_CANDIDATES = ['socks5://127.0.0.1:2080', 'http://127.0.0.1:2080'] as const
 const DEFAULT_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
@@ -28,9 +29,31 @@ interface MetadataScraperServiceOptions {
   defaultProxyServer?: string
 }
 
+type MetadataSource = 'nhentai' | 'ehentai'
+
 interface SearchContext {
   input: ParsedInput
-  client: AxiosInstance
+  nhClient: AxiosInstance
+  ehClient: AxiosInstance
+  proxyServer?: string
+}
+
+interface SourceSearchDebugStep {
+  at_ms: number
+  stage: string
+  message: string
+  request?: unknown
+  response?: unknown
+}
+
+interface SourceSearchDebug {
+  source: MetadataSource
+  started_at_ms: number
+  finished_at_ms: number
+  success: boolean
+  result_count: number
+  error_message?: string
+  steps: SourceSearchDebugStep[]
 }
 
 export class MetadataScraperService {
@@ -47,91 +70,200 @@ export class MetadataScraperService {
       return { items: [] }
     }
 
-    const proxyServer = request.proxy_server?.trim() || this.defaultProxyServer || undefined
-    const context: SearchContext = {
-      input: parseInput(inputRaw),
-      client: createHttpClient(proxyServer),
-    }
+    const input = parseInput(inputRaw)
+    const ehentaiCookies = buildEhentaiCookieHeader(request.ehentai_cookies)
+    const proxyCandidates = resolveProxyCandidates(request.proxy_server, this.defaultProxyServer)
 
     if (source === 'nhentai') {
-      return { items: await this.searchNhentai(context) }
+      return this.searchBySourceWithProxyFallback('nhentai', input, ehentaiCookies, proxyCandidates)
     }
     if (source === 'ehentai') {
-      return { items: await this.searchEhentai(context) }
+      return this.searchBySourceWithProxyFallback('ehentai', input, ehentaiCookies, proxyCandidates)
     }
 
-    const [nhItems, ehItems] = await Promise.all([this.searchNhentai(context), this.searchEhentai(context)])
+    const [nhResponse, ehResponse] = await Promise.all([
+      this.searchBySourceWithProxyFallback('nhentai', input, ehentaiCookies, proxyCandidates),
+      this.searchBySourceWithProxyFallback('ehentai', input, ehentaiCookies, proxyCandidates),
+    ])
+
     return {
-      items: [...nhItems, ...ehItems],
+      items: [...nhResponse.items, ...ehResponse.items],
     }
   }
 
-  private async searchNhentai(context: SearchContext): Promise<ExternalMetadataResultItemDto[]> {
-    try {
-      let entries: Array<Record<string, unknown>> = []
-      if (context.input.type === 'id' || context.input.type === 'nh_link') {
-        const id = context.input.value ?? context.input.id
-        if (!id) {
-          return []
-        }
-        const response = await context.client.get(`https://nhentai.net/api/gallery/${id}`)
-        if (response.data && typeof response.data === 'object') {
-          entries = [response.data as Record<string, unknown>]
-        }
-      } else {
-        const response = await context.client.get('https://nhentai.net/api/galleries/search', {
-          params: {
-            query: context.input.value,
-            page: 1,
-          },
-        })
-        const list = (response.data as { result?: Array<Record<string, unknown>> } | null)?.result
-        entries = Array.isArray(list) ? list : []
-      }
+  private async searchBySourceWithProxyFallback(
+    source: MetadataSource,
+    input: ParsedInput,
+    ehentaiCookies: string,
+    proxyCandidates: Array<string | undefined>,
+  ): Promise<SearchExternalMetadataResponseDto> {
+    let lastResponse: SearchExternalMetadataResponseDto | null = null
 
-      return entries.map((entry) => toNhentaiResult(entry))
-    } catch {
-      return []
+    for (let index = 0; index < proxyCandidates.length; index += 1) {
+      const proxyServer = proxyCandidates[index]
+      const context = this.createSearchContext(input, proxyServer, ehentaiCookies)
+      const response = await this.searchBySource(context, source)
+      lastResponse = response
+
+      const debug = response.debug
+      const shouldRetry =
+        Boolean(debug) && !debug.success && index < proxyCandidates.length - 1 && isLikelyNetworkError(debug.error_message)
+      if (!shouldRetry) {
+        return response
+      }
+    }
+
+    return lastResponse ?? { items: [] }
+  }
+
+  private createSearchContext(
+    input: ParsedInput,
+    proxyServer: string | undefined,
+    ehentaiCookies: string,
+  ): SearchContext {
+    return {
+      input,
+      proxyServer,
+      nhClient: createHttpClient(proxyServer),
+      ehClient: createHttpClient(proxyServer, {
+        cookie: ehentaiCookies,
+        referer: 'https://e-hentai.org/',
+      }),
     }
   }
 
-  private async searchEhentai(context: SearchContext): Promise<ExternalMetadataResultItemDto[]> {
-    try {
-      let gidlist: Array<[number, string]> = []
-      if (context.input.type === 'eh_link') {
-        const gid = Number(context.input.gid)
-        const token = context.input.token?.trim() ?? ''
-        if (Number.isInteger(gid) && token) {
-          gidlist = [[gid, token]]
-        }
-      } else if (context.input.type === 'eh_page_link') {
-        const tokenInfo = await this.fetchTokenFromPage(context)
-        if (tokenInfo) {
-          gidlist = [[tokenInfo.gid, tokenInfo.token]]
-        }
-      } else if (context.input.type === 'id') {
-        gidlist = await this.searchEhGidList(context, `gid:${context.input.value ?? ''}`)
-      } else {
-        gidlist = await this.searchEhGidList(context, context.input.value ?? '')
-      }
-
-      if (gidlist.length === 0) {
-        return []
-      }
-
-      const metadata = await this.fetchEhMetadata(context, gidlist)
-      return metadata.map((entry) => toEhentaiResult(entry))
-    } catch {
-      return []
-    }
-  }
-
-  private async searchEhGidList(context: SearchContext, query: string): Promise<Array<[number, string]>> {
-    const response = await context.client.get('https://e-hentai.org/', {
-      params: {
-        f_search: query,
+  private async searchBySource(
+    context: SearchContext,
+    source: MetadataSource,
+  ): Promise<SearchExternalMetadataResponseDto> {
+    const debug = createSourceSearchDebug(source)
+    appendDebugStep(debug, {
+      stage: `${source}.start`,
+      message: '开始检索',
+      request: {
+        source,
+        input: context.input,
+        proxy_server: context.proxyServer ?? '(direct)',
       },
     })
+
+    try {
+      const items =
+        source === 'nhentai'
+          ? await this.searchNhentai(context, debug)
+          : await this.searchEhentai(context, debug)
+      appendDebugStep(debug, {
+        stage: `${source}.result`,
+        message: '检索完成',
+        response: {
+          item_count: items.length,
+        },
+      })
+      finishSourceSearchDebug(debug, true, items.length)
+      return {
+        items,
+        debug,
+      }
+    } catch (error) {
+      const errorDetail = describeRequestError(error)
+      appendDebugStep(debug, {
+        stage: `${source}.failed`,
+        message: '检索失败',
+        response: errorDetail.response,
+      })
+      finishSourceSearchDebug(debug, false, 0, errorDetail.message)
+      return {
+        items: [],
+        debug,
+      }
+    }
+  }
+
+  private async searchNhentai(
+    context: SearchContext,
+    debug: SourceSearchDebug,
+  ): Promise<ExternalMetadataResultItemDto[]> {
+    let entries: Array<Record<string, unknown>> = []
+    if (context.input.type === 'id' || context.input.type === 'nh_link') {
+      const id = context.input.value ?? context.input.id
+      if (!id) {
+        return []
+      }
+      const response = await tracedGet(
+        context.nhClient,
+        debug,
+        'nhentai.gallery',
+        `https://nhentai.net/api/gallery/${id}`,
+      )
+      if (response.data && typeof response.data === 'object') {
+        entries = [response.data as Record<string, unknown>]
+      }
+    } else {
+      const response = await tracedGet(
+        context.nhClient,
+        debug,
+        'nhentai.search',
+        'https://nhentai.net/api/galleries/search',
+        {
+          query: context.input.value,
+          page: 1,
+        },
+      )
+      const list = (response.data as { result?: Array<Record<string, unknown>> } | null)?.result
+      entries = Array.isArray(list) ? list : []
+    }
+
+    return entries.map((entry) => toNhentaiResult(entry))
+  }
+
+  private async searchEhentai(
+    context: SearchContext,
+    debug: SourceSearchDebug,
+  ): Promise<ExternalMetadataResultItemDto[]> {
+    let gidlist: Array<[number, string]> = []
+    if (context.input.type === 'eh_link') {
+      const gid = Number(context.input.gid)
+      const token = context.input.token?.trim() ?? ''
+      if (Number.isInteger(gid) && token) {
+        gidlist = [[gid, token]]
+      }
+    } else if (context.input.type === 'eh_page_link') {
+      const tokenInfo = await this.fetchTokenFromPage(context, debug)
+      if (tokenInfo) {
+        gidlist = [[tokenInfo.gid, tokenInfo.token]]
+      }
+    } else if (context.input.type === 'id') {
+      gidlist = await this.searchEhGidList(context, `gid:${context.input.value ?? ''}`, debug)
+    } else {
+      gidlist = await this.searchEhGidList(context, context.input.value ?? '', debug)
+    }
+
+    if (gidlist.length === 0) {
+      appendDebugStep(debug, {
+        stage: 'ehentai.gidlist.empty',
+        message: '未解析到 gid/token，跳过 gdata 请求',
+      })
+      return []
+    }
+
+    const metadata = await this.fetchEhMetadata(context, gidlist, debug)
+    return metadata.map((entry) => toEhentaiResult(entry))
+  }
+
+  private async searchEhGidList(
+    context: SearchContext,
+    query: string,
+    debug: SourceSearchDebug,
+  ): Promise<Array<[number, string]>> {
+    const response = await tracedGet(
+      context.ehClient,
+      debug,
+      'ehentai.search-page',
+      'https://e-hentai.org/',
+      {
+        f_search: query,
+      },
+    )
     const html = typeof response.data === 'string' ? response.data : ''
     const $ = loadHtml(html)
     const gidlist: Array<[number, string]> = []
@@ -152,14 +284,23 @@ export class MetadataScraperService {
       gidlist.push([gid, token])
     })
 
+    appendDebugStep(debug, {
+      stage: 'ehentai.search-page.parse',
+      message: '解析搜索页 gid/token',
+      response: {
+        gid_token_count: gidlist.length,
+      },
+    })
+
     return gidlist
   }
 
   private async fetchEhMetadata(
     context: SearchContext,
     gidlist: Array<[number, string]>,
+    debug: SourceSearchDebug,
   ): Promise<Array<Record<string, unknown>>> {
-    const response = await context.client.post('https://api.e-hentai.org/api.php', {
+    const response = await tracedPost(context.ehClient, debug, 'ehentai.gdata', 'https://api.e-hentai.org/api.php', {
       method: 'gdata',
       gidlist,
       namespace: 1,
@@ -171,7 +312,10 @@ export class MetadataScraperService {
     return list.filter((item) => !('error' in item))
   }
 
-  private async fetchTokenFromPage(context: SearchContext): Promise<{ gid: number; token: string } | null> {
+  private async fetchTokenFromPage(
+    context: SearchContext,
+    debug: SourceSearchDebug,
+  ): Promise<{ gid: number; token: string } | null> {
     const gid = Number(context.input.gid)
     const pageToken = context.input.pageToken?.trim() ?? ''
     const pageNumber = Number(context.input.pageNumber)
@@ -179,7 +323,7 @@ export class MetadataScraperService {
       return null
     }
 
-    const response = await context.client.post('https://api.e-hentai.org/api.php', {
+    const response = await tracedPost(context.ehClient, debug, 'ehentai.gtoken', 'https://api.e-hentai.org/api.php', {
       method: 'gtoken',
       pagelist: [[pageToken, gid, pageNumber]],
     })
@@ -200,16 +344,27 @@ export class MetadataScraperService {
   }
 }
 
-function createHttpClient(proxyServer?: string): AxiosInstance {
+interface HttpClientHeaderOptions {
+  cookie?: string
+  referer?: string
+}
+
+function createHttpClient(proxyServer: string | undefined, headerOptions?: HttpClientHeaderOptions): AxiosInstance {
   const normalizedProxy = proxyServer?.trim() ?? ''
+  const headers: Record<string, string> = {
+    'User-Agent': DEFAULT_USER_AGENT,
+  }
+  if (headerOptions?.cookie) {
+    headers.Cookie = headerOptions.cookie
+  }
+  if (headerOptions?.referer) {
+    headers.Referer = headerOptions.referer
+  }
+
   if (!normalizedProxy) {
     return axios.create({
       timeout: DEFAULT_TIMEOUT_MS,
-      headers: {
-        'User-Agent': DEFAULT_USER_AGENT,
-        Cookie: DEFAULT_COOKIES,
-        Referer: 'https://e-hentai.org/',
-      },
+      headers,
     })
   }
 
@@ -222,12 +377,282 @@ function createHttpClient(proxyServer?: string): AxiosInstance {
     proxy: false,
     httpsAgent: agent,
     httpAgent: agent,
-    headers: {
-      'User-Agent': DEFAULT_USER_AGENT,
-      Cookie: DEFAULT_COOKIES,
-      Referer: 'https://e-hentai.org/',
+    headers,
+  })
+}
+
+function buildEhentaiCookieHeader(rawCookies: string | undefined): string {
+  const merged = new Map<string, string>()
+  for (const [key, value] of parseCookieMap(DEFAULT_EHENTAI_COOKIES)) {
+    merged.set(key, value)
+  }
+  for (const [key, value] of parseCookieMap(rawCookies ?? '')) {
+    merged.set(key, value)
+  }
+  return Array.from(merged.entries())
+    .map(([key, value]) => `${key}=${value}`)
+    .join('; ')
+}
+
+function parseCookieMap(rawCookies: string): Map<string, string> {
+  const sanitized = rawCookies.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim()
+  const map = new Map<string, string>()
+  for (const segment of sanitized.split(';')) {
+    const token = segment.trim()
+    if (!token) {
+      continue
+    }
+    const separator = token.indexOf('=')
+    if (separator <= 0) {
+      continue
+    }
+    const key = token.slice(0, separator).trim()
+    const value = token.slice(separator + 1).trim()
+    if (!key) {
+      continue
+    }
+    map.set(key, value)
+  }
+  return map
+}
+
+function resolveProxyCandidates(
+  rawRequestProxyServer: string | undefined,
+  defaultProxyServer: string,
+): Array<string | undefined> {
+  const requestProxyServer = rawRequestProxyServer?.trim() ?? ''
+  if (requestProxyServer) {
+    return [requestProxyServer]
+  }
+
+  const candidates: Array<string | undefined> = [
+    defaultProxyServer.trim() || undefined,
+    undefined,
+    ...PROXY_FALLBACK_CANDIDATES,
+  ]
+
+  const unique = new Map<string, string | undefined>()
+  for (const candidate of candidates) {
+    const normalized = candidate?.trim() || undefined
+    const key = normalized ?? '__direct__'
+    if (!unique.has(key)) {
+      unique.set(key, normalized)
+    }
+  }
+
+  return Array.from(unique.values())
+}
+
+function isLikelyNetworkError(rawMessage: string | undefined): boolean {
+  const message = (rawMessage ?? '').toLowerCase()
+  if (!message) {
+    return false
+  }
+
+  return [
+    'econnrefused',
+    'econnreset',
+    'enotfound',
+    'eai_again',
+    'etimedout',
+    'socket hang up',
+    'proxy',
+    'connect timeout',
+    'network error',
+    'tunneling socket',
+  ].some((keyword) => message.includes(keyword))
+}
+
+function createSourceSearchDebug(source: MetadataSource): SourceSearchDebug {
+  return {
+    source,
+    started_at_ms: Date.now(),
+    finished_at_ms: Date.now(),
+    success: false,
+    result_count: 0,
+    steps: [],
+  }
+}
+
+function finishSourceSearchDebug(
+  debug: SourceSearchDebug,
+  success: boolean,
+  resultCount: number,
+  errorMessage?: string,
+): void {
+  debug.finished_at_ms = Date.now()
+  debug.success = success
+  debug.result_count = resultCount
+  if (errorMessage) {
+    debug.error_message = errorMessage
+  }
+}
+
+function appendDebugStep(
+  debug: SourceSearchDebug,
+  step: Omit<SourceSearchDebugStep, 'at_ms'>,
+): void {
+  debug.steps.push({
+    at_ms: Date.now(),
+    ...step,
+  })
+}
+
+async function tracedGet(
+  client: AxiosInstance,
+  debug: SourceSearchDebug,
+  stage: string,
+  url: string,
+  params?: Record<string, unknown>,
+): Promise<AxiosResponse<unknown>> {
+  appendDebugStep(debug, {
+    stage: `${stage}.request`,
+    message: '开始请求',
+    request: {
+      method: 'GET',
+      url,
+      params: params ?? null,
     },
   })
+
+  try {
+    const response = await client.get(url, {
+      params,
+    })
+    appendDebugStep(debug, {
+      stage: `${stage}.response`,
+      message: '请求成功',
+      response: summarizeResponse(response),
+    })
+    return response
+  } catch (error) {
+    const detail = describeRequestError(error)
+    appendDebugStep(debug, {
+      stage: `${stage}.response`,
+      message: '请求失败',
+      response: detail.response,
+    })
+    throw error
+  }
+}
+
+async function tracedPost(
+  client: AxiosInstance,
+  debug: SourceSearchDebug,
+  stage: string,
+  url: string,
+  data: Record<string, unknown>,
+): Promise<AxiosResponse<unknown>> {
+  appendDebugStep(debug, {
+    stage: `${stage}.request`,
+    message: '开始请求',
+    request: {
+      method: 'POST',
+      url,
+      body: data,
+    },
+  })
+
+  try {
+    const response = await client.post(url, data)
+    appendDebugStep(debug, {
+      stage: `${stage}.response`,
+      message: '请求成功',
+      response: summarizeResponse(response),
+    })
+    return response
+  } catch (error) {
+    const detail = describeRequestError(error)
+    appendDebugStep(debug, {
+      stage: `${stage}.response`,
+      message: '请求失败',
+      response: detail.response,
+    })
+    throw error
+  }
+}
+
+function summarizeResponse(response: AxiosResponse<unknown>): Record<string, unknown> {
+  return {
+    status: response.status,
+    status_text: response.statusText,
+    headers: pickResponseHeaders(response.headers),
+    body_preview: toResponsePreview(response.data),
+  }
+}
+
+function describeRequestError(error: unknown): {
+  message: string
+  response: Record<string, unknown>
+} {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status
+    const statusText = error.response?.statusText
+    const detailMessage = [
+      error.message,
+      error.code ? `code=${error.code}` : '',
+      status ? `status=${status}` : '',
+      statusText ? `status_text=${statusText}` : '',
+    ]
+      .filter(Boolean)
+      .join(' | ')
+
+    return {
+      message: detailMessage || '请求失败',
+      response: {
+        status,
+        status_text: statusText,
+        code: error.code,
+        headers: pickResponseHeaders(error.response?.headers),
+        body_preview: toResponsePreview(error.response?.data),
+      },
+    }
+  }
+
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      response: {
+        message: error.message,
+        name: error.name,
+      },
+    }
+  }
+
+  return {
+    message: String(error),
+    response: {
+      message: String(error),
+    },
+  }
+}
+
+function pickResponseHeaders(headers: unknown): Record<string, string> {
+  const target = headers && typeof headers === 'object' ? (headers as Record<string, unknown>) : {}
+  const selectedKeys = ['content-type', 'content-length', 'server', 'date', 'cf-ray']
+  const result: Record<string, string> = {}
+  for (const key of selectedKeys) {
+    const value = target[key] ?? target[key.toLowerCase()] ?? target[key.toUpperCase()]
+    if (typeof value === 'string' && value.trim()) {
+      result[key] = value
+    }
+  }
+  return result
+}
+
+function toResponsePreview(value: unknown): string {
+  if (typeof value === 'string') {
+    return value.length > 1200 ? `${value.slice(0, 1200)}...` : value
+  }
+  try {
+    const serialized = JSON.stringify(value)
+    if (!serialized) {
+      return ''
+    }
+    return serialized.length > 1200 ? `${serialized.slice(0, 1200)}...` : serialized
+  } catch {
+    return ''
+  }
 }
 
 function parseInput(value: string): ParsedInput {

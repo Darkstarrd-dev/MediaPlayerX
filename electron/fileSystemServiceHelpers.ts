@@ -139,7 +139,7 @@ export function matchesFeatureFilter(
               .split(',')
               .map((value) => value.trim())
               .filter(Boolean)
-              .map((value) => `${namespace}:${value}`),
+              .flatMap((value) => [value, `${namespace}:${value}`]),
           )
       : []
     const lowerTags = [...source.tags, ...externalTags].map((tag) => tag.toLowerCase())

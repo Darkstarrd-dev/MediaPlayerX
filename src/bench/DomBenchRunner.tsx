@@ -305,6 +305,7 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             metadataTargetPackageLabel={pkg.displayName}
             metadataFetchDefaultText={pkg.packageName}
             metadataProxyServer={''}
+            metadataEhentaiCookies={''}
             onMetadataSyncName={() => undefined}
             onMetadataSaveParsed={async () => undefined}
             onPrevPage={() => undefined}
