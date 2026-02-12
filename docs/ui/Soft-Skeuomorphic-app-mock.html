@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Soft Skeuomorphic App Mock - Complete Scenes</title>
+    <style>
+      :root {
+        /* Soft Skeuomorphic Palette (Light) */
+        --neu-bg: #e0e5ec;
+        --neu-text: #4d5b7c;
+        --neu-text-dim: #a3b1c6;
+        --neu-shadow-light: #ffffff;
+        --neu-shadow-dark: #a3b1c6;
+        --neu-accent: #6d5dfc;
+        
+        /* Dark Mode (for Fullscreen) */
+        --neu-dark-bg: #2b2e33;
+        --neu-dark-text: #e0e5ec;
+        --neu-dark-text-dim: #8892a0;
+        --neu-dark-shadow-light: #3e4249;
+        --neu-dark-shadow-dark: #1e2024;
+
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 20px;
+        --radius-round: 50px;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 40px;
+        background: #f0f2f5; /* Outer background to show the mock app container */
+        color: var(--neu-text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      h1, h2 { text-align: center; color: #333; margin-bottom: 40px; }
+      h2 { margin-top: 80px; margin-bottom: 20px; font-size: 18px; color: #666; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+
+      /* --- Neu Utils --- */
+      .neu-bg { background: var(--neu-bg); color: var(--neu-text); }
+      .neu-dark { background: var(--neu-dark-bg); color: var(--neu-dark-text); }
+
+      .neu-panel {
+        box-shadow: 9px 9px 16px var(--neu-shadow-dark), -9px -9px 16px var(--neu-shadow-light);
+        border-radius: var(--radius-lg);
+      }
+      .neu-dark .neu-panel {
+        box-shadow: 9px 9px 16px var(--neu-dark-shadow-dark), -9px -9px 16px var(--neu-dark-shadow-light);
+      }
+
+      .neu-inset {
+        box-shadow: inset 6px 6px 10px var(--neu-shadow-dark), inset -6px -6px 10px var(--neu-shadow-light);
+        border-radius: var(--radius-md);
+      }
+      .neu-dark .neu-inset {
+        box-shadow: inset 6px 6px 10px var(--neu-dark-shadow-dark), inset -6px -6px 10px var(--neu-dark-shadow-light);
+      }
+
+      .neu-btn {
+        border: none; background: var(--neu-bg); color: var(--neu-text);
+        box-shadow: 6px 6px 10px var(--neu-shadow-dark), -6px -6px 10px var(--neu-shadow-light);
+        border-radius: var(--radius-sm); padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px;
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        transition: all 0.2s ease;
+      }
+      .neu-btn:hover { color: var(--neu-accent); transform: translateY(-1px); }
+      .neu-btn:active, .neu-btn.active {
+        box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+        transform: translateY(0); color: var(--neu-accent);
+      }
+      
+      .neu-dark .neu-btn {
+        background: var(--neu-dark-bg); color: var(--neu-dark-text);
+        box-shadow: 6px 6px 10px var(--neu-dark-shadow-dark), -6px -6px 10px var(--neu-dark-shadow-light);
+      }
+      .neu-dark .neu-btn:active, .neu-dark .neu-btn.active {
+        box-shadow: inset 4px 4px 8px var(--neu-dark-shadow-dark), inset -4px -4px 8px var(--neu-dark-shadow-light);
+      }
+
+      .neu-input {
+        border: none; background: var(--neu-bg); width: 100%; padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+        color: var(--neu-text); font-family: inherit;
+      }
+
+      .neu-badge {
+        padding: 2px 8px; border-radius: 10px; font-size: 11px;
+        box-shadow: inset 2px 2px 4px var(--neu-shadow-dark), inset -2px -2px 4px var(--neu-shadow-light);
+        color: var(--neu-text-dim);
+      }
+
+      .neu-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+      .neu-scroll::-webkit-scrollbar-thumb { background: #cbd2de; border-radius: 3px; }
+      
+      /* --- Layout Shells --- */
+      .app-window {
+        width: 1200px;
+        height: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.5);
+      }
+
+      .header {
+        height: 60px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; z-index: 10;
+      }
+      .header-group { display: flex; gap: 12px; align-items: center; }
+
+      .body-row { flex: 1; display: flex; overflow: hidden; position: relative; }
+      
+      .sidebar { width: 260px; padding: 16px; display: flex; flex-direction: column; gap: 16px; z-index: 5; }
+      .sidebar-tree { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px; }
+      .tree-item { padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; }
+      .tree-item:hover { color: var(--neu-accent); }
+      .tree-item.active { color: var(--neu-accent); box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light); }
+
+      .main-area { flex: 1; display: flex; flex-direction: column; padding: 16px; min-width: 0; gap: 16px; }
+      
+      .metadata-panel { width: 300px; padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+      
+      .main-toolbar { height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; }
+      
+      .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; overflow-y: auto; padding: 10px; }
+      .grid-card {
+        aspect-ratio: 0.7; background: var(--neu-bg); border-radius: var(--radius-md);
+        box-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+        padding: 8px; cursor: pointer; transition: 0.2s;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .grid-card:hover { transform: translateY(-2px); }
+      .grid-card-inner { width: 100%; height: 100%; background: #ccc; border-radius: 8px; overflow: hidden; position: relative; }
+      .grid-card img { width: 100%; height: 100%; object-fit: cover; filter: sepia(0.2); }
+
+      .form-group { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+      .form-label { color: var(--neu-text-dim); }
+
+      /* --- Video Controls (Layout B) --- */
+      .video-stage {
+        flex: 1; background: #222; border-radius: var(--radius-lg); overflow: hidden; position: relative;
+        box-shadow: inset 6px 6px 12px #111, inset -6px -6px 12px #333;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .video-placeholder { color: rgba(255,255,255,0.1); font-size: 48px; font-weight: 900; text-transform: uppercase; }
+
+      .controls-floater {
+        position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+        width: 90%; max-width: 800px;
+        background: rgba(224, 229, 236, 0.95); backdrop-filter: blur(8px);
+        padding: 12px 24px; border-radius: 20px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        display: flex; flex-direction: column; gap: 8px;
+        border: 1px solid rgba(255,255,255,0.4);
+      }
+      .controls-floater.dark {
+        background: rgba(43, 46, 51, 0.95);
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+
+      .progress-rail { height: 6px; border-radius: 3px; background: #cbd2de; cursor: pointer; position: relative; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1); }
+      .dark .progress-rail { background: #1a1c20; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.5); }
+      
+      .progress-fill { width: 30%; height: 100%; background: var(--neu-accent); border-radius: 3px; position: relative; }
+      .progress-thumb { position: absolute; right: -6px; top: -3px; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+      .ctrl-row { display: flex; align-items: center; justify-content: space-between; }
+      .ctrl-group { display: flex; align-items: center; gap: 12px; }
+      
+      .vol-slider { width: 60px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 2px; }
+      .dark .vol-slider { background: rgba(255,255,255,0.1); }
+      .vol-fill { width: 60%; height: 100%; background: var(--neu-accent); }
+
+      .btn-circle { border-radius: 50%; width: 36px; height: 36px; padding: 0; }
+      .btn-circle.lg { width: 48px; height: 48px; font-size: 18px; }
+
+      /* --- Bottom Dual/Nav Bar --- */
+      .bottom-nav-bar {
+        position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+        display: flex; gap: 12px;
+        background: var(--neu-bg); padding: 8px 16px; border-radius: var(--radius-lg);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        z-index: 20;
+      }
+      .bottom-nav-bar.dark {
+        background: var(--neu-dark-bg);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+
+      /* --- Modals --- */
+      .modal-mask {
+        position: absolute; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
+        display: flex; align-items: center; justify-content: center; z-index: 100;
+      }
+      .modal-window {
+        width: 800px; height: 600px; background: var(--neu-bg); border-radius: var(--radius-lg);
+        display: flex; flex-direction: column; overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      }
+      .modal-body { flex: 1; display: flex; overflow: hidden; }
+      
+      .settings-nav { width: 200px; padding: 16px; border-right: 1px solid rgba(0,0,0,0.05); }
+      .settings-content { flex: 1; padding: 24px; overflow-y: auto; background: rgba(255,255,255,0.3); box-shadow: inset 4px 4px 10px rgba(0,0,0,0.05); }
+
+      .fetch-modal { width: 900px; height: 700px; }
+      .fetch-grid { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 16px; flex: 1; overflow: hidden; padding: 16px; }
+      .fetch-col { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+      .fetch-card { padding: 12px; border-radius: 12px; background: var(--neu-bg); cursor: pointer; border: 1px solid transparent; box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light); }
+      .fetch-card:hover { transform: translateY(-1px); border-color: var(--neu-accent); }
+
+    </style>
+  </head>
+  <body>
+
+    <!-- SCENE 1: Image Mode -->
+    <h2>Scene 1: Image Mode (ui-shell 1)</h2>
+    <div class="app-window neu-bg neu-panel">
+      <header class="header">
+        <div class="header-group">
+          <button class="neu-btn">MediaPlayerX</button>
+          <button class="neu-btn">空闲</button>
+          <div class="neu-inset" style="padding: 4px; display:flex; gap:8px;">
+            <button class="neu-btn active" style="box-shadow:none; background:transparent;">图片模式</button>
+            <button class="neu-btn" style="box-shadow:none; background:transparent;">视频模式</button>
+          </div>
+          <button class="neu-btn active">检索</button>
+          <button class="neu-btn">文件管理</button>
+          <button class="neu-btn">元数据管理</button>
+        </div>
+        <div class="header-group">
+          <span>缩放级别</span>
+          <div class="neu-inset" style="display:flex; align-items:center;">
+            <button class="neu-btn" style="width:28px; padding:0; box-shadow:none; background:transparent;">-</button>
+            <span style="font-size:12px; padding:0 8px;">6</span>
+            <button class="neu-btn" style="width:28px; padding:0; box-shadow:none; background:transparent;">+</button>
+          </div>
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px;">
+            <input type="checkbox" /> 自动播放
+          </label>
+          <button class="neu-btn">设置</button>
+        </div>
+      </header>
+
+      <div class="body-row">
+        <!-- Sidebar -->
+        <aside class="sidebar neu-inset" style="margin: 0 0 16px 16px; box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <strong>目录结构</strong>
+            <button class="neu-btn" style="padding:4px 8px;">↕</button>
+          </div>
+          <div class="sidebar-tree neu-scroll">
+            <div class="tree-item">Z: <span class="neu-badge" style="margin-left:auto;">节点 16</span></div>
+            <div class="tree-item" style="padding-left:24px;">PureBenchFolder02 <span class="neu-badge" style="margin-left:auto;">节点 15</span></div>
+            <div class="tree-item active" style="padding-left:40px;">GREAT MECHANICS... <span class="neu-badge" style="margin-left:auto;">图 114</span></div>
+            <div class="tree-item" style="padding-left:40px;">MASTERPIECE ROLL... <span class="neu-badge" style="margin-left:auto;">图 119</span></div>
+            <div class="tree-item" style="padding-left:24px;">img <span class="neu-badge" style="margin-left:auto;">节点 3</span></div>
+          </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-area">
+          <div class="main-toolbar neu-panel" style="border-radius: var(--radius-sm); padding: 0 16px;">
+            <strong>GREAT MECHANICS RGM-79 GM BOOK (114 张)</strong>
+            <div style="display:flex; gap:8px;">
+              <button class="neu-btn active" style="padding:6px;">▦</button>
+              <button class="neu-btn" style="padding:6px;">⛶</button>
+            </div>
+          </div>
+          
+          <div class="grid-view neu-inset">
+            <!-- 4 Mock Cards -->
+            <div class="grid-card"><div class="grid-card-inner"><img src="https://via.placeholder.com/200x280/ccc/666?text=GM+BOOK+1" /></div></div>
+            <div class="grid-card"><div class="grid-card-inner"><img src="https://via.placeholder.com/200x280/ccc/666?text=GM+BOOK+2" /></div></div>
+            <div class="grid-card"><div class="grid-card-inner"><img src="https://via.placeholder.com/200x280/ccc/666?text=GM+BOOK+3" /></div></div>
+            <div class="grid-card"><div class="grid-card-inner"><img src="https://via.placeholder.com/200x280/ccc/666?text=GM+BOOK+4" /></div></div>
+          </div>
+
+          <div style="display:flex; justify-content:center; gap:16px;">
+            <button class="neu-btn">上一页</button>
+            <span style="display:flex; align-items:center; font-size:13px; color:var(--neu-text-dim);">第 1 / 19 页</span>
+            <button class="neu-btn">下一页</button>
+          </div>
+          
+          <div style="font-size:12px; color:var(--neu-text-dim);">Z:\PureBenchFolder02\7z\GREAT MECHANICS... #1 1518KB</div>
+        </main>
+
+        <!-- Metadata -->
+        <aside class="metadata-panel neu-inset" style="margin: 0 16px 16px 0;">
+          <div style="display:flex; justify-content:space-between;">
+            <strong>元数据面板</strong>
+            <button class="neu-btn" style="padding:4px;">▣</button>
+          </div>
+          <div class="neu-panel" style="padding:12px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+              <span>评分</span>
+              <span style="color:gold;">★ ★ ★ ★ ☆</span>
+            </div>
+            <div class="form-group">
+              <span class="form-label">图包名</span>
+              <input class="neu-input" value="GREAT MECHANICS RGM-79.zip" />
+            </div>
+            <div class="form-group">
+              <span class="form-label">作品名</span>
+              <div style="display:flex; gap:8px;">
+                <input class="neu-input" value="GREAT MECHANICS RGM-79..." />
+                <button class="neu-btn">EN</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <span class="form-label">来源</span>
+              <div class="neu-inset" style="padding:8px; font-size:13px;">Nhentai</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- SCENE 2: Video Mode (Normal) -->
+    <h2>Scene 2: Video Mode - Normal (ui-shell 2)</h2>
+    <div class="app-window neu-bg neu-panel">
+      <!-- Header (Simplified) -->
+      <header class="header">
+        <div class="header-group"><button class="neu-btn">MediaPlayerX</button></div>
+        <div class="header-group">
+          <div class="neu-inset" style="padding: 4px; display:flex; gap:8px;">
+            <button class="neu-btn" style="box-shadow:none; background:transparent;">图片模式</button>
+            <button class="neu-btn active" style="box-shadow:none; background:transparent;">视频模式</button>
+          </div>
+        </div>
+        <div class="header-group"><button class="neu-btn">设置</button></div>
+      </header>
+
+      <div class="body-row">
+        <!-- Sidebar -->
+        <aside class="sidebar neu-inset" style="margin: 0 0 16px 16px;">
+          <div class="tree-item">PureBenchFolder02</div>
+          <div class="tree-item active">七海立ちバック動画</div>
+          <div class="tree-item">Ellen Joe - If Looks Could Kill</div>
+        </aside>
+
+        <!-- Main Video Stage with Layout B -->
+        <main class="main-area">
+          <div class="video-stage">
+            <div class="video-placeholder">VIDEO CONTENT</div>
+            
+            <!-- Layout B Controls -->
+            <div class="controls-floater">
+              <!-- Info Row -->
+              <div style="font-size:12px; color:var(--neu-text); margin-bottom:4px; font-weight:600;">封面态 (待播放) 00:00 / 03:21</div>
+              
+              <!-- Progress -->
+              <div class="progress-rail">
+                <div class="progress-fill"></div>
+                <div class="progress-thumb" style="left:30%;"></div>
+              </div>
+
+              <!-- Controls Row -->
+              <div class="ctrl-row" style="margin-top:8px;">
+                <div class="ctrl-group">
+                  <button class="neu-btn btn-circle lg active" style="color:var(--neu-accent);">▶</button>
+                  <button class="neu-btn btn-circle">⏮</button>
+                  <button class="neu-btn btn-circle">⏭</button>
+                  <div class="neu-inset" style="display:flex; align-items:center; padding:4px 8px; gap:8px;">
+                    <span style="font-size:12px;">🔊</span>
+                    <div class="vol-slider"><div class="vol-fill"></div></div>
+                    <span style="font-size:11px; width:24px;">60%</span>
+                  </div>
+                </div>
+                
+                <div class="ctrl-group">
+                  <div class="neu-inset" style="padding:4px 12px; font-size:12px;">倍速 x1.00</div>
+                  <button class="neu-btn">Save as cover</button>
+                  <button class="neu-btn">F 全屏</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:12px; color:var(--neu-text-dim);">Z:\PureBenchFolder02\[MIGNON WORKS]...mp4</div>
+        </main>
+
+        <!-- Metadata -->
+        <aside class="metadata-panel neu-inset" style="margin: 0 16px 16px 0;">
+          <div style="display:flex; gap:8px;">
+            <button class="neu-btn active">视频信息</button>
+            <button class="neu-btn">播放列表</button>
+          </div>
+          <div class="form-group">
+            <span class="form-label">文件信息</span>
+            <div class="neu-inset" style="padding:8px; font-size:12px;">1280x720 | 03:21</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- SCENE 3: Video Dual Display (Bottom Nav) -->
+    <h2>Scene 3: Video Mode - Dual Display (ui-shell 3)</h2>
+    <div class="app-window neu-bg neu-panel" style="height:600px;">
+      <!-- Simplified window content -->
+      <div class="body-row" style="padding:16px;">
+        <div class="video-stage" style="background:#f0f0f0; box-shadow:none;">
+          <!-- Dual Display: Left Empty, Right Video -->
+          <div style="display:flex; width:100%; height:100%;">
+            <div style="flex:1; background:#fff;"></div>
+            <div style="flex:1; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:30px;">VIDEO</div>
+          </div>
+
+          <!-- Video Controls (Layout B) -->
+          <div class="controls-floater dark" style="bottom: 80px; max-width:900px;">
+            <div class="ctrl-row" style="color:#ccc; font-size:12px; margin-bottom:4px;">
+              <span>00:00 / 03:21</span>
+            </div>
+            <div class="progress-rail"><div class="progress-fill"></div></div>
+            <div class="ctrl-row" style="margin-top:10px;">
+              <div class="ctrl-group">
+                <button class="neu-btn btn-circle active" style="background:#444; color:#fff;">▶</button>
+                <button class="neu-btn" style="background:#333; color:#ccc;">上一个</button>
+                <button class="neu-btn" style="background:#333; color:#ccc;">下一个</button>
+                <button class="neu-btn" style="background:#333; color:#ccc;">静音</button>
+                <span style="color:#aaa; font-size:12px;">音量 60%</span>
+                <div class="vol-slider" style="width:100px;"><div class="vol-fill"></div></div>
+              </div>
+              <div class="ctrl-group">
+                <span style="color:#aaa; font-size:12px;">倍速 x1.00</span>
+                <div class="vol-slider" style="width:100px;"><div class="vol-fill"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Nav Bar (Soft Skeuomorphic) -->
+          <div class="bottom-nav-bar dark" style="bottom: 20px;">
+            <button class="neu-btn active" style="background:#444; color:#fff;">双显示</button>
+            <button class="neu-btn" style="background:#333; color:#ccc;">调换左右</button>
+            <div style="width:1px; background:#555; height:20px;"></div>
+            <span style="color:#aaa; font-size:12px; display:flex; align-items:center;">焦点: 单显示</span>
+            <div style="width:1px; background:#555; height:20px;"></div>
+            <button class="neu-btn" style="background:#333; color:#ccc;">上一页</button>
+            <button class="neu-btn" style="background:#333; color:#ccc;">下一页</button>
+            <button class="neu-btn" style="background:#333; color:#ccc;">上个包</button>
+            <button class="neu-btn" style="background:#333; color:#ccc;">下个包</button>
+            <button class="neu-btn" style="background:#333; color:#ccc;">自动播放</button>
+            <div class="neu-inset" style="background:#222; color:#ccc; padding:6px 12px; font-size:12px;">速度 2s ▼</div>
+            <div style="width:1px; background:#555; height:20px;"></div>
+            <button class="neu-btn" style="background:#333; color:#ccc;">上对齐</button>
+            <button class="neu-btn" style="background:#333; color:#ccc;">下对齐</button>
+            <button class="neu-btn" style="background:#333; color:#ccc;">Reset</button>
+            <button class="neu-btn" style="background:#333; color:#ccc;">退出全屏</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 4 & 5: Fullscreen (Dark Mode) -->
+    <h2>Scene 4 & 5: Fullscreen (Image & Video)</h2>
+    <div class="app-window neu-dark" style="height:600px; background:#111; border:none;">
+      <div class="video-stage" style="border-radius:0; box-shadow:none;">
+        <div style="display:flex; width:100%; height:100%;">
+          <div style="flex:1; background:#000; border-right:1px solid #333;"></div>
+          <div style="flex:1; background:#1a1a1a; display:flex; align-items:center; justify-content:center; color:#333; font-size:40px;">MEDIA</div>
+        </div>
+
+        <!-- Floating Controls (Video Mode) -->
+        <div class="controls-floater dark" style="bottom: 80px; width:90%;">
+          <div class="progress-rail"><div class="progress-fill" style="width:50%;"></div></div>
+          <div class="ctrl-row" style="margin-top:12px;">
+            <div class="ctrl-group">
+              <button class="neu-btn active" style="background:#444; color:#fff;">播放</button>
+              <button class="neu-btn" style="background:#333; color:#ccc;">上一个</button>
+              <button class="neu-btn" style="background:#333; color:#ccc;">下一个</button>
+              <button class="neu-btn" style="background:#333; color:#ccc;">静音</button>
+              <span style="color:#aaa; font-size:12px;">音量 60%</span>
+              <div class="vol-slider" style="width:100px;"><div class="vol-fill"></div></div>
+            </div>
+            <div class="ctrl-group">
+              <span style="color:#aaa; font-size:12px;">倍速 x1.00</span>
+              <div class="vol-slider" style="width:100px;"><div class="vol-fill"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Nav Bar (Dark) -->
+        <div class="bottom-nav-bar dark">
+          <button class="neu-btn active" style="background:#444; color:#fff;">双显示</button>
+          <button class="neu-btn" style="background:#333; color:#ccc;">调换左右</button>
+          <span style="color:#888; font-size:12px; display:flex; align-items:center; margin:0 8px;">焦点: 图片</span>
+          <button class="neu-btn" style="background:#333; color:#ccc;">上一页</button>
+          <button class="neu-btn" style="background:#333; color:#ccc;">下一页</button>
+          <button class="neu-btn" style="background:#333; color:#ccc;">自动播放</button>
+          <div class="neu-inset" style="background:#222; color:#ccc; padding:6px; font-size:12px;">2s ▼</div>
+          <button class="neu-btn" style="background:#333; color:#ccc;">上对齐</button>
+          <button class="neu-btn" style="background:#333; color:#ccc;">下对齐</button>
+          <button class="neu-btn" style="background:#333; color:#ccc;">Reset</button>
+          <button class="neu-btn" style="background:#333; color:#ccc;">退出全屏</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 6: Settings Modal -->
+    <h2>Scene 6: Settings Modal (ui-shell 6)</h2>
+    <div style="position:relative; height:600px; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center;">
+      <div class="modal-window">
+        <div class="header" style="border-bottom:1px solid #ddd;">
+          <h3>设置面板</h3>
+          <button class="neu-btn">关闭</button>
+        </div>
+        <div class="modal-body">
+          <div class="settings-nav">
+            <button class="neu-btn active" style="width:100%; justify-content:flex-start; margin-bottom:8px;">界面设置</button>
+            <button class="neu-btn" style="width:100%; justify-content:flex-start; margin-bottom:8px; box-shadow:none; background:transparent;">AI模型设置</button>
+            <button class="neu-btn" style="width:100%; justify-content:flex-start; margin-bottom:8px; box-shadow:none; background:transparent;">数据库设置</button>
+            <button class="neu-btn" style="width:100%; justify-content:flex-start; margin-bottom:8px; box-shadow:none; background:transparent;">快捷键设置</button>
+          </div>
+          <div class="settings-content">
+            <h4 style="margin-top:0;">主题设置</h4>
+            <p style="font-size:12px; color:#666;">主题已拆分为 style 和 palette...</p>
+            <div class="form-group" style="margin-bottom:16px;">
+              <span class="form-label">Style</span>
+              <div class="neu-inset" style="padding:10px; display:flex; justify-content:space-between; background:#e0e5ec;">
+                Flush <span style="font-size:10px;">▼</span>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:24px;">
+              <span class="form-label">Palette</span>
+              <div class="neu-inset" style="padding:10px; display:flex; justify-content:space-between; background:#e0e5ec;">
+                Parchment <span style="font-size:10px;">▼</span>
+              </div>
+            </div>
+            <div class="neu-divider" style="margin-bottom:24px;"></div>
+            <h4>缩略图设置</h4>
+            <div class="form-group" style="margin-bottom:16px;">
+              <span class="form-label">缩略图间距系数 1.00x (8px)</span>
+              <div class="progress-rail"><div class="progress-fill" style="width:20%;"></div><div class="progress-thumb" style="left:20%;"></div></div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+              <span class="form-label">缩略图质量</span>
+              <input class="neu-input" value="40" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 7: Fetch Metadata Modal -->
+    <h2>Scene 7: Fetch Metadata Modal (ui-shell 7)</h2>
+    <div style="position:relative; height:700px; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center;">
+      <div class="modal-window fetch-modal">
+        <div class="header" style="border-bottom:1px solid #ddd;">
+          <h3>获取元数据</h3>
+          <button class="neu-btn">关闭</button>
+        </div>
+        <div style="padding:16px 24px;">
+          <div style="font-size:12px; color:#666; margin-bottom:8px;">目标图包: GREAT MECHANICS RGM-79 GM BOOK</div>
+          <div class="neu-panel" style="padding:16px; background:#ecf0f3;">
+            <div style="display:flex; gap:16px; margin-bottom:12px;">
+              <div class="neu-inset" style="padding:4px; display:flex;">
+                <button class="neu-btn" style="box-shadow:none; padding:4px 12px; background:transparent;">NH</button>
+                <button class="neu-btn" style="box-shadow:none; padding:4px 12px; background:transparent;">EH</button>
+                <button class="neu-btn active" style="box-shadow:none; padding:4px 12px;">ALL</button>
+              </div>
+              <input class="neu-input" placeholder="检索ID" style="width:120px;" />
+              <input class="neu-input" value="GREAT MECHANICS RGM-79 GM BOOK" style="flex:1;" />
+              <button class="neu-btn">检索</button>
+            </div>
+          </div>
+        </div>
+        <div class="fetch-grid">
+          <div class="fetch-col">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:13px;">Nhentai <span class="neu-badge">0条</span></div>
+            <div class="neu-inset" style="padding:16px; color:#aaa; text-align:center; font-size:13px; height:100px; display:flex; align-items:center; justify-content:center;">无结果</div>
+            <div class="neu-btn" style="justify-content:space-between;">Parsed <span>展开</span></div>
+            <div class="neu-btn" style="justify-content:space-between;">Raw <span>展开</span></div>
+          </div>
+          <div class="neu-divider" style="width:1px; height:100%;"></div>
+          <div class="fetch-col">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:13px;">E-Hentai <span class="neu-badge">0条</span></div>
+            <div class="neu-inset" style="padding:16px; color:#aaa; text-align:center; font-size:13px; height:100px; display:flex; align-items:center; justify-content:center;">无结果</div>
+            <div class="neu-btn" style="justify-content:space-between;">Parsed <span>展开</span></div>
+            <div class="neu-btn" style="justify-content:space-between;">Raw <span>展开</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

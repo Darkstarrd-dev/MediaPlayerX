@@ -222,73 +222,75 @@ function VideoMainSection({
         ) : null}
       </div>
 
-      <div className="video-progress-line">
-        <span className="video-progress-time">{`${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
-        <input
-          aria-label="进度滑条"
-          max={durationSec}
-          min={0}
-          step={0.1}
-          type="range"
-          value={clampedTime}
-          onChange={(event) => onSeekVideo(Number(event.target.value))}
-        />
-      </div>
-
-      <div className="video-controls">
-        <div className="video-controls-group is-transport">
-          <button className="video-action-btn video-action-play" type="button" onClick={onTogglePlay}>
-            {videoPlaying ? '暂停' : '播放'}
-          </button>
-          <button className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
-            上一个
-          </button>
-          <button className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
-            下一个
-          </button>
+      <div className="video-controls-shell">
+        <div className="video-progress-line">
+          <span className="video-progress-time">{`${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
+          <input
+            aria-label="进度滑条"
+            max={durationSec}
+            min={0}
+            step={0.1}
+            type="range"
+            value={clampedTime}
+            onChange={(event) => onSeekVideo(Number(event.target.value))}
+          />
         </div>
 
-        <div className="video-controls-group is-audio">
-          <button className="video-action-btn video-action-mute" type="button" onClick={onToggleMute}>
-            {videoMuted ? '取消静音' : '静音'}
-          </button>
-          <label className="video-volume-inline player-inline-field">
-            <span>音量</span>
-            <span>{videoMuted ? '0%' : `${videoVolume}%`}</span>
-            <input
-              aria-label="音量滑条"
-              max={100}
-              min={0}
-              step={1}
-              type="range"
-              value={videoMuted ? 0 : videoVolume}
-              onChange={(event) => onChangeVolume(Number(event.target.value))}
-            />
-          </label>
-        </div>
+        <div className="video-controls">
+          <div className="video-controls-group is-transport">
+            <button className="video-action-btn video-action-play" type="button" onClick={onTogglePlay}>
+              {videoPlaying ? '暂停' : '播放'}
+            </button>
+            <button className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
+              上一个
+            </button>
+            <button className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
+              下一个
+            </button>
+          </div>
 
-        <div className="video-controls-group is-rate">
-          <label className="video-rate-inline player-inline-field">
-            <span>{`倍率 x${videoRate.toFixed(2)}`}</span>
-            <input
-              aria-label="倍速滑条"
-              max={4}
-              min={0.1}
-              step={0.1}
-              type="range"
-              value={videoRate}
-              onChange={(event) => onChangeRate(Number(event.target.value))}
-            />
-          </label>
-        </div>
+          <div className="video-controls-group is-audio">
+            <button className="video-action-btn video-action-mute" type="button" onClick={onToggleMute}>
+              {videoMuted ? '取消静音' : '静音'}
+            </button>
+            <label className="video-volume-inline player-inline-field">
+              <span>音量</span>
+              <span>{videoMuted ? '0%' : `${videoVolume}%`}</span>
+              <input
+                aria-label="音量滑条"
+                max={100}
+                min={0}
+                step={1}
+                type="range"
+                value={videoMuted ? 0 : videoVolume}
+                onChange={(event) => onChangeVolume(Number(event.target.value))}
+              />
+            </label>
+          </div>
 
-        <div className="video-controls-group is-utility">
-          <button className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
-            Save as cover
-          </button>
-          <button className="video-action-btn video-action-fullscreen video-fullscreen-btn" type="button" onClick={onEnterFullscreen}>
-            F 全屏
-          </button>
+          <div className="video-controls-group is-rate">
+            <label className="video-rate-inline player-inline-field">
+              <span>{`倍率 x${videoRate.toFixed(2)}`}</span>
+              <input
+                aria-label="倍速滑条"
+                max={4}
+                min={0.1}
+                step={0.1}
+                type="range"
+                value={videoRate}
+                onChange={(event) => onChangeRate(Number(event.target.value))}
+              />
+            </label>
+          </div>
+
+          <div className="video-controls-group is-utility">
+            <button className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
+              Save as cover
+            </button>
+            <button className="video-action-btn video-action-fullscreen video-fullscreen-btn" type="button" onClick={onEnterFullscreen}>
+              F 全屏
+            </button>
+          </div>
         </div>
       </div>
     </div>

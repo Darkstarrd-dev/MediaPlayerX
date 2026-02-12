@@ -339,6 +339,10 @@
   color: var(--mpx-video-empty-text);
 }
 
+.video-controls-shell {
+  display: contents;
+}
+
 .video-controls {
   margin: 6px 8px 8px;
   border: 1px solid var(--mpx-player-surface-border);
