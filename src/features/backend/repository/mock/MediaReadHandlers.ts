@@ -36,7 +36,11 @@ import {
 import { MOCK_LIBRARY_SNAPSHOT_REF, type MockRepositoryState } from './types'
 
 export class MockMediaReadHandlers {
-  constructor(private state: MockRepositoryState) {}
+  private readonly state: MockRepositoryState
+
+  constructor(state: MockRepositoryState) {
+    this.state = state
+  }
 
   readImageSidebarTreeSync(
     request: ReadImageSidebarTreeRequestDto,

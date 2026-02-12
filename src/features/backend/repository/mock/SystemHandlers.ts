@@ -21,7 +21,9 @@ import {
 import { type MockRepositoryState } from './types'
 
 export class MockSystemHandlers {
-  constructor(private state: MockRepositoryState) {}
+  constructor(state: MockRepositoryState) {
+    void state
+  }
 
   async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> {
     const val = localStorage.getItem(`mpx_mock_state_${request.state_key}`)

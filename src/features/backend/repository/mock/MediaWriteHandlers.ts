@@ -50,7 +50,11 @@ import {
 import { MOCK_LIBRARY_SNAPSHOT_REF, type MockRepositoryState } from './types'
 
 export class MockMediaWriteHandlers {
-  constructor(private state: MockRepositoryState) {}
+  private readonly state: MockRepositoryState
+
+  constructor(state: MockRepositoryState) {
+    this.state = state
+  }
 
   writePackageGradeSync(
     request: WritePackageGradeRequestDto,

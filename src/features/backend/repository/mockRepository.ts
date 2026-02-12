@@ -58,6 +58,8 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
+  type SetImageHiddenRequestDto,
+  type SetImageHiddenResponseDto,
   type RetryImportTaskRequestDto,
   type RetryImportTaskResponseDto,
   type SearchExternalMetadataRequestDto,

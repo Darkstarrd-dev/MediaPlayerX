@@ -23,7 +23,7 @@ import {
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
 } from '../../../../contracts/backend'
-import { hashLocator, locatorPathKey } from './utils'
+import { hashLocator, normalizePathKeyForMatch, parseSidebarNodePath, pathHasPrefix } from './utils'
 import { MOCK_LIBRARY_SNAPSHOT_REF, type MockRepositoryState } from './types'
 
 const DEFAULT_AD_REVIEW_MAX_CONCURRENCY = 4
@@ -88,7 +88,11 @@ export function buildAdReviewAudit(
 }
 
 export class MockAdReviewHandlers {
-  constructor(private state: MockRepositoryState) {}
+  private readonly state: MockRepositoryState
+
+  constructor(state: MockRepositoryState) {
+    this.state = state
+  }
 
   private resolveManageAdReviewImageIds(request: StartManageAdReviewRequestDto): string[] {
     const snapshot = MOCK_LIBRARY_SNAPSHOT_REF.current
@@ -101,13 +105,47 @@ export class MockAdReviewHandlers {
       }
     }
 
-    if (!request.scope_image_ids) {
-      return Array.from(imageById.keys())
+    if (request.selection_scope === 'image') {
+      return Array.from(
+        new Set(
+          (request.image_ids ?? [])
+            .map((id) => id.trim())
+            .filter((id) => id.length > 0 && imageById.has(id)),
+        ),
+      )
     }
 
-    return Array.from(
-      new Set(request.scope_image_ids.map((id) => id.trim()).filter((id) => id.length > 0 && imageById.has(id))),
-    )
+    const parsedTargets = (request.node_ids ?? [])
+      .map((nodeId) => parseSidebarNodePath(nodeId))
+      .filter((value): value is { kind: 'folder' | 'package' | 'video'; pathKey: string } => Boolean(value))
+
+    const selected = new Set<string>()
+    for (const source of allSources) {
+      const sourcePathKey = normalizePathKeyForMatch(source.tree_path)
+
+      let matched = false
+      for (const target of parsedTargets) {
+        if (target.kind === 'folder' && pathHasPrefix(sourcePathKey, target.pathKey)) {
+          matched = true
+          break
+        }
+
+        if (target.kind === 'package' && sourcePathKey === target.pathKey) {
+          matched = true
+          break
+        }
+      }
+
+      if (!matched) {
+        continue
+      }
+
+      for (const image of source.images) {
+        selected.add(image.id)
+      }
+    }
+
+    return Array.from(selected)
   }
 
   startManageAdReviewSync(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto {
