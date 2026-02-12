@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
 import type { MetadataPanelProps } from '../../components/MetadataPanel'
+import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { ImageItem, ImagePackage, VideoItem } from '../../types'
 import type { PackageMetadataWritePayload, VideoMetadataWritePayload } from './useMetadataWriteBindings'
 
@@ -71,6 +72,7 @@ interface BuildMetadataPanelPropsParams {
   updateSettings: (patch: Partial<AppSettings>) => void
   onGradeChange: (grade: number | null) => void
   onSavePackageMetadata: (payload: PackageMetadataWritePayload) => void
+  onSavePackageParsedMetadata: (payload: ParsedExternalMetadata) => Promise<void>
   onSaveVideoMetadata: (payload: VideoMetadataWritePayload) => void
   onMetadataTabChange: (tab: MetadataPanelProps['metadataTab']) => void
   onSelectVideo: (videoId: string) => void
@@ -150,6 +152,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onExpand: () => params.updateSettings({ metadataCollapsed: false }),
     onGradeChange: params.onGradeChange,
     onSavePackageMetadata: params.onSavePackageMetadata,
+    onSavePackageParsedMetadata: params.onSavePackageParsedMetadata,
     onSaveVideoMetadata: params.onSaveVideoMetadata,
     onSearchByWorkTitle: params.onSearchByWorkTitle,
     onSearchByCircle: params.onSearchByCircle,

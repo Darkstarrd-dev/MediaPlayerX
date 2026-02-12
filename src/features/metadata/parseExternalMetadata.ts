@@ -2,7 +2,7 @@ import type { ExternalMetadataResultItemDto } from '../../contracts/backend'
 
 export interface ParsedExternalMetadata {
   source: {
-    site: 'nhentai' | 'ehentai'
+    site: 'nhentai' | 'ehentai' | 'others'
     url: string
     id: string
     token: string

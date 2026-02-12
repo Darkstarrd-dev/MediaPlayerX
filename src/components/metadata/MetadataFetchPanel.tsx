@@ -576,32 +576,6 @@ function MetadataFetchPanel({
                             ...previous,
                             [source]: {
                               ...previous[source],
-                              debug: !previous[source].debug,
-                            },
-                          }))
-                        }}
-                      >
-                        <span>Debug Trace</span>
-                        <span>{debugCollapsed ? '展开' : '折叠'}</span>
-                      </button>
-                      {!debugCollapsed ? (
-                        <AutoSizeReadonlyTextarea
-                          id={`${source}-debug-trace`}
-                          label="Debug Trace"
-                          value={previewDebugBySource[source]}
-                        />
-                      ) : null}
-                    </section>
-
-                    <section className="metadata-fetch-preview-card">
-                      <button
-                        type="button"
-                        className="metadata-fetch-preview-toggle"
-                        onClick={() => {
-                          setPreviewCollapseBySource((previous) => ({
-                            ...previous,
-                            [source]: {
-                              ...previous[source],
                               parsed: !previous[source].parsed,
                             },
                           }))
@@ -634,6 +608,32 @@ function MetadataFetchPanel({
                       </button>
                       {!rawCollapsed ? (
                         <AutoSizeReadonlyTextarea id={`${source}-raw`} label="Raw" value={previewRawBySource[source]} />
+                      ) : null}
+                    </section>
+
+                    <section className="metadata-fetch-preview-card">
+                      <button
+                        type="button"
+                        className="metadata-fetch-preview-toggle"
+                        onClick={() => {
+                          setPreviewCollapseBySource((previous) => ({
+                            ...previous,
+                            [source]: {
+                              ...previous[source],
+                              debug: !previous[source].debug,
+                            },
+                          }))
+                        }}
+                      >
+                        <span>Debug Trace</span>
+                        <span>{debugCollapsed ? '展开' : '折叠'}</span>
+                      </button>
+                      {!debugCollapsed ? (
+                        <AutoSizeReadonlyTextarea
+                          id={`${source}-debug-trace`}
+                          label="Debug Trace"
+                          value={previewDebugBySource[source]}
+                        />
                       ) : null}
                     </section>
 

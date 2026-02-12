@@ -11,7 +11,7 @@ export interface PackageMetadataWritePayload {
 }
 
 export interface ParsedExternalMetadataSavePayload {
-  sourceSite: 'nhentai' | 'ehentai'
+  sourceSite: 'nhentai' | 'ehentai' | 'others'
   sourceUrl: string
   sourceRemoteId: string
   sourceToken: string
@@ -70,7 +70,7 @@ interface UseMetadataWriteBindingsParams {
     writePackageExternalMetadata?: (
       packageId: string,
       payload: {
-        sourceSite: 'nhentai' | 'ehentai'
+        sourceSite: 'nhentai' | 'ehentai' | 'others'
         sourceUrl: string
         sourceRemoteId: string
         sourceToken?: string

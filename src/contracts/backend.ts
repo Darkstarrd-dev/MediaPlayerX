@@ -45,7 +45,7 @@ export const imageItemDtoSchema = z.object({
 })
 
 export const imageSourceExternalMetadataDtoSchema = z.object({
-  source_site: z.enum(['nhentai', 'ehentai']),
+  source_site: z.enum(['nhentai', 'ehentai', 'others']),
   source_url: z.string().min(1),
   source_remote_id: z.string().min(1),
   source_token: z.string(),
@@ -463,7 +463,7 @@ export const writePackageMetadataResponseSchema = z.object({
 
 export const writePackageExternalMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
-  source_site: z.enum(['nhentai', 'ehentai']),
+  source_site: z.enum(['nhentai', 'ehentai', 'others']),
   source_url: z.string().min(1),
   source_remote_id: z.string().min(1),
   source_token: z.string().optional(),

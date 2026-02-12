@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { ManageAdReviewTaskDto } from '../contracts/backend'
+import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
 import type { BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
 import { MetadataImageEditor } from './metadata/MetadataImageEditor'
 import { MetadataVideoEditor } from './metadata/MetadataVideoEditor'
@@ -126,6 +127,7 @@ export interface MetadataPanelProps {
     tags?: string[]
     syncWorkTitleToPackageName?: boolean
   }) => void
+  onSavePackageParsedMetadata: (payload: ParsedExternalMetadata) => Promise<void>
   onSaveVideoMetadata: (payload: {
     workTitle?: string
     circle?: string
@@ -223,6 +225,7 @@ function MetadataPanel({
   onExpand,
   onGradeChange,
   onSavePackageMetadata,
+  onSavePackageParsedMetadata,
   onSaveVideoMetadata,
   onSearchByWorkTitle,
   onSearchByCircle,
@@ -715,6 +718,7 @@ function MetadataPanel({
           onSubmitPackageCircle={persistPackageCircle}
           onSubmitPackageAuthor={persistPackageAuthor}
           onSubmitPackageTags={persistPackageTags}
+          onSubmitParsedMetadata={onSavePackageParsedMetadata}
           onGradeChange={onGradeChange}
           onSearchByWorkTitle={onSearchByWorkTitle}
           onSearchByCircle={onSearchByCircle}

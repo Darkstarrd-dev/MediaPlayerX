@@ -1053,7 +1053,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
 
     fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
-    const circleInput = screen.getByLabelText('社团') as HTMLInputElement
+    const circleInput = screen.getByLabelText('英文社团名') as HTMLInputElement
     fireEvent.change(circleInput, { target: { value: '批量社团更名' } })
     fireEvent.keyDown(circleInput, { key: 'Enter', code: 'Enter' })
 

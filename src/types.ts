@@ -50,7 +50,7 @@ export interface ImagePackage {
   tags: string[]
   mockGrade?: number
   externalMetadata?: {
-    sourceSite: 'nhentai' | 'ehentai'
+    sourceSite: 'nhentai' | 'ehentai' | 'others'
     sourceUrl: string
     sourceRemoteId: string
     sourceToken: string

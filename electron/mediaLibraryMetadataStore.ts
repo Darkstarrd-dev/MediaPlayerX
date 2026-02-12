@@ -127,7 +127,7 @@ export class MediaLibraryMetadataStore {
       )
       .all() as Array<{
       source_id: string
-      source_site: 'nhentai' | 'ehentai'
+      source_site: 'nhentai' | 'ehentai' | 'others'
       source_url: string
       source_remote_id: string
       source_token: string

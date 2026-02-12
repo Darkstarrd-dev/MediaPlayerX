@@ -10,7 +10,7 @@ export interface SourceRow {
   author: string
   tags_json: string
   mock_grade: number | null
-  source_site: 'nhentai' | 'ehentai' | null
+  source_site: 'nhentai' | 'ehentai' | 'others' | null
   source_url: string | null
   source_remote_id: string | null
   source_token: string | null

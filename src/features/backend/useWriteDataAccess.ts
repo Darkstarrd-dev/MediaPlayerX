@@ -97,7 +97,7 @@ interface UseWriteDataAccessResult {
   writePackageExternalMetadata: (
     packageId: string,
     payload: {
-      sourceSite: 'nhentai' | 'ehentai'
+      sourceSite: 'nhentai' | 'ehentai' | 'others'
       sourceUrl: string
       sourceRemoteId: string
       sourceToken?: string
@@ -341,7 +341,7 @@ export function useWriteDataAccess({
     async (
       packageId: string,
       payload: {
-        sourceSite: 'nhentai' | 'ehentai'
+        sourceSite: 'nhentai' | 'ehentai' | 'others'
         sourceUrl: string
         sourceRemoteId: string
         sourceToken?: string
