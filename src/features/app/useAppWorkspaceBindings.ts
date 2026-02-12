@@ -134,7 +134,7 @@ export function useAppWorkspaceBindings({
     goPrevPage,
     goNextPage,
     collapseSidebar,
-    onStartVectorPanelResize,
+    onStartWorkspaceBottomPanelResize,
     orderedRootScopedPackages,
   } = readNavigationState
 
@@ -185,7 +185,7 @@ export function useAppWorkspaceBindings({
     setAdReviewPanelOpen,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
-    vectorPanelHeight: appSettings.vectorPanelHeight,
+    workspaceBottomPanelHeight: appSettings.workspaceBottomPanelHeight,
     vectorPanelRef,
     vectorPanelContentRef,
     vectorSearchResults: sessionState.vectorSearchResults,
@@ -212,7 +212,7 @@ export function useAppWorkspaceBindings({
     setFeatureTags,
     featureGradeFilter,
     setFeatureGradeFilter,
-    onStartVectorPanelResize,
+    onStartWorkspaceBottomPanelResize,
     layoutLocked,
     currentRootLabel,
     managementErrorRows,

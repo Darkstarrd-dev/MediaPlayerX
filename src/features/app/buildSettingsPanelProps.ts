@@ -15,6 +15,7 @@ interface BuildSettingsPanelPropsParams {
   sidebarIndentStep: number
   sidebarVerticalGap: number
   metadataRatio: number
+  workspaceBottomPanelHeight: number
   fullscreenVideoControlsMaxWidth: number
   thumbnailGap: number
   thumbnailQuality: number
@@ -67,6 +68,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     sidebarIndentStep: params.sidebarIndentStep,
     sidebarVerticalGap: params.sidebarVerticalGap,
     metadataRatio: params.metadataRatio,
+    workspaceBottomPanelHeight: params.workspaceBottomPanelHeight,
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
@@ -109,6 +111,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onSidebarIndentStepChange: (value) => params.updateSettings({ sidebarIndentStep: value }),
     onSidebarVerticalGapChange: (value) => params.updateSettings({ sidebarVerticalGap: value }),
     onMetadataRatioChange: params.applyMetadataRatio,
+    onWorkspaceBottomPanelHeightChange: (value) => params.updateSettings({ workspaceBottomPanelHeight: value }),
     onFullscreenVideoControlsMaxWidthChange: (value) => params.updateSettings({ fullscreenVideoControlsMaxWidth: value }),
     onThumbnailGapChange: (value) => params.updateSettings({ thumbnailGap: value }),
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),

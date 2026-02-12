@@ -5,7 +5,7 @@ interface BuildSearchPanelPropsParams {
   manageMode: boolean
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
-  vectorPanelHeight: number
+  workspaceBottomPanelHeight: number
   vectorPanelRef: RefObject<HTMLDivElement | null>
   vectorPanelContentRef: RefObject<HTMLDivElement | null>
   featureResultCount: number
@@ -26,7 +26,7 @@ interface BuildSearchPanelPropsParams {
   setFeatureTags: Dispatch<SetStateAction<string[]>>
   featureGradeFilter: number | null
   setFeatureGradeFilter: (value: number | null) => void
-  onStartVectorPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
+  onStartWorkspaceBottomPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   layoutLocked: boolean
 }
 
@@ -34,7 +34,7 @@ export function buildSearchPanelProps(params: BuildSearchPanelPropsParams) {
   return {
     visible: params.vectorMode && !params.manageMode,
     collapsed: params.searchPanelCollapsed,
-    panelHeight: params.vectorPanelHeight,
+    panelHeight: params.workspaceBottomPanelHeight,
     panelRef: params.vectorPanelRef,
     panelContentRef: params.vectorPanelContentRef,
     featureResultCount: params.featureResultCount,
@@ -65,7 +65,7 @@ export function buildSearchPanelProps(params: BuildSearchPanelPropsParams) {
     onFeatureGradeFilterChange: params.setFeatureGradeFilter,
     onCollapse: () => params.setSearchPanelCollapsed(true),
     onExpand: () => params.setSearchPanelCollapsed(false),
-    onStartResize: params.onStartVectorPanelResize,
+    onStartResize: params.onStartWorkspaceBottomPanelResize,
     layoutLocked: params.layoutLocked,
   }
 }

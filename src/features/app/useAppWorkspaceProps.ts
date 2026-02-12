@@ -35,7 +35,7 @@ interface UseAppWorkspacePropsParams {
   setAdReviewPanelOpen: Dispatch<SetStateAction<boolean>>
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
-  vectorPanelHeight: number
+  workspaceBottomPanelHeight: number
   vectorPanelRef: RefObject<HTMLDivElement | null>
   vectorPanelContentRef: RefObject<HTMLDivElement | null>
   vectorSearchResults: VectorCandidate[]
@@ -62,7 +62,7 @@ interface UseAppWorkspacePropsParams {
   setFeatureTags: Dispatch<SetStateAction<string[]>>
   featureGradeFilter: number | null
   setFeatureGradeFilter: Dispatch<SetStateAction<number | null>>
-  onStartVectorPanelResize: (event: MouseEvent<HTMLDivElement>) => void
+  onStartWorkspaceBottomPanelResize: (event: MouseEvent<HTMLDivElement>) => void
   layoutLocked: boolean
   currentRootLabel: string | null
   managementErrorRows: BackendErrorRow[]
@@ -214,7 +214,7 @@ export function useAppWorkspaceProps({
   setAdReviewPanelOpen,
   searchPanelCollapsed,
   setSearchPanelCollapsed,
-  vectorPanelHeight,
+  workspaceBottomPanelHeight,
   vectorPanelRef,
   vectorPanelContentRef,
   vectorSearchResults,
@@ -241,7 +241,7 @@ export function useAppWorkspaceProps({
   setFeatureTags,
   featureGradeFilter,
   setFeatureGradeFilter,
-  onStartVectorPanelResize,
+  onStartWorkspaceBottomPanelResize,
   layoutLocked,
   currentRootLabel,
   managementErrorRows,
@@ -406,7 +406,7 @@ export function useAppWorkspaceProps({
     manageMode,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
-    vectorPanelHeight,
+    workspaceBottomPanelHeight,
     vectorPanelRef,
     vectorPanelContentRef,
     featureResultCount: mode === 'video' ? videosForSidebarCount : scopedImageSourcesEffective.length,
@@ -427,7 +427,7 @@ export function useAppWorkspaceProps({
     setFeatureTags,
     featureGradeFilter,
     setFeatureGradeFilter,
-    onStartVectorPanelResize,
+    onStartWorkspaceBottomPanelResize,
     layoutLocked,
   })
 
@@ -436,7 +436,7 @@ export function useAppWorkspaceProps({
     manageMode,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
-    vectorPanelHeight,
+    workspaceBottomPanelHeight,
     vectorPanelRef,
     vectorPanelContentRef,
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
@@ -494,7 +494,7 @@ export function useAppWorkspaceProps({
       })
     },
     onDismissAdReviewTask: manageAdReview.dismissTask,
-    onStartVectorPanelResize,
+    onStartWorkspaceBottomPanelResize,
     layoutLocked,
   })
 
@@ -544,14 +544,14 @@ export function useAppWorkspaceProps({
     metadataManageMode,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
-    vectorPanelHeight,
+    workspaceBottomPanelHeight,
     vectorPanelRef,
     vectorPanelContentRef,
     metadataPending: metadataWriteBindings.metadataPending,
     operationHint: manageOperationHint,
     onSyncName: applyMetadataSyncName,
     onSaveParsedMetadata: saveParsedMetadata,
-    onStartVectorPanelResize,
+    onStartWorkspaceBottomPanelResize,
     layoutLocked,
     targetPackageName: metadataImagePackageEffective?.packageName ?? '',
     targetPackageLabel: metadataImagePackageEffective?.displayName ?? '-',

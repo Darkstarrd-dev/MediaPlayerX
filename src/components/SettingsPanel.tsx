@@ -32,6 +32,7 @@ export interface SettingsPanelProps {
   sidebarIndentStep: number
   sidebarVerticalGap: number
   metadataRatio: number
+  workspaceBottomPanelHeight: number
   fullscreenVideoControlsMaxWidth: number
   thumbnailGap: number
   thumbnailQuality: number
@@ -69,6 +70,7 @@ export interface SettingsPanelProps {
   onSidebarIndentStepChange: (value: number) => void
   onSidebarVerticalGapChange: (value: number) => void
   onMetadataRatioChange: (value: number) => void
+  onWorkspaceBottomPanelHeightChange: (value: number) => void
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
@@ -130,6 +132,7 @@ function SettingsPanel({
   sidebarIndentStep,
   sidebarVerticalGap,
   metadataRatio,
+  workspaceBottomPanelHeight,
   fullscreenVideoControlsMaxWidth,
   thumbnailGap,
   thumbnailQuality,
@@ -167,6 +170,7 @@ function SettingsPanel({
   onSidebarIndentStepChange,
   onSidebarVerticalGapChange,
   onMetadataRatioChange,
+  onWorkspaceBottomPanelHeightChange,
   onFullscreenVideoControlsMaxWidthChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
@@ -198,6 +202,7 @@ function SettingsPanel({
   const sidebarCountFontSizeScale = toScale('sidebarCountFontSize', sidebarCountFontSize)
   const sidebarIndentStepScale = toScale('sidebarIndentStep', sidebarIndentStep)
   const sidebarVerticalGapScale = toScale('sidebarVerticalGap', sidebarVerticalGap)
+  const workspaceBottomPanelHeightScale = toScale('workspaceBottomPanelHeight', workspaceBottomPanelHeight)
   const fullscreenVideoControlsMaxWidthScale = toScale('fullscreenVideoControlsMaxWidth', fullscreenVideoControlsMaxWidth)
   const thumbnailGapScale = toScale('thumbnailGap', thumbnailGap)
 
@@ -335,6 +340,8 @@ function SettingsPanel({
     sidebarVerticalGap,
     sidebarVerticalGapScale,
     metadataRatio,
+    workspaceBottomPanelHeight,
+    workspaceBottomPanelHeightScale,
     fullscreenVideoControlsMaxWidth,
     fullscreenVideoControlsMaxWidthScale,
     thumbnailGap,
@@ -375,6 +382,7 @@ function SettingsPanel({
     onSidebarIndentStepChange,
     onSidebarVerticalGapChange,
     onMetadataRatioChange,
+    onWorkspaceBottomPanelHeightChange,
     onFullscreenVideoControlsMaxWidthChange,
     onThumbnailGapChange,
     onThumbnailQualityChange,

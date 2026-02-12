@@ -10,14 +10,14 @@ interface UsePaneResizersParams {
   sidebarRatio: number
   sidebarMinWidth: number
   metadataRatio: number
-  vectorPanelHeight: number
+  workspaceBottomPanelHeight: number
   layoutLocked: boolean
   searchPanelCollapsed: boolean
   sidebarCollapseRatio: number
   lastExpandedSidebarRatioRef: MutableRefObject<number>
   onSetSidebarRatio: (value: number) => void
   onSetMetadataRatio: (value: number) => void
-  onSetVectorPanelHeight: (value: number) => void
+  onSetWorkspaceBottomPanelHeight: (value: number) => void
 }
 
 interface UsePaneResizersResult {
@@ -27,7 +27,7 @@ interface UsePaneResizersResult {
   applyMetadataRatio: (candidate: number) => void
   onStartSidebarResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   onStartMetadataResize: (event: ReactMouseEvent<HTMLDivElement>) => void
-  onStartVectorPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
+  onStartWorkspaceBottomPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   onExpandSidebar: () => void
 }
 
@@ -39,14 +39,14 @@ export function usePaneResizers({
   sidebarRatio,
   sidebarMinWidth,
   metadataRatio,
-  vectorPanelHeight,
+  workspaceBottomPanelHeight,
   layoutLocked,
   searchPanelCollapsed,
   sidebarCollapseRatio,
   lastExpandedSidebarRatioRef,
   onSetSidebarRatio,
   onSetMetadataRatio,
-  onSetVectorPanelHeight,
+  onSetWorkspaceBottomPanelHeight,
 }: UsePaneResizersParams): UsePaneResizersResult {
   const readAppBodyWidth = useCallback(() => {
     const measured = appBodyRef.current?.getBoundingClientRect().width
@@ -179,7 +179,7 @@ export function usePaneResizers({
     [layoutLocked, updateMetadataRatioByClientX],
   )
 
-  const updateVectorPanelHeightByClientY = useCallback(
+  const updateWorkspaceBottomPanelHeightByClientY = useCallback(
     (clientY: number) => {
       const rect = workspaceRef.current?.getBoundingClientRect()
       if (!rect || rect.height <= 0) {
@@ -189,16 +189,16 @@ export function usePaneResizers({
       const minHeight = 80
       const maxHeight = Math.max(minHeight, Math.min(360, Math.floor(rect.height - 120)))
       const nextHeight = clamp(Math.round(clientY - rect.top), minHeight, maxHeight)
-      if (Math.abs(nextHeight - vectorPanelHeight) < 1) {
+      if (Math.abs(nextHeight - workspaceBottomPanelHeight) < 1) {
         return
       }
 
-      onSetVectorPanelHeight(nextHeight)
+      onSetWorkspaceBottomPanelHeight(nextHeight)
     },
-    [onSetVectorPanelHeight, vectorPanelHeight, workspaceRef],
+    [onSetWorkspaceBottomPanelHeight, workspaceBottomPanelHeight, workspaceRef],
   )
 
-  const onStartVectorPanelResize = useCallback(
+  const onStartWorkspaceBottomPanelResize = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
       if (layoutLocked || searchPanelCollapsed) {
         return
@@ -206,7 +206,7 @@ export function usePaneResizers({
       event.preventDefault()
 
       const onMouseMove = (moveEvent: MouseEvent) => {
-        updateVectorPanelHeightByClientY(moveEvent.clientY)
+        updateWorkspaceBottomPanelHeightByClientY(moveEvent.clientY)
       }
 
       const onMouseUp = () => {
@@ -217,7 +217,7 @@ export function usePaneResizers({
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [layoutLocked, searchPanelCollapsed, updateVectorPanelHeightByClientY],
+    [layoutLocked, searchPanelCollapsed, updateWorkspaceBottomPanelHeightByClientY],
   )
 
   return {
@@ -227,7 +227,7 @@ export function usePaneResizers({
     applyMetadataRatio,
     onStartSidebarResize,
     onStartMetadataResize,
-    onStartVectorPanelResize,
+    onStartWorkspaceBottomPanelResize,
     onExpandSidebar,
   }
 }

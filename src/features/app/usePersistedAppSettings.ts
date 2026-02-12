@@ -25,7 +25,7 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     sidebarIndentStep: settings.sidebarIndentStep,
     sidebarVerticalGap: settings.sidebarVerticalGap,
     metadataRatio: settings.metadataRatio,
-    vectorPanelHeight: settings.vectorPanelHeight,
+    workspaceBottomPanelHeight: settings.workspaceBottomPanelHeight,
     fullscreenVideoControlsMaxWidth: settings.fullscreenVideoControlsMaxWidth,
     thumbnailScale: settings.thumbnailScale,
     thumbnailGap: settings.thumbnailGap,

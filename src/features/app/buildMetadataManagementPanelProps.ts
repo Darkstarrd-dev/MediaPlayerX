@@ -5,14 +5,14 @@ interface BuildMetadataManagementPanelPropsParams {
   metadataManageMode: boolean
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: (collapsed: boolean) => void
-  vectorPanelHeight: number
+  workspaceBottomPanelHeight: number
   vectorPanelRef: RefObject<HTMLDivElement | null>
   vectorPanelContentRef: RefObject<HTMLDivElement | null>
   metadataPending: boolean
   operationHint: string | null
   onSyncName: () => void
   onSaveParsedMetadata: (parsed: ParsedExternalMetadata) => Promise<void>
-  onStartVectorPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
+  onStartWorkspaceBottomPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   layoutLocked: boolean
   targetPackageName: string
   targetPackageLabel: string
@@ -28,7 +28,7 @@ export function buildMetadataManagementPanelProps(params: BuildMetadataManagemen
   return {
     visible: params.metadataManageMode,
     collapsed: params.searchPanelCollapsed,
-    panelHeight: params.vectorPanelHeight,
+    panelHeight: params.workspaceBottomPanelHeight,
     panelRef: params.vectorPanelRef,
     panelContentRef: params.vectorPanelContentRef,
     metadataPending: params.metadataPending,
@@ -36,7 +36,7 @@ export function buildMetadataManagementPanelProps(params: BuildMetadataManagemen
     onSyncName: params.onSyncName,
     onSaveParsedMetadata: params.onSaveParsedMetadata,
     onExpand: () => params.setSearchPanelCollapsed(false),
-    onStartResize: params.onStartVectorPanelResize,
+    onStartResize: params.onStartWorkspaceBottomPanelResize,
     layoutLocked: params.layoutLocked,
     defaultFetchText: stripArchiveSuffix(params.targetPackageName),
     proxyServer: params.proxyServer,

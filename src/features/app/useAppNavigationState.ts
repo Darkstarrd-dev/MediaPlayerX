@@ -35,7 +35,7 @@ export function useAppNavigationState({
     sidebarRatio,
     sidebarMinWidth,
     metadataRatio,
-    vectorPanelHeight,
+    workspaceBottomPanelHeight,
     layoutLocked,
     thumbnailScale,
     thumbnailGap,
@@ -172,7 +172,7 @@ export function useAppNavigationState({
     applyMetadataRatio,
     onStartSidebarResize,
     onStartMetadataResize,
-    onStartVectorPanelResize,
+    onStartWorkspaceBottomPanelResize,
     onExpandSidebar,
   } = usePaneResizers({
     appBodyRef,
@@ -182,14 +182,14 @@ export function useAppNavigationState({
     sidebarRatio,
     sidebarMinWidth,
     metadataRatio,
-    vectorPanelHeight,
+    workspaceBottomPanelHeight,
     layoutLocked,
     searchPanelCollapsed,
     sidebarCollapseRatio: SIDEBAR_COLLAPSE_RATIO,
     lastExpandedSidebarRatioRef,
     onSetSidebarRatio: (value) => updateSettings({ sidebarRatio: value }),
     onSetMetadataRatio: (value) => updateSettings({ metadataRatio: value }),
-    onSetVectorPanelHeight: (value) => updateSettings({ vectorPanelHeight: value }),
+    onSetWorkspaceBottomPanelHeight: (value) => updateSettings({ workspaceBottomPanelHeight: value }),
   })
 
   const thumbnailLayout = useMemo(
@@ -301,7 +301,7 @@ export function useAppNavigationState({
     applyMetadataRatio,
     onStartSidebarResize,
     onStartMetadataResize,
-    onStartVectorPanelResize,
+    onStartWorkspaceBottomPanelResize,
     onExpandSidebar,
     normalizedThumbnailScale,
     thumbnailScaleLevelCount,

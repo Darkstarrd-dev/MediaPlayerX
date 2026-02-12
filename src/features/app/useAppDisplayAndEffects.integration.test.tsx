@@ -90,7 +90,7 @@ describe('useAppDisplayAndEffects integration', () => {
       vectorMode: false,
       settingsOpen: false,
       sidebarRatio: 0.3,
-      vectorPanelHeight: 220,
+      workspaceBottomPanelHeight: 220,
       thumbnailScale: 3,
       showNamesOnly: false,
       autoPlayEnabled: false,

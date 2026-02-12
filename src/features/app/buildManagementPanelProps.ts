@@ -9,7 +9,7 @@ interface BuildManagementPanelPropsParams {
   manageMode: boolean
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: (collapsed: boolean) => void
-  vectorPanelHeight: number
+  workspaceBottomPanelHeight: number
   vectorPanelRef: RefObject<HTMLDivElement | null>
   vectorPanelContentRef: RefObject<HTMLDivElement | null>
   sidebarSelectedCount: number
@@ -41,7 +41,7 @@ interface BuildManagementPanelPropsParams {
   onAdReviewTailNChange: (value: number) => void
   onAdReviewTailStopCleanStreakChange: (value: number) => void
   onDismissAdReviewTask: () => void
-  onStartVectorPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
+  onStartWorkspaceBottomPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   layoutLocked: boolean
 }
 
@@ -52,7 +52,7 @@ export function buildManagementPanelProps(params: BuildManagementPanelPropsParam
   return {
     visible: params.manageMode,
     collapsed: params.searchPanelCollapsed,
-    panelHeight: params.vectorPanelHeight,
+    panelHeight: params.workspaceBottomPanelHeight,
     panelRef: params.vectorPanelRef,
     panelContentRef: params.vectorPanelContentRef,
     sidebarSelectedCount: params.sidebarSelectedCount,
@@ -89,7 +89,7 @@ export function buildManagementPanelProps(params: BuildManagementPanelPropsParam
     onAdReviewTailStopCleanStreakChange: params.onAdReviewTailStopCleanStreakChange,
     onDismissAdReviewTask: params.onDismissAdReviewTask,
     onExpand: () => params.setSearchPanelCollapsed(false),
-    onStartResize: params.onStartVectorPanelResize,
+    onStartResize: params.onStartWorkspaceBottomPanelResize,
     layoutLocked: params.layoutLocked,
   }
 }

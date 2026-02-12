@@ -36,6 +36,8 @@ interface RenderSettingsMainSectionParams {
   sidebarVerticalGap: number
   sidebarVerticalGapScale: number
   metadataRatio: number
+  workspaceBottomPanelHeight: number
+  workspaceBottomPanelHeightScale: number
   fullscreenVideoControlsMaxWidth: number
   fullscreenVideoControlsMaxWidthScale: number
   thumbnailGap: number
@@ -76,6 +78,7 @@ interface RenderSettingsMainSectionParams {
   onSidebarIndentStepChange: (value: number) => void
   onSidebarVerticalGapChange: (value: number) => void
   onMetadataRatioChange: (value: number) => void
+  onWorkspaceBottomPanelHeightChange: (value: number) => void
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
@@ -113,6 +116,8 @@ export function renderSettingsMainSection({
   sidebarVerticalGap,
   sidebarVerticalGapScale,
   metadataRatio,
+  workspaceBottomPanelHeight,
+  workspaceBottomPanelHeightScale,
   fullscreenVideoControlsMaxWidth,
   fullscreenVideoControlsMaxWidthScale,
   thumbnailGap,
@@ -153,6 +158,7 @@ export function renderSettingsMainSection({
   onSidebarIndentStepChange,
   onSidebarVerticalGapChange,
   onMetadataRatioChange,
+  onWorkspaceBottomPanelHeightChange,
   onFullscreenVideoControlsMaxWidthChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
@@ -321,6 +327,17 @@ export function renderSettingsMainSection({
           <label>
             元数据面板比例 {(metadataRatio * 100).toFixed(0)}%
             <input max={0.45} min={0.2} step={0.01} type="range" value={metadataRatio} onChange={(event) => onMetadataRatioChange(Number(event.target.value))} />
+          </label>
+          <label>
+            检索/管理容器高度系数 {formatScale(workspaceBottomPanelHeightScale)}（{workspaceBottomPanelHeight}px）
+            <input
+              max={SIZE_SCALE_CONFIG.workspaceBottomPanelHeight.max}
+              min={SIZE_SCALE_CONFIG.workspaceBottomPanelHeight.min}
+              step={SIZE_SCALE_CONFIG.workspaceBottomPanelHeight.step}
+              type="range"
+              value={workspaceBottomPanelHeightScale}
+              onChange={(event) => onWorkspaceBottomPanelHeightChange(toAbsolutePx('workspaceBottomPanelHeight', Number(event.target.value)))}
+            />
           </label>
           <label>
             全屏视频控件最大宽度系数 {formatScale(fullscreenVideoControlsMaxWidthScale)}（{fullscreenVideoControlsMaxWidth}px）

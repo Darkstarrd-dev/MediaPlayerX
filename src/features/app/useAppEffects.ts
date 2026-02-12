@@ -54,7 +54,7 @@ interface UseAppEffectsParams {
   metadataManageMode: boolean
   searchPanelCollapsed: boolean
   searchPanelMode: 'vector' | 'feature'
-  vectorPanelHeight: number
+  workspaceBottomPanelHeight: number
   featureTagPickerOpen: boolean
   styleId: string
   paletteId: string
@@ -121,7 +121,7 @@ export function useAppEffects({
   metadataManageMode,
   searchPanelCollapsed,
   searchPanelMode,
-  vectorPanelHeight,
+  workspaceBottomPanelHeight,
   featureTagPickerOpen,
   styleId,
   paletteId,
@@ -436,10 +436,10 @@ export function useAppEffects({
         ? readPx(styles.paddingTop) + readPx(styles.paddingBottom) + readPx(styles.borderTopWidth) + readPx(styles.borderBottomWidth)
         : 20
       const measured = clamp(Math.ceil(content.scrollHeight + chromeHeight + 1), TOP_PANEL_MIN_HEIGHT, TOP_PANEL_MAX_HEIGHT)
-      if (Math.abs(measured - vectorPanelHeight) < 1) {
+      if (Math.abs(measured - workspaceBottomPanelHeight) < 1) {
         return
       }
-      updateSettings({ vectorPanelHeight: measured })
+      updateSettings({ workspaceBottomPanelHeight: measured })
     }
 
     const rafId = window.requestAnimationFrame(measurePanelHeight)
@@ -459,7 +459,7 @@ export function useAppEffects({
     searchPanelMode,
     updateSettings,
     vectorPanelContentRef,
-    vectorPanelHeight,
+    workspaceBottomPanelHeight,
   ])
 
   useEffect(() => {

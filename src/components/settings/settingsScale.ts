@@ -43,6 +43,12 @@ export const SIZE_SCALE_CONFIG = {
     max: 24 / DEFAULT_SETTINGS.sidebarVerticalGap,
     step: 0.01,
   },
+  workspaceBottomPanelHeight: {
+    base: DEFAULT_SETTINGS.workspaceBottomPanelHeight,
+    min: 80 / DEFAULT_SETTINGS.workspaceBottomPanelHeight,
+    max: 360 / DEFAULT_SETTINGS.workspaceBottomPanelHeight,
+    step: 0.01,
+  },
   fullscreenVideoControlsMaxWidth: {
     base: DEFAULT_SETTINGS.fullscreenVideoControlsMaxWidth,
     min: 640 / DEFAULT_SETTINGS.fullscreenVideoControlsMaxWidth,

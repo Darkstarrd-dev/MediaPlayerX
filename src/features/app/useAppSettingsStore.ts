@@ -18,7 +18,7 @@ export function useAppSettingsStore() {
       sidebarIndentStep: state.sidebarIndentStep,
       sidebarVerticalGap: state.sidebarVerticalGap,
       metadataRatio: state.metadataRatio,
-      vectorPanelHeight: state.vectorPanelHeight,
+      workspaceBottomPanelHeight: state.workspaceBottomPanelHeight,
       fullscreenVideoControlsMaxWidth: state.fullscreenVideoControlsMaxWidth,
       thumbnailScale: state.thumbnailScale,
       thumbnailGap: state.thumbnailGap,

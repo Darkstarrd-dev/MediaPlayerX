@@ -27,6 +27,13 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   next.paletteId = rawPaletteId || rawThemeId || 'parchment'
   next.themeId = next.paletteId
 
+  const legacyVectorPanelHeight = next.vectorPanelHeight
+  const hasNextWorkspaceBottomPanelHeight = typeof next.workspaceBottomPanelHeight === 'number' && Number.isFinite(next.workspaceBottomPanelHeight)
+  if (!hasNextWorkspaceBottomPanelHeight && typeof legacyVectorPanelHeight === 'number' && Number.isFinite(legacyVectorPanelHeight)) {
+    next.workspaceBottomPanelHeight = legacyVectorPanelHeight
+  }
+  delete next.vectorPanelHeight
+
   if (typeof next.adReviewMaxConcurrency === 'number' && Number.isFinite(next.adReviewMaxConcurrency)) {
     next.adReviewMaxConcurrency = Math.max(4, Math.min(12, Math.floor(next.adReviewMaxConcurrency)))
   }

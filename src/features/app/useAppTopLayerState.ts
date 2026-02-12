@@ -567,6 +567,7 @@ export function useAppTopLayerState({
     sidebarIndentStep: appSettings.sidebarIndentStep,
     sidebarVerticalGap: appSettings.sidebarVerticalGap,
     metadataRatio: appSettings.metadataRatio,
+    workspaceBottomPanelHeight: appSettings.workspaceBottomPanelHeight,
     fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
     thumbnailGap: appSettings.thumbnailGap,
     thumbnailQuality: appSettings.thumbnailQuality,

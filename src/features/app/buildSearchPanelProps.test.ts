@@ -11,7 +11,7 @@ describe('buildSearchPanelProps', () => {
       manageMode: false,
       searchPanelCollapsed: false,
       setSearchPanelCollapsed,
-      vectorPanelHeight: 240,
+      workspaceBottomPanelHeight: 240,
       vectorPanelRef: { current: null },
       vectorPanelContentRef: { current: null },
       featureResultCount: 2,
@@ -32,7 +32,7 @@ describe('buildSearchPanelProps', () => {
       setFeatureTags: vi.fn(),
       featureGradeFilter: null,
       setFeatureGradeFilter: vi.fn(),
-      onStartVectorPanelResize: vi.fn(),
+      onStartWorkspaceBottomPanelResize: vi.fn(),
       layoutLocked: false,
     })
 
@@ -51,7 +51,7 @@ describe('buildSearchPanelProps', () => {
       manageMode: false,
       searchPanelCollapsed: true,
       setSearchPanelCollapsed: vi.fn(),
-      vectorPanelHeight: 240,
+      workspaceBottomPanelHeight: 240,
       vectorPanelRef: { current: null },
       vectorPanelContentRef: { current: null },
       featureResultCount: 0,
@@ -72,7 +72,7 @@ describe('buildSearchPanelProps', () => {
       setFeatureTags,
       featureGradeFilter: null,
       setFeatureGradeFilter: vi.fn(),
-      onStartVectorPanelResize: vi.fn(),
+      onStartWorkspaceBottomPanelResize: vi.fn(),
       layoutLocked: true,
     })
 
