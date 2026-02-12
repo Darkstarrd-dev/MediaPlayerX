@@ -20,5 +20,16 @@ export default defineConfig(({ command }) => ({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'json-summary'],
+      reportsDirectory: './coverage',
+      thresholds: {
+        lines: 5,
+        functions: 5,
+        statements: 5,
+        branches: 3,
+      },
+    },
   },
 }))

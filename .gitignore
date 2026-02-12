@@ -16,6 +16,7 @@ perf-data
 bench-user-data
 docs/perf/runs
 docs/perf/ui-runs
+coverage/
 library
 *.sqlite
 *.sqlite-shm

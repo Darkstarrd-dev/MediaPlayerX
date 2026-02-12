@@ -21,7 +21,8 @@
     "bench:ui": "node scripts/run-ui-bench.mjs",
     "bench:ui-matrix": "node scripts/run-ui-bench-matrix.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "7z-wasm": "^1.2.0",
@@ -46,6 +47,7 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.182.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "@vitejs/plugin-react": "^5.1.1",
     "better-sqlite3": "^12.6.2",
     "electron": "^40.2.1",
