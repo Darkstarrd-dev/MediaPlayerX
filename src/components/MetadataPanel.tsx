@@ -1,58 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 
 import type { ManageAdReviewTaskDto } from '../contracts/backend'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
 import type { BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
+import { FeatureTagPickerModal } from './metadata/FeatureTagPickerModal'
 import { MetadataImageEditor } from './metadata/MetadataImageEditor'
 import { MetadataVideoEditor } from './metadata/MetadataVideoEditor'
+import {
+  AD_REVIEW_CONCURRENCY_OPTIONS,
+  AD_REVIEW_STREAK_OPTIONS,
+  AD_REVIEW_WINDOW_OPTIONS,
+  formatPercent,
+  parseTagsInput,
+  resolveAdReviewExecutionLabel,
+  resolveAdReviewStatusLabel,
+  resolveTagGroupKey,
+} from './metadata/metadataPanelUtils'
 
 const IS_TEST_MODE = import.meta.env.MODE === 'test'
-const AD_REVIEW_CONCURRENCY_OPTIONS = Array.from({ length: 9 }, (_, index) => index + 4)
-const AD_REVIEW_WINDOW_OPTIONS = Array.from({ length: 201 }, (_, index) => index)
-const AD_REVIEW_STREAK_OPTIONS = Array.from({ length: 200 }, (_, index) => index + 1)
-
-function resolveAdReviewStatusLabel(status: ManageAdReviewTaskDto['status']): string {
-  if (status === 'running') {
-    return '审核中'
-  }
-  if (status === 'paused') {
-    return '已暂停'
-  }
-  if (status === 'failed') {
-    return '失败'
-  }
-  return '待复核'
-}
-
-function formatPercent(value: number): string {
-  const normalized = Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0
-  return `${(normalized * 100).toFixed(1)}%`
-}
-
-function resolveAdReviewExecutionLabel(task: ManageAdReviewTaskDto): string | null {
-  if (!task.execution) {
-    return null
-  }
-
-  const strategy = task.execution.strategy
-  const strategyLabel =
-    strategy.mode === 'head-tail'
-      ? `head-tail(h=${strategy.head_n}, t=${strategy.tail_n}, stop=${strategy.tail_stop_clean_streak})`
-      : 'all'
-
-  return `策略 ${strategyLabel} | 并发 ${task.execution.max_concurrency}`
-}
-
-function resolveTagGroupKey(tag: string): string {
-  const normalized = tag.trim()
-  if (!normalized) {
-    return '#'
-  }
-
-  const first = normalized[0]?.toUpperCase() ?? '#'
-  return /[A-Z0-9]/.test(first) ? first : '#'
-}
 
 export interface MetadataPanelProps {
   mode: BrowserMode
@@ -145,17 +110,6 @@ export interface MetadataPanelProps {
   onRemoveVideoFromPlaylist: (videoId: string) => void
   onDragStart: (videoId: string) => void
   onDropToVideo: (targetVideoId: string) => void
-}
-
-function parseTagsInput(value: string): string[] {
-  const next = new Set<string>()
-  for (const item of value.split(/[\n,，]/)) {
-    const normalized = item.trim()
-    if (normalized.length > 0) {
-      next.add(normalized)
-    }
-  }
-  return Array.from(next)
 }
 
 function MetadataPanel({
@@ -557,123 +511,6 @@ function MetadataPanel({
     )
   }
 
-  const tagPickerModal =
-    featureTagPickerOpen && typeof document !== 'undefined'
-      ? createPortal(
-          <div className="feature-tag-modal-overlay" role="dialog" aria-modal="true" aria-label="tags 控制面板">
-            <div
-              className="feature-tag-modal-backdrop"
-              onMouseDown={(event) => {
-                if (event.button === 2) {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  closeFeatureTagPicker(true)
-                  return
-                }
-                if (event.target === event.currentTarget) {
-                  closeFeatureTagPicker(true)
-                }
-              }}
-              onContextMenu={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-                closeFeatureTagPicker(true)
-              }}
-            >
-              <div className="feature-tag-modal-panel">
-                <div className="feature-tag-picker-head">
-                  <strong>Tag 选择</strong>
-                  <div className="feature-control-actions">
-                    <label className="feature-tag-select-mode">
-                      <input
-                        checked={featureTagSelectMode === 'single'}
-                        type="radio"
-                        name="feature-tag-select-mode"
-                        onChange={() => {
-                          setFeatureTagSelectMode('single')
-                          if (featureTagDrafts.length > 1) {
-                            setFeatureTagDrafts(featureTagDrafts.slice(0, 1))
-                          }
-                        }}
-                      />
-                      单选
-                    </label>
-                    <label className="feature-tag-select-mode">
-                      <input
-                        checked={featureTagSelectMode === 'multi'}
-                        type="radio"
-                        name="feature-tag-select-mode"
-                        onChange={() => setFeatureTagSelectMode('multi')}
-                      />
-                      复选
-                    </label>
-                  </div>
-                </div>
-
-                <div className="feature-tag-picker-groups" role="listbox" aria-label="tags 分组列表" ref={featureTagGroupsRef}>
-                  {groupedFeatureTagOptions.length === 0 ? (
-                    <p className="feature-selection-result">当前库内暂无可选 tags</p>
-                  ) : (
-                    groupedFeatureTagOptions.map((group) => (
-                      <div key={group.key} className="feature-tag-picker-group-row" data-tag-group-key={group.key}>
-                        <span className="feature-tag-picker-group-key">{group.key}</span>
-                        <div className="feature-tags-popover">
-                          {group.tags.map((tag) => {
-                            const selected = featureTagDrafts.includes(tag)
-                            return (
-                              <button
-                                key={tag}
-                                aria-label={tag}
-                                aria-pressed={selected}
-                                className={selected ? 'is-active' : ''}
-                                type="button"
-                                onClick={() => {
-                                  setFeatureTagDrafts((previous) => {
-                                    if (featureTagSelectMode === 'single') {
-                                      return previous[0] === tag ? [] : [tag]
-                                    }
-                                    if (previous.includes(tag)) {
-                                      return previous.filter((item) => item !== tag)
-                                    }
-                                    return [...previous, tag]
-                                  })
-                                }}
-                              >
-                                {tag}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="feature-tag-picker-actions">
-                  <button className="feature-action-btn" type="button" onClick={() => setFeatureTagDrafts([])}>
-                    清空临时选择
-                  </button>
-                  <button className="feature-action-btn" type="button" onClick={() => closeFeatureTagPicker(true)}>
-                    取消
-                  </button>
-                  <button
-                    className="vector-search-btn"
-                    type="button"
-                    onClick={() => {
-                      onSetFeatureTags(featureTagDrafts)
-                      closeFeatureTagPicker(false)
-                    }}
-                  >
-                    确定
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )
-      : null
-
   return (
     <>
       <aside className={metadataPanelClassName} style={{ width: `${metadataRatio * 100}%` }}>
@@ -1048,7 +885,20 @@ function MetadataPanel({
         </section>
       ) : null}
       </aside>
-      {tagPickerModal}
+      <FeatureTagPickerModal
+        open={featureTagPickerOpen}
+        selectMode={featureTagSelectMode}
+        drafts={featureTagDrafts}
+        groupedOptions={groupedFeatureTagOptions}
+        groupContainerRef={featureTagGroupsRef}
+        onSelectModeChange={setFeatureTagSelectMode}
+        onDraftsChange={setFeatureTagDrafts}
+        onCancel={() => closeFeatureTagPicker(true)}
+        onConfirm={() => {
+          onSetFeatureTags(featureTagDrafts)
+          closeFeatureTagPicker(false)
+        }}
+      />
     </>
   )
 }
