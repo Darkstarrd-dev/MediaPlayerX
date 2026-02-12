@@ -102,8 +102,12 @@ html                                        data-mpx-style / data-mpx-palette
    └─ #root
       └─ div.app                            100vw × 100vh, flex column
          ├─ header.app-header               Header 横栏
-         │    ├─ .header-left               Logo + 任务按钮 + 模式切换
-         │    └─ .header-right              检索 + 管理 + 缩放 + 自动播放 + 设置
+         │    ├─ .header-left               Logo + 任务按钮 + 模式切换 + 检索/管理开关
+         │    └─ .header-right              缩放 + 自动播放 + 设置
+         │
+         ├─ section.backend-error-banner    后端错误横幅（按需出现）
+         ├─ section.runtime-warning-banner  运行时能力警告横幅（按需出现）
+         ├─ section.import-task-panel       导入任务横幅（按需出现）
          │
          └─ div.app-body                    flex row, padding: var(--mpx-layout-padding)
               ├─ aside.sidebar              flex column, 可折叠
@@ -113,26 +117,25 @@ html                                        data-mpx-style / data-mpx-palette
               ├─ div.sidebar-splitter       宽度: var(--mpx-splitter-width), 可拖动
               │
               └─ section.workspace          flex column
-                   ├─ .search-panel         检索容器（可折叠）
-                   ├─ .manage-panel         管理容器（互斥于检索）
-                   ├─ .vector-splitter      检索与主区之间的分割条
-                   └─ div.workspace-body    flex row
-                        ├─ main.main-pane   flex column
-                        │    ├─ .main-toolbar        工具栏
-                        │    ├─ .image-grid          缩略图网格 (grid)
-                        │    │   └─ .thumb-card ×N   缩略图卡片
-                        │    ├─ .name-list           纯文件名列表视图
-                        │    ├─ .video-preview       视频预览区
-                        │    ├─ .pager-line          分页控件
-                        │    └─ footer.main-footer   focus 项详情
-                        │
-                        ├─ div.metadata-splitter     宽度: var(--mpx-splitter-width)
-                        │
-                        └─ aside.metadata-panel      flex column
-                             ├─ .metadata-head       标题 + 图标按钮
-                             ├─ .metadata-content    元数据文本/编辑
-                             ├─ .metadata-content-focus  图片预览 + caption
-                             └─ .metadata-video-content  视频信息/播放列表
+                    └─ div.workspace-body    flex row
+                         ├─ main.main-pane   flex column
+                         │    ├─ .main-toolbar             工具栏（普通/管理/元数据管理）
+                         │    ├─ .image-grid               缩略图网格 (grid)
+                         │    │   └─ .thumb-card ×N        缩略图卡片
+                         │    ├─ .name-list                纯文件名列表视图
+                         │    ├─ .video-preview            视频预览区
+                         │    ├─ .pager-line               分页控件（按需出现）
+                         │    └─ footer.main-footer        focus 项详情
+                         │
+                         ├─ div.metadata-splitter          宽度: var(--mpx-splitter-width)
+                         │
+                         └─ aside.metadata-panel           flex column
+                              ├─ .metadata-head            标题 + 图标按钮
+                              ├─ .metadata-content         图包元数据编辑
+                              ├─ .metadata-content-focus   图片预览 + caption
+                              ├─ .metadata-video-content   视频信息/播放列表
+                              ├─ .metadata-search-section  检索筛选区（search mode）
+                              └─ .metadata-ad-review-section AI 审核区（manage mode）
 ```
 
 ### 3.2 叠层（Overlay）
@@ -142,8 +145,11 @@ html                                        data-mpx-style / data-mpx-palette
 | 叠层 | Class | 层级 | 布局 |
 |------|-------|------|------|
 | 全屏模式 | `.fullscreen-layer` | z-index: 20 | fixed inset:0, 独立背景色 |
-| 设置面板 | `.settings-mask` + `.settings-panel` | z-index: 10+ | 居中 80%，backdrop-filter |
+| 设置面板 | `.settings-mask` + `.settings-panel` | z-index: 30 | fixed inset:0, 居中 80% |
+| 特征 Tag 选择器 | `.feature-tag-modal-overlay` | z-index: 2400 | fixed inset:0, 模态层 |
+| 浮层对话框 | `.settings-floating-mask` + `.settings-floating-panel` | z-index: 8 | 快捷键录入/危险确认 |
 | 拖拽叠加 | `.drop-overlay` | z-index: 12 | fixed inset:0, 半透明 |
+| 元数据抓取面板 | `.settings-mask` + `.metadata-fetch-panel` | z-index: 30 | 设置容器内的大尺寸模态 |
 
 ### 3.3 面板间空间关系
 
@@ -654,22 +660,32 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 |--------|------|
 | `.app` | 根容器 |
 | `.app-header` | Header 横栏 |
+| `.backend-error-banner` | 后端错误横幅 |
+| `.runtime-warning-banner` | 运行时警告横幅 |
+| `.import-task-panel` | 导入任务横幅 |
 | `.app-body` | Header 以下的 body 区域 |
 | `.sidebar` | Sidebar 面板 |
 | `.sidebar-splitter` | Sidebar 分割条 |
-| `.workspace` | 工作区（Main + Metadata + Search） |
+| `.workspace` | 工作区（Main + Metadata） |
 | `.workspace-body` | Main + Metadata 的水平容器 |
 | `.main-pane` | 主内容区 |
 | `.metadata-splitter` | Metadata 分割条 |
 | `.metadata-panel` | 元数据面板 |
+| `.settings-mask` | 全局设置模态遮罩 |
+| `.settings-panel` | 设置主面板 |
+| `.settings-floating-mask` | 浮层对话框遮罩 |
+| `.settings-floating-panel` | 浮层对话框 |
+| `.metadata-fetch-panel` | 元数据抓取面板 |
+| `.drop-overlay` | 拖拽导入遮罩 |
+| `.fullscreen-layer` | 全屏层 |
 
 ### 控件级
 
 | 选择器 | 描述 |
 |--------|------|
 | `.logo-btn` | Logo 按钮 |
-| `.search-trigger-btn` | 检索入口按钮 |
 | `.task-status-btn` | 任务状态按钮 |
+| `.search-trigger-btn` | 检索/管理开关按钮 |
 | `.mode-switch` | 图片/视频模式切换容器 |
 | `.mode-switch button` | 模式切换按钮 |
 | `.sidebar-head` | Sidebar 头部 |
@@ -696,11 +712,14 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | `.metadata-head` | 元数据头部 |
 | `.metadata-head-icon-btn` | 元数据图标按钮 |
 | `.metadata-content` | 元数据内容区 |
+| `.metadata-search-section` | 元数据内检索筛选区 |
+| `.metadata-ad-review-section` | 元数据内 AI 审核区 |
 | `.metadata-rating-group` | 评分组件 |
 | `.metadata-edit-grid` | 编辑网格 |
 | `.meta-tabs` | 元数据页签 |
 | `.meta-tabs button` | 页签按钮 |
 | `.playlist-item` | 播放列表项 |
+| `.manage-confirm-dialog` | 危险操作确认对话框 |
 | `.main-footer` | Main 底部信息栏 |
 
 ### 状态修饰符
@@ -713,20 +732,32 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | `.is-idle` | 空闲态 |
 | `.is-open` | 展开态 |
 | `.is-locked` | 锁定态 |
+| `.is-running` | 运行中态 |
+| `.is-paused` | 暂停态 |
+| `.is-review` | 待复核态 |
+| `.is-failed` | 失败态 |
 | `.is-skeleton` | 骨架屏态 |
 
 ---
 
 ## 8. 组件 → Token 映射表
 
+> 说明：旧的独立 `search/manage/vector-panel` 模块已下沉，当前主路径为 Metadata 面板中的
+> `.metadata-search-section` 与 `.metadata-ad-review-section`。
+
 ### 哪些 token 影响哪些组件
 
 | 组件 | 受影响的 token |
 |------|---------------|
 | Header 横栏 | `--mpx-header-{bg,border,radius,shadow,margin,border-width,backdrop-filter}` |
+| 顶部横幅（backend/runtime/import） | `--mpx-status-{danger,warning,info}-{bg,border,text}` + `--mpx-text-*` |
 | Sidebar 面板 | `--mpx-sidebar-{bg,radius,border-width,border-style,shadow,backdrop-filter,transform,transition,padding}` |
 | Main 面板 | `--mpx-main-{bg,radius,border-width,border-style,shadow,backdrop-filter,transform,transition,padding}` |
 | Metadata 面板 | `--mpx-metadata-{bg,radius,border-width,border-style,shadow,backdrop-filter,transform,transition,padding}` |
+| Metadata 检索区 | `--mpx-input-*` + `--mpx-btn-secondary-*` + `--mpx-accent*` + `--mpx-text-*` |
+| Metadata AI 审核区 | `--mpx-status-{busy,warning,danger}-*` + `--mpx-accent*` + `--mpx-border-*` |
+| 元数据抓取面板 | `--mpx-bg-{app,panel,elevated}` + `--mpx-input-*` + `--mpx-btn-secondary-*` + `--mpx-shadow-panel` |
+| 危险确认对话框 | `--mpx-bg-elevated` + `--mpx-status-danger-*` + `--mpx-border-*` + `--mpx-shadow-panel` |
 | 分割条 | `--mpx-splitter-{width,track-bg,handle-bg,handle-hover-bg}` |
 | 缩略图卡片 | `--mpx-card-{radius,shadow,border-width}` + `--mpx-control-hover-{transform,shadow}` |
 | 通用按钮 | `--mpx-control-{radius,border-width,height,padding-x,font-weight,shadow,backdrop-filter,transition}` + hover/active token |
@@ -739,6 +770,7 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | 视频/全屏播放器控件 | `--mpx-player-{surface,hud,btn}-*`（固定深色半透明语义） |
 | body 背景 | `--mpx-bg-body` |
 | 全屏模式 | `--mpx-fullscreen-{bg,footer-bg}` — 不受 style layout token 影响 |
+| 拖拽导入遮罩 | `--mpx-bg-tooltip` + `--mpx-accent*` + `--mpx-text-inverse` |
 
 ---
 

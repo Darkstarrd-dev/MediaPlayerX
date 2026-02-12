@@ -16,18 +16,6 @@
   color: var(--mpx-btn-secondary-text);
 }
 
-.search-box select,
-.search-box input,
-.header-right select,
-.settings-block input,
-.settings-block select {
-  border: 1px solid var(--mpx-input-border);
-  border-radius: 8px;
-  background: var(--mpx-input-bg);
-  color: var(--mpx-input-text);
-  padding: 6px 8px;
-}
-
 .search-box select:focus,
 .search-box input:focus,
 .header-right select:focus,
@@ -51,12 +39,12 @@
 .main-toolbar button,
 .settings-block button,
 .search-trigger-btn {
-  border: var(--control-border-width) solid var(--line-strong);
-  border-radius: var(--control-radius);
+  border: var(--mpx-control-border-width) solid var(--mpx-border-2);
+  border-radius: var(--mpx-control-radius);
   background: var(--mpx-bg-elevated);
   color: var(--mpx-text-1);
-  min-height: var(--control-height);
-  padding: 6px var(--control-padding-x);
+  min-height: var(--mpx-control-height);
+  padding: 6px var(--mpx-control-padding-x);
   cursor: pointer;
 }
 
@@ -74,29 +62,17 @@
 .settings-panel {
   width: 80vw;
   height: 80vh;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--mpx-border-2);
   border-radius: 14px;
   background: var(--mpx-bg-app);
-  box-shadow: var(--shadow-panel);
+  box-shadow: var(--mpx-shadow-panel);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.settings-side {
-  width: 100%;
-  min-width: 0;
-  border: 1px solid var(--mpx-border-1);
-  border-radius: 10px;
-  background: var(--mpx-bg-panel);
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .settings-head {
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--mpx-border-1);
   padding: 10px 14px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -130,7 +106,7 @@
 .settings-side {
   width: 100%;
   min-width: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--mpx-border-1);
   border-radius: 10px;
   background: var(--mpx-bg-elevated);
   padding: 10px;
@@ -145,8 +121,8 @@
 }
 
 .settings-side button.is-active {
-  background: var(--accent-soft);
-  border-color: var(--accent);
+  background: var(--mpx-accent-soft);
+  border-color: var(--mpx-accent);
   color: var(--mpx-accent);
 }
 
@@ -156,7 +132,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  border: 1px solid var(--line);
+  border: 1px solid var(--mpx-border-1);
   border-radius: 10px;
   background: var(--mpx-bg-elevated);
   padding: 14px 16px;
@@ -179,7 +155,7 @@
   display: grid;
   gap: 10px;
   padding-top: 12px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--mpx-border-1);
 }
 
 .settings-group:first-child {
@@ -192,26 +168,26 @@
   align-items: center;
   gap: 10px;
   margin: 0;
-  color: var(--text-main);
+  color: var(--mpx-text-1);
   font-weight: 700;
 }
 
 .settings-group-head::after {
   content: '';
   flex: 1;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--mpx-border-1);
 }
 
 .settings-block label {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  color: var(--text-dim);
+  color: var(--mpx-text-2);
 }
 
 .settings-subsection {
   margin: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--mpx-border-1);
   border-radius: 10px;
   padding: 10px;
   display: grid;
@@ -225,7 +201,7 @@
 
 .settings-placeholder {
   margin: 0;
-  color: var(--text-dim);
+  color: var(--mpx-text-2);
   line-height: 1.5;
 }
 
@@ -286,13 +262,13 @@
 }
 
 .settings-runtime-grid > span {
-  color: var(--text-dim);
+  color: var(--mpx-text-2);
 }
 
 .settings-runtime-grid > code {
   display: block;
   margin: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--mpx-border-1);
   border-radius: 8px;
   padding: 6px 8px;
   background: var(--mpx-input-bg);
@@ -346,8 +322,8 @@
 .shortcut-binding-trigger {
   width: 100%;
   min-height: 34px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--control-radius);
+  border: 1px solid var(--mpx-border-2);
+  border-radius: var(--mpx-control-radius);
   background: var(--mpx-input-bg);
   color: var(--mpx-input-text);
   text-align: left;
@@ -356,9 +332,9 @@
 }
 
 .shortcut-conflicts {
-  border-top: 1px dashed var(--line);
+  border-top: 1px dashed var(--mpx-border-1);
   padding-top: 8px;
-  color: var(--text-dim);
+  color: var(--mpx-text-2);
 }
 
 .shortcut-conflicts ul {
@@ -368,7 +344,7 @@
 .settings-floating-mask {
   position: absolute;
   inset: 0;
-  background: rgba(18, 15, 11, 0.26);
+  background: color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -377,10 +353,10 @@
 
 .settings-floating-panel {
   width: min(540px, 92%);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--mpx-border-2);
   border-radius: 12px;
   background: var(--mpx-bg-elevated);
-  box-shadow: 0 18px 36px rgba(33, 27, 20, 0.2);
+  box-shadow: var(--mpx-shadow-panel);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -407,7 +383,7 @@
 }
 
 .binding-chip-list li {
-  border: 1px solid var(--line);
+  border: 1px solid var(--mpx-border-1);
   border-radius: 999px;
   padding: 4px 10px;
   background: var(--mpx-input-bg);
@@ -418,7 +394,7 @@
 
 .binding-capture-preview {
   margin: 0;
-  border: 1px dashed var(--line-strong);
+  border: 1px dashed var(--mpx-border-2);
   border-radius: 10px;
   padding: 10px;
   min-height: 42px;

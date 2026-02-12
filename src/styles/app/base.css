@@ -1,27 +1,3 @@
-:root {
-  --bg-main: var(--mpx-bg-app);
-  --bg-panel: var(--mpx-bg-panel);
-  --line: var(--mpx-border-1);
-  --line-strong: var(--mpx-border-2);
-  --text-main: var(--mpx-text-1);
-  --text-dim: var(--mpx-text-2);
-  --accent: var(--mpx-accent);
-  --accent-soft: var(--mpx-accent-soft);
-  --danger: var(--mpx-status-danger-text);
-  --panel-head-height: var(--mpx-panel-head-height);
-  --header-bg: var(--mpx-header-bg);
-  --shadow-panel: var(--mpx-shadow-panel);
-  --control-radius: var(--mpx-control-radius);
-  --control-border-width: var(--mpx-control-border-width);
-  --control-height: var(--mpx-control-height);
-  --control-padding-x: var(--mpx-control-padding-x);
-  --control-font-weight: var(--mpx-control-font-weight);
-  --card-radius: var(--mpx-card-radius);
-  --card-shadow: var(--mpx-card-shadow);
-  --card-border-width: var(--mpx-card-border-width);
-  --splitter-width: var(--mpx-splitter-width);
-}
-
 .sidebar-head strong,
 .vector-panel strong,
 .main-toolbar strong,
@@ -35,19 +11,16 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mpx-scrollbar-thumb-bg) var(--mpx-scrollbar-track-bg);
 }
 
 body {
   margin: 0;
   min-width: 960px;
   font-family: var(--mpx-font-ui);
-  color: var(--text-main);
+  color: var(--mpx-text-1);
   background: var(--mpx-bg-body);
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--mpx-scrollbar-thumb-bg) var(--mpx-scrollbar-track-bg);
 }
 
 *::-webkit-scrollbar {
@@ -76,8 +49,8 @@ select {
 }
 
 button {
-  border-radius: var(--control-radius);
-  font-weight: var(--control-font-weight);
+  border-radius: var(--mpx-control-radius);
+  font-weight: var(--mpx-control-font-weight);
   box-shadow: var(--mpx-control-shadow);
   backdrop-filter: var(--mpx-control-backdrop-filter);
   transition: var(--mpx-control-transition);
@@ -96,7 +69,7 @@ button:active {
 
 input:not([type='checkbox']):not([type='radio']):not([type='range']),
 select {
-  min-height: var(--control-height);
+  min-height: var(--mpx-control-height);
 }
 
 input[type='range'] {
@@ -144,7 +117,7 @@ input[type='checkbox'] {
   width: var(--mpx-checkbox-size);
   height: var(--mpx-checkbox-size);
   margin: 0;
-  border: var(--control-border-width) solid var(--mpx-checkbox-border);
+  border: var(--mpx-control-border-width) solid var(--mpx-checkbox-border);
   border-radius: var(--mpx-checkbox-radius);
   background: var(--mpx-checkbox-bg);
   display: inline-grid;
@@ -325,16 +298,12 @@ select option {
   padding: 2px 8px;
 }
 
-.grade-popover button:hover {
-  background: var(--mpx-bg-hover);
-}
-
 .grade-control {
   position: relative;
 }
 
 .grade-control > button {
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--mpx-border-2);
   border-radius: 8px;
   padding: 6px 10px;
   background: var(--mpx-bg-elevated);
@@ -348,11 +317,11 @@ select option {
   min-width: 96px;
   display: none;
   flex-direction: column;
-  border: 1px solid var(--line);
+  border: 1px solid var(--mpx-border-1);
   border-radius: 8px;
   overflow: hidden;
   background: var(--mpx-bg-elevated);
-  box-shadow: var(--shadow-panel);
+  box-shadow: var(--mpx-shadow-panel);
   z-index: 6;
 }
 
@@ -401,7 +370,7 @@ select option {
   min-width: 0;
   margin-left: auto;
   text-align: right;
-  color: var(--text-dim);
+  color: var(--mpx-text-2);
   font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
@@ -409,7 +378,7 @@ select option {
 }
 
 .main-toolbar-hint {
-  color: var(--text-dim);
+  color: var(--mpx-text-2);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -417,7 +386,7 @@ select option {
 .toolbar-actions .feature-action-btn.is-active {
   border-color: color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-border-2));
   background: color-mix(in srgb, var(--mpx-accent-soft) 64%, var(--mpx-bg-muted));
-  color: var(--text-main);
+  color: var(--mpx-text-1);
 }
 
 .toolbar-actions .toolbar-icon-btn {
