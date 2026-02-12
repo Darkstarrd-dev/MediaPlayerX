@@ -218,9 +218,29 @@ export class MediaLibrarySnapshotStore {
             source.circle,
             source.author,
             source.tags_json,
-            grade.grade AS mock_grade
+            grade.grade AS mock_grade,
+            external.source_site,
+            external.source_url,
+            external.source_remote_id,
+            external.source_token,
+            external.title AS external_title,
+            external.title_jpn,
+            external.group_name,
+            external.group_name_jpn,
+            external.artist,
+            external.artist_jpn,
+            external.posted,
+            external.rating,
+            external.favorited,
+            external.tags_json AS external_tags_json,
+            external.raw_json AS external_raw_json,
+            source_cover.cover_color AS source_cover_color,
+            source_cover.cover_image_path AS source_cover_image_path,
+            source_cover.updated_at_ms AS source_cover_updated_at_ms
           FROM media_source AS source
           LEFT JOIN package_grade AS grade ON grade.source_id = source.id
+          LEFT JOIN media_source_external_metadata AS external ON external.source_id = source.id
+          LEFT JOIN media_source_cover AS source_cover ON source_cover.source_id = source.id
           ORDER BY source.absolute_path COLLATE NOCASE
         `,
       )
@@ -280,6 +300,34 @@ export class MediaLibrarySnapshotStore {
         author: row.author,
         tags: parseJson<string[]>(row.tags_json, []),
         mock_grade: row.mock_grade,
+        external_metadata:
+          row.source_site && row.source_url && row.source_remote_id
+            ? {
+                source_site: row.source_site,
+                source_url: row.source_url,
+                source_remote_id: row.source_remote_id,
+                source_token: row.source_token ?? '',
+                title: row.external_title ?? '',
+                title_jpn: row.title_jpn ?? '',
+                group_name: row.group_name ?? '',
+                group_name_jpn: row.group_name_jpn ?? '',
+                artist: row.artist ?? '',
+                artist_jpn: row.artist_jpn ?? '',
+                posted: row.posted ?? '',
+                rating: row.rating,
+                favorited: row.favorited,
+                tags: parseJson<Record<string, string>>(row.external_tags_json ?? '{}', {}),
+                raw_json: row.external_raw_json ?? '{}',
+              }
+            : null,
+        source_cover:
+          row.source_cover_color && row.source_cover_updated_at_ms
+            ? {
+                cover_color: row.source_cover_color,
+                cover_image_path: row.source_cover_image_path,
+                updated_at_ms: row.source_cover_updated_at_ms,
+              }
+            : null,
         images,
       }
 

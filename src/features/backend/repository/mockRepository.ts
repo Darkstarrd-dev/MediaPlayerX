@@ -33,6 +33,7 @@ import {
   setImageHiddenResponseSchema,
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
+  writePackageExternalMetadataResponseSchema,
   searchExternalMetadataResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
@@ -99,6 +100,8 @@ import {
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
   type WritePackageMetadataResponseDto,
+  type WritePackageExternalMetadataRequestDto,
+  type WritePackageExternalMetadataResponseDto,
   type SearchExternalMetadataRequestDto,
   type SearchExternalMetadataResponseDto,
   type WriteVideoMetadataRequestDto,
@@ -224,7 +227,10 @@ function toSidebarNodeDto(node: SidebarNode): SidebarNodeDto {
     package_id: node.packageId,
     video_id: node.videoId,
     image_source_id: node.imageSourceId,
+    image_node_type: node.imageNodeType,
     direct_image_count: node.directImageCount,
+    descendant_package_count: node.descendantPackageCount,
+    descendant_image_count: node.descendantImageCount,
     path_key: node.pathKey,
   }
 }
@@ -1248,6 +1254,47 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageMetadataResponseDto> {
     const response = this.writePackageMetadataSync(request)
+    return resolveAsync(response, options)
+  }
+
+  writePackageExternalMetadataSync(
+    request: WritePackageExternalMetadataRequestDto,
+  ): WritePackageExternalMetadataResponseDto {
+    const allSources = [...MOCK_LIBRARY_SNAPSHOT.image_packages, ...MOCK_LIBRARY_SNAPSHOT.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`mock 仓库写入外部元数据失败：source 不存在 ${request.package_id}`)
+    }
+
+    source.external_metadata = {
+      source_site: request.source_site,
+      source_url: request.source_url,
+      source_remote_id: request.source_remote_id,
+      source_token: request.source_token?.trim() ?? '',
+      title: request.title?.trim() ?? '',
+      title_jpn: request.title_jpn?.trim() ?? '',
+      group_name: request.group_name?.trim() ?? '',
+      group_name_jpn: request.group_name_jpn?.trim() ?? '',
+      artist: request.artist?.trim() ?? '',
+      artist_jpn: request.artist_jpn?.trim() ?? '',
+      posted: request.posted?.trim() ?? '',
+      rating: request.rating ?? null,
+      favorited: request.favorited ?? null,
+      tags: request.tags,
+      raw_json: request.raw_json,
+    }
+
+    return writePackageExternalMetadataResponseSchema.parse({
+      package: source,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  async writePackageExternalMetadata(
+    request: WritePackageExternalMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageExternalMetadataResponseDto> {
+    const response = this.writePackageExternalMetadataSync(request)
     return resolveAsync(response, options)
   }
 

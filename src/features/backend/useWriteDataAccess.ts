@@ -10,6 +10,8 @@ import type {
   WritePackageGradeResponseDto,
   WritePackageMetadataRequestDto,
   WritePackageMetadataResponseDto,
+  WritePackageExternalMetadataRequestDto,
+  WritePackageExternalMetadataResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
 } from '../../contracts/backend'
@@ -34,6 +36,9 @@ interface UseWriteDataAccessParams {
 interface SyncWriteRepository extends MediaRepository {
   writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
+  writePackageExternalMetadataSync?(
+    request: WritePackageExternalMetadataRequestDto,
+  ): WritePackageExternalMetadataResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
 }
@@ -87,6 +92,27 @@ interface UseWriteDataAccessResult {
       tags: string[]
       grade?: number | null
       syncFileNameToWorkTitle?: boolean
+    },
+  ) => Promise<void>
+  writePackageExternalMetadata: (
+    packageId: string,
+    payload: {
+      sourceSite: 'nhentai' | 'ehentai'
+      sourceUrl: string
+      sourceRemoteId: string
+      sourceToken?: string
+      title?: string
+      titleJpn?: string
+      groupName?: string
+      groupNameJpn?: string
+      artist?: string
+      artistJpn?: string
+      posted?: string
+      rating?: string | null
+      favorited?: string | null
+      tags: Record<string, string>
+      rawJson: string
+      thumbUrl?: string
     },
   ) => Promise<void>
   saveVideoCover: (videoId: string, timeSec: number, optimisticColor: string) => Promise<void>
@@ -311,6 +337,79 @@ export function useWriteDataAccess({
     [isSynchronousTestMode, repository],
   )
 
+  const writePackageExternalMetadata = useCallback(
+    async (
+      packageId: string,
+      payload: {
+        sourceSite: 'nhentai' | 'ehentai'
+        sourceUrl: string
+        sourceRemoteId: string
+        sourceToken?: string
+        title?: string
+        titleJpn?: string
+        groupName?: string
+        groupNameJpn?: string
+        artist?: string
+        artistJpn?: string
+        posted?: string
+        rating?: string | null
+        favorited?: string | null
+        tags: Record<string, string>
+        rawJson: string
+        thumbUrl?: string
+      },
+    ) => {
+      if (!repository.writePackageExternalMetadata) {
+        setMetadataError('当前后端不支持写入外部元数据')
+        return
+      }
+
+      setMetadataPending(true)
+      setMetadataError(null)
+
+      try {
+        const request: WritePackageExternalMetadataRequestDto = {
+          package_id: packageId,
+          source_site: payload.sourceSite,
+          source_url: payload.sourceUrl,
+          source_remote_id: payload.sourceRemoteId,
+          source_token: payload.sourceToken,
+          title: payload.title,
+          title_jpn: payload.titleJpn,
+          group_name: payload.groupName,
+          group_name_jpn: payload.groupNameJpn,
+          artist: payload.artist,
+          artist_jpn: payload.artistJpn,
+          posted: payload.posted,
+          rating: payload.rating,
+          favorited: payload.favorited,
+          tags: payload.tags,
+          raw_json: payload.rawJson,
+          thumb_url: payload.thumbUrl,
+        }
+
+        if (isSynchronousTestMode) {
+          const writer = repository.writePackageExternalMetadataSync
+          if (!writer) {
+            setMetadataError('当前后端不支持写入外部元数据')
+            return
+          }
+          writer(request)
+          return
+        }
+
+        await repository.writePackageExternalMetadata(request, {
+          timeoutMs: 15_000,
+        })
+      } catch (error: unknown) {
+        setMetadataError(toErrorMessage(error))
+      } finally {
+        setMetadataPending(false)
+      }
+    },
+    [isSynchronousTestMode, repository],
+  )
+
   const setImageHidden = useCallback(
     async (imageIds: string[], hidden: boolean): Promise<SetImageHiddenResponseDto> => {
       if (!repository.setImageHidden) {
@@ -439,6 +538,7 @@ export function useWriteDataAccess({
     deleteImageItems,
     deleteSidebarNodes,
     writePackageMetadata,
+    writePackageExternalMetadata,
     writeVideoMetadata,
     saveVideoCover,
   }

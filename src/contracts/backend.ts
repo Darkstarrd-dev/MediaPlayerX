@@ -44,6 +44,30 @@ export const imageItemDtoSchema = z.object({
   hidden: z.boolean().optional(),
 })
 
+export const imageSourceExternalMetadataDtoSchema = z.object({
+  source_site: z.enum(['nhentai', 'ehentai']),
+  source_url: z.string().min(1),
+  source_remote_id: z.string().min(1),
+  source_token: z.string(),
+  title: z.string(),
+  title_jpn: z.string(),
+  group_name: z.string(),
+  group_name_jpn: z.string(),
+  artist: z.string(),
+  artist_jpn: z.string(),
+  posted: z.string(),
+  rating: z.string().nullable().optional(),
+  favorited: z.string().nullable().optional(),
+  tags: z.record(z.string(), z.string()),
+  raw_json: z.string(),
+})
+
+export const imageSourceCoverDtoSchema = z.object({
+  cover_color: z.string().min(1),
+  cover_image_path: z.string().min(1).nullable(),
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const imagePackageDtoSchema = z.object({
   id: z.string().min(1),
   package_name: z.string().min(1),
@@ -55,6 +79,8 @@ export const imagePackageDtoSchema = z.object({
   author: z.string().min(1),
   tags: z.array(z.string()),
   mock_grade: z.number().int().min(0).max(5).nullable(),
+  external_metadata: imageSourceExternalMetadataDtoSchema.nullable().optional(),
+  source_cover: imageSourceCoverDtoSchema.nullable().optional(),
   images: z.array(imageItemDtoSchema),
 })
 
@@ -86,22 +112,28 @@ export const sidebarNodeDtoSchema: z.ZodType<{
   id: string
   label: string
   kind: 'folder' | 'package' | 'video'
+  image_node_type?: 'folder' | 'package' | 'directory'
   children: Array<unknown>
   package_id?: string
   video_id?: string
   image_source_id?: string
   direct_image_count?: number
+  descendant_package_count?: number
+  descendant_image_count?: number
   path_key: string
 }> = z.lazy(() =>
   z.object({
     id: z.string().min(1),
     label: z.string().min(1),
     kind: z.enum(['folder', 'package', 'video']),
+    image_node_type: z.enum(['folder', 'package', 'directory']).optional(),
     children: z.array(sidebarNodeDtoSchema),
     package_id: z.string().min(1).optional(),
     video_id: z.string().min(1).optional(),
     image_source_id: z.string().min(1).optional(),
     direct_image_count: nonNegativeIntSchema.optional(),
+    descendant_package_count: nonNegativeIntSchema.optional(),
+    descendant_image_count: nonNegativeIntSchema.optional(),
     path_key: z.string().min(1),
   }),
 )
@@ -407,6 +439,31 @@ export const writePackageMetadataResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const writePackageExternalMetadataRequestSchema = z.object({
+  package_id: z.string().min(1),
+  source_site: z.enum(['nhentai', 'ehentai']),
+  source_url: z.string().min(1),
+  source_remote_id: z.string().min(1),
+  source_token: z.string().optional(),
+  title: z.string().optional(),
+  title_jpn: z.string().optional(),
+  group_name: z.string().optional(),
+  group_name_jpn: z.string().optional(),
+  artist: z.string().optional(),
+  artist_jpn: z.string().optional(),
+  posted: z.string().optional(),
+  rating: z.string().nullable().optional(),
+  favorited: z.string().nullable().optional(),
+  tags: z.record(z.string(), z.string()),
+  raw_json: z.string().min(1),
+  thumb_url: z.string().optional(),
+})
+
+export const writePackageExternalMetadataResponseSchema = z.object({
+  package: imagePackageDtoSchema,
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const writeVideoMetadataRequestSchema = z.object({
   video_id: z.string().min(1),
   work_title: z.string().min(1),
@@ -655,6 +712,8 @@ export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManage
 export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
 export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
+export type WritePackageExternalMetadataRequestDto = z.infer<typeof writePackageExternalMetadataRequestSchema>
+export type WritePackageExternalMetadataResponseDto = z.infer<typeof writePackageExternalMetadataResponseSchema>
 export type SearchExternalMetadataRequestDto = z.infer<typeof searchExternalMetadataRequestSchema>
 export type ExternalMetadataResultItemDto = z.infer<typeof externalMetadataResultItemSchema>
 export type SearchExternalMetadataResponseDto = z.infer<typeof searchExternalMetadataResponseSchema>

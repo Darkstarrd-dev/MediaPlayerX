@@ -112,6 +112,34 @@ export class MediaLibraryDatabase {
     return this.metadataStore.readVideoMetadata()
   }
 
+  readSourceExternalMetadata(): Map<
+    string,
+    {
+      sourceSite: 'nhentai' | 'ehentai'
+      sourceUrl: string
+      sourceRemoteId: string
+      sourceToken: string
+      title: string
+      titleJpn: string
+      groupName: string
+      groupNameJpn: string
+      artist: string
+      artistJpn: string
+      posted: string
+      rating: string | null
+      favorited: string | null
+      tags: Record<string, string>
+      rawJson: string
+      updatedAtMs: number
+    }
+  > {
+    return this.metadataStore.readSourceExternalMetadata()
+  }
+
+  readSourceCovers(): Map<string, { coverColor: string; coverImagePath: string | null; updatedAtMs: number }> {
+    return this.metadataStore.readSourceCovers()
+  }
+
   writePackageGrade(sourceId: string, grade: number | null): void {
     this.metadataStore.writePackageGrade(sourceId, grade)
   }
@@ -159,6 +187,33 @@ export class MediaLibraryDatabase {
     this.metadataStore.writeVideoMetadata(videoId, payload)
   }
 
+  writeSourceExternalMetadata(
+    sourceId: string,
+    payload: {
+      sourceSite: 'nhentai' | 'ehentai'
+      sourceUrl: string
+      sourceRemoteId: string
+      sourceToken: string
+      title: string
+      titleJpn: string
+      groupName: string
+      groupNameJpn: string
+      artist: string
+      artistJpn: string
+      posted: string
+      rating: string | null
+      favorited: string | null
+      tags: Record<string, string>
+      rawJson: string
+    },
+  ): void {
+    this.metadataStore.writeSourceExternalMetadata(sourceId, payload)
+  }
+
+  writeSourceCover(sourceId: string, coverColor: string, coverImagePath: string | null): void {
+    this.metadataStore.writeSourceCover(sourceId, coverColor, coverImagePath)
+  }
+
   readPlaylist(): string[] {
     return this.playlistStore.readPlaylist()
   }
@@ -185,6 +240,8 @@ export class MediaLibraryDatabase {
       this.db.prepare('DELETE FROM playlist_entry').run()
       this.db.prepare('DELETE FROM video_cover').run()
       this.db.prepare('DELETE FROM video_metadata').run()
+      this.db.prepare('DELETE FROM media_source_cover').run()
+      this.db.prepare('DELETE FROM media_source_external_metadata').run()
       this.db.prepare('DELETE FROM package_grade').run()
       this.db.prepare('DELETE FROM image_item').run()
       this.db.prepare('DELETE FROM media_source').run()

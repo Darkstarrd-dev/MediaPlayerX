@@ -10,6 +10,24 @@ export interface SourceRow {
   author: string
   tags_json: string
   mock_grade: number | null
+  source_site: 'nhentai' | 'ehentai' | null
+  source_url: string | null
+  source_remote_id: string | null
+  source_token: string | null
+  external_title: string | null
+  title_jpn: string | null
+  group_name: string | null
+  group_name_jpn: string | null
+  artist: string | null
+  artist_jpn: string | null
+  posted: string | null
+  rating: string | null
+  favorited: string | null
+  external_tags_json: string | null
+  external_raw_json: string | null
+  source_cover_color: string | null
+  source_cover_image_path: string | null
+  source_cover_updated_at_ms: number | null
 }
 
 export interface ImageRow {

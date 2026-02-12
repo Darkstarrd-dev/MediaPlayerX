@@ -11,10 +11,22 @@ export interface PackageMetadataWritePayload {
 }
 
 export interface ParsedExternalMetadataSavePayload {
+  sourceSite: 'nhentai' | 'ehentai'
+  sourceUrl: string
+  sourceRemoteId: string
+  sourceToken: string
   title: string
+  titleJpn: string
   group: string
+  groupJpn: string
   artist: string
+  artistJpn: string
+  posted: string
+  rating?: string
+  favorited?: string
+  thumbUrl: string
   tags: Record<string, string>
+  rawJson: string
 }
 
 export interface VideoMetadataWritePayload {
@@ -55,6 +67,27 @@ interface UseMetadataWriteBindingsParams {
         syncFileNameToWorkTitle?: boolean
       },
     ) => Promise<void>
+    writePackageExternalMetadata?: (
+      packageId: string,
+      payload: {
+        sourceSite: 'nhentai' | 'ehentai'
+        sourceUrl: string
+        sourceRemoteId: string
+        sourceToken?: string
+        title?: string
+        titleJpn?: string
+        groupName?: string
+        groupNameJpn?: string
+        artist?: string
+        artistJpn?: string
+        posted?: string
+        rating?: string | null
+        favorited?: string | null
+        tags: Record<string, string>
+        rawJson: string
+        thumbUrl?: string
+      },
+    ) => Promise<void>
   }
   packageById: Map<string, ImagePackage>
   videoById: Map<string, VideoItem>
@@ -70,6 +103,7 @@ interface UseMetadataWriteBindingsResult {
   applyPackageGrade: (grade: number | null) => void
   applyPackageMetadata: (payload: PackageMetadataWritePayload) => void
   applyPackageMetadataById: (packageId: string, payload: PackageMetadataWritePayload) => Promise<void>
+  applyPackageExternalMetadataById: (packageId: string, payload: ParsedExternalMetadataSavePayload) => Promise<void>
   applyPackageSyncName: () => void
   applyVideoMetadata: (payload: VideoMetadataWritePayload) => void
   applyVideoSyncName: () => void
@@ -328,11 +362,41 @@ export function useMetadataWriteBindings({
     [backendWrite.writePackageMetadata, buildPackageMetadataPayload, setManageOperationHint],
   )
 
+  const applyPackageExternalMetadataById = useCallback(
+    async (packageId: string, payload: ParsedExternalMetadataSavePayload) => {
+      const writer = backendWrite.writePackageExternalMetadata
+      if (!writer) {
+        throw new Error('当前后端不支持写入外部元数据')
+      }
+
+      await writer(packageId, {
+        sourceSite: payload.sourceSite,
+        sourceUrl: payload.sourceUrl,
+        sourceRemoteId: payload.sourceRemoteId,
+        sourceToken: payload.sourceToken,
+        title: payload.title,
+        titleJpn: payload.titleJpn,
+        groupName: payload.group,
+        groupNameJpn: payload.groupJpn,
+        artist: payload.artist,
+        artistJpn: payload.artistJpn,
+        posted: payload.posted,
+        rating: payload.rating ?? null,
+        favorited: payload.favorited ?? null,
+        tags: payload.tags,
+        rawJson: payload.rawJson,
+        thumbUrl: payload.thumbUrl,
+      })
+    },
+    [backendWrite.writePackageExternalMetadata],
+  )
+
   return {
     metadataPending: backendWrite.pending.metadata || backendWrite.pending.grade,
     applyPackageGrade,
     applyPackageMetadata,
     applyPackageMetadataById,
+    applyPackageExternalMetadataById,
     applyPackageSyncName,
     applyVideoMetadata,
     applyVideoSyncName,

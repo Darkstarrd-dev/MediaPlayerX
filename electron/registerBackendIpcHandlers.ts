@@ -51,6 +51,8 @@ import {
   writePlaylistResponseSchema,
   writePackageMetadataRequestSchema,
   writePackageMetadataResponseSchema,
+  writePackageExternalMetadataRequestSchema,
+  writePackageExternalMetadataResponseSchema,
   searchExternalMetadataRequestSchema,
   searchExternalMetadataResponseSchema,
   writeVideoMetadataRequestSchema,
@@ -289,6 +291,12 @@ export function registerBackendIpcHandlers(): void {
     const request = writePackageMetadataRequestSchema.parse(payload)
     const response = await ensureService().writePackageMetadata(request)
     return writePackageMetadataResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.writePackageExternalMetadata, async (_event, payload: unknown) => {
+    const request = writePackageExternalMetadataRequestSchema.parse(payload)
+    const response = await ensureService().writePackageExternalMetadata(request)
+    return writePackageExternalMetadataResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.searchExternalMetadata, async (_event, payload: unknown) => {

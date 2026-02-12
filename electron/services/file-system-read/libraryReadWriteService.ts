@@ -1,4 +1,7 @@
+import { createHash } from 'node:crypto'
 import { promises as fs } from 'node:fs'
+import path from 'node:path'
+import axios from 'axios'
 
 import {
   readAppStateResponseSchema,
@@ -8,6 +11,7 @@ import {
   readPlaylistResponseSchema,
   saveVideoCoverResponseSchema,
   writeAppStateResponseSchema,
+  writePackageExternalMetadataResponseSchema,
   writePackageGradeResponseSchema,
   writePlaylistResponseSchema,
   type ImagePackageDto,
@@ -29,6 +33,8 @@ import {
   type WritePackageGradeResponseDto,
   type WritePackageMetadataRequestDto,
   type WritePackageMetadataResponseDto,
+  type WritePackageExternalMetadataRequestDto,
+  type WritePackageExternalMetadataResponseDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
   type WriteVideoMetadataRequestDto,
@@ -47,6 +53,31 @@ import { toDeterministicCoverColor, toSafeSizeKb } from '../../fileSystemService
 import { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
 import type { PersistedVideoCoverRecord } from './librarySnapshotService'
 import type { RuntimeDependencySnapshot } from './runtimeDependencyService'
+
+const SOURCE_COVER_EXT_ALLOWLIST = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'])
+
+function normalizeExternalMetadataText(value: string | undefined): string {
+  return value?.trim() ?? ''
+}
+
+function resolveCoverFileExtension(coverUrl: string): string {
+  try {
+    const parsed = new URL(coverUrl)
+    const ext = path.extname(parsed.pathname).toLowerCase()
+    if (SOURCE_COVER_EXT_ALLOWLIST.has(ext)) {
+      return ext
+    }
+  } catch {
+    // ignore invalid url
+  }
+  return '.jpg'
+}
+
+function resolveFallbackCoverColor(sourceId: string): string {
+  const hash = createHash('sha1').update(sourceId).digest('hex')
+  const hue = Number.parseInt(hash.slice(0, 2), 16) % 360
+  return `hsl(${hue} 36% 42%)`
+}
 
 function filterHiddenImagesFromSource(source: ImagePackageDto, includeHidden: boolean): ImagePackageDto {
   if (includeHidden) {
@@ -247,6 +278,90 @@ export class LibraryReadWriteService {
     })
 
     return response
+  }
+
+  async writePackageExternalMetadata(
+    request: WritePackageExternalMetadataRequestDto,
+  ): Promise<WritePackageExternalMetadataResponseDto> {
+    const snapshot = await this.options.ensureSnapshotLoaded()
+    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
+    const source = allSources.find((item) => item.id === request.package_id)
+    if (!source) {
+      throw new Error(`写入外部元数据失败：source 不存在 ${request.package_id}`)
+    }
+
+    const updatedAtMs = Date.now()
+    const externalMetadata = {
+      source_site: request.source_site,
+      source_url: request.source_url,
+      source_remote_id: request.source_remote_id,
+      source_token: normalizeExternalMetadataText(request.source_token),
+      title: normalizeExternalMetadataText(request.title),
+      title_jpn: normalizeExternalMetadataText(request.title_jpn),
+      group_name: normalizeExternalMetadataText(request.group_name),
+      group_name_jpn: normalizeExternalMetadataText(request.group_name_jpn),
+      artist: normalizeExternalMetadataText(request.artist),
+      artist_jpn: normalizeExternalMetadataText(request.artist_jpn),
+      posted: normalizeExternalMetadataText(request.posted),
+      rating: request.rating ?? null,
+      favorited: request.favorited ?? null,
+      tags: request.tags,
+      raw_json: request.raw_json,
+    }
+
+    this.options.database.writeSourceExternalMetadata(source.id, {
+      sourceSite: externalMetadata.source_site,
+      sourceUrl: externalMetadata.source_url,
+      sourceRemoteId: externalMetadata.source_remote_id,
+      sourceToken: externalMetadata.source_token,
+      title: externalMetadata.title,
+      titleJpn: externalMetadata.title_jpn,
+      groupName: externalMetadata.group_name,
+      groupNameJpn: externalMetadata.group_name_jpn,
+      artist: externalMetadata.artist,
+      artistJpn: externalMetadata.artist_jpn,
+      posted: externalMetadata.posted,
+      rating: externalMetadata.rating,
+      favorited: externalMetadata.favorited,
+      tags: externalMetadata.tags,
+      rawJson: externalMetadata.raw_json,
+    })
+
+    let sourceCover = source.source_cover ?? null
+    const thumbUrl = request.thumb_url?.trim() ?? ''
+    if (thumbUrl.length > 0) {
+      const extension = resolveCoverFileExtension(thumbUrl)
+      const fileHash = createHash('sha1').update(thumbUrl).digest('hex')
+      const targetDir = path.join(this.options.coverOutputRootDir, 'source')
+      const outputPath = path.join(targetDir, `${source.id}-${fileHash}${extension}`)
+      await fs.mkdir(targetDir, { recursive: true })
+      const response = await axios.get<ArrayBuffer>(thumbUrl, {
+        responseType: 'arraybuffer',
+        timeout: 12_000,
+      })
+      await fs.writeFile(outputPath, Buffer.from(response.data))
+
+      const coverColor = sourceCover?.cover_color ?? resolveFallbackCoverColor(source.id)
+      sourceCover = {
+        cover_color: coverColor,
+        cover_image_path: outputPath,
+        updated_at_ms: updatedAtMs,
+      }
+      this.options.database.writeSourceCover(source.id, coverColor, outputPath)
+    }
+
+    source.external_metadata = externalMetadata
+    source.source_cover = sourceCover
+
+    this.options.emitLibraryChanged({
+      reason: 'write-package-external-metadata',
+      updated_at_ms: updatedAtMs,
+    })
+
+    return writePackageExternalMetadataResponseSchema.parse({
+      package: source,
+      updated_at_ms: updatedAtMs,
+    })
   }
 
   async writeVideoMetadata(

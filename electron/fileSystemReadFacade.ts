@@ -47,6 +47,8 @@ import {
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
   type WritePackageMetadataResponseDto,
+  type WritePackageExternalMetadataRequestDto,
+  type WritePackageExternalMetadataResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
   type WritePackageGradeRequestDto,
@@ -581,6 +583,12 @@ export class FileSystemMediaReadService {
     request: WritePackageMetadataRequestDto,
   ): Promise<WritePackageMetadataResponseDto> {
     return this.libraryReadWriteService.writePackageMetadata(request)
+  }
+
+  async writePackageExternalMetadata(
+    request: WritePackageExternalMetadataRequestDto,
+  ): Promise<WritePackageExternalMetadataResponseDto> {
+    return this.libraryReadWriteService.writePackageExternalMetadata(request)
   }
 
 

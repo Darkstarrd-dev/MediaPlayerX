@@ -93,6 +93,32 @@ export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
     author: source.author,
     tags: [...source.tags],
     mockGrade: source.mock_grade ?? undefined,
+    externalMetadata: source.external_metadata
+      ? {
+          sourceSite: source.external_metadata.source_site,
+          sourceUrl: source.external_metadata.source_url,
+          sourceRemoteId: source.external_metadata.source_remote_id,
+          sourceToken: source.external_metadata.source_token,
+          title: source.external_metadata.title,
+          titleJpn: source.external_metadata.title_jpn,
+          groupName: source.external_metadata.group_name,
+          groupNameJpn: source.external_metadata.group_name_jpn,
+          artist: source.external_metadata.artist,
+          artistJpn: source.external_metadata.artist_jpn,
+          posted: source.external_metadata.posted,
+          rating: source.external_metadata.rating ?? null,
+          favorited: source.external_metadata.favorited ?? null,
+          tags: { ...source.external_metadata.tags },
+          rawJson: source.external_metadata.raw_json,
+        }
+      : null,
+    sourceCover: source.source_cover
+      ? {
+          coverColor: source.source_cover.cover_color,
+          coverImagePath: source.source_cover.cover_image_path ?? null,
+          updatedAtMs: source.source_cover.updated_at_ms,
+        }
+      : null,
     images: source.images.map(mapImageItemDto),
   }
 }
@@ -128,7 +154,10 @@ export function mapSidebarNodeDto(node: SidebarNodeDto): SidebarNode {
     packageId: node.package_id,
     videoId: node.video_id,
     imageSourceId: node.image_source_id,
+    imageNodeType: node.image_node_type,
     directImageCount: node.direct_image_count,
+    descendantPackageCount: node.descendant_package_count,
+    descendantImageCount: node.descendant_image_count,
     pathKey: node.path_key,
   }
 }
@@ -168,7 +197,10 @@ function mapSidebarNodeDtoWithSourceLabel(node: SidebarNodeDto, sourceById: Map<
     packageId: node.package_id,
     videoId: node.video_id,
     imageSourceId: node.image_source_id,
+    imageNodeType: node.image_node_type,
     directImageCount: node.direct_image_count,
+    descendantPackageCount: node.descendant_package_count,
+    descendantImageCount: node.descendant_image_count,
     pathKey: node.path_key,
   }
 }

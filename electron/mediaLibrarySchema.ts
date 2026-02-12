@@ -2,7 +2,7 @@ import type { SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 
 export const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
 
-const SCHEMA_VERSION = 5
+const SCHEMA_VERSION = 6
 
 export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
   const versionRow = db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
@@ -69,6 +69,35 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
     CREATE TABLE IF NOT EXISTS package_grade (
       source_id TEXT PRIMARY KEY,
       grade INTEGER,
+      updated_at_ms INTEGER NOT NULL,
+      FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS media_source_external_metadata (
+      source_id TEXT PRIMARY KEY,
+      source_site TEXT NOT NULL,
+      source_url TEXT NOT NULL,
+      source_remote_id TEXT NOT NULL,
+      source_token TEXT NOT NULL,
+      title TEXT NOT NULL,
+      title_jpn TEXT NOT NULL,
+      group_name TEXT NOT NULL,
+      group_name_jpn TEXT NOT NULL,
+      artist TEXT NOT NULL,
+      artist_jpn TEXT NOT NULL,
+      posted TEXT NOT NULL,
+      rating TEXT,
+      favorited TEXT,
+      tags_json TEXT NOT NULL,
+      raw_json TEXT NOT NULL,
+      updated_at_ms INTEGER NOT NULL,
+      FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS media_source_cover (
+      source_id TEXT PRIMARY KEY,
+      cover_color TEXT NOT NULL,
+      cover_image_path TEXT,
       updated_at_ms INTEGER NOT NULL,
       FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
     );
@@ -153,6 +182,39 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
     } catch {
       // ignore duplicated column on new databases
     }
+  }
+
+  if (currentVersion < 6) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS media_source_external_metadata (
+        source_id TEXT PRIMARY KEY,
+        source_site TEXT NOT NULL,
+        source_url TEXT NOT NULL,
+        source_remote_id TEXT NOT NULL,
+        source_token TEXT NOT NULL,
+        title TEXT NOT NULL,
+        title_jpn TEXT NOT NULL,
+        group_name TEXT NOT NULL,
+        group_name_jpn TEXT NOT NULL,
+        artist TEXT NOT NULL,
+        artist_jpn TEXT NOT NULL,
+        posted TEXT NOT NULL,
+        rating TEXT,
+        favorited TEXT,
+        tags_json TEXT NOT NULL,
+        raw_json TEXT NOT NULL,
+        updated_at_ms INTEGER NOT NULL,
+        FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS media_source_cover (
+        source_id TEXT PRIMARY KEY,
+        cover_color TEXT NOT NULL,
+        cover_image_path TEXT,
+        updated_at_ms INTEGER NOT NULL,
+        FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+      );
+    `)
   }
 
   db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`)

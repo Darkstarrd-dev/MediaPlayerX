@@ -49,6 +49,28 @@ export interface ImagePackage {
   author: string
   tags: string[]
   mockGrade?: number
+  externalMetadata?: {
+    sourceSite: 'nhentai' | 'ehentai'
+    sourceUrl: string
+    sourceRemoteId: string
+    sourceToken: string
+    title: string
+    titleJpn: string
+    groupName: string
+    groupNameJpn: string
+    artist: string
+    artistJpn: string
+    posted: string
+    rating?: string | null
+    favorited?: string | null
+    tags: Record<string, string>
+    rawJson: string
+  } | null
+  sourceCover?: {
+    coverColor: string
+    coverImagePath: string | null
+    updatedAtMs: number
+  } | null
   images: ImageItem[]
 }
 
@@ -81,7 +103,10 @@ export interface SidebarNode {
   packageId?: string
   videoId?: string
   imageSourceId?: string
+  imageNodeType?: 'folder' | 'package' | 'directory'
   directImageCount?: number
+  descendantPackageCount?: number
+  descendantImageCount?: number
   pathKey: string
 }
 

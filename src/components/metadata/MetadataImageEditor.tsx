@@ -204,6 +204,41 @@ export function MetadataImageEditor({
                   </div>
                 )}
               </label>
+
+              {focusedImagePackage.externalMetadata ? (
+                <>
+                  <label>
+                    <span>来源</span>
+                    <input
+                      readOnly
+                      value={`${focusedImagePackage.externalMetadata.sourceSite} #${focusedImagePackage.externalMetadata.sourceRemoteId}`}
+                    />
+                  </label>
+                  <label>
+                    <span>原标题</span>
+                    <input readOnly value={focusedImagePackage.externalMetadata.titleJpn || '-'} />
+                  </label>
+                  <label>
+                    <span>原社团</span>
+                    <input readOnly value={focusedImagePackage.externalMetadata.groupNameJpn || '-'} />
+                  </label>
+                  <label>
+                    <span>原作者</span>
+                    <input readOnly value={focusedImagePackage.externalMetadata.artistJpn || '-'} />
+                  </label>
+                  <label>
+                    <span>发布时间</span>
+                    <input readOnly value={focusedImagePackage.externalMetadata.posted || '-'} />
+                  </label>
+                  <label>
+                    <span>评分/收藏</span>
+                    <input
+                      readOnly
+                      value={`${focusedImagePackage.externalMetadata.rating ?? '-'} / ${focusedImagePackage.externalMetadata.favorited ?? '-'}`}
+                    />
+                  </label>
+                </>
+              ) : null}
             </div>
           ) : (
             <p className="metadata-empty-tip">当前无可编辑图包</p>

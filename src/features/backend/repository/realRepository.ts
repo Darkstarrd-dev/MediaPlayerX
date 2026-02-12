@@ -19,6 +19,7 @@ import {
   saveVideoCoverResponseSchema,
   writePlaylistResponseSchema,
   writePackageMetadataResponseSchema,
+  writePackageExternalMetadataResponseSchema,
   searchExternalMetadataResponseSchema,
   writeVideoMetadataResponseSchema,
   writePackageGradeResponseSchema,
@@ -64,6 +65,8 @@ import {
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
   type WritePackageMetadataResponseDto,
+  type WritePackageExternalMetadataRequestDto,
+  type WritePackageExternalMetadataResponseDto,
   type SearchExternalMetadataRequestDto,
   type SearchExternalMetadataResponseDto,
   type WriteVideoMetadataRequestDto,
@@ -419,6 +422,19 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.writePackageMetadata(request), options)
     return writePackageMetadataResponseSchema.parse(response)
+  }
+
+  async writePackageExternalMetadata(
+    request: WritePackageExternalMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WritePackageExternalMetadataResponseDto> {
+    const api = window.mediaPlayerBackend
+    if (!api?.writePackageExternalMetadata) {
+      throw new Error('真实后端通道不可用：writePackageExternalMetadata 未注入')
+    }
+
+    const response = await withAbort(api.writePackageExternalMetadata(request), options)
+    return writePackageExternalMetadataResponseSchema.parse(response)
   }
 
   async searchExternalMetadata(

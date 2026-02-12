@@ -102,14 +102,28 @@ export function useFeatureSearch({
 
   const featureCircleOptions = useMemo(
     () =>
-      Array.from(new Set((mode === 'image' ? imageSources.map((source) => source.circle) : videos.map((video) => video.circle))))
+      Array.from(
+        new Set(
+          mode === 'image'
+            ? imageSources.flatMap((source) => [source.circle, source.externalMetadata?.groupName ?? '', source.externalMetadata?.groupNameJpn ?? ''])
+            : videos.map((video) => video.circle),
+        ),
+      )
+        .filter((value) => value.trim().length > 0)
         .sort((a, b) => a.localeCompare(b, 'zh-CN')),
     [imageSources, mode, videos],
   )
 
   const featureAuthorOptions = useMemo(
     () =>
-      Array.from(new Set((mode === 'image' ? imageSources.map((source) => source.author) : videos.map((video) => video.author))))
+      Array.from(
+        new Set(
+          mode === 'image'
+            ? imageSources.flatMap((source) => [source.author, source.externalMetadata?.artist ?? '', source.externalMetadata?.artistJpn ?? ''])
+            : videos.map((video) => video.author),
+        ),
+      )
+        .filter((value) => value.trim().length > 0)
         .sort((a, b) => a.localeCompare(b, 'zh-CN')),
     [imageSources, mode, videos],
   )
@@ -118,9 +132,20 @@ export function useFeatureSearch({
     () =>
       Array.from(
         new Set(
-          normalizeTagsFromValues(
-            mode === 'image' ? imageSources.flatMap((source) => source.tags) : videos.flatMap((video) => video.tags),
-          ),
+          normalizeTagsFromValues([
+            ...(mode === 'image' ? imageSources.flatMap((source) => source.tags) : videos.flatMap((video) => video.tags)),
+            ...(mode === 'image'
+              ? imageSources.flatMap((source) =>
+                  Object.entries(source.externalMetadata?.tags ?? {}).flatMap(([namespace, raw]) =>
+                    raw
+                      .split(',')
+                      .map((value) => value.trim())
+                      .filter(Boolean)
+                      .map((value) => `${namespace}:${value}`),
+                  ),
+                )
+              : []),
+          ]),
         ),
       ).sort((a, b) => a.localeCompare(b, 'zh-CN')),
     [imageSources, mode, videos],

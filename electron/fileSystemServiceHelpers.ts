@@ -93,6 +93,8 @@ export function matchesFeatureFilter(
   filter: FeatureFilterDto,
   gradeOverrides?: Record<string, number | null>,
 ): boolean {
+  const external = source.external_metadata
+
   if (filter.name_query) {
     const matched = [source.package_name, source.display_name].some((text) =>
       text.toLowerCase().includes(filter.name_query),
@@ -102,20 +104,45 @@ export function matchesFeatureFilter(
     }
   }
 
-  if (filter.work_title_query && !source.work_title.toLowerCase().includes(filter.work_title_query)) {
-    return false
+  if (filter.work_title_query) {
+    const matched = [source.work_title, external?.title ?? '', external?.title_jpn ?? ''].some((value) =>
+      value.toLowerCase().includes(filter.work_title_query),
+    )
+    if (!matched) {
+      return false
+    }
   }
 
-  if (filter.circle_query && !source.circle.toLowerCase().includes(filter.circle_query)) {
-    return false
+  if (filter.circle_query) {
+    const matched = [source.circle, external?.group_name ?? '', external?.group_name_jpn ?? ''].some((value) =>
+      value.toLowerCase().includes(filter.circle_query),
+    )
+    if (!matched) {
+      return false
+    }
   }
 
-  if (filter.author_query && !source.author.toLowerCase().includes(filter.author_query)) {
-    return false
+  if (filter.author_query) {
+    const matched = [source.author, external?.artist ?? '', external?.artist_jpn ?? ''].some((value) =>
+      value.toLowerCase().includes(filter.author_query),
+    )
+    if (!matched) {
+      return false
+    }
   }
 
   if (filter.tags.length > 0) {
-    const lowerTags = source.tags.map((tag) => tag.toLowerCase())
+    const externalTags = external
+      ? Object.entries(external.tags)
+          .flatMap(([namespace, raw]) =>
+            raw
+              .split(',')
+              .map((value) => value.trim())
+              .filter(Boolean)
+              .map((value) => `${namespace}:${value}`),
+          )
+      : []
+    const lowerTags = [...source.tags, ...externalTags].map((tag) => tag.toLowerCase())
     const tagsMatched = filter.tags.every((tag) => lowerTags.includes(tag))
     if (!tagsMatched) {
       return false
