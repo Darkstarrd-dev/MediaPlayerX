@@ -65,11 +65,7 @@ export class FileSystemSystemHandlers {
   async writeAppState(request: WriteAppStateRequestDto): Promise<WriteAppStateResponseDto> {
     await this.context.ensureStateLoaded()
     const updatedAtMs = Date.now()
-    this.context.database.writeAppState({
-      state_key: request.state_key,
-      state_json: request.state_json,
-      updated_at_ms: updatedAtMs,
-    })
+    this.context.database.writeAppState(request.state_key, JSON.parse(request.state_json))
     return { updated_at_ms: updatedAtMs }
   }
 

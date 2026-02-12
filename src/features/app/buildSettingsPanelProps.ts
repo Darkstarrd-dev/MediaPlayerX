@@ -25,6 +25,8 @@ interface BuildSettingsPanelPropsParams {
   adReviewVisionVerified: boolean
   adReviewVisionTestPending: boolean
   adReviewVisionTestMessage: string | null
+  adReviewVisionSavePending: boolean
+  adReviewVisionSaveMessage: string | null
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
   vectorUniverseLookSensitivity: number
@@ -53,6 +55,7 @@ interface BuildSettingsPanelPropsParams {
   resetVectorControls: () => void
   clearDatabaseForDev: () => void
   testAdReviewVisionModel: () => void
+  saveAdReviewVisionModel: () => void
   pickDatabaseDirectoryPath: () => void
   pickThumbnailCacheDirectoryPath: () => void
 }
@@ -82,6 +85,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     adReviewVisionVerified: params.adReviewVisionVerified,
     adReviewVisionTestPending: params.adReviewVisionTestPending,
     adReviewVisionTestMessage: params.adReviewVisionTestMessage,
+    adReviewVisionSavePending: params.adReviewVisionSavePending,
+    adReviewVisionSaveMessage: params.adReviewVisionSaveMessage,
     vectorUniverseMoveSpeed: params.vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier: params.vectorUniverseSprintMultiplier,
     vectorUniverseLookSensitivity: params.vectorUniverseLookSensitivity,
@@ -134,6 +139,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
         adReviewVisionVerified: false,
       }),
     onTestAdReviewVisionModel: params.testAdReviewVisionModel,
+    onSaveAdReviewVisionModel: params.saveAdReviewVisionModel,
     onVectorUniverseMoveSpeedChange: (value) => params.updateSettings({ vectorUniverseMoveSpeed: value }),
     onVectorUniverseSprintMultiplierChange: (value) => params.updateSettings({ vectorUniverseSprintMultiplier: value }),
     onVectorUniverseLookSensitivityChange: (value) => params.updateSettings({ vectorUniverseLookSensitivity: value }),

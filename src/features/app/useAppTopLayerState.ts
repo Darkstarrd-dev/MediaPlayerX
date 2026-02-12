@@ -18,6 +18,7 @@ import { buildBackendErrorRows } from './buildBackendErrorRows'
 import { buildFullscreenLayerProps } from './buildFullscreenLayerProps'
 import { buildImportTaskPanelProps } from './buildImportTaskPanelProps'
 import { buildSettingsPanelProps } from './buildSettingsPanelProps'
+import { SETTINGS_STATE_KEY, toPersistedAppSettings } from './usePersistedAppSettings'
 import { useDatabaseResetAction } from './useDatabaseResetAction'
 import { useImportTaskPanelState } from './useImportTaskPanelState'
 import { useRuntimeInfoDiagnostics } from './useRuntimeInfoDiagnostics'
@@ -299,9 +300,12 @@ export function useAppTopLayerState({
   } = appSettings
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
   const [adReviewVisionTestMessage, setAdReviewVisionTestMessage] = useState<string | null>(null)
+  const [adReviewVisionSavePending, setAdReviewVisionSavePending] = useState(false)
+  const [adReviewVisionSaveMessage, setAdReviewVisionSaveMessage] = useState<string | null>(null)
 
   useEffect(() => {
     setAdReviewVisionTestMessage(null)
+    setAdReviewVisionSaveMessage(null)
   }, [adReviewVisionEndpoint, adReviewVisionModel])
 
   const testAdReviewVisionModel = useCallback(async () => {
@@ -347,6 +351,48 @@ export function useAppTopLayerState({
       setAdReviewVisionTestPending(false)
     }
   }, [adReviewVisionEndpoint, adReviewVisionModel, mediaRepository, updateSettings])
+
+  const saveAdReviewVisionModel = useCallback(async () => {
+    const writeAppState = mediaRepository.writeAppState
+    if (!writeAppState) {
+      setAdReviewVisionSaveMessage('当前后端不支持模型配置保存')
+      return
+    }
+
+    const normalizedEndpoint = adReviewVisionEndpoint.trim()
+    const normalizedModel = adReviewVisionModel.trim()
+    if (!normalizedEndpoint || !normalizedModel) {
+      setAdReviewVisionSaveMessage('请先填写视觉模型端口和模型ID')
+      return
+    }
+
+    const persistableSettings = {
+      ...toPersistedAppSettings(appSettings),
+      adReviewVisionEndpoint: normalizedEndpoint,
+      adReviewVisionModel: normalizedModel,
+      adReviewVisionVerified: false,
+    }
+
+    setAdReviewVisionSavePending(true)
+    try {
+      await writeAppState({
+        state_key: SETTINGS_STATE_KEY,
+        state_json: JSON.stringify(persistableSettings),
+      })
+
+      updateSettings({
+        adReviewVisionEndpoint: normalizedEndpoint,
+        adReviewVisionModel: normalizedModel,
+        adReviewVisionVerified: false,
+      })
+      setAdReviewVisionSaveMessage('视觉模型配置已保存')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      setAdReviewVisionSaveMessage(`保存失败：${message}`)
+    } finally {
+      setAdReviewVisionSavePending(false)
+    }
+  }, [adReviewVisionEndpoint, adReviewVisionModel, appSettings, mediaRepository, updateSettings])
 
   const pickRuntimeDirectory = useCallback(
     async (title: string, defaultPath: string | undefined) => {
@@ -444,6 +490,8 @@ export function useAppTopLayerState({
     adReviewVisionVerified: appSettings.adReviewVisionVerified,
     adReviewVisionTestPending,
     adReviewVisionTestMessage,
+    adReviewVisionSavePending,
+    adReviewVisionSaveMessage,
     vectorUniverseMoveSpeed: appSettings.vectorUniverseMoveSpeed,
     vectorUniverseSprintMultiplier: appSettings.vectorUniverseSprintMultiplier,
     vectorUniverseLookSensitivity: appSettings.vectorUniverseLookSensitivity,
@@ -472,6 +520,7 @@ export function useAppTopLayerState({
     resetVectorControls: appSettings.resetVectorControls,
     clearDatabaseForDev,
     testAdReviewVisionModel,
+    saveAdReviewVisionModel,
     pickDatabaseDirectoryPath,
     pickThumbnailCacheDirectoryPath,
   })

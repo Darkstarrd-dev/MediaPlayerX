@@ -49,6 +49,8 @@ interface RenderSettingsMainSectionParams {
   adReviewVisionVerified: boolean
   adReviewVisionTestPending: boolean
   adReviewVisionTestMessage: string | null
+  adReviewVisionSavePending: boolean
+  adReviewVisionSaveMessage: string | null
   styleId: string
   paletteId: string
   vectorUniverseMoveSpeed: number
@@ -90,6 +92,7 @@ interface RenderSettingsMainSectionParams {
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
+  onSaveAdReviewVisionModel: () => void
   onStyleChange: (value: string) => void
   onPaletteChange: (value: string) => void
   onVectorUniverseMoveSpeedChange: (value: number) => void
@@ -136,6 +139,8 @@ export function renderSettingsMainSection({
   adReviewVisionVerified,
   adReviewVisionTestPending,
   adReviewVisionTestMessage,
+  adReviewVisionSavePending,
+  adReviewVisionSaveMessage,
   styleId,
   paletteId,
   vectorUniverseMoveSpeed,
@@ -177,6 +182,7 @@ export function renderSettingsMainSection({
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
+  onSaveAdReviewVisionModel,
   onStyleChange,
   onPaletteChange,
   onVectorUniverseMoveSpeedChange,
@@ -384,10 +390,14 @@ export function renderSettingsMainSection({
             <button type="button" disabled={adReviewVisionTestPending} aria-label="测试视觉模型连接" onClick={onTestAdReviewVisionModel}>
               {adReviewVisionTestPending ? '测试中...' : '测试'}
             </button>
+            <button type="button" disabled={adReviewVisionSavePending} aria-label="保存视觉模型配置" onClick={onSaveAdReviewVisionModel}>
+              {adReviewVisionSavePending ? '保存中...' : '保存'}
+            </button>
             <span className={`settings-test-status ${adReviewVisionVerified ? 'is-ok' : 'is-pending'}`}>
               {adReviewVisionTestMessage ?? (adReviewVisionVerified ? '已通过测试' : '未测试')}
             </span>
           </div>
+          {adReviewVisionSaveMessage ? <p className="settings-placeholder">{adReviewVisionSaveMessage}</p> : null}
           <p className="settings-placeholder">通过测试后，文件管理模式主工具栏会显示“广告审核”按钮。</p>
         </fieldset>
       </div>

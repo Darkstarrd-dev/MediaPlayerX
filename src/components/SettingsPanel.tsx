@@ -48,6 +48,8 @@ export interface SettingsPanelProps {
   adReviewVisionVerified: boolean
   adReviewVisionTestPending: boolean
   adReviewVisionTestMessage: string | null
+  adReviewVisionSavePending: boolean
+  adReviewVisionSaveMessage: string | null
   vectorUniverseMoveSpeed: number
   vectorUniverseSprintMultiplier: number
   vectorUniverseLookSensitivity: number
@@ -87,6 +89,7 @@ export interface SettingsPanelProps {
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
+  onSaveAdReviewVisionModel: () => void
   onVectorUniverseMoveSpeedChange: (value: number) => void
   onVectorUniverseSprintMultiplierChange: (value: number) => void
   onVectorUniverseLookSensitivityChange: (value: number) => void
@@ -160,6 +163,8 @@ function SettingsPanel({
   adReviewVisionVerified,
   adReviewVisionTestPending,
   adReviewVisionTestMessage,
+  adReviewVisionSavePending,
+  adReviewVisionSaveMessage,
   vectorUniverseMoveSpeed,
   vectorUniverseSprintMultiplier,
   vectorUniverseLookSensitivity,
@@ -199,6 +204,7 @@ function SettingsPanel({
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
+  onSaveAdReviewVisionModel,
   onVectorUniverseMoveSpeedChange,
   onVectorUniverseSprintMultiplierChange,
   onVectorUniverseLookSensitivityChange,
@@ -406,6 +412,8 @@ function SettingsPanel({
     adReviewVisionVerified,
     adReviewVisionTestPending,
     adReviewVisionTestMessage,
+    adReviewVisionSavePending,
+    adReviewVisionSaveMessage,
     styleId,
     paletteId,
     vectorUniverseMoveSpeed,
@@ -447,6 +455,7 @@ function SettingsPanel({
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,
+    onSaveAdReviewVisionModel,
     onStyleChange,
     onPaletteChange,
     onVectorUniverseMoveSpeedChange,
