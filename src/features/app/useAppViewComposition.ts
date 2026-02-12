@@ -86,7 +86,6 @@ export function useAppViewComposition({
       importTaskPanelProps: topLayerState.importTaskPanelProps,
     },
     workspaceState,
-    vectorUniverseSectionProps: displayState.vectorUniverseSectionProps,
     importInputs: {
       fileImportInputRef: importState.fileImportInputRef,
       folderImportInputRef: importState.folderImportInputRef,

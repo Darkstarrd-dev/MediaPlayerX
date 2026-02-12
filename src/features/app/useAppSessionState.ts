@@ -35,7 +35,6 @@ export function useAppSessionState({
   const [manageOperationHint, setManageOperationHint] = useState<string | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [importMenuOpen, setImportMenuOpen] = useState(false)
-  const [vectorUniverseOpen, setVectorUniverseOpen] = useState(false)
   const [adReviewPanelOpen, setAdReviewPanelOpen] = useState(false)
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
   const [importTaskPanelOpen, setImportTaskPanelOpen] = useState(false)
@@ -83,8 +82,6 @@ export function useAppSessionState({
     setDeleteConfirmOpen,
     importMenuOpen,
     setImportMenuOpen,
-    vectorUniverseOpen,
-    setVectorUniverseOpen,
     adReviewPanelOpen,
     setAdReviewPanelOpen,
     dismissedImportTaskIds,

@@ -53,13 +53,6 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     adReviewTailN: settings.adReviewTailN,
     adReviewTailStopCleanStreak: settings.adReviewTailStopCleanStreak,
     adReviewMaxConcurrency: settings.adReviewMaxConcurrency,
-    vectorUniverseMoveSpeed: settings.vectorUniverseMoveSpeed,
-    vectorUniverseSprintMultiplier: settings.vectorUniverseSprintMultiplier,
-    vectorUniverseLookSensitivity: settings.vectorUniverseLookSensitivity,
-    vectorUniverseRaycastDistance: settings.vectorUniverseRaycastDistance,
-    vectorUniverseHelperScale: settings.vectorUniverseHelperScale,
-    vectorUniverseDispersion: settings.vectorUniverseDispersion,
-    vectorUniverseWidgetSize: settings.vectorUniverseWidgetSize,
   }
 }
 

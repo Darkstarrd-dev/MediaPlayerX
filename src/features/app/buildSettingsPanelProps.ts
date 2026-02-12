@@ -28,17 +28,8 @@ interface BuildSettingsPanelPropsParams {
   adReviewVisionTestMessage: string | null
   adReviewVisionSavePending: boolean
   adReviewVisionSaveMessage: string | null
-  vectorUniverseMoveSpeed: number
-  vectorUniverseSprintMultiplier: number
-  vectorUniverseLookSensitivity: number
-  vectorUniverseRaycastDistance: number
-  vectorUniverseHelperScale: number
-  vectorUniverseDispersion: number
-  vectorUniverseWidgetSize: number
   shortcuts: SettingsPanelProps['shortcuts']
   shortcutConflicts: SettingsPanelProps['shortcutConflicts']
-  vectorControls: SettingsPanelProps['vectorControls']
-  vectorControlConflicts: SettingsPanelProps['vectorControlConflicts']
   databaseResetPending: boolean
   databaseResetError: string | null
   runtimePathUpdatePending: boolean
@@ -53,9 +44,7 @@ interface BuildSettingsPanelPropsParams {
   applySidebarRatio: (value: number) => void
   applyMetadataRatio: (value: number) => void
   setShortcut: SettingsPanelProps['onSetShortcut']
-  setVectorControl: SettingsPanelProps['onSetVectorControl']
   resetShortcuts: () => void
-  resetVectorControls: () => void
   clearDatabaseForDev: () => void
   testAdReviewVisionModel: () => void
   saveAdReviewVisionModel: () => void
@@ -91,17 +80,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     adReviewVisionTestMessage: params.adReviewVisionTestMessage,
     adReviewVisionSavePending: params.adReviewVisionSavePending,
     adReviewVisionSaveMessage: params.adReviewVisionSaveMessage,
-    vectorUniverseMoveSpeed: params.vectorUniverseMoveSpeed,
-    vectorUniverseSprintMultiplier: params.vectorUniverseSprintMultiplier,
-    vectorUniverseLookSensitivity: params.vectorUniverseLookSensitivity,
-    vectorUniverseRaycastDistance: params.vectorUniverseRaycastDistance,
-    vectorUniverseHelperScale: params.vectorUniverseHelperScale,
-    vectorUniverseDispersion: params.vectorUniverseDispersion,
-    vectorUniverseWidgetSize: params.vectorUniverseWidgetSize,
     shortcuts: params.shortcuts,
     shortcutConflicts: params.shortcutConflicts,
-    vectorControls: params.vectorControls,
-    vectorControlConflicts: params.vectorControlConflicts,
     databaseResetPending: params.databaseResetPending,
     databaseResetError: params.databaseResetError,
     runtimePathUpdatePending: params.runtimePathUpdatePending,
@@ -147,17 +127,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       }),
     onTestAdReviewVisionModel: params.testAdReviewVisionModel,
     onSaveAdReviewVisionModel: params.saveAdReviewVisionModel,
-    onVectorUniverseMoveSpeedChange: (value) => params.updateSettings({ vectorUniverseMoveSpeed: value }),
-    onVectorUniverseSprintMultiplierChange: (value) => params.updateSettings({ vectorUniverseSprintMultiplier: value }),
-    onVectorUniverseLookSensitivityChange: (value) => params.updateSettings({ vectorUniverseLookSensitivity: value }),
-    onVectorUniverseRaycastDistanceChange: (value) => params.updateSettings({ vectorUniverseRaycastDistance: value }),
-    onVectorUniverseHelperScaleChange: (value) => params.updateSettings({ vectorUniverseHelperScale: value }),
-    onVectorUniverseDispersionChange: (value) => params.updateSettings({ vectorUniverseDispersion: value }),
-    onVectorUniverseWidgetSizeChange: (value) => params.updateSettings({ vectorUniverseWidgetSize: value }),
     onSetShortcut: params.setShortcut,
-    onSetVectorControl: params.setVectorControl,
     onResetShortcuts: params.resetShortcuts,
-    onResetVectorControls: params.resetVectorControls,
     onClearDatabase: params.clearDatabaseForDev,
     onPickDatabaseDirectoryPath: params.pickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath: params.pickThumbnailCacheDirectoryPath,

@@ -123,7 +123,7 @@
       .theme-playground .drop-overlay,
       .theme-playground .fullscreen-layer,
       .theme-playground .settings-mask,
-      .theme-playground .vector-universe-overlay {
+      .theme-playground .overlay-demo {
         position: relative;
         inset: auto;
         z-index: 1;
@@ -142,7 +142,7 @@
         inset: 0;
       }
 
-      .theme-playground .vector-universe-stage-wrap {
+      .theme-playground .overlay-demo-stage-wrap {
         height: 100%;
       }
     </style>
@@ -196,7 +196,7 @@
               </div>
 
               <button class="search-trigger-btn is-active" type="button">Search</button>
-              <button class="search-trigger-btn vector-universe-trigger" type="button">Vector Universe</button>
+              <button class="search-trigger-btn" type="button">Overlay Demo</button>
             </div>
 
             <div class="header-right">
@@ -654,19 +654,19 @@
             </div>
           </div>
 
-          <div class="vector-universe-overlay">
-            <div class="vector-universe-stage-wrap">
-              <button class="vector-universe-close-btn" type="button">Exit</button>
-              <div class="vector-universe-stage">
-                <canvas class="vector-universe-canvas"></canvas>
+          <div class="overlay-demo">
+            <div class="overlay-demo-stage-wrap">
+              <button class="overlay-demo-close-btn" type="button">Exit</button>
+              <div class="overlay-demo-stage">
+                <canvas class="overlay-demo-canvas"></canvas>
               </div>
-              <div class="vector-universe-widget">
+              <div class="overlay-demo-widget">
                 <strong>HUD</strong>
                 <p>Position</p>
-                <canvas class="vector-universe-widget-canvas"></canvas>
+                <canvas class="overlay-demo-widget-canvas"></canvas>
               </div>
-              <p class="vector-universe-overlay-tip">Hold mouse to orbit</p>
-              <div class="vector-universe-hud">
+              <p class="overlay-demo-tip">Hold mouse to orbit</p>
+              <div class="overlay-demo-hud">
                 <p>Speed <span>1.0x</span></p>
                 <p>Raycast <span>18m</span></p>
               </div>

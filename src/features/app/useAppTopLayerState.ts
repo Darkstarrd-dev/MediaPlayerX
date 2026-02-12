@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import { findShortcutConflicts } from '../../shortcuts'
-import { findVectorControlConflicts } from '../../vectorControls'
 import type { BrowserMode, ImageItem, VideoItem } from '../../types'
 import type { ImportTaskDto } from '../../contracts/backend'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
@@ -73,7 +72,6 @@ interface UseAppTopLayerStateParams {
   mode: BrowserMode
   manageMode: boolean
   metadataManageMode: boolean
-  vectorUniverseOpen: boolean
   displayThumbnailScaleLevel: number
   thumbnailScaleLevelCount: number
   canThumbnailScaleDown: boolean
@@ -86,7 +84,6 @@ interface UseAppTopLayerStateParams {
   openImportFoldersDialog: () => void
   setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
-  setVectorUniverseOpen: Dispatch<SetStateAction<boolean>>
   onToggleManageMode: () => void
   onToggleMetadataManageMode: () => void
   importTasks: ImportTaskDto[]
@@ -153,7 +150,6 @@ export function useAppTopLayerState({
   mode,
   manageMode,
   metadataManageMode,
-  vectorUniverseOpen,
   displayThumbnailScaleLevel,
   thumbnailScaleLevelCount,
   canThumbnailScaleDown,
@@ -166,7 +162,6 @@ export function useAppTopLayerState({
   openImportFoldersDialog,
   setSearchPanelMode,
   setSearchPanelCollapsed,
-  setVectorUniverseOpen,
   onToggleManageMode,
   onToggleMetadataManageMode,
   importTasks,
@@ -292,7 +287,6 @@ export function useAppTopLayerState({
   })
 
   const shortcutConflicts = useMemo(() => findShortcutConflicts(appSettings.shortcuts), [appSettings.shortcuts])
-  const vectorControlConflicts = useMemo(() => findVectorControlConflicts(appSettings.vectorControls), [appSettings.vectorControls])
   const {
     adReviewVisionEndpoint,
     adReviewVisionModel,
@@ -538,17 +532,8 @@ export function useAppTopLayerState({
     adReviewVisionTestMessage,
     adReviewVisionSavePending,
     adReviewVisionSaveMessage,
-    vectorUniverseMoveSpeed: appSettings.vectorUniverseMoveSpeed,
-    vectorUniverseSprintMultiplier: appSettings.vectorUniverseSprintMultiplier,
-    vectorUniverseLookSensitivity: appSettings.vectorUniverseLookSensitivity,
-    vectorUniverseRaycastDistance: appSettings.vectorUniverseRaycastDistance,
-    vectorUniverseHelperScale: appSettings.vectorUniverseHelperScale,
-    vectorUniverseDispersion: appSettings.vectorUniverseDispersion,
-    vectorUniverseWidgetSize: appSettings.vectorUniverseWidgetSize,
     shortcuts: appSettings.shortcuts,
     shortcutConflicts,
-    vectorControls: appSettings.vectorControls,
-    vectorControlConflicts,
     databaseResetPending,
     databaseResetError,
     runtimePathUpdatePending,
@@ -563,9 +548,7 @@ export function useAppTopLayerState({
     applySidebarRatio,
     applyMetadataRatio,
     setShortcut: appSettings.setShortcut,
-    setVectorControl: appSettings.setVectorControl,
     resetShortcuts: appSettings.resetShortcuts,
-    resetVectorControls: appSettings.resetVectorControls,
     clearDatabaseForDev,
     testAdReviewVisionModel,
     saveAdReviewVisionModel,
@@ -579,7 +562,6 @@ export function useAppTopLayerState({
     vectorMode: appSettings.vectorMode,
     manageMode,
     metadataManageMode,
-    vectorUniverseOpen,
     displayThumbnailScaleLevel,
     canThumbnailScaleDown,
     canThumbnailScaleUp,
@@ -598,7 +580,6 @@ export function useAppTopLayerState({
     updateSettings: appSettings.updateSettings,
     setSearchPanelMode,
     setSearchPanelCollapsed,
-    setVectorUniverseOpen,
     onToggleManageMode,
     onToggleMetadataManageMode,
   })

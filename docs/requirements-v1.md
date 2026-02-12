@@ -138,4 +138,4 @@
 - 审核任务支持策略参数化：`all/head-tail` + 并发度（由设置面板配置并透传到 Main 审核链路）。
 - 审核结果包含可解释信息（命中原因）与审计信息（来源分布、LLM 命中率、总体命中率）。
 - 支持“已确认删除图片哈希复用”，对重复图片可跳过 LLM 直接标记为疑似广告。
-- 详细拆解与阶段计划见 `docs/management-llm-ad-review-plan-v1.md`。
+- 详细实现以当前 `contracts/repository/main` 实际代码为准。

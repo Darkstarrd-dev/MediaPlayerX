@@ -67,7 +67,6 @@ export function useAppInteractionEffects({
     vectorFocusIndex,
     setVectorFocusIndex,
     setVectorPage,
-    vectorUniverseOpen,
     appBodyRef,
     vectorPanelContentRef,
     wasFullscreenRef,
@@ -299,7 +298,6 @@ export function useAppInteractionEffects({
 
   useAppShortcutBindings({
     shortcuts,
-    vectorUniverseOpen,
     featureTagPickerOpen,
     mode,
     vectorResultsActive,

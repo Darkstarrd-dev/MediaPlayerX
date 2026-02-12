@@ -9,14 +9,13 @@ import type { RepositoryMode } from '../../features/backend/repository'
 import type { JSX } from 'react'
 
 import type { ShortcutConflict } from '../../shortcuts'
-import type { VectorControlConflict } from '../../vectorControls'
 import {
   formatScale,
   SIZE_SCALE_CONFIG,
   toAbsolutePx,
 } from './settingsScale'
 
-export type SettingsSection = 'layout' | 'model' | 'database' | 'shortcuts' | 'space3d'
+export type SettingsSection = 'layout' | 'model' | 'database' | 'shortcuts'
 
 interface RenderSettingsMainSectionParams {
   activeSection: SettingsSection
@@ -54,17 +53,8 @@ interface RenderSettingsMainSectionParams {
   adReviewVisionSaveMessage: string | null
   styleId: string
   paletteId: string
-  vectorUniverseMoveSpeed: number
-  vectorUniverseSprintMultiplier: number
-  vectorUniverseLookSensitivity: number
-  vectorUniverseRaycastDistance: number
-  vectorUniverseHelperScale: number
-  vectorUniverseDispersion: number
-  vectorUniverseWidgetSize: number
   shortcutConflicts: ShortcutConflict[]
-  vectorControlConflicts: VectorControlConflict[]
   shortcutLabelByAction: Map<string, string>
-  vectorLabelByAction: Map<string, string>
   databaseResetPending: boolean
   databaseResetError: string | null
   runtimePathUpdatePending: boolean
@@ -74,9 +64,8 @@ interface RenderSettingsMainSectionParams {
   runtimeInfoLoading: boolean
   runtimeInfoError: string | null
   runtimeInfo: ReadRuntimeInfoResponseDto | null
-  renderBindingRows: (kind: 'shortcut' | 'vector') => JSX.Element
+  renderBindingRows: () => JSX.Element
   onResetShortcuts: () => void
-  onResetVectorControls: () => void
   onLayoutLockedChange: (value: boolean) => void
   onHeaderHeightChange: (value: number) => void
   onSettingsFontSizeChange: (value: number) => void
@@ -99,13 +88,6 @@ interface RenderSettingsMainSectionParams {
   onSaveAdReviewVisionModel: () => void
   onStyleChange: (value: string) => void
   onPaletteChange: (value: string) => void
-  onVectorUniverseMoveSpeedChange: (value: number) => void
-  onVectorUniverseSprintMultiplierChange: (value: number) => void
-  onVectorUniverseLookSensitivityChange: (value: number) => void
-  onVectorUniverseRaycastDistanceChange: (value: number) => void
-  onVectorUniverseHelperScaleChange: (value: number) => void
-  onVectorUniverseDispersionChange: (value: number) => void
-  onVectorUniverseWidgetSizeChange: (value: number) => void
   onClearDatabase: () => void
   onPickDatabaseDirectoryPath: () => void
   onPickThumbnailCacheDirectoryPath: () => void
@@ -148,17 +130,8 @@ export function renderSettingsMainSection({
   adReviewVisionSaveMessage,
   styleId,
   paletteId,
-  vectorUniverseMoveSpeed,
-  vectorUniverseSprintMultiplier,
-  vectorUniverseLookSensitivity,
-  vectorUniverseRaycastDistance,
-  vectorUniverseHelperScale,
-  vectorUniverseDispersion,
-  vectorUniverseWidgetSize,
   shortcutConflicts,
-  vectorControlConflicts,
   shortcutLabelByAction,
-  vectorLabelByAction,
   databaseResetPending,
   databaseResetError,
   runtimePathUpdatePending,
@@ -170,7 +143,6 @@ export function renderSettingsMainSection({
   runtimeInfo,
   renderBindingRows,
   onResetShortcuts,
-  onResetVectorControls,
   onLayoutLockedChange,
   onHeaderHeightChange,
   onSettingsFontSizeChange,
@@ -193,13 +165,6 @@ export function renderSettingsMainSection({
   onSaveAdReviewVisionModel,
   onStyleChange,
   onPaletteChange,
-  onVectorUniverseMoveSpeedChange,
-  onVectorUniverseSprintMultiplierChange,
-  onVectorUniverseLookSensitivityChange,
-  onVectorUniverseRaycastDistanceChange,
-  onVectorUniverseHelperScaleChange,
-  onVectorUniverseDispersionChange,
-  onVectorUniverseWidgetSizeChange,
   onClearDatabase,
   onPickDatabaseDirectoryPath,
   onPickThumbnailCacheDirectoryPath,
@@ -420,7 +385,7 @@ export function renderSettingsMainSection({
           <button type="button" onClick={onResetShortcuts}>恢复默认</button>
         </div>
 
-        {renderBindingRows('shortcut')}
+        {renderBindingRows()}
 
         <div className="shortcut-conflicts">
           <strong>冲突检测</strong>
@@ -540,63 +505,6 @@ export function renderSettingsMainSection({
             </p>
           ) : null}
         </fieldset>
-      </div>
-    )
-  }
-
-  if (activeSection === 'space3d') {
-    return (
-      <div className="settings-block settings-shortcuts">
-        <p className="settings-placeholder">参数 + 控制映射均可在此调整。</p>
-        <label>
-          移动速度 {vectorUniverseMoveSpeed.toFixed(1)}
-          <input max={80} min={4} step={0.5} type="range" value={vectorUniverseMoveSpeed} onChange={(event) => onVectorUniverseMoveSpeedChange(Number(event.target.value))} />
-        </label>
-        <label>
-          加速倍率 {vectorUniverseSprintMultiplier.toFixed(2)}
-          <input max={4} min={1} step={0.05} type="range" value={vectorUniverseSprintMultiplier} onChange={(event) => onVectorUniverseSprintMultiplierChange(Number(event.target.value))} />
-        </label>
-        <label>
-          视角灵敏度 {vectorUniverseLookSensitivity.toFixed(4)}
-          <input max={0.01} min={0.0005} step={0.0001} type="range" value={vectorUniverseLookSensitivity} onChange={(event) => onVectorUniverseLookSensitivityChange(Number(event.target.value))} />
-        </label>
-        <label>
-          正前方检测距离 {vectorUniverseRaycastDistance.toFixed(1)}
-          <input max={120} min={4} step={0.5} type="range" value={vectorUniverseRaycastDistance} onChange={(event) => onVectorUniverseRaycastDistanceChange(Number(event.target.value))} />
-        </label>
-        <label>
-          坐标辅助缩放 {vectorUniverseHelperScale.toFixed(0)}
-          <input max={600} min={40} step={10} type="range" value={vectorUniverseHelperScale} onChange={(event) => onVectorUniverseHelperScaleChange(Number(event.target.value))} />
-        </label>
-        <label>
-          宇宙离散度 {vectorUniverseDispersion.toFixed(2)}
-          <input max={6} min={0.2} step={0.05} type="range" value={vectorUniverseDispersion} onChange={(event) => onVectorUniverseDispersionChange(Number(event.target.value))} />
-        </label>
-        <label>
-          位置控件大小 {vectorUniverseWidgetSize.toFixed(0)}px
-          <input max={340} min={140} step={2} type="range" value={vectorUniverseWidgetSize} onChange={(event) => onVectorUniverseWidgetSizeChange(Number(event.target.value))} />
-        </label>
-
-        <div className="settings-shortcuts-head">
-          <strong>控制映射</strong>
-          <button type="button" onClick={onResetVectorControls}>恢复默认</button>
-        </div>
-        {renderBindingRows('vector')}
-
-        <div className="shortcut-conflicts">
-          <strong>控制映射冲突</strong>
-          {vectorControlConflicts.length === 0 ? (
-            <p>当前无冲突。</p>
-          ) : (
-            <ul>
-              {vectorControlConflicts.map((conflict) => (
-                <li key={conflict.combo}>
-                  {`${conflict.combo} -> ${conflict.actions.map((action) => vectorLabelByAction.get(action) ?? action).join(', ')}`}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       </div>
     )
   }

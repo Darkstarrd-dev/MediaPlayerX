@@ -221,7 +221,7 @@
       .mock-page .drop-overlay,
       .mock-page .fullscreen-layer,
       .mock-page .settings-mask,
-      .mock-page .vector-universe-overlay {
+      .mock-page .overlay-demo {
         position: relative;
         inset: auto;
         z-index: 1;
@@ -237,7 +237,7 @@
         position: absolute;
         inset: 0;
       }
-      .mock-page .vector-universe-stage-wrap {
+      .mock-page .overlay-demo-stage-wrap {
         height: 100%;
       }
       .mock-overlay-grid {
@@ -487,7 +487,7 @@
       :root[data-debug="true"] .settings-mask,
       :root[data-debug="true"] .fullscreen-layer,
       :root[data-debug="true"] .drop-overlay,
-      :root[data-debug="true"] .vector-universe-overlay,
+      :root[data-debug="true"] .overlay-demo,
       :root[data-debug="true"] .video-preview,
       :root[data-debug="true"] .backend-error-banner,
       :root[data-debug="true"] .runtime-warning-banner,
@@ -514,7 +514,7 @@
       :root[data-debug="true"] .settings-mask::before,
       :root[data-debug="true"] .fullscreen-layer::before,
       :root[data-debug="true"] .drop-overlay::before,
-      :root[data-debug="true"] .vector-universe-overlay::before,
+      :root[data-debug="true"] .overlay-demo::before,
       :root[data-debug="true"] .video-preview::before,
       :root[data-debug="true"] .backend-error-banner::before,
       :root[data-debug="true"] .runtime-warning-banner::before,
@@ -748,11 +748,11 @@
         color: #fff;
       }
 
-      :root[data-debug="true"] .vector-universe-overlay {
+      :root[data-debug="true"] .overlay-demo {
         outline: 2px dashed rgba(0, 120, 180, .6);
       }
-      :root[data-debug="true"] .vector-universe-overlay::before {
-        content: 'VEC-UNIV';
+      :root[data-debug="true"] .overlay-demo::before {
+        content: 'OVERLAY';
         background: rgba(0, 120, 180, .8);
         color: #fff;
       }
@@ -876,7 +876,7 @@
                 <button type="button">Video</button>
               </div>
               <button class="search-trigger-btn is-active" type="button">Search</button>
-              <button class="search-trigger-btn vector-universe-trigger" type="button">Vector Universe</button>
+              <button class="search-trigger-btn" type="button">Overlay Demo</button>
             </div>
             <div class="header-right">
               <div class="zoom-stepper" role="group" aria-label="zoom">
@@ -1313,10 +1313,10 @@
 
 
       <!-- ================================================================
-           F. Overlays — Fullscreen / Drop / Vector Universe
-           ================================================================ -->
+           F. Overlays — Fullscreen / Drop / Overlay Demo
+            ================================================================ -->
       <section class="mock-section" data-module="overlays">
-        <h3>F. Overlays (Fullscreen / Drop / Vector Universe)</h3>
+        <h3>F. Overlays (Fullscreen / Drop / Overlay Demo)</h3>
         <div class="mock-overlay-grid">
           <!-- Fullscreen -->
           <div class="fullscreen-layer">
@@ -1365,20 +1365,20 @@
             </div>
           </div>
 
-          <!-- Vector Universe -->
-          <div class="vector-universe-overlay">
-            <div class="vector-universe-stage-wrap">
-              <button class="vector-universe-close-btn" type="button">Exit</button>
-              <div class="vector-universe-stage">
-                <canvas class="vector-universe-canvas"></canvas>
+          <!-- Overlay Demo -->
+          <div class="overlay-demo">
+            <div class="overlay-demo-stage-wrap">
+              <button class="overlay-demo-close-btn" type="button">Exit</button>
+              <div class="overlay-demo-stage">
+                <canvas class="overlay-demo-canvas"></canvas>
               </div>
-              <div class="vector-universe-widget">
+              <div class="overlay-demo-widget">
                 <strong>HUD</strong>
                 <p>Position</p>
-                <canvas class="vector-universe-widget-canvas"></canvas>
+                <canvas class="overlay-demo-widget-canvas"></canvas>
               </div>
-              <p class="vector-universe-overlay-tip">Hold mouse to orbit</p>
-              <div class="vector-universe-hud">
+              <p class="overlay-demo-tip">Hold mouse to orbit</p>
+              <div class="overlay-demo-hud">
                 <p>Speed <span>1.0x</span></p>
                 <p>Raycast <span>18m</span></p>
               </div>

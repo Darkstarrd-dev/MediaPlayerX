@@ -10,7 +10,6 @@ interface BuildAppHeaderPropsParams {
   vectorMode: boolean
   manageMode: boolean
   metadataManageMode: boolean
-  vectorUniverseOpen: boolean
   displayThumbnailScaleLevel: number
   canThumbnailScaleDown: boolean
   canThumbnailScaleUp: boolean
@@ -29,7 +28,6 @@ interface BuildAppHeaderPropsParams {
   updateSettings: (patch: Partial<AppSettings>) => void
   setSearchPanelMode: Dispatch<SetStateAction<'vector' | 'feature'>>
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
-  setVectorUniverseOpen: Dispatch<SetStateAction<boolean>>
   onToggleManageMode: () => void
   onToggleMetadataManageMode: () => void
 }
@@ -41,7 +39,6 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     searchPanelOpen: params.vectorMode && !params.manageMode && !params.metadataManageMode,
     manageMode: params.manageMode,
     metadataManageMode: params.metadataManageMode,
-    vectorUniverseOpen: params.vectorUniverseOpen,
     thumbnailScaleLevel: params.displayThumbnailScaleLevel,
     canThumbnailScaleDown: params.canThumbnailScaleDown,
     canThumbnailScaleUp: params.canThumbnailScaleUp,
@@ -74,9 +71,6 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     },
     onToggleManageMode: params.onToggleManageMode,
     onToggleMetadataManageMode: params.onToggleMetadataManageMode,
-    onOpenVectorUniverse: () => {
-      params.setVectorUniverseOpen(true)
-    },
     onThumbnailScaleDown: () => {
       params.updateSettings({
         thumbnailScale: clamp(params.thumbnailScale + 1, 1, params.thumbnailScaleLevelCount),

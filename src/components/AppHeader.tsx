@@ -6,7 +6,6 @@ export interface AppHeaderProps {
   searchPanelOpen: boolean
   manageMode: boolean
   metadataManageMode: boolean
-  vectorUniverseOpen: boolean
   thumbnailScaleLevel: number
   canThumbnailScaleDown: boolean
   canThumbnailScaleUp: boolean
@@ -25,7 +24,6 @@ export interface AppHeaderProps {
   onToggleSearchPanel: () => void
   onToggleManageMode: () => void
   onToggleMetadataManageMode: () => void
-  onOpenVectorUniverse: () => void
   onThumbnailScaleDown: () => void
   onThumbnailScaleUp: () => void
   onAutoPlayEnabledChange: (enabled: boolean) => void
@@ -39,7 +37,6 @@ function AppHeader({
   searchPanelOpen,
   manageMode,
   metadataManageMode,
-  vectorUniverseOpen,
   thumbnailScaleLevel,
   canThumbnailScaleDown,
   canThumbnailScaleUp,
@@ -58,7 +55,6 @@ function AppHeader({
   onToggleSearchPanel,
   onToggleManageMode,
   onToggleMetadataManageMode,
-  onOpenVectorUniverse,
   onThumbnailScaleDown,
   onThumbnailScaleUp,
   onAutoPlayEnabledChange,
@@ -135,14 +131,6 @@ function AppHeader({
           onClick={onToggleMetadataManageMode}
         >
           元数据管理
-        </button>
-
-        <button
-          className={`search-trigger-btn vector-universe-trigger ${vectorUniverseOpen ? 'is-active' : ''}`}
-          type="button"
-          onClick={onOpenVectorUniverse}
-        >
-          向量宇宙
         </button>
       </div>
 

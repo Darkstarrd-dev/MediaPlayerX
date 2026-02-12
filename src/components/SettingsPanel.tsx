@@ -13,12 +13,6 @@ import {
   type ShortcutMap,
 } from '../shortcuts'
 import {
-  VECTOR_CONTROL_DEFINITIONS,
-  type VectorControlAction,
-  type VectorControlConflict,
-  type VectorControlMap,
-} from '../vectorControls'
-import {
   renderSettingsMainSection,
   type SettingsSection,
 } from './settings/renderSettingsMainSection'
@@ -51,17 +45,8 @@ export interface SettingsPanelProps {
   adReviewVisionTestMessage: string | null
   adReviewVisionSavePending: boolean
   adReviewVisionSaveMessage: string | null
-  vectorUniverseMoveSpeed: number
-  vectorUniverseSprintMultiplier: number
-  vectorUniverseLookSensitivity: number
-  vectorUniverseRaycastDistance: number
-  vectorUniverseHelperScale: number
-  vectorUniverseDispersion: number
-  vectorUniverseWidgetSize: number
   shortcuts: ShortcutMap
   shortcutConflicts: ShortcutConflict[]
-  vectorControls: VectorControlMap
-  vectorControlConflicts: VectorControlConflict[]
   databaseResetPending: boolean
   databaseResetError: string | null
   runtimePathUpdatePending: boolean
@@ -94,26 +79,15 @@ export interface SettingsPanelProps {
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
   onSaveAdReviewVisionModel: () => void
-  onVectorUniverseMoveSpeedChange: (value: number) => void
-  onVectorUniverseSprintMultiplierChange: (value: number) => void
-  onVectorUniverseLookSensitivityChange: (value: number) => void
-  onVectorUniverseRaycastDistanceChange: (value: number) => void
-  onVectorUniverseHelperScaleChange: (value: number) => void
-  onVectorUniverseDispersionChange: (value: number) => void
-  onVectorUniverseWidgetSizeChange: (value: number) => void
   onSetShortcut: (action: ShortcutAction, binding: string) => void
-  onSetVectorControl: (action: VectorControlAction, binding: string) => void
   onResetShortcuts: () => void
-  onResetVectorControls: () => void
   onClearDatabase: () => void
   onPickDatabaseDirectoryPath: () => void
   onPickThumbnailCacheDirectoryPath: () => void
   onRefreshRuntimeInfo: () => void
 }
 
-type BindingTarget =
-  | { kind: 'shortcut'; action: ShortcutAction; label: string }
-  | { kind: 'vector'; action: VectorControlAction; label: string }
+type BindingTarget = { action: ShortcutAction; label: string }
 
 const MOUSE_CAPTURE_PRESETS: Array<{ label: string; combo: string }> = [
   { label: '鼠标左键', combo: 'MouseLeft' },
@@ -130,11 +104,10 @@ const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
   { id: 'model', label: 'AI模型设置' },
   { id: 'database', label: '数据库设置' },
   { id: 'shortcuts', label: '快捷键设置' },
-  { id: 'space3d', label: '3D 设置' },
 ]
 
 function resolveSettingsSection(raw: unknown): SettingsSection {
-  if (raw === 'layout' || raw === 'model' || raw === 'database' || raw === 'shortcuts' || raw === 'space3d') {
+  if (raw === 'layout' || raw === 'model' || raw === 'database' || raw === 'shortcuts') {
     return raw
   }
   if (raw === 'theme' || raw === 'thumbnail') {
@@ -170,17 +143,8 @@ function SettingsPanel({
   adReviewVisionTestMessage,
   adReviewVisionSavePending,
   adReviewVisionSaveMessage,
-  vectorUniverseMoveSpeed,
-  vectorUniverseSprintMultiplier,
-  vectorUniverseLookSensitivity,
-  vectorUniverseRaycastDistance,
-  vectorUniverseHelperScale,
-  vectorUniverseDispersion,
-  vectorUniverseWidgetSize,
   shortcuts,
   shortcutConflicts,
-  vectorControls,
-  vectorControlConflicts,
   databaseResetPending,
   databaseResetError,
   runtimePathUpdatePending,
@@ -213,17 +177,8 @@ function SettingsPanel({
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
   onSaveAdReviewVisionModel,
-  onVectorUniverseMoveSpeedChange,
-  onVectorUniverseSprintMultiplierChange,
-  onVectorUniverseLookSensitivityChange,
-  onVectorUniverseRaycastDistanceChange,
-  onVectorUniverseHelperScaleChange,
-  onVectorUniverseDispersionChange,
-  onVectorUniverseWidgetSizeChange,
   onSetShortcut,
-  onSetVectorControl,
   onResetShortcuts,
-  onResetVectorControls,
   onClearDatabase,
   onPickDatabaseDirectoryPath,
   onPickThumbnailCacheDirectoryPath,
@@ -250,21 +205,12 @@ function SettingsPanel({
     () => new Map(SHORTCUT_DEFINITIONS.map((definition) => [definition.action, definition.label])),
     [],
   )
-  const vectorLabelByAction = useMemo(
-    () => new Map(VECTOR_CONTROL_DEFINITIONS.map((definition) => [definition.action, definition.label])),
-    [],
-  )
-
   const getBinding = (target: BindingTarget): string => {
-    return target.kind === 'shortcut' ? shortcuts[target.action] : vectorControls[target.action]
+    return shortcuts[target.action]
   }
 
   const setBinding = (target: BindingTarget, binding: string) => {
-    if (target.kind === 'shortcut') {
-      onSetShortcut(target.action, binding)
-      return
-    }
-    onSetVectorControl(target.action, binding)
+    onSetShortcut(target.action, binding)
   }
 
   useEffect(() => {
@@ -351,37 +297,18 @@ function SettingsPanel({
     setCapturedCombo('')
   }
 
-  const renderBindingRows = (kind: BindingTarget['kind']) => {
-    if (kind === 'shortcut') {
-      return (
-        <div className="shortcut-list">
-          {SHORTCUT_DEFINITIONS.map((definition) => (
-            <label key={definition.action} className="shortcut-row">
-              <span>{definition.label}</span>
-              <button
-                className="shortcut-binding-trigger"
-                type="button"
-                onClick={() => openBindingManager({ kind: 'shortcut', action: definition.action, label: definition.label })}
-              >
-                {shortcuts[definition.action] || '未设置'}
-              </button>
-            </label>
-          ))}
-        </div>
-      )
-    }
-
+  const renderBindingRows = () => {
     return (
       <div className="shortcut-list">
-        {VECTOR_CONTROL_DEFINITIONS.map((definition) => (
+        {SHORTCUT_DEFINITIONS.map((definition) => (
           <label key={definition.action} className="shortcut-row">
             <span>{definition.label}</span>
             <button
               className="shortcut-binding-trigger"
               type="button"
-              onClick={() => openBindingManager({ kind: 'vector', action: definition.action, label: definition.label })}
+              onClick={() => openBindingManager({ action: definition.action, label: definition.label })}
             >
-              {vectorControls[definition.action] || '未设置'}
+              {shortcuts[definition.action] || '未设置'}
             </button>
           </label>
         ))}
@@ -425,17 +352,8 @@ function SettingsPanel({
     adReviewVisionSaveMessage,
     styleId,
     paletteId,
-    vectorUniverseMoveSpeed,
-    vectorUniverseSprintMultiplier,
-    vectorUniverseLookSensitivity,
-    vectorUniverseRaycastDistance,
-    vectorUniverseHelperScale,
-    vectorUniverseDispersion,
-    vectorUniverseWidgetSize,
     shortcutConflicts,
-    vectorControlConflicts,
     shortcutLabelByAction,
-    vectorLabelByAction,
     databaseResetPending,
     databaseResetError,
     runtimePathUpdatePending,
@@ -447,7 +365,6 @@ function SettingsPanel({
     runtimeInfo,
     renderBindingRows,
     onResetShortcuts,
-    onResetVectorControls,
     onLayoutLockedChange,
     onHeaderHeightChange,
     onSettingsFontSizeChange,
@@ -470,13 +387,6 @@ function SettingsPanel({
     onSaveAdReviewVisionModel,
     onStyleChange,
     onPaletteChange,
-    onVectorUniverseMoveSpeedChange,
-    onVectorUniverseSprintMultiplierChange,
-    onVectorUniverseLookSensitivityChange,
-    onVectorUniverseRaycastDistanceChange,
-    onVectorUniverseHelperScaleChange,
-    onVectorUniverseDispersionChange,
-    onVectorUniverseWidgetSizeChange,
     onClearDatabase,
     onPickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath,

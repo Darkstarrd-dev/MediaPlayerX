@@ -14,7 +14,6 @@ describe('buildAppHeaderProps', () => {
       vectorMode: false,
       manageMode: false,
       metadataManageMode: false,
-      vectorUniverseOpen: false,
       displayThumbnailScaleLevel: 3,
       canThumbnailScaleDown: true,
       canThumbnailScaleUp: true,
@@ -33,7 +32,6 @@ describe('buildAppHeaderProps', () => {
       updateSettings,
       setSearchPanelMode,
       setSearchPanelCollapsed,
-      setVectorUniverseOpen: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
     })
@@ -57,7 +55,6 @@ describe('buildAppHeaderProps', () => {
       vectorMode: false,
       manageMode: false,
       metadataManageMode: false,
-      vectorUniverseOpen: false,
       displayThumbnailScaleLevel: 3,
       canThumbnailScaleDown: true,
       canThumbnailScaleUp: true,
@@ -76,7 +73,6 @@ describe('buildAppHeaderProps', () => {
       updateSettings,
       setSearchPanelMode,
       setSearchPanelCollapsed,
-      setVectorUniverseOpen: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
     })
@@ -98,7 +94,6 @@ describe('buildAppHeaderProps', () => {
       vectorMode: true,
       manageMode: false,
       metadataManageMode: false,
-      vectorUniverseOpen: false,
       displayThumbnailScaleLevel: 1,
       canThumbnailScaleDown: true,
       canThumbnailScaleUp: false,
@@ -117,7 +112,6 @@ describe('buildAppHeaderProps', () => {
       updateSettings,
       setSearchPanelMode: vi.fn(),
       setSearchPanelCollapsed: vi.fn(),
-      setVectorUniverseOpen: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
     })
@@ -142,7 +136,6 @@ describe('buildAppHeaderProps', () => {
       vectorMode: true,
       manageMode: false,
       metadataManageMode: true,
-      vectorUniverseOpen: false,
       displayThumbnailScaleLevel: 3,
       canThumbnailScaleDown: true,
       canThumbnailScaleUp: true,
@@ -161,7 +154,6 @@ describe('buildAppHeaderProps', () => {
       updateSettings: vi.fn(),
       setSearchPanelMode: vi.fn(),
       setSearchPanelCollapsed: vi.fn(),
-      setVectorUniverseOpen: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
     })

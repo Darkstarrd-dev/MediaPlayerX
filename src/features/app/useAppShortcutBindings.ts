@@ -9,7 +9,6 @@ type ShortcutEngineParams = Parameters<typeof useShortcutEngine>[0]
 
 interface UseAppShortcutBindingsParams {
   shortcuts: ShortcutEngineParams['shortcuts']
-  vectorUniverseOpen: boolean
   featureTagPickerOpen: boolean
   mode: ShortcutEngineParams['mode']
   vectorResultsActive: boolean
@@ -41,7 +40,6 @@ interface UseAppShortcutBindingsParams {
 
 export function useAppShortcutBindings({
   shortcuts,
-  vectorUniverseOpen,
   featureTagPickerOpen,
   mode,
   vectorResultsActive,
@@ -72,7 +70,7 @@ export function useAppShortcutBindings({
 }: UseAppShortcutBindingsParams) {
   useShortcutEngine({
     shortcuts,
-    suspended: vectorUniverseOpen || featureTagPickerOpen,
+    suspended: featureTagPickerOpen,
     mode,
     vectorMode: vectorResultsActive,
     settingsOpen,

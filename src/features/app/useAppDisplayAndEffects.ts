@@ -1,12 +1,12 @@
 import { useAppDisplayResources } from './useAppDisplayResources'
 import { useAppInteractionEffects } from './useAppInteractionEffects'
 import { useAppManageBindings } from './useAppManageBindings'
+import { useSearchAndVectorActions } from './useSearchAndVectorActions'
 import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { AppSessionStateResult } from './useAppSessionState'
 import { useFullscreenPlaybackBindings } from './useFullscreenPlaybackBindings'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
-import { useVectorUniverseBindings } from './useVectorUniverseBindings'
 import type { MediaStateResult } from '../media/useMediaState'
 import type { UiBenchSettings } from '../perf/benchSettings'
 
@@ -33,14 +33,6 @@ export function useAppDisplayAndEffects({
     mode,
     autoPlayEnabled,
     vectorThreshold,
-    vectorUniverseMoveSpeed,
-    vectorUniverseSprintMultiplier,
-    vectorUniverseLookSensitivity,
-    vectorUniverseRaycastDistance,
-    vectorUniverseHelperScale,
-    vectorUniverseDispersion,
-    vectorUniverseWidgetSize,
-    vectorControls,
     updateSettings,
   } = appSettings
 
@@ -51,9 +43,6 @@ export function useAppDisplayAndEffects({
     setVectorSearchResults,
     setVectorFocusIndex,
     setVectorPage,
-    vectorUniverseOpen,
-    setVectorUniverseOpen,
-    vectorSearchResults,
   } = sessionState
 
   const {
@@ -69,11 +58,9 @@ export function useAppDisplayAndEffects({
     quickFeatureSearchActive,
     clearQuickFeatureSearch,
     vectorResultsActive,
-    scopedImageSourcesEffective,
     packageByIdEffective,
     allScopedRefs,
     normalImageSourceNodeIdMap,
-    orderedRootScopedPackages,
     focusedRef,
     setImageFocus,
   } = readNavigationState
@@ -115,40 +102,26 @@ export function useAppDisplayAndEffects({
   const {
     runVectorSearch,
     goToFromSearchMode,
-    vectorUniverseSectionProps,
-  } = useVectorUniverseBindings({
+  } = useSearchAndVectorActions({
     mode,
     focusedRef,
     allScopedRefs,
     packageById: packageByIdEffective,
     vectorThreshold,
-    vectorSearchResults,
     vectorResultsActive,
     featureSearchActive,
     quickFeatureSearchActive,
     selectedSidebarNodeId,
     normalImageSourceNodeIdMap,
-    orderedRootScopedPackages,
     setSelectedPackageId,
     setSelectedSidebarNodeId,
     setVectorSearchResults,
     setVectorFocusIndex,
     setVectorPage,
     setSearchPanelMode,
-    vectorUniverseOpen,
-    setVectorUniverseOpen,
     setImageFocus,
     clearQuickFeatureSearch,
     updateSettings,
-    scopedImageSourcesEffective,
-    vectorUniverseMoveSpeed,
-    vectorUniverseSprintMultiplier,
-    vectorUniverseLookSensitivity,
-    vectorUniverseRaycastDistance,
-    vectorUniverseDispersion,
-    vectorUniverseHelperScale,
-    vectorUniverseWidgetSize,
-    vectorControls,
   })
 
   useAppInteractionEffects({
@@ -174,7 +147,6 @@ export function useAppDisplayAndEffects({
     setFullscreenActiveWithAutoStop,
     runVectorSearch,
     goToFromSearchMode,
-    vectorUniverseSectionProps,
   }
 }
 

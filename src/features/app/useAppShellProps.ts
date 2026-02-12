@@ -4,7 +4,6 @@ import { buildE2eBenchSectionProps } from './buildE2eBenchSectionProps'
 import { buildManageDeleteDialogProps } from './buildManageDeleteDialogProps'
 import type { AppTopLayerStateResult } from './useAppTopLayerState'
 import type { AppWorkspacePropsResult } from './useAppWorkspaceProps'
-import type { VectorUniverseBindingsResult } from './useVectorUniverseBindings'
 import type { ImportPipelineResult } from '../import/useImportPipeline'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
 import type { BrowserMode } from '../../types'
@@ -35,7 +34,6 @@ interface UseAppShellPropsParams {
     | 'importTaskPanelProps'
   >
   workspaceState: AppWorkspacePropsResult
-  vectorUniverseSectionProps: VectorUniverseBindingsResult['vectorUniverseSectionProps']
   importInputs: Pick<
     ImportPipelineResult,
     'fileImportInputRef' | 'folderImportInputRef' | 'onImportFilesSelected' | 'onImportFoldersSelected'
@@ -62,7 +60,6 @@ export function useAppShellProps({
   onStartMetadataResize,
   topLayerState,
   workspaceState,
-  vectorUniverseSectionProps,
   importInputs,
   dragOverlayActive,
   manageDeleteDialogParams,
@@ -116,7 +113,6 @@ export function useAppShellProps({
     appTopBannersProps,
     appWorkspaceProps,
     fullscreenLayerProps: topLayerState.fullscreenLayerProps,
-    vectorUniverseSectionProps,
     settingsPanelProps: topLayerState.settingsPanelProps,
     manageDeleteDialogProps,
     dragOverlayActive,

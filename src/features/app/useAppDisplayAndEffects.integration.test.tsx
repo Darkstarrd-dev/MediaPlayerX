@@ -9,7 +9,6 @@ const useEffectiveDisplayStateMock = vi.fn()
 const useMetadataWriteBindingsMock = vi.fn()
 const useResolvedMediaStateMock = vi.fn()
 const useFullscreenPlaybackBindingsMock = vi.fn()
-const useVectorUniverseBindingsMock = vi.fn()
 const useAppInteractionEffectsMock = vi.fn()
 
 vi.mock('../backend', () => ({
@@ -39,10 +38,6 @@ vi.mock('./useResolvedMediaState', () => ({
 
 vi.mock('./useFullscreenPlaybackBindings', () => ({
   useFullscreenPlaybackBindings: (params: unknown) => useFullscreenPlaybackBindingsMock(params),
-}))
-
-vi.mock('./useVectorUniverseBindings', () => ({
-  useVectorUniverseBindings: (params: unknown) => useVectorUniverseBindingsMock(params),
 }))
 
 vi.mock('./useAppInteractionEffects', () => ({
@@ -80,7 +75,6 @@ describe('useAppDisplayAndEffects integration', () => {
     useMetadataWriteBindingsMock.mockReset()
     useResolvedMediaStateMock.mockReset()
     useFullscreenPlaybackBindingsMock.mockReset()
-    useVectorUniverseBindingsMock.mockReset()
     useAppInteractionEffectsMock.mockReset()
   })
 
@@ -106,15 +100,7 @@ describe('useAppDisplayAndEffects integration', () => {
       themeId: 'ocean',
       styleId: 'flush',
       paletteId: 'ocean',
-      vectorUniverseMoveSpeed: 1,
-      vectorUniverseSprintMultiplier: 1.4,
-      vectorUniverseLookSensitivity: 1,
-      vectorUniverseRaycastDistance: 320,
-      vectorUniverseHelperScale: 1,
-      vectorUniverseDispersion: 1,
-      vectorUniverseWidgetSize: 1,
       shortcuts: {},
-      vectorControls: {},
       updateSettings,
     })
 
@@ -133,8 +119,6 @@ describe('useAppDisplayAndEffects integration', () => {
       manageOperationHint: null,
       setManageOperationHint: vi.fn(),
       setDeleteConfirmOpen: vi.fn(),
-      vectorUniverseOpen: false,
-      setVectorUniverseOpen: vi.fn(),
       appBodyRef: { current: null },
       vectorPanelContentRef: { current: null },
       wasFullscreenRef: { current: false },
@@ -283,11 +267,6 @@ describe('useAppDisplayAndEffects integration', () => {
       requestFullscreenAlign: vi.fn(),
       setFullscreenActiveWithAutoStop: vi.fn(),
     })
-    useVectorUniverseBindingsMock.mockReturnValue({
-      runVectorSearch: vi.fn(),
-      goToFromSearchMode: vi.fn(),
-      vectorUniverseSectionProps: {},
-    })
 
     const { result } = renderHook(() =>
       useAppDisplayAndEffects({
@@ -362,11 +341,6 @@ describe('useAppDisplayAndEffects integration', () => {
       applyAutoplayIntervalByIndex: vi.fn(),
       requestFullscreenAlign: vi.fn(),
       setFullscreenActiveWithAutoStop: vi.fn(),
-    })
-    useVectorUniverseBindingsMock.mockReturnValue({
-      runVectorSearch: vi.fn(),
-      goToFromSearchMode: vi.fn(),
-      vectorUniverseSectionProps: {},
     })
 
     const appSettings = createLooseState({ mode: 'image', updateSettings: vi.fn() })

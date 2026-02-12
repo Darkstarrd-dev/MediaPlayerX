@@ -1,132 +1,44 @@
 # MediaPlayer 文档
 
-该目录用于记录 MediaPlayer 当前阶段的产品定义与工程决策。
+本目录用于维护 MediaPlayer 当前版本的需求、架构、交互与工程约束。
 
-## 文档索引
+## 核心文档（SSOT）
 
-- `implementation-plan-2026-02-11.md`：本轮实施计划（临时）。
-- `implementation-plan-2026-02-12-metadata-fetch.md`：下一轮实施计划：元数据获取与元数据界面重构（仅计划）。
-- `requirements-v1.md`：V1 需求范围与行为冻结。
-- `architecture-v1.md`：运行时架构、模块边界与数据流。
-- `interaction-v1.md`：界面布局、交互逻辑、全屏行为与快捷键定义。
-- `vector-retrieval-plan-v1.md`：向量检索与 Tag 混合建库未实施方案（历史参考，当前架构不采用）。
-- `management-llm-ad-review-plan-v1.md`：管理模式 LLM 广告图片审核模块实施计划（已接线并完成策略参数化/审计可视化）。
-- `maintainability-improvement-plan-v1.md`：可维护性与稳定性改进计划（已完成，长期保留）。
-- `stability-note-2026-02-12-sidebar-switch-crash.md`：Sidebar 高频切换闪退问题记录与临时修复说明。
-- `project-evaluation-report.md`：项目评估报告初版（历史基线）。
-- `project-evaluation-report-v2.md`：项目评估报告第二版（整改后复评）。
-- `project-evaluation-report-v3.md`：项目评估报告第三版（最新规模与质量评估）。
-- `ui/theme-system-v1.md`：主题系统 V1 CSS 契约与开发规范（已废弃，见 V2）。
-- `ui/theme-system-v2.md`：主题系统 V2 规范手册 (SSOT)——Style × Palette 二维模型、完整 token 参考、应用布局结构、开发指南。
-- `ui/theme-playground.html`：主题开发调试页（集中预览控件与状态）。
-- `ui/theme-mock.html`：主题开发辅助页（独立于 app，覆盖主要界面元素，支持 Style × Palette 组合预览与 debug 区域着色）。
-- `开发启动清单.md`：跨机器拉取仓库后的标准启动与续开发流程。
-- `backend-integration-guardrails.md`：后端接入阶段的强制规避方案与执行门禁。
-- `perf/2026-02-08-ui-perf-benchmark-plan.md`：UI 性能基准与选型结论（定型：R1-S1）。
-- `perf/2026-02-07-scan-benchmark.md`：扫描/索引性能基准报告。
+- `requirements-v1.md`：需求范围与行为边界。
+- `architecture-v1.md`：运行时架构、模块边界、数据流。
+- `interaction-v1.md`：界面结构、交互规则、快捷键行为。
+- `backend-integration-guardrails.md`：后端接入强约束与门禁。
+- `开发启动清单.md`：跨机器拉取后的一次性启动流程。
 
-## 参考文档
+## 质量与稳定性
 
-- `ref/虚拟UI阶段说明.md`：虚拟 UI 阶段过程记录（历史参考）。
-- `ref/3dwidgetsolution1.md`：3D 坐标控件方案草案 1（参考）。
-- `ref/3dwidgetsolution2.md`：3D 坐标控件方案草案 2（参考）。
-- `ref/scalesolution.html`：缩略图排布算法早期原型（历史参考）。
-- `ref/scalesolution2.tsx`：缩略图排布算法对照实现（历史参考）。
+- `stability-note-2026-02-12-sidebar-switch-crash.md`：Sidebar 高频切换稳定性问题与修复记录。
+- `project-evaluation-report-v3.md`：项目评估（当前保留版本）。
+
+## 主题与 UI
+
+- `ui/theme-system-v2.md`：主题系统 V2 规范（主文档）。
+- `ui/theme-system-v1.md`：主题系统 V1 历史文档（仅追溯）。
+- `ui/instruction.md`：主题/样式开发说明。
+- `ui/theme-playground.html`：主题调试页。
+- `ui/theme-mock.html`：主题要素预览页。
+
+## 性能文档
+
+- `perf/2026-02-07-scan-benchmark.md`：扫描/重处理基准报告。
+- `perf/2026-02-08-ui-perf-benchmark-plan.md`：UI 性能测试方案与指标口径。
+- `perf/2026-02-08-streaming-ingest-benchmark-plan.md`：流式导入性能测试方案。
 
 ## 当前状态
 
-- 2026-02-12 元数据获取与重构已落地（`implementation-plan-2026-02-12-metadata-fetch.md`）：已完成 `检索 -> 解析 -> 保存` 闭环，新增外部元数据持久化表（`media_source_external_metadata`）与节点封面表（`media_source_cover`），并接入 Sidebar 聚合计数/颜色区分与主区节点浏览态 cover 网格跳转。
-- 2026-02-11 架构重构已完成：向量模型/Embedding/wd-swin 自动标签链路已移除，检索入口仅保留特征检索容器，设置仅保留 AI 广告审核视觉模型相关项。
-- 2026-02-12 稳定性修复已上线：针对 Sidebar 高频切换触发的缩略图异常与闪退风险，已在主进程缩略图链路加入并发限流与同目标任务去重，并接入运行时诊断日志。
-- 向量宇宙仍保留，但节点定位改为基于 tags/work 元数据的稳定语义哈希，不再依赖 `featureVector`。
-- 下方出现的向量检索/Embedding 相关条目均为历史阶段记录，仅用于追溯，不代表当前实现。
-- 产品范围已冻结到交互规范版本 `v1.5`。
-- 向量检索与特征检索已实装；当前开发阶段转为 `implementation-plan-2026-02-11.md` 中的 Embedding 模型调试与 AI 模型设置可用性收尾。
-- 虚拟 UI 脚手架与首版交互已落地，且已完成 `App.tsx` 的模块化拆分。
-- 文件加载前端部分已完成：导入文件/文件夹弹窗、全窗口拖拽、窗口焦点粘贴路径，并带拖拽叠加层占位反馈。
-- Sidebar 部分修正已完成：统一“设为根”按钮与“恢复”逻辑、根目录标题显示/点击折叠、可拖动分割条、`<3%` 自动折叠（三角展开按钮）、PageUp/PageDown 翻页修正、Sidebar 样式参数可配置，且目录 Mock 已扩容。
-- Main 下一轮修正待办已按 `interaction-v1.md` 完成（1~6 全部落地），并补充图包级评分、视频封面随机色保存与列表/缩略图布局修正。
-- Main 模块修正与全屏模式专项已完成（含第三轮：Ctrl+左右包切换兜底、Alt+方向对齐快捷键、视频悬浮控件贴边锚点修正、双显示视频按留白水平/垂直微调）。
-- 已按顺序完成 App 拆分：`useShortcutEngine -> useSidebarNavigation -> useImportPipeline -> useMediaState`。
-- Header 检索链路已改版：移除向量模式 toggle 与检索输入控件，改为“检索”按钮展开检索容器；向量检索改为手动触发并支持“阈值改动后重检索”。
-- 设置面板已改为 side/main 分栏，新增 `theme 设置` 与 `3D 设置` 占位项用于后续能力扩展。
-- 设置面板已进一步调整为 `side 20% | main 80%`，并在布局参数中新增“布局锁定”开关用于禁用主界面分割条拖动。
-- 设置面板新增“设置面板字体大小”调节项，`main` 区统一圆角容器外观，内容容器用于居中排版。
-- 检索容器已增加“向量检索 / 特征检索”页签，并支持与主区之间的高度拖动分割条；特征检索升级为多字段组合过滤（名称/作品名/社团/作者/tags/图包评分）。
-- 检索容器支持折叠后保持检索模式，顶部居中箭头按钮可快速恢复；向量/特征页切换时容器高度自动贴合控件。
-- 元数据面板展开态以标题“元数据面板”作为折叠入口，折叠态使用侧边箭头恢复展开。
-- Mock 数据已补充随机 tags 与图包评分初始值，用于检索与评分筛选验证。
-- 为控制复杂度，`App.tsx` 已进一步模块拆分：检索容器抽离为 `components/SearchPanel.tsx`，特征检索状态/过滤逻辑下沉到 `features/search/useFeatureSearch.ts`。
-- 主界面布局渲染层已从 `App.tsx` 抽离为 `components/AppWorkspace.tsx`，用于承载 Sidebar/Workspace/Main/Metadata 编排。
-- 本轮继续模块化：`features/app/useImageBrowserViewModel.ts` 聚合图片浏览核心视图模型，`features/app/useAppEffects.ts` 集中副作用同步链，`features/layout/usePaneResizers.ts` 统一分割条拖拽与比例归一化。
-- Header 已新增“向量宇宙”入口：可打开独立 Three.js 3D 漫游层（模拟阶段），当前实现为 billboard + 距离 LOD + tag 颜色映射 + 正前方 Raycast 命中选择，并已将控制参数接入设置面板 3D 设置页；向量宇宙范围与 Sidebar 当前范围保持一致，进入即自动捕捉鼠标，且以进入图片作为坐标原点。快捷键与 3D 控制映射现支持弹窗式新增/清除（键盘/鼠标/组合），并新增离散度与边界穿越控制。
-- 向量宇宙前端内容已阶段性完成：包含二次确认退出、全息球体位置控件（深度亮度、方向箭头、越界穿入）与设置面板参数化调节。
-- 本轮“按职责块拆分”已完成并封版：
-  - Renderer 入口链路已收敛：`src/App.tsx` -> `useAppController` -> `useAppDataPipeline`，入口仅保留薄编排职责。
-  - Renderer 侧新增分层编排基线：`RuntimeSources / ReadState / NavigationState / DisplayAndEffects / TopLayerBindings / WorkspaceBindings / ViewComposition`，后续新功能必须沿该模式扩展。
-  - 当前关键入口规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
-  - Main 侧 `fileSystemReadService` 拆分阶段已完成：`electron/fileSystemReadService.ts` 已收敛为 Facade 入口（`2` 行），核心编排迁移到 `electron/fileSystemReadFacade.ts`（约 `548` 行）并委托到领域服务。
-- Main 领域服务已成型：`mediaTokenService`、`runtimeDependencyService`、`serviceEventBus`、`importPathRegistry`、`archiveNormalizationService`、`librarySnapshotService`、`importTaskService`、`libraryReadWriteService`、`managementMutationService`、`mediaResourceService`。
-- 管理模式图片选择交互接线已完成：`ImageMainSection` 已切换到 `useManageImageSelectionInteractions`，重复 Hook 实现已移除。
-- 大文件拆分已完成：`src/App.css` 已改为样式聚合入口并拆分到 `src/styles/app/*`，`electron/mediaLibraryDatabase.ts` 已收敛为 Facade 并委托到职责子模块。
-- 管理模式 LLM 广告审核纵向接线已完成：contracts/preload/ipc/repository/UI 全链路可用，支持“启动审核 -> 轮询进度/结果 -> 人工复核 -> 确认删除”。
-- 后端接入必须遵循 `backend-integration-guardrails.md`，禁止绕过数据访问层与 DTO 映射层。
-- 后端接入 Phase-1（只读垂直切片）已启动：新增 Repository 双实现（Mock/Real）、DTO->ViewModel 映射层、Renderer 读链路异步一致性控制（取消旧请求 + request id 防覆盖）与错误可见反馈（重试 + 快照回退）。
-- Repository 切换方式：可通过 `VITE_MEDIA_REPOSITORY_MODE=mock|real` 强制指定；未指定时开发环境在检测到 `window.mediaPlayerBackend` 后走 `real`（否则 `mock`），生产构建默认强制 `real` 并禁止静默回退到 `mock`。
-- Electron 通道已从骨架升级到真实 Main 读服务：`registerBackendIpcHandlers` 现接入 `FileSystemMediaReadService`（文件系统适配），并在 IPC 入参与出参统一执行 Zod 校验。
-- Main/Sidebar 的特征筛选口径已收敛到 Repository SSOT，前端不再维护同构筛选副本。
-- 已补充 Repository/IPC 集成测试：覆盖超时、取消、重试、快照回退；`App.test.tsx` 仍可能在 Vitest 输出非阻断性 `act(...)` 警告。
-- 已新增真实文件性能门禁并完成首份基准报告：`docs/perf/2026-02-07-scan-benchmark.md`。
-- 后端接入 Phase-2（真实媒体可用化）已落地：Main/Metadata/Fullscreen 由占位渲染切换为真实 `<img>/<video>` 渲染链路。
-- 新增媒体定位模型 `MediaLocator`（文件系统/压缩包统一表达），并在 DTO -> ViewModel 映射层收敛为 SSOT。
-- 新增 Main 白名单媒体访问协议：Renderer 仅可通过 `Repository -> preload bridge -> ipc` 获取受控 `resource_url`，禁止直连 Node/FS。
-- `FileSystemMediaReadService` 已支持 zip 压缩包轻扫（仅 entry name），扫描阶段不做全量解压、不依赖 entry size。
-- 已补充 Phase-2 集成测试：真实渲染链路、协议权限边界、压缩包轻扫与异常重试；`lint/test/build` 基线通过。
-- 新增视频元数据真实探测链路：Main 使用 `ffprobe` 探测时长/分辨率，Renderer 在 `loadedmetadata` 回传并校准进度显示。
-- 新增写链路下沉：图包评分与 `Save as cover` 通过 Main 写入；Renderer 采用 optimistic update + 失败回滚。
-- 后端存储已切换到 SQLite 基座：`migration/init/version`、`source/package`、`image`、`video`、`grade`、`cover`、`playlist`、`app_state`、`root_config`、`task_log` 已落地。
-- 读链路（snapshot/sidebar/page/metadata）已改为“扫描结果事务 upsert -> SQLite 查询回读”的 DB 优先路径，内存快照仅作为短生命周期缓存。
-- 播放列表已接入持久化链路：Renderer 通过 `Repository -> preload -> ipc` 读写播放列表，重启后恢复。
-- 导入链路已接入任务队列：文件/文件夹/拖拽/粘贴统一入队，任务状态持久化到 `task_log` 并在前端任务面板展示，失败可重试；导入为“纯引用”：库外路径不复制入库，仅登记引用并在原路径扫描/读取媒体。
-- Electron 启动脚本已补齐：`npm run dev:desktop`（开发）与 `npm run desktop:start`（构建+启动）。
-- Electron 代理支持：可通过 `MEDIA_PLAYERX_PROXY_SERVER` / `MEDIA_PLAYERX_PROXY_BYPASS` 透传运行时代理配置（用于依赖联网能力或受限网络环境）。
-- 缩略图渲染链路已接入 Sharp WebP 缓存：Main 按请求变体生成并缓存缩略图，Renderer 缩略图网格优先读取 thumbnail 变体，Metadata/Fullscreen 保持 original 变体。
-- 新增 `resolveMediaResource` 审计统计：拒绝原因分类、token 命中/未命中/过期/清理计数可通过 IPC 读取。
-- 新增运行时依赖预检：Main 启动后可输出 `sharp/ffmpeg/ffprobe/archive-wasm/powershell` 可用性，Renderer 在降级生效时展示可见告警；`rar/7z` 与 zip 重处理策略按依赖可用性自动收口。
-- 压缩包策略升级：`rar/7z` 统一走“内存解包 -> 非 webp 图片转 webp(quality=90) -> zip(store)”并在同目录原地替换为 `.zip`（成功后删除原始 `rar/7z`）；zip 遇到非 `store/deflate` 图片条目时走“解压 -> webp(quality=90) -> zip(store)”归一化策略。
-- 归一化调度策略：`rar/7z` 默认进入低优先级后台队列（等待交互空闲后执行，按 Sidebar 路径排序）；当用户显式打开某个 `rar/7z` 包时提升为高优先级并立即后台处理。
-- Header 已新增任务状态按钮（`加载中/空闲`）：位于 Logo 与模式切换之间，点击后才显示导入任务面板；任务面板默认隐藏。
-- Sidebar 已增加加载状态标记：左侧圆点表示 `pending`，高亮圆点与行背景表示 `running`，完成后不显示标记。
-- 缩略图网格显示策略已更新：卡片比例改为 `1:1`，卡片内不再显示 caption；caption 迁移到元数据预览区底部。
-- 纯文件名模式已改为展示真实值：文件大小使用真实字节换算，分辨率优先真实探测；未知值显示 `-`，不再使用 `1920x1080 / 0KB` 占位。
-- 扫描/重处理性能门禁改为双规并行：`Z:\bench`（实际负载回放） + `perf-data/<日期>-scan-dataset/input`（脚本生成全覆盖）。
-- 覆盖门禁判定以“脚本生成全覆盖目录”执行，实际负载目录用于真实性能回放与回归对照。
-- 性能门禁覆盖项包含：中文/日文/特殊符号目录、中文/日文/特殊符号压缩包路径、长路径与损坏压缩包样本。
-- 当前代码质量检查基线为：`npm run lint`、`npm run test`、`npm run build` 全部通过。
-- 主题系统 V2 已完成：Style × Palette 二维模型（视觉风格与配色方案独立选择）已落地，新增播放器控件专用 token（固定深色半透明语义），Token 总量约 ~148 个；手册文档见 `docs/ui/theme-system-v2.md`。
-- 可维护性与稳定性改进计划已完成：Phase 0~4 全部落地，临时实施文档已移除。
-- 管理模式“LLM 广告图片审核”已完成接入并完成首轮优化：支持审核策略（`all/head-tail`）与并发参数透传；管理面板新增审核审计可视化（来源分布、LLM/总体命中率）；删除后继续将候选哈希写入 `app_state`（known-hash）用于后续命中短路。
-- 大 I/O 性能压测按具体实施阶段执行，不提前进行。
-- 仓库初始化以本目录文档为起点。
-
-## 文档使用方式（单一事实源）
-
-- 本目录文档是项目当前阶段的唯一事实来源（SSOT）。
-- 当代码与文档出现不一致时，默认以文档为准，并在同一开发周期内修正代码或补齐文档说明。
-- 所有功能变更必须同时更新代码与对应文档，禁止只改其一。
-- 新成员或新机器接手时，先阅读文档再改代码，避免按个人记忆实现。
-
-## 跨机器继续开发流程
-
-1. 拉取仓库：`git clone` 后切换到目标分支并执行 `git pull`。
-2. 先读文档：按 `requirements-v1.md -> architecture-v1.md -> interaction-v1.md` 顺序确认范围与约束。
-3. 再看代码：以文档中的模块边界、交互约束、数据策略为核对基线。
-4. 开发实现：新增/修改功能时，同步更新相关文档条目。
-5. 提交前自检：确认“代码行为、接口约束、交互逻辑”与文档一致。
+- 历史空间漫游功能及相关设置项已从产品与实现中移除。
+- 设置面板当前仅保留界面、AI 模型、数据库、快捷键分组。
+- 文档目录已清理历史空间漫游方案、过期评估与已完成实施计划。
 
 ## 文档维护约定
 
-- 需求变更：更新 `requirements-v1.md`。
-- 架构调整：更新 `architecture-v1.md`。
-- 交互变化：更新 `interaction-v1.md`。
-- 如果变更跨多个维度，需同时修改多个文档并在提交信息中说明关联关系。
+- 需求变化：同步更新 `requirements-v1.md`。
+- 架构变化：同步更新 `architecture-v1.md`。
+- 交互变化：同步更新 `interaction-v1.md`。
+- 后端链路变化：同步更新 `backend-integration-guardrails.md`。
+- 代码与文档不一致时，以当前代码行为为准，文档需在同一迭代内修正。

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, type Dispatch, type SetStateAction } from 'react'
+import { useCallback, type Dispatch, type SetStateAction } from 'react'
 
 import { buildVectorCandidates } from '../../mockData'
 import type {
@@ -16,20 +16,17 @@ interface UseSearchAndVectorActionsParams {
   allScopedRefs: FocusedImageRef[]
   packageById: Map<string, ImagePackage>
   vectorThreshold: number
-  vectorSearchResults: VectorCandidate[]
   vectorResultsActive: boolean
   featureSearchActive: boolean
   quickFeatureSearchActive: boolean
   selectedSidebarNodeId: string | null
   normalImageSourceNodeIdMap: Map<string, string>
-  orderedRootScopedPackages: ImagePackage[]
   setSelectedPackageId: Dispatch<SetStateAction<string>>
   setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>
   setVectorSearchResults: Dispatch<SetStateAction<VectorCandidate[]>>
   setVectorFocusIndex: Dispatch<SetStateAction<number>>
   setVectorPage: Dispatch<SetStateAction<number>>
   setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
-  setVectorUniverseOpen: Dispatch<SetStateAction<boolean>>
   setImageFocus: (packageId: string, imageIndex: number) => void
   clearQuickFeatureSearch: () => void
   updateSettings: (patch: { mode?: BrowserMode; vectorMode?: boolean; sidebarFocus?: 'sidebar' | 'main' }) => void
@@ -38,8 +35,6 @@ interface UseSearchAndVectorActionsParams {
 interface UseSearchAndVectorActionsResult {
   runVectorSearch: () => void
   goToFromSearchMode: () => void
-  confirmVectorUniverseSelection: (ref: FocusedImageRef) => void
-  vectorUniverseScopeRefs: FocusedImageRef[]
 }
 
 export function useSearchAndVectorActions({
@@ -48,20 +43,17 @@ export function useSearchAndVectorActions({
   allScopedRefs,
   packageById,
   vectorThreshold,
-  vectorSearchResults,
   vectorResultsActive,
   featureSearchActive,
   quickFeatureSearchActive,
   selectedSidebarNodeId,
   normalImageSourceNodeIdMap,
-  orderedRootScopedPackages,
   setSelectedPackageId,
   setSelectedSidebarNodeId,
   setVectorSearchResults,
   setVectorFocusIndex,
   setVectorPage,
   setSearchPanelMode,
-  setVectorUniverseOpen,
   setImageFocus,
   clearQuickFeatureSearch,
   updateSettings,
@@ -183,77 +175,8 @@ export function useSearchAndVectorActions({
     vectorResultsActive,
   ])
 
-  const confirmVectorUniverseSelection = useCallback(
-    (ref: FocusedImageRef) => {
-      const targetNodeId = normalImageSourceNodeIdMap.get(ref.packageId) ?? null
-
-      setVectorUniverseOpen(false)
-      setVectorSearchResults([])
-      setVectorFocusIndex(0)
-      setVectorPage(0)
-      setSearchPanelMode('vector')
-
-      updateSettings({
-        mode: 'image',
-        vectorMode: false,
-        sidebarFocus: 'main',
-      })
-
-      setImageFocus(ref.packageId, ref.imageIndex)
-      if (targetNodeId) {
-        setSelectedSidebarNodeId(targetNodeId)
-      }
-    },
-    [
-      normalImageSourceNodeIdMap,
-      setImageFocus,
-      setSearchPanelMode,
-      setSelectedSidebarNodeId,
-      setVectorFocusIndex,
-      setVectorPage,
-      setVectorSearchResults,
-      setVectorUniverseOpen,
-      updateSettings,
-    ],
-  )
-
-  const vectorUniverseScopeRefs = useMemo<FocusedImageRef[]>(() => {
-    if (vectorResultsActive) {
-      const refs: FocusedImageRef[] = []
-      const seen = new Set<string>()
-
-      for (const candidate of vectorSearchResults) {
-        const key = `${candidate.packageId}:${candidate.imageIndex}`
-        if (seen.has(key)) {
-          continue
-        }
-        seen.add(key)
-        refs.push({
-          packageId: candidate.packageId,
-          imageIndex: candidate.imageIndex,
-        })
-      }
-
-      return refs
-    }
-
-    const refs: FocusedImageRef[] = []
-    for (const pkg of orderedRootScopedPackages) {
-      pkg.images.forEach((_, imageIndex) => {
-        refs.push({
-          packageId: pkg.id,
-          imageIndex,
-        })
-      })
-    }
-
-    return refs
-  }, [orderedRootScopedPackages, vectorResultsActive, vectorSearchResults])
-
   return {
     runVectorSearch,
     goToFromSearchMode,
-    confirmVectorUniverseSelection,
-    vectorUniverseScopeRefs,
   }
 }

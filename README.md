@@ -2,11 +2,13 @@
 
 本仓库用于开发本地优先的综合媒体浏览器（图片 + 视频）。
 
-当前阶段：**Electron 实用化阶段（向量检索/特征检索除外）**。
+当前版本：`0.66`
+
+当前阶段：**Electron 实用化阶段**。
 
 - 已接入真实文件系统扫描、SQLite 持久化、媒体协议白名单与导入任务队列。
 - 已完成外部元数据链路：支持 nhentai/ehentai 检索、解析保存、外部元数据持久化与节点封面落盘，并在 Sidebar/主区提供节点浏览态展示。
-- 向量检索与特征检索仍保留为后续能力，不计入当前可用集。
+- 已移除历史 3D 空间漫游能力与相关设置项，当前版本聚焦 2D 浏览、管理与元数据链路。
 
 ## 运行项目
 
@@ -43,25 +45,24 @@ npm run test
 ## 文档入口
 
 - `docs/README.md`
-- `docs/implementation-plan-2026-02-11.md`
-- `docs/implementation-plan-2026-02-12-metadata-fetch.md`
 - `docs/requirements-v1.md`
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
-- `docs/vector-retrieval-plan-v1.md`
-- `docs/ref/虚拟UI阶段说明.md`（历史参考）
-- `docs/ui/theme-playground.html`（主题开发调试页）
-- `docs/project-evaluation-report.md`（项目评估报告·初版）
-- `docs/project-evaluation-report-v2.md`（项目评估报告·整改后第二版）
-- `docs/project-evaluation-report-v3.md`（项目评估报告·第三版，含最新规模与质量基线）
+- `docs/backend-integration-guardrails.md`
+- `docs/stability-note-2026-02-12-sidebar-switch-crash.md`
+- `docs/project-evaluation-report-v3.md`
+- `docs/perf/2026-02-07-scan-benchmark.md`
+- `docs/perf/2026-02-08-ui-perf-benchmark-plan.md`
+- `docs/perf/2026-02-08-streaming-ingest-benchmark-plan.md`
+- `docs/ui/theme-system-v2.md`
+- `docs/ui/theme-playground.html`
 
 文档为当前阶段单一事实源（SSOT）。
 
-## 计划待办
+## 质量基线
 
-- [x] 拆分 `useAppDisplayAndEffects`（477 行）为 2-3 个职责更明确的子 hook
-- [x] 为非显而易见的设计决策补充 why 注释（归档规范化策略、Token TTL 取值、安全守卫白名单规则等）
-- [x] 为各特性模块添加 barrel export（`index.ts`）
-- [x] 重命名 `ReadonlyMediaRepository` 或拆分为独立的读/写接口
-
-> 以上待办事项来源于项目评估报告，详见 `docs/project-evaluation-report-v2.md` 第 8 节。
+```bash
+npm run lint
+npm run test
+npm run build
+```

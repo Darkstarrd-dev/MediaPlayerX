@@ -7,11 +7,6 @@ import {
   type ShortcutAction,
   type ShortcutMap,
 } from '../shortcuts'
-import {
-  DEFAULT_VECTOR_CONTROLS,
-  type VectorControlAction,
-  type VectorControlMap,
-} from '../vectorControls'
 
 export const DEFAULT_SETTINGS: AppSettings = {
   mode: 'image',
@@ -55,13 +50,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   adReviewTailN: 8,
   adReviewTailStopCleanStreak: 6,
   adReviewMaxConcurrency: 4,
-  vectorUniverseMoveSpeed: 24,
-  vectorUniverseSprintMultiplier: 2.25,
-  vectorUniverseLookSensitivity: 0.0019,
-  vectorUniverseRaycastDistance: 18,
-  vectorUniverseHelperScale: 180,
-  vectorUniverseDispersion: 1,
-  vectorUniverseWidgetSize: 200,
 }
 
 const SETTINGS_KEYS: (keyof AppSettings)[] = [
@@ -106,13 +94,6 @@ const SETTINGS_KEYS: (keyof AppSettings)[] = [
   'adReviewTailN',
   'adReviewTailStopCleanStreak',
   'adReviewMaxConcurrency',
-  'vectorUniverseMoveSpeed',
-  'vectorUniverseSprintMultiplier',
-  'vectorUniverseLookSensitivity',
-  'vectorUniverseRaycastDistance',
-  'vectorUniverseHelperScale',
-  'vectorUniverseDispersion',
-  'vectorUniverseWidgetSize',
 ]
 
 function pickSettings(state: UiStore): AppSettings {
@@ -125,18 +106,14 @@ function pickSettings(state: UiStore): AppSettings {
 
 interface UiStore extends AppSettings {
   shortcuts: ShortcutMap
-  vectorControls: VectorControlMap
   updateSettings: (patch: Partial<AppSettings>) => void
   setShortcut: (action: ShortcutAction, binding: string) => void
-  setVectorControl: (action: VectorControlAction, binding: string) => void
   resetShortcuts: () => void
-  resetVectorControls: () => void
 }
 
 export const useUiStore = create<UiStore>((set, get) => ({
   ...DEFAULT_SETTINGS,
   shortcuts: { ...DEFAULT_SHORTCUTS },
-  vectorControls: { ...DEFAULT_VECTOR_CONTROLS },
   updateSettings: (patch) => {
     const current = pickSettings(get())
     const candidate = {
@@ -166,20 +143,8 @@ export const useUiStore = create<UiStore>((set, get) => ({
       },
     }))
   },
-  setVectorControl: (action, binding) => {
-    const normalized = normalizeShortcutBinding(binding)
-    set((state) => ({
-      vectorControls: {
-        ...state.vectorControls,
-        [action]: normalized,
-      },
-    }))
-  },
   resetShortcuts: () => {
     set({ shortcuts: { ...DEFAULT_SHORTCUTS } })
-  },
-  resetVectorControls: () => {
-    set({ vectorControls: { ...DEFAULT_VECTOR_CONTROLS } })
   },
 }))
 
@@ -188,6 +153,5 @@ export function resetUiStoreState(): void {
     ...state,
     ...DEFAULT_SETTINGS,
     shortcuts: { ...DEFAULT_SHORTCUTS },
-    vectorControls: { ...DEFAULT_VECTOR_CONTROLS },
   }))
 }

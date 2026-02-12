@@ -143,7 +143,6 @@ html                                        data-mpx-style / data-mpx-palette
 |------|-------|------|------|
 | 全屏模式 | `.fullscreen-layer` | z-index: 20 | fixed inset:0, 独立背景色 |
 | 设置面板 | `.settings-mask` + `.settings-panel` | z-index: 10+ | 居中 80%，backdrop-filter |
-| 向量宇宙 | `.vector-universe-overlay` | z-index: 15+ | fixed inset:0, Three.js canvas |
 | 拖拽叠加 | `.drop-overlay` | z-index: 12 | fixed inset:0, 半透明 |
 
 ### 3.3 面板间空间关系

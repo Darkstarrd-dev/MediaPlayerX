@@ -9,7 +9,6 @@ import E2eBenchSection from './E2eBenchSection'
 import FullscreenLayer from './FullscreenLayer'
 import ImportSourceInputs from './ImportSourceInputs'
 import SettingsPanel from './SettingsPanel'
-import VectorUniverseSection from './VectorUniverseSection'
 
 interface AppShellProps {
   onDragEnterImport: ComponentProps<'div'>['onDragEnter']
@@ -21,7 +20,6 @@ interface AppShellProps {
   appTopBannersProps: ComponentProps<typeof AppTopBanners>
   appWorkspaceProps: ComponentProps<typeof AppWorkspace>
   fullscreenLayerProps: ComponentProps<typeof FullscreenLayer>
-  vectorUniverseSectionProps: ComponentProps<typeof VectorUniverseSection>
   settingsPanelProps: ComponentProps<typeof SettingsPanel>
   manageDeleteDialogProps: ComponentProps<typeof DangerConfirmDialog>
   dragOverlayActive: boolean
@@ -38,7 +36,6 @@ function AppShell({
   appTopBannersProps,
   appWorkspaceProps,
   fullscreenLayerProps,
-  vectorUniverseSectionProps,
   settingsPanelProps,
   manageDeleteDialogProps,
   dragOverlayActive,
@@ -51,7 +48,6 @@ function AppShell({
       <AppTopBanners {...appTopBannersProps} />
       <AppWorkspace {...appWorkspaceProps} />
       <FullscreenLayer {...fullscreenLayerProps} />
-      <VectorUniverseSection {...vectorUniverseSectionProps} />
       <SettingsPanel {...settingsPanelProps} />
       <DangerConfirmDialog {...manageDeleteDialogProps} />
       <DragImportOverlay active={dragOverlayActive} />

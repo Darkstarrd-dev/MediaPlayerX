@@ -1464,7 +1464,6 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '界面设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'AI模型设置' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '快捷键设置' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '3D 设置' })).toBeInTheDocument()
 
     expect(screen.queryByRole('button', { name: '缩略图设置' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'theme 设置' })).toBeNull()
@@ -1504,21 +1503,6 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '选择缩略图目录' })).toBeInTheDocument()
     expect(screen.queryByText('向量数据管理')).toBeNull()
     expect(screen.queryByRole('button', { name: '选择向量目录' })).toBeNull()
-
-    fireEvent.click(screen.getByRole('button', { name: '3D 设置' }))
-    expect(screen.getByText('向量宇宙：前进')).toBeInTheDocument()
-
-    const moveSpeedSlider = screen.getByLabelText(/移动速度/)
-    fireEvent.change(moveSpeedSlider, { target: { value: '30' } })
-    expect(screen.getByText(/移动速度 30\.0/)).toBeInTheDocument()
-
-    const dispersionSlider = screen.getByLabelText(/宇宙离散度/)
-    fireEvent.change(dispersionSlider, { target: { value: '1.5' } })
-    expect(screen.getByText(/宇宙离散度 1\.50/)).toBeInTheDocument()
-
-    const widgetSizeSlider = screen.getByLabelText(/位置控件大小/)
-    fireEvent.change(widgetSizeSlider, { target: { value: '240' } })
-    expect(screen.getByText(/位置控件大小 240px/)).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '快捷键设置' }))
     expect(screen.getByText('全屏：上对齐')).toBeInTheDocument()
@@ -1652,93 +1636,4 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(hasPersistedVerifiedTrue).toBe(true)
   })
 
-  const openVectorUniverseAndWaitReady = async () => {
-    fireEvent.click(screen.getByRole('button', { name: '向量宇宙' }))
-    await waitFor(
-      () => {
-        expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: '关闭向量宇宙' })).toBeInTheDocument()
-      },
-      { timeout: 8_000 },
-    )
-  }
-
-  it('Header 显示向量宇宙按钮并可打开关闭 3D 层', async () => {
-    render(<App />)
-
-    await openVectorUniverseAndWaitReady()
-
-    fireEvent.click(screen.getByRole('button', { name: '关闭向量宇宙' }))
-    expect(screen.queryByRole('dialog', { name: '向量宇宙层' })).not.toBeInTheDocument()
-  })
-
-  it('向量宇宙层支持 Esc 二次确认退出', async () => {
-    render(<App />)
-
-    await openVectorUniverseAndWaitReady()
-
-    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
-    expect(screen.getByText('再按一次 Esc 退出向量宇宙')).toBeInTheDocument()
-    expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-
-    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
-    expect(screen.queryByRole('dialog', { name: '向量宇宙层' })).not.toBeInTheDocument()
-  })
-
-  it('无 focus 时向量宇宙层显示提示并保留 LOD 层级标识', async () => {
-    render(<App />)
-
-    await openVectorUniverseAndWaitReady()
-
-    expect(screen.getByText('请先在主视图选中图片')).toBeInTheDocument()
-    expect(screen.getByLabelText('世界坐标辅助')).toBeInTheDocument()
-    expect(screen.getByTestId('vector-universe-position')).toBeInTheDocument()
-    expect(screen.getByTestId('vector-universe-front-hit')).toHaveTextContent('无命中')
-    expect(screen.getByTestId('vector-universe-lod-level')).toBeInTheDocument()
-    expect(Number(screen.getByTestId('vector-universe-scope-count').textContent ?? '0')).toBeGreaterThan(0)
-    expect(screen.getByRole('group', { name: 'LOD 层级标识' })).toBeInTheDocument()
-    expect(screen.getByTestId('vector-universe-lod-far')).toBeInTheDocument()
-    expect(screen.getByTestId('vector-universe-lod-mid')).toBeInTheDocument()
-    expect(screen.getByTestId('vector-universe-lod-near')).toBeInTheDocument()
-  })
-
-  it('向量宇宙层打开期间不吞掉关闭后的既有快捷键行为', async () => {
-    render(<App />)
-
-    fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
-    await openVectorUniverseAndWaitReady()
-
-    fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
-    expect(document.querySelector('.fullscreen-layer')).toBeNull()
-
-    fireEvent.click(screen.getByRole('button', { name: '关闭向量宇宙' }))
-
-    fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
-    expect(document.querySelector('.fullscreen-layer')).not.toBeNull()
-  })
-
-  it('向量宇宙层在无命中时按 Space 不会误退出', async () => {
-    render(<App />)
-
-    await openVectorUniverseAndWaitReady()
-
-    fireEvent.keyDown(window, { key: ' ', code: 'Space' })
-    expect(screen.getByRole('dialog', { name: '向量宇宙层' })).toBeInTheDocument()
-  })
-
-  it('向量宇宙层支持 F1 折叠 HUD 为单行信息', async () => {
-    render(<App />)
-
-    await openVectorUniverseAndWaitReady()
-    expect(screen.queryByTestId('vector-universe-hud-compact')).not.toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'LOD 层级标识' })).toBeInTheDocument()
-
-    fireEvent.keyDown(window, { key: 'F1', code: 'F1' })
-    expect(screen.getByTestId('vector-universe-hud-compact')).toBeInTheDocument()
-    expect(screen.queryByRole('group', { name: 'LOD 层级标识' })).not.toBeInTheDocument()
-
-    fireEvent.keyDown(window, { key: 'F1', code: 'F1' })
-    expect(screen.queryByTestId('vector-universe-hud-compact')).not.toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'LOD 层级标识' })).toBeInTheDocument()
-  })
 })

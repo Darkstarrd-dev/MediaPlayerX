@@ -75,7 +75,7 @@
 - 已完成（integration）：contracts/preload/ipc/repository 接线，管理面板审核列表、任务轮询、危险确认删除与结果回写闭环。
 - 已完成（persistence）：确认删除项的哈希写入 `app_state`，后续同图命中可走 known-hash 短路。
 - 已完成（observability）：审核任务 DTO 新增 `execution/audit` 字段，包含来源分布（known-hash/llm/skip）与命中率（LLM/overall），并在管理面板可视化。
-- 详细计划与阶段拆解见 `docs/management-llm-ad-review-plan-v1.md`。
+- 详细实现以当前 `electron/manageAdReview/*` 与前端管理面板接线代码为准。
 
 ## 模块边界
 
@@ -147,7 +147,6 @@
 
 ## 可维护性与稳定性改进专项（已完成）
 
-- 专项计划文档：`docs/maintainability-improvement-plan-v1.md`（长期保留）。
 - 专项实施文档：`docs/maintainability-improvement-execution-v1.md`（临时文档，已移除）。
 - 执行优先级：
   - P0：SQLite 存储层与媒体访问安全守卫测试。
