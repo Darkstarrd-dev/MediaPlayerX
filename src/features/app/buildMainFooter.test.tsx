@@ -51,6 +51,9 @@ describe('buildMainFooter', () => {
 
     render(<div className="main-footer">{node}</div>)
     expect(document.querySelector('.main-footer-pagination')).toBeInTheDocument()
+    const footerMetaSpans = document.querySelectorAll('.main-footer-meta > span')
+    expect(footerMetaSpans).toHaveLength(1)
+    expect(footerMetaSpans[0]?.textContent ?? '').toBe('C:/media/pkg-1.zip')
     expect(screen.getByRole('button', { name: '上一页' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '下一页' })).toBeInTheDocument()
     expect(screen.getByText('第 2 / 3 页')).toBeInTheDocument()

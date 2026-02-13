@@ -260,8 +260,9 @@ export function MetadataImageEditor({
             )}
           </div>
           <div className="metadata-image-caption">
-            <strong>{`${focusedImagePackage?.displayName ?? '图片'} #${focusedImage.ordinal}`}</strong>
             <span>{mediaLocatorFileName(focusedImage.mediaLocator)}</span>
+            <span>{focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width} x ${focusedImage.height}` : '-'}</span>
+            <span>{focusedImage.sizeKb > 0 ? `${focusedImage.sizeKb}KB` : '-'}</span>
           </div>
         </>
       ) : (

@@ -918,6 +918,25 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
+  it('原图说明仅显示文件名/分辨率/大小三行，不重复图包标题', async () => {
+    render(<App />)
+
+    const firstThumbButton = screen.getByText('幻旅系列 001 #1').closest('button')
+    expect(firstThumbButton).not.toBeNull()
+    fireEvent.click(firstThumbButton as HTMLButtonElement)
+
+    await waitFor(() => {
+      const caption = document.querySelector('.metadata-image-caption') as HTMLElement | null
+      expect(caption).not.toBeNull()
+      const lines = caption?.querySelectorAll('span') ?? []
+      expect(lines).toHaveLength(3)
+      expect(lines[0]?.textContent ?? '').toContain('img_0001.jpg')
+      expect(lines[1]?.textContent ?? '').toBe('920 x 920')
+      expect(lines[2]?.textContent ?? '').toBe('180KB')
+      expect(caption?.querySelector('strong')).toBeNull()
+    })
+  })
+
   it('退出原图显示后元数据面板恢复常规布局，不保持 focus 容器样式', async () => {
     render(<App />)
 
@@ -1306,10 +1325,28 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('方向键右键在无 focus 时可建立并切换图片 focus', () => {
     render(<App />)
 
-    expect(screen.queryByText(/archive_001\.zip #1/)).not.toBeInTheDocument()
+    const readToolbarProgress = () => {
+      const line = document.querySelector('.main-toolbar-title')?.textContent ?? ''
+      const matched = line.match(/\((\d+)\/(\d+)\)/)
+      return {
+        current: Number(matched?.[1] ?? 0),
+        total: Number(matched?.[2] ?? 0),
+      }
+    }
+
+    expect(readToolbarProgress().current).toBe(1)
+    expect(readToolbarProgress().total).toBeGreaterThan(1)
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
 
-    expect(screen.getByText(/archive_001\.zip #2/)).toBeInTheDocument()
+    expect(readToolbarProgress().current).toBe(2)
+  })
+
+  it('图片主工具栏标题显示当前图片序号与图包总数', () => {
+    render(<App />)
+
+    const toolbarTitle = document.querySelector('.main-toolbar-title')?.textContent ?? ''
+    expect(toolbarTitle).toContain('幻旅系列 001')
+    expect(toolbarTitle).toMatch(/\(\d+\/\d+\)/)
   })
 
   it('快捷键支持将滚轮下绑定为下一张图片', () => {
@@ -1323,13 +1360,25 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     render(<App />)
 
-    expect(screen.queryByText(/archive_001\.zip #1/)).not.toBeInTheDocument()
+    const readToolbarProgress = () => {
+      const line = document.querySelector('.main-toolbar-title')?.textContent ?? ''
+      const matched = line.match(/\((\d+)\/(\d+)\)/)
+      return Number(matched?.[1] ?? 0)
+    }
+
+    expect(readToolbarProgress()).toBe(1)
     fireEvent.wheel(window, { deltaY: 80 })
-    expect(screen.getByText(/archive_001\.zip #2/)).toBeInTheDocument()
+    expect(readToolbarProgress()).toBe(2)
   })
 
   it('鼠标点击与键盘方向键共享 focus，Esc 可清空 focus', () => {
     render(<App />)
+
+    const readToolbarProgress = () => {
+      const line = document.querySelector('.main-toolbar-title')?.textContent ?? ''
+      const matched = line.match(/\((\d+)\/(\d+)\)/)
+      return Number(matched?.[1] ?? 0)
+    }
 
     expect(screen.getByLabelText('图包名')).toBeInTheDocument()
 
@@ -1338,13 +1387,13 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(firstThumbButton as HTMLButtonElement)
 
     expect(screen.queryByLabelText('图包名')).not.toBeInTheDocument()
-    expect(screen.getByText(/archive_001\.zip #1/)).toBeInTheDocument()
+    expect(readToolbarProgress()).toBe(1)
 
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
-    expect(screen.getByText(/archive_001\.zip #2/)).toBeInTheDocument()
+    expect(readToolbarProgress()).toBe(2)
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
-    expect(screen.queryByText(/archive_001\.zip #/)).not.toBeInTheDocument()
+    expect(readToolbarProgress()).toBe(1)
     expect(screen.getByLabelText('图包名')).toBeInTheDocument()
   })
 
@@ -1352,8 +1401,8 @@ describe('MediaPlayer 虚拟 UI', () => {
     render(<App />)
 
     const readFocusedOrdinal = () => {
-      const line = screen.getByText(/archive_001\.zip #\d+/).textContent ?? ''
-      const matched = line.match(/#(\d+)/)
+      const line = document.querySelector('.main-toolbar-title')?.textContent ?? ''
+      const matched = line.match(/\((\d+)\/(\d+)\)/)
       return Number(matched?.[1] ?? 0)
     }
 

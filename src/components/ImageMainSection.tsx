@@ -465,6 +465,33 @@ function ImageMainSection({
         ? `已选媒体条目: ${imageSelectedCount}`
         : '未选择条目'
 
+  const activePackageImageProgress = (() => {
+    if (!activePackage || activePackage.images.length === 0) {
+      return null
+    }
+
+    const total = activePackage.images.length
+
+    if (focusedRef?.packageId === activePackage.id) {
+      const current = Math.max(1, Math.min(total, focusedRef.imageIndex + 1))
+      return `${current}/${total}`
+    }
+
+    const firstInPage = refsInPage.find((ref) => ref.packageId === activePackage.id)
+    if (firstInPage) {
+      const current = Math.max(1, Math.min(total, firstInPage.imageIndex + 1))
+      return `${current}/${total}`
+    }
+
+    const firstVisible = visibleImageRefs.find((ref) => ref.packageId === activePackage.id)
+    if (firstVisible) {
+      const current = Math.max(1, Math.min(total, firstVisible.imageIndex + 1))
+      return `${current}/${total}`
+    }
+
+    return `1/${total}`
+  })()
+
   return (
     <>
       <div className="main-toolbar">
@@ -519,7 +546,7 @@ function ImageMainSection({
                 ? `${nodeBrowseLabel || '节点浏览'} (${nodeBrowseItems.length} 项)`
                 : vectorMode
                   ? '检索结果视图'
-                  : `${activePackage?.displayName ?? '无图包'} (${visibleImageRefs.length} 张)`}
+                  : `${activePackage?.displayName ?? '无图包'} (${activePackageImageProgress ?? '0/0'})`}
             </strong>
             <div className="toolbar-actions">
               {canJumpToAnimation ? (

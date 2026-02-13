@@ -28,16 +28,9 @@ export function buildMainFooter({
   onNextPage,
 }: BuildMainFooterParams): ReactNode {
   let primary = sidebarFocusedPath ?? '-'
-  let secondary = '-'
-  let tertiary = '-'
 
-  if (mode === 'image' && focusedImage && focusedImagePackage) {
-    primary =
-      focusedImage.mediaLocator.kind === 'filesystem'
-        ? focusedImage.mediaLocator.absolutePath
-        : `${focusedImage.mediaLocator.archivePath} #${focusedImage.ordinal}`
-    secondary = `${focusedImage.sizeKb}KB`
-    tertiary = focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width}x${focusedImage.height}` : '-'
+  if (mode === 'image' && (focusedImagePackage || focusedImage)) {
+    primary = focusedImagePackage?.absolutePath ?? primary
   }
 
   if (mode === 'video' && focusedVideo) {
@@ -50,8 +43,6 @@ export function buildMainFooter({
     <>
       <div className="main-footer-meta">
         <span>{primary}</span>
-        {mode === 'image' ? <span>{secondary}</span> : null}
-        {mode === 'image' ? <span>{tertiary}</span> : null}
       </div>
 
       {showPagination ? (

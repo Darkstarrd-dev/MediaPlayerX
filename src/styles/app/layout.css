@@ -230,23 +230,17 @@
 .window-controls {
   display: inline-flex;
   align-items: center;
-  border: var(--mpx-control-border-width) solid var(--mpx-border-2);
-  border-radius: var(--mpx-control-radius);
-  overflow: hidden;
+  gap: 6px;
 }
 
 .window-control-btn {
   width: 36px;
   height: var(--mpx-control-height);
-  border: 0;
-  border-left: var(--mpx-control-border-width) solid var(--mpx-border-2);
+  border: var(--mpx-control-border-width) solid var(--mpx-border-2);
+  border-radius: var(--mpx-control-radius);
   background: var(--mpx-bg-elevated);
   color: var(--mpx-text-1);
   cursor: pointer;
-}
-
-.window-control-btn:first-child {
-  border-left: 0;
 }
 
 .window-control-btn:hover {

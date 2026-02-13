@@ -64,6 +64,8 @@
 
 .metadata-panel.is-image-focus {
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .metadata-head {
@@ -139,17 +141,7 @@
   font-size: 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-
-.metadata-image-caption strong {
-  color: var(--mpx-text-1);
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  line-height: 1.35;
+  gap: 4px;
 }
 
 .metadata-image-caption span {
