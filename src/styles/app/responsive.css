@@ -17,14 +17,13 @@
     grid-template-columns: 1fr;
   }
 
-  .music-name-list .name-list-header,
-  .music-name-list .name-list-row,
-  .music-name-list .name-list-row-main {
-    grid-template-columns: minmax(0, 1fr) 88px 88px;
-    gap: 8px;
-  }
-
   .music-controls-shell {
     padding: 10px;
+  }
+
+  .music-controls-progress {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
   }
 }

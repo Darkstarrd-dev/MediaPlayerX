@@ -31,10 +31,14 @@ describe('MetadataMusicEditor', () => {
     const onSearchByWorkTitle = vi.fn()
     const onSearchByCircle = vi.fn()
     const onSearchByAuthor = vi.fn()
+    const audio = makeAudio()
 
     render(
       <MetadataMusicEditor
-        focusedAudio={makeAudio()}
+        focusedAudio={audio}
+        audioPlaylistIds={[audio.id]}
+        selectedAudioId={audio.id}
+        audioById={new Map([[audio.id, audio]])}
         metadataPending={false}
         editable={false}
         audioAlbumDraft="Album A"
@@ -52,6 +56,8 @@ describe('MetadataMusicEditor', () => {
         onSearchByWorkTitle={onSearchByWorkTitle}
         onSearchByCircle={onSearchByCircle}
         onSearchByAuthor={onSearchByAuthor}
+        onSelectAudio={vi.fn()}
+        onSelectAudioAndPlay={vi.fn()}
       />,
     )
 
@@ -73,10 +79,14 @@ describe('MetadataMusicEditor', () => {
     const onSubmitAudioAuthor = vi.fn()
     const onSubmitAudioTrackTitle = vi.fn()
     const onSubmitAudioSeriesId = vi.fn()
+    const audio = makeAudio()
 
     render(
       <MetadataMusicEditor
-        focusedAudio={makeAudio()}
+        focusedAudio={audio}
+        audioPlaylistIds={[audio.id]}
+        selectedAudioId={audio.id}
+        audioById={new Map([[audio.id, audio]])}
         metadataPending={false}
         editable={true}
         audioAlbumDraft="Album A"
@@ -94,6 +104,8 @@ describe('MetadataMusicEditor', () => {
         onSearchByWorkTitle={vi.fn()}
         onSearchByCircle={vi.fn()}
         onSearchByAuthor={vi.fn()}
+        onSelectAudio={vi.fn()}
+        onSelectAudioAndPlay={vi.fn()}
       />,
     )
 
@@ -111,5 +123,65 @@ describe('MetadataMusicEditor', () => {
     expect(onSubmitAudioAuthor).toHaveBeenCalledWith('Author A')
     expect(onSubmitAudioTrackTitle).toHaveBeenCalledWith('Track A')
     expect(onSubmitAudioSeriesId).toHaveBeenCalledWith('series-a')
+  })
+
+  it('播放列表渲染到元数据面板并支持点击切换曲目', () => {
+    const audioA = makeAudio()
+    const audioB = {
+      ...makeAudio(),
+      id: 'audio-2',
+      fileName: 'audio-2.mp3',
+      absolutePath: 'D:/audio/audio-2.mp3',
+      trackTitle: 'Track B',
+      mediaLocator: {
+        kind: 'filesystem' as const,
+        absolutePath: 'D:/audio/audio-2.mp3',
+        extension: '.mp3',
+        mediaType: 'audio' as const,
+        mimeType: 'audio/mpeg',
+      },
+    }
+    const onSelectAudio = vi.fn()
+    const onSelectAudioAndPlay = vi.fn()
+
+    render(
+      <MetadataMusicEditor
+        focusedAudio={audioA}
+        audioPlaylistIds={[]}
+        selectedAudioId={audioA.id}
+        audioById={new Map([
+          [audioA.id, audioA],
+          [audioB.id, audioB],
+        ])}
+        metadataPending={false}
+        editable={false}
+        audioAlbumDraft="Album A"
+        audioAuthorDraft="Author A"
+        audioTrackTitleDraft="Track A"
+        audioSeriesIdDraft="series-a"
+        onAudioAlbumDraftChange={vi.fn()}
+        onAudioAuthorDraftChange={vi.fn()}
+        onAudioTrackTitleDraftChange={vi.fn()}
+        onAudioSeriesIdDraftChange={vi.fn()}
+        onSubmitAudioAlbum={vi.fn()}
+        onSubmitAudioAuthor={vi.fn()}
+        onSubmitAudioTrackTitle={vi.fn()}
+        onSubmitAudioSeriesId={vi.fn()}
+        onSearchByWorkTitle={vi.fn()}
+        onSearchByCircle={vi.fn()}
+        onSearchByAuthor={vi.fn()}
+        onSelectAudio={onSelectAudio}
+        onSelectAudioAndPlay={onSelectAudioAndPlay}
+      />,
+    )
+
+    expect(screen.getByLabelText('音乐播放列表')).toBeInTheDocument()
+    const audio2Button = screen.getByRole('button', { name: /audio-2.mp3/i })
+    fireEvent.click(audio2Button)
+    expect(onSelectAudio).toHaveBeenCalledWith('audio-2')
+    expect(onSelectAudioAndPlay).not.toHaveBeenCalled()
+
+    fireEvent.doubleClick(audio2Button)
+    expect(onSelectAudioAndPlay).toHaveBeenCalledWith('audio-2')
   })
 })

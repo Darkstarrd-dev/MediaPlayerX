@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import type { AudioItem, SidebarNode } from '../../types'
 import { useAudioSidebarState } from './useAudioSidebarState'
 
-function makeAudio(params: { id: string; fileName: string; trackTitle: string; treePath: string[] }): AudioItem {
+function makeAudio(params: { id: string; fileName: string; treePath: string[] }): AudioItem {
   return {
     id: params.id,
     fileName: params.fileName,
@@ -14,7 +14,7 @@ function makeAudio(params: { id: string; fileName: string; trackTitle: string; t
     sizeMb: 9,
     album: 'mock-album',
     author: 'mock-author',
-    trackTitle: params.trackTitle,
+    trackTitle: params.fileName,
     mediaLocator: {
       kind: 'filesystem',
       absolutePath: `Z:/audios/${params.fileName}`,
@@ -25,14 +25,14 @@ function makeAudio(params: { id: string; fileName: string; trackTitle: string; t
   }
 }
 
-function findNodeByAudioId(nodes: SidebarNode[], audioId: string): SidebarNode | null {
+function findNodeById(nodes: SidebarNode[], nodeId: string): SidebarNode | null {
   const stack = [...nodes]
   while (stack.length > 0) {
     const node = stack.pop()
     if (!node) {
       continue
     }
-    if (node.audioId === audioId) {
+    if (node.id === nodeId) {
       return node
     }
     stack.push(...node.children)
@@ -41,28 +41,58 @@ function findNodeByAudioId(nodes: SidebarNode[], audioId: string): SidebarNode |
 }
 
 describe('useAudioSidebarState', () => {
-  it('音频节点在 fileName 与 trackTitle 不一致时显示 trackTitle', () => {
+  it('音乐侧栏仅构建目录节点并标注目录内音频数量', () => {
     const audios = [
       makeAudio({
         id: 'audio-a',
-        fileName: 'track_intro.mp3',
-        trackTitle: 'Intro Theme',
-        treePath: ['X盘', '音乐', '专辑A', 'track_intro.mp3'],
+        fileName: 'track_a.mp3',
+        treePath: ['X盘', '音乐', '专辑A', 'track_a.mp3'],
       }),
       makeAudio({
         id: 'audio-b',
-        fileName: 'loop_city.mp3',
-        trackTitle: 'loop_city',
-        treePath: ['X盘', '音乐', '专辑A', 'loop_city.mp3'],
+        fileName: 'track_b.mp3',
+        treePath: ['X盘', '音乐', '专辑A', 'track_b.mp3'],
+      }),
+      makeAudio({
+        id: 'audio-c',
+        fileName: 'track_c.mp3',
+        treePath: ['X盘', '音乐', '专辑A', '子目录', 'track_c.mp3'],
       }),
     ]
 
     const { result } = renderHook(() => useAudioSidebarState({ audios, musicRootNodeId: null }))
 
-    const trackTitleNode = findNodeByAudioId(result.current.audioTreeRaw, 'audio-a')
-    const sameNameNode = findNodeByAudioId(result.current.audioTreeRaw, 'audio-b')
+    const albumNode = findNodeById(result.current.audioTreeForSidebar, 'folder:X盘/音乐/专辑A')
+    const childNode = findNodeById(result.current.audioTreeForSidebar, 'folder:X盘/音乐/专辑A/子目录')
 
-    expect(trackTitleNode?.label).toBe('Intro Theme')
-    expect(sameNameNode?.label).toBe('loop_city.mp3')
+    expect(albumNode?.kind).toBe('folder')
+    expect(albumNode?.descendantNodeCount).toBe(3)
+    expect(childNode?.descendantNodeCount).toBe(1)
+    expect(findNodeById(result.current.audioTreeForSidebar, 'audio:X盘/音乐/专辑A/track_a.mp3')).toBeNull()
+  })
+
+  it('设置 music root 后只返回根目录子树内的音频', () => {
+    const audios = [
+      makeAudio({
+        id: 'audio-a',
+        fileName: 'track_a.mp3',
+        treePath: ['X盘', '音乐', '专辑A', 'track_a.mp3'],
+      }),
+      makeAudio({
+        id: 'audio-b',
+        fileName: 'track_b.mp3',
+        treePath: ['X盘', '音乐', '专辑B', 'track_b.mp3'],
+      }),
+    ]
+
+    const { result } = renderHook(() =>
+      useAudioSidebarState({
+        audios,
+        musicRootNodeId: 'folder:X盘/音乐/专辑A',
+      }),
+    )
+
+    expect(result.current.audiosForSidebar.map((audio) => audio.id)).toEqual(['audio-a'])
+    expect(Array.from(result.current.rootScopedAudioIds)).toEqual(['audio-a'])
   })
 })

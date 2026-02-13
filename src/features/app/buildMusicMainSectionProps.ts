@@ -5,6 +5,9 @@ import type { AudioItem } from '../../types'
 import { clamp } from '../../utils/ui'
 
 interface BuildMusicMainSectionPropsParams {
+  mode: 'image' | 'video' | 'music'
+  videoPlaying: boolean
+  playRequestNonce: number
   manageMode: boolean
   metadataManageMode: boolean
   sidebarSelectedCount: number
@@ -26,7 +29,6 @@ interface BuildMusicMainSectionPropsParams {
   audioPlaylistIds: string[]
   audioByIdEffective: Map<string, AudioItem>
   setSelectedAudioId: Dispatch<SetStateAction<string>>
-  setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
   updateSettings: (patch: Partial<AppSettings>) => void
 }
 
@@ -45,6 +47,9 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
   const hasSelection = fallbackIndex >= 0
 
   return {
+    active: params.mode === 'music',
+    interruptByVideoPlayback: params.mode === 'video' && params.videoPlaying,
+    playRequestNonce: params.playRequestNonce,
     manageMode: params.manageMode,
     metadataManageMode: params.metadataManageMode,
     sidebarSelectedCount: params.sidebarSelectedCount,
@@ -60,21 +65,10 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     onJumpToManga: params.onJumpToManga,
     onJumpToAnimation: params.onJumpToAnimation,
     audios: params.audiosForSidebar,
-    selectedAudioId: params.selectedAudioId,
     focusedAudio: params.focusedAudio,
     focusedAudioSrc: params.focusedAudioSrc,
     canPrevAudio: hasSelection && fallbackIndex > 0,
     canNextAudio: hasSelection && fallbackIndex < playbackOrder.length - 1,
-    onSelectAudio: (audioId: string) => {
-      params.setSelectedAudioId(audioId)
-      params.setAudioPlaylistIds((previous) => {
-        if (previous.includes(audioId)) {
-          return previous
-        }
-        return [...previous, audioId]
-      })
-      params.updateSettings({ sidebarFocus: 'main' })
-    },
     onPrevAudio: () => {
       if (!hasSelection || fallbackIndex <= 0) {
         return

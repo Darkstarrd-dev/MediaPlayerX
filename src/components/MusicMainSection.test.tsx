@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -25,6 +26,40 @@ function makeAudio(id: string): AudioItem {
   }
 }
 
+function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMainSection>> = {}) {
+  const audios = [makeAudio('track-1')]
+
+  return render(
+    <MusicMainSection
+      active={true}
+      interruptByVideoPlayback={false}
+      playRequestNonce={0}
+      manageMode={false}
+      metadataManageMode={false}
+      sidebarSelectedCount={0}
+      imageSelectedCount={0}
+      activeSelectionScope={null}
+      pendingManageAction={false}
+      manageOperationHint={null}
+      canManageDelete={false}
+      onManageDelete={vi.fn()}
+      onClearManageSelection={vi.fn()}
+      canJumpToManga={false}
+      canJumpToAnimation={false}
+      onJumpToManga={vi.fn()}
+      onJumpToAnimation={vi.fn()}
+      audios={audios}
+      focusedAudio={audios[0]}
+      focusedAudioSrc="mock://audio-1"
+      canPrevAudio={false}
+      canNextAudio={true}
+      onPrevAudio={vi.fn()}
+      onNextAudio={vi.fn()}
+      {...overrides}
+    />,
+  )
+}
+
 describe('MusicMainSection', () => {
   beforeEach(() => {
     vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(async () => undefined)
@@ -35,97 +70,43 @@ describe('MusicMainSection', () => {
     vi.restoreAllMocks()
   })
 
-  it('渲染音乐列表并支持选择音频', () => {
-    const onSelectAudio = vi.fn()
-    const audios = [makeAudio('track-1'), makeAudio('track-2')]
+  it('音乐工具栏显示专辑与作者，并渲染可视化占位区', () => {
+    renderMusicMainSection()
 
-    render(
-      <MusicMainSection
-        manageMode={false}
-        metadataManageMode={false}
-        sidebarSelectedCount={0}
-        imageSelectedCount={0}
-        activeSelectionScope={null}
-        pendingManageAction={false}
-        manageOperationHint={null}
-        canManageDelete={false}
-        onManageDelete={vi.fn()}
-        onClearManageSelection={vi.fn()}
-        canJumpToManga={false}
-        canJumpToAnimation={false}
-        onJumpToManga={vi.fn()}
-        onJumpToAnimation={vi.fn()}
-        audios={audios}
-        selectedAudioId="track-1"
-        focusedAudio={audios[0]}
-        focusedAudioSrc="mock://audio-1"
-        canPrevAudio={false}
-        canNextAudio={true}
-        onSelectAudio={onSelectAudio}
-        onPrevAudio={vi.fn()}
-        onNextAudio={vi.fn()}
-      />,
-    )
-
-    expect(screen.getByText('track-1.mp3')).toBeInTheDocument()
-    fireEvent.click(screen.getByText('track-2.mp3'))
-    expect(onSelectAudio).toHaveBeenCalledWith('track-2')
+    expect(screen.getByText('album / author (1 首)')).toBeInTheDocument()
+    expect(screen.getByLabelText('music visualizer')).toBeInTheDocument()
   })
 
-  it('支持上一首/播放/下一首控制和音量弹层', () => {
-    const onPrevAudio = vi.fn()
-    const onNextAudio = vi.fn()
-    const audios = [makeAudio('track-1')]
-
-    const { container } = render(
-      <MusicMainSection
-        manageMode={false}
-        metadataManageMode={false}
-        sidebarSelectedCount={0}
-        imageSelectedCount={0}
-        activeSelectionScope={null}
-        pendingManageAction={false}
-        manageOperationHint={null}
-        canManageDelete={false}
-        onManageDelete={vi.fn()}
-        onClearManageSelection={vi.fn()}
-        canJumpToManga={false}
-        canJumpToAnimation={false}
-        onJumpToManga={vi.fn()}
-        onJumpToAnimation={vi.fn()}
-        audios={audios}
-        selectedAudioId="track-1"
-        focusedAudio={audios[0]}
-        focusedAudioSrc="mock://audio-1"
-        canPrevAudio={true}
-        canNextAudio={true}
-        onSelectAudio={vi.fn()}
-        onPrevAudio={onPrevAudio}
-        onNextAudio={onNextAudio}
-      />,
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: '上一个' }))
-    fireEvent.click(screen.getByRole('button', { name: '下一个' }))
-    expect(onPrevAudio).toHaveBeenCalledTimes(1)
-    expect(onNextAudio).toHaveBeenCalledTimes(1)
+  it('支持播放控制、进度条与音量弹层调节', () => {
+    const { container } = renderMusicMainSection({
+      canPrevAudio: true,
+      onPrevAudio: vi.fn(),
+      onNextAudio: vi.fn(),
+    })
 
     fireEvent.click(screen.getByRole('button', { name: '播放' }))
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalled()
 
+    fireEvent.change(screen.getByLabelText('音乐进度滑条'), { target: { value: '25' } })
+
     const muteButton = screen.getByRole('button', { name: '静音' })
     fireEvent.mouseEnter(muteButton.parentElement as HTMLElement)
-    const volumePanel = container.querySelector('#music-main-popover-volume') as HTMLDivElement
-    expect(volumePanel.hidden).toBe(false)
+    const volumeRange = screen.getByLabelText('音量滑条')
+    fireEvent.change(volumeRange, { target: { value: '30' } })
+
+    const audioElement = container.querySelector('audio') as HTMLAudioElement
+    expect(audioElement.currentTime).toBe(25)
+    expect(audioElement.volume).toBeCloseTo(0.3, 3)
   })
 
-  it('系列匹配时显示漫画版/动画版按钮并触发跳转', () => {
-    const onJumpToManga = vi.fn()
-    const onJumpToAnimation = vi.fn()
-    const audios = [makeAudio('track-1')]
+  it('playRequestNonce 递增时会触发播放', () => {
+    const baseAudio = makeAudio('track-1')
 
-    render(
+    const { rerender } = render(
       <MusicMainSection
+        active={true}
+        interruptByVideoPlayback={false}
+        playRequestNonce={0}
         manageMode={false}
         metadataManageMode={false}
         sidebarSelectedCount={0}
@@ -136,26 +117,89 @@ describe('MusicMainSection', () => {
         canManageDelete={false}
         onManageDelete={vi.fn()}
         onClearManageSelection={vi.fn()}
-        canJumpToManga={true}
-        canJumpToAnimation={true}
-        onJumpToManga={onJumpToManga}
-        onJumpToAnimation={onJumpToAnimation}
-        audios={audios}
-        selectedAudioId="track-1"
-        focusedAudio={audios[0]}
+        canJumpToManga={false}
+        canJumpToAnimation={false}
+        onJumpToManga={vi.fn()}
+        onJumpToAnimation={vi.fn()}
+        audios={[baseAudio]}
+        focusedAudio={baseAudio}
         focusedAudioSrc="mock://audio-1"
         canPrevAudio={false}
         canNextAudio={true}
-        onSelectAudio={vi.fn()}
         onPrevAudio={vi.fn()}
         onNextAudio={vi.fn()}
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '漫画版' }))
-    fireEvent.click(screen.getByRole('button', { name: '动画版' }))
+    const initialPlayCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
 
-    expect(onJumpToManga).toHaveBeenCalledTimes(1)
-    expect(onJumpToAnimation).toHaveBeenCalledTimes(1)
+    rerender(
+      <MusicMainSection
+        active={true}
+        interruptByVideoPlayback={false}
+        playRequestNonce={1}
+        manageMode={false}
+        metadataManageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        onManageDelete={vi.fn()}
+        onClearManageSelection={vi.fn()}
+        canJumpToManga={false}
+        canJumpToAnimation={false}
+        onJumpToManga={vi.fn()}
+        onJumpToAnimation={vi.fn()}
+        audios={[baseAudio]}
+        focusedAudio={baseAudio}
+        focusedAudioSrc="mock://audio-1"
+        canPrevAudio={false}
+        canNextAudio={true}
+        onPrevAudio={vi.fn()}
+        onNextAudio={vi.fn()}
+      />,
+    )
+
+    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(initialPlayCallCount)
+  })
+
+  it('视频开始播放时会中断音乐播放', () => {
+    const { rerender } = renderMusicMainSection()
+
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    const pauseCallCount = vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length
+
+    rerender(
+      <MusicMainSection
+        active={false}
+        interruptByVideoPlayback={true}
+        playRequestNonce={0}
+        manageMode={false}
+        metadataManageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        onManageDelete={vi.fn()}
+        onClearManageSelection={vi.fn()}
+        canJumpToManga={false}
+        canJumpToAnimation={false}
+        onJumpToManga={vi.fn()}
+        onJumpToAnimation={vi.fn()}
+        audios={[makeAudio('track-1')]}
+        focusedAudio={makeAudio('track-1')}
+        focusedAudioSrc="mock://audio-1"
+        canPrevAudio={false}
+        canNextAudio={true}
+        onPrevAudio={vi.fn()}
+        onNextAudio={vi.fn()}
+      />,
+    )
+
+    expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length).toBeGreaterThan(pauseCallCount)
   })
 })

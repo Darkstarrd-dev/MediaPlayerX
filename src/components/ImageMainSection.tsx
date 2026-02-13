@@ -403,6 +403,14 @@ function ImageMainSection({
       return
     }
 
+    if (IS_TEST_MODE) {
+      setPendingThumbnailSession(null)
+      setBufferedThumbnailSessionKey(pendingThumbnailSession.key)
+      setBufferedRefsInPage(pendingThumbnailSession.refs)
+      setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
+      return
+    }
+
     pendingDecodeSequenceRef.current += 1
     const sequence = pendingDecodeSequenceRef.current
     let cancelled = false

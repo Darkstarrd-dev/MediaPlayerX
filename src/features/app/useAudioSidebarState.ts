@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 
 import { buildSidebarTree, findNodeById } from '../../mockData'
 import type { AudioItem, SidebarNode } from '../../types'
-import { collectLeafIds } from '../../utils/mediaHelpers'
 
 interface UseAudioSidebarStateParams {
   audios: AudioItem[]
@@ -17,31 +16,48 @@ interface UseAudioSidebarStateResult {
   audioTreeForSidebar: SidebarNode[]
 }
 
-function normalizeNodeLabelCompare(value: string): string {
-  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
-}
+function buildAudioFolderTree(audios: AudioItem[]): SidebarNode[] {
+  const directAudioCountByPath = new Map<string, number>()
+  const uniqueFolderLeaves = new Map<string, { id: string; treePath: string[] }>()
 
-function shouldUseTrackTitleLabel(fileName: string, trackTitle: string): boolean {
-  const normalizedTrackTitle = normalizeNodeLabelCompare(trackTitle)
-  if (normalizedTrackTitle.length === 0) {
-    return false
+  for (const audio of audios) {
+    const folderPath = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1))
+    if (folderPath.length === 0) {
+      continue
+    }
+
+    const pathKey = folderPath.join('/')
+    directAudioCountByPath.set(pathKey, (directAudioCountByPath.get(pathKey) ?? 0) + 1)
+    if (!uniqueFolderLeaves.has(pathKey)) {
+      uniqueFolderLeaves.set(pathKey, {
+        id: pathKey,
+        treePath: folderPath,
+      })
+    }
   }
-  return normalizeNodeLabelCompare(fileName) !== normalizedTrackTitle
+
+  const tree = buildSidebarTree(Array.from(uniqueFolderLeaves.values()), 'folder')
+
+  const hydrateDescendantAudioCounts = (nodes: SidebarNode[]): number => {
+    let total = 0
+
+    for (const node of nodes) {
+      const childCount = hydrateDescendantAudioCounts(node.children)
+      const directCount = directAudioCountByPath.get(node.pathKey) ?? 0
+      const nodeCount = directCount + childCount
+      node.descendantNodeCount = nodeCount
+      total += nodeCount
+    }
+
+    return total
+  }
+
+  hydrateDescendantAudioCounts(tree)
+  return tree
 }
 
 export function useAudioSidebarState({ audios, musicRootNodeId }: UseAudioSidebarStateParams): UseAudioSidebarStateResult {
-  const audioTreeRaw = useMemo(
-    () =>
-      buildSidebarTree(
-        audios.map((audio) => ({
-          id: audio.id,
-          treePath: audio.treePath,
-          leafLabel: shouldUseTrackTitleLabel(audio.fileName, audio.trackTitle) ? audio.trackTitle : undefined,
-        })),
-        'audio',
-      ),
-    [audios],
-  )
+  const audioTreeRaw = useMemo(() => buildAudioFolderTree(audios), [audios])
 
   const musicRootNode = useMemo(() => findNodeById(audioTreeRaw, musicRootNodeId), [audioTreeRaw, musicRootNodeId])
 
@@ -49,21 +65,22 @@ export function useAudioSidebarState({ audios, musicRootNodeId }: UseAudioSideba
     if (!musicRootNode) {
       return new Set(audios.map((audio) => audio.id))
     }
-    return new Set(collectLeafIds(musicRootNode, 'audio'))
+
+    const rootPath = musicRootNode.pathKey
+    const rootPrefix = `${rootPath}/`
+    return new Set(
+      audios
+        .filter((audio) => {
+          const folderPath = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1)).join('/')
+          return folderPath === rootPath || folderPath.startsWith(rootPrefix)
+        })
+        .map((audio) => audio.id),
+    )
   }, [audios, musicRootNode])
 
   const audiosForSidebar = useMemo(() => audios.filter((audio) => rootScopedAudioIds.has(audio.id)), [audios, rootScopedAudioIds])
 
-  const audioTreeForSidebar = useMemo(() => {
-    return buildSidebarTree(
-      audiosForSidebar.map((audio) => ({
-        id: audio.id,
-        treePath: audio.treePath,
-        leafLabel: shouldUseTrackTitleLabel(audio.fileName, audio.trackTitle) ? audio.trackTitle : undefined,
-      })),
-      'audio',
-    )
-  }, [audiosForSidebar])
+  const audioTreeForSidebar = useMemo(() => buildAudioFolderTree(audiosForSidebar), [audiosForSidebar])
 
   return {
     audioTreeRaw,

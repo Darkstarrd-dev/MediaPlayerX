@@ -84,7 +84,9 @@ function AppWorkspace({
     ) : (
       <VideoMainSection {...videoMainSectionProps} />
     )
-  ) : enableProfiler ? (
+  ) : null
+
+  const musicSection = enableProfiler ? (
     <Profiler id="MusicMainSection" onRender={benchOnReactRender}>
       <MusicMainSection {...musicMainSectionProps} />
     </Profiler>
@@ -133,6 +135,7 @@ function AppWorkspace({
             style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - var(--mpx-splitter-width))` }}
           >
             {mainSection}
+            {musicSection}
 
             <footer className="main-footer">{mainFooter}</footer>
           </main>

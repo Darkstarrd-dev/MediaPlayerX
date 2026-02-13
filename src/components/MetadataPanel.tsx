@@ -76,6 +76,9 @@ export interface MetadataPanelProps {
   editable: boolean
   focusedVideo: VideoItem | null
   focusedAudio: AudioItem | null
+  audioPlaylistIds: string[]
+  selectedAudioId: string
+  audioById: Map<string, AudioItem>
   metadataTab: 'info' | 'playlist'
   playlistIds: string[]
   selectedVideoId: string
@@ -120,6 +123,8 @@ export interface MetadataPanelProps {
   onRemoveVideoFromPlaylist: (videoId: string) => void
   onDragStart: (videoId: string) => void
   onDropToVideo: (targetVideoId: string) => void
+  onSelectAudio: (audioId: string) => void
+  onSelectAudioAndPlay: (audioId: string) => void
 }
 
 function MetadataPanel({
@@ -178,6 +183,9 @@ function MetadataPanel({
   editable,
   focusedVideo,
   focusedAudio,
+  audioPlaylistIds,
+  selectedAudioId,
+  audioById,
   metadataTab,
   playlistIds,
   selectedVideoId,
@@ -199,6 +207,8 @@ function MetadataPanel({
   onRemoveVideoFromPlaylist,
   onDragStart,
   onDropToVideo,
+  onSelectAudio,
+  onSelectAudioAndPlay,
 }: MetadataPanelProps) {
   const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
   const [showImagePreview, setShowImagePreview] = useState(true)
@@ -879,6 +889,9 @@ function MetadataPanel({
       ) : (
         <MetadataMusicEditor
           focusedAudio={focusedAudio}
+          audioPlaylistIds={audioPlaylistIds}
+          selectedAudioId={selectedAudioId}
+          audioById={audioById}
           metadataPending={metadataPending}
           editable={editable}
           audioAlbumDraft={audioAlbumDraft}
@@ -896,6 +909,8 @@ function MetadataPanel({
           onSearchByWorkTitle={onSearchByWorkTitle}
           onSearchByCircle={onSearchByCircle}
           onSearchByAuthor={onSearchByAuthor}
+          onSelectAudio={onSelectAudio}
+          onSelectAudioAndPlay={onSelectAudioAndPlay}
         />
       )}
 

@@ -4,6 +4,9 @@ import type { AudioItem } from '../../types'
 
 interface MetadataMusicEditorProps {
   focusedAudio: AudioItem | null
+  audioPlaylistIds: string[]
+  selectedAudioId: string
+  audioById: Map<string, AudioItem>
   metadataPending: boolean
   editable: boolean
   audioAlbumDraft: string
@@ -21,6 +24,8 @@ interface MetadataMusicEditorProps {
   onSearchByWorkTitle: (value: string) => void
   onSearchByCircle: (value: string) => void
   onSearchByAuthor: (value: string) => void
+  onSelectAudio: (audioId: string) => void
+  onSelectAudioAndPlay: (audioId: string) => void
 }
 
 function commitOnEnter(
@@ -41,6 +46,9 @@ function normalizeSearchValue(value: string): string {
 
 export function MetadataMusicEditor({
   focusedAudio,
+  audioPlaylistIds,
+  selectedAudioId,
+  audioById,
   metadataPending,
   editable,
   audioAlbumDraft,
@@ -58,18 +66,23 @@ export function MetadataMusicEditor({
   onSearchByWorkTitle,
   onSearchByCircle,
   onSearchByAuthor,
+  onSelectAudio,
+  onSelectAudioAndPlay,
 }: MetadataMusicEditorProps) {
+  const playlistIds = audioPlaylistIds.filter((audioId) => audioById.has(audioId))
+  const effectivePlaylistIds = playlistIds.length > 0 ? playlistIds : Array.from(audioById.keys())
+
   if (!focusedAudio && !editable) {
     return (
-      <div className="metadata-content metadata-video-content">
+      <div className="metadata-content metadata-video-content metadata-music-content">
         <p className="metadata-empty-tip">当前无可编辑音频</p>
       </div>
     )
   }
 
   return (
-    <div className="metadata-content metadata-video-content">
-      <div className="metadata-video-body">
+    <div className="metadata-content metadata-video-content metadata-music-content">
+      <div className="metadata-video-body metadata-music-body">
         <div className="metadata-edit-grid metadata-video-grid">
           <label>
             <span>专辑</span>
@@ -158,6 +171,34 @@ export function MetadataMusicEditor({
             </label>
           ) : null}
         </div>
+      </div>
+
+      <div className="metadata-music-playlist" aria-label="音乐播放列表">
+        {effectivePlaylistIds.length > 0 ? (
+          effectivePlaylistIds.map((audioId, index) => {
+            const audio = audioById.get(audioId)
+            if (!audio) {
+              return null
+            }
+
+            return (
+              <button
+                key={audioId}
+                className={`metadata-music-playlist-item ${selectedAudioId === audioId ? 'is-active' : ''}`}
+                type="button"
+                onClick={() => onSelectAudio(audioId)}
+                onDoubleClick={() => onSelectAudioAndPlay(audioId)}
+              >
+                <span className="metadata-music-playlist-index">{index + 1}</span>
+                <span className="metadata-music-playlist-title" title={audio.fileName}>
+                  {audio.fileName}
+                </span>
+              </button>
+            )
+          })
+        ) : (
+          <p className="metadata-empty-tip">当前无播放条目</p>
+        )}
       </div>
     </div>
   )

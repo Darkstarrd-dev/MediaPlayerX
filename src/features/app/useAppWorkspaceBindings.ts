@@ -42,6 +42,8 @@ export function useAppWorkspaceBindings({
     setSelectedAudioId,
     audioPlaylistIds,
     setAudioPlaylistIds,
+    musicPlayRequestNonce,
+    requestMusicPlay,
     imageFocusActive,
     manageMode,
     metadataManageMode,
@@ -306,6 +308,7 @@ export function useAppWorkspaceBindings({
     selectedVideoId,
     selectedAudioId,
     audioPlaylistIds,
+    musicPlayRequestNonce,
     dragVideoId,
     videoByIdEffective,
     audioByIdEffective,
@@ -336,5 +339,6 @@ export function useAppWorkspaceBindings({
     applyCurrentRootFromSelection,
     toggleSidebarNodeChecked,
     setAudioPlaylistIds,
+    requestMusicPlay,
   })
 }

@@ -21,6 +21,7 @@ export function useAppSessionState({
   const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
   const [selectedAudioId, setSelectedAudioId] = useState(audios[0]?.id ?? '')
   const [audioPlaylistIds, setAudioPlaylistIds] = useState<string[]>(audios.slice(0, 3).map((audio) => audio.id))
+  const [musicPlayRequestNonce, setMusicPlayRequestNonce] = useState(0)
   const [imageFocusActive, setImageFocusActive] = useState(false)
   const [focusByPackage, setFocusByPackage] = useState<Record<string, number>>(() =>
     Object.fromEntries(imageSources.map((source) => [source.id, 0])),
@@ -67,6 +68,10 @@ export function useAppSessionState({
     setSelectedAudioId,
     audioPlaylistIds,
     setAudioPlaylistIds,
+    musicPlayRequestNonce,
+    requestMusicPlay: () => {
+      setMusicPlayRequestNonce((value) => value + 1)
+    },
     imageFocusActive,
     setImageFocusActive,
     focusByPackage,

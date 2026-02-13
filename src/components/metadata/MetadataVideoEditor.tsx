@@ -393,40 +393,41 @@ export function MetadataVideoEditor({
           </>
         ) : null}
 
-        {metadataTab === 'playlist' ? (
-          <div className="playlist-list">
-            {playlistIds.map((videoId) => {
-              const video = videoById.get(videoId)
-              if (!video) {
-                return null
-              }
-
-              return (
-                <div
-                  key={videoId}
-                  className={`playlist-item ${selectedVideoId === videoId ? 'is-active' : ''}`}
-                  draggable
-                  onDragStart={() => onDragStart(videoId)}
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={() => {
-                    if (!dragVideoId || dragVideoId === videoId) {
-                      return
-                    }
-                    onDropToVideo(videoId)
-                  }}
-                >
-                  <button type="button" onClick={() => onSelectVideo(videoId)}>
-                    {video.fileName}
-                  </button>
-                  <button type="button" onClick={() => onRemoveVideoFromPlaylist(videoId)}>
-                    删除
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        ) : null}
       </div>
+
+      {metadataTab === 'playlist' ? (
+        <div className="playlist-list">
+          {playlistIds.map((videoId) => {
+            const video = videoById.get(videoId)
+            if (!video) {
+              return null
+            }
+
+            return (
+              <div
+                key={videoId}
+                className={`playlist-item ${selectedVideoId === videoId ? 'is-active' : ''}`}
+                draggable
+                onDragStart={() => onDragStart(videoId)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => {
+                  if (!dragVideoId || dragVideoId === videoId) {
+                    return
+                  }
+                  onDropToVideo(videoId)
+                }}
+              >
+                <button type="button" onClick={() => onSelectVideo(videoId)}>
+                  {video.fileName}
+                </button>
+                <button type="button" onClick={() => onRemoveVideoFromPlaylist(videoId)}>
+                  删除
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      ) : null}
     </div>
   )
 }

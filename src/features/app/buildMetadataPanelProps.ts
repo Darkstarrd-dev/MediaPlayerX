@@ -62,6 +62,9 @@ interface BuildMetadataPanelPropsParams {
   editable: boolean
   focusedVideo: VideoItem | null
   focusedAudio: AudioItem | null
+  audioPlaylistIds: string[]
+  selectedAudioId: string
+  audioById: Map<string, AudioItem>
   metadataTab: MetadataPanelProps['metadataTab']
   playlistIds: string[]
   selectedVideoId: string
@@ -81,6 +84,8 @@ interface BuildMetadataPanelPropsParams {
   onSearchByTag: (value: string) => void
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
   setDragVideoId: Dispatch<SetStateAction<string | null>>
+  onSelectAudio: (audioId: string) => void
+  onSelectAudioAndPlay: (audioId: string) => void
 }
 
 export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): MetadataPanelProps {
@@ -140,6 +145,9 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     editable: params.editable,
     focusedVideo: params.focusedVideo,
     focusedAudio: params.focusedAudio,
+    audioPlaylistIds: params.audioPlaylistIds,
+    selectedAudioId: params.selectedAudioId,
+    audioById: params.audioById,
     metadataTab: params.metadataTab,
     playlistIds: params.playlistIds,
     selectedVideoId: params.selectedVideoId,
@@ -183,5 +191,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
         return next
       })
     },
+    onSelectAudio: params.onSelectAudio,
+    onSelectAudioAndPlay: params.onSelectAudioAndPlay,
   }
 }

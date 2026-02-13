@@ -300,14 +300,41 @@
   grid-template-columns: minmax(0, 1fr) 120px 120px;
 }
 
+.music-visualizer-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  border: 1px solid var(--mpx-border-1);
+  border-radius: var(--mpx-card-radius);
+  background: #000;
+  color: color-mix(in srgb, var(--mpx-text-inverse) 76%, #fff);
+  letter-spacing: 0.05em;
+}
+
+.music-visualizer-placeholder-inner {
+  opacity: 0.72;
+}
+
 .music-controls-shell {
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 10px 14px;
   border: 1px solid var(--mpx-player-surface-border);
   border-radius: var(--mpx-card-radius);
   background: var(--mpx-player-surface-bg);
   color: var(--mpx-player-surface-text);
   box-shadow: var(--mpx-shadow-panel);
+}
+
+.music-controls-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.music-controls-progress input[type='range'] {
+  flex: 1;
 }
 
 .music-controls-row {

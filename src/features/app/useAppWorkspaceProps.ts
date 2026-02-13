@@ -147,6 +147,7 @@ interface UseAppWorkspacePropsParams {
   selectedVideoId: string
   selectedAudioId: string
   audioPlaylistIds: string[]
+  musicPlayRequestNonce: number
   dragVideoId: string | null
   videoByIdEffective: Map<string, VideoItem>
   audioByIdEffective: Map<string, AudioItem>
@@ -177,6 +178,7 @@ interface UseAppWorkspacePropsParams {
   applyCurrentRootFromSelection: () => void
   toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void
   setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
+  requestMusicPlay: () => void
 }
 
 function normalizeFeatureTags(values: string[]): string[] {
@@ -368,6 +370,7 @@ export function useAppWorkspaceProps({
   selectedVideoId,
   selectedAudioId,
   audioPlaylistIds,
+  musicPlayRequestNonce,
   dragVideoId,
   videoByIdEffective,
   audioByIdEffective,
@@ -398,6 +401,7 @@ export function useAppWorkspaceProps({
   applyCurrentRootFromSelection,
   toggleSidebarNodeChecked,
   setAudioPlaylistIds,
+  requestMusicPlay,
 }: UseAppWorkspacePropsParams) {
   /**
    * Workspace 层只做视图模型组装：
@@ -863,6 +867,9 @@ export function useAppWorkspaceProps({
   })
 
   const musicMainSectionProps = buildMusicMainSectionProps({
+    mode,
+    videoPlaying,
+    playRequestNonce: musicPlayRequestNonce,
     manageMode,
     metadataManageMode,
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
@@ -884,7 +891,6 @@ export function useAppWorkspaceProps({
     audioPlaylistIds,
     audioByIdEffective,
     setSelectedAudioId,
-    setAudioPlaylistIds,
     updateSettings: appSettings.updateSettings,
   })
 
@@ -979,6 +985,9 @@ export function useAppWorkspaceProps({
     editable: metadataManageMode,
     focusedVideo: focusedVideoEffective,
     focusedAudio,
+    audioPlaylistIds,
+    selectedAudioId,
+    audioById: audioByIdEffective,
     metadataTab,
     playlistIds,
     selectedVideoId,
@@ -1004,6 +1013,15 @@ export function useAppWorkspaceProps({
     },
     onMetadataTabChange: setMetadataTab,
     onSelectVideo: selectVideoFromBrowser,
+    onSelectAudio: (audioId) => {
+      setSelectedAudioId(audioId)
+      appSettings.updateSettings({ sidebarFocus: 'main' })
+    },
+    onSelectAudioAndPlay: (audioId) => {
+      setSelectedAudioId(audioId)
+      requestMusicPlay()
+      appSettings.updateSettings({ sidebarFocus: 'main' })
+    },
     setPlaylistIds,
     setDragVideoId,
   })

@@ -107,6 +107,7 @@ function SidebarPanel({
       const hasOwnImages = imageNodeType === 'package' || imageNodeType === 'directory'
       const visibleImageCount = node.directImageCount ?? 0
       const descendantNodeCount = node.descendantNodeCount ?? node.children.length
+      const descendantAudioCount = node.descendantNodeCount ?? 0
 
       const row = (
         <div
@@ -170,6 +171,14 @@ function SidebarPanel({
                 title={hasOwnImages ? `图 ${visibleImageCount}` : `节点 ${descendantNodeCount}`}
               >
                 {hasOwnImages ? visibleImageCount : descendantNodeCount}
+              </span>
+            </span>
+          ) : null}
+
+          {mode === 'music' ? (
+            <span className="sidebar-counts" style={{ fontSize: `${sidebarCountFontSize}px` }}>
+              <span className="sidebar-count sidebar-count-audios" aria-label={`曲 ${descendantAudioCount}`} title={`曲 ${descendantAudioCount}`}>
+                {descendantAudioCount}
               </span>
             </span>
           ) : null}
