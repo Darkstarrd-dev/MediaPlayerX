@@ -33,6 +33,7 @@ export function useAppSettingsStore() {
       sidebarFocus: state.sidebarFocus,
       imageRootNodeId: state.imageRootNodeId,
       videoRootNodeId: state.videoRootNodeId,
+      musicRootNodeId: state.musicRootNodeId,
       themeId: state.themeId,
       styleId: state.styleId,
       paletteId: state.paletteId,

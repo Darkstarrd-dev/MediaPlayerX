@@ -14,7 +14,7 @@ import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 import type { WriteDataAccessResult } from '../backend'
-import type { BrowserMode, FocusedImageRef, ImageItem, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
+import type { AudioItem, BrowserMode, FocusedImageRef, ImageItem, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import type { UiBenchSettings } from '../perf/benchSettings'
 import type { VideoFitMode } from '../media/videoFitMode'
 import type {
@@ -41,6 +41,7 @@ interface UseAppWorkspacePropsParams {
   vectorSearchResults: VectorCandidate[]
   scopedImageSourcesEffective: ImagePackage[]
   videosForSidebarCount: number
+  audiosForSidebarCount: number
   focusedRef: FocusedImageRef | null
   focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
@@ -140,8 +141,11 @@ interface UseAppWorkspacePropsParams {
   metadataTab: 'info' | 'playlist'
   playlistIds: string[]
   selectedVideoId: string
+  selectedAudioId: string
+  audioPlaylistIds: string[]
   dragVideoId: string | null
   videoByIdEffective: Map<string, VideoItem>
+  audioByIdEffective: Map<string, AudioItem>
   setMetadataTab: Dispatch<SetStateAction<'info' | 'playlist'>>
   selectVideoFromBrowser: (videoId: string) => void
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
@@ -152,8 +156,10 @@ interface UseAppWorkspacePropsParams {
   canSetCurrentRoot: boolean
   imageRootNodeId: string | null
   videoRootNodeId: string | null
+  musicRootNodeId: string | null
   imageTreeForSidebar: SidebarNode[]
   videoTreeForSidebar: SidebarNode[]
+  audioTreeForSidebar: SidebarNode[]
   imageNodeLoadStateById: Record<string, 'pending' | 'running'>
   selectedPackageId: string
   featureSearchActive: boolean
@@ -162,9 +168,11 @@ interface UseAppWorkspacePropsParams {
   goToFromSearchMode: () => void
   setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>
   setSelectedPackageId: Dispatch<SetStateAction<string>>
+  setSelectedAudioId: Dispatch<SetStateAction<string>>
   collapseSidebar: () => void
   applyCurrentRootFromSelection: () => void
   toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void
+  setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
 }
 
 function normalizeFeatureTags(values: string[]): string[] {
@@ -251,6 +259,7 @@ export function useAppWorkspaceProps({
   vectorSearchResults,
   scopedImageSourcesEffective,
   videosForSidebarCount,
+  audiosForSidebarCount,
   focusedRef,
   focusedImage,
   focusedImagePackage,
@@ -350,8 +359,11 @@ export function useAppWorkspaceProps({
   metadataTab,
   playlistIds,
   selectedVideoId,
+  selectedAudioId,
+  audioPlaylistIds,
   dragVideoId,
   videoByIdEffective,
+  audioByIdEffective,
   setMetadataTab,
   selectVideoFromBrowser,
   setPlaylistIds,
@@ -362,8 +374,10 @@ export function useAppWorkspaceProps({
   canSetCurrentRoot,
   imageRootNodeId,
   videoRootNodeId,
+  musicRootNodeId,
   imageTreeForSidebar,
   videoTreeForSidebar,
+  audioTreeForSidebar,
   imageNodeLoadStateById,
   selectedPackageId,
   featureSearchActive,
@@ -372,9 +386,11 @@ export function useAppWorkspaceProps({
   goToFromSearchMode,
   setSelectedSidebarNodeId,
   setSelectedPackageId,
+  setSelectedAudioId,
   collapseSidebar,
   applyCurrentRootFromSelection,
   toggleSidebarNodeChecked,
+  setAudioPlaylistIds,
 }: UseAppWorkspacePropsParams) {
   /**
    * Workspace 层只做视图模型组装：
@@ -409,11 +425,14 @@ export function useAppWorkspaceProps({
     canSetCurrentRoot,
     imageRootNodeId,
     videoRootNodeId,
+    musicRootNodeId,
     imageTreeNodes: imageTreeForSidebar,
     videoTreeNodes: videoTreeForSidebar,
+    audioTreeNodes: audioTreeForSidebar,
     imageNodeLoadStateById,
     selectedPackageId,
     selectedVideoId,
+    selectedAudioId,
     vectorResultsActive,
     featureSearchActive,
     searchResultsReadOnly,
@@ -427,9 +446,12 @@ export function useAppWorkspaceProps({
     updateSettings: appSettings.updateSettings,
     setSelectedPackageId,
     selectVideoFromBrowser,
+    setSelectedAudioId,
     collapseSidebar,
     applyCurrentRootFromSelection,
     setPlaylistIds,
+    audioPlaylistIds,
+    setAudioPlaylistIds,
     onToggleManageNode: toggleSidebarNodeChecked,
   })
 
@@ -441,7 +463,8 @@ export function useAppWorkspaceProps({
     workspaceBottomPanelHeight,
     vectorPanelRef,
     vectorPanelContentRef,
-    featureResultCount: mode === 'video' ? videosForSidebarCount : scopedImageSourcesEffective.length,
+    featureResultCount:
+      mode === 'video' ? videosForSidebarCount : mode === 'music' ? audiosForSidebarCount : scopedImageSourcesEffective.length,
     featureNameQuery,
     setFeatureNameQuery,
     featureWorkTitleQuery,
@@ -592,6 +615,7 @@ export function useAppWorkspaceProps({
   })
 
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
+  void audioByIdEffective
 
   const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
   const nodeBrowseMode =
@@ -819,7 +843,8 @@ export function useAppWorkspaceProps({
     mode,
     manageMode,
     searchModeActive: vectorMode && !manageMode && !metadataManageMode,
-    featureResultCount: mode === 'video' ? videosForSidebarCount : scopedImageSourcesEffective.length,
+    featureResultCount:
+      mode === 'video' ? videosForSidebarCount : mode === 'music' ? audiosForSidebarCount : scopedImageSourcesEffective.length,
     featureNameQuery,
     onFeatureNameQueryChange: setFeatureNameQuery,
     featureWorkTitleQuery,

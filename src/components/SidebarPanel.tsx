@@ -16,11 +16,14 @@ interface SidebarPanelProps {
   canSetCurrentRoot: boolean
   imageRootNodeId: string | null
   videoRootNodeId: string | null
+  musicRootNodeId: string | null
   imageTreeNodes: SidebarNode[]
   videoTreeNodes: SidebarNode[]
+  audioTreeNodes: SidebarNode[]
   imageNodeLoadStateById?: Record<string, 'pending' | 'running'>
   selectedPackageId: string
   selectedVideoId: string
+  selectedAudioId: string
   imageHighlightByNode?: boolean
   searchResultMode?: boolean
   searchResultReadonly?: boolean
@@ -28,14 +31,17 @@ interface SidebarPanelProps {
   manageMode?: boolean
   checkedSidebarNodeIds?: ReadonlySet<string>
   playlistIds: string[]
+  audioPlaylistIds: string[]
   onSelectNode: (nodeId: string) => void
   onSelectPackage: (packageId: string) => void
   onSelectVideo: (videoId: string) => void
+  onSelectAudio: (audioId: string) => void
   onCollapseSidebar: () => void
   onSetCurrentRoot: () => void
   onGoToFromSearchMode: () => void
   onResetRoot: () => void
   onToggleVideoPlaylist: (videoId: string, checked: boolean) => void
+  onToggleAudioPlaylist: (audioId: string, checked: boolean) => void
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void
 }
 
@@ -53,11 +59,14 @@ function SidebarPanel({
   canSetCurrentRoot,
   imageRootNodeId,
   videoRootNodeId,
+  musicRootNodeId,
   imageTreeNodes,
   videoTreeNodes,
+  audioTreeNodes,
   imageNodeLoadStateById = {},
   selectedPackageId,
   selectedVideoId,
+  selectedAudioId,
   imageHighlightByNode = false,
   searchResultMode = false,
   searchResultReadonly = false,
@@ -65,18 +74,21 @@ function SidebarPanel({
   manageMode = false,
   checkedSidebarNodeIds,
   playlistIds,
+  audioPlaylistIds,
   onSelectNode,
   onSelectPackage,
   onSelectVideo,
+  onSelectAudio,
   onCollapseSidebar,
   onSetCurrentRoot,
   onGoToFromSearchMode,
   onResetRoot,
   onToggleVideoPlaylist,
+  onToggleAudioPlaylist,
   onToggleManageNode,
 }: SidebarPanelProps) {
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>()
-  const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : Boolean(videoRootNodeId)
+  const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : mode === 'video' ? Boolean(videoRootNodeId) : Boolean(musicRootNodeId)
   const showRootToggle = !searchResultMode
   const rootToggleLabel = rootSet ? '恢复根目录' : '设为根'
   const rootToggleIcon = rootSet ? '↺' : '⌖'
@@ -89,6 +101,7 @@ function SidebarPanel({
         mode === 'image' &&
         (imageHighlightByNode ? selectedSidebarNodeId === node.id : node.imageSourceId === selectedPackageId)
       const isActiveVideo = mode === 'video' && node.videoId === selectedVideoId
+      const isActiveAudio = mode === 'music' && node.audioId === selectedAudioId
       const isKeyboardActive = selectedSidebarNodeId === node.id
       const loadState = mode === 'image' ? imageNodeLoadStateById[node.id] : undefined
       const hasOwnImages = imageNodeType === 'package' || imageNodeType === 'directory'
@@ -99,7 +112,7 @@ function SidebarPanel({
         <div
           key={node.id}
           data-sidebar-node-id={node.id}
-          className={`sidebar-row ${manageMode ? 'is-manage' : ''} ${checkedNodes.has(node.id) ? 'is-selected' : ''} ${isActivePackage || isActiveVideo ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
+            className={`sidebar-row ${manageMode ? 'is-manage' : ''} ${checkedNodes.has(node.id) ? 'is-selected' : ''} ${isActivePackage || isActiveVideo || isActiveAudio ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
           style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
         >
           <span className={`sidebar-bullet ${loadState ? `is-${loadState}` : ''}`} aria-hidden="true" />
@@ -123,6 +136,9 @@ function SidebarPanel({
               if (node.videoId) {
                 onSelectVideo(node.videoId)
               }
+              if (node.audioId) {
+                onSelectAudio(node.audioId)
+              }
             }}
           >
             {node.label}
@@ -134,6 +150,15 @@ function SidebarPanel({
               checked={playlistIds.includes(node.videoId)}
               type="checkbox"
               onChange={(event) => onToggleVideoPlaylist(node.videoId!, event.target.checked)}
+            />
+          ) : null}
+
+          {mode === 'music' && node.audioId ? (
+            <input
+              aria-label={`toggle-${node.audioId}`}
+              checked={audioPlaylistIds.includes(node.audioId)}
+              type="checkbox"
+              onChange={(event) => onToggleAudioPlaylist(node.audioId!, event.target.checked)}
             />
           ) : null}
 
@@ -199,7 +224,7 @@ function SidebarPanel({
       </div>
 
       <div className="sidebar-tree" style={{ display: 'flex', flexDirection: 'column', gap: `${sidebarVerticalGap}px` }}>
-        {mode === 'image' ? renderNodes(imageTreeNodes) : renderNodes(videoTreeNodes)}
+        {mode === 'image' ? renderNodes(imageTreeNodes) : mode === 'video' ? renderNodes(videoTreeNodes) : renderNodes(audioTreeNodes)}
       </div>
     </aside>
   )

@@ -33,6 +33,7 @@ export const appSettingsSchema = z.object({
   sidebarFocus: z.enum(['sidebar', 'main']),
   imageRootNodeId: z.string().nullable(),
   videoRootNodeId: z.string().nullable(),
+  musicRootNodeId: z.string().nullable(),
   themeId: z.string().min(1),
   styleId: z.string().min(1).default('flush'),
   paletteId: z.string().min(1).default('parchment'),

@@ -1,22 +1,26 @@
 import { useRef, useState } from 'react'
 
-import type { BrowserMode, ImagePackage, VectorCandidate } from '../../types'
+import type { AudioItem, BrowserMode, ImagePackage, VectorCandidate } from '../../types'
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 
 interface UseAppSessionStateParams {
   imageSources: ImagePackage[]
+  audios: AudioItem[]
   mode: BrowserMode
   sidebarRatio: number
 }
 
 export function useAppSessionState({
   imageSources,
+  audios,
   mode,
   sidebarRatio,
 }: UseAppSessionStateParams) {
   const [selectedPackageId, setSelectedPackageId] = useState(imageSources[0]?.id ?? '')
   const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
+  const [selectedAudioId, setSelectedAudioId] = useState(audios[0]?.id ?? '')
+  const [audioPlaylistIds, setAudioPlaylistIds] = useState<string[]>(audios.slice(0, 3).map((audio) => audio.id))
   const [imageFocusActive, setImageFocusActive] = useState(false)
   const [focusByPackage, setFocusByPackage] = useState<Record<string, number>>(() =>
     Object.fromEntries(imageSources.map((source) => [source.id, 0])),
@@ -59,6 +63,10 @@ export function useAppSessionState({
     setSelectedPackageId,
     selectedSidebarNodeId,
     setSelectedSidebarNodeId,
+    selectedAudioId,
+    setSelectedAudioId,
+    audioPlaylistIds,
+    setAudioPlaylistIds,
     imageFocusActive,
     setImageFocusActive,
     focusByPackage,

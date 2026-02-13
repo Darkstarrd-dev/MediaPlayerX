@@ -11,6 +11,7 @@ import {
 } from '../../mockData'
 import type { BrowserMode } from '../../types'
 import type {
+  AudioItem,
   FocusedImageRef,
   ImagePackage,
   VectorCandidate,
@@ -27,6 +28,7 @@ import { useImageSidebarBaseState } from './useImageSidebarBaseState'
 import { useRootScopedImageData } from './useRootScopedImageData'
 import { useScopedImageSourceStateSync } from './useScopedImageSourceStateSync'
 import { useVideoSidebarState } from './useVideoSidebarState'
+import { useAudioSidebarState } from './useAudioSidebarState'
 import { useManageSelection } from '../management/useManageSelection'
 import { useSidebarNavigation } from '../sidebar/useSidebarNavigation'
 
@@ -47,6 +49,7 @@ interface UseAppSidebarScopeStateParams {
   bootstrapImagePackages: ImagePackage[]
   bootstrapImageDirectories: ImagePackage[]
   bootstrapVideos: VideoItem[]
+  bootstrapAudios: AudioItem[]
   vectorSearchResults: VectorCandidate[]
   vectorResultsActive: boolean
   featureSearchActive: boolean
@@ -63,11 +66,14 @@ interface UseAppSidebarScopeStateParams {
   }
   imageRootNodeId: string | null
   videoRootNodeId: string | null
+  musicRootNodeId: string | null
   selectedSidebarNodeId: string | null
   appBodyRef: RefObject<HTMLDivElement | null>
   setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>
   setSelectedPackageId: Dispatch<SetStateAction<string>>
   selectVideoFromBrowser: (videoId: string) => void
+  setSelectedAudioId: Dispatch<SetStateAction<string>>
+  setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
   setFocusByPackage: Dispatch<SetStateAction<Record<string, number>>>
   setPageByPackage: Dispatch<SetStateAction<Record<string, number>>>
   setGradeByPackage: Dispatch<SetStateAction<Record<string, number | null>>>
@@ -75,6 +81,7 @@ interface UseAppSidebarScopeStateParams {
     sidebarFocus?: 'sidebar' | 'main'
     imageRootNodeId?: string | null
     videoRootNodeId?: string | null
+    musicRootNodeId?: string | null
   }) => void
 }
 
@@ -82,11 +89,15 @@ interface UseAppSidebarScopeStateResult {
   scopedImageSourcesEffective: ImagePackage[]
   packageByIdEffective: Map<string, ImagePackage>
   videoByIdEffective: Map<string, VideoItem>
+  audioByIdEffective: Map<string, AudioItem>
   imageTreeForSidebar: ImageSidebarTreeViewModel['tree']
   imageNodeLoadStateById: Record<string, 'pending' | 'running'>
   videosForSidebar: VideoItem[]
   videoTreeForSidebar: ImageSidebarTreeViewModel['tree']
+  audiosForSidebar: AudioItem[]
+  audioTreeForSidebar: ImageSidebarTreeViewModel['tree']
   rootScopedVideoIds: Set<string>
+  rootScopedAudioIds: Set<string>
   imageRootNode: ImageSidebarTreeViewModel['tree'][number] | null
   rootScopedPackageIds: Set<string>
   rootScopedPackages: ImagePackage[]
@@ -98,6 +109,7 @@ interface UseAppSidebarScopeStateResult {
   sidebarNodeById: Map<string, ImageSidebarTreeViewModel['tree'][number]>
   imageSourceNodeIdMap: Map<string, string>
   videoNodeIdMap: Map<string, string>
+  audioNodeIdMap: Map<string, string>
   canSetCurrentRoot: boolean
   currentRootLabel: string | null
   applyCurrentRootFromSelection: () => void
@@ -123,6 +135,7 @@ export function useAppSidebarScopeState({
   bootstrapImagePackages,
   bootstrapImageDirectories,
   bootstrapVideos,
+  bootstrapAudios,
   vectorSearchResults,
   vectorResultsActive,
   featureSearchActive,
@@ -136,11 +149,14 @@ export function useAppSidebarScopeState({
   archiveLoadStatus,
   imageRootNodeId,
   videoRootNodeId,
+  musicRootNodeId,
   selectedSidebarNodeId,
   appBodyRef,
   setSelectedSidebarNodeId,
   setSelectedPackageId,
   selectVideoFromBrowser,
+  setSelectedAudioId,
+  setAudioPlaylistIds,
   setFocusByPackage,
   setPageByPackage,
   setGradeByPackage,
@@ -155,6 +171,7 @@ export function useAppSidebarScopeState({
   )
   const librarySnapshotEffective = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
   const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos
+  const audiosEffective = librarySnapshotEffective?.audios ?? bootstrapAudios
   const packageByIdEffective = useMemo(
     () => new Map(scopedImageSourcesEffective.map((source) => [source.id, source])),
     [scopedImageSourcesEffective],
@@ -171,6 +188,10 @@ export function useAppSidebarScopeState({
   const videoByIdEffective = useMemo(
     () => new Map(videosEffective.map((video) => [video.id, video])),
     [videosEffective],
+  )
+  const audioByIdEffective = useMemo(
+    () => new Map(audiosEffective.map((audio) => [audio.id, audio])),
+    [audiosEffective],
   )
   const sidebarTreeSnapshot = sidebarSnapshot?.tree ?? null
 
@@ -313,9 +334,63 @@ export function useAppSidebarScopeState({
     })
   }, [featureSearchActive, mode, normalizedVideoFeatureFilter, videosEffective])
 
+  const normalizedAudioFeatureFilter = useMemo(
+    () => ({
+      nameQuery: featureNameQuery.trim().toLocaleLowerCase('zh-CN'),
+      workTitleQuery: featureWorkTitleQuery.trim().toLocaleLowerCase('zh-CN'),
+      seriesIdQuery: featureSeriesIdQuery.trim().toLocaleLowerCase('zh-CN'),
+      circleQuery: featureCircleQuery.trim().toLocaleLowerCase('zh-CN'),
+      authorQuery: featureAuthorQuery.trim().toLocaleLowerCase('zh-CN'),
+    }),
+    [featureAuthorQuery, featureCircleQuery, featureNameQuery, featureSeriesIdQuery, featureWorkTitleQuery],
+  )
+
+  const searchedAudios = useMemo(() => {
+    if (mode !== 'music' || !featureSearchActive) {
+      return audiosEffective
+    }
+
+    const textIncludes = (value: string, query: string) =>
+      query.length === 0 || value.toLocaleLowerCase('zh-CN').includes(query)
+
+    return audiosEffective.filter((audio) => {
+      if (normalizedAudioFeatureFilter.nameQuery.length > 0) {
+        const matched =
+          textIncludes(audio.fileName, normalizedAudioFeatureFilter.nameQuery) ||
+          textIncludes(audio.absolutePath, normalizedAudioFeatureFilter.nameQuery)
+        if (!matched) {
+          return false
+        }
+      }
+
+      if (!textIncludes(audio.trackTitle, normalizedAudioFeatureFilter.workTitleQuery)) {
+        return false
+      }
+
+      if (!textIncludes(audio.seriesId ?? '', normalizedAudioFeatureFilter.seriesIdQuery)) {
+        return false
+      }
+
+      if (!textIncludes(audio.album, normalizedAudioFeatureFilter.circleQuery)) {
+        return false
+      }
+
+      if (!textIncludes(audio.author, normalizedAudioFeatureFilter.authorQuery)) {
+        return false
+      }
+
+      return true
+    })
+  }, [audiosEffective, featureSearchActive, mode, normalizedAudioFeatureFilter])
+
   const { videoRootNode, rootScopedVideoIds, videosForSidebar, videoTreeForSidebar } = useVideoSidebarState({
     videos: searchedVideos,
     videoRootNodeId,
+  })
+
+  const { musicRootNode, rootScopedAudioIds, audiosForSidebar, audioTreeForSidebar } = useAudioSidebarState({
+    audios: searchedAudios,
+    musicRootNodeId,
   })
 
   const {
@@ -323,6 +398,7 @@ export function useAppSidebarScopeState({
     sidebarNodeById,
     imageSourceNodeIdMap,
     videoNodeIdMap,
+    audioNodeIdMap,
     canSetCurrentRoot,
     currentRootLabel,
     applyCurrentRootFromSelection,
@@ -332,13 +408,24 @@ export function useAppSidebarScopeState({
     mode,
     imageTreeForSidebar,
     videoTreeForSidebar,
+    audioTreeForSidebar,
     imageRootNode,
     videoRootNode,
+    musicRootNode,
     selectedSidebarNodeId,
     appBodyRef,
     onSetSelectedSidebarNodeId: setSelectedSidebarNodeId,
     onSelectPackage: setSelectedPackageId,
     onSelectVideo: selectVideoFromBrowser,
+    onSelectAudio: (audioId) => {
+      setSelectedAudioId(audioId)
+      setAudioPlaylistIds((previous) => {
+        if (previous.includes(audioId)) {
+          return previous
+        }
+        return [...previous, audioId]
+      })
+    },
     onSetSidebarFocusMain: () => {
       updateSettings({ sidebarFocus: 'main' })
     },
@@ -347,6 +434,9 @@ export function useAppSidebarScopeState({
     },
     onSetVideoRootNodeId: (nodeId) => {
       updateSettings({ videoRootNodeId: nodeId })
+    },
+    onSetMusicRootNodeId: (nodeId) => {
+      updateSettings({ musicRootNodeId: nodeId })
     },
   })
 
@@ -438,11 +528,15 @@ export function useAppSidebarScopeState({
     scopedImageSourcesEffective,
     packageByIdEffective,
     videoByIdEffective,
+    audioByIdEffective,
     imageTreeForSidebar,
     imageNodeLoadStateById,
     videosForSidebar,
     videoTreeForSidebar,
+    audiosForSidebar,
+    audioTreeForSidebar,
     rootScopedVideoIds,
+    rootScopedAudioIds,
     imageRootNode,
     rootScopedPackageIds,
     rootScopedPackages,
@@ -454,6 +548,7 @@ export function useAppSidebarScopeState({
     sidebarNodeById,
     imageSourceNodeIdMap,
     videoNodeIdMap,
+    audioNodeIdMap,
     canSetCurrentRoot,
     currentRootLabel,
     applyCurrentRootFromSelection,

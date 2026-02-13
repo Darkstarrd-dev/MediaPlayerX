@@ -114,7 +114,7 @@ export interface AudioItem {
   mediaLocator: MediaLocator
 }
 
-export type SidebarNodeKind = 'folder' | 'package' | 'video'
+export type SidebarNodeKind = 'folder' | 'package' | 'video' | 'audio'
 
 export interface SidebarNode {
   id: string
@@ -123,6 +123,7 @@ export interface SidebarNode {
   children: SidebarNode[]
   packageId?: string
   videoId?: string
+  audioId?: string
   imageSourceId?: string
   imageNodeType?: 'folder' | 'package' | 'directory'
   directImageCount?: number

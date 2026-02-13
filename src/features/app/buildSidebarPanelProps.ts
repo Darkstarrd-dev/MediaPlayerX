@@ -18,11 +18,14 @@ interface BuildSidebarPanelPropsParams {
   canSetCurrentRoot: boolean
   imageRootNodeId: string | null
   videoRootNodeId: string | null
+  musicRootNodeId: string | null
   imageTreeNodes: SidebarNode[]
   videoTreeNodes: SidebarNode[]
+  audioTreeNodes: SidebarNode[]
   imageNodeLoadStateById: Record<string, 'pending' | 'running'>
   selectedPackageId: string
   selectedVideoId: string
+  selectedAudioId: string
   vectorResultsActive: boolean
   featureSearchActive: boolean
   searchResultsReadOnly: boolean
@@ -36,9 +39,12 @@ interface BuildSidebarPanelPropsParams {
   updateSettings: (patch: Partial<AppSettings>) => void
   setSelectedPackageId: (packageId: string) => void
   selectVideoFromBrowser: (videoId: string) => void
+  setSelectedAudioId: (audioId: string) => void
   collapseSidebar: () => void
   applyCurrentRootFromSelection: () => void
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
+  audioPlaylistIds: string[]
+  setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
   onToggleManageNode: (nodeId: string, shiftKey: boolean) => void
 }
 
@@ -57,11 +63,14 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     canSetCurrentRoot: params.canSetCurrentRoot,
     imageRootNodeId: params.imageRootNodeId,
     videoRootNodeId: params.videoRootNodeId,
+    musicRootNodeId: params.musicRootNodeId,
     imageTreeNodes: params.imageTreeNodes,
     videoTreeNodes: params.videoTreeNodes,
+    audioTreeNodes: params.audioTreeNodes,
     imageNodeLoadStateById: params.imageNodeLoadStateById,
     selectedPackageId: params.selectedPackageId,
     selectedVideoId: params.selectedVideoId,
+    selectedAudioId: params.selectedAudioId,
     imageHighlightByNode: params.vectorResultsActive,
     searchResultMode: params.searchResultsMode,
     searchResultReadonly: params.searchResultsReadOnly,
@@ -71,6 +80,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
       ? Boolean(params.focusedRef)
       : params.featureSearchActive,
     playlistIds: params.playlistIds,
+    audioPlaylistIds: params.audioPlaylistIds,
     onGoToFromSearchMode: params.goToFromSearchMode,
     onSelectNode: (nodeId: string) => {
       if (params.mode === 'image' && params.vectorResultsActive) {
@@ -82,6 +92,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     },
     onSelectPackage: params.setSelectedPackageId,
     onSelectVideo: params.selectVideoFromBrowser,
+    onSelectAudio: params.setSelectedAudioId,
     onCollapseSidebar: params.collapseSidebar,
     onSetCurrentRoot: params.applyCurrentRootFromSelection,
     onResetRoot: () => {
@@ -89,7 +100,11 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
         params.updateSettings({ imageRootNodeId: null })
         return
       }
-      params.updateSettings({ videoRootNodeId: null })
+      if (params.mode === 'video') {
+        params.updateSettings({ videoRootNodeId: null })
+        return
+      }
+      params.updateSettings({ musicRootNodeId: null })
     },
     onToggleVideoPlaylist: (videoId: string, checked: boolean) => {
       params.setPlaylistIds((previous) => {
@@ -103,5 +118,16 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
       })
     },
     onToggleManageNode: params.onToggleManageNode,
+    onToggleAudioPlaylist: (audioId: string, checked: boolean) => {
+      params.setAudioPlaylistIds((previous) => {
+        if (checked) {
+          if (previous.includes(audioId)) {
+            return previous
+          }
+          return [...previous, audioId]
+        }
+        return previous.filter((id) => id !== audioId)
+      })
+    },
   }
 }

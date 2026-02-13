@@ -34,11 +34,14 @@ describe('buildSidebarPanelProps', () => {
       canSetCurrentRoot: true,
       imageRootNodeId: null,
       videoRootNodeId: null,
+      musicRootNodeId: null,
       imageTreeNodes: [SIDEBAR_NODE_FIXTURE],
       videoTreeNodes: [],
+      audioTreeNodes: [],
       imageNodeLoadStateById: {},
       selectedPackageId: 'pkg-1',
       selectedVideoId: '',
+      selectedAudioId: '',
       vectorResultsActive: true,
       featureSearchActive: false,
       searchResultsReadOnly: true,
@@ -52,9 +55,12 @@ describe('buildSidebarPanelProps', () => {
       updateSettings,
       setSelectedPackageId: vi.fn(),
       selectVideoFromBrowser: vi.fn(),
+      setSelectedAudioId: vi.fn(),
       collapseSidebar: vi.fn(),
       applyCurrentRootFromSelection: vi.fn(),
       setPlaylistIds: vi.fn(),
+      audioPlaylistIds: [],
+      setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
     })
 
@@ -85,11 +91,14 @@ describe('buildSidebarPanelProps', () => {
       canSetCurrentRoot: true,
       imageRootNodeId: null,
       videoRootNodeId: 'video:root',
+      musicRootNodeId: null,
       imageTreeNodes: [],
       videoTreeNodes: [SIDEBAR_NODE_FIXTURE],
+      audioTreeNodes: [],
       imageNodeLoadStateById: {},
       selectedPackageId: '',
       selectedVideoId: 'video-1',
+      selectedAudioId: '',
       vectorResultsActive: false,
       featureSearchActive: true,
       searchResultsReadOnly: false,
@@ -103,9 +112,12 @@ describe('buildSidebarPanelProps', () => {
       updateSettings,
       setSelectedPackageId: vi.fn(),
       selectVideoFromBrowser: vi.fn(),
+      setSelectedAudioId: vi.fn(),
       collapseSidebar: vi.fn(),
       applyCurrentRootFromSelection: vi.fn(),
       setPlaylistIds,
+      audioPlaylistIds: [],
+      setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
     })
 
@@ -138,11 +150,14 @@ describe('buildSidebarPanelProps', () => {
       canSetCurrentRoot: true,
       imageRootNodeId: null,
       videoRootNodeId: null,
+      musicRootNodeId: null,
       imageTreeNodes: [SIDEBAR_NODE_FIXTURE],
       videoTreeNodes: [],
+      audioTreeNodes: [],
       imageNodeLoadStateById: {},
       selectedPackageId: 'pkg-1',
       selectedVideoId: '',
+      selectedAudioId: '',
       vectorResultsActive: false,
       featureSearchActive: false,
       searchResultsReadOnly: false,
@@ -156,12 +171,76 @@ describe('buildSidebarPanelProps', () => {
       updateSettings: vi.fn(),
       setSelectedPackageId: vi.fn(),
       selectVideoFromBrowser: vi.fn(),
+      setSelectedAudioId: vi.fn(),
       collapseSidebar: vi.fn(),
       applyCurrentRootFromSelection: vi.fn(),
       setPlaylistIds: vi.fn(),
+      audioPlaylistIds: [],
+      setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
     })
 
     expect(props.manageMode).toBe(true)
+  })
+
+  it('music 模式可重置根目录并维护音频播放列表', () => {
+    const updateSettings = vi.fn()
+    const setAudioPlaylistIds = vi.fn()
+
+    const props = buildSidebarPanelProps({
+      mode: 'music',
+      sidebarFocus: 'sidebar',
+      sidebarRatio: 0.3,
+      sidebarMinWidth: 220,
+      sidebarFontSize: 14,
+      sidebarCountFontSize: 12,
+      sidebarIndentStep: 16,
+      sidebarVerticalGap: 4,
+      currentRootLabel: null,
+      searchResultsMode: false,
+      selectedSidebarNodeId: null,
+      canSetCurrentRoot: true,
+      imageRootNodeId: null,
+      videoRootNodeId: null,
+      musicRootNodeId: 'audio:root',
+      imageTreeNodes: [],
+      videoTreeNodes: [],
+      audioTreeNodes: [SIDEBAR_NODE_FIXTURE],
+      imageNodeLoadStateById: {},
+      selectedPackageId: '',
+      selectedVideoId: '',
+      selectedAudioId: 'audio-1',
+      vectorResultsActive: false,
+      featureSearchActive: false,
+      searchResultsReadOnly: false,
+      manageMode: false,
+      metadataManageMode: false,
+      checkedSidebarNodeIdSet: new Set<string>(),
+      focusedRef: null,
+      playlistIds: [],
+      audioPlaylistIds: ['audio-2'],
+      goToFromSearchMode: vi.fn(),
+      setSelectedSidebarNodeId: vi.fn(),
+      updateSettings,
+      setSelectedPackageId: vi.fn(),
+      selectVideoFromBrowser: vi.fn(),
+      setSelectedAudioId: vi.fn(),
+      collapseSidebar: vi.fn(),
+      applyCurrentRootFromSelection: vi.fn(),
+      setPlaylistIds: vi.fn(),
+      setAudioPlaylistIds,
+      onToggleManageNode: vi.fn(),
+    })
+
+    props.onResetRoot()
+    expect(updateSettings).toHaveBeenCalledWith({ musicRootNodeId: null })
+
+    props.onToggleAudioPlaylist('audio-1', true)
+    const addUpdater = setAudioPlaylistIds.mock.calls[0]?.[0] as ((value: string[]) => string[]) | undefined
+    expect(addUpdater?.(['audio-2'])).toEqual(['audio-2', 'audio-1'])
+
+    props.onToggleAudioPlaylist('audio-2', false)
+    const removeUpdater = setAudioPlaylistIds.mock.calls[1]?.[0] as ((value: string[]) => string[]) | undefined
+    expect(removeUpdater?.(['audio-1', 'audio-2'])).toEqual(['audio-1'])
   })
 })

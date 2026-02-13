@@ -13,10 +13,11 @@ export function useAppRuntimeSources() {
   const { mode, sidebarRatio } = appSettings
 
   const repositoryBootstrap = useRepositoryBootstrapData()
-  const { mediaRepository, imageSources, bootstrapVideos } = repositoryBootstrap
+  const { mediaRepository, imageSources, bootstrapVideos, bootstrapAudios } = repositoryBootstrap
 
   const sessionState = useAppSessionState({
     imageSources,
+    audios: bootstrapAudios,
     mode,
     sidebarRatio,
   })

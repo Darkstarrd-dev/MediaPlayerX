@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { BrowserMode, ImagePackage, VideoItem } from '../../types'
+import type { AudioItem, BrowserMode, ImagePackage, VideoItem } from '../../types'
 
 type SearchPanelMode = 'vector' | 'feature'
 
@@ -17,6 +17,7 @@ interface UseFeatureSearchParams {
   vectorMode: boolean
   imageSources: ImagePackage[]
   videos: VideoItem[]
+  audios: AudioItem[]
 }
 
 function normalizeTagsFromValues(values: string[]): string[] {
@@ -31,6 +32,7 @@ export function useFeatureSearch({
   vectorMode,
   imageSources,
   videos,
+  audios,
 }: UseFeatureSearchParams) {
   const [searchPanelMode, setSearchPanelMode] = useState<SearchPanelMode>('feature')
   const [featureNameQuery, setFeatureNameQuery] = useState('')
@@ -116,12 +118,14 @@ export function useFeatureSearch({
         new Set(
           mode === 'image'
             ? imageSources.flatMap((source) => [source.circle, source.externalMetadata?.groupName ?? '', source.externalMetadata?.groupNameJpn ?? ''])
-            : videos.map((video) => video.circle),
+            : mode === 'video'
+              ? videos.map((video) => video.circle)
+              : audios.map((audio) => audio.album),
         ),
       )
         .filter((value) => value.trim().length > 0)
         .sort((a, b) => a.localeCompare(b, 'zh-CN')),
-    [imageSources, mode, videos],
+    [audios, imageSources, mode, videos],
   )
 
   const featureAuthorOptions = useMemo(
@@ -130,12 +134,14 @@ export function useFeatureSearch({
         new Set(
           mode === 'image'
             ? imageSources.flatMap((source) => [source.author, source.externalMetadata?.artist ?? '', source.externalMetadata?.artistJpn ?? ''])
-            : videos.map((video) => video.author),
+            : mode === 'video'
+              ? videos.map((video) => video.author)
+              : audios.map((audio) => audio.author),
         ),
       )
         .filter((value) => value.trim().length > 0)
         .sort((a, b) => a.localeCompare(b, 'zh-CN')),
-    [imageSources, mode, videos],
+    [audios, imageSources, mode, videos],
   )
 
   const featureTagOptions = useMemo(
@@ -143,7 +149,7 @@ export function useFeatureSearch({
       Array.from(
         new Set(
           normalizeTagsFromValues([
-            ...(mode === 'image' ? imageSources.flatMap((source) => source.tags) : videos.flatMap((video) => video.tags)),
+            ...(mode === 'image' ? imageSources.flatMap((source) => source.tags) : mode === 'video' ? videos.flatMap((video) => video.tags) : []),
             ...(mode === 'image'
               ? imageSources.flatMap((source) =>
                   Object.entries(source.externalMetadata?.tags ?? {}).flatMap(([namespace, raw]) =>

@@ -1,4 +1,5 @@
 import type {
+  AudioItem,
   FocusedImageRef,
   ImageItem,
   ImagePackage,
@@ -110,6 +111,27 @@ function buildMockVideoLocator(absolutePath: string): MediaLocator {
     extension,
     mediaType: 'video',
     mimeType: extension === '.webm' ? 'video/webm' : 'video/mp4',
+  }
+}
+
+function buildMockAudioLocator(absolutePath: string): MediaLocator {
+  const extension = `.${absolutePath.split('.').pop()?.toLowerCase() ?? 'mp3'}`
+  const mimeByExtension: Record<string, string> = {
+    '.mp3': 'audio/mpeg',
+    '.flac': 'audio/flac',
+    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg',
+    '.m4a': 'audio/mp4',
+    '.opus': 'audio/opus',
+    '.aac': 'audio/aac',
+  }
+
+  return {
+    kind: 'filesystem',
+    absolutePath,
+    extension,
+    mediaType: 'audio',
+    mimeType: mimeByExtension[extension] ?? 'audio/mpeg',
   }
 }
 
@@ -704,6 +726,59 @@ export const VIDEO_ITEMS: VideoItem[] = [
   },
 ]
 
+export const AUDIO_ITEMS: AudioItem[] = [
+  {
+    id: 'audio-001',
+    fileName: 'orbit_intro.mp3',
+    absolutePath: 'X:/音乐/Orbit/orbit_intro.mp3',
+    treePath: ['X盘', '音乐', 'Orbit', 'orbit_intro.mp3'],
+    durationSec: 126,
+    sizeMb: 8,
+    album: 'Orbit Session Vol.1',
+    author: 'Nori',
+    trackTitle: 'Orbit Intro',
+    seriesId: 'series-orbit-001',
+    mediaLocator: buildMockAudioLocator('X:/音乐/Orbit/orbit_intro.mp3'),
+  },
+  {
+    id: 'audio-002',
+    fileName: 'orbit_night.flac',
+    absolutePath: 'X:/音乐/Orbit/orbit_night.flac',
+    treePath: ['X盘', '音乐', 'Orbit', 'orbit_night.flac'],
+    durationSec: 244,
+    sizeMb: 29,
+    album: 'Orbit Session Vol.1',
+    author: 'Nori',
+    trackTitle: 'Night Drive',
+    seriesId: 'series-orbit-001',
+    mediaLocator: buildMockAudioLocator('X:/音乐/Orbit/orbit_night.flac'),
+  },
+  {
+    id: 'audio-003',
+    fileName: 'forest_theme.ogg',
+    absolutePath: 'Y:/配乐/Forest/forest_theme.ogg',
+    treePath: ['Y盘', '配乐', 'Forest', 'forest_theme.ogg'],
+    durationSec: 198,
+    sizeMb: 10,
+    album: 'Forest Study',
+    author: 'Ayan',
+    trackTitle: 'Forest Theme',
+    mediaLocator: buildMockAudioLocator('Y:/配乐/Forest/forest_theme.ogg'),
+  },
+  {
+    id: 'audio-004',
+    fileName: 'city_loop.wav',
+    absolutePath: 'Z:/音频样本/City/city_loop.wav',
+    treePath: ['Z盘', '音频样本', 'City', 'city_loop.wav'],
+    durationSec: 86,
+    sizeMb: 46,
+    album: 'City Kit',
+    author: 'Rei',
+    trackTitle: 'City Loop',
+    mediaLocator: buildMockAudioLocator('Z:/音频样本/City/city_loop.wav'),
+  },
+]
+
 interface LeafInput {
   id: string
   treePath: string[]
@@ -733,6 +808,7 @@ function sortNodes(nodes: SidebarNode[]): void {
     folder: 0,
     package: 1,
     video: 2,
+    audio: 3,
   }
 
   nodes.sort((a, b) => {
@@ -893,6 +969,9 @@ export function buildSidebarTree(
         }
         if (leafKind === 'video') {
           node.videoId = leaf.id
+        }
+        if (leafKind === 'audio') {
+          node.audioId = leaf.id
         }
       }
 

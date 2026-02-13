@@ -7,16 +7,20 @@ interface UseSidebarNavigationParams {
   mode: BrowserMode
   imageTreeForSidebar: SidebarNode[]
   videoTreeForSidebar: SidebarNode[]
+  audioTreeForSidebar: SidebarNode[]
   imageRootNode: SidebarNode | null
   videoRootNode: SidebarNode | null
+  musicRootNode: SidebarNode | null
   selectedSidebarNodeId: string | null
   appBodyRef: RefObject<HTMLDivElement | null>
   onSetSelectedSidebarNodeId: (nodeId: string | null) => void
   onSelectPackage: (packageId: string) => void
   onSelectVideo: (videoId: string) => void
+  onSelectAudio: (audioId: string) => void
   onSetSidebarFocusMain: () => void
   onSetImageRootNodeId: (nodeId: string) => void
   onSetVideoRootNodeId: (nodeId: string) => void
+  onSetMusicRootNodeId: (nodeId: string) => void
 }
 
 interface UseSidebarNavigationResult {
@@ -25,6 +29,7 @@ interface UseSidebarNavigationResult {
   sidebarNodeById: Map<string, SidebarNode>
   imageSourceNodeIdMap: Map<string, string>
   videoNodeIdMap: Map<string, string>
+  audioNodeIdMap: Map<string, string>
   selectedSidebarNode: SidebarNode | null
   canSetCurrentRoot: boolean
   currentRootLabel: string | null
@@ -37,18 +42,22 @@ export function useSidebarNavigation({
   mode,
   imageTreeForSidebar,
   videoTreeForSidebar,
+  audioTreeForSidebar,
   imageRootNode,
   videoRootNode,
+  musicRootNode,
   selectedSidebarNodeId,
   appBodyRef,
   onSetSelectedSidebarNodeId,
   onSelectPackage,
   onSelectVideo,
+  onSelectAudio,
   onSetSidebarFocusMain,
   onSetImageRootNodeId,
   onSetVideoRootNodeId,
+  onSetMusicRootNodeId,
 }: UseSidebarNavigationParams): UseSidebarNavigationResult {
-  const activeSidebarTree = mode === 'image' ? imageTreeForSidebar : videoTreeForSidebar
+  const activeSidebarTree = mode === 'image' ? imageTreeForSidebar : mode === 'video' ? videoTreeForSidebar : audioTreeForSidebar
 
   const flatSidebarNodes = useMemo(() => {
     const items: SidebarNode[] = []
@@ -98,9 +107,25 @@ export function useSidebarNavigation({
     return map
   }, [videoTreeForSidebar])
 
+  const audioNodeIdMap = useMemo(() => {
+    const map = new Map<string, string>()
+    const walk = (nodes: SidebarNode[]) => {
+      for (const node of nodes) {
+        if (node.audioId) {
+          map.set(node.audioId, node.id)
+        }
+        if (node.children.length > 0) {
+          walk(node.children)
+        }
+      }
+    }
+    walk(audioTreeForSidebar)
+    return map
+  }, [audioTreeForSidebar])
+
   const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
   const canSetCurrentRoot = selectedSidebarNode?.kind === 'folder'
-  const currentRootLabel = mode === 'image' ? imageRootNode?.label ?? null : videoRootNode?.label ?? null
+  const currentRootLabel = mode === 'image' ? imageRootNode?.label ?? null : mode === 'video' ? videoRootNode?.label ?? null : musicRootNode?.label ?? null
 
   const applyCurrentRootFromSelection = useCallback(() => {
     if (!selectedSidebarNode || selectedSidebarNode.kind !== 'folder') {
@@ -112,8 +137,13 @@ export function useSidebarNavigation({
       return
     }
 
-    onSetVideoRootNodeId(selectedSidebarNode.id)
-  }, [mode, onSetImageRootNodeId, onSetVideoRootNodeId, selectedSidebarNode])
+    if (mode === 'video') {
+      onSetVideoRootNodeId(selectedSidebarNode.id)
+      return
+    }
+
+    onSetMusicRootNodeId(selectedSidebarNode.id)
+  }, [mode, onSetImageRootNodeId, onSetMusicRootNodeId, onSetVideoRootNodeId, selectedSidebarNode])
 
   const ensureSidebarNodeVisible = useCallback(
     (nodeId: string) => {
@@ -253,6 +283,9 @@ export function useSidebarNavigation({
         if (mode === 'video' && node.videoId) {
           onSelectVideo(node.videoId)
         }
+        if (mode === 'music' && node.audioId) {
+          onSelectAudio(node.audioId)
+        }
         requestAnimationFrame(() => ensureSidebarNodeVisible(node.id))
         return true
       }
@@ -265,6 +298,7 @@ export function useSidebarNavigation({
       flatSidebarNodes,
       mode,
       onSelectPackage,
+      onSelectAudio,
       onSelectVideo,
       onSetSelectedSidebarNodeId,
       onSetSidebarFocusMain,
@@ -279,6 +313,7 @@ export function useSidebarNavigation({
     sidebarNodeById,
     imageSourceNodeIdMap,
     videoNodeIdMap,
+    audioNodeIdMap,
     selectedSidebarNode,
     canSetCurrentRoot,
     currentRootLabel,

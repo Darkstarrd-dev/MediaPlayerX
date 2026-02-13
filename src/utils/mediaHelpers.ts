@@ -160,12 +160,15 @@ export function videoMatchesSearch(video: VideoItem, query: string): boolean {
   return [video.fileName, video.absolutePath].join(' ').toLowerCase().includes(query.trim().toLowerCase())
 }
 
-export function collectLeafIds(node: SidebarNode, kind: 'package' | 'video'): string[] {
+export function collectLeafIds(node: SidebarNode, kind: 'package' | 'video' | 'audio'): string[] {
   if (kind === 'package' && node.packageId) {
     return [node.packageId]
   }
   if (kind === 'video' && node.videoId) {
     return [node.videoId]
+  }
+  if (kind === 'audio' && node.audioId) {
+    return [node.audioId]
   }
 
   return node.children.flatMap((child) => collectLeafIds(child, kind))

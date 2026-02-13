@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import {
+  AUDIO_ITEMS,
   IMAGE_DIRECTORY_SOURCES,
   IMAGE_PACKAGES,
   VIDEO_ITEMS,
@@ -22,6 +23,7 @@ export function useRepositoryBootstrapData() {
     [repositoryMode],
   )
   const fallbackVideos = useMemo(() => (repositoryMode === 'real' ? [] : VIDEO_ITEMS), [repositoryMode])
+  const fallbackAudios = useMemo(() => (repositoryMode === 'real' ? [] : AUDIO_ITEMS), [repositoryMode])
   const imageSources = useMemo(
     () =>
       bootstrapLibrarySnapshot
@@ -41,6 +43,10 @@ export function useRepositoryBootstrapData() {
     () => bootstrapLibrarySnapshot?.videos ?? fallbackVideos,
     [bootstrapLibrarySnapshot, fallbackVideos],
   )
+  const bootstrapAudios = useMemo(
+    () => bootstrapLibrarySnapshot?.audios ?? fallbackAudios,
+    [bootstrapLibrarySnapshot, fallbackAudios],
+  )
 
   return {
     mediaRepository,
@@ -50,6 +56,7 @@ export function useRepositoryBootstrapData() {
     bootstrapImagePackages,
     bootstrapImageDirectories,
     bootstrapVideos,
+    bootstrapAudios,
   }
 }
 

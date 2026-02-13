@@ -36,6 +36,7 @@ export function useAppReadState({
     mediaRepository,
     imageSources,
     bootstrapVideos,
+    bootstrapAudios,
   } = repositoryBootstrap
 
   const {
@@ -88,6 +89,7 @@ export function useAppReadState({
     vectorMode,
     imageSources,
     videos: bootstrapVideos,
+    audios: bootstrapAudios,
   })
 
   const quickFeatureSearchEnabled = quickFeatureSearchActive
