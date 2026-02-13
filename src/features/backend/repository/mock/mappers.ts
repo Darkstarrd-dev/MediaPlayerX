@@ -1,11 +1,12 @@
 import {
+  type AudioItemDto,
   type ImageItemDto,
   type ImagePackageDto,
   type MediaLocatorDto,
   type SidebarNodeDto,
   type VideoItemDto,
 } from '../../../../contracts/backend'
-import { type ImagePackage, type MediaLocator, type SidebarNode, type VideoItem } from '../../../../types'
+import { type AudioItem, type ImagePackage, type MediaLocator, type SidebarNode, type VideoItem } from '../../../../types'
 import { deriveWorkTitleFromFileName } from './utils'
 
 export function toMediaLocatorDto(locator: MediaLocator): MediaLocatorDto {
@@ -109,6 +110,23 @@ export function toVideoItemDto(video: VideoItem): VideoItemDto {
   }
 }
 
+export function toAudioItemDto(audio: AudioItem): AudioItemDto {
+  const fallbackTrackTitle = deriveWorkTitleFromFileName(audio.fileName)
+  return {
+    id: audio.id,
+    file_name: audio.fileName,
+    absolute_path: audio.absolutePath,
+    tree_path: [...audio.treePath],
+    duration_sec: Math.max(0, Math.round(audio.durationSec)),
+    size_mb: Math.max(0, Math.round(audio.sizeMb)),
+    album: audio.album ?? '',
+    author: audio.author ?? '',
+    track_title: audio.trackTitle?.trim().length ? audio.trackTitle : fallbackTrackTitle,
+    series_id: audio.seriesId ?? '',
+    media_locator: toMediaLocatorDto(audio.mediaLocator),
+  }
+}
+
 export function toSidebarNodeDto(node: SidebarNode): SidebarNodeDto {
   return {
     id: node.id,
@@ -151,5 +169,21 @@ export function toImagePackageViewModel(dto: ImagePackageDto): ImagePackage {
       mediaLocator: toMediaLocatorViewModel(item.media_locator),
       hidden: item.hidden ?? false,
     })),
+  }
+}
+
+export function toAudioItemViewModel(dto: AudioItemDto): AudioItem {
+  return {
+    id: dto.id,
+    fileName: dto.file_name,
+    absolutePath: dto.absolute_path,
+    treePath: [...dto.tree_path],
+    durationSec: dto.duration_sec,
+    sizeMb: dto.size_mb,
+    album: dto.album ?? '',
+    author: dto.author ?? '',
+    trackTitle: dto.track_title ?? '',
+    seriesId: dto.series_id ?? '',
+    mediaLocator: toMediaLocatorViewModel(dto.media_locator),
   }
 }

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const browserModeSchema = z.enum(['image', 'video'])
+export const browserModeSchema = z.enum(['image', 'video', 'music'])
 
 export const searchFieldSchema = z.enum(['all', 'name', 'workTitle', 'circle', 'author', 'tags'])
 

@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 const nonNegativeIntSchema = z.number().int().nonnegative()
 
-export const browserModeDtoSchema = z.enum(['image', 'video'])
+export const browserModeDtoSchema = z.enum(['image', 'video', 'music'])
 
 export const featureFilterDtoSchema = z.object({
   name_query: z.string(),
@@ -19,7 +19,7 @@ export const mediaLocatorDtoSchema = z.discriminatedUnion('kind', [
     kind: z.literal('filesystem'),
     absolute_path: z.string().min(1),
     extension: z.string().min(1),
-    media_type: z.enum(['image', 'video', 'subtitle']),
+    media_type: z.enum(['image', 'video', 'audio', 'subtitle']),
     mime_type: z.string().min(1),
   }),
   z.object({
@@ -28,7 +28,7 @@ export const mediaLocatorDtoSchema = z.discriminatedUnion('kind', [
     archive_format: z.enum(['zip', 'rar', '7z']),
     entry_name: z.string().min(1),
     extension: z.string().min(1),
-    media_type: z.enum(['image', 'video', 'subtitle']),
+    media_type: z.enum(['image', 'video', 'audio', 'subtitle']),
     mime_type: z.string().min(1),
   }),
 ])
@@ -109,6 +109,20 @@ export const videoItemDtoSchema = z.object({
   media_locator: mediaLocatorDtoSchema,
 })
 
+export const audioItemDtoSchema = z.object({
+  id: z.string().min(1),
+  file_name: z.string().min(1),
+  absolute_path: z.string().min(1),
+  tree_path: z.array(z.string().min(1)).min(1),
+  duration_sec: nonNegativeIntSchema,
+  size_mb: nonNegativeIntSchema,
+  album: z.string().default(''),
+  author: z.string().default(''),
+  track_title: z.string().default(''),
+  series_id: z.string().default(''),
+  media_locator: mediaLocatorDtoSchema,
+})
+
 export const focusedImageRefDtoSchema = z.object({
   package_id: z.string().min(1),
   image_index: nonNegativeIntSchema,
@@ -150,6 +164,7 @@ export const librarySnapshotDtoSchema = z.object({
   image_packages: z.array(imagePackageDtoSchema),
   image_directories: z.array(imagePackageDtoSchema),
   videos: z.array(videoItemDtoSchema),
+  audios: z.array(audioItemDtoSchema).optional(),
 })
 
 export const gradeOverrideMapSchema = z.record(z.string(), z.number().int().min(0).max(5).nullable())
@@ -756,6 +771,7 @@ export type MediaLocatorDto = z.infer<typeof mediaLocatorDtoSchema>
 export type ImageItemDto = z.infer<typeof imageItemDtoSchema>
 export type ImagePackageDto = z.infer<typeof imagePackageDtoSchema>
 export type VideoItemDto = z.infer<typeof videoItemDtoSchema>
+export type AudioItemDto = z.infer<typeof audioItemDtoSchema>
 export type FocusedImageRefDto = z.infer<typeof focusedImageRefDtoSchema>
 export type SidebarNodeDto = z.infer<typeof sidebarNodeDtoSchema>
 export type LibrarySnapshotDto = z.infer<typeof librarySnapshotDtoSchema>

@@ -84,6 +84,46 @@ describe('buildAppHeaderProps', () => {
     expect(setSearchPanelCollapsed).toHaveBeenCalledWith(false)
   })
 
+  it('音乐模式打开检索面板时默认切到 feature 模式', () => {
+    const setSearchPanelMode = vi.fn()
+    const setSearchPanelCollapsed = vi.fn()
+    const updateSettings = vi.fn()
+
+    const props = buildAppHeaderProps({
+      headerHeight: 56,
+      mode: 'music',
+      vectorMode: false,
+      manageMode: false,
+      metadataManageMode: false,
+      displayThumbnailScaleLevel: 3,
+      canThumbnailScaleDown: true,
+      canThumbnailScaleUp: true,
+      autoPlayEnabled: false,
+      autoPlayInterval: 3,
+      importMenuOpen: false,
+      taskStatusLabel: '空闲',
+      importTaskPanelOpen: false,
+      autoPlayPresets: [1, 2, 3],
+      thumbnailScale: 3,
+      thumbnailScaleLevelCount: 5,
+      setImportMenuOpen: vi.fn(),
+      setImportTaskPanelOpen: vi.fn(),
+      openImportFilesDialog: vi.fn(),
+      openImportFoldersDialog: vi.fn(),
+      updateSettings,
+      setSearchPanelMode,
+      setSearchPanelCollapsed,
+      onToggleManageMode: vi.fn(),
+      onToggleMetadataManageMode: vi.fn(),
+    })
+
+    props.onToggleSearchPanel()
+
+    expect(updateSettings).toHaveBeenCalledWith({ vectorMode: true })
+    expect(setSearchPanelMode).toHaveBeenCalledWith('feature')
+    expect(setSearchPanelCollapsed).toHaveBeenCalledWith(false)
+  })
+
   it('缩略图等级调节会执行 clamp，导入菜单开关使用函数式 setter', () => {
     const updateSettings = vi.fn()
     const setImportMenuOpen = vi.fn()

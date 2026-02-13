@@ -1,6 +1,6 @@
-export const BROWSER_MODES = ['image', 'video'] as const
+export const BROWSER_MODES = ['image', 'video', 'music'] as const
 
-export const MEDIA_TYPES = ['image', 'video', 'subtitle'] as const
+export const MEDIA_TYPES = ['image', 'video', 'audio', 'subtitle'] as const
 
 export type BrowserMode = (typeof BROWSER_MODES)[number]
 
@@ -97,6 +97,20 @@ export interface VideoItem {
   authorJpn?: string
   tags: string[]
   grade: number | null
+  mediaLocator: MediaLocator
+}
+
+export interface AudioItem {
+  id: string
+  fileName: string
+  absolutePath: string
+  treePath: string[]
+  durationSec: number
+  sizeMb: number
+  album: string
+  author: string
+  trackTitle: string
+  seriesId?: string
   mediaLocator: MediaLocator
 }
 

@@ -65,7 +65,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
       const nextOpen = params.manageMode || params.metadataManageMode ? true : !params.vectorMode
       params.updateSettings({ vectorMode: nextOpen })
       if (nextOpen) {
-        params.setSearchPanelMode(params.mode === 'video' ? 'feature' : 'vector')
+        params.setSearchPanelMode(params.mode === 'image' ? 'vector' : 'feature')
         params.setSearchPanelCollapsed(false)
       }
     },

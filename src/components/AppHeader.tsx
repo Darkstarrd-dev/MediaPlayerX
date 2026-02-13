@@ -139,6 +139,9 @@ function AppHeader({
           <button className={mode === 'video' ? 'is-active' : ''} type="button" onClick={() => onModeChange('video')}>
             视频模式
           </button>
+          <button className={mode === 'music' ? 'is-active' : ''} type="button" onClick={() => onModeChange('music')}>
+            音乐模式
+          </button>
         </div>
 
         <button

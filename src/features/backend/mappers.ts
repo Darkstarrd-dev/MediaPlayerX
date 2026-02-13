@@ -1,4 +1,5 @@
 import type {
+  AudioItemDto,
   FocusedImageRefDto,
   ImageItemDto,
   ImagePackageDto,
@@ -11,6 +12,7 @@ import type {
   VideoItemDto,
 } from '../../contracts/backend'
 import type {
+  AudioItem,
   FocusedImageRef,
   ImageItem,
   ImagePackage,
@@ -23,6 +25,7 @@ export interface LibrarySnapshotViewModel {
   imagePackages: ImagePackage[]
   imageDirectories: ImagePackage[]
   videos: VideoItem[]
+  audios: AudioItem[]
 }
 
 export interface ImageSidebarTreeViewModel {
@@ -150,6 +153,23 @@ export function mapVideoItemDto(video: VideoItemDto): VideoItem {
   }
 }
 
+export function mapAudioItemDto(audio: AudioItemDto): AudioItem {
+  const fallbackTrackTitle = audio.file_name.replace(/\.[^./\\]+$/, '')
+  return {
+    id: audio.id,
+    fileName: audio.file_name,
+    absolutePath: audio.absolute_path,
+    treePath: [...audio.tree_path],
+    durationSec: audio.duration_sec,
+    sizeMb: audio.size_mb,
+    album: audio.album ?? '',
+    author: audio.author ?? '',
+    trackTitle: audio.track_title?.trim().length ? audio.track_title : fallbackTrackTitle,
+    seriesId: audio.series_id ?? '',
+    mediaLocator: mapMediaLocatorDto(audio.media_locator),
+  }
+}
+
 export function mapSidebarNodeDto(node: SidebarNodeDto): SidebarNode {
   return {
     id: node.id,
@@ -226,6 +246,7 @@ export function mapLibrarySnapshotDto(snapshot: LibrarySnapshotDto): LibrarySnap
     imagePackages: snapshot.image_packages.map(mapImagePackageDto),
     imageDirectories: snapshot.image_directories.map(mapImagePackageDto),
     videos: snapshot.videos.map(mapVideoItemDto),
+    audios: (snapshot.audios ?? []).map(mapAudioItemDto),
   }
 }
 

@@ -20,7 +20,7 @@
 ## 2. 总体 Checklist
 
 - [x] Step 0：落地实施计划文档（本文件）
-- [ ] Step 1：扩展前后端模式与合约（`music` + `audio` DTO 基础）
+- [x] Step 1：扩展前后端模式与合约（`music` + `audio` DTO 基础）
 - [ ] Step 2：Electron 扫描链路支持音频文件与 `media_type=audio`
 - [ ] Step 3：数据库 Schema 迁移（`audio_item` / `audio_metadata`）与快照读写
 - [ ] Step 4：入库时解析 `ID3` / `Vorbis` 标签并写入 metadata override
@@ -221,4 +221,5 @@ git push
 
 | Step | 状态 | 测试结论 | Commit | Push |
 | --- | --- | --- | --- | --- |
-| 0 | DONE | N/A（文档变更） | TODO | TODO |
+| 0 | DONE | N/A（文档变更） | a0afed8 | DONE |
+| 1 | DONE | PASS（`buildAppHeaderProps` + backend read/write/repository 相关 24 tests） | PENDING（本次提交） | PENDING |
