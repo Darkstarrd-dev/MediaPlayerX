@@ -1,4 +1,5 @@
 import {
+  AUDIO_ITEMS,
   IMAGE_DIRECTORY_SOURCES,
   IMAGE_PACKAGES,
   VIDEO_ITEMS,
@@ -74,7 +75,7 @@ import {
   type RepositoryRequestOptions,
   type SynchronousMediaRepository,
 } from './types'
-import { toImagePackageDto, toVideoItemDto } from './mock/mappers'
+import { toAudioItemDto, toImagePackageDto, toVideoItemDto } from './mock/mappers'
 import { resolveAsync } from './mock/utils'
 import { MOCK_LIBRARY_SNAPSHOT_REF, type MockRepositoryState } from './mock/types'
 import { MockAdReviewHandlers } from './mock/AdReviewHandlers'
@@ -86,6 +87,7 @@ const INITIAL_SNAPSHOT: LibrarySnapshotDto = librarySnapshotDtoSchema.parse({
   image_packages: IMAGE_PACKAGES.map(toImagePackageDto),
   image_directories: IMAGE_DIRECTORY_SOURCES.map(toImagePackageDto),
   videos: VIDEO_ITEMS.map(toVideoItemDto),
+  audios: AUDIO_ITEMS.map(toAudioItemDto),
 })
 
 MOCK_LIBRARY_SNAPSHOT_REF.current = INITIAL_SNAPSHOT

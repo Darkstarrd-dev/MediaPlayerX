@@ -6,6 +6,7 @@ import { benchOnReactRender } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
 import ImageMainSection from './ImageMainSection'
 import MetadataPanel from './MetadataPanel'
+import MusicMainSection from './MusicMainSection'
 import SidebarPanel from './SidebarPanel'
 import VideoMainSection from './VideoMainSection'
 import type ManagementPanel from './ManagementPanel'
@@ -30,6 +31,7 @@ interface AppWorkspaceProps {
   managementPanelProps: ComponentProps<typeof ManagementPanel>
   imageMainSectionProps: ComponentProps<typeof ImageMainSection>
   videoMainSectionProps: ComponentProps<typeof VideoMainSection>
+  musicMainSectionProps: ComponentProps<typeof MusicMainSection>
   metadataPanelProps: ComponentProps<typeof MetadataPanel>
   mainFooter: ReactNode
 }
@@ -51,6 +53,7 @@ function AppWorkspace({
   sidebarPanelProps,
   imageMainSectionProps,
   videoMainSectionProps,
+  musicMainSectionProps,
   metadataPanelProps,
   mainFooter,
 }: AppWorkspaceProps) {
@@ -73,12 +76,20 @@ function AppWorkspace({
     ) : (
       <ImageMainSection {...imageMainSectionProps} />
     )
-  ) : enableProfiler ? (
-    <Profiler id="VideoMainSection" onRender={benchOnReactRender}>
+  ) : mode === 'video' ? (
+    enableProfiler ? (
+      <Profiler id="VideoMainSection" onRender={benchOnReactRender}>
+        <VideoMainSection {...videoMainSectionProps} />
+      </Profiler>
+    ) : (
       <VideoMainSection {...videoMainSectionProps} />
+    )
+  ) : enableProfiler ? (
+    <Profiler id="MusicMainSection" onRender={benchOnReactRender}>
+      <MusicMainSection {...musicMainSectionProps} />
     </Profiler>
   ) : (
-    <VideoMainSection {...videoMainSectionProps} />
+    <MusicMainSection {...musicMainSectionProps} />
   )
 
   const metadataPanel = enableProfiler ? (

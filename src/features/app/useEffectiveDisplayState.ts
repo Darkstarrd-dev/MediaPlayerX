@@ -5,6 +5,7 @@ import type {
   ImagePageViewModel,
 } from '../backend'
 import type {
+  AudioItem,
   FocusedImageRef,
   ImageItem,
   ImagePackage,
@@ -33,7 +34,9 @@ interface UseEffectiveDisplayStateParams {
   metadataImagePackage: ImagePackage | null
   currentGrade: number | null
   selectedVideoId: string
+  selectedAudioId: string
   videosForSidebar: VideoItem[]
+  audiosForSidebar: AudioItem[]
   videoDurationById: Record<string, number>
   videoCoverById: Record<string, string>
   videoCoverImageById: Record<string, string | null>
@@ -50,6 +53,7 @@ interface UseEffectiveDisplayStateResult {
   metadataImagePackageEffective: ImagePackage | null
   currentGradeEffective: number | null
   focusedVideo: VideoItem | null
+  focusedAudio: AudioItem | null
   focusedVideoDurationSec: number
   focusedVideoCoverColor: string
   focusedVideoCoverImageLocator: MediaLocator | null
@@ -76,7 +80,9 @@ export function useEffectiveDisplayState({
   metadataImagePackage,
   currentGrade,
   selectedVideoId,
+  selectedAudioId,
   videosForSidebar,
+  audiosForSidebar,
   videoDurationById,
   videoCoverById,
   videoCoverImageById,
@@ -143,8 +149,13 @@ export function useEffectiveDisplayState({
     () => new Map(videosForSidebar.map((video) => [video.id, video])),
     [videosForSidebar],
   )
+  const scopedAudioById = useMemo(
+    () => new Map(audiosForSidebar.map((audio) => [audio.id, audio])),
+    [audiosForSidebar],
+  )
 
   const focusedVideo = scopedVideoById.get(selectedVideoId) ?? videosForSidebar[0] ?? null
+  const focusedAudio = scopedAudioById.get(selectedAudioId) ?? audiosForSidebar[0] ?? null
   const focusedVideoDurationSec = focusedVideo
     ? Math.max(0, videoDurationById[focusedVideo.id] ?? focusedVideo.durationSec)
     : 0
@@ -182,6 +193,7 @@ export function useEffectiveDisplayState({
     metadataImagePackageEffective,
     currentGradeEffective,
     focusedVideo,
+    focusedAudio,
     focusedVideoDurationSec,
     focusedVideoCoverColor,
     focusedVideoCoverImageLocator,

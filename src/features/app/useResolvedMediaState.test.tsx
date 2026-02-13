@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useResolvedMediaUrls } from '../backend'
 import type { MediaRepository } from '../backend/repository'
 import type { UiBenchSettings } from '../perf/benchSettings'
-import type { FocusedImageRef, ImagePackage } from '../../types'
+import type { AudioItem, FocusedImageRef, ImagePackage } from '../../types'
 import { useResolvedMediaState } from './useResolvedMediaState'
 
 vi.mock('../backend', () => ({
@@ -57,6 +57,27 @@ function createPackageWithImages(imageCount: number): ImagePackage {
   }
 }
 
+function createAudio(id: string): AudioItem {
+  return {
+    id,
+    fileName: `${id}.mp3`,
+    absolutePath: `Z:/bench/${id}.mp3`,
+    treePath: ['Z盘', 'bench', `${id}.mp3`],
+    durationSec: 60,
+    sizeMb: 4,
+    album: 'bench',
+    author: 'bench',
+    trackTitle: id,
+    mediaLocator: {
+      kind: 'filesystem',
+      absolutePath: `Z:/bench/${id}.mp3`,
+      extension: '.mp3',
+      mediaType: 'audio',
+      mimeType: 'audio/mpeg',
+    },
+  }
+}
+
 describe('useResolvedMediaState', () => {
   beforeEach(() => {
     vi.mocked(useResolvedMediaUrls).mockClear()
@@ -92,6 +113,7 @@ describe('useResolvedMediaState', () => {
         showNamesOnly: false,
         refsInPage: visibleImageRefs.slice(2, 4),
         focusedVideo: null,
+        focusedAudio: null,
         focusedVideoCoverImageLocator: null,
       }),
     )
@@ -136,6 +158,7 @@ describe('useResolvedMediaState', () => {
           showNamesOnly: false,
           refsInPage: visibleImageRefs,
           focusedVideo: null,
+          focusedAudio: null,
           focusedVideoCoverImageLocator: null,
         }),
       {
@@ -157,5 +180,38 @@ describe('useResolvedMediaState', () => {
     const secondThumbTarget = secondTargets.find((target) => target.targetId === 'image-thumb:img-0')
     expect(secondThumbTarget?.thumbnailQuality).toBe(90)
     expect(secondThumbTarget?.thumbnailMaxEdge).toBe(640)
+  })
+
+  it('聚焦音频时会下发 audio 资源解析目标', () => {
+    const packageData = createPackageWithImages(1)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const focusedAudio = createAudio('audio-focus')
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        actualCellWidth: 180,
+        actualMediaHeight: 120,
+        thumbnailQuality: 40,
+        thumbnailWidth: 256,
+        packageById,
+        focusedImage: null,
+        metadataImage: null,
+        focusedRef: null,
+        orderedRootScopedImageRefs: [],
+        fullscreenActive: false,
+        showNamesOnly: true,
+        refsInPage: [],
+        focusedVideo: null,
+        focusedAudio,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    const firstCall = vi.mocked(useResolvedMediaUrls).mock.calls[0]?.[0]
+    const audioTargetIds = firstCall?.targets.filter((target) => target.targetId.startsWith('audio:')).map((target) => target.targetId)
+    expect(audioTargetIds).toEqual(['audio:audio-focus'])
   })
 })

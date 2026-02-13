@@ -141,11 +141,17 @@ export class MockMediaReadHandlers {
             mime_type: request.locator.mime_type,
             expires_at_ms: Date.now() + 600_000,
           }
-        : {
-            resource_url: `about:blank#mock-video-${encodeURIComponent(locatorPathKey(request.locator))}`,
-            mime_type: request.locator.mime_type,
-            expires_at_ms: Date.now() + 600_000,
-          }
+        : request.locator.media_type === 'video'
+          ? {
+              resource_url: `about:blank#mock-video-${encodeURIComponent(locatorPathKey(request.locator))}`,
+              mime_type: request.locator.mime_type,
+              expires_at_ms: Date.now() + 600_000,
+            }
+          : {
+              resource_url: `about:blank#mock-audio-${encodeURIComponent(locatorPathKey(request.locator))}`,
+              mime_type: request.locator.mime_type,
+              expires_at_ms: Date.now() + 600_000,
+            }
 
     return resolveMediaResourceResponseSchema.parse(response)
   }

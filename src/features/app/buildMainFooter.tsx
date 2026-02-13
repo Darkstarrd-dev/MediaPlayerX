@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 
-import type { BrowserMode, ImageItem, ImagePackage, VideoItem } from '../../types'
+import type { AudioItem, BrowserMode, ImageItem, ImagePackage, VideoItem } from '../../types'
 
 interface BuildMainFooterParams {
   mode: BrowserMode
   focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
   focusedVideo: VideoItem | null
+  focusedAudio: AudioItem | null
   sidebarFocusedPath: string | null
   nodeBrowseMode: boolean
   normalizedPageIndex: number
@@ -20,6 +21,7 @@ export function buildMainFooter({
   focusedImage,
   focusedImagePackage,
   focusedVideo,
+  focusedAudio,
   sidebarFocusedPath,
   nodeBrowseMode,
   normalizedPageIndex,
@@ -35,6 +37,10 @@ export function buildMainFooter({
 
   if (mode === 'video' && focusedVideo) {
     primary = focusedVideo.absolutePath
+  }
+
+  if (mode === 'music' && focusedAudio) {
+    primary = focusedAudio.absolutePath
   }
 
   const showPagination = mode === 'image' && !nodeBrowseMode && imageTotalPages > 1

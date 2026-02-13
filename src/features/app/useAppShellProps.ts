@@ -103,6 +103,7 @@ export function useAppShellProps({
     managementPanelProps: workspaceState.managementPanelProps,
     imageMainSectionProps: workspaceState.imageMainSectionProps,
     videoMainSectionProps: workspaceState.videoMainSectionProps,
+    musicMainSectionProps: workspaceState.musicMainSectionProps,
     metadataPanelProps: workspaceState.metadataPanelProps,
     mainFooter: workspaceState.mainFooter,
   }

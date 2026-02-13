@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import type { ImageItem, ImagePackage } from '../../types'
+import type { AudioItem, ImageItem, ImagePackage } from '../../types'
 import { buildMainFooter } from './buildMainFooter'
 
 const sampleImage: ImageItem = {
@@ -34,6 +34,25 @@ const samplePackage: ImagePackage = {
   images: [sampleImage],
 }
 
+const sampleAudio: AudioItem = {
+  id: 'audio-1',
+  fileName: 'audio-1.mp3',
+  absolutePath: 'C:/media/audio-1.mp3',
+  treePath: ['audio-1.mp3'],
+  durationSec: 123,
+  sizeMb: 8,
+  album: 'album',
+  author: 'author',
+  trackTitle: 'track',
+  mediaLocator: {
+    kind: 'filesystem',
+    absolutePath: 'C:/media/audio-1.mp3',
+    extension: '.mp3',
+    mediaType: 'audio',
+    mimeType: 'audio/mpeg',
+  },
+}
+
 describe('buildMainFooter', () => {
   it('图片模式分页时在 Footer 右侧渲染翻页控件', () => {
     const node = buildMainFooter({
@@ -41,6 +60,7 @@ describe('buildMainFooter', () => {
       focusedImage: sampleImage,
       focusedImagePackage: samplePackage,
       focusedVideo: null,
+      focusedAudio: null,
       sidebarFocusedPath: null,
       nodeBrowseMode: false,
       normalizedPageIndex: 1,
@@ -65,6 +85,7 @@ describe('buildMainFooter', () => {
       focusedImage: sampleImage,
       focusedImagePackage: samplePackage,
       focusedVideo: null,
+      focusedAudio: null,
       sidebarFocusedPath: null,
       nodeBrowseMode: true,
       normalizedPageIndex: 1,
@@ -77,5 +98,26 @@ describe('buildMainFooter', () => {
     expect(document.querySelector('.main-footer-pagination')).toBeNull()
     expect(screen.queryByRole('button', { name: '上一页' })).toBeNull()
     expect(screen.queryByRole('button', { name: '下一页' })).toBeNull()
+  })
+
+  it('音乐模式显示当前音频绝对路径', () => {
+    const node = buildMainFooter({
+      mode: 'music',
+      focusedImage: null,
+      focusedImagePackage: null,
+      focusedVideo: null,
+      focusedAudio: sampleAudio,
+      sidebarFocusedPath: 'fallback-path',
+      nodeBrowseMode: false,
+      normalizedPageIndex: 0,
+      imageTotalPages: 1,
+      onPrevPage: vi.fn(),
+      onNextPage: vi.fn(),
+    })
+
+    render(<div className="main-footer">{node}</div>)
+    const footerMetaSpans = document.querySelectorAll('.main-footer-meta > span')
+    expect(footerMetaSpans[0]?.textContent ?? '').toBe('C:/media/audio-1.mp3')
+    expect(document.querySelector('.main-footer-pagination')).toBeNull()
   })
 })

@@ -8,6 +8,7 @@ import { buildMetadataManagementPanelProps } from './buildMetadataManagementPane
 import { buildMetadataPanelProps } from './buildMetadataPanelProps'
 import { buildSearchPanelProps } from './buildSearchPanelProps'
 import { buildSidebarPanelProps } from './buildSidebarPanelProps'
+import { buildMusicMainSectionProps } from './buildMusicMainSectionProps'
 import { buildVideoMainSectionProps } from './buildVideoMainSectionProps'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
@@ -42,6 +43,7 @@ interface UseAppWorkspacePropsParams {
   scopedImageSourcesEffective: ImagePackage[]
   videosForSidebarCount: number
   audiosForSidebarCount: number
+  audiosForSidebar: AudioItem[]
   focusedRef: FocusedImageRef | null
   focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
@@ -104,6 +106,7 @@ interface UseAppWorkspacePropsParams {
   goPrevPage: () => void
   goNextPage: () => void
   focusedVideoDurationSec: number
+  focusedAudio: AudioItem | null
   videoTime: number
   videoPlaying: boolean
   videoRate: number
@@ -111,6 +114,7 @@ interface UseAppWorkspacePropsParams {
   videoMuted: boolean
   videoFitMode: VideoFitMode
   focusedVideoSrc: string | null
+  focusedAudioSrc: string | null
   subtitleTrackUrl: string | null
   subtitleVisible: boolean
   subtitleLoading: boolean
@@ -260,6 +264,7 @@ export function useAppWorkspaceProps({
   scopedImageSourcesEffective,
   videosForSidebarCount,
   audiosForSidebarCount,
+  audiosForSidebar,
   focusedRef,
   focusedImage,
   focusedImagePackage,
@@ -322,6 +327,7 @@ export function useAppWorkspaceProps({
   goPrevPage,
   goNextPage,
   focusedVideoDurationSec,
+  focusedAudio,
   videoTime,
   videoPlaying,
   videoRate,
@@ -329,6 +335,7 @@ export function useAppWorkspaceProps({
   videoMuted,
   videoFitMode,
   focusedVideoSrc,
+  focusedAudioSrc,
   subtitleTrackUrl,
   subtitleVisible,
   subtitleLoading,
@@ -558,6 +565,9 @@ export function useAppWorkspaceProps({
       metadataWriteBindings.applyPackageSyncName()
       return
     }
+    if (mode === 'music') {
+      return
+    }
     metadataWriteBindings.applyVideoSyncName()
   }
 
@@ -615,7 +625,6 @@ export function useAppWorkspaceProps({
   })
 
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
-  void audioByIdEffective
 
   const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
   const nodeBrowseMode =
@@ -830,6 +839,28 @@ export function useAppWorkspaceProps({
     onMetadataSyncName: applyMetadataSyncName,
   })
 
+  const musicMainSectionProps = buildMusicMainSectionProps({
+    manageMode,
+    metadataManageMode,
+    sidebarSelectedCount: sidebarCheckedNodeIds.length,
+    imageSelectedCount: imageCheckedIds.length,
+    activeSelectionScope,
+    pendingManageAction: backendWrite.pending.manage,
+    manageOperationHint,
+    canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    onManageDelete: requestManageDelete,
+    onClearManageSelection: clearAllSelections,
+    audiosForSidebar,
+    focusedAudio,
+    focusedAudioSrc,
+    selectedAudioId,
+    audioPlaylistIds,
+    audioByIdEffective,
+    setSelectedAudioId,
+    setAudioPlaylistIds,
+    updateSettings: appSettings.updateSettings,
+  })
+
   const applyMetadataFeatureSearch = (patch: {
     workTitle?: string
     circle?: string
@@ -953,6 +984,7 @@ export function useAppWorkspaceProps({
     focusedImage,
     focusedImagePackage,
     focusedVideo: focusedVideoEffective,
+    focusedAudio,
     sidebarFocusedPath: selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null) : null,
     nodeBrowseMode,
     normalizedPageIndex: normalizedPageIndexEffective,
@@ -967,6 +999,7 @@ export function useAppWorkspaceProps({
     managementPanelProps,
     imageMainSectionProps,
     videoMainSectionProps,
+    musicMainSectionProps,
     metadataPanelProps,
     mainFooter,
   }

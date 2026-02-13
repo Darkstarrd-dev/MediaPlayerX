@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import type { VideoItem } from '../../types'
+import type { AudioItem, VideoItem } from '../../types'
 import { useEffectiveDisplayState } from './useEffectiveDisplayState'
 
 function makeVideo(id: string): VideoItem {
@@ -31,7 +31,33 @@ function makeVideo(id: string): VideoItem {
   }
 }
 
-function createParams(videosForSidebar: VideoItem[], selectedVideoId = ''): Parameters<typeof useEffectiveDisplayState>[0] {
+function makeAudio(id: string): AudioItem {
+  return {
+    id,
+    fileName: `${id}.mp3`,
+    absolutePath: `D:/audios/${id}.mp3`,
+    treePath: ['D:', 'audios', `${id}.mp3`],
+    durationSec: 10,
+    sizeMb: 4,
+    album: 'album',
+    author: 'author',
+    trackTitle: id,
+    mediaLocator: {
+      kind: 'filesystem',
+      absolutePath: `D:/audios/${id}.mp3`,
+      extension: '.mp3',
+      mediaType: 'audio',
+      mimeType: 'audio/mpeg',
+    },
+  }
+}
+
+function createParams(
+  videosForSidebar: VideoItem[],
+  audiosForSidebar: AudioItem[],
+  selectedVideoId = '',
+  selectedAudioId = '',
+): Parameters<typeof useEffectiveDisplayState>[0] {
   return {
     backendPageData: null,
     backendPageSnapshot: null,
@@ -52,7 +78,9 @@ function createParams(videosForSidebar: VideoItem[], selectedVideoId = ''): Para
     metadataImagePackage: null,
     currentGrade: null,
     selectedVideoId,
+    selectedAudioId,
     videosForSidebar,
+    audiosForSidebar,
     videoDurationById: {},
     videoCoverById: {},
     videoCoverImageById: {},
@@ -64,7 +92,7 @@ describe('useEffectiveDisplayState', () => {
     const sidebarVideo = makeVideo('video-inside')
 
     const { result } = renderHook(() =>
-      useEffectiveDisplayState(createParams([sidebarVideo], 'video-outside')),
+      useEffectiveDisplayState(createParams([sidebarVideo], [], 'video-outside')),
     )
 
     expect(result.current.focusedVideo?.id).toBe('video-inside')
@@ -72,9 +100,19 @@ describe('useEffectiveDisplayState', () => {
 
   it('当前侧栏没有视频时不会保留过期视频焦点', () => {
     const { result } = renderHook(() =>
-      useEffectiveDisplayState(createParams([], 'video-outside')),
+      useEffectiveDisplayState(createParams([], [], 'video-outside')),
     )
 
     expect(result.current.focusedVideo).toBeNull()
+  })
+
+  it('选中音频不在当前侧栏范围时回退到范围内首项', () => {
+    const sidebarAudio = makeAudio('audio-inside')
+
+    const { result } = renderHook(() =>
+      useEffectiveDisplayState(createParams([], [sidebarAudio], '', 'audio-outside')),
+    )
+
+    expect(result.current.focusedAudio?.id).toBe('audio-inside')
   })
 })

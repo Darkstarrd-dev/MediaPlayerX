@@ -7,6 +7,7 @@ import {
 import type { MediaRepository } from '../backend/repository'
 import type { UiBenchSettings } from '../perf/benchSettings'
 import type {
+  AudioItem,
   FocusedImageRef,
   ImageItem,
   ImagePackage,
@@ -31,6 +32,7 @@ interface UseResolvedMediaStateParams {
   showNamesOnly: boolean
   refsInPage: FocusedImageRef[]
   focusedVideo: VideoItem | null
+  focusedAudio: AudioItem | null
   focusedVideoCoverImageLocator: MediaLocator | null
   sourceCoverLocators?: Array<{ sourceId: string; locator: MediaLocator }>
 }
@@ -40,6 +42,7 @@ interface UseResolvedMediaStateResult {
   metadataImageSrc: string | null
   fullscreenImageSrc: string | null
   focusedVideoSrc: string | null
+  focusedAudioSrc: string | null
   focusedVideoCoverImageSrc: string | null
   sourceCoverImageUrlBySourceId: Record<string, string>
 }
@@ -61,6 +64,7 @@ export function useResolvedMediaState({
   showNamesOnly,
   refsInPage,
   focusedVideo,
+  focusedAudio,
   focusedVideoCoverImageLocator,
   sourceCoverLocators = [],
 }: UseResolvedMediaStateParams): UseResolvedMediaStateResult {
@@ -176,6 +180,17 @@ export function useResolvedMediaState({
       }
     }
 
+    if (focusedAudio) {
+      pushTarget(
+        {
+          targetId: `audio:${focusedAudio.id}`,
+          locator: focusedAudio.mediaLocator,
+          variant: 'original',
+        },
+        true,
+      )
+    }
+
     for (const sourceCover of sourceCoverLocators) {
       pushTarget(
         {
@@ -194,6 +209,7 @@ export function useResolvedMediaState({
     thumbnailQuality,
     thumbnailWidth,
     focusedImage,
+    focusedAudio,
     focusedVideo,
     focusedVideoCoverImageLocator,
     metadataImage,
@@ -269,6 +285,7 @@ export function useResolvedMediaState({
     ? (originalImageUrlById[focusedImage.id] ?? thumbnailImageUrlById[focusedImage.id] ?? null)
     : null
   const focusedVideoSrc = focusedVideo ? (resolvedMedia.urlByTargetId[`video:${focusedVideo.id}`] ?? null) : null
+  const focusedAudioSrc = focusedAudio ? (resolvedMedia.urlByTargetId[`audio:${focusedAudio.id}`] ?? null) : null
   const focusedVideoCoverImageSrc = focusedVideo ? (videoCoverImageUrlById[focusedVideo.id] ?? null) : null
 
   return {
@@ -276,6 +293,7 @@ export function useResolvedMediaState({
     metadataImageSrc,
     fullscreenImageSrc,
     focusedVideoSrc,
+    focusedAudioSrc,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
   }
