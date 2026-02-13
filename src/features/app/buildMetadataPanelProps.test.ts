@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { ImageItem, ImagePackage, VideoItem } from '../../types'
+import type { AudioItem, ImageItem, ImagePackage, VideoItem } from '../../types'
 import { buildMetadataPanelProps } from './buildMetadataPanelProps'
 
 const IMAGE_FIXTURE: ImageItem = {
@@ -56,6 +56,26 @@ const VIDEO_FIXTURE: VideoItem = {
     extension: '.mp4',
     mediaType: 'video',
     mimeType: 'video/mp4',
+  },
+}
+
+const AUDIO_FIXTURE: AudioItem = {
+  id: 'audio-a',
+  fileName: 'audio-a.mp3',
+  absolutePath: 'D:/audio-a.mp3',
+  treePath: ['audio-a.mp3'],
+  durationSec: 95,
+  sizeMb: 8,
+  album: 'album-a',
+  author: 'author-a',
+  trackTitle: 'track-a',
+  seriesId: 'series-a',
+  mediaLocator: {
+    kind: 'filesystem',
+    absolutePath: 'D:/audio-a.mp3',
+    extension: '.mp3',
+    mediaType: 'audio',
+    mimeType: 'audio/mpeg',
   },
 }
 
@@ -120,6 +140,7 @@ describe('buildMetadataPanelProps', () => {
       metadataPending: false,
       editable: false,
       focusedVideo: VIDEO_FIXTURE,
+      focusedAudio: AUDIO_FIXTURE,
       metadataTab: 'playlist',
       playlistIds: ['video-a', 'video-b'],
       selectedVideoId: 'video-a',
@@ -133,6 +154,7 @@ describe('buildMetadataPanelProps', () => {
       onSavePackageMetadata: vi.fn(),
       onSavePackageParsedMetadata: vi.fn(async () => undefined),
       onSaveVideoMetadata: vi.fn(),
+      onSaveAudioMetadata: vi.fn(),
       onSearchByWorkTitle: vi.fn(),
       onSearchByCircle: vi.fn(),
       onSearchByAuthor: vi.fn(),
@@ -214,6 +236,7 @@ describe('buildMetadataPanelProps', () => {
       metadataPending: false,
       editable: false,
       focusedVideo: VIDEO_FIXTURE,
+      focusedAudio: AUDIO_FIXTURE,
       metadataTab: 'playlist',
       playlistIds: ['video-a', 'video-b', 'video-c'],
       selectedVideoId: 'video-a',
@@ -228,6 +251,7 @@ describe('buildMetadataPanelProps', () => {
       onSavePackageMetadata: vi.fn(),
       onSavePackageParsedMetadata: vi.fn(async () => undefined),
       onSaveVideoMetadata: vi.fn(),
+      onSaveAudioMetadata: vi.fn(),
       onSearchByWorkTitle: vi.fn(),
       onSearchByCircle: vi.fn(),
       onSearchByAuthor: vi.fn(),

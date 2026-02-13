@@ -18,6 +18,8 @@ import {
   type WritePackageExternalMetadataResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
+  type WriteAudioMetadataRequestDto,
+  type WriteAudioMetadataResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
   type SaveVideoCoverRequestDto,
@@ -72,6 +74,12 @@ export class FileSystemLibraryHandlers {
     request: WriteVideoMetadataRequestDto,
   ): Promise<WriteVideoMetadataResponseDto> {
     return this.context.libraryReadWriteService.writeVideoMetadata(request)
+  }
+
+  async writeAudioMetadata(
+    request: WriteAudioMetadataRequestDto,
+  ): Promise<WriteAudioMetadataResponseDto> {
+    return this.context.libraryReadWriteService.writeAudioMetadata(request)
   }
 
   async saveVideoCover(

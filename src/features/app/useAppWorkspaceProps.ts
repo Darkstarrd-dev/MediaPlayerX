@@ -951,6 +951,7 @@ export function useAppWorkspaceProps({
     metadataPending: metadataWriteBindings.metadataPending,
     editable: metadataManageMode,
     focusedVideo: focusedVideoEffective,
+    focusedAudio,
     metadataTab,
     playlistIds,
     selectedVideoId,
@@ -961,6 +962,7 @@ export function useAppWorkspaceProps({
     onSavePackageMetadata: metadataWriteBindings.applyPackageMetadata,
     onSavePackageParsedMetadata: saveParsedMetadata,
     onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
+    onSaveAudioMetadata: metadataWriteBindings.applyAudioMetadata,
     onSearchByWorkTitle: (value) => {
       applyMetadataFeatureSearch({ workTitle: value })
     },

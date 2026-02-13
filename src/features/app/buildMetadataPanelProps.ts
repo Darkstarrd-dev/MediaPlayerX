@@ -3,8 +3,8 @@ import type { Dispatch, SetStateAction } from 'react'
 import type { AppSettings } from '../../contracts/settings'
 import type { MetadataPanelProps } from '../../components/MetadataPanel'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
-import type { ImageItem, ImagePackage, VideoItem } from '../../types'
-import type { PackageMetadataWritePayload, VideoMetadataWritePayload } from './useMetadataWriteBindings'
+import type { AudioItem, ImageItem, ImagePackage, VideoItem } from '../../types'
+import type { AudioMetadataWritePayload, PackageMetadataWritePayload, VideoMetadataWritePayload } from './useMetadataWriteBindings'
 
 interface BuildMetadataPanelPropsParams {
   mode: MetadataPanelProps['mode']
@@ -61,6 +61,7 @@ interface BuildMetadataPanelPropsParams {
   metadataPending: boolean
   editable: boolean
   focusedVideo: VideoItem | null
+  focusedAudio: AudioItem | null
   metadataTab: MetadataPanelProps['metadataTab']
   playlistIds: string[]
   selectedVideoId: string
@@ -71,6 +72,7 @@ interface BuildMetadataPanelPropsParams {
   onSavePackageMetadata: (payload: PackageMetadataWritePayload) => void
   onSavePackageParsedMetadata: (payload: ParsedExternalMetadata) => Promise<void>
   onSaveVideoMetadata: (payload: VideoMetadataWritePayload) => void
+  onSaveAudioMetadata: (payload: AudioMetadataWritePayload) => void
   onMetadataTabChange: (tab: MetadataPanelProps['metadataTab']) => void
   onSelectVideo: (videoId: string) => void
   onSearchByWorkTitle: (value: string) => void
@@ -137,6 +139,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     metadataPending: params.metadataPending,
     editable: params.editable,
     focusedVideo: params.focusedVideo,
+    focusedAudio: params.focusedAudio,
     metadataTab: params.metadataTab,
     playlistIds: params.playlistIds,
     selectedVideoId: params.selectedVideoId,
@@ -148,6 +151,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onSavePackageMetadata: params.onSavePackageMetadata,
     onSavePackageParsedMetadata: params.onSavePackageParsedMetadata,
     onSaveVideoMetadata: params.onSaveVideoMetadata,
+    onSaveAudioMetadata: params.onSaveAudioMetadata,
     onSearchByWorkTitle: params.onSearchByWorkTitle,
     onSearchByCircle: params.onSearchByCircle,
     onSearchByAuthor: params.onSearchByAuthor,

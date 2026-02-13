@@ -527,6 +527,19 @@ export const writeVideoMetadataResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const writeAudioMetadataRequestSchema = z.object({
+  audio_id: z.string().min(1),
+  album: z.string().optional(),
+  author: z.string().optional(),
+  track_title: z.string().optional(),
+  series_id: z.string().optional(),
+})
+
+export const writeAudioMetadataResponseSchema = z.object({
+  audio: audioItemDtoSchema,
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const saveVideoCoverRequestSchema = z.object({
   video_id: z.string().min(1),
   time_sec: z.number().nonnegative(),
@@ -824,6 +837,8 @@ export type SearchExternalMetadataDebugDto = z.infer<typeof searchExternalMetada
 export type SearchExternalMetadataResponseDto = z.infer<typeof searchExternalMetadataResponseSchema>
 export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>
 export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataResponseSchema>
+export type WriteAudioMetadataRequestDto = z.infer<typeof writeAudioMetadataRequestSchema>
+export type WriteAudioMetadataResponseDto = z.infer<typeof writeAudioMetadataResponseSchema>
 export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>
 export type SaveVideoCoverResponseDto = z.infer<typeof saveVideoCoverResponseSchema>
 export type ReadPlaylistResponseDto = z.infer<typeof readPlaylistResponseSchema>

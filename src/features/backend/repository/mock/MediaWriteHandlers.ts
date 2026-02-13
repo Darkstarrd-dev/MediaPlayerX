@@ -11,6 +11,7 @@ import {
   writePackageMetadataResponseSchema,
   writePlaylistResponseSchema,
   writeVideoMetadataResponseSchema,
+  writeAudioMetadataResponseSchema,
   type ClearDatabaseResponseDto,
   type DeleteImageItemsRequestDto,
   type DeleteImageItemsResponseDto,
@@ -35,6 +36,8 @@ import {
   type WritePlaylistResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
+  type WriteAudioMetadataRequestDto,
+  type WriteAudioMetadataResponseDto,
 } from '../../../../contracts/backend'
 import {
   deriveWorkTitleFromFileName,
@@ -337,6 +340,36 @@ export class MockMediaWriteHandlers {
 
     return writeVideoMetadataResponseSchema.parse({
       video,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  writeAudioMetadataSync(
+    request: WriteAudioMetadataRequestDto,
+  ): WriteAudioMetadataResponseDto {
+    const snapshot = MOCK_LIBRARY_SNAPSHOT_REF.current
+    if (!snapshot) throw new Error('Mock snapshot not initialized')
+
+    const audio = snapshot.audios?.find((item) => item.id === request.audio_id)
+    if (!audio) {
+      throw new Error(`mock 仓库写入音频元数据失败：audio 不存在 ${request.audio_id}`)
+    }
+
+    if (typeof request.album !== 'undefined') {
+      audio.album = request.album.trim()
+    }
+    if (typeof request.author !== 'undefined') {
+      audio.author = request.author.trim()
+    }
+    if (typeof request.track_title !== 'undefined') {
+      audio.track_title = request.track_title.trim()
+    }
+    if (typeof request.series_id !== 'undefined') {
+      audio.series_id = request.series_id.trim()
+    }
+
+    return writeAudioMetadataResponseSchema.parse({
+      audio,
       updated_at_ms: Date.now(),
     })
   }

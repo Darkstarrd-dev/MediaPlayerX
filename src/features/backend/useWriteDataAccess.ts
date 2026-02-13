@@ -14,6 +14,8 @@ import type {
   WritePackageExternalMetadataResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
+  WriteAudioMetadataRequestDto,
+  WriteAudioMetadataResponseDto,
 } from '../../contracts/backend'
 import type { MediaRepository } from './repository'
 
@@ -40,6 +42,7 @@ interface SyncWriteRepository extends MediaRepository {
     request: WritePackageExternalMetadataRequestDto,
   ): WritePackageExternalMetadataResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
+  writeAudioMetadataSync?(request: WriteAudioMetadataRequestDto): WriteAudioMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
 }
 
@@ -118,6 +121,15 @@ interface UseWriteDataAccessResult {
       tags: Record<string, string>
       rawJson: string
       thumbUrl?: string
+    },
+  ) => Promise<void>
+  writeAudioMetadata: (
+    audioId: string,
+    payload: {
+      album?: string
+      author?: string
+      trackTitle?: string
+      seriesId?: string
     },
   ) => Promise<void>
   saveVideoCover: (videoId: string, timeSec: number, optimisticColor: string) => Promise<void>
@@ -352,6 +364,55 @@ export function useWriteDataAccess({
     [isSynchronousTestMode, repository],
   )
 
+  const writeAudioMetadata = useCallback(
+    async (
+      audioId: string,
+      payload: {
+        album?: string
+        author?: string
+        trackTitle?: string
+        seriesId?: string
+      },
+    ) => {
+      if (!repository.writeAudioMetadata) {
+        setMetadataError('当前后端不支持写入音频元数据')
+        return
+      }
+
+      setMetadataPending(true)
+      setMetadataError(null)
+
+      try {
+        const request: WriteAudioMetadataRequestDto = {
+          audio_id: audioId,
+          album: payload.album,
+          author: payload.author,
+          track_title: payload.trackTitle,
+          series_id: payload.seriesId,
+        }
+
+        if (isSynchronousTestMode) {
+          const writer = repository.writeAudioMetadataSync
+          if (!writer) {
+            setMetadataError('当前后端不支持写入音频元数据')
+            return
+          }
+          writer(request)
+          return
+        }
+
+        await repository.writeAudioMetadata(request, {
+          timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+        })
+      } catch (error: unknown) {
+        setMetadataError(toErrorMessage(error))
+      } finally {
+        setMetadataPending(false)
+      }
+    },
+    [isSynchronousTestMode, repository],
+  )
+
   const writePackageExternalMetadata = useCallback(
     async (
       packageId: string,
@@ -555,6 +616,7 @@ export function useWriteDataAccess({
     writePackageMetadata,
     writePackageExternalMetadata,
     writeVideoMetadata,
+    writeAudioMetadata,
     saveVideoCover,
   }
 }

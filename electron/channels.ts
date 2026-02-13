@@ -17,6 +17,7 @@ export const BACKEND_CHANNELS = {
   writePackageExternalMetadata: 'backend:writePackageExternalMetadata',
   searchExternalMetadata: 'backend:searchExternalMetadata',
   writeVideoMetadata: 'backend:writeVideoMetadata',
+  writeAudioMetadata: 'backend:writeAudioMetadata',
   saveVideoCover: 'backend:saveVideoCover',
   readPlaylist: 'backend:readPlaylist',
   writePlaylist: 'backend:writePlaylist',

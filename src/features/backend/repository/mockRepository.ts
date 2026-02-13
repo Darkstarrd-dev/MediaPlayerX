@@ -55,6 +55,8 @@ import {
   type WritePlaylistResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
+  type WriteAudioMetadataRequestDto,
+  type WriteAudioMetadataResponseDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
   type PauseManageAdReviewTaskRequestDto,
@@ -299,6 +301,17 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<WriteVideoMetadataResponseDto> {
     return resolveAsync(this.writeVideoMetadataSync(request), options)
+  }
+
+  writeAudioMetadataSync(request: WriteAudioMetadataRequestDto): WriteAudioMetadataResponseDto {
+    return this.write.writeAudioMetadataSync(request)
+  }
+
+  async writeAudioMetadata(
+    request: WriteAudioMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WriteAudioMetadataResponseDto> {
+    return resolveAsync(this.writeAudioMetadataSync(request), options)
   }
 
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto {

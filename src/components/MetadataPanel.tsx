@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ManageAdReviewTaskDto } from '../contracts/backend'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
-import type { BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
+import type { AudioItem, BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
 import { FeatureTagPickerModal } from './metadata/FeatureTagPickerModal'
 import { MetadataImageEditor } from './metadata/MetadataImageEditor'
+import { MetadataMusicEditor } from './metadata/MetadataMusicEditor'
 import { MetadataVideoEditor } from './metadata/MetadataVideoEditor'
 import {
   AD_REVIEW_CONCURRENCY_OPTIONS,
@@ -74,6 +75,7 @@ export interface MetadataPanelProps {
   metadataPending: boolean
   editable: boolean
   focusedVideo: VideoItem | null
+  focusedAudio: AudioItem | null
   metadataTab: 'info' | 'playlist'
   playlistIds: string[]
   selectedVideoId: string
@@ -102,6 +104,12 @@ export interface MetadataPanelProps {
     tags?: string[]
     grade?: number | null
     syncFileNameToWorkTitle?: boolean
+  }) => void
+  onSaveAudioMetadata: (payload: {
+    album?: string
+    author?: string
+    trackTitle?: string
+    seriesId?: string
   }) => void
   onSearchByWorkTitle: (value: string) => void
   onSearchByCircle: (value: string) => void
@@ -169,6 +177,7 @@ function MetadataPanel({
   metadataPending,
   editable,
   focusedVideo,
+  focusedAudio,
   metadataTab,
   playlistIds,
   selectedVideoId,
@@ -180,6 +189,7 @@ function MetadataPanel({
   onSavePackageMetadata,
   onSavePackageParsedMetadata,
   onSaveVideoMetadata,
+  onSaveAudioMetadata,
   onSearchByWorkTitle,
   onSearchByCircle,
   onSearchByAuthor,
@@ -205,6 +215,10 @@ function MetadataPanel({
   const [videoAuthorDraft, setVideoAuthorDraft] = useState('')
   const [videoAuthorJpnDraft, setVideoAuthorJpnDraft] = useState('')
   const [videoTagsDraft, setVideoTagsDraft] = useState('')
+  const [audioAlbumDraft, setAudioAlbumDraft] = useState('')
+  const [audioAuthorDraft, setAudioAuthorDraft] = useState('')
+  const [audioTrackTitleDraft, setAudioTrackTitleDraft] = useState('')
+  const [audioSeriesIdDraft, setAudioSeriesIdDraft] = useState('')
   const [featureTagDrafts, setFeatureTagDrafts] = useState<string[]>([])
   const [featureTagSelectMode, setFeatureTagSelectMode] = useState<'single' | 'multi'>('multi')
   const featureTagGroupsRef = useRef<HTMLDivElement | null>(null)
@@ -330,6 +344,13 @@ function MetadataPanel({
     focusedVideo?.authorJpn,
     focusedVideo?.tags,
   ])
+
+  useEffect(() => {
+    setAudioAlbumDraft(focusedAudio?.album ?? '')
+    setAudioAuthorDraft(focusedAudio?.author ?? '')
+    setAudioTrackTitleDraft(focusedAudio?.trackTitle ?? '')
+    setAudioSeriesIdDraft(focusedAudio?.seriesId ?? '')
+  }, [focusedAudio?.id, focusedAudio?.album, focusedAudio?.author, focusedAudio?.trackTitle, focusedAudio?.seriesId])
 
   useEffect(() => {
     if (editable && showImagePreview) {
@@ -706,6 +727,46 @@ function MetadataPanel({
     })
   }
 
+  const persistAudioAlbum = (rawValue: string) => {
+    if (!focusedAudio) {
+      return
+    }
+
+    onSaveAudioMetadata({
+      album: rawValue.trim(),
+    })
+  }
+
+  const persistAudioAuthor = (rawValue: string) => {
+    if (!focusedAudio) {
+      return
+    }
+
+    onSaveAudioMetadata({
+      author: rawValue.trim(),
+    })
+  }
+
+  const persistAudioTrackTitle = (rawValue: string) => {
+    if (!focusedAudio) {
+      return
+    }
+
+    onSaveAudioMetadata({
+      trackTitle: rawValue.trim(),
+    })
+  }
+
+  const persistAudioSeriesId = (rawValue: string) => {
+    if (!focusedAudio) {
+      return
+    }
+
+    onSaveAudioMetadata({
+      seriesId: rawValue.trim(),
+    })
+  }
+
   if (metadataCollapsed) {
     return (
       <button aria-label="展开元数据面板" className="meta-restore" type="button" onClick={onExpand}>
@@ -769,7 +830,7 @@ function MetadataPanel({
           onSearchByAuthor={onSearchByAuthor}
           onSearchByTag={onSearchByTag}
         />
-      ) : (
+      ) : mode === 'video' ? (
         <MetadataVideoEditor
           metadataTab={metadataTab}
           focusedVideo={focusedVideo}
@@ -814,6 +875,27 @@ function MetadataPanel({
           onRemoveVideoFromPlaylist={onRemoveVideoFromPlaylist}
           onDragStart={onDragStart}
           onDropToVideo={onDropToVideo}
+        />
+      ) : (
+        <MetadataMusicEditor
+          focusedAudio={focusedAudio}
+          metadataPending={metadataPending}
+          editable={editable}
+          audioAlbumDraft={audioAlbumDraft}
+          audioAuthorDraft={audioAuthorDraft}
+          audioTrackTitleDraft={audioTrackTitleDraft}
+          audioSeriesIdDraft={audioSeriesIdDraft}
+          onAudioAlbumDraftChange={setAudioAlbumDraft}
+          onAudioAuthorDraftChange={setAudioAuthorDraft}
+          onAudioTrackTitleDraftChange={setAudioTrackTitleDraft}
+          onAudioSeriesIdDraftChange={setAudioSeriesIdDraft}
+          onSubmitAudioAlbum={persistAudioAlbum}
+          onSubmitAudioAuthor={persistAudioAuthor}
+          onSubmitAudioTrackTitle={persistAudioTrackTitle}
+          onSubmitAudioSeriesId={persistAudioSeriesId}
+          onSearchByWorkTitle={onSearchByWorkTitle}
+          onSearchByCircle={onSearchByCircle}
+          onSearchByAuthor={onSearchByAuthor}
         />
       )}
 

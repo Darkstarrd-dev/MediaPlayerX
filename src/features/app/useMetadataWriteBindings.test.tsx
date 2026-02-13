@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import type { ImagePackage, SidebarNode, VideoItem } from '../../types'
+import type { AudioItem, ImagePackage, SidebarNode, VideoItem } from '../../types'
 import { useMetadataWriteBindings } from './useMetadataWriteBindings'
 
 function createImagePackage(id: string, overrides: Partial<ImagePackage> = {}): ImagePackage {
@@ -44,6 +44,28 @@ function createVideo(id: string): VideoItem {
       extension: '.mp4',
       mediaType: 'video',
       mimeType: 'video/mp4',
+    },
+  }
+}
+
+function createAudio(id: string): AudioItem {
+  return {
+    id,
+    fileName: `${id}.mp3`,
+    absolutePath: `D:/audio/${id}.mp3`,
+    treePath: ['D:', 'audio', `${id}.mp3`],
+    durationSec: 120,
+    sizeMb: 9,
+    album: `${id}-album`,
+    author: `${id}-author`,
+    trackTitle: `${id}-title`,
+    seriesId: `${id}-series`,
+    mediaLocator: {
+      kind: 'filesystem',
+      absolutePath: `D:/audio/${id}.mp3`,
+      extension: '.mp3',
+      mediaType: 'audio',
+      mimeType: 'audio/mpeg',
     },
   }
 }
@@ -101,8 +123,10 @@ describe('useMetadataWriteBindings', () => {
           [packageB.id, packageB],
         ]),
         videoById: new Map<string, VideoItem>([['video-a', createVideo('video-a')]]),
+        audioById: new Map<string, AudioItem>([['audio-a', createAudio('audio-a')]]),
         metadataImagePackageId: packageA.id,
         focusedVideoId: 'video-a',
+        focusedAudioId: 'audio-a',
         sidebarCheckedNodeIds: [sidebarRoot.id],
         sidebarNodeById: new Map([[sidebarRoot.id, sidebarRoot]]),
         setManageOperationHint: vi.fn(),
@@ -154,8 +178,10 @@ describe('useMetadataWriteBindings', () => {
         },
         packageById: new Map([[packageA.id, packageA]]),
         videoById: new Map<string, VideoItem>(),
+        audioById: new Map<string, AudioItem>([['audio-a', createAudio('audio-a')]]),
         metadataImagePackageId: packageA.id,
         focusedVideoId: null,
+        focusedAudioId: 'audio-a',
         sidebarCheckedNodeIds: [],
         sidebarNodeById: new Map(),
         setManageOperationHint: vi.fn(),
@@ -174,6 +200,54 @@ describe('useMetadataWriteBindings', () => {
       packageA.id,
       expect.objectContaining({
         syncWorkTitleToPackageName: true,
+      }),
+    )
+  })
+
+  it('音频元数据提交会按目标音频合并写入', async () => {
+    const audio = createAudio('audio-a')
+    const writeAudioMetadata = vi.fn().mockResolvedValue(undefined)
+
+    const { result } = renderHook(() =>
+      useMetadataWriteBindings({
+        metadataManageMode: false,
+        backendWrite: {
+          pending: { metadata: false, grade: false },
+          writePackageGrade: vi.fn().mockResolvedValue(undefined),
+          writePackageMetadata: vi.fn().mockResolvedValue(undefined),
+          writeVideoMetadata: vi.fn().mockResolvedValue(undefined),
+          writeAudioMetadata,
+        },
+        packageById: new Map<string, ImagePackage>(),
+        videoById: new Map<string, VideoItem>(),
+        audioById: new Map<string, AudioItem>([[audio.id, audio]]),
+        metadataImagePackageId: null,
+        focusedVideoId: null,
+        focusedAudioId: audio.id,
+        sidebarCheckedNodeIds: [],
+        sidebarNodeById: new Map(),
+        setManageOperationHint: vi.fn(),
+      }),
+    )
+
+    act(() => {
+      result.current.applyAudioMetadata({
+        album: 'next-album',
+        seriesId: '',
+      })
+    })
+
+    await waitFor(() => {
+      expect(writeAudioMetadata).toHaveBeenCalledTimes(1)
+    })
+
+    expect(writeAudioMetadata).toHaveBeenCalledWith(
+      audio.id,
+      expect.objectContaining({
+        album: 'next-album',
+        author: audio.author,
+        trackTitle: audio.trackTitle,
+        seriesId: '',
       }),
     )
   })

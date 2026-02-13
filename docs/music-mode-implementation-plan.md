@@ -26,7 +26,7 @@
 - [x] Step 4：入库时解析 `ID3` / `Vorbis` 标签并写入 metadata override
 - [x] Step 5：前端状态层接入 music（读取、选择、播放列表、sidebar scope）
 - [x] Step 6：新增 `MusicMainSection`（names-only + `music-controls-shell`）
-- [ ] Step 7：Metadata 面板接入 `MetadataMusicEditor`（album/author/title/seriesId）
+- [x] Step 7：Metadata 面板接入 `MetadataMusicEditor`（album/author/title/seriesId）
 - [ ] Step 8：seriesId 跨模式跳转（music -> manga/image、music -> animation/video）
 - [ ] Step 9：测试补齐与文档同步（interaction/architecture 必要更新）
 - [ ] Step 10：最终回归、收尾提交与推送
@@ -227,4 +227,5 @@ git push
 | 3 | DONE | PASS（schema/snapshot-store/database/read-service 共 26 tests） | 8085593 | DONE |
 | 4 | DONE | PASS（metadata-store/database/read-service 含音频标签入库共 25 tests） | f779c2d | DONE |
 | 5 | DONE | PASS（`buildSidebarPanelProps` + `useAudioSidebarState` + app pipeline/settings/sidebar 相关 14 tests） | d161bb7 | DONE |
-| 6 | DONE | PASS（`MusicMainSection` + `AppWorkspace` + resolved/effective/footer 相关 26 tests） | PENDING（本次提交） | PENDING |
+| 6 | DONE | PASS（`MusicMainSection` + `AppWorkspace` + resolved/effective/footer 相关 26 tests） | 71a6271 | DONE |
+| 7 | DONE | PASS（`MetadataMusicEditor` + `useMetadataWriteBindings` + metadata/write-access 相关 13 tests） | PENDING（本次提交） | PENDING |

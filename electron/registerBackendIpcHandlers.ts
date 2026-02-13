@@ -64,6 +64,8 @@ import {
   searchExternalMetadataResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
+  writeAudioMetadataRequestSchema,
+  writeAudioMetadataResponseSchema,
   writePackageGradeRequestSchema,
   writePackageGradeResponseSchema,
   readAppStateRequestSchema,
@@ -448,6 +450,12 @@ export function registerBackendIpcHandlers(): void {
     const request = writeVideoMetadataRequestSchema.parse(payload)
     const response = await ensureService().writeVideoMetadata(request)
     return writeVideoMetadataResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.writeAudioMetadata, async (_event, payload: unknown) => {
+    const request = writeAudioMetadataRequestSchema.parse(payload)
+    const response = await ensureService().writeAudioMetadata(request)
+    return writeAudioMetadataResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.saveVideoCover, async (_event, payload: unknown) => {

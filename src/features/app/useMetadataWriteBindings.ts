@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { ImagePackage, SidebarNode, VideoItem } from '../../types'
+import type { AudioItem, ImagePackage, SidebarNode, VideoItem } from '../../types'
 
 export interface PackageMetadataWritePayload {
   workTitle?: string
@@ -43,6 +43,13 @@ export interface VideoMetadataWritePayload {
   syncFileNameToWorkTitle?: boolean
 }
 
+export interface AudioMetadataWritePayload {
+  album?: string
+  author?: string
+  trackTitle?: string
+  seriesId?: string
+}
+
 interface UseMetadataWriteBindingsParams {
   metadataManageMode: boolean
   backendWrite: {
@@ -77,6 +84,15 @@ interface UseMetadataWriteBindingsParams {
         syncFileNameToWorkTitle?: boolean
       },
     ) => Promise<void>
+    writeAudioMetadata?: (
+      audioId: string,
+      payload: {
+        album?: string
+        author?: string
+        trackTitle?: string
+        seriesId?: string
+      },
+    ) => Promise<void>
     writePackageExternalMetadata?: (
       packageId: string,
       payload: {
@@ -101,8 +117,10 @@ interface UseMetadataWriteBindingsParams {
   }
   packageById: Map<string, ImagePackage>
   videoById: Map<string, VideoItem>
+  audioById: Map<string, AudioItem>
   metadataImagePackageId: string | null
   focusedVideoId: string | null
+  focusedAudioId: string | null
   sidebarCheckedNodeIds: string[]
   sidebarNodeById: Map<string, SidebarNode>
   setManageOperationHint: (value: string | null) => void
@@ -116,6 +134,7 @@ interface UseMetadataWriteBindingsResult {
   applyPackageExternalMetadataById: (packageId: string, payload: ParsedExternalMetadataSavePayload) => Promise<void>
   applyPackageSyncName: () => void
   applyVideoMetadata: (payload: VideoMetadataWritePayload) => void
+  applyAudioMetadata: (payload: AudioMetadataWritePayload) => void
   applyVideoSyncName: () => void
 }
 
@@ -164,8 +183,10 @@ export function useMetadataWriteBindings({
   backendWrite,
   packageById,
   videoById,
+  audioById,
   metadataImagePackageId,
   focusedVideoId,
+  focusedAudioId,
   sidebarCheckedNodeIds,
   sidebarNodeById,
   setManageOperationHint,
@@ -173,6 +194,7 @@ export function useMetadataWriteBindings({
   const collectBatchTargets = useCallback(() => {
     const packageIds = new Set<string>()
     const videoIds = new Set<string>()
+    const audioIds = new Set<string>()
 
     const visitNode = (node: SidebarNode) => {
       if (node.packageId) {
@@ -183,6 +205,9 @@ export function useMetadataWriteBindings({
       }
       if (node.videoId) {
         videoIds.add(node.videoId)
+      }
+      if (node.audioId) {
+        audioIds.add(node.audioId)
       }
       for (const child of node.children) {
         visitNode(child)
@@ -197,11 +222,12 @@ export function useMetadataWriteBindings({
       visitNode(node)
     }
 
-    return {
-      packageIds: Array.from(packageIds),
-      videoIds: Array.from(videoIds),
-    }
-  }, [sidebarCheckedNodeIds, sidebarNodeById])
+      return {
+        packageIds: Array.from(packageIds),
+        videoIds: Array.from(videoIds),
+        audioIds: Array.from(audioIds),
+      }
+    }, [sidebarCheckedNodeIds, sidebarNodeById])
 
   const resolvePackageTargets = useCallback((): string[] => {
     if (metadataManageMode) {
@@ -222,6 +248,16 @@ export function useMetadataWriteBindings({
     }
     return focusedVideoId ? [focusedVideoId] : []
   }, [collectBatchTargets, focusedVideoId, metadataManageMode])
+
+  const resolveAudioTargets = useCallback((): string[] => {
+    if (metadataManageMode) {
+      const { audioIds } = collectBatchTargets()
+      if (audioIds.length > 0) {
+        return audioIds
+      }
+    }
+    return focusedAudioId ? [focusedAudioId] : []
+  }, [collectBatchTargets, focusedAudioId, metadataManageMode])
 
   const runBatchWrite = useCallback(
     async (
@@ -290,6 +326,23 @@ export function useMetadataWriteBindings({
       }
     },
     [videoById],
+  )
+
+  const buildAudioMetadataPayload = useCallback(
+    (audioId: string, payload: AudioMetadataWritePayload) => {
+      const source = audioById.get(audioId)
+      if (!source) {
+        return null
+      }
+
+      return {
+        album: normalizeOptionalTextPatch(payload.album, source.album),
+        author: normalizeOptionalTextPatch(payload.author, source.author),
+        trackTitle: normalizeOptionalTextPatch(payload.trackTitle, source.trackTitle),
+        seriesId: normalizeSeriesIdPatch(payload.seriesId, source.seriesId ?? ''),
+      }
+    },
+    [audioById],
   )
 
   const applyPackageGrade = useCallback(
@@ -361,6 +414,34 @@ export function useMetadataWriteBindings({
     [backendWrite.writeVideoMetadata, buildVideoMetadataPayload, resolveVideoTargets, runBatchWrite, setManageOperationHint],
   )
 
+  const applyAudioMetadata = useCallback(
+    (payload: AudioMetadataWritePayload) => {
+      const writer = backendWrite.writeAudioMetadata
+      if (!writer) {
+        return
+      }
+
+      const audioIds = resolveAudioTargets()
+      if (audioIds.length === 0) {
+        setManageOperationHint('音频元数据写入失败：当前无可用音频')
+        return
+      }
+
+      void runBatchWrite(
+        audioIds,
+        async (audioId) => {
+          const mergedPayload = buildAudioMetadataPayload(audioId, payload)
+          if (!mergedPayload) {
+            throw new Error(`audio_not_found:${audioId}`)
+          }
+          await writer(audioId, mergedPayload)
+        },
+        '音频元数据批量写入完成',
+      )
+    },
+    [backendWrite.writeAudioMetadata, buildAudioMetadataPayload, resolveAudioTargets, runBatchWrite, setManageOperationHint],
+  )
+
   const applyPackageSyncName = useCallback(() => {
     applyPackageMetadata({
       syncWorkTitleToPackageName: true,
@@ -428,6 +509,7 @@ export function useMetadataWriteBindings({
     applyPackageExternalMetadataById,
     applyPackageSyncName,
     applyVideoMetadata,
+    applyAudioMetadata,
     applyVideoSyncName,
   }
 }

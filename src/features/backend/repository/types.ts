@@ -55,6 +55,8 @@ import type {
   SearchExternalMetadataResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
+  WriteAudioMetadataRequestDto,
+  WriteAudioMetadataResponseDto,
   SetImageHiddenRequestDto,
   SetImageHiddenResponseDto,
   WritePackageGradeRequestDto,
@@ -141,6 +143,10 @@ export interface MediaRepository {
     request: WriteVideoMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WriteVideoMetadataResponseDto>
+  writeAudioMetadata?(
+    request: WriteAudioMetadataRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<WriteAudioMetadataResponseDto>
   saveVideoCover(
     request: SaveVideoCoverRequestDto,
     options?: RepositoryRequestOptions,
@@ -217,6 +223,7 @@ export interface SynchronousMediaRepository extends MediaRepository {
   ): WritePackageExternalMetadataResponseDto
   searchExternalMetadataSync?(request: SearchExternalMetadataRequestDto): SearchExternalMetadataResponseDto
   writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
+  writeAudioMetadataSync?(request: WriteAudioMetadataRequestDto): WriteAudioMetadataResponseDto
   saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
   readPlaylistSync(): ReadPlaylistResponseDto
   writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto

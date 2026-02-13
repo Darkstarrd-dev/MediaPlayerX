@@ -46,6 +46,8 @@ import {
   type WritePlaylistResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
+  type WriteAudioMetadataRequestDto,
+  type WriteAudioMetadataResponseDto,
 } from '../../../src/contracts/backend'
 import {
   applyPackageMetadataWrite,
@@ -402,6 +404,47 @@ export class LibraryReadWriteService {
     })
 
     return response
+  }
+
+  async writeAudioMetadata(
+    request: WriteAudioMetadataRequestDto,
+  ): Promise<WriteAudioMetadataResponseDto> {
+    const snapshot = await this.options.ensureSnapshotLoaded()
+    const audio = snapshot.audios?.find((item) => item.id === request.audio_id)
+    if (!audio) {
+      throw new Error(`写入音频元数据失败：audio 不存在 ${request.audio_id}`)
+    }
+
+    if (typeof request.album !== 'undefined') {
+      audio.album = request.album.trim()
+    }
+    if (typeof request.author !== 'undefined') {
+      audio.author = request.author.trim()
+    }
+    if (typeof request.track_title !== 'undefined') {
+      audio.track_title = request.track_title.trim()
+    }
+    if (typeof request.series_id !== 'undefined') {
+      audio.series_id = request.series_id.trim()
+    }
+
+    const updatedAtMs = Date.now()
+    this.options.database.writeAudioMetadata(audio.id, {
+      album: audio.album,
+      author: audio.author,
+      trackTitle: audio.track_title,
+      seriesId: audio.series_id,
+    })
+
+    this.options.emitLibraryChanged({
+      reason: 'write-audio-metadata',
+      updated_at_ms: updatedAtMs,
+    })
+
+    return {
+      audio,
+      updated_at_ms: updatedAtMs,
+    }
   }
 
   async saveVideoCover(

@@ -55,6 +55,8 @@ import {
   type WritePackageExternalMetadataResponseDto,
   type WriteVideoMetadataRequestDto,
   type WriteVideoMetadataResponseDto,
+  type WriteAudioMetadataRequestDto,
+  type WriteAudioMetadataResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
   type WriteAppStateRequestDto,
@@ -564,6 +566,10 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async writeVideoMetadata(request: WriteVideoMetadataRequestDto): Promise<WriteVideoMetadataResponseDto> {
     return this.libraryHandlers.writeVideoMetadata(request)
+  }
+
+  async writeAudioMetadata(request: WriteAudioMetadataRequestDto): Promise<WriteAudioMetadataResponseDto> {
+    return this.libraryHandlers.writeAudioMetadata(request)
   }
 
   async saveVideoCover(request: SaveVideoCoverRequestDto): Promise<SaveVideoCoverResponseDto> {
