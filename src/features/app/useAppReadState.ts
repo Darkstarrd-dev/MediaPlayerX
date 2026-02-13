@@ -28,7 +28,6 @@ export function useAppReadState({
     thumbnailScale,
     thumbnailGap,
     thumbnailWidth,
-    styleId,
     showNamesOnly,
   } = appSettings
 
@@ -128,7 +127,7 @@ export function useAppReadState({
         zoomLevel: thumbnailScale,
         cardChrome: resolveThumbnailCardChromePx(),
       }).pageSize,
-    [gridSize.height, gridSize.width, styleId, thumbnailGap, thumbnailScale, thumbnailWidth],
+    [gridSize.height, gridSize.width, thumbnailGap, thumbnailScale, thumbnailWidth],
   )
 
   const backendMetadataRequestRef = useMemo<FocusedImageRef | null>(() => {

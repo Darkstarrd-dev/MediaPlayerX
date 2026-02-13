@@ -44,7 +44,6 @@ export function useAppNavigationState({
     thumbnailScale,
     thumbnailGap,
     thumbnailWidth,
-    styleId,
     showNamesOnly,
     imageRootNodeId,
     videoRootNodeId,
@@ -240,7 +239,7 @@ export function useAppNavigationState({
         zoomLevel: thumbnailScale,
         cardChrome: resolveThumbnailCardChromePx(),
       }),
-    [layoutGridSize.height, layoutGridSize.width, styleId, thumbnailGap, thumbnailScale, thumbnailWidth],
+    [layoutGridSize.height, layoutGridSize.width, thumbnailGap, thumbnailScale, thumbnailWidth],
   )
   const normalizedThumbnailScale = thumbnailLayout.zoomLevel
   const thumbnailScaleLevelCount = thumbnailLayout.zoomLevelCount

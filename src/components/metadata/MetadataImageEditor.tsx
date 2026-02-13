@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { mediaLocatorFileName } from '../../features/backend'
 import type { ParsedExternalMetadata } from '../../features/metadata/parseExternalMetadata'
@@ -93,11 +93,36 @@ export function MetadataImageEditor({
   )
   const [parsedError, setParsedError] = useState<string | null>(null)
 
+  const latestPackageDraftFallbackRef = useRef({
+    workTitleDraft,
+    circleDraft,
+    authorDraft,
+    tagsDraft,
+  })
+
   useEffect(() => {
+    latestPackageDraftFallbackRef.current = {
+      workTitleDraft,
+      circleDraft,
+      authorDraft,
+      tagsDraft,
+    }
+  }, [authorDraft, circleDraft, tagsDraft, workTitleDraft])
+
+  useEffect(() => {
+    const latestDraftFallback = latestPackageDraftFallbackRef.current
     setPreferTitleJpn(true)
     setPreferAuthorJpn(true)
     setPreferGroupJpn(true)
-    setParsedDraft(buildParsedDraft(focusedImagePackage, workTitleDraft, circleDraft, authorDraft, tagsDraft))
+    setParsedDraft(
+      buildParsedDraft(
+        focusedImagePackage,
+        latestDraftFallback.workTitleDraft,
+        latestDraftFallback.circleDraft,
+        latestDraftFallback.authorDraft,
+        latestDraftFallback.tagsDraft,
+      ),
+    )
     setParsedError(null)
   }, [focusedImagePackage])
 
