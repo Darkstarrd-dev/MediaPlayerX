@@ -122,10 +122,11 @@ function VideoMainSection({
   const showVideoFrame = Boolean(videoSourceUrl && (videoPlaying || hasPlayedCurrentSource))
   const videoScreenBackground = 'var(--mpx-bg-elevated)'
   const videoObjectFit = videoFitMode === 'original' ? 'none' : videoFitMode
+  const toolbarAuthor = focusedVideo?.author.trim() ?? ''
   const toolbarVideoSummary = focusedVideo
     ? [
         focusedVideo.workTitle.trim() || focusedVideo.fileName,
-        focusedVideo.author.trim() || null,
+        toolbarAuthor && toolbarAuthor !== '未知' ? `[${toolbarAuthor}]` : null,
         `${focusedVideo.width}x${focusedVideo.height}`,
         `${focusedVideo.sizeMb}MB`,
       ]
@@ -192,7 +193,7 @@ function VideoMainSection({
   }, [subtitleTrackUrl, subtitleVisible, videoSourceUrl])
 
   return (
-    <div className="video-preview">
+    <>
       <div className="main-toolbar">
         {manageMode ? (
           <>
@@ -247,7 +248,8 @@ function VideoMainSection({
         )}
       </div>
 
-      <div className="video-screen" style={{ background: videoScreenBackground }}>
+      <div className="video-preview">
+        <div className="video-screen" style={{ background: videoScreenBackground }}>
         {videoSourceUrl ? (
           <video
             ref={videoRef}
@@ -295,9 +297,9 @@ function VideoMainSection({
             <span>无可用视频源</span>
           </div>
         ) : null}
-      </div>
+        </div>
 
-      <div className="video-controls-shell">
+        <div className="video-controls-shell">
         <div className="video-controls-progress">
           <span className="video-progress-time">{`${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
           <input
@@ -521,8 +523,9 @@ function VideoMainSection({
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
