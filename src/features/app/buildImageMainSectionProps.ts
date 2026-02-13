@@ -22,8 +22,6 @@ interface BuildImageMainSectionPropsParams {
   thumbnailColumns: number
   actualThumbnailGap: number
   vectorSearchResults: VectorCandidate[]
-  normalizedPageIndexEffective: number
-  imageTotalPagesEffective: number
   packageByIdEffective: Map<string, ImagePackage>
   thumbnailImageUrlById: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
@@ -63,8 +61,6 @@ interface BuildImageMainSectionPropsParams {
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
   onClearManageSelection: () => void
-  goPrevPage: () => void
-  goNextPage: () => void
   nodeBrowseMode: boolean
   nodeBrowseLabel: string
   nodeBrowseItems: Array<{
@@ -99,8 +95,6 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     thumbnailColumns: params.thumbnailColumns,
     thumbnailGap: params.actualThumbnailGap,
     vectorCandidates: params.vectorSearchResults,
-    normalizedPageIndex: params.normalizedPageIndexEffective,
-    imageTotalPages: params.imageTotalPagesEffective,
     packageById: params.packageByIdEffective,
     imageUrlById: params.thumbnailImageUrlById,
     gridRef: params.gridRef,
@@ -145,8 +139,6 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     metadataEhentaiCookies: params.metadataEhentaiCookies,
     onMetadataSyncName: params.onMetadataSyncName,
     onMetadataSaveParsed: params.onMetadataSaveParsed,
-    onPrevPage: params.goPrevPage,
-    onNextPage: params.goNextPage,
     nodeBrowseMode: params.nodeBrowseMode,
     nodeBrowseLabel: params.nodeBrowseLabel,
     nodeBrowseItems: params.nodeBrowseItems,

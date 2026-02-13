@@ -78,7 +78,8 @@ export function useAppDisplayResources({
 }: UseAppDisplayResourcesParams) {
   const { showNamesOnly } = appSettings
   const isVideoMode = appSettings.mode === 'video'
-  const isSynchronousSubtitleMode = import.meta.env.MODE === 'test' && isSyncSubtitleRepository(mediaRepository)
+  const syncMediaRepository = isSyncSubtitleRepository(mediaRepository) ? mediaRepository : null
+  const isSynchronousSubtitleMode = import.meta.env.MODE === 'test' && Boolean(syncMediaRepository)
   const { imageFocusActive, metadataManageMode, setManageOperationHint } = sessionState
 
   const {
@@ -218,8 +219,9 @@ export function useAppDisplayResources({
 
   useEffect(() => {
     const api = mediaRepository.listVideoSubtitles
+    const apiSync = syncMediaRepository?.listVideoSubtitlesSync
     const videoId = isVideoMode ? (focusedVideoEffective?.id ?? null) : null
-    if (!isVideoMode || !api || !videoId) {
+    if (!isVideoMode || !videoId || (!api && !apiSync)) {
       setSubtitleOptions([])
       setSelectedSubtitleId(null)
       setSelectedSubtitleLocator(null)
@@ -230,8 +232,8 @@ export function useAppDisplayResources({
       return
     }
 
-    if (isSynchronousSubtitleMode) {
-      const response = mediaRepository.listVideoSubtitlesSync({ video_id: videoId })
+    if (isSynchronousSubtitleMode && apiSync) {
+      const response = apiSync({ video_id: videoId })
       const options = response.subtitles.map((item) => ({
         id: item.id,
         label: item.label,
@@ -261,6 +263,17 @@ export function useAppDisplayResources({
         setSubtitleMessage('未发现同目录字幕文件')
       }
       setSubtitleLoading(false)
+      return
+    }
+
+    if (!api) {
+      setSubtitleOptions([])
+      setSelectedSubtitleId(null)
+      setSelectedSubtitleLocator(null)
+      setSubtitleTrackUrl(null)
+      setSubtitleVisible(false)
+      setSubtitleLoading(false)
+      setSubtitleMessage(null)
       return
     }
 
@@ -328,7 +341,7 @@ export function useAppDisplayResources({
     return () => {
       active = false
     }
-  }, [focusedVideoEffective?.id, isSynchronousSubtitleMode, isVideoMode, mediaRepository])
+  }, [focusedVideoEffective?.id, isSynchronousSubtitleMode, isVideoMode, mediaRepository, syncMediaRepository])
 
   useEffect(() => {
     if (!isVideoMode || !focusedVideoEffective?.id || !selectedSubtitleLocator) {
@@ -336,8 +349,8 @@ export function useAppDisplayResources({
       return
     }
 
-    if (isSynchronousSubtitleMode) {
-      const response = mediaRepository.resolveMediaResourceSync({
+    if (isSynchronousSubtitleMode && syncMediaRepository) {
+      const response = syncMediaRepository.resolveMediaResourceSync({
         locator: toLocatorDto(selectedSubtitleLocator),
         preferred_variant: 'original',
       })
@@ -368,7 +381,7 @@ export function useAppDisplayResources({
     return () => {
       active = false
     }
-  }, [focusedVideoEffective?.id, isSynchronousSubtitleMode, isVideoMode, mediaRepository, selectedSubtitleLocator])
+  }, [focusedVideoEffective?.id, isSynchronousSubtitleMode, isVideoMode, mediaRepository, selectedSubtitleLocator, syncMediaRepository])
 
   const selectSubtitleById = async (subtitleId: string) => {
     const option = subtitleOptions.find((item) => item.id === subtitleId)

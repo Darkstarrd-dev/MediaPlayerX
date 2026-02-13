@@ -24,8 +24,6 @@ interface ImageMainSectionProps {
   thumbnailColumns: number
   thumbnailGap: number
   vectorCandidates: VectorCandidate[]
-  normalizedPageIndex: number
-  imageTotalPages: number
   packageById: Map<string, ImagePackage>
   imageUrlById: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
@@ -64,8 +62,6 @@ interface ImageMainSectionProps {
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
   onClearManageSelection: () => void
-  onPrevPage: () => void
-  onNextPage: () => void
   nodeBrowseMode?: boolean
   nodeBrowseLabel?: string
   nodeBrowseItems?: Array<{
@@ -95,12 +91,10 @@ function ImageMainSection({
   refsInPage,
   pageStart,
   actualCellWidth,
-  actualMediaHeight,
+  actualMediaHeight: _actualMediaHeight,
   thumbnailColumns,
   thumbnailGap,
   vectorCandidates,
-  normalizedPageIndex,
-  imageTotalPages,
   packageById,
   imageUrlById,
   gridRef,
@@ -139,8 +133,6 @@ function ImageMainSection({
   metadataEhentaiCookies,
   onMetadataSyncName,
   onMetadataSaveParsed,
-  onPrevPage,
-  onNextPage,
   nodeBrowseMode = false,
   nodeBrowseLabel = '',
   nodeBrowseItems = [],
@@ -263,43 +255,40 @@ function ImageMainSection({
       </div>
 
       {nodeBrowseMode ? (
-        <>
-          <div
-            className="image-grid node-browse-grid"
-            ref={gridRef}
-            style={{
-              gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
-              gap: `${thumbnailGap}px`,
-            }}
-          >
-            {nodeBrowseItems.map((item) => (
-              <div key={item.nodeId} className="thumb-card" style={{ width: `${actualCellWidth}px` }}>
-                <button
-                  className="thumb-card-main"
-                  type="button"
-                  onClick={() => onSelectNodeBrowseItem?.(item.nodeId, item.imageSourceId)}
-                >
-                  <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
-                    <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
-                      {item.coverImageUrl ? (
-                        <img
-                          className="thumb-media-image"
-                          src={item.coverImageUrl}
-                          alt={item.label}
-                          loading="lazy"
-                          draggable={false}
-                        />
-                      ) : (
-                        <div className="thumb-media-empty" />
-                      )}
-                    </div>
+        <div
+          className="image-grid node-browse-grid"
+          ref={gridRef}
+          style={{
+            gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
+            gap: `${thumbnailGap}px`,
+          }}
+        >
+          {nodeBrowseItems.map((item) => (
+            <div key={item.nodeId} className="thumb-card" style={{ width: `${actualCellWidth}px` }}>
+              <button
+                className="thumb-card-main"
+                type="button"
+                onClick={() => onSelectNodeBrowseItem?.(item.nodeId, item.imageSourceId)}
+              >
+                <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
+                  <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
+                    {item.coverImageUrl ? (
+                      <img
+                        className="thumb-media-image"
+                        src={item.coverImageUrl}
+                        alt={item.label}
+                        loading="lazy"
+                        draggable={false}
+                      />
+                    ) : (
+                      <div className="thumb-media-empty" />
+                    )}
                   </div>
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="pager-line is-placeholder" aria-hidden="true" />
-        </>
+                </div>
+              </button>
+            </div>
+          ))}
+        </div>
       ) : showNamesOnly ? (
         <div className={`name-list ${manageMode ? 'is-manage' : ''}`} ref={gridRef}>
           <div className="name-list-header">
@@ -353,29 +342,28 @@ function ImageMainSection({
           </div>
         </div>
       ) : (
-        <>
-          <div
-            className={`image-grid ${manageMode ? 'is-manage' : ''}`}
-            ref={gridRef}
-            onMouseDown={manageMode ? startThumbnailDragToggle : undefined}
-            style={{
-              gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
-              gap: `${thumbnailGap}px`,
-            }}
-          >
-            {showSkeleton
-              ? Array.from({ length: Math.max(1, placeholderCount) }).map((_, index) => (
-                  <div
-                    key={`skeleton-${index}`}
-                    className="thumb-card is-skeleton"
-                    style={{ width: `${actualCellWidth}px` }}
-                  >
-                    <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
-                      <div className="thumb-media thumb-media-empty" style={{ width: '100%', height: '100%' }} />
-                    </div>
+        <div
+          className={`image-grid ${manageMode ? 'is-manage' : ''}`}
+          ref={gridRef}
+          onMouseDown={manageMode ? startThumbnailDragToggle : undefined}
+          style={{
+            gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
+            gap: `${thumbnailGap}px`,
+          }}
+        >
+          {showSkeleton
+            ? Array.from({ length: Math.max(1, placeholderCount) }).map((_, index) => (
+                <div
+                  key={`skeleton-${index}`}
+                  className="thumb-card is-skeleton"
+                  style={{ width: `${actualCellWidth}px` }}
+                >
+                  <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
+                    <div className="thumb-media thumb-media-empty" style={{ width: '100%', height: '100%' }} />
                   </div>
-                ))
-              : refsInPage.map((ref, pageIndex) => {
+                </div>
+              ))
+            : refsInPage.map((ref, pageIndex) => {
               const pkg = packageById.get(ref.packageId)
               const image = pkg?.images[ref.imageIndex]
               if (!pkg || !image) {
@@ -430,22 +418,7 @@ function ImageMainSection({
                   </div>
                 )
               })}
-          </div>
-
-          {imageTotalPages > 1 ? (
-            <div className="pager-line">
-              <button type="button" onClick={onPrevPage}>
-                上一页
-              </button>
-              <span>{`第 ${normalizedPageIndex + 1} / ${imageTotalPages} 页`}</span>
-              <button type="button" onClick={onNextPage}>
-                下一页
-              </button>
-            </div>
-          ) : (
-            <div className="pager-line is-placeholder" aria-hidden="true" />
-          )}
-        </>
+        </div>
       )}
 
       {marqueeStyle && marqueeStyle.width > 2 && marqueeStyle.height > 2 ? (

@@ -271,8 +271,6 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             thumbnailColumns={10}
             thumbnailGap={8}
             vectorCandidates={[]}
-            normalizedPageIndex={0}
-            imageTotalPages={1}
             packageById={packageById}
             imageUrlById={imageUrlById}
             gridRef={gridRef}
@@ -301,6 +299,8 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             onClearManageSelection={() => undefined}
             onToggleShowNamesOnly={() => undefined}
             onEnterFullscreen={() => undefined}
+            canJumpToAnimation={false}
+            onJumpToAnimation={() => undefined}
             onSelectImage={() => undefined}
             metadataPending={false}
             metadataTargetPackageLabel={pkg.displayName}
@@ -309,8 +309,6 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             metadataEhentaiCookies={''}
             onMetadataSyncName={() => undefined}
             onMetadataSaveParsed={async () => undefined}
-            onPrevPage={() => undefined}
-            onNextPage={() => undefined}
           />
         </Profiler>
       </div>

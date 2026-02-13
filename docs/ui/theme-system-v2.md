@@ -124,8 +124,7 @@ html                                        data-mpx-style / data-mpx-palette
                          │    │   └─ .thumb-card ×N        缩略图卡片
                          │    ├─ .name-list                纯文件名列表视图
                          │    ├─ .video-preview            视频预览区
-                         │    ├─ .pager-line               分页控件（按需出现）
-                         │    └─ footer.main-footer        focus 项详情
+                         │    └─ footer.main-footer        focus 项详情 + 右侧分页控件
                          │
                          ├─ div.metadata-splitter          宽度: var(--mpx-splitter-width)
                          │
@@ -701,7 +700,7 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | `.thumb-placeholder` | 缩略图占位 |
 | `.thumb-media` | 缩略图媒体容器 |
 | `.thumb-media-image` | 缩略图 img 元素 |
-| `.pager-line` | 分页控件行 |
+| `.main-footer-pagination` | Footer 右侧分页控件 |
 | `.name-list` | 纯文件名列表 |
 | `.name-list-header` | 列表头 |
 | `.name-list-row` | 列表行 |

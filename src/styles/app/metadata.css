@@ -464,9 +464,10 @@
 }
 
 .metadata-search-section {
-  margin-top: 10px;
-  border-top: 1px solid var(--mpx-border-1);
-  padding-top: 10px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--mpx-border-1);
+  padding-bottom: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;

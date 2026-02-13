@@ -19,7 +19,7 @@ const basePackage: ImagePackage = {
   images: [],
 }
 
-function renderImageMainSection(imageTotalPages: number) {
+function renderImageMainSection() {
   return render(
     <ImageMainSection
       vectorMode={false}
@@ -39,8 +39,6 @@ function renderImageMainSection(imageTotalPages: number) {
       thumbnailColumns={8}
       thumbnailGap={8}
       vectorCandidates={[]}
-      normalizedPageIndex={0}
-      imageTotalPages={imageTotalPages}
       packageById={new Map([[basePackage.id, basePackage]])}
       imageUrlById={{}}
       gridRef={createRef<HTMLDivElement>()}
@@ -79,8 +77,6 @@ function renderImageMainSection(imageTotalPages: number) {
       onManageUnhide={vi.fn()}
       onToggleAdReviewPanel={vi.fn()}
       onClearManageSelection={vi.fn()}
-      onPrevPage={vi.fn()}
-      onNextPage={vi.fn()}
     />,
   )
 }
@@ -105,8 +101,6 @@ function renderNodeBrowseSection() {
       thumbnailColumns={8}
       thumbnailGap={8}
       vectorCandidates={[]}
-      normalizedPageIndex={0}
-      imageTotalPages={1}
       packageById={new Map([[basePackage.id, basePackage]])}
       imageUrlById={{}}
       gridRef={createRef<HTMLDivElement>()}
@@ -145,8 +139,6 @@ function renderNodeBrowseSection() {
       onManageUnhide={vi.fn()}
       onToggleAdReviewPanel={vi.fn()}
       onClearManageSelection={vi.fn()}
-      onPrevPage={vi.fn()}
-      onNextPage={vi.fn()}
       nodeBrowseMode={true}
       nodeBrowseLabel="目录A"
       nodeBrowseItems={[
@@ -165,22 +157,13 @@ function renderNodeBrowseSection() {
   )
 }
 
-describe('ImageMainSection pager layout', () => {
-  it('单页时保留占位行并隐藏翻页按钮', () => {
-    renderImageMainSection(1)
+describe('ImageMainSection layout', () => {
+  it('主区不再渲染分页容器与翻页按钮', () => {
+    renderImageMainSection()
 
-    expect(document.querySelector('.pager-line.is-placeholder')).toBeInTheDocument()
+    expect(document.querySelector('.pager-line')).toBeNull()
     expect(screen.queryByRole('button', { name: '上一页' })).toBeNull()
     expect(screen.queryByRole('button', { name: '下一页' })).toBeNull()
-  })
-
-  it('多页时显示翻页控件', () => {
-    renderImageMainSection(3)
-
-    expect(document.querySelector('.pager-line.is-placeholder')).toBeNull()
-    expect(screen.getByRole('button', { name: '上一页' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '下一页' })).toBeInTheDocument()
-    expect(screen.getByText('第 1 / 3 页')).toBeInTheDocument()
   })
 
   it('节点浏览缩略图仅显示封面，不显示名称与数量文案', () => {
@@ -189,6 +172,6 @@ describe('ImageMainSection pager layout', () => {
     expect(document.querySelector('.node-browse-caption')).toBeNull()
     expect(screen.queryByText('图片 12')).toBeNull()
     expect(screen.queryByText('子目录-示例')).toBeNull()
-    expect(document.querySelector('.pager-line.is-placeholder')).toBeInTheDocument()
+    expect(document.querySelector('.pager-line')).toBeNull()
   })
 })

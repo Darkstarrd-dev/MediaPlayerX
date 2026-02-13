@@ -559,7 +559,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
-  it('检索模式将筛选控件渲染到元数据面板下方并实时生效', async () => {
+  it('检索模式将筛选控件渲染到元数据编辑区顶部并实时生效', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '检索' }))

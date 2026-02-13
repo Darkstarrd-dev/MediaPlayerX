@@ -8,6 +8,11 @@ interface BuildMainFooterParams {
   focusedImagePackage: ImagePackage | null
   focusedVideo: VideoItem | null
   sidebarFocusedPath: string | null
+  nodeBrowseMode: boolean
+  normalizedPageIndex: number
+  imageTotalPages: number
+  onPrevPage: () => void
+  onNextPage: () => void
 }
 
 export function buildMainFooter({
@@ -16,6 +21,11 @@ export function buildMainFooter({
   focusedImagePackage,
   focusedVideo,
   sidebarFocusedPath,
+  nodeBrowseMode,
+  normalizedPageIndex,
+  imageTotalPages,
+  onPrevPage,
+  onNextPage,
 }: BuildMainFooterParams): ReactNode {
   let primary = sidebarFocusedPath ?? '-'
   let secondary = '-'
@@ -32,14 +42,29 @@ export function buildMainFooter({
 
   if (mode === 'video' && focusedVideo) {
     primary = focusedVideo.absolutePath
-    return <span>{primary}</span>
   }
+
+  const showPagination = mode === 'image' && !nodeBrowseMode && imageTotalPages > 1
 
   return (
     <>
-      <span>{primary}</span>
-      <span>{secondary}</span>
-      <span>{tertiary}</span>
+      <div className="main-footer-meta">
+        <span>{primary}</span>
+        {mode === 'image' ? <span>{secondary}</span> : null}
+        {mode === 'image' ? <span>{tertiary}</span> : null}
+      </div>
+
+      {showPagination ? (
+        <div className="main-footer-pagination">
+          <button type="button" onClick={onPrevPage}>
+            上一页
+          </button>
+          <span>{`第 ${normalizedPageIndex + 1} / ${imageTotalPages} 页`}</span>
+          <button type="button" onClick={onNextPage}>
+            下一页
+          </button>
+        </div>
+      ) : null}
     </>
   )
 }

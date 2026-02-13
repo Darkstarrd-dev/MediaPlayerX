@@ -694,8 +694,6 @@ export function useAppWorkspaceProps({
     thumbnailColumns,
     actualThumbnailGap,
     vectorSearchResults,
-    normalizedPageIndexEffective,
-    imageTotalPagesEffective,
     packageByIdEffective,
     thumbnailImageUrlById,
     gridRef,
@@ -739,8 +737,6 @@ export function useAppWorkspaceProps({
     },
     onToggleAdReviewPanel: () => setAdReviewPanelOpen((value) => !value),
     onClearManageSelection: clearAllSelections,
-    goPrevPage,
-    goNextPage,
     nodeBrowseMode,
     nodeBrowseLabel: nodeBrowseMode ? (selectedSidebarNode?.label ?? '节点浏览') : '',
     nodeBrowseItems,
@@ -933,6 +929,11 @@ export function useAppWorkspaceProps({
     focusedImagePackage,
     focusedVideo: focusedVideoEffective,
     sidebarFocusedPath: selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null) : null,
+    nodeBrowseMode,
+    normalizedPageIndex: normalizedPageIndexEffective,
+    imageTotalPages: imageTotalPagesEffective,
+    onPrevPage: goPrevPage,
+    onNextPage: goNextPage,
   })
 
   return {
