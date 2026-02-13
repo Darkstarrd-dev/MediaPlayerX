@@ -6,7 +6,7 @@ import {
 } from '../../features/theme/themeRegistry'
 import type { ReadRuntimeInfoResponseDto } from '../../contracts/backend'
 import type { RepositoryMode } from '../../features/backend/repository'
-import type { JSX } from 'react'
+import type { JSX, KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import type { ShortcutConflict } from '../../shortcuts'
 import {
@@ -43,7 +43,7 @@ interface RenderSettingsMainSectionParams {
   thumbnailGap: number
   thumbnailGapScale: number
   thumbnailQuality: number
-  thumbnailWidth: number
+  thumbnailWidthInputValue: string
   proxyServer: string
   ehentaiCookies: string
   adReviewVisionEndpoint: string
@@ -82,7 +82,9 @@ interface RenderSettingsMainSectionParams {
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
-  onThumbnailWidthChange: (value: number) => void
+  onThumbnailWidthInputChange: (value: string) => void
+  onThumbnailWidthInputBlur: () => void
+  onThumbnailWidthInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
@@ -123,7 +125,7 @@ export function renderSettingsMainSection({
   thumbnailGap,
   thumbnailGapScale,
   thumbnailQuality,
-  thumbnailWidth,
+  thumbnailWidthInputValue,
   proxyServer,
   ehentaiCookies,
   adReviewVisionEndpoint,
@@ -162,7 +164,9 @@ export function renderSettingsMainSection({
   onFullscreenVideoControlsMaxWidthChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
-  onThumbnailWidthChange,
+  onThumbnailWidthInputChange,
+  onThumbnailWidthInputBlur,
+  onThumbnailWidthInputKeyDown,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onAdReviewVisionEndpointChange,
@@ -231,7 +235,15 @@ export function renderSettingsMainSection({
           </label>
           <label>
             缩略图宽度
-            <input max={2048} min={128} type="number" value={thumbnailWidth} onChange={(event) => onThumbnailWidthChange(Number(event.target.value))} />
+            <input
+              max={2048}
+              min={128}
+              type="number"
+              value={thumbnailWidthInputValue}
+              onBlur={onThumbnailWidthInputBlur}
+              onChange={(event) => onThumbnailWidthInputChange(event.target.value)}
+              onKeyDown={onThumbnailWidthInputKeyDown}
+            />
           </label>
         </section>
 

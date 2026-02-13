@@ -20,6 +20,7 @@ interface UseResolvedMediaStateParams {
   maxConcurrent: number
   actualCellWidth: number
   actualMediaHeight: number
+  thumbnailQuality: number
   packageById: ReadonlyMap<string, ImagePackage>
   focusedImage: ImageItem | null
   metadataImage: ImageItem | null
@@ -51,6 +52,7 @@ export function useResolvedMediaState({
   maxConcurrent,
   actualCellWidth,
   actualMediaHeight,
+  thumbnailQuality,
   packageById,
   focusedImage,
   metadataImage,
@@ -95,7 +97,7 @@ export function useResolvedMediaState({
         locator: image.mediaLocator,
         variant: 'thumbnail',
         thumbnailMaxEdge,
-        thumbnailQuality: 82,
+        thumbnailQuality,
       })
     }
 
@@ -204,6 +206,7 @@ export function useResolvedMediaState({
   }, [
     actualCellWidth,
     actualMediaHeight,
+    thumbnailQuality,
     focusedImage,
     focusedVideo,
     focusedVideoCoverImageLocator,

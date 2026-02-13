@@ -165,6 +165,7 @@ export function useAppDisplayResources({
     maxConcurrent: MEDIA_RESOLVE_MAX_CONCURRENT,
     actualCellWidth,
     actualMediaHeight,
+    thumbnailQuality: appSettings.thumbnailQuality,
     packageById: packageByIdEffective,
     focusedImage,
     metadataImage: metadataImageEffective,

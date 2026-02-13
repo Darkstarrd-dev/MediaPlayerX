@@ -81,6 +81,7 @@ describe('useResolvedMediaState', () => {
         maxConcurrent: 8,
         actualCellWidth: 240,
         actualMediaHeight: 180,
+        thumbnailQuality: 82,
         packageById,
         focusedImage: null,
         metadataImage: null,

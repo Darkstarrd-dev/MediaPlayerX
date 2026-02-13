@@ -6,6 +6,9 @@ import type { MediaLocator } from '../../types'
 import { mapMediaLocatorToDto, mediaLocatorKey } from './mediaLocator'
 import type { MediaRepository } from './repository'
 
+const THUMBNAIL_MIN_QUALITY = 1
+const THUMBNAIL_MAX_QUALITY = 100
+
 export interface MediaResolveTarget {
   targetId: string
   locator: MediaLocator | null
@@ -44,7 +47,7 @@ export function buildRequestKey(target: MediaResolveTarget): string | null {
   }
 
   const maxEdge = Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320)))
-  const quality = Math.max(50, Math.min(95, Math.round(target.thumbnailQuality ?? 82)))
+  const quality = Math.max(THUMBNAIL_MIN_QUALITY, Math.min(THUMBNAIL_MAX_QUALITY, Math.round(target.thumbnailQuality ?? 82)))
   return `${base}|variant:thumbnail|max:${maxEdge}|q:${quality}`
 }
 
@@ -55,7 +58,7 @@ export function buildResolveRequest(target: MediaResolveTarget): ResolveMediaRes
       preferred_variant: 'thumbnail',
       thumbnail: {
         max_edge: Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320))),
-        quality: Math.max(50, Math.min(95, Math.round(target.thumbnailQuality ?? 82))),
+        quality: Math.max(THUMBNAIL_MIN_QUALITY, Math.min(THUMBNAIL_MAX_QUALITY, Math.round(target.thumbnailQuality ?? 82))),
       },
     }
   }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import type { ReadRuntimeInfoResponseDto } from '../contracts/backend'
 import type { RepositoryMode } from '../features/backend/repository'
@@ -108,6 +108,9 @@ const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
   { id: 'shortcuts', label: '快捷键设置' },
 ]
 
+const THUMBNAIL_WIDTH_MIN = 128
+const THUMBNAIL_WIDTH_MAX = 2048
+
 function resolveSettingsSection(raw: unknown): SettingsSection {
   if (raw === 'layout' || raw === 'model' || raw === 'database' || raw === 'shortcuts') {
     return raw
@@ -193,6 +196,7 @@ function SettingsPanel({
   const [bindingTarget, setBindingTarget] = useState<BindingTarget | null>(null)
   const [capturingTarget, setCapturingTarget] = useState<BindingTarget | null>(null)
   const [capturedCombo, setCapturedCombo] = useState('')
+  const [thumbnailWidthInputValue, setThumbnailWidthInputValue] = useState(() => String(thumbnailWidth))
   const captureDialogRef = useRef<HTMLDivElement>(null)
 
   const headerHeightScale = toScale('headerHeight', headerHeight)
@@ -224,8 +228,13 @@ function SettingsPanel({
       setBindingTarget(null)
       setCapturingTarget(null)
       setCapturedCombo('')
+      setThumbnailWidthInputValue(String(thumbnailWidth))
     }
-  }, [settingsOpen])
+  }, [settingsOpen, thumbnailWidth])
+
+  useEffect(() => {
+    setThumbnailWidthInputValue(String(thumbnailWidth))
+  }, [thumbnailWidth])
 
   useEffect(() => {
     const normalized = resolveSettingsSection(activeSectionRaw)
@@ -321,6 +330,51 @@ function SettingsPanel({
     )
   }
 
+  const commitThumbnailWidthInput = () => {
+    const parsed = Number(thumbnailWidthInputValue)
+    if (!Number.isFinite(parsed)) {
+      setThumbnailWidthInputValue(String(thumbnailWidth))
+      return
+    }
+
+    const normalized = Math.max(THUMBNAIL_WIDTH_MIN, Math.min(THUMBNAIL_WIDTH_MAX, Math.round(parsed)))
+    setThumbnailWidthInputValue(String(normalized))
+    onThumbnailWidthChange(normalized)
+  }
+
+  const handleThumbnailWidthInputChange = (value: string) => {
+    if (value.length === 0) {
+      setThumbnailWidthInputValue(value)
+      return
+    }
+    if (!/^\d+$/.test(value)) {
+      return
+    }
+
+    setThumbnailWidthInputValue(value)
+
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed)) {
+      return
+    }
+    if (parsed < THUMBNAIL_WIDTH_MIN || parsed > THUMBNAIL_WIDTH_MAX) {
+      return
+    }
+    onThumbnailWidthChange(parsed)
+  }
+
+  const handleThumbnailWidthInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      commitThumbnailWidthInput()
+      event.currentTarget.blur()
+      return
+    }
+    if (event.key === 'Escape') {
+      setThumbnailWidthInputValue(String(thumbnailWidth))
+      event.currentTarget.blur()
+    }
+  }
+
   const mainSection = renderSettingsMainSection({
     activeSection,
     layoutLocked,
@@ -347,7 +401,7 @@ function SettingsPanel({
     thumbnailGap,
     thumbnailGapScale,
     thumbnailQuality,
-    thumbnailWidth,
+    thumbnailWidthInputValue,
     proxyServer,
     ehentaiCookies,
     adReviewVisionEndpoint,
@@ -386,7 +440,9 @@ function SettingsPanel({
     onFullscreenVideoControlsMaxWidthChange,
     onThumbnailGapChange,
     onThumbnailQualityChange,
-    onThumbnailWidthChange,
+    onThumbnailWidthInputChange: handleThumbnailWidthInputChange,
+    onThumbnailWidthInputBlur: commitThumbnailWidthInput,
+    onThumbnailWidthInputKeyDown: handleThumbnailWidthInputKeyDown,
     onProxyServerChange,
     onEhentaiCookiesChange,
     onAdReviewVisionEndpointChange,
