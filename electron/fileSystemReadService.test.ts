@@ -205,6 +205,7 @@ describe('FileSystemMediaReadService', () => {
     ])
     await writeBinary(path.join(root, '损坏_かな_!@#.rar'), [0x00, 0x01, 0x02, 0x03])
     await writeBinary(path.join(root, '動画_かな.mp4'), [0x00, 0x00, 0x00, 0x18])
+    await writeBinary(path.join(root, '音声_かな.mp3'), [0x49, 0x44, 0x33, 0x04])
 
     const service = new FileSystemMediaReadService(root)
     createdServices.push(service)

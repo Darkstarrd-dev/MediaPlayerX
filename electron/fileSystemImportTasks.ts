@@ -21,6 +21,7 @@ async function inspectImportPath(
     rootDir: string
     imageExtensions: ReadonlySet<string>
     videoExtensions: ReadonlySet<string>
+    audioExtensions: ReadonlySet<string>
     archiveExtensions: ReadonlySet<string>
   },
 ): Promise<ImportPathInspectionResult> {
@@ -58,6 +59,7 @@ async function inspectImportPath(
   if (
     !options.imageExtensions.has(extension) &&
     !options.videoExtensions.has(extension) &&
+    !options.audioExtensions.has(extension) &&
     !options.archiveExtensions.has(extension)
   ) {
     return { ok: false, reason: `类型不支持: ${absolutePath}` }
@@ -80,6 +82,7 @@ interface ExecuteImportTaskParams {
   legacyImportsDirName: string
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
+  audioExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   database: MediaLibraryDatabase
   invalidateCache: () => void
@@ -133,6 +136,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
       rootDir: params.rootDir,
       imageExtensions: params.imageExtensions,
       videoExtensions: params.videoExtensions,
+      audioExtensions: params.audioExtensions,
       archiveExtensions: params.archiveExtensions,
     })
 

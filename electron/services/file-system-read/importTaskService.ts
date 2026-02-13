@@ -17,6 +17,7 @@ interface ImportTaskServiceOptions {
   legacyImportsDirName: string
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
+  audioExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   database: MediaLibraryDatabase
   invalidateCache: () => void
@@ -220,6 +221,7 @@ export class ImportTaskService {
       legacyImportsDirName: this.options.legacyImportsDirName,
       imageExtensions: this.options.imageExtensions,
       videoExtensions: this.options.videoExtensions,
+      audioExtensions: this.options.audioExtensions,
       archiveExtensions: this.options.archiveExtensions,
       database: this.options.database,
       invalidateCache: this.options.invalidateCache,

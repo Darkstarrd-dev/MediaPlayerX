@@ -21,6 +21,7 @@ function createBaseContext(rootDir: string): MediaAccessGuardContext {
     archiveEntryIndexByPath: new Map<string, Set<string>>(),
     imageExtensions: new Set(['.jpg', '.png', '.webp']),
     videoExtensions: new Set(['.mp4', '.webm']),
+    audioExtensions: new Set(['.mp3', '.flac', '.wav', '.ogg', '.m4a', '.opus', '.aac']),
     subtitleExtensions: new Set(['.vtt', '.srt', '.ass', '.ssa']),
   }
 }
@@ -46,9 +47,11 @@ describe('fileSystemMediaAccessGuard', () => {
     roots.push(outsideRoot)
 
     const insideImage = path.join(root, 'inside.jpg')
+    const insideAudio = path.join(root, 'inside.mp3')
     const importDirImage = path.join(importRoot, 'from-dir.jpg')
     const importFileImage = path.join(outsideRoot, 'from-file.jpg')
     await writeFile(insideImage)
+    await writeFile(insideAudio)
     await writeFile(importDirImage)
     await writeFile(importFileImage)
 
@@ -77,6 +80,13 @@ describe('fileSystemMediaAccessGuard', () => {
       media_type: 'image',
       mime_type: 'image/jpeg',
     }
+    const locatorAudio: MediaLocatorDto = {
+      kind: 'filesystem',
+      absolute_path: insideAudio,
+      extension: '.mp3',
+      media_type: 'audio',
+      mime_type: 'audio/mpeg',
+    }
 
     await expect(assertLocatorAllowed(locatorInside, context)).resolves.toMatchObject({
       absolute_path: path.resolve(insideImage),
@@ -89,6 +99,10 @@ describe('fileSystemMediaAccessGuard', () => {
     await expect(assertLocatorAllowed(locatorImportFile, context)).resolves.toMatchObject({
       absolute_path: path.resolve(importFileImage),
       extension: '.jpg',
+    })
+    await expect(assertLocatorAllowed(locatorAudio, context)).resolves.toMatchObject({
+      absolute_path: path.resolve(insideAudio),
+      extension: '.mp3',
     })
   })
 

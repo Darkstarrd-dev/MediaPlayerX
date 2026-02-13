@@ -5,6 +5,7 @@ import path from 'node:path'
 
 import {
   librarySnapshotDtoSchema,
+  type AudioItemDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
   type MediaLocatorDto,
@@ -71,6 +72,7 @@ interface LibrarySnapshotServiceOptions {
   importPathRegistry: ImportPathRegistry
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
+  audioExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   colorPalette: readonly string[]
   imageExtensionsForWebpConvert: ReadonlySet<string>
@@ -225,6 +227,7 @@ export class LibrarySnapshotService {
       directoryScanConcurrency: this.options.directoryScanConcurrency,
       imageExtensions: this.options.imageExtensions,
       videoExtensions: this.options.videoExtensions,
+      audioExtensions: this.options.audioExtensions,
       archiveExtensions: this.options.archiveExtensions,
       probeImageDimensionsFromFile,
     })
@@ -269,6 +272,38 @@ export class LibrarySnapshotService {
       author_jpn: metadataRecord?.authorJpn ?? '',
       tags: metadataRecord?.tags ?? [],
       grade: metadataRecord?.grade ?? null,
+      media_locator: mediaLocator,
+    }
+  }
+
+  private async createAudioSource(file: FileRecord): Promise<AudioItemDto> {
+    const mediaLocator: MediaLocatorDto = {
+      kind: 'filesystem',
+      absolute_path: file.absolutePath,
+      extension: file.extension,
+      media_type: 'audio',
+      mime_type: detectMimeTypeByExtension(file.extension, 'audio'),
+    }
+
+    const audioId = makeStableId('aud', file.absolutePath)
+    const runtimeDependencies = await this.options.ensureRuntimeDependencies()
+    const probe = runtimeDependencies.ffprobe
+      ? await probeVideoMetadata(file.absolutePath, this.options.ffprobeBin).catch(() => null)
+      : null
+    const fileName = path.basename(file.absolutePath)
+    const fallbackTrackTitle = deriveVideoWorkTitleFromFileName(fileName)
+
+    return {
+      id: audioId,
+      file_name: fileName,
+      absolute_path: file.absolutePath,
+      tree_path: toAbsoluteTreePath(file.absolutePath),
+      duration_sec: Math.max(0, Math.round(probe?.durationSec ?? 0)),
+      size_mb: toSafeSizeMb(file.sizeBytes),
+      album: '',
+      author: '',
+      track_title: fallbackTrackTitle,
+      series_id: '',
       media_locator: mediaLocator,
     }
   }
@@ -439,6 +474,7 @@ export class LibrarySnapshotService {
     const directoryImageMap = new Map<string, FileRecord[]>()
     const archives: FileRecord[] = []
     const videos: FileRecord[] = []
+    const audios: FileRecord[] = []
 
     for (const file of files) {
       if (this.options.imageExtensions.has(file.extension)) {
@@ -456,6 +492,11 @@ export class LibrarySnapshotService {
 
       if (this.options.videoExtensions.has(file.extension)) {
         videos.push(file)
+        continue
+      }
+
+      if (this.options.audioExtensions.has(file.extension)) {
+        audios.push(file)
       }
     }
 
@@ -512,10 +553,15 @@ export class LibrarySnapshotService {
       left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
     )
 
+    const audioItems = (await Promise.all(audios.map((file) => this.createAudioSource(file)))).sort((left, right) =>
+      left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
+    )
+
     const scannedSnapshot = librarySnapshotDtoSchema.parse({
       image_packages: imagePackages,
       image_directories: imageDirectories,
       videos: videoItems,
+      audios: audioItems,
     })
 
     this.archiveEntryIndexByPath = nextArchiveEntryIndexByPath

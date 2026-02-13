@@ -78,6 +78,7 @@ import {
   ARCHIVE_NORMALIZE_IDLE_MS,
   ARCHIVE_NORMALIZE_RECHECK_MS,
   ARCHIVE_SCAN_CONCURRENCY,
+  AUDIO_EXTENSIONS,
   COLOR_PALETTE,
   DIRECTORY_SCAN_CONCURRENCY,
   FFMPEG_BIN,
@@ -186,6 +187,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       importPathRegistry: this.importPathRegistry,
       imageExtensions: IMAGE_EXTENSIONS,
       videoExtensions: VIDEO_EXTENSIONS,
+      audioExtensions: AUDIO_EXTENSIONS,
       archiveExtensions: ARCHIVE_EXTENSIONS,
       colorPalette: COLOR_PALETTE,
       imageExtensionsForWebpConvert: IMAGE_EXTENSIONS_FOR_WEBP_CONVERT,
@@ -208,6 +210,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       legacyImportsDirName: LEGACY_IMPORTS_DIR_NAME,
       imageExtensions: IMAGE_EXTENSIONS,
       videoExtensions: VIDEO_EXTENSIONS,
+      audioExtensions: AUDIO_EXTENSIONS,
       archiveExtensions: ARCHIVE_EXTENSIONS,
       database: this.database,
       invalidateCache: () => this.invalidateCache(),
@@ -340,6 +343,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       archiveEntryIndexByPath: this.librarySnapshotService.getArchiveEntryIndexByPath(),
       imageExtensions: IMAGE_EXTENSIONS,
       videoExtensions: VIDEO_EXTENSIONS,
+      audioExtensions: AUDIO_EXTENSIONS,
       subtitleExtensions: SUBTITLE_EXTENSIONS,
     }
   }

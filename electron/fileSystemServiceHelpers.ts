@@ -219,7 +219,10 @@ export function isPathInsideRoot(rootDir: string, absolutePath: string): boolean
   return !relative.startsWith('..') && !path.isAbsolute(relative)
 }
 
-export function detectMimeTypeByExtension(extension: string, mediaType: 'image' | 'video' | 'subtitle'): string {
+export function detectMimeTypeByExtension(
+  extension: string,
+  mediaType: 'image' | 'video' | 'audio' | 'subtitle',
+): string {
   const lowerExt = extension.toLowerCase()
   if (mediaType === 'image') {
     if (lowerExt === '.jpg' || lowerExt === '.jpeg') {
@@ -252,6 +255,31 @@ export function detectMimeTypeByExtension(extension: string, mediaType: 'image' 
     }
     if (lowerExt === '.mov') {
       return 'video/quicktime'
+    }
+    return 'application/octet-stream'
+  }
+
+  if (mediaType === 'audio') {
+    if (lowerExt === '.mp3') {
+      return 'audio/mpeg'
+    }
+    if (lowerExt === '.flac') {
+      return 'audio/flac'
+    }
+    if (lowerExt === '.wav') {
+      return 'audio/wav'
+    }
+    if (lowerExt === '.ogg') {
+      return 'audio/ogg'
+    }
+    if (lowerExt === '.m4a') {
+      return 'audio/mp4'
+    }
+    if (lowerExt === '.opus') {
+      return 'audio/opus'
+    }
+    if (lowerExt === '.aac') {
+      return 'audio/aac'
     }
     return 'application/octet-stream'
   }

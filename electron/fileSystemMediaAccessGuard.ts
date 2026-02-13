@@ -33,6 +33,7 @@ export interface MediaAccessGuardContext {
   archiveEntryIndexByPath: Map<string, Set<string>>
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
+  audioExtensions: ReadonlySet<string>
   subtitleExtensions: ReadonlySet<string>
 }
 
@@ -80,7 +81,9 @@ export async function assertLocatorAllowed(
         ? context.imageExtensions.has(extension)
         : locator.media_type === 'video'
           ? context.videoExtensions.has(extension)
-          : context.subtitleExtensions.has(extension)
+          : locator.media_type === 'audio'
+            ? context.audioExtensions.has(extension)
+            : context.subtitleExtensions.has(extension)
     if (!extensionAllowed) {
       throw new MediaAccessError('filesystem_media_type_not_allowed', `媒体访问被拒绝（类型不允许）: ${absolutePath}`)
     }

@@ -21,6 +21,7 @@ interface CollectMediaFilesParams {
   directoryScanConcurrency: number
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
+  audioExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   probeImageDimensionsFromFile: (absolutePath: string) => Promise<{ width: number; height: number }>
 }
@@ -70,7 +71,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
       }
 
       const nextLevel: string[] = []
-      const pendingVideoRecords: Array<{ absolutePath: string; extension: string }> = []
+      const pendingMediaRecords: Array<{ absolutePath: string; extension: string }> = []
       const pendingImageOrArchiveRecords: Array<{ absolutePath: string; extension: string }> = []
 
       for (const entry of entries) {
@@ -90,7 +91,10 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
 
         const extension = path.extname(entry.name).toLowerCase()
         const supported =
-          params.imageExtensions.has(extension) || params.videoExtensions.has(extension) || params.archiveExtensions.has(extension)
+          params.imageExtensions.has(extension) ||
+          params.videoExtensions.has(extension) ||
+          params.audioExtensions.has(extension) ||
+          params.archiveExtensions.has(extension)
         if (!supported) {
           continue
         }
@@ -99,8 +103,8 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
           continue
         }
 
-        if (params.videoExtensions.has(extension)) {
-          pendingVideoRecords.push({ absolutePath, extension })
+        if (params.videoExtensions.has(extension) || params.audioExtensions.has(extension)) {
+          pendingMediaRecords.push({ absolutePath, extension })
           continue
         }
 
@@ -143,22 +147,22 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
         }
       }
 
-      if (pendingVideoRecords.length > 0) {
-        const videoFiles = await parallelMapLimit(
-          pendingVideoRecords,
+      if (pendingMediaRecords.length > 0) {
+        const mediaFiles = await parallelMapLimit(
+          pendingMediaRecords,
           params.directoryScanConcurrency,
-          async (videoRecord) => {
-            const stat = await fs.stat(videoRecord.absolutePath).catch(() => null)
+          async (mediaRecord) => {
+            const stat = await fs.stat(mediaRecord.absolutePath).catch(() => null)
             return {
-              absolutePath: videoRecord.absolutePath,
-              extension: videoRecord.extension,
+              absolutePath: mediaRecord.absolutePath,
+              extension: mediaRecord.extension,
               sizeBytes: stat?.size ?? 0,
             }
           },
         )
 
-        for (const videoFile of videoFiles) {
-          pushFile(videoFile.absolutePath, videoFile.extension, videoFile.sizeBytes, 0, 0)
+        for (const mediaFile of mediaFiles) {
+          pushFile(mediaFile.absolutePath, mediaFile.extension, mediaFile.sizeBytes, 0, 0)
         }
       }
 
@@ -183,7 +187,10 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
 
       const extension = path.extname(absolutePath).toLowerCase()
       const supported =
-        params.imageExtensions.has(extension) || params.videoExtensions.has(extension) || params.archiveExtensions.has(extension)
+        params.imageExtensions.has(extension) ||
+        params.videoExtensions.has(extension) ||
+        params.audioExtensions.has(extension) ||
+        params.archiveExtensions.has(extension)
       if (!supported) {
         return null
       }
