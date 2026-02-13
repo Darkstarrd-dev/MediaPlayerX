@@ -139,8 +139,12 @@ function SidebarPanel({
 
           {mode === 'image' ? (
             <span className="sidebar-counts" style={{ fontSize: `${sidebarCountFontSize}px` }}>
-              <span className={`sidebar-count ${hasOwnImages ? 'sidebar-count-images is-leaf' : 'sidebar-count-packages'}`}>
-                {hasOwnImages ? `图 ${visibleImageCount}` : `节点 ${descendantNodeCount}`}
+              <span
+                className={`sidebar-count ${hasOwnImages ? 'sidebar-count-images' : 'sidebar-count-packages'}`}
+                aria-label={hasOwnImages ? `图 ${visibleImageCount}` : `节点 ${descendantNodeCount}`}
+                title={hasOwnImages ? `图 ${visibleImageCount}` : `节点 ${descendantNodeCount}`}
+              >
+                {hasOwnImages ? visibleImageCount : descendantNodeCount}
               </span>
             </span>
           ) : null}

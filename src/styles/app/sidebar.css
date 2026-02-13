@@ -189,14 +189,21 @@
 }
 
 .sidebar-count {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  padding: 0 6px;
+  width: 4.4ch;
+  height: 1.9em;
+  padding: 0 0.45em;
   border-radius: 999px;
-  font-size: 12px;
-  line-height: 20px;
+  font-family: var(--mpx-font-mono);
+  font-size: 1em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
   border: 1px solid transparent;
 }
 
@@ -210,10 +217,6 @@
   color: var(--mpx-status-success-text);
   background: color-mix(in srgb, var(--mpx-status-success-bg) 72%, transparent);
   border-color: var(--mpx-status-success-border);
-}
-
-.sidebar-count.is-leaf {
-  font-weight: 600;
 }
 
 .sidebar-splitter {
