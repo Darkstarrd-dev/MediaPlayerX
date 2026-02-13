@@ -203,6 +203,14 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       getPackageGradeOverridesBySourceId: () => this.database.readPackageGrades(),
       getVideoCoverOverridesByVideoId: () => this.database.readVideoCovers(),
       getVideoMetadataOverridesByVideoId: () => this.database.readVideoMetadata(),
+      getAudioMetadataOverridesByAudioId: () => this.database.readAudioMetadata(),
+      upsertAudioMetadataFromScan: (audioId, payload) =>
+        this.database.writeAudioMetadata(audioId, {
+          album: payload.album,
+          author: payload.author,
+          trackTitle: payload.trackTitle,
+          seriesId: payload.seriesId,
+        }),
     })
 
     this.importTaskService = new ImportTaskService({

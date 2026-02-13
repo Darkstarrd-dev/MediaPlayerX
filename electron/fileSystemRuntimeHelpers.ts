@@ -12,6 +12,14 @@ export interface VideoProbeResult {
   height: number
 }
 
+export interface AudioProbeResult {
+  durationSec: number
+  album: string
+  author: string
+  trackTitle: string
+  seriesId: string
+}
+
 type SharpModule = typeof import('sharp')
 let sharpModulePromise: Promise<SharpModule | null> | null = null
 
@@ -124,6 +132,53 @@ function parseFfprobeJson(raw: string): VideoProbeResult | null {
   }
 }
 
+function parseAudioFfprobeJson(raw: string): AudioProbeResult | null {
+  try {
+    const parsed = JSON.parse(raw) as {
+      format?: {
+        duration?: string
+        tags?: Record<string, string | undefined>
+      }
+    }
+
+    const durationValue = Number(parsed.format?.duration ?? 0)
+    const durationSec = Number.isFinite(durationValue) && durationValue > 0 ? durationValue : 0
+    const rawTags = parsed.format?.tags ?? {}
+    const tags = new Map<string, string>()
+    for (const [key, value] of Object.entries(rawTags)) {
+      if (typeof value !== 'string') {
+        continue
+      }
+      const normalizedValue = value.trim()
+      if (normalizedValue.length <= 0) {
+        continue
+      }
+      tags.set(key.trim().toLowerCase(), normalizedValue)
+    }
+
+    const album = tags.get('album') ?? ''
+    const author = tags.get('artist') ?? tags.get('author') ?? ''
+    const trackTitle = tags.get('title') ?? ''
+    const explicitSeriesId = tags.get('series_id') ?? tags.get('seriesid') ?? tags.get('series') ?? ''
+    const commentSeriesId = tags.get('comment') ?? tags.get('description') ?? ''
+    const seriesId = explicitSeriesId || commentSeriesId
+
+    if (durationSec <= 0 && album.length === 0 && author.length === 0 && trackTitle.length === 0 && seriesId.length === 0) {
+      return null
+    }
+
+    return {
+      durationSec,
+      album,
+      author,
+      trackTitle,
+      seriesId,
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function probeVideoMetadata(videoPath: string, ffprobeBin: string): Promise<VideoProbeResult | null> {
   const result = await runProcess(
     ffprobeBin,
@@ -148,4 +203,26 @@ export async function probeVideoMetadata(videoPath: string, ffprobeBin: string):
   }
 
   return parseFfprobeJson(result.stdout)
+}
+
+export async function probeAudioMetadata(audioPath: string, ffprobeBin: string): Promise<AudioProbeResult | null> {
+  const result = await runProcess(
+    ffprobeBin,
+    [
+      '-v',
+      'error',
+      '-show_entries',
+      'format=duration:format_tags',
+      '-of',
+      'json',
+      audioPath,
+    ],
+    2_000,
+  ).catch(() => null)
+
+  if (!result || result.code !== 0) {
+    return null
+  }
+
+  return parseAudioFfprobeJson(result.stdout)
 }

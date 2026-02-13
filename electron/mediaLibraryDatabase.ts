@@ -135,6 +135,19 @@ export class MediaLibraryDatabase {
     return this.metadataStore.readVideoMetadata()
   }
 
+  readAudioMetadata(): Map<
+    string,
+    {
+      album: string
+      author: string
+      trackTitle: string
+      seriesId: string
+      updatedAtMs: number
+    }
+  > {
+    return this.metadataStore.readAudioMetadata()
+  }
+
   readSourceExternalMetadata(): Map<
     string,
     {
@@ -215,6 +228,18 @@ export class MediaLibraryDatabase {
     },
   ): void {
     this.metadataStore.writeVideoMetadata(videoId, payload)
+  }
+
+  writeAudioMetadata(
+    audioId: string,
+    payload: {
+      album: string
+      author: string
+      trackTitle: string
+      seriesId: string
+    },
+  ): void {
+    this.metadataStore.writeAudioMetadata(audioId, payload)
   }
 
   writeSourceExternalMetadata(

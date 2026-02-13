@@ -33,7 +33,7 @@ import { createArchiveSource, createDirectorySource } from '../../fileSystemSour
 import {
   readArchiveEntryMedia,
 } from '../../fileSystemMediaReaders'
-import { probeImageDimensionsFromFile, probeVideoMetadata } from '../../fileSystemRuntimeHelpers'
+import { probeAudioMetadata, probeImageDimensionsFromFile, probeVideoMetadata } from '../../fileSystemRuntimeHelpers'
 import { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
 import { writeStoredZipFromDirectory } from '../../fileSystemZipStoreWriter'
 import {
@@ -64,6 +64,14 @@ export interface PersistedVideoCoverRecord {
   updatedAtMs: number
 }
 
+export interface PersistedAudioMetadataRecord {
+  album: string
+  author: string
+  trackTitle: string
+  seriesId: string
+  updatedAtMs: number
+}
+
 interface LibrarySnapshotServiceOptions {
   rootDir: string
   normalizedArchiveRootDir: string
@@ -88,6 +96,11 @@ interface LibrarySnapshotServiceOptions {
   getPackageGradeOverridesBySourceId: () => Map<string, number | null>
   getVideoCoverOverridesByVideoId: () => Map<string, PersistedVideoCoverRecord>
   getVideoMetadataOverridesByVideoId: () => Map<string, PersistedVideoMetadataRecord>
+  getAudioMetadataOverridesByAudioId: () => Map<string, PersistedAudioMetadataRecord>
+  upsertAudioMetadataFromScan: (
+    audioId: string,
+    payload: { album: string; author: string; trackTitle: string; seriesId: string },
+  ) => void
 }
 
 export class LibrarySnapshotService {
@@ -276,7 +289,13 @@ export class LibrarySnapshotService {
     }
   }
 
-  private async createAudioSource(file: FileRecord): Promise<AudioItemDto> {
+  private async createAudioSource(file: FileRecord): Promise<{
+    audio: AudioItemDto
+    parsedMetadataForUpsert: {
+      audioId: string
+      payload: { album: string; author: string; trackTitle: string; seriesId: string }
+    } | null
+  }> {
     const mediaLocator: MediaLocatorDto = {
       kind: 'filesystem',
       absolute_path: file.absolutePath,
@@ -288,23 +307,50 @@ export class LibrarySnapshotService {
     const audioId = makeStableId('aud', file.absolutePath)
     const runtimeDependencies = await this.options.ensureRuntimeDependencies()
     const probe = runtimeDependencies.ffprobe
-      ? await probeVideoMetadata(file.absolutePath, this.options.ffprobeBin).catch(() => null)
+      ? await probeAudioMetadata(file.absolutePath, this.options.ffprobeBin).catch(() => null)
       : null
+    const metadataRecord = this.options.getAudioMetadataOverridesByAudioId().get(audioId)
     const fileName = path.basename(file.absolutePath)
     const fallbackTrackTitle = deriveVideoWorkTitleFromFileName(fileName)
 
+    const parsedAlbum = probe?.album ?? ''
+    const parsedAuthor = probe?.author ?? ''
+    const parsedTrackTitle = probe?.trackTitle ?? ''
+    const parsedSeriesId = probe?.seriesId ?? ''
+
+    const album = metadataRecord?.album ?? parsedAlbum
+    const author = metadataRecord?.author ?? parsedAuthor
+    const trackTitle = metadataRecord?.trackTitle ?? parsedTrackTitle
+    const seriesId = metadataRecord?.seriesId ?? parsedSeriesId
+
+    const parsedMetadataForUpsert =
+      !metadataRecord && (parsedAlbum.length > 0 || parsedAuthor.length > 0 || parsedTrackTitle.length > 0 || parsedSeriesId.length > 0)
+        ? {
+            audioId,
+            payload: {
+              album: parsedAlbum,
+              author: parsedAuthor,
+              trackTitle: parsedTrackTitle,
+              seriesId: parsedSeriesId,
+            },
+          }
+        : null
+
     return {
-      id: audioId,
-      file_name: fileName,
-      absolute_path: file.absolutePath,
-      tree_path: toAbsoluteTreePath(file.absolutePath),
-      duration_sec: Math.max(0, Math.round(probe?.durationSec ?? 0)),
-      size_mb: toSafeSizeMb(file.sizeBytes),
-      album: '',
-      author: '',
-      track_title: fallbackTrackTitle,
-      series_id: '',
-      media_locator: mediaLocator,
+      audio: {
+        id: audioId,
+        file_name: fileName,
+        absolute_path: file.absolutePath,
+        tree_path: toAbsoluteTreePath(file.absolutePath),
+        duration_sec: Math.max(0, Math.round(probe?.durationSec ?? 0)),
+        size_mb: toSafeSizeMb(file.sizeBytes),
+        album,
+        author,
+        track_title: trackTitle.trim().length > 0 ? trackTitle : fallbackTrackTitle,
+        series_id: seriesId,
+        media_locator: mediaLocator,
+      },
+      parsedMetadataForUpsert,
     }
   }
 
@@ -553,9 +599,10 @@ export class LibrarySnapshotService {
       left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
     )
 
-    const audioItems = (await Promise.all(audios.map((file) => this.createAudioSource(file)))).sort((left, right) =>
-      left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
-    )
+    const audioSourceResults = await Promise.all(audios.map((file) => this.createAudioSource(file)))
+    const audioItems = audioSourceResults
+      .map((result) => result.audio)
+      .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
     const scannedSnapshot = librarySnapshotDtoSchema.parse({
       image_packages: imagePackages,
@@ -568,6 +615,17 @@ export class LibrarySnapshotService {
     this.zipEntryIndexByPath = nextZipEntryIndexByPath
 
     this.options.database.replaceSnapshot(scannedSnapshot)
+
+    for (const result of audioSourceResults) {
+      if (!result.parsedMetadataForUpsert) {
+        continue
+      }
+      this.options.upsertAudioMetadataFromScan(
+        result.parsedMetadataForUpsert.audioId,
+        result.parsedMetadataForUpsert.payload,
+      )
+    }
+
     return this.options.database.readSnapshot()
   }
 }

@@ -75,6 +75,48 @@ function seedVideo(db: { prepare: (sql: string) => { run: (...params: unknown[])
   )
 }
 
+function seedAudio(db: { prepare: (sql: string) => { run: (...params: unknown[]) => unknown } }, audioId: string): void {
+  db.prepare(
+    `
+      INSERT INTO audio_item (
+        id,
+        file_name,
+        absolute_path,
+        tree_path_json,
+        duration_sec,
+        size_mb,
+        album,
+        author,
+        track_title,
+        series_id,
+        media_locator_json,
+        last_seen_revision,
+        updated_at_ms
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+  ).run(
+    audioId,
+    'seed.mp3',
+    'D:/seed.mp3',
+    JSON.stringify(['seed.mp3']),
+    5,
+    8,
+    '',
+    '',
+    'seed',
+    '',
+    JSON.stringify({
+      kind: 'filesystem',
+      absolute_path: 'D:/seed.mp3',
+      extension: '.mp3',
+      media_type: 'audio',
+      mime_type: 'audio/mpeg',
+    }),
+    1,
+    Date.now(),
+  )
+}
+
 describe('MediaLibraryMetadataStore', () => {
   const roots: string[] = []
   const closers: Array<() => void> = []
@@ -185,5 +227,30 @@ describe('MediaLibraryMetadataStore', () => {
     harness.db.prepare('UPDATE video_metadata SET tags_json = ? WHERE video_id = ?').run('bad-json', 'video-1')
     const fallbackMetadata = store.readVideoMetadata()
     expect(fallbackMetadata.get('video-1')?.tags).toEqual([])
+  })
+
+  it('可写入并读取音频元数据', async () => {
+    const root = await createTempMediaRoot('mpx-metadata-audio-')
+    roots.push(root)
+
+    const harness = openMigratedSqliteDatabase(root)
+    closers.push(harness.close)
+    seedAudio(harness.db, 'audio-1')
+
+    const store = new MediaLibraryMetadataStore(harness.db)
+    store.writeAudioMetadata('audio-1', {
+      album: '专辑-A',
+      author: '作者-B',
+      trackTitle: '曲目-C',
+      seriesId: 'series-audio-001',
+    })
+
+    const metadataMap = store.readAudioMetadata()
+    expect(metadataMap.get('audio-1')).toMatchObject({
+      album: '专辑-A',
+      author: '作者-B',
+      trackTitle: '曲目-C',
+      seriesId: 'series-audio-001',
+    })
   })
 })

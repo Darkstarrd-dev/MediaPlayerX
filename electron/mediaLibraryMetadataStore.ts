@@ -99,6 +99,46 @@ export class MediaLibraryMetadataStore {
     )
   }
 
+  readAudioMetadata(): Map<
+    string,
+    {
+      album: string
+      author: string
+      trackTitle: string
+      seriesId: string
+      updatedAtMs: number
+    }
+  > {
+    const rows = this.db
+      .prepare(
+        `
+          SELECT audio_id, album, author, track_title, series_id, updated_at_ms
+          FROM audio_metadata
+        `,
+      )
+      .all() as Array<{
+      audio_id: string
+      album: string
+      author: string
+      track_title: string
+      series_id: string
+      updated_at_ms: number
+    }>
+
+    return new Map(
+      rows.map((row) => [
+        row.audio_id,
+        {
+          album: row.album,
+          author: row.author,
+          trackTitle: row.track_title,
+          seriesId: row.series_id,
+          updatedAtMs: row.updated_at_ms,
+        },
+      ]),
+    )
+  }
+
   readSourceExternalMetadata(): Map<
     string,
     {
@@ -331,6 +371,31 @@ export class MediaLibraryMetadataStore {
         payload.grade,
         Date.now(),
       )
+  }
+
+  writeAudioMetadata(
+    audioId: string,
+    payload: {
+      album: string
+      author: string
+      trackTitle: string
+      seriesId: string
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO audio_metadata (audio_id, album, author, track_title, series_id, updated_at_ms)
+          VALUES (?, ?, ?, ?, ?, ?)
+          ON CONFLICT(audio_id) DO UPDATE SET
+            album = excluded.album,
+            author = excluded.author,
+            track_title = excluded.track_title,
+            series_id = excluded.series_id,
+            updated_at_ms = excluded.updated_at_ms
+        `,
+      )
+      .run(audioId, payload.album, payload.author, payload.trackTitle, payload.seriesId, Date.now())
   }
 
   writeSourceExternalMetadata(
