@@ -21,6 +21,7 @@ interface UseResolvedMediaStateParams {
   actualCellWidth: number
   actualMediaHeight: number
   thumbnailQuality: number
+  thumbnailWidth: number
   packageById: ReadonlyMap<string, ImagePackage>
   focusedImage: ImageItem | null
   metadataImage: ImageItem | null
@@ -53,6 +54,7 @@ export function useResolvedMediaState({
   actualCellWidth,
   actualMediaHeight,
   thumbnailQuality,
+  thumbnailWidth,
   packageById,
   focusedImage,
   metadataImage,
@@ -72,7 +74,8 @@ export function useResolvedMediaState({
     const targetById = new Map<string, MediaResolveTarget>()
     const priorityTargets: MediaResolveTarget[] = []
     const normalTargets: MediaResolveTarget[] = []
-    const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight)))
+    const normalizedThumbnailWidth = Math.max(128, Math.round(thumbnailWidth))
+    const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight, normalizedThumbnailWidth)))
 
     const pushTarget = (target: MediaResolveTarget, priority = false) => {
       if (targetById.has(target.targetId)) {
@@ -207,6 +210,7 @@ export function useResolvedMediaState({
     actualCellWidth,
     actualMediaHeight,
     thumbnailQuality,
+    thumbnailWidth,
     focusedImage,
     focusedVideo,
     focusedVideoCoverImageLocator,

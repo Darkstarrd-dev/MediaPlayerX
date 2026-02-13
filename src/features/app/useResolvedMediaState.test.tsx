@@ -82,6 +82,7 @@ describe('useResolvedMediaState', () => {
         actualCellWidth: 240,
         actualMediaHeight: 180,
         thumbnailQuality: 82,
+        thumbnailWidth: 512,
         packageById,
         focusedImage: null,
         metadataImage: null,
@@ -110,5 +111,58 @@ describe('useResolvedMediaState', () => {
       'image-thumb:img-4',
       'image-thumb:img-5',
     ])
+  })
+
+  it('缩略图质量和宽度变化会更新缩略图解析参数', () => {
+    const packageData = createPackageWithImages(2)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const visibleImageRefs: FocusedImageRef[] = [
+      { packageId: packageData.id, imageIndex: 0 },
+      { packageId: packageData.id, imageIndex: 1 },
+    ]
+
+    const { rerender } = renderHook(
+      ({ thumbnailQuality, thumbnailWidth }) =>
+        useResolvedMediaState({
+          repository: {} as MediaRepository,
+          benchSettings: createBenchSettings(),
+          maxConcurrent: 8,
+          actualCellWidth: 180,
+          actualMediaHeight: 120,
+          thumbnailQuality,
+          thumbnailWidth,
+          packageById,
+          focusedImage: null,
+          metadataImage: null,
+          focusedRef: null,
+          orderedRootScopedImageRefs: visibleImageRefs,
+          fullscreenActive: false,
+          showNamesOnly: false,
+          visibleImageRefs,
+          pageStart: 0,
+          pagedPageSize: 2,
+          refsInPage: visibleImageRefs,
+          focusedVideo: null,
+          focusedVideoCoverImageLocator: null,
+        }),
+      {
+        initialProps: {
+          thumbnailQuality: 40,
+          thumbnailWidth: 256,
+        },
+      },
+    )
+
+    const firstTargets = vi.mocked(useResolvedMediaUrls).mock.calls[0]?.[0]?.targets ?? []
+    const firstThumbTarget = firstTargets.find((target) => target.targetId === 'image-thumb:img-0')
+    expect(firstThumbTarget?.thumbnailQuality).toBe(40)
+    expect(firstThumbTarget?.thumbnailMaxEdge).toBe(256)
+
+    rerender({ thumbnailQuality: 90, thumbnailWidth: 640 })
+
+    const secondTargets = vi.mocked(useResolvedMediaUrls).mock.calls[1]?.[0]?.targets ?? []
+    const secondThumbTarget = secondTargets.find((target) => target.targetId === 'image-thumb:img-0')
+    expect(secondThumbTarget?.thumbnailQuality).toBe(90)
+    expect(secondThumbTarget?.thumbnailMaxEdge).toBe(640)
   })
 })

@@ -182,6 +182,7 @@ export function useAppDisplayResources({
     actualCellWidth,
     actualMediaHeight,
     thumbnailQuality: appSettings.thumbnailQuality,
+    thumbnailWidth: appSettings.thumbnailWidth,
     packageById: packageByIdEffective,
     focusedImage,
     metadataImage: metadataImageEffective,
