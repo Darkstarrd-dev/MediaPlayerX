@@ -159,6 +159,7 @@ function renderStartupSplashHtml(): string {
 }
 
 function createStartupSplashWindow(): BrowserWindow {
+  const appWindowIconPath = resolveAppWindowIconPath() ?? undefined
   const splashWindow = new BrowserWindow({
     width: 700,
     height: 430,
@@ -176,6 +177,7 @@ function createStartupSplashWindow(): BrowserWindow {
     skipTaskbar: true,
     alwaysOnTop: true,
     backgroundColor: '#efe7dc',
+    icon: appWindowIconPath,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -271,6 +273,36 @@ function collectAppRootCandidates(): string[] {
   return Array.from(candidates)
 }
 
+function resolveAppWindowIconPath(): string | null {
+  const explicitIconPath = (process.env.MEDIA_PLAYERX_APP_ICON_PATH ?? '').trim()
+  if (explicitIconPath.length > 0) {
+    const resolvedExplicitPath = path.isAbsolute(explicitIconPath)
+      ? explicitIconPath
+      : path.resolve(process.cwd(), explicitIconPath)
+    if (existsSync(resolvedExplicitPath)) {
+      return resolvedExplicitPath
+    }
+  }
+
+  const platformIconCandidates =
+    process.platform === 'win32'
+      ? ['build/icons/icon.ico', 'build/icons/256x256.png', 'src/assets/icon.png']
+      : process.platform === 'darwin'
+        ? ['build/icons/icon.icns', 'build/icons/512x512.png', 'src/assets/icon.png']
+        : ['build/icons/512x512.png', 'build/icons/256x256.png', 'src/assets/icon.png']
+
+  for (const rootPath of collectAppRootCandidates()) {
+    for (const relativePath of platformIconCandidates) {
+      const candidatePath = path.resolve(rootPath, relativePath)
+      if (existsSync(candidatePath)) {
+        return candidatePath
+      }
+    }
+  }
+
+  return null
+}
+
 function normalizeProxyServer(rawValue: string | undefined): string | null {
   const value = (rawValue ?? '').trim()
   if (!value) {
@@ -348,6 +380,10 @@ tryConfigureCrashDumpsDir()
 const userDataDir = resolveUserDataDir()
 if (userDataDir) {
   app.setPath('userData', userDataDir)
+}
+
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.darkstarrd.mediaplayerx')
 }
 
 function resolveRendererEntry(): { type: 'url' | 'file'; value: string } {
@@ -557,6 +593,7 @@ function registerWindowControlIpcHandlers(): void {
 
 function createMainWindow(): BrowserWindow {
   const benchMode = resolveBenchMode()
+  const appWindowIconPath = resolveAppWindowIconPath() ?? undefined
   const window = new BrowserWindow({
     width: 1400,
     height: 920,
@@ -568,6 +605,7 @@ function createMainWindow(): BrowserWindow {
     thickFrame: process.platform === 'win32',
     autoHideMenuBar: !nativeChromeEnabled,
     backgroundColor: '#f2eee7',
+    icon: appWindowIconPath,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

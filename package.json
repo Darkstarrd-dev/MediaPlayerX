@@ -74,6 +74,7 @@
     "files": [
       "dist/**",
       "dist-electron/**",
+      "build/icons/**",
       "node_modules/**",
       "package.json"
     ],
@@ -81,6 +82,7 @@
       "**/*.node"
     ],
     "win": {
+      "icon": "build/icons/icon.ico",
       "signAndEditExecutable": false,
       "target": [
         {
@@ -90,6 +92,12 @@
           ]
         }
       ]
+    },
+    "mac": {
+      "icon": "build/icons/icon.icns"
+    },
+    "linux": {
+      "icon": "build/icons/512x512.png"
     },
     "nsis": {
       "oneClick": false,
