@@ -27,6 +27,7 @@ export interface SettingsPanelProps {
   sidebarRatio: number
   sidebarMinWidth: number
   layoutLocked: boolean
+  electronNativeChromeEnabled: boolean
   sidebarFontSize: number
   sidebarCountFontSize: number
   sidebarIndentStep: number
@@ -65,6 +66,7 @@ export interface SettingsPanelProps {
   onSidebarRatioChange: (value: number) => void
   onSidebarMinWidthChange: (value: number) => void
   onLayoutLockedChange: (value: boolean) => void
+  onElectronNativeChromeEnabledChange: (value: boolean) => void
   onSidebarFontSizeChange: (value: number) => void
   onSidebarCountFontSizeChange: (value: number) => void
   onSidebarIndentStepChange: (value: number) => void
@@ -130,6 +132,7 @@ function SettingsPanel({
   sidebarRatio,
   sidebarMinWidth,
   layoutLocked,
+  electronNativeChromeEnabled,
   sidebarFontSize,
   sidebarCountFontSize,
   sidebarIndentStep,
@@ -168,6 +171,7 @@ function SettingsPanel({
   onSidebarRatioChange,
   onSidebarMinWidthChange,
   onLayoutLockedChange,
+  onElectronNativeChromeEnabledChange,
   onSidebarFontSizeChange,
   onSidebarCountFontSizeChange,
   onSidebarIndentStepChange,
@@ -378,6 +382,7 @@ function SettingsPanel({
   const mainSection = renderSettingsMainSection({
     activeSection,
     layoutLocked,
+    electronNativeChromeEnabled,
     headerHeight,
     headerHeightScale,
     settingsFontSize,
@@ -427,6 +432,7 @@ function SettingsPanel({
     renderBindingRows,
     onResetShortcuts,
     onLayoutLockedChange,
+    onElectronNativeChromeEnabledChange,
     onHeaderHeightChange,
     onSettingsFontSizeChange,
     onSidebarRatioChange,

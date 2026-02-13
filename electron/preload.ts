@@ -330,6 +330,12 @@ const windowApi = {
   isMaximized: async () => {
     return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.isMaximized)
   },
+  getNativeChromeEnabled: async () => {
+    return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.getNativeChromeEnabled)
+  },
+  setNativeChromeEnabled: async (enabled: boolean) => {
+    return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.setNativeChromeEnabled, Boolean(enabled))
+  },
   onMaximizedStateChange: (listener: (maximized: boolean) => void) => {
     const handler = (_event: unknown, payload: unknown) => {
       listener(Boolean(payload))

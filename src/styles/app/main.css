@@ -89,6 +89,24 @@
   text-align: inherit;
 }
 
+.thumb-card-main:disabled {
+  opacity: 1;
+  cursor: progress;
+}
+
+.image-grid.is-pending-swap {
+  cursor: progress;
+}
+
+.image-grid.is-pending-swap .thumb-card {
+  cursor: progress;
+}
+
+.image-grid.is-pending-swap .thumb-card:hover {
+  transform: none;
+  box-shadow: var(--mpx-card-shadow);
+}
+
 .node-browse-grid .thumb-card-main {
   display: block;
 }

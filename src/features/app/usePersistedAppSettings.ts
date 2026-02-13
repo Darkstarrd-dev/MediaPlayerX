@@ -20,6 +20,7 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     sidebarRatio: settings.sidebarRatio,
     sidebarMinWidth: settings.sidebarMinWidth,
     layoutLocked: settings.layoutLocked,
+    electronNativeChromeEnabled: settings.electronNativeChromeEnabled,
     sidebarFontSize: settings.sidebarFontSize,
     sidebarCountFontSize: settings.sidebarCountFontSize,
     sidebarIndentStep: settings.sidebarIndentStep,

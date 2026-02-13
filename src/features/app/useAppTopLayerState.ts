@@ -321,6 +321,7 @@ export function useAppTopLayerState({
   const {
     adReviewVisionEndpoint,
     adReviewVisionModel,
+    electronNativeChromeEnabled,
     updateSettings,
   } = appSettings
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
@@ -334,6 +335,49 @@ export function useAppTopLayerState({
     setAdReviewVisionTestMessage(null)
     setAdReviewVisionSaveMessage(null)
   }, [adReviewVisionEndpoint, adReviewVisionModel])
+
+  useEffect(() => {
+    const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined
+    if (!windowApi?.getNativeChromeEnabled) {
+      return
+    }
+
+    let active = true
+    void windowApi
+      .getNativeChromeEnabled()
+      .then((enabled) => {
+        if (!active) {
+          return
+        }
+        if (enabled !== electronNativeChromeEnabled) {
+          updateSettings({ electronNativeChromeEnabled: enabled })
+        }
+      })
+      .catch(() => undefined)
+
+    return () => {
+      active = false
+    }
+  }, [electronNativeChromeEnabled, updateSettings])
+
+  const applyElectronNativeChromeEnabled = useCallback(
+    (value: boolean) => {
+      updateSettings({ electronNativeChromeEnabled: value })
+
+      const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined
+      if (!windowApi?.setNativeChromeEnabled) {
+        return
+      }
+
+      void windowApi
+        .setNativeChromeEnabled(value)
+        .then((applied) => {
+          updateSettings({ electronNativeChromeEnabled: applied })
+        })
+        .catch(() => undefined)
+    },
+    [updateSettings],
+  )
 
   const testAdReviewVisionModel = useCallback(async () => {
     const testVisionModel = mediaRepository.testAdReviewVisionModel
@@ -562,6 +606,7 @@ export function useAppTopLayerState({
     sidebarRatio: appSettings.sidebarRatio,
     sidebarMinWidth: appSettings.sidebarMinWidth,
     layoutLocked: appSettings.layoutLocked,
+    electronNativeChromeEnabled,
     sidebarFontSize: appSettings.sidebarFontSize,
     sidebarCountFontSize: appSettings.sidebarCountFontSize,
     sidebarIndentStep: appSettings.sidebarIndentStep,
@@ -596,6 +641,7 @@ export function useAppTopLayerState({
     updateSettings: appSettings.updateSettings,
     applySidebarRatio,
     applyMetadataRatio,
+    applyElectronNativeChromeEnabled,
     setShortcut: appSettings.setShortcut,
     resetShortcuts: appSettings.resetShortcuts,
     clearDatabaseForDev,

@@ -250,7 +250,9 @@ function MetadataPanel({
     const sequence = imagePreloadSeqRef.current
 
     if (!focusedImageSrc) {
-      setDisplayedImageSrc(null)
+      if (!focusedImage) {
+        setDisplayedImageSrc(null)
+      }
       return
     }
 
@@ -291,7 +293,7 @@ function MetadataPanel({
     return () => {
       cancelled = true
     }
-  }, [displayedImageSrc, focusedImageSrc])
+  }, [displayedImageSrc, focusedImage, focusedImageSrc])
 
   useEffect(() => {
     setWorkTitleDraft(focusedImagePackage?.workTitle ?? '')
@@ -386,19 +388,8 @@ function MetadataPanel({
     return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [featureTagPickerOpen, featureTags, onToggleFeatureTagPicker])
 
-  const imagePreviewSizing = (() => {
-    if (!focusedImage) {
-      return {}
-    }
-
-    if (focusedImage.width >= focusedImage.height) {
-      return { width: '100%' }
-    }
-
-    return { height: '100%' }
-  })()
-
-  const imagePreviewClassName = hasImageFocus && focusedImage ? 'metadata-content metadata-content-focus' : 'metadata-content'
+  const showImageCanvas = mode === 'image' && showImagePreview && hasImageFocus && Boolean(focusedImage)
+  const imagePreviewClassName = showImageCanvas ? 'metadata-content metadata-content-focus' : 'metadata-content'
   const lockMetadataScroll = mode === 'image' && showImagePreview && hasImageFocus && Boolean(focusedImage) && !searchModeActive
   const metadataPanelClassName = lockMetadataScroll ? 'metadata-panel is-image-focus' : 'metadata-panel'
   const adReviewRunning = adReviewTask?.status === 'running'
@@ -715,8 +706,6 @@ function MetadataPanel({
     })
   }
 
-  const showImageCanvas = mode === 'image' && showImagePreview && hasImageFocus && Boolean(focusedImage)
-
   if (metadataCollapsed) {
     return (
       <button aria-label="展开元数据面板" className="meta-restore" type="button" onClick={onExpand}>
@@ -755,7 +744,6 @@ function MetadataPanel({
           focusedImage={focusedImage}
           focusedImagePackage={focusedImagePackage}
           displayedImageSrc={displayedImageSrc}
-          imagePreviewSizing={imagePreviewSizing}
           metadataPending={metadataPending}
           editable={editable}
           currentGrade={currentGrade}

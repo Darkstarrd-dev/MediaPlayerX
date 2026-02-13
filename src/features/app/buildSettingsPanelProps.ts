@@ -10,6 +10,7 @@ interface BuildSettingsPanelPropsParams {
   sidebarRatio: number
   sidebarMinWidth: number
   layoutLocked: boolean
+  electronNativeChromeEnabled: boolean
   sidebarFontSize: number
   sidebarCountFontSize: number
   sidebarIndentStep: number
@@ -44,6 +45,7 @@ interface BuildSettingsPanelPropsParams {
   updateSettings: (patch: Partial<AppSettings>) => void
   applySidebarRatio: (value: number) => void
   applyMetadataRatio: (value: number) => void
+  applyElectronNativeChromeEnabled: (value: boolean) => void
   setShortcut: SettingsPanelProps['onSetShortcut']
   resetShortcuts: () => void
   clearDatabaseForDev: () => void
@@ -63,6 +65,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     sidebarRatio: params.sidebarRatio,
     sidebarMinWidth: params.sidebarMinWidth,
     layoutLocked: params.layoutLocked,
+    electronNativeChromeEnabled: params.electronNativeChromeEnabled,
     sidebarFontSize: params.sidebarFontSize,
     sidebarCountFontSize: params.sidebarCountFontSize,
     sidebarIndentStep: params.sidebarIndentStep,
@@ -106,6 +109,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onSidebarRatioChange: params.applySidebarRatio,
     onSidebarMinWidthChange: (value) => params.updateSettings({ sidebarMinWidth: value }),
     onLayoutLockedChange: (value) => params.updateSettings({ layoutLocked: value }),
+    onElectronNativeChromeEnabledChange: params.applyElectronNativeChromeEnabled,
     onSidebarFontSizeChange: (value) => params.updateSettings({ sidebarFontSize: value }),
     onSidebarCountFontSizeChange: (value) => params.updateSettings({ sidebarCountFontSize: value }),
     onSidebarIndentStepChange: (value) => params.updateSettings({ sidebarIndentStep: value }),

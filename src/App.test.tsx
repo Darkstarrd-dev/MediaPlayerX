@@ -905,6 +905,38 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
+  it('原图显示阶段不再渲染旧版分辨率色块占位', async () => {
+    render(<App />)
+
+    const firstThumbButton = screen.getByText('幻旅系列 001 #1').closest('button')
+    expect(firstThumbButton).not.toBeNull()
+    fireEvent.click(firstThumbButton as HTMLButtonElement)
+
+    await waitFor(() => {
+      expect(document.querySelector('.metadata-image-real')).not.toBeNull()
+      expect(document.querySelector('.metadata-image-media')).toBeNull()
+    })
+  })
+
+  it('退出原图显示后元数据面板恢复常规布局，不保持 focus 容器样式', async () => {
+    render(<App />)
+
+    const firstThumbButton = screen.getByText('幻旅系列 001 #1').closest('button')
+    expect(firstThumbButton).not.toBeNull()
+    fireEvent.click(firstThumbButton as HTMLButtonElement)
+
+    await waitFor(() => {
+      expect(document.querySelector('.metadata-content-focus')).not.toBeNull()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '切换到元数据显示' }))
+
+    await waitFor(() => {
+      expect(document.querySelector('.metadata-content-focus')).toBeNull()
+      expect(document.querySelector('.metadata-rating-group')).not.toBeNull()
+    })
+  })
+
   it('元数据评分支持清空到空星，并可继续点击设星', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
@@ -1592,6 +1624,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText(/缩略图间距系数/)).toBeInTheDocument()
     expect(screen.getByLabelText('缩略图质量')).toBeInTheDocument()
     expect(screen.getByLabelText('缩略图宽度')).toBeInTheDocument()
+    expect(screen.getByLabelText('调试显示 Electron 外框与菜单')).toBeInTheDocument()
 
     const settingsFontSlider = screen.getByLabelText(/设置面板字体系数/)
     const fontSizeBefore = settingsPanel?.style.fontSize

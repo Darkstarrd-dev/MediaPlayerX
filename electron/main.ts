@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, protocol, type MenuItemConstructorOptions } from 'electron'
 import { existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -14,6 +14,48 @@ import {
 } from './runtimeDiagnostics'
 
 const STARTUP_SPLASH_TIMEOUT_MS = 12_000
+
+let nativeChromeEnabled = false
+let mainWindowRef: BrowserWindow | null = null
+
+function buildNativeChromeMenuTemplate(): MenuItemConstructorOptions[] {
+  return [
+    {
+      label: 'File',
+      submenu: [{ role: 'close' }],
+    },
+    {
+      label: 'Edit',
+      submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }],
+    },
+    {
+      label: 'View',
+      submenu: [{ role: 'reload' }, { role: 'forceReload' }, { role: 'toggleDevTools' }, { type: 'separator' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' }, { role: 'togglefullscreen' }],
+    },
+    {
+      label: 'Window',
+      submenu: [{ role: 'minimize' }, { role: 'zoom' }, { role: 'close' }],
+    },
+    {
+      label: 'Help',
+      submenu: [],
+    },
+  ]
+}
+
+function applyApplicationMenuForChromeMode(): void {
+  if (nativeChromeEnabled) {
+    Menu.setApplicationMenu(Menu.buildFromTemplate(buildNativeChromeMenuTemplate()))
+    return
+  }
+
+  Menu.setApplicationMenu(null)
+}
+
+function applyWindowMenuState(window: BrowserWindow): void {
+  window.setAutoHideMenuBar(!nativeChromeEnabled)
+  window.setMenuBarVisibility(nativeChromeEnabled)
+}
 
 function renderStartupSplashHtml(): string {
   return `<!doctype html>
@@ -417,6 +459,53 @@ function resolvePreloadEntry(): string {
   return path.join(fallbackRoot, 'dist-electron', 'preload.cjs')
 }
 
+function recreateMainWindowForChromeMode(currentWindow: BrowserWindow): Promise<void> {
+  const wasMaximized = currentWindow.isMaximized()
+  const wasVisible = currentWindow.isVisible()
+  const bounds = currentWindow.getBounds()
+
+  const nextWindow = createMainWindow()
+  mainWindowRef = nextWindow
+  nextWindow.once('closed', () => {
+    if (mainWindowRef === nextWindow) {
+      mainWindowRef = null
+    }
+  })
+
+  if (!wasMaximized) {
+    nextWindow.setBounds(bounds)
+  }
+
+  if (wasMaximized) {
+    nextWindow.maximize()
+  }
+
+  return new Promise((resolve) => {
+    let settled = false
+
+    const finalize = () => {
+      if (settled) {
+        return
+      }
+      settled = true
+
+      if (!nextWindow.isDestroyed() && wasVisible) {
+        nextWindow.show()
+        nextWindow.focus()
+      }
+
+      if (!currentWindow.isDestroyed()) {
+        currentWindow.destroy()
+      }
+
+      resolve()
+    }
+
+    nextWindow.once('ready-to-show', finalize)
+    nextWindow.webContents.once('did-fail-load', finalize)
+  })
+}
+
 function registerWindowControlIpcHandlers(): void {
   ipcMain.handle(APP_WINDOW_CHANNELS.minimize, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize()
@@ -443,6 +532,27 @@ function registerWindowControlIpcHandlers(): void {
   ipcMain.handle(APP_WINDOW_CHANNELS.isMaximized, (event) => {
     return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
   })
+
+  ipcMain.handle(APP_WINDOW_CHANNELS.getNativeChromeEnabled, () => {
+    return nativeChromeEnabled
+  })
+
+  ipcMain.handle(APP_WINDOW_CHANNELS.setNativeChromeEnabled, async (event, enabled: unknown) => {
+    const normalized = Boolean(enabled)
+    if (nativeChromeEnabled === normalized) {
+      return nativeChromeEnabled
+    }
+
+    nativeChromeEnabled = normalized
+    applyApplicationMenuForChromeMode()
+
+    const currentWindow = BrowserWindow.fromWebContents(event.sender) ?? mainWindowRef
+    if (currentWindow && !currentWindow.isDestroyed()) {
+      await recreateMainWindowForChromeMode(currentWindow)
+    }
+
+    return nativeChromeEnabled
+  })
 }
 
 function createMainWindow(): BrowserWindow {
@@ -454,9 +564,9 @@ function createMainWindow(): BrowserWindow {
     minHeight: 680,
     show: false,
     paintWhenInitiallyHidden: true,
-    frame: false,
+    frame: nativeChromeEnabled,
     thickFrame: process.platform === 'win32',
-    autoHideMenuBar: true,
+    autoHideMenuBar: !nativeChromeEnabled,
     backgroundColor: '#f2eee7',
     webPreferences: {
       contextIsolation: true,
@@ -468,7 +578,7 @@ function createMainWindow(): BrowserWindow {
     },
   })
 
-  window.setMenuBarVisibility(false)
+  applyWindowMenuState(window)
 
   // Prevent the default Electron behavior where dropping a file onto the window
   // navigates the current page to a file:// URL.
@@ -623,6 +733,12 @@ function openMainWindow(): BrowserWindow {
   const benchMode = resolveBenchMode()
   const splashWindow = benchMode ? null : createStartupSplashWindow()
   const mainWindow = createMainWindow()
+  mainWindowRef = mainWindow
+  mainWindow.once('closed', () => {
+    if (mainWindowRef === mainWindow) {
+      mainWindowRef = null
+    }
+  })
 
   if (!benchMode) {
     bindStartupWindowTransition(mainWindow, splashWindow)
@@ -643,7 +759,7 @@ app.whenReady().then(() => {
     true,
   )
 
-  Menu.setApplicationMenu(null)
+  applyApplicationMenuForChromeMode()
   registerWindowControlIpcHandlers()
   registerBackendIpcHandlers()
   registerBenchIpcHandlers()

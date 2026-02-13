@@ -99,11 +99,14 @@ describe('useResolvedMediaState', () => {
     const firstCall = vi.mocked(useResolvedMediaUrls).mock.calls[0]?.[0]
     const thumbnailTargetIds =
       firstCall?.targets.filter((target) => target.targetId.startsWith('image-thumb:')).map((target) => target.targetId) ?? []
+    const originalTargetIds =
+      firstCall?.targets.filter((target) => target.targetId.startsWith('image-original:')).map((target) => target.targetId) ?? []
 
     expect(thumbnailTargetIds).toEqual([
       'image-thumb:img-2',
       'image-thumb:img-3',
     ])
+    expect(originalTargetIds).toContain('image-original:img-2')
   })
 
   it('缩略图质量和宽度变化会更新缩略图解析参数', () => {

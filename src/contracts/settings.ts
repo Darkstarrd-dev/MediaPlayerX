@@ -13,6 +13,7 @@ export const appSettingsSchema = z.object({
   sidebarRatio: z.number().min(0).max(0.95),
   sidebarMinWidth: z.number().min(80).max(640),
   layoutLocked: z.boolean(),
+  electronNativeChromeEnabled: z.boolean(),
   sidebarFontSize: z.number().min(11).max(24),
   sidebarCountFontSize: z.number().min(10).max(22),
   sidebarIndentStep: z.number().min(8).max(48),

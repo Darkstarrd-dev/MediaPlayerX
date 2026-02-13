@@ -133,6 +133,7 @@ export function useResolvedMediaState({
 
     pushOriginalImageTarget(focusedImage)
     pushOriginalImageTarget(metadataImage)
+    pushOriginalImageTargetByRef(refsInPage[0], true)
 
     if (focusedRef && orderedRootScopedImageRefs.length > 0) {
       const focusedIndex = orderedRootScopedImageRefs.findIndex(

@@ -29,6 +29,7 @@ interface RenderSettingsMainSectionParams {
   sidebarMinWidthScale: number
   sidebarFontSize: number
   sidebarFontSizeScale: number
+  electronNativeChromeEnabled: boolean
   sidebarCountFontSize: number
   sidebarCountFontSizeScale: number
   sidebarIndentStep: number
@@ -74,6 +75,7 @@ interface RenderSettingsMainSectionParams {
   onSidebarRatioChange: (value: number) => void
   onSidebarMinWidthChange: (value: number) => void
   onSidebarFontSizeChange: (value: number) => void
+  onElectronNativeChromeEnabledChange: (value: boolean) => void
   onSidebarCountFontSizeChange: (value: number) => void
   onSidebarIndentStepChange: (value: number) => void
   onSidebarVerticalGapChange: (value: number) => void
@@ -111,6 +113,7 @@ export function renderSettingsMainSection({
   sidebarMinWidthScale,
   sidebarFontSize,
   sidebarFontSizeScale,
+  electronNativeChromeEnabled,
   sidebarCountFontSize,
   sidebarCountFontSizeScale,
   sidebarIndentStep,
@@ -156,6 +159,7 @@ export function renderSettingsMainSection({
   onSidebarRatioChange,
   onSidebarMinWidthChange,
   onSidebarFontSizeChange,
+  onElectronNativeChromeEnabledChange,
   onSidebarCountFontSizeChange,
   onSidebarIndentStepChange,
   onSidebarVerticalGapChange,
@@ -254,6 +258,14 @@ export function renderSettingsMainSection({
           <label className="settings-toggle-row">
             <span>布局锁定</span>
             <input type="checkbox" checked={layoutLocked} onChange={(event) => onLayoutLockedChange(event.target.checked)} />
+          </label>
+          <label className="settings-toggle-row">
+            <span>调试显示 Electron 外框与菜单</span>
+            <input
+              type="checkbox"
+              checked={electronNativeChromeEnabled}
+              onChange={(event) => onElectronNativeChromeEnabledChange(event.target.checked)}
+            />
           </label>
           <label>
             Header 高度系数 {formatScale(headerHeightScale)}（{headerHeight}px）

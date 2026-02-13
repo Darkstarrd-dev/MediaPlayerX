@@ -128,6 +128,8 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  padding: 8px 0;
+  overflow: hidden;
 }
 
 .metadata-image-caption {
@@ -415,11 +417,22 @@
 }
 
 .metadata-image-real {
+  width: 100%;
+  height: 100%;
   max-width: 100%;
   max-height: 100%;
   border-radius: 8px;
+  display: block;
   object-fit: contain;
+  object-position: center center;
   box-shadow: var(--mpx-shadow-popover);
+}
+
+.metadata-image-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: transparent;
 }
 
 .metadata-image-media span {

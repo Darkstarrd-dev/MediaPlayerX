@@ -1,6 +1,6 @@
 import { createRef } from 'react'
 
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { ImagePackage } from '../types'
@@ -52,6 +52,45 @@ const packageWithImages: ImagePackage = {
       mediaLocator: {
         kind: 'filesystem',
         absolutePath: 'C:/mock/pkg-2-2.jpg',
+        extension: '.jpg',
+        mediaType: 'image',
+        mimeType: 'image/jpeg',
+      },
+    },
+  ],
+}
+
+const packageWithMoreImages: ImagePackage = {
+  ...packageWithImages,
+  images: [
+    ...packageWithImages.images,
+    {
+      id: 'img-3',
+      ordinal: 3,
+      width: 1024,
+      height: 768,
+      sizeKb: 128,
+      cluster: 0,
+      color: '#999',
+      mediaLocator: {
+        kind: 'filesystem',
+        absolutePath: 'C:/mock/pkg-2-3.jpg',
+        extension: '.jpg',
+        mediaType: 'image',
+        mimeType: 'image/jpeg',
+      },
+    },
+    {
+      id: 'img-4',
+      ordinal: 4,
+      width: 1024,
+      height: 768,
+      sizeKb: 128,
+      cluster: 0,
+      color: '#999',
+      mediaLocator: {
+        kind: 'filesystem',
+        absolutePath: 'C:/mock/pkg-2-4.jpg',
         extension: '.jpg',
         mediaType: 'image',
         mimeType: 'image/jpeg',
@@ -216,7 +255,7 @@ describe('ImageMainSection layout', () => {
     expect(document.querySelector('.pager-line')).toBeNull()
   })
 
-  it('缩略图在新批次未准备好时显示占位，准备完成后整批替换', () => {
+  it('缩略图在新批次未准备好时显示占位，准备完成后整批替换', async () => {
     const refsInPage = [
       { packageId: packageWithImages.id, imageIndex: 0 },
       { packageId: packageWithImages.id, imageIndex: 1 },
@@ -345,7 +384,314 @@ describe('ImageMainSection layout', () => {
       />,
     )
 
+    await waitFor(() => {
+      expect(document.querySelectorAll('.thumb-card.is-skeleton').length).toBe(0)
+      expect(document.querySelectorAll('.thumb-media-image').length).toBe(2)
+    })
+  })
+
+  it('切换批次未就绪时保留旧缩略图并锁定交互，待就绪后平替', async () => {
+    const refsBatchA = [
+      { packageId: packageWithMoreImages.id, imageIndex: 0 },
+      { packageId: packageWithMoreImages.id, imageIndex: 1 },
+    ]
+    const refsBatchB = [
+      { packageId: packageWithMoreImages.id, imageIndex: 2 },
+      { packageId: packageWithMoreImages.id, imageIndex: 3 },
+    ]
+
+    const onSelectImage = vi.fn()
+    const { rerender } = render(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={2}
+        enableLoadingSkeleton={true}
+        activePackage={packageWithMoreImages}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={refsBatchA}
+        refsInPage={refsBatchA}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={2}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[packageWithMoreImages.id, packageWithMoreImages]])}
+        imageUrlById={{
+          'img-1': 'mock://thumb-1',
+          'img-2': 'mock://thumb-2',
+        }}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={onSelectImage}
+        metadataPending={false}
+        metadataTargetPackageLabel={packageWithMoreImages.displayName}
+        metadataFetchDefaultText={packageWithMoreImages.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+      />,
+    )
+
+    const initialImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
+    expect(initialImages.map((element) => element.getAttribute('src'))).toEqual(['mock://thumb-1', 'mock://thumb-2'])
+
+    rerender(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={2}
+        enableLoadingSkeleton={true}
+        activePackage={packageWithMoreImages}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={refsBatchB}
+        refsInPage={refsBatchB}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={2}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[packageWithMoreImages.id, packageWithMoreImages]])}
+        imageUrlById={{
+          'img-3': 'mock://thumb-3',
+        }}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={onSelectImage}
+        metadataPending={false}
+        metadataTargetPackageLabel={packageWithMoreImages.displayName}
+        metadataFetchDefaultText={packageWithMoreImages.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+      />,
+    )
+
     expect(document.querySelectorAll('.thumb-card.is-skeleton').length).toBe(0)
-    expect(document.querySelectorAll('.thumb-media-image').length).toBe(2)
+    const preservedImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
+    expect(preservedImages.map((element) => element.getAttribute('src'))).toEqual(['mock://thumb-1', 'mock://thumb-2'])
+    const pendingButtons = Array.from(document.querySelectorAll('.thumb-card-main')) as HTMLButtonElement[]
+    expect(pendingButtons.every((button) => button.disabled)).toBe(true)
+
+    fireEvent.click(pendingButtons[0] as HTMLButtonElement)
+    expect(onSelectImage).toHaveBeenCalledTimes(0)
+
+    rerender(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={2}
+        enableLoadingSkeleton={true}
+        activePackage={packageWithMoreImages}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={refsBatchB}
+        refsInPage={refsBatchB}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={2}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[packageWithMoreImages.id, packageWithMoreImages]])}
+        imageUrlById={{
+          'img-3': 'mock://thumb-3',
+          'img-4': 'mock://thumb-4',
+        }}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={onSelectImage}
+        metadataPending={false}
+        metadataTargetPackageLabel={packageWithMoreImages.displayName}
+        metadataFetchDefaultText={packageWithMoreImages.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      const swappedImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
+      expect(swappedImages.map((element) => element.getAttribute('src'))).toEqual(['mock://thumb-3', 'mock://thumb-4'])
+      const settledButtons = Array.from(document.querySelectorAll('.thumb-card-main')) as HTMLButtonElement[]
+      expect(settledButtons.every((button) => !button.disabled)).toBe(true)
+    })
+  })
+
+  it('纯文件名模式来回切换时复用既有缩略图批次，不重新进入 pending', () => {
+    const refsInPage = [
+      { packageId: packageWithImages.id, imageIndex: 0 },
+      { packageId: packageWithImages.id, imageIndex: 1 },
+    ]
+
+    const sharedProps = {
+      vectorMode: false,
+      metadataManageMode: false,
+      loading: false,
+      placeholderCount: 2,
+      enableLoadingSkeleton: true,
+      activePackage: packageWithImages,
+      focusedRef: null,
+      focusedImageExists: false,
+      visibleImageRefs: refsInPage,
+      refsInPage,
+      pageStart: 0,
+      actualCellWidth: 120,
+      actualMediaHeight: 108,
+      thumbnailColumns: 2,
+      thumbnailGap: 8,
+      vectorCandidates: [],
+      packageById: new Map([[packageWithImages.id, packageWithImages]]),
+      imageUrlById: {
+        'img-1': 'mock://thumb-1',
+        'img-2': 'mock://thumb-2',
+      },
+      gridRef: createRef<HTMLDivElement>(),
+      onGridElementChange: vi.fn(),
+      onToggleShowNamesOnly: vi.fn(),
+      onEnterFullscreen: vi.fn(),
+      canJumpToAnimation: false,
+      onJumpToAnimation: vi.fn(),
+      onSelectImage: vi.fn(),
+      metadataPending: false,
+      metadataTargetPackageLabel: packageWithImages.displayName,
+      metadataFetchDefaultText: packageWithImages.packageName,
+      metadataProxyServer: '',
+      metadataEhentaiCookies: '',
+      onMetadataSyncName: vi.fn(),
+      onMetadataSaveParsed: async () => undefined,
+      manageMode: false,
+      sidebarSelectedCount: 0,
+      imageSelectedCount: 0,
+      activeSelectionScope: null,
+      pendingManageAction: false,
+      manageOperationHint: null,
+      canManageDelete: false,
+      canManageHide: false,
+      canManageUnhide: false,
+      adReviewFeatureEnabled: false,
+      adReviewPanelOpen: false,
+      checkedImageIds: new Set<string>(),
+      adReviewScopeImageIds: new Set<string>(),
+      adReviewLlmReviewedImageIds: new Set<string>(),
+      adReviewNonLlmReviewedImageIds: new Set<string>(),
+      onToggleImageChecked: vi.fn(),
+      onReplaceCheckedImages: vi.fn(),
+      onManageDelete: vi.fn(),
+      onManageHide: vi.fn(),
+      onManageUnhide: vi.fn(),
+      onToggleAdReviewPanel: vi.fn(),
+      onClearManageSelection: vi.fn(),
+    } satisfies Omit<Parameters<typeof ImageMainSection>[0], 'showNamesOnly'>
+
+    const { rerender } = render(<ImageMainSection {...sharedProps} showNamesOnly={false} />)
+
+    const initialImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
+    expect(initialImages.map((element) => element.getAttribute('src'))).toEqual(['mock://thumb-1', 'mock://thumb-2'])
+    const initialButtons = Array.from(document.querySelectorAll('.thumb-card-main')) as HTMLButtonElement[]
+    expect(initialButtons.every((button) => !button.disabled)).toBe(true)
+
+    rerender(<ImageMainSection {...sharedProps} showNamesOnly={true} />)
+    expect(document.querySelector('.name-list')).not.toBeNull()
+
+    rerender(<ImageMainSection {...sharedProps} showNamesOnly={false} />)
+
+    const imageGrid = document.querySelector('.image-grid')
+    expect(imageGrid?.classList.contains('is-pending-swap')).toBe(false)
+    const settledImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
+    expect(settledImages.map((element) => element.getAttribute('src'))).toEqual(['mock://thumb-1', 'mock://thumb-2'])
+    const settledButtons = Array.from(document.querySelectorAll('.thumb-card-main')) as HTMLButtonElement[]
+    expect(settledButtons.every((button) => !button.disabled)).toBe(true)
   })
 })

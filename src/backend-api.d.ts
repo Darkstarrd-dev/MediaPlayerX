@@ -158,6 +158,8 @@ interface MediaPlayerWindowApi {
   toggleMaximize: () => Promise<void>
   close: () => Promise<void>
   isMaximized: () => Promise<boolean>
+  getNativeChromeEnabled: () => Promise<boolean>
+  setNativeChromeEnabled: (enabled: boolean) => Promise<boolean>
   onMaximizedStateChange: (listener: (maximized: boolean) => void) => () => void
 }
 

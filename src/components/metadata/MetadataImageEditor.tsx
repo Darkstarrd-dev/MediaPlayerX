@@ -29,7 +29,6 @@ interface MetadataImageEditorProps {
   focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
   displayedImageSrc: string | null
-  imagePreviewSizing: { width?: string; height?: string }
   metadataPending: boolean
   editable: boolean
   currentGrade: number | null
@@ -62,7 +61,6 @@ export function MetadataImageEditor({
   focusedImage,
   focusedImagePackage,
   displayedImageSrc,
-  imagePreviewSizing,
   metadataPending,
   editable,
   currentGrade,
@@ -258,16 +256,7 @@ export function MetadataImageEditor({
                 draggable={false}
               />
             ) : (
-              <div
-                className="metadata-image-media"
-                style={{
-                  background: focusedImage.color,
-                  aspectRatio: `${focusedImage.width} / ${focusedImage.height}`,
-                  ...imagePreviewSizing,
-                }}
-              >
-                <span>{`${focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width} x ${focusedImage.height}` : '-'}`}</span>
-              </div>
+              <div className="metadata-image-placeholder" aria-hidden="true" />
             )}
           </div>
           <div className="metadata-image-caption">

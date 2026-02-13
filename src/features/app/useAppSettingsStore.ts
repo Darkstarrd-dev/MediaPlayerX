@@ -13,6 +13,7 @@ export function useAppSettingsStore() {
       sidebarRatio: state.sidebarRatio,
       sidebarMinWidth: state.sidebarMinWidth,
       layoutLocked: state.layoutLocked,
+      electronNativeChromeEnabled: state.electronNativeChromeEnabled,
       sidebarFontSize: state.sidebarFontSize,
       sidebarCountFontSize: state.sidebarCountFontSize,
       sidebarIndentStep: state.sidebarIndentStep,

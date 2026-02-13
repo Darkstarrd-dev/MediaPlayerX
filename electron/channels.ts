@@ -53,6 +53,8 @@ export const APP_WINDOW_CHANNELS = {
   close: 'appWindow:close',
   isMaximized: 'appWindow:isMaximized',
   maximizedStateChanged: 'appWindow:maximizedStateChanged',
+  getNativeChromeEnabled: 'appWindow:getNativeChromeEnabled',
+  setNativeChromeEnabled: 'appWindow:setNativeChromeEnabled',
 } as const
 
 export const MEDIA_PROTOCOL_SCHEME = 'mediaplayerx-media'

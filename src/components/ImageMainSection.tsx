@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 
 import { mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
@@ -83,6 +83,8 @@ interface ThumbnailGridSession {
   imageIds: string[]
 }
 
+const IS_TEST_MODE = import.meta.env.MODE === 'test'
+
 function resolveImageIdForRef(packageById: Map<string, ImagePackage>, ref: FocusedImageRef): string | null {
   const image = packageById.get(ref.packageId)?.images[ref.imageIndex]
   return image?.id ?? null
@@ -152,6 +154,68 @@ function isEqualRecord(left: Record<string, string>, right: Record<string, strin
   }
 
   return true
+}
+
+function preloadImageUrl(url: string): Promise<void> {
+  if (IS_TEST_MODE) {
+    return Promise.resolve()
+  }
+
+  return new Promise((resolve) => {
+    const image = new Image()
+    let settled = false
+
+    const finish = () => {
+      if (settled) {
+        return
+      }
+      settled = true
+      image.onload = null
+      image.onerror = null
+      resolve()
+    }
+
+    const timeout = window.setTimeout(() => {
+      finish()
+    }, 1_200)
+
+    const finishWithCleanup = () => {
+      window.clearTimeout(timeout)
+      finish()
+    }
+
+    image.onload = finishWithCleanup
+    image.onerror = finishWithCleanup
+    image.decoding = 'async'
+    image.src = url
+
+    if (typeof image.decode === 'function') {
+      void image
+        .decode()
+        .then(() => {
+          finishWithCleanup()
+        })
+        .catch(() => {
+          if (image.complete) {
+            finishWithCleanup()
+          }
+        })
+      return
+    }
+
+    if (image.complete) {
+      finishWithCleanup()
+    }
+  })
+}
+
+async function preloadSessionImageUrls(urlByImageId: Record<string, string>): Promise<void> {
+  const uniqueUrls = Array.from(new Set(Object.values(urlByImageId).filter(Boolean)))
+  if (uniqueUrls.length === 0) {
+    return
+  }
+
+  await Promise.all(uniqueUrls.map((url) => preloadImageUrl(url)))
 }
 
 function ImageMainSection({
@@ -256,6 +320,7 @@ function ImageMainSection({
     }
     return null
   })
+  const pendingDecodeSequenceRef = useRef(0)
 
   const thumbnailGridSession = useMemo(
     () =>
@@ -278,11 +343,16 @@ function ImageMainSection({
   )
 
   useEffect(() => {
-    if (showNamesOnly || nodeBrowseMode) {
+    if (nodeBrowseMode) {
       setPendingThumbnailSession(null)
       setBufferedRefsInPage(refsInPage)
       setBufferedThumbnailSessionKey(null)
       setBufferedImageUrlById((previous) => (isEqualRecord(previous, imageUrlById) ? previous : imageUrlById))
+      return
+    }
+
+    if (showNamesOnly) {
+      setPendingThumbnailSession(null)
       return
     }
 
@@ -295,13 +365,16 @@ function ImageMainSection({
     }
 
     const readyUrls = collectSessionImageUrls(thumbnailGridSession, imageUrlById)
-    if (readyUrls) {
-      setPendingThumbnailSession(null)
-      setBufferedThumbnailSessionKey(thumbnailGridSession.key)
-      if (bufferedThumbnailSessionKey !== thumbnailGridSession.key) {
+
+    if (bufferedThumbnailSessionKey === thumbnailGridSession.key) {
+      if (readyUrls) {
         setBufferedRefsInPage(thumbnailGridSession.refs)
+        setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
+        setPendingThumbnailSession(null)
+        return
       }
-      setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
+
+      setPendingThumbnailSession(thumbnailGridSession)
       return
     }
 
@@ -330,22 +403,45 @@ function ImageMainSection({
       return
     }
 
-    setPendingThumbnailSession(null)
-    setBufferedThumbnailSessionKey(pendingThumbnailSession.key)
-    if (bufferedThumbnailSessionKey !== pendingThumbnailSession.key) {
-      setBufferedRefsInPage(pendingThumbnailSession.refs)
+    pendingDecodeSequenceRef.current += 1
+    const sequence = pendingDecodeSequenceRef.current
+    let cancelled = false
+
+    void preloadSessionImageUrls(readyUrls)
+      .catch(() => undefined)
+      .then(() => {
+        if (cancelled || pendingDecodeSequenceRef.current !== sequence) {
+          return
+        }
+
+        setPendingThumbnailSession(null)
+        setBufferedThumbnailSessionKey(pendingThumbnailSession.key)
+        setBufferedRefsInPage(pendingThumbnailSession.refs)
+        setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
+      })
+
+    return () => {
+      cancelled = true
     }
-    setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
-  }, [bufferedThumbnailSessionKey, imageUrlById, pendingThumbnailSession])
+  }, [imageUrlById, pendingThumbnailSession])
 
   const thumbnailBufferPending = !showNamesOnly && !nodeBrowseMode && pendingThumbnailSession !== null
   const refsInPageForRender = showNamesOnly || nodeBrowseMode ? refsInPage : bufferedRefsInPage
   const imageUrlByIdForRender = showNamesOnly || nodeBrowseMode ? imageUrlById : bufferedImageUrlById
+  const hasRenderableThumbnailBatch =
+    !showNamesOnly &&
+    !nodeBrowseMode &&
+    refsInPageForRender.length > 0 &&
+    refsInPageForRender.every((ref) => {
+      const imageId = resolveImageIdForRef(packageById, ref)
+      return Boolean(imageId && imageUrlByIdForRender[imageId])
+    })
+  const isThumbnailInteractionLocked = !showNamesOnly && !nodeBrowseMode && thumbnailBufferPending
   const showSkeleton =
     !showNamesOnly &&
     !nodeBrowseMode &&
     enableLoadingSkeleton &&
-    (thumbnailBufferPending || (loading && refsInPageForRender.length === 0))
+    (!hasRenderableThumbnailBatch && (thumbnailBufferPending || (loading && refsInPageForRender.length === 0)))
   const skeletonCount = Math.max(1, thumbnailBufferPending ? (pendingThumbnailSession?.refs.length ?? placeholderCount) : placeholderCount)
 
   useEffect(() => {
@@ -550,9 +646,10 @@ function ImageMainSection({
         </div>
       ) : (
         <div
-          className={`image-grid ${manageMode ? 'is-manage' : ''}`}
+          className={`image-grid ${manageMode ? 'is-manage' : ''} ${isThumbnailInteractionLocked ? 'is-pending-swap' : ''}`}
           ref={gridRef}
-          onMouseDown={manageMode ? startThumbnailDragToggle : undefined}
+          aria-busy={isThumbnailInteractionLocked || undefined}
+          onMouseDown={manageMode && !isThumbnailInteractionLocked ? startThumbnailDragToggle : undefined}
           style={{
             gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
             gap: `${thumbnailGap}px`,
@@ -598,6 +695,7 @@ function ImageMainSection({
                     <button
                       className="thumb-card-main"
                       type="button"
+                      disabled={isThumbnailInteractionLocked}
                       onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
                       onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
                     >
