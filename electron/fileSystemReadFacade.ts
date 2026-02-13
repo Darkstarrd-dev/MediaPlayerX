@@ -438,6 +438,11 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
         missingPaths.add(video.absolute_path)
       }
     }
+    for (const audio of snapshot.audios ?? []) {
+      if (!(await this.pathExists(audio.absolute_path))) {
+        missingPaths.add(audio.absolute_path)
+      }
+    }
 
     if (missingPaths.size === 0) {
       return snapshot
@@ -445,7 +450,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
     const pathsToPrune = Array.from(missingPaths)
     const deleted = this.database.deleteSnapshotEntriesByPaths(pathsToPrune)
-    if (deleted.deletedSourceCount === 0 && deleted.deletedVideoCount === 0) {
+    if (deleted.deletedSourceCount === 0 && deleted.deletedVideoCount === 0 && deleted.deletedAudioCount === 0) {
       return snapshot
     }
 

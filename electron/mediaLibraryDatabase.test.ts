@@ -31,6 +31,7 @@ describe('MediaLibraryDatabase', () => {
       packageAbsolutePath: `${root}/pkg-fixture.zip`,
       directoryAbsolutePath: `${root}/gallery-fixture`,
       videoAbsolutePath: `${root}/video-fixture.mp4`,
+      audioAbsolutePath: `${root}/audio-fixture.mp3`,
     })
     const packageId = snapshot.image_packages[0]?.id
     const videoId = snapshot.videos[0]?.id
@@ -86,6 +87,7 @@ describe('MediaLibraryDatabase', () => {
     expect(restoredSnapshot.image_packages).toHaveLength(1)
     expect(restoredSnapshot.image_directories).toHaveLength(1)
     expect(restoredSnapshot.videos).toHaveLength(1)
+    expect(restoredSnapshot.audios).toHaveLength(1)
 
     expect(restarted.readPackageGrades().get(packageId)).toBe(5)
     expect(restarted.readVideoCovers().get(videoId)).toMatchObject({
@@ -123,6 +125,7 @@ describe('MediaLibraryDatabase', () => {
       packageAbsolutePath: `${root}/pkg-fixture.zip`,
       directoryAbsolutePath: `${root}/gallery-fixture`,
       videoAbsolutePath: `${root}/video-fixture.mp4`,
+      audioAbsolutePath: `${root}/audio-fixture.mp3`,
     })
     const packageId = snapshot.image_packages[0]?.id
     const videoId = snapshot.videos[0]?.id
@@ -158,6 +161,7 @@ describe('MediaLibraryDatabase', () => {
       image_packages: [],
       image_directories: [],
       videos: [],
+      audios: [],
     })
     expect(database.readPackageGrades().size).toBe(0)
     expect(database.readVideoCovers().size).toBe(0)

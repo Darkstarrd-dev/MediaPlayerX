@@ -175,7 +175,9 @@ export class MediaLibraryDatabase {
     return this.snapshotStore.deleteImageItems(imageIds)
   }
 
-  deleteSnapshotEntriesByPaths(paths: string[]): { deletedSourceCount: number; deletedVideoCount: number } {
+  deleteSnapshotEntriesByPaths(
+    paths: string[],
+  ): { deletedSourceCount: number; deletedVideoCount: number; deletedAudioCount: number } {
     return this.snapshotStore.deleteSnapshotEntriesByPaths(paths)
   }
 
@@ -268,12 +270,14 @@ export class MediaLibraryDatabase {
       this.db.prepare('DELETE FROM playlist_entry').run()
       this.db.prepare('DELETE FROM video_cover').run()
       this.db.prepare('DELETE FROM video_metadata').run()
+      this.db.prepare('DELETE FROM audio_metadata').run()
       this.db.prepare('DELETE FROM media_source_cover').run()
       this.db.prepare('DELETE FROM media_source_external_metadata').run()
       this.db.prepare('DELETE FROM package_grade').run()
       this.db.prepare('DELETE FROM image_item').run()
       this.db.prepare('DELETE FROM media_source').run()
       this.db.prepare('DELETE FROM video_item').run()
+      this.db.prepare('DELETE FROM audio_item').run()
       this.db.prepare('DELETE FROM app_state').run()
     })
   }

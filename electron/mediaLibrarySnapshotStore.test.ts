@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import type { LibrarySnapshotDto } from '../src/contracts/backend'
 import { MediaLibrarySnapshotStore } from './mediaLibrarySnapshotStore'
 import {
+  createAudioFixture,
   cleanupTempMediaRoot,
   createImageSourceFixture,
   createTempMediaRoot,
@@ -66,6 +67,7 @@ describe('MediaLibrarySnapshotStore', () => {
         }),
       ],
       videos: [createVideoFixture('video-a', 'D:/root/video-a.mp4')],
+      audios: [createAudioFixture('audio-a', 'D:/root/audio-a.mp3')],
     }
 
     const snapshotB: LibrarySnapshotDto = {
@@ -79,6 +81,7 @@ describe('MediaLibrarySnapshotStore', () => {
       ],
       image_directories: [],
       videos: [createVideoFixture('video-b', 'D:/root/video-b.mp4')],
+      audios: [createAudioFixture('audio-b', 'D:/root/audio-b.mp3')],
     }
 
     store.replaceSnapshot(snapshotA)
@@ -88,6 +91,7 @@ describe('MediaLibrarySnapshotStore', () => {
     expect(snapshot.image_packages.map((item) => item.id)).toEqual(['pkg-b'])
     expect(snapshot.image_directories).toHaveLength(0)
     expect(snapshot.videos.map((item) => item.id)).toEqual(['video-b'])
+    expect(snapshot.audios?.map((item) => item.id)).toEqual(['audio-b'])
   })
 
   it('setImagesHidden 与 deleteImageItems 可更新 hidden 并在删除后重排 ordinal', async () => {
@@ -109,6 +113,7 @@ describe('MediaLibrarySnapshotStore', () => {
       ],
       image_directories: [],
       videos: [],
+      audios: [],
     })
 
     const before = store.readSnapshot().image_packages[0]
@@ -164,16 +169,22 @@ describe('MediaLibrarySnapshotStore', () => {
         createVideoFixture('video-keep', 'D:/root/keep/video-keep.mp4'),
         createVideoFixture('video-drop', 'D:/root/drop/video-drop.mp4'),
       ],
+      audios: [
+        createAudioFixture('audio-keep', 'D:/root/keep/audio-keep.mp3'),
+        createAudioFixture('audio-drop', 'D:/root/drop/audio-drop.mp3'),
+      ],
     })
 
     const result = store.deleteSnapshotEntriesByPaths(['D:/root/drop'])
     expect(result).toEqual({
       deletedSourceCount: 1,
       deletedVideoCount: 1,
+      deletedAudioCount: 1,
     })
 
     const snapshot = store.readSnapshot()
     expect(snapshot.image_packages.map((item) => item.id)).toEqual(['pkg-keep'])
     expect(snapshot.videos.map((item) => item.id)).toEqual(['video-keep'])
+    expect(snapshot.audios?.map((item) => item.id)).toEqual(['audio-keep'])
   })
 })

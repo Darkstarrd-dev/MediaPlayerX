@@ -215,6 +215,8 @@ describe('FileSystemMediaReadService', () => {
     expect(snapshot.image_directories.length).toBeGreaterThan(0)
     expect(snapshot.image_packages.length).toBeGreaterThanOrEqual(2)
     expect(snapshot.videos.length).toBe(1)
+    expect(snapshot.audios).toHaveLength(1)
+    expect(snapshot.audios?.[0]?.track_title).toBe('音声_かな')
 
     const zipPackage = snapshot.image_packages.find((item) => item.absolute_path.endsWith('.zip'))
     expect(zipPackage?.images.length).toBe(2)

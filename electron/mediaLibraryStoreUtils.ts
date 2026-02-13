@@ -67,6 +67,24 @@ export interface VideoRow {
   grade: number | null
 }
 
+export interface AudioRow {
+  id: string
+  file_name: string
+  absolute_path: string
+  tree_path_json: string
+  duration_sec: number
+  size_mb: number
+  album: string
+  author: string
+  track_title: string
+  series_id: string
+  metadata_album: string | null
+  metadata_author: string | null
+  metadata_track_title: string | null
+  metadata_series_id: string | null
+  media_locator_json: string
+}
+
 export function parseJson<T>(raw: string, fallback: T): T {
   try {
     return JSON.parse(raw) as T

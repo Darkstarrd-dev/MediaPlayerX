@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import {
+  type AudioItemDto,
   librarySnapshotDtoSchema,
   type ImageItemDto,
   type ImagePackageDto,
@@ -10,7 +11,7 @@ import {
 } from '../src/contracts/backend'
 import { isPathInsideRoot, normalizeAllowlistKey } from './fileSystemServiceHelpers'
 import type { SQLiteDatabaseLike, TransactionRunner } from './mediaLibraryDatabaseTypes'
-import { type ImageRow, parseJson, type SourceRow, type VideoRow } from './mediaLibraryStoreUtils'
+import { type AudioRow, type ImageRow, parseJson, type SourceRow, type VideoRow } from './mediaLibraryStoreUtils'
 
 export class MediaLibrarySnapshotStore {
   constructor(
@@ -116,6 +117,39 @@ export class MediaLibrarySnapshotStore {
       `,
     )
 
+    const upsertAudio = this.db.prepare(
+      `
+        INSERT INTO audio_item (
+          id,
+          file_name,
+          absolute_path,
+          tree_path_json,
+          duration_sec,
+          size_mb,
+          album,
+          author,
+          track_title,
+          series_id,
+          media_locator_json,
+          last_seen_revision,
+          updated_at_ms
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          file_name = excluded.file_name,
+          absolute_path = excluded.absolute_path,
+          tree_path_json = excluded.tree_path_json,
+          duration_sec = excluded.duration_sec,
+          size_mb = excluded.size_mb,
+          album = excluded.album,
+          author = excluded.author,
+          track_title = excluded.track_title,
+          series_id = excluded.series_id,
+          media_locator_json = excluded.media_locator_json,
+          last_seen_revision = excluded.last_seen_revision,
+          updated_at_ms = excluded.updated_at_ms
+      `,
+    )
+
     const deleteStaleImagesBySource = this.db.prepare(
       `
         DELETE FROM image_item
@@ -133,6 +167,13 @@ export class MediaLibrarySnapshotStore {
     const deleteStaleVideos = this.db.prepare(
       `
         DELETE FROM video_item
+        WHERE last_seen_revision <> ?
+      `,
+    )
+
+    const deleteStaleAudios = this.db.prepare(
+      `
+        DELETE FROM audio_item
         WHERE last_seen_revision <> ?
       `,
     )
@@ -201,8 +242,27 @@ export class MediaLibrarySnapshotStore {
         )
       }
 
+      for (const audio of snapshot.audios ?? []) {
+        upsertAudio.run(
+          audio.id,
+          audio.file_name,
+          audio.absolute_path,
+          JSON.stringify(audio.tree_path),
+          audio.duration_sec,
+          audio.size_mb,
+          audio.album ?? '',
+          audio.author ?? '',
+          audio.track_title ?? '',
+          audio.series_id ?? '',
+          JSON.stringify(audio.media_locator),
+          revision,
+          now,
+        )
+      }
+
       deleteStaleSources.run(revision)
       deleteStaleVideos.run(revision)
+      deleteStaleAudios.run(revision)
     })
   }
 
@@ -407,10 +467,61 @@ export class MediaLibrarySnapshotStore {
       }
     })
 
+    const audioRows = this.db
+      .prepare(
+        `
+          SELECT
+            audio.id,
+            audio.file_name,
+            audio.absolute_path,
+            audio.tree_path_json,
+            audio.duration_sec,
+            audio.size_mb,
+            audio.album,
+            audio.author,
+            audio.track_title,
+            audio.series_id,
+            metadata.album AS metadata_album,
+            metadata.author AS metadata_author,
+            metadata.track_title AS metadata_track_title,
+            metadata.series_id AS metadata_series_id,
+            audio.media_locator_json
+          FROM audio_item AS audio
+          LEFT JOIN audio_metadata AS metadata ON metadata.audio_id = audio.id
+          ORDER BY audio.absolute_path COLLATE NOCASE
+        `,
+      )
+      .all() as AudioRow[]
+
+    const audios: AudioItemDto[] = audioRows.map((row) => {
+      const defaultTrackTitle = row.file_name.replace(/\.[^./\\]+$/, '')
+      const trackTitle = row.metadata_track_title ?? row.track_title ?? defaultTrackTitle
+      return {
+        id: row.id,
+        file_name: row.file_name,
+        absolute_path: row.absolute_path,
+        tree_path: parseJson<string[]>(row.tree_path_json, [row.file_name]),
+        duration_sec: row.duration_sec,
+        size_mb: row.size_mb,
+        album: row.metadata_album ?? row.album ?? '',
+        author: row.metadata_author ?? row.author ?? '',
+        track_title: trackTitle.trim().length > 0 ? trackTitle : defaultTrackTitle,
+        series_id: row.metadata_series_id ?? row.series_id ?? '',
+        media_locator: parseJson<MediaLocatorDto>(row.media_locator_json, {
+          kind: 'filesystem',
+          absolute_path: row.absolute_path,
+          extension: path.extname(row.absolute_path).toLowerCase() || '.mp3',
+          media_type: 'audio',
+          mime_type: 'audio/mpeg',
+        }),
+      }
+    })
+
     return librarySnapshotDtoSchema.parse({
       image_packages: imagePackages,
       image_directories: imageDirectories,
       videos,
+      audios,
     })
   }
 
@@ -527,12 +638,15 @@ export class MediaLibrarySnapshotStore {
     }
   }
 
-  deleteSnapshotEntriesByPaths(paths: string[]): { deletedSourceCount: number; deletedVideoCount: number } {
+  deleteSnapshotEntriesByPaths(
+    paths: string[],
+  ): { deletedSourceCount: number; deletedVideoCount: number; deletedAudioCount: number } {
     const normalizedRoots = Array.from(new Set(paths.map((value) => path.resolve(value)).filter(Boolean)))
     if (normalizedRoots.length === 0) {
       return {
         deletedSourceCount: 0,
         deletedVideoCount: 0,
+        deletedAudioCount: 0,
       }
     }
 
@@ -552,6 +666,14 @@ export class MediaLibrarySnapshotStore {
         `,
       )
       .all() as Array<{ id: string; absolute_path: string }>
+    const audioRows = this.db
+      .prepare(
+        `
+          SELECT id, absolute_path
+          FROM audio_item
+        `,
+      )
+      .all() as Array<{ id: string; absolute_path: string }>
 
     const matchesAnyRoot = (candidatePath: string): boolean => {
       const resolvedCandidate = path.resolve(candidatePath)
@@ -564,11 +686,13 @@ export class MediaLibrarySnapshotStore {
 
     const sourceIdsToDelete = sourceRows.filter((row) => matchesAnyRoot(row.absolute_path)).map((row) => row.id)
     const videoIdsToDelete = videoRows.filter((row) => matchesAnyRoot(row.absolute_path)).map((row) => row.id)
+    const audioIdsToDelete = audioRows.filter((row) => matchesAnyRoot(row.absolute_path)).map((row) => row.id)
 
-    if (sourceIdsToDelete.length === 0 && videoIdsToDelete.length === 0) {
+    if (sourceIdsToDelete.length === 0 && videoIdsToDelete.length === 0 && audioIdsToDelete.length === 0) {
       return {
         deletedSourceCount: 0,
         deletedVideoCount: 0,
+        deletedAudioCount: 0,
       }
     }
 
@@ -584,9 +708,16 @@ export class MediaLibrarySnapshotStore {
         WHERE id = ?
       `,
     )
+    const deleteAudioById = this.db.prepare(
+      `
+        DELETE FROM audio_item
+        WHERE id = ?
+      `,
+    )
 
     let deletedSourceCount = 0
     let deletedVideoCount = 0
+    let deletedAudioCount = 0
     this.runInTransaction(() => {
       for (const sourceId of sourceIdsToDelete) {
         const result = deleteSourceById.run(sourceId) as { changes?: number } | undefined
@@ -597,11 +728,17 @@ export class MediaLibrarySnapshotStore {
         const result = deleteVideoById.run(videoId) as { changes?: number } | undefined
         deletedVideoCount += result?.changes ?? 0
       }
+
+      for (const audioId of audioIdsToDelete) {
+        const result = deleteAudioById.run(audioId) as { changes?: number } | undefined
+        deletedAudioCount += result?.changes ?? 0
+      }
     })
 
     return {
       deletedSourceCount,
       deletedVideoCount,
+      deletedAudioCount,
     }
   }
 }

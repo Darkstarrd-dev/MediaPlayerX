@@ -2,7 +2,7 @@ import type { SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 
 export const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
 
-const SCHEMA_VERSION = 8
+const SCHEMA_VERSION = 9
 
 export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
   const versionRow = db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
@@ -67,6 +67,24 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
 
     CREATE INDEX IF NOT EXISTS idx_video_item_path ON video_item(absolute_path);
 
+    CREATE TABLE IF NOT EXISTS audio_item (
+      id TEXT PRIMARY KEY,
+      file_name TEXT NOT NULL,
+      absolute_path TEXT NOT NULL UNIQUE,
+      tree_path_json TEXT NOT NULL,
+      duration_sec INTEGER NOT NULL,
+      size_mb INTEGER NOT NULL,
+      album TEXT NOT NULL DEFAULT '',
+      author TEXT NOT NULL DEFAULT '',
+      track_title TEXT NOT NULL DEFAULT '',
+      series_id TEXT NOT NULL DEFAULT '',
+      media_locator_json TEXT NOT NULL,
+      last_seen_revision INTEGER NOT NULL,
+      updated_at_ms INTEGER NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_audio_item_path ON audio_item(absolute_path);
+
     CREATE TABLE IF NOT EXISTS package_grade (
       source_id TEXT PRIMARY KEY,
       grade INTEGER,
@@ -124,6 +142,16 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
       grade INTEGER,
       updated_at_ms INTEGER NOT NULL,
       FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS audio_metadata (
+      audio_id TEXT PRIMARY KEY,
+      album TEXT NOT NULL,
+      author TEXT NOT NULL,
+      track_title TEXT NOT NULL,
+      series_id TEXT NOT NULL DEFAULT '',
+      updated_at_ms INTEGER NOT NULL,
+      FOREIGN KEY(audio_id) REFERENCES audio_item(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS playlist_entry (
@@ -254,6 +282,38 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
     } catch {
       // ignore duplicated column on new databases
     }
+  }
+
+  if (currentVersion < 9) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS audio_item (
+        id TEXT PRIMARY KEY,
+        file_name TEXT NOT NULL,
+        absolute_path TEXT NOT NULL UNIQUE,
+        tree_path_json TEXT NOT NULL,
+        duration_sec INTEGER NOT NULL,
+        size_mb INTEGER NOT NULL,
+        album TEXT NOT NULL DEFAULT '',
+        author TEXT NOT NULL DEFAULT '',
+        track_title TEXT NOT NULL DEFAULT '',
+        series_id TEXT NOT NULL DEFAULT '',
+        media_locator_json TEXT NOT NULL,
+        last_seen_revision INTEGER NOT NULL,
+        updated_at_ms INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_audio_item_path ON audio_item(absolute_path);
+
+      CREATE TABLE IF NOT EXISTS audio_metadata (
+        audio_id TEXT PRIMARY KEY,
+        album TEXT NOT NULL,
+        author TEXT NOT NULL,
+        track_title TEXT NOT NULL,
+        series_id TEXT NOT NULL DEFAULT '',
+        updated_at_ms INTEGER NOT NULL,
+        FOREIGN KEY(audio_id) REFERENCES audio_item(id) ON DELETE CASCADE
+      );
+    `)
   }
 
   db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`)

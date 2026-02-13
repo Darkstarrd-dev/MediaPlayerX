@@ -2,7 +2,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { promises as fs } from 'node:fs'
 
-import type { ImagePackageDto, LibrarySnapshotDto, MediaLocatorDto, VideoItemDto } from '../../src/contracts/backend'
+import type { AudioItemDto, ImagePackageDto, LibrarySnapshotDto, MediaLocatorDto, VideoItemDto } from '../../src/contracts/backend'
 
 export async function createTempMediaRoot(prefix = 'mpx-test-'): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix))
@@ -29,6 +29,16 @@ export function createFilesystemVideoLocator(absolutePath: string, extension = '
     extension,
     media_type: 'video',
     mime_type: 'video/mp4',
+  }
+}
+
+export function createFilesystemAudioLocator(absolutePath: string, extension = '.mp3'): MediaLocatorDto {
+  return {
+    kind: 'filesystem',
+    absolute_path: absolutePath,
+    extension,
+    media_type: 'audio',
+    mime_type: extension === '.flac' ? 'audio/flac' : extension === '.wav' ? 'audio/wav' : 'audio/mpeg',
   }
 }
 
@@ -111,14 +121,35 @@ export function createVideoFixture(videoId: string, absolutePath: string): Video
   }
 }
 
+export function createAudioFixture(audioId: string, absolutePath: string): AudioItemDto {
+  const fileName = path.basename(absolutePath)
+  const trackTitle = fileName.replace(/\.[^./\\]+$/, '')
+
+  return {
+    id: audioId,
+    file_name: fileName,
+    absolute_path: absolutePath,
+    tree_path: [fileName],
+    duration_sec: 0,
+    size_mb: 1,
+    album: '',
+    author: '',
+    track_title: trackTitle,
+    series_id: '',
+    media_locator: createFilesystemAudioLocator(absolutePath),
+  }
+}
+
 export function createLibrarySnapshotFixture(params?: {
   packageAbsolutePath?: string
   directoryAbsolutePath?: string
   videoAbsolutePath?: string
+  audioAbsolutePath?: string
 }): LibrarySnapshotDto {
   const packageAbsolutePath = params?.packageAbsolutePath ?? 'Z:/fixtures/pkg-fixture.zip'
   const directoryAbsolutePath = params?.directoryAbsolutePath ?? 'Z:/fixtures/gallery-fixture'
   const videoAbsolutePath = params?.videoAbsolutePath ?? 'Z:/fixtures/video-fixture.mp4'
+  const audioAbsolutePath = params?.audioAbsolutePath ?? 'Z:/fixtures/audio-fixture.mp3'
 
   return {
     image_packages: [
@@ -138,5 +169,6 @@ export function createLibrarySnapshotFixture(params?: {
       }),
     ],
     videos: [createVideoFixture('video-fixture', videoAbsolutePath)],
+    audios: [createAudioFixture('audio-fixture', audioAbsolutePath)],
   }
 }
