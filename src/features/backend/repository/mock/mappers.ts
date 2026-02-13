@@ -135,6 +135,7 @@ export function toSidebarNodeDto(node: SidebarNode): SidebarNodeDto {
     children: node.children.map(toSidebarNodeDto),
     package_id: node.packageId,
     video_id: node.videoId,
+    audio_id: node.audioId,
     image_source_id: node.imageSourceId,
     image_node_type: node.imageNodeType,
     direct_image_count: node.directImageCount,

@@ -20,6 +20,7 @@
 - 压缩包扫描接入归一化策略：`rar/7z` 走“内存解包 -> 非 webp 图片转 `webp(90)` -> `zip(store)` 并原地替换”；zip 非 `store/deflate` 图片条目 -> `webp(90)` 后转存 zip(store)。
 - SQLite 基座已启用（含 migration/init/version）；扫描产物以事务 upsert + stale 清理写入数据库，读取统一以 SQLite 为 SSOT。
 - 播放列表写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `readPlaylist/writePlaylist`，重启后可恢复。
+- 音频元数据写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `writeAudioMetadata`，写入 SQLite `audio_metadata` 并回写快照。
 - 缩略图变体链路已落地：`resolveMediaResource` 支持 `original/thumbnail` 变体，thumbnail 由 Main 使用 Sharp 生成 WebP 并落盘缓存。
 - 运行时依赖预检已落地：Main 暴露依赖可用性与降级策略矩阵（`sharp/ffmpeg/ffprobe/archive-wasm/powershell`），Renderer 在降级时显示告警。
 - `rar/7z` 归一化调度采用“双优先级队列”：默认低优先级（交互空闲后按路径排序执行），用户显式打开目标包时提升为高优先级后台处理。
@@ -106,6 +107,7 @@
 - 图包/压缩包级元数据。
 - item 级稳定标识与展示状态。
 - 用户整理字段（`grade`、封面、播放列表、显示名、手动元数据）。
+- 音频元数据覆盖（`album`、`author`、`track_title`、`series_id`）与更新时戳。
 - 任务状态与操作日志。
 
 ### LanceDB 职责

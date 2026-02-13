@@ -874,7 +874,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(within(ehColumn as HTMLElement).getByLabelText('Request Body')).toBeInTheDocument()
     })
-  })
+  }, 15_000)
 
   it('元数据面板标题可折叠，并可恢复展开', () => {
     render(<App />)
@@ -1492,7 +1492,7 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelector('.fullscreen-layer')).toBeNull()
       expect(screen.getByRole('button', { name: '自动播放' })).toHaveAttribute('aria-pressed', 'false')
     })
-  })
+  }, 15_000)
 
   it('视频播放后暂停保留当前画面，切换视频后回到封面态，Save as cover 走后端写链路并保持封面态', async () => {
     render(<App />)

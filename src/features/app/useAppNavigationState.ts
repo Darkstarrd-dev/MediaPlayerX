@@ -155,6 +155,7 @@ export function useAppNavigationState({
     bootstrapImagePackages,
     bootstrapImageDirectories,
     bootstrapVideos,
+    bootstrapAudios,
     vectorSearchResults,
     vectorResultsActive,
     featureSearchActive,

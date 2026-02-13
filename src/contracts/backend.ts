@@ -131,11 +131,12 @@ export const focusedImageRefDtoSchema = z.object({
 export const sidebarNodeDtoSchema: z.ZodType<{
   id: string
   label: string
-  kind: 'folder' | 'package' | 'video'
+  kind: 'folder' | 'package' | 'video' | 'audio'
   image_node_type?: 'folder' | 'package' | 'directory'
   children: Array<unknown>
   package_id?: string
   video_id?: string
+  audio_id?: string
   image_source_id?: string
   direct_image_count?: number
   descendant_package_count?: number
@@ -146,11 +147,12 @@ export const sidebarNodeDtoSchema: z.ZodType<{
   z.object({
     id: z.string().min(1),
     label: z.string().min(1),
-    kind: z.enum(['folder', 'package', 'video']),
+    kind: z.enum(['folder', 'package', 'video', 'audio']),
     image_node_type: z.enum(['folder', 'package', 'directory']).optional(),
     children: z.array(sidebarNodeDtoSchema),
     package_id: z.string().min(1).optional(),
     video_id: z.string().min(1).optional(),
+    audio_id: z.string().min(1).optional(),
     image_source_id: z.string().min(1).optional(),
     direct_image_count: nonNegativeIntSchema.optional(),
     descendant_package_count: nonNegativeIntSchema.optional(),
