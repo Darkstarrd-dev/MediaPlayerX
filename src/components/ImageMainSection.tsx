@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useState, type RefObject } from 'react'
 
 import { mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
@@ -77,6 +77,83 @@ interface ImageMainSectionProps {
   onSelectNodeBrowseItem?: (nodeId: string, imageSourceId?: string) => void
 }
 
+interface ThumbnailGridSession {
+  key: string
+  refs: FocusedImageRef[]
+  imageIds: string[]
+}
+
+function resolveImageIdForRef(packageById: Map<string, ImagePackage>, ref: FocusedImageRef): string | null {
+  const image = packageById.get(ref.packageId)?.images[ref.imageIndex]
+  return image?.id ?? null
+}
+
+function buildThumbnailGridSession(params: {
+  refsInPage: FocusedImageRef[]
+  packageById: Map<string, ImagePackage>
+  actualCellWidth: number
+  actualMediaHeight: number
+  thumbnailColumns: number
+  thumbnailGap: number
+}): ThumbnailGridSession | null {
+  if (params.refsInPage.length === 0) {
+    return null
+  }
+
+  const imageIds: string[] = []
+  for (const ref of params.refsInPage) {
+    const imageId = resolveImageIdForRef(params.packageById, ref)
+    if (!imageId) {
+      continue
+    }
+    imageIds.push(imageId)
+  }
+
+  if (imageIds.length === 0) {
+    return null
+  }
+
+  return {
+    key: [
+      params.actualCellWidth,
+      params.actualMediaHeight,
+      params.thumbnailColumns,
+      params.thumbnailGap,
+      imageIds.join(','),
+    ].join('|'),
+    refs: params.refsInPage,
+    imageIds,
+  }
+}
+
+function collectSessionImageUrls(session: ThumbnailGridSession, imageUrlById: Record<string, string>): Record<string, string> | null {
+  const next: Record<string, string> = {}
+  for (const imageId of session.imageIds) {
+    const url = imageUrlById[imageId]
+    if (!url) {
+      return null
+    }
+    next[imageId] = url
+  }
+  return next
+}
+
+function isEqualRecord(left: Record<string, string>, right: Record<string, string>): boolean {
+  const leftKeys = Object.keys(left)
+  const rightKeys = Object.keys(right)
+  if (leftKeys.length !== rightKeys.length) {
+    return false
+  }
+
+  for (const key of leftKeys) {
+    if (left[key] !== right[key]) {
+      return false
+    }
+  }
+
+  return true
+}
+
 function ImageMainSection({
   vectorMode,
   showNamesOnly,
@@ -139,7 +216,137 @@ function ImageMainSection({
   onSelectNodeBrowseItem,
 }: ImageMainSectionProps) {
   const [metadataFetchOpen, setMetadataFetchOpen] = useState(false)
-  const showSkeleton = !showNamesOnly && enableLoadingSkeleton && loading && refsInPage.length === 0
+
+  const initialThumbnailSession =
+    !showNamesOnly && !nodeBrowseMode
+      ? buildThumbnailGridSession({
+          refsInPage,
+          packageById,
+          actualCellWidth,
+          actualMediaHeight: _actualMediaHeight,
+          thumbnailColumns,
+          thumbnailGap,
+        })
+      : null
+  const initialThumbnailUrls = initialThumbnailSession
+    ? collectSessionImageUrls(initialThumbnailSession, imageUrlById)
+    : null
+
+  const [bufferedRefsInPage, setBufferedRefsInPage] = useState<FocusedImageRef[]>(() => {
+    if (initialThumbnailSession && initialThumbnailUrls) {
+      return initialThumbnailSession.refs
+    }
+    return []
+  })
+  const [bufferedThumbnailSessionKey, setBufferedThumbnailSessionKey] = useState<string | null>(() => {
+    if (initialThumbnailSession && initialThumbnailUrls) {
+      return initialThumbnailSession.key
+    }
+    return null
+  })
+  const [bufferedImageUrlById, setBufferedImageUrlById] = useState<Record<string, string>>(() => {
+    if (initialThumbnailUrls) {
+      return initialThumbnailUrls
+    }
+    return {}
+  })
+  const [pendingThumbnailSession, setPendingThumbnailSession] = useState<ThumbnailGridSession | null>(() => {
+    if (initialThumbnailSession && !initialThumbnailUrls) {
+      return initialThumbnailSession
+    }
+    return null
+  })
+
+  const thumbnailGridSession = useMemo(
+    () =>
+      buildThumbnailGridSession({
+        refsInPage,
+        packageById,
+        actualCellWidth,
+        actualMediaHeight: _actualMediaHeight,
+        thumbnailColumns,
+        thumbnailGap,
+      }),
+    [
+      _actualMediaHeight,
+      actualCellWidth,
+      packageById,
+      refsInPage,
+      thumbnailColumns,
+      thumbnailGap,
+    ],
+  )
+
+  useEffect(() => {
+    if (showNamesOnly || nodeBrowseMode) {
+      setPendingThumbnailSession(null)
+      setBufferedRefsInPage(refsInPage)
+      setBufferedThumbnailSessionKey(null)
+      setBufferedImageUrlById((previous) => (isEqualRecord(previous, imageUrlById) ? previous : imageUrlById))
+      return
+    }
+
+    if (!thumbnailGridSession) {
+      setPendingThumbnailSession(null)
+      setBufferedRefsInPage([])
+      setBufferedThumbnailSessionKey(null)
+      setBufferedImageUrlById((previous) => (Object.keys(previous).length === 0 ? previous : {}))
+      return
+    }
+
+    const readyUrls = collectSessionImageUrls(thumbnailGridSession, imageUrlById)
+    if (readyUrls) {
+      setPendingThumbnailSession(null)
+      setBufferedThumbnailSessionKey(thumbnailGridSession.key)
+      if (bufferedThumbnailSessionKey !== thumbnailGridSession.key) {
+        setBufferedRefsInPage(thumbnailGridSession.refs)
+      }
+      setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
+      return
+    }
+
+    setPendingThumbnailSession((previous) => {
+      if (previous?.key === thumbnailGridSession.key) {
+        return previous
+      }
+      return thumbnailGridSession
+    })
+  }, [
+    bufferedThumbnailSessionKey,
+    imageUrlById,
+    nodeBrowseMode,
+    refsInPage,
+    showNamesOnly,
+    thumbnailGridSession,
+  ])
+
+  useEffect(() => {
+    if (!pendingThumbnailSession) {
+      return
+    }
+
+    const readyUrls = collectSessionImageUrls(pendingThumbnailSession, imageUrlById)
+    if (!readyUrls) {
+      return
+    }
+
+    setPendingThumbnailSession(null)
+    setBufferedThumbnailSessionKey(pendingThumbnailSession.key)
+    if (bufferedThumbnailSessionKey !== pendingThumbnailSession.key) {
+      setBufferedRefsInPage(pendingThumbnailSession.refs)
+    }
+    setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
+  }, [bufferedThumbnailSessionKey, imageUrlById, pendingThumbnailSession])
+
+  const thumbnailBufferPending = !showNamesOnly && !nodeBrowseMode && pendingThumbnailSession !== null
+  const refsInPageForRender = showNamesOnly || nodeBrowseMode ? refsInPage : bufferedRefsInPage
+  const imageUrlByIdForRender = showNamesOnly || nodeBrowseMode ? imageUrlById : bufferedImageUrlById
+  const showSkeleton =
+    !showNamesOnly &&
+    !nodeBrowseMode &&
+    enableLoadingSkeleton &&
+    (thumbnailBufferPending || (loading && refsInPageForRender.length === 0))
+  const skeletonCount = Math.max(1, thumbnailBufferPending ? (pendingThumbnailSession?.refs.length ?? placeholderCount) : placeholderCount)
 
   useEffect(() => {
     onGridElementChange(gridRef.current)
@@ -352,7 +559,7 @@ function ImageMainSection({
           }}
         >
           {showSkeleton
-            ? Array.from({ length: Math.max(1, placeholderCount) }).map((_, index) => (
+            ? Array.from({ length: skeletonCount }).map((_, index) => (
                 <div
                   key={`skeleton-${index}`}
                   className="thumb-card is-skeleton"
@@ -363,7 +570,7 @@ function ImageMainSection({
                   </div>
                 </div>
               ))
-            : refsInPage.map((ref, pageIndex) => {
+            : refsInPageForRender.map((ref, pageIndex) => {
               const pkg = packageById.get(ref.packageId)
               const image = pkg?.images[ref.imageIndex]
               if (!pkg || !image) {
@@ -372,7 +579,7 @@ function ImageMainSection({
 
                 const absoluteIndex = pageStart + pageIndex
                 const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
-                const imageSrc = imageUrlById[image.id] ?? ''
+                const imageSrc = imageUrlByIdForRender[image.id] ?? ''
                 const isChecked = checkedImageIds.has(image.id)
                 const inAdReviewScope = adReviewScopeImageIds.has(image.id)
                 const isAdReviewLlmReviewed = adReviewLlmReviewedImageIds.has(image.id)

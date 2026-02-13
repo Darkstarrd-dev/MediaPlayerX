@@ -66,7 +66,7 @@ describe('useResolvedMediaState', () => {
     })
   })
 
-  it('缩略图目标会预取上一页和下一页', () => {
+  it('缩略图目标仅解析当前页，避免切换阶段请求风暴', () => {
     const packageData = createPackageWithImages(6)
     const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
     const visibleImageRefs: FocusedImageRef[] = Array.from({ length: 6 }).map((_, index) => ({
@@ -90,9 +90,6 @@ describe('useResolvedMediaState', () => {
         orderedRootScopedImageRefs: visibleImageRefs,
         fullscreenActive: false,
         showNamesOnly: false,
-        visibleImageRefs,
-        pageStart: 2,
-        pagedPageSize: 2,
         refsInPage: visibleImageRefs.slice(2, 4),
         focusedVideo: null,
         focusedVideoCoverImageLocator: null,
@@ -106,10 +103,6 @@ describe('useResolvedMediaState', () => {
     expect(thumbnailTargetIds).toEqual([
       'image-thumb:img-2',
       'image-thumb:img-3',
-      'image-thumb:img-0',
-      'image-thumb:img-1',
-      'image-thumb:img-4',
-      'image-thumb:img-5',
     ])
   })
 
@@ -138,9 +131,6 @@ describe('useResolvedMediaState', () => {
           orderedRootScopedImageRefs: visibleImageRefs,
           fullscreenActive: false,
           showNamesOnly: false,
-          visibleImageRefs,
-          pageStart: 0,
-          pagedPageSize: 2,
           refsInPage: visibleImageRefs,
           focusedVideo: null,
           focusedVideoCoverImageLocator: null,

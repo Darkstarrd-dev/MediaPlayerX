@@ -22,6 +22,7 @@ import type { BrowserMode, FocusedImageRef } from '../../types'
 const DEFAULT_IPC_TIMEOUT_MS = 8_000
 const PAGE_READ_DEBOUNCE_MS = 72
 const METADATA_READ_DEBOUNCE_MS = 84
+const TRANSIENT_LIBRARY_CHANGE_REASONS = new Set(['thumbnail-rendering-start', 'thumbnail-rendering-end'])
 
 interface UseReadOnlyDataAccessParams {
   repository: MediaRepository
@@ -353,6 +354,10 @@ export function useReadOnlyDataAccess({
     }
 
     const unsubscribe = repository.onLibraryChanged((payload) => {
+      if (TRANSIENT_LIBRARY_CHANGE_REASONS.has(payload.reason)) {
+        return
+      }
+
       const isMetadataManageWriteReason =
         payload.reason === 'write-package-grade' ||
         payload.reason === 'write-package-metadata' ||

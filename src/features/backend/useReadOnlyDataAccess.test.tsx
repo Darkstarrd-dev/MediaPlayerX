@@ -811,6 +811,36 @@ describe('useReadOnlyDataAccess', () => {
     expect(repository.readImageMetadata).toHaveBeenCalledTimes(metadataCallsBefore)
   })
 
+  it('thumbnail-rendering 事件不会触发 Sidebar/Page/Metadata 切片刷新', async () => {
+    const repository = new GradeRefreshTrackingRepository()
+
+    renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository, {
+        featureGradeFilter: null,
+      }),
+    })
+
+    await waitFor(() => {
+      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1)
+      expect(repository.readImagePage).toHaveBeenCalledTimes(1)
+      expect(repository.readImageMetadata).toHaveBeenCalledTimes(1)
+    })
+
+    const sidebarCallsBefore = repository.readImageSidebarTree.mock.calls.length
+    const pageCallsBefore = repository.readImagePage.mock.calls.length
+    const metadataCallsBefore = repository.readImageMetadata.mock.calls.length
+
+    await act(async () => {
+      repository.emitLibraryChanged('thumbnail-rendering-start')
+      repository.emitLibraryChanged('thumbnail-rendering-end')
+      await new Promise((resolve) => setTimeout(resolve, 220))
+    })
+
+    expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(sidebarCallsBefore)
+    expect(repository.readImagePage).toHaveBeenCalledTimes(pageCallsBefore)
+    expect(repository.readImageMetadata).toHaveBeenCalledTimes(metadataCallsBefore)
+  })
+
   it('write-package-grade 事件在评分筛选启用时仅刷新 Sidebar/Page', async () => {
     const repository = new GradeRefreshTrackingRepository()
 

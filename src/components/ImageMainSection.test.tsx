@@ -19,6 +19,47 @@ const basePackage: ImagePackage = {
   images: [],
 }
 
+const packageWithImages: ImagePackage = {
+  ...basePackage,
+  id: 'pkg-2',
+  packageName: 'pkg-2.zip',
+  displayName: 'pkg-2',
+  images: [
+    {
+      id: 'img-1',
+      ordinal: 1,
+      width: 1024,
+      height: 768,
+      sizeKb: 128,
+      cluster: 0,
+      color: '#999',
+      mediaLocator: {
+        kind: 'filesystem',
+        absolutePath: 'C:/mock/pkg-2-1.jpg',
+        extension: '.jpg',
+        mediaType: 'image',
+        mimeType: 'image/jpeg',
+      },
+    },
+    {
+      id: 'img-2',
+      ordinal: 2,
+      width: 1024,
+      height: 768,
+      sizeKb: 128,
+      cluster: 0,
+      color: '#999',
+      mediaLocator: {
+        kind: 'filesystem',
+        absolutePath: 'C:/mock/pkg-2-2.jpg',
+        extension: '.jpg',
+        mediaType: 'image',
+        mimeType: 'image/jpeg',
+      },
+    },
+  ],
+}
+
 function renderImageMainSection() {
   return render(
     <ImageMainSection
@@ -173,5 +214,138 @@ describe('ImageMainSection layout', () => {
     expect(screen.queryByText('图片 12')).toBeNull()
     expect(screen.queryByText('子目录-示例')).toBeNull()
     expect(document.querySelector('.pager-line')).toBeNull()
+  })
+
+  it('缩略图在新批次未准备好时显示占位，准备完成后整批替换', () => {
+    const refsInPage = [
+      { packageId: packageWithImages.id, imageIndex: 0 },
+      { packageId: packageWithImages.id, imageIndex: 1 },
+    ]
+
+    const { rerender } = render(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={2}
+        enableLoadingSkeleton={true}
+        activePackage={packageWithImages}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={refsInPage}
+        refsInPage={refsInPage}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={2}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[packageWithImages.id, packageWithImages]])}
+        imageUrlById={{ 'img-1': 'mock://thumb-1' }}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={vi.fn()}
+        metadataPending={false}
+        metadataTargetPackageLabel={packageWithImages.displayName}
+        metadataFetchDefaultText={packageWithImages.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+      />,
+    )
+
+    expect(document.querySelectorAll('.thumb-card.is-skeleton').length).toBe(2)
+    expect(document.querySelectorAll('.thumb-media-image').length).toBe(0)
+
+    rerender(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={2}
+        enableLoadingSkeleton={true}
+        activePackage={packageWithImages}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={refsInPage}
+        refsInPage={refsInPage}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={2}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[packageWithImages.id, packageWithImages]])}
+        imageUrlById={{ 'img-1': 'mock://thumb-1', 'img-2': 'mock://thumb-2' }}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={vi.fn()}
+        metadataPending={false}
+        metadataTargetPackageLabel={packageWithImages.displayName}
+        metadataFetchDefaultText={packageWithImages.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+      />,
+    )
+
+    expect(document.querySelectorAll('.thumb-card.is-skeleton').length).toBe(0)
+    expect(document.querySelectorAll('.thumb-media-image').length).toBe(2)
   })
 })

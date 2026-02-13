@@ -19,6 +19,15 @@ const DEFAULT_MAX_CONCURRENT = 8
 const FAILURE_RETRY_BASE_MS = 3_000
 const FAILURE_RETRY_MAX_MS = 20_000
 
+const CACHE_INVALIDATION_IGNORED_LIBRARY_CHANGE_REASONS = new Set([
+  'write-package-grade',
+  'write-package-metadata',
+  'write-package-external-metadata',
+  'write-video-metadata',
+  'thumbnail-rendering-start',
+  'thumbnail-rendering-end',
+])
+
 interface CachedMediaUrl {
   resourceUrl: string
   expiresAtMs: number
@@ -108,12 +117,7 @@ export function useResolvedMediaUrls({
     }
 
     const unsubscribe = repository.onLibraryChanged((payload) => {
-      if (
-        payload.reason === 'write-package-grade' ||
-        payload.reason === 'write-package-metadata' ||
-        payload.reason === 'write-package-external-metadata' ||
-        payload.reason === 'write-video-metadata'
-      ) {
+      if (CACHE_INVALIDATION_IGNORED_LIBRARY_CHANGE_REASONS.has(payload.reason)) {
         return
       }
 
