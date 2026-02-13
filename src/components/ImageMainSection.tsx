@@ -263,46 +263,43 @@ function ImageMainSection({
       </div>
 
       {nodeBrowseMode ? (
-        <div
-          className="image-grid node-browse-grid"
-          ref={gridRef}
-          style={{
-            gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
-            gap: `${thumbnailGap}px`,
-          }}
-        >
-          {nodeBrowseItems.map((item) => (
-            <div key={item.nodeId} className="thumb-card" style={{ width: `${actualCellWidth}px` }}>
-              <button
-                className="thumb-card-main"
-                type="button"
-                onClick={() => onSelectNodeBrowseItem?.(item.nodeId, item.imageSourceId)}
-              >
-                <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
-                  <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
-                    {item.coverImageUrl ? (
-                      <img
-                        className="thumb-media-image"
-                        src={item.coverImageUrl}
-                        alt={item.label}
-                        loading="lazy"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="thumb-media-empty" />
-                    )}
+        <>
+          <div
+            className="image-grid node-browse-grid"
+            ref={gridRef}
+            style={{
+              gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
+              gap: `${thumbnailGap}px`,
+            }}
+          >
+            {nodeBrowseItems.map((item) => (
+              <div key={item.nodeId} className="thumb-card" style={{ width: `${actualCellWidth}px` }}>
+                <button
+                  className="thumb-card-main"
+                  type="button"
+                  onClick={() => onSelectNodeBrowseItem?.(item.nodeId, item.imageSourceId)}
+                >
+                  <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
+                    <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
+                      {item.coverImageUrl ? (
+                        <img
+                          className="thumb-media-image"
+                          src={item.coverImageUrl}
+                          alt={item.label}
+                          loading="lazy"
+                          draggable={false}
+                        />
+                      ) : (
+                        <div className="thumb-media-empty" />
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="node-browse-caption">
-                  <strong>{item.label}</strong>
-                  <span>
-                    {item.imageNodeType === 'folder' ? `包含节点 ${item.descendantNodeCount}` : `图片 ${item.imageCount}`}
-                  </span>
-                </div>
-              </button>
-            </div>
-          ))}
-        </div>
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="pager-line is-placeholder" aria-hidden="true" />
+        </>
       ) : showNamesOnly ? (
         <div className={`name-list ${manageMode ? 'is-manage' : ''}`} ref={gridRef}>
           <div className="name-list-header">
@@ -445,7 +442,9 @@ function ImageMainSection({
                 下一页
               </button>
             </div>
-          ) : null}
+          ) : (
+            <div className="pager-line is-placeholder" aria-hidden="true" />
+          )}
         </>
       )}
 

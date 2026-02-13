@@ -240,6 +240,7 @@ export function useAppNavigationState({
 
   const snapTimeoutRef = useRef<number | null>(null)
   const scaleSnapSuppressUntilRef = useRef(0)
+  const snapApplyingRef = useRef(false)
 
   useEffect(() => {
     return () => {
@@ -261,7 +262,7 @@ export function useAppNavigationState({
   }, [horizontalResizing, layoutLocked, mode, showNamesOnly])
 
   const applyThumbnailHorizontalSnap = useCallback(() => {
-    if (mode !== 'image' || showNamesOnly || layoutLocked || horizontalResizing) {
+    if (mode !== 'image' || showNamesOnly || layoutLocked || horizontalResizing || snapApplyingRef.current) {
       return
     }
 
@@ -369,19 +370,29 @@ export function useAppNavigationState({
       return
     }
 
+    const nextPatch: {
+      sidebarRatio?: number
+      metadataRatio?: number
+    } = {}
     if (sidebarChanged) {
-      applySidebarRatio(nextSidebarRatio)
+      nextPatch.sidebarRatio = nextSidebarRatio
     }
     if (metadataChanged) {
-      applyMetadataRatio(nextMetadataRatio)
+      nextPatch.metadataRatio = nextMetadataRatio
     }
 
+    snapApplyingRef.current = true
+    updateSettings(nextPatch)
+
     scaleSnapSuppressUntilRef.current = performance.now() + SCALE_SNAP_SUPPRESS_MS
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        snapApplyingRef.current = false
+      })
+    })
   }, [
     appBodyRef,
     appBodyWidth,
-    applyMetadataRatio,
-    applySidebarRatio,
     gridSize.height,
     gridSize.width,
     horizontalResizing,
@@ -396,12 +407,17 @@ export function useAppNavigationState({
     thumbnailGap,
     thumbnailScale,
     thumbnailWidth,
+    updateSettings,
     workspaceBodyRef,
   ])
 
   const queueThumbnailHorizontalSnap = useCallback(
     (delayMs: number) => {
       if (mode !== 'image' || showNamesOnly || layoutLocked || horizontalResizing) {
+        return
+      }
+
+      if (snapApplyingRef.current) {
         return
       }
 
