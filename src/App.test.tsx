@@ -1371,9 +1371,9 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
     expect(screen.queryByText('加载中...')).not.toBeInTheDocument()
 
-    const autoplayToggle = screen.getByRole('checkbox', { name: '自动播放' }) as HTMLInputElement
+    const autoplayToggle = screen.getByRole('button', { name: '自动播放' })
     fireEvent.click(autoplayToggle)
-    expect(autoplayToggle.checked).toBe(true)
+    expect(autoplayToggle).toHaveAttribute('aria-pressed', 'true')
 
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
     await waitFor(() => {
@@ -1384,7 +1384,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.keyDown(window, { key: 'f', code: 'KeyF' })
     await waitFor(() => {
       expect(document.querySelector('.fullscreen-layer')).toBeNull()
-      expect((screen.getByRole('checkbox', { name: '自动播放' }) as HTMLInputElement).checked).toBe(false)
+      expect(screen.getByRole('button', { name: '自动播放' })).toHaveAttribute('aria-pressed', 'false')
     })
   })
 

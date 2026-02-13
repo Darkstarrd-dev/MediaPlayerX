@@ -47,8 +47,18 @@ export const BENCH_CHANNELS = {
   finish: 'bench:finish',
 } as const
 
+export const APP_WINDOW_CHANNELS = {
+  minimize: 'appWindow:minimize',
+  toggleMaximize: 'appWindow:toggleMaximize',
+  close: 'appWindow:close',
+  isMaximized: 'appWindow:isMaximized',
+  maximizedStateChanged: 'appWindow:maximizedStateChanged',
+} as const
+
 export const MEDIA_PROTOCOL_SCHEME = 'mediaplayerx-media'
 
 export type BackendChannelName = (typeof BACKEND_CHANNELS)[keyof typeof BACKEND_CHANNELS]
 
 export type BenchChannelName = (typeof BENCH_CHANNELS)[keyof typeof BENCH_CHANNELS]
+
+export type AppWindowChannelName = (typeof APP_WINDOW_CHANNELS)[keyof typeof APP_WINDOW_CHANNELS]

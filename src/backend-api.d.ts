@@ -153,12 +153,21 @@ interface MediaPlayerViewApi {
   setZoomFactor: (value: number) => void
 }
 
+interface MediaPlayerWindowApi {
+  minimize: () => Promise<void>
+  toggleMaximize: () => Promise<void>
+  close: () => Promise<void>
+  isMaximized: () => Promise<boolean>
+  onMaximizedStateChange: (listener: (maximized: boolean) => void) => () => void
+}
+
 declare global {
   interface Window {
     mediaPlayerBackend?: MediaPlayerBackendApi
     mediaPlayerBench?: MediaPlayerBenchApi
     mediaPlayerPlatform?: MediaPlayerPlatformApi
     mediaPlayerView?: MediaPlayerViewApi
+    mediaPlayerWindow?: MediaPlayerWindowApi
   }
 }
 

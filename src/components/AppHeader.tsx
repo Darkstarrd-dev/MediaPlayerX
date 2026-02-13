@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import type { BrowserMode } from '../types'
 
 export interface AppHeaderProps {
@@ -61,6 +63,36 @@ function AppHeader({
   onAutoPlayIntervalChange,
   onOpenSettings,
 }: AppHeaderProps) {
+  const [windowMaximized, setWindowMaximized] = useState(false)
+
+  useEffect(() => {
+    const windowApi = window.mediaPlayerWindow
+    if (!windowApi) {
+      return
+    }
+
+    let active = true
+    void windowApi
+      .isMaximized()
+      .then((maximized) => {
+        if (active) {
+          setWindowMaximized(maximized)
+        }
+      })
+      .catch(() => {
+        // ignore initialization failures
+      })
+
+    const unsubscribe = windowApi.onMaximizedStateChange((maximized) => {
+      setWindowMaximized(maximized)
+    })
+
+    return () => {
+      active = false
+      unsubscribe()
+    }
+  }, [])
+
   return (
     <header className="app-header" style={{ height: `${headerHeight}px` }}>
       <div className="header-left">
@@ -158,14 +190,15 @@ function AppHeader({
           </button>
         </div>
 
-        <label className="inline-switch">
-          <input
-            checked={autoPlayEnabled}
-            type="checkbox"
-            onChange={(event) => onAutoPlayEnabledChange(event.target.checked)}
-          />
-          自动播放
-        </label>
+        <button
+          aria-label="自动播放"
+          aria-pressed={autoPlayEnabled}
+          className={`auto-play-toggle-btn ${autoPlayEnabled ? 'is-active' : ''}`}
+          type="button"
+          onClick={() => onAutoPlayEnabledChange(!autoPlayEnabled)}
+        >
+          自动
+        </button>
 
         <select value={autoPlayInterval} onChange={(event) => onAutoPlayIntervalChange(Number(event.target.value))}>
           {autoPlayPresets.map((value) => (
@@ -176,6 +209,39 @@ function AppHeader({
         <button className="header-settings-btn" type="button" onClick={onOpenSettings}>
           设置
         </button>
+
+        <div aria-label="窗口控制" className="window-controls" role="group">
+          <button
+            aria-label="最小化窗口"
+            className="window-control-btn"
+            type="button"
+            onClick={() => {
+              void window.mediaPlayerWindow?.minimize()
+            }}
+          >
+            —
+          </button>
+          <button
+            aria-label={windowMaximized ? '还原窗口' : '最大化窗口'}
+            className="window-control-btn"
+            type="button"
+            onClick={() => {
+              void window.mediaPlayerWindow?.toggleMaximize()
+            }}
+          >
+            {windowMaximized ? '❐' : '□'}
+          </button>
+          <button
+            aria-label="关闭窗口"
+            className="window-control-btn window-control-btn--close"
+            type="button"
+            onClick={() => {
+              void window.mediaPlayerWindow?.close()
+            }}
+          >
+            ✕
+          </button>
+        </div>
       </div>
     </header>
   )

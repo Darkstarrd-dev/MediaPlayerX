@@ -1,9 +1,9 @@
-import { app, BrowserWindow, protocol } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron'
 import { existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { MEDIA_PROTOCOL_SCHEME } from './channels'
+import { APP_WINDOW_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
 import { registerBenchIpcHandlers } from './registerBenchIpcHandlers'
 import { registerBackendIpcHandlers } from './registerBackendIpcHandlers'
 import {
@@ -417,6 +417,34 @@ function resolvePreloadEntry(): string {
   return path.join(fallbackRoot, 'dist-electron', 'preload.cjs')
 }
 
+function registerWindowControlIpcHandlers(): void {
+  ipcMain.handle(APP_WINDOW_CHANNELS.minimize, (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.minimize()
+  })
+
+  ipcMain.handle(APP_WINDOW_CHANNELS.toggleMaximize, (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) {
+      return
+    }
+
+    if (window.isMaximized()) {
+      window.unmaximize()
+      return
+    }
+
+    window.maximize()
+  })
+
+  ipcMain.handle(APP_WINDOW_CHANNELS.close, (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close()
+  })
+
+  ipcMain.handle(APP_WINDOW_CHANNELS.isMaximized, (event) => {
+    return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
+  })
+}
+
 function createMainWindow(): BrowserWindow {
   const benchMode = resolveBenchMode()
   const window = new BrowserWindow({
@@ -426,6 +454,9 @@ function createMainWindow(): BrowserWindow {
     minHeight: 680,
     show: false,
     paintWhenInitiallyHidden: true,
+    frame: false,
+    thickFrame: process.platform === 'win32',
+    autoHideMenuBar: true,
     backgroundColor: '#f2eee7',
     webPreferences: {
       contextIsolation: true,
@@ -436,6 +467,8 @@ function createMainWindow(): BrowserWindow {
       preload: resolvePreloadEntry(),
     },
   })
+
+  window.setMenuBarVisibility(false)
 
   // Prevent the default Electron behavior where dropping a file onto the window
   // navigates the current page to a file:// URL.
@@ -488,6 +521,17 @@ function createMainWindow(): BrowserWindow {
   window.once('ready-to-show', () => {
     logRuntimeDiagnostic('startup-main-ready-to-show', { windowId: window.webContents.id }, 'info', true)
   })
+
+  const emitMaximizedState = () => {
+    if (window.isDestroyed()) {
+      return
+    }
+    window.webContents.send(APP_WINDOW_CHANNELS.maximizedStateChanged, window.isMaximized())
+  }
+
+  window.on('maximize', emitMaximizedState)
+  window.on('unmaximize', emitMaximizedState)
+  window.once('ready-to-show', emitMaximizedState)
 
   if (benchMode) {
     try {
@@ -599,6 +643,8 @@ app.whenReady().then(() => {
     true,
   )
 
+  Menu.setApplicationMenu(null)
+  registerWindowControlIpcHandlers()
   registerBackendIpcHandlers()
   registerBenchIpcHandlers()
   openMainWindow()

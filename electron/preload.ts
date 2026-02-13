@@ -71,7 +71,7 @@ import {
   openExternalUrlRequestSchema,
   openExternalUrlResponseSchema,
 } from '../src/contracts/backend'
-import { BACKEND_CHANNELS, BENCH_CHANNELS } from './channels'
+import { APP_WINDOW_CHANNELS, BACKEND_CHANNELS, BENCH_CHANNELS } from './channels'
 
 const backendApi = {
   readLibrarySnapshot: async () => {
@@ -317,7 +317,33 @@ const viewApi = {
   },
 }
 
+const windowApi = {
+  minimize: async () => {
+    await ipcRenderer.invoke(APP_WINDOW_CHANNELS.minimize)
+  },
+  toggleMaximize: async () => {
+    await ipcRenderer.invoke(APP_WINDOW_CHANNELS.toggleMaximize)
+  },
+  close: async () => {
+    await ipcRenderer.invoke(APP_WINDOW_CHANNELS.close)
+  },
+  isMaximized: async () => {
+    return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.isMaximized)
+  },
+  onMaximizedStateChange: (listener: (maximized: boolean) => void) => {
+    const handler = (_event: unknown, payload: unknown) => {
+      listener(Boolean(payload))
+    }
+
+    ipcRenderer.on(APP_WINDOW_CHANNELS.maximizedStateChanged, handler)
+    return () => {
+      ipcRenderer.removeListener(APP_WINDOW_CHANNELS.maximizedStateChanged, handler)
+    }
+  },
+}
+
 contextBridge.exposeInMainWorld('mediaPlayerBackend', backendApi)
 contextBridge.exposeInMainWorld('mediaPlayerBench', benchApi)
 contextBridge.exposeInMainWorld('mediaPlayerPlatform', platformApi)
 contextBridge.exposeInMainWorld('mediaPlayerView', viewApi)
+contextBridge.exposeInMainWorld('mediaPlayerWindow', windowApi)
