@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain, Menu, protocol, type MenuItemConstructorOptions } from 'electron'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -12,8 +12,11 @@ import {
   logRuntimeDiagnostic,
   serializeUnknownError,
 } from './runtimeDiagnostics'
+import { STARTUP_SPLASH_WINDOW_CONFIG, renderStartupSplashHtml } from './startupSplashTemplate'
 
 const STARTUP_SPLASH_TIMEOUT_MS = 12_000
+const STARTUP_SPLASH_MIN_DURATION_MAX_MS = 120_000
+const STARTUP_SEQUENCE_STARTED_AT_MS = Date.now()
 
 let nativeChromeEnabled = false
 let mainWindowRef: BrowserWindow | null = null
@@ -57,126 +60,26 @@ function applyWindowMenuState(window: BrowserWindow): void {
   window.setMenuBarVisibility(nativeChromeEnabled)
 }
 
-function renderStartupSplashHtml(): string {
-  return `<!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>MediaPlayerX</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #efe7dc;
-      }
-
-      .splash {
-        width: 100%;
-        height: 100%;
-        box-sizing: border-box;
-        display: grid;
-        place-items: center;
-        background: radial-gradient(circle at 18% 20%, #f6e9da 0%, transparent 46%), radial-gradient(circle at 82% 16%, #e2dccf 0%, transparent 42%), linear-gradient(160deg, #f5eee3 0%, #ece3d5 52%, #e8dece 100%);
-      }
-
-      .card {
-        width: min(520px, calc(100vw - 48px));
-        border-radius: 16px;
-        padding: 24px 24px 20px;
-        background: rgba(255, 250, 243, 0.9);
-        border: 1px solid rgba(170, 147, 120, 0.35);
-        box-shadow: 0 16px 36px rgba(72, 54, 33, 0.16);
-      }
-
-      .brand {
-        margin: 0;
-        font: 700 21px/1.25 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-        color: #2c1d11;
-        letter-spacing: 0.2px;
-      }
-
-      .desc {
-        margin: 8px 0 0;
-        font: 500 13px/1.4 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-        color: #6f5740;
-      }
-
-      .track {
-        margin-top: 16px;
-        position: relative;
-        height: 8px;
-        border-radius: 999px;
-        background: rgba(171, 140, 108, 0.24);
-        overflow: hidden;
-      }
-
-      .track::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        width: 42%;
-        border-radius: inherit;
-        background: linear-gradient(90deg, #c9703a 0%, #cc7e44 56%, #d4965f 100%);
-        animation: loading 1.4s ease-in-out infinite;
-      }
-
-      .hint {
-        margin-top: 12px;
-        font: 500 12px/1.4 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-        color: #73573d;
-      }
-
-      @keyframes loading {
-        0% {
-          transform: translateX(-130%);
-        }
-
-        50% {
-          transform: translateX(90%);
-        }
-
-        100% {
-          transform: translateX(220%);
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="splash" aria-label="MediaPlayerX 启动页">
-      <section class="card" role="status" aria-live="polite">
-        <h1 class="brand">MediaPlayerX</h1>
-        <p class="desc">正在初始化渲染进程与媒体索引</p>
-        <div class="track" aria-hidden="true"></div>
-        <p class="hint">启动中，请稍候...</p>
-      </section>
-    </main>
-  </body>
-</html>`
-}
-
 function createStartupSplashWindow(): BrowserWindow {
   const appWindowIconPath = resolveAppWindowIconPath() ?? undefined
   const splashWindow = new BrowserWindow({
-    width: 700,
-    height: 430,
-    minWidth: 700,
-    minHeight: 430,
-    maxWidth: 700,
-    maxHeight: 430,
+    width: STARTUP_SPLASH_WINDOW_CONFIG.width,
+    height: STARTUP_SPLASH_WINDOW_CONFIG.height,
+    minWidth: STARTUP_SPLASH_WINDOW_CONFIG.width,
+    minHeight: STARTUP_SPLASH_WINDOW_CONFIG.height,
+    maxWidth: STARTUP_SPLASH_WINDOW_CONFIG.width,
+    maxHeight: STARTUP_SPLASH_WINDOW_CONFIG.height,
     show: false,
     resizable: false,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
     frame: false,
+    transparent: true,
     autoHideMenuBar: true,
     skipTaskbar: true,
     alwaysOnTop: true,
-    backgroundColor: '#efe7dc',
+    backgroundColor: STARTUP_SPLASH_WINDOW_CONFIG.backgroundColor,
     icon: appWindowIconPath,
     webPreferences: {
       contextIsolation: true,
@@ -194,7 +97,7 @@ function createStartupSplashWindow(): BrowserWindow {
     }
   })
 
-  const html = renderStartupSplashHtml()
+  const html = renderStartupSplashHtml({ bannerSrc: resolveStartupSplashBannerSrc() })
   void splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
 
   return splashWindow
@@ -203,16 +106,38 @@ function createStartupSplashWindow(): BrowserWindow {
 function bindStartupWindowTransition(mainWindow: BrowserWindow, splashWindow: BrowserWindow | null): void {
   let revealed = false
   let fallbackTimer: ReturnType<typeof setTimeout> | null = null
+  let revealDelayTimer: ReturnType<typeof setTimeout> | null = null
+  const startupSplashMinDurationMs = resolveStartupSplashMinDurationMs()
 
   const revealMainWindow = (reason: 'ready-to-show' | 'timeout' | 'did-fail-load') => {
     if (revealed) {
       return
     }
+
+    const elapsedMs = Date.now() - STARTUP_SEQUENCE_STARTED_AT_MS
+    const remainingDelayMs = startupSplashMinDurationMs - elapsedMs
+
+    if (remainingDelayMs > 0) {
+      if (!revealDelayTimer) {
+        revealDelayTimer = setTimeout(() => {
+          revealDelayTimer = null
+          revealMainWindow(reason)
+        }, remainingDelayMs)
+        revealDelayTimer.unref?.()
+      }
+      return
+    }
+
     revealed = true
 
     if (fallbackTimer) {
       clearTimeout(fallbackTimer)
       fallbackTimer = null
+    }
+
+    if (revealDelayTimer) {
+      clearTimeout(revealDelayTimer)
+      revealDelayTimer = null
     }
 
     if (!mainWindow.isDestroyed()) {
@@ -244,6 +169,9 @@ function bindStartupWindowTransition(mainWindow: BrowserWindow, splashWindow: Br
     if (fallbackTimer) {
       clearTimeout(fallbackTimer)
     }
+    if (revealDelayTimer) {
+      clearTimeout(revealDelayTimer)
+    }
     if (splashWindow && !splashWindow.isDestroyed()) {
       splashWindow.destroy()
     }
@@ -271,6 +199,92 @@ function collectAppRootCandidates(): string[] {
 
   candidates.add(path.resolve(process.cwd()))
   return Array.from(candidates)
+}
+
+function resolveStartupSplashBannerSrc(): string | null {
+  const explicitPath = (process.env.MEDIA_PLAYERX_SPLASH_BANNER_PATH ?? '').trim()
+  if (explicitPath.length > 0) {
+    const resolvedExplicitPath = path.resolve(explicitPath)
+    if (existsSync(resolvedExplicitPath)) {
+      const explicitDataUrl = resolveImageDataUrl(resolvedExplicitPath)
+      if (explicitDataUrl) {
+        return explicitDataUrl
+      }
+    }
+  }
+
+  const relativeCandidates = [
+    ['src', 'assets', 'banner.png'],
+    ['..', 'src', 'assets', 'banner.png'],
+  ] as const
+
+  for (const root of collectAppRootCandidates()) {
+    for (const relativeCandidate of relativeCandidates) {
+      const candidate = path.resolve(root, ...relativeCandidate)
+      if (existsSync(candidate)) {
+        const dataUrl = resolveImageDataUrl(candidate)
+        if (dataUrl) {
+          return dataUrl
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+function resolveImageMimeType(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase()
+
+  if (ext === '.png') {
+    return 'image/png'
+  }
+
+  if (ext === '.jpg' || ext === '.jpeg') {
+    return 'image/jpeg'
+  }
+
+  if (ext === '.webp') {
+    return 'image/webp'
+  }
+
+  if (ext === '.gif') {
+    return 'image/gif'
+  }
+
+  if (ext === '.svg') {
+    return 'image/svg+xml'
+  }
+
+  return 'application/octet-stream'
+}
+
+function resolveImageDataUrl(filePath: string): string | null {
+  try {
+    const buffer = readFileSync(filePath)
+    if (buffer.length === 0) {
+      return null
+    }
+
+    const mimeType = resolveImageMimeType(filePath)
+    return `data:${mimeType};base64,${buffer.toString('base64')}`
+  } catch {
+    return null
+  }
+}
+
+function resolveStartupSplashMinDurationMs(): number {
+  const rawValue = (process.env.MEDIA_PLAYERX_SPLASH_MIN_DURATION_MS ?? '').trim()
+  if (rawValue.length === 0) {
+    return 0
+  }
+
+  const parsedValue = Number(rawValue)
+  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    return 0
+  }
+
+  return Math.min(Math.floor(parsedValue), STARTUP_SPLASH_MIN_DURATION_MAX_MS)
 }
 
 function resolveAppWindowIconPath(): string | null {

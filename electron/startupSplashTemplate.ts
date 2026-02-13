@@ -1,0 +1,585 @@
+const STARTUP_SPLASH_COPY = {
+  title: 'MediaPlayerX',
+  description: '正在初始化渲染进程与媒体索引',
+  hint: '启动中，请稍候...',
+} as const
+
+type StartupSplashRenderOptions = {
+  bannerSrc?: string | null
+}
+
+const DEFAULT_STARTUP_SPLASH_MOCK_BANNER_SRC = '../../src/assets/banner.png'
+
+const STARTUP_SPLASH_TOKENS = {
+  windowBackground: '#efe7dc',
+  radialLeft: '#f6e9da',
+  radialRight: '#e2dccf',
+  linearTop: '#f5eee3',
+  linearMid: '#ece3d5',
+  linearBottom: '#e8dece',
+  cardBackground: 'rgba(255, 250, 243, 0.9)',
+  cardBorder: 'rgba(170, 147, 120, 0.35)',
+  cardRadius: 16,
+  cardShadow: '0 16px 36px rgba(72, 54, 33, 0.16)',
+  brandColor: '#2c1d11',
+  descColor: '#6f5740',
+  trackBackground: 'rgba(171, 140, 108, 0.24)',
+  trackStart: '#c9703a',
+  trackMid: '#cc7e44',
+  trackEnd: '#d4965f',
+  hintColor: '#73573d',
+  characterTranslateYPx: -160,
+  characterTranslateYPxMobile: -125,
+  loadingDurationSeconds: 1.4,
+} as const
+
+export const STARTUP_SPLASH_WINDOW_CONFIG = {
+  width: 700,
+  height: 560,
+  backgroundColor: '#00000000',
+} as const
+
+function escapeHtmlAttribute(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+function renderSplashCardMarkup(bannerSrc: string | null): string {
+  const bannerMarkup = bannerSrc
+    ? `<img class="character" src="${escapeHtmlAttribute(bannerSrc)}" alt="" aria-hidden="true" />`
+    : ''
+  const stageClassName = bannerMarkup.length > 0 ? 'card-stage has-character' : 'card-stage'
+
+  return `<section class="${stageClassName}">
+        ${bannerMarkup}
+        <section class="card" role="status" aria-live="polite">
+        <h1 class="brand">${STARTUP_SPLASH_COPY.title}</h1>
+        <p class="desc">${STARTUP_SPLASH_COPY.description}</p>
+        <div class="track" aria-hidden="true"></div>
+        <p class="hint">${STARTUP_SPLASH_COPY.hint}</p>
+        </section>
+      </section>`
+}
+
+function renderCommonStyles(): string {
+  return `:root {
+        --splash-window-bg: ${STARTUP_SPLASH_TOKENS.windowBackground};
+        --splash-radial-left: ${STARTUP_SPLASH_TOKENS.radialLeft};
+        --splash-radial-right: ${STARTUP_SPLASH_TOKENS.radialRight};
+        --splash-linear-top: ${STARTUP_SPLASH_TOKENS.linearTop};
+        --splash-linear-mid: ${STARTUP_SPLASH_TOKENS.linearMid};
+        --splash-linear-bottom: ${STARTUP_SPLASH_TOKENS.linearBottom};
+        --splash-card-bg: ${STARTUP_SPLASH_TOKENS.cardBackground};
+        --splash-card-border: ${STARTUP_SPLASH_TOKENS.cardBorder};
+        --splash-card-radius: ${STARTUP_SPLASH_TOKENS.cardRadius}px;
+        --splash-card-shadow: ${STARTUP_SPLASH_TOKENS.cardShadow};
+        --splash-brand-color: ${STARTUP_SPLASH_TOKENS.brandColor};
+        --splash-desc-color: ${STARTUP_SPLASH_TOKENS.descColor};
+        --splash-track-bg: ${STARTUP_SPLASH_TOKENS.trackBackground};
+        --splash-track-start: ${STARTUP_SPLASH_TOKENS.trackStart};
+        --splash-track-mid: ${STARTUP_SPLASH_TOKENS.trackMid};
+        --splash-track-end: ${STARTUP_SPLASH_TOKENS.trackEnd};
+        --splash-hint-color: ${STARTUP_SPLASH_TOKENS.hintColor};
+        --splash-character-translate-y: ${STARTUP_SPLASH_TOKENS.characterTranslateYPx}px;
+        --splash-character-translate-y-mobile: ${STARTUP_SPLASH_TOKENS.characterTranslateYPxMobile}px;
+        --splash-loading-duration: ${STARTUP_SPLASH_TOKENS.loadingDurationSeconds}s;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      body {
+        overflow: hidden;
+        background: transparent;
+        font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      .splash {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: end center;
+        padding: 20px 24px;
+        background: transparent;
+      }
+
+      .card-stage {
+        position: relative;
+        width: min(560px, calc(100vw - 48px));
+      }
+
+      .card-stage.has-character {
+        padding-top: 152px;
+      }
+
+      .character {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: min(410px, 68vw);
+        max-width: 410px;
+        transform: translate(-50%, var(--splash-character-translate-y));
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-drag: none;
+        filter: drop-shadow(0 14px 24px rgba(59, 39, 21, 0.18));
+        z-index: 2;
+      }
+
+      .card {
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        border-radius: var(--splash-card-radius);
+        padding: 24px 24px 20px;
+        background: var(--splash-card-bg);
+        border: 1px solid var(--splash-card-border);
+        box-shadow: var(--splash-card-shadow);
+      }
+
+      .brand {
+        margin: 0;
+        font: 700 21px/1.25 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        color: var(--splash-brand-color);
+        letter-spacing: 0.2px;
+      }
+
+      .desc {
+        margin: 8px 0 0;
+        font: 500 13px/1.4 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        color: var(--splash-desc-color);
+      }
+
+      .track {
+        margin-top: 16px;
+        position: relative;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--splash-track-bg);
+        overflow: hidden;
+      }
+
+      .track::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 42%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--splash-track-start) 0%, var(--splash-track-mid) 56%, var(--splash-track-end) 100%);
+        animation: startup-loading var(--splash-loading-duration) ease-in-out infinite;
+      }
+
+      .hint {
+        margin-top: 12px;
+        font: 500 12px/1.4 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        color: var(--splash-hint-color);
+      }
+
+      @media (max-width: 760px) {
+        .splash {
+          padding: 12px;
+        }
+
+        .card-stage {
+          width: min(100%, 520px);
+        }
+
+        .card-stage.has-character {
+          padding-top: 132px;
+        }
+
+        .character {
+          width: min(320px, 82vw);
+          transform: translate(-50%, var(--splash-character-translate-y-mobile));
+        }
+
+        .card {
+          padding: 20px 16px 16px;
+        }
+      }
+
+      @keyframes startup-loading {
+        0% {
+          transform: translateX(-130%);
+        }
+
+        50% {
+          transform: translateX(90%);
+        }
+
+        100% {
+          transform: translateX(220%);
+        }
+      }`
+}
+
+function renderStartupSplashDocument(bodyContent: string): string {
+  return `<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MediaPlayerX</title>
+    <style>
+      ${renderCommonStyles()}
+    </style>
+  </head>
+  <body>
+    ${bodyContent}
+  </body>
+</html>`
+}
+
+export function renderStartupSplashHtml(options: StartupSplashRenderOptions = {}): string {
+  const bannerSrc = options.bannerSrc ?? null
+  return renderStartupSplashDocument(`<main class="splash" aria-label="MediaPlayerX 启动页">
+      ${renderSplashCardMarkup(bannerSrc)}
+    </main>`)
+}
+
+export function renderStartupSplashMockHtml(options: StartupSplashRenderOptions = {}): string {
+  const bannerSrc = options.bannerSrc ?? DEFAULT_STARTUP_SPLASH_MOCK_BANNER_SRC
+  return renderStartupSplashDocument(`<main class="mock-root">
+      <section class="mock-panel" aria-label="启动页调参">
+        <h1>Startup Splash Mock</h1>
+        <p class="mock-subtitle">调节 token 后，点击“复制 token JSON”保存当前视觉参数。</p>
+        <form id="startup-splash-mock-form" class="mock-controls" autocomplete="off">
+          <label>
+            <span>背景底色</span>
+            <input id="token-window-bg" type="color" value="${STARTUP_SPLASH_TOKENS.windowBackground}" />
+            <output data-output="token-window-bg">${STARTUP_SPLASH_TOKENS.windowBackground}</output>
+          </label>
+          <label>
+            <span>卡片圆角</span>
+            <input id="token-card-radius" type="range" min="8" max="30" step="1" value="${STARTUP_SPLASH_TOKENS.cardRadius}" />
+            <output data-output="token-card-radius">${STARTUP_SPLASH_TOKENS.cardRadius}px</output>
+          </label>
+          <label>
+            <span>加载速度</span>
+            <input id="token-loading-duration" type="range" min="0.8" max="3" step="0.1" value="${STARTUP_SPLASH_TOKENS.loadingDurationSeconds}" />
+            <output data-output="token-loading-duration">${STARTUP_SPLASH_TOKENS.loadingDurationSeconds}s</output>
+          </label>
+          <label>
+            <span>进度条起始色</span>
+            <input id="token-track-start" type="color" value="${STARTUP_SPLASH_TOKENS.trackStart}" />
+            <output data-output="token-track-start">${STARTUP_SPLASH_TOKENS.trackStart}</output>
+          </label>
+          <label>
+            <span>描述文案</span>
+            <input id="copy-description" type="text" value="${STARTUP_SPLASH_COPY.description}" />
+          </label>
+          <label>
+            <span>提示文案</span>
+            <input id="copy-hint" type="text" value="${STARTUP_SPLASH_COPY.hint}" />
+          </label>
+        </form>
+        <div class="mock-actions">
+          <button type="button" id="reset-token-values">恢复默认</button>
+          <button type="button" id="copy-token-json">复制 token JSON</button>
+        </div>
+        <p id="mock-status" class="mock-status">预览尺寸固定为 ${STARTUP_SPLASH_WINDOW_CONFIG.width} x ${STARTUP_SPLASH_WINDOW_CONFIG.height}。</p>
+      </section>
+      <section class="mock-preview" aria-label="启动页预览">
+        <div class="mock-window-frame" style="width: ${STARTUP_SPLASH_WINDOW_CONFIG.width}px; height: ${STARTUP_SPLASH_WINDOW_CONFIG.height}px;">
+          <div class="splash" aria-label="MediaPlayerX 启动页预览">
+            ${renderSplashCardMarkup(bannerSrc)}
+          </div>
+        </div>
+      </section>
+    </main>
+    <style>
+      body {
+        overflow: auto;
+        min-height: 100vh;
+        padding: 24px;
+        background: linear-gradient(160deg, #e8dece 0%, #d7cebf 100%);
+      }
+
+      .mock-root {
+        min-height: calc(100vh - 48px);
+        display: grid;
+        grid-template-columns: minmax(280px, 360px) minmax(560px, 1fr);
+        gap: 18px;
+      }
+
+      .mock-panel {
+        border: 1px solid rgba(118, 97, 73, 0.3);
+        border-radius: 16px;
+        background: rgba(255, 249, 241, 0.92);
+        box-shadow: 0 14px 28px rgba(52, 35, 20, 0.16);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-self: start;
+        position: sticky;
+        top: 16px;
+      }
+
+      .mock-panel h1 {
+        margin: 0;
+        font-size: 18px;
+        color: #2f2013;
+      }
+
+      .mock-subtitle {
+        margin: 0;
+        font-size: 12px;
+        color: #73573d;
+        line-height: 1.45;
+      }
+
+      .mock-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .mock-controls label {
+        display: grid;
+        gap: 6px;
+      }
+
+      .mock-controls span {
+        font-size: 12px;
+        font-weight: 600;
+        color: #5f4530;
+      }
+
+      .mock-controls input[type="text"] {
+        border: 1px solid rgba(134, 113, 88, 0.5);
+        border-radius: 8px;
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 12px;
+        color: #3a2818;
+        background: rgba(255, 253, 249, 0.95);
+      }
+
+      .mock-controls input[type="range"] {
+        accent-color: #c9743f;
+      }
+
+      .mock-controls input[type="color"] {
+        width: 52px;
+        height: 30px;
+        padding: 0;
+        border: none;
+        background: transparent;
+      }
+
+      .mock-controls output {
+        font-size: 12px;
+        color: #7a5f45;
+      }
+
+      .mock-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .mock-actions button {
+        border: 1px solid rgba(134, 113, 88, 0.45);
+        border-radius: 8px;
+        padding: 7px 10px;
+        font-size: 12px;
+        color: #402b18;
+        background: rgba(255, 250, 242, 0.92);
+        cursor: pointer;
+      }
+
+      .mock-actions button:hover {
+        background: rgba(246, 232, 214, 0.88);
+      }
+
+      .mock-status {
+        margin: 0;
+        font-size: 12px;
+        color: #6f543b;
+      }
+
+      .mock-preview {
+        border: 1px solid rgba(126, 105, 83, 0.3);
+        border-radius: 18px;
+        background: rgba(236, 228, 216, 0.82);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 16px 34px rgba(66, 49, 31, 0.14);
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        min-height: 500px;
+      }
+
+      .mock-window-frame {
+        border: 1px solid rgba(95, 74, 53, 0.24);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--splash-window-bg);
+        box-shadow: 0 18px 36px rgba(58, 41, 24, 0.2);
+      }
+
+      @media (max-width: 1100px) {
+        body {
+          padding: 12px;
+        }
+
+        .mock-root {
+          grid-template-columns: 1fr;
+        }
+
+        .mock-panel {
+          position: static;
+        }
+
+        .mock-preview {
+          min-height: auto;
+          padding: 14px;
+        }
+
+        .mock-window-frame {
+          width: min(100%, ${STARTUP_SPLASH_WINDOW_CONFIG.width}px) !important;
+          height: auto !important;
+          aspect-ratio: ${STARTUP_SPLASH_WINDOW_CONFIG.width} / ${STARTUP_SPLASH_WINDOW_CONFIG.height};
+        }
+      }
+    </style>
+    <script>
+      ;(() => {
+        const root = document.documentElement
+        const status = document.getElementById('mock-status')
+        const descriptionField = document.getElementById('copy-description')
+        const hintField = document.getElementById('copy-hint')
+        const cardDescription = document.querySelector('.desc')
+        const cardHint = document.querySelector('.hint')
+
+        const tokenDescriptors = [
+          { id: 'token-window-bg', cssVar: '--splash-window-bg', unit: '' },
+          { id: 'token-card-radius', cssVar: '--splash-card-radius', unit: 'px' },
+          { id: 'token-loading-duration', cssVar: '--splash-loading-duration', unit: 's' },
+          { id: 'token-track-start', cssVar: '--splash-track-start', unit: '' },
+        ]
+
+        const report = (message) => {
+          if (status) {
+            status.textContent = message
+          }
+        }
+
+        const syncText = () => {
+          if (descriptionField instanceof HTMLInputElement && cardDescription) {
+            cardDescription.textContent = descriptionField.value.trim().length > 0 ? descriptionField.value : '${STARTUP_SPLASH_COPY.description}'
+          }
+          if (hintField instanceof HTMLInputElement && cardHint) {
+            cardHint.textContent = hintField.value.trim().length > 0 ? hintField.value : '${STARTUP_SPLASH_COPY.hint}'
+          }
+        }
+
+        const applyToken = (descriptor) => {
+          const input = document.getElementById(descriptor.id)
+          if (!(input instanceof HTMLInputElement)) {
+            return
+          }
+
+          const resolvedValue = input.value + descriptor.unit
+          root.style.setProperty(descriptor.cssVar, resolvedValue)
+
+          const output = document.querySelector('[data-output="' + descriptor.id + '"]')
+          if (output) {
+            output.textContent = resolvedValue
+          }
+        }
+
+        for (const descriptor of tokenDescriptors) {
+          const input = document.getElementById(descriptor.id)
+          if (!(input instanceof HTMLInputElement)) {
+            continue
+          }
+
+          const applyCurrent = () => {
+            applyToken(descriptor)
+          }
+
+          input.addEventListener('input', applyCurrent)
+          input.addEventListener('change', applyCurrent)
+          applyCurrent()
+        }
+
+        if (descriptionField instanceof HTMLInputElement) {
+          descriptionField.addEventListener('input', syncText)
+        }
+
+        if (hintField instanceof HTMLInputElement) {
+          hintField.addEventListener('input', syncText)
+        }
+
+        syncText()
+
+        const resetButton = document.getElementById('reset-token-values')
+        const form = document.getElementById('startup-splash-mock-form')
+        if (resetButton && form instanceof HTMLFormElement) {
+          resetButton.addEventListener('click', () => {
+            form.reset()
+            window.requestAnimationFrame(() => {
+              for (const descriptor of tokenDescriptors) {
+                applyToken(descriptor)
+              }
+              syncText()
+              report('已恢复默认 token。')
+            })
+          })
+        }
+
+        const copyButton = document.getElementById('copy-token-json')
+        if (copyButton) {
+          copyButton.addEventListener('click', async () => {
+            const computed = getComputedStyle(root)
+            const payload = {
+              window: {
+                width: ${STARTUP_SPLASH_WINDOW_CONFIG.width},
+                height: ${STARTUP_SPLASH_WINDOW_CONFIG.height},
+                backgroundColor: computed.getPropertyValue('--splash-window-bg').trim(),
+              },
+              card: {
+                radius: computed.getPropertyValue('--splash-card-radius').trim(),
+              },
+              loading: {
+                duration: computed.getPropertyValue('--splash-loading-duration').trim(),
+                startColor: computed.getPropertyValue('--splash-track-start').trim(),
+              },
+              copy: {
+                description:
+                  descriptionField instanceof HTMLInputElement
+                    ? descriptionField.value
+                    : '${STARTUP_SPLASH_COPY.description}',
+                hint: hintField instanceof HTMLInputElement ? hintField.value : '${STARTUP_SPLASH_COPY.hint}',
+              },
+            }
+
+            const text = JSON.stringify(payload, null, 2)
+
+            try {
+              if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                await navigator.clipboard.writeText(text)
+                report('当前 token JSON 已复制到剪贴板。')
+              } else {
+                console.log(text)
+                report('当前环境不支持剪贴板，已输出到控制台。')
+              }
+            } catch {
+              console.log(text)
+              report('复制失败，已输出 token JSON 到控制台。')
+            }
+          })
+        }
+      })()
+    </script>`)
+}

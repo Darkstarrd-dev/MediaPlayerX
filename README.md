@@ -36,6 +36,20 @@ MEDIA_PLAYERX_PROXY_BYPASS=localhost,127.0.0.1,::1
 npm run desktop:start
 ```
 
+## 启动画面可视化调参
+
+```bash
+npm run mock:splash
+```
+
+执行后会生成 `docs/ui/startup-splash-mock.html`，可直接在浏览器打开并调整启动页 token。
+
+若需在桌面版里观察启动页完整动画，可设置最短展示时长（毫秒）：
+
+```bash
+MEDIA_PLAYERX_SPLASH_MIN_DURATION_MS=2000 npm run dev:desktop
+```
+
 ## 运行测试
 
 ```bash

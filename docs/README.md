@@ -22,6 +22,7 @@
 - `ui/instruction.md`：主题/样式开发说明。
 - `ui/theme-playground.html`：主题调试页。
 - `ui/theme-mock.html`：主题要素预览页。
+- `ui/startup-splash-mock.html`：启动页可视化调参 mock（由 `npm run mock:splash` 生成）。
 
 ## 性能文档
 
