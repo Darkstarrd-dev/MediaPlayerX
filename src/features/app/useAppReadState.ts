@@ -59,6 +59,7 @@ export function useAppReadState({
     featureSearchActive,
     quickFeatureSearchActive,
     quickFeatureWorkTitleQuery,
+    quickFeatureSeriesIdQuery,
     quickFeatureCircleQuery,
     quickFeatureAuthorQuery,
     quickFeatureTags,
@@ -96,6 +97,7 @@ export function useAppReadState({
     : quickFeatureSearchEnabled
       ? quickFeatureWorkTitleQuery
       : ''
+  const featureSeriesIdQueryEffective = quickFeatureSearchEnabled ? quickFeatureSeriesIdQuery : ''
   const featureCircleQueryEffective = featureSearchActive
     ? featureCircleQuery
     : quickFeatureSearchEnabled
@@ -163,6 +165,7 @@ export function useAppReadState({
     vectorResultsActive,
     featureNameQuery: featureNameQueryEffective,
     featureWorkTitleQuery: featureWorkTitleQueryEffective,
+    featureSeriesIdQuery: featureSeriesIdQueryEffective,
     featureCircleQuery: featureCircleQueryEffective,
     featureAuthorQuery: featureAuthorQueryEffective,
     featureTags: featureTagsEffective,
@@ -185,6 +188,7 @@ export function useAppReadState({
     featureWorkTitleQuery,
     setFeatureWorkTitleQuery,
     featureWorkTitleQueryEffective,
+    featureSeriesIdQueryEffective,
     featureCircleQuery,
     setFeatureCircleQuery,
     featureCircleQueryEffective,

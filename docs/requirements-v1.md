@@ -69,6 +69,7 @@
 
 - 元数据字段预留：
   - `work_title`
+  - `series_id`
   - `language`
   - `circle`
   - `author`
@@ -110,6 +111,7 @@
 - 播放列表可在元数据面板查看、拖拽排序、删除条目。
 - 从播放列表删除条目时，同步 Sidebar 对应 `toggle` 状态。
 - 预览控件包含 `Save as cover`，用于手动保存封面。
+- 图片/视频元数据均支持 `series_id`（系列ID）人工录入；当图片与视频的 `series_id` 相同，可在元数据面板进行跨模式跳转。
 
 ## 全屏行为
 

@@ -17,6 +17,7 @@ import type { MediaLibraryDatabase } from './mediaLibraryDatabase'
 
 export interface PersistedVideoMetadataRecord {
   workTitle: string
+  seriesId: string
   circle: string
   author: string
   tags: string[]
@@ -48,11 +49,13 @@ export function applyPackageMetadataWrite({
   }
 
   const workTitle = normalizeMetadataText(request.work_title, source.work_title)
+  const seriesId = (request.series_id ?? source.series_id ?? '').trim()
   const circle = normalizeMetadataText(request.circle, source.circle)
   const author = normalizeMetadataText(request.author, source.author)
   const tags = normalizeMetadataTags(request.tags)
 
   source.work_title = workTitle
+  source.series_id = seriesId
   source.circle = circle
   source.author = author
   source.tags = tags
@@ -67,6 +70,7 @@ export function applyPackageMetadataWrite({
     packageName: source.package_name,
     displayName: source.display_name,
     workTitle: source.work_title,
+    seriesId: source.series_id,
     circle: source.circle,
     author: source.author,
     tags: source.tags,
@@ -92,12 +96,14 @@ export function applyVideoMetadataWrite({
   const workTitle = request.sync_file_name_to_work_title
     ? defaultWorkTitle
     : normalizeMetadataText(request.work_title, video.work_title)
+  const seriesId = (request.series_id ?? video.series_id ?? '').trim()
   const circle = normalizeMetadataText(request.circle, video.circle)
   const author = normalizeMetadataText(request.author, video.author)
   const tags = normalizeMetadataTags(request.tags)
   const grade = typeof request.grade === 'undefined' ? video.grade ?? null : request.grade
 
   video.work_title = workTitle
+  video.series_id = seriesId
   video.circle = circle
   video.author = author
   video.tags = tags
@@ -106,6 +112,7 @@ export function applyVideoMetadataWrite({
   const updatedAtMs = Date.now()
   const persistedRecord: PersistedVideoMetadataRecord = {
     workTitle,
+    seriesId,
     circle,
     author,
     tags,
@@ -115,6 +122,7 @@ export function applyVideoMetadataWrite({
 
   database.writeVideoMetadata(video.id, {
     workTitle,
+    seriesId,
     circle,
     author,
     tags,

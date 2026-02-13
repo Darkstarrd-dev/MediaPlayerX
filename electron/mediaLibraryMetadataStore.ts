@@ -46,18 +46,27 @@ export class MediaLibraryMetadataStore {
 
   readVideoMetadata(): Map<
     string,
-    { workTitle: string; circle: string; author: string; tags: string[]; grade: number | null; updatedAtMs: number }
+    {
+      workTitle: string
+      seriesId: string
+      circle: string
+      author: string
+      tags: string[]
+      grade: number | null
+      updatedAtMs: number
+    }
   > {
     const rows = this.db
       .prepare(
         `
-          SELECT video_id, work_title, circle, author, tags_json, grade, updated_at_ms
+          SELECT video_id, work_title, series_id, circle, author, tags_json, grade, updated_at_ms
           FROM video_metadata
         `,
       )
       .all() as Array<{
       video_id: string
       work_title: string
+      series_id: string
       circle: string
       author: string
       tags_json: string
@@ -70,6 +79,7 @@ export class MediaLibraryMetadataStore {
         row.video_id,
         {
           workTitle: row.work_title,
+          seriesId: row.series_id,
           circle: row.circle,
           author: row.author,
           tags: parseJson<string[]>(row.tags_json, []),
@@ -217,6 +227,7 @@ export class MediaLibraryMetadataStore {
       packageName: string
       displayName: string
       workTitle: string
+      seriesId: string
       circle: string
       author: string
       tags: string[]
@@ -230,6 +241,7 @@ export class MediaLibraryMetadataStore {
             package_name = ?,
             display_name = ?,
             work_title = ?,
+            series_id = ?,
             circle = ?,
             author = ?,
             tags_json = ?,
@@ -241,6 +253,7 @@ export class MediaLibraryMetadataStore {
         payload.packageName,
         payload.displayName,
         payload.workTitle,
+        payload.seriesId,
         payload.circle,
         payload.author,
         JSON.stringify(payload.tags),
@@ -268,6 +281,7 @@ export class MediaLibraryMetadataStore {
     videoId: string,
     payload: {
       workTitle: string
+      seriesId: string
       circle: string
       author: string
       tags: string[]
@@ -277,10 +291,11 @@ export class MediaLibraryMetadataStore {
     this.db
       .prepare(
         `
-          INSERT INTO video_metadata (video_id, work_title, circle, author, tags_json, grade, updated_at_ms)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO video_metadata (video_id, work_title, series_id, circle, author, tags_json, grade, updated_at_ms)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(video_id) DO UPDATE SET
             work_title = excluded.work_title,
+            series_id = excluded.series_id,
             circle = excluded.circle,
             author = excluded.author,
             tags_json = excluded.tags_json,
@@ -288,7 +303,16 @@ export class MediaLibraryMetadataStore {
             updated_at_ms = excluded.updated_at_ms
         `,
       )
-      .run(videoId, payload.workTitle, payload.circle, payload.author, JSON.stringify(payload.tags), payload.grade, Date.now())
+      .run(
+        videoId,
+        payload.workTitle,
+        payload.seriesId,
+        payload.circle,
+        payload.author,
+        JSON.stringify(payload.tags),
+        payload.grade,
+        Date.now(),
+      )
   }
 
   writeSourceExternalMetadata(

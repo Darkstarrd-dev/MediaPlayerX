@@ -255,6 +255,7 @@ export class MockMediaWriteHandlers {
 
     const workTitle = normalizeTextValue(request.work_title, source.work_title)
     source.work_title = workTitle
+    source.series_id = (request.series_id ?? source.series_id ?? '').trim()
     source.circle = normalizeTextValue(request.circle, source.circle)
     source.author = normalizeTextValue(request.author, source.author)
     source.tags = normalizeTags(request.tags)
@@ -323,6 +324,7 @@ export class MockMediaWriteHandlers {
       : normalizeTextValue(request.work_title, video.work_title)
 
     video.work_title = nextWorkTitle
+    video.series_id = (request.series_id ?? video.series_id ?? '').trim()
     video.circle = normalizeTextValue(request.circle, video.circle)
     video.author = normalizeTextValue(request.author, video.author)
     video.tags = normalizeTags(request.tags)

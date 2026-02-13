@@ -84,6 +84,7 @@ export interface MetadataPanelProps {
   onGradeChange: (grade: number | null) => void
   onSavePackageMetadata: (payload: {
     workTitle?: string
+    seriesId?: string
     circle?: string
     author?: string
     tags?: string[]
@@ -92,6 +93,7 @@ export interface MetadataPanelProps {
   onSavePackageParsedMetadata: (payload: ParsedExternalMetadata) => Promise<void>
   onSaveVideoMetadata: (payload: {
     workTitle?: string
+    seriesId?: string
     circle?: string
     author?: string
     tags?: string[]
@@ -188,10 +190,12 @@ function MetadataPanel({
   const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
   const [showImagePreview, setShowImagePreview] = useState(true)
   const [workTitleDraft, setWorkTitleDraft] = useState('')
+  const [seriesIdDraft, setSeriesIdDraft] = useState('')
   const [circleDraft, setCircleDraft] = useState('')
   const [authorDraft, setAuthorDraft] = useState('')
   const [tagsDraft, setTagsDraft] = useState('')
   const [videoWorkTitleDraft, setVideoWorkTitleDraft] = useState('')
+  const [videoSeriesIdDraft, setVideoSeriesIdDraft] = useState('')
   const [videoCircleDraft, setVideoCircleDraft] = useState('')
   const [videoAuthorDraft, setVideoAuthorDraft] = useState('')
   const [videoTagsDraft, setVideoTagsDraft] = useState('')
@@ -285,17 +289,33 @@ function MetadataPanel({
 
   useEffect(() => {
     setWorkTitleDraft(focusedImagePackage?.workTitle ?? '')
+    setSeriesIdDraft(focusedImagePackage?.seriesId ?? '')
     setCircleDraft(focusedImagePackage?.circle ?? '')
     setAuthorDraft(focusedImagePackage?.author ?? '')
     setTagsDraft((focusedImagePackage?.tags ?? []).join(', '))
-  }, [focusedImagePackage?.id, focusedImagePackage?.workTitle, focusedImagePackage?.circle, focusedImagePackage?.author, focusedImagePackage?.tags])
+  }, [
+    focusedImagePackage?.id,
+    focusedImagePackage?.workTitle,
+    focusedImagePackage?.seriesId,
+    focusedImagePackage?.circle,
+    focusedImagePackage?.author,
+    focusedImagePackage?.tags,
+  ])
 
   useEffect(() => {
     setVideoWorkTitleDraft(focusedVideo?.workTitle ?? '')
+    setVideoSeriesIdDraft(focusedVideo?.seriesId ?? '')
     setVideoCircleDraft(focusedVideo?.circle ?? '')
     setVideoAuthorDraft(focusedVideo?.author ?? '')
     setVideoTagsDraft((focusedVideo?.tags ?? []).join(', '))
-  }, [focusedVideo?.id, focusedVideo?.workTitle, focusedVideo?.circle, focusedVideo?.author, focusedVideo?.tags])
+  }, [
+    focusedVideo?.id,
+    focusedVideo?.workTitle,
+    focusedVideo?.seriesId,
+    focusedVideo?.circle,
+    focusedVideo?.author,
+    focusedVideo?.tags,
+  ])
 
   useEffect(() => {
     if (editable && showImagePreview) {
@@ -407,6 +427,16 @@ function MetadataPanel({
     })
   }
 
+  const persistPackageSeriesId = (rawValue: string) => {
+    if (!focusedImagePackage) {
+      return
+    }
+
+    onSavePackageMetadata({
+      seriesId: rawValue.trim(),
+    })
+  }
+
   const persistPackageAuthor = (rawValue: string) => {
     if (!focusedImagePackage) {
       return
@@ -457,6 +487,16 @@ function MetadataPanel({
 
     onSaveVideoMetadata({
       circle,
+    })
+  }
+
+  const persistVideoSeriesId = (rawValue: string) => {
+    if (!focusedVideo) {
+      return
+    }
+
+    onSaveVideoMetadata({
+      seriesId: rawValue.trim(),
     })
   }
 
@@ -538,14 +578,17 @@ function MetadataPanel({
           editable={editable}
           currentGrade={currentGrade}
           workTitleDraft={workTitleDraft}
+          seriesIdDraft={seriesIdDraft}
           circleDraft={circleDraft}
           authorDraft={authorDraft}
           tagsDraft={tagsDraft}
           onWorkTitleDraftChange={setWorkTitleDraft}
+          onSeriesIdDraftChange={setSeriesIdDraft}
           onCircleDraftChange={setCircleDraft}
           onAuthorDraftChange={setAuthorDraft}
           onTagsDraftChange={setTagsDraft}
           onSubmitPackageWorkTitle={persistPackageWorkTitle}
+          onSubmitPackageSeriesId={persistPackageSeriesId}
           onSubmitPackageCircle={persistPackageCircle}
           onSubmitPackageAuthor={persistPackageAuthor}
           onSubmitPackageTags={persistPackageTags}
@@ -564,6 +607,7 @@ function MetadataPanel({
           editable={editable}
           currentVideoGrade={currentVideoGrade}
           videoWorkTitleDraft={videoWorkTitleDraft}
+          videoSeriesIdDraft={videoSeriesIdDraft}
           videoCircleDraft={videoCircleDraft}
           videoAuthorDraft={videoAuthorDraft}
           videoTagsDraft={videoTagsDraft}
@@ -573,10 +617,12 @@ function MetadataPanel({
           videoById={videoById}
           onMetadataTabChange={onMetadataTabChange}
           onVideoWorkTitleDraftChange={setVideoWorkTitleDraft}
+          onVideoSeriesIdDraftChange={setVideoSeriesIdDraft}
           onVideoCircleDraftChange={setVideoCircleDraft}
           onVideoAuthorDraftChange={setVideoAuthorDraft}
           onVideoTagsDraftChange={setVideoTagsDraft}
           onSubmitVideoWorkTitle={persistVideoWorkTitle}
+          onSubmitVideoSeriesId={persistVideoSeriesId}
           onSubmitVideoCircle={persistVideoCircle}
           onSubmitVideoAuthor={persistVideoAuthor}
           onSubmitVideoTags={persistVideoTags}

@@ -7,6 +7,7 @@ export const browserModeDtoSchema = z.enum(['image', 'video'])
 export const featureFilterDtoSchema = z.object({
   name_query: z.string(),
   work_title_query: z.string(),
+  series_id_query: z.string(),
   circle_query: z.string(),
   author_query: z.string(),
   tags: z.array(z.string()),
@@ -75,6 +76,7 @@ export const imagePackageDtoSchema = z.object({
   absolute_path: z.string().min(1),
   tree_path: z.array(z.string().min(1)).min(1),
   work_title: z.string().min(1),
+  series_id: z.string().default(''),
   circle: z.string().min(1),
   author: z.string().min(1),
   tags: z.array(z.string()),
@@ -96,6 +98,7 @@ export const videoItemDtoSchema = z.object({
   cover_color: z.string().min(1),
   cover_image_path: z.string().min(1).nullable().optional(),
   work_title: z.string().min(1),
+  series_id: z.string().default(''),
   circle: z.string().min(1),
   author: z.string().min(1),
   tags: z.array(z.string()),
@@ -403,6 +406,7 @@ export const confirmManageAdReviewDeleteResponseSchema = z.object({
 export const writePackageMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
   work_title: z.string().min(1),
+  series_id: z.string().optional(),
   circle: z.string().min(1),
   author: z.string().min(1),
   tags: z.array(z.string()),
@@ -489,6 +493,7 @@ export const writePackageExternalMetadataResponseSchema = z.object({
 export const writeVideoMetadataRequestSchema = z.object({
   video_id: z.string().min(1),
   work_title: z.string().min(1),
+  series_id: z.string().optional(),
   circle: z.string().min(1),
   author: z.string().min(1),
   tags: z.array(z.string()),

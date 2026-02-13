@@ -6,6 +6,7 @@ type SearchPanelMode = 'vector' | 'feature'
 
 interface QuickFeatureSearchPatch {
   workTitle?: string
+  seriesId?: string
   circle?: string
   author?: string
   tag?: string
@@ -41,6 +42,7 @@ export function useFeatureSearch({
   const [featureTagPickerOpen, setFeatureTagPickerOpen] = useState(false)
   const [searchPanelCollapsed, setSearchPanelCollapsed] = useState(false)
   const [quickFeatureWorkTitleQuery, setQuickFeatureWorkTitleQuery] = useState('')
+  const [quickFeatureSeriesIdQuery, setQuickFeatureSeriesIdQuery] = useState('')
   const [quickFeatureCircleQuery, setQuickFeatureCircleQuery] = useState('')
   const [quickFeatureAuthorQuery, setQuickFeatureAuthorQuery] = useState('')
   const [quickFeatureTags, setQuickFeatureTags] = useState<string[]>([])
@@ -66,12 +68,14 @@ export function useFeatureSearch({
   const featureSearchActive = vectorMode && searchPanelMode === 'feature'
   const quickFeatureSearchActive =
     quickFeatureWorkTitleQuery.length > 0 ||
+    quickFeatureSeriesIdQuery.length > 0 ||
     quickFeatureCircleQuery.length > 0 ||
     quickFeatureAuthorQuery.length > 0 ||
     quickFeatureTags.length > 0
 
   const clearQuickFeatureSearch = useCallback(() => {
     setQuickFeatureWorkTitleQuery('')
+    setQuickFeatureSeriesIdQuery('')
     setQuickFeatureCircleQuery('')
     setQuickFeatureAuthorQuery('')
     setQuickFeatureTags([])
@@ -80,19 +84,25 @@ export function useFeatureSearch({
   const applyQuickFeatureSearch = useCallback(
     (patch: QuickFeatureSearchPatch) => {
       const nextWorkTitle = patch.workTitle?.trim() ?? ''
+      const nextSeriesId = patch.seriesId?.trim() ?? ''
       const nextCircle = patch.circle?.trim() ?? ''
       const nextAuthor = patch.author?.trim() ?? ''
       const nextTag = patch.tag?.trim() ?? ''
       const nextTags = nextTag.length > 0 ? [nextTag] : []
 
       const hasFilter =
-        nextWorkTitle.length > 0 || nextCircle.length > 0 || nextAuthor.length > 0 || nextTags.length > 0
+        nextWorkTitle.length > 0 ||
+        nextSeriesId.length > 0 ||
+        nextCircle.length > 0 ||
+        nextAuthor.length > 0 ||
+        nextTags.length > 0
       if (!hasFilter) {
         clearQuickFeatureSearch()
         return
       }
 
       setQuickFeatureWorkTitleQuery(nextWorkTitle)
+      setQuickFeatureSeriesIdQuery(nextSeriesId)
       setQuickFeatureCircleQuery(nextCircle)
       setQuickFeatureAuthorQuery(nextAuthor)
       setQuickFeatureTags(nextTags)
@@ -159,6 +169,7 @@ export function useFeatureSearch({
     featureSearchActive,
     quickFeatureSearchActive,
     quickFeatureWorkTitleQuery,
+    quickFeatureSeriesIdQuery,
     quickFeatureCircleQuery,
     quickFeatureAuthorQuery,
     quickFeatureTags,

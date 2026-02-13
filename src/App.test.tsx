@@ -14,13 +14,13 @@ describe('MediaPlayer 虚拟 UI', () => {
     window.sessionStorage.clear()
   })
 
-  it('支持图片/视频模式切换', () => {
+  it('支持图片/视频模式切换', async () => {
     render(<App />)
 
     expect(screen.getByRole('button', { name: '检索' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
 
-    expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: '播放' })).toBeInTheDocument()
   })
 
   it('应用启动阶段不会触发 Maximum update depth exceeded', async () => {
@@ -921,6 +921,10 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.mouseDown(screen.getByRole('button', { name: '清空评分' }), { button: 0 })
     expect(readStars()).toEqual(['×', '☆', '☆', '☆', '☆', '☆'])
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '图包评分 2 星' })).not.toBeDisabled()
+    })
   })
 
   it('图片模式只读元数据评分可用并可写入', async () => {
@@ -943,11 +947,13 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
 
     fireEvent.mouseDown(screen.getByRole('button', { name: '清空评分' }), { button: 0 })
-    expect(writePackageGradeSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        grade: null,
-      }),
-    )
+    await waitFor(() => {
+      expect(writePackageGradeSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          grade: null,
+        }),
+      )
+    })
   })
 
   it('视频模式元数据默认只读，包含评分与操作区', () => {
@@ -968,7 +974,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(document.querySelector('.metadata-video-stats')).toBeNull()
   })
 
-  it('视频信息字段回车会触发 writeVideoMetadata 调用', () => {
+  it('视频信息字段回车会触发 writeVideoMetadata 调用', async () => {
     const writeVideoMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writeVideoMetadataSync')
     render(<App />)
 
@@ -980,15 +986,112 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.change(workTitleInput, { target: { value: '新的视频作品名' } })
     fireEvent.keyDown(workTitleInput, { key: 'Enter', code: 'Enter' })
 
-    expect(writeVideoMetadataSpy).toHaveBeenCalled()
-    expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        work_title: '新的视频作品名',
-      }),
-    )
+    await waitFor(() => {
+      expect(writeVideoMetadataSpy).toHaveBeenCalled()
+      expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          work_title: '新的视频作品名',
+        }),
+      )
+    })
   })
 
-  it('视频评分可点击并写入 grade', () => {
+  it('系列ID匹配时支持动画版/漫画版双向跳转', async () => {
+    render(<App />)
+
+    const jumpToAnimation = screen.getByRole('button', { name: '动画版' })
+    const imageToolbarActions = jumpToAnimation.closest('.toolbar-actions')
+    expect(imageToolbarActions?.firstElementChild).toBe(jumpToAnimation)
+    expect(jumpToAnimation).toBeEnabled()
+    fireEvent.click(jumpToAnimation)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '漫画版' })).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+    expect(screen.queryAllByRole('button', { name: 'scene_motion.mp4' })).toHaveLength(0)
+    expect(screen.queryAllByRole('button', { name: 'teaser_city.mp4' }).length).toBeGreaterThan(0)
+
+    await waitFor(() => {
+      const toolbarTitle = document.querySelector('.main-toolbar-title.is-video')?.textContent ?? ''
+      expect(toolbarTitle).toContain('teaser_city')
+    })
+
+    const jumpToManga = screen.getByRole('button', { name: '漫画版' })
+    const videoToolbarActions = jumpToManga.closest('.toolbar-actions')
+    expect(videoToolbarActions?.firstElementChild).toBe(jumpToManga)
+    expect(jumpToManga).toBeEnabled()
+    fireEvent.click(jumpToManga)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '动画版' })).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+    expect(screen.queryAllByRole('button', { name: 'forest_pack.zip' })).toHaveLength(0)
+
+    await waitFor(() => {
+      const toolbarTitle = document.querySelector('.main-toolbar-title')?.textContent ?? ''
+      expect(toolbarTitle).toContain('幻旅系列 001')
+    })
+  })
+
+  it('未配置系列ID的条目不显示动画版/漫画版跳转按钮', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'forest_pack.zip' }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: '动画版' })).toBeNull()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'scene_motion.mp4' })[0])
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: '漫画版' })).toBeNull()
+    })
+  })
+
+  it('元数据管理支持写入图片与视频系列ID', async () => {
+    const writePackageMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writePackageMetadataSync')
+    const writeVideoMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writeVideoMetadataSync')
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+
+    const imageSeriesLabel = await screen.findByText('系列ID')
+    const imageSeriesInput = imageSeriesLabel.closest('label')?.querySelector('input') as HTMLInputElement
+    expect(imageSeriesInput).toBeInTheDocument()
+    fireEvent.change(imageSeriesInput, { target: { value: 'series-image-001' } })
+    fireEvent.keyDown(imageSeriesInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      expect(writePackageMetadataSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          series_id: 'series-image-001',
+        }),
+      )
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
+    fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
+
+    const videoSeriesLabel = await screen.findByText('系列ID')
+    const videoSeriesInput = videoSeriesLabel.closest('label')?.querySelector('input') as HTMLInputElement
+    expect(videoSeriesInput).toBeInTheDocument()
+    fireEvent.change(videoSeriesInput, { target: { value: 'series-video-001' } })
+    fireEvent.keyDown(videoSeriesInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          series_id: 'series-video-001',
+        }),
+      )
+    })
+  })
+
+  it('视频评分可点击并写入 grade', async () => {
     const writeVideoMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writeVideoMetadataSync')
     render(<App />)
 
@@ -997,11 +1100,13 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
     fireEvent.click(screen.getByRole('button', { name: '视频评分 5 星' }))
 
-    expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        grade: 5,
-      }),
-    )
+    await waitFor(() => {
+      expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          grade: 5,
+        }),
+      )
+    })
   })
 
   it('默认只读元数据作品名标题复制当前值，点击值不触发切换', async () => {
@@ -1250,15 +1355,17 @@ describe('MediaPlayer 虚拟 UI', () => {
     render(<App />)
 
     const toolbarIconButtons = document.querySelectorAll('.toolbar-actions .toolbar-icon-btn')
-    expect(toolbarIconButtons.length).toBe(2)
+    expect(toolbarIconButtons.length).toBeGreaterThanOrEqual(3)
+    expect(screen.getByRole('button', { name: '动画版' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '纯文件名模式' })).not.toBeInTheDocument()
-    expect(toolbarIconButtons[0]?.textContent).toContain('▦')
+    const viewModeToggleButton = screen.getByRole('button', { name: /切换到纯文件名模式/ })
+    expect(viewModeToggleButton.textContent).toContain('▦')
 
-    fireEvent.click(screen.getByRole('button', { name: /切换到纯文件名模式/ }))
-    expect(toolbarIconButtons[0]?.textContent).toContain('≡')
+    fireEvent.click(viewModeToggleButton)
+    expect(screen.getByRole('button', { name: /切换到缩略图模式/ }).textContent).toContain('≡')
 
     fireEvent.click(screen.getByRole('button', { name: /切换到缩略图模式/ }))
-    expect(toolbarIconButtons[0]?.textContent).toContain('▦')
+    expect(screen.getByRole('button', { name: /切换到纯文件名模式/ }).textContent).toContain('▦')
 
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
     expect(screen.queryByText('加载中...')).not.toBeInTheDocument()

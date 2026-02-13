@@ -261,6 +261,7 @@ export class LibrarySnapshotService {
       cover_color: coverRecord?.coverColor ?? toDeterministicCoverColor(videoId),
       cover_image_path: coverRecord?.coverImagePath ?? null,
       work_title: metadataRecord?.workTitle ?? fallbackWorkTitle,
+      series_id: metadataRecord?.seriesId ?? '',
       circle: metadataRecord?.circle ?? '未知',
       author: metadataRecord?.author ?? '未知',
       tags: metadataRecord?.tags ?? [],

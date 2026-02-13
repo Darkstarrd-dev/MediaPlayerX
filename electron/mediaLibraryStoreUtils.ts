@@ -6,6 +6,7 @@ export interface SourceRow {
   absolute_path: string
   tree_path_json: string
   work_title: string
+  series_id: string
   circle: string
   author: string
   tags_json: string
@@ -56,6 +57,7 @@ export interface VideoRow {
   cover_color: string | null
   cover_image_path: string | null
   work_title: string | null
+  series_id: string | null
   circle: string | null
   author: string | null
   tags_json: string | null

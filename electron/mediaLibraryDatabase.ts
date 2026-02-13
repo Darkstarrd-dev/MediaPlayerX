@@ -119,7 +119,15 @@ export class MediaLibraryDatabase {
 
   readVideoMetadata(): Map<
     string,
-    { workTitle: string; circle: string; author: string; tags: string[]; grade: number | null; updatedAtMs: number }
+    {
+      workTitle: string
+      seriesId: string
+      circle: string
+      author: string
+      tags: string[]
+      grade: number | null
+      updatedAtMs: number
+    }
   > {
     return this.metadataStore.readVideoMetadata()
   }
@@ -174,6 +182,7 @@ export class MediaLibraryDatabase {
       packageName: string
       displayName: string
       workTitle: string
+      seriesId: string
       circle: string
       author: string
       tags: string[]
@@ -190,6 +199,7 @@ export class MediaLibraryDatabase {
     videoId: string,
     payload: {
       workTitle: string
+      seriesId: string
       circle: string
       author: string
       tags: string[]

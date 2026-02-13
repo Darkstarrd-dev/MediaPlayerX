@@ -4,6 +4,7 @@ import type { ImagePackage, SidebarNode, VideoItem } from '../../types'
 
 export interface PackageMetadataWritePayload {
   workTitle?: string
+  seriesId?: string
   circle?: string
   author?: string
   tags?: string[]
@@ -31,6 +32,7 @@ export interface ParsedExternalMetadataSavePayload {
 
 export interface VideoMetadataWritePayload {
   workTitle?: string
+  seriesId?: string
   circle?: string
   author?: string
   tags?: string[]
@@ -50,6 +52,7 @@ interface UseMetadataWriteBindingsParams {
       packageId: string,
       payload: {
         workTitle: string
+        seriesId: string
         circle: string
         author: string
         tags: string[]
@@ -60,6 +63,7 @@ interface UseMetadataWriteBindingsParams {
       videoId: string,
       payload: {
         workTitle: string
+        seriesId: string
         circle: string
         author: string
         tags: string[]
@@ -133,6 +137,13 @@ function normalizeTagsPatch(tags: string[] | undefined, fallback: string[]): str
     return fallback
   }
   return normalizeTags(tags)
+}
+
+function normalizeSeriesIdPatch(value: string | undefined, fallback: string): string {
+  if (typeof value === 'undefined') {
+    return fallback
+  }
+  return value.trim()
 }
 
 export function useMetadataWriteBindings({
@@ -235,6 +246,7 @@ export function useMetadataWriteBindings({
 
       return {
         workTitle: normalizeTextPatch(payload.workTitle, source.workTitle),
+        seriesId: normalizeSeriesIdPatch(payload.seriesId, source.seriesId ?? ''),
         circle: normalizeTextPatch(payload.circle, source.circle),
         author: normalizeTextPatch(payload.author, source.author),
         tags: normalizeTagsPatch(payload.tags, source.tags),
@@ -253,6 +265,7 @@ export function useMetadataWriteBindings({
 
       return {
         workTitle: normalizeTextPatch(payload.workTitle, source.workTitle),
+        seriesId: normalizeSeriesIdPatch(payload.seriesId, source.seriesId ?? ''),
         circle: normalizeTextPatch(payload.circle, source.circle),
         author: normalizeTextPatch(payload.author, source.author),
         tags: normalizeTagsPatch(payload.tags, source.tags),

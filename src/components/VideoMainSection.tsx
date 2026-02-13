@@ -24,6 +24,8 @@ interface VideoMainSectionProps {
   onClearManageSelection: () => void
   metadataPending: boolean
   onMetadataSyncName: () => void
+  canJumpToManga: boolean
+  onJumpToManga: () => void
   durationSec: number
   videoTime: number
   videoPlaying: boolean
@@ -76,6 +78,8 @@ function VideoMainSection({
   onClearManageSelection,
   metadataPending,
   onMetadataSyncName,
+  canJumpToManga,
+  onJumpToManga,
   durationSec,
   videoTime,
   videoPlaying,
@@ -222,9 +226,24 @@ function VideoMainSection({
             </div>
           </>
         ) : (
-          <strong className="main-toolbar-title is-video" title={toolbarVideoSummary}>
-            {toolbarVideoSummary}
-          </strong>
+          <>
+            <strong className="main-toolbar-title is-video" title={toolbarVideoSummary}>
+              {toolbarVideoSummary}
+            </strong>
+            {canJumpToManga ? (
+              <div className="toolbar-actions">
+                <button
+                  className="toolbar-icon-btn"
+                  type="button"
+                  aria-label="漫画版"
+                  title="漫画版"
+                  onClick={onJumpToManga}
+                >
+                  <span aria-hidden="true">▦</span>
+                </button>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
 

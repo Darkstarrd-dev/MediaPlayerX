@@ -36,6 +36,7 @@ interface UseReadOnlyDataAccessParams {
   vectorResultsActive: boolean
   featureNameQuery: string
   featureWorkTitleQuery: string
+  featureSeriesIdQuery: string
   featureCircleQuery: string
   featureAuthorQuery: string
   featureTags: string[]
@@ -53,6 +54,7 @@ interface BackendReadErrors {
 function buildFeatureFilter(params: {
   featureNameQuery: string
   featureWorkTitleQuery: string
+  featureSeriesIdQuery: string
   featureCircleQuery: string
   featureAuthorQuery: string
   featureTags: string[]
@@ -61,6 +63,7 @@ function buildFeatureFilter(params: {
   return {
     name_query: params.featureNameQuery,
     work_title_query: params.featureWorkTitleQuery,
+    series_id_query: params.featureSeriesIdQuery,
     circle_query: params.featureCircleQuery,
     author_query: params.featureAuthorQuery,
     tags: params.featureTags,
@@ -92,6 +95,7 @@ export function useReadOnlyDataAccess({
   vectorResultsActive,
   featureNameQuery,
   featureWorkTitleQuery,
+  featureSeriesIdQuery,
   featureCircleQuery,
   featureAuthorQuery,
   featureTags,
@@ -130,12 +134,21 @@ export function useReadOnlyDataAccess({
       buildFeatureFilter({
         featureNameQuery,
         featureWorkTitleQuery,
+        featureSeriesIdQuery,
         featureCircleQuery,
         featureAuthorQuery,
         featureTags,
         featureGradeFilter,
       }),
-    [featureAuthorQuery, featureCircleQuery, featureGradeFilter, featureNameQuery, featureTags, featureWorkTitleQuery],
+    [
+      featureAuthorQuery,
+      featureCircleQuery,
+      featureGradeFilter,
+      featureNameQuery,
+      featureSeriesIdQuery,
+      featureTags,
+      featureWorkTitleQuery,
+    ],
   )
 
   const gradeOverridesForRead = useMemo(

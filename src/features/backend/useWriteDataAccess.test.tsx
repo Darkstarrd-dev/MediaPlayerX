@@ -138,6 +138,7 @@ class WritableRepositoryStub implements MediaRepository {
         absolute_path: 'Z:/mock/archive_001.zip',
         tree_path: ['archive_001.zip'],
         work_title: request.work_title,
+        series_id: request.series_id ?? '',
         circle: request.circle,
         author: request.author,
         tags: request.tags,
@@ -417,6 +418,7 @@ describe('useWriteDataAccess', () => {
       await result.current.write.writePackageGrade('pkg', 5)
       await result.current.write.writePackageMetadata('pkg', {
         workTitle: '新作',
+        seriesId: 'series-test-001',
         circle: '社团A',
         author: '作者B',
         tags: ['tag1', 'tag2'],
@@ -457,6 +459,7 @@ describe('useWriteDataAccess', () => {
     await act(async () => {
       await result.current.write.writePackageMetadata('pkg', {
         workTitle: '新作',
+        seriesId: 'series-test-002',
         circle: '社团A',
         author: '作者B',
         tags: ['tag1'],

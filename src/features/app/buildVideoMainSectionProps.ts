@@ -46,6 +46,8 @@ interface BuildVideoMainSectionPropsParams {
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   metadataPending: boolean
   onMetadataSyncName: () => void
+  canJumpToManga: boolean
+  onJumpToManga: () => void
   subtitleVisible: boolean
   subtitleTrackUrl: string | null
   subtitleLoading: boolean
@@ -86,6 +88,8 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     focusedVideo: params.focusedVideo,
     metadataPending: params.metadataPending,
     onMetadataSyncName: params.onMetadataSyncName,
+    canJumpToManga: params.canJumpToManga,
+    onJumpToManga: params.onJumpToManga,
     subtitleVisible: params.subtitleVisible,
     subtitleTrackUrl: params.subtitleTrackUrl,
     subtitleLoading: params.subtitleLoading,

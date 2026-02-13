@@ -223,6 +223,7 @@ describe('FileSystemMediaReadService', () => {
       feature_filter: {
         name_query: '',
         work_title_query: '',
+        series_id_query: '',
         circle_query: '',
         author_query: '',
         tags: [],
@@ -248,6 +249,7 @@ describe('FileSystemMediaReadService', () => {
       feature_filter: {
         name_query: '',
         work_title_query: '',
+        series_id_query: '',
         circle_query: '',
         author_query: '',
         tags: [],
@@ -687,6 +689,7 @@ describe('FileSystemMediaReadService', () => {
       feature_filter: {
         name_query: '',
         work_title_query: '',
+        series_id_query: '',
         circle_query: '',
         author_query: '',
         tags: [],
@@ -782,6 +785,7 @@ describe('FileSystemMediaReadService', () => {
       feature_filter: {
         name_query: '',
         work_title_query: '',
+        series_id_query: '',
         circle_query: '',
         author_query: '',
         tags: [],
@@ -812,6 +816,7 @@ describe('FileSystemMediaReadService', () => {
       feature_filter: {
         name_query: '',
         work_title_query: '',
+        series_id_query: '',
         circle_query: '',
         author_query: '',
         tags: [],
@@ -840,6 +845,7 @@ describe('FileSystemMediaReadService', () => {
       feature_filter: {
         name_query: '',
         work_title_query: '',
+        series_id_query: '',
         circle_query: '',
         author_query: '',
         tags: [],

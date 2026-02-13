@@ -31,6 +31,8 @@ interface ImageMainSectionProps {
   gridRef: RefObject<HTMLDivElement | null>
   onToggleShowNamesOnly: () => void
   onEnterFullscreen: () => void
+  canJumpToAnimation: boolean
+  onJumpToAnimation: () => void
   onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
   metadataPending: boolean
   metadataTargetPackageLabel: string
@@ -125,6 +127,8 @@ function ImageMainSection({
   onClearManageSelection,
   onToggleShowNamesOnly,
   onEnterFullscreen,
+  canJumpToAnimation,
+  onJumpToAnimation,
   onSelectImage,
   metadataPending,
   metadataTargetPackageLabel,
@@ -213,6 +217,17 @@ function ImageMainSection({
                   : `${activePackage?.displayName ?? '无图包'} (${visibleImageRefs.length} 张)`}
             </strong>
             <div className="toolbar-actions">
+              {canJumpToAnimation ? (
+                <button
+                  className="toolbar-icon-btn"
+                  type="button"
+                  aria-label="动画版"
+                  title="动画版"
+                  onClick={onJumpToAnimation}
+                >
+                  <span aria-hidden="true">▶</span>
+                </button>
+              ) : null}
               <button
                 className={`toolbar-icon-btn ${showNamesOnly ? 'is-names-mode' : 'is-grid-mode'}`}
                 type="button"

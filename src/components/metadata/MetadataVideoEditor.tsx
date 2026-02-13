@@ -10,6 +10,7 @@ interface MetadataVideoEditorProps {
   editable: boolean
   currentVideoGrade: number | null
   videoWorkTitleDraft: string
+  videoSeriesIdDraft: string
   videoCircleDraft: string
   videoAuthorDraft: string
   videoTagsDraft: string
@@ -19,10 +20,12 @@ interface MetadataVideoEditorProps {
   videoById: Map<string, VideoItem>
   onMetadataTabChange: (tab: 'info' | 'playlist') => void
   onVideoWorkTitleDraftChange: (value: string) => void
+  onVideoSeriesIdDraftChange: (value: string) => void
   onVideoCircleDraftChange: (value: string) => void
   onVideoAuthorDraftChange: (value: string) => void
   onVideoTagsDraftChange: (value: string) => void
   onSubmitVideoWorkTitle: (value: string) => void
+  onSubmitVideoSeriesId: (value: string) => void
   onSubmitVideoCircle: (value: string) => void
   onSubmitVideoAuthor: (value: string) => void
   onSubmitVideoTags: (value: string) => void
@@ -44,6 +47,7 @@ export function MetadataVideoEditor({
   editable,
   currentVideoGrade,
   videoWorkTitleDraft,
+  videoSeriesIdDraft,
   videoCircleDraft,
   videoAuthorDraft,
   videoTagsDraft,
@@ -53,10 +57,12 @@ export function MetadataVideoEditor({
   videoById,
   onMetadataTabChange,
   onVideoWorkTitleDraftChange,
+  onVideoSeriesIdDraftChange,
   onVideoCircleDraftChange,
   onVideoAuthorDraftChange,
   onVideoTagsDraftChange,
   onSubmitVideoWorkTitle,
+  onSubmitVideoSeriesId,
   onSubmitVideoCircle,
   onSubmitVideoAuthor,
   onSubmitVideoTags,
@@ -129,6 +135,20 @@ export function MetadataVideoEditor({
                   />
                 ) : (
                   <input readOnly value={videoWorkTitleDraft.trim() || '-'} />
+                )}
+              </label>
+              <label>
+                <span>系列ID</span>
+                {editable ? (
+                  <input
+                    value={videoSeriesIdDraft}
+                    onChange={(event) => onVideoSeriesIdDraftChange(event.target.value)}
+                    onKeyDown={(event) => {
+                      commitOnEnter(event, onSubmitVideoSeriesId)
+                    }}
+                  />
+                ) : (
+                  <input readOnly value={videoSeriesIdDraft.trim() || '-'} />
                 )}
               </label>
               <label>

@@ -107,6 +107,7 @@ describe('MediaLibraryMetadataStore', () => {
       packageName: 'renamed.zip',
       displayName: 'renamed',
       workTitle: '新作标题',
+      seriesId: 'series-source-001',
       circle: '新社团',
       author: '新作者',
       tags: ['a', 'b'],
@@ -116,12 +117,13 @@ describe('MediaLibraryMetadataStore', () => {
     expect(gradeMap.get('pkg-1')).toBeNull()
 
     const sourceRow = harness.db
-      .prepare('SELECT package_name, display_name, work_title, circle, author, tags_json FROM media_source WHERE id = ?')
+      .prepare('SELECT package_name, display_name, work_title, series_id, circle, author, tags_json FROM media_source WHERE id = ?')
       .get('pkg-1') as
       | {
           package_name: string
           display_name: string
           work_title: string
+          series_id: string
           circle: string
           author: string
           tags_json: string
@@ -132,6 +134,7 @@ describe('MediaLibraryMetadataStore', () => {
       package_name: 'renamed.zip',
       display_name: 'renamed',
       work_title: '新作标题',
+      series_id: 'series-source-001',
       circle: '新社团',
       author: '新作者',
       tags_json: JSON.stringify(['a', 'b']),
@@ -150,6 +153,7 @@ describe('MediaLibraryMetadataStore', () => {
     store.writeVideoCover('video-1', 'hsl(100, 40%, 40%)', 'D:/covers/seed.webp')
     store.writeVideoMetadata('video-1', {
       workTitle: '视频标题',
+      seriesId: 'series-video-001',
       circle: '视频社团',
       author: '视频作者',
       tags: ['tag-1', 'tag-2'],
@@ -165,6 +169,7 @@ describe('MediaLibraryMetadataStore', () => {
     })
     expect(metadataMap.get('video-1')).toMatchObject({
       workTitle: '视频标题',
+      seriesId: 'series-video-001',
       circle: '视频社团',
       author: '视频作者',
       tags: ['tag-1', 'tag-2'],

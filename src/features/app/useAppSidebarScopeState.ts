@@ -52,6 +52,7 @@ interface UseAppSidebarScopeStateParams {
   featureSearchActive: boolean
   featureNameQuery: string
   featureWorkTitleQuery: string
+  featureSeriesIdQuery: string
   featureCircleQuery: string
   featureAuthorQuery: string
   featureTags: string[]
@@ -127,6 +128,7 @@ export function useAppSidebarScopeState({
   featureSearchActive,
   featureNameQuery,
   featureWorkTitleQuery,
+  featureSeriesIdQuery,
   featureCircleQuery,
   featureAuthorQuery,
   featureTags,
@@ -233,12 +235,21 @@ export function useAppSidebarScopeState({
     () => ({
       nameQuery: featureNameQuery.trim().toLocaleLowerCase('zh-CN'),
       workTitleQuery: featureWorkTitleQuery.trim().toLocaleLowerCase('zh-CN'),
+      seriesIdQuery: featureSeriesIdQuery.trim().toLocaleLowerCase('zh-CN'),
       circleQuery: featureCircleQuery.trim().toLocaleLowerCase('zh-CN'),
       authorQuery: featureAuthorQuery.trim().toLocaleLowerCase('zh-CN'),
       tags: featureTags.map((tag) => tag.trim().toLocaleLowerCase('zh-CN')).filter(Boolean),
       grade: featureGradeFilter,
     }),
-    [featureAuthorQuery, featureCircleQuery, featureGradeFilter, featureNameQuery, featureTags, featureWorkTitleQuery],
+    [
+      featureAuthorQuery,
+      featureCircleQuery,
+      featureGradeFilter,
+      featureNameQuery,
+      featureSeriesIdQuery,
+      featureTags,
+      featureWorkTitleQuery,
+    ],
   )
 
   const searchedVideos = useMemo(() => {
@@ -260,6 +271,10 @@ export function useAppSidebarScopeState({
       }
 
       if (!textIncludes(video.workTitle, normalizedVideoFeatureFilter.workTitleQuery)) {
+        return false
+      }
+
+      if (!textIncludes(video.seriesId ?? '', normalizedVideoFeatureFilter.seriesIdQuery)) {
         return false
       }
 

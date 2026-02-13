@@ -55,7 +55,7 @@ interface UseAppWorkspacePropsParams {
   featureCircleOptions: string[]
   featureAuthorOptions: string[]
   featureTagOptions: string[]
-  applyQuickFeatureSearch: (patch: { workTitle?: string; circle?: string; author?: string; tag?: string }) => void
+  applyQuickFeatureSearch: (patch: { workTitle?: string; seriesId?: string; circle?: string; author?: string; tag?: string }) => void
   featureTagPickerOpen: boolean
   setFeatureTagPickerOpen: Dispatch<SetStateAction<boolean>>
   featureTags: string[]
@@ -201,6 +201,36 @@ function flattenExternalTagValues(value: Record<string, string>): string[] {
     tags.push(...parts)
   }
   return Array.from(new Set(tags))
+}
+
+function normalizeSeriesId(value: string | null | undefined): string {
+  return value?.trim() ?? ''
+}
+
+function compareAbsolutePath(left: { absolutePath: string }, right: { absolutePath: string }): number {
+  return left.absolutePath.localeCompare(right.absolutePath, 'zh-CN', { sensitivity: 'base' })
+}
+
+function pickFirstBySeriesId<T extends { seriesId?: string; absolutePath: string }>(
+  items: Iterable<T>,
+  seriesId: string,
+): T | null {
+  if (!seriesId) {
+    return null
+  }
+
+  const matches: T[] = []
+  for (const item of items) {
+    if (normalizeSeriesId(item.seriesId) === seriesId) {
+      matches.push(item)
+    }
+  }
+
+  if (matches.length === 0) {
+    return null
+  }
+  matches.sort(compareAbsolutePath)
+  return matches[0]
 }
 
 export function useAppWorkspaceProps({
@@ -620,6 +650,30 @@ export function useAppWorkspaceProps({
   const adReviewLlmReviewedImageIdSet = new Set(manageAdReview.llmReviewedImageIds)
   const adReviewNonLlmReviewedImageIdSet = new Set(manageAdReview.nonLlmReviewedImageIds)
 
+  const imageSeriesId = normalizeSeriesId(metadataImagePackageEffective?.seriesId)
+  const videoSeriesId = normalizeSeriesId(focusedVideoEffective?.seriesId)
+  const jumpTargetVideo = pickFirstBySeriesId(videoByIdEffective.values(), imageSeriesId)
+  const jumpTargetImage = pickFirstBySeriesId(packageByIdEffective.values(), videoSeriesId)
+
+  const jumpToAnimation = () => {
+    if (!jumpTargetVideo || !imageSeriesId) {
+      return
+    }
+    applyQuickFeatureSearch({ seriesId: imageSeriesId })
+    appSettings.updateSettings({ mode: 'video' })
+    selectVideoFromBrowser(jumpTargetVideo.id)
+    setMetadataTab('info')
+  }
+
+  const jumpToManga = () => {
+    if (!jumpTargetImage || !videoSeriesId) {
+      return
+    }
+    applyQuickFeatureSearch({ seriesId: videoSeriesId })
+    appSettings.updateSettings({ mode: 'image' })
+    setSelectedPackageId(jumpTargetImage.id)
+  }
+
   const imageMainSectionProps = buildImageMainSectionProps({
     vectorResultsActive,
     showNamesOnly,
@@ -662,6 +716,8 @@ export function useAppWorkspaceProps({
     setFullscreenActiveWithAutoStop,
     setVectorFocusIndex,
     setImageFocus,
+    canJumpToAnimation: Boolean(jumpTargetVideo),
+    onJumpToAnimation: jumpToAnimation,
     metadataPending: metadataWriteBindings.metadataPending,
     metadataTargetPackageLabel: metadataImagePackageEffective?.displayName ?? '-',
     metadataFetchDefaultText: metadataManagementPanelProps.defaultFetchText,
@@ -735,6 +791,8 @@ export function useAppWorkspaceProps({
     focusedVideoId: focusedVideoEffective?.id ?? null,
     focusedVideo: focusedVideoEffective,
     setVideoPlaying,
+    canJumpToManga: Boolean(jumpTargetImage),
+    onJumpToManga: jumpToManga,
     goPlaylist,
     setVideoTime,
     setVideoDurationById,

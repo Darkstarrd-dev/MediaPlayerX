@@ -34,14 +34,17 @@ interface MetadataImageEditorProps {
   editable: boolean
   currentGrade: number | null
   workTitleDraft: string
+  seriesIdDraft: string
   circleDraft: string
   authorDraft: string
   tagsDraft: string
   onWorkTitleDraftChange: (value: string) => void
+  onSeriesIdDraftChange: (value: string) => void
   onCircleDraftChange: (value: string) => void
   onAuthorDraftChange: (value: string) => void
   onTagsDraftChange: (value: string) => void
   onSubmitPackageWorkTitle: (value: string) => void
+  onSubmitPackageSeriesId: (value: string) => void
   onSubmitPackageCircle: (value: string) => void
   onSubmitPackageAuthor: (value: string) => void
   onSubmitPackageTags: (value: string) => void
@@ -64,14 +67,17 @@ export function MetadataImageEditor({
   editable,
   currentGrade,
   workTitleDraft,
+  seriesIdDraft,
   circleDraft,
   authorDraft,
   tagsDraft,
   onWorkTitleDraftChange,
+  onSeriesIdDraftChange,
   onCircleDraftChange,
   onAuthorDraftChange,
   onTagsDraftChange,
   onSubmitPackageWorkTitle,
+  onSubmitPackageSeriesId,
   onSubmitPackageCircle,
   onSubmitPackageAuthor,
   onSubmitPackageTags,
@@ -545,6 +551,26 @@ export function MetadataImageEditor({
                     />
                     <small className="metadata-field-hint" aria-hidden="true">
                       parsed.title
+                    </small>
+                  </label>
+
+                  <label>
+                    <span>系列ID</span>
+                    <input
+                      value={seriesIdDraft}
+                      onChange={(event) => {
+                        onSeriesIdDraftChange(event.target.value)
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Enter') {
+                          return
+                        }
+                        event.preventDefault()
+                        onSubmitPackageSeriesId(event.currentTarget.value)
+                      }}
+                    />
+                    <small className="metadata-field-hint" aria-hidden="true">
+                      series_id
                     </small>
                   </label>
 

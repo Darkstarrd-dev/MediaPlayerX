@@ -16,6 +16,7 @@ function createLibrarySnapshotDto(): LibrarySnapshotDto {
         absolute_path: 'Z:/bench/archive_001.zip',
         tree_path: ['archive_001.zip'],
         work_title: 'archive_001',
+        series_id: '',
         circle: '未知',
         author: '未知',
         tags: [],

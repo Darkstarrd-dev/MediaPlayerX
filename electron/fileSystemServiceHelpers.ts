@@ -81,6 +81,7 @@ export function normalizeFeatureFilter(filter: FeatureFilterDto): FeatureFilterD
   return {
     name_query: filter.name_query.trim().toLowerCase(),
     work_title_query: filter.work_title_query.trim().toLowerCase(),
+    series_id_query: filter.series_id_query.trim().toLowerCase(),
     circle_query: filter.circle_query.trim().toLowerCase(),
     author_query: filter.author_query.trim().toLowerCase(),
     tags: filter.tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean),
@@ -108,6 +109,13 @@ export function matchesFeatureFilter(
     const matched = [source.work_title, external?.title ?? '', external?.title_jpn ?? ''].some((value) =>
       value.toLowerCase().includes(filter.work_title_query),
     )
+    if (!matched) {
+      return false
+    }
+  }
+
+  if (filter.series_id_query) {
+    const matched = (source.series_id ?? '').toLowerCase().includes(filter.series_id_query)
     if (!matched) {
       return false
     }

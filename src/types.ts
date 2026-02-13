@@ -47,6 +47,7 @@ export interface ImagePackage {
   absolutePath: string
   treePath: string[]
   workTitle: string
+  seriesId?: string
   circle: string
   author: string
   tags: string[]
@@ -88,6 +89,7 @@ export interface VideoItem {
   coverColor: string
   coverImagePath?: string | null
   workTitle: string
+  seriesId?: string
   circle: string
   author: string
   tags: string[]

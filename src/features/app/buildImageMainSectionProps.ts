@@ -46,6 +46,8 @@ interface BuildImageMainSectionPropsParams {
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   setVectorFocusIndex: (value: number) => void
   setImageFocus: (packageId: string, imageIndex: number) => void
+  canJumpToAnimation: boolean
+  onJumpToAnimation: () => void
   metadataPending: boolean
   metadataTargetPackageLabel: string
   metadataFetchDefaultText: string
@@ -124,6 +126,8 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onToggleAdReviewPanel: params.onToggleAdReviewPanel,
     onClearManageSelection: params.onClearManageSelection,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
+    canJumpToAnimation: params.canJumpToAnimation,
+    onJumpToAnimation: params.onJumpToAnimation,
     onEnterFullscreen: () => params.setFullscreenActiveWithAutoStop(true),
     onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => {
       if (params.vectorResultsActive) {

@@ -77,6 +77,7 @@ interface UseWriteDataAccessResult {
     packageId: string,
     payload: {
       workTitle: string
+      seriesId: string
       circle: string
       author: string
       tags: string[]
@@ -87,6 +88,7 @@ interface UseWriteDataAccessResult {
     videoId: string,
     payload: {
       workTitle: string
+      seriesId: string
       circle: string
       author: string
       tags: string[]
@@ -238,6 +240,7 @@ export function useWriteDataAccess({
       packageId: string,
       payload: {
         workTitle: string
+        seriesId: string
         circle: string
         author: string
         tags: string[]
@@ -256,6 +259,7 @@ export function useWriteDataAccess({
         const request: WritePackageMetadataRequestDto = {
           package_id: packageId,
           work_title: payload.workTitle,
+          series_id: payload.seriesId,
           circle: payload.circle,
           author: payload.author,
           tags: payload.tags,
@@ -289,6 +293,7 @@ export function useWriteDataAccess({
       videoId: string,
       payload: {
         workTitle: string
+        seriesId: string
         circle: string
         author: string
         tags: string[]
@@ -308,6 +313,7 @@ export function useWriteDataAccess({
         const request: WriteVideoMetadataRequestDto = {
           video_id: videoId,
           work_title: payload.workTitle,
+          series_id: payload.seriesId,
           circle: payload.circle,
           author: payload.author,
           tags: payload.tags,
