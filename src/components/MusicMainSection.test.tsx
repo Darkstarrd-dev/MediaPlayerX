@@ -51,6 +51,10 @@ describe('MusicMainSection', () => {
         canManageDelete={false}
         onManageDelete={vi.fn()}
         onClearManageSelection={vi.fn()}
+        canJumpToManga={false}
+        canJumpToAnimation={false}
+        onJumpToManga={vi.fn()}
+        onJumpToAnimation={vi.fn()}
         audios={audios}
         selectedAudioId="track-1"
         focusedAudio={audios[0]}
@@ -85,6 +89,10 @@ describe('MusicMainSection', () => {
         canManageDelete={false}
         onManageDelete={vi.fn()}
         onClearManageSelection={vi.fn()}
+        canJumpToManga={false}
+        canJumpToAnimation={false}
+        onJumpToManga={vi.fn()}
+        onJumpToAnimation={vi.fn()}
         audios={audios}
         selectedAudioId="track-1"
         focusedAudio={audios[0]}
@@ -109,5 +117,45 @@ describe('MusicMainSection', () => {
     fireEvent.mouseEnter(muteButton.parentElement as HTMLElement)
     const volumePanel = container.querySelector('#music-main-popover-volume') as HTMLDivElement
     expect(volumePanel.hidden).toBe(false)
+  })
+
+  it('系列匹配时显示漫画版/动画版按钮并触发跳转', () => {
+    const onJumpToManga = vi.fn()
+    const onJumpToAnimation = vi.fn()
+    const audios = [makeAudio('track-1')]
+
+    render(
+      <MusicMainSection
+        manageMode={false}
+        metadataManageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        onManageDelete={vi.fn()}
+        onClearManageSelection={vi.fn()}
+        canJumpToManga={true}
+        canJumpToAnimation={true}
+        onJumpToManga={onJumpToManga}
+        onJumpToAnimation={onJumpToAnimation}
+        audios={audios}
+        selectedAudioId="track-1"
+        focusedAudio={audios[0]}
+        focusedAudioSrc="mock://audio-1"
+        canPrevAudio={false}
+        canNextAudio={true}
+        onSelectAudio={vi.fn()}
+        onPrevAudio={vi.fn()}
+        onNextAudio={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '漫画版' }))
+    fireEvent.click(screen.getByRole('button', { name: '动画版' }))
+
+    expect(onJumpToManga).toHaveBeenCalledTimes(1)
+    expect(onJumpToAnimation).toHaveBeenCalledTimes(1)
   })
 })

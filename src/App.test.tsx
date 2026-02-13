@@ -1104,6 +1104,31 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
   })
 
+  it('音乐模式支持按系列ID跳转到动画版/漫画版', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '音乐模式' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '漫画版' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: '动画版' })).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '动画版' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '漫画版' })).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '漫画版' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '动画版' })).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+  })
+
   it('元数据管理支持写入图片与视频系列ID', async () => {
     const writePackageMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writePackageMetadataSync')
     const writeVideoMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writeVideoMetadataSync')

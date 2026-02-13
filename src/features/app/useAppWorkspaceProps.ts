@@ -687,8 +687,11 @@ export function useAppWorkspaceProps({
 
   const imageSeriesId = normalizeSeriesId(metadataImagePackageEffective?.seriesId)
   const videoSeriesId = normalizeSeriesId(focusedVideoEffective?.seriesId)
+  const audioSeriesId = normalizeSeriesId(focusedAudio?.seriesId)
   const jumpTargetVideo = pickFirstBySeriesId(videoByIdEffective.values(), imageSeriesId)
   const jumpTargetImage = pickFirstBySeriesId(packageByIdEffective.values(), videoSeriesId)
+  const jumpTargetImageFromAudio = pickFirstBySeriesId(packageByIdEffective.values(), audioSeriesId)
+  const jumpTargetVideoFromAudio = pickFirstBySeriesId(videoByIdEffective.values(), audioSeriesId)
 
   const jumpToAnimation = () => {
     if (!jumpTargetVideo || !imageSeriesId) {
@@ -707,6 +710,26 @@ export function useAppWorkspaceProps({
     applyQuickFeatureSearch({ seriesId: videoSeriesId })
     appSettings.updateSettings({ mode: 'image' })
     setSelectedPackageId(jumpTargetImage.id)
+  }
+
+  const jumpMusicToManga = () => {
+    if (!jumpTargetImageFromAudio || !audioSeriesId) {
+      return
+    }
+    applyQuickFeatureSearch({ seriesId: audioSeriesId })
+    appSettings.updateSettings({ mode: 'image' })
+    setSelectedPackageId(jumpTargetImageFromAudio.id)
+    setMetadataTab('info')
+  }
+
+  const jumpMusicToAnimation = () => {
+    if (!jumpTargetVideoFromAudio || !audioSeriesId) {
+      return
+    }
+    applyQuickFeatureSearch({ seriesId: audioSeriesId })
+    appSettings.updateSettings({ mode: 'video' })
+    selectVideoFromBrowser(jumpTargetVideoFromAudio.id)
+    setMetadataTab('info')
   }
 
   const imageMainSectionProps = buildImageMainSectionProps({
@@ -850,6 +873,10 @@ export function useAppWorkspaceProps({
     canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
     onManageDelete: requestManageDelete,
     onClearManageSelection: clearAllSelections,
+    canJumpToManga: Boolean(jumpTargetImageFromAudio),
+    canJumpToAnimation: Boolean(jumpTargetVideoFromAudio),
+    onJumpToManga: jumpMusicToManga,
+    onJumpToAnimation: jumpMusicToAnimation,
     audiosForSidebar,
     focusedAudio,
     focusedAudioSrc,

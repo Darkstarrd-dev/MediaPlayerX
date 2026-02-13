@@ -58,7 +58,6 @@ export function useAppNavigationState({
     bootstrapImageDirectories,
     bootstrapVideos,
     bootstrapAudios,
-    bootstrapAudios,
   } = repositoryBootstrap
 
   const {

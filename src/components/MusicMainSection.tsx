@@ -17,6 +17,10 @@ interface MusicMainSectionProps {
   canManageDelete: boolean
   onManageDelete: () => void
   onClearManageSelection: () => void
+  canJumpToManga: boolean
+  canJumpToAnimation: boolean
+  onJumpToManga: () => void
+  onJumpToAnimation: () => void
   audios: AudioItem[]
   selectedAudioId: string
   focusedAudio: AudioItem | null
@@ -39,6 +43,10 @@ function MusicMainSection({
   canManageDelete,
   onManageDelete,
   onClearManageSelection,
+  canJumpToManga,
+  canJumpToAnimation,
+  onJumpToManga,
+  onJumpToAnimation,
   audios,
   selectedAudioId,
   focusedAudio,
@@ -133,15 +141,31 @@ function MusicMainSection({
         ) : metadataManageMode ? (
           <>
             <strong className="main-toolbar-title">元数据管理</strong>
-            <div className="toolbar-actions toolbar-actions-manage">
-              <span className="main-toolbar-hint">音乐元数据编辑将在下一步接入</span>
-            </div>
+            {manageOperationHint ? (
+              <div className="toolbar-actions toolbar-actions-manage">
+                <span className="main-toolbar-hint">{manageOperationHint}</span>
+              </div>
+            ) : null}
           </>
         ) : (
           <>
             <strong className="main-toolbar-title" title={toolbarSummary}>
               {`${toolbarSummary} (${audios.length} 首)`}
             </strong>
+            {canJumpToManga || canJumpToAnimation ? (
+              <div className="toolbar-actions">
+                {canJumpToManga ? (
+                  <button className="toolbar-icon-btn" type="button" aria-label="漫画版" title="漫画版" onClick={onJumpToManga}>
+                    <span aria-hidden="true">▦</span>
+                  </button>
+                ) : null}
+                {canJumpToAnimation ? (
+                  <button className="toolbar-icon-btn" type="button" aria-label="动画版" title="动画版" onClick={onJumpToAnimation}>
+                    <span aria-hidden="true">▧</span>
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </>
         )}
       </div>

@@ -96,6 +96,7 @@ export function useAppDisplayResources({
     packageByIdEffective,
     scopedImageSourcesEffective,
     videoByIdEffective,
+    audioByIdEffective,
     audiosForSidebar,
     videosForSidebar,
     selectedAudioId,

@@ -15,6 +15,10 @@ interface BuildMusicMainSectionPropsParams {
   canManageDelete: boolean
   onManageDelete: () => void
   onClearManageSelection: () => void
+  canJumpToManga: boolean
+  canJumpToAnimation: boolean
+  onJumpToManga: () => void
+  onJumpToAnimation: () => void
   audiosForSidebar: AudioItem[]
   focusedAudio: AudioItem | null
   focusedAudioSrc: string | null
@@ -51,6 +55,10 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     canManageDelete: params.canManageDelete,
     onManageDelete: params.onManageDelete,
     onClearManageSelection: params.onClearManageSelection,
+    canJumpToManga: params.canJumpToManga,
+    canJumpToAnimation: params.canJumpToAnimation,
+    onJumpToManga: params.onJumpToManga,
+    onJumpToAnimation: params.onJumpToAnimation,
     audios: params.audiosForSidebar,
     selectedAudioId: params.selectedAudioId,
     focusedAudio: params.focusedAudio,
