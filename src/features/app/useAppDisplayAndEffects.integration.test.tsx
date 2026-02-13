@@ -125,6 +125,8 @@ describe('useAppDisplayAndEffects integration', () => {
       lastExpandedSidebarRatioRef: { current: 0.3 },
       setAppBodyWidth: vi.fn(),
       gridRef: { current: null },
+      gridElement: null,
+      setGridElement: vi.fn(),
       setGridSize: vi.fn(),
       fullscreenEntryDisplay: 'single',
       setFullscreenEntryDisplay: vi.fn(),

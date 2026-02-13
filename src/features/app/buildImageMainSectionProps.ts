@@ -27,6 +27,7 @@ interface BuildImageMainSectionPropsParams {
   packageByIdEffective: Map<string, ImagePackage>
   thumbnailImageUrlById: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
+  onGridElementChange: (element: HTMLDivElement | null) => void
   manageMode: boolean
   sidebarSelectedCount: number
   imageSelectedCount: number
@@ -103,6 +104,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     packageById: params.packageByIdEffective,
     imageUrlById: params.thumbnailImageUrlById,
     gridRef: params.gridRef,
+    onGridElementChange: params.onGridElementChange,
     manageMode: params.manageMode,
     sidebarSelectedCount: params.sidebarSelectedCount,
     imageSelectedCount: params.imageSelectedCount,

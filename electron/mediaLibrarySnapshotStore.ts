@@ -359,9 +359,12 @@ export class MediaLibrarySnapshotStore {
             cover.cover_color,
             cover.cover_image_path,
             metadata.work_title,
+            metadata.work_title_jpn,
             metadata.series_id,
             metadata.circle,
+            metadata.circle_jpn,
             metadata.author,
+            metadata.author_jpn,
             metadata.tags_json,
             metadata.grade
           FROM video_item AS video
@@ -386,9 +389,12 @@ export class MediaLibrarySnapshotStore {
         cover_color: row.cover_color ?? 'hsl(0, 0%, 36%)',
         cover_image_path: row.cover_image_path,
         work_title: row.work_title && row.work_title.trim().length > 0 ? row.work_title : defaultWorkTitle,
+        work_title_jpn: row.work_title_jpn ?? '',
         series_id: row.series_id ?? '',
         circle: row.circle && row.circle.trim().length > 0 ? row.circle : '未知',
+        circle_jpn: row.circle_jpn ?? '',
         author: row.author && row.author.trim().length > 0 ? row.author : '未知',
+        author_jpn: row.author_jpn ?? '',
         tags: row.tags_json ? parseJson<string[]>(row.tags_json, []) : [],
         grade: row.grade,
         media_locator: parseJson<MediaLocatorDto>(row.media_locator_json, {

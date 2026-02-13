@@ -270,7 +270,11 @@ export function useAppSidebarScopeState({
         }
       }
 
-      if (!textIncludes(video.workTitle, normalizedVideoFeatureFilter.workTitleQuery)) {
+      if (
+        ![video.workTitle, video.workTitleJpn ?? ''].some((value) =>
+          textIncludes(value, normalizedVideoFeatureFilter.workTitleQuery),
+        )
+      ) {
         return false
       }
 
@@ -278,11 +282,15 @@ export function useAppSidebarScopeState({
         return false
       }
 
-      if (!textIncludes(video.circle, normalizedVideoFeatureFilter.circleQuery)) {
+      if (
+        ![video.circle, video.circleJpn ?? ''].some((value) => textIncludes(value, normalizedVideoFeatureFilter.circleQuery))
+      ) {
         return false
       }
 
-      if (!textIncludes(video.author, normalizedVideoFeatureFilter.authorQuery)) {
+      if (
+        ![video.author, video.authorJpn ?? ''].some((value) => textIncludes(value, normalizedVideoFeatureFilter.authorQuery))
+      ) {
         return false
       }
 

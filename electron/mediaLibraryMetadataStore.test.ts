@@ -153,9 +153,12 @@ describe('MediaLibraryMetadataStore', () => {
     store.writeVideoCover('video-1', 'hsl(100, 40%, 40%)', 'D:/covers/seed.webp')
     store.writeVideoMetadata('video-1', {
       workTitle: '视频标题',
+      workTitleJpn: 'ビデオタイトル',
       seriesId: 'series-video-001',
       circle: '视频社团',
+      circleJpn: 'ビデオサークル',
       author: '视频作者',
+      authorJpn: 'ビデオ作者',
       tags: ['tag-1', 'tag-2'],
       grade: 5,
     })
@@ -169,9 +172,12 @@ describe('MediaLibraryMetadataStore', () => {
     })
     expect(metadataMap.get('video-1')).toMatchObject({
       workTitle: '视频标题',
+      workTitleJpn: 'ビデオタイトル',
       seriesId: 'series-video-001',
       circle: '视频社团',
+      circleJpn: 'ビデオサークル',
       author: '视频作者',
+      authorJpn: 'ビデオ作者',
       tags: ['tag-1', 'tag-2'],
       grade: 5,
     })

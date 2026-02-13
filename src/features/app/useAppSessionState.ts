@@ -51,6 +51,7 @@ export function useAppSessionState({
   const lastExpandedSidebarRatioRef = useRef(sidebarRatio >= SIDEBAR_COLLAPSE_RATIO ? sidebarRatio : 0.26)
   const [appBodyWidth, setAppBodyWidth] = useState(0)
   const gridRef = useRef<HTMLDivElement>(null)
+  const [gridElement, setGridElement] = useState<HTMLDivElement | null>(null)
   const [gridSize, setGridSize] = useState({ width: 1200, height: 700 })
 
   return {
@@ -100,6 +101,8 @@ export function useAppSessionState({
     appBodyWidth,
     setAppBodyWidth,
     gridRef,
+    gridElement,
+    setGridElement,
     gridSize,
     setGridSize,
   }

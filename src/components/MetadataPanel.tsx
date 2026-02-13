@@ -93,9 +93,12 @@ export interface MetadataPanelProps {
   onSavePackageParsedMetadata: (payload: ParsedExternalMetadata) => Promise<void>
   onSaveVideoMetadata: (payload: {
     workTitle?: string
+    workTitleJpn?: string
     seriesId?: string
     circle?: string
+    circleJpn?: string
     author?: string
+    authorJpn?: string
     tags?: string[]
     grade?: number | null
     syncFileNameToWorkTitle?: boolean
@@ -195,9 +198,12 @@ function MetadataPanel({
   const [authorDraft, setAuthorDraft] = useState('')
   const [tagsDraft, setTagsDraft] = useState('')
   const [videoWorkTitleDraft, setVideoWorkTitleDraft] = useState('')
+  const [videoWorkTitleJpnDraft, setVideoWorkTitleJpnDraft] = useState('')
   const [videoSeriesIdDraft, setVideoSeriesIdDraft] = useState('')
   const [videoCircleDraft, setVideoCircleDraft] = useState('')
+  const [videoCircleJpnDraft, setVideoCircleJpnDraft] = useState('')
   const [videoAuthorDraft, setVideoAuthorDraft] = useState('')
+  const [videoAuthorJpnDraft, setVideoAuthorJpnDraft] = useState('')
   const [videoTagsDraft, setVideoTagsDraft] = useState('')
   const [featureTagDrafts, setFeatureTagDrafts] = useState<string[]>([])
   const [featureTagSelectMode, setFeatureTagSelectMode] = useState<'single' | 'multi'>('multi')
@@ -304,16 +310,22 @@ function MetadataPanel({
 
   useEffect(() => {
     setVideoWorkTitleDraft(focusedVideo?.workTitle ?? '')
+    setVideoWorkTitleJpnDraft(focusedVideo?.workTitleJpn ?? '')
     setVideoSeriesIdDraft(focusedVideo?.seriesId ?? '')
     setVideoCircleDraft(focusedVideo?.circle ?? '')
+    setVideoCircleJpnDraft(focusedVideo?.circleJpn ?? '')
     setVideoAuthorDraft(focusedVideo?.author ?? '')
+    setVideoAuthorJpnDraft(focusedVideo?.authorJpn ?? '')
     setVideoTagsDraft((focusedVideo?.tags ?? []).join(', '))
   }, [
     focusedVideo?.id,
     focusedVideo?.workTitle,
+    focusedVideo?.workTitleJpn,
     focusedVideo?.seriesId,
     focusedVideo?.circle,
+    focusedVideo?.circleJpn,
     focusedVideo?.author,
+    focusedVideo?.authorJpn,
     focusedVideo?.tags,
   ])
 
@@ -490,6 +502,26 @@ function MetadataPanel({
     })
   }
 
+  const persistVideoWorkTitleJpn = (rawValue: string) => {
+    if (!focusedVideo) {
+      return
+    }
+
+    onSaveVideoMetadata({
+      workTitleJpn: rawValue.trim(),
+    })
+  }
+
+  const persistVideoCircleJpn = (rawValue: string) => {
+    if (!focusedVideo) {
+      return
+    }
+
+    onSaveVideoMetadata({
+      circleJpn: rawValue.trim(),
+    })
+  }
+
   const persistVideoSeriesId = (rawValue: string) => {
     if (!focusedVideo) {
       return
@@ -511,6 +543,16 @@ function MetadataPanel({
 
     onSaveVideoMetadata({
       author,
+    })
+  }
+
+  const persistVideoAuthorJpn = (rawValue: string) => {
+    if (!focusedVideo) {
+      return
+    }
+
+    onSaveVideoMetadata({
+      authorJpn: rawValue.trim(),
     })
   }
 
@@ -607,9 +649,12 @@ function MetadataPanel({
           editable={editable}
           currentVideoGrade={currentVideoGrade}
           videoWorkTitleDraft={videoWorkTitleDraft}
+          videoWorkTitleJpnDraft={videoWorkTitleJpnDraft}
           videoSeriesIdDraft={videoSeriesIdDraft}
           videoCircleDraft={videoCircleDraft}
+          videoCircleJpnDraft={videoCircleJpnDraft}
           videoAuthorDraft={videoAuthorDraft}
+          videoAuthorJpnDraft={videoAuthorJpnDraft}
           videoTagsDraft={videoTagsDraft}
           playlistIds={playlistIds}
           selectedVideoId={selectedVideoId}
@@ -617,14 +662,20 @@ function MetadataPanel({
           videoById={videoById}
           onMetadataTabChange={onMetadataTabChange}
           onVideoWorkTitleDraftChange={setVideoWorkTitleDraft}
+          onVideoWorkTitleJpnDraftChange={setVideoWorkTitleJpnDraft}
           onVideoSeriesIdDraftChange={setVideoSeriesIdDraft}
           onVideoCircleDraftChange={setVideoCircleDraft}
+          onVideoCircleJpnDraftChange={setVideoCircleJpnDraft}
           onVideoAuthorDraftChange={setVideoAuthorDraft}
+          onVideoAuthorJpnDraftChange={setVideoAuthorJpnDraft}
           onVideoTagsDraftChange={setVideoTagsDraft}
           onSubmitVideoWorkTitle={persistVideoWorkTitle}
+          onSubmitVideoWorkTitleJpn={persistVideoWorkTitleJpn}
           onSubmitVideoSeriesId={persistVideoSeriesId}
           onSubmitVideoCircle={persistVideoCircle}
+          onSubmitVideoCircleJpn={persistVideoCircleJpn}
           onSubmitVideoAuthor={persistVideoAuthor}
+          onSubmitVideoAuthorJpn={persistVideoAuthorJpn}
           onSubmitVideoTags={persistVideoTags}
           onVideoGradeChange={persistVideoGrade}
           onSearchByWorkTitle={onSearchByWorkTitle}

@@ -36,7 +36,7 @@ describe('mediaLibrarySchema', () => {
     migrateMediaLibrarySchema(harness.db)
 
     const version = harness.db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
-    expect(version?.user_version).toBe(7)
+    expect(version?.user_version).toBe(8)
 
     const tableRows = harness.db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -61,7 +61,7 @@ describe('mediaLibrarySchema', () => {
     )
   })
 
-  it('从旧版本升级时会补齐 task_source/grade/hidden/series_id 列', async () => {
+  it('从旧版本升级时会补齐 task_source/grade/hidden/series_id 与 video_metadata 日文字段列', async () => {
     const root = await createTempMediaRoot('mpx-schema-upgrade-')
     roots.push(root)
 
@@ -120,10 +120,13 @@ describe('mediaLibrarySchema', () => {
     expect(taskColumns).toContain('task_source')
     expect(metadataColumns).toContain('grade')
     expect(metadataColumns).toContain('series_id')
+    expect(metadataColumns).toContain('work_title_jpn')
+    expect(metadataColumns).toContain('circle_jpn')
+    expect(metadataColumns).toContain('author_jpn')
     expect(imageColumns).toContain('hidden')
     expect(sourceColumns).toContain('series_id')
 
     const version = harness.db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
-    expect(version?.user_version).toBe(7)
+    expect(version?.user_version).toBe(8)
   })
 })

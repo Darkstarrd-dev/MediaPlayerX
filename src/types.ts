@@ -89,9 +89,12 @@ export interface VideoItem {
   coverColor: string
   coverImagePath?: string | null
   workTitle: string
+  workTitleJpn?: string
   seriesId?: string
   circle: string
+  circleJpn?: string
   author: string
+  authorJpn?: string
   tags: string[]
   grade: number | null
   mediaLocator: MediaLocator

@@ -5,7 +5,7 @@ import type { AppSessionStateResult } from './useAppSessionState'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
 import { useFeatureSearch } from '../search/useFeatureSearch'
 import { useReadOnlyDataAccess } from '../backend'
-import { computeThumbnailGridLayout } from '../layout/thumbnailLayout'
+import { computeThumbnailGridLayout, resolveThumbnailCardChromePx } from '../layout/thumbnailLayout'
 import type { FocusedImageRef } from '../../types'
 import { clamp } from '../../utils/ui'
 
@@ -28,6 +28,7 @@ export function useAppReadState({
     thumbnailScale,
     thumbnailGap,
     thumbnailWidth,
+    styleId,
     showNamesOnly,
   } = appSettings
 
@@ -123,8 +124,9 @@ export function useAppReadState({
         thumbnailWidth,
         thumbnailGap,
         zoomLevel: thumbnailScale,
+        cardChrome: resolveThumbnailCardChromePx(),
       }).pageSize,
-    [gridSize.height, gridSize.width, thumbnailGap, thumbnailScale, thumbnailWidth],
+    [gridSize.height, gridSize.width, styleId, thumbnailGap, thumbnailScale, thumbnailWidth],
   )
 
   const backendMetadataRequestRef = useMemo<FocusedImageRef | null>(() => {

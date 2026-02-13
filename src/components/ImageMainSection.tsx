@@ -1,4 +1,4 @@
-import { useState, type RefObject } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
 
 import { mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
@@ -29,6 +29,7 @@ interface ImageMainSectionProps {
   packageById: Map<string, ImagePackage>
   imageUrlById: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
+  onGridElementChange: (element: HTMLDivElement | null) => void
   onToggleShowNamesOnly: () => void
   onEnterFullscreen: () => void
   canJumpToAnimation: boolean
@@ -103,6 +104,7 @@ function ImageMainSection({
   packageById,
   imageUrlById,
   gridRef,
+  onGridElementChange,
   manageMode,
   sidebarSelectedCount,
   imageSelectedCount,
@@ -146,6 +148,14 @@ function ImageMainSection({
 }: ImageMainSectionProps) {
   const [metadataFetchOpen, setMetadataFetchOpen] = useState(false)
   const showSkeleton = !showNamesOnly && enableLoadingSkeleton && loading && refsInPage.length === 0
+
+  useEffect(() => {
+    onGridElementChange(gridRef.current)
+    return () => {
+      onGridElementChange(null)
+    }
+  }, [gridRef, nodeBrowseMode, onGridElementChange, showNamesOnly])
+
   const { marqueeStyle, startMarqueeSelection, startThumbnailDragToggle } = useManageImageSelectionInteractions({
     manageMode,
     onReplaceCheckedImages,
@@ -268,7 +278,7 @@ function ImageMainSection({
                 type="button"
                 onClick={() => onSelectNodeBrowseItem?.(item.nodeId, item.imageSourceId)}
               >
-                <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
+                <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
                   <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
                     {item.coverImageUrl ? (
                       <img
@@ -363,7 +373,7 @@ function ImageMainSection({
                     className="thumb-card is-skeleton"
                     style={{ width: `${actualCellWidth}px` }}
                   >
-                    <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
+                    <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
                       <div className="thumb-media thumb-media-empty" style={{ width: '100%', height: '100%' }} />
                     </div>
                   </div>
@@ -404,7 +414,7 @@ function ImageMainSection({
                       {vectorMode ? (
                         <span className="visually-hidden">{`相似度 ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</span>
                       ) : null}
-                      <div className="thumb-placeholder" style={{ aspectRatio: `${actualCellWidth} / ${actualMediaHeight}` }}>
+                      <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
                         <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
                           {imageSrc ? (
                             <img

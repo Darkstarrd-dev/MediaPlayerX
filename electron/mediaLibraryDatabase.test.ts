@@ -46,9 +46,12 @@ describe('MediaLibraryDatabase', () => {
     database.writeVideoCover(videoId, 'hsl(210, 44%, 40%)', `${root}/covers/video-fixture.webp`)
     database.writeVideoMetadata(videoId, {
       workTitle: '视频标题',
+      workTitleJpn: 'ビデオタイトル',
       seriesId: 'series-db-001',
       circle: '视频社团',
+      circleJpn: 'ビデオサークル',
       author: '视频作者',
+      authorJpn: 'ビデオ作者',
       tags: ['tag-a', 'tag-b'],
       grade: 4,
     })
@@ -91,9 +94,12 @@ describe('MediaLibraryDatabase', () => {
     })
     expect(restarted.readVideoMetadata().get(videoId)).toMatchObject({
       workTitle: '视频标题',
+      workTitleJpn: 'ビデオタイトル',
       seriesId: 'series-db-001',
       circle: '视频社团',
+      circleJpn: 'ビデオサークル',
       author: '视频作者',
+      authorJpn: 'ビデオ作者',
       tags: ['tag-a', 'tag-b'],
       grade: 4,
     })

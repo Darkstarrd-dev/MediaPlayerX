@@ -32,9 +32,12 @@ export interface ParsedExternalMetadataSavePayload {
 
 export interface VideoMetadataWritePayload {
   workTitle?: string
+  workTitleJpn?: string
   seriesId?: string
   circle?: string
+  circleJpn?: string
   author?: string
+  authorJpn?: string
   tags?: string[]
   grade?: number | null
   syncFileNameToWorkTitle?: boolean
@@ -63,9 +66,12 @@ interface UseMetadataWriteBindingsParams {
       videoId: string,
       payload: {
         workTitle: string
+        workTitleJpn: string
         seriesId: string
         circle: string
+        circleJpn: string
         author: string
+        authorJpn: string
         tags: string[]
         grade?: number | null
         syncFileNameToWorkTitle?: boolean
@@ -140,6 +146,13 @@ function normalizeTagsPatch(tags: string[] | undefined, fallback: string[]): str
 }
 
 function normalizeSeriesIdPatch(value: string | undefined, fallback: string): string {
+  if (typeof value === 'undefined') {
+    return fallback
+  }
+  return value.trim()
+}
+
+function normalizeOptionalTextPatch(value: string | undefined, fallback: string): string {
   if (typeof value === 'undefined') {
     return fallback
   }
@@ -265,9 +278,12 @@ export function useMetadataWriteBindings({
 
       return {
         workTitle: normalizeTextPatch(payload.workTitle, source.workTitle),
+        workTitleJpn: normalizeOptionalTextPatch(payload.workTitleJpn, source.workTitleJpn ?? ''),
         seriesId: normalizeSeriesIdPatch(payload.seriesId, source.seriesId ?? ''),
         circle: normalizeTextPatch(payload.circle, source.circle),
+        circleJpn: normalizeOptionalTextPatch(payload.circleJpn, source.circleJpn ?? ''),
         author: normalizeTextPatch(payload.author, source.author),
+        authorJpn: normalizeOptionalTextPatch(payload.authorJpn, source.authorJpn ?? ''),
         tags: normalizeTagsPatch(payload.tags, source.tags),
         grade: payload.grade,
         syncFileNameToWorkTitle: payload.syncFileNameToWorkTitle,

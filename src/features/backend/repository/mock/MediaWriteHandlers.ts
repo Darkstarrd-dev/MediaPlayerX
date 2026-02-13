@@ -324,9 +324,12 @@ export class MockMediaWriteHandlers {
       : normalizeTextValue(request.work_title, video.work_title)
 
     video.work_title = nextWorkTitle
+    video.work_title_jpn = (request.work_title_jpn ?? video.work_title_jpn ?? '').trim()
     video.series_id = (request.series_id ?? video.series_id ?? '').trim()
     video.circle = normalizeTextValue(request.circle, video.circle)
+    video.circle_jpn = (request.circle_jpn ?? video.circle_jpn ?? '').trim()
     video.author = normalizeTextValue(request.author, video.author)
+    video.author_jpn = (request.author_jpn ?? video.author_jpn ?? '').trim()
     video.tags = normalizeTags(request.tags)
     if (typeof request.grade !== 'undefined') {
       video.grade = request.grade

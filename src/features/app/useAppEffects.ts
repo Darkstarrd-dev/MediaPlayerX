@@ -10,7 +10,7 @@ const TOP_PANEL_MAX_HEIGHT = 360
 
 interface UseAppEffectsParams {
   appBodyRef: RefObject<HTMLDivElement | null>
-  gridRef: RefObject<HTMLDivElement | null>
+  gridElement: HTMLDivElement | null
   vectorPanelContentRef: RefObject<HTMLDivElement | null>
   wasFullscreenRef: MutableRefObject<boolean>
   lastExpandedSidebarRatioRef: MutableRefObject<number>
@@ -77,7 +77,7 @@ interface UseAppEffectsParams {
 
 export function useAppEffects({
   appBodyRef,
-  gridRef,
+  gridElement,
   vectorPanelContentRef,
   wasFullscreenRef,
   lastExpandedSidebarRatioRef,
@@ -167,11 +167,10 @@ export function useAppEffects({
       return
     }
 
-    if (!gridRef.current) {
+    if (!gridElement) {
       return
     }
 
-    const target = gridRef.current
     const updateGridSize = (width: number, height: number) => {
       if (width <= 1 || height <= 1) {
         return
@@ -187,7 +186,7 @@ export function useAppEffects({
       })
     }
 
-    const initialRect = target.getBoundingClientRect()
+    const initialRect = gridElement.getBoundingClientRect()
     updateGridSize(initialRect.width, initialRect.height)
 
     const observer = new ResizeObserver((entries) => {
@@ -199,9 +198,12 @@ export function useAppEffects({
       updateGridSize(entry.contentRect.width, entry.contentRect.height)
     })
 
-    observer.observe(target)
-    return () => observer.disconnect()
-  }, [gridRef, mode, setGridSize, showNamesOnly])
+    observer.observe(gridElement)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [gridElement, mode, setGridSize, showNamesOnly])
 
   useEffect(() => {
     if (sidebarRatio >= sidebarCollapseRatio) {

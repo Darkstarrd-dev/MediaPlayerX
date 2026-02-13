@@ -2,7 +2,7 @@ import type { SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 
 export const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
 
-const SCHEMA_VERSION = 7
+const SCHEMA_VERSION = 8
 
 export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
   const versionRow = db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
@@ -114,9 +114,12 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
     CREATE TABLE IF NOT EXISTS video_metadata (
       video_id TEXT PRIMARY KEY,
       work_title TEXT NOT NULL,
+      work_title_jpn TEXT NOT NULL DEFAULT '',
       series_id TEXT NOT NULL DEFAULT '',
       circle TEXT NOT NULL,
+      circle_jpn TEXT NOT NULL DEFAULT '',
       author TEXT NOT NULL,
+      author_jpn TEXT NOT NULL DEFAULT '',
       tags_json TEXT NOT NULL,
       grade INTEGER,
       updated_at_ms INTEGER NOT NULL,
@@ -228,6 +231,26 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
 
     try {
       db.exec("ALTER TABLE video_metadata ADD COLUMN series_id TEXT NOT NULL DEFAULT '';")
+    } catch {
+      // ignore duplicated column on new databases
+    }
+  }
+
+  if (currentVersion < 8) {
+    try {
+      db.exec("ALTER TABLE video_metadata ADD COLUMN work_title_jpn TEXT NOT NULL DEFAULT '';")
+    } catch {
+      // ignore duplicated column on new databases
+    }
+
+    try {
+      db.exec("ALTER TABLE video_metadata ADD COLUMN circle_jpn TEXT NOT NULL DEFAULT '';")
+    } catch {
+      // ignore duplicated column on new databases
+    }
+
+    try {
+      db.exec("ALTER TABLE video_metadata ADD COLUMN author_jpn TEXT NOT NULL DEFAULT '';")
     } catch {
       // ignore duplicated column on new databases
     }

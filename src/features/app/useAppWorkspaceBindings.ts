@@ -243,6 +243,7 @@ export function useAppWorkspaceBindings({
     thumbnailImageUrlById,
     sourceCoverImageUrlBySourceId,
     gridRef: sessionState.gridRef,
+    onGridElementChange: sessionState.setGridElement,
     imageCheckedIdSet,
     setFullscreenActiveWithAutoStop,
     setVectorFocusIndex,

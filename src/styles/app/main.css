@@ -46,6 +46,7 @@
 }
 
 .image-grid {
+  min-width: 0;
   min-height: 0;
   flex: 1;
   border: var(--mpx-card-border-width) solid var(--mpx-border-1);
@@ -70,6 +71,7 @@
   border: var(--mpx-card-border-width) solid var(--mpx-border-1);
   border-radius: var(--mpx-card-radius);
   padding: 5px;
+  box-sizing: border-box;
   background: var(--mpx-bg-elevated);
   cursor: pointer;
   text-align: left;
@@ -78,6 +80,7 @@
 }
 
 .thumb-card-main {
+  display: block;
   width: 100%;
   border: 0;
   padding: 0;
@@ -119,7 +122,7 @@
 
 .thumb-card.is-focused {
   border-color: var(--mpx-border-focus);
-  box-shadow: 0 0 0 2px var(--mpx-card-focus-ring);
+  box-shadow: inset 0 0 0 2px var(--mpx-card-focus-ring);
 }
 
 .thumb-card:hover {
@@ -195,6 +198,7 @@
 }
 
 .name-list {
+  min-width: 0;
   min-height: 0;
   flex: 1;
   border: 1px solid var(--mpx-border-1);

@@ -1,4 +1,4 @@
-import { useCallback, type MouseEvent as ReactMouseEvent, type MutableRefObject, type RefObject } from 'react'
+import { useCallback, useState, type MouseEvent as ReactMouseEvent, type MutableRefObject, type RefObject } from 'react'
 
 import { clamp } from '../../utils/ui'
 
@@ -25,6 +25,8 @@ interface UsePaneResizersResult {
   normalizeSidebarRatio: (candidate: number) => number
   applySidebarRatio: (candidate: number) => void
   applyMetadataRatio: (candidate: number) => void
+  horizontalResizing: boolean
+  horizontalResizeCommitCount: number
   onStartSidebarResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   onStartMetadataResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   onStartWorkspaceBottomPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
@@ -48,6 +50,9 @@ export function usePaneResizers({
   onSetMetadataRatio,
   onSetWorkspaceBottomPanelHeight,
 }: UsePaneResizersParams): UsePaneResizersResult {
+  const [horizontalResizing, setHorizontalResizing] = useState(false)
+  const [horizontalResizeCommitCount, setHorizontalResizeCommitCount] = useState(0)
+
   const readAppBodyWidth = useCallback(() => {
     const measured = appBodyRef.current?.getBoundingClientRect().width
     if (measured && measured > 0) {
@@ -109,6 +114,7 @@ export function usePaneResizers({
         return
       }
       event.preventDefault()
+      setHorizontalResizing(true)
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         updateSidebarRatioByClientX(moveEvent.clientX)
@@ -117,6 +123,8 @@ export function usePaneResizers({
       const onMouseUp = () => {
         window.removeEventListener('mousemove', onMouseMove)
         window.removeEventListener('mouseup', onMouseUp)
+        setHorizontalResizing(false)
+        setHorizontalResizeCommitCount((value) => value + 1)
       }
 
       window.addEventListener('mousemove', onMouseMove)
@@ -163,6 +171,7 @@ export function usePaneResizers({
         return
       }
       event.preventDefault()
+      setHorizontalResizing(true)
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         updateMetadataRatioByClientX(moveEvent.clientX)
@@ -171,6 +180,8 @@ export function usePaneResizers({
       const onMouseUp = () => {
         window.removeEventListener('mousemove', onMouseMove)
         window.removeEventListener('mouseup', onMouseUp)
+        setHorizontalResizing(false)
+        setHorizontalResizeCommitCount((value) => value + 1)
       }
 
       window.addEventListener('mousemove', onMouseMove)
@@ -225,6 +236,8 @@ export function usePaneResizers({
     normalizeSidebarRatio,
     applySidebarRatio,
     applyMetadataRatio,
+    horizontalResizing,
+    horizontalResizeCommitCount,
     onStartSidebarResize,
     onStartMetadataResize,
     onStartWorkspaceBottomPanelResize,

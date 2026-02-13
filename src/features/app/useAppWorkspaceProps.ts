@@ -93,6 +93,7 @@ interface UseAppWorkspacePropsParams {
   thumbnailImageUrlById: Record<string, string>
   sourceCoverImageUrlBySourceId: Record<string, string>
   gridRef: RefObject<HTMLDivElement | null>
+  onGridElementChange: (element: HTMLDivElement | null) => void
   imageCheckedIdSet: Set<string>
   setFullscreenActiveWithAutoStop: (value: boolean | ((previous: boolean) => boolean)) => void
   setVectorFocusIndex: Dispatch<SetStateAction<number>>
@@ -302,6 +303,7 @@ export function useAppWorkspaceProps({
   thumbnailImageUrlById,
   sourceCoverImageUrlBySourceId,
   gridRef,
+  onGridElementChange,
   imageCheckedIdSet,
   setFullscreenActiveWithAutoStop,
   setVectorFocusIndex,
@@ -697,6 +699,7 @@ export function useAppWorkspaceProps({
     packageByIdEffective,
     thumbnailImageUrlById,
     gridRef,
+    onGridElementChange,
     manageMode,
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,

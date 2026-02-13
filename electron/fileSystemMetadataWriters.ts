@@ -17,9 +17,12 @@ import type { MediaLibraryDatabase } from './mediaLibraryDatabase'
 
 export interface PersistedVideoMetadataRecord {
   workTitle: string
+  workTitleJpn: string
   seriesId: string
   circle: string
+  circleJpn: string
   author: string
+  authorJpn: string
   tags: string[]
   grade: number | null
   updatedAtMs: number
@@ -96,25 +99,34 @@ export function applyVideoMetadataWrite({
   const workTitle = request.sync_file_name_to_work_title
     ? defaultWorkTitle
     : normalizeMetadataText(request.work_title, video.work_title)
+  const workTitleJpn = (request.work_title_jpn ?? video.work_title_jpn ?? '').trim()
   const seriesId = (request.series_id ?? video.series_id ?? '').trim()
   const circle = normalizeMetadataText(request.circle, video.circle)
+  const circleJpn = (request.circle_jpn ?? video.circle_jpn ?? '').trim()
   const author = normalizeMetadataText(request.author, video.author)
+  const authorJpn = (request.author_jpn ?? video.author_jpn ?? '').trim()
   const tags = normalizeMetadataTags(request.tags)
   const grade = typeof request.grade === 'undefined' ? video.grade ?? null : request.grade
 
   video.work_title = workTitle
+  video.work_title_jpn = workTitleJpn
   video.series_id = seriesId
   video.circle = circle
+  video.circle_jpn = circleJpn
   video.author = author
+  video.author_jpn = authorJpn
   video.tags = tags
   video.grade = grade
 
   const updatedAtMs = Date.now()
   const persistedRecord: PersistedVideoMetadataRecord = {
     workTitle,
+    workTitleJpn,
     seriesId,
     circle,
+    circleJpn,
     author,
+    authorJpn,
     tags,
     grade,
     updatedAtMs,
@@ -122,9 +134,12 @@ export function applyVideoMetadataWrite({
 
   database.writeVideoMetadata(video.id, {
     workTitle,
+    workTitleJpn,
     seriesId,
     circle,
+    circleJpn,
     author,
+    authorJpn,
     tags,
     grade,
   })

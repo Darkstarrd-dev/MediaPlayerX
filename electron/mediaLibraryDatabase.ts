@@ -121,9 +121,12 @@ export class MediaLibraryDatabase {
     string,
     {
       workTitle: string
+      workTitleJpn: string
       seriesId: string
       circle: string
+      circleJpn: string
       author: string
+      authorJpn: string
       tags: string[]
       grade: number | null
       updatedAtMs: number
@@ -199,9 +202,12 @@ export class MediaLibraryDatabase {
     videoId: string,
     payload: {
       workTitle: string
+      workTitleJpn: string
       seriesId: string
       circle: string
+      circleJpn: string
       author: string
+      authorJpn: string
       tags: string[]
       grade: number | null
     },

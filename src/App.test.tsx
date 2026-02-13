@@ -963,9 +963,10 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
 
     expect(screen.getByLabelText('文件名')).toBeInTheDocument()
-    expect(screen.getByLabelText('作品名')).toBeInTheDocument()
-    expect(screen.getByLabelText('社团')).toBeInTheDocument()
-    expect(screen.getByLabelText('作者')).toBeInTheDocument()
+    expect(screen.getByText('作品名')).toBeInTheDocument()
+    expect(screen.getByText('社团')).toBeInTheDocument()
+    expect(screen.getByText('作者')).toBeInTheDocument()
+    expect(document.querySelectorAll('.metadata-localized-field .metadata-localized-value.is-clickable').length).toBeGreaterThanOrEqual(3)
     expect(screen.getByText('Tags')).toBeInTheDocument()
     expect(screen.getByRole('group', { name: '视频评分' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '视频评分 无评分' })).toBeDisabled()
@@ -982,7 +983,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
     fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
 
-    const workTitleInput = screen.getByLabelText('作品名') as HTMLInputElement
+    const workTitleInput = screen.getByLabelText('英文标题') as HTMLInputElement
     fireEvent.change(workTitleInput, { target: { value: '新的视频作品名' } })
     fireEvent.keyDown(workTitleInput, { key: 'Enter', code: 'Enter' })
 
@@ -1217,8 +1218,8 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
 
     const circleLabel = screen.getByText('社团').closest('label') as HTMLElement
-    const circleChip = within(circleLabel).getByRole('button') as HTMLButtonElement
-    fireEvent.click(circleChip)
+    const circleValue = circleLabel.querySelector('.metadata-localized-value.is-clickable') as HTMLElement
+    fireEvent.click(circleValue)
 
     expect(screen.queryByRole('group', { name: 'search-mode-switch' })).toBeNull()
     expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()

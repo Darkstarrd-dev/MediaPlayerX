@@ -57,9 +57,12 @@ export interface VideoRow {
   cover_color: string | null
   cover_image_path: string | null
   work_title: string | null
+  work_title_jpn: string | null
   series_id: string | null
   circle: string | null
+  circle_jpn: string | null
   author: string | null
+  author_jpn: string | null
   tags_json: string | null
   grade: number | null
 }

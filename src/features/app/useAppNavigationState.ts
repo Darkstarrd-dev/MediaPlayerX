@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { AppSessionStateResult } from './useAppSessionState'
@@ -8,10 +8,13 @@ import type { MediaStateResult } from '../media/useMediaState'
 import type { AppReadStateResult } from './useAppReadState'
 import { useAppSidebarScopeState } from './useAppSidebarScopeState'
 import { usePaneResizers } from '../layout/usePaneResizers'
-import { computeThumbnailGridLayout } from '../layout/thumbnailLayout'
+import { computeThumbnailGridLayout, resolveThumbnailCardChromePx } from '../layout/thumbnailLayout'
 import { useImageBrowserViewModel } from './useImageBrowserViewModel'
+import { clamp } from '../../utils/ui'
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03
+const SNAP_SETTLE_DELAY_MS = 96
+const SCALE_SNAP_SUPPRESS_MS = 220
 
 interface UseAppNavigationStateParams {
   appSettings: AppSettingsStoreSnapshot
@@ -34,12 +37,14 @@ export function useAppNavigationState({
     mode,
     sidebarRatio,
     sidebarMinWidth,
+    metadataCollapsed,
     metadataRatio,
     workspaceBottomPanelHeight,
     layoutLocked,
     thumbnailScale,
     thumbnailGap,
     thumbnailWidth,
+    styleId,
     showNamesOnly,
     imageRootNodeId,
     videoRootNodeId,
@@ -172,6 +177,8 @@ export function useAppNavigationState({
     normalizeSidebarRatio,
     applySidebarRatio,
     applyMetadataRatio,
+    horizontalResizing,
+    horizontalResizeCommitCount,
     onStartSidebarResize,
     onStartMetadataResize,
     onStartWorkspaceBottomPanelResize,
@@ -194,16 +201,31 @@ export function useAppNavigationState({
     onSetWorkspaceBottomPanelHeight: (value) => updateSettings({ workspaceBottomPanelHeight: value }),
   })
 
+  const [layoutGridSize, setLayoutGridSize] = useState(gridSize)
+  useEffect(() => {
+    if (horizontalResizing) {
+      return
+    }
+
+    setLayoutGridSize((previous) => {
+      if (Math.abs(previous.width - gridSize.width) < 1 && Math.abs(previous.height - gridSize.height) < 1) {
+        return previous
+      }
+      return gridSize
+    })
+  }, [gridSize, horizontalResizing])
+
   const thumbnailLayout = useMemo(
     () =>
       computeThumbnailGridLayout({
-        gridWidth: gridSize.width,
-        gridHeight: gridSize.height,
+        gridWidth: layoutGridSize.width,
+        gridHeight: layoutGridSize.height,
         thumbnailWidth,
         thumbnailGap,
         zoomLevel: thumbnailScale,
+        cardChrome: resolveThumbnailCardChromePx(),
       }),
-    [gridSize.height, gridSize.width, thumbnailGap, thumbnailScale, thumbnailWidth],
+    [layoutGridSize.height, layoutGridSize.width, styleId, thumbnailGap, thumbnailScale, thumbnailWidth],
   )
   const normalizedThumbnailScale = thumbnailLayout.zoomLevel
   const thumbnailScaleLevelCount = thumbnailLayout.zoomLevelCount
@@ -215,6 +237,233 @@ export function useAppNavigationState({
   const actualMediaHeight = thumbnailLayout.mediaHeight
   const pagedPageSize = thumbnailLayout.pageSize
   const actualThumbnailGap = thumbnailLayout.gap
+
+  const snapTimeoutRef = useRef<number | null>(null)
+  const scaleSnapSuppressUntilRef = useRef(0)
+
+  useEffect(() => {
+    return () => {
+      if (snapTimeoutRef.current !== null) {
+        window.clearTimeout(snapTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (mode === 'image' && !showNamesOnly && !layoutLocked && !horizontalResizing) {
+      return
+    }
+
+    if (snapTimeoutRef.current !== null) {
+      window.clearTimeout(snapTimeoutRef.current)
+      snapTimeoutRef.current = null
+    }
+  }, [horizontalResizing, layoutLocked, mode, showNamesOnly])
+
+  const applyThumbnailHorizontalSnap = useCallback(() => {
+    if (mode !== 'image' || showNamesOnly || layoutLocked || horizontalResizing) {
+      return
+    }
+
+    if (gridSize.width <= 1 || gridSize.height <= 1) {
+      return
+    }
+
+    const liveLayout = computeThumbnailGridLayout({
+      gridWidth: gridSize.width,
+      gridHeight: gridSize.height,
+      thumbnailWidth,
+      thumbnailGap,
+      zoomLevel: thumbnailScale,
+      cardChrome: resolveThumbnailCardChromePx(),
+    })
+    if (liveLayout.columns <= 0) {
+      return
+    }
+
+    const deltaMainWidth = liveLayout.idealGridWidth - gridSize.width
+    if (Math.abs(deltaMainWidth) < 0.5) {
+      return
+    }
+
+    const appBodyWidthMeasured = appBodyRef.current?.getBoundingClientRect().width ?? appBodyWidth
+    const workspaceWidthMeasured = workspaceBodyRef.current?.getBoundingClientRect().width
+    if (appBodyWidthMeasured <= 1 || !workspaceWidthMeasured || workspaceWidthMeasured <= 1) {
+      return
+    }
+
+    const canAdjustSidebar = !sidebarCollapsed
+    const canAdjustMetadata = !metadataCollapsed
+    if (!canAdjustSidebar && !canAdjustMetadata) {
+      return
+    }
+
+    const applySidebarShare = (targetMainDelta: number, currentSidebarRatio: number, currentMetadataRatio: number) => {
+      if (!canAdjustSidebar) {
+        return {
+          nextSidebarRatio: currentSidebarRatio,
+          appliedMainDelta: 0,
+          workspaceWidthDelta: 0,
+        }
+      }
+
+      const workspaceMainFactor = Math.max(0.05, 1 - currentMetadataRatio)
+      const ratioDelta = -(targetMainDelta / (appBodyWidthMeasured * workspaceMainFactor))
+      const nextSidebarRatio = normalizeSidebarRatio(currentSidebarRatio + ratioDelta)
+      const workspaceWidthDelta = -(nextSidebarRatio - currentSidebarRatio) * appBodyWidthMeasured
+      const appliedMainDelta = workspaceWidthDelta * workspaceMainFactor
+
+      return {
+        nextSidebarRatio,
+        appliedMainDelta,
+        workspaceWidthDelta,
+      }
+    }
+
+    const applyMetadataShare = (targetMainDelta: number, currentMetadataRatio: number, currentWorkspaceWidth: number) => {
+      if (!canAdjustMetadata || currentWorkspaceWidth <= 1) {
+        return {
+          nextMetadataRatio: currentMetadataRatio,
+          appliedMainDelta: 0,
+        }
+      }
+
+      const ratioDelta = -(targetMainDelta / currentWorkspaceWidth)
+      const nextMetadataRatio = Number(clamp(currentMetadataRatio + ratioDelta, 0.2, 0.45).toFixed(3))
+      const appliedMainDelta = -(nextMetadataRatio - currentMetadataRatio) * currentWorkspaceWidth
+
+      return {
+        nextMetadataRatio,
+        appliedMainDelta,
+      }
+    }
+
+    let nextSidebarRatio = sidebarRatio
+    let nextMetadataRatio = metadataRatio
+    let remainingMainDelta = deltaMainWidth
+    let workspaceWidthForMetadata = workspaceWidthMeasured
+
+    const firstShare = canAdjustSidebar && canAdjustMetadata ? remainingMainDelta / 2 : remainingMainDelta
+    if (canAdjustSidebar) {
+      const sidebarResult = applySidebarShare(firstShare, nextSidebarRatio, nextMetadataRatio)
+      nextSidebarRatio = sidebarResult.nextSidebarRatio
+      workspaceWidthForMetadata += sidebarResult.workspaceWidthDelta
+      remainingMainDelta -= sidebarResult.appliedMainDelta
+    }
+
+    if (canAdjustMetadata) {
+      const metadataResult = applyMetadataShare(remainingMainDelta, nextMetadataRatio, workspaceWidthForMetadata)
+      nextMetadataRatio = metadataResult.nextMetadataRatio
+      remainingMainDelta -= metadataResult.appliedMainDelta
+    }
+
+    if (canAdjustSidebar && Math.abs(remainingMainDelta) > 0.5) {
+      const sidebarFinal = applySidebarShare(remainingMainDelta, nextSidebarRatio, nextMetadataRatio)
+      nextSidebarRatio = sidebarFinal.nextSidebarRatio
+      remainingMainDelta -= sidebarFinal.appliedMainDelta
+    }
+
+    const sidebarChanged = Math.abs(nextSidebarRatio - sidebarRatio) > 0.0005
+    const metadataChanged = canAdjustMetadata && Math.abs(nextMetadataRatio - metadataRatio) > 0.0005
+    if (!sidebarChanged && !metadataChanged) {
+      return
+    }
+
+    if (sidebarChanged) {
+      applySidebarRatio(nextSidebarRatio)
+    }
+    if (metadataChanged) {
+      applyMetadataRatio(nextMetadataRatio)
+    }
+
+    scaleSnapSuppressUntilRef.current = performance.now() + SCALE_SNAP_SUPPRESS_MS
+  }, [
+    appBodyRef,
+    appBodyWidth,
+    applyMetadataRatio,
+    applySidebarRatio,
+    gridSize.height,
+    gridSize.width,
+    horizontalResizing,
+    layoutLocked,
+    metadataCollapsed,
+    metadataRatio,
+    mode,
+    normalizeSidebarRatio,
+    showNamesOnly,
+    sidebarCollapsed,
+    sidebarRatio,
+    thumbnailGap,
+    thumbnailScale,
+    thumbnailWidth,
+    workspaceBodyRef,
+  ])
+
+  const queueThumbnailHorizontalSnap = useCallback(
+    (delayMs: number) => {
+      if (mode !== 'image' || showNamesOnly || layoutLocked || horizontalResizing) {
+        return
+      }
+
+      if (snapTimeoutRef.current !== null) {
+        window.clearTimeout(snapTimeoutRef.current)
+      }
+
+      snapTimeoutRef.current = window.setTimeout(() => {
+        snapTimeoutRef.current = null
+        applyThumbnailHorizontalSnap()
+      }, delayMs)
+    },
+    [applyThumbnailHorizontalSnap, horizontalResizing, layoutLocked, mode, showNamesOnly],
+  )
+
+  useEffect(() => {
+    if (horizontalResizeCommitCount <= 0) {
+      return
+    }
+
+    queueThumbnailHorizontalSnap(SNAP_SETTLE_DELAY_MS)
+  }, [horizontalResizeCommitCount, queueThumbnailHorizontalSnap])
+
+  const previousThumbnailScaleRef = useRef(thumbnailScale)
+  useEffect(() => {
+    const scaleChanged = previousThumbnailScaleRef.current !== thumbnailScale
+    previousThumbnailScaleRef.current = thumbnailScale
+    if (!scaleChanged) {
+      return
+    }
+
+    if (mode !== 'image' || showNamesOnly || layoutLocked) {
+      return
+    }
+
+    if (performance.now() < scaleSnapSuppressUntilRef.current) {
+      return
+    }
+
+    queueThumbnailHorizontalSnap(SNAP_SETTLE_DELAY_MS)
+  }, [layoutLocked, mode, queueThumbnailHorizontalSnap, showNamesOnly, thumbnailScale])
+
+  const initialSnapDoneRef = useRef(false)
+  useEffect(() => {
+    if (mode !== 'image' || showNamesOnly || layoutLocked || horizontalResizing || layoutGridSize.width <= 1) {
+      return
+    }
+
+    if (initialSnapDoneRef.current) {
+      return
+    }
+
+    initialSnapDoneRef.current = true
+    queueThumbnailHorizontalSnap(0)
+  }, [horizontalResizing, layoutGridSize.width, layoutLocked, mode, queueThumbnailHorizontalSnap, showNamesOnly])
+
+  useEffect(() => {
+    if (mode === 'image' && !showNamesOnly) {
+      return
+    }
+    initialSnapDoneRef.current = false
+  }, [mode, showNamesOnly])
 
   const {
     activePackage,
@@ -301,6 +550,7 @@ export function useAppNavigationState({
     normalizeSidebarRatio,
     applySidebarRatio,
     applyMetadataRatio,
+    horizontalResizeCommitCount,
     onStartSidebarResize,
     onStartMetadataResize,
     onStartWorkspaceBottomPanelResize,

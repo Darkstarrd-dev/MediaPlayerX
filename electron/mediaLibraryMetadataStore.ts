@@ -48,9 +48,12 @@ export class MediaLibraryMetadataStore {
     string,
     {
       workTitle: string
+      workTitleJpn: string
       seriesId: string
       circle: string
+      circleJpn: string
       author: string
+      authorJpn: string
       tags: string[]
       grade: number | null
       updatedAtMs: number
@@ -59,16 +62,19 @@ export class MediaLibraryMetadataStore {
     const rows = this.db
       .prepare(
         `
-          SELECT video_id, work_title, series_id, circle, author, tags_json, grade, updated_at_ms
+          SELECT video_id, work_title, work_title_jpn, series_id, circle, circle_jpn, author, author_jpn, tags_json, grade, updated_at_ms
           FROM video_metadata
         `,
       )
       .all() as Array<{
       video_id: string
       work_title: string
+      work_title_jpn: string
       series_id: string
       circle: string
+      circle_jpn: string
       author: string
+      author_jpn: string
       tags_json: string
       grade: number | null
       updated_at_ms: number
@@ -79,9 +85,12 @@ export class MediaLibraryMetadataStore {
         row.video_id,
         {
           workTitle: row.work_title,
+          workTitleJpn: row.work_title_jpn ?? '',
           seriesId: row.series_id,
           circle: row.circle,
+          circleJpn: row.circle_jpn ?? '',
           author: row.author,
+          authorJpn: row.author_jpn ?? '',
           tags: parseJson<string[]>(row.tags_json, []),
           grade: row.grade,
           updatedAtMs: row.updated_at_ms,
@@ -281,9 +290,12 @@ export class MediaLibraryMetadataStore {
     videoId: string,
     payload: {
       workTitle: string
+      workTitleJpn: string
       seriesId: string
       circle: string
+      circleJpn: string
       author: string
+      authorJpn: string
       tags: string[]
       grade: number | null
     },
@@ -291,13 +303,16 @@ export class MediaLibraryMetadataStore {
     this.db
       .prepare(
         `
-          INSERT INTO video_metadata (video_id, work_title, series_id, circle, author, tags_json, grade, updated_at_ms)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO video_metadata (video_id, work_title, work_title_jpn, series_id, circle, circle_jpn, author, author_jpn, tags_json, grade, updated_at_ms)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(video_id) DO UPDATE SET
             work_title = excluded.work_title,
+            work_title_jpn = excluded.work_title_jpn,
             series_id = excluded.series_id,
             circle = excluded.circle,
+            circle_jpn = excluded.circle_jpn,
             author = excluded.author,
+            author_jpn = excluded.author_jpn,
             tags_json = excluded.tags_json,
             grade = excluded.grade,
             updated_at_ms = excluded.updated_at_ms
@@ -306,9 +321,12 @@ export class MediaLibraryMetadataStore {
       .run(
         videoId,
         payload.workTitle,
+        payload.workTitleJpn,
         payload.seriesId,
         payload.circle,
+        payload.circleJpn,
         payload.author,
+        payload.authorJpn,
         JSON.stringify(payload.tags),
         payload.grade,
         Date.now(),

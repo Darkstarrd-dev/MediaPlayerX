@@ -72,6 +72,7 @@ export function useAppInteractionEffects({
     wasFullscreenRef,
     lastExpandedSidebarRatioRef,
     setAppBodyWidth,
+    gridElement,
     setGridSize,
     setSelectedPackageId,
     setSelectedSidebarNodeId,
@@ -329,7 +330,7 @@ export function useAppInteractionEffects({
 
   useAppEffects({
     appBodyRef,
-    gridRef: sessionState.gridRef,
+    gridElement,
     vectorPanelContentRef,
     wasFullscreenRef,
     lastExpandedSidebarRatioRef,

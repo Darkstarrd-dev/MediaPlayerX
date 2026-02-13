@@ -88,9 +88,12 @@ interface UseWriteDataAccessResult {
     videoId: string,
     payload: {
       workTitle: string
+      workTitleJpn: string
       seriesId: string
       circle: string
+      circleJpn: string
       author: string
+      authorJpn: string
       tags: string[]
       grade?: number | null
       syncFileNameToWorkTitle?: boolean
@@ -293,9 +296,12 @@ export function useWriteDataAccess({
       videoId: string,
       payload: {
         workTitle: string
+        workTitleJpn: string
         seriesId: string
         circle: string
+        circleJpn: string
         author: string
+        authorJpn: string
         tags: string[]
         grade?: number | null
         syncFileNameToWorkTitle?: boolean
@@ -313,9 +319,12 @@ export function useWriteDataAccess({
         const request: WriteVideoMetadataRequestDto = {
           video_id: videoId,
           work_title: payload.workTitle,
+          work_title_jpn: payload.workTitleJpn,
           series_id: payload.seriesId,
           circle: payload.circle,
+          circle_jpn: payload.circleJpn,
           author: payload.author,
+          author_jpn: payload.authorJpn,
           tags: payload.tags,
           grade: payload.grade,
           sync_file_name_to_work_title: payload.syncFileNameToWorkTitle,

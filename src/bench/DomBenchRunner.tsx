@@ -276,6 +276,7 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             packageById={packageById}
             imageUrlById={imageUrlById}
             gridRef={gridRef}
+            onGridElementChange={() => undefined}
             manageMode={false}
             sidebarSelectedCount={0}
             imageSelectedCount={0}
