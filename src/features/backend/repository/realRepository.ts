@@ -104,8 +104,8 @@ import {
   type WriteAppStateResponseDto,
 } from '../../../contracts/backend'
 import type { MediaRepository, RepositoryRequestOptions } from './types'
-import { benchRecordIpcTiming } from '../../perf/benchRecorder'
 import { requireBackend, requireBackendMethod } from './backendChannel'
+import { withIpcTiming } from './repositoryIpcTiming'
 import { withAbort } from './requestGuards'
 
 export class RealMediaRepository implements MediaRepository {
@@ -124,21 +124,10 @@ export class RealMediaRepository implements MediaRepository {
 
   async readLibrarySnapshot(options?: RepositoryRequestOptions): Promise<LibrarySnapshotDto> {
     const api = requireBackend()
-
-    const startedAt = performance.now()
-    try {
+    return withIpcTiming('readLibrarySnapshot', async () => {
       const response = await withAbort(api.readLibrarySnapshot(), options)
-      benchRecordIpcTiming('readLibrarySnapshot', performance.now() - startedAt, true)
       return librarySnapshotDtoSchema.parse(response)
-    } catch (error: unknown) {
-      benchRecordIpcTiming(
-        'readLibrarySnapshot',
-        performance.now() - startedAt,
-        false,
-        error instanceof Error ? error.message : String(error),
-      )
-      throw error
-    }
+    })
   }
 
   async readImageSidebarTree(
@@ -146,21 +135,10 @@ export class RealMediaRepository implements MediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<ReadImageSidebarTreeResponseDto> {
     const api = requireBackend()
-
-    const startedAt = performance.now()
-    try {
+    return withIpcTiming('readImageSidebarTree', async () => {
       const response = await withAbort(api.readImageSidebarTree(request), options)
-      benchRecordIpcTiming('readImageSidebarTree', performance.now() - startedAt, true)
       return readImageSidebarTreeResponseSchema.parse(response)
-    } catch (error: unknown) {
-      benchRecordIpcTiming(
-        'readImageSidebarTree',
-        performance.now() - startedAt,
-        false,
-        error instanceof Error ? error.message : String(error),
-      )
-      throw error
-    }
+    })
   }
 
   async readImagePage(
@@ -168,16 +146,10 @@ export class RealMediaRepository implements MediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<ReadImagePageResponseDto> {
     const api = requireBackend()
-
-    const startedAt = performance.now()
-    try {
+    return withIpcTiming('readImagePage', async () => {
       const response = await withAbort(api.readImagePage(request), options)
-      benchRecordIpcTiming('readImagePage', performance.now() - startedAt, true)
       return readImagePageResponseSchema.parse(response)
-    } catch (error: unknown) {
-      benchRecordIpcTiming('readImagePage', performance.now() - startedAt, false, error instanceof Error ? error.message : String(error))
-      throw error
-    }
+    })
   }
 
   async readImageMetadata(
@@ -185,21 +157,10 @@ export class RealMediaRepository implements MediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<ReadImageMetadataResponseDto> {
     const api = requireBackend()
-
-    const startedAt = performance.now()
-    try {
+    return withIpcTiming('readImageMetadata', async () => {
       const response = await withAbort(api.readImageMetadata(request), options)
-      benchRecordIpcTiming('readImageMetadata', performance.now() - startedAt, true)
       return readImageMetadataResponseSchema.parse(response)
-    } catch (error: unknown) {
-      benchRecordIpcTiming(
-        'readImageMetadata',
-        performance.now() - startedAt,
-        false,
-        error instanceof Error ? error.message : String(error),
-      )
-      throw error
-    }
+    })
   }
 
   async resolveMediaResource(
@@ -207,21 +168,10 @@ export class RealMediaRepository implements MediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<ResolveMediaResourceResponseDto> {
     const api = requireBackend()
-
-    const startedAt = performance.now()
-    try {
+    return withIpcTiming('resolveMediaResource', async () => {
       const response = await withAbort(api.resolveMediaResource(request), options)
-      benchRecordIpcTiming('resolveMediaResource', performance.now() - startedAt, true)
       return resolveMediaResourceResponseSchema.parse(response)
-    } catch (error: unknown) {
-      benchRecordIpcTiming(
-        'resolveMediaResource',
-        performance.now() - startedAt,
-        false,
-        error instanceof Error ? error.message : String(error),
-      )
-      throw error
-    }
+    })
   }
 
   async writePackageGrade(
@@ -453,35 +403,18 @@ export class RealMediaRepository implements MediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<EnqueueImportTaskResponseDto> {
     const api = requireBackend()
-
-    const startedAt = performance.now()
-    try {
+    return withIpcTiming('enqueueImportTask', async () => {
       const response = await withAbort(api.enqueueImportTask(request), options)
-      benchRecordIpcTiming('enqueueImportTask', performance.now() - startedAt, true)
       return enqueueImportTaskResponseSchema.parse(response)
-    } catch (error: unknown) {
-      benchRecordIpcTiming(
-        'enqueueImportTask',
-        performance.now() - startedAt,
-        false,
-        error instanceof Error ? error.message : String(error),
-      )
-      throw error
-    }
+    })
   }
 
   async readImportTasks(options?: RepositoryRequestOptions): Promise<ReadImportTasksResponseDto> {
     const api = requireBackend()
-
-    const startedAt = performance.now()
-    try {
+    return withIpcTiming('readImportTasks', async () => {
       const response = await withAbort(api.readImportTasks(), options)
-      benchRecordIpcTiming('readImportTasks', performance.now() - startedAt, true)
       return readImportTasksResponseSchema.parse(response)
-    } catch (error: unknown) {
-      benchRecordIpcTiming('readImportTasks', performance.now() - startedAt, false, error instanceof Error ? error.message : String(error))
-      throw error
-    }
+    })
   }
 
   async retryImportTask(
