@@ -15,6 +15,7 @@ type HeaderIconName =
   | 'search'
   | 'edit'
   | 'metadata'
+  | 'dataMode'
   | 'autoplayOn'
   | 'autoplayOff'
   | 'settings'
@@ -91,6 +92,16 @@ const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
     <>
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </>
+  ),
+  dataMode: (
+    <>
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <rect x="3" y="4" width="4" height="4" />
+      <rect x="3" y="10" width="4" height="4" />
+      <rect x="3" y="16" width="4" height="4" />
     </>
   ),
   autoplayOn: (
@@ -628,18 +639,18 @@ function AppHeader({
           </button>
 
           <button
-            aria-label="元数据管理"
+            aria-label={metadataManageMode ? '切换到图像模式' : '切换到元数据模式'}
             className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`}
             type="button"
             onClick={onToggleMetadataManageMode}
           >
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
-                <HeaderActionIcon name="metadata" />
+              <span className="header-btn-content">
+                <span className="header-btn-icon">
+                  <HeaderActionIcon name={metadataManageMode ? 'image' : 'metadata'} />
+                </span>
+                <span className="header-btn-label">{metadataManageMode ? '图像模式' : '元数据管理'}</span>
               </span>
-              <span className="header-btn-label">元数据管理</span>
-            </span>
-          </button>
+            </button>
         </div>
       </div>
 

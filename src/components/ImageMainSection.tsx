@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 
+import { MainUiIcon } from './MainUiIcon'
+import { VideoControlIcon } from './VideoControlIcon'
 import { mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
@@ -342,6 +344,21 @@ function ImageMainSection({
         ? `已选媒体条目: ${imageSelectedCount}`
         : '未选择条目'
 
+  const currentThumbnailPageImageIds = useMemo(() => {
+    if (!manageMode) {
+      return []
+    }
+
+    const ids: string[] = []
+    for (const ref of refsInPage) {
+      const imageId = resolveImageIdForRef(packageById, ref)
+      if (imageId) {
+        ids.push(imageId)
+      }
+    }
+    return ids
+  }, [manageMode, packageById, refsInPage])
+
   const activePackageImageProgress = (() => {
     if (!activePackage || activePackage.images.length === 0) {
       return null
@@ -375,27 +392,67 @@ function ImageMainSection({
         {manageMode ? (
           <>
             <div className="toolbar-actions toolbar-actions-manage">
-              <button className="vector-search-btn" type="button" disabled={!canManageDelete || pendingManageAction} onClick={onManageDelete}>
-                删除
+              <button
+                className="vector-search-btn main-icon-square-btn"
+                type="button"
+                aria-label="删除"
+                title="删除"
+                disabled={!canManageDelete || pendingManageAction}
+                onClick={onManageDelete}
+              >
+                <MainUiIcon name="delete" />
               </button>
               {adReviewFeatureEnabled ? (
                 <button
-                  className={`feature-action-btn ${adReviewPanelOpen ? 'is-active' : ''}`}
+                  className={`feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? 'is-active' : ''}`}
                   type="button"
+                  aria-label="广告审核"
+                  title="广告审核"
                   disabled={pendingManageAction}
                   onClick={onToggleAdReviewPanel}
                 >
-                  广告审核
+                  <MainUiIcon name="adSearch" />
                 </button>
               ) : null}
-              <button className="feature-action-btn" type="button" disabled={!canManageHide || pendingManageAction} onClick={onManageHide}>
-                隐藏
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="隐藏"
+                title="隐藏"
+                disabled={!canManageHide || pendingManageAction}
+                onClick={onManageHide}
+              >
+                <MainUiIcon name="hidden" />
               </button>
-              <button className="feature-action-btn" type="button" disabled={!canManageUnhide || pendingManageAction} onClick={onManageUnhide}>
-                取消隐藏
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="取消隐藏"
+                title="取消隐藏"
+                disabled={!canManageUnhide || pendingManageAction}
+                onClick={onManageUnhide}
+              >
+                <MainUiIcon name="reveal" />
               </button>
-              <button className="feature-action-btn" type="button" disabled={pendingManageAction} onClick={onClearManageSelection}>
-                清空选择
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="全选当前页"
+                title="全选当前页"
+                disabled={pendingManageAction || currentThumbnailPageImageIds.length === 0}
+                onClick={() => onReplaceCheckedImages(currentThumbnailPageImageIds)}
+              >
+                <MainUiIcon name="selectAll" />
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="清空选择"
+                title="清空选择"
+                disabled={pendingManageAction}
+                onClick={onClearManageSelection}
+              >
+                <MainUiIcon name="unselectAll" />
               </button>
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>
@@ -407,11 +464,24 @@ function ImageMainSection({
           <>
             <strong className="main-toolbar-title">元数据管理</strong>
             <div className="toolbar-actions toolbar-actions-manage">
-              <button className="feature-action-btn" type="button" disabled={metadataPending} onClick={onMetadataSyncName}>
-                同步名称
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="同步名称"
+                title="同步名称"
+                disabled={metadataPending}
+                onClick={onMetadataSyncName}
+              >
+                <MainUiIcon name="refresh" />
               </button>
-              <button className="feature-action-btn" type="button" onClick={() => setMetadataFetchOpen(true)}>
-                获取元数据
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="获取元数据"
+                title="获取元数据"
+                onClick={() => setMetadataFetchOpen(true)}
+              >
+                <MainUiIcon name="getMetaData" />
               </button>
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>
@@ -444,7 +514,7 @@ function ImageMainSection({
                 title={showNamesOnly ? '切换到缩略图模式' : '切换到纯文件名模式'}
                 onClick={onToggleShowNamesOnly}
               >
-                <span aria-hidden="true">{showNamesOnly ? '≡' : '▦'}</span>
+                <MainUiIcon name={showNamesOnly ? 'thumbnail' : 'fileList'} />
               </button>
               <button
                 className="toolbar-icon-btn"
@@ -454,7 +524,7 @@ function ImageMainSection({
                 onClick={onEnterFullscreen}
                 disabled={!focusedImageExists}
               >
-                <span aria-hidden="true">⛶</span>
+                <VideoControlIcon className="main-ui-icon" name="fullscreenExpand" />
               </button>
             </div>
           </>

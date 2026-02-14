@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { MainUiIcon } from '../MainUiIcon'
 import type { ExternalMetadataResultItemDto, SearchExternalMetadataDebugDto } from '../../contracts/backend'
 import {
   parseExternalMetadataToHitomi,
@@ -419,8 +420,8 @@ function MetadataFetchPanel({
         <header className="settings-head metadata-fetch-head">
           <span className="settings-head-spacer" />
           <h2>获取元数据</h2>
-          <button type="button" onClick={onClose}>
-            关闭
+          <button className="feature-action-btn main-icon-square-btn" type="button" aria-label="关闭" title="关闭" onClick={onClose}>
+            <MainUiIcon name="close" />
           </button>
         </header>
 
@@ -474,8 +475,15 @@ function MetadataFetchPanel({
               </label>
 
               <div className="metadata-fetch-search-action">
-                <button type="button" disabled={!canSearch || loading} onClick={() => void runSearch()}>
-                  {loading ? '检索中...' : '检索'}
+                <button
+                  className="feature-action-btn main-icon-square-btn"
+                  type="button"
+                  aria-label={loading ? '检索中' : '检索'}
+                  title={loading ? '检索中' : '检索'}
+                  disabled={!canSearch || loading}
+                  onClick={() => void runSearch()}
+                >
+                  <MainUiIcon name="search" />
                 </button>
               </div>
             </div>
@@ -509,24 +517,30 @@ function MetadataFetchPanel({
 
                   <div className="settings-floating-actions metadata-fetch-actions metadata-fetch-actions-inline">
                     <button
+                      className="feature-action-btn main-icon-square-btn"
                       type="button"
+                      aria-label="解析"
+                      title="解析"
                       disabled={!canParse}
                       onClick={() => {
                         setSelectedSource(source)
                         runParse(source)
                       }}
                     >
-                      解析
+                      <MainUiIcon name="parse" />
                     </button>
                     <button
+                      className="feature-action-btn main-icon-square-btn"
                       type="button"
+                      aria-label={saving && selectedSource === source ? '保存中' : '保存'}
+                      title={saving && selectedSource === source ? '保存中' : '保存'}
                       disabled={!canSave}
                       onClick={() => {
                         setSelectedSource(source)
                         void runSave(source)
                       }}
                     >
-                      {saving && selectedSource === source ? '保存中...' : '保存'}
+                      <MainUiIcon name="save" />
                     </button>
                   </div>
 
@@ -582,7 +596,9 @@ function MetadataFetchPanel({
                         }}
                       >
                         <span>Parsed</span>
-                        <span>{parsedCollapsed ? '展开' : '折叠'}</span>
+                        <span className="metadata-fetch-preview-state" aria-hidden="true">
+                          <MainUiIcon name={parsedCollapsed ? 'expand' : 'collapse'} />
+                        </span>
                       </button>
                       {!parsedCollapsed ? (
                         <AutoSizeReadonlyTextarea id={`${source}-parsed`} label="Parsed" value={previewParsedBySource[source]} />
@@ -604,7 +620,9 @@ function MetadataFetchPanel({
                         }}
                       >
                         <span>Raw</span>
-                        <span>{rawCollapsed ? '展开' : '折叠'}</span>
+                        <span className="metadata-fetch-preview-state" aria-hidden="true">
+                          <MainUiIcon name={rawCollapsed ? 'expand' : 'collapse'} />
+                        </span>
                       </button>
                       {!rawCollapsed ? (
                         <AutoSizeReadonlyTextarea id={`${source}-raw`} label="Raw" value={previewRawBySource[source]} />
@@ -626,7 +644,9 @@ function MetadataFetchPanel({
                         }}
                       >
                         <span>Debug Trace</span>
-                        <span>{debugCollapsed ? '展开' : '折叠'}</span>
+                        <span className="metadata-fetch-preview-state" aria-hidden="true">
+                          <MainUiIcon name={debugCollapsed ? 'expand' : 'collapse'} />
+                        </span>
                       </button>
                       {!debugCollapsed ? (
                         <AutoSizeReadonlyTextarea
@@ -652,7 +672,9 @@ function MetadataFetchPanel({
                         }}
                       >
                         <span>Request Body</span>
-                        <span>{requestCollapsed ? '展开' : '折叠'}</span>
+                        <span className="metadata-fetch-preview-state" aria-hidden="true">
+                          <MainUiIcon name={requestCollapsed ? 'expand' : 'collapse'} />
+                        </span>
                       </button>
                       {!requestCollapsed ? (
                         <AutoSizeReadonlyTextarea
@@ -678,7 +700,9 @@ function MetadataFetchPanel({
                         }}
                       >
                         <span>Response Body</span>
-                        <span>{responseCollapsed ? '展开' : '折叠'}</span>
+                        <span className="metadata-fetch-preview-state" aria-hidden="true">
+                          <MainUiIcon name={responseCollapsed ? 'expand' : 'collapse'} />
+                        </span>
                       </button>
                       {!responseCollapsed ? (
                         <AutoSizeReadonlyTextarea

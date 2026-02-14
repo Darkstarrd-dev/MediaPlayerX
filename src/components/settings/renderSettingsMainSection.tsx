@@ -10,6 +10,7 @@ import type { RepositoryMode } from '../../features/backend/repository'
 import type { JSX, KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import type { ShortcutConflict } from '../../shortcuts'
+import { MainUiIcon } from '../MainUiIcon'
 import {
   formatScale,
   SIZE_SCALE_CONFIG,
@@ -435,11 +436,25 @@ export function renderSettingsMainSection({
             />
           </label>
           <div className="settings-test-row">
-            <button type="button" disabled={adReviewVisionTestPending} aria-label="测试视觉模型连接" onClick={onTestAdReviewVisionModel}>
-              {adReviewVisionTestPending ? '测试中...' : '测试'}
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={adReviewVisionTestPending}
+              aria-label={adReviewVisionTestPending ? '测试中' : '测试视觉模型连接'}
+              title={adReviewVisionTestPending ? '测试中' : '测试视觉模型连接'}
+              onClick={onTestAdReviewVisionModel}
+            >
+              <MainUiIcon name="test" />
             </button>
-            <button type="button" disabled={adReviewVisionSavePending} aria-label="保存视觉模型配置" onClick={onSaveAdReviewVisionModel}>
-              {adReviewVisionSavePending ? '保存中...' : '保存'}
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={adReviewVisionSavePending}
+              aria-label={adReviewVisionSavePending ? '保存中' : '保存视觉模型配置'}
+              title={adReviewVisionSavePending ? '保存中' : '保存视觉模型配置'}
+              onClick={onSaveAdReviewVisionModel}
+            >
+              <MainUiIcon name="save" />
             </button>
             <span className={`settings-test-status ${adReviewVisionVerified ? 'is-ok' : 'is-pending'}`}>
               {adReviewVisionTestMessage ?? (adReviewVisionVerified ? '已通过测试' : '未测试')}
@@ -457,7 +472,9 @@ export function renderSettingsMainSection({
       <div className="settings-block settings-shortcuts">
         <div className="settings-shortcuts-head">
           <strong>快捷键设置</strong>
-          <button type="button" onClick={onResetShortcuts}>恢复默认</button>
+          <button className="settings-icon-btn main-icon-square-btn" type="button" aria-label="恢复默认" title="恢复默认" onClick={onResetShortcuts}>
+            <MainUiIcon name="return" />
+          </button>
         </div>
 
         {renderBindingRows()}
@@ -569,8 +586,15 @@ export function renderSettingsMainSection({
             <code>{runtimeInfo?.database_path ?? '-'}</code>
           </div>
           <div className="settings-runtime-actions">
-            <button type="button" disabled={runtimeInfoLoading} onClick={onRefreshRuntimeInfo}>
-              {runtimeInfoLoading ? '诊断读取中...' : '刷新诊断'}
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={runtimeInfoLoading}
+              aria-label={runtimeInfoLoading ? '诊断读取中' : '刷新诊断'}
+              title={runtimeInfoLoading ? '诊断读取中' : '刷新诊断'}
+              onClick={onRefreshRuntimeInfo}
+            >
+              <MainUiIcon name="refresh" />
             </button>
           </div>
           {runtimeInfoError ? <p className="settings-danger-text">{runtimeInfoError}</p> : null}

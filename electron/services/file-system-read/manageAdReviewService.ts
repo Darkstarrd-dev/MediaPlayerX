@@ -32,11 +32,13 @@ import type { ManageAdReviewDecision } from '../../manageAdReview'
 import { type ZipCentralEntry } from '../../zipArchiveHelpers'
 import {
   DEFAULT_VISION_TEST_TIMEOUT_MS,
+  applyDecisionToSourceDistribution,
   buildImageSourceById,
   buildSourceDistribution,
   createEmptySourceDistribution,
   decodeVisionTestImageBytes,
   isValidVisionDescription,
+  normalizeImageSource,
   normalizeHashes,
   normalizeTaskExecution,
   parseSidebarNodeId,

@@ -9,6 +9,7 @@ import { MetadataImageEditor } from './metadata/MetadataImageEditor'
 import { MetadataMusicEditor } from './metadata/MetadataMusicEditor'
 import { MetadataSearchSection } from './metadata/MetadataSearchSection'
 import { MetadataVideoEditor } from './metadata/MetadataVideoEditor'
+import { MainUiIcon } from './MainUiIcon'
 import {
   parseTagsInput,
   resolveTagGroupKey,
@@ -480,6 +481,31 @@ function MetadataPanel({
     />
   ) : null
 
+  const adReviewSection =
+    manageMode && adReviewFeatureVisible && adReviewPanelOpen && mode === 'image' ? (
+      <MetadataAdReviewSection
+        adReviewPending={adReviewPending}
+        adReviewTask={adReviewTask}
+        adReviewHideUncheckedNonChecked={adReviewHideUncheckedNonChecked}
+        hasCheckedAdReviewCandidates={hasCheckedAdReviewCandidates}
+        adReviewStrategyMode={adReviewStrategyMode}
+        adReviewMaxConcurrency={adReviewMaxConcurrency}
+        adReviewHeadN={adReviewHeadN}
+        adReviewTailN={adReviewTailN}
+        adReviewTailStopCleanStreak={adReviewTailStopCleanStreak}
+        canExecuteAdReview={canExecuteAdReview}
+        onStartAdReview={onStartAdReview}
+        onPauseAdReview={onPauseAdReview}
+        onToggleHideUncheckedNonChecked={onToggleHideUncheckedNonChecked}
+        onAdReviewStrategyModeChange={onAdReviewStrategyModeChange}
+        onAdReviewMaxConcurrencyChange={onAdReviewMaxConcurrencyChange}
+        onAdReviewHeadNChange={onAdReviewHeadNChange}
+        onAdReviewTailNChange={onAdReviewTailNChange}
+        onAdReviewTailStopCleanStreakChange={onAdReviewTailStopCleanStreakChange}
+        onDismissAdReviewTask={onDismissAdReviewTask}
+      />
+    ) : null
+
   const persistPackageWorkTitle = (rawValue: string) => {
     if (!focusedImagePackage) {
       return
@@ -710,10 +736,12 @@ function MetadataPanel({
             title={showImagePreview ? '切换到元数据显示' : '切换到原图显示'}
             onClick={() => setShowImagePreview((value) => !value)}
           >
-            <span aria-hidden="true">{showImagePreview ? '≣' : '▣'}</span>
+            <MainUiIcon name={showImagePreview ? 'dataMode' : 'imageMode'} />
           </button>
         ) : null}
       </div>
+
+      {adReviewSection}
 
       {metadataSearchSection}
 
@@ -834,29 +862,6 @@ function MetadataPanel({
         />
       )}
 
-      {manageMode && adReviewFeatureVisible && adReviewPanelOpen && mode === 'image' ? (
-        <MetadataAdReviewSection
-          adReviewPending={adReviewPending}
-          adReviewTask={adReviewTask}
-          adReviewHideUncheckedNonChecked={adReviewHideUncheckedNonChecked}
-          hasCheckedAdReviewCandidates={hasCheckedAdReviewCandidates}
-          adReviewStrategyMode={adReviewStrategyMode}
-          adReviewMaxConcurrency={adReviewMaxConcurrency}
-          adReviewHeadN={adReviewHeadN}
-          adReviewTailN={adReviewTailN}
-          adReviewTailStopCleanStreak={adReviewTailStopCleanStreak}
-          canExecuteAdReview={canExecuteAdReview}
-          onStartAdReview={onStartAdReview}
-          onPauseAdReview={onPauseAdReview}
-          onToggleHideUncheckedNonChecked={onToggleHideUncheckedNonChecked}
-          onAdReviewStrategyModeChange={onAdReviewStrategyModeChange}
-          onAdReviewMaxConcurrencyChange={onAdReviewMaxConcurrencyChange}
-          onAdReviewHeadNChange={onAdReviewHeadNChange}
-          onAdReviewTailNChange={onAdReviewTailNChange}
-          onAdReviewTailStopCleanStreakChange={onAdReviewTailStopCleanStreakChange}
-          onDismissAdReviewTask={onDismissAdReviewTask}
-        />
-      ) : null}
       </aside>
       <FeatureTagPickerModal
         open={featureTagPickerOpen}

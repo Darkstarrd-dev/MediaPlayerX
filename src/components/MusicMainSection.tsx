@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
+import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon, type MusicControlIconName } from './MusicControlIcon'
 import type { AppSettings } from '../contracts/settings'
 import type { AudioItem, MusicLoopMode } from '../types'
@@ -782,11 +783,25 @@ function MusicMainSection({
             {manageMode ? (
               <>
                 <div className="toolbar-actions toolbar-actions-manage">
-                  <button className="vector-search-btn" type="button" disabled={!canManageDelete || pendingManageAction} onClick={onManageDelete}>
-                    删除
+                  <button
+                    className="vector-search-btn main-icon-square-btn"
+                    type="button"
+                    aria-label="删除"
+                    title="删除"
+                    disabled={!canManageDelete || pendingManageAction}
+                    onClick={onManageDelete}
+                  >
+                    <MainUiIcon name="delete" />
                   </button>
-                  <button className="feature-action-btn" type="button" disabled={pendingManageAction} onClick={onClearManageSelection}>
-                    清空选择
+                  <button
+                    className="feature-action-btn main-icon-square-btn"
+                    type="button"
+                    aria-label="清空选择"
+                    title="清空选择"
+                    disabled={pendingManageAction}
+                    onClick={onClearManageSelection}
+                  >
+                    <MainUiIcon name="unselectAll" />
                   </button>
                   {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
                 </div>

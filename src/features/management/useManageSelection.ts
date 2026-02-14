@@ -76,6 +76,10 @@ export function useManageSelection({
               const rangeNodeId = flatSidebarNodeIds[index]
               if (rangeNodeId) {
                 next.add(rangeNodeId)
+                const descendants = sidebarDescendantNodeIdsById?.get(rangeNodeId) ?? []
+                for (const descendantNodeId of descendants) {
+                  next.add(descendantNodeId)
+                }
               }
             }
             return Array.from(next)
@@ -102,6 +106,23 @@ export function useManageSelection({
       }
     },
     [flatSidebarNodeIds, sidebarAnchorNodeId, sidebarDescendantNodeIdsById],
+  )
+
+  const checkSidebarNode = useCallback(
+    (nodeId: string) => {
+      setImageCheckedIds([])
+
+      setSidebarCheckedNodeIds((previous) => {
+        const next = new Set(previous)
+        next.add(nodeId)
+        const descendants = sidebarDescendantNodeIdsById?.get(nodeId) ?? []
+        for (const descendantNodeId of descendants) {
+          next.add(descendantNodeId)
+        }
+        return Array.from(next)
+      })
+    },
+    [sidebarDescendantNodeIdsById],
   )
 
   const toggleImageChecked = useCallback((imageId: string, checked?: boolean) => {
@@ -144,6 +165,7 @@ export function useManageSelection({
     clearImageSelections,
     clearAllSelections,
     toggleSidebarNodeChecked,
+    checkSidebarNode,
     toggleImageChecked,
     replaceImageCheckedIds,
   }

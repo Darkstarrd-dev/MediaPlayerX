@@ -46,6 +46,7 @@ interface BuildSidebarPanelPropsParams {
   audioPlaylistIds: string[]
   setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
   onToggleManageNode: (nodeId: string, shiftKey: boolean) => void
+  onCheckManageNode: (nodeId: string) => void
 }
 
 export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
@@ -119,6 +120,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
       })
     },
     onToggleManageNode: params.onToggleManageNode,
+    onCheckManageNode: params.onCheckManageNode,
     onToggleAudioPlaylist: (audioId: string, checked: boolean) => {
       params.setAudioPlaylistIds((previous) => {
         if (checked) {

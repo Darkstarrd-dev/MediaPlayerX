@@ -401,6 +401,32 @@ select option {
   line-height: 1;
 }
 
+.main-ui-icon {
+  width: var(--mpx-icon-size);
+  height: var(--mpx-icon-size);
+  display: block;
+  flex-shrink: 0;
+}
+
+.main-action-btn-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.main-icon-square-btn {
+  width: var(--mpx-icon-button-size);
+  height: var(--mpx-icon-button-size);
+  min-width: var(--mpx-icon-button-size);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .toolbar-actions .toolbar-icon-btn.is-grid-mode {
   background: var(--mpx-bg-selected);
 }

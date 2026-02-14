@@ -83,7 +83,7 @@ export function toImageFileName(image: ImageItemDto): string | null {
   return path.basename(image.media_locator.entry_name)
 }
 
-function normalizeImageSource(source: ManageAdReviewDecision['source']): ManageAdReviewImageSourceDto {
+export function normalizeImageSource(source: ManageAdReviewDecision['source']): ManageAdReviewImageSourceDto {
   if (source === 'llm-error') {
     return 'llm-error'
   }
@@ -172,7 +172,7 @@ export function toEngineStrategy(execution: ManageAdReviewTaskExecutionDto) {
   }
 }
 
-function applyDecisionToSourceDistribution(
+export function applyDecisionToSourceDistribution(
   current: ManageAdReviewSourceDistributionDto,
   decision: Pick<ManageAdReviewDecision, 'source' | 'status'>,
 ): ManageAdReviewSourceDistributionDto {

@@ -100,6 +100,60 @@ describe('useManageSelection', () => {
     expect(result.current.sidebarCheckedNodeIds).toHaveLength(0)
   })
 
+  it('Sidebar shift 区间命中父节点时会级联包含其子节点', () => {
+    const flatSidebarNodeIds = ['folder:root', 'folder:parent', 'folder:leaf']
+    const sidebarDescendantNodeIdsById = new Map([
+      ['folder:parent', ['folder:child-a', 'folder:child-b']],
+    ])
+    const { result } = renderHook(() =>
+      useManageSelection({
+        flatSidebarNodeIds,
+        sidebarDescendantNodeIdsById,
+      }),
+    )
+
+    act(() => {
+      result.current.toggleSidebarNodeChecked('folder:root', false)
+    })
+
+    act(() => {
+      result.current.toggleSidebarNodeChecked('folder:leaf', true)
+    })
+
+    expect(result.current.sidebarCheckedNodeIds).toEqual([
+      'folder:root',
+      'folder:parent',
+      'folder:child-a',
+      'folder:child-b',
+      'folder:leaf',
+    ])
+  })
+
+  it('拖动选中时仅追加节点并级联其子节点', () => {
+    const flatSidebarNodeIds = ['folder:parent', 'folder:child']
+    const sidebarDescendantNodeIdsById = new Map([
+      ['folder:parent', ['folder:child']],
+    ])
+    const { result } = renderHook(() =>
+      useManageSelection({
+        flatSidebarNodeIds,
+        sidebarDescendantNodeIdsById,
+      }),
+    )
+
+    act(() => {
+      result.current.checkSidebarNode('folder:parent')
+    })
+
+    expect(result.current.sidebarCheckedNodeIds).toEqual(['folder:parent', 'folder:child'])
+
+    act(() => {
+      result.current.checkSidebarNode('folder:parent')
+    })
+
+    expect(result.current.sidebarCheckedNodeIds).toEqual(['folder:parent', 'folder:child'])
+  })
+
   it('会自动清理已失效的图片与 Sidebar 选择', () => {
     const { result, rerender } = renderHook(
       ({ flatSidebarNodeIds, validImageIdSet }: { flatSidebarNodeIds: string[]; validImageIdSet: Set<string> }) =>

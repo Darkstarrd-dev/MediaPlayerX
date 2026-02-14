@@ -1,5 +1,5 @@
 .sidebar-row.is-manage {
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: 10px var(--mpx-checkbox-size) minmax(0, 1fr) auto auto;
 }
 
 .sidebar-row.is-manage.is-selected {
@@ -386,6 +386,10 @@
 }
 
 .metadata-fetch-source-switch {
+  position: static;
+  left: auto;
+  top: auto;
+  height: auto;
   width: fit-content;
 }
 
@@ -402,7 +406,7 @@
 }
 
 .metadata-fetch-search-action > button {
-  min-width: 108px;
+  min-width: 0;
 }
 
 .metadata-fetch-actions {
@@ -520,6 +524,17 @@
   justify-content: space-between;
   gap: 10px;
   color: var(--mpx-text-2);
+}
+
+.metadata-fetch-preview-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metadata-fetch-preview-state .main-ui-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .metadata-fetch-preview-field {

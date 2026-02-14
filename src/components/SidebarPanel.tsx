@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactElement } from 'react'
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactElement } from 'react'
 
+import { MainUiIcon } from './MainUiIcon'
 import type { BrowserMode, SidebarNode } from '../types'
 
 function resolveFirstAudioId(node: SidebarNode): string | null {
@@ -86,6 +87,7 @@ interface SidebarPanelProps {
   onToggleVideoPlaylist: (videoId: string, checked: boolean) => void
   onToggleAudioPlaylist: (audioId: string, checked: boolean) => void
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void
+  onCheckManageNode?: (nodeId: string) => void
 }
 
 function SidebarPanel({
@@ -130,10 +132,99 @@ function SidebarPanel({
   onToggleVideoPlaylist,
   onToggleAudioPlaylist,
   onToggleManageNode,
+  onCheckManageNode,
 }: SidebarPanelProps) {
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>()
   const [collapsedImageFolderNodeIds, setCollapsedImageFolderNodeIds] = useState<Set<string>>(new Set())
+  const checkerDragCleanupRef = useRef<(() => void) | null>(null)
+  const checkerDragStateRef = useRef<{
+    startX: number
+    startY: number
+    startNodeId: string
+    dragStarted: boolean
+    visitedNodeIds: Set<string>
+  } | null>(null)
   const activeTreeNodes = mode === 'image' ? imageTreeNodes : mode === 'video' ? videoTreeNodes : audioTreeNodes
+
+  const detachCheckerDragListeners = useCallback(() => {
+    const cleanup = checkerDragCleanupRef.current
+    if (cleanup) {
+      checkerDragCleanupRef.current = null
+      cleanup()
+    }
+    checkerDragStateRef.current = null
+  }, [])
+
+  useEffect(
+    () => () => {
+      detachCheckerDragListeners()
+    },
+    [detachCheckerDragListeners],
+  )
+
+  const startCheckerDragSelection = (startNodeId: string, event: ReactMouseEvent<HTMLInputElement>) => {
+    if (!manageStyleEnabled || !onCheckManageNode || event.button !== 0) {
+      return
+    }
+
+    detachCheckerDragListeners()
+    checkerDragStateRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      startNodeId,
+      dragStarted: false,
+      visitedNodeIds: new Set<string>(),
+    }
+
+    const applyCheckedFromElement = (element: Element | null) => {
+      const state = checkerDragStateRef.current
+      if (!state) {
+        return
+      }
+
+      const row = element?.closest<HTMLElement>('[data-sidebar-node-id]')
+      const nodeId = row?.dataset.sidebarNodeId
+      if (!nodeId || state.visitedNodeIds.has(nodeId)) {
+        return
+      }
+
+      state.visitedNodeIds.add(nodeId)
+      onCheckManageNode(nodeId)
+    }
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const state = checkerDragStateRef.current
+      if (!state) {
+        return
+      }
+
+      const movedEnough = Math.abs(moveEvent.clientX - state.startX) >= 2 || Math.abs(moveEvent.clientY - state.startY) >= 2
+      if (!state.dragStarted && !movedEnough) {
+        return
+      }
+
+      if (!state.dragStarted) {
+        state.dragStarted = true
+        if (!state.visitedNodeIds.has(state.startNodeId)) {
+          state.visitedNodeIds.add(state.startNodeId)
+          onCheckManageNode(state.startNodeId)
+        }
+      }
+
+      applyCheckedFromElement(document.elementFromPoint(moveEvent.clientX, moveEvent.clientY))
+    }
+
+    const onMouseUp = () => {
+      detachCheckerDragListeners()
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    checkerDragCleanupRef.current = () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }
 
   useEffect(() => {
     const allowedIds = collectCollapsibleFolderIds(mode, activeTreeNodes)
@@ -155,7 +246,7 @@ function SidebarPanel({
   const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : mode === 'video' ? Boolean(videoRootNodeId) : Boolean(musicRootNodeId)
   const showRootToggle = !searchResultMode
   const rootToggleLabel = rootSet ? '恢复根目录' : '设为根'
-  const rootToggleIcon = rootSet ? '↺' : '⌖'
+  const rootToggleIconName = rootSet ? 'return' : 'setRoot'
 
   const renderNodes = (nodes: SidebarNode[], depth = 0): ReactElement[] => {
     return nodes.flatMap((node) => {
@@ -189,16 +280,30 @@ function SidebarPanel({
         >
           <span className={`sidebar-bullet ${loadState ? `is-${loadState}` : ''}`} aria-hidden="true" />
 
+          {manageStyleEnabled ? (
+            <input
+              className="sidebar-manage-checker"
+              type="checkbox"
+              readOnly
+              checked={checkedNodes.has(node.id)}
+              aria-label={`manage-node-${node.label}`}
+              onMouseDown={(event) => {
+                event.stopPropagation()
+                startCheckerDragSelection(node.id, event)
+              }}
+              onClick={(event) => {
+                event.stopPropagation()
+                onToggleManageNode?.(node.id, event.shiftKey)
+              }}
+            />
+          ) : null}
+
           <button
             className={`sidebar-label ${imageFolderCollapsible ? 'is-collapsible' : ''} ${imageFolderCollapsed ? 'is-collapsed' : ''}`}
             type="button"
             style={{ fontSize: `${sidebarFontSize}px` }}
             title={imageFolderCollapsible ? (imageFolderCollapsed ? '双击展开子目录' : '双击折叠子目录') : undefined}
             onClick={(event) => {
-              if (manageMode) {
-                onToggleManageNode?.(node.id, event.shiftKey)
-                return
-              }
               if (metadataManageMode && (!checkedNodes.has(node.id) || event.shiftKey)) {
                 onToggleManageNode?.(node.id, event.shiftKey)
               }
@@ -306,7 +411,7 @@ function SidebarPanel({
               disabled={!canGoToFromSearchMode}
               onClick={onGoToFromSearchMode}
             >
-              <span aria-hidden="true">←</span>
+              <MainUiIcon name="return" />
             </button>
           ) : null}
 
@@ -319,7 +424,7 @@ function SidebarPanel({
               disabled={!rootSet && !canSetCurrentRoot}
               onClick={rootSet ? onResetRoot : onSetCurrentRoot}
             >
-              <span aria-hidden="true">{rootToggleIcon}</span>
+              <MainUiIcon name={rootToggleIconName} />
             </button>
           ) : null}
         </div>

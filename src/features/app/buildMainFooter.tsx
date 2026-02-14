@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { VideoControlIcon } from '../../components/VideoControlIcon'
 import type { AudioItem, BrowserMode, ImageItem, ImagePackage, VideoItem } from '../../types'
 
 interface BuildMainFooterParams {
@@ -53,12 +54,12 @@ export function buildMainFooter({
 
       {showPagination ? (
         <div className="main-footer-pagination">
-          <button type="button" onClick={onPrevPage}>
-            上一页
+          <button className="main-icon-square-btn" type="button" aria-label="上一页" title="上一页" onClick={onPrevPage}>
+            <VideoControlIcon className="main-ui-icon" name="prev" />
           </button>
           <span>{`第 ${normalizedPageIndex + 1} / ${imageTotalPages} 页`}</span>
-          <button type="button" onClick={onNextPage}>
-            下一页
+          <button className="main-icon-square-btn" type="button" aria-label="下一页" title="下一页" onClick={onNextPage}>
+            <VideoControlIcon className="main-ui-icon" name="next" />
           </button>
         </div>
       ) : null}

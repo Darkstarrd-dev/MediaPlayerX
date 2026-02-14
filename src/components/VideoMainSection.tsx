@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
+import { MainUiIcon } from './MainUiIcon'
 import { VideoControlIcon } from './VideoControlIcon'
 import type { VideoItem } from '../types'
 import { videoFitModeLabel, type VideoFitMode } from '../features/media/videoFitMode'
@@ -206,17 +207,45 @@ function VideoMainSection({
         {manageMode ? (
           <>
             <div className="toolbar-actions toolbar-actions-manage">
-              <button className="vector-search-btn" type="button" disabled={!canManageDelete || pendingManageAction} onClick={onManageDelete}>
-                删除
+              <button
+                className="vector-search-btn main-icon-square-btn"
+                type="button"
+                aria-label="删除"
+                title="删除"
+                disabled={!canManageDelete || pendingManageAction}
+                onClick={onManageDelete}
+              >
+                <MainUiIcon name="delete" />
               </button>
-              <button className="feature-action-btn" type="button" disabled={!canManageHide || pendingManageAction} onClick={onManageHide}>
-                隐藏
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="隐藏"
+                title="隐藏"
+                disabled={!canManageHide || pendingManageAction}
+                onClick={onManageHide}
+              >
+                <MainUiIcon name="hidden" />
               </button>
-              <button className="feature-action-btn" type="button" disabled={!canManageUnhide || pendingManageAction} onClick={onManageUnhide}>
-                取消隐藏
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="取消隐藏"
+                title="取消隐藏"
+                disabled={!canManageUnhide || pendingManageAction}
+                onClick={onManageUnhide}
+              >
+                <MainUiIcon name="reveal" />
               </button>
-              <button className="feature-action-btn" type="button" disabled={pendingManageAction} onClick={onClearManageSelection}>
-                清空选择
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="清空选择"
+                title="清空选择"
+                disabled={pendingManageAction}
+                onClick={onClearManageSelection}
+              >
+                <MainUiIcon name="unselectAll" />
               </button>
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>
@@ -228,8 +257,15 @@ function VideoMainSection({
           <>
             <strong className="main-toolbar-title">元数据管理</strong>
             <div className="toolbar-actions toolbar-actions-manage">
-              <button className="feature-action-btn" type="button" disabled={metadataPending} onClick={onMetadataSyncName}>
-                同步名称
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label="同步名称"
+                title="同步名称"
+                disabled={metadataPending}
+                onClick={onMetadataSyncName}
+              >
+                <MainUiIcon name="refresh" />
               </button>
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>

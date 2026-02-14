@@ -203,6 +203,14 @@
   min-height: var(--mpx-control-height);
 }
 
+.main-footer-pagination .main-icon-square-btn {
+  width: var(--mpx-icon-button-size);
+  height: var(--mpx-icon-button-size);
+  min-width: var(--mpx-icon-button-size);
+  min-height: var(--mpx-icon-button-size);
+  padding: 0;
+}
+
 .main-footer-pagination span {
   white-space: nowrap;
   overflow: visible;

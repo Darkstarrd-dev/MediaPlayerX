@@ -96,6 +96,7 @@ function renderMusicSidebar(overrides: Partial<ComponentProps<typeof SidebarPane
   const onSelectAudio = vi.fn()
   const onSelectNode = vi.fn()
   const onToggleManageNode = vi.fn()
+  const onCheckManageNode = vi.fn()
 
   render(
     <SidebarPanel
@@ -132,6 +133,7 @@ function renderMusicSidebar(overrides: Partial<ComponentProps<typeof SidebarPane
       onToggleVideoPlaylist={vi.fn()}
       onToggleAudioPlaylist={vi.fn()}
       onToggleManageNode={onToggleManageNode}
+      onCheckManageNode={onCheckManageNode}
       {...overrides}
     />,
   )
@@ -140,6 +142,7 @@ function renderMusicSidebar(overrides: Partial<ComponentProps<typeof SidebarPane
     onSelectAudio,
     onSelectNode,
     onToggleManageNode,
+    onCheckManageNode,
   }
 }
 
@@ -249,6 +252,26 @@ describe('SidebarPanel music interactions', () => {
     expect(onSelectNode).toHaveBeenCalledWith('folder:X盘/Album A')
     expect(onSelectAudio).toHaveBeenCalledWith('audio-1')
     expect(document.querySelectorAll('.sidebar-row.is-manage').length).toBeGreaterThan(0)
+  })
+
+  it('管理模式下点击节点标签仍会驱动导航，不再拦截为勾选', () => {
+    const { onSelectAudio, onSelectNode, onToggleManageNode } = renderMusicSidebar({ manageMode: true })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Album A' }))
+
+    expect(onToggleManageNode).not.toHaveBeenCalled()
+    expect(onSelectNode).toHaveBeenCalledWith('folder:X盘/Album A')
+    expect(onSelectAudio).toHaveBeenCalledWith('audio-1')
+  })
+
+  it('管理模式下节点左侧显示 checker，并支持 shift 点击勾选', () => {
+    const { onToggleManageNode } = renderMusicSidebar({ manageMode: true })
+
+    const checkboxes = screen.getAllByRole('checkbox', { name: /manage-node-/ })
+    expect(checkboxes).toHaveLength(2)
+
+    fireEvent.click(checkboxes[1], { shiftKey: true })
+    expect(onToggleManageNode).toHaveBeenCalledWith('folder:X盘/Album A', true)
   })
 
   it('音乐模式目录节点支持双击折叠/展开', () => {

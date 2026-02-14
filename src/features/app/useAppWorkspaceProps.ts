@@ -200,6 +200,7 @@ interface UseAppWorkspacePropsParams {
   collapseSidebar: () => void
   applyCurrentRootFromSelection: () => void
   toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void
+  checkSidebarNode: (nodeId: string) => void
   setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
   requestMusicPlay: () => void
   musicBookletBindings: MusicBookletBindingsResult
@@ -361,6 +362,7 @@ export function useAppWorkspaceProps({
   collapseSidebar,
   applyCurrentRootFromSelection,
   toggleSidebarNodeChecked,
+  checkSidebarNode,
   setAudioPlaylistIds,
   requestMusicPlay,
   musicBookletBindings,
@@ -426,6 +428,7 @@ export function useAppWorkspaceProps({
     audioPlaylistIds,
     setAudioPlaylistIds,
     onToggleManageNode: toggleSidebarNodeChecked,
+    onCheckManageNode: checkSidebarNode,
   })
 
   const searchPanelProps = buildSearchPanelProps({
@@ -548,7 +551,6 @@ export function useAppWorkspaceProps({
     mode === 'image' &&
     !vectorResultsActive &&
     !metadataManageMode &&
-    !manageMode &&
     Boolean(selectedSidebarNode && selectedSidebarNode.imageNodeType === 'folder' && selectedSidebarNode.children.length > 0)
 
   const nodeBrowseItems = buildNodeBrowseItems({
