@@ -36,6 +36,16 @@ MEDIA_PLAYERX_PROXY_BYPASS=localhost,127.0.0.1,::1
 npm run desktop:start
 ```
 
+## 打包 Windows 安装包
+
+```bash
+# 未签名包（内测/调试）
+npm run desktop:pack:unsigned
+
+# 签名包（正式发布，需先配置证书环境变量）
+npm run desktop:pack:signed
+```
+
 ## 启动画面可视化调参
 
 ```bash
@@ -64,6 +74,7 @@ npm run test
 - `docs/interaction-v1.md`
 - `docs/music-visualizer-shader-migration-playbook.md`
 - `docs/backend-integration-guardrails.md`
+- `docs/windows-release-signing-runbook.md`
 - `docs/stability-note-2026-02-12-sidebar-switch-crash.md`
 - `docs/project-evaluation-report-v3.md`
 - `docs/perf/2026-02-07-scan-benchmark.md`

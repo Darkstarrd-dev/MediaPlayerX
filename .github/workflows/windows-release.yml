@@ -1,0 +1,52 @@
+name: Windows Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      signed:
+        description: Build signed installer
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  build-windows-installer:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build renderer and electron bundles
+        run: npm run desktop:bundle
+
+      - name: Pack unsigned installer
+        if: ${{ !inputs.signed }}
+        run: npm run desktop:pack:unsigned
+
+      - name: Pack signed installer
+        if: ${{ inputs.signed }}
+        run: npm run desktop:pack:signed
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mediaplayerx-windows-installer
+          path: |
+            release/*.exe
+            release/*.blockmap
+            release/latest*.yml
