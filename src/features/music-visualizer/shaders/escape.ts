@@ -1,0 +1,368 @@
+import escapeBufferAIChannel0 from '../../../assets/EscapeBufferAIChannel0.png'
+import escapeBufferAIChannel1 from '../../../assets/EscapeBufferAIChannel1.png'
+import escapeImageIChannel0 from '../../../assets/EscapeImageIChannel0.png'
+import type { MusicVisualizerShaderDefinition } from '../types'
+
+const BUFFER_A_SOURCE = String.raw`#define PI 3.1415926535898
+float matid = 0.0;
+float tdist = 0.0;
+
+float box(vec3 p, vec3 b)
+{
+  vec3 d = abs(p) - b;
+  return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+}
+
+float infi_box(vec3 p, vec2 b)
+{
+  vec2 d = abs(p.xy) - b;
+  return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+
+vec3 path(float p)
+{
+  return vec3(sin(p * 0.05) * cos(p * 0.025) * 18.0, 0.0, 0.0);
+}
+
+float cylinder(vec3 p, vec2 h)
+{
+  p.yz = p.zy;
+  vec2 d = abs(vec2(length(p.xz), p.y)) - h;
+  return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+
+vec3 map(vec3 pos)
+{
+  vec3 p = pos - path(pos.z);
+  float d = 2.0 - length(p.xy);
+  float d0 = length(vec3(p.x, -0.5, p.z) - p);
+  float d1 = length(vec3(p.x, 1.2, p.z) - p);
+  float d2 = cylinder(vec3(abs(p.x) - 1.6, p.y - 1.15, mod(p.z, 2.0) - 1.0), vec2(0.06, 0.2));
+  float d3 = infi_box(vec3(abs(p.x) - 1.8, p.y + 0.5, p.z), vec2(0.5, 0.03));
+  float d4 = infi_box(vec3(abs(p.x) - 1.3, p.y + 0.5, p.z), vec2(0.015, 0.04));
+  float d5 = box(vec3(abs(p.x) - 1.99, p.y + 0.2, mod(p.z, 8.0) - 4.0), vec3(0.02, 0.02, 0.02));
+
+  matid = 0.0;
+  if (d0 < d) { d = d0; matid = 1.0; }
+  if (d1 < d) { d = d1; matid = 2.0; }
+  if (d2 < d) { d = d2; matid = 3.0; }
+  if (d3 < d) { d = d3; matid = 1.0; }
+  if (d4 < d) { d = d4; matid = 1.0; }
+  if (d5 < d) { d = d5; matid = 4.0; }
+
+  return vec3(d);
+}
+
+vec3 get_normal(vec3 p)
+{
+  const vec2 e = vec2(0.002, 0.0);
+  return normalize(vec3(
+    map(p + e.xyy).x - map(p - e.xyy).x,
+    map(p + e.yxy).x - map(p - e.yxy).x,
+    map(p + e.yyx).x - map(p - e.yyx).x
+  ));
+}
+
+float get_ao(vec3 p, vec3 n)
+{
+  float r = 0.0;
+  float w = 1.0;
+  for (float i = 1.0; i < 6.1; i += 1.0)
+  {
+    float d = i / 5.0;
+    r += w * (d - map(p + n * d).x);
+    w *= 0.5;
+  }
+  return 1.0 - clamp(r, 0.0, 1.0);
+}
+
+float intersect(vec3 ro, vec3 rd)
+{
+  vec3 res = vec3(0.0);
+  float t = 0.01;
+  for (int i = 0; i < 128; ++i)
+  {
+    vec3 p = ro + rd * t;
+    res = map(p);
+    if (res.x < 0.005 * t || res.x > 20.0)
+      break;
+    t += res.x;
+    tdist = t;
+  }
+
+  if (res.x > 20.0) t = -1.0;
+  return t;
+}
+
+vec4 texcube(sampler2D sam, vec3 p, vec3 n)
+{
+  vec4 x = texture(sam, p.yz);
+  vec4 y = texture(sam, p.zx);
+  vec4 z = texture(sam, p.xy);
+  return x * abs(n.x) + y * abs(n.y) + z * abs(n.z);
+}
+
+vec3 lighting(vec3 rd, vec3 ro, vec3 lp0, vec3 pos, vec3 n)
+{
+  vec3 p = pos - path(pos.z);
+
+  float a = atan(p.y, p.x);
+  vec2 uv = vec2(p.z * 0.1, a * 0.1);
+
+  vec3 mate = vec3(1.0);
+
+  if (matid < 0.9)
+    mate = (0.35 + 3.5 * pow(p.y, 5.0)) * texture(iChannel0, uv).xxx;
+  else if (matid < 2.9)
+    mate = 0.5 * texcube(iChannel1, p, n).xxx;
+  else if (matid < 3.9)
+    mate = 10.0 * vec3(0.7, 0.8, 1.2);
+  else if (matid < 4.9)
+    mate = 10.0 * vec3(1.0, 1.0, 0.1);
+
+  if (p.y < 0.5)
+  {
+    mate += (1.0 - smoothstep(0.05, 0.06, abs(abs(p.x) - 1.1))) * vec3(1.0);
+    mate = mix(mate, vec3(1.0), floor(fract(p.z * 0.5) + 0.5) * (1.0 - smoothstep(0.04, 0.05, abs(p.x) - 0.001)));
+  }
+
+  if (matid > 1.9 && matid < 2.9)
+    mate += 0.5 * smoothstep(0.8, 1.5, abs(p.x));
+
+  vec3 ld0 = normalize(lp0 - pos);
+
+  float dif = max(0.0, dot(n, ld0));
+  float spe = max(0.0, pow(clamp(dot(ld0, reflect(rd, n)), 0.0, 1.0), 20.0));
+  float ao = get_ao(pos, n);
+  vec3 lin = 4.0 * vec3(0.1, 0.5, 1.0) * dif * ao * ao;
+  lin += 2.5 * vec3(1.0) * spe;
+  lin = lin * 0.2 * mate;
+
+  return lin;
+}
+
+vec3 shade(vec3 ro, vec3 rd, vec3 l0_pos)
+{
+  vec3 col = rd;
+  float res = intersect(ro, rd);
+
+  if (res > -0.5)
+  {
+    vec3 pos = ro + rd * res;
+    vec3 n = get_normal(pos);
+    col = lighting(rd, ro, l0_pos, pos, n);
+  }
+  return col;
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+  vec2 uv = (fragCoord.xy - iResolution.xy * 0.5) / iResolution.xy;
+  uv.x *= iResolution.x / iResolution.y;
+
+  float velocity = 8.0;
+  float fov = PI / 3.0;
+
+  vec3 look_at = vec3(0.0, 0.0, iTime * velocity);
+  vec3 ro = look_at + vec3(0.0, 0.0, -0.5);
+  vec3 l0_pos = ro + vec3(0.0, 0.0, 2.0);
+
+  look_at += path(look_at.z);
+  ro += path(ro.z);
+  l0_pos += path(l0_pos.z);
+
+  vec3 forward = normalize(look_at - ro);
+  vec3 right = normalize(cross(forward, vec3(0.0, 1.0, 0.0)));
+  vec3 up = cross(right, forward);
+
+  vec3 rd = normalize(uv.x * right + uv.y * up + fov * forward);
+  vec3 col = shade(ro, rd, l0_pos);
+  col = mix(col, 0.14 * vec3(0.34, 0.62, 1.06), 1.0 - exp(-0.002 * tdist * tdist));
+
+  float encodedDist = clamp(tdist / 20.0, 0.0, 1.0);
+  fragColor = vec4(col, encodedDist);
+}
+`
+
+const BACKGROUND_IMAGE_SOURCE = String.raw`vec2 totex(vec2 p)
+{
+  p.x = p.x * iResolution.y / iResolution.x + 0.5;
+  p.y += 0.5;
+  return p;
+}
+
+vec3 sample_color(vec2 p)
+{
+  return texture(iChannel2, totex(p)).xyz;
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+  vec2 uv = fragCoord.xy / iResolution.xy;
+  vec2 p = (fragCoord.xy - iResolution.xy * 0.5) / iResolution.yy;
+
+  vec4 fb = texture(iChannel2, uv);
+
+  float dist = max(fb.w * 20.0, 0.0001);
+  float amp = 0.1 / dist;
+  vec4 noise = texture(iChannel0, (fragCoord + floor(iTime * vec2(12.0, 56.0))) / 64.0);
+
+  vec3 col = vec3(0.0);
+  col += sample_color(p * ((noise.x + 2.0) * amp + 1.0));
+  col += sample_color(p * ((noise.y + 1.0) * amp + 1.0));
+  col += sample_color(p * ((noise.z + 0.0) * amp + 1.0));
+  col += sample_color(p * ((noise.w - 1.0) * amp + 1.0));
+  col += sample_color(p * ((noise.x - 2.0) * amp + 1.0));
+  col *= 0.2;
+  col.y *= 1.05;
+  col = pow(clamp(col, 0.0, 1.0), vec3(0.45));
+  col = mix(col, vec3(dot(col, vec3(0.33))), -0.5);
+  col *= vec3(0.95, 0.86, 1.08);
+
+  fragColor = vec4(col, 1.0);
+}
+`
+
+const FOREGROUND_SOURCE = String.raw`const float XFill = 0.9;
+const float BarWidth = 0.0125;
+const float YOffset = 0.53;
+
+vec3 bouncingBars(vec2 p) {
+  float antiAlias = sqrt(2.0) / iResolution.y;
+  float aspectScale = XFill * iResolution.x / iResolution.y;
+  vec3 color = vec3(0.0);
+
+  vec2 op = p;
+  op.y += YOffset;
+
+  p /= aspectScale;
+  p.y += YOffset / aspectScale;
+
+  vec2 normalizedPos = (1.0 + p) * 0.5;
+  float barIndex = round(normalizedPos.x / BarWidth) * BarWidth;
+
+  if (barIndex >= 0.0 && barIndex <= 1.0) {
+    vec2 localPos = vec2(normalizedPos.x - barIndex, abs(normalizedPos.y - 0.5));
+    float sampleX = clamp(barIndex + 0.5 * BarWidth, 0.0, 1.0);
+    float amplitude = texture(iChannel0, vec2(sampleX, 0.25)).x;
+    float highBandLift = mix(1.0, 3.2, pow(sampleX, 0.75));
+    float waveformPulse = abs(texture(iChannel0, vec2(sampleX, 0.75)).x - 0.5) * 2.0;
+    amplitude = amplitude * highBandLift + waveformPulse * 0.2;
+    amplitude = amplitude * sqrt(sampleX + 0.2) * 2.5 / aspectScale - 0.25;
+
+    localPos.y -= amplitude * 0.3;
+
+    float distanceToBar = aspectScale * ((localPos.y > 0.0 ? length(localPos) : abs(localPos.x)) - BarWidth * 0.4);
+
+    color = mix(
+      color,
+      (1.0 + sin(abs(p.y) - iTime + 2.0 * p.x + vec3(0.0, 1.0, 2.0))) * (1.25 + sign(p.y)),
+      smoothstep(antiAlias, -antiAlias, distanceToBar)
+    );
+  }
+
+  if (abs(op.y) < 2.0 * antiAlias) {
+    color = vec3(2.0);
+  }
+
+  if (op.y < 0.0) {
+    color -= 0.003 * vec3(1.0, 3.0, 21.0) * op.y;
+  }
+
+  return color;
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 p = (fragCoord + fragCoord - iResolution.xy) / iResolution.y;
+  fragColor = vec4(sqrt(tanh(bouncingBars(p))), 1.0);
+}
+`
+
+const FINAL_COMPOSITE_SOURCE = String.raw`vec3 screenBlend(vec3 base, vec3 layer) {
+  return 1.0 - (1.0 - base) * (1.0 - layer);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 uv = fragCoord / iResolution.xy;
+  vec3 background = texture(iChannel0, uv).rgb;
+  vec3 foreground = texture(iChannel1, uv).rgb;
+
+  vec3 color = screenBlend(background, foreground * 1.2);
+
+  fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
+}
+`
+
+export const SHADER: MusicVisualizerShaderDefinition = {
+  id: 'escape',
+  label: 'Escape',
+  fragmentSource: FINAL_COMPOSITE_SOURCE,
+  multiPass: {
+    textures: [
+      {
+        id: 'escape-buffera-ch0',
+        preset: 'noise-rgb',
+        width: 1024,
+        height: 1024,
+        sourceUrl: escapeBufferAIChannel0,
+        filter: 'linear',
+        wrap: 'repeat',
+      },
+      {
+        id: 'escape-buffera-ch1',
+        preset: 'noise-rgb',
+        width: 1024,
+        height: 1024,
+        sourceUrl: escapeBufferAIChannel1,
+        filter: 'linear',
+        wrap: 'repeat',
+      },
+      {
+        id: 'escape-image-noise',
+        preset: 'noise-rgb',
+        width: 512,
+        height: 512,
+        sourceUrl: escapeImageIChannel0,
+        filter: 'linear',
+        wrap: 'repeat',
+      },
+    ],
+    passes: [
+      {
+        id: 'escape-buffer-a',
+        fragmentSource: BUFFER_A_SOURCE,
+        output: 'buffer',
+        channels: [
+          { kind: 'texture', textureId: 'escape-buffera-ch0' },
+          { kind: 'texture', textureId: 'escape-buffera-ch1' },
+        ],
+      },
+      {
+        id: 'escape-background',
+        fragmentSource: BACKGROUND_IMAGE_SOURCE,
+        output: 'buffer',
+        channels: [
+          { kind: 'texture', textureId: 'escape-image-noise' },
+          null,
+          { kind: 'pass', passId: 'escape-buffer-a' },
+        ],
+      },
+      {
+        id: 'escape-foreground',
+        fragmentSource: FOREGROUND_SOURCE,
+        output: 'buffer',
+        channels: [{ kind: 'audio' }],
+      },
+      {
+        id: 'escape-image',
+        fragmentSource: FINAL_COMPOSITE_SOURCE,
+        output: 'screen',
+        toneMap: true,
+        channels: [
+          { kind: 'pass', passId: 'escape-background' },
+          { kind: 'pass', passId: 'escape-foreground' },
+        ],
+      },
+    ],
+  },
+}

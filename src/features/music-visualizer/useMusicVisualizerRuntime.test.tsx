@@ -317,7 +317,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     expect(scaledFrame?.height).toBe(1500)
   })
 
-  it('galaxy 和 starfield 的前景背景倍率会抬升最终输出分辨率', () => {
+  it('galaxy、starfield、escape 的前景背景倍率会抬升最终输出分辨率', () => {
     const scenarios = [
       {
         shaderId: 'galaxy',
@@ -332,6 +332,13 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         backgroundPassId: 'starfield-background',
         foregroundPassId: 'starfield-foreground',
         screenPassId: 'starfield-image',
+      },
+      {
+        shaderId: 'escape',
+        label: 'Escape',
+        backgroundPassId: 'escape-background',
+        foregroundPassId: 'escape-foreground',
+        screenPassId: 'escape-image',
       },
     ]
 

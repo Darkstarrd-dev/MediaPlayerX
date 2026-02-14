@@ -13,6 +13,7 @@ describe('shaderRegistry', () => {
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'fungi')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'singularity')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'rain-drips')).toBe(true)
+    expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'escape')).toBe(true)
   })
 
   it('resolves default shader entry', () => {

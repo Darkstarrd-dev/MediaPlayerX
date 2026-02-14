@@ -265,6 +265,21 @@
   - 前景叠加来源 `https://www.shadertoy.com/view/Nd33zr`，并按中心缩放到原始尺寸的 `60%`。
   - 音乐响应仅作用于亮度（brightness）：`iAudioLevel` 与 `iAudioBeat` 仅驱动高光区域增亮，不驱动几何路径。
 
+## 6.6 新增 Shader（Escape）
+
+- Shader：`src/features/music-visualizer/shaders/escape.ts`
+- 背景来源 URL：`https://www.shadertoy.com/view/4lcGWr`
+- 前景来源 URL：`https://www.shadertoy.com/view/W3y3Wy`
+- 接入定位：高速隧道背景 + 音频柱状前景（多 Pass 复合）。
+- 适配说明：
+  - 背景链路按 `Buffer A -> Image` 重建，并接入本地纹理资源：
+    - `src/assets/EscapeBufferAIChannel0.png`
+    - `src/assets/EscapeBufferAIChannel1.png`
+    - `src/assets/EscapeImageIChannel0.png`
+  - 前景链路单独实现 `escape-foreground` pass，保留原始音频柱状动画。
+  - 最终合成 pass 采用 screen blend，将前景覆盖到背景之上。
+  - 为适配 UNORM 缓冲，`Buffer A` 的 `tdist` 写入 alpha 时做归一化编码，`Image` pass 按同尺度解码。
+
 ## 7. 变更记录（持续追加）
 
 - 2026-02-14
@@ -277,5 +292,6 @@
   - 新增 `Nebula` Shader，来源 `https://www.shadertoy.com/view/MXXcD4` + `https://www.shadertoy.com/view/43GGDm`，完成背景与前景融合。
   - 新增 `Fungi` Shader，来源 `https://www.shadertoy.com/view/33VGzW`，并落地音频响应的人机工程优化方案（包络平滑 + onset 脉冲 + 高光局部脉冲 + 过曝压缩）。
   - 新增 `Rain Drips` Shader，来源 `https://www.shadertoy.com/view/tstXRj`，并基于多 Pass 运行时实现 `Buffer A/B/Image` 链路；`iChannel1/iChannel3` 已接入本地贴图资源，叠加 `Nd33zr` 前景并缩放至 60%，音乐响应限定为亮度通道。
+  - 新增 `Escape` Shader，来源 `https://www.shadertoy.com/view/4lcGWr` + `https://www.shadertoy.com/view/W3y3Wy`，完成背景与前景多 Pass 复合接入。
   - Tone Mapping 模式扩展为 `off/reinhard/aces/filmic/agx/khronos`，由统一后处理管线驱动。
   - Tone Mapping / FPS / 渲染长边切换改为热更新，减少运行时重建引发的不稳定。
