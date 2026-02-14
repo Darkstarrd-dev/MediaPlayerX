@@ -150,6 +150,84 @@ const BUFFER_B_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fr
 }
 `
 
+const AUDIO_FOREGROUND_PASS_SOURCE = String.raw`#define PI 3.141592
+
+const float OUTER_RING_RESPONSE_GAIN = 2.5;
+
+vec3 drawWave(in vec2 uv)
+{
+    float downsizeX = 2.5;
+    uv.x = (uv.x * downsizeX) - (downsizeX - 1.0) * 0.5;
+    float downsizeY = 7.5;
+    uv.y = (uv.y * downsizeY) - (downsizeY - 1.0) * 0.5;
+
+    int tx = int(clamp(uv.x, 0.0, 1.0) * 511.0);
+    float wave = texelFetch(iChannel0, ivec2(tx, 1), 0).x;
+
+    float waveThickness = pow(abs(wave - 0.5), 0.6) * 3.0;
+    vec3 waveCol = vec3(1.0 - smoothstep(0.0, waveThickness, abs(wave - uv.y)));
+
+    float xColorSpeed = 1.2;
+    float xColor1 = cos(iTime * xColorSpeed + PI * uv.x) * 0.5 + 0.5;
+    float xColor2 = cos(iTime * xColorSpeed + PI * uv.x + PI * 0.25) * 0.5 + 0.5;
+    float xColor3 = 1.0 - xColor2;
+    waveCol *= vec3(waveCol.x * xColor3, waveCol.x * xColor2, waveCol.x * xColor1);
+    waveCol *= 1.2;
+
+    float lineThickness = 0.02;
+    float lineIsInXRange = float(uv.x > 0.0 && uv.x < 1.0);
+    float lineIsInYRange = float(uv.y > (0.5 - lineThickness) && uv.y < (0.5 + lineThickness));
+    float lineCol = 1.0 * lineIsInXRange * lineIsInYRange;
+    vec3 col = lineCol > 0.0 ? vec3(1.0) : waveCol;
+
+    float fade = 0.2;
+    col *= smoothstep(0.0, fade, uv.x) * (1.0 - smoothstep(1.0 - fade, 1.0, uv.x));
+    return col;
+}
+
+vec3 drawFreq(vec2 fragCoord)
+{
+    vec2 centeredUv = (fragCoord.xy - iResolution.xy * 0.5) / max(iResolution.x, iResolution.y);
+    float r = length(centeredUv);
+    float theta = atan(centeredUv.y, centeredUv.x);
+    theta = theta / (2.0 * PI) + 0.5;
+
+    float nBands = 128.0;
+    float intBand = floor(theta * nBands);
+    float fractBand = fract(theta * nBands);
+
+    int tx = int(clamp(intBand / nBands, 0.0, 1.0) * 511.0);
+    float fft = texelFetch(iChannel0, ivec2(tx, 0), 0).x;
+
+    float circleMinRadius = 0.24;
+    float circleMaxRadius = 0.30;
+    float bandWidth = 0.1;
+    bandWidth += 0.3 * abs(cos(iTime * 0.4 + PI * theta));
+    float freqAmount = circleMinRadius + (circleMaxRadius - circleMinRadius) * fft * OUTER_RING_RESPONSE_GAIN;
+    float isInBandRange = float(fractBand < bandWidth && r > circleMinRadius && r < freqAmount);
+    vec3 freqColor = vec3(1.0) * isInBandRange;
+
+    float xColorSpeed = 1.2;
+    float xColor1 = cos(iTime * xColorSpeed + PI * theta) * 0.5 + 0.5;
+    float xColor2 = cos(iTime * xColorSpeed + PI * theta + PI * 0.25) * 0.5 + 0.5;
+    float xColor3 = 1.0 - xColor2;
+    freqColor *= vec3(xColor1, xColor2, xColor3);
+
+    float lineThickness = 0.003;
+    vec3 lineColor = vec3(float(r > circleMinRadius && r < circleMinRadius + lineThickness));
+    return freqColor + lineColor;
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+    vec2 uv = fragCoord.xy / iResolution.xy;
+    vec3 col = vec3(0.0);
+    col += drawFreq(fragCoord);
+    col += drawWave(uv);
+    fragColor = vec4(col, 1.0);
+}
+`
+
 const IMAGE_PASS_SOURCE = String.raw`#define heightMap iChannel0
 #define heightMapResolution iChannelResolution[0]
 #define textureOffset 1.0
@@ -169,88 +247,16 @@ vec2 texNormalMap(in vec2 uv)
 }
 
 const float FOREGROUND_SCALE = 0.84;
-const float OUTER_RING_RESPONSE_GAIN = 2.5;
-const float FG_PI = 3.141592;
-
-vec3 drawWaveForeground(in vec2 uv)
-{
-    float downsizeX = 2.5;
-    vec2 scaledUv = uv;
-    scaledUv.x = (scaledUv.x * downsizeX) - (downsizeX - 1.0) * 0.5;
-    float downsizeY = 7.5;
-    scaledUv.y = (scaledUv.y * downsizeY) - (downsizeY - 1.0) * 0.5;
-
-    int tx = int(clamp(scaledUv.x, 0.0, 1.0) * 511.0);
-    float wave = texelFetch(iChannel2, ivec2(tx, 1), 0).x;
-
-    float waveThickness = pow(abs(wave - 0.5), 0.6) * 3.0;
-    vec3 waveCol = vec3(1.0 - smoothstep(0.0, waveThickness, abs(wave - scaledUv.y)));
-
-    float xColorSpeed = 1.2;
-    float xColor1 = cos(iTime * xColorSpeed + FG_PI * scaledUv.x) * 0.5 + 0.5;
-    float xColor2 = cos(iTime * xColorSpeed + FG_PI * scaledUv.x + FG_PI * 0.25) * 0.5 + 0.5;
-    float xColor3 = 1.0 - xColor2;
-    waveCol *= vec3(waveCol.x * xColor3, waveCol.x * xColor2, waveCol.x * xColor1);
-    waveCol *= 1.2;
-
-    float lineThickness = 0.02;
-    float lineIsInXRange = float(scaledUv.x > 0.0 && scaledUv.x < 1.0);
-    float lineIsInYRange = float(scaledUv.y > (0.5 - lineThickness) && scaledUv.y < (0.5 + lineThickness));
-    float lineCol = 1.0 * lineIsInXRange * lineIsInYRange;
-
-    vec3 col = lineCol > 0.0 ? vec3(1.0) : waveCol;
-
-    float fade = 0.2;
-    col *= smoothstep(0.0, fade, scaledUv.x) * (1.0 - smoothstep(1.0 - fade, 1.0, scaledUv.x));
-
-    return col;
-}
-
-vec3 drawFreqForeground(const vec2 uv, vec2 fragCoord)
-{
-    vec2 centeredUv = (fragCoord.xy - iResolution.xy * 0.5) / max(iResolution.x, iResolution.y);
-    float r = sqrt(centeredUv.x * centeredUv.x + centeredUv.y * centeredUv.y);
-    float theta = atan(centeredUv.y, centeredUv.x);
-    theta = theta / (2.0 * FG_PI) + 0.5;
-
-    float nBands = 128.0;
-    float intBand = floor(theta * nBands);
-    float fractBand = fract(theta * nBands);
-
-    int tx = int(clamp(intBand / nBands, 0.0, 1.0) * 511.0);
-    float fft = texelFetch(iChannel2, ivec2(tx, 0), 0).x;
-
-    float circleMinRadius = 0.24;
-    float circleMaxRadius = 0.30;
-    float bandWidth = 0.1;
-    bandWidth += 0.3 * abs(cos(iTime * 0.4 + FG_PI * theta));
-    float freqAmount = circleMinRadius + (circleMaxRadius - circleMinRadius) * fft * OUTER_RING_RESPONSE_GAIN;
-    float isInBandRange = float(fractBand < bandWidth && r > circleMinRadius && r < freqAmount);
-    vec3 freqColor = vec3(1.0) * isInBandRange;
-
-    float xColorSpeed = 1.2;
-    float xColor1 = cos(iTime * xColorSpeed + FG_PI * theta) * 0.5 + 0.5;
-    float xColor2 = cos(iTime * xColorSpeed + FG_PI * theta + FG_PI * 0.25) * 0.5 + 0.5;
-    float xColor3 = 1.0 - xColor2;
-    freqColor *= vec3(xColor1, xColor2, xColor3);
-
-    float lineThickness = 0.003;
-    vec3 lineColor = vec3(float(r > circleMinRadius && r < circleMinRadius + lineThickness));
-
-    return freqColor + lineColor;
-}
 
 vec3 screenBlend(vec3 base, vec3 layer)
 {
     return 1.0 - (1.0 - base) * (1.0 - layer);
 }
 
-vec3 drawAudioForegroundScaled(vec2 fragCoord, vec2 resolution)
+vec3 sampleAudioForegroundScaled(vec2 fragCoord, vec2 resolution)
 {
     vec2 uv = fragCoord / resolution;
     vec2 scaledUv = (uv - 0.5) / FOREGROUND_SCALE + 0.5;
-    vec2 scaledFragCoord = scaledUv * resolution;
-
     float inBounds =
         step(0.0, scaledUv.x) * step(scaledUv.x, 1.0) *
         step(0.0, scaledUv.y) * step(scaledUv.y, 1.0);
@@ -261,10 +267,7 @@ vec3 drawAudioForegroundScaled(vec2 fragCoord, vec2 resolution)
         (1.0 - smoothstep(0.97, 1.0, scaledUv.x)) *
         (1.0 - smoothstep(0.97, 1.0, scaledUv.y));
 
-    vec3 col = vec3(0.0);
-    col += drawFreqForeground(scaledUv, scaledFragCoord);
-    col += drawWaveForeground(scaledUv);
-
+    vec3 col = texture(iChannel2, scaledUv).rgb;
     return col * inBounds * edgeFade;
 }
 
@@ -309,7 +312,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         fragColor.rgb += fragColor.rgb * brightnessBoost * (0.22 + 0.78 * responseMask);
         fragColor.rgb = fragColor.rgb / (1.0 + fragColor.rgb * (0.12 + beat * 0.08));
 
-        vec3 foreground = drawAudioForegroundScaled(fragCoord, res);
+        vec3 foreground = sampleAudioForegroundScaled(fragCoord, res);
         foreground *= 0.95;
         fragColor.rgb = screenBlend(fragColor.rgb, foreground);
     }
@@ -396,6 +399,13 @@ export const SHADER: MusicVisualizerShaderDefinition = {
         ],
       },
       {
+        id: 'foreground-audio',
+        fragmentSource: AUDIO_FOREGROUND_PASS_SOURCE,
+        output: 'buffer',
+        renderScale: 1,
+        channels: [{ kind: 'audio' }],
+      },
+      {
         id: 'image',
         fragmentSource: IMAGE_PASS_SOURCE,
         output: 'screen',
@@ -403,7 +413,7 @@ export const SHADER: MusicVisualizerShaderDefinition = {
         channels: [
           { kind: 'pass', passId: 'buffer-b' },
           { kind: 'texture', textureId: 'rain-bg' },
-          { kind: 'audio' },
+          { kind: 'pass', passId: 'foreground-audio' },
           { kind: 'texture', textureId: 'rain-glass' },
         ],
       },

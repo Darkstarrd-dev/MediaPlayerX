@@ -558,6 +558,22 @@
   font-size: 12px;
 }
 
+.music-ctrl-shader-input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.music-ctrl-shader-input[type='number']::-webkit-outer-spin-button,
+.music-ctrl-shader-input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.music-ctrl-shader-input option {
+  background: var(--mpx-player-hud-bg);
+  color: var(--mpx-player-hud-text);
+}
+
 .music-ctrl-shader-input:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--mpx-color-accent, #56b6ff) 70%, #fff 30%);
   outline-offset: 1px;

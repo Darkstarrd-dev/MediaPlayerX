@@ -15,7 +15,7 @@ const MIN_RENDER_LONG_EDGE = 240
 const MAX_RENDER_LONG_EDGE = 4096
 const STATS_UPDATE_INTERVAL_MS = 240
 const MIN_SHADER_RENDER_SCALE = 0.25
-const MAX_SHADER_RENDER_SCALE = 1
+const MAX_SHADER_RENDER_SCALE = 5
 const MIN_TONE_MAP_EXPOSURE = 0.5
 const MAX_TONE_MAP_EXPOSURE = 2
 const TONE_MAP_EXPOSURE_SLEW_PER_SECOND = 1.8
@@ -46,6 +46,7 @@ interface UseMusicVisualizerRuntimeParams {
   toneMapExposure: number
   toneMapStrength: number
   selectedShaderId: string | null
+  foregroundBackgroundScaleRatio?: number
 }
 
 interface UseMusicVisualizerRuntimeResult {
@@ -93,17 +94,46 @@ export function useMusicVisualizerRuntime({
   toneMapExposure,
   toneMapStrength,
   selectedShaderId,
+  foregroundBackgroundScaleRatio = 2,
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
 
   const shader = useMemo(() => {
     const matched = resolveMusicVisualizerShaderById(selectedShaderId)
-    if (matched) {
-      return matched
+    const baseShader = matched ?? resolveDefaultMusicVisualizerShader()
+    if (!baseShader) {
+      return baseShader
     }
-    return resolveDefaultMusicVisualizerShader()
-  }, [selectedShaderId])
+
+    if (baseShader.id !== 'rain-drips' || !baseShader.multiPass) {
+      return baseShader
+    }
+
+    const ratio = Math.max(1, Math.min(5, foregroundBackgroundScaleRatio))
+    return {
+      ...baseShader,
+      renderScale: ratio,
+      multiPass: {
+        ...baseShader.multiPass,
+        passes: baseShader.multiPass.passes.map((pass) => {
+          if (pass.id === 'foreground-audio') {
+            return {
+              ...pass,
+              renderScale: 1,
+            }
+          }
+          if (pass.id === 'buffer-a' || pass.id === 'buffer-b') {
+            return {
+              ...pass,
+              renderScale: 1 / ratio,
+            }
+          }
+          return pass
+        }),
+      },
+    }
+  }, [foregroundBackgroundScaleRatio, selectedShaderId])
   const audioAnalyserRef = useRef<MusicAudioAnalyser | null>(null)
   const runtimeSettingsRef = useRef({
     fpsCap,

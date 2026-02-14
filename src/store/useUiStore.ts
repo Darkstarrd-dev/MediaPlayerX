@@ -56,6 +56,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   musicVisualizerShaderSettingsById: {
     [DEFAULT_MUSIC_SHADER_ID]: {
       renderLongEdgePx: 1280,
+      foregroundBackgroundScaleRatio: 2,
       fpsCap: 60,
       toneMapMode: 'aces',
       toneMapExposure: 1,

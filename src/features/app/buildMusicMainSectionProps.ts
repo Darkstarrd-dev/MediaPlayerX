@@ -140,6 +140,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
   const selectedShaderId = params.musicVisualizerSelectedShaderId.trim().slice(0, 64) || defaultShaderId
   const fallbackShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string] = {
     renderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
+    foregroundBackgroundScaleRatio: 2,
     fpsCap: params.musicVisualizerFpsCap,
     toneMapMode: params.musicVisualizerToneMapMode,
     toneMapExposure: params.musicVisualizerToneMapExposure,

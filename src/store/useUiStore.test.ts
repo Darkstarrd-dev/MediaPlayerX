@@ -19,6 +19,7 @@ describe('useUiStore visualizer settings', () => {
     expect(state.musicVisualizerRenderer).toBe('gpu')
     expect(state.musicVisualizerShaderSettingsById['mcs-szb']).toEqual({
       renderLongEdgePx: 1280,
+      foregroundBackgroundScaleRatio: 2,
       fpsCap: 60,
       toneMapMode: 'aces',
       toneMapExposure: 1,
@@ -41,6 +42,7 @@ describe('useUiStore visualizer settings', () => {
       musicVisualizerShaderSettingsById: {
         fungi: {
           renderLongEdgePx: 1920,
+          foregroundBackgroundScaleRatio: 3,
           fpsCap: 120,
           toneMapMode: 'reinhard',
           toneMapExposure: 1.3,
@@ -62,6 +64,7 @@ describe('useUiStore visualizer settings', () => {
     expect(state.musicVisualizerRenderer).toBe('cpu')
     expect(state.musicVisualizerShaderSettingsById.fungi).toEqual({
       renderLongEdgePx: 1920,
+      foregroundBackgroundScaleRatio: 3,
       fpsCap: 120,
       toneMapMode: 'reinhard',
       toneMapExposure: 1.3,

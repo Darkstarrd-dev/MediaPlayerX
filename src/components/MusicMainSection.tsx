@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 import { VideoControlIcon } from './VideoControlIcon'
 import type { AppSettings } from '../contracts/settings'
@@ -100,6 +100,8 @@ function MusicMainSection({
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const visualizerCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const lastPlayRequestNonceRef = useRef(playRequestNonce)
+  const visualizerActivateRafRef = useRef<number | null>(null)
+  const visualizerActivateRaf2Ref = useRef<number | null>(null)
   const [openPopover, setOpenPopover] = useState<MusicPopoverKey | null>(null)
   const [audioPlaying, setAudioPlaying] = useState(false)
   const [audioVolume, setAudioVolume] = useState(60)
@@ -107,11 +109,14 @@ function MusicMainSection({
   const [audioTime, setAudioTime] = useState(0)
   const [audioDurationSec, setAudioDurationSec] = useState(0)
   const [renderLongEdgeDraft, setRenderLongEdgeDraft] = useState('')
+  const [foregroundBackgroundScaleDraft, setForegroundBackgroundScaleDraft] = useState<number | null>(null)
+  const [visualizerRuntimeActive, setVisualizerRuntimeActive] = useState(false)
   const [fullscreenControlsMounted, setFullscreenControlsMounted] = useState(true)
   const [fullscreenControlsVisible, setFullscreenControlsVisible] = useState(true)
   const fullscreenControlsHideTimerRef = useRef<number | null>(null)
 
   const musicVisualizerRenderLongEdgePx = musicVisualizerShaderSettings.renderLongEdgePx
+  const musicVisualizerForegroundBackgroundScaleRatio = musicVisualizerShaderSettings.foregroundBackgroundScaleRatio ?? 2
   const musicVisualizerFpsCap = musicVisualizerShaderSettings.fpsCap
   const musicVisualizerToneMapMode = musicVisualizerShaderSettings.toneMapMode
   const musicVisualizerToneMapExposure = musicVisualizerShaderSettings.toneMapExposure
@@ -133,12 +138,49 @@ function MusicMainSection({
     }
   }, [musicVisualizerSelectedShaderId, onMusicVisualizerSelectedShaderIdChange, selectedShaderId])
 
+  useEffect(() => {
+    if (visualizerActivateRafRef.current != null) {
+      window.cancelAnimationFrame(visualizerActivateRafRef.current)
+      visualizerActivateRafRef.current = null
+    }
+    if (visualizerActivateRaf2Ref.current != null) {
+      window.cancelAnimationFrame(visualizerActivateRaf2Ref.current)
+      visualizerActivateRaf2Ref.current = null
+    }
+
+    if (!active) {
+      setVisualizerRuntimeActive(false)
+      return
+    }
+
+    setVisualizerRuntimeActive(false)
+    visualizerActivateRafRef.current = window.requestAnimationFrame(() => {
+      visualizerActivateRafRef.current = null
+      visualizerActivateRaf2Ref.current = window.requestAnimationFrame(() => {
+        visualizerActivateRaf2Ref.current = null
+        setVisualizerRuntimeActive(true)
+      })
+    })
+
+    return () => {
+      if (visualizerActivateRafRef.current != null) {
+        window.cancelAnimationFrame(visualizerActivateRafRef.current)
+        visualizerActivateRafRef.current = null
+      }
+      if (visualizerActivateRaf2Ref.current != null) {
+        window.cancelAnimationFrame(visualizerActivateRaf2Ref.current)
+        visualizerActivateRaf2Ref.current = null
+      }
+    }
+  }, [active])
+
   const { stats: visualizerStats, runtimeError: visualizerRuntimeError, resumeAudioAnalyser } = useMusicVisualizerRuntime({
     canvasRef: visualizerCanvasRef,
     audioRef,
-    active,
+    active: visualizerRuntimeActive,
     preferredRenderer: musicVisualizerRenderer,
     renderLongEdgePx: musicVisualizerRenderLongEdgePx,
+    foregroundBackgroundScaleRatio: musicVisualizerForegroundBackgroundScaleRatio,
     fpsCap: musicVisualizerFpsCap,
     toneMapMode: musicVisualizerToneMapMode,
     toneMapExposure: musicVisualizerToneMapExposure,
@@ -181,6 +223,11 @@ function MusicMainSection({
   const toneMapStrengthPercent = clamp(musicVisualizerToneMapStrength * 100, 0, 100)
   const toneMapStrengthRangeStyle = {
     '--mpx-skeuo-range-pct': `${toneMapStrengthPercent}%`,
+  } as CSSProperties
+  const foregroundBackgroundScaleValue = foregroundBackgroundScaleDraft ?? musicVisualizerForegroundBackgroundScaleRatio
+  const foregroundBackgroundScalePercent = clamp(((foregroundBackgroundScaleValue - 1) / 4) * 100, 0, 100)
+  const foregroundBackgroundScaleStyle = {
+    '--mpx-skeuo-range-pct': `${foregroundBackgroundScalePercent}%`,
   } as CSSProperties
 
   const manageSummary =
@@ -254,6 +301,10 @@ function MusicMainSection({
   }, [musicVisualizerRenderLongEdgePx, selectedShaderId])
 
   useEffect(() => {
+    setForegroundBackgroundScaleDraft(null)
+  }, [musicVisualizerForegroundBackgroundScaleRatio, selectedShaderId])
+
+  useEffect(() => {
     if (!fullscreenActive) {
       if (fullscreenControlsHideTimerRef.current != null) {
         window.clearTimeout(fullscreenControlsHideTimerRef.current)
@@ -291,6 +342,34 @@ function MusicMainSection({
     setRenderLongEdgeDraft(String(clamped))
     onMusicVisualizerShaderSettingsChange({ renderLongEdgePx: clamped })
   }
+
+  const applyForegroundBackgroundScaleDraft = useCallback(() => {
+    if (foregroundBackgroundScaleDraft == null || !Number.isFinite(foregroundBackgroundScaleDraft)) {
+      return
+    }
+    onMusicVisualizerShaderSettingsChange({
+      foregroundBackgroundScaleRatio: Math.max(1, Math.min(5, foregroundBackgroundScaleDraft)),
+    })
+    setForegroundBackgroundScaleDraft(null)
+  }, [foregroundBackgroundScaleDraft, onMusicVisualizerShaderSettingsChange])
+
+  useEffect(() => {
+    if (foregroundBackgroundScaleDraft == null) {
+      return
+    }
+
+    const handlePointerUp = () => {
+      applyForegroundBackgroundScaleDraft()
+    }
+
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('touchend', handlePointerUp)
+
+    return () => {
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('touchend', handlePointerUp)
+    }
+  }, [applyForegroundBackgroundScaleDraft, foregroundBackgroundScaleDraft])
 
   const showFullscreenControls = () => {
     if (!fullscreenActive) {
@@ -477,6 +556,33 @@ function MusicMainSection({
                       if (event.key === 'Enter') {
                         event.preventDefault()
                         applyRenderLongEdgeDraft()
+                      }
+                    }}
+                  />
+                </label>
+                <label className="music-ctrl-shader-field">
+                  <span className="music-ctrl-shader-label">前景/背景倍率 {foregroundBackgroundScaleValue.toFixed(2)}x</span>
+                  <input
+                    className="music-ctrl-shader-range"
+                    max={5}
+                    min={1}
+                    step={0.01}
+                    style={foregroundBackgroundScaleStyle}
+                    type="range"
+                    value={foregroundBackgroundScaleValue}
+                    onChange={(event) => {
+                      const value = Number(event.target.value)
+                      if (!Number.isFinite(value)) {
+                        return
+                      }
+                      setForegroundBackgroundScaleDraft(Math.max(1, Math.min(5, value)))
+                    }}
+                    onMouseUp={applyForegroundBackgroundScaleDraft}
+                    onTouchEnd={applyForegroundBackgroundScaleDraft}
+                    onBlur={applyForegroundBackgroundScaleDraft}
+                    onKeyUp={(event) => {
+                      if (event.key === 'Enter') {
+                        applyForegroundBackgroundScaleDraft()
                       }
                     }}
                   />

@@ -20,6 +20,7 @@ function normalizeShaderSettingEntry(value: unknown): MusicVisualizerShaderSetti
 
   const source = value as Record<string, unknown>
   const renderLongEdgePxRaw = source.renderLongEdgePx
+  const foregroundBackgroundScaleRatioRaw = source.foregroundBackgroundScaleRatio
   const fpsCapRaw = source.fpsCap
   const toneMapModeRaw = source.toneMapMode
   const toneMapExposureRaw = source.toneMapExposure
@@ -56,8 +57,14 @@ function normalizeShaderSettingEntry(value: unknown): MusicVisualizerShaderSetti
     return null
   }
 
+  const normalizedForegroundBackgroundScaleRatio =
+    typeof foregroundBackgroundScaleRatioRaw === 'number' && Number.isFinite(foregroundBackgroundScaleRatioRaw)
+      ? Math.max(1, Math.min(5, foregroundBackgroundScaleRatioRaw))
+      : 2
+
   return {
     renderLongEdgePx: Math.max(240, Math.min(4096, Math.floor(renderLongEdgePxRaw))),
+    foregroundBackgroundScaleRatio: normalizedForegroundBackgroundScaleRatio,
     fpsCap: fpsCapRaw,
     toneMapMode: toneMapModeRaw,
     toneMapExposure: Math.max(0.5, Math.min(2, toneMapExposureRaw)),
@@ -181,6 +188,7 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
       && (next.musicVisualizerRenderer === 'gpu' || next.musicVisualizerRenderer === 'cpu')
       ? {
         renderLongEdgePx: Math.max(240, Math.min(4096, Math.floor(next.musicVisualizerRenderLongEdgePx))),
+        foregroundBackgroundScaleRatio: 2,
         fpsCap: next.musicVisualizerFpsCap,
         toneMapMode: next.musicVisualizerToneMapMode,
         toneMapExposure: Math.max(0.5, Math.min(2, next.musicVisualizerToneMapExposure)),

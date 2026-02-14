@@ -3,8 +3,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useMusicVisualizerRuntime } from './useMusicVisualizerRuntime'
 
+type MutableTestShader = {
+  id: string
+  label: string
+  fragmentSource: string
+  renderScale?: number
+  multiPass?: {
+    passes: Array<{
+      id: string
+      fragmentSource: string
+      output: 'buffer' | 'screen'
+    }>
+  }
+}
+
 const shared = vi.hoisted(() => {
-  const shader = {
+  const shader: MutableTestShader = {
     id: 'test-shader',
     label: 'Test Shader',
     fragmentSource: `
@@ -124,6 +138,16 @@ describe('useMusicVisualizerRuntime', () => {
   }
 
   beforeEach(() => {
+    shared.shader.id = 'test-shader'
+    shared.shader.label = 'Test Shader'
+    shared.shader.fragmentSource = `
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  fragColor = vec4(fragCoord.xy * 0.0, 0.0, 1.0);
+}
+`
+    delete shared.shader.multiPass
+    delete shared.shader.renderScale
+
     shared.webglConstructorCount = 0
     shared.webglRenderCalls.length = 0
 
@@ -183,6 +207,7 @@ describe('useMusicVisualizerRuntime', () => {
         toneMapExposure: 0.5,
         toneMapStrength: 0,
         selectedShaderId: 'test-shader',
+        foregroundBackgroundScaleRatio: 2,
       },
     })
 
@@ -211,6 +236,7 @@ describe('useMusicVisualizerRuntime', () => {
       toneMapExposure: 2,
       toneMapStrength: 1,
       selectedShaderId: 'test-shader',
+      foregroundBackgroundScaleRatio: 2,
     })
 
     flushFrame(20)
@@ -225,5 +251,69 @@ describe('useMusicVisualizerRuntime', () => {
     expect(nextFrame?.toneMapExposure).toBeLessThan(2)
     expect(nextFrame?.toneMapStrength).toBeGreaterThan(0)
     expect(nextFrame?.toneMapStrength).toBeLessThan(1)
+  })
+
+  it('rain-drips 的前景背景倍率会抬升最终输出分辨率', () => {
+    shared.shader.id = 'rain-drips'
+    shared.shader.label = 'Rain Drips'
+    shared.shader.multiPass = {
+      passes: [
+        { id: 'buffer-a', fragmentSource: shared.shader.fragmentSource, output: 'buffer' },
+        { id: 'buffer-b', fragmentSource: shared.shader.fragmentSource, output: 'buffer' },
+        { id: 'foreground-audio', fragmentSource: shared.shader.fragmentSource, output: 'buffer' },
+        { id: 'image', fragmentSource: shared.shader.fragmentSource, output: 'screen' },
+      ],
+    }
+
+    const container = document.createElement('div')
+    Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true })
+    Object.defineProperty(container, 'clientHeight', { value: 600, configurable: true })
+    const canvas = document.createElement('canvas')
+    container.appendChild(canvas)
+    document.body.appendChild(container)
+
+    const audio = document.createElement('audio')
+    const canvasRef = { current: canvas }
+    const audioRef = { current: audio }
+
+    const { rerender } = renderHook((props: Parameters<typeof useMusicVisualizerRuntime>[0]) => useMusicVisualizerRuntime(props), {
+      initialProps: {
+        canvasRef,
+        audioRef,
+        active: true,
+        preferredRenderer: 'gpu',
+        renderLongEdgePx: 400,
+        foregroundBackgroundScaleRatio: 1,
+        fpsCap: 60,
+        toneMapMode: 'aces',
+        toneMapExposure: 1,
+        toneMapStrength: 0.5,
+        selectedShaderId: 'rain-drips',
+      },
+    })
+
+    flushFrame(20)
+    const baseFrame = shared.webglRenderCalls.at(-1)
+    expect(baseFrame?.width).toBe(400)
+    expect(baseFrame?.height).toBe(300)
+
+    rerender({
+      canvasRef,
+      audioRef,
+      active: true,
+      preferredRenderer: 'gpu',
+      renderLongEdgePx: 400,
+      foregroundBackgroundScaleRatio: 5,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.5,
+      selectedShaderId: 'rain-drips',
+    })
+
+    flushFrame(20)
+    const scaledFrame = shared.webglRenderCalls.at(-1)
+    expect(scaledFrame?.width).toBe(2000)
+    expect(scaledFrame?.height).toBe(1500)
   })
 })

@@ -503,7 +503,7 @@ function normalizeShaderPipeline(shader: MusicVisualizerShaderDefinition): Norma
       fragmentSource: pass.fragmentSource,
       channels: normalizeChannels(pass.channels),
       output,
-      renderScale: output === 'screen' ? 1 : clamp(pass.renderScale ?? 1, 0.25, 1),
+      renderScale: output === 'screen' ? 1 : clamp(pass.renderScale ?? 1, 0.1, 5),
       toneMap: pass.toneMap ?? output === 'screen',
     }
   })

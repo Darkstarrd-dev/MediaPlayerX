@@ -10,6 +10,7 @@ export const musicVisualizerRendererSchema = z.enum(['gpu', 'cpu'])
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
+  foregroundBackgroundScaleRatio: z.number().min(1).max(5).default(2),
   fpsCap: musicVisualizerFpsCapSchema,
   toneMapMode: musicVisualizerToneMapModeSchema,
   toneMapExposure: z.number().min(0.5).max(2),

@@ -1,4 +1,23 @@
 @media (max-width: 1280px) {
+  .app-header {
+    gap: 10px;
+  }
+
+  .header-left,
+  .header-right {
+    gap: 10px;
+  }
+
+  .header-group-modes,
+  .header-group-search {
+    min-width: 0;
+  }
+
+  .mode-switch {
+    max-width: min(100%, 520px);
+    overflow-x: auto;
+  }
+
   .search-box {
     min-width: 180px;
   }

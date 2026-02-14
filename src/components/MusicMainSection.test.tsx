@@ -59,6 +59,7 @@ function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof Mu
     onToggleFullscreen: vi.fn(),
     musicVisualizerShaderSettings: {
       renderLongEdgePx: 1280,
+      foregroundBackgroundScaleRatio: 2,
       fpsCap: 60,
       toneMapMode: 'aces',
       toneMapExposure: 1,
@@ -286,11 +287,17 @@ describe('MusicMainSection', () => {
     expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
     fireEvent.keyDown(renderLongEdgeInput, { key: 'Enter', code: 'Enter' })
 
+    const foregroundBackgroundScaleSlider = screen.getByLabelText(/前景\/背景倍率/)
+    fireEvent.change(foregroundBackgroundScaleSlider, { target: { value: '3.6' } })
+    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ foregroundBackgroundScaleRatio: 3.6 })
+    fireEvent.mouseUp(foregroundBackgroundScaleSlider)
+
     fireEvent.change(screen.getByLabelText('渲染帧率上限'), { target: { value: '120' } })
     fireEvent.change(screen.getByLabelText(/Tone Mapping 曝光/), { target: { value: '1.4' } })
     fireEvent.click(screen.getByLabelText('显示 FPS 调试信息'))
 
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ foregroundBackgroundScaleRatio: 3.6 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ fpsCap: 120 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ toneMapExposure: 1.4 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ showFps: true })

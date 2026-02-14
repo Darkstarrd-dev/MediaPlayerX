@@ -177,6 +177,7 @@ describe('useSettingsPersistence', () => {
     expect(hydrationPatch.musicVisualizerShaderSettingsById).toEqual({
       singularity: {
         renderLongEdgePx: 4096,
+        foregroundBackgroundScaleRatio: 2,
         fpsCap: 120,
         toneMapMode: 'khronos',
         toneMapExposure: 2,
