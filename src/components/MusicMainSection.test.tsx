@@ -344,6 +344,7 @@ describe('MusicMainSection', () => {
     expect(screen.getByRole('button', { name: 'Default' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Starfield' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Galaxy' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Nebula' })).toBeInTheDocument()
 
     const controlsShell = container.querySelector('.music-controls-shell') as HTMLElement
     fireEvent.mouseLeave(controlsShell)
@@ -351,5 +352,6 @@ describe('MusicMainSection', () => {
     expect(screen.queryByRole('button', { name: 'Default' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Starfield' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Galaxy' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Nebula' })).toBeNull()
   })
 })
