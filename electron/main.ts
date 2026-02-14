@@ -1,5 +1,5 @@
 import { app, BrowserWindow, Menu, protocol, type MenuItemConstructorOptions } from 'electron'
-import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -15,6 +15,7 @@ import {
 import { applyElectronProxy, resolveUserDataDir } from './mainRuntimeConfig'
 import { installMainWindowNavigationGuards } from './mainWindowGuards'
 import { registerWindowControlIpcHandlers } from './mainWindowControls'
+import { resolveBenchMode, shouldOpenDevTools, tryConfigureCrashDumpsDir } from './mainBenchRuntime'
 import { STARTUP_SPLASH_WINDOW_CONFIG, renderStartupSplashHtml } from './startupSplashTemplate'
 
 const STARTUP_SPLASH_TIMEOUT_MS = 12_000
@@ -377,62 +378,6 @@ function resolveRendererEntry(): { type: 'url' | 'file'; value: string } {
     type: 'file',
     value: path.join(fallbackRoot, 'dist', 'index.html'),
   }
-}
-
-function resolveBenchMode(): string | null {
-  const value = (process.env.MEDIA_PLAYERX_BENCH ?? '').trim()
-  return value.length > 0 ? value : null
-}
-
-function resolveBenchOutDir(): string | null {
-  const raw = (process.env.MEDIA_PLAYERX_BENCH_OUT_DIR ?? '').trim()
-  return raw.length > 0 ? path.resolve(raw) : null
-}
-
-function resolveBenchIdentity(): { candidateId: string | null; runTag: string | null } {
-  const raw = (process.env.MEDIA_PLAYERX_BENCH_CONFIG_JSON ?? '').trim()
-  if (!raw) {
-    return { candidateId: null, runTag: null }
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as { candidateId?: unknown; runTag?: unknown }
-    const candidateId = typeof parsed.candidateId === 'string' ? parsed.candidateId : null
-    const runTag = typeof parsed.runTag === 'string' ? parsed.runTag : null
-    return { candidateId, runTag }
-  } catch {
-    return { candidateId: null, runTag: null }
-  }
-}
-
-function tryConfigureCrashDumpsDir(): void {
-  const benchMode = resolveBenchMode()
-  if (!benchMode) {
-    return
-  }
-
-  const outDir = resolveBenchOutDir()
-  if (!outDir) {
-    return
-  }
-
-  const identity = resolveBenchIdentity()
-  const safeCandidate = (identity.candidateId ?? 'unknown').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 64)
-  const safeRunTag = (identity.runTag ?? String(Date.now())).replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 96)
-  const crashDir = path.join(outDir, 'crash-dumps', `${safeCandidate}-${safeRunTag}`)
-
-  try {
-    mkdirSync(crashDir, { recursive: true })
-    app.setPath('crashDumps', crashDir)
-    console.log('[main] crashDumps configured', { crashDir })
-  } catch (error) {
-    console.warn('[main] crashDumps configure failed', { error: (error as Error).message })
-  }
-}
-
-function shouldOpenDevTools(): boolean {
-  const raw = (process.env.MEDIA_PLAYERX_BENCH_DEVTOOLS ?? '').trim().toLowerCase()
-  return raw === '1' || raw === 'true' || raw === 'yes'
 }
 
 function resolvePreloadEntry(): string {
