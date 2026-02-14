@@ -1,9 +1,6 @@
 import type { MusicVisualizerShaderDefinition } from '../types'
 
-export const SHADER: MusicVisualizerShaderDefinition = {
-  id: 'starfield',
-  label: 'Starfield',
-  fragmentSource: String.raw`const float NUM_LAYERS = 7.0;
+const COMMON_SOURCE = String.raw`const float NUM_LAYERS = 7.0;
 const int NUM_LAYER_COUNT = 7;
 const float PI = 3.141592654;
 
@@ -178,17 +175,63 @@ vec3 renderForeground(vec2 fragCoord) {
   float radialMask = 1.0 - smoothstep(0.38, 0.88, length(p));
   return col * radialMask;
 }
+`
 
-vec3 screenBlend(vec3 base, vec3 highlight) {
+const BACKGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec3 background = renderBackground(fragCoord);
+  fragColor = vec4(background, 1.0);
+}
+`
+
+const FOREGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec3 foreground = renderForeground(fragCoord);
+  fragColor = vec4(foreground, 1.0);
+}
+`
+
+const IMAGE_PASS_SOURCE = String.raw`vec3 screenBlend(vec3 base, vec3 highlight) {
   return 1.0 - (1.0 - base) * (1.0 - highlight);
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  vec3 background = renderBackground(fragCoord);
-  vec3 foreground = renderForeground(fragCoord);
+  vec2 uv = fragCoord / iResolution.xy;
+  vec3 background = texture(iChannel0, uv).rgb;
+  vec3 foreground = texture(iChannel1, uv).rgb;
   vec3 col = screenBlend(background, foreground);
-
   fragColor = vec4(col, 1.0);
 }
-`,
+`
+
+export const SHADER: MusicVisualizerShaderDefinition = {
+  id: 'starfield',
+  label: 'Starfield',
+  fragmentSource: IMAGE_PASS_SOURCE,
+  commonSource: COMMON_SOURCE,
+  multiPass: {
+    commonSource: COMMON_SOURCE,
+    passes: [
+      {
+        id: 'starfield-background',
+        fragmentSource: BACKGROUND_PASS_SOURCE,
+        output: 'buffer',
+        channels: [{ kind: 'audio' }],
+      },
+      {
+        id: 'starfield-foreground',
+        fragmentSource: FOREGROUND_PASS_SOURCE,
+        output: 'buffer',
+        channels: [{ kind: 'audio' }],
+      },
+      {
+        id: 'starfield-image',
+        fragmentSource: IMAGE_PASS_SOURCE,
+        output: 'screen',
+        toneMap: true,
+        channels: [
+          { kind: 'pass', passId: 'starfield-background' },
+          { kind: 'pass', passId: 'starfield-foreground' },
+        ],
+      },
+    ],
+  },
 }

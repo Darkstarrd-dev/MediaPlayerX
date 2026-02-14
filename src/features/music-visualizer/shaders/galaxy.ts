@@ -1,9 +1,6 @@
 import type { MusicVisualizerShaderDefinition } from '../types'
 
-export const SHADER: MusicVisualizerShaderDefinition = {
-  id: 'galaxy',
-  label: 'Galaxy',
-  fragmentSource: String.raw`#define PI 3.141592654
+const COMMON_SOURCE = String.raw`#define PI 3.141592654
 
 const int ITERATIONS = 13;
 const int VOLSTEPS = 20;
@@ -228,17 +225,18 @@ vec3 renderForeground(vec2 fragCoord) {
   return centered * mask;
 }
 
-vec3 screenBlend(vec3 base, vec3 highlight) {
-  return 1.0 - (1.0 - base) * (1.0 - highlight);
-}
-
-void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+float resolveAmplifiedTime() {
   float addToTime = 0.0;
   for (int i = 0; i < AUDIO_SAMPLE_COUNT; i += 1) {
     addToTime += fftBand(1.0 + float(i) * 2.0);
   }
   addToTime /= float(AUDIO_SAMPLE_COUNT);
-  iAmplifiedTime = iTime + addToTime;
+  return iTime + addToTime;
+}
+`
+
+const BACKGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  iAmplifiedTime = resolveAmplifiedTime();
 
   vec2 uv = fragCoord / iResolution.xy - 0.5;
   uv.y *= iResolution.y / iResolution.x;
@@ -246,15 +244,69 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec3 swirl = renderSwirl(fragCoord);
   vec3 bursts = renderAudioBursts(fragCoord, uv);
   vec3 volume = renderVolumetric(fragCoord).rgb;
-
   vec3 background = volume * (bursts * vec3(0.4, 1.0, 1.0) + swirl);
+
+  fragColor = vec4(clamp(background, 0.0, 1.0), 1.0);
+}
+`
+
+const FOREGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  iAmplifiedTime = resolveAmplifiedTime();
   vec3 foreground = renderForeground(fragCoord);
+  fragColor = vec4(clamp(foreground, 0.0, 1.0), 1.0);
+}
+`
+
+const IMAGE_PASS_SOURCE = String.raw`vec3 screenBlend(vec3 base, vec3 highlight) {
+  return 1.0 - (1.0 - base) * (1.0 - highlight);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 uv = fragCoord / iResolution.xy;
+  vec3 background = texture(iChannel0, uv).rgb;
+  vec3 foreground = texture(iChannel1, uv).rgb;
 
   float fgEnergy = max(max(foreground.r, foreground.g), foreground.b);
-  float fgMask = smoothstep(0.03, 0.18, fgEnergy);
-  vec3 color = mix(background, screenBlend(background, foreground), fgMask);
+  float fgMask = smoothstep(0.005, 0.10, fgEnergy);
+  fgMask = max(fgMask, 0.22 * step(0.002, fgEnergy));
+
+  vec3 boostedForeground = foreground * 1.35;
+  vec3 color = mix(background, screenBlend(background, boostedForeground), fgMask);
 
   fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }
-`,
+`
+
+export const SHADER: MusicVisualizerShaderDefinition = {
+  id: 'galaxy',
+  label: 'Galaxy',
+  fragmentSource: IMAGE_PASS_SOURCE,
+  commonSource: COMMON_SOURCE,
+  multiPass: {
+    commonSource: COMMON_SOURCE,
+    passes: [
+      {
+        id: 'galaxy-background',
+        fragmentSource: BACKGROUND_PASS_SOURCE,
+        output: 'buffer',
+        channels: [{ kind: 'audio' }],
+      },
+      {
+        id: 'galaxy-foreground',
+        fragmentSource: FOREGROUND_PASS_SOURCE,
+        output: 'buffer',
+        channels: [{ kind: 'audio' }],
+      },
+      {
+        id: 'galaxy-image',
+        fragmentSource: IMAGE_PASS_SOURCE,
+        output: 'screen',
+        toneMap: true,
+        channels: [
+          { kind: 'pass', passId: 'galaxy-background' },
+          { kind: 'pass', passId: 'galaxy-foreground' },
+        ],
+      },
+    ],
+  },
 }

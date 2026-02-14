@@ -102,33 +102,51 @@ export function useMusicVisualizerRuntime({
   const shader = useMemo(() => {
     const matched = resolveMusicVisualizerShaderById(selectedShaderId)
     const baseShader = matched ?? resolveDefaultMusicVisualizerShader()
-    if (!baseShader) {
+    if (!baseShader || !baseShader.multiPass) {
       return baseShader
     }
 
-    if (baseShader.id !== 'rain-drips' || !baseShader.multiPass) {
+    const ratioCapableShaderIds = new Set(['rain-drips', 'galaxy', 'starfield'])
+    if (!ratioCapableShaderIds.has(baseShader.id)) {
       return baseShader
     }
 
     const ratio = Math.max(1, Math.min(5, foregroundBackgroundScaleRatio))
+
+    const backgroundPassIdsByShaderId: Record<string, readonly string[]> = {
+      'rain-drips': ['buffer-a', 'buffer-b'],
+      galaxy: ['galaxy-background'],
+      starfield: ['starfield-background'],
+    }
+    const foregroundPassIdByShaderId: Record<string, string> = {
+      'rain-drips': 'foreground-audio',
+      galaxy: 'galaxy-foreground',
+      starfield: 'starfield-foreground',
+    }
+
+    const backgroundPassIds = new Set(backgroundPassIdsByShaderId[baseShader.id] ?? [])
+    const foregroundPassId = foregroundPassIdByShaderId[baseShader.id]
+
     return {
       ...baseShader,
       renderScale: ratio,
       multiPass: {
         ...baseShader.multiPass,
         passes: baseShader.multiPass.passes.map((pass) => {
-          if (pass.id === 'foreground-audio') {
+          if (pass.id === foregroundPassId) {
             return {
               ...pass,
               renderScale: 1,
             }
           }
-          if (pass.id === 'buffer-a' || pass.id === 'buffer-b') {
+
+          if (backgroundPassIds.has(pass.id)) {
             return {
               ...pass,
               renderScale: 1 / ratio,
             }
           }
+
           return pass
         }),
       },

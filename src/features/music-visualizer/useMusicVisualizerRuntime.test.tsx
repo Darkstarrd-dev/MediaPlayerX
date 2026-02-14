@@ -316,4 +316,88 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     expect(scaledFrame?.width).toBe(2000)
     expect(scaledFrame?.height).toBe(1500)
   })
+
+  it('galaxy 和 starfield 的前景背景倍率会抬升最终输出分辨率', () => {
+    const scenarios = [
+      {
+        shaderId: 'galaxy',
+        label: 'Galaxy',
+        backgroundPassId: 'galaxy-background',
+        foregroundPassId: 'galaxy-foreground',
+        screenPassId: 'galaxy-image',
+      },
+      {
+        shaderId: 'starfield',
+        label: 'Starfield',
+        backgroundPassId: 'starfield-background',
+        foregroundPassId: 'starfield-foreground',
+        screenPassId: 'starfield-image',
+      },
+    ]
+
+    for (const scenario of scenarios) {
+      shared.shader.id = scenario.shaderId
+      shared.shader.label = scenario.label
+      shared.shader.multiPass = {
+        passes: [
+          { id: scenario.backgroundPassId, fragmentSource: shared.shader.fragmentSource, output: 'buffer' },
+          { id: scenario.foregroundPassId, fragmentSource: shared.shader.fragmentSource, output: 'buffer' },
+          { id: scenario.screenPassId, fragmentSource: shared.shader.fragmentSource, output: 'screen' },
+        ],
+      }
+
+      const container = document.createElement('div')
+      Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true })
+      Object.defineProperty(container, 'clientHeight', { value: 600, configurable: true })
+      const canvas = document.createElement('canvas')
+      container.appendChild(canvas)
+      document.body.appendChild(container)
+
+      const audio = document.createElement('audio')
+      const canvasRef = { current: canvas }
+      const audioRef = { current: audio }
+
+      const { rerender, unmount } = renderHook((props: Parameters<typeof useMusicVisualizerRuntime>[0]) => useMusicVisualizerRuntime(props), {
+        initialProps: {
+          canvasRef,
+          audioRef,
+          active: true,
+          preferredRenderer: 'gpu',
+          renderLongEdgePx: 400,
+          foregroundBackgroundScaleRatio: 1,
+          fpsCap: 60,
+          toneMapMode: 'aces',
+          toneMapExposure: 1,
+          toneMapStrength: 0.5,
+          selectedShaderId: scenario.shaderId,
+        },
+      })
+
+      flushFrame(20)
+      const baseFrame = shared.webglRenderCalls.at(-1)
+      expect(baseFrame?.width).toBe(400)
+      expect(baseFrame?.height).toBe(300)
+
+      rerender({
+        canvasRef,
+        audioRef,
+        active: true,
+        preferredRenderer: 'gpu',
+        renderLongEdgePx: 400,
+        foregroundBackgroundScaleRatio: 5,
+        fpsCap: 60,
+        toneMapMode: 'aces',
+        toneMapExposure: 1,
+        toneMapStrength: 0.5,
+        selectedShaderId: scenario.shaderId,
+      })
+
+      flushFrame(20)
+      const scaledFrame = shared.webglRenderCalls.at(-1)
+      expect(scaledFrame?.width).toBe(2000)
+      expect(scaledFrame?.height).toBe(1500)
+
+      unmount()
+    }
+  })
 })
