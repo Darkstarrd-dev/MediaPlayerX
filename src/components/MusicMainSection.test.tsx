@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { AudioItem } from '../types'
@@ -219,6 +219,35 @@ describe('MusicMainSection', () => {
     expect(container.querySelector('.music-visualizer-exit-fullscreen-btn')).toBeNull()
   })
 
+  it('全屏控制条在移出后淡出隐藏，移入后淡入显示', () => {
+    vi.useFakeTimers()
+    const { container } = renderMusicMainSection({ fullscreenActive: true })
+
+    const shell = container.querySelector('.music-controls-shell.is-fullscreen-floating') as HTMLElement
+    expect(shell).toBeInTheDocument()
+    expect(shell.hidden).toBe(false)
+    expect(shell.className).toContain('is-visible')
+
+    fireEvent.mouseLeave(shell)
+    expect(shell.className).not.toContain('is-visible')
+
+    act(() => {
+      vi.advanceTimersByTime(300)
+    })
+    expect(shell.hidden).toBe(true)
+
+    const hotzone = container.querySelector('.music-controls-fullscreen-hotzone') as HTMLElement
+    fireEvent.mouseEnter(hotzone)
+
+    act(() => {
+      vi.advanceTimersByTime(20)
+    })
+    expect(shell.hidden).toBe(false)
+    expect(shell.className).toContain('is-visible')
+
+    vi.useRealTimers()
+  })
+
   it('支持在控制栏打开 Shader 列表', () => {
     const { container } = renderMusicMainSection()
 
@@ -252,10 +281,16 @@ describe('MusicMainSection', () => {
     const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
     fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
 
+    const renderLongEdgeInput = screen.getByLabelText('实际渲染长边分辨率')
+    fireEvent.change(renderLongEdgeInput, { target: { value: '5000' } })
+    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
+    fireEvent.keyDown(renderLongEdgeInput, { key: 'Enter', code: 'Enter' })
+
     fireEvent.change(screen.getByLabelText('渲染帧率上限'), { target: { value: '120' } })
-    fireEvent.change(screen.getByLabelText('Tone Mapping 曝光'), { target: { value: '1.4' } })
+    fireEvent.change(screen.getByLabelText(/Tone Mapping 曝光/), { target: { value: '1.4' } })
     fireEvent.click(screen.getByLabelText('显示 FPS 调试信息'))
 
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ fpsCap: 120 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ toneMapExposure: 1.4 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ showFps: true })

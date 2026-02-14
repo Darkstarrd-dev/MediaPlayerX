@@ -106,6 +106,10 @@ function MusicMainSection({
   const [audioMuted, setAudioMuted] = useState(false)
   const [audioTime, setAudioTime] = useState(0)
   const [audioDurationSec, setAudioDurationSec] = useState(0)
+  const [renderLongEdgeDraft, setRenderLongEdgeDraft] = useState('')
+  const [fullscreenControlsMounted, setFullscreenControlsMounted] = useState(true)
+  const [fullscreenControlsVisible, setFullscreenControlsVisible] = useState(true)
+  const fullscreenControlsHideTimerRef = useRef<number | null>(null)
 
   const musicVisualizerRenderLongEdgePx = musicVisualizerShaderSettings.renderLongEdgePx
   const musicVisualizerFpsCap = musicVisualizerShaderSettings.fpsCap
@@ -169,6 +173,14 @@ function MusicMainSection({
   const audioVolumePercent = clamp(audioMuted ? 0 : audioVolume, 0, 100)
   const musicVolumeRangeStyle = {
     '--mpx-skeuo-range-pct': `${audioVolumePercent}%`,
+  } as CSSProperties
+  const toneMapExposurePercent = clamp(((musicVisualizerToneMapExposure - 0.5) / 1.5) * 100, 0, 100)
+  const toneMapExposureRangeStyle = {
+    '--mpx-skeuo-range-pct': `${toneMapExposurePercent}%`,
+  } as CSSProperties
+  const toneMapStrengthPercent = clamp(musicVisualizerToneMapStrength * 100, 0, 100)
+  const toneMapStrengthRangeStyle = {
+    '--mpx-skeuo-range-pct': `${toneMapStrengthPercent}%`,
   } as CSSProperties
 
   const manageSummary =
@@ -237,12 +249,93 @@ function MusicMainSection({
     void resumeAudioAnalyser()
   }, [audioPlaying, resumeAudioAnalyser])
 
+  useEffect(() => {
+    setRenderLongEdgeDraft(String(musicVisualizerRenderLongEdgePx))
+  }, [musicVisualizerRenderLongEdgePx, selectedShaderId])
+
+  useEffect(() => {
+    if (!fullscreenActive) {
+      if (fullscreenControlsHideTimerRef.current != null) {
+        window.clearTimeout(fullscreenControlsHideTimerRef.current)
+        fullscreenControlsHideTimerRef.current = null
+      }
+      setFullscreenControlsMounted(true)
+      setFullscreenControlsVisible(true)
+      return
+    }
+
+    setFullscreenControlsMounted(true)
+    setFullscreenControlsVisible(true)
+  }, [fullscreenActive])
+
+  useEffect(
+    () => () => {
+      if (fullscreenControlsHideTimerRef.current != null) {
+        window.clearTimeout(fullscreenControlsHideTimerRef.current)
+        fullscreenControlsHideTimerRef.current = null
+      }
+    },
+    [],
+  )
+
   const closePopover = () => {
     setOpenPopover(null)
   }
 
+  const applyRenderLongEdgeDraft = () => {
+    const parsed = Number(renderLongEdgeDraft)
+    if (!Number.isFinite(parsed)) {
+      return
+    }
+    const clamped = Math.max(240, Math.min(4096, Math.round(parsed)))
+    setRenderLongEdgeDraft(String(clamped))
+    onMusicVisualizerShaderSettingsChange({ renderLongEdgePx: clamped })
+  }
+
+  const showFullscreenControls = () => {
+    if (!fullscreenActive) {
+      return
+    }
+    if (fullscreenControlsHideTimerRef.current != null) {
+      window.clearTimeout(fullscreenControlsHideTimerRef.current)
+      fullscreenControlsHideTimerRef.current = null
+    }
+    if (!fullscreenControlsMounted) {
+      setFullscreenControlsMounted(true)
+      if (typeof window !== 'undefined') {
+        window.requestAnimationFrame(() => {
+          setFullscreenControlsVisible(true)
+        })
+      } else {
+        setFullscreenControlsVisible(true)
+      }
+      return
+    }
+    setFullscreenControlsVisible(true)
+  }
+
+  const hideFullscreenControls = () => {
+    if (!fullscreenActive) {
+      return
+    }
+    setFullscreenControlsVisible(false)
+    if (fullscreenControlsHideTimerRef.current != null) {
+      window.clearTimeout(fullscreenControlsHideTimerRef.current)
+    }
+    fullscreenControlsHideTimerRef.current = window.setTimeout(() => {
+      setFullscreenControlsMounted(false)
+      fullscreenControlsHideTimerRef.current = null
+      closePopover()
+    }, 300)
+  }
+
   const musicControlsShell = (
-    <div className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating' : ''}`} onMouseLeave={closePopover}>
+    <div
+      className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating' : ''}${fullscreenActive && fullscreenControlsVisible ? ' is-visible' : ''}${fullscreenActive && !fullscreenControlsMounted ? ' is-hidden' : ''}`}
+      hidden={fullscreenActive ? !fullscreenControlsMounted : undefined}
+      onMouseEnter={fullscreenActive ? showFullscreenControls : undefined}
+      onMouseLeave={fullscreenActive ? hideFullscreenControls : closePopover}
+    >
       <div className="music-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(clampedAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
         <input
@@ -375,16 +468,16 @@ function MusicMainSection({
                   <span className="music-ctrl-shader-label">实际渲染长边分辨率</span>
                   <input
                     className="music-ctrl-shader-input"
-                    max={4096}
-                    min={240}
                     type="number"
-                    value={musicVisualizerRenderLongEdgePx}
+                    value={renderLongEdgeDraft}
                     onChange={(event) => {
-                      const value = Number(event.target.value)
-                      if (!Number.isFinite(value)) {
-                        return
+                      setRenderLongEdgeDraft(event.target.value)
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        applyRenderLongEdgeDraft()
                       }
-                      onMusicVisualizerShaderSettingsChange({ renderLongEdgePx: Math.max(240, Math.min(4096, Math.round(value))) })
                     }}
                   />
                 </label>
@@ -424,13 +517,14 @@ function MusicMainSection({
                   </select>
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">Tone Mapping 曝光</span>
+                  <span className="music-ctrl-shader-label">Tone Mapping 曝光 {musicVisualizerToneMapExposure.toFixed(2)}</span>
                   <input
-                    className="music-ctrl-shader-input"
+                    className="music-ctrl-shader-range"
                     max={2}
                     min={0.5}
-                    step={0.05}
-                    type="number"
+                    step={0.01}
+                    style={toneMapExposureRangeStyle}
+                    type="range"
                     value={musicVisualizerToneMapExposure}
                     onChange={(event) => {
                       const value = Number(event.target.value)
@@ -448,6 +542,7 @@ function MusicMainSection({
                     max={1}
                     min={0}
                     step={0.01}
+                    style={toneMapStrengthRangeStyle}
                     type="range"
                     value={musicVisualizerToneMapStrength}
                     onChange={(event) =>
@@ -612,7 +707,16 @@ function MusicMainSection({
                 <span>{visualizerRuntimeError}</span>
               </div>
             ) : null}
-            {fullscreenActive ? musicControlsShell : null}
+            {fullscreenActive ? (
+              <>
+                <div
+                  className="music-controls-fullscreen-hotzone"
+                  onMouseEnter={showFullscreenControls}
+                  onMouseLeave={hideFullscreenControls}
+                />
+                {musicControlsShell}
+              </>
+            ) : null}
           </div>
 
           {!fullscreenActive ? musicControlsShell : null}

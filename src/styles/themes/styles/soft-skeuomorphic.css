@@ -212,7 +212,8 @@
 :root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-webkit-slider-runnable-track,
 :root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-webkit-slider-runnable-track,
 :root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-webkit-slider-runnable-track,
-:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-webkit-slider-runnable-track {
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-webkit-slider-runnable-track,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-shader-range::-webkit-slider-runnable-track {
   border-radius: 2px;
   box-shadow: inset 2px 2px 4px var(--mpx-skeuo-shadow-dark), inset -1px -1px 2px var(--mpx-skeuo-shadow-light);
   background: linear-gradient(
@@ -227,7 +228,8 @@
 :root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-webkit-slider-thumb,
 :root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-webkit-slider-thumb,
 :root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-webkit-slider-thumb,
-:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-webkit-slider-thumb {
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-webkit-slider-thumb,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-shader-range::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   border: 1px solid var(--mpx-skeuo-border-color);
@@ -239,7 +241,8 @@
 :root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-moz-range-track,
 :root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-track,
 :root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-track,
-:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-track {
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-track,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-track {
   border-radius: 2px;
   box-shadow: inset 2px 2px 4px var(--mpx-skeuo-shadow-dark), inset -1px -1px 2px var(--mpx-skeuo-shadow-light);
   background: var(--mpx-skeuo-inset-bg);
@@ -248,7 +251,8 @@
 :root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-moz-range-progress,
 :root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-progress,
 :root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-progress,
-:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-progress {
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-progress,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-progress {
   border-radius: 2px;
   background: var(--mpx-skeuo-accent-fill);
 }
@@ -256,7 +260,8 @@
 :root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-moz-range-thumb,
 :root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-thumb,
 :root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-thumb,
-:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-thumb {
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-thumb,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border: 1px solid var(--mpx-skeuo-border-color);
