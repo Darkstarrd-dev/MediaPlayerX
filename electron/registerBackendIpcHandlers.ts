@@ -1,5 +1,4 @@
 import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
-import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
 import {
@@ -77,17 +76,15 @@ import { BACKEND_CHANNELS } from './channels'
 import { extractLikelyPaths, parseClipboardFileNameWBuffer } from './clipboardImportPaths'
 import { buildImportPathsDialogOptions } from './importDialogOptions'
 import {
-  moveDatabaseFiles,
-  normalizeAbsoluteDirectory,
   readRuntimeStoragePaths,
   resolveDatabasePath,
   resolveRuntimeStoragePathsConfigPath,
   resolveThumbnailCachePath,
-  writeRuntimeStoragePaths,
 } from './backendRuntimeStorage'
 import { FileSystemMediaReadService } from './fileSystemReadService'
 import { registerMediaProtocolHandler } from './registerMediaProtocolHandler'
 import { registerResolveMediaResourceHandler } from './registerResolveMediaResourceHandler'
+import { updateRuntimeStoragePaths } from './runtimeStorageUpdate'
 import { MetadataScraperService } from './services/metadata/metadataScraperService'
 
 export function registerBackendIpcHandlers(): void {
@@ -398,50 +395,24 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.setRuntimeStoragePaths, async (_event, payload: unknown) => {
     const request = setRuntimeStoragePathsRequestSchema.parse(payload)
-    const nextDatabaseDir = normalizeAbsoluteDirectory(request.database_dir) ?? path.dirname(databasePath)
-    const nextThumbnailCachePath =
-      normalizeAbsoluteDirectory(request.thumbnail_cache_dir) ?? thumbnailCachePath
-    const nextDatabasePath = resolveDatabasePath(libraryRoot, nextDatabaseDir)
+    const updateResult = await updateRuntimeStoragePaths({
+      request,
+      libraryRoot,
+      databasePath,
+      thumbnailCachePath,
+      runtimeStoragePathsConfigPath,
+      hasPersistedDatabasePayload,
+      disposeService,
+    })
 
-    const databasePathChanged = path.resolve(nextDatabasePath) !== path.resolve(databasePath)
-    const thumbnailPathChanged = path.resolve(nextThumbnailCachePath) !== path.resolve(thumbnailCachePath)
-    let movedDatabase = false
-
-    if (databasePathChanged || thumbnailPathChanged) {
-      const previousDatabasePath = databasePath
-      const shouldMoveDatabase = databasePathChanged
-        ? await hasPersistedDatabasePayload().catch(() => true)
-        : false
-      disposeService()
-
-      if (databasePathChanged) {
-        const canMoveDatabase = await fs
-          .stat(previousDatabasePath)
-          .then((stat) => stat.isFile() && stat.size > 0)
-          .catch(() => false)
-
-        if (shouldMoveDatabase && canMoveDatabase) {
-          await moveDatabaseFiles(previousDatabasePath, nextDatabasePath)
-          movedDatabase = true
-        }
-      }
-
-      databasePath = path.resolve(nextDatabasePath)
-      thumbnailCachePath = path.resolve(nextThumbnailCachePath)
-      await fs.mkdir(path.dirname(databasePath), { recursive: true })
-      await fs.mkdir(thumbnailCachePath, { recursive: true })
-
-      runtimeStoragePaths = {
-        database_dir: path.dirname(databasePath),
-        thumbnail_cache_dir: thumbnailCachePath,
-      }
-      await writeRuntimeStoragePaths(runtimeStoragePathsConfigPath, runtimeStoragePaths)
-    }
+    databasePath = updateResult.databasePath
+    thumbnailCachePath = updateResult.thumbnailCachePath
+    runtimeStoragePaths = updateResult.runtimeStoragePaths
 
     return setRuntimeStoragePathsResponseSchema.parse({
       database_path: databasePath,
       thumbnail_cache_path: thumbnailCachePath,
-      moved_database: movedDatabase,
+      moved_database: updateResult.movedDatabase,
       updated_at_ms: Date.now(),
     })
   })
