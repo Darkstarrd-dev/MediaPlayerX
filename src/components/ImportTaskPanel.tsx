@@ -18,13 +18,13 @@ export interface ImportTaskPanelProps {
 }
 
 function resolveTaskSourceLabel(source: ImportTaskDto['source']): string {
-  if (source === 'dialog-folders') {
+  if (source === 'dialog-folders' || source === 'dialog-folders-music') {
     return '文件夹'
   }
-  if (source === 'drag-drop') {
+  if (source === 'drag-drop' || source === 'drag-drop-music') {
     return '拖拽'
   }
-  if (source === 'paste') {
+  if (source === 'paste' || source === 'paste-music') {
     return '粘贴'
   }
   return '文件'

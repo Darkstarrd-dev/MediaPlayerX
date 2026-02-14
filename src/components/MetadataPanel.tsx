@@ -79,6 +79,12 @@ export interface MetadataPanelProps {
   audioPlaylistIds: string[]
   selectedAudioId: string
   audioById: Map<string, AudioItem>
+  musicBookletAlbumRootPath: string
+  musicBookletCandidates: Array<{ sourceId: string; label: string; imageCount: number }>
+  musicCoverBindingValue: string
+  musicBookletBindingValue: string
+  canOpenMusicCover: boolean
+  canOpenMusicBooklet: boolean
   metadataTab: 'info' | 'playlist'
   playlistIds: string[]
   selectedVideoId: string
@@ -125,6 +131,11 @@ export interface MetadataPanelProps {
   onDropToVideo: (targetVideoId: string) => void
   onSelectAudio: (audioId: string) => void
   onSelectAudioAndPlay: (audioId: string) => void
+  onMusicCoverBindingChange: (value: string) => void
+  onMusicBookletBindingChange: (value: string) => void
+  onOpenMusicCover: () => void
+  onOpenMusicBooklet: () => void
+  onResetMusicBookletBinding: () => void
 }
 
 function MetadataPanel({
@@ -186,6 +197,12 @@ function MetadataPanel({
   audioPlaylistIds,
   selectedAudioId,
   audioById,
+  musicBookletAlbumRootPath,
+  musicBookletCandidates,
+  musicCoverBindingValue,
+  musicBookletBindingValue,
+  canOpenMusicCover,
+  canOpenMusicBooklet,
   metadataTab,
   playlistIds,
   selectedVideoId,
@@ -209,6 +226,11 @@ function MetadataPanel({
   onDropToVideo,
   onSelectAudio,
   onSelectAudioAndPlay,
+  onMusicCoverBindingChange,
+  onMusicBookletBindingChange,
+  onOpenMusicCover,
+  onOpenMusicBooklet,
+  onResetMusicBookletBinding,
 }: MetadataPanelProps) {
   const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
   const [showImagePreview, setShowImagePreview] = useState(true)
@@ -892,6 +914,12 @@ function MetadataPanel({
           audioPlaylistIds={audioPlaylistIds}
           selectedAudioId={selectedAudioId}
           audioById={audioById}
+          musicBookletAlbumRootPath={musicBookletAlbumRootPath}
+          musicBookletCandidates={musicBookletCandidates}
+          musicCoverBindingValue={musicCoverBindingValue}
+          musicBookletBindingValue={musicBookletBindingValue}
+          canOpenMusicCover={canOpenMusicCover}
+          canOpenMusicBooklet={canOpenMusicBooklet}
           metadataPending={metadataPending}
           editable={editable}
           audioAlbumDraft={audioAlbumDraft}
@@ -911,6 +939,11 @@ function MetadataPanel({
           onSearchByAuthor={onSearchByAuthor}
           onSelectAudio={onSelectAudio}
           onSelectAudioAndPlay={onSelectAudioAndPlay}
+          onMusicCoverBindingChange={onMusicCoverBindingChange}
+          onMusicBookletBindingChange={onMusicBookletBindingChange}
+          onOpenMusicCover={onOpenMusicCover}
+          onOpenMusicBooklet={onOpenMusicBooklet}
+          onResetMusicBookletBinding={onResetMusicBookletBinding}
         />
       )}
 

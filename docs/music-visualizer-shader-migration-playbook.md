@@ -124,9 +124,22 @@
   - 使用基于 `min(iResolution.x, iResolution.y)` 的居中坐标映射。
   - 为对齐目标构图，增加偏移参数：`HEADPHONE_OFFSET_X`（耳机横向）与 `SCENE_OFFSET_Y`（耳机+频谱整体纵向）。
 
+## 6.1 新增 Shader（Starfield）
+
+- Shader：`src/features/music-visualizer/shaders/starfield.ts`
+- 来源 URL（背景层）：`https://www.shadertoy.com/view/43cGDs`
+- 来源 URL（前景层）：`https://www.shadertoy.com/view/7l2SWV`
+- 接入定位：作为复合结构中的背景层（Background Layer）候选。
+- 适配说明：
+  - 原始代码依赖 `iMouse`，当前运行时未注入该 uniform，已改为时间驱动运动向量。
+  - 原始 Bloom 分支依赖 `iChannelResolution`，当前版本按背景层用途保留主渲染路径，不启用 Bloom 分支。
+  - 已与前景层代码合并为完整 `Starfield`：背景保留音乐反应，前景内容居中显示并用 screen blend 合成。
+
 ## 7. 变更记录（持续追加）
 
 - 2026-02-14
   - 新增本手册。
   - 记录 `McsSzB` 迁移中的构图偏移、裁切与输入差异问题。
   - 记录 `McsSzB` 在业务场景下的构图修正参数（耳机左移、下移）。
+  - 新增 `Starfield` Shader，来源 `https://www.shadertoy.com/view/43cGDs`，并记录背景层适配要点。
+  - 合并前景来源 `https://www.shadertoy.com/view/7l2SWV`，形成完整复合版 `Starfield`。

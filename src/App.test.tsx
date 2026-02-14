@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
+import type { LibrarySnapshotDto } from './contracts/backend'
 import { MockMediaRepository } from './features/backend/repository/mockRepository'
 import { resetUiStoreState, useUiStore } from './store/useUiStore'
 
@@ -1127,6 +1128,51 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(screen.getByRole('button', { name: '动画版' })).toBeInTheDocument()
     })
     expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
+  })
+
+  it('非元数据管理模式下打开封面/打开Booklet可用，并可从非 CD Booklet 树定位', async () => {
+    const originalGetInitialLibrarySnapshot = MockMediaRepository.prototype.getInitialLibrarySnapshot
+    vi.spyOn(MockMediaRepository.prototype, 'getInitialLibrarySnapshot').mockImplementation(function (this: MockMediaRepository): LibrarySnapshotDto {
+      const snapshot = originalGetInitialLibrarySnapshot.call(this)
+      const templateDirectory = snapshot.image_directories[0]
+      if (!templateDirectory) {
+        return snapshot
+      }
+
+      const fallbackBookletDirectory: LibrarySnapshotDto['image_directories'][number] = {
+        ...templateDirectory,
+        id: 'dir-music-booklet-fallback',
+        package_name: '[DIR] Orbit Booklet',
+        display_name: 'Orbit Booklet',
+        absolute_path: 'X:/音乐/Orbit/booklet',
+        tree_path: ['X盘', '音乐', 'Orbit', 'booklet'],
+        images: templateDirectory.images.slice(0, 2).map((image, index): LibrarySnapshotDto['image_directories'][number]['images'][number] => ({
+          ...image,
+          id: `dir-music-booklet-fallback-img-${index + 1}`,
+        })),
+      }
+
+      return {
+        ...snapshot,
+        image_directories: [...snapshot.image_directories, fallbackBookletDirectory],
+      }
+    })
+
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '音乐模式' }))
+
+    const openCoverButton = await screen.findByRole('button', { name: '打开封面' })
+    const openBookletButton = screen.getByRole('button', { name: '打开Booklet' })
+
+    expect(openCoverButton).toBeEnabled()
+    expect(openBookletButton).toBeEnabled()
+
+    fireEvent.click(openBookletButton)
+
+    await waitFor(() => {
+      const imageModeButton = screen.getByRole('button', { name: '图片模式' }) as HTMLButtonElement
+      expect(imageModeButton.classList.contains('is-active')).toBe(true)
+    })
   })
 
   it('元数据管理支持写入图片与视频系列ID', async () => {

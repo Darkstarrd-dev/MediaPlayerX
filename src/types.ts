@@ -1,8 +1,12 @@
 export const BROWSER_MODES = ['image', 'video', 'music'] as const
 
+export const MUSIC_LOOP_MODES = ['single', 'folder', 'album', 'library'] as const
+
 export const MEDIA_TYPES = ['image', 'video', 'audio', 'subtitle'] as const
 
 export type BrowserMode = (typeof BROWSER_MODES)[number]
+
+export type MusicLoopMode = (typeof MUSIC_LOOP_MODES)[number]
 
 export type MediaType = (typeof MEDIA_TYPES)[number]
 
@@ -129,6 +133,8 @@ export interface SidebarNode {
   directImageCount?: number
   descendantPackageCount?: number
   descendantImageCount?: number
+  directAudioCount?: number
+  descendantAudioFolderCount?: number
   descendantNodeCount?: number
   pathKey: string
 }

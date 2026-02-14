@@ -480,6 +480,50 @@
   flex: 0 0 auto;
 }
 
+.metadata-music-booklet-bindings {
+  border: 1px solid var(--mpx-border-1);
+  border-radius: 10px;
+  background: var(--mpx-bg-elevated);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metadata-music-booklet-bindings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metadata-music-booklet-bindings-head span {
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mpx-text-2);
+  font-size: 12px;
+}
+
+.metadata-music-booklet-bindings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.metadata-music-booklet-bindings-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metadata-music-booklet-bindings-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .metadata-music-playlist {
   min-height: 0;
   flex: 1;

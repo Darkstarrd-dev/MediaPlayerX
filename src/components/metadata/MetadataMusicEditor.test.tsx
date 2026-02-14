@@ -26,6 +26,26 @@ function makeAudio(): AudioItem {
   }
 }
 
+function makeBookletProps(overrides: Partial<Parameters<typeof MetadataMusicEditor>[0]> = {}) {
+  return {
+    musicBookletAlbumRootPath: 'D:/audio',
+    musicBookletCandidates: [
+      { sourceId: 'cover-source', label: 'cover', imageCount: 1 },
+      { sourceId: 'scans-source', label: 'scans', imageCount: 12 },
+    ],
+    musicCoverBindingValue: '__auto__',
+    musicBookletBindingValue: '__auto__',
+    canOpenMusicCover: true,
+    canOpenMusicBooklet: true,
+    onMusicCoverBindingChange: vi.fn(),
+    onMusicBookletBindingChange: vi.fn(),
+    onOpenMusicCover: vi.fn(),
+    onOpenMusicBooklet: vi.fn(),
+    onResetMusicBookletBinding: vi.fn(),
+    ...overrides,
+  }
+}
+
 describe('MetadataMusicEditor', () => {
   it('只读模式渲染 album/author/trackTitle 并支持检索跳转', () => {
     const onSearchByWorkTitle = vi.fn()
@@ -39,6 +59,7 @@ describe('MetadataMusicEditor', () => {
         audioPlaylistIds={[audio.id]}
         selectedAudioId={audio.id}
         audioById={new Map([[audio.id, audio]])}
+        {...makeBookletProps()}
         metadataPending={false}
         editable={false}
         audioAlbumDraft="Album A"
@@ -64,6 +85,9 @@ describe('MetadataMusicEditor', () => {
     expect(screen.getByText('Album A')).toBeInTheDocument()
     expect(screen.getByText('Author A')).toBeInTheDocument()
     expect(screen.getByText('Track A')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '打开封面' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '打开Booklet' })).toBeEnabled()
+    expect(screen.queryByText('Booklet 绑定')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByText('Track A'))
     fireEvent.click(screen.getByText('Album A'))
@@ -87,6 +111,7 @@ describe('MetadataMusicEditor', () => {
         audioPlaylistIds={[audio.id]}
         selectedAudioId={audio.id}
         audioById={new Map([[audio.id, audio]])}
+        {...makeBookletProps()}
         metadataPending={false}
         editable={true}
         audioAlbumDraft="Album A"
@@ -113,6 +138,7 @@ describe('MetadataMusicEditor', () => {
     const authorInput = screen.getByDisplayValue('Author A')
     const trackInput = screen.getByDisplayValue('Track A')
     const seriesInput = screen.getByDisplayValue('series-a')
+    expect(screen.getByText('Booklet 绑定')).toBeInTheDocument()
 
     fireEvent.keyDown(albumInput, { key: 'Enter' })
     fireEvent.keyDown(authorInput, { key: 'Enter' })
@@ -153,6 +179,7 @@ describe('MetadataMusicEditor', () => {
           [audioA.id, audioA],
           [audioB.id, audioB],
         ])}
+        {...makeBookletProps()}
         metadataPending={false}
         editable={false}
         audioAlbumDraft="Album A"

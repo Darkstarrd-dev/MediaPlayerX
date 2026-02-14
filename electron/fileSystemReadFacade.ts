@@ -71,6 +71,7 @@ import {
   type MediaProtocolResponsePayload,
   type MediaProtocolStreamResponsePayload,
 } from './fileSystemMediaReaders'
+import { isPathInsideRoot, normalizeAllowlistKey } from './fileSystemServiceHelpers'
 import { MediaLibraryDatabase } from './mediaLibraryDatabase'
 import { MediaTokenService } from './services/file-system-read/mediaTokenService'
 import { ImportPathRegistry } from './services/file-system-read/importPathRegistry'
@@ -206,6 +207,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       getVideoCoverOverridesByVideoId: () => this.database.readVideoCovers(),
       getVideoMetadataOverridesByVideoId: () => this.database.readVideoMetadata(),
       getAudioMetadataOverridesByAudioId: () => this.database.readAudioMetadata(),
+      getMusicImportSources: () => this.database.readMusicImportSources(),
       upsertAudioMetadataFromScan: (audioId, payload) =>
         this.database.writeAudioMetadata(audioId, {
           album: payload.album,
@@ -404,9 +406,38 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private async removeImportSourcePaths(pathsToRemove: string[]): Promise<void> {
     await this.ensureStateLoaded()
     const didRemove = this.importPathRegistry.removeImportSourcePaths(pathsToRemove)
+
+    const removeRoots = pathsToRemove.map((value) => path.resolve(value))
+    const shouldRemovePath = (candidatePath: string): boolean => {
+      const resolvedCandidatePath = path.resolve(candidatePath)
+      return removeRoots.some(
+        (rootPath) =>
+          normalizeAllowlistKey(rootPath) === normalizeAllowlistKey(resolvedCandidatePath) ||
+          isPathInsideRoot(rootPath, resolvedCandidatePath),
+      )
+    }
+
+    const currentMusicSources = this.database.readMusicImportSources()
+    const nextMusicDirectories = currentMusicSources.directories
+      .map((value) => path.resolve(value))
+      .filter((value) => !shouldRemovePath(value))
+    const nextMusicFiles = currentMusicSources.files
+      .map((value) => path.resolve(value))
+      .filter((value) => !shouldRemovePath(value))
+    const didChangeMusicSources =
+      nextMusicDirectories.length !== currentMusicSources.directories.length ||
+      nextMusicFiles.length !== currentMusicSources.files.length
+
     if (didRemove) {
       const nextSources = this.importPathRegistry.getImportSources()
       this.database.writeImportSources({ directories: nextSources.directories, files: nextSources.files })
+    }
+
+    if (didChangeMusicSources) {
+      this.database.writeMusicImportSources({
+        directories: nextMusicDirectories,
+        files: nextMusicFiles,
+      })
     }
   }
 

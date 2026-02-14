@@ -600,7 +600,16 @@ export const writePlaylistResponseSchema = z.object({
 
 export const importTaskStatusSchema = z.enum(['pending', 'running', 'completed', 'failed'])
 
-export const importTaskSourceSchema = z.enum(['dialog-files', 'dialog-folders', 'drag-drop', 'paste'])
+export const importTaskSourceSchema = z.enum([
+  'dialog-files',
+  'dialog-folders',
+  'drag-drop',
+  'paste',
+  'dialog-files-music',
+  'dialog-folders-music',
+  'drag-drop-music',
+  'paste-music',
+])
 
 export const importTaskDtoSchema = z.object({
   task_id: z.string().min(1),
@@ -640,6 +649,7 @@ export const retryImportTaskResponseSchema = z.object({
 
 export const pickImportPathsRequestSchema = z.object({
   mode: z.enum(['files', 'folders']),
+  target_mode: z.enum(['image', 'video', 'music']).optional(),
 })
 
 export const pickImportPathsResponseSchema = z.object({

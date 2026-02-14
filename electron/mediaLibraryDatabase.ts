@@ -101,6 +101,14 @@ export class MediaLibraryDatabase {
     this.appStateStore.writeImportSources(next)
   }
 
+  readMusicImportSources(): { directories: string[]; files: string[] } {
+    return this.appStateStore.readMusicImportSources()
+  }
+
+  writeMusicImportSources(next: { directories: string[]; files: string[] }): void {
+    this.appStateStore.writeMusicImportSources(next)
+  }
+
   replaceSnapshot(snapshot: LibrarySnapshotDto): void {
     this.snapshotStore.replaceSnapshot(snapshot)
   }

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, type RefObject } from 'react'
 
-import type { BrowserMode, SidebarNode } from '../../types'
+import type { AudioItem, BrowserMode, SidebarNode } from '../../types'
 import { clamp } from '../../utils/ui'
 
 interface UseSidebarNavigationParams {
@@ -8,6 +8,7 @@ interface UseSidebarNavigationParams {
   imageTreeForSidebar: SidebarNode[]
   videoTreeForSidebar: SidebarNode[]
   audioTreeForSidebar: SidebarNode[]
+  audiosForSidebar: AudioItem[]
   imageRootNode: SidebarNode | null
   videoRootNode: SidebarNode | null
   musicRootNode: SidebarNode | null
@@ -38,11 +39,27 @@ interface UseSidebarNavigationResult {
   handleSidebarNavigationKey: (event: KeyboardEvent) => boolean
 }
 
+function resolveFirstAudioId(node: SidebarNode): string | null {
+  if (node.audioId) {
+    return node.audioId
+  }
+
+  for (const child of node.children) {
+    const candidate = resolveFirstAudioId(child)
+    if (candidate) {
+      return candidate
+    }
+  }
+
+  return null
+}
+
 export function useSidebarNavigation({
   mode,
   imageTreeForSidebar,
   videoTreeForSidebar,
   audioTreeForSidebar,
+  audiosForSidebar,
   imageRootNode,
   videoRootNode,
   musicRootNode,
@@ -108,20 +125,33 @@ export function useSidebarNavigation({
   }, [videoTreeForSidebar])
 
   const audioNodeIdMap = useMemo(() => {
-    const map = new Map<string, string>()
-    const walk = (nodes: SidebarNode[]) => {
+    const folderNodeIdByPathKey = new Map<string, string>()
+    const walkFolders = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
-        if (node.audioId) {
-          map.set(node.audioId, node.id)
-        }
+        folderNodeIdByPathKey.set(node.pathKey, node.id)
         if (node.children.length > 0) {
-          walk(node.children)
+          walkFolders(node.children)
         }
       }
     }
-    walk(audioTreeForSidebar)
+    walkFolders(audioTreeForSidebar)
+
+    const map = new Map<string, string>()
+    for (const audio of audiosForSidebar) {
+      const folderSegments = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1))
+      for (let length = folderSegments.length; length >= 1; length -= 1) {
+        const pathKey = folderSegments.slice(0, length).join('/')
+        const nodeId = folderNodeIdByPathKey.get(pathKey)
+        if (!nodeId) {
+          continue
+        }
+        map.set(audio.id, nodeId)
+        break
+      }
+    }
+
     return map
-  }, [audioTreeForSidebar])
+  }, [audioTreeForSidebar, audiosForSidebar])
 
   const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
   const canSetCurrentRoot = selectedSidebarNode?.kind === 'folder'
@@ -283,8 +313,11 @@ export function useSidebarNavigation({
         if (mode === 'video' && node.videoId) {
           onSelectVideo(node.videoId)
         }
-        if (mode === 'music' && node.audioId) {
-          onSelectAudio(node.audioId)
+        if (mode === 'music') {
+          const targetAudioId = resolveFirstAudioId(node)
+          if (targetAudioId) {
+            onSelectAudio(targetAudioId)
+          }
         }
         requestAnimationFrame(() => ensureSidebarNodeVisible(node.id))
         return true

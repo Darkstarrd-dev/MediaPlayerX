@@ -148,8 +148,12 @@ export class ImportTaskService {
   }): ImportTaskDto {
     const taskSource: ImportTaskSourceDto =
       record.taskSource === 'dialog-folders' ||
+      record.taskSource === 'dialog-folders-music' ||
       record.taskSource === 'drag-drop' ||
-      record.taskSource === 'paste'
+      record.taskSource === 'drag-drop-music' ||
+      record.taskSource === 'paste' ||
+      record.taskSource === 'paste-music' ||
+      record.taskSource === 'dialog-files-music'
         ? record.taskSource
         : 'dialog-files'
 
@@ -171,6 +175,10 @@ export class ImportTaskService {
 
   private buildImportTaskId(): string {
     return `import-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`
+  }
+
+  private isMusicImportTaskSource(taskSource: string): boolean {
+    return taskSource.endsWith('-music')
   }
 
   private scheduleImportTask(taskId: string): void {
@@ -215,6 +223,9 @@ export class ImportTaskService {
   }
 
   private async runImportTask(taskId: string): Promise<ImportTaskDto> {
+    const task = this.options.database.readTask(taskId)
+    const musicImportMode = task ? this.isMusicImportTaskSource(task.taskSource) : false
+
     const finalTask = await executeImportTask({
       taskId,
       rootDir: this.options.rootDir,
@@ -223,6 +234,7 @@ export class ImportTaskService {
       videoExtensions: this.options.videoExtensions,
       audioExtensions: this.options.audioExtensions,
       archiveExtensions: this.options.archiveExtensions,
+      musicImportMode,
       database: this.options.database,
       invalidateCache: this.options.invalidateCache,
       ensureSnapshotLoaded: this.options.ensureSnapshotLoaded,

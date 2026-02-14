@@ -39,6 +39,8 @@ const EMPTY_PARSED_DRAFT: ParsedMetadataDraft = {
   tagsJson: '{\n  "parody": "",\n  "character": ""\n}',
 }
 
+const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
+
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
 }
@@ -145,6 +147,10 @@ function tagsDraftToMap(tagsDraft: string): Record<string, string> {
   return { tag: values.join(', ') }
 }
 
+function resolveDefaultSourceSite(sourcePackage: ImagePackage | null): ParsedSourceSite {
+  return sourcePackage?.treePath[0] === MUSIC_BOOKLET_ROOT_LABEL ? 'others' : 'nhentai'
+}
+
 export function buildParsedDraft(
   sourcePackage: ImagePackage | null,
   workTitleDraft: string,
@@ -157,10 +163,11 @@ export function buildParsedDraft(
   const externalTags = external?.tags ?? {}
   const packageTags = sourcePackage?.tags ?? []
   const packageTagsDraft = packageTags.length > 0 ? packageTags.join(', ') : tagsDraft
+  const defaultSourceSite = resolveDefaultSourceSite(sourcePackage)
 
   const merged: ParsedMetadataDraft = {
     ...EMPTY_PARSED_DRAFT,
-    sourceSite: external?.sourceSite ?? rawDraft?.sourceSite ?? 'nhentai',
+    sourceSite: external?.sourceSite ?? rawDraft?.sourceSite ?? defaultSourceSite,
     sourceUrl: external?.sourceUrl ?? rawDraft?.sourceUrl ?? '',
     sourceId: external?.sourceRemoteId ?? rawDraft?.sourceId ?? '',
     sourceToken: external?.sourceToken ?? rawDraft?.sourceToken ?? '',

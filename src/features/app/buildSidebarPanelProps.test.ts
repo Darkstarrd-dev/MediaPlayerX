@@ -134,7 +134,7 @@ describe('buildSidebarPanelProps', () => {
     expect(removeUpdater?.(['video-1', 'video-2'])).toEqual(['video-1'])
   })
 
-  it('元数据管理模式开启时也会展示 Sidebar checker', () => {
+  it('元数据管理模式下 Sidebar 保持普通导航行为', () => {
     const props = buildSidebarPanelProps({
       mode: 'image',
       sidebarFocus: 'sidebar',
@@ -180,7 +180,7 @@ describe('buildSidebarPanelProps', () => {
       onToggleManageNode: vi.fn(),
     })
 
-    expect(props.manageMode).toBe(true)
+    expect(props.manageMode).toBe(false)
   })
 
   it('music 模式可重置根目录并维护音频播放列表', () => {

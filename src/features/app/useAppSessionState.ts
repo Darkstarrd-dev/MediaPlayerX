@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import type { AudioItem, BrowserMode, ImagePackage, VectorCandidate } from '../../types'
+import type { AudioItem, BrowserMode, ImagePackage, MusicLoopMode, VectorCandidate } from '../../types'
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 
@@ -21,6 +21,7 @@ export function useAppSessionState({
   const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
   const [selectedAudioId, setSelectedAudioId] = useState(audios[0]?.id ?? '')
   const [audioPlaylistIds, setAudioPlaylistIds] = useState<string[]>(audios.slice(0, 3).map((audio) => audio.id))
+  const [musicLoopMode, setMusicLoopMode] = useState<MusicLoopMode>('library')
   const [musicPlayRequestNonce, setMusicPlayRequestNonce] = useState(0)
   const [imageFocusActive, setImageFocusActive] = useState(false)
   const [focusByPackage, setFocusByPackage] = useState<Record<string, number>>(() =>
@@ -68,6 +69,8 @@ export function useAppSessionState({
     setSelectedAudioId,
     audioPlaylistIds,
     setAudioPlaylistIds,
+    musicLoopMode,
+    setMusicLoopMode,
     musicPlayRequestNonce,
     requestMusicPlay: () => {
       setMusicPlayRequestNonce((value) => value + 1)

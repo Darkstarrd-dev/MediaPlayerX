@@ -2,7 +2,7 @@ import { useEffect, type Dispatch, type MutableRefObject, type RefObject, type S
 
 import type { AppSettings } from '../../contracts/settings'
 import { resolvePaletteId, resolveStyleId } from '../theme/themeRegistry'
-import type { BrowserMode, FocusedImageRef, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
+import type { AudioItem, BrowserMode, FocusedImageRef, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import { clamp } from '../../utils/ui'
 
 const TOP_PANEL_MIN_HEIGHT = 80
@@ -41,9 +41,13 @@ interface UseAppEffectsParams {
   vectorResultPackageNodeIdMap: Map<string, string>
   vectorSidebarNodes: SidebarNode[]
   videosForSidebar: VideoItem[]
+  audiosForSidebar: AudioItem[]
   rootScopedVideoIds: Set<string>
+  rootScopedAudioIds: Set<string>
   selectedVideoId: string
+  selectedAudioId: string
   videoNodeIdMap: Map<string, string>
+  audioNodeIdMap: Map<string, string>
   ensureSidebarNodeVisible: (nodeId: string) => void
   fullscreenActive: boolean
   autoPlayEnabled: boolean
@@ -66,6 +70,7 @@ interface UseAppEffectsParams {
   setPageByPackage: Dispatch<SetStateAction<Record<string, number>>>
   setSelectedPackageId: Dispatch<SetStateAction<string>>
   setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>
+  setSelectedAudioId: Dispatch<SetStateAction<string>>
   selectVideoFromBrowser: (videoId: string) => void
   setFullscreenEntryDisplay: Dispatch<SetStateAction<'image-only' | 'video-only'>>
   setFullscreenDisplay: Dispatch<SetStateAction<'dual' | 'video-only' | 'image-only'>>
@@ -108,9 +113,13 @@ export function useAppEffects({
   vectorResultPackageNodeIdMap,
   vectorSidebarNodes,
   videosForSidebar,
+  audiosForSidebar,
   rootScopedVideoIds,
+  rootScopedAudioIds,
   selectedVideoId,
+  selectedAudioId,
   videoNodeIdMap,
+  audioNodeIdMap,
   ensureSidebarNodeVisible,
   fullscreenActive,
   autoPlayEnabled,
@@ -133,6 +142,7 @@ export function useAppEffects({
   setPageByPackage,
   setSelectedPackageId,
   setSelectedSidebarNodeId,
+  setSelectedAudioId,
   selectVideoFromBrowser,
   setFullscreenEntryDisplay,
   setFullscreenDisplay,
@@ -366,6 +376,34 @@ export function useAppEffects({
       setSelectedSidebarNodeId(fallbackNodeId)
     }
   }, [flatSidebarNodes, mode, selectedSidebarNodeId, selectedVideoId, setSelectedSidebarNodeId, sidebarNodeById, videoNodeIdMap])
+
+  useEffect(() => {
+    if (audiosForSidebar.length === 0) {
+      if (selectedAudioId !== '') {
+        setSelectedAudioId('')
+      }
+      return
+    }
+
+    if (!rootScopedAudioIds.has(selectedAudioId)) {
+      setSelectedAudioId(audiosForSidebar[0].id)
+    }
+  }, [audiosForSidebar, rootScopedAudioIds, selectedAudioId, setSelectedAudioId])
+
+  useEffect(() => {
+    if (mode !== 'music') {
+      return
+    }
+
+    if (selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)) {
+      return
+    }
+
+    const fallbackNodeId = audioNodeIdMap.get(selectedAudioId) ?? flatSidebarNodes[0]?.id ?? null
+    if (fallbackNodeId !== selectedSidebarNodeId) {
+      setSelectedSidebarNodeId(fallbackNodeId)
+    }
+  }, [audioNodeIdMap, flatSidebarNodes, mode, selectedAudioId, selectedSidebarNodeId, setSelectedSidebarNodeId, sidebarNodeById])
 
   useEffect(() => {
     if (sidebarCollapsed || sidebarFocus !== 'sidebar' || !selectedSidebarNodeId) {

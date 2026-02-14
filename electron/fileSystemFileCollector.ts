@@ -17,6 +17,8 @@ interface CollectMediaFilesParams {
   rootDir: string
   importDirectoryRoots: string[]
   importFiles: string[]
+  musicImportDirectoryRoots: string[]
+  musicImportFiles: string[]
   legacyImportsDirName: string
   directoryScanConcurrency: number
   imageExtensions: ReadonlySet<string>
@@ -34,6 +36,8 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
 
   const directoryRoots = Array.from(new Set(params.importDirectoryRoots.map((value) => path.resolve(value))))
   const explicitFiles = Array.from(new Set(params.importFiles.map((value) => path.resolve(value))))
+  const musicDirectoryRoots = Array.from(new Set(params.musicImportDirectoryRoots.map((value) => path.resolve(value))))
+  const musicFileAllowlistKeys = new Set(params.musicImportFiles.map((value) => normalizeAllowlistKey(path.resolve(value))))
 
   if (directoryRoots.length === 0 && explicitFiles.length === 0) {
     return []
@@ -44,6 +48,14 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
 
   const files: FileRecord[] = []
   const seen = new Set<string>()
+
+  const isMusicManagedPath = (absolutePath: string): boolean => {
+    if (musicFileAllowlistKeys.has(normalizeAllowlistKey(absolutePath))) {
+      return true
+    }
+
+    return musicDirectoryRoots.some((rootPath) => isPathInsideRoot(rootPath, absolutePath))
+  }
 
   const pushFile = (absolutePath: string, extension: string, sizeBytes: number, width = 0, height = 0) => {
     const key = normalizeAllowlistKey(absolutePath)
@@ -96,6 +108,10 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
           params.audioExtensions.has(extension) ||
           params.archiveExtensions.has(extension)
         if (!supported) {
+          continue
+        }
+
+        if (isMusicManagedPath(absolutePath) && (params.videoExtensions.has(extension) || params.archiveExtensions.has(extension))) {
           continue
         }
 
@@ -192,6 +208,10 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
         params.audioExtensions.has(extension) ||
         params.archiveExtensions.has(extension)
       if (!supported) {
+        return null
+      }
+
+      if (isMusicManagedPath(absolutePath) && (params.videoExtensions.has(extension) || params.archiveExtensions.has(extension))) {
         return null
       }
 

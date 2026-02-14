@@ -35,7 +35,7 @@ export function useAppRuntimeSources() {
     setPlaylistIds: mediaState.setPlaylistIds,
   })
 
-  const importState = useImportPipeline({ repository: mediaRepository })
+  const importState = useImportPipeline({ repository: mediaRepository, mode })
   const archiveLoadStatus = useArchiveLoadStatus({ repository: mediaRepository })
 
   return {

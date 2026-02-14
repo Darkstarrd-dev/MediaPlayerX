@@ -76,10 +76,13 @@ interface CreateDirectorySourceParams {
   imageFiles: FileRecord[]
   colorPalette: readonly string[]
   packageGradeOverridesBySourceId: Map<string, number | null>
+  treePathOverride?: string[]
 }
 
 export function createDirectorySource(params: CreateDirectorySourceParams): ImagePackageDto {
-  const treePath = toAbsoluteTreePath(params.directoryPath)
+  const treePath = params.treePathOverride && params.treePathOverride.length > 0
+    ? [...params.treePathOverride]
+    : toAbsoluteTreePath(params.directoryPath)
   const sourceId = makeStableId('dir', params.directoryPath)
   const displayName = path.basename(params.directoryPath) || treePath[treePath.length - 1] || sourceId
   const persistedGrade = params.packageGradeOverridesBySourceId.get(sourceId)

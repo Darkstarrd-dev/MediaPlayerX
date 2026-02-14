@@ -2,6 +2,21 @@ import type { ReactElement } from 'react'
 
 import type { BrowserMode, SidebarNode } from '../types'
 
+function resolveFirstAudioId(node: SidebarNode): string | null {
+  if (node.audioId) {
+    return node.audioId
+  }
+
+  for (const child of node.children) {
+    const candidate = resolveFirstAudioId(child)
+    if (candidate) {
+      return candidate
+    }
+  }
+
+  return null
+}
+
 interface SidebarPanelProps {
   mode: BrowserMode
   sidebarFocus: 'sidebar' | 'main'
@@ -29,6 +44,7 @@ interface SidebarPanelProps {
   searchResultReadonly?: boolean
   canGoToFromSearchMode?: boolean
   manageMode?: boolean
+  metadataManageMode?: boolean
   checkedSidebarNodeIds?: ReadonlySet<string>
   playlistIds: string[]
   audioPlaylistIds: string[]
@@ -72,6 +88,7 @@ function SidebarPanel({
   searchResultReadonly = false,
   canGoToFromSearchMode = false,
   manageMode = false,
+  metadataManageMode = false,
   checkedSidebarNodeIds,
   playlistIds,
   audioPlaylistIds,
@@ -88,6 +105,7 @@ function SidebarPanel({
   onToggleManageNode,
 }: SidebarPanelProps) {
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>()
+  const manageStyleEnabled = manageMode || metadataManageMode
   const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : mode === 'video' ? Boolean(videoRootNodeId) : Boolean(musicRootNodeId)
   const showRootToggle = !searchResultMode
   const rootToggleLabel = rootSet ? '恢复根目录' : '设为根'
@@ -101,19 +119,24 @@ function SidebarPanel({
         mode === 'image' &&
         (imageHighlightByNode ? selectedSidebarNodeId === node.id : node.imageSourceId === selectedPackageId)
       const isActiveVideo = mode === 'video' && node.videoId === selectedVideoId
-      const isActiveAudio = mode === 'music' && node.audioId === selectedAudioId
+      const isActiveAudio = mode === 'music' && (selectedSidebarNodeId === node.id || node.audioId === selectedAudioId)
       const isKeyboardActive = selectedSidebarNodeId === node.id
       const loadState = mode === 'image' ? imageNodeLoadStateById[node.id] : undefined
       const hasOwnImages = imageNodeType === 'package' || imageNodeType === 'directory'
       const visibleImageCount = node.directImageCount ?? 0
       const descendantNodeCount = node.descendantNodeCount ?? node.children.length
-      const descendantAudioCount = node.descendantNodeCount ?? 0
+      const directAudioCount = node.directAudioCount ?? 0
+      const descendantAudioFolderCount = node.descendantAudioFolderCount ?? 0
+      const musicCountIsTrack = directAudioCount > 0
+      const musicCountValue = musicCountIsTrack ? directAudioCount : descendantAudioFolderCount
+      const musicCountLabel = musicCountIsTrack ? `曲 ${musicCountValue}` : `夹 ${musicCountValue}`
+      const musicCountClassName = `sidebar-count ${musicCountIsTrack ? 'sidebar-count-images' : 'sidebar-count-packages'}`
 
       const row = (
         <div
           key={node.id}
           data-sidebar-node-id={node.id}
-            className={`sidebar-row ${manageMode ? 'is-manage' : ''} ${checkedNodes.has(node.id) ? 'is-selected' : ''} ${isActivePackage || isActiveVideo || isActiveAudio ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
+            className={`sidebar-row ${manageStyleEnabled ? 'is-manage' : ''} ${checkedNodes.has(node.id) ? 'is-selected' : ''} ${isActivePackage || isActiveVideo || isActiveAudio ? 'is-active' : ''} ${isKeyboardActive ? 'is-key-active' : ''} ${loadState === 'running' ? 'is-processing' : ''}`}
           style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
         >
           <span className={`sidebar-bullet ${loadState ? `is-${loadState}` : ''}`} aria-hidden="true" />
@@ -127,6 +150,9 @@ function SidebarPanel({
                 onToggleManageNode?.(node.id, event.shiftKey)
                 return
               }
+              if (metadataManageMode && (!checkedNodes.has(node.id) || event.shiftKey)) {
+                onToggleManageNode?.(node.id, event.shiftKey)
+              }
               if (mode === 'image' && searchResultReadonly) {
                 return
               }
@@ -134,11 +160,15 @@ function SidebarPanel({
               if (mode === 'image' && node.imageSourceId) {
                 onSelectPackage(node.imageSourceId)
               }
+              if (mode === 'music') {
+                const targetAudioId = resolveFirstAudioId(node)
+                if (targetAudioId) {
+                  onSelectAudio(targetAudioId)
+                }
+                return
+              }
               if (node.videoId) {
                 onSelectVideo(node.videoId)
-              }
-              if (node.audioId) {
-                onSelectAudio(node.audioId)
               }
             }}
           >
@@ -154,7 +184,7 @@ function SidebarPanel({
             />
           ) : null}
 
-          {mode === 'music' && node.audioId ? (
+          {mode === 'music' && node.kind === 'audio' && node.audioId ? (
             <input
               aria-label={`toggle-${node.audioId}`}
               checked={audioPlaylistIds.includes(node.audioId)}
@@ -177,8 +207,8 @@ function SidebarPanel({
 
           {mode === 'music' ? (
             <span className="sidebar-counts" style={{ fontSize: `${sidebarCountFontSize}px` }}>
-              <span className="sidebar-count sidebar-count-audios" aria-label={`曲 ${descendantAudioCount}`} title={`曲 ${descendantAudioCount}`}>
-                {descendantAudioCount}
+              <span className={musicCountClassName} aria-label={musicCountLabel} title={musicCountLabel}>
+                {musicCountValue}
               </span>
             </span>
           ) : null}

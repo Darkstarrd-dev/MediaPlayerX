@@ -409,6 +409,7 @@ export function useAppSidebarScopeState({
     imageTreeForSidebar,
     videoTreeForSidebar,
     audioTreeForSidebar,
+    audiosForSidebar,
     imageRootNode,
     videoRootNode,
     musicRootNode,

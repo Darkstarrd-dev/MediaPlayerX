@@ -23,6 +23,7 @@ async function inspectImportPath(
     videoExtensions: ReadonlySet<string>
     audioExtensions: ReadonlySet<string>
     archiveExtensions: ReadonlySet<string>
+    musicImportMode: boolean
   },
 ): Promise<ImportPathInspectionResult> {
   const absolutePath = path.resolve(candidatePath)
@@ -56,6 +57,22 @@ async function inspectImportPath(
   }
 
   const extension = path.extname(absolutePath).toLowerCase()
+  if (options.musicImportMode) {
+    if (!options.audioExtensions.has(extension)) {
+      return { ok: false, reason: `音乐导入仅支持音频文件: ${absolutePath}` }
+    }
+
+    return {
+      ok: true,
+      inspection: {
+        absolutePath,
+        insideRoot,
+        kind: 'file',
+        extension,
+      },
+    }
+  }
+
   if (
     !options.imageExtensions.has(extension) &&
     !options.videoExtensions.has(extension) &&
@@ -84,6 +101,7 @@ interface ExecuteImportTaskParams {
   videoExtensions: ReadonlySet<string>
   audioExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
+  musicImportMode: boolean
   database: MediaLibraryDatabase
   invalidateCache: () => void
   ensureSnapshotLoaded: () => Promise<unknown>
@@ -117,6 +135,9 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
   const existingImportSources = params.database.readImportSources()
   const directoryMap = new Map<string, string>()
   const fileMap = new Map<string, string>()
+  const existingMusicImportSources = params.musicImportMode ? params.database.readMusicImportSources() : null
+  const musicDirectoryMap = new Map<string, string>()
+  const musicFileMap = new Map<string, string>()
 
   for (const value of existingImportSources.directories) {
     const resolved = path.resolve(value)
@@ -128,8 +149,21 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
     fileMap.set(normalizeAllowlistKey(resolved), resolved)
   }
 
+  if (existingMusicImportSources) {
+    for (const value of existingMusicImportSources.directories) {
+      const resolved = path.resolve(value)
+      musicDirectoryMap.set(normalizeAllowlistKey(resolved), resolved)
+    }
+    for (const value of existingMusicImportSources.files) {
+      const resolved = path.resolve(value)
+      musicFileMap.set(normalizeAllowlistKey(resolved), resolved)
+    }
+  }
+
   let addedDirectoryCount = 0
   let addedFileCount = 0
+  let addedMusicDirectoryCount = 0
+  let addedMusicFileCount = 0
 
   for (const sourcePath of existing.sourcePaths) {
     const inspected = await inspectImportPath(sourcePath, {
@@ -138,6 +172,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
       videoExtensions: params.videoExtensions,
       audioExtensions: params.audioExtensions,
       archiveExtensions: params.archiveExtensions,
+      musicImportMode: params.musicImportMode,
     })
 
     if (inspected.ok) {
@@ -155,11 +190,21 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
             fileMap.set(key, absolutePath)
             addedFileCount += 1
           }
+
+          if (params.musicImportMode && !musicFileMap.has(key)) {
+            musicFileMap.set(key, absolutePath)
+            addedMusicFileCount += 1
+          }
         } else if (inspection.kind === 'directory') {
           const key = normalizeAllowlistKey(absolutePath)
           if (!directoryMap.has(key)) {
             directoryMap.set(key, absolutePath)
             addedDirectoryCount += 1
+          }
+
+          if (params.musicImportMode && !musicDirectoryMap.has(key)) {
+            musicDirectoryMap.set(key, absolutePath)
+            addedMusicDirectoryCount += 1
           }
         }
 
@@ -188,11 +233,20 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
   }
 
   const addedTotal = addedDirectoryCount + addedFileCount
-  if (addedTotal > 0) {
+  const addedMusicTotal = addedMusicDirectoryCount + addedMusicFileCount
+  if (addedTotal > 0 || (params.musicImportMode && addedMusicTotal > 0)) {
     params.database.writeImportSources({
       directories: Array.from(directoryMap.values()),
       files: Array.from(fileMap.values()),
     })
+
+    if (params.musicImportMode && addedMusicTotal > 0) {
+      params.database.writeMusicImportSources({
+        directories: Array.from(musicDirectoryMap.values()),
+        files: Array.from(musicFileMap.values()),
+      })
+    }
+
     params.invalidateCache()
     await params.ensureSnapshotLoaded()
 
@@ -207,7 +261,9 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
   const status: ImportTaskRecord['status'] = failedCount > 0 ? 'failed' : 'completed'
   const message =
     status === 'completed'
-      ? `导入完成，共 ${acceptedCount} 项，新增引用 ${addedTotal} 项（目录 ${addedDirectoryCount} + 文件 ${addedFileCount}）`
+      ? params.musicImportMode
+        ? `导入完成，共 ${acceptedCount} 项，新增引用 ${addedTotal} 项（目录 ${addedDirectoryCount} + 文件 ${addedFileCount}）；音乐引用新增 ${addedMusicTotal} 项（目录 ${addedMusicDirectoryCount} + 文件 ${addedMusicFileCount}）`
+        : `导入完成，共 ${acceptedCount} 项，新增引用 ${addedTotal} 项（目录 ${addedDirectoryCount} + 文件 ${addedFileCount}）`
       : `导入失败，成功 ${acceptedCount} 项，失败 ${failedCount} 项`
 
   params.database.upsertTask({

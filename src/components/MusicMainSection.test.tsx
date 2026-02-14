@@ -342,10 +342,12 @@ describe('MusicMainSection', () => {
     fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
 
     expect(screen.getByRole('button', { name: 'Default' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Starfield' })).toBeInTheDocument()
 
     const controlsShell = container.querySelector('.music-controls-shell') as HTMLElement
     fireEvent.mouseLeave(controlsShell)
 
     expect(screen.queryByRole('button', { name: 'Default' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Starfield' })).toBeNull()
   })
 })

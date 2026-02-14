@@ -7,6 +7,12 @@ interface MetadataMusicEditorProps {
   audioPlaylistIds: string[]
   selectedAudioId: string
   audioById: Map<string, AudioItem>
+  musicBookletAlbumRootPath: string
+  musicBookletCandidates: Array<{ sourceId: string; label: string; imageCount: number }>
+  musicCoverBindingValue: string
+  musicBookletBindingValue: string
+  canOpenMusicCover: boolean
+  canOpenMusicBooklet: boolean
   metadataPending: boolean
   editable: boolean
   audioAlbumDraft: string
@@ -26,7 +32,15 @@ interface MetadataMusicEditorProps {
   onSearchByAuthor: (value: string) => void
   onSelectAudio: (audioId: string) => void
   onSelectAudioAndPlay: (audioId: string) => void
+  onMusicCoverBindingChange: (value: string) => void
+  onMusicBookletBindingChange: (value: string) => void
+  onOpenMusicCover: () => void
+  onOpenMusicBooklet: () => void
+  onResetMusicBookletBinding: () => void
 }
+
+const MUSIC_BOOKLET_AUTO_VALUE = '__auto__'
+const MUSIC_BOOKLET_NONE_VALUE = '__none__'
 
 function commitOnEnter(
   event: ReactKeyboardEvent<HTMLInputElement>,
@@ -49,6 +63,12 @@ export function MetadataMusicEditor({
   audioPlaylistIds,
   selectedAudioId,
   audioById,
+  musicBookletAlbumRootPath,
+  musicBookletCandidates,
+  musicCoverBindingValue,
+  musicBookletBindingValue,
+  canOpenMusicCover,
+  canOpenMusicBooklet,
   metadataPending,
   editable,
   audioAlbumDraft,
@@ -68,6 +88,11 @@ export function MetadataMusicEditor({
   onSearchByAuthor,
   onSelectAudio,
   onSelectAudioAndPlay,
+  onMusicCoverBindingChange,
+  onMusicBookletBindingChange,
+  onOpenMusicCover,
+  onOpenMusicBooklet,
+  onResetMusicBookletBinding,
 }: MetadataMusicEditorProps) {
   const playlistIds = audioPlaylistIds.filter((audioId) => audioById.has(audioId))
   const effectivePlaylistIds = playlistIds.length > 0 ? playlistIds : Array.from(audioById.keys())
@@ -172,6 +197,76 @@ export function MetadataMusicEditor({
           ) : null}
         </div>
       </div>
+
+      {editable ? (
+        <div className="metadata-music-booklet-bindings">
+          <div className="metadata-music-booklet-bindings-head">
+            <strong>Booklet 绑定</strong>
+            <span title={musicBookletAlbumRootPath}>{musicBookletAlbumRootPath || '-'}</span>
+          </div>
+
+          <div className="metadata-music-booklet-bindings-grid">
+            <label>
+              <span>封面来源</span>
+              <select
+                disabled={metadataPending || musicBookletCandidates.length === 0}
+                value={musicCoverBindingValue}
+                onChange={(event) => onMusicCoverBindingChange(event.target.value)}
+              >
+                <option value={MUSIC_BOOKLET_AUTO_VALUE}>自动</option>
+                <option value={MUSIC_BOOKLET_NONE_VALUE}>无</option>
+                {musicBookletCandidates.map((candidate) => (
+                  <option key={candidate.sourceId} value={candidate.sourceId}>
+                    {`${candidate.label} (${candidate.imageCount})`}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span>Booklet 来源</span>
+              <select
+                disabled={metadataPending || musicBookletCandidates.length === 0}
+                value={musicBookletBindingValue}
+                onChange={(event) => onMusicBookletBindingChange(event.target.value)}
+              >
+                <option value={MUSIC_BOOKLET_AUTO_VALUE}>自动</option>
+                <option value={MUSIC_BOOKLET_NONE_VALUE}>无</option>
+                {musicBookletCandidates.map((candidate) => (
+                  <option key={candidate.sourceId} value={candidate.sourceId}>
+                    {`${candidate.label} (${candidate.imageCount})`}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="metadata-music-booklet-bindings-actions">
+            <button disabled={!canOpenMusicCover} type="button" onClick={onOpenMusicCover}>
+              打开封面
+            </button>
+            <button disabled={!canOpenMusicBooklet} type="button" onClick={onOpenMusicBooklet}>
+              打开Booklet
+            </button>
+            <button
+              disabled={metadataPending || !musicBookletAlbumRootPath}
+              type="button"
+              onClick={onResetMusicBookletBinding}
+            >
+              重置自动
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="metadata-music-booklet-bindings-actions">
+          <button disabled={!canOpenMusicCover} type="button" onClick={onOpenMusicCover}>
+            打开封面
+          </button>
+          <button disabled={!canOpenMusicBooklet} type="button" onClick={onOpenMusicBooklet}>
+            打开Booklet
+          </button>
+        </div>
+      )}
 
       <div className="metadata-music-playlist" aria-label="音乐播放列表">
         {effectivePlaylistIds.length > 0 ? (

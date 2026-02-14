@@ -65,6 +65,12 @@ interface BuildMetadataPanelPropsParams {
   audioPlaylistIds: string[]
   selectedAudioId: string
   audioById: Map<string, AudioItem>
+  musicBookletAlbumRootPath: string
+  musicBookletCandidates: Array<{ sourceId: string; label: string; imageCount: number }>
+  musicCoverBindingValue: string
+  musicBookletBindingValue: string
+  canOpenMusicCover: boolean
+  canOpenMusicBooklet: boolean
   metadataTab: MetadataPanelProps['metadataTab']
   playlistIds: string[]
   selectedVideoId: string
@@ -86,6 +92,11 @@ interface BuildMetadataPanelPropsParams {
   setDragVideoId: Dispatch<SetStateAction<string | null>>
   onSelectAudio: (audioId: string) => void
   onSelectAudioAndPlay: (audioId: string) => void
+  onMusicCoverBindingChange: (value: string) => void
+  onMusicBookletBindingChange: (value: string) => void
+  onOpenMusicCover: () => void
+  onOpenMusicBooklet: () => void
+  onResetMusicBookletBinding: () => void
 }
 
 export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): MetadataPanelProps {
@@ -148,6 +159,12 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     audioPlaylistIds: params.audioPlaylistIds,
     selectedAudioId: params.selectedAudioId,
     audioById: params.audioById,
+    musicBookletAlbumRootPath: params.musicBookletAlbumRootPath,
+    musicBookletCandidates: params.musicBookletCandidates,
+    musicCoverBindingValue: params.musicCoverBindingValue,
+    musicBookletBindingValue: params.musicBookletBindingValue,
+    canOpenMusicCover: params.canOpenMusicCover,
+    canOpenMusicBooklet: params.canOpenMusicBooklet,
     metadataTab: params.metadataTab,
     playlistIds: params.playlistIds,
     selectedVideoId: params.selectedVideoId,
@@ -193,5 +210,10 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     },
     onSelectAudio: params.onSelectAudio,
     onSelectAudioAndPlay: params.onSelectAudioAndPlay,
+    onMusicCoverBindingChange: params.onMusicCoverBindingChange,
+    onMusicBookletBindingChange: params.onMusicBookletBindingChange,
+    onOpenMusicCover: params.onOpenMusicCover,
+    onOpenMusicBooklet: params.onOpenMusicBooklet,
+    onResetMusicBookletBinding: params.onResetMusicBookletBinding,
   }
 }

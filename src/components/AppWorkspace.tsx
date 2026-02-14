@@ -86,7 +86,7 @@ function AppWorkspace({
     )
   ) : null
 
-  const musicSection = enableProfiler ? (
+  const musicSection = mode !== 'music' ? null : enableProfiler ? (
     <Profiler id="MusicMainSection" onRender={benchOnReactRender}>
       <MusicMainSection {...musicMainSectionProps} />
     </Profiler>

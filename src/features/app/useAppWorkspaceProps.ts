@@ -42,6 +42,7 @@ interface UseAppWorkspacePropsParams {
   vectorPanelContentRef: RefObject<HTMLDivElement | null>
   vectorSearchResults: VectorCandidate[]
   scopedImageSourcesEffective: ImagePackage[]
+  musicBookletImageSources: ImagePackage[]
   videosForSidebarCount: number
   audiosForSidebarCount: number
   audiosForSidebar: AudioItem[]
@@ -501,6 +502,31 @@ function resolveAlbumRootPath(params: {
     .sort((left, right) => pathDepth(right) - pathDepth(left))[0]
 
   if (!matchedImportRoot) {
+    let bestAncestor = ''
+    for (const source of params.bookletSources) {
+      const candidatePath = normalizeFsPath(source.absolutePath)
+      if (!candidatePath) {
+        continue
+      }
+
+      const ancestor = commonAncestorPath(audioDirectoryPath, candidatePath)
+      if (!ancestor) {
+        continue
+      }
+
+      if (pathDepth(ancestor) > pathDepth(bestAncestor)) {
+        bestAncestor = ancestor
+      }
+    }
+
+    if (bestAncestor && pathDepth(bestAncestor) >= 2) {
+      const bestAncestorBase = basenameFsPath(bestAncestor)
+      if (DISC_DIRECTORY_PATTERN.test(bestAncestorBase)) {
+        return dirnameFsPath(bestAncestor) || bestAncestor
+      }
+      return bestAncestor
+    }
+
     const baseName = basenameFsPath(audioDirectoryPath)
     if (DISC_DIRECTORY_PATTERN.test(baseName)) {
       return dirnameFsPath(audioDirectoryPath) || audioDirectoryPath
@@ -545,6 +571,29 @@ function resolveAlbumRootPath(params: {
   return joinFsPath(matchedImportRoot, firstSegment)
 }
 
+function buildMusicBookletCandidates(params: {
+  bookletSources: ImagePackage[]
+  albumRootPath: string
+}): MusicBookletCandidate[] {
+  return params.bookletSources
+    .filter((source) => isPathInside(params.albumRootPath, source.absolutePath))
+    .map((source) => {
+      const relativeSegments = relativeSegmentsFromRoot(params.albumRootPath, source.absolutePath)
+      const relativeLabel = relativeSegments.join('/')
+      const baseName = basenameFsPath(source.absolutePath)
+      return {
+        sourceId: source.id,
+        absolutePath: source.absolutePath,
+        label: relativeLabel || baseName || source.displayName,
+        imageCount: source.images.length,
+        relativeDepth: relativeSegments.length,
+        coverHint: hasKeyword(baseName, COVER_HINT_KEYWORDS),
+        bookletHint: hasKeyword(baseName, BOOKLET_HINT_KEYWORDS),
+      }
+    })
+    .sort((left, right) => left.absolutePath.localeCompare(right.absolutePath, 'zh-CN', { sensitivity: 'base' }))
+}
+
 function resolveMusicBookletState(params: {
   focusedAudio: AudioItem | null
   imageSources: ImagePackage[]
@@ -564,30 +613,31 @@ function resolveMusicBookletState(params: {
     }
   }
 
-  const bookletSources = params.imageSources.filter((source) => source.treePath[0] === MUSIC_BOOKLET_ROOT_LABEL)
-  const albumRootPath = resolveAlbumRootPath({
-    audioAbsolutePath: params.focusedAudio.absolutePath,
-    bookletSources,
-    musicImportDirectories: params.musicImportDirectories,
-  })
+  const preferredBookletSources = params.imageSources.filter((source) => source.treePath[0] === MUSIC_BOOKLET_ROOT_LABEL)
 
-  const candidates = bookletSources
-    .filter((source) => isPathInside(albumRootPath, source.absolutePath))
-    .map((source) => {
-      const relativeSegments = relativeSegmentsFromRoot(albumRootPath, source.absolutePath)
-      const relativeLabel = relativeSegments.join('/')
-      const baseName = basenameFsPath(source.absolutePath)
-      return {
-        sourceId: source.id,
-        absolutePath: source.absolutePath,
-        label: relativeLabel || baseName || source.displayName,
-        imageCount: source.images.length,
-        relativeDepth: relativeSegments.length,
-        coverHint: hasKeyword(baseName, COVER_HINT_KEYWORDS),
-        bookletHint: hasKeyword(baseName, BOOKLET_HINT_KEYWORDS),
-      }
+  const resolveBySourcePool = (bookletSources: ImagePackage[]) => {
+    const albumRootPath = resolveAlbumRootPath({
+      audioAbsolutePath: params.focusedAudio!.absolutePath,
+      bookletSources,
+      musicImportDirectories: params.musicImportDirectories,
     })
-    .sort((left, right) => left.absolutePath.localeCompare(right.absolutePath, 'zh-CN', { sensitivity: 'base' }))
+    const candidates = buildMusicBookletCandidates({ bookletSources, albumRootPath })
+    return {
+      albumRootPath,
+      candidates,
+    }
+  }
+
+  const primaryBookletSources = preferredBookletSources.length > 0 ? preferredBookletSources : params.imageSources
+  let { albumRootPath, candidates } = resolveBySourcePool(primaryBookletSources)
+
+  if (preferredBookletSources.length > 0 && candidates.length === 0) {
+    const fallbackResolved = resolveBySourcePool(params.imageSources)
+    if (fallbackResolved.candidates.length > 0) {
+      albumRootPath = fallbackResolved.albumRootPath
+      candidates = fallbackResolved.candidates
+    }
+  }
 
   const sortedForCover = [...candidates].sort((left, right) => {
     if (normalizePathKey(left.absolutePath) === normalizePathKey(albumRootPath)) {
@@ -677,6 +727,7 @@ export function useAppWorkspaceProps({
   vectorPanelContentRef,
   vectorSearchResults,
   scopedImageSourcesEffective,
+  musicBookletImageSources,
   videosForSidebarCount,
   audiosForSidebarCount,
   audiosForSidebar,
@@ -1121,10 +1172,20 @@ export function useAppWorkspaceProps({
   const jumpTargetVideoFromAudio = pickFirstBySeriesId(videoByIdEffective.values(), audioSeriesId)
   const musicBookletState = resolveMusicBookletState({
     focusedAudio,
-    imageSources: Array.from(packageByIdEffective.values()),
+    imageSources: musicBookletImageSources,
     musicImportDirectories: musicBookletBindings.musicImportDirectories,
     bindingsByAlbumRoot: musicBookletBindings.bindingsByAlbumRoot,
   })
+  const openMusicCoverSourceId = metadataManageMode
+    ? musicBookletState.effectiveCoverSourceId
+    : musicBookletState.effectiveCoverSourceId ?? musicBookletState.autoCoverSourceId
+  const openMusicBookletSourceId = metadataManageMode
+    ? musicBookletState.effectiveBookletSourceId ?? musicBookletState.effectiveCoverSourceId
+    :
+        musicBookletState.effectiveBookletSourceId ??
+        musicBookletState.effectiveCoverSourceId ??
+        musicBookletState.autoBookletSourceId ??
+        musicBookletState.autoCoverSourceId
   const musicBookletPreviewRootNodeId = resolveMusicBookletPreviewRootNodeId({
     candidateSourceIds: musicBookletState.candidates.map((candidate) => candidate.sourceId),
     imageSourceNodeIdMap: normalImageSourceNodeIdMap,
@@ -1170,7 +1231,7 @@ export function useAppWorkspaceProps({
   }
 
   const jumpMusicToCover = () => {
-    const coverSourceId = musicBookletState.effectiveCoverSourceId
+    const coverSourceId = openMusicCoverSourceId
     if (!coverSourceId) {
       return
     }
@@ -1182,7 +1243,7 @@ export function useAppWorkspaceProps({
   }
 
   const jumpMusicToBooklet = () => {
-    const bookletSourceId = musicBookletState.effectiveBookletSourceId ?? musicBookletState.effectiveCoverSourceId
+    const bookletSourceId = openMusicBookletSourceId
     if (!bookletSourceId) {
       return
     }
@@ -1394,7 +1455,7 @@ export function useAppWorkspaceProps({
     onClearManageSelection: clearAllSelections,
     canJumpToManga: Boolean(jumpTargetImageFromAudio),
     canJumpToAnimation: Boolean(jumpTargetVideoFromAudio),
-    canJumpToBooklet: Boolean(musicBookletState.effectiveBookletSourceId || musicBookletState.effectiveCoverSourceId),
+    canJumpToBooklet: Boolean(openMusicBookletSourceId),
     onJumpToManga: jumpMusicToManga,
     onJumpToAnimation: jumpMusicToAnimation,
     onJumpToBooklet: jumpMusicToBooklet,
@@ -1516,8 +1577,8 @@ export function useAppWorkspaceProps({
     })),
     musicCoverBindingValue: musicBookletState.coverBindingValue,
     musicBookletBindingValue: musicBookletState.bookletBindingValue,
-    canOpenMusicCover: Boolean(musicBookletState.effectiveCoverSourceId),
-    canOpenMusicBooklet: Boolean(musicBookletState.effectiveBookletSourceId || musicBookletState.effectiveCoverSourceId),
+    canOpenMusicCover: Boolean(openMusicCoverSourceId),
+    canOpenMusicBooklet: Boolean(openMusicBookletSourceId),
     metadataTab,
     playlistIds,
     selectedVideoId,

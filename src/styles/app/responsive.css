@@ -21,9 +21,18 @@
     padding: 10px;
   }
 
+  .music-controls-shell.is-fullscreen-floating {
+    width: min(calc(100vw - 16px), 980px);
+    bottom: 8px;
+  }
+
   .music-controls-progress {
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
+  }
+
+  .metadata-music-booklet-bindings-actions {
+    flex-wrap: wrap;
   }
 }

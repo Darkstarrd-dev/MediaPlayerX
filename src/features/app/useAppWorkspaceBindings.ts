@@ -1,4 +1,5 @@
 import { useAppWorkspaceProps } from './useAppWorkspaceProps'
+import { useMusicBookletBindings } from './useMusicBookletBindings'
 import type { BackendErrorRow } from './buildBackendErrorRows'
 import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
 import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
@@ -20,9 +21,16 @@ export function useAppWorkspaceBindings({
   const {
     benchSettings,
     appSettings,
+    repositoryBootstrap,
     sessionState,
     mediaState,
   } = runtimeSources
+
+  const {
+    bootstrapLibrarySnapshot,
+  } = repositoryBootstrap
+
+  const musicBookletBindings = useMusicBookletBindings({ repository: repositoryBootstrap.mediaRepository })
 
   const {
     mode,
@@ -42,6 +50,8 @@ export function useAppWorkspaceBindings({
     setSelectedAudioId,
     audioPlaylistIds,
     setAudioPlaylistIds,
+    musicLoopMode,
+    setMusicLoopMode,
     musicPlayRequestNonce,
     requestMusicPlay,
     imageFocusActive,
@@ -146,7 +156,13 @@ export function useAppWorkspaceBindings({
     collapseSidebar,
     onStartWorkspaceBottomPanelResize,
     orderedRootScopedPackages,
+    normalImageSourceNodeIdMap,
   } = readNavigationState
+
+  const musicBookletLibrarySnapshot = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
+  const musicBookletImageSources = musicBookletLibrarySnapshot
+    ? [...musicBookletLibrarySnapshot.imagePackages, ...musicBookletLibrarySnapshot.imageDirectories]
+    : scopedImageSourcesEffective
 
   void orderedRootScopedPackages
 
@@ -202,6 +218,7 @@ export function useAppWorkspaceBindings({
     vectorPanelContentRef,
     vectorSearchResults: sessionState.vectorSearchResults,
     scopedImageSourcesEffective,
+    musicBookletImageSources,
     videosForSidebarCount: videosForSidebar.length,
     audiosForSidebarCount: audiosForSidebar.length,
     audiosForSidebar,
@@ -308,6 +325,7 @@ export function useAppWorkspaceBindings({
     selectedVideoId,
     selectedAudioId,
     audioPlaylistIds,
+    musicLoopMode,
     musicPlayRequestNonce,
     dragVideoId,
     videoByIdEffective,
@@ -320,6 +338,7 @@ export function useAppWorkspaceBindings({
     selectedSidebarNodeId,
     searchResultsMode,
     canSetCurrentRoot,
+    normalImageSourceNodeIdMap,
     imageRootNodeId,
     videoRootNodeId,
     musicRootNodeId,
@@ -335,10 +354,12 @@ export function useAppWorkspaceBindings({
     setSelectedSidebarNodeId,
     setSelectedPackageId,
     setSelectedAudioId,
+    setMusicLoopMode,
     collapseSidebar,
     applyCurrentRootFromSelection,
     toggleSidebarNodeChecked,
     setAudioPlaylistIds,
     requestMusicPlay,
+    musicBookletBindings,
   })
 }

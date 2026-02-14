@@ -74,7 +74,8 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     imageHighlightByNode: params.vectorResultsActive,
     searchResultMode: params.searchResultsMode,
     searchResultReadonly: params.searchResultsReadOnly,
-    manageMode: params.manageMode || params.metadataManageMode,
+    manageMode: params.manageMode,
+    metadataManageMode: params.metadataManageMode,
     checkedSidebarNodeIds: params.checkedSidebarNodeIdSet,
     canGoToFromSearchMode: params.vectorResultsActive
       ? Boolean(params.focusedRef)

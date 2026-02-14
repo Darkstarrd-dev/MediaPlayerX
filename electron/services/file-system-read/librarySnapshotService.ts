@@ -97,10 +97,36 @@ interface LibrarySnapshotServiceOptions {
   getVideoCoverOverridesByVideoId: () => Map<string, PersistedVideoCoverRecord>
   getVideoMetadataOverridesByVideoId: () => Map<string, PersistedVideoMetadataRecord>
   getAudioMetadataOverridesByAudioId: () => Map<string, PersistedAudioMetadataRecord>
+  getMusicImportSources: () => { directories: string[]; files: string[] }
   upsertAudioMetadataFromScan: (
     audioId: string,
     payload: { album: string; author: string; trackTitle: string; seriesId: string },
   ) => void
+}
+
+interface MusicImportPathContext {
+  directoryRoots: string[]
+  fileAllowlistKeys: Set<string>
+}
+
+const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
+const MUSIC_ISOLATED_FALLBACK_GROUP = 'unknown artist'
+
+function normalizeTreeSegment(value: string, fallback: string): string {
+  const normalized = value
+    .replace(/[\\/]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return normalized.length > 0 ? normalized : fallback
+}
+
+function buildBookletTreePath(directoryPath: string): string[] {
+  return [MUSIC_BOOKLET_ROOT_LABEL, ...toAbsoluteTreePath(directoryPath)]
+}
+
+function resolveIsolatedAudioGroup(album: string): string {
+  const candidate = album.trim().length > 0 ? album : MUSIC_ISOLATED_FALLBACK_GROUP
+  return normalizeTreeSegment(candidate, MUSIC_ISOLATED_FALLBACK_GROUP)
 }
 
 export class LibrarySnapshotService {
@@ -232,10 +258,14 @@ export class LibrarySnapshotService {
   }
 
   private async collectFiles(): Promise<FileRecord[]> {
+    const musicImportSources = this.options.getMusicImportSources()
+
     return collectMediaFiles({
       rootDir: this.options.rootDir,
       importDirectoryRoots: this.options.importPathRegistry.getImportDirectoryRoots(),
       importFiles: this.options.importPathRegistry.getImportFilePaths(),
+      musicImportDirectoryRoots: musicImportSources.directories,
+      musicImportFiles: musicImportSources.files,
       legacyImportsDirName: this.options.legacyImportsDirName,
       directoryScanConcurrency: this.options.directoryScanConcurrency,
       imageExtensions: this.options.imageExtensions,
@@ -289,7 +319,10 @@ export class LibrarySnapshotService {
     }
   }
 
-  private async createAudioSource(file: FileRecord): Promise<{
+  private async createAudioSource(
+    file: FileRecord,
+    musicImportPathContext: MusicImportPathContext,
+  ): Promise<{
     audio: AudioItemDto
     parsedMetadataForUpsert: {
       audioId: string
@@ -322,6 +355,11 @@ export class LibrarySnapshotService {
     const author = metadataRecord?.author ?? parsedAuthor
     const trackTitle = metadataRecord?.trackTitle ?? parsedTrackTitle
     const seriesId = metadataRecord?.seriesId ?? parsedSeriesId
+    const audioPathKey = normalizeAllowlistKey(file.absolutePath)
+    const isExplicitMusicFile = musicImportPathContext.fileAllowlistKeys.has(audioPathKey)
+    const underMusicDirectory = musicImportPathContext.directoryRoots.some((rootPath) => isPathInsideRoot(rootPath, file.absolutePath))
+    const isIsolatedMusicFile = isExplicitMusicFile && !underMusicDirectory
+    const treePath = isIsolatedMusicFile ? [resolveIsolatedAudioGroup(album), fileName] : toAbsoluteTreePath(file.absolutePath)
 
     const parsedMetadataForUpsert =
       !metadataRecord && (parsedAlbum.length > 0 || parsedAuthor.length > 0 || parsedTrackTitle.length > 0 || parsedSeriesId.length > 0)
@@ -341,7 +379,7 @@ export class LibrarySnapshotService {
         id: audioId,
         file_name: fileName,
         absolute_path: file.absolutePath,
-        tree_path: toAbsoluteTreePath(file.absolutePath),
+        tree_path: treePath,
         duration_sec: Math.max(0, Math.round(probe?.durationSec ?? 0)),
         size_mb: toSafeSizeMb(file.sizeBytes),
         album,
@@ -516,6 +554,11 @@ export class LibrarySnapshotService {
 
   private async loadSnapshot(): Promise<LibrarySnapshotDto> {
     const files = await this.collectFiles()
+    const musicImportSources = this.options.getMusicImportSources()
+    const musicImportDirectoryRoots = Array.from(new Set(musicImportSources.directories.map((value) => path.resolve(value))))
+    const musicImportFileAllowlistKeys = new Set(
+      musicImportSources.files.map((value) => normalizeAllowlistKey(path.resolve(value))),
+    )
 
     const directoryImageMap = new Map<string, FileRecord[]>()
     const archives: FileRecord[] = []
@@ -546,17 +589,48 @@ export class LibrarySnapshotService {
       }
     }
 
+    const musicRootMediaFlags = new Map<string, { hasAudio: boolean; hasImage: boolean }>()
+    for (const rootPath of musicImportDirectoryRoots) {
+      musicRootMediaFlags.set(rootPath, { hasAudio: false, hasImage: false })
+    }
+
+    for (const file of files) {
+      for (const rootPath of musicImportDirectoryRoots) {
+        if (!isPathInsideRoot(rootPath, file.absolutePath)) {
+          continue
+        }
+
+        const flags = musicRootMediaFlags.get(rootPath)
+        if (!flags) {
+          continue
+        }
+        if (this.options.audioExtensions.has(file.extension)) {
+          flags.hasAudio = true
+        }
+        if (this.options.imageExtensions.has(file.extension)) {
+          flags.hasImage = true
+        }
+      }
+    }
+
+    const bookletRootPaths = Array.from(musicRootMediaFlags.entries())
+      .filter(([, flags]) => flags.hasAudio && flags.hasImage)
+      .map(([rootPath]) => rootPath)
+      .sort((left, right) => right.length - left.length)
+
     const nextArchiveEntryIndexByPath = new Map<string, Set<string>>()
     const nextZipEntryIndexByPath = new Map<string, Map<string, ZipCentralEntry>>()
 
     const imageDirectories = Array.from(directoryImageMap.entries())
       .map(([directoryPath, imageFiles]) => {
         imageFiles.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
+        const bookletRoot = bookletRootPaths.find((rootPath) => isPathInsideRoot(rootPath, directoryPath))
         return createDirectorySource({
           directoryPath,
           imageFiles,
           colorPalette: [...this.options.colorPalette],
           packageGradeOverridesBySourceId: this.options.getPackageGradeOverridesBySourceId(),
+          treePathOverride: bookletRoot ? buildBookletTreePath(directoryPath) : undefined,
         })
       })
       .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
@@ -599,7 +673,14 @@ export class LibrarySnapshotService {
       left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
     )
 
-    const audioSourceResults = await Promise.all(audios.map((file) => this.createAudioSource(file)))
+    const audioSourceResults = await Promise.all(
+      audios.map((file) =>
+        this.createAudioSource(file, {
+          directoryRoots: musicImportDirectoryRoots,
+          fileAllowlistKeys: musicImportFileAllowlistKeys,
+        }),
+      ),
+    )
     const audioItems = audioSourceResults
       .map((result) => result.audio)
       .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))

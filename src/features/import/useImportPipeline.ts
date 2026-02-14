@@ -18,6 +18,7 @@ import type {
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
 } from '../../contracts/backend'
+import type { BrowserMode } from '../../types'
 import type { MediaRepository } from '../backend/repository'
 import { collectNativePaths } from './importPathUtils'
 import { useImportDragOverlay } from './useImportDragOverlay'
@@ -54,6 +55,7 @@ interface UseImportPipelineResult {
 
 interface UseImportPipelineParams {
   repository: MediaRepository
+  mode: BrowserMode
 }
 
 interface SyncImportRepository extends MediaRepository {
@@ -73,7 +75,28 @@ function isSyncImportRepository(repository: MediaRepository): repository is Sync
   )
 }
 
-export function useImportPipeline({ repository }: UseImportPipelineParams): UseImportPipelineResult {
+type BaseImportTaskSource = 'dialog-files' | 'dialog-folders' | 'drag-drop' | 'paste'
+
+function resolveImportTaskSource(source: BaseImportTaskSource, mode: BrowserMode): ImportTaskSourceDto {
+  if (mode !== 'music') {
+    return source
+  }
+
+  switch (source) {
+    case 'dialog-files':
+      return 'dialog-files-music'
+    case 'dialog-folders':
+      return 'dialog-folders-music'
+    case 'drag-drop':
+      return 'drag-drop-music'
+    case 'paste':
+      return 'paste-music'
+    default:
+      return source
+  }
+}
+
+export function useImportPipeline({ repository, mode }: UseImportPipelineParams): UseImportPipelineResult {
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncImportRepository(repository)
 
   const fileImportInputRef = useRef<HTMLInputElement>(null)
@@ -101,7 +124,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
   }, [isSynchronousTestMode, repository])
 
   const enqueueImportPaths = useCallback(
-    async (source: ImportTaskSourceDto, paths: string[]) => {
+    async (source: BaseImportTaskSource, paths: string[]) => {
       const normalizedPaths = Array.from(new Set(paths.map((value) => value.trim()).filter(Boolean)))
       if (normalizedPaths.length === 0) {
         setTaskError('导入失败：未获取到本地绝对路径')
@@ -113,7 +136,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
 
       try {
         const request: EnqueueImportTaskRequestDto = {
-          source,
+          source: resolveImportTaskSource(source, mode),
           paths: normalizedPaths,
         }
         const response = isSynchronousTestMode
@@ -130,7 +153,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
         setEnqueuePending(false)
       }
     },
-    [handleImportError, isSynchronousTestMode, refreshTasks, repository],
+    [handleImportError, isSynchronousTestMode, mode, refreshTasks, repository],
   )
 
   const retryImportTask = useCallback(
@@ -168,6 +191,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
     void picker(
       {
         mode: 'files',
+        target_mode: mode,
       },
       { timeoutMs: IMPORT_TASK_TIMEOUT_MS },
     )
@@ -179,7 +203,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
       .catch((error: unknown) => {
         handleImportError(error)
       })
-  }, [enqueueImportPaths, handleImportError, repository])
+  }, [enqueueImportPaths, handleImportError, mode, repository])
 
   const openImportFoldersDialog = useCallback(() => {
     const picker = repository.pickImportPaths
@@ -197,6 +221,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
     void picker(
       {
         mode: 'folders',
+        target_mode: mode,
       },
       { timeoutMs: IMPORT_TASK_TIMEOUT_MS },
     )
@@ -208,7 +233,7 @@ export function useImportPipeline({ repository }: UseImportPipelineParams): UseI
       .catch((error: unknown) => {
         handleImportError(error)
       })
-  }, [enqueueImportPaths, handleImportError, repository])
+  }, [enqueueImportPaths, handleImportError, mode, repository])
 
   const onImportFilesSelected = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])

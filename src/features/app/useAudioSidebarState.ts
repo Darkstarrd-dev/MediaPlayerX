@@ -18,6 +18,7 @@ interface UseAudioSidebarStateResult {
 
 function buildAudioFolderTree(audios: AudioItem[]): SidebarNode[] {
   const directAudioCountByPath = new Map<string, number>()
+  const firstAudioIdByPath = new Map<string, string>()
   const uniqueFolderLeaves = new Map<string, { id: string; treePath: string[] }>()
 
   for (const audio of audios) {
@@ -28,6 +29,14 @@ function buildAudioFolderTree(audios: AudioItem[]): SidebarNode[] {
 
     const pathKey = folderPath.join('/')
     directAudioCountByPath.set(pathKey, (directAudioCountByPath.get(pathKey) ?? 0) + 1)
+
+    for (let index = 1; index <= folderPath.length; index += 1) {
+      const ancestorPathKey = folderPath.slice(0, index).join('/')
+      if (!firstAudioIdByPath.has(ancestorPathKey)) {
+        firstAudioIdByPath.set(ancestorPathKey, audio.id)
+      }
+    }
+
     if (!uniqueFolderLeaves.has(pathKey)) {
       uniqueFolderLeaves.set(pathKey, {
         id: pathKey,
@@ -39,17 +48,22 @@ function buildAudioFolderTree(audios: AudioItem[]): SidebarNode[] {
   const tree = buildSidebarTree(Array.from(uniqueFolderLeaves.values()), 'folder')
 
   const hydrateDescendantAudioCounts = (nodes: SidebarNode[]): number => {
-    let total = 0
+    let totalAudioFolderCount = 0
 
     for (const node of nodes) {
-      const childCount = hydrateDescendantAudioCounts(node.children)
+      const childAudioFolderCount = hydrateDescendantAudioCounts(node.children)
       const directCount = directAudioCountByPath.get(node.pathKey) ?? 0
-      const nodeCount = directCount + childCount
-      node.descendantNodeCount = nodeCount
-      total += nodeCount
+      const selfAudioFolderCount = directCount > 0 ? 1 : 0
+      const nodeAudioFolderCount = selfAudioFolderCount + childAudioFolderCount
+
+      node.directAudioCount = directCount
+      node.descendantAudioFolderCount = nodeAudioFolderCount
+      node.descendantNodeCount = directCount > 0 ? directCount : childAudioFolderCount
+      node.audioId = firstAudioIdByPath.get(node.pathKey)
+      totalAudioFolderCount += nodeAudioFolderCount
     }
 
-    return total
+    return totalAudioFolderCount
   }
 
   hydrateDescendantAudioCounts(tree)
