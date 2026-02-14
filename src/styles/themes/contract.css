@@ -20,6 +20,17 @@
 
   --mpx-icon-button-size: 34px;
   --mpx-icon-size: 17px;
+  --mpx-header-btn-icon-display: none;
+  --mpx-header-btn-label-display: inline;
+  --mpx-header-btn-gap: 6px;
+  --mpx-header-btn-size: var(--mpx-control-height);
+  --mpx-header-btn-radius: var(--mpx-control-radius);
+  --mpx-header-btn-padding-x: calc(var(--mpx-control-padding-x) + 4px);
+  --mpx-header-icon-size: var(--mpx-icon-size);
+  --mpx-header-btn-shadow: none;
+  --mpx-header-btn-hover-shadow: none;
+  --mpx-header-btn-active-shadow: none;
+  --mpx-header-btn-active-border: var(--mpx-accent);
 
   --mpx-scrollbar-size: 10px;
   --mpx-scrollbar-radius: 999px;

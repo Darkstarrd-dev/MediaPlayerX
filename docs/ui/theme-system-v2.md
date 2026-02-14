@@ -189,6 +189,17 @@ gapped/liquid 风格下，面板有间距和圆角：
 └────────────────────────────────────────────────────┘
 ```
 
+### 3.4 Header 按钮渲染模式
+
+- Header 按钮统一渲染为双层结构：
+  - `.header-btn-icon`
+  - `.header-btn-label`
+- Theme 通过 token 决定显示策略：
+  - 文字优先：`--mpx-header-btn-icon-display: none` + `--mpx-header-btn-label-display: inline`
+  - 图标优先：`--mpx-header-btn-icon-display: inline-flex` + `--mpx-header-btn-label-display: none`
+- 按钮大小、圆角、内边距、阴影由 `--mpx-header-btn-*` token 驱动，不在组件里硬编码。
+- 无论图标/文字模式，按钮可访问名称由 `aria-label` 保证，禁止因 icon-only 失去可访问语义。
+
 ---
 
 ## 4. Token 完整参考
@@ -217,6 +228,17 @@ gapped/liquid 风格下，面板有间距和圆角：
 | `--mpx-control-font-weight` | `600` | 按钮字重 |
 | `--mpx-icon-button-size` | `34px` | 图标按钮尺寸 |
 | `--mpx-icon-size` | `17px` | 图标字号 |
+| `--mpx-header-btn-icon-display` | `none` | Header 按钮图标显示（`none`/`inline-flex`） |
+| `--mpx-header-btn-label-display` | `inline` | Header 按钮文字显示（`none`/`inline`） |
+| `--mpx-header-btn-gap` | `6px` | Header 按钮图标与文字间距 |
+| `--mpx-header-btn-size` | `var(--mpx-control-height)` | Header 按钮尺寸（高/最小宽） |
+| `--mpx-header-btn-radius` | `var(--mpx-control-radius)` | Header 按钮圆角 |
+| `--mpx-header-btn-padding-x` | `calc(var(--mpx-control-padding-x) + 4px)` | Header 按钮水平内边距 |
+| `--mpx-header-icon-size` | `var(--mpx-icon-size)` | Header 图标尺寸 |
+| `--mpx-header-btn-shadow` | `none` | Header 按钮基础阴影 |
+| `--mpx-header-btn-hover-shadow` | `none` | Header 按钮 hover 阴影 |
+| `--mpx-header-btn-active-shadow` | `none` | Header 按钮 active 阴影 |
+| `--mpx-header-btn-active-border` | `var(--mpx-accent)` | Header 按钮激活边框色 |
 | `--mpx-scrollbar-size` | `10px` | 滚动条粗细 |
 | `--mpx-scrollbar-radius` | `999px` | 滚动条圆角 |
 | `--mpx-range-track-height` | `6px` | 滑条轨道高度 |

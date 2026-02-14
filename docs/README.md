@@ -24,6 +24,8 @@
 - `ui/instruction.md`：主题/样式开发说明。
 - `ui/theme-playground.html`：主题调试页。
 - `ui/theme-mock.html`：主题要素预览页。
+- `ui/header-control-base.html`：Header 控件图标化探索 mock（v1 变体池）。
+- `ui/header-control-base-v2.html`：Header 控件图标/文字主题切换与软拟态分组 mock（v2 定型稿）。
 - `ui/startup-splash-mock.html`：启动页可视化调参 mock（由 `npm run mock:splash` 生成）。
 
 ## 性能文档
