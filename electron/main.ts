@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, protocol, type MenuItemConstructorOptions } from 'electron'
+import { app, BrowserWindow, Menu, protocol, type MenuItemConstructorOptions } from 'electron'
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -14,6 +14,7 @@ import {
 } from './runtimeDiagnostics'
 import { applyElectronProxy, resolveUserDataDir } from './mainRuntimeConfig'
 import { installMainWindowNavigationGuards } from './mainWindowGuards'
+import { registerWindowControlIpcHandlers } from './mainWindowControls'
 import { STARTUP_SPLASH_WINDOW_CONFIG, renderStartupSplashHtml } from './startupSplashTemplate'
 
 const STARTUP_SPLASH_TIMEOUT_MS = 12_000
@@ -501,55 +502,6 @@ function recreateMainWindowForChromeMode(currentWindow: BrowserWindow): Promise<
   })
 }
 
-function registerWindowControlIpcHandlers(): void {
-  ipcMain.handle(APP_WINDOW_CHANNELS.minimize, (event) => {
-    BrowserWindow.fromWebContents(event.sender)?.minimize()
-  })
-
-  ipcMain.handle(APP_WINDOW_CHANNELS.toggleMaximize, (event) => {
-    const window = BrowserWindow.fromWebContents(event.sender)
-    if (!window) {
-      return
-    }
-
-    if (window.isMaximized()) {
-      window.unmaximize()
-      return
-    }
-
-    window.maximize()
-  })
-
-  ipcMain.handle(APP_WINDOW_CHANNELS.close, (event) => {
-    BrowserWindow.fromWebContents(event.sender)?.close()
-  })
-
-  ipcMain.handle(APP_WINDOW_CHANNELS.isMaximized, (event) => {
-    return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
-  })
-
-  ipcMain.handle(APP_WINDOW_CHANNELS.getNativeChromeEnabled, () => {
-    return nativeChromeEnabled
-  })
-
-  ipcMain.handle(APP_WINDOW_CHANNELS.setNativeChromeEnabled, async (event, enabled: unknown) => {
-    const normalized = Boolean(enabled)
-    if (nativeChromeEnabled === normalized) {
-      return nativeChromeEnabled
-    }
-
-    nativeChromeEnabled = normalized
-    applyApplicationMenuForChromeMode()
-
-    const currentWindow = BrowserWindow.fromWebContents(event.sender) ?? mainWindowRef
-    if (currentWindow && !currentWindow.isDestroyed()) {
-      await recreateMainWindowForChromeMode(currentWindow)
-    }
-
-    return nativeChromeEnabled
-  })
-}
-
 function createMainWindow(): BrowserWindow {
   const benchMode = resolveBenchMode()
   const appWindowIconPath = resolveAppWindowIconPath() ?? undefined
@@ -720,7 +672,15 @@ app.whenReady().then(() => {
   )
 
   applyApplicationMenuForChromeMode()
-  registerWindowControlIpcHandlers()
+  registerWindowControlIpcHandlers({
+    getMainWindowRef: () => mainWindowRef,
+    getNativeChromeEnabled: () => nativeChromeEnabled,
+    setNativeChromeEnabled: (enabled) => {
+      nativeChromeEnabled = enabled
+    },
+    applyApplicationMenuForChromeMode,
+    recreateMainWindowForChromeMode,
+  })
   registerBackendIpcHandlers()
   registerBenchIpcHandlers()
   openMainWindow()
