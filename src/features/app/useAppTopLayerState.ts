@@ -17,6 +17,11 @@ import { buildBackendErrorRows } from './buildBackendErrorRows'
 import { buildFullscreenLayerProps } from './buildFullscreenLayerProps'
 import { buildImportTaskPanelProps } from './buildImportTaskPanelProps'
 import { buildSettingsPanelProps } from './buildSettingsPanelProps'
+import {
+  VISION_TEST_RED_IMAGE_BASE64,
+  normalizeOptionalPath,
+  toDirectoryDefaultPath,
+} from './useAppTopLayerState.utils'
 import { SETTINGS_STATE_KEY, toPersistedAppSettings } from './usePersistedAppSettings'
 import { useDatabaseResetAction } from './useDatabaseResetAction'
 import { useImportTaskPanelState } from './useImportTaskPanelState'
@@ -32,34 +37,6 @@ import type {
 
 type SearchPanelMode = 'vector' | 'feature'
 type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
-
-const VISION_TEST_RED_IMAGE_BASE64 =
-  '/9j/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCABkAGQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAcJ/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AnQBDGqYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q=='
-
-function normalizeOptionalPath(value: string): string | undefined {
-  const normalized = value.trim()
-  return normalized.length > 0 ? normalized : undefined
-}
-
-function toDirectoryDefaultPath(value: string): string | undefined {
-  const normalized = normalizeOptionalPath(value)
-  if (!normalized) {
-    return undefined
-  }
-
-  const withoutFragment = normalized.split('#')[0].trim()
-  if (!withoutFragment) {
-    return undefined
-  }
-
-  const normalizedSlashes = withoutFragment.replace(/\\/g, '/')
-  const lastSlashIndex = normalizedSlashes.lastIndexOf('/')
-  if (lastSlashIndex < 2) {
-    return withoutFragment
-  }
-
-  return withoutFragment.slice(0, lastSlashIndex)
-}
 
 interface UseAppTopLayerStateParams {
   appSettings: AppSettingsStoreSnapshot
