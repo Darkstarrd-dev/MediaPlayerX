@@ -5,6 +5,7 @@ export const browserModeSchema = z.enum(['image', 'video', 'music'])
 export const searchFieldSchema = z.enum(['all', 'name', 'workTitle', 'circle', 'author', 'tags'])
 
 export const musicVisualizerFpsCapSchema = z.union([z.literal(30), z.literal(60), z.literal(120)])
+export const musicVisualizerToneMapModeSchema = z.enum(['off', 'reinhard', 'aces', 'filmic', 'agx', 'khronos'])
 
 export const appSettingsSchema = z.object({
   mode: browserModeSchema,
@@ -43,6 +44,10 @@ export const appSettingsSchema = z.object({
   thumbnailWidth: z.number().min(128).max(2048),
   musicVisualizerRenderLongEdgePx: z.number().int().min(240).max(4096),
   musicVisualizerFpsCap: musicVisualizerFpsCapSchema,
+  musicVisualizerSelectedShaderId: z.string().max(64),
+  musicVisualizerToneMapMode: musicVisualizerToneMapModeSchema,
+  musicVisualizerToneMapExposure: z.number().min(0.5).max(2),
+  musicVisualizerToneMapStrength: z.number().min(0).max(1),
   musicVisualizerShowFps: z.boolean(),
   musicVisualizerRenderer: z.enum(['gpu', 'cpu']),
   proxyServer: z.string().max(512),

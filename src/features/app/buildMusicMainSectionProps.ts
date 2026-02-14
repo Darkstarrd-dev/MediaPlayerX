@@ -35,8 +35,12 @@ interface BuildMusicMainSectionPropsParams {
   setSelectedAudioId: Dispatch<SetStateAction<string>>
   setMusicLoopMode: Dispatch<SetStateAction<MusicLoopMode>>
   setFullscreenActiveWithAutoStop: (value: boolean) => void
+  musicVisualizerSelectedShaderId: string
   musicVisualizerRenderLongEdgePx: number
   musicVisualizerFpsCap: 30 | 60 | 120
+  musicVisualizerToneMapMode: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos'
+  musicVisualizerToneMapExposure: number
+  musicVisualizerToneMapStrength: number
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   updateSettings: (patch: Partial<AppSettings>) => void
@@ -194,8 +198,12 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     onToggleFullscreen: () => {
       params.setFullscreenActiveWithAutoStop(!params.fullscreenActive)
     },
+    musicVisualizerSelectedShaderId: params.musicVisualizerSelectedShaderId,
     musicVisualizerRenderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
     musicVisualizerFpsCap: params.musicVisualizerFpsCap,
+    musicVisualizerToneMapMode: params.musicVisualizerToneMapMode,
+    musicVisualizerToneMapExposure: params.musicVisualizerToneMapExposure,
+    musicVisualizerToneMapStrength: params.musicVisualizerToneMapStrength,
     musicVisualizerShowFps: params.musicVisualizerShowFps,
     musicVisualizerRenderer: params.musicVisualizerRenderer,
     onPrevAudio: () => {
@@ -217,6 +225,9 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
         : MUSIC_LOOP_MODE_ORDER.length - 1
       const nextMode = MUSIC_LOOP_MODE_ORDER[nextIndex] ?? 'library'
       params.setMusicLoopMode(nextMode)
+    },
+    onMusicVisualizerSelectedShaderIdChange: (value: string) => {
+      params.updateSettings({ musicVisualizerSelectedShaderId: value })
     },
   }
 }

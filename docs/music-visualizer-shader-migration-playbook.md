@@ -26,6 +26,8 @@
 - `iTime`（`float`）
 - `iFrame`（`int`）
 - `iChannel0`（`sampler2D`）
+- `iAudioLevel`（`float`，舒适化平滑音量包络）
+- `iAudioBeat`（`float`，舒适化节拍脉冲包络）
 
 ### 2.3 音频纹理约定
 
@@ -33,6 +35,37 @@
 - 第 0 行：频谱（Frequency Bins）
 - 第 1 行：波形（Waveform）
 - 来源：`src/features/music-visualizer/audioAnalyser.ts`
+
+补充：
+
+- `audioAnalyser` 在纹理输出之外，还会产出两路“人体感知友好”信号：
+  - `audioLevel`：Attack/Release 平滑后的响度包络。
+  - `audioBeat`：基于快慢包络差的 onset 脉冲（带衰减）。
+
+### 2.4 全局 Tone Mapping 管线
+
+- Tone Mapping 由运行时统一注入（Shader 后处理），支持全局设置：
+  - 模式：`off` / `reinhard` / `aces` / `filmic` / `agx` / `khronos`
+  - 曝光：`0.5 ~ 2.0`
+  - 强度：`0 ~ 1`
+- Shader 可通过定义字段进行覆盖：
+  - `toneMapPolicy?: 'inherit' | 'force-on' | 'force-off'`
+  - `toneMapStrengthBias?: number`（在全局强度基础上偏移后再 clamp）
+- 运行时输入：
+  - `iToneMapMode`（`int`）
+  - `iToneMapExposure`（`float`）
+  - `iToneMapStrength`（`float`）
+- 设计目标：
+  - 统一解决不同 Shader 的高光过曝与对比失真。
+  - 避免每个 Shader 重复实现 Tone Mapping 逻辑。
+  - 避免设置突变导致的运行时异常或画面突跳。
+
+运行时稳定性策略（Stability Guardrails）：
+
+- Tone Mapping 参数采用“斜率限制（slew-rate limiting）”平滑过渡：
+  - 曝光与强度按帧渐进收敛，而非一次性硬切。
+- Tone Mapping / FPS / Render Long Edge 调整走运行时热更新（hot update），避免每次改动都重建渲染器。
+- 单帧渲染异常会被捕获并显示 runtime 错误，不会导致渲染循环直接中断。
 
 ## 3. 标准迁移流程（SOP）
 
@@ -104,6 +137,45 @@
 
 `vitest + jsdom` 下会出现 `HTMLCanvasElement.getContext()` not implemented 警告；属于已知限制，不等于业务失败。
 
+### 4.5 音乐响应“过快 / 过闪”导致生理不适
+
+典型现象：
+
+- 颜色高频翻转，出现“反色感”或视觉噪音。
+- 亮度按帧抖动（frame-level flicker），刺眼、疲劳、眩晕。
+- 与音乐节奏不一致，主观感受像随机闪烁。
+
+根因：
+
+- 直接使用时域单点（waveform center sample）驱动亮度。
+- 未做 Attack/Release 包络平滑，输入噪声直接进入 shader。
+- 对整帧执行乘法脉冲（`color *= pulse`），导致全屏 strobe。
+
+标准优化策略（Human Factors Baseline）：
+
+1. **信号层（JS）先舒适化，再喂给 Shader**
+   - 计算带权音量：低频 + 中频 + 高频 + waveform RMS。
+   - 包络：`attack 40~70ms`，`release 200~350ms`。
+   - 节拍：快慢包络差（onset）+ 衰减保持（`250~400ms`）。
+2. **Shader 仅做“表现层”**
+   - `iAudioLevel` 控制颜色混合比例（慢变化）。
+   - `iAudioBeat` 控制高光脉冲（短促但不过载）。
+   - 禁止直接改动几何核心路径，避免构图漂移。
+3. **脉冲只作用在高光区域**
+   - 使用亮度 mask（例如 `smoothstep`）限制脉冲作用面。
+   - 亮度采用加法提升（additive boost）优先，避免全屏乘法闪烁。
+4. **高光压缩防过曝**
+   - 使用轻度压缩（soft compression）防止纯白剪切。
+
+推荐默认参数：
+
+- `ENVELOPE_ATTACK_SEC = 0.06`
+- `ENVELOPE_RELEASE_SEC = 0.28`
+- `SLOW_ENVELOPE_SEC = 0.55`
+- `BEAT_DECAY_SEC = 0.34`
+- `ONSET_THRESHOLD = 0.014`
+- `ONSET_GAIN = 5.4`
+
 ## 5. 开发检查清单（Checklist）
 
 合入前必须满足：
@@ -157,6 +229,16 @@
   - 前景层的动态射线循环改为固定上限 `int` 循环并按音频幅值门限激活，避免 WebGL 循环编译不稳定。
   - 合成策略为背景黑位压暗 + 前景能量 mask + screen blend，降低全局雾化风险。
 
+## 6.4 新增 Shader（Fungi）
+
+- Shader：`src/features/music-visualizer/shaders/fungi.ts`
+- 来源 URL：`https://www.shadertoy.com/view/33VGzW`
+- 实施要点：
+  - 未播放或低音量时，保持原版灰白构图基线。
+  - 播放后再进入霓虹渐变 + 节拍亮度脉冲。
+  - 几何与运动沿用原算法；音乐只驱动颜色/亮度，不驱动形变。
+  - 脉冲仅作用于高光区，避免全屏 strobe。
+
 ## 7. 变更记录（持续追加）
 
 - 2026-02-14
@@ -167,3 +249,6 @@
   - 合并前景来源 `https://www.shadertoy.com/view/7l2SWV`，形成完整复合版 `Starfield`。
   - 新增 `Galaxy` Shader，来源 `https://www.shadertoy.com/view/MXXcD4` + `https://www.shadertoy.com/view/WcXSDn`，完成背景与居中前景合并。
   - 新增 `Nebula` Shader，来源 `https://www.shadertoy.com/view/MXXcD4` + `https://www.shadertoy.com/view/43GGDm`，完成背景与前景融合。
+  - 新增 `Fungi` Shader，来源 `https://www.shadertoy.com/view/33VGzW`，并落地音频响应的人机工程优化方案（包络平滑 + onset 脉冲 + 高光局部脉冲 + 过曝压缩）。
+  - Tone Mapping 模式扩展为 `off/reinhard/aces/filmic/agx/khronos`，由统一后处理管线驱动。
+  - Tone Mapping / FPS / 渲染长边切换改为热更新，减少运行时重建引发的不稳定。

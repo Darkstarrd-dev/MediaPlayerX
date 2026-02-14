@@ -61,6 +61,9 @@ function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMa
       onToggleFullscreen={vi.fn()}
       musicVisualizerRenderLongEdgePx={1280}
       musicVisualizerFpsCap={60}
+      musicVisualizerToneMapMode="aces"
+      musicVisualizerToneMapExposure={1}
+      musicVisualizerToneMapStrength={0.55}
       musicVisualizerShowFps={false}
       musicVisualizerRenderer="gpu"
       onPrevAudio={vi.fn()}
@@ -169,6 +172,9 @@ describe('MusicMainSection', () => {
         onToggleFullscreen={vi.fn()}
         musicVisualizerRenderLongEdgePx={1280}
         musicVisualizerFpsCap={60}
+        musicVisualizerToneMapMode="aces"
+        musicVisualizerToneMapExposure={1}
+        musicVisualizerToneMapStrength={0.55}
         musicVisualizerShowFps={false}
         musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
@@ -211,6 +217,9 @@ describe('MusicMainSection', () => {
         onToggleFullscreen={vi.fn()}
         musicVisualizerRenderLongEdgePx={1280}
         musicVisualizerFpsCap={60}
+        musicVisualizerToneMapMode="aces"
+        musicVisualizerToneMapExposure={1}
+        musicVisualizerToneMapStrength={0.55}
         musicVisualizerShowFps={false}
         musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
@@ -260,6 +269,9 @@ describe('MusicMainSection', () => {
         onToggleFullscreen={vi.fn()}
         musicVisualizerRenderLongEdgePx={1280}
         musicVisualizerFpsCap={60}
+        musicVisualizerToneMapMode="aces"
+        musicVisualizerToneMapExposure={1}
+        musicVisualizerToneMapStrength={0.55}
         musicVisualizerShowFps={false}
         musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
@@ -304,6 +316,9 @@ describe('MusicMainSection', () => {
       onToggleFullscreen: vi.fn(),
       musicVisualizerRenderLongEdgePx: 1280,
       musicVisualizerFpsCap: 60,
+      musicVisualizerToneMapMode: 'aces',
+      musicVisualizerToneMapExposure: 1,
+      musicVisualizerToneMapStrength: 0.55,
       musicVisualizerShowFps: false,
       musicVisualizerRenderer: 'gpu',
       onPrevAudio: vi.fn(),
@@ -349,6 +364,7 @@ describe('MusicMainSection', () => {
     expect(screen.getByRole('button', { name: 'Default' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Starfield' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Galaxy' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Fungi' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Nebula' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Voxel' })).toBeInTheDocument()
 
@@ -358,6 +374,7 @@ describe('MusicMainSection', () => {
     expect(screen.queryByRole('button', { name: 'Default' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Starfield' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Galaxy' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Fungi' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Nebula' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Voxel' })).toBeNull()
   })

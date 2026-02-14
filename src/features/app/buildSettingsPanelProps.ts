@@ -23,6 +23,9 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWidth: number
   musicVisualizerRenderLongEdgePx: number
   musicVisualizerFpsCap: 30 | 60 | 120
+  musicVisualizerToneMapMode: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos'
+  musicVisualizerToneMapExposure: number
+  musicVisualizerToneMapStrength: number
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
@@ -82,6 +85,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailWidth: params.thumbnailWidth,
     musicVisualizerRenderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
     musicVisualizerFpsCap: params.musicVisualizerFpsCap,
+    musicVisualizerToneMapMode: params.musicVisualizerToneMapMode,
+    musicVisualizerToneMapExposure: params.musicVisualizerToneMapExposure,
+    musicVisualizerToneMapStrength: params.musicVisualizerToneMapStrength,
     musicVisualizerShowFps: params.musicVisualizerShowFps,
     musicVisualizerRenderer: params.musicVisualizerRenderer,
     proxyServer: params.proxyServer,
@@ -130,6 +136,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
     onMusicVisualizerRenderLongEdgePxChange: (value) => params.updateSettings({ musicVisualizerRenderLongEdgePx: value }),
     onMusicVisualizerFpsCapChange: (value) => params.updateSettings({ musicVisualizerFpsCap: value }),
+    onMusicVisualizerToneMapModeChange: (value) => params.updateSettings({ musicVisualizerToneMapMode: value }),
+    onMusicVisualizerToneMapExposureChange: (value) => params.updateSettings({ musicVisualizerToneMapExposure: value }),
+    onMusicVisualizerToneMapStrengthChange: (value) => params.updateSettings({ musicVisualizerToneMapStrength: value }),
     onMusicVisualizerShowFpsChange: (value) => params.updateSettings({ musicVisualizerShowFps: value }),
     onMusicVisualizerRendererChange: (value) => params.updateSettings({ musicVisualizerRenderer: value }),
     onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),

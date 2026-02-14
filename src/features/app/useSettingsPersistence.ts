@@ -48,6 +48,36 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.musicVisualizerFpsCap
   }
 
+  if (typeof next.musicVisualizerSelectedShaderId === 'string') {
+    next.musicVisualizerSelectedShaderId = next.musicVisualizerSelectedShaderId.trim().slice(0, 64)
+  } else if ('musicVisualizerSelectedShaderId' in next) {
+    delete next.musicVisualizerSelectedShaderId
+  }
+
+  if (
+    next.musicVisualizerToneMapMode !== 'off'
+    && next.musicVisualizerToneMapMode !== 'reinhard'
+    && next.musicVisualizerToneMapMode !== 'aces'
+    && next.musicVisualizerToneMapMode !== 'filmic'
+    && next.musicVisualizerToneMapMode !== 'agx'
+    && next.musicVisualizerToneMapMode !== 'khronos'
+    && 'musicVisualizerToneMapMode' in next
+  ) {
+    delete next.musicVisualizerToneMapMode
+  }
+
+  if (typeof next.musicVisualizerToneMapExposure === 'number' && Number.isFinite(next.musicVisualizerToneMapExposure)) {
+    next.musicVisualizerToneMapExposure = Math.max(0.5, Math.min(2, next.musicVisualizerToneMapExposure))
+  } else if ('musicVisualizerToneMapExposure' in next) {
+    delete next.musicVisualizerToneMapExposure
+  }
+
+  if (typeof next.musicVisualizerToneMapStrength === 'number' && Number.isFinite(next.musicVisualizerToneMapStrength)) {
+    next.musicVisualizerToneMapStrength = Math.max(0, Math.min(1, next.musicVisualizerToneMapStrength))
+  } else if ('musicVisualizerToneMapStrength' in next) {
+    delete next.musicVisualizerToneMapStrength
+  }
+
   if (typeof next.musicVisualizerShowFps !== 'boolean' && 'musicVisualizerShowFps' in next) {
     delete next.musicVisualizerShowFps
   }

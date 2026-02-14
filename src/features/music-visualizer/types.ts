@@ -1,11 +1,17 @@
 export type MusicVisualizerRendererMode = 'gpu' | 'cpu'
 
+export type MusicVisualizerToneMapMode = 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos'
+
+export type MusicVisualizerToneMapPolicy = 'inherit' | 'force-on' | 'force-off'
+
 export interface MusicVisualizerShaderDefinition {
   id: string
   label: string
   fragmentSource: string
   defaultEntry?: boolean
   renderScale?: number
+  toneMapPolicy?: MusicVisualizerToneMapPolicy
+  toneMapStrengthBias?: number
 }
 
 export interface MusicVisualizerFrameInput {
@@ -15,6 +21,11 @@ export interface MusicVisualizerFrameInput {
   frame: number
   frequencyData: Uint8Array
   waveformData: Uint8Array
+  audioLevel: number
+  audioBeat: number
+  toneMapMode: MusicVisualizerToneMapMode
+  toneMapExposure: number
+  toneMapStrength: number
 }
 
 export interface MusicVisualizerRenderer {

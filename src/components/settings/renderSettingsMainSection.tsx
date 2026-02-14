@@ -47,6 +47,9 @@ interface RenderSettingsMainSectionParams {
   thumbnailWidthInputValue: string
   musicVisualizerRenderLongEdgeInputValue: string
   musicVisualizerFpsCap: 30 | 60 | 120
+  musicVisualizerToneMapMode: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos'
+  musicVisualizerToneMapExposure: number
+  musicVisualizerToneMapStrength: number
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
@@ -95,6 +98,9 @@ interface RenderSettingsMainSectionParams {
   onMusicVisualizerRenderLongEdgeInputBlur: () => void
   onMusicVisualizerRenderLongEdgeInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
   onMusicVisualizerFpsCapChange: (value: 30 | 60 | 120) => void
+  onMusicVisualizerToneMapModeChange: (value: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos') => void
+  onMusicVisualizerToneMapExposureChange: (value: number) => void
+  onMusicVisualizerToneMapStrengthChange: (value: number) => void
   onMusicVisualizerShowFpsChange: (value: boolean) => void
   onMusicVisualizerRendererChange: (value: 'gpu' | 'cpu') => void
   onProxyServerChange: (value: string) => void
@@ -141,6 +147,9 @@ export function renderSettingsMainSection({
   thumbnailWidthInputValue,
   musicVisualizerRenderLongEdgeInputValue,
   musicVisualizerFpsCap,
+  musicVisualizerToneMapMode,
+  musicVisualizerToneMapExposure,
+  musicVisualizerToneMapStrength,
   musicVisualizerShowFps,
   musicVisualizerRenderer,
   proxyServer,
@@ -189,6 +198,9 @@ export function renderSettingsMainSection({
   onMusicVisualizerRenderLongEdgeInputBlur,
   onMusicVisualizerRenderLongEdgeInputKeyDown,
   onMusicVisualizerFpsCapChange,
+  onMusicVisualizerToneMapModeChange,
+  onMusicVisualizerToneMapExposureChange,
+  onMusicVisualizerToneMapStrengthChange,
   onMusicVisualizerShowFpsChange,
   onMusicVisualizerRendererChange,
   onProxyServerChange,
@@ -425,6 +437,42 @@ export function renderSettingsMainSection({
               <option value={60}>60 FPS</option>
               <option value={120}>120 FPS</option>
             </select>
+          </label>
+          <label>
+            Tone Mapping
+            <select
+              value={musicVisualizerToneMapMode}
+              onChange={(event) => onMusicVisualizerToneMapModeChange(event.target.value as 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos')}
+            >
+              <option value="off">关闭</option>
+              <option value="aces">ACES Filmic</option>
+              <option value="reinhard">Reinhard</option>
+              <option value="filmic">Filmic (Blender)</option>
+              <option value="agx">AgX (Blender 5.1)</option>
+              <option value="khronos">Khronos PBR Neutral (Blender 5.1)</option>
+            </select>
+          </label>
+          <label>
+            Tone Mapping 曝光
+            <input
+              max={2}
+              min={0.5}
+              step={0.05}
+              type="number"
+              value={musicVisualizerToneMapExposure}
+              onChange={(event) => onMusicVisualizerToneMapExposureChange(Number(event.target.value))}
+            />
+          </label>
+          <label>
+            Tone Mapping 强度 {(musicVisualizerToneMapStrength * 100).toFixed(0)}%
+            <input
+              max={1}
+              min={0}
+              step={0.01}
+              type="range"
+              value={musicVisualizerToneMapStrength}
+              onChange={(event) => onMusicVisualizerToneMapStrengthChange(Number(event.target.value))}
+            />
           </label>
           <label>
             渲染后端

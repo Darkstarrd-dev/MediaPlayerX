@@ -3,7 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 import { MusicAudioAnalyser } from './audioAnalyser'
 import { CpuMusicVisualizerRenderer } from './cpuRenderer'
 import { resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from './shaderRegistry'
-import type { MusicVisualizerRenderer, MusicVisualizerRendererMode, MusicVisualizerStats } from './types'
+import type {
+  MusicVisualizerRenderer,
+  MusicVisualizerRendererMode,
+  MusicVisualizerStats,
+  MusicVisualizerToneMapMode,
+} from './types'
 import { WebglMusicVisualizerRenderer } from './webglRenderer'
 
 const MIN_RENDER_LONG_EDGE = 240
@@ -11,6 +16,24 @@ const MAX_RENDER_LONG_EDGE = 4096
 const STATS_UPDATE_INTERVAL_MS = 240
 const MIN_SHADER_RENDER_SCALE = 0.25
 const MAX_SHADER_RENDER_SCALE = 1
+const MIN_TONE_MAP_EXPOSURE = 0.5
+const MAX_TONE_MAP_EXPOSURE = 2
+const TONE_MAP_EXPOSURE_SLEW_PER_SECOND = 1.8
+const TONE_MAP_STRENGTH_SLEW_PER_SECOND = 1.2
+
+function clampToneMapExposure(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 1
+  }
+  return Math.max(MIN_TONE_MAP_EXPOSURE, Math.min(MAX_TONE_MAP_EXPOSURE, value))
+}
+
+function clampToneMapStrength(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+  return Math.max(0, Math.min(1, value))
+}
 
 interface UseMusicVisualizerRuntimeParams {
   canvasRef: RefObject<HTMLCanvasElement | null>
@@ -19,6 +42,9 @@ interface UseMusicVisualizerRuntimeParams {
   preferredRenderer: MusicVisualizerRendererMode
   renderLongEdgePx: number
   fpsCap: 30 | 60 | 120
+  toneMapMode: MusicVisualizerToneMapMode
+  toneMapExposure: number
+  toneMapStrength: number
   selectedShaderId: string | null
 }
 
@@ -63,6 +89,9 @@ export function useMusicVisualizerRuntime({
   preferredRenderer,
   renderLongEdgePx,
   fpsCap,
+  toneMapMode,
+  toneMapExposure,
+  toneMapStrength,
   selectedShaderId,
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
@@ -76,6 +105,23 @@ export function useMusicVisualizerRuntime({
     return resolveDefaultMusicVisualizerShader()
   }, [selectedShaderId])
   const audioAnalyserRef = useRef<MusicAudioAnalyser | null>(null)
+  const runtimeSettingsRef = useRef({
+    fpsCap,
+    renderLongEdgePx,
+    toneMapMode,
+    toneMapExposure,
+    toneMapStrength,
+  })
+
+  useEffect(() => {
+    runtimeSettingsRef.current = {
+      fpsCap,
+      renderLongEdgePx,
+      toneMapMode,
+      toneMapExposure,
+      toneMapStrength,
+    }
+  }, [fpsCap, renderLongEdgePx, toneMapExposure, toneMapMode, toneMapStrength])
 
   if (audioAnalyserRef.current == null) {
     audioAnalyserRef.current = new MusicAudioAnalyser()
@@ -119,7 +165,28 @@ export function useMusicVisualizerRuntime({
     }
 
     const shaderRenderScale = Math.max(MIN_SHADER_RENDER_SCALE, Math.min(MAX_SHADER_RENDER_SCALE, shader.renderScale ?? 1))
-    const minFrameIntervalMs = 1000 / fpsCap
+    const resolveEffectiveToneMap = (): {
+      mode: MusicVisualizerToneMapMode
+      exposure: number
+      strength: number
+    } => {
+      const shaderToneMapPolicy = shader.toneMapPolicy ?? 'inherit'
+      let mode: MusicVisualizerToneMapMode = runtimeSettingsRef.current.toneMapMode
+      if (shaderToneMapPolicy === 'force-off') {
+        mode = 'off'
+      } else if (shaderToneMapPolicy === 'force-on' && mode === 'off') {
+        mode = 'aces'
+      }
+
+      const baseStrength = mode === 'off' ? 0 : runtimeSettingsRef.current.toneMapStrength
+      return {
+        mode,
+        exposure: clampToneMapExposure(runtimeSettingsRef.current.toneMapExposure),
+        strength: clampToneMapStrength(baseStrength + (shader.toneMapStrengthBias ?? 0)),
+      }
+    }
+
+    const initialToneMap = resolveEffectiveToneMap()
 
     const createRenderer = (mode: MusicVisualizerRendererMode): MusicVisualizerRenderer => {
       if (mode === 'gpu') {
@@ -136,7 +203,8 @@ export function useMusicVisualizerRuntime({
       const probe2dCanvas = document.createElement('canvas')
       const hasWebgl2 = Boolean(probeWebglCanvas.getContext('webgl2'))
       const hasCanvas2d = Boolean(probe2dCanvas.getContext('2d'))
-      return `shader=${shader.id}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${fpsCap}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
+      const snapshot = resolveEffectiveToneMap()
+      return `shader=${shader.id}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${runtimeSettingsRef.current.fpsCap}, toneMap=${snapshot.mode}@${snapshot.exposure.toFixed(2)}*${snapshot.strength.toFixed(2)}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
     }
 
     const runtimeProbeInfo = resolveRuntimeProbeInfo()
@@ -182,13 +250,31 @@ export function useMusicVisualizerRuntime({
     let statsFrameCount = 0
     let latestFrameMs = 0
     let lastAnalyserError: string | null = null
+    let lastRenderError: string | null = null
     let lastRenderAt = -Infinity
+    let smoothedToneMapExposure = initialToneMap.exposure
+    let smoothedToneMapStrength = initialToneMap.strength
+    let smoothedToneMapMode = initialToneMap.mode
+
+    const stepToward = (current: number, target: number, maxDelta: number): number => {
+      if (!Number.isFinite(current) || !Number.isFinite(target)) {
+        return target
+      }
+      if (!Number.isFinite(maxDelta) || maxDelta <= 0) {
+        return target
+      }
+      if (Math.abs(target - current) <= maxDelta) {
+        return target
+      }
+      return current + Math.sign(target - current) * maxDelta
+    }
 
     const renderLoop = (now: number) => {
       if (disposed) {
         return
       }
 
+      const minFrameIntervalMs = 1000 / runtimeSettingsRef.current.fpsCap
       if (now - lastRenderAt < minFrameIntervalMs) {
         animationFrameId = window.requestAnimationFrame(renderLoop)
         return
@@ -198,7 +284,7 @@ export function useMusicVisualizerRuntime({
       const containerSize = resolveContainerSize(canvas)
       const containerWidth = containerSize.width
       const containerHeight = containerSize.height
-      const renderSize = resolveRenderSize(containerWidth, containerHeight, renderLongEdgePx * shaderRenderScale)
+      const renderSize = resolveRenderSize(containerWidth, containerHeight, runtimeSettingsRef.current.renderLongEdgePx * shaderRenderScale)
 
       canvas.style.width = '100%'
       canvas.style.height = '100%'
@@ -217,14 +303,45 @@ export function useMusicVisualizerRuntime({
         }
       }
 
-      renderer.render({
-        width: renderSize.width,
-        height: renderSize.height,
-        timeSec: now * 0.001,
-        frame,
-        frequencyData: audioAnalyser?.frequencyData ?? new Uint8Array(512),
-        waveformData: audioAnalyser?.waveformData ?? new Uint8Array(512),
-      })
+      const toneMap = resolveEffectiveToneMap()
+      const deltaSec = Math.max(0.001, Math.min(0.2, (now - lastFrameAt) * 0.001))
+      const exposureStep = TONE_MAP_EXPOSURE_SLEW_PER_SECOND * deltaSec
+      const strengthStep = TONE_MAP_STRENGTH_SLEW_PER_SECOND * deltaSec
+
+      if (toneMap.mode !== smoothedToneMapMode) {
+        smoothedToneMapMode = toneMap.mode
+      }
+      smoothedToneMapExposure = stepToward(smoothedToneMapExposure, toneMap.exposure, exposureStep)
+      smoothedToneMapStrength = stepToward(smoothedToneMapStrength, toneMap.strength, strengthStep)
+
+      try {
+        renderer.render({
+          width: renderSize.width,
+          height: renderSize.height,
+          timeSec: now * 0.001,
+          frame,
+          frequencyData: audioAnalyser?.frequencyData ?? new Uint8Array(512),
+          waveformData: audioAnalyser?.waveformData ?? new Uint8Array(512),
+          audioLevel: audioAnalyser?.audioLevel ?? 0,
+          audioBeat: audioAnalyser?.audioBeat ?? 0,
+          toneMapMode: smoothedToneMapMode,
+          toneMapExposure: smoothedToneMapExposure,
+          toneMapStrength: smoothedToneMapStrength,
+        })
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        if (message !== lastRenderError) {
+          lastRenderError = message
+          setRuntimeError(`可视化渲染异常：${message} | ${runtimeProbeInfo}`)
+        }
+        animationFrameId = window.requestAnimationFrame(renderLoop)
+        return
+      }
+
+      if (lastRenderError) {
+        lastRenderError = null
+        setRuntimeError(rendererInitMessage)
+      }
 
       frame += 1
       statsFrameCount += 1
@@ -257,7 +374,7 @@ export function useMusicVisualizerRuntime({
       window.cancelAnimationFrame(animationFrameId)
       renderer?.dispose()
     }
-  }, [active, audioRef, canvasRef, fpsCap, preferredRenderer, renderLongEdgePx, shader])
+  }, [active, audioRef, canvasRef, preferredRenderer, shader])
 
   return {
     stats,

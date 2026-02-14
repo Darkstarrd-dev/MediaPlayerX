@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { VideoControlIcon } from './VideoControlIcon'
 import type { AudioItem, MusicLoopMode } from '../types'
-import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader } from '../features/music-visualizer/shaderRegistry'
+import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from '../features/music-visualizer/shaderRegistry'
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp, formatSeconds } from '../utils/ui'
 
@@ -37,10 +37,15 @@ interface MusicMainSectionProps {
   canNextAudio: boolean
   fullscreenActive: boolean
   onToggleFullscreen: () => void
+  musicVisualizerSelectedShaderId: string
   musicVisualizerRenderLongEdgePx: number
   musicVisualizerFpsCap: 30 | 60 | 120
+  musicVisualizerToneMapMode: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos'
+  musicVisualizerToneMapExposure: number
+  musicVisualizerToneMapStrength: number
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
+  onMusicVisualizerSelectedShaderIdChange?: (value: string) => void
   onPrevAudio: () => void
   onNextAudio: () => void
   onCycleMusicLoopMode: () => void
@@ -88,10 +93,15 @@ function MusicMainSection({
   canNextAudio,
   fullscreenActive,
   onToggleFullscreen,
+  musicVisualizerSelectedShaderId,
   musicVisualizerRenderLongEdgePx,
   musicVisualizerFpsCap,
+  musicVisualizerToneMapMode,
+  musicVisualizerToneMapExposure,
+  musicVisualizerToneMapStrength,
   musicVisualizerShowFps,
   musicVisualizerRenderer,
+  onMusicVisualizerSelectedShaderIdChange = () => undefined,
   onPrevAudio,
   onNextAudio,
   onCycleMusicLoopMode,
@@ -105,7 +115,20 @@ function MusicMainSection({
   const [audioMuted, setAudioMuted] = useState(false)
   const [audioTime, setAudioTime] = useState(0)
   const [audioDurationSec, setAudioDurationSec] = useState(0)
-  const [selectedShaderId, setSelectedShaderId] = useState(() => resolveDefaultMusicVisualizerShader()?.id ?? '')
+
+  const selectedShaderId = useMemo(() => {
+    const matched = resolveMusicVisualizerShaderById(musicVisualizerSelectedShaderId)
+    if (matched) {
+      return matched.id
+    }
+    return resolveDefaultMusicVisualizerShader()?.id ?? ''
+  }, [musicVisualizerSelectedShaderId])
+
+  useEffect(() => {
+    if (selectedShaderId && selectedShaderId !== musicVisualizerSelectedShaderId) {
+      onMusicVisualizerSelectedShaderIdChange(selectedShaderId)
+    }
+  }, [musicVisualizerSelectedShaderId, onMusicVisualizerSelectedShaderIdChange, selectedShaderId])
 
   const { stats: visualizerStats, runtimeError: visualizerRuntimeError, resumeAudioAnalyser } = useMusicVisualizerRuntime({
     canvasRef: visualizerCanvasRef,
@@ -114,6 +137,9 @@ function MusicMainSection({
     preferredRenderer: musicVisualizerRenderer,
     renderLongEdgePx: musicVisualizerRenderLongEdgePx,
     fpsCap: musicVisualizerFpsCap,
+    toneMapMode: musicVisualizerToneMapMode,
+    toneMapExposure: musicVisualizerToneMapExposure,
+    toneMapStrength: musicVisualizerToneMapStrength,
     selectedShaderId,
   })
 
@@ -204,22 +230,6 @@ function MusicMainSection({
     void resumeAudioAnalyser()
   }, [audioPlaying, resumeAudioAnalyser])
 
-  useEffect(() => {
-    if (MUSIC_VISUALIZER_SHADERS.length === 0) {
-      if (selectedShaderId !== '') {
-        setSelectedShaderId('')
-      }
-      return
-    }
-
-    const matched = MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === selectedShaderId)
-    if (matched) {
-      return
-    }
-
-    setSelectedShaderId(resolveDefaultMusicVisualizerShader()?.id ?? MUSIC_VISUALIZER_SHADERS[0]?.id ?? '')
-  }, [selectedShaderId])
-
   const closePopover = () => {
     setOpenPopover(null)
   }
@@ -308,7 +318,7 @@ function MusicMainSection({
                       key={shader.id}
                       type="button"
                       onClick={() => {
-                        setSelectedShaderId(shader.id)
+                        onMusicVisualizerSelectedShaderIdChange(shader.id)
                         closePopover()
                       }}
                     >
@@ -439,6 +449,7 @@ function MusicMainSection({
                 <span>{`Render ${visualizerStats.renderWidth} x ${visualizerStats.renderHeight}`}</span>
                 <span>{`TargetLongEdge ${musicVisualizerRenderLongEdgePx}`}</span>
                 <span>{`FPS Cap ${musicVisualizerFpsCap}`}</span>
+                <span>{`ToneMap ${musicVisualizerToneMapMode}@${musicVisualizerToneMapExposure.toFixed(2)}*${musicVisualizerToneMapStrength.toFixed(2)}`}</span>
                 <span>{`Backend ${visualizerStats.backend.toUpperCase()}`}</span>
                 <span>{`Shader ${visualizerStats.shaderId}`}</span>
                 <span>{visualizerStats.rendererLabel}</span>

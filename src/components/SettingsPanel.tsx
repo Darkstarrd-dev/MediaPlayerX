@@ -40,6 +40,9 @@ export interface SettingsPanelProps {
   thumbnailWidth: number
   musicVisualizerRenderLongEdgePx: number
   musicVisualizerFpsCap: 30 | 60 | 120
+  musicVisualizerToneMapMode: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos'
+  musicVisualizerToneMapExposure: number
+  musicVisualizerToneMapStrength: number
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
@@ -83,6 +86,9 @@ export interface SettingsPanelProps {
   onThumbnailWidthChange: (value: number) => void
   onMusicVisualizerRenderLongEdgePxChange: (value: number) => void
   onMusicVisualizerFpsCapChange: (value: 30 | 60 | 120) => void
+  onMusicVisualizerToneMapModeChange: (value: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos') => void
+  onMusicVisualizerToneMapExposureChange: (value: number) => void
+  onMusicVisualizerToneMapStrengthChange: (value: number) => void
   onMusicVisualizerShowFpsChange: (value: boolean) => void
   onMusicVisualizerRendererChange: (value: 'gpu' | 'cpu') => void
   onProxyServerChange: (value: string) => void
@@ -155,6 +161,9 @@ function SettingsPanel({
   thumbnailWidth,
   musicVisualizerRenderLongEdgePx,
   musicVisualizerFpsCap,
+  musicVisualizerToneMapMode,
+  musicVisualizerToneMapExposure,
+  musicVisualizerToneMapStrength,
   musicVisualizerShowFps,
   musicVisualizerRenderer,
   proxyServer,
@@ -198,6 +207,9 @@ function SettingsPanel({
   onThumbnailWidthChange,
   onMusicVisualizerRenderLongEdgePxChange,
   onMusicVisualizerFpsCapChange,
+  onMusicVisualizerToneMapModeChange,
+  onMusicVisualizerToneMapExposureChange,
+  onMusicVisualizerToneMapStrengthChange,
   onMusicVisualizerShowFpsChange,
   onMusicVisualizerRendererChange,
   onProxyServerChange,
@@ -480,6 +492,9 @@ function SettingsPanel({
     thumbnailWidthInputValue,
     musicVisualizerRenderLongEdgeInputValue,
     musicVisualizerFpsCap,
+    musicVisualizerToneMapMode,
+    musicVisualizerToneMapExposure,
+    musicVisualizerToneMapStrength,
     musicVisualizerShowFps,
     musicVisualizerRenderer,
     proxyServer,
@@ -528,6 +543,9 @@ function SettingsPanel({
     onMusicVisualizerRenderLongEdgeInputBlur: commitMusicVisualizerRenderLongEdgeInput,
     onMusicVisualizerRenderLongEdgeInputKeyDown: handleMusicVisualizerRenderLongEdgeInputKeyDown,
     onMusicVisualizerFpsCapChange,
+    onMusicVisualizerToneMapModeChange,
+    onMusicVisualizerToneMapExposureChange,
+    onMusicVisualizerToneMapStrengthChange,
     onMusicVisualizerShowFpsChange,
     onMusicVisualizerRendererChange,
     onProxyServerChange,

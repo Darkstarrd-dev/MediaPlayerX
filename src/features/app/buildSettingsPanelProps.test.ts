@@ -29,6 +29,9 @@ describe('buildSettingsPanelProps', () => {
       thumbnailWidth: 512,
       musicVisualizerRenderLongEdgePx: 1920,
       musicVisualizerFpsCap: 120,
+      musicVisualizerToneMapMode: 'reinhard',
+      musicVisualizerToneMapExposure: 1.25,
+      musicVisualizerToneMapStrength: 0.8,
       musicVisualizerShowFps: true,
       musicVisualizerRenderer: 'cpu',
       proxyServer: '',
@@ -67,17 +70,26 @@ describe('buildSettingsPanelProps', () => {
 
     expect(props.musicVisualizerRenderLongEdgePx).toBe(1920)
     expect(props.musicVisualizerFpsCap).toBe(120)
+    expect(props.musicVisualizerToneMapMode).toBe('reinhard')
+    expect(props.musicVisualizerToneMapExposure).toBe(1.25)
+    expect(props.musicVisualizerToneMapStrength).toBe(0.8)
     expect(props.musicVisualizerShowFps).toBe(true)
     expect(props.musicVisualizerRenderer).toBe('cpu')
 
     props.onMusicVisualizerRenderLongEdgePxChange(1280)
     props.onMusicVisualizerFpsCapChange(30)
+    props.onMusicVisualizerToneMapModeChange('aces')
+    props.onMusicVisualizerToneMapExposureChange(1.05)
+    props.onMusicVisualizerToneMapStrengthChange(0.62)
     props.onMusicVisualizerShowFpsChange(false)
     props.onMusicVisualizerRendererChange('gpu')
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { musicVisualizerRenderLongEdgePx: 1280 })
     expect(updateSettings).toHaveBeenNthCalledWith(2, { musicVisualizerFpsCap: 30 })
-    expect(updateSettings).toHaveBeenNthCalledWith(3, { musicVisualizerShowFps: false })
-    expect(updateSettings).toHaveBeenNthCalledWith(4, { musicVisualizerRenderer: 'gpu' })
+    expect(updateSettings).toHaveBeenNthCalledWith(3, { musicVisualizerToneMapMode: 'aces' })
+    expect(updateSettings).toHaveBeenNthCalledWith(4, { musicVisualizerToneMapExposure: 1.05 })
+    expect(updateSettings).toHaveBeenNthCalledWith(5, { musicVisualizerToneMapStrength: 0.62 })
+    expect(updateSettings).toHaveBeenNthCalledWith(6, { musicVisualizerShowFps: false })
+    expect(updateSettings).toHaveBeenNthCalledWith(7, { musicVisualizerRenderer: 'gpu' })
   })
 })

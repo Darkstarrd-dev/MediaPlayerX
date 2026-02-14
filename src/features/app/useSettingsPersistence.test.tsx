@@ -100,6 +100,10 @@ describe('useSettingsPersistence', () => {
       state_json: JSON.stringify({
         musicVisualizerRenderLongEdgePx: 99999,
         musicVisualizerFpsCap: 75,
+        musicVisualizerSelectedShaderId: 1,
+        musicVisualizerToneMapMode: 'filmic',
+        musicVisualizerToneMapExposure: 8,
+        musicVisualizerToneMapStrength: -3,
         musicVisualizerShowFps: 'true',
         musicVisualizerRenderer: 'metal',
       }),
@@ -123,6 +127,10 @@ describe('useSettingsPersistence', () => {
     const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<string, unknown>
     expect(hydrationPatch.musicVisualizerRenderLongEdgePx).toBe(4096)
     expect(hydrationPatch).not.toHaveProperty('musicVisualizerFpsCap')
+    expect(hydrationPatch).not.toHaveProperty('musicVisualizerSelectedShaderId')
+    expect(hydrationPatch.musicVisualizerToneMapMode).toBe('filmic')
+    expect(hydrationPatch.musicVisualizerToneMapExposure).toBe(2)
+    expect(hydrationPatch.musicVisualizerToneMapStrength).toBe(0)
     expect(hydrationPatch).not.toHaveProperty('musicVisualizerShowFps')
     expect(hydrationPatch).not.toHaveProperty('musicVisualizerRenderer')
   })

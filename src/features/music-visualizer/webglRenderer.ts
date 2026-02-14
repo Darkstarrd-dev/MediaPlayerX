@@ -94,6 +94,25 @@ function listActiveUniformNames(gl: WebGL2RenderingContext, program: WebGLProgra
   return names
 }
 
+function resolveToneMapModeCode(mode: MusicVisualizerFrameInput['toneMapMode']): number {
+  if (mode === 'reinhard') {
+    return 1
+  }
+  if (mode === 'aces') {
+    return 2
+  }
+  if (mode === 'filmic') {
+    return 3
+  }
+  if (mode === 'agx') {
+    return 4
+  }
+  if (mode === 'khronos') {
+    return 5
+  }
+  return 0
+}
+
 export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
   readonly backend = 'gpu' as const
   readonly shaderId: string
@@ -110,6 +129,11 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
   private readonly timeUniform: WebGLUniformLocation | null
   private readonly frameUniform: WebGLUniformLocation | null
   private readonly channel0Uniform: WebGLUniformLocation | null
+  private readonly audioLevelUniform: WebGLUniformLocation | null
+  private readonly audioBeatUniform: WebGLUniformLocation | null
+  private readonly toneMapModeUniform: WebGLUniformLocation | null
+  private readonly toneMapExposureUniform: WebGLUniformLocation | null
+  private readonly toneMapStrengthUniform: WebGLUniformLocation | null
 
   constructor(canvas: HTMLCanvasElement, shader: MusicVisualizerShaderDefinition) {
     this.canvas = canvas
@@ -154,6 +178,11 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     const timeUniform = gl.getUniformLocation(program, 'iTime')
     const frameUniform = gl.getUniformLocation(program, 'iFrame')
     const channel0Uniform = gl.getUniformLocation(program, 'iChannel0')
+    const audioLevelUniform = gl.getUniformLocation(program, 'iAudioLevel')
+    const audioBeatUniform = gl.getUniformLocation(program, 'iAudioBeat')
+    const toneMapModeUniform = gl.getUniformLocation(program, 'iToneMapMode')
+    const toneMapExposureUniform = gl.getUniformLocation(program, 'iToneMapExposure')
+    const toneMapStrengthUniform = gl.getUniformLocation(program, 'iToneMapStrength')
     const activeUniformNames = listActiveUniformNames(gl, program)
 
     this.gl = gl
@@ -164,6 +193,11 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     this.timeUniform = timeUniform
     this.frameUniform = frameUniform
     this.channel0Uniform = channel0Uniform
+    this.audioLevelUniform = audioLevelUniform
+    this.audioBeatUniform = audioBeatUniform
+    this.toneMapModeUniform = toneMapModeUniform
+    this.toneMapExposureUniform = toneMapExposureUniform
+    this.toneMapStrengthUniform = toneMapStrengthUniform
     this.rendererLabel = `${resolveRendererLabel(gl)} | uniforms=${activeUniformNames.join(',') || 'none'}`
   }
 
@@ -179,7 +213,19 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     this.gl.viewport(0, 0, nextWidth, nextHeight)
   }
 
-  render({ width, height, timeSec, frame, frequencyData, waveformData }: MusicVisualizerFrameInput): void {
+  render({
+    width,
+    height,
+    timeSec,
+    frame,
+    frequencyData,
+    waveformData,
+    audioLevel,
+    audioBeat,
+    toneMapMode,
+    toneMapExposure,
+    toneMapStrength,
+  }: MusicVisualizerFrameInput): void {
     this.uploadAudioTexture(frequencyData, waveformData)
 
     const gl = this.gl
@@ -200,6 +246,21 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     }
     if (this.frameUniform) {
       gl.uniform1i(this.frameUniform, frame)
+    }
+    if (this.audioLevelUniform) {
+      gl.uniform1f(this.audioLevelUniform, audioLevel)
+    }
+    if (this.audioBeatUniform) {
+      gl.uniform1f(this.audioBeatUniform, audioBeat)
+    }
+    if (this.toneMapModeUniform) {
+      gl.uniform1i(this.toneMapModeUniform, resolveToneMapModeCode(toneMapMode))
+    }
+    if (this.toneMapExposureUniform) {
+      gl.uniform1f(this.toneMapExposureUniform, toneMapExposure)
+    }
+    if (this.toneMapStrengthUniform) {
+      gl.uniform1f(this.toneMapStrengthUniform, toneMapStrength)
     }
 
     gl.drawArrays(gl.TRIANGLES, 0, 3)
