@@ -23,6 +23,7 @@ import {
   normalizeSeriesId,
   pickFirstBySeriesId,
 } from './workspaceSharedUtils'
+import { buildNodeBrowseItems, resolveRefsInPageForDisplay } from './workspaceImageDerivations'
 import {
   createApplyMetadataSyncName,
   createSaveParsedMetadata,
@@ -571,52 +572,20 @@ export function useAppWorkspaceProps({
     !manageMode &&
     Boolean(selectedSidebarNode && selectedSidebarNode.imageNodeType === 'folder' && selectedSidebarNode.children.length > 0)
 
-  const resolveNodePreviewSourceId = (node: SidebarNode): string | null => {
-    if (node.imageSourceId) {
-      return node.imageSourceId
-    }
-    for (const child of node.children) {
-      const found = resolveNodePreviewSourceId(child)
-      if (found) {
-        return found
-      }
-    }
-    return null
-  }
+  const nodeBrowseItems = buildNodeBrowseItems({
+    nodeBrowseMode,
+    selectedSidebarNode,
+    packageByIdEffective,
+    sourceCoverImageUrlBySourceId,
+    thumbnailImageUrlById,
+  })
 
-  const nodeBrowseItems = nodeBrowseMode
-    ? (selectedSidebarNode?.children ?? []).map((child) => {
-        const hasOwnImages = child.imageNodeType === 'package' || child.imageNodeType === 'directory'
-        const previewSourceId = hasOwnImages ? (child.imageSourceId ?? resolveNodePreviewSourceId(child)) : resolveNodePreviewSourceId(child)
-        const previewSource = previewSourceId ? packageByIdEffective.get(previewSourceId) : null
-        const fallbackImageId = previewSource?.images.find((image) => !image.hidden)?.id
-        const visibleImageCount = previewSource
-          ? previewSource.images.reduce((count, image) => (image.hidden ? count : count + 1), 0)
-          : child.directImageCount ?? 0
-        const coverImageUrl =
-          (previewSourceId ? sourceCoverImageUrlBySourceId[previewSourceId] : null) ??
-          (fallbackImageId ? thumbnailImageUrlById[fallbackImageId] ?? null : null)
-
-        return {
-          nodeId: child.id,
-          imageSourceId: child.imageSourceId,
-          imageNodeType: child.imageNodeType ?? 'folder',
-          label: child.label,
-          packageCount: child.descendantPackageCount ?? 0,
-          imageCount: hasOwnImages ? visibleImageCount : child.descendantImageCount ?? 0,
-          descendantNodeCount: child.descendantNodeCount ?? child.children.length,
-          coverImageUrl,
-        }
-      })
-    : []
-
-  const refsInPageForDisplay =
-    manageMode && manageAdReview.hideUncheckedNonChecked
-      ? refsInPageEffective.filter((ref) => {
-          const imageId = packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]?.id
-          return Boolean(imageId && imageCheckedIdSet.has(imageId))
-        })
-      : refsInPageEffective
+  const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageEffective, {
+    manageMode,
+    hideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
+    imageCheckedIdSet,
+    packageByIdEffective,
+  })
 
   const adReviewScopeImageIdSet = new Set(manageAdReview.scopeImageIds)
   const adReviewLlmReviewedImageIdSet = new Set(manageAdReview.llmReviewedImageIds)
