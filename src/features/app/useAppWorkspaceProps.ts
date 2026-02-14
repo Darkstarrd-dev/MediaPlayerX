@@ -19,14 +19,16 @@ import {
 import {
   collectAudioIdsBySidebarOrder,
   collectScopedAudioIdsByFolderNode,
-  flattenExternalTags,
   flattenExternalTagValues,
   normalizeFeatureTags,
   normalizeSeriesId,
   pickFirstBySeriesId,
 } from './workspaceSharedUtils'
+import {
+  createApplyMetadataSyncName,
+  createSaveParsedMetadata,
+} from './workspaceMetadataActions'
 import type { MusicBookletBindingsResult } from './useMusicBookletBindings'
-import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
@@ -523,50 +525,17 @@ export function useAppWorkspaceProps({
     layoutLocked,
   })
 
-  const applyMetadataSyncName = () => {
-    if (mode === 'image') {
-      metadataWriteBindings.applyPackageSyncName()
-      return
-    }
-    if (mode === 'music') {
-      return
-    }
-    metadataWriteBindings.applyVideoSyncName()
-  }
+  const applyMetadataSyncName = createApplyMetadataSyncName({
+    mode,
+    metadataWriteBindings,
+    metadataImagePackageEffective,
+  })
 
-  const saveParsedMetadata = async (parsed: ParsedExternalMetadata) => {
-    if (mode !== 'image') {
-      throw new Error('当前模式不支持写入图包元数据')
-    }
-    const packageId = metadataImagePackageEffective?.id
-    if (!packageId) {
-      throw new Error('当前无可用图包，无法保存')
-    }
-    await metadataWriteBindings.applyPackageMetadataById(packageId, {
-      workTitle: parsed.title,
-      circle: parsed.group,
-      author: parsed.artist,
-      tags: flattenExternalTags(parsed.tags),
-    })
-    await metadataWriteBindings.applyPackageExternalMetadataById(packageId, {
-      sourceSite: parsed.source.site,
-      sourceUrl: parsed.source.url,
-      sourceRemoteId: parsed.source.id,
-      sourceToken: parsed.source.token,
-      title: parsed.title,
-      titleJpn: parsed.title_jpn,
-      group: parsed.group,
-      groupJpn: parsed.group_jpn,
-      artist: parsed.artist,
-      artistJpn: parsed.artist_jpn,
-      posted: parsed.posted,
-      rating: parsed.rating,
-      favorited: parsed.favorited,
-      thumbUrl: parsed.thumb,
-      tags: parsed.tags,
-      rawJson: JSON.stringify(parsed),
-    })
-  }
+  const saveParsedMetadata = createSaveParsedMetadata({
+    mode,
+    metadataWriteBindings,
+    metadataImagePackageEffective,
+  })
 
   const metadataManagementPanelProps = buildMetadataManagementPanelProps({
     metadataManageMode,
