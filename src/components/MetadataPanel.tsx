@@ -4,17 +4,13 @@ import type { ManageAdReviewTaskDto } from '../contracts/backend'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
 import type { AudioItem, BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
 import { FeatureTagPickerModal } from './metadata/FeatureTagPickerModal'
+import { MetadataAdReviewSection } from './metadata/MetadataAdReviewSection'
 import { MetadataImageEditor } from './metadata/MetadataImageEditor'
 import { MetadataMusicEditor } from './metadata/MetadataMusicEditor'
+import { MetadataSearchSection } from './metadata/MetadataSearchSection'
 import { MetadataVideoEditor } from './metadata/MetadataVideoEditor'
 import {
-  AD_REVIEW_CONCURRENCY_OPTIONS,
-  AD_REVIEW_STREAK_OPTIONS,
-  AD_REVIEW_WINDOW_OPTIONS,
-  formatPercent,
   parseTagsInput,
-  resolveAdReviewExecutionLabel,
-  resolveAdReviewStatusLabel,
   resolveTagGroupKey,
 } from './metadata/metadataPanelUtils'
 
@@ -445,7 +441,6 @@ function MetadataPanel({
   const imagePreviewClassName = showImageCanvas ? 'metadata-content metadata-content-focus' : 'metadata-content'
   const lockMetadataScroll = mode === 'image' && showImagePreview && hasImageFocus && Boolean(focusedImage) && !searchModeActive
   const metadataPanelClassName = lockMetadataScroll ? 'metadata-panel is-image-focus' : 'metadata-panel'
-  const adReviewRunning = adReviewTask?.status === 'running'
   const closeFeatureTagPicker = (revertDraft: boolean) => {
     if (revertDraft) {
       setFeatureTagDrafts(featureTags)
@@ -455,142 +450,34 @@ function MetadataPanel({
     }
   }
 
+  const toggleFeatureTagPickerRequest = () => {
+    if (!featureTagPickerOpen) {
+      setFeatureTagDrafts(featureTags)
+    }
+    onToggleFeatureTagPicker()
+  }
+
   const metadataSearchSection = searchModeActive ? (
-    <section className="metadata-search-section" aria-label="检索筛选">
-      <div className="metadata-search-head">
-        <strong>{`命中节点: ${featureResultCount} 个`}</strong>
-      </div>
-
-      <div className="feature-controls metadata-search-controls">
-        <label>
-          名称
-          <input
-            className="feature-query-input"
-            placeholder="按名称模糊匹配"
-            value={featureNameQuery}
-            onChange={(event) => onFeatureNameQueryChange(event.target.value)}
-          />
-        </label>
-
-        <label>
-          作品名
-          <input
-            className="feature-query-input"
-            placeholder="按作品名模糊匹配"
-            value={featureWorkTitleQuery}
-            onChange={(event) => onFeatureWorkTitleQueryChange(event.target.value)}
-          />
-        </label>
-
-        <label>
-          社团
-          <input
-            className="feature-query-input"
-            list="metadata-feature-circle-options"
-            placeholder="输入社团，支持自动补完"
-            value={featureCircleQuery}
-            onChange={(event) => onFeatureCircleQueryChange(event.target.value)}
-          />
-          <datalist id="metadata-feature-circle-options">
-            {featureCircleOptions.map((item) => (
-              <option key={item} value={item} />
-            ))}
-          </datalist>
-        </label>
-
-        <label>
-          作者
-          <input
-            className="feature-query-input"
-            list="metadata-feature-author-options"
-            placeholder="输入作者，支持自动补完"
-            value={featureAuthorQuery}
-            onChange={(event) => onFeatureAuthorQueryChange(event.target.value)}
-          />
-          <datalist id="metadata-feature-author-options">
-            {featureAuthorOptions.map((item) => (
-              <option key={item} value={item} />
-            ))}
-          </datalist>
-        </label>
-
-        <div className="feature-tags-group">
-          <div className="feature-control-head">
-            <strong>tags</strong>
-            <div className="feature-control-actions">
-              <button
-                className="feature-action-btn"
-                type="button"
-                onClick={() => {
-                  if (!featureTagPickerOpen) {
-                    setFeatureTagDrafts(featureTags)
-                  }
-                  onToggleFeatureTagPicker()
-                }}
-              >
-                {featureTagPickerOpen ? '关闭面板' : '选择 tags'}
-              </button>
-              <button className="feature-action-btn" type="button" onClick={onClearFeatureTags}>
-                清空 tags
-              </button>
-            </div>
-          </div>
-
-          {featureTags.length === 0 ? (
-            <p className="feature-selection-result">未选择 tags</p>
-          ) : (
-            <div className="feature-selected-tags">
-              {featureTags.map((tag) => (
-                <button
-                  key={tag}
-                  className="feature-selected-tag-chip"
-                  type="button"
-                  aria-label={`移除tag ${tag}`}
-                  onClick={() => onSetFeatureTags(featureTags.filter((item) => item !== tag))}
-                >
-                  <span>{tag}</span>
-                  <span aria-hidden="true">×</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="feature-rating-group">
-          <strong>图包评分</strong>
-          <div className="feature-rating-stars" role="group" aria-label="图包评分筛选">
-            <button
-              aria-label="图包评分 无评分"
-              aria-pressed={featureGradeFilter === null}
-              className={`is-clear ${featureGradeFilter === null ? 'is-active' : ''}`}
-              type="button"
-              onClick={() => onFeatureGradeFilterChange(null)}
-            >
-              ×
-            </button>
-
-            {[1, 2, 3, 4, 5].map((score) => {
-              const isActive = featureGradeFilter !== null && score <= featureGradeFilter
-              return (
-                <button
-                  key={score}
-                  aria-label={`图包评分 ${score} 分`}
-                  aria-pressed={featureGradeFilter === score}
-                  className={isActive ? 'is-active' : ''}
-                  style={{ color: `hsl(42deg ${35 + score * 13}% 48%)` }}
-                  type="button"
-                  onClick={() => onFeatureGradeFilterChange(featureGradeFilter === score ? null : score)}
-                >
-                  {isActive ? '★' : '☆'}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <p className="vector-hint">多字段组合按 AND 逻辑过滤，结果即时同步到 Sidebar 与主视图。</p>
-      </div>
-    </section>
+    <MetadataSearchSection
+      featureResultCount={featureResultCount}
+      featureNameQuery={featureNameQuery}
+      onFeatureNameQueryChange={onFeatureNameQueryChange}
+      featureWorkTitleQuery={featureWorkTitleQuery}
+      onFeatureWorkTitleQueryChange={onFeatureWorkTitleQueryChange}
+      featureCircleQuery={featureCircleQuery}
+      onFeatureCircleQueryChange={onFeatureCircleQueryChange}
+      featureAuthorQuery={featureAuthorQuery}
+      onFeatureAuthorQueryChange={onFeatureAuthorQueryChange}
+      featureCircleOptions={featureCircleOptions}
+      featureAuthorOptions={featureAuthorOptions}
+      featureTagPickerOpen={featureTagPickerOpen}
+      featureTags={featureTags}
+      onToggleFeatureTagPickerRequest={toggleFeatureTagPickerRequest}
+      onClearFeatureTags={onClearFeatureTags}
+      onSetFeatureTags={onSetFeatureTags}
+      featureGradeFilter={featureGradeFilter}
+      onFeatureGradeFilterChange={onFeatureGradeFilterChange}
+    />
   ) : null
 
   const persistPackageWorkTitle = (rawValue: string) => {
@@ -948,149 +835,27 @@ function MetadataPanel({
       )}
 
       {manageMode && adReviewFeatureVisible && adReviewPanelOpen && mode === 'image' ? (
-        <section className="metadata-ad-review-section" aria-label="AI广告审核面板">
-          <header>
-            <strong>AI广告审核</strong>
-            {adReviewTask ? <span className={`manage-ad-review-status is-${adReviewTask.status}`}>{resolveAdReviewStatusLabel(adReviewTask.status)}</span> : null}
-          </header>
-
-          <div className="metadata-ad-review-controls" role="group" aria-label="AI广告审核控制">
-            <div className="metadata-ad-review-primary-row">
-              <button
-                className={`manage-ad-review-icon-btn ${adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}`}
-                type="button"
-                aria-label="AI广告审核策略切换"
-                title={
-                  adReviewStrategyMode === 'head-tail'
-                    ? '当前策略：头尾抽样。点击切换为全量审核'
-                    : '当前策略：全量审核。点击切换为头尾抽样'
-                }
-                onClick={() => onAdReviewStrategyModeChange(adReviewStrategyMode === 'head-tail' ? 'all' : 'head-tail')}
-              >
-                <span aria-hidden="true">{adReviewStrategyMode === 'head-tail' ? '⇵' : '∞'}</span>
-              </button>
-
-              <button
-                className={`manage-ad-review-icon-btn manage-ad-review-exec-btn ${adReviewRunning ? 'is-running' : ''}`}
-                type="button"
-                aria-label={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
-                title={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
-                disabled={adReviewPending || (!adReviewRunning && !canExecuteAdReview)}
-                onClick={adReviewRunning ? onPauseAdReview : onStartAdReview}
-              >
-                <span aria-hidden="true">{adReviewRunning ? '⏸' : '▶'}</span>
-              </button>
-            </div>
-
-            <label className="manage-ad-review-inline-field">
-              <span>并发</span>
-              <select
-                aria-label="AI广告审核并发"
-                value={adReviewMaxConcurrency}
-                onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}
-              >
-                {AD_REVIEW_CONCURRENCY_OPTIONS.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
-              <span>头部</span>
-              <select
-                aria-label="AI广告审核头部窗口样本数"
-                disabled={adReviewStrategyMode !== 'head-tail'}
-                value={adReviewHeadN}
-                onChange={(event) => onAdReviewHeadNChange(Number(event.target.value))}
-              >
-                {AD_REVIEW_WINDOW_OPTIONS.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
-              <span>尾部</span>
-              <select
-                aria-label="AI广告审核尾部窗口样本数"
-                disabled={adReviewStrategyMode !== 'head-tail'}
-                value={adReviewTailN}
-                onChange={(event) => onAdReviewTailNChange(Number(event.target.value))}
-              >
-                {AD_REVIEW_WINDOW_OPTIONS.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label
-              className={`manage-ad-review-inline-field manage-ad-review-inline-field-wide ${
-                adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''
-              }`}
-            >
-              <span>停止 clean</span>
-              <select
-                aria-label="AI广告审核尾部停止clean连续数"
-                disabled={adReviewStrategyMode !== 'head-tail'}
-                value={adReviewTailStopCleanStreak}
-                onChange={(event) => onAdReviewTailStopCleanStreakChange(Number(event.target.value))}
-              >
-                {AD_REVIEW_STREAK_OPTIONS.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          {adReviewTask ? (
-            <section className="manage-ad-review" aria-live="polite">
-              <p className="manage-ad-review-progress">
-                {`进度 ${Math.round(adReviewTask.progress * 100)}% (${adReviewTask.reviewed_count}/${adReviewTask.total_count})`}
-              </p>
-              {resolveAdReviewExecutionLabel(adReviewTask) ? <p className="manage-ad-review-config">{resolveAdReviewExecutionLabel(adReviewTask)}</p> : null}
-              {adReviewTask.audit ? (
-                <div className="manage-ad-review-audit">
-                  <p className="manage-ad-review-audit-line">
-                    {`来源 known-hash ${adReviewTask.audit.source_distribution.known_hash} | llm(疑似/正常/失败) ${adReviewTask.audit.source_distribution.llm_suspected}/${adReviewTask.audit.source_distribution.llm_clean}/${adReviewTask.audit.source_distribution.llm_failed} | strategy-skip ${adReviewTask.audit.source_distribution.strategy_skipped}`}
-                  </p>
-                  <p className="manage-ad-review-audit-line">
-                    {`命中率 LLM ${formatPercent(adReviewTask.audit.llm_hit_rate)} | 总体 ${formatPercent(adReviewTask.audit.overall_hit_rate)}`}
-                  </p>
-                </div>
-              ) : null}
-
-              <p className="manage-ad-review-message">
-                {adReviewTask.status === 'review'
-                  ? `疑似候选 ${adReviewTask.candidates.length} 张，已同步到选中态。请在主视图修正后使用上方“删除”执行清除。`
-                  : adReviewTask.message ?? 'AI广告审核任务进行中'}
-              </p>
-
-              {adReviewTask.status === 'review' ? (
-                <div className="manage-ad-review-actions">
-                  <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onToggleHideUncheckedNonChecked}>
-                    {adReviewHideUncheckedNonChecked ? '显示全部图片' : '隐藏未勾选图片'}
-                  </button>
-                  <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
-                    关闭结果
-                  </button>
-                  <span className={`manage-ad-review-selection-tag ${hasCheckedAdReviewCandidates ? 'is-active' : ''}`}>
-                    {hasCheckedAdReviewCandidates ? '已选候选可删除' : '未选候选'}
-                  </span>
-                </div>
-              ) : null}
-
-              {adReviewTask.error_detail ? <p className="manage-ad-review-error">{adReviewTask.error_detail}</p> : null}
-            </section>
-          ) : null}
-        </section>
+        <MetadataAdReviewSection
+          adReviewPending={adReviewPending}
+          adReviewTask={adReviewTask}
+          adReviewHideUncheckedNonChecked={adReviewHideUncheckedNonChecked}
+          hasCheckedAdReviewCandidates={hasCheckedAdReviewCandidates}
+          adReviewStrategyMode={adReviewStrategyMode}
+          adReviewMaxConcurrency={adReviewMaxConcurrency}
+          adReviewHeadN={adReviewHeadN}
+          adReviewTailN={adReviewTailN}
+          adReviewTailStopCleanStreak={adReviewTailStopCleanStreak}
+          canExecuteAdReview={canExecuteAdReview}
+          onStartAdReview={onStartAdReview}
+          onPauseAdReview={onPauseAdReview}
+          onToggleHideUncheckedNonChecked={onToggleHideUncheckedNonChecked}
+          onAdReviewStrategyModeChange={onAdReviewStrategyModeChange}
+          onAdReviewMaxConcurrencyChange={onAdReviewMaxConcurrencyChange}
+          onAdReviewHeadNChange={onAdReviewHeadNChange}
+          onAdReviewTailNChange={onAdReviewTailNChange}
+          onAdReviewTailStopCleanStreakChange={onAdReviewTailStopCleanStreakChange}
+          onDismissAdReviewTask={onDismissAdReviewTask}
+        />
       ) : null}
       </aside>
       <FeatureTagPickerModal
