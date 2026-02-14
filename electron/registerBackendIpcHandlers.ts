@@ -1,5 +1,5 @@
 import { app, BrowserWindow, clipboard, dialog, ipcMain, protocol, shell } from 'electron'
-import { promises as fs, readFileSync } from 'node:fs'
+import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
 import {
@@ -76,17 +76,22 @@ import {
   openExternalUrlResponseSchema,
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
+import {
+  moveDatabaseFiles,
+  normalizeAbsoluteDirectory,
+  readRuntimeStoragePaths,
+  resolveDatabasePath,
+  resolveRuntimeStoragePathsConfigPath,
+  resolveThumbnailCachePath,
+  writeRuntimeStoragePaths,
+} from './backendRuntimeStorage'
 import { MediaAccessError } from './fileSystemMediaAccessGuard'
 import { FileSystemMediaReadService } from './fileSystemReadService'
-import { DATABASE_RELATIVE_PATH } from './mediaLibrarySchema'
 import { isRuntimeDiagnosticsVerboseEnabled, logRuntimeDiagnostic, serializeUnknownError } from './runtimeDiagnostics'
-import { THUMBNAIL_CACHE_DIR_NAME } from './services/file-system-read/fileSystemReadFacadeConfig'
 import { MetadataScraperService } from './services/metadata/metadataScraperService'
 
 const MEDIA_ACCESS_FALLBACK_URL = 'data:application/octet-stream;base64,'
 const MEDIA_ACCESS_FALLBACK_TTL_MS = 60_000
-const RUNTIME_STORAGE_PATHS_FILE_NAME = 'runtime-storage-paths.json'
-const DATABASE_FILE_NAME = path.basename(DATABASE_RELATIVE_PATH)
 
 const AUDIO_FILE_FILTER_EXTENSIONS = ['mp3', 'flac', 'wav', 'ogg', 'm4a', 'opus', 'aac']
 const GENERIC_MEDIA_FILE_FILTER_EXTENSIONS = [
@@ -105,100 +110,6 @@ const GENERIC_MEDIA_FILE_FILTER_EXTENSIONS = [
   'rar',
   '7z',
 ]
-
-interface RuntimeStoragePathsConfig {
-  database_dir?: string
-  thumbnail_cache_dir?: string
-}
-
-function normalizeAbsoluteDirectory(value: string | undefined): string | null {
-  if (typeof value !== 'string') {
-    return null
-  }
-  const trimmed = value.trim()
-  if (!trimmed) {
-    return null
-  }
-  return path.resolve(trimmed)
-}
-
-function resolveDatabasePath(libraryRoot: string, databaseDir: string | undefined): string {
-  const normalizedDir = normalizeAbsoluteDirectory(databaseDir)
-  if (!normalizedDir) {
-    return path.resolve(libraryRoot, DATABASE_RELATIVE_PATH)
-  }
-  return path.join(normalizedDir, DATABASE_FILE_NAME)
-}
-
-function resolveThumbnailCachePath(libraryRoot: string, thumbnailCacheDir: string | undefined): string {
-  const normalizedDir = normalizeAbsoluteDirectory(thumbnailCacheDir)
-  if (!normalizedDir) {
-    return path.resolve(libraryRoot, THUMBNAIL_CACHE_DIR_NAME)
-  }
-  return normalizedDir
-}
-
-function readRuntimeStoragePaths(configPath: string): RuntimeStoragePathsConfig {
-  try {
-    const rawText = readFileSync(configPath, 'utf8')
-    const parsed = JSON.parse(rawText) as RuntimeStoragePathsConfig
-    return {
-      database_dir: normalizeAbsoluteDirectory(parsed.database_dir) ?? undefined,
-      thumbnail_cache_dir: normalizeAbsoluteDirectory(parsed.thumbnail_cache_dir) ?? undefined,
-    }
-  } catch {
-    return {}
-  }
-}
-
-async function writeRuntimeStoragePaths(configPath: string, config: RuntimeStoragePathsConfig): Promise<void> {
-  const normalized: RuntimeStoragePathsConfig = {
-    database_dir: normalizeAbsoluteDirectory(config.database_dir) ?? undefined,
-    thumbnail_cache_dir: normalizeAbsoluteDirectory(config.thumbnail_cache_dir) ?? undefined,
-  }
-  await fs.mkdir(path.dirname(configPath), { recursive: true })
-  await fs.writeFile(configPath, JSON.stringify(normalized, null, 2), 'utf8')
-}
-
-async function moveFileWithFallback(sourcePath: string, targetPath: string): Promise<void> {
-  try {
-    await fs.rename(sourcePath, targetPath)
-  } catch (error) {
-    const isCrossDevice =
-      typeof error === 'object' &&
-      error !== null &&
-      'code' in error &&
-      (error as { code?: string }).code === 'EXDEV'
-
-    if (!isCrossDevice) {
-      throw error
-    }
-
-    await fs.copyFile(sourcePath, targetPath)
-    await fs.unlink(sourcePath)
-  }
-}
-
-async function moveDatabaseFiles(sourceDatabasePath: string, targetDatabasePath: string): Promise<void> {
-  await fs.mkdir(path.dirname(targetDatabasePath), { recursive: true })
-  await fs.rm(targetDatabasePath, { force: true })
-  await fs.rm(`${targetDatabasePath}-wal`, { force: true })
-  await fs.rm(`${targetDatabasePath}-shm`, { force: true })
-  await moveFileWithFallback(sourceDatabasePath, targetDatabasePath)
-
-  for (const suffix of ['-wal', '-shm']) {
-    const sourceSidecarPath = `${sourceDatabasePath}${suffix}`
-    const targetSidecarPath = `${targetDatabasePath}${suffix}`
-    const exists = await fs
-      .access(sourceSidecarPath)
-      .then(() => true)
-      .catch(() => false)
-    if (!exists) {
-      continue
-    }
-    await moveFileWithFallback(sourceSidecarPath, targetSidecarPath)
-  }
-}
 
 function extractLikelyPaths(raw: string): string[] {
   const tokens = raw
@@ -231,7 +142,7 @@ export function registerBackendIpcHandlers(): void {
   const userDataPath = app.getPath('userData')
   const defaultLibraryRoot = path.join(app.getPath('pictures'), 'MediaPlayerXLibrary')
   const libraryRoot = path.resolve(process.env.MEDIA_PLAYERX_LIBRARY_ROOT ?? defaultLibraryRoot)
-  const runtimeStoragePathsConfigPath = path.join(userDataPath, RUNTIME_STORAGE_PATHS_FILE_NAME)
+  const runtimeStoragePathsConfigPath = resolveRuntimeStoragePathsConfigPath(userDataPath)
   let runtimeStoragePaths = readRuntimeStoragePaths(runtimeStoragePathsConfigPath)
   let databasePath = resolveDatabasePath(libraryRoot, runtimeStoragePaths.database_dir)
   let thumbnailCachePath = resolveThumbnailCachePath(libraryRoot, runtimeStoragePaths.thumbnail_cache_dir)
@@ -646,7 +557,7 @@ export function registerBackendIpcHandlers(): void {
     const nextDatabaseDir = normalizeAbsoluteDirectory(request.database_dir) ?? path.dirname(databasePath)
     const nextThumbnailCachePath =
       normalizeAbsoluteDirectory(request.thumbnail_cache_dir) ?? thumbnailCachePath
-    const nextDatabasePath = path.join(nextDatabaseDir, DATABASE_FILE_NAME)
+    const nextDatabasePath = resolveDatabasePath(libraryRoot, nextDatabaseDir)
 
     const databasePathChanged = path.resolve(nextDatabasePath) !== path.resolve(databasePath)
     const thumbnailPathChanged = path.resolve(nextThumbnailCachePath) !== path.resolve(thumbnailCachePath)
