@@ -31,6 +31,13 @@
   --mpx-header-btn-hover-shadow: none;
   --mpx-header-btn-active-shadow: none;
   --mpx-header-btn-active-border: var(--mpx-accent);
+  --mpx-header-status-btn-min-width: max(80px, var(--mpx-header-btn-size));
+  --mpx-header-group-gap: 20px;
+  --mpx-header-item-gap: 8px;
+  --mpx-header-group-modes-width: 280px;
+  --mpx-header-group-search-width: 190px;
+  --mpx-header-music-actions-reserve: calc(var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px);
+  --mpx-header-modes-wrap-width: calc(var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 24px);
 
   --mpx-scrollbar-size: 10px;
   --mpx-scrollbar-radius: 999px;

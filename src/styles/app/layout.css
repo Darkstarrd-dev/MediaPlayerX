@@ -28,7 +28,21 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--mpx-header-group-gap, 20px);
+}
+
+.header-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mpx-header-item-gap, 8px);
+}
+
+.header-group-modes {
+  min-width: var(--mpx-header-group-modes-width, 280px);
+}
+
+.header-group-search {
+  min-width: var(--mpx-header-group-search-width, 190px);
 }
 
 .header-btn-content {
@@ -116,7 +130,7 @@
   font-weight: var(--mpx-control-font-weight);
   height: var(--mpx-header-btn-size);
   min-height: var(--mpx-header-btn-size);
-  padding: 0 var(--mpx-header-btn-padding-x);
+  padding: 0 max(var(--mpx-header-btn-padding-x), 14px);
   cursor: pointer;
   box-shadow: var(--mpx-header-btn-shadow);
   backdrop-filter: var(--mpx-control-backdrop-filter);
@@ -162,11 +176,25 @@
 .mode-switch {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--mpx-header-item-gap, 8px);
   padding: 2px;
   border: 1px solid var(--mpx-border-2);
   border-radius: 10px;
   background: var(--mpx-bg-elevated);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: max-content;
+  height: calc(var(--mpx-header-btn-size) + 4px);
+}
+
+.mode-switch-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--mpx-header-modes-wrap-width, max-content);
+  width: var(--mpx-header-modes-wrap-width, max-content);
+  height: calc(var(--mpx-header-btn-size) + 4px);
 }
 
 .mode-switch button {
@@ -181,6 +209,45 @@
   color: var(--mpx-text-1);
   box-shadow: var(--mpx-header-btn-shadow);
   transition: var(--mpx-control-transition);
+}
+
+.mode-action-btn {
+  border: var(--mpx-control-border-width) solid transparent;
+  border-radius: calc(var(--mpx-header-btn-radius) - 2px);
+  min-width: var(--mpx-header-btn-size);
+  width: var(--mpx-header-btn-size);
+  height: var(--mpx-header-btn-size);
+  min-height: var(--mpx-header-btn-size);
+  padding: 0;
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
+  box-shadow: var(--mpx-header-btn-shadow);
+  transition: var(--mpx-control-transition);
+}
+
+.mode-action-btn:hover {
+  transform: var(--mpx-control-hover-transform);
+  box-shadow: var(--mpx-header-btn-hover-shadow);
+}
+
+.mode-action-btn:active {
+  transform: var(--mpx-control-active-transform);
+  box-shadow: var(--mpx-header-btn-active-shadow);
+}
+
+.music-quick-actions {
+  display: none;
+  align-items: center;
+  gap: var(--mpx-header-item-gap, 8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+
+.music-quick-actions.is-visible {
+  display: inline-flex;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .mode-switch button.is-active {
@@ -207,7 +274,7 @@
   color: var(--mpx-text-1);
   font-weight: var(--mpx-control-font-weight);
   height: var(--mpx-header-btn-size);
-  min-width: max(80px, var(--mpx-header-btn-size));
+  min-width: var(--mpx-header-status-btn-min-width, max(80px, var(--mpx-header-btn-size)));
   padding: 0 var(--mpx-header-btn-padding-x);
   cursor: pointer;
   box-shadow: var(--mpx-header-btn-shadow);
@@ -377,24 +444,132 @@
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
 
+.header-popover-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.header-popover-control::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  top: 100%;
+  height: 32px;
+  background: transparent;
+}
+
+.header-popover-trigger {
+  width: var(--mpx-header-btn-size);
+  min-width: var(--mpx-header-btn-size);
+  height: var(--mpx-header-btn-size);
+  min-height: var(--mpx-header-btn-size);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--mpx-control-border-width) solid var(--mpx-border-2);
+  border-radius: var(--mpx-header-btn-radius);
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
+  box-shadow: var(--mpx-header-btn-shadow);
+  transition: var(--mpx-control-transition);
+}
+
+.header-popover-trigger:hover {
+  transform: var(--mpx-control-hover-transform);
+  box-shadow: var(--mpx-header-btn-hover-shadow);
+}
+
+.header-popover-trigger:active {
+  transform: var(--mpx-control-active-transform);
+  box-shadow: var(--mpx-header-btn-active-shadow);
+}
+
+.header-popover-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid var(--mpx-border-1);
+  border-radius: 8px;
+  background: var(--mpx-bg-elevated);
+  padding: 8px 6px;
+  box-shadow: var(--mpx-shadow-popover);
+  z-index: 24;
+}
+
+.header-popover-panel[hidden] {
+  display: none;
+}
+
+.header-vertical-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-vertical-slider-value {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--mpx-text-1);
+  min-width: 18px;
+  text-align: center;
+}
+
+.header-vertical-slider-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 120px;
+}
+
+.header-vertical-range {
+  display: block;
+  width: 120px;
+  height: var(--mpx-range-thumb-size);
+  margin: 0;
+  padding: 0;
+  transform: rotate(90deg);
+  transform-origin: center;
+  direction: rtl;
+}
+
 .window-controls {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--mpx-header-item-gap, 8px);
 }
 
 .window-control-btn {
-  width: 36px;
-  height: var(--mpx-control-height);
+  width: var(--mpx-header-btn-size);
+  min-width: var(--mpx-header-btn-size);
+  height: var(--mpx-header-btn-size);
+  min-height: var(--mpx-header-btn-size);
   border: var(--mpx-control-border-width) solid var(--mpx-border-2);
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-header-btn-radius);
   background: var(--mpx-bg-elevated);
   color: var(--mpx-text-1);
   cursor: pointer;
+  box-shadow: var(--mpx-header-btn-shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--mpx-control-transition);
 }
 
 .window-control-btn:hover {
-  background: var(--mpx-bg-hover);
+  transform: var(--mpx-control-hover-transform);
+  box-shadow: var(--mpx-header-btn-hover-shadow);
+}
+
+.window-control-btn:active {
+  transform: var(--mpx-control-active-transform);
+  box-shadow: var(--mpx-header-btn-active-shadow);
 }
 
 .window-control-btn--close:hover {
