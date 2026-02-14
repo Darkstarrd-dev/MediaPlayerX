@@ -15,7 +15,7 @@
 ## 质量与稳定性
 
 - `stability-note-2026-02-12-sidebar-switch-crash.md`：Sidebar 高频切换稳定性问题与修复记录。
-- `project-evaluation-report-v3.md`：项目评估（当前保留版本）。
+- `project-evaluation-report-v6.md`：项目评估（当前保留版本）。
 
 ## 主题与 UI
 

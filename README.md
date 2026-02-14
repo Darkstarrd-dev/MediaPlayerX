@@ -76,7 +76,7 @@ npm run test
 - `docs/backend-integration-guardrails.md`
 - `docs/windows-release-signing-runbook.md`
 - `docs/stability-note-2026-02-12-sidebar-switch-crash.md`
-- `docs/project-evaluation-report-v3.md`
+- `docs/project-evaluation-report-v6.md`
 - `docs/perf/2026-02-07-scan-benchmark.md`
 - `docs/perf/2026-02-08-ui-perf-benchmark-plan.md`
 - `docs/perf/2026-02-08-streaming-ingest-benchmark-plan.md`
