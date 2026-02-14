@@ -135,6 +135,17 @@
   - 原始 Bloom 分支依赖 `iChannelResolution`，当前版本按背景层用途保留主渲染路径，不启用 Bloom 分支。
   - 已与前景层代码合并为完整 `Starfield`：背景保留音乐反应，前景内容居中显示并用 screen blend 合成。
 
+## 6.2 新增 Shader（Galaxy）
+
+- Shader：`src/features/music-visualizer/shaders/galaxy.ts`
+- 来源 URL（背景层）：`https://www.shadertoy.com/view/MXXcD4`
+- 来源 URL（前景层）：`https://www.shadertoy.com/view/WcXSDn`
+- 接入定位：完整复合结构（背景 + 居中前景）。
+- 适配说明：
+  - 背景层依赖 `iAmplifiedTime` 与 `FFT`，按本地 `iChannel0` 音频纹理实现。
+  - 前景层原始代码依赖 `iChannel1`，当前运行时无 `iChannel1`，已映射到 `iChannel0` 频谱采样并保持中心构图。
+  - 合成策略使用 screen blend，前景作为高亮层叠加在背景之上。
+
 ## 7. 变更记录（持续追加）
 
 - 2026-02-14
@@ -143,3 +154,4 @@
   - 记录 `McsSzB` 在业务场景下的构图修正参数（耳机左移、下移）。
   - 新增 `Starfield` Shader，来源 `https://www.shadertoy.com/view/43cGDs`，并记录背景层适配要点。
   - 合并前景来源 `https://www.shadertoy.com/view/7l2SWV`，形成完整复合版 `Starfield`。
+  - 新增 `Galaxy` Shader，来源 `https://www.shadertoy.com/view/MXXcD4` + `https://www.shadertoy.com/view/WcXSDn`，完成背景与居中前景合并。

@@ -7,6 +7,7 @@ describe('shaderRegistry', () => {
     expect(MUSIC_VISUALIZER_SHADERS.length).toBeGreaterThan(0)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'mcs-szb')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'starfield')).toBe(true)
+    expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'galaxy')).toBe(true)
   })
 
   it('resolves default shader entry', () => {
