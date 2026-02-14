@@ -77,6 +77,7 @@ import {
 } from '../src/contracts/backend'
 import { BACKEND_CHANNELS } from './channels'
 import { extractLikelyPaths, parseClipboardFileNameWBuffer } from './clipboardImportPaths'
+import { buildImportPathsDialogOptions } from './importDialogOptions'
 import {
   moveDatabaseFiles,
   normalizeAbsoluteDirectory,
@@ -94,24 +95,6 @@ import { MetadataScraperService } from './services/metadata/metadataScraperServi
 
 const MEDIA_ACCESS_FALLBACK_URL = 'data:application/octet-stream;base64,'
 const MEDIA_ACCESS_FALLBACK_TTL_MS = 60_000
-
-const AUDIO_FILE_FILTER_EXTENSIONS = ['mp3', 'flac', 'wav', 'ogg', 'm4a', 'opus', 'aac']
-const GENERIC_MEDIA_FILE_FILTER_EXTENSIONS = [
-  'jpg',
-  'jpeg',
-  'png',
-  'webp',
-  'gif',
-  'bmp',
-  'mp4',
-  'webm',
-  'mkv',
-  'mov',
-  ...AUDIO_FILE_FILTER_EXTENSIONS,
-  'zip',
-  'rar',
-  '7z',
-]
 
 export function registerBackendIpcHandlers(): void {
   const userDataPath = app.getPath('userData')
@@ -363,24 +346,7 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.pickImportPaths, async (_event, payload: unknown) => {
     const request = pickImportPathsRequestSchema.parse(payload)
-    const mode = request.mode
-    const targetMode = request.target_mode
-    const fileExtensions = targetMode === 'music' ? AUDIO_FILE_FILTER_EXTENSIONS : GENERIC_MEDIA_FILE_FILTER_EXTENSIONS
-
-    const result = await dialog.showOpenDialog({
-      title: mode === 'folders' ? '选择要导入的文件夹' : '选择要导入的文件',
-      properties:
-        mode === 'folders' ? ['openDirectory', 'multiSelections', 'dontAddToRecent'] : ['openFile', 'multiSelections', 'dontAddToRecent'],
-      filters:
-        mode === 'folders'
-          ? undefined
-          : [
-              {
-                name: '媒体文件',
-                extensions: fileExtensions,
-              },
-            ],
-    })
+    const result = await dialog.showOpenDialog(buildImportPathsDialogOptions(request.mode, request.target_mode))
 
     return pickImportPathsResponseSchema.parse({
       paths: result.canceled ? [] : result.filePaths,
