@@ -16,6 +16,7 @@ import {
   renderSettingsMainSection,
   type SettingsSection,
 } from './settings/renderSettingsMainSection'
+import { MainUiIcon } from './MainUiIcon'
 import { toScale } from './settings/settingsScale'
 
 export interface SettingsPanelProps {
@@ -487,7 +488,9 @@ function SettingsPanel({
         <div className="settings-head">
           <span className="settings-head-spacer" aria-hidden="true" />
           <h2>设置面板</h2>
-          <button type="button" onClick={onClose}>关闭</button>
+          <button className="settings-icon-btn main-icon-square-btn" type="button" aria-label="关闭" title="关闭" onClick={onClose}>
+            <MainUiIcon name="close" />
+          </button>
         </div>
 
         <div className="settings-shell">

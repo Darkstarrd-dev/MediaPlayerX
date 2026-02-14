@@ -646,7 +646,7 @@ function AppHeader({
           >
               <span className="header-btn-content">
                 <span className="header-btn-icon">
-                  <HeaderActionIcon name={metadataManageMode ? 'image' : 'metadata'} />
+                  <HeaderActionIcon name="metadata" />
                 </span>
                 <span className="header-btn-label">{metadataManageMode ? '图像模式' : '元数据管理'}</span>
               </span>
