@@ -2,6 +2,21 @@ import { useMemo } from 'react'
 
 import type { SidebarNode } from '../../types'
 
+const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
+
+function reorderImageRootNodes(nodes: SidebarNode[]): SidebarNode[] {
+  const next = [...nodes]
+  next.sort((left, right) => {
+    const leftBooklet = left.pathKey.localeCompare(MUSIC_BOOKLET_ROOT_LABEL, 'zh-CN', { sensitivity: 'base' }) === 0
+    const rightBooklet = right.pathKey.localeCompare(MUSIC_BOOKLET_ROOT_LABEL, 'zh-CN', { sensitivity: 'base' }) === 0
+    if (leftBooklet === rightBooklet) {
+      return 0
+    }
+    return leftBooklet ? 1 : -1
+  })
+  return next
+}
+
 interface UseImageSidebarBaseStateParams {
   imageTreeRaw: SidebarNode[]
   imageRootNode: SidebarNode | null
@@ -18,7 +33,7 @@ export function useImageSidebarBaseState({
 }: UseImageSidebarBaseStateParams): UseImageSidebarBaseStateResult {
   const imageTreeForSidebarNormal = useMemo(() => {
     if (!imageRootNode) {
-      return imageTreeRaw
+      return reorderImageRootNodes(imageTreeRaw)
     }
     return [imageRootNode]
   }, [imageRootNode, imageTreeRaw])

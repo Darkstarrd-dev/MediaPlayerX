@@ -1,5 +1,22 @@
 import type { ImagePackageDto, SidebarNodeDto } from '../src/contracts/backend'
 
+const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
+
+function isMusicBookletRootNode(node: SidebarNodeDto): boolean {
+  return node.path_key.localeCompare(MUSIC_BOOKLET_ROOT_LABEL, 'zh-CN', { sensitivity: 'base' }) === 0
+}
+
+function moveMusicBookletRootToEnd(nodes: SidebarNodeDto[]): void {
+  nodes.sort((left, right) => {
+    const leftBooklet = isMusicBookletRootNode(left)
+    const rightBooklet = isMusicBookletRootNode(right)
+    if (leftBooklet === rightBooklet) {
+      return 0
+    }
+    return leftBooklet ? 1 : -1
+  })
+}
+
 export function buildImageSidebarTree(
   imagePackages: ImagePackageDto[],
   imageDirectories: ImagePackageDto[],
@@ -127,5 +144,6 @@ export function buildImageSidebarTree(
   const roots = Array.from(rootMap.values())
   hydrateAggregateCounts(roots)
   sortNodes(roots)
+  moveMusicBookletRootToEnd(roots)
   return roots
 }

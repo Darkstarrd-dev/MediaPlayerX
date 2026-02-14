@@ -826,6 +826,23 @@ function sortNodes(nodes: SidebarNode[]): void {
   }
 }
 
+const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
+
+function isMusicBookletRootNode(node: SidebarNode): boolean {
+  return node.pathKey.localeCompare(MUSIC_BOOKLET_ROOT_LABEL, 'zh-CN', { sensitivity: 'base' }) === 0
+}
+
+function moveMusicBookletRootToEnd(nodes: SidebarNode[]): void {
+  nodes.sort((left, right) => {
+    const leftBooklet = isMusicBookletRootNode(left)
+    const rightBooklet = isMusicBookletRootNode(right)
+    if (leftBooklet === rightBooklet) {
+      return 0
+    }
+    return leftBooklet ? 1 : -1
+  })
+}
+
 export function buildImageSidebarTree(
   packages: ImagePackage[],
   directories: ImagePackage[],
@@ -926,6 +943,7 @@ export function buildImageSidebarTree(
   const roots = Array.from(rootMap.values())
   hydrateAggregateCounts(roots)
   sortNodes(roots)
+  moveMusicBookletRootToEnd(roots)
   return roots
 }
 
