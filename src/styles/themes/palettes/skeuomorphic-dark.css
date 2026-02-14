@@ -1,0 +1,129 @@
+:root[data-mpx-palette="skeuomorphic-dark"] {
+  color-scheme: dark;
+
+  --mpx-palette-surface: #292d32;
+  --mpx-palette-base: #1f2329;
+  --mpx-palette-accent-raw: #ff9f43;
+  --mpx-palette-text-raw: #cfcfcf;
+  --mpx-palette-shadow-color: rgba(30, 33, 37, 0.96);
+
+  --mpx-scrollbar-track-bg: #21252a;
+  --mpx-scrollbar-thumb-bg: #4d5561;
+  --mpx-scrollbar-thumb-hover-bg: #6f7988;
+
+  --mpx-range-track-bg: #26292e;
+  --mpx-range-thumb-bg: #292d32;
+  --mpx-range-thumb-border: #4a3c2e;
+
+  --mpx-checkbox-bg: var(--mpx-input-bg);
+  --mpx-checkbox-border: var(--mpx-input-border);
+  --mpx-checkbox-check: #1d2126;
+  --mpx-checkbox-checked-bg: var(--mpx-accent);
+  --mpx-checkbox-checked-border: var(--mpx-accent);
+
+  --mpx-bg-app: #1f2329;
+  --mpx-bg-workspace: #21262d;
+  --mpx-bg-panel: #292d32;
+  --mpx-bg-elevated: #2d3239;
+  --mpx-bg-hover: rgba(255, 255, 255, 0.08);
+  --mpx-bg-selected: #3a4049;
+  --mpx-bg-muted: #252a31;
+  --mpx-bg-tooltip: rgba(7, 9, 12, 0.92);
+
+  --mpx-text-1: #d5d8df;
+  --mpx-text-2: #cfcfcf;
+  --mpx-text-3: #666666;
+  --mpx-text-heading: #edeff4;
+  --mpx-text-inverse: #151922;
+
+  --mpx-border-1: #4a3c2e;
+  --mpx-border-2: #4a3c2e;
+  --mpx-border-focus: #ff9f43;
+
+  --mpx-accent: #ff9f43;
+  --mpx-accent-contrast: #1d2126;
+  --mpx-accent-soft: rgba(255, 159, 67, 0.2);
+
+  --mpx-input-bg: #252b32;
+  --mpx-input-border: #4f5867;
+  --mpx-input-text: #e0e4eb;
+  --mpx-input-focus-bg: #2a3038;
+  --mpx-input-focus-border: #ff9f43;
+  --mpx-input-readonly-bg: #20252c;
+  --mpx-input-readonly-text: #9da5b1;
+  --mpx-input-readonly-border: #464e5c;
+
+  --mpx-btn-primary-bg: #ff9f43;
+  --mpx-btn-primary-text: #1f2328;
+  --mpx-btn-secondary-bg: #2a2e35;
+  --mpx-btn-secondary-border: #4a3c2e;
+  --mpx-btn-secondary-text: #d1d4d9;
+
+  --mpx-status-danger-bg: #492e2d;
+  --mpx-status-danger-border: #87504d;
+  --mpx-status-danger-text: #ffd6d1;
+
+  --mpx-status-warning-bg: #4a3b25;
+  --mpx-status-warning-border: #937141;
+  --mpx-status-warning-text: #ffe7bf;
+
+  --mpx-status-info-bg: #243748;
+  --mpx-status-info-border: #3d627f;
+  --mpx-status-info-text: #d7ebff;
+
+  --mpx-status-success-bg: #234132;
+  --mpx-status-success-border: #3f7b5d;
+  --mpx-status-success-text: #d8f5e6;
+
+  --mpx-status-busy-bg: #4b3a24;
+  --mpx-status-busy-border: #9a7233;
+  --mpx-status-busy-text: #ffe8c2;
+
+  --mpx-status-idle-bg: #2a333d;
+  --mpx-status-idle-border: #5c7084;
+  --mpx-status-idle-text: #d5e2f0;
+
+  --mpx-header-bg: linear-gradient(125deg, #2b3036 0%, #262b31 48%, #22262c 100%);
+  --mpx-header-border: var(--mpx-border-1);
+
+  --mpx-sidebar-bullet-pending: #7f8998;
+  --mpx-sidebar-bullet-running: #46b07c;
+
+  --mpx-splitter-track-bg: linear-gradient(180deg, rgba(58, 66, 76, 0.28), rgba(58, 66, 76, 0.08));
+  --mpx-splitter-handle-bg: rgba(101, 111, 126, 0.7);
+  --mpx-splitter-handle-hover-bg: rgba(255, 159, 67, 0.86);
+
+  --mpx-card-focus-ring: rgba(255, 159, 67, 0.24);
+
+  --mpx-fullscreen-bg: #06080b;
+  --mpx-fullscreen-footer-bg: rgba(8, 10, 14, 0.9);
+
+  --mpx-video-screen-bg: linear-gradient(135deg, #1b1e24, #14171d);
+  --mpx-video-empty-bg: var(--mpx-video-screen-bg);
+  --mpx-video-empty-text: #eceff5;
+
+  --mpx-player-surface-bg: #292d32;
+  --mpx-player-surface-border: #4a3c2e;
+  --mpx-player-surface-text: #cfcfcf;
+  --mpx-player-surface-text-muted: #cfcfcf;
+  --mpx-player-hud-bg: #292d32;
+  --mpx-player-hud-border: #4a3c2e;
+  --mpx-player-hud-text: #d7d7d7;
+  --mpx-player-btn-bg: #292d32;
+  --mpx-player-btn-border: #4a3c2e;
+  --mpx-player-btn-text: #cfcfcf;
+  --mpx-player-btn-hover-bg: #292d32;
+  --mpx-player-btn-active-bg: #292d32;
+  --mpx-player-btn-active-border: #4a3c2e;
+  --mpx-player-btn-muted-text: #707988;
+
+  --mpx-skeuo-shadow-dark: #1e2125;
+  --mpx-skeuo-shadow-light: #34393f;
+  --mpx-skeuo-border-color: #4a3c2e;
+  --mpx-skeuo-inset-bg: #26292e;
+  --mpx-skeuo-accent-fill: #ff9f43;
+  --mpx-skeuo-active-icon: #ff9f43;
+
+  --mpx-shadow-panel: 0 10px 24px rgba(8, 10, 14, 0.42);
+  --mpx-shadow-popover: 0 10px 22px rgba(5, 8, 11, 0.52);
+}

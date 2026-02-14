@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 import { VideoControlIcon } from './VideoControlIcon'
 import type { AppSettings } from '../contracts/settings'
@@ -162,6 +162,14 @@ function MusicMainSection({
   }, [selectedShaderId])
 
   const clampedAudioTime = clamp(audioTime, 0, Math.max(0, audioDurationSec))
+  const audioProgressPercent = audioDurationSec > 0 ? clamp((clampedAudioTime / audioDurationSec) * 100, 0, 100) : 0
+  const musicProgressRangeStyle = {
+    '--mpx-skeuo-range-pct': `${audioProgressPercent}%`,
+  } as CSSProperties
+  const audioVolumePercent = clamp(audioMuted ? 0 : audioVolume, 0, 100)
+  const musicVolumeRangeStyle = {
+    '--mpx-skeuo-range-pct': `${audioVolumePercent}%`,
+  } as CSSProperties
 
   const manageSummary =
     activeSelectionScope === 'sidebar'
@@ -242,6 +250,7 @@ function MusicMainSection({
           max={Math.max(0, audioDurationSec)}
           min={0}
           step={0.1}
+          style={musicProgressRangeStyle}
           type="range"
           value={clampedAudioTime}
           onChange={(event) => {
@@ -287,6 +296,7 @@ function MusicMainSection({
                   max={100}
                   min={0}
                   step={1}
+                  style={musicVolumeRangeStyle}
                   type="range"
                   value={audioMuted ? 0 : audioVolume}
                   onChange={(event) => {

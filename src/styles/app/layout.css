@@ -481,6 +481,7 @@
   margin: 0;
   padding: 10px 14px;
   backdrop-filter: blur(8px);
+  box-shadow: none;
 }
 
 .fullscreen-video-controls.is-top .video-ctrl-panel {

@@ -14,6 +14,8 @@
 @import './palettes/linear-dark.css';
 @import './palettes/nord-dark.css';
 @import './palettes/rose-pine.css';
+@import './palettes/skeuomorphic-dark.css';
+@import './palettes/skeuomorphic-light.css';
 @import './palettes/solarized-dark.css';
 @import './palettes/tokyo-night.css';
 
@@ -21,3 +23,4 @@
 @import './styles/_flush.css';
 @import './styles/liquid-glass.css';
 @import './styles/neobrutalism.css';
+@import './styles/soft-skeuomorphic.css';

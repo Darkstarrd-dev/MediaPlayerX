@@ -1,7 +1,7 @@
 import {
-  listPalettes,
+  listPalettesByStyle,
   listStyles,
-  resolvePaletteIdFromPalettes,
+  resolvePaletteIdForStyle,
   resolveStyleIdFromStyles,
 } from '../../features/theme/themeRegistry'
 import type { ReadRuntimeInfoResponseDto } from '../../contracts/backend'
@@ -186,9 +186,9 @@ export function renderSettingsMainSection({
 }: RenderSettingsMainSectionParams): JSX.Element {
   if (activeSection === 'layout') {
     const styles = listStyles()
-    const palettes = listPalettes()
     const selectedStyleId = resolveStyleIdFromStyles(styleId, styles)
-    const selectedPaletteId = resolvePaletteIdFromPalettes(paletteId, palettes)
+    const palettes = listPalettesByStyle(selectedStyleId)
+    const selectedPaletteId = resolvePaletteIdForStyle(paletteId, selectedStyleId)
 
     return (
       <div className="settings-block">

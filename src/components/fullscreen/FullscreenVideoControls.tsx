@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 
 import { VideoControlIcon } from '../VideoControlIcon'
 import { videoFitModeLabel, type VideoFitMode } from '../../features/media/videoFitMode'
@@ -75,6 +75,15 @@ export function FullscreenVideoControlsShell({
     setOpenPopover(null)
   }
 
+  const progressPercent = durationSec > 0 ? Math.max(0, Math.min(100, (clampedVideoTime / durationSec) * 100)) : 0
+  const videoProgressRangeStyle = {
+    '--mpx-skeuo-range-pct': `${progressPercent}%`,
+  } as CSSProperties
+  const volumePercent = Math.max(0, Math.min(100, videoMuted ? 0 : videoVolume))
+  const videoVolumeRangeStyle = {
+    '--mpx-skeuo-range-pct': `${volumePercent}%`,
+  } as CSSProperties
+
   const openPopoverByHover = (key: VideoPopoverKey) => {
     setOpenPopover(key)
   }
@@ -88,6 +97,7 @@ export function FullscreenVideoControlsShell({
           max={Math.max(0, durationSec)}
           min={0}
           step={0.1}
+          style={videoProgressRangeStyle}
           type="range"
           value={clampedVideoTime}
           onChange={(event) => onSeekVideo(Number(event.target.value))}
@@ -119,6 +129,7 @@ export function FullscreenVideoControlsShell({
                 max={100}
                 min={0}
                 step={1}
+                style={videoVolumeRangeStyle}
                 type="range"
                 value={videoMuted ? 0 : videoVolume}
                 onChange={(event) => onChangeVideoVolume(Number(event.target.value))}

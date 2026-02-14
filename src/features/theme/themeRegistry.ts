@@ -17,6 +17,14 @@ export const DEFAULT_STYLE_ID = 'flush'
 export const DEFAULT_PALETTE_ID = 'parchment'
 export const DEFAULT_THEME_ID = DEFAULT_PALETTE_ID
 
+const STYLE_PALETTE_ALLOWLIST: Record<string, readonly string[]> = {
+  'soft-skeuomorphic': ['skeuomorphic-light', 'skeuomorphic-dark'],
+}
+
+const STYLE_DEFAULT_PALETTE_ID: Record<string, string> = {
+  'soft-skeuomorphic': 'skeuomorphic-light',
+}
+
 // Styles and palettes are loaded via styles/themes/index.css; here we only need file metadata for lists/resolution.
 const STYLE_FILES = import.meta.glob('/src/styles/themes/styles/**/*.css')
 const PALETTE_FILES = import.meta.glob('/src/styles/themes/palettes/**/*.css')
@@ -84,6 +92,10 @@ export function listStyles(): StyleInfo[] {
 }
 
 export function listPalettes(): PaletteInfo[] {
+  return listPalettesByStyle()
+}
+
+export function listPalettesByStyle(styleId?: string): PaletteInfo[] {
   const byId = new Map<string, PaletteInfo>()
 
   for (const item of [...collectInfos(PALETTE_FILES), ...collectInfos(THEME_FILES)]) {
@@ -92,7 +104,18 @@ export function listPalettes(): PaletteInfo[] {
     }
   }
 
-  return ensureDefaultOption(Array.from(byId.values()), DEFAULT_PALETTE_ID)
+  const allPalettes = ensureDefaultOption(Array.from(byId.values()), DEFAULT_PALETTE_ID)
+  if (!styleId) {
+    return allPalettes
+  }
+
+  const allowedPaletteIds = STYLE_PALETTE_ALLOWLIST[styleId]
+  if (!allowedPaletteIds || allowedPaletteIds.length === 0) {
+    return allPalettes
+  }
+
+  const filtered = allPalettes.filter((palette) => allowedPaletteIds.includes(palette.id))
+  return filtered
 }
 
 export function resolveThemeIdFromThemes(
@@ -129,4 +152,22 @@ export function resolveStyleId(styleId: string, defaultStyleId: string = DEFAULT
 
 export function resolvePaletteId(paletteId: string, defaultPaletteId: string = DEFAULT_PALETTE_ID): string {
   return resolvePaletteIdFromPalettes(paletteId, listPalettes(), defaultPaletteId)
+}
+
+export function resolvePaletteIdForStyle(
+  paletteId: string,
+  styleId: string,
+  defaultPaletteId: string = DEFAULT_PALETTE_ID,
+): string {
+  const palettes = listPalettesByStyle(styleId)
+  const styleDefaultPaletteId = STYLE_DEFAULT_PALETTE_ID[styleId] ?? defaultPaletteId
+  if (palettes.some((palette) => palette.id === paletteId)) {
+    return paletteId
+  }
+
+  if (palettes.some((palette) => palette.id === styleDefaultPaletteId)) {
+    return styleDefaultPaletteId
+  }
+
+  return resolvePaletteIdFromPalettes(paletteId, palettes, styleDefaultPaletteId)
 }

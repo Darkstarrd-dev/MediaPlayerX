@@ -4,7 +4,9 @@ import {
   DEFAULT_PALETTE_ID,
   DEFAULT_STYLE_ID,
   DEFAULT_THEME_ID,
+  listPalettesByStyle,
   resolvePaletteIdFromPalettes,
+  resolvePaletteIdForStyle,
   resolveStyleIdFromStyles,
   resolveThemeIdFromThemes,
   type PaletteInfo,
@@ -66,5 +68,23 @@ describe('resolvePaletteIdFromPalettes', () => {
 
   it('falls back to default palette when no palette preset exists', () => {
     expect(resolvePaletteIdFromPalettes('missing-palette', [])).toBe(DEFAULT_PALETTE_ID)
+  })
+})
+
+describe('listPalettesByStyle', () => {
+  it('limits soft-skeuomorphic to dedicated palettes', () => {
+    const ids = listPalettesByStyle('soft-skeuomorphic').map((item) => item.id)
+    expect(ids).toEqual(['skeuomorphic-dark', 'skeuomorphic-light'])
+  })
+
+  it('keeps unrestricted styles compatible with default palette', () => {
+    const ids = listPalettesByStyle('flush').map((item) => item.id)
+    expect(ids).toContain(DEFAULT_PALETTE_ID)
+  })
+})
+
+describe('resolvePaletteIdForStyle', () => {
+  it('falls back to style default palette when current palette is out of allowlist', () => {
+    expect(resolvePaletteIdForStyle('parchment', 'soft-skeuomorphic')).toBe('skeuomorphic-light')
   })
 })

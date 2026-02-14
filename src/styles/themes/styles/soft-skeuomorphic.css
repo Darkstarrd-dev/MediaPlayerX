@@ -1,0 +1,254 @@
+:root[data-mpx-style="soft-skeuomorphic"] {
+  --mpx-layout-padding: 10px;
+  --mpx-splitter-width: 14px;
+  --mpx-bg-body: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--mpx-palette-surface) 72%, var(--mpx-palette-base)),
+    var(--mpx-palette-base)
+  );
+
+  --mpx-panel-radius: 16px;
+  --mpx-panel-border-width: 1px;
+  --mpx-panel-border-style: solid;
+  --mpx-panel-shadow: 8px 8px 20px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent),
+    -8px -8px 20px color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-bg-elevated));
+  --mpx-panel-backdrop-filter: none;
+  --mpx-panel-transform: none;
+  --mpx-panel-transition: box-shadow 0.22s ease, transform 0.22s ease;
+  --mpx-panel-padding: 12px;
+
+  --mpx-sidebar-radius: var(--mpx-panel-radius);
+  --mpx-sidebar-border-width: var(--mpx-panel-border-width);
+  --mpx-sidebar-border-style: var(--mpx-panel-border-style);
+  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+  --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-sidebar-transform: var(--mpx-panel-transform);
+  --mpx-sidebar-transition: var(--mpx-panel-transition);
+  --mpx-sidebar-padding: 0px;
+
+  --mpx-main-radius: var(--mpx-panel-radius);
+  --mpx-main-border-width: var(--mpx-panel-border-width);
+  --mpx-main-border-style: var(--mpx-panel-border-style);
+  --mpx-main-shadow: var(--mpx-panel-shadow);
+  --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-main-transform: var(--mpx-panel-transform);
+  --mpx-main-transition: var(--mpx-panel-transition);
+  --mpx-main-padding: var(--mpx-panel-padding);
+
+  --mpx-metadata-radius: var(--mpx-panel-radius);
+  --mpx-metadata-border-width: var(--mpx-panel-border-width);
+  --mpx-metadata-border-style: var(--mpx-panel-border-style);
+  --mpx-metadata-shadow: var(--mpx-panel-shadow);
+  --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-metadata-transform: var(--mpx-panel-transform);
+  --mpx-metadata-transition: var(--mpx-panel-transition);
+  --mpx-metadata-padding: var(--mpx-panel-padding);
+
+  --mpx-header-radius: 14px;
+  --mpx-header-shadow: 6px 6px 16px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
+    -6px -6px 16px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
+  --mpx-header-margin: 10px 10px 0px;
+  --mpx-header-border-width: 1px;
+  --mpx-header-backdrop-filter: none;
+
+  --mpx-card-radius: 12px;
+  --mpx-card-shadow: 4px 4px 10px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+    -4px -4px 10px color-mix(in srgb, var(--mpx-palette-surface) 88%, var(--mpx-bg-elevated));
+  --mpx-card-border-width: 1px;
+
+  --mpx-control-radius: 8px;
+  --mpx-control-border-width: 1px;
+  --mpx-control-shadow: 3px 3px 7px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+    -3px -3px 7px color-mix(in srgb, var(--mpx-palette-surface) 88%, var(--mpx-bg-elevated));
+  --mpx-control-backdrop-filter: none;
+  --mpx-control-transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  --mpx-control-hover-transform: translateY(-1px);
+  --mpx-control-hover-shadow: 4px 4px 9px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
+    -4px -4px 9px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
+  --mpx-control-hover-backdrop-filter: none;
+  --mpx-control-active-transform: translateY(0px);
+  --mpx-control-active-shadow: inset 2px 2px 4px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
+    inset -2px -2px 4px color-mix(in srgb, var(--mpx-palette-surface) 86%, var(--mpx-bg-elevated));
+
+  --mpx-splitter-track-bg: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+    color-mix(in srgb, var(--mpx-palette-surface) 14%, transparent)
+  );
+  --mpx-splitter-handle-bg: color-mix(in srgb, var(--mpx-palette-text-raw) 16%, transparent);
+  --mpx-splitter-handle-hover-bg: color-mix(in srgb, var(--mpx-palette-accent-raw) 44%, transparent);
+
+  --mpx-bg-panel: color-mix(in srgb, var(--mpx-palette-surface) 82%, var(--mpx-palette-base));
+  --mpx-bg-elevated: color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base));
+  --mpx-border-1: color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent);
+  --mpx-header-bg: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base)),
+    color-mix(in srgb, var(--mpx-palette-surface) 70%, var(--mpx-palette-base))
+  );
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-shell:not(.fullscreen-video-controls-shell) {
+  border-radius: 8px;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-shell {
+  border-radius: 8px;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-row {
+  gap: 16px;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-group.is-left,
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-group.is-right,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-group.is-left,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-group.is-right {
+  gap: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--mpx-player-surface-bg);
+  box-shadow: inset 2px 2px 3px var(--mpx-skeuo-shadow-dark), inset -2px -2px 3px var(--mpx-skeuo-shadow-light);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-group.is-center,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-group.is-center {
+  gap: 20px;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-action-btn,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-group .video-action-btn {
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  background: var(--mpx-player-btn-bg);
+  color: var(--mpx-player-btn-text);
+  box-shadow: none;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-action-play {
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  min-height: 56px;
+  border-radius: 12px;
+  box-shadow: 2px 2px 3px var(--mpx-skeuo-shadow-dark), -2px -2px 3px var(--mpx-skeuo-shadow-light);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-action-prev,
+:root[data-mpx-style="soft-skeuomorphic"] .video-action-next {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 12px;
+  box-shadow: 2px 2px 3px var(--mpx-skeuo-shadow-dark), -2px -2px 3px var(--mpx-skeuo-shadow-light);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-group.is-center .video-action-btn:first-child,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-group.is-center .video-action-btn:last-child {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 12px;
+  box-shadow: 2px 2px 3px var(--mpx-skeuo-shadow-dark), -2px -2px 3px var(--mpx-skeuo-shadow-light);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-group.is-center .video-action-btn:nth-child(2) {
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  min-height: 56px;
+  border-radius: 12px;
+  box-shadow: 2px 2px 3px var(--mpx-skeuo-shadow-dark), -2px -2px 3px var(--mpx-skeuo-shadow-light);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-row .video-action-btn:hover,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-row .video-action-btn:hover {
+  background: var(--mpx-player-btn-hover-bg);
+  transform: none;
+  box-shadow: inherit;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-row .video-action-btn:active,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-row .video-action-btn:active {
+  background: var(--mpx-player-btn-active-bg);
+  border-color: transparent;
+  transform: none;
+  color: var(--mpx-skeuo-active-icon);
+  box-shadow: inset 3px 3px 6px var(--mpx-skeuo-shadow-dark), inset -3px -3px 6px var(--mpx-skeuo-shadow-light);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-panel {
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-popover .video-ctrl-volume-range {
+  width: 6px;
+  height: 120px;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-webkit-slider-runnable-track,
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-webkit-slider-runnable-track,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-webkit-slider-runnable-track,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-webkit-slider-runnable-track {
+  border-radius: 2px;
+  box-shadow: inset 2px 2px 4px var(--mpx-skeuo-shadow-dark), inset -1px -1px 2px var(--mpx-skeuo-shadow-light);
+  background: linear-gradient(
+    to right,
+    var(--mpx-skeuo-accent-fill) 0%,
+    var(--mpx-skeuo-accent-fill) var(--mpx-skeuo-range-pct, 0%),
+    var(--mpx-skeuo-inset-bg) var(--mpx-skeuo-range-pct, 0%),
+    var(--mpx-skeuo-inset-bg) 100%
+  );
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-webkit-slider-thumb,
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-webkit-slider-thumb,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-webkit-slider-thumb,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--mpx-skeuo-border-color);
+  border-radius: 50%;
+  box-shadow: 1px 1px 3px var(--mpx-skeuo-shadow-dark);
+  background: var(--mpx-player-surface-bg);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-moz-range-track,
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-track,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-track,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-track {
+  border-radius: 2px;
+  box-shadow: inset 2px 2px 4px var(--mpx-skeuo-shadow-dark), inset -1px -1px 2px var(--mpx-skeuo-shadow-light);
+  background: var(--mpx-skeuo-inset-bg);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-moz-range-progress,
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-progress,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-progress,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-progress {
+  border-radius: 2px;
+  background: var(--mpx-skeuo-accent-fill);
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-moz-range-thumb,
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-thumb,
+:root[data-mpx-style="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-thumb,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--mpx-skeuo-border-color);
+  border-radius: 50%;
+  box-shadow: 1px 1px 3px var(--mpx-skeuo-shadow-dark);
+  background: var(--mpx-player-surface-bg);
+}

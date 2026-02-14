@@ -1,0 +1,129 @@
+:root[data-mpx-palette="skeuomorphic-light"] {
+  color-scheme: light;
+
+  --mpx-palette-surface: #e6e7ee;
+  --mpx-palette-base: #f0f2f5;
+  --mpx-palette-accent-raw: #333333;
+  --mpx-palette-text-raw: #444444;
+  --mpx-palette-shadow-color: rgba(209, 209, 209, 0.9);
+
+  --mpx-scrollbar-track-bg: #d7dae4;
+  --mpx-scrollbar-thumb-bg: #a9b1c1;
+  --mpx-scrollbar-thumb-hover-bg: #6f7f98;
+
+  --mpx-range-track-bg: #e6e7ee;
+  --mpx-range-thumb-bg: #e6e7ee;
+  --mpx-range-thumb-border: rgba(255, 255, 255, 0.5);
+
+  --mpx-checkbox-bg: var(--mpx-input-bg);
+  --mpx-checkbox-border: var(--mpx-input-border);
+  --mpx-checkbox-check: var(--mpx-accent-contrast);
+  --mpx-checkbox-checked-bg: var(--mpx-accent);
+  --mpx-checkbox-checked-border: var(--mpx-accent);
+
+  --mpx-bg-app: #f0f2f5;
+  --mpx-bg-workspace: #eef0f4;
+  --mpx-bg-panel: #e6e7ee;
+  --mpx-bg-elevated: #edeef3;
+  --mpx-bg-hover: rgba(63, 74, 92, 0.08);
+  --mpx-bg-selected: #dce3f2;
+  --mpx-bg-muted: #e9ecf4;
+  --mpx-bg-tooltip: rgba(32, 38, 48, 0.84);
+
+  --mpx-text-1: #444444;
+  --mpx-text-2: #555555;
+  --mpx-text-3: #888888;
+  --mpx-text-heading: #3d3d3d;
+  --mpx-text-inverse: #f8f9fc;
+
+  --mpx-border-1: rgba(255, 255, 255, 0.5);
+  --mpx-border-2: rgba(255, 255, 255, 0.5);
+  --mpx-border-focus: #333333;
+
+  --mpx-accent: #333333;
+  --mpx-accent-contrast: #f1f1f1;
+  --mpx-accent-soft: rgba(51, 51, 51, 0.14);
+
+  --mpx-input-bg: #f5f7fc;
+  --mpx-input-border: #c2c9d8;
+  --mpx-input-text: #364053;
+  --mpx-input-focus-bg: #ffffff;
+  --mpx-input-focus-border: #5f7393;
+  --mpx-input-readonly-bg: #e9edf6;
+  --mpx-input-readonly-text: #6b7388;
+  --mpx-input-readonly-border: #c5ccdb;
+
+  --mpx-btn-primary-bg: #4a5f81;
+  --mpx-btn-primary-text: #f5f8ff;
+  --mpx-btn-secondary-bg: #f4f6fb;
+  --mpx-btn-secondary-border: #b7bfcd;
+  --mpx-btn-secondary-text: #3b4356;
+
+  --mpx-status-danger-bg: #f9ece9;
+  --mpx-status-danger-border: #d8a49a;
+  --mpx-status-danger-text: #6a2f26;
+
+  --mpx-status-warning-bg: #fbf3e3;
+  --mpx-status-warning-border: #d7bf8e;
+  --mpx-status-warning-text: #6a4a17;
+
+  --mpx-status-info-bg: #e8eff8;
+  --mpx-status-info-border: #aebdd4;
+  --mpx-status-info-text: #29405e;
+
+  --mpx-status-success-bg: #e8f2eb;
+  --mpx-status-success-border: #8eb89d;
+  --mpx-status-success-text: #275437;
+
+  --mpx-status-busy-bg: #fdf1df;
+  --mpx-status-busy-border: #d5aa63;
+  --mpx-status-busy-text: #6f4f1d;
+
+  --mpx-status-idle-bg: #ebeff3;
+  --mpx-status-idle-border: #9bacbf;
+  --mpx-status-idle-text: #3b4f65;
+
+  --mpx-header-bg: linear-gradient(120deg, #ebecef 0%, #f0f1f5 42%, #e3e5eb 100%);
+  --mpx-header-border: var(--mpx-border-1);
+
+  --mpx-sidebar-bullet-pending: #95a1b3;
+  --mpx-sidebar-bullet-running: #48ab76;
+
+  --mpx-splitter-track-bg: linear-gradient(180deg, rgba(162, 173, 192, 0.16), rgba(162, 173, 192, 0.04));
+  --mpx-splitter-handle-bg: rgba(137, 151, 173, 0.62);
+  --mpx-splitter-handle-hover-bg: rgba(79, 101, 138, 0.88);
+
+  --mpx-card-focus-ring: rgba(78, 101, 139, 0.2);
+
+  --mpx-fullscreen-bg: #0b0e14;
+  --mpx-fullscreen-footer-bg: rgba(10, 12, 18, 0.84);
+
+  --mpx-video-screen-bg: linear-gradient(135deg, #2b2f38, #1f232d);
+  --mpx-video-empty-bg: var(--mpx-video-screen-bg);
+  --mpx-video-empty-text: #f3f6fc;
+
+  --mpx-player-surface-bg: #e6e7ee;
+  --mpx-player-surface-border: rgba(255, 255, 255, 0.5);
+  --mpx-player-surface-text: #444444;
+  --mpx-player-surface-text-muted: #555555;
+  --mpx-player-hud-bg: #e6e7ee;
+  --mpx-player-hud-border: rgba(255, 255, 255, 0.5);
+  --mpx-player-hud-text: #454545;
+  --mpx-player-btn-bg: #e6e7ee;
+  --mpx-player-btn-border: rgba(255, 255, 255, 0.5);
+  --mpx-player-btn-text: #555555;
+  --mpx-player-btn-hover-bg: #e6e7ee;
+  --mpx-player-btn-active-bg: #e6e7ee;
+  --mpx-player-btn-active-border: rgba(255, 255, 255, 0.5);
+  --mpx-player-btn-muted-text: #8a90a2;
+
+  --mpx-skeuo-shadow-dark: #d1d1d1;
+  --mpx-skeuo-shadow-light: #ffffff;
+  --mpx-skeuo-border-color: rgba(255, 255, 255, 0.5);
+  --mpx-skeuo-inset-bg: #e6e7ee;
+  --mpx-skeuo-accent-fill: #333333;
+  --mpx-skeuo-active-icon: currentColor;
+
+  --mpx-shadow-panel: 0 8px 20px rgba(138, 145, 161, 0.22);
+  --mpx-shadow-popover: 0 10px 18px rgba(127, 135, 150, 0.22);
+}

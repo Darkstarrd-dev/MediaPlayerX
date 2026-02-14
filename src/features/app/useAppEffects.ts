@@ -1,7 +1,7 @@
 import { useEffect, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
-import { resolvePaletteId, resolveStyleId } from '../theme/themeRegistry'
+import { resolvePaletteIdForStyle, resolveStyleId } from '../theme/themeRegistry'
 import type { AudioItem, BrowserMode, FocusedImageRef, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import { clamp } from '../../utils/ui'
 
@@ -504,7 +504,7 @@ export function useAppEffects({
 
   useEffect(() => {
     const nextStyleId = resolveStyleId(styleId)
-    const nextPaletteId = resolvePaletteId(paletteId)
+    const nextPaletteId = resolvePaletteIdForStyle(paletteId, nextStyleId)
     const nextThemeId = nextPaletteId
 
     if (nextStyleId !== styleId || nextPaletteId !== paletteId || nextThemeId !== themeId) {

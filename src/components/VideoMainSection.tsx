@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { VideoControlIcon } from './VideoControlIcon'
 import type { VideoItem } from '../types'
@@ -118,6 +118,14 @@ function VideoMainSection({
   const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false)
   const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
   const clampedTime = Math.min(videoTime, Math.max(0, durationSec))
+  const progressPercent = durationSec > 0 ? clamp((clampedTime / durationSec) * 100, 0, 100) : 0
+  const videoProgressRangeStyle = {
+    '--mpx-skeuo-range-pct': `${progressPercent}%`,
+  } as CSSProperties
+  const volumePercent = clamp(videoMuted ? 0 : videoVolume, 0, 100)
+  const videoVolumeRangeStyle = {
+    '--mpx-skeuo-range-pct': `${volumePercent}%`,
+  } as CSSProperties
   const showCover = Boolean(videoSourceUrl && !videoPlaying && !hasPlayedCurrentSource)
   const showVideoFrame = Boolean(videoSourceUrl && (videoPlaying || hasPlayedCurrentSource))
   const videoScreenBackground = 'var(--mpx-bg-elevated)'
@@ -307,6 +315,7 @@ function VideoMainSection({
             max={durationSec}
             min={0}
             step={0.1}
+            style={videoProgressRangeStyle}
             type="range"
             value={clampedTime}
             onChange={(event) => onSeekVideo(Number(event.target.value))}
@@ -338,6 +347,7 @@ function VideoMainSection({
                   max={100}
                   min={0}
                   step={1}
+                  style={videoVolumeRangeStyle}
                   type="range"
                   value={videoMuted ? 0 : videoVolume}
                   onChange={(event) => onChangeVolume(Number(event.target.value))}
