@@ -84,10 +84,10 @@
   --mpx-header-status-btn-min-width: var(--mpx-header-btn-size);
   --mpx-header-group-gap: 22px;
   --mpx-header-item-gap: 8px;
-  --mpx-header-group-modes-width: 360px;
+  --mpx-header-group-modes-width: var(--mpx-header-modes-wrap-width);
   --mpx-header-group-search-width: 180px;
   --mpx-header-music-actions-reserve: calc(var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px);
-  --mpx-header-modes-wrap-width: calc(var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 24px);
+  --mpx-header-modes-wrap-width: calc(var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 6px);
 
   --mpx-splitter-track-bg: linear-gradient(
     180deg,

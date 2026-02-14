@@ -582,7 +582,7 @@
   padding: 0;
   transform: rotate(90deg);
   transform-origin: center;
-  direction: rtl;
+  direction: ltr;
 }
 
 .window-controls {

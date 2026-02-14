@@ -55,6 +55,24 @@ const ICON_PATHS: Record<VideoControlIconName, string> = {
 }
 
 export function VideoControlIcon({ name, className }: VideoControlIconProps) {
+  if (name === 'pause') {
+    return (
+      <svg
+        aria-hidden="true"
+        className={className ?? 'video-action-icon'}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="6" y="4" width="4" height="16" />
+        <rect x="14" y="4" width="4" height="16" />
+      </svg>
+    )
+  }
+
   return (
     <svg aria-hidden="true" className={className ?? 'video-action-icon'} viewBox="0 0 24 24">
       <path d={ICON_PATHS[name]} />

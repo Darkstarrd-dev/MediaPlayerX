@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
-import { VideoControlIcon } from './VideoControlIcon'
+import { MusicControlIcon, type MusicControlIconName } from './MusicControlIcon'
 import type { AppSettings } from '../contracts/settings'
 import type { AudioItem, MusicLoopMode } from '../types'
+import {
+  emitMusicPlaybackState,
+  onMusicPlaybackControl,
+} from '../features/media/musicPlaybackBridge'
 import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from '../features/music-visualizer/shaderRegistry'
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp, formatSeconds } from '../utils/ui'
@@ -47,7 +51,10 @@ interface MusicMainSectionProps {
   onCycleMusicLoopMode: () => void
 }
 
-function resolveLoopModeIconName(mode: MusicLoopMode): 'repeatOne' | 'repeatFolder' | 'repeatAlbum' | 'repeatLibrary' {
+function resolveLoopModeIconName(mode: MusicLoopMode): Extract<
+  MusicControlIconName,
+  'repeatOne' | 'repeatFolder' | 'repeatAlbum' | 'repeatLibrary'
+> {
   if (mode === 'single') {
     return 'repeatOne'
   }
@@ -237,6 +244,25 @@ function MusicMainSection({
         ? `已选媒体条目: ${imageSelectedCount}`
         : '未选择条目'
 
+  const toggleAudioPlayback = useCallback(() => {
+    if (!focusedAudioSrc) {
+      return
+    }
+    setAudioPlaying((value) => !value)
+  }, [focusedAudioSrc])
+
+  const stopAudioPlayback = useCallback(() => {
+    setAudioPlaying(false)
+    setAudioTime(0)
+    emitMusicPlaybackState({ playing: false })
+    const audio = audioRef.current
+    if (!audio) {
+      return
+    }
+    audio.pause()
+    audio.currentTime = 0
+  }, [])
+
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) {
@@ -295,6 +321,26 @@ function MusicMainSection({
     }
     void resumeAudioAnalyser()
   }, [audioPlaying, resumeAudioAnalyser])
+
+  useEffect(() => {
+    emitMusicPlaybackState({ playing: audioPlaying })
+  }, [audioPlaying])
+
+  useEffect(() => {
+    return () => {
+      emitMusicPlaybackState({ playing: false })
+    }
+  }, [])
+
+  useEffect(() => {
+    return onMusicPlaybackControl((action) => {
+      if (action === 'toggle-playback') {
+        toggleAudioPlayback()
+        return
+      }
+      stopAudioPlayback()
+    })
+  }, [stopAudioPlayback, toggleAudioPlayback])
 
   useEffect(() => {
     setRenderLongEdgeDraft(String(musicVisualizerRenderLongEdgePx))
@@ -451,7 +497,7 @@ function MusicMainSection({
               type="button"
               onClick={() => setAudioMuted((value) => !value)}
             >
-              <VideoControlIcon name={audioMuted ? 'volumeMuted' : 'volume'} />
+              <MusicControlIcon name={audioMuted ? 'volumeMuted' : 'volume'} />
             </button>
 
             <div
@@ -493,7 +539,7 @@ function MusicMainSection({
               className="video-action-btn"
               type="button"
             >
-              <VideoControlIcon name="shader" />
+              <MusicControlIcon name="shaderList" />
             </button>
             <div className="music-ctrl-panel is-shader" hidden={openPopover !== 'shader'} id="music-main-popover-shader" role="dialog">
               <span className="music-ctrl-panel-title">Shader</span>
@@ -533,7 +579,7 @@ function MusicMainSection({
               className="video-action-btn"
               type="button"
             >
-              <VideoControlIcon name="settings" />
+              <MusicControlIcon name="shaderParameter" />
             </button>
             <div
               className="music-ctrl-panel is-shader is-shader-settings"
@@ -688,24 +734,19 @@ function MusicMainSection({
 
         <div className="music-controls-group is-center">
           <button aria-label="上一个" className="video-action-btn" disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
-            <VideoControlIcon name="prev" />
+            <MusicControlIcon name="prev" />
           </button>
           <button
             aria-label={audioPlaying ? '暂停' : '播放'}
             className="video-action-btn"
             disabled={!focusedAudioSrc}
             type="button"
-            onClick={() => {
-              if (!focusedAudioSrc) {
-                return
-              }
-              setAudioPlaying((value) => !value)
-            }}
+            onClick={toggleAudioPlayback}
           >
-            <VideoControlIcon name={audioPlaying ? 'pause' : 'play'} />
+            <MusicControlIcon name={audioPlaying ? 'pause' : 'play'} />
           </button>
           <button aria-label="下一个" className="video-action-btn" disabled={!canNextAudio} type="button" onClick={onNextAudio}>
-            <VideoControlIcon name="next" />
+            <MusicControlIcon name="next" />
           </button>
         </div>
 
@@ -717,7 +758,7 @@ function MusicMainSection({
             type="button"
             onClick={onToggleFullscreen}
           >
-            <VideoControlIcon name="fullscreen" />
+            <MusicControlIcon name={fullscreenActive ? 'fullscreenCompress' : 'fullscreenExpand'} />
           </button>
           <button
             aria-label={`循环模式：${musicLoopModeLabel}`}
@@ -726,7 +767,7 @@ function MusicMainSection({
             type="button"
             onClick={onCycleMusicLoopMode}
           >
-            <VideoControlIcon name={resolveLoopModeIconName(musicLoopMode)} />
+            <MusicControlIcon name={resolveLoopModeIconName(musicLoopMode)} />
           </button>
         </div>
       </div>

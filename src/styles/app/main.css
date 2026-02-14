@@ -926,6 +926,12 @@
   display: block;
 }
 
+.video-action-btn .music-action-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
 .video-controls-row .video-action-btn:hover {
   background: var(--mpx-player-btn-hover-bg);
 }

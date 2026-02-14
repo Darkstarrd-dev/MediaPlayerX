@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react'
 
+import {
+  dispatchMusicPlaybackControl,
+  onMusicPlaybackState,
+} from '../features/media/musicPlaybackBridge'
 import type { BrowserMode } from '../types'
 
 type HeaderIconName =
@@ -131,8 +135,13 @@ const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
     </>
   ),
   play: <polygon points="5 3 19 12 5 21 5 3" />,
-  pause: <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" stroke="none" />,
-  stop: <rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none" />,
+  pause: (
+    <>
+      <rect x="6" y="4" width="4" height="16" />
+      <rect x="14" y="4" width="4" height="16" />
+    </>
+  ),
+  stop: <rect x="6" y="6" width="12" height="12" rx="1" />,
   windowMinimize: <path d="M5 19h14" />,
   windowMaximize: <rect x="3" y="3" width="18" height="18" rx="2" />,
   windowRestore: (
@@ -363,6 +372,12 @@ function AppHeader({
     }
   }, [])
 
+  useEffect(() => {
+    return onMusicPlaybackState((detail) => {
+      setMusicQuickPlaying(detail.playing)
+    })
+  }, [])
+
   return (
     <header className="app-header" style={{ height: `${headerHeight}px` }}>
       <div className="header-left">
@@ -480,7 +495,7 @@ function AppHeader({
                   className="mode-action-btn"
                   type="button"
                   onClick={() => {
-                    setMusicQuickPlaying((value) => !value)
+                    dispatchMusicPlaybackControl('toggle-playback')
                   }}
                 >
                   <HeaderActionIcon name={musicQuickPlaying ? 'pause' : 'play'} />
@@ -490,7 +505,7 @@ function AppHeader({
                   className="mode-action-btn"
                   type="button"
                   onClick={() => {
-                    setMusicQuickPlaying(false)
+                    dispatchMusicPlaybackControl('stop')
                   }}
                 >
                   <HeaderActionIcon name="stop" />
