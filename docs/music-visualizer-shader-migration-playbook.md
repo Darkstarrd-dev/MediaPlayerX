@@ -288,7 +288,7 @@
 - 接入定位：组织纹理隧道背景 + 环形音频柱前景（多 Pass 复合）。
 - 适配说明：
   - 背景原版依赖 `iMouse`，运行时改为 `iAudioLevel`/`iAudioBeat` 驱动时间偏移。
-  - 背景原版依赖外部纹理高度场，当前版本使用运行时程序化纹理 `tissue-noise` 近似。
+  - 背景 `iChannel0` 贴图使用本地纹理 `src/assets/iChannel1.png`，避免程序化近似导致的复杂度损失与接缝放大。
   - 前景保留原始环形柱结构，输入来自 `iChannel0` 音频纹理。
   - 最终合成 pass 采用 screen blend，前景作为高亮层覆盖背景。
 

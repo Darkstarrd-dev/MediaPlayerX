@@ -8,7 +8,11 @@ export type MusicVisualizerShaderTextureFilter = 'linear' | 'nearest'
 
 export type MusicVisualizerShaderTextureWrap = 'repeat' | 'clamp'
 
-export type MusicVisualizerShaderTexturePreset = 'noise-rg' | 'noise-rgb' | 'noise-rgb-seamless' | 'rain-bg'
+export type MusicVisualizerShaderTexturePreset =
+  | 'noise-rg'
+  | 'noise-rgb'
+  | 'noise-rgb-seamless'
+  | 'rain-bg'
 
 export interface MusicVisualizerShaderTextureDefinition {
   id: string

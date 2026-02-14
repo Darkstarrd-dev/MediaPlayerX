@@ -1,3 +1,4 @@
+import tissueIChannel0 from '../../../assets/iChannel1.png'
 import type { MusicVisualizerShaderDefinition } from '../types'
 
 const BACKGROUND_SOURCE = String.raw`#define HSAMPLES 128
@@ -38,6 +39,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     col *= 1.0 - textureLod(iChannel0, uv.xy, 0.0).xyz;
     col = mix(col * 1.2, 1.5 * textureLod(iChannel0, vec2(uv.x * 0.4, 0.1 * sin(2.0 * uv.y * 3.1316)), 0.0).yzx, 1.0 - 0.7 * col);
     col = mix(col, vec3(0.2, 0.1, 0.1), 0.5 - 0.5 * smoothstep(0.0, 0.3, 0.3 - 0.8 * uv.z + texture(iChannel0, 2.0 * uv.xy + uv.z).x));
+    col *= mix(vec3(1.10, 0.86, 1.05), vec3(0.70, 0.36, 0.50), smoothstep(0.12, 1.0, uv.z));
     col *= 1.0 - 1.3 * uv.z;
     col *= 1.3 - 0.2 * dif;
     col *= exp(-0.35 / (0.0001 + r.x));
@@ -46,8 +48,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
   }
 
   tot /= float(MSAMPLES);
-  tot.x += 0.05;
-  tot = 1.05 * pow(tot, vec3(0.6, 1.0, 1.0));
+  tot.x += 0.06;
+  tot = 1.08 * pow(tot, vec3(0.58, 0.90, 0.86));
+  tot *= vec3(1.16, 0.84, 0.98);
 
   fragColor = vec4(tot, 1.0);
 }
@@ -121,9 +124,10 @@ export const SHADER: MusicVisualizerShaderDefinition = {
     textures: [
       {
         id: 'tissue-noise',
-        preset: 'noise-rgb-seamless',
+        preset: 'noise-rgb',
         width: 1024,
         height: 1024,
+        sourceUrl: tissueIChannel0,
         filter: 'linear',
         wrap: 'repeat',
         seed: 71,
