@@ -47,6 +47,7 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     thumbnailQuality: settings.thumbnailQuality,
     thumbnailWidth: settings.thumbnailWidth,
     musicVisualizerRenderLongEdgePx: settings.musicVisualizerRenderLongEdgePx,
+    musicVisualizerFpsCap: settings.musicVisualizerFpsCap,
     musicVisualizerShowFps: settings.musicVisualizerShowFps,
     musicVisualizerRenderer: settings.musicVisualizerRenderer,
     proxyServer: settings.proxyServer,

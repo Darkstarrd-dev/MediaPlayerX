@@ -28,6 +28,7 @@ describe('buildSettingsPanelProps', () => {
       thumbnailQuality: 40,
       thumbnailWidth: 512,
       musicVisualizerRenderLongEdgePx: 1920,
+      musicVisualizerFpsCap: 120,
       musicVisualizerShowFps: true,
       musicVisualizerRenderer: 'cpu',
       proxyServer: '',
@@ -65,15 +66,18 @@ describe('buildSettingsPanelProps', () => {
     })
 
     expect(props.musicVisualizerRenderLongEdgePx).toBe(1920)
+    expect(props.musicVisualizerFpsCap).toBe(120)
     expect(props.musicVisualizerShowFps).toBe(true)
     expect(props.musicVisualizerRenderer).toBe('cpu')
 
     props.onMusicVisualizerRenderLongEdgePxChange(1280)
+    props.onMusicVisualizerFpsCapChange(30)
     props.onMusicVisualizerShowFpsChange(false)
     props.onMusicVisualizerRendererChange('gpu')
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { musicVisualizerRenderLongEdgePx: 1280 })
-    expect(updateSettings).toHaveBeenNthCalledWith(2, { musicVisualizerShowFps: false })
-    expect(updateSettings).toHaveBeenNthCalledWith(3, { musicVisualizerRenderer: 'gpu' })
+    expect(updateSettings).toHaveBeenNthCalledWith(2, { musicVisualizerFpsCap: 30 })
+    expect(updateSettings).toHaveBeenNthCalledWith(3, { musicVisualizerShowFps: false })
+    expect(updateSettings).toHaveBeenNthCalledWith(4, { musicVisualizerRenderer: 'gpu' })
   })
 })

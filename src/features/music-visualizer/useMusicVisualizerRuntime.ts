@@ -9,6 +9,8 @@ import { WebglMusicVisualizerRenderer } from './webglRenderer'
 const MIN_RENDER_LONG_EDGE = 240
 const MAX_RENDER_LONG_EDGE = 4096
 const STATS_UPDATE_INTERVAL_MS = 240
+const MIN_SHADER_RENDER_SCALE = 0.25
+const MAX_SHADER_RENDER_SCALE = 1
 
 interface UseMusicVisualizerRuntimeParams {
   canvasRef: RefObject<HTMLCanvasElement | null>
@@ -16,6 +18,7 @@ interface UseMusicVisualizerRuntimeParams {
   active: boolean
   preferredRenderer: MusicVisualizerRendererMode
   renderLongEdgePx: number
+  fpsCap: 30 | 60 | 120
   selectedShaderId: string | null
 }
 
@@ -59,6 +62,7 @@ export function useMusicVisualizerRuntime({
   active,
   preferredRenderer,
   renderLongEdgePx,
+  fpsCap,
   selectedShaderId,
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
@@ -114,6 +118,9 @@ export function useMusicVisualizerRuntime({
       return
     }
 
+    const shaderRenderScale = Math.max(MIN_SHADER_RENDER_SCALE, Math.min(MAX_SHADER_RENDER_SCALE, shader.renderScale ?? 1))
+    const minFrameIntervalMs = 1000 / fpsCap
+
     const createRenderer = (mode: MusicVisualizerRendererMode): MusicVisualizerRenderer => {
       if (mode === 'gpu') {
         const probeCanvas = document.createElement('canvas')
@@ -129,7 +136,7 @@ export function useMusicVisualizerRuntime({
       const probe2dCanvas = document.createElement('canvas')
       const hasWebgl2 = Boolean(probeWebglCanvas.getContext('webgl2'))
       const hasCanvas2d = Boolean(probe2dCanvas.getContext('2d'))
-      return `shader=${shader.id}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
+      return `shader=${shader.id}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${fpsCap}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
     }
 
     const runtimeProbeInfo = resolveRuntimeProbeInfo()
@@ -175,16 +182,23 @@ export function useMusicVisualizerRuntime({
     let statsFrameCount = 0
     let latestFrameMs = 0
     let lastAnalyserError: string | null = null
+    let lastRenderAt = -Infinity
 
     const renderLoop = (now: number) => {
       if (disposed) {
         return
       }
 
+      if (now - lastRenderAt < minFrameIntervalMs) {
+        animationFrameId = window.requestAnimationFrame(renderLoop)
+        return
+      }
+      lastRenderAt = now
+
       const containerSize = resolveContainerSize(canvas)
       const containerWidth = containerSize.width
       const containerHeight = containerSize.height
-      const renderSize = resolveRenderSize(containerWidth, containerHeight, renderLongEdgePx)
+      const renderSize = resolveRenderSize(containerWidth, containerHeight, renderLongEdgePx * shaderRenderScale)
 
       canvas.style.width = '100%'
       canvas.style.height = '100%'
@@ -243,7 +257,7 @@ export function useMusicVisualizerRuntime({
       window.cancelAnimationFrame(animationFrameId)
       renderer?.dispose()
     }
-  }, [active, audioRef, canvasRef, preferredRenderer, renderLongEdgePx, shader])
+  }, [active, audioRef, canvasRef, fpsCap, preferredRenderer, renderLongEdgePx, shader])
 
   return {
     stats,

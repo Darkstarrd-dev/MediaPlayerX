@@ -46,6 +46,7 @@ interface RenderSettingsMainSectionParams {
   thumbnailQuality: number
   thumbnailWidthInputValue: string
   musicVisualizerRenderLongEdgeInputValue: string
+  musicVisualizerFpsCap: 30 | 60 | 120
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
@@ -93,6 +94,7 @@ interface RenderSettingsMainSectionParams {
   onMusicVisualizerRenderLongEdgeInputChange: (value: string) => void
   onMusicVisualizerRenderLongEdgeInputBlur: () => void
   onMusicVisualizerRenderLongEdgeInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
+  onMusicVisualizerFpsCapChange: (value: 30 | 60 | 120) => void
   onMusicVisualizerShowFpsChange: (value: boolean) => void
   onMusicVisualizerRendererChange: (value: 'gpu' | 'cpu') => void
   onProxyServerChange: (value: string) => void
@@ -138,6 +140,7 @@ export function renderSettingsMainSection({
   thumbnailQuality,
   thumbnailWidthInputValue,
   musicVisualizerRenderLongEdgeInputValue,
+  musicVisualizerFpsCap,
   musicVisualizerShowFps,
   musicVisualizerRenderer,
   proxyServer,
@@ -185,6 +188,7 @@ export function renderSettingsMainSection({
   onMusicVisualizerRenderLongEdgeInputChange,
   onMusicVisualizerRenderLongEdgeInputBlur,
   onMusicVisualizerRenderLongEdgeInputKeyDown,
+  onMusicVisualizerFpsCapChange,
   onMusicVisualizerShowFpsChange,
   onMusicVisualizerRendererChange,
   onProxyServerChange,
@@ -413,6 +417,14 @@ export function renderSettingsMainSection({
           <label className="settings-toggle-row">
             <span>显示 FPS 调试信息</span>
             <input type="checkbox" checked={musicVisualizerShowFps} onChange={(event) => onMusicVisualizerShowFpsChange(event.target.checked)} />
+          </label>
+          <label>
+            渲染帧率上限
+            <select value={musicVisualizerFpsCap} onChange={(event) => onMusicVisualizerFpsCapChange(Number(event.target.value) as 30 | 60 | 120)}>
+              <option value={30}>30 FPS</option>
+              <option value={60}>60 FPS</option>
+              <option value={120}>120 FPS</option>
+            </select>
           </label>
           <label>
             渲染后端

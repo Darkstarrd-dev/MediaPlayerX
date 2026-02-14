@@ -38,6 +38,7 @@ interface MusicMainSectionProps {
   fullscreenActive: boolean
   onToggleFullscreen: () => void
   musicVisualizerRenderLongEdgePx: number
+  musicVisualizerFpsCap: 30 | 60 | 120
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   onPrevAudio: () => void
@@ -88,6 +89,7 @@ function MusicMainSection({
   fullscreenActive,
   onToggleFullscreen,
   musicVisualizerRenderLongEdgePx,
+  musicVisualizerFpsCap,
   musicVisualizerShowFps,
   musicVisualizerRenderer,
   onPrevAudio,
@@ -111,6 +113,7 @@ function MusicMainSection({
     active,
     preferredRenderer: musicVisualizerRenderer,
     renderLongEdgePx: musicVisualizerRenderLongEdgePx,
+    fpsCap: musicVisualizerFpsCap,
     selectedShaderId,
   })
 
@@ -435,6 +438,7 @@ function MusicMainSection({
                 <span>{`FPS ${visualizerStats.fps.toFixed(1)} | ${visualizerStats.frameMs.toFixed(2)}ms`}</span>
                 <span>{`Render ${visualizerStats.renderWidth} x ${visualizerStats.renderHeight}`}</span>
                 <span>{`TargetLongEdge ${musicVisualizerRenderLongEdgePx}`}</span>
+                <span>{`FPS Cap ${musicVisualizerFpsCap}`}</span>
                 <span>{`Backend ${visualizerStats.backend.toUpperCase()}`}</span>
                 <span>{`Shader ${visualizerStats.shaderId}`}</span>
                 <span>{visualizerStats.rendererLabel}</span>

@@ -22,6 +22,7 @@ interface BuildSettingsPanelPropsParams {
   thumbnailQuality: number
   thumbnailWidth: number
   musicVisualizerRenderLongEdgePx: number
+  musicVisualizerFpsCap: 30 | 60 | 120
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
@@ -80,6 +81,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailQuality: params.thumbnailQuality,
     thumbnailWidth: params.thumbnailWidth,
     musicVisualizerRenderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
+    musicVisualizerFpsCap: params.musicVisualizerFpsCap,
     musicVisualizerShowFps: params.musicVisualizerShowFps,
     musicVisualizerRenderer: params.musicVisualizerRenderer,
     proxyServer: params.proxyServer,
@@ -127,6 +129,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
     onMusicVisualizerRenderLongEdgePxChange: (value) => params.updateSettings({ musicVisualizerRenderLongEdgePx: value }),
+    onMusicVisualizerFpsCapChange: (value) => params.updateSettings({ musicVisualizerFpsCap: value }),
     onMusicVisualizerShowFpsChange: (value) => params.updateSettings({ musicVisualizerShowFps: value }),
     onMusicVisualizerRendererChange: (value) => params.updateSettings({ musicVisualizerRenderer: value }),
     onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),

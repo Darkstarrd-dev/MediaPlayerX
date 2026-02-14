@@ -44,6 +44,10 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.musicVisualizerRenderLongEdgePx
   }
 
+  if (next.musicVisualizerFpsCap !== 30 && next.musicVisualizerFpsCap !== 60 && next.musicVisualizerFpsCap !== 120 && 'musicVisualizerFpsCap' in next) {
+    delete next.musicVisualizerFpsCap
+  }
+
   if (typeof next.musicVisualizerShowFps !== 'boolean' && 'musicVisualizerShowFps' in next) {
     delete next.musicVisualizerShowFps
   }

@@ -36,6 +36,7 @@ interface BuildMusicMainSectionPropsParams {
   setMusicLoopMode: Dispatch<SetStateAction<MusicLoopMode>>
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   musicVisualizerRenderLongEdgePx: number
+  musicVisualizerFpsCap: 30 | 60 | 120
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   updateSettings: (patch: Partial<AppSettings>) => void
@@ -194,6 +195,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
       params.setFullscreenActiveWithAutoStop(!params.fullscreenActive)
     },
     musicVisualizerRenderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
+    musicVisualizerFpsCap: params.musicVisualizerFpsCap,
     musicVisualizerShowFps: params.musicVisualizerShowFps,
     musicVisualizerRenderer: params.musicVisualizerRenderer,
     onPrevAudio: () => {

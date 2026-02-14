@@ -60,6 +60,7 @@ function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMa
       fullscreenActive={false}
       onToggleFullscreen={vi.fn()}
       musicVisualizerRenderLongEdgePx={1280}
+      musicVisualizerFpsCap={60}
       musicVisualizerShowFps={false}
       musicVisualizerRenderer="gpu"
       onPrevAudio={vi.fn()}
@@ -167,6 +168,7 @@ describe('MusicMainSection', () => {
         fullscreenActive={false}
         onToggleFullscreen={vi.fn()}
         musicVisualizerRenderLongEdgePx={1280}
+        musicVisualizerFpsCap={60}
         musicVisualizerShowFps={false}
         musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
@@ -208,6 +210,7 @@ describe('MusicMainSection', () => {
         fullscreenActive={false}
         onToggleFullscreen={vi.fn()}
         musicVisualizerRenderLongEdgePx={1280}
+        musicVisualizerFpsCap={60}
         musicVisualizerShowFps={false}
         musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
@@ -256,6 +259,7 @@ describe('MusicMainSection', () => {
         fullscreenActive={false}
         onToggleFullscreen={vi.fn()}
         musicVisualizerRenderLongEdgePx={1280}
+        musicVisualizerFpsCap={60}
         musicVisualizerShowFps={false}
         musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
@@ -299,6 +303,7 @@ describe('MusicMainSection', () => {
       fullscreenActive: false,
       onToggleFullscreen: vi.fn(),
       musicVisualizerRenderLongEdgePx: 1280,
+      musicVisualizerFpsCap: 60,
       musicVisualizerShowFps: false,
       musicVisualizerRenderer: 'gpu',
       onPrevAudio: vi.fn(),
@@ -345,6 +350,7 @@ describe('MusicMainSection', () => {
     expect(screen.getByRole('button', { name: 'Starfield' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Galaxy' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Nebula' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Voxel' })).toBeInTheDocument()
 
     const controlsShell = container.querySelector('.music-controls-shell') as HTMLElement
     fireEvent.mouseLeave(controlsShell)
@@ -353,5 +359,6 @@ describe('MusicMainSection', () => {
     expect(screen.queryByRole('button', { name: 'Starfield' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Galaxy' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Nebula' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Voxel' })).toBeNull()
   })
 })

@@ -9,6 +9,7 @@ describe('shaderRegistry', () => {
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'starfield')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'galaxy')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'nebula')).toBe(true)
+    expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'voxel')).toBe(true)
   })
 
   it('resolves default shader entry', () => {

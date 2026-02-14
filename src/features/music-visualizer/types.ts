@@ -5,6 +5,7 @@ export interface MusicVisualizerShaderDefinition {
   label: string
   fragmentSource: string
   defaultEntry?: boolean
+  renderScale?: number
 }
 
 export interface MusicVisualizerFrameInput {

@@ -1470,6 +1470,7 @@ export function useAppWorkspaceProps({
     setMusicLoopMode,
     setFullscreenActiveWithAutoStop,
     musicVisualizerRenderLongEdgePx: appSettings.musicVisualizerRenderLongEdgePx,
+    musicVisualizerFpsCap: appSettings.musicVisualizerFpsCap,
     musicVisualizerShowFps: appSettings.musicVisualizerShowFps,
     musicVisualizerRenderer: appSettings.musicVisualizerRenderer,
     updateSettings: appSettings.updateSettings,

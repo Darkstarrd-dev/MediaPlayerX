@@ -40,6 +40,7 @@ export function useAppSettingsStore() {
       thumbnailQuality: state.thumbnailQuality,
       thumbnailWidth: state.thumbnailWidth,
       musicVisualizerRenderLongEdgePx: state.musicVisualizerRenderLongEdgePx,
+      musicVisualizerFpsCap: state.musicVisualizerFpsCap,
       musicVisualizerShowFps: state.musicVisualizerShowFps,
       musicVisualizerRenderer: state.musicVisualizerRenderer,
       proxyServer: state.proxyServer,

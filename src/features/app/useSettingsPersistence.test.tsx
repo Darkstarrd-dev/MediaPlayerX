@@ -99,6 +99,7 @@ describe('useSettingsPersistence', () => {
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
         musicVisualizerRenderLongEdgePx: 99999,
+        musicVisualizerFpsCap: 75,
         musicVisualizerShowFps: 'true',
         musicVisualizerRenderer: 'metal',
       }),
@@ -121,6 +122,7 @@ describe('useSettingsPersistence', () => {
 
     const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<string, unknown>
     expect(hydrationPatch.musicVisualizerRenderLongEdgePx).toBe(4096)
+    expect(hydrationPatch).not.toHaveProperty('musicVisualizerFpsCap')
     expect(hydrationPatch).not.toHaveProperty('musicVisualizerShowFps')
     expect(hydrationPatch).not.toHaveProperty('musicVisualizerRenderer')
   })

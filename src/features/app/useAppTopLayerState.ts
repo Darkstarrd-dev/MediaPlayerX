@@ -618,6 +618,7 @@ export function useAppTopLayerState({
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailWidth: appSettings.thumbnailWidth,
     musicVisualizerRenderLongEdgePx: appSettings.musicVisualizerRenderLongEdgePx,
+    musicVisualizerFpsCap: appSettings.musicVisualizerFpsCap,
     musicVisualizerShowFps: appSettings.musicVisualizerShowFps,
     musicVisualizerRenderer: appSettings.musicVisualizerRenderer,
     proxyServer: appSettings.proxyServer,
