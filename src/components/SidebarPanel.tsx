@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 
 import type { BrowserMode, SidebarNode } from '../types'
 
@@ -15,6 +15,33 @@ function resolveFirstAudioId(node: SidebarNode): string | null {
   }
 
   return null
+}
+
+function canFolderCollapse(mode: BrowserMode, node: SidebarNode, imageNodeType: SidebarNode['imageNodeType']): boolean {
+  if (node.kind !== 'folder') {
+    return false
+  }
+  if (mode === 'image' && imageNodeType !== 'folder') {
+    return false
+  }
+  return node.children.length > 0
+}
+
+function collectCollapsibleFolderIds(mode: BrowserMode, nodes: SidebarNode[]): Set<string> {
+  const ids = new Set<string>()
+  const walk = (currentNodes: SidebarNode[]) => {
+    for (const node of currentNodes) {
+      const imageNodeType = node.imageNodeType ?? (node.kind === 'folder' ? 'folder' : 'package')
+      if (canFolderCollapse(mode, node, imageNodeType)) {
+        ids.add(node.id)
+      }
+      if (node.children.length > 0) {
+        walk(node.children)
+      }
+    }
+  }
+  walk(nodes)
+  return ids
 }
 
 interface SidebarPanelProps {
@@ -105,6 +132,25 @@ function SidebarPanel({
   onToggleManageNode,
 }: SidebarPanelProps) {
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>()
+  const [collapsedImageFolderNodeIds, setCollapsedImageFolderNodeIds] = useState<Set<string>>(new Set())
+  const activeTreeNodes = mode === 'image' ? imageTreeNodes : mode === 'video' ? videoTreeNodes : audioTreeNodes
+
+  useEffect(() => {
+    const allowedIds = collectCollapsibleFolderIds(mode, activeTreeNodes)
+    setCollapsedImageFolderNodeIds((previous) => {
+      if (previous.size === 0) {
+        return previous
+      }
+      const next = new Set<string>()
+      for (const nodeId of previous) {
+        if (allowedIds.has(nodeId)) {
+          next.add(nodeId)
+        }
+      }
+      return next.size === previous.size ? previous : next
+    })
+  }, [activeTreeNodes, mode])
+
   const manageStyleEnabled = manageMode || metadataManageMode
   const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : mode === 'video' ? Boolean(videoRootNodeId) : Boolean(musicRootNodeId)
   const showRootToggle = !searchResultMode
@@ -123,6 +169,8 @@ function SidebarPanel({
       const isKeyboardActive = selectedSidebarNodeId === node.id
       const loadState = mode === 'image' ? imageNodeLoadStateById[node.id] : undefined
       const hasOwnImages = imageNodeType === 'package' || imageNodeType === 'directory'
+      const imageFolderCollapsible = canFolderCollapse(mode, node, imageNodeType)
+      const imageFolderCollapsed = imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id)
       const visibleImageCount = node.directImageCount ?? 0
       const descendantNodeCount = node.descendantNodeCount ?? node.children.length
       const directAudioCount = node.directAudioCount ?? 0
@@ -142,9 +190,10 @@ function SidebarPanel({
           <span className={`sidebar-bullet ${loadState ? `is-${loadState}` : ''}`} aria-hidden="true" />
 
           <button
-            className="sidebar-label"
+            className={`sidebar-label ${imageFolderCollapsible ? 'is-collapsible' : ''} ${imageFolderCollapsed ? 'is-collapsed' : ''}`}
             type="button"
             style={{ fontSize: `${sidebarFontSize}px` }}
+            title={imageFolderCollapsible ? (imageFolderCollapsed ? '双击展开子目录' : '双击折叠子目录') : undefined}
             onClick={(event) => {
               if (manageMode) {
                 onToggleManageNode?.(node.id, event.shiftKey)
@@ -170,6 +219,20 @@ function SidebarPanel({
               if (node.videoId) {
                 onSelectVideo(node.videoId)
               }
+            }}
+            onDoubleClick={() => {
+              if (!imageFolderCollapsible) {
+                return
+              }
+              setCollapsedImageFolderNodeIds((previous) => {
+                const next = new Set(previous)
+                if (next.has(node.id)) {
+                  next.delete(node.id)
+                } else {
+                  next.add(node.id)
+                }
+                return next
+              })
             }}
           >
             {node.label}
@@ -215,7 +278,7 @@ function SidebarPanel({
         </div>
       )
 
-      if (node.children.length === 0) {
+      if (node.children.length === 0 || imageFolderCollapsed) {
         return [row]
       }
 

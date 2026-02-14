@@ -182,6 +182,18 @@
   white-space: nowrap;
 }
 
+.sidebar-label.is-collapsible::before {
+  content: '▾';
+  display: inline-block;
+  width: 1em;
+  margin-right: 0.15em;
+  color: var(--mpx-text-2);
+}
+
+.sidebar-label.is-collapsible.is-collapsed::before {
+  content: '▸';
+}
+
 .sidebar-counts {
   display: inline-flex;
   align-items: center;
