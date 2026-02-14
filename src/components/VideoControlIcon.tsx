@@ -12,6 +12,11 @@ type VideoControlIconName =
   | 'camera'
   | 'aspect'
   | 'speed'
+  | 'repeatOne'
+  | 'repeatFolder'
+  | 'repeatAlbum'
+  | 'repeatLibrary'
+  | 'shader'
 
 interface VideoControlIconProps {
   name: VideoControlIconName
@@ -37,6 +42,13 @@ const ICON_PATHS: Record<VideoControlIconName, string> = {
     'M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z',
   aspect: 'M19 12h-2v3h-3v2h5v-5zM7 9h3V7H5v5h2V9zm14-6H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02z',
   speed: 'M12 4a8 8 0 1 0 8 8h-2a6 6 0 1 1-6-6V4zm1 7.2 4.6-2.3-2.3 4.6z',
+  repeatOne: 'M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4zm-5-2V9h-1.6l-1.2 1v1.2h1.3V15H12z',
+  repeatFolder:
+    'M7 7h9v3l3-3-3-3v2H6v5h1V7zm9 10H7v-2H4l3 3 3-3H8v-1h8v3zm4-9h-8l-2-2H4v6h16V8z',
+  repeatAlbum: 'M7 7h9v3l3-3-3-3v2H6v5h1V7zm9 10H8v-1H6v3h10v3l3-3-3-3v2zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2z',
+  repeatLibrary: 'M7 7h9v3l3-3-3-3v2H6v5h1V7zm9 10H7v-2H4l3 3 3-3H8v-1h8v3zm-9-5h10V10H7v2zm0-4h12V6H7v2z',
+  shader:
+    'M3 6h7v2H3V6zm11 0h7v2h-7V6zM8 11h13v2H8v-2zM3 11h3v2H3v-2zm0 5h11v2H3v-2zm15 0h3v2h-3v-2zM10 5h4v4h-4V5zm-4 5h4v4H6v-4zm8 5h4v4h-4v-4z',
 }
 
 export function VideoControlIcon({ name, className }: VideoControlIconProps) {

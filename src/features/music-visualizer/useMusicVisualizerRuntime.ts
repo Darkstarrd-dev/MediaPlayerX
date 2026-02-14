@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 
 import { MusicAudioAnalyser } from './audioAnalyser'
 import { CpuMusicVisualizerRenderer } from './cpuRenderer'
-import { resolveDefaultMusicVisualizerShader } from './shaderRegistry'
+import { resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from './shaderRegistry'
 import type { MusicVisualizerRenderer, MusicVisualizerRendererMode, MusicVisualizerStats } from './types'
 import { WebglMusicVisualizerRenderer } from './webglRenderer'
 
@@ -16,6 +16,7 @@ interface UseMusicVisualizerRuntimeParams {
   active: boolean
   preferredRenderer: MusicVisualizerRendererMode
   renderLongEdgePx: number
+  selectedShaderId: string | null
 }
 
 interface UseMusicVisualizerRuntimeResult {
@@ -35,17 +36,41 @@ function resolveRenderSize(containerWidth: number, containerHeight: number, targ
   }
 }
 
+function resolveContainerSize(canvas: HTMLCanvasElement): { width: number; height: number } {
+  const container = canvas.parentElement
+  if (!container) {
+    return {
+      width: Math.max(1, Math.round(canvas.clientWidth || 1)),
+      height: Math.max(1, Math.round(canvas.clientHeight || 1)),
+    }
+  }
+
+  const width = container.clientWidth || Math.round(container.getBoundingClientRect().width)
+  const height = container.clientHeight || Math.round(container.getBoundingClientRect().height)
+  return {
+    width: Math.max(1, width),
+    height: Math.max(1, height),
+  }
+}
+
 export function useMusicVisualizerRuntime({
   canvasRef,
   audioRef,
   active,
   preferredRenderer,
   renderLongEdgePx,
+  selectedShaderId,
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
 
-  const shader = useMemo(() => resolveDefaultMusicVisualizerShader(), [])
+  const shader = useMemo(() => {
+    const matched = resolveMusicVisualizerShaderById(selectedShaderId)
+    if (matched) {
+      return matched
+    }
+    return resolveDefaultMusicVisualizerShader()
+  }, [selectedShaderId])
   const audioAnalyserRef = useRef<MusicAudioAnalyser | null>(null)
 
   if (audioAnalyserRef.current == null) {
@@ -156,10 +181,9 @@ export function useMusicVisualizerRuntime({
         return
       }
 
-      const container = canvas.parentElement
-      const bounds = container?.getBoundingClientRect()
-      const containerWidth = Math.max(1, Math.round(bounds?.width ?? canvas.clientWidth ?? 1))
-      const containerHeight = Math.max(1, Math.round(bounds?.height ?? canvas.clientHeight ?? 1))
+      const containerSize = resolveContainerSize(canvas)
+      const containerWidth = containerSize.width
+      const containerHeight = containerSize.height
       const renderSize = resolveRenderSize(containerWidth, containerHeight, renderLongEdgePx)
 
       canvas.style.width = '100%'

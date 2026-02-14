@@ -7,6 +7,7 @@
 - `requirements-v1.md`：需求范围与行为边界。
 - `architecture-v1.md`：运行时架构、模块边界、数据流。
 - `interaction-v1.md`：界面结构、交互规则、快捷键行为。
+- `music-visualizer-shader-migration-playbook.md`：音乐可视化 Shader 迁移流程、排障与验收清单。
 - `backend-integration-guardrails.md`：后端接入强约束与门禁。
 - `开发启动清单.md`：跨机器拉取后的一次性启动流程。
 

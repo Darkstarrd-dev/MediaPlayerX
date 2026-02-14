@@ -5,6 +5,8 @@ export const SHADER: MusicVisualizerShaderDefinition = {
   label: 'Shadertoy McsSzB',
   defaultEntry: true,
   fragmentSource: String.raw`const float HUE = 0.0;
+const float HEADPHONE_OFFSET_X = 0.15;
+const float HEADPHONE_OFFSET_Y = -0.15;
 
 // SVG rendering from: https://www.shadertoy.com/view/ldXyRn
 #define N 16. // splines discretization. Lower it on slow GPUs
@@ -49,9 +51,6 @@ void SVG(vec2 uv, inout vec4 O)
     uv.y = 1.0 - uv.y;
 
     uv = uv * 1.25 - vec2(0.3, 0.01);
-    if (uv.x < -0.1 || uv.x > 1.1) {
-        return;
-    }
 
 uv *= vec2(134.6, 138.6);
 // SVG optimized by custom software
@@ -147,7 +146,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     col = mix(col, vec3(1), d);
 
     fragColor = vec4(col, 1.0);
-    SVG(fragCoord / min(iResolution.x, iResolution.y), fragColor);
+    float minResolution = min(iResolution.x, iResolution.y);
+    vec2 svgCoord = fragCoord - 0.5 * (iResolution.xy - vec2(minResolution));
+    SVG(svgCoord / minResolution + vec2(HEADPHONE_OFFSET_X, HEADPHONE_OFFSET_Y), fragColor);
 }
 `,
 }

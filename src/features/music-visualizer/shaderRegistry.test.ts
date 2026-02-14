@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader } from './shaderRegistry'
+import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from './shaderRegistry'
 
 describe('shaderRegistry', () => {
   it('loads bundled music visualizer shaders', () => {
@@ -12,5 +12,10 @@ describe('shaderRegistry', () => {
     const shader = resolveDefaultMusicVisualizerShader()
     expect(shader).not.toBeNull()
     expect(shader?.id).toBe('mcs-szb')
+  })
+
+  it('resolves shader by id', () => {
+    expect(resolveMusicVisualizerShaderById('mcs-szb')?.id).toBe('mcs-szb')
+    expect(resolveMusicVisualizerShaderById('missing-shader')).toBeNull()
   })
 })

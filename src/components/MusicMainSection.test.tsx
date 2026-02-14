@@ -267,11 +267,80 @@ describe('MusicMainSection', () => {
     expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length).toBeGreaterThan(pauseCallCount)
   })
 
+  it('播放中切歌时资源短暂置空后恢复会自动续播', () => {
+    const track1 = makeAudio('track-1')
+    const track2 = makeAudio('track-2')
+
+    const baseProps: ComponentProps<typeof MusicMainSection> = {
+      active: true,
+      interruptByVideoPlayback: false,
+      playRequestNonce: 0,
+      manageMode: false,
+      metadataManageMode: false,
+      sidebarSelectedCount: 0,
+      imageSelectedCount: 0,
+      activeSelectionScope: null,
+      pendingManageAction: false,
+      manageOperationHint: null,
+      canManageDelete: false,
+      onManageDelete: vi.fn(),
+      onClearManageSelection: vi.fn(),
+      canJumpToManga: false,
+      canJumpToAnimation: false,
+      canJumpToBooklet: false,
+      onJumpToManga: vi.fn(),
+      onJumpToAnimation: vi.fn(),
+      onJumpToBooklet: vi.fn(),
+      audios: [track1, track2],
+      musicLoopMode: 'library',
+      musicLoopModeLabel: '全曲库循环',
+      canPrevAudio: true,
+      canNextAudio: true,
+      fullscreenActive: false,
+      onToggleFullscreen: vi.fn(),
+      musicVisualizerRenderLongEdgePx: 1280,
+      musicVisualizerShowFps: false,
+      musicVisualizerRenderer: 'gpu',
+      onPrevAudio: vi.fn(),
+      onNextAudio: vi.fn(),
+      onCycleMusicLoopMode: vi.fn(),
+      focusedAudio: track1,
+      focusedAudioSrc: 'mock://audio-track-1',
+    }
+
+    const { rerender } = render(<MusicMainSection {...baseProps} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    const playCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
+
+    rerender(<MusicMainSection {...baseProps} focusedAudio={track2} focusedAudioSrc={null} />)
+    rerender(<MusicMainSection {...baseProps} focusedAudio={track2} focusedAudioSrc="mock://audio-track-2" />)
+
+    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(playCallCount)
+  })
+
   it('全屏按钮可切换音乐可视化全屏', () => {
     const onToggleFullscreen = vi.fn()
     renderMusicMainSection({ onToggleFullscreen })
 
     fireEvent.click(screen.getByRole('button', { name: '全屏' }))
     expect(onToggleFullscreen).toHaveBeenCalledTimes(1)
+  })
+
+  it('全屏时使用底部浮动控制条并隐藏右上角退出按钮', () => {
+    const { container } = renderMusicMainSection({ fullscreenActive: true })
+
+    const visualizer = screen.getByLabelText('music visualizer')
+    expect((visualizer as HTMLElement).querySelector('.music-controls-shell.is-fullscreen-floating')).not.toBeNull()
+    expect(container.querySelector('.music-visualizer-exit-fullscreen-btn')).toBeNull()
+  })
+
+  it('支持在控制栏打开 Shader 列表', () => {
+    renderMusicMainSection()
+
+    const shaderButton = screen.getByRole('button', { name: /^Shader：/ })
+    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
+
+    expect(screen.getByRole('button', { name: 'Shadertoy McsSzB' })).toBeInTheDocument()
   })
 })

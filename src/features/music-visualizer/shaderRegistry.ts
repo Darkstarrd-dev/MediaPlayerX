@@ -22,6 +22,13 @@ function listShaderEntries(): MusicVisualizerShaderDefinition[] {
 
 export const MUSIC_VISUALIZER_SHADERS = listShaderEntries()
 
+export function resolveMusicVisualizerShaderById(shaderId: string | null | undefined): MusicVisualizerShaderDefinition | null {
+  if (!shaderId) {
+    return null
+  }
+  return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === shaderId) ?? null
+}
+
 export function resolveDefaultMusicVisualizerShader(): MusicVisualizerShaderDefinition | null {
   const explicitDefault = MUSIC_VISUALIZER_SHADERS.find((shader) => shader.defaultEntry)
   if (explicitDefault) {

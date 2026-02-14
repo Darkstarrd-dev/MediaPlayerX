@@ -62,6 +62,7 @@ npm run test
 - `docs/requirements-v1.md`
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
+- `docs/music-visualizer-shader-migration-playbook.md`
 - `docs/backend-integration-guardrails.md`
 - `docs/stability-note-2026-02-12-sidebar-switch-crash.md`
 - `docs/project-evaluation-report-v3.md`
