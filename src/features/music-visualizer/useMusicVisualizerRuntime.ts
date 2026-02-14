@@ -106,7 +106,7 @@ export function useMusicVisualizerRuntime({
       return baseShader
     }
 
-    const ratioCapableShaderIds = new Set(['rain-drips', 'galaxy', 'starfield', 'escape'])
+    const ratioCapableShaderIds = new Set(['rain-drips', 'galaxy', 'starfield', 'escape', 'tissue'])
     if (!ratioCapableShaderIds.has(baseShader.id)) {
       return baseShader
     }
@@ -118,12 +118,14 @@ export function useMusicVisualizerRuntime({
       galaxy: ['galaxy-background'],
       starfield: ['starfield-background'],
       escape: ['escape-buffer-a', 'escape-background'],
+      tissue: ['tissue-background'],
     }
     const foregroundPassIdByShaderId: Record<string, string> = {
       'rain-drips': 'foreground-audio',
       galaxy: 'galaxy-foreground',
       starfield: 'starfield-foreground',
       escape: 'escape-foreground',
+      tissue: 'tissue-foreground',
     }
 
     const backgroundPassIds = new Set(backgroundPassIdsByShaderId[baseShader.id] ?? [])

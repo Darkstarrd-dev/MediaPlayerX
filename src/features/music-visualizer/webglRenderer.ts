@@ -260,6 +260,29 @@ function buildTexturePixels(definition: MusicVisualizerShaderTextureDefinition):
         continue
       }
 
+      if (definition.preset === 'noise-rgb-seamless') {
+        const tau = Math.PI * 2
+        const ax = u * tau
+        const ay = v * tau
+
+        const n0 = Math.sin(ax * 3 + ay * 2 + seed * 0.13) * 0.5 + 0.5
+        const n1 = Math.sin(ax * 7 - ay * 5 + seed * 0.27) * 0.5 + 0.5
+        const n2 = Math.cos(ax * 11 + ay * 9 + seed * 0.19) * 0.5 + 0.5
+
+        const mixed = n0 * 0.46 + n1 * 0.34 + n2 * 0.20
+        const tint = Math.sin(ax * 5 + ay * 4 + seed * 0.07) * 0.5 + 0.5
+
+        const r = clamp(mixed * (0.90 + tint * 0.22), 0, 1)
+        const g = clamp(mixed * (0.95 + tint * 0.18), 0, 1)
+        const b = clamp(mixed * (1.02 + tint * 0.14), 0, 1)
+
+        pixels[offset] = Math.round(r * 255)
+        pixels[offset + 1] = Math.round(g * 255)
+        pixels[offset + 2] = Math.round(b * 255)
+        pixels[offset + 3] = 255
+        continue
+      }
+
       const glowA = Math.exp(-((u - 0.65) * (u - 0.65) * 19 + (v - 0.38) * (v - 0.38) * 8.5))
       const glowB = Math.exp(-((u - 0.28) * (u - 0.28) * 22 + (v - 0.74) * (v - 0.74) * 9.2))
       const glowC = Math.exp(-((u - 0.52) * (u - 0.52) * 30 + (v - 0.18) * (v - 0.18) * 13.0))

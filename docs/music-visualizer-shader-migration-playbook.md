@@ -280,6 +280,18 @@
   - 最终合成 pass 采用 screen blend，将前景覆盖到背景之上。
   - 为适配 UNORM 缓冲，`Buffer A` 的 `tdist` 写入 alpha 时做归一化编码，`Image` pass 按同尺度解码。
 
+## 6.7 新增 Shader（Tissue）
+
+- Shader：`src/features/music-visualizer/shaders/tissue.ts`
+- 背景来源 URL：`https://www.shadertoy.com/view/XdBSzd`
+- 前景来源 URL：`https://www.shadertoy.com/view/4cBXDz`
+- 接入定位：组织纹理隧道背景 + 环形音频柱前景（多 Pass 复合）。
+- 适配说明：
+  - 背景原版依赖 `iMouse`，运行时改为 `iAudioLevel`/`iAudioBeat` 驱动时间偏移。
+  - 背景原版依赖外部纹理高度场，当前版本使用运行时程序化纹理 `tissue-noise` 近似。
+  - 前景保留原始环形柱结构，输入来自 `iChannel0` 音频纹理。
+  - 最终合成 pass 采用 screen blend，前景作为高亮层覆盖背景。
+
 ## 7. 变更记录（持续追加）
 
 - 2026-02-14
@@ -293,5 +305,6 @@
   - 新增 `Fungi` Shader，来源 `https://www.shadertoy.com/view/33VGzW`，并落地音频响应的人机工程优化方案（包络平滑 + onset 脉冲 + 高光局部脉冲 + 过曝压缩）。
   - 新增 `Rain Drips` Shader，来源 `https://www.shadertoy.com/view/tstXRj`，并基于多 Pass 运行时实现 `Buffer A/B/Image` 链路；`iChannel1/iChannel3` 已接入本地贴图资源，叠加 `Nd33zr` 前景并缩放至 60%，音乐响应限定为亮度通道。
   - 新增 `Escape` Shader，来源 `https://www.shadertoy.com/view/4lcGWr` + `https://www.shadertoy.com/view/W3y3Wy`，完成背景与前景多 Pass 复合接入。
+  - 新增 `Tissue` Shader，来源 `https://www.shadertoy.com/view/XdBSzd` + `https://www.shadertoy.com/view/4cBXDz`，完成背景与前景多 Pass 复合接入。
   - Tone Mapping 模式扩展为 `off/reinhard/aces/filmic/agx/khronos`，由统一后处理管线驱动。
   - Tone Mapping / FPS / 渲染长边切换改为热更新，减少运行时重建引发的不稳定。
