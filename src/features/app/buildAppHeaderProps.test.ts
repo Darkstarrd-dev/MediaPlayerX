@@ -19,6 +19,10 @@ describe('buildAppHeaderProps', () => {
       canThumbnailScaleUp: true,
       autoPlayEnabled: false,
       autoPlayInterval: 3,
+      styleId: 'flush',
+      paletteMode: 'day',
+      paletteDayId: 'parchment',
+      paletteNightId: 'tokyo-night',
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       importTaskPanelOpen: false,
@@ -60,6 +64,10 @@ describe('buildAppHeaderProps', () => {
       canThumbnailScaleUp: true,
       autoPlayEnabled: false,
       autoPlayInterval: 3,
+      styleId: 'flush',
+      paletteMode: 'day',
+      paletteDayId: 'parchment',
+      paletteNightId: 'tokyo-night',
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       importTaskPanelOpen: false,
@@ -100,6 +108,10 @@ describe('buildAppHeaderProps', () => {
       canThumbnailScaleUp: true,
       autoPlayEnabled: false,
       autoPlayInterval: 3,
+      styleId: 'flush',
+      paletteMode: 'day',
+      paletteDayId: 'parchment',
+      paletteNightId: 'tokyo-night',
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       importTaskPanelOpen: false,
@@ -139,6 +151,10 @@ describe('buildAppHeaderProps', () => {
       canThumbnailScaleUp: false,
       autoPlayEnabled: false,
       autoPlayInterval: 3,
+      styleId: 'flush',
+      paletteMode: 'day',
+      paletteDayId: 'parchment',
+      paletteNightId: 'tokyo-night',
       importMenuOpen: true,
       taskStatusLabel: '空闲',
       importTaskPanelOpen: false,
@@ -181,6 +197,10 @@ describe('buildAppHeaderProps', () => {
       canThumbnailScaleUp: true,
       autoPlayEnabled: false,
       autoPlayInterval: 3,
+      styleId: 'flush',
+      paletteMode: 'day',
+      paletteDayId: 'parchment',
+      paletteNightId: 'tokyo-night',
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       importTaskPanelOpen: false,
@@ -200,5 +220,51 @@ describe('buildAppHeaderProps', () => {
 
     expect(props.searchPanelOpen).toBe(false)
     expect(props.metadataManageMode).toBe(true)
+  })
+
+  it('day/night 按钮切换会同步更新 paletteMode 与生效 palette', () => {
+    const updateSettings = vi.fn()
+
+    const props = buildAppHeaderProps({
+      headerHeight: 56,
+      mode: 'image',
+      vectorMode: false,
+      manageMode: false,
+      metadataManageMode: false,
+      displayThumbnailScaleLevel: 3,
+      canThumbnailScaleDown: true,
+      canThumbnailScaleUp: true,
+      autoPlayEnabled: false,
+      autoPlayInterval: 3,
+      styleId: 'soft-skeuomorphic',
+      paletteMode: 'day',
+      paletteDayId: 'skeuomorphic-light',
+      paletteNightId: 'skeuomorphic-dark',
+      importMenuOpen: false,
+      taskStatusLabel: '空闲',
+      importTaskPanelOpen: false,
+      autoPlayPresets: [1, 2, 3],
+      thumbnailScale: 3,
+      thumbnailScaleLevelCount: 9,
+      setImportMenuOpen: vi.fn(),
+      setImportTaskPanelOpen: vi.fn(),
+      openImportFilesDialog: vi.fn(),
+      openImportFoldersDialog: vi.fn(),
+      updateSettings,
+      setSearchPanelMode: vi.fn(),
+      setSearchPanelCollapsed: vi.fn(),
+      onToggleManageMode: vi.fn(),
+      onToggleMetadataManageMode: vi.fn(),
+    })
+
+    props.onTogglePaletteMode()
+
+    expect(updateSettings).toHaveBeenCalledWith({
+      paletteMode: 'night',
+      paletteDayId: 'skeuomorphic-light',
+      paletteNightId: 'skeuomorphic-dark',
+      paletteId: 'skeuomorphic-dark',
+      themeId: 'skeuomorphic-dark',
+    })
   })
 })

@@ -1,6 +1,7 @@
 import {
   listPalettesByStyle,
   listStyles,
+  resolvePalettePairForStyle,
   resolvePaletteIdForStyle,
   resolveStyleIdFromStyles,
 } from '../../features/theme/themeRegistry'
@@ -56,6 +57,9 @@ interface RenderSettingsMainSectionParams {
   adReviewVisionSaveMessage: string | null
   styleId: string
   paletteId: string
+  paletteMode: 'day' | 'night'
+  paletteDayId: string
+  paletteNightId: string
   shortcutConflicts: ShortcutConflict[]
   shortcutLabelByAction: Map<string, string>
   databaseResetPending: boolean
@@ -94,7 +98,9 @@ interface RenderSettingsMainSectionParams {
   onTestAdReviewVisionModel: () => void
   onSaveAdReviewVisionModel: () => void
   onStyleChange: (value: string) => void
-  onPaletteChange: (value: string) => void
+  onPaletteModeChange: (value: 'day' | 'night') => void
+  onPaletteDayChange: (value: string) => void
+  onPaletteNightChange: (value: string) => void
   onClearDatabase: () => void
   onPickDatabaseDirectoryPath: () => void
   onPickThumbnailCacheDirectoryPath: () => void
@@ -140,6 +146,9 @@ export function renderSettingsMainSection({
   adReviewVisionSaveMessage,
   styleId,
   paletteId,
+  paletteMode,
+  paletteDayId,
+  paletteNightId,
   shortcutConflicts,
   shortcutLabelByAction,
   databaseResetPending,
@@ -178,7 +187,9 @@ export function renderSettingsMainSection({
   onTestAdReviewVisionModel,
   onSaveAdReviewVisionModel,
   onStyleChange,
-  onPaletteChange,
+  onPaletteModeChange,
+  onPaletteDayChange,
+  onPaletteNightChange,
   onClearDatabase,
   onPickDatabaseDirectoryPath,
   onPickThumbnailCacheDirectoryPath,
@@ -188,7 +199,9 @@ export function renderSettingsMainSection({
     const styles = listStyles()
     const selectedStyleId = resolveStyleIdFromStyles(styleId, styles)
     const palettes = listPalettesByStyle(selectedStyleId)
-    const selectedPaletteId = resolvePaletteIdForStyle(paletteId, selectedStyleId)
+    const selectedPalettePair = resolvePalettePairForStyle(selectedStyleId, paletteDayId, paletteNightId)
+    const activePaletteId = resolvePaletteIdForStyle(paletteId, selectedStyleId)
+    const activePaletteLabel = palettes.find((palette) => palette.id === activePaletteId)?.label ?? activePaletteId
 
     return (
       <div className="settings-block">
@@ -208,14 +221,32 @@ export function renderSettingsMainSection({
               </option>
             ))}
           </select>
-          <label htmlFor="theme-palette-select">Palette</label>
-          <select id="theme-palette-select" value={selectedPaletteId} onChange={(event) => onPaletteChange(event.target.value)}>
+          <label htmlFor="theme-palette-mode-select">Palette 模式</label>
+          <select
+            id="theme-palette-mode-select"
+            value={paletteMode}
+            onChange={(event) => onPaletteModeChange(event.target.value === 'night' ? 'night' : 'day')}
+          >
+            <option value="day">Day（日间）</option>
+            <option value="night">Night（夜间）</option>
+          </select>
+          <label htmlFor="theme-palette-day-select">日间默认 Palette</label>
+          <select id="theme-palette-day-select" value={selectedPalettePair.day} onChange={(event) => onPaletteDayChange(event.target.value)}>
             {palettes.map((palette) => (
               <option key={palette.id} value={palette.id}>
                 {palette.label}
               </option>
             ))}
           </select>
+          <label htmlFor="theme-palette-night-select">夜间默认 Palette</label>
+          <select id="theme-palette-night-select" value={selectedPalettePair.night} onChange={(event) => onPaletteNightChange(event.target.value)}>
+            {palettes.map((palette) => (
+              <option key={palette.id} value={palette.id}>
+                {palette.label}
+              </option>
+            ))}
+          </select>
+          <p className="settings-placeholder">当前生效：{activePaletteLabel}</p>
         </section>
 
         <section className="settings-group">

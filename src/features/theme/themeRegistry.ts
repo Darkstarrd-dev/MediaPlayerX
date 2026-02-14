@@ -13,6 +13,8 @@ export interface PaletteInfo {
   label: string
 }
 
+export type PaletteMode = 'day' | 'night'
+
 export const DEFAULT_STYLE_ID = 'flush'
 export const DEFAULT_PALETTE_ID = 'parchment'
 export const DEFAULT_THEME_ID = DEFAULT_PALETTE_ID
@@ -24,6 +26,16 @@ const STYLE_PALETTE_ALLOWLIST: Record<string, readonly string[]> = {
 const STYLE_DEFAULT_PALETTE_ID: Record<string, string> = {
   'soft-skeuomorphic': 'skeuomorphic-light',
 }
+
+const STYLE_DEFAULT_PALETTE_PAIR: Record<string, { day: string; night: string }> = {
+  'soft-skeuomorphic': {
+    day: 'skeuomorphic-light',
+    night: 'skeuomorphic-dark',
+  },
+}
+
+const NIGHT_KEYWORDS = ['dark', 'night', 'dim', 'mocha', 'black']
+const DAY_KEYWORDS = ['light', 'day', 'paper', 'parchment', 'solarized']
 
 // Styles and palettes are loaded via styles/themes/index.css; here we only need file metadata for lists/resolution.
 const STYLE_FILES = import.meta.glob('/src/styles/themes/styles/**/*.css')
@@ -170,4 +182,46 @@ export function resolvePaletteIdForStyle(
   }
 
   return resolvePaletteIdFromPalettes(paletteId, palettes, styleDefaultPaletteId)
+}
+
+export function resolvePaletteModeById(paletteId: string): PaletteMode {
+  const lower = paletteId.toLowerCase()
+  if (NIGHT_KEYWORDS.some((keyword) => lower.includes(keyword))) {
+    return 'night'
+  }
+  if (DAY_KEYWORDS.some((keyword) => lower.includes(keyword))) {
+    return 'day'
+  }
+  return 'day'
+}
+
+export function resolvePalettePairForStyle(
+  styleId: string,
+  dayPaletteId: string,
+  nightPaletteId: string,
+): { day: string; night: string } {
+  const palettes = listPalettesByStyle(styleId)
+  const defaults = STYLE_DEFAULT_PALETTE_PAIR[styleId]
+
+  const resolvedDay = resolvePaletteIdFromPalettes(dayPaletteId, palettes, defaults?.day ?? DEFAULT_PALETTE_ID)
+  const resolvedNight = resolvePaletteIdFromPalettes(
+    nightPaletteId,
+    palettes,
+    defaults?.night ?? (resolvedDay === DEFAULT_PALETTE_ID ? 'tokyo-night' : resolvedDay),
+  )
+
+  if (resolvedDay !== resolvedNight) {
+    return { day: resolvedDay, night: resolvedNight }
+  }
+
+  const dayCandidate = palettes.find((palette) => resolvePaletteModeById(palette.id) === 'day' && palette.id !== resolvedDay)
+  const nightCandidate = palettes.find((palette) => resolvePaletteModeById(palette.id) === 'night' && palette.id !== resolvedNight)
+  if (dayCandidate) {
+    return { day: dayCandidate.id, night: resolvedNight }
+  }
+  if (nightCandidate) {
+    return { day: resolvedDay, night: nightCandidate.id }
+  }
+
+  return { day: resolvedDay, night: resolvedNight }
 }

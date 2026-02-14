@@ -1,10 +1,14 @@
 import type { AppSettings } from '../../contracts/settings'
 import type { SettingsPanelProps } from '../../components/SettingsPanel'
+import { resolvePalettePairForStyle, resolveStyleId } from '../theme/themeRegistry'
 
 interface BuildSettingsPanelPropsParams {
   settingsOpen: boolean
   styleId: string
   paletteId: string
+  paletteMode: AppSettings['paletteMode']
+  paletteDayId: string
+  paletteNightId: string
   headerHeight: number
   settingsFontSize: number
   sidebarRatio: number
@@ -60,6 +64,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     settingsOpen: params.settingsOpen,
     styleId: params.styleId,
     paletteId: params.paletteId,
+    paletteMode: params.paletteMode,
+    paletteDayId: params.paletteDayId,
+    paletteNightId: params.paletteNightId,
     headerHeight: params.headerHeight,
     settingsFontSize: params.settingsFontSize,
     sidebarRatio: params.sidebarRatio,
@@ -98,12 +105,56 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     runtimeInfo: params.runtimeInfo,
     onRefreshRuntimeInfo: params.refreshRuntimeInfo,
     onClose: () => params.updateSettings({ settingsOpen: false }),
-    onStyleChange: (value) => params.updateSettings({ styleId: value }),
-    onPaletteChange: (value) =>
+    onStyleChange: (value) => {
+      const nextStyleId = resolveStyleId(value)
+      const nextPair = resolvePalettePairForStyle(nextStyleId, params.paletteDayId, params.paletteNightId)
+      const nextPaletteId = params.paletteMode === 'night' ? nextPair.night : nextPair.day
       params.updateSettings({
-        paletteId: value,
-        themeId: value,
-      }),
+        styleId: nextStyleId,
+        paletteDayId: nextPair.day,
+        paletteNightId: nextPair.night,
+        paletteId: nextPaletteId,
+        themeId: nextPaletteId,
+      })
+    },
+    onPaletteModeChange: (value) => {
+      const nextMode: AppSettings['paletteMode'] = value === 'night' ? 'night' : 'day'
+      const pair = resolvePalettePairForStyle(params.styleId, params.paletteDayId, params.paletteNightId)
+      const nextPaletteId = nextMode === 'night' ? pair.night : pair.day
+      params.updateSettings({
+        paletteMode: nextMode,
+        paletteDayId: pair.day,
+        paletteNightId: pair.night,
+        paletteId: nextPaletteId,
+        themeId: nextPaletteId,
+      })
+    },
+    onPaletteDayChange: (value) => {
+      const pair = resolvePalettePairForStyle(params.styleId, value, params.paletteNightId)
+      params.updateSettings({
+        paletteDayId: pair.day,
+        paletteNightId: pair.night,
+        ...(params.paletteMode === 'day'
+          ? {
+              paletteId: pair.day,
+              themeId: pair.day,
+            }
+          : {}),
+      })
+    },
+    onPaletteNightChange: (value) => {
+      const pair = resolvePalettePairForStyle(params.styleId, params.paletteDayId, value)
+      params.updateSettings({
+        paletteDayId: pair.day,
+        paletteNightId: pair.night,
+        ...(params.paletteMode === 'night'
+          ? {
+              paletteId: pair.night,
+              themeId: pair.night,
+            }
+          : {}),
+      })
+    },
     onHeaderHeightChange: (value) => params.updateSettings({ headerHeight: value }),
     onSettingsFontSizeChange: (value) => params.updateSettings({ settingsFontSize: value }),
     onSidebarRatioChange: params.applySidebarRatio,

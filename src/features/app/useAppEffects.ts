@@ -1,7 +1,7 @@
 import { useEffect, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
-import { resolvePaletteIdForStyle, resolveStyleId } from '../theme/themeRegistry'
+import { resolvePaletteIdForStyle, resolvePalettePairForStyle, resolveStyleId } from '../theme/themeRegistry'
 import type { AudioItem, BrowserMode, FocusedImageRef, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import { clamp } from '../../utils/ui'
 
@@ -62,6 +62,9 @@ interface UseAppEffectsParams {
   featureTagPickerOpen: boolean
   styleId: string
   paletteId: string
+  paletteMode: 'day' | 'night'
+  paletteDayId: string
+  paletteNightId: string
   themeId: string
   setAppBodyWidth: Dispatch<SetStateAction<number>>
   setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>
@@ -134,6 +137,9 @@ export function useAppEffects({
   featureTagPickerOpen,
   styleId,
   paletteId,
+  paletteMode,
+  paletteDayId,
+  paletteNightId,
   themeId,
   setAppBodyWidth,
   setGridSize,
@@ -504,13 +510,23 @@ export function useAppEffects({
 
   useEffect(() => {
     const nextStyleId = resolveStyleId(styleId)
-    const nextPaletteId = resolvePaletteIdForStyle(paletteId, nextStyleId)
+    const nextPalettePair = resolvePalettePairForStyle(nextStyleId, paletteDayId, paletteNightId)
+    const targetPaletteId = paletteMode === 'night' ? nextPalettePair.night : nextPalettePair.day
+    const nextPaletteId = resolvePaletteIdForStyle(targetPaletteId, nextStyleId)
     const nextThemeId = nextPaletteId
 
-    if (nextStyleId !== styleId || nextPaletteId !== paletteId || nextThemeId !== themeId) {
+    if (
+      nextStyleId !== styleId
+      || nextPaletteId !== paletteId
+      || nextThemeId !== themeId
+      || nextPalettePair.day !== paletteDayId
+      || nextPalettePair.night !== paletteNightId
+    ) {
       updateSettings({
         styleId: nextStyleId,
         paletteId: nextPaletteId,
+        paletteDayId: nextPalettePair.day,
+        paletteNightId: nextPalettePair.night,
         themeId: nextThemeId,
       })
     }
@@ -518,5 +534,5 @@ export function useAppEffects({
     document.documentElement.dataset.mpxStyle = nextStyleId
     document.documentElement.dataset.mpxPalette = nextPaletteId
     document.documentElement.dataset.mpxTheme = nextThemeId
-  }, [paletteId, styleId, themeId, updateSettings])
+  }, [paletteDayId, paletteId, paletteMode, paletteNightId, styleId, themeId, updateSettings])
 }

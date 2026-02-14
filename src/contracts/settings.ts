@@ -7,6 +7,7 @@ export const searchFieldSchema = z.enum(['all', 'name', 'workTitle', 'circle', '
 export const musicVisualizerFpsCapSchema = z.union([z.literal(30), z.literal(60), z.literal(120)])
 export const musicVisualizerToneMapModeSchema = z.enum(['off', 'reinhard', 'aces', 'filmic', 'agx', 'khronos'])
 export const musicVisualizerRendererSchema = z.enum(['gpu', 'cpu'])
+export const paletteModeSchema = z.enum(['day', 'night'])
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
@@ -54,6 +55,9 @@ export const appSettingsSchema = z.object({
   themeId: z.string().min(1),
   styleId: z.string().min(1).default('flush'),
   paletteId: z.string().min(1).default('parchment'),
+  paletteMode: paletteModeSchema.default('day'),
+  paletteDayId: z.string().min(1).default('parchment'),
+  paletteNightId: z.string().min(1).default('tokyo-night'),
   thumbnailQuality: z.number().min(1).max(100),
   thumbnailWidth: z.number().min(128).max(2048),
   musicVisualizerRenderLongEdgePx: z.number().int().min(240).max(4096),

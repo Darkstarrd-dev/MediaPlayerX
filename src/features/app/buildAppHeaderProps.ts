@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
 import type { AppHeaderProps } from '../../components/AppHeader'
+import { resolvePalettePairForStyle } from '../theme/themeRegistry'
 import { clamp } from '../../utils/ui'
 
 interface BuildAppHeaderPropsParams {
@@ -15,6 +16,10 @@ interface BuildAppHeaderPropsParams {
   canThumbnailScaleUp: boolean
   autoPlayEnabled: boolean
   autoPlayInterval: number
+  styleId: string
+  paletteMode: AppSettings['paletteMode']
+  paletteDayId: string
+  paletteNightId: string
   importMenuOpen: boolean
   taskStatusLabel: string
   importTaskPanelOpen: boolean
@@ -44,6 +49,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     canThumbnailScaleUp: params.canThumbnailScaleUp,
     autoPlayEnabled: params.autoPlayEnabled,
     autoPlayInterval: params.autoPlayInterval,
+    paletteMode: params.paletteMode,
     importMenuOpen: params.importMenuOpen,
     taskStatusLabel: params.taskStatusLabel,
     importTaskPanelOpen: params.importTaskPanelOpen,
@@ -83,6 +89,18 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     },
     onAutoPlayEnabledChange: (enabled) => params.updateSettings({ autoPlayEnabled: enabled }),
     onAutoPlayIntervalChange: (value) => params.updateSettings({ autoPlayInterval: value }),
+    onTogglePaletteMode: () => {
+      const nextMode: AppSettings['paletteMode'] = params.paletteMode === 'day' ? 'night' : 'day'
+      const pair = resolvePalettePairForStyle(params.styleId, params.paletteDayId, params.paletteNightId)
+      const targetPaletteId = nextMode === 'night' ? pair.night : pair.day
+      params.updateSettings({
+        paletteMode: nextMode,
+        paletteDayId: pair.day,
+        paletteNightId: pair.night,
+        paletteId: targetPaletteId,
+        themeId: targetPaletteId,
+      })
+    },
     onOpenSettings: () => params.updateSettings({ settingsOpen: true }),
   }
 }

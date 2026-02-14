@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 
 import type { BrowserMode } from '../types'
 
@@ -11,8 +11,11 @@ type HeaderIconName =
   | 'search'
   | 'edit'
   | 'metadata'
-  | 'autoplay'
+  | 'autoplayOn'
+  | 'autoplayOff'
   | 'settings'
+  | 'day'
+  | 'night'
   | 'minus'
   | 'plus'
   | 'zoom'
@@ -26,33 +29,132 @@ type HeaderIconName =
 
 type HeaderPopoverKey = 'scale' | 'autoplay'
 
-const HEADER_ICON_PATHS: Record<HeaderIconName, string> = {
-  statusIdle: 'M7 7h10v10H7zM9 12l1.8 1.8L15 9.6',
-  statusBusy: 'M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4',
-  image: 'M4 6h16v12H4zM7 15l3-3 3 3 3-4 4 5M9 10h.01',
-  video: 'M4 7h14v10H4zM10 10l4 2-4 2zM18 10l2-1v6l-2-1z',
-  music: 'M12 5v10M12 5l7-2v9M10 17a2 2 0 1 0 0 .01M19 14a2 2 0 1 0 0 .01',
-  search: 'M11 17a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM16 16l4 4',
-  edit: 'M8 16l9-9 2 2-9 9-3 1zM7 17h4',
-  metadata: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 10v6M12 7.5h.01',
-  autoplay: 'M8 7h9l-1.5-1.5M17 7l-1.5 1.5M16 17H7l1.5 1.5M7 17l1.5-1.5M11 10l4 2-4 2z',
-  settings: 'M6 7h12M6 12h12M6 17h12M10 7a1.3 1.3 0 1 0 0 .01M15 12a1.3 1.3 0 1 0 0 .01M12 17a1.3 1.3 0 1 0 0 .01',
-  minus: 'M6 12h12',
-  plus: 'M12 6v12M6 12h12',
-  zoom: 'M11 17a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM16 16l4 4M11 8v6M8 11h6',
-  play: 'M8 5v14l11-7z',
-  pause: 'M6 19h4V5H6zm8-14v14h4V5h-4z',
-  stop: 'M7 7h10v10H7z',
-  windowMinimize: 'M5 19h14',
-  windowMaximize: 'M4 4h16v16H4z',
-  windowRestore: 'M8 8h12v12H8zM4 4h12v2H6v10H4z',
-  windowClose: 'M18 6 6 18M6 6l12 12',
+const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
+  statusIdle: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+    </>
+  ),
+  statusBusy: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="8" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="12" r="1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+      <line x1="7" y1="2" x2="7" y2="22" />
+      <line x1="17" y1="2" x2="17" y2="22" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <line x1="2" y1="7" x2="7" y2="7" />
+      <line x1="2" y1="17" x2="7" y2="17" />
+      <line x1="17" y1="17" x2="22" y2="17" />
+      <line x1="17" y1="7" x2="22" y2="7" />
+    </>
+  ),
+  music: (
+    <>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </>
+  ),
+  edit: (
+    <>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <line x1="9" y1="15" x2="15" y2="9" />
+      <line x1="15" y1="15" x2="9" y2="9" />
+    </>
+  ),
+  metadata: (
+    <>
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </>
+  ),
+  autoplayOn: (
+    <>
+      <path d="M12 2a10 10 0 1 0 10 10" />
+      <polygon points="10 8 16 12 10 16 10 8" />
+      <path d="M22 12c0-5.52-4.48-10-10-10" />
+    </>
+  ),
+  autoplayOff: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </>
+  ),
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </>
+  ),
+  day: (
+    <>
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </>
+  ),
+  night: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
+  minus: <path d="M6 12h12" />,
+  plus: (
+    <>
+      <path d="M12 6v12" />
+      <path d="M6 12h12" />
+    </>
+  ),
+  zoom: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+      <path d="M11 8v6" />
+      <path d="M8 11h6" />
+    </>
+  ),
+  play: <polygon points="5 3 19 12 5 21 5 3" />,
+  pause: <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" stroke="none" />,
+  stop: <rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none" />,
+  windowMinimize: <path d="M5 19h14" />,
+  windowMaximize: <rect x="3" y="3" width="18" height="18" rx="2" />,
+  windowRestore: (
+    <>
+      <rect x="3" y="11" width="10" height="10" rx="1" />
+      <path d="M11 3h7a1 1 0 0 1 1 1v7" />
+      <path d="M11 3v4" />
+      <path d="M15 11h4" />
+    </>
+  ),
+  windowClose: (
+    <>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </>
+  ),
 }
 
 function HeaderActionIcon({ name }: { name: HeaderIconName }) {
   return (
     <svg aria-hidden="true" className="header-action-icon" viewBox="0 0 24 24">
-      <path d={HEADER_ICON_PATHS[name]} />
+      {HEADER_ICON_NODES[name]}
     </svg>
   )
 }
@@ -68,6 +170,7 @@ export interface AppHeaderProps {
   canThumbnailScaleUp: boolean
   autoPlayEnabled: boolean
   autoPlayInterval: number
+  paletteMode: 'day' | 'night'
   importMenuOpen: boolean
   taskStatusLabel: string
   importTaskPanelOpen: boolean
@@ -85,6 +188,7 @@ export interface AppHeaderProps {
   onThumbnailScaleUp: () => void
   onAutoPlayEnabledChange: (enabled: boolean) => void
   onAutoPlayIntervalChange: (value: number) => void
+  onTogglePaletteMode: () => void
   onOpenSettings: () => void
 }
 
@@ -99,6 +203,7 @@ function AppHeader({
   canThumbnailScaleUp,
   autoPlayEnabled,
   autoPlayInterval,
+  paletteMode,
   importMenuOpen,
   taskStatusLabel,
   importTaskPanelOpen,
@@ -116,6 +221,7 @@ function AppHeader({
   onThumbnailScaleUp,
   onAutoPlayEnabledChange,
   onAutoPlayIntervalChange,
+  onTogglePaletteMode,
   onOpenSettings,
 }: AppHeaderProps) {
   const [windowMaximized, setWindowMaximized] = useState(false)
@@ -303,6 +409,16 @@ function AppHeader({
             </span>
           </button>
 
+          <button
+            aria-label={paletteMode === 'day' ? '切换到夜间配色' : '切换到日间配色'}
+            aria-pressed={paletteMode === 'night'}
+            className="header-settings-btn header-icon-only-btn"
+            type="button"
+            onClick={onTogglePaletteMode}
+          >
+            <HeaderActionIcon name={paletteMode === 'day' ? 'night' : 'day'} />
+          </button>
+
           <button aria-label="设置" className="header-settings-btn" type="button" onClick={onOpenSettings}>
             <span className="header-btn-content">
               <span className="header-btn-icon">
@@ -323,13 +439,13 @@ function AppHeader({
                 onMouseEnter={() => setShowMusicQuickActions(false)}
                 onClick={() => onModeChange('image')}
               >
-              <span className="header-btn-content">
-                <span className="header-btn-icon">
-                  <HeaderActionIcon name="image" />
+                <span className="header-btn-content">
+                  <span className="header-btn-icon">
+                    <HeaderActionIcon name="image" />
+                  </span>
+                  <span className="header-btn-label">图片模式</span>
                 </span>
-                <span className="header-btn-label">图片模式</span>
-              </span>
-            </button>
+              </button>
               <button
                 aria-label="视频模式"
                 className={mode === 'video' ? 'is-active' : ''}
@@ -337,13 +453,13 @@ function AppHeader({
                 onMouseEnter={() => setShowMusicQuickActions(false)}
                 onClick={() => onModeChange('video')}
               >
-              <span className="header-btn-content">
-                <span className="header-btn-icon">
-                  <HeaderActionIcon name="video" />
+                <span className="header-btn-content">
+                  <span className="header-btn-icon">
+                    <HeaderActionIcon name="video" />
+                  </span>
+                  <span className="header-btn-label">视频模式</span>
                 </span>
-                <span className="header-btn-label">视频模式</span>
-              </span>
-            </button>
+              </button>
               <button
                 aria-label="音乐模式"
                 className={mode === 'music' ? 'is-active' : ''}
@@ -384,52 +500,6 @@ function AppHeader({
           </div>
         </div>
 
-        <div className="header-group header-group-search">
-          <button
-            aria-label="检索"
-            className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
-            type="button"
-            onClick={onToggleSearchPanel}
-          >
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
-                <HeaderActionIcon name="search" />
-              </span>
-              <span className="header-btn-label">检索</span>
-            </span>
-          </button>
-
-          <button
-            aria-label="文件管理"
-            className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`}
-            type="button"
-            onClick={onToggleManageMode}
-          >
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
-                <HeaderActionIcon name="edit" />
-              </span>
-              <span className="header-btn-label">文件管理</span>
-            </span>
-          </button>
-
-          <button
-            aria-label="元数据管理"
-            className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`}
-            type="button"
-            onClick={onToggleMetadataManageMode}
-          >
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
-                <HeaderActionIcon name="metadata" />
-              </span>
-              <span className="header-btn-label">元数据管理</span>
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div className="header-right">
         <div className="header-group header-group-playback">
           <div
             className={`header-popover-control ${openHeaderPopover === 'scale' ? 'is-open' : ''}`}
@@ -485,7 +555,7 @@ function AppHeader({
               type="button"
               onClick={() => onAutoPlayEnabledChange(!autoPlayEnabled)}
             >
-              <HeaderActionIcon name="autoplay" />
+              <HeaderActionIcon name={autoPlayEnabled ? 'autoplayOn' : 'autoplayOff'} />
             </button>
 
             <div className="header-popover-panel" hidden={openHeaderPopover !== 'autoplay'} role="dialog" aria-label="自动播放速度设置">
@@ -513,6 +583,52 @@ function AppHeader({
           </div>
         </div>
 
+        <div className="header-group header-group-search">
+          <button
+            aria-label="检索"
+            className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
+            type="button"
+            onClick={onToggleSearchPanel}
+          >
+            <span className="header-btn-content">
+              <span className="header-btn-icon">
+                <HeaderActionIcon name="search" />
+              </span>
+              <span className="header-btn-label">检索</span>
+            </span>
+          </button>
+
+          <button
+            aria-label="文件管理"
+            className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`}
+            type="button"
+            onClick={onToggleManageMode}
+          >
+            <span className="header-btn-content">
+              <span className="header-btn-icon">
+                <HeaderActionIcon name="edit" />
+              </span>
+              <span className="header-btn-label">文件管理</span>
+            </span>
+          </button>
+
+          <button
+            aria-label="元数据管理"
+            className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`}
+            type="button"
+            onClick={onToggleMetadataManageMode}
+          >
+            <span className="header-btn-content">
+              <span className="header-btn-icon">
+                <HeaderActionIcon name="metadata" />
+              </span>
+              <span className="header-btn-label">元数据管理</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="header-right">
         <div aria-label="窗口控制" className="window-controls header-group header-group-window" role="group">
           <button
             aria-label="最小化窗口"

@@ -22,6 +22,9 @@ export interface SettingsPanelProps {
   settingsOpen: boolean
   styleId: string
   paletteId: string
+  paletteMode: 'day' | 'night'
+  paletteDayId: string
+  paletteNightId: string
   headerHeight: number
   settingsFontSize: number
   sidebarRatio: number
@@ -60,7 +63,9 @@ export interface SettingsPanelProps {
   runtimeInfo: ReadRuntimeInfoResponseDto | null
   onClose: () => void
   onStyleChange: (value: string) => void
-  onPaletteChange: (value: string) => void
+  onPaletteModeChange: (value: 'day' | 'night') => void
+  onPaletteDayChange: (value: string) => void
+  onPaletteNightChange: (value: string) => void
   onHeaderHeightChange: (value: number) => void
   onSettingsFontSizeChange: (value: number) => void
   onSidebarRatioChange: (value: number) => void
@@ -127,6 +132,9 @@ function SettingsPanel({
   settingsOpen,
   styleId,
   paletteId,
+  paletteMode,
+  paletteDayId,
+  paletteNightId,
   headerHeight,
   settingsFontSize,
   sidebarRatio,
@@ -165,7 +173,9 @@ function SettingsPanel({
   runtimeInfo,
   onClose,
   onStyleChange,
-  onPaletteChange,
+  onPaletteModeChange,
+  onPaletteDayChange,
+  onPaletteNightChange,
   onHeaderHeightChange,
   onSettingsFontSizeChange,
   onSidebarRatioChange,
@@ -418,6 +428,9 @@ function SettingsPanel({
     adReviewVisionSaveMessage,
     styleId,
     paletteId,
+    paletteMode,
+    paletteDayId,
+    paletteNightId,
     shortcutConflicts,
     shortcutLabelByAction,
     databaseResetPending,
@@ -456,7 +469,9 @@ function SettingsPanel({
     onTestAdReviewVisionModel,
     onSaveAdReviewVisionModel,
     onStyleChange,
-    onPaletteChange,
+    onPaletteModeChange,
+    onPaletteDayChange,
+    onPaletteNightChange,
     onClearDatabase,
     onPickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath,

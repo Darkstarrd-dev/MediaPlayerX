@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { AppSettings } from '../../contracts/settings'
 import type { MediaRepository } from '../backend/repository/types'
+import { resolvePaletteModeById } from '../theme/themeRegistry'
 
 interface UseSettingsPersistenceParams {
   settings: AppSettings
@@ -86,9 +87,20 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   const rawStyleId = typeof next.styleId === 'string' ? next.styleId.trim() : ''
   const rawPaletteId = typeof next.paletteId === 'string' ? next.paletteId.trim() : ''
   const rawThemeId = typeof next.themeId === 'string' ? next.themeId.trim() : ''
+  const rawPaletteMode =
+    next.paletteMode === 'night'
+      ? 'night'
+      : next.paletteMode === 'day'
+        ? 'day'
+        : resolvePaletteModeById(rawPaletteId || rawThemeId || '')
+  const rawPaletteDayId = typeof next.paletteDayId === 'string' ? next.paletteDayId.trim() : ''
+  const rawPaletteNightId = typeof next.paletteNightId === 'string' ? next.paletteNightId.trim() : ''
 
   next.styleId = rawStyleId || 'flush'
   next.paletteId = rawPaletteId || rawThemeId || 'parchment'
+  next.paletteMode = rawPaletteMode
+  next.paletteDayId = rawPaletteDayId || (rawPaletteMode === 'day' ? next.paletteId : 'parchment')
+  next.paletteNightId = rawPaletteNightId || (rawPaletteMode === 'night' ? next.paletteId : 'tokyo-night')
   next.themeId = next.paletteId
 
   const legacyVectorPanelHeight = next.vectorPanelHeight
