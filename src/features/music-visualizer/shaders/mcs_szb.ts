@@ -2,11 +2,11 @@ import type { MusicVisualizerShaderDefinition } from '../types'
 
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'mcs-szb',
-  label: 'Shadertoy McsSzB',
+  label: 'Default',
   defaultEntry: true,
   fragmentSource: String.raw`const float HUE = 0.0;
 const float HEADPHONE_OFFSET_X = 0.15;
-const float HEADPHONE_OFFSET_Y = -0.15;
+const float SCENE_OFFSET_Y = 0.15;
 
 // SVG rendering from: https://www.shadertoy.com/view/ldXyRn
 #define N 16. // splines discretization. Lower it on slow GPUs
@@ -130,7 +130,7 @@ vec3 hue_shift(vec3 c, float s){
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    vec2 uv = fragCoord / iResolution.xy;
+    vec2 uv = fragCoord / iResolution.xy + vec2(0.0, SCENE_OFFSET_Y);
 
     const vec2 scale = vec2(40, 1);
     float id = floor(uv.x * scale.x) / scale.x;
@@ -148,7 +148,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     fragColor = vec4(col, 1.0);
     float minResolution = min(iResolution.x, iResolution.y);
     vec2 svgCoord = fragCoord - 0.5 * (iResolution.xy - vec2(minResolution));
-    SVG(svgCoord / minResolution + vec2(HEADPHONE_OFFSET_X, HEADPHONE_OFFSET_Y), fragColor);
+    SVG(svgCoord / minResolution + vec2(HEADPHONE_OFFSET_X, SCENE_OFFSET_Y), fragColor);
 }
 `,
 }

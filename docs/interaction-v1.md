@@ -157,7 +157,7 @@
 
 - Main 主区采用 names-only 列表（文件名/大小/时长），不提供缩略图网格。
 - 播放控件固定为 `music-controls-shell`：音量、上一首、播放/暂停、下一首。
-- 主区可视化区域改为 Shader 渲染（默认 Shadertoy `McsSzB` 单 pass），不再显示占位文案。
+- 主区可视化区域改为 Shader 渲染（默认 `Default`，来源 Shadertoy `McsSzB` 单 pass），不再显示占位文案。
 - 可视化支持两种渲染后端：`GPU(WebGL2 Shader)` 与 `CPU(Canvas2D fallback)`。
 - 可视化运行时显示分辨率与 FPS 调试 HUD（由设置项开关控制）。
 - 可视化区域支持全屏覆盖层；全屏态提供“退出全屏”按钮并复用 `Esc/F` 与右键关闭语义。

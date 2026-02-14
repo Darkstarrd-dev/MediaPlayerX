@@ -222,7 +222,7 @@ function MusicMainSection({
   }
 
   const musicControlsShell = (
-    <div className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating' : ''}`}>
+    <div className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating' : ''}`} onMouseLeave={closePopover}>
       <div className="music-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(clampedAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
         <input

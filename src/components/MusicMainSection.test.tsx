@@ -336,11 +336,16 @@ describe('MusicMainSection', () => {
   })
 
   it('支持在控制栏打开 Shader 列表', () => {
-    renderMusicMainSection()
+    const { container } = renderMusicMainSection()
 
     const shaderButton = screen.getByRole('button', { name: /^Shader：/ })
     fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
 
-    expect(screen.getByRole('button', { name: 'Shadertoy McsSzB' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Default' })).toBeInTheDocument()
+
+    const controlsShell = container.querySelector('.music-controls-shell') as HTMLElement
+    fireEvent.mouseLeave(controlsShell)
+
+    expect(screen.queryByRole('button', { name: 'Default' })).toBeNull()
   })
 })

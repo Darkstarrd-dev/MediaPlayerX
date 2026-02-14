@@ -115,13 +115,14 @@
 - [ ] 最小测试集通过。
 - [ ] 本文档已追加本次特有坑点与规避策略。
 
-## 6. 当前基线经验（McsSzB）
+## 6. 当前基线经验（Default / McsSzB）
 
 - Shader：`src/features/music-visualizer/shaders/mcs_szb.ts`
+- 来源 URL：`https://www.shadertoy.com/view/McsSzB`
 - 已做适配：
   - 移除会导致宽屏误裁切的硬阈值早退。
   - 使用基于 `min(iResolution.x, iResolution.y)` 的居中坐标映射。
-  - 为对齐目标构图，耳机主体增加偏移参数：`HEADPHONE_OFFSET_X`、`HEADPHONE_OFFSET_Y`。
+  - 为对齐目标构图，增加偏移参数：`HEADPHONE_OFFSET_X`（耳机横向）与 `SCENE_OFFSET_Y`（耳机+频谱整体纵向）。
 
 ## 7. 变更记录（持续追加）
 

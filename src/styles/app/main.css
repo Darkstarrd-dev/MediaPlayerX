@@ -447,9 +447,12 @@
   width: max-content;
   max-width: min(360px, calc(100vw - 24px));
   padding: 8px;
-  display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.music-ctrl-panel.is-shader[hidden] {
+  display: none;
 }
 
 .music-ctrl-panel-title {
