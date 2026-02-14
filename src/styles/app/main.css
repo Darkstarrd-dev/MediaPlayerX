@@ -420,6 +420,11 @@
   align-items: center;
 }
 
+.music-ctrl-popover.is-dock-left .music-ctrl-panel {
+  left: 0;
+  transform: none;
+}
+
 .music-ctrl-popover.is-open::after {
   content: '';
   position: absolute;
@@ -461,6 +466,24 @@
   gap: 6px;
 }
 
+.music-ctrl-panel.is-volume {
+  min-width: 52px;
+  width: 52px;
+  min-height: 142px;
+  padding: 10px 0;
+  align-items: center;
+}
+
+.music-ctrl-volume-axis {
+  width: 120px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
 .music-ctrl-panel.is-shader[hidden] {
   display: none;
 }
@@ -479,6 +502,59 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.music-ctrl-panel.is-shader-settings {
+  min-width: 280px;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 10px;
+}
+
+.music-ctrl-shader-settings-form {
+  gap: 8px;
+}
+
+.music-ctrl-shader-field {
+  display: grid;
+  gap: 4px;
+}
+
+.music-ctrl-shader-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mpx-player-surface-text);
+}
+
+.music-ctrl-shader-input {
+  width: 100%;
+  min-height: 30px;
+  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
+  border-radius: var(--mpx-control-radius);
+  background: var(--mpx-player-btn-bg);
+  color: var(--mpx-player-btn-text);
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.music-ctrl-shader-input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--mpx-color-accent, #56b6ff) 70%, #fff 30%);
+  outline-offset: 1px;
+}
+
+.music-ctrl-shader-range {
+  width: 100%;
+}
+
+.music-ctrl-shader-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 28px;
+  border: var(--mpx-control-border-width) solid var(--mpx-player-hud-border);
+  border-radius: var(--mpx-control-radius);
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--mpx-player-surface-bg) 86%, #fff 14%);
 }
 
 .music-ctrl-panel-option {
@@ -508,10 +584,9 @@
 }
 
 .music-ctrl-volume-range {
-  width: 6px;
-  height: 120px;
-  writing-mode: vertical-lr;
-  direction: rtl;
+  width: 100%;
+  min-width: 120px;
+  margin: 0;
 }
 
 .music-native-audio {

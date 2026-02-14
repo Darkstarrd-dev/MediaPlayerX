@@ -8,6 +8,8 @@ import {
   type ShortcutMap,
 } from '../shortcuts'
 
+const DEFAULT_MUSIC_SHADER_ID = 'mcs-szb'
+
 export const DEFAULT_SETTINGS: AppSettings = {
   mode: 'image',
   vectorMode: false,
@@ -51,6 +53,17 @@ export const DEFAULT_SETTINGS: AppSettings = {
   musicVisualizerToneMapStrength: 0.55,
   musicVisualizerShowFps: false,
   musicVisualizerRenderer: 'gpu',
+  musicVisualizerShaderSettingsById: {
+    [DEFAULT_MUSIC_SHADER_ID]: {
+      renderLongEdgePx: 1280,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.55,
+      showFps: false,
+      renderer: 'gpu',
+    },
+  },
   proxyServer: '',
   ehentaiCookies: '',
   adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
@@ -106,6 +119,7 @@ const SETTINGS_KEYS: (keyof AppSettings)[] = [
   'musicVisualizerToneMapStrength',
   'musicVisualizerShowFps',
   'musicVisualizerRenderer',
+  'musicVisualizerShaderSettingsById',
   'proxyServer',
   'ehentaiCookies',
   'adReviewVisionEndpoint',

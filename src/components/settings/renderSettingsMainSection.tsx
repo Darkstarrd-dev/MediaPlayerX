@@ -45,13 +45,6 @@ interface RenderSettingsMainSectionParams {
   thumbnailGapScale: number
   thumbnailQuality: number
   thumbnailWidthInputValue: string
-  musicVisualizerRenderLongEdgeInputValue: string
-  musicVisualizerFpsCap: 30 | 60 | 120
-  musicVisualizerToneMapMode: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos'
-  musicVisualizerToneMapExposure: number
-  musicVisualizerToneMapStrength: number
-  musicVisualizerShowFps: boolean
-  musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
   ehentaiCookies: string
   adReviewVisionEndpoint: string
@@ -94,15 +87,6 @@ interface RenderSettingsMainSectionParams {
   onThumbnailWidthInputChange: (value: string) => void
   onThumbnailWidthInputBlur: () => void
   onThumbnailWidthInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
-  onMusicVisualizerRenderLongEdgeInputChange: (value: string) => void
-  onMusicVisualizerRenderLongEdgeInputBlur: () => void
-  onMusicVisualizerRenderLongEdgeInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
-  onMusicVisualizerFpsCapChange: (value: 30 | 60 | 120) => void
-  onMusicVisualizerToneMapModeChange: (value: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos') => void
-  onMusicVisualizerToneMapExposureChange: (value: number) => void
-  onMusicVisualizerToneMapStrengthChange: (value: number) => void
-  onMusicVisualizerShowFpsChange: (value: boolean) => void
-  onMusicVisualizerRendererChange: (value: 'gpu' | 'cpu') => void
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
@@ -145,13 +129,6 @@ export function renderSettingsMainSection({
   thumbnailGapScale,
   thumbnailQuality,
   thumbnailWidthInputValue,
-  musicVisualizerRenderLongEdgeInputValue,
-  musicVisualizerFpsCap,
-  musicVisualizerToneMapMode,
-  musicVisualizerToneMapExposure,
-  musicVisualizerToneMapStrength,
-  musicVisualizerShowFps,
-  musicVisualizerRenderer,
   proxyServer,
   ehentaiCookies,
   adReviewVisionEndpoint,
@@ -194,15 +171,6 @@ export function renderSettingsMainSection({
   onThumbnailWidthInputChange,
   onThumbnailWidthInputBlur,
   onThumbnailWidthInputKeyDown,
-  onMusicVisualizerRenderLongEdgeInputChange,
-  onMusicVisualizerRenderLongEdgeInputBlur,
-  onMusicVisualizerRenderLongEdgeInputKeyDown,
-  onMusicVisualizerFpsCapChange,
-  onMusicVisualizerToneMapModeChange,
-  onMusicVisualizerToneMapExposureChange,
-  onMusicVisualizerToneMapStrengthChange,
-  onMusicVisualizerShowFpsChange,
-  onMusicVisualizerRendererChange,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onAdReviewVisionEndpointChange,
@@ -410,78 +378,6 @@ export function renderSettingsMainSection({
           </label>
         </section>
 
-        <section className="settings-group">
-          <header className="settings-group-head">
-            <span>频谱可视化设置</span>
-          </header>
-          <label>
-            实际渲染长边分辨率
-            <input
-              max={4096}
-              min={240}
-              type="number"
-              value={musicVisualizerRenderLongEdgeInputValue}
-              onBlur={onMusicVisualizerRenderLongEdgeInputBlur}
-              onChange={(event) => onMusicVisualizerRenderLongEdgeInputChange(event.target.value)}
-              onKeyDown={onMusicVisualizerRenderLongEdgeInputKeyDown}
-            />
-          </label>
-          <label className="settings-toggle-row">
-            <span>显示 FPS 调试信息</span>
-            <input type="checkbox" checked={musicVisualizerShowFps} onChange={(event) => onMusicVisualizerShowFpsChange(event.target.checked)} />
-          </label>
-          <label>
-            渲染帧率上限
-            <select value={musicVisualizerFpsCap} onChange={(event) => onMusicVisualizerFpsCapChange(Number(event.target.value) as 30 | 60 | 120)}>
-              <option value={30}>30 FPS</option>
-              <option value={60}>60 FPS</option>
-              <option value={120}>120 FPS</option>
-            </select>
-          </label>
-          <label>
-            Tone Mapping
-            <select
-              value={musicVisualizerToneMapMode}
-              onChange={(event) => onMusicVisualizerToneMapModeChange(event.target.value as 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos')}
-            >
-              <option value="off">关闭</option>
-              <option value="aces">ACES Filmic</option>
-              <option value="reinhard">Reinhard</option>
-              <option value="filmic">Filmic (Blender)</option>
-              <option value="agx">AgX (Blender 5.1)</option>
-              <option value="khronos">Khronos PBR Neutral (Blender 5.1)</option>
-            </select>
-          </label>
-          <label>
-            Tone Mapping 曝光
-            <input
-              max={2}
-              min={0.5}
-              step={0.05}
-              type="number"
-              value={musicVisualizerToneMapExposure}
-              onChange={(event) => onMusicVisualizerToneMapExposureChange(Number(event.target.value))}
-            />
-          </label>
-          <label>
-            Tone Mapping 强度 {(musicVisualizerToneMapStrength * 100).toFixed(0)}%
-            <input
-              max={1}
-              min={0}
-              step={0.01}
-              type="range"
-              value={musicVisualizerToneMapStrength}
-              onChange={(event) => onMusicVisualizerToneMapStrengthChange(Number(event.target.value))}
-            />
-          </label>
-          <label>
-            渲染后端
-            <select value={musicVisualizerRenderer} onChange={(event) => onMusicVisualizerRendererChange(event.target.value as 'gpu' | 'cpu')}>
-              <option value="gpu">GPU (WebGL2 Shader)</option>
-              <option value="cpu">CPU (Canvas2D Fallback)</option>
-            </select>
-          </label>
-        </section>
       </div>
     )
   }

@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
+import { resolveDefaultMusicVisualizerShader } from '../music-visualizer/shaderRegistry'
 import type { AudioItem, MusicLoopMode } from '../../types'
 import { clamp } from '../../utils/ui'
 
@@ -43,6 +44,7 @@ interface BuildMusicMainSectionPropsParams {
   musicVisualizerToneMapStrength: number
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
+  musicVisualizerShaderSettingsById: AppSettings['musicVisualizerShaderSettingsById']
   updateSettings: (patch: Partial<AppSettings>) => void
 }
 
@@ -134,6 +136,19 @@ function resolveScopedPlaybackOrder(params: {
 }
 
 export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsParams) {
+  const defaultShaderId = resolveDefaultMusicVisualizerShader()?.id ?? 'mcs-szb'
+  const selectedShaderId = params.musicVisualizerSelectedShaderId.trim().slice(0, 64) || defaultShaderId
+  const fallbackShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string] = {
+    renderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
+    fpsCap: params.musicVisualizerFpsCap,
+    toneMapMode: params.musicVisualizerToneMapMode,
+    toneMapExposure: params.musicVisualizerToneMapExposure,
+    toneMapStrength: params.musicVisualizerToneMapStrength,
+    showFps: params.musicVisualizerShowFps,
+    renderer: params.musicVisualizerRenderer,
+  }
+  const selectedShaderSettings = params.musicVisualizerShaderSettingsById[selectedShaderId] ?? fallbackShaderSettings
+
   const libraryPlaybackOrder = resolveLibraryPlaybackOrder(params)
   const selectedAudio = params.audioByIdEffective.get(params.selectedAudioId) ?? params.focusedAudio
   const scopedPlaybackOrder = resolveScopedPlaybackOrder({
@@ -198,14 +213,8 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     onToggleFullscreen: () => {
       params.setFullscreenActiveWithAutoStop(!params.fullscreenActive)
     },
-    musicVisualizerSelectedShaderId: params.musicVisualizerSelectedShaderId,
-    musicVisualizerRenderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
-    musicVisualizerFpsCap: params.musicVisualizerFpsCap,
-    musicVisualizerToneMapMode: params.musicVisualizerToneMapMode,
-    musicVisualizerToneMapExposure: params.musicVisualizerToneMapExposure,
-    musicVisualizerToneMapStrength: params.musicVisualizerToneMapStrength,
-    musicVisualizerShowFps: params.musicVisualizerShowFps,
-    musicVisualizerRenderer: params.musicVisualizerRenderer,
+    musicVisualizerSelectedShaderId: selectedShaderId,
+    musicVisualizerShaderSettings: selectedShaderSettings,
     onPrevAudio: () => {
       if (!canStepBetweenTracks) {
         return
@@ -227,7 +236,31 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
       params.setMusicLoopMode(nextMode)
     },
     onMusicVisualizerSelectedShaderIdChange: (value: string) => {
-      params.updateSettings({ musicVisualizerSelectedShaderId: value })
+      const nextShaderId = value.trim().slice(0, 64)
+      if (!nextShaderId) {
+        return
+      }
+      const nextSettingsById = { ...params.musicVisualizerShaderSettingsById }
+      if (!nextSettingsById[nextShaderId]) {
+        nextSettingsById[nextShaderId] = selectedShaderSettings
+      }
+      params.updateSettings({
+        musicVisualizerSelectedShaderId: nextShaderId,
+        musicVisualizerShaderSettingsById: nextSettingsById,
+      })
+    },
+    onMusicVisualizerShaderSettingsChange: (patch: Partial<AppSettings['musicVisualizerShaderSettingsById'][string]>) => {
+      const current = params.musicVisualizerShaderSettingsById[selectedShaderId] ?? fallbackShaderSettings
+      const next: AppSettings['musicVisualizerShaderSettingsById'][string] = {
+        ...current,
+        ...patch,
+      }
+      params.updateSettings({
+        musicVisualizerShaderSettingsById: {
+          ...params.musicVisualizerShaderSettingsById,
+          [selectedShaderId]: next,
+        },
+      })
     },
   }
 }

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { VideoControlIcon } from './VideoControlIcon'
+import type { AppSettings } from '../contracts/settings'
 import type { AudioItem, MusicLoopMode } from '../types'
 import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from '../features/music-visualizer/shaderRegistry'
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp, formatSeconds } from '../utils/ui'
 
-type MusicPopoverKey = 'volume' | 'shader'
+type MusicPopoverKey = 'volume' | 'shader' | 'shaderSettings'
 
 interface MusicMainSectionProps {
   active: boolean
@@ -38,14 +39,9 @@ interface MusicMainSectionProps {
   fullscreenActive: boolean
   onToggleFullscreen: () => void
   musicVisualizerSelectedShaderId: string
-  musicVisualizerRenderLongEdgePx: number
-  musicVisualizerFpsCap: 30 | 60 | 120
-  musicVisualizerToneMapMode: 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos'
-  musicVisualizerToneMapExposure: number
-  musicVisualizerToneMapStrength: number
-  musicVisualizerShowFps: boolean
-  musicVisualizerRenderer: 'gpu' | 'cpu'
+  musicVisualizerShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string]
   onMusicVisualizerSelectedShaderIdChange?: (value: string) => void
+  onMusicVisualizerShaderSettingsChange: (patch: Partial<AppSettings['musicVisualizerShaderSettingsById'][string]>) => void
   onPrevAudio: () => void
   onNextAudio: () => void
   onCycleMusicLoopMode: () => void
@@ -94,14 +90,9 @@ function MusicMainSection({
   fullscreenActive,
   onToggleFullscreen,
   musicVisualizerSelectedShaderId,
-  musicVisualizerRenderLongEdgePx,
-  musicVisualizerFpsCap,
-  musicVisualizerToneMapMode,
-  musicVisualizerToneMapExposure,
-  musicVisualizerToneMapStrength,
-  musicVisualizerShowFps,
-  musicVisualizerRenderer,
+  musicVisualizerShaderSettings,
   onMusicVisualizerSelectedShaderIdChange = () => undefined,
+  onMusicVisualizerShaderSettingsChange,
   onPrevAudio,
   onNextAudio,
   onCycleMusicLoopMode,
@@ -115,6 +106,14 @@ function MusicMainSection({
   const [audioMuted, setAudioMuted] = useState(false)
   const [audioTime, setAudioTime] = useState(0)
   const [audioDurationSec, setAudioDurationSec] = useState(0)
+
+  const musicVisualizerRenderLongEdgePx = musicVisualizerShaderSettings.renderLongEdgePx
+  const musicVisualizerFpsCap = musicVisualizerShaderSettings.fpsCap
+  const musicVisualizerToneMapMode = musicVisualizerShaderSettings.toneMapMode
+  const musicVisualizerToneMapExposure = musicVisualizerShaderSettings.toneMapExposure
+  const musicVisualizerToneMapStrength = musicVisualizerShaderSettings.toneMapStrength
+  const musicVisualizerShowFps = musicVisualizerShaderSettings.showFps
+  const musicVisualizerRenderer = musicVisualizerShaderSettings.renderer
 
   const selectedShaderId = useMemo(() => {
     const matched = resolveMusicVisualizerShaderById(musicVisualizerSelectedShaderId)
@@ -261,7 +260,6 @@ function MusicMainSection({
           <div
             className={`music-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
             onMouseEnter={() => setOpenPopover('volume')}
-            onMouseLeave={closePopover}
           >
             <button
               aria-controls="music-main-popover-volume"
@@ -275,20 +273,28 @@ function MusicMainSection({
               <VideoControlIcon name={audioMuted ? 'volumeMuted' : 'volume'} />
             </button>
 
-            <div className="music-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="music-main-popover-volume" role="dialog">
-              <input
-                aria-label="音量滑条"
-                className="music-ctrl-volume-range"
-                max={100}
-                min={0}
-                step={1}
-                type="range"
-                value={audioMuted ? 0 : audioVolume}
-                onChange={(event) => {
-                  setAudioMuted(false)
-                  setAudioVolume(clamp(Number(event.target.value), 0, 100))
-                }}
-              />
+            <div
+              className="music-ctrl-panel is-volume"
+              hidden={openPopover !== 'volume'}
+              id="music-main-popover-volume"
+              role="dialog"
+              onMouseLeave={closePopover}
+            >
+              <div className="music-ctrl-volume-axis">
+                <input
+                  aria-label="音量滑条"
+                  className="music-ctrl-volume-range"
+                  max={100}
+                  min={0}
+                  step={1}
+                  type="range"
+                  value={audioMuted ? 0 : audioVolume}
+                  onChange={(event) => {
+                    setAudioMuted(false)
+                    setAudioVolume(clamp(Number(event.target.value), 0, 100))
+                  }}
+                />
+              </div>
             </div>
           </div>
 
@@ -328,6 +334,142 @@ function MusicMainSection({
                 ) : (
                   <span className="music-ctrl-panel-note">暂无 Shader</span>
                 )}
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={`music-ctrl-popover is-dock-left ${openPopover === 'shaderSettings' ? 'is-open' : ''}`}
+            onMouseEnter={() => setOpenPopover('shaderSettings')}
+            onMouseLeave={closePopover}
+          >
+            <button
+              aria-controls="music-main-popover-shader-settings"
+              aria-expanded={openPopover === 'shaderSettings'}
+              aria-haspopup="dialog"
+              aria-label="Shader 设置"
+              className="video-action-btn"
+              type="button"
+            >
+              <VideoControlIcon name="settings" />
+            </button>
+            <div
+              className="music-ctrl-panel is-shader is-shader-settings"
+              hidden={openPopover !== 'shaderSettings'}
+              id="music-main-popover-shader-settings"
+              role="dialog"
+            >
+              <span className="music-ctrl-panel-title">{`${selectedShaderLabel} 设置`}</span>
+              <div className="music-ctrl-panel-options music-ctrl-shader-settings-form">
+                <label className="music-ctrl-shader-field">
+                  <span className="music-ctrl-shader-label">实际渲染长边分辨率</span>
+                  <input
+                    className="music-ctrl-shader-input"
+                    max={4096}
+                    min={240}
+                    type="number"
+                    value={musicVisualizerRenderLongEdgePx}
+                    onChange={(event) => {
+                      const value = Number(event.target.value)
+                      if (!Number.isFinite(value)) {
+                        return
+                      }
+                      onMusicVisualizerShaderSettingsChange({ renderLongEdgePx: Math.max(240, Math.min(4096, Math.round(value))) })
+                    }}
+                  />
+                </label>
+                <label className="music-ctrl-shader-field">
+                  <span className="music-ctrl-shader-label">渲染帧率上限</span>
+                  <select
+                    className="music-ctrl-shader-input"
+                    value={musicVisualizerFpsCap}
+                    onChange={(event) =>
+                      onMusicVisualizerShaderSettingsChange({
+                        fpsCap: Number(event.target.value) as 30 | 60 | 120,
+                      })
+                    }
+                  >
+                    <option value={30}>30 FPS</option>
+                    <option value={60}>60 FPS</option>
+                    <option value={120}>120 FPS</option>
+                  </select>
+                </label>
+                <label className="music-ctrl-shader-field">
+                  <span className="music-ctrl-shader-label">Tone Mapping</span>
+                  <select
+                    className="music-ctrl-shader-input"
+                    value={musicVisualizerToneMapMode}
+                    onChange={(event) =>
+                      onMusicVisualizerShaderSettingsChange({
+                        toneMapMode: event.target.value as 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos',
+                      })
+                    }
+                  >
+                    <option value="off">关闭</option>
+                    <option value="aces">ACES Filmic</option>
+                    <option value="reinhard">Reinhard</option>
+                    <option value="filmic">Filmic (Blender)</option>
+                    <option value="agx">AgX (Blender 5.1)</option>
+                    <option value="khronos">Khronos PBR Neutral (Blender 5.1)</option>
+                  </select>
+                </label>
+                <label className="music-ctrl-shader-field">
+                  <span className="music-ctrl-shader-label">Tone Mapping 曝光</span>
+                  <input
+                    className="music-ctrl-shader-input"
+                    max={2}
+                    min={0.5}
+                    step={0.05}
+                    type="number"
+                    value={musicVisualizerToneMapExposure}
+                    onChange={(event) => {
+                      const value = Number(event.target.value)
+                      if (!Number.isFinite(value)) {
+                        return
+                      }
+                      onMusicVisualizerShaderSettingsChange({ toneMapExposure: Math.max(0.5, Math.min(2, value)) })
+                    }}
+                  />
+                </label>
+                <label className="music-ctrl-shader-field">
+                  <span className="music-ctrl-shader-label">Tone Mapping 强度 {(musicVisualizerToneMapStrength * 100).toFixed(0)}%</span>
+                  <input
+                    className="music-ctrl-shader-range"
+                    max={1}
+                    min={0}
+                    step={0.01}
+                    type="range"
+                    value={musicVisualizerToneMapStrength}
+                    onChange={(event) =>
+                      onMusicVisualizerShaderSettingsChange({
+                        toneMapStrength: Math.max(0, Math.min(1, Number(event.target.value))),
+                      })
+                    }
+                  />
+                </label>
+                <label className="music-ctrl-shader-toggle">
+                  <span className="music-ctrl-shader-label">显示 FPS 调试信息</span>
+                  <input
+                    type="checkbox"
+                    checked={musicVisualizerShowFps}
+                    onChange={(event) => onMusicVisualizerShaderSettingsChange({ showFps: event.target.checked })}
+                  />
+                </label>
+                <label className="music-ctrl-shader-field">
+                  <span className="music-ctrl-shader-label">渲染后端</span>
+                  <select
+                    className="music-ctrl-shader-input"
+                    value={musicVisualizerRenderer}
+                    onChange={(event) =>
+                      onMusicVisualizerShaderSettingsChange({
+                        renderer: event.target.value as 'gpu' | 'cpu',
+                      })
+                    }
+                  >
+                    <option value="gpu">GPU (WebGL2 Shader)</option>
+                    <option value="cpu">CPU (Canvas2D Fallback)</option>
+                  </select>
+                </label>
               </div>
             </div>
           </div>

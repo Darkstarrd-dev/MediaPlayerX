@@ -135,6 +135,58 @@ describe('useSettingsPersistence', () => {
     expect(hydrationPatch).not.toHaveProperty('musicVisualizerRenderer')
   })
 
+  it('sanitizes per-shader visualizer settings map on hydration', async () => {
+    const updateSettings = vi.fn()
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        musicVisualizerSelectedShaderId: 'singularity',
+        musicVisualizerShaderSettingsById: {
+          singularity: {
+            renderLongEdgePx: 99999,
+            fpsCap: 120,
+            toneMapMode: 'khronos',
+            toneMapExposure: 9,
+            toneMapStrength: -2,
+            showFps: true,
+            renderer: 'gpu',
+          },
+          bad: {
+            renderLongEdgePx: 'x',
+          },
+        },
+      }),
+    })
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalled()
+    })
+
+    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<string, unknown>
+    expect(hydrationPatch.musicVisualizerSelectedShaderId).toBe('singularity')
+    expect(hydrationPatch.musicVisualizerShaderSettingsById).toEqual({
+      singularity: {
+        renderLongEdgePx: 4096,
+        fpsCap: 120,
+        toneMapMode: 'khronos',
+        toneMapExposure: 2,
+        toneMapStrength: 0,
+        showFps: true,
+        renderer: 'gpu',
+      },
+    })
+  })
+
   it('does not overwrite local changes made before hydration resolves', async () => {
     const deferred: { resolve: (value: unknown) => void } = {
       resolve: () => void 0,

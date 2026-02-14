@@ -4,7 +4,7 @@ import { DEFAULT_SHORTCUTS } from '../../shortcuts'
 import { buildSettingsPanelProps } from './buildSettingsPanelProps'
 
 describe('buildSettingsPanelProps', () => {
-  it('wires visualizer settings fields and callbacks', () => {
+  it('wires thumbnail settings fields and callbacks', () => {
     const updateSettings = vi.fn()
 
     const props = buildSettingsPanelProps({
@@ -27,13 +27,6 @@ describe('buildSettingsPanelProps', () => {
       thumbnailGap: 8,
       thumbnailQuality: 40,
       thumbnailWidth: 512,
-      musicVisualizerRenderLongEdgePx: 1920,
-      musicVisualizerFpsCap: 120,
-      musicVisualizerToneMapMode: 'reinhard',
-      musicVisualizerToneMapExposure: 1.25,
-      musicVisualizerToneMapStrength: 0.8,
-      musicVisualizerShowFps: true,
-      musicVisualizerRenderer: 'cpu',
       proxyServer: '',
       ehentaiCookies: '',
       adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
@@ -68,28 +61,16 @@ describe('buildSettingsPanelProps', () => {
       pickThumbnailCacheDirectoryPath: vi.fn(),
     })
 
-    expect(props.musicVisualizerRenderLongEdgePx).toBe(1920)
-    expect(props.musicVisualizerFpsCap).toBe(120)
-    expect(props.musicVisualizerToneMapMode).toBe('reinhard')
-    expect(props.musicVisualizerToneMapExposure).toBe(1.25)
-    expect(props.musicVisualizerToneMapStrength).toBe(0.8)
-    expect(props.musicVisualizerShowFps).toBe(true)
-    expect(props.musicVisualizerRenderer).toBe('cpu')
+    expect(props.thumbnailWidth).toBe(512)
+    expect(props.thumbnailQuality).toBe(40)
+    expect(props.thumbnailGap).toBe(8)
 
-    props.onMusicVisualizerRenderLongEdgePxChange(1280)
-    props.onMusicVisualizerFpsCapChange(30)
-    props.onMusicVisualizerToneMapModeChange('aces')
-    props.onMusicVisualizerToneMapExposureChange(1.05)
-    props.onMusicVisualizerToneMapStrengthChange(0.62)
-    props.onMusicVisualizerShowFpsChange(false)
-    props.onMusicVisualizerRendererChange('gpu')
+    props.onThumbnailWidthChange(1024)
+    props.onThumbnailQualityChange(65)
+    props.onThumbnailGapChange(12)
 
-    expect(updateSettings).toHaveBeenNthCalledWith(1, { musicVisualizerRenderLongEdgePx: 1280 })
-    expect(updateSettings).toHaveBeenNthCalledWith(2, { musicVisualizerFpsCap: 30 })
-    expect(updateSettings).toHaveBeenNthCalledWith(3, { musicVisualizerToneMapMode: 'aces' })
-    expect(updateSettings).toHaveBeenNthCalledWith(4, { musicVisualizerToneMapExposure: 1.05 })
-    expect(updateSettings).toHaveBeenNthCalledWith(5, { musicVisualizerToneMapStrength: 0.62 })
-    expect(updateSettings).toHaveBeenNthCalledWith(6, { musicVisualizerShowFps: false })
-    expect(updateSettings).toHaveBeenNthCalledWith(7, { musicVisualizerRenderer: 'gpu' })
+    expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 })
+    expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 })
+    expect(updateSettings).toHaveBeenNthCalledWith(3, { thumbnailGap: 12 })
   })
 })

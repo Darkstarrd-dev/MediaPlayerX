@@ -1732,7 +1732,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     expect(screen.getByText('主题设置')).toBeInTheDocument()
     expect(screen.getByText('缩略图设置')).toBeInTheDocument()
-    expect(screen.getByText('频谱可视化设置')).toBeInTheDocument()
+    expect(screen.queryByText('频谱可视化设置')).toBeNull()
     expect(screen.getByText('布局参数')).toBeInTheDocument()
 
     const styleSelect = screen.getByRole('combobox', { name: 'Style' }) as HTMLSelectElement
@@ -1745,13 +1745,9 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByLabelText(/缩略图间距系数/)).toBeInTheDocument()
     expect(screen.getByLabelText('缩略图质量')).toBeInTheDocument()
     expect(screen.getByLabelText('缩略图宽度')).toBeInTheDocument()
-    expect(screen.getByLabelText('实际渲染长边分辨率')).toBeInTheDocument()
-    expect(screen.getByLabelText('渲染帧率上限')).toBeInTheDocument()
-    expect(screen.getByLabelText('Tone Mapping')).toBeInTheDocument()
-    expect(screen.getByLabelText('Tone Mapping 曝光')).toBeInTheDocument()
-    expect(screen.getByLabelText(/Tone Mapping 强度/)).toBeInTheDocument()
-    expect(screen.getByLabelText('显示 FPS 调试信息')).toBeInTheDocument()
-    expect(screen.getByLabelText('渲染后端')).toBeInTheDocument()
+    expect(screen.queryByLabelText('实际渲染长边分辨率')).toBeNull()
+    expect(screen.queryByLabelText('渲染帧率上限')).toBeNull()
+    expect(screen.queryByLabelText('Tone Mapping')).toBeNull()
     expect(screen.getByLabelText('调试显示 Electron 外框与菜单')).toBeInTheDocument()
 
     const settingsFontSlider = screen.getByLabelText(/设置面板字体系数/)

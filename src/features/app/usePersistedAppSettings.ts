@@ -54,6 +54,7 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     musicVisualizerToneMapStrength: settings.musicVisualizerToneMapStrength,
     musicVisualizerShowFps: settings.musicVisualizerShowFps,
     musicVisualizerRenderer: settings.musicVisualizerRenderer,
+    musicVisualizerShaderSettingsById: settings.musicVisualizerShaderSettingsById,
     proxyServer: settings.proxyServer,
     ehentaiCookies: settings.ehentaiCookies,
     adReviewVisionEndpoint: settings.adReviewVisionEndpoint,

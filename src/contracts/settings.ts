@@ -6,6 +6,19 @@ export const searchFieldSchema = z.enum(['all', 'name', 'workTitle', 'circle', '
 
 export const musicVisualizerFpsCapSchema = z.union([z.literal(30), z.literal(60), z.literal(120)])
 export const musicVisualizerToneMapModeSchema = z.enum(['off', 'reinhard', 'aces', 'filmic', 'agx', 'khronos'])
+export const musicVisualizerRendererSchema = z.enum(['gpu', 'cpu'])
+
+export const musicVisualizerShaderSettingsSchema = z.object({
+  renderLongEdgePx: z.number().int().min(240).max(4096),
+  fpsCap: musicVisualizerFpsCapSchema,
+  toneMapMode: musicVisualizerToneMapModeSchema,
+  toneMapExposure: z.number().min(0.5).max(2),
+  toneMapStrength: z.number().min(0).max(1),
+  showFps: z.boolean(),
+  renderer: musicVisualizerRendererSchema,
+})
+
+export const musicVisualizerShaderSettingsByIdSchema = z.record(z.string().max(64), musicVisualizerShaderSettingsSchema)
 
 export const appSettingsSchema = z.object({
   mode: browserModeSchema,
@@ -49,7 +62,8 @@ export const appSettingsSchema = z.object({
   musicVisualizerToneMapExposure: z.number().min(0.5).max(2),
   musicVisualizerToneMapStrength: z.number().min(0).max(1),
   musicVisualizerShowFps: z.boolean(),
-  musicVisualizerRenderer: z.enum(['gpu', 'cpu']),
+  musicVisualizerRenderer: musicVisualizerRendererSchema,
+  musicVisualizerShaderSettingsById: musicVisualizerShaderSettingsByIdSchema,
   proxyServer: z.string().max(512),
   ehentaiCookies: z.string().max(4096),
   adReviewVisionEndpoint: z.string().max(512),

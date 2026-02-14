@@ -57,13 +57,16 @@ function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof Mu
     canNextAudio: true,
     fullscreenActive: false,
     onToggleFullscreen: vi.fn(),
-    musicVisualizerRenderLongEdgePx: 1280,
-    musicVisualizerFpsCap: 60,
-    musicVisualizerToneMapMode: 'aces',
-    musicVisualizerToneMapExposure: 1,
-    musicVisualizerToneMapStrength: 0.55,
-    musicVisualizerShowFps: false,
-    musicVisualizerRenderer: 'gpu',
+    musicVisualizerShaderSettings: {
+      renderLongEdgePx: 1280,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.55,
+      showFps: false,
+      renderer: 'gpu',
+    },
+    onMusicVisualizerShaderSettingsChange: vi.fn(),
     onPrevAudio: vi.fn(),
     onNextAudio: vi.fn(),
     onCycleMusicLoopMode: vi.fn(),
@@ -238,5 +241,21 @@ describe('MusicMainSection', () => {
     expect(screen.queryByRole('button', { name: 'Fungi' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Nebula' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Voxel' })).toBeNull()
+  })
+
+  it('支持在控制栏打开 Shader 设置并更新当前 Shader 配置', () => {
+    const onMusicVisualizerShaderSettingsChange = vi.fn()
+    renderMusicMainSection({ onMusicVisualizerShaderSettingsChange })
+
+    const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
+    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
+
+    fireEvent.change(screen.getByLabelText('渲染帧率上限'), { target: { value: '120' } })
+    fireEvent.change(screen.getByLabelText('Tone Mapping 曝光'), { target: { value: '1.4' } })
+    fireEvent.click(screen.getByLabelText('显示 FPS 调试信息'))
+
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ fpsCap: 120 })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ toneMapExposure: 1.4 })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ showFps: true })
   })
 })

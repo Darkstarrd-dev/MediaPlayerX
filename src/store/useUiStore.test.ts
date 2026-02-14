@@ -17,6 +17,15 @@ describe('useUiStore visualizer settings', () => {
     expect(state.musicVisualizerToneMapStrength).toBe(0.55)
     expect(state.musicVisualizerShowFps).toBe(false)
     expect(state.musicVisualizerRenderer).toBe('gpu')
+    expect(state.musicVisualizerShaderSettingsById['mcs-szb']).toEqual({
+      renderLongEdgePx: 1280,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.55,
+      showFps: false,
+      renderer: 'gpu',
+    })
   })
 
   it('accepts valid visualizer settings updates', () => {
@@ -29,6 +38,17 @@ describe('useUiStore visualizer settings', () => {
       musicVisualizerToneMapStrength: 0.8,
       musicVisualizerShowFps: true,
       musicVisualizerRenderer: 'cpu',
+      musicVisualizerShaderSettingsById: {
+        fungi: {
+          renderLongEdgePx: 1920,
+          fpsCap: 120,
+          toneMapMode: 'reinhard',
+          toneMapExposure: 1.3,
+          toneMapStrength: 0.8,
+          showFps: true,
+          renderer: 'cpu',
+        },
+      },
     })
 
     const state = useUiStore.getState()
@@ -40,6 +60,15 @@ describe('useUiStore visualizer settings', () => {
     expect(state.musicVisualizerToneMapStrength).toBe(0.8)
     expect(state.musicVisualizerShowFps).toBe(true)
     expect(state.musicVisualizerRenderer).toBe('cpu')
+    expect(state.musicVisualizerShaderSettingsById.fungi).toEqual({
+      renderLongEdgePx: 1920,
+      fpsCap: 120,
+      toneMapMode: 'reinhard',
+      toneMapExposure: 1.3,
+      toneMapStrength: 0.8,
+      showFps: true,
+      renderer: 'cpu',
+    })
   })
 
   it('rejects invalid visualizer settings updates', () => {

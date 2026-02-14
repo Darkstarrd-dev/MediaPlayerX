@@ -47,6 +47,7 @@ export function useAppSettingsStore() {
       musicVisualizerToneMapStrength: state.musicVisualizerToneMapStrength,
       musicVisualizerShowFps: state.musicVisualizerShowFps,
       musicVisualizerRenderer: state.musicVisualizerRenderer,
+      musicVisualizerShaderSettingsById: state.musicVisualizerShaderSettingsById,
       proxyServer: state.proxyServer,
       ehentaiCookies: state.ehentaiCookies,
       adReviewVisionEndpoint: state.adReviewVisionEndpoint,

@@ -968,6 +968,7 @@ export function useAppWorkspaceProps({
     musicVisualizerToneMapStrength: appSettings.musicVisualizerToneMapStrength,
     musicVisualizerShowFps: appSettings.musicVisualizerShowFps,
     musicVisualizerRenderer: appSettings.musicVisualizerRenderer,
+    musicVisualizerShaderSettingsById: appSettings.musicVisualizerShaderSettingsById,
     updateSettings: appSettings.updateSettings,
   })
 

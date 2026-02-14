@@ -9,6 +9,63 @@ interface UseSettingsPersistenceParams {
 }
 
 const SETTINGS_STATE_KEY = 'ui_settings_v1'
+const DEFAULT_MUSIC_SHADER_ID = 'mcs-szb'
+
+type MusicVisualizerShaderSettings = AppSettings['musicVisualizerShaderSettingsById'][string]
+
+function normalizeShaderSettingEntry(value: unknown): MusicVisualizerShaderSettings | null {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+
+  const source = value as Record<string, unknown>
+  const renderLongEdgePxRaw = source.renderLongEdgePx
+  const fpsCapRaw = source.fpsCap
+  const toneMapModeRaw = source.toneMapMode
+  const toneMapExposureRaw = source.toneMapExposure
+  const toneMapStrengthRaw = source.toneMapStrength
+  const showFpsRaw = source.showFps
+  const rendererRaw = source.renderer
+
+  if (typeof renderLongEdgePxRaw !== 'number' || !Number.isFinite(renderLongEdgePxRaw)) {
+    return null
+  }
+  if (fpsCapRaw !== 30 && fpsCapRaw !== 60 && fpsCapRaw !== 120) {
+    return null
+  }
+  if (
+    toneMapModeRaw !== 'off'
+    && toneMapModeRaw !== 'reinhard'
+    && toneMapModeRaw !== 'aces'
+    && toneMapModeRaw !== 'filmic'
+    && toneMapModeRaw !== 'agx'
+    && toneMapModeRaw !== 'khronos'
+  ) {
+    return null
+  }
+  if (typeof toneMapExposureRaw !== 'number' || !Number.isFinite(toneMapExposureRaw)) {
+    return null
+  }
+  if (typeof toneMapStrengthRaw !== 'number' || !Number.isFinite(toneMapStrengthRaw)) {
+    return null
+  }
+  if (typeof showFpsRaw !== 'boolean') {
+    return null
+  }
+  if (rendererRaw !== 'gpu' && rendererRaw !== 'cpu') {
+    return null
+  }
+
+  return {
+    renderLongEdgePx: Math.max(240, Math.min(4096, Math.floor(renderLongEdgePxRaw))),
+    fpsCap: fpsCapRaw,
+    toneMapMode: toneMapModeRaw,
+    toneMapExposure: Math.max(0.5, Math.min(2, toneMapExposureRaw)),
+    toneMapStrength: Math.max(0, Math.min(1, toneMapStrengthRaw)),
+    showFps: showFpsRaw,
+    renderer: rendererRaw,
+  }
+}
 
 function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   if (!value || typeof value !== 'object') {
@@ -84,6 +141,63 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
 
   if (next.musicVisualizerRenderer !== 'gpu' && next.musicVisualizerRenderer !== 'cpu' && 'musicVisualizerRenderer' in next) {
     delete next.musicVisualizerRenderer
+  }
+
+  const normalizedShaderSettingsById: AppSettings['musicVisualizerShaderSettingsById'] = {}
+  const rawShaderSettingsById = next.musicVisualizerShaderSettingsById
+  if (rawShaderSettingsById && typeof rawShaderSettingsById === 'object') {
+    for (const [rawShaderId, rawValue] of Object.entries(rawShaderSettingsById as Record<string, unknown>)) {
+      const shaderId = rawShaderId.trim().slice(0, 64)
+      if (!shaderId) {
+        continue
+      }
+      const normalizedEntry = normalizeShaderSettingEntry(rawValue)
+      if (normalizedEntry) {
+        normalizedShaderSettingsById[shaderId] = normalizedEntry
+      }
+    }
+  }
+
+  const selectedShaderIdRaw = typeof next.musicVisualizerSelectedShaderId === 'string'
+    ? next.musicVisualizerSelectedShaderId.trim().slice(0, 64)
+    : ''
+  const selectedShaderId = selectedShaderIdRaw || DEFAULT_MUSIC_SHADER_ID
+
+  const migratedLegacyEntry: MusicVisualizerShaderSettings | null =
+    typeof next.musicVisualizerRenderLongEdgePx === 'number'
+      && Number.isFinite(next.musicVisualizerRenderLongEdgePx)
+      && (next.musicVisualizerFpsCap === 30 || next.musicVisualizerFpsCap === 60 || next.musicVisualizerFpsCap === 120)
+      && (next.musicVisualizerToneMapMode === 'off'
+        || next.musicVisualizerToneMapMode === 'reinhard'
+        || next.musicVisualizerToneMapMode === 'aces'
+        || next.musicVisualizerToneMapMode === 'filmic'
+        || next.musicVisualizerToneMapMode === 'agx'
+        || next.musicVisualizerToneMapMode === 'khronos')
+      && typeof next.musicVisualizerToneMapExposure === 'number'
+      && Number.isFinite(next.musicVisualizerToneMapExposure)
+      && typeof next.musicVisualizerToneMapStrength === 'number'
+      && Number.isFinite(next.musicVisualizerToneMapStrength)
+      && typeof next.musicVisualizerShowFps === 'boolean'
+      && (next.musicVisualizerRenderer === 'gpu' || next.musicVisualizerRenderer === 'cpu')
+      ? {
+        renderLongEdgePx: Math.max(240, Math.min(4096, Math.floor(next.musicVisualizerRenderLongEdgePx))),
+        fpsCap: next.musicVisualizerFpsCap,
+        toneMapMode: next.musicVisualizerToneMapMode,
+        toneMapExposure: Math.max(0.5, Math.min(2, next.musicVisualizerToneMapExposure)),
+        toneMapStrength: Math.max(0, Math.min(1, next.musicVisualizerToneMapStrength)),
+        showFps: next.musicVisualizerShowFps,
+        renderer: next.musicVisualizerRenderer,
+      }
+      : null
+
+  if (!normalizedShaderSettingsById[selectedShaderId] && migratedLegacyEntry) {
+    normalizedShaderSettingsById[selectedShaderId] = migratedLegacyEntry
+  }
+
+  if (Object.keys(normalizedShaderSettingsById).length > 0) {
+    next.musicVisualizerShaderSettingsById = normalizedShaderSettingsById
+  } else if ('musicVisualizerShaderSettingsById' in next) {
+    delete next.musicVisualizerShaderSettingsById
   }
 
   return next as Partial<AppSettings>
