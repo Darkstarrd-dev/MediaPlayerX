@@ -26,9 +26,9 @@ function makeAudio(id: string): AudioItem {
   }
 }
 
-function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMainSection>> = {}) {
+function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof MusicMainSection>> = {}): ComponentProps<typeof MusicMainSection> {
   const audios = [makeAudio('track-1')]
-  const props: ComponentProps<typeof MusicMainSection> = {
+  return {
     active: true,
     interruptByVideoPlayback: false,
     playRequestNonce: 0,
@@ -70,8 +70,10 @@ function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMa
     ...overrides,
     musicVisualizerSelectedShaderId: overrides.musicVisualizerSelectedShaderId ?? 'default',
   }
+}
 
-  return render(<MusicMainSection {...props} />)
+function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMainSection>> = {}) {
+  return render(<MusicMainSection {...createMusicMainSectionProps(overrides)} />)
 }
 
 describe('MusicMainSection', () => {
@@ -139,96 +141,17 @@ describe('MusicMainSection', () => {
 
   it('playRequestNonce 递增时会触发播放', () => {
     const baseAudio = makeAudio('track-1')
+    const baseProps = createMusicMainSectionProps({
+      audios: [baseAudio],
+      focusedAudio: baseAudio,
+      focusedAudioSrc: 'mock://audio-1',
+    })
 
-    const { rerender } = render(
-      <MusicMainSection
-        active={true}
-        interruptByVideoPlayback={false}
-        playRequestNonce={0}
-        manageMode={false}
-        metadataManageMode={false}
-        sidebarSelectedCount={0}
-        imageSelectedCount={0}
-        activeSelectionScope={null}
-        pendingManageAction={false}
-        manageOperationHint={null}
-        canManageDelete={false}
-        onManageDelete={vi.fn()}
-        onClearManageSelection={vi.fn()}
-        canJumpToManga={false}
-        canJumpToAnimation={false}
-        canJumpToBooklet={false}
-        onJumpToManga={vi.fn()}
-        onJumpToAnimation={vi.fn()}
-        onJumpToBooklet={vi.fn()}
-        audios={[baseAudio]}
-        focusedAudio={baseAudio}
-        focusedAudioSrc="mock://audio-1"
-        musicLoopMode="library"
-        musicLoopModeLabel="全曲库循环"
-        canPrevAudio={false}
-        canNextAudio={true}
-        fullscreenActive={false}
-        onToggleFullscreen={vi.fn()}
-        musicVisualizerSelectedShaderId="default"
-        musicVisualizerRenderLongEdgePx={1280}
-        musicVisualizerFpsCap={60}
-        musicVisualizerToneMapMode="aces"
-        musicVisualizerToneMapExposure={1}
-        musicVisualizerToneMapStrength={0.55}
-        musicVisualizerShowFps={false}
-        musicVisualizerRenderer="gpu"
-        onPrevAudio={vi.fn()}
-        onNextAudio={vi.fn()}
-        onCycleMusicLoopMode={vi.fn()}
-      />,
-    )
+    const { rerender } = render(<MusicMainSection {...baseProps} playRequestNonce={0} />)
 
     const initialPlayCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
 
-    rerender(
-      <MusicMainSection
-        active={true}
-        interruptByVideoPlayback={false}
-        playRequestNonce={1}
-        manageMode={false}
-        metadataManageMode={false}
-        sidebarSelectedCount={0}
-        imageSelectedCount={0}
-        activeSelectionScope={null}
-        pendingManageAction={false}
-        manageOperationHint={null}
-        canManageDelete={false}
-        onManageDelete={vi.fn()}
-        onClearManageSelection={vi.fn()}
-        canJumpToManga={false}
-        canJumpToAnimation={false}
-        canJumpToBooklet={false}
-        onJumpToManga={vi.fn()}
-        onJumpToAnimation={vi.fn()}
-        onJumpToBooklet={vi.fn()}
-        audios={[baseAudio]}
-        focusedAudio={baseAudio}
-        focusedAudioSrc="mock://audio-1"
-        musicLoopMode="library"
-        musicLoopModeLabel="全曲库循环"
-        canPrevAudio={false}
-        canNextAudio={true}
-        fullscreenActive={false}
-        onToggleFullscreen={vi.fn()}
-        musicVisualizerSelectedShaderId="default"
-        musicVisualizerRenderLongEdgePx={1280}
-        musicVisualizerFpsCap={60}
-        musicVisualizerToneMapMode="aces"
-        musicVisualizerToneMapExposure={1}
-        musicVisualizerToneMapStrength={0.55}
-        musicVisualizerShowFps={false}
-        musicVisualizerRenderer="gpu"
-        onPrevAudio={vi.fn()}
-        onNextAudio={vi.fn()}
-        onCycleMusicLoopMode={vi.fn()}
-      />,
-    )
+    rerender(<MusicMainSection {...baseProps} playRequestNonce={1} />)
 
     expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(initialPlayCallCount)
   })
@@ -241,45 +164,13 @@ describe('MusicMainSection', () => {
 
     rerender(
       <MusicMainSection
-        active={false}
-        interruptByVideoPlayback={true}
-        playRequestNonce={0}
-        manageMode={false}
-        metadataManageMode={false}
-        sidebarSelectedCount={0}
-        imageSelectedCount={0}
-        activeSelectionScope={null}
-        pendingManageAction={false}
-        manageOperationHint={null}
-        canManageDelete={false}
-        onManageDelete={vi.fn()}
-        onClearManageSelection={vi.fn()}
-        canJumpToManga={false}
-        canJumpToAnimation={false}
-        canJumpToBooklet={false}
-        onJumpToManga={vi.fn()}
-        onJumpToAnimation={vi.fn()}
-        onJumpToBooklet={vi.fn()}
-        audios={[makeAudio('track-1')]}
-        focusedAudio={makeAudio('track-1')}
-        focusedAudioSrc="mock://audio-1"
-        musicLoopMode="library"
-        musicLoopModeLabel="全曲库循环"
-        canPrevAudio={false}
-        canNextAudio={true}
-        fullscreenActive={false}
-        onToggleFullscreen={vi.fn()}
-        musicVisualizerSelectedShaderId="default"
-        musicVisualizerRenderLongEdgePx={1280}
-        musicVisualizerFpsCap={60}
-        musicVisualizerToneMapMode="aces"
-        musicVisualizerToneMapExposure={1}
-        musicVisualizerToneMapStrength={0.55}
-        musicVisualizerShowFps={false}
-        musicVisualizerRenderer="gpu"
-        onPrevAudio={vi.fn()}
-        onNextAudio={vi.fn()}
-        onCycleMusicLoopMode={vi.fn()}
+        {...createMusicMainSectionProps({
+          active: false,
+          interruptByVideoPlayback: true,
+          audios: [makeAudio('track-1')],
+          focusedAudio: makeAudio('track-1'),
+          focusedAudioSrc: 'mock://audio-1',
+        })}
       />,
     )
 
@@ -290,47 +181,13 @@ describe('MusicMainSection', () => {
     const track1 = makeAudio('track-1')
     const track2 = makeAudio('track-2')
 
-    const baseProps: ComponentProps<typeof MusicMainSection> = {
-      active: true,
-      interruptByVideoPlayback: false,
-      playRequestNonce: 0,
-      manageMode: false,
-      metadataManageMode: false,
-      sidebarSelectedCount: 0,
-      imageSelectedCount: 0,
-      activeSelectionScope: null,
-      pendingManageAction: false,
-      manageOperationHint: null,
-      canManageDelete: false,
-      onManageDelete: vi.fn(),
-      onClearManageSelection: vi.fn(),
-      canJumpToManga: false,
-      canJumpToAnimation: false,
-      canJumpToBooklet: false,
-      onJumpToManga: vi.fn(),
-      onJumpToAnimation: vi.fn(),
-      onJumpToBooklet: vi.fn(),
+    const baseProps = createMusicMainSectionProps({
       audios: [track1, track2],
-      musicLoopMode: 'library',
-      musicLoopModeLabel: '全曲库循环',
       canPrevAudio: true,
       canNextAudio: true,
-      fullscreenActive: false,
-      onToggleFullscreen: vi.fn(),
-      musicVisualizerSelectedShaderId: 'default',
-      musicVisualizerRenderLongEdgePx: 1280,
-      musicVisualizerFpsCap: 60,
-      musicVisualizerToneMapMode: 'aces',
-      musicVisualizerToneMapExposure: 1,
-      musicVisualizerToneMapStrength: 0.55,
-      musicVisualizerShowFps: false,
-      musicVisualizerRenderer: 'gpu',
-      onPrevAudio: vi.fn(),
-      onNextAudio: vi.fn(),
-      onCycleMusicLoopMode: vi.fn(),
       focusedAudio: track1,
       focusedAudioSrc: 'mock://audio-track-1',
-    }
+    })
 
     const { rerender } = render(<MusicMainSection {...baseProps} />)
 
