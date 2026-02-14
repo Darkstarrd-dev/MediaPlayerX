@@ -72,13 +72,14 @@ export function useMusicVisualizerRuntime({
   useEffect(() => {
     if (!active) {
       setStats(null)
+      setRuntimeError(null)
       return
     }
 
     const canvas = canvasRef.current
     if (!canvas) {
       setStats(null)
-      setRuntimeError('可视化画布未就绪')
+      setRuntimeError('可视化画布未就绪（canvasRef.current 为空）')
       return
     }
 
@@ -90,10 +91,23 @@ export function useMusicVisualizerRuntime({
 
     const createRenderer = (mode: MusicVisualizerRendererMode): MusicVisualizerRenderer => {
       if (mode === 'gpu') {
+        const probeCanvas = document.createElement('canvas')
+        const probeRenderer = new WebglMusicVisualizerRenderer(probeCanvas, shader)
+        probeRenderer.dispose()
         return new WebglMusicVisualizerRenderer(canvas, shader)
       }
       return new CpuMusicVisualizerRenderer(canvas)
     }
+
+    const resolveRuntimeProbeInfo = (): string => {
+      const probeWebglCanvas = document.createElement('canvas')
+      const probe2dCanvas = document.createElement('canvas')
+      const hasWebgl2 = Boolean(probeWebglCanvas.getContext('webgl2'))
+      const hasCanvas2d = Boolean(probe2dCanvas.getContext('2d'))
+      return `shader=${shader.id}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
+    }
+
+    const runtimeProbeInfo = resolveRuntimeProbeInfo()
 
     let renderer: MusicVisualizerRenderer | null = null
     let rendererInitMessage: string | null = null
@@ -105,10 +119,10 @@ export function useMusicVisualizerRuntime({
         const gpuErrorMessage = gpuError instanceof Error ? gpuError.message : String(gpuError)
         try {
           renderer = createRenderer('cpu')
-          rendererInitMessage = `GPU 渲染初始化失败，已自动切换 CPU：${gpuErrorMessage}`
+          rendererInitMessage = `GPU 渲染初始化失败，已自动切换 CPU：${gpuErrorMessage} | ${runtimeProbeInfo}`
         } catch (cpuError) {
           const cpuErrorMessage = cpuError instanceof Error ? cpuError.message : String(cpuError)
-          rendererInitMessage = `可视化渲染器初始化失败（GPU + CPU）：${gpuErrorMessage} | ${cpuErrorMessage}`
+          rendererInitMessage = `可视化渲染器初始化失败（GPU + CPU）：${gpuErrorMessage} | ${cpuErrorMessage} | ${runtimeProbeInfo}`
         }
       }
     } else {
@@ -116,7 +130,7 @@ export function useMusicVisualizerRuntime({
         renderer = createRenderer('cpu')
       } catch (cpuError) {
         const cpuErrorMessage = cpuError instanceof Error ? cpuError.message : String(cpuError)
-        rendererInitMessage = `CPU 渲染初始化失败：${cpuErrorMessage}`
+        rendererInitMessage = `CPU 渲染初始化失败：${cpuErrorMessage} | ${runtimeProbeInfo}`
       }
     }
 
@@ -188,6 +202,7 @@ export function useMusicVisualizerRuntime({
           renderWidth: renderSize.width,
           renderHeight: renderSize.height,
           backend: renderer.backend,
+          shaderId: renderer.shaderId,
           rendererLabel: renderer.rendererLabel,
         })
         statsStartAt = now

@@ -33,7 +33,8 @@ function compileShader(gl: WebGL2RenderingContext, shaderType: number, source: s
 
   const info = gl.getShaderInfoLog(shader) || 'unknown shader error'
   gl.deleteShader(shader)
-  throw new Error(info)
+  const stage = shaderType === gl.VERTEX_SHADER ? 'vertex' : 'fragment'
+  throw new Error(`[${stage} compile] ${info}`)
 }
 
 function createProgram(gl: WebGL2RenderingContext, fragmentSource: string): WebGLProgram {
@@ -59,7 +60,7 @@ function createProgram(gl: WebGL2RenderingContext, fragmentSource: string): WebG
 
   const info = gl.getProgramInfoLog(program) || 'unknown link error'
   gl.deleteProgram(program)
-  throw new Error(info)
+  throw new Error(`[program link] ${info}`)
 }
 
 function resolveRendererLabel(gl: WebGL2RenderingContext): string {
@@ -79,8 +80,23 @@ function resolveRendererLabel(gl: WebGL2RenderingContext): string {
   return 'WebGL2'
 }
 
+function listActiveUniformNames(gl: WebGL2RenderingContext, program: WebGLProgram): string[] {
+  const activeCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS)
+  const names: string[] = []
+  const normalizedCount = typeof activeCount === 'number' ? activeCount : 0
+  for (let index = 0; index < normalizedCount; index += 1) {
+    const activeUniform = gl.getActiveUniform(program, index)
+    if (!activeUniform || !activeUniform.name) {
+      continue
+    }
+    names.push(activeUniform.name)
+  }
+  return names
+}
+
 export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
   readonly backend = 'gpu' as const
+  readonly shaderId: string
   readonly rendererLabel: string
 
   private readonly canvas: HTMLCanvasElement
@@ -90,13 +106,14 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
   private readonly audioTexture: WebGLTexture
   private readonly audioTextureData = new Uint8Array(AUDIO_TEXTURE_WIDTH * AUDIO_TEXTURE_HEIGHT * 4)
 
-  private readonly resolutionUniform: WebGLUniformLocation
-  private readonly timeUniform: WebGLUniformLocation
-  private readonly frameUniform: WebGLUniformLocation
-  private readonly channel0Uniform: WebGLUniformLocation
+  private readonly resolutionUniform: WebGLUniformLocation | null
+  private readonly timeUniform: WebGLUniformLocation | null
+  private readonly frameUniform: WebGLUniformLocation | null
+  private readonly channel0Uniform: WebGLUniformLocation | null
 
   constructor(canvas: HTMLCanvasElement, shader: MusicVisualizerShaderDefinition) {
     this.canvas = canvas
+    this.shaderId = shader.id
 
     const gl = canvas.getContext('webgl2', {
       alpha: false,
@@ -137,12 +154,7 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     const timeUniform = gl.getUniformLocation(program, 'iTime')
     const frameUniform = gl.getUniformLocation(program, 'iFrame')
     const channel0Uniform = gl.getUniformLocation(program, 'iChannel0')
-    if (!resolutionUniform || !timeUniform || !frameUniform || !channel0Uniform) {
-      gl.deleteTexture(audioTexture)
-      gl.deleteVertexArray(vao)
-      gl.deleteProgram(program)
-      throw new Error('Shader 缺少必需 uniform')
-    }
+    const activeUniformNames = listActiveUniformNames(gl, program)
 
     this.gl = gl
     this.program = program
@@ -152,7 +164,7 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     this.timeUniform = timeUniform
     this.frameUniform = frameUniform
     this.channel0Uniform = channel0Uniform
-    this.rendererLabel = resolveRendererLabel(gl)
+    this.rendererLabel = `${resolveRendererLabel(gl)} | uniforms=${activeUniformNames.join(',') || 'none'}`
   }
 
   resize(width: number, height: number): void {
@@ -174,18 +186,28 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     gl.useProgram(this.program)
     gl.bindVertexArray(this.vao)
 
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.audioTexture)
-    gl.uniform1i(this.channel0Uniform, 0)
+    if (this.channel0Uniform) {
+      gl.activeTexture(gl.TEXTURE0)
+      gl.bindTexture(gl.TEXTURE_2D, this.audioTexture)
+      gl.uniform1i(this.channel0Uniform, 0)
+    }
 
-    gl.uniform3f(this.resolutionUniform, width, height, 1)
-    gl.uniform1f(this.timeUniform, timeSec)
-    gl.uniform1i(this.frameUniform, frame)
+    if (this.resolutionUniform) {
+      gl.uniform3f(this.resolutionUniform, width, height, 1)
+    }
+    if (this.timeUniform) {
+      gl.uniform1f(this.timeUniform, timeSec)
+    }
+    if (this.frameUniform) {
+      gl.uniform1i(this.frameUniform, frame)
+    }
 
     gl.drawArrays(gl.TRIANGLES, 0, 3)
 
     gl.bindVertexArray(null)
-    gl.bindTexture(gl.TEXTURE_2D, null)
+    if (this.channel0Uniform) {
+      gl.bindTexture(gl.TEXTURE_2D, null)
+    }
   }
 
   dispose(): void {

@@ -18,6 +18,7 @@ export interface MusicVisualizerFrameInput {
 
 export interface MusicVisualizerRenderer {
   readonly backend: MusicVisualizerRendererMode
+  readonly shaderId: string
   readonly rendererLabel: string
   resize: (width: number, height: number) => void
   render: (input: MusicVisualizerFrameInput) => void
@@ -30,5 +31,6 @@ export interface MusicVisualizerStats {
   renderWidth: number
   renderHeight: number
   backend: MusicVisualizerRendererMode
+  shaderId: string
   rendererLabel: string
 }

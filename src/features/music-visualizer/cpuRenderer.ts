@@ -13,6 +13,7 @@ function resolveFrequencyValue(frequencyData: Uint8Array, index: number, total: 
 
 export class CpuMusicVisualizerRenderer implements MusicVisualizerRenderer {
   readonly backend = 'cpu' as const
+  readonly shaderId = 'cpu-fallback-bars'
   readonly rendererLabel = 'Canvas2D CPU Fallback'
 
   private readonly canvas: HTMLCanvasElement
