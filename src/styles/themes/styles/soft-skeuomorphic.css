@@ -218,9 +218,15 @@
   box-shadow: none;
 }
 
-:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-popover .video-ctrl-volume-range {
-  width: 6px;
-  height: 120px;
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-panel.is-volume,
+:root[data-mpx-style="soft-skeuomorphic"] .music-ctrl-panel.is-volume {
+  width: 32px;
+  min-width: 32px;
+}
+
+:root[data-mpx-style="soft-skeuomorphic"] .video-ctrl-volume-axis {
+  width: 120px;
+  height: 24px;
 }
 
 :root[data-mpx-style="soft-skeuomorphic"] .video-controls-progress input[type='range']::-webkit-slider-runnable-track,

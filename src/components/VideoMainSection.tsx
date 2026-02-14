@@ -341,17 +341,19 @@ function VideoMainSection({
                 <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
               </button>
               <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
-                <input
-                  aria-label="音量滑条"
-                  className="video-ctrl-volume-range"
-                  max={100}
-                  min={0}
-                  step={1}
-                  style={videoVolumeRangeStyle}
-                  type="range"
-                  value={videoMuted ? 0 : videoVolume}
-                  onChange={(event) => onChangeVolume(Number(event.target.value))}
-                />
+                <div className="video-ctrl-volume-axis">
+                  <input
+                    aria-label="音量滑条"
+                    className="video-ctrl-volume-range"
+                    max={100}
+                    min={0}
+                    step={1}
+                    style={videoVolumeRangeStyle}
+                    type="range"
+                    value={videoMuted ? 0 : videoVolume}
+                    onChange={(event) => onChangeVolume(Number(event.target.value))}
+                  />
+                </div>
               </div>
             </div>
 
@@ -434,7 +436,7 @@ function VideoMainSection({
               type="button"
               onClick={onEnterFullscreen}
             >
-              <VideoControlIcon name="fullscreen" />
+              <VideoControlIcon name="fullscreenExpand" />
             </button>
 
             <div

@@ -489,14 +489,16 @@
 }
 
 .music-ctrl-panel.is-volume {
-  min-width: 52px;
-  width: 52px;
+  min-width: var(--mpx-control-height);
+  width: var(--mpx-control-height);
   min-height: 142px;
   padding: 10px 0;
   align-items: center;
+  justify-content: center;
 }
 
-.music-ctrl-volume-axis {
+.music-ctrl-volume-axis,
+.video-ctrl-volume-axis {
   width: 120px;
   height: 24px;
   display: flex;
@@ -647,6 +649,7 @@
   width: 100%;
   min-width: 120px;
   margin: 0;
+  direction: ltr;
 }
 
 .music-native-audio {
@@ -854,21 +857,25 @@
 }
 
 .video-ctrl-panel.is-volume {
-  min-width: 34px;
-  width: 34px;
-  padding: 6px 0;
+  min-width: var(--mpx-control-height);
+  width: var(--mpx-control-height);
+  min-height: 142px;
+  padding: 10px 0;
   align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 0;
 }
 
 .video-ctrl-panel input {
   width: 100%;
 }
 
-.video-ctrl-popover .video-ctrl-volume-range {
-  width: 6px;
-  height: 120px;
-  writing-mode: vertical-lr;
-  direction: rtl;
+.video-ctrl-volume-range {
+  width: 100%;
+  min-width: 120px;
+  margin: 0;
+  direction: ltr;
 }
 
 .video-ctrl-panel-options {
@@ -922,7 +929,6 @@
 .video-action-btn .video-action-icon {
   width: 18px;
   height: 18px;
-  fill: currentColor;
   display: block;
 }
 

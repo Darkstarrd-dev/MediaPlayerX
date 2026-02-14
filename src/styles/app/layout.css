@@ -538,10 +538,13 @@
   top: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
+  width: var(--mpx-header-btn-size);
+  display: flex;
+  justify-content: center;
   border: 1px solid var(--mpx-border-1);
   border-radius: 8px;
   background: var(--mpx-bg-elevated);
-  padding: 8px 6px;
+  padding: 8px 0;
   box-shadow: var(--mpx-shadow-popover);
   z-index: 24;
 }
@@ -555,6 +558,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
 .header-vertical-slider-value {
@@ -570,7 +574,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: var(--mpx-header-btn-size);
   height: 120px;
 }
 

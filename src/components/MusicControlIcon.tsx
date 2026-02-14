@@ -94,15 +94,41 @@ const ICON_NODES: Record<MusicControlIconName, ReactElement> = {
       <line x1="17" y1="16" x2="23" y2="16" />
     </>
   ),
-  repeatOne: <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4zm-5-2V9h-1.6l-1.2 1v1.2h1.3V15H12z" />,
+  repeatOne: (
+    <>
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
+      <path d="M11 10h1v4" />
+    </>
+  ),
   repeatFolder: (
-    <path d="M7 7h9v3l3-3-3-3v2H6v5h1V7zm9 10H7v-2H4l3 3 3-3H8v-1h8v3zm4-9h-8l-2-2H4v6h16V8z" />
+    <>
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
+      <circle cx="12" cy="12" r="2" />
+    </>
   ),
   repeatAlbum: (
-    <path d="M7 7h9v3l3-3-3-3v2H6v5h1V7zm9 10H8v-1H6v3h10v3l3-3-3-3v2zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+    <>
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
+      <rect x="10" y="10" width="4" height="4" rx="0.5" />
+    </>
   ),
   repeatLibrary: (
-    <path d="M7 7h9v3l3-3-3-3v2H6v5h1V7zm9 10H7v-2H4l3 3 3-3H8v-1h8v3zm-9-5h10V10H7v2zm0-4h12V6H7v2z" />
+    <>
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
+      <path d="M8 12h8" />
+    </>
   ),
 }
 

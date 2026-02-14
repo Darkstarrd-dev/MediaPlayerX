@@ -123,17 +123,19 @@ export function FullscreenVideoControlsShell({
               <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
             </button>
             <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
-              <input
-                aria-label="全屏视频音量滑条"
-                className="video-ctrl-volume-range"
-                max={100}
-                min={0}
-                step={1}
-                style={videoVolumeRangeStyle}
-                type="range"
-                value={videoMuted ? 0 : videoVolume}
-                onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
-              />
+              <div className="video-ctrl-volume-axis">
+                <input
+                  aria-label="全屏视频音量滑条"
+                  className="video-ctrl-volume-range"
+                  max={100}
+                  min={0}
+                  step={1}
+                  style={videoVolumeRangeStyle}
+                  type="range"
+                  value={videoMuted ? 0 : videoVolume}
+                  onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
+                />
+              </div>
             </div>
           </div>
 
@@ -216,7 +218,7 @@ export function FullscreenVideoControlsShell({
             type="button"
             onClick={onExit}
           >
-            <VideoControlIcon name="fullscreen" />
+            <VideoControlIcon name="fullscreenCompress" />
           </button>
 
           <div
