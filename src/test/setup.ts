@@ -26,3 +26,21 @@ if (globalThis.HTMLMediaElement) {
     value: vi.fn(),
   })
 }
+
+if (globalThis.HTMLCanvasElement) {
+  const canvasContextStub = {
+    clearRect: vi.fn(),
+    drawImage: vi.fn(),
+    fillRect: vi.fn(),
+    getImageData: vi.fn(),
+    putImageData: vi.fn(),
+    setTransform: vi.fn(),
+    createImageData: vi.fn(),
+  }
+
+  Object.defineProperty(globalThis.HTMLCanvasElement.prototype, 'getContext', {
+    configurable: true,
+    writable: true,
+    value: vi.fn(() => canvasContextStub),
+  })
+}
