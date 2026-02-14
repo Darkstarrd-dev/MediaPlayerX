@@ -28,50 +28,50 @@ function makeAudio(id: string): AudioItem {
 
 function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMainSection>> = {}) {
   const audios = [makeAudio('track-1')]
+  const props: ComponentProps<typeof MusicMainSection> = {
+    active: true,
+    interruptByVideoPlayback: false,
+    playRequestNonce: 0,
+    manageMode: false,
+    metadataManageMode: false,
+    sidebarSelectedCount: 0,
+    imageSelectedCount: 0,
+    activeSelectionScope: null,
+    pendingManageAction: false,
+    manageOperationHint: null,
+    canManageDelete: false,
+    onManageDelete: vi.fn(),
+    onClearManageSelection: vi.fn(),
+    canJumpToManga: false,
+    canJumpToAnimation: false,
+    canJumpToBooklet: false,
+    onJumpToManga: vi.fn(),
+    onJumpToAnimation: vi.fn(),
+    onJumpToBooklet: vi.fn(),
+    audios,
+    focusedAudio: audios[0],
+    focusedAudioSrc: 'mock://audio-1',
+    musicLoopMode: 'library',
+    musicLoopModeLabel: '全曲库循环',
+    canPrevAudio: false,
+    canNextAudio: true,
+    fullscreenActive: false,
+    onToggleFullscreen: vi.fn(),
+    musicVisualizerRenderLongEdgePx: 1280,
+    musicVisualizerFpsCap: 60,
+    musicVisualizerToneMapMode: 'aces',
+    musicVisualizerToneMapExposure: 1,
+    musicVisualizerToneMapStrength: 0.55,
+    musicVisualizerShowFps: false,
+    musicVisualizerRenderer: 'gpu',
+    onPrevAudio: vi.fn(),
+    onNextAudio: vi.fn(),
+    onCycleMusicLoopMode: vi.fn(),
+    ...overrides,
+    musicVisualizerSelectedShaderId: overrides.musicVisualizerSelectedShaderId ?? 'default',
+  }
 
-  return render(
-    <MusicMainSection
-      active={true}
-      interruptByVideoPlayback={false}
-      playRequestNonce={0}
-      manageMode={false}
-      metadataManageMode={false}
-      sidebarSelectedCount={0}
-      imageSelectedCount={0}
-      activeSelectionScope={null}
-      pendingManageAction={false}
-      manageOperationHint={null}
-      canManageDelete={false}
-      onManageDelete={vi.fn()}
-      onClearManageSelection={vi.fn()}
-      canJumpToManga={false}
-      canJumpToAnimation={false}
-      canJumpToBooklet={false}
-      onJumpToManga={vi.fn()}
-      onJumpToAnimation={vi.fn()}
-      onJumpToBooklet={vi.fn()}
-      audios={audios}
-      focusedAudio={audios[0]}
-      focusedAudioSrc="mock://audio-1"
-      musicLoopMode="library"
-      musicLoopModeLabel="全曲库循环"
-      canPrevAudio={false}
-      canNextAudio={true}
-      fullscreenActive={false}
-      onToggleFullscreen={vi.fn()}
-      musicVisualizerRenderLongEdgePx={1280}
-      musicVisualizerFpsCap={60}
-      musicVisualizerToneMapMode="aces"
-      musicVisualizerToneMapExposure={1}
-      musicVisualizerToneMapStrength={0.55}
-      musicVisualizerShowFps={false}
-      musicVisualizerRenderer="gpu"
-      onPrevAudio={vi.fn()}
-      onNextAudio={vi.fn()}
-      onCycleMusicLoopMode={vi.fn()}
-      {...overrides}
-    />,
-  )
+  return render(<MusicMainSection {...props} />)
 }
 
 describe('MusicMainSection', () => {
@@ -170,6 +170,7 @@ describe('MusicMainSection', () => {
         canNextAudio={true}
         fullscreenActive={false}
         onToggleFullscreen={vi.fn()}
+        musicVisualizerSelectedShaderId="default"
         musicVisualizerRenderLongEdgePx={1280}
         musicVisualizerFpsCap={60}
         musicVisualizerToneMapMode="aces"
@@ -215,6 +216,7 @@ describe('MusicMainSection', () => {
         canNextAudio={true}
         fullscreenActive={false}
         onToggleFullscreen={vi.fn()}
+        musicVisualizerSelectedShaderId="default"
         musicVisualizerRenderLongEdgePx={1280}
         musicVisualizerFpsCap={60}
         musicVisualizerToneMapMode="aces"
@@ -267,6 +269,7 @@ describe('MusicMainSection', () => {
         canNextAudio={true}
         fullscreenActive={false}
         onToggleFullscreen={vi.fn()}
+        musicVisualizerSelectedShaderId="default"
         musicVisualizerRenderLongEdgePx={1280}
         musicVisualizerFpsCap={60}
         musicVisualizerToneMapMode="aces"
@@ -314,6 +317,7 @@ describe('MusicMainSection', () => {
       canNextAudio: true,
       fullscreenActive: false,
       onToggleFullscreen: vi.fn(),
+      musicVisualizerSelectedShaderId: 'default',
       musicVisualizerRenderLongEdgePx: 1280,
       musicVisualizerFpsCap: 60,
       musicVisualizerToneMapMode: 'aces',
