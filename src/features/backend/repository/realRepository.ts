@@ -105,6 +105,7 @@ import {
 } from '../../../contracts/backend'
 import type { MediaRepository, RepositoryRequestOptions } from './types'
 import { benchRecordIpcTiming } from '../../perf/benchRecorder'
+import { requireBackend, requireBackendMethod } from './backendChannel'
 import { withAbort } from './requestGuards'
 
 export class RealMediaRepository implements MediaRepository {
@@ -122,10 +123,7 @@ export class RealMediaRepository implements MediaRepository {
   }
 
   async readLibrarySnapshot(options?: RepositoryRequestOptions): Promise<LibrarySnapshotDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const startedAt = performance.now()
     try {
@@ -147,10 +145,7 @@ export class RealMediaRepository implements MediaRepository {
     request: ReadImageSidebarTreeRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ReadImageSidebarTreeResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const startedAt = performance.now()
     try {
@@ -172,10 +167,7 @@ export class RealMediaRepository implements MediaRepository {
     request: ReadImagePageRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ReadImagePageResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const startedAt = performance.now()
     try {
@@ -192,10 +184,7 @@ export class RealMediaRepository implements MediaRepository {
     request: ReadImageMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ReadImageMetadataResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const startedAt = performance.now()
     try {
@@ -217,10 +206,7 @@ export class RealMediaRepository implements MediaRepository {
     request: ResolveMediaResourceRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ResolveMediaResourceResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const startedAt = performance.now()
     try {
@@ -242,10 +228,7 @@ export class RealMediaRepository implements MediaRepository {
     request: WritePackageGradeRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageGradeResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.writePackageGrade(request), options)
     return writePackageGradeResponseSchema.parse(response)
@@ -255,12 +238,9 @@ export class RealMediaRepository implements MediaRepository {
     request: SetImageHiddenRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<SetImageHiddenResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.setImageHidden) {
-      throw new Error('真实后端通道不可用：setImageHidden 未注入')
-    }
+    const setImageHidden = requireBackendMethod('setImageHidden')
 
-    const response = await withAbort(api.setImageHidden(request), options)
+    const response = await withAbort(setImageHidden(request), options)
     return setImageHiddenResponseSchema.parse(response)
   }
 
@@ -268,12 +248,9 @@ export class RealMediaRepository implements MediaRepository {
     request: DeleteImageItemsRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<DeleteImageItemsResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.deleteImageItems) {
-      throw new Error('真实后端通道不可用：deleteImageItems 未注入')
-    }
+    const deleteImageItems = requireBackendMethod('deleteImageItems')
 
-    const response = await withAbort(api.deleteImageItems(request), options)
+    const response = await withAbort(deleteImageItems(request), options)
     return deleteImageItemsResponseSchema.parse(response)
   }
 
@@ -281,12 +258,9 @@ export class RealMediaRepository implements MediaRepository {
     request: DeleteSidebarNodesRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<DeleteSidebarNodesResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.deleteSidebarNodes) {
-      throw new Error('真实后端通道不可用：deleteSidebarNodes 未注入')
-    }
+    const deleteSidebarNodes = requireBackendMethod('deleteSidebarNodes')
 
-    const response = await withAbort(api.deleteSidebarNodes(request), options)
+    const response = await withAbort(deleteSidebarNodes(request), options)
     return deleteSidebarNodesResponseSchema.parse(response)
   }
 
@@ -294,12 +268,9 @@ export class RealMediaRepository implements MediaRepository {
     request: StartManageAdReviewRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<StartManageAdReviewResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.startManageAdReview) {
-      throw new Error('真实后端通道不可用：startManageAdReview 未注入')
-    }
+    const startManageAdReview = requireBackendMethod('startManageAdReview')
 
-    const response = await withAbort(api.startManageAdReview(request), options)
+    const response = await withAbort(startManageAdReview(request), options)
     return startManageAdReviewResponseSchema.parse(response)
   }
 
@@ -307,12 +278,9 @@ export class RealMediaRepository implements MediaRepository {
     request: ReadManageAdReviewTaskRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ReadManageAdReviewTaskResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.readManageAdReviewTask) {
-      throw new Error('真实后端通道不可用：readManageAdReviewTask 未注入')
-    }
+    const readManageAdReviewTask = requireBackendMethod('readManageAdReviewTask')
 
-    const response = await withAbort(api.readManageAdReviewTask(request), options)
+    const response = await withAbort(readManageAdReviewTask(request), options)
     return readManageAdReviewTaskResponseSchema.parse(response)
   }
 
@@ -320,12 +288,9 @@ export class RealMediaRepository implements MediaRepository {
     request: PauseManageAdReviewTaskRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PauseManageAdReviewTaskResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.pauseManageAdReviewTask) {
-      throw new Error('真实后端通道不可用：pauseManageAdReviewTask 未注入')
-    }
+    const pauseManageAdReviewTask = requireBackendMethod('pauseManageAdReviewTask')
 
-    const response = await withAbort(api.pauseManageAdReviewTask(request), options)
+    const response = await withAbort(pauseManageAdReviewTask(request), options)
     return pauseManageAdReviewTaskResponseSchema.parse(response)
   }
 
@@ -333,12 +298,9 @@ export class RealMediaRepository implements MediaRepository {
     request: TestAdReviewVisionModelRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<TestAdReviewVisionModelResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.testAdReviewVisionModel) {
-      throw new Error('真实后端通道不可用：testAdReviewVisionModel 未注入')
-    }
+    const testAdReviewVisionModel = requireBackendMethod('testAdReviewVisionModel')
 
-    const response = await withAbort(api.testAdReviewVisionModel(request), options)
+    const response = await withAbort(testAdReviewVisionModel(request), options)
     return testAdReviewVisionModelResponseSchema.parse(response)
   }
 
@@ -346,12 +308,9 @@ export class RealMediaRepository implements MediaRepository {
     request: ConfirmManageAdReviewDeleteRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.confirmManageAdReviewDelete) {
-      throw new Error('真实后端通道不可用：confirmManageAdReviewDelete 未注入')
-    }
+    const confirmManageAdReviewDelete = requireBackendMethod('confirmManageAdReviewDelete')
 
-    const response = await withAbort(api.confirmManageAdReviewDelete(request), options)
+    const response = await withAbort(confirmManageAdReviewDelete(request), options)
     return confirmManageAdReviewDeleteResponseSchema.parse(response)
   }
 
@@ -359,12 +318,9 @@ export class RealMediaRepository implements MediaRepository {
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageMetadataResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.writePackageMetadata) {
-      throw new Error('真实后端通道不可用：writePackageMetadata 未注入')
-    }
+    const writePackageMetadata = requireBackendMethod('writePackageMetadata')
 
-    const response = await withAbort(api.writePackageMetadata(request), options)
+    const response = await withAbort(writePackageMetadata(request), options)
     return writePackageMetadataResponseSchema.parse(response)
   }
 
@@ -372,12 +328,9 @@ export class RealMediaRepository implements MediaRepository {
     request: WritePackageExternalMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePackageExternalMetadataResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.writePackageExternalMetadata) {
-      throw new Error('真实后端通道不可用：writePackageExternalMetadata 未注入')
-    }
+    const writePackageExternalMetadata = requireBackendMethod('writePackageExternalMetadata')
 
-    const response = await withAbort(api.writePackageExternalMetadata(request), options)
+    const response = await withAbort(writePackageExternalMetadata(request), options)
     return writePackageExternalMetadataResponseSchema.parse(response)
   }
 
@@ -385,12 +338,9 @@ export class RealMediaRepository implements MediaRepository {
     request: SearchExternalMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<SearchExternalMetadataResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.searchExternalMetadata) {
-      throw new Error('真实后端通道不可用：searchExternalMetadata 未注入')
-    }
+    const searchExternalMetadata = requireBackendMethod('searchExternalMetadata')
 
-    const response = await withAbort(api.searchExternalMetadata(request), options)
+    const response = await withAbort(searchExternalMetadata(request), options)
     return searchExternalMetadataResponseSchema.parse(response)
   }
 
@@ -398,12 +348,9 @@ export class RealMediaRepository implements MediaRepository {
     request: WriteVideoMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WriteVideoMetadataResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.writeVideoMetadata) {
-      throw new Error('真实后端通道不可用：writeVideoMetadata 未注入')
-    }
+    const writeVideoMetadata = requireBackendMethod('writeVideoMetadata')
 
-    const response = await withAbort(api.writeVideoMetadata(request), options)
+    const response = await withAbort(writeVideoMetadata(request), options)
     return writeVideoMetadataResponseSchema.parse(response)
   }
 
@@ -411,12 +358,9 @@ export class RealMediaRepository implements MediaRepository {
     request: WriteAudioMetadataRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WriteAudioMetadataResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.writeAudioMetadata) {
-      throw new Error('真实后端通道不可用：writeAudioMetadata 未注入')
-    }
+    const writeAudioMetadata = requireBackendMethod('writeAudioMetadata')
 
-    const response = await withAbort(api.writeAudioMetadata(request), options)
+    const response = await withAbort(writeAudioMetadata(request), options)
     return writeAudioMetadataResponseSchema.parse(response)
   }
 
@@ -424,20 +368,14 @@ export class RealMediaRepository implements MediaRepository {
     request: SaveVideoCoverRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<SaveVideoCoverResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.saveVideoCover(request), options)
     return saveVideoCoverResponseSchema.parse(response)
   }
 
   async readPlaylist(options?: RepositoryRequestOptions): Promise<ReadPlaylistResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.readPlaylist(), options)
     return readPlaylistResponseSchema.parse(response)
@@ -447,10 +385,7 @@ export class RealMediaRepository implements MediaRepository {
     request: WritePlaylistRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WritePlaylistResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.writePlaylist(request), options)
     return writePlaylistResponseSchema.parse(response)
@@ -460,12 +395,9 @@ export class RealMediaRepository implements MediaRepository {
     request: ListVideoSubtitlesRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ListVideoSubtitlesResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.listVideoSubtitles) {
-      throw new Error('真实后端通道不可用：listVideoSubtitles 未注入')
-    }
+    const listVideoSubtitles = requireBackendMethod('listVideoSubtitles')
 
-    const response = await withAbort(api.listVideoSubtitles(request), options)
+    const response = await withAbort(listVideoSubtitles(request), options)
     return listVideoSubtitlesResponseSchema.parse(response)
   }
 
@@ -473,12 +405,9 @@ export class RealMediaRepository implements MediaRepository {
     request: PrepareSubtitleTrackRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PrepareSubtitleTrackResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.prepareSubtitleTrack) {
-      throw new Error('真实后端通道不可用：prepareSubtitleTrack 未注入')
-    }
+    const prepareSubtitleTrack = requireBackendMethod('prepareSubtitleTrack')
 
-    const response = await withAbort(api.prepareSubtitleTrack(request), options)
+    const response = await withAbort(prepareSubtitleTrack(request), options)
     return prepareSubtitleTrackResponseSchema.parse(response)
   }
 
@@ -486,10 +415,7 @@ export class RealMediaRepository implements MediaRepository {
     request: PickImportPathsRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PickImportPathsResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.pickImportPaths(request), options)
     return pickImportPathsResponseSchema.parse(response)
@@ -499,12 +425,9 @@ export class RealMediaRepository implements MediaRepository {
     request: PickFilePathRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PickFilePathResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.pickFilePath) {
-      throw new Error('真实后端通道不可用：pickFilePath 未注入')
-    }
+    const pickFilePath = requireBackendMethod('pickFilePath')
 
-    const response = await withAbort(api.pickFilePath(request), options)
+    const response = await withAbort(pickFilePath(request), options)
     return pickFilePathResponseSchema.parse(response)
   }
 
@@ -512,20 +435,14 @@ export class RealMediaRepository implements MediaRepository {
     request: PickDirectoryPathRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PickDirectoryPathResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api?.pickDirectoryPath) {
-      throw new Error('真实后端通道不可用：pickDirectoryPath 未注入')
-    }
+    const pickDirectoryPath = requireBackendMethod('pickDirectoryPath')
 
-    const response = await withAbort(api.pickDirectoryPath(request), options)
+    const response = await withAbort(pickDirectoryPath(request), options)
     return pickDirectoryPathResponseSchema.parse(response)
   }
 
   async readClipboardImportPaths(options?: RepositoryRequestOptions): Promise<ReadClipboardImportPathsResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.readClipboardImportPaths(), options)
     return readClipboardImportPathsResponseSchema.parse(response)
@@ -535,10 +452,7 @@ export class RealMediaRepository implements MediaRepository {
     request: EnqueueImportTaskRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<EnqueueImportTaskResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const startedAt = performance.now()
     try {
@@ -557,10 +471,7 @@ export class RealMediaRepository implements MediaRepository {
   }
 
   async readImportTasks(options?: RepositoryRequestOptions): Promise<ReadImportTasksResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const startedAt = performance.now()
     try {
@@ -577,42 +488,30 @@ export class RealMediaRepository implements MediaRepository {
     request: RetryImportTaskRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<RetryImportTaskResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.retryImportTask(request), options)
     return retryImportTaskResponseSchema.parse(response)
   }
 
   async readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.readMediaAccessAudit(), options)
     return mediaAccessAuditResponseSchema.parse(response)
   }
 
   async readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.readRuntimeCapabilities(), options)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
   }
 
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api || !api.readArchiveLoadStatus) {
-      throw new Error('真实后端通道不可用：readArchiveLoadStatus 未注入')
-    }
+    const readArchiveLoadStatus = requireBackendMethod('readArchiveLoadStatus')
 
-    const response = await withAbort(api.readArchiveLoadStatus(), options)
+    const response = await withAbort(readArchiveLoadStatus(), options)
     return readArchiveLoadStatusResponseSchema.parse(response)
   }
 
@@ -620,12 +519,9 @@ export class RealMediaRepository implements MediaRepository {
     request: ReadAppStateRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ReadAppStateResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api || !api.readAppState) {
-      throw new Error('真实后端通道不可用：readAppState 未注入')
-    }
+    const readAppState = requireBackendMethod('readAppState')
 
-    const response = await withAbort(api.readAppState(request), options)
+    const response = await withAbort(readAppState(request), options)
     return readAppStateResponseSchema.parse(response)
   }
 
@@ -633,20 +529,14 @@ export class RealMediaRepository implements MediaRepository {
     request: WriteAppStateRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<WriteAppStateResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api || !api.writeAppState) {
-      throw new Error('真实后端通道不可用：writeAppState 未注入')
-    }
+    const writeAppState = requireBackendMethod('writeAppState')
 
-    const response = await withAbort(api.writeAppState(request), options)
+    const response = await withAbort(writeAppState(request), options)
     return writeAppStateResponseSchema.parse(response)
   }
 
   async clearDatabase(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto> {
-    const api = window.mediaPlayerBackend
-    if (!api) {
-      throw new Error('真实后端通道不可用：window.mediaPlayerBackend 未注入')
-    }
+    const api = requireBackend()
 
     const response = await withAbort(api.clearDatabase(), options)
     return clearDatabaseResponseSchema.parse(response)
