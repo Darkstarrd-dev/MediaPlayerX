@@ -13,6 +13,7 @@ import {
   serializeUnknownError,
 } from './runtimeDiagnostics'
 import { applyElectronProxy, resolveUserDataDir } from './mainRuntimeConfig'
+import { installMainWindowNavigationGuards } from './mainWindowGuards'
 import { STARTUP_SPLASH_WINDOW_CONFIG, renderStartupSplashHtml } from './startupSplashTemplate'
 
 const STARTUP_SPLASH_TIMEOUT_MS = 12_000
@@ -576,45 +577,8 @@ function createMainWindow(): BrowserWindow {
 
   applyWindowMenuState(window)
 
-  // Prevent the default Electron behavior where dropping a file onto the window
-  // navigates the current page to a file:// URL.
-  // This must be handled in the main process; renderer preventDefault alone is not reliable.
   const entry = resolveRendererEntry()
-  const allowedOrigin = entry.type === 'url' ? new URL(entry.value).origin : null
-  const allowedFileBase =
-    entry.type === 'file'
-      ? (() => {
-          const url = pathToFileURL(entry.value)
-          url.search = ''
-          url.hash = ''
-          return url.toString()
-        })()
-      : null
-
-  window.webContents.on('will-navigate', (event, url) => {
-    if (allowedOrigin) {
-      try {
-        if (new URL(url).origin === allowedOrigin) {
-          return
-        }
-      } catch {
-        // fallthrough
-      }
-    }
-
-    if (allowedFileBase && url.startsWith(allowedFileBase)) {
-      return
-    }
-
-    event.preventDefault()
-  })
-
-  window.webContents.on('will-frame-navigate', (event) => {
-    // Frame navigations are not expected in this app; block defensively.
-    event.preventDefault()
-  })
-
-  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+  installMainWindowNavigationGuards(window, entry)
 
   window.webContents.once('dom-ready', () => {
     logRuntimeDiagnostic('startup-main-dom-ready', { windowId: window.webContents.id }, 'info', true)
