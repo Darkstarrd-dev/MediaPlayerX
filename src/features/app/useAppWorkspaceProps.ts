@@ -28,6 +28,7 @@ import {
   createApplyMetadataSyncName,
   createSaveParsedMetadata,
 } from './workspaceMetadataActions'
+import { createAdReviewSettingHandlers } from './workspaceAdReviewHandlers'
 import type { MusicBookletBindingsResult } from './useMusicBookletBindings'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
@@ -497,29 +498,7 @@ export function useAppWorkspaceProps({
       void manageAdReview.pauseManageAdReview()
     },
     onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
-    onAdReviewStrategyModeChange: (value) => {
-      appSettings.updateSettings({ adReviewStrategyMode: value })
-    },
-    onAdReviewMaxConcurrencyChange: (value) => {
-      appSettings.updateSettings({
-        adReviewMaxConcurrency: Math.max(4, Math.min(12, Math.floor(value))),
-      })
-    },
-    onAdReviewHeadNChange: (value) => {
-      appSettings.updateSettings({
-        adReviewHeadN: Math.max(0, Math.min(200, Math.floor(value))),
-      })
-    },
-    onAdReviewTailNChange: (value) => {
-      appSettings.updateSettings({
-        adReviewTailN: Math.max(0, Math.min(200, Math.floor(value))),
-      })
-    },
-    onAdReviewTailStopCleanStreakChange: (value) => {
-      appSettings.updateSettings({
-        adReviewTailStopCleanStreak: Math.max(1, Math.min(200, Math.floor(value))),
-      })
-    },
+    ...createAdReviewSettingHandlers({ updateSettings: appSettings.updateSettings }),
     onDismissAdReviewTask: manageAdReview.dismissTask,
     onStartWorkspaceBottomPanelResize,
     layoutLocked,
@@ -879,29 +858,7 @@ export function useAppWorkspaceProps({
       void manageAdReview.pauseManageAdReview()
     },
     onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
-    onAdReviewStrategyModeChange: (value) => {
-      appSettings.updateSettings({ adReviewStrategyMode: value })
-    },
-    onAdReviewMaxConcurrencyChange: (value) => {
-      appSettings.updateSettings({
-        adReviewMaxConcurrency: Math.max(4, Math.min(12, Math.floor(value))),
-      })
-    },
-    onAdReviewHeadNChange: (value) => {
-      appSettings.updateSettings({
-        adReviewHeadN: Math.max(0, Math.min(200, Math.floor(value))),
-      })
-    },
-    onAdReviewTailNChange: (value) => {
-      appSettings.updateSettings({
-        adReviewTailN: Math.max(0, Math.min(200, Math.floor(value))),
-      })
-    },
-    onAdReviewTailStopCleanStreakChange: (value) => {
-      appSettings.updateSettings({
-        adReviewTailStopCleanStreak: Math.max(1, Math.min(200, Math.floor(value))),
-      })
-    },
+    ...createAdReviewSettingHandlers({ updateSettings: appSettings.updateSettings }),
     onDismissAdReviewTask: manageAdReview.dismissTask,
     metadataCollapsed: appSettings.metadataCollapsed,
     metadataRatio: appSettings.metadataRatio,
