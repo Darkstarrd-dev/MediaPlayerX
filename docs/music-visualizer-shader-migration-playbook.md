@@ -6,7 +6,7 @@
 
 - 目标：降低重复踩坑概率，保证新 Shader 的接入速度、稳定性与可调试性。
 - 适用：`src/features/music-visualizer/` 下的 GPU 渲染（WebGL2 Renderer）与 CPU 回退（Canvas2D Fallback）链路。
-- 非目标：当前不支持 Shadertoy 多 Buffer（Buffer A/B/C/D）与多通道资源采样（除 `iChannel0` 音频纹理）。
+- 范围说明：当前已支持 Shadertoy 风格多 Pass（含 Buffer 自反馈）与 4 路通道采样；不支持键盘输入（`iKeyboard`）与鼠标输入（`iMouse`）默认注入。
 
 ## 2. 当前运行时契约（Runtime Contract）
 
@@ -25,9 +25,23 @@
 - `iResolution`（`vec3`）
 - `iTime`（`float`）
 - `iFrame`（`int`）
+- `iDate`（`vec4`）
 - `iChannel0`（`sampler2D`）
+- `iChannel1`（`sampler2D`）
+- `iChannel2`（`sampler2D`）
+- `iChannel3`（`sampler2D`）
+- `iChannelResolution[4]`（`vec3[4]`）
 - `iAudioLevel`（`float`，舒适化平滑音量包络）
 - `iAudioBeat`（`float`，舒适化节拍脉冲包络）
+
+### 2.2.1 多 Pass 运行时约束
+
+- Shader 可在 `MusicVisualizerShaderDefinition.multiPass` 中声明 Pass 链路。
+- 当前实现约束：
+  - 必须且只能有 1 个 `output=screen` 的 pass。
+  - `output=screen` pass 必须位于 pass 列表末尾。
+  - `feedback=true` 的 pass 通道读取上一帧同 pass 纹理（ping-pong）。
+  - 中间 pass 不做 Tone Mapping；末尾 screen pass 可启用 Tone Mapping。
 
 ### 2.3 音频纹理约定
 
@@ -215,7 +229,7 @@
 - 接入定位：完整复合结构（背景 + 居中前景）。
 - 适配说明：
   - 背景层依赖 `iAmplifiedTime` 与 `FFT`，按本地 `iChannel0` 音频纹理实现。
-  - 前景层原始代码依赖 `iChannel1`，当前运行时无 `iChannel1`，已映射到 `iChannel0` 频谱采样并保持中心构图。
+   - 前景层原始代码依赖 `iChannel1`；该版本接入时为了减少通道依赖，映射到 `iChannel0` 频谱采样并保持中心构图。
   - 合成策略使用 screen blend，前景作为高亮层叠加在背景之上。
 
 ## 6.3 新增 Shader（Nebula）
@@ -225,7 +239,7 @@
 - 来源 URL（前景层）：`https://www.shadertoy.com/view/43GGDm`
 - 接入定位：完整复合结构（背景 + 前景）。
 - 适配说明：
-  - 前景层原始代码依赖 `iChannel1` 和 `iMouse`，运行时改为 `iChannel0` 音频采样与时间驱动相机运动。
+   - 前景层原始代码依赖 `iChannel1` 和 `iMouse`；该版本接入时改为 `iChannel0` 音频采样与时间驱动相机运动。
   - 前景层的动态射线循环改为固定上限 `int` 循环并按音频幅值门限激活，避免 WebGL 循环编译不稳定。
   - 合成策略为背景黑位压暗 + 前景能量 mask + screen blend，降低全局雾化风险。
 
@@ -239,6 +253,18 @@
   - 几何与运动沿用原算法；音乐只驱动颜色/亮度，不驱动形变。
   - 脉冲仅作用于高光区，避免全屏 strobe。
 
+## 6.5 新增 Shader（Rain Drips）
+
+- Shader：`src/features/music-visualizer/shaders/rain_drips.ts`
+- 来源 URL：`https://www.shadertoy.com/view/tstXRj`
+- 接入定位：雨滴挂窗（多 Pass 版本）。
+- 适配说明：
+  - 运行时新增多 Pass 后，按 `Buffer A -> Buffer B -> Image` 链路重建。
+  - `Buffer A` 使用自反馈粒子状态；`Buffer B` 使用历史反馈叠加雨痕；`Image` 负责折射与合成。
+  - `iChannel1` 与 `iChannel3` 使用项目内贴图资源（`src/assets/iChannel1.png`、`src/assets/iChannel3.png`），`iChannel2` 使用运行时程序化扰动纹理。
+  - 前景叠加来源 `https://www.shadertoy.com/view/Nd33zr`，并按中心缩放到原始尺寸的 `60%`。
+  - 音乐响应仅作用于亮度（brightness）：`iAudioLevel` 与 `iAudioBeat` 仅驱动高光区域增亮，不驱动几何路径。
+
 ## 7. 变更记录（持续追加）
 
 - 2026-02-14
@@ -250,5 +276,6 @@
   - 新增 `Galaxy` Shader，来源 `https://www.shadertoy.com/view/MXXcD4` + `https://www.shadertoy.com/view/WcXSDn`，完成背景与居中前景合并。
   - 新增 `Nebula` Shader，来源 `https://www.shadertoy.com/view/MXXcD4` + `https://www.shadertoy.com/view/43GGDm`，完成背景与前景融合。
   - 新增 `Fungi` Shader，来源 `https://www.shadertoy.com/view/33VGzW`，并落地音频响应的人机工程优化方案（包络平滑 + onset 脉冲 + 高光局部脉冲 + 过曝压缩）。
+  - 新增 `Rain Drips` Shader，来源 `https://www.shadertoy.com/view/tstXRj`，并基于多 Pass 运行时实现 `Buffer A/B/Image` 链路；`iChannel1/iChannel3` 已接入本地贴图资源，叠加 `Nd33zr` 前景并缩放至 60%，音乐响应限定为亮度通道。
   - Tone Mapping 模式扩展为 `off/reinhard/aces/filmic/agx/khronos`，由统一后处理管线驱动。
   - Tone Mapping / FPS / 渲染长边切换改为热更新，减少运行时重建引发的不稳定。

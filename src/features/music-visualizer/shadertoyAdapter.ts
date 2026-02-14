@@ -1,20 +1,17 @@
-export function buildShadertoyFragmentSource(mainImageSource: string): string {
-  return `#version 300 es
-precision highp float;
-precision highp int;
+interface BuildShadertoyFragmentSourceOptions {
+  commonSource?: string
+  includeToneMapping?: boolean
+}
 
-uniform vec3 iResolution;
-uniform float iTime;
-uniform int iFrame;
-uniform sampler2D iChannel0;
-uniform float iAudioLevel;
-uniform float iAudioBeat;
-uniform int iToneMapMode;
-uniform float iToneMapExposure;
-uniform float iToneMapStrength;
+export function buildShadertoyFragmentSource(
+  mainImageSource: string,
+  options: BuildShadertoyFragmentSourceOptions = {},
+): string {
+  const includeToneMapping = options.includeToneMapping ?? true
+  const commonSource = options.commonSource ? `${options.commonSource}\n\n` : ''
 
-out vec4 outColor;
-
+  const toneMapFunctions = includeToneMapping
+    ? `
 vec3 toneMapReinhard(vec3 value) {
   return value / (vec3(1.0) + value);
 }
@@ -69,13 +66,44 @@ vec3 applyToneMapping(vec3 color) {
   }
   return mix(color, mapped, strength);
 }
+`
+    : ''
+
+  const outputColorLine = includeToneMapping
+    ? '  outColor = vec4(applyToneMapping(rawColor.rgb), rawColor.a);'
+    : '  outColor = rawColor;'
+
+  return `#version 300 es
+precision highp float;
+precision highp int;
+
+uniform vec3 iResolution;
+uniform float iTime;
+uniform int iFrame;
+uniform vec4 iDate;
+uniform sampler2D iChannel0;
+uniform sampler2D iChannel1;
+uniform sampler2D iChannel2;
+uniform sampler2D iChannel3;
+uniform vec3 iChannelResolution[4];
+uniform float iAudioLevel;
+uniform float iAudioBeat;
+uniform int iToneMapMode;
+uniform float iToneMapExposure;
+uniform float iToneMapStrength;
+
+out vec4 outColor;
+
+${toneMapFunctions}
+
+${commonSource}
 
 ${mainImageSource}
 
 void main() {
   vec4 rawColor = vec4(0.0);
   mainImage(rawColor, gl_FragCoord.xy);
-  outColor = vec4(applyToneMapping(rawColor.rgb), rawColor.a);
+${outputColorLine}
 }
 `
 }
