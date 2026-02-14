@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { VideoControlIcon } from './VideoControlIcon'
-import type { AudioItem } from '../types'
+import type { AudioItem, MusicLoopMode } from '../types'
+import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp, formatSeconds } from '../utils/ui'
 
 type MusicPopoverKey = 'volume'
@@ -22,15 +23,38 @@ interface MusicMainSectionProps {
   onClearManageSelection: () => void
   canJumpToManga: boolean
   canJumpToAnimation: boolean
+  canJumpToBooklet: boolean
   onJumpToManga: () => void
   onJumpToAnimation: () => void
+  onJumpToBooklet: () => void
   audios: AudioItem[]
   focusedAudio: AudioItem | null
   focusedAudioSrc: string | null
+  musicLoopMode: MusicLoopMode
+  musicLoopModeLabel: string
   canPrevAudio: boolean
   canNextAudio: boolean
+  fullscreenActive: boolean
+  onToggleFullscreen: () => void
+  musicVisualizerRenderLongEdgePx: number
+  musicVisualizerShowFps: boolean
+  musicVisualizerRenderer: 'gpu' | 'cpu'
   onPrevAudio: () => void
   onNextAudio: () => void
+  onCycleMusicLoopMode: () => void
+}
+
+function resolveLoopModeIconName(mode: MusicLoopMode): 'repeatOne' | 'repeatFolder' | 'repeatAlbum' | 'repeatLibrary' {
+  if (mode === 'single') {
+    return 'repeatOne'
+  }
+  if (mode === 'folder') {
+    return 'repeatFolder'
+  }
+  if (mode === 'album') {
+    return 'repeatAlbum'
+  }
+  return 'repeatLibrary'
 }
 
 function MusicMainSection({
@@ -49,17 +73,28 @@ function MusicMainSection({
   onClearManageSelection,
   canJumpToManga,
   canJumpToAnimation,
+  canJumpToBooklet,
   onJumpToManga,
   onJumpToAnimation,
+  onJumpToBooklet,
   audios,
   focusedAudio,
   focusedAudioSrc,
+  musicLoopMode,
+  musicLoopModeLabel,
   canPrevAudio,
   canNextAudio,
+  fullscreenActive,
+  onToggleFullscreen,
+  musicVisualizerRenderLongEdgePx,
+  musicVisualizerShowFps,
+  musicVisualizerRenderer,
   onPrevAudio,
   onNextAudio,
+  onCycleMusicLoopMode,
 }: MusicMainSectionProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const visualizerCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const lastPlayRequestNonceRef = useRef(playRequestNonce)
   const [openPopover, setOpenPopover] = useState<MusicPopoverKey | null>(null)
   const [audioPlaying, setAudioPlaying] = useState(false)
@@ -67,6 +102,14 @@ function MusicMainSection({
   const [audioMuted, setAudioMuted] = useState(false)
   const [audioTime, setAudioTime] = useState(0)
   const [audioDurationSec, setAudioDurationSec] = useState(0)
+
+  const { stats: visualizerStats, runtimeError: visualizerRuntimeError, resumeAudioAnalyser } = useMusicVisualizerRuntime({
+    canvasRef: visualizerCanvasRef,
+    audioRef,
+    active,
+    preferredRenderer: musicVisualizerRenderer,
+    renderLongEdgePx: musicVisualizerRenderLongEdgePx,
+  })
 
   const toolbarSummary = useMemo(() => {
     if (!focusedAudio) {
@@ -144,6 +187,13 @@ function MusicMainSection({
     setAudioPlaying(true)
   }, [focusedAudioSrc, interruptByVideoPlayback, playRequestNonce])
 
+  useEffect(() => {
+    if (!audioPlaying) {
+      return
+    }
+    void resumeAudioAnalyser()
+  }, [audioPlaying, resumeAudioAnalyser])
+
   const closePopover = () => {
     setOpenPopover(null)
   }
@@ -182,7 +232,7 @@ function MusicMainSection({
                 <strong className="main-toolbar-title" title={toolbarSummary}>
                   {`${toolbarSummary} (${audios.length} 首)`}
                 </strong>
-                {canJumpToManga || canJumpToAnimation ? (
+                {canJumpToManga || canJumpToAnimation || canJumpToBooklet ? (
                   <div className="toolbar-actions">
                     {canJumpToManga ? (
                       <button className="toolbar-icon-btn" type="button" aria-label="漫画版" title="漫画版" onClick={onJumpToManga}>
@@ -194,14 +244,41 @@ function MusicMainSection({
                         <span aria-hidden="true">▧</span>
                       </button>
                     ) : null}
+                    {canJumpToBooklet ? (
+                      <button className="toolbar-icon-btn" type="button" aria-label="Booklet" title="Booklet" onClick={onJumpToBooklet}>
+                        <span aria-hidden="true">▤</span>
+                      </button>
+                    ) : null}
                   </div>
                 ) : null}
               </>
             )}
           </div>
 
-          <div className="name-list music-name-list music-visualizer-placeholder" aria-label="music visualizer">
-            <div className="music-visualizer-placeholder-inner">Music Visualizer (Placeholder)</div>
+          <div
+            className={`name-list music-name-list music-visualizer${fullscreenActive ? ' is-fullscreen' : ''}`}
+            aria-label="music visualizer"
+            data-overlay-close={fullscreenActive ? 'fullscreen' : undefined}
+          >
+            <canvas ref={visualizerCanvasRef} className="music-visualizer-canvas" />
+            {musicVisualizerShowFps && visualizerStats ? (
+              <div className="music-visualizer-hud" role="status">
+                <span>{`FPS ${visualizerStats.fps.toFixed(1)} | ${visualizerStats.frameMs.toFixed(2)}ms`}</span>
+                <span>{`Render ${visualizerStats.renderWidth} x ${visualizerStats.renderHeight}`}</span>
+                <span>{`Backend ${visualizerStats.backend.toUpperCase()}`}</span>
+                <span>{visualizerStats.rendererLabel}</span>
+              </div>
+            ) : null}
+            {visualizerRuntimeError ? (
+              <div className={`music-visualizer-hud ${musicVisualizerShowFps ? 'is-warning' : 'is-warning is-bottom'}`} role="status">
+                <span>{visualizerRuntimeError}</span>
+              </div>
+            ) : null}
+            {fullscreenActive ? (
+              <button className="music-visualizer-exit-fullscreen-btn" type="button" onClick={onToggleFullscreen}>
+                退出全屏
+              </button>
+            ) : null}
           </div>
 
           <div className="music-controls-shell">
@@ -285,7 +362,26 @@ function MusicMainSection({
                 </button>
               </div>
 
-              <div className="music-controls-group is-right" />
+              <div className="music-controls-group is-right">
+                <button
+                  aria-label={fullscreenActive ? '退出全屏' : '全屏'}
+                  className="video-action-btn"
+                  title={fullscreenActive ? '退出全屏' : '全屏'}
+                  type="button"
+                  onClick={onToggleFullscreen}
+                >
+                  <VideoControlIcon name="fullscreen" />
+                </button>
+                <button
+                  aria-label={`循环模式：${musicLoopModeLabel}`}
+                  className="video-action-btn"
+                  title={`循环模式：${musicLoopModeLabel}`}
+                  type="button"
+                  onClick={onCycleMusicLoopMode}
+                >
+                  <VideoControlIcon name={resolveLoopModeIconName(musicLoopMode)} />
+                </button>
+              </div>
             </div>
           </div>
         </>
@@ -294,6 +390,7 @@ function MusicMainSection({
       <audio
         ref={audioRef}
         className="music-native-audio"
+        crossOrigin="anonymous"
         src={focusedAudioSrc ?? undefined}
         preload="metadata"
         onTimeUpdate={() => {
@@ -311,6 +408,17 @@ function MusicMainSection({
         }}
         onEnded={() => {
           setAudioTime(0)
+          const audio = audioRef.current
+          const shouldRestartCurrent = Boolean(focusedAudioSrc) && (musicLoopMode === 'single' || !canNextAudio)
+          if (audio && shouldRestartCurrent) {
+            audio.currentTime = 0
+            if (audioPlaying) {
+              void audio.play().catch(() => {
+                setAudioPlaying(false)
+              })
+            }
+            return
+          }
           onNextAudio()
         }}
       />

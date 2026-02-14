@@ -10,12 +10,13 @@ import { buildSearchPanelProps } from './buildSearchPanelProps'
 import { buildSidebarPanelProps } from './buildSidebarPanelProps'
 import { buildMusicMainSectionProps } from './buildMusicMainSectionProps'
 import { buildVideoMainSectionProps } from './buildVideoMainSectionProps'
+import type { MusicBookletBindingsResult } from './useMusicBookletBindings'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 import type { WriteDataAccessResult } from '../backend'
-import type { AudioItem, BrowserMode, FocusedImageRef, ImageItem, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
+import type { AudioItem, BrowserMode, FocusedImageRef, ImageItem, ImagePackage, MusicLoopMode, SidebarNode, VectorCandidate, VideoItem } from '../../types'
 import type { UiBenchSettings } from '../perf/benchSettings'
 import type { VideoFitMode } from '../media/videoFitMode'
 import type {
@@ -147,6 +148,7 @@ interface UseAppWorkspacePropsParams {
   selectedVideoId: string
   selectedAudioId: string
   audioPlaylistIds: string[]
+  musicLoopMode: MusicLoopMode
   musicPlayRequestNonce: number
   dragVideoId: string | null
   videoByIdEffective: Map<string, VideoItem>
@@ -159,6 +161,7 @@ interface UseAppWorkspacePropsParams {
   selectedSidebarNodeId: string | null
   searchResultsMode: boolean
   canSetCurrentRoot: boolean
+  normalImageSourceNodeIdMap: Map<string, string>
   imageRootNodeId: string | null
   videoRootNodeId: string | null
   musicRootNodeId: string | null
@@ -174,11 +177,13 @@ interface UseAppWorkspacePropsParams {
   setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>
   setSelectedPackageId: Dispatch<SetStateAction<string>>
   setSelectedAudioId: Dispatch<SetStateAction<string>>
+  setMusicLoopMode: Dispatch<SetStateAction<MusicLoopMode>>
   collapseSidebar: () => void
   applyCurrentRootFromSelection: () => void
   toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void
   setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
   requestMusicPlay: () => void
+  musicBookletBindings: MusicBookletBindingsResult
 }
 
 function normalizeFeatureTags(values: string[]): string[] {
@@ -226,6 +231,103 @@ function compareAbsolutePath(left: { absolutePath: string }, right: { absolutePa
   return left.absolutePath.localeCompare(right.absolutePath, 'zh-CN', { sensitivity: 'base' })
 }
 
+function collectAudioIdsBySidebarOrder(nodes: SidebarNode[], audios: AudioItem[]): string[] {
+  const folderOrderByPath = new Map<string, number>()
+  let order = 0
+  const walk = (currentNodes: SidebarNode[]) => {
+    for (const node of currentNodes) {
+      folderOrderByPath.set(node.pathKey, order)
+      order += 1
+      if (node.children.length > 0) {
+        walk(node.children)
+      }
+    }
+  }
+  walk(nodes)
+
+  const resolveFolderPath = (audio: AudioItem): string => audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1)).join('/')
+
+  return [...audios]
+    .sort((left, right) => {
+      const leftOrder = folderOrderByPath.get(resolveFolderPath(left)) ?? Number.MAX_SAFE_INTEGER
+      const rightOrder = folderOrderByPath.get(resolveFolderPath(right)) ?? Number.MAX_SAFE_INTEGER
+      if (leftOrder !== rightOrder) {
+        return leftOrder - rightOrder
+      }
+      return left.absolutePath.localeCompare(right.absolutePath, 'zh-CN', { sensitivity: 'base' })
+    })
+    .map((audio) => audio.id)
+}
+
+function collectScopedAudioIdsByFolderNode(params: {
+  selectedSidebarNode: SidebarNode | null
+  audiosForSidebar: AudioItem[]
+  audioSidebarOrderedIds: string[]
+}): string[] {
+  const { selectedSidebarNode, audiosForSidebar, audioSidebarOrderedIds } = params
+  if (!selectedSidebarNode || selectedSidebarNode.kind !== 'folder') {
+    return audioSidebarOrderedIds
+  }
+
+  const selectedPath = selectedSidebarNode.pathKey
+  const selectedPrefix = `${selectedPath}/`
+  const scopedIdSet = new Set(
+    audiosForSidebar
+      .filter((audio) => {
+        const folderPath = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1)).join('/')
+        return folderPath === selectedPath || folderPath.startsWith(selectedPrefix)
+      })
+      .map((audio) => audio.id),
+  )
+
+  if (scopedIdSet.size === 0) {
+    return audioSidebarOrderedIds
+  }
+
+  return audioSidebarOrderedIds.filter((audioId) => scopedIdSet.has(audioId))
+}
+
+function extractPathKeyFromNodeId(nodeId: string): string {
+  const separatorIndex = nodeId.indexOf(':')
+  if (separatorIndex < 0) {
+    return nodeId
+  }
+  return nodeId.slice(separatorIndex + 1)
+}
+
+function resolveMusicBookletPreviewRootNodeId(params: {
+  candidateSourceIds: string[]
+  imageSourceNodeIdMap: Map<string, string>
+}): string | null {
+  const pathPartsList = params.candidateSourceIds
+    .map((sourceId) => params.imageSourceNodeIdMap.get(sourceId))
+    .filter((nodeId): nodeId is string => typeof nodeId === 'string' && nodeId.length > 0)
+    .map((nodeId) => extractPathKeyFromNodeId(nodeId).split('/').filter(Boolean))
+
+  if (pathPartsList.length === 0) {
+    return null
+  }
+
+  let sharedParts = pathPartsList[0] ?? []
+  for (let index = 1; index < pathPartsList.length; index += 1) {
+    const currentParts = pathPartsList[index] ?? []
+    const sharedLimit = Math.min(sharedParts.length, currentParts.length)
+    const nextShared: string[] = []
+    for (let partIndex = 0; partIndex < sharedLimit; partIndex += 1) {
+      if ((sharedParts[partIndex] ?? '').toLocaleLowerCase('zh-CN') !== (currentParts[partIndex] ?? '').toLocaleLowerCase('zh-CN')) {
+        break
+      }
+      nextShared.push(sharedParts[partIndex] as string)
+    }
+    sharedParts = nextShared
+    if (sharedParts.length === 0) {
+      return null
+    }
+  }
+
+  return sharedParts.length > 0 ? `folder:${sharedParts.join('/')}` : null
+}
+
 function pickFirstBySeriesId<T extends { seriesId?: string; absolutePath: string }>(
   items: Iterable<T>,
   seriesId: string,
@@ -246,6 +348,317 @@ function pickFirstBySeriesId<T extends { seriesId?: string; absolutePath: string
   }
   matches.sort(compareAbsolutePath)
   return matches[0]
+}
+
+const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
+const MUSIC_BOOKLET_AUTO_VALUE = '__auto__'
+const MUSIC_BOOKLET_NONE_VALUE = '__none__'
+const DISC_DIRECTORY_PATTERN = /^(?:cd|disc|disk)\s*[-_ ]*\d+$/i
+const COVER_HINT_KEYWORDS = ['cover', 'front', 'jacket', 'folder', 'art', 'artwork']
+const BOOKLET_HINT_KEYWORDS = ['booklet', 'scan', 'scans', 'liner', 'lyric', 'bk']
+
+interface MusicBookletCandidate {
+  sourceId: string
+  absolutePath: string
+  label: string
+  imageCount: number
+  relativeDepth: number
+  coverHint: boolean
+  bookletHint: boolean
+}
+
+interface MusicBookletResolvedState {
+  albumRootPath: string
+  candidates: MusicBookletCandidate[]
+  autoCoverSourceId: string | null
+  autoBookletSourceId: string | null
+  effectiveCoverSourceId: string | null
+  effectiveBookletSourceId: string | null
+  coverBindingValue: string
+  bookletBindingValue: string
+}
+
+function normalizeFsPath(value: string): string {
+  const normalized = value.replace(/\\+/g, '/').replace(/\/+/g, '/').trim()
+  if (!normalized) {
+    return ''
+  }
+  if (normalized.length > 1 && normalized.endsWith('/')) {
+    return normalized.slice(0, -1)
+  }
+  return normalized
+}
+
+function normalizePathKey(value: string): string {
+  return normalizeFsPath(value).toLowerCase()
+}
+
+function splitFsSegments(value: string): string[] {
+  return normalizeFsPath(value)
+    .split('/')
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+}
+
+function dirnameFsPath(value: string): string {
+  const normalized = normalizeFsPath(value)
+  if (!normalized) {
+    return ''
+  }
+
+  const index = normalized.lastIndexOf('/')
+  if (index <= 0) {
+    return normalized
+  }
+
+  return normalized.slice(0, index)
+}
+
+function basenameFsPath(value: string): string {
+  const normalized = normalizeFsPath(value)
+  if (!normalized) {
+    return ''
+  }
+
+  const index = normalized.lastIndexOf('/')
+  return index >= 0 ? normalized.slice(index + 1) : normalized
+}
+
+function isPathInside(rootPath: string, targetPath: string): boolean {
+  const normalizedRootKey = normalizePathKey(rootPath)
+  const normalizedTargetKey = normalizePathKey(targetPath)
+  if (!normalizedRootKey || !normalizedTargetKey) {
+    return false
+  }
+
+  return normalizedTargetKey === normalizedRootKey || normalizedTargetKey.startsWith(`${normalizedRootKey}/`)
+}
+
+function commonAncestorPath(leftPath: string, rightPath: string): string {
+  const left = splitFsSegments(leftPath)
+  const right = splitFsSegments(rightPath)
+  const limit = Math.min(left.length, right.length)
+  const shared: string[] = []
+  for (let index = 0; index < limit; index += 1) {
+    if (left[index]?.toLowerCase() !== right[index]?.toLowerCase()) {
+      break
+    }
+    shared.push(left[index] as string)
+  }
+  return shared.join('/')
+}
+
+function pathDepth(value: string): number {
+  return splitFsSegments(value).length
+}
+
+function relativeSegmentsFromRoot(rootPath: string, targetPath: string): string[] {
+  if (!isPathInside(rootPath, targetPath)) {
+    return []
+  }
+
+  const rootSegments = splitFsSegments(rootPath)
+  const targetSegments = splitFsSegments(targetPath)
+  return targetSegments.slice(rootSegments.length)
+}
+
+function joinFsPath(basePath: string, segment: string): string {
+  const normalizedBase = normalizeFsPath(basePath)
+  const normalizedSegment = segment.replace(/\\+/g, '/').replace(/\/+$/g, '').replace(/^\/+/, '')
+  if (!normalizedBase) {
+    return normalizedSegment
+  }
+  if (!normalizedSegment) {
+    return normalizedBase
+  }
+  return `${normalizedBase}/${normalizedSegment}`
+}
+
+function hasKeyword(text: string, keywords: readonly string[]): boolean {
+  const normalized = text.trim().toLowerCase()
+  if (!normalized) {
+    return false
+  }
+  return keywords.some((keyword) => normalized.includes(keyword))
+}
+
+function resolveAlbumRootPath(params: {
+  audioAbsolutePath: string
+  bookletSources: Array<{ absolutePath: string }>
+  musicImportDirectories: string[]
+}): string {
+  const normalizedAudioPath = normalizeFsPath(params.audioAbsolutePath)
+  const audioDirectoryPath = dirnameFsPath(normalizedAudioPath)
+  if (!audioDirectoryPath) {
+    return normalizedAudioPath
+  }
+
+  const normalizedImportDirectories = Array.from(
+    new Set(params.musicImportDirectories.map((value) => normalizeFsPath(value)).filter(Boolean)),
+  )
+  const matchedImportRoot = normalizedImportDirectories
+    .filter((candidateRoot) => isPathInside(candidateRoot, normalizedAudioPath))
+    .sort((left, right) => pathDepth(right) - pathDepth(left))[0]
+
+  if (!matchedImportRoot) {
+    const baseName = basenameFsPath(audioDirectoryPath)
+    if (DISC_DIRECTORY_PATTERN.test(baseName)) {
+      return dirnameFsPath(audioDirectoryPath) || audioDirectoryPath
+    }
+    return audioDirectoryPath
+  }
+
+  let bestAncestor = ''
+  for (const source of params.bookletSources) {
+    const candidatePath = normalizeFsPath(source.absolutePath)
+    if (!candidatePath || !isPathInside(matchedImportRoot, candidatePath)) {
+      continue
+    }
+
+    const ancestor = commonAncestorPath(audioDirectoryPath, candidatePath)
+    if (!ancestor || !isPathInside(matchedImportRoot, ancestor)) {
+      continue
+    }
+
+    if (pathDepth(ancestor) > pathDepth(bestAncestor)) {
+      bestAncestor = ancestor
+    }
+  }
+
+  if (bestAncestor) {
+    const bestAncestorBase = basenameFsPath(bestAncestor)
+    if (DISC_DIRECTORY_PATTERN.test(bestAncestorBase)) {
+      return dirnameFsPath(bestAncestor) || matchedImportRoot
+    }
+    return bestAncestor
+  }
+
+  const relativeSegments = relativeSegmentsFromRoot(matchedImportRoot, audioDirectoryPath)
+  if (relativeSegments.length <= 0) {
+    return matchedImportRoot
+  }
+
+  const firstSegment = relativeSegments[0] ?? ''
+  if (!firstSegment || DISC_DIRECTORY_PATTERN.test(firstSegment)) {
+    return matchedImportRoot
+  }
+  return joinFsPath(matchedImportRoot, firstSegment)
+}
+
+function resolveMusicBookletState(params: {
+  focusedAudio: AudioItem | null
+  imageSources: ImagePackage[]
+  musicImportDirectories: string[]
+  bindingsByAlbumRoot: Record<string, { coverSourceId?: string | null; bookletSourceId?: string | null }>
+}): MusicBookletResolvedState {
+  if (!params.focusedAudio) {
+    return {
+      albumRootPath: '',
+      candidates: [],
+      autoCoverSourceId: null,
+      autoBookletSourceId: null,
+      effectiveCoverSourceId: null,
+      effectiveBookletSourceId: null,
+      coverBindingValue: MUSIC_BOOKLET_AUTO_VALUE,
+      bookletBindingValue: MUSIC_BOOKLET_AUTO_VALUE,
+    }
+  }
+
+  const bookletSources = params.imageSources.filter((source) => source.treePath[0] === MUSIC_BOOKLET_ROOT_LABEL)
+  const albumRootPath = resolveAlbumRootPath({
+    audioAbsolutePath: params.focusedAudio.absolutePath,
+    bookletSources,
+    musicImportDirectories: params.musicImportDirectories,
+  })
+
+  const candidates = bookletSources
+    .filter((source) => isPathInside(albumRootPath, source.absolutePath))
+    .map((source) => {
+      const relativeSegments = relativeSegmentsFromRoot(albumRootPath, source.absolutePath)
+      const relativeLabel = relativeSegments.join('/')
+      const baseName = basenameFsPath(source.absolutePath)
+      return {
+        sourceId: source.id,
+        absolutePath: source.absolutePath,
+        label: relativeLabel || baseName || source.displayName,
+        imageCount: source.images.length,
+        relativeDepth: relativeSegments.length,
+        coverHint: hasKeyword(baseName, COVER_HINT_KEYWORDS),
+        bookletHint: hasKeyword(baseName, BOOKLET_HINT_KEYWORDS),
+      }
+    })
+    .sort((left, right) => left.absolutePath.localeCompare(right.absolutePath, 'zh-CN', { sensitivity: 'base' }))
+
+  const sortedForCover = [...candidates].sort((left, right) => {
+    if (normalizePathKey(left.absolutePath) === normalizePathKey(albumRootPath)) {
+      return -1
+    }
+    if (normalizePathKey(right.absolutePath) === normalizePathKey(albumRootPath)) {
+      return 1
+    }
+    if (left.coverHint !== right.coverHint) {
+      return left.coverHint ? -1 : 1
+    }
+    if (left.relativeDepth !== right.relativeDepth) {
+      return left.relativeDepth - right.relativeDepth
+    }
+    if (left.imageCount !== right.imageCount) {
+      return right.imageCount - left.imageCount
+    }
+    return left.label.localeCompare(right.label, 'zh-CN')
+  })
+
+  const sortedForBooklet = [...candidates].sort((left, right) => {
+    if (left.bookletHint !== right.bookletHint) {
+      return left.bookletHint ? -1 : 1
+    }
+    if (left.imageCount !== right.imageCount) {
+      return right.imageCount - left.imageCount
+    }
+    if (left.relativeDepth !== right.relativeDepth) {
+      return left.relativeDepth - right.relativeDepth
+    }
+    return left.label.localeCompare(right.label, 'zh-CN')
+  })
+
+  const autoCoverSourceId = sortedForCover[0]?.sourceId ?? null
+  const autoBookletSourceId = sortedForBooklet[0]?.sourceId ?? null
+  const candidateSourceIdSet = new Set(candidates.map((candidate) => candidate.sourceId))
+  const manualOverride = params.bindingsByAlbumRoot[albumRootPath]
+
+  const resolveEffectiveSourceId = (manualValue: string | null | undefined, autoValue: string | null): string | null => {
+    if (typeof manualValue === 'undefined') {
+      return autoValue
+    }
+    if (manualValue === null) {
+      return null
+    }
+    return candidateSourceIdSet.has(manualValue) ? manualValue : autoValue
+  }
+
+  const effectiveCoverSourceId = resolveEffectiveSourceId(manualOverride?.coverSourceId, autoCoverSourceId)
+  const effectiveBookletSourceId = resolveEffectiveSourceId(manualOverride?.bookletSourceId, autoBookletSourceId)
+
+  return {
+    albumRootPath,
+    candidates,
+    autoCoverSourceId,
+    autoBookletSourceId,
+    effectiveCoverSourceId,
+    effectiveBookletSourceId,
+    coverBindingValue:
+      typeof manualOverride?.coverSourceId === 'undefined'
+        ? MUSIC_BOOKLET_AUTO_VALUE
+        : manualOverride.coverSourceId === null
+          ? MUSIC_BOOKLET_NONE_VALUE
+          : manualOverride.coverSourceId,
+    bookletBindingValue:
+      typeof manualOverride?.bookletSourceId === 'undefined'
+        ? MUSIC_BOOKLET_AUTO_VALUE
+        : manualOverride.bookletSourceId === null
+          ? MUSIC_BOOKLET_NONE_VALUE
+          : manualOverride.bookletSourceId,
+  }
 }
 
 export function useAppWorkspaceProps({
@@ -370,6 +783,7 @@ export function useAppWorkspaceProps({
   selectedVideoId,
   selectedAudioId,
   audioPlaylistIds,
+  musicLoopMode,
   musicPlayRequestNonce,
   dragVideoId,
   videoByIdEffective,
@@ -382,6 +796,7 @@ export function useAppWorkspaceProps({
   selectedSidebarNodeId,
   searchResultsMode,
   canSetCurrentRoot,
+  normalImageSourceNodeIdMap,
   imageRootNodeId,
   videoRootNodeId,
   musicRootNodeId,
@@ -397,11 +812,13 @@ export function useAppWorkspaceProps({
   setSelectedSidebarNodeId,
   setSelectedPackageId,
   setSelectedAudioId,
+  setMusicLoopMode,
   collapseSidebar,
   applyCurrentRootFromSelection,
   toggleSidebarNodeChecked,
   setAudioPlaylistIds,
   requestMusicPlay,
+  musicBookletBindings,
 }: UseAppWorkspacePropsParams) {
   /**
    * Workspace 层只做视图模型组装：
@@ -631,6 +1048,12 @@ export function useAppWorkspaceProps({
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
 
   const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
+  const audioSidebarOrderedIds = collectAudioIdsBySidebarOrder(audioTreeForSidebar, audiosForSidebar)
+  const metadataMusicPlaylistIds = collectScopedAudioIdsByFolderNode({
+    selectedSidebarNode,
+    audiosForSidebar,
+    audioSidebarOrderedIds,
+  })
   const nodeBrowseMode =
     mode === 'image' &&
     !vectorResultsActive &&
@@ -696,6 +1119,16 @@ export function useAppWorkspaceProps({
   const jumpTargetImage = pickFirstBySeriesId(packageByIdEffective.values(), videoSeriesId)
   const jumpTargetImageFromAudio = pickFirstBySeriesId(packageByIdEffective.values(), audioSeriesId)
   const jumpTargetVideoFromAudio = pickFirstBySeriesId(videoByIdEffective.values(), audioSeriesId)
+  const musicBookletState = resolveMusicBookletState({
+    focusedAudio,
+    imageSources: Array.from(packageByIdEffective.values()),
+    musicImportDirectories: musicBookletBindings.musicImportDirectories,
+    bindingsByAlbumRoot: musicBookletBindings.bindingsByAlbumRoot,
+  })
+  const musicBookletPreviewRootNodeId = resolveMusicBookletPreviewRootNodeId({
+    candidateSourceIds: musicBookletState.candidates.map((candidate) => candidate.sourceId),
+    imageSourceNodeIdMap: normalImageSourceNodeIdMap,
+  })
 
   const jumpToAnimation = () => {
     if (!jumpTargetVideo || !imageSeriesId) {
@@ -734,6 +1167,84 @@ export function useAppWorkspaceProps({
     appSettings.updateSettings({ mode: 'video' })
     selectVideoFromBrowser(jumpTargetVideoFromAudio.id)
     setMetadataTab('info')
+  }
+
+  const jumpMusicToCover = () => {
+    const coverSourceId = musicBookletState.effectiveCoverSourceId
+    if (!coverSourceId) {
+      return
+    }
+
+    applyQuickFeatureSearch({})
+    appSettings.updateSettings({ mode: 'image', imageRootNodeId: musicBookletPreviewRootNodeId })
+    setSelectedPackageId(coverSourceId)
+    setMetadataTab('info')
+  }
+
+  const jumpMusicToBooklet = () => {
+    const bookletSourceId = musicBookletState.effectiveBookletSourceId ?? musicBookletState.effectiveCoverSourceId
+    if (!bookletSourceId) {
+      return
+    }
+
+    applyQuickFeatureSearch({})
+    appSettings.updateSettings({ mode: 'image', imageRootNodeId: musicBookletPreviewRootNodeId })
+    setSelectedPackageId(bookletSourceId)
+    setMetadataTab('info')
+  }
+
+  const updateMusicCoverBinding = (bindingValue: string) => {
+    const albumRootPath = musicBookletState.albumRootPath
+    if (!albumRootPath) {
+      return
+    }
+
+    if (bindingValue === MUSIC_BOOKLET_AUTO_VALUE) {
+      const current = musicBookletBindings.bindingsByAlbumRoot[albumRootPath]
+      if (!current) {
+        return
+      }
+      if (typeof current.bookletSourceId === 'undefined') {
+        musicBookletBindings.resetBindingOverride(albumRootPath)
+        return
+      }
+      musicBookletBindings.setBindingOverride(albumRootPath, { coverSourceId: undefined })
+      return
+    }
+
+    if (bindingValue === MUSIC_BOOKLET_NONE_VALUE) {
+      musicBookletBindings.setBindingOverride(albumRootPath, { coverSourceId: null })
+      return
+    }
+
+    musicBookletBindings.setBindingOverride(albumRootPath, { coverSourceId: bindingValue })
+  }
+
+  const updateMusicBookletBinding = (bindingValue: string) => {
+    const albumRootPath = musicBookletState.albumRootPath
+    if (!albumRootPath) {
+      return
+    }
+
+    if (bindingValue === MUSIC_BOOKLET_AUTO_VALUE) {
+      const current = musicBookletBindings.bindingsByAlbumRoot[albumRootPath]
+      if (!current) {
+        return
+      }
+      if (typeof current.coverSourceId === 'undefined') {
+        musicBookletBindings.resetBindingOverride(albumRootPath)
+        return
+      }
+      musicBookletBindings.setBindingOverride(albumRootPath, { bookletSourceId: undefined })
+      return
+    }
+
+    if (bindingValue === MUSIC_BOOKLET_NONE_VALUE) {
+      musicBookletBindings.setBindingOverride(albumRootPath, { bookletSourceId: null })
+      return
+    }
+
+    musicBookletBindings.setBindingOverride(albumRootPath, { bookletSourceId: bindingValue })
   }
 
   const imageMainSectionProps = buildImageMainSectionProps({
@@ -868,6 +1379,7 @@ export function useAppWorkspaceProps({
 
   const musicMainSectionProps = buildMusicMainSectionProps({
     mode,
+    fullscreenActive,
     videoPlaying,
     playRequestNonce: musicPlayRequestNonce,
     manageMode,
@@ -882,15 +1394,23 @@ export function useAppWorkspaceProps({
     onClearManageSelection: clearAllSelections,
     canJumpToManga: Boolean(jumpTargetImageFromAudio),
     canJumpToAnimation: Boolean(jumpTargetVideoFromAudio),
+    canJumpToBooklet: Boolean(musicBookletState.effectiveBookletSourceId || musicBookletState.effectiveCoverSourceId),
     onJumpToManga: jumpMusicToManga,
     onJumpToAnimation: jumpMusicToAnimation,
+    onJumpToBooklet: jumpMusicToBooklet,
     audiosForSidebar,
+    audioSidebarOrderedIds,
     focusedAudio,
     focusedAudioSrc,
     selectedAudioId,
-    audioPlaylistIds,
+    musicLoopMode,
     audioByIdEffective,
     setSelectedAudioId,
+    setMusicLoopMode,
+    setFullscreenActiveWithAutoStop,
+    musicVisualizerRenderLongEdgePx: appSettings.musicVisualizerRenderLongEdgePx,
+    musicVisualizerShowFps: appSettings.musicVisualizerShowFps,
+    musicVisualizerRenderer: appSettings.musicVisualizerRenderer,
     updateSettings: appSettings.updateSettings,
   })
 
@@ -985,9 +1505,19 @@ export function useAppWorkspaceProps({
     editable: metadataManageMode,
     focusedVideo: focusedVideoEffective,
     focusedAudio,
-    audioPlaylistIds,
+    audioPlaylistIds: metadataMusicPlaylistIds,
     selectedAudioId,
     audioById: audioByIdEffective,
+    musicBookletAlbumRootPath: musicBookletState.albumRootPath,
+    musicBookletCandidates: musicBookletState.candidates.map((candidate) => ({
+      sourceId: candidate.sourceId,
+      label: candidate.label,
+      imageCount: candidate.imageCount,
+    })),
+    musicCoverBindingValue: musicBookletState.coverBindingValue,
+    musicBookletBindingValue: musicBookletState.bookletBindingValue,
+    canOpenMusicCover: Boolean(musicBookletState.effectiveCoverSourceId),
+    canOpenMusicBooklet: Boolean(musicBookletState.effectiveBookletSourceId || musicBookletState.effectiveCoverSourceId),
     metadataTab,
     playlistIds,
     selectedVideoId,
@@ -1021,6 +1551,16 @@ export function useAppWorkspaceProps({
       setSelectedAudioId(audioId)
       requestMusicPlay()
       appSettings.updateSettings({ sidebarFocus: 'main' })
+    },
+    onMusicCoverBindingChange: updateMusicCoverBinding,
+    onMusicBookletBindingChange: updateMusicBookletBinding,
+    onOpenMusicCover: jumpMusicToCover,
+    onOpenMusicBooklet: jumpMusicToBooklet,
+    onResetMusicBookletBinding: () => {
+      if (!musicBookletState.albumRootPath) {
+        return
+      }
+      musicBookletBindings.resetBindingOverride(musicBookletState.albumRootPath)
     },
     setPlaylistIds,
     setDragVideoId,

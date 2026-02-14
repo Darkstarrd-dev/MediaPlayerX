@@ -38,6 +38,20 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     next.adReviewMaxConcurrency = Math.max(4, Math.min(12, Math.floor(next.adReviewMaxConcurrency)))
   }
 
+  if (typeof next.musicVisualizerRenderLongEdgePx === 'number' && Number.isFinite(next.musicVisualizerRenderLongEdgePx)) {
+    next.musicVisualizerRenderLongEdgePx = Math.max(240, Math.min(4096, Math.floor(next.musicVisualizerRenderLongEdgePx)))
+  } else if ('musicVisualizerRenderLongEdgePx' in next) {
+    delete next.musicVisualizerRenderLongEdgePx
+  }
+
+  if (typeof next.musicVisualizerShowFps !== 'boolean' && 'musicVisualizerShowFps' in next) {
+    delete next.musicVisualizerShowFps
+  }
+
+  if (next.musicVisualizerRenderer !== 'gpu' && next.musicVisualizerRenderer !== 'cpu' && 'musicVisualizerRenderer' in next) {
+    delete next.musicVisualizerRenderer
+  }
+
   return next as Partial<AppSettings>
 }
 

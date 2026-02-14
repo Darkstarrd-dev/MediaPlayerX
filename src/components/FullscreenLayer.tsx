@@ -557,7 +557,7 @@ function FullscreenLayer({
     }
   }, [subtitleTrackUrl, subtitleVisible])
 
-  if (!fullscreenActive) {
+  if (!fullscreenActive || mode === 'music') {
     return null
   }
 

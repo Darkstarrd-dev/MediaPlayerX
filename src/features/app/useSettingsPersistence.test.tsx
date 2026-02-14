@@ -94,6 +94,37 @@ describe('useSettingsPersistence', () => {
     })
   })
 
+  it('sanitizes music visualizer settings on hydration', async () => {
+    const updateSettings = vi.fn()
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        musicVisualizerRenderLongEdgePx: 99999,
+        musicVisualizerShowFps: 'true',
+        musicVisualizerRenderer: 'metal',
+      }),
+    })
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalled()
+    })
+
+    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<string, unknown>
+    expect(hydrationPatch.musicVisualizerRenderLongEdgePx).toBe(4096)
+    expect(hydrationPatch).not.toHaveProperty('musicVisualizerShowFps')
+    expect(hydrationPatch).not.toHaveProperty('musicVisualizerRenderer')
+  })
+
   it('does not overwrite local changes made before hydration resolves', async () => {
     const deferred: { resolve: (value: unknown) => void } = {
       resolve: () => void 0,

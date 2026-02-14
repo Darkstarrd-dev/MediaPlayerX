@@ -45,6 +45,9 @@ interface RenderSettingsMainSectionParams {
   thumbnailGapScale: number
   thumbnailQuality: number
   thumbnailWidthInputValue: string
+  musicVisualizerRenderLongEdgeInputValue: string
+  musicVisualizerShowFps: boolean
+  musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
   ehentaiCookies: string
   adReviewVisionEndpoint: string
@@ -87,6 +90,11 @@ interface RenderSettingsMainSectionParams {
   onThumbnailWidthInputChange: (value: string) => void
   onThumbnailWidthInputBlur: () => void
   onThumbnailWidthInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
+  onMusicVisualizerRenderLongEdgeInputChange: (value: string) => void
+  onMusicVisualizerRenderLongEdgeInputBlur: () => void
+  onMusicVisualizerRenderLongEdgeInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
+  onMusicVisualizerShowFpsChange: (value: boolean) => void
+  onMusicVisualizerRendererChange: (value: 'gpu' | 'cpu') => void
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
@@ -129,6 +137,9 @@ export function renderSettingsMainSection({
   thumbnailGapScale,
   thumbnailQuality,
   thumbnailWidthInputValue,
+  musicVisualizerRenderLongEdgeInputValue,
+  musicVisualizerShowFps,
+  musicVisualizerRenderer,
   proxyServer,
   ehentaiCookies,
   adReviewVisionEndpoint,
@@ -171,6 +182,11 @@ export function renderSettingsMainSection({
   onThumbnailWidthInputChange,
   onThumbnailWidthInputBlur,
   onThumbnailWidthInputKeyDown,
+  onMusicVisualizerRenderLongEdgeInputChange,
+  onMusicVisualizerRenderLongEdgeInputBlur,
+  onMusicVisualizerRenderLongEdgeInputKeyDown,
+  onMusicVisualizerShowFpsChange,
+  onMusicVisualizerRendererChange,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onAdReviewVisionEndpointChange,
@@ -375,6 +391,35 @@ export function renderSettingsMainSection({
                 onFullscreenVideoControlsMaxWidthChange(toAbsolutePx('fullscreenVideoControlsMaxWidth', Number(event.target.value)))
               }
             />
+          </label>
+        </section>
+
+        <section className="settings-group">
+          <header className="settings-group-head">
+            <span>频谱可视化设置</span>
+          </header>
+          <label>
+            实际渲染长边分辨率
+            <input
+              max={4096}
+              min={240}
+              type="number"
+              value={musicVisualizerRenderLongEdgeInputValue}
+              onBlur={onMusicVisualizerRenderLongEdgeInputBlur}
+              onChange={(event) => onMusicVisualizerRenderLongEdgeInputChange(event.target.value)}
+              onKeyDown={onMusicVisualizerRenderLongEdgeInputKeyDown}
+            />
+          </label>
+          <label className="settings-toggle-row">
+            <span>显示 FPS 调试信息</span>
+            <input type="checkbox" checked={musicVisualizerShowFps} onChange={(event) => onMusicVisualizerShowFpsChange(event.target.checked)} />
+          </label>
+          <label>
+            渲染后端
+            <select value={musicVisualizerRenderer} onChange={(event) => onMusicVisualizerRendererChange(event.target.value as 'gpu' | 'cpu')}>
+              <option value="gpu">GPU (WebGL2 Shader)</option>
+              <option value="cpu">CPU (Canvas2D Fallback)</option>
+            </select>
           </label>
         </section>
       </div>

@@ -21,6 +21,7 @@
 - SQLite 基座已启用（含 migration/init/version）；扫描产物以事务 upsert + stale 清理写入数据库，读取统一以 SQLite 为 SSOT。
 - 播放列表写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `readPlaylist/writePlaylist`，重启后可恢复。
 - 音频元数据写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `writeAudioMetadata`，写入 SQLite `audio_metadata` 并回写快照。
+- 音乐模式可视化已接入 Shader 渲染链路：Renderer 通过独立 `music-visualizer` 模块提供 `WebGL2(GPU)` 与 `Canvas2D(CPU fallback)` 双后端运行时。
 - 缩略图变体链路已落地：`resolveMediaResource` 支持 `original/thumbnail` 变体，thumbnail 由 Main 使用 Sharp 生成 WebP 并落盘缓存。
 - 运行时依赖预检已落地：Main 暴露依赖可用性与降级策略矩阵（`sharp/ffmpeg/ffprobe/archive-wasm/powershell`），Renderer 在降级时显示告警。
 - `rar/7z` 归一化调度采用“双优先级队列”：默认低优先级（交互空闲后按路径排序执行），用户显式打开目标包时提升为高优先级后台处理。
@@ -32,6 +33,7 @@
   - `fileSystemReadService` 领域服务拆分已落地：Token、Runtime、EventBus、ImportPathRegistry、ArchiveNormalization、LibrarySnapshot、ImportTask、LibraryReadWrite、ManagementMutation、MediaResource。
   - 当前关键入口文件规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
 - 管理模式图片选择交互接线已完成：`ImageMainSection` 已统一改用 `useManageImageSelectionInteractions`，旧实现已移除。
+- 音乐可视化资源注册已模块化：Shader 通过 `import.meta.glob('./shaders/*.ts')` 自动发现，替换/新增 Shader 不需要修改 App 壳层组装代码。
 - 大文件拆分已完成：`src/App.css` 已拆分为 `src/styles/app/*` 聚合样式，`electron/mediaLibraryDatabase.ts` 已拆分为 Facade + stores（schema/snapshot/metadata/playlist/task/app state）。
 - 管理模式广告图片审核 (LLM Ad Review) 已完成纵向接线：`Renderer -> Repository -> preload/ipc -> Main service -> manageAdReview core` 全链路可用。
 
@@ -53,6 +55,7 @@
 
 - 负责 Header、Sidebar 树、Main 网格/预览、元数据面板、设置遮罩层、全屏 Footer。
 - 负责图片模式/视频模式切换。
+- 负责音乐模式可视化运行时编排（音频采样、渲染后端选择、FPS 指标采集、分辨率缩放策略）。
 - 负责向量模式容器与结果参数控制。
 - 状态管理采用 Zustand 多 slice。
 
@@ -64,6 +67,26 @@
 - 压缩包维护 Worker：转换、重打包、重命名、重排序任务。
 - 视频 Worker：元数据提取与手动封面持久化。
 - 管理审核能力：已接入管理模式审核任务链路（任务启动/轮询/人工复核/确认删除），并复用现有删除写链路。
+
+## 音乐可视化模块边界（新增）
+
+- `src/features/music-visualizer/shaders/*`：纯 Shader 资源定义（Shadertoy 源码或等价 GLSL）。
+- `src/features/music-visualizer/shaderRegistry.ts`：Shader 自动发现与默认项解析。
+- `src/features/music-visualizer/shadertoyAdapter.ts`：`mainImage(out vec4, in vec2)` 到 WebGL2 fragment entry 适配。
+- `src/features/music-visualizer/audioAnalyser.ts`：`AudioContext + AnalyserNode` 音频采样与频谱/波形缓冲。
+- `src/features/music-visualizer/webglRenderer.ts`：GPU 后端（WebGL2）渲染器，接收 `iChannel0` 音频纹理输入。
+- `src/features/music-visualizer/cpuRenderer.ts`：CPU 保底后端（Canvas2D），用于无硬件加速环境。
+- `src/features/music-visualizer/useMusicVisualizerRuntime.ts`：统一运行时调度层（后端切换、渲染循环、FPS/帧耗时统计、内部渲染分辨率控制）。
+
+约束：播放器主组件只传递输入与配置，不直接耦合 Shader 细节；新增 Shader 时不允许改动 App 顶层编排。
+
+## 媒体协议跨域头（新增）
+
+- 自定义媒体协议 `mediaplayerx-media://` 在 Main `protocol.handle` 响应中补充 CORS 头：
+  - `Access-Control-Allow-Origin`
+  - `Access-Control-Expose-Headers`
+  - `Vary: Origin`（按请求 Origin 回显时）
+- 目的：保证 `<audio crossOrigin="anonymous">` 能稳定接入 Web Audio 分析链路，避免 `createMediaElementSource` 在部分环境下被安全策略拒绝。
 
 ## 管理模式 LLM 广告审核（已接线完成）
 

@@ -38,6 +38,9 @@ export interface SettingsPanelProps {
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
+  musicVisualizerRenderLongEdgePx: number
+  musicVisualizerShowFps: boolean
+  musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
   ehentaiCookies: string
   adReviewVisionEndpoint: string
@@ -77,6 +80,9 @@ export interface SettingsPanelProps {
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onThumbnailWidthChange: (value: number) => void
+  onMusicVisualizerRenderLongEdgePxChange: (value: number) => void
+  onMusicVisualizerShowFpsChange: (value: boolean) => void
+  onMusicVisualizerRendererChange: (value: 'gpu' | 'cpu') => void
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
@@ -112,6 +118,8 @@ const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
 
 const THUMBNAIL_WIDTH_MIN = 128
 const THUMBNAIL_WIDTH_MAX = 2048
+const MUSIC_VISUALIZER_LONG_EDGE_MIN = 240
+const MUSIC_VISUALIZER_LONG_EDGE_MAX = 4096
 
 function resolveSettingsSection(raw: unknown): SettingsSection {
   if (raw === 'layout' || raw === 'model' || raw === 'database' || raw === 'shortcuts') {
@@ -143,6 +151,9 @@ function SettingsPanel({
   thumbnailGap,
   thumbnailQuality,
   thumbnailWidth,
+  musicVisualizerRenderLongEdgePx,
+  musicVisualizerShowFps,
+  musicVisualizerRenderer,
   proxyServer,
   ehentaiCookies,
   adReviewVisionEndpoint,
@@ -182,6 +193,9 @@ function SettingsPanel({
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onThumbnailWidthChange,
+  onMusicVisualizerRenderLongEdgePxChange,
+  onMusicVisualizerShowFpsChange,
+  onMusicVisualizerRendererChange,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onAdReviewVisionEndpointChange,
@@ -201,6 +215,9 @@ function SettingsPanel({
   const [capturingTarget, setCapturingTarget] = useState<BindingTarget | null>(null)
   const [capturedCombo, setCapturedCombo] = useState('')
   const [thumbnailWidthInputValue, setThumbnailWidthInputValue] = useState(() => String(thumbnailWidth))
+  const [musicVisualizerRenderLongEdgeInputValue, setMusicVisualizerRenderLongEdgeInputValue] = useState(
+    () => String(musicVisualizerRenderLongEdgePx),
+  )
   const captureDialogRef = useRef<HTMLDivElement>(null)
 
   const headerHeightScale = toScale('headerHeight', headerHeight)
@@ -233,12 +250,17 @@ function SettingsPanel({
       setCapturingTarget(null)
       setCapturedCombo('')
       setThumbnailWidthInputValue(String(thumbnailWidth))
+      setMusicVisualizerRenderLongEdgeInputValue(String(musicVisualizerRenderLongEdgePx))
     }
-  }, [settingsOpen, thumbnailWidth])
+  }, [musicVisualizerRenderLongEdgePx, settingsOpen, thumbnailWidth])
 
   useEffect(() => {
     setThumbnailWidthInputValue(String(thumbnailWidth))
   }, [thumbnailWidth])
+
+  useEffect(() => {
+    setMusicVisualizerRenderLongEdgeInputValue(String(musicVisualizerRenderLongEdgePx))
+  }, [musicVisualizerRenderLongEdgePx])
 
   useEffect(() => {
     const normalized = resolveSettingsSection(activeSectionRaw)
@@ -379,6 +401,51 @@ function SettingsPanel({
     }
   }
 
+  const commitMusicVisualizerRenderLongEdgeInput = () => {
+    const parsed = Number(musicVisualizerRenderLongEdgeInputValue)
+    if (!Number.isFinite(parsed)) {
+      setMusicVisualizerRenderLongEdgeInputValue(String(musicVisualizerRenderLongEdgePx))
+      return
+    }
+
+    const normalized = Math.max(MUSIC_VISUALIZER_LONG_EDGE_MIN, Math.min(MUSIC_VISUALIZER_LONG_EDGE_MAX, Math.round(parsed)))
+    setMusicVisualizerRenderLongEdgeInputValue(String(normalized))
+    onMusicVisualizerRenderLongEdgePxChange(normalized)
+  }
+
+  const handleMusicVisualizerRenderLongEdgeInputChange = (value: string) => {
+    if (value.length === 0) {
+      setMusicVisualizerRenderLongEdgeInputValue(value)
+      return
+    }
+    if (!/^\d+$/.test(value)) {
+      return
+    }
+
+    setMusicVisualizerRenderLongEdgeInputValue(value)
+
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed)) {
+      return
+    }
+    if (parsed < MUSIC_VISUALIZER_LONG_EDGE_MIN || parsed > MUSIC_VISUALIZER_LONG_EDGE_MAX) {
+      return
+    }
+    onMusicVisualizerRenderLongEdgePxChange(parsed)
+  }
+
+  const handleMusicVisualizerRenderLongEdgeInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      commitMusicVisualizerRenderLongEdgeInput()
+      event.currentTarget.blur()
+      return
+    }
+    if (event.key === 'Escape') {
+      setMusicVisualizerRenderLongEdgeInputValue(String(musicVisualizerRenderLongEdgePx))
+      event.currentTarget.blur()
+    }
+  }
+
   const mainSection = renderSettingsMainSection({
     activeSection,
     layoutLocked,
@@ -407,6 +474,9 @@ function SettingsPanel({
     thumbnailGapScale,
     thumbnailQuality,
     thumbnailWidthInputValue,
+    musicVisualizerRenderLongEdgeInputValue,
+    musicVisualizerShowFps,
+    musicVisualizerRenderer,
     proxyServer,
     ehentaiCookies,
     adReviewVisionEndpoint,
@@ -449,6 +519,11 @@ function SettingsPanel({
     onThumbnailWidthInputChange: handleThumbnailWidthInputChange,
     onThumbnailWidthInputBlur: commitThumbnailWidthInput,
     onThumbnailWidthInputKeyDown: handleThumbnailWidthInputKeyDown,
+    onMusicVisualizerRenderLongEdgeInputChange: handleMusicVisualizerRenderLongEdgeInputChange,
+    onMusicVisualizerRenderLongEdgeInputBlur: commitMusicVisualizerRenderLongEdgeInput,
+    onMusicVisualizerRenderLongEdgeInputKeyDown: handleMusicVisualizerRenderLongEdgeInputKeyDown,
+    onMusicVisualizerShowFpsChange,
+    onMusicVisualizerRendererChange,
     onProxyServerChange,
     onEhentaiCookiesChange,
     onAdReviewVisionEndpointChange,

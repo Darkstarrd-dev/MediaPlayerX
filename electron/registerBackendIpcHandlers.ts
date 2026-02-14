@@ -88,6 +88,24 @@ const MEDIA_ACCESS_FALLBACK_TTL_MS = 60_000
 const RUNTIME_STORAGE_PATHS_FILE_NAME = 'runtime-storage-paths.json'
 const DATABASE_FILE_NAME = path.basename(DATABASE_RELATIVE_PATH)
 
+const AUDIO_FILE_FILTER_EXTENSIONS = ['mp3', 'flac', 'wav', 'ogg', 'm4a', 'opus', 'aac']
+const GENERIC_MEDIA_FILE_FILTER_EXTENSIONS = [
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'gif',
+  'bmp',
+  'mp4',
+  'webm',
+  'mkv',
+  'mov',
+  ...AUDIO_FILE_FILTER_EXTENSIONS,
+  'zip',
+  'rar',
+  '7z',
+]
+
 interface RuntimeStoragePathsConfig {
   database_dir?: string
   thumbnail_cache_dir?: string
@@ -280,10 +298,26 @@ export function registerBackendIpcHandlers(): void {
   }
 
   protocol.handle(MEDIA_PROTOCOL_SCHEME, async (request) => {
+    const buildCorsHeaders = (headersInit: Record<string, string>): Record<string, string> => {
+      const headers = {
+        ...headersInit,
+      }
+      const requestOrigin = request.headers.get('origin')
+      headers['access-control-allow-origin'] = requestOrigin ?? '*'
+      headers['access-control-expose-headers'] = 'accept-ranges, content-length, content-range, content-type'
+      if (requestOrigin) {
+        headers.vary = 'Origin'
+      }
+      return headers
+    }
+
     const requestUrl = new URL(request.url)
     const token = decodeURIComponent(requestUrl.pathname.replace(/^\//, ''))
     if (!token) {
-      return new Response('invalid media token', { status: 400 })
+      return new Response('invalid media token', {
+        status: 400,
+        headers: buildCorsHeaders({ 'content-type': 'text/plain; charset=utf-8' }),
+      })
     }
 
     try {
@@ -294,7 +328,7 @@ export function registerBackendIpcHandlers(): void {
       )
       return new Response(payload.body, {
         status: payload.status,
-        headers: payload.headers,
+        headers: buildCorsHeaders(payload.headers),
       })
     } catch (error) {
       protocolReadFailureCount += 1
@@ -306,7 +340,10 @@ export function registerBackendIpcHandlers(): void {
           error: serializeUnknownError(error),
         }, 'warn')
       }
-      return new Response('media not found', { status: 404 })
+      return new Response('media not found', {
+        status: 404,
+        headers: buildCorsHeaders({ 'content-type': 'text/plain; charset=utf-8' }),
+      })
     }
   })
 
@@ -490,6 +527,8 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.pickImportPaths, async (_event, payload: unknown) => {
     const request = pickImportPathsRequestSchema.parse(payload)
     const mode = request.mode
+    const targetMode = request.target_mode
+    const fileExtensions = targetMode === 'music' ? AUDIO_FILE_FILTER_EXTENSIONS : GENERIC_MEDIA_FILE_FILTER_EXTENSIONS
 
     const result = await dialog.showOpenDialog({
       title: mode === 'folders' ? '选择要导入的文件夹' : '选择要导入的文件',
@@ -501,7 +540,7 @@ export function registerBackendIpcHandlers(): void {
           : [
               {
                 name: '媒体文件',
-                extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'mp4', 'webm', 'mkv', 'mov', 'zip', 'rar', '7z'],
+                extensions: fileExtensions,
               },
             ],
     })

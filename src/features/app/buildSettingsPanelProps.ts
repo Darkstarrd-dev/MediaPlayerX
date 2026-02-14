@@ -21,6 +21,9 @@ interface BuildSettingsPanelPropsParams {
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
+  musicVisualizerRenderLongEdgePx: number
+  musicVisualizerShowFps: boolean
+  musicVisualizerRenderer: 'gpu' | 'cpu'
   proxyServer: string
   ehentaiCookies: string
   adReviewVisionEndpoint: string
@@ -76,6 +79,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
     thumbnailWidth: params.thumbnailWidth,
+    musicVisualizerRenderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
+    musicVisualizerShowFps: params.musicVisualizerShowFps,
+    musicVisualizerRenderer: params.musicVisualizerRenderer,
     proxyServer: params.proxyServer,
     ehentaiCookies: params.ehentaiCookies,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
@@ -120,6 +126,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onThumbnailGapChange: (value) => params.updateSettings({ thumbnailGap: value }),
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
+    onMusicVisualizerRenderLongEdgePxChange: (value) => params.updateSettings({ musicVisualizerRenderLongEdgePx: value }),
+    onMusicVisualizerShowFpsChange: (value) => params.updateSettings({ musicVisualizerShowFps: value }),
+    onMusicVisualizerRendererChange: (value) => params.updateSettings({ musicVisualizerRenderer: value }),
     onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),
     onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
     onAdReviewVisionEndpointChange: (value) =>

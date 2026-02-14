@@ -46,15 +46,25 @@ function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMa
       onClearManageSelection={vi.fn()}
       canJumpToManga={false}
       canJumpToAnimation={false}
+      canJumpToBooklet={false}
       onJumpToManga={vi.fn()}
       onJumpToAnimation={vi.fn()}
+      onJumpToBooklet={vi.fn()}
       audios={audios}
       focusedAudio={audios[0]}
       focusedAudioSrc="mock://audio-1"
+      musicLoopMode="library"
+      musicLoopModeLabel="全曲库循环"
       canPrevAudio={false}
       canNextAudio={true}
+      fullscreenActive={false}
+      onToggleFullscreen={vi.fn()}
+      musicVisualizerRenderLongEdgePx={1280}
+      musicVisualizerShowFps={false}
+      musicVisualizerRenderer="gpu"
       onPrevAudio={vi.fn()}
       onNextAudio={vi.fn()}
+      onCycleMusicLoopMode={vi.fn()}
       {...overrides}
     />,
   )
@@ -70,7 +80,7 @@ describe('MusicMainSection', () => {
     vi.restoreAllMocks()
   })
 
-  it('音乐工具栏显示专辑与作者，并渲染可视化占位区', () => {
+  it('音乐工具栏显示专辑与作者，并渲染可视化区域', () => {
     renderMusicMainSection()
 
     expect(screen.getByText('album / author (1 首)')).toBeInTheDocument()
@@ -99,6 +109,30 @@ describe('MusicMainSection', () => {
     expect(audioElement.volume).toBeCloseTo(0.3, 3)
   })
 
+  it('循环模式按钮可触发状态切换', () => {
+    const onCycleMusicLoopMode = vi.fn()
+    renderMusicMainSection({ onCycleMusicLoopMode })
+
+    fireEvent.click(screen.getByRole('button', { name: '循环模式：全曲库循环' }))
+    expect(onCycleMusicLoopMode).toHaveBeenCalledTimes(1)
+  })
+
+  it('单曲循环在播放结束后会从头继续播放', () => {
+    const { container } = renderMusicMainSection({
+      musicLoopMode: 'single',
+      musicLoopModeLabel: '单曲循环',
+      canNextAudio: false,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    const playCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
+
+    const audioElement = container.querySelector('audio') as HTMLAudioElement
+    fireEvent.ended(audioElement)
+
+    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(playCallCount)
+  })
+
   it('playRequestNonce 递增时会触发播放', () => {
     const baseAudio = makeAudio('track-1')
 
@@ -119,15 +153,25 @@ describe('MusicMainSection', () => {
         onClearManageSelection={vi.fn()}
         canJumpToManga={false}
         canJumpToAnimation={false}
+        canJumpToBooklet={false}
         onJumpToManga={vi.fn()}
         onJumpToAnimation={vi.fn()}
+        onJumpToBooklet={vi.fn()}
         audios={[baseAudio]}
         focusedAudio={baseAudio}
         focusedAudioSrc="mock://audio-1"
+        musicLoopMode="library"
+        musicLoopModeLabel="全曲库循环"
         canPrevAudio={false}
         canNextAudio={true}
+        fullscreenActive={false}
+        onToggleFullscreen={vi.fn()}
+        musicVisualizerRenderLongEdgePx={1280}
+        musicVisualizerShowFps={false}
+        musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
         onNextAudio={vi.fn()}
+        onCycleMusicLoopMode={vi.fn()}
       />,
     )
 
@@ -150,15 +194,25 @@ describe('MusicMainSection', () => {
         onClearManageSelection={vi.fn()}
         canJumpToManga={false}
         canJumpToAnimation={false}
+        canJumpToBooklet={false}
         onJumpToManga={vi.fn()}
         onJumpToAnimation={vi.fn()}
+        onJumpToBooklet={vi.fn()}
         audios={[baseAudio]}
         focusedAudio={baseAudio}
         focusedAudioSrc="mock://audio-1"
+        musicLoopMode="library"
+        musicLoopModeLabel="全曲库循环"
         canPrevAudio={false}
         canNextAudio={true}
+        fullscreenActive={false}
+        onToggleFullscreen={vi.fn()}
+        musicVisualizerRenderLongEdgePx={1280}
+        musicVisualizerShowFps={false}
+        musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
         onNextAudio={vi.fn()}
+        onCycleMusicLoopMode={vi.fn()}
       />,
     )
 
@@ -188,18 +242,36 @@ describe('MusicMainSection', () => {
         onClearManageSelection={vi.fn()}
         canJumpToManga={false}
         canJumpToAnimation={false}
+        canJumpToBooklet={false}
         onJumpToManga={vi.fn()}
         onJumpToAnimation={vi.fn()}
+        onJumpToBooklet={vi.fn()}
         audios={[makeAudio('track-1')]}
         focusedAudio={makeAudio('track-1')}
         focusedAudioSrc="mock://audio-1"
+        musicLoopMode="library"
+        musicLoopModeLabel="全曲库循环"
         canPrevAudio={false}
         canNextAudio={true}
+        fullscreenActive={false}
+        onToggleFullscreen={vi.fn()}
+        musicVisualizerRenderLongEdgePx={1280}
+        musicVisualizerShowFps={false}
+        musicVisualizerRenderer="gpu"
         onPrevAudio={vi.fn()}
         onNextAudio={vi.fn()}
+        onCycleMusicLoopMode={vi.fn()}
       />,
     )
 
     expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length).toBeGreaterThan(pauseCallCount)
+  })
+
+  it('全屏按钮可切换音乐可视化全屏', () => {
+    const onToggleFullscreen = vi.fn()
+    renderMusicMainSection({ onToggleFullscreen })
+
+    fireEvent.click(screen.getByRole('button', { name: '全屏' }))
+    expect(onToggleFullscreen).toHaveBeenCalledTimes(1)
   })
 })

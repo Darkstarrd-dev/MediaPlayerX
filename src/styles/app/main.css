@@ -300,20 +300,77 @@
   grid-template-columns: minmax(0, 1fr) 120px 120px;
 }
 
-.music-visualizer-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.music-visualizer {
   min-height: 220px;
   border: 1px solid var(--mpx-border-1);
   border-radius: var(--mpx-card-radius);
   background: #000;
   color: color-mix(in srgb, var(--mpx-text-inverse) 76%, #fff);
-  letter-spacing: 0.05em;
+  position: relative;
+  overflow: hidden;
 }
 
-.music-visualizer-placeholder-inner {
-  opacity: 0.72;
+.music-visualizer.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  min-height: 100vh;
+  border: 0;
+  border-radius: 0;
+}
+
+.music-visualizer-canvas {
+  display: block;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.music-visualizer-hud {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--mpx-border-1) 55%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, #060811 74%, transparent);
+  color: color-mix(in srgb, var(--mpx-text-inverse) 92%, #fff);
+  font-size: 12px;
+  line-height: 1.35;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+}
+
+.music-visualizer-hud.is-warning {
+  top: auto;
+  bottom: 12px;
+  background: color-mix(in srgb, #250b14 74%, transparent);
+  border-color: color-mix(in srgb, #8f2f45 80%, transparent);
+}
+
+.music-visualizer-hud.is-warning.is-bottom {
+  left: 12px;
+  right: auto;
+}
+
+.music-visualizer-exit-fullscreen-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: var(--mpx-control-border-width) solid color-mix(in srgb, var(--mpx-text-inverse) 28%, transparent);
+  border-radius: var(--mpx-control-radius);
+  background: color-mix(in srgb, #060811 72%, transparent);
+  color: var(--mpx-text-inverse);
+  min-height: var(--mpx-control-height);
+  padding: 0 10px;
+}
+
+.music-visualizer-exit-fullscreen-btn:hover {
+  background: color-mix(in srgb, #10163a 72%, transparent);
 }
 
 .music-controls-shell {
