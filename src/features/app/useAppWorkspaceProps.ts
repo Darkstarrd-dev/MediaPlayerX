@@ -11,11 +11,10 @@ import { buildSidebarPanelProps } from './buildSidebarPanelProps'
 import { buildMusicMainSectionProps } from './buildMusicMainSectionProps'
 import { buildVideoMainSectionProps } from './buildVideoMainSectionProps'
 import {
-  MUSIC_BOOKLET_AUTO_VALUE,
-  MUSIC_BOOKLET_NONE_VALUE,
   resolveMusicBookletPreviewRootNodeId,
   resolveMusicBookletState,
 } from './workspaceMusicBooklet'
+import { createMusicBookletBindingActions, createWorkspaceJumpActions } from './workspaceJumpActions'
 import {
   collectAudioIdsBySidebarOrder,
   collectScopedAudioIdsByFolderNode,
@@ -651,122 +650,37 @@ export function useAppWorkspaceProps({
     imageSourceNodeIdMap: normalImageSourceNodeIdMap,
   })
 
-  const jumpToAnimation = () => {
-    if (!jumpTargetVideo || !imageSeriesId) {
-      return
-    }
-    applyQuickFeatureSearch({ seriesId: imageSeriesId })
-    appSettings.updateSettings({ mode: 'video' })
-    selectVideoFromBrowser(jumpTargetVideo.id)
-    setMetadataTab('info')
-  }
+  const {
+    jumpToAnimation,
+    jumpToManga,
+    jumpMusicToManga,
+    jumpMusicToAnimation,
+    jumpMusicToCover,
+    jumpMusicToBooklet,
+  } = createWorkspaceJumpActions({
+    applyQuickFeatureSearch: (patch) => applyQuickFeatureSearch(patch),
+    updateSettings: (patch) => appSettings.updateSettings(patch),
+    setMetadataTab,
+    setSelectedPackageId,
+    selectVideoFromBrowser,
+    jumpTargetVideoId: jumpTargetVideo?.id ?? null,
+    jumpTargetImageId: jumpTargetImage?.id ?? null,
+    jumpTargetImageFromAudioId: jumpTargetImageFromAudio?.id ?? null,
+    jumpTargetVideoFromAudioId: jumpTargetVideoFromAudio?.id ?? null,
+    imageSeriesId,
+    videoSeriesId,
+    audioSeriesId,
+    openMusicCoverSourceId,
+    openMusicBookletSourceId,
+    musicBookletPreviewRootNodeId,
+  })
 
-  const jumpToManga = () => {
-    if (!jumpTargetImage || !videoSeriesId) {
-      return
-    }
-    applyQuickFeatureSearch({ seriesId: videoSeriesId })
-    appSettings.updateSettings({ mode: 'image' })
-    setSelectedPackageId(jumpTargetImage.id)
-  }
-
-  const jumpMusicToManga = () => {
-    if (!jumpTargetImageFromAudio || !audioSeriesId) {
-      return
-    }
-    applyQuickFeatureSearch({ seriesId: audioSeriesId })
-    appSettings.updateSettings({ mode: 'image' })
-    setSelectedPackageId(jumpTargetImageFromAudio.id)
-    setMetadataTab('info')
-  }
-
-  const jumpMusicToAnimation = () => {
-    if (!jumpTargetVideoFromAudio || !audioSeriesId) {
-      return
-    }
-    applyQuickFeatureSearch({ seriesId: audioSeriesId })
-    appSettings.updateSettings({ mode: 'video' })
-    selectVideoFromBrowser(jumpTargetVideoFromAudio.id)
-    setMetadataTab('info')
-  }
-
-  const jumpMusicToCover = () => {
-    const coverSourceId = openMusicCoverSourceId
-    if (!coverSourceId) {
-      return
-    }
-
-    applyQuickFeatureSearch({})
-    appSettings.updateSettings({ mode: 'image', imageRootNodeId: musicBookletPreviewRootNodeId })
-    setSelectedPackageId(coverSourceId)
-    setMetadataTab('info')
-  }
-
-  const jumpMusicToBooklet = () => {
-    const bookletSourceId = openMusicBookletSourceId
-    if (!bookletSourceId) {
-      return
-    }
-
-    applyQuickFeatureSearch({})
-    appSettings.updateSettings({ mode: 'image', imageRootNodeId: musicBookletPreviewRootNodeId })
-    setSelectedPackageId(bookletSourceId)
-    setMetadataTab('info')
-  }
-
-  const updateMusicCoverBinding = (bindingValue: string) => {
-    const albumRootPath = musicBookletState.albumRootPath
-    if (!albumRootPath) {
-      return
-    }
-
-    if (bindingValue === MUSIC_BOOKLET_AUTO_VALUE) {
-      const current = musicBookletBindings.bindingsByAlbumRoot[albumRootPath]
-      if (!current) {
-        return
-      }
-      if (typeof current.bookletSourceId === 'undefined') {
-        musicBookletBindings.resetBindingOverride(albumRootPath)
-        return
-      }
-      musicBookletBindings.setBindingOverride(albumRootPath, { coverSourceId: undefined })
-      return
-    }
-
-    if (bindingValue === MUSIC_BOOKLET_NONE_VALUE) {
-      musicBookletBindings.setBindingOverride(albumRootPath, { coverSourceId: null })
-      return
-    }
-
-    musicBookletBindings.setBindingOverride(albumRootPath, { coverSourceId: bindingValue })
-  }
-
-  const updateMusicBookletBinding = (bindingValue: string) => {
-    const albumRootPath = musicBookletState.albumRootPath
-    if (!albumRootPath) {
-      return
-    }
-
-    if (bindingValue === MUSIC_BOOKLET_AUTO_VALUE) {
-      const current = musicBookletBindings.bindingsByAlbumRoot[albumRootPath]
-      if (!current) {
-        return
-      }
-      if (typeof current.coverSourceId === 'undefined') {
-        musicBookletBindings.resetBindingOverride(albumRootPath)
-        return
-      }
-      musicBookletBindings.setBindingOverride(albumRootPath, { bookletSourceId: undefined })
-      return
-    }
-
-    if (bindingValue === MUSIC_BOOKLET_NONE_VALUE) {
-      musicBookletBindings.setBindingOverride(albumRootPath, { bookletSourceId: null })
-      return
-    }
-
-    musicBookletBindings.setBindingOverride(albumRootPath, { bookletSourceId: bindingValue })
-  }
+  const { updateMusicCoverBinding, updateMusicBookletBinding } = createMusicBookletBindingActions({
+    albumRootPath: musicBookletState.albumRootPath,
+    bindingsByAlbumRoot: musicBookletBindings.bindingsByAlbumRoot,
+    resetBindingOverride: musicBookletBindings.resetBindingOverride,
+    setBindingOverride: musicBookletBindings.setBindingOverride,
+  })
 
   const imageMainSectionProps = buildImageMainSectionProps({
     vectorResultsActive,
