@@ -1,4 +1,4 @@
-import { app, BrowserWindow, clipboard, dialog, ipcMain, protocol, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
@@ -75,7 +75,7 @@ import {
   openExternalUrlRequestSchema,
   openExternalUrlResponseSchema,
 } from '../src/contracts/backend'
-import { BACKEND_CHANNELS, MEDIA_PROTOCOL_SCHEME } from './channels'
+import { BACKEND_CHANNELS } from './channels'
 import {
   moveDatabaseFiles,
   normalizeAbsoluteDirectory,
@@ -88,6 +88,7 @@ import {
 import { MediaAccessError } from './fileSystemMediaAccessGuard'
 import { FileSystemMediaReadService } from './fileSystemReadService'
 import { isRuntimeDiagnosticsVerboseEnabled, logRuntimeDiagnostic, serializeUnknownError } from './runtimeDiagnostics'
+import { registerMediaProtocolHandler } from './registerMediaProtocolHandler'
 import { MetadataScraperService } from './services/metadata/metadataScraperService'
 
 const MEDIA_ACCESS_FALLBACK_URL = 'data:application/octet-stream;base64,'
@@ -147,7 +148,6 @@ export function registerBackendIpcHandlers(): void {
   let databasePath = resolveDatabasePath(libraryRoot, runtimeStoragePaths.database_dir)
   let thumbnailCachePath = resolveThumbnailCachePath(libraryRoot, runtimeStoragePaths.thumbnail_cache_dir)
   let service: FileSystemMediaReadService | null = null
-  let protocolReadFailureCount = 0
   let resolveMediaResourceCount = 0
   let resolveMediaResourceFailureCount = 0
   const metadataScraper = new MetadataScraperService({
@@ -208,55 +208,7 @@ export function registerBackendIpcHandlers(): void {
     )
   }
 
-  protocol.handle(MEDIA_PROTOCOL_SCHEME, async (request) => {
-    const buildCorsHeaders = (headersInit: Record<string, string>): Record<string, string> => {
-      const headers = {
-        ...headersInit,
-      }
-      const requestOrigin = request.headers.get('origin')
-      headers['access-control-allow-origin'] = requestOrigin ?? '*'
-      headers['access-control-expose-headers'] = 'accept-ranges, content-length, content-range, content-type'
-      if (requestOrigin) {
-        headers.vary = 'Origin'
-      }
-      return headers
-    }
-
-    const requestUrl = new URL(request.url)
-    const token = decodeURIComponent(requestUrl.pathname.replace(/^\//, ''))
-    if (!token) {
-      return new Response('invalid media token', {
-        status: 400,
-        headers: buildCorsHeaders({ 'content-type': 'text/plain; charset=utf-8' }),
-      })
-    }
-
-    try {
-      const payload = await ensureService().readMediaResourceByTokenStream(
-        token,
-        request.headers.get('range'),
-        request.signal,
-      )
-      return new Response(payload.body, {
-        status: payload.status,
-        headers: buildCorsHeaders(payload.headers),
-      })
-    } catch (error) {
-      protocolReadFailureCount += 1
-      if (isRuntimeDiagnosticsVerboseEnabled() || protocolReadFailureCount <= 10 || protocolReadFailureCount % 50 === 0) {
-        logRuntimeDiagnostic('media-protocol-read-failed', {
-          count: protocolReadFailureCount,
-          tokenPrefix: token.slice(0, 8),
-          hasRangeHeader: Boolean(request.headers.get('range')),
-          error: serializeUnknownError(error),
-        }, 'warn')
-      }
-      return new Response('media not found', {
-        status: 404,
-        headers: buildCorsHeaders({ 'content-type': 'text/plain; charset=utf-8' }),
-      })
-    }
-  })
+  registerMediaProtocolHandler(ensureService)
 
   ipcMain.handle(BACKEND_CHANNELS.readLibrarySnapshot, async () => {
     const response = await ensureService().readLibrarySnapshot()
