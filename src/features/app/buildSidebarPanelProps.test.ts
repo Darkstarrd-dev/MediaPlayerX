@@ -247,4 +247,64 @@ describe('buildSidebarPanelProps', () => {
     const removeUpdater = setAudioPlaylistIds.mock.calls[1]?.[0] as ((value: string[]) => string[]) | undefined
     expect(removeUpdater?.(['audio-1', 'audio-2'])).toEqual(['audio-1'])
   })
+
+  it('广告复核结果模式下显示返回按钮并触发退出 focus', () => {
+    const onExitAdReviewResultsMode = vi.fn()
+    const goToFromSearchMode = vi.fn()
+
+    const props = buildSidebarPanelProps({
+      mode: 'image',
+      sidebarFocus: 'sidebar',
+      sidebarRatio: 0.3,
+      sidebarMinWidth: 220,
+      sidebarFontSize: 14,
+      sidebarCountFontSize: 12,
+      sidebarIndentStep: 16,
+      sidebarVerticalGap: 4,
+      currentRootLabel: '广告疑似结果',
+      searchResultsMode: false,
+      adReviewResultsMode: true,
+      selectedSidebarNodeId: null,
+      canSetCurrentRoot: false,
+      imageRootNodeId: null,
+      videoRootNodeId: null,
+      musicRootNodeId: null,
+      imageTreeNodes: [SIDEBAR_NODE_FIXTURE],
+      videoTreeNodes: [],
+      audioTreeNodes: [],
+      imageNodeLoadStateById: {},
+      selectedPackageId: 'pkg-1',
+      selectedVideoId: '',
+      selectedAudioId: '',
+      vectorResultsActive: false,
+      featureSearchActive: false,
+      searchResultsReadOnly: true,
+      manageMode: false,
+      metadataManageMode: false,
+      checkedSidebarNodeIdSet: new Set<string>(),
+      focusedRef: null,
+      playlistIds: [],
+      audioPlaylistIds: [],
+      goToFromSearchMode,
+      onExitAdReviewResultsMode,
+      setSelectedSidebarNodeId: vi.fn(),
+      updateSettings: vi.fn(),
+      setSelectedPackageId: vi.fn(),
+      selectVideoFromBrowser: vi.fn(),
+      setSelectedAudioId: vi.fn(),
+      collapseSidebar: vi.fn(),
+      applyCurrentRootFromSelection: vi.fn(),
+      setPlaylistIds: vi.fn(),
+      setAudioPlaylistIds: vi.fn(),
+      onToggleManageNode: vi.fn(),
+      onCheckManageNode: vi.fn(),
+    })
+
+    expect(props.searchResultMode).toBe(true)
+    expect(props.canGoToFromSearchMode).toBe(true)
+
+    props.onGoToFromSearchMode()
+    expect(onExitAdReviewResultsMode).toHaveBeenCalledTimes(1)
+    expect(goToFromSearchMode).not.toHaveBeenCalled()
+  })
 })

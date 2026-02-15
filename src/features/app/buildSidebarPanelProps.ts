@@ -14,6 +14,7 @@ interface BuildSidebarPanelPropsParams {
   sidebarVerticalGap: number
   currentRootLabel: string | null
   searchResultsMode: boolean
+  adReviewResultsMode?: boolean
   selectedSidebarNodeId: string | null
   canSetCurrentRoot: boolean
   imageRootNodeId: string | null
@@ -35,6 +36,7 @@ interface BuildSidebarPanelPropsParams {
   focusedRef: { packageId: string; imageIndex: number } | null
   playlistIds: string[]
   goToFromSearchMode: () => void
+  onExitAdReviewResultsMode?: () => void
   setSelectedSidebarNodeId: (nodeId: string) => void
   updateSettings: (patch: Partial<AppSettings>) => void
   setSelectedPackageId: (packageId: string) => void
@@ -50,6 +52,9 @@ interface BuildSidebarPanelPropsParams {
 }
 
 export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
+  const adReviewResultsMode = params.adReviewResultsMode ?? false
+  const sidebarResultMode = params.searchResultsMode || adReviewResultsMode
+
   return {
     mode: params.mode,
     sidebarFocus: params.sidebarFocus,
@@ -73,17 +78,23 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     selectedVideoId: params.selectedVideoId,
     selectedAudioId: params.selectedAudioId,
     imageHighlightByNode: params.vectorResultsActive,
-    searchResultMode: params.searchResultsMode,
+    searchResultMode: sidebarResultMode,
     searchResultReadonly: params.searchResultsReadOnly,
     manageMode: params.manageMode,
     metadataManageMode: params.metadataManageMode,
     checkedSidebarNodeIds: params.checkedSidebarNodeIdSet,
-    canGoToFromSearchMode: params.vectorResultsActive
+    canGoToFromSearchMode: adReviewResultsMode
+      ? true
+      : params.vectorResultsActive
       ? Boolean(params.focusedRef)
       : params.featureSearchActive,
     playlistIds: params.playlistIds,
     audioPlaylistIds: params.audioPlaylistIds,
-    onGoToFromSearchMode: params.goToFromSearchMode,
+    onGoToFromSearchMode: adReviewResultsMode
+      ? () => {
+          params.onExitAdReviewResultsMode?.()
+        }
+      : params.goToFromSearchMode,
     onSelectNode: (nodeId: string) => {
       if (params.mode === 'image' && params.vectorResultsActive) {
         return

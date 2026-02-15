@@ -6,6 +6,7 @@ import { buildMainFooter } from './buildMainFooter'
 import { buildManagementPanelProps } from './buildManagementPanelProps'
 import { buildMetadataManagementPanelProps } from './buildMetadataManagementPanelProps'
 import { buildMetadataPanelProps } from './buildMetadataPanelProps'
+import { buildAdReviewSidebarState } from './buildAdReviewSidebarState'
 import { buildSearchPanelProps } from './buildSearchPanelProps'
 import { buildSidebarPanelProps } from './buildSidebarPanelProps'
 import { buildMusicMainSectionProps } from './buildMusicMainSectionProps'
@@ -183,6 +184,7 @@ interface UseAppWorkspacePropsParams {
   searchResultsMode: boolean
   canSetCurrentRoot: boolean
   normalImageSourceNodeIdMap: Map<string, string>
+  orderedRootScopedImageRefs: FocusedImageRef[]
   imageRootNodeId: string | null
   videoRootNodeId: string | null
   musicRootNodeId: string | null
@@ -206,6 +208,24 @@ interface UseAppWorkspacePropsParams {
   setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
   requestMusicPlay: () => void
   musicBookletBindings: MusicBookletBindingsResult
+}
+
+function pathKeyHasPrefix(pathKey: string, prefix: string): boolean {
+  return pathKey === prefix || pathKey.startsWith(`${prefix}/`)
+}
+
+function buildSidebarNodeById(nodes: SidebarNode[]): Map<string, SidebarNode> {
+  const nodeById = new Map<string, SidebarNode>()
+
+  const walk = (input: SidebarNode[]) => {
+    for (const node of input) {
+      nodeById.set(node.id, node)
+      walk(node.children)
+    }
+  }
+
+  walk(nodes)
+  return nodeById
 }
 
 export function useAppWorkspaceProps({
@@ -347,6 +367,7 @@ export function useAppWorkspaceProps({
   searchResultsMode,
   canSetCurrentRoot,
   normalImageSourceNodeIdMap,
+  orderedRootScopedImageRefs,
   imageRootNodeId,
   videoRootNodeId,
   musicRootNodeId,
@@ -389,6 +410,20 @@ export function useAppWorkspaceProps({
     ),
   ).sort((left, right) => left.localeCompare(right, 'zh-CN'))
 
+  const adReviewFocusTask =
+    adReviewFocusTaskId ? manageAdReview.queueTasks.find((item) => item.task_id === adReviewFocusTaskId) ?? null : null
+  const adReviewResultsMode = mode === 'image' && Boolean(adReviewFocusTask && adReviewFocusTask.status === 'review')
+  const adReviewSidebarNodes = adReviewResultsMode
+    ? buildAdReviewSidebarState({
+        focusTask: adReviewFocusTask,
+        packageById: packageByIdEffective,
+      })
+    : []
+  const adReviewSidebarNodeById = adReviewResultsMode ? buildSidebarNodeById(adReviewSidebarNodes) : new Map<string, SidebarNode>()
+  const effectiveSidebarNodeById = adReviewResultsMode ? adReviewSidebarNodeById : sidebarNodeById
+  const selectedSidebarNode = selectedSidebarNodeId ? effectiveSidebarNodeById.get(selectedSidebarNodeId) ?? null : null
+  const sidebarImageTreeNodes = adReviewResultsMode ? adReviewSidebarNodes : imageTreeForSidebar
+
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
     sidebarFocus: appSettings.sidebarFocus,
@@ -398,14 +433,15 @@ export function useAppWorkspaceProps({
     sidebarCountFontSize: appSettings.sidebarCountFontSize,
     sidebarIndentStep: appSettings.sidebarIndentStep,
     sidebarVerticalGap: appSettings.sidebarVerticalGap,
-    currentRootLabel,
+    currentRootLabel: adReviewResultsMode ? '广告疑似结果' : currentRootLabel,
     searchResultsMode,
+    adReviewResultsMode,
     selectedSidebarNodeId,
-    canSetCurrentRoot,
+    canSetCurrentRoot: adReviewResultsMode ? false : canSetCurrentRoot,
     imageRootNodeId,
     videoRootNodeId,
     musicRootNodeId,
-    imageTreeNodes: imageTreeForSidebar,
+    imageTreeNodes: sidebarImageTreeNodes,
     videoTreeNodes: videoTreeForSidebar,
     audioTreeNodes: audioTreeForSidebar,
     imageNodeLoadStateById,
@@ -414,13 +450,16 @@ export function useAppWorkspaceProps({
     selectedAudioId,
     vectorResultsActive,
     featureSearchActive,
-    searchResultsReadOnly,
+    searchResultsReadOnly: adReviewResultsMode ? true : searchResultsReadOnly,
     manageMode,
     metadataManageMode,
     checkedSidebarNodeIdSet: sidebarCheckedNodeIdSet,
     focusedRef,
     playlistIds,
     goToFromSearchMode,
+    onExitAdReviewResultsMode: () => {
+      setAdReviewFocusTaskId(null)
+    },
     setSelectedSidebarNodeId,
     updateSettings: appSettings.updateSettings,
     setSelectedPackageId,
@@ -544,17 +583,61 @@ export function useAppWorkspaceProps({
 
   const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
 
-  const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
   const audioSidebarOrderedIds = collectAudioIdsBySidebarOrder(audioTreeForSidebar, audiosForSidebar)
   const metadataMusicPlaylistIds = collectScopedAudioIdsByFolderNode({
     selectedSidebarNode,
     audiosForSidebar,
     audioSidebarOrderedIds,
   })
+
+  const resolveImageIdByRef = (ref: FocusedImageRef): string | null =>
+    packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]?.id ?? null
+
+  const adReviewFocusCandidateImageIdSet = new Set(adReviewFocusTask?.candidates.map((candidate) => candidate.image_id) ?? [])
+  const adReviewFocusRefsAll = adReviewResultsMode
+    ? orderedRootScopedImageRefs.filter((ref) => {
+        const imageId = resolveImageIdByRef(ref)
+        return Boolean(imageId && adReviewFocusCandidateImageIdSet.has(imageId))
+      })
+    : []
+
+  const adReviewFocusRefsBySidebar = adReviewResultsMode
+    ? adReviewFocusRefsAll.filter((ref) => {
+        if (!selectedSidebarNode) {
+          return true
+        }
+
+        if (selectedSidebarNode.imageNodeType === 'folder') {
+          const packagePathKey = packageByIdEffective.get(ref.packageId)?.treePath.join('/')
+          return Boolean(packagePathKey && pathKeyHasPrefix(packagePathKey, selectedSidebarNode.pathKey))
+        }
+
+        const nodePackageId = selectedSidebarNode.imageSourceId ?? selectedSidebarNode.packageId
+        if (!nodePackageId) {
+          return true
+        }
+
+        return ref.packageId === nodePackageId
+      })
+    : []
+
+  const adReviewImageTotalPages = Math.max(1, Math.ceil(adReviewFocusRefsBySidebar.length / Math.max(1, pagedPageSize)))
+  const adReviewNormalizedPageIndex = Math.min(Math.max(normalizedPageIndexEffective, 0), adReviewImageTotalPages - 1)
+  const adReviewPageStart = adReviewNormalizedPageIndex * pagedPageSize
+
+  const visibleImageRefsForMain = adReviewResultsMode ? adReviewFocusRefsBySidebar : visibleImageRefs
+  const refsInPageBase = adReviewResultsMode
+    ? adReviewFocusRefsBySidebar.slice(adReviewPageStart, adReviewPageStart + pagedPageSize)
+    : refsInPageEffective
+  const pageStartForMain = adReviewResultsMode ? adReviewPageStart : pageStartEffective
+  const normalizedPageIndexForMain = adReviewResultsMode ? adReviewNormalizedPageIndex : normalizedPageIndexEffective
+  const imageTotalPagesForMain = adReviewResultsMode ? adReviewImageTotalPages : imageTotalPagesEffective
+
   const nodeBrowseMode =
     mode === 'image' &&
     !vectorResultsActive &&
     !metadataManageMode &&
+    !adReviewResultsMode &&
     Boolean(selectedSidebarNode && selectedSidebarNode.imageNodeType === 'folder' && selectedSidebarNode.children.length > 0)
 
   const nodeBrowseItems = buildNodeBrowseItems({
@@ -565,16 +648,29 @@ export function useAppWorkspaceProps({
     thumbnailImageUrlById,
   })
 
-  const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageEffective, {
+  const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageBase, {
     manageMode,
     hideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
     imageCheckedIdSet,
     packageByIdEffective,
   })
 
-  const adReviewScopeImageIdSet = new Set(manageAdReview.scopeImageIds)
-  const adReviewLlmReviewedImageIdSet = new Set(manageAdReview.llmReviewedImageIds)
-  const adReviewNonLlmReviewedImageIdSet = new Set(manageAdReview.nonLlmReviewedImageIds)
+  const adReviewTaskForDisplay = adReviewResultsMode ? adReviewFocusTask : manageAdReview.task
+  const adReviewScopeImageIdSet = new Set(adReviewTaskForDisplay?.scope_image_ids ?? manageAdReview.scopeImageIds)
+  const adReviewLlmReviewedImageIdSet = new Set(
+    adReviewTaskForDisplay
+      ? Object.entries(adReviewTaskForDisplay.image_source_by_id)
+          .filter(([, source]) => source === 'llm' || source === 'llm-error')
+          .map(([imageId]) => imageId)
+      : manageAdReview.llmReviewedImageIds,
+  )
+  const adReviewNonLlmReviewedImageIdSet = new Set(
+    adReviewTaskForDisplay
+      ? Object.entries(adReviewTaskForDisplay.image_source_by_id)
+          .filter(([, source]) => source === 'known-hash' || source === 'strategy-skip')
+          .map(([imageId]) => imageId)
+      : manageAdReview.nonLlmReviewedImageIds,
+  )
 
   const imageSeriesId = normalizeSeriesId(metadataImagePackageEffective?.seriesId)
   const videoSeriesId = normalizeSeriesId(focusedVideoEffective?.seriesId)
@@ -646,9 +742,9 @@ export function useAppWorkspaceProps({
     activePackageForDisplay,
     focusedRef,
     focusedImageExists: Boolean(focusedImage),
-    visibleImageRefs,
+    visibleImageRefs: visibleImageRefsForMain,
     refsInPageEffective: refsInPageForDisplay,
-    pageStartEffective,
+    pageStartEffective: pageStartForMain,
     actualCellWidth,
     actualMediaHeight,
     thumbnailColumns,
@@ -961,10 +1057,10 @@ export function useAppWorkspaceProps({
     focusedImagePackage,
     focusedVideo: focusedVideoEffective,
     focusedAudio,
-    sidebarFocusedPath: selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null) : null,
+    sidebarFocusedPath: selectedSidebarNodeId ? (effectiveSidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null) : null,
     nodeBrowseMode,
-    normalizedPageIndex: normalizedPageIndexEffective,
-    imageTotalPages: imageTotalPagesEffective,
+    normalizedPageIndex: normalizedPageIndexForMain,
+    imageTotalPages: imageTotalPagesForMain,
     onPrevPage: goPrevPage,
     onNextPage: goNextPage,
   })
