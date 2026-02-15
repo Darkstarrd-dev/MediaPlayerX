@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon, type MusicControlIconName } from './MusicControlIcon'
+import { useFullscreenFloatingControls } from './useFullscreenFloatingControls'
 import type { AppSettings } from '../contracts/settings'
 import type { AudioItem, MusicLoopMode } from '../types'
 import {
@@ -134,9 +135,6 @@ function MusicMainSection({
   const [shaderListTargetLayer, setShaderListTargetLayer] = useState<'foreground' | 'background'>('foreground')
   const [visualizerCanvasVersion, setVisualizerCanvasVersion] = useState(0)
   const [visualizerRuntimeActive, setVisualizerRuntimeActive] = useState(false)
-  const [fullscreenControlsMounted, setFullscreenControlsMounted] = useState(true)
-  const [fullscreenControlsVisible, setFullscreenControlsVisible] = useState(true)
-  const fullscreenControlsHideTimerRef = useRef<number | null>(null)
   const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
 
   const musicVisualizerLayeredBackgroundShaderId = musicVisualizerShaderSettings.layeredBackgroundShaderId ?? 'galaxy'
@@ -471,34 +469,19 @@ function MusicMainSection({
     setBackgroundRenderScaleCoeffDraft(null)
   }, [backgroundLayerRenderScaleCoeff])
 
-  useEffect(() => {
-    if (!fullscreenActive) {
-      if (fullscreenControlsHideTimerRef.current != null) {
-        window.clearTimeout(fullscreenControlsHideTimerRef.current)
-        fullscreenControlsHideTimerRef.current = null
-      }
-      setFullscreenControlsMounted(true)
-      setFullscreenControlsVisible(true)
-      return
-    }
-
-    setFullscreenControlsMounted(true)
-    setFullscreenControlsVisible(true)
-  }, [fullscreenActive])
-
-  useEffect(
-    () => () => {
-      if (fullscreenControlsHideTimerRef.current != null) {
-        window.clearTimeout(fullscreenControlsHideTimerRef.current)
-        fullscreenControlsHideTimerRef.current = null
-      }
-    },
-    [],
-  )
-
   const closePopover = () => {
     setOpenPopover(null)
   }
+
+  const {
+    controlsMounted: fullscreenControlsMounted,
+    controlsVisible: fullscreenControlsVisible,
+    showControls: showFullscreenControls,
+    hideControls: hideFullscreenControls,
+  } = useFullscreenFloatingControls({
+    fullscreenActive,
+    onAfterHide: closePopover,
+  })
 
   const toggleShaderListTargetLayer = () => {
     setShaderListTargetLayer((value) => (value === 'foreground' ? 'background' : 'foreground'))
@@ -577,43 +560,6 @@ function MusicMainSection({
       window.removeEventListener('touchend', handlePointerUp)
     }
   }, [applyBackgroundRenderScaleCoeffDraft, backgroundRenderScaleCoeffDraft])
-
-  const showFullscreenControls = () => {
-    if (!fullscreenActive) {
-      return
-    }
-    if (fullscreenControlsHideTimerRef.current != null) {
-      window.clearTimeout(fullscreenControlsHideTimerRef.current)
-      fullscreenControlsHideTimerRef.current = null
-    }
-    if (!fullscreenControlsMounted) {
-      setFullscreenControlsMounted(true)
-      if (typeof window !== 'undefined') {
-        window.requestAnimationFrame(() => {
-          setFullscreenControlsVisible(true)
-        })
-      } else {
-        setFullscreenControlsVisible(true)
-      }
-      return
-    }
-    setFullscreenControlsVisible(true)
-  }
-
-  const hideFullscreenControls = () => {
-    if (!fullscreenActive) {
-      return
-    }
-    setFullscreenControlsVisible(false)
-    if (fullscreenControlsHideTimerRef.current != null) {
-      window.clearTimeout(fullscreenControlsHideTimerRef.current)
-    }
-    fullscreenControlsHideTimerRef.current = window.setTimeout(() => {
-      setFullscreenControlsMounted(false)
-      fullscreenControlsHideTimerRef.current = null
-      closePopover()
-    }, 300)
-  }
 
   const musicControlsShell = (
     <div
