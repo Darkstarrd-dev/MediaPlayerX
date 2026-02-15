@@ -536,6 +536,28 @@
   gap: 6px;
 }
 
+.music-ctrl-shader-toolbar {
+  display: flex;
+  gap: 6px;
+}
+
+.music-ctrl-shader-toolbar-btn {
+  width: 32px;
+  height: 28px;
+  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
+  border-radius: var(--mpx-control-radius);
+  background: var(--mpx-player-btn-bg);
+  color: var(--mpx-player-btn-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.music-ctrl-shader-toolbar-btn.is-on {
+  border-color: var(--mpx-player-btn-active-border);
+  background: var(--mpx-player-btn-active-bg);
+}
+
 .music-ctrl-panel.is-shader-settings {
   min-width: 280px;
   max-width: min(360px, calc(100vw - 32px));

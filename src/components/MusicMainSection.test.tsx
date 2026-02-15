@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { AudioItem } from '../types'
@@ -331,61 +331,118 @@ describe('MusicMainSection', () => {
 
   it('支持在控制栏打开 Shader 设置并更新当前 Shader 配置', () => {
     const onMusicVisualizerShaderSettingsChange = vi.fn()
-    renderMusicMainSection({ onMusicVisualizerShaderSettingsChange })
+    const onMusicVisualizerLayerShaderSettingsChange = vi.fn()
+    renderMusicMainSection({
+      onMusicVisualizerShaderSettingsChange,
+      onMusicVisualizerLayerShaderSettingsChange,
+    })
 
     const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
     fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
 
     const renderLongEdgeInput = screen.getByLabelText('实际渲染长边分辨率')
     fireEvent.change(renderLongEdgeInput, { target: { value: '5000' } })
-    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
+    expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith('foreground', { renderLongEdgePx: 4096 })
     fireEvent.keyDown(renderLongEdgeInput, { key: 'Enter', code: 'Enter' })
 
     const renderScaleCoeffSlider = screen.getByLabelText(/渲染分辨率系数/)
     fireEvent.change(renderScaleCoeffSlider, { target: { value: '3.6' } })
-    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ renderScaleCoeff: 3.6 })
+    expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith('foreground', { renderScaleCoeff: 3.6 })
     fireEvent.mouseUp(renderScaleCoeffSlider)
 
     fireEvent.change(screen.getByLabelText('渲染帧率上限'), { target: { value: '120' } })
     fireEvent.change(screen.getByLabelText(/Tone Mapping 曝光/), { target: { value: '1.4' } })
     fireEvent.click(screen.getByLabelText('显示 FPS 调试信息'))
 
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ renderScaleCoeff: 3.6 })
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ fpsCap: 120 })
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ toneMapExposure: 1.4 })
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ showFps: true })
+    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { renderLongEdgePx: 4096 })
+    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { renderScaleCoeff: 3.6 })
+    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { fpsCap: 120 })
+    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { toneMapExposure: 1.4 })
+    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { showFps: true })
+    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalled()
   })
 
-  it('分层模式下前景/背景 Shader 选择器会按 layerRole 过滤选项', () => {
+  it('Shader 列表支持前景/背景目标切换与目标开关', () => {
+    const onMusicVisualizerLayerShaderIdChange = vi.fn()
+    const onMusicVisualizerShaderSettingsChange = vi.fn()
     renderMusicMainSection({
-      musicVisualizerShaderSettings: {
-        renderLongEdgePx: 1280,
-        renderScaleCoeff: 2,
-        compositionMode: 'layered',
-        layeredBackgroundShaderId: 'galaxy',
-        layeredForegroundShaderId: 'mcs-szb',
-        layeredBackgroundEnabled: true,
-        layeredForegroundEnabled: true,
-        layeredForegroundOffsetX: 0,
-        layeredForegroundOffsetY: 0,
-        layeredForegroundScale: 1,
-        fpsCap: 60,
-        toneMapMode: 'aces',
-        toneMapExposure: 1,
-        toneMapStrength: 0.55,
-        showFps: false,
-        renderer: 'gpu',
-      },
+      onMusicVisualizerLayerShaderIdChange,
+      onMusicVisualizerShaderSettingsChange,
     })
+
+    const shaderButton = screen.getByRole('button', { name: /^Shader：/ })
+    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
+
+    const switchButton = screen.getByRole('button', { name: '切换前景/背景选择' })
+    const toggleButton = screen.getByRole('button', { name: '切换当前层开关' })
+
+    expect(switchButton).toHaveTextContent('F')
+    expect(toggleButton).toHaveTextContent('on')
+
+    fireEvent.click(switchButton)
+    expect(switchButton).toHaveTextContent('B')
+
+    fireEvent.click(toggleButton)
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ layeredBackgroundEnabled: false })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Voxel' }))
+    expect(onMusicVisualizerLayerShaderIdChange).toHaveBeenCalledWith('background', 'voxel')
+  })
+
+  it('Shader 参数面板根据列表目标层动态显示前景限定参数', () => {
+    renderMusicMainSection()
+
+    const shaderButton = screen.getByRole('button', { name: /^Shader：/ })
+    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
+
+    const switchButton = screen.getByRole('button', { name: '切换前景/背景选择' })
+    expect(switchButton).toHaveTextContent('F')
 
     const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
     fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
+    expect(screen.getByText('前景 参数')).toBeInTheDocument()
+    expect(screen.getByLabelText(/前景 X 偏移/)).toBeInTheDocument()
 
-    const backgroundSelect = screen.getByLabelText(/背景 Shader/) as HTMLSelectElement
-    const foregroundSelect = screen.getByLabelText(/前景 Shader/) as HTMLSelectElement
+    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
+    fireEvent.click(switchButton)
+    expect(switchButton).toHaveTextContent('B')
 
-    expect(within(backgroundSelect).queryByRole('option', { name: 'Galaxy Foreground' })).toBeNull()
-    expect(within(foregroundSelect).queryByRole('option', { name: 'Galaxy Background' })).toBeNull()
+    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
+
+    expect(screen.getByText('背景 参数')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/前景 X 偏移/)).toBeNull()
+  })
+
+  it('仅开启单层时按钮标签显示该层 shader，双层关闭时显示透明', () => {
+    const { rerender } = render(
+      <MusicMainSection
+        {...createMusicMainSectionProps({
+          musicVisualizerShaderSettings: {
+            ...createMusicMainSectionProps().musicVisualizerShaderSettings,
+            layeredBackgroundEnabled: false,
+            layeredForegroundEnabled: true,
+            layeredForegroundShaderId: 'voxel',
+          },
+        })}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /^Shader：Voxel/ })).toBeInTheDocument()
+
+    rerender(
+      <MusicMainSection
+        {...createMusicMainSectionProps({
+          musicVisualizerShaderSettings: {
+            ...createMusicMainSectionProps().musicVisualizerShaderSettings,
+            layeredBackgroundEnabled: false,
+            layeredForegroundEnabled: false,
+          },
+        })}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /^Shader：透明/ })).toBeInTheDocument()
+    const canvas = screen.getByLabelText('music visualizer').querySelector('canvas') as HTMLCanvasElement
+    expect(canvas.style.opacity).toBe('0')
   })
 })

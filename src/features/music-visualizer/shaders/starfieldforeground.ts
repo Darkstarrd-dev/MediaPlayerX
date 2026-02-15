@@ -102,7 +102,6 @@ const IMAGE_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragC
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'starfieldforeground',
   label: 'Starfield Foreground',
-  layerRole: 'foreground',
   fragmentSource: IMAGE_SOURCE,
   commonSource: COMMON_SOURCE,
 }

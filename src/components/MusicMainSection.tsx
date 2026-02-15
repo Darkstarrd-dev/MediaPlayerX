@@ -129,14 +129,12 @@ function MusicMainSection({
   const [audioDurationSec, setAudioDurationSec] = useState(0)
   const [renderLongEdgeDraft, setRenderLongEdgeDraft] = useState('')
   const [renderScaleCoeffDraft, setRenderScaleCoeffDraft] = useState<number | null>(null)
+  const [shaderListTargetLayer, setShaderListTargetLayer] = useState<'foreground' | 'background'>('foreground')
   const [visualizerRuntimeActive, setVisualizerRuntimeActive] = useState(false)
   const [fullscreenControlsMounted, setFullscreenControlsMounted] = useState(true)
   const [fullscreenControlsVisible, setFullscreenControlsVisible] = useState(true)
   const fullscreenControlsHideTimerRef = useRef<number | null>(null)
 
-  const musicVisualizerRenderLongEdgePx = musicVisualizerShaderSettings.renderLongEdgePx
-  const musicVisualizerRenderScaleCoeff = musicVisualizerShaderSettings.renderScaleCoeff ?? 2
-  const musicVisualizerCompositionMode = musicVisualizerShaderSettings.compositionMode ?? 'single'
   const musicVisualizerLayeredBackgroundShaderId = musicVisualizerShaderSettings.layeredBackgroundShaderId ?? 'galaxy'
   const musicVisualizerLayeredForegroundShaderId = musicVisualizerShaderSettings.layeredForegroundShaderId ?? 'mcs-szb'
   const musicVisualizerLayeredBackgroundEnabled = musicVisualizerShaderSettings.layeredBackgroundEnabled ?? true
@@ -146,12 +144,32 @@ function MusicMainSection({
   const musicVisualizerLayeredForegroundScale = musicVisualizerShaderSettings.layeredForegroundScale ?? 1
   const backgroundLayerRenderScaleCoeff = musicVisualizerLayeredBackgroundShaderSettings.renderScaleCoeff ?? 2
   const foregroundLayerRenderScaleCoeff = musicVisualizerLayeredForegroundShaderSettings.renderScaleCoeff ?? 2
-  const musicVisualizerFpsCap = musicVisualizerShaderSettings.fpsCap
-  const musicVisualizerToneMapMode = musicVisualizerShaderSettings.toneMapMode
-  const musicVisualizerToneMapExposure = musicVisualizerShaderSettings.toneMapExposure
-  const musicVisualizerToneMapStrength = musicVisualizerShaderSettings.toneMapStrength
-  const musicVisualizerShowFps = musicVisualizerShaderSettings.showFps
-  const musicVisualizerRenderer = musicVisualizerShaderSettings.renderer
+
+  const shaderListTargetShaderId = shaderListTargetLayer === 'foreground'
+    ? musicVisualizerLayeredForegroundShaderId
+    : musicVisualizerLayeredBackgroundShaderId
+  const shaderListTargetEnabled = shaderListTargetLayer === 'foreground'
+    ? musicVisualizerLayeredForegroundEnabled
+    : musicVisualizerLayeredBackgroundEnabled
+
+  const hasForegroundLayerOnly = musicVisualizerLayeredForegroundEnabled && !musicVisualizerLayeredBackgroundEnabled
+  const hasBackgroundLayerOnly = musicVisualizerLayeredBackgroundEnabled && !musicVisualizerLayeredForegroundEnabled
+  const hasNoLayerEnabled = !musicVisualizerLayeredBackgroundEnabled && !musicVisualizerLayeredForegroundEnabled
+
+  const runtimeSettingsSource = hasForegroundLayerOnly
+    ? musicVisualizerLayeredForegroundShaderSettings
+    : hasBackgroundLayerOnly
+      ? musicVisualizerLayeredBackgroundShaderSettings
+      : musicVisualizerLayeredForegroundShaderSettings
+
+  const runtimeRenderLongEdgePx = runtimeSettingsSource.renderLongEdgePx
+  const runtimeRenderScaleCoeff = runtimeSettingsSource.renderScaleCoeff ?? 2
+  const runtimeFpsCap = runtimeSettingsSource.fpsCap
+  const runtimeToneMapMode = runtimeSettingsSource.toneMapMode
+  const runtimeToneMapExposure = runtimeSettingsSource.toneMapExposure
+  const runtimeToneMapStrength = runtimeSettingsSource.toneMapStrength
+  const runtimeShowFps = runtimeSettingsSource.showFps
+  const runtimeRenderer = runtimeSettingsSource.renderer
 
   const selectedShaderId = useMemo(() => {
     const matched = resolveMusicVisualizerShaderById(musicVisualizerSelectedShaderId)
@@ -206,11 +224,10 @@ function MusicMainSection({
   const { stats: visualizerStats, runtimeError: visualizerRuntimeError, resumeAudioAnalyser } = useMusicVisualizerRuntime({
     canvasRef: visualizerCanvasRef,
     audioRef,
-    active: visualizerRuntimeActive,
-    preferredRenderer: musicVisualizerRenderer,
-    renderLongEdgePx: musicVisualizerRenderLongEdgePx,
-    renderScaleCoeff: musicVisualizerRenderScaleCoeff,
-    compositionMode: musicVisualizerCompositionMode,
+    active: visualizerRuntimeActive && !hasNoLayerEnabled,
+    preferredRenderer: runtimeRenderer,
+    renderLongEdgePx: runtimeRenderLongEdgePx,
+    renderScaleCoeff: runtimeRenderScaleCoeff,
     layeredBackgroundShaderId: musicVisualizerLayeredBackgroundShaderId,
     layeredForegroundShaderId: musicVisualizerLayeredForegroundShaderId,
     layeredBackgroundEnabled: musicVisualizerLayeredBackgroundEnabled,
@@ -220,10 +237,10 @@ function MusicMainSection({
     layeredForegroundOffsetX: musicVisualizerLayeredForegroundOffsetX,
     layeredForegroundOffsetY: musicVisualizerLayeredForegroundOffsetY,
     layeredForegroundScale: musicVisualizerLayeredForegroundScale,
-    fpsCap: musicVisualizerFpsCap,
-    toneMapMode: musicVisualizerToneMapMode,
-    toneMapExposure: musicVisualizerToneMapExposure,
-    toneMapStrength: musicVisualizerToneMapStrength,
+    fpsCap: runtimeFpsCap,
+    toneMapMode: runtimeToneMapMode,
+    toneMapExposure: runtimeToneMapExposure,
+    toneMapStrength: runtimeToneMapStrength,
     selectedShaderId,
   })
 
@@ -242,28 +259,6 @@ function MusicMainSection({
       .join(' / ')
   }, [focusedAudio])
 
-  const selectedShaderLabel = useMemo(() => {
-    return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === selectedShaderId)?.label ?? '未选择 Shader'
-  }, [selectedShaderId])
-
-  const layeredBackgroundShaderOptions = useMemo(() => {
-    const compatible = MUSIC_VISUALIZER_SHADERS.filter((shader) => (shader.layerRole ?? 'any') !== 'foreground')
-    if (compatible.some((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)) {
-      return compatible
-    }
-    const selected = MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)
-    return selected ? [selected, ...compatible] : compatible
-  }, [musicVisualizerLayeredBackgroundShaderId])
-
-  const layeredForegroundShaderOptions = useMemo(() => {
-    const compatible = MUSIC_VISUALIZER_SHADERS.filter((shader) => (shader.layerRole ?? 'any') !== 'background')
-    if (compatible.some((shader) => shader.id === musicVisualizerLayeredForegroundShaderId)) {
-      return compatible
-    }
-    const selected = MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredForegroundShaderId)
-    return selected ? [selected, ...compatible] : compatible
-  }, [musicVisualizerLayeredForegroundShaderId])
-
   const layeredBackgroundShaderLabel = useMemo(() => {
     return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)?.label ?? '未选择背景 Shader'
   }, [musicVisualizerLayeredBackgroundShaderId])
@@ -271,6 +266,29 @@ function MusicMainSection({
   const layeredForegroundShaderLabel = useMemo(() => {
     return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredForegroundShaderId)?.label ?? '未选择前景 Shader'
   }, [musicVisualizerLayeredForegroundShaderId])
+
+  const selectedShaderLabel = useMemo(() => {
+    if (musicVisualizerLayeredBackgroundEnabled && musicVisualizerLayeredForegroundEnabled) {
+      return `${layeredBackgroundShaderLabel} + ${layeredForegroundShaderLabel}`
+    }
+    if (musicVisualizerLayeredBackgroundEnabled) {
+      return layeredBackgroundShaderLabel
+    }
+    if (musicVisualizerLayeredForegroundEnabled) {
+      return layeredForegroundShaderLabel
+    }
+    return '透明'
+  }, [
+    layeredBackgroundShaderLabel,
+    layeredForegroundShaderLabel,
+    musicVisualizerLayeredBackgroundEnabled,
+    musicVisualizerLayeredForegroundEnabled,
+  ])
+
+  const shaderSettingsSource = shaderListTargetLayer === 'foreground'
+    ? musicVisualizerLayeredForegroundShaderSettings
+    : musicVisualizerLayeredBackgroundShaderSettings
+  const shaderSettingsLayerLabel = shaderListTargetLayer === 'foreground' ? '前景' : '背景'
 
   const clampedAudioTime = clamp(audioTime, 0, Math.max(0, audioDurationSec))
   const audioProgressPercent = audioDurationSec > 0 ? clamp((clampedAudioTime / audioDurationSec) * 100, 0, 100) : 0
@@ -281,24 +299,18 @@ function MusicMainSection({
   const musicVolumeRangeStyle = {
     '--mpx-skeuo-range-pct': `${audioVolumePercent}%`,
   } as CSSProperties
-  const toneMapExposurePercent = clamp(((musicVisualizerToneMapExposure - 0.5) / 1.5) * 100, 0, 100)
+  const toneMapExposurePercent = clamp(((shaderSettingsSource.toneMapExposure - 0.5) / 1.5) * 100, 0, 100)
   const toneMapExposureRangeStyle = {
     '--mpx-skeuo-range-pct': `${toneMapExposurePercent}%`,
   } as CSSProperties
-  const toneMapStrengthPercent = clamp(musicVisualizerToneMapStrength * 100, 0, 100)
+  const toneMapStrengthPercent = clamp(shaderSettingsSource.toneMapStrength * 100, 0, 100)
   const toneMapStrengthRangeStyle = {
     '--mpx-skeuo-range-pct': `${toneMapStrengthPercent}%`,
   } as CSSProperties
-  const renderScaleCoeffValue = renderScaleCoeffDraft ?? musicVisualizerRenderScaleCoeff
+  const renderScaleCoeffValue = renderScaleCoeffDraft ?? (shaderSettingsSource.renderScaleCoeff ?? 2)
   const renderScaleCoeffPercent = clamp(((renderScaleCoeffValue - 1) / 4) * 100, 0, 100)
   const renderScaleCoeffStyle = {
     '--mpx-skeuo-range-pct': `${renderScaleCoeffPercent}%`,
-  } as CSSProperties
-  const backgroundLayerRenderScaleCoeffStyle = {
-    '--mpx-skeuo-range-pct': `${clamp(((backgroundLayerRenderScaleCoeff - 1) / 4) * 100, 0, 100)}%`,
-  } as CSSProperties
-  const foregroundLayerRenderScaleCoeffStyle = {
-    '--mpx-skeuo-range-pct': `${clamp(((foregroundLayerRenderScaleCoeff - 1) / 4) * 100, 0, 100)}%`,
   } as CSSProperties
 
   const manageSummary =
@@ -407,12 +419,12 @@ function MusicMainSection({
   }, [stopAudioPlayback, toggleAudioPlayback])
 
   useEffect(() => {
-    setRenderLongEdgeDraft(String(musicVisualizerRenderLongEdgePx))
-  }, [musicVisualizerRenderLongEdgePx, selectedShaderId])
+    setRenderLongEdgeDraft(String(shaderSettingsSource.renderLongEdgePx))
+  }, [shaderSettingsSource.renderLongEdgePx, shaderListTargetLayer])
 
   useEffect(() => {
     setRenderScaleCoeffDraft(null)
-  }, [musicVisualizerRenderScaleCoeff, selectedShaderId])
+  }, [shaderSettingsSource.renderScaleCoeff, shaderListTargetLayer])
 
   useEffect(() => {
     if (!fullscreenActive) {
@@ -443,6 +455,18 @@ function MusicMainSection({
     setOpenPopover(null)
   }
 
+  const toggleShaderListTargetLayer = () => {
+    setShaderListTargetLayer((value) => (value === 'foreground' ? 'background' : 'foreground'))
+  }
+
+  const toggleShaderListTargetEnabled = () => {
+    if (shaderListTargetLayer === 'foreground') {
+      onMusicVisualizerShaderSettingsChange({ layeredForegroundEnabled: !musicVisualizerLayeredForegroundEnabled })
+      return
+    }
+    onMusicVisualizerShaderSettingsChange({ layeredBackgroundEnabled: !musicVisualizerLayeredBackgroundEnabled })
+  }
+
   const applyRenderLongEdgeDraft = () => {
     const parsed = Number(renderLongEdgeDraft)
     if (!Number.isFinite(parsed)) {
@@ -450,18 +474,18 @@ function MusicMainSection({
     }
     const clamped = Math.max(240, Math.min(4096, Math.round(parsed)))
     setRenderLongEdgeDraft(String(clamped))
-    onMusicVisualizerShaderSettingsChange({ renderLongEdgePx: clamped })
+    onMusicVisualizerLayerShaderSettingsChange(shaderListTargetLayer, { renderLongEdgePx: clamped })
   }
 
   const applyRenderScaleCoeffDraft = useCallback(() => {
     if (renderScaleCoeffDraft == null || !Number.isFinite(renderScaleCoeffDraft)) {
       return
     }
-    onMusicVisualizerShaderSettingsChange({
+    onMusicVisualizerLayerShaderSettingsChange(shaderListTargetLayer, {
       renderScaleCoeff: Math.max(1, Math.min(5, renderScaleCoeffDraft)),
     })
     setRenderScaleCoeffDraft(null)
-  }, [onMusicVisualizerShaderSettingsChange, renderScaleCoeffDraft])
+  }, [onMusicVisualizerLayerShaderSettingsChange, renderScaleCoeffDraft, shaderListTargetLayer])
 
   useEffect(() => {
     if (renderScaleCoeffDraft == null) {
@@ -607,16 +631,34 @@ function MusicMainSection({
             </button>
             <div className="music-ctrl-panel is-shader" hidden={openPopover !== 'shader'} id="music-main-popover-shader" role="dialog">
               <span className="music-ctrl-panel-title">Shader</span>
+              <div className="music-ctrl-shader-toolbar">
+                <button
+                  aria-label="切换前景/背景选择"
+                  className="music-ctrl-shader-toolbar-btn"
+                  type="button"
+                  onClick={toggleShaderListTargetLayer}
+                >
+                  {shaderListTargetLayer === 'foreground' ? 'F' : 'B'}
+                </button>
+                <button
+                  aria-label="切换当前层开关"
+                  className={`music-ctrl-shader-toolbar-btn ${shaderListTargetEnabled ? 'is-on' : 'is-off'}`}
+                  type="button"
+                  onClick={toggleShaderListTargetEnabled}
+                >
+                  {shaderListTargetEnabled ? 'on' : 'off'}
+                </button>
+              </div>
               <div className="music-ctrl-panel-options">
                 {MUSIC_VISUALIZER_SHADERS.length > 0 ? (
                   MUSIC_VISUALIZER_SHADERS.map((shader) => (
                     <button
-                      aria-pressed={selectedShaderId === shader.id}
-                      className={`music-ctrl-panel-option ${selectedShaderId === shader.id ? 'is-active' : ''}`}
+                      aria-pressed={shaderListTargetShaderId === shader.id}
+                      className={`music-ctrl-panel-option ${shaderListTargetShaderId === shader.id ? 'is-active' : ''}`}
                       key={shader.id}
                       type="button"
                       onClick={() => {
-                        onMusicVisualizerSelectedShaderIdChange(shader.id)
+                        onMusicVisualizerLayerShaderIdChange(shaderListTargetLayer, shader.id)
                         closePopover()
                       }}
                     >
@@ -651,7 +693,7 @@ function MusicMainSection({
               id="music-main-popover-shader-settings"
               role="dialog"
             >
-              <span className="music-ctrl-panel-title">{`${selectedShaderLabel} 设置`}</span>
+              <span className="music-ctrl-panel-title">{`${shaderSettingsLayerLabel} 参数`}</span>
               <div className="music-ctrl-panel-options music-ctrl-shader-settings-form">
                 <label className="music-ctrl-shader-field">
                   <span className="music-ctrl-shader-label">实际渲染长边分辨率</span>
@@ -697,109 +739,8 @@ function MusicMainSection({
                     }}
                   />
                 </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">合成模式</span>
-                  <select
-                    className="music-ctrl-shader-input"
-                    value={musicVisualizerCompositionMode}
-                    onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
-                        compositionMode: event.target.value === 'layered' ? 'layered' : 'single',
-                      })
-                    }
-                  >
-                    <option value="single">单 Shader</option>
-                    <option value="layered">前景 + 背景</option>
-                  </select>
-                </label>
-                {musicVisualizerCompositionMode === 'layered' ? (
+                {shaderListTargetLayer === 'foreground' ? (
                   <>
-                    <label className="music-ctrl-shader-toggle">
-                      <span className="music-ctrl-shader-label">启用背景层</span>
-                      <input
-                        type="checkbox"
-                        checked={musicVisualizerLayeredBackgroundEnabled}
-                        onChange={(event) => onMusicVisualizerShaderSettingsChange({ layeredBackgroundEnabled: event.target.checked })}
-                      />
-                    </label>
-                    <label className="music-ctrl-shader-field">
-                      <span className="music-ctrl-shader-label">背景 Shader（{layeredBackgroundShaderLabel}）</span>
-                      <select
-                        className="music-ctrl-shader-input"
-                        value={musicVisualizerLayeredBackgroundShaderId}
-                        onChange={(event) => onMusicVisualizerLayerShaderIdChange('background', event.target.value)}
-                      >
-                        {layeredBackgroundShaderOptions.map((shader) => (
-                          <option key={`bg-${shader.id}`} value={shader.id}>
-                            {shader.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="music-ctrl-shader-field">
-                      <span className="music-ctrl-shader-label">背景分辨率系数 {backgroundLayerRenderScaleCoeff.toFixed(2)}x</span>
-                      <input
-                        className="music-ctrl-shader-range"
-                        max={5}
-                        min={1}
-                        step={0.01}
-                        style={backgroundLayerRenderScaleCoeffStyle}
-                        type="range"
-                        value={backgroundLayerRenderScaleCoeff}
-                        onChange={(event) => {
-                          const value = Number(event.target.value)
-                          if (!Number.isFinite(value)) {
-                            return
-                          }
-                          onMusicVisualizerLayerShaderSettingsChange('background', {
-                            renderScaleCoeff: Math.max(1, Math.min(5, value)),
-                          })
-                        }}
-                      />
-                    </label>
-                    <label className="music-ctrl-shader-toggle">
-                      <span className="music-ctrl-shader-label">启用前景层</span>
-                      <input
-                        type="checkbox"
-                        checked={musicVisualizerLayeredForegroundEnabled}
-                        onChange={(event) => onMusicVisualizerShaderSettingsChange({ layeredForegroundEnabled: event.target.checked })}
-                      />
-                    </label>
-                    <label className="music-ctrl-shader-field">
-                      <span className="music-ctrl-shader-label">前景 Shader（{layeredForegroundShaderLabel}）</span>
-                      <select
-                        className="music-ctrl-shader-input"
-                        value={musicVisualizerLayeredForegroundShaderId}
-                        onChange={(event) => onMusicVisualizerLayerShaderIdChange('foreground', event.target.value)}
-                      >
-                        {layeredForegroundShaderOptions.map((shader) => (
-                          <option key={`fg-${shader.id}`} value={shader.id}>
-                            {shader.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="music-ctrl-shader-field">
-                      <span className="music-ctrl-shader-label">前景分辨率系数 {foregroundLayerRenderScaleCoeff.toFixed(2)}x</span>
-                      <input
-                        className="music-ctrl-shader-range"
-                        max={5}
-                        min={1}
-                        step={0.01}
-                        style={foregroundLayerRenderScaleCoeffStyle}
-                        type="range"
-                        value={foregroundLayerRenderScaleCoeff}
-                        onChange={(event) => {
-                          const value = Number(event.target.value)
-                          if (!Number.isFinite(value)) {
-                            return
-                          }
-                          onMusicVisualizerLayerShaderSettingsChange('foreground', {
-                            renderScaleCoeff: Math.max(1, Math.min(5, value)),
-                          })
-                        }}
-                      />
-                    </label>
                     <label className="music-ctrl-shader-field">
                       <span className="music-ctrl-shader-label">前景 X 偏移 {musicVisualizerLayeredForegroundOffsetX.toFixed(2)}</span>
                       <input
@@ -860,9 +801,9 @@ function MusicMainSection({
                   <span className="music-ctrl-shader-label">渲染帧率上限</span>
                   <select
                     className="music-ctrl-shader-input"
-                    value={musicVisualizerFpsCap}
+                    value={shaderSettingsSource.fpsCap}
                     onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
+                      onMusicVisualizerLayerShaderSettingsChange(shaderListTargetLayer, {
                         fpsCap: Number(event.target.value) as 30 | 60 | 120,
                       })
                     }
@@ -876,9 +817,9 @@ function MusicMainSection({
                   <span className="music-ctrl-shader-label">Tone Mapping</span>
                   <select
                     className="music-ctrl-shader-input"
-                    value={musicVisualizerToneMapMode}
+                    value={shaderSettingsSource.toneMapMode}
                     onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
+                      onMusicVisualizerLayerShaderSettingsChange(shaderListTargetLayer, {
                         toneMapMode: event.target.value as 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos',
                       })
                     }
@@ -892,7 +833,7 @@ function MusicMainSection({
                   </select>
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">Tone Mapping 曝光 {musicVisualizerToneMapExposure.toFixed(2)}</span>
+                  <span className="music-ctrl-shader-label">Tone Mapping 曝光 {shaderSettingsSource.toneMapExposure.toFixed(2)}</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={2}
@@ -900,18 +841,20 @@ function MusicMainSection({
                     step={0.01}
                     style={toneMapExposureRangeStyle}
                     type="range"
-                    value={musicVisualizerToneMapExposure}
+                    value={shaderSettingsSource.toneMapExposure}
                     onChange={(event) => {
                       const value = Number(event.target.value)
                       if (!Number.isFinite(value)) {
                         return
                       }
-                      onMusicVisualizerShaderSettingsChange({ toneMapExposure: Math.max(0.5, Math.min(2, value)) })
+                      onMusicVisualizerLayerShaderSettingsChange(shaderListTargetLayer, {
+                        toneMapExposure: Math.max(0.5, Math.min(2, value)),
+                      })
                     }}
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">Tone Mapping 强度 {(musicVisualizerToneMapStrength * 100).toFixed(0)}%</span>
+                  <span className="music-ctrl-shader-label">Tone Mapping 强度 {(shaderSettingsSource.toneMapStrength * 100).toFixed(0)}%</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={1}
@@ -919,9 +862,9 @@ function MusicMainSection({
                     step={0.01}
                     style={toneMapStrengthRangeStyle}
                     type="range"
-                    value={musicVisualizerToneMapStrength}
+                    value={shaderSettingsSource.toneMapStrength}
                     onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
+                      onMusicVisualizerLayerShaderSettingsChange(shaderListTargetLayer, {
                         toneMapStrength: Math.max(0, Math.min(1, Number(event.target.value))),
                       })
                     }
@@ -931,17 +874,19 @@ function MusicMainSection({
                   <span className="music-ctrl-shader-label">显示 FPS 调试信息</span>
                   <input
                     type="checkbox"
-                    checked={musicVisualizerShowFps}
-                    onChange={(event) => onMusicVisualizerShaderSettingsChange({ showFps: event.target.checked })}
+                    checked={shaderSettingsSource.showFps}
+                    onChange={(event) =>
+                      onMusicVisualizerLayerShaderSettingsChange(shaderListTargetLayer, { showFps: event.target.checked })
+                    }
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
                   <span className="music-ctrl-shader-label">渲染后端</span>
                   <select
                     className="music-ctrl-shader-input"
-                    value={musicVisualizerRenderer}
+                    value={shaderSettingsSource.renderer}
                     onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
+                      onMusicVisualizerLayerShaderSettingsChange(shaderListTargetLayer, {
                         renderer: event.target.value as 'gpu' | 'cpu',
                       })
                     }
@@ -1073,21 +1018,25 @@ function MusicMainSection({
             aria-label="music visualizer"
             data-overlay-close={fullscreenActive ? 'fullscreen' : undefined}
           >
-            <canvas ref={visualizerCanvasRef} className="music-visualizer-canvas" />
-            {musicVisualizerShowFps && visualizerStats ? (
+            <canvas
+              ref={visualizerCanvasRef}
+              className="music-visualizer-canvas"
+              style={hasNoLayerEnabled ? ({ opacity: 0 } as CSSProperties) : undefined}
+            />
+            {runtimeShowFps && visualizerStats ? (
               <div className="music-visualizer-hud" role="status">
                 <span>{`FPS ${visualizerStats.fps.toFixed(1)} | ${visualizerStats.frameMs.toFixed(2)}ms`}</span>
                 <span>{`Render ${visualizerStats.renderWidth} x ${visualizerStats.renderHeight}`}</span>
-                <span>{`TargetLongEdge ${musicVisualizerRenderLongEdgePx}`}</span>
-                <span>{`FPS Cap ${musicVisualizerFpsCap}`}</span>
-                <span>{`ToneMap ${musicVisualizerToneMapMode}@${musicVisualizerToneMapExposure.toFixed(2)}*${musicVisualizerToneMapStrength.toFixed(2)}`}</span>
+                <span>{`TargetLongEdge ${runtimeRenderLongEdgePx}`}</span>
+                <span>{`FPS Cap ${runtimeFpsCap}`}</span>
+                <span>{`ToneMap ${runtimeToneMapMode}@${runtimeToneMapExposure.toFixed(2)}*${runtimeToneMapStrength.toFixed(2)}`}</span>
                 <span>{`Backend ${visualizerStats.backend.toUpperCase()}`}</span>
                 <span>{`Shader ${visualizerStats.shaderId}`}</span>
                 <span>{visualizerStats.rendererLabel}</span>
               </div>
             ) : null}
             {visualizerRuntimeError ? (
-              <div className={`music-visualizer-hud ${musicVisualizerShowFps ? 'is-warning' : 'is-warning is-bottom'}`} role="status">
+              <div className={`music-visualizer-hud ${runtimeShowFps ? 'is-warning' : 'is-warning is-bottom'}`} role="status">
                 <span>{visualizerRuntimeError}</span>
               </div>
             ) : null}

@@ -489,7 +489,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         preferredRenderer: 'gpu',
         renderLongEdgePx: 800,
         renderScaleCoeff: 1,
-        compositionMode: 'layered',
         layeredBackgroundShaderId: backgroundShader.id,
         layeredForegroundShaderId: foregroundShader.id,
         layeredBackgroundEnabled: true,
@@ -526,5 +525,93 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     expect(renderedFrame?.foregroundOffsetX).toBeCloseTo(0.2, 5)
     expect(renderedFrame?.foregroundOffsetY).toBeCloseTo(-0.15, 5)
     expect(renderedFrame?.foregroundScale).toBeCloseTo(1.3, 5)
+  })
+
+  it('前景/背景仅开启一层时直接使用该层 shader，两层关闭时回退透明 shader', () => {
+    const backgroundShader: MutableTestShader = {
+      id: 'bg-only',
+      label: 'Background Only',
+      fragmentSource: shared.shader.fragmentSource,
+    }
+    const foregroundShader: MutableTestShader = {
+      id: 'fg-only',
+      label: 'Foreground Only',
+      fragmentSource: shared.shader.fragmentSource,
+    }
+    shared.shaderById.set(backgroundShader.id, backgroundShader)
+    shared.shaderById.set(foregroundShader.id, foregroundShader)
+
+    const container = document.createElement('div')
+    Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true })
+    Object.defineProperty(container, 'clientHeight', { value: 600, configurable: true })
+    const canvas = document.createElement('canvas')
+    container.appendChild(canvas)
+    document.body.appendChild(container)
+
+    const audio = document.createElement('audio')
+    const canvasRef = { current: canvas }
+    const audioRef = { current: audio }
+
+    const { rerender } = renderHook((props: Parameters<typeof useMusicVisualizerRuntime>[0]) => useMusicVisualizerRuntime(props), {
+      initialProps: {
+        canvasRef,
+        audioRef,
+        active: true,
+        preferredRenderer: 'gpu',
+        renderLongEdgePx: 800,
+        fpsCap: 60,
+        toneMapMode: 'aces',
+        toneMapExposure: 1,
+        toneMapStrength: 0.5,
+        selectedShaderId: 'test-shader',
+        layeredBackgroundShaderId: backgroundShader.id,
+        layeredForegroundShaderId: foregroundShader.id,
+        layeredBackgroundEnabled: true,
+        layeredForegroundEnabled: false,
+      },
+    })
+
+    flushFrame(20)
+    expect(shared.webglConstructedShaders.at(-1)?.id).toBe(backgroundShader.id)
+
+    rerender({
+      canvasRef,
+      audioRef,
+      active: true,
+      preferredRenderer: 'gpu',
+      renderLongEdgePx: 800,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.5,
+      selectedShaderId: 'test-shader',
+      layeredBackgroundShaderId: backgroundShader.id,
+      layeredForegroundShaderId: foregroundShader.id,
+      layeredBackgroundEnabled: false,
+      layeredForegroundEnabled: true,
+    })
+
+    flushFrame(20)
+    expect(shared.webglConstructedShaders.at(-1)?.id).toBe(foregroundShader.id)
+
+    rerender({
+      canvasRef,
+      audioRef,
+      active: true,
+      preferredRenderer: 'gpu',
+      renderLongEdgePx: 800,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.5,
+      selectedShaderId: 'test-shader',
+      layeredBackgroundShaderId: backgroundShader.id,
+      layeredForegroundShaderId: foregroundShader.id,
+      layeredBackgroundEnabled: false,
+      layeredForegroundEnabled: false,
+    })
+
+    flushFrame(20)
+    expect(shared.webglConstructedShaders.at(-1)?.id).toBe('transparent-disabled')
   })
 })

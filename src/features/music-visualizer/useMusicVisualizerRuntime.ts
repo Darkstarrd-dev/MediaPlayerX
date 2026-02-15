@@ -51,7 +51,6 @@ interface UseMusicVisualizerRuntimeParams {
   toneMapStrength: number
   selectedShaderId: string | null
   renderScaleCoeff?: number
-  compositionMode?: 'single' | 'layered'
   layeredBackgroundShaderId?: string | null
   layeredForegroundShaderId?: string | null
   layeredBackgroundEnabled?: boolean
@@ -253,6 +252,15 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   }
 }
 
+const TRANSPARENT_SHADER: MusicVisualizerShaderDefinition = {
+  id: 'transparent-disabled',
+  label: 'Transparent Disabled',
+  fragmentSource: String.raw`void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+}`,
+  toneMapPolicy: 'force-off',
+}
+
 export function useMusicVisualizerRuntime({
   canvasRef,
   audioRef,
@@ -265,7 +273,6 @@ export function useMusicVisualizerRuntime({
   toneMapStrength,
   selectedShaderId,
   renderScaleCoeff = 2,
-  compositionMode = 'single',
   layeredBackgroundShaderId,
   layeredForegroundShaderId,
   layeredBackgroundEnabled = true,
@@ -281,28 +288,30 @@ export function useMusicVisualizerRuntime({
 
   const shader = useMemo(() => {
     const defaultShader = resolveDefaultMusicVisualizerShader()
-    const singleShader = resolveMusicVisualizerShaderById(selectedShaderId) ?? defaultShader
-    if (!singleShader) {
-      return null
+    const fallbackShader = resolveMusicVisualizerShaderById(selectedShaderId) ?? defaultShader
+    const backgroundShader = resolveMusicVisualizerShaderById(layeredBackgroundShaderId) ?? fallbackShader
+    const foregroundShader = resolveMusicVisualizerShaderById(layeredForegroundShaderId) ?? fallbackShader
+
+    if (layeredBackgroundEnabled && layeredForegroundEnabled && backgroundShader && foregroundShader) {
+      return composeLayeredShader({
+        backgroundShader,
+        foregroundShader,
+        backgroundEnabled: true,
+        foregroundEnabled: true,
+        backgroundScaleCoeff: layeredBackgroundRenderScaleCoeff,
+        foregroundScaleCoeff: layeredForegroundRenderScaleCoeff,
+      })
     }
 
-    if (compositionMode !== 'layered') {
-      return singleShader
+    if (layeredBackgroundEnabled) {
+      return backgroundShader ?? fallbackShader ?? TRANSPARENT_SHADER
+    }
+    if (layeredForegroundEnabled) {
+      return foregroundShader ?? fallbackShader ?? TRANSPARENT_SHADER
     }
 
-    const backgroundShader = resolveMusicVisualizerShaderById(layeredBackgroundShaderId) ?? singleShader
-    const foregroundShader = resolveMusicVisualizerShaderById(layeredForegroundShaderId) ?? defaultShader ?? singleShader
-
-    return composeLayeredShader({
-      backgroundShader,
-      foregroundShader,
-      backgroundEnabled: layeredBackgroundEnabled,
-      foregroundEnabled: layeredForegroundEnabled,
-      backgroundScaleCoeff: layeredBackgroundRenderScaleCoeff,
-      foregroundScaleCoeff: layeredForegroundRenderScaleCoeff,
-    })
+    return TRANSPARENT_SHADER
   }, [
-    compositionMode,
     layeredBackgroundEnabled,
     layeredBackgroundRenderScaleCoeff,
     layeredBackgroundShaderId,
@@ -414,7 +423,7 @@ export function useMusicVisualizerRuntime({
       const hasWebgl2 = Boolean(probeWebglCanvas.getContext('webgl2'))
       const hasCanvas2d = Boolean(probe2dCanvas.getContext('2d'))
       const snapshot = resolveEffectiveToneMap()
-      return `shader=${shader.id}, mode=${compositionMode}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${runtimeSettingsRef.current.fpsCap}, toneMap=${snapshot.mode}@${snapshot.exposure.toFixed(2)}*${snapshot.strength.toFixed(2)}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
+      return `shader=${shader.id}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${runtimeSettingsRef.current.fpsCap}, toneMap=${snapshot.mode}@${snapshot.exposure.toFixed(2)}*${snapshot.strength.toFixed(2)}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
     }
 
     const runtimeProbeInfo = resolveRuntimeProbeInfo()
@@ -591,7 +600,6 @@ export function useMusicVisualizerRuntime({
     active,
     audioRef,
     canvasRef,
-    compositionMode,
     layeredForegroundOffsetX,
     layeredForegroundOffsetY,
     layeredForegroundScale,

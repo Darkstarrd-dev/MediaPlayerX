@@ -60,7 +60,6 @@ export interface MusicVisualizerShaderDefinition {
   multiPass?: MusicVisualizerShaderMultiPassDefinition
   defaultEntry?: boolean
   renderScale?: number
-  layerRole?: 'any' | 'foreground' | 'background'
   toneMapPolicy?: MusicVisualizerToneMapPolicy
   toneMapStrengthBias?: number
 }

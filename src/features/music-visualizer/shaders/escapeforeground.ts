@@ -58,6 +58,5 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'escapeforeground',
   label: 'Escape Foreground',
-  layerRole: 'foreground',
   fragmentSource: IMAGE_SOURCE,
 }

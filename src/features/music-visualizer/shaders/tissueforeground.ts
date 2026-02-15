@@ -47,6 +47,5 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'tissueforeground',
   label: 'Tissue Foreground',
-  layerRole: 'foreground',
   fragmentSource: IMAGE_SOURCE,
 }

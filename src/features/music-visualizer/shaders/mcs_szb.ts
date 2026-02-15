@@ -4,7 +4,6 @@ export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'mcs-szb',
   label: 'Default',
   defaultEntry: true,
-  layerRole: 'foreground',
   fragmentSource: String.raw`const float HUE = 0.0;
 const float HEADPHONE_OFFSET_X = 0.15;
 const float SCENE_OFFSET_Y = 0.15;
