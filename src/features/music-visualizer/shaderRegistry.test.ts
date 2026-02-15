@@ -19,6 +19,34 @@ describe('shaderRegistry', () => {
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'starfieldforeground')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'escapeforeground')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'tissueforeground')).toBe(true)
+    expect(resolveMusicVisualizerShaderById('galaxyforeground')?.label).toBe('Orbs')
+    expect(resolveMusicVisualizerShaderById('starfieldforeground')?.label).toBe('Simple Pan')
+    expect(resolveMusicVisualizerShaderById('escapeforeground')?.label).toBe('Bouncing Bars')
+    expect(resolveMusicVisualizerShaderById('tissueforeground')?.label).toBe('Radial Bars')
+    expect(resolveMusicVisualizerShaderById('starfield')?.label).toBe('Starfield')
+    expect(resolveMusicVisualizerShaderById('galaxy')?.label).toBe('Galaxy')
+    expect(resolveMusicVisualizerShaderById('tissue')?.label).toBe('Tissue')
+    expect(resolveMusicVisualizerShaderById('escape')?.label).toBe('Escape')
+  })
+
+  it('keeps custom shader list order', () => {
+    const orderedIds = MUSIC_VISUALIZER_SHADERS.map((shader) => shader.id)
+    expect(orderedIds).toEqual([
+      'mcs-szb',
+      'escapeforeground',
+      'starfieldforeground',
+      'tissueforeground',
+      'galaxyforeground',
+      'singularity',
+      'starfield',
+      'nebula',
+      'galaxy',
+      'fungi',
+      'tissue',
+      'rain-drips',
+      'escape',
+      'voxel',
+    ])
   })
 
   it('resolves default shader entry', () => {

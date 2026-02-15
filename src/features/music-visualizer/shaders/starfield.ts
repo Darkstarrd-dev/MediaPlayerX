@@ -185,7 +185,7 @@ const BACKGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in 
 
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'starfield',
-  label: 'Starfield Background',
+  label: 'Starfield',
   fragmentSource: BACKGROUND_PASS_SOURCE,
   commonSource: COMMON_SOURCE,
   multiPass: {

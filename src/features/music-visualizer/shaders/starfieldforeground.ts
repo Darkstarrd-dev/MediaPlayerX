@@ -1,5 +1,7 @@
 import type { MusicVisualizerShaderDefinition } from '../types'
 
+// Source: https://www.shadertoy.com/view/7l2SWV
+
 const COMMON_SOURCE = String.raw`const float PI = 3.141592654;
 
 vec2 grad(ivec2 z) {
@@ -53,12 +55,10 @@ float sdSegment(vec2 p, vec2 a, vec2 b) {
   return length(pa - ba * h);
 }
 
-vec3 renderForeground(vec2 fragCoord) {
+vec4 renderForeground(vec2 fragCoord) {
   vec2 uv = fragCoord / iResolution.xy;
   float aspect = iResolution.x / iResolution.y;
   vec2 uvAspect = vec2(uv.x * aspect, uv.y);
-
-  vec3 backCol = 0.5 + 0.5 * cos(iTime + uvAspect.xyx + vec3(0.0, 2.0, 4.0));
 
   vec2 center = vec2(0.5 * aspect, 0.5);
   vec2 p = uvAspect - center;
@@ -85,23 +85,28 @@ vec3 renderForeground(vec2 fragCoord) {
   vec3 addValCol = clamp(1.0 - addVal, 0.0, 1.0) * vec3(0.3, 0.5, 0.99);
   vec3 baseValCol = vec3(0.4, 0.8, 0.88) * (1.0 - val);
   vec3 col = addValCol + baseValCol;
-
-  col = mix(col, backCol + col, clamp(col.x, 0.0, 1.0));
-
-  float radialMask = 1.0 - smoothstep(0.38, 0.88, length(p));
-  return col * radialMask;
+  float foregroundMask = clamp(max(max(col.r, col.g), col.b), 0.0, 1.0);
+  return vec4(col, foregroundMask);
 }
 `
 
 const IMAGE_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  vec3 foreground = renderForeground(fragCoord);
-  fragColor = vec4(foreground, 1.0);
+  vec4 foregroundData = renderForeground(fragCoord);
+  vec3 foregroundColor = foregroundData.rgb;
+  float foregroundMask = clamp(foregroundData.a, 0.0, 1.0);
+  vec3 themeBackground = clamp(iThemeBackgroundColor, vec3(0.0), vec3(1.0));
+  bool layeredComposite = iCompositeMode == 2;
+  float outputAlpha = layeredComposite ? foregroundMask : 1.0;
+  vec3 outputColor = layeredComposite
+    ? foregroundColor * foregroundMask
+    : mix(themeBackground, foregroundColor, foregroundMask);
+  fragColor = vec4(outputColor, outputAlpha);
 }
 `
 
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'starfieldforeground',
-  label: 'Starfield Foreground',
+  label: 'Simple Pan',
   fragmentSource: IMAGE_SOURCE,
   commonSource: COMMON_SOURCE,
 }

@@ -225,7 +225,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'escape',
-  label: 'Escape Background',
+  label: 'Escape',
   fragmentSource: BACKGROUND_IMAGE_SOURCE,
   multiPass: {
     textures: [

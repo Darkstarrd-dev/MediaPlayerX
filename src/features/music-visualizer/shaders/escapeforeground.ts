@@ -1,5 +1,7 @@
 import type { MusicVisualizerShaderDefinition } from '../types'
 
+// Source: https://www.shadertoy.com/view/W3y3Wy
+
 const IMAGE_SOURCE = String.raw`const float XFill = 0.9;
 const float BarWidth = 0.0125;
 const float YOffset = 0.53;
@@ -57,6 +59,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'escapeforeground',
-  label: 'Escape Foreground',
+  label: 'Bouncing Bars',
   fragmentSource: IMAGE_SOURCE,
 }

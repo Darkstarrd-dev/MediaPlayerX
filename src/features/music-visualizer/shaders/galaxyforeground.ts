@@ -1,5 +1,7 @@
 import type { MusicVisualizerShaderDefinition } from '../types'
 
+// Source: https://www.shadertoy.com/view/WcXSDn
+
 const COMMON_SOURCE = String.raw`#define PI 3.141592654
 
 vec3 paletteForeground(float t) {
@@ -43,7 +45,7 @@ const IMAGE_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragC
 
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'galaxyforeground',
-  label: 'Galaxy Foreground',
+  label: 'Orbs',
   fragmentSource: IMAGE_SOURCE,
   commonSource: COMMON_SOURCE,
 }

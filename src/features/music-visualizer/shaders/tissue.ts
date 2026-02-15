@@ -58,7 +58,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'tissue',
-  label: 'Tissue Background',
+  label: 'Tissue',
   fragmentSource: BACKGROUND_SOURCE,
   multiPass: {
     textures: [

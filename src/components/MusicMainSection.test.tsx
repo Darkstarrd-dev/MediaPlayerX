@@ -378,22 +378,22 @@ describe("MusicMainSection", () => {
 
     expect(screen.getByRole("button", { name: "Default" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Starfield Background" }),
+      screen.getByRole("button", { name: "Starfield" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Galaxy Background" }),
+      screen.getByRole("button", { name: "Galaxy" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Escape Background" }),
+      screen.getByRole("button", { name: "Escape" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Tissue Background" }),
+      screen.getByRole("button", { name: "Tissue" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Galaxy Foreground" }),
+      screen.getByRole("button", { name: "Orbs" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Starfield Foreground" }),
+      screen.getByRole("button", { name: "Simple Pan" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fungi" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Nebula" })).toBeInTheDocument();
@@ -409,22 +409,22 @@ describe("MusicMainSection", () => {
 
     expect(screen.queryByRole("button", { name: "Default" })).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Starfield Background" }),
+      screen.queryByRole("button", { name: "Starfield" }),
     ).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Galaxy Background" }),
+      screen.queryByRole("button", { name: "Galaxy" }),
     ).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Escape Background" }),
+      screen.queryByRole("button", { name: "Escape" }),
     ).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Tissue Background" }),
+      screen.queryByRole("button", { name: "Tissue" }),
     ).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Galaxy Foreground" }),
+      screen.queryByRole("button", { name: "Orbs" }),
     ).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Starfield Foreground" }),
+      screen.queryByRole("button", { name: "Simple Pan" }),
     ).toBeNull();
     expect(screen.queryByRole("button", { name: "Fungi" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Nebula" })).toBeNull();

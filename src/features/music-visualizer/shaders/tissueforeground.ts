@@ -1,5 +1,7 @@
 import type { MusicVisualizerShaderDefinition } from '../types'
 
+// Source: https://www.shadertoy.com/view/4cBXDz
+
 const IMAGE_SOURCE = String.raw`#define AA (1.5 / iResolution.y)
 
 float ss(float e, float v)
@@ -46,6 +48,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'tissueforeground',
-  label: 'Tissue Foreground',
+  label: 'Radial Bars',
   fragmentSource: IMAGE_SOURCE,
 }
