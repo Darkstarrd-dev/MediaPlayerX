@@ -40,6 +40,49 @@ function canFolderCollapse(
   return node.children.length > 0;
 }
 
+function resolveAncestorNodeIds(
+  nodes: SidebarNode[],
+  targetNodeId: string,
+): string[] {
+  const path: string[] = [];
+
+  const walk = (items: SidebarNode[], ancestors: string[]): boolean => {
+    for (const node of items) {
+      if (node.id === targetNodeId) {
+        path.push(...ancestors);
+        return true;
+      }
+
+      if (node.children.length === 0) {
+        continue;
+      }
+
+      if (walk(node.children, [...ancestors, node.id])) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  walk(nodes, []);
+  return path;
+}
+
+function isSameNodeIdSet(left: Set<string>, right: Set<string>): boolean {
+  if (left.size !== right.size) {
+    return false;
+  }
+
+  for (const value of left) {
+    if (!right.has(value)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 interface SidebarPanelProps {
   mode: BrowserMode;
   sidebarFocus: "sidebar" | "main";
@@ -166,17 +209,64 @@ function SidebarPanel({
     [detachCheckerDragListeners],
   );
 
-  const updateCollapsedImageFolderNodeIds = (
+  const updateCollapsedImageFolderNodeIds = useCallback(
+    (
     updater: (previous: Set<string>) => Set<string>,
-  ) => {
-    if (onSetCollapsedFolderNodeIds) {
-      const next = updater(new Set(collapsedFolderNodeIds ?? []));
-      onSetCollapsedFolderNodeIds(Array.from(next));
+    ) => {
+      if (onSetCollapsedFolderNodeIds) {
+        const previous = new Set(collapsedFolderNodeIds ?? []);
+        const next = updater(new Set(previous));
+        if (isSameNodeIdSet(previous, next)) {
+          return;
+        }
+        onSetCollapsedFolderNodeIds(Array.from(next));
+        return;
+      }
+
+      setLocalCollapsedImageFolderNodeIds((previous) => updater(previous));
+    },
+    [collapsedFolderNodeIds, onSetCollapsedFolderNodeIds],
+  );
+
+  useEffect(() => {
+    if (!selectedSidebarNodeId) {
       return;
     }
 
-    setLocalCollapsedImageFolderNodeIds((previous) => updater(previous));
-  };
+    const activeTreeNodes =
+      mode === "image"
+        ? imageTreeNodes
+        : mode === "video"
+          ? videoTreeNodes
+          : audioTreeNodes;
+    const ancestorNodeIds = resolveAncestorNodeIds(
+      activeTreeNodes,
+      selectedSidebarNodeId,
+    );
+    if (ancestorNodeIds.length === 0) {
+      return;
+    }
+
+    updateCollapsedImageFolderNodeIds((previous) => {
+      const next = new Set(previous);
+      let changed = false;
+
+      for (const ancestorNodeId of ancestorNodeIds) {
+        if (next.delete(ancestorNodeId)) {
+          changed = true;
+        }
+      }
+
+      return changed ? next : previous;
+    });
+  }, [
+    audioTreeNodes,
+    imageTreeNodes,
+    mode,
+    selectedSidebarNodeId,
+    updateCollapsedImageFolderNodeIds,
+    videoTreeNodes,
+  ]);
 
   const startCheckerDragSelection = (
     startNodeId: string,

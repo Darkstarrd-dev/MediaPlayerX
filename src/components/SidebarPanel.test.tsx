@@ -448,4 +448,57 @@ describe("SidebarPanel image collapse interactions", () => {
 
     expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
   });
+
+  it("受控折叠状态下定位到子节点时会自动展开祖先节点", () => {
+    const onSetCollapsedFolderNodeIds = vi.fn();
+    const { rerender } = renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE, {
+      selectedSidebarNodeId: "package:图库/Vol.1",
+      collapsedFolderNodeIds: ["folder:图库"],
+      onSetCollapsedFolderNodeIds,
+    });
+
+    expect(onSetCollapsedFolderNodeIds).toHaveBeenCalledWith([]);
+
+    rerender(
+      <SidebarPanel
+        mode="image"
+        sidebarFocus="sidebar"
+        sidebarRatio={0.3}
+        sidebarMinWidth={220}
+        sidebarFontSize={14}
+        sidebarCountFontSize={12}
+        sidebarIndentStep={16}
+        sidebarVerticalGap={4}
+        currentRootLabel={null}
+        selectedSidebarNodeId="package:图库/Vol.1"
+        canSetCurrentRoot={true}
+        imageRootNodeId={null}
+        videoRootNodeId={null}
+        musicRootNodeId={null}
+        imageTreeNodes={IMAGE_TREE_COLLAPSIBLE_FIXTURE}
+        videoTreeNodes={[]}
+        audioTreeNodes={[]}
+        selectedPackageId=""
+        selectedVideoId=""
+        selectedAudioId=""
+        playlistIds={[]}
+        audioPlaylistIds={[]}
+        onSelectNode={vi.fn()}
+        onSelectPackage={vi.fn()}
+        onSelectVideo={vi.fn()}
+        onSelectAudio={vi.fn()}
+        onCollapseSidebar={vi.fn()}
+        onSetCurrentRoot={vi.fn()}
+        onGoToFromSearchMode={vi.fn()}
+        onResetRoot={vi.fn()}
+        onToggleVideoPlaylist={vi.fn()}
+        onToggleAudioPlaylist={vi.fn()}
+        onToggleManageNode={vi.fn()}
+        collapsedFolderNodeIds={[]}
+        onSetCollapsedFolderNodeIds={onSetCollapsedFolderNodeIds}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Vol.1" })).toBeInTheDocument();
+  });
 });
