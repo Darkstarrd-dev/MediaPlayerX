@@ -400,7 +400,17 @@ Doc + Git
 
 ---
 
-## Open Questions (track here, resolve before Phase 1)
+## Defaults (v1)
 
-1) Queue scheduling: auto-run next pending on `review/failed` only (recommended) vs manual start only.
-2) Reviewed-node hash definition: metadata signature (recommended v1) vs strict byte sha256.
+- Queue scheduling: auto-run next `pending` when a `running` item transitions to `review` or `failed`.
+  - Do NOT auto-run next when user pauses a task (`paused`).
+- Reviewed-node hash: metadata signature hash (no file bytes read).
+
+## Optional Variants (not part of v1)
+
+- Manual scheduling only:
+  - Keep `pending` items until user explicitly starts the next one.
+  - Backend change: do not auto-start pending in the completion handler.
+- Strict byte-level node hashing:
+  - Compute node hash from per-image sha256.
+  - Requires reading image bytes (heavy) or adding sha256 persistence at ingest time (larger scope).
