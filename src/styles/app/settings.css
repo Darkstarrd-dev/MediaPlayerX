@@ -219,6 +219,43 @@
   line-height: 1.5;
 }
 
+.help-block {
+  gap: 10px;
+}
+
+.help-group-title {
+  margin: 0;
+  color: var(--mpx-text-1);
+  font-weight: 600;
+}
+
+.help-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  color: var(--mpx-text-2);
+  line-height: 1.5;
+}
+
+.help-shortcut-row {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) 1fr;
+  align-items: start;
+  gap: 10px;
+}
+
+.help-shortcut-chip {
+  display: inline-block;
+  border: 1px solid var(--mpx-border-1);
+  border-radius: 6px;
+  padding: 2px 8px;
+  color: var(--mpx-text-1);
+  background: var(--mpx-bg-elevated-soft, var(--mpx-bg-elevated));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  word-break: break-word;
+}
+
 .settings-toggle-row {
   flex-direction: row !important;
   align-items: center;

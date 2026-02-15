@@ -494,6 +494,7 @@ export function useAppTopLayerState({
   const helpPanelProps = {
     helpOpen: appSettings.helpOpen,
     settingsFontSize: appSettings.settingsFontSize,
+    shortcuts: appSettings.shortcuts,
     onClose: () => appSettings.updateSettings({ helpOpen: false }),
   }
 
