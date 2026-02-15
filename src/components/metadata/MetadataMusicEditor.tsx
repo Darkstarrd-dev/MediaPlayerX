@@ -102,7 +102,7 @@ export function MetadataMusicEditor({
   if (!focusedAudio && !editable) {
     return (
       <div className="metadata-content metadata-video-content metadata-music-content">
-        <p className="metadata-empty-tip">当前无可编辑音频</p>
+        <p className="metadata-empty-tip">{t('ui.metadata.noEditableAudio')}</p>
       </div>
     )
   }
@@ -112,7 +112,7 @@ export function MetadataMusicEditor({
       <div className="metadata-video-body metadata-music-body">
         <div className="metadata-edit-grid metadata-video-grid">
           <label>
-            <span>专辑</span>
+            <span>{t('ui.metadata.album')}</span>
             {editable ? (
               <input
                 disabled={metadataPending}
@@ -137,7 +137,7 @@ export function MetadataMusicEditor({
           </label>
 
           <label>
-            <span>作者</span>
+            <span>{t('ui.metadata.author')}</span>
             {editable ? (
               <input
                 disabled={metadataPending}
@@ -162,7 +162,7 @@ export function MetadataMusicEditor({
           </label>
 
           <label>
-            <span>曲名</span>
+            <span>{t('ui.metadata.trackTitle')}</span>
             {editable ? (
               <input
                 disabled={metadataPending}
@@ -188,7 +188,7 @@ export function MetadataMusicEditor({
 
           {editable ? (
             <label>
-              <span>系列ID</span>
+              <span>{t('ui.metadata.seriesId')}</span>
               <input
                 disabled={metadataPending}
                 value={audioSeriesIdDraft}
@@ -203,20 +203,20 @@ export function MetadataMusicEditor({
       {editable ? (
         <div className="metadata-music-booklet-bindings">
           <div className="metadata-music-booklet-bindings-head">
-            <strong>Booklet 绑定</strong>
+            <strong>{t('ui.metadata.bookletBinding')}</strong>
             <span title={musicBookletAlbumRootPath}>{musicBookletAlbumRootPath || '-'}</span>
           </div>
 
           <div className="metadata-music-booklet-bindings-grid">
             <label>
-              <span>封面来源</span>
+              <span>{t('ui.metadata.coverSource')}</span>
               <select
                 disabled={metadataPending || musicBookletCandidates.length === 0}
                 value={musicCoverBindingValue}
                 onChange={(event) => onMusicCoverBindingChange(event.target.value)}
               >
-                <option value={MUSIC_BOOKLET_AUTO_VALUE}>自动</option>
-                <option value={MUSIC_BOOKLET_NONE_VALUE}>无</option>
+                <option value={MUSIC_BOOKLET_AUTO_VALUE}>{t('ui.metadata.auto')}</option>
+                <option value={MUSIC_BOOKLET_NONE_VALUE}>{t('ui.metadata.none')}</option>
                 {musicBookletCandidates.map((candidate) => (
                   <option key={candidate.sourceId} value={candidate.sourceId}>
                     {`${candidate.label} (${candidate.imageCount})`}
@@ -226,14 +226,14 @@ export function MetadataMusicEditor({
             </label>
 
             <label>
-              <span>Booklet 来源</span>
+              <span>{t('ui.metadata.bookletSource')}</span>
               <select
                 disabled={metadataPending || musicBookletCandidates.length === 0}
                 value={musicBookletBindingValue}
                 onChange={(event) => onMusicBookletBindingChange(event.target.value)}
               >
-                <option value={MUSIC_BOOKLET_AUTO_VALUE}>自动</option>
-                <option value={MUSIC_BOOKLET_NONE_VALUE}>无</option>
+                <option value={MUSIC_BOOKLET_AUTO_VALUE}>{t('ui.metadata.auto')}</option>
+                <option value={MUSIC_BOOKLET_NONE_VALUE}>{t('ui.metadata.none')}</option>
                 {musicBookletCandidates.map((candidate) => (
                   <option key={candidate.sourceId} value={candidate.sourceId}>
                     {`${candidate.label} (${candidate.imageCount})`}
@@ -245,27 +245,27 @@ export function MetadataMusicEditor({
 
           <div className="metadata-music-booklet-bindings-actions">
             <button disabled={!canOpenMusicCover} type="button" onClick={onOpenMusicCover}>
-              打开封面
+              {t('ui.metadata.openCover')}
             </button>
             <button disabled={!canOpenMusicBooklet} type="button" onClick={onOpenMusicBooklet}>
-              打开Booklet
+              {t('ui.metadata.openBooklet')}
             </button>
             <button
               disabled={metadataPending || !musicBookletAlbumRootPath}
               type="button"
               onClick={onResetMusicBookletBinding}
             >
-              重置自动
+              {t('ui.metadata.resetAuto')}
             </button>
           </div>
         </div>
       ) : (
         <div className="metadata-music-booklet-bindings-actions">
           <button disabled={!canOpenMusicCover} type="button" onClick={onOpenMusicCover}>
-            打开封面
+            {t('ui.metadata.openCover')}
           </button>
           <button disabled={!canOpenMusicBooklet} type="button" onClick={onOpenMusicBooklet}>
-            打开Booklet
+            {t('ui.metadata.openBooklet')}
           </button>
         </div>
       )}
@@ -294,7 +294,7 @@ export function MetadataMusicEditor({
             )
           })
         ) : (
-          <p className="metadata-empty-tip">当前无播放条目</p>
+          <p className="metadata-empty-tip">{t('ui.metadata.noPlaylistEntries')}</p>
         )}
       </div>
     </div>

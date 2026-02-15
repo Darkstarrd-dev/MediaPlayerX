@@ -262,12 +262,12 @@ function MusicMainSection({
   const toolbarSummary = useMemo(() => resolveMusicToolbarSummary(focusedAudio), [focusedAudio])
 
   const layeredBackgroundShaderLabel = useMemo(() => {
-    return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)?.label ?? '未选择背景 Shader'
-  }, [musicVisualizerLayeredBackgroundShaderId])
+    return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)?.label ?? t('ui.music.backgroundShaderUnselected')
+  }, [musicVisualizerLayeredBackgroundShaderId, t])
 
   const layeredForegroundShaderLabel = useMemo(() => {
-    return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredForegroundShaderId)?.label ?? '未选择前景 Shader'
-  }, [musicVisualizerLayeredForegroundShaderId])
+    return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredForegroundShaderId)?.label ?? t('ui.music.foregroundShaderUnselected')
+  }, [musicVisualizerLayeredForegroundShaderId, t])
 
   const selectedShaderLabel = useMemo(() => {
     if (musicVisualizerLayeredBackgroundEnabled && musicVisualizerLayeredForegroundEnabled) {
@@ -279,12 +279,13 @@ function MusicMainSection({
     if (musicVisualizerLayeredForegroundEnabled) {
       return layeredForegroundShaderLabel
     }
-    return '透明'
+    return t('ui.music.transparent')
   }, [
     layeredBackgroundShaderLabel,
     layeredForegroundShaderLabel,
     musicVisualizerLayeredBackgroundEnabled,
     musicVisualizerLayeredForegroundEnabled,
+    t,
   ])
 
   const clampedAudioTime = clamp(audioTime, 0, Math.max(0, audioDurationSec))
@@ -623,7 +624,7 @@ function MusicMainSection({
               <MusicControlIcon name="shaderList" />
             </button>
             <div className="music-ctrl-panel is-shader" hidden={openPopover !== 'shader'} id="music-main-popover-shader" role="dialog">
-              <span className="music-ctrl-panel-title">Shader</span>
+              <span className="music-ctrl-panel-title">{t('ui.music.shaderTitle')}</span>
               <div className="music-ctrl-shader-toolbar">
                 <button
                   aria-label={t('a11y.music.shaderToggleLayer')}
@@ -639,7 +640,7 @@ function MusicMainSection({
                   type="button"
                   onClick={toggleShaderListTargetEnabled}
                 >
-                  {shaderListTargetEnabled ? 'on' : 'off'}
+                  {shaderListTargetEnabled ? t('ui.music.enabled') : t('ui.music.disabled')}
                 </button>
               </div>
               <div className="music-ctrl-panel-options">
@@ -659,7 +660,7 @@ function MusicMainSection({
                     </button>
                   ))
                 ) : (
-                  <span className="music-ctrl-panel-note">暂无 Shader</span>
+                  <span className="music-ctrl-panel-note">{t('ui.music.noShaders')}</span>
                 )}
               </div>
             </div>
@@ -686,10 +687,10 @@ function MusicMainSection({
               id="music-main-popover-shader-settings"
               role="dialog"
             >
-              <span className="music-ctrl-panel-title">Shader 参数</span>
+              <span className="music-ctrl-panel-title">{t('ui.music.shaderSettingsTitle')}</span>
               <div className="music-ctrl-panel-options music-ctrl-shader-settings-form">
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">渲染长边分辨率</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.renderLongEdge')}</span>
                   <input
                     className="music-ctrl-shader-input"
                     type="number"
@@ -706,7 +707,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">前景分辨率系数 {foregroundRenderScaleCoeffValue.toFixed(2)}x</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.foregroundResolutionScale', { value: foregroundRenderScaleCoeffValue.toFixed(2) })}</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={5}
@@ -733,7 +734,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">背景分辨率系数 {backgroundRenderScaleCoeffValue.toFixed(2)}x</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.backgroundResolutionScale', { value: backgroundRenderScaleCoeffValue.toFixed(2) })}</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={5}
@@ -760,7 +761,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">前景X偏移 {musicVisualizerLayeredForegroundOffsetX.toFixed(2)}</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.foregroundOffsetX', { value: musicVisualizerLayeredForegroundOffsetX.toFixed(2) })}</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={1}
@@ -778,7 +779,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">前景Y偏移 {musicVisualizerLayeredForegroundOffsetY.toFixed(2)}</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.foregroundOffsetY', { value: musicVisualizerLayeredForegroundOffsetY.toFixed(2) })}</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={1}
@@ -796,7 +797,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">前景缩放 {musicVisualizerLayeredForegroundScale.toFixed(2)}x</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.foregroundScale', { value: musicVisualizerLayeredForegroundScale.toFixed(2) })}</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={3}
@@ -814,7 +815,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">帧率限制</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.fpsCap')}</span>
                   <select
                     className="music-ctrl-shader-input"
                     value={musicVisualizerShaderSettings.fpsCap}
@@ -830,7 +831,7 @@ function MusicMainSection({
                   </select>
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">Tone Mapping</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.toneMapping')}</span>
                   <select
                     className="music-ctrl-shader-input"
                     value={musicVisualizerShaderSettings.toneMapMode}
@@ -840,7 +841,7 @@ function MusicMainSection({
                       })
                     }
                   >
-                    <option value="off">关闭</option>
+                    <option value="off">{t('ui.music.disabled')}</option>
                     <option value="aces">ACES Filmic</option>
                     <option value="reinhard">Reinhard</option>
                     <option value="filmic">Filmic (Blender)</option>
@@ -849,7 +850,7 @@ function MusicMainSection({
                   </select>
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">Tone Mapping 曝光 {musicVisualizerShaderSettings.toneMapExposure.toFixed(2)}</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.toneMapExposure', { value: musicVisualizerShaderSettings.toneMapExposure.toFixed(2) })}</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={2}
@@ -870,7 +871,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">Tone Mapping 强度 {(musicVisualizerShaderSettings.toneMapStrength * 100).toFixed(0)}%</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.toneMapStrength', { value: (musicVisualizerShaderSettings.toneMapStrength * 100).toFixed(0) })}</span>
                   <input
                     className="music-ctrl-shader-range"
                     max={1}
@@ -887,7 +888,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-toggle">
-                  <span className="music-ctrl-shader-label">显示 FPS 调试信息</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.showFpsDebug')}</span>
                   <input
                     type="checkbox"
                     checked={musicVisualizerShaderSettings.showFps}
@@ -895,7 +896,7 @@ function MusicMainSection({
                   />
                 </label>
                 <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">渲染后端</span>
+                  <span className="music-ctrl-shader-label">{t('ui.music.renderBackend')}</span>
                   <select
                     className="music-ctrl-shader-input"
                     value={musicVisualizerShaderSettings.renderer}
@@ -905,8 +906,8 @@ function MusicMainSection({
                       })
                     }
                   >
-                    <option value="gpu">GPU (WebGL2 Shader)</option>
-                    <option value="cpu">CPU (Canvas2D Fallback)</option>
+                    <option value="gpu">{t('ui.music.rendererGpu')}</option>
+                    <option value="cpu">{t('ui.music.rendererCpu')}</option>
                   </select>
                 </label>
               </div>
@@ -1002,7 +1003,7 @@ function MusicMainSection({
             ) : (
               <>
                 <strong className="main-toolbar-title" title={toolbarSummary}>
-                  {`${toolbarSummary} (${audios.length} 首)`}
+                  {t('ui.music.trackCountSummary', { summary: toolbarSummary, count: audios.length })}
                 </strong>
                 {canJumpToManga || canJumpToAnimation || canJumpToBooklet ? (
                   <div className="toolbar-actions">

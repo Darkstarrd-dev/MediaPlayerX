@@ -61,7 +61,7 @@ export function FeatureTagPickerModal({
       >
         <div className="feature-tag-modal-panel">
           <div className="feature-tag-picker-head">
-            <strong>Tag 选择</strong>
+            <strong>{t('ui.tags.selectTitle')}</strong>
             <div className="feature-control-actions">
               <label className="feature-tag-select-mode">
                 <input
@@ -75,7 +75,7 @@ export function FeatureTagPickerModal({
                     }
                   }}
                 />
-                单选
+                {t('ui.tags.singleSelect')}
               </label>
               <label className="feature-tag-select-mode">
                 <input
@@ -84,14 +84,14 @@ export function FeatureTagPickerModal({
                   name="feature-tag-select-mode"
                   onChange={() => onSelectModeChange('multi')}
                 />
-                复选
+                {t('ui.tags.multiSelect')}
               </label>
             </div>
           </div>
 
           <div className="feature-tag-picker-groups" role="listbox" {...buildA11yPropsByRegistry({ key: 'tagsGroups', t })} ref={groupContainerRef}>
             {groupedOptions.length === 0 ? (
-              <p className="feature-selection-result">当前库内暂无可选 tags</p>
+              <p className="feature-selection-result">{t('ui.tags.noAvailable')}</p>
             ) : (
               groupedOptions.map((group) => (
                 <div key={group.key} className="feature-tag-picker-group-row" data-tag-group-key={group.key}>
@@ -130,13 +130,13 @@ export function FeatureTagPickerModal({
 
           <div className="feature-tag-picker-actions">
             <button className="feature-action-btn" type="button" onClick={() => onDraftsChange([])}>
-              清空临时选择
+              {t('ui.tags.clearTemporarySelection')}
             </button>
             <button className="feature-action-btn" type="button" onClick={onCancel}>
-              取消
+              {t('ui.common.cancel')}
             </button>
             <button className="vector-search-btn" type="button" onClick={onConfirm}>
-              确定
+              {t('ui.common.confirm')}
             </button>
           </div>
         </div>

@@ -175,14 +175,14 @@ export function MetadataVideoEditor({
     <div className="metadata-content metadata-video-content">
       <div className="meta-tabs">
         <button className={metadataTab === 'info' ? 'is-active' : ''} type="button" onClick={() => onMetadataTabChange('info')}>
-          视频信息
+          {t('ui.metadata.videoInfoTab')}
         </button>
         <button
           className={metadataTab === 'playlist' ? 'is-active' : ''}
           type="button"
           onClick={() => onMetadataTabChange('playlist')}
         >
-          播放列表
+          {t('ui.metadata.playlistTab')}
         </button>
       </div>
 
@@ -200,11 +200,11 @@ export function MetadataVideoEditor({
 
             <div className="metadata-edit-grid metadata-video-grid">
               <label>
-                <span>文件名</span>
+                <span>{t('ui.metadata.fileName')}</span>
                 <input readOnly value={focusedVideo.fileName} />
               </label>
               <label>
-                <span>{editable ? '日文标题' : '作品名'}</span>
+                <span>{editable ? t('ui.metadata.japaneseTitle') : t('ui.metadata.workTitle')}</span>
                 {editable ? (
                   <input
                     value={videoWorkTitleJpnDraft}
@@ -244,7 +244,7 @@ export function MetadataVideoEditor({
               </label>
               {editable ? (
                 <label>
-                  <span>英文标题</span>
+                  <span>{t('ui.metadata.englishTitle')}</span>
                   <input
                     value={videoWorkTitleDraft}
                     onChange={(event) => onVideoWorkTitleDraftChange(event.target.value)}
@@ -256,7 +256,7 @@ export function MetadataVideoEditor({
               ) : null}
               {editable ? (
                 <label>
-                  <span>系列ID</span>
+                  <span>{t('ui.metadata.seriesId')}</span>
                   <input
                     value={videoSeriesIdDraft}
                     onChange={(event) => onVideoSeriesIdDraftChange(event.target.value)}
@@ -267,7 +267,7 @@ export function MetadataVideoEditor({
                 </label>
               ) : null}
               <label>
-                <span>{editable ? '日文社团名' : '社团'}</span>
+                <span>{editable ? t('ui.metadata.japaneseCircle') : t('ui.metadata.circle')}</span>
                 {editable ? (
                   <input
                     value={videoCircleJpnDraft}
@@ -307,7 +307,7 @@ export function MetadataVideoEditor({
               </label>
               {editable ? (
                 <label>
-                  <span>英文社团名</span>
+                  <span>{t('ui.metadata.englishCircle')}</span>
                   <input
                     value={videoCircleDraft}
                     onChange={(event) => onVideoCircleDraftChange(event.target.value)}
@@ -318,7 +318,7 @@ export function MetadataVideoEditor({
                 </label>
               ) : null}
               <label>
-                <span>{editable ? '日文作者名' : '作者'}</span>
+                <span>{editable ? t('ui.metadata.japaneseAuthor') : t('ui.metadata.author')}</span>
                 {editable ? (
                   <input
                     value={videoAuthorJpnDraft}
@@ -358,7 +358,7 @@ export function MetadataVideoEditor({
               </label>
               {editable ? (
                 <label>
-                  <span>英文作者名</span>
+                  <span>{t('ui.metadata.englishAuthor')}</span>
                   <input
                     value={videoAuthorDraft}
                     onChange={(event) => onVideoAuthorDraftChange(event.target.value)}
@@ -373,7 +373,7 @@ export function MetadataVideoEditor({
                 {editable ? (
                   <input
                     value={videoTagsDraft}
-                    placeholder="多个标签用逗号分隔"
+                    placeholder={t('ui.metadata.tagsPlaceholder')}
                     onChange={(event) => onVideoTagsDraftChange(event.target.value)}
                     onKeyDown={(event) => {
                       commitOnEnter(event, onSubmitVideoTags)
@@ -423,7 +423,7 @@ export function MetadataVideoEditor({
                   {video.fileName}
                 </button>
                 <button type="button" onClick={() => onRemoveVideoFromPlaylist(videoId)}>
-                  删除
+                  {t('a11y.common.delete')}
                 </button>
               </div>
             )
