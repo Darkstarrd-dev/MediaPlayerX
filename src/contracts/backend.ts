@@ -138,6 +138,8 @@ export const sidebarNodeDtoSchema: z.ZodType<{
   video_id?: string
   audio_id?: string
   image_source_id?: string
+  cover_source_id?: string
+  cover_image_id?: string
   direct_image_count?: number
   descendant_package_count?: number
   descendant_image_count?: number
@@ -154,6 +156,8 @@ export const sidebarNodeDtoSchema: z.ZodType<{
     video_id: z.string().min(1).optional(),
     audio_id: z.string().min(1).optional(),
     image_source_id: z.string().min(1).optional(),
+    cover_source_id: z.string().min(1).optional(),
+    cover_image_id: z.string().min(1).optional(),
     direct_image_count: nonNegativeIntSchema.optional(),
     descendant_package_count: nonNegativeIntSchema.optional(),
     descendant_image_count: nonNegativeIntSchema.optional(),

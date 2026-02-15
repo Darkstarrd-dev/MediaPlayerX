@@ -41,6 +41,42 @@ function createPackage(id: string, images: ImageItem[]): ImagePackage {
 }
 
 describe("buildNodeBrowseItems", () => {
+  it("uses precomputed node cover refs when available", () => {
+    const selectedSidebarNode: SidebarNode = {
+      id: "folder:root",
+      label: "root",
+      kind: "folder",
+      pathKey: "root",
+      imageNodeType: "folder",
+      children: [
+        {
+          id: "folder:root/child",
+          label: "child",
+          kind: "folder",
+          pathKey: "root/child",
+          imageNodeType: "folder",
+          descendantImageCount: 1,
+          coverSourceId: "p-cover",
+          coverImageId: "p-cover-first",
+          children: [],
+        },
+      ],
+    };
+
+    const items = buildNodeBrowseItems({
+      nodeBrowseMode: true,
+      selectedSidebarNode,
+      packageByIdEffective: new Map(),
+      sourceCoverImageUrlBySourceId: {},
+      thumbnailImageUrlById: {
+        "p-cover-first": "thumb://p-cover-first",
+      },
+    });
+
+    expect(items).toHaveLength(1);
+    expect(items[0].coverImageUrl).toBe("thumb://p-cover-first");
+  });
+
   it("falls back to first visible image in subset when parent source has no visible image", () => {
     const selectedSidebarNode: SidebarNode = {
       id: "folder:root",

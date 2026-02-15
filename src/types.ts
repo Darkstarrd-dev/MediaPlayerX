@@ -129,6 +129,8 @@ export interface SidebarNode {
   videoId?: string
   audioId?: string
   imageSourceId?: string
+  coverSourceId?: string
+  coverImageId?: string
   imageNodeType?: 'folder' | 'package' | 'directory'
   directImageCount?: number
   descendantPackageCount?: number

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useEffectiveDisplayState } from "./useEffectiveDisplayState";
 import { useMetadataWriteBindings } from "./useMetadataWriteBindings";
@@ -200,6 +200,77 @@ export function useAppDisplayResources({
         selectedSidebarNode.imageNodeType === "folder"),
     );
 
+  const nodeBrowseMode =
+    appSettings.mode === "image" &&
+    !vectorResultsActive &&
+    !metadataManageMode &&
+    !adReviewResultsMode &&
+    Boolean(
+      selectedSidebarNode &&
+      selectedSidebarNode.imageNodeType === "folder" &&
+      selectedSidebarNode.children.length > 0,
+    );
+
+  const canWarmupNodeBrowseCoverThumbnails =
+    !(backendRead.library?.loading ?? false) &&
+    !(backendRead.sidebar?.loading ?? false) &&
+    !(backendRead.page?.loading ?? false) &&
+    !(backendRead.metadata?.loading ?? false);
+
+  const nodeBrowseCoverThumbnailLocators = useMemo(
+    () => {
+      if (
+        !nodeBrowseMode ||
+        !canWarmupNodeBrowseCoverThumbnails ||
+        !selectedSidebarNode
+      ) {
+        return [];
+      }
+
+      const next: Array<{
+        sourceId: string;
+        imageId: string;
+        locator: MediaLocator;
+      }> = [];
+      const seenImageIds = new Set<string>();
+
+      for (const child of selectedSidebarNode.children) {
+        const sourceId = child.coverSourceId?.trim() ?? "";
+        const imageId = child.coverImageId?.trim() ?? "";
+        if (!sourceId || !imageId || seenImageIds.has(imageId)) {
+          continue;
+        }
+
+        const source = packageByIdEffective.get(sourceId);
+        if (!source || source.sourceCover?.coverImagePath) {
+          continue;
+        }
+
+        const image = source.images.find(
+          (item) => item.id === imageId && !item.hidden,
+        );
+        if (!image) {
+          continue;
+        }
+
+        seenImageIds.add(imageId);
+        next.push({
+          sourceId,
+          imageId,
+          locator: image.mediaLocator,
+        });
+      }
+
+      return next;
+    },
+    [
+      canWarmupNodeBrowseCoverThumbnails,
+      nodeBrowseMode,
+      packageByIdEffective,
+      selectedSidebarNode,
+    ],
+  );
+
   const { refsInPageBase } = resolveAdReviewPageDerivations({
     adReviewResultsMode,
     orderedRootScopedImageRefs,
@@ -266,6 +337,7 @@ export function useAppDisplayResources({
     focusedVideo,
     focusedAudio,
     focusedVideoCoverImageLocator,
+    nodeBrowseCoverThumbnailLocators,
     sourceCoverLocators: scopedImageSourcesEffective
       .map((source) => {
         const locator = buildCoverImageLocator(

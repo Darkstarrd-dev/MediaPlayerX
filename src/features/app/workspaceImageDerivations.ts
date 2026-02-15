@@ -62,13 +62,21 @@ export function buildNodeBrowseItems({
   return (selectedSidebarNode?.children ?? []).map((child) => {
     const hasOwnImages =
       child.imageNodeType === "package" || child.imageNodeType === "directory";
-    const previewSourceIds = resolveNodePreviewSourceIds(child);
-    const firstVisibleImage = resolveFirstVisibleImage(
-      previewSourceIds,
-      packageByIdEffective,
-    );
+    const coverSourceIdFromNode = child.coverSourceId?.trim() || null;
+    const coverImageIdFromNode = child.coverImageId?.trim() || null;
+    const previewSourceIds = coverSourceIdFromNode
+      ? [coverSourceIdFromNode]
+      : coverImageIdFromNode
+        ? []
+        : resolveNodePreviewSourceIds(child);
+    const firstVisibleImage = coverImageIdFromNode
+      ? {
+          sourceId: coverSourceIdFromNode ?? "",
+          imageId: coverImageIdFromNode,
+        }
+      : resolveFirstVisibleImage(previewSourceIds, packageByIdEffective);
     const previewSourceId =
-      firstVisibleImage?.sourceId ?? previewSourceIds[0] ?? null;
+      coverSourceIdFromNode ?? firstVisibleImage?.sourceId ?? previewSourceIds[0] ?? null;
     const ownSource = child.imageSourceId
       ? packageByIdEffective.get(child.imageSourceId)
       : null;

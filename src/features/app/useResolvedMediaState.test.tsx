@@ -119,7 +119,12 @@ describe('useResolvedMediaState', () => {
       }),
     )
 
-    const firstCall = vi.mocked(useResolvedMediaUrls).mock.calls[0]?.[0]
+    const firstCall =
+      vi
+        .mocked(useResolvedMediaUrls)
+        .mock.calls
+        .map((call) => call[0])
+        .find((call) => call.targets.some((target) => target.targetId.startsWith('image-thumb:'))) ?? null
     const thumbnailTargetIds =
       firstCall?.targets.filter((target) => target.targetId.startsWith('image-thumb:')).map((target) => target.targetId) ?? []
     const originalTargetIds =
@@ -171,14 +176,26 @@ describe('useResolvedMediaState', () => {
       },
     )
 
-    const firstTargets = vi.mocked(useResolvedMediaUrls).mock.calls[0]?.[0]?.targets ?? []
+    const firstThumbnailTargetCalls = vi
+      .mocked(useResolvedMediaUrls)
+      .mock.calls
+      .map((call) => call[0])
+      .filter((call) => call.targets.some((target) => target.targetId.startsWith('image-thumb:')))
+
+    const firstTargets = firstThumbnailTargetCalls[0]?.targets ?? []
     const firstThumbTarget = firstTargets.find((target) => target.targetId === 'image-thumb:img-0')
     expect(firstThumbTarget?.thumbnailQuality).toBe(40)
     expect(firstThumbTarget?.thumbnailMaxEdge).toBe(256)
 
     rerender({ thumbnailQuality: 90, thumbnailWidth: 640 })
 
-    const secondTargets = vi.mocked(useResolvedMediaUrls).mock.calls[1]?.[0]?.targets ?? []
+    const secondThumbnailTargetCalls = vi
+      .mocked(useResolvedMediaUrls)
+      .mock.calls
+      .map((call) => call[0])
+      .filter((call) => call.targets.some((target) => target.targetId.startsWith('image-thumb:')))
+
+    const secondTargets = secondThumbnailTargetCalls[1]?.targets ?? []
     const secondThumbTarget = secondTargets.find((target) => target.targetId === 'image-thumb:img-0')
     expect(secondThumbTarget?.thumbnailQuality).toBe(90)
     expect(secondThumbTarget?.thumbnailMaxEdge).toBe(640)
@@ -213,8 +230,60 @@ describe('useResolvedMediaState', () => {
       }),
     )
 
-    const firstCall = vi.mocked(useResolvedMediaUrls).mock.calls[0]?.[0]
+    const firstCall =
+      vi
+        .mocked(useResolvedMediaUrls)
+        .mock.calls
+        .map((call) => call[0])
+        .find((call) => call.targets.some((target) => target.targetId.startsWith('audio:'))) ?? null
     const audioTargetIds = firstCall?.targets.filter((target) => target.targetId.startsWith('audio:')).map((target) => target.targetId)
     expect(audioTargetIds).toEqual(['audio:audio-focus'])
+  })
+
+  it('node browse cover 预热使用独立低并发缩略图队列', () => {
+    const packageData = createPackageWithImages(1)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        actualCellWidth: 180,
+        actualMediaHeight: 120,
+        thumbnailQuality: 82,
+        thumbnailWidth: 320,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: null,
+        metadataImage: null,
+        focusedRef: null,
+        orderedRootScopedImageRefs: [],
+        fullscreenActive: false,
+        showNamesOnly: true,
+        refsInPage: [],
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+        nodeBrowseCoverThumbnailLocators: [
+          {
+            sourceId: packageData.id,
+            imageId: packageData.images[0].id,
+            locator: packageData.images[0].mediaLocator,
+          },
+        ],
+      }),
+    )
+
+    const warmupCall =
+      vi
+        .mocked(useResolvedMediaUrls)
+        .mock.calls
+        .map((call) => call[0])
+        .find((call) => call.targets.some((target) => target.targetId.startsWith('node-cover-thumb:'))) ?? null
+
+    expect(warmupCall).not.toBeNull()
+    expect(warmupCall?.options?.maxConcurrent).toBe(1)
+    expect(warmupCall?.options?.stateScope).toBe('active-only')
   })
 })

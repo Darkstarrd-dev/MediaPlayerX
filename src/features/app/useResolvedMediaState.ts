@@ -36,6 +36,7 @@ interface UseResolvedMediaStateParams {
   focusedAudio: AudioItem | null
   focusedVideoCoverImageLocator: MediaLocator | null
   sourceCoverLocators?: Array<{ sourceId: string; locator: MediaLocator }>
+  nodeBrowseCoverThumbnailLocators?: Array<{ sourceId: string; imageId: string; locator: MediaLocator }>
 }
 
 interface UseResolvedMediaStateResult {
@@ -69,6 +70,7 @@ export function useResolvedMediaState({
   focusedAudio,
   focusedVideoCoverImageLocator,
   sourceCoverLocators = [],
+  nodeBrowseCoverThumbnailLocators = [],
 }: UseResolvedMediaStateParams): UseResolvedMediaStateResult {
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
     const targetById = new Map<string, MediaResolveTarget>()
@@ -238,16 +240,73 @@ export function useResolvedMediaState({
         },
   })
 
-  const thumbnailImageUrlById = useMemo<Record<string, string>>(() => {
-    const next: Record<string, string> = {}
-    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
-      if (!targetId.startsWith('image-thumb:')) {
+  const nodeBrowseCoverThumbnailTargets = useMemo<MediaResolveTarget[]>(() => {
+    if (benchSettings.enabled || nodeBrowseCoverThumbnailLocators.length === 0) {
+      return []
+    }
+
+    const targetById = new Map<string, MediaResolveTarget>()
+    const normalizedThumbnailWidth = Math.max(128, Math.round(thumbnailWidth))
+    const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight, normalizedThumbnailWidth)))
+
+    for (const candidate of nodeBrowseCoverThumbnailLocators) {
+      const targetId = `node-cover-thumb:${candidate.imageId}`
+      if (targetById.has(targetId)) {
         continue
       }
-      next[targetId.slice('image-thumb:'.length)] = url
+
+      targetById.set(targetId, {
+        targetId,
+        locator: candidate.locator,
+        variant: 'thumbnail',
+        thumbnailMaxEdge,
+        thumbnailQuality,
+        thumbnailGenerationConcurrency,
+      })
     }
+
+    return [...targetById.values()]
+  }, [
+    actualCellWidth,
+    actualMediaHeight,
+    benchSettings.enabled,
+    nodeBrowseCoverThumbnailLocators,
+    thumbnailGenerationConcurrency,
+    thumbnailQuality,
+    thumbnailWidth,
+  ])
+
+  const nodeBrowseCoverWarmupMedia = useResolvedMediaUrls({
+    repository,
+    targets: nodeBrowseCoverThumbnailTargets,
+    options: {
+      applyMode: 'raf',
+      stateScope: 'active-only',
+      maxConcurrent: 1,
+    },
+  })
+
+  const thumbnailImageUrlById = useMemo<Record<string, string>>(() => {
+    const next: Record<string, string> = {}
+
+    const appendThumbnailTargetUrls = (urlByTargetId: Record<string, string>) => {
+      for (const [targetId, url] of Object.entries(urlByTargetId)) {
+        if (targetId.startsWith('image-thumb:')) {
+          next[targetId.slice('image-thumb:'.length)] = url
+          continue
+        }
+
+        if (targetId.startsWith('node-cover-thumb:')) {
+          next[targetId.slice('node-cover-thumb:'.length)] = url
+        }
+      }
+    }
+
+    appendThumbnailTargetUrls(resolvedMedia.urlByTargetId)
+    appendThumbnailTargetUrls(nodeBrowseCoverWarmupMedia.urlByTargetId)
+
     return next
-  }, [resolvedMedia.urlByTargetId])
+  }, [nodeBrowseCoverWarmupMedia.urlByTargetId, resolvedMedia.urlByTargetId])
 
   const originalImageUrlById = useMemo<Record<string, string>>(() => {
     const next: Record<string, string> = {}

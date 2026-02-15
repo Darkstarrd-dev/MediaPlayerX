@@ -21,6 +21,15 @@ export function buildImageSidebarTree(
   imagePackages: ImagePackageDto[],
   imageDirectories: ImagePackageDto[],
 ): SidebarNodeDto[] {
+  const resolveFirstVisibleImageId = (source: ImagePackageDto | undefined): string | null => {
+    if (!source) {
+      return null
+    }
+
+    const firstVisibleImage = source.images.find((image) => !(image.hidden ?? false))
+    return firstVisibleImage?.id ?? null
+  }
+
   const countVisibleImages = (source: ImagePackageDto | undefined): number => {
     if (!source) {
       return 0
@@ -36,6 +45,15 @@ export function buildImageSidebarTree(
   }
   for (const directory of imageDirectories) {
     directoryByPath.set(directory.tree_path.join('/'), directory)
+  }
+
+  const firstVisibleImageIdBySourceId = new Map<string, string>()
+  for (const source of [...imagePackages, ...imageDirectories]) {
+    const firstVisibleImageId = resolveFirstVisibleImageId(source)
+    if (!firstVisibleImageId) {
+      continue
+    }
+    firstVisibleImageIdBySourceId.set(source.id, firstVisibleImageId)
   }
 
   const allLeafPaths = [...imagePackages.map((pkg) => pkg.tree_path), ...imageDirectories.map((directory) => directory.tree_path)]
@@ -141,9 +159,68 @@ export function buildImageSidebarTree(
     }
   }
 
+  const hydrateNodeCoverRefs = (node: SidebarNodeDto): { sourceId: string | null; imageId: string | null } => {
+    if (node.image_node_type === 'package' || node.image_node_type === 'directory') {
+      const sourceId = node.image_source_id ?? null
+      const imageId = sourceId ? (firstVisibleImageIdBySourceId.get(sourceId) ?? null) : null
+      if (sourceId) {
+        node.cover_source_id = sourceId
+      } else {
+        delete node.cover_source_id
+      }
+      if (imageId) {
+        node.cover_image_id = imageId
+      } else {
+        delete node.cover_image_id
+      }
+
+      for (const child of node.children) {
+        hydrateNodeCoverRefs(child)
+      }
+
+      return {
+        sourceId,
+        imageId,
+      }
+    }
+
+    let coverSourceId: string | null = null
+    let coverImageId: string | null = null
+
+    for (const child of node.children) {
+      const childCover = hydrateNodeCoverRefs(child)
+      if (!coverImageId && childCover.imageId) {
+        coverImageId = childCover.imageId
+        coverSourceId = childCover.sourceId
+      }
+    }
+
+    if (coverSourceId) {
+      node.cover_source_id = coverSourceId
+    } else {
+      delete node.cover_source_id
+    }
+
+    if (coverImageId) {
+      node.cover_image_id = coverImageId
+    } else {
+      delete node.cover_image_id
+    }
+
+    return {
+      sourceId: coverSourceId,
+      imageId: coverImageId,
+    }
+  }
+
   const roots = Array.from(rootMap.values())
   hydrateAggregateCounts(roots)
   sortNodes(roots)
   moveMusicBookletRootToEnd(roots)
+
+  for (const node of roots) {
+    hydrateNodeCoverRefs(node)
+  }
+
   return roots
 }
