@@ -10,8 +10,24 @@ export default defineConfig(({ command }) => ({
     chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'zustand'],
+        manualChunks: (id) => {
+          if (!id.includes('node_modules')) {
+            return undefined
+          }
+
+          if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/zustand/')) {
+            return 'vendor-react'
+          }
+
+          if (id.includes('/three/')) {
+            return 'vendor-three'
+          }
+
+          if (id.includes('/axios/') || id.includes('/cheerio/') || id.includes('/zod/')) {
+            return 'vendor-data'
+          }
+
+          return 'vendor-misc'
         },
       },
     },

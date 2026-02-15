@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
-import { MusicControlIcon, type MusicControlIconName } from './MusicControlIcon'
+import { MusicControlIcon } from './MusicControlIcon'
+import { resolveLoopModeIconName, resolveMusicToolbarSummary } from './musicMainSectionUtils'
 import { useFullscreenFloatingControls } from './useFullscreenFloatingControls'
 import type { AppSettings } from '../contracts/settings'
 import type { AudioItem, MusicLoopMode } from '../types'
@@ -58,22 +59,6 @@ interface MusicMainSectionProps {
   onPrevAudio: () => void
   onNextAudio: () => void
   onCycleMusicLoopMode: () => void
-}
-
-function resolveLoopModeIconName(mode: MusicLoopMode): Extract<
-  MusicControlIconName,
-  'repeatOne' | 'repeatFolder' | 'repeatAlbum' | 'repeatLibrary'
-> {
-  if (mode === 'single') {
-    return 'repeatOne'
-  }
-  if (mode === 'folder') {
-    return 'repeatFolder'
-  }
-  if (mode === 'album') {
-    return 'repeatAlbum'
-  }
-  return 'repeatLibrary'
 }
 
 function MusicMainSection({
@@ -272,20 +257,7 @@ function MusicMainSection({
     setVisualizerCanvasVersion((value) => value + 1)
   }, [visualizerRuntimeError])
 
-  const toolbarSummary = useMemo(() => {
-    if (!focusedAudio) {
-      return '音乐列表'
-    }
-
-    const album = focusedAudio.album.trim()
-    const author = focusedAudio.author.trim()
-    return [
-      album || '未知专辑',
-      author || '未知作者',
-    ]
-      .filter((value): value is string => Boolean(value))
-      .join(' / ')
-  }, [focusedAudio])
+  const toolbarSummary = useMemo(() => resolveMusicToolbarSummary(focusedAudio), [focusedAudio])
 
   const layeredBackgroundShaderLabel = useMemo(() => {
     return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)?.label ?? '未选择背景 Shader'
