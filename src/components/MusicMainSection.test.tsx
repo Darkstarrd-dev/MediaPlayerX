@@ -340,26 +340,31 @@ describe('MusicMainSection', () => {
     const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
     fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
 
-    const renderLongEdgeInput = screen.getByLabelText('实际渲染长边分辨率')
+    const renderLongEdgeInput = screen.getByLabelText('渲染长边分辨率')
     fireEvent.change(renderLongEdgeInput, { target: { value: '5000' } })
-    expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith('foreground', { renderLongEdgePx: 4096 })
+    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
     fireEvent.keyDown(renderLongEdgeInput, { key: 'Enter', code: 'Enter' })
 
-    const renderScaleCoeffSlider = screen.getByLabelText(/渲染分辨率系数/)
-    fireEvent.change(renderScaleCoeffSlider, { target: { value: '3.6' } })
+    const foregroundScaleCoeffSlider = screen.getByLabelText(/前景分辨率系数/)
+    fireEvent.change(foregroundScaleCoeffSlider, { target: { value: '3.6' } })
     expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith('foreground', { renderScaleCoeff: 3.6 })
-    fireEvent.mouseUp(renderScaleCoeffSlider)
+    fireEvent.mouseUp(foregroundScaleCoeffSlider)
 
-    fireEvent.change(screen.getByLabelText('渲染帧率上限'), { target: { value: '120' } })
+    const backgroundScaleCoeffSlider = screen.getByLabelText(/背景分辨率系数/)
+    fireEvent.change(backgroundScaleCoeffSlider, { target: { value: '1.8' } })
+    expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith('background', { renderScaleCoeff: 1.8 })
+    fireEvent.mouseUp(backgroundScaleCoeffSlider)
+
+    fireEvent.change(screen.getByLabelText('帧率限制'), { target: { value: '120' } })
     fireEvent.change(screen.getByLabelText(/Tone Mapping 曝光/), { target: { value: '1.4' } })
     fireEvent.click(screen.getByLabelText('显示 FPS 调试信息'))
 
-    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { renderLongEdgePx: 4096 })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
     expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { renderScaleCoeff: 3.6 })
-    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { fpsCap: 120 })
-    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { toneMapExposure: 1.4 })
-    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { showFps: true })
-    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalled()
+    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('background', { renderScaleCoeff: 1.8 })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ fpsCap: 120 })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ toneMapExposure: 1.4 })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ showFps: true })
   })
 
   it('Shader 列表支持前景/背景目标切换与目标开关', () => {
@@ -389,7 +394,7 @@ describe('MusicMainSection', () => {
     expect(onMusicVisualizerLayerShaderIdChange).toHaveBeenCalledWith('background', 'voxel')
   })
 
-  it('Shader 参数面板根据列表目标层动态显示前景限定参数', () => {
+  it('Shader 参数面板在切换列表目标层后仍显示统一参数', () => {
     renderMusicMainSection()
 
     const shaderButton = screen.getByRole('button', { name: /^Shader：/ })
@@ -400,8 +405,10 @@ describe('MusicMainSection', () => {
 
     const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
     fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
-    expect(screen.getByText('前景 参数')).toBeInTheDocument()
-    expect(screen.getByLabelText(/前景 X 偏移/)).toBeInTheDocument()
+    expect(screen.getByText('Shader 参数')).toBeInTheDocument()
+    expect(screen.getByLabelText(/前景分辨率系数/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/背景分辨率系数/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/前景X偏移/)).toBeInTheDocument()
 
     fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
     fireEvent.click(switchButton)
@@ -409,8 +416,10 @@ describe('MusicMainSection', () => {
 
     fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
 
-    expect(screen.getByText('背景 参数')).toBeInTheDocument()
-    expect(screen.queryByLabelText(/前景 X 偏移/)).toBeNull()
+    expect(screen.getByText('Shader 参数')).toBeInTheDocument()
+    expect(screen.getByLabelText(/前景分辨率系数/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/背景分辨率系数/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/前景X偏移/)).toBeInTheDocument()
   })
 
   it('仅开启单层时按钮标签显示该层 shader，双层关闭时显示透明', () => {
