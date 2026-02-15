@@ -79,6 +79,11 @@ export interface MusicVisualizerFrameInput {
   foregroundOffsetX: number
   foregroundOffsetY: number
   foregroundScale: number
+  compositeModeCode: number
+  themeModeCode: number
+  themeBackgroundR: number
+  themeBackgroundG: number
+  themeBackgroundB: number
 }
 
 export interface MusicVisualizerRenderer {

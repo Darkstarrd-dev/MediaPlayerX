@@ -45,7 +45,7 @@ const float FILL = 1., CONTOUR = 0.;
 vec4 COL = vec4(0); float fill = FILL, S = 1.;
 float d = 1e38;
 
-void SVG(vec2 uv, inout vec4 O)
+void SVG(vec2 uv, int headphoneCode, inout vec4 O)
 {
     float _x, _y, x0, y0, px, py;
     uv.y = 1.0 - uv.y;
@@ -54,7 +54,7 @@ void SVG(vec2 uv, inout vec4 O)
 
 uv *= vec2(134.6, 138.6);
 // SVG optimized by custom software
-path(style(FILL, 0)
+path(style(FILL, headphoneCode)
 m(117.,138.)q(-3.7,.0,-6.,-3.3)t(-2.,-8.6)V(88.)c(.0,-6.,2.8,-7.5,5.,-7.5)l(10.5,2.)V(51.)l(.8,-.8)h(1.)Q(111.,9.,67.5,6.5)h(-.6)Q(23.7,9.4,9.,50.3)h(.5)l(.8,.8)v(31.6)l(4.7,-1.2)l(6.,-.9)s(5.,1.3,5.,7.5)v(37.8)q(.0,5.5,-2.,8.6)t(-6.,3.3)H(1.5)l(-.8,-.8)V(51.)l(.8,-.8)h(1.)C(10.3,21.2,36.7,.9,67.,.8)h(.3)c(30.3,.0,56.7,20.4,64.5,49.6)h(1.5)l(.8,.8)v(86.)l(-.8,.8)h(-16.4)z
 m(1.5,-15.4)c(.0,3.4,1.3,3.4,1.8,3.4)h(4.)V(93.)l(-6.,-.2)v(29.6)z
 M(14.5,126.)s(1.8,.0,1.8,-3.4)V(93.)l(-6.,.2)v(33.)h(4.)z
@@ -112,10 +112,11 @@ float ellipse_arc(vec2 uv, vec2 radii, float xrot, float large, float sweep, vec
 
 void draw(vec2 uv, float d, inout vec4 O)
 {
-  float d2 = d;
   float f = length(fwidth(uv)) * 8.0;
-  O = mix(vec4(1), O, smoothstep(1.5 - f * 0.25, 1.5 + f * 0.25, d2));
-  O = mix(COL, O, smoothstep(-f * 2.0, 0.0, S * d * 8.0));
+  float shapeMask = 1.0 - smoothstep(-f * 2.0, 0.0, S * d * 8.0);
+  shapeMask = clamp(shapeMask, 0.0, 1.0);
+  O.rgb = mix(O.rgb, COL.rgb, shapeMask);
+  O.a = max(O.a, shapeMask);
 }
 
 float elongate(vec2 p, float h) {
@@ -138,17 +139,25 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     float a = iResolution.y / iResolution.x;
     float music = texelFetch(iChannel0, ivec2(abs(id - 0.35) * 512.0, 0), 0).r;
     music = (1.0 - exp(-music * music)) * 0.5;
+    music *= 2.3;
     float d = elongate(iv / scale * vec2(1.0, a), music);
   float f = length(fwidth(uv));
     d = smoothstep(-f, f, d);
     vec3 col = vec3(-0.2, -0.2, 0.5) + vec3(1.25, 1.0, 1.5) * (cos(1.5 * 3.1415 * (uv.xxx * vec3(2.25, 1.8, 0.6) + vec3(1.5, 1.0, -0.15))) * 0.5 + 0.5);
     col = hue_shift(col, HUE);
-    col = mix(col, vec3(1), d);
+    float spectrumMask = 1.0 - d;
+    vec3 themeBackground = clamp(iThemeBackgroundColor, vec3(0.0), vec3(1.0));
+    bool layeredComposite = iCompositeMode == 2;
+    float outputAlpha = layeredComposite ? spectrumMask : 1.0;
+    vec3 outputColor = layeredComposite
+      ? col * spectrumMask
+      : mix(themeBackground, col, spectrumMask);
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4(outputColor, outputAlpha);
+    int headphoneCode = (iCompositeMode == 2 || iThemeMode == 1) ? 16777215 : 0;
     float minResolution = min(iResolution.x, iResolution.y);
     vec2 svgCoord = fragCoord - 0.5 * (iResolution.xy - vec2(minResolution));
-    SVG(svgCoord / minResolution + vec2(HEADPHONE_OFFSET_X, SCENE_OFFSET_Y), fragColor);
+    SVG(svgCoord / minResolution + vec2(HEADPHONE_OFFSET_X, SCENE_OFFSET_Y), headphoneCode, fragColor);
 }
 `,
 }

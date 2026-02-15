@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { buildImageMainSectionProps } from "./buildImageMainSectionProps";
 import { buildMainFooter } from "./buildMainFooter";
@@ -526,6 +526,39 @@ export function useAppWorkspaceProps({
     imageTotalPagesEffective,
   });
 
+  const onPrevPageForMain = adReviewResultsMode
+    ? () => {
+        setAdReviewPageIndex((value) => Math.max(0, value - 1));
+      }
+    : goPrevPage;
+  const onNextPageForMain = adReviewResultsMode
+    ? () => {
+        setAdReviewPageIndex((value) =>
+          Math.min(Math.max(0, imageTotalPagesForMain - 1), value + 1),
+        );
+      }
+    : goNextPage;
+
+  const imageSidebarNodeIdsForWheel = useMemo(() => {
+    const orderedIds: string[] = [];
+    const walk = (nodes: typeof sidebarImageTreeNodes) => {
+      for (const node of nodes) {
+        orderedIds.push(node.id);
+        if (node.children.length > 0) {
+          walk(node.children);
+        }
+      }
+    };
+    walk(sidebarImageTreeNodes);
+    return orderedIds;
+  }, [sidebarImageTreeNodes]);
+
+  const imageSidebarNodeIndexByIdForWheel = useMemo(() => {
+    return new Map(
+      imageSidebarNodeIdsForWheel.map((nodeId, index) => [nodeId, index]),
+    );
+  }, [imageSidebarNodeIdsForWheel]);
+
   const nodeBrowseMode =
     mode === "image" &&
     !vectorResultsActive &&
@@ -749,6 +782,47 @@ export function useAppWorkspaceProps({
         setSelectedPackageId(imageSourceId);
       }
     },
+    onThumbnailWheelTurnPage: (direction) => {
+      if (direction === "next") {
+        onNextPageForMain();
+        return;
+      }
+      onPrevPageForMain();
+    },
+    onThumbnailWheelSwitchSidebarNode: (direction) => {
+      if (imageSidebarNodeIdsForWheel.length === 0) {
+        return;
+      }
+
+      const currentNodeId =
+        selectedSidebarNodeId &&
+        imageSidebarNodeIndexByIdForWheel.has(selectedSidebarNodeId)
+          ? selectedSidebarNodeId
+          : imageSidebarNodeIdsForWheel[0];
+      const currentIndex = imageSidebarNodeIndexByIdForWheel.get(currentNodeId);
+      if (currentIndex === undefined) {
+        return;
+      }
+
+      const nextIndex = Math.max(
+        0,
+        Math.min(
+          imageSidebarNodeIdsForWheel.length - 1,
+          currentIndex + (direction === "next" ? 1 : -1),
+        ),
+      );
+      const nextNodeId = imageSidebarNodeIdsForWheel[nextIndex];
+      if (!nextNodeId || nextNodeId === selectedSidebarNodeId) {
+        return;
+      }
+
+      setSelectedSidebarNodeId(nextNodeId);
+
+      const nextNode = effectiveSidebarNodeById.get(nextNodeId);
+      if (nextNode?.imageSourceId) {
+        setSelectedPackageId(nextNode.imageSourceId);
+      }
+    },
   });
 
   const videoMainSectionProps = buildVideoMainSectionProps({
@@ -821,6 +895,7 @@ export function useAppWorkspaceProps({
   const musicMainSectionProps = buildMusicMainSectionProps({
     mode,
     fullscreenActive,
+    paletteMode: appSettings.paletteMode,
     videoPlaying,
     playRequestNonce: musicPlayRequestNonce,
     manageMode,
@@ -1067,19 +1142,6 @@ export function useAppWorkspaceProps({
     setPlaylistIds,
     setDragVideoId,
   });
-
-  const onPrevPageForMain = adReviewResultsMode
-    ? () => {
-        setAdReviewPageIndex((value) => Math.max(0, value - 1));
-      }
-    : goPrevPage;
-  const onNextPageForMain = adReviewResultsMode
-    ? () => {
-        setAdReviewPageIndex((value) =>
-          Math.min(Math.max(0, imageTotalPagesForMain - 1), value + 1),
-        );
-      }
-    : goNextPage;
 
   const mainFooter = buildMainFooter({
     t,

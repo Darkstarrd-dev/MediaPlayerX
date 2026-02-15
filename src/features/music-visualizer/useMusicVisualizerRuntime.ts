@@ -26,6 +26,13 @@ const MIN_TONE_MAP_EXPOSURE = 0.5
 const MAX_TONE_MAP_EXPOSURE = 2
 const TONE_MAP_EXPOSURE_SLEW_PER_SECOND = 1.8
 const TONE_MAP_STRENGTH_SLEW_PER_SECOND = 1.2
+const THEME_BACKGROUND_SYNC_INTERVAL_MS = 500
+
+interface RgbColor {
+  r: number
+  g: number
+  b: number
+}
 
 function clampToneMapExposure(value: number): number {
   if (!Number.isFinite(value)) {
@@ -39,6 +46,122 @@ function clampToneMapStrength(value: number): number {
     return 0
   }
   return Math.max(0, Math.min(1, value))
+}
+
+function clampColor01(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+  return Math.max(0, Math.min(1, value))
+}
+
+function parseCssHexColor(colorText: string): RgbColor | null {
+  const normalized = colorText.trim().toLowerCase()
+  const match = normalized.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/)
+  if (!match) {
+    return null
+  }
+
+  const token = match[1]
+  if (!token) {
+    return null
+  }
+
+  if (token.length === 3) {
+    const r = parseInt(token[0] + token[0], 16)
+    const g = parseInt(token[1] + token[1], 16)
+    const b = parseInt(token[2] + token[2], 16)
+    return {
+      r: clampColor01(r / 255),
+      g: clampColor01(g / 255),
+      b: clampColor01(b / 255),
+    }
+  }
+
+  const r = parseInt(token.slice(0, 2), 16)
+  const g = parseInt(token.slice(2, 4), 16)
+  const b = parseInt(token.slice(4, 6), 16)
+  return {
+    r: clampColor01(r / 255),
+    g: clampColor01(g / 255),
+    b: clampColor01(b / 255),
+  }
+}
+
+function parseCssRgbColor(colorText: string): RgbColor | null {
+  const normalized = colorText.trim().toLowerCase()
+  if (!normalized.startsWith('rgb')) {
+    return null
+  }
+
+  const values = normalized.match(/-?\d*\.?\d+/g)
+  if (!values || values.length < 3) {
+    return null
+  }
+
+  const r = Number(values[0])
+  const g = Number(values[1])
+  const b = Number(values[2])
+  return {
+    r: clampColor01(r / 255),
+    g: clampColor01(g / 255),
+    b: clampColor01(b / 255),
+  }
+}
+
+function parseCssSrgbColor(colorText: string): RgbColor | null {
+  const normalized = colorText.trim().toLowerCase()
+  if (!normalized.startsWith('color(') || !normalized.includes('srgb')) {
+    return null
+  }
+
+  const values = normalized.match(/-?\d*\.?\d+/g)
+  if (!values || values.length < 3) {
+    return null
+  }
+
+  const r = Number(values[0])
+  const g = Number(values[1])
+  const b = Number(values[2])
+  return {
+    r: clampColor01(r),
+    g: clampColor01(g),
+    b: clampColor01(b),
+  }
+}
+
+function parseCssColor(colorText: string): RgbColor | null {
+  return parseCssRgbColor(colorText) ?? parseCssHexColor(colorText) ?? parseCssSrgbColor(colorText)
+}
+
+function resolveThemeBackgroundColor(canvas: HTMLCanvasElement, paletteMode: 'day' | 'night'): RgbColor {
+  const fallback: RgbColor = paletteMode === 'night'
+    ? { r: 0.14, g: 0.16, b: 0.19 }
+    : { r: 0.95, g: 0.93, b: 0.90 }
+
+  const container = canvas.parentElement
+  if (!container || typeof window === 'undefined') {
+    return fallback
+  }
+
+  const styles = window.getComputedStyle(container)
+  const colorCandidates = [
+    styles.backgroundColor,
+    styles.getPropertyValue('--mpx-bg-panel'),
+    styles.getPropertyValue('--mpx-bg-app'),
+  ]
+
+  for (const colorText of colorCandidates) {
+    if (!colorText || colorText.trim().length === 0) {
+      continue
+    }
+    const parsed = parseCssColor(colorText)
+    if (parsed) {
+      return parsed
+    }
+  }
+
+  return fallback
 }
 
 interface UseMusicVisualizerRuntimeParams {
@@ -64,6 +187,7 @@ interface UseMusicVisualizerRuntimeParams {
   layeredForegroundOffsetX?: number
   layeredForegroundOffsetY?: number
   layeredForegroundScale?: number
+  paletteMode?: 'day' | 'night'
 }
 
 interface UseMusicVisualizerRuntimeResult {
@@ -289,11 +413,13 @@ export function useMusicVisualizerRuntime({
   layeredForegroundOffsetX = 0,
   layeredForegroundOffsetY = 0,
   layeredForegroundScale = 1,
+  paletteMode = 'day',
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const { t } = useI18n()
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
   const [activeBackend, setActiveBackend] = useState<MusicVisualizerRendererMode | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
+  const compositeModeCode = layeredBackgroundEnabled && layeredForegroundEnabled ? 2 : layeredForegroundEnabled ? 1 : 0
 
   const shader = useMemo(() => {
     const defaultShader = resolveDefaultMusicVisualizerShader()
@@ -340,6 +466,7 @@ export function useMusicVisualizerRuntime({
     layeredForegroundOffsetX,
     layeredForegroundOffsetY,
     layeredForegroundScale,
+    paletteMode,
   })
 
   useEffect(() => {
@@ -353,12 +480,14 @@ export function useMusicVisualizerRuntime({
       layeredForegroundOffsetX,
       layeredForegroundOffsetY,
       layeredForegroundScale,
+      paletteMode,
     }
   }, [
     fpsCap,
     layeredForegroundOffsetX,
     layeredForegroundOffsetY,
     layeredForegroundScale,
+    paletteMode,
     renderLongEdgePx,
     renderScaleCoeff,
     toneMapExposure,
@@ -515,6 +644,9 @@ export function useMusicVisualizerRuntime({
     let lastAnalyserError: string | null = null
     let lastRenderError: string | null = null
     let lastRenderAt = -Infinity
+    let lastThemeBackgroundSyncAt = -Infinity
+    let lastThemePaletteMode = runtimeSettingsRef.current.paletteMode
+    let themeBackgroundColor = resolveThemeBackgroundColor(renderCanvas, runtimeSettingsRef.current.paletteMode)
     let smoothedToneMapExposure = initialToneMap.exposure
     let smoothedToneMapStrength = initialToneMap.strength
     let smoothedToneMapMode = initialToneMap.mode
@@ -578,6 +710,15 @@ export function useMusicVisualizerRuntime({
       smoothedToneMapExposure = stepToward(smoothedToneMapExposure, toneMap.exposure, exposureStep)
       smoothedToneMapStrength = stepToward(smoothedToneMapStrength, toneMap.strength, strengthStep)
 
+      if (
+        runtimeSettingsRef.current.paletteMode !== lastThemePaletteMode ||
+        now - lastThemeBackgroundSyncAt >= THEME_BACKGROUND_SYNC_INTERVAL_MS
+      ) {
+        lastThemePaletteMode = runtimeSettingsRef.current.paletteMode
+        themeBackgroundColor = resolveThemeBackgroundColor(renderCanvas, runtimeSettingsRef.current.paletteMode)
+        lastThemeBackgroundSyncAt = now
+      }
+
       try {
         renderer.render({
           width: renderSize.width,
@@ -594,6 +735,11 @@ export function useMusicVisualizerRuntime({
           foregroundOffsetX: Math.max(-1, Math.min(1, runtimeSettingsRef.current.layeredForegroundOffsetX)),
           foregroundOffsetY: Math.max(-1, Math.min(1, runtimeSettingsRef.current.layeredForegroundOffsetY)),
           foregroundScale: Math.max(0.25, Math.min(3, runtimeSettingsRef.current.layeredForegroundScale)),
+          compositeModeCode,
+          themeModeCode: runtimeSettingsRef.current.paletteMode === 'night' ? 1 : 0,
+          themeBackgroundR: themeBackgroundColor.r,
+          themeBackgroundG: themeBackgroundColor.g,
+          themeBackgroundB: themeBackgroundColor.b,
         })
       } catch (error) {
         const message = toErrorDetailWithCode(error, t)
@@ -648,6 +794,7 @@ export function useMusicVisualizerRuntime({
     canvasRef,
     cpuCanvasRef,
     preferredRenderer,
+    compositeModeCode,
     shader,
     t,
   ])

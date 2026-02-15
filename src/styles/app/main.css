@@ -312,7 +312,7 @@
   min-height: 220px;
   border: 1px solid var(--mpx-border-1);
   border-radius: var(--mpx-card-radius);
-  background: #000;
+  background: var(--mpx-bg-panel);
   color: color-mix(in srgb, var(--mpx-text-inverse) 76%, #fff);
   position: relative;
   overflow: hidden;
@@ -333,7 +333,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  background: #000;
+  background: transparent;
   pointer-events: none;
 }
 

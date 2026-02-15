@@ -48,6 +48,7 @@ interface MusicMainSectionProps {
   canPrevAudio: boolean
   canNextAudio: boolean
   fullscreenActive: boolean
+  paletteMode?: 'day' | 'night'
   onToggleFullscreen: () => void
   musicVisualizerSelectedShaderId: string
   musicVisualizerShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string]
@@ -96,6 +97,7 @@ function MusicMainSection({
   canPrevAudio,
   canNextAudio,
   fullscreenActive,
+  paletteMode = 'day',
   onToggleFullscreen,
   musicVisualizerSelectedShaderId,
   musicVisualizerShaderSettings,
@@ -231,6 +233,7 @@ function MusicMainSection({
     layeredForegroundOffsetX: musicVisualizerLayeredForegroundOffsetX,
     layeredForegroundOffsetY: musicVisualizerLayeredForegroundOffsetY,
     layeredForegroundScale: musicVisualizerLayeredForegroundScale,
+    paletteMode,
     fpsCap: runtimeFpsCap,
     toneMapMode: runtimeToneMapMode,
     toneMapExposure: runtimeToneMapExposure,

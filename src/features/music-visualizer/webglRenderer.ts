@@ -48,6 +48,9 @@ interface PassUniformLocations {
   toneMapStrength: WebGLUniformLocation | null
   foregroundOffset: WebGLUniformLocation | null
   foregroundScale: WebGLUniformLocation | null
+  compositeMode: WebGLUniformLocation | null
+  themeMode: WebGLUniformLocation | null
+  themeBackgroundColor: WebGLUniformLocation | null
 }
 
 interface PassRenderTarget {
@@ -94,6 +97,11 @@ interface PassUniformInput {
   foregroundOffsetX: number
   foregroundOffsetY: number
   foregroundScale: number
+  compositeModeCode: number
+  themeModeCode: number
+  themeBackgroundR: number
+  themeBackgroundG: number
+  themeBackgroundB: number
 }
 
 function compileShader(gl: WebGL2RenderingContext, shaderType: number, source: string): WebGLShader {
@@ -584,6 +592,9 @@ function resolvePassUniformLocations(gl: WebGL2RenderingContext, program: WebGLP
     toneMapStrength: gl.getUniformLocation(program, 'iToneMapStrength'),
     foregroundOffset: gl.getUniformLocation(program, 'iForegroundOffset'),
     foregroundScale: gl.getUniformLocation(program, 'iForegroundScale'),
+    compositeMode: gl.getUniformLocation(program, 'iCompositeMode'),
+    themeMode: gl.getUniformLocation(program, 'iThemeMode'),
+    themeBackgroundColor: gl.getUniformLocation(program, 'iThemeBackgroundColor'),
   }
 }
 
@@ -720,6 +731,11 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     foregroundOffsetX,
     foregroundOffsetY,
     foregroundScale,
+    compositeModeCode,
+    themeModeCode,
+    themeBackgroundR,
+    themeBackgroundG,
+    themeBackgroundB,
   }: MusicVisualizerFrameInput): void {
     if (this.contextLost || this.gl.isContextLost()) {
       throw new Error('WebGL context lost')
@@ -779,6 +795,11 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
         foregroundOffsetX,
         foregroundOffsetY,
         foregroundScale,
+        compositeModeCode,
+        themeModeCode,
+        themeBackgroundR,
+        themeBackgroundG,
+        themeBackgroundB,
       })
 
       gl.drawArrays(gl.TRIANGLES, 0, 3)
@@ -970,6 +991,15 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     }
     if (uniforms.foregroundScale) {
       gl.uniform1f(uniforms.foregroundScale, input.foregroundScale)
+    }
+    if (uniforms.compositeMode) {
+      gl.uniform1i(uniforms.compositeMode, input.compositeModeCode)
+    }
+    if (uniforms.themeMode) {
+      gl.uniform1i(uniforms.themeMode, input.themeModeCode)
+    }
+    if (uniforms.themeBackgroundColor) {
+      gl.uniform3f(uniforms.themeBackgroundColor, input.themeBackgroundR, input.themeBackgroundG, input.themeBackgroundB)
     }
   }
 

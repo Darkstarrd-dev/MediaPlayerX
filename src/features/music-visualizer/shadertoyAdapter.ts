@@ -93,6 +93,9 @@ uniform float iToneMapExposure;
 uniform float iToneMapStrength;
 uniform vec2 iForegroundOffset;
 uniform float iForegroundScale;
+uniform int iCompositeMode;
+uniform int iThemeMode;
+uniform vec3 iThemeBackgroundColor;
 
 out vec4 outColor;
 
