@@ -36,6 +36,7 @@ export const appSettingsSchema = z.object({
   vectorMode: z.boolean(),
   settingsOpen: z.boolean(),
   headerHeight: z.number().min(48).max(96),
+  settingsBackdropOpacity: z.number().min(0).max(100),
   settingsFontSize: z.number().min(12).max(24),
   sidebarRatio: z.number().min(0).max(0.95),
   sidebarMinWidth: z.number().min(80).max(640),

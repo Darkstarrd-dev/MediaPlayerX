@@ -103,3 +103,9 @@ Pane 侧（此前已存在）可继续用：
 3. 在 gallery 中筛选 1~2 套候选。
 4. 只对胜出候选做细节打磨（hover/active/密度/对比度）。
 5. 最后补一轮同 scene 的视觉回归截图。
+
+---
+
+## 6) Soft Skeuomorphic 细节探索
+
+- 细节变体定义与选择基线：`docs/ui/soft-skeuomorphic-detail-brainstorm.md`

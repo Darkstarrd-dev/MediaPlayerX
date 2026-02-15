@@ -52,6 +52,7 @@ export const APP_WINDOW_CHANNELS = {
   minimize: 'appWindow:minimize',
   toggleMaximize: 'appWindow:toggleMaximize',
   close: 'appWindow:close',
+  setFullscreen: 'appWindow:setFullscreen',
   isMaximized: 'appWindow:isMaximized',
   maximizedStateChanged: 'appWindow:maximizedStateChanged',
   getNativeChromeEnabled: 'appWindow:getNativeChromeEnabled',

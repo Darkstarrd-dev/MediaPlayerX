@@ -10,6 +10,7 @@ interface BuildSettingsPanelPropsParams {
   paletteDayId: string
   paletteNightId: string
   headerHeight: number
+  settingsBackdropOpacity: number
   settingsFontSize: number
   sidebarRatio: number
   sidebarMinWidth: number
@@ -68,6 +69,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     paletteDayId: params.paletteDayId,
     paletteNightId: params.paletteNightId,
     headerHeight: params.headerHeight,
+    settingsBackdropOpacity: params.settingsBackdropOpacity,
     settingsFontSize: params.settingsFontSize,
     sidebarRatio: params.sidebarRatio,
     sidebarMinWidth: params.sidebarMinWidth,
@@ -156,6 +158,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       })
     },
     onHeaderHeightChange: (value) => params.updateSettings({ headerHeight: value }),
+    onSettingsBackdropOpacityChange: (value) => params.updateSettings({ settingsBackdropOpacity: value }),
     onSettingsFontSizeChange: (value) => params.updateSettings({ settingsFontSize: value }),
     onSidebarRatioChange: params.applySidebarRatio,
     onSidebarMinWidthChange: (value) => params.updateSettings({ sidebarMinWidth: value }),

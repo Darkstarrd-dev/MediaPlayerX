@@ -33,6 +33,15 @@ export function registerWindowControlIpcHandlers(handlers: WindowControlHandlers
     BrowserWindow.fromWebContents(event.sender)?.close()
   })
 
+  ipcMain.handle(APP_WINDOW_CHANNELS.setFullscreen, (event, active: unknown) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) {
+      return
+    }
+
+    window.setFullScreen(Boolean(active))
+  })
+
   ipcMain.handle(APP_WINDOW_CHANNELS.isMaximized, (event) => {
     return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
   })

@@ -63,6 +63,7 @@ interface RenderSettingsMainSectionParams {
   paletteNightId: string
   shortcutConflicts: ShortcutConflict[]
   shortcutLabelByAction: Map<string, string>
+  settingsBackdropOpacity: number
   databaseResetPending: boolean
   databaseResetError: string | null
   runtimePathUpdatePending: boolean
@@ -76,6 +77,7 @@ interface RenderSettingsMainSectionParams {
   onResetShortcuts: () => void
   onLayoutLockedChange: (value: boolean) => void
   onHeaderHeightChange: (value: number) => void
+  onSettingsBackdropOpacityChange: (value: number) => void
   onSettingsFontSizeChange: (value: number) => void
   onSidebarRatioChange: (value: number) => void
   onSidebarMinWidthChange: (value: number) => void
@@ -152,6 +154,7 @@ export function renderSettingsMainSection({
   paletteNightId,
   shortcutConflicts,
   shortcutLabelByAction,
+  settingsBackdropOpacity,
   databaseResetPending,
   databaseResetError,
   runtimePathUpdatePending,
@@ -165,6 +168,7 @@ export function renderSettingsMainSection({
   onResetShortcuts,
   onLayoutLockedChange,
   onHeaderHeightChange,
+  onSettingsBackdropOpacityChange,
   onSettingsFontSizeChange,
   onSidebarRatioChange,
   onSidebarMinWidthChange,
@@ -248,6 +252,17 @@ export function renderSettingsMainSection({
             ))}
           </select>
           <p className="settings-placeholder">当前生效：{activePaletteLabel}</p>
+          <label>
+            面板背景遮罩透明度 {settingsBackdropOpacity.toFixed(0)}%
+            <input
+              max={100}
+              min={0}
+              step={1}
+              type="range"
+              value={settingsBackdropOpacity}
+              onChange={(event) => onSettingsBackdropOpacityChange(Number(event.target.value))}
+            />
+          </label>
         </section>
 
         <section className="settings-group">

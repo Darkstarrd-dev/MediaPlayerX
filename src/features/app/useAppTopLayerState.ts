@@ -378,6 +378,7 @@ export function useAppTopLayerState({
     paletteDayId: appSettings.paletteDayId,
     paletteNightId: appSettings.paletteNightId,
     headerHeight: appSettings.headerHeight,
+    settingsBackdropOpacity: appSettings.settingsBackdropOpacity,
     settingsFontSize: appSettings.settingsFontSize,
     sidebarRatio: appSettings.sidebarRatio,
     sidebarMinWidth: appSettings.sidebarMinWidth,

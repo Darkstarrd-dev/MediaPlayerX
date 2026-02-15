@@ -148,6 +148,19 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     next.adReviewMaxConcurrency = Math.max(4, Math.min(12, Math.floor(next.adReviewMaxConcurrency)))
   }
 
+  if (typeof next.settingsBackdropOpacity === 'number' && Number.isFinite(next.settingsBackdropOpacity)) {
+    next.settingsBackdropOpacity = Math.max(0, Math.min(100, next.settingsBackdropOpacity))
+  } else if (typeof next.settingsBackdropBlur === 'number' && Number.isFinite(next.settingsBackdropBlur)) {
+    const migratedOpacity = Math.max(0, Math.min(100, (next.settingsBackdropBlur / 24) * 100))
+    next.settingsBackdropOpacity = Number(migratedOpacity.toFixed(0))
+  } else if ('settingsBackdropOpacity' in next) {
+    delete next.settingsBackdropOpacity
+  }
+
+  if ('settingsBackdropBlur' in next) {
+    delete next.settingsBackdropBlur
+  }
+
   if (typeof next.musicVisualizerRenderLongEdgePx === 'number' && Number.isFinite(next.musicVisualizerRenderLongEdgePx)) {
     next.musicVisualizerRenderLongEdgePx = Math.max(240, Math.min(4096, Math.floor(next.musicVisualizerRenderLongEdgePx)))
   } else if ('musicVisualizerRenderLongEdgePx' in next) {

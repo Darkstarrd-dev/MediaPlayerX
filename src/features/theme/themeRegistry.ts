@@ -21,14 +21,32 @@ export const DEFAULT_THEME_ID = DEFAULT_PALETTE_ID
 
 const STYLE_PALETTE_ALLOWLIST: Record<string, readonly string[]> = {
   'soft-skeuomorphic': ['skeuomorphic-light', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-crisp': ['skeuomorphic-light', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-plush': ['skeuomorphic-light', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-etched': ['skeuomorphic-light', 'skeuomorphic-dark'],
 }
 
 const STYLE_DEFAULT_PALETTE_ID: Record<string, string> = {
   'soft-skeuomorphic': 'skeuomorphic-light',
+  'soft-skeuomorphic-crisp': 'skeuomorphic-light',
+  'soft-skeuomorphic-plush': 'skeuomorphic-light',
+  'soft-skeuomorphic-etched': 'skeuomorphic-light',
 }
 
 const STYLE_DEFAULT_PALETTE_PAIR: Record<string, { day: string; night: string }> = {
   'soft-skeuomorphic': {
+    day: 'skeuomorphic-light',
+    night: 'skeuomorphic-dark',
+  },
+  'soft-skeuomorphic-crisp': {
+    day: 'skeuomorphic-light',
+    night: 'skeuomorphic-dark',
+  },
+  'soft-skeuomorphic-plush': {
+    day: 'skeuomorphic-light',
+    night: 'skeuomorphic-dark',
+  },
+  'soft-skeuomorphic-etched': {
     day: 'skeuomorphic-light',
     night: 'skeuomorphic-dark',
   },

@@ -334,6 +334,9 @@ const windowApi = {
   close: async () => {
     await ipcRenderer.invoke(APP_WINDOW_CHANNELS.close)
   },
+  setFullscreen: async (active: boolean) => {
+    await ipcRenderer.invoke(APP_WINDOW_CHANNELS.setFullscreen, Boolean(active))
+  },
   isMaximized: async () => {
     return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.isMaximized)
   },

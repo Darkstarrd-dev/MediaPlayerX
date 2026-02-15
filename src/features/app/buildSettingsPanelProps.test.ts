@@ -15,6 +15,7 @@ describe('buildSettingsPanelProps', () => {
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
       headerHeight: 56,
+      settingsBackdropOpacity: 18,
       settingsFontSize: 14,
       sidebarRatio: 0.26,
       sidebarMinWidth: 180,
@@ -67,11 +68,13 @@ describe('buildSettingsPanelProps', () => {
     expect(props.thumbnailWidth).toBe(512)
     expect(props.thumbnailQuality).toBe(40)
     expect(props.thumbnailGap).toBe(8)
+    expect(props.settingsBackdropOpacity).toBe(18)
     expect(props.paletteMode).toBe('day')
 
     props.onThumbnailWidthChange(1024)
     props.onThumbnailQualityChange(65)
     props.onThumbnailGapChange(12)
+    props.onSettingsBackdropOpacityChange(42)
     props.onPaletteModeChange('night')
     props.onPaletteDayChange('geist-light')
     props.onPaletteNightChange('tokyo-night')
@@ -79,20 +82,21 @@ describe('buildSettingsPanelProps', () => {
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 })
     expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 })
     expect(updateSettings).toHaveBeenNthCalledWith(3, { thumbnailGap: 12 })
-    expect(updateSettings).toHaveBeenNthCalledWith(4, {
+    expect(updateSettings).toHaveBeenNthCalledWith(4, { settingsBackdropOpacity: 42 })
+    expect(updateSettings).toHaveBeenNthCalledWith(5, {
       paletteMode: 'night',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
       paletteId: 'tokyo-night',
       themeId: 'tokyo-night',
     })
-    expect(updateSettings).toHaveBeenNthCalledWith(5, {
+    expect(updateSettings).toHaveBeenNthCalledWith(6, {
       paletteDayId: 'geist-light',
       paletteNightId: 'tokyo-night',
       paletteId: 'geist-light',
       themeId: 'geist-light',
     })
-    expect(updateSettings).toHaveBeenNthCalledWith(6, {
+    expect(updateSettings).toHaveBeenNthCalledWith(7, {
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
     })

@@ -160,6 +160,7 @@ interface MediaPlayerWindowApi {
   minimize: () => Promise<void>
   toggleMaximize: () => Promise<void>
   close: () => Promise<void>
+  setFullscreen: (active: boolean) => Promise<void>
   isMaximized: () => Promise<boolean>
   getNativeChromeEnabled: () => Promise<boolean>
   setNativeChromeEnabled: (enabled: boolean) => Promise<boolean>

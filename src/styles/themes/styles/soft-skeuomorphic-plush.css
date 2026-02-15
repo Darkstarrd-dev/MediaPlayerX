@@ -1,0 +1,29 @@
+:root[data-mpx-style="soft-skeuomorphic-plush"] {
+  --mpx-layout-padding: 12px;
+  --mpx-panel-radius: 18px;
+  --mpx-header-radius: 16px;
+  --mpx-card-radius: 13px;
+  --mpx-control-radius: 10px;
+
+  --mpx-panel-shadow: 10px 10px 24px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
+    -10px -10px 24px color-mix(in srgb, var(--mpx-palette-surface) 94%, var(--mpx-bg-elevated));
+  --mpx-header-shadow: 8px 8px 18px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+    -8px -8px 18px color-mix(in srgb, var(--mpx-palette-surface) 94%, var(--mpx-bg-elevated));
+  --mpx-card-shadow: 5px 5px 12px color-mix(in srgb, var(--mpx-palette-text-raw) 10%, transparent),
+    -5px -5px 12px color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-bg-elevated));
+
+  --mpx-control-shadow: 4px 4px 9px color-mix(in srgb, var(--mpx-palette-text-raw) 10%, transparent),
+    -4px -4px 9px color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-bg-elevated));
+  --mpx-control-hover-transform: translateY(0px);
+  --mpx-control-hover-shadow: 5px 5px 12px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+    -5px -5px 12px color-mix(in srgb, var(--mpx-palette-surface) 94%, var(--mpx-bg-elevated));
+  --mpx-control-active-shadow: inset 2px 2px 5px color-mix(in srgb, var(--mpx-palette-text-raw) 10%, transparent),
+    inset -2px -2px 5px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
+
+  --mpx-header-group-gap: 24px;
+  --mpx-header-item-gap: 10px;
+
+  --mpx-bg-panel: color-mix(in srgb, var(--mpx-palette-surface) 86%, var(--mpx-palette-base));
+  --mpx-bg-elevated: color-mix(in srgb, var(--mpx-palette-surface) 95%, var(--mpx-palette-base));
+  --mpx-border-1: color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent);
+}

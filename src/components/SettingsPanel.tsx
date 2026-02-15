@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react'
 
 import type { ReadRuntimeInfoResponseDto } from '../contracts/backend'
 import type { RepositoryMode } from '../features/backend/repository'
@@ -27,6 +27,7 @@ export interface SettingsPanelProps {
   paletteDayId: string
   paletteNightId: string
   headerHeight: number
+  settingsBackdropOpacity: number
   settingsFontSize: number
   sidebarRatio: number
   sidebarMinWidth: number
@@ -68,6 +69,7 @@ export interface SettingsPanelProps {
   onPaletteDayChange: (value: string) => void
   onPaletteNightChange: (value: string) => void
   onHeaderHeightChange: (value: number) => void
+  onSettingsBackdropOpacityChange: (value: number) => void
   onSettingsFontSizeChange: (value: number) => void
   onSidebarRatioChange: (value: number) => void
   onSidebarMinWidthChange: (value: number) => void
@@ -98,6 +100,14 @@ export interface SettingsPanelProps {
 }
 
 type BindingTarget = { action: ShortcutAction; label: string }
+type PanelOffset = { x: number; y: number }
+type PanelDragState = {
+  pointerId: number
+  startClientX: number
+  startClientY: number
+  startOffsetX: number
+  startOffsetY: number
+}
 
 const MOUSE_CAPTURE_PRESETS: Array<{ label: string; combo: string }> = [
   { label: '鼠标左键', combo: 'MouseLeft' },
@@ -119,6 +129,14 @@ const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
 const THUMBNAIL_WIDTH_MIN = 128
 const THUMBNAIL_WIDTH_MAX = 2048
 
+function shouldIgnoreSettingsPanelDragStart(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) {
+    return false
+  }
+
+  return Boolean(target.closest('button, input, select, textarea, a, label, [data-no-drag="true"]'))
+}
+
 function resolveSettingsSection(raw: unknown): SettingsSection {
   if (raw === 'layout' || raw === 'model' || raw === 'database' || raw === 'shortcuts') {
     return raw
@@ -137,6 +155,7 @@ function SettingsPanel({
   paletteDayId,
   paletteNightId,
   headerHeight,
+  settingsBackdropOpacity,
   settingsFontSize,
   sidebarRatio,
   sidebarMinWidth,
@@ -178,6 +197,7 @@ function SettingsPanel({
   onPaletteDayChange,
   onPaletteNightChange,
   onHeaderHeightChange,
+  onSettingsBackdropOpacityChange,
   onSettingsFontSizeChange,
   onSidebarRatioChange,
   onSidebarMinWidthChange,
@@ -213,6 +233,10 @@ function SettingsPanel({
   const [capturedCombo, setCapturedCombo] = useState('')
   const [thumbnailWidthInputValue, setThumbnailWidthInputValue] = useState(() => String(thumbnailWidth))
   const captureDialogRef = useRef<HTMLDivElement>(null)
+  const settingsPanelRef = useRef<HTMLElement>(null)
+  const panelDragStateRef = useRef<PanelDragState | null>(null)
+  const [settingsPanelOffset, setSettingsPanelOffset] = useState<PanelOffset>({ x: 0, y: 0 })
+  const [settingsPanelDragging, setSettingsPanelDragging] = useState(false)
 
   const headerHeightScale = toScale('headerHeight', headerHeight)
   const settingsFontSizeScale = toScale('settingsFontSize', settingsFontSize)
@@ -244,6 +268,9 @@ function SettingsPanel({
       setCapturingTarget(null)
       setCapturedCombo('')
       setThumbnailWidthInputValue(String(thumbnailWidth))
+      panelDragStateRef.current = null
+      setSettingsPanelOffset({ x: 0, y: 0 })
+      setSettingsPanelDragging(false)
     }
   }, [settingsOpen, thumbnailWidth])
 
@@ -390,6 +417,81 @@ function SettingsPanel({
     }
   }
 
+  const stopSettingsPanelDragging = () => {
+    panelDragStateRef.current = null
+    setSettingsPanelDragging(false)
+  }
+
+  const handleSettingsHeadPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) {
+      return
+    }
+    if (shouldIgnoreSettingsPanelDragStart(event.target)) {
+      return
+    }
+
+    panelDragStateRef.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startOffsetX: settingsPanelOffset.x,
+      startOffsetY: settingsPanelOffset.y,
+    }
+
+    event.currentTarget.setPointerCapture(event.pointerId)
+    setSettingsPanelDragging(true)
+    event.preventDefault()
+  }
+
+  const handleSettingsHeadPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const dragState = panelDragStateRef.current
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return
+    }
+
+    const nextOffset = {
+      x: dragState.startOffsetX + (event.clientX - dragState.startClientX),
+      y: dragState.startOffsetY + (event.clientY - dragState.startClientY),
+    }
+
+    setSettingsPanelOffset((previousOffset) => {
+      if (Math.abs(previousOffset.x - nextOffset.x) < 0.5 && Math.abs(previousOffset.y - nextOffset.y) < 0.5) {
+        return previousOffset
+      }
+      return nextOffset
+    })
+
+    event.preventDefault()
+  }
+
+  const handleSettingsHeadPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const dragState = panelDragStateRef.current
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    stopSettingsPanelDragging()
+  }
+
+  const handleSettingsHeadPointerCancel = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const dragState = panelDragStateRef.current
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    stopSettingsPanelDragging()
+  }
+
+  const handleSettingsHeadLostPointerCapture = () => {
+    stopSettingsPanelDragging()
+  }
+
   const mainSection = renderSettingsMainSection({
     activeSection,
     layoutLocked,
@@ -448,7 +550,9 @@ function SettingsPanel({
     onLayoutLockedChange,
     onElectronNativeChromeEnabledChange,
     onHeaderHeightChange,
+    settingsBackdropOpacity,
     onSettingsFontSizeChange,
+    onSettingsBackdropOpacityChange,
     onSidebarRatioChange,
     onSidebarMinWidthChange,
     onSidebarFontSizeChange,
@@ -484,11 +588,29 @@ function SettingsPanel({
 
   return (
     <div className="settings-mask" role="dialog" aria-modal="true" aria-label="设置面板" data-overlay-close="settings">
-      <section className="settings-panel" style={{ fontSize: `${settingsFontSize}px` }}>
-        <div className="settings-head">
+      <section
+        ref={settingsPanelRef}
+        className={`settings-panel ${settingsPanelDragging ? 'is-dragging' : ''}`}
+        style={{ fontSize: `${settingsFontSize}px`, transform: `translate(${settingsPanelOffset.x}px, ${settingsPanelOffset.y}px)` }}
+      >
+        <div
+          className="settings-head settings-head-draggable"
+          onPointerDown={handleSettingsHeadPointerDown}
+          onPointerMove={handleSettingsHeadPointerMove}
+          onPointerUp={handleSettingsHeadPointerUp}
+          onPointerCancel={handleSettingsHeadPointerCancel}
+          onLostPointerCapture={handleSettingsHeadLostPointerCapture}
+        >
           <span className="settings-head-spacer" aria-hidden="true" />
           <h2>设置面板</h2>
-          <button className="settings-icon-btn main-icon-square-btn" type="button" aria-label="关闭" title="关闭" onClick={onClose}>
+          <button
+            className="settings-icon-btn main-icon-square-btn"
+            type="button"
+            data-no-drag="true"
+            aria-label="关闭"
+            title="关闭"
+            onClick={onClose}
+          >
             <MainUiIcon name="close" />
           </button>
         </div>

@@ -1,0 +1,33 @@
+:root[data-mpx-style="soft-skeuomorphic-etched"] {
+  --mpx-layout-padding: 10px;
+  --mpx-panel-radius: 15px;
+  --mpx-header-radius: 13px;
+  --mpx-card-radius: 11px;
+  --mpx-control-radius: 8px;
+
+  --mpx-panel-border-width: 1px;
+  --mpx-card-border-width: 1px;
+  --mpx-control-border-width: 1px;
+
+  --mpx-panel-shadow: 8px 8px 19px color-mix(in srgb, var(--mpx-palette-text-raw) 20%, transparent),
+    -8px -8px 19px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
+  --mpx-header-shadow: 6px 6px 14px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent),
+    -6px -6px 14px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
+  --mpx-card-shadow: 4px 4px 10px color-mix(in srgb, var(--mpx-palette-text-raw) 16%, transparent),
+    -4px -4px 10px color-mix(in srgb, var(--mpx-palette-surface) 88%, var(--mpx-bg-elevated));
+
+  --mpx-control-shadow: 3px 3px 7px color-mix(in srgb, var(--mpx-palette-text-raw) 16%, transparent),
+    -3px -3px 7px color-mix(in srgb, var(--mpx-palette-surface) 88%, var(--mpx-bg-elevated));
+  --mpx-control-hover-shadow: 4px 4px 9px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent),
+    -4px -4px 9px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
+  --mpx-control-active-shadow: inset 3px 3px 7px color-mix(in srgb, var(--mpx-palette-text-raw) 20%, transparent),
+    inset -3px -3px 7px color-mix(in srgb, var(--mpx-palette-surface) 84%, var(--mpx-bg-elevated));
+
+  --mpx-header-btn-shadow: 2px 2px 4px var(--mpx-skeuo-shadow-dark), -2px -2px 4px var(--mpx-skeuo-shadow-light);
+  --mpx-header-btn-hover-shadow: 3px 3px 5px var(--mpx-skeuo-shadow-dark), -3px -3px 5px var(--mpx-skeuo-shadow-light);
+  --mpx-header-btn-active-shadow: inset 4px 4px 8px var(--mpx-skeuo-shadow-dark), inset -4px -4px 8px var(--mpx-skeuo-shadow-light);
+
+  --mpx-bg-panel: color-mix(in srgb, var(--mpx-palette-surface) 78%, var(--mpx-palette-base));
+  --mpx-bg-elevated: color-mix(in srgb, var(--mpx-palette-surface) 91%, var(--mpx-palette-base));
+  --mpx-border-1: color-mix(in srgb, var(--mpx-palette-text-raw) 20%, transparent);
+}

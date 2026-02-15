@@ -16,6 +16,7 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     vectorMode: settings.vectorMode,
     settingsOpen: settings.settingsOpen,
     headerHeight: settings.headerHeight,
+    settingsBackdropOpacity: settings.settingsBackdropOpacity,
     settingsFontSize: settings.settingsFontSize,
     sidebarRatio: settings.sidebarRatio,
     sidebarMinWidth: settings.sidebarMinWidth,

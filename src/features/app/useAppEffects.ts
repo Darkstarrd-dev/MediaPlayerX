@@ -66,6 +66,7 @@ interface UseAppEffectsParams {
   paletteDayId: string
   paletteNightId: string
   themeId: string
+  settingsBackdropOpacity: number
   setAppBodyWidth: Dispatch<SetStateAction<number>>
   setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>
   setVectorFocusIndex: Dispatch<SetStateAction<number>>
@@ -141,6 +142,7 @@ export function useAppEffects({
   paletteDayId,
   paletteNightId,
   themeId,
+  settingsBackdropOpacity,
   setAppBodyWidth,
   setGridSize,
   setVectorFocusIndex,
@@ -448,6 +450,17 @@ export function useAppEffects({
   ])
 
   useEffect(() => {
+    const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined
+    if (!windowApi?.setFullscreen) {
+      return
+    }
+
+    void windowApi.setFullscreen(fullscreenActive).catch(() => {
+      // ignore runtime bridge errors and keep renderer behavior intact
+    })
+  }, [fullscreenActive])
+
+  useEffect(() => {
     if (mode !== 'image' || !autoPlayEnabled) {
       return
     }
@@ -535,4 +548,9 @@ export function useAppEffects({
     document.documentElement.dataset.mpxPalette = nextPaletteId
     document.documentElement.dataset.mpxTheme = nextThemeId
   }, [paletteDayId, paletteId, paletteMode, paletteNightId, styleId, themeId, updateSettings])
+
+  useEffect(() => {
+    const normalizedOpacity = Math.max(0, Math.min(100, settingsBackdropOpacity))
+    document.documentElement.style.setProperty('--mpx-settings-backdrop-opacity', `${normalizedOpacity.toFixed(0)}%`)
+  }, [settingsBackdropOpacity])
 }

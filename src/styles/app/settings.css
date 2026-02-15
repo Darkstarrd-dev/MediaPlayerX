@@ -51,8 +51,8 @@
 .settings-mask {
   position: fixed;
   inset: 0;
-  background: var(--mpx-bg-tooltip);
-  backdrop-filter: blur(2px);
+  background: color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent);
+  backdrop-filter: none;
   z-index: 30;
   display: flex;
   align-items: center;
@@ -78,6 +78,20 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 8px;
+}
+
+.settings-head-draggable {
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+
+.settings-head-draggable button {
+  cursor: pointer;
+}
+
+.settings-panel.is-dragging {
+  cursor: move;
 }
 
 .settings-head h2 {
