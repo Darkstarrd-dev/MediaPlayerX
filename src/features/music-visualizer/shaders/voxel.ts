@@ -61,10 +61,10 @@ float coreMatrixMask(vec3 p, out vec2 cellIndex, out float layerIndex) {
 
   float occupancy = (insideX && insideY && insideZ) ? 1.0 : 0.0;
 
-  // 高频越高，缺块概率越高，保留“随机缺少几块”的体素矩阵质感。
+  // Higher highs increase missing-block probability, preserving the "randomly missing chunks" voxel-matrix texture.
   float dropThreshold = mix(0.24, 0.52, clamp(gBands.z * 1.5 + gTransient * 0.45, 0.0, 1.0));
   float keep = step(dropThreshold, hash13(vec3(cellIndex, layerIndex)));
-  // 保留核心锚点，避免低能量时 1x1 团块完全消失。
+  // Keep the core anchor so the 1x1 cluster does not vanish completely at low energy.
   if (abs(cellIndex.x) < 0.1 && abs(cellIndex.y) < 0.1 && abs(zCell) < 0.1) {
     keep = 1.0;
   }
@@ -78,7 +78,7 @@ float de(vec3 p) {
   vec3 tunnelP = p;
   tunnelP.xy -= path(tunnelP.z);
 
-  // 隧道（反向圆柱）。
+  // Tunnel (inverted cylinder).
   float d = -length(tunnelP.xy) + 4.0;
 
   vec3 octaP = tunnelP;
@@ -87,12 +87,12 @@ float de(vec3 p) {
   float octa = dot(octaP, normalize(sign(octaP))) - 1.0;
   d = min(d, octa);
 
-  // 隧道整体亮度保持稳定，不受 blob 过曝拖累。
+  // Keep tunnel brightness stable; do not let blob overexposure drag it.
   float tunnelGlow = 0.012 / (0.02 + d * d);
   tunnelGlow *= 0.75 + gBands.y * 0.9 + gBands.z * 0.5;
   gTunnel += tunnelGlow;
 
-  // 中心矩阵体素簇：数量由音乐驱动（2x2 / 3x3 / 4x4），方块大小保持 1 个 voxel。
+  // Center voxel matrix cluster: music drives count (2x2 / 3x3 / 4x4), while block size stays 1 voxel.
   vec2 coreCell = vec2(0.0);
   float coreLayer = 0.0;
   float coreMask = coreMatrixMask(p, coreCell, coreLayer);
@@ -104,7 +104,7 @@ float de(vec3 p) {
       gCoreCell = coreCell;
       gCoreLayer = coreLayer;
 
-      // blob 发光单独积分，后续单独限幅，不影响隧道亮度。
+      // Integrate blob glow separately and clamp later so tunnel brightness stays unaffected.
       gCore += 0.010 / (0.04 + coreVoxelDistance * coreVoxelDistance);
     }
   }
@@ -116,7 +116,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec2 uv = fragCoord / iResolution.xy - 0.5;
   uv.x *= iResolution.x / iResolution.y;
 
-  // 音频分频：低频控制矩阵级别，中频控制照亮强度，高频控制颜色变换与缺块率。
+  // Audio bands: lows drive matrix level, mids drive lighting strength, highs drive color variation and missing-block rate.
   float low = pow(audioBand(0.04), 1.05);
   float mid = pow(audioBand(0.16), 1.10);
   float high = pow(audioBand(0.34), 1.12);
@@ -126,7 +126,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   float waveCenter = waveformBand(0.50);
   gTransient = abs(waveCenter - 0.5) * 2.0;
 
-  // 目标：保持方块尺寸不变，仅增减矩阵数量（1x1 -> 4x4）。
+  // Goal: keep block size fixed, only change matrix count (1x1 -> 4x4).
   float matrixDrive = low * 4.5 + mid * 1.4 + gTransient * 2.2;
   gMatrixLevel = 1.0 + floor(clamp(matrixDrive, 0.0, 3.0));
 
@@ -171,7 +171,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   float ringGain = 0.7 + gBands.y * 1.6;
   c.r += sin(iTime) * 0.2 + sin(p.z * 0.5 - iTime * 6.0) * ringGain;
 
-  // 中心体素簇颜色：按节奏与时间离散跳变，形成“随机换色”观感。
+  // Center voxel-cluster color: discrete rhythm/time jumps for a "random color switching" look.
   if (gCoreHit > 0.5) {
     float colorStep = floor(iTime * (2.0 + gBands.z * 14.0 + gTransient * 6.0));
     float colorSeed = hash13(vec3(gCoreCell, gCoreLayer + colorStep));
@@ -185,14 +185,14 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float coreGlow = 0.45 + gBands.x * 1.25 + gBands.y * 1.90 + gBands.z * 1.15 + gTransient * 0.95;
     vec3 coreEmission = coreColor * coreGlow * (0.42 + gCore * 0.95);
 
-    // 仅对 blob 发光做软限幅，避免纯白，同时保持高饱和色彩。
+    // Soft-limit blob emission only to avoid pure white while preserving high saturation.
     coreEmission = coreEmission / (1.0 + coreEmission * 0.55);
 
     c = mix(c, coreColor, 0.42 + gBands.z * 0.22);
     c += coreEmission;
   }
 
-  // 照亮周边隧道：由中频/高频控制整体泛光强度。
+  // Illuminate the surrounding tunnel: mids/highs control overall bloom intensity.
   float ambientGlow = 0.18 + gBands.y * 0.95 + gBands.z * 0.45;
   c += vec3(0.22, 0.46, 0.82) * gTunnel * ambientGlow;
 

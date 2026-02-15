@@ -329,7 +329,8 @@ export function useSettingsPersistence({
         return
       }
 
-      // 若用户（或其他逻辑）在水合完成前已修改过某个 key，则不允许旧持久化值覆盖它。
+      // If the user (or other logic) has already modified a key before hydration completes,
+      // do not let stale persisted values override it.
       if (Object.is(latest[key], initial[key])) {
         next[key] = persistedValue
       }

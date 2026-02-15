@@ -220,9 +220,9 @@ export function useAppTopLayerState({
   const { t } = useI18n()
 
   /**
-   * 顶层状态只负责跨面板编排：
-   * - Header / Settings / Fullscreen / ImportPanel 共享同一批信号。
-   * - 业务读写留在 feature hooks，避免这里再次膨胀为 God Hook。
+   * Top-layer state is responsible only for cross-panel orchestration:
+   * - Header / Settings / Fullscreen / ImportPanel share the same signal set.
+   * - Domain read/write logic stays in feature hooks to avoid re-growing this into a God Hook.
    */
   const backendErrorRows = buildBackendErrorRows({
     backendRead,

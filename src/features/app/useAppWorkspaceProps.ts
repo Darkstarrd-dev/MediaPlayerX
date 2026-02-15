@@ -206,9 +206,9 @@ export function useAppWorkspaceProps({
   const { t } = useI18n()
 
   /**
-   * Workspace 层只做视图模型组装：
-   * - 输入是上游状态层已收敛的读写能力；
-   * - 输出是 Sidebar/Main/Metadata 的稳定 props。
+   * The Workspace layer only assembles view-model props:
+   * - Inputs are read/write capabilities already consolidated by upstream state layers.
+   * - Outputs are stable props for Sidebar/Main/Metadata.
    */
   const featureTagOptionsEffective = Array.from(
     new Set(
