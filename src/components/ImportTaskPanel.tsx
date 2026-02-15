@@ -1,4 +1,5 @@
 import type { ImportTaskDto } from '../contracts/backend'
+import { useI18n } from '../i18n/useI18n'
 import { clamp } from '../utils/ui'
 
 export interface ImportTaskPanelProps {
@@ -17,17 +18,36 @@ export interface ImportTaskPanelProps {
   onRemoveTask: (taskId: string) => void
 }
 
-function resolveTaskSourceLabel(source: ImportTaskDto['source']): string {
+function resolveTaskSourceLabel(source: ImportTaskDto['source'], t: ReturnType<typeof useI18n>['t']): string {
   if (source === 'dialog-folders' || source === 'dialog-folders-music') {
-    return '文件夹'
+    return t('ui.importTask.source.folder')
   }
   if (source === 'drag-drop' || source === 'drag-drop-music') {
-    return '拖拽'
+    return t('ui.importTask.source.dragDrop')
   }
   if (source === 'paste' || source === 'paste-music') {
-    return '粘贴'
+    return t('ui.importTask.source.paste')
   }
-  return '文件'
+  return t('ui.importTask.source.file')
+}
+
+function resolveTaskStatusLabel(status: ImportTaskDto['status'], t: ReturnType<typeof useI18n>['t']): string {
+  if (status === 'pending') {
+    return t('ui.importTask.status.pending')
+  }
+  if (status === 'running') {
+    return t('ui.importTask.status.running')
+  }
+  if (status === 'completed') {
+    return t('ui.importTask.status.completed')
+  }
+  if (status === 'failed') {
+    return t('ui.importTask.status.failed')
+  }
+  if (status === 'cancelled') {
+    return t('ui.importTask.status.cancelled')
+  }
+  return status
 }
 
 function ImportTaskPanel({
@@ -45,6 +65,8 @@ function ImportTaskPanel({
   onRetryTask,
   onRemoveTask,
 }: ImportTaskPanelProps) {
+  const { t } = useI18n()
+
   if (!open) {
     return null
   }
@@ -52,49 +74,49 @@ function ImportTaskPanel({
   return (
     <section className="import-task-panel" role="status" aria-live="polite">
       <header>
-        <strong>导入任务</strong>
-        <span>{`进行中 ${activeTaskCount}`}</span>
-        <span>{`归一化排队 ${pendingArchiveCount}`}</span>
-        {runningArchive ? <span>归一化处理中</span> : null}
-        {enqueuePending ? <span>正在入队...</span> : null}
+        <strong>{t('ui.importTask.title')}</strong>
+        <span>{t('ui.importTask.activeCount', { count: activeTaskCount })}</span>
+        <span>{t('ui.importTask.pendingArchiveCount', { count: pendingArchiveCount })}</span>
+        {runningArchive ? <span>{t('ui.importTask.runningArchive')}</span> : null}
+        {enqueuePending ? <span>{t('ui.importTask.enqueuing')}</span> : null}
         <button type="button" onClick={onClose}>
-          关闭
+          {t('ui.common.close')}
         </button>
         <button type="button" onClick={onClearFinished}>
-          清理已完成
+          {t('ui.importTask.clearFinished')}
         </button>
         <button type="button" onClick={onClearAll}>
-          清空列表
+          {t('ui.importTask.clearAll')}
         </button>
       </header>
       {taskError ? (
         <p>
           <span>{taskError}</span>
           <button type="button" onClick={onClearError}>
-            清除
+            {t('ui.common.clear')}
           </button>
         </p>
       ) : null}
       {tasks.length > 0 ? (
         <ul>
           {tasks.map((task) => {
-            const sourceLabel = resolveTaskSourceLabel(task.source)
+            const sourceLabel = resolveTaskSourceLabel(task.source, t)
             const progressPercent = Math.round(clamp(task.progress, 0, 1) * 100)
 
             return (
               <li key={task.task_id}>
-                <span>{`${sourceLabel} | ${task.processed_count}/${task.total_count}`}</span>
-                <span>{task.status}</span>
+                <span>{t('ui.importTask.progressSummary', { source: sourceLabel, processed: task.processed_count, total: task.total_count })}</span>
+                <span>{resolveTaskStatusLabel(task.status, t)}</span>
                 <progress max={100} value={progressPercent} />
                 <span>{`${progressPercent}%`}</span>
                 <span>{task.message ?? '-'}</span>
                 {task.status === 'failed' ? (
                   <button type="button" onClick={() => onRetryTask(task.task_id)}>
-                    重试
+                    {t('ui.common.retry')}
                   </button>
                 ) : task.status === 'completed' ? (
                   <button type="button" onClick={() => onRemoveTask(task.task_id)}>
-                    移除
+                    {t('ui.common.remove')}
                   </button>
                 ) : null}
               </li>
@@ -102,7 +124,7 @@ function ImportTaskPanel({
           })}
         </ul>
       ) : (
-        <p>暂无导入任务。</p>
+        <p>{t('ui.importTask.empty')}</p>
       )}
     </section>
   )

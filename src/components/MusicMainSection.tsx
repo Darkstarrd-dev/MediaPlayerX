@@ -997,7 +997,7 @@ function MusicMainSection({
                     disabled={!canManageMoveNodes || pendingManageAction}
                     onClick={onManageGroup}
                   >
-                    <span aria-hidden="true">G</span>
+                    <span aria-hidden="true">{t('ui.common.groupShort')}</span>
                   </button>
                   <button
                     className="feature-action-btn main-icon-square-btn"
@@ -1007,7 +1007,7 @@ function MusicMainSection({
                     disabled={!canManageMoveNodes || pendingManageAction}
                     onClick={onManageMove}
                   >
-                    <span aria-hidden="true">M</span>
+                    <span aria-hidden="true">{t('ui.common.moveShort')}</span>
                   </button>
                   <button
                     className="feature-action-btn main-icon-square-btn"
