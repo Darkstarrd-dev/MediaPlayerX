@@ -294,7 +294,7 @@ export const manageAdReviewImageSourceSchema = z.enum([
   'strategy-skip',
 ])
 
-export const manageAdReviewTaskStatusSchema = z.enum(['running', 'paused', 'review', 'failed'])
+export const manageAdReviewTaskStatusSchema = z.enum(['pending', 'running', 'paused', 'review', 'failed'])
 
 export const manageAdReviewAllStrategySchema = z.object({
   mode: z.literal('all'),

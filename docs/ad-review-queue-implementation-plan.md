@@ -211,59 +211,64 @@ Files to touch
   - only if we add incremental persistence hooks beyond current `onEvent`
 
 Implementation checklist
-- [ ] Define and document app_state keys (`queue_v1`, `reviewed_nodes_v1`).
-- [ ] Add queue load/save helpers in `ManageAdReviewService`.
-- [ ] On service init / first call, normalize persisted queue:
-  - [ ] items with `status==='running'` -> `paused`.
-- [ ] Implement `enqueueOrStart(request)` behavior:
-  - [ ] if a `running` task exists -> create `pending` item
-  - [ ] else -> create item and start (status `running`)
-- [ ] Reviewed-node skip (sidebar scope only):
-  - [ ] compute node_hash for each selected node
-  - [ ] if `node_hash` unchanged vs reviewed index -> add to `skipped_node_ids` and exclude from effective selection
-  - [ ] if effective selection empty -> mark item as `review` with message `已审核(未变更)，无需执行`
-- [ ] Normalize sidebar node targets (sidebar scope only):
-  - [ ] remove descendant nodes if an ancestor node is also selected (avoid double-scanning overlaps)
-- [ ] Execute sidebar scope node-by-node (atomic commit per node):
-  - [ ] process `effective_node_ids` sequentially
-  - [ ] for each node:
-    - [ ] resolve its effective image ids
-    - [ ] run ad-review engine for this node (keep existing per-image concurrency)
-    - [ ] append results to the queue item and persist `manage_ad_review_queue_v1`
-    - [ ] compute and persist reviewed-node hash for this node in `manage_ad_review_reviewed_nodes_v1`
-  - [ ] if crash happens mid-node: no reviewed-node record exists for that node; it will be re-scanned next time
-- [ ] During running (optional live progress):
-  - [ ] keep in-memory progress updates via existing `onEvent(image-reviewed)` for UI
-  - [ ] do NOT persist partial node results as reviewed-node records
-- [ ] On task completion:
-  - [ ] status -> `review` or `failed`
-  - [ ] persist final queue item state
-  - [ ] if completed to `review` or `failed`, start next pending (FIFO)
-- [ ] On pause:
-  - [ ] status -> `paused`
-  - [ ] persist
-- [ ] On delete confirmation:
-  - [ ] keep existing known-hash persistence
-  - [ ] update queue item candidates + counts
-  - [ ] recompute node_hash for effective nodes and write reviewed index
+- [x] Define and document app_state keys (`queue_v1`, `reviewed_nodes_v1`).
+- [x] Add queue load/save helpers in `ManageAdReviewService`.
+- [x] On service init / first call, normalize persisted queue:
+  - [x] items with `status==='running'` -> `paused`.
+- [x] Implement `enqueueOrStart(request)` behavior:
+  - [x] if a `running` task exists -> create `pending` item
+  - [x] else -> create item and start (status `running`)
+- [x] Reviewed-node skip (sidebar scope only):
+  - [x] compute node_hash for each selected node
+  - [x] if `node_hash` unchanged vs reviewed index -> add to `skipped_node_ids` and exclude from effective selection
+  - [x] if effective selection empty -> mark item as `review` with message `已审核(未变更)，无需执行`
+- [x] Normalize sidebar node targets (sidebar scope only):
+  - [x] remove descendant nodes if an ancestor node is also selected (avoid double-scanning overlaps)
+- [x] Execute sidebar scope node-by-node (atomic commit per node):
+  - [x] process `effective_node_ids` sequentially
+  - [x] for each node:
+    - [x] resolve its effective image ids
+    - [x] run ad-review engine for this node (keep existing per-image concurrency)
+    - [x] append results to the queue item and persist `manage_ad_review_queue_v1`
+    - [x] compute and persist reviewed-node hash for this node in `manage_ad_review_reviewed_nodes_v1`
+  - [x] if crash happens mid-node: no reviewed-node record exists for that node; it will be re-scanned next time
+- [x] During running (optional live progress):
+  - [x] keep in-memory progress updates via existing `onEvent(image-reviewed)` for UI
+  - [x] do NOT persist partial node results as reviewed-node records
+- [x] On task completion:
+  - [x] status -> `review` or `failed`
+  - [x] persist final queue item state
+  - [x] if completed to `review` or `failed`, start next pending (FIFO)
+- [x] On pause:
+  - [x] status -> `paused`
+  - [x] persist
+- [x] On delete confirmation:
+  - [x] keep existing known-hash persistence
+  - [x] update queue item candidates + counts
+  - [x] recompute node_hash for effective nodes and write reviewed index
 
 Tests
 - Add unit tests:
   - `electron/services/file-system-read/manageAdReviewQueue.test.ts` (new) or `manageAdReviewService.test.ts` (new)
-    - [ ] enqueue while running -> pending
-    - [ ] finish running -> auto-start next pending
-    - [ ] pause running -> does not auto-start next
-    - [ ] reviewed-node skip excludes unchanged nodes
-    - [ ] delete confirmation updates reviewed-node index
+    - [x] enqueue while running -> pending
+    - [x] finish running -> auto-start next pending
+    - [x] pause running -> does not auto-start next (running 残留在重启后会归一为 paused)
+    - [x] reviewed-node skip excludes unchanged nodes
+    - [x] delete confirmation updates reviewed-node index
 
 Verify
-- `npm run test -- electron/services/file-system-read/manageAdReviewService.test.ts` (or the chosen file)
-- `npm run build`
+- [x] `npm run test -- electron/services/file-system-read/manageAdReviewService.test.ts`
+- [x] `npm run build`
 
 Doc + Git
-- [ ] Update this doc: mark Phase 1 done, record commit hash.
+- [x] Update this doc: mark Phase 1 done.
 - [ ] Commit message suggestion: `feat(ad-review): persist queue and reviewed-node index`
 - [ ] `git push`
+
+Phase 1 completion notes
+- Added persistence keys and queue/reviewed-node storage implementation in backend service.
+- Added node-level atomic persistence semantics for sidebar scope.
+- Added regression/unit tests in `electron/services/file-system-read/manageAdReviewService.test.ts`.
 
 ---
 

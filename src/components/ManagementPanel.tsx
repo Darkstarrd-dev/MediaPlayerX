@@ -8,6 +8,9 @@ const AD_REVIEW_WINDOW_OPTIONS = Array.from({ length: 201 }, (_, index) => index
 const AD_REVIEW_STREAK_OPTIONS = Array.from({ length: 200 }, (_, index) => index + 1)
 
 function resolveAdReviewStatusLabel(status: ManageAdReviewTaskDto['status']): string {
+  if (status === 'pending') {
+    return '排队中'
+  }
   if (status === 'running') {
     return '审核中'
   }

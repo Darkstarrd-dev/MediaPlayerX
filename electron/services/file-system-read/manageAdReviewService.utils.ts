@@ -1,8 +1,10 @@
 import path from 'node:path'
+import { createHash } from 'node:crypto'
 
 import {
   manageAdReviewTaskExecutionSchema,
   type ImageItemDto,
+  type ImagePackageDto,
   type ManageAdReviewImageSourceDto,
   type ManageAdReviewSourceDistributionDto,
   type ManageAdReviewTaskAuditDto,
@@ -51,6 +53,110 @@ export function pathKeyHasPrefix(pathKey: string, prefix: string): boolean {
     return true
   }
   return pathKey.startsWith(`${prefix}/`)
+}
+
+export function toSourcePathKey(source: Pick<ImagePackageDto, 'tree_path'>): string {
+  return source.tree_path.join('/')
+}
+
+export function normalizeSidebarNodeSelection(nodeRefs: ParsedSidebarNodeRef[]): ParsedSidebarNodeRef[] {
+  const deduped = new Map<string, ParsedSidebarNodeRef>()
+  for (const nodeRef of nodeRefs) {
+    const key = `${nodeRef.kind}:${nodeRef.pathKey}`
+    deduped.set(key, nodeRef)
+  }
+
+  const ordered = Array.from(deduped.values()).sort((left, right) => {
+    if (left.pathKey.length !== right.pathKey.length) {
+      return left.pathKey.length - right.pathKey.length
+    }
+    if (left.pathKey !== right.pathKey) {
+      return left.pathKey.localeCompare(right.pathKey)
+    }
+    return left.kind.localeCompare(right.kind)
+  })
+
+  const normalized: ParsedSidebarNodeRef[] = []
+  for (const nodeRef of ordered) {
+    const coveredByAncestor = normalized.some((candidate) => {
+      if (candidate.kind !== 'folder') {
+        return false
+      }
+      return pathKeyHasPrefix(nodeRef.pathKey, candidate.pathKey)
+    })
+
+    if (!coveredByAncestor) {
+      normalized.push(nodeRef)
+    }
+  }
+
+  return normalized
+}
+
+export function collectImageIdsForSidebarNode(
+  nodeRef: ParsedSidebarNodeRef,
+  sources: Array<Pick<ImagePackageDto, 'tree_path' | 'images'>>,
+): string[] {
+  const selected = new Set<string>()
+  for (const source of sources) {
+    const sourcePathKey = toSourcePathKey(source)
+    const matched =
+      nodeRef.kind === 'folder'
+        ? pathKeyHasPrefix(sourcePathKey, nodeRef.pathKey)
+        : sourcePathKey === nodeRef.pathKey
+    if (!matched) {
+      continue
+    }
+
+    for (const image of source.images) {
+      selected.add(image.id)
+    }
+  }
+
+  return Array.from(selected)
+}
+
+function resolveLocatorSignature(image: ImageItemDto): string {
+  const locator = image.media_locator
+  if (locator.kind === 'filesystem') {
+    return `fs:${locator.absolute_path}`
+  }
+  return `arc:${locator.archive_path}::${locator.entry_name}`
+}
+
+export function computeSidebarNodeHash(
+  nodeRef: ParsedSidebarNodeRef,
+  sources: Array<Pick<ImagePackageDto, 'id' | 'tree_path' | 'images'>>,
+): string {
+  const signatures: string[] = []
+
+  for (const source of sources) {
+    const sourcePathKey = toSourcePathKey(source)
+    const matched =
+      nodeRef.kind === 'folder'
+        ? pathKeyHasPrefix(sourcePathKey, nodeRef.pathKey)
+        : sourcePathKey === nodeRef.pathKey
+    if (!matched) {
+      continue
+    }
+
+    for (const image of source.images) {
+      signatures.push(
+        [
+          source.id,
+          sourcePathKey,
+          image.id,
+          String(image.ordinal),
+          String(image.size_kb),
+          resolveLocatorSignature(image),
+        ].join('|'),
+      )
+    }
+  }
+
+  signatures.sort((left, right) => left.localeCompare(right))
+  const payload = signatures.length > 0 ? signatures.join('\n') : `empty:${nodeRef.kind}:${nodeRef.pathKey}`
+  return createHash('sha256').update(payload).digest('hex')
 }
 
 export function normalizeHashes(input: unknown): Set<string> {
