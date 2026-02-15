@@ -265,7 +265,15 @@ function MusicMainSection({
     setVisualizerCanvasVersion((value) => value + 1)
   }, [t, visualizerRuntimeError])
 
-  const toolbarSummary = useMemo(() => resolveMusicToolbarSummary(focusedAudio), [focusedAudio])
+  const toolbarSummary = useMemo(
+    () =>
+      resolveMusicToolbarSummary(focusedAudio, {
+        list: t('ui.music.libraryLabel'),
+        unknownAlbum: t('ui.music.unknownAlbum'),
+        unknownAuthor: t('ui.music.unknownAuthor'),
+      }),
+    [focusedAudio, t],
+  )
 
   const layeredBackgroundShaderLabel = useMemo(() => {
     return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)?.label ?? t('ui.music.backgroundShaderUnselected')

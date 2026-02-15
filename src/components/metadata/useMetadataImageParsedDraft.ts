@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ParsedExternalMetadata } from '../../features/metadata/parseExternalMetadata'
+import { useI18n } from '../../i18n/useI18n'
 import type { ImagePackage } from '../../types'
 import {
+  PARSED_METADATA_ERROR_INVALID_TAG_JSON,
+  PARSED_METADATA_ERROR_SOURCE_ID_REQUIRED,
+  PARSED_METADATA_ERROR_SOURCE_URL_REQUIRED,
+  PARSED_METADATA_ERROR_TAG_NAMESPACE_STRING,
   type ParsedMetadataDraft,
   buildParsedDraft,
   copyTextValue,
@@ -38,6 +43,7 @@ export function useMetadataImageParsedDraft({
   onSearchByAuthor,
   onSearchByCircle,
 }: UseMetadataImageParsedDraftParams) {
+  const { t } = useI18n()
   const [preferTitleJpn, setPreferTitleJpn] = useState(true)
   const [preferAuthorJpn, setPreferAuthorJpn] = useState(true)
   const [preferGroupJpn, setPreferGroupJpn] = useState(true)
@@ -45,6 +51,26 @@ export function useMetadataImageParsedDraft({
     buildParsedDraft(focusedImagePackage, workTitleDraft, circleDraft, authorDraft, tagsDraft),
   )
   const [parsedError, setParsedError] = useState<string | null>(null)
+
+  const resolveParsedErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+      if (error.message === PARSED_METADATA_ERROR_INVALID_TAG_JSON) {
+        return t('ui.metadata.parsedError.invalidTagJson')
+      }
+      if (error.message.startsWith(`${PARSED_METADATA_ERROR_TAG_NAMESPACE_STRING}:`)) {
+        const namespace = error.message.slice(`${PARSED_METADATA_ERROR_TAG_NAMESPACE_STRING}:`.length)
+        return t('ui.metadata.parsedError.tagNamespaceMustBeString', { namespace })
+      }
+      if (error.message === PARSED_METADATA_ERROR_SOURCE_URL_REQUIRED) {
+        return t('ui.metadata.parsedError.sourceUrlRequired')
+      }
+      if (error.message === PARSED_METADATA_ERROR_SOURCE_ID_REQUIRED) {
+        return t('ui.metadata.parsedError.sourceIdRequired')
+      }
+      return error.message
+    }
+    return t('ui.metadata.parsedWriteFailed')
+  }
 
   const latestPackageDraftFallbackRef = useRef({
     workTitleDraft,
@@ -98,7 +124,11 @@ export function useMetadataImageParsedDraft({
       .filter((tag, index, arr) => tag.length > 0 && arr.indexOf(tag) === index)
   }, [parsedTagMap, tagsDraft])
 
-  const sourceDisplayValue = resolveSourceSiteLabel(parsedDraft.sourceSite)
+  const sourceDisplayValue = resolveSourceSiteLabel(parsedDraft.sourceSite, {
+    nhentai: t('ui.metadata.sourceSiteNhentai'),
+    ehentai: t('ui.metadata.sourceSiteEhentai'),
+    others: t('ui.metadata.sourceSiteOthers'),
+  })
 
   const resolvedTitle = useMemo(() => {
     const primary = preferTitleJpn ? parsedDraft.titleJpn : parsedDraft.title
@@ -159,7 +189,7 @@ export function useMetadataImageParsedDraft({
       const payload = toParsedPayload(nextDraft)
       await onSubmitParsedMetadata(payload)
     } catch (error) {
-      setParsedError(error instanceof Error ? error.message : '写入 parsed 元数据失败')
+      setParsedError(resolveParsedErrorMessage(error))
     }
   }
 

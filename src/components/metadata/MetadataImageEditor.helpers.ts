@@ -3,6 +3,17 @@ import type { ImagePackage } from '../../types'
 
 export type ParsedSourceSite = ParsedExternalMetadata['source']['site']
 
+interface SourceSiteDisplayLabels {
+  nhentai: string
+  ehentai: string
+  others: string
+}
+
+export const PARSED_METADATA_ERROR_INVALID_TAG_JSON = 'ERR_METADATA_TAG_JSON_INVALID'
+export const PARSED_METADATA_ERROR_TAG_NAMESPACE_STRING = 'ERR_METADATA_TAG_NAMESPACE_STRING'
+export const PARSED_METADATA_ERROR_SOURCE_URL_REQUIRED = 'ERR_METADATA_SOURCE_URL_REQUIRED'
+export const PARSED_METADATA_ERROR_SOURCE_ID_REQUIRED = 'ERR_METADATA_SOURCE_ID_REQUIRED'
+
 export interface ParsedMetadataDraft {
   sourceSite: ParsedSourceSite
   sourceUrl: string
@@ -86,7 +97,7 @@ export function parseTagJson(raw: string): Record<string, string> {
   try {
     parsed = JSON.parse(text)
   } catch {
-    throw new Error('tags 必须是合法 JSON 对象')
+    throw new Error(PARSED_METADATA_ERROR_INVALID_TAG_JSON)
   }
 
   const record = asRecord(parsed)
@@ -97,7 +108,7 @@ export function parseTagJson(raw: string): Record<string, string> {
       continue
     }
     if (typeof valueRaw !== 'string') {
-      throw new Error(`tags.${namespace} 必须是字符串`)
+      throw new Error(`${PARSED_METADATA_ERROR_TAG_NAMESPACE_STRING}:${namespace}`)
     }
     normalized[namespace] = valueRaw.trim()
   }
@@ -289,14 +300,14 @@ export function resolveEvaluationDisplayValue(draft: ParsedMetadataDraft): strin
   return rating || favorited || '-'
 }
 
-export function resolveSourceSiteLabel(site: ParsedSourceSite): string {
+export function resolveSourceSiteLabel(site: ParsedSourceSite, labels: SourceSiteDisplayLabels): string {
   if (site === 'nhentai') {
-    return 'Nhentai'
+    return labels.nhentai
   }
   if (site === 'ehentai') {
-    return 'Ehentai'
+    return labels.ehentai
   }
-  return 'Other'
+  return labels.others
 }
 
 export function resolveLanguageLabel(preferJpn: boolean, jpnValue: string, enValue: string): 'JP' | 'EN' | '-' {
@@ -391,12 +402,12 @@ export function updateSourceTagsBySite(
 export function toParsedPayload(draft: ParsedMetadataDraft): ParsedExternalMetadata {
   const sourceUrl = draft.sourceUrl.trim()
   if (!sourceUrl) {
-    throw new Error('source.url 不能为空')
+    throw new Error(PARSED_METADATA_ERROR_SOURCE_URL_REQUIRED)
   }
 
   const sourceId = draft.sourceId.trim()
   if (!sourceId) {
-    throw new Error('source.id 不能为空')
+    throw new Error(PARSED_METADATA_ERROR_SOURCE_ID_REQUIRED)
   }
 
   const tags = parseTagJson(draft.tagsJson)

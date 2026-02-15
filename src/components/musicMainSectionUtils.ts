@@ -1,6 +1,12 @@
 import type { MusicControlIconName } from './MusicControlIcon'
 import type { AudioItem, MusicLoopMode } from '../types'
 
+interface MusicToolbarSummaryLabels {
+  list: string
+  unknownAlbum: string
+  unknownAuthor: string
+}
+
 export function resolveLoopModeIconName(mode: MusicLoopMode): Extract<
   MusicControlIconName,
   'repeatOne' | 'repeatFolder' | 'repeatAlbum' | 'repeatLibrary'
@@ -17,16 +23,16 @@ export function resolveLoopModeIconName(mode: MusicLoopMode): Extract<
   return 'repeatLibrary'
 }
 
-export function resolveMusicToolbarSummary(focusedAudio: AudioItem | null): string {
+export function resolveMusicToolbarSummary(focusedAudio: AudioItem | null, labels: MusicToolbarSummaryLabels): string {
   if (!focusedAudio) {
-    return '音乐列表'
+    return labels.list
   }
 
   const album = focusedAudio.album.trim()
   const author = focusedAudio.author.trim()
   return [
-    album || '未知专辑',
-    author || '未知作者',
+    album || labels.unknownAlbum,
+    author || labels.unknownAuthor,
   ]
     .filter((value): value is string => Boolean(value))
     .join(' / ')
