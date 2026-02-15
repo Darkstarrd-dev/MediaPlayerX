@@ -4,10 +4,15 @@ export interface DangerConfirmDialogProps {
   open: boolean
   title: string
   description: string
+  targetListTitle?: string
+  targetPaths?: string[]
   acknowledgeLabel: string
   confirmLabel: string
+  removeOnlyLabel?: string
+  removeOnlyEnabled?: boolean
   cancelLabel: string
   pending?: boolean
+  onRemoveOnly?: () => void
   onConfirm: () => void
   onCancel: () => void
 }
@@ -16,10 +21,15 @@ function DangerConfirmDialog({
   open,
   title,
   description,
+  targetListTitle,
+  targetPaths = [],
   acknowledgeLabel,
   confirmLabel,
+  removeOnlyLabel,
+  removeOnlyEnabled = false,
   cancelLabel,
   pending = false,
+  onRemoveOnly,
   onConfirm,
   onCancel,
 }: DangerConfirmDialogProps) {
@@ -41,6 +51,17 @@ function DangerConfirmDialog({
         <h3>{title}</h3>
         <p className="manage-confirm-description">{description}</p>
 
+        {targetPaths.length > 0 ? (
+          <section className="manage-confirm-targets" aria-label={targetListTitle}>
+            <p className="manage-confirm-targets-title">{targetListTitle}</p>
+            <ul className="manage-confirm-targets-list">
+              {targetPaths.map((path) => (
+                <li key={path} title={path}>{path}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <label className="manage-confirm-ack">
           <input
             checked={acknowledged}
@@ -52,6 +73,11 @@ function DangerConfirmDialog({
         </label>
 
         <div className="settings-floating-actions">
+          {onRemoveOnly && removeOnlyLabel ? (
+            <button type="button" disabled={!removeOnlyEnabled || pending} onClick={onRemoveOnly}>
+              {removeOnlyLabel}
+            </button>
+          ) : null}
           <button type="button" disabled={!acknowledged || pending} onClick={onConfirm}>
             {confirmLabel}
           </button>

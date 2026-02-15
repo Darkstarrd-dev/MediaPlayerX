@@ -72,6 +72,7 @@ export function useAppManageBindings({
     requestManageGroup,
     requestManageMove,
     confirmManageDelete,
+    confirmManageRemoveOnly,
   } = useManageModeActions({
     mode,
     manageMode,
@@ -155,6 +156,7 @@ export function useAppManageBindings({
     requestManageGroup,
     requestManageMove,
     confirmManageDelete: confirmManageDeleteWithAdReview,
+    confirmManageRemoveOnly,
     manageAdReview,
     runtimeCapabilities,
   }

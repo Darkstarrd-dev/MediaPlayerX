@@ -487,13 +487,13 @@
 }
 
 .settings-floating-mask {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 8;
+  z-index: 3002;
 }
 
 .settings-floating-panel {

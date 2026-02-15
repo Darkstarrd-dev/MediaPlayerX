@@ -13,6 +13,9 @@ interface ManageDeleteDialogInput {
   open: boolean
   pending: boolean
   confirmManageDelete: () => Promise<void>
+  confirmManageRemoveOnly: () => Promise<void>
+  removeOnlyEnabled: boolean
+  targetPaths: string[]
   setDeleteConfirmOpen: (value: boolean | ((previous: boolean) => boolean)) => void
 }
 
@@ -86,8 +89,12 @@ export function useAppShellProps({
     ...manageDeleteDialogParams,
     title: t('ui.manage.deleteDialogTitle'),
     description: t('ui.manage.deleteDialogDescription'),
+    targetListTitle: t('ui.manage.deleteDialogTargetListTitle'),
+    targetPaths: manageDeleteDialogParams.targetPaths,
     acknowledgeLabel: t('ui.manage.deleteDialogAcknowledge'),
     confirmLabel: t('ui.manage.deleteDialogConfirm'),
+    removeOnlyLabel: t('ui.manage.deleteDialogRemoveOnly'),
+    removeOnlyEnabled: manageDeleteDialogParams.removeOnlyEnabled,
     cancelLabel: t('ui.common.cancel'),
   })
   const e2eBenchSectionProps = buildE2eBenchSectionProps(e2eBenchSectionParams)

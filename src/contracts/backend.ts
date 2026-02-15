@@ -275,6 +275,7 @@ export const deleteImageItemsResponseSchema = z.object({
 
 export const deleteSidebarNodesRequestSchema = z.object({
   node_ids: z.array(z.string().min(1)).min(1),
+  delete_files: z.boolean().optional(),
 })
 
 export const deleteSidebarNodesResponseSchema = z.object({

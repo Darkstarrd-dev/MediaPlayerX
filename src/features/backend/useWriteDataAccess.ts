@@ -97,6 +97,9 @@ interface UseWriteDataAccessResult {
   ) => Promise<DeleteImageItemsResponseDto>;
   deleteSidebarNodes: (
     nodeIds: string[],
+    options?: {
+      deleteFiles?: boolean
+    },
   ) => Promise<DeleteSidebarNodesResponseDto>;
   pickDirectoryPath: (
     title?: string,
@@ -608,7 +611,12 @@ export function useWriteDataAccess({
   );
 
   const deleteSidebarNodes = useCallback(
-    async (nodeIds: string[]): Promise<DeleteSidebarNodesResponseDto> => {
+    async (
+      nodeIds: string[],
+      options?: {
+        deleteFiles?: boolean
+      },
+    ): Promise<DeleteSidebarNodesResponseDto> => {
       if (!repository.deleteSidebarNodes) {
         throw new Error("manage_delete_nodes_unsupported");
       }
@@ -627,6 +635,7 @@ export function useWriteDataAccess({
         const response = await repository.deleteSidebarNodes(
           {
             node_ids: normalizedIds,
+            delete_files: options?.deleteFiles,
           },
           {
             timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,

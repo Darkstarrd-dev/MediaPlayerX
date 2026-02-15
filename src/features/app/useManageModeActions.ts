@@ -13,7 +13,7 @@ import { toErrorDetailWithCode } from './errorCode'
 interface ManageWriteAccess {
   setImageHidden: (imageIds: string[], hidden: boolean) => Promise<SetImageHiddenResponseDto>
   deleteImageItems: (imageIds: string[]) => Promise<DeleteImageItemsResponseDto>
-  deleteSidebarNodes: (nodeIds: string[]) => Promise<DeleteSidebarNodesResponseDto>
+  deleteSidebarNodes: (nodeIds: string[], options?: { deleteFiles?: boolean }) => Promise<DeleteSidebarNodesResponseDto>
   pickDirectoryPath: (title?: string, defaultPath?: string) => Promise<string | null>
   moveSidebarNodes: (
     nodeIds: string[],
@@ -45,6 +45,7 @@ interface UseManageModeActionsResult {
   requestManageGroup: () => Promise<void>
   requestManageMove: () => Promise<void>
   confirmManageDelete: () => Promise<void>
+  confirmManageRemoveOnly: () => Promise<void>
 }
 
 export function useManageModeActions({
@@ -235,6 +236,32 @@ export function useManageModeActions({
     t,
   ])
 
+  const confirmManageRemoveOnly = useCallback(async () => {
+    if (sidebarCheckedNodeIds.length === 0) {
+      setManageOperationHint(t('ui.manage.hint.selectSidebarNodesFirst'))
+      return
+    }
+
+    setDeleteConfirmOpen(false)
+    setManageOperationHint(null)
+
+    try {
+      const response = await backendWrite.deleteSidebarNodes(sidebarCheckedNodeIds, { deleteFiles: false })
+      const failedCount = response.failed.length
+      setManageOperationHint(
+        failedCount > 0
+          ? t('ui.manage.hint.removeNodesWithFailures', {
+              removed: response.deleted_count,
+              failed: failedCount,
+            })
+          : t('ui.manage.hint.removeNodesSuccess', { removed: response.deleted_count }),
+      )
+      clearAllSelections()
+    } catch (error) {
+      setManageOperationHint(t('ui.manage.hint.operationFailed', { message: toErrorDetailWithCode(error, t) }))
+    }
+  }, [backendWrite, clearAllSelections, setDeleteConfirmOpen, setManageOperationHint, sidebarCheckedNodeIds, t])
+
   return {
     toggleManageMode,
     runManageHideAction,
@@ -242,5 +269,6 @@ export function useManageModeActions({
     requestManageGroup,
     requestManageMove,
     confirmManageDelete,
+    confirmManageRemoveOnly,
   }
 }
