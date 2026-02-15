@@ -193,6 +193,7 @@ export interface AppHeaderProps {
   paletteMode: 'day' | 'night'
   importMenuOpen: boolean
   taskStatusLabel: string
+  taskStatusBusy: boolean
   importTaskPanelOpen: boolean
   autoPlayPresets: number[]
   onToggleImportMenu: () => void
@@ -226,6 +227,7 @@ function AppHeader({
   paletteMode,
   importMenuOpen,
   taskStatusLabel,
+  taskStatusBusy,
   importTaskPanelOpen,
   autoPlayPresets,
   onToggleImportMenu,
@@ -423,13 +425,13 @@ function AppHeader({
 
           <button
             aria-label={taskStatusLabel}
-            className={`task-status-btn ${taskStatusLabel === '加载中' ? 'is-busy' : 'is-idle'} ${importTaskPanelOpen ? 'is-open' : ''}`}
+            className={`task-status-btn ${taskStatusBusy ? 'is-busy' : 'is-idle'} ${importTaskPanelOpen ? 'is-open' : ''}`}
             type="button"
             onClick={onToggleImportTaskPanel}
           >
             <span className="header-btn-content">
               <span className="header-btn-icon">
-                <HeaderActionIcon name={taskStatusLabel === '加载中' ? 'statusBusy' : 'statusIdle'} />
+                <HeaderActionIcon name={taskStatusBusy ? 'statusBusy' : 'statusIdle'} />
               </span>
               <span className="header-btn-label">{taskStatusLabel}</span>
             </span>

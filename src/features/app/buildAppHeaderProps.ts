@@ -22,6 +22,7 @@ interface BuildAppHeaderPropsParams {
   paletteNightId: string
   importMenuOpen: boolean
   taskStatusLabel: string
+  taskStatusBusy: boolean
   importTaskPanelOpen: boolean
   autoPlayPresets: number[]
   thumbnailScale: number
@@ -52,6 +53,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     paletteMode: params.paletteMode,
     importMenuOpen: params.importMenuOpen,
     taskStatusLabel: params.taskStatusLabel,
+    taskStatusBusy: params.taskStatusBusy,
     importTaskPanelOpen: params.importTaskPanelOpen,
     autoPlayPresets: params.autoPlayPresets,
     onToggleImportMenu: () => params.setImportMenuOpen((value) => !value),

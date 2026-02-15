@@ -45,8 +45,11 @@ export interface MetadataPanelProps {
   canExecuteAdReview: boolean
   adReviewPending: boolean
   adReviewTask: ManageAdReviewTaskDto | null
+  adReviewQueueTasks: ManageAdReviewTaskDto[]
+  adReviewActiveTaskId: string | null
   adReviewHideUncheckedNonChecked: boolean
   hasCheckedAdReviewCandidates: boolean
+  adReviewFocusTaskId: string | null
   adReviewStrategyMode: 'all' | 'head-tail'
   adReviewMaxConcurrency: number
   adReviewHeadN: number
@@ -55,6 +58,9 @@ export interface MetadataPanelProps {
   onStartAdReview: () => void
   onPauseAdReview: () => void
   onToggleHideUncheckedNonChecked: () => void
+  onSelectAdReviewTask: (taskId: string) => void
+  onRemoveAdReviewTask: (taskId: string) => void
+  onToggleAdReviewFocus: () => void
   onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
   onAdReviewMaxConcurrencyChange: (value: number) => void
   onAdReviewHeadNChange: (value: number) => void
@@ -163,8 +169,11 @@ function MetadataPanel({
   canExecuteAdReview,
   adReviewPending,
   adReviewTask,
+  adReviewQueueTasks,
+  adReviewActiveTaskId,
   adReviewHideUncheckedNonChecked,
   hasCheckedAdReviewCandidates,
+  adReviewFocusTaskId,
   adReviewStrategyMode,
   adReviewMaxConcurrency,
   adReviewHeadN,
@@ -173,6 +182,9 @@ function MetadataPanel({
   onStartAdReview,
   onPauseAdReview,
   onToggleHideUncheckedNonChecked,
+  onSelectAdReviewTask,
+  onRemoveAdReviewTask,
+  onToggleAdReviewFocus,
   onAdReviewStrategyModeChange,
   onAdReviewMaxConcurrencyChange,
   onAdReviewHeadNChange,
@@ -486,8 +498,11 @@ function MetadataPanel({
       <MetadataAdReviewSection
         adReviewPending={adReviewPending}
         adReviewTask={adReviewTask}
+        adReviewQueueTasks={adReviewQueueTasks}
+        adReviewActiveTaskId={adReviewActiveTaskId}
         adReviewHideUncheckedNonChecked={adReviewHideUncheckedNonChecked}
         hasCheckedAdReviewCandidates={hasCheckedAdReviewCandidates}
+        adReviewFocusTaskId={adReviewFocusTaskId}
         adReviewStrategyMode={adReviewStrategyMode}
         adReviewMaxConcurrency={adReviewMaxConcurrency}
         adReviewHeadN={adReviewHeadN}
@@ -497,6 +512,9 @@ function MetadataPanel({
         onStartAdReview={onStartAdReview}
         onPauseAdReview={onPauseAdReview}
         onToggleHideUncheckedNonChecked={onToggleHideUncheckedNonChecked}
+        onSelectAdReviewTask={onSelectAdReviewTask}
+        onRemoveAdReviewTask={onRemoveAdReviewTask}
+        onToggleAdReviewFocus={onToggleAdReviewFocus}
         onAdReviewStrategyModeChange={onAdReviewStrategyModeChange}
         onAdReviewMaxConcurrencyChange={onAdReviewMaxConcurrencyChange}
         onAdReviewHeadNChange={onAdReviewHeadNChange}

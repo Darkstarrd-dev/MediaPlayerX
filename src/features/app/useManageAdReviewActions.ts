@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ManageAdReviewTaskDto } from '../../contracts/backend'
+import { manageAdReviewTaskSchema, type ManageAdReviewTaskDto } from '../../contracts/backend'
 import type { BrowserMode } from '../../types'
 import type { MediaRepository } from '../backend/repository'
 
@@ -9,6 +9,8 @@ const REVIEW_START_TIMEOUT_MS = 60_000
 const REVIEW_READ_TIMEOUT_MS = 10_000
 const REVIEW_PAUSE_TIMEOUT_MS = 10_000
 const REVIEW_DELETE_TIMEOUT_MS = 20_000
+const REVIEW_QUEUE_WRITE_TIMEOUT_MS = 10_000
+const AD_REVIEW_QUEUE_STATE_KEY = 'manage_ad_review_queue_v1'
 
 interface UseManageAdReviewActionsParams {
   repository: MediaRepository
@@ -29,8 +31,20 @@ interface UseManageAdReviewActionsParams {
   setManageOperationHint: (message: string | null) => void
 }
 
+interface PersistedQueueRaw {
+  version: number
+  items: Array<{
+    task?: unknown
+    [key: string]: unknown
+  }>
+}
+
 interface UseManageAdReviewActionsResult {
   task: ManageAdReviewTaskDto | null
+  queueTasks: ManageAdReviewTaskDto[]
+  activeTaskId: string | null
+  runningTaskId: string | null
+  hasRunningTask: boolean
   pending: boolean
   hideUncheckedNonChecked: boolean
   hasCheckedCandidateSelection: boolean
@@ -42,6 +56,53 @@ interface UseManageAdReviewActionsResult {
   toggleHideUncheckedNonChecked: () => void
   confirmDeleteSelectedCandidates: () => Promise<void>
   dismissTask: () => void
+  selectTask: (taskId: string) => void
+  removeTask: (taskId: string) => Promise<void>
+}
+
+function parseQueueRaw(stateJson: string): PersistedQueueRaw {
+  try {
+    const parsed = JSON.parse(stateJson) as unknown
+    if (!parsed || typeof parsed !== 'object') {
+      return { version: 1, items: [] }
+    }
+    const version = typeof (parsed as { version?: unknown }).version === 'number' ? (parsed as { version: number }).version : 1
+    const items = Array.isArray((parsed as { items?: unknown }).items)
+      ? ((parsed as { items: Array<{ task?: unknown; [key: string]: unknown }> }).items ?? [])
+      : []
+    return {
+      version,
+      items,
+    }
+  } catch {
+    return { version: 1, items: [] }
+  }
+}
+
+function parseQueueTasks(stateJson: string): ManageAdReviewTaskDto[] {
+  const raw = parseQueueRaw(stateJson)
+  const tasks: ManageAdReviewTaskDto[] = []
+
+  for (const item of raw.items) {
+    const parsedTask = manageAdReviewTaskSchema.safeParse(item.task)
+    if (!parsedTask.success) {
+      continue
+    }
+    tasks.push(parsedTask.data)
+  }
+
+  return tasks
+}
+
+function upsertTask(tasks: ManageAdReviewTaskDto[], nextTask: ManageAdReviewTaskDto): ManageAdReviewTaskDto[] {
+  const index = tasks.findIndex((task) => task.task_id === nextTask.task_id)
+  if (index < 0) {
+    return [...tasks, nextTask]
+  }
+
+  const next = [...tasks]
+  next[index] = nextTask
+  return next
 }
 
 export function useManageAdReviewActions({
@@ -62,11 +123,12 @@ export function useManageAdReviewActions({
   replaceImageCheckedIds,
   setManageOperationHint,
 }: UseManageAdReviewActionsParams): UseManageAdReviewActionsResult {
-  const [task, setTask] = useState<ManageAdReviewTaskDto | null>(null)
+  const [queueTasks, setQueueTasks] = useState<ManageAdReviewTaskDto[]>([])
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [hideUncheckedNonChecked, setHideUncheckedNonChecked] = useState(false)
   const pollingTimerRef = useRef<ReturnType<typeof window.setInterval> | null>(null)
-  const previousTaskStatusRef = useRef<ManageAdReviewTaskDto['status'] | null>(null)
+  const previousTaskStatusByIdRef = useRef<Record<string, ManageAdReviewTaskDto['status']>>({})
 
   const activeScope = useMemo(() => {
     if (activeSelectionScope === 'sidebar' && sidebarCheckedNodeIds.length > 0) {
@@ -85,15 +147,6 @@ export function useManageAdReviewActions({
     }
   }, [])
 
-  useEffect(() => {
-    if (!manageMode || mode !== 'image') {
-      disposePolling()
-      setTask(null)
-      setHideUncheckedNonChecked(false)
-      previousTaskStatusRef.current = null
-    }
-  }, [disposePolling, manageMode, mode])
-
   useEffect(
     () => () => {
       disposePolling()
@@ -101,67 +154,112 @@ export function useManageAdReviewActions({
     [disposePolling],
   )
 
+  const loadQueueTasks = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const readAppState = repository.readAppState
+      if (!readAppState) {
+        return null
+      }
+
+      try {
+        const response = await readAppState(
+          {
+            state_key: AD_REVIEW_QUEUE_STATE_KEY,
+            fallback_json: JSON.stringify({ version: 1, items: [] }),
+          },
+          { timeoutMs: REVIEW_READ_TIMEOUT_MS },
+        )
+        const tasks = parseQueueTasks(response.state_json)
+        setQueueTasks(tasks)
+        setActiveTaskId((previous) => {
+          if (previous && tasks.some((task) => task.task_id === previous)) {
+            return previous
+          }
+
+          const runningTask = tasks.find((task) => task.status === 'running')
+          if (runningTask) {
+            return runningTask.task_id
+          }
+
+          return tasks.length > 0 ? tasks[tasks.length - 1]?.task_id ?? null : null
+        })
+        return tasks
+      } catch (error) {
+        if (!options?.silent) {
+          const message = error instanceof Error ? error.message : String(error)
+          setManageOperationHint(`AI广告审核队列读取失败：${message}`)
+        }
+        return null
+      }
+    },
+    [repository, setManageOperationHint],
+  )
+
   useEffect(() => {
-    const currentStatus = task?.status ?? null
-    const previousStatus = previousTaskStatusRef.current
-    if (task && task.status === 'review' && previousStatus !== 'review') {
+    void loadQueueTasks({ silent: true })
+  }, [loadQueueTasks])
+
+  const task = useMemo(() => {
+    if (queueTasks.length === 0) {
+      return null
+    }
+
+    if (activeTaskId) {
+      const active = queueTasks.find((item) => item.task_id === activeTaskId)
+      if (active) {
+        return active
+      }
+    }
+
+    const runningTask = queueTasks.find((item) => item.status === 'running')
+    if (runningTask) {
+      return runningTask
+    }
+
+    return queueTasks[queueTasks.length - 1] ?? null
+  }, [activeTaskId, queueTasks])
+
+  const hasRunningTask = useMemo(() => queueTasks.some((item) => item.status === 'running'), [queueTasks])
+  const runningTaskId = useMemo(
+    () => queueTasks.find((item) => item.status === 'running')?.task_id ?? null,
+    [queueTasks],
+  )
+
+  useEffect(() => {
+    if (!task) {
+      return
+    }
+
+    const previousStatus = previousTaskStatusByIdRef.current[task.task_id]
+    if (previousStatus && task.status === 'review' && previousStatus !== 'review') {
       replaceImageCheckedIds(
         task.candidates.map((candidate) => candidate.image_id),
         false,
       )
     }
-    previousTaskStatusRef.current = currentStatus
+    previousTaskStatusByIdRef.current[task.task_id] = task.status
   }, [replaceImageCheckedIds, task])
 
   useEffect(() => {
-    const readManageAdReviewTask = repository.readManageAdReviewTask
-    if (!task || task.status !== 'running' || !readManageAdReviewTask) {
+    if (!hasRunningTask || !repository.readAppState) {
       disposePolling()
       return
     }
 
     disposePolling()
     pollingTimerRef.current = window.setInterval(() => {
-      void (async () => {
-        try {
-          const response = await readManageAdReviewTask(
-            { task_id: task.task_id },
-            { timeoutMs: REVIEW_READ_TIMEOUT_MS },
-          )
-          if (!response.task) {
-            disposePolling()
-            setTask(null)
-            setHideUncheckedNonChecked(false)
-            return
-          }
-
-          setTask(response.task)
-          if (response.task.status !== 'running') {
-            disposePolling()
-          }
-        } catch (error) {
-          disposePolling()
-          const message = error instanceof Error ? error.message : String(error)
-          setTask((previous) =>
-            previous
-              ? {
-                  ...previous,
-                  status: 'failed',
-                  message: 'AI广告审核任务读取失败',
-                  error_detail: message,
-                  updated_at_ms: Date.now(),
-                }
-              : previous,
-          )
-          setManageOperationHint(`AI广告审核读取失败：${message}`)
-        }
-      })()
+      void loadQueueTasks({ silent: true })
     }, REVIEW_POLL_INTERVAL_MS)
 
     return () => {
       disposePolling()
     }
-  }, [disposePolling, repository, setManageOperationHint, task])
+  }, [disposePolling, hasRunningTask, loadQueueTasks, repository])
+
+  const updateTaskInQueue = useCallback((nextTask: ManageAdReviewTaskDto) => {
+    setQueueTasks((previous) => upsertTask(previous, nextTask))
+    setActiveTaskId(nextTask.task_id)
+  }, [])
 
   const startManageAdReview = useCallback(async () => {
     if (!repository.startManageAdReview) {
@@ -225,12 +323,11 @@ export function useManageAdReviewActions({
         { timeoutMs: REVIEW_START_TIMEOUT_MS },
       )
 
-      setTask(response.task)
+      updateTaskInQueue(response.task)
+      await loadQueueTasks({ silent: true })
       setManageOperationHint(response.task.message ?? 'AI广告审核任务已启动')
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      setTask(null)
-      setHideUncheckedNonChecked(false)
       setManageOperationHint(`AI广告审核启动失败：${message}`)
     } finally {
       setPending(false)
@@ -245,11 +342,13 @@ export function useManageAdReviewActions({
     adReviewTailStopCleanStreak,
     llmEndpoint,
     llmModel,
+    loadQueueTasks,
     manageMode,
     mode,
     repository,
     setManageOperationHint,
     sidebarCheckedNodeIds,
+    updateTaskInQueue,
   ])
 
   const pauseManageAdReview = useCallback(async () => {
@@ -258,7 +357,8 @@ export function useManageAdReviewActions({
       return
     }
 
-    if (!task || task.status !== 'running') {
+    const runningTask = task?.status === 'running' ? task : queueTasks.find((item) => item.status === 'running') ?? null
+    if (!runningTask) {
       setManageOperationHint('当前无可暂停的AI广告审核任务')
       return
     }
@@ -266,10 +366,11 @@ export function useManageAdReviewActions({
     setPending(true)
     try {
       const response = await repository.pauseManageAdReviewTask(
-        { task_id: task.task_id },
+        { task_id: runningTask.task_id },
         { timeoutMs: REVIEW_PAUSE_TIMEOUT_MS },
       )
-      setTask(response.task)
+      updateTaskInQueue(response.task)
+      await loadQueueTasks({ silent: true })
       setManageOperationHint(response.task.message ?? 'AI广告审核已暂停')
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
@@ -277,7 +378,7 @@ export function useManageAdReviewActions({
     } finally {
       setPending(false)
     }
-  }, [repository, setManageOperationHint, task])
+  }, [loadQueueTasks, queueTasks, repository, setManageOperationHint, task, updateTaskInQueue])
 
   const toggleHideUncheckedNonChecked = useCallback(() => {
     setHideUncheckedNonChecked((previous) => !previous)
@@ -343,7 +444,8 @@ export function useManageAdReviewActions({
         { timeoutMs: REVIEW_DELETE_TIMEOUT_MS },
       )
 
-      setTask(response.task)
+      updateTaskInQueue(response.task)
+      await loadQueueTasks({ silent: true })
 
       if (response.deleted_count > 0) {
         clearAllSelections()
@@ -371,21 +473,89 @@ export function useManageAdReviewActions({
     }
   }, [
     clearAllSelections,
+    loadQueueTasks,
     replaceImageCheckedIds,
     repository,
     selectedCandidateIds,
     setManageOperationHint,
     task,
+    updateTaskInQueue,
   ])
 
   const dismissTask = useCallback(() => {
-    disposePolling()
-    setTask(null)
+    setActiveTaskId(null)
     setHideUncheckedNonChecked(false)
-  }, [disposePolling])
+  }, [])
+
+  const selectTask = useCallback((taskId: string) => {
+    setActiveTaskId(taskId)
+  }, [])
+
+  const removeTask = useCallback(
+    async (taskId: string) => {
+      const readAppState = repository.readAppState
+      const writeAppState = repository.writeAppState
+      if (!readAppState || !writeAppState) {
+        setManageOperationHint('当前后端不支持AI广告审核队列管理')
+        return
+      }
+
+      const target = queueTasks.find((item) => item.task_id === taskId)
+      if (!target) {
+        setManageOperationHint('目标任务不存在，可能已被移除')
+        return
+      }
+
+      if (target.status === 'running') {
+        setManageOperationHint('运行中的任务不可直接移除，请先暂停')
+        return
+      }
+
+      setPending(true)
+      try {
+        const response = await readAppState(
+          {
+            state_key: AD_REVIEW_QUEUE_STATE_KEY,
+            fallback_json: JSON.stringify({ version: 1, items: [] }),
+          },
+          { timeoutMs: REVIEW_READ_TIMEOUT_MS },
+        )
+        const rawQueue = parseQueueRaw(response.state_json)
+        const nextQueue: PersistedQueueRaw = {
+          version: rawQueue.version,
+          items: rawQueue.items.filter((item) => {
+            const parsedTask = manageAdReviewTaskSchema.safeParse(item.task)
+            return parsedTask.success ? parsedTask.data.task_id !== taskId : true
+          }),
+        }
+
+        await writeAppState(
+          {
+            state_key: AD_REVIEW_QUEUE_STATE_KEY,
+            state_json: JSON.stringify(nextQueue),
+          },
+          { timeoutMs: REVIEW_QUEUE_WRITE_TIMEOUT_MS },
+        )
+
+        setQueueTasks((previous) => previous.filter((item) => item.task_id !== taskId))
+        setActiveTaskId((previous) => (previous === taskId ? null : previous))
+        setManageOperationHint('已移除AI广告审核队列项')
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        setManageOperationHint(`AI广告审核队列移除失败：${message}`)
+      } finally {
+        setPending(false)
+      }
+    },
+    [queueTasks, repository, setManageOperationHint],
+  )
 
   return {
     task,
+    queueTasks,
+    activeTaskId,
+    runningTaskId,
+    hasRunningTask,
     pending,
     hideUncheckedNonChecked,
     hasCheckedCandidateSelection,
@@ -397,6 +567,8 @@ export function useManageAdReviewActions({
     toggleHideUncheckedNonChecked,
     confirmDeleteSelectedCandidates,
     dismissTask,
+    selectTask,
+    removeTask,
   }
 }
 

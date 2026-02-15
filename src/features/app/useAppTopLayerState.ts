@@ -66,6 +66,7 @@ interface UseAppTopLayerStateParams {
   }
   normalizePathForCompare: (value: string) => string
   retryImportTask: (taskId: string) => Promise<void>
+  adReviewRunning: boolean
   taskError: string | null
   clearTaskError: () => void
   fullscreenActive: boolean
@@ -156,6 +157,7 @@ export function useAppTopLayerState({
   archiveLoadStatus,
   normalizePathForCompare,
   retryImportTask,
+  adReviewRunning,
   taskError,
   clearTaskError,
   fullscreenActive,
@@ -265,6 +267,7 @@ export function useAppTopLayerState({
     normalizedPendingArchivePathSet,
     normalizedRunningArchivePath,
     taskStatusLabel,
+    taskStatusBusy,
     clearFinishedImportTasks,
     clearAllImportTasks,
     retryImportTaskFromPanel,
@@ -276,6 +279,7 @@ export function useAppTopLayerState({
     archiveLoadStatus,
     normalizePathForCompare,
     retryImportTask,
+    adReviewRunning,
   })
 
   const {
@@ -440,6 +444,7 @@ export function useAppTopLayerState({
     paletteNightId: appSettings.paletteNightId,
     importMenuOpen,
     taskStatusLabel,
+    taskStatusBusy,
     importTaskPanelOpen,
     autoPlayPresets,
     thumbnailScale: appSettings.thumbnailScale,

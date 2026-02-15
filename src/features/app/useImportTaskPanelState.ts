@@ -13,6 +13,7 @@ interface UseImportTaskPanelStateParams {
   }
   normalizePathForCompare: (value: string) => string
   retryImportTask: (taskId: string) => Promise<void>
+  adReviewRunning: boolean
 }
 
 interface UseImportTaskPanelStateResult {
@@ -21,6 +22,7 @@ interface UseImportTaskPanelStateResult {
   normalizedPendingArchivePathSet: Set<string>
   normalizedRunningArchivePath: string | null
   taskStatusLabel: string
+  taskStatusBusy: boolean
   clearFinishedImportTasks: () => void
   clearAllImportTasks: () => void
   retryImportTaskFromPanel: (taskId: string) => void
@@ -34,6 +36,7 @@ export function useImportTaskPanelState({
   archiveLoadStatus,
   normalizePathForCompare,
   retryImportTask,
+  adReviewRunning,
 }: UseImportTaskPanelStateParams): UseImportTaskPanelStateResult {
   const visibleImportTasks = useMemo(
     () => importTasks.filter((task) => !dismissedImportTaskIds[task.task_id]),
@@ -67,7 +70,9 @@ export function useImportTaskPanelState({
     : null
 
   const archiveLoadBusy = normalizedPendingArchivePathSet.size > 0 || normalizedRunningArchivePath !== null
-  const taskStatusLabel = enqueuePending || activeImportTasks.length > 0 || archiveLoadBusy ? '加载中' : '空闲'
+  const importBusy = enqueuePending || activeImportTasks.length > 0 || archiveLoadBusy
+  const taskStatusBusy = importBusy || adReviewRunning
+  const taskStatusLabel = importBusy ? '加载中' : adReviewRunning ? '审核中' : '空闲'
 
   const clearFinishedImportTasks = useCallback(() => {
     setDismissedImportTaskIds((previous) => {
@@ -110,6 +115,7 @@ export function useImportTaskPanelState({
     normalizedPendingArchivePathSet,
     normalizedRunningArchivePath,
     taskStatusLabel,
+    taskStatusBusy,
     clearFinishedImportTasks,
     clearAllImportTasks,
     retryImportTaskFromPanel,

@@ -287,40 +287,40 @@ Files to touch
 - `src/components/metadata/MetadataAdReviewSection.tsx`
   - render queue list + select active item
   - actions:
-    - [ ] enqueue/start
-    - [ ] pause
-    - [ ] remove queue item
-    - [ ] focus/return toggle (manual)
+    - [x] enqueue/start
+    - [x] pause
+    - [x] remove queue item
+    - [x] focus/return toggle (manual)
 - `src/features/app/useAppWorkspaceProps.ts`
   - map queue state to `metadataPanelProps` (active queue item)
 - `src/features/app/useAppSessionState.ts`
   - add UI-only state:
-    - [ ] `adReviewFocusTaskId: string | null`
+    - [x] `adReviewFocusTaskId: string | null`
 - `src/features/app/buildAppHeaderProps.ts`
 - `src/components/AppHeader.tsx`
 - `src/features/app/useImportTaskPanelState.ts`
   - switch from `taskStatusLabel === '加载中'` to an explicit busy boolean:
-    - [ ] `importBusy` (existing)
-    - [ ] `adReviewBusy` (derived from queue)
-    - [ ] `taskStatusBusy = importBusy || adReviewBusy`
+    - [x] `importBusy` (existing)
+    - [x] `adReviewBusy` (derived from queue)
+    - [x] `taskStatusBusy = importBusy || adReviewBusy`
 
 Implementation checklist
-- [ ] Create a single source of truth for queue in UI:
-  - [ ] `queueItems: ManageAdReviewQueueItem[]`
-  - [ ] `activeTaskId`
-  - [ ] `runningTaskId`
-- [ ] Polling rule:
-  - [ ] poll every 1s while `runningTaskId != null`
-  - [ ] stop polling otherwise
-- [ ] Enqueue action:
-  - [ ] uses current selection (sidebar/image) and current vision settings
-  - [ ] backend returns new task_id and initial status
-- [ ] Focus toggle:
-  - [ ] `focus` sets `adReviewFocusTaskId=activeTaskId`
-  - [ ] `return` sets null
-- [ ] Header busy:
-  - [ ] busy style uses boolean, not string label
-  - [ ] label can become: `加载中` / `审核中` / `空闲`
+- [x] Create a single source of truth for queue in UI:
+  - [x] `queueItems: ManageAdReviewQueueItem[]`
+  - [x] `activeTaskId`
+  - [x] `runningTaskId`
+- [x] Polling rule:
+  - [x] poll every 1s while `runningTaskId != null`
+  - [x] stop polling otherwise
+- [x] Enqueue action:
+  - [x] uses current selection (sidebar/image) and current vision settings
+  - [x] backend returns new task_id and initial status
+- [x] Focus toggle:
+  - [x] `focus` sets `adReviewFocusTaskId=activeTaskId`
+  - [x] `return` sets null
+- [x] Header busy:
+  - [x] busy style uses boolean, not string label
+  - [x] label can become: `加载中` / `审核中` / `空闲`
 
 Tests
 - Unit/UI tests:
@@ -329,13 +329,18 @@ Tests
   - `src/features/app/buildAppHeaderProps.test.ts`: busy behavior
 
 Verify
-- `npm run test -- <targeted test files>`
-- `npm run build`
+- [x] `npm run test -- src/features/app/buildMetadataPanelProps.test.ts src/features/app/buildAppHeaderProps.test.ts electron/services/file-system-read/manageAdReviewService.test.ts`
+- [ ] `npm run build` (blocked by unrelated music visualizer type errors in working tree)
 
 Doc + Git
-- [ ] Update this doc: mark Phase 2 done, record commit hash.
+- [x] Update this doc: mark Phase 2 done.
 - [ ] Commit message suggestion: `feat(ad-review): add queue panel and header busy state`
 - [ ] `git push`
+
+Phase 2 completion notes
+- Queue-aware frontend state implemented in `useManageAdReviewActions` with global polling via `readAppState`.
+- Metadata ad-review panel now supports queue list display, task selection, queue-item removal (non-running), and manual focus/return toggle state.
+- Header busy style switched to explicit boolean (`taskStatusBusy`) and ad-review running now contributes to busy state.
 
 ---
 

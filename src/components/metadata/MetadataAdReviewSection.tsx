@@ -11,8 +11,11 @@ import {
 interface MetadataAdReviewSectionProps {
   adReviewPending: boolean
   adReviewTask: ManageAdReviewTaskDto | null
+  adReviewQueueTasks: ManageAdReviewTaskDto[]
+  adReviewActiveTaskId: string | null
   adReviewHideUncheckedNonChecked: boolean
   hasCheckedAdReviewCandidates: boolean
+  adReviewFocusTaskId: string | null
   adReviewStrategyMode: 'all' | 'head-tail'
   adReviewMaxConcurrency: number
   adReviewHeadN: number
@@ -22,6 +25,9 @@ interface MetadataAdReviewSectionProps {
   onStartAdReview: () => void
   onPauseAdReview: () => void
   onToggleHideUncheckedNonChecked: () => void
+  onSelectAdReviewTask: (taskId: string) => void
+  onRemoveAdReviewTask: (taskId: string) => void
+  onToggleAdReviewFocus: () => void
   onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
   onAdReviewMaxConcurrencyChange: (value: number) => void
   onAdReviewHeadNChange: (value: number) => void
@@ -33,8 +39,11 @@ interface MetadataAdReviewSectionProps {
 export function MetadataAdReviewSection({
   adReviewPending,
   adReviewTask,
+  adReviewQueueTasks,
+  adReviewActiveTaskId,
   adReviewHideUncheckedNonChecked,
   hasCheckedAdReviewCandidates,
+  adReviewFocusTaskId,
   adReviewStrategyMode,
   adReviewMaxConcurrency,
   adReviewHeadN,
@@ -44,6 +53,9 @@ export function MetadataAdReviewSection({
   onStartAdReview,
   onPauseAdReview,
   onToggleHideUncheckedNonChecked,
+  onSelectAdReviewTask,
+  onRemoveAdReviewTask,
+  onToggleAdReviewFocus,
   onAdReviewStrategyModeChange,
   onAdReviewMaxConcurrencyChange,
   onAdReviewHeadNChange,
@@ -152,6 +164,37 @@ export function MetadataAdReviewSection({
         </label>
       </div>
 
+      {adReviewQueueTasks.length > 0 ? (
+        <section className="manage-ad-review-queue" aria-label="AI广告审核队列">
+          {adReviewQueueTasks.map((queueTask) => {
+            const isActive = adReviewTask?.task_id === queueTask.task_id || adReviewActiveTaskId === queueTask.task_id
+            return (
+              <div key={queueTask.task_id} className={`manage-ad-review-queue-item ${isActive ? 'is-active' : ''}`}>
+                <button
+                  className="feature-action-btn manage-ad-review-queue-item-btn"
+                  type="button"
+                  onClick={() => onSelectAdReviewTask(queueTask.task_id)}
+                >
+                  <span>{resolveAdReviewStatusLabel(queueTask.status)}</span>
+                  <span>{`${Math.round(queueTask.progress * 100)}% · ${queueTask.reviewed_count}/${queueTask.total_count}`}</span>
+                </button>
+
+                <button
+                  className="feature-action-btn"
+                  type="button"
+                  disabled={adReviewPending || queueTask.status === 'running'}
+                  onClick={() => {
+                    onRemoveAdReviewTask(queueTask.task_id)
+                  }}
+                >
+                  移除
+                </button>
+              </div>
+            )
+          })}
+        </section>
+      ) : null}
+
       {adReviewTask ? (
         <section className="manage-ad-review" aria-live="polite">
           <p className="manage-ad-review-progress">{`进度 ${Math.round(adReviewTask.progress * 100)}% (${adReviewTask.reviewed_count}/${adReviewTask.total_count})`}</p>
@@ -180,6 +223,14 @@ export function MetadataAdReviewSection({
               </button>
               <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
                 关闭结果
+              </button>
+              <button
+                className="feature-action-btn"
+                type="button"
+                disabled={adReviewPending}
+                onClick={onToggleAdReviewFocus}
+              >
+                {adReviewFocusTaskId === adReviewTask.task_id ? 'return' : 'focus'}
               </button>
               <span className={`manage-ad-review-selection-tag ${hasCheckedAdReviewCandidates ? 'is-active' : ''}`}>
                 {hasCheckedAdReviewCandidates ? '已选候选可删除' : '未选候选'}

@@ -53,6 +53,8 @@ interface UseAppWorkspacePropsParams {
   metadataManageMode: boolean
   adReviewPanelOpen: boolean
   setAdReviewPanelOpen: Dispatch<SetStateAction<boolean>>
+  adReviewFocusTaskId: string | null
+  setAdReviewFocusTaskId: Dispatch<SetStateAction<string | null>>
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   workspaceBottomPanelHeight: number
@@ -215,6 +217,8 @@ export function useAppWorkspaceProps({
   metadataManageMode,
   adReviewPanelOpen,
   setAdReviewPanelOpen,
+  adReviewFocusTaskId,
+  setAdReviewFocusTaskId,
   searchPanelCollapsed,
   setSearchPanelCollapsed,
   workspaceBottomPanelHeight,
@@ -846,8 +850,11 @@ export function useAppWorkspaceProps({
     canExecuteAdReview: (activeSelectionScope === 'sidebar' && sidebarCheckedNodeIds.length > 0) || imageCheckedIds.length > 0,
     adReviewPending: manageAdReview.pending,
     adReviewTask: manageAdReview.task,
+    adReviewQueueTasks: manageAdReview.queueTasks,
+    adReviewActiveTaskId: manageAdReview.activeTaskId,
     adReviewHideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
     hasCheckedAdReviewCandidates: manageAdReview.hasCheckedCandidateSelection,
+    adReviewFocusTaskId,
     adReviewStrategyMode: appSettings.adReviewStrategyMode,
     adReviewMaxConcurrency: appSettings.adReviewMaxConcurrency,
     adReviewHeadN: appSettings.adReviewHeadN,
@@ -860,6 +867,19 @@ export function useAppWorkspaceProps({
       void manageAdReview.pauseManageAdReview()
     },
     onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
+    onSelectAdReviewTask: manageAdReview.selectTask,
+    onRemoveAdReviewTask: (taskId) => {
+      void manageAdReview.removeTask(taskId)
+    },
+    onToggleAdReviewFocus: () => {
+      const currentTask = manageAdReview.task
+      if (!currentTask || currentTask.status !== 'review') {
+        setAdReviewFocusTaskId(null)
+        return
+      }
+
+      setAdReviewFocusTaskId((previous) => (previous === currentTask.task_id ? null : currentTask.task_id))
+    },
     ...createAdReviewSettingHandlers({ updateSettings: appSettings.updateSettings }),
     onDismissAdReviewTask: manageAdReview.dismissTask,
     metadataCollapsed: appSettings.metadataCollapsed,

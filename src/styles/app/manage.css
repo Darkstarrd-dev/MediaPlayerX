@@ -250,6 +250,11 @@
   color: var(--mpx-status-busy-text);
 }
 
+.manage-ad-review-status.is-pending {
+  background: var(--mpx-bg-muted);
+  color: var(--mpx-text-2);
+}
+
 .manage-ad-review-status.is-paused {
   background: var(--mpx-bg-muted);
   color: var(--mpx-text-2);
@@ -301,6 +306,27 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.manage-ad-review-queue {
+  display: grid;
+  gap: 6px;
+}
+
+.manage-ad-review-queue-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.manage-ad-review-queue-item-btn {
+  justify-content: space-between;
+}
+
+.manage-ad-review-queue-item.is-active .manage-ad-review-queue-item-btn {
+  border-color: var(--mpx-accent);
+  background: var(--mpx-accent-soft);
+  color: var(--mpx-accent);
 }
 
 .manage-ad-review-selection-tag {

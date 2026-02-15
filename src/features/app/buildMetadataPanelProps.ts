@@ -34,8 +34,11 @@ interface BuildMetadataPanelPropsParams {
   canExecuteAdReview: boolean
   adReviewPending: boolean
   adReviewTask: MetadataPanelProps['adReviewTask']
+  adReviewQueueTasks: MetadataPanelProps['adReviewQueueTasks']
+  adReviewActiveTaskId: string | null
   adReviewHideUncheckedNonChecked: boolean
   hasCheckedAdReviewCandidates: boolean
+  adReviewFocusTaskId: string | null
   adReviewStrategyMode: 'all' | 'head-tail'
   adReviewMaxConcurrency: number
   adReviewHeadN: number
@@ -44,6 +47,9 @@ interface BuildMetadataPanelPropsParams {
   onStartAdReview: () => void
   onPauseAdReview: () => void
   onToggleHideUncheckedNonChecked: () => void
+  onSelectAdReviewTask: (taskId: string) => void
+  onRemoveAdReviewTask: (taskId: string) => void
+  onToggleAdReviewFocus: () => void
   onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
   onAdReviewMaxConcurrencyChange: (value: number) => void
   onAdReviewHeadNChange: (value: number) => void
@@ -128,8 +134,11 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     canExecuteAdReview: params.canExecuteAdReview,
     adReviewPending: params.adReviewPending,
     adReviewTask: params.adReviewTask,
+    adReviewQueueTasks: params.adReviewQueueTasks,
+    adReviewActiveTaskId: params.adReviewActiveTaskId,
     adReviewHideUncheckedNonChecked: params.adReviewHideUncheckedNonChecked,
     hasCheckedAdReviewCandidates: params.hasCheckedAdReviewCandidates,
+    adReviewFocusTaskId: params.adReviewFocusTaskId,
     adReviewStrategyMode: params.adReviewStrategyMode,
     adReviewMaxConcurrency: params.adReviewMaxConcurrency,
     adReviewHeadN: params.adReviewHeadN,
@@ -138,6 +147,9 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onStartAdReview: params.onStartAdReview,
     onPauseAdReview: params.onPauseAdReview,
     onToggleHideUncheckedNonChecked: params.onToggleHideUncheckedNonChecked,
+    onSelectAdReviewTask: params.onSelectAdReviewTask,
+    onRemoveAdReviewTask: params.onRemoveAdReviewTask,
+    onToggleAdReviewFocus: params.onToggleAdReviewFocus,
     onAdReviewStrategyModeChange: params.onAdReviewStrategyModeChange,
     onAdReviewMaxConcurrencyChange: params.onAdReviewMaxConcurrencyChange,
     onAdReviewHeadNChange: params.onAdReviewHeadNChange,
