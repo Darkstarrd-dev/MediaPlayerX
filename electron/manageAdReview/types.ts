@@ -94,6 +94,8 @@ export type ManageAdReviewEvent =
       imageId: string
       status: AdReviewDecisionStatus
       source: AdReviewDecisionSource
+      hash: string
+      reason: string
     }
   | {
       type: 'container-complete'

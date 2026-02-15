@@ -22,6 +22,7 @@ describe('runManageAdReview', () => {
     const knownHashStore = new InMemoryKnownHashStore([computeSha256Hex(bytesA)])
 
     let llmCalls = 0
+    const events: unknown[] = []
     const client: AdVisionClient = {
       detectAd: async ({ imageBytes }) => {
         llmCalls += 1
@@ -70,6 +71,9 @@ describe('runManageAdReview', () => {
         hashStore: knownHashStore,
         strategy: { mode: 'all' },
         concurrency: 2,
+        onEvent: (event) => {
+          events.push(event)
+        },
       },
     )
 
@@ -89,6 +93,19 @@ describe('runManageAdReview', () => {
       ['b', 'suspected', 'llm', 'qr_code'],
       ['c', 'failed', 'llm-error', 'mock_network_error'],
     ])
+
+    const reviewedEvents = events
+      .filter((event): event is { type: 'image-reviewed'; hash: string; reason: string; imageId: string } => {
+        if (!event || typeof event !== 'object') {
+          return false
+        }
+        return (event as { type?: string }).type === 'image-reviewed'
+      })
+      .sort((left, right) => left.imageId.localeCompare(right.imageId))
+    expect(reviewedEvents[0]?.hash).toBeTypeOf('string')
+    expect(reviewedEvents[0]?.reason).toBeTypeOf('string')
+    expect(reviewedEvents[0]?.hash.length).toBeGreaterThan(0)
+    expect(reviewedEvents[0]?.reason.length).toBeGreaterThan(0)
   })
 
   it('在 head-tail 策略下仅扫描必要窗口并标记跳过项', async () => {

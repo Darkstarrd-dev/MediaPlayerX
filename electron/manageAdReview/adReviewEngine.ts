@@ -195,6 +195,8 @@ export async function runManageAdReview(input: ManageAdReviewInput, options: Man
         imageId: decision.imageId,
         status: decision.status,
         source: decision.source,
+        hash: decision.hash,
+        reason: decision.reason,
       })
     }
 
@@ -253,6 +255,8 @@ export async function runManageAdReview(input: ManageAdReviewInput, options: Man
           imageId: decision.imageId,
           status: decision.status,
           source: decision.source,
+          hash: decision.hash,
+          reason: decision.reason,
         })
       }
     }

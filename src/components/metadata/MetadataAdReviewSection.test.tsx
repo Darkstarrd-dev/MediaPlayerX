@@ -125,4 +125,32 @@ describe('MetadataAdReviewSection', () => {
     fireEvent.click(focusButton)
     expect(onToggleAdReviewFocus).toHaveBeenCalledTimes(1)
   })
+
+  it('keeps focus toggle available while running when candidates exist', () => {
+    const runningTask = createTask('task-running', 'running')
+    runningTask.candidates = [
+      {
+        image_id: 'img-1',
+        package_id: 'pkg-1',
+        package_name: 'pkg-1.zip',
+        display_name: 'pkg-1',
+        ordinal: 1,
+        file_name: '001.jpg',
+        reason: 'suspected',
+        source: 'llm',
+        hash: 'hash-1',
+      },
+    ]
+
+    const { onToggleAdReviewFocus } = renderSection({
+      adReviewTask: runningTask,
+      adReviewQueueTasks: [runningTask],
+      adReviewActiveTaskId: runningTask.task_id,
+    })
+
+    const focusButton = screen.getByRole('button', { name: 'focus' })
+    expect(focusButton).toBeEnabled()
+    fireEvent.click(focusButton)
+    expect(onToggleAdReviewFocus).toHaveBeenCalledTimes(1)
+  })
 })

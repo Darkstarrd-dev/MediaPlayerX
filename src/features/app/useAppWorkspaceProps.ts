@@ -752,7 +752,13 @@ export function useAppWorkspaceProps({
     },
     onToggleAdReviewFocus: () => {
       const currentTask = manageAdReview.task
-      if (!currentTask || currentTask.status !== 'review') {
+      if (!currentTask) {
+        setAdReviewFocusTaskId(null)
+        return
+      }
+
+      const canFocusStatus = currentTask.status === 'running' || currentTask.status === 'paused' || currentTask.status === 'review'
+      if (!canFocusStatus || currentTask.candidates.length === 0) {
         setAdReviewFocusTaskId(null)
         return
       }

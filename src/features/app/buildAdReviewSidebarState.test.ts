@@ -4,6 +4,21 @@ import type { ManageAdReviewTaskDto } from '../../contracts/backend'
 import type { ImagePackage } from '../../types'
 import { buildAdReviewSidebarState } from './buildAdReviewSidebarState'
 
+function findNodeByPackageId(nodes: ReturnType<typeof buildAdReviewSidebarState>, packageId: string) {
+  const stack = [...nodes]
+  while (stack.length > 0) {
+    const node = stack.pop()
+    if (!node) {
+      continue
+    }
+    if (node.packageId === packageId) {
+      return node
+    }
+    stack.push(...node.children)
+  }
+  return null
+}
+
 function createPackage(id: string, treePath: string[], displayName: string): ImagePackage {
   return {
     id,
@@ -110,16 +125,26 @@ describe('buildAdReviewSidebarState', () => {
 
     const drive = nodes.find((node) => node.pathKey === 'C:')
     expect(drive?.descendantImageCount).toBe(3)
+    expect(drive?.descendantNodeCount).toBe(3)
+    expect(drive?.imageNodeType).toBe('folder')
 
-    const pkgA = drive?.children[0]?.children[0]?.children.find((node) => node.packageId === 'pkg-a')
-    const pkgB = drive?.children[0]?.children[0]?.children.find((node) => node.packageId === 'pkg-b')
+    const compactFolder = drive?.children.find((node) => node.label === 'Users/A')
+    expect(compactFolder).toBeTruthy()
+    expect(compactFolder?.imageNodeType).toBe('folder')
+    expect(compactFolder?.descendantNodeCount).toBe(3)
+
+    const pkgA = findNodeByPackageId(nodes, 'pkg-a')
+    const pkgB = findNodeByPackageId(nodes, 'pkg-b')
     expect(pkgA?.directImageCount).toBe(2)
+    expect(pkgA?.imageNodeType).toBe('package')
     expect(pkgB?.directImageCount).toBe(1)
+    expect(pkgB?.imageNodeType).toBe('package')
   })
 
-  it('returns empty list when focus task is not review', () => {
+  it('returns empty list when focus task has no candidates', () => {
     const task = createReviewTask()
     task.status = 'paused'
+    task.candidates = []
 
     const nodes = buildAdReviewSidebarState({
       focusTask: task,

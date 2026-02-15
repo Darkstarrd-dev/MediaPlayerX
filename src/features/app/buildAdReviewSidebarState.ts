@@ -13,6 +13,48 @@ interface AdReviewSidebarNodeMetrics {
   imageCount: number
 }
 
+function isCompressibleImageFolderNode(node: SidebarNode): boolean {
+  if (node.kind !== 'folder') {
+    return false
+  }
+
+  if (node.imageNodeType && node.imageNodeType !== 'folder') {
+    return false
+  }
+
+  if (node.imageSourceId || node.packageId || node.videoId || node.audioId) {
+    return false
+  }
+
+  return (node.directImageCount ?? 0) === 0
+}
+
+function compactImageSidebarNode(node: SidebarNode, isRoot: boolean): SidebarNode {
+  let cursor = node
+  const mergedLabels = [node.label]
+
+  if (!isRoot) {
+    while (isCompressibleImageFolderNode(cursor) && cursor.children.length === 1) {
+      const child = cursor.children[0]
+      if (!isCompressibleImageFolderNode(child)) {
+        break
+      }
+      mergedLabels.push(child.label)
+      cursor = child
+    }
+  }
+
+  return {
+    ...cursor,
+    label: mergedLabels.length > 1 ? mergedLabels.join('/') : cursor.label,
+    children: cursor.children.map((child) => compactImageSidebarNode(child, false)),
+  }
+}
+
+function compactImageSidebarTree(nodes: SidebarNode[]): SidebarNode[] {
+  return nodes.map((node) => compactImageSidebarNode(node, true))
+}
+
 function decorateNodesWithMetrics(nodes: SidebarNode[], suspectedCountByPackageId: Map<string, number>): AdReviewSidebarNodeMetrics[] {
   return nodes.map((node) => {
     const childMetrics = decorateNodesWithMetrics(node.children, suspectedCountByPackageId)
@@ -24,10 +66,12 @@ function decorateNodesWithMetrics(nodes: SidebarNode[], suspectedCountByPackageI
       node: {
         ...node,
         children: childMetrics.map((child) => child.node),
+        imageNodeType: node.kind === 'folder' ? 'folder' : 'package',
         imageSourceId: node.packageId ?? node.imageSourceId,
         directImageCount: selfImageCount,
         descendantImageCount,
         descendantPackageCount,
+        descendantNodeCount: descendantImageCount,
       },
       packageCount: descendantPackageCount,
       imageCount: descendantImageCount,
@@ -36,7 +80,7 @@ function decorateNodesWithMetrics(nodes: SidebarNode[], suspectedCountByPackageI
 }
 
 export function buildAdReviewSidebarState({ focusTask, packageById }: BuildAdReviewSidebarStateParams): SidebarNode[] {
-  if (!focusTask || focusTask.status !== 'review' || focusTask.candidates.length === 0) {
+  if (!focusTask || focusTask.candidates.length === 0) {
     return []
   }
 
@@ -63,5 +107,6 @@ export function buildAdReviewSidebarState({ focusTask, packageById }: BuildAdRev
   }
 
   const rawTree = buildSidebarTree(leaves, 'package')
-  return decorateNodesWithMetrics(rawTree, suspectedCountByPackageId).map((item) => item.node)
+  const decorated = decorateNodesWithMetrics(rawTree, suspectedCountByPackageId).map((item) => item.node)
+  return compactImageSidebarTree(decorated)
 }

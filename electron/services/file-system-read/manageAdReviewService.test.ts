@@ -287,6 +287,49 @@ describe('ManageAdReviewService queue persistence', () => {
     expect(runManageAdReviewMock.mock.calls).toHaveLength(1)
   })
 
+  it('updates running task candidates incrementally from image-reviewed events', async () => {
+    const deferred = createDeferred<ReturnType<typeof buildReviewResult>>()
+    runManageAdReviewMock.mockImplementationOnce(async (_input, options) => {
+      ;(options as { onEvent?: (event: unknown) => void }).onEvent?.({
+        type: 'image-reviewed',
+        containerId: 'pkg-1',
+        imageId: 'img-1',
+        status: 'suspected',
+        source: 'llm',
+        hash: 'hash-img-1',
+        reason: 'mock_suspected',
+      })
+      return deferred.promise
+    })
+
+    const { service } = createServiceFixture()
+    const request: StartManageAdReviewRequestDto = {
+      selection_scope: 'image',
+      image_ids: ['img-1'],
+      llm_endpoint: 'http://127.0.0.1:1234/v1',
+      llm_model: 'mock-model',
+      strategy: { mode: 'all' },
+      max_concurrency: 4,
+    }
+
+    const started = await service.startManageAdReview(request)
+
+    await vi.waitFor(async () => {
+      const task = await service.readManageAdReviewTask({ task_id: started.task.task_id })
+      expect(task.task?.status).toBe('running')
+      expect(task.task?.candidates).toHaveLength(1)
+      expect(task.task?.candidates[0]?.image_id).toBe('img-1')
+      expect(task.task?.candidates[0]?.reason).toBe('mock_suspected')
+    })
+
+    deferred.resolve(buildReviewResult(['img-1']))
+
+    await vi.waitFor(async () => {
+      const task = await service.readManageAdReviewTask({ task_id: started.task.task_id })
+      expect(task.task?.status).toBe('review')
+    })
+  })
+
   it('skips unchanged reviewed sidebar nodes on next run', async () => {
     const { service } = createServiceFixture()
     const request: StartManageAdReviewRequestDto = {

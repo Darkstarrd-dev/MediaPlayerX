@@ -227,7 +227,7 @@ export function MetadataAdReviewSection({
               <button
                 className="feature-action-btn"
                 type="button"
-                disabled={adReviewPending}
+                disabled={adReviewPending || adReviewTask.candidates.length === 0}
                 onClick={onToggleAdReviewFocus}
               >
                 {adReviewFocusTaskId === adReviewTask.task_id ? 'return' : 'focus'}
@@ -235,6 +235,19 @@ export function MetadataAdReviewSection({
               <span className={`manage-ad-review-selection-tag ${hasCheckedAdReviewCandidates ? 'is-active' : ''}`}>
                 {hasCheckedAdReviewCandidates ? '已选候选可删除' : '未选候选'}
               </span>
+            </div>
+          ) : null}
+
+          {(adReviewTask.status === 'running' || adReviewTask.status === 'paused') ? (
+            <div className="manage-ad-review-actions">
+              <button
+                className="feature-action-btn"
+                type="button"
+                disabled={adReviewPending || adReviewTask.candidates.length === 0}
+                onClick={onToggleAdReviewFocus}
+              >
+                {adReviewFocusTaskId === adReviewTask.task_id ? 'return' : 'focus'}
+              </button>
             </div>
           ) : null}
 

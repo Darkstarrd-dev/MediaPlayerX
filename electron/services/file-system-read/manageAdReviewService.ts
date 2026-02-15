@@ -13,6 +13,7 @@ import {
   type ImagePackageDto,
   type LibrarySnapshotDto,
   type ManageAdReviewCandidateDto,
+  type ManageAdReviewImageSourceDto,
   type ManageAdReviewTaskDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
@@ -681,6 +682,34 @@ export class ManageAdReviewService {
                 [event.imageId]: normalizeImageSource(event.source),
               }
 
+              let nextCandidates = currentTask.task.candidates
+              const imageEntry = imageById.get(event.imageId)
+              if (event.status === 'suspected' && imageEntry) {
+                const normalizedReason = event.reason.trim() || 'suspected_ad'
+                const normalizedHash = event.hash.trim().toLowerCase() || `missing-hash-${event.imageId}`
+                const nextCandidate: ManageAdReviewCandidateDto = {
+                  image_id: event.imageId,
+                  package_id: imageEntry.source.id,
+                  package_name: imageEntry.source.package_name,
+                  display_name: imageEntry.source.display_name,
+                  ordinal: imageEntry.image.ordinal,
+                  file_name: toImageFileName(imageEntry.image),
+                  reason: normalizedReason,
+                  source: resolveCandidateSource(event.source),
+                  hash: normalizedHash,
+                }
+
+                const candidateByImageId = new Map(currentTask.task.candidates.map((candidate) => [candidate.image_id, candidate]))
+                candidateByImageId.set(nextCandidate.image_id, nextCandidate)
+                nextCandidates = Array.from(candidateByImageId.values()).sort((left, right) => {
+                  if (left.package_id !== right.package_id) {
+                    return left.package_id.localeCompare(right.package_id)
+                  }
+                  return left.ordinal - right.ordinal
+                })
+                currentTask.candidateHashByImageId.set(nextCandidate.image_id, nextCandidate.hash)
+              }
+
               currentTask.task = {
                 ...currentTask.task,
                 reviewed_count: reviewedCount,
@@ -689,6 +718,7 @@ export class ManageAdReviewService {
                 known_hash_hits: nextSourceDistribution.known_hash,
                 llm_calls: llmCalls,
                 image_source_by_id: nextImageSourceById,
+                candidates: nextCandidates,
                 audit: toTaskAudit({
                   sourceDistribution: nextSourceDistribution,
                   suspectedCount,

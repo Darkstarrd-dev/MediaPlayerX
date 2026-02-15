@@ -58,7 +58,8 @@ export function resolveAdReviewPageDerivations({
           return true
         }
 
-        if (selectedSidebarNode.imageNodeType === 'folder') {
+        const selectedNodeIsFolder = selectedSidebarNode.kind === 'folder' || selectedSidebarNode.imageNodeType === 'folder'
+        if (selectedNodeIsFolder) {
           const packagePathKey = packageByIdEffective.get(ref.packageId)?.treePath.join('/')
           return Boolean(packagePathKey && pathKeyHasPrefix(packagePathKey, selectedSidebarNode.pathKey))
         }
