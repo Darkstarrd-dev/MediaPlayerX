@@ -184,7 +184,7 @@ function delay(ms: number): Promise<void> {
   })
 }
 
-function buildSceneApplyScript(styleId: string, paletteId: string, scenePreset: ThemeGalleryScenePreset): string {
+export function buildSceneApplyScript(styleId: string, paletteId: string, scenePreset: ThemeGalleryScenePreset): string {
   const payload = JSON.stringify({ styleId, paletteId, scenePreset })
 
   return `(() => {
@@ -216,12 +216,18 @@ function buildSceneApplyScript(styleId: string, paletteId: string, scenePreset: 
   }
 
   const ensureMode = async (mode) => {
+    const selectorByMode = {
+      image: 'button[data-a11y-id="header.mode.image"]',
+      video: 'button[data-a11y-id="header.mode.video"]',
+      music: 'button[data-a11y-id="header.mode.music"]',
+    }
     const labelByMode = {
       image: '图片模式',
       video: '视频模式',
       music: '音乐模式',
     }
-    const button = query('.mode-switch button[aria-label="' + labelByMode[mode] + '"]')
+    const button = query(selectorByMode[mode])
+      || query('.mode-switch button[aria-label="' + labelByMode[mode] + '"]')
     if (!button) {
       throw new Error('mode button not found: ' + mode)
     }
@@ -232,17 +238,20 @@ function buildSceneApplyScript(styleId: string, paletteId: string, scenePreset: 
   }
 
   const ensureSearchPanel = async (enabled) => {
-    const button = query('.header-group-search .search-trigger-btn[aria-label="检索"]')
+    const button = query('button[data-a11y-id="header.search"]')
+      || query('.header-group-search .search-trigger-btn[aria-label="检索"]')
     await ensureButtonActive(button, enabled)
   }
 
   const ensureManageMode = async (enabled) => {
-    const button = query('.header-group-search .search-trigger-btn[aria-label="文件管理"]')
+    const button = query('button[data-a11y-id="header.manage"]')
+      || query('.header-group-search .search-trigger-btn[aria-label="文件管理"]')
     await ensureButtonActive(button, enabled)
   }
 
   const ensureMetadataManageMode = async (enabled) => {
-    const preferred = query('.header-group-search .search-trigger-btn[aria-label="切换到图像模式"]')
+    const preferred = query('button[data-a11y-id="header.metadataToggle"]')
+      || query('.header-group-search .search-trigger-btn[aria-label="切换到图像模式"]')
       || query('.header-group-search .search-trigger-btn[aria-label="切换到元数据模式"]')
     const fallback = Array.from(document.querySelectorAll('.header-group-search .search-trigger-btn'))[2] || null
     const button = preferred || fallback
@@ -253,7 +262,9 @@ function buildSceneApplyScript(styleId: string, paletteId: string, scenePreset: 
     const isOpen = () => Boolean(query('.settings-mask'))
     if (enabled) {
       if (!isOpen()) {
-        const button = query('.header-group-primary .header-settings-btn[aria-label="设置"]') || query('button[aria-label="设置"]')
+        const button = query('button[data-a11y-id="header.settings"]')
+          || query('.header-group-primary .header-settings-btn[aria-label="设置"]')
+          || query('button[aria-label="设置"]')
         if (!button) {
           throw new Error('settings open button not found')
         }
@@ -264,7 +275,8 @@ function buildSceneApplyScript(styleId: string, paletteId: string, scenePreset: 
     }
 
     if (isOpen()) {
-      const closeButton = query('.settings-mask .settings-head button[aria-label="关闭"]')
+      const closeButton = query('.settings-mask .settings-head button[data-a11y-id="settings.close"]')
+        || query('.settings-mask .settings-head button[aria-label="关闭"]')
       if (!closeButton) {
         throw new Error('settings close button not found')
       }

@@ -485,6 +485,7 @@ function AppHeader({
           <div className="mode-switch-wrap" onMouseEnter={clearMusicQuickHideTimer} onMouseLeave={scheduleHideMusicActions}>
             <div className="mode-switch" role="group" aria-label="mode-switch">
               <button
+                data-a11y-id="header.mode.image"
                 aria-label="图片模式"
                 className={mode === 'image' ? 'is-active' : ''}
                 type="button"
@@ -499,6 +500,7 @@ function AppHeader({
                 </span>
               </button>
               <button
+                data-a11y-id="header.mode.video"
                 aria-label="视频模式"
                 className={mode === 'video' ? 'is-active' : ''}
                 type="button"
@@ -513,6 +515,7 @@ function AppHeader({
                 </span>
               </button>
               <button
+                data-a11y-id="header.mode.music"
                 aria-label="音乐模式"
                 className={mode === 'music' ? 'is-active' : ''}
                 type="button"

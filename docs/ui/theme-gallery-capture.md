@@ -9,6 +9,7 @@
 - 固定结构：不引入 pane 重排，不改 `AppWorkspace` 结构。
 - 可变范围：style 层 token + 非结构性单 area 变换（如 header 偏斜、pane 浮动错位感）。
 - 数据源：强制 `mock repository`，避免真实库差异干扰视觉评审。
+- 自动化选择器：优先使用 `data-a11y-id` 稳定选择器，禁止新脚本仅依赖 `aria-label` 文案。
 
 ---
 
@@ -109,3 +110,4 @@ Pane 侧（此前已存在）可继续用：
 ## 6) Soft Skeuomorphic 细节探索
 
 - 细节变体定义与选择基线：`docs/ui/soft-skeuomorphic-detail-brainstorm.md`
+- 新对话入口提示词：`docs/ui/theme-brainstorm-entry.md`
