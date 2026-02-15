@@ -169,7 +169,22 @@ export function useManageAdReviewActions({
           },
           { timeoutMs: REVIEW_READ_TIMEOUT_MS },
         )
-        const tasks = parseQueueTasks(response.state_json)
+        let tasks = parseQueueTasks(response.state_json)
+        const runningTaskId = tasks.find((item) => item.status === 'running')?.task_id ?? null
+        if (runningTaskId && repository.readManageAdReviewTask) {
+          try {
+            const runtimeResponse = await repository.readManageAdReviewTask(
+              { task_id: runningTaskId },
+              { timeoutMs: REVIEW_READ_TIMEOUT_MS },
+            )
+            const runtimeTask = runtimeResponse.task
+            if (runtimeTask && runtimeTask.task_id === runningTaskId) {
+              tasks = tasks.map((item) => (item.task_id === runningTaskId ? runtimeTask : item))
+            }
+          } catch {
+            // Keep queue snapshot as fallback when runtime task read fails.
+          }
+        }
         setQueueTasks(tasks)
         setActiveTaskId((previous) => {
           if (previous && tasks.some((task) => task.task_id === previous)) {
