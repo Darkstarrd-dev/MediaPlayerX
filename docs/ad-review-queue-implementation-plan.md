@@ -9,6 +9,7 @@ Rules for this plan
 - Each phase is self-contained and ends with: tests -> update this doc -> git commit -> git push.
 - Only 1 ad-review task is allowed to be `running` at any time.
 - Keep per-image concurrency behavior as-is (existing `max_concurrency` setting).
+- For sidebar-scope reviews, node completion is the atomic unit for persistence.
 
 ---
 
@@ -41,6 +42,11 @@ Rules for this plan
   - Esc or right-click exits original-image back to data view
 - D) Only 1 ad-review item can be `running` at a time.
   - a new request while one is running becomes `pending`.
+- E) Node-level persistence semantics (sidebar scope):
+  - A node is marked as reviewed only after the node finishes scanning.
+  - If the app crashes/power-loss happens while scanning a node, that node is NOT recorded as reviewed.
+    - after restart, that node will be scanned again next time.
+  - Nodes completed before the crash remain recorded and their results remain visible after restart.
 
 ---
 
@@ -160,6 +166,13 @@ Node hash definition (recommended v1)
 - This detects add/remove/relocate/most changes cheaply.
 - If strict byte-level detection is required later, introduce per-image sha256 storage at ingest time (out of scope for v1).
 
+Persistence semantics (crash safety)
+- Queue item results should be persisted at node boundaries (after a node completes) so completed nodes survive crashes.
+- Reviewed-node index MUST be persisted only at node completion.
+  - Do not update reviewed-node index for partially scanned nodes.
+- On restart, any queue item left in `running` becomes `paused`.
+  - resuming will re-scan the last in-progress node because it was not marked as reviewed.
+
 ---
 
 ## Execution Phases
@@ -174,6 +187,7 @@ Outcome
 - On pause, backend does NOT auto-start next.
 - On restart:
   - any item left in `running` is converted to `paused` (best-effort).
+  - only nodes fully completed before the interruption are present in reviewed-node index.
 
 Files to touch
 - `src/contracts/backend.ts`
@@ -205,13 +219,22 @@ Implementation checklist
   - [ ] compute node_hash for each selected node
   - [ ] if `node_hash` unchanged vs reviewed index -> add to `skipped_node_ids` and exclude from effective selection
   - [ ] if effective selection empty -> mark item as `review` with message `已审核(未变更)，无需执行`
-- [ ] During running:
-  - [ ] update queue item progress + `image_source_by_id` using existing `onEvent(image-reviewed)`
-  - [ ] persist with throttling (e.g. every 500ms or every N events)
-- [ ] On completion:
+- [ ] Normalize sidebar node targets (sidebar scope only):
+  - [ ] remove descendant nodes if an ancestor node is also selected (avoid double-scanning overlaps)
+- [ ] Execute sidebar scope node-by-node (atomic commit per node):
+  - [ ] process `effective_node_ids` sequentially
+  - [ ] for each node:
+    - [ ] resolve its effective image ids
+    - [ ] run ad-review engine for this node (keep existing per-image concurrency)
+    - [ ] append results to the queue item and persist `manage_ad_review_queue_v1`
+    - [ ] compute and persist reviewed-node hash for this node in `manage_ad_review_reviewed_nodes_v1`
+  - [ ] if crash happens mid-node: no reviewed-node record exists for that node; it will be re-scanned next time
+- [ ] During running (optional live progress):
+  - [ ] keep in-memory progress updates via existing `onEvent(image-reviewed)` for UI
+  - [ ] do NOT persist partial node results as reviewed-node records
+- [ ] On task completion:
   - [ ] status -> `review` or `failed`
-  - [ ] persist candidates + audit
-  - [ ] update reviewed node index for all effective nodes
+  - [ ] persist final queue item state
   - [ ] if completed to `review` or `failed`, start next pending (FIFO)
 - [ ] On pause:
   - [ ] status -> `paused`
@@ -405,6 +428,7 @@ Doc + Git
 - Queue scheduling: auto-run next `pending` when a `running` item transitions to `review` or `failed`.
   - Do NOT auto-run next when user pauses a task (`paused`).
 - Reviewed-node hash: metadata signature hash (no file bytes read).
+- Reviewed-node persistence: write reviewed-node index only after a node finishes scanning (sidebar scope).
 
 ## Optional Variants (not part of v1)
 
