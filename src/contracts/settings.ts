@@ -60,6 +60,7 @@ export const appSettingsSchema = z.object({
   mode: browserModeSchema,
   vectorMode: z.boolean(),
   settingsOpen: z.boolean(),
+  helpOpen: z.boolean(),
   headerHeight: z.number().min(48).max(96),
   settingsBackdropOpacity: z.number().min(0).max(100),
   settingsFontSize: z.number().min(12).max(24),

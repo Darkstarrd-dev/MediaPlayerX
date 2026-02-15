@@ -214,6 +214,7 @@ export interface AppHeaderProps {
   onAutoPlayEnabledChange: (enabled: boolean) => void
   onAutoPlayIntervalChange: (value: number) => void
   onTogglePaletteMode: () => void
+  onOpenHelp: () => void
   onOpenSettings: () => void
 }
 
@@ -249,6 +250,7 @@ function AppHeader({
   onAutoPlayEnabledChange,
   onAutoPlayIntervalChange,
   onTogglePaletteMode,
+  onOpenHelp,
   onOpenSettings,
 }: AppHeaderProps) {
   const { t } = useI18n()
@@ -399,6 +401,7 @@ function AppHeader({
   }, [])
 
   const settingsButtonA11y = buildA11yPropsByRegistry({ key: 'headerSettings', t })
+  const helpButtonA11y = buildA11yPropsByRegistry({ key: 'headerHelp', t })
   const searchButtonA11y = buildA11yPropsByRegistry({ key: 'headerSearch', t })
   const manageButtonA11y = buildA11yPropsByRegistry({ key: 'headerManage', t })
   const metadataToggleA11y = buildA11yProps({
@@ -674,6 +677,9 @@ function AppHeader({
 
       <div className="header-right">
         <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" role="group">
+          <button {...helpButtonA11y} className="window-control-btn" type="button" onClick={onOpenHelp}>
+            <span aria-hidden="true">H</span>
+          </button>
           <button
             aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
             className="window-control-btn"

@@ -37,6 +37,7 @@ interface UseAppShellPropsParams {
     | 'runtimeCapabilityWarnings'
     | 'runtimeWarningDismiss'
     | 'fullscreenLayerProps'
+    | 'helpPanelProps'
     | 'settingsPanelProps'
     | 'appHeaderProps'
     | 'importTaskPanelProps'
@@ -137,6 +138,7 @@ export function useAppShellProps({
     appTopBannersProps,
     appWorkspaceProps,
     fullscreenLayerProps: topLayerState.fullscreenLayerProps,
+    helpPanelProps: topLayerState.helpPanelProps,
     settingsPanelProps: topLayerState.settingsPanelProps,
     manageDeleteDialogProps,
     dragOverlayActive,

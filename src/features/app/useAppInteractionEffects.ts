@@ -44,6 +44,7 @@ export function useAppInteractionEffects({
     mode,
     vectorMode,
     settingsOpen,
+    helpOpen,
     sidebarRatio,
     settingsBackdropOpacity,
     thumbnailScale,
@@ -195,6 +196,14 @@ export function useAppInteractionEffects({
       return true
     }
 
+    const closeHelpPanel = () => {
+      if (!helpOpen) {
+        return false
+      }
+      updateSettings({ helpOpen: false })
+      return true
+    }
+
     const closeDeleteConfirm = () => {
       if (!deleteConfirmOpen) {
         return false
@@ -216,6 +225,9 @@ export function useAppInteractionEffects({
         return false
       }
       if (closeDeleteConfirm()) {
+        return true
+      }
+      if (closeHelpPanel()) {
         return true
       }
       if (closeSettingsPanel()) {
@@ -245,6 +257,9 @@ export function useAppInteractionEffects({
       }
       if (layer === 'settings') {
         return closeSettingsPanel()
+      }
+      if (layer === 'help') {
+        return closeHelpPanel()
       }
       if (layer === 'search-panel') {
         return closeSearchPanel()
@@ -330,6 +345,7 @@ export function useAppInteractionEffects({
     setManageOperationHint,
     setMetadataManageMode,
     settingsOpen,
+    helpOpen,
     updateSettings,
     vectorMode,
     featureTagPickerOpen,
@@ -341,7 +357,7 @@ export function useAppInteractionEffects({
     adReviewDeletePending,
     mode,
     vectorResultsActive,
-    settingsOpen,
+    settingsOpen: settingsOpen || helpOpen,
     sidebarFocus,
     fullscreenActive,
     fullscreenDisplay,

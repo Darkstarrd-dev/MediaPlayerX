@@ -41,6 +41,7 @@ function createHeaderProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderPr
     onAutoPlayEnabledChange: vi.fn(),
     onAutoPlayIntervalChange: vi.fn(),
     onTogglePaletteMode: vi.fn(),
+    onOpenHelp: vi.fn(),
     onOpenSettings: vi.fn(),
     ...overrides,
   }

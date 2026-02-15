@@ -81,6 +81,7 @@ export function useAppViewComposition({
       runtimeCapabilityWarnings: topLayerState.runtimeCapabilityWarnings,
       runtimeWarningDismiss: topLayerState.runtimeWarningDismiss,
       fullscreenLayerProps: topLayerState.fullscreenLayerProps,
+      helpPanelProps: topLayerState.helpPanelProps,
       settingsPanelProps: topLayerState.settingsPanelProps,
       appHeaderProps: topLayerState.appHeaderProps,
       importTaskPanelProps: topLayerState.importTaskPanelProps,

@@ -123,6 +123,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
         themeId: targetPaletteId,
       })
     },
+    onOpenHelp: () => params.updateSettings({ helpOpen: true }),
     onOpenSettings: () => params.updateSettings({ settingsOpen: true }),
   }
 }

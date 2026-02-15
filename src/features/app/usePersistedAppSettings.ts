@@ -17,6 +17,7 @@ export function toPersistedAppSettings(
     mode: settings.mode,
     vectorMode: settings.vectorMode,
     settingsOpen: settings.settingsOpen,
+    helpOpen: settings.helpOpen,
     headerHeight: settings.headerHeight,
     settingsBackdropOpacity: settings.settingsBackdropOpacity,
     settingsFontSize: settings.settingsFontSize,

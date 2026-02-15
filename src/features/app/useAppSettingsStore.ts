@@ -8,6 +8,7 @@ export function useAppSettingsStore() {
       mode: state.mode,
       vectorMode: state.vectorMode,
       settingsOpen: state.settingsOpen,
+      helpOpen: state.helpOpen,
       headerHeight: state.headerHeight,
       settingsBackdropOpacity: state.settingsBackdropOpacity,
       settingsFontSize: state.settingsFontSize,

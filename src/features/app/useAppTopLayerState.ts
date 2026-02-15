@@ -491,6 +491,12 @@ export function useAppTopLayerState({
     onToggleMetadataManageMode,
   })
 
+  const helpPanelProps = {
+    helpOpen: appSettings.helpOpen,
+    settingsFontSize: appSettings.settingsFontSize,
+    onClose: () => appSettings.updateSettings({ helpOpen: false }),
+  }
+
   const importTaskPanelProps = buildImportTaskPanelProps({
     open: importTaskPanelOpen,
     activeTaskCount: activeImportTaskCount,
@@ -513,6 +519,7 @@ export function useAppTopLayerState({
     runtimeCapabilityWarnings,
     runtimeWarningDismiss,
     fullscreenLayerProps,
+    helpPanelProps,
     settingsPanelProps,
     appHeaderProps,
     importTaskPanelProps,

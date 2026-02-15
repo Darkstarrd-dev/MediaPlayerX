@@ -20,6 +20,11 @@ export const a11yRegistry = {
     labelKey: 'a11y.header.settings',
     titleKey: 'tip.header.settings',
   },
+  headerHelp: {
+    id: 'header.help',
+    labelKey: 'a11y.header.help',
+    titleKey: 'tip.header.help',
+  },
   headerMetadataToggle: {
     id: 'header.metadataToggle',
     labelKey: 'a11y.header.switchToMetadataMode',
