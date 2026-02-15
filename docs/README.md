@@ -7,6 +7,7 @@
 - `requirements-v1.md`：需求范围与行为边界。
 - `architecture-v1.md`：运行时架构、模块边界、数据流。
 - `interaction-v1.md`：界面结构、交互规则、快捷键行为。
+- `music-visualizer-shader-entry.md`：Shader 开发新对话极简入口（提示词模板 + 最小读取范围）。
 - `music-visualizer-shader-migration-playbook.md`：音乐可视化 Shader 迁移流程、排障与验收清单。
 - `backend-integration-guardrails.md`：后端接入强约束与门禁。
 - `windows-release-signing-runbook.md`：Windows 发布签名与 CI 打包流程。
@@ -43,12 +44,8 @@
 
 ## 待办
 
-1. 视频元数据获取实施：按 `docs/ref/video-metadata-scraper/` 参考文档落地抓取流程、字段映射与数据入库链路。
-2. 广告审核运行态联动：进入广告审核任务后，Header `idle/busy` 状态强制切到 `busy`，直到审核任务结束（`review/completed/failed/cancelled`）再恢复。
-3. 广告审核后台持续执行：审核启动后允许用户切换模式与常规看图操作，审核任务在后台持续执行并可回到面板查看进度。
-4. 广告审核结果 Sidebar 输入：审核完成后将疑似广告结果集映射为独立 Sidebar 视图输入，仅显示该结果集内容。
-5. 广告审核 Focus/Return 切换：在广告审核面板右侧新增 `focus` 按钮（复用“设为根”图标），`focus/return` 两态切换“结果 Sidebar”与“常规 Sidebar”；结果集执行删除后自动销毁该临时 Sidebar 视图。
-6. 缩略图与元数据联动：在缩略图中点击图片时，元数据面板自动切换到“原图模式”。
+1. Theme brainstorm 迭代入口：使用 `docs/ui/theme-brainstorm-entry.md` 作为新对话提示词，限制读取范围并执行 screenshot gallery 流程。
+2. Shader 开发入口落地：新建 Shader 相关任务默认使用 `docs/music-visualizer-shader-entry.md` 作为首个提示词入口，并持续维护最小读取范围。
 
 ## 文档维护约定
 

@@ -72,6 +72,7 @@ npm run test
 - `docs/requirements-v1.md`
 - `docs/architecture-v1.md`
 - `docs/interaction-v1.md`
+- `docs/music-visualizer-shader-entry.md`
 - `docs/music-visualizer-shader-migration-playbook.md`
 - `docs/backend-integration-guardrails.md`
 - `docs/windows-release-signing-runbook.md`
