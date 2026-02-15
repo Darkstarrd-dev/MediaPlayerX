@@ -5,7 +5,6 @@ import { buildMainFooter } from './buildMainFooter'
 import { buildManagementPanelProps } from './buildManagementPanelProps'
 import { buildMetadataManagementPanelProps } from './buildMetadataManagementPanelProps'
 import { buildMetadataPanelProps } from './buildMetadataPanelProps'
-import { buildAdReviewSidebarState } from './buildAdReviewSidebarState'
 import { buildSearchPanelProps } from './buildSearchPanelProps'
 import { buildSidebarPanelProps } from './buildSidebarPanelProps'
 import { buildMusicMainSectionProps } from './buildMusicMainSectionProps'
@@ -24,30 +23,17 @@ import {
   pickFirstBySeriesId,
 } from './workspaceSharedUtils'
 import { buildNodeBrowseItems, resolveRefsInPageForDisplay } from './workspaceImageDerivations'
+import { resolveAdReviewSidebarContext } from './workspaceAdReviewSidebarContext'
 import {
   createApplyMetadataSyncName,
   createSaveParsedMetadata,
 } from './workspaceMetadataActions'
 import { createAdReviewSettingHandlers } from './workspaceAdReviewHandlers'
 import type { UseAppWorkspacePropsParams } from './useAppWorkspaceProps.types'
-import type { FocusedImageRef, SidebarNode } from '../../types'
+import type { FocusedImageRef } from '../../types'
 
 function pathKeyHasPrefix(pathKey: string, prefix: string): boolean {
   return pathKey === prefix || pathKey.startsWith(`${prefix}/`)
-}
-
-function buildSidebarNodeById(nodes: SidebarNode[]): Map<string, SidebarNode> {
-  const nodeById = new Map<string, SidebarNode>()
-
-  const walk = (input: SidebarNode[]) => {
-    for (const node of input) {
-      nodeById.set(node.id, node)
-      walk(node.children)
-    }
-  }
-
-  walk(nodes)
-  return nodeById
 }
 
 export function useAppWorkspaceProps({
@@ -232,19 +218,21 @@ export function useAppWorkspaceProps({
     ),
   ).sort((left, right) => left.localeCompare(right, 'zh-CN'))
 
-  const adReviewFocusTask =
-    adReviewFocusTaskId ? manageAdReview.queueTasks.find((item) => item.task_id === adReviewFocusTaskId) ?? null : null
-  const adReviewResultsMode = mode === 'image' && Boolean(adReviewFocusTask && adReviewFocusTask.status === 'review')
-  const adReviewSidebarNodes = adReviewResultsMode
-    ? buildAdReviewSidebarState({
-        focusTask: adReviewFocusTask,
-        packageById: packageByIdEffective,
-      })
-    : []
-  const adReviewSidebarNodeById = adReviewResultsMode ? buildSidebarNodeById(adReviewSidebarNodes) : new Map<string, SidebarNode>()
-  const effectiveSidebarNodeById = adReviewResultsMode ? adReviewSidebarNodeById : sidebarNodeById
-  const selectedSidebarNode = selectedSidebarNodeId ? effectiveSidebarNodeById.get(selectedSidebarNodeId) ?? null : null
-  const sidebarImageTreeNodes = adReviewResultsMode ? adReviewSidebarNodes : imageTreeForSidebar
+  const {
+    adReviewFocusTask,
+    adReviewResultsMode,
+    effectiveSidebarNodeById,
+    selectedSidebarNode,
+    sidebarImageTreeNodes,
+  } = resolveAdReviewSidebarContext({
+    mode,
+    adReviewFocusTaskId,
+    queueTasks: manageAdReview.queueTasks,
+    packageByIdEffective,
+    sidebarNodeById,
+    selectedSidebarNodeId,
+    imageTreeForSidebar,
+  })
 
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
