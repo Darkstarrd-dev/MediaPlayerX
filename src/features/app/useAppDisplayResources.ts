@@ -16,6 +16,7 @@ import type { SynchronousMediaRepository } from '../backend/repository'
 import type { MediaStateResult } from '../media/useMediaState'
 import type { UiBenchSettings } from '../perf/benchSettings'
 import type { MediaLocator } from '../../types'
+import { useI18n } from '../../i18n/useI18n'
 
 function isSyncSubtitleRepository(repository: unknown): repository is SynchronousMediaRepository {
   if (!repository || typeof repository !== 'object') {
@@ -77,6 +78,7 @@ export function useAppDisplayResources({
   readNavigationState,
   manageBindings,
 }: UseAppDisplayResourcesParams) {
+  const { t } = useI18n()
   const { showNamesOnly } = appSettings
   const isVideoMode = appSettings.mode === 'video'
   const syncMediaRepository = isSyncSubtitleRepository(mediaRepository) ? mediaRepository : null
@@ -321,7 +323,7 @@ export function useAppDisplayResources({
       setSubtitleOptions(options)
       if (options.length === 0) {
         setSubtitleVisible(false)
-        setSubtitleMessage('未发现同目录字幕文件')
+        setSubtitleMessage(t('ui.media.subtitleNotFoundInDirectory'))
       }
       setSubtitleLoading(false)
       return
@@ -377,7 +379,7 @@ export function useAppDisplayResources({
         setSubtitleOptions(options)
         if (options.length === 0) {
           setSubtitleVisible(false)
-          setSubtitleMessage('未发现同目录字幕文件')
+          setSubtitleMessage(t('ui.media.subtitleNotFoundInDirectory'))
         }
       })
       .catch((error: unknown) => {
@@ -402,7 +404,7 @@ export function useAppDisplayResources({
     return () => {
       active = false
     }
-  }, [focusedVideoEffective?.id, isSynchronousSubtitleMode, isVideoMode, mediaRepository, syncMediaRepository])
+  }, [focusedVideoEffective?.id, isSynchronousSubtitleMode, isVideoMode, mediaRepository, syncMediaRepository, t])
 
   useEffect(() => {
     if (!isVideoMode || !focusedVideoEffective?.id || !selectedSubtitleLocator) {
@@ -456,7 +458,7 @@ export function useAppDisplayResources({
       let locator = option.locator
       if (option.format !== 'vtt') {
         if (!mediaRepository.prepareSubtitleTrack) {
-          throw new Error('后端未启用字幕转换能力')
+          throw new Error(t('ui.media.subtitleConverterUnsupported'))
         }
         const prepared = await mediaRepository.prepareSubtitleTrack({
           subtitle_id: option.id,

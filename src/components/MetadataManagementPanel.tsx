@@ -60,7 +60,7 @@ function MetadataManagementPanel({
           type="button"
           onClick={onExpand}
         >
-          <span className="search-panel-expand-tip">展开元数据管理容器</span>
+          <span className="search-panel-expand-tip">{t('ui.metadata.expandManagementPanelTip')}</span>
         </button>
       ) : (
         <div
@@ -72,10 +72,10 @@ function MetadataManagementPanel({
           <div className="vector-panel-content" ref={panelContentRef}>
             <div className="vector-controls metadata-manage-actions">
               <button className="feature-action-btn" type="button" disabled={syncNameDisabled} onClick={onSyncName}>
-                同步名称
+                {t('tip.common.syncName')}
               </button>
               <button className="feature-action-btn" type="button" onClick={() => setFetchPanelOpen(true)}>
-                获取元数据
+                {t('ui.metadata.fetchTitle')}
               </button>
             </div>
 

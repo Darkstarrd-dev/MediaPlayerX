@@ -9,7 +9,7 @@ import {
   type MediaLocatorDto,
   type VideoItemDto,
 } from '../src/contracts/backend'
-import { isPathInsideRoot, normalizeAllowlistKey } from './fileSystemServiceHelpers'
+import { isPathInsideRoot, normalizeAllowlistKey, toAbsoluteTreePath } from './fileSystemServiceHelpers'
 import type { SQLiteDatabaseLike, TransactionRunner } from './mediaLibraryDatabaseTypes'
 import { type AudioRow, type ImageRow, parseJson, type SourceRow, type VideoRow } from './mediaLibraryStoreUtils'
 
@@ -739,6 +739,232 @@ export class MediaLibrarySnapshotStore {
       deletedSourceCount,
       deletedVideoCount,
       deletedAudioCount,
+    }
+  }
+
+  moveSnapshotEntriesByPaths(
+    mappings: Array<{ fromPath: string; toPath: string }>,
+  ): {
+    movedSourceCount: number
+    movedImageLocatorCount: number
+    movedVideoCount: number
+    movedAudioCount: number
+  } {
+    const mappingByFromKey = new Map<string, { fromPath: string; toPath: string; fromKey: string }>()
+    for (const mapping of mappings) {
+      const fromPath = path.resolve(mapping.fromPath)
+      const toPath = path.resolve(mapping.toPath)
+      const fromKey = normalizeAllowlistKey(fromPath)
+      if (fromKey === normalizeAllowlistKey(toPath)) {
+        continue
+      }
+      mappingByFromKey.set(fromKey, {
+        fromPath,
+        toPath,
+        fromKey,
+      })
+    }
+
+    const normalizedMappings = Array.from(mappingByFromKey.values()).sort(
+      (left, right) => right.fromPath.length - left.fromPath.length,
+    )
+    if (normalizedMappings.length === 0) {
+      return {
+        movedSourceCount: 0,
+        movedImageLocatorCount: 0,
+        movedVideoCount: 0,
+        movedAudioCount: 0,
+      }
+    }
+
+    const resolveMovedPath = (candidatePath: string): string | null => {
+      const resolvedCandidate = path.resolve(candidatePath)
+      const candidateKey = normalizeAllowlistKey(resolvedCandidate)
+
+      for (const mapping of normalizedMappings) {
+        if (mapping.fromKey === candidateKey) {
+          return mapping.toPath
+        }
+        if (isPathInsideRoot(mapping.fromPath, resolvedCandidate)) {
+          const relativePath = path.relative(mapping.fromPath, resolvedCandidate)
+          return path.resolve(mapping.toPath, relativePath)
+        }
+      }
+
+      return null
+    }
+
+    const sourceRows = this.db
+      .prepare(
+        `
+          SELECT id, absolute_path
+          FROM media_source
+        `,
+      )
+      .all() as Array<{ id: string; absolute_path: string }>
+    const imageRows = this.db
+      .prepare(
+        `
+          SELECT id, media_locator_json
+          FROM image_item
+        `,
+      )
+      .all() as Array<{ id: string; media_locator_json: string }>
+    const videoRows = this.db
+      .prepare(
+        `
+          SELECT id, absolute_path, media_locator_json
+          FROM video_item
+        `,
+      )
+      .all() as Array<{ id: string; absolute_path: string; media_locator_json: string }>
+    const audioRows = this.db
+      .prepare(
+        `
+          SELECT id, absolute_path, media_locator_json
+          FROM audio_item
+        `,
+      )
+      .all() as Array<{ id: string; absolute_path: string; media_locator_json: string }>
+
+    const updateSourcePath = this.db.prepare(
+      `
+        UPDATE media_source
+        SET absolute_path = ?, tree_path_json = ?, updated_at_ms = ?
+        WHERE id = ?
+      `,
+    )
+    const updateImageLocator = this.db.prepare(
+      `
+        UPDATE image_item
+        SET media_locator_json = ?, updated_at_ms = ?
+        WHERE id = ?
+      `,
+    )
+    const updateVideoItem = this.db.prepare(
+      `
+        UPDATE video_item
+        SET absolute_path = ?, tree_path_json = ?, media_locator_json = ?, updated_at_ms = ?
+        WHERE id = ?
+      `,
+    )
+    const updateAudioItem = this.db.prepare(
+      `
+        UPDATE audio_item
+        SET absolute_path = ?, tree_path_json = ?, media_locator_json = ?, updated_at_ms = ?
+        WHERE id = ?
+      `,
+    )
+
+    let movedSourceCount = 0
+    let movedImageLocatorCount = 0
+    let movedVideoCount = 0
+    let movedAudioCount = 0
+
+    this.runInTransaction(() => {
+      const updatedAtMs = Date.now()
+
+      for (const row of sourceRows) {
+        const movedPath = resolveMovedPath(row.absolute_path)
+        if (!movedPath || normalizeAllowlistKey(movedPath) === normalizeAllowlistKey(row.absolute_path)) {
+          continue
+        }
+        updateSourcePath.run(movedPath, JSON.stringify(toAbsoluteTreePath(movedPath)), updatedAtMs, row.id)
+        movedSourceCount += 1
+      }
+
+      for (const row of imageRows) {
+        const locator = parseJson<MediaLocatorDto>(row.media_locator_json, {
+          kind: 'filesystem',
+          absolute_path: '',
+          extension: '.jpg',
+          media_type: 'image',
+          mime_type: 'image/jpeg',
+        })
+
+        let changed = false
+        if (locator.kind === 'filesystem') {
+          const movedPath = resolveMovedPath(locator.absolute_path)
+          if (movedPath && normalizeAllowlistKey(movedPath) !== normalizeAllowlistKey(locator.absolute_path)) {
+            locator.absolute_path = movedPath
+            changed = true
+          }
+        } else {
+          const movedPath = resolveMovedPath(locator.archive_path)
+          if (movedPath && normalizeAllowlistKey(movedPath) !== normalizeAllowlistKey(locator.archive_path)) {
+            locator.archive_path = movedPath
+            changed = true
+          }
+        }
+
+        if (!changed) {
+          continue
+        }
+
+        updateImageLocator.run(JSON.stringify(locator), updatedAtMs, row.id)
+        movedImageLocatorCount += 1
+      }
+
+      for (const row of videoRows) {
+        const movedPath = resolveMovedPath(row.absolute_path)
+        if (!movedPath || normalizeAllowlistKey(movedPath) === normalizeAllowlistKey(row.absolute_path)) {
+          continue
+        }
+
+        const locator = parseJson<MediaLocatorDto>(row.media_locator_json, {
+          kind: 'filesystem',
+          absolute_path: row.absolute_path,
+          extension: path.extname(row.absolute_path).toLowerCase() || '.mp4',
+          media_type: 'video',
+          mime_type: 'video/mp4',
+        })
+        if (locator.kind === 'filesystem') {
+          locator.absolute_path = movedPath
+        }
+
+        updateVideoItem.run(
+          movedPath,
+          JSON.stringify(toAbsoluteTreePath(movedPath)),
+          JSON.stringify(locator),
+          updatedAtMs,
+          row.id,
+        )
+        movedVideoCount += 1
+      }
+
+      for (const row of audioRows) {
+        const movedPath = resolveMovedPath(row.absolute_path)
+        if (!movedPath || normalizeAllowlistKey(movedPath) === normalizeAllowlistKey(row.absolute_path)) {
+          continue
+        }
+
+        const locator = parseJson<MediaLocatorDto>(row.media_locator_json, {
+          kind: 'filesystem',
+          absolute_path: row.absolute_path,
+          extension: path.extname(row.absolute_path).toLowerCase() || '.mp3',
+          media_type: 'audio',
+          mime_type: 'audio/mpeg',
+        })
+        if (locator.kind === 'filesystem') {
+          locator.absolute_path = movedPath
+        }
+
+        updateAudioItem.run(
+          movedPath,
+          JSON.stringify(toAbsoluteTreePath(movedPath)),
+          JSON.stringify(locator),
+          updatedAtMs,
+          row.id,
+        )
+        movedAudioCount += 1
+      }
+    })
+
+    return {
+      movedSourceCount,
+      movedImageLocatorCount,
+      movedVideoCount,
+      movedAudioCount,
     }
   }
 }

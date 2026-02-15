@@ -14,6 +14,7 @@ interface BuildSidebarPanelPropsParams {
   sidebarVerticalGap: number
   currentRootLabel: string | null
   searchResultsMode: boolean
+  searchResultsLabel: string
   adReviewResultsMode?: boolean
   selectedSidebarNodeId: string | null
   canSetCurrentRoot: boolean
@@ -64,7 +65,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     sidebarCountFontSize: params.sidebarCountFontSize,
     sidebarIndentStep: params.sidebarIndentStep,
     sidebarVerticalGap: params.sidebarVerticalGap,
-    currentRootLabel: params.searchResultsMode ? '检索结果' : params.currentRootLabel,
+    currentRootLabel: params.searchResultsMode ? params.searchResultsLabel : params.currentRootLabel,
     selectedSidebarNodeId: params.selectedSidebarNodeId,
     canSetCurrentRoot: params.canSetCurrentRoot,
     imageRootNodeId: params.imageRootNodeId,

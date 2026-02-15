@@ -67,7 +67,7 @@ export function buildMainFooter({
           >
             <VideoControlIcon className="main-ui-icon" name="prev" />
           </button>
-          <span>{`第 ${normalizedPageIndex + 1} / ${imageTotalPages} 页`}</span>
+          <span>{translate('ui.footer.pageSummary', { current: normalizedPageIndex + 1, total: imageTotalPages })}</span>
           <button
             className="main-icon-square-btn"
             type="button"

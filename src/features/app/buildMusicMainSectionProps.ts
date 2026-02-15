@@ -18,7 +18,10 @@ interface BuildMusicMainSectionPropsParams {
   pendingManageAction: boolean
   manageOperationHint: string | null
   canManageDelete: boolean
+  canManageMoveNodes: boolean
   onManageDelete: () => void
+  onManageGroup: () => void
+  onManageMove: () => void
   onClearManageSelection: () => void
   canJumpToManga: boolean
   canJumpToAnimation: boolean
@@ -32,6 +35,7 @@ interface BuildMusicMainSectionPropsParams {
   focusedAudioSrc: string | null
   selectedAudioId: string
   musicLoopMode: MusicLoopMode
+  musicLoopModeLabels: Record<MusicLoopMode, string>
   audioByIdEffective: Map<string, AudioItem>
   setSelectedAudioId: Dispatch<SetStateAction<string>>
   setMusicLoopMode: Dispatch<SetStateAction<MusicLoopMode>>
@@ -51,17 +55,9 @@ interface BuildMusicMainSectionPropsParams {
 const MUSIC_LOOP_MODE_ORDER: MusicLoopMode[] = ['single', 'folder', 'album', 'library']
 const DISC_DIRECTORY_PATTERN = /^(?:cd|disc|disk)\s*[-_ ]*\d+$/i
 
-function resolveMusicLoopModeLabel(mode: MusicLoopMode): string {
-  if (mode === 'single') {
-    return '单曲循环'
-  }
-  if (mode === 'folder') {
-    return '单文件夹循环'
-  }
-  if (mode === 'album') {
-    return '单专辑循环'
-  }
-  return '全曲库循环'
+function resolveMusicLoopModeLabel(mode: MusicLoopMode, labels: Record<MusicLoopMode, string>): string {
+  const normalizedLabel = labels[mode]?.trim()
+  return normalizedLabel.length > 0 ? normalizedLabel : mode
 }
 
 function normalizePathKeyFromTreePath(treePath: string[]): string {
@@ -193,7 +189,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     params.updateSettings({ sidebarFocus: 'main' })
   }
 
-  const currentLoopModeLabel = resolveMusicLoopModeLabel(params.musicLoopMode)
+  const currentLoopModeLabel = resolveMusicLoopModeLabel(params.musicLoopMode, params.musicLoopModeLabels)
 
   return {
     active: params.mode === 'music',
@@ -207,7 +203,10 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     pendingManageAction: params.pendingManageAction,
     manageOperationHint: params.manageOperationHint,
     canManageDelete: params.canManageDelete,
+    canManageMoveNodes: params.canManageMoveNodes,
     onManageDelete: params.onManageDelete,
+    onManageGroup: params.onManageGroup,
+    onManageMove: params.onManageMove,
     onClearManageSelection: params.onClearManageSelection,
     canJumpToManga: params.canJumpToManga,
     canJumpToAnimation: params.canJumpToAnimation,

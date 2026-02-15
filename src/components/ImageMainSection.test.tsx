@@ -146,6 +146,7 @@ function renderImageMainSection() {
       pendingManageAction={false}
       manageOperationHint={null}
       canManageDelete={false}
+      canManageMoveNodes={false}
       canManageHide={false}
       canManageUnhide={false}
       adReviewFeatureEnabled={false}
@@ -157,6 +158,8 @@ function renderImageMainSection() {
       onToggleImageChecked={vi.fn()}
       onReplaceCheckedImages={vi.fn()}
       onManageDelete={vi.fn()}
+      onManageGroup={vi.fn()}
+      onManageMove={vi.fn()}
       onManageHide={vi.fn()}
       onManageUnhide={vi.fn()}
       onToggleAdReviewPanel={vi.fn()}
@@ -208,6 +211,7 @@ function renderNodeBrowseSection() {
       pendingManageAction={false}
       manageOperationHint={null}
       canManageDelete={false}
+      canManageMoveNodes={false}
       canManageHide={false}
       canManageUnhide={false}
       adReviewFeatureEnabled={false}
@@ -219,6 +223,8 @@ function renderNodeBrowseSection() {
       onToggleImageChecked={vi.fn()}
       onReplaceCheckedImages={vi.fn()}
       onManageDelete={vi.fn()}
+      onManageGroup={vi.fn()}
+      onManageMove={vi.fn()}
       onManageHide={vi.fn()}
       onManageUnhide={vi.fn()}
       onToggleAdReviewPanel={vi.fn()}
@@ -307,6 +313,7 @@ describe('ImageMainSection layout', () => {
         pendingManageAction={false}
         manageOperationHint={null}
         canManageDelete={false}
+        canManageMoveNodes={false}
         canManageHide={false}
         canManageUnhide={false}
         adReviewFeatureEnabled={false}
@@ -318,6 +325,8 @@ describe('ImageMainSection layout', () => {
         onToggleImageChecked={vi.fn()}
         onReplaceCheckedImages={vi.fn()}
         onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
         onManageHide={vi.fn()}
         onManageUnhide={vi.fn()}
         onToggleAdReviewPanel={vi.fn()}
@@ -370,6 +379,7 @@ describe('ImageMainSection layout', () => {
         pendingManageAction={false}
         manageOperationHint={null}
         canManageDelete={false}
+        canManageMoveNodes={false}
         canManageHide={false}
         canManageUnhide={false}
         adReviewFeatureEnabled={false}
@@ -381,6 +391,8 @@ describe('ImageMainSection layout', () => {
         onToggleImageChecked={vi.fn()}
         onReplaceCheckedImages={vi.fn()}
         onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
         onManageHide={vi.fn()}
         onManageUnhide={vi.fn()}
         onToggleAdReviewPanel={vi.fn()}
@@ -450,6 +462,7 @@ describe('ImageMainSection layout', () => {
         pendingManageAction={false}
         manageOperationHint={null}
         canManageDelete={false}
+        canManageMoveNodes={false}
         canManageHide={false}
         canManageUnhide={false}
         adReviewFeatureEnabled={false}
@@ -461,6 +474,8 @@ describe('ImageMainSection layout', () => {
         onToggleImageChecked={vi.fn()}
         onReplaceCheckedImages={vi.fn()}
         onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
         onManageHide={vi.fn()}
         onManageUnhide={vi.fn()}
         onToggleAdReviewPanel={vi.fn()}
@@ -515,6 +530,7 @@ describe('ImageMainSection layout', () => {
         pendingManageAction={false}
         manageOperationHint={null}
         canManageDelete={false}
+        canManageMoveNodes={false}
         canManageHide={false}
         canManageUnhide={false}
         adReviewFeatureEnabled={false}
@@ -526,6 +542,8 @@ describe('ImageMainSection layout', () => {
         onToggleImageChecked={vi.fn()}
         onReplaceCheckedImages={vi.fn()}
         onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
         onManageHide={vi.fn()}
         onManageUnhide={vi.fn()}
         onToggleAdReviewPanel={vi.fn()}
@@ -587,6 +605,7 @@ describe('ImageMainSection layout', () => {
         pendingManageAction={false}
         manageOperationHint={null}
         canManageDelete={false}
+        canManageMoveNodes={false}
         canManageHide={false}
         canManageUnhide={false}
         adReviewFeatureEnabled={false}
@@ -598,6 +617,8 @@ describe('ImageMainSection layout', () => {
         onToggleImageChecked={vi.fn()}
         onReplaceCheckedImages={vi.fn()}
         onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
         onManageHide={vi.fn()}
         onManageUnhide={vi.fn()}
         onToggleAdReviewPanel={vi.fn()}
@@ -662,6 +683,7 @@ describe('ImageMainSection layout', () => {
       pendingManageAction: false,
       manageOperationHint: null,
       canManageDelete: false,
+      canManageMoveNodes: false,
       canManageHide: false,
       canManageUnhide: false,
       adReviewFeatureEnabled: false,
@@ -673,6 +695,8 @@ describe('ImageMainSection layout', () => {
       onToggleImageChecked: vi.fn(),
       onReplaceCheckedImages: vi.fn(),
       onManageDelete: vi.fn(),
+      onManageGroup: vi.fn(),
+      onManageMove: vi.fn(),
       onManageHide: vi.fn(),
       onManageUnhide: vi.fn(),
       onToggleAdReviewPanel: vi.fn(),

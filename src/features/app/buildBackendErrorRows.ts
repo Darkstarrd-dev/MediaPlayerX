@@ -40,6 +40,19 @@ interface BuildBackendErrorRowsParams {
     error: string | null
     retry: () => void
   }
+  labels: {
+    library: string
+    sidebar: string
+    page: string
+    metadata: string
+    gradeWrite: string
+    metadataWrite: string
+    coverWrite: string
+    manageWrite: string
+    playlistRead: string
+    playlistWrite: string
+    runtimeCapability: string
+  }
 }
 
 export function buildBackendErrorRows({
@@ -47,12 +60,13 @@ export function buildBackendErrorRows({
   backendWrite,
   playlistPersistence,
   runtimeCapabilities,
+  labels,
 }: BuildBackendErrorRowsParams): BackendErrorRow[] {
   return [
     backendRead.errors.library
       ? {
           key: 'library',
-          label: '数据快照',
+          label: labels.library,
           message: backendRead.errors.library,
           onRetry: backendRead.retryLibrary,
         }
@@ -60,7 +74,7 @@ export function buildBackendErrorRows({
     backendRead.errors.sidebar
       ? {
           key: 'sidebar',
-          label: 'Sidebar 目录树',
+          label: labels.sidebar,
           message: backendRead.errors.sidebar,
           onRetry: backendRead.retrySidebar,
         }
@@ -68,7 +82,7 @@ export function buildBackendErrorRows({
     backendRead.errors.page
       ? {
           key: 'page',
-          label: 'Main 分页列表',
+          label: labels.page,
           message: backendRead.errors.page,
           onRetry: backendRead.retryPage,
         }
@@ -76,7 +90,7 @@ export function buildBackendErrorRows({
     backendRead.errors.metadata
       ? {
           key: 'metadata',
-          label: 'Metadata 面板',
+          label: labels.metadata,
           message: backendRead.errors.metadata,
           onRetry: backendRead.retryMetadata,
         }
@@ -84,7 +98,7 @@ export function buildBackendErrorRows({
     backendWrite.errors.grade
       ? {
           key: 'grade-write',
-          label: '评分写入',
+          label: labels.gradeWrite,
           message: backendWrite.errors.grade,
           onRetry: backendWrite.clearGradeError,
         }
@@ -92,7 +106,7 @@ export function buildBackendErrorRows({
     backendWrite.errors.metadata
       ? {
           key: 'metadata-write',
-          label: '元数据写入',
+          label: labels.metadataWrite,
           message: backendWrite.errors.metadata,
           onRetry: backendWrite.clearMetadataError,
         }
@@ -100,7 +114,7 @@ export function buildBackendErrorRows({
     backendWrite.errors.cover
       ? {
           key: 'cover-write',
-          label: '封面写入',
+          label: labels.coverWrite,
           message: backendWrite.errors.cover,
           onRetry: backendWrite.clearCoverError,
         }
@@ -108,7 +122,7 @@ export function buildBackendErrorRows({
     backendWrite.errors.manage
       ? {
           key: 'manage-write',
-          label: '管理操作',
+          label: labels.manageWrite,
           message: backendWrite.errors.manage,
           onRetry: backendWrite.clearManageError,
         }
@@ -116,7 +130,7 @@ export function buildBackendErrorRows({
     playlistPersistence.readError
       ? {
           key: 'playlist-read',
-          label: '播放列表读取',
+          label: labels.playlistRead,
           message: playlistPersistence.readError,
           onRetry: playlistPersistence.retryRead,
         }
@@ -124,7 +138,7 @@ export function buildBackendErrorRows({
     playlistPersistence.writeError
       ? {
           key: 'playlist-write',
-          label: '播放列表写入',
+          label: labels.playlistWrite,
           message: playlistPersistence.writeError,
           onRetry: playlistPersistence.retryWrite,
         }
@@ -132,7 +146,7 @@ export function buildBackendErrorRows({
     runtimeCapabilities.error
       ? {
           key: 'runtime-capability',
-          label: '运行时依赖预检',
+          label: labels.runtimeCapability,
           message: runtimeCapabilities.error,
           onRetry: runtimeCapabilities.retry,
         }

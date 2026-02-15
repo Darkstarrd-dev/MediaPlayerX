@@ -369,7 +369,7 @@ export function MetadataVideoEditor({
                 </label>
               ) : null}
               <label>
-                <span>Tags</span>
+                <span>{t('ui.metadata.tags')}</span>
                 {editable ? (
                   <input
                     value={videoTagsDraft}

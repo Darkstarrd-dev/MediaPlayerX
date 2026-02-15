@@ -153,6 +153,7 @@ export function useAppTopLayerBindings({
     normalizePathForCompare,
     retryImportTask: importState.retryImportTask,
     adReviewRunning: displayState.manageAdReview.hasRunningTask,
+    adReviewDeleting: displayState.manageAdReview.deletePending,
     taskError: importState.taskError,
     clearTaskError: importState.clearTaskError,
     fullscreenActive,

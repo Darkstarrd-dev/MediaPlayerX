@@ -202,6 +202,17 @@ export class MediaLibraryDatabase {
     return this.snapshotStore.deleteSnapshotEntriesByPaths(paths)
   }
 
+  moveSnapshotEntriesByPaths(
+    mappings: Array<{ fromPath: string; toPath: string }>,
+  ): {
+    movedSourceCount: number
+    movedImageLocatorCount: number
+    movedVideoCount: number
+    movedAudioCount: number
+  } {
+    return this.snapshotStore.moveSnapshotEntriesByPaths(mappings)
+  }
+
   writeSourceMetadata(
     sourceId: string,
     payload: {

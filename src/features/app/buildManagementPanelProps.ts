@@ -24,6 +24,7 @@ interface BuildManagementPanelPropsParams {
   onClearSelection: () => void
   adReviewFeatureEnabled: boolean
   adReviewPending: boolean
+  adReviewDeletePending?: boolean
   adReviewTask: ManageAdReviewTaskDto | null
   adReviewHideUncheckedNonChecked: boolean
   hasCheckedAdReviewCandidates: boolean
@@ -71,6 +72,7 @@ export function buildManagementPanelProps(params: BuildManagementPanelPropsParam
     onUnhide: params.onUnhide,
     onClearSelection: params.onClearSelection,
     adReviewPending: params.adReviewPending,
+    adReviewDeletePending: params.adReviewDeletePending,
     adReviewTask: params.adReviewTask,
     adReviewHideUncheckedNonChecked: params.adReviewHideUncheckedNonChecked,
     hasCheckedAdReviewCandidates: params.hasCheckedAdReviewCandidates,

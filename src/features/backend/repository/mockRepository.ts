@@ -13,6 +13,8 @@ import {
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
+  type MoveSidebarNodesRequestDto,
+  type MoveSidebarNodesResponseDto,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type LibrarySnapshotDto,
@@ -202,6 +204,17 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<DeleteSidebarNodesResponseDto> {
     return resolveAsync(this.deleteSidebarNodesSync(request), options)
+  }
+
+  moveSidebarNodesSync(request: MoveSidebarNodesRequestDto): MoveSidebarNodesResponseDto {
+    return this.write.moveSidebarNodesSync(request)
+  }
+
+  async moveSidebarNodes(
+    request: MoveSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<MoveSidebarNodesResponseDto> {
+    return resolveAsync(this.moveSidebarNodesSync(request), options)
   }
 
   startManageAdReviewSync(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto {

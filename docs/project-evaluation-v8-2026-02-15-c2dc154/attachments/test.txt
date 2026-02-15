@@ -1,0 +1,185 @@
+
+> mediaplayerx@0.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mZ:/Playground/CurrentWorking/MediaPlayerX[39m
+
+ [32m✓[39m electron/manageAdReview/concurrency.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 51[2mms[22m[39m
+(node:29480) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83768) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59928) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34268) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:85116) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m electron/fileSystemMediaAccessGuard.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryAppStateStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 480[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryPlaylistStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 481[2mms[22m[39m
+(node:92784) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m electron/mediaLibraryTaskStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 491[2mms[22m[39m
+(node:69724) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m electron/mediaLibrarySchema.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 508[2mms[22m[39m
+(node:48920) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m electron/mediaLibraryMetadataStore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 632[2mms[22m[39m
+ [32m✓[39m src/features/backend/repository/realRepository.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryDatabase.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 339[2mms[22m[39m
+ [32m✓[39m electron/mediaLibrarySnapshotStore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 381[2mms[22m[39m
+ [32m✓[39m electron/services/file-system-read/manageAdReviewService.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 266[2mms[22m[39m
+ [32m✓[39m src/features/app/useImageSidebarBaseState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/features/management/useManageSelection.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m src/features/backend/useWriteDataAccess.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32m✓[39m src/features/app/useResolvedMediaState.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/features/app/useMetadataWriteBindings.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 121[2mms[22m[39m
+ [32m✓[39m src/features/app/useAudioSidebarState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/features/app/useEffectiveDisplayState.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/features/app/useVideoSidebarState.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m src/components/AppWorkspace.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m src/mockData.imageSidebarTree.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataMusicEditor.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 322[2mms[22m[39m
+ [32m✓[39m src/features/app/buildMainFooter.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 275[2mms[22m[39m
+ [32m✓[39m src/features/app/buildAdReviewSidebarState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m electron/fileSystemSidebarTree.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/features/app/useAppDataPipeline.integration.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/useMusicVisualizerRuntime.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[32m 131[2mms[22m[39m
+ [32m✓[39m src/components/AppHeader.accessibility.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 523[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps stable toolbar button labels in normal mode [33m 414[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataAdReviewSection.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 571[2mms[22m[39m
+     [33m[2m✓[22m[39m renders queue items and supports select/remove actions [33m 411[2mms[22m[39m
+ [32m✓[39m src/features/app/useAppDisplayAndEffects.integration.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m src/components/SidebarPanel.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 776[2mms[22m[39m
+ [32m✓[39m src/features/backend/useResolvedMediaUrls.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 800[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSettingsPanelProps.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/features/theme/themeRegistry.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/features/app/buildAppHeaderProps.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/features/app/useSettingsPersistence.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 419[2mms[22m[39m
+ [32m✓[39m src/components/ImageMainSection.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 360[2mms[22m[39m
+ [32m✓[39m electron/manageAdReview/openAiVisionClient.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/store/useUiStore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m electron/manageAdReview/adReviewEngine.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSidebarPanelProps.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m electron/manageAdReview/jsonExtract.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/features/app/buildMetadataPanelProps.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m electron/services/file-system-read/mediaTokenService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSearchPanelProps.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/shadertoyAdapter.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/shaderRegistry.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m electron/externalUrlPolicy.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/shortcuts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m electron/facade/FileSystemSystemHandlers.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/components/MetadataPanel.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 616[2mms[22m[39m
+     [33m[2m✓[22m[39m non-manage模式下焦点图片变化会自动切回原图显示 [33m 392[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataImageEditor.helpers.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/features/layout/thumbnailLayout.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/components/MusicMainSection.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 1443[2mms[22m[39m
+     [33m[2m✓[22m[39m 支持播放控制、进度条与音量弹层调节 [33m 409[2mms[22m[39m
+ [32m✓[39m src/features/backend/useReadOnlyDataAccess.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 2729[2mms[22m[39m
+     [33m[2m✓[22m[39m write-package-grade 事件在无评分筛选时不会触发刷新 [33m 378[2mms[22m[39m
+     [33m[2m✓[22m[39m thumbnail-rendering 事件不会触发 Sidebar/Page/Metadata 切片刷新 [33m 359[2mms[22m[39m
+     [33m[2m✓[22m[39m write-package-grade 事件在评分筛选启用时仅刷新 Sidebar/Page [33m 511[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理挂起刷新时，元数据写事件不会刷新缩略图相关切片，退出后补一次全量刷新 [33m 512[2mms[22m[39m
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m媒体访问通道执行根目录白名单并可读取令牌资源
+[22m[39mresolveMediaResource denied {
+  reason: [32m'path_outside_root'[39m,
+  message: [32m'媒体访问被拒绝（未导入/未允许）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-media-outside-OL3tRE\\outside.jpg'[39m
+}
+
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m压缩包轻扫仅使用 entry name，并可按白名单读取 zip 内图片
+[22m[39mresolveMediaResource denied {
+  reason: [32m'archive_entry_illegal'[39m,
+  message: [32m'压缩包媒体访问被拒绝（entry 非法）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-zip-light-scan-RQYqX7\\gallery.zip'[39m
+}
+
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m管理删除压缩包中的图片后会刷新 zip 条目白名单并保留剩余条目可读
+[22m[39mresolveMediaResource denied {
+  reason: [32m'archive_entry_not_allowlisted'[39m,
+  message: [32m'压缩包媒体访问被拒绝（entry 不在白名单）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-manage-delete-zip-entry-76nbpu\\gallery.zip::a/001.jpg'[39m
+}
+
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2mresolveMediaResource 输出审计统计（拒绝分类、token 命中/过期）
+[22m[39mresolveMediaResource denied {
+  reason: [32m'path_outside_root'[39m,
+  message: [32m'媒体访问被拒绝（未导入/未允许）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\outside.jpg'[39m
+}
+
+ [32m✓[39m electron/fileSystemReadService.test.ts [2m([22m[2m24 tests[22m[2m)[22m[33m 8178[2mms[22m[39m
+     [33m[2m✓[22m[39m 可读取真实目录并保留中文/日文/特殊符号路径 [33m 1701[2mms[22m[39m
+     [33m[2m✓[22m[39m 缩略图请求可生成 Sharp WebP 缓存并复用受控协议返回 [33m 340[2mms[22m[39m
+     [33m[2m✓[22m[39m 写链路可持久化评分与封面，失败时由调用端回滚 [33m 372[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频元数据支持同步文件名到作品名并持久化 [33m 393[2mms[22m[39m
+     [33m[2m✓[22m[39m 播放列表写入后可在服务重启后恢复 [33m 574[2mms[22m[39m
+     [33m[2m✓[22m[39m 读取快照时会自动清理磁盘已删除的 source/video 并广播变更 [33m 332[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐文件导入会写入 music_import_sources，并将孤立文件按专辑或 unknown artist 分组 [33m 390[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐文件夹含音频与图片时，图片目录统一归入 CD Booklet 树根 [33m 329[2mms[22m[39m
+     [33m[2m✓[22m[39m 磁盘文件缺失触发自动清理时会同步移除 music_import_sources [33m 339[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除 Sidebar 压缩包和视频节点后快照同步移除并物理删除文件 [33m 358[2mms[22m[39m
+     [33m[2m✓[22m[39m 可通过 ffprobe 探测真实视频元数据并回填时长/分辨率 [33m 482[2mms[22m[39m
+     [33m[2m✓[22m[39m 入库时可提取音频 ID3/Vorbis 标签并持久化到 sqlite [33m 500[2mms[22m[39m
+ [32m✓[39m src/App.test.tsx [2m([22m[2m68 tests[22m[2m)[22m[33m 43013[2mms[22m[39m
+     [33m[2m✓[22m[39m 支持图片/视频模式切换 [33m 704[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式可展开管理容器并与检索容器互斥 [33m 850[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理与元数据管理互斥，且可一键切换到检索模式 [33m 569[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理控件改为主工具栏承载，且摘要右对齐显示 [33m 315[2mms[22m[39m
+     [33m[2m✓[22m[39m 检索/文件管理/元数据管理快速切换不会抛出运行时错误 [33m 872[2mms[22m[39m
+     [33m[2m✓[22m[39m 快速切换 Sidebar 节点时缩略图列表保持可渲染且不抛错 [33m 517[2mms[22m[39m
+     [33m[2m✓[22m[39m Sidebar 包节点在无英文/日文标题时显示文件名 [33m 321[2mms[22m[39m
+     [33m[2m✓[22m[39m Sidebar 目录源节点在无英文/日文标题时显示目录名 [33m 349[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式删除确认弹窗需勾选不可逆确认后才能提交 [33m 1093[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 按优先级先关闭删除确认，再关闭管理面板 [33m 1074[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 可关闭设置与检索状态，且主区右键不误关闭检索 [33m 910[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 关闭元数据管理，右键关闭全屏层 [33m 867[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式下 Sidebar 与主视图 checker 互斥，且视频模式可进入管理 [33m 665[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式下点击缩略图即可切换 checker 状态 [33m 363[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式在紧凑窗口下保持稳定：无最大更新深度报错、无折叠按钮、缩略图容器不可滚动 [33m 511[2mms[22m[39m
+     [33m[2m✓[22m[39m 隐藏项在非管理模式不可见 [33m 1582[2mms[22m[39m
+     [33m[2m✓[22m[39m main-footer 始终显示，focus 清空后显示当前 Sidebar 路径 [33m 315[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理异常显示在主工具栏提示中，不占用顶部异常横幅 [33m 889[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除 Sidebar 节点部分失败时，提示文案与 failed 计数保持一致 [33m 913[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除图片部分失败时，提示文案与 failed 计数保持一致 [33m 852[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理改为工具栏后仍可执行删除流程 [33m 869[2mms[22m[39m
+     [33m[2m✓[22m[39m AI广告审核通过后仅显示工具栏按钮，点击后才展开审核面板 [33m 691[2mms[22m[39m
+     [33m[2m✓[22m[39m 真实渲染链路可输出可渲染媒体 URL（Main/Metadata/Fullscreen） [33m 404[2mms[22m[39m
+     [33m[2m✓[22m[39m 检索模式将筛选控件渲染到元数据编辑区顶部并实时生效 [33m 413[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式检索面板仅展示特征检索 [33m 409[2mms[22m[39m
+     [33m[2m✓[22m[39m 布局锁定开启后，主界面分割条拖动失效 [33m 680[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理使用主工具栏承载同步名称与获取元数据动作 [33m 836[2mms[22m[39m
+     [33m[2m✓[22m[39m 获取元数据弹窗展示双源结果列与分源请求响应预览 [33m 650[2mms[22m[39m
+     [33m[2m✓[22m[39m 获取元数据支持按来源过滤、回车检索并可解析 ehentai 结果 [33m 1555[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据面板标题可折叠，并可恢复展开 [33m 767[2mms[22m[39m
+     [33m[2m✓[22m[39m 进入元数据管理时自动退出原图显示并回到元数据编辑视图 [33m 332[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据评分支持清空到空星，并可继续点击设星 [33m 1172[2mms[22m[39m
+     [33m[2m✓[22m[39m 图片模式只读元数据评分可用并可写入 [33m 367[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式元数据默认只读，包含评分与操作区 [33m 418[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频信息字段回车会触发 writeVideoMetadata 调用 [33m 452[2mms[22m[39m
+     [33m[2m✓[22m[39m 系列ID匹配时支持动画版/漫画版双向跳转 [33m 810[2mms[22m[39m
+     [33m[2m✓[22m[39m 未配置系列ID的条目不显示动画版/漫画版跳转按钮 [33m 807[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐模式支持按系列ID跳转到动画版/漫画版 [33m 771[2mms[22m[39m
+     [33m[2m✓[22m[39m 非元数据管理模式下打开封面/打开Booklet可用，并可从非 CD Booklet 树定位 [33m 499[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理支持写入图片与视频系列ID [33m 629[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频评分可点击并写入 grade [33m 437[2mms[22m[39m
+     [33m[2m✓[22m[39m 默认只读元数据点击作者值可静默触发检索并通过返回按钮清空 [33m 879[2mms[22m[39m
+     [33m[2m✓[22m[39m 默认只读元数据点击社团值可静默触发检索并通过返回按钮清空 [33m 888[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空 [33m 511[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理支持按字段回车批量写入，不覆盖未提交字段 [33m 393[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理面板已移除自动标签与嵌入按钮，仅保留同步名称 [33m 705[2mms[22m[39m
+     [33m[2m✓[22m[39m Main 工具栏使用图标按钮，退出全屏会自动关闭自动播放，且不显示加载中文案 [33m 1481[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频播放后暂停保留当前画面，切换视频后回到封面态，Save as cover 走后端写链路并保持封面态 [33m 855[2mms[22m[39m
+     [33m[2m✓[22m[39m 全屏默认按当前模式进入单显示，双显示切回单显示时恢复入口模式 [33m 700[2mms[22m[39m
+     [33m[2m✓[22m[39m 全屏图片支持首末跳转、跨包翻页与上个包下个包按钮 [33m 336[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应 [33m 423[2mms[22m[39m
+     [33m[2m✓[22m[39m 设置面板按 side/main 分栏并包含界面设置聚合与快捷键鼠标录入 [33m 2830[2mms[22m[39m
+     [33m[2m✓[22m[39m 数据库目录选择器可触发 SQL 与缩略图目录选择 [33m 877[2mms[22m[39m
+     [33m[2m✓[22m[39m 数据库目录设置会调用后端路径持久化并显示反馈 [33m 1080[2mms[22m[39m
+     [33m[2m✓[22m[39m AI模型保存会持久化测试通过状态 [33m 871[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m57 passed[39m[22m[90m (57)[39m
+[2m      Tests [22m [1m[32m291 passed[39m[22m[90m (291)[39m
+[2m   Start at [22m 13:17:32
+[2m   Duration [22m 92.59s[2m (transform 21.70s, setup 191.98s, import 75.38s, tests 64.58s, environment 1179.19s)[22m
+

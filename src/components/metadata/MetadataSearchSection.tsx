@@ -46,36 +46,36 @@ export function MetadataSearchSection({
   return (
     <section className="metadata-search-section" aria-label={t('a11y.metadata.searchFilters')}>
       <div className="metadata-search-head">
-        <strong>{`命中节点: ${featureResultCount} 个`}</strong>
+        <strong>{t('ui.metadata.hitNodeCount', { count: featureResultCount })}</strong>
       </div>
 
       <div className="feature-controls metadata-search-controls">
         <label>
-          名称
+          {t('ui.metadata.name')}
           <input
             className="feature-query-input"
-            placeholder="按名称模糊匹配"
+            placeholder={t('ui.metadata.nameQueryPlaceholder')}
             value={featureNameQuery}
             onChange={(event) => onFeatureNameQueryChange(event.target.value)}
           />
         </label>
 
         <label>
-          作品名
+          {t('ui.metadata.workTitle')}
           <input
             className="feature-query-input"
-            placeholder="按作品名模糊匹配"
+            placeholder={t('ui.metadata.workTitleQueryPlaceholder')}
             value={featureWorkTitleQuery}
             onChange={(event) => onFeatureWorkTitleQueryChange(event.target.value)}
           />
         </label>
 
         <label>
-          社团
+          {t('ui.metadata.circle')}
           <input
             className="feature-query-input"
             list="metadata-feature-circle-options"
-            placeholder="输入社团，支持自动补完"
+            placeholder={t('ui.metadata.circleQueryPlaceholder')}
             value={featureCircleQuery}
             onChange={(event) => onFeatureCircleQueryChange(event.target.value)}
           />
@@ -87,11 +87,11 @@ export function MetadataSearchSection({
         </label>
 
         <label>
-          作者
+          {t('ui.metadata.author')}
           <input
             className="feature-query-input"
             list="metadata-feature-author-options"
-            placeholder="输入作者，支持自动补完"
+            placeholder={t('ui.metadata.authorQueryPlaceholder')}
             value={featureAuthorQuery}
             onChange={(event) => onFeatureAuthorQueryChange(event.target.value)}
           />
@@ -104,19 +104,19 @@ export function MetadataSearchSection({
 
         <div className="feature-tags-group">
           <div className="feature-control-head">
-            <strong>tags</strong>
+            <strong>{t('ui.metadata.tags')}</strong>
             <div className="feature-control-actions">
               <button className="feature-action-btn" type="button" onClick={onToggleFeatureTagPickerRequest}>
-                {featureTagPickerOpen ? '关闭面板' : '选择 tags'}
+                {featureTagPickerOpen ? t('ui.metadata.closePanel') : t('ui.metadata.selectTags')}
               </button>
               <button className="feature-action-btn" type="button" onClick={onClearFeatureTags}>
-                清空 tags
+                {t('ui.metadata.clearTags')}
               </button>
             </div>
           </div>
 
           {featureTags.length === 0 ? (
-            <p className="feature-selection-result">未选择 tags</p>
+            <p className="feature-selection-result">{t('ui.metadata.noTagsSelected')}</p>
           ) : (
             <div className="feature-selected-tags">
               {featureTags.map((tag) => (
@@ -136,7 +136,7 @@ export function MetadataSearchSection({
         </div>
 
         <div className="feature-rating-group">
-          <strong>图包评分</strong>
+          <strong>{t('ui.metadata.packageRatingLabel')}</strong>
           <div className="feature-rating-stars" role="group" aria-label={t('a11y.metadata.ratingFilter')}>
             <button
               aria-label={t('a11y.metadata.ratingNone')}
@@ -167,7 +167,7 @@ export function MetadataSearchSection({
           </div>
         </div>
 
-        <p className="vector-hint">多字段组合按 AND 逻辑过滤，结果即时同步到 Sidebar 与主视图。</p>
+        <p className="vector-hint">{t('ui.metadata.searchHint')}</p>
       </div>
     </section>
   )

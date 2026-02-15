@@ -3,6 +3,7 @@ import { useCallback, useState, type Dispatch, type SetStateAction } from 'react
 import type {
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesResponseDto,
+  MoveSidebarNodesResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
   SetImageHiddenResponseDto,
@@ -76,6 +77,12 @@ interface UseWriteDataAccessResult {
   setImageHidden: (imageIds: string[], hidden: boolean) => Promise<SetImageHiddenResponseDto>
   deleteImageItems: (imageIds: string[]) => Promise<DeleteImageItemsResponseDto>
   deleteSidebarNodes: (nodeIds: string[]) => Promise<DeleteSidebarNodesResponseDto>
+  pickDirectoryPath: (title?: string, defaultPath?: string) => Promise<string | null>
+  moveSidebarNodes: (
+    nodeIds: string[],
+    destinationDirectory: string,
+    groupName?: string,
+  ) => Promise<MoveSidebarNodesResponseDto>
   writePackageMetadata: (
     packageId: string,
     payload: {
@@ -592,6 +599,74 @@ export function useWriteDataAccess({
     [repository],
   )
 
+  const pickDirectoryPath = useCallback(
+    async (title?: string, defaultPath?: string): Promise<string | null> => {
+      if (!repository.pickDirectoryPath) {
+        throw new Error('当前后端不支持目录选择')
+      }
+
+      const response = await repository.pickDirectoryPath({
+        title,
+        default_path: defaultPath,
+      })
+
+      if (response.canceled || !response.path) {
+        return null
+      }
+
+      return response.path
+    },
+    [repository],
+  )
+
+  const moveSidebarNodes = useCallback(
+    async (
+      nodeIds: string[],
+      destinationDirectory: string,
+      groupName?: string,
+    ): Promise<MoveSidebarNodesResponseDto> => {
+      if (!repository.moveSidebarNodes) {
+        throw new Error('当前后端不支持移动目录操作')
+      }
+
+      const normalizedNodeIds = Array.from(new Set(nodeIds.map((id) => id.trim()).filter(Boolean)))
+      if (normalizedNodeIds.length === 0) {
+        throw new Error('请选择需要移动的目录节点')
+      }
+
+      const normalizedDestinationDirectory = destinationDirectory.trim()
+      if (!normalizedDestinationDirectory) {
+        throw new Error('请选择目标目录')
+      }
+
+      const normalizedGroupName = groupName?.trim() || undefined
+
+      setManagePending(true)
+      setManageError(null)
+
+      try {
+        const response = await repository.moveSidebarNodes(
+          {
+            node_ids: normalizedNodeIds,
+            destination_directory: normalizedDestinationDirectory,
+            group_name: normalizedGroupName,
+          },
+          {
+            timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+          },
+        )
+        return response
+      } catch (error: unknown) {
+        const message = toErrorMessage(error)
+        setManageError(message)
+        throw new Error(message)
+      } finally {
+        setManagePending(false)
+      }
+    },
+    [repository],
+  )
+
   return {
     pending: {
       grade: gradePending,
@@ -613,6 +688,8 @@ export function useWriteDataAccess({
     setImageHidden,
     deleteImageItems,
     deleteSidebarNodes,
+    pickDirectoryPath,
+    moveSidebarNodes,
     writePackageMetadata,
     writePackageExternalMetadata,
     writeVideoMetadata,

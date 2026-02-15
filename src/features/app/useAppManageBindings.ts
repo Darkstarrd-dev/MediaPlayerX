@@ -69,6 +69,8 @@ export function useAppManageBindings({
     toggleManageMode,
     runManageHideAction,
     requestManageDelete,
+    requestManageGroup,
+    requestManageMove,
     confirmManageDelete,
   } = useManageModeActions({
     mode,
@@ -115,9 +117,16 @@ export function useAppManageBindings({
     clearAllSelections,
     replaceImageCheckedIds,
     setManageOperationHint,
+    onDeleteRoundCompleted: () => {
+      setAdReviewPanelOpen(false)
+    },
   })
 
   const confirmManageDeleteWithAdReview = useCallback(async () => {
+    if (manageAdReview.deletePending) {
+      return
+    }
+
     const reviewTask = manageAdReview.task
     const shouldRouteToAdReviewDelete =
       reviewTask?.status === 'review' &&
@@ -143,6 +152,8 @@ export function useAppManageBindings({
     toggleMetadataManageMode,
     runManageHideAction,
     requestManageDelete,
+    requestManageGroup,
+    requestManageMove,
     confirmManageDelete: confirmManageDeleteWithAdReview,
     manageAdReview,
     runtimeCapabilities,

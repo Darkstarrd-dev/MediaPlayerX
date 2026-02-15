@@ -33,6 +33,7 @@ import {
 } from './workspaceMetadataActions'
 import { createAdReviewSettingHandlers } from './workspaceAdReviewHandlers'
 import type { UseAppWorkspacePropsParams } from './useAppWorkspaceProps.types'
+import { useI18n } from '../../i18n/useI18n'
 
 export function useAppWorkspaceProps({
   appSettings,
@@ -89,6 +90,8 @@ export function useAppWorkspaceProps({
   backendWrite,
   manageOperationHint,
   requestManageDelete,
+  requestManageGroup,
+  requestManageMove,
   runManageHideAction,
   manageAdReview,
   clearAllSelections,
@@ -200,6 +203,8 @@ export function useAppWorkspaceProps({
   requestMusicPlay,
   musicBookletBindings,
 }: UseAppWorkspacePropsParams) {
+  const { t } = useI18n()
+
   /**
    * Workspace 层只做视图模型组装：
    * - 输入是上游状态层已收敛的读写能力；
@@ -272,8 +277,9 @@ export function useAppWorkspaceProps({
     sidebarCountFontSize: appSettings.sidebarCountFontSize,
     sidebarIndentStep: appSettings.sidebarIndentStep,
     sidebarVerticalGap: appSettings.sidebarVerticalGap,
-    currentRootLabel: adReviewResultsMode ? '广告疑似结果' : currentRootLabel,
+    currentRootLabel: adReviewResultsMode ? t('ui.sidebar.adReviewResultsRoot') : currentRootLabel,
     searchResultsMode,
+    searchResultsLabel: t('ui.sidebar.searchResultsRoot'),
     adReviewResultsMode,
     selectedSidebarNodeId,
     canSetCurrentRoot: adReviewResultsMode ? false : canSetCurrentRoot,
@@ -361,7 +367,7 @@ export function useAppWorkspaceProps({
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
-    pending: backendWrite.pending.manage,
+    pending: backendWrite.pending.manage || manageAdReview.deletePending,
     operationHint: manageOperationHint,
     errorRows: managementErrorRows,
     onDelete: requestManageDelete,
@@ -374,6 +380,7 @@ export function useAppWorkspaceProps({
     onClearSelection: clearAllSelections,
     adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
     adReviewPending: manageAdReview.pending,
+    adReviewDeletePending: manageAdReview.deletePending,
     adReviewTask: manageAdReview.task,
     adReviewHideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
     hasCheckedAdReviewCandidates: manageAdReview.hasCheckedCandidateSelection,
@@ -405,6 +412,10 @@ export function useAppWorkspaceProps({
     mode,
     metadataWriteBindings,
     metadataImagePackageEffective,
+    saveParsedMetadataErrors: {
+      unsupportedMode: t('ui.metadata.saveParsedUnsupportedMode'),
+      noAvailablePackage: t('ui.metadata.saveParsedNoPackage'),
+    },
   })
 
   const metadataManagementPanelProps = buildMetadataManagementPanelProps({
@@ -586,12 +597,14 @@ export function useAppWorkspaceProps({
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
-    pendingManageAction: backendWrite.pending.manage,
+    pendingManageAction: backendWrite.pending.manage || manageAdReview.deletePending,
     manageOperationHint,
     canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
     canManageHide: mode === 'image' && imageCheckedIds.length > 0,
     canManageUnhide: mode === 'image' && imageCheckedIds.length > 0,
     adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
+    adReviewDeletePending: manageAdReview.deletePending,
     adReviewPanelOpen,
     checkedImageIdSet: imageCheckedIdSet,
     adReviewScopeImageIdSet,
@@ -616,16 +629,27 @@ export function useAppWorkspaceProps({
     onToggleImageChecked: toggleImageChecked,
     onReplaceCheckedImages: replaceImageCheckedIds,
     onManageDelete: requestManageDelete,
+    onManageGroup: () => {
+      void requestManageGroup()
+    },
+    onManageMove: () => {
+      void requestManageMove()
+    },
     onManageHide: () => {
       void runManageHideAction(true)
     },
     onManageUnhide: () => {
       void runManageHideAction(false)
     },
-    onToggleAdReviewPanel: () => setAdReviewPanelOpen((value) => !value),
+    onToggleAdReviewPanel: () => {
+      if (manageAdReview.deletePending) {
+        return
+      }
+      setAdReviewPanelOpen((value) => !value)
+    },
     onClearManageSelection: clearAllSelections,
     nodeBrowseMode,
-    nodeBrowseLabel: nodeBrowseMode ? (selectedSidebarNode?.label ?? '节点浏览') : '',
+    nodeBrowseLabel: nodeBrowseMode ? (selectedSidebarNode?.label ?? t('ui.image.nodeBrowseDefaultLabel')) : '',
     nodeBrowseItems,
     onSelectNodeBrowseItem: (nodeId, imageSourceId) => {
       setSelectedSidebarNodeId(nodeId)
@@ -641,12 +665,19 @@ export function useAppWorkspaceProps({
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
-    pendingManageAction: backendWrite.pending.manage,
+    pendingManageAction: backendWrite.pending.manage || manageAdReview.deletePending,
     manageOperationHint,
     canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
     canManageHide: mode === 'image' && imageCheckedIds.length > 0,
     canManageUnhide: mode === 'image' && imageCheckedIds.length > 0,
     onManageDelete: requestManageDelete,
+    onManageGroup: () => {
+      void requestManageGroup()
+    },
+    onManageMove: () => {
+      void requestManageMove()
+    },
     onManageHide: () => {
       void runManageHideAction(true)
     },
@@ -703,10 +734,17 @@ export function useAppWorkspaceProps({
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
-    pendingManageAction: backendWrite.pending.manage,
+    pendingManageAction: backendWrite.pending.manage || manageAdReview.deletePending,
     manageOperationHint,
     canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
     onManageDelete: requestManageDelete,
+    onManageGroup: () => {
+      void requestManageGroup()
+    },
+    onManageMove: () => {
+      void requestManageMove()
+    },
     onClearManageSelection: clearAllSelections,
     canJumpToManga: Boolean(jumpTargetImageFromAudio),
     canJumpToAnimation: Boolean(jumpTargetVideoFromAudio),
@@ -720,6 +758,12 @@ export function useAppWorkspaceProps({
     focusedAudioSrc,
     selectedAudioId,
     musicLoopMode,
+    musicLoopModeLabels: {
+      single: t('ui.music.loopModeSingle'),
+      folder: t('ui.music.loopModeFolder'),
+      album: t('ui.music.loopModeAlbum'),
+      library: t('ui.music.loopModeLibrary'),
+    },
     audioByIdEffective,
     setSelectedAudioId,
     setMusicLoopMode,
@@ -776,6 +820,7 @@ export function useAppWorkspaceProps({
     adReviewPanelOpen,
     canExecuteAdReview: (activeSelectionScope === 'sidebar' && sidebarCheckedNodeIds.length > 0) || imageCheckedIds.length > 0,
     adReviewPending: manageAdReview.pending,
+    adReviewDeletePending: manageAdReview.deletePending,
     adReviewTask: manageAdReview.task,
     adReviewQueueTasks: manageAdReview.queueTasks,
     adReviewActiveTaskId: manageAdReview.activeTaskId,
@@ -807,7 +852,13 @@ export function useAppWorkspaceProps({
     onRemoveAdReviewTask: (taskId) => {
       void manageAdReview.removeTask(taskId)
     },
+    onDeleteSelectedAdReviewCandidates: () => {
+      void manageAdReview.confirmDeleteSelectedCandidates()
+    },
     onToggleAdReviewFocus: () => {
+      if (manageAdReview.deletePending) {
+        return
+      }
       const currentTask = manageAdReview.task
       if (!currentTask) {
         setAdReviewFocusTaskId(null)
@@ -913,6 +964,7 @@ export function useAppWorkspaceProps({
     : goNextPage
 
   const mainFooter = buildMainFooter({
+    t,
     mode,
     focusedImage,
     focusedImagePackage,

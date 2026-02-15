@@ -8,39 +8,9 @@ const AD_REVIEW_CONCURRENCY_OPTIONS = Array.from({ length: 9 }, (_, index) => in
 const AD_REVIEW_WINDOW_OPTIONS = Array.from({ length: 201 }, (_, index) => index)
 const AD_REVIEW_STREAK_OPTIONS = Array.from({ length: 200 }, (_, index) => index + 1)
 
-function resolveAdReviewStatusLabel(status: ManageAdReviewTaskDto['status']): string {
-  if (status === 'pending') {
-    return '排队中'
-  }
-  if (status === 'running') {
-    return '审核中'
-  }
-  if (status === 'paused') {
-    return '已暂停'
-  }
-  if (status === 'failed') {
-    return '失败'
-  }
-  return '待复核'
-}
-
 function formatPercent(value: number): string {
   const normalized = Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0
   return `${(normalized * 100).toFixed(1)}%`
-}
-
-function resolveAdReviewExecutionLabel(task: ManageAdReviewTaskDto): string | null {
-  if (!task.execution) {
-    return null
-  }
-
-  const strategy = task.execution.strategy
-  const strategyLabel =
-    strategy.mode === 'head-tail'
-      ? `head-tail(h=${strategy.head_n}, t=${strategy.tail_n}, stop=${strategy.tail_stop_clean_streak})`
-      : 'all'
-
-  return `策略 ${strategyLabel} | 并发 ${task.execution.max_concurrency}`
 }
 
 interface ManagementPanelProps {
@@ -65,6 +35,7 @@ interface ManagementPanelProps {
   onUnhide: () => void
   onClearSelection: () => void
   adReviewPending: boolean
+  adReviewDeletePending?: boolean
   adReviewTask: ManageAdReviewTaskDto | null
   adReviewHideUncheckedNonChecked: boolean
   hasCheckedAdReviewCandidates: boolean
@@ -109,6 +80,7 @@ function ManagementPanel({
   onUnhide,
   onClearSelection,
   adReviewPending,
+  adReviewDeletePending = false,
   adReviewTask,
   adReviewHideUncheckedNonChecked,
   hasCheckedAdReviewCandidates,
@@ -135,6 +107,43 @@ function ManagementPanel({
   const adReviewRunning = adReviewTask?.status === 'running'
   const effectivePanelHeight = adReviewPanelOpen ? Math.max(panelHeight, 320) : panelHeight
 
+  const resolveStatusLabel = (status: ManageAdReviewTaskDto['status']): string => {
+    if (status === 'pending') {
+      return t('ui.manage.status.pending')
+    }
+    if (status === 'running') {
+      return t('ui.manage.status.running')
+    }
+    if (status === 'paused') {
+      return t('ui.manage.status.paused')
+    }
+    if (status === 'failed') {
+      return t('ui.manage.status.failed')
+    }
+    return t('ui.manage.status.review')
+  }
+
+  const resolveExecutionLabel = (task: ManageAdReviewTaskDto): string | null => {
+    if (!task.execution) {
+      return null
+    }
+
+    const strategy = task.execution.strategy
+    const strategyLabel =
+      strategy.mode === 'head-tail'
+        ? t('ui.manage.executionStrategyHeadTail', {
+            head: strategy.head_n,
+            tail: strategy.tail_n,
+            stop: strategy.tail_stop_clean_streak,
+          })
+        : t('ui.manage.executionStrategyAll')
+
+    return t('ui.manage.executionSummary', {
+      strategy: strategyLabel,
+      concurrency: task.execution.max_concurrency,
+    })
+  }
+
   useEffect(() => {
     if (!visible || !adReviewFeatureVisible) {
       setAdReviewPanelOpen(false)
@@ -149,7 +158,7 @@ function ManagementPanel({
     <>
       {collapsed ? (
         <button aria-label={t('a11y.common.expandManagePanel')} className="search-panel-expand-btn" type="button" onClick={onExpand}>
-          <span className="search-panel-expand-tip">展开管理容器</span>
+          <span className="search-panel-expand-tip">{t('ui.manage.expandPanelTip')}</span>
         </button>
       ) : (
         <div
@@ -161,24 +170,24 @@ function ManagementPanel({
           <div className="vector-panel-content" ref={panelContentRef}>
             <p className="manage-panel-summary">
               {activeSelectionScope === 'sidebar'
-                ? `已选目录节点: ${sidebarSelectedCount}`
+                ? t('ui.manage.selectedSidebarNodes', { count: sidebarSelectedCount })
                 : activeSelectionScope === 'image'
-                  ? `已选媒体条目: ${imageSelectedCount}`
-                  : '未选择条目'}
+                  ? t('ui.manage.selectedMediaItems', { count: imageSelectedCount })
+                  : t('ui.manage.noSelection')}
             </p>
 
             <div className="vector-controls manage-panel-actions">
               <button className="vector-search-btn" type="button" disabled={!canDelete || pending} onClick={onDelete}>
-                删除
+                {adReviewDeletePending ? t('ui.manage.deleting') : t('ui.manage.delete')}
               </button>
               <button className="feature-action-btn" type="button" disabled={!canHide || pending} onClick={onHide}>
-                隐藏
+                {t('tip.common.hide')}
               </button>
               <button className="feature-action-btn" type="button" disabled={!canUnhide || pending} onClick={onUnhide}>
-                取消隐藏
+                {t('tip.common.unhide')}
               </button>
               <button className="feature-action-btn" type="button" disabled={pending} onClick={onClearSelection}>
-                清空选择
+                {t('tip.common.clearSelection')}
               </button>
               {adReviewFeatureVisible ? (
                 <button
@@ -187,7 +196,7 @@ function ManagementPanel({
                   disabled={pending || adReviewPending}
                   onClick={() => setAdReviewPanelOpen((previous) => !previous)}
                 >
-                  {adReviewPanelOpen ? '关闭AI审核' : 'AI广告审核'}
+                  {adReviewPanelOpen ? t('ui.manage.closeAdReview') : t('ui.manage.adReviewTitle')}
                 </button>
               ) : null}
             </div>
@@ -195,7 +204,7 @@ function ManagementPanel({
             {adReviewFeatureVisible && adReviewPanelOpen ? (
               <section className="manage-ad-review-params">
                 <header>
-                  <strong>AI广告审核参数</strong>
+                  <strong>{t('ui.manage.paramsTitle')}</strong>
                 </header>
                 <div className="manage-ad-review-controls-row" role="group" aria-label={t('a11y.manage.controls')}>
                   <button
@@ -224,7 +233,7 @@ function ManagementPanel({
                   </button>
 
                   <label className="manage-ad-review-inline-field">
-                    <span>并发</span>
+                    <span>{t('ui.manage.concurrency')}</span>
                     <select
                       aria-label={t('a11y.manage.concurrency')}
                       value={adReviewMaxConcurrency}
@@ -239,7 +248,7 @@ function ManagementPanel({
                   </label>
 
                   <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
-                    <span>头部</span>
+                    <span>{t('ui.manage.headWindow')}</span>
                     <select
                       aria-label={t('a11y.manage.headWindow')}
                       disabled={adReviewStrategyMode !== 'head-tail'}
@@ -255,7 +264,7 @@ function ManagementPanel({
                   </label>
 
                   <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
-                    <span>尾部</span>
+                    <span>{t('ui.manage.tailWindow')}</span>
                     <select
                       aria-label={t('a11y.manage.tailWindow')}
                       disabled={adReviewStrategyMode !== 'head-tail'}
@@ -275,7 +284,7 @@ function ManagementPanel({
                       adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''
                     }`}
                   >
-                    <span>停止 clean</span>
+                    <span>{t('ui.manage.tailStopClean')}</span>
                     <select
                       aria-label={t('a11y.manage.tailStopClean')}
                       disabled={adReviewStrategyMode !== 'head-tail'}
@@ -298,45 +307,58 @@ function ManagementPanel({
             {adReviewFeatureVisible && adReviewPanelOpen && adReviewTask ? (
               <section className="manage-ad-review" aria-live="polite">
                 <header>
-                  <strong>AI广告审核</strong>
+                  <strong>{t('ui.manage.adReviewTitle')}</strong>
                   <span className={`manage-ad-review-status is-${adReviewTask.status}`}>
-                    {resolveAdReviewStatusLabel(adReviewTask.status)}
+                    {resolveStatusLabel(adReviewTask.status)}
                   </span>
                 </header>
 
                 <p className="manage-ad-review-progress">
-                  {`进度 ${Math.round(adReviewTask.progress * 100)}% (${adReviewTask.reviewed_count}/${adReviewTask.total_count})`}
+                  {t('ui.manage.progress', {
+                    percent: Math.round(adReviewTask.progress * 100),
+                    reviewed: adReviewTask.reviewed_count,
+                    total: adReviewTask.total_count,
+                  })}
                 </p>
-                {resolveAdReviewExecutionLabel(adReviewTask) ? (
-                  <p className="manage-ad-review-config">{resolveAdReviewExecutionLabel(adReviewTask)}</p>
+                {resolveExecutionLabel(adReviewTask) ? (
+                  <p className="manage-ad-review-config">{resolveExecutionLabel(adReviewTask)}</p>
                 ) : null}
                 {adReviewTask.audit ? (
                   <div className="manage-ad-review-audit">
                     <p className="manage-ad-review-audit-line">
-                      {`来源 known-hash ${adReviewTask.audit.source_distribution.known_hash} | llm(疑似/正常/失败) ${adReviewTask.audit.source_distribution.llm_suspected}/${adReviewTask.audit.source_distribution.llm_clean}/${adReviewTask.audit.source_distribution.llm_failed} | strategy-skip ${adReviewTask.audit.source_distribution.strategy_skipped}`}
+                      {t('ui.manage.auditSourceDistribution', {
+                        knownHash: adReviewTask.audit.source_distribution.known_hash,
+                        suspected: adReviewTask.audit.source_distribution.llm_suspected,
+                        clean: adReviewTask.audit.source_distribution.llm_clean,
+                        failed: adReviewTask.audit.source_distribution.llm_failed,
+                        skipped: adReviewTask.audit.source_distribution.strategy_skipped,
+                      })}
                     </p>
                     <p className="manage-ad-review-audit-line">
-                      {`命中率 LLM ${formatPercent(adReviewTask.audit.llm_hit_rate)} | 总体 ${formatPercent(adReviewTask.audit.overall_hit_rate)}`}
+                      {t('ui.manage.auditHitRate', {
+                        llm: formatPercent(adReviewTask.audit.llm_hit_rate),
+                        overall: formatPercent(adReviewTask.audit.overall_hit_rate),
+                      })}
                     </p>
                   </div>
                 ) : null}
 
                 <p className="manage-ad-review-message">
                   {adReviewTask.status === 'review'
-                    ? `疑似候选 ${adReviewTask.candidates.length} 张，已同步到缩略图勾选。请在缩略图校正后使用上方“删除”执行清除。`
-                    : adReviewTask.message ?? 'AI广告审核任务进行中'}
+                    ? t('ui.manage.reviewCandidatesMessageThumbnail', { count: adReviewTask.candidates.length })
+                    : adReviewTask.message ?? t('ui.manage.runningMessage')}
                 </p>
 
                 {adReviewTask.status === 'review' ? (
                   <div className="manage-ad-review-actions">
                     <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onToggleHideUncheckedNonChecked}>
-                      {adReviewHideUncheckedNonChecked ? '显示全部图片' : '隐藏未勾选图片'}
+                      {adReviewHideUncheckedNonChecked ? t('ui.manage.showAllImages') : t('ui.manage.hideUncheckedImages')}
                     </button>
                     <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
-                      关闭结果
+                      {t('ui.manage.closeResult')}
                     </button>
                     <span className={`manage-ad-review-selection-tag ${hasCheckedAdReviewCandidates ? 'is-active' : ''}`}>
-                      {hasCheckedAdReviewCandidates ? '已勾选候选可删除' : '未勾选候选'}
+                      {hasCheckedAdReviewCandidates ? t('ui.manage.checkedCandidatesRemovable') : t('ui.manage.uncheckedCandidates')}
                     </span>
                   </div>
                 ) : null}
@@ -348,7 +370,7 @@ function ManagementPanel({
             {errorRows.length > 0 ? (
               <section className="manage-error-list" aria-live="polite">
                 <header>
-                  <strong>管理模式异常</strong>
+                  <strong>{t('ui.manage.errorListTitle')}</strong>
                   <button
                     className="feature-action-btn"
                     type="button"
@@ -359,7 +381,7 @@ function ManagementPanel({
                       }
                     }}
                   >
-                    清除全部
+                    {t('ui.manage.clearAll')}
                   </button>
                 </header>
                 <ul>
@@ -367,7 +389,7 @@ function ManagementPanel({
                     <li key={row.key}>
                       <span>{`${row.label}: ${row.message}`}</span>
                       <button className="feature-action-btn" type="button" disabled={pending} onClick={row.onRetry}>
-                        清除
+                        {t('ui.manage.clear')}
                       </button>
                     </li>
                   ))}

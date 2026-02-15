@@ -1,0 +1,513 @@
+
+> mediaplayerx@0.0.0 test:coverage
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mZ:/Playground/CurrentWorking/MediaPlayerX[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m electron/manageAdReview/concurrency.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 56[2mms[22m[39m
+(node:31048) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32468) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83616) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63924) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:91256) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/features/management/useManageSelection.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+(node:48240) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:95052) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/features/backend/useWriteDataAccess.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [32m✓[39m electron/fileSystemMediaAccessGuard.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m src/features/app/useVideoSidebarState.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 43[2mms[22m[39m
+(node:48904) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/features/app/buildMainFooter.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 290[2mms[22m[39m
+ [32m✓[39m src/components/AppWorkspace.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [32m✓[39m src/features/backend/repository/realRepository.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m src/features/app/useMetadataWriteBindings.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 131[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataMusicEditor.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 392[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/useMusicVisualizerRuntime.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[32m 108[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryPlaylistStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 623[2mms[22m[39m
+     [33m[2m✓[22m[39m 写入空列表会清空已有播放列表 [33m 322[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryAppStateStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 630[2mms[22m[39m
+     [33m[2m✓[22m[39m writeImportSources 会做 trim + 去重，upsertRootConfig 可覆盖旧值 [33m 337[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryTaskStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 630[2mms[22m[39m
+     [33m[2m✓[22m[39m readTasks 按 created_at_ms 倒序返回，非法 source_paths_json 回退为空数组 [33m 335[2mms[22m[39m
+ [32m✓[39m electron/mediaLibrarySchema.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 639[2mms[22m[39m
+     [33m[2m✓[22m[39m 从旧版本升级时会补齐 task_source/grade/hidden/series_id 与 video_metadata 日文字段列 [33m 366[2mms[22m[39m
+ [32m✓[39m src/components/AppHeader.accessibility.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 604[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps stable toolbar button labels in normal mode [33m 445[2mms[22m[39m
+ [32m✓[39m electron/services/file-system-read/manageAdReviewService.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 278[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryMetadataStore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 830[2mms[22m[39m
+     [33m[2m✓[22m[39m 可写入并读取视频封面与视频元数据，异常 tags_json 回退为空数组 [33m 343[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryDatabase.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 680[2mms[22m[39m
+     [33m[2m✓[22m[39m 关键读写数据可在数据库重启后恢复 [33m 439[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataAdReviewSection.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 772[2mms[22m[39m
+     [33m[2m✓[22m[39m renders queue items and supports select/remove actions [33m 548[2mms[22m[39m
+ [32m✓[39m electron/mediaLibrarySnapshotStore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 726[2mms[22m[39m
+     [33m[2m✓[22m[39m replaceSnapshot 会按 revision 清理 stale source/image/video [33m 322[2mms[22m[39m
+ [32m✓[39m src/features/app/useAppDisplayAndEffects.integration.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m src/features/backend/useResolvedMediaUrls.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 816[2mms[22m[39m
+ [32m✓[39m src/components/SidebarPanel.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 1029[2mms[22m[39m
+     [33m[2m✓[22m[39m 点击音乐文件夹节点会定位到该节点下第一首音频 [33m 304[2mms[22m[39m
+ [32m✓[39m src/features/app/useSettingsPersistence.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 480[2mms[22m[39m
+ [32m✓[39m src/components/ImageMainSection.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 482[2mms[22m[39m
+     [33m[2m✓[22m[39m 主区不再渲染分页容器与翻页按钮 [33m 347[2mms[22m[39m
+ [32m✓[39m src/features/app/useImageSidebarBaseState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m src/features/app/useAudioSidebarState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m src/features/app/useAppDataPipeline.integration.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m electron/fileSystemSidebarTree.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/mockData.imageSidebarTree.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/features/theme/themeRegistry.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/features/app/useEffectiveDisplayState.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m src/components/MetadataPanel.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1282[2mms[22m[39m
+     [33m[2m✓[22m[39m non-manage模式下焦点图片变化会自动切回原图显示 [33m 630[2mms[22m[39m
+     [33m[2m✓[22m[39m non-manage模式下 Esc 与右键会返回元数据显示 [33m 342[2mms[22m[39m
+     [33m[2m✓[22m[39m manage 或 metadata-manage 模式下禁用自动切回原图行为 [33m 306[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSettingsPanelProps.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/features/app/buildAppHeaderProps.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/features/app/useResolvedMediaState.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m src/features/app/buildAdReviewSidebarState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m electron/manageAdReview/jsonExtract.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m electron/manageAdReview/openAiVisionClient.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m electron/manageAdReview/adReviewEngine.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/features/backend/useReadOnlyDataAccess.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 2902[2mms[22m[39m
+     [33m[2m✓[22m[39m 仅在评分筛选启用时透传 grade_overrides [33m 303[2mms[22m[39m
+     [33m[2m✓[22m[39m write-package-grade 事件在无评分筛选时不会触发刷新 [33m 356[2mms[22m[39m
+     [33m[2m✓[22m[39m thumbnail-rendering 事件不会触发 Sidebar/Page/Metadata 切片刷新 [33m 365[2mms[22m[39m
+     [33m[2m✓[22m[39m write-package-grade 事件在评分筛选启用时仅刷新 Sidebar/Page [33m 519[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理挂起刷新时，元数据写事件不会刷新缩略图相关切片，退出后补一次全量刷新 [33m 533[2mms[22m[39m
+     [33m[2m✓[22m[39m includeHidden 从 true 切换到 false 时会驱动 Sidebar/Page/Metadata 同步收敛 [33m 355[2mms[22m[39m
+ [32m✓[39m src/store/useUiStore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSidebarPanelProps.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m electron/services/file-system-read/mediaTokenService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/shaderRegistry.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/features/app/buildMetadataPanelProps.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m electron/externalUrlPolicy.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSearchPanelProps.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m electron/facade/FileSystemSystemHandlers.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/shadertoyAdapter.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/shortcuts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/features/layout/thumbnailLayout.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataImageEditor.helpers.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m媒体访问通道执行根目录白名单并可读取令牌资源
+[22m[39mresolveMediaResource denied {
+  reason: [32m'path_outside_root'[39m,
+  message: [32m'媒体访问被拒绝（未导入/未允许）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-media-outside-NnxCZj\\outside.jpg'[39m
+}
+
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m压缩包轻扫仅使用 entry name，并可按白名单读取 zip 内图片
+[22m[39mresolveMediaResource denied {
+  reason: [32m'archive_entry_illegal'[39m,
+  message: [32m'压缩包媒体访问被拒绝（entry 非法）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-zip-light-scan-VzcKXO\\gallery.zip'[39m
+}
+
+ [32m✓[39m src/components/MusicMainSection.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 2745[2mms[22m[39m
+     [33m[2m✓[22m[39m 支持播放控制、进度条与音量弹层调节 [33m 693[2mms[22m[39m
+     [33m[2m✓[22m[39m 支持在控制栏打开 Shader 列表 [33m 358[2mms[22m[39m
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m管理删除压缩包中的图片后会刷新 zip 条目白名单并保留剩余条目可读
+[22m[39mresolveMediaResource denied {
+  reason: [32m'archive_entry_not_allowlisted'[39m,
+  message: [32m'压缩包媒体访问被拒绝（entry 不在白名单）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-manage-delete-zip-entry-dwS3od\\gallery.zip::a/001.jpg'[39m
+}
+
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2mresolveMediaResource 输出审计统计（拒绝分类、token 命中/过期）
+[22m[39mresolveMediaResource denied {
+  reason: [32m'path_outside_root'[39m,
+  message: [32m'媒体访问被拒绝（未导入/未允许）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\outside.jpg'[39m
+}
+
+ [32m✓[39m electron/fileSystemReadService.test.ts [2m([22m[2m24 tests[22m[2m)[22m[33m 7129[2mms[22m[39m
+     [33m[2m✓[22m[39m 可读取真实目录并保留中文/日文/特殊符号路径 [33m 611[2mms[22m[39m
+     [33m[2m✓[22m[39m 缩略图请求可生成 Sharp WebP 缓存并复用受控协议返回 [33m 356[2mms[22m[39m
+     [33m[2m✓[22m[39m 写链路可持久化评分与封面，失败时由调用端回滚 [33m 404[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频元数据支持同步文件名到作品名并持久化 [33m 400[2mms[22m[39m
+     [33m[2m✓[22m[39m 播放列表写入后可在服务重启后恢复 [33m 593[2mms[22m[39m
+     [33m[2m✓[22m[39m 读取快照时会自动清理磁盘已删除的 source/video 并广播变更 [33m 328[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐文件导入会写入 music_import_sources，并将孤立文件按专辑或 unknown artist 分组 [33m 372[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐文件夹含音频与图片时，图片目录统一归入 CD Booklet 树根 [33m 334[2mms[22m[39m
+     [33m[2m✓[22m[39m 磁盘文件缺失触发自动清理时会同步移除 music_import_sources [33m 334[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除 Sidebar 压缩包和视频节点后快照同步移除并物理删除文件 [33m 362[2mms[22m[39m
+     [33m[2m✓[22m[39m 可通过 ffprobe 探测真实视频元数据并回填时长/分辨率 [33m 486[2mms[22m[39m
+     [33m[2m✓[22m[39m 入库时可提取音频 ID3/Vorbis 标签并持久化到 sqlite [33m 504[2mms[22m[39m
+ [32m✓[39m src/App.test.tsx [2m([22m[2m68 tests[22m[2m)[22m[33m 69831[2mms[22m[39m
+     [33m[2m✓[22m[39m 支持图片/视频模式切换 [33m 1093[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式可展开管理容器并与检索容器互斥 [33m 1451[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理与元数据管理互斥，且可一键切换到检索模式 [33m 878[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理控件改为主工具栏承载，且摘要右对齐显示 [33m 510[2mms[22m[39m
+     [33m[2m✓[22m[39m 检索/文件管理/元数据管理快速切换不会抛出运行时错误 [33m 1226[2mms[22m[39m
+     [33m[2m✓[22m[39m 快速切换 Sidebar 节点时缩略图列表保持可渲染且不抛错 [33m 976[2mms[22m[39m
+     [33m[2m✓[22m[39m Sidebar 包节点在无英文/日文标题时显示文件名 [33m 550[2mms[22m[39m
+     [33m[2m✓[22m[39m Sidebar 目录源节点在无英文/日文标题时显示目录名 [33m 554[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式删除确认弹窗需勾选不可逆确认后才能提交 [33m 1802[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 按优先级先关闭删除确认，再关闭管理面板 [33m 1771[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 可关闭设置与检索状态，且主区右键不误关闭检索 [33m 1467[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 关闭元数据管理，右键关闭全屏层 [33m 1363[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式下 Sidebar 与主视图 checker 互斥，且视频模式可进入管理 [33m 1111[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式下点击缩略图即可切换 checker 状态 [33m 558[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式在紧凑窗口下保持稳定：无最大更新深度报错、无折叠按钮、缩略图容器不可滚动 [33m 863[2mms[22m[39m
+     [33m[2m✓[22m[39m 隐藏项在非管理模式不可见 [33m 2597[2mms[22m[39m
+     [33m[2m✓[22m[39m main-footer 始终显示，focus 清空后显示当前 Sidebar 路径 [33m 488[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理异常显示在主工具栏提示中，不占用顶部异常横幅 [33m 1504[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除 Sidebar 节点部分失败时，提示文案与 failed 计数保持一致 [33m 1510[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除图片部分失败时，提示文案与 failed 计数保持一致 [33m 1399[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理改为工具栏后仍可执行删除流程 [33m 1405[2mms[22m[39m
+     [33m[2m✓[22m[39m AI广告审核通过后仅显示工具栏按钮，点击后才展开审核面板 [33m 1069[2mms[22m[39m
+     [33m[2m✓[22m[39m 真实渲染链路可输出可渲染媒体 URL（Main/Metadata/Fullscreen） [33m 554[2mms[22m[39m
+     [33m[2m✓[22m[39m 检索模式将筛选控件渲染到元数据编辑区顶部并实时生效 [33m 665[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式检索面板仅展示特征检索 [33m 725[2mms[22m[39m
+     [33m[2m✓[22m[39m 布局锁定开启后，主界面分割条拖动失效 [33m 1083[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理使用主工具栏承载同步名称与获取元数据动作 [33m 1330[2mms[22m[39m
+     [33m[2m✓[22m[39m 获取元数据弹窗展示双源结果列与分源请求响应预览 [33m 1014[2mms[22m[39m
+     [33m[2m✓[22m[39m 获取元数据支持按来源过滤、回车检索并可解析 ehentai 结果 [33m 2488[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据面板标题可折叠，并可恢复展开 [33m 1314[2mms[22m[39m
+     [33m[2m✓[22m[39m 进入元数据管理时自动退出原图显示并回到元数据编辑视图 [33m 499[2mms[22m[39m
+     [33m[2m✓[22m[39m 退出原图显示后元数据面板恢复常规布局，不保持 focus 容器样式 [33m 482[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据评分支持清空到空星，并可继续点击设星 [33m 1978[2mms[22m[39m
+     [33m[2m✓[22m[39m 图片模式只读元数据评分可用并可写入 [33m 541[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式元数据默认只读，包含评分与操作区 [33m 682[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频信息字段回车会触发 writeVideoMetadata 调用 [33m 725[2mms[22m[39m
+     [33m[2m✓[22m[39m 系列ID匹配时支持动画版/漫画版双向跳转 [33m 1237[2mms[22m[39m
+     [33m[2m✓[22m[39m 未配置系列ID的条目不显示动画版/漫画版跳转按钮 [33m 1327[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐模式支持按系列ID跳转到动画版/漫画版 [33m 1268[2mms[22m[39m
+     [33m[2m✓[22m[39m 非元数据管理模式下打开封面/打开Booklet可用，并可从非 CD Booklet 树定位 [33m 834[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理支持写入图片与视频系列ID [33m 1033[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频评分可点击并写入 grade [33m 729[2mms[22m[39m
+     [33m[2m✓[22m[39m 默认只读元数据作品名标题复制当前值，点击值不触发切换 [33m 463[2mms[22m[39m
+     [33m[2m✓[22m[39m 默认只读元数据点击作者值可静默触发检索并通过返回按钮清空 [33m 1368[2mms[22m[39m
+     [33m[2m✓[22m[39m 默认只读元数据点击社团值可静默触发检索并通过返回按钮清空 [33m 1395[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空 [33m 839[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理支持按字段回车批量写入，不覆盖未提交字段 [33m 588[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理面板已移除自动标签与嵌入按钮，仅保留同步名称 [33m 1146[2mms[22m[39m
+     [33m[2m✓[22m[39m 纯文件名模式为滚动列表且不显示分页控件 [33m 454[2mms[22m[39m
+     [33m[2m✓[22m[39m Main 工具栏使用图标按钮，退出全屏会自动关闭自动播放，且不显示加载中文案 [33m 2432[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频播放后暂停保留当前画面，切换视频后回到封面态，Save as cover 走后端写链路并保持封面态 [33m 1457[2mms[22m[39m
+     [33m[2m✓[22m[39m 全屏默认按当前模式进入单显示，双显示切回单显示时恢复入口模式 [33m 1105[2mms[22m[39m
+     [33m[2m✓[22m[39m 全屏图片支持首末跳转、跨包翻页与上个包下个包按钮 [33m 541[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应 [33m 716[2mms[22m[39m
+     [33m[2m✓[22m[39m 设置面板按 side/main 分栏并包含界面设置聚合与快捷键鼠标录入 [33m 4712[2mms[22m[39m
+     [33m[2m✓[22m[39m 数据库目录选择器可触发 SQL 与缩略图目录选择 [33m 1484[2mms[22m[39m
+     [33m[2m✓[22m[39m 数据库目录设置会调用后端路径持久化并显示反馈 [33m 1828[2mms[22m[39m
+     [33m[2m✓[22m[39m AI模型保存会持久化测试通过状态 [33m 1453[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m57 passed[39m[22m[90m (57)[39m
+[2m      Tests [22m [1m[32m291 passed[39m[22m[90m (291)[39m
+[2m   Start at [22m 13:19:07
+[2m   Duration [22m 78.28s[2m (transform 24.08s, setup 13.60s, import 39.21s, tests 94.96s, environment 96.33s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   58.56 |    52.55 |   59.52 |    58.8 |                   
+ electron          |   66.43 |    54.35 |   69.58 |   66.64 |                   
+  ...mExtractor.ts |   14.19 |    13.15 |   17.64 |   14.14 | ...13,220-677,709 
+  channels.ts      |     100 |      100 |     100 |     100 |                   
+  ...lUrlPolicy.ts |    93.1 |    95.23 |     100 |    93.1 | 39,49             
+  ...izeHelpers.ts |    5.55 |        0 |       0 |    5.55 | 8-40              
+  ...AsyncUtils.ts |     100 |      100 |     100 |     100 |                   
+  ...eCollector.ts |   83.76 |     81.7 |   72.22 |   86.79 | ...01,211,215,237 
+  ...mportTasks.ts |   81.65 |    77.92 |      60 |   83.01 | ...86,215-216,282 
+  ...ccessGuard.ts |   93.18 |     92.5 |      80 |   95.23 | 105,110           
+  ...diaReaders.ts |   30.18 |    18.18 |      50 |   30.18 | ...20,142,163-190 
+  ...ataWriters.ts |   95.91 |    70.37 |     100 |   95.74 | 51,95             
+  ...ReadFacade.ts |   74.75 |    74.46 |   70.94 |   74.38 | ...47,655,667-671 
+  ...eadService.ts |       0 |        0 |       0 |       0 |                   
+  ...imeHelpers.ts |      80 |    67.85 |   71.42 |   81.39 | ...67,178,199,221 
+  ...iceHelpers.ts |   42.28 |    23.48 |   54.83 |   42.46 | ...50-259,266-296 
+  ...idebarTree.ts |   98.79 |    85.29 |     100 |   98.73 | 26                
+  ...eFactories.ts |     100 |    73.33 |     100 |     100 | 35-67,87          
+  ...urceFilter.ts |   83.33 |       50 |     100 |   83.33 | 16                
+  ...eamHelpers.ts |   13.88 |    15.15 |      25 |   14.28 | 14,16-37,39-70    
+  ...ilResolver.ts |      71 |    54.16 |   66.66 |   72.91 | ...24-225,229,242 
+  ...verCapture.ts |   56.25 |    41.66 |   33.33 |      60 | 25,37,43-47       
+  ...toreWriter.ts |   75.25 |       30 |   57.14 |   75.26 | 35-77,89          
+  ...StateStore.ts |     100 |      100 |     100 |     100 |                   
+  ...ryDatabase.ts |   90.41 |    83.33 |   85.71 |   90.41 | ...84,192,273-277 
+  ...adataStore.ts |   69.23 |       50 |      70 |      68 | 163-248,421-485   
+  ...ylistStore.ts |     100 |      100 |     100 |     100 |                   
+  ...rarySchema.ts |     100 |    55.55 |     100 |     100 | 9,196-287         
+  ...pshotStore.ts |   95.55 |    56.66 |     100 |   95.16 | ...11,626,646,692 
+  ...StoreUtils.ts |   83.33 |       50 |     100 |   83.33 | 98                
+  ...yTaskStore.ts |   88.88 |       50 |     100 |    87.5 | 93                
+  ...iveHelpers.ts |   80.95 |    58.69 |     100 |   80.58 | ...77,181,188-192 
+ electron/facade   |    62.5 |      100 |   63.15 |    62.5 |                   
+  ...ryHandlers.ts |   81.25 |      100 |      80 |   81.25 | 70,100-104        
+  ...ntHandlers.ts |   33.33 |      100 |   33.33 |   33.33 | 27,45-69          
+  ...emHandlers.ts |      60 |      100 |   64.28 |      60 | 31-36,52,74-78    
+ ...manageAdReview |   76.26 |    50.39 |   82.69 |   75.74 |                   
+  ...viewEngine.ts |   89.18 |    72.05 |    90.9 |   88.73 | ...27,333,370,377 
+  concurrency.ts   |      76 |    66.66 |   83.33 |      75 | 2-4,9,15,34       
+  hashStore.ts     |   64.28 |       40 |   66.66 |   64.28 | 30-39             
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  jsonExtract.ts   |   82.19 |    54.23 |     100 |   81.94 | ...,51,94,116,132 
+  ...sionClient.ts |   56.63 |    34.78 |   63.63 |   56.63 | ...83,290,297,302 
+  prompts.ts       |     100 |      100 |     100 |     100 |                   
+ ...le-system-read |   66.59 |    51.56 |   72.32 |   66.38 |                   
+  ...ionService.ts |   23.92 |     17.7 |   31.03 |   23.92 | ...41,154,169-369 
+  ...cadeConfig.ts |   95.83 |       75 |     100 |   95.83 | 7                 
+  ...thRegistry.ts |   68.11 |    58.33 |   81.81 |   69.23 | 42-44,71-96,101   
+  ...askService.ts |   48.43 |     32.5 |   68.75 |   46.77 | ...86,191,196-215 
+  ...iteService.ts |   51.45 |     31.3 |   56.41 |   50.51 | ...17-592,613-615 
+  ...hotService.ts |   74.41 |    74.35 |    75.4 |   74.48 | ...00,605,619,686 
+  ...iewService.ts |   78.85 |    59.55 |   85.13 |   78.69 | ...1175,1179,1186 
+  ...vice.utils.ts |      50 |    29.87 |   66.66 |   49.62 | ...42,268,285-345 
+  ...ionService.ts |   75.26 |    54.88 |   77.77 |    76.2 | ...98-500,516-519 
+  ...rceService.ts |   83.33 |    63.63 |   88.88 |   82.97 | 71,76,125,177-184 
+  ...kenService.ts |   97.14 |      100 |   83.33 |   97.14 | 86                
+  ...ncyService.ts |     100 |    65.11 |     100 |     100 | 73-110            
+  ...ceEventBus.ts |   94.44 |       80 |     100 |   94.44 | 14                
+ ...ron/test-utils |     100 |    68.18 |     100 |     100 |                   
+  ...ryFixtures.ts |     100 |    68.18 |     100 |     100 | 21,41,149-152     
+  sqliteHarness.ts |     100 |      100 |     100 |     100 |                   
+ src               |   75.95 |    69.77 |   69.09 |   82.09 |                   
+  App.css          |       0 |        0 |       0 |       0 |                   
+  App.tsx          |     100 |      100 |     100 |     100 |                   
+  mockData.ts      |   80.34 |    74.28 |   66.66 |    80.9 | ...1022,1033-1092 
+  shortcuts.ts     |   69.61 |    66.87 |   72.22 |   83.33 | ...11,321,367-368 
+  types.ts         |     100 |      100 |     100 |     100 |                   
+ src/assets        |       0 |        0 |       0 |       0 |                   
+  ...IChannel0.png |       0 |        0 |       0 |       0 |                   
+  ...IChannel1.png |       0 |        0 |       0 |       0 |                   
+  ...IChannel0.png |       0 |        0 |       0 |       0 |                   
+  iChannel1.png    |       0 |        0 |       0 |       0 |                   
+  iChannel3.png    |       0 |        0 |       0 |       0 |                   
+ src/bench         |       0 |        0 |       0 |       0 |                   
+  ...ontroller.tsx |       0 |        0 |       0 |       0 | 11-566            
+ src/components    |   64.24 |    65.01 |   60.82 |   64.41 |                   
+  AppHeader.tsx    |   41.02 |    57.57 |   35.55 |    42.1 | ...11-577,602-686 
+  AppShell.tsx     |     100 |      100 |     100 |     100 |                   
+  ...opBanners.tsx |     100 |      100 |     100 |     100 |                   
+  AppWorkspace.tsx |     100 |       75 |     100 |     100 | ...,72,80-107,130 
+  ...rorBanner.tsx |     100 |      100 |     100 |     100 |                   
+  ...irmDialog.tsx |     100 |      100 |     100 |     100 |                   
+  ...rtOverlay.tsx |   66.66 |       50 |     100 |   66.66 | 10                
+  ...chSection.tsx |   66.66 |       50 |     100 |   66.66 | 13                
+  ...reenLayer.tsx |   71.04 |    63.45 |   64.58 |   71.37 | ...05-706,754-760 
+  ...inSection.tsx |    82.5 |    79.33 |   74.28 |      83 | ...48-580,587,609 
+  ...rceInputs.tsx |     100 |      100 |     100 |     100 |                   
+  ...TaskPanel.tsx |   13.33 |     3.57 |      20 |   13.33 | 21-30,52-96       
+  MainUiIcon.tsx   |     100 |      100 |     100 |     100 |                   
+  ...dataPanel.tsx |   52.59 |    54.97 |      48 |      53 | ...65-769,933-936 
+  ...ntrolIcon.tsx |     100 |      100 |     100 |     100 |                   
+  ...inSection.tsx |   75.56 |    66.91 |   72.36 |   75.65 | ...1095,1105,1110 
+  ...ingBanner.tsx |      50 |       50 |      50 |      50 | 18-28             
+  ...ingsPanel.tsx |   52.84 |    32.95 |    62.5 |    52.1 | ...88,492,713-714 
+  SidebarPanel.tsx |    63.3 |    79.69 |   66.66 |    63.3 | ...92,311,351-360 
+  ...ntrolIcon.tsx |     100 |      100 |     100 |     100 |                   
+  ...inSection.tsx |   65.75 |    64.16 |   45.83 |   66.19 | ...24,480,507-552 
+  ...ionPreload.ts |   42.85 |    46.15 |   30.76 |   43.54 | 32,38,83-141      
+  ...ctionUtils.ts |   76.92 |    58.33 |     100 |   76.92 | 12,15,22          
+  ...ngControls.ts |   85.36 |    58.33 |     100 |   85.36 | 27-28,51,61,65,70 
+ ...nts/fullscreen |   54.97 |    59.09 |   36.36 |   55.29 |                   
+  ...eenFooter.tsx |   22.22 |    91.66 |   22.22 |   22.22 | 69-90,102-111     
+  ...reenPanes.tsx |   17.64 |       50 |    37.5 |   17.64 | 50-74,154-199     
+  ...oControls.tsx |   37.93 |     57.5 |   22.22 |   37.93 | ...53-292,317-318 
+  paneMath.ts      |   95.65 |    91.66 |     100 |   95.65 | 89,91             
+  ...mageSource.ts |   25.53 |       20 |      20 |   25.53 | 37-95,102         
+  ...ewportSize.ts |   95.65 |      100 |   83.33 |     100 |                   
+ ...nents/metadata |   52.51 |     60.1 |   52.26 |   53.46 |                   
+  ...ckerModal.tsx |    7.14 |       10 |    9.09 |     7.4 | 36-127            
+  ...ewSection.tsx |   66.66 |    59.32 |   61.53 |   66.66 | ...05,120,136,156 
+  ...etchPanel.tsx |    70.2 |    73.33 |   61.81 |   72.58 | ...40,554-637,693 
+  ...or.helpers.ts |   41.17 |    55.55 |   62.96 |   41.17 | ...29-388,397-431 
+  ...ageEditor.tsx |    20.3 |       50 |   23.63 |   22.41 | ...07,530,548-642 
+  ...sicEditor.tsx |   72.72 |    72.91 |   72.72 |   72.09 | ...93,214,231,276 
+  ...tingGroup.tsx |      25 |       40 |   36.36 |      25 | 13-20,43,48,54-97 
+  ...chSection.tsx |      50 |    42.85 |   46.15 |   53.84 | 65-76,119-142,157 
+  ...deoEditor.tsx |   52.52 |    67.81 |    41.3 |   53.68 | ...84,296,311-423 
+  ...PanelUtils.ts |   66.66 |       50 |    87.5 |   63.33 | ...18,30,45,53-60 
+  ...arsedDraft.ts |   86.11 |    69.33 |   96.15 |   85.43 | ...95,203,211,219 
+ ...nents/settings |   57.62 |    76.71 |   31.42 |   56.89 |                   
+  ...inSection.tsx |      50 |    76.71 |      25 |   48.97 | ...04-505,566,626 
+  settingsScale.ts |     100 |      100 |     100 |     100 |                   
+ src/contracts     |   99.15 |        0 |      50 |   99.15 |                   
+  backend.ts       |   99.08 |        0 |      50 |   99.08 | 769               
+  settings.ts      |     100 |      100 |     100 |     100 |                   
+ src/features/app  |   61.97 |     54.5 |   63.38 |   62.21 |                   
+  ...debarState.ts |   95.65 |    88.23 |     100 |      95 | 55                
+  ...eaderProps.ts |      80 |    78.94 |   71.42 |    82.6 | 60-61,67,93       
+  ...dErrorRows.ts |     100 |    59.09 |     100 |     100 | 52-84,100,116-132 
+  ...ctionProps.ts |     100 |      100 |     100 |     100 |                   
+  ...LayerProps.ts |   14.28 |    11.11 |   17.85 |   16.66 | ...14-126,135-170 
+  ...ctionProps.ts |   71.42 |       50 |      75 |   71.42 | 127,130           
+  ...eLoadState.ts |   69.69 |    46.15 |      75 |   71.87 | 32-38,54-55,58,63 
+  ...PanelProps.ts |      25 |      100 |      25 |   33.33 | 31-37             
+  ...ainFooter.tsx |     100 |    95.45 |     100 |     100 | 36                
+  ...ialogProps.ts |     100 |      100 |     100 |     100 |                   
+  ...PanelProps.ts |      75 |      100 |      50 |      75 | 91                
+  ...PanelProps.ts |   66.66 |      100 |   66.66 |   66.66 | 38                
+  ...PanelProps.ts |   94.73 |     87.5 |     100 |   94.11 | 214               
+  ...ctionProps.ts |    32.4 |    25.77 |   28.57 |   31.13 | ...81-193,227-322 
+  ...PanelProps.ts |   81.81 |      100 |   77.77 |   88.88 | 53                
+  ...PanelProps.ts |   53.12 |       40 |      50 |   53.12 | ...73,177,180-185 
+  ...PanelProps.ts |   89.65 |    92.85 |     100 |   88.88 | 113-114,139       
+  ...debarState.ts |   34.61 |        0 |      50 |   34.61 | ...29,34-39,51-58 
+  ...ctionProps.ts |   25.92 |    22.22 |   26.31 |   26.08 | ...34-140,144,149 
+  ...aPathUtils.ts |   39.28 |    27.77 |   66.66 |   39.28 | ...33,43-49,51-59 
+  ...Controller.ts |     100 |      100 |     100 |     100 |                   
+  ...taPipeline.ts |     100 |      100 |     100 |     100 |                   
+  ...AndEffects.ts |     100 |      100 |     100 |     100 |                   
+  ...yResources.ts |   40.15 |    43.03 |   33.33 |   41.08 | ...59-389,394-438 
+  useAppEffects.ts |    67.8 |     57.3 |    73.8 |   68.15 | ...69,487-512,538 
+  ...ionEffects.ts |   92.23 |    83.01 |     100 |   92.23 | ...42,247,252,266 
+  ...geBindings.ts |   71.42 |       50 |      50 |      75 | 124,127-130       
+  ...ationState.ts |   54.83 |    50.96 |   63.63 |   54.83 | ...40,456,467-475 
+  ...Navigation.ts |     100 |      100 |     100 |     100 |                   
+  ...pReadState.ts |   93.33 |    86.53 |     100 |   93.33 | 139-140           
+  ...imeSources.ts |     100 |       50 |     100 |     100 | 26                
+  ...ssionState.ts |   95.55 |       70 |      80 |    97.5 | 77                
+  ...tingsStore.ts |     100 |      100 |     100 |     100 |                   
+  ...ShellProps.ts |     100 |      100 |     100 |     100 |                   
+  ...utBindings.ts |   36.36 |    16.66 |   42.85 |   33.33 | 88,93-109         
+  ...ScopeState.ts |   73.24 |    51.57 |   76.59 |   73.15 | ...83,423-441,499 
+  ...erBindings.ts |     100 |       50 |     100 |     100 | 210               
+  ...LayerState.ts |      96 |    55.55 |    87.5 |     100 | 232-236,252       
+  ...tate.utils.ts |   42.85 |     37.5 |     100 |   42.85 | 15-26             
+  ...omposition.ts |     100 |      100 |     100 |     100 |                   
+  ...ceBindings.ts |     100 |       40 |     100 |     100 | 166-167           
+  ...spaceProps.ts |   57.14 |    74.07 |   34.14 |   58.62 | ...60,801,810-831 
+  ...LoadStatus.ts |   27.58 |     8.33 |   33.33 |   27.58 | 28-59,63-65       
+  ...debarState.ts |   98.07 |    94.44 |     100 |   97.77 | 27                
+  ...esetAction.ts |      20 |        0 |   16.66 |      20 | 16-19,26-56       
+  ...splayState.ts |     100 |    94.66 |     100 |     100 | 119,137,141,163   
+  ...ckBindings.ts |      80 |    85.71 |   83.33 |   78.94 | 39-43             
+  ...rViewModel.ts |   54.71 |     53.9 |    62.5 |    55.7 | ...65-374,381-390 
+  ...rBaseState.ts |   95.45 |    90.62 |     100 |   95.34 | 17,80             
+  ...PanelState.ts |      50 |    52.63 |   41.17 |   54.05 | ...3,88-93,99-107 
+  ...iewActions.ts |   26.17 |    14.68 |   28.84 |   27.61 | ...87,491,496-547 
+  ...odeActions.ts |   80.95 |    65.38 |     100 |   80.95 | ...-88,97,105-106 
+  ...odeActions.ts |     100 |      100 |     100 |     100 |                   
+  ...teBindings.ts |   70.06 |    52.68 |   85.18 |   69.86 | ...59-470,477-482 
+  ...etBindings.ts |   19.62 |    12.32 |   21.05 |   19.81 | ...75-206,216-227 
+  ...ppSettings.ts |     100 |      100 |     100 |     100 |                   
+  ...tstrapData.ts |     100 |       50 |     100 |     100 | 18-47             
+  ...MediaState.ts |   93.18 |    81.53 |     100 |    93.1 | ...72,195,265,276 
+  ...ZoomEffect.ts |   16.66 |       50 |      40 |   16.66 | 16-43             
+  ...dImageData.ts |   93.33 |       50 |     100 |    92.3 | 25                
+  ...iagnostics.ts |      80 |    54.16 |      75 |   79.59 | ...56,63,68-72,79 
+  ...ingDismiss.ts |   69.23 |       40 |      75 |   69.23 | 21,34-36          
+  ...eStateSync.ts |     100 |    96.66 |     100 |     100 | 80                
+  ...torActions.ts |   44.06 |       30 |      50 |   44.06 | ...01,117,121-142 
+  ...ersistence.ts |    85.1 |    73.96 |   93.75 |   85.02 | ...51,359,369,391 
+  ...ngsActions.ts |   52.47 |    43.75 |   53.33 |   52.47 | ...90,200-201,216 
+  ...debarState.ts |    90.9 |       75 |     100 |   88.88 | 27,52             
+  ...ewHandlers.ts |   54.54 |      100 |   16.66 |   54.54 | 9,13,19,25,31     
+  ...erivations.ts |   46.15 |    28.12 |   16.66 |      48 | 27-31,50-51,57-71 
+  ...barContext.ts |      50 |       60 |      25 |      50 | 24-34,47          
+  ...erivations.ts |   83.33 |    56.52 |   85.71 |    82.6 | 13,73-75          
+  ...umpActions.ts |   37.66 |       25 |      60 |   37.66 | ...08-131,135-158 
+  ...ataActions.ts |   13.33 |        0 |      50 |   13.33 | 17-24,34-47       
+  ...sicBooklet.ts |   57.81 |    35.37 |   78.78 |   56.98 | ...52-361,373-376 
+  ...haredUtils.ts |   77.41 |    76.92 |   84.21 |   76.66 | 11-25,31-35,64    
+ ...atures/backend |   66.47 |    59.81 |   73.61 |   65.91 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  mappers.ts       |   90.24 |    62.12 |   94.11 |      90 | 174,195,200,216   
+  mediaLocator.ts  |   71.42 |    58.33 |      75 |   71.42 | 8,34-37           
+  ...solveUtils.ts |   88.57 |    74.19 |   88.88 |   88.57 | 28,41,46,90       
+  ...SliceUtils.ts |   96.42 |    94.44 |     100 |   96.15 | 27                
+  ...DataAccess.ts |   89.68 |    91.95 |   80.48 |   90.43 | ...78,383,440-443 
+  ...dMediaUrls.ts |   45.45 |    35.11 |   39.13 |   45.85 | ...13,417,445-452 
+  ...pabilities.ts |   39.02 |       35 |   33.33 |      40 | ...-87,92,100-104 
+  ...DataAccess.ts |   68.71 |    55.17 |   82.14 |   67.05 | ...63,568,608-610 
+ ...end/repository |   34.68 |    56.09 |   30.37 |   34.94 |                   
+  ...endChannel.ts |    37.5 |       25 |      50 |    37.5 | 6,13-18           
+  ...Repository.ts |   57.89 |    43.75 |     100 |   57.89 | 10-15,25,29,33,45 
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...Repository.ts |   36.25 |      100 |   29.16 |    36.7 | ...38-457,467-475 
+  ...Repository.ts |    12.9 |        0 |   14.89 |      13 | ...28-427,438-475 
+  ...yIpcTiming.ts |     100 |       50 |     100 |     100 | 10                
+  requestGuards.ts |   84.84 |    82.35 |   77.77 |   84.84 | 24,56-61          
+  types.ts         |       0 |        0 |       0 |       0 |                   
+ ...epository/mock |   30.82 |    27.57 |   39.83 |   31.81 |                   
+  ...ewHandlers.ts |    2.38 |        0 |    4.54 |     2.5 | 35-85,100-357     
+  ...adHandlers.ts |   90.24 |    66.66 |   83.33 |    92.1 | 78,160,172        
+  ...teHandlers.ts |    15.1 |     7.01 |   17.14 |   15.88 | ...71,385,400-457 
+  ...emHandlers.ts |   41.17 |    16.66 |      50 |   41.17 | 39-47,62-95       
+  mappers.ts       |   93.75 |    65.38 |      90 |   93.75 | 177               
+  types.ts         |     100 |      100 |     100 |     100 |                   
+  utils.ts         |   53.96 |    46.15 |   52.77 |   54.09 | ...24-277,293-294 
+ ...eatures/import |    24.5 |     8.02 |   20.68 |   24.69 |                   
+  ...tPathUtils.ts |       0 |        0 |       0 |       0 | 8-52              
+  ...ragOverlay.ts |   26.58 |        0 |   27.27 |   26.58 | ...24-141,145-147 
+  ...mportPaste.ts |   17.85 |        0 |      50 |   14.81 | 22-60             
+  ...rtPipeline.ts |   29.26 |       20 |   17.64 |    30.5 | ...88,294,299,330 
+ ...eatures/layout |   57.34 |    43.52 |   42.85 |   56.86 |                   
+  ...nailLayout.ts |   83.18 |    65.95 |     100 |    82.4 | ...03-205,224-233 
+  ...neResizers.ts |   27.55 |    15.78 |      20 |   28.12 | ...95-207,214-229 
+ ...res/management |    68.8 |    57.01 |   78.57 |   68.26 |                   
+  ...teractions.ts |   46.72 |    35.38 |   61.11 |   46.72 | ...13,221,229-230 
+  ...eSelection.ts |   96.87 |    85.71 |   91.66 |   98.83 | 45                
+ ...features/media |   46.06 |    26.08 |   45.09 |   46.62 |                   
+  ...backBridge.ts |   58.06 |    35.29 |   63.63 |   62.06 | ...45-48,53,57-61 
+  useMediaState.ts |      64 |        0 |   42.85 |   67.44 | ...14,118-119,123 
+  ...ersistence.ts |   33.73 |    27.77 |   39.13 |   32.46 | ...33-169,178-188 
+  videoFitMode.ts  |   28.57 |       20 |   33.33 |   28.57 | 6-8,13,16,22-28   
+ ...tures/metadata |   64.38 |    42.46 |   45.45 |   65.27 |                   
+  ...alMetadata.ts |   64.38 |    42.46 |   45.45 |   65.27 | ...40,148,156-180 
+ ...sic-visualizer |   35.53 |    31.98 |   47.31 |   35.65 |                   
+  audioAnalyser.ts |   45.39 |    23.17 |   66.66 |   46.25 | ...49-250,253-254 
+  cpuRenderer.ts   |   51.85 |    18.75 |      80 |   51.92 | 6-11,26,58-82     
+  ...erRegistry.ts |   84.21 |       50 |     100 |   81.25 | 15,27,37          
+  ...toyAdapter.ts |     100 |      100 |     100 |     100 |                   
+  ...zerRuntime.ts |   83.46 |    69.39 |     100 |   83.33 | ...02-603,613-624 
+  webglRenderer.ts |    3.85 |     0.92 |    2.22 |    3.93 | ...12,629,634-997 
+ ...alizer/shaders |     100 |      100 |     100 |     100 |                   
+  escape.ts        |     100 |      100 |     100 |     100 |                   
+  ...foreground.ts |     100 |      100 |     100 |     100 |                   
+  fungi.ts         |     100 |      100 |     100 |     100 |                   
+  galaxy.ts        |     100 |      100 |     100 |     100 |                   
+  ...foreground.ts |     100 |      100 |     100 |     100 |                   
+  mcs_szb.ts       |     100 |      100 |     100 |     100 |                   
+  nebula.ts        |     100 |      100 |     100 |     100 |                   
+  rain_drips.ts    |     100 |      100 |     100 |     100 |                   
+  singularity.ts   |     100 |      100 |     100 |     100 |                   
+  starfield.ts     |     100 |      100 |     100 |     100 |                   
+  ...foreground.ts |     100 |      100 |     100 |     100 |                   
+  tissue.ts        |     100 |      100 |     100 |     100 |                   
+  ...foreground.ts |     100 |      100 |     100 |     100 |                   
+  voxel.ts         |     100 |      100 |     100 |     100 |                   
+ src/features/perf |     6.6 |     3.17 |    8.69 |    6.86 |                   
+  benchRecorder.ts |       4 |     3.63 |       5 |    4.16 | ...14-210,223-322 
+  benchSettings.ts |      50 |        0 |   33.33 |      50 | 51-67,75          
+ ...eatures/search |   94.59 |    96.66 |   89.65 |   94.52 |                   
+  ...tureSearch.ts |   94.59 |    96.66 |   89.65 |   94.52 | 66,156-160        
+ ...ures/shortcuts |      50 |       50 |     100 |   49.48 |                   
+  ...tcutEngine.ts |      50 |       50 |     100 |   49.48 | ...94,399,417-418 
+ ...atures/sidebar |   54.43 |    49.07 |      60 |   54.32 |                   
+  ...Navigation.ts |   54.43 |    49.07 |      60 |   54.32 | ...99,302,305-323 
+ ...features/theme |   79.12 |    73.21 |   74.19 |   80.76 |                   
+  themeRegistry.ts |   79.12 |    73.21 |   74.19 |   80.76 | ...02,211,235-244 
+ src/store         |    92.3 |       75 |   88.88 |    90.9 |                   
+  useUiStore.ts    |    92.3 |       75 |   88.88 |    90.9 | 185,200           
+ ...themes/presets |       0 |        0 |       0 |       0 |                   
+  _template.css    |       0 |        0 |       0 |       0 |                   
+  aurora-sand.css  |       0 |        0 |       0 |       0 |                   
+  ...cin-mocha.css |       0 |        0 |       0 |       0 |                   
+  dracula-dark.css |       0 |        0 |       0 |       0 |                   
+  geist-light.css  |       0 |        0 |       0 |       0 |                   
+  ...ub-dimmed.css |       0 |        0 |       0 |       0 |                   
+  gruvbox-dark.css |       0 |        0 |       0 |       0 |                   
+  linear-dark.css  |       0 |        0 |       0 |       0 |                   
+  nord-dark.css    |       0 |        0 |       0 |       0 |                   
+  rose-pine.css    |       0 |        0 |       0 |       0 |                   
+  ...ized-dark.css |       0 |        0 |       0 |       0 |                   
+  tokyo-night.css  |       0 |        0 |       0 |       0 |                   
+ ...sets/goodtheme |       0 |        0 |       0 |       0 |                   
+  ...er-signal.css |       0 |        0 |       0 |       0 |                   
+  clean-light.css  |       0 |        0 |       0 |       0 |                   
+  ...smorphism.css |       0 |        0 |       0 |       0 |                   
+  matrix-mint.css  |       0 |        0 |       0 |       0 |                   
+  ...ht-cinema.css |       0 |        0 |       0 |       0 |                   
+  ...onal-dark.css |       0 |        0 |       0 |       0 |                   
+  vibrant-pop.css  |       0 |        0 |       0 |       0 |                   
+ src/utils         |   18.62 |    10.46 |    23.8 |   19.58 |                   
+  mediaHelpers.ts  |   10.75 |     3.75 |   11.11 |   11.36 | ...90-194,210-213 
+  ui.ts            |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------

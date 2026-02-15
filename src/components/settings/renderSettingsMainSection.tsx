@@ -327,7 +327,14 @@ export function renderSettingsMainSection({
             <div className="settings-compact-control-cell">
               <span>{t('ui.settings.thumbnailQuality')}</span>
               <div className="settings-compact-control-actions">
-                <input max={100} min={1} type="number" value={thumbnailQuality} onChange={(event) => onThumbnailQualityChange(Number(event.target.value))} />
+                <input
+                  max={100}
+                  min={1}
+                  type="number"
+                  aria-label={t('ui.settings.thumbnailQuality')}
+                  value={thumbnailQuality}
+                  onChange={(event) => onThumbnailQualityChange(Number(event.target.value))}
+                />
                 <button
                   className="settings-icon-btn main-icon-square-btn"
                   type="button"
@@ -346,6 +353,7 @@ export function renderSettingsMainSection({
                   max={2048}
                   min={128}
                   type="number"
+                  aria-label={t('ui.settings.thumbnailResolution')}
                   value={thumbnailWidthInputValue}
                   onBlur={onThumbnailWidthInputBlur}
                   onChange={(event) => onThumbnailWidthInputChange(event.target.value)}
@@ -369,6 +377,7 @@ export function renderSettingsMainSection({
                   max={16}
                   min={1}
                   type="number"
+                  aria-label={t('ui.settings.thumbnailGenerationConcurrency')}
                   value={thumbnailGenerationConcurrencyInput}
                   onBlur={onThumbnailGenerationConcurrencyInputBlur}
                   onChange={(event) => onThumbnailGenerationConcurrencyInputChange(event.target.value)}
@@ -392,6 +401,7 @@ export function renderSettingsMainSection({
                   max={32}
                   min={1}
                   type="number"
+                  aria-label={t('ui.settings.thumbnailResolveConcurrency')}
                   value={thumbnailResolveConcurrencyInput}
                   onBlur={onThumbnailResolveConcurrencyInputBlur}
                   onChange={(event) => onThumbnailResolveConcurrencyInputChange(event.target.value)}
@@ -556,26 +566,26 @@ export function renderSettingsMainSection({
     return (
       <div className="settings-block">
         <fieldset className="settings-subsection">
-          <legend>运行时诊断</legend>
-          <p className="settings-placeholder">用于排查 EXE 与 dev:desktop 的后端桥接与数据路径差异。</p>
+          <legend>{t('ui.settings.runtimeDiagnosticsLegend')}</legend>
+          <p className="settings-placeholder">{t('ui.settings.runtimeDiagnosticsHint')}</p>
           <div className="settings-runtime-grid">
-            <span>Renderer PROD</span>
+            <span>{t('ui.settings.rendererProd')}</span>
             <code>{rendererIsProd ? 'true' : 'false'}</code>
-            <span>Repository 模式</span>
+            <span>{t('ui.settings.repositoryMode')}</span>
             <code>{repositoryMode}</code>
-            <span>Backend Bridge</span>
+            <span>{t('ui.settings.backendBridge')}</span>
             <code>{backendBridgeInjected ? 'true' : 'false'}</code>
-            <span>App 版本</span>
+            <span>{t('ui.settings.appVersion')}</span>
             <code>{runtimeInfo?.app_version ?? '-'}</code>
-            <span>Main isPackaged</span>
+            <span>{t('ui.settings.mainIsPackaged')}</span>
             <code>{typeof runtimeInfo?.is_packaged === 'boolean' ? String(runtimeInfo.is_packaged) : '-'}</code>
-            <span>平台/架构</span>
+            <span>{t('ui.settings.platformArch')}</span>
             <code>{runtimeInfo ? `${runtimeInfo.platform}/${runtimeInfo.arch}` : '-'}</code>
-            <span>UserData 路径</span>
+            <span>{t('ui.settings.userDataPath')}</span>
             <code>{runtimeInfo?.user_data_path ?? '-'}</code>
-            <span>Library Root</span>
+            <span>{t('ui.settings.libraryRoot')}</span>
             <code>{runtimeInfo?.library_root ?? '-'}</code>
-            <span>数据库路径</span>
+            <span>{t('ui.settings.databasePath')}</span>
             <code>{runtimeInfo?.database_path ?? '-'}</code>
           </div>
           <div className="settings-runtime-actions">
@@ -593,15 +603,15 @@ export function renderSettingsMainSection({
           {runtimeInfoError ? <p className="settings-danger-text">{runtimeInfoError}</p> : null}
           {bridgeMissingInProduction ? (
             <p className="settings-danger-text">
-              当前为生产构建且未检测到后端桥接，已禁用 mock 回退。请检查打包产物中的 preload 注入链路。
+              {t('ui.settings.bridgeMissingWarning')}
             </p>
           ) : null}
         </fieldset>
 
         <fieldset className="settings-subsection">
-          <legend>GPU 诊断（Main）</legend>
+          <legend>{t('ui.settings.gpuDiagnosticsLegend')}</legend>
           <div className="settings-runtime-grid">
-            <span>硬件加速启用</span>
+            <span>{t('ui.settings.hardwareAccelerationEnabled')}</span>
             <code>{typeof runtimeInfo?.hardware_acceleration_enabled === 'boolean' ? String(runtimeInfo.hardware_acceleration_enabled) : '-'}</code>
           </div>
           {gpuFeatureRows.length > 0 ? (
@@ -612,14 +622,14 @@ export function renderSettingsMainSection({
               ])}
             </div>
           ) : (
-            <p className="settings-placeholder">无 GPU FeatureStatus 数据。</p>
+            <p className="settings-placeholder">{t('ui.settings.gpuFeatureStatusEmpty')}</p>
           )}
-          {gpuInfoJson ? <pre className="settings-code-block">{gpuInfoJson}</pre> : <p className="settings-placeholder">无 GPUInfo(basic) 数据。</p>}
+          {gpuInfoJson ? <pre className="settings-code-block">{gpuInfoJson}</pre> : <p className="settings-placeholder">{t('ui.settings.gpuInfoEmpty')}</p>}
         </fieldset>
 
         <fieldset className="settings-subsection">
-          <legend>解码能力检测（Renderer）</legend>
-          {mediaCapabilitiesLoading ? <p className="settings-placeholder">检测中...</p> : null}
+          <legend>{t('ui.settings.mediaCapabilitiesLegend')}</legend>
+          {mediaCapabilitiesLoading ? <p className="settings-placeholder">{t('ui.settings.mediaCapabilitiesLoading')}</p> : null}
           {mediaCapabilitiesError ? <p className="settings-danger-text">{mediaCapabilitiesError}</p> : null}
           {mediaCapabilities.length > 0 ? (
             <div className="settings-runtime-grid">
@@ -627,8 +637,14 @@ export function renderSettingsMainSection({
                 <span key={`${item.id}:label`}>{item.label}</span>,
                 <code key={`${item.id}:value`}>
                   {item.supported
-                    ? `supported=${item.supported}, smooth=${item.smooth}, powerEfficient=${item.powerEfficient ?? 'unknown'}`
-                    : `unsupported${item.error ? ` (${item.error})` : ''}`}
+                    ? t('ui.settings.mediaCapabilitySupported', {
+                        supported: item.supported,
+                        smooth: item.smooth,
+                        powerEfficient: item.powerEfficient ?? 'unknown',
+                      })
+                    : item.error
+                      ? t('ui.settings.mediaCapabilityUnsupportedWithError', { error: item.error })
+                      : t('ui.settings.mediaCapabilityUnsupported')}
                 </code>,
               ])}
             </div>
@@ -642,9 +658,9 @@ export function renderSettingsMainSection({
     return (
       <div className="settings-block">
         <fieldset className="settings-subsection">
-          <legend>AI广告审核视觉模型</legend>
+          <legend>{t('ui.settings.adReviewVisionLegend')}</legend>
           <label>
-            视觉模型端口
+            {t('ui.settings.adReviewVisionEndpoint')}
             <input
               type="text"
               value={adReviewVisionEndpoint}
@@ -652,7 +668,7 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            视觉模型ID
+            {t('ui.settings.adReviewVisionModel')}
             <input
               type="text"
               value={adReviewVisionModel}
@@ -681,11 +697,11 @@ export function renderSettingsMainSection({
               <MainUiIcon name="save" />
             </button>
             <span className={`settings-test-status ${adReviewVisionVerified ? 'is-ok' : 'is-pending'}`}>
-              {adReviewVisionTestMessage ?? (adReviewVisionVerified ? '已通过测试' : '未测试')}
+              {adReviewVisionTestMessage ?? (adReviewVisionVerified ? t('ui.settings.adReviewVisionPassed') : t('ui.settings.adReviewVisionUntested'))}
             </span>
           </div>
           {adReviewVisionSaveMessage ? <p className="settings-placeholder">{adReviewVisionSaveMessage}</p> : null}
-          <p className="settings-placeholder">通过测试后，文件管理模式主工具栏会显示“广告审核”按钮。</p>
+          <p className="settings-placeholder">{t('ui.settings.adReviewVisionHint')}</p>
         </fieldset>
       </div>
     )
@@ -695,7 +711,7 @@ export function renderSettingsMainSection({
     return (
       <div className="settings-block settings-shortcuts">
         <div className="settings-shortcuts-head">
-          <strong>快捷键设置</strong>
+          <strong>{t('ui.settings.shortcutsTitle')}</strong>
           <button
             className="settings-icon-btn main-icon-square-btn"
             type="button"
@@ -710,14 +726,18 @@ export function renderSettingsMainSection({
         {renderBindingRows()}
 
         <div className="shortcut-conflicts">
-          <strong>冲突检测</strong>
+          <strong>{t('ui.settings.shortcutConflictsTitle')}</strong>
           {shortcutConflicts.length === 0 ? (
-            <p>当前无冲突。</p>
+            <p>{t('ui.settings.shortcutConflictsNone')}</p>
           ) : (
             <ul>
               {shortcutConflicts.map((conflict) => (
                 <li key={`${conflict.scope}-${conflict.combo}`}>
-                  {`${conflict.scope} 范围：${conflict.combo} -> ${conflict.actions.map((action) => shortcutLabelByAction.get(action) ?? action).join(', ')}`}
+                  {t('ui.settings.shortcutConflictLine', {
+                    scope: conflict.scope,
+                    combo: conflict.combo,
+                    actions: conflict.actions.map((action) => shortcutLabelByAction.get(action) ?? action).join(', '),
+                  })}
                 </li>
               ))}
             </ul>
@@ -733,34 +753,34 @@ export function renderSettingsMainSection({
 
     return (
       <div className="settings-block">
-        <p className="settings-placeholder">开发阶段可使用此功能清空本地数据库后重启验证初始化链路。</p>
+        <p className="settings-placeholder">{t('ui.settings.databaseResetHint')}</p>
         <label>
-          清除数据库（开发）
+          {t('ui.settings.databaseResetLabel')}
           <button type="button" className="settings-danger-btn" disabled={databaseResetPending} onClick={onClearDatabase}>
-            {databaseResetPending ? '清除中...' : '清除数据库'}
+            {databaseResetPending ? t('ui.settings.databaseResetPending') : t('ui.settings.databaseResetAction')}
           </button>
         </label>
         {databaseResetError ? <p className="settings-danger-text">{databaseResetError}</p> : null}
 
         <fieldset className="settings-subsection">
-          <legend>数据库目录设置</legend>
-          <p className="settings-placeholder">选择后会立即保存目录配置，重启后自动沿用。</p>
-          <p className="settings-placeholder">若当前数据库已有内容，切换 SQL 目录时会自动迁移数据库文件。</p>
+          <legend>{t('ui.settings.databaseDirectoryLegend')}</legend>
+          <p className="settings-placeholder">{t('ui.settings.databaseDirectoryHint')}</p>
+          <p className="settings-placeholder">{t('ui.settings.databaseDirectoryMigrationHint')}</p>
           <label>
-            SQL 库路径
+            {t('ui.settings.sqlDatabasePathLabel')}
             <div className="settings-inline-field">
-              <input type="text" value={databasePath} readOnly placeholder="读取运行时诊断后显示" />
+              <input type="text" value={databasePath} readOnly placeholder={t('ui.settings.readRuntimeInfoPlaceholder')} />
               <button type="button" disabled={runtimePathUpdatePending} onClick={onPickDatabaseDirectoryPath}>
-                {runtimePathUpdatePending ? '保存中...' : '选择SQL目录'}
+                {runtimePathUpdatePending ? t('ui.settings.runtimePathSaving') : t('ui.settings.chooseSqlDirectory')}
               </button>
             </div>
           </label>
           <label>
-            缩略图目录
+            {t('ui.settings.thumbnailCacheDirectoryLabel')}
             <div className="settings-inline-field">
-              <input type="text" value={thumbnailCachePath} readOnly placeholder="读取运行时诊断后显示" />
+              <input type="text" value={thumbnailCachePath} readOnly placeholder={t('ui.settings.readRuntimeInfoPlaceholder')} />
               <button type="button" disabled={runtimePathUpdatePending} onClick={onPickThumbnailCacheDirectoryPath}>
-                {runtimePathUpdatePending ? '保存中...' : '选择缩略图目录'}
+                {runtimePathUpdatePending ? t('ui.settings.runtimePathSaving') : t('ui.settings.chooseThumbnailDirectory')}
               </button>
             </div>
           </label>
@@ -768,23 +788,23 @@ export function renderSettingsMainSection({
         </fieldset>
 
         <fieldset className="settings-subsection">
-          <legend>网络代理设置</legend>
-          <p className="settings-placeholder">用于元数据抓取链路，支持 socks5:// 与 http(s)://。</p>
+          <legend>{t('ui.settings.networkProxyLegend')}</legend>
+          <p className="settings-placeholder">{t('ui.settings.networkProxyHint')}</p>
           <label>
-            代理服务器
+            {t('ui.settings.proxyServerLabel')}
             <input
               type="text"
               value={proxyServer}
-              placeholder="例如 socks5://127.0.0.1:2080"
+              placeholder={t('ui.settings.proxyServerPlaceholder')}
               onChange={(event) => onProxyServerChange(event.target.value)}
             />
           </label>
           <label>
-            E-Hentai Cookies
+            {t('ui.settings.ehentaiCookiesLabel')}
             <input
               type="text"
               value={ehentaiCookies}
-              placeholder="例如 ipb_member_id=xxx; ipb_pass_hash=xxx"
+              placeholder={t('ui.settings.ehentaiCookiesPlaceholder')}
               onChange={(event) => onEhentaiCookiesChange(event.target.value)}
             />
           </label>

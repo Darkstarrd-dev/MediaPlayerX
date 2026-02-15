@@ -33,6 +33,7 @@ interface BuildMetadataPanelPropsParams {
   adReviewPanelOpen: boolean
   canExecuteAdReview: boolean
   adReviewPending: boolean
+  adReviewDeletePending?: boolean
   adReviewTask: MetadataPanelProps['adReviewTask']
   adReviewQueueTasks: MetadataPanelProps['adReviewQueueTasks']
   adReviewActiveTaskId: string | null
@@ -50,6 +51,7 @@ interface BuildMetadataPanelPropsParams {
   onToggleHideUncheckedNonChecked: () => void
   onSelectAdReviewTask: (taskId: string) => void
   onRemoveAdReviewTask: (taskId: string) => void
+  onDeleteSelectedAdReviewCandidates?: () => void
   onToggleAdReviewFocus: () => void
   onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
   onAdReviewMaxConcurrencyChange: (value: number) => void
@@ -134,6 +136,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     adReviewPanelOpen: params.adReviewPanelOpen,
     canExecuteAdReview: params.canExecuteAdReview,
     adReviewPending: params.adReviewPending,
+    adReviewDeletePending: params.adReviewDeletePending,
     adReviewTask: params.adReviewTask,
     adReviewQueueTasks: params.adReviewQueueTasks,
     adReviewActiveTaskId: params.adReviewActiveTaskId,
@@ -151,6 +154,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onToggleHideUncheckedNonChecked: params.onToggleHideUncheckedNonChecked,
     onSelectAdReviewTask: params.onSelectAdReviewTask,
     onRemoveAdReviewTask: params.onRemoveAdReviewTask,
+    onDeleteSelectedAdReviewCandidates: params.onDeleteSelectedAdReviewCandidates,
     onToggleAdReviewFocus: params.onToggleAdReviewFocus,
     onAdReviewStrategyModeChange: params.onAdReviewStrategyModeChange,
     onAdReviewMaxConcurrencyChange: params.onAdReviewMaxConcurrencyChange,

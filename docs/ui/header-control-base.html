@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Header Control Base - Soft Skeuomorphic</title>
+
+    <style>
+      /* ====================================================================
+       * Header Control Base
+       * - Self-contained mock for header controls.
+       * - Ported theme variables from docs/ui/video-control-base.html
+       * - Provides:
+       *   1) Icon-only buttons (replacing text buttons)
+       *   2) 5 icon variants per action
+       *   3) 5 button style variants
+       *   4) 5 zoom-group implementations
+       *   5) 5 autoplay-group implementations
+       * ==================================================================== */
+
+      /* --- Theme Variables (Light Component / v4) --- */
+      :root {
+        --page-bg: #f0f2f5;
+        --shell-bg: #e6e7ee;
+        --text-main: #444444;
+        --text-muted: #555555;
+        --text-dim: #888888;
+        --shadow-dark: #d1d1d1;
+        --shadow-light: #ffffff;
+        --accent-fill: #333333;
+        --border-color: rgba(255, 255, 255, 0.5);
+        --inset-bg: #e6e7ee;
+        --popup-bg: #e6e7ee;
+        --popup-hover: rgba(0, 0, 0, 0.05);
+
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 14px;
+        --radius-pill: 999px;
+
+        --btn-size: 40px;
+        --btn-radius: 10px;
+        --btn-gap: 10px;
+        --btn-font: 600 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      /* --- Theme Variables (Dark Component / v6) --- */
+      body[data-theme="inverted"] {
+        --page-bg: #1a1a1a;
+        --shell-bg: #292d32;
+        --text-main: #cfcfcf;
+        --text-muted: #cfcfcf;
+        --text-dim: #666666;
+        --shadow-dark: #1e2125;
+        --shadow-light: #34393f;
+        --accent-fill: #ff9f43;
+        --border-color: #4a3c2e;
+        --inset-bg: #26292e;
+        --popup-bg: #292d32;
+        --popup-hover: rgba(255, 255, 255, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+        min-height: 100vh;
+        background: var(--page-bg);
+        color: var(--text-main);
+        font: var(--btn-font);
+      }
+
+      .mock-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .mock-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        align-items: center;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        background: var(--shell-bg);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.08);
+      }
+
+      body[data-theme="inverted"] .mock-toolbar {
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.45);
+      }
+
+      .mock-toolbar strong {
+        font-size: 13px;
+        letter-spacing: 0.02em;
+        color: var(--text-main);
+      }
+
+      .mock-toolbar label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+
+      .mock-toolbar select,
+      .mock-toolbar button {
+        font: inherit;
+      }
+
+      .mock-toolbar select {
+        height: 32px;
+        padding: 0 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--shell-bg);
+        color: var(--text-main);
+        box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+        outline: none;
+      }
+
+      .mock-toolbar .mock-sep {
+        width: 1px;
+        height: 20px;
+        background: color-mix(in srgb, var(--text-dim) 18%, transparent);
+      }
+
+      .hc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        background: var(--shell-bg);
+        color: var(--text-main);
+      }
+
+      .hc-left,
+      .hc-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .hc-left {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .hc-segment {
+        display: flex;
+        align-items: center;
+        gap: var(--btn-gap);
+        flex-wrap: wrap;
+      }
+
+      .hc-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--shell-bg);
+        box-shadow: inset 2px 2px 3px var(--shadow-dark), inset -2px -2px 3px var(--shadow-light);
+      }
+
+      .hc-group-title {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        color: var(--text-muted);
+      }
+
+      .hc-btn {
+        width: var(--btn-size);
+        height: var(--btn-size);
+        border-radius: var(--btn-radius);
+        padding: 0;
+        border: 1px solid var(--border-color);
+        background: var(--shell-bg);
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+      }
+
+      .hc-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .hc-btn[aria-pressed="true"],
+      .hc-btn.is-active {
+        color: var(--accent-fill);
+      }
+
+      .hc-btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-fill) 26%, transparent);
+      }
+
+      .hc-icon {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .hc-icon.is-thin {
+        stroke-width: 1.6;
+      }
+
+      .hc-icon.is-fill {
+        fill: currentColor;
+        stroke: none;
+      }
+
+      .hc-pill {
+        height: 32px;
+        padding: 0 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--shell-bg);
+        color: var(--text-main);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+      }
+
+      .hc-pill strong {
+        min-width: 18px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .hc-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--shell-bg) 86%, transparent);
+        box-shadow: inset 2px 2px 3px var(--shadow-dark), inset -2px -2px 3px var(--shadow-light);
+        border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+      }
+
+      .hc-dot.is-on {
+        background: var(--accent-fill);
+        box-shadow: 1px 1px 3px var(--shadow-dark);
+        border-color: var(--border-color);
+      }
+
+      .hc-value {
+        min-width: 18px;
+        text-align: center;
+        color: var(--text-main);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ====================================================================
+       * Button Style Variants (1..5)
+       * - Applied via <html data-btn-style="X">
+       * ==================================================================== */
+
+      html[data-btn-style="1"] .hc-btn {
+        box-shadow: none;
+      }
+
+      html[data-btn-style="1"] .hc-btn:active {
+        box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+      }
+
+      html[data-btn-style="2"] .hc-btn {
+        box-shadow: 2px 2px 3px var(--shadow-dark), -2px -2px 3px var(--shadow-light);
+      }
+
+      html[data-btn-style="2"] .hc-btn:active {
+        box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+      }
+
+      html[data-btn-style="3"] .hc-btn {
+        border-color: transparent;
+        box-shadow: none;
+        background: color-mix(in srgb, var(--shell-bg) 92%, var(--inset-bg));
+      }
+
+      html[data-btn-style="3"] .hc-btn[aria-pressed="true"],
+      html[data-btn-style="3"] .hc-btn.is-active {
+        border-color: var(--border-color);
+        box-shadow: 2px 2px 3px var(--shadow-dark), -2px -2px 3px var(--shadow-light);
+      }
+
+      html[data-btn-style="3"] .hc-btn:active {
+        box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+      }
+
+      html[data-btn-style="4"] .hc-btn {
+        background: linear-gradient(
+          145deg,
+          color-mix(in srgb, var(--shell-bg) 92%, #fff),
+          color-mix(in srgb, var(--shell-bg) 82%, var(--shadow-dark))
+        );
+        box-shadow: 2px 2px 3px var(--shadow-dark), -2px -2px 3px var(--shadow-light);
+      }
+
+      html[data-btn-style="4"] body[data-theme="inverted"] .hc-btn {
+        background: linear-gradient(
+          145deg,
+          color-mix(in srgb, var(--shell-bg) 95%, var(--shadow-light)),
+          color-mix(in srgb, var(--shell-bg) 78%, var(--shadow-dark))
+        );
+      }
+
+      html[data-btn-style="4"] .hc-btn:active {
+        box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+      }
+
+      html[data-btn-style="5"] .hc-btn {
+        background: transparent;
+        border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+        box-shadow: none;
+      }
+
+      html[data-btn-style="5"] .hc-btn:hover {
+        background: color-mix(in srgb, var(--shell-bg) 82%, transparent);
+      }
+
+      html[data-btn-style="5"] .hc-btn:active {
+        background: var(--shell-bg);
+        box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+      }
+
+      /* ====================================================================
+       * Zoom / Autoplay Group Variant Switch (1..5)
+       * - Applied via <html data-zoom-variant="X" data-auto-variant="Y">
+       * ==================================================================== */
+
+      .hc-variant {
+        display: none;
+      }
+
+      html[data-zoom-variant="1"] .hc-zoom .hc-variant[data-variant="1"],
+      html[data-zoom-variant="2"] .hc-zoom .hc-variant[data-variant="2"],
+      html[data-zoom-variant="3"] .hc-zoom .hc-variant[data-variant="3"],
+      html[data-zoom-variant="4"] .hc-zoom .hc-variant[data-variant="4"],
+      html[data-zoom-variant="5"] .hc-zoom .hc-variant[data-variant="5"] {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      html[data-auto-variant="1"] .hc-auto .hc-variant[data-variant="1"],
+      html[data-auto-variant="2"] .hc-auto .hc-variant[data-variant="2"],
+      html[data-auto-variant="3"] .hc-auto .hc-variant[data-variant="3"],
+      html[data-auto-variant="4"] .hc-auto .hc-variant[data-variant="4"],
+      html[data-auto-variant="5"] .hc-auto .hc-variant[data-variant="5"] {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .hc-mini-range {
+        width: 120px;
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 14px;
+        background: transparent;
+        margin: 0;
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 6px;
+        border-radius: 2px;
+        background: var(--inset-bg);
+        box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+        background: var(--shell-bg);
+        box-shadow: 1px 1px 3px var(--shadow-dark);
+        margin-top: -4px;
+      }
+
+      input[type="range"]::-moz-range-track {
+        height: 6px;
+        border: 0;
+        border-radius: 2px;
+        background: var(--inset-bg);
+        box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+        background: var(--shell-bg);
+        box-shadow: 1px 1px 3px var(--shadow-dark);
+      }
+
+      /* ====================================================================
+       * Icon Variant Picker
+       * ==================================================================== */
+
+      .mock-section {
+        border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+        border-radius: var(--radius-lg);
+        background: color-mix(in srgb, var(--shell-bg) 92%, transparent);
+        padding: 12px;
+      }
+
+      .mock-section h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        letter-spacing: 0.02em;
+        color: var(--text-main);
+      }
+
+      .icon-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 10px 12px;
+        align-items: center;
+      }
+
+      .icon-grid .action-name {
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+
+      .icon-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .icon-pick {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--shell-bg);
+        color: var(--text-muted);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 2px 2px 3px var(--shadow-dark), -2px -2px 3px var(--shadow-light);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .icon-pick:hover {
+        transform: translateY(-1px);
+      }
+
+      .icon-pick.is-selected {
+        color: var(--accent-fill);
+        box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+        transform: translateY(0px);
+      }
+
+      /* small visual aid */
+      .note {
+        color: var(--text-dim);
+        font-size: 12px;
+        margin: 8px 0 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- SVG Library (45 icons: 9 actions x 5 variants) -->
+    <svg style="display: none" aria-hidden="true">
+      <defs>
+        <!-- IDLE (v1..v5) -->
+        <symbol id="i-idle-v1" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9 8v8M15 8v8" />
+        </symbol>
+        <symbol id="i-idle-v2" viewBox="0 0 24 24">
+          <path d="M15.5 3.5a8.5 8.5 0 1 0 5 15.2A7 7 0 1 1 15.5 3.5z" />
+        </symbol>
+        <symbol id="i-idle-v3" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <circle cx="12" cy="12" r="2" />
+        </symbol>
+        <symbol id="i-idle-v4" viewBox="0 0 24 24">
+          <path d="M4 11l8-7 8 7" />
+          <path d="M6.5 10.5V20h11V10.5" />
+          <path d="M10 20v-6h4v6" />
+        </symbol>
+        <symbol id="i-idle-v5" viewBox="0 0 24 24">
+          <path d="M12 3v8" />
+          <path d="M7.2 5.4a9 9 0 1 0 9.6 0" />
+        </symbol>
+
+        <!-- IMAGE MODE -->
+        <symbol id="i-image-v1" viewBox="0 0 24 24">
+          <rect x="4" y="6" width="16" height="12" rx="2" />
+          <path d="M7 15l3-3 3 3 3-4 4 5" />
+          <circle cx="9" cy="10" r="1.2" />
+        </symbol>
+        <symbol id="i-image-v2" viewBox="0 0 24 24">
+          <path d="M7 6h10v12H7z" />
+          <path d="M6 8h10v12H6z" />
+          <path d="M8.5 15.5l2-2 2 2 2.5-3 2.5 4" />
+        </symbol>
+        <symbol id="i-image-v3" viewBox="0 0 24 24">
+          <rect x="5" y="5" width="6" height="6" rx="1" />
+          <rect x="13" y="5" width="6" height="6" rx="1" />
+          <rect x="5" y="13" width="6" height="6" rx="1" />
+          <rect x="13" y="13" width="6" height="6" rx="1" />
+        </symbol>
+        <symbol id="i-image-v4" viewBox="0 0 24 24">
+          <rect x="6" y="7" width="12" height="10" rx="2" />
+          <rect x="4" y="5" width="12" height="10" rx="2" />
+          <rect x="8" y="9" width="12" height="10" rx="2" />
+        </symbol>
+        <symbol id="i-image-v5" viewBox="0 0 24 24">
+          <path d="M8 7h2l1-2h2l1 2h2" />
+          <rect x="6" y="7" width="12" height="12" rx="2" />
+          <circle cx="12" cy="13" r="3" />
+        </symbol>
+
+        <!-- VIDEO MODE -->
+        <symbol id="i-video-v1" viewBox="0 0 24 24">
+          <rect x="4" y="7" width="14" height="10" rx="2" />
+          <path d="M10 10l4 2-4 2z" />
+          <path d="M18 10l2-1v6l-2-1z" />
+        </symbol>
+        <symbol id="i-video-v2" viewBox="0 0 24 24">
+          <rect x="4" y="7" width="16" height="10" rx="2" />
+          <path d="M7 7v10M17 7v10" />
+          <path d="M4 10h16M4 14h16" />
+        </symbol>
+        <symbol id="i-video-v3" viewBox="0 0 24 24">
+          <path d="M5 8h14v10H5z" />
+          <path d="M7 8l2-3h4l2 3" />
+          <path d="M7 12h4M13 12h4" />
+        </symbol>
+        <symbol id="i-video-v4" viewBox="0 0 24 24">
+          <rect x="4" y="9" width="12" height="8" rx="2" />
+          <path d="M16 11l4-2v8l-4-2z" />
+          <path d="M6.5 7h7" />
+        </symbol>
+        <symbol id="i-video-v5" viewBox="0 0 24 24">
+          <rect x="5" y="7" width="14" height="10" rx="2" />
+          <path d="M9 6h6" />
+          <path d="M12 10l4 2-4 2z" />
+        </symbol>
+
+        <!-- MUSIC MODE -->
+        <symbol id="i-music-v1" viewBox="0 0 24 24">
+          <path d="M10 18a2 2 0 1 1-1-1.73V6l10-2v9" />
+          <path d="M10 6l10-2" />
+          <circle cx="19" cy="14" r="2" />
+        </symbol>
+        <symbol id="i-music-v2" viewBox="0 0 24 24">
+          <path d="M4 14c2-4 4-4 6 0s4 4 6 0 4-4 4 0" />
+          <path d="M4 10c2-4 4-4 6 0s4 4 6 0 4-4 4 0" />
+        </symbol>
+        <symbol id="i-music-v3" viewBox="0 0 24 24">
+          <path d="M6 17V7" />
+          <path d="M10 19V5" />
+          <path d="M14 17V7" />
+          <path d="M18 15V9" />
+        </symbol>
+        <symbol id="i-music-v4" viewBox="0 0 24 24">
+          <path d="M4 13v-2a3 3 0 0 1 3-3h1v10H7a3 3 0 0 1-3-3z" />
+          <path d="M20 13v-2a3 3 0 0 0-3-3h-1v10h1a3 3 0 0 0 3-3z" />
+          <path d="M8 8h8" />
+        </symbol>
+        <symbol id="i-music-v5" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="2" />
+          <path d="M12 4v8" />
+        </symbol>
+
+        <!-- SEARCH -->
+        <symbol id="i-search-v1" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="6" />
+          <path d="M16 16l4 4" />
+        </symbol>
+        <symbol id="i-search-v2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="7" />
+          <path d="M12 8v8" />
+          <path d="M8 12h8" />
+          <circle cx="12" cy="12" r="2" />
+        </symbol>
+        <symbol id="i-search-v3" viewBox="0 0 24 24">
+          <path d="M5 6h14" />
+          <path d="M7 11h10" />
+          <path d="M10 16h4" />
+          <path d="M8 6l4 6 4-6" />
+        </symbol>
+        <symbol id="i-search-v4" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 4v4" />
+          <path d="M12 16v4" />
+          <path d="M4 12h4" />
+          <path d="M16 12h4" />
+          <path d="M12 12l3 2" />
+        </symbol>
+        <symbol id="i-search-v5" viewBox="0 0 24 24">
+          <path d="M8 10a4 4 0 0 1 8 0c0 1.6-.9 2.6-2 3.2-1 .6-2 .9-2 .9s-1-.3-2-.9c-1.1-.6-2-1.6-2-3.2z" />
+          <path d="M12 17v3" />
+          <path d="M10 20h4" />
+        </symbol>
+
+        <!-- FILE MANAGE -->
+        <symbol id="i-files-v1" viewBox="0 0 24 24">
+          <path d="M4 8h7l2 2h7v10H4z" />
+          <path d="M4 8V6h6l2 2h8v2" />
+        </symbol>
+        <symbol id="i-files-v2" viewBox="0 0 24 24">
+          <rect x="7" y="6" width="12" height="14" rx="2" />
+          <rect x="5" y="4" width="12" height="14" rx="2" />
+          <path d="M8 9h6" />
+          <path d="M8 13h8" />
+        </symbol>
+        <symbol id="i-files-v3" viewBox="0 0 24 24">
+          <path d="M6 14h12" />
+          <path d="M8 10h8" />
+          <path d="M10 6h4" />
+          <path d="M6 14l-2 2v4h16v-4l-2-2" />
+        </symbol>
+        <symbol id="i-files-v4" viewBox="0 0 24 24">
+          <rect x="7" y="5" width="12" height="16" rx="2" />
+          <path d="M9 9h6" />
+          <path d="M9 13h8" />
+          <path d="M5 8h2" />
+          <path d="M5 12h2" />
+          <path d="M5 16h2" />
+        </symbol>
+        <symbol id="i-files-v5" viewBox="0 0 24 24">
+          <path d="M6 7h12" />
+          <path d="M6 12h7" />
+          <path d="M6 17h10" />
+          <circle cx="18" cy="12" r="3" />
+        </symbol>
+
+        <!-- METADATA MANAGE -->
+        <symbol id="i-meta-v1" viewBox="0 0 24 24">
+          <path d="M7 7h10v6l-5 4-5-4V7z" />
+          <path d="M10 10h4" />
+        </symbol>
+        <symbol id="i-meta-v2" viewBox="0 0 24 24">
+          <path d="M6 7h12" />
+          <path d="M6 12h12" />
+          <path d="M6 17h12" />
+          <circle cx="10" cy="7" r="1.2" />
+          <circle cx="15" cy="12" r="1.2" />
+          <circle cx="12" cy="17" r="1.2" />
+        </symbol>
+        <symbol id="i-meta-v3" viewBox="0 0 24 24">
+          <path d="M8 6h8" />
+          <path d="M8 10h8" />
+          <path d="M8 14h8" />
+          <path d="M8 18h5" />
+          <path d="M16 15l3 3" />
+          <path d="M15 19l4-4" />
+        </symbol>
+        <symbol id="i-meta-v4" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 10v6" />
+          <path d="M12 7.5h.01" />
+        </symbol>
+        <symbol id="i-meta-v5" viewBox="0 0 24 24">
+          <path d="M12 3l2.2 4.6L19 8l-3.5 3.4.9 4.8-4.4-2.3-4.4 2.3.9-4.8L5 8l4.8-.4z" />
+        </symbol>
+
+        <!-- AUTOPLAY -->
+        <symbol id="i-auto-v1" viewBox="0 0 24 24">
+          <path d="M8 7h9l-1.5-1.5" />
+          <path d="M17 7l-1.5 1.5" />
+          <path d="M16 17H7l1.5 1.5" />
+          <path d="M7 17l1.5-1.5" />
+          <path d="M11 10l4 2-4 2z" />
+        </symbol>
+        <symbol id="i-auto-v2" viewBox="0 0 24 24">
+          <path d="M7 14c2 0 3-2 5-2s3 2 5 2 3-2 3-4-1-4-3-4-3 2-5 2-3-2-5-2-3 2-3 4 1 4 3 4z" />
+          <path d="M12 10l3 2-3 2z" />
+        </symbol>
+        <symbol id="i-auto-v3" viewBox="0 0 24 24">
+          <path d="M7 8h10" />
+          <path d="M7 8l2-2" />
+          <path d="M7 8l2 2" />
+          <path d="M17 16H7" />
+          <path d="M17 16l-2-2" />
+          <path d="M17 16l-2 2" />
+          <path d="M11 10l4 2-4 2z" />
+        </symbol>
+        <symbol id="i-auto-v4" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 7v5l3 2" />
+          <path d="M12 10l3 2-3 2z" />
+        </symbol>
+        <symbol id="i-auto-v5" viewBox="0 0 24 24">
+          <path d="M7 17l2-7 3 3 3-8 2 8 1 4" />
+          <path d="M6 17h12" />
+        </symbol>
+
+        <!-- SETTINGS -->
+        <symbol id="i-settings-v1" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 2v3" />
+          <path d="M12 19v3" />
+          <path d="M4.2 4.2l2.1 2.1" />
+          <path d="M17.7 17.7l2.1 2.1" />
+          <path d="M2 12h3" />
+          <path d="M19 12h3" />
+          <path d="M4.2 19.8l2.1-2.1" />
+          <path d="M17.7 6.3l2.1-2.1" />
+        </symbol>
+        <symbol id="i-settings-v2" viewBox="0 0 24 24">
+          <path d="M6 7h12" />
+          <path d="M6 12h12" />
+          <path d="M6 17h12" />
+          <circle cx="10" cy="7" r="1.3" />
+          <circle cx="15" cy="12" r="1.3" />
+          <circle cx="12" cy="17" r="1.3" />
+        </symbol>
+        <symbol id="i-settings-v3" viewBox="0 0 24 24">
+          <path d="M14 7l3 3-6 6H8v-3z" />
+          <path d="M15 6l3 3" />
+          <path d="M7 17h10" />
+        </symbol>
+        <symbol id="i-settings-v4" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="1.8" />
+          <path d="M12 4v2" />
+          <path d="M12 18v2" />
+        </symbol>
+        <symbol id="i-settings-v5" viewBox="0 0 24 24">
+          <path d="M7 6v12" />
+          <path d="M12 6v12" />
+          <path d="M17 6v12" />
+          <circle cx="7" cy="10" r="1.4" />
+          <circle cx="12" cy="14" r="1.4" />
+          <circle cx="17" cy="9" r="1.4" />
+        </symbol>
+
+        <!-- utility icons -->
+        <symbol id="i-minus" viewBox="0 0 24 24">
+          <path d="M6 12h12" />
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24">
+          <path d="M12 6v12" />
+          <path d="M6 12h12" />
+        </symbol>
+        <symbol id="i-zoom" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="6" />
+          <path d="M16 16l4 4" />
+          <path d="M11 8v6" />
+          <path d="M8 11h6" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="mock-page">
+      <div class="mock-toolbar" role="region" aria-label="mock controls">
+        <strong>Header Control Base</strong>
+        <span class="mock-sep" aria-hidden="true"></span>
+        <button class="hc-btn" id="theme-toggle" type="button" aria-pressed="false" title="Toggle theme">
+          <svg class="hc-icon" viewBox="0 0 24 24">
+            <use href="#i-idle-v2" />
+          </svg>
+        </button>
+        <label>
+          Button style
+          <select id="btn-style-select">
+            <option value="1">1 - Flat</option>
+            <option value="2">2 - Raised</option>
+            <option value="3">3 - Active raised</option>
+            <option value="4">4 - Bevel</option>
+            <option value="5">5 - Outline</option>
+          </select>
+        </label>
+        <label>
+          Zoom group
+          <select id="zoom-variant-select">
+            <option value="1">1 - Stepper</option>
+            <option value="2">2 - Unified stepper</option>
+            <option value="3">3 - Slider</option>
+            <option value="4">4 - Dropdown</option>
+            <option value="5">5 - Presets</option>
+          </select>
+        </label>
+        <label>
+          Autoplay group
+          <select id="auto-variant-select">
+            <option value="1">1 - Toggle + select</option>
+            <option value="2">2 - Switch + select</option>
+            <option value="3">3 - Segmented presets</option>
+            <option value="4">4 - Menu button</option>
+            <option value="5">5 - Cycle pill</option>
+          </select>
+        </label>
+      </div>
+
+      <header class="hc-header" role="banner">
+        <div class="hc-left">
+          <div class="hc-segment" role="group" aria-label="mode and panels">
+            <button class="hc-btn is-active" type="button" data-action="idle" aria-pressed="true" title="Idle">
+              <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-idle-v1" /></svg>
+            </button>
+            <button class="hc-btn" type="button" data-action="image" aria-pressed="false" title="Image mode">
+              <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-image-v1" /></svg>
+            </button>
+            <button class="hc-btn" type="button" data-action="video" aria-pressed="false" title="Video mode">
+              <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-video-v1" /></svg>
+            </button>
+            <button class="hc-btn" type="button" data-action="music" aria-pressed="false" title="Music mode">
+              <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-music-v1" /></svg>
+            </button>
+            <button class="hc-btn" type="button" data-action="search" aria-pressed="false" title="Search">
+              <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-search-v1" /></svg>
+            </button>
+            <button class="hc-btn" type="button" data-action="files" aria-pressed="false" title="File manage">
+              <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-files-v1" /></svg>
+            </button>
+            <button class="hc-btn" type="button" data-action="meta" aria-pressed="false" title="Metadata manage">
+              <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-meta-v1" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="hc-right">
+          <div class="hc-group hc-zoom" role="group" aria-label="zoom controls">
+            <div class="hc-variant" data-variant="1">
+              <span class="hc-group-title" title="Zoom">
+                <svg class="hc-icon is-thin" viewBox="0 0 24 24"><use href="#i-zoom" /></svg>
+              </span>
+              <button class="hc-btn" type="button" aria-label="Zoom out" data-zoom="dec">
+                <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-minus" /></svg>
+              </button>
+              <span class="hc-value" id="zoom-value">6</span>
+              <button class="hc-btn" type="button" aria-label="Zoom in" data-zoom="inc">
+                <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-plus" /></svg>
+              </button>
+            </div>
+
+            <div class="hc-variant" data-variant="2">
+              <div class="hc-pill" role="group" aria-label="Unified zoom stepper">
+                <button class="hc-btn" type="button" aria-label="Zoom out" data-zoom="dec">
+                  <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-minus" /></svg>
+                </button>
+                <strong id="zoom-value-2">6</strong>
+                <button class="hc-btn" type="button" aria-label="Zoom in" data-zoom="inc">
+                  <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-plus" /></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="hc-variant" data-variant="3">
+              <span class="hc-group-title" title="Zoom">
+                <svg class="hc-icon is-thin" viewBox="0 0 24 24"><use href="#i-zoom" /></svg>
+              </span>
+              <input class="hc-mini-range" aria-label="Zoom level" max="10" min="1" step="1" type="range" value="6" />
+            </div>
+
+            <div class="hc-variant" data-variant="4">
+              <span class="hc-group-title" title="Zoom">
+                <svg class="hc-icon is-thin" viewBox="0 0 24 24"><use href="#i-zoom" /></svg>
+              </span>
+              <select aria-label="Zoom preset">
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6" selected>6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+              </select>
+            </div>
+
+            <div class="hc-variant" data-variant="5">
+              <span class="hc-group-title" title="Zoom">
+                <svg class="hc-icon is-thin" viewBox="0 0 24 24"><use href="#i-zoom" /></svg>
+              </span>
+              <div class="hc-segment" role="group" aria-label="Zoom presets">
+                <button class="hc-btn" type="button" aria-label="Small">
+                  <svg class="hc-icon is-fill" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /></svg>
+                </button>
+                <button class="hc-btn is-active" type="button" aria-label="Medium">
+                  <svg class="hc-icon is-fill" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" /></svg>
+                </button>
+                <button class="hc-btn" type="button" aria-label="Large">
+                  <svg class="hc-icon is-fill" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="hc-group hc-auto" role="group" aria-label="autoplay controls">
+            <div class="hc-variant" data-variant="1">
+              <button class="hc-btn" type="button" data-action="auto" aria-pressed="false" title="Autoplay">
+                <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-auto-v1" /></svg>
+              </button>
+              <select aria-label="Autoplay interval">
+                <option value="1">1s</option>
+                <option value="2" selected>2s</option>
+                <option value="3">3s</option>
+                <option value="5">5s</option>
+              </select>
+            </div>
+
+            <div class="hc-variant" data-variant="2">
+              <button class="hc-pill" id="auto-switch" data-action="auto" type="button" aria-pressed="false" title="Autoplay switch">
+                <svg class="hc-icon" viewBox="0 0 24 24" style="width: 18px; height: 18px"><use href="#i-auto-v3" /></svg>
+                <span class="hc-dot" id="auto-dot" aria-hidden="true"></span>
+              </button>
+              <select aria-label="Autoplay interval">
+                <option value="1">1s</option>
+                <option value="2" selected>2s</option>
+                <option value="3">3s</option>
+                <option value="5">5s</option>
+              </select>
+            </div>
+
+            <div class="hc-variant" data-variant="3">
+              <div class="hc-segment" role="group" aria-label="Autoplay presets">
+                <button class="hc-btn is-active" type="button" aria-label="Autoplay off">0</button>
+                <button class="hc-btn" type="button" aria-label="Autoplay 2 seconds">2</button>
+                <button class="hc-btn" type="button" aria-label="Autoplay 3 seconds">3</button>
+                <button class="hc-btn" type="button" aria-label="Autoplay 5 seconds">5</button>
+              </div>
+            </div>
+
+            <div class="hc-variant" data-variant="4">
+              <button class="hc-btn" type="button" data-action="auto" aria-pressed="false" title="Autoplay menu">
+                <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-auto-v4" /></svg>
+              </button>
+              <button class="hc-pill" type="button" aria-label="Interval pill">
+                <strong>2s</strong>
+              </button>
+            </div>
+
+            <div class="hc-variant" data-variant="5">
+              <button class="hc-pill" id="auto-cycle" data-action="auto" type="button" aria-label="Autoplay cycle" aria-pressed="true">
+                <svg class="hc-icon" viewBox="0 0 24 24" style="width: 18px; height: 18px"><use href="#i-auto-v2" /></svg>
+                <strong id="auto-cycle-value">2s</strong>
+              </button>
+            </div>
+          </div>
+
+          <button class="hc-btn" type="button" data-action="settings" aria-pressed="false" title="Settings">
+            <svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-settings-v1" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="mock-section" aria-label="icon variants">
+        <h2>Icon Variants (pick per action)</h2>
+        <div class="icon-grid" id="icon-grid">
+          <div class="action-name">idle</div>
+          <div class="icon-row" data-action="idle">
+            <button class="icon-pick is-selected" type="button" data-action="idle" data-variant="1" title="idle v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-idle-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="idle" data-variant="2" title="idle v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-idle-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="idle" data-variant="3" title="idle v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-idle-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="idle" data-variant="4" title="idle v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-idle-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="idle" data-variant="5" title="idle v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-idle-v5" /></svg></button>
+          </div>
+
+          <div class="action-name">image</div>
+          <div class="icon-row" data-action="image">
+            <button class="icon-pick is-selected" type="button" data-action="image" data-variant="1" title="image v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-image-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="image" data-variant="2" title="image v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-image-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="image" data-variant="3" title="image v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-image-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="image" data-variant="4" title="image v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-image-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="image" data-variant="5" title="image v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-image-v5" /></svg></button>
+          </div>
+
+          <div class="action-name">video</div>
+          <div class="icon-row" data-action="video">
+            <button class="icon-pick is-selected" type="button" data-action="video" data-variant="1" title="video v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-video-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="video" data-variant="2" title="video v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-video-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="video" data-variant="3" title="video v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-video-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="video" data-variant="4" title="video v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-video-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="video" data-variant="5" title="video v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-video-v5" /></svg></button>
+          </div>
+
+          <div class="action-name">music</div>
+          <div class="icon-row" data-action="music">
+            <button class="icon-pick is-selected" type="button" data-action="music" data-variant="1" title="music v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-music-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="music" data-variant="2" title="music v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-music-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="music" data-variant="3" title="music v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-music-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="music" data-variant="4" title="music v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-music-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="music" data-variant="5" title="music v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-music-v5" /></svg></button>
+          </div>
+
+          <div class="action-name">search</div>
+          <div class="icon-row" data-action="search">
+            <button class="icon-pick is-selected" type="button" data-action="search" data-variant="1" title="search v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-search-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="search" data-variant="2" title="search v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-search-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="search" data-variant="3" title="search v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-search-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="search" data-variant="4" title="search v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-search-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="search" data-variant="5" title="search v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-search-v5" /></svg></button>
+          </div>
+
+          <div class="action-name">files</div>
+          <div class="icon-row" data-action="files">
+            <button class="icon-pick is-selected" type="button" data-action="files" data-variant="1" title="files v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-files-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="files" data-variant="2" title="files v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-files-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="files" data-variant="3" title="files v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-files-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="files" data-variant="4" title="files v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-files-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="files" data-variant="5" title="files v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-files-v5" /></svg></button>
+          </div>
+
+          <div class="action-name">meta</div>
+          <div class="icon-row" data-action="meta">
+            <button class="icon-pick is-selected" type="button" data-action="meta" data-variant="1" title="meta v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-meta-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="meta" data-variant="2" title="meta v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-meta-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="meta" data-variant="3" title="meta v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-meta-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="meta" data-variant="4" title="meta v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-meta-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="meta" data-variant="5" title="meta v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-meta-v5" /></svg></button>
+          </div>
+
+          <div class="action-name">autoplay</div>
+          <div class="icon-row" data-action="auto">
+            <button class="icon-pick is-selected" type="button" data-action="auto" data-variant="1" title="auto v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-auto-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="auto" data-variant="2" title="auto v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-auto-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="auto" data-variant="3" title="auto v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-auto-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="auto" data-variant="4" title="auto v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-auto-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="auto" data-variant="5" title="auto v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-auto-v5" /></svg></button>
+          </div>
+
+          <div class="action-name">settings</div>
+          <div class="icon-row" data-action="settings">
+            <button class="icon-pick is-selected" type="button" data-action="settings" data-variant="1" title="settings v1"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-settings-v1" /></svg></button>
+            <button class="icon-pick" type="button" data-action="settings" data-variant="2" title="settings v2"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-settings-v2" /></svg></button>
+            <button class="icon-pick" type="button" data-action="settings" data-variant="3" title="settings v3"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-settings-v3" /></svg></button>
+            <button class="icon-pick" type="button" data-action="settings" data-variant="4" title="settings v4"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-settings-v4" /></svg></button>
+            <button class="icon-pick" type="button" data-action="settings" data-variant="5" title="settings v5"><svg class="hc-icon" viewBox="0 0 24 24"><use href="#i-settings-v5" /></svg></button>
+          </div>
+        </div>
+        <p class="note">Tip: click an icon variant to update the preview header button.</p>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement
+      root.dataset.btnStyle = root.dataset.btnStyle || '2'
+      root.dataset.zoomVariant = root.dataset.zoomVariant || '1'
+      root.dataset.autoVariant = root.dataset.autoVariant || '1'
+
+      const iconByAction = {
+        idle: 1,
+        image: 1,
+        video: 1,
+        music: 1,
+        search: 1,
+        files: 1,
+        meta: 1,
+        auto: 1,
+        settings: 1,
+      }
+
+      function iconHref(action, variant) {
+        if (action === 'idle') return `#i-idle-v${variant}`
+        if (action === 'image') return `#i-image-v${variant}`
+        if (action === 'video') return `#i-video-v${variant}`
+        if (action === 'music') return `#i-music-v${variant}`
+        if (action === 'search') return `#i-search-v${variant}`
+        if (action === 'files') return `#i-files-v${variant}`
+        if (action === 'meta') return `#i-meta-v${variant}`
+        if (action === 'auto') return `#i-auto-v${variant}`
+        return `#i-settings-v${variant}`
+      }
+
+      function updateHeaderIcon(action) {
+        for (const btn of document.querySelectorAll(`.hc-header [data-action="${action}"]`)) {
+          const use = btn.querySelector('use')
+          if (use) {
+            use.setAttribute('href', iconHref(action, iconByAction[action]))
+          }
+        }
+      }
+
+      function setSelectedPick(action, variant) {
+        const row = document.querySelector(`.icon-row[data-action="${action}"]`)
+        if (!row) return
+        for (const el of row.querySelectorAll('.icon-pick')) {
+          const pickVariant = Number(el.getAttribute('data-variant') || '0')
+          el.classList.toggle('is-selected', pickVariant === variant)
+        }
+      }
+
+      for (const action of Object.keys(iconByAction)) {
+        updateHeaderIcon(action)
+        setSelectedPick(action, iconByAction[action])
+      }
+
+      // Icon picker events
+      document.getElementById('icon-grid')?.addEventListener('click', (event) => {
+        const target = event.target instanceof Element ? event.target.closest('.icon-pick') : null
+        if (!target) return
+        const action = target.getAttribute('data-action')
+        const variant = Number(target.getAttribute('data-variant') || '1')
+        if (!action) return
+        iconByAction[action] = Math.max(1, Math.min(5, variant))
+        updateHeaderIcon(action)
+        setSelectedPick(action, iconByAction[action])
+      })
+
+      // Variant selectors
+      const btnStyleSelect = document.getElementById('btn-style-select')
+      const zoomVariantSelect = document.getElementById('zoom-variant-select')
+      const autoVariantSelect = document.getElementById('auto-variant-select')
+
+      if (btnStyleSelect) {
+        btnStyleSelect.value = root.dataset.btnStyle
+        btnStyleSelect.addEventListener('change', () => {
+          root.dataset.btnStyle = btnStyleSelect.value
+        })
+      }
+
+      if (zoomVariantSelect) {
+        zoomVariantSelect.value = root.dataset.zoomVariant
+        zoomVariantSelect.addEventListener('change', () => {
+          root.dataset.zoomVariant = zoomVariantSelect.value
+        })
+      }
+
+      if (autoVariantSelect) {
+        autoVariantSelect.value = root.dataset.autoVariant
+        autoVariantSelect.addEventListener('change', () => {
+          root.dataset.autoVariant = autoVariantSelect.value
+        })
+      }
+
+      // Theme toggle
+      const themeToggle = document.getElementById('theme-toggle')
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          const inverted = document.body.getAttribute('data-theme') === 'inverted'
+          if (inverted) {
+            document.body.removeAttribute('data-theme')
+            themeToggle.setAttribute('aria-pressed', 'false')
+          } else {
+            document.body.setAttribute('data-theme', 'inverted')
+            themeToggle.setAttribute('aria-pressed', 'true')
+          }
+        })
+      }
+
+      // Simple zoom stepper demo (variants 1/2 share same data-zoom buttons)
+      let zoomValue = 6
+      function renderZoom() {
+        const el1 = document.getElementById('zoom-value')
+        const el2 = document.getElementById('zoom-value-2')
+        if (el1) el1.textContent = String(zoomValue)
+        if (el2) el2.textContent = String(zoomValue)
+      }
+      renderZoom()
+      document.querySelector('.hc-zoom')?.addEventListener('click', (event) => {
+        const btn = event.target instanceof Element ? event.target.closest('[data-zoom]') : null
+        if (!btn) return
+        const op = btn.getAttribute('data-zoom')
+        if (op === 'dec') zoomValue = Math.max(1, zoomValue - 1)
+        if (op === 'inc') zoomValue = Math.min(10, zoomValue + 1)
+        renderZoom()
+      })
+
+      // Autoplay switch/cycle demo
+      let autoOn = false
+      const autoSwitch = document.getElementById('auto-switch')
+      const autoDot = document.getElementById('auto-dot')
+      if (autoSwitch && autoDot) {
+        autoSwitch.addEventListener('click', () => {
+          autoOn = !autoOn
+          autoDot.classList.toggle('is-on', autoOn)
+          autoSwitch.setAttribute('aria-pressed', autoOn ? 'true' : 'false')
+        })
+      }
+
+      const autoCycle = document.getElementById('auto-cycle')
+      const autoCycleValue = document.getElementById('auto-cycle-value')
+      const cycleValues = ['OFF', '2s', '3s', '5s']
+      let cycleIndex = 1
+      if (autoCycle && autoCycleValue) {
+        autoCycleValue.textContent = cycleValues[cycleIndex]
+        autoCycle.addEventListener('click', () => {
+          cycleIndex = (cycleIndex + 1) % cycleValues.length
+          autoCycleValue.textContent = cycleValues[cycleIndex]
+          autoCycle.setAttribute('aria-pressed', cycleIndex === 0 ? 'false' : 'true')
+        })
+      }
+    </script>
+  </body>
+</html>

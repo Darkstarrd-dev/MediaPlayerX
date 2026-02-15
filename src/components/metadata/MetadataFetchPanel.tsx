@@ -113,17 +113,17 @@ function createInitialPreviewCollapseBySource(): SourcePreviewCollapseMap {
 }
 
 function getSourceDisplayLabel(source: MetadataSource): string {
-  return source === 'nhentai' ? 'Nhentai' : 'E-Hentai'
+  return source === 'nhentai' ? 'ui.metadata.fetchSourceNhentai' : 'ui.metadata.fetchSourceEhentai'
 }
 
 function getSourceShortLabel(source: MetadataSource): string {
   return source === 'nhentai' ? 'NH' : 'EH'
 }
 
-function buildErrorPayload(error: unknown): Record<string, unknown> {
+function buildErrorPayload(error: unknown, fallbackMessage: string): Record<string, unknown> {
   if (!(error instanceof Error)) {
     return {
-      message: '检索失败',
+      message: fallbackMessage,
       raw: String(error),
     }
   }
@@ -189,6 +189,8 @@ function MetadataFetchPanel({
   const [previewCollapseBySource, setPreviewCollapseBySource] = useState<SourcePreviewCollapseMap>(
     createInitialPreviewCollapseBySource(),
   )
+
+  const getSourceLabel = (source: MetadataSource): string => t(getSourceDisplayLabel(source))
 
   useEffect(() => {
     if (!open) {
@@ -292,7 +294,7 @@ function MetadataFetchPanel({
         nextRequestPreviewBySource[source] = JSON.stringify(buildRequestPayload(source), null, 2)
         nextResponsePreviewBySource[source] = JSON.stringify(
           {
-            message: '当前后端不支持元数据检索',
+            message: t('ui.metadata.fetchUnsupported'),
             code: 'backend_unavailable',
           },
           null,
@@ -307,7 +309,7 @@ function MetadataFetchPanel({
       setDebugBySource(createEmptySourceDebugMap())
       setParsedBySource(createEmptyParsedBySource())
       setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
-      setError('当前后端不支持元数据检索')
+      setError(t('ui.metadata.fetchUnsupported'))
       return
     }
 
@@ -335,8 +337,8 @@ function MetadataFetchPanel({
             nextResponsePreviewBySource[source] = JSON.stringify(response, null, 2)
             nextDebugBySource[source] = response.debug ?? null
           } catch (searchError) {
-            nextResponsePreviewBySource[source] = JSON.stringify(buildErrorPayload(searchError), null, 2)
-            searchErrors.push(`${getSourceShortLabel(source)}: ${searchError instanceof Error ? searchError.message : '检索失败'}`)
+            nextResponsePreviewBySource[source] = JSON.stringify(buildErrorPayload(searchError, t('ui.metadata.fetchSearchFailed')), null, 2)
+            searchErrors.push(`${getSourceShortLabel(source)}: ${searchError instanceof Error ? searchError.message : t('ui.metadata.fetchSearchFailed')}`)
           }
         }),
       )
@@ -360,7 +362,7 @@ function MetadataFetchPanel({
       if (searchErrors.length > 0) {
         setError(searchErrors.join(' | '))
       } else if (nextSourceLists.nhentai.length + nextSourceLists.ehentai.length === 0) {
-        setError('未检索到结果')
+        setError(t('ui.metadata.fetchNoResultFound'))
       }
     } finally {
       setLoading(false)
@@ -395,7 +397,7 @@ function MetadataFetchPanel({
         ...previous,
         [source]: null,
       }))
-      setError(parseError instanceof Error ? parseError.message : '解析失败')
+      setError(parseError instanceof Error ? parseError.message : t('ui.metadata.fetchParseFailed'))
     }
   }
 
@@ -410,7 +412,7 @@ function MetadataFetchPanel({
       await onSaveParsedMetadata(selectedParsed)
       onClose()
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : '保存失败')
+      setError(saveError instanceof Error ? saveError.message : t('ui.metadata.fetchSaveFailed'))
     } finally {
       setSaving(false)
     }
@@ -428,13 +430,13 @@ function MetadataFetchPanel({
         </header>
 
         <div className="metadata-fetch-shell settings-block">
-          <p className="settings-placeholder">目标图包：{targetPackageLabel || '-'} </p>
+          <p className="settings-placeholder">{t('ui.metadata.fetchTargetPackage', { label: targetPackageLabel || '-' })}</p>
 
           <fieldset className="settings-subsection metadata-fetch-search-section">
-            <legend>检索参数</legend>
+            <legend>{t('ui.metadata.fetchSearchParams')}</legend>
             <div className="metadata-fetch-input-grid">
               <div className="metadata-fetch-source-picker">
-                <span>来源</span>
+                <span>{t('ui.metadata.source')}</span>
                 <div className="mode-switch metadata-fetch-source-switch" role="group" aria-label={t('a11y.metadata.fetchSourceSwitch')}>
                   <button type="button" className={sourceMode === 'nhentai' ? 'is-active' : ''} onClick={() => setSourceMode('nhentai')}>
                     NH
@@ -449,7 +451,7 @@ function MetadataFetchPanel({
               </div>
 
               <label>
-                检索ID
+                {t('ui.metadata.fetchId')}
                 <input
                   type="text"
                   value={inputId}
@@ -463,7 +465,7 @@ function MetadataFetchPanel({
               </label>
 
               <label>
-                检索关键字
+                {t('ui.metadata.fetchKeyword')}
                 <input
                   type="text"
                   value={inputText}
@@ -513,8 +515,8 @@ function MetadataFetchPanel({
                   data-source={source}
                 >
                   <header>
-                    <strong>{getSourceDisplayLabel(source)}</strong>
-                    <span>{`${list.length} 条`}</span>
+                    <strong>{getSourceLabel(source)}</strong>
+                    <span>{t('ui.metadata.fetchSourceResultCount', { count: list.length })}</span>
                   </header>
 
                   <div className="settings-floating-actions metadata-fetch-actions metadata-fetch-actions-inline">
@@ -597,13 +599,13 @@ function MetadataFetchPanel({
                           }))
                         }}
                       >
-                        <span>Parsed</span>
+                        <span>{t('ui.metadata.fetchPreviewParsed')}</span>
                         <span className="metadata-fetch-preview-state" aria-hidden="true">
                           <MainUiIcon name={parsedCollapsed ? 'expand' : 'collapse'} />
                         </span>
                       </button>
                       {!parsedCollapsed ? (
-                        <AutoSizeReadonlyTextarea id={`${source}-parsed`} label="Parsed" value={previewParsedBySource[source]} />
+                          <AutoSizeReadonlyTextarea id={`${source}-parsed`} label={t('ui.metadata.fetchPreviewParsed')} value={previewParsedBySource[source]} />
                       ) : null}
                     </section>
 
@@ -621,13 +623,13 @@ function MetadataFetchPanel({
                           }))
                         }}
                       >
-                        <span>Raw</span>
+                        <span>{t('ui.metadata.fetchPreviewRaw')}</span>
                         <span className="metadata-fetch-preview-state" aria-hidden="true">
                           <MainUiIcon name={rawCollapsed ? 'expand' : 'collapse'} />
                         </span>
                       </button>
                       {!rawCollapsed ? (
-                        <AutoSizeReadonlyTextarea id={`${source}-raw`} label="Raw" value={previewRawBySource[source]} />
+                          <AutoSizeReadonlyTextarea id={`${source}-raw`} label={t('ui.metadata.fetchPreviewRaw')} value={previewRawBySource[source]} />
                       ) : null}
                     </section>
 
@@ -645,7 +647,7 @@ function MetadataFetchPanel({
                           }))
                         }}
                       >
-                        <span>Debug Trace</span>
+                        <span>{t('ui.metadata.fetchPreviewDebugTrace')}</span>
                         <span className="metadata-fetch-preview-state" aria-hidden="true">
                           <MainUiIcon name={debugCollapsed ? 'expand' : 'collapse'} />
                         </span>
@@ -653,8 +655,8 @@ function MetadataFetchPanel({
                       {!debugCollapsed ? (
                         <AutoSizeReadonlyTextarea
                           id={`${source}-debug-trace`}
-                          label="Debug Trace"
-                          value={previewDebugBySource[source]}
+                           label={t('ui.metadata.fetchPreviewDebugTrace')}
+                           value={previewDebugBySource[source]}
                         />
                       ) : null}
                     </section>
@@ -673,7 +675,7 @@ function MetadataFetchPanel({
                           }))
                         }}
                       >
-                        <span>Request Body</span>
+                        <span>{t('ui.metadata.fetchPreviewRequestBody')}</span>
                         <span className="metadata-fetch-preview-state" aria-hidden="true">
                           <MainUiIcon name={requestCollapsed ? 'expand' : 'collapse'} />
                         </span>
@@ -681,8 +683,8 @@ function MetadataFetchPanel({
                       {!requestCollapsed ? (
                         <AutoSizeReadonlyTextarea
                           id={`${source}-request-body`}
-                          label="Request Body"
-                          value={requestPreviewBySource[source]}
+                           label={t('ui.metadata.fetchPreviewRequestBody')}
+                           value={requestPreviewBySource[source]}
                         />
                       ) : null}
                     </section>
@@ -701,7 +703,7 @@ function MetadataFetchPanel({
                           }))
                         }}
                       >
-                        <span>Response Body</span>
+                        <span>{t('ui.metadata.fetchPreviewResponseBody')}</span>
                         <span className="metadata-fetch-preview-state" aria-hidden="true">
                           <MainUiIcon name={responseCollapsed ? 'expand' : 'collapse'} />
                         </span>
@@ -709,8 +711,8 @@ function MetadataFetchPanel({
                       {!responseCollapsed ? (
                         <AutoSizeReadonlyTextarea
                           id={`${source}-response-body`}
-                          label="Response Body"
-                          value={responsePreviewBySource[source]}
+                           label={t('ui.metadata.fetchPreviewResponseBody')}
+                           value={responsePreviewBySource[source]}
                         />
                       ) : null}
                     </section>
@@ -720,7 +722,7 @@ function MetadataFetchPanel({
             })}
           </div>
 
-          <p className="metadata-fetch-total">{`总结果 ${resultCount} 条，当前来源 ${getSourceDisplayLabel(selectedSource)}`}</p>
+          <p className="metadata-fetch-total">{t('ui.metadata.fetchTotalSummary', { count: resultCount, source: getSourceLabel(selectedSource) })}</p>
         </div>
       </section>
     </div>

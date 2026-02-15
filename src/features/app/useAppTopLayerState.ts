@@ -19,6 +19,7 @@ import { useDatabaseResetAction } from './useDatabaseResetAction'
 import { useImportTaskPanelState } from './useImportTaskPanelState'
 import { useRuntimeInfoDiagnostics } from './useRuntimeInfoDiagnostics'
 import { useRuntimeWarningDismiss } from './useRuntimeWarningDismiss'
+import { useI18n } from '../../i18n/useI18n'
 import type { PlaylistPersistenceResult } from '../media/usePlaylistPersistence'
 import type { VideoFitMode } from '../media/videoFitMode'
 import type {
@@ -216,6 +217,8 @@ export function useAppTopLayerState({
   applyMetadataRatio,
   focusedVideoEffectiveId,
 }: UseAppTopLayerStateParams) {
+  const { t } = useI18n()
+
   /**
    * 顶层状态只负责跨面板编排：
    * - Header / Settings / Fullscreen / ImportPanel 共享同一批信号。
@@ -226,6 +229,19 @@ export function useAppTopLayerState({
     backendWrite,
     playlistPersistence,
     runtimeCapabilities,
+    labels: {
+      library: t('ui.settings.backendError.library'),
+      sidebar: t('ui.settings.backendError.sidebar'),
+      page: t('ui.settings.backendError.page'),
+      metadata: t('ui.settings.backendError.metadata'),
+      gradeWrite: t('ui.settings.backendError.gradeWrite'),
+      metadataWrite: t('ui.settings.backendError.metadataWrite'),
+      coverWrite: t('ui.settings.backendError.coverWrite'),
+      manageWrite: t('ui.settings.backendError.manageWrite'),
+      playlistRead: t('ui.settings.backendError.playlistRead'),
+      playlistWrite: t('ui.settings.backendError.playlistWrite'),
+      runtimeCapability: t('ui.settings.backendError.runtimeCapability'),
+    },
   })
 
   const runtimeInfoDiagnostics = useRuntimeInfoDiagnostics()
@@ -238,9 +254,8 @@ export function useAppTopLayerState({
   const bridgeMissingRow = bridgeMissingInProduction
     ? {
         key: 'backend-bridge',
-        label: '后端桥接',
-        message:
-          '生产构建未检测到后端桥接（window.mediaPlayerBackend），已禁用 mock 回退。请检查 Electron preload 注入链路。',
+        label: t('ui.settings.backendBridge'),
+        message: t('ui.settings.bridgeMissingWarning'),
         onRetry: runtimeInfoDiagnostics.retry,
       }
     : null
@@ -283,6 +298,12 @@ export function useAppTopLayerState({
     retryImportTask,
     adReviewRunning,
     adReviewDeleting,
+    taskStatusLabels: {
+      loading: t('ui.header.taskStatusLoading'),
+      deleting: t('ui.header.taskStatusDeleting'),
+      reviewing: t('ui.header.taskStatusReviewing'),
+      idle: t('ui.header.taskStatusIdle'),
+    },
   })
 
   const {

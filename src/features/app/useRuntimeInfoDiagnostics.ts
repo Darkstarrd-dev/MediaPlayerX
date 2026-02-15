@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { ReadRuntimeInfoResponseDto, RuntimeMediaCapabilityHintDto } from '../../contracts/backend'
+import { useI18n } from '../../i18n/useI18n'
 
 const RUNTIME_INFO_TIMEOUT_MS = 6_000
 const MEDIA_CAPABILITY_TIMEOUT_MS = 1_500
@@ -16,11 +17,11 @@ function detectBackendBridgeInjected(): boolean {
   return typeof window !== 'undefined' && typeof window.mediaPlayerBackend !== 'undefined'
 }
 
-function toErrorMessage(error: unknown): string {
+function toErrorMessage(error: unknown, fallbackMessage: string): string {
   if (error instanceof Error && error.message.trim().length > 0) {
     return error.message
   }
-  return '读取运行时诊断信息失败'
+  return fallbackMessage
 }
 
 export interface RuntimeInfoDiagnosticsResult {
@@ -48,14 +49,15 @@ function hasMediaCapabilitiesApi(): boolean {
   return typeof navigator !== 'undefined' && typeof navigator.mediaCapabilities?.decodingInfo === 'function'
 }
 
-function toMediaCapabilityErrorMessage(error: unknown): string {
+function toMediaCapabilityErrorMessage(error: unknown, fallbackMessage: string): string {
   if (error instanceof Error && error.message.trim().length > 0) {
     return error.message
   }
-  return '解码能力检测失败'
+  return fallbackMessage
 }
 
 export function useRuntimeInfoDiagnostics(): RuntimeInfoDiagnosticsResult {
+  const { t } = useI18n()
   const backendBridgeInjected = detectBackendBridgeInjected()
   const [data, setData] = useState<ReadRuntimeInfoResponseDto | null>(null)
   const [loading, setLoading] = useState(false)
@@ -70,14 +72,14 @@ export function useRuntimeInfoDiagnostics(): RuntimeInfoDiagnosticsResult {
     if (!backendBridgeInjected || !backendApi) {
       setData(null)
       setLoading(false)
-      setError('未检测到后端桥接（window.mediaPlayerBackend），当前可能是浏览器 mock 环境')
+      setError(t('ui.settings.backendBridgeMissingInMock'))
       return
     }
 
     if (typeof backendApi.readRuntimeInfo !== 'function') {
       setData(null)
       setLoading(false)
-      setError('当前后端未提供运行时诊断接口（readRuntimeInfo）')
+      setError(t('ui.settings.runtimeDiagnosticsUnsupported'))
       return
     }
 
@@ -88,7 +90,7 @@ export function useRuntimeInfoDiagnostics(): RuntimeInfoDiagnosticsResult {
 
     const timeoutTask = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => {
-        reject(new Error(`运行时诊断读取超时（>${RUNTIME_INFO_TIMEOUT_MS}ms）`))
+        reject(new Error(t('ui.settings.runtimeDiagnosticsTimeout', { ms: RUNTIME_INFO_TIMEOUT_MS })))
       }, RUNTIME_INFO_TIMEOUT_MS)
     })
 
@@ -104,7 +106,7 @@ export function useRuntimeInfoDiagnostics(): RuntimeInfoDiagnosticsResult {
           return
         }
         setData(null)
-        setError(toErrorMessage(errorValue))
+        setError(toErrorMessage(errorValue, t('ui.settings.runtimeDiagnosticsReadFailed')))
       })
       .finally(() => {
         if (timeoutId !== null) {
@@ -122,13 +124,13 @@ export function useRuntimeInfoDiagnostics(): RuntimeInfoDiagnosticsResult {
         clearTimeout(timeoutId)
       }
     }
-  }, [backendBridgeInjected, retryNonce])
+  }, [backendBridgeInjected, retryNonce, t])
 
   useEffect(() => {
     const hints = data?.media_capability_hints ?? DEFAULT_MEDIA_CAPABILITY_HINTS
     if (!hasMediaCapabilitiesApi()) {
       setMediaCapabilitiesLoading(false)
-      setMediaCapabilitiesError('当前环境不支持 MediaCapabilities API')
+      setMediaCapabilitiesError(t('ui.settings.mediaCapabilitiesUnsupportedApi'))
       setMediaCapabilities([])
       return
     }
@@ -143,7 +145,7 @@ export function useRuntimeInfoDiagnostics(): RuntimeInfoDiagnosticsResult {
         let timeoutId: ReturnType<typeof setTimeout> | null = null
         const timeoutTask = new Promise<never>((_, reject) => {
           timeoutId = setTimeout(() => {
-            reject(new Error(`解码能力检测超时（>${MEDIA_CAPABILITY_TIMEOUT_MS}ms）`))
+            reject(new Error(t('ui.settings.mediaCapabilitiesTimeout', { ms: MEDIA_CAPABILITY_TIMEOUT_MS })))
           }, MEDIA_CAPABILITY_TIMEOUT_MS)
         })
 
@@ -177,7 +179,7 @@ export function useRuntimeInfoDiagnostics(): RuntimeInfoDiagnosticsResult {
             supported: false,
             smooth: false,
             powerEfficient: null,
-            error: toMediaCapabilityErrorMessage(errorValue),
+            error: toMediaCapabilityErrorMessage(errorValue, t('ui.settings.mediaCapabilitiesProbeFailed')),
           })
         } finally {
           if (timeoutId !== null) {
@@ -199,13 +201,13 @@ export function useRuntimeInfoDiagnostics(): RuntimeInfoDiagnosticsResult {
       }
       setMediaCapabilities([])
       setMediaCapabilitiesLoading(false)
-      setMediaCapabilitiesError(toMediaCapabilityErrorMessage(errorValue))
+      setMediaCapabilitiesError(toMediaCapabilityErrorMessage(errorValue, t('ui.settings.mediaCapabilitiesProbeFailed')))
     })
 
     return () => {
       active = false
     }
-  }, [data])
+  }, [data, t])
 
   const retry = useCallback(() => {
     setRetryNonce((value) => value + 1)

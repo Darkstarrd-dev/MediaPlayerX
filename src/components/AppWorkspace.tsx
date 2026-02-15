@@ -5,7 +5,7 @@ import type { BrowserMode } from '../types'
 import { benchOnReactRender } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
 import { buildA11yPropsByRegistry } from '../i18n/a11y'
-import { zhCnCatalog } from '../i18n/locales/zh-CN'
+import { useI18n } from '../i18n/useI18n'
 import ImageMainSection from './ImageMainSection'
 import MetadataPanel from './MetadataPanel'
 import MusicMainSection from './MusicMainSection'
@@ -59,9 +59,7 @@ function AppWorkspace({
   metadataPanelProps,
   mainFooter,
 }: AppWorkspaceProps) {
-  const t = (key: string) => {
-    return zhCnCatalog[key as keyof typeof zhCnCatalog] ?? key
-  }
+  const { t } = useI18n()
   const benchSettings = getBenchSettings()
   const enableProfiler = Boolean(benchSettings.enabled && benchSettings.reactProfiler)
 
@@ -111,7 +109,7 @@ function AppWorkspace({
     <div className="app-body" ref={appBodyRef}>
       {sidebarCollapsed ? (
         <button {...buildA11yPropsByRegistry({ key: 'commonExpandSidebar', t })} className="sidebar-expand-btn" type="button" onClick={onExpandSidebar}>
-          <span className="sidebar-expand-tip">展开目录</span>
+          <span className="sidebar-expand-tip">{t('ui.sidebar.expand')}</span>
         </button>
       ) : (
         <>

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useI18n } from '../../i18n/useI18n'
 import type { MediaRepository } from '../backend/repository'
 
 interface UseDatabaseResetActionParams {
@@ -20,11 +21,12 @@ function toErrorMessage(error: unknown, fallback: string): string {
 }
 
 export function useDatabaseResetAction({ mediaRepository }: UseDatabaseResetActionParams): UseDatabaseResetActionResult {
+  const { t } = useI18n()
   const [databaseResetPending, setDatabaseResetPending] = useState(false)
   const [databaseResetError, setDatabaseResetError] = useState<string | null>(null)
   const clearDatabaseForDev = useCallback(() => {
     if (!mediaRepository.clearDatabase) {
-      setDatabaseResetError('当前后端不支持清除数据库')
+      setDatabaseResetError(t('ui.settings.databaseResetUnsupported'))
       return
     }
 
@@ -32,7 +34,7 @@ export function useDatabaseResetAction({ mediaRepository }: UseDatabaseResetActi
       typeof window === 'undefined'
         ? true
         : window.confirm(
-            '清除数据库将移除评分/封面/任务/播放列表缓存，并清空导入引用列表与缩略图/归一化缓存。仅建议开发调试使用，确认继续？',
+            t('ui.settings.databaseResetConfirmPrompt'),
           )
 
     if (!confirmed) {
@@ -50,12 +52,12 @@ export function useDatabaseResetAction({ mediaRepository }: UseDatabaseResetActi
         }
       })
       .catch((error: unknown) => {
-        setDatabaseResetError(toErrorMessage(error, '清除数据库失败'))
+        setDatabaseResetError(toErrorMessage(error, t('ui.settings.databaseResetFailed')))
       })
       .finally(() => {
         setDatabaseResetPending(false)
       })
-  }, [mediaRepository])
+  }, [mediaRepository, t])
 
   return {
     databaseResetPending,

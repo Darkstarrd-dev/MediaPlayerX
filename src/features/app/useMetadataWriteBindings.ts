@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useI18n } from '../../i18n/useI18n'
 import type { AudioItem, ImagePackage, SidebarNode, VideoItem } from '../../types'
 
 export interface PackageMetadataWritePayload {
@@ -191,6 +192,8 @@ export function useMetadataWriteBindings({
   sidebarNodeById,
   setManageOperationHint,
 }: UseMetadataWriteBindingsParams): UseMetadataWriteBindingsResult {
+  const { t } = useI18n()
+
   const collectBatchTargets = useCallback(() => {
     const packageIds = new Set<string>()
     const videoIds = new Set<string>()
@@ -263,7 +266,7 @@ export function useMetadataWriteBindings({
     async (
       targetIds: string[],
       applyWrite: (targetId: string) => Promise<void>,
-      summaryLabel = '元数据批量写入完成',
+      summaryLabel: string,
     ) => {
       let successCount = 0
       let failedCount = 0
@@ -279,11 +282,18 @@ export function useMetadataWriteBindings({
 
       setManageOperationHint(
         failedCount > 0
-          ? `${summaryLabel}：成功 ${successCount} 项，失败 ${failedCount} 项`
-          : `${summaryLabel}：成功 ${successCount} 项`,
+          ? t('ui.metadata.batchWriteResultWithFailures', {
+              label: summaryLabel,
+              success: successCount,
+              failed: failedCount,
+            })
+          : t('ui.metadata.batchWriteResultSuccess', {
+              label: summaryLabel,
+              success: successCount,
+            }),
       )
     },
-    [setManageOperationHint],
+    [setManageOperationHint, t],
   )
 
   const buildPackageMetadataPayload = useCallback(
@@ -349,13 +359,17 @@ export function useMetadataWriteBindings({
     (grade: number | null) => {
       const packageIds = resolvePackageTargets()
       if (packageIds.length > 0) {
-        void runBatchWrite(packageIds, (packageId) => backendWrite.writePackageGrade(packageId, grade))
+        void runBatchWrite(
+          packageIds,
+          (packageId) => backendWrite.writePackageGrade(packageId, grade),
+          t('ui.metadata.packageGradeWriteCompleted'),
+        )
         return
       }
 
-      setManageOperationHint('评分写入失败：当前无可用图包')
+      setManageOperationHint(t('ui.metadata.packageGradeWriteNoTarget'))
     },
-    [backendWrite, resolvePackageTargets, runBatchWrite, setManageOperationHint],
+    [backendWrite, resolvePackageTargets, runBatchWrite, setManageOperationHint, t],
   )
 
   const applyPackageMetadata = useCallback(
@@ -367,7 +381,7 @@ export function useMetadataWriteBindings({
 
       const packageIds = resolvePackageTargets()
       if (packageIds.length === 0) {
-        setManageOperationHint('元数据写入失败：当前无可用图包')
+        setManageOperationHint(t('ui.metadata.packageWriteNoTarget'))
         return
       }
 
@@ -380,10 +394,17 @@ export function useMetadataWriteBindings({
           }
           await writer(packageId, mergedPayload)
         },
-        '元数据批量写入完成',
+        t('ui.metadata.packageBatchWriteCompleted'),
       )
     },
-    [backendWrite.writePackageMetadata, buildPackageMetadataPayload, resolvePackageTargets, runBatchWrite, setManageOperationHint],
+    [
+      backendWrite.writePackageMetadata,
+      buildPackageMetadataPayload,
+      resolvePackageTargets,
+      runBatchWrite,
+      setManageOperationHint,
+      t,
+    ],
   )
 
   const applyVideoMetadata = useCallback(
@@ -395,7 +416,7 @@ export function useMetadataWriteBindings({
 
       const videoIds = resolveVideoTargets()
       if (videoIds.length === 0) {
-        setManageOperationHint('视频元数据写入失败：当前无可用视频')
+        setManageOperationHint(t('ui.metadata.videoWriteNoTarget'))
         return
       }
 
@@ -408,10 +429,17 @@ export function useMetadataWriteBindings({
           }
           await writer(videoId, mergedPayload)
         },
-        '视频元数据批量写入完成',
+        t('ui.metadata.videoBatchWriteCompleted'),
       )
     },
-    [backendWrite.writeVideoMetadata, buildVideoMetadataPayload, resolveVideoTargets, runBatchWrite, setManageOperationHint],
+    [
+      backendWrite.writeVideoMetadata,
+      buildVideoMetadataPayload,
+      resolveVideoTargets,
+      runBatchWrite,
+      setManageOperationHint,
+      t,
+    ],
   )
 
   const applyAudioMetadata = useCallback(
@@ -423,7 +451,7 @@ export function useMetadataWriteBindings({
 
       const audioIds = resolveAudioTargets()
       if (audioIds.length === 0) {
-        setManageOperationHint('音频元数据写入失败：当前无可用音频')
+        setManageOperationHint(t('ui.metadata.audioWriteNoTarget'))
         return
       }
 
@@ -436,10 +464,17 @@ export function useMetadataWriteBindings({
           }
           await writer(audioId, mergedPayload)
         },
-        '音频元数据批量写入完成',
+        t('ui.metadata.audioBatchWriteCompleted'),
       )
     },
-    [backendWrite.writeAudioMetadata, buildAudioMetadataPayload, resolveAudioTargets, runBatchWrite, setManageOperationHint],
+    [
+      backendWrite.writeAudioMetadata,
+      buildAudioMetadataPayload,
+      resolveAudioTargets,
+      runBatchWrite,
+      setManageOperationHint,
+      t,
+    ],
   )
 
   const applyPackageSyncName = useCallback(() => {
@@ -458,7 +493,7 @@ export function useMetadataWriteBindings({
     async (packageId: string, payload: PackageMetadataWritePayload) => {
       const writer = backendWrite.writePackageMetadata
       if (!writer) {
-        throw new Error('当前后端不支持写入元数据')
+        throw new Error(t('ui.metadata.backendWriteUnsupported'))
       }
 
       const mergedPayload = buildPackageMetadataPayload(packageId, payload)
@@ -467,16 +502,16 @@ export function useMetadataWriteBindings({
       }
 
       await writer(packageId, mergedPayload)
-      setManageOperationHint('元数据写入完成：成功 1 项')
+      setManageOperationHint(t('ui.metadata.singleWriteSuccess'))
     },
-    [backendWrite.writePackageMetadata, buildPackageMetadataPayload, setManageOperationHint],
+    [backendWrite.writePackageMetadata, buildPackageMetadataPayload, setManageOperationHint, t],
   )
 
   const applyPackageExternalMetadataById = useCallback(
     async (packageId: string, payload: ParsedExternalMetadataSavePayload) => {
       const writer = backendWrite.writePackageExternalMetadata
       if (!writer) {
-        throw new Error('当前后端不支持写入外部元数据')
+        throw new Error(t('ui.metadata.backendExternalWriteUnsupported'))
       }
 
       await writer(packageId, {
@@ -498,7 +533,7 @@ export function useMetadataWriteBindings({
         thumbUrl: payload.thumbUrl,
       })
     },
-    [backendWrite.writePackageExternalMetadata],
+    [backendWrite.writePackageExternalMetadata, t],
   )
 
   return {

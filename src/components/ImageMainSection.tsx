@@ -61,9 +61,11 @@ interface ImageMainSectionProps {
   pendingManageAction: boolean
   manageOperationHint: string | null
   canManageDelete: boolean
+  canManageMoveNodes?: boolean
   canManageHide: boolean
   canManageUnhide: boolean
   adReviewFeatureEnabled: boolean
+  adReviewDeletePending?: boolean
   adReviewPanelOpen: boolean
   checkedImageIds: ReadonlySet<string>
   adReviewScopeImageIds: ReadonlySet<string>
@@ -75,6 +77,8 @@ interface ImageMainSectionProps {
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   onManageDelete: () => void
+  onManageGroup?: () => void
+  onManageMove?: () => void
   onManageHide: () => void
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
@@ -123,9 +127,11 @@ function ImageMainSection({
   pendingManageAction,
   manageOperationHint,
   canManageDelete,
+  canManageMoveNodes = false,
   canManageHide,
   canManageUnhide,
   adReviewFeatureEnabled,
+  adReviewDeletePending = false,
   adReviewPanelOpen,
   checkedImageIds,
   adReviewScopeImageIds,
@@ -137,6 +143,8 @@ function ImageMainSection({
   onToggleImageChecked,
   onReplaceCheckedImages,
   onManageDelete,
+  onManageGroup = () => undefined,
+  onManageMove = () => undefined,
   onManageHide,
   onManageUnhide,
   onToggleAdReviewPanel,
@@ -403,14 +411,34 @@ function ImageMainSection({
           <>
             <div className="toolbar-actions toolbar-actions-manage">
               <button
-                className="vector-search-btn main-icon-square-btn"
+                className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? 'is-pending' : ''}`}
                 type="button"
-                aria-label={t('a11y.common.delete')}
-                title={t('tip.common.delete')}
+                aria-label={adReviewDeletePending ? t('ui.manage.deleting') : t('a11y.common.delete')}
+                title={adReviewDeletePending ? t('ui.manage.deleting') : t('tip.common.delete')}
                 disabled={!canManageDelete || pendingManageAction}
                 onClick={onManageDelete}
               >
                 <MainUiIcon name="delete" />
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t('a11y.common.group')}
+                title={t('tip.common.group')}
+                disabled={!canManageMoveNodes || pendingManageAction}
+                onClick={onManageGroup}
+              >
+                <span aria-hidden="true">G</span>
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t('a11y.common.move')}
+                title={t('tip.common.move')}
+                disabled={!canManageMoveNodes || pendingManageAction}
+                onClick={onManageMove}
+              >
+                <span aria-hidden="true">M</span>
               </button>
               {adReviewFeatureEnabled ? (
                 <button
@@ -500,10 +528,16 @@ function ImageMainSection({
           <>
             <strong className="main-toolbar-title">
               {nodeBrowseMode
-                ? `${nodeBrowseLabel || '节点浏览'} (${nodeBrowseItems.length} 项)`
+                ? t('ui.image.nodeBrowseSummary', {
+                    label: nodeBrowseLabel || t('ui.image.nodeBrowseDefaultLabel'),
+                    count: nodeBrowseItems.length,
+                  })
                 : vectorMode
-                  ? '检索结果视图'
-                  : `${activePackage?.displayName ?? '无图包'} (${activePackageImageProgress ?? '0/0'})`}
+                  ? t('ui.image.searchResultsView')
+                  : t('ui.image.packageProgressSummary', {
+                      packageName: activePackage?.displayName ?? t('ui.image.noPackage'),
+                      progress: activePackageImageProgress ?? t('ui.image.defaultProgress'),
+                    })}
             </strong>
             <div className="toolbar-actions">
               {canJumpToAnimation ? (
@@ -579,9 +613,9 @@ function ImageMainSection({
       ) : showNamesOnly ? (
         <div className={`name-list ${manageMode ? 'is-manage' : ''}`} ref={gridRef}>
           <div className="name-list-header">
-            <span>文件名</span>
-            <span>文件大小</span>
-            <span>分辨率</span>
+            <span>{t('ui.metadata.fileName')}</span>
+            <span>{t('ui.image.fileSize')}</span>
+            <span>{t('ui.image.resolution')}</span>
           </div>
           <div
             className="name-list-body"
@@ -621,7 +655,7 @@ function ImageMainSection({
                     onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
                     onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
                   >
-                    <span>{`${manageMode && image.hidden ? '[隐藏] ' : ''}${pkg.displayName}/${fileName}`}</span>
+                    <span>{`${manageMode && image.hidden ? `${t('ui.image.hiddenPrefix')} ` : ''}${pkg.displayName}/${fileName}`}</span>
                     <span>{`${image.sizeKb}KB`}</span>
                     <span>{image.width > 0 && image.height > 0 ? `${image.width} x ${image.height}` : '-'}</span>
                   </button>
@@ -689,10 +723,10 @@ function ImageMainSection({
                       onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
                       onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
                     >
-                      {manageMode && image.hidden ? <span className="manage-hidden-badge">已隐藏</span> : null}
+                      {manageMode && image.hidden ? <span className="manage-hidden-badge">{t('ui.image.hiddenBadge')}</span> : null}
                       <span className="visually-hidden">{`${pkg.displayName} #${image.ordinal}`}</span>
                       {vectorMode ? (
-                        <span className="visually-hidden">{`相似度 ${(vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2)}`}</span>
+                        <span className="visually-hidden">{t('ui.image.similarityScore', { score: (vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2) })}</span>
                       ) : null}
                       <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
                         <div className="thumb-media" style={{ width: '100%', height: '100%' }}>

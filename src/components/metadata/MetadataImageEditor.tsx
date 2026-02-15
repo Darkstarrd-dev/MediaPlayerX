@@ -124,12 +124,12 @@ export function MetadataImageEditor({
         <>
           <div className="metadata-image-canvas">
             {displayedImageSrc ? (
-              <img
-                className="metadata-image-real"
-                src={displayedImageSrc}
-                alt={`${focusedImagePackage?.displayName ?? '图片'} #${focusedImage.ordinal}`}
-                draggable={false}
-              />
+                <img
+                  className="metadata-image-real"
+                  src={displayedImageSrc}
+                  alt={`${focusedImagePackage?.displayName ?? t('ui.metadata.imageFallbackName')} #${focusedImage.ordinal}`}
+                  draggable={false}
+                />
             ) : (
               <div className="metadata-image-placeholder" aria-hidden="true" />
             )}
@@ -156,7 +156,7 @@ export function MetadataImageEditor({
               {!editable ? (
                 <>
                   <label>
-                    <span>图包名</span>
+                    <span>{t('ui.metadata.packageName')}</span>
                     <input readOnly value={focusedImagePackage?.packageName ?? '-'} />
                   </label>
 
@@ -168,7 +168,7 @@ export function MetadataImageEditor({
                         copyResolvedTitle()
                       }}
                     >
-                      作品名
+                      {t('ui.metadata.workTitle')}
                     </span>
                     <div className="metadata-localized-field">
                       <p className="metadata-localized-value" onClick={(e) => e.preventDefault()}>
@@ -198,7 +198,7 @@ export function MetadataImageEditor({
                         copyResolvedAuthor()
                       }}
                     >
-                      作者
+                      {t('ui.metadata.author')}
                     </span>
                     <div className="metadata-localized-field">
                       <p
@@ -234,7 +234,7 @@ export function MetadataImageEditor({
                         copyResolvedGroup()
                       }}
                     >
-                      社团
+                      {t('ui.metadata.circle')}
                     </span>
                     <div className="metadata-localized-field">
                       <p
@@ -263,17 +263,17 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>发布时间</span>
+                    <span>{t('ui.metadata.publishedAt')}</span>
                     <input readOnly value={parsedDraft.posted.trim() || '-'} />
                   </label>
 
                   <label>
-                    <span>评分/收藏</span>
+                    <span>{t('ui.metadata.ratingFavorited')}</span>
                     <input readOnly value={ratingFavoritedDisplayValue} />
                   </label>
 
                   <label>
-                    <span>系列名</span>
+                    <span>{t('ui.metadata.parodyName')}</span>
                     <div className="metadata-tag-chip-list">
                       {parodyValues.length > 0
                         ? parodyValues.map((tag) => (
@@ -286,7 +286,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>角色名</span>
+                    <span>{t('ui.metadata.characterName')}</span>
                     <div className="metadata-tag-chip-list">
                       {characterValues.length > 0
                         ? characterValues.map((tag) => (
@@ -299,7 +299,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>Tags</span>
+                    <span>{t('ui.metadata.tags')}</span>
                     <div className="metadata-tag-chip-list">
                       {readOnlyTags.length > 0
                         ? readOnlyTags.map((tag) => (
@@ -312,7 +312,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>来源</span>
+                    <span>{t('ui.metadata.source')}</span>
                     <button
                       type="button"
                       disabled={!parsedDraft.sourceUrl.trim()}
@@ -327,7 +327,7 @@ export function MetadataImageEditor({
               {editable ? (
                 <>
                   <label>
-                    <span>来源站点</span>
+                    <span>{t('ui.metadata.sourceSite')}</span>
                     <select
                       value={parsedDraft.sourceSite}
                       onChange={(event) => {
@@ -335,9 +335,9 @@ export function MetadataImageEditor({
                         void persistParsedPatch({ sourceSite })
                       }}
                     >
-                      <option value="nhentai">nhentai</option>
-                      <option value="ehentai">ehentai</option>
-                      <option value="others">others</option>
+                      <option value="nhentai">{t('ui.metadata.sourceSiteNhentai')}</option>
+                      <option value="ehentai">{t('ui.metadata.sourceSiteEhentai')}</option>
+                      <option value="others">{t('ui.metadata.sourceSiteOthers')}</option>
                     </select>
                     <small className="metadata-field-hint" aria-hidden="true">
                       parsed.source.site
@@ -345,7 +345,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>来源URL</span>
+                    <span>{t('ui.metadata.sourceUrl')}</span>
                     <input
                       value={parsedDraft.sourceUrl}
                       onChange={(event) => {
@@ -369,7 +369,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>日文标题</span>
+                    <span>{t('ui.metadata.japaneseTitle')}</span>
                     <input
                       value={parsedDraft.titleJpn}
                       onChange={(event) => {
@@ -393,7 +393,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>英文标题</span>
+                    <span>{t('ui.metadata.englishTitle')}</span>
                     <input
                       value={workTitleDraft}
                       onChange={(event) => {
@@ -420,7 +420,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>系列ID</span>
+                    <span>{t('ui.metadata.seriesId')}</span>
                     <input
                       value={seriesIdDraft}
                       onChange={(event) => {
@@ -440,7 +440,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>日文作者名</span>
+                    <span>{t('ui.metadata.japaneseAuthor')}</span>
                     <input
                       value={parsedDraft.artistJpn}
                       onChange={(event) => {
@@ -464,7 +464,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>英文作者名</span>
+                    <span>{t('ui.metadata.englishAuthor')}</span>
                     <input
                       value={authorDraft}
                       onChange={(event) => {
@@ -491,7 +491,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>日文社团名</span>
+                    <span>{t('ui.metadata.japaneseCircle')}</span>
                     <input
                       value={parsedDraft.groupJpn}
                       onChange={(event) => {
@@ -515,7 +515,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>英文社团名</span>
+                    <span>{t('ui.metadata.englishCircle')}</span>
                     <input
                       aria-label={t('a11y.metadata.englishCircle')}
                       value={circleDraft}
@@ -543,7 +543,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>发布时间</span>
+                    <span>{t('ui.metadata.publishedAt')}</span>
                     <input
                       value={parsedDraft.posted}
                       onChange={(event) => {
@@ -567,12 +567,12 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>评分/favorited（只读）</span>
+                    <span>{t('ui.metadata.evaluationReadOnly')}</span>
                     <input readOnly value={evaluationDisplayValue} />
                   </label>
 
                   <label>
-                    <span>Parody</span>
+                    <span>{t('ui.metadata.parody')}</span>
                     <input
                       value={editableParodyValue}
                       onChange={(event) => {
@@ -597,7 +597,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>Character</span>
+                    <span>{t('ui.metadata.character')}</span>
                     <input
                       value={editableCharacterValue}
                       onChange={(event) => {
@@ -622,7 +622,7 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>Tags</span>
+                    <span>{t('ui.metadata.tags')}</span>
                     <input
                       value={editableTagsValue}
                       onChange={(event) => {
@@ -650,17 +650,17 @@ export function MetadataImageEditor({
                   </label>
 
                   <label>
-                    <span>来源ID</span>
+                    <span>{t('ui.metadata.sourceId')}</span>
                     <input readOnly value={parsedDraft.sourceId.trim() || '-'} />
                   </label>
 
                   <label>
-                    <span>来源Token</span>
+                    <span>{t('ui.metadata.sourceToken')}</span>
                     <input readOnly value={parsedDraft.sourceToken.trim() || '-'} />
                   </label>
 
                   <label>
-                    <span>封面URL</span>
+                    <span>{t('ui.metadata.coverUrl')}</span>
                     <input readOnly value={parsedDraft.thumb.trim() || '-'} />
                   </label>
 
@@ -669,7 +669,7 @@ export function MetadataImageEditor({
               ) : null}
             </div>
           ) : (
-            <p className="metadata-empty-tip">当前无可编辑图包</p>
+            <p className="metadata-empty-tip">{t('ui.metadata.noEditablePackage')}</p>
           )}
         </div>
       )}

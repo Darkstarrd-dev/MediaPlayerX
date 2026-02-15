@@ -2,11 +2,19 @@ import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
 
 import { buildE2eBenchSectionProps } from './buildE2eBenchSectionProps'
 import { buildManageDeleteDialogProps } from './buildManageDeleteDialogProps'
+import { useI18n } from '../../i18n/useI18n'
 import type { AppTopLayerStateResult } from './useAppTopLayerState'
 import type { AppWorkspacePropsResult } from './useAppWorkspaceProps'
 import type { ImportPipelineResult } from '../import/useImportPipeline'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
 import type { BrowserMode } from '../../types'
+
+interface ManageDeleteDialogInput {
+  open: boolean
+  pending: boolean
+  confirmManageDelete: () => Promise<void>
+  setDeleteConfirmOpen: (value: boolean | ((previous: boolean) => boolean)) => void
+}
 
 interface UseAppShellPropsParams {
   repositoryMode: RepositoryBootstrapDataResult['repositoryMode']
@@ -39,7 +47,12 @@ interface UseAppShellPropsParams {
     'fileImportInputRef' | 'folderImportInputRef' | 'onImportFilesSelected' | 'onImportFoldersSelected'
   >
   dragOverlayActive: ImportPipelineResult['dragOverlayActive']
-  manageDeleteDialogParams: Parameters<typeof buildManageDeleteDialogProps>[0]
+  adReviewDeleteOverlayParams: {
+    active: boolean
+    completedCount: number
+    totalCount: number
+  }
+  manageDeleteDialogParams: ManageDeleteDialogInput
   e2eBenchSectionParams: Parameters<typeof buildE2eBenchSectionProps>[0]
 }
 
@@ -62,10 +75,20 @@ export function useAppShellProps({
   workspaceState,
   importInputs,
   dragOverlayActive,
+  adReviewDeleteOverlayParams,
   manageDeleteDialogParams,
   e2eBenchSectionParams,
 }: UseAppShellPropsParams) {
-  const manageDeleteDialogProps = buildManageDeleteDialogProps(manageDeleteDialogParams)
+  const { t } = useI18n()
+
+  const manageDeleteDialogProps = buildManageDeleteDialogProps({
+    ...manageDeleteDialogParams,
+    title: t('ui.manage.deleteDialogTitle'),
+    description: t('ui.manage.deleteDialogDescription'),
+    acknowledgeLabel: t('ui.manage.deleteDialogAcknowledge'),
+    confirmLabel: t('ui.manage.deleteDialogConfirm'),
+    cancelLabel: t('ui.common.cancel'),
+  })
   const e2eBenchSectionProps = buildE2eBenchSectionProps(e2eBenchSectionParams)
 
   const importSourceInputsProps = {
@@ -117,6 +140,7 @@ export function useAppShellProps({
     settingsPanelProps: topLayerState.settingsPanelProps,
     manageDeleteDialogProps,
     dragOverlayActive,
+    adReviewDeleteOverlayProps: adReviewDeleteOverlayParams,
     e2eBenchSectionProps,
   }
 }

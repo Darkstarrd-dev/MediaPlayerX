@@ -61,6 +61,9 @@ describe('buildMainFooter', () => {
     if (key === 'a11y.common.nextPage' || key === 'tip.common.nextPage') {
       return '下一页'
     }
+    if (key === 'ui.footer.pageSummary') {
+      return '第 2 / 3 页'
+    }
     return key
   }
 

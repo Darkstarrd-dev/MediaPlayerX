@@ -1,0 +1,12 @@
+{
+  "ipc_main_handle_count": 50,
+  "preload_expose_in_main_world_count": 5,
+  "create_table_count": 18,
+  "backend_export_schema_count": 105,
+  "app_settings_field_count": 57,
+  "sources": {
+    "schema_file": "electron/mediaLibrarySchema.ts",
+    "backend_contract": "src/contracts/backend.ts",
+    "settings_contract": "src/contracts/settings.ts"
+  }
+}

@@ -7,8 +7,6 @@ import {
   AD_REVIEW_STREAK_OPTIONS,
   AD_REVIEW_WINDOW_OPTIONS,
   formatPercent,
-  resolveAdReviewExecutionLabel,
-  resolveAdReviewStatusLabel,
 } from './metadataPanelUtils'
 
 interface MetadataAdReviewSectionProps {
@@ -31,6 +29,7 @@ interface MetadataAdReviewSectionProps {
   onToggleHideUncheckedNonChecked: () => void
   onSelectAdReviewTask: (taskId: string) => void
   onRemoveAdReviewTask: (taskId: string) => void
+  onDeleteSelectedAdReviewCandidates?: () => void
   onToggleAdReviewFocus: () => void
   onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
   onAdReviewMaxConcurrencyChange: (value: number) => void
@@ -38,6 +37,7 @@ interface MetadataAdReviewSectionProps {
   onAdReviewTailNChange: (value: number) => void
   onAdReviewTailStopCleanStreakChange: (value: number) => void
   onDismissAdReviewTask: () => void
+  adReviewDeletePending?: boolean
 }
 
 export function MetadataAdReviewSection({
@@ -60,6 +60,7 @@ export function MetadataAdReviewSection({
   onToggleHideUncheckedNonChecked: _onToggleHideUncheckedNonChecked,
   onSelectAdReviewTask,
   onRemoveAdReviewTask,
+  onDeleteSelectedAdReviewCandidates = () => undefined,
   onToggleAdReviewFocus,
   onAdReviewStrategyModeChange,
   onAdReviewMaxConcurrencyChange,
@@ -67,6 +68,7 @@ export function MetadataAdReviewSection({
   onAdReviewTailNChange,
   onAdReviewTailStopCleanStreakChange,
   onDismissAdReviewTask,
+  adReviewDeletePending = false,
 }: MetadataAdReviewSectionProps) {
   const { t } = useI18n()
   void _adReviewHideUncheckedNonChecked
@@ -99,11 +101,48 @@ export function MetadataAdReviewSection({
     onStartAdReview({ skipReviewedNodes })
   }
 
+  const resolveStatusLabel = (status: ManageAdReviewTaskDto['status']): string => {
+    if (status === 'pending') {
+      return t('ui.manage.status.pending')
+    }
+    if (status === 'running') {
+      return t('ui.manage.status.running')
+    }
+    if (status === 'paused') {
+      return t('ui.manage.status.paused')
+    }
+    if (status === 'failed') {
+      return t('ui.manage.status.failed')
+    }
+    return t('ui.manage.status.review')
+  }
+
+  const resolveExecutionLabel = (task: ManageAdReviewTaskDto): string | null => {
+    if (!task.execution) {
+      return null
+    }
+
+    const strategy = task.execution.strategy
+    const strategyLabel =
+      strategy.mode === 'head-tail'
+        ? t('ui.manage.executionStrategyHeadTail', {
+            head: strategy.head_n,
+            tail: strategy.tail_n,
+            stop: strategy.tail_stop_clean_streak,
+          })
+        : t('ui.manage.executionStrategyAll')
+
+    return t('ui.manage.executionSummary', {
+      strategy: strategyLabel,
+      concurrency: task.execution.max_concurrency,
+    })
+  }
+
   return (
     <section className="metadata-ad-review-section" aria-label={t('a11y.manage.panel')}>
       <header>
-        <strong>AI广告审核</strong>
-        {adReviewTask ? <span className={`manage-ad-review-status is-${adReviewTask.status}`}>{resolveAdReviewStatusLabel(adReviewTask.status)}</span> : null}
+        <strong>{t('ui.manage.adReviewTitle')}</strong>
+        {adReviewTask ? <span className={`manage-ad-review-status is-${adReviewTask.status}`}>{resolveStatusLabel(adReviewTask.status)}</span> : null}
       </header>
 
       <div className="metadata-ad-review-controls" role="group" aria-label={t('a11y.manage.controls')}>
@@ -148,7 +187,7 @@ export function MetadataAdReviewSection({
         </div>
 
         <label className="manage-ad-review-inline-field">
-          <span>并发</span>
+          <span>{t('ui.manage.concurrency')}</span>
           <select aria-label={t('a11y.manage.concurrency')} value={adReviewMaxConcurrency} onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}>
             {AD_REVIEW_CONCURRENCY_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -159,7 +198,7 @@ export function MetadataAdReviewSection({
         </label>
 
         <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
-          <span>头部</span>
+          <span>{t('ui.manage.headWindow')}</span>
           <select
             aria-label={t('a11y.manage.headWindow')}
             disabled={adReviewStrategyMode !== 'head-tail'}
@@ -175,7 +214,7 @@ export function MetadataAdReviewSection({
         </label>
 
         <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
-          <span>尾部</span>
+          <span>{t('ui.manage.tailWindow')}</span>
           <select
             aria-label={t('a11y.manage.tailWindow')}
             disabled={adReviewStrategyMode !== 'head-tail'}
@@ -195,7 +234,7 @@ export function MetadataAdReviewSection({
             adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''
           }`}
         >
-          <span>停止 clean</span>
+          <span>{t('ui.manage.tailStopClean')}</span>
           <select
             aria-label={t('a11y.manage.tailStopClean')}
             disabled={adReviewStrategyMode !== 'head-tail'}
@@ -216,11 +255,11 @@ export function MetadataAdReviewSection({
           {adReviewQueueTasks.map((queueTask) => {
             const isActive = adReviewTask?.task_id === queueTask.task_id || adReviewActiveTaskId === queueTask.task_id
             const reviewWithoutCandidates = queueTask.status === 'review' && queueTask.candidates.length === 0
-            const queueStatusLabel = reviewWithoutCandidates ? '已完成' : resolveAdReviewStatusLabel(queueTask.status)
+            const queueStatusLabel = reviewWithoutCandidates ? t('ui.manage.queueStatusCompleted') : resolveStatusLabel(queueTask.status)
             const reviewProgressLabel =
               queueTask.status === 'review'
                 ? reviewWithoutCandidates
-                  ? '无待复核'
+                  ? t('ui.manage.reviewWithoutCandidates')
                   : `${queueTask.task_id === adReviewTask?.task_id ? selectedAdReviewCandidateCount : queueTask.candidates.length}/${queueTask.candidates.length}`
                 : `${Math.round(queueTask.progress * 100)}% · ${queueTask.reviewed_count}/${queueTask.total_count}`
             return (
@@ -237,12 +276,12 @@ export function MetadataAdReviewSection({
                 <button
                   className="feature-action-btn"
                   type="button"
-                  disabled={adReviewPending || queueTask.status === 'running'}
+                  disabled={adReviewPending || adReviewDeletePending || queueTask.status === 'running'}
                   onClick={() => {
                     onRemoveAdReviewTask(queueTask.task_id)
                   }}
                 >
-                  移除
+                  {adReviewDeletePending && queueTask.task_id === adReviewTask?.task_id ? t('ui.manage.deleting') : t('ui.manage.removeTask')}
                 </button>
               </div>
             )
@@ -252,15 +291,30 @@ export function MetadataAdReviewSection({
 
       {adReviewTask ? (
         <section className="manage-ad-review" aria-live="polite">
-          <p className="manage-ad-review-progress">{`进度 ${Math.round(adReviewTask.progress * 100)}% (${adReviewTask.reviewed_count}/${adReviewTask.total_count})`}</p>
-          {resolveAdReviewExecutionLabel(adReviewTask) ? <p className="manage-ad-review-config">{resolveAdReviewExecutionLabel(adReviewTask)}</p> : null}
+          <p className="manage-ad-review-progress">
+            {t('ui.manage.progress', {
+              percent: Math.round(adReviewTask.progress * 100),
+              reviewed: adReviewTask.reviewed_count,
+              total: adReviewTask.total_count,
+            })}
+          </p>
+          {resolveExecutionLabel(adReviewTask) ? <p className="manage-ad-review-config">{resolveExecutionLabel(adReviewTask)}</p> : null}
           {adReviewTask.audit ? (
             <div className="manage-ad-review-audit">
               <p className="manage-ad-review-audit-line">
-                {`来源 known-hash ${adReviewTask.audit.source_distribution.known_hash} | llm(疑似/正常/失败) ${adReviewTask.audit.source_distribution.llm_suspected}/${adReviewTask.audit.source_distribution.llm_clean}/${adReviewTask.audit.source_distribution.llm_failed} | strategy-skip ${adReviewTask.audit.source_distribution.strategy_skipped}`}
+                {t('ui.manage.auditSourceDistribution', {
+                  knownHash: adReviewTask.audit.source_distribution.known_hash,
+                  suspected: adReviewTask.audit.source_distribution.llm_suspected,
+                  clean: adReviewTask.audit.source_distribution.llm_clean,
+                  failed: adReviewTask.audit.source_distribution.llm_failed,
+                  skipped: adReviewTask.audit.source_distribution.strategy_skipped,
+                })}
               </p>
               <p className="manage-ad-review-audit-line">
-                {`命中率 LLM ${formatPercent(adReviewTask.audit.llm_hit_rate)} | 总体 ${formatPercent(adReviewTask.audit.overall_hit_rate)}`}
+                {t('ui.manage.auditHitRate', {
+                  llm: formatPercent(adReviewTask.audit.llm_hit_rate),
+                  overall: formatPercent(adReviewTask.audit.overall_hit_rate),
+                })}
               </p>
             </div>
           ) : null}
@@ -268,18 +322,26 @@ export function MetadataAdReviewSection({
           <p className="manage-ad-review-message">
             {adReviewTask.status === 'review'
               ? adReviewTask.candidates.length > 0
-                ? `疑似候选 ${adReviewTask.candidates.length} 张，已同步到选中态。请在主视图修正后使用上方“删除”执行清除。`
-                : '本轮审核已完成，无待复核内容。'
-              : adReviewTask.message ?? 'AI广告审核任务进行中'}
+                ? t('ui.manage.reviewCandidatesMessage', { count: adReviewTask.candidates.length })
+                : t('ui.manage.reviewCompletedMessage')
+              : adReviewTask.message ?? t('ui.manage.runningMessage')}
           </p>
 
           {adReviewTask.status === 'review' && adReviewTask.candidates.length > 0 ? (
             <div className="manage-ad-review-actions">
+              <button
+                className="vector-search-btn"
+                type="button"
+                disabled={adReviewPending || !hasCheckedAdReviewCandidates}
+                onClick={onDeleteSelectedAdReviewCandidates}
+              >
+                {adReviewDeletePending ? t('ui.manage.deleting') : t('ui.manage.deleteSelectedCount', { count: selectedAdReviewCandidateCount })}
+              </button>
               <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
-                重置剔除
+                {t('ui.manage.resetDismiss')}
               </button>
               <span className={`manage-ad-review-selection-tag ${hasCheckedAdReviewCandidates ? 'is-active' : ''}`}>
-                {hasCheckedAdReviewCandidates ? '已选候选可删除' : '未选候选'}
+                {hasCheckedAdReviewCandidates ? t('ui.manage.selectedCandidatesRemovable') : t('ui.manage.noCandidateSelected')}
               </span>
             </div>
           ) : null}
@@ -301,17 +363,17 @@ export function MetadataAdReviewSection({
           }}
         >
           <section className="settings-floating-panel manage-ad-review-start-dialog" onMouseDown={(event) => event.stopPropagation()}>
-            <h3>执行AI广告审核</h3>
-            <p className="manage-ad-review-start-description">请选择本次执行方式：</p>
+            <h3>{t('ui.manage.startDialogTitle')}</h3>
+            <p className="manage-ad-review-start-description">{t('ui.manage.startDialogDescription')}</p>
             <div className="settings-floating-actions">
               <button type="button" onClick={() => startWithOption(true)}>
-                跳过已扫描的
+                {t('ui.manage.startSkipScanned')}
               </button>
               <button type="button" onClick={() => startWithOption(false)}>
-                不跳过已扫描的
+                {t('ui.manage.startDontSkipScanned')}
               </button>
               <button type="button" onClick={() => setStartDialogOpen(false)}>
-                取消
+                {t('ui.common.cancel')}
               </button>
             </div>
           </section>

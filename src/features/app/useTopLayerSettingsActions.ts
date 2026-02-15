@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useI18n } from '../../i18n/useI18n'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { MediaRepository } from '../backend/repository'
 import type { RuntimeInfoDiagnosticsResult } from './useRuntimeInfoDiagnostics'
@@ -35,6 +36,8 @@ export function useTopLayerSettingsActions({
   mediaRepository,
   runtimeInfoDiagnostics,
 }: UseTopLayerSettingsActionsParams): TopLayerSettingsActionsResult {
+  const { t } = useI18n()
+
   const {
     adReviewVisionEndpoint,
     adReviewVisionModel,
@@ -101,7 +104,7 @@ export function useTopLayerSettingsActions({
     const testVisionModel = mediaRepository.testAdReviewVisionModel
     if (!testVisionModel) {
       updateSettings({ adReviewVisionVerified: false })
-      setAdReviewVisionTestMessage('当前后端不支持视觉模型测试')
+      setAdReviewVisionTestMessage(t('ui.settings.visionModelTestUnsupported'))
       return
     }
 
@@ -109,12 +112,12 @@ export function useTopLayerSettingsActions({
     const normalizedModel = adReviewVisionModel.trim()
     if (!normalizedEndpoint || !normalizedModel) {
       updateSettings({ adReviewVisionVerified: false })
-      setAdReviewVisionTestMessage('请先填写视觉模型端口和模型ID')
+      setAdReviewVisionTestMessage(t('ui.settings.visionModelRequired'))
       return
     }
 
     setAdReviewVisionTestPending(true)
-    setAdReviewVisionTestMessage('测试中...')
+    setAdReviewVisionTestMessage(t('ui.settings.visionModelTesting'))
     try {
       const response = await testVisionModel(
         {
@@ -135,22 +138,22 @@ export function useTopLayerSettingsActions({
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       updateSettings({ adReviewVisionVerified: false })
-      setAdReviewVisionTestMessage(`模型测试失败：${message}`)
+      setAdReviewVisionTestMessage(t('ui.settings.visionModelTestFailed', { message }))
     } finally {
       setAdReviewVisionTestPending(false)
     }
-  }, [adReviewVisionEndpoint, adReviewVisionModel, mediaRepository, updateSettings])
+  }, [adReviewVisionEndpoint, adReviewVisionModel, mediaRepository, t, updateSettings])
 
   const saveAdReviewVisionModel = useCallback(async () => {
     if (!mediaRepository.writeAppState) {
-      setAdReviewVisionSaveMessage('当前后端不支持模型配置保存')
+      setAdReviewVisionSaveMessage(t('ui.settings.visionModelSaveUnsupported'))
       return
     }
 
     const normalizedEndpoint = adReviewVisionEndpoint.trim()
     const normalizedModel = adReviewVisionModel.trim()
     if (!normalizedEndpoint || !normalizedModel) {
-      setAdReviewVisionSaveMessage('请先填写视觉模型端口和模型ID')
+      setAdReviewVisionSaveMessage(t('ui.settings.visionModelRequired'))
       return
     }
 
@@ -173,37 +176,41 @@ export function useTopLayerSettingsActions({
         adReviewVisionModel: normalizedModel,
         adReviewVisionVerified,
       })
-      setAdReviewVisionSaveMessage('视觉模型配置已保存')
+      setAdReviewVisionSaveMessage(t('ui.settings.visionModelSaved'))
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      setAdReviewVisionSaveMessage(`保存失败：${message}`)
+      setAdReviewVisionSaveMessage(t('ui.settings.visionModelSaveFailed', { message }))
     } finally {
       setAdReviewVisionSavePending(false)
     }
-  }, [adReviewVisionEndpoint, adReviewVisionModel, adReviewVisionVerified, appSettings, mediaRepository, updateSettings])
+  }, [adReviewVisionEndpoint, adReviewVisionModel, adReviewVisionVerified, appSettings, mediaRepository, t, updateSettings])
 
   const applyRuntimeStoragePaths = useCallback(
     async (patch: { database_dir?: string; thumbnail_cache_dir?: string }) => {
       const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
       if (!backendApi?.setRuntimeStoragePaths) {
-        setRuntimePathUpdateMessage('当前后端不支持目录持久化')
+        setRuntimePathUpdateMessage(t('ui.settings.runtimePathUnsupported'))
         return
       }
 
       setRuntimePathUpdatePending(true)
-      setRuntimePathUpdateMessage('目录保存中...')
+      setRuntimePathUpdateMessage(t('ui.settings.runtimePathSaving'))
       try {
         const response = await backendApi.setRuntimeStoragePaths(patch)
-        setRuntimePathUpdateMessage(response.moved_database ? '目录已保存，已迁移数据库文件' : '目录已保存')
+        setRuntimePathUpdateMessage(
+          response.moved_database
+            ? t('ui.settings.runtimePathSavedMigrated')
+            : t('ui.settings.runtimePathSaved'),
+        )
         runtimeInfoDiagnostics.retry()
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        setRuntimePathUpdateMessage(`目录保存失败：${message}`)
+        setRuntimePathUpdateMessage(t('ui.settings.runtimePathSaveFailed', { message }))
       } finally {
         setRuntimePathUpdatePending(false)
       }
     },
-    [runtimeInfoDiagnostics],
+    [runtimeInfoDiagnostics, t],
   )
 
   const pickRuntimeDirectory = useCallback(
@@ -238,19 +245,19 @@ export function useTopLayerSettingsActions({
 
   const pickDatabaseDirectoryPath = useCallback(async () => {
     await pickRuntimeDirectory({
-      title: '选择 SQL 库目录',
+      title: t('ui.settings.pickSqlDirectoryDialogTitle'),
       defaultPath: toDirectoryDefaultPath(runtimeInfoDiagnostics.data?.database_path ?? ''),
       target: 'database',
     })
-  }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.database_path])
+  }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.database_path, t])
 
   const pickThumbnailCacheDirectoryPath = useCallback(async () => {
     await pickRuntimeDirectory({
-      title: '选择缩略图缓存目录',
+      title: t('ui.settings.pickThumbnailDirectoryDialogTitle'),
       defaultPath: normalizeOptionalPath(runtimeInfoDiagnostics.data?.thumbnail_cache_path ?? ''),
       target: 'thumbnail-cache',
     })
-  }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.thumbnail_cache_path])
+  }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.thumbnail_cache_path, t])
 
   return {
     adReviewVisionTestPending,

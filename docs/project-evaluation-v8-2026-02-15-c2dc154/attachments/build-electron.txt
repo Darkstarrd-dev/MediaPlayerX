@@ -1,0 +1,19 @@
+
+> mediaplayerx@0.0.0 build:electron
+> node scripts/build-electron.mjs
+
+
+  dist-electron\archiveNormalizeWorker.cjs      19.2kb
+  dist-electron\archiveNormalizeWorker.cjs.map  34.2kb
+
+Done in 10ms
+
+  dist-electron\preload.cjs      549.8kb
+  dist-electron\preload.cjs.map  977.5kb
+
+Done in 29ms
+
+  dist-electron\main.cjs      3.7mb
+  dist-electron\main.cjs.map  6.4mb
+
+Done in 932ms

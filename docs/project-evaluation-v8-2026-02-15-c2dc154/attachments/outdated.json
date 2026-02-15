@@ -1,0 +1,72 @@
+{
+  "@eslint/js": {
+    "current": "9.39.2",
+    "wanted": "9.39.2",
+    "latest": "10.0.1",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\@eslint\\js"
+  },
+  "@types/node": {
+    "current": "24.10.11",
+    "wanted": "24.10.13",
+    "latest": "25.2.3",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\@types\\node"
+  },
+  "@types/react": {
+    "current": "19.2.13",
+    "wanted": "19.2.14",
+    "latest": "19.2.14",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\@types\\react"
+  },
+  "@vitejs/plugin-react": {
+    "current": "5.1.3",
+    "wanted": "5.1.4",
+    "latest": "5.1.4",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\@vitejs\\plugin-react"
+  },
+  "electron": {
+    "current": "40.2.1",
+    "wanted": "40.4.1",
+    "latest": "40.4.1",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\electron"
+  },
+  "eslint": {
+    "current": "9.39.2",
+    "wanted": "9.39.2",
+    "latest": "10.0.0",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\eslint"
+  },
+  "eslint-plugin-react-refresh": {
+    "current": "0.4.26",
+    "wanted": "0.4.26",
+    "latest": "0.5.0",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\eslint-plugin-react-refresh"
+  },
+  "globals": {
+    "current": "16.5.0",
+    "wanted": "16.5.0",
+    "latest": "17.3.0",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\globals"
+  },
+  "jsdom": {
+    "current": "28.0.0",
+    "wanted": "28.1.0",
+    "latest": "28.1.0",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\jsdom"
+  },
+  "typescript-eslint": {
+    "current": "8.54.0",
+    "wanted": "8.55.0",
+    "latest": "8.55.0",
+    "dependent": "MediaPlayerX",
+    "location": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\node_modules\\typescript-eslint"
+  }
+}

@@ -33,9 +33,11 @@ interface BuildImageMainSectionPropsParams {
   pendingManageAction: boolean
   manageOperationHint: string | null
   canManageDelete: boolean
+  canManageMoveNodes: boolean
   canManageHide: boolean
   canManageUnhide: boolean
   adReviewFeatureEnabled: boolean
+  adReviewDeletePending?: boolean
   adReviewPanelOpen: boolean
   checkedImageIdSet: Set<string>
   adReviewScopeImageIdSet: Set<string>
@@ -60,6 +62,8 @@ interface BuildImageMainSectionPropsParams {
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   onManageDelete: () => void
+  onManageGroup: () => void
+  onManageMove: () => void
   onManageHide: () => void
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
@@ -109,9 +113,11 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     pendingManageAction: params.pendingManageAction,
     manageOperationHint: params.manageOperationHint,
     canManageDelete: params.canManageDelete,
+    canManageMoveNodes: params.canManageMoveNodes,
     canManageHide: params.canManageHide,
     canManageUnhide: params.canManageUnhide,
     adReviewFeatureEnabled: params.adReviewFeatureEnabled,
+    adReviewDeletePending: params.adReviewDeletePending,
     adReviewPanelOpen: params.adReviewPanelOpen,
     checkedImageIds: params.checkedImageIdSet,
     adReviewScopeImageIds: params.adReviewScopeImageIdSet,
@@ -123,6 +129,8 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onToggleImageChecked: params.onToggleImageChecked,
     onReplaceCheckedImages: params.onReplaceCheckedImages,
     onManageDelete: params.onManageDelete,
+    onManageGroup: params.onManageGroup,
+    onManageMove: params.onManageMove,
     onManageHide: params.onManageHide,
     onManageUnhide: params.onManageUnhide,
     onToggleAdReviewPanel: params.onToggleAdReviewPanel,

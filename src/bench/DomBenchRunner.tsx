@@ -282,6 +282,7 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             pendingManageAction={false}
             manageOperationHint={null}
             canManageDelete={false}
+            canManageMoveNodes={false}
             canManageHide={false}
             canManageUnhide={false}
             adReviewFeatureEnabled={false}
@@ -293,6 +294,8 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             onToggleImageChecked={() => undefined}
             onReplaceCheckedImages={() => undefined}
             onManageDelete={() => undefined}
+            onManageGroup={() => undefined}
+            onManageMove={() => undefined}
             onManageHide={() => undefined}
             onManageUnhide={() => undefined}
             onToggleAdReviewPanel={() => undefined}

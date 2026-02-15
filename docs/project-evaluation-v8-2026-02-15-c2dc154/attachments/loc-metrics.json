@@ -1,0 +1,151 @@
+{
+  "frontend_business": {
+    "files": 211,
+    "lines": 45425
+  },
+  "electron_business": {
+    "files": 79,
+    "lines": 17068
+  },
+  "core_business": {
+    "files": 290,
+    "lines": 62493
+  },
+  "tests": {
+    "files": 57,
+    "lines": 14922
+  },
+  "dts": {
+    "files": 0,
+    "lines": 0
+  },
+  "css": {
+    "files": 56,
+    "lines": 9705
+  },
+  "scripts": {
+    "files": 14,
+    "lines": 4639
+  },
+  "docs_md": {
+    "files": 29,
+    "lines": 6396
+  },
+  "test_ratio_percent": 23.88,
+  "feature_modules": {
+    "app": {
+      "files": 77,
+      "lines": 13827
+    },
+    "backend": {
+      "files": 24,
+      "lines": 5233
+    },
+    "import": {
+      "files": 5,
+      "lines": 640
+    },
+    "layout": {
+      "files": 3,
+      "lines": 517
+    },
+    "management": {
+      "files": 3,
+      "lines": 426
+    },
+    "media": {
+      "files": 5,
+      "lines": 464
+    },
+    "metadata": {
+      "files": 1,
+      "lines": 185
+    },
+    "music-visualizer": {
+      "files": 21,
+      "lines": 4753
+    },
+    "perf": {
+      "files": 3,
+      "lines": 423
+    },
+    "search": {
+      "files": 2,
+      "lines": 203
+    },
+    "shortcuts": {
+      "files": 2,
+      "lines": 433
+    },
+    "sidebar": {
+      "files": 2,
+      "lines": 358
+    },
+    "theme": {
+      "files": 2,
+      "lines": 252
+    }
+  },
+  "large_files_over_700": [
+    {
+      "path": "electron/services/file-system-read/manageAdReviewService.ts",
+      "lines": 1191
+    },
+    {
+      "path": "src/components/MusicMainSection.tsx",
+      "lines": 1117
+    },
+    {
+      "path": "src/mockData.ts",
+      "lines": 1093
+    },
+    {
+      "path": "src/features/music-visualizer/webglRenderer.ts",
+      "lines": 999
+    },
+    {
+      "path": "src/components/MetadataPanel.tsx",
+      "lines": 943
+    },
+    {
+      "path": "src/contracts/backend.ts",
+      "lines": 895
+    },
+    {
+      "path": "src/features/app/useAppWorkspaceProps.ts",
+      "lines": 863
+    },
+    {
+      "path": "electron/services/metadata/metadataScraperService.ts",
+      "lines": 785
+    },
+    {
+      "path": "src/components/FullscreenLayer.tsx",
+      "lines": 771
+    },
+    {
+      "path": "electron/mediaLibrarySnapshotStore.ts",
+      "lines": 744
+    },
+    {
+      "path": "src/components/ImageMainSection.tsx",
+      "lines": 729
+    },
+    {
+      "path": "src/components/SettingsPanel.tsx",
+      "lines": 728
+    },
+    {
+      "path": "src/components/metadata/MetadataFetchPanel.tsx",
+      "lines": 728
+    },
+    {
+      "path": "electron/services/file-system-read/librarySnapshotService.ts",
+      "lines": 712
+    },
+    {
+      "path": "electron/archiveWasmExtractor.ts",
+      "lines": 710
+    }
+  ]
+}

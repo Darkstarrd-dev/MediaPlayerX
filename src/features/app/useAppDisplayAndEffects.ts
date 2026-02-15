@@ -135,6 +135,7 @@ export function useAppDisplayAndEffects({
     applyAutoplayIntervalByIndex,
     setFullscreenActiveWithAutoStop,
     applyPackageGrade: displayResources.metadataWriteBindings.applyPackageGrade,
+    adReviewDeletePending: manageBindings.manageAdReview.deletePending,
   })
 
   return {

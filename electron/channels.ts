@@ -8,6 +8,7 @@ export const BACKEND_CHANNELS = {
   setImageHidden: 'backend:setImageHidden',
   deleteImageItems: 'backend:deleteImageItems',
   deleteSidebarNodes: 'backend:deleteSidebarNodes',
+  moveSidebarNodes: 'backend:moveSidebarNodes',
   startManageAdReview: 'backend:startManageAdReview',
   readManageAdReviewTask: 'backend:readManageAdReviewTask',
   pauseManageAdReviewTask: 'backend:pauseManageAdReviewTask',

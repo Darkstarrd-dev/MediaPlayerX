@@ -1027,7 +1027,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByText('社团')).toBeInTheDocument()
     expect(screen.getByText('作者')).toBeInTheDocument()
     expect(document.querySelectorAll('.metadata-localized-field .metadata-localized-value.is-clickable').length).toBeGreaterThanOrEqual(3)
-    expect(screen.getByText('Tags')).toBeInTheDocument()
+    expect(screen.getByText(/标签|Tags/)).toBeInTheDocument()
     expect(screen.getByRole('group', { name: '视频评分' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '视频评分 无评分' })).toBeDisabled()
     expect(screen.queryByRole('button', { name: '保存' })).toBeNull()

@@ -18,9 +18,12 @@ interface VideoMainSectionProps {
   pendingManageAction: boolean
   manageOperationHint: string | null
   canManageDelete: boolean
+  canManageMoveNodes?: boolean
   canManageHide: boolean
   canManageUnhide: boolean
   onManageDelete: () => void
+  onManageGroup?: () => void
+  onManageMove?: () => void
   onManageHide: () => void
   onManageUnhide: () => void
   onClearManageSelection: () => void
@@ -72,9 +75,12 @@ function VideoMainSection({
   pendingManageAction,
   manageOperationHint,
   canManageDelete,
+  canManageMoveNodes = false,
   canManageHide,
   canManageUnhide,
   onManageDelete,
+  onManageGroup = () => undefined,
+  onManageMove = () => undefined,
   onManageHide,
   onManageUnhide,
   onClearManageSelection,
@@ -144,7 +150,7 @@ function VideoMainSection({
   const toolbarVideoSummary = focusedVideo
     ? [
         focusedVideo.workTitle.trim() || focusedVideo.fileName,
-        toolbarAuthor && toolbarAuthor !== '未知' ? `[${toolbarAuthor}]` : null,
+        toolbarAuthor && toolbarAuthor !== t('ui.common.unknown') ? `[${toolbarAuthor}]` : null,
         `${focusedVideo.width}x${focusedVideo.height}`,
         `${focusedVideo.sizeMb}MB`,
       ]
@@ -225,6 +231,26 @@ function VideoMainSection({
                 onClick={onManageDelete}
               >
                 <MainUiIcon name="delete" />
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t('a11y.common.group')}
+                title={t('tip.common.group')}
+                disabled={!canManageMoveNodes || pendingManageAction}
+                onClick={onManageGroup}
+              >
+                <span aria-hidden="true">G</span>
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t('a11y.common.move')}
+                title={t('tip.common.move')}
+                disabled={!canManageMoveNodes || pendingManageAction}
+                onClick={onManageMove}
+              >
+                <span aria-hidden="true">M</span>
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn"

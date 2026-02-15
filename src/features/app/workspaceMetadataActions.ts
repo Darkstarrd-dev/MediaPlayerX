@@ -9,6 +9,13 @@ interface MetadataActionsParams {
   metadataImagePackageEffective: ImagePackage | null
 }
 
+interface SaveParsedMetadataErrors {
+  saveParsedMetadataErrors: {
+    unsupportedMode: string
+    noAvailablePackage: string
+  }
+}
+
 export function createApplyMetadataSyncName({
   mode,
   metadataWriteBindings,
@@ -29,14 +36,15 @@ export function createSaveParsedMetadata({
   mode,
   metadataWriteBindings,
   metadataImagePackageEffective,
-}: MetadataActionsParams): (parsed: ParsedExternalMetadata) => Promise<void> {
+  saveParsedMetadataErrors,
+}: MetadataActionsParams & SaveParsedMetadataErrors): (parsed: ParsedExternalMetadata) => Promise<void> {
   return async (parsed: ParsedExternalMetadata) => {
     if (mode !== 'image') {
-      throw new Error('当前模式不支持写入图包元数据')
+      throw new Error(saveParsedMetadataErrors.unsupportedMode)
     }
     const packageId = metadataImagePackageEffective?.id
     if (!packageId) {
-      throw new Error('当前无可用图包，无法保存')
+      throw new Error(saveParsedMetadataErrors.noAvailablePackage)
     }
     await metadataWriteBindings.applyPackageMetadataById(packageId, {
       workTitle: parsed.title,

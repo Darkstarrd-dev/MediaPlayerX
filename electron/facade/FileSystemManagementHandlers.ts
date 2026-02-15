@@ -5,6 +5,8 @@ import {
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
+  type MoveSidebarNodesRequestDto,
+  type MoveSidebarNodesResponseDto,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
@@ -37,6 +39,12 @@ export class FileSystemManagementHandlers {
     request: DeleteSidebarNodesRequestDto,
   ): Promise<DeleteSidebarNodesResponseDto> {
     return this.context.managementMutationService.deleteSidebarNodes(request)
+  }
+
+  async moveSidebarNodes(
+    request: MoveSidebarNodesRequestDto,
+  ): Promise<MoveSidebarNodesResponseDto> {
+    return this.context.managementMutationService.moveSidebarNodes(request)
   }
 
   async startManageAdReview(

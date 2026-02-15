@@ -38,6 +38,8 @@ import {
   deleteImageItemsResponseSchema,
   deleteSidebarNodesRequestSchema,
   deleteSidebarNodesResponseSchema,
+  moveSidebarNodesRequestSchema,
+  moveSidebarNodesResponseSchema,
   startManageAdReviewRequestSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskRequestSchema,
@@ -119,6 +121,11 @@ const backendApi = {
     const parsed = deleteSidebarNodesRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.deleteSidebarNodes, parsed)
     return deleteSidebarNodesResponseSchema.parse(response)
+  },
+  moveSidebarNodes: async (request: unknown) => {
+    const parsed = moveSidebarNodesRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.moveSidebarNodes, parsed)
+    return moveSidebarNodesResponseSchema.parse(response)
   },
   startManageAdReview: async (request: unknown) => {
     const parsed = startManageAdReviewRequestSchema.parse(request)

@@ -29,7 +29,10 @@ interface MusicMainSectionProps {
   pendingManageAction: boolean
   manageOperationHint: string | null
   canManageDelete: boolean
+  canManageMoveNodes?: boolean
   onManageDelete: () => void
+  onManageGroup?: () => void
+  onManageMove?: () => void
   onClearManageSelection: () => void
   canJumpToManga: boolean
   canJumpToAnimation: boolean
@@ -75,6 +78,9 @@ function MusicMainSection({
   manageOperationHint,
   canManageDelete,
   onManageDelete,
+  canManageMoveNodes = false,
+  onManageGroup = () => undefined,
+  onManageMove = () => undefined,
   onClearManageSelection,
   canJumpToManga,
   canJumpToAnimation,
@@ -239,7 +245,7 @@ function MusicMainSection({
     }
 
     const shouldRecover =
-      visualizerRuntimeError.includes('可视化渲染器初始化失败') ||
+      visualizerRuntimeError.includes(t('ui.music.visualizerInitErrorMarker')) ||
       visualizerRuntimeError.includes('WebGL context lost')
     if (!shouldRecover) {
       return
@@ -257,7 +263,7 @@ function MusicMainSection({
 
     tracker.attempts += 1
     setVisualizerCanvasVersion((value) => value + 1)
-  }, [visualizerRuntimeError])
+  }, [t, visualizerRuntimeError])
 
   const toolbarSummary = useMemo(() => resolveMusicToolbarSummary(focusedAudio), [focusedAudio])
 
@@ -974,6 +980,26 @@ function MusicMainSection({
                     onClick={onManageDelete}
                   >
                     <MainUiIcon name="delete" />
+                  </button>
+                  <button
+                    className="feature-action-btn main-icon-square-btn"
+                    type="button"
+                    aria-label={t('a11y.common.group')}
+                    title={t('tip.common.group')}
+                    disabled={!canManageMoveNodes || pendingManageAction}
+                    onClick={onManageGroup}
+                  >
+                    <span aria-hidden="true">G</span>
+                  </button>
+                  <button
+                    className="feature-action-btn main-icon-square-btn"
+                    type="button"
+                    aria-label={t('a11y.common.move')}
+                    title={t('tip.common.move')}
+                    disabled={!canManageMoveNodes || pendingManageAction}
+                    onClick={onManageMove}
+                  >
+                    <span aria-hidden="true">M</span>
                   </button>
                   <button
                     className="feature-action-btn main-icon-square-btn"

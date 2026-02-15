@@ -37,6 +37,8 @@ import {
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
+  type MoveSidebarNodesRequestDto,
+  type MoveSidebarNodesResponseDto,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
@@ -257,6 +259,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       refreshArchiveIndexesForPaths: (paths) => this.refreshArchiveIndexesForPaths(paths),
       pruneArchiveIndexesByDeletedRoots: (paths) => this.pruneArchiveIndexesByDeletedRoots(paths),
       removeImportSourcePaths: (paths) => this.removeImportSourcePaths(paths),
+      replaceImportSourcePaths: (mappings) => this.replaceImportSourcePaths(mappings),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     })
@@ -441,6 +444,102 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     }
   }
 
+  private async replaceImportSourcePaths(
+    mappings: Array<{ fromPath: string; toPath: string }>,
+  ): Promise<void> {
+    if (mappings.length === 0) {
+      return
+    }
+
+    await this.ensureStateLoaded()
+
+    const mappingByFromKey = new Map<string, { fromPath: string; toPath: string; fromKey: string }>()
+    for (const mapping of mappings) {
+      const fromPath = path.resolve(mapping.fromPath)
+      const toPath = path.resolve(mapping.toPath)
+      const fromKey = normalizeAllowlistKey(fromPath)
+      if (fromKey === normalizeAllowlistKey(toPath)) {
+        continue
+      }
+      mappingByFromKey.set(fromKey, {
+        fromPath,
+        toPath,
+        fromKey,
+      })
+    }
+
+    const normalizedMappings = Array.from(mappingByFromKey.values()).sort(
+      (left, right) => right.fromPath.length - left.fromPath.length,
+    )
+    if (normalizedMappings.length === 0) {
+      return
+    }
+
+    const dedupeResolvedPaths = (values: string[]): string[] => {
+      const map = new Map<string, string>()
+      for (const value of values) {
+        const resolved = path.resolve(value)
+        map.set(normalizeAllowlistKey(resolved), resolved)
+      }
+      return Array.from(map.values())
+    }
+
+    const toNormalizedKey = (values: string[]): string =>
+      values
+        .map((value) => normalizeAllowlistKey(path.resolve(value)))
+        .sort((left, right) => left.localeCompare(right, 'en-US'))
+        .join('|')
+
+    const resolveMappedPath = (candidatePath: string): string => {
+      const resolvedCandidate = path.resolve(candidatePath)
+      const candidateKey = normalizeAllowlistKey(resolvedCandidate)
+
+      for (const mapping of normalizedMappings) {
+        if (mapping.fromKey === candidateKey) {
+          return mapping.toPath
+        }
+        if (isPathInsideRoot(mapping.fromPath, resolvedCandidate)) {
+          const relativePath = path.relative(mapping.fromPath, resolvedCandidate)
+          return path.resolve(mapping.toPath, relativePath)
+        }
+      }
+
+      return resolvedCandidate
+    }
+
+    const currentImportSources = this.importPathRegistry.getImportSources()
+    const nextImportDirectories = dedupeResolvedPaths(currentImportSources.directories.map(resolveMappedPath))
+    const nextImportFiles = dedupeResolvedPaths(currentImportSources.files.map(resolveMappedPath))
+    const didChangeImportSources =
+      toNormalizedKey(currentImportSources.directories) !== toNormalizedKey(nextImportDirectories) ||
+      toNormalizedKey(currentImportSources.files) !== toNormalizedKey(nextImportFiles)
+
+    if (didChangeImportSources) {
+      this.importPathRegistry.hydrate({
+        directories: nextImportDirectories,
+        files: nextImportFiles,
+      })
+      this.database.writeImportSources({
+        directories: nextImportDirectories,
+        files: nextImportFiles,
+      })
+    }
+
+    const currentMusicSources = this.database.readMusicImportSources()
+    const nextMusicDirectories = dedupeResolvedPaths(currentMusicSources.directories.map(resolveMappedPath))
+    const nextMusicFiles = dedupeResolvedPaths(currentMusicSources.files.map(resolveMappedPath))
+    const didChangeMusicSources =
+      toNormalizedKey(currentMusicSources.directories) !== toNormalizedKey(nextMusicDirectories) ||
+      toNormalizedKey(currentMusicSources.files) !== toNormalizedKey(nextMusicFiles)
+
+    if (didChangeMusicSources) {
+      this.database.writeMusicImportSources({
+        directories: nextMusicDirectories,
+        files: nextMusicFiles,
+      })
+    }
+  }
+
   private syncSnapshotFromDatabase(): LibrarySnapshotDto {
     return this.librarySnapshotService.syncSnapshotFromDatabase()
   }
@@ -565,6 +664,10 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async deleteSidebarNodes(request: DeleteSidebarNodesRequestDto): Promise<DeleteSidebarNodesResponseDto> {
     return this.managementHandlers.deleteSidebarNodes(request)
+  }
+
+  async moveSidebarNodes(request: MoveSidebarNodesRequestDto): Promise<MoveSidebarNodesResponseDto> {
+    return this.managementHandlers.moveSidebarNodes(request)
   }
 
   async startManageAdReview(request: StartManageAdReviewRequestDto): Promise<StartManageAdReviewResponseDto> {

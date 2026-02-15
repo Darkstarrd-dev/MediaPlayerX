@@ -411,7 +411,7 @@ function SidebarPanel({
     >
       <div className="sidebar-head">
         <button className="sidebar-title-btn" type="button" onClick={onCollapseSidebar}>
-          {currentRootLabel ?? '目录结构'}
+          {currentRootLabel ?? t('ui.sidebar.structure')}
         </button>
 
         <div className="sidebar-head-actions">

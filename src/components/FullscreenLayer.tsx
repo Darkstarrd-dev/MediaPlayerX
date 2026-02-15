@@ -685,11 +685,22 @@ function FullscreenLayer({
   )
 
   const footerImageInfo = focusedImage
-    ? `图片 #${focusedImage.ordinal} | ${focusedImage.width} x ${focusedImage.height}`
-    : '无可用图片'
+    ? t('ui.fullscreen.footerImageInfo', {
+        ordinal: focusedImage.ordinal,
+        width: focusedImage.width,
+        height: focusedImage.height,
+      })
+    : t('ui.fullscreen.noImage')
   const footerVideoInfo = focusedVideo
-    ? `${videoPlaying ? '真实视频' : '封面态'} ${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)} | ${focusedVideo.fileName} (${focusedVideo.width} x ${focusedVideo.height})`
-    : '无可用视频'
+    ? t('ui.fullscreen.footerVideoInfo', {
+        state: videoPlaying ? t('ui.fullscreen.videoStatePlaying') : t('ui.fullscreen.videoStateCover'),
+        current: formatSeconds(clampedVideoTime),
+        duration: formatSeconds(durationSec),
+        fileName: focusedVideo.fileName,
+        width: focusedVideo.width,
+        height: focusedVideo.height,
+      })
+    : t('ui.fullscreen.noVideo')
   const footerInfoText =
     fullscreenDisplay === 'image-only'
       ? footerImageInfo

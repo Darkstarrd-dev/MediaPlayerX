@@ -368,6 +368,71 @@
   color: var(--mpx-text-2);
 }
 
+.ad-review-delete-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2601;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--mpx-bg-tooltip) 56%, transparent);
+  backdrop-filter: blur(3px);
+}
+
+.ad-review-delete-overlay-card {
+  width: min(760px, calc(100vw - 36px));
+  border: 1px solid var(--mpx-border-2);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--mpx-bg-app);
+  box-shadow: var(--mpx-shadow-panel);
+}
+
+.ad-review-delete-overlay-banner {
+  display: block;
+  width: 100%;
+  height: min(240px, 30vh);
+  object-fit: cover;
+  border-bottom: 1px solid var(--mpx-border-1);
+}
+
+.ad-review-delete-overlay-content {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px 16px;
+}
+
+.ad-review-delete-overlay-content > strong {
+  font-size: 16px;
+}
+
+.ad-review-delete-overlay-content > p {
+  margin: 0;
+  color: var(--mpx-text-2);
+}
+
+.ad-review-delete-overlay-progress-text {
+  color: var(--mpx-text-1) !important;
+}
+
+.ad-review-delete-overlay-progress {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--mpx-border-1);
+  border-radius: 999px;
+  height: 10px;
+  background: var(--mpx-bg-muted);
+}
+
+.ad-review-delete-overlay-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--mpx-status-warning-text), var(--mpx-accent));
+  transition: width 0.18s ease;
+}
+
 .manage-selection-marquee {
   position: fixed;
   border: 1px solid var(--mpx-accent);

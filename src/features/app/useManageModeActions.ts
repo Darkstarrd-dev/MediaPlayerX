@@ -3,14 +3,22 @@ import { useCallback, type Dispatch, type SetStateAction } from 'react'
 import type {
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesResponseDto,
+  MoveSidebarNodesResponseDto,
   SetImageHiddenResponseDto,
 } from '../../contracts/backend'
+import { useI18n } from '../../i18n/useI18n'
 import type { BrowserMode } from '../../types'
 
 interface ManageWriteAccess {
   setImageHidden: (imageIds: string[], hidden: boolean) => Promise<SetImageHiddenResponseDto>
   deleteImageItems: (imageIds: string[]) => Promise<DeleteImageItemsResponseDto>
   deleteSidebarNodes: (nodeIds: string[]) => Promise<DeleteSidebarNodesResponseDto>
+  pickDirectoryPath: (title?: string, defaultPath?: string) => Promise<string | null>
+  moveSidebarNodes: (
+    nodeIds: string[],
+    destinationDirectory: string,
+    groupName?: string,
+  ) => Promise<MoveSidebarNodesResponseDto>
 }
 
 interface UseManageModeActionsParams {
@@ -33,6 +41,8 @@ interface UseManageModeActionsResult {
   toggleManageMode: () => void
   runManageHideAction: (hidden: boolean) => Promise<void>
   requestManageDelete: () => void
+  requestManageGroup: () => Promise<void>
+  requestManageMove: () => Promise<void>
   confirmManageDelete: () => Promise<void>
 }
 
@@ -51,6 +61,8 @@ export function useManageModeActions({
   setManageOperationHint,
   updateSettings,
 }: UseManageModeActionsParams): UseManageModeActionsResult {
+  const { t } = useI18n()
+
   const toggleManageMode = useCallback(() => {
     const nextOpen = !manageMode
     setManageMode(nextOpen)
@@ -80,34 +92,105 @@ export function useManageModeActions({
   const runManageHideAction = useCallback(
     async (hidden: boolean) => {
       if (mode !== 'image') {
-        setManageOperationHint('当前模式不支持隐藏/取消隐藏')
+        setManageOperationHint(t('ui.manage.hint.unsupportedHideAction'))
         return
       }
       if (imageCheckedIds.length === 0) {
-        setManageOperationHint('请先在缩略图/文件名区域选择图片')
+        setManageOperationHint(t('ui.manage.hint.selectImagesFirst'))
         return
       }
 
       try {
         const response = await backendWrite.setImageHidden(imageCheckedIds, hidden)
         setManageOperationHint(
-          `${hidden ? '隐藏' : '取消隐藏'}完成：${response.updated_count} 项`,
+          t('ui.manage.hint.setHiddenResult', {
+            action: hidden ? t('ui.manage.action.hide') : t('ui.manage.action.unhide'),
+            count: response.updated_count,
+          }),
         )
       } catch (error) {
         setManageOperationHint(error instanceof Error ? error.message : String(error))
       }
     },
-    [backendWrite, imageCheckedIds, mode, setManageOperationHint],
+    [backendWrite, imageCheckedIds, mode, setManageOperationHint, t],
   )
 
   const requestManageDelete = useCallback(() => {
     if (sidebarCheckedNodeIds.length === 0 && imageCheckedIds.length === 0) {
-      setManageOperationHint('请先选择需要删除的节点或图片')
+      setManageOperationHint(t('ui.manage.hint.selectNodesOrImagesFirst'))
       return
     }
 
     setDeleteConfirmOpen(true)
-  }, [imageCheckedIds.length, setDeleteConfirmOpen, setManageOperationHint, sidebarCheckedNodeIds.length])
+  }, [imageCheckedIds.length, setDeleteConfirmOpen, setManageOperationHint, sidebarCheckedNodeIds.length, t])
+
+  const runManageMoveAction = useCallback(
+    async (groupMode: boolean) => {
+      if (sidebarCheckedNodeIds.length === 0) {
+        setManageOperationHint(t('ui.manage.hint.selectSidebarNodesFirst'))
+        return
+      }
+
+      let groupName: string | undefined
+      if (groupMode) {
+        const input = window.prompt(t('ui.manage.prompt.groupName'))
+        if (input === null) {
+          setManageOperationHint(t('ui.manage.hint.groupCancelled'))
+          return
+        }
+        groupName = input.trim()
+        if (!groupName) {
+          setManageOperationHint(t('ui.manage.hint.groupNameRequired'))
+          return
+        }
+      }
+
+      let destinationDirectory: string | null = null
+      try {
+        destinationDirectory = await backendWrite.pickDirectoryPath(
+          groupMode ? t('ui.manage.dialog.pickGroupTargetTitle') : t('ui.manage.dialog.pickMoveTargetTitle'),
+        )
+      } catch (error) {
+        setManageOperationHint(error instanceof Error ? error.message : String(error))
+        return
+      }
+
+      if (!destinationDirectory) {
+        setManageOperationHint(groupMode ? t('ui.manage.hint.groupCancelled') : t('ui.manage.hint.moveCancelled'))
+        return
+      }
+
+      try {
+        const response = await backendWrite.moveSidebarNodes(sidebarCheckedNodeIds, destinationDirectory, groupName)
+        const failedCount = response.failed.length
+        const action = groupMode ? t('ui.manage.action.group') : t('ui.manage.action.move')
+        setManageOperationHint(
+          failedCount > 0
+            ? t('ui.manage.hint.moveResultWithFailures', {
+                action,
+                success: response.moved_count,
+                failed: failedCount,
+              })
+            : t('ui.manage.hint.moveResultSuccess', {
+                action,
+                success: response.moved_count,
+              }),
+        )
+        clearAllSelections()
+      } catch (error) {
+        setManageOperationHint(error instanceof Error ? error.message : String(error))
+      }
+    },
+    [backendWrite, clearAllSelections, setManageOperationHint, sidebarCheckedNodeIds, t],
+  )
+
+  const requestManageGroup = useCallback(async () => {
+    await runManageMoveAction(true)
+  }, [runManageMoveAction])
+
+  const requestManageMove = useCallback(async () => {
+    await runManageMoveAction(false)
+  }, [runManageMoveAction])
 
   const confirmManageDelete = useCallback(async () => {
     setDeleteConfirmOpen(false)
@@ -119,16 +202,22 @@ export function useManageModeActions({
         const failedCount = response.failed.length
         setManageOperationHint(
           failedCount > 0
-            ? `已删除 ${response.deleted_count} 项，失败 ${failedCount} 项`
-            : `已删除 ${response.deleted_count} 项`,
+            ? t('ui.manage.hint.deleteNodesWithFailures', {
+                deleted: response.deleted_count,
+                failed: failedCount,
+              })
+            : t('ui.manage.hint.deleteNodesSuccess', { deleted: response.deleted_count }),
         )
       } else if (imageCheckedIds.length > 0) {
         const response = await backendWrite.deleteImageItems(imageCheckedIds)
         const failedCount = response.failed.length
         setManageOperationHint(
           failedCount > 0
-            ? `已删除 ${response.deleted_count} 张，失败 ${failedCount} 项`
-            : `已删除 ${response.deleted_count} 张`,
+            ? t('ui.manage.hint.deleteImagesWithFailures', {
+                deleted: response.deleted_count,
+                failed: failedCount,
+              })
+            : t('ui.manage.hint.deleteImagesSuccess', { deleted: response.deleted_count }),
         )
       }
       clearAllSelections()
@@ -142,12 +231,15 @@ export function useManageModeActions({
     setDeleteConfirmOpen,
     setManageOperationHint,
     sidebarCheckedNodeIds,
+    t,
   ])
 
   return {
     toggleManageMode,
     runManageHideAction,
     requestManageDelete,
+    requestManageGroup,
+    requestManageMove,
     confirmManageDelete,
   }
 }

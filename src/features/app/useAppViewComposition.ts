@@ -93,6 +93,11 @@ export function useAppViewComposition({
       onImportFoldersSelected: importState.onImportFoldersSelected,
     },
     dragOverlayActive: importState.dragOverlayActive,
+    adReviewDeleteOverlayParams: {
+      active: displayState.manageAdReview.deletePending,
+      completedCount: displayState.manageAdReview.deleteProgress.completed,
+      totalCount: displayState.manageAdReview.deleteProgress.total,
+    },
     manageDeleteDialogParams: {
       open: deleteConfirmOpen,
       pending: displayState.backendWrite.pending.manage,

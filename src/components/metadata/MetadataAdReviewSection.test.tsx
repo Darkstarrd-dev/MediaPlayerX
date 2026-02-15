@@ -66,6 +66,7 @@ function renderSection(overrides: Partial<ComponentProps<typeof MetadataAdReview
   const onSelectAdReviewTask = vi.fn()
   const onRemoveAdReviewTask = vi.fn()
   const onToggleAdReviewFocus = vi.fn()
+  const onDeleteSelectedAdReviewCandidates = vi.fn()
 
   const queueTasks = [createTask('task-running', 'running'), createTask('task-review', 'review')]
   const adReviewTask = queueTasks[1]
@@ -91,6 +92,7 @@ function renderSection(overrides: Partial<ComponentProps<typeof MetadataAdReview
       onToggleHideUncheckedNonChecked={vi.fn()}
       onSelectAdReviewTask={onSelectAdReviewTask}
       onRemoveAdReviewTask={onRemoveAdReviewTask}
+      onDeleteSelectedAdReviewCandidates={onDeleteSelectedAdReviewCandidates}
       onToggleAdReviewFocus={onToggleAdReviewFocus}
       onAdReviewStrategyModeChange={vi.fn()}
       onAdReviewMaxConcurrencyChange={vi.fn()}
@@ -107,6 +109,7 @@ function renderSection(overrides: Partial<ComponentProps<typeof MetadataAdReview
     onPauseAdReview,
     onSelectAdReviewTask,
     onRemoveAdReviewTask,
+    onDeleteSelectedAdReviewCandidates,
     onToggleAdReviewFocus,
   }
 }
@@ -129,6 +132,31 @@ describe('MetadataAdReviewSection', () => {
     const focusButton = screen.getByRole('button', { name: 'focus' })
     fireEvent.click(focusButton)
     expect(onToggleAdReviewFocus).toHaveBeenCalledTimes(1)
+  })
+
+  it('triggers delete action from review area', () => {
+    const { onDeleteSelectedAdReviewCandidates } = renderSection({
+      hasCheckedAdReviewCandidates: true,
+      selectedAdReviewCandidateCount: 1,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '删除已选(1)' }))
+    expect(onDeleteSelectedAdReviewCandidates).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows deleting state label while review delete is pending', () => {
+    renderSection({
+      adReviewPending: true,
+      adReviewDeletePending: true,
+      hasCheckedAdReviewCandidates: true,
+      selectedAdReviewCandidateCount: 1,
+    })
+
+    const deletingButtons = screen.getAllByRole('button', { name: '删除中...' })
+    expect(deletingButtons.length).toBeGreaterThan(0)
+    for (const button of deletingButtons) {
+      expect(button).toBeDisabled()
+    }
   })
 
   it('keeps focus toggle available while running when candidates exist', () => {

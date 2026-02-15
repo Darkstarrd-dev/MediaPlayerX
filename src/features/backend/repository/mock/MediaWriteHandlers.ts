@@ -2,6 +2,7 @@ import {
   clearDatabaseResponseSchema,
   deleteImageItemsResponseSchema,
   deleteSidebarNodesResponseSchema,
+  moveSidebarNodesResponseSchema,
   enqueueImportTaskResponseSchema,
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
@@ -17,6 +18,8 @@ import {
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
+  type MoveSidebarNodesRequestDto,
+  type MoveSidebarNodesResponseDto,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ImportTaskDto,
@@ -51,6 +54,34 @@ import {
   toDeterministicCoverColor,
 } from './utils'
 import { MOCK_LIBRARY_SNAPSHOT_REF, type MockRepositoryState } from './types'
+
+function normalizeMockPath(value: string): string {
+  const normalized = value.replace(/\\/g, '/').replace(/\/+/g, '/').trim()
+  return normalized.endsWith('/') ? normalized.slice(0, -1) : normalized
+}
+
+function basenameMockPath(value: string): string {
+  const normalized = normalizeMockPath(value)
+  const segments = normalized.split('/').filter(Boolean)
+  return segments[segments.length - 1] ?? normalized
+}
+
+function joinMockPath(basePath: string, childName: string): string {
+  const normalizedBase = normalizeMockPath(basePath)
+  return `${normalizedBase}/${childName}`
+}
+
+function relativeMockPath(rootPath: string, candidatePath: string): string {
+  const normalizedRoot = normalizeMockPath(rootPath)
+  const normalizedCandidate = normalizeMockPath(candidatePath)
+  if (normalizedCandidate === normalizedRoot) {
+    return ''
+  }
+  if (normalizedCandidate.startsWith(`${normalizedRoot}/`)) {
+    return normalizedCandidate.slice(normalizedRoot.length + 1)
+  }
+  return normalizedCandidate
+}
 
 export class MockMediaWriteHandlers {
   private readonly state: MockRepositoryState
@@ -240,6 +271,249 @@ export class MockMediaWriteHandlers {
     return deleteSidebarNodesResponseSchema.parse({
       deleted_count: Math.max(0, deletedCount),
       failed,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  moveSidebarNodesSync(
+    request: MoveSidebarNodesRequestDto,
+  ): MoveSidebarNodesResponseDto {
+    const snapshot = MOCK_LIBRARY_SNAPSHOT_REF.current
+    if (!snapshot) throw new Error('Mock snapshot not initialized')
+
+    const normalizePathKey = (value: string): string => normalizeMockPath(value).toLowerCase()
+    const isPathInside = (rootPath: string, candidatePath: string): boolean => {
+      const normalizedRoot = normalizePathKey(rootPath)
+      const normalizedCandidate = normalizePathKey(candidatePath)
+      return normalizedCandidate === normalizedRoot || normalizedCandidate.startsWith(`${normalizedRoot}/`)
+    }
+    const toTreePath = (absolutePath: string): string[] => {
+      const normalized = normalizeMockPath(absolutePath)
+      return normalized.split('/').filter(Boolean)
+    }
+
+    const destinationRoot = normalizeMockPath(request.destination_directory)
+    const groupName = request.group_name?.trim() ?? ''
+    const targetDirectory = groupName.length > 0
+      ? joinMockPath(destinationRoot, groupName)
+      : destinationRoot
+
+    const parsedTargets = request.node_ids.map((nodeId) => {
+      const parsed = parseSidebarNodePath(nodeId)
+      return {
+        nodeId,
+        parsed,
+        matched: false,
+      }
+    })
+
+    const failed: Array<{ node_id: string; reason: string }> = []
+    const validTargets = parsedTargets.filter((target) => {
+      if (target.parsed) {
+        return true
+      }
+      failed.push({
+        node_id: target.nodeId,
+        reason: 'invalid node id',
+      })
+      return false
+    })
+
+    const selectedPaths = new Set<string>()
+    const nodeIdsBySelectedPath = new Map<string, Set<string>>()
+    const rememberSelectedPath = (absolutePath: string, nodeId: string) => {
+      const resolvedPath = normalizeMockPath(absolutePath)
+      selectedPaths.add(resolvedPath)
+      const nodeIds = nodeIdsBySelectedPath.get(resolvedPath) ?? new Set<string>()
+      nodeIds.add(nodeId)
+      nodeIdsBySelectedPath.set(resolvedPath, nodeIds)
+    }
+
+    for (const target of validTargets) {
+      if (!target.parsed || target.parsed.kind !== 'folder') {
+        continue
+      }
+      rememberSelectedPath(target.parsed.pathKey, target.nodeId)
+      target.matched = true
+    }
+
+    const markMatchedAndSelect = (
+      pathKey: string,
+      kind: 'package' | 'directory' | 'video',
+      absolutePath: string,
+    ): boolean => {
+      for (const target of validTargets) {
+        const parsed = target.parsed
+        if (!parsed) {
+          continue
+        }
+
+        if (parsed.kind === 'folder') {
+          if (pathHasPrefix(pathKey, parsed.pathKey)) {
+            target.matched = true
+            rememberSelectedPath(absolutePath, target.nodeId)
+            return true
+          }
+          continue
+        }
+
+        if (parsed.kind === 'package' && kind === 'package' && pathKey === parsed.pathKey) {
+          target.matched = true
+          rememberSelectedPath(absolutePath, target.nodeId)
+          return true
+        }
+
+        if (parsed.kind === 'video' && kind === 'video' && pathKey === parsed.pathKey) {
+          target.matched = true
+          rememberSelectedPath(absolutePath, target.nodeId)
+          return true
+        }
+      }
+
+      return false
+    }
+
+    for (const source of snapshot.image_packages) {
+      markMatchedAndSelect(normalizePathKeyForMatch(source.tree_path), 'package', source.absolute_path)
+    }
+    for (const source of snapshot.image_directories) {
+      markMatchedAndSelect(normalizePathKeyForMatch(source.tree_path), 'directory', source.absolute_path)
+    }
+    for (const video of snapshot.videos) {
+      markMatchedAndSelect(normalizePathKeyForMatch(video.tree_path), 'video', video.absolute_path)
+    }
+
+    for (const target of validTargets) {
+      if (target.matched) {
+        continue
+      }
+      failed.push({
+        node_id: target.nodeId,
+        reason: 'node not found',
+      })
+    }
+
+    const sortedPaths = Array.from(selectedPaths).sort((left, right) => left.length - right.length)
+    const prunedPaths: string[] = []
+    for (const candidatePath of sortedPaths) {
+      if (prunedPaths.some((existingPath) => isPathInside(existingPath, candidatePath))) {
+        continue
+      }
+      prunedPaths.push(candidatePath)
+    }
+
+    const occupiedPathKeys = new Set<string>([
+      ...snapshot.image_packages.map((source) => normalizePathKey(source.absolute_path)),
+      ...snapshot.image_directories.map((source) => normalizePathKey(source.absolute_path)),
+      ...snapshot.videos.map((video) => normalizePathKey(video.absolute_path)),
+      ...(snapshot.audios ?? []).map((audio) => normalizePathKey(audio.absolute_path)),
+    ])
+
+    const movedMappings: Array<{ fromPath: string; toPath: string }> = []
+    for (const absolutePath of prunedPaths) {
+      const nodeIds = nodeIdsBySelectedPath.get(absolutePath) ?? new Set<string>()
+      const toPath = joinMockPath(targetDirectory, basenameMockPath(absolutePath))
+      const sourceKey = normalizePathKey(absolutePath)
+      const targetKey = normalizePathKey(toPath)
+
+      if (sourceKey === targetKey) {
+        for (const nodeId of nodeIds) {
+          failed.push({
+            node_id: nodeId,
+            reason: 'source already in destination',
+          })
+        }
+        continue
+      }
+
+      const conflictWithSnapshot = occupiedPathKeys.has(targetKey) &&
+        !prunedPaths.some((candidatePath) => normalizePathKey(candidatePath) === targetKey)
+      const conflictWithBatch = movedMappings.some((mapping) => normalizePathKey(mapping.toPath) === targetKey)
+      if (conflictWithSnapshot || conflictWithBatch) {
+        for (const nodeId of nodeIds) {
+          failed.push({
+            node_id: nodeId,
+            reason: 'destination already exists',
+          })
+        }
+        continue
+      }
+
+      movedMappings.push({
+        fromPath: absolutePath,
+        toPath,
+      })
+      occupiedPathKeys.delete(sourceKey)
+      occupiedPathKeys.add(targetKey)
+    }
+
+    const resolveMovedPath = (candidatePath: string): string | null => {
+      const resolvedCandidate = normalizeMockPath(candidatePath)
+      for (const mapping of movedMappings) {
+        if (normalizePathKey(mapping.fromPath) === normalizePathKey(resolvedCandidate)) {
+          return mapping.toPath
+        }
+        if (isPathInside(mapping.fromPath, resolvedCandidate)) {
+          const relativePath = relativeMockPath(mapping.fromPath, resolvedCandidate)
+          return relativePath.length > 0 ? joinMockPath(mapping.toPath, relativePath) : mapping.toPath
+        }
+      }
+      return null
+    }
+
+    if (movedMappings.length > 0) {
+      const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
+      for (const source of allSources) {
+        const movedPath = resolveMovedPath(source.absolute_path)
+        if (movedPath) {
+          source.absolute_path = movedPath
+          source.tree_path = toTreePath(movedPath)
+        }
+
+        for (const image of source.images) {
+          if (image.media_locator.kind === 'filesystem') {
+            const movedImagePath = resolveMovedPath(image.media_locator.absolute_path)
+            if (movedImagePath) {
+              image.media_locator.absolute_path = movedImagePath
+            }
+          } else {
+            const movedArchivePath = resolveMovedPath(image.media_locator.archive_path)
+            if (movedArchivePath) {
+              image.media_locator.archive_path = movedArchivePath
+            }
+          }
+        }
+      }
+
+      for (const video of snapshot.videos) {
+        const movedPath = resolveMovedPath(video.absolute_path)
+        if (!movedPath) {
+          continue
+        }
+        video.absolute_path = movedPath
+        video.tree_path = toTreePath(movedPath)
+        if (video.media_locator.kind === 'filesystem') {
+          video.media_locator.absolute_path = movedPath
+        }
+      }
+
+      for (const audio of snapshot.audios ?? []) {
+        const movedPath = resolveMovedPath(audio.absolute_path)
+        if (!movedPath) {
+          continue
+        }
+        audio.absolute_path = movedPath
+        audio.tree_path = toTreePath(movedPath)
+        if (audio.media_locator.kind === 'filesystem') {
+          audio.media_locator.absolute_path = movedPath
+        }
+      }
+    }
+
+    return moveSidebarNodesResponseSchema.parse({
+      moved_count: movedMappings.length,
+      failed,
+      target_directory: targetDirectory,
       updated_at_ms: Date.now(),
     })
   }

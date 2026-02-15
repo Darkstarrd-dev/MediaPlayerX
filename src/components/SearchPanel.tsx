@@ -79,44 +79,44 @@ function SearchPanel({
           type="button"
           onClick={onExpand}
         >
-          <span className="search-panel-expand-tip">展开检索容器</span>
+          <span className="search-panel-expand-tip">{t('ui.search.expandPanelTip')}</span>
         </button>
       ) : (
         <div className="vector-panel" ref={panelRef} style={{ height: `${panelHeight}px` }} data-overlay-close="search-panel">
           <div className="vector-panel-content" ref={panelContentRef}>
             <div className="vector-top-row">
               <div className="vector-top-actions">
-                <span>{`命中节点: ${featureResultCount} 个`}</span>
+                <span>{t('ui.metadata.hitNodeCount', { count: featureResultCount })}</span>
                 <button className="vector-collapse-btn" type="button" onClick={onCollapse}>
-                  折叠
+                  {t('ui.search.collapse')}
                 </button>
               </div>
             </div>
             <div className="feature-controls">
                 <label>
-                  名称
+                  {t('ui.metadata.name')}
                   <input
                     className="feature-query-input"
-                    placeholder="按名称模糊匹配"
+                    placeholder={t('ui.metadata.nameQueryPlaceholder')}
                     value={featureNameQuery}
                     onChange={(event) => onFeatureNameQueryChange(event.target.value)}
                   />
                 </label>
                 <label>
-                  作品名
+                  {t('ui.metadata.workTitle')}
                   <input
                     className="feature-query-input"
-                    placeholder="按作品名模糊匹配"
+                    placeholder={t('ui.metadata.workTitleQueryPlaceholder')}
                     value={featureWorkTitleQuery}
                     onChange={(event) => onFeatureWorkTitleQueryChange(event.target.value)}
                   />
                 </label>
                 <label>
-                  社团
+                  {t('ui.metadata.circle')}
                   <input
                     className="feature-query-input"
                     list="feature-circle-options"
-                    placeholder="输入社团，支持自动补完"
+                    placeholder={t('ui.metadata.circleQueryPlaceholder')}
                     value={featureCircleQuery}
                     onChange={(event) => onFeatureCircleQueryChange(event.target.value)}
                   />
@@ -127,11 +127,11 @@ function SearchPanel({
                   </datalist>
                 </label>
                 <label>
-                  作者
+                  {t('ui.metadata.author')}
                   <input
                     className="feature-query-input"
                     list="feature-author-options"
-                    placeholder="输入作者，支持自动补完"
+                    placeholder={t('ui.metadata.authorQueryPlaceholder')}
                     value={featureAuthorQuery}
                     onChange={(event) => onFeatureAuthorQueryChange(event.target.value)}
                   />
@@ -144,13 +144,13 @@ function SearchPanel({
 
                 <div className="feature-tags-group">
                   <div className="feature-control-head">
-                    <strong>tags</strong>
+                    <strong>{t('ui.metadata.tags')}</strong>
                     <div className="feature-control-actions">
                       <button className="feature-action-btn" type="button" onClick={onToggleFeatureTagPicker}>
-                        {featureTagPickerOpen ? '收起 tags' : '选择 tags'}
+                        {featureTagPickerOpen ? t('ui.search.collapseTags') : t('ui.metadata.selectTags')}
                       </button>
                       <button className="feature-action-btn" type="button" onClick={onClearFeatureTags}>
-                        清空 tags
+                        {t('ui.metadata.clearTags')}
                       </button>
                     </div>
                   </div>
@@ -175,11 +175,13 @@ function SearchPanel({
                     </div>
                   ) : null}
 
-                  <p className="feature-selection-result">{featureTags.length === 0 ? '未选择 tags' : `已选: ${featureTags.join(', ')}`}</p>
+                  <p className="feature-selection-result">
+                    {featureTags.length === 0 ? t('ui.metadata.noTagsSelected') : t('ui.metadata.selectedTagsSummary', { tags: featureTags.join(', ') })}
+                  </p>
                 </div>
 
                 <div className="feature-rating-group">
-                  <strong>图包评分</strong>
+                  <strong>{t('ui.metadata.packageRatingLabel')}</strong>
                   <div className="feature-rating-stars" role="group" aria-label={t('a11y.metadata.ratingFilter')}>
                     <button
                       aria-label={t('a11y.metadata.ratingNone')}
@@ -210,7 +212,7 @@ function SearchPanel({
                   </div>
                 </div>
 
-                <p className="vector-hint">多字段组合按 AND 逻辑过滤，结果即时同步到 Sidebar 与主视图。</p>
+                <p className="vector-hint">{t('ui.metadata.searchHint')}</p>
               </div>
           </div>
         </div>

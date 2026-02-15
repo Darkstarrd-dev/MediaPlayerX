@@ -1,0 +1,8 @@
+{
+  "bom_format": "CycloneDX",
+  "spec_version": "1.6",
+  "metadata_timestamp": "2026-02-15T05:25:52.983Z",
+  "serial_number": "urn:uuid:9e5664cb-0498-4e94-9fe0-2a27527085b0",
+  "component_count": 414,
+  "dependency_entries": 440
+}

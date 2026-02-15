@@ -24,6 +24,7 @@ interface UseAppInteractionEffectsParams {
   applyAutoplayIntervalByIndex: FullscreenPlaybackBindingsResult['applyAutoplayIntervalByIndex']
   setFullscreenActiveWithAutoStop: FullscreenPlaybackBindingsResult['setFullscreenActiveWithAutoStop']
   applyPackageGrade: MetadataWriteBindingsResult['applyPackageGrade']
+  adReviewDeletePending: boolean
 }
 
 export function useAppInteractionEffects({
@@ -37,6 +38,7 @@ export function useAppInteractionEffects({
   applyAutoplayIntervalByIndex,
   setFullscreenActiveWithAutoStop,
   applyPackageGrade,
+  adReviewDeletePending,
 }: UseAppInteractionEffectsParams) {
   const {
     mode,
@@ -148,6 +150,9 @@ export function useAppInteractionEffects({
     const searchPanelOpen = vectorMode && !manageMode && !metadataManageMode
 
     const closeManagePanel = () => {
+      if (adReviewDeletePending) {
+        return false
+      }
       if (!manageMode) {
         return false
       }
@@ -160,6 +165,9 @@ export function useAppInteractionEffects({
     }
 
     const closeMetadataManagePanel = () => {
+      if (adReviewDeletePending) {
+        return false
+      }
       if (!metadataManageMode) {
         return false
       }
@@ -204,6 +212,9 @@ export function useAppInteractionEffects({
     }
 
     const closeTopLayerByPriority = () => {
+      if (adReviewDeletePending) {
+        return false
+      }
       if (closeDeleteConfirm()) {
         return true
       }
@@ -226,6 +237,9 @@ export function useAppInteractionEffects({
     }
 
     const closeLayerByRoot = (layer: string) => {
+      if (adReviewDeletePending) {
+        return false
+      }
       if (layer === 'delete-confirm') {
         return closeDeleteConfirm()
       }
@@ -251,6 +265,13 @@ export function useAppInteractionEffects({
       if (featureTagPickerOpen) {
         return
       }
+
+      if (adReviewDeletePending && event.key === 'Escape') {
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+
       if (event.key !== 'Escape') {
         return
       }
@@ -265,6 +286,13 @@ export function useAppInteractionEffects({
       if (featureTagPickerOpen) {
         return
       }
+
+      if (adReviewDeletePending && event.button === 2) {
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+
       if (event.button !== 2) {
         return
       }
@@ -294,6 +322,7 @@ export function useAppInteractionEffects({
     fullscreenActive,
     manageMode,
     metadataManageMode,
+    adReviewDeletePending,
     setDeleteConfirmOpen,
     setFullscreenActiveWithAutoStop,
     setAdReviewPanelOpen,
@@ -309,6 +338,7 @@ export function useAppInteractionEffects({
   useAppShortcutBindings({
     shortcuts,
     featureTagPickerOpen,
+    adReviewDeletePending,
     mode,
     vectorResultsActive,
     settingsOpen,

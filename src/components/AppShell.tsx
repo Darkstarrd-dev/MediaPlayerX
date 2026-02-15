@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
 
 import AppHeader from './AppHeader'
+import AdReviewDeleteOverlay from './AdReviewDeleteOverlay'
 import AppTopBanners from './AppTopBanners'
 import AppWorkspace from './AppWorkspace'
 import DangerConfirmDialog from './DangerConfirmDialog'
@@ -23,6 +24,7 @@ interface AppShellProps {
   settingsPanelProps: ComponentProps<typeof SettingsPanel>
   manageDeleteDialogProps: ComponentProps<typeof DangerConfirmDialog>
   dragOverlayActive: boolean
+  adReviewDeleteOverlayProps: ComponentProps<typeof AdReviewDeleteOverlay>
   e2eBenchSectionProps: ComponentProps<typeof E2eBenchSection>
 }
 
@@ -39,6 +41,7 @@ function AppShell({
   settingsPanelProps,
   manageDeleteDialogProps,
   dragOverlayActive,
+  adReviewDeleteOverlayProps,
   e2eBenchSectionProps,
 }: AppShellProps) {
   return (
@@ -51,6 +54,7 @@ function AppShell({
       <SettingsPanel {...settingsPanelProps} />
       <DangerConfirmDialog {...manageDeleteDialogProps} />
       <DragImportOverlay active={dragOverlayActive} />
+      <AdReviewDeleteOverlay {...adReviewDeleteOverlayProps} />
       <E2eBenchSection {...e2eBenchSectionProps} />
     </div>
   )

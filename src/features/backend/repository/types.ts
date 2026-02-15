@@ -15,6 +15,8 @@ import type {
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
   DeleteSidebarNodesResponseDto,
+  MoveSidebarNodesRequestDto,
+  MoveSidebarNodesResponseDto,
   StartManageAdReviewRequestDto,
   StartManageAdReviewResponseDto,
   ReadManageAdReviewTaskRequestDto,
@@ -107,6 +109,10 @@ export interface MediaRepository {
     request: DeleteSidebarNodesRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<DeleteSidebarNodesResponseDto>
+  moveSidebarNodes?(
+    request: MoveSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<MoveSidebarNodesResponseDto>
   startManageAdReview?(
     request: StartManageAdReviewRequestDto,
     options?: RepositoryRequestOptions,
@@ -210,6 +216,7 @@ export interface SynchronousMediaRepository extends MediaRepository {
   setImageHiddenSync?(request: SetImageHiddenRequestDto): SetImageHiddenResponseDto
   deleteImageItemsSync?(request: DeleteImageItemsRequestDto): DeleteImageItemsResponseDto
   deleteSidebarNodesSync?(request: DeleteSidebarNodesRequestDto): DeleteSidebarNodesResponseDto
+  moveSidebarNodesSync?(request: MoveSidebarNodesRequestDto): MoveSidebarNodesResponseDto
   startManageAdReviewSync?(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto
   readManageAdReviewTaskSync?(request: ReadManageAdReviewTaskRequestDto): ReadManageAdReviewTaskResponseDto
   pauseManageAdReviewTaskSync?(request: PauseManageAdReviewTaskRequestDto): PauseManageAdReviewTaskResponseDto

@@ -1,0 +1,88 @@
+{
+  "total_packages": 432,
+  "distinct_licenses": 16,
+  "top_licenses": [
+    {
+      "license": "MIT",
+      "count": 347
+    },
+    {
+      "license": "ISC",
+      "count": 22
+    },
+    {
+      "license": "Apache-2.0",
+      "count": 21
+    },
+    {
+      "license": "BSD-2-Clause",
+      "count": 19
+    },
+    {
+      "license": "BSD-3-Clause",
+      "count": 11
+    },
+    {
+      "license": "MIT-0",
+      "count": 2
+    },
+    {
+      "license": "Custom: https://github.com/sonictruth/7zip.js",
+      "count": 1
+    },
+    {
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "count": 1
+    },
+    {
+      "license": "Python-2.0",
+      "count": 1
+    },
+    {
+      "license": "CC-BY-4.0",
+      "count": 1
+    },
+    {
+      "license": "(MIT OR WTFPL)",
+      "count": 1
+    },
+    {
+      "license": "BlueOak-1.0.0",
+      "count": 1
+    },
+    {
+      "license": "CC0-1.0",
+      "count": 1
+    },
+    {
+      "license": "UNLICENSED",
+      "count": 1
+    },
+    {
+      "license": "(BSD-2-Clause OR MIT OR Apache-2.0)",
+      "count": 1
+    },
+    {
+      "license": "(MIT OR CC0-1.0)",
+      "count": 1
+    }
+  ],
+  "strong_copyleft_risk_count": 1,
+  "strong_copyleft_risk_packages": [
+    {
+      "package": "@img/sharp-win32-x64@0.34.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later"
+    }
+  ],
+  "unknown_or_custom_count": 2,
+  "unknown_or_custom_examples": [
+    {
+      "package": "7z-wasm@1.2.0",
+      "license": "Custom: https://github.com/sonictruth/7zip.js"
+    },
+    {
+      "package": "mediaplayerx@0.0.0",
+      "license": "UNLICENSED"
+    }
+  ]
+}

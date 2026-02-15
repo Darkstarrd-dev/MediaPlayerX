@@ -62,6 +62,8 @@ import type {
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
   DeleteSidebarNodesResponseDto,
+  MoveSidebarNodesRequestDto,
+  MoveSidebarNodesResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
   ReadAppStateRequestDto,
@@ -82,6 +84,7 @@ interface MediaPlayerBackendApi {
   setImageHidden?: (request: SetImageHiddenRequestDto) => Promise<SetImageHiddenResponseDto>
   deleteImageItems?: (request: DeleteImageItemsRequestDto) => Promise<DeleteImageItemsResponseDto>
   deleteSidebarNodes?: (request: DeleteSidebarNodesRequestDto) => Promise<DeleteSidebarNodesResponseDto>
+  moveSidebarNodes?: (request: MoveSidebarNodesRequestDto) => Promise<MoveSidebarNodesResponseDto>
   startManageAdReview?: (request: StartManageAdReviewRequestDto) => Promise<StartManageAdReviewResponseDto>
   readManageAdReviewTask?: (request: ReadManageAdReviewTaskRequestDto) => Promise<ReadManageAdReviewTaskResponseDto>
   pauseManageAdReviewTask?: (

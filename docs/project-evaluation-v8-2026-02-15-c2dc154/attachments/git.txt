@@ -1,0 +1,15 @@
+c2dc154f4197a6d32d85e4999c6220fe9bb766f1
+c2dc154
+c2dc154
+ M docs/README.md
+ M docs/ui/theme-gallery-capture.md
+ M src/features/app/useAppWorkspaceBindings.ts
+?? docs/project-evaluation-report-template.md
+?? docs/project-evaluation-report-v7.md
+?? docs/project-evaluation-v8-2026-02-15-c2dc154/
+?? docs/ref/video-metadata-scraper/
+?? docs/ui/Soft-Skeuomorphic-icon_design.md
+?? docs/ui/header-control-base.html
+?? docs/ui/icon_design.md
+?? docs/ui/theme-brainstorm-entry.md
+?? docs/ui/theme-gallery/

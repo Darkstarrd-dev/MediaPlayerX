@@ -1,0 +1,371 @@
+{
+  "generatedAtMs": 1771123163842,
+  "runDir": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z",
+  "imagesDir": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images",
+  "config": {
+    "outDir": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery",
+    "runTag": "2026-02-15T02-38-51-033Z",
+    "width": 1680,
+    "height": 980,
+    "waitAfterLoadMs": 600,
+    "waitAfterApplyMs": 260,
+    "styles": [
+      "soft-skeuomorphic",
+      "soft-skeuomorphic-crisp",
+      "soft-skeuomorphic-plush",
+      "soft-skeuomorphic-etched"
+    ],
+    "palettes": [
+      "skeuomorphic-light",
+      "skeuomorphic-dark"
+    ],
+    "scenes": [
+      {
+        "id": "image-default",
+        "label": "Image Default",
+        "preset": "image-default",
+        "waitMs": null
+      },
+      {
+        "id": "image-manage",
+        "label": "Image Manage",
+        "preset": "image-manage",
+        "waitMs": null
+      },
+      {
+        "id": "image-metadata",
+        "label": "Image Metadata",
+        "preset": "image-metadata",
+        "waitMs": null
+      },
+      {
+        "id": "settings-layout",
+        "label": "Settings Layout",
+        "preset": "settings-layout",
+        "waitMs": null
+      }
+    ]
+  },
+  "captures": [
+    {
+      "index": 1,
+      "sceneId": "image-default",
+      "sceneLabel": "Image Default",
+      "scenePreset": "image-default",
+      "styleId": "soft-skeuomorphic",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "001_image-default__soft-skeuomorphic__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\001_image-default__soft-skeuomorphic__skeuomorphic-light.png"
+    },
+    {
+      "index": 2,
+      "sceneId": "image-manage",
+      "sceneLabel": "Image Manage",
+      "scenePreset": "image-manage",
+      "styleId": "soft-skeuomorphic",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "002_image-manage__soft-skeuomorphic__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\002_image-manage__soft-skeuomorphic__skeuomorphic-light.png"
+    },
+    {
+      "index": 3,
+      "sceneId": "image-metadata",
+      "sceneLabel": "Image Metadata",
+      "scenePreset": "image-metadata",
+      "styleId": "soft-skeuomorphic",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "003_image-metadata__soft-skeuomorphic__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\003_image-metadata__soft-skeuomorphic__skeuomorphic-light.png"
+    },
+    {
+      "index": 4,
+      "sceneId": "settings-layout",
+      "sceneLabel": "Settings Layout",
+      "scenePreset": "settings-layout",
+      "styleId": "soft-skeuomorphic",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "004_settings-layout__soft-skeuomorphic__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\004_settings-layout__soft-skeuomorphic__skeuomorphic-light.png"
+    },
+    {
+      "index": 5,
+      "sceneId": "image-default",
+      "sceneLabel": "Image Default",
+      "scenePreset": "image-default",
+      "styleId": "soft-skeuomorphic",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "005_image-default__soft-skeuomorphic__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\005_image-default__soft-skeuomorphic__skeuomorphic-dark.png"
+    },
+    {
+      "index": 6,
+      "sceneId": "image-manage",
+      "sceneLabel": "Image Manage",
+      "scenePreset": "image-manage",
+      "styleId": "soft-skeuomorphic",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "006_image-manage__soft-skeuomorphic__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\006_image-manage__soft-skeuomorphic__skeuomorphic-dark.png"
+    },
+    {
+      "index": 7,
+      "sceneId": "image-metadata",
+      "sceneLabel": "Image Metadata",
+      "scenePreset": "image-metadata",
+      "styleId": "soft-skeuomorphic",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "007_image-metadata__soft-skeuomorphic__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\007_image-metadata__soft-skeuomorphic__skeuomorphic-dark.png"
+    },
+    {
+      "index": 8,
+      "sceneId": "settings-layout",
+      "sceneLabel": "Settings Layout",
+      "scenePreset": "settings-layout",
+      "styleId": "soft-skeuomorphic",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "008_settings-layout__soft-skeuomorphic__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\008_settings-layout__soft-skeuomorphic__skeuomorphic-dark.png"
+    },
+    {
+      "index": 9,
+      "sceneId": "image-default",
+      "sceneLabel": "Image Default",
+      "scenePreset": "image-default",
+      "styleId": "soft-skeuomorphic-crisp",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "009_image-default__soft-skeuomorphic-crisp__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\009_image-default__soft-skeuomorphic-crisp__skeuomorphic-light.png"
+    },
+    {
+      "index": 10,
+      "sceneId": "image-manage",
+      "sceneLabel": "Image Manage",
+      "scenePreset": "image-manage",
+      "styleId": "soft-skeuomorphic-crisp",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "010_image-manage__soft-skeuomorphic-crisp__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\010_image-manage__soft-skeuomorphic-crisp__skeuomorphic-light.png"
+    },
+    {
+      "index": 11,
+      "sceneId": "image-metadata",
+      "sceneLabel": "Image Metadata",
+      "scenePreset": "image-metadata",
+      "styleId": "soft-skeuomorphic-crisp",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "011_image-metadata__soft-skeuomorphic-crisp__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\011_image-metadata__soft-skeuomorphic-crisp__skeuomorphic-light.png"
+    },
+    {
+      "index": 12,
+      "sceneId": "settings-layout",
+      "sceneLabel": "Settings Layout",
+      "scenePreset": "settings-layout",
+      "styleId": "soft-skeuomorphic-crisp",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "012_settings-layout__soft-skeuomorphic-crisp__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\012_settings-layout__soft-skeuomorphic-crisp__skeuomorphic-light.png"
+    },
+    {
+      "index": 13,
+      "sceneId": "image-default",
+      "sceneLabel": "Image Default",
+      "scenePreset": "image-default",
+      "styleId": "soft-skeuomorphic-crisp",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "013_image-default__soft-skeuomorphic-crisp__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\013_image-default__soft-skeuomorphic-crisp__skeuomorphic-dark.png"
+    },
+    {
+      "index": 14,
+      "sceneId": "image-manage",
+      "sceneLabel": "Image Manage",
+      "scenePreset": "image-manage",
+      "styleId": "soft-skeuomorphic-crisp",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "014_image-manage__soft-skeuomorphic-crisp__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\014_image-manage__soft-skeuomorphic-crisp__skeuomorphic-dark.png"
+    },
+    {
+      "index": 15,
+      "sceneId": "image-metadata",
+      "sceneLabel": "Image Metadata",
+      "scenePreset": "image-metadata",
+      "styleId": "soft-skeuomorphic-crisp",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "015_image-metadata__soft-skeuomorphic-crisp__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\015_image-metadata__soft-skeuomorphic-crisp__skeuomorphic-dark.png"
+    },
+    {
+      "index": 16,
+      "sceneId": "settings-layout",
+      "sceneLabel": "Settings Layout",
+      "scenePreset": "settings-layout",
+      "styleId": "soft-skeuomorphic-crisp",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "016_settings-layout__soft-skeuomorphic-crisp__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\016_settings-layout__soft-skeuomorphic-crisp__skeuomorphic-dark.png"
+    },
+    {
+      "index": 17,
+      "sceneId": "image-default",
+      "sceneLabel": "Image Default",
+      "scenePreset": "image-default",
+      "styleId": "soft-skeuomorphic-plush",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "017_image-default__soft-skeuomorphic-plush__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\017_image-default__soft-skeuomorphic-plush__skeuomorphic-light.png"
+    },
+    {
+      "index": 18,
+      "sceneId": "image-manage",
+      "sceneLabel": "Image Manage",
+      "scenePreset": "image-manage",
+      "styleId": "soft-skeuomorphic-plush",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "018_image-manage__soft-skeuomorphic-plush__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\018_image-manage__soft-skeuomorphic-plush__skeuomorphic-light.png"
+    },
+    {
+      "index": 19,
+      "sceneId": "image-metadata",
+      "sceneLabel": "Image Metadata",
+      "scenePreset": "image-metadata",
+      "styleId": "soft-skeuomorphic-plush",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "019_image-metadata__soft-skeuomorphic-plush__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\019_image-metadata__soft-skeuomorphic-plush__skeuomorphic-light.png"
+    },
+    {
+      "index": 20,
+      "sceneId": "settings-layout",
+      "sceneLabel": "Settings Layout",
+      "scenePreset": "settings-layout",
+      "styleId": "soft-skeuomorphic-plush",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "020_settings-layout__soft-skeuomorphic-plush__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\020_settings-layout__soft-skeuomorphic-plush__skeuomorphic-light.png"
+    },
+    {
+      "index": 21,
+      "sceneId": "image-default",
+      "sceneLabel": "Image Default",
+      "scenePreset": "image-default",
+      "styleId": "soft-skeuomorphic-plush",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "021_image-default__soft-skeuomorphic-plush__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\021_image-default__soft-skeuomorphic-plush__skeuomorphic-dark.png"
+    },
+    {
+      "index": 22,
+      "sceneId": "image-manage",
+      "sceneLabel": "Image Manage",
+      "scenePreset": "image-manage",
+      "styleId": "soft-skeuomorphic-plush",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "022_image-manage__soft-skeuomorphic-plush__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\022_image-manage__soft-skeuomorphic-plush__skeuomorphic-dark.png"
+    },
+    {
+      "index": 23,
+      "sceneId": "image-metadata",
+      "sceneLabel": "Image Metadata",
+      "scenePreset": "image-metadata",
+      "styleId": "soft-skeuomorphic-plush",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "023_image-metadata__soft-skeuomorphic-plush__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\023_image-metadata__soft-skeuomorphic-plush__skeuomorphic-dark.png"
+    },
+    {
+      "index": 24,
+      "sceneId": "settings-layout",
+      "sceneLabel": "Settings Layout",
+      "scenePreset": "settings-layout",
+      "styleId": "soft-skeuomorphic-plush",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "024_settings-layout__soft-skeuomorphic-plush__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\024_settings-layout__soft-skeuomorphic-plush__skeuomorphic-dark.png"
+    },
+    {
+      "index": 25,
+      "sceneId": "image-default",
+      "sceneLabel": "Image Default",
+      "scenePreset": "image-default",
+      "styleId": "soft-skeuomorphic-etched",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "025_image-default__soft-skeuomorphic-etched__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\025_image-default__soft-skeuomorphic-etched__skeuomorphic-light.png"
+    },
+    {
+      "index": 26,
+      "sceneId": "image-manage",
+      "sceneLabel": "Image Manage",
+      "scenePreset": "image-manage",
+      "styleId": "soft-skeuomorphic-etched",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "026_image-manage__soft-skeuomorphic-etched__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\026_image-manage__soft-skeuomorphic-etched__skeuomorphic-light.png"
+    },
+    {
+      "index": 27,
+      "sceneId": "image-metadata",
+      "sceneLabel": "Image Metadata",
+      "scenePreset": "image-metadata",
+      "styleId": "soft-skeuomorphic-etched",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "027_image-metadata__soft-skeuomorphic-etched__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\027_image-metadata__soft-skeuomorphic-etched__skeuomorphic-light.png"
+    },
+    {
+      "index": 28,
+      "sceneId": "settings-layout",
+      "sceneLabel": "Settings Layout",
+      "scenePreset": "settings-layout",
+      "styleId": "soft-skeuomorphic-etched",
+      "paletteId": "skeuomorphic-light",
+      "fileName": "028_settings-layout__soft-skeuomorphic-etched__skeuomorphic-light.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\028_settings-layout__soft-skeuomorphic-etched__skeuomorphic-light.png"
+    },
+    {
+      "index": 29,
+      "sceneId": "image-default",
+      "sceneLabel": "Image Default",
+      "scenePreset": "image-default",
+      "styleId": "soft-skeuomorphic-etched",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "029_image-default__soft-skeuomorphic-etched__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\029_image-default__soft-skeuomorphic-etched__skeuomorphic-dark.png"
+    },
+    {
+      "index": 30,
+      "sceneId": "image-manage",
+      "sceneLabel": "Image Manage",
+      "scenePreset": "image-manage",
+      "styleId": "soft-skeuomorphic-etched",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "030_image-manage__soft-skeuomorphic-etched__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\030_image-manage__soft-skeuomorphic-etched__skeuomorphic-dark.png"
+    },
+    {
+      "index": 31,
+      "sceneId": "image-metadata",
+      "sceneLabel": "Image Metadata",
+      "scenePreset": "image-metadata",
+      "styleId": "soft-skeuomorphic-etched",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "031_image-metadata__soft-skeuomorphic-etched__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\031_image-metadata__soft-skeuomorphic-etched__skeuomorphic-dark.png"
+    },
+    {
+      "index": 32,
+      "sceneId": "settings-layout",
+      "sceneLabel": "Settings Layout",
+      "scenePreset": "settings-layout",
+      "styleId": "soft-skeuomorphic-etched",
+      "paletteId": "skeuomorphic-dark",
+      "fileName": "032_settings-layout__soft-skeuomorphic-etched__skeuomorphic-dark.png",
+      "filePath": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\ui\\theme-gallery\\2026-02-15T02-38-51-033Z\\images\\032_settings-layout__soft-skeuomorphic-etched__skeuomorphic-dark.png"
+    }
+  ]
+}

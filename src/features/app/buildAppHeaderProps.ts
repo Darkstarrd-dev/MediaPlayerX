@@ -20,6 +20,7 @@ interface BuildAppHeaderPropsParams {
   paletteMode: AppSettings['paletteMode']
   paletteDayId: string
   paletteNightId: string
+  interactionLocked?: boolean
   importMenuOpen: boolean
   taskStatusLabel: string
   taskStatusBusy: boolean
@@ -51,6 +52,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     autoPlayEnabled: params.autoPlayEnabled,
     autoPlayInterval: params.autoPlayInterval,
     paletteMode: params.paletteMode,
+    interactionLocked: Boolean(params.interactionLocked),
     importMenuOpen: params.importMenuOpen,
     taskStatusLabel: params.taskStatusLabel,
     taskStatusBusy: params.taskStatusBusy,
@@ -61,8 +63,16 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     onCloseImportMenu: () => params.setImportMenuOpen(false),
     onImportFiles: params.openImportFilesDialog,
     onImportFolders: params.openImportFoldersDialog,
-    onModeChange: (nextMode) => params.updateSettings({ mode: nextMode }),
+    onModeChange: (nextMode) => {
+      if (params.interactionLocked) {
+        return
+      }
+      params.updateSettings({ mode: nextMode })
+    },
     onToggleSearchPanel: () => {
+      if (params.interactionLocked) {
+        return
+      }
       if (params.manageMode) {
         params.onToggleManageMode()
       }
@@ -77,8 +87,18 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
         params.setSearchPanelCollapsed(false)
       }
     },
-    onToggleManageMode: params.onToggleManageMode,
-    onToggleMetadataManageMode: params.onToggleMetadataManageMode,
+    onToggleManageMode: () => {
+      if (params.interactionLocked) {
+        return
+      }
+      params.onToggleManageMode()
+    },
+    onToggleMetadataManageMode: () => {
+      if (params.interactionLocked) {
+        return
+      }
+      params.onToggleMetadataManageMode()
+    },
     onThumbnailScaleDown: () => {
       params.updateSettings({
         thumbnailScale: clamp(params.thumbnailScale + 1, 1, params.thumbnailScaleLevelCount),

@@ -59,34 +59,38 @@ export function FullscreenFooter({
       <div className="fullscreen-meta-line">{footerInfoText}</div>
       <div className="fullscreen-group">
         <button className={fullscreenDisplay === 'dual' ? 'is-active' : ''} type="button" onClick={onToggleDualDisplay}>
-          {fullscreenDisplay === 'dual' ? '单显示' : '双显示'}
+          {fullscreenDisplay === 'dual' ? t('ui.fullscreen.singleDisplay') : t('ui.fullscreen.dualDisplay')}
         </button>
         <button type="button" disabled={fullscreenDisplay !== 'dual'} onClick={onToggleSwapSides}>
-          调换左右
+          {t('ui.fullscreen.swapSides')}
         </button>
         <span className="fullscreen-focus-text">
-          {fullscreenDisplay === 'dual' ? `焦点：${fullscreenVideoFocus ? '视频' : '图片'}（点击区域或 Tab 切换）` : '焦点：单显示'}
+          {fullscreenDisplay === 'dual'
+            ? t('ui.fullscreen.focusDual', {
+                focus: fullscreenVideoFocus ? t('ui.fullscreen.focusVideo') : t('ui.fullscreen.focusImage'),
+              })
+            : t('ui.fullscreen.focusSingle')}
         </span>
       </div>
 
       <div className="fullscreen-group">
         <button type="button" onClick={() => onStepFocusedPane(-1)}>
-          上一页
+          {t('ui.fullscreen.prevPage')}
         </button>
         <button type="button" onClick={() => onStepFocusedPane(1)}>
-          下一页
+          {t('ui.fullscreen.nextPage')}
         </button>
         <button type="button" disabled={mode !== 'image'} onClick={onPrevPackage}>
-          上个包
+          {t('ui.fullscreen.prevPackage')}
         </button>
         <button type="button" disabled={mode !== 'image'} onClick={onNextPackage}>
-          下个包
+          {t('ui.fullscreen.nextPackage')}
         </button>
         <button type="button" disabled={!autoplayEnabledForFocus} onClick={onToggleAutoplay}>
-          {autoPlayEnabled ? '停止自动播放' : '自动播放'}
+          {autoPlayEnabled ? t('ui.fullscreen.stopAutoplay') : t('ui.fullscreen.autoplay')}
         </button>
         <label className="fullscreen-inline-field">
-          速度
+          {t('ui.fullscreen.speed')}
           <select
             {...buildA11yPropsByRegistry({ key: 'mediaFullscreenAutoPlaySpeed', t })}
             disabled={!autoplayEnabledForFocus}
@@ -104,29 +108,29 @@ export function FullscreenFooter({
 
       <div className="fullscreen-group">
         <button type="button" onClick={() => onAlignFocusedPane('up')}>
-          上对齐
+          {t('ui.fullscreen.alignUp')}
         </button>
         <button type="button" onClick={() => onAlignFocusedPane('down')}>
-          下对齐
+          {t('ui.fullscreen.alignDown')}
         </button>
         <button type="button" onClick={() => onAlignFocusedPane('left')}>
-          左对齐
+          {t('ui.fullscreen.alignLeft')}
         </button>
         <button type="button" onClick={() => onAlignFocusedPane('right')}>
-          右对齐
+          {t('ui.fullscreen.alignRight')}
         </button>
         <button type="button" disabled={!zoomEnabled} onClick={onZoomOut}>
-          缩小
+          {t('ui.fullscreen.zoomOut')}
         </button>
         <span className="fullscreen-zoom-text">{zoomEnabled ? `${zoomPercent}%` : '-'}</span>
         <button type="button" disabled={!zoomEnabled} onClick={onZoomIn}>
-          放大
+          {t('ui.fullscreen.zoomIn')}
         </button>
         <button type="button" disabled={!zoomEnabled} onClick={onResetSinglePane}>
-          Reset
+          {t('ui.fullscreen.reset')}
         </button>
         <button type="button" onClick={onExit}>
-          退出全屏
+          {t('ui.fullscreen.exit')}
         </button>
       </div>
     </footer>
