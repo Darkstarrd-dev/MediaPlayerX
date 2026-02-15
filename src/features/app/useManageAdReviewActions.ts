@@ -4,6 +4,7 @@ import { manageAdReviewTaskSchema, type ManageAdReviewTaskDto } from '../../cont
 import { useI18n } from '../../i18n/useI18n'
 import type { BrowserMode } from '../../types'
 import type { MediaRepository } from '../backend/repository'
+import { toErrorDetailWithCode } from './errorCode'
 
 const REVIEW_POLL_INTERVAL_MS = 1_000
 const REVIEW_START_TIMEOUT_MS = 60_000
@@ -337,7 +338,7 @@ export function useManageAdReviewActions({
       } catch (error) {
         setQueueLoaded(true)
         if (!options?.silent) {
-          const message = error instanceof Error ? error.message : String(error)
+          const message = toErrorDetailWithCode(error, t)
           setManageOperationHint(t('ui.manage.hint.queueReadFailed', { message }))
         }
         return null
@@ -596,7 +597,7 @@ export function useManageAdReviewActions({
       setManageOperationHint(response.task.message ?? t('ui.manage.hint.started'))
       return response.task
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
+      const message = toErrorDetailWithCode(error, t)
       setManageOperationHint(t('ui.manage.hint.startFailed', { message }))
       return null
     } finally {
@@ -649,7 +650,7 @@ export function useManageAdReviewActions({
       await loadQueueTasks({ silent: true })
       setManageOperationHint(response.task.message ?? t('ui.manage.hint.paused'))
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
+      const message = toErrorDetailWithCode(error, t)
       setManageOperationHint(t('ui.manage.hint.pauseFailed', { message }))
     } finally {
       setPending(false)
@@ -764,7 +765,7 @@ export function useManageAdReviewActions({
         return true
       } catch (error) {
         if (!options?.silentHint) {
-          const message = error instanceof Error ? error.message : String(error)
+          const message = toErrorDetailWithCode(error, t)
           setManageOperationHint(t('ui.manage.hint.queueRemoveFailed', { message }))
         }
         return false
@@ -838,7 +839,7 @@ export function useManageAdReviewActions({
       }
       return true
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
+      const message = toErrorDetailWithCode(error, t)
       setManageOperationHint(t('ui.manage.hint.deleteFailed', { message }))
       return false
     } finally {

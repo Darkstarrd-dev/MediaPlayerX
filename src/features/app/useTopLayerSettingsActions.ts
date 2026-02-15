@@ -10,6 +10,7 @@ import {
   toDirectoryDefaultPath,
 } from './useAppTopLayerState.utils'
 import { SETTINGS_STATE_KEY, toPersistedAppSettings } from './usePersistedAppSettings'
+import { toErrorDetailWithCode } from './errorCode'
 
 interface UseTopLayerSettingsActionsParams {
   appSettings: AppSettingsStoreSnapshot
@@ -136,7 +137,7 @@ export function useTopLayerSettingsActions({
       })
       setAdReviewVisionTestMessage(response.message)
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
+      const message = toErrorDetailWithCode(error, t)
       updateSettings({ adReviewVisionVerified: false })
       setAdReviewVisionTestMessage(t('ui.settings.visionModelTestFailed', { message }))
     } finally {
@@ -178,7 +179,7 @@ export function useTopLayerSettingsActions({
       })
       setAdReviewVisionSaveMessage(t('ui.settings.visionModelSaved'))
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
+      const message = toErrorDetailWithCode(error, t)
       setAdReviewVisionSaveMessage(t('ui.settings.visionModelSaveFailed', { message }))
     } finally {
       setAdReviewVisionSavePending(false)
@@ -204,7 +205,7 @@ export function useTopLayerSettingsActions({
         )
         runtimeInfoDiagnostics.retry()
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
+        const message = toErrorDetailWithCode(error, t)
         setRuntimePathUpdateMessage(t('ui.settings.runtimePathSaveFailed', { message }))
       } finally {
         setRuntimePathUpdatePending(false)

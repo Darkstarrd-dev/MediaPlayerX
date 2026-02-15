@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 
+import { useI18n } from '../../i18n/useI18n'
 import type { MediaRepository } from '../backend/repository'
+import { toErrorDetailWithCode } from '../shared/errorCode'
 import type { VideoItem } from '../../types'
 
 const DEFAULT_PLAYLIST_TIMEOUT_MS = 8_000
@@ -19,13 +21,6 @@ function isSameList(left: string[], right: string[]): boolean {
     }
   }
   return true
-}
-
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message
-  }
-  return '播放列表持久化失败'
 }
 
 interface UsePlaylistPersistenceParams {
@@ -63,6 +58,7 @@ export function usePlaylistPersistence({
   playlistIds,
   setPlaylistIds,
 }: UsePlaylistPersistenceParams): UsePlaylistPersistenceResult {
+  const { t } = useI18n()
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncPlaylistRepository(repository)
   const validVideoIds = useMemo(() => new Set(videos.map((video) => video.id)), [videos])
 
@@ -116,14 +112,14 @@ export function usePlaylistPersistence({
 
         hydratedRef.current = true
         persistedPlaylistRef.current = normalizePlaylist(playlistIdsRef.current, validVideoIds)
-        setReadError(toErrorMessage(error))
+        setReadError(t('ui.playlist.readFailed', { message: toErrorDetailWithCode(error, t) }))
         setLoading(false)
       })
 
     return () => {
       disposed = true
     }
-  }, [isSynchronousTestMode, readNonce, repository, setPlaylistIds, validVideoIds])
+  }, [isSynchronousTestMode, readNonce, repository, setPlaylistIds, t, validVideoIds])
 
   useEffect(() => {
     if (isSynchronousTestMode || !hydratedRef.current) {
@@ -162,13 +158,13 @@ export function usePlaylistPersistence({
         if (disposed) {
           return
         }
-        setWriteError(toErrorMessage(error))
+        setWriteError(t('ui.playlist.writeFailed', { message: toErrorDetailWithCode(error, t) }))
       })
 
     return () => {
       disposed = true
     }
-  }, [isSynchronousTestMode, playlistIds, repository, setPlaylistIds, validVideoIds, writeNonce])
+  }, [isSynchronousTestMode, playlistIds, repository, setPlaylistIds, t, validVideoIds, writeNonce])
 
   if (isSynchronousTestMode) {
     return {

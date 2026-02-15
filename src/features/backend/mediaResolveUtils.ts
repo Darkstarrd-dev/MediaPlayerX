@@ -26,7 +26,7 @@ export function toErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
     return error.message
   }
-  return '媒体 URL 解析失败'
+  return 'media_resolve_failed'
 }
 
 export function isAbortError(error: unknown): boolean {

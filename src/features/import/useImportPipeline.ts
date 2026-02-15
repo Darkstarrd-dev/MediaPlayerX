@@ -18,21 +18,16 @@ import type {
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
 } from '../../contracts/backend'
+import { useI18n } from '../../i18n/useI18n'
 import type { BrowserMode } from '../../types'
 import type { MediaRepository } from '../backend/repository'
+import { toErrorDetailWithCode } from '../shared/errorCode'
 import { collectNativePaths } from './importPathUtils'
 import { useImportDragOverlay } from './useImportDragOverlay'
 import { useImportPaste } from './useImportPaste'
 
 const IMPORT_TASK_TIMEOUT_MS = 20_000
 const IMPORT_TASK_POLL_INTERVAL_MS = 1_500
-
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message
-  }
-  return '导入任务失败'
-}
 
 interface UseImportPipelineResult {
   fileImportInputRef: RefObject<HTMLInputElement | null>
@@ -97,6 +92,7 @@ function resolveImportTaskSource(source: BaseImportTaskSource, mode: BrowserMode
 }
 
 export function useImportPipeline({ repository, mode }: UseImportPipelineParams): UseImportPipelineResult {
+  const { t } = useI18n()
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncImportRepository(repository)
 
   const fileImportInputRef = useRef<HTMLInputElement>(null)
@@ -104,8 +100,8 @@ export function useImportPipeline({ repository, mode }: UseImportPipelineParams)
   const [enqueuePending, setEnqueuePending] = useState(false)
   const [taskError, setTaskError] = useState<string | null>(null)
   const handleImportError = useCallback((error: unknown) => {
-    setTaskError(toErrorMessage(error))
-  }, [])
+    setTaskError(t('ui.importTask.failed', { message: toErrorDetailWithCode(error, t) }))
+  }, [t])
   const initialImportTasks = useMemo<ImportTaskDto[]>(() => {
     if (!isSynchronousTestMode) {
       return []
@@ -127,7 +123,7 @@ export function useImportPipeline({ repository, mode }: UseImportPipelineParams)
     async (source: BaseImportTaskSource, paths: string[]) => {
       const normalizedPaths = Array.from(new Set(paths.map((value) => value.trim()).filter(Boolean)))
       if (normalizedPaths.length === 0) {
-        setTaskError('导入失败：未获取到本地绝对路径')
+        setTaskError(t('ui.importTask.pathResolveFailed'))
         return
       }
 
@@ -296,8 +292,8 @@ export function useImportPipeline({ repository, mode }: UseImportPipelineParams)
     [enqueueImportPaths],
   )
   const handleDragPathResolveFailed = useCallback(() => {
-    setTaskError('拖拽导入失败：未获取到本地绝对路径')
-  }, [])
+    setTaskError(t('ui.importTask.dragPathResolveFailed'))
+  }, [t])
 
   useImportPaste({
     repository,

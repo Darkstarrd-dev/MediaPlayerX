@@ -581,25 +581,25 @@ describe('useWriteDataAccess', () => {
 
     await act(async () => {
       await expect(result.current.write.moveSidebarNodes([], 'D:/target')).rejects.toThrow(
-        '请选择需要移动的目录节点',
+        'manage_move_nodes_empty_selection',
       )
-      await expect(result.current.write.moveSidebarNodes(['package:pkg-1'], '   ')).rejects.toThrow('请选择目标目录')
+      await expect(result.current.write.moveSidebarNodes(['package:pkg-1'], '   ')).rejects.toThrow('manage_move_nodes_empty_destination')
     })
 
     ;(repository as unknown as { moveSidebarNodes?: undefined }).moveSidebarNodes = undefined
 
     await act(async () => {
       await expect(result.current.write.moveSidebarNodes(['package:pkg-1'], 'D:/target')).rejects.toThrow(
-        '当前后端不支持移动目录操作',
+        'manage_move_nodes_unsupported',
       )
     })
   })
 
   it.each([
-    'TimeoutError: request timed out',
-    'AbortError: request aborted',
-    'Invalid moveSidebarNodes response payload',
-  ])('moveSidebarNodes 会透传后端错误: %s', async (backendMessage) => {
+    ['TimeoutError: request timed out', '错误码 timeouterror'],
+    ['AbortError: request aborted', '错误码 aborterror'],
+    ['Invalid moveSidebarNodes response payload', 'Invalid moveSidebarNodes response payload'],
+  ])('moveSidebarNodes 会透传后端错误: %s', async (backendMessage, expectedManageMessage) => {
     const repository = new WritableRepositoryStub()
     repository.moveSidebarNodes = vi.fn(async () => {
       throw new Error(backendMessage)
@@ -625,7 +625,7 @@ describe('useWriteDataAccess', () => {
       await expect(result.current.write.moveSidebarNodes(['package:pkg-1'], 'D:/target')).rejects.toThrow(backendMessage)
     })
 
-    expect(result.current.write.errors.manage).toBe(backendMessage)
+    expect(result.current.write.errors.manage).toBe(expectedManageMessage)
     expect(result.current.write.pending.manage).toBe(false)
   })
 

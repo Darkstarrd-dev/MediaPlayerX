@@ -18,16 +18,11 @@ import type {
   WriteAudioMetadataRequestDto,
   WriteAudioMetadataResponseDto,
 } from '../../contracts/backend'
+import { useI18n } from '../../i18n/useI18n'
+import { toErrorDetailWithCode } from '../shared/errorCode'
 import type { MediaRepository } from './repository'
 
 const DEFAULT_WRITE_TIMEOUT_MS = 8_000
-
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message
-  }
-  return '未知后端错误'
-}
 
 interface UseWriteDataAccessParams {
   repository: MediaRepository
@@ -148,6 +143,7 @@ export function useWriteDataAccess({
   setVideoCoverById,
   setVideoCoverImageById,
 }: UseWriteDataAccessParams): UseWriteDataAccessResult {
+  const { t } = useI18n()
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncWriteRepository(repository)
 
   const [gradePending, setGradePending] = useState(false)
@@ -193,12 +189,12 @@ export function useWriteDataAccess({
           ...previous,
           [packageId]: previousGrade,
         }))
-        setGradeError(toErrorMessage(error))
+        setGradeError(toErrorDetailWithCode(error, t))
       } finally {
         setGradePending(false)
       }
     },
-    [isSynchronousTestMode, repository, setGradeByPackage],
+    [isSynchronousTestMode, repository, setGradeByPackage, t],
   )
 
   const saveVideoCover = useCallback(
@@ -249,12 +245,12 @@ export function useWriteDataAccess({
           ...previous,
           [videoId]: previousCoverImagePath,
         }))
-        setCoverError(toErrorMessage(error))
+        setCoverError(toErrorDetailWithCode(error, t))
       } finally {
         setCoverPending(false)
       }
     },
-    [isSynchronousTestMode, repository, setVideoCoverById, setVideoCoverImageById],
+    [isSynchronousTestMode, repository, setVideoCoverById, setVideoCoverImageById, t],
   )
 
   const writePackageMetadata = useCallback(
@@ -270,7 +266,7 @@ export function useWriteDataAccess({
       },
     ) => {
       if (!repository.writePackageMetadata) {
-        setMetadataError('当前后端不支持写入元数据')
+        setMetadataError(t('ui.metadata.backendWriteUnsupported'))
         return
       }
 
@@ -291,7 +287,7 @@ export function useWriteDataAccess({
         if (isSynchronousTestMode) {
           const writer = repository.writePackageMetadataSync
           if (!writer) {
-            setMetadataError('当前后端不支持写入元数据')
+            setMetadataError(t('ui.metadata.backendWriteUnsupported'))
             return
           }
           writer(request)
@@ -302,12 +298,12 @@ export function useWriteDataAccess({
           timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
         })
       } catch (error: unknown) {
-        setMetadataError(toErrorMessage(error))
+        setMetadataError(toErrorDetailWithCode(error, t))
       } finally {
         setMetadataPending(false)
       }
     },
-    [isSynchronousTestMode, repository],
+    [isSynchronousTestMode, repository, t],
   )
 
   const writeVideoMetadata = useCallback(
@@ -327,7 +323,7 @@ export function useWriteDataAccess({
       },
     ) => {
       if (!repository.writeVideoMetadata) {
-        setMetadataError('当前后端不支持写入视频元数据')
+        setMetadataError(t('ui.metadata.backendVideoWriteUnsupported'))
         return
       }
 
@@ -352,7 +348,7 @@ export function useWriteDataAccess({
         if (isSynchronousTestMode) {
           const writer = repository.writeVideoMetadataSync
           if (!writer) {
-            setMetadataError('当前后端不支持写入视频元数据')
+            setMetadataError(t('ui.metadata.backendVideoWriteUnsupported'))
             return
           }
           writer(request)
@@ -363,12 +359,12 @@ export function useWriteDataAccess({
           timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
         })
       } catch (error: unknown) {
-        setMetadataError(toErrorMessage(error))
+        setMetadataError(toErrorDetailWithCode(error, t))
       } finally {
         setMetadataPending(false)
       }
     },
-    [isSynchronousTestMode, repository],
+    [isSynchronousTestMode, repository, t],
   )
 
   const writeAudioMetadata = useCallback(
@@ -382,7 +378,7 @@ export function useWriteDataAccess({
       },
     ) => {
       if (!repository.writeAudioMetadata) {
-        setMetadataError('当前后端不支持写入音频元数据')
+        setMetadataError(t('ui.metadata.backendAudioWriteUnsupported'))
         return
       }
 
@@ -401,7 +397,7 @@ export function useWriteDataAccess({
         if (isSynchronousTestMode) {
           const writer = repository.writeAudioMetadataSync
           if (!writer) {
-            setMetadataError('当前后端不支持写入音频元数据')
+            setMetadataError(t('ui.metadata.backendAudioWriteUnsupported'))
             return
           }
           writer(request)
@@ -412,12 +408,12 @@ export function useWriteDataAccess({
           timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
         })
       } catch (error: unknown) {
-        setMetadataError(toErrorMessage(error))
+        setMetadataError(toErrorDetailWithCode(error, t))
       } finally {
         setMetadataPending(false)
       }
     },
-    [isSynchronousTestMode, repository],
+    [isSynchronousTestMode, repository, t],
   )
 
   const writePackageExternalMetadata = useCallback(
@@ -443,7 +439,7 @@ export function useWriteDataAccess({
       },
     ) => {
       if (!repository.writePackageExternalMetadata) {
-        setMetadataError('当前后端不支持写入外部元数据')
+        setMetadataError(t('ui.metadata.backendExternalWriteUnsupported'))
         return
       }
 
@@ -474,7 +470,7 @@ export function useWriteDataAccess({
         if (isSynchronousTestMode) {
           const writer = repository.writePackageExternalMetadataSync
           if (!writer) {
-            setMetadataError('当前后端不支持写入外部元数据')
+            setMetadataError(t('ui.metadata.backendExternalWriteUnsupported'))
             return
           }
           writer(request)
@@ -485,23 +481,23 @@ export function useWriteDataAccess({
           timeoutMs: 15_000,
         })
       } catch (error: unknown) {
-        setMetadataError(toErrorMessage(error))
+        setMetadataError(toErrorDetailWithCode(error, t))
       } finally {
         setMetadataPending(false)
       }
     },
-    [isSynchronousTestMode, repository],
+    [isSynchronousTestMode, repository, t],
   )
 
   const setImageHidden = useCallback(
     async (imageIds: string[], hidden: boolean): Promise<SetImageHiddenResponseDto> => {
       if (!repository.setImageHidden) {
-        throw new Error('当前后端不支持隐藏管理操作')
+        throw new Error('manage_hidden_unsupported')
       }
 
       const normalizedIds = Array.from(new Set(imageIds.map((id) => id.trim()).filter(Boolean)))
       if (normalizedIds.length === 0) {
-        throw new Error('请选择需要隐藏/取消隐藏的图片')
+        throw new Error('manage_hidden_empty_selection')
       }
 
       setManagePending(true)
@@ -519,25 +515,25 @@ export function useWriteDataAccess({
         )
         return response
       } catch (error: unknown) {
-        const message = toErrorMessage(error)
+        const message = toErrorDetailWithCode(error, t)
         setManageError(message)
-        throw new Error(message)
+        throw (error instanceof Error ? error : new Error(String(error)))
       } finally {
         setManagePending(false)
       }
     },
-    [repository],
+    [repository, t],
   )
 
   const deleteImageItems = useCallback(
     async (imageIds: string[]): Promise<DeleteImageItemsResponseDto> => {
       if (!repository.deleteImageItems) {
-        throw new Error('当前后端不支持删除图片操作')
+        throw new Error('manage_delete_images_unsupported')
       }
 
       const normalizedIds = Array.from(new Set(imageIds.map((id) => id.trim()).filter(Boolean)))
       if (normalizedIds.length === 0) {
-        throw new Error('请选择需要删除的图片')
+        throw new Error('manage_delete_images_empty_selection')
       }
 
       setManagePending(true)
@@ -554,25 +550,25 @@ export function useWriteDataAccess({
         )
         return response
       } catch (error: unknown) {
-        const message = toErrorMessage(error)
+        const message = toErrorDetailWithCode(error, t)
         setManageError(message)
-        throw new Error(message)
+        throw (error instanceof Error ? error : new Error(String(error)))
       } finally {
         setManagePending(false)
       }
     },
-    [repository],
+    [repository, t],
   )
 
   const deleteSidebarNodes = useCallback(
     async (nodeIds: string[]): Promise<DeleteSidebarNodesResponseDto> => {
       if (!repository.deleteSidebarNodes) {
-        throw new Error('当前后端不支持删除目录操作')
+        throw new Error('manage_delete_nodes_unsupported')
       }
 
       const normalizedIds = Array.from(new Set(nodeIds.map((id) => id.trim()).filter(Boolean)))
       if (normalizedIds.length === 0) {
-        throw new Error('请选择需要删除的目录节点')
+        throw new Error('manage_delete_nodes_empty_selection')
       }
 
       setManagePending(true)
@@ -589,20 +585,20 @@ export function useWriteDataAccess({
         )
         return response
       } catch (error: unknown) {
-        const message = toErrorMessage(error)
+        const message = toErrorDetailWithCode(error, t)
         setManageError(message)
-        throw new Error(message)
+        throw (error instanceof Error ? error : new Error(String(error)))
       } finally {
         setManagePending(false)
       }
     },
-    [repository],
+    [repository, t],
   )
 
   const pickDirectoryPath = useCallback(
     async (title?: string, defaultPath?: string): Promise<string | null> => {
       if (!repository.pickDirectoryPath) {
-        throw new Error('当前后端不支持目录选择')
+        throw new Error('manage_pick_directory_unsupported')
       }
 
       const response = await repository.pickDirectoryPath({
@@ -616,7 +612,7 @@ export function useWriteDataAccess({
 
       return response.path
     },
-    [repository],
+    [repository, t],
   )
 
   const moveSidebarNodes = useCallback(
@@ -626,17 +622,17 @@ export function useWriteDataAccess({
       groupName?: string,
     ): Promise<MoveSidebarNodesResponseDto> => {
       if (!repository.moveSidebarNodes) {
-        throw new Error('当前后端不支持移动目录操作')
+        throw new Error('manage_move_nodes_unsupported')
       }
 
       const normalizedNodeIds = Array.from(new Set(nodeIds.map((id) => id.trim()).filter(Boolean)))
       if (normalizedNodeIds.length === 0) {
-        throw new Error('请选择需要移动的目录节点')
+        throw new Error('manage_move_nodes_empty_selection')
       }
 
       const normalizedDestinationDirectory = destinationDirectory.trim()
       if (!normalizedDestinationDirectory) {
-        throw new Error('请选择目标目录')
+        throw new Error('manage_move_nodes_empty_destination')
       }
 
       const normalizedGroupName = groupName?.trim() || undefined
@@ -657,14 +653,14 @@ export function useWriteDataAccess({
         )
         return response
       } catch (error: unknown) {
-        const message = toErrorMessage(error)
+        const message = toErrorDetailWithCode(error, t)
         setManageError(message)
-        throw new Error(message)
+        throw (error instanceof Error ? error : new Error(String(error)))
       } finally {
         setManagePending(false)
       }
     },
-    [repository],
+    [repository, t],
   )
 
   return {

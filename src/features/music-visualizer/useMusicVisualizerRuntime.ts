@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 
+import { useI18n } from '../../i18n/useI18n'
+import { toErrorDetailWithCode } from '../shared/errorCode'
 import { MusicAudioAnalyser } from './audioAnalyser'
 import { CpuMusicVisualizerRenderer } from './cpuRenderer'
 import { resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from './shaderRegistry'
@@ -288,6 +290,7 @@ export function useMusicVisualizerRuntime({
   layeredForegroundOffsetY = 0,
   layeredForegroundScale = 1,
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
+  const { t } = useI18n()
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
   const [activeBackend, setActiveBackend] = useState<MusicVisualizerRendererMode | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
@@ -397,20 +400,20 @@ export function useMusicVisualizerRuntime({
     if (!gpuCanvas) {
       setStats(null)
       setActiveBackend(null)
-      setRuntimeError('可视化画布未就绪（canvasRef.current 为空）')
+      setRuntimeError(t('ui.music.runtimeCanvasNotReady'))
       return
     }
     if (!cpuCanvas) {
       setStats(null)
       setActiveBackend(null)
-      setRuntimeError('可视化画布未就绪（cpuCanvasRef.current 为空）')
+      setRuntimeError(t('ui.music.runtimeCpuCanvasNotReady'))
       return
     }
 
     if (!shader) {
       setStats(null)
       setActiveBackend(null)
-      setRuntimeError('未找到可用 Shader')
+      setRuntimeError(t('ui.music.runtimeShaderNotFound'))
       return
     }
 
@@ -469,21 +472,25 @@ export function useMusicVisualizerRuntime({
       try {
         renderer = createRenderer('gpu')
       } catch (gpuError) {
-        const gpuErrorMessage = gpuError instanceof Error ? gpuError.message : String(gpuError)
+        const gpuErrorMessage = toErrorDetailWithCode(gpuError, t)
         try {
           renderer = createRenderer('cpu')
-          rendererInitMessage = `GPU 渲染初始化失败，已自动切换 CPU：${gpuErrorMessage} | ${runtimeProbeInfo}`
+          rendererInitMessage = t('ui.music.runtimeRendererGpuFallback', { message: gpuErrorMessage, detail: runtimeProbeInfo })
         } catch (cpuError) {
-          const cpuErrorMessage = cpuError instanceof Error ? cpuError.message : String(cpuError)
-          rendererInitMessage = `可视化渲染器初始化失败（GPU + CPU）：${gpuErrorMessage} | ${cpuErrorMessage} | ${runtimeProbeInfo}`
+          const cpuErrorMessage = toErrorDetailWithCode(cpuError, t)
+          rendererInitMessage = t('ui.music.runtimeRendererInitFailedBoth', {
+            gpuMessage: gpuErrorMessage,
+            cpuMessage: cpuErrorMessage,
+            detail: runtimeProbeInfo,
+          })
         }
       }
     } else {
       try {
         renderer = createRenderer('cpu')
       } catch (cpuError) {
-        const cpuErrorMessage = cpuError instanceof Error ? cpuError.message : String(cpuError)
-        rendererInitMessage = `CPU 渲染初始化失败：${cpuErrorMessage} | ${runtimeProbeInfo}`
+        const cpuErrorMessage = toErrorDetailWithCode(cpuError, t)
+        rendererInitMessage = t('ui.music.runtimeRendererCpuInitFailed', { message: cpuErrorMessage, detail: runtimeProbeInfo })
       }
     }
 
@@ -553,7 +560,7 @@ export function useMusicVisualizerRuntime({
         if (audioAnalyser.lastError !== lastAnalyserError) {
           lastAnalyserError = audioAnalyser.lastError
           if (lastAnalyserError) {
-            setRuntimeError(`音频分析不可用：${lastAnalyserError}`)
+            setRuntimeError(t('ui.music.runtimeAudioAnalyserUnavailable', { message: lastAnalyserError }))
           } else {
             setRuntimeError(rendererInitMessage)
           }
@@ -589,10 +596,10 @@ export function useMusicVisualizerRuntime({
           foregroundScale: Math.max(0.25, Math.min(3, runtimeSettingsRef.current.layeredForegroundScale)),
         })
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
+        const message = toErrorDetailWithCode(error, t)
         if (message !== lastRenderError) {
           lastRenderError = message
-          setRuntimeError(`可视化渲染异常：${message} | ${runtimeProbeInfo}`)
+          setRuntimeError(t('ui.music.runtimeRenderException', { message, detail: runtimeProbeInfo }))
         }
         animationFrameId = window.requestAnimationFrame(renderLoop)
         return
@@ -642,6 +649,7 @@ export function useMusicVisualizerRuntime({
     cpuCanvasRef,
     preferredRenderer,
     shader,
+    t,
   ])
 
   return {

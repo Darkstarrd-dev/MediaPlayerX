@@ -8,6 +8,7 @@ import type {
 } from '../../contracts/backend'
 import { useI18n } from '../../i18n/useI18n'
 import type { BrowserMode } from '../../types'
+import { toErrorDetailWithCode } from './errorCode'
 
 interface ManageWriteAccess {
   setImageHidden: (imageIds: string[], hidden: boolean) => Promise<SetImageHiddenResponseDto>
@@ -109,7 +110,7 @@ export function useManageModeActions({
           }),
         )
       } catch (error) {
-        setManageOperationHint(error instanceof Error ? error.message : String(error))
+        setManageOperationHint(t('ui.manage.hint.operationFailed', { message: toErrorDetailWithCode(error, t) }))
       }
     },
     [backendWrite, imageCheckedIds, mode, setManageOperationHint, t],
@@ -151,7 +152,7 @@ export function useManageModeActions({
           groupMode ? t('ui.manage.dialog.pickGroupTargetTitle') : t('ui.manage.dialog.pickMoveTargetTitle'),
         )
       } catch (error) {
-        setManageOperationHint(error instanceof Error ? error.message : String(error))
+        setManageOperationHint(t('ui.manage.hint.operationFailed', { message: toErrorDetailWithCode(error, t) }))
         return
       }
 
@@ -178,7 +179,7 @@ export function useManageModeActions({
         )
         clearAllSelections()
       } catch (error) {
-        setManageOperationHint(error instanceof Error ? error.message : String(error))
+        setManageOperationHint(t('ui.manage.hint.operationFailed', { message: toErrorDetailWithCode(error, t) }))
       }
     },
     [backendWrite, clearAllSelections, setManageOperationHint, sidebarCheckedNodeIds, t],
@@ -222,7 +223,7 @@ export function useManageModeActions({
       }
       clearAllSelections()
     } catch (error) {
-      setManageOperationHint(error instanceof Error ? error.message : String(error))
+      setManageOperationHint(t('ui.manage.hint.operationFailed', { message: toErrorDetailWithCode(error, t) }))
     }
   }, [
     backendWrite,

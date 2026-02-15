@@ -23,7 +23,7 @@ export class CpuMusicVisualizerRenderer implements MusicVisualizerRenderer {
     this.canvas = canvas
     const ctx = canvas.getContext('2d')
     if (!ctx) {
-      throw new Error('当前环境不可用 Canvas2D')
+      throw new Error('canvas2d_unavailable')
     }
     this.ctx = ctx
   }

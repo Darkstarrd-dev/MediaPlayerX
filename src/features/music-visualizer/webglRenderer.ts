@@ -99,7 +99,7 @@ interface PassUniformInput {
 function compileShader(gl: WebGL2RenderingContext, shaderType: number, source: string): WebGLShader {
   const shader = gl.createShader(shaderType)
   if (!shader) {
-    throw new Error('创建 WebGL Shader 失败')
+    throw new Error('webgl_shader_create_failed')
   }
 
   gl.shaderSource(shader, source)
@@ -123,7 +123,7 @@ function createProgram(gl: WebGL2RenderingContext, fragmentSource: string): WebG
   if (!program) {
     gl.deleteShader(vertexShader)
     gl.deleteShader(fragmentShader)
-    throw new Error('创建 WebGL Program 失败')
+    throw new Error('webgl_program_create_failed')
   }
 
   gl.attachShader(program, vertexShader)
@@ -364,7 +364,7 @@ function createTextureBinding(
 ): ChannelTextureBinding {
   const texture = gl.createTexture()
   if (!texture) {
-    throw new Error(`创建纹理失败：${definition.id}`)
+    throw new Error(`webgl_texture_create_failed:${definition.id}`)
   }
 
   const filter = resolveTextureFilter(gl, definition.filter)
@@ -414,7 +414,7 @@ function createTextureBinding(
 function createRenderTexture(gl: WebGL2RenderingContext, width: number, height: number): WebGLTexture {
   const texture = gl.createTexture()
   if (!texture) {
-    throw new Error('创建渲染纹理失败')
+    throw new Error('webgl_render_texture_create_failed')
   }
   gl.bindTexture(gl.TEXTURE_2D, texture)
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
@@ -429,7 +429,7 @@ function createRenderTexture(gl: WebGL2RenderingContext, width: number, height: 
 function createFramebufferForTexture(gl: WebGL2RenderingContext, texture: WebGLTexture): WebGLFramebuffer {
   const framebuffer = gl.createFramebuffer()
   if (!framebuffer) {
-    throw new Error('创建帧缓冲失败')
+    throw new Error('webgl_framebuffer_create_failed')
   }
   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
@@ -437,7 +437,7 @@ function createFramebufferForTexture(gl: WebGL2RenderingContext, texture: WebGLT
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   if (status !== gl.FRAMEBUFFER_COMPLETE) {
     gl.deleteFramebuffer(framebuffer)
-    throw new Error(`帧缓冲不完整：status=${status}`)
+    throw new Error(`webgl_framebuffer_incomplete:${status}`)
   }
   return framebuffer
 }
@@ -541,7 +541,7 @@ function normalizeShaderPipeline(shader: MusicVisualizerShaderDefinition): Norma
   const passIdSet = new Set<string>()
   for (const pass of normalizedPasses) {
     if (passIdSet.has(pass.id)) {
-      throw new Error(`多 Pass 配置存在重复 id：${pass.id}`)
+      throw new Error(`shader_pipeline_duplicate_pass_id:${pass.id}`)
     }
     passIdSet.add(pass.id)
   }
@@ -551,10 +551,10 @@ function normalizeShaderPipeline(shader: MusicVisualizerShaderDefinition): Norma
     .filter((index) => index >= 0)
 
   if (screenPassIndexes.length !== 1) {
-    throw new Error('多 Pass 配置必须且只能有 1 个 output=screen 的 pass')
+    throw new Error('shader_pipeline_single_screen_pass_required')
   }
   if (screenPassIndexes[0] !== normalizedPasses.length - 1) {
-    throw new Error('output=screen 的 pass 必须位于多 Pass 队列末尾')
+    throw new Error('shader_pipeline_screen_pass_must_be_last')
   }
 
   return {
@@ -626,18 +626,18 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     })
 
     if (!gl) {
-      throw new Error('当前环境不可用 WebGL2')
+      throw new Error('webgl2_unavailable')
     }
 
     const vao = gl.createVertexArray()
     if (!vao) {
-      throw new Error('创建 VAO 失败')
+      throw new Error('webgl_vao_create_failed')
     }
 
     const audioTexture = gl.createTexture()
     if (!audioTexture) {
       gl.deleteVertexArray(vao)
-      throw new Error('创建音频纹理失败')
+      throw new Error('webgl_audio_texture_create_failed')
     }
 
     gl.bindTexture(gl.TEXTURE_2D, audioTexture)
@@ -659,7 +659,7 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
 
     for (const textureDef of pipeline.textures) {
       if (this.staticTextureById.has(textureDef.id)) {
-        throw new Error(`多 Pass 纹理 id 重复：${textureDef.id}`)
+        throw new Error(`shader_pipeline_duplicate_texture_id:${textureDef.id}`)
       }
       const binding = createTextureBinding(gl, textureDef, () => !this.disposed)
       this.staticTextureById.set(textureDef.id, binding)
@@ -837,10 +837,10 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
           continue
         }
         if (channel.kind === 'pass' && !this.passRuntimeById.has(channel.passId)) {
-          throw new Error(`Pass ${runtime.descriptor.id} 引用了不存在的 pass：${channel.passId}`)
+          throw new Error(`shader_pipeline_missing_pass_ref:${runtime.descriptor.id}:${channel.passId}`)
         }
         if (channel.kind === 'texture' && !this.staticTextureById.has(channel.textureId)) {
-          throw new Error(`Pass ${runtime.descriptor.id} 引用了不存在的纹理：${channel.textureId}`)
+          throw new Error(`shader_pipeline_missing_texture_ref:${runtime.descriptor.id}:${channel.textureId}`)
         }
       }
     }

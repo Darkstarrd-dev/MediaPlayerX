@@ -1,16 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { ReadRuntimeCapabilitiesResponseDto } from '../../contracts/backend'
+import { useI18n } from '../../i18n/useI18n'
+import { toErrorDetailWithCode } from '../shared/errorCode'
 import type { MediaRepository } from './repository'
 
 const RUNTIME_CAPABILITY_TIMEOUT_MS = 6_000
-
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message
-  }
-  return '运行时能力探测失败'
-}
 
 interface UseRuntimeCapabilitiesParams {
   repository: MediaRepository
@@ -34,6 +29,7 @@ function isSyncRuntimeCapabilityRepository(
 }
 
 export function useRuntimeCapabilities({ repository }: UseRuntimeCapabilitiesParams): UseRuntimeCapabilitiesResult {
+  const { t } = useI18n()
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncRuntimeCapabilityRepository(repository)
   const syncInitialData = useMemo<ReadRuntimeCapabilitiesResponseDto | null>(() => {
     if (!isSynchronousTestMode) {
@@ -73,7 +69,7 @@ export function useRuntimeCapabilities({ repository }: UseRuntimeCapabilitiesPar
         if (!active) {
           return
         }
-        setError(toErrorMessage(errorValue))
+        setError(t('ui.settings.runtimeCapabilityReadFailed', { message: toErrorDetailWithCode(errorValue, t) }))
       })
       .finally(() => {
         if (!active) {
@@ -86,7 +82,7 @@ export function useRuntimeCapabilities({ repository }: UseRuntimeCapabilitiesPar
       active = false
       abortController.abort()
     }
-  }, [isSynchronousTestMode, repository, retryNonce])
+  }, [isSynchronousTestMode, repository, retryNonce, t])
 
   const retry = useCallback(() => {
     setRetryNonce((value) => value + 1)

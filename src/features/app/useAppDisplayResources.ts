@@ -17,6 +17,7 @@ import type { MediaStateResult } from '../media/useMediaState'
 import type { UiBenchSettings } from '../perf/benchSettings'
 import type { MediaLocator } from '../../types'
 import { useI18n } from '../../i18n/useI18n'
+import { toErrorDetailWithCode } from './errorCode'
 
 function isSyncSubtitleRepository(repository: unknown): repository is SynchronousMediaRepository {
   if (!repository || typeof repository !== 'object') {
@@ -386,13 +387,13 @@ export function useAppDisplayResources({
         if (!active) {
           return
         }
-        const message = error instanceof Error ? error.message : String(error)
+        const message = toErrorDetailWithCode(error, t)
         setSubtitleOptions([])
         setSelectedSubtitleId(null)
         setSelectedSubtitleLocator(null)
         setSubtitleTrackUrl(null)
         setSubtitleVisible(false)
-        setSubtitleMessage(message)
+        setSubtitleMessage(t('ui.media.subtitleLoadFailed', { message }))
       })
       .finally(() => {
         if (!active) {
@@ -438,7 +439,7 @@ export function useAppDisplayResources({
           return
         }
         setSubtitleTrackUrl(null)
-        setSubtitleMessage(error instanceof Error ? error.message : String(error))
+        setSubtitleMessage(t('ui.media.subtitleResolveFailed', { message: toErrorDetailWithCode(error, t) }))
       })
 
     return () => {
@@ -488,7 +489,7 @@ export function useAppDisplayResources({
       setSelectedSubtitleLocator(locator)
       setSubtitleVisible(true)
     } catch (error: unknown) {
-      setSubtitleMessage(error instanceof Error ? error.message : String(error))
+      setSubtitleMessage(t('ui.media.subtitleSelectFailed', { message: toErrorDetailWithCode(error, t) }))
       setSubtitleVisible(false)
     } finally {
       setSubtitleLoading(false)
