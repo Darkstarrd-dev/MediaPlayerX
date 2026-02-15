@@ -255,12 +255,13 @@ function AppHeader({
   const [windowMaximized, setWindowMaximized] = useState(false)
   const [showMusicQuickActions, setShowMusicQuickActions] = useState(false)
   const [musicQuickPlaying, setMusicQuickPlaying] = useState(false)
+  const musicQuickSessionArmedRef = useRef(false)
+  const previousModeRef = useRef<BrowserMode>(mode)
   const [scaleCommittedLevel, setScaleCommittedLevel] = useState(Math.max(1, Math.min(9, Math.round(thumbnailScaleLevel))))
   const [autoPlayCommittedLevel, setAutoPlayCommittedLevel] = useState(Math.max(1, Math.min(9, Math.round(autoPlayInterval))))
   const [scaleDraftValue, setScaleDraftValue] = useState(scaleCommittedLevel)
   const [autoPlayDraftValue, setAutoPlayDraftValue] = useState(autoPlayCommittedLevel)
   const [openHeaderPopover, setOpenHeaderPopover] = useState<HeaderPopoverKey | null>(null)
-  const musicQuickHideTimerRef = useRef<number | null>(null)
   const headerPopoverHideTimerRef = useRef<number | null>(null)
 
   const scaleLevel = Math.max(1, Math.min(9, Math.round(thumbnailScaleLevel)))
@@ -315,13 +316,6 @@ function AppHeader({
     setAutoPlayCommittedLevel(target)
   }
 
-  const clearMusicQuickHideTimer = () => {
-    if (musicQuickHideTimerRef.current != null) {
-      window.clearTimeout(musicQuickHideTimerRef.current)
-      musicQuickHideTimerRef.current = null
-    }
-  }
-
   const clearHeaderPopoverHideTimer = () => {
     if (headerPopoverHideTimerRef.current != null) {
       window.clearTimeout(headerPopoverHideTimerRef.current)
@@ -329,26 +323,33 @@ function AppHeader({
     }
   }
 
-  const showMusicActions = () => {
-    clearMusicQuickHideTimer()
-    setShowMusicQuickActions(true)
-  }
-
-  const scheduleHideMusicActions = () => {
-    clearMusicQuickHideTimer()
-    musicQuickHideTimerRef.current = window.setTimeout(() => {
-      setShowMusicQuickActions(false)
-      musicQuickHideTimerRef.current = null
-    }, 180)
-  }
-
   useEffect(
     () => () => {
-      clearMusicQuickHideTimer()
       clearHeaderPopoverHideTimer()
     },
     [],
   )
+
+  useEffect(() => {
+    if (mode === 'music') {
+      musicQuickSessionArmedRef.current = false
+      setShowMusicQuickActions(false)
+    }
+  }, [mode])
+
+  useEffect(() => {
+    if (mode === 'music' && musicQuickPlaying) {
+      musicQuickSessionArmedRef.current = true
+    }
+  }, [mode, musicQuickPlaying])
+
+  useEffect(() => {
+    const previousMode = previousModeRef.current
+    if (previousMode === 'music' && mode !== 'music' && musicQuickSessionArmedRef.current) {
+      setShowMusicQuickActions(true)
+    }
+    previousModeRef.current = mode
+  }, [mode])
 
   const openPopoverByHover = (key: HeaderPopoverKey) => {
     clearHeaderPopoverHideTimer()
@@ -473,14 +474,13 @@ function AppHeader({
         </div>
 
         <div className="header-group header-group-modes">
-          <div className="mode-switch-wrap" onMouseEnter={clearMusicQuickHideTimer} onMouseLeave={scheduleHideMusicActions}>
+          <div className="mode-switch-wrap">
             <div className="mode-switch" role="group" aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}>
               <button
                 {...buildA11yPropsByRegistry({ key: 'headerModeImage', t })}
                 className={mode === 'image' ? 'is-active' : ''}
                 type="button"
                 disabled={interactionLocked}
-                onMouseEnter={() => setShowMusicQuickActions(false)}
                 onClick={() => onModeChange('image')}
               >
                 <span className="header-btn-content">
@@ -495,7 +495,6 @@ function AppHeader({
                 className={mode === 'video' ? 'is-active' : ''}
                 type="button"
                 disabled={interactionLocked}
-                onMouseEnter={() => setShowMusicQuickActions(false)}
                 onClick={() => onModeChange('video')}
               >
                 <span className="header-btn-content">
@@ -510,7 +509,6 @@ function AppHeader({
                 className={mode === 'music' ? 'is-active' : ''}
                 type="button"
                 disabled={interactionLocked}
-                onMouseEnter={showMusicActions}
                 onClick={() => onModeChange('music')}
               >
                 <span className="header-btn-content">
@@ -520,7 +518,7 @@ function AppHeader({
                   <span className="header-btn-label">{t('ui.header.musicMode')}</span>
                 </span>
               </button>
-              <div className={`music-quick-actions ${showMusicQuickActions ? 'is-visible' : ''}`} onMouseEnter={clearMusicQuickHideTimer}>
+              <div className={`music-quick-actions ${showMusicQuickActions && mode !== 'music' ? 'is-visible' : ''}`}>
                 <button
                   aria-label={musicQuickPlaying ? t('a11y.header.musicPause') : t('a11y.header.musicPlay')}
                   className="mode-action-btn"
@@ -532,6 +530,8 @@ function AppHeader({
                   <HeaderActionIcon name={musicQuickPlaying ? 'pause' : 'play'} />
                 </button>
                 <button {...buildA11yPropsByRegistry({ key: 'headerMusicStop', t })} className="mode-action-btn" type="button" onClick={() => {
+                  setShowMusicQuickActions(false)
+                  musicQuickSessionArmedRef.current = false
                   dispatchMusicPlaybackControl('stop')
                 }}>
                   <HeaderActionIcon name="stop" />

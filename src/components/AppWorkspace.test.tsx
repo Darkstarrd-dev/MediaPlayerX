@@ -61,9 +61,10 @@ describe('AppWorkspace', () => {
     expect(screen.queryByTestId('video-main-section')).toBeNull()
   })
 
-  it('image/video 模式保持原有主区渲染逻辑', () => {
+  it('image/video 模式保持原有主区渲染逻辑，同时保留 MusicMainSection', () => {
     const { rerender } = renderWorkspace('image')
     expect(screen.getByTestId('image-main-section')).toBeInTheDocument()
+    expect(screen.getByTestId('music-main-section')).toBeInTheDocument()
 
     rerender(
       <AppWorkspace
@@ -92,6 +93,6 @@ describe('AppWorkspace', () => {
     )
 
     expect(screen.getByTestId('video-main-section')).toBeInTheDocument()
-    expect(screen.queryByTestId('music-main-section')).toBeNull()
+    expect(screen.getByTestId('music-main-section')).toBeInTheDocument()
   })
 })
