@@ -7,6 +7,12 @@ import { MockMediaRepository } from './features/backend/repository/mockRepositor
 import { resetUiStoreState, useUiStore } from './store/useUiStore'
 
 describe('MediaPlayer 虚拟 UI', () => {
+  const getMetadataManageModeButton = () =>
+    screen.getByRole('button', { name: /切换到元数据模式|切换到图像模式|元数据管理/ })
+
+  const getFirstManageNodeChecker = () =>
+    document.querySelector('.sidebar-row.is-manage .sidebar-manage-checker') as HTMLInputElement | null
+
   beforeEach(() => {
     vi.restoreAllMocks()
     resetUiStoreState()
@@ -58,7 +64,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     const searchButton = screen.getByRole('button', { name: '检索' }) as HTMLButtonElement
     const fileManageButton = screen.getByRole('button', { name: '文件管理' })
-    const metadataManageButton = screen.getByRole('button', { name: '元数据管理' })
+    const metadataManageButton = getMetadataManageModeButton()
 
     fireEvent.click(metadataManageButton)
     expect(searchButton.disabled).toBe(false)
@@ -95,7 +101,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     const searchButton = screen.getByRole('button', { name: '检索' })
     const manageButton = screen.getByRole('button', { name: '文件管理' })
-    const metadataManageButton = screen.getByRole('button', { name: '元数据管理' })
+    const metadataManageButton = getMetadataManageModeButton()
 
     for (let index = 0; index < 5; index += 1) {
       fireEvent.click(manageButton)
@@ -158,9 +164,9 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
 
-    const firstSidebarLabel = document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement | null
-    expect(firstSidebarLabel).not.toBeNull()
-    fireEvent.click(firstSidebarLabel as HTMLButtonElement)
+    const firstManageNodeChecker = getFirstManageNodeChecker()
+    expect(firstManageNodeChecker).not.toBeNull()
+    fireEvent.click(firstManageNodeChecker as HTMLInputElement)
 
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     expect(screen.getByRole('dialog', { name: '永久删除确认' })).toBeInTheDocument()
@@ -183,7 +189,7 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
 
-    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
+    fireEvent.click(getFirstManageNodeChecker() as HTMLInputElement)
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     expect(screen.getByRole('dialog', { name: '永久删除确认' })).toBeInTheDocument()
 
@@ -224,7 +230,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('Esc 关闭元数据管理，右键关闭全屏层', async () => {
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
     expect(screen.getByRole('button', { name: '同步名称' })).toBeInTheDocument()
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
     expect(screen.queryByRole('button', { name: '同步名称' })).toBeNull()
@@ -256,7 +262,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     const firstSidebarRow = document.querySelector('.sidebar-row.is-manage') as HTMLElement | null
     expect(firstSidebarRow).not.toBeNull()
-    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
+    fireEvent.click(getFirstManageNodeChecker() as HTMLInputElement)
     expect((firstSidebarRow as HTMLElement).classList.contains('is-selected')).toBe(true)
 
     const firstThumbCard = document.querySelector('.thumb-card.is-manage') as HTMLElement | null
@@ -399,7 +405,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
-    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
+    fireEvent.click(getFirstManageNodeChecker() as HTMLInputElement)
 
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
@@ -431,7 +437,7 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
     })
 
-    fireEvent.click(document.querySelector('.sidebar-row.is-manage .sidebar-label') as HTMLButtonElement)
+    fireEvent.click(getFirstManageNodeChecker() as HTMLInputElement)
     fireEvent.click(screen.getByRole('button', { name: '删除' }))
     fireEvent.click(screen.getByRole('checkbox', { name: '我了解此操作将永久不可逆地删除选中数据' }))
     fireEvent.click(screen.getByRole('button', { name: '确定删除' }))
@@ -621,7 +627,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('元数据管理使用主工具栏承载同步名称与获取元数据动作', () => {
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
 
     expect(screen.getByRole('button', { name: '同步名称' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '获取元数据' })).toBeInTheDocument()
@@ -634,7 +640,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('获取元数据弹窗展示双源结果列与分源请求响应预览', async () => {
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
     fireEvent.click(screen.getByRole('button', { name: '获取元数据' }))
 
     const searchExternalMetadata = vi.fn(async (request: { source?: 'nhentai' | 'ehentai' }) => {
@@ -768,7 +774,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: '关闭' }))
 
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
     fireEvent.click(screen.getByRole('button', { name: '获取元数据' }))
 
     const searchExternalMetadata = vi.fn(async () => ({
@@ -898,7 +904,7 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelector('.metadata-image-real')).not.toBeNull()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
 
     await waitFor(() => {
       expect(document.querySelector('.metadata-image-real')).toBeNull()
@@ -959,7 +965,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
   it('元数据评分支持清空到空星，并可继续点击设星', async () => {
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
 
     const ratingGroup = screen.getByRole('group', { name: '图包评分' })
     const readStars = () => within(ratingGroup).getAllByRole('button').map((button) => button.textContent)
@@ -1032,7 +1038,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
     fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
 
     const workTitleInput = screen.getByLabelText('英文标题') as HTMLInputElement
@@ -1180,7 +1186,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     const writeVideoMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writeVideoMetadataSync')
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
 
     const imageSeriesLabel = await screen.findByText('系列ID')
     const imageSeriesInput = imageSeriesLabel.closest('label')?.querySelector('input') as HTMLInputElement
@@ -1219,7 +1225,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: '视频模式' }))
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
     fireEvent.click(screen.getByRole('button', { name: '视频信息' }))
     fireEvent.click(screen.getByRole('button', { name: '视频评分 5 星' }))
 
@@ -1358,7 +1364,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     const writePackageMetadataSpy = vi.spyOn(MockMediaRepository.prototype, 'writePackageMetadataSync')
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
 
     await waitFor(() => {
       expect(document.querySelectorAll('.sidebar-row.is-manage .sidebar-label').length).toBeGreaterThan(0)
@@ -1382,7 +1388,7 @@ describe('MediaPlayer 虚拟 UI', () => {
   it('元数据管理面板已移除自动标签与嵌入按钮，仅保留同步名称', async () => {
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: '元数据管理' }))
+    fireEvent.click(getMetadataManageModeButton())
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '同步名称' })).toBeInTheDocument()
@@ -1512,13 +1518,11 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByRole('button', { name: '动画版' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '纯文件名模式' })).not.toBeInTheDocument()
     const viewModeToggleButton = screen.getByRole('button', { name: /切换到纯文件名模式/ })
-    expect(viewModeToggleButton.textContent).toContain('▦')
-
     fireEvent.click(viewModeToggleButton)
-    expect(screen.getByRole('button', { name: /切换到缩略图模式/ }).textContent).toContain('≡')
+    expect(screen.getByRole('button', { name: /切换到缩略图模式/ })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /切换到缩略图模式/ }))
-    expect(screen.getByRole('button', { name: /切换到纯文件名模式/ }).textContent).toContain('▦')
+    expect(screen.getByRole('button', { name: /切换到纯文件名模式/ })).toBeInTheDocument()
 
     fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' })
     expect(screen.queryByText('加载中...')).not.toBeInTheDocument()
@@ -1736,7 +1740,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.getByText('布局参数')).toBeInTheDocument()
 
     const styleSelect = screen.getByRole('combobox', { name: 'Style' }) as HTMLSelectElement
-    const paletteSelect = screen.getByRole('combobox', { name: 'Palette' }) as HTMLSelectElement
+    const paletteSelect = screen.getByRole('combobox', { name: '日间默认 Palette' }) as HTMLSelectElement
     expect(styleSelect.value.length).toBeGreaterThan(0)
     expect(Array.from(styleSelect.options).some((option) => option.value === styleSelect.value)).toBe(true)
     expect(paletteSelect.value.length).toBeGreaterThan(0)

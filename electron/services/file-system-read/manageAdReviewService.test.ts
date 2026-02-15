@@ -14,7 +14,9 @@ import type { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
 
 vi.mock('../../manageAdReview', () => {
   class OpenAiVisionClient {
-    constructor(_options: unknown) {}
+    constructor(options: unknown) {
+      void options
+    }
   }
 
   return {
