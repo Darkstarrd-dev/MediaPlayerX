@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 
 import type { ManageAdReviewTaskDto } from '../contracts/backend'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
@@ -264,6 +264,9 @@ function MetadataPanel({
   const [featureTagSelectMode, setFeatureTagSelectMode] = useState<'single' | 'multi'>('multi')
   const featureTagGroupsRef = useRef<HTMLDivElement | null>(null)
   const imagePreloadSeqRef = useRef(0)
+  const lastFocusedImageIdRef = useRef<string | null>(null)
+  const autoOriginalImageMode = mode === 'image' && !manageMode && !editable
+  const focusedImageId = focusedImage?.id ?? null
 
   const groupedFeatureTagOptions = useMemo(() => {
     const groups = new Map<string, string[]>()
@@ -400,6 +403,37 @@ function MetadataPanel({
   }, [editable, showImagePreview])
 
   useEffect(() => {
+    const previousFocusedImageId = lastFocusedImageIdRef.current
+    lastFocusedImageIdRef.current = focusedImageId
+
+    if (!autoOriginalImageMode || !focusedImageId) {
+      return
+    }
+
+    if (previousFocusedImageId !== focusedImageId) {
+      setShowImagePreview(true)
+    }
+  }, [autoOriginalImageMode, focusedImageId])
+
+  useEffect(() => {
+    if (!autoOriginalImageMode) {
+      return
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return
+      }
+      setShowImagePreview(false)
+    }
+
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true)
+    }
+  }, [autoOriginalImageMode])
+
+  useEffect(() => {
     if (!featureTagPickerOpen) {
       return
     }
@@ -454,6 +488,13 @@ function MetadataPanel({
   const imagePreviewClassName = showImageCanvas ? 'metadata-content metadata-content-focus' : 'metadata-content'
   const lockMetadataScroll = mode === 'image' && showImagePreview && hasImageFocus && Boolean(focusedImage) && !searchModeActive
   const metadataPanelClassName = lockMetadataScroll ? 'metadata-panel is-image-focus' : 'metadata-panel'
+  const handlePanelContextMenu = (event: ReactMouseEvent<HTMLElement>) => {
+    if (!autoOriginalImageMode || !showImagePreview) {
+      return
+    }
+    event.preventDefault()
+    setShowImagePreview(false)
+  }
   const closeFeatureTagPicker = (revertDraft: boolean) => {
     if (revertDraft) {
       setFeatureTagDrafts(featureTags)
@@ -740,7 +781,7 @@ function MetadataPanel({
 
   return (
     <>
-      <aside className={metadataPanelClassName} style={{ width: `${metadataRatio * 100}%` }}>
+      <aside className={metadataPanelClassName} style={{ width: `${metadataRatio * 100}%` }} onContextMenu={handlePanelContextMenu}>
       <div className="metadata-head">
         <button className="metadata-title-btn" type="button" onClick={onCollapse}>
           元数据面板

@@ -362,8 +362,8 @@ Files to touch
   - expose helpers needed to map nodeId -> package ids or pathKey
 - `src/features/app/workspaceImageDerivations.ts`
   - add helpers to filter refs by:
-    - [ ] suspected image ids
-    - [ ] selected sidebar node pathKey prefix
+    - [x] suspected image ids (implemented in `useAppWorkspaceProps`)
+    - [x] selected sidebar node pathKey prefix (implemented in `useAppWorkspaceProps`)
 - `src/features/app/buildAdReviewSidebarState.ts` (new)
   - build a sidebar tree from candidate list (similar to `buildVectorSidebarState.ts`)
 - `src/features/app/useAppReadState.ts`
@@ -374,32 +374,38 @@ Files to touch
   - support `searchResultMode`-like header label and return button for focus mode
 
 Implementation checklist
-- [ ] Define `adReviewResultsMode`:
-  - [ ] `Boolean(adReviewFocusTaskId)`
-- [ ] Sidebar tree in focus mode:
-  - [ ] leaves = candidate packages (by `package_id` + `treePath` from snapshot)
-  - [ ] node counts = suspected image counts (direct + descendant)
-- [ ] Main thumbnails in focus mode:
-  - [ ] always image grid (disable node browse)
-  - [ ] visible refs are derived from candidate image ids
-  - [ ] if selected sidebar node is folder -> further filter by subtree
-  - [ ] if selected node is a package/directory -> show its candidate images
-- [ ] Return behavior:
-  - [ ] return button clears focus (does NOT clear queue)
+- [x] Define `adReviewResultsMode`:
+  - [x] `Boolean(adReviewFocusTaskId)` (effective with `status==='review'` guard)
+- [x] Sidebar tree in focus mode:
+  - [x] leaves = candidate packages (by `package_id` + `treePath` from snapshot)
+  - [x] node counts = suspected image counts (direct + descendant)
+- [x] Main thumbnails in focus mode:
+  - [x] always image grid (disable node browse)
+  - [x] visible refs are derived from candidate image ids
+  - [x] if selected sidebar node is folder -> further filter by subtree
+  - [x] if selected node is a package/directory -> show its candidate images
+- [x] Return behavior:
+  - [x] return button clears focus (does NOT clear queue)
 
 Tests
-- `src/features/app/buildAdReviewSidebarState.test.ts` (new)
-- `src/features/app/workspaceImageDerivations.test.ts` (new)
-- `src/components/SidebarPanel.test.tsx` (extend): focus return button
+- [x] `src/features/app/buildAdReviewSidebarState.test.ts` (new)
+- [ ] `src/features/app/workspaceImageDerivations.test.ts` (new)
+- [x] `src/features/app/buildSidebarPanelProps.test.ts` (extend): focus return behavior wiring
+- [x] `src/components/metadata/MetadataAdReviewSection.test.tsx` (queue/focus panel behavior)
 
 Verify
-- `npm run test -- <targeted test files>`
-- `npm run build`
+- [x] `npm run test -- src/features/app/buildAdReviewSidebarState.test.ts src/components/metadata/MetadataAdReviewSection.test.tsx src/features/app/buildSidebarPanelProps.test.ts src/components/SidebarPanel.test.tsx`
+- [x] `npm run build`
 
 Doc + Git
-- [ ] Update this doc: mark Phase 3 done, record commit hash.
+- [x] Update this doc: mark Phase 3 done.
 - [ ] Commit message suggestion: `feat(ad-review): add result focus mode sidebar and thumbnail filtering`
 - [ ] `git push`
+
+Phase 3 completion notes
+- Added result-focus sidebar tree builder (`buildAdReviewSidebarState`) with suspected-image count aggregation.
+- Wired `useAppWorkspaceProps` to enable `adReviewResultsMode`, use result-sidebar nodes, disable node-browse cover mode, and paginate/filter aggregated suspected thumbnails by selected node.
+- Added/updated tests for result focus panel and sidebar return wiring.
 
 ---
 
@@ -413,26 +419,31 @@ Outcome
 Files to touch
 - `src/components/MetadataPanel.tsx`
   - implement a small internal state machine for `showImagePreview`:
-    - [ ] when `mode==='image' && !manageMode && !metadataManageMode` and focused image changes -> `setShowImagePreview(true)`
-    - [ ] keydown Escape -> `setShowImagePreview(false)`
-    - [ ] contextmenu (right click) -> `setShowImagePreview(false)`
+    - [x] when `mode==='image' && !manageMode && !metadataManageMode` and focused image changes -> `setShowImagePreview(true)`
+    - [x] keydown Escape -> `setShowImagePreview(false)`
+    - [x] contextmenu (right click) -> `setShowImagePreview(false)`
 - `src/features/app/useAppWorkspaceProps.ts`
   - ensure metadata panel gets enough signals (focused image id) if needed
 
 Tests
 - `src/components/MetadataPanel.test.tsx` (new):
-  - [ ] focus image change forces original-image
-  - [ ] Esc/right-click returns to data
-  - [ ] manageMode or metadataManageMode disables this behavior
+  - [x] focus image change forces original-image
+  - [x] Esc/right-click returns to data
+  - [x] manageMode or metadataManageMode disables this behavior
 
 Verify
-- `npm run test -- src/components/MetadataPanel.test.tsx`
-- `npm run build`
+- [x] `npm run test -- src/components/MetadataPanel.test.tsx`
+- [x] `npm run build`
 
 Doc + Git
-- [ ] Update this doc: mark Phase 4 done, record commit hash.
+- [x] Update this doc: mark Phase 4 done.
 - [ ] Commit message suggestion: `feat(metadata): auto switch to original image on focus changes`
 - [ ] `git push`
+
+Phase 4 completion notes
+- Metadata panel now auto-switches to original-image view when focused image changes in non-manage/non-metadata-manage mode.
+- Added Escape and right-click exits back to metadata data view in the same mode.
+- Added `src/components/MetadataPanel.test.tsx` to cover the new behavior and mode guards.
 
 ---
 
