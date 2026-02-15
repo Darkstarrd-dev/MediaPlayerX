@@ -439,13 +439,13 @@ function MetadataFetchPanel({
                 <span>{t('ui.metadata.source')}</span>
                 <div className="mode-switch metadata-fetch-source-switch" role="group" aria-label={t('a11y.metadata.fetchSourceSwitch')}>
                   <button type="button" className={sourceMode === 'nhentai' ? 'is-active' : ''} onClick={() => setSourceMode('nhentai')}>
-                    NH
+                    {t('ui.metadata.fetchSourceModeNh')}
                   </button>
                   <button type="button" className={sourceMode === 'ehentai' ? 'is-active' : ''} onClick={() => setSourceMode('ehentai')}>
-                    EH
+                    {t('ui.metadata.fetchSourceModeEh')}
                   </button>
                   <button type="button" className={sourceMode === 'all' ? 'is-active' : ''} onClick={() => setSourceMode('all')}>
-                    ALL
+                    {t('ui.metadata.fetchSourceModeAll')}
                   </button>
                 </div>
               </div>

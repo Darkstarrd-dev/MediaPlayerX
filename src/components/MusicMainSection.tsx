@@ -839,9 +839,9 @@ function MusicMainSection({
                       })
                     }
                   >
-                    <option value={30}>30 FPS</option>
-                    <option value={60}>60 FPS</option>
-                    <option value={120}>120 FPS</option>
+                    <option value={30}>{t('ui.music.fpsCapOption30')}</option>
+                    <option value={60}>{t('ui.music.fpsCapOption60')}</option>
+                    <option value={120}>{t('ui.music.fpsCapOption120')}</option>
                   </select>
                 </label>
                 <label className="music-ctrl-shader-field">
@@ -856,11 +856,11 @@ function MusicMainSection({
                     }
                   >
                     <option value="off">{t('ui.music.disabled')}</option>
-                    <option value="aces">ACES Filmic</option>
-                    <option value="reinhard">Reinhard</option>
-                    <option value="filmic">Filmic (Blender)</option>
-                    <option value="agx">AgX (Blender 5.1)</option>
-                    <option value="khronos">Khronos PBR Neutral (Blender 5.1)</option>
+                    <option value="aces">{t('ui.music.toneMapModeAces')}</option>
+                    <option value="reinhard">{t('ui.music.toneMapModeReinhard')}</option>
+                    <option value="filmic">{t('ui.music.toneMapModeFilmic')}</option>
+                    <option value="agx">{t('ui.music.toneMapModeAgx')}</option>
+                    <option value="khronos">{t('ui.music.toneMapModeKhronos')}</option>
                   </select>
                 </label>
                 <label className="music-ctrl-shader-field">
