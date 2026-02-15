@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react'
 import { useEffectiveDisplayState } from './useEffectiveDisplayState'
 import { useMetadataWriteBindings } from './useMetadataWriteBindings'
 import { buildCoverImageLocator } from './mediaPathUtils'
+import { resolveAdReviewPageDerivations } from './workspaceAdReviewPageDerivations'
+import { resolveAdReviewSidebarContext } from './workspaceAdReviewSidebarContext'
+import { resolveRefsInPageForDisplay } from './workspaceImageDerivations'
 import { useResolvedMediaState } from './useResolvedMediaState'
 import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
@@ -80,7 +83,14 @@ export function useAppDisplayResources({
   const isVideoMode = appSettings.mode === 'video'
   const syncMediaRepository = isSyncSubtitleRepository(mediaRepository) ? mediaRepository : null
   const isSynchronousSubtitleMode = import.meta.env.MODE === 'test' && Boolean(syncMediaRepository)
-  const { imageFocusActive, metadataManageMode, setManageOperationHint } = sessionState
+  const {
+    imageFocusActive,
+    manageMode,
+    metadataManageMode,
+    adReviewFocusTaskId,
+    selectedSidebarNodeId,
+    setManageOperationHint,
+  } = sessionState
 
   const {
     selectedVideoId,
@@ -103,6 +113,7 @@ export function useAppDisplayResources({
     focusedRef,
     focusedImage,
     activePackage,
+    visibleImageRefs,
     refsInPage,
     pageStart,
     normalizedPageIndex,
@@ -113,7 +124,9 @@ export function useAppDisplayResources({
     actualCellWidth,
     actualMediaHeight,
     orderedRootScopedImageRefs,
+    imageTreeForSidebar,
     sidebarCheckedNodeIds,
+    imageCheckedIdSet,
     sidebarNodeById,
   } = readNavigationState
 
@@ -161,6 +174,41 @@ export function useAppDisplayResources({
     videoCoverImageById,
   })
 
+  const {
+    adReviewFocusTask,
+    adReviewResultsMode,
+    selectedSidebarNode,
+  } = resolveAdReviewSidebarContext({
+    mode: appSettings.mode,
+    adReviewFocusTaskId,
+    queueTasks: manageBindings.manageAdReview.queueTasks,
+    packageByIdEffective,
+    sidebarNodeById,
+    selectedSidebarNodeId,
+    imageTreeForSidebar,
+  })
+
+  const { refsInPageBase } = resolveAdReviewPageDerivations({
+    adReviewResultsMode,
+    orderedRootScopedImageRefs,
+    packageByIdEffective,
+    adReviewFocusTask,
+    selectedSidebarNode,
+    pagedPageSize,
+    normalizedPageIndexEffective,
+    visibleImageRefs,
+    refsInPageEffective,
+    pageStartEffective,
+    imageTotalPagesEffective,
+  })
+
+  const refsInPageForResolve = resolveRefsInPageForDisplay(refsInPageBase, {
+    manageMode,
+    hideUncheckedNonChecked: manageBindings.manageAdReview.hideUncheckedNonChecked,
+    imageCheckedIdSet,
+    packageByIdEffective,
+  })
+
   const metadataWriteBindings = useMetadataWriteBindings({
     metadataManageMode,
     backendWrite: manageBindings.backendWrite,
@@ -198,7 +246,7 @@ export function useAppDisplayResources({
     orderedRootScopedImageRefs,
     fullscreenActive,
     showNamesOnly,
-    refsInPage: refsInPageEffective,
+    refsInPage: refsInPageForResolve,
     focusedVideo,
     focusedAudio,
     focusedVideoCoverImageLocator,
