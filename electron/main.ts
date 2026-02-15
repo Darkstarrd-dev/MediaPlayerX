@@ -16,6 +16,7 @@ import { registerWindowControlIpcHandlers } from './mainWindowControls'
 import { resolveAppWindowIconPath, resolvePreloadEntry, resolveRendererEntry, resolveStartupSplashBannerSrc } from './mainPaths'
 import { resolveBenchMode, shouldOpenDevTools, tryConfigureCrashDumpsDir } from './mainBenchRuntime'
 import { STARTUP_SPLASH_WINDOW_CONFIG, renderStartupSplashHtml } from './startupSplashTemplate'
+import { runThemeGalleryCaptureIfEnabled } from './themeGalleryCaptureRuntime'
 
 const STARTUP_SPLASH_TIMEOUT_MS = 12_000
 const STARTUP_SPLASH_MIN_DURATION_MAX_MS = 120_000
@@ -339,7 +340,7 @@ function createMainWindow(): BrowserWindow {
 
   if (entry.type === 'url') {
     logRuntimeDiagnostic('startup-main-load-url', { target: entry.value }, 'info', true)
-    if (benchMode) {
+    if (benchMode === 'dom' || benchMode === 'e2e') {
       const url = new URL(entry.value)
       url.searchParams.set('bench', benchMode)
       void window.loadURL(url.toString())
@@ -348,7 +349,7 @@ function createMainWindow(): BrowserWindow {
     }
   } else {
     logRuntimeDiagnostic('startup-main-load-file', { target: entry.value }, 'info', true)
-    if (benchMode) {
+    if (benchMode === 'dom' || benchMode === 'e2e') {
       const fileUrl = pathToFileURL(entry.value)
       fileUrl.searchParams.set('bench', benchMode)
       void window.loadURL(fileUrl.toString())
@@ -421,6 +422,8 @@ function openMainWindow(): BrowserWindow {
   if (!benchMode) {
     bindStartupWindowTransition(mainWindow, splashWindow)
   }
+
+  runThemeGalleryCaptureIfEnabled(mainWindow)
 
   return mainWindow
 }

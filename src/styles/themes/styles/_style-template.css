@@ -63,6 +63,9 @@
   --mpx-header-margin: 0px;
   --mpx-header-border-width: 1px;
   --mpx-header-backdrop-filter: none;
+  --mpx-header-transform: none;
+  --mpx-header-transform-origin: center top;
+  --mpx-header-transition: none;
 
   /* ---------- Inner cards ---------- */
   --mpx-card-radius: 10px;

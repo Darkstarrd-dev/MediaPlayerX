@@ -21,6 +21,9 @@
   box-shadow: var(--mpx-header-shadow);
   margin: var(--mpx-header-margin);
   backdrop-filter: var(--mpx-header-backdrop-filter);
+  transform: var(--mpx-header-transform);
+  transform-origin: var(--mpx-header-transform-origin);
+  transition: var(--mpx-header-transition);
   -webkit-app-region: drag;
 }
 

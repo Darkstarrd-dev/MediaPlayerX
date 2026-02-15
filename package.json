@@ -23,6 +23,7 @@
     "bench:streaming-matrix": "node scripts/run-streaming-benchmark-matrix.mjs",
     "bench:ui": "node scripts/run-ui-bench.mjs",
     "bench:ui-matrix": "node scripts/run-ui-bench-matrix.mjs",
+    "theme:gallery": "node scripts/capture-theme-gallery.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
