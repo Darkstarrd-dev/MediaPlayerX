@@ -129,12 +129,18 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
         : resolvePaletteModeById(rawPaletteId || rawThemeId || '')
   const rawPaletteDayId = typeof next.paletteDayId === 'string' ? next.paletteDayId.trim() : ''
   const rawPaletteNightId = typeof next.paletteNightId === 'string' ? next.paletteNightId.trim() : ''
+  const rawUiLocale = typeof next.uiLocale === 'string' ? next.uiLocale.trim() : ''
 
   next.styleId = rawStyleId || 'flush'
   next.paletteId = rawPaletteId || rawThemeId || 'parchment'
   next.paletteMode = rawPaletteMode
   next.paletteDayId = rawPaletteDayId || (rawPaletteMode === 'day' ? next.paletteId : 'parchment')
   next.paletteNightId = rawPaletteNightId || (rawPaletteMode === 'night' ? next.paletteId : 'tokyo-night')
+  if (rawUiLocale === 'auto' || rawUiLocale === 'zh-CN' || rawUiLocale === 'en-US') {
+    next.uiLocale = rawUiLocale
+  } else if ('uiLocale' in next) {
+    delete next.uiLocale
+  }
   next.themeId = next.paletteId
 
   const legacyVectorPanelHeight = next.vectorPanelHeight

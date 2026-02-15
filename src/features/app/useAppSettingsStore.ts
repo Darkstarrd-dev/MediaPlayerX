@@ -35,6 +35,7 @@ export function useAppSettingsStore() {
       imageRootNodeId: state.imageRootNodeId,
       videoRootNodeId: state.videoRootNodeId,
       musicRootNodeId: state.musicRootNodeId,
+      uiLocale: state.uiLocale,
       themeId: state.themeId,
       styleId: state.styleId,
       paletteId: state.paletteId,

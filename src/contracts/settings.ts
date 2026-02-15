@@ -9,6 +9,7 @@ export const musicVisualizerToneMapModeSchema = z.enum(['off', 'reinhard', 'aces
 export const musicVisualizerRendererSchema = z.enum(['gpu', 'cpu'])
 export const musicVisualizerCompositionModeSchema = z.enum(['single', 'layered'])
 export const paletteModeSchema = z.enum(['day', 'night'])
+export const uiLocaleSchema = z.enum(['auto', 'zh-CN', 'en-US'])
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
@@ -62,6 +63,7 @@ export const appSettingsSchema = z.object({
   imageRootNodeId: z.string().nullable(),
   videoRootNodeId: z.string().nullable(),
   musicRootNodeId: z.string().nullable(),
+  uiLocale: uiLocaleSchema,
   themeId: z.string().min(1),
   styleId: z.string().min(1).default('flush'),
   paletteId: z.string().min(1).default('parchment'),

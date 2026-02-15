@@ -9,6 +9,7 @@ describe('useUiStore visualizer settings', () => {
 
   it('provides visualizer defaults', () => {
     const state = useUiStore.getState()
+    expect(state.uiLocale).toBe('auto')
     expect(state.musicVisualizerRenderLongEdgePx).toBe(1280)
     expect(state.musicVisualizerFpsCap).toBe(60)
     expect(state.musicVisualizerSelectedShaderId).toBe('')
@@ -47,6 +48,7 @@ describe('useUiStore visualizer settings', () => {
       musicVisualizerToneMapStrength: 0.8,
       musicVisualizerShowFps: true,
       musicVisualizerRenderer: 'cpu',
+      uiLocale: 'en-US',
       musicVisualizerShaderSettingsById: {
         fungi: {
           renderLongEdgePx: 1920,
@@ -78,6 +80,7 @@ describe('useUiStore visualizer settings', () => {
     expect(state.musicVisualizerToneMapStrength).toBe(0.8)
     expect(state.musicVisualizerShowFps).toBe(true)
     expect(state.musicVisualizerRenderer).toBe('cpu')
+    expect(state.uiLocale).toBe('en-US')
     expect(state.musicVisualizerShaderSettingsById.fungi).toEqual({
       renderLongEdgePx: 1920,
       renderScaleCoeff: 3,
@@ -109,6 +112,7 @@ describe('useUiStore visualizer settings', () => {
       musicVisualizerToneMapExposure: 99 as unknown as number,
       musicVisualizerToneMapStrength: -1 as unknown as number,
       musicVisualizerRenderer: 'invalid' as unknown as 'gpu',
+      uiLocale: 'de-DE' as unknown as 'auto',
     })
 
     const state = useUiStore.getState()
@@ -119,6 +123,7 @@ describe('useUiStore visualizer settings', () => {
     expect(state.musicVisualizerToneMapExposure).toBe(1)
     expect(state.musicVisualizerToneMapStrength).toBe(0.55)
     expect(state.musicVisualizerRenderer).toBe('gpu')
+    expect(state.uiLocale).toBe('auto')
 
     warnSpy.mockRestore()
   })

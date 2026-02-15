@@ -42,6 +42,7 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     imageRootNodeId: settings.imageRootNodeId,
     videoRootNodeId: settings.videoRootNodeId,
     musicRootNodeId: settings.musicRootNodeId,
+    uiLocale: settings.uiLocale,
     themeId: settings.themeId,
     styleId: settings.styleId,
     paletteId: settings.paletteId,
