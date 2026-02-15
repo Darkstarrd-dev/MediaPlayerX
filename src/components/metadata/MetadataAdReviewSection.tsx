@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import type { ManageAdReviewTaskDto } from '../../contracts/backend'
 import {
   AD_REVIEW_CONCURRENCY_OPTIONS,
@@ -15,6 +17,7 @@ interface MetadataAdReviewSectionProps {
   adReviewActiveTaskId: string | null
   adReviewHideUncheckedNonChecked: boolean
   hasCheckedAdReviewCandidates: boolean
+  selectedAdReviewCandidateCount: number
   adReviewFocusTaskId: string | null
   adReviewStrategyMode: 'all' | 'head-tail'
   adReviewMaxConcurrency: number
@@ -22,7 +25,7 @@ interface MetadataAdReviewSectionProps {
   adReviewTailN: number
   adReviewTailStopCleanStreak: number
   canExecuteAdReview: boolean
-  onStartAdReview: () => void
+  onStartAdReview: (options?: { skipReviewedNodes?: boolean }) => void
   onPauseAdReview: () => void
   onToggleHideUncheckedNonChecked: () => void
   onSelectAdReviewTask: (taskId: string) => void
@@ -41,8 +44,9 @@ export function MetadataAdReviewSection({
   adReviewTask,
   adReviewQueueTasks,
   adReviewActiveTaskId,
-  adReviewHideUncheckedNonChecked,
+  adReviewHideUncheckedNonChecked: _adReviewHideUncheckedNonChecked,
   hasCheckedAdReviewCandidates,
+  selectedAdReviewCandidateCount,
   adReviewFocusTaskId,
   adReviewStrategyMode,
   adReviewMaxConcurrency,
@@ -52,7 +56,7 @@ export function MetadataAdReviewSection({
   canExecuteAdReview,
   onStartAdReview,
   onPauseAdReview,
-  onToggleHideUncheckedNonChecked,
+  onToggleHideUncheckedNonChecked: _onToggleHideUncheckedNonChecked,
   onSelectAdReviewTask,
   onRemoveAdReviewTask,
   onToggleAdReviewFocus,
@@ -63,7 +67,34 @@ export function MetadataAdReviewSection({
   onAdReviewTailStopCleanStreakChange,
   onDismissAdReviewTask,
 }: MetadataAdReviewSectionProps) {
+  void _adReviewHideUncheckedNonChecked
+  void _onToggleHideUncheckedNonChecked
+
   const adReviewRunning = adReviewTask?.status === 'running'
+  const [startDialogOpen, setStartDialogOpen] = useState(false)
+  const focusEnabledTask = adReviewTask && (adReviewTask.status === 'running' || adReviewTask.status === 'paused' || adReviewTask.status === 'review')
+    ? adReviewTask
+    : null
+  const focusActive = Boolean(focusEnabledTask && adReviewFocusTaskId === focusEnabledTask.task_id)
+
+  useEffect(() => {
+    if (adReviewRunning) {
+      setStartDialogOpen(false)
+    }
+  }, [adReviewRunning])
+
+  const triggerStartOrPause = () => {
+    if (adReviewRunning) {
+      onPauseAdReview()
+      return
+    }
+    setStartDialogOpen(true)
+  }
+
+  const startWithOption = (skipReviewedNodes: boolean) => {
+    setStartDialogOpen(false)
+    onStartAdReview({ skipReviewedNodes })
+  }
 
   return (
     <section className="metadata-ad-review-section" aria-label="AI广告审核面板">
@@ -94,9 +125,20 @@ export function MetadataAdReviewSection({
             aria-label={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
             title={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
             disabled={adReviewPending || (!adReviewRunning && !canExecuteAdReview)}
-            onClick={adReviewRunning ? onPauseAdReview : onStartAdReview}
+            onClick={triggerStartOrPause}
           >
             <span aria-hidden="true">{adReviewRunning ? '⏸' : '▶'}</span>
+          </button>
+
+          <button
+            className={`manage-ad-review-icon-btn ${focusActive ? 'is-active' : ''}`}
+            type="button"
+            aria-label={focusActive ? 'return' : 'focus'}
+            title={focusActive ? 'return' : 'focus'}
+            disabled={adReviewPending || !focusEnabledTask || focusEnabledTask.candidates.length === 0}
+            onClick={onToggleAdReviewFocus}
+          >
+            <span aria-hidden="true">{focusActive ? 'R' : 'F'}</span>
           </button>
         </div>
 
@@ -168,6 +210,10 @@ export function MetadataAdReviewSection({
         <section className="manage-ad-review-queue" aria-label="AI广告审核队列">
           {adReviewQueueTasks.map((queueTask) => {
             const isActive = adReviewTask?.task_id === queueTask.task_id || adReviewActiveTaskId === queueTask.task_id
+            const reviewProgressLabel =
+              queueTask.status === 'review'
+                ? `${queueTask.task_id === adReviewTask?.task_id ? selectedAdReviewCandidateCount : queueTask.candidates.length}/${queueTask.candidates.length}`
+                : `${Math.round(queueTask.progress * 100)}% · ${queueTask.reviewed_count}/${queueTask.total_count}`
             return (
               <div key={queueTask.task_id} className={`manage-ad-review-queue-item ${isActive ? 'is-active' : ''}`}>
                 <button
@@ -176,7 +222,7 @@ export function MetadataAdReviewSection({
                   onClick={() => onSelectAdReviewTask(queueTask.task_id)}
                 >
                   <span>{resolveAdReviewStatusLabel(queueTask.status)}</span>
-                  <span>{`${Math.round(queueTask.progress * 100)}% · ${queueTask.reviewed_count}/${queueTask.total_count}`}</span>
+                  <span>{reviewProgressLabel}</span>
                 </button>
 
                 <button
@@ -218,19 +264,8 @@ export function MetadataAdReviewSection({
 
           {adReviewTask.status === 'review' ? (
             <div className="manage-ad-review-actions">
-              <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onToggleHideUncheckedNonChecked}>
-                {adReviewHideUncheckedNonChecked ? '显示全部图片' : '隐藏未勾选图片'}
-              </button>
               <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
-                关闭结果
-              </button>
-              <button
-                className="feature-action-btn"
-                type="button"
-                disabled={adReviewPending || adReviewTask.candidates.length === 0}
-                onClick={onToggleAdReviewFocus}
-              >
-                {adReviewFocusTaskId === adReviewTask.task_id ? 'return' : 'focus'}
+                重置剔除
               </button>
               <span className={`manage-ad-review-selection-tag ${hasCheckedAdReviewCandidates ? 'is-active' : ''}`}>
                 {hasCheckedAdReviewCandidates ? '已选候选可删除' : '未选候选'}
@@ -238,21 +273,38 @@ export function MetadataAdReviewSection({
             </div>
           ) : null}
 
-          {(adReviewTask.status === 'running' || adReviewTask.status === 'paused') ? (
-            <div className="manage-ad-review-actions">
-              <button
-                className="feature-action-btn"
-                type="button"
-                disabled={adReviewPending || adReviewTask.candidates.length === 0}
-                onClick={onToggleAdReviewFocus}
-              >
-                {adReviewFocusTaskId === adReviewTask.task_id ? 'return' : 'focus'}
-              </button>
-            </div>
-          ) : null}
-
           {adReviewTask.error_detail ? <p className="manage-ad-review-error">{adReviewTask.error_detail}</p> : null}
         </section>
+      ) : null}
+
+      {startDialogOpen ? (
+        <div
+          className="manage-ad-review-start-mask"
+          role="dialog"
+          aria-modal="true"
+          aria-label="选择AI广告审核执行方式"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setStartDialogOpen(false)
+            }
+          }}
+        >
+          <section className="settings-floating-panel manage-ad-review-start-dialog" onMouseDown={(event) => event.stopPropagation()}>
+            <h3>执行AI广告审核</h3>
+            <p className="manage-ad-review-start-description">请选择本次执行方式：</p>
+            <div className="settings-floating-actions">
+              <button type="button" onClick={() => startWithOption(true)}>
+                跳过已扫描的
+              </button>
+              <button type="button" onClick={() => startWithOption(false)}>
+                不跳过已扫描的
+              </button>
+              <button type="button" onClick={() => setStartDialogOpen(false)}>
+                取消
+              </button>
+            </div>
+          </section>
+        </div>
       ) : null}
     </section>
   )

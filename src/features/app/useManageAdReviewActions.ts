@@ -48,10 +48,11 @@ interface UseManageAdReviewActionsResult {
   pending: boolean
   hideUncheckedNonChecked: boolean
   hasCheckedCandidateSelection: boolean
+  selectedCandidateCount: number
   scopeImageIds: string[]
   llmReviewedImageIds: string[]
   nonLlmReviewedImageIds: string[]
-  startManageAdReview: () => Promise<void>
+  startManageAdReview: (options?: { skipReviewedNodes?: boolean }) => Promise<ManageAdReviewTaskDto | null>
   pauseManageAdReview: () => Promise<void>
   toggleHideUncheckedNonChecked: () => void
   confirmDeleteSelectedCandidates: () => Promise<void>
@@ -129,6 +130,7 @@ export function useManageAdReviewActions({
   const [hideUncheckedNonChecked, setHideUncheckedNonChecked] = useState(false)
   const pollingTimerRef = useRef<ReturnType<typeof window.setInterval> | null>(null)
   const previousTaskStatusByIdRef = useRef<Record<string, ManageAdReviewTaskDto['status']>>({})
+  const knownCandidateImageIdsByTaskIdRef = useRef<Record<string, string[]>>({})
 
   const activeScope = useMemo(() => {
     if (activeSelectionScope === 'sidebar' && sidebarCheckedNodeIds.length > 0) {
@@ -245,15 +247,27 @@ export function useManageAdReviewActions({
       return
     }
 
-    const previousStatus = previousTaskStatusByIdRef.current[task.task_id]
-    if (previousStatus && task.status === 'review' && previousStatus !== 'review') {
-      replaceImageCheckedIds(
-        task.candidates.map((candidate) => candidate.image_id),
-        false,
-      )
+    const candidateImageIds = task.candidates.map((candidate) => candidate.image_id)
+    const candidateImageIdSet = new Set(candidateImageIds)
+    const knownCandidateImageIds = knownCandidateImageIdsByTaskIdRef.current[task.task_id] ?? []
+    const knownCandidateImageIdSet = new Set(knownCandidateImageIds)
+    const newCandidateImageIds = candidateImageIds.filter((imageId) => !knownCandidateImageIdSet.has(imageId))
+
+    const canAutoSelectCandidates = task.status === 'running' || task.status === 'paused' || task.status === 'review'
+    if (canAutoSelectCandidates && candidateImageIds.length > 0) {
+      const hasSelectedCandidate = imageCheckedIds.some((imageId) => candidateImageIdSet.has(imageId))
+      if (knownCandidateImageIds.length === 0) {
+        if (!hasSelectedCandidate) {
+          replaceImageCheckedIds(candidateImageIds, false)
+        }
+      } else if (newCandidateImageIds.length > 0) {
+        replaceImageCheckedIds(newCandidateImageIds, true)
+      }
     }
+
+    knownCandidateImageIdsByTaskIdRef.current[task.task_id] = candidateImageIds
     previousTaskStatusByIdRef.current[task.task_id] = task.status
-  }, [replaceImageCheckedIds, task])
+  }, [imageCheckedIds, replaceImageCheckedIds, task])
 
   useEffect(() => {
     if (!hasRunningTask || !repository.readAppState) {
@@ -276,29 +290,29 @@ export function useManageAdReviewActions({
     setActiveTaskId(nextTask.task_id)
   }, [])
 
-  const startManageAdReview = useCallback(async () => {
+  const startManageAdReview = useCallback(async (options?: { skipReviewedNodes?: boolean }) => {
     if (!repository.startManageAdReview) {
       setManageOperationHint('当前后端不支持AI广告审核')
-      return
+      return null
     }
     if (mode !== 'image') {
       setManageOperationHint('AI广告审核仅支持图片模式')
-      return
+      return null
     }
     if (!manageMode) {
       setManageOperationHint('请先进入管理模式')
-      return
+      return null
     }
     if (!activeScope) {
       setManageOperationHint('请先在管理模式勾选图片或目录')
-      return
+      return null
     }
 
     const normalizedEndpoint = llmEndpoint.trim()
     const normalizedModel = llmModel.trim()
     if (!normalizedEndpoint || !normalizedModel) {
       setManageOperationHint('请先在设置面板配置并测试AI广告审核视觉模型')
-      return
+      return null
     }
 
     const imageIds = activeScope === 'image' ? imageCheckedIds : []
@@ -330,6 +344,7 @@ export function useManageAdReviewActions({
           selection_scope: activeScope,
           image_ids: imageIds,
           node_ids: nodeIds,
+          skip_reviewed_nodes: options?.skipReviewedNodes ?? true,
           llm_endpoint: normalizedEndpoint,
           llm_model: normalizedModel,
           strategy,
@@ -341,9 +356,11 @@ export function useManageAdReviewActions({
       updateTaskInQueue(response.task)
       await loadQueueTasks({ silent: true })
       setManageOperationHint(response.task.message ?? 'AI广告审核任务已启动')
+      return response.task
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       setManageOperationHint(`AI广告审核启动失败：${message}`)
+      return null
     } finally {
       setPending(false)
     }
@@ -409,6 +426,7 @@ export function useManageAdReviewActions({
   }, [imageCheckedIds, task])
 
   const hasCheckedCandidateSelection = selectedCandidateIds.length > 0
+  const selectedCandidateCount = selectedCandidateIds.length
 
   const scopeImageIds = task?.scope_image_ids ?? []
   const llmReviewedImageIds = useMemo(() => {
@@ -471,10 +489,6 @@ export function useManageAdReviewActions({
         false,
       )
 
-      if (response.deleted_count > 0) {
-        setHideUncheckedNonChecked(true)
-      }
-
       if (response.failed.length > 0) {
         setManageOperationHint(`已删除 ${response.deleted_count} 张，失败 ${response.failed.length} 项`)
       } else {
@@ -498,9 +512,15 @@ export function useManageAdReviewActions({
   ])
 
   const dismissTask = useCallback(() => {
-    setActiveTaskId(null)
+    if (task?.status === 'review') {
+      replaceImageCheckedIds(
+        task.candidates.map((candidate) => candidate.image_id),
+        false,
+      )
+      setManageOperationHint('已重置剔除，恢复全选候选')
+    }
     setHideUncheckedNonChecked(false)
-  }, [])
+  }, [replaceImageCheckedIds, setManageOperationHint, task])
 
   const selectTask = useCallback((taskId: string) => {
     setActiveTaskId(taskId)
@@ -574,6 +594,7 @@ export function useManageAdReviewActions({
     pending,
     hideUncheckedNonChecked,
     hasCheckedCandidateSelection,
+    selectedCandidateCount,
     scopeImageIds,
     llmReviewedImageIds,
     nonLlmReviewedImageIds,

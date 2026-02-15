@@ -74,6 +74,7 @@ function createBaseProps(overrides: Partial<ComponentProps<typeof MetadataPanel>
     adReviewActiveTaskId: null,
     adReviewHideUncheckedNonChecked: false,
     hasCheckedAdReviewCandidates: false,
+    selectedAdReviewCandidateCount: 0,
     adReviewFocusTaskId: null,
     adReviewStrategyMode: 'all',
     adReviewMaxConcurrency: 4,

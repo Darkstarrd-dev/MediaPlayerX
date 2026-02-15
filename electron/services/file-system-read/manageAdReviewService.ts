@@ -427,6 +427,7 @@ export class ManageAdReviewService {
         .filter((value): value is ParsedSidebarNodeRef => Boolean(value))
         .filter((value) => value.kind === 'folder' || value.kind === 'package'),
     )
+    const skipReviewedNodes = request.skip_reviewed_nodes ?? true
     const reviewedNodeHashById = this.readReviewedNodeHashState().node_hash_by_id
 
     const selectedImageIdSet = new Set<string>()
@@ -439,7 +440,7 @@ export class ManageAdReviewService {
       const nodeHash = computeSidebarNodeHash(target, sources)
       nodeHashById[nodeId] = nodeHash
 
-      if (reviewedNodeHashById[nodeId]?.node_hash === nodeHash) {
+      if (skipReviewedNodes && reviewedNodeHashById[nodeId]?.node_hash === nodeHash) {
         skippedNodeIds.push(nodeId)
         continue
       }

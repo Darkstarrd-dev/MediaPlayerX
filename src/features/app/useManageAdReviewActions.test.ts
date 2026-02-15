@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { ManageAdReviewTaskDto } from '../../contracts/backend'
@@ -164,5 +164,129 @@ describe('useManageAdReviewActions', () => {
     })
 
     expect(readManageAdReviewTask).not.toHaveBeenCalled()
+  })
+
+  it('reset action restores full candidate selection for reviewed task', async () => {
+    const reviewTask = createTask('task-review', 'review', {
+      progress: 1,
+      reviewed_count: 2,
+      total_count: 2,
+      candidates: [
+        {
+          image_id: 'img-1',
+          package_id: 'pkg-1',
+          package_name: 'pkg-1.zip',
+          display_name: 'pkg-1',
+          ordinal: 1,
+          file_name: '001.jpg',
+          reason: 'suspected',
+          source: 'llm',
+          hash: 'hash-1',
+        },
+        {
+          image_id: 'img-2',
+          package_id: 'pkg-1',
+          package_name: 'pkg-1.zip',
+          display_name: 'pkg-1',
+          ordinal: 2,
+          file_name: '002.jpg',
+          reason: 'suspected',
+          source: 'llm',
+          hash: 'hash-2',
+        },
+      ],
+    })
+
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: createQueueStateJson([reviewTask]),
+    })
+    const replaceImageCheckedIds = vi.fn()
+    const setManageOperationHint = vi.fn()
+
+    const repository = {
+      readAppState,
+    } as unknown as MediaRepository
+
+    const { result } = renderHook(() =>
+      useManageAdReviewActions({
+        repository,
+        mode: 'image',
+        manageMode: true,
+        activeSelectionScope: 'image',
+        imageCheckedIds: ['img-1'],
+        sidebarCheckedNodeIds: [],
+        llmEndpoint: '',
+        llmModel: '',
+        adReviewStrategyMode: 'all',
+        adReviewHeadN: 0,
+        adReviewTailN: 0,
+        adReviewTailStopCleanStreak: 1,
+        adReviewMaxConcurrency: 4,
+        clearAllSelections: vi.fn(),
+        replaceImageCheckedIds,
+        setManageOperationHint,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.task?.task_id).toBe('task-review')
+    })
+
+    act(() => {
+      result.current.dismissTask()
+    })
+
+    expect(replaceImageCheckedIds).toHaveBeenCalledWith(['img-1', 'img-2'], false)
+    expect(setManageOperationHint).toHaveBeenCalledWith('已重置剔除，恢复全选候选')
+  })
+
+  it('passes skip_reviewed_nodes option when starting review', async () => {
+    const reviewTask = createTask('task-review', 'review', {
+      progress: 1,
+      reviewed_count: 1,
+      total_count: 1,
+      scope_image_ids: ['img-1'],
+    })
+    const startManageAdReview = vi.fn().mockResolvedValue({ task: reviewTask })
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: createQueueStateJson([reviewTask]),
+    })
+
+    const repository = {
+      startManageAdReview,
+      readAppState,
+    } as unknown as MediaRepository
+
+    const { result } = renderHook(() =>
+      useManageAdReviewActions({
+        repository,
+        mode: 'image',
+        manageMode: true,
+        activeSelectionScope: 'image',
+        imageCheckedIds: ['img-1'],
+        sidebarCheckedNodeIds: [],
+        llmEndpoint: 'http://127.0.0.1:1234/v1',
+        llmModel: 'mock-model',
+        adReviewStrategyMode: 'all',
+        adReviewHeadN: 0,
+        adReviewTailN: 0,
+        adReviewTailStopCleanStreak: 1,
+        adReviewMaxConcurrency: 4,
+        clearAllSelections: vi.fn(),
+        replaceImageCheckedIds: vi.fn(),
+        setManageOperationHint: vi.fn(),
+      }),
+    )
+
+    act(() => {
+      void result.current.startManageAdReview({ skipReviewedNodes: false })
+    })
+
+    await waitFor(() => {
+      expect(startManageAdReview).toHaveBeenCalled()
+    })
+
+    const firstPayload = startManageAdReview.mock.calls[0]?.[0]
+    expect(firstPayload?.skip_reviewed_nodes).toBe(false)
   })
 })

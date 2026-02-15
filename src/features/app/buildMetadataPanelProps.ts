@@ -38,13 +38,14 @@ interface BuildMetadataPanelPropsParams {
   adReviewActiveTaskId: string | null
   adReviewHideUncheckedNonChecked: boolean
   hasCheckedAdReviewCandidates: boolean
+  selectedAdReviewCandidateCount: number
   adReviewFocusTaskId: string | null
   adReviewStrategyMode: 'all' | 'head-tail'
   adReviewMaxConcurrency: number
   adReviewHeadN: number
   adReviewTailN: number
   adReviewTailStopCleanStreak: number
-  onStartAdReview: () => void
+  onStartAdReview: (options?: { skipReviewedNodes?: boolean }) => void
   onPauseAdReview: () => void
   onToggleHideUncheckedNonChecked: () => void
   onSelectAdReviewTask: (taskId: string) => void
@@ -138,6 +139,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     adReviewActiveTaskId: params.adReviewActiveTaskId,
     adReviewHideUncheckedNonChecked: params.adReviewHideUncheckedNonChecked,
     hasCheckedAdReviewCandidates: params.hasCheckedAdReviewCandidates,
+    selectedAdReviewCandidateCount: params.selectedAdReviewCandidateCount,
     adReviewFocusTaskId: params.adReviewFocusTaskId,
     adReviewStrategyMode: params.adReviewStrategyMode,
     adReviewMaxConcurrency: params.adReviewMaxConcurrency,

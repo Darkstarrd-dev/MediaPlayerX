@@ -356,6 +356,39 @@ describe('ManageAdReviewService queue persistence', () => {
     expect(runManageAdReviewMock.mock.calls.length).toBe(callCountAfterFirst)
   })
 
+  it('reruns reviewed sidebar nodes when skip_reviewed_nodes is false', async () => {
+    const { service } = createServiceFixture()
+    const request: StartManageAdReviewRequestDto = {
+      selection_scope: 'sidebar',
+      node_ids: ['folder:C:/Users/A'],
+      llm_endpoint: 'http://127.0.0.1:1234/v1',
+      llm_model: 'mock-model',
+      strategy: { mode: 'all' },
+      max_concurrency: 4,
+    }
+
+    const first = await service.startManageAdReview(request)
+    await vi.waitFor(async () => {
+      const task = await service.readManageAdReviewTask({ task_id: first.task.task_id })
+      expect(task.task?.status).toBe('review')
+    })
+
+    const callCountAfterFirst = runManageAdReviewMock.mock.calls.length
+    const second = await service.startManageAdReview({
+      ...request,
+      skip_reviewed_nodes: false,
+    })
+
+    await vi.waitFor(async () => {
+      const task = await service.readManageAdReviewTask({ task_id: second.task.task_id })
+      expect(task.task?.status).toBe('review')
+    })
+
+    expect(second.task.total_count).toBeGreaterThan(0)
+    expect(second.task.message).not.toBe('已审核(未变更)，无需执行')
+    expect(runManageAdReviewMock.mock.calls.length).toBe(callCountAfterFirst + 1)
+  })
+
   it('recomputes reviewed node hash after deleting candidates', async () => {
     const snapshot = createSnapshotForTests()
     const { service, appState } = createServiceFixture({ snapshot })

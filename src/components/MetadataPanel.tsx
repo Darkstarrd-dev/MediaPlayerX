@@ -49,13 +49,14 @@ export interface MetadataPanelProps {
   adReviewActiveTaskId: string | null
   adReviewHideUncheckedNonChecked: boolean
   hasCheckedAdReviewCandidates: boolean
+  selectedAdReviewCandidateCount: number
   adReviewFocusTaskId: string | null
   adReviewStrategyMode: 'all' | 'head-tail'
   adReviewMaxConcurrency: number
   adReviewHeadN: number
   adReviewTailN: number
   adReviewTailStopCleanStreak: number
-  onStartAdReview: () => void
+  onStartAdReview: (options?: { skipReviewedNodes?: boolean }) => void
   onPauseAdReview: () => void
   onToggleHideUncheckedNonChecked: () => void
   onSelectAdReviewTask: (taskId: string) => void
@@ -173,6 +174,7 @@ function MetadataPanel({
   adReviewActiveTaskId,
   adReviewHideUncheckedNonChecked,
   hasCheckedAdReviewCandidates,
+  selectedAdReviewCandidateCount,
   adReviewFocusTaskId,
   adReviewStrategyMode,
   adReviewMaxConcurrency,
@@ -543,6 +545,7 @@ function MetadataPanel({
         adReviewActiveTaskId={adReviewActiveTaskId}
         adReviewHideUncheckedNonChecked={adReviewHideUncheckedNonChecked}
         hasCheckedAdReviewCandidates={hasCheckedAdReviewCandidates}
+        selectedAdReviewCandidateCount={selectedAdReviewCandidateCount}
         adReviewFocusTaskId={adReviewFocusTaskId}
         adReviewStrategyMode={adReviewStrategyMode}
         adReviewMaxConcurrency={adReviewMaxConcurrency}

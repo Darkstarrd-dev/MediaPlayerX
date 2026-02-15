@@ -368,6 +368,7 @@ export const startManageAdReviewRequestSchema = z.object({
   selection_scope: manageAdReviewSelectionScopeSchema,
   image_ids: z.array(z.string().min(1)).optional(),
   node_ids: z.array(z.string().min(1)).optional(),
+  skip_reviewed_nodes: z.boolean().optional(),
   llm_endpoint: z.string().min(1),
   llm_model: z.string().min(1),
   strategy: manageAdReviewStrategySchema.optional(),

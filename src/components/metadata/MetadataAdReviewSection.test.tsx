@@ -61,6 +61,8 @@ function createTask(taskId: string, status: ManageAdReviewTaskDto['status']): Ma
 }
 
 function renderSection(overrides: Partial<ComponentProps<typeof MetadataAdReviewSection>> = {}) {
+  const onStartAdReview = vi.fn()
+  const onPauseAdReview = vi.fn()
   const onSelectAdReviewTask = vi.fn()
   const onRemoveAdReviewTask = vi.fn()
   const onToggleAdReviewFocus = vi.fn()
@@ -76,6 +78,7 @@ function renderSection(overrides: Partial<ComponentProps<typeof MetadataAdReview
       adReviewActiveTaskId={adReviewTask.task_id}
       adReviewHideUncheckedNonChecked={false}
       hasCheckedAdReviewCandidates={false}
+      selectedAdReviewCandidateCount={1}
       adReviewFocusTaskId={null}
       adReviewStrategyMode="all"
       adReviewMaxConcurrency={4}
@@ -83,8 +86,8 @@ function renderSection(overrides: Partial<ComponentProps<typeof MetadataAdReview
       adReviewTailN={8}
       adReviewTailStopCleanStreak={6}
       canExecuteAdReview={true}
-      onStartAdReview={vi.fn()}
-      onPauseAdReview={vi.fn()}
+      onStartAdReview={onStartAdReview}
+      onPauseAdReview={onPauseAdReview}
       onToggleHideUncheckedNonChecked={vi.fn()}
       onSelectAdReviewTask={onSelectAdReviewTask}
       onRemoveAdReviewTask={onRemoveAdReviewTask}
@@ -100,6 +103,8 @@ function renderSection(overrides: Partial<ComponentProps<typeof MetadataAdReview
   )
 
   return {
+    onStartAdReview,
+    onPauseAdReview,
     onSelectAdReviewTask,
     onRemoveAdReviewTask,
     onToggleAdReviewFocus,
@@ -152,5 +157,32 @@ describe('MetadataAdReviewSection', () => {
     expect(focusButton).toBeEnabled()
     fireEvent.click(focusButton)
     expect(onToggleAdReviewFocus).toHaveBeenCalledTimes(1)
+  })
+
+  it('opens start dialog and passes skip option', () => {
+    const { onStartAdReview } = renderSection({ adReviewTask: createTask('task-pending', 'pending') })
+
+    fireEvent.click(screen.getByRole('button', { name: '执行AI广告审核' }))
+    expect(screen.getByRole('dialog', { name: '选择AI广告审核执行方式' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '不跳过已扫描的' }))
+    expect(onStartAdReview).toHaveBeenCalledWith({ skipReviewedNodes: false })
+  })
+
+  it('running task pauses immediately without opening start dialog', () => {
+    const runningTask = createTask('task-running', 'running')
+    const { onPauseAdReview } = renderSection({ adReviewTask: runningTask, adReviewQueueTasks: [runningTask] })
+
+    fireEvent.click(screen.getByRole('button', { name: '暂停AI广告审核' }))
+    expect(onPauseAdReview).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('dialog', { name: '选择AI广告审核执行方式' })).toBeNull()
+  })
+
+  it('shows reset-exclusion action and removes hide-unchecked action', () => {
+    renderSection()
+
+    expect(screen.getByRole('button', { name: /待复核.*1\/1/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '重置剔除' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /隐藏未勾选图片|显示全部图片/ })).toBeNull()
   })
 })
