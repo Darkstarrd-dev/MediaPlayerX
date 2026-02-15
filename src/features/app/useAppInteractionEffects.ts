@@ -144,8 +144,45 @@ export function useAppInteractionEffects({
     moveImageVertical,
     jumpImageBoundary,
     goPackage,
+    goPrevPage,
+    goNextPage,
     clearAllSelections,
   } = readNavigationState
+
+  const handleImageWheelLikePageNavigation = (direction: 'next' | 'prev') => {
+    if (mode !== 'image') {
+      return
+    }
+
+    if (direction === 'next') {
+      goNextPage()
+      return
+    }
+
+    goPrevPage()
+  }
+
+  const handleImageCtrlWheelLikeSidebarNavigation = (direction: 'next' | 'prev') => {
+    if (mode !== 'image' || flatSidebarNodes.length === 0) {
+      return
+    }
+
+    const currentNodeId = selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId) ? selectedSidebarNodeId : flatSidebarNodes[0].id
+    const currentIndex = Math.max(0, flatSidebarNodes.findIndex((node) => node.id === currentNodeId))
+    const delta = direction === 'next' ? 1 : -1
+    const nextIndex = Math.max(0, Math.min(flatSidebarNodes.length - 1, currentIndex + delta))
+    const nextNode = flatSidebarNodes[nextIndex]
+    if (!nextNode || nextNode.id === selectedSidebarNodeId) {
+      return
+    }
+
+    setSelectedSidebarNodeId(nextNode.id)
+    if (nextNode.imageSourceId) {
+      setSelectedPackageId(nextNode.imageSourceId)
+    }
+
+    requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id))
+  }
 
   useEffect(() => {
     const searchPanelOpen = vectorMode && !manageMode && !metadataManageMode
@@ -380,6 +417,8 @@ export function useAppInteractionEffects({
     goPlaylist,
     adjustVideoRate,
     adjustVideoVolume,
+    onImageWheelNavigatePage: handleImageWheelLikePageNavigation,
+    onImageCtrlWheelNavigateSidebar: handleImageCtrlWheelLikeSidebarNavigation,
     updateSettings,
   })
 

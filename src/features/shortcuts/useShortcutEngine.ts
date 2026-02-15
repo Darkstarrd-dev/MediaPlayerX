@@ -43,6 +43,8 @@ interface UseShortcutEngineParams {
   onGoPlaylist: (delta: number) => void
   onAdjustVideoRate: (delta: number) => void
   onAdjustVideoVolume: (delta: number) => void
+  onImageWheelNavigatePage: (direction: 'next' | 'prev') => void
+  onImageCtrlWheelNavigateSidebar: (direction: 'next' | 'prev') => void
 }
 
 export function useShortcutEngine({
@@ -74,6 +76,8 @@ export function useShortcutEngine({
   onGoPlaylist,
   onAdjustVideoRate,
   onAdjustVideoVolume,
+  onImageWheelNavigatePage,
+  onImageCtrlWheelNavigateSidebar,
 }: UseShortcutEngineParams): void {
   const lastImageNavAtRef = useRef(0)
 
@@ -310,6 +314,39 @@ export function useShortcutEngine({
         return
       }
 
+      if (
+        !fullscreenActive &&
+        mode === 'image' &&
+        event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey
+      ) {
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault()
+          onImageWheelNavigatePage('prev')
+          return
+        }
+
+        if (event.key === 'ArrowRight') {
+          event.preventDefault()
+          onImageWheelNavigatePage('next')
+          return
+        }
+
+        if (event.key === 'ArrowUp') {
+          event.preventDefault()
+          onImageCtrlWheelNavigateSidebar('prev')
+          return
+        }
+
+        if (event.key === 'ArrowDown') {
+          event.preventDefault()
+          onImageCtrlWheelNavigateSidebar('next')
+          return
+        }
+      }
+
       if (!fullscreenActive && sidebarFocus === 'sidebar') {
         const handledBySidebar = handleSidebarNavigationKey(event)
         if (handledBySidebar) {
@@ -371,6 +408,8 @@ export function useShortcutEngine({
     onToggleFullscreenPaneFocus,
     onGoPackage,
     onAlignFocus,
+    onImageCtrlWheelNavigateSidebar,
+    onImageWheelNavigatePage,
     settingsOpen,
     shortcuts,
     suspended,

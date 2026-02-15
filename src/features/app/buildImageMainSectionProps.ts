@@ -81,6 +81,8 @@ interface BuildImageMainSectionPropsParams {
     coverImageUrl: string | null
   }>
   onSelectNodeBrowseItem: (nodeId: string, imageSourceId?: string) => void
+  onThumbnailWheelTurnPage: (direction: 'next' | 'prev') => void
+  onThumbnailWheelSwitchSidebarNode: (direction: 'next' | 'prev') => void
 }
 
 export function buildImageMainSectionProps(params: BuildImageMainSectionPropsParams) {
@@ -157,5 +159,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     nodeBrowseLabel: params.nodeBrowseLabel,
     nodeBrowseItems: params.nodeBrowseItems,
     onSelectNodeBrowseItem: params.onSelectNodeBrowseItem,
+    onThumbnailWheelTurnPage: params.onThumbnailWheelTurnPage,
+    onThumbnailWheelSwitchSidebarNode: params.onThumbnailWheelSwitchSidebarNode,
   }
 }

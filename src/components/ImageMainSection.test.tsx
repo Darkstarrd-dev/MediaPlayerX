@@ -722,4 +722,85 @@ describe('ImageMainSection layout', () => {
     const settledButtons = Array.from(document.querySelectorAll('.thumb-card-main')) as HTMLButtonElement[]
     expect(settledButtons.every((button) => !button.disabled)).toBe(true)
   })
+
+  it('缩略图容器滚轮触发翻页，Ctrl+滚轮切换 sidebar 节点', () => {
+    const refsInPage = [{ packageId: packageWithImages.id, imageIndex: 0 }]
+    const onThumbnailWheelTurnPage = vi.fn()
+    const onThumbnailWheelSwitchSidebarNode = vi.fn()
+
+    render(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={1}
+        enableLoadingSkeleton={false}
+        activePackage={packageWithImages}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={refsInPage}
+        refsInPage={refsInPage}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={2}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[packageWithImages.id, packageWithImages]])}
+        imageUrlById={{ 'img-1': 'mock://thumb-1' }}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={vi.fn()}
+        metadataPending={false}
+        metadataTargetPackageLabel={packageWithImages.displayName}
+        metadataFetchDefaultText={packageWithImages.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageMoveNodes={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+        onThumbnailWheelTurnPage={onThumbnailWheelTurnPage}
+        onThumbnailWheelSwitchSidebarNode={onThumbnailWheelSwitchSidebarNode}
+      />,
+    )
+
+    const grid = document.querySelector('.image-grid') as HTMLDivElement
+    expect(grid).not.toBeNull()
+
+    fireEvent.wheel(grid, { deltaY: 120 })
+    expect(onThumbnailWheelTurnPage).toHaveBeenCalledWith('next')
+    expect(onThumbnailWheelSwitchSidebarNode).not.toHaveBeenCalled()
+
+    fireEvent.wheel(grid, { deltaY: -120, ctrlKey: true })
+    expect(onThumbnailWheelSwitchSidebarNode).toHaveBeenCalledWith('prev')
+  })
 })

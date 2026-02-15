@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject, type WheelEvent as ReactWheelEvent } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
 import { VideoControlIcon } from './VideoControlIcon'
@@ -96,6 +96,8 @@ interface ImageMainSectionProps {
     coverImageUrl: string | null
   }>
   onSelectNodeBrowseItem?: (nodeId: string, imageSourceId?: string) => void
+  onThumbnailWheelTurnPage?: (direction: 'next' | 'prev') => void
+  onThumbnailWheelSwitchSidebarNode?: (direction: 'next' | 'prev') => void
 }
 
 function ImageMainSection({
@@ -165,6 +167,8 @@ function ImageMainSection({
   nodeBrowseLabel = '',
   nodeBrowseItems = [],
   onSelectNodeBrowseItem,
+  onThumbnailWheelTurnPage,
+  onThumbnailWheelSwitchSidebarNode,
 }: ImageMainSectionProps) {
   const { t } = useI18n()
   const [metadataFetchOpen, setMetadataFetchOpen] = useState(false)
@@ -404,6 +408,22 @@ function ImageMainSection({
     return `1/${total}`
   })()
 
+  const handleThumbnailContainerWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || event.deltaY === 0) {
+      return
+    }
+
+    const direction: 'next' | 'prev' = event.deltaY > 0 ? 'next' : 'prev'
+    event.preventDefault()
+
+    if (event.ctrlKey) {
+      onThumbnailWheelSwitchSidebarNode?.(direction)
+      return
+    }
+
+    onThumbnailWheelTurnPage?.(direction)
+  }
+
   return (
     <>
       <div className="main-toolbar">
@@ -579,6 +599,7 @@ function ImageMainSection({
         <div
           className="image-grid node-browse-grid"
           ref={gridRef}
+          onWheel={handleThumbnailContainerWheel}
           style={{
             gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
             gap: `${thumbnailGap}px`,
@@ -669,6 +690,7 @@ function ImageMainSection({
           className={`image-grid ${manageMode ? 'is-manage' : ''} ${isThumbnailInteractionLocked ? 'is-pending-swap' : ''}`}
           ref={gridRef}
           aria-busy={isThumbnailInteractionLocked || undefined}
+          onWheel={handleThumbnailContainerWheel}
           onMouseDown={manageMode && !isThumbnailInteractionLocked ? startThumbnailDragToggle : undefined}
           style={{
             gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,

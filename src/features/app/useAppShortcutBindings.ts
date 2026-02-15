@@ -36,6 +36,8 @@ interface UseAppShortcutBindingsParams {
   goPlaylist: ShortcutEngineParams['onGoPlaylist']
   adjustVideoRate: ShortcutEngineParams['onAdjustVideoRate']
   adjustVideoVolume: ShortcutEngineParams['onAdjustVideoVolume']
+  onImageWheelNavigatePage: ShortcutEngineParams['onImageWheelNavigatePage']
+  onImageCtrlWheelNavigateSidebar: ShortcutEngineParams['onImageCtrlWheelNavigateSidebar']
   updateSettings: AppSettingsStoreSnapshot['updateSettings']
 }
 
@@ -68,6 +70,8 @@ export function useAppShortcutBindings({
   goPlaylist,
   adjustVideoRate,
   adjustVideoVolume,
+  onImageWheelNavigatePage,
+  onImageCtrlWheelNavigateSidebar,
   updateSettings,
 }: UseAppShortcutBindingsParams) {
   useShortcutEngine({
@@ -113,5 +117,7 @@ export function useAppShortcutBindings({
     onGoPlaylist: goPlaylist,
     onAdjustVideoRate: adjustVideoRate,
     onAdjustVideoVolume: adjustVideoVolume,
+    onImageWheelNavigatePage,
+    onImageCtrlWheelNavigateSidebar,
   })
 }
