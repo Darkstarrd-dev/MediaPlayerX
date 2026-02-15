@@ -117,6 +117,7 @@ interface SidebarPanelProps {
   onSelectNode: (nodeId: string) => void;
   onSelectPackage: (packageId: string) => void;
   onSelectVideo: (videoId: string) => void;
+  onSelectVideoAndPlay?: (videoId: string) => void;
   onSelectAudio: (audioId: string) => void;
   onCollapseSidebar: () => void;
   onSetCurrentRoot: () => void;
@@ -164,6 +165,7 @@ function SidebarPanel({
   onSelectNode,
   onSelectPackage,
   onSelectVideo,
+  onSelectVideoAndPlay,
   onSelectAudio,
   onCollapseSidebar,
   onSetCurrentRoot,
@@ -463,6 +465,16 @@ function SidebarPanel({
               }
             }}
             onDoubleClick={() => {
+              if (mode === "video" && node.videoId) {
+                onSelectNode(node.id);
+                if (onSelectVideoAndPlay) {
+                  onSelectVideoAndPlay(node.videoId);
+                } else {
+                  onSelectVideo(node.videoId);
+                }
+                return;
+              }
+
               if (!imageFolderCollapsible) {
                 return;
               }

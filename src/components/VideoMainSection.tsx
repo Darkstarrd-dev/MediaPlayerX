@@ -129,6 +129,7 @@ function VideoMainSection({
   const { t } = useI18n()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false)
+  const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] = useState(false)
   const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
   const clampedTime = Math.min(videoTime, Math.max(0, durationSec))
   const progressPercent = durationSec > 0 ? clamp((clampedTime / durationSec) * 100, 0, 100) : 0
@@ -139,8 +140,8 @@ function VideoMainSection({
   const videoVolumeRangeStyle = {
     '--mpx-skeuo-range-pct': `${volumePercent}%`,
   } as CSSProperties
-  const showCover = Boolean(videoSourceUrl && !videoPlaying && !hasPlayedCurrentSource)
-  const showVideoFrame = Boolean(videoSourceUrl && (videoPlaying || hasPlayedCurrentSource))
+  const showVideoFrame = Boolean(videoSourceUrl && (videoPlaying || hasPlayedCurrentSource || hasSeekPreviewCurrentSource || !coverImageUrl))
+  const showCover = Boolean(videoSourceUrl && !showVideoFrame && coverImageUrl)
   const videoScreenBackground = 'var(--mpx-bg-elevated)'
   const videoObjectFit = videoFitMode === 'original' ? 'none' : videoFitMode
   const subtitleToggleLabel = subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')
@@ -174,6 +175,7 @@ function VideoMainSection({
 
   useEffect(() => {
     setHasPlayedCurrentSource(false)
+    setHasSeekPreviewCurrentSource(false)
   }, [videoSourceUrl])
 
   useEffect(() => {
@@ -367,6 +369,12 @@ function VideoMainSection({
               if (Number.isFinite(duration) && duration > 0) {
                 onVideoDurationDetected(duration)
               }
+              if (!videoPlaying && !coverImageUrl) {
+                const video = videoRef.current
+                if (video && video.duration > 0) {
+                  video.currentTime = Math.min(0.001, video.duration)
+                }
+              }
               const currentTime = videoRef.current?.currentTime ?? 0
               onVideoTimeUpdate(currentTime)
             }}
@@ -406,7 +414,10 @@ function VideoMainSection({
             style={videoProgressRangeStyle}
             type="range"
             value={clampedTime}
-            onChange={(event) => onSeekVideo(Number(event.target.value))}
+            onChange={(event) => {
+              setHasSeekPreviewCurrentSource(true)
+              onSeekVideo(Number(event.target.value))
+            }}
           />
         </div>
 

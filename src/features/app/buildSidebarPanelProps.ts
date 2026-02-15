@@ -41,7 +41,7 @@ interface BuildSidebarPanelPropsParams {
   setSelectedSidebarNodeId: (nodeId: string) => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
   setSelectedPackageId: (packageId: string) => void;
-  selectVideoFromBrowser: (videoId: string) => void;
+  selectVideoFromBrowser: (videoId: string, options?: { play?: boolean }) => void;
   setSelectedAudioId: (audioId: string) => void;
   collapseSidebar: () => void;
   collapsedFolderNodeIds?: string[];
@@ -110,6 +110,9 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     },
     onSelectPackage: params.setSelectedPackageId,
     onSelectVideo: params.selectVideoFromBrowser,
+    onSelectVideoAndPlay: (videoId: string) => {
+      params.selectVideoFromBrowser(videoId, { play: true });
+    },
     onSelectAudio: params.setSelectedAudioId,
     onCollapseSidebar: params.collapseSidebar,
     collapsedFolderNodeIds: params.collapsedFolderNodeIds,

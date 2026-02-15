@@ -51,7 +51,7 @@ interface UseMediaStateResult {
   showFullscreenFooter: boolean
   setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>
   goPlaylist: (delta: number) => void
-  selectVideoFromBrowser: (videoId: string) => void
+  selectVideoFromBrowser: (videoId: string, options?: { play?: boolean }) => void
   adjustVideoRate: (delta: number) => void
   adjustVideoVolume: (delta: number) => void
   cycleVideoFitMode: () => void
@@ -104,10 +104,10 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
     [playlistIds, selectedVideoId],
   )
 
-  const selectVideoFromBrowser = useCallback((videoId: string) => {
+  const selectVideoFromBrowser = useCallback((videoId: string, options?: { play?: boolean }) => {
     setSelectedVideoId(videoId)
     setVideoTime(0)
-    setVideoPlaying(false)
+    setVideoPlaying((previous) => (options?.play ? true : previous))
   }, [])
 
   const adjustVideoRate = useCallback((delta: number) => {
