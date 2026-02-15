@@ -32,6 +32,7 @@ interface UseAppShortcutBindingsParams {
   autoPlayEnabled: boolean
   applyAutoplayIntervalByIndex: ShortcutEngineParams['onApplyAutoplayIntervalByIndex']
   applyPackageGrade: ShortcutEngineParams['onSetPackageGrade']
+  applyVideoGrade: ShortcutEngineParams['onSetVideoGrade']
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: ShortcutEngineParams['onGoPlaylist']
   adjustVideoRate: ShortcutEngineParams['onAdjustVideoRate']
@@ -66,6 +67,7 @@ export function useAppShortcutBindings({
   autoPlayEnabled,
   applyAutoplayIntervalByIndex,
   applyPackageGrade,
+  applyVideoGrade,
   setVideoPlaying,
   goPlaylist,
   adjustVideoRate,
@@ -111,6 +113,7 @@ export function useAppShortcutBindings({
     },
     onApplyAutoplayIntervalByIndex: applyAutoplayIntervalByIndex,
     onSetPackageGrade: applyPackageGrade,
+    onSetVideoGrade: applyVideoGrade,
     onToggleVideoPlaying: () => {
       setVideoPlaying((value) => !value)
     },

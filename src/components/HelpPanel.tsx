@@ -67,20 +67,14 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         action: t('ui.help.image.keyboard.focusSwitch'),
       },
       {
-        key: 'image-autoplay-toggle',
-        shortcut: renderShortcutBinding(shortcuts.autoplayToggle, t('ui.help.shortcutNotSet')),
-        action: t('ui.help.image.keyboard.autoplayToggle'),
+        key: 'image-mode-switch',
+        shortcut: t('ui.help.image.keyboard.fixedModeSwitchShortcut'),
+        action: t('ui.help.image.keyboard.modeSwitchF1F3'),
       },
       {
-        key: 'image-autoplay-interval',
-        shortcut: [
-          renderShortcutBinding(shortcuts.autoplayInterval1, t('ui.help.shortcutNotSet')),
-          renderShortcutBinding(shortcuts.autoplayInterval2, t('ui.help.shortcutNotSet')),
-          renderShortcutBinding(shortcuts.autoplayInterval3, t('ui.help.shortcutNotSet')),
-          renderShortcutBinding(shortcuts.autoplayInterval4, t('ui.help.shortcutNotSet')),
-          renderShortcutBinding(shortcuts.autoplayInterval5, t('ui.help.shortcutNotSet')),
-        ].join(' / '),
-        action: t('ui.help.image.keyboard.autoplayIntervals'),
+        key: 'image-panel-switch',
+        shortcut: t('ui.help.image.keyboard.fixedPanelSwitchShortcut'),
+        action: t('ui.help.image.keyboard.panelSwitchCtrl1Ctrl3'),
       },
       {
         key: 'image-rating',
@@ -144,6 +138,11 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         key: 'fullscreen-tab-dual',
         shortcut: 'Tab',
         action: t('ui.help.fullscreen.keyboard.tabDualFocusSwitch'),
+      },
+      {
+        key: 'fullscreen-autoplay-toggle',
+        shortcut: renderShortcutBinding(shortcuts.autoplayToggle, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.autoplayToggle'),
       },
     ],
     [shortcuts, t],

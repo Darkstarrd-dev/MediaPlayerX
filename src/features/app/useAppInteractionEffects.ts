@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppEffects } from './useAppEffects'
 import { usePersistedAppSettings } from './usePersistedAppSettings'
+import { isEditableTarget } from '../../utils/ui'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { AppSessionStateResult } from './useAppSessionState'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
@@ -24,6 +25,7 @@ interface UseAppInteractionEffectsParams {
   applyAutoplayIntervalByIndex: FullscreenPlaybackBindingsResult['applyAutoplayIntervalByIndex']
   setFullscreenActiveWithAutoStop: FullscreenPlaybackBindingsResult['setFullscreenActiveWithAutoStop']
   applyPackageGrade: MetadataWriteBindingsResult['applyPackageGrade']
+  applyVideoGrade: (grade: number | null) => void
   adReviewDeletePending: boolean
 }
 
@@ -38,6 +40,7 @@ export function useAppInteractionEffects({
   applyAutoplayIntervalByIndex,
   setFullscreenActiveWithAutoStop,
   applyPackageGrade,
+  applyVideoGrade,
   adReviewDeletePending,
 }: UseAppInteractionEffectsParams) {
   const {
@@ -116,6 +119,8 @@ export function useAppInteractionEffects({
   const {
     searchPanelMode,
     searchPanelCollapsed,
+    setSearchPanelMode,
+    setSearchPanelCollapsed,
     featureTagPickerOpen,
     vectorResultsActive,
     rootScopedVideoIds,
@@ -318,6 +323,96 @@ export function useAppInteractionEffects({
         return
       }
 
+      if (!fullscreenActive) {
+        if (isEditableTarget(event.target)) {
+          return
+        }
+
+        if (!event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
+          if (event.code === 'F1') {
+            event.preventDefault()
+            event.stopPropagation()
+            updateSettings({ mode: 'image' })
+            return
+          }
+          if (event.code === 'F2') {
+            event.preventDefault()
+            event.stopPropagation()
+            updateSettings({ mode: 'video' })
+            return
+          }
+          if (event.code === 'F3') {
+            event.preventDefault()
+            event.stopPropagation()
+            updateSettings({ mode: 'music' })
+            return
+          }
+        }
+
+        if (event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
+          if (adReviewDeletePending) {
+            return
+          }
+
+          if (event.code === 'Digit1' || event.code === 'Numpad1') {
+            event.preventDefault()
+            event.stopPropagation()
+            if (manageMode) {
+              closeManagePanel()
+            }
+            if (metadataManageMode) {
+              closeMetadataManagePanel()
+            }
+            if (searchPanelOpen) {
+              updateSettings({ vectorMode: false })
+            } else {
+              updateSettings({ vectorMode: true })
+              setSearchPanelMode(mode === 'image' ? 'vector' : 'feature')
+              setSearchPanelCollapsed(false)
+            }
+            return
+          }
+
+          if (event.code === 'Digit2' || event.code === 'Numpad2') {
+            event.preventDefault()
+            event.stopPropagation()
+            const nextOpen = !manageMode
+            setManageMode(nextOpen)
+            setAdReviewPanelOpen(false)
+            setDeleteConfirmOpen(false)
+            setManageOperationHint(null)
+            clearAllSelections()
+
+            if (nextOpen) {
+              if (metadataManageMode) {
+                setMetadataManageMode(false)
+              }
+              updateSettings({ vectorMode: false, sidebarFocus: 'main' })
+            }
+            return
+          }
+
+          if (event.code === 'Digit3' || event.code === 'Numpad3') {
+            event.preventDefault()
+            event.stopPropagation()
+            const nextOpen = !metadataManageMode
+            setMetadataManageMode(nextOpen)
+            setAdReviewPanelOpen(false)
+            setDeleteConfirmOpen(false)
+            setManageOperationHint(null)
+            clearAllSelections()
+
+            if (nextOpen) {
+              if (manageMode) {
+                setManageMode(false)
+              }
+              updateSettings({ vectorMode: false, sidebarFocus: 'main' })
+            }
+            return
+          }
+        }
+      }
+
       if (adReviewDeletePending && event.key === 'Escape') {
         event.preventDefault()
         event.stopPropagation()
@@ -372,6 +467,7 @@ export function useAppInteractionEffects({
     clearAllSelections,
     deleteConfirmOpen,
     fullscreenActive,
+    mode,
     manageMode,
     metadataManageMode,
     adReviewDeletePending,
@@ -383,6 +479,8 @@ export function useAppInteractionEffects({
     setMetadataManageMode,
     settingsOpen,
     helpOpen,
+    setSearchPanelCollapsed,
+    setSearchPanelMode,
     updateSettings,
     vectorMode,
     featureTagPickerOpen,
@@ -413,6 +511,7 @@ export function useAppInteractionEffects({
     autoPlayEnabled,
     applyAutoplayIntervalByIndex,
     applyPackageGrade,
+    applyVideoGrade,
     setVideoPlaying,
     goPlaylist,
     adjustVideoRate,

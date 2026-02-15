@@ -4,11 +4,11 @@ import { describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SHORTCUTS } from '../../shortcuts'
 import { useShortcutEngine } from './useShortcutEngine'
 
-function createBaseParams() {
+function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
   return {
     shortcuts: DEFAULT_SHORTCUTS,
     suspended: false,
-    mode: 'image' as const,
+    mode: 'image',
     vectorMode: false,
     settingsOpen: false,
     sidebarFocus: 'main' as const,
@@ -30,6 +30,7 @@ function createBaseParams() {
     onToggleAutoplay: vi.fn(),
     onApplyAutoplayIntervalByIndex: vi.fn(),
     onSetPackageGrade: vi.fn(),
+    onSetVideoGrade: vi.fn(),
     onToggleVideoPlaying: vi.fn(),
     onGoPlaylist: vi.fn(),
     onAdjustVideoRate: vi.fn(),
@@ -66,5 +67,56 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     expect(params.onImageCtrlWheelNavigateSidebar).toHaveBeenNthCalledWith(1, 'prev')
     expect(params.onImageCtrlWheelNavigateSidebar).toHaveBeenNthCalledWith(2, 'next')
     expect(params.onImageWheelNavigatePage).not.toHaveBeenCalled()
+  })
+
+  it('autoplay toggle shortcut only works in fullscreen image mode', () => {
+    const params = createBaseParams()
+    const hook = renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', code: 'KeyA', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleAutoplay).not.toHaveBeenCalled()
+
+    hook.unmount()
+    params.fullscreenActive = true
+    renderHook(() => useShortcutEngine(params))
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', code: 'KeyA', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleAutoplay).toHaveBeenCalledTimes(1)
+  })
+
+  it('digit rating shortcuts apply package grade in non-fullscreen image mode', () => {
+    const params = createBaseParams()
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '1', code: 'Digit1', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '5', code: 'Digit5', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '0', code: 'Numpad0', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onSetPackageGrade).toHaveBeenNthCalledWith(1, 1)
+    expect(params.onSetPackageGrade).toHaveBeenNthCalledWith(2, 5)
+    expect(params.onSetPackageGrade).toHaveBeenNthCalledWith(3, null)
+    expect(params.onSetVideoGrade).not.toHaveBeenCalled()
+  })
+
+  it('digit rating shortcuts apply video grade in video mode', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '2', code: 'Digit2', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '0', code: 'Numpad0', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onSetVideoGrade).toHaveBeenNthCalledWith(1, 2)
+    expect(params.onSetVideoGrade).toHaveBeenNthCalledWith(2, null)
+    expect(params.onSetPackageGrade).not.toHaveBeenCalled()
   })
 })

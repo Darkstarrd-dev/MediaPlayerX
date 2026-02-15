@@ -39,6 +39,7 @@ interface UseShortcutEngineParams {
   onToggleAutoplay: () => void
   onApplyAutoplayIntervalByIndex: (index: 0 | 1 | 2 | 3 | 4) => void
   onSetPackageGrade: (grade: number | null) => void
+  onSetVideoGrade: (grade: number | null) => void
   onToggleVideoPlaying: () => void
   onGoPlaylist: (delta: number) => void
   onAdjustVideoRate: (delta: number) => void
@@ -72,6 +73,7 @@ export function useShortcutEngine({
   onToggleAutoplay,
   onApplyAutoplayIntervalByIndex,
   onSetPackageGrade,
+  onSetVideoGrade,
   onToggleVideoPlaying,
   onGoPlaylist,
   onAdjustVideoRate,
@@ -136,41 +138,75 @@ export function useShortcutEngine({
           }
           return
         case 'autoplayToggle':
-          if (mode === 'image') {
+          if (mode === 'image' && fullscreenActive) {
             onToggleAutoplay()
           }
           return
         case 'autoplayInterval1':
-          onApplyAutoplayIntervalByIndex(0)
+          if (mode === 'image' && fullscreenActive) {
+            onApplyAutoplayIntervalByIndex(0)
+          }
           return
         case 'autoplayInterval2':
-          onApplyAutoplayIntervalByIndex(1)
+          if (mode === 'image' && fullscreenActive) {
+            onApplyAutoplayIntervalByIndex(1)
+          }
           return
         case 'autoplayInterval3':
-          onApplyAutoplayIntervalByIndex(2)
+          if (mode === 'image' && fullscreenActive) {
+            onApplyAutoplayIntervalByIndex(2)
+          }
           return
         case 'autoplayInterval4':
-          onApplyAutoplayIntervalByIndex(3)
+          if (mode === 'image' && fullscreenActive) {
+            onApplyAutoplayIntervalByIndex(3)
+          }
           return
         case 'autoplayInterval5':
-          onApplyAutoplayIntervalByIndex(4)
+          if (mode === 'image' && fullscreenActive) {
+            onApplyAutoplayIntervalByIndex(4)
+          }
           return
         case 'rating0':
+          if (mode === 'video') {
+            onSetVideoGrade(null)
+            return
+          }
           onSetPackageGrade(null)
           return
         case 'rating1':
+          if (mode === 'video') {
+            onSetVideoGrade(1)
+            return
+          }
           onSetPackageGrade(1)
           return
         case 'rating2':
+          if (mode === 'video') {
+            onSetVideoGrade(2)
+            return
+          }
           onSetPackageGrade(2)
           return
         case 'rating3':
+          if (mode === 'video') {
+            onSetVideoGrade(3)
+            return
+          }
           onSetPackageGrade(3)
           return
         case 'rating4':
+          if (mode === 'video') {
+            onSetVideoGrade(4)
+            return
+          }
           onSetPackageGrade(4)
           return
         case 'rating5':
+          if (mode === 'video') {
+            onSetVideoGrade(5)
+            return
+          }
           onSetPackageGrade(5)
           return
         case 'enterFullscreen':
@@ -239,6 +275,7 @@ export function useShortcutEngine({
       onAlignFocus,
       onSetFullscreenActive,
       onSetPackageGrade,
+      onSetVideoGrade,
       onToggleAutoplay,
       onToggleSidebarFocus,
       onToggleVideoPlaying,
