@@ -1,5 +1,7 @@
 {
   "name": "mediaplayerx",
+  "description": "MediaPlayerX desktop media library manager built with Electron and React.",
+  "author": "MediaPlayerX Contributors",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -17,6 +19,8 @@
     "desktop:start": "npm run desktop:bundle && node scripts/electron-start.mjs",
     "mock:splash": "tsx scripts/export-startup-splash-mock.mjs",
     "lint": "eslint .",
+    "format:check": "node scripts/prettier-check-scoped.mjs",
+    "format:write": "node scripts/prettier-check-scoped.mjs --write",
     "preview": "vite preview",
     "bench:streaming": "node scripts/streaming-ingest-benchmark.mjs",
     "bench:archive-db": "node scripts/archive-db-benchmark.mjs",
