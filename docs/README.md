@@ -10,6 +10,7 @@
 - `music-visualizer-shader-entry.md`：Shader 开发新对话极简入口（提示词模板 + 最小读取范围）。
 - `music-visualizer-shader-migration-playbook.md`：音乐可视化 Shader 迁移流程、排障与验收清单。
 - `backend-integration-guardrails.md`：后端接入强约束与门禁。
+- `i18n-aria-guardrails.md`：i18n 与 aria 长期开发约束（key 分层、a11y-id、门禁）。
 - `windows-release-signing-runbook.md`：Windows 发布签名与 CI 打包流程。
 - `开发启动清单.md`：跨机器拉取后的一次性启动流程。
 
@@ -17,6 +18,10 @@
 
 - `stability-note-2026-02-12-sidebar-switch-crash.md`：Sidebar 高频切换稳定性问题与修复记录。
 - `project-evaluation-report-v6.md`：项目评估（当前保留版本）。
+
+## 当前实施计划
+
+- `ad-review-audit-mode-fix-implementation-plan.md`：广告审核模式 5 项问题修复计划（分 Phase、最小读取、测试门禁、提交推送门禁）。
 
 ## 主题与 UI
 
@@ -46,6 +51,12 @@
 
 1. Theme brainstorm 迭代入口：使用 `docs/ui/theme-brainstorm-entry.md` 作为新对话提示词，限制读取范围并执行 screenshot gallery 流程。
 2. Shader 开发入口落地：新建 Shader 相关任务默认使用 `docs/music-visualizer-shader-entry.md` 作为首个提示词入口，并持续维护最小读取范围。
+3. 持续执行 `docs/i18n-aria-guardrails.md`，新增交互控件补齐 `data-a11y-id` 与测试契约。
+4. 文件管理模式 G/M 回归：覆盖跨盘移动（EXDEV fallback）、目标重名冲突、非法分组名、部分成功部分失败提示与 sqlite 快照路径同步验证。
+5. classname和idname的规格化
+6. 继续UI界面的文字按钮重构为图形按钮
+7. tooltip的模式和样式设计（是否纳入theme系统管理，tooltip时用覆盖全屏的模式还是单个按钮单个位置的模式）
+8. https://idc.xpzsd.codes/ 供参考的背景特效和边框特效
 
 ## 文档维护约定
 

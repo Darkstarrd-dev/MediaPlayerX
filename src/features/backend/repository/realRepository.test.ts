@@ -65,6 +65,18 @@ function createSidebarResponseDto(): ReadImageSidebarTreeResponseDto {
   }
 }
 
+function setMoveBackend(
+  moveSidebarNodes: (request: {
+    node_ids: string[]
+    destination_directory: string
+    group_name?: string
+  }) => Promise<unknown>,
+): void {
+  window.mediaPlayerBackend = {
+    moveSidebarNodes,
+  } as unknown as NonNullable<Window['mediaPlayerBackend']>
+}
+
 describe('RealMediaRepository', () => {
   it('IPC 超时会抛出 TimeoutError', async () => {
     window.mediaPlayerBackend = {
@@ -606,5 +618,79 @@ describe('RealMediaRepository', () => {
     expect(grade.grade).toBe(3)
     expect(cover.cover_color).toContain('hsl')
     expect(audit.resolve_denied_by_reason.path_outside_root).toBe(1)
+  })
+
+  it('moveSidebarNodes IPC 超时会抛出 TimeoutError', async () => {
+    setMoveBackend(async () => new Promise<unknown>(() => undefined))
+
+    const repository = new RealMediaRepository()
+
+    await expect(
+      repository.moveSidebarNodes(
+        {
+          node_ids: ['package:pkg-timeout'],
+          destination_directory: 'D:/target',
+        },
+        { timeoutMs: 25 },
+      ),
+    ).rejects.toMatchObject({
+      name: 'TimeoutError',
+    })
+  })
+
+  it('moveSidebarNodes 取消信号会终止请求并抛出 AbortError', async () => {
+    setMoveBackend(
+      async () =>
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve({
+                moved_count: 1,
+                failed: [],
+                target_directory: 'D:/target',
+                updated_at_ms: Date.now(),
+              }),
+            80,
+          )
+        }),
+    )
+
+    const repository = new RealMediaRepository()
+    const abortController = new AbortController()
+    const task = repository.moveSidebarNodes(
+      {
+        node_ids: ['package:pkg-abort'],
+        destination_directory: 'D:/target',
+      },
+      {
+        signal: abortController.signal,
+        timeoutMs: 2_000,
+      },
+    )
+
+    abortController.abort()
+
+    await expect(task).rejects.toMatchObject({
+      name: 'AbortError',
+    })
+  })
+
+  it('moveSidebarNodes 返回非法 payload 时抛出 ZodError', async () => {
+    setMoveBackend(async () => ({
+      moved_count: 1,
+      failed: [],
+      updated_at_ms: Date.now(),
+    }))
+
+    const repository = new RealMediaRepository()
+
+    await expect(
+      repository.moveSidebarNodes({
+        node_ids: ['package:pkg-invalid'],
+        destination_directory: 'D:/target',
+      }),
+    ).rejects.toMatchObject({
+      name: 'ZodError',
+    })
   })
 })

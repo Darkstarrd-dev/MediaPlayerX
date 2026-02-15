@@ -1,3 +1,5 @@
+import path from 'node:path'
+
 import { afterEach, describe, expect, it } from 'vitest'
 
 import type { LibrarySnapshotDto } from '../src/contracts/backend'
@@ -186,5 +188,86 @@ describe('MediaLibrarySnapshotStore', () => {
     expect(snapshot.image_packages.map((item) => item.id)).toEqual(['pkg-keep'])
     expect(snapshot.videos.map((item) => item.id)).toEqual(['video-keep'])
     expect(snapshot.audios?.map((item) => item.id)).toEqual(['audio-keep'])
+  })
+
+  it('moveSnapshotEntriesByPaths 可同步更新 source 与 media locator 路径', async () => {
+    const root = await createTempMediaRoot('mpx-snapshot-path-move-')
+    roots.push(root)
+
+    const harness = openMigratedSqliteDatabase(root)
+    closers.push(harness.close)
+    const store = new MediaLibrarySnapshotStore(harness.db, createTransactionRunner(harness.db))
+
+    const packageSource = createImageSourceFixture({
+      sourceId: 'pkg-move',
+      packageName: 'pkg-move.zip',
+      absolutePath: 'D:/root/drop/pkg-move.zip',
+      sourceType: 'package',
+    })
+    packageSource.images[0]!.media_locator = {
+      kind: 'archive-entry',
+      archive_path: 'D:/root/drop/pkg-move.zip',
+      archive_format: 'zip',
+      entry_name: '001.jpg',
+      extension: '.jpg',
+      media_type: 'image',
+      mime_type: 'image/jpeg',
+    }
+
+    store.replaceSnapshot({
+      image_packages: [packageSource],
+      image_directories: [
+        createImageSourceFixture({
+          sourceId: 'dir-move',
+          packageName: 'gallery-move',
+          absolutePath: 'D:/root/drop/gallery-move',
+          sourceType: 'directory',
+        }),
+      ],
+      videos: [createVideoFixture('video-move', 'D:/root/drop/video-move.mp4')],
+      audios: [createAudioFixture('audio-move', 'D:/root/drop/audio-move.mp3')],
+    })
+
+    const result = store.moveSnapshotEntriesByPaths([
+      {
+        fromPath: 'D:/root/drop',
+        toPath: 'E:/root/moved',
+      },
+    ])
+    expect(result).toEqual({
+      movedSourceCount: 2,
+      movedImageLocatorCount: 4,
+      movedVideoCount: 1,
+      movedAudioCount: 1,
+    })
+
+    const snapshot = store.readSnapshot()
+    expect(snapshot.image_packages[0]?.absolute_path).toBe(path.resolve('E:/root/moved/pkg-move.zip'))
+    expect(snapshot.image_packages[0]?.images[0]?.media_locator).toMatchObject({
+      kind: 'archive-entry',
+      archive_path: path.resolve('E:/root/moved/pkg-move.zip'),
+    })
+    expect(snapshot.image_packages[0]?.images[1]?.media_locator).toMatchObject({
+      kind: 'filesystem',
+      absolute_path: path.resolve('E:/root/moved/pkg-move_002.jpg'),
+    })
+
+    expect(snapshot.image_directories[0]?.absolute_path).toBe(path.resolve('E:/root/moved/gallery-move'))
+    expect(snapshot.image_directories[0]?.images[0]?.media_locator).toMatchObject({
+      kind: 'filesystem',
+      absolute_path: path.resolve('E:/root/moved/gallery-move_001.jpg'),
+    })
+
+    expect(snapshot.videos[0]?.absolute_path).toBe(path.resolve('E:/root/moved/video-move.mp4'))
+    expect(snapshot.videos[0]?.media_locator).toMatchObject({
+      kind: 'filesystem',
+      absolute_path: path.resolve('E:/root/moved/video-move.mp4'),
+    })
+
+    expect(snapshot.audios?.[0]?.absolute_path).toBe(path.resolve('E:/root/moved/audio-move.mp3'))
+    expect(snapshot.audios?.[0]?.media_locator).toMatchObject({
+      kind: 'filesystem',
+      absolute_path: path.resolve('E:/root/moved/audio-move.mp3'),
+    })
   })
 })

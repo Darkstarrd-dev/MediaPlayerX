@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { useState } from 'react'
 
 import type {
@@ -7,6 +7,8 @@ import type {
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
   DeleteSidebarNodesResponseDto,
+  MoveSidebarNodesRequestDto,
+  MoveSidebarNodesResponseDto,
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   LibrarySnapshotDto,
@@ -208,6 +210,25 @@ class WritableRepositoryStub implements MediaRepository {
     return {
       deleted_count: request.node_ids.length,
       failed: [],
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  async moveSidebarNodes(
+    request: MoveSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<MoveSidebarNodesResponseDto> {
+    void options
+    if (this.shouldFailManage) {
+      throw new Error('manage-failed')
+    }
+
+    return {
+      moved_count: request.node_ids.length,
+      failed: [],
+      target_directory: request.group_name
+        ? `${request.destination_directory}/${request.group_name}`
+        : request.destination_directory,
       updated_at_ms: Date.now(),
     }
   }
@@ -530,9 +551,128 @@ describe('useWriteDataAccess', () => {
 
       const deleteNodeResult = await result.current.write.deleteSidebarNodes(['folder:root'])
       expect(deleteNodeResult.deleted_count).toBe(1)
+
+      const moveResult = await result.current.write.moveSidebarNodes(['package:pkg-1'], 'D:/target', 'group-a')
+      expect(moveResult.moved_count).toBe(1)
+      expect(moveResult.target_directory).toContain('group-a')
     })
 
     expect(result.current.write.errors.manage).toBeNull()
     expect(result.current.write.pending.manage).toBe(false)
+  })
+
+  it('moveSidebarNodes 会校验参数并在后端不支持时返回明确错误', async () => {
+    const repository = new WritableRepositoryStub()
+    const { result } = renderHook(() => {
+      const [, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
+      const [, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
+      const [, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
+      const write = useWriteDataAccess({
+        repository,
+        setGradeByPackage,
+        setVideoCoverById,
+        setVideoCoverImageById,
+      })
+
+      return {
+        write,
+      }
+    })
+
+    await act(async () => {
+      await expect(result.current.write.moveSidebarNodes([], 'D:/target')).rejects.toThrow(
+        '请选择需要移动的目录节点',
+      )
+      await expect(result.current.write.moveSidebarNodes(['package:pkg-1'], '   ')).rejects.toThrow('请选择目标目录')
+    })
+
+    ;(repository as unknown as { moveSidebarNodes?: undefined }).moveSidebarNodes = undefined
+
+    await act(async () => {
+      await expect(result.current.write.moveSidebarNodes(['package:pkg-1'], 'D:/target')).rejects.toThrow(
+        '当前后端不支持移动目录操作',
+      )
+    })
+  })
+
+  it.each([
+    'TimeoutError: request timed out',
+    'AbortError: request aborted',
+    'Invalid moveSidebarNodes response payload',
+  ])('moveSidebarNodes 会透传后端错误: %s', async (backendMessage) => {
+    const repository = new WritableRepositoryStub()
+    repository.moveSidebarNodes = vi.fn(async () => {
+      throw new Error(backendMessage)
+    })
+
+    const { result } = renderHook(() => {
+      const [, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
+      const [, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
+      const [, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
+      const write = useWriteDataAccess({
+        repository,
+        setGradeByPackage,
+        setVideoCoverById,
+        setVideoCoverImageById,
+      })
+
+      return {
+        write,
+      }
+    })
+
+    await act(async () => {
+      await expect(result.current.write.moveSidebarNodes(['package:pkg-1'], 'D:/target')).rejects.toThrow(backendMessage)
+    })
+
+    expect(result.current.write.errors.manage).toBe(backendMessage)
+    expect(result.current.write.pending.manage).toBe(false)
+  })
+
+  it('moveSidebarNodes 会规范请求并透传 timeout 选项', async () => {
+    const repository = new WritableRepositoryStub()
+    const moveSidebarNodes = vi.fn().mockResolvedValue({
+      moved_count: 1,
+      failed: [],
+      target_directory: 'D:/target/group-a',
+      updated_at_ms: Date.now(),
+    })
+    repository.moveSidebarNodes = moveSidebarNodes
+
+    const { result } = renderHook(() => {
+      const [, setGradeByPackage] = useState<Record<string, number | null>>({ pkg: 4 })
+      const [, setVideoCoverById] = useState<Record<string, string>>({ video: 'hsl(20, 40%, 40%)' })
+      const [, setVideoCoverImageById] = useState<Record<string, string | null>>({ video: null })
+      const write = useWriteDataAccess({
+        repository,
+        setGradeByPackage,
+        setVideoCoverById,
+        setVideoCoverImageById,
+      })
+
+      return {
+        write,
+      }
+    })
+
+    await act(async () => {
+      const response = await result.current.write.moveSidebarNodes(
+        [' package:pkg-1 ', 'package:pkg-1', ''],
+        ' D:/target ',
+        ' group-a ',
+      )
+      expect(response.moved_count).toBe(1)
+    })
+
+    expect(moveSidebarNodes).toHaveBeenCalledWith(
+      {
+        node_ids: ['package:pkg-1'],
+        destination_directory: 'D:/target',
+        group_name: 'group-a',
+      },
+      {
+        timeoutMs: 8_000,
+      },
+    )
   })
 })
