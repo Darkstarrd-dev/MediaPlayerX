@@ -1,0 +1,6 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "components": 414,
+  "dependencies": 440
+}

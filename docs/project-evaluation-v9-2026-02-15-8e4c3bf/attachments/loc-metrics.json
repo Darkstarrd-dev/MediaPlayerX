@@ -1,0 +1,159 @@
+{
+  "frontend": {
+    "files": 223,
+    "loc": 50130
+  },
+  "electron": {
+    "files": 79,
+    "loc": 17817
+  },
+  "business_total": {
+    "files": 302,
+    "loc": 67947
+  },
+  "tests": {
+    "files": 69,
+    "loc": 17587,
+    "ratio_percent": 25.88
+  },
+  "other": {
+    "css_loc": 9906,
+    "scripts_loc": 4729,
+    "docs_loc": 7606
+  },
+  "feature_modules_top": [
+    {
+      "module": "app",
+      "files": 78,
+      "loc": 15144
+    },
+    {
+      "module": "backend",
+      "files": 24,
+      "loc": 5612
+    },
+    {
+      "module": "music-visualizer",
+      "files": 21,
+      "loc": 4761
+    },
+    {
+      "module": "import",
+      "files": 5,
+      "loc": 636
+    },
+    {
+      "module": "layout",
+      "files": 3,
+      "loc": 517
+    },
+    {
+      "module": "media",
+      "files": 5,
+      "loc": 460
+    },
+    {
+      "module": "shortcuts",
+      "files": 2,
+      "loc": 433
+    },
+    {
+      "module": "management",
+      "files": 3,
+      "loc": 428
+    },
+    {
+      "module": "perf",
+      "files": 3,
+      "loc": 423
+    },
+    {
+      "module": "sidebar",
+      "files": 2,
+      "loc": 358
+    }
+  ],
+  "oversized_count_gt_700": 23,
+  "oversized_files_top": [
+    {
+      "path": "electron/services/file-system-read/manageAdReviewService.ts",
+      "loc": 1222
+    },
+    {
+      "path": "src/components/MusicMainSection.tsx",
+      "loc": 1154
+    },
+    {
+      "path": "src/mockData.ts",
+      "loc": 1093
+    },
+    {
+      "path": "src/features/app/useAppWorkspaceProps.ts",
+      "loc": 1011
+    },
+    {
+      "path": "src/features/music-visualizer/webglRenderer.ts",
+      "loc": 999
+    },
+    {
+      "path": "electron/mediaLibrarySnapshotStore.ts",
+      "loc": 970
+    },
+    {
+      "path": "src/components/MetadataPanel.tsx",
+      "loc": 958
+    },
+    {
+      "path": "src/features/app/useManageAdReviewActions.ts",
+      "loc": 932
+    },
+    {
+      "path": "src/contracts/backend.ts",
+      "loc": 928
+    },
+    {
+      "path": "src/components/SettingsPanel.tsx",
+      "loc": 887
+    },
+    {
+      "path": "electron/services/file-system-read/managementMutationService.ts",
+      "loc": 848
+    },
+    {
+      "path": "src/components/settings/renderSettingsMainSection.tsx",
+      "loc": 818
+    },
+    {
+      "path": "src/components/FullscreenLayer.tsx",
+      "loc": 785
+    },
+    {
+      "path": "electron/services/metadata/metadataScraperService.ts",
+      "loc": 785
+    },
+    {
+      "path": "src/components/ImageMainSection.tsx",
+      "loc": 779
+    },
+    {
+      "path": "electron/fileSystemReadFacade.ts",
+      "loc": 776
+    },
+    {
+      "path": "src/features/backend/repository/mock/MediaWriteHandlers.ts",
+      "loc": 736
+    },
+    {
+      "path": "src/components/metadata/MetadataFetchPanel.tsx",
+      "loc": 732
+    },
+    {
+      "path": "src/components/AppHeader.tsx",
+      "loc": 713
+    },
+    {
+      "path": "electron/services/file-system-read/librarySnapshotService.ts",
+      "loc": 712
+    }
+  ]
+}

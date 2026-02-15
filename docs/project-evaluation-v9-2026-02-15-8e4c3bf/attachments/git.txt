@@ -1,0 +1,24 @@
+rev-parse-short:
+8e4c3bf
+rev-parse:
+8e4c3bfafa2dcac5c5f70d979db6151e99184985
+describe:
+8e4c3bf
+status-porcelain:
+ M docs/README.md
+ M src/App.test.tsx
+ M src/components/MusicMainSection.test.tsx
+ M src/components/SidebarPanel.test.tsx
+ M src/components/SidebarPanel.tsx
+ M src/components/metadata/MetadataAdReviewSection.test.tsx
+ M src/contracts/settings.ts
+ M src/features/app/buildSidebarPanelProps.ts
+ M src/features/app/useAppSettingsStore.ts
+ M src/features/app/useAppWorkspaceProps.ts
+ M src/features/app/usePersistedAppSettings.ts
+ M src/features/app/useSettingsPersistence.ts
+ M src/features/app/workspaceImageDerivations.ts
+ M src/store/useUiStore.ts
+?? docs/project-evaluation-report-v9.md
+?? docs/project-evaluation-v9-2026-02-15-8e4c3bf/
+?? src/features/app/workspaceImageDerivations.test.ts

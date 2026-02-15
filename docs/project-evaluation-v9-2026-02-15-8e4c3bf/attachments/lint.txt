@@ -1,0 +1,16 @@
+
+> mediaplayerx@0.0.0 lint
+> eslint .
+
+
+Z:\Playground\CurrentWorking\MediaPlayerX\src\features\app\useAppDisplayResources.ts
+  448:6  warning  React Hook useEffect has a missing dependency: 't'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Z:\Playground\CurrentWorking\MediaPlayerX\src\features\backend\useWriteDataAccess.ts
+  615:5  warning  React Hook useCallback has an unnecessary dependency: 't'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+Z:\Playground\CurrentWorking\MediaPlayerX\src\features\import\useImportPipeline.ts
+  152:5  warning  React Hook useCallback has a missing dependency: 't'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 3 problems (0 errors, 3 warnings)
+

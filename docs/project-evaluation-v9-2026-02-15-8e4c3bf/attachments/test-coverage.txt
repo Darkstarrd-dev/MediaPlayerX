@@ -1,0 +1,1103 @@
+
+> mediaplayerx@0.0.0 test:coverage
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mZ:/Playground/CurrentWorking/MediaPlayerX[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m electron/manageAdReview/concurrency.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 46[2mms[22m[39m
+(node:89196) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94832) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86684) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:102460) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:96992) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:88068) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/features/management/useManageSelection.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+(node:30564) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m electron/fileSystemMediaAccessGuard.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+(node:103908) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m electron/services/file-system-read/managementMutationService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/features/backend/repository/realRepository.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m src/features/app/buildMainFooter.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 223[2mms[22m[39m
+ [32m✓[39m src/features/backend/useWriteDataAccess.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m src/features/app/useMetadataWriteBindings.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 107[2mms[22m[39m
+ [32m✓[39m src/components/AppWorkspace.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryPlaylistStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 594[2mms[22m[39m
+     [33m[2m✓[22m[39m 写入空列表会清空已有播放列表 [33m 316[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryTaskStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 625[2mms[22m[39m
+     [33m[2m✓[22m[39m upsertTask 会归一化进度与计数，并可回读更新值 [33m 316[2mms[22m[39m
+     [33m[2m✓[22m[39m readTasks 按 created_at_ms 倒序返回，非法 source_paths_json 回退为空数组 [33m 306[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryAppStateStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 624[2mms[22m[39m
+     [33m[2m✓[22m[39m 可写入并读取 app_state，非法 JSON 会回退到 fallback [32m 300[2mms[22m[39m
+     [33m[2m✓[22m[39m writeImportSources 会做 trim + 去重，upsertRootConfig 可覆盖旧值 [33m 321[2mms[22m[39m
+ [32m✓[39m electron/mediaLibrarySchema.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 658[2mms[22m[39m
+     [33m[2m✓[22m[39m 从旧版本升级时会补齐 task_source/grade/hidden/series_id 与 video_metadata 日文字段列 [33m 377[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataMusicEditor.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 453[2mms[22m[39m
+     [33m[2m✓[22m[39m 只读模式渲染 album/author/trackTitle 并支持检索跳转 [33m 328[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/useMusicVisualizerRuntime.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[32m 113[2mms[22m[39m
+ [32m✓[39m src/features/app/useManageAdReviewActions.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 435[2mms[22m[39m
+ [32m✓[39m electron/services/file-system-read/manageAdReviewService.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 498[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryMetadataStore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 824[2mms[22m[39m
+     [33m[2m✓[22m[39m 可写入并读取评分与 source 元数据 [33m 301[2mms[22m[39m
+     [33m[2m✓[22m[39m 可写入并读取视频封面与视频元数据，异常 tags_json 回退为空数组 [33m 324[2mms[22m[39m
+ [32m✓[39m electron/mediaLibraryDatabase.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 687[2mms[22m[39m
+     [33m[2m✓[22m[39m 关键读写数据可在数据库重启后恢复 [33m 429[2mms[22m[39m
+ [32m✓[39m src/features/backend/useResolvedMediaUrls.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 759[2mms[22m[39m
+ [32m✓[39m electron/mediaLibrarySnapshotStore.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 883[2mms[22m[39m
+     [33m[2m✓[22m[39m replaceSnapshot 会按 revision 清理 stale source/image/video [33m 308[2mms[22m[39m
+     [33m[2m✓[22m[39m setImagesHidden 与 deleteImageItems 可更新 hidden 并在删除后重排 ordinal [33m 320[2mms[22m[39m
+ [32m✓[39m src/components/AppHeader.accessibility.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 730[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps stable toolbar button labels in normal mode [33m 536[2mms[22m[39m
+ [32m✓[39m src/components/SidebarPanel.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1023[2mms[22m[39m
+ [32m✓[39m src/features/app/useSettingsPersistence.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 644[2mms[22m[39m
+ [32m✓[39m src/components/ImageMainSection.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 551[2mms[22m[39m
+     [33m[2m✓[22m[39m 主区不再渲染分页容器与翻页按钮 [33m 405[2mms[22m[39m
+ [32m✓[39m src/features/app/useAudioSidebarState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataAdReviewSection.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 2160[2mms[22m[39m
+     [33m[2m✓[22m[39m renders queue items and supports select/remove actions [33m 552[2mms[22m[39m
+     [33m[2m✓[22m[39m opens start dialog and passes skip option [33m 356[2mms[22m[39m
+ [32m✓[39m src/i18n/catalog.consistency.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/features/app/useImageSidebarBaseState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m src/features/backend/useReadOnlyDataAccess.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 2811[2mms[22m[39m
+     [33m[2m✓[22m[39m write-package-grade 事件在无评分筛选时不会触发刷新 [33m 357[2mms[22m[39m
+     [33m[2m✓[22m[39m thumbnail-rendering 事件不会触发 Sidebar/Page/Metadata 切片刷新 [33m 369[2mms[22m[39m
+     [33m[2m✓[22m[39m write-package-grade 事件在评分筛选启用时仅刷新 Sidebar/Page [33m 532[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理挂起刷新时，元数据写事件不会刷新缩略图相关切片，退出后补一次全量刷新 [33m 542[2mms[22m[39m
+     [33m[2m✓[22m[39m includeHidden 从 true 切换到 false 时会驱动 Sidebar/Page/Metadata 同步收敛 [33m 326[2mms[22m[39m
+ [32m✓[39m src/components/MetadataPanel.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1360[2mms[22m[39m
+     [33m[2m✓[22m[39m non-manage模式下焦点图片变化会自动切回原图显示 [33m 654[2mms[22m[39m
+     [33m[2m✓[22m[39m non-manage模式下 Esc 与右键会返回元数据显示 [33m 388[2mms[22m[39m
+     [33m[2m✓[22m[39m manage 或 metadata-manage 模式下禁用自动切回原图行为 [33m 315[2mms[22m[39m
+ [32m✓[39m src/i18n/I18nProvider.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m src/features/app/useManageModeActions.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m src/features/app/useVideoSidebarState.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/mockData.imageSidebarTree.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/features/theme/themeRegistry.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m electron/manageAdReview/adReviewEngine.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSettingsPanelProps.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/features/app/buildAppHeaderProps.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m electron/fileSystemSidebarTree.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/features/app/useEffectiveDisplayState.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m src/features/app/buildAdReviewSidebarState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/features/app/useResolvedMediaState.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/features/app/useAppDisplayResources.focus.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/features/app/useAppDataPipeline.integration.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m electron/manageAdReview/openAiVisionClient.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/store/useUiStore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSidebarPanelProps.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/features/app/workspaceAdReviewPageDerivations.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/features/app/useAppDisplayAndEffects.integration.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32m✓[39m src/features/app/buildMetadataPanelProps.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m electron/services/file-system-read/mediaTokenService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m electron/registerBackendIpcHandlers.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/features/app/workspaceImageDerivations.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m媒体访问通道执行根目录白名单并可读取令牌资源
+[22m[39mresolveMediaResource denied {
+  reason: [32m'path_outside_root'[39m,
+  message: [32m'媒体访问被拒绝（未导入/未允许）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-media-outside-Rk9luy\\outside.jpg'[39m
+}
+
+ [32m✓[39m electron/manageAdReview/jsonExtract.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m electron/externalUrlPolicy.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m electron/facade/FileSystemSystemHandlers.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m压缩包轻扫仅使用 entry name，并可按白名单读取 zip 内图片
+[22m[39mresolveMediaResource denied {
+  reason: [32m'archive_entry_illegal'[39m,
+  message: [32m'压缩包媒体访问被拒绝（entry 非法）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-zip-light-scan-P4zac1\\gallery.zip'[39m
+}
+
+ [32m✓[39m src/features/layout/thumbnailLayout.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/features/app/buildSearchPanelProps.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/i18n/locale.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/shortcuts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/shadertoyAdapter.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/components/metadata/MetadataImageEditor.helpers.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/i18n/a11y.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/features/music-visualizer/shaderRegistry.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m electron/themeGalleryCaptureRuntime.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/components/MusicMainSection.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 3295[2mms[22m[39m
+     [33m[2m✓[22m[39m 支持播放控制、进度条与音量弹层调节 [33m 743[2mms[22m[39m
+     [33m[2m✓[22m[39m 支持在控制栏打开 Shader 列表 [33m 718[2mms[22m[39m
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m管理模式可展开管理容器并与检索容器互斥
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m文件管理与元数据管理互斥，且可一键切换到检索模式
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2m管理删除压缩包中的图片后会刷新 zip 条目白名单并保留剩余条目可读
+[22m[39mresolveMediaResource denied {
+  reason: [32m'archive_entry_not_allowlisted'[39m,
+  message: [32m'压缩包媒体访问被拒绝（entry 不在白名单）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\mpx-manage-delete-zip-entry-y52LtF\\gallery.zip::a/001.jpg'[39m
+}
+
+[90mstderr[2m | electron/fileSystemReadService.test.ts[2m > [22m[2mFileSystemMediaReadService[2m > [22m[2mresolveMediaResource 输出审计统计（拒绝分类、token 命中/过期）
+[22m[39mresolveMediaResource denied {
+  reason: [32m'path_outside_root'[39m,
+  message: [32m'媒体访问被拒绝（未导入/未允许）: C:\\Users\\Houpy\\AppData\\Local\\Temp\\outside.jpg'[39m
+}
+
+ [32m✓[39m electron/fileSystemReadService.test.ts [2m([22m[2m24 tests[22m[2m)[22m[33m 7537[2mms[22m[39m
+     [33m[2m✓[22m[39m 可读取真实目录并保留中文/日文/特殊符号路径 [33m 1006[2mms[22m[39m
+     [33m[2m✓[22m[39m 缩略图请求可生成 Sharp WebP 缓存并复用受控协议返回 [33m 381[2mms[22m[39m
+     [33m[2m✓[22m[39m 写链路可持久化评分与封面，失败时由调用端回滚 [33m 398[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频元数据支持同步文件名到作品名并持久化 [33m 386[2mms[22m[39m
+     [33m[2m✓[22m[39m 播放列表写入后可在服务重启后恢复 [33m 576[2mms[22m[39m
+     [33m[2m✓[22m[39m 读取快照时会自动清理磁盘已删除的 source/video 并广播变更 [33m 329[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐文件导入会写入 music_import_sources，并将孤立文件按专辑或 unknown artist 分组 [33m 369[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐文件夹含音频与图片时，图片目录统一归入 CD Booklet 树根 [33m 335[2mms[22m[39m
+     [33m[2m✓[22m[39m 磁盘文件缺失触发自动清理时会同步移除 music_import_sources [33m 338[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除 Sidebar 压缩包和视频节点后快照同步移除并物理删除文件 [33m 360[2mms[22m[39m
+     [33m[2m✓[22m[39m 可通过 ffprobe 探测真实视频元数据并回填时长/分辨率 [33m 484[2mms[22m[39m
+     [33m[2m✓[22m[39m 入库时可提取音频 ID3/Vorbis 标签并持久化到 sqlite [33m 508[2mms[22m[39m
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2mSidebar 包节点在无英文/日文标题时显示文件名
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2mSidebar 目录源节点在无英文/日文标题时显示目录名
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2mEsc 可关闭设置与检索状态，且主区右键不误关闭检索
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m检索模式将筛选控件渲染到元数据编辑区顶部并实时生效
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m视频模式检索面板仅展示特征检索
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m布局锁定开启后，主界面分割条拖动失效
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m元数据管理使用主工具栏承载同步名称与获取元数据动作
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m元数据面板标题可折叠，并可恢复展开
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m视频模式元数据默认只读，包含评分与操作区
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m默认只读元数据点击作者值可静默触发检索并通过返回按钮清空
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m默认只读元数据点击社团值可静默触发检索并通过返回按钮清空
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m方向键右键在无 focus 时可建立并切换图片 focus
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m图片主工具栏标题显示当前图片序号与图包总数
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m快捷键支持将滚轮下绑定为下一张图片
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m鼠标点击与键盘方向键共享 focus，Esc 可清空 focus
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m方向键上下按网格移动，到边界时钳制到首末项
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m纯文件名模式为滚动列表且不显示分页控件
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m全屏默认按当前模式进入单显示，双显示切回单显示时恢复入口模式
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m全屏图片支持首末跳转、跨包翻页与上个包下个包按钮
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m全屏模式支持鼠标滚轮上下翻页
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/App.test.tsx[2m > [22m[2mMediaPlayer 虚拟 UI[2m > [22m[2m设置面板按 side/main 分栏并包含界面设置聚合与快捷键鼠标录入
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/App.test.tsx [2m([22m[2m68 tests[22m[2m)[22m[33m 72702[2mms[22m[39m
+     [33m[2m✓[22m[39m 支持图片/视频模式切换 [33m 1074[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式可展开管理容器并与检索容器互斥 [33m 1439[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理与元数据管理互斥，且可一键切换到检索模式 [33m 868[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理控件改为主工具栏承载，且摘要右对齐显示 [33m 524[2mms[22m[39m
+     [33m[2m✓[22m[39m 检索/文件管理/元数据管理快速切换不会抛出运行时错误 [33m 1231[2mms[22m[39m
+     [33m[2m✓[22m[39m 快速切换 Sidebar 节点时缩略图列表保持可渲染且不抛错 [33m 975[2mms[22m[39m
+     [33m[2m✓[22m[39m Sidebar 包节点在无英文/日文标题时显示文件名 [33m 555[2mms[22m[39m
+     [33m[2m✓[22m[39m Sidebar 目录源节点在无英文/日文标题时显示目录名 [33m 555[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式删除确认弹窗需勾选不可逆确认后才能提交 [33m 1872[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 按优先级先关闭删除确认，再关闭管理面板 [33m 1799[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 可关闭设置与检索状态，且主区右键不误关闭检索 [33m 1519[2mms[22m[39m
+     [33m[2m✓[22m[39m Esc 关闭元数据管理，右键关闭全屏层 [33m 1380[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式下 Sidebar 与主视图 checker 互斥，且视频模式可进入管理 [33m 1154[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式下点击缩略图即可切换 checker 状态 [33m 579[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理模式在紧凑窗口下保持稳定：无最大更新深度报错、无折叠按钮、缩略图容器不可滚动 [33m 918[2mms[22m[39m
+     [33m[2m✓[22m[39m 隐藏项在非管理模式不可见 [33m 2657[2mms[22m[39m
+     [33m[2m✓[22m[39m main-footer 始终显示，focus 清空后显示当前 Sidebar 路径 [33m 527[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理异常显示在主工具栏提示中，不占用顶部异常横幅 [33m 1531[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除 Sidebar 节点部分失败时，提示文案与 failed 计数保持一致 [33m 1541[2mms[22m[39m
+     [33m[2m✓[22m[39m 管理删除图片部分失败时，提示文案与 failed 计数保持一致 [33m 1446[2mms[22m[39m
+     [33m[2m✓[22m[39m 文件管理改为工具栏后仍可执行删除流程 [33m 1444[2mms[22m[39m
+     [33m[2m✓[22m[39m AI广告审核通过后仅显示工具栏按钮，点击后才展开审核面板 [33m 1410[2mms[22m[39m
+     [33m[2m✓[22m[39m 真实渲染链路可输出可渲染媒体 URL（Main/Metadata/Fullscreen） [33m 575[2mms[22m[39m
+     [33m[2m✓[22m[39m 检索模式将筛选控件渲染到元数据编辑区顶部并实时生效 [33m 686[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式检索面板仅展示特征检索 [33m 741[2mms[22m[39m
+     [33m[2m✓[22m[39m 布局锁定开启后，主界面分割条拖动失效 [33m 1094[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理使用主工具栏承载同步名称与获取元数据动作 [33m 1365[2mms[22m[39m
+     [33m[2m✓[22m[39m 获取元数据弹窗展示双源结果列与分源请求响应预览 [33m 1043[2mms[22m[39m
+     [33m[2m✓[22m[39m 获取元数据支持按来源过滤、回车检索并可解析 ehentai 结果 [33m 2546[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据面板标题可折叠，并可恢复展开 [33m 1348[2mms[22m[39m
+     [33m[2m✓[22m[39m 进入元数据管理时自动退出原图显示并回到元数据编辑视图 [33m 505[2mms[22m[39m
+     [33m[2m✓[22m[39m 退出原图显示后元数据面板恢复常规布局，不保持 focus 容器样式 [33m 477[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据评分支持清空到空星，并可继续点击设星 [33m 2030[2mms[22m[39m
+     [33m[2m✓[22m[39m 图片模式只读元数据评分可用并可写入 [33m 548[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式元数据默认只读，包含评分与操作区 [33m 713[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频信息字段回车会触发 writeVideoMetadata 调用 [33m 748[2mms[22m[39m
+     [33m[2m✓[22m[39m 系列ID匹配时支持动画版/漫画版双向跳转 [33m 1354[2mms[22m[39m
+     [33m[2m✓[22m[39m 未配置系列ID的条目不显示动画版/漫画版跳转按钮 [33m 1678[2mms[22m[39m
+     [33m[2m✓[22m[39m 音乐模式支持按系列ID跳转到动画版/漫画版 [33m 1356[2mms[22m[39m
+     [33m[2m✓[22m[39m 非元数据管理模式下打开封面/打开Booklet可用，并可从非 CD Booklet 树定位 [33m 919[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理支持写入图片与视频系列ID [33m 1068[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频评分可点击并写入 grade [33m 749[2mms[22m[39m
+     [33m[2m✓[22m[39m 默认只读元数据作品名标题复制当前值，点击值不触发切换 [33m 493[2mms[22m[39m
+     [33m[2m✓[22m[39m 默认只读元数据点击作者值可静默触发检索并通过返回按钮清空 [33m 1418[2mms[22m[39m
+     [33m[2m✓[22m[39m 默认只读元数据点击社团值可静默触发检索并通过返回按钮清空 [33m 1427[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空 [33m 861[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理支持按字段回车批量写入，不覆盖未提交字段 [33m 629[2mms[22m[39m
+     [33m[2m✓[22m[39m 元数据管理面板已移除自动标签与嵌入按钮，仅保留同步名称 [33m 1459[2mms[22m[39m
+     [33m[2m✓[22m[39m 纯文件名模式为滚动列表且不显示分页控件 [33m 510[2mms[22m[39m
+     [33m[2m✓[22m[39m Main 工具栏使用图标按钮，退出全屏会自动关闭自动播放，且不显示加载中文案 [33m 2450[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频播放后暂停保留当前画面，切换视频后回到封面态，Save as cover 走后端写链路并保持封面态 [33m 1589[2mms[22m[39m
+     [33m[2m✓[22m[39m 全屏默认按当前模式进入单显示，双显示切回单显示时恢复入口模式 [33m 1152[2mms[22m[39m
+     [33m[2m✓[22m[39m 全屏图片支持首末跳转、跨包翻页与上个包下个包按钮 [33m 551[2mms[22m[39m
+     [33m[2m✓[22m[39m 视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应 [33m 717[2mms[22m[39m
+     [33m[2m✓[22m[39m 设置面板按 side/main 分栏并包含界面设置聚合与快捷键鼠标录入 [33m 4807[2mms[22m[39m
+     [33m[2m✓[22m[39m 数据库目录选择器可触发 SQL 与缩略图目录选择 [33m 1503[2mms[22m[39m
+     [33m[2m✓[22m[39m 数据库目录设置会调用后端路径持久化并显示反馈 [33m 1858[2mms[22m[39m
+     [33m[2m✓[22m[39m AI模型保存会持久化测试通过状态 [33m 1464[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m69 passed[39m[22m[90m (69)[39m
+[2m      Tests [22m [1m[32m350 passed[39m[22m[90m (350)[39m
+[2m   Start at [22m 21:31:16
+[2m   Duration [22m 82.14s[2m (transform 27.41s, setup 14.39s, import 46.19s, tests 101.56s, environment 109.74s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   57.46 |    51.46 |    58.2 |   57.59 |                   
+ electron          |   58.68 |    47.45 |   58.84 |   58.69 |                   
+  ...mExtractor.ts |   14.19 |    13.15 |   17.64 |   14.14 | ...13,220-677,709 
+  ...imeStorage.ts |   36.17 |    20.83 |      50 |   36.17 | ...7,35,43,60-104 
+  channels.ts      |     100 |      100 |     100 |     100 |                   
+  ...mportPaths.ts |       0 |        0 |       0 |       0 | 2-25              
+  ...lUrlPolicy.ts |    93.1 |    95.23 |     100 |    93.1 | 39,49             
+  ...izeHelpers.ts |    5.55 |        0 |       0 |    5.55 | 8-40              
+  ...AsyncUtils.ts |     100 |      100 |     100 |     100 |                   
+  ...eCollector.ts |   83.76 |     81.7 |   72.22 |   86.79 | ...01,211,215,237 
+  ...mportTasks.ts |   81.65 |    77.92 |      60 |   83.01 | ...86,215-216,282 
+  ...ccessGuard.ts |   93.18 |     92.5 |      80 |   95.23 | 105,110           
+  ...diaReaders.ts |   30.18 |    18.18 |      50 |   30.18 | ...20,142,163-190 
+  ...ataWriters.ts |   95.91 |    70.37 |     100 |   95.74 | 51,95             
+  ...ReadFacade.ts |   60.54 |    53.84 |   66.66 |   60.07 | ...50,758,770-774 
+  ...eadService.ts |       0 |        0 |       0 |       0 |                   
+  ...imeHelpers.ts |      80 |    67.85 |   71.42 |   81.39 | ...67,178,199,221 
+  ...iceHelpers.ts |   42.28 |    23.48 |   54.83 |   42.46 | ...50-259,266-296 
+  ...idebarTree.ts |   98.79 |    85.29 |     100 |   98.73 | 26                
+  ...eFactories.ts |     100 |    73.33 |     100 |     100 | 35-67,87          
+  ...urceFilter.ts |   83.33 |       50 |     100 |   83.33 | 16                
+  ...eamHelpers.ts |   13.88 |    15.15 |      25 |   14.28 | 14,16-37,39-70    
+  ...ilResolver.ts |   69.44 |    51.92 |   68.75 |   71.15 | ...40-241,245,258 
+  ...verCapture.ts |   56.25 |    41.66 |   33.33 |      60 | 25,37,43-47       
+  ...toreWriter.ts |   75.25 |       30 |   57.14 |   75.26 | 35-77,89          
+  ...logOptions.ts |      50 |        0 |       0 |      50 | 22-24             
+  ...StateStore.ts |     100 |      100 |     100 |     100 |                   
+  ...ryDatabase.ts |   89.18 |    83.33 |   83.33 |   89.18 | ...92,213,284-288 
+  ...adataStore.ts |   69.23 |       50 |      70 |      68 | 163-248,421-485   
+  ...ylistStore.ts |     100 |      100 |     100 |     100 |                   
+  ...rarySchema.ts |     100 |    55.55 |     100 |     100 | 9,196-287         
+  ...pshotStore.ts |   92.92 |    58.75 |   96.66 |   92.53 | ...70,901,911,938 
+  ...StoreUtils.ts |   83.33 |       50 |     100 |   83.33 | 98                
+  ...yTaskStore.ts |   88.88 |       50 |     100 |    87.5 | 93                
+  ...pcHandlers.ts |   31.18 |     9.09 |    6.38 |   31.34 | ...69-475,479-480 
+  ...rageUpdate.ts |    3.44 |        0 |       0 |    3.57 | 33-76             
+  ...ureRuntime.ts |    6.95 |        0 |    4.76 |    7.01 | 60-183,376-534    
+  ...iveHelpers.ts |   80.95 |    58.69 |     100 |   80.58 | ...77,181,188-192 
+ electron/facade   |   60.97 |      100 |   61.53 |   60.97 |                   
+  ...ryHandlers.ts |   81.25 |      100 |      80 |   81.25 | 70,100-104        
+  ...ntHandlers.ts |      30 |      100 |      30 |      30 | 29,47-77          
+  ...emHandlers.ts |      60 |      100 |   64.28 |      60 | 31-36,52,74-78    
+ ...manageAdReview |   76.26 |    50.39 |   82.69 |   75.74 |                   
+  ...viewEngine.ts |   89.18 |    72.05 |    90.9 |   88.73 | ...31,337,374,381 
+  concurrency.ts   |      76 |    66.66 |   83.33 |      75 | 2-4,9,15,34       
+  hashStore.ts     |   64.28 |       40 |   66.66 |   64.28 | 30-39             
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  jsonExtract.ts   |   82.19 |    54.23 |     100 |   81.94 | ...,51,94,116,132 
+  ...sionClient.ts |   56.63 |    34.78 |   63.63 |   56.63 | ...83,290,297,302 
+  prompts.ts       |     100 |      100 |     100 |     100 |                   
+ ...le-system-read |   68.87 |    54.98 |      75 |   68.81 |                   
+  ...ionService.ts |   36.19 |    28.12 |   48.27 |   36.19 | ...07,312,319-369 
+  ...cadeConfig.ts |   95.83 |       75 |     100 |   95.83 | 7                 
+  ...thRegistry.ts |   68.11 |    58.33 |   81.81 |   69.23 | 42-44,71-96,101   
+  ...askService.ts |      50 |     32.5 |      75 |   48.38 | ...86,191,196-215 
+  ...iteService.ts |   51.45 |     31.3 |   56.41 |   50.51 | ...17-592,613-615 
+  ...hotService.ts |   74.41 |    74.35 |    75.4 |   74.48 | ...00,605,619,686 
+  ...iewService.ts |   81.11 |    63.34 |   84.21 |   81.26 | ...1206,1210,1217 
+  ...vice.utils.ts |    58.2 |    40.25 |      75 |   57.89 | ...01,307,313-345 
+  ...ionService.ts |   72.08 |       57 |   79.06 |   72.72 | ...90-796,817-819 
+  ...rceService.ts |   83.33 |    63.63 |   88.88 |   82.97 | 71,76,125,177-184 
+  ...kenService.ts |   97.14 |      100 |   83.33 |   97.14 | 86                
+  ...ncyService.ts |     100 |    65.11 |     100 |     100 | 73-110            
+  ...ceEventBus.ts |   94.44 |       80 |     100 |   94.44 | 14                
+ ...vices/metadata |    1.93 |     0.86 |    2.63 |    1.96 |                   
+  ...perService.ts |    1.93 |     0.86 |    2.63 |    1.96 | 67-784            
+ ...ron/test-utils |     100 |    68.18 |     100 |     100 |                   
+  ...ryFixtures.ts |     100 |    68.18 |     100 |     100 | 21,41,149-152     
+  sqliteHarness.ts |     100 |      100 |     100 |     100 |                   
+ src               |   75.95 |    69.77 |   69.09 |   82.09 |                   
+  App.css          |       0 |        0 |       0 |       0 |                   
+  App.tsx          |     100 |      100 |     100 |     100 |                   
+  mockData.ts      |   80.34 |    74.28 |   66.66 |    80.9 | ...1022,1033-1092 
+  shortcuts.ts     |   69.61 |    66.87 |   72.22 |   83.33 | ...11,321,367-368 
+  types.ts         |     100 |      100 |     100 |     100 |                   
+ src/assets        |       0 |        0 |       0 |       0 |                   
+  ...IChannel0.png |       0 |        0 |       0 |       0 |                   
+  ...IChannel1.png |       0 |        0 |       0 |       0 |                   
+  ...IChannel0.png |       0 |        0 |       0 |       0 |                   
+  banner.png       |       0 |        0 |       0 |       0 |                   
+  iChannel1.png    |       0 |        0 |       0 |       0 |                   
+  iChannel3.png    |       0 |        0 |       0 |       0 |                   
+ src/bench         |       0 |        0 |       0 |       0 |                   
+  ...ontroller.tsx |       0 |        0 |       0 |       0 | 11-566            
+ src/components    |   62.48 |    61.95 |   59.01 |   62.57 |                   
+  ...teOverlay.tsx |    87.5 |     5.55 |     100 |    87.5 | 21                
+  AppHeader.tsx    |   43.44 |     58.2 |   35.55 |   44.53 | ...29-590,615-702 
+  AppShell.tsx     |     100 |      100 |     100 |     100 |                   
+  ...opBanners.tsx |     100 |      100 |     100 |     100 |                   
+  AppWorkspace.tsx |     100 |       75 |     100 |     100 | ...,75,83-110,133 
+  ...rorBanner.tsx |     100 |      100 |     100 |     100 |                   
+  ...irmDialog.tsx |     100 |      100 |     100 |     100 |                   
+  ...rtOverlay.tsx |   66.66 |       50 |     100 |   66.66 | 10                
+  ...chSection.tsx |   66.66 |       50 |     100 |   66.66 | 13                
+  ...reenLayer.tsx |   71.15 |    63.45 |   64.58 |   71.48 | ...19-720,768-774 
+  ...inSection.tsx |   82.35 |    77.37 |   70.27 |   82.82 | ...92-624,631,655 
+  ...rceInputs.tsx |     100 |      100 |     100 |     100 |                   
+  ...TaskPanel.tsx |   11.11 |     2.63 |   16.66 |   11.11 | 22-50,74-118      
+  MainUiIcon.tsx   |     100 |      100 |     100 |     100 |                   
+  ...dataPanel.tsx |   52.94 |    54.73 |      48 |   53.35 | ...76-780,948-951 
+  ...ntrolIcon.tsx |     100 |      100 |     100 |     100 |                   
+  ...inSection.tsx |   75.15 |    65.59 |   70.51 |   75.32 | ...1132,1142,1147 
+  ...ingBanner.tsx |   27.27 |    16.66 |   33.33 |   27.27 | 22-42             
+  ...ingsPanel.tsx |   46.64 |    24.79 |      58 |   45.62 | ...22,626,872-873 
+  SidebarPanel.tsx |   61.71 |    78.91 |   63.63 |   61.41 | ...81,306,346-355 
+  ...ntrolIcon.tsx |     100 |      100 |     100 |     100 |                   
+  ...inSection.tsx |   65.38 |    62.59 |    42.3 |   65.78 | ...59,515,542-587 
+  ...ionPreload.ts |   42.85 |    46.15 |   30.76 |   43.54 | 32,38,83-141      
+  ...ctionUtils.ts |   76.92 |    58.33 |     100 |   76.92 | 18,21,28          
+  ...ngControls.ts |   85.36 |    58.33 |     100 |   85.36 | 27-28,51,61,65,70 
+ ...nts/fullscreen |   55.74 |    58.88 |   36.36 |   56.06 |                   
+  ...eenFooter.tsx |      30 |    91.66 |   22.22 |      30 | 77-98,110-119     
+  ...reenPanes.tsx |   17.64 |       50 |    37.5 |   17.64 | 50-74,154-199     
+  ...oControls.tsx |   41.93 |    56.81 |   22.22 |   41.93 | ...61-300,325-326 
+  paneMath.ts      |   95.65 |    91.66 |     100 |   95.65 | 89,91             
+  ...mageSource.ts |   25.53 |       20 |      20 |   25.53 | 37-95,102         
+  ...ewportSize.ts |   95.65 |      100 |   83.33 |     100 |                   
+ ...nents/metadata |   54.09 |    62.89 |   52.34 |   55.01 |                   
+  ...ckerModal.tsx |   10.34 |       10 |    9.09 |   10.71 | 41-132            
+  ...ewSection.tsx |   76.27 |     80.5 |   58.33 |   76.27 | ...42,360-369,375 
+  ...etchPanel.tsx |   70.64 |    73.33 |    62.5 |   72.87 | ...44,558-641,697 
+  ...or.helpers.ts |    42.4 |    55.55 |   62.96 |    42.4 | ...40-399,408-442 
+  ...ageEditor.tsx |   20.89 |       50 |   23.63 |   23.07 | ...09,532,550-644 
+  ...sicEditor.tsx |   73.33 |    72.91 |   72.72 |   72.72 | ...95,216,233,278 
+  ...tingGroup.tsx |   27.02 |       40 |   36.36 |   27.02 | ...2,46,51,57-100 
+  ...chSection.tsx |   53.33 |    42.85 |   46.15 |   57.14 | 69-80,123-146,161 
+  ...deoEditor.tsx |      53 |    67.81 |    41.3 |   54.16 | ...86,298,313-425 
+  ...PanelUtils.ts |   63.15 |       40 |   83.33 |   56.25 | 13,21-28          
+  ...arsedDraft.ts |   81.96 |    66.26 |   96.29 |   81.19 | ...25,233,241,249 
+ ...nents/settings |   46.15 |    36.19 |   25.64 |   46.15 |                   
+  ...inSection.tsx |    37.5 |    36.19 |   19.44 |    37.5 | ...35-739,799,817 
+  settingsScale.ts |     100 |      100 |     100 |     100 |                   
+ src/contracts     |   99.18 |        0 |      50 |   99.18 |                   
+  backend.ts       |    99.1 |        0 |      50 |    99.1 | 799               
+  settings.ts      |     100 |      100 |     100 |     100 |                   
+ src/features/app  |   64.37 |    58.13 |    65.7 |   64.39 |                   
+  ...debarState.ts |    90.9 |       85 |     100 |      90 | 22,26,40,99       
+  ...eaderProps.ts |   74.28 |    70.37 |      75 |   75.75 | ...4,77,92,98,113 
+  ...dErrorRows.ts |     100 |    59.09 |     100 |     100 | 66-98,114,130-146 
+  ...ctionProps.ts |     100 |      100 |     100 |     100 |                   
+  ...LayerProps.ts |   14.28 |    11.11 |   17.85 |   16.66 | ...14-126,135-170 
+  ...ctionProps.ts |   71.42 |       50 |      75 |   71.42 | 141,144           
+  ...eLoadState.ts |   69.69 |    46.15 |      75 |   71.87 | 32-38,54-55,58,63 
+  ...PanelProps.ts |      25 |      100 |      25 |   33.33 | 31-37             
+  ...ainFooter.tsx |    90.9 |    91.66 |      50 |     100 | 36,40             
+  ...ialogProps.ts |     100 |      100 |     100 |     100 |                   
+  ...PanelProps.ts |      75 |      100 |      50 |      75 | 93                
+  ...PanelProps.ts |   66.66 |      100 |   66.66 |   66.66 | 38                
+  ...PanelProps.ts |   94.73 |     87.5 |     100 |   94.11 | 220               
+  ...ctionProps.ts |   32.03 |    24.73 |   28.57 |   30.69 | ...77-189,226-321 
+  ...PanelProps.ts |   81.81 |      100 |   77.77 |   88.88 | 53                
+  ...PanelProps.ts |   44.73 |       40 |      40 |   44.73 | ...92-205,208-213 
+  ...PanelProps.ts |   89.65 |    92.85 |     100 |   88.88 | 118-119,144       
+  ...debarState.ts |   34.61 |        0 |      50 |   34.61 | ...29,34-39,51-58 
+  ...ctionProps.ts |   25.92 |    22.22 |   26.31 |   26.08 | ...40-146,150,155 
+  errorCode.ts     |       0 |        0 |       0 |       0 |                   
+  ...aPathUtils.ts |   39.28 |    27.77 |   66.66 |   39.28 | ...33,43-49,51-59 
+  ...Controller.ts |     100 |      100 |     100 |     100 |                   
+  ...taPipeline.ts |     100 |      100 |     100 |     100 |                   
+  ...AndEffects.ts |     100 |      100 |     100 |     100 |                   
+  ...yResources.ts |   41.91 |    47.43 |   33.33 |   42.85 | ...16-446,451-495 
+  useAppEffects.ts |    67.8 |     57.3 |    73.8 |   68.15 | ...69,487-512,538 
+  ...ionEffects.ts |   84.87 |    75.36 |     100 |   84.87 | ...72,287,291-293 
+  ...geBindings.ts |   66.66 |       50 |      40 |   69.56 | ...27,133,136-139 
+  ...ationState.ts |   54.83 |    50.96 |   63.63 |   54.83 | ...40,456,467-475 
+  ...Navigation.ts |     100 |      100 |     100 |     100 |                   
+  ...pReadState.ts |   93.33 |    86.53 |     100 |   93.33 | 139-140           
+  ...imeSources.ts |     100 |       50 |     100 |     100 | 26                
+  ...ssionState.ts |   95.65 |       70 |      80 |   97.56 | 78                
+  ...tingsStore.ts |     100 |      100 |     100 |     100 |                   
+  ...ShellProps.ts |     100 |      100 |     100 |     100 |                   
+  ...utBindings.ts |   36.36 |     37.5 |   42.85 |   33.33 | 90,95-111         
+  ...ScopeState.ts |   73.24 |    51.57 |   76.59 |   73.15 | ...83,423-441,499 
+  ...erBindings.ts |     100 |       50 |     100 |     100 | 211               
+  ...LayerState.ts |   96.15 |    55.55 |    87.5 |     100 | 250-254,269       
+  ...tate.utils.ts |   42.85 |     37.5 |     100 |   42.85 | 15-26             
+  ...omposition.ts |     100 |      100 |     100 |     100 |                   
+  ...ceBindings.ts |     100 |       40 |     100 |     100 | 168-169           
+  ...spaceProps.ts |    45.8 |    64.63 |   27.58 |   47.29 | ...46-967,975,980 
+  ...LoadStatus.ts |   27.58 |     8.33 |   33.33 |   27.58 | 28-59,63-65       
+  ...debarState.ts |   98.07 |    94.44 |     100 |   97.77 | 27                
+  ...esetAction.ts |    23.8 |        0 |   16.66 |    23.8 | 17-20,28-58       
+  ...splayState.ts |     100 |    94.66 |     100 |     100 | 119,137,141,163   
+  ...ckBindings.ts |      80 |    85.71 |   83.33 |   78.94 | 39-43             
+  ...rViewModel.ts |   54.71 |     53.9 |    62.5 |    55.7 | ...65-374,381-390 
+  ...rBaseState.ts |   95.91 |    86.11 |     100 |   95.74 | 19,89             
+  ...PanelState.ts |      50 |    54.54 |   41.17 |   54.05 | ...03-108,114-122 
+  ...iewActions.ts |    62.3 |    54.25 |   72.97 |   61.64 | ...81-884,889-901 
+  ...odeActions.ts |      80 |     72.5 |     100 |      80 | ...45,155-156,182 
+  ...odeActions.ts |     100 |      100 |     100 |     100 |                   
+  ...teBindings.ts |   70.27 |    52.17 |   85.18 |   70.27 | ...94-505,512-517 
+  ...etBindings.ts |   19.62 |    12.32 |   21.05 |   19.81 | ...75-206,216-227 
+  ...ppSettings.ts |     100 |      100 |     100 |     100 |                   
+  ...tstrapData.ts |     100 |       50 |     100 |     100 | 18-47             
+  ...MediaState.ts |   93.18 |    81.53 |     100 |    93.1 | ...75,198,269,280 
+  ...ZoomEffect.ts |   16.66 |       50 |      40 |   16.66 | 16-43             
+  ...dImageData.ts |   93.33 |       50 |     100 |    92.3 | 25                
+  ...iagnostics.ts |   56.25 |       45 |   57.14 |   55.78 | ...11,118,140-210 
+  ...ingDismiss.ts |   69.23 |       40 |      75 |   69.23 | 21,34-36          
+  ...eStateSync.ts |     100 |    96.66 |     100 |     100 | 80                
+  ...torActions.ts |   44.06 |       30 |      50 |   44.06 | ...01,117,121-142 
+  ...ersistence.ts |    81.9 |    72.04 |   88.88 |   82.19 | ...98,406,416,438 
+  ...ngsActions.ts |   52.94 |       50 |   53.33 |   52.94 | ...94,208-209,224 
+  ...debarState.ts |    90.9 |       75 |     100 |   88.88 | 27,52             
+  ...ewHandlers.ts |   54.54 |      100 |   16.66 |   54.54 | 9,13,19,25,31     
+  ...erivations.ts |   92.18 |    90.19 |     100 |   92.06 | 64-67,130         
+  ...barContext.ts |      50 |       60 |      25 |      50 | 24-34,47          
+  ...erivations.ts |   86.11 |    73.46 |   88.88 |   85.71 | 28,40,101-103     
+  ...umpActions.ts |   37.66 |       25 |      60 |   37.66 | ...08-131,135-158 
+  ...ataActions.ts |   13.33 |        0 |      50 |   13.33 | 24-31,42-55       
+  ...sicBooklet.ts |   57.81 |    35.37 |   78.78 |   56.98 | ...52-361,373-376 
+  ...haredUtils.ts |   78.87 |    71.87 |   86.36 |   77.94 | 7,23-37,43-47,81  
+ ...atures/backend |   67.27 |     59.9 |   73.79 |   66.71 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  mappers.ts       |   90.24 |    62.12 |   94.11 |      90 | 174,195,200,216   
+  mediaLocator.ts  |   71.42 |    58.33 |      75 |   71.42 | 8,34-37           
+  ...solveUtils.ts |   88.57 |    75.75 |   88.88 |   88.57 | 29,42,47,92       
+  ...SliceUtils.ts |   96.42 |    94.44 |     100 |   96.15 | 27                
+  ...DataAccess.ts |   89.68 |    91.95 |   80.48 |   90.43 | ...79,384,441-444 
+  ...dMediaUrls.ts |   45.45 |    35.11 |   39.13 |   45.85 | ...13,417,445-452 
+  ...pabilities.ts |   43.58 |    43.75 |   36.36 |   44.73 | ...1-83,88,96-100 
+  ...DataAccess.ts |   70.09 |    52.63 |      80 |   68.55 | ...00-613,679-681 
+ ...end/repository |   36.23 |    58.53 |   31.15 |   36.49 |                   
+  ...endChannel.ts |      75 |       50 |     100 |      75 | 6,15              
+  ...Repository.ts |   57.89 |    43.75 |     100 |   57.89 | 10-15,25,29,33,45 
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...Repository.ts |   35.36 |      100 |   28.37 |    35.8 | ...51-470,480-488 
+  ...Repository.ts |   14.96 |        0 |   16.66 |   15.07 | ...41-440,451-488 
+  ...yIpcTiming.ts |     100 |       50 |     100 |     100 | 10                
+  requestGuards.ts |   84.84 |    82.35 |   77.77 |   84.84 | 24,56-61          
+  types.ts         |       0 |        0 |       0 |       0 |                   
+ ...epository/mock |    23.7 |    22.76 |   34.02 |   24.25 |                   
+  ...ewHandlers.ts |    2.38 |        0 |    4.54 |     2.5 | 35-85,100-357     
+  ...adHandlers.ts |   90.24 |    66.66 |   83.33 |    92.1 | 78,160,172        
+  ...teHandlers.ts |    8.33 |     4.08 |   10.71 |    8.41 | ...45,659,674-731 
+  ...emHandlers.ts |   41.17 |    16.66 |      50 |   41.17 | 39-47,62-95       
+  mappers.ts       |   93.75 |    65.38 |      90 |   93.75 | 177               
+  types.ts         |     100 |      100 |     100 |     100 |                   
+  utils.ts         |   53.96 |    46.15 |   52.77 |   54.09 | ...24-277,293-294 
+ ...eatures/import |   25.09 |     8.27 |   21.05 |    25.3 |                   
+  ...tPathUtils.ts |       0 |        0 |       0 |       0 | 8-52              
+  ...ragOverlay.ts |   26.58 |        0 |   27.27 |   26.58 | ...24-141,145-147 
+  ...mportPaste.ts |   17.85 |        0 |      50 |   14.81 | 22-60             
+  ...rtPipeline.ts |   30.57 |    21.56 |   18.18 |   31.89 | ...84,290,295,326 
+ ...eatures/layout |   57.34 |    43.52 |   42.85 |   56.86 |                   
+  ...nailLayout.ts |   83.18 |    65.95 |     100 |    82.4 | ...03-205,224-233 
+  ...neResizers.ts |   27.55 |    15.78 |      20 |   28.12 | ...95-207,214-229 
+ ...res/management |    68.8 |    57.39 |   78.57 |   68.26 |                   
+  ...teractions.ts |   46.72 |    36.36 |   61.11 |   46.72 | ...15,223,231-232 
+  ...eSelection.ts |   96.87 |    85.71 |   91.66 |   98.83 | 45                
+ ...features/media |   45.45 |    24.61 |      44 |   45.96 |                   
+  ...backBridge.ts |   58.06 |    35.29 |   63.63 |   62.06 | ...45-48,53,57-61 
+  useMediaState.ts |      64 |        0 |   42.85 |   67.44 | ...14,118-119,123 
+  ...ersistence.ts |    35.8 |    31.25 |    40.9 |   34.66 | ...29-165,174-184 
+  videoFitMode.ts  |    7.14 |        0 |       0 |    7.14 | 6-28              
+ ...tures/metadata |   64.38 |    42.46 |   45.45 |   65.27 |                   
+  ...alMetadata.ts |   64.38 |    42.46 |   45.45 |   65.27 | ...40,148,156-180 
+ ...sic-visualizer |    35.6 |    32.09 |   47.31 |   35.72 |                   
+  audioAnalyser.ts |   45.39 |    23.17 |   66.66 |   46.25 | ...49-250,253-254 
+  cpuRenderer.ts   |   51.85 |    18.75 |      80 |   51.92 | 6-11,26,58-82     
+  ...erRegistry.ts |   84.21 |       50 |     100 |   81.25 | 15,27,37          
+  ...toyAdapter.ts |     100 |      100 |     100 |     100 |                   
+  ...zerRuntime.ts |   83.53 |    71.42 |     100 |    83.4 | ...09-610,620-631 
+  webglRenderer.ts |    3.85 |     0.92 |    2.22 |    3.93 | ...12,629,634-997 
+ ...alizer/shaders |     100 |      100 |     100 |     100 |                   
+  escape.ts        |     100 |      100 |     100 |     100 |                   
+  ...foreground.ts |     100 |      100 |     100 |     100 |                   
+  fungi.ts         |     100 |      100 |     100 |     100 |                   
+  galaxy.ts        |     100 |      100 |     100 |     100 |                   
+  ...foreground.ts |     100 |      100 |     100 |     100 |                   
+  mcs_szb.ts       |     100 |      100 |     100 |     100 |                   
+  nebula.ts        |     100 |      100 |     100 |     100 |                   
+  rain_drips.ts    |     100 |      100 |     100 |     100 |                   
+  singularity.ts   |     100 |      100 |     100 |     100 |                   
+  starfield.ts     |     100 |      100 |     100 |     100 |                   
+  ...foreground.ts |     100 |      100 |     100 |     100 |                   
+  tissue.ts        |     100 |      100 |     100 |     100 |                   
+  ...foreground.ts |     100 |      100 |     100 |     100 |                   
+  voxel.ts         |     100 |      100 |     100 |     100 |                   
+ src/features/perf |     6.6 |     3.17 |    8.69 |    6.86 |                   
+  benchRecorder.ts |       4 |     3.63 |       5 |    4.16 | ...14-210,223-322 
+  benchSettings.ts |      50 |        0 |   33.33 |      50 | 51-67,75          
+ ...eatures/search |      95 |    93.75 |   90.62 |   94.87 |                   
+  ...tureSearch.ts |      95 |    93.75 |   90.62 |   94.87 | 78,168-172        
+ ...eatures/shared |   84.21 |     62.5 |     100 |   84.21 |                   
+  errorCode.ts     |   84.21 |     62.5 |     100 |   84.21 | 13,29,49          
+ ...ures/shortcuts |      50 |       50 |     100 |   49.48 |                   
+  ...tcutEngine.ts |      50 |       50 |     100 |   49.48 | ...94,399,417-418 
+ ...atures/sidebar |   54.43 |    49.07 |      60 |   54.32 |                   
+  ...Navigation.ts |   54.43 |    49.07 |      60 |   54.32 | ...99,302,305-323 
+ ...features/theme |   79.12 |    73.21 |   74.19 |   80.76 |                   
+  themeRegistry.ts |   79.12 |    73.21 |   74.19 |   80.76 | ...02,211,235-244 
+ src/i18n          |    92.3 |    84.09 |   95.23 |    92.2 |                   
+  I18nProvider.tsx |   94.73 |    83.33 |     100 |   94.44 | 26                
+  a11y.ts          |     100 |      100 |     100 |     100 |                   
+  ariaRegistry.ts  |     100 |      100 |     100 |     100 |                   
+  catalog.ts       |     100 |      100 |     100 |     100 |                   
+  context.ts       |     100 |      100 |     100 |     100 |                   
+  locale.ts        |    87.5 |    83.33 |    87.5 |    87.5 | 21,30,53,77       
+  useI18n.ts       |    92.3 |       80 |     100 |    92.3 | 16                
+ src/i18n/locales  |     100 |      100 |     100 |     100 |                   
+  en-US.ts         |     100 |      100 |     100 |     100 |                   
+  zh-CN.ts         |     100 |      100 |     100 |     100 |                   
+ src/store         |    92.3 |       75 |   88.88 |    90.9 |                   
+  useUiStore.ts    |    92.3 |       75 |   88.88 |    90.9 | 197,212           
+ ...themes/presets |       0 |        0 |       0 |       0 |                   
+  _template.css    |       0 |        0 |       0 |       0 |                   
+  aurora-sand.css  |       0 |        0 |       0 |       0 |                   
+  ...cin-mocha.css |       0 |        0 |       0 |       0 |                   
+  dracula-dark.css |       0 |        0 |       0 |       0 |                   
+  geist-light.css  |       0 |        0 |       0 |       0 |                   
+  ...ub-dimmed.css |       0 |        0 |       0 |       0 |                   
+  gruvbox-dark.css |       0 |        0 |       0 |       0 |                   
+  linear-dark.css  |       0 |        0 |       0 |       0 |                   
+  nord-dark.css    |       0 |        0 |       0 |       0 |                   
+  rose-pine.css    |       0 |        0 |       0 |       0 |                   
+  ...ized-dark.css |       0 |        0 |       0 |       0 |                   
+  tokyo-night.css  |       0 |        0 |       0 |       0 |                   
+ ...sets/goodtheme |       0 |        0 |       0 |       0 |                   
+  ...er-signal.css |       0 |        0 |       0 |       0 |                   
+  clean-light.css  |       0 |        0 |       0 |       0 |                   
+  ...smorphism.css |       0 |        0 |       0 |       0 |                   
+  matrix-mint.css  |       0 |        0 |       0 |       0 |                   
+  ...ht-cinema.css |       0 |        0 |       0 |       0 |                   
+  ...onal-dark.css |       0 |        0 |       0 |       0 |                   
+  vibrant-pop.css  |       0 |        0 |       0 |       0 |                   
+ src/utils         |   18.62 |    10.46 |    23.8 |   19.58 |                   
+  mediaHelpers.ts  |   10.75 |     3.75 |   11.11 |   11.36 | ...90-194,210-213 
+  ui.ts            |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------

@@ -1,0 +1,42 @@
+{
+  "ipc_main_handle_count": 51,
+  "ipc_main_on_count": 0,
+  "schema_export_count": 120,
+  "create_table_count": 21,
+  "preload_expose_count": 5,
+  "permission_request_handler_count": 0,
+  "csp_reference_count": 0,
+  "sample_evidence": {
+    "ipcMain.handle": [
+      "electron/mainWindowControls.ts:14",
+      "electron/mainWindowControls.ts:18",
+      "electron/mainWindowControls.ts:32",
+      "electron/mainWindowControls.ts:36",
+      "electron/mainWindowControls.ts:45",
+      "electron/mainWindowControls.ts:49",
+      "electron/mainWindowControls.ts:53",
+      "electron/registerBackendIpcHandlers.ts:164",
+      "electron/registerBackendIpcHandlers.ts:169",
+      "electron/registerBackendIpcHandlers.ts:175"
+    ],
+    "schema_exports": [
+      "src/contracts/backend.ts:5",
+      "src/contracts/backend.ts:7",
+      "src/contracts/backend.ts:17",
+      "src/contracts/backend.ts:36",
+      "src/contracts/backend.ts:48",
+      "src/contracts/backend.ts:66",
+      "src/contracts/backend.ts:72",
+      "src/contracts/backend.ts:89",
+      "src/contracts/backend.ts:112",
+      "src/contracts/backend.ts:126"
+    ],
+    "contextBridge.exposeInMainWorld": [
+      "electron/preload.ts:368",
+      "electron/preload.ts:369",
+      "electron/preload.ts:370",
+      "electron/preload.ts:371",
+      "electron/preload.ts:372"
+    ]
+  }
+}

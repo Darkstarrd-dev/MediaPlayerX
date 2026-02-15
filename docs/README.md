@@ -17,6 +17,7 @@
 ## 质量与稳定性
 
 - `stability-note-2026-02-12-sidebar-switch-crash.md`：Sidebar 高频切换稳定性问题与修复记录。
+- `stability-note-2026-02-16-dev-desktop-loading-csp.md`：`dev:desktop` 持久“加载中”问题排查与 CSP 修复记录。
 - `project-evaluation-report-v6.md`：项目评估（当前保留版本）。
 
 ## 当前实施计划
@@ -53,16 +54,15 @@
 2. Shader 开发入口落地：新建 Shader 相关任务默认使用 `docs/music-visualizer-shader-entry.md` 作为首个提示词入口，并持续维护最小读取范围。
 3. 基于 `docs/aria-regression-checklist.md` 执行全量回归签收（zh-CN / en-US、键盘流、屏幕阅读器）。
 4. 文件管理模式 G/M 回归：覆盖跨盘移动（EXDEV fallback）、目标重名冲突、非法分组名、部分成功部分失败提示与 sqlite 快照路径同步验证。
-5. classname和idname的规格化
-6. 继续UI界面的文字按钮重构为图形按钮
-7. tooltip的模式和样式设计（是否纳入theme系统管理，tooltip时用覆盖全屏的模式还是单个按钮单个位置的模式）
-8. https://idc.xpzsd.codes/ 供参考的背景特效和边框特效
-9. 父级节点cover图策略变更，使用子集节点的第一张图作为cover图，如果通过元数据获取了正式的cover图，则替换为正式的cover图
-10. sidebar折叠状态的持久化保存，当前审核模式返回，之前折叠的现在自动展开
-11. 基于tags的近似推荐系统
-12. 基于用户自己的stars评分的random推荐系统
-13. 基于作品tags的用户xp分析系统
-14. 基于 `docs/copy-review-checklist.md` 执行文案统一审校，补齐边角错误文案与术语一致性。
+5. 继续UI界面的文字按钮重构为图形按钮
+6. tooltip的模式和样式设计（是否纳入theme系统管理，tooltip时用覆盖全屏的模式还是单个按钮单个位置的模式）
+7. https://idc.xpzsd.codes/ 供参考的背景特效和边框特效
+8. 父级节点cover图策略变更，使用子集节点的第一张图作为cover图，如果通过元数据获取了正式的cover图，则替换为正式的cover图
+9. sidebar折叠状态的持久化保存，当前审核模式返回，之前折叠的现在自动展开
+10. 基于tags的近似推荐系统
+11. 基于用户自己的stars评分的random推荐系统
+12. 基于作品tags的用户xp分析系统
+13. 基于 `docs/copy-review-checklist.md` 执行文案统一审校，补齐边角错误文案与术语一致性。
 
 ## 文档维护约定
 

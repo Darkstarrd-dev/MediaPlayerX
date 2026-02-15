@@ -1,0 +1,21 @@
+{
+  "packages": 432,
+  "copyleft_count": 1,
+  "custom_or_unknown_count": 2,
+  "copyleft_examples": [
+    {
+      "package": "@img/sharp-win32-x64@0.34.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later"
+    }
+  ],
+  "custom_or_unknown_examples": [
+    {
+      "package": "7z-wasm@1.2.0",
+      "license": "Custom: https://github.com/sonictruth/7zip.js"
+    },
+    {
+      "package": "mediaplayerx@0.0.0",
+      "license": "UNLICENSED"
+    }
+  ]
+}

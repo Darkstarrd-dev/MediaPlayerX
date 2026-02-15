@@ -1,45 +1,79 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
   // Electron loads the production bundle via file://, so we need relative asset paths.
-  base: command === 'build' ? './' : '/',
+  base: command === "build" ? "./" : "/",
   plugins: [react()],
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          if (!id.includes('node_modules')) {
-            return undefined
+          const normalizedId = id.replace(/\\/g, "/");
+
+          if (normalizedId.includes("/src/features/music-visualizer/")) {
+            return "feature-visualizer";
           }
 
-          if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/zustand/')) {
-            return 'vendor-react'
+          if (normalizedId.includes("/src/features/app/")) {
+            return "feature-app-runtime";
           }
 
-          if (id.includes('/three/')) {
-            return 'vendor-three'
+          if (normalizedId.includes("/src/features/backend/")) {
+            return "feature-backend-runtime";
           }
 
-          if (id.includes('/axios/') || id.includes('/cheerio/') || id.includes('/zod/')) {
-            return 'vendor-data'
+          if (normalizedId.includes("/src/components/metadata/")) {
+            return "ui-metadata";
           }
 
-          return 'vendor-misc'
+          if (normalizedId.includes("/src/components/fullscreen/")) {
+            return "ui-fullscreen";
+          }
+
+          if (normalizedId.includes("/src/components/MusicMainSection")) {
+            return "ui-music-main";
+          }
+
+          if (!normalizedId.includes("/node_modules/")) {
+            return undefined;
+          }
+
+          if (
+            normalizedId.includes("/react/") ||
+            normalizedId.includes("/react-dom/") ||
+            normalizedId.includes("/zustand/")
+          ) {
+            return "vendor-react";
+          }
+
+          if (normalizedId.includes("/three/")) {
+            return "vendor-three";
+          }
+
+          if (
+            normalizedId.includes("/axios/") ||
+            normalizedId.includes("/cheerio/") ||
+            normalizedId.includes("/zod/")
+          ) {
+            return "vendor-data";
+          }
+
+          return "vendor-misc";
         },
       },
     },
   },
   test: {
-    environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.ts",
     globals: true,
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'json-summary'],
-      reportsDirectory: './coverage',
+      provider: "v8",
+      reporter: ["text", "html", "json-summary"],
+      reportsDirectory: "./coverage",
       thresholds: {
         lines: 5,
         functions: 5,
@@ -48,4 +82,4 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
-}))
+}));
