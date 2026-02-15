@@ -140,7 +140,15 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
   const selectedShaderId = params.musicVisualizerSelectedShaderId.trim().slice(0, 64) || defaultShaderId
   const fallbackShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string] = {
     renderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
-    foregroundBackgroundScaleRatio: 2,
+    renderScaleCoeff: 2,
+    compositionMode: 'single',
+    layeredBackgroundShaderId: 'galaxy',
+    layeredForegroundShaderId: 'mcs-szb',
+    layeredBackgroundEnabled: true,
+    layeredForegroundEnabled: true,
+    layeredForegroundOffsetX: 0,
+    layeredForegroundOffsetY: 0,
+    layeredForegroundScale: 1,
     fpsCap: params.musicVisualizerFpsCap,
     toneMapMode: params.musicVisualizerToneMapMode,
     toneMapExposure: params.musicVisualizerToneMapExposure,
@@ -149,6 +157,10 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     renderer: params.musicVisualizerRenderer,
   }
   const selectedShaderSettings = params.musicVisualizerShaderSettingsById[selectedShaderId] ?? fallbackShaderSettings
+  const layeredBackgroundShaderId = selectedShaderSettings.layeredBackgroundShaderId || 'galaxy'
+  const layeredForegroundShaderId = selectedShaderSettings.layeredForegroundShaderId || 'mcs-szb'
+  const layeredBackgroundShaderSettings = params.musicVisualizerShaderSettingsById[layeredBackgroundShaderId] ?? fallbackShaderSettings
+  const layeredForegroundShaderSettings = params.musicVisualizerShaderSettingsById[layeredForegroundShaderId] ?? fallbackShaderSettings
 
   const libraryPlaybackOrder = resolveLibraryPlaybackOrder(params)
   const selectedAudio = params.audioByIdEffective.get(params.selectedAudioId) ?? params.focusedAudio
@@ -216,6 +228,8 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     },
     musicVisualizerSelectedShaderId: selectedShaderId,
     musicVisualizerShaderSettings: selectedShaderSettings,
+    musicVisualizerLayeredBackgroundShaderSettings: layeredBackgroundShaderSettings,
+    musicVisualizerLayeredForegroundShaderSettings: layeredForegroundShaderSettings,
     onPrevAudio: () => {
       if (!canStepBetweenTracks) {
         return
@@ -243,7 +257,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
       }
       const nextSettingsById = { ...params.musicVisualizerShaderSettingsById }
       if (!nextSettingsById[nextShaderId]) {
-        nextSettingsById[nextShaderId] = selectedShaderSettings
+        nextSettingsById[nextShaderId] = { ...selectedShaderSettings }
       }
       params.updateSettings({
         musicVisualizerSelectedShaderId: nextShaderId,
@@ -260,6 +274,55 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
         musicVisualizerShaderSettingsById: {
           ...params.musicVisualizerShaderSettingsById,
           [selectedShaderId]: next,
+        },
+      })
+    },
+    onMusicVisualizerLayerShaderIdChange: (layer: 'foreground' | 'background', value: string) => {
+      const shaderId = value.trim().slice(0, 64)
+      if (!shaderId) {
+        return
+      }
+
+      const current = params.musicVisualizerShaderSettingsById[selectedShaderId] ?? fallbackShaderSettings
+      const nextSettingsById = { ...params.musicVisualizerShaderSettingsById }
+      if (!nextSettingsById[shaderId]) {
+        nextSettingsById[shaderId] = { ...fallbackShaderSettings }
+      }
+
+      const nextCurrent = {
+        ...current,
+        layeredBackgroundShaderId: layer === 'background' ? shaderId : current.layeredBackgroundShaderId,
+        layeredForegroundShaderId: layer === 'foreground' ? shaderId : current.layeredForegroundShaderId,
+      }
+
+      params.updateSettings({
+        musicVisualizerShaderSettingsById: {
+          ...nextSettingsById,
+          [selectedShaderId]: nextCurrent,
+        },
+      })
+    },
+    onMusicVisualizerLayerShaderSettingsChange: (
+      layer: 'foreground' | 'background',
+      patch: Partial<AppSettings['musicVisualizerShaderSettingsById'][string]>,
+    ) => {
+      const current = params.musicVisualizerShaderSettingsById[selectedShaderId] ?? fallbackShaderSettings
+      const targetShaderId = layer === 'foreground' ? current.layeredForegroundShaderId : current.layeredBackgroundShaderId
+      const normalizedTargetShaderId = targetShaderId.trim().slice(0, 64)
+      if (!normalizedTargetShaderId) {
+        return
+      }
+
+      const targetCurrent = params.musicVisualizerShaderSettingsById[normalizedTargetShaderId] ?? fallbackShaderSettings
+      const targetNext: AppSettings['musicVisualizerShaderSettingsById'][string] = {
+        ...targetCurrent,
+        ...patch,
+      }
+
+      params.updateSettings({
+        musicVisualizerShaderSettingsById: {
+          ...params.musicVisualizerShaderSettingsById,
+          [normalizedTargetShaderId]: targetNext,
         },
       })
     },

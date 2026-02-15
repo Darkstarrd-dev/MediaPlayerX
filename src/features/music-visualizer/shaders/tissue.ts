@@ -56,70 +56,11 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 }
 `
 
-const FOREGROUND_SOURCE = String.raw`#define AA (1.5 / iResolution.y)
-
-float ss(float e, float v)
-{
-  return smoothstep(e - AA, e + AA, v);
-}
-
-float ss(float e, float v, float m)
-{
-  float a = m * AA;
-  return smoothstep(e - a, e + a, v);
-}
-
-void mainImage(out vec4 fragColor, in vec2 fragCoord)
-{
-  vec2 uv = fragCoord / iResolution.xy - 0.5;
-  uv.x *= iResolution.x / iResolution.y;
-  uv = (-uv * 2.0);
-
-  float barCount = 50.0;
-
-  float r = atan(uv.x, uv.y) / 3.14159;
-  r = (r + 1.0) / 2.0;
-
-  float ir = floor(r * barCount) / barCount;
-
-  float s = 0.3;
-
-    float w = texture(iChannel0, vec2(ir, 0.0)).r;
-    w = mix(s, 1.0, w);
-    w = s + (w - s) * 1.5;
-
-  float d = length(uv);
-
-  float b = fract(r * barCount);
-  b = ss(0.15, b, barCount) - ss(0.85, b, barCount);
-
-  vec3 col = vec3(0.0);
-  col = mix(col, mix(vec3(0.0, 0.7, 0.3), vec3(0.0, 1.0, 1.0), d), ss(d, w) * b * ss(s + 0.01, d));
-
-  fragColor = vec4(col, 1.0);
-}
-`
-
-const IMAGE_SOURCE = String.raw`vec3 screenBlend(vec3 base, vec3 layer)
-{
-  return 1.0 - (1.0 - base) * (1.0 - layer);
-}
-
-void mainImage(out vec4 fragColor, in vec2 fragCoord)
-{
-  vec2 uv = fragCoord / iResolution.xy;
-  vec3 background = texture(iChannel0, uv).rgb;
-  vec3 foreground = texture(iChannel1, uv).rgb;
-  vec3 color = screenBlend(background, foreground * 1.2);
-
-  fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
-}
-`
-
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'tissue',
-  label: 'Tissue',
-  fragmentSource: IMAGE_SOURCE,
+  label: 'Tissue Background',
+  layerRole: 'background',
+  fragmentSource: BACKGROUND_SOURCE,
   multiPass: {
     textures: [
       {
@@ -135,26 +76,11 @@ export const SHADER: MusicVisualizerShaderDefinition = {
     ],
     passes: [
       {
-        id: 'tissue-background',
-        fragmentSource: BACKGROUND_SOURCE,
-        output: 'buffer',
-        channels: [{ kind: 'texture', textureId: 'tissue-noise' }],
-      },
-      {
-        id: 'tissue-foreground',
-        fragmentSource: FOREGROUND_SOURCE,
-        output: 'buffer',
-        channels: [{ kind: 'audio' }],
-      },
-      {
         id: 'tissue-image',
-        fragmentSource: IMAGE_SOURCE,
+        fragmentSource: BACKGROUND_SOURCE,
         output: 'screen',
         toneMap: true,
-        channels: [
-          { kind: 'pass', passId: 'tissue-background' },
-          { kind: 'pass', passId: 'tissue-foreground' },
-        ],
+        channels: [{ kind: 'texture', textureId: 'tissue-noise' }],
       },
     ],
   },

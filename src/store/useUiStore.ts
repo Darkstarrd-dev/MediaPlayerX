@@ -59,7 +59,15 @@ export const DEFAULT_SETTINGS: AppSettings = {
   musicVisualizerShaderSettingsById: {
     [DEFAULT_MUSIC_SHADER_ID]: {
       renderLongEdgePx: 1280,
-      foregroundBackgroundScaleRatio: 2,
+      renderScaleCoeff: 2,
+      compositionMode: 'single',
+      layeredBackgroundShaderId: 'galaxy',
+      layeredForegroundShaderId: DEFAULT_MUSIC_SHADER_ID,
+      layeredBackgroundEnabled: true,
+      layeredForegroundEnabled: true,
+      layeredForegroundOffsetX: 0,
+      layeredForegroundOffsetY: 0,
+      layeredForegroundScale: 1,
       fpsCap: 60,
       toneMapMode: 'aces',
       toneMapExposure: 1,

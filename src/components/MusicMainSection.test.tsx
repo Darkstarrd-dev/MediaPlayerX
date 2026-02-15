@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { AudioItem } from '../types'
@@ -59,7 +59,51 @@ function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof Mu
     onToggleFullscreen: vi.fn(),
     musicVisualizerShaderSettings: {
       renderLongEdgePx: 1280,
-      foregroundBackgroundScaleRatio: 2,
+      renderScaleCoeff: 2,
+      compositionMode: 'single',
+      layeredBackgroundShaderId: 'galaxy',
+      layeredForegroundShaderId: 'mcs-szb',
+      layeredBackgroundEnabled: true,
+      layeredForegroundEnabled: true,
+      layeredForegroundOffsetX: 0,
+      layeredForegroundOffsetY: 0,
+      layeredForegroundScale: 1,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.55,
+      showFps: false,
+      renderer: 'gpu',
+    },
+    musicVisualizerLayeredBackgroundShaderSettings: {
+      renderLongEdgePx: 1280,
+      renderScaleCoeff: 2,
+      compositionMode: 'single',
+      layeredBackgroundShaderId: 'galaxy',
+      layeredForegroundShaderId: 'mcs-szb',
+      layeredBackgroundEnabled: true,
+      layeredForegroundEnabled: true,
+      layeredForegroundOffsetX: 0,
+      layeredForegroundOffsetY: 0,
+      layeredForegroundScale: 1,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.55,
+      showFps: false,
+      renderer: 'gpu',
+    },
+    musicVisualizerLayeredForegroundShaderSettings: {
+      renderLongEdgePx: 1280,
+      renderScaleCoeff: 2,
+      compositionMode: 'single',
+      layeredBackgroundShaderId: 'galaxy',
+      layeredForegroundShaderId: 'mcs-szb',
+      layeredBackgroundEnabled: true,
+      layeredForegroundEnabled: true,
+      layeredForegroundOffsetX: 0,
+      layeredForegroundOffsetY: 0,
+      layeredForegroundScale: 1,
       fpsCap: 60,
       toneMapMode: 'aces',
       toneMapExposure: 1,
@@ -68,6 +112,8 @@ function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof Mu
       renderer: 'gpu',
     },
     onMusicVisualizerShaderSettingsChange: vi.fn(),
+    onMusicVisualizerLayerShaderIdChange: vi.fn(),
+    onMusicVisualizerLayerShaderSettingsChange: vi.fn(),
     onPrevAudio: vi.fn(),
     onNextAudio: vi.fn(),
     onCycleMusicLoopMode: vi.fn(),
@@ -256,10 +302,12 @@ describe('MusicMainSection', () => {
     fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
 
     expect(screen.getByRole('button', { name: 'Default' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Starfield' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Galaxy' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Escape' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Tissue' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Starfield Background' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Galaxy Background' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Escape Background' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Tissue Background' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Galaxy Foreground' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Starfield Foreground' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Fungi' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Nebula' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Rain Drips' })).toBeInTheDocument()
@@ -269,10 +317,12 @@ describe('MusicMainSection', () => {
     fireEvent.mouseLeave(controlsShell)
 
     expect(screen.queryByRole('button', { name: 'Default' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Starfield' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Galaxy' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Escape' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Tissue' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Starfield Background' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Galaxy Background' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Escape Background' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Tissue Background' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Galaxy Foreground' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Starfield Foreground' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Fungi' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Nebula' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Rain Drips' })).toBeNull()
@@ -291,19 +341,51 @@ describe('MusicMainSection', () => {
     expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
     fireEvent.keyDown(renderLongEdgeInput, { key: 'Enter', code: 'Enter' })
 
-    const foregroundBackgroundScaleSlider = screen.getByLabelText(/前景\/背景倍率/)
-    fireEvent.change(foregroundBackgroundScaleSlider, { target: { value: '3.6' } })
-    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ foregroundBackgroundScaleRatio: 3.6 })
-    fireEvent.mouseUp(foregroundBackgroundScaleSlider)
+    const renderScaleCoeffSlider = screen.getByLabelText(/渲染分辨率系数/)
+    fireEvent.change(renderScaleCoeffSlider, { target: { value: '3.6' } })
+    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ renderScaleCoeff: 3.6 })
+    fireEvent.mouseUp(renderScaleCoeffSlider)
 
     fireEvent.change(screen.getByLabelText('渲染帧率上限'), { target: { value: '120' } })
     fireEvent.change(screen.getByLabelText(/Tone Mapping 曝光/), { target: { value: '1.4' } })
     fireEvent.click(screen.getByLabelText('显示 FPS 调试信息'))
 
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ foregroundBackgroundScaleRatio: 3.6 })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ renderScaleCoeff: 3.6 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ fpsCap: 120 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ toneMapExposure: 1.4 })
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ showFps: true })
+  })
+
+  it('分层模式下前景/背景 Shader 选择器会按 layerRole 过滤选项', () => {
+    renderMusicMainSection({
+      musicVisualizerShaderSettings: {
+        renderLongEdgePx: 1280,
+        renderScaleCoeff: 2,
+        compositionMode: 'layered',
+        layeredBackgroundShaderId: 'galaxy',
+        layeredForegroundShaderId: 'mcs-szb',
+        layeredBackgroundEnabled: true,
+        layeredForegroundEnabled: true,
+        layeredForegroundOffsetX: 0,
+        layeredForegroundOffsetY: 0,
+        layeredForegroundScale: 1,
+        fpsCap: 60,
+        toneMapMode: 'aces',
+        toneMapExposure: 1,
+        toneMapStrength: 0.55,
+        showFps: false,
+        renderer: 'gpu',
+      },
+    })
+
+    const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
+    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
+
+    const backgroundSelect = screen.getByLabelText(/背景 Shader/) as HTMLSelectElement
+    const foregroundSelect = screen.getByLabelText(/前景 Shader/) as HTMLSelectElement
+
+    expect(within(backgroundSelect).queryByRole('option', { name: 'Galaxy Foreground' })).toBeNull()
+    expect(within(foregroundSelect).queryByRole('option', { name: 'Galaxy Background' })).toBeNull()
   })
 })

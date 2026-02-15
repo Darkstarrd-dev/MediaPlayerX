@@ -177,7 +177,15 @@ describe('useSettingsPersistence', () => {
     expect(hydrationPatch.musicVisualizerShaderSettingsById).toEqual({
       singularity: {
         renderLongEdgePx: 4096,
-        foregroundBackgroundScaleRatio: 2,
+        renderScaleCoeff: 2,
+        compositionMode: 'single',
+        layeredBackgroundShaderId: 'galaxy',
+        layeredForegroundShaderId: 'mcs-szb',
+        layeredBackgroundEnabled: true,
+        layeredForegroundEnabled: true,
+        layeredForegroundOffsetX: 0,
+        layeredForegroundOffsetY: 0,
+        layeredForegroundScale: 1,
         fpsCap: 120,
         toneMapMode: 'khronos',
         toneMapExposure: 2,

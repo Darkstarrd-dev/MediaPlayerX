@@ -21,7 +21,16 @@ function normalizeShaderSettingEntry(value: unknown): MusicVisualizerShaderSetti
 
   const source = value as Record<string, unknown>
   const renderLongEdgePxRaw = source.renderLongEdgePx
+  const renderScaleCoeffRaw = source.renderScaleCoeff
   const foregroundBackgroundScaleRatioRaw = source.foregroundBackgroundScaleRatio
+  const compositionModeRaw = source.compositionMode
+  const layeredBackgroundShaderIdRaw = source.layeredBackgroundShaderId
+  const layeredForegroundShaderIdRaw = source.layeredForegroundShaderId
+  const layeredBackgroundEnabledRaw = source.layeredBackgroundEnabled
+  const layeredForegroundEnabledRaw = source.layeredForegroundEnabled
+  const layeredForegroundOffsetXRaw = source.layeredForegroundOffsetX
+  const layeredForegroundOffsetYRaw = source.layeredForegroundOffsetY
+  const layeredForegroundScaleRaw = source.layeredForegroundScale
   const fpsCapRaw = source.fpsCap
   const toneMapModeRaw = source.toneMapMode
   const toneMapExposureRaw = source.toneMapExposure
@@ -58,14 +67,39 @@ function normalizeShaderSettingEntry(value: unknown): MusicVisualizerShaderSetti
     return null
   }
 
-  const normalizedForegroundBackgroundScaleRatio =
-    typeof foregroundBackgroundScaleRatioRaw === 'number' && Number.isFinite(foregroundBackgroundScaleRatioRaw)
-      ? Math.max(1, Math.min(5, foregroundBackgroundScaleRatioRaw))
+  const normalizedCompositionMode = compositionModeRaw === 'layered' ? 'layered' : 'single'
+  const normalizedLayeredBackgroundShaderId =
+    typeof layeredBackgroundShaderIdRaw === 'string' ? layeredBackgroundShaderIdRaw.trim().slice(0, 64) : ''
+  const normalizedLayeredForegroundShaderId =
+    typeof layeredForegroundShaderIdRaw === 'string' ? layeredForegroundShaderIdRaw.trim().slice(0, 64) : ''
+
+  const normalizedRenderScaleCoeff =
+    typeof renderScaleCoeffRaw === 'number' && Number.isFinite(renderScaleCoeffRaw)
+      ? Math.max(1, Math.min(5, renderScaleCoeffRaw))
+      : typeof foregroundBackgroundScaleRatioRaw === 'number' && Number.isFinite(foregroundBackgroundScaleRatioRaw)
+        ? Math.max(1, Math.min(5, foregroundBackgroundScaleRatioRaw))
       : 2
 
   return {
     renderLongEdgePx: Math.max(240, Math.min(4096, Math.floor(renderLongEdgePxRaw))),
-    foregroundBackgroundScaleRatio: normalizedForegroundBackgroundScaleRatio,
+    renderScaleCoeff: normalizedRenderScaleCoeff,
+    compositionMode: normalizedCompositionMode,
+    layeredBackgroundShaderId: normalizedLayeredBackgroundShaderId || 'galaxy',
+    layeredForegroundShaderId: normalizedLayeredForegroundShaderId || DEFAULT_MUSIC_SHADER_ID,
+    layeredBackgroundEnabled: typeof layeredBackgroundEnabledRaw === 'boolean' ? layeredBackgroundEnabledRaw : true,
+    layeredForegroundEnabled: typeof layeredForegroundEnabledRaw === 'boolean' ? layeredForegroundEnabledRaw : true,
+    layeredForegroundOffsetX:
+      typeof layeredForegroundOffsetXRaw === 'number' && Number.isFinite(layeredForegroundOffsetXRaw)
+        ? Math.max(-1, Math.min(1, layeredForegroundOffsetXRaw))
+        : 0,
+    layeredForegroundOffsetY:
+      typeof layeredForegroundOffsetYRaw === 'number' && Number.isFinite(layeredForegroundOffsetYRaw)
+        ? Math.max(-1, Math.min(1, layeredForegroundOffsetYRaw))
+        : 0,
+    layeredForegroundScale:
+      typeof layeredForegroundScaleRaw === 'number' && Number.isFinite(layeredForegroundScaleRaw)
+        ? Math.max(0.25, Math.min(3, layeredForegroundScaleRaw))
+        : 1,
     fpsCap: fpsCapRaw,
     toneMapMode: toneMapModeRaw,
     toneMapExposure: Math.max(0.5, Math.min(2, toneMapExposureRaw)),
@@ -200,7 +234,15 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
       && (next.musicVisualizerRenderer === 'gpu' || next.musicVisualizerRenderer === 'cpu')
       ? {
         renderLongEdgePx: Math.max(240, Math.min(4096, Math.floor(next.musicVisualizerRenderLongEdgePx))),
-        foregroundBackgroundScaleRatio: 2,
+        renderScaleCoeff: 2,
+        compositionMode: 'single',
+        layeredBackgroundShaderId: 'galaxy',
+        layeredForegroundShaderId: DEFAULT_MUSIC_SHADER_ID,
+        layeredBackgroundEnabled: true,
+        layeredForegroundEnabled: true,
+        layeredForegroundOffsetX: 0,
+        layeredForegroundOffsetY: 0,
+        layeredForegroundScale: 1,
         fpsCap: next.musicVisualizerFpsCap,
         toneMapMode: next.musicVisualizerToneMapMode,
         toneMapExposure: Math.max(0.5, Math.min(2, next.musicVisualizerToneMapExposure)),

@@ -250,62 +250,21 @@ const BACKGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in 
 }
 `
 
-const FOREGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  iAmplifiedTime = resolveAmplifiedTime();
-  vec3 foreground = renderForeground(fragCoord);
-  fragColor = vec4(clamp(foreground, 0.0, 1.0), 1.0);
-}
-`
-
-const IMAGE_PASS_SOURCE = String.raw`vec3 screenBlend(vec3 base, vec3 highlight) {
-  return 1.0 - (1.0 - base) * (1.0 - highlight);
-}
-
-void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  vec2 uv = fragCoord / iResolution.xy;
-  vec3 background = texture(iChannel0, uv).rgb;
-  vec3 foreground = texture(iChannel1, uv).rgb;
-
-  float fgEnergy = max(max(foreground.r, foreground.g), foreground.b);
-  float fgMask = smoothstep(0.005, 0.10, fgEnergy);
-  fgMask = max(fgMask, 0.22 * step(0.002, fgEnergy));
-
-  vec3 boostedForeground = foreground * 1.35;
-  vec3 color = mix(background, screenBlend(background, boostedForeground), fgMask);
-
-  fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
-}
-`
-
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'galaxy',
-  label: 'Galaxy',
-  fragmentSource: IMAGE_PASS_SOURCE,
+  label: 'Galaxy Background',
+  layerRole: 'background',
+  fragmentSource: BACKGROUND_PASS_SOURCE,
   commonSource: COMMON_SOURCE,
   multiPass: {
     commonSource: COMMON_SOURCE,
     passes: [
       {
-        id: 'galaxy-background',
-        fragmentSource: BACKGROUND_PASS_SOURCE,
-        output: 'buffer',
-        channels: [{ kind: 'audio' }],
-      },
-      {
-        id: 'galaxy-foreground',
-        fragmentSource: FOREGROUND_PASS_SOURCE,
-        output: 'buffer',
-        channels: [{ kind: 'audio' }],
-      },
-      {
         id: 'galaxy-image',
-        fragmentSource: IMAGE_PASS_SOURCE,
+        fragmentSource: BACKGROUND_PASS_SOURCE,
         output: 'screen',
         toneMap: true,
-        channels: [
-          { kind: 'pass', passId: 'galaxy-background' },
-          { kind: 'pass', passId: 'galaxy-foreground' },
-        ],
+        channels: [{ kind: 'audio' }],
       },
     ],
   },

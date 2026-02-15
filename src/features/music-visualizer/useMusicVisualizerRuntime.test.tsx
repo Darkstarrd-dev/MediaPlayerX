@@ -30,20 +30,42 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
   return {
     shader,
+    shaderById: new Map<string, MutableTestShader>(),
     webglConstructorCount: 0,
+    webglConstructedShaders: [] as Array<{
+      id: string
+      multiPass?: {
+        passes: Array<{
+          id: string
+          output?: 'buffer' | 'screen'
+          toneMap?: boolean
+        }>
+      }
+    }>,
     webglRenderCalls: [] as Array<{
       width: number
       height: number
       toneMapMode: string
       toneMapExposure: number
       toneMapStrength: number
+      foregroundOffsetX: number
+      foregroundOffsetY: number
+      foregroundScale: number
     }>,
   }
 })
 
 vi.mock('./shaderRegistry', () => ({
   resolveDefaultMusicVisualizerShader: () => shared.shader,
-  resolveMusicVisualizerShaderById: (id: string | null | undefined) => (id === shared.shader.id ? shared.shader : null),
+  resolveMusicVisualizerShaderById: (id: string | null | undefined) => {
+    if (!id) {
+      return null
+    }
+    if (id === shared.shader.id) {
+      return shared.shader
+    }
+    return shared.shaderById.get(id) ?? null
+  },
 }))
 
 vi.mock('./audioAnalyser', () => {
@@ -93,6 +115,7 @@ vi.mock('./webglRenderer', () => {
     constructor(_canvas: HTMLCanvasElement, shader: { id: string }) {
       this.shaderId = shader.id
       shared.webglConstructorCount += 1
+      shared.webglConstructedShaders.push(shader)
     }
 
     resize = vi.fn()
@@ -103,6 +126,9 @@ vi.mock('./webglRenderer', () => {
       toneMapMode: string
       toneMapExposure: number
       toneMapStrength: number
+      foregroundOffsetX: number
+      foregroundOffsetY: number
+      foregroundScale: number
     }) {
       shared.webglRenderCalls.push({
         width: input.width,
@@ -110,6 +136,9 @@ vi.mock('./webglRenderer', () => {
         toneMapMode: input.toneMapMode,
         toneMapExposure: input.toneMapExposure,
         toneMapStrength: input.toneMapStrength,
+        foregroundOffsetX: input.foregroundOffsetX,
+        foregroundOffsetY: input.foregroundOffsetY,
+        foregroundScale: input.foregroundScale,
       })
     }
 
@@ -148,7 +177,11 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     delete shared.shader.multiPass
     delete shared.shader.renderScale
 
+    shared.shaderById.clear()
+    shared.shaderById.set(shared.shader.id, shared.shader)
+
     shared.webglConstructorCount = 0
+    shared.webglConstructedShaders.length = 0
     shared.webglRenderCalls.length = 0
 
     rafNow = 0
@@ -207,7 +240,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         toneMapExposure: 0.5,
         toneMapStrength: 0,
         selectedShaderId: 'test-shader',
-        foregroundBackgroundScaleRatio: 2,
+        renderScaleCoeff: 1,
       },
     })
 
@@ -236,7 +269,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
       toneMapExposure: 2,
       toneMapStrength: 1,
       selectedShaderId: 'test-shader',
-      foregroundBackgroundScaleRatio: 2,
+      renderScaleCoeff: 1,
     })
 
     flushFrame(20)
@@ -283,7 +316,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         active: true,
         preferredRenderer: 'gpu',
         renderLongEdgePx: 400,
-        foregroundBackgroundScaleRatio: 1,
+        renderScaleCoeff: 1,
         fpsCap: 60,
         toneMapMode: 'aces',
         toneMapExposure: 1,
@@ -303,7 +336,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
       active: true,
       preferredRenderer: 'gpu',
       renderLongEdgePx: 400,
-      foregroundBackgroundScaleRatio: 5,
+      renderScaleCoeff: 5,
       fpsCap: 60,
       toneMapMode: 'aces',
       toneMapExposure: 1,
@@ -378,7 +411,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
           active: true,
           preferredRenderer: 'gpu',
           renderLongEdgePx: 400,
-          foregroundBackgroundScaleRatio: 1,
+          renderScaleCoeff: 1,
           fpsCap: 60,
           toneMapMode: 'aces',
           toneMapExposure: 1,
@@ -398,7 +431,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         active: true,
         preferredRenderer: 'gpu',
         renderLongEdgePx: 400,
-        foregroundBackgroundScaleRatio: 5,
+        renderScaleCoeff: 5,
         fpsCap: 60,
         toneMapMode: 'aces',
         toneMapExposure: 1,
@@ -413,5 +446,85 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
       unmount()
     }
+  })
+
+  it('layered 模式仅在最终合成 pass 启用 tone mapping，并传递前景变换参数', () => {
+    const backgroundShader: MutableTestShader = {
+      id: 'bg-shader',
+      label: 'Background Shader',
+      fragmentSource: shared.shader.fragmentSource,
+      multiPass: {
+        passes: [
+          { id: 'bg-buffer', fragmentSource: shared.shader.fragmentSource, output: 'buffer' },
+          { id: 'bg-image', fragmentSource: shared.shader.fragmentSource, output: 'screen' },
+        ],
+      },
+    }
+
+    const foregroundShader: MutableTestShader = {
+      id: 'fg-shader',
+      label: 'Foreground Shader',
+      fragmentSource: shared.shader.fragmentSource,
+    }
+
+    shared.shaderById.set(backgroundShader.id, backgroundShader)
+    shared.shaderById.set(foregroundShader.id, foregroundShader)
+
+    const container = document.createElement('div')
+    Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true })
+    Object.defineProperty(container, 'clientHeight', { value: 600, configurable: true })
+    const canvas = document.createElement('canvas')
+    container.appendChild(canvas)
+    document.body.appendChild(container)
+
+    const audio = document.createElement('audio')
+    const canvasRef = { current: canvas }
+    const audioRef = { current: audio }
+
+    renderHook((props: Parameters<typeof useMusicVisualizerRuntime>[0]) => useMusicVisualizerRuntime(props), {
+      initialProps: {
+        canvasRef,
+        audioRef,
+        active: true,
+        preferredRenderer: 'gpu',
+        renderLongEdgePx: 800,
+        renderScaleCoeff: 1,
+        compositionMode: 'layered',
+        layeredBackgroundShaderId: backgroundShader.id,
+        layeredForegroundShaderId: foregroundShader.id,
+        layeredBackgroundEnabled: true,
+        layeredForegroundEnabled: true,
+        layeredBackgroundRenderScaleCoeff: 1.5,
+        layeredForegroundRenderScaleCoeff: 1.2,
+        layeredForegroundOffsetX: 0.2,
+        layeredForegroundOffsetY: -0.15,
+        layeredForegroundScale: 1.3,
+        fpsCap: 60,
+        toneMapMode: 'aces',
+        toneMapExposure: 1,
+        toneMapStrength: 0.5,
+        selectedShaderId: 'test-shader',
+      },
+    })
+
+    flushFrame(20)
+
+    const constructedShader = shared.webglConstructedShaders.at(-1)
+    expect(constructedShader?.id.startsWith('layered:')).toBe(true)
+
+    const passes = constructedShader?.multiPass?.passes ?? []
+    expect(passes.length).toBeGreaterThan(0)
+
+    const toneMappedPasses = passes.filter((pass) => pass.toneMap === true)
+    expect(toneMappedPasses).toHaveLength(1)
+    expect(toneMappedPasses[0]?.id).toBe('compose-screen')
+
+    const nonFinalToneMappedPasses = passes.filter((pass) => pass.id !== 'compose-screen' && pass.toneMap === true)
+    expect(nonFinalToneMappedPasses).toHaveLength(0)
+
+    const renderedFrame = shared.webglRenderCalls.at(-1)
+    expect(renderedFrame?.foregroundOffsetX).toBeCloseTo(0.2, 5)
+    expect(renderedFrame?.foregroundOffsetY).toBeCloseTo(-0.15, 5)
+    expect(renderedFrame?.foregroundScale).toBeCloseTo(1.3, 5)
   })
 })

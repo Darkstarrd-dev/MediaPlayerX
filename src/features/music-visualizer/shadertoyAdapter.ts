@@ -91,6 +91,8 @@ uniform float iAudioBeat;
 uniform int iToneMapMode;
 uniform float iToneMapExposure;
 uniform float iToneMapStrength;
+uniform vec2 iForegroundOffset;
+uniform float iForegroundScale;
 
 out vec4 outColor;
 

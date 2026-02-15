@@ -33,6 +33,8 @@
 - `iChannelResolution[4]`（`vec3[4]`）
 - `iAudioLevel`（`float`，舒适化平滑音量包络）
 - `iAudioBeat`（`float`，舒适化节拍脉冲包络）
+- `iForegroundOffset`（`vec2`，仅分层合成时用于前景平移）
+- `iForegroundScale`（`float`，仅分层合成时用于前景缩放）
 
 ### 2.2.1 多 Pass 运行时约束
 
@@ -42,6 +44,9 @@
   - `output=screen` pass 必须位于 pass 列表末尾。
   - `feedback=true` 的 pass 通道读取上一帧同 pass 纹理（ping-pong）。
   - 中间 pass 不做 Tone Mapping；末尾 screen pass 可启用 Tone Mapping。
+- 分层合成（`layered`）额外约束：
+  - 前景/背景 shader 在运行时被编排为中间 buffer pass。
+  - Tone Mapping 只允许在最终 `compose-screen` pass 执行一次。
 
 ### 2.3 音频纹理约定
 
@@ -106,6 +111,19 @@
 
 6. **文档同步**
    - 更新本手册中的“已知问题与规避策略”与“变更记录”。
+
+## 3.1 分层合成配置（Layered Composition）
+
+- 入口配置（`musicVisualizerShaderSettingsSchema`）：
+  - `compositionMode`: `single | layered`
+  - `renderScaleCoeff`: 全局渲染分辨率系数（替代旧 `foregroundBackgroundScaleRatio`）
+  - `layeredBackgroundShaderId` / `layeredForegroundShaderId`
+  - `layeredBackgroundEnabled` / `layeredForegroundEnabled`
+  - `layeredForegroundOffsetX` / `layeredForegroundOffsetY`
+  - `layeredForegroundScale`
+- 兼容迁移：
+  - 持久化读取时若存在旧字段 `foregroundBackgroundScaleRatio`，自动迁移到 `renderScaleCoeff`。
+  - 新字段缺失时回填默认值，避免历史配置导致运行时崩溃。
 
 ## 4. 高频问题与规避策略
 
@@ -289,8 +307,20 @@
 - 适配说明：
   - 背景原版依赖 `iMouse`，运行时改为 `iAudioLevel`/`iAudioBeat` 驱动时间偏移。
   - 背景 `iChannel0` 贴图使用本地纹理 `src/assets/iChannel1.png`，避免程序化近似导致的复杂度损失与接缝放大。
-  - 前景保留原始环形柱结构，输入来自 `iChannel0` 音频纹理。
-  - 最终合成 pass 采用 screen blend，前景作为高亮层覆盖背景。
+   - 前景保留原始环形柱结构，输入来自 `iChannel0` 音频纹理。
+   - 最终合成 pass 采用 screen blend，前景作为高亮层覆盖背景。
+
+## 6.8 分层架构重构（2026-02-15）
+
+- 目的：把“单 Shader 内部复合”升级为“运行时可组合复合”。
+- 关键变更：
+  - `galaxy/starfield/escape/tissue` 拆分为背景与前景独立 shader：
+    - 背景：`galaxy.ts` / `starfield.ts` / `escape.ts` / `tissue.ts`
+    - 前景：`galaxyforeground.ts` / `starfieldforeground.ts` / `escapeforeground.ts` / `tissueforeground.ts`
+  - `Default (mcs-szb)` 标记为前景角色（`layerRole: 'foreground'`）。
+  - UI 新增 `single/layered` 模式切换、分层启停、前景偏移与缩放控制。
+  - 分层选择器按 `layerRole` 过滤，避免把纯前景 shader 误选为背景（反之亦然）。
+  - Tone Mapping 在分层模式下仅在最终合成 pass 生效。
 
 ## 7. 变更记录（持续追加）
 
@@ -308,3 +338,9 @@
   - 新增 `Tissue` Shader，来源 `https://www.shadertoy.com/view/XdBSzd` + `https://www.shadertoy.com/view/4cBXDz`，完成背景与前景多 Pass 复合接入。
   - Tone Mapping 模式扩展为 `off/reinhard/aces/filmic/agx/khronos`，由统一后处理管线驱动。
   - Tone Mapping / FPS / 渲染长边切换改为热更新，减少运行时重建引发的不稳定。
+- 2026-02-15
+  - 引入分层合成模式（`single/layered`），支持前景/背景独立 shader 选择与开关。
+  - 旧 `foregroundBackgroundScaleRatio` 迁移为 `renderScaleCoeff`。
+  - 新增前景全局变换：`iForegroundOffset`、`iForegroundScale`。
+  - 拆分 `galaxy/starfield/escape/tissue` 为背景 + `*foreground` 独立 shader。
+  - 分层模式下 Tone Mapping 改为仅最终合成 pass 执行一次。

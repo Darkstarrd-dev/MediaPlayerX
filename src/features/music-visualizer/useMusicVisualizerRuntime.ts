@@ -4,6 +4,10 @@ import { MusicAudioAnalyser } from './audioAnalyser'
 import { CpuMusicVisualizerRenderer } from './cpuRenderer'
 import { resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from './shaderRegistry'
 import type {
+  MusicVisualizerShaderChannelSource,
+  MusicVisualizerShaderDefinition,
+  MusicVisualizerShaderPassDefinition,
+  MusicVisualizerShaderTextureDefinition,
   MusicVisualizerRenderer,
   MusicVisualizerRendererMode,
   MusicVisualizerStats,
@@ -46,7 +50,17 @@ interface UseMusicVisualizerRuntimeParams {
   toneMapExposure: number
   toneMapStrength: number
   selectedShaderId: string | null
-  foregroundBackgroundScaleRatio?: number
+  renderScaleCoeff?: number
+  compositionMode?: 'single' | 'layered'
+  layeredBackgroundShaderId?: string | null
+  layeredForegroundShaderId?: string | null
+  layeredBackgroundEnabled?: boolean
+  layeredForegroundEnabled?: boolean
+  layeredBackgroundRenderScaleCoeff?: number
+  layeredForegroundRenderScaleCoeff?: number
+  layeredForegroundOffsetX?: number
+  layeredForegroundOffsetY?: number
+  layeredForegroundScale?: number
 }
 
 interface UseMusicVisualizerRuntimeResult {
@@ -83,6 +97,162 @@ function resolveContainerSize(canvas: HTMLCanvasElement): { width: number; heigh
   }
 }
 
+function clampRenderScaleCoeff(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 1
+  }
+  return Math.max(1, Math.min(5, value))
+}
+
+function prefixChannelSource(
+  source: MusicVisualizerShaderChannelSource,
+  prefix: string,
+): MusicVisualizerShaderChannelSource {
+  if (source.kind === 'pass') {
+    return {
+      ...source,
+      passId: `${prefix}${source.passId}`,
+    }
+  }
+  if (source.kind === 'texture') {
+    return {
+      ...source,
+      textureId: `${prefix}${source.textureId}`,
+    }
+  }
+  return source
+}
+
+function composeLayeredShader(params: {
+  backgroundShader: MusicVisualizerShaderDefinition | null
+  foregroundShader: MusicVisualizerShaderDefinition | null
+  backgroundEnabled: boolean
+  foregroundEnabled: boolean
+  backgroundScaleCoeff: number
+  foregroundScaleCoeff: number
+}): MusicVisualizerShaderDefinition | null {
+  const {
+    backgroundShader,
+    foregroundShader,
+    backgroundEnabled,
+    foregroundEnabled,
+    backgroundScaleCoeff,
+    foregroundScaleCoeff,
+  } = params
+
+  if (!backgroundEnabled && !foregroundEnabled) {
+    return null
+  }
+
+  const textures: MusicVisualizerShaderTextureDefinition[] = []
+  const passes: MusicVisualizerShaderPassDefinition[] = []
+
+  const appendShaderAsBuffer = (
+    shader: MusicVisualizerShaderDefinition,
+    prefix: string,
+    defaultScaleCoeff: number,
+  ): string => {
+    const commonSource = shader.multiPass?.commonSource ?? shader.commonSource
+    let finalPassId = ''
+
+    if (shader.multiPass && shader.multiPass.passes.length > 0) {
+      for (const texture of shader.multiPass.textures ?? []) {
+        textures.push({
+          ...texture,
+          id: `${prefix}${texture.id}`,
+        })
+      }
+
+      const sourcePasses = shader.multiPass.passes
+      const explicitScreenIndex = sourcePasses.findIndex((pass) => pass.output === 'screen')
+      const screenPassIndex = explicitScreenIndex >= 0 ? explicitScreenIndex : sourcePasses.length - 1
+
+      for (let index = 0; index < sourcePasses.length; index += 1) {
+        const sourcePass = sourcePasses[index]
+        const passId = `${prefix}${sourcePass.id}`
+        finalPassId = index === screenPassIndex ? passId : finalPassId
+
+        const scopedSource = commonSource
+          ? `${commonSource}\n\n${sourcePass.fragmentSource}`
+          : sourcePass.fragmentSource
+
+        passes.push({
+          id: passId,
+          fragmentSource: scopedSource,
+          output: 'buffer',
+          toneMap: false,
+          renderScale: clampRenderScaleCoeff((sourcePass.renderScale ?? 1) * defaultScaleCoeff),
+          channels: (sourcePass.channels ?? []).map((channel) => {
+            if (!channel) {
+              return null
+            }
+            return prefixChannelSource(channel, prefix)
+          }),
+        })
+      }
+
+      return finalPassId
+    }
+
+    finalPassId = `${prefix}image`
+    const scopedSource = commonSource ? `${commonSource}\n\n${shader.fragmentSource}` : shader.fragmentSource
+    passes.push({
+      id: finalPassId,
+      fragmentSource: scopedSource,
+      output: 'buffer',
+      toneMap: false,
+      renderScale: clampRenderScaleCoeff((shader.renderScale ?? 1) * defaultScaleCoeff),
+      channels: [{ kind: 'audio' }, null, null, null],
+    })
+    return finalPassId
+  }
+
+  const backgroundPassId = backgroundEnabled && backgroundShader
+    ? appendShaderAsBuffer(backgroundShader, 'bg_', backgroundScaleCoeff)
+    : ''
+  const foregroundPassId = foregroundEnabled && foregroundShader
+    ? appendShaderAsBuffer(foregroundShader, 'fg_', foregroundScaleCoeff)
+    : ''
+
+  passes.push({
+    id: 'compose-screen',
+    output: 'screen',
+    toneMap: true,
+    fragmentSource: String.raw`vec3 screenBlend(vec3 base, vec3 layer) {
+  return 1.0 - (1.0 - base) * (1.0 - layer);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 uv = fragCoord / iResolution.xy;
+  vec3 background = texture(iChannel0, uv).rgb;
+
+  vec2 centered = (uv - vec2(0.5)) / max(iForegroundScale, 0.0001) + vec2(0.5);
+  vec2 foregroundUv = centered - iForegroundOffset;
+  vec3 foreground = texture(iChannel1, foregroundUv).rgb;
+
+  vec3 color = screenBlend(background, foreground);
+  fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
+}
+`,
+    channels: [
+      backgroundPassId ? { kind: 'pass', passId: backgroundPassId } : null,
+      foregroundPassId ? { kind: 'pass', passId: foregroundPassId } : null,
+      null,
+      null,
+    ],
+  })
+
+  return {
+    id: `layered:${backgroundShader?.id ?? 'none'}:${foregroundShader?.id ?? 'none'}`,
+    label: 'Layered Composite',
+    fragmentSource: passes[passes.length - 1]?.fragmentSource ?? '',
+    multiPass: {
+      textures,
+      passes,
+    },
+  }
+}
+
 export function useMusicVisualizerRuntime({
   canvasRef,
   audioRef,
@@ -94,68 +264,53 @@ export function useMusicVisualizerRuntime({
   toneMapExposure,
   toneMapStrength,
   selectedShaderId,
-  foregroundBackgroundScaleRatio = 2,
+  renderScaleCoeff = 2,
+  compositionMode = 'single',
+  layeredBackgroundShaderId,
+  layeredForegroundShaderId,
+  layeredBackgroundEnabled = true,
+  layeredForegroundEnabled = true,
+  layeredBackgroundRenderScaleCoeff = 2,
+  layeredForegroundRenderScaleCoeff = 2,
+  layeredForegroundOffsetX = 0,
+  layeredForegroundOffsetY = 0,
+  layeredForegroundScale = 1,
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
 
   const shader = useMemo(() => {
-    const matched = resolveMusicVisualizerShaderById(selectedShaderId)
-    const baseShader = matched ?? resolveDefaultMusicVisualizerShader()
-    if (!baseShader || !baseShader.multiPass) {
-      return baseShader
+    const defaultShader = resolveDefaultMusicVisualizerShader()
+    const singleShader = resolveMusicVisualizerShaderById(selectedShaderId) ?? defaultShader
+    if (!singleShader) {
+      return null
     }
 
-    const ratioCapableShaderIds = new Set(['rain-drips', 'galaxy', 'starfield', 'escape', 'tissue'])
-    if (!ratioCapableShaderIds.has(baseShader.id)) {
-      return baseShader
+    if (compositionMode !== 'layered') {
+      return singleShader
     }
 
-    const ratio = Math.max(1, Math.min(5, foregroundBackgroundScaleRatio))
+    const backgroundShader = resolveMusicVisualizerShaderById(layeredBackgroundShaderId) ?? singleShader
+    const foregroundShader = resolveMusicVisualizerShaderById(layeredForegroundShaderId) ?? defaultShader ?? singleShader
 
-    const backgroundPassIdsByShaderId: Record<string, readonly string[]> = {
-      'rain-drips': ['buffer-a', 'buffer-b'],
-      galaxy: ['galaxy-background'],
-      starfield: ['starfield-background'],
-      escape: ['escape-buffer-a', 'escape-background'],
-      tissue: ['tissue-background'],
-    }
-    const foregroundPassIdByShaderId: Record<string, string> = {
-      'rain-drips': 'foreground-audio',
-      galaxy: 'galaxy-foreground',
-      starfield: 'starfield-foreground',
-      escape: 'escape-foreground',
-      tissue: 'tissue-foreground',
-    }
-
-    const backgroundPassIds = new Set(backgroundPassIdsByShaderId[baseShader.id] ?? [])
-    const foregroundPassId = foregroundPassIdByShaderId[baseShader.id]
-
-    return {
-      ...baseShader,
-      renderScale: ratio,
-      multiPass: {
-        ...baseShader.multiPass,
-        passes: baseShader.multiPass.passes.map((pass) => {
-          if (pass.id === foregroundPassId) {
-            return {
-              ...pass,
-              renderScale: 1,
-            }
-          }
-
-          if (backgroundPassIds.has(pass.id)) {
-            return {
-              ...pass,
-              renderScale: 1 / ratio,
-            }
-          }
-
-          return pass
-        }),
-      },
-    }
-  }, [foregroundBackgroundScaleRatio, selectedShaderId])
+    return composeLayeredShader({
+      backgroundShader,
+      foregroundShader,
+      backgroundEnabled: layeredBackgroundEnabled,
+      foregroundEnabled: layeredForegroundEnabled,
+      backgroundScaleCoeff: layeredBackgroundRenderScaleCoeff,
+      foregroundScaleCoeff: layeredForegroundRenderScaleCoeff,
+    })
+  }, [
+    compositionMode,
+    layeredBackgroundEnabled,
+    layeredBackgroundRenderScaleCoeff,
+    layeredBackgroundShaderId,
+    layeredForegroundEnabled,
+    layeredForegroundRenderScaleCoeff,
+    layeredForegroundShaderId,
+    selectedShaderId,
+  ])
   const audioAnalyserRef = useRef<MusicAudioAnalyser | null>(null)
   const runtimeSettingsRef = useRef({
     fpsCap,
@@ -216,7 +371,10 @@ export function useMusicVisualizerRuntime({
       return
     }
 
-    const shaderRenderScale = Math.max(MIN_SHADER_RENDER_SCALE, Math.min(MAX_SHADER_RENDER_SCALE, shader.renderScale ?? 1))
+    const shaderRenderScale = Math.max(
+      MIN_SHADER_RENDER_SCALE,
+      Math.min(MAX_SHADER_RENDER_SCALE, (shader.renderScale ?? 1) * clampRenderScaleCoeff(renderScaleCoeff)),
+    )
     const resolveEffectiveToneMap = (): {
       mode: MusicVisualizerToneMapMode
       exposure: number
@@ -256,7 +414,7 @@ export function useMusicVisualizerRuntime({
       const hasWebgl2 = Boolean(probeWebglCanvas.getContext('webgl2'))
       const hasCanvas2d = Boolean(probe2dCanvas.getContext('2d'))
       const snapshot = resolveEffectiveToneMap()
-      return `shader=${shader.id}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${runtimeSettingsRef.current.fpsCap}, toneMap=${snapshot.mode}@${snapshot.exposure.toFixed(2)}*${snapshot.strength.toFixed(2)}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
+      return `shader=${shader.id}, mode=${compositionMode}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${runtimeSettingsRef.current.fpsCap}, toneMap=${snapshot.mode}@${snapshot.exposure.toFixed(2)}*${snapshot.strength.toFixed(2)}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
     }
 
     const runtimeProbeInfo = resolveRuntimeProbeInfo()
@@ -379,6 +537,9 @@ export function useMusicVisualizerRuntime({
           toneMapMode: smoothedToneMapMode,
           toneMapExposure: smoothedToneMapExposure,
           toneMapStrength: smoothedToneMapStrength,
+          foregroundOffsetX: Math.max(-1, Math.min(1, layeredForegroundOffsetX)),
+          foregroundOffsetY: Math.max(-1, Math.min(1, layeredForegroundOffsetY)),
+          foregroundScale: Math.max(0.25, Math.min(3, layeredForegroundScale)),
         })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
@@ -426,7 +587,18 @@ export function useMusicVisualizerRuntime({
       window.cancelAnimationFrame(animationFrameId)
       renderer?.dispose()
     }
-  }, [active, audioRef, canvasRef, preferredRenderer, shader])
+  }, [
+    active,
+    audioRef,
+    canvasRef,
+    compositionMode,
+    layeredForegroundOffsetX,
+    layeredForegroundOffsetY,
+    layeredForegroundScale,
+    preferredRenderer,
+    renderScaleCoeff,
+    shader,
+  ])
 
   return {
     stats,

@@ -15,6 +15,10 @@ describe('shaderRegistry', () => {
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'rain-drips')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'escape')).toBe(true)
     expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'tissue')).toBe(true)
+    expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'galaxyforeground')).toBe(true)
+    expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'starfieldforeground')).toBe(true)
+    expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'escapeforeground')).toBe(true)
+    expect(MUSIC_VISUALIZER_SHADERS.some((shader) => shader.id === 'tissueforeground')).toBe(true)
   })
 
   it('resolves default shader entry', () => {

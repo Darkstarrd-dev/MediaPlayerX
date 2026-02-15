@@ -183,54 +183,21 @@ const BACKGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in 
 }
 `
 
-const FOREGROUND_PASS_SOURCE = String.raw`void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  vec3 foreground = renderForeground(fragCoord);
-  fragColor = vec4(foreground, 1.0);
-}
-`
-
-const IMAGE_PASS_SOURCE = String.raw`vec3 screenBlend(vec3 base, vec3 highlight) {
-  return 1.0 - (1.0 - base) * (1.0 - highlight);
-}
-
-void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  vec2 uv = fragCoord / iResolution.xy;
-  vec3 background = texture(iChannel0, uv).rgb;
-  vec3 foreground = texture(iChannel1, uv).rgb;
-  vec3 col = screenBlend(background, foreground);
-  fragColor = vec4(col, 1.0);
-}
-`
-
 export const SHADER: MusicVisualizerShaderDefinition = {
   id: 'starfield',
-  label: 'Starfield',
-  fragmentSource: IMAGE_PASS_SOURCE,
+  label: 'Starfield Background',
+  layerRole: 'background',
+  fragmentSource: BACKGROUND_PASS_SOURCE,
   commonSource: COMMON_SOURCE,
   multiPass: {
     commonSource: COMMON_SOURCE,
     passes: [
       {
-        id: 'starfield-background',
-        fragmentSource: BACKGROUND_PASS_SOURCE,
-        output: 'buffer',
-        channels: [{ kind: 'audio' }],
-      },
-      {
-        id: 'starfield-foreground',
-        fragmentSource: FOREGROUND_PASS_SOURCE,
-        output: 'buffer',
-        channels: [{ kind: 'audio' }],
-      },
-      {
         id: 'starfield-image',
-        fragmentSource: IMAGE_PASS_SOURCE,
+        fragmentSource: BACKGROUND_PASS_SOURCE,
         output: 'screen',
         toneMap: true,
-        channels: [
-          { kind: 'pass', passId: 'starfield-background' },
-          { kind: 'pass', passId: 'starfield-foreground' },
-        ],
+        channels: [{ kind: 'audio' }],
       },
     ],
   },

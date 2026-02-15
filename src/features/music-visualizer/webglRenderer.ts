@@ -46,6 +46,8 @@ interface PassUniformLocations {
   toneMapMode: WebGLUniformLocation | null
   toneMapExposure: WebGLUniformLocation | null
   toneMapStrength: WebGLUniformLocation | null
+  foregroundOffset: WebGLUniformLocation | null
+  foregroundScale: WebGLUniformLocation | null
 }
 
 interface PassRenderTarget {
@@ -89,6 +91,9 @@ interface PassUniformInput {
   toneMapModeCode: number
   toneMapExposure: number
   toneMapStrength: number
+  foregroundOffsetX: number
+  foregroundOffsetY: number
+  foregroundScale: number
 }
 
 function compileShader(gl: WebGL2RenderingContext, shaderType: number, source: string): WebGLShader {
@@ -575,6 +580,8 @@ function resolvePassUniformLocations(gl: WebGL2RenderingContext, program: WebGLP
     toneMapMode: gl.getUniformLocation(program, 'iToneMapMode'),
     toneMapExposure: gl.getUniformLocation(program, 'iToneMapExposure'),
     toneMapStrength: gl.getUniformLocation(program, 'iToneMapStrength'),
+    foregroundOffset: gl.getUniformLocation(program, 'iForegroundOffset'),
+    foregroundScale: gl.getUniformLocation(program, 'iForegroundScale'),
   }
 }
 
@@ -697,6 +704,9 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     toneMapMode,
     toneMapExposure,
     toneMapStrength,
+    foregroundOffsetX,
+    foregroundOffsetY,
+    foregroundScale,
   }: MusicVisualizerFrameInput): void {
     this.uploadAudioTexture(frequencyData, waveformData)
     this.ensurePassTargetSizes(width, height)
@@ -749,6 +759,9 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
         toneMapModeCode,
         toneMapExposure,
         toneMapStrength,
+        foregroundOffsetX,
+        foregroundOffsetY,
+        foregroundScale,
       })
 
       gl.drawArrays(gl.TRIANGLES, 0, 3)
@@ -931,6 +944,12 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     }
     if (uniforms.toneMapStrength) {
       gl.uniform1f(uniforms.toneMapStrength, input.toneMapStrength)
+    }
+    if (uniforms.foregroundOffset) {
+      gl.uniform2f(uniforms.foregroundOffset, input.foregroundOffsetX, input.foregroundOffsetY)
+    }
+    if (uniforms.foregroundScale) {
+      gl.uniform1f(uniforms.foregroundScale, input.foregroundScale)
     }
   }
 

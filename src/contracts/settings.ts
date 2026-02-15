@@ -7,11 +7,20 @@ export const searchFieldSchema = z.enum(['all', 'name', 'workTitle', 'circle', '
 export const musicVisualizerFpsCapSchema = z.union([z.literal(30), z.literal(60), z.literal(120)])
 export const musicVisualizerToneMapModeSchema = z.enum(['off', 'reinhard', 'aces', 'filmic', 'agx', 'khronos'])
 export const musicVisualizerRendererSchema = z.enum(['gpu', 'cpu'])
+export const musicVisualizerCompositionModeSchema = z.enum(['single', 'layered'])
 export const paletteModeSchema = z.enum(['day', 'night'])
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
-  foregroundBackgroundScaleRatio: z.number().min(1).max(5).default(2),
+  renderScaleCoeff: z.number().min(1).max(5).default(2),
+  compositionMode: musicVisualizerCompositionModeSchema.default('single'),
+  layeredBackgroundShaderId: z.string().max(64).default('galaxy'),
+  layeredForegroundShaderId: z.string().max(64).default('mcs-szb'),
+  layeredBackgroundEnabled: z.boolean().default(true),
+  layeredForegroundEnabled: z.boolean().default(true),
+  layeredForegroundOffsetX: z.number().min(-1).max(1).default(0),
+  layeredForegroundOffsetY: z.number().min(-1).max(1).default(0),
+  layeredForegroundScale: z.number().min(0.25).max(3).default(1),
   fpsCap: musicVisualizerFpsCapSchema,
   toneMapMode: musicVisualizerToneMapModeSchema,
   toneMapExposure: z.number().min(0.5).max(2),

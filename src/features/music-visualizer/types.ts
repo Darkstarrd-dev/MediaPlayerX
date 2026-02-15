@@ -60,6 +60,7 @@ export interface MusicVisualizerShaderDefinition {
   multiPass?: MusicVisualizerShaderMultiPassDefinition
   defaultEntry?: boolean
   renderScale?: number
+  layerRole?: 'any' | 'foreground' | 'background'
   toneMapPolicy?: MusicVisualizerToneMapPolicy
   toneMapStrengthBias?: number
 }
@@ -76,6 +77,9 @@ export interface MusicVisualizerFrameInput {
   toneMapMode: MusicVisualizerToneMapMode
   toneMapExposure: number
   toneMapStrength: number
+  foregroundOffsetX: number
+  foregroundOffsetY: number
+  foregroundScale: number
 }
 
 export interface MusicVisualizerRenderer {
