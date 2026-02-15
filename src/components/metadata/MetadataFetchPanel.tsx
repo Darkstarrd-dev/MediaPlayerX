@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { MainUiIcon } from '../MainUiIcon'
+import { useI18n } from '../../i18n/useI18n'
 import type { ExternalMetadataResultItemDto, SearchExternalMetadataDebugDto } from '../../contracts/backend'
 import {
   parseExternalMetadataToHitomi,
@@ -169,6 +170,7 @@ function MetadataFetchPanel({
   onClose,
   onSaveParsedMetadata,
 }: MetadataFetchPanelProps) {
+  const { t } = useI18n()
   const [sourceMode, setSourceMode] = useState<SourceMode>('all')
   const [inputId, setInputId] = useState('')
   const [inputText, setInputText] = useState(defaultText)
@@ -415,12 +417,12 @@ function MetadataFetchPanel({
   }
 
   return (
-    <div className="settings-mask" role="dialog" aria-modal="true" aria-label="获取元数据" data-overlay-close="metadata-fetch-panel">
+    <div className="settings-mask" role="dialog" aria-modal="true" aria-label={t('a11y.metadata.fetchDialog')} data-overlay-close="metadata-fetch-panel">
       <section className="settings-panel metadata-fetch-panel" data-overlay-close="metadata-fetch-panel">
         <header className="settings-head metadata-fetch-head">
           <span className="settings-head-spacer" />
-          <h2>获取元数据</h2>
-          <button className="feature-action-btn main-icon-square-btn" type="button" aria-label="关闭" title="关闭" onClick={onClose}>
+          <h2>{t('ui.metadata.fetchTitle')}</h2>
+          <button className="feature-action-btn main-icon-square-btn" type="button" aria-label={t('a11y.common.close')} title={t('tip.common.close')} onClick={onClose}>
             <MainUiIcon name="close" />
           </button>
         </header>
@@ -478,8 +480,8 @@ function MetadataFetchPanel({
                 <button
                   className="feature-action-btn main-icon-square-btn"
                   type="button"
-                  aria-label={loading ? '检索中' : '检索'}
-                  title={loading ? '检索中' : '检索'}
+                  aria-label={loading ? t('a11y.common.searching') : t('a11y.common.search')}
+                  title={loading ? t('tip.common.searching') : t('tip.common.search')}
                   disabled={!canSearch || loading}
                   onClick={() => void runSearch()}
                 >
@@ -519,8 +521,8 @@ function MetadataFetchPanel({
                     <button
                       className="feature-action-btn main-icon-square-btn"
                       type="button"
-                      aria-label="解析"
-                      title="解析"
+                      aria-label={t('a11y.common.parse')}
+                      title={t('tip.common.parse')}
                       disabled={!canParse}
                       onClick={() => {
                         setSelectedSource(source)
@@ -532,8 +534,8 @@ function MetadataFetchPanel({
                     <button
                       className="feature-action-btn main-icon-square-btn"
                       type="button"
-                      aria-label={saving && selectedSource === source ? '保存中' : '保存'}
-                      title={saving && selectedSource === source ? '保存中' : '保存'}
+                      aria-label={saving && selectedSource === source ? t('a11y.common.saving') : t('a11y.common.save')}
+                      title={saving && selectedSource === source ? t('tip.common.saving') : t('tip.common.save')}
                       disabled={!canSave}
                       onClick={() => {
                         setSelectedSource(source)
@@ -577,7 +579,7 @@ function MetadataFetchPanel({
                         </button>
                       </li>
                     ))}
-                    {list.length === 0 ? <li className="metadata-fetch-empty">无结果</li> : null}
+                    {list.length === 0 ? <li className="metadata-fetch-empty">{t('ui.common.noResults')}</li> : null}
                   </ul>
 
                   <div className="metadata-fetch-preview-stack">

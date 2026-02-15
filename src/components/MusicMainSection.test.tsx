@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { I18nProvider } from '../i18n/I18nProvider'
 import type { AudioItem } from '../types'
 import MusicMainSection from './MusicMainSection'
 
@@ -123,7 +124,11 @@ function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof Mu
 }
 
 function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMainSection>> = {}) {
-  return render(<MusicMainSection {...createMusicMainSectionProps(overrides)} />)
+  return render(
+    <I18nProvider>
+      <MusicMainSection {...createMusicMainSectionProps(overrides)} />
+    </I18nProvider>,
+  )
 }
 
 describe('MusicMainSection', () => {
@@ -197,11 +202,19 @@ describe('MusicMainSection', () => {
       focusedAudioSrc: 'mock://audio-1',
     })
 
-    const { rerender } = render(<MusicMainSection {...baseProps} playRequestNonce={0} />)
+    const { rerender } = render(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} playRequestNonce={0} />
+      </I18nProvider>,
+    )
 
     const initialPlayCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
 
-    rerender(<MusicMainSection {...baseProps} playRequestNonce={1} />)
+    rerender(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} playRequestNonce={1} />
+      </I18nProvider>,
+    )
 
     expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(initialPlayCallCount)
   })
@@ -213,15 +226,17 @@ describe('MusicMainSection', () => {
     const pauseCallCount = vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length
 
     rerender(
-      <MusicMainSection
-        {...createMusicMainSectionProps({
-          active: false,
-          interruptByVideoPlayback: true,
-          audios: [makeAudio('track-1')],
-          focusedAudio: makeAudio('track-1'),
-          focusedAudioSrc: 'mock://audio-1',
-        })}
-      />,
+      <I18nProvider>
+        <MusicMainSection
+          {...createMusicMainSectionProps({
+            active: false,
+            interruptByVideoPlayback: true,
+            audios: [makeAudio('track-1')],
+            focusedAudio: makeAudio('track-1'),
+            focusedAudioSrc: 'mock://audio-1',
+          })}
+        />
+      </I18nProvider>,
     )
 
     expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length).toBeGreaterThan(pauseCallCount)
@@ -239,13 +254,25 @@ describe('MusicMainSection', () => {
       focusedAudioSrc: 'mock://audio-track-1',
     })
 
-    const { rerender } = render(<MusicMainSection {...baseProps} />)
+    const { rerender } = render(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} />
+      </I18nProvider>,
+    )
 
     fireEvent.click(screen.getByRole('button', { name: '播放' }))
     const playCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
 
-    rerender(<MusicMainSection {...baseProps} focusedAudio={track2} focusedAudioSrc={null} />)
-    rerender(<MusicMainSection {...baseProps} focusedAudio={track2} focusedAudioSrc="mock://audio-track-2" />)
+    rerender(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} focusedAudio={track2} focusedAudioSrc={null} />
+      </I18nProvider>,
+    )
+    rerender(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} focusedAudio={track2} focusedAudioSrc="mock://audio-track-2" />
+      </I18nProvider>,
+    )
 
     expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(playCallCount)
   })
@@ -424,30 +451,34 @@ describe('MusicMainSection', () => {
 
   it('仅开启单层时按钮标签显示该层 shader，双层关闭时显示透明', () => {
     const { rerender } = render(
-      <MusicMainSection
-        {...createMusicMainSectionProps({
-          musicVisualizerShaderSettings: {
-            ...createMusicMainSectionProps().musicVisualizerShaderSettings,
-            layeredBackgroundEnabled: false,
-            layeredForegroundEnabled: true,
-            layeredForegroundShaderId: 'voxel',
-          },
-        })}
-      />,
+      <I18nProvider>
+        <MusicMainSection
+          {...createMusicMainSectionProps({
+            musicVisualizerShaderSettings: {
+              ...createMusicMainSectionProps().musicVisualizerShaderSettings,
+              layeredBackgroundEnabled: false,
+              layeredForegroundEnabled: true,
+              layeredForegroundShaderId: 'voxel',
+            },
+          })}
+        />
+      </I18nProvider>,
     )
 
     expect(screen.getByRole('button', { name: /^Shader：Voxel/ })).toBeInTheDocument()
 
     rerender(
-      <MusicMainSection
-        {...createMusicMainSectionProps({
-          musicVisualizerShaderSettings: {
-            ...createMusicMainSectionProps().musicVisualizerShaderSettings,
-            layeredBackgroundEnabled: false,
-            layeredForegroundEnabled: false,
-          },
-        })}
-      />,
+      <I18nProvider>
+        <MusicMainSection
+          {...createMusicMainSectionProps({
+            musicVisualizerShaderSettings: {
+              ...createMusicMainSectionProps().musicVisualizerShaderSettings,
+              layeredBackgroundEnabled: false,
+              layeredForegroundEnabled: false,
+            },
+          })}
+        />
+      </I18nProvider>,
     )
 
     expect(screen.getByRole('button', { name: /^Shader：透明/ })).toBeInTheDocument()

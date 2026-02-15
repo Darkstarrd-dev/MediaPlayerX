@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
 import { VideoControlIcon } from './VideoControlIcon'
+import { useI18n } from '../i18n/useI18n'
 import type { VideoItem } from '../types'
 import { videoFitModeLabel, type VideoFitMode } from '../features/media/videoFitMode'
 import { clamp, formatSeconds } from '../utils/ui'
@@ -115,6 +116,7 @@ function VideoMainSection({
   onSaveCover,
   onEnterFullscreen,
 }: VideoMainSectionProps) {
+  const { t } = useI18n()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false)
   const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
@@ -210,8 +212,8 @@ function VideoMainSection({
               <button
                 className="vector-search-btn main-icon-square-btn"
                 type="button"
-                aria-label="删除"
-                title="删除"
+                aria-label={t('a11y.common.delete')}
+                title={t('tip.common.delete')}
                 disabled={!canManageDelete || pendingManageAction}
                 onClick={onManageDelete}
               >
@@ -220,8 +222,8 @@ function VideoMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="隐藏"
-                title="隐藏"
+                aria-label={t('a11y.common.hide')}
+                title={t('tip.common.hide')}
                 disabled={!canManageHide || pendingManageAction}
                 onClick={onManageHide}
               >
@@ -230,8 +232,8 @@ function VideoMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="取消隐藏"
-                title="取消隐藏"
+                aria-label={t('a11y.common.unhide')}
+                title={t('tip.common.unhide')}
                 disabled={!canManageUnhide || pendingManageAction}
                 onClick={onManageUnhide}
               >
@@ -240,8 +242,8 @@ function VideoMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="清空选择"
-                title="清空选择"
+                aria-label={t('a11y.common.clearSelection')}
+                title={t('tip.common.clearSelection')}
                 disabled={pendingManageAction}
                 onClick={onClearManageSelection}
               >
@@ -255,13 +257,13 @@ function VideoMainSection({
           </>
         ) : metadataManageMode ? (
           <>
-            <strong className="main-toolbar-title">元数据管理</strong>
+            <strong className="main-toolbar-title">{t('ui.header.metadataManage')}</strong>
             <div className="toolbar-actions toolbar-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="同步名称"
-                title="同步名称"
+                aria-label={t('a11y.common.syncName')}
+                title={t('tip.common.syncName')}
                 disabled={metadataPending}
                 onClick={onMetadataSyncName}
               >
@@ -280,8 +282,8 @@ function VideoMainSection({
                 <button
                   className="toolbar-icon-btn"
                   type="button"
-                  aria-label="漫画版"
-                  title="漫画版"
+                  aria-label={t('a11y.media.manga')}
+                  title={t('tip.media.manga')}
                   onClick={onJumpToManga}
                 >
                   <span aria-hidden="true">▦</span>
@@ -347,7 +349,7 @@ function VideoMainSection({
         <div className="video-controls-progress">
           <span className="video-progress-time">{`${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
           <input
-            aria-label="进度滑条"
+            aria-label={t('a11y.media.progress')}
             max={durationSec}
             min={0}
             step={0.1}
@@ -370,7 +372,7 @@ function VideoMainSection({
                 aria-expanded={openPopover === 'volume'}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-mute"
-                aria-label={videoMuted ? '取消静音' : '静音'}
+                aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
                 type="button"
                 onClick={onToggleMute}
               >
@@ -379,7 +381,7 @@ function VideoMainSection({
               <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
                 <div className="video-ctrl-volume-axis">
                   <input
-                    aria-label="音量滑条"
+                    aria-label={t('a11y.media.volumeSlider')}
                     className="video-ctrl-volume-range"
                     max={100}
                     min={0}
@@ -467,7 +469,7 @@ function VideoMainSection({
             </div>
 
             <button
-              aria-label="F 全屏"
+              aria-label={t('a11y.media.hotkeyFullscreen')}
               className="video-action-btn video-action-fullscreen video-fullscreen-btn"
               type="button"
               onClick={onEnterFullscreen}
@@ -517,24 +519,24 @@ function VideoMainSection({
           </div>
 
           <div className="video-controls-group is-center">
-            <button aria-label="上一个" className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
+            <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
               <VideoControlIcon name="prev" />
             </button>
             <button
-              aria-label={videoPlaying ? '暂停' : '播放'}
+              aria-label={videoPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
               className="video-action-btn video-action-play"
               type="button"
               onClick={onTogglePlay}
             >
               <VideoControlIcon name={videoPlaying ? 'pause' : 'play'} />
             </button>
-            <button aria-label="下一个" className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
+            <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
               <VideoControlIcon name="next" />
             </button>
           </div>
 
           <div className="video-controls-group is-right">
-            <button aria-label="Save as cover" className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
+            <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
               <VideoControlIcon name="camera" />
             </button>
             <button

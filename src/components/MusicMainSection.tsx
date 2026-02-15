@@ -5,6 +5,7 @@ import { MusicControlIcon } from './MusicControlIcon'
 import { resolveLoopModeIconName, resolveMusicToolbarSummary } from './musicMainSectionUtils'
 import { useFullscreenFloatingControls } from './useFullscreenFloatingControls'
 import type { AppSettings } from '../contracts/settings'
+import { useI18n } from '../i18n/useI18n'
 import type { AudioItem, MusicLoopMode } from '../types'
 import {
   emitMusicPlaybackState,
@@ -102,6 +103,7 @@ function MusicMainSection({
   onNextAudio,
   onCycleMusicLoopMode,
 }: MusicMainSectionProps) {
+  const { t } = useI18n()
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const visualizerGpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const visualizerCpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -543,7 +545,7 @@ function MusicMainSection({
       <div className="music-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(clampedAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
         <input
-          aria-label="音乐进度滑条"
+          aria-label={t('a11y.music.progress')}
           max={Math.max(0, audioDurationSec)}
           min={0}
           step={0.1}
@@ -571,7 +573,7 @@ function MusicMainSection({
               aria-controls="music-main-popover-volume"
               aria-expanded={openPopover === 'volume'}
               aria-haspopup="dialog"
-              aria-label={audioMuted ? '取消静音' : '静音'}
+              aria-label={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               className="video-action-btn"
               type="button"
               onClick={() => setAudioMuted((value) => !value)}
@@ -588,7 +590,7 @@ function MusicMainSection({
             >
               <div className="music-ctrl-volume-axis">
                 <input
-                  aria-label="音量滑条"
+                  aria-label={t('a11y.media.volumeSlider')}
                   className="music-ctrl-volume-range"
                   max={100}
                   min={0}
@@ -913,11 +915,11 @@ function MusicMainSection({
         </div>
 
         <div className="music-controls-group is-center">
-          <button aria-label="上一个" className="video-action-btn" disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
+          <button aria-label={t('a11y.media.prev')} className="video-action-btn" disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
             <MusicControlIcon name="prev" />
           </button>
           <button
-            aria-label={audioPlaying ? '暂停' : '播放'}
+            aria-label={audioPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
             className="video-action-btn"
             disabled={!focusedAudioSrc}
             type="button"
@@ -925,25 +927,25 @@ function MusicMainSection({
           >
             <MusicControlIcon name={audioPlaying ? 'pause' : 'play'} />
           </button>
-          <button aria-label="下一个" className="video-action-btn" disabled={!canNextAudio} type="button" onClick={onNextAudio}>
+          <button aria-label={t('a11y.media.next')} className="video-action-btn" disabled={!canNextAudio} type="button" onClick={onNextAudio}>
             <MusicControlIcon name="next" />
           </button>
         </div>
 
         <div className="music-controls-group is-right">
           <button
-            aria-label={fullscreenActive ? '退出全屏' : '全屏'}
+            aria-label={fullscreenActive ? t('a11y.media.exitFullscreen') : t('a11y.media.enterFullscreen')}
             className="video-action-btn"
-            title={fullscreenActive ? '退出全屏' : '全屏'}
+            title={fullscreenActive ? t('tip.media.exitFullscreen') : t('tip.media.enterFullscreen')}
             type="button"
             onClick={onToggleFullscreen}
           >
             <MusicControlIcon name={fullscreenActive ? 'fullscreenCompress' : 'fullscreenExpand'} />
           </button>
           <button
-            aria-label={`循环模式：${musicLoopModeLabel}`}
+            aria-label={t('a11y.music.loopMode', { label: musicLoopModeLabel })}
             className="video-action-btn"
-            title={`循环模式：${musicLoopModeLabel}`}
+            title={t('tip.music.loopMode', { label: musicLoopModeLabel })}
             type="button"
             onClick={onCycleMusicLoopMode}
           >
@@ -965,8 +967,8 @@ function MusicMainSection({
                   <button
                     className="vector-search-btn main-icon-square-btn"
                     type="button"
-                    aria-label="删除"
-                    title="删除"
+                    aria-label={t('a11y.common.delete')}
+                    title={t('tip.common.delete')}
                     disabled={!canManageDelete || pendingManageAction}
                     onClick={onManageDelete}
                   >
@@ -975,8 +977,8 @@ function MusicMainSection({
                   <button
                     className="feature-action-btn main-icon-square-btn"
                     type="button"
-                    aria-label="清空选择"
-                    title="清空选择"
+                    aria-label={t('a11y.common.clearSelection')}
+                    title={t('tip.common.clearSelection')}
                     disabled={pendingManageAction}
                     onClick={onClearManageSelection}
                   >
@@ -990,7 +992,7 @@ function MusicMainSection({
               </>
             ) : metadataManageMode ? (
               <>
-                <strong className="main-toolbar-title">元数据管理</strong>
+                <strong className="main-toolbar-title">{t('ui.header.metadataManage')}</strong>
                 {manageOperationHint ? (
                   <div className="toolbar-actions toolbar-actions-manage">
                     <span className="main-toolbar-hint">{manageOperationHint}</span>
@@ -1005,17 +1007,17 @@ function MusicMainSection({
                 {canJumpToManga || canJumpToAnimation || canJumpToBooklet ? (
                   <div className="toolbar-actions">
                     {canJumpToManga ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label="漫画版" title="漫画版" onClick={onJumpToManga}>
+                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.manga')} title={t('tip.media.manga')} onClick={onJumpToManga}>
                         <span aria-hidden="true">▦</span>
                       </button>
                     ) : null}
                     {canJumpToAnimation ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label="动画版" title="动画版" onClick={onJumpToAnimation}>
+                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.animation')} title={t('tip.media.animation')} onClick={onJumpToAnimation}>
                         <span aria-hidden="true">▧</span>
                       </button>
                     ) : null}
                     {canJumpToBooklet ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label="Booklet" title="Booklet" onClick={onJumpToBooklet}>
+                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.booklet')} title={t('tip.media.booklet')} onClick={onJumpToBooklet}>
                         <span aria-hidden="true">▤</span>
                       </button>
                     ) : null}
@@ -1027,7 +1029,7 @@ function MusicMainSection({
 
           <div
             className={`name-list music-name-list music-visualizer${fullscreenActive ? ' is-fullscreen' : ''}`}
-            aria-label="music visualizer"
+            aria-label={t('a11y.music.visualizer')}
             data-overlay-close={fullscreenActive ? 'fullscreen' : undefined}
           >
             <canvas
