@@ -67,6 +67,7 @@ interface UseAppTopLayerStateParams {
   normalizePathForCompare: (value: string) => string
   retryImportTask: (taskId: string) => Promise<void>
   adReviewRunning: boolean
+  adReviewDeleting: boolean
   taskError: string | null
   clearTaskError: () => void
   fullscreenActive: boolean
@@ -158,6 +159,7 @@ export function useAppTopLayerState({
   normalizePathForCompare,
   retryImportTask,
   adReviewRunning,
+  adReviewDeleting,
   taskError,
   clearTaskError,
   fullscreenActive,
@@ -280,6 +282,7 @@ export function useAppTopLayerState({
     normalizePathForCompare,
     retryImportTask,
     adReviewRunning,
+    adReviewDeleting,
   })
 
   const {
@@ -394,6 +397,8 @@ export function useAppTopLayerState({
     thumbnailGap: appSettings.thumbnailGap,
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailWidth: appSettings.thumbnailWidth,
+    thumbnailGenerationConcurrency: appSettings.thumbnailGenerationConcurrency,
+    thumbnailResolveConcurrency: appSettings.thumbnailResolveConcurrency,
     proxyServer: appSettings.proxyServer,
     ehentaiCookies: appSettings.ehentaiCookies,
     adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,
@@ -414,6 +419,9 @@ export function useAppTopLayerState({
     runtimeInfoLoading: runtimeInfoDiagnostics.loading,
     runtimeInfoError: runtimeInfoDiagnostics.error,
     runtimeInfo: runtimeInfoDiagnostics.data,
+    mediaCapabilitiesLoading: runtimeInfoDiagnostics.mediaCapabilitiesLoading,
+    mediaCapabilitiesError: runtimeInfoDiagnostics.mediaCapabilitiesError,
+    mediaCapabilities: runtimeInfoDiagnostics.mediaCapabilities,
     refreshRuntimeInfo: runtimeInfoDiagnostics.retry,
     updateSettings: appSettings.updateSettings,
     applySidebarRatio,
@@ -443,6 +451,7 @@ export function useAppTopLayerState({
     paletteMode: appSettings.paletteMode,
     paletteDayId: appSettings.paletteDayId,
     paletteNightId: appSettings.paletteNightId,
+    interactionLocked: adReviewDeleting,
     importMenuOpen,
     taskStatusLabel,
     taskStatusBusy,

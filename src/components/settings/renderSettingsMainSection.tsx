@@ -2,12 +2,12 @@ import {
   listPalettesByStyle,
   listStyles,
   resolvePalettePairForStyle,
-  resolvePaletteIdForStyle,
   resolveStyleIdFromStyles,
 } from '../../features/theme/themeRegistry'
 import type { ReadRuntimeInfoResponseDto } from '../../contracts/backend'
 import type { RepositoryMode } from '../../features/backend/repository'
 import type { JSX, KeyboardEvent as ReactKeyboardEvent } from 'react'
+import type { RuntimeMediaCapabilityProbeResult } from '../../features/app/useRuntimeInfoDiagnostics'
 
 import type { ShortcutConflict } from '../../shortcuts'
 import { MainUiIcon } from '../MainUiIcon'
@@ -18,7 +18,7 @@ import {
 } from './settingsScale'
 import type { TranslateFn } from '../../i18n/context'
 
-export type SettingsSection = 'layout' | 'model' | 'database' | 'shortcuts'
+export type SettingsSection = 'layout' | 'system' | 'model' | 'database' | 'shortcuts'
 
 interface RenderSettingsMainSectionParams {
   t: TranslateFn
@@ -49,6 +49,8 @@ interface RenderSettingsMainSectionParams {
   thumbnailGapScale: number
   thumbnailQuality: number
   thumbnailWidthInputValue: string
+  thumbnailGenerationConcurrencyInput: string
+  thumbnailResolveConcurrencyInput: string
   proxyServer: string
   ehentaiCookies: string
   adReviewVisionEndpoint: string
@@ -59,7 +61,6 @@ interface RenderSettingsMainSectionParams {
   adReviewVisionSavePending: boolean
   adReviewVisionSaveMessage: string | null
   styleId: string
-  paletteId: string
   paletteMode: 'day' | 'night'
   paletteDayId: string
   paletteNightId: string
@@ -75,6 +76,9 @@ interface RenderSettingsMainSectionParams {
   runtimeInfoLoading: boolean
   runtimeInfoError: string | null
   runtimeInfo: ReadRuntimeInfoResponseDto | null
+  mediaCapabilitiesLoading: boolean
+  mediaCapabilitiesError: string | null
+  mediaCapabilities: RuntimeMediaCapabilityProbeResult[]
   renderBindingRows: () => JSX.Element
   onResetShortcuts: () => void
   onLayoutLockedChange: (value: boolean) => void
@@ -93,9 +97,19 @@ interface RenderSettingsMainSectionParams {
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
+  onResetThumbnailQuality: () => void
   onThumbnailWidthInputChange: (value: string) => void
   onThumbnailWidthInputBlur: () => void
   onThumbnailWidthInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
+  onResetThumbnailWidth: () => void
+  onThumbnailGenerationConcurrencyInputChange: (value: string) => void
+  onThumbnailGenerationConcurrencyInputBlur: () => void
+  onThumbnailGenerationConcurrencyInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
+  onResetThumbnailGenerationConcurrency: () => void
+  onThumbnailResolveConcurrencyInputChange: (value: string) => void
+  onThumbnailResolveConcurrencyInputBlur: () => void
+  onThumbnailResolveConcurrencyInputKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void
+  onResetThumbnailResolveConcurrency: () => void
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
@@ -141,6 +155,8 @@ export function renderSettingsMainSection({
   thumbnailGapScale,
   thumbnailQuality,
   thumbnailWidthInputValue,
+  thumbnailGenerationConcurrencyInput,
+  thumbnailResolveConcurrencyInput,
   proxyServer,
   ehentaiCookies,
   adReviewVisionEndpoint,
@@ -151,7 +167,6 @@ export function renderSettingsMainSection({
   adReviewVisionSavePending,
   adReviewVisionSaveMessage,
   styleId,
-  paletteId,
   paletteMode,
   paletteDayId,
   paletteNightId,
@@ -167,6 +182,9 @@ export function renderSettingsMainSection({
   runtimeInfoLoading,
   runtimeInfoError,
   runtimeInfo,
+  mediaCapabilitiesLoading,
+  mediaCapabilitiesError,
+  mediaCapabilities,
   renderBindingRows,
   onResetShortcuts,
   onLayoutLockedChange,
@@ -185,9 +203,19 @@ export function renderSettingsMainSection({
   onFullscreenVideoControlsMaxWidthChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
+  onResetThumbnailQuality,
   onThumbnailWidthInputChange,
   onThumbnailWidthInputBlur,
   onThumbnailWidthInputKeyDown,
+  onResetThumbnailWidth,
+  onThumbnailGenerationConcurrencyInputChange,
+  onThumbnailGenerationConcurrencyInputBlur,
+  onThumbnailGenerationConcurrencyInputKeyDown,
+  onResetThumbnailGenerationConcurrency,
+  onThumbnailResolveConcurrencyInputChange,
+  onThumbnailResolveConcurrencyInputBlur,
+  onThumbnailResolveConcurrencyInputKeyDown,
+  onResetThumbnailResolveConcurrency,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onAdReviewVisionEndpointChange,
@@ -208,55 +236,67 @@ export function renderSettingsMainSection({
     const selectedStyleId = resolveStyleIdFromStyles(styleId, styles)
     const palettes = listPalettesByStyle(selectedStyleId)
     const selectedPalettePair = resolvePalettePairForStyle(selectedStyleId, paletteDayId, paletteNightId)
-    const activePaletteId = resolvePaletteIdForStyle(paletteId, selectedStyleId)
-    const activePaletteLabel = palettes.find((palette) => palette.id === activePaletteId)?.label ?? activePaletteId
 
     return (
       <div className="settings-block">
         <section className="settings-group">
           <header className="settings-group-head">
-            <span>主题设置</span>
+            <span>{t('ui.settings.themeSection')}</span>
           </header>
-          <p className="settings-placeholder">
-            主题已拆分为 style（布局/效果）和 palette（配色）。您可以向 <code>src/styles/themes/styles/</code> 与{' '}
-            <code>src/styles/themes/palettes/</code> 添加 CSS 文件扩展预设。
-          </p>
-          <label htmlFor="theme-style-select">Style</label>
-          <select id="theme-style-select" value={selectedStyleId} onChange={(event) => onStyleChange(event.target.value)}>
-            {styles.map((style) => (
-              <option key={style.id} value={style.id}>
-                {style.label}
-              </option>
-            ))}
-          </select>
-          <label htmlFor="theme-palette-mode-select">Palette 模式</label>
-          <select
-            id="theme-palette-mode-select"
-            value={paletteMode}
-            onChange={(event) => onPaletteModeChange(event.target.value === 'night' ? 'night' : 'day')}
-          >
-            <option value="day">Day（日间）</option>
-            <option value="night">Night（夜间）</option>
-          </select>
-          <label htmlFor="theme-palette-day-select">日间默认 Palette</label>
-          <select id="theme-palette-day-select" value={selectedPalettePair.day} onChange={(event) => onPaletteDayChange(event.target.value)}>
-            {palettes.map((palette) => (
-              <option key={palette.id} value={palette.id}>
-                {palette.label}
-              </option>
-            ))}
-          </select>
-          <label htmlFor="theme-palette-night-select">夜间默认 Palette</label>
-          <select id="theme-palette-night-select" value={selectedPalettePair.night} onChange={(event) => onPaletteNightChange(event.target.value)}>
-            {palettes.map((palette) => (
-              <option key={palette.id} value={palette.id}>
-                {palette.label}
-              </option>
-            ))}
-          </select>
-          <p className="settings-placeholder">当前生效：{activePaletteLabel}</p>
+          <div className="settings-theme-inline-row">
+            <label htmlFor="theme-style-select">
+              {t('ui.settings.styleLabel')}
+              <select id="theme-style-select" value={selectedStyleId} onChange={(event) => onStyleChange(event.target.value)}>
+                {styles.map((style) => (
+                  <option key={style.id} value={style.id}>
+                    {style.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label htmlFor="theme-palette-day-select">
+              {t('ui.settings.paletteDayDefault')}{paletteMode === 'day' ? t('ui.settings.currentActiveTag') : ''}
+              <select
+                id="theme-palette-day-select"
+                aria-label={t('ui.settings.paletteDayDefault')}
+                value={selectedPalettePair.day}
+                onChange={(event) => onPaletteDayChange(event.target.value)}
+              >
+                {palettes.map((palette) => (
+                  <option key={palette.id} value={palette.id}>
+                    {palette.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label htmlFor="theme-palette-night-select">
+              {t('ui.settings.paletteNightDefault')}{paletteMode === 'night' ? t('ui.settings.currentActiveTag') : ''}
+              <select
+                id="theme-palette-night-select"
+                aria-label={t('ui.settings.paletteNightDefault')}
+                value={selectedPalettePair.night}
+                onChange={(event) => onPaletteNightChange(event.target.value)}
+              >
+                {palettes.map((palette) => (
+                  <option key={palette.id} value={palette.id}>
+                    {palette.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              className="header-settings-btn header-icon-only-btn settings-theme-toggle-btn"
+              type="button"
+              aria-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
+              title={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
+              aria-pressed={paletteMode === 'night'}
+              onClick={() => onPaletteModeChange(paletteMode === 'day' ? 'night' : 'day')}
+            >
+              <MainUiIcon name={paletteMode === 'day' ? 'day' : 'night'} />
+            </button>
+          </div>
           <label>
-            面板背景遮罩透明度 {settingsBackdropOpacity.toFixed(0)}%
+            {t('ui.settings.backdropOpacity', { value: settingsBackdropOpacity.toFixed(0) })}
             <input
               max={100}
               min={0}
@@ -270,10 +310,10 @@ export function renderSettingsMainSection({
 
         <section className="settings-group">
           <header className="settings-group-head">
-            <span>缩略图设置</span>
+            <span>{t('ui.settings.thumbnailSection')}</span>
           </header>
           <label>
-            缩略图间距系数 {formatScale(thumbnailGapScale)}（{thumbnailGap}px）
+            {t('ui.settings.thumbnailGapScale', { scale: formatScale(thumbnailGapScale), px: thumbnailGap })}
             <input
               max={SIZE_SCALE_CONFIG.thumbnailGap.max}
               min={SIZE_SCALE_CONFIG.thumbnailGap.min}
@@ -283,34 +323,104 @@ export function renderSettingsMainSection({
               onChange={(event) => onThumbnailGapChange(toAbsolutePx('thumbnailGap', Number(event.target.value)))}
             />
           </label>
-          <label>
-            缩略图质量
-            <input max={100} min={1} type="number" value={thumbnailQuality} onChange={(event) => onThumbnailQualityChange(Number(event.target.value))} />
-          </label>
-          <label>
-            缩略图宽度
-            <input
-              max={2048}
-              min={128}
-              type="number"
-              value={thumbnailWidthInputValue}
-              onBlur={onThumbnailWidthInputBlur}
-              onChange={(event) => onThumbnailWidthInputChange(event.target.value)}
-              onKeyDown={onThumbnailWidthInputKeyDown}
-            />
-          </label>
+          <div className="settings-thumbnail-four-row">
+            <div className="settings-compact-control-cell">
+              <span>{t('ui.settings.thumbnailQuality')}</span>
+              <div className="settings-compact-control-actions">
+                <input max={100} min={1} type="number" value={thumbnailQuality} onChange={(event) => onThumbnailQualityChange(Number(event.target.value))} />
+                <button
+                  className="settings-icon-btn main-icon-square-btn"
+                  type="button"
+                  aria-label={t('a11y.common.restoreDefault')}
+                  title={t('tip.common.restoreDefault')}
+                  onClick={onResetThumbnailQuality}
+                >
+                  <MainUiIcon name="return" />
+                </button>
+              </div>
+            </div>
+            <div className="settings-compact-control-cell">
+              <span>{t('ui.settings.thumbnailResolution')}</span>
+              <div className="settings-compact-control-actions">
+                <input
+                  max={2048}
+                  min={128}
+                  type="number"
+                  value={thumbnailWidthInputValue}
+                  onBlur={onThumbnailWidthInputBlur}
+                  onChange={(event) => onThumbnailWidthInputChange(event.target.value)}
+                  onKeyDown={onThumbnailWidthInputKeyDown}
+                />
+                <button
+                  className="settings-icon-btn main-icon-square-btn"
+                  type="button"
+                  aria-label={t('a11y.common.restoreDefault')}
+                  title={t('tip.common.restoreDefault')}
+                  onClick={onResetThumbnailWidth}
+                >
+                  <MainUiIcon name="return" />
+                </button>
+              </div>
+            </div>
+            <div className="settings-compact-control-cell">
+              <span>{t('ui.settings.thumbnailGenerationConcurrency')}</span>
+              <div className="settings-compact-control-actions">
+                <input
+                  max={16}
+                  min={1}
+                  type="number"
+                  value={thumbnailGenerationConcurrencyInput}
+                  onBlur={onThumbnailGenerationConcurrencyInputBlur}
+                  onChange={(event) => onThumbnailGenerationConcurrencyInputChange(event.target.value)}
+                  onKeyDown={onThumbnailGenerationConcurrencyInputKeyDown}
+                />
+                <button
+                  className="settings-icon-btn main-icon-square-btn"
+                  type="button"
+                  aria-label={t('a11y.common.restoreDefault')}
+                  title={t('tip.common.restoreDefault')}
+                  onClick={onResetThumbnailGenerationConcurrency}
+                >
+                  <MainUiIcon name="return" />
+                </button>
+              </div>
+            </div>
+            <div className="settings-compact-control-cell">
+              <span>{t('ui.settings.thumbnailResolveConcurrency')}</span>
+              <div className="settings-compact-control-actions">
+                <input
+                  max={32}
+                  min={1}
+                  type="number"
+                  value={thumbnailResolveConcurrencyInput}
+                  onBlur={onThumbnailResolveConcurrencyInputBlur}
+                  onChange={(event) => onThumbnailResolveConcurrencyInputChange(event.target.value)}
+                  onKeyDown={onThumbnailResolveConcurrencyInputKeyDown}
+                />
+                <button
+                  className="settings-icon-btn main-icon-square-btn"
+                  type="button"
+                  aria-label={t('a11y.common.restoreDefault')}
+                  title={t('tip.common.restoreDefault')}
+                  onClick={onResetThumbnailResolveConcurrency}
+                >
+                  <MainUiIcon name="return" />
+                </button>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="settings-group">
           <header className="settings-group-head">
-            <span>布局参数</span>
+            <span>{t('ui.settings.layoutSection')}</span>
           </header>
           <label className="settings-toggle-row">
-            <span>布局锁定</span>
+            <span>{t('ui.settings.layoutLocked')}</span>
             <input type="checkbox" checked={layoutLocked} onChange={(event) => onLayoutLockedChange(event.target.checked)} />
           </label>
           <label className="settings-toggle-row">
-            <span>调试显示 Electron 外框与菜单</span>
+            <span>{t('ui.settings.debugNativeChrome')}</span>
             <input
               type="checkbox"
               checked={electronNativeChromeEnabled}
@@ -318,7 +428,7 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            Header 高度系数 {formatScale(headerHeightScale)}（{headerHeight}px）
+            {t('ui.settings.headerHeightScale', { scale: formatScale(headerHeightScale), px: headerHeight })}
             <input
               max={SIZE_SCALE_CONFIG.headerHeight.max}
               min={SIZE_SCALE_CONFIG.headerHeight.min}
@@ -329,7 +439,7 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            设置面板字体系数 {formatScale(settingsFontSizeScale)}（{settingsFontSize}px）
+            {t('ui.settings.settingsFontScale', { scale: formatScale(settingsFontSizeScale), px: settingsFontSize })}
             <input
               max={SIZE_SCALE_CONFIG.settingsFontSize.max}
               min={SIZE_SCALE_CONFIG.settingsFontSize.min}
@@ -340,11 +450,11 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            Sidebar 比例 {(sidebarRatio * 100).toFixed(0)}%
+            {t('ui.settings.sidebarRatio', { percent: (sidebarRatio * 100).toFixed(0) })}
             <input max={0.95} min={0} step={0.005} type="range" value={sidebarRatio} onChange={(event) => onSidebarRatioChange(Number(event.target.value))} />
           </label>
           <label>
-            Sidebar 最小宽度系数 {formatScale(sidebarMinWidthScale)}（{sidebarMinWidth}px）
+            {t('ui.settings.sidebarMinWidthScale', { scale: formatScale(sidebarMinWidthScale), px: sidebarMinWidth })}
             <input
               max={SIZE_SCALE_CONFIG.sidebarMinWidth.max}
               min={SIZE_SCALE_CONFIG.sidebarMinWidth.min}
@@ -355,7 +465,7 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            Sidebar 字体系数 {formatScale(sidebarFontSizeScale)}（{sidebarFontSize}px）
+            {t('ui.settings.sidebarFontScale', { scale: formatScale(sidebarFontSizeScale), px: sidebarFontSize })}
             <input
               max={SIZE_SCALE_CONFIG.sidebarFontSize.max}
               min={SIZE_SCALE_CONFIG.sidebarFontSize.min}
@@ -366,7 +476,7 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            Sidebar 数字字号系数 {formatScale(sidebarCountFontSizeScale)}（{sidebarCountFontSize}px）
+            {t('ui.settings.sidebarCountFontScale', { scale: formatScale(sidebarCountFontSizeScale), px: sidebarCountFontSize })}
             <input
               max={SIZE_SCALE_CONFIG.sidebarCountFontSize.max}
               min={SIZE_SCALE_CONFIG.sidebarCountFontSize.min}
@@ -377,7 +487,7 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            目录结构间隔系数 {formatScale(sidebarIndentStepScale)}（{sidebarIndentStep}px）
+            {t('ui.settings.sidebarIndentScale', { scale: formatScale(sidebarIndentStepScale), px: sidebarIndentStep })}
             <input
               max={SIZE_SCALE_CONFIG.sidebarIndentStep.max}
               min={SIZE_SCALE_CONFIG.sidebarIndentStep.min}
@@ -388,7 +498,7 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            目录结构上下间隔系数 {formatScale(sidebarVerticalGapScale)}（{sidebarVerticalGap}px）
+            {t('ui.settings.sidebarVerticalGapScale', { scale: formatScale(sidebarVerticalGapScale), px: sidebarVerticalGap })}
             <input
               max={SIZE_SCALE_CONFIG.sidebarVerticalGap.max}
               min={SIZE_SCALE_CONFIG.sidebarVerticalGap.min}
@@ -399,11 +509,11 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            元数据面板比例 {(metadataRatio * 100).toFixed(0)}%
+            {t('ui.settings.metadataPanelRatio', { percent: (metadataRatio * 100).toFixed(0) })}
             <input max={0.45} min={0.2} step={0.01} type="range" value={metadataRatio} onChange={(event) => onMetadataRatioChange(Number(event.target.value))} />
           </label>
           <label>
-            检索/管理容器高度系数 {formatScale(workspaceBottomPanelHeightScale)}（{workspaceBottomPanelHeight}px）
+            {t('ui.settings.workspaceBottomPanelHeightScale', { scale: formatScale(workspaceBottomPanelHeightScale), px: workspaceBottomPanelHeight })}
             <input
               max={SIZE_SCALE_CONFIG.workspaceBottomPanelHeight.max}
               min={SIZE_SCALE_CONFIG.workspaceBottomPanelHeight.min}
@@ -414,7 +524,10 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            全屏视频控件最大宽度系数 {formatScale(fullscreenVideoControlsMaxWidthScale)}（{fullscreenVideoControlsMaxWidth}px）
+            {t('ui.settings.fullscreenVideoControlsMaxWidthScale', {
+              scale: formatScale(fullscreenVideoControlsMaxWidthScale),
+              px: fullscreenVideoControlsMaxWidth,
+            })}
             <input
               max={SIZE_SCALE_CONFIG.fullscreenVideoControlsMaxWidth.max}
               min={SIZE_SCALE_CONFIG.fullscreenVideoControlsMaxWidth.min}
@@ -428,6 +541,99 @@ export function renderSettingsMainSection({
           </label>
         </section>
 
+      </div>
+    )
+  }
+
+  if (activeSection === 'system') {
+    const rendererIsProd = import.meta.env.PROD
+    const bridgeMissingInProduction = rendererIsProd && repositoryMode === 'real' && !backendBridgeInjected
+    const gpuFeatureRows = runtimeInfo?.gpu_feature_status
+      ? Object.entries(runtimeInfo.gpu_feature_status).sort(([left], [right]) => left.localeCompare(right))
+      : []
+    const gpuInfoJson = runtimeInfo?.gpu_info_basic ? JSON.stringify(runtimeInfo.gpu_info_basic, null, 2) : null
+
+    return (
+      <div className="settings-block">
+        <fieldset className="settings-subsection">
+          <legend>运行时诊断</legend>
+          <p className="settings-placeholder">用于排查 EXE 与 dev:desktop 的后端桥接与数据路径差异。</p>
+          <div className="settings-runtime-grid">
+            <span>Renderer PROD</span>
+            <code>{rendererIsProd ? 'true' : 'false'}</code>
+            <span>Repository 模式</span>
+            <code>{repositoryMode}</code>
+            <span>Backend Bridge</span>
+            <code>{backendBridgeInjected ? 'true' : 'false'}</code>
+            <span>App 版本</span>
+            <code>{runtimeInfo?.app_version ?? '-'}</code>
+            <span>Main isPackaged</span>
+            <code>{typeof runtimeInfo?.is_packaged === 'boolean' ? String(runtimeInfo.is_packaged) : '-'}</code>
+            <span>平台/架构</span>
+            <code>{runtimeInfo ? `${runtimeInfo.platform}/${runtimeInfo.arch}` : '-'}</code>
+            <span>UserData 路径</span>
+            <code>{runtimeInfo?.user_data_path ?? '-'}</code>
+            <span>Library Root</span>
+            <code>{runtimeInfo?.library_root ?? '-'}</code>
+            <span>数据库路径</span>
+            <code>{runtimeInfo?.database_path ?? '-'}</code>
+          </div>
+          <div className="settings-runtime-actions">
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={runtimeInfoLoading}
+              aria-label={runtimeInfoLoading ? t('a11y.settings.loadingDiagnostics') : t('a11y.settings.refreshDiagnostics')}
+              title={runtimeInfoLoading ? t('a11y.settings.loadingDiagnostics') : t('a11y.settings.refreshDiagnostics')}
+              onClick={onRefreshRuntimeInfo}
+            >
+              <MainUiIcon name="refresh" />
+            </button>
+          </div>
+          {runtimeInfoError ? <p className="settings-danger-text">{runtimeInfoError}</p> : null}
+          {bridgeMissingInProduction ? (
+            <p className="settings-danger-text">
+              当前为生产构建且未检测到后端桥接，已禁用 mock 回退。请检查打包产物中的 preload 注入链路。
+            </p>
+          ) : null}
+        </fieldset>
+
+        <fieldset className="settings-subsection">
+          <legend>GPU 诊断（Main）</legend>
+          <div className="settings-runtime-grid">
+            <span>硬件加速启用</span>
+            <code>{typeof runtimeInfo?.hardware_acceleration_enabled === 'boolean' ? String(runtimeInfo.hardware_acceleration_enabled) : '-'}</code>
+          </div>
+          {gpuFeatureRows.length > 0 ? (
+            <div className="settings-runtime-grid">
+              {gpuFeatureRows.flatMap(([key, value]) => [
+                <span key={`${key}:label`}>{key}</span>,
+                <code key={`${key}:value`}>{value}</code>,
+              ])}
+            </div>
+          ) : (
+            <p className="settings-placeholder">无 GPU FeatureStatus 数据。</p>
+          )}
+          {gpuInfoJson ? <pre className="settings-code-block">{gpuInfoJson}</pre> : <p className="settings-placeholder">无 GPUInfo(basic) 数据。</p>}
+        </fieldset>
+
+        <fieldset className="settings-subsection">
+          <legend>解码能力检测（Renderer）</legend>
+          {mediaCapabilitiesLoading ? <p className="settings-placeholder">检测中...</p> : null}
+          {mediaCapabilitiesError ? <p className="settings-danger-text">{mediaCapabilitiesError}</p> : null}
+          {mediaCapabilities.length > 0 ? (
+            <div className="settings-runtime-grid">
+              {mediaCapabilities.flatMap((item) => [
+                <span key={`${item.id}:label`}>{item.label}</span>,
+                <code key={`${item.id}:value`}>
+                  {item.supported
+                    ? `supported=${item.supported}, smooth=${item.smooth}, powerEfficient=${item.powerEfficient ?? 'unknown'}`
+                    : `unsupported${item.error ? ` (${item.error})` : ''}`}
+                </code>,
+              ])}
+            </div>
+          ) : null}
+        </fieldset>
       </div>
     )
   }
@@ -522,8 +728,6 @@ export function renderSettingsMainSection({
   }
 
   if (activeSection === 'database') {
-    const rendererIsProd = import.meta.env.PROD
-    const bridgeMissingInProduction = rendererIsProd && repositoryMode === 'real' && !backendBridgeInjected
     const databasePath = runtimeInfo?.database_path ?? ''
     const thumbnailCachePath = runtimeInfo?.thumbnail_cache_path ?? ''
 
@@ -586,48 +790,6 @@ export function renderSettingsMainSection({
           </label>
         </fieldset>
 
-        <fieldset className="settings-subsection">
-          <legend>运行时诊断</legend>
-          <p className="settings-placeholder">用于排查 EXE 与 dev:desktop 的后端桥接与数据路径差异。</p>
-          <div className="settings-runtime-grid">
-            <span>Renderer PROD</span>
-            <code>{rendererIsProd ? 'true' : 'false'}</code>
-            <span>Repository 模式</span>
-            <code>{repositoryMode}</code>
-            <span>Backend Bridge</span>
-            <code>{backendBridgeInjected ? 'true' : 'false'}</code>
-            <span>App 版本</span>
-            <code>{runtimeInfo?.app_version ?? '-'}</code>
-            <span>Main isPackaged</span>
-            <code>{typeof runtimeInfo?.is_packaged === 'boolean' ? String(runtimeInfo.is_packaged) : '-'}</code>
-            <span>平台/架构</span>
-            <code>{runtimeInfo ? `${runtimeInfo.platform}/${runtimeInfo.arch}` : '-'}</code>
-            <span>UserData 路径</span>
-            <code>{runtimeInfo?.user_data_path ?? '-'}</code>
-            <span>Library Root</span>
-            <code>{runtimeInfo?.library_root ?? '-'}</code>
-            <span>数据库路径</span>
-            <code>{runtimeInfo?.database_path ?? '-'}</code>
-          </div>
-          <div className="settings-runtime-actions">
-            <button
-              className="settings-icon-btn main-icon-square-btn"
-              type="button"
-              disabled={runtimeInfoLoading}
-              aria-label={runtimeInfoLoading ? t('a11y.settings.loadingDiagnostics') : t('a11y.settings.refreshDiagnostics')}
-              title={runtimeInfoLoading ? t('a11y.settings.loadingDiagnostics') : t('a11y.settings.refreshDiagnostics')}
-              onClick={onRefreshRuntimeInfo}
-            >
-              <MainUiIcon name="refresh" />
-            </button>
-          </div>
-          {runtimeInfoError ? <p className="settings-danger-text">{runtimeInfoError}</p> : null}
-          {bridgeMissingInProduction ? (
-            <p className="settings-danger-text">
-              当前为生产构建且未检测到后端桥接，已禁用 mock 回退。请检查打包产物中的 preload 注入链路。
-            </p>
-          ) : null}
-        </fieldset>
       </div>
     )
   }

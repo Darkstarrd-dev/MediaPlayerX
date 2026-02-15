@@ -26,6 +26,8 @@ interface BuildSettingsPanelPropsParams {
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
+  thumbnailGenerationConcurrency: number
+  thumbnailResolveConcurrency: number
   proxyServer: string
   ehentaiCookies: string
   adReviewVisionEndpoint: string
@@ -46,6 +48,9 @@ interface BuildSettingsPanelPropsParams {
   runtimeInfoLoading: boolean
   runtimeInfoError: string | null
   runtimeInfo: SettingsPanelProps['runtimeInfo']
+  mediaCapabilitiesLoading: boolean
+  mediaCapabilitiesError: string | null
+  mediaCapabilities: SettingsPanelProps['mediaCapabilities']
   refreshRuntimeInfo: () => void
   updateSettings: (patch: Partial<AppSettings>) => void
   applySidebarRatio: (value: number) => void
@@ -85,6 +90,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
     thumbnailWidth: params.thumbnailWidth,
+    thumbnailGenerationConcurrency: params.thumbnailGenerationConcurrency,
+    thumbnailResolveConcurrency: params.thumbnailResolveConcurrency,
     proxyServer: params.proxyServer,
     ehentaiCookies: params.ehentaiCookies,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
@@ -105,6 +112,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     runtimeInfoLoading: params.runtimeInfoLoading,
     runtimeInfoError: params.runtimeInfoError,
     runtimeInfo: params.runtimeInfo,
+    mediaCapabilitiesLoading: params.mediaCapabilitiesLoading,
+    mediaCapabilitiesError: params.mediaCapabilitiesError,
+    mediaCapabilities: params.mediaCapabilities,
     onRefreshRuntimeInfo: params.refreshRuntimeInfo,
     onClose: () => params.updateSettings({ settingsOpen: false }),
     onStyleChange: (value) => {
@@ -173,7 +183,25 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onFullscreenVideoControlsMaxWidthChange: (value) => params.updateSettings({ fullscreenVideoControlsMaxWidth: value }),
     onThumbnailGapChange: (value) => params.updateSettings({ thumbnailGap: value }),
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
+    onResetThumbnailQuality: () =>
+      params.updateSettings({
+        thumbnailQuality: 40,
+      }),
     onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
+    onResetThumbnailWidth: () =>
+      params.updateSettings({
+        thumbnailWidth: 512,
+      }),
+    onThumbnailGenerationConcurrencyChange: (value) => params.updateSettings({ thumbnailGenerationConcurrency: value }),
+    onThumbnailResolveConcurrencyChange: (value) => params.updateSettings({ thumbnailResolveConcurrency: value }),
+    onResetThumbnailGenerationConcurrency: () =>
+      params.updateSettings({
+        thumbnailGenerationConcurrency: 4,
+      }),
+    onResetThumbnailResolveConcurrency: () =>
+      params.updateSettings({
+        thumbnailResolveConcurrency: 8,
+      }),
     onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),
     onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
     onAdReviewVisionEndpointChange: (value) =>

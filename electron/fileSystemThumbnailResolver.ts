@@ -13,7 +13,8 @@ const THUMBNAIL_MIN_QUALITY = 1
 const THUMBNAIL_MAX_QUALITY = 100
 
 // 限制全局并发缩略图生成任务数，防止 Sharp 峰值内存/线程池过载
-const MAX_CONCURRENT_THUMBNAIL_GENERATION = 4
+const DEFAULT_MAX_CONCURRENT_THUMBNAIL_GENERATION = 4
+let maxConcurrentThumbnailGeneration = DEFAULT_MAX_CONCURRENT_THUMBNAIL_GENERATION
 
 // 全局任务队列与去重池
 const pendingThumbnailTasks = new Map<string, Promise<MediaLocatorDto | null>>()
@@ -38,12 +39,25 @@ function runWithConcurrencyLimit<T>(task: () => Promise<T>): Promise<T> {
       }
     }
 
-    if (activeProcessingCount < MAX_CONCURRENT_THUMBNAIL_GENERATION) {
+    if (activeProcessingCount < maxConcurrentThumbnailGeneration) {
       void execute()
     } else {
       processingQueue.push(execute)
     }
   })
+}
+
+function applyRequestedGenerationConcurrency(rawValue: number | undefined): void {
+  if (!Number.isFinite(rawValue)) {
+    return
+  }
+
+  const normalized = Math.max(1, Math.min(16, Math.round(rawValue)))
+  if (normalized === maxConcurrentThumbnailGeneration) {
+    return
+  }
+
+  maxConcurrentThumbnailGeneration = normalized
 }
 
 interface ThumbnailRenderOptions {
@@ -153,6 +167,8 @@ export async function maybeResolveThumbnailLocator({
   scheduleArchiveNormalizationDrain,
   archiveNormalizeRecheckMs,
 }: ResolveThumbnailLocatorParams): Promise<MediaLocatorDto | null> {
+  applyRequestedGenerationConcurrency(request.thumbnail?.generation_concurrency)
+
   const options = resolveThumbnailOptionsFromRequest(request)
   if (!options) {
     return null

@@ -167,6 +167,18 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.settingsBackdropBlur
   }
 
+  if (typeof next.thumbnailGenerationConcurrency === 'number' && Number.isFinite(next.thumbnailGenerationConcurrency)) {
+    next.thumbnailGenerationConcurrency = Math.max(1, Math.min(16, Math.floor(next.thumbnailGenerationConcurrency)))
+  } else if ('thumbnailGenerationConcurrency' in next) {
+    delete next.thumbnailGenerationConcurrency
+  }
+
+  if (typeof next.thumbnailResolveConcurrency === 'number' && Number.isFinite(next.thumbnailResolveConcurrency)) {
+    next.thumbnailResolveConcurrency = Math.max(1, Math.min(32, Math.floor(next.thumbnailResolveConcurrency)))
+  } else if ('thumbnailResolveConcurrency' in next) {
+    delete next.thumbnailResolveConcurrency
+  }
+
   if (typeof next.musicVisualizerRenderLongEdgePx === 'number' && Number.isFinite(next.musicVisualizerRenderLongEdgePx)) {
     next.musicVisualizerRenderLongEdgePx = Math.max(240, Math.min(4096, Math.floor(next.musicVisualizerRenderLongEdgePx)))
   } else if ('musicVisualizerRenderLongEdgePx' in next) {

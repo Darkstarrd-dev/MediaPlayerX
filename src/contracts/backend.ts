@@ -222,6 +222,7 @@ export const resolveMediaResourceRequestSchema = z.object({
     .object({
       max_edge: z.number().int().min(64).max(2048).optional(),
       quality: z.number().int().min(1).max(100).optional(),
+      generation_concurrency: z.number().int().min(1).max(16).optional(),
     })
     .optional(),
 })
@@ -751,6 +752,12 @@ export const readRuntimeCapabilitiesResponseSchema = z.object({
   generated_at_ms: z.number().int().positive(),
 })
 
+export const runtimeMediaCapabilityHintSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  content_type: z.string().min(1),
+})
+
 export const readRuntimeInfoResponseSchema = z.object({
   app_version: z.string().min(1),
   is_packaged: z.boolean(),
@@ -760,6 +767,10 @@ export const readRuntimeInfoResponseSchema = z.object({
   library_root: z.string().min(1),
   database_path: z.string().min(1),
   thumbnail_cache_path: z.string().min(1),
+  hardware_acceleration_enabled: z.boolean().optional(),
+  gpu_feature_status: z.record(z.string(), z.string()).optional(),
+  gpu_info_basic: z.record(z.string(), z.unknown()).optional(),
+  media_capability_hints: z.array(runtimeMediaCapabilityHintSchema).optional(),
 })
 
 export const setRuntimeStoragePathsRequestSchema = z
@@ -890,6 +901,7 @@ export type OpenExternalUrlResponseDto = z.infer<typeof openExternalUrlResponseS
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>
+export type RuntimeMediaCapabilityHintDto = z.infer<typeof runtimeMediaCapabilityHintSchema>
 export type ReadRuntimeInfoResponseDto = z.infer<typeof readRuntimeInfoResponseSchema>
 export type SetRuntimeStoragePathsRequestDto = z.infer<typeof setRuntimeStoragePathsRequestSchema>
 export type SetRuntimeStoragePathsResponseDto = z.infer<typeof setRuntimeStoragePathsResponseSchema>

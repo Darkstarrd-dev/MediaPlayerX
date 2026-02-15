@@ -51,8 +51,6 @@ function toLocatorDto(locator: MediaLocator) {
   }
 }
 
-const MEDIA_RESOLVE_MAX_CONCURRENT = 8
-
 export interface VideoSubtitleOption {
   id: string
   label: string
@@ -241,11 +239,12 @@ export function useAppDisplayResources({
   } = useResolvedMediaState({
     repository: mediaRepository,
     benchSettings,
-    maxConcurrent: MEDIA_RESOLVE_MAX_CONCURRENT,
+    maxConcurrent: appSettings.thumbnailResolveConcurrency,
     actualCellWidth,
     actualMediaHeight,
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailWidth: appSettings.thumbnailWidth,
+    thumbnailGenerationConcurrency: appSettings.thumbnailGenerationConcurrency,
     packageById: packageByIdEffective,
     focusedImage,
     metadataImage: metadataImageEffective,

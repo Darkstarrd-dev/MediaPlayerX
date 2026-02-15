@@ -51,6 +51,8 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     paletteNightId: settings.paletteNightId,
     thumbnailQuality: settings.thumbnailQuality,
     thumbnailWidth: settings.thumbnailWidth,
+    thumbnailGenerationConcurrency: settings.thumbnailGenerationConcurrency,
+    thumbnailResolveConcurrency: settings.thumbnailResolveConcurrency,
     musicVisualizerRenderLongEdgePx: settings.musicVisualizerRenderLongEdgePx,
     musicVisualizerFpsCap: settings.musicVisualizerFpsCap,
     musicVisualizerSelectedShaderId: settings.musicVisualizerSelectedShaderId,

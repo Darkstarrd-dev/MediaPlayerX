@@ -44,6 +44,8 @@ export function useAppSettingsStore() {
       paletteNightId: state.paletteNightId,
       thumbnailQuality: state.thumbnailQuality,
       thumbnailWidth: state.thumbnailWidth,
+      thumbnailGenerationConcurrency: state.thumbnailGenerationConcurrency,
+      thumbnailResolveConcurrency: state.thumbnailResolveConcurrency,
       musicVisualizerRenderLongEdgePx: state.musicVisualizerRenderLongEdgePx,
       musicVisualizerFpsCap: state.musicVisualizerFpsCap,
       musicVisualizerSelectedShaderId: state.musicVisualizerSelectedShaderId,

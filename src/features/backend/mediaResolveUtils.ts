@@ -15,6 +15,7 @@ export interface MediaResolveTarget {
   variant?: 'original' | 'thumbnail'
   thumbnailMaxEdge?: number
   thumbnailQuality?: number
+  thumbnailGenerationConcurrency?: number
 }
 
 export interface SyncResolveRepository extends MediaRepository {
@@ -59,6 +60,7 @@ export function buildResolveRequest(target: MediaResolveTarget): ResolveMediaRes
       thumbnail: {
         max_edge: Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320))),
         quality: Math.max(THUMBNAIL_MIN_QUALITY, Math.min(THUMBNAIL_MAX_QUALITY, Math.round(target.thumbnailQuality ?? 82))),
+        generation_concurrency: Math.max(1, Math.min(16, Math.round(target.thumbnailGenerationConcurrency ?? 4))),
       },
     }
   }

@@ -16,6 +16,7 @@ import {
   renderSettingsMainSection,
   type SettingsSection,
 } from './settings/renderSettingsMainSection'
+import type { RuntimeMediaCapabilityProbeResult } from '../features/app/useRuntimeInfoDiagnostics'
 import { buildA11yProps } from '../i18n/a11y'
 import { a11yRegistry } from '../i18n/ariaRegistry'
 import { useI18n } from '../i18n/useI18n'
@@ -46,6 +47,8 @@ export interface SettingsPanelProps {
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
+  thumbnailGenerationConcurrency: number
+  thumbnailResolveConcurrency: number
   proxyServer: string
   ehentaiCookies: string
   adReviewVisionEndpoint: string
@@ -66,6 +69,9 @@ export interface SettingsPanelProps {
   runtimeInfoLoading: boolean
   runtimeInfoError: string | null
   runtimeInfo: ReadRuntimeInfoResponseDto | null
+  mediaCapabilitiesLoading: boolean
+  mediaCapabilitiesError: string | null
+  mediaCapabilities: RuntimeMediaCapabilityProbeResult[]
   onClose: () => void
   onStyleChange: (value: string) => void
   onPaletteModeChange: (value: 'day' | 'night') => void
@@ -87,7 +93,13 @@ export interface SettingsPanelProps {
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
+  onResetThumbnailQuality: () => void
   onThumbnailWidthChange: (value: number) => void
+  onResetThumbnailWidth: () => void
+  onThumbnailGenerationConcurrencyChange: (value: number) => void
+  onThumbnailResolveConcurrencyChange: (value: number) => void
+  onResetThumbnailGenerationConcurrency: () => void
+  onResetThumbnailResolveConcurrency: () => void
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
@@ -112,25 +124,30 @@ type PanelDragState = {
   startOffsetY: number
 }
 
-const MOUSE_CAPTURE_PRESETS: Array<{ label: string; combo: string }> = [
-  { label: '鼠标左键', combo: 'MouseLeft' },
-  { label: '鼠标中键', combo: 'MouseMiddle' },
-  { label: '鼠标右键', combo: 'MouseRight' },
-  { label: '鼠标后退键', combo: 'MouseBack' },
-  { label: '鼠标前进键', combo: 'MouseForward' },
-  { label: '滚轮上', combo: 'WheelUp' },
-  { label: '滚轮下', combo: 'WheelDown' },
+const MOUSE_CAPTURE_PRESETS: Array<{ labelKey: string; combo: string }> = [
+  { labelKey: 'ui.settings.mousePresetLeft', combo: 'MouseLeft' },
+  { labelKey: 'ui.settings.mousePresetMiddle', combo: 'MouseMiddle' },
+  { labelKey: 'ui.settings.mousePresetRight', combo: 'MouseRight' },
+  { labelKey: 'ui.settings.mousePresetBack', combo: 'MouseBack' },
+  { labelKey: 'ui.settings.mousePresetForward', combo: 'MouseForward' },
+  { labelKey: 'ui.settings.mousePresetWheelUp', combo: 'WheelUp' },
+  { labelKey: 'ui.settings.mousePresetWheelDown', combo: 'WheelDown' },
 ]
 
-const SETTINGS_SECTIONS: Array<{ id: SettingsSection; label: string }> = [
-  { id: 'layout', label: '界面设置' },
-  { id: 'model', label: 'AI模型设置' },
-  { id: 'database', label: '数据库设置' },
-  { id: 'shortcuts', label: '快捷键设置' },
+const SETTINGS_SECTIONS: Array<{ id: SettingsSection; labelKey: string }> = [
+  { id: 'layout', labelKey: 'ui.settings.sectionLayout' },
+  { id: 'model', labelKey: 'ui.settings.sectionModel' },
+  { id: 'shortcuts', labelKey: 'ui.settings.sectionShortcuts' },
+  { id: 'database', labelKey: 'ui.settings.sectionDatabase' },
+  { id: 'system', labelKey: 'ui.settings.sectionSystem' },
 ]
 
 const THUMBNAIL_WIDTH_MIN = 128
 const THUMBNAIL_WIDTH_MAX = 2048
+const THUMBNAIL_GENERATION_CONCURRENCY_MIN = 1
+const THUMBNAIL_GENERATION_CONCURRENCY_MAX = 16
+const THUMBNAIL_RESOLVE_CONCURRENCY_MIN = 1
+const THUMBNAIL_RESOLVE_CONCURRENCY_MAX = 32
 
 function shouldIgnoreSettingsPanelDragStart(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) {
@@ -141,7 +158,7 @@ function shouldIgnoreSettingsPanelDragStart(target: EventTarget | null): boolean
 }
 
 function resolveSettingsSection(raw: unknown): SettingsSection {
-  if (raw === 'layout' || raw === 'model' || raw === 'database' || raw === 'shortcuts') {
+  if (raw === 'layout' || raw === 'system' || raw === 'model' || raw === 'database' || raw === 'shortcuts') {
     return raw
   }
   if (raw === 'theme' || raw === 'thumbnail') {
@@ -153,7 +170,6 @@ function resolveSettingsSection(raw: unknown): SettingsSection {
 function SettingsPanel({
   settingsOpen,
   styleId,
-  paletteId,
   paletteMode,
   paletteDayId,
   paletteNightId,
@@ -174,6 +190,8 @@ function SettingsPanel({
   thumbnailGap,
   thumbnailQuality,
   thumbnailWidth,
+  thumbnailGenerationConcurrency,
+  thumbnailResolveConcurrency,
   proxyServer,
   ehentaiCookies,
   adReviewVisionEndpoint,
@@ -194,6 +212,9 @@ function SettingsPanel({
   runtimeInfoLoading,
   runtimeInfoError,
   runtimeInfo,
+  mediaCapabilitiesLoading,
+  mediaCapabilitiesError,
+  mediaCapabilities,
   onClose,
   onStyleChange,
   onPaletteModeChange,
@@ -215,7 +236,13 @@ function SettingsPanel({
   onFullscreenVideoControlsMaxWidthChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
+  onResetThumbnailQuality,
   onThumbnailWidthChange,
+  onResetThumbnailWidth,
+  onThumbnailGenerationConcurrencyChange,
+  onThumbnailResolveConcurrencyChange,
+  onResetThumbnailGenerationConcurrency,
+  onResetThumbnailResolveConcurrency,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onAdReviewVisionEndpointChange,
@@ -236,6 +263,8 @@ function SettingsPanel({
   const [capturingTarget, setCapturingTarget] = useState<BindingTarget | null>(null)
   const [capturedCombo, setCapturedCombo] = useState('')
   const [thumbnailWidthInputValue, setThumbnailWidthInputValue] = useState(() => String(thumbnailWidth))
+  const [thumbnailGenerationConcurrencyInput, setThumbnailGenerationConcurrencyInput] = useState(() => String(thumbnailGenerationConcurrency))
+  const [thumbnailResolveConcurrencyInput, setThumbnailResolveConcurrencyInput] = useState(() => String(thumbnailResolveConcurrency))
   const captureDialogRef = useRef<HTMLDivElement>(null)
   const settingsPanelRef = useRef<HTMLElement>(null)
   const panelDragStateRef = useRef<PanelDragState | null>(null)
@@ -272,15 +301,25 @@ function SettingsPanel({
       setCapturingTarget(null)
       setCapturedCombo('')
       setThumbnailWidthInputValue(String(thumbnailWidth))
+      setThumbnailGenerationConcurrencyInput(String(thumbnailGenerationConcurrency))
+      setThumbnailResolveConcurrencyInput(String(thumbnailResolveConcurrency))
       panelDragStateRef.current = null
       setSettingsPanelOffset({ x: 0, y: 0 })
       setSettingsPanelDragging(false)
     }
-  }, [settingsOpen, thumbnailWidth])
+  }, [settingsOpen, thumbnailGenerationConcurrency, thumbnailResolveConcurrency, thumbnailWidth])
 
   useEffect(() => {
     setThumbnailWidthInputValue(String(thumbnailWidth))
   }, [thumbnailWidth])
+
+  useEffect(() => {
+    setThumbnailGenerationConcurrencyInput(String(thumbnailGenerationConcurrency))
+  }, [thumbnailGenerationConcurrency])
+
+  useEffect(() => {
+    setThumbnailResolveConcurrencyInput(String(thumbnailResolveConcurrency))
+  }, [thumbnailResolveConcurrency])
 
   useEffect(() => {
     const normalized = resolveSettingsSection(activeSectionRaw)
@@ -368,7 +407,7 @@ function SettingsPanel({
               type="button"
               onClick={() => openBindingManager({ action: definition.action, label: definition.label })}
             >
-              {shortcuts[definition.action] || '未设置'}
+              {shortcuts[definition.action] || t('ui.settings.shortcutNotSet')}
             </button>
           </label>
         ))}
@@ -417,6 +456,97 @@ function SettingsPanel({
     }
     if (event.key === 'Escape') {
       setThumbnailWidthInputValue(String(thumbnailWidth))
+      event.currentTarget.blur()
+    }
+  }
+
+  const commitThumbnailGenerationConcurrencyInput = () => {
+    const parsed = Number(thumbnailGenerationConcurrencyInput)
+    if (!Number.isFinite(parsed)) {
+      setThumbnailGenerationConcurrencyInput(String(thumbnailGenerationConcurrency))
+      return
+    }
+
+    const normalized = Math.max(
+      THUMBNAIL_GENERATION_CONCURRENCY_MIN,
+      Math.min(THUMBNAIL_GENERATION_CONCURRENCY_MAX, Math.round(parsed)),
+    )
+    setThumbnailGenerationConcurrencyInput(String(normalized))
+    onThumbnailGenerationConcurrencyChange(normalized)
+  }
+
+  const handleThumbnailGenerationConcurrencyInputChange = (value: string) => {
+    if (value.length === 0) {
+      setThumbnailGenerationConcurrencyInput(value)
+      return
+    }
+    if (!/^\d+$/.test(value)) {
+      return
+    }
+
+    setThumbnailGenerationConcurrencyInput(value)
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed)) {
+      return
+    }
+    if (parsed < THUMBNAIL_GENERATION_CONCURRENCY_MIN || parsed > THUMBNAIL_GENERATION_CONCURRENCY_MAX) {
+      return
+    }
+    onThumbnailGenerationConcurrencyChange(parsed)
+  }
+
+  const handleThumbnailGenerationConcurrencyInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      commitThumbnailGenerationConcurrencyInput()
+      event.currentTarget.blur()
+      return
+    }
+    if (event.key === 'Escape') {
+      setThumbnailGenerationConcurrencyInput(String(thumbnailGenerationConcurrency))
+      event.currentTarget.blur()
+    }
+  }
+
+  const commitThumbnailResolveConcurrencyInput = () => {
+    const parsed = Number(thumbnailResolveConcurrencyInput)
+    if (!Number.isFinite(parsed)) {
+      setThumbnailResolveConcurrencyInput(String(thumbnailResolveConcurrency))
+      return
+    }
+
+    const normalized = Math.max(THUMBNAIL_RESOLVE_CONCURRENCY_MIN, Math.min(THUMBNAIL_RESOLVE_CONCURRENCY_MAX, Math.round(parsed)))
+    setThumbnailResolveConcurrencyInput(String(normalized))
+    onThumbnailResolveConcurrencyChange(normalized)
+  }
+
+  const handleThumbnailResolveConcurrencyInputChange = (value: string) => {
+    if (value.length === 0) {
+      setThumbnailResolveConcurrencyInput(value)
+      return
+    }
+    if (!/^\d+$/.test(value)) {
+      return
+    }
+
+    setThumbnailResolveConcurrencyInput(value)
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed)) {
+      return
+    }
+    if (parsed < THUMBNAIL_RESOLVE_CONCURRENCY_MIN || parsed > THUMBNAIL_RESOLVE_CONCURRENCY_MAX) {
+      return
+    }
+    onThumbnailResolveConcurrencyChange(parsed)
+  }
+
+  const handleThumbnailResolveConcurrencyInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      commitThumbnailResolveConcurrencyInput()
+      event.currentTarget.blur()
+      return
+    }
+    if (event.key === 'Escape') {
+      setThumbnailResolveConcurrencyInput(String(thumbnailResolveConcurrency))
       event.currentTarget.blur()
     }
   }
@@ -525,6 +655,8 @@ function SettingsPanel({
     thumbnailGapScale,
     thumbnailQuality,
     thumbnailWidthInputValue,
+    thumbnailGenerationConcurrencyInput,
+    thumbnailResolveConcurrencyInput,
     proxyServer,
     ehentaiCookies,
     adReviewVisionEndpoint,
@@ -535,7 +667,6 @@ function SettingsPanel({
     adReviewVisionSavePending,
     adReviewVisionSaveMessage,
     styleId,
-    paletteId,
     paletteMode,
     paletteDayId,
     paletteNightId,
@@ -550,6 +681,9 @@ function SettingsPanel({
     runtimeInfoLoading,
     runtimeInfoError,
     runtimeInfo,
+    mediaCapabilitiesLoading,
+    mediaCapabilitiesError,
+    mediaCapabilities,
     renderBindingRows,
     onResetShortcuts,
     onLayoutLockedChange,
@@ -569,9 +703,19 @@ function SettingsPanel({
     onFullscreenVideoControlsMaxWidthChange,
     onThumbnailGapChange,
     onThumbnailQualityChange,
+    onResetThumbnailQuality,
     onThumbnailWidthInputChange: handleThumbnailWidthInputChange,
     onThumbnailWidthInputBlur: commitThumbnailWidthInput,
     onThumbnailWidthInputKeyDown: handleThumbnailWidthInputKeyDown,
+    onResetThumbnailWidth,
+    onThumbnailGenerationConcurrencyInputChange: handleThumbnailGenerationConcurrencyInputChange,
+    onThumbnailGenerationConcurrencyInputBlur: commitThumbnailGenerationConcurrencyInput,
+    onThumbnailGenerationConcurrencyInputKeyDown: handleThumbnailGenerationConcurrencyInputKeyDown,
+    onResetThumbnailGenerationConcurrency,
+    onThumbnailResolveConcurrencyInputChange: handleThumbnailResolveConcurrencyInputChange,
+    onThumbnailResolveConcurrencyInputBlur: commitThumbnailResolveConcurrencyInput,
+    onThumbnailResolveConcurrencyInputKeyDown: handleThumbnailResolveConcurrencyInputKeyDown,
+    onResetThumbnailResolveConcurrency,
     onProxyServerChange,
     onEhentaiCookiesChange,
     onAdReviewVisionEndpointChange,
@@ -634,7 +778,7 @@ function SettingsPanel({
           <aside className="settings-side" aria-label={t(a11yRegistry.settingsGroups.labelKey)}>
             {SETTINGS_SECTIONS.map((section) => (
               <button key={section.id} className={activeSection === section.id ? 'is-active' : ''} type="button" onClick={() => setActiveSection(section.id)}>
-                {section.label}
+                {t(section.labelKey)}
               </button>
             ))}
           </aside>
@@ -653,7 +797,7 @@ function SettingsPanel({
                   ))}
                 </ul>
               ) : (
-                <p className="settings-placeholder">当前未设置快捷键。</p>
+                <p className="settings-placeholder">{t('ui.settings.shortcutNoneConfigured')}</p>
               )}
               <div className="settings-floating-actions">
                 <button
@@ -664,9 +808,9 @@ function SettingsPanel({
                     setCapturingTarget(bindingTarget)
                   }}
                 >
-                  新增
+                  {t('ui.common.add')}
                 </button>
-                <button type="button" data-capture-ignore="true" onClick={() => setBinding(bindingTarget, '')}>清除</button>
+                <button type="button" data-capture-ignore="true" onClick={() => setBinding(bindingTarget, '')}>{t('ui.common.clear')}</button>
                 <button
                   type="button"
                   data-capture-ignore="true"
@@ -676,7 +820,7 @@ function SettingsPanel({
                     setCapturedCombo('')
                   }}
                 >
-                  关闭
+                  {t('ui.common.close')}
                 </button>
               </div>
             </section>
@@ -686,11 +830,11 @@ function SettingsPanel({
         {capturingTarget ? (
           <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={t(a11yRegistry.settingsShortcutCaptureDialog.labelKey)}>
             <section ref={captureDialogRef} className="settings-floating-panel">
-              <h3>录入快捷键</h3>
-              <p className="settings-placeholder">按下键盘/鼠标（支持组合键）。</p>
-              <p className="binding-capture-preview">{capturedCombo || '等待输入...'}</p>
+              <h3>{t('ui.settings.shortcutCaptureTitle')}</h3>
+              <p className="settings-placeholder">{t('ui.settings.shortcutCaptureHint')}</p>
+              <p className="binding-capture-preview">{capturedCombo || t('ui.settings.shortcutCaptureWaiting')}</p>
               <div className="binding-mouse-presets" data-capture-ignore="true">
-                <span>快速选择鼠标事件</span>
+                <span>{t('ui.settings.shortcutMousePresets')}</span>
                 <div className="binding-mouse-preset-list">
                   {MOUSE_CAPTURE_PRESETS.map((preset) => (
                     <button
@@ -701,7 +845,7 @@ function SettingsPanel({
                         setCapturedCombo(preset.combo)
                       }}
                     >
-                      {preset.label}
+                      {t(preset.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -719,7 +863,7 @@ function SettingsPanel({
                     setCapturedCombo('')
                   }}
                 >
-                  确认新增
+                  {t('ui.settings.shortcutConfirmAdd')}
                 </button>
                 <button
                   type="button"
@@ -729,7 +873,7 @@ function SettingsPanel({
                     setCapturedCombo('')
                   }}
                 >
-                  取消
+                  {t('ui.common.cancel')}
                 </button>
               </div>
             </section>

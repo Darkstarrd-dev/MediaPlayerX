@@ -194,6 +194,7 @@ export interface AppHeaderProps {
   autoPlayEnabled: boolean
   autoPlayInterval: number
   paletteMode: 'day' | 'night'
+  interactionLocked?: boolean
   importMenuOpen: boolean
   taskStatusLabel: string
   taskStatusBusy: boolean
@@ -228,6 +229,7 @@ function AppHeader({
   autoPlayEnabled,
   autoPlayInterval,
   paletteMode,
+  interactionLocked = false,
   importMenuOpen,
   taskStatusLabel,
   taskStatusBusy,
@@ -421,7 +423,7 @@ function AppHeader({
                     onCloseImportMenu()
                   }}
                 >
-                  导入文件
+                  {t('ui.header.importFiles')}
                 </button>
                 <button
                   type="button"
@@ -430,7 +432,7 @@ function AppHeader({
                     onCloseImportMenu()
                   }}
                 >
-                  导入文件夹
+                  {t('ui.header.importFolders')}
                 </button>
               </div>
             ) : null}
@@ -457,7 +459,7 @@ function AppHeader({
             type="button"
             onClick={onTogglePaletteMode}
           >
-            <HeaderActionIcon name={paletteMode === 'day' ? 'night' : 'day'} />
+            <HeaderActionIcon name={paletteMode === 'day' ? 'day' : 'night'} />
           </button>
 
           <button {...settingsButtonA11y} className="header-settings-btn" type="button" onClick={onOpenSettings}>
@@ -477,6 +479,7 @@ function AppHeader({
                 {...buildA11yPropsByRegistry({ key: 'headerModeImage', t })}
                 className={mode === 'image' ? 'is-active' : ''}
                 type="button"
+                disabled={interactionLocked}
                 onMouseEnter={() => setShowMusicQuickActions(false)}
                 onClick={() => onModeChange('image')}
               >
@@ -491,6 +494,7 @@ function AppHeader({
                 {...buildA11yPropsByRegistry({ key: 'headerModeVideo', t })}
                 className={mode === 'video' ? 'is-active' : ''}
                 type="button"
+                disabled={interactionLocked}
                 onMouseEnter={() => setShowMusicQuickActions(false)}
                 onClick={() => onModeChange('video')}
               >
@@ -505,6 +509,7 @@ function AppHeader({
                 {...buildA11yPropsByRegistry({ key: 'headerModeMusic', t })}
                 className={mode === 'music' ? 'is-active' : ''}
                 type="button"
+                disabled={interactionLocked}
                 onMouseEnter={showMusicActions}
                 onClick={() => onModeChange('music')}
               >
@@ -620,7 +625,13 @@ function AppHeader({
         </div>
 
         <div className="header-group header-group-search">
-          <button {...searchButtonA11y} className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`} type="button" onClick={onToggleSearchPanel}>
+          <button
+            {...searchButtonA11y}
+            className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
+            type="button"
+            disabled={interactionLocked}
+            onClick={onToggleSearchPanel}
+          >
             <span className="header-btn-content">
               <span className="header-btn-icon">
                 <HeaderActionIcon name="search" />
@@ -629,7 +640,13 @@ function AppHeader({
             </span>
           </button>
 
-          <button {...manageButtonA11y} className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`} type="button" onClick={onToggleManageMode}>
+          <button
+            {...manageButtonA11y}
+            className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`}
+            type="button"
+            disabled={interactionLocked}
+            onClick={onToggleManageMode}
+          >
             <span className="header-btn-content">
               <span className="header-btn-icon">
                 <HeaderActionIcon name="edit" />
@@ -638,14 +655,20 @@ function AppHeader({
             </span>
           </button>
 
-          <button {...metadataToggleA11y} className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`} type="button" onClick={onToggleMetadataManageMode}>
-              <span className="header-btn-content">
-                <span className="header-btn-icon">
-                  <HeaderActionIcon name="metadata" />
-                </span>
-                <span className="header-btn-label">{metadataManageMode ? t('ui.header.imageMode') : t('ui.header.metadataManage')}</span>
+          <button
+            {...metadataToggleA11y}
+            className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`}
+            type="button"
+            disabled={interactionLocked}
+            onClick={onToggleMetadataManageMode}
+          >
+            <span className="header-btn-content">
+              <span className="header-btn-icon">
+                <HeaderActionIcon name="metadata" />
               </span>
-            </button>
+              <span className="header-btn-label">{metadataManageMode ? t('ui.header.imageMode') : t('ui.header.metadataManage')}</span>
+            </span>
+          </button>
         </div>
       </div>
 

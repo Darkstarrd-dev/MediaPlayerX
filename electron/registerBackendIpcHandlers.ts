@@ -86,6 +86,7 @@ import { registerMediaProtocolHandler } from './registerMediaProtocolHandler'
 import { registerResolveMediaResourceHandler } from './registerResolveMediaResourceHandler'
 import { updateRuntimeStoragePaths } from './runtimeStorageUpdate'
 import { MetadataScraperService } from './services/metadata/metadataScraperService'
+import { getAllowedExternalUrlHosts, isExternalUrlAllowed } from './externalUrlPolicy'
 
 export function registerBackendIpcHandlers(): void {
   const userDataPath = app.getPath('userData')
@@ -95,6 +96,7 @@ export function registerBackendIpcHandlers(): void {
   let runtimeStoragePaths = readRuntimeStoragePaths(runtimeStoragePathsConfigPath)
   let databasePath = resolveDatabasePath(libraryRoot, runtimeStoragePaths.database_dir)
   let thumbnailCachePath = resolveThumbnailCachePath(libraryRoot, runtimeStoragePaths.thumbnail_cache_dir)
+  const allowedExternalUrlHosts = getAllowedExternalUrlHosts()
   let service: FileSystemMediaReadService | null = null
   const metadataScraper = new MetadataScraperService({
     defaultProxyServer: process.env.MEDIA_PLAYERX_PROXY_SERVER,
@@ -381,6 +383,18 @@ export function registerBackendIpcHandlers(): void {
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeInfo, async () => {
+    const gpuFeatureStatusRaw = app.getGPUFeatureStatus()
+    const gpuFeatureStatus: Record<string, string> = {}
+    for (const [key, value] of Object.entries(gpuFeatureStatusRaw)) {
+      gpuFeatureStatus[key] = String(value)
+    }
+
+    const gpuInfoBasicRaw = await app.getGPUInfo('basic').catch(() => null)
+    const gpuInfoBasic =
+      gpuInfoBasicRaw && typeof gpuInfoBasicRaw === 'object'
+        ? (gpuInfoBasicRaw as Record<string, unknown>)
+        : undefined
+
     return readRuntimeInfoResponseSchema.parse({
       app_version: app.getVersion(),
       is_packaged: app.isPackaged,
@@ -390,6 +404,15 @@ export function registerBackendIpcHandlers(): void {
       library_root: libraryRoot,
       database_path: databasePath,
       thumbnail_cache_path: thumbnailCachePath,
+      hardware_acceleration_enabled: app.isHardwareAccelerationEnabled(),
+      gpu_feature_status: gpuFeatureStatus,
+      gpu_info_basic: gpuInfoBasic,
+      media_capability_hints: [
+        { id: 'h264-1080p', label: 'H.264 / AVC 1080p', content_type: 'video/mp4; codecs="avc1.640028"' },
+        { id: 'hevc-1080p', label: 'H.265 / HEVC 1080p', content_type: 'video/mp4; codecs="hvc1.1.6.L120.B0"' },
+        { id: 'av1-1080p', label: 'AV1 1080p', content_type: 'video/mp4; codecs="av01.0.08M.08"' },
+        { id: 'vp9-1080p', label: 'VP9 1080p', content_type: 'video/webm; codecs="vp09.00.41.08"' },
+      ],
     })
   })
 
@@ -436,6 +459,10 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.openExternalUrl, async (_event, payload: unknown) => {
     const request = openExternalUrlRequestSchema.parse(payload)
+    if (!isExternalUrlAllowed(request.url, allowedExternalUrlHosts)) {
+      return openExternalUrlResponseSchema.parse({ ok: false })
+    }
+
     await shell.openExternal(request.url)
     return openExternalUrlResponseSchema.parse({ ok: true })
   })

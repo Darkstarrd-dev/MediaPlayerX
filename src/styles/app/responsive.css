@@ -32,6 +32,29 @@
     min-width: 0;
   }
 
+  .settings-theme-inline-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .settings-theme-toggle-btn {
+    justify-self: start;
+  }
+
+  .settings-thumbnail-four-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .settings-compact-control-actions {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .settings-compact-control-actions > input[type='number'] {
+    width: 100%;
+    min-width: 0;
+  }
+
   .feature-controls {
     grid-template-columns: 1fr;
   }

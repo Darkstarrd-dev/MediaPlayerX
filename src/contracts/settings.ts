@@ -72,6 +72,8 @@ export const appSettingsSchema = z.object({
   paletteNightId: z.string().min(1).default('tokyo-night'),
   thumbnailQuality: z.number().min(1).max(100),
   thumbnailWidth: z.number().min(128).max(2048),
+  thumbnailGenerationConcurrency: z.number().int().min(1).max(16),
+  thumbnailResolveConcurrency: z.number().int().min(1).max(32),
   musicVisualizerRenderLongEdgePx: z.number().int().min(240).max(4096),
   musicVisualizerFpsCap: musicVisualizerFpsCapSchema,
   musicVisualizerSelectedShaderId: z.string().max(64),
