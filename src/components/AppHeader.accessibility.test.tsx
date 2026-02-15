@@ -1,6 +1,8 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { act, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { I18nProvider } from '../i18n/I18nProvider'
+import { resetUiStoreState, useUiStore } from '../store/useUiStore'
 import AppHeader, { type AppHeaderProps } from './AppHeader'
 
 function createProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderProps {
@@ -41,17 +43,47 @@ function createProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderProps {
 }
 
 describe('AppHeader accessibility labels', () => {
-  it('keeps stable toolbar button labels in normal mode', () => {
-    render(<AppHeader {...createProps({ metadataManageMode: false })} />)
+  afterEach(() => {
+    act(() => {
+      resetUiStoreState()
+    })
+  })
 
+  it('keeps stable toolbar button labels in normal mode', () => {
+    act(() => {
+      useUiStore.getState().updateSettings({ uiLocale: 'zh-CN' })
+    })
+
+    const { container } = render(
+      <I18nProvider browserLocale="en-US">
+        <AppHeader {...createProps({ metadataManageMode: false })} />
+      </I18nProvider>,
+    )
+
+    const searchButton = container.querySelector('button[data-a11y-id="header.search"]')
+    const manageButton = container.querySelector('button[data-a11y-id="header.manage"]')
+    const metadataToggleButton = container.querySelector('button[data-a11y-id="header.metadataToggle"]')
+
+    expect(searchButton).toBeInTheDocument()
+    expect(manageButton).toBeInTheDocument()
+    expect(metadataToggleButton).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '检索' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '文件管理' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '切换到元数据模式' })).toBeInTheDocument()
   })
 
   it('switches metadata mode toggle label when metadata mode is active', () => {
-    render(<AppHeader {...createProps({ metadataManageMode: true })} />)
+    act(() => {
+      useUiStore.getState().updateSettings({ uiLocale: 'zh-CN' })
+    })
 
+    const { container } = render(
+      <I18nProvider browserLocale="en-US">
+        <AppHeader {...createProps({ metadataManageMode: true })} />
+      </I18nProvider>,
+    )
+
+    expect(container.querySelector('button[data-a11y-id="header.metadataToggle"]')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '切换到图像模式' })).toBeInTheDocument()
   })
 })

@@ -16,6 +16,8 @@ import {
   renderSettingsMainSection,
   type SettingsSection,
 } from './settings/renderSettingsMainSection'
+import { buildA11yProps } from '../i18n/a11y'
+import { useI18n } from '../i18n/useI18n'
 import { MainUiIcon } from './MainUiIcon'
 import { toScale } from './settings/settingsScale'
 
@@ -226,6 +228,7 @@ function SettingsPanel({
   onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
 }: SettingsPanelProps) {
+  const { t } = useI18n()
   const [activeSectionRaw, setActiveSection] = useState<SettingsSection>('layout')
   const activeSection = resolveSettingsSection(activeSectionRaw)
   const [bindingTarget, setBindingTarget] = useState<BindingTarget | null>(null)
@@ -585,9 +588,20 @@ function SettingsPanel({
 
   const currentBinding = bindingTarget ? getBinding(bindingTarget) : ''
   const currentCombos = currentBinding ? currentBinding.split('|') : []
+  const settingsPanelA11y = buildA11yProps({
+    id: 'settings.panel',
+    labelKey: 'a11y.settings.panel',
+    t,
+  })
+  const settingsCloseA11y = buildA11yProps({
+    id: 'settings.close',
+    labelKey: 'a11y.settings.close',
+    titleKey: 'tip.settings.close',
+    t,
+  })
 
   return (
-    <div className="settings-mask" role="dialog" aria-modal="true" aria-label="设置面板" data-overlay-close="settings">
+    <div {...settingsPanelA11y} className="settings-mask" role="dialog" aria-modal="true" data-overlay-close="settings">
       <section
         ref={settingsPanelRef}
         className={`settings-panel ${settingsPanelDragging ? 'is-dragging' : ''}`}
@@ -602,13 +616,12 @@ function SettingsPanel({
           onLostPointerCapture={handleSettingsHeadLostPointerCapture}
         >
           <span className="settings-head-spacer" aria-hidden="true" />
-          <h2>设置面板</h2>
+          <h2>{t('ui.settings.panel')}</h2>
           <button
+            {...settingsCloseA11y}
             className="settings-icon-btn main-icon-square-btn"
             type="button"
             data-no-drag="true"
-            aria-label="关闭"
-            title="关闭"
             onClick={onClose}
           >
             <MainUiIcon name="close" />

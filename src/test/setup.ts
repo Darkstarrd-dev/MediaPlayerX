@@ -13,6 +13,13 @@ if (!globalThis.ResizeObserver) {
   globalThis.ResizeObserver = ResizeObserverMock as typeof ResizeObserver
 }
 
+if (globalThis.navigator) {
+  Object.defineProperty(globalThis.navigator, 'language', {
+    configurable: true,
+    get: () => 'zh-CN',
+  })
+}
+
 if (globalThis.HTMLMediaElement) {
   Object.defineProperty(globalThis.HTMLMediaElement.prototype, 'play', {
     configurable: true,

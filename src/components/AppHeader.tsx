@@ -4,6 +4,8 @@ import {
   dispatchMusicPlaybackControl,
   onMusicPlaybackState,
 } from '../features/media/musicPlaybackBridge'
+import { buildA11yProps } from '../i18n/a11y'
+import { useI18n } from '../i18n/useI18n'
 import type { BrowserMode } from '../types'
 
 type HeaderIconName =
@@ -246,6 +248,7 @@ function AppHeader({
   onTogglePaletteMode,
   onOpenSettings,
 }: AppHeaderProps) {
+  const { t } = useI18n()
   const [windowMaximized, setWindowMaximized] = useState(false)
   const [showMusicQuickActions, setShowMusicQuickActions] = useState(false)
   const [musicQuickPlaying, setMusicQuickPlaying] = useState(false)
@@ -391,6 +394,27 @@ function AppHeader({
     })
   }, [])
 
+  const settingsButtonA11y = buildA11yProps({
+    id: 'header.settings',
+    labelKey: 'a11y.header.settings',
+    t,
+  })
+  const searchButtonA11y = buildA11yProps({
+    id: 'header.search',
+    labelKey: 'a11y.header.search',
+    t,
+  })
+  const manageButtonA11y = buildA11yProps({
+    id: 'header.manage',
+    labelKey: 'a11y.header.manage',
+    t,
+  })
+  const metadataToggleA11y = buildA11yProps({
+    id: 'header.metadataToggle',
+    labelKey: metadataManageMode ? 'a11y.header.switchToImageMode' : 'a11y.header.switchToMetadataMode',
+    t,
+  })
+
   return (
     <header className="app-header" style={{ height: `${headerHeight}px` }}>
       <div className="header-left">
@@ -447,12 +471,12 @@ function AppHeader({
             <HeaderActionIcon name={paletteMode === 'day' ? 'night' : 'day'} />
           </button>
 
-          <button aria-label="设置" className="header-settings-btn" type="button" onClick={onOpenSettings}>
+          <button {...settingsButtonA11y} className="header-settings-btn" type="button" onClick={onOpenSettings}>
             <span className="header-btn-content">
               <span className="header-btn-icon">
                 <HeaderActionIcon name="settings" />
               </span>
-              <span className="header-btn-label">设置</span>
+              <span className="header-btn-label">{t('ui.header.settings')}</span>
             </span>
           </button>
         </div>
@@ -612,45 +636,30 @@ function AppHeader({
         </div>
 
         <div className="header-group header-group-search">
-          <button
-            aria-label="检索"
-            className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
-            type="button"
-            onClick={onToggleSearchPanel}
-          >
+          <button {...searchButtonA11y} className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`} type="button" onClick={onToggleSearchPanel}>
             <span className="header-btn-content">
               <span className="header-btn-icon">
                 <HeaderActionIcon name="search" />
               </span>
-              <span className="header-btn-label">检索</span>
+              <span className="header-btn-label">{t('ui.header.search')}</span>
             </span>
           </button>
 
-          <button
-            aria-label="文件管理"
-            className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`}
-            type="button"
-            onClick={onToggleManageMode}
-          >
+          <button {...manageButtonA11y} className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`} type="button" onClick={onToggleManageMode}>
             <span className="header-btn-content">
               <span className="header-btn-icon">
                 <HeaderActionIcon name="edit" />
               </span>
-              <span className="header-btn-label">文件管理</span>
+              <span className="header-btn-label">{t('ui.header.manage')}</span>
             </span>
           </button>
 
-          <button
-            aria-label={metadataManageMode ? '切换到图像模式' : '切换到元数据模式'}
-            className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`}
-            type="button"
-            onClick={onToggleMetadataManageMode}
-          >
+          <button {...metadataToggleA11y} className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`} type="button" onClick={onToggleMetadataManageMode}>
               <span className="header-btn-content">
                 <span className="header-btn-icon">
                   <HeaderActionIcon name="metadata" />
                 </span>
-                <span className="header-btn-label">{metadataManageMode ? '图像模式' : '元数据管理'}</span>
+                <span className="header-btn-label">{metadataManageMode ? t('ui.header.imageMode') : t('ui.header.metadataManage')}</span>
               </span>
             </button>
         </div>
