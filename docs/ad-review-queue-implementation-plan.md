@@ -43,6 +43,9 @@ Rules for this plan
 - D) Only 1 ad-review item can be `running` at a time.
   - a new request while one is running becomes `pending`.
 - E) Node-level persistence semantics (sidebar scope):
+  - Node definition: a "node" means one normalized selected sidebar node id (from `selection_node_ids` after de-dup and removing descendants).
+    - if the node is a folder node, its scan scope is all descendant image sources and images under that subtree.
+    - if the node is a package/directory node, its scan scope is that single image source.
   - A node is marked as reviewed only after the node finishes scanning.
   - If the app crashes/power-loss happens while scanning a node, that node is NOT recorded as reviewed.
     - after restart, that node will be scanned again next time.
