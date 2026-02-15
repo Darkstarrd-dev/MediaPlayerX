@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { resolveActiveLocale } from '../../i18n/locale'
+import { useUiStore } from '../../store/useUiStore'
 import type { AudioItem, BrowserMode, ImagePackage, VideoItem } from '../../types'
 
 type SearchPanelMode = 'vector' | 'feature'
@@ -34,6 +36,7 @@ export function useFeatureSearch({
   videos,
   audios,
 }: UseFeatureSearchParams) {
+  const uiLocale = useUiStore((state) => state?.uiLocale ?? 'auto')
   const [searchPanelMode, setSearchPanelMode] = useState<SearchPanelMode>('feature')
   const [featureNameQuery, setFeatureNameQuery] = useState('')
   const [featureWorkTitleQuery, setFeatureWorkTitleQuery] = useState('')
@@ -48,6 +51,15 @@ export function useFeatureSearch({
   const [quickFeatureCircleQuery, setQuickFeatureCircleQuery] = useState('')
   const [quickFeatureAuthorQuery, setQuickFeatureAuthorQuery] = useState('')
   const [quickFeatureTags, setQuickFeatureTags] = useState<string[]>([])
+
+  const activeLocale = useMemo(
+    () => resolveActiveLocale(uiLocale, typeof navigator === 'undefined' ? null : navigator.language),
+    [uiLocale],
+  )
+  const textCollator = useMemo(
+    () => new Intl.Collator(activeLocale, { sensitivity: 'base' }),
+    [activeLocale],
+  )
 
   useEffect(() => {
     if (!vectorMode || searchPanelMode !== 'feature') {
@@ -122,10 +134,10 @@ export function useFeatureSearch({
               ? videos.map((video) => video.circle)
               : audios.map((audio) => audio.album),
         ),
-      )
+        )
         .filter((value) => value.trim().length > 0)
-        .sort((a, b) => a.localeCompare(b, 'zh-CN')),
-    [audios, imageSources, mode, videos],
+        .sort((a, b) => textCollator.compare(a, b)),
+    [audios, imageSources, mode, textCollator, videos],
   )
 
   const featureAuthorOptions = useMemo(
@@ -138,10 +150,10 @@ export function useFeatureSearch({
               ? videos.map((video) => video.author)
               : audios.map((audio) => audio.author),
         ),
-      )
+        )
         .filter((value) => value.trim().length > 0)
-        .sort((a, b) => a.localeCompare(b, 'zh-CN')),
-    [audios, imageSources, mode, videos],
+        .sort((a, b) => textCollator.compare(a, b)),
+    [audios, imageSources, mode, textCollator, videos],
   )
 
   const featureTagOptions = useMemo(
@@ -163,8 +175,8 @@ export function useFeatureSearch({
               : []),
           ]),
         ),
-      ).sort((a, b) => a.localeCompare(b, 'zh-CN')),
-    [imageSources, mode, videos],
+      ).sort((a, b) => textCollator.compare(a, b)),
+    [imageSources, mode, textCollator, videos],
   )
 
   return {

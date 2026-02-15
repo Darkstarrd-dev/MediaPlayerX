@@ -1,25 +1,14 @@
-import { createContext, useMemo, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 
 import { useUiStore } from '../store/useUiStore'
 import {
   DEFAULT_LOCALE,
   getCatalogByLocale,
-  type SupportedLocale,
-  type UiLocalePreference,
 } from './catalog'
+import { I18nContext, type I18nContextValue, type TranslateFn } from './context'
 import { resolveActiveLocale } from './locale'
 
 type TranslationParams = Record<string, string | number | boolean | null | undefined>
-
-export type TranslateFn = (key: string, params?: TranslationParams) => string
-
-export interface I18nContextValue {
-  locale: SupportedLocale
-  uiLocale: UiLocalePreference
-  t: TranslateFn
-}
-
-export const I18nContext = createContext<I18nContextValue | null>(null)
 
 interface I18nProviderProps {
   children: ReactNode

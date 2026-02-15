@@ -26,7 +26,8 @@
     "theme:gallery": "node scripts/capture-theme-gallery.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "i18n:check": "node scripts/i18n-check.mjs"
   },
   "dependencies": {
     "7z-wasm": "^1.2.0",

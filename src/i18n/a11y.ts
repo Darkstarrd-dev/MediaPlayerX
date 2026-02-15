@@ -1,4 +1,4 @@
-import type { TranslateFn } from './I18nProvider'
+import type { TranslateFn } from './context'
 
 export interface A11yProps {
   'data-a11y-id': string

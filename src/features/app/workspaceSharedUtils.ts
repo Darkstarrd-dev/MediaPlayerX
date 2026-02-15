@@ -1,4 +1,16 @@
+import { resolveActiveLocale } from '../../i18n/locale'
+import { useUiStore } from '../../store/useUiStore'
 import type { AudioItem, SidebarNode } from '../../types'
+
+function resolveSortLocale(overrideLocale?: string): string {
+  if (overrideLocale) {
+    return overrideLocale
+  }
+
+  const uiLocale = useUiStore.getState()?.uiLocale ?? 'auto'
+  const browserLocale = typeof navigator === 'undefined' ? null : navigator.language
+  return resolveActiveLocale(uiLocale, browserLocale)
+}
 
 export function normalizeFeatureTags(values: string[]): string[] {
   return values
@@ -41,13 +53,18 @@ export function normalizeSeriesId(value: string | null | undefined): string {
   return value?.trim() ?? ''
 }
 
-function compareAbsolutePath(left: { absolutePath: string }, right: { absolutePath: string }): number {
-  return left.absolutePath.localeCompare(right.absolutePath, 'zh-CN', { sensitivity: 'base' })
+function compareByLocale(left: string, right: string, locale: string): number {
+  return left.localeCompare(right, locale, { sensitivity: 'base' })
+}
+
+function compareAbsolutePath(left: { absolutePath: string }, right: { absolutePath: string }, locale: string): number {
+  return compareByLocale(left.absolutePath, right.absolutePath, locale)
 }
 
 export function pickFirstBySeriesId<T extends { seriesId?: string; absolutePath: string }>(
   items: Iterable<T>,
   seriesId: string,
+  locale?: string,
 ): T | null {
   if (!seriesId) {
     return null
@@ -63,11 +80,13 @@ export function pickFirstBySeriesId<T extends { seriesId?: string; absolutePath:
   if (matches.length === 0) {
     return null
   }
-  matches.sort(compareAbsolutePath)
+  const sortLocale = resolveSortLocale(locale)
+  matches.sort((left, right) => compareAbsolutePath(left, right, sortLocale))
   return matches[0]
 }
 
-export function collectAudioIdsBySidebarOrder(nodes: SidebarNode[], audios: AudioItem[]): string[] {
+export function collectAudioIdsBySidebarOrder(nodes: SidebarNode[], audios: AudioItem[], locale?: string): string[] {
+  const sortLocale = resolveSortLocale(locale)
   const folderOrderByPath = new Map<string, number>()
   let order = 0
   const walk = (currentNodes: SidebarNode[]) => {
@@ -90,7 +109,7 @@ export function collectAudioIdsBySidebarOrder(nodes: SidebarNode[], audios: Audi
       if (leftOrder !== rightOrder) {
         return leftOrder - rightOrder
       }
-      return left.absolutePath.localeCompare(right.absolutePath, 'zh-CN', { sensitivity: 'base' })
+      return compareByLocale(left.absolutePath, right.absolutePath, sortLocale)
     })
     .map((audio) => audio.id)
 }

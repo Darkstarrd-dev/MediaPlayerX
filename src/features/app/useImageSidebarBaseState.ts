@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 
+import { resolveActiveLocale } from '../../i18n/locale'
+import { useUiStore } from '../../store/useUiStore'
 import type { SidebarNode } from '../../types'
 
 const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
@@ -46,11 +48,12 @@ function compactImageSidebarTree(nodes: SidebarNode[]): SidebarNode[] {
   return nodes.map((node) => compactImageSidebarNode(node, true))
 }
 
-function reorderImageRootNodes(nodes: SidebarNode[]): SidebarNode[] {
+function reorderImageRootNodes(nodes: SidebarNode[], locale: string): SidebarNode[] {
+  const localeCollator = new Intl.Collator(locale, { sensitivity: 'base' })
   const next = [...nodes]
   next.sort((left, right) => {
-    const leftBooklet = left.pathKey.localeCompare(MUSIC_BOOKLET_ROOT_LABEL, 'zh-CN', { sensitivity: 'base' }) === 0
-    const rightBooklet = right.pathKey.localeCompare(MUSIC_BOOKLET_ROOT_LABEL, 'zh-CN', { sensitivity: 'base' }) === 0
+    const leftBooklet = localeCollator.compare(left.pathKey, MUSIC_BOOKLET_ROOT_LABEL) === 0
+    const rightBooklet = localeCollator.compare(right.pathKey, MUSIC_BOOKLET_ROOT_LABEL) === 0
     if (leftBooklet === rightBooklet) {
       return 0
     }
@@ -73,12 +76,18 @@ export function useImageSidebarBaseState({
   imageTreeRaw,
   imageRootNode,
 }: UseImageSidebarBaseStateParams): UseImageSidebarBaseStateResult {
+  const uiLocale = useUiStore((state) => state?.uiLocale ?? 'auto')
+  const activeLocale = useMemo(
+    () => resolveActiveLocale(uiLocale, typeof navigator === 'undefined' ? null : navigator.language),
+    [uiLocale],
+  )
+
   const imageTreeForSidebarNormal = useMemo(() => {
     if (!imageRootNode) {
-      return reorderImageRootNodes(compactImageSidebarTree(imageTreeRaw))
+      return reorderImageRootNodes(compactImageSidebarTree(imageTreeRaw), activeLocale)
     }
     return compactImageSidebarTree([imageRootNode])
-  }, [imageRootNode, imageTreeRaw])
+  }, [activeLocale, imageRootNode, imageTreeRaw])
 
   const normalImageSourceNodeIdMap = useMemo(() => {
     const map = new Map<string, string>()
