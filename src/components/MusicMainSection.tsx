@@ -997,7 +997,7 @@ function MusicMainSection({
                     type="button"
                     aria-label={t('a11y.common.group')}
                     title={t('tip.common.group')}
-                    disabled={!canManageMoveNodes || pendingManageAction}
+                    disabled={pendingManageAction}
                     onClick={onManageGroup}
                   >
                     <span aria-hidden="true">{t('ui.common.groupShort')}</span>

@@ -19,11 +19,13 @@ interface VideoMainSectionProps {
   manageOperationHint: string | null
   canManageDelete: boolean
   canManageMoveNodes?: boolean
+  canManageAddToPlaylist?: boolean
   canManageHide: boolean
   canManageUnhide: boolean
   onManageDelete: () => void
   onManageGroup?: () => void
   onManageMove?: () => void
+  onManageAddToPlaylist?: () => void
   onManageHide: () => void
   onManageUnhide: () => void
   onClearManageSelection: () => void
@@ -78,11 +80,13 @@ function VideoMainSection({
   manageOperationHint,
   canManageDelete,
   canManageMoveNodes = false,
+  canManageAddToPlaylist = false,
   canManageHide,
   canManageUnhide,
   onManageDelete,
   onManageGroup = () => undefined,
   onManageMove = () => undefined,
+  onManageAddToPlaylist = () => undefined,
   onManageHide,
   onManageUnhide,
   onClearManageSelection,
@@ -243,10 +247,20 @@ function VideoMainSection({
                 type="button"
                 aria-label={t('a11y.common.group')}
                 title={t('tip.common.group')}
-                disabled={!canManageMoveNodes || pendingManageAction}
+                disabled={pendingManageAction}
                 onClick={onManageGroup}
               >
                 <span aria-hidden="true">{t('ui.common.groupShort')}</span>
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t('a11y.media.addToPlaylist')}
+                title={t('tip.media.addToPlaylist')}
+                disabled={!canManageAddToPlaylist || pendingManageAction}
+                onClick={onManageAddToPlaylist}
+              >
+                <span aria-hidden="true">P</span>
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn"

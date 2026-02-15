@@ -709,6 +709,7 @@ export const zhCnCatalog = {
   'a11y.media.videoFitOriginal': '原始',
   'a11y.media.videoPreview': '视频预览',
   'a11y.media.playbackRate': '倍速 x{{rate}}',
+  'a11y.media.addToPlaylist': '加入播放列表',
   'a11y.music.progress': '音乐进度滑条',
   'a11y.music.loopMode': '循环模式：{{label}}',
   'a11y.music.visualizer': '音乐可视化',
@@ -771,6 +772,7 @@ export const zhCnCatalog = {
   'tip.media.animation': '动画版',
   'tip.media.music': '音乐版',
   'tip.media.booklet': '小册版',
+  'tip.media.addToPlaylist': '加入播放列表',
   'tip.music.loopMode': '循环模式：{{label}}',
 } as const
 

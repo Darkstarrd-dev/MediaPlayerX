@@ -160,7 +160,6 @@ function SidebarPanel({
   manageMode = false,
   metadataManageMode = false,
   checkedSidebarNodeIds,
-  playlistIds,
   audioPlaylistIds,
   onSelectNode,
   onSelectPackage,
@@ -171,7 +170,6 @@ function SidebarPanel({
   onSetCurrentRoot,
   onGoToFromSearchMode,
   onResetRoot,
-  onToggleVideoPlaylist,
   onToggleAudioPlaylist,
   onToggleManageNode,
   onCheckManageNode,
@@ -491,17 +489,6 @@ function SidebarPanel({
           >
             {node.label}
           </button>
-
-          {mode === "video" && node.videoId ? (
-            <input
-              aria-label={t("a11y.sidebar.toggleVideo", { id: node.videoId })}
-              checked={playlistIds.includes(node.videoId)}
-              type="checkbox"
-              onChange={(event) =>
-                onToggleVideoPlaylist(node.videoId!, event.target.checked)
-              }
-            />
-          ) : null}
 
           {mode === "music" && node.kind === "audio" && node.audioId ? (
             <input

@@ -14,11 +14,13 @@ interface BuildVideoMainSectionPropsParams {
   manageOperationHint: string | null
   canManageDelete: boolean
   canManageMoveNodes: boolean
+  canManageAddToPlaylist: boolean
   canManageHide: boolean
   canManageUnhide: boolean
   onManageDelete: () => void
   onManageGroup: () => void
   onManageMove: () => void
+  onManageAddToPlaylist: () => void
   onManageHide: () => void
   onManageUnhide: () => void
   onClearManageSelection: () => void
@@ -74,11 +76,13 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     manageOperationHint: params.manageOperationHint,
     canManageDelete: params.canManageDelete,
     canManageMoveNodes: params.canManageMoveNodes,
+    canManageAddToPlaylist: params.canManageAddToPlaylist,
     canManageHide: params.canManageHide,
     canManageUnhide: params.canManageUnhide,
     onManageDelete: params.onManageDelete,
     onManageGroup: params.onManageGroup,
     onManageMove: params.onManageMove,
+    onManageAddToPlaylist: params.onManageAddToPlaylist,
     onManageHide: params.onManageHide,
     onManageUnhide: params.onManageUnhide,
     onClearManageSelection: params.onClearManageSelection,

@@ -711,6 +711,7 @@ export const enUsCatalog: { [K in keyof ZhCnCatalog]: string } = {
   'a11y.media.videoFitOriginal': 'Original',
   'a11y.media.videoPreview': 'Video preview',
   'a11y.media.playbackRate': 'Playback rate x{{rate}}',
+  'a11y.media.addToPlaylist': 'Add to playlist',
   'a11y.music.progress': 'Music Progress Slider',
   'a11y.music.loopMode': 'Loop Mode: {{label}}',
   'a11y.music.visualizer': 'music visualizer',
@@ -773,5 +774,6 @@ export const enUsCatalog: { [K in keyof ZhCnCatalog]: string } = {
   'tip.media.animation': 'Animation',
   'tip.media.music': 'Music',
   'tip.media.booklet': 'Booklet',
+  'tip.media.addToPlaylist': 'Add to playlist',
   'tip.music.loopMode': 'Loop Mode: {{label}}',
 }

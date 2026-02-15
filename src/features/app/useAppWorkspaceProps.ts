@@ -873,6 +873,10 @@ export function useAppWorkspaceProps({
     canManageDelete:
       sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
     canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
+    canManageAddToPlaylist: sidebarCheckedNodeIds.some((nodeId) => {
+      const node = sidebarNodeById.get(nodeId)
+      return Boolean(node?.videoId)
+    }),
     canManageHide: mode === "image" && imageCheckedIds.length > 0,
     canManageUnhide: mode === "image" && imageCheckedIds.length > 0,
     onManageDelete: requestManageDelete,
@@ -881,6 +885,25 @@ export function useAppWorkspaceProps({
     },
     onManageMove: () => {
       void requestManageMove();
+    },
+    onManageAddToPlaylist: () => {
+      const checkedVideoIds = Array.from(
+        new Set(
+          sidebarCheckedNodeIds
+            .map((nodeId) => sidebarNodeById.get(nodeId)?.videoId ?? null)
+            .filter((videoId): videoId is string => Boolean(videoId)),
+        ),
+      )
+      if (checkedVideoIds.length === 0) {
+        return
+      }
+      setPlaylistIds((previous) => {
+        const next = new Set(previous)
+        for (const videoId of checkedVideoIds) {
+          next.add(videoId)
+        }
+        return Array.from(next)
+      })
     },
     onManageHide: () => {
       void runManageHideAction(true);

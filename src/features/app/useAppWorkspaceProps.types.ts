@@ -165,7 +165,7 @@ export interface UseAppWorkspacePropsParams {
   videoByIdEffective: Map<string, VideoItem>
   audioByIdEffective: Map<string, AudioItem>
   setMetadataTab: Dispatch<SetStateAction<'info' | 'playlist'>>
-  selectVideoFromBrowser: (videoId: string) => void
+  selectVideoFromBrowser: (videoId: string, options?: { play?: boolean }) => void
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
   setDragVideoId: Dispatch<SetStateAction<string | null>>
   sidebarNodeById: Map<string, SidebarNode>

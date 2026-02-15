@@ -422,8 +422,14 @@ export function MetadataVideoEditor({
                 <button type="button" onClick={() => onSelectVideo(videoId)}>
                   {video.fileName}
                 </button>
-                <button type="button" onClick={() => onRemoveVideoFromPlaylist(videoId)}>
-                  {t('a11y.common.delete')}
+                <button
+                  type="button"
+                  className="playlist-item-remove main-icon-square-btn"
+                  aria-label={t('a11y.common.delete')}
+                  title={t('tip.common.delete')}
+                  onClick={() => onRemoveVideoFromPlaylist(videoId)}
+                >
+                  <span aria-hidden="true">-</span>
                 </button>
               </div>
             )

@@ -493,14 +493,14 @@ function ImageMainSection({
               >
                 <MainUiIcon name="delete" />
               </button>
-              <button
-                className="feature-action-btn main-icon-square-btn"
-                type="button"
-                aria-label={t('a11y.common.group')}
-                title={t('tip.common.group')}
-                disabled={!canManageMoveNodes || pendingManageAction}
-                onClick={onManageGroup}
-              >
+                <button
+                  className="feature-action-btn main-icon-square-btn"
+                  type="button"
+                  aria-label={t('a11y.common.group')}
+                  title={t('tip.common.group')}
+                  disabled={pendingManageAction}
+                  onClick={onManageGroup}
+                >
                 <span aria-hidden="true">{t('ui.common.groupShort')}</span>
               </button>
               <button
