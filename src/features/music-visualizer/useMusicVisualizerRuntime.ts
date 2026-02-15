@@ -41,7 +41,9 @@ function clampToneMapStrength(value: number): number {
 
 interface UseMusicVisualizerRuntimeParams {
   canvasRef: RefObject<HTMLCanvasElement | null>
+  cpuCanvasRef?: RefObject<HTMLCanvasElement | null>
   audioRef: RefObject<HTMLAudioElement | null>
+  canvasInstanceVersion?: number
   active: boolean
   preferredRenderer: MusicVisualizerRendererMode
   renderLongEdgePx: number
@@ -64,6 +66,7 @@ interface UseMusicVisualizerRuntimeParams {
 
 interface UseMusicVisualizerRuntimeResult {
   stats: MusicVisualizerStats | null
+  activeBackend: MusicVisualizerRendererMode | null
   runtimeError: string | null
   resumeAudioAnalyser: () => Promise<void>
 }
@@ -263,7 +266,9 @@ const TRANSPARENT_SHADER: MusicVisualizerShaderDefinition = {
 
 export function useMusicVisualizerRuntime({
   canvasRef,
+  cpuCanvasRef,
   audioRef,
+  canvasInstanceVersion = 0,
   active,
   preferredRenderer,
   renderLongEdgePx,
@@ -284,6 +289,7 @@ export function useMusicVisualizerRuntime({
   layeredForegroundScale = 1,
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
+  const [activeBackend, setActiveBackend] = useState<MusicVisualizerRendererMode | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
 
   const shader = useMemo(() => {
@@ -324,20 +330,38 @@ export function useMusicVisualizerRuntime({
   const runtimeSettingsRef = useRef({
     fpsCap,
     renderLongEdgePx,
+    renderScaleCoeff,
     toneMapMode,
     toneMapExposure,
     toneMapStrength,
+    layeredForegroundOffsetX,
+    layeredForegroundOffsetY,
+    layeredForegroundScale,
   })
 
   useEffect(() => {
     runtimeSettingsRef.current = {
       fpsCap,
       renderLongEdgePx,
+      renderScaleCoeff,
       toneMapMode,
       toneMapExposure,
       toneMapStrength,
+      layeredForegroundOffsetX,
+      layeredForegroundOffsetY,
+      layeredForegroundScale,
     }
-  }, [fpsCap, renderLongEdgePx, toneMapExposure, toneMapMode, toneMapStrength])
+  }, [
+    fpsCap,
+    layeredForegroundOffsetX,
+    layeredForegroundOffsetY,
+    layeredForegroundScale,
+    renderLongEdgePx,
+    renderScaleCoeff,
+    toneMapExposure,
+    toneMapMode,
+    toneMapStrength,
+  ])
 
   if (audioAnalyserRef.current == null) {
     audioAnalyserRef.current = new MusicAudioAnalyser()
@@ -363,27 +387,39 @@ export function useMusicVisualizerRuntime({
   useEffect(() => {
     if (!active) {
       setStats(null)
+      setActiveBackend(null)
       setRuntimeError(null)
       return
     }
 
-    const canvas = canvasRef.current
-    if (!canvas) {
+    const gpuCanvas = canvasRef.current
+    const cpuCanvas = cpuCanvasRef?.current ?? canvasRef.current
+    if (!gpuCanvas) {
       setStats(null)
+      setActiveBackend(null)
       setRuntimeError('可视化画布未就绪（canvasRef.current 为空）')
+      return
+    }
+    if (!cpuCanvas) {
+      setStats(null)
+      setActiveBackend(null)
+      setRuntimeError('可视化画布未就绪（cpuCanvasRef.current 为空）')
       return
     }
 
     if (!shader) {
       setStats(null)
+      setActiveBackend(null)
       setRuntimeError('未找到可用 Shader')
       return
     }
 
-    const shaderRenderScale = Math.max(
-      MIN_SHADER_RENDER_SCALE,
-      Math.min(MAX_SHADER_RENDER_SCALE, (shader.renderScale ?? 1) * clampRenderScaleCoeff(renderScaleCoeff)),
-    )
+    const resolveShaderRenderScale = (): number => {
+      return Math.max(
+        MIN_SHADER_RENDER_SCALE,
+        Math.min(MAX_SHADER_RENDER_SCALE, (shader.renderScale ?? 1) * clampRenderScaleCoeff(runtimeSettingsRef.current.renderScaleCoeff)),
+      )
+    }
     const resolveEffectiveToneMap = (): {
       mode: MusicVisualizerToneMapMode
       exposure: number
@@ -409,12 +445,9 @@ export function useMusicVisualizerRuntime({
 
     const createRenderer = (mode: MusicVisualizerRendererMode): MusicVisualizerRenderer => {
       if (mode === 'gpu') {
-        const probeCanvas = document.createElement('canvas')
-        const probeRenderer = new WebglMusicVisualizerRenderer(probeCanvas, shader)
-        probeRenderer.dispose()
-        return new WebglMusicVisualizerRenderer(canvas, shader)
+        return new WebglMusicVisualizerRenderer(gpuCanvas, shader)
       }
-      return new CpuMusicVisualizerRenderer(canvas)
+      return new CpuMusicVisualizerRenderer(cpuCanvas)
     }
 
     const resolveRuntimeProbeInfo = (): string => {
@@ -423,6 +456,7 @@ export function useMusicVisualizerRuntime({
       const hasWebgl2 = Boolean(probeWebglCanvas.getContext('webgl2'))
       const hasCanvas2d = Boolean(probe2dCanvas.getContext('2d'))
       const snapshot = resolveEffectiveToneMap()
+      const shaderRenderScale = resolveShaderRenderScale()
       return `shader=${shader.id}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${runtimeSettingsRef.current.fpsCap}, toneMap=${snapshot.mode}@${snapshot.exposure.toFixed(2)}*${snapshot.strength.toFixed(2)}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
     }
 
@@ -454,11 +488,14 @@ export function useMusicVisualizerRuntime({
     }
 
     setRuntimeError(rendererInitMessage)
+    setActiveBackend(renderer?.backend ?? null)
 
     if (!renderer) {
       setStats(null)
       return
     }
+
+    const renderCanvas = renderer.backend === 'gpu' ? gpuCanvas : cpuCanvas
 
     const audioAnalyser = audioAnalyserRef.current
     let disposed = false
@@ -500,13 +537,14 @@ export function useMusicVisualizerRuntime({
       }
       lastRenderAt = now
 
-      const containerSize = resolveContainerSize(canvas)
+      const containerSize = resolveContainerSize(renderCanvas)
       const containerWidth = containerSize.width
       const containerHeight = containerSize.height
+      const shaderRenderScale = resolveShaderRenderScale()
       const renderSize = resolveRenderSize(containerWidth, containerHeight, runtimeSettingsRef.current.renderLongEdgePx * shaderRenderScale)
 
-      canvas.style.width = '100%'
-      canvas.style.height = '100%'
+      renderCanvas.style.width = '100%'
+      renderCanvas.style.height = '100%'
       renderer.resize(renderSize.width, renderSize.height)
 
       if (audioAnalyser) {
@@ -546,9 +584,9 @@ export function useMusicVisualizerRuntime({
           toneMapMode: smoothedToneMapMode,
           toneMapExposure: smoothedToneMapExposure,
           toneMapStrength: smoothedToneMapStrength,
-          foregroundOffsetX: Math.max(-1, Math.min(1, layeredForegroundOffsetX)),
-          foregroundOffsetY: Math.max(-1, Math.min(1, layeredForegroundOffsetY)),
-          foregroundScale: Math.max(0.25, Math.min(3, layeredForegroundScale)),
+          foregroundOffsetX: Math.max(-1, Math.min(1, runtimeSettingsRef.current.layeredForegroundOffsetX)),
+          foregroundOffsetY: Math.max(-1, Math.min(1, runtimeSettingsRef.current.layeredForegroundOffsetY)),
+          foregroundScale: Math.max(0.25, Math.min(3, runtimeSettingsRef.current.layeredForegroundScale)),
         })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
@@ -599,17 +637,16 @@ export function useMusicVisualizerRuntime({
   }, [
     active,
     audioRef,
+    canvasInstanceVersion,
     canvasRef,
-    layeredForegroundOffsetX,
-    layeredForegroundOffsetY,
-    layeredForegroundScale,
+    cpuCanvasRef,
     preferredRenderer,
-    renderScaleCoeff,
     shader,
   ])
 
   return {
     stats,
+    activeBackend,
     runtimeError,
     resumeAudioAnalyser,
   }

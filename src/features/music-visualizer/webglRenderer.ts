@@ -109,7 +109,8 @@ function compileShader(gl: WebGL2RenderingContext, shaderType: number, source: s
     return shader
   }
 
-  const info = gl.getShaderInfoLog(shader) || 'unknown shader error'
+  const contextLost = typeof gl.isContextLost === 'function' ? gl.isContextLost() : false
+  const info = gl.getShaderInfoLog(shader) || (contextLost ? 'WebGL context lost' : 'unknown shader error')
   gl.deleteShader(shader)
   const stage = shaderType === gl.VERTEX_SHADER ? 'vertex' : 'fragment'
   throw new Error(`[${stage} compile] ${info}`)
@@ -136,7 +137,8 @@ function createProgram(gl: WebGL2RenderingContext, fragmentSource: string): WebG
     return program
   }
 
-  const info = gl.getProgramInfoLog(program) || 'unknown link error'
+  const contextLost = typeof gl.isContextLost === 'function' ? gl.isContextLost() : false
+  const info = gl.getProgramInfoLog(program) || (contextLost ? 'WebGL context lost' : 'unknown link error')
   gl.deleteProgram(program)
   throw new Error(`[program link] ${info}`)
 }
@@ -601,6 +603,14 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
   private readonly channelResolutionData = new Float32Array(MAX_CHANNEL_COUNT * 3)
   private readonly dateData = new Float32Array(4)
   private disposed = false
+  private contextLost = false
+  private readonly handleContextLost = (event: Event): void => {
+    event.preventDefault()
+    this.contextLost = true
+  }
+  private readonly handleContextRestored = (): void => {
+    this.contextLost = false
+  }
 
   constructor(canvas: HTMLCanvasElement, shader: MusicVisualizerShaderDefinition) {
     this.canvas = canvas
@@ -641,6 +651,9 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     this.gl = gl
     this.vao = vao
     this.audioTexture = audioTexture
+
+    this.canvas.addEventListener('webglcontextlost', this.handleContextLost)
+    this.canvas.addEventListener('webglcontextrestored', this.handleContextRestored)
 
     const pipeline = normalizeShaderPipeline(shader)
 
@@ -708,6 +721,10 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     foregroundOffsetY,
     foregroundScale,
   }: MusicVisualizerFrameInput): void {
+    if (this.contextLost || this.gl.isContextLost()) {
+      throw new Error('WebGL context lost')
+    }
+
     this.uploadAudioTexture(frequencyData, waveformData)
     this.ensurePassTargetSizes(width, height)
     this.updateDateUniformData()
@@ -791,6 +808,9 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     this.disposed = true
 
     const gl = this.gl
+    this.canvas.removeEventListener('webglcontextlost', this.handleContextLost)
+    this.canvas.removeEventListener('webglcontextrestored', this.handleContextRestored)
+
     gl.deleteTexture(this.audioTexture)
     gl.deleteVertexArray(this.vao)
 

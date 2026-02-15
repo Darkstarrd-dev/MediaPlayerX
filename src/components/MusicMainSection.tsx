@@ -117,7 +117,8 @@ function MusicMainSection({
   onCycleMusicLoopMode,
 }: MusicMainSectionProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const visualizerCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const visualizerGpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const visualizerCpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const lastPlayRequestNonceRef = useRef(playRequestNonce)
   const visualizerActivateRafRef = useRef<number | null>(null)
   const visualizerActivateRaf2Ref = useRef<number | null>(null)
@@ -130,10 +131,12 @@ function MusicMainSection({
   const [renderLongEdgeDraft, setRenderLongEdgeDraft] = useState('')
   const [renderScaleCoeffDraft, setRenderScaleCoeffDraft] = useState<number | null>(null)
   const [shaderListTargetLayer, setShaderListTargetLayer] = useState<'foreground' | 'background'>('foreground')
+  const [visualizerCanvasVersion, setVisualizerCanvasVersion] = useState(0)
   const [visualizerRuntimeActive, setVisualizerRuntimeActive] = useState(false)
   const [fullscreenControlsMounted, setFullscreenControlsMounted] = useState(true)
   const [fullscreenControlsVisible, setFullscreenControlsVisible] = useState(true)
   const fullscreenControlsHideTimerRef = useRef<number | null>(null)
+  const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
 
   const musicVisualizerLayeredBackgroundShaderId = musicVisualizerShaderSettings.layeredBackgroundShaderId ?? 'galaxy'
   const musicVisualizerLayeredForegroundShaderId = musicVisualizerShaderSettings.layeredForegroundShaderId ?? 'mcs-szb'
@@ -221,9 +224,16 @@ function MusicMainSection({
     }
   }, [active])
 
-  const { stats: visualizerStats, runtimeError: visualizerRuntimeError, resumeAudioAnalyser } = useMusicVisualizerRuntime({
-    canvasRef: visualizerCanvasRef,
+  const {
+    stats: visualizerStats,
+    activeBackend: visualizerActiveBackend,
+    runtimeError: visualizerRuntimeError,
+    resumeAudioAnalyser,
+  } = useMusicVisualizerRuntime({
+    canvasRef: visualizerGpuCanvasRef,
+    cpuCanvasRef: visualizerCpuCanvasRef,
     audioRef,
+    canvasInstanceVersion: visualizerCanvasVersion,
     active: visualizerRuntimeActive && !hasNoLayerEnabled,
     preferredRenderer: runtimeRenderer,
     renderLongEdgePx: runtimeRenderLongEdgePx,
@@ -243,6 +253,33 @@ function MusicMainSection({
     toneMapStrength: runtimeToneMapStrength,
     selectedShaderId,
   })
+
+  useEffect(() => {
+    if (!visualizerRuntimeError) {
+      visualizerRecoveryRef.current = { windowStartedAt: 0, attempts: 0 }
+      return
+    }
+
+    const shouldRecover =
+      visualizerRuntimeError.includes('可视化渲染器初始化失败') ||
+      visualizerRuntimeError.includes('WebGL context lost')
+    if (!shouldRecover) {
+      return
+    }
+
+    const now = Date.now()
+    const tracker = visualizerRecoveryRef.current
+    if (tracker.windowStartedAt === 0 || now - tracker.windowStartedAt > 8000) {
+      tracker.windowStartedAt = now
+      tracker.attempts = 0
+    }
+    if (tracker.attempts >= 2) {
+      return
+    }
+
+    tracker.attempts += 1
+    setVisualizerCanvasVersion((value) => value + 1)
+  }, [visualizerRuntimeError])
 
   const toolbarSummary = useMemo(() => {
     if (!focusedAudio) {
@@ -312,6 +349,17 @@ function MusicMainSection({
   const renderScaleCoeffStyle = {
     '--mpx-skeuo-range-pct': `${renderScaleCoeffPercent}%`,
   } as CSSProperties
+  const visualizerDisplayBackend = visualizerStats?.backend ?? visualizerActiveBackend ?? runtimeRenderer
+  const gpuCanvasStyle = hasNoLayerEnabled
+    ? ({ opacity: 0 } as CSSProperties)
+    : visualizerDisplayBackend === 'gpu'
+      ? undefined
+      : ({ display: 'none' } as CSSProperties)
+  const cpuCanvasStyle = hasNoLayerEnabled
+    ? ({ opacity: 0 } as CSSProperties)
+    : visualizerDisplayBackend === 'cpu'
+      ? undefined
+      : ({ display: 'none' } as CSSProperties)
 
   const manageSummary =
     activeSelectionScope === 'sidebar'
@@ -1019,9 +1067,16 @@ function MusicMainSection({
             data-overlay-close={fullscreenActive ? 'fullscreen' : undefined}
           >
             <canvas
-              ref={visualizerCanvasRef}
+              key={`${visualizerCanvasVersion}-gpu`}
+              ref={visualizerGpuCanvasRef}
               className="music-visualizer-canvas"
-              style={hasNoLayerEnabled ? ({ opacity: 0 } as CSSProperties) : undefined}
+              style={gpuCanvasStyle}
+            />
+            <canvas
+              key={`${visualizerCanvasVersion}-cpu`}
+              ref={visualizerCpuCanvasRef}
+              className="music-visualizer-canvas"
+              style={cpuCanvasStyle}
             />
             {runtimeShowFps && visualizerStats ? (
               <div className="music-visualizer-hud" role="status">

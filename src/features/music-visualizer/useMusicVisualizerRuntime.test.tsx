@@ -31,7 +31,11 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   return {
     shader,
     shaderById: new Map<string, MutableTestShader>(),
+    failWebglInit: false,
+    webglFailedCanvas: null as HTMLCanvasElement | null,
     webglConstructorCount: 0,
+    cpuConstructorCount: 0,
+    cpuConstructedCanvases: [] as HTMLCanvasElement[],
     webglConstructedShaders: [] as Array<{
       id: string
       multiPass?: {
@@ -99,6 +103,14 @@ vi.mock('./cpuRenderer', () => {
     resize = vi.fn()
     render = vi.fn()
     dispose = vi.fn()
+
+    constructor(canvas: HTMLCanvasElement) {
+      shared.cpuConstructorCount += 1
+      shared.cpuConstructedCanvases.push(canvas)
+      if (canvas === shared.webglFailedCanvas) {
+        throw new Error('当前环境不可用 Canvas2D')
+      }
+    }
   }
 
   return {
@@ -112,9 +124,13 @@ vi.mock('./webglRenderer', () => {
     readonly shaderId: string
     readonly rendererLabel = 'mock-webgl'
 
-    constructor(_canvas: HTMLCanvasElement, shader: { id: string }) {
+    constructor(canvas: HTMLCanvasElement, shader: { id: string }) {
       this.shaderId = shader.id
       shared.webglConstructorCount += 1
+      if (shared.failWebglInit) {
+        shared.webglFailedCanvas = canvas
+        throw new Error('mock webgl init failure')
+      }
       shared.webglConstructedShaders.push(shader)
     }
 
@@ -180,7 +196,11 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     shared.shaderById.clear()
     shared.shaderById.set(shared.shader.id, shared.shader)
 
+    shared.failWebglInit = false
+    shared.webglFailedCanvas = null
     shared.webglConstructorCount = 0
+    shared.cpuConstructorCount = 0
+    shared.cpuConstructedCanvases.length = 0
     shared.webglConstructedShaders.length = 0
     shared.webglRenderCalls.length = 0
 
@@ -247,7 +267,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     flushFrame(20)
 
     const initialConstructorCount = shared.webglConstructorCount
-    expect(initialConstructorCount).toBe(2)
+    expect(initialConstructorCount).toBe(1)
     expect(shared.webglRenderCalls.length).toBeGreaterThan(0)
 
     const firstFrame = shared.webglRenderCalls.at(-1)
@@ -284,6 +304,116 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     expect(nextFrame?.toneMapExposure).toBeLessThan(2)
     expect(nextFrame?.toneMapStrength).toBeGreaterThan(0)
     expect(nextFrame?.toneMapStrength).toBeLessThan(1)
+  })
+
+  it('热更新前景参数与渲染倍率时不重建 renderer', () => {
+    const container = document.createElement('div')
+    Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true })
+    Object.defineProperty(container, 'clientHeight', { value: 600, configurable: true })
+    const canvas = document.createElement('canvas')
+    container.appendChild(canvas)
+    document.body.appendChild(container)
+
+    const audio = document.createElement('audio')
+    const canvasRef = { current: canvas }
+    const audioRef = { current: audio }
+
+    const { rerender } = renderHook((props: Parameters<typeof useMusicVisualizerRuntime>[0]) => useMusicVisualizerRuntime(props), {
+      initialProps: {
+        canvasRef,
+        audioRef,
+        active: true,
+        preferredRenderer: 'gpu',
+        renderLongEdgePx: 800,
+        renderScaleCoeff: 1,
+        fpsCap: 60,
+        toneMapMode: 'aces',
+        toneMapExposure: 1,
+        toneMapStrength: 0.5,
+        layeredForegroundOffsetX: 0,
+        layeredForegroundOffsetY: 0,
+        layeredForegroundScale: 1,
+        selectedShaderId: 'test-shader',
+      },
+    })
+
+    flushFrame(20)
+    const initialConstructorCount = shared.webglConstructorCount
+    const initialFrame = shared.webglRenderCalls.at(-1)
+    expect(initialFrame?.width).toBe(800)
+    expect(initialFrame?.height).toBe(600)
+    expect(initialFrame?.foregroundOffsetX).toBeCloseTo(0, 5)
+    expect(initialFrame?.foregroundOffsetY).toBeCloseTo(0, 5)
+    expect(initialFrame?.foregroundScale).toBeCloseTo(1, 5)
+
+    rerender({
+      canvasRef,
+      audioRef,
+      active: true,
+      preferredRenderer: 'gpu',
+      renderLongEdgePx: 800,
+      renderScaleCoeff: 2,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.5,
+      layeredForegroundOffsetX: 0.3,
+      layeredForegroundOffsetY: -0.2,
+      layeredForegroundScale: 1.4,
+      selectedShaderId: 'test-shader',
+    })
+
+    flushFrame(20)
+    const nextFrame = shared.webglRenderCalls.at(-1)
+    expect(shared.webglConstructorCount).toBe(initialConstructorCount)
+    expect(nextFrame?.width).toBe(1600)
+    expect(nextFrame?.height).toBe(1200)
+    expect(nextFrame?.foregroundOffsetX).toBeCloseTo(0.3, 5)
+    expect(nextFrame?.foregroundOffsetY).toBeCloseTo(-0.2, 5)
+    expect(nextFrame?.foregroundScale).toBeCloseTo(1.4, 5)
+  })
+
+  it('GPU 初始化失败时可使用独立 CPU 画布回退', () => {
+    shared.failWebglInit = true
+
+    const container = document.createElement('div')
+    Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true })
+    Object.defineProperty(container, 'clientHeight', { value: 600, configurable: true })
+    const gpuCanvas = document.createElement('canvas')
+    const cpuCanvas = document.createElement('canvas')
+    container.appendChild(gpuCanvas)
+    container.appendChild(cpuCanvas)
+    document.body.appendChild(container)
+
+    const audio = document.createElement('audio')
+    const gpuCanvasRef = { current: gpuCanvas }
+    const cpuCanvasRef = { current: cpuCanvas }
+    const audioRef = { current: audio }
+
+    const { result } = renderHook((props: Parameters<typeof useMusicVisualizerRuntime>[0]) => useMusicVisualizerRuntime(props), {
+      initialProps: {
+        canvasRef: gpuCanvasRef,
+        cpuCanvasRef,
+        audioRef,
+        active: true,
+        preferredRenderer: 'gpu',
+        renderLongEdgePx: 800,
+        renderScaleCoeff: 1,
+        fpsCap: 60,
+        toneMapMode: 'aces',
+        toneMapExposure: 1,
+        toneMapStrength: 0.5,
+        selectedShaderId: 'test-shader',
+      },
+    })
+
+    flushFrame(20)
+
+    expect(shared.webglConstructorCount).toBe(1)
+    expect(shared.cpuConstructorCount).toBe(1)
+    expect(shared.cpuConstructedCanvases.at(-1)).toBe(cpuCanvas)
+    expect(result.current.activeBackend).toBe('cpu')
+    expect(result.current.runtimeError?.includes('已自动切换 CPU')).toBe(true)
   })
 
   it('rain-drips 的前景背景倍率会抬升最终输出分辨率', () => {
