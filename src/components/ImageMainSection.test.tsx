@@ -6,6 +6,10 @@ import { describe, expect, it, vi } from 'vitest'
 import type { ImagePackage } from '../types'
 import ImageMainSection from './ImageMainSection'
 
+vi.mock('./metadata/MetadataFetchPanel', () => ({
+  default: () => null,
+}))
+
 const basePackage: ImagePackage = {
   id: 'pkg-1',
   packageName: 'pkg-1.zip',

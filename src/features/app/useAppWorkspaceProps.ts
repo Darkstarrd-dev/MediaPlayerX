@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import {
   buildImageMainSectionProps,
 } from './buildImageMainSectionProps'
@@ -43,6 +45,8 @@ export function useAppWorkspaceProps({
   setAdReviewPanelOpen,
   adReviewFocusTaskId,
   setAdReviewFocusTaskId,
+  adReviewPageIndex,
+  setAdReviewPageIndex,
   searchPanelCollapsed,
   setSearchPanelCollapsed,
   workspaceBottomPanelHeight,
@@ -230,6 +234,35 @@ export function useAppWorkspaceProps({
     imageTreeForSidebar,
   })
 
+  const previousAdReviewPanelOpenRef = useRef(adReviewPanelOpen)
+  useEffect(() => {
+    const wasOpen = previousAdReviewPanelOpenRef.current
+    previousAdReviewPanelOpenRef.current = adReviewPanelOpen
+
+    if (wasOpen && !adReviewPanelOpen) {
+      if (adReviewFocusTaskId) {
+        setAdReviewFocusTaskId(null)
+        setAdReviewPageIndex(0)
+      }
+      return
+    }
+
+    const enteringAdReviewMode = !wasOpen && adReviewPanelOpen
+    if (!enteringAdReviewMode) {
+      return
+    }
+
+    const activeTask = manageAdReview.task
+    if (!activeTask) {
+      return
+    }
+
+    if (activeTask.status === 'running' || activeTask.status === 'paused') {
+      setAdReviewFocusTaskId(activeTask.task_id)
+      setAdReviewPageIndex(0)
+    }
+  }, [adReviewFocusTaskId, adReviewPanelOpen, manageAdReview.task, setAdReviewFocusTaskId, setAdReviewPageIndex])
+
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
     sidebarFocus: appSettings.sidebarFocus,
@@ -256,7 +289,7 @@ export function useAppWorkspaceProps({
     selectedAudioId,
     vectorResultsActive,
     featureSearchActive,
-    searchResultsReadOnly: adReviewResultsMode ? true : searchResultsReadOnly,
+    searchResultsReadOnly: adReviewResultsMode ? false : searchResultsReadOnly,
     manageMode,
     metadataManageMode,
     checkedSidebarNodeIdSet: sidebarCheckedNodeIdSet,
@@ -265,8 +298,14 @@ export function useAppWorkspaceProps({
     goToFromSearchMode,
     onExitAdReviewResultsMode: () => {
       setAdReviewFocusTaskId(null)
+      setAdReviewPageIndex(0)
     },
-    setSelectedSidebarNodeId,
+    setSelectedSidebarNodeId: (nodeId) => {
+      setSelectedSidebarNodeId(nodeId)
+      if (adReviewResultsMode) {
+        setAdReviewPageIndex(0)
+      }
+    },
     updateSettings: appSettings.updateSettings,
     setSelectedPackageId,
     selectVideoFromBrowser,
@@ -395,6 +434,8 @@ export function useAppWorkspaceProps({
     audiosForSidebar,
     audioSidebarOrderedIds,
   })
+  const adReviewGroupByPackageRows =
+    adReviewResultsMode && Boolean(selectedSidebarNode && (selectedSidebarNode.kind === 'folder' || selectedSidebarNode.imageNodeType === 'folder'))
 
   const {
     visibleImageRefsForMain,
@@ -409,6 +450,9 @@ export function useAppWorkspaceProps({
     adReviewFocusTask,
     selectedSidebarNode,
     pagedPageSize,
+    thumbnailColumns,
+    adReviewGroupByPackageRows,
+    adReviewPageIndex,
     normalizedPageIndexEffective,
     visibleImageRefs,
     refsInPageEffective,
@@ -433,7 +477,7 @@ export function useAppWorkspaceProps({
 
   const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageBase, {
     manageMode,
-    hideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
+    hideUncheckedNonChecked: false,
     imageCheckedIdSet,
     packageByIdEffective,
   })
@@ -454,6 +498,7 @@ export function useAppWorkspaceProps({
           .map(([imageId]) => imageId)
       : manageAdReview.nonLlmReviewedImageIds,
   )
+  const adReviewCandidateImageIdSet = new Set(adReviewTaskForDisplay?.candidates.map((candidate) => candidate.image_id) ?? [])
 
   const imageSeriesId = normalizeSeriesId(metadataImagePackageEffective?.seriesId)
   const videoSeriesId = normalizeSeriesId(focusedVideoEffective?.seriesId)
@@ -552,6 +597,9 @@ export function useAppWorkspaceProps({
     adReviewScopeImageIdSet,
     adReviewLlmReviewedImageIdSet,
     adReviewNonLlmReviewedImageIdSet,
+    adReviewCandidateImageIdSet,
+    adReviewResultsMode,
+    adReviewGroupByPackageRows,
     updateSettings: appSettings.updateSettings,
     setFullscreenActiveWithAutoStop,
     setVectorFocusIndex,
@@ -733,20 +781,29 @@ export function useAppWorkspaceProps({
     adReviewActiveTaskId: manageAdReview.activeTaskId,
     adReviewHideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
     hasCheckedAdReviewCandidates: manageAdReview.hasCheckedCandidateSelection,
+    selectedAdReviewCandidateCount: manageAdReview.selectedCandidateCount,
     adReviewFocusTaskId,
     adReviewStrategyMode: appSettings.adReviewStrategyMode,
     adReviewMaxConcurrency: appSettings.adReviewMaxConcurrency,
     adReviewHeadN: appSettings.adReviewHeadN,
     adReviewTailN: appSettings.adReviewTailN,
     adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
-    onStartAdReview: () => {
-      void manageAdReview.startManageAdReview()
+    onStartAdReview: async (options) => {
+      const startedTask = await manageAdReview.startManageAdReview(options)
+      if (!startedTask) {
+        return
+      }
+      setAdReviewFocusTaskId(startedTask.task_id)
+      setAdReviewPageIndex(0)
     },
     onPauseAdReview: () => {
       void manageAdReview.pauseManageAdReview()
     },
     onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
-    onSelectAdReviewTask: manageAdReview.selectTask,
+    onSelectAdReviewTask: (taskId) => {
+      manageAdReview.selectTask(taskId)
+      setAdReviewPageIndex(0)
+    },
     onRemoveAdReviewTask: (taskId) => {
       void manageAdReview.removeTask(taskId)
     },
@@ -760,10 +817,14 @@ export function useAppWorkspaceProps({
       const canFocusStatus = currentTask.status === 'running' || currentTask.status === 'paused' || currentTask.status === 'review'
       if (!canFocusStatus || currentTask.candidates.length === 0) {
         setAdReviewFocusTaskId(null)
+        setAdReviewPageIndex(0)
         return
       }
 
-      setAdReviewFocusTaskId((previous) => (previous === currentTask.task_id ? null : currentTask.task_id))
+      setAdReviewFocusTaskId((previous) => {
+        setAdReviewPageIndex(0)
+        return previous === currentTask.task_id ? null : currentTask.task_id
+      })
     },
     ...createAdReviewSettingHandlers({ updateSettings: appSettings.updateSettings }),
     onDismissAdReviewTask: manageAdReview.dismissTask,
@@ -840,6 +901,17 @@ export function useAppWorkspaceProps({
     setDragVideoId,
   })
 
+  const onPrevPageForMain = adReviewResultsMode
+    ? () => {
+        setAdReviewPageIndex((value) => Math.max(0, value - 1))
+      }
+    : goPrevPage
+  const onNextPageForMain = adReviewResultsMode
+    ? () => {
+        setAdReviewPageIndex((value) => Math.min(Math.max(0, imageTotalPagesForMain - 1), value + 1))
+      }
+    : goNextPage
+
   const mainFooter = buildMainFooter({
     mode,
     focusedImage,
@@ -850,8 +922,8 @@ export function useAppWorkspaceProps({
     nodeBrowseMode,
     normalizedPageIndex: normalizedPageIndexForMain,
     imageTotalPages: imageTotalPagesForMain,
-    onPrevPage: goPrevPage,
-    onNextPage: goNextPage,
+    onPrevPage: onPrevPageForMain,
+    onNextPage: onNextPageForMain,
   })
 
   return {

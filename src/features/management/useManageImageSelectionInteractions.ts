@@ -12,6 +12,7 @@ interface UseManageImageSelectionInteractionsParams {
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
+  focusOnFirstToggle?: boolean
 }
 
 interface UseManageImageSelectionInteractionsResult {
@@ -30,6 +31,7 @@ export function useManageImageSelectionInteractions({
   onReplaceCheckedImages,
   onToggleImageChecked,
   onSelectImage,
+  focusOnFirstToggle = true,
 }: UseManageImageSelectionInteractionsParams): UseManageImageSelectionInteractionsResult {
   const marqueeListenerCleanupRef = useRef<(() => void) | null>(null)
   const dragToggleCleanupRef = useRef<(() => void) | null>(null)
@@ -223,7 +225,7 @@ export function useManageImageSelectionInteractions({
 
       event.preventDefault()
       detachDragToggleListeners()
-      toggleFromCard(firstCard, true)
+      toggleFromCard(firstCard, focusOnFirstToggle)
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         const card = findCardFromElement(document.elementFromPoint(moveEvent.clientX, moveEvent.clientY))
@@ -241,7 +243,7 @@ export function useManageImageSelectionInteractions({
         window.removeEventListener('mouseup', onMouseUp)
       }
     },
-    [detachDragToggleListeners, manageMode, onSelectImage, onToggleImageChecked],
+    [detachDragToggleListeners, focusOnFirstToggle, manageMode, onSelectImage, onToggleImageChecked],
   )
 
   return {

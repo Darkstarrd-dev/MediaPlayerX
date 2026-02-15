@@ -43,6 +43,7 @@ export function useAppSessionState({
   const [importMenuOpen, setImportMenuOpen] = useState(false)
   const [adReviewPanelOpen, setAdReviewPanelOpen] = useState(false)
   const [adReviewFocusTaskId, setAdReviewFocusTaskId] = useState<string | null>(null)
+  const [adReviewPageIndex, setAdReviewPageIndex] = useState(0)
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
   const [importTaskPanelOpen, setImportTaskPanelOpen] = useState(false)
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
@@ -104,6 +105,8 @@ export function useAppSessionState({
     setAdReviewPanelOpen,
     adReviewFocusTaskId,
     setAdReviewFocusTaskId,
+    adReviewPageIndex,
+    setAdReviewPageIndex,
     dismissedImportTaskIds,
     setDismissedImportTaskIds,
     importTaskPanelOpen,

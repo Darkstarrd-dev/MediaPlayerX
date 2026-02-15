@@ -31,6 +31,8 @@ export interface UseAppWorkspacePropsParams {
   setAdReviewPanelOpen: Dispatch<SetStateAction<boolean>>
   adReviewFocusTaskId: string | null
   setAdReviewFocusTaskId: Dispatch<SetStateAction<string | null>>
+  adReviewPageIndex: number
+  setAdReviewPageIndex: Dispatch<SetStateAction<number>>
   searchPanelCollapsed: boolean
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   workspaceBottomPanelHeight: number

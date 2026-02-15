@@ -41,6 +41,9 @@ interface BuildImageMainSectionPropsParams {
   adReviewScopeImageIdSet: Set<string>
   adReviewLlmReviewedImageIdSet: Set<string>
   adReviewNonLlmReviewedImageIdSet: Set<string>
+  adReviewCandidateImageIdSet: Set<string>
+  adReviewResultsMode: boolean
+  adReviewGroupByPackageRows: boolean
   updateSettings: (patch: Partial<AppSettings>) => void
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   setVectorFocusIndex: (value: number) => void
@@ -114,6 +117,9 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     adReviewScopeImageIds: params.adReviewScopeImageIdSet,
     adReviewLlmReviewedImageIds: params.adReviewLlmReviewedImageIdSet,
     adReviewNonLlmReviewedImageIds: params.adReviewNonLlmReviewedImageIdSet,
+    adReviewCandidateImageIds: params.adReviewCandidateImageIdSet,
+    adReviewResultsMode: params.adReviewResultsMode,
+    adReviewGroupByPackageRows: params.adReviewGroupByPackageRows,
     onToggleImageChecked: params.onToggleImageChecked,
     onReplaceCheckedImages: params.onReplaceCheckedImages,
     onManageDelete: params.onManageDelete,

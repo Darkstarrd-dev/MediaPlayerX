@@ -151,6 +151,11 @@
   background: color-mix(in srgb, var(--mpx-status-warning-bg) 36%, var(--mpx-bg-elevated));
 }
 
+.thumb-card.is-manage.is-ad-review-excluded .thumb-media-image {
+  filter: blur(6px) saturate(0.68);
+  opacity: 0.84;
+}
+
 .manage-ad-review-params {
   display: grid;
   gap: 8px;
@@ -342,6 +347,25 @@
   border-color: var(--mpx-accent);
   color: var(--mpx-accent);
   background: var(--mpx-accent-soft);
+}
+
+.manage-ad-review-start-mask {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 22;
+}
+
+.manage-ad-review-start-dialog {
+  width: min(480px, 92vw);
+}
+
+.manage-ad-review-start-description {
+  margin: 0;
+  color: var(--mpx-text-2);
 }
 
 .manage-selection-marquee {

@@ -88,6 +88,7 @@ export function useAppDisplayResources({
     manageMode,
     metadataManageMode,
     adReviewFocusTaskId,
+    adReviewPageIndex,
     selectedSidebarNodeId,
     setManageOperationHint,
   } = sessionState
@@ -119,6 +120,7 @@ export function useAppDisplayResources({
     normalizedPageIndex,
     imageTotalPages,
     pagedPageSize,
+    thumbnailColumns,
     metadataImagePackage,
     currentGrade,
     actualCellWidth,
@@ -187,6 +189,8 @@ export function useAppDisplayResources({
     selectedSidebarNodeId,
     imageTreeForSidebar,
   })
+  const adReviewGroupByPackageRows =
+    adReviewResultsMode && Boolean(selectedSidebarNode && (selectedSidebarNode.kind === 'folder' || selectedSidebarNode.imageNodeType === 'folder'))
 
   const { refsInPageBase } = resolveAdReviewPageDerivations({
     adReviewResultsMode,
@@ -195,6 +199,9 @@ export function useAppDisplayResources({
     adReviewFocusTask,
     selectedSidebarNode,
     pagedPageSize,
+    thumbnailColumns,
+    adReviewGroupByPackageRows,
+    adReviewPageIndex,
     normalizedPageIndexEffective,
     visibleImageRefs,
     refsInPageEffective,
@@ -204,7 +211,7 @@ export function useAppDisplayResources({
 
   const refsInPageForResolve = resolveRefsInPageForDisplay(refsInPageBase, {
     manageMode,
-    hideUncheckedNonChecked: manageBindings.manageAdReview.hideUncheckedNonChecked,
+    hideUncheckedNonChecked: false,
     imageCheckedIdSet,
     packageByIdEffective,
   })

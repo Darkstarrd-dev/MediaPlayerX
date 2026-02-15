@@ -112,6 +112,7 @@ describe('useAppDisplayResources (ad-review focus refs)', () => {
           manageMode: true,
           metadataManageMode: false,
           adReviewFocusTaskId: 'task-1',
+          adReviewPageIndex: 0,
           setManageOperationHint: vi.fn(),
         } as never,
         mediaState: {

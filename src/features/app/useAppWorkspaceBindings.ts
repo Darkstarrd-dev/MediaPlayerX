@@ -61,6 +61,8 @@ export function useAppWorkspaceBindings({
     setAdReviewPanelOpen,
     adReviewFocusTaskId,
     setAdReviewFocusTaskId,
+    adReviewPageIndex,
+    setAdReviewPageIndex,
     manageOperationHint,
     vectorPanelRef,
     vectorPanelContentRef,
@@ -159,6 +161,7 @@ export function useAppWorkspaceBindings({
     collapseSidebar,
     onStartWorkspaceBottomPanelResize,
     orderedRootScopedPackages,
+    orderedRootScopedImageRefs,
     normalImageSourceNodeIdMap,
   } = readNavigationState
 
@@ -216,6 +219,8 @@ export function useAppWorkspaceBindings({
     setAdReviewPanelOpen,
     adReviewFocusTaskId,
     setAdReviewFocusTaskId,
+    adReviewPageIndex,
+    setAdReviewPageIndex,
     searchPanelCollapsed,
     setSearchPanelCollapsed,
     workspaceBottomPanelHeight: appSettings.workspaceBottomPanelHeight,
@@ -344,6 +349,7 @@ export function useAppWorkspaceBindings({
     searchResultsMode,
     canSetCurrentRoot,
     normalImageSourceNodeIdMap,
+    orderedRootScopedImageRefs,
     imageRootNodeId,
     videoRootNodeId,
     musicRootNodeId,

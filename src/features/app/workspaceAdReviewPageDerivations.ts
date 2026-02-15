@@ -8,6 +8,9 @@ interface ResolveAdReviewPageDerivationsParams {
   adReviewFocusTask: ManageAdReviewTaskDto | null
   selectedSidebarNode: SidebarNode | null
   pagedPageSize: number
+  thumbnailColumns: number
+  adReviewGroupByPackageRows: boolean
+  adReviewPageIndex: number
   normalizedPageIndexEffective: number
   visibleImageRefs: FocusedImageRef[]
   refsInPageEffective: FocusedImageRef[]
@@ -31,6 +34,61 @@ function resolveImageIdByRef(ref: FocusedImageRef, packageByIdEffective: Map<str
   return packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]?.id ?? null
 }
 
+function paginateAdReviewRefsBySlots(
+  refs: FocusedImageRef[],
+  options: { pageSize: number; thumbnailColumns: number; groupByPackageRows: boolean },
+): { pages: FocusedImageRef[][]; pageStartByIndex: number[] } {
+  const pageSize = Math.max(1, options.pageSize)
+  const columns = Math.max(1, options.thumbnailColumns)
+  const pages: FocusedImageRef[][] = [[]]
+  const pageStartByIndex: number[] = [0]
+
+  let pageIndex = 0
+  let usedCellsInPage = 0
+  let usedCellsInRow = 0
+  let refsConsumed = 0
+  let previousPackageId: string | null = null
+
+  const ensureCurrentPage = () => {
+    if (!pages[pageIndex]) {
+      pages[pageIndex] = []
+      pageStartByIndex[pageIndex] = refsConsumed
+    }
+  }
+
+  for (const ref of refs) {
+    const startsNewPackage = options.groupByPackageRows && previousPackageId !== null && previousPackageId !== ref.packageId
+    if (startsNewPackage && usedCellsInRow > 0) {
+      const remainingRowCells = columns - usedCellsInRow
+      if (usedCellsInPage + remainingRowCells >= pageSize) {
+        pageIndex += 1
+        usedCellsInPage = 0
+        usedCellsInRow = 0
+        ensureCurrentPage()
+      } else {
+        usedCellsInPage += remainingRowCells
+        usedCellsInRow = 0
+      }
+    }
+
+    if (usedCellsInPage >= pageSize) {
+      pageIndex += 1
+      usedCellsInPage = 0
+      usedCellsInRow = 0
+      ensureCurrentPage()
+    }
+
+    ensureCurrentPage()
+    pages[pageIndex].push(ref)
+    usedCellsInPage += 1
+    usedCellsInRow = (usedCellsInRow + 1) % columns
+    refsConsumed += 1
+    previousPackageId = ref.packageId
+  }
+
+  return { pages, pageStartByIndex }
+}
+
 export function resolveAdReviewPageDerivations({
   adReviewResultsMode,
   orderedRootScopedImageRefs,
@@ -38,6 +96,9 @@ export function resolveAdReviewPageDerivations({
   adReviewFocusTask,
   selectedSidebarNode,
   pagedPageSize,
+  thumbnailColumns,
+  adReviewGroupByPackageRows,
+  adReviewPageIndex,
   normalizedPageIndexEffective,
   visibleImageRefs,
   refsInPageEffective,
@@ -73,14 +134,17 @@ export function resolveAdReviewPageDerivations({
       })
     : []
 
-  const adReviewImageTotalPages = Math.max(1, Math.ceil(adReviewFocusRefsBySidebar.length / Math.max(1, pagedPageSize)))
-  const adReviewNormalizedPageIndex = Math.min(Math.max(normalizedPageIndexEffective, 0), adReviewImageTotalPages - 1)
-  const adReviewPageStart = adReviewNormalizedPageIndex * pagedPageSize
+  const { pages: adReviewPages, pageStartByIndex } = paginateAdReviewRefsBySlots(adReviewFocusRefsBySidebar, {
+    pageSize: pagedPageSize,
+    thumbnailColumns,
+    groupByPackageRows: adReviewGroupByPackageRows,
+  })
+  const adReviewImageTotalPages = Math.max(1, adReviewPages.length)
+  const adReviewNormalizedPageIndex = Math.min(Math.max(adReviewPageIndex, 0), adReviewImageTotalPages - 1)
+  const adReviewPageStart = pageStartByIndex[adReviewNormalizedPageIndex] ?? 0
 
   const visibleImageRefsForMain = adReviewResultsMode ? adReviewFocusRefsBySidebar : visibleImageRefs
-  const refsInPageBase = adReviewResultsMode
-    ? adReviewFocusRefsBySidebar.slice(adReviewPageStart, adReviewPageStart + pagedPageSize)
-    : refsInPageEffective
+  const refsInPageBase = adReviewResultsMode ? adReviewPages[adReviewNormalizedPageIndex] ?? [] : refsInPageEffective
   const pageStartForMain = adReviewResultsMode ? adReviewPageStart : pageStartEffective
   const normalizedPageIndexForMain = adReviewResultsMode ? adReviewNormalizedPageIndex : normalizedPageIndexEffective
   const imageTotalPagesForMain = adReviewResultsMode ? adReviewImageTotalPages : imageTotalPagesEffective

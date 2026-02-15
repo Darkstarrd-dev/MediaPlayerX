@@ -111,6 +111,9 @@ describe('resolveAdReviewPageDerivations', () => {
       adReviewFocusTask: createReviewTask(['img-1', 'img-2', 'img-3']),
       selectedSidebarNode,
       pagedPageSize: 20,
+      thumbnailColumns: 4,
+      adReviewGroupByPackageRows: false,
+      adReviewPageIndex: 0,
       normalizedPageIndexEffective: 0,
       visibleImageRefs: [],
       refsInPageEffective: [],
@@ -153,6 +156,9 @@ describe('resolveAdReviewPageDerivations', () => {
       adReviewFocusTask: createReviewTask(['img-1', 'img-2']),
       selectedSidebarNode,
       pagedPageSize: 20,
+      thumbnailColumns: 4,
+      adReviewGroupByPackageRows: false,
+      adReviewPageIndex: 0,
       normalizedPageIndexEffective: 0,
       visibleImageRefs: [],
       refsInPageEffective: [],
@@ -161,5 +167,106 @@ describe('resolveAdReviewPageDerivations', () => {
     })
 
     expect(result.visibleImageRefsForMain).toEqual([{ packageId: 'pkg-b', imageIndex: 0 }])
+  })
+
+  it('uses ad-review page index instead of package page index', () => {
+    const packageById = new Map<string, ImagePackage>([
+      ['pkg-a', createPackage('pkg-a', ['C:', 'Users', 'A', 'pkg-a.zip'], ['img-1', 'img-2', 'img-3', 'img-4'])],
+    ])
+
+    const orderedRootScopedImageRefs: FocusedImageRef[] = [
+      { packageId: 'pkg-a', imageIndex: 0 },
+      { packageId: 'pkg-a', imageIndex: 1 },
+      { packageId: 'pkg-a', imageIndex: 2 },
+      { packageId: 'pkg-a', imageIndex: 3 },
+    ]
+
+    const result = resolveAdReviewPageDerivations({
+      adReviewResultsMode: true,
+      orderedRootScopedImageRefs,
+      packageByIdEffective: packageById,
+      adReviewFocusTask: createReviewTask(['img-1', 'img-2', 'img-3', 'img-4']),
+      selectedSidebarNode: null,
+      pagedPageSize: 1,
+      thumbnailColumns: 4,
+      adReviewGroupByPackageRows: false,
+      adReviewPageIndex: 3,
+      normalizedPageIndexEffective: 0,
+      visibleImageRefs: [],
+      refsInPageEffective: [],
+      pageStartEffective: 0,
+      imageTotalPagesEffective: 1,
+    })
+
+    expect(result.normalizedPageIndexForMain).toBe(3)
+    expect(result.imageTotalPagesForMain).toBe(4)
+    expect(result.refsInPageBase).toEqual([{ packageId: 'pkg-a', imageIndex: 3 }])
+  })
+
+  it('computes page by grid slots when grouping rows by package', () => {
+    const packageById = new Map<string, ImagePackage>([
+      ['pkg-a', createPackage('pkg-a', ['C:', 'Users', 'A', 'pkg-a.zip'], ['img-1', 'img-2', 'img-3'])],
+      ['pkg-b', createPackage('pkg-b', ['C:', 'Users', 'A', 'pkg-b.zip'], ['img-4', 'img-5', 'img-6', 'img-7', 'img-8'])],
+    ])
+
+    const orderedRootScopedImageRefs: FocusedImageRef[] = [
+      { packageId: 'pkg-a', imageIndex: 0 },
+      { packageId: 'pkg-a', imageIndex: 1 },
+      { packageId: 'pkg-a', imageIndex: 2 },
+      { packageId: 'pkg-b', imageIndex: 0 },
+      { packageId: 'pkg-b', imageIndex: 1 },
+      { packageId: 'pkg-b', imageIndex: 2 },
+      { packageId: 'pkg-b', imageIndex: 3 },
+      { packageId: 'pkg-b', imageIndex: 4 },
+    ]
+
+    const resultPage1 = resolveAdReviewPageDerivations({
+      adReviewResultsMode: true,
+      orderedRootScopedImageRefs,
+      packageByIdEffective: packageById,
+      adReviewFocusTask: createReviewTask(['img-1', 'img-2', 'img-3', 'img-4', 'img-5', 'img-6', 'img-7', 'img-8']),
+      selectedSidebarNode: null,
+      pagedPageSize: 8,
+      thumbnailColumns: 4,
+      adReviewGroupByPackageRows: true,
+      adReviewPageIndex: 0,
+      normalizedPageIndexEffective: 0,
+      visibleImageRefs: [],
+      refsInPageEffective: [],
+      pageStartEffective: 0,
+      imageTotalPagesEffective: 1,
+    })
+
+    expect(resultPage1.imageTotalPagesForMain).toBe(2)
+    expect(resultPage1.refsInPageBase).toEqual([
+      { packageId: 'pkg-a', imageIndex: 0 },
+      { packageId: 'pkg-a', imageIndex: 1 },
+      { packageId: 'pkg-a', imageIndex: 2 },
+      { packageId: 'pkg-b', imageIndex: 0 },
+      { packageId: 'pkg-b', imageIndex: 1 },
+      { packageId: 'pkg-b', imageIndex: 2 },
+      { packageId: 'pkg-b', imageIndex: 3 },
+    ])
+
+    const resultPage2 = resolveAdReviewPageDerivations({
+      adReviewResultsMode: true,
+      orderedRootScopedImageRefs,
+      packageByIdEffective: packageById,
+      adReviewFocusTask: createReviewTask(['img-1', 'img-2', 'img-3', 'img-4', 'img-5', 'img-6', 'img-7', 'img-8']),
+      selectedSidebarNode: null,
+      pagedPageSize: 8,
+      thumbnailColumns: 4,
+      adReviewGroupByPackageRows: true,
+      adReviewPageIndex: 1,
+      normalizedPageIndexEffective: 0,
+      visibleImageRefs: [],
+      refsInPageEffective: [],
+      pageStartEffective: 0,
+      imageTotalPagesEffective: 1,
+    })
+
+    expect(resultPage2.refsInPageBase).toEqual([
+      { packageId: 'pkg-b', imageIndex: 4 },
+    ])
   })
 })
