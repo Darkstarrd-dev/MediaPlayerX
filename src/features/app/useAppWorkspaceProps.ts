@@ -23,6 +23,7 @@ import {
   pickFirstBySeriesId,
 } from './workspaceSharedUtils'
 import { buildNodeBrowseItems, resolveRefsInPageForDisplay } from './workspaceImageDerivations'
+import { resolveAdReviewPageDerivations } from './workspaceAdReviewPageDerivations'
 import { resolveAdReviewSidebarContext } from './workspaceAdReviewSidebarContext'
 import {
   createApplyMetadataSyncName,
@@ -30,11 +31,6 @@ import {
 } from './workspaceMetadataActions'
 import { createAdReviewSettingHandlers } from './workspaceAdReviewHandlers'
 import type { UseAppWorkspacePropsParams } from './useAppWorkspaceProps.types'
-import type { FocusedImageRef } from '../../types'
-
-function pathKeyHasPrefix(pathKey: string, prefix: string): boolean {
-  return pathKey === prefix || pathKey.startsWith(`${prefix}/`)
-}
 
 export function useAppWorkspaceProps({
   appSettings,
@@ -400,48 +396,25 @@ export function useAppWorkspaceProps({
     audioSidebarOrderedIds,
   })
 
-  const resolveImageIdByRef = (ref: FocusedImageRef): string | null =>
-    packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]?.id ?? null
-
-  const adReviewFocusCandidateImageIdSet = new Set(adReviewFocusTask?.candidates.map((candidate) => candidate.image_id) ?? [])
-  const adReviewFocusRefsAll = adReviewResultsMode
-    ? orderedRootScopedImageRefs.filter((ref) => {
-        const imageId = resolveImageIdByRef(ref)
-        return Boolean(imageId && adReviewFocusCandidateImageIdSet.has(imageId))
-      })
-    : []
-
-  const adReviewFocusRefsBySidebar = adReviewResultsMode
-    ? adReviewFocusRefsAll.filter((ref) => {
-        if (!selectedSidebarNode) {
-          return true
-        }
-
-        if (selectedSidebarNode.imageNodeType === 'folder') {
-          const packagePathKey = packageByIdEffective.get(ref.packageId)?.treePath.join('/')
-          return Boolean(packagePathKey && pathKeyHasPrefix(packagePathKey, selectedSidebarNode.pathKey))
-        }
-
-        const nodePackageId = selectedSidebarNode.imageSourceId ?? selectedSidebarNode.packageId
-        if (!nodePackageId) {
-          return true
-        }
-
-        return ref.packageId === nodePackageId
-      })
-    : []
-
-  const adReviewImageTotalPages = Math.max(1, Math.ceil(adReviewFocusRefsBySidebar.length / Math.max(1, pagedPageSize)))
-  const adReviewNormalizedPageIndex = Math.min(Math.max(normalizedPageIndexEffective, 0), adReviewImageTotalPages - 1)
-  const adReviewPageStart = adReviewNormalizedPageIndex * pagedPageSize
-
-  const visibleImageRefsForMain = adReviewResultsMode ? adReviewFocusRefsBySidebar : visibleImageRefs
-  const refsInPageBase = adReviewResultsMode
-    ? adReviewFocusRefsBySidebar.slice(adReviewPageStart, adReviewPageStart + pagedPageSize)
-    : refsInPageEffective
-  const pageStartForMain = adReviewResultsMode ? adReviewPageStart : pageStartEffective
-  const normalizedPageIndexForMain = adReviewResultsMode ? adReviewNormalizedPageIndex : normalizedPageIndexEffective
-  const imageTotalPagesForMain = adReviewResultsMode ? adReviewImageTotalPages : imageTotalPagesEffective
+  const {
+    visibleImageRefsForMain,
+    refsInPageBase,
+    pageStartForMain,
+    normalizedPageIndexForMain,
+    imageTotalPagesForMain,
+  } = resolveAdReviewPageDerivations({
+    adReviewResultsMode,
+    orderedRootScopedImageRefs,
+    packageByIdEffective,
+    adReviewFocusTask,
+    selectedSidebarNode,
+    pagedPageSize,
+    normalizedPageIndexEffective,
+    visibleImageRefs,
+    refsInPageEffective,
+    pageStartEffective,
+    imageTotalPagesEffective,
+  })
 
   const nodeBrowseMode =
     mode === 'image' &&
