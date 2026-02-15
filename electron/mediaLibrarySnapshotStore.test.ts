@@ -96,6 +96,38 @@ describe('MediaLibrarySnapshotStore', () => {
     expect(snapshot.audios?.map((item) => item.id)).toEqual(['audio-b'])
   })
 
+  it('replaceSnapshot 遇到同路径不同 video id 时复用已存在 id，不触发唯一约束异常', async () => {
+    const root = await createTempMediaRoot('mpx-snapshot-video-path-collision-')
+    roots.push(root)
+
+    const harness = openMigratedSqliteDatabase(root)
+    closers.push(harness.close)
+    const store = new MediaLibrarySnapshotStore(harness.db, createTransactionRunner(harness.db))
+
+    const sharedVideoPath = 'D:/root/shared/video.mp4'
+
+    store.replaceSnapshot({
+      image_packages: [],
+      image_directories: [],
+      videos: [createVideoFixture('legacy-video-id', sharedVideoPath)],
+      audios: [],
+    })
+
+    expect(() => {
+      store.replaceSnapshot({
+        image_packages: [],
+        image_directories: [],
+        videos: [createVideoFixture('new-video-id', sharedVideoPath)],
+        audios: [],
+      })
+    }).not.toThrow()
+
+    const snapshot = store.readSnapshot()
+    expect(snapshot.videos).toHaveLength(1)
+    expect(snapshot.videos[0]?.id).toBe('legacy-video-id')
+    expect(path.normalize(snapshot.videos[0]?.absolute_path ?? '')).toBe(path.normalize(sharedVideoPath))
+  })
+
   it('setImagesHidden 与 deleteImageItems 可更新 hidden 并在删除后重排 ordinal', async () => {
     const root = await createTempMediaRoot('mpx-snapshot-delete-')
     roots.push(root)

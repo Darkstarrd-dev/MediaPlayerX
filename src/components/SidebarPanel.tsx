@@ -151,7 +151,6 @@ function SidebarPanel({
   audioTreeNodes,
   imageNodeLoadStateById = {},
   selectedPackageId,
-  selectedVideoId,
   selectedAudioId,
   imageHighlightByNode = false,
   searchResultMode = false,
@@ -363,7 +362,7 @@ function SidebarPanel({
           ? selectedSidebarNodeId === node.id
           : node.imageSourceId === selectedPackageId);
       const isActiveVideo =
-        mode === "video" && node.videoId === selectedVideoId;
+        mode === "video" && selectedSidebarNodeId === node.id;
       const isActiveAudio =
         mode === "music" &&
         (selectedSidebarNodeId === node.id || node.audioId === selectedAudioId);

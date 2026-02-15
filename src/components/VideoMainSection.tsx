@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
+import { MusicControlIcon } from './MusicControlIcon'
 import { VideoControlIcon } from './VideoControlIcon'
 import { useI18n } from '../i18n/useI18n'
 import type { VideoItem } from '../types'
@@ -42,6 +43,8 @@ interface VideoMainSectionProps {
   videoVolume: number
   videoMuted: boolean
   videoFitMode: VideoFitMode
+  videoLoopMode: 'single' | 'list'
+  videoLoopModeLabel: string
   videoSourceUrl: string | null
   subtitleTrackUrl: string | null
   subtitleVisible: boolean
@@ -56,6 +59,7 @@ interface VideoMainSectionProps {
   onTogglePlay: () => void
   onPrevVideo: () => void
   onNextVideo: () => void
+  onVideoEnded: () => void
   onSeekVideo: (time: number) => void
   onVideoTimeUpdate: (time: number) => void
   onVideoDurationDetected: (duration: number) => void
@@ -64,6 +68,7 @@ interface VideoMainSectionProps {
   onSelectSubtitle: (subtitleId: string) => void
   onChangeVolume: (volume: number) => void
   onChangeRate: (rate: number) => void
+  onCycleVideoLoopMode: () => void
   onCycleVideoFitMode: () => void
   onSetVideoFitMode: (mode: VideoFitMode) => void
   onSaveCover: () => void
@@ -103,6 +108,8 @@ function VideoMainSection({
   videoVolume,
   videoMuted,
   videoFitMode,
+  videoLoopMode,
+  videoLoopModeLabel,
   videoSourceUrl,
   subtitleTrackUrl,
   subtitleVisible,
@@ -117,6 +124,7 @@ function VideoMainSection({
   onTogglePlay,
   onPrevVideo,
   onNextVideo,
+  onVideoEnded,
   onSeekVideo,
   onVideoTimeUpdate,
   onVideoDurationDetected,
@@ -125,6 +133,7 @@ function VideoMainSection({
   onSelectSubtitle,
   onChangeVolume,
   onChangeRate,
+  onCycleVideoLoopMode,
   onCycleVideoFitMode,
   onSetVideoFitMode,
   onSaveCover,
@@ -393,8 +402,7 @@ function VideoMainSection({
               onVideoTimeUpdate(currentTime)
             }}
             onEnded={() => {
-              onVideoTimeUpdate(0)
-              onNextVideo()
+              onVideoEnded()
             }}
           >
             {subtitleTrackUrl ? <track default kind="subtitles" label={t('ui.media.subtitleTrack')} src={subtitleTrackUrl} /> : null}
@@ -611,6 +619,18 @@ function VideoMainSection({
           </div>
 
           <div className="video-controls-group is-right">
+            <button
+              aria-label={t('a11y.media.videoLoopMode', { label: videoLoopModeLabel })}
+              className="video-action-btn video-action-loop-mode"
+              title={t('tip.media.videoLoopMode', { label: videoLoopModeLabel })}
+              type="button"
+              onClick={onCycleVideoLoopMode}
+            >
+              <MusicControlIcon
+                className="video-action-icon"
+                name={videoLoopMode === 'single' ? 'repeatOne' : 'repeatAlbum'}
+              />
+            </button>
             <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
               <VideoControlIcon name="camera" />
             </button>

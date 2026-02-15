@@ -31,6 +31,8 @@ interface BuildVideoMainSectionPropsParams {
   videoVolume: number
   videoMuted: boolean
   videoFitMode: VideoFitMode
+  videoLoopMode: 'single' | 'list'
+  videoLoopModeLabel: string
   videoSourceUrl: string | null
   fullscreenActive: boolean
   active: boolean
@@ -46,6 +48,7 @@ interface BuildVideoMainSectionPropsParams {
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
   setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  onCycleVideoLoopMode: () => void
   cycleVideoFitMode: () => void
   saveVideoCover: (videoId: string, timeSec: number, color: string) => Promise<void>
   setFullscreenActiveWithAutoStop: (value: boolean) => void
@@ -93,6 +96,8 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     videoVolume: params.videoVolume,
     videoMuted: params.videoMuted,
     videoFitMode: params.videoFitMode,
+    videoLoopMode: params.videoLoopMode,
+    videoLoopModeLabel: params.videoLoopModeLabel,
     videoSourceUrl: params.videoSourceUrl,
     fullscreenActive: params.fullscreenActive,
     active: params.active,
@@ -118,6 +123,14 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     },
     onPrevVideo: () => params.goPlaylist(-1),
     onNextVideo: () => params.goPlaylist(1),
+    onVideoEnded: () => {
+      if (params.videoLoopMode === 'single') {
+        params.setVideoTime(0)
+        params.setVideoPlaying(true)
+        return
+      }
+      params.goPlaylist(1)
+    },
     onSeekVideo: (time: number) => {
       params.setVideoTime(clamp(time, 0, params.durationSec))
     },
@@ -143,6 +156,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     onChangeRate: (rate: number) => {
       params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
     },
+    onCycleVideoLoopMode: params.onCycleVideoLoopMode,
     onCycleVideoFitMode: params.cycleVideoFitMode,
     onSetVideoFitMode: (mode: VideoFitMode) => {
       params.setVideoFitMode(mode)

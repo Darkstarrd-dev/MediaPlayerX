@@ -33,6 +33,8 @@ interface UseAppShortcutBindingsParams {
   applyAutoplayIntervalByIndex: ShortcutEngineParams['onApplyAutoplayIntervalByIndex']
   applyPackageGrade: ShortcutEngineParams['onSetPackageGrade']
   applyVideoGrade: ShortcutEngineParams['onSetVideoGrade']
+  addFocusedVideoToPlaylist: ShortcutEngineParams['onAddFocusedVideoToPlaylist']
+  removeFocusedVideoFromPlaylist: ShortcutEngineParams['onRemoveFocusedVideoFromPlaylist']
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: ShortcutEngineParams['onGoPlaylist']
   adjustVideoRate: ShortcutEngineParams['onAdjustVideoRate']
@@ -68,6 +70,8 @@ export function useAppShortcutBindings({
   applyAutoplayIntervalByIndex,
   applyPackageGrade,
   applyVideoGrade,
+  addFocusedVideoToPlaylist,
+  removeFocusedVideoFromPlaylist,
   setVideoPlaying,
   goPlaylist,
   adjustVideoRate,
@@ -114,6 +118,8 @@ export function useAppShortcutBindings({
     onApplyAutoplayIntervalByIndex: applyAutoplayIntervalByIndex,
     onSetPackageGrade: applyPackageGrade,
     onSetVideoGrade: applyVideoGrade,
+    onAddFocusedVideoToPlaylist: addFocusedVideoToPlaylist,
+    onRemoveFocusedVideoFromPlaylist: removeFocusedVideoFromPlaylist,
     onToggleVideoPlaying: () => {
       setVideoPlaying((value) => !value)
     },

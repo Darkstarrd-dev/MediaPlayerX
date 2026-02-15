@@ -45,9 +45,11 @@ interface MetadataVideoEditorProps {
   onSearchByAuthor: (value: string) => void
   onSearchByTag: (value: string) => void
   onSelectVideo: (videoId: string) => void
+  onSelectVideoAndPlay: (videoId: string) => void
   onRemoveVideoFromPlaylist: (videoId: string) => void
   onDragStart: (videoId: string) => void
-  onDropToVideo: (targetVideoId: string) => void
+  onDropToVideo: (targetVideoId: string, placement: 'before' | 'after') => void
+  onDragEnd: () => void
 }
 
 function resolveLocalizedValue(preferJpn: boolean, jpnValue: string, enValue: string): string {
@@ -120,9 +122,11 @@ export function MetadataVideoEditor({
   onSearchByAuthor,
   onSearchByTag,
   onSelectVideo,
+  onSelectVideoAndPlay,
   onRemoveVideoFromPlaylist,
   onDragStart,
   onDropToVideo,
+  onDragEnd,
 }: MetadataVideoEditorProps) {
   const { t } = useI18n()
   const readOnlyTags = videoTagsDraft
@@ -411,15 +415,21 @@ export function MetadataVideoEditor({
                 className={`playlist-item ${selectedVideoId === videoId ? 'is-active' : ''}`}
                 draggable
                 onDragStart={() => onDragStart(videoId)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={() => {
+                onDragEnd={onDragEnd}
+                onDragOver={(event) => {
+                  event.preventDefault()
                   if (!dragVideoId || dragVideoId === videoId) {
                     return
                   }
-                  onDropToVideo(videoId)
+                  const bounds = event.currentTarget.getBoundingClientRect()
+                  const placement = event.clientY - bounds.top > bounds.height / 2 ? 'after' : 'before'
+                  onDropToVideo(videoId, placement)
+                }}
+                onDrop={() => {
+                  onDragEnd()
                 }}
               >
-                <button type="button" onClick={() => onSelectVideo(videoId)}>
+                <button type="button" onClick={() => onSelectVideo(videoId)} onDoubleClick={() => onSelectVideoAndPlay(videoId)}>
                   {video.fileName}
                 </button>
                 <button

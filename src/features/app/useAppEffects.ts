@@ -45,6 +45,7 @@ interface UseAppEffectsParams {
   rootScopedVideoIds: Set<string>
   rootScopedAudioIds: Set<string>
   selectedVideoId: string
+  videoQueueSource: 'sidebar' | 'playlist'
   selectedAudioId: string
   videoNodeIdMap: Map<string, string>
   audioNodeIdMap: Map<string, string>
@@ -121,6 +122,7 @@ export function useAppEffects({
   rootScopedVideoIds,
   rootScopedAudioIds,
   selectedVideoId,
+  videoQueueSource,
   selectedAudioId,
   videoNodeIdMap,
   audioNodeIdMap,
@@ -369,6 +371,25 @@ export function useAppEffects({
       selectVideoFromBrowser(videosForSidebar[0].id)
     }
   }, [rootScopedVideoIds, selectVideoFromBrowser, selectedVideoId, videosForSidebar])
+
+  useEffect(() => {
+    if (mode !== 'video') {
+      return
+    }
+
+    if (videoQueueSource !== 'sidebar') {
+      return
+    }
+
+    const nextVideoNodeId = videoNodeIdMap.get(selectedVideoId) ?? null
+    if (!nextVideoNodeId) {
+      return
+    }
+
+    if (nextVideoNodeId !== selectedSidebarNodeId) {
+      setSelectedSidebarNodeId(nextVideoNodeId)
+    }
+  }, [mode, selectedSidebarNodeId, selectedVideoId, setSelectedSidebarNodeId, videoNodeIdMap, videoQueueSource])
 
   useEffect(() => {
     if (mode !== 'video') {

@@ -84,7 +84,7 @@ export function useAppDisplayAndEffects({
   })
 
   const {
-    videoShortcutActive,
+    videoShortcutActive: fullscreenVideoShortcutActive,
     fullscreenAlignRequest,
     applyAutoplayIntervalByIndex,
     requestFullscreenAlign,
@@ -98,6 +98,8 @@ export function useAppDisplayAndEffects({
     setFullscreenActive,
     autoPlayPresets: AUTO_PLAY_PRESETS,
   })
+
+  const videoShortcutActive = mode === 'video' || fullscreenVideoShortcutActive
 
   const {
     runVectorSearch,

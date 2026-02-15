@@ -19,6 +19,7 @@ import {
 } from "./workspaceJumpActions";
 import {
   collectAudioIdsBySidebarOrder,
+  collectVideoIdsBySidebarOrder,
   collectScopedAudioIdsByFolderNode,
   flattenExternalTagValues,
   normalizeFeatureTags,
@@ -61,6 +62,7 @@ export function useAppWorkspaceProps({
   scopedImageSourcesEffective,
   musicBookletImageSources,
   videosForSidebarCount,
+  videosForSidebar,
   audiosForSidebarCount,
   audiosForSidebar,
   focusedRef,
@@ -138,6 +140,7 @@ export function useAppWorkspaceProps({
   videoVolume,
   videoMuted,
   videoFitMode,
+  videoLoopMode,
   focusedVideoSrc,
   focusedAudioSrc,
   subtitleTrackUrl,
@@ -160,6 +163,7 @@ export function useAppWorkspaceProps({
   setVideoVolume,
   setVideoRate,
   setVideoFitMode,
+  cycleVideoLoopMode,
   cycleVideoFitMode,
   imageFocusActive,
   metadataImageEffective,
@@ -282,6 +286,14 @@ export function useAppWorkspaceProps({
     setAdReviewPageIndex,
   ]);
 
+  const sidebarVideoQueueIds = useMemo(() => {
+    const orderedByTree = collectVideoIdsBySidebarOrder(videoTreeForSidebar)
+    if (orderedByTree.length > 0) {
+      return orderedByTree
+    }
+    return videosForSidebar.map((video) => video.id)
+  }, [videoTreeForSidebar, videosForSidebar])
+
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
     sidebarFocus: appSettings.sidebarFocus,
@@ -330,7 +342,12 @@ export function useAppWorkspaceProps({
     },
     updateSettings: appSettings.updateSettings,
     setSelectedPackageId,
-    selectVideoFromBrowser,
+    selectVideoFromBrowser: (videoId, options) => {
+      selectVideoFromBrowser(videoId, {
+        ...options,
+        queueSource: options?.queueSource ?? 'sidebar',
+      })
+    },
     setSelectedAudioId,
     collapseSidebar,
     collapsedFolderNodeIds:
@@ -919,6 +936,11 @@ export function useAppWorkspaceProps({
     videoVolume,
     videoMuted,
     videoFitMode,
+    videoLoopMode,
+    videoLoopModeLabel:
+      videoLoopMode === "single"
+        ? t("ui.media.videoLoopModeSingle")
+        : t("ui.media.videoLoopModeList"),
     videoSourceUrl: focusedVideoSrc,
     subtitleTrackUrl,
     subtitleVisible,
@@ -939,13 +961,14 @@ export function useAppWorkspaceProps({
     canJumpToMusic: Boolean(jumpTargetAudioFromVideo),
     onJumpToManga: jumpToManga,
     onJumpToMusic: jumpVideoToMusic,
-    goPlaylist,
+    goPlaylist: (step) => goPlaylist(step, sidebarVideoQueueIds),
     setVideoTime,
     setVideoDurationById,
     setVideoMuted,
     setVideoVolume,
     setVideoRate,
     setVideoFitMode,
+    onCycleVideoLoopMode: cycleVideoLoopMode,
     cycleVideoFitMode,
     saveVideoCover: backendWrite.saveVideoCover,
     setFullscreenActiveWithAutoStop,
@@ -1178,7 +1201,12 @@ export function useAppWorkspaceProps({
       applyMetadataFeatureSearch({ tag: value });
     },
     onMetadataTabChange: setMetadataTab,
-    onSelectVideo: selectVideoFromBrowser,
+    onSelectVideo: (videoId) => {
+      selectVideoFromBrowser(videoId, { queueSource: 'playlist' })
+    },
+    onSelectVideoAndPlay: (videoId) => {
+      selectVideoFromBrowser(videoId, { play: true, queueSource: 'playlist' })
+    },
     onSelectAudio: (audioId) => {
       setSelectedAudioId(audioId);
       appSettings.updateSettings({ sidebarFocus: "main" });

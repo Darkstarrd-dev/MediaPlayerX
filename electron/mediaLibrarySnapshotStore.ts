@@ -117,6 +117,15 @@ export class MediaLibrarySnapshotStore {
       `,
     )
 
+    const selectVideoIdByAbsolutePath = this.db.prepare(
+      `
+        SELECT id
+        FROM video_item
+        WHERE absolute_path = ?
+        LIMIT 1
+      `,
+    )
+
     const upsertAudio = this.db.prepare(
       `
         INSERT INTO audio_item (
@@ -227,8 +236,14 @@ export class MediaLibrarySnapshotStore {
       }
 
       for (const video of snapshot.videos) {
+        const existingVideoIdRow = selectVideoIdByAbsolutePath.get(video.absolute_path) as { id?: string } | undefined
+        const effectiveVideoId =
+          typeof existingVideoIdRow?.id === 'string' && existingVideoIdRow.id.trim().length > 0
+            ? existingVideoIdRow.id
+            : video.id
+
         upsertVideo.run(
-          video.id,
+          effectiveVideoId,
           video.file_name,
           video.absolute_path,
           JSON.stringify(video.tree_path),

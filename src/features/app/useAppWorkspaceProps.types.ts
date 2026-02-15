@@ -42,6 +42,7 @@ export interface UseAppWorkspacePropsParams {
   scopedImageSourcesEffective: ImagePackage[]
   musicBookletImageSources: ImagePackage[]
   videosForSidebarCount: number
+  videosForSidebar: VideoItem[]
   audiosForSidebarCount: number
   audiosForSidebar: AudioItem[]
   focusedRef: FocusedImageRef | null
@@ -125,6 +126,7 @@ export interface UseAppWorkspacePropsParams {
   videoVolume: number
   videoMuted: boolean
   videoFitMode: VideoFitMode
+  videoLoopMode: 'single' | 'list'
   focusedVideoSrc: string | null
   focusedAudioSrc: string | null
   subtitleTrackUrl: string | null
@@ -140,13 +142,14 @@ export interface UseAppWorkspacePropsParams {
   focusedVideoCoverImageSrc: string | null
   focusedVideoEffective: VideoItem | null
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
-  goPlaylist: (step: number) => void
+  goPlaylist: (step: number, sidebarQueueIds?: string[]) => void
   setVideoTime: Dispatch<SetStateAction<number>>
   setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
   setVideoMuted: Dispatch<SetStateAction<boolean>>
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
   setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  cycleVideoLoopMode: () => void
   cycleVideoFitMode: () => void
   imageFocusActive: boolean
   metadataImageEffective: ImageItem | null
@@ -165,7 +168,7 @@ export interface UseAppWorkspacePropsParams {
   videoByIdEffective: Map<string, VideoItem>
   audioByIdEffective: Map<string, AudioItem>
   setMetadataTab: Dispatch<SetStateAction<'info' | 'playlist'>>
-  selectVideoFromBrowser: (videoId: string, options?: { play?: boolean }) => void
+  selectVideoFromBrowser: (videoId: string, options?: { play?: boolean; queueSource?: 'sidebar' | 'playlist' }) => void
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
   setDragVideoId: Dispatch<SetStateAction<string | null>>
   sidebarNodeById: Map<string, SidebarNode>

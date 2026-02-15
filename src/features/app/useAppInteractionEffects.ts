@@ -103,6 +103,8 @@ export function useAppInteractionEffects({
     selectedVideoId,
     videoPlaying,
     setVideoPlaying,
+    setPlaylistIds,
+    videoQueueSource,
     fullscreenActive,
     fullscreenDisplay,
     setFullscreenDisplay,
@@ -600,6 +602,18 @@ export function useAppInteractionEffects({
     applyAutoplayIntervalByIndex,
     applyPackageGrade,
     applyVideoGrade,
+    addFocusedVideoToPlaylist: () => {
+      if (mode !== 'video' || !selectedVideoId) {
+        return
+      }
+      setPlaylistIds((previous) => (previous.includes(selectedVideoId) ? previous : [...previous, selectedVideoId]))
+    },
+    removeFocusedVideoFromPlaylist: () => {
+      if (mode !== 'video' || !selectedVideoId) {
+        return
+      }
+      setPlaylistIds((previous) => previous.filter((id) => id !== selectedVideoId))
+    },
     setVideoPlaying,
     goPlaylist,
     adjustVideoRate,
@@ -646,6 +660,7 @@ export function useAppInteractionEffects({
     rootScopedVideoIds,
     rootScopedAudioIds,
     selectedVideoId,
+    videoQueueSource,
     selectedAudioId,
     videoNodeIdMap,
     audioNodeIdMap,

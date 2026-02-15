@@ -93,6 +93,16 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         ].join(' / '),
         action: t('ui.help.image.keyboard.rating'),
       },
+      {
+        key: 'video-playlist-add',
+        shortcut: renderShortcutBinding(shortcuts.videoPlaylistAdd, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.image.keyboard.videoPlaylistAdd'),
+      },
+      {
+        key: 'video-playlist-remove',
+        shortcut: renderShortcutBinding(shortcuts.videoPlaylistRemove, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.image.keyboard.videoPlaylistRemove'),
+      },
     ],
     [shortcuts, t],
   )

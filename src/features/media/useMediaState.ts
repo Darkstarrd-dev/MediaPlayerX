@@ -5,6 +5,8 @@ import { buildInitialVideoCoverImageMap, buildInitialVideoCoverMap } from '../..
 import type { VideoItem } from '../../types'
 import { cycleVideoFitMode, type VideoFitMode } from './videoFitMode'
 
+export type VideoLoopMode = 'single' | 'list'
+
 interface UseMediaStateParams {
   initialVideoId: string
   initialPlaylistIds: string[]
@@ -32,6 +34,8 @@ interface UseMediaStateResult {
   setVideoMuted: Dispatch<SetStateAction<boolean>>
   videoFitMode: VideoFitMode
   setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  videoLoopMode: VideoLoopMode
+  setVideoLoopMode: Dispatch<SetStateAction<VideoLoopMode>>
   videoCoverById: Record<string, string>
   setVideoCoverById: Dispatch<SetStateAction<Record<string, string>>>
   videoCoverImageById: Record<string, string | null>
@@ -50,10 +54,12 @@ interface UseMediaStateResult {
   setFullscreenSplit: Dispatch<SetStateAction<number>>
   showFullscreenFooter: boolean
   setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>
-  goPlaylist: (delta: number) => void
-  selectVideoFromBrowser: (videoId: string, options?: { play?: boolean }) => void
+  videoQueueSource: 'sidebar' | 'playlist'
+  goPlaylist: (delta: number, sidebarQueueIds?: string[]) => void
+  selectVideoFromBrowser: (videoId: string, options?: { play?: boolean; queueSource?: 'sidebar' | 'playlist' }) => void
   adjustVideoRate: (delta: number) => void
   adjustVideoVolume: (delta: number) => void
+  cycleVideoLoopMode: () => void
   cycleVideoFitMode: () => void
 }
 
@@ -69,6 +75,7 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
   const [videoVolume, setVideoVolume] = useState(60)
   const [videoMuted, setVideoMuted] = useState(false)
   const [videoFitMode, setVideoFitMode] = useState<VideoFitMode>('contain')
+  const [videoLoopMode, setVideoLoopMode] = useState<VideoLoopMode>('list')
   const [videoCoverById, setVideoCoverById] = useState<Record<string, string>>(() => buildInitialVideoCoverMap(videos))
   const [videoCoverImageById, setVideoCoverImageById] = useState<Record<string, string | null>>(() =>
     buildInitialVideoCoverImageMap(videos),
@@ -83,17 +90,28 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
   const [fullscreenVideoFocus, setFullscreenVideoFocus] = useState(false)
   const [fullscreenSplit, setFullscreenSplit] = useState(0.56)
   const [showFullscreenFooter, setShowFullscreenFooter] = useState(false)
+  const [videoQueueSource, setVideoQueueSource] = useState<'sidebar' | 'playlist'>('sidebar')
 
   const goPlaylist = useCallback(
-    (delta: number) => {
-      if (playlistIds.length === 0) {
+    (delta: number, sidebarQueueIds?: string[]) => {
+      const fallbackSidebarQueueIds = videos.map((video) => video.id)
+      const queueIds =
+        videoQueueSource === 'playlist' && playlistIds.length > 0
+          ? playlistIds
+          : (sidebarQueueIds && sidebarQueueIds.length > 0 ? sidebarQueueIds : fallbackSidebarQueueIds)
+      if (queueIds.length === 0) {
         return
       }
 
-      const currentIndexInPlaylist = playlistIds.findIndex((id) => id === selectedVideoId)
-      const safeCurrent = currentIndexInPlaylist >= 0 ? currentIndexInPlaylist : 0
-      const nextIndex = clamp(safeCurrent + delta, 0, playlistIds.length - 1)
-      const nextId = playlistIds[nextIndex]
+      const currentIndexInPlaylist = queueIds.findIndex((id) => id === selectedVideoId)
+      let nextIndex = 0
+      if (currentIndexInPlaylist < 0) {
+        nextIndex = delta < 0 ? queueIds.length - 1 : 0
+      } else {
+        const rawIndex = currentIndexInPlaylist + delta
+        nextIndex = ((rawIndex % queueIds.length) + queueIds.length) % queueIds.length
+      }
+      const nextId = queueIds[nextIndex]
       if (!nextId) {
         return
       }
@@ -101,12 +119,15 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
       setSelectedVideoId(nextId)
       setVideoTime(0)
     },
-    [playlistIds, selectedVideoId],
+    [playlistIds, selectedVideoId, videoQueueSource, videos],
   )
 
-  const selectVideoFromBrowser = useCallback((videoId: string, options?: { play?: boolean }) => {
+  const selectVideoFromBrowser = useCallback((videoId: string, options?: { play?: boolean; queueSource?: 'sidebar' | 'playlist' }) => {
     setSelectedVideoId(videoId)
     setVideoTime(0)
+    if (options?.queueSource) {
+      setVideoQueueSource(options.queueSource)
+    }
     setVideoPlaying((previous) => (options?.play ? true : previous))
   }, [])
 
@@ -121,6 +142,10 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
 
   const cycleVideoFitModeState = useCallback(() => {
     setVideoFitMode((value) => cycleVideoFitMode(value))
+  }, [])
+
+  const cycleVideoLoopMode = useCallback(() => {
+    setVideoLoopMode((value) => (value === 'single' ? 'list' : 'single'))
   }, [])
 
   return {
@@ -144,6 +169,8 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
     setVideoMuted,
     videoFitMode,
     setVideoFitMode,
+    videoLoopMode,
+    setVideoLoopMode,
     videoCoverById,
     setVideoCoverById,
     videoCoverImageById,
@@ -162,10 +189,12 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
     setFullscreenSplit,
     showFullscreenFooter,
     setShowFullscreenFooter,
+    videoQueueSource,
     goPlaylist,
     selectVideoFromBrowser,
     adjustVideoRate,
     adjustVideoVolume,
+    cycleVideoLoopMode,
     cycleVideoFitMode: cycleVideoFitModeState,
   }
 }

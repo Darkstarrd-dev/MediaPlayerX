@@ -31,6 +31,8 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onApplyAutoplayIntervalByIndex: vi.fn(),
     onSetPackageGrade: vi.fn(),
     onSetVideoGrade: vi.fn(),
+    onAddFocusedVideoToPlaylist: vi.fn(),
+    onRemoveFocusedVideoFromPlaylist: vi.fn(),
     onToggleVideoPlaying: vi.fn(),
     onGoPlaylist: vi.fn(),
     onAdjustVideoRate: vi.fn(),
@@ -118,5 +120,20 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     expect(params.onSetVideoGrade).toHaveBeenNthCalledWith(1, 2)
     expect(params.onSetVideoGrade).toHaveBeenNthCalledWith(2, null)
     expect(params.onSetPackageGrade).not.toHaveBeenCalled()
+  })
+
+  it('video mode A/D shortcuts add and remove focused video in playlist', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.videoShortcutActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', code: 'KeyA', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd', code: 'KeyD', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onAddFocusedVideoToPlaylist).toHaveBeenCalledTimes(1)
+    expect(params.onRemoveFocusedVideoFromPlaylist).toHaveBeenCalledTimes(1)
   })
 })

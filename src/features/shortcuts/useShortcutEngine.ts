@@ -40,6 +40,8 @@ interface UseShortcutEngineParams {
   onApplyAutoplayIntervalByIndex: (index: 0 | 1 | 2 | 3 | 4) => void
   onSetPackageGrade: (grade: number | null) => void
   onSetVideoGrade: (grade: number | null) => void
+  onAddFocusedVideoToPlaylist: () => void
+  onRemoveFocusedVideoFromPlaylist: () => void
   onToggleVideoPlaying: () => void
   onGoPlaylist: (delta: number) => void
   onAdjustVideoRate: (delta: number) => void
@@ -74,6 +76,8 @@ export function useShortcutEngine({
   onApplyAutoplayIntervalByIndex,
   onSetPackageGrade,
   onSetVideoGrade,
+  onAddFocusedVideoToPlaylist,
+  onRemoveFocusedVideoFromPlaylist,
   onToggleVideoPlaying,
   onGoPlaylist,
   onAdjustVideoRate,
@@ -226,6 +230,16 @@ export function useShortcutEngine({
             onToggleVideoPlaying()
           }
           return
+        case 'videoPlaylistAdd':
+          if (videoShortcutActive) {
+            onAddFocusedVideoToPlaylist()
+          }
+          return
+        case 'videoPlaylistRemove':
+          if (videoShortcutActive) {
+            onRemoveFocusedVideoFromPlaylist()
+          }
+          return
         case 'videoPrev':
           if (videoShortcutActive) {
             onGoPlaylist(-1)
@@ -276,6 +290,8 @@ export function useShortcutEngine({
       onSetFullscreenActive,
       onSetPackageGrade,
       onSetVideoGrade,
+      onAddFocusedVideoToPlaylist,
+      onRemoveFocusedVideoFromPlaylist,
       onToggleAutoplay,
       onToggleSidebarFocus,
       onToggleVideoPlaying,
@@ -397,12 +413,18 @@ export function useShortcutEngine({
         allowedScopes.add('video')
       }
 
-      const matchedDefinition = SHORTCUT_DEFINITIONS.find((definition) => {
-        if (!allowedScopes.has(definition.scope)) {
-          return false
-        }
-        return shortcutMatches(shortcuts[definition.action], event)
-      })
+      const matchedDefinition = [...SHORTCUT_DEFINITIONS]
+        .filter((definition) => {
+          if (!allowedScopes.has(definition.scope)) {
+            return false
+          }
+          return shortcutMatches(shortcuts[definition.action], event)
+        })
+        .sort((left, right) => {
+          const leftPriority = videoShortcutActive && left.scope === 'video' ? 0 : 1
+          const rightPriority = videoShortcutActive && right.scope === 'video' ? 0 : 1
+          return leftPriority - rightPriority
+        })[0]
 
       if (!matchedDefinition) {
         return
@@ -475,12 +497,18 @@ export function useShortcutEngine({
         allowedScopes.add('video')
       }
 
-      const matchedDefinition = SHORTCUT_DEFINITIONS.find((definition) => {
-        if (!allowedScopes.has(definition.scope)) {
-          return false
-        }
-        return shortcutWheelMatches(shortcuts[definition.action], event)
-      })
+      const matchedDefinition = [...SHORTCUT_DEFINITIONS]
+        .filter((definition) => {
+          if (!allowedScopes.has(definition.scope)) {
+            return false
+          }
+          return shortcutWheelMatches(shortcuts[definition.action], event)
+        })
+        .sort((left, right) => {
+          const leftPriority = videoShortcutActive && left.scope === 'video' ? 0 : 1
+          const rightPriority = videoShortcutActive && right.scope === 'video' ? 0 : 1
+          return leftPriority - rightPriority
+        })[0]
 
       if (!matchedDefinition) {
         return

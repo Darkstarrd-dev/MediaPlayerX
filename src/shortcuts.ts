@@ -27,6 +27,8 @@ export type ShortcutAction =
   | 'enterFullscreen'
   | 'fullscreenToggle'
   | 'videoPlayPause'
+  | 'videoPlaylistAdd'
+  | 'videoPlaylistRemove'
   | 'videoPrev'
   | 'videoNext'
   | 'videoSpeedDown'
@@ -69,6 +71,8 @@ export const SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
   { action: 'enterFullscreen', scope: 'global', label: '全屏：进入' },
   { action: 'fullscreenToggle', scope: 'global', label: '全屏：切换' },
   { action: 'videoPlayPause', scope: 'video', label: '视频：播放/暂停' },
+  { action: 'videoPlaylistAdd', scope: 'video', label: '视频：加入播放列表' },
+  { action: 'videoPlaylistRemove', scope: 'video', label: '视频：移出播放列表' },
   { action: 'videoPrev', scope: 'video', label: '视频：上一个' },
   { action: 'videoNext', scope: 'video', label: '视频：下一个' },
   { action: 'videoSpeedDown', scope: 'video', label: '视频：减速' },
@@ -104,6 +108,8 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   enterFullscreen: 'Enter',
   fullscreenToggle: 'KeyF',
   videoPlayPause: 'Space',
+  videoPlaylistAdd: 'KeyA',
+  videoPlaylistRemove: 'KeyD',
   videoPrev: 'PageUp',
   videoNext: 'PageDown',
   videoSpeedDown: 'Ctrl+PageUp',

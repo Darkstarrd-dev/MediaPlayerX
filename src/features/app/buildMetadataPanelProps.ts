@@ -93,6 +93,7 @@ interface BuildMetadataPanelPropsParams {
   onSaveAudioMetadata: (payload: AudioMetadataWritePayload) => void
   onMetadataTabChange: (tab: MetadataPanelProps['metadataTab']) => void
   onSelectVideo: (videoId: string) => void
+  onSelectVideoAndPlay?: (videoId: string) => void
   onSearchByWorkTitle: (value: string) => void
   onSearchByCircle: (value: string) => void
   onSearchByAuthor: (value: string) => void
@@ -201,13 +202,14 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onSearchByTag: params.onSearchByTag,
     onMetadataTabChange: params.onMetadataTabChange,
     onSelectVideo: params.onSelectVideo,
+    onSelectVideoAndPlay: params.onSelectVideoAndPlay ?? params.onSelectVideo,
     onRemoveVideoFromPlaylist: (videoId: string) => {
       params.setPlaylistIds((previous) => previous.filter((id) => id !== videoId))
     },
     onDragStart: (videoId: string) => {
       params.setDragVideoId(videoId)
     },
-    onDropToVideo: (targetVideoId: string) => {
+    onDropToVideo: (targetVideoId: string, placement: 'before' | 'after' = 'before') => {
       const dragVideoId = params.dragVideoId
       if (!dragVideoId || dragVideoId === targetVideoId) {
         return
@@ -222,9 +224,14 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
 
         const next = [...previous]
         next.splice(from, 1)
-        next.splice(to, 0, dragVideoId)
+        const insertIndexBase = placement === 'after' ? to + 1 : to
+        const insertIndex = from < insertIndexBase ? insertIndexBase - 1 : insertIndexBase
+        next.splice(insertIndex, 0, dragVideoId)
         return next
       })
+    },
+    onDragEnd: () => {
+      params.setDragVideoId(null)
     },
     onSelectAudio: params.onSelectAudio,
     onSelectAudioAndPlay: params.onSelectAudioAndPlay,

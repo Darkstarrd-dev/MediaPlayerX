@@ -133,9 +133,11 @@ export interface MetadataPanelProps {
   onSearchByTag: (value: string) => void
   onMetadataTabChange: (tab: 'info' | 'playlist') => void
   onSelectVideo: (videoId: string) => void
+  onSelectVideoAndPlay?: (videoId: string) => void
   onRemoveVideoFromPlaylist: (videoId: string) => void
   onDragStart: (videoId: string) => void
-  onDropToVideo: (targetVideoId: string) => void
+  onDropToVideo: (targetVideoId: string, placement?: 'before' | 'after') => void
+  onDragEnd?: () => void
   onSelectAudio: (audioId: string) => void
   onSelectAudioAndPlay: (audioId: string) => void
   onMusicCoverBindingChange: (value: string) => void
@@ -237,9 +239,11 @@ function MetadataPanel({
   onSearchByTag,
   onMetadataTabChange,
   onSelectVideo,
+  onSelectVideoAndPlay,
   onRemoveVideoFromPlaylist,
   onDragStart,
   onDropToVideo,
+  onDragEnd,
   onSelectAudio,
   onSelectAudioAndPlay,
   onMusicCoverBindingChange,
@@ -893,9 +897,11 @@ function MetadataPanel({
           onSearchByAuthor={onSearchByAuthor}
           onSearchByTag={onSearchByTag}
           onSelectVideo={onSelectVideo}
+          onSelectVideoAndPlay={onSelectVideoAndPlay ?? onSelectVideo}
           onRemoveVideoFromPlaylist={onRemoveVideoFromPlaylist}
           onDragStart={onDragStart}
           onDropToVideo={onDropToVideo}
+          onDragEnd={onDragEnd ?? (() => undefined)}
         />
       ) : (
         <MetadataMusicEditor

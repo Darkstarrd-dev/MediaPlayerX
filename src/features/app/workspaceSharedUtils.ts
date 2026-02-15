@@ -114,6 +114,26 @@ export function collectAudioIdsBySidebarOrder(nodes: SidebarNode[], audios: Audi
     .map((audio) => audio.id)
 }
 
+export function collectVideoIdsBySidebarOrder(nodes: SidebarNode[]): string[] {
+  const orderedIds: string[] = []
+  const seen = new Set<string>()
+
+  const walk = (currentNodes: SidebarNode[]) => {
+    for (const node of currentNodes) {
+      if (node.videoId && !seen.has(node.videoId)) {
+        seen.add(node.videoId)
+        orderedIds.push(node.videoId)
+      }
+      if (node.children.length > 0) {
+        walk(node.children)
+      }
+    }
+  }
+
+  walk(nodes)
+  return orderedIds
+}
+
 export function collectScopedAudioIdsByFolderNode(params: {
   selectedSidebarNode: SidebarNode | null
   audiosForSidebar: AudioItem[]
