@@ -4,7 +4,7 @@ import { MainUiIcon } from './MainUiIcon'
 import { VideoControlIcon } from './VideoControlIcon'
 import { useI18n } from '../i18n/useI18n'
 import type { VideoItem } from '../types'
-import { videoFitModeLabel, type VideoFitMode } from '../features/media/videoFitMode'
+import type { VideoFitMode } from '../features/media/videoFitMode'
 import { clamp, formatSeconds } from '../utils/ui'
 
 type VideoPopoverKey = 'volume' | 'subtitle' | 'speed' | 'fit' | 'playlist'
@@ -133,6 +133,13 @@ function VideoMainSection({
   const showVideoFrame = Boolean(videoSourceUrl && (videoPlaying || hasPlayedCurrentSource))
   const videoScreenBackground = 'var(--mpx-bg-elevated)'
   const videoObjectFit = videoFitMode === 'original' ? 'none' : videoFitMode
+  const subtitleToggleLabel = subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')
+  const videoFitLabel =
+    videoFitMode === 'fill'
+      ? t('a11y.media.videoFitFill')
+      : videoFitMode === 'original'
+        ? t('a11y.media.videoFitOriginal')
+        : t('a11y.media.videoFitContain')
   const toolbarAuthor = focusedVideo?.author.trim() ?? ''
   const toolbarVideoSummary = focusedVideo
     ? [
@@ -143,13 +150,13 @@ function VideoMainSection({
       ]
         .filter((value): value is string => Boolean(value))
         .join('    ')
-    : '视频预览'
+    : t('a11y.media.videoPreview')
   const manageSummary =
     activeSelectionScope === 'sidebar'
-      ? `已选目录节点: ${sidebarSelectedCount}`
+      ? t('a11y.manage.selectedSidebarNodes', { count: sidebarSelectedCount })
       : activeSelectionScope === 'image'
-        ? `已选媒体条目: ${imageSelectedCount}`
-        : '未选择条目'
+        ? t('a11y.manage.selectedMediaItems', { count: imageSelectedCount })
+        : t('a11y.manage.noSelection')
 
   const closePopover = () => {
     setOpenPopover(null)
@@ -325,7 +332,7 @@ function VideoMainSection({
               onNextVideo()
             }}
           >
-            {subtitleTrackUrl ? <track default kind="subtitles" label="字幕" src={subtitleTrackUrl} /> : null}
+            {subtitleTrackUrl ? <track default kind="subtitles" label={t('ui.media.subtitleTrack')} src={subtitleTrackUrl} /> : null}
           </video>
         ) : null}
 
@@ -334,13 +341,13 @@ function VideoMainSection({
             className="video-screen-cover-image"
             style={{ objectFit: videoObjectFit, objectPosition: 'center center' }}
             src={coverImageUrl}
-            alt="视频封面"
+            alt={t('ui.media.videoCoverAlt')}
           />
         ) : null}
 
         {!videoSourceUrl ? (
           <div className="video-screen-empty">
-            <span>无可用视频源</span>
+            <span>{t('ui.media.noVideoSource')}</span>
           </div>
         ) : null}
         </div>
@@ -405,14 +412,14 @@ function VideoMainSection({
                 aria-expanded={openPopover === 'subtitle'}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-subtitle"
-                aria-label={subtitleVisible ? '字幕:开' : '字幕:关'}
+                aria-label={subtitleToggleLabel}
                 type="button"
                 onClick={onToggleSubtitle}
               >
                 <VideoControlIcon name="subtitle" />
               </button>
               <div className="video-ctrl-panel" hidden={openPopover !== 'subtitle'} id="video-main-popover-subtitle" role="dialog">
-                {subtitleLoading ? <span className="video-ctrl-panel-note">加载中...</span> : null}
+                {subtitleLoading ? <span className="video-ctrl-panel-note">{t('ui.common.loading')}</span> : null}
                 {subtitleMessage ? <span className="video-ctrl-panel-note">{subtitleMessage}</span> : null}
                 <div className="video-ctrl-panel-options">
                   {subtitleOptions.map((option) => (
@@ -443,7 +450,7 @@ function VideoMainSection({
                 aria-expanded={openPopover === 'speed'}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-speed"
-                aria-label={`倍速 x${videoRate.toFixed(2)}`}
+                aria-label={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
                 type="button"
               >
                 <VideoControlIcon name="speed" />
@@ -487,7 +494,7 @@ function VideoMainSection({
                 aria-expanded={openPopover === 'fit'}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-fit"
-                aria-label={videoFitModeLabel(videoFitMode)}
+                aria-label={videoFitLabel}
                 type="button"
                 onClick={onCycleVideoFitMode}
               >
@@ -496,9 +503,9 @@ function VideoMainSection({
               <div className="video-ctrl-panel is-fit" hidden={openPopover !== 'fit'} id="video-main-popover-fit" role="dialog">
                 <div className="video-ctrl-panel-options">
                   {[
-                    { label: '适应', mode: 'contain' as const },
-                    { label: '拉伸', mode: 'fill' as const },
-                    { label: '原始', mode: 'original' as const },
+                    { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
+                    { label: t('a11y.media.videoFitFill'), mode: 'fill' as const },
+                    { label: t('a11y.media.videoFitOriginal'), mode: 'original' as const },
                   ].map((option) => (
                     <button
                       aria-pressed={videoFitMode === option.mode}
@@ -540,10 +547,10 @@ function VideoMainSection({
               <VideoControlIcon name="camera" />
             </button>
             <button
-              aria-label="切换独立或复合模式（仅全屏可用）"
+              aria-label={t('a11y.media.dualModeFullscreenOnly')}
               className="video-action-btn video-action-dual"
               disabled={!fullscreenActive}
-              title={fullscreenActive ? '在全屏中切换独立/复合模式' : '仅全屏模式可用'}
+              title={fullscreenActive ? t('tip.media.dualModeInFullscreen') : t('tip.media.fullscreenOnly')}
               type="button"
             >
               <VideoControlIcon name="dual" />
@@ -558,17 +565,17 @@ function VideoMainSection({
                 aria-controls="video-main-popover-playlist"
                 aria-expanded={openPopover === 'playlist'}
                 aria-haspopup="dialog"
-                aria-label="播放列表（仅全屏可用）"
+                aria-label={t('a11y.media.playlistFullscreenOnly')}
                 className="video-action-btn video-action-playlist"
                 disabled={!fullscreenActive}
-                title={fullscreenActive ? '在全屏中选择播放项' : '仅全屏模式可用'}
+                title={fullscreenActive ? t('tip.media.playlistInFullscreen') : t('tip.media.fullscreenOnly')}
                 type="button"
               >
                 <VideoControlIcon name="playlist" />
               </button>
               <div className="video-ctrl-panel" hidden={openPopover !== 'playlist'} id="video-main-popover-playlist" role="dialog">
-                <span className="video-ctrl-panel-title">播放列表</span>
-                <span className="video-ctrl-panel-note">P3 在 fullscreen 内启用</span>
+                <span className="video-ctrl-panel-title">{t('ui.media.playlist')}</span>
+                <span className="video-ctrl-panel-note">{t('ui.media.playlistFullscreenHint')}</span>
               </div>
             </div>
           </div>

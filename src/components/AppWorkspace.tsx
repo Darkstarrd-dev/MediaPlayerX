@@ -4,6 +4,8 @@ import { Profiler } from 'react'
 import type { BrowserMode } from '../types'
 import { benchOnReactRender } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
+import { buildA11yPropsByRegistry } from '../i18n/a11y'
+import { zhCnCatalog } from '../i18n/locales/zh-CN'
 import ImageMainSection from './ImageMainSection'
 import MetadataPanel from './MetadataPanel'
 import MusicMainSection from './MusicMainSection'
@@ -57,6 +59,9 @@ function AppWorkspace({
   metadataPanelProps,
   mainFooter,
 }: AppWorkspaceProps) {
+  const t = (key: string) => {
+    return zhCnCatalog[key as keyof typeof zhCnCatalog] ?? key
+  }
   const benchSettings = getBenchSettings()
   const enableProfiler = Boolean(benchSettings.enabled && benchSettings.reactProfiler)
 
@@ -105,7 +110,7 @@ function AppWorkspace({
   return (
     <div className="app-body" ref={appBodyRef}>
       {sidebarCollapsed ? (
-        <button aria-label="展开目录" className="sidebar-expand-btn" type="button" onClick={onExpandSidebar}>
+        <button {...buildA11yPropsByRegistry({ key: 'commonExpandSidebar', t })} className="sidebar-expand-btn" type="button" onClick={onExpandSidebar}>
           <span className="sidebar-expand-tip">展开目录</span>
         </button>
       ) : (
@@ -113,7 +118,7 @@ function AppWorkspace({
           {sidebar}
 
           <div
-            aria-label="调整 Sidebar 宽度"
+            {...buildA11yPropsByRegistry({ key: 'commonAdjustSidebarWidth', t })}
             aria-orientation="vertical"
             aria-disabled={layoutLocked}
             className={`sidebar-splitter ${layoutLocked ? 'is-locked' : ''}`}
@@ -142,7 +147,7 @@ function AppWorkspace({
 
           {metadataCollapsed ? null : (
             <div
-              aria-label="调整元数据面板宽度"
+              {...buildA11yPropsByRegistry({ key: 'commonAdjustMetadataPanelWidth', t })}
               aria-orientation="vertical"
               aria-disabled={layoutLocked}
               className={`metadata-splitter ${layoutLocked ? 'is-locked' : ''}`}

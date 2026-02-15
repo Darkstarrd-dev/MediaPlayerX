@@ -1,5 +1,6 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 
+import { useI18n } from '../../i18n/useI18n'
 import type { AudioItem } from '../../types'
 
 interface MetadataMusicEditorProps {
@@ -94,6 +95,7 @@ export function MetadataMusicEditor({
   onOpenMusicBooklet,
   onResetMusicBookletBinding,
 }: MetadataMusicEditorProps) {
+  const { t } = useI18n()
   const playlistIds = audioPlaylistIds.filter((audioId) => audioById.has(audioId))
   const effectivePlaylistIds = playlistIds.length > 0 ? playlistIds : Array.from(audioById.keys())
 
@@ -268,7 +270,7 @@ export function MetadataMusicEditor({
         </div>
       )}
 
-      <div className="metadata-music-playlist" aria-label="音乐播放列表">
+      <div className="metadata-music-playlist" aria-label={t('a11y.music.playlist')}>
         {effectivePlaylistIds.length > 0 ? (
           effectivePlaylistIds.map((audioId, index) => {
             const audio = audioById.get(audioId)

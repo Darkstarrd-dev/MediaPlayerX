@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { useI18n } from '../../i18n/useI18n'
+
 interface MetadataRatingGroupProps {
   title: string
   groupAriaLabel: string
@@ -28,6 +30,7 @@ export function MetadataRatingGroup({
   pending,
   onChange,
 }: MetadataRatingGroupProps) {
+  const { t } = useI18n()
   const [dragging, setDragging] = useState(false)
 
   return (
@@ -88,7 +91,7 @@ export function MetadataRatingGroup({
           }}
         >
           <button
-            aria-label={`${groupAriaLabel} 无评分`}
+            aria-label={t('a11y.metadata.ratingNoneWithGroup', { group: groupAriaLabel })}
             aria-pressed={value === null}
             className={`is-clear ${value === null ? 'is-active' : ''}`}
             type="button"
@@ -105,7 +108,7 @@ export function MetadataRatingGroup({
             return (
               <button
                 key={score}
-                aria-label={`${groupAriaLabel} ${score} 星`}
+                aria-label={t('a11y.metadata.ratingStarsWithGroup', { group: groupAriaLabel, score })}
                 aria-pressed={value === score}
                 className={isActive ? 'is-active' : ''}
                 type="button"

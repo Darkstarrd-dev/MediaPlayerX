@@ -2,6 +2,8 @@ import { useState, type MouseEvent as ReactMouseEvent, type RefObject } from 're
 
 import MetadataFetchPanel from './metadata/MetadataFetchPanel'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
+import { buildA11yPropsByRegistry } from '../i18n/a11y'
+import { useI18n } from '../i18n/useI18n'
 
 interface MetadataManagementPanelProps {
   visible: boolean
@@ -40,6 +42,7 @@ function MetadataManagementPanel({
   ehentaiCookies,
   targetPackageLabel,
 }: MetadataManagementPanelProps) {
+  const { t } = useI18n()
   const [fetchPanelOpen, setFetchPanelOpen] = useState(false)
 
   if (!visible) {
@@ -51,7 +54,12 @@ function MetadataManagementPanel({
   return (
     <>
       {collapsed ? (
-        <button aria-label="展开元数据管理容器" className="search-panel-expand-btn" type="button" onClick={onExpand}>
+        <button
+          {...buildA11yPropsByRegistry({ key: 'commonExpandMetadataManagementPanel', t })}
+          className="search-panel-expand-btn"
+          type="button"
+          onClick={onExpand}
+        >
           <span className="search-panel-expand-tip">展开元数据管理容器</span>
         </button>
       ) : (
@@ -78,7 +86,7 @@ function MetadataManagementPanel({
 
       {!collapsed ? (
         <div
-          aria-label="调整元数据管理容器高度"
+          {...buildA11yPropsByRegistry({ key: 'commonAdjustMetadataManagementPanelHeight', t })}
           aria-orientation="horizontal"
           aria-disabled={layoutLocked}
           className={`vector-splitter ${layoutLocked ? 'is-locked' : ''}`}

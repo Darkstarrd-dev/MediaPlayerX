@@ -1,6 +1,9 @@
 import { createPortal } from 'react-dom'
 import type { Dispatch, RefObject, SetStateAction } from 'react'
 
+import { buildA11yPropsByRegistry } from '../../i18n/a11y'
+import { useI18n } from '../../i18n/useI18n'
+
 interface FeatureTagGroup {
   key: string
   tags: string[]
@@ -29,12 +32,14 @@ export function FeatureTagPickerModal({
   onCancel,
   onConfirm,
 }: FeatureTagPickerModalProps) {
+  const { t } = useI18n()
+
   if (!open || typeof document === 'undefined') {
     return null
   }
 
   return createPortal(
-    <div className="feature-tag-modal-overlay" role="dialog" aria-modal="true" aria-label="tags 控制面板">
+    <div className="feature-tag-modal-overlay" role="dialog" aria-modal="true" {...buildA11yPropsByRegistry({ key: 'tagsPanel', t })}>
       <div
         className="feature-tag-modal-backdrop"
         onMouseDown={(event) => {
@@ -84,7 +89,7 @@ export function FeatureTagPickerModal({
             </div>
           </div>
 
-          <div className="feature-tag-picker-groups" role="listbox" aria-label="tags 分组列表" ref={groupContainerRef}>
+          <div className="feature-tag-picker-groups" role="listbox" {...buildA11yPropsByRegistry({ key: 'tagsGroups', t })} ref={groupContainerRef}>
             {groupedOptions.length === 0 ? (
               <p className="feature-selection-result">当前库内暂无可选 tags</p>
             ) : (
@@ -97,7 +102,7 @@ export function FeatureTagPickerModal({
                       return (
                         <button
                           key={tag}
-                          aria-label={tag}
+                          aria-label={t('a11y.tags.selectTag', { tag })}
                           aria-pressed={selected}
                           className={selected ? 'is-active' : ''}
                           type="button"

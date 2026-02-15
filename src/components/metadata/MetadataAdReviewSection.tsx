@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import type { ManageAdReviewTaskDto } from '../../contracts/backend'
+import { useI18n } from '../../i18n/useI18n'
 import {
   AD_REVIEW_CONCURRENCY_OPTIONS,
   AD_REVIEW_STREAK_OPTIONS,
@@ -67,6 +68,7 @@ export function MetadataAdReviewSection({
   onAdReviewTailStopCleanStreakChange,
   onDismissAdReviewTask,
 }: MetadataAdReviewSectionProps) {
+  const { t } = useI18n()
   void _adReviewHideUncheckedNonChecked
   void _onToggleHideUncheckedNonChecked
 
@@ -75,6 +77,7 @@ export function MetadataAdReviewSection({
   const focusEnabledTask = adReviewTask && (adReviewTask.status === 'running' || adReviewTask.status === 'paused' || adReviewTask.status === 'review')
     ? adReviewTask
     : null
+  const focusVisible = Boolean(focusEnabledTask && focusEnabledTask.candidates.length > 0)
   const focusActive = Boolean(focusEnabledTask && adReviewFocusTaskId === focusEnabledTask.task_id)
 
   useEffect(() => {
@@ -97,22 +100,22 @@ export function MetadataAdReviewSection({
   }
 
   return (
-    <section className="metadata-ad-review-section" aria-label="AI广告审核面板">
+    <section className="metadata-ad-review-section" aria-label={t('a11y.manage.panel')}>
       <header>
         <strong>AI广告审核</strong>
         {adReviewTask ? <span className={`manage-ad-review-status is-${adReviewTask.status}`}>{resolveAdReviewStatusLabel(adReviewTask.status)}</span> : null}
       </header>
 
-      <div className="metadata-ad-review-controls" role="group" aria-label="AI广告审核控制">
+      <div className="metadata-ad-review-controls" role="group" aria-label={t('a11y.manage.controls')}>
         <div className="metadata-ad-review-primary-row">
           <button
             className={`manage-ad-review-icon-btn ${adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}`}
             type="button"
-            aria-label="AI广告审核策略切换"
+            aria-label={t('a11y.manage.strategyToggle')}
             title={
               adReviewStrategyMode === 'head-tail'
-                ? '当前策略：头尾抽样。点击切换为全量审核'
-                : '当前策略：全量审核。点击切换为头尾抽样'
+                ? t('tip.manage.strategyHeadTailToAll')
+                : t('tip.manage.strategyAllToHeadTail')
             }
             onClick={() => onAdReviewStrategyModeChange(adReviewStrategyMode === 'head-tail' ? 'all' : 'head-tail')}
           >
@@ -122,29 +125,31 @@ export function MetadataAdReviewSection({
           <button
             className={`manage-ad-review-icon-btn manage-ad-review-exec-btn ${adReviewRunning ? 'is-running' : ''}`}
             type="button"
-            aria-label={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
-            title={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
+            aria-label={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
+            title={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
             disabled={adReviewPending || (!adReviewRunning && !canExecuteAdReview)}
             onClick={triggerStartOrPause}
           >
             <span aria-hidden="true">{adReviewRunning ? '⏸' : '▶'}</span>
           </button>
 
-          <button
-            className={`manage-ad-review-icon-btn ${focusActive ? 'is-active' : ''}`}
-            type="button"
-            aria-label={focusActive ? 'return' : 'focus'}
-            title={focusActive ? 'return' : 'focus'}
-            disabled={adReviewPending || !focusEnabledTask || focusEnabledTask.candidates.length === 0}
-            onClick={onToggleAdReviewFocus}
-          >
-            <span aria-hidden="true">{focusActive ? 'R' : 'F'}</span>
-          </button>
+          {focusVisible ? (
+            <button
+              className={`manage-ad-review-icon-btn ${focusActive ? 'is-active' : ''}`}
+              type="button"
+              aria-label={focusActive ? t('a11y.manage.return') : t('a11y.manage.focus')}
+              title={focusActive ? t('a11y.manage.return') : t('a11y.manage.focus')}
+              disabled={adReviewPending}
+              onClick={onToggleAdReviewFocus}
+            >
+              <span aria-hidden="true">{focusActive ? 'R' : 'F'}</span>
+            </button>
+          ) : null}
         </div>
 
         <label className="manage-ad-review-inline-field">
           <span>并发</span>
-          <select aria-label="AI广告审核并发" value={adReviewMaxConcurrency} onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}>
+          <select aria-label={t('a11y.manage.concurrency')} value={adReviewMaxConcurrency} onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}>
             {AD_REVIEW_CONCURRENCY_OPTIONS.map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -156,7 +161,7 @@ export function MetadataAdReviewSection({
         <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
           <span>头部</span>
           <select
-            aria-label="AI广告审核头部窗口样本数"
+            aria-label={t('a11y.manage.headWindow')}
             disabled={adReviewStrategyMode !== 'head-tail'}
             value={adReviewHeadN}
             onChange={(event) => onAdReviewHeadNChange(Number(event.target.value))}
@@ -172,7 +177,7 @@ export function MetadataAdReviewSection({
         <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
           <span>尾部</span>
           <select
-            aria-label="AI广告审核尾部窗口样本数"
+            aria-label={t('a11y.manage.tailWindow')}
             disabled={adReviewStrategyMode !== 'head-tail'}
             value={adReviewTailN}
             onChange={(event) => onAdReviewTailNChange(Number(event.target.value))}
@@ -192,7 +197,7 @@ export function MetadataAdReviewSection({
         >
           <span>停止 clean</span>
           <select
-            aria-label="AI广告审核尾部停止clean连续数"
+            aria-label={t('a11y.manage.tailStopClean')}
             disabled={adReviewStrategyMode !== 'head-tail'}
             value={adReviewTailStopCleanStreak}
             onChange={(event) => onAdReviewTailStopCleanStreakChange(Number(event.target.value))}
@@ -207,12 +212,16 @@ export function MetadataAdReviewSection({
       </div>
 
       {adReviewQueueTasks.length > 0 ? (
-        <section className="manage-ad-review-queue" aria-label="AI广告审核队列">
+        <section className="manage-ad-review-queue" aria-label={t('a11y.manage.queue')}>
           {adReviewQueueTasks.map((queueTask) => {
             const isActive = adReviewTask?.task_id === queueTask.task_id || adReviewActiveTaskId === queueTask.task_id
+            const reviewWithoutCandidates = queueTask.status === 'review' && queueTask.candidates.length === 0
+            const queueStatusLabel = reviewWithoutCandidates ? '已完成' : resolveAdReviewStatusLabel(queueTask.status)
             const reviewProgressLabel =
               queueTask.status === 'review'
-                ? `${queueTask.task_id === adReviewTask?.task_id ? selectedAdReviewCandidateCount : queueTask.candidates.length}/${queueTask.candidates.length}`
+                ? reviewWithoutCandidates
+                  ? '无待复核'
+                  : `${queueTask.task_id === adReviewTask?.task_id ? selectedAdReviewCandidateCount : queueTask.candidates.length}/${queueTask.candidates.length}`
                 : `${Math.round(queueTask.progress * 100)}% · ${queueTask.reviewed_count}/${queueTask.total_count}`
             return (
               <div key={queueTask.task_id} className={`manage-ad-review-queue-item ${isActive ? 'is-active' : ''}`}>
@@ -221,7 +230,7 @@ export function MetadataAdReviewSection({
                   type="button"
                   onClick={() => onSelectAdReviewTask(queueTask.task_id)}
                 >
-                  <span>{resolveAdReviewStatusLabel(queueTask.status)}</span>
+                  <span>{queueStatusLabel}</span>
                   <span>{reviewProgressLabel}</span>
                 </button>
 
@@ -258,11 +267,13 @@ export function MetadataAdReviewSection({
 
           <p className="manage-ad-review-message">
             {adReviewTask.status === 'review'
-              ? `疑似候选 ${adReviewTask.candidates.length} 张，已同步到选中态。请在主视图修正后使用上方“删除”执行清除。`
+              ? adReviewTask.candidates.length > 0
+                ? `疑似候选 ${adReviewTask.candidates.length} 张，已同步到选中态。请在主视图修正后使用上方“删除”执行清除。`
+                : '本轮审核已完成，无待复核内容。'
               : adReviewTask.message ?? 'AI广告审核任务进行中'}
           </p>
 
-          {adReviewTask.status === 'review' ? (
+          {adReviewTask.status === 'review' && adReviewTask.candidates.length > 0 ? (
             <div className="manage-ad-review-actions">
               <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
                 重置剔除
@@ -282,7 +293,7 @@ export function MetadataAdReviewSection({
           className="manage-ad-review-start-mask"
           role="dialog"
           aria-modal="true"
-          aria-label="选择AI广告审核执行方式"
+          aria-label={t('a11y.manage.startModeDialog')}
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setStartDialogOpen(false)

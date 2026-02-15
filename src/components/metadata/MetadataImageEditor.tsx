@@ -2,6 +2,7 @@ import { mediaLocatorFileName } from '../../features/backend'
 import type { ParsedExternalMetadata } from '../../features/metadata/parseExternalMetadata'
 import type { ImageItem, ImagePackage } from '../../types'
 import { MetadataRatingGroup } from './MetadataRatingGroup'
+import { useI18n } from '../../i18n/useI18n'
 import { useMetadataImageParsedDraft } from './useMetadataImageParsedDraft'
 import {
   formatTagJson,
@@ -72,6 +73,7 @@ export function MetadataImageEditor({
   onSearchByAuthor,
   onSearchByTag,
 }: MetadataImageEditorProps) {
+  const { t } = useI18n()
   const {
     parsedDraft,
     setParsedDraft,
@@ -141,9 +143,9 @@ export function MetadataImageEditor({
       ) : (
         <div className="metadata-editor-shell">
           <MetadataRatingGroup
-            title="评分"
-            groupAriaLabel="图包评分"
-            clearAriaLabel="清空评分"
+            title={t('tip.common.rating')}
+            groupAriaLabel={t('a11y.metadata.packageRating')}
+            clearAriaLabel={t('a11y.metadata.clearPackageRating')}
             pending={metadataPending}
             value={currentGrade}
             onChange={onGradeChange}
@@ -515,7 +517,7 @@ export function MetadataImageEditor({
                   <label>
                     <span>英文社团名</span>
                     <input
-                      aria-label="英文社团名"
+                      aria-label={t('a11y.metadata.englishCircle')}
                       value={circleDraft}
                       onChange={(event) => {
                         const nextValue = event.target.value

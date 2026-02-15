@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import type { VideoItem } from '../../types'
+import { useI18n } from '../../i18n/useI18n'
 import { MetadataRatingGroup } from './MetadataRatingGroup'
 
 interface MetadataVideoEditorProps {
@@ -123,6 +124,7 @@ export function MetadataVideoEditor({
   onDragStart,
   onDropToVideo,
 }: MetadataVideoEditorProps) {
+  const { t } = useI18n()
   const readOnlyTags = videoTagsDraft
     .split(/[,，]/)
     .map((tag) => tag.trim())
@@ -188,9 +190,9 @@ export function MetadataVideoEditor({
         {metadataTab === 'info' && focusedVideo ? (
           <>
             <MetadataRatingGroup
-              title="评分"
-              groupAriaLabel="视频评分"
-              clearAriaLabel="清空视频评分"
+              title={t('tip.common.rating')}
+              groupAriaLabel={t('a11y.metadata.videoRating')}
+              clearAriaLabel={t('a11y.metadata.clearVideoRating')}
               pending={metadataPending || !editable}
               value={currentVideoGrade}
               onChange={onVideoGradeChange}

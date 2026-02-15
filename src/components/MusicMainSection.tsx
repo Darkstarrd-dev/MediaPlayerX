@@ -328,10 +328,10 @@ function MusicMainSection({
 
   const manageSummary =
     activeSelectionScope === 'sidebar'
-      ? `已选目录节点: ${sidebarSelectedCount}`
+      ? t('a11y.manage.selectedSidebarNodes', { count: sidebarSelectedCount })
       : activeSelectionScope === 'image'
-        ? `已选媒体条目: ${imageSelectedCount}`
-        : '未选择条目'
+        ? t('a11y.manage.selectedMediaItems', { count: imageSelectedCount })
+        : t('a11y.manage.noSelection')
 
   const toggleAudioPlayback = useCallback(() => {
     if (!focusedAudioSrc) {
@@ -616,7 +616,7 @@ function MusicMainSection({
               aria-controls="music-main-popover-shader"
               aria-expanded={openPopover === 'shader'}
               aria-haspopup="dialog"
-              aria-label={`Shader：${selectedShaderLabel}`}
+              aria-label={t('a11y.music.shaderSelected', { label: selectedShaderLabel })}
               className="video-action-btn"
               type="button"
             >
@@ -626,7 +626,7 @@ function MusicMainSection({
               <span className="music-ctrl-panel-title">Shader</span>
               <div className="music-ctrl-shader-toolbar">
                 <button
-                  aria-label="切换前景/背景选择"
+                  aria-label={t('a11y.music.shaderToggleLayer')}
                   className="music-ctrl-shader-toolbar-btn"
                   type="button"
                   onClick={toggleShaderListTargetLayer}
@@ -634,7 +634,7 @@ function MusicMainSection({
                   {shaderListTargetLayer === 'foreground' ? 'F' : 'B'}
                 </button>
                 <button
-                  aria-label="切换当前层开关"
+                  aria-label={t('a11y.music.shaderToggleEnabled')}
                   className={`music-ctrl-shader-toolbar-btn ${shaderListTargetEnabled ? 'is-on' : 'is-off'}`}
                   type="button"
                   onClick={toggleShaderListTargetEnabled}
@@ -674,7 +674,7 @@ function MusicMainSection({
               aria-controls="music-main-popover-shader-settings"
               aria-expanded={openPopover === 'shaderSettings'}
               aria-haspopup="dialog"
-              aria-label="Shader 设置"
+              aria-label={t('a11y.music.shaderSettings')}
               className="video-action-btn"
               type="button"
             >

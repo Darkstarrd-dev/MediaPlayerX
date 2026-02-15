@@ -16,10 +16,12 @@ import {
   SIZE_SCALE_CONFIG,
   toAbsolutePx,
 } from './settingsScale'
+import type { TranslateFn } from '../../i18n/context'
 
 export type SettingsSection = 'layout' | 'model' | 'database' | 'shortcuts'
 
 interface RenderSettingsMainSectionParams {
+  t: TranslateFn
   activeSection: SettingsSection
   layoutLocked: boolean
   headerHeight: number
@@ -111,6 +113,7 @@ interface RenderSettingsMainSectionParams {
 }
 
 export function renderSettingsMainSection({
+  t,
   activeSection,
   layoutLocked,
   headerHeight,
@@ -455,8 +458,8 @@ export function renderSettingsMainSection({
               className="settings-icon-btn main-icon-square-btn"
               type="button"
               disabled={adReviewVisionTestPending}
-              aria-label={adReviewVisionTestPending ? '测试中' : '测试视觉模型连接'}
-              title={adReviewVisionTestPending ? '测试中' : '测试视觉模型连接'}
+              aria-label={adReviewVisionTestPending ? t('a11y.settings.testingVisionModel') : t('a11y.settings.testVisionModel')}
+              title={adReviewVisionTestPending ? t('a11y.settings.testingVisionModel') : t('a11y.settings.testVisionModel')}
               onClick={onTestAdReviewVisionModel}
             >
               <MainUiIcon name="test" />
@@ -465,8 +468,8 @@ export function renderSettingsMainSection({
               className="settings-icon-btn main-icon-square-btn"
               type="button"
               disabled={adReviewVisionSavePending}
-              aria-label={adReviewVisionSavePending ? '保存中' : '保存视觉模型配置'}
-              title={adReviewVisionSavePending ? '保存中' : '保存视觉模型配置'}
+              aria-label={adReviewVisionSavePending ? t('a11y.settings.savingVisionModel') : t('a11y.settings.saveVisionModel')}
+              title={adReviewVisionSavePending ? t('a11y.settings.savingVisionModel') : t('a11y.settings.saveVisionModel')}
               onClick={onSaveAdReviewVisionModel}
             >
               <MainUiIcon name="save" />
@@ -487,7 +490,13 @@ export function renderSettingsMainSection({
       <div className="settings-block settings-shortcuts">
         <div className="settings-shortcuts-head">
           <strong>快捷键设置</strong>
-          <button className="settings-icon-btn main-icon-square-btn" type="button" aria-label="恢复默认" title="恢复默认" onClick={onResetShortcuts}>
+          <button
+            className="settings-icon-btn main-icon-square-btn"
+            type="button"
+            aria-label={t('a11y.common.restoreDefault')}
+            title={t('tip.common.restoreDefault')}
+            onClick={onResetShortcuts}
+          >
             <MainUiIcon name="return" />
           </button>
         </div>
@@ -605,8 +614,8 @@ export function renderSettingsMainSection({
               className="settings-icon-btn main-icon-square-btn"
               type="button"
               disabled={runtimeInfoLoading}
-              aria-label={runtimeInfoLoading ? '诊断读取中' : '刷新诊断'}
-              title={runtimeInfoLoading ? '诊断读取中' : '刷新诊断'}
+              aria-label={runtimeInfoLoading ? t('a11y.settings.loadingDiagnostics') : t('a11y.settings.refreshDiagnostics')}
+              title={runtimeInfoLoading ? t('a11y.settings.loadingDiagnostics') : t('a11y.settings.refreshDiagnostics')}
               onClick={onRefreshRuntimeInfo}
             >
               <MainUiIcon name="refresh" />

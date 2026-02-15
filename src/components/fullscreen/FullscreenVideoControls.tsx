@@ -1,7 +1,8 @@
 import { useState, type CSSProperties } from 'react'
 
 import { VideoControlIcon } from '../VideoControlIcon'
-import { videoFitModeLabel, type VideoFitMode } from '../../features/media/videoFitMode'
+import type { VideoFitMode } from '../../features/media/videoFitMode'
+import { useI18n } from '../../i18n/useI18n'
 import { formatSeconds } from '../../utils/ui'
 
 type VideoPopoverKey = 'volume' | 'subtitle' | 'speed' | 'fit' | 'playlist'
@@ -69,6 +70,7 @@ export function FullscreenVideoControlsShell({
   onSaveCover,
   onExit,
 }: FullscreenVideoControlsShellProps) {
+  const { t } = useI18n()
   const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
 
   const closePopover = () => {
@@ -83,6 +85,12 @@ export function FullscreenVideoControlsShell({
   const videoVolumeRangeStyle = {
     '--mpx-skeuo-range-pct': `${volumePercent}%`,
   } as CSSProperties
+  const videoFitLabel =
+    videoFitMode === 'fill'
+      ? t('a11y.media.videoFitFill')
+      : videoFitMode === 'original'
+        ? t('a11y.media.videoFitOriginal')
+        : t('a11y.media.videoFitContain')
 
   const openPopoverByHover = (key: VideoPopoverKey) => {
     setOpenPopover(key)
@@ -93,7 +101,7 @@ export function FullscreenVideoControlsShell({
       <div className="video-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}</span>
         <input
-          aria-label="全屏视频进度滑条"
+          aria-label={t('a11y.media.fullscreenProgress')}
           max={Math.max(0, durationSec)}
           min={0}
           step={0.1}
@@ -115,7 +123,7 @@ export function FullscreenVideoControlsShell({
               aria-controls="fullscreen-popover-volume"
               aria-expanded={openPopover === 'volume'}
               aria-haspopup="dialog"
-              aria-label={videoMuted ? '取消静音' : '静音'}
+              aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               className="video-action-btn video-action-mute"
               type="button"
               onClick={onToggleVideoMute}
@@ -125,7 +133,7 @@ export function FullscreenVideoControlsShell({
             <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
               <div className="video-ctrl-volume-axis">
                 <input
-                  aria-label="全屏视频音量滑条"
+                  aria-label={t('a11y.media.fullscreenVolume')}
                   className="video-ctrl-volume-range"
                   max={100}
                   min={0}
@@ -148,7 +156,7 @@ export function FullscreenVideoControlsShell({
               aria-controls="fullscreen-popover-subtitle"
               aria-expanded={openPopover === 'subtitle'}
               aria-haspopup="dialog"
-              aria-label={subtitleVisible ? '字幕:开' : '字幕:关'}
+              aria-label={subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')}
               className="video-action-btn video-action-subtitle"
               type="button"
               onClick={onToggleSubtitle}
@@ -156,7 +164,7 @@ export function FullscreenVideoControlsShell({
               <VideoControlIcon name="subtitle" />
             </button>
             <div className="video-ctrl-panel" hidden={openPopover !== 'subtitle'} id="fullscreen-popover-subtitle" role="dialog">
-              {subtitleLoading ? <span className="video-ctrl-panel-note">加载中...</span> : null}
+              {subtitleLoading ? <span className="video-ctrl-panel-note">{t('ui.common.loading')}</span> : null}
               {subtitleMessage ? <span className="video-ctrl-panel-note">{subtitleMessage}</span> : null}
               <div className="video-ctrl-panel-options">
                 {subtitleOptions.map((option) => (
@@ -186,7 +194,7 @@ export function FullscreenVideoControlsShell({
               aria-controls="fullscreen-popover-speed"
               aria-expanded={openPopover === 'speed'}
               aria-haspopup="dialog"
-              aria-label={`倍速 x${videoRate.toFixed(2)}`}
+              aria-label={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
               className="video-action-btn video-action-speed"
               type="button"
             >
@@ -213,7 +221,7 @@ export function FullscreenVideoControlsShell({
           </div>
 
           <button
-            aria-label="退出全屏"
+            aria-label={t('a11y.media.exitFullscreen')}
             className="video-action-btn video-action-fullscreen video-fullscreen-btn"
             type="button"
             onClick={onExit}
@@ -226,24 +234,24 @@ export function FullscreenVideoControlsShell({
             onMouseEnter={() => openPopoverByHover('fit')}
             onMouseLeave={closePopover}
           >
-            <button
-              aria-controls="fullscreen-popover-fit"
-              aria-expanded={openPopover === 'fit'}
-              aria-haspopup="dialog"
-              aria-label={videoFitModeLabel(videoFitMode)}
-              className="video-action-btn video-action-fit"
-              type="button"
-              onClick={onCycleVideoFitMode}
-            >
+              <button
+                aria-controls="fullscreen-popover-fit"
+                aria-expanded={openPopover === 'fit'}
+                aria-haspopup="dialog"
+                aria-label={videoFitLabel}
+                className="video-action-btn video-action-fit"
+                type="button"
+                onClick={onCycleVideoFitMode}
+              >
               <VideoControlIcon name="aspect" />
             </button>
             <div className="video-ctrl-panel is-fit" hidden={openPopover !== 'fit'} id="fullscreen-popover-fit" role="dialog">
-              <div className="video-ctrl-panel-options">
-                {[
-                  { label: '适应', mode: 'contain' as const },
-                  { label: '拉伸', mode: 'fill' as const },
-                  { label: '原始', mode: 'original' as const },
-                ].map((option) => (
+                <div className="video-ctrl-panel-options">
+                  {[
+                    { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
+                    { label: t('a11y.media.videoFitFill'), mode: 'fill' as const },
+                    { label: t('a11y.media.videoFitOriginal'), mode: 'original' as const },
+                  ].map((option) => (
                   <button
                     aria-pressed={videoFitMode === option.mode}
                     className={`video-ctrl-panel-option ${videoFitMode === option.mode ? 'is-active' : ''}`}
@@ -263,27 +271,27 @@ export function FullscreenVideoControlsShell({
         </div>
 
         <div className="video-controls-group is-center">
-          <button aria-label="上一个" className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
+          <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
             <VideoControlIcon name="prev" />
           </button>
           <button
-            aria-label={videoPlaying ? '暂停' : '播放'}
+            aria-label={videoPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
             className="video-action-btn video-action-play"
             type="button"
             onClick={onToggleVideoPlay}
           >
             <VideoControlIcon name={videoPlaying ? 'pause' : 'play'} />
           </button>
-          <button aria-label="下一个" className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
+          <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
             <VideoControlIcon name="next" />
           </button>
         </div>
 
         <div className="video-controls-group is-right">
-          <button aria-label="Save as cover" className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
+          <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
             <VideoControlIcon name="camera" />
           </button>
-          <button aria-label="独立/复合" className="video-action-btn video-action-dual" type="button" onClick={onToggleDualDisplay}>
+          <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" type="button" onClick={onToggleDualDisplay}>
             <VideoControlIcon name="dual" />
           </button>
 
@@ -296,7 +304,7 @@ export function FullscreenVideoControlsShell({
               aria-controls="fullscreen-popover-playlist"
               aria-expanded={openPopover === 'playlist'}
               aria-haspopup="dialog"
-              aria-label="播放列表"
+              aria-label={t('a11y.media.playlist')}
               className="video-action-btn video-action-playlist"
               type="button"
             >
@@ -304,7 +312,7 @@ export function FullscreenVideoControlsShell({
             </button>
             <div className="video-ctrl-panel" hidden={openPopover !== 'playlist'} id="fullscreen-popover-playlist" role="dialog">
               {playlistEntries.length === 0 ? (
-                <span className="video-ctrl-panel-note">无播放列表</span>
+                <span className="video-ctrl-panel-note">{t('ui.media.emptyPlaylist')}</span>
               ) : (
                 <div className="video-ctrl-panel-options">
                   {playlistEntries.map((entry) => (

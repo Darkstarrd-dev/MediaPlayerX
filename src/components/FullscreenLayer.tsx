@@ -13,6 +13,8 @@ import {
 import type { BrowserMode, ImageItem, VideoItem } from '../types'
 import { clamp, formatSeconds } from '../utils/ui'
 import type { VideoFitMode } from '../features/media/videoFitMode'
+import { buildA11yPropsByRegistry } from '../i18n/a11y'
+import { useI18n } from '../i18n/useI18n'
 import { FullscreenFooter } from './fullscreen/FullscreenFooter'
 import { FullscreenImagePane, FullscreenVideoPane } from './fullscreen/FullscreenPanes'
 import { useFullscreenImageSource } from './fullscreen/useFullscreenImageSource'
@@ -166,6 +168,7 @@ function FullscreenLayer({
   onSetVideoFitMode,
   onExit,
 }: FullscreenLayerProps) {
+  const { t } = useI18n()
   const contentRef = useRef<HTMLDivElement>(null)
   const imagePaneRef = useRef<HTMLElement>(null)
   const videoPaneRef = useRef<HTMLElement>(null)
@@ -713,7 +716,7 @@ function FullscreenLayer({
               {pane === 'image' ? imagePane : videoPane}
               {index === 0 ? (
                 <div
-                  aria-label="调整全屏分屏比例"
+                  {...buildA11yPropsByRegistry({ key: 'commonAdjustFullscreenSplit', t })}
                   aria-orientation="vertical"
                   className="fullscreen-divider"
                   role="separator"

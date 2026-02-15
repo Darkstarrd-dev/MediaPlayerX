@@ -1,4 +1,6 @@
 import type { BrowserMode } from '../../types'
+import { buildA11yPropsByRegistry } from '../../i18n/a11y'
+import { useI18n } from '../../i18n/useI18n'
 import type { AlignDirection } from './paneMath'
 
 interface FullscreenFooterProps {
@@ -50,6 +52,8 @@ export function FullscreenFooter({
   onResetSinglePane,
   onExit,
 }: FullscreenFooterProps) {
+  const { t } = useI18n()
+
   return (
     <footer className="fullscreen-footer">
       <div className="fullscreen-meta-line">{footerInfoText}</div>
@@ -84,7 +88,7 @@ export function FullscreenFooter({
         <label className="fullscreen-inline-field">
           速度
           <select
-            aria-label="全屏自动播放速度"
+            {...buildA11yPropsByRegistry({ key: 'mediaFullscreenAutoPlaySpeed', t })}
             disabled={!autoplayEnabledForFocus}
             value={autoPlayInterval}
             onChange={(event) => onSetAutoplayInterval(Number(event.target.value))}

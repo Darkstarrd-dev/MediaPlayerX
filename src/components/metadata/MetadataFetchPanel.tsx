@@ -435,7 +435,7 @@ function MetadataFetchPanel({
             <div className="metadata-fetch-input-grid">
               <div className="metadata-fetch-source-picker">
                 <span>来源</span>
-                <div className="mode-switch metadata-fetch-source-switch" role="group" aria-label="metadata-fetch-source-switch">
+                <div className="mode-switch metadata-fetch-source-switch" role="group" aria-label={t('a11y.metadata.fetchSourceSwitch')}>
                   <button type="button" className={sourceMode === 'nhentai' ? 'is-active' : ''} onClick={() => setSourceMode('nhentai')}>
                     NH
                   </button>

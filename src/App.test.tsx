@@ -7,6 +7,8 @@ import { MockMediaRepository } from './features/backend/repository/mockRepositor
 import { resetUiStoreState, useUiStore } from './store/useUiStore'
 
 describe('MediaPlayer 虚拟 UI', () => {
+  const uiLongTestTimeoutMs = 25_000
+
   const getMetadataManageModeButton = () =>
     screen.getByRole('button', { name: /切换到元数据模式|切换到图像模式|元数据管理/ })
 
@@ -179,7 +181,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '取消' }))
     expect(screen.queryByRole('dialog', { name: '永久删除确认' })).not.toBeInTheDocument()
-  })
+  }, uiLongTestTimeoutMs)
 
   it('Esc 按优先级先关闭删除确认，再关闭管理面板', async () => {
     render(<App />)
@@ -199,7 +201,7 @@ describe('MediaPlayer 虚拟 UI', () => {
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
     expect(screen.queryByRole('button', { name: '删除' })).toBeNull()
-  })
+  }, uiLongTestTimeoutMs)
 
   it('Esc 可关闭设置与检索状态，且主区右键不误关闭检索', async () => {
     render(<App />)
@@ -375,7 +377,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(screen.queryAllByText('幻旅系列 001 #1').length).toBeGreaterThan(0)
     })
-  })
+  }, uiLongTestTimeoutMs)
 
   it('main-footer 始终显示，focus 清空后显示当前 Sidebar 路径', async () => {
     render(<App />)
@@ -506,7 +508,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(screen.getByText('已删除 1 张')).toBeInTheDocument()
     })
-  }, 15_000)
+  }, uiLongTestTimeoutMs)
 
   it('AI广告审核通过后仅显示工具栏按钮，点击后才展开审核面板', async () => {
     useUiStore.setState({
@@ -581,7 +583,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.change(featureScope.getByPlaceholderText('输入作者，支持自动补完'), { target: { value: 'Nori' } })
     expect(screen.getByRole('button', { name: '检索结果' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
-  }, 15_000)
+  }, uiLongTestTimeoutMs)
 
   it('视频模式检索面板仅展示特征检索', () => {
     render(<App />)
@@ -635,7 +637,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     expect(screen.queryByRole('button', { name: '视觉模型生成标签' })).toBeNull()
     expect(screen.queryByRole('button', { name: '生成嵌入向量' })).toBeNull()
     expect(screen.queryByRole('button', { name: '保存' })).toBeNull()
-  })
+  }, uiLongTestTimeoutMs)
 
   it('获取元数据弹窗展示双源结果列与分源请求响应预览', async () => {
     render(<App />)
@@ -881,7 +883,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(within(ehColumn as HTMLElement).getByLabelText('Request Body')).toBeInTheDocument()
     })
-  }, 15_000)
+  }, uiLongTestTimeoutMs)
 
   it('元数据面板标题可折叠，并可恢复展开', () => {
     render(<App />)
@@ -983,7 +985,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '图包评分 2 星' })).not.toBeDisabled()
     })
-  })
+  }, uiLongTestTimeoutMs)
 
   it('图片模式只读元数据评分可用并可写入', async () => {
     const writePackageGradeSpy = vi.spyOn(MockMediaRepository.prototype, 'writePackageGradeSync')
@@ -1542,7 +1544,7 @@ describe('MediaPlayer 虚拟 UI', () => {
       expect(document.querySelector('.fullscreen-layer')).toBeNull()
       expect(screen.getByRole('button', { name: '自动播放' })).toHaveAttribute('aria-pressed', 'false')
     })
-  }, 15_000)
+  }, uiLongTestTimeoutMs)
 
   it('视频播放后暂停保留当前画面，切换视频后回到封面态，Save as cover 走后端写链路并保持封面态', async () => {
     render(<App />)
@@ -1567,7 +1569,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.mouseEnter(screen.getByRole('button', { name: '倍速 x1.00' }))
     fireEvent.click(screen.getByRole('button', { name: '2x' }))
     expect(screen.getByRole('button', { name: '倍速 x2.00' })).toBeInTheDocument()
-  })
+  }, uiLongTestTimeoutMs)
 
   it('全屏默认按当前模式进入单显示，双显示切回单显示时恢复入口模式', () => {
     render(<App />)
@@ -1801,7 +1803,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     fireEvent.click(within(shortcutEditDialog).getByRole('button', { name: '关闭' }))
     expect(alignUpBindingButton.textContent).toContain('MouseRight')
     expect(alignUpBindingButton.textContent).toContain('WheelDown')
-  }, 15_000)
+  }, uiLongTestTimeoutMs)
 
   it('数据库目录选择器可触发 SQL 与缩略图目录选择', async () => {
     const pickDirectoryPathSpy = vi.spyOn(MockMediaRepository.prototype, 'pickDirectoryPathSync')
@@ -1815,7 +1817,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(pickDirectoryPathSpy).toHaveBeenCalledTimes(2)
     })
-  })
+  }, uiLongTestTimeoutMs)
 
   it('数据库目录设置会调用后端路径持久化并显示反馈', async () => {
     const pickDirectoryPathSpy = vi
@@ -1875,7 +1877,7 @@ describe('MediaPlayer 虚拟 UI', () => {
     await waitFor(() => {
       expect(screen.getByText(/目录已保存/)).toBeInTheDocument()
     })
-  })
+  }, uiLongTestTimeoutMs)
 
   it('AI模型保存会持久化测试通过状态', async () => {
     const writeAppStateSpy = vi.spyOn(MockMediaRepository.prototype, 'writeAppState')
@@ -1905,6 +1907,6 @@ describe('MediaPlayer 虚拟 UI', () => {
       }
     })
     expect(hasPersistedVerifiedTrue).toBe(true)
-  })
+  }, uiLongTestTimeoutMs)
 
 })

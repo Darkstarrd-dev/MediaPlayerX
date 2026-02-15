@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactElement } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
+import { useI18n } from '../i18n/useI18n'
 import type { BrowserMode, SidebarNode } from '../types'
 
 function resolveFirstAudioId(node: SidebarNode): string | null {
@@ -134,6 +135,7 @@ function SidebarPanel({
   onToggleManageNode,
   onCheckManageNode,
 }: SidebarPanelProps) {
+  const { t } = useI18n()
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>()
   const [collapsedImageFolderNodeIds, setCollapsedImageFolderNodeIds] = useState<Set<string>>(new Set())
   const checkerDragCleanupRef = useRef<(() => void) | null>(null)
@@ -245,7 +247,7 @@ function SidebarPanel({
   const manageStyleEnabled = manageMode || metadataManageMode
   const rootSet = mode === 'image' ? Boolean(imageRootNodeId) : mode === 'video' ? Boolean(videoRootNodeId) : Boolean(musicRootNodeId)
   const showRootToggle = !searchResultMode
-  const rootToggleLabel = rootSet ? '恢复根目录' : '设为根'
+  const rootToggleLabel = rootSet ? t('a11y.sidebar.restoreRoot') : t('a11y.sidebar.setAsRoot')
   const rootToggleIconName = rootSet ? 'return' : 'setRoot'
 
   const renderNodes = (nodes: SidebarNode[], depth = 0): ReactElement[] => {
@@ -268,8 +270,13 @@ function SidebarPanel({
       const descendantAudioFolderCount = node.descendantAudioFolderCount ?? 0
       const musicCountIsTrack = directAudioCount > 0
       const musicCountValue = musicCountIsTrack ? directAudioCount : descendantAudioFolderCount
-      const musicCountLabel = musicCountIsTrack ? `曲 ${musicCountValue}` : `夹 ${musicCountValue}`
+      const musicCountLabel = musicCountIsTrack
+        ? t('a11y.sidebar.musicTrackCount', { count: musicCountValue })
+        : t('a11y.sidebar.musicFolderCount', { count: musicCountValue })
       const musicCountClassName = `sidebar-count ${musicCountIsTrack ? 'sidebar-count-images' : 'sidebar-count-packages'}`
+      const imageCountLabel = hasOwnImages
+        ? t('a11y.sidebar.imageCount', { count: visibleImageCount })
+        : t('a11y.sidebar.nodeCount', { count: descendantNodeCount })
 
       const row = (
         <div
@@ -286,7 +293,7 @@ function SidebarPanel({
               type="checkbox"
               readOnly
               checked={checkedNodes.has(node.id)}
-              aria-label={`manage-node-${node.label}`}
+              aria-label={t('a11y.sidebar.manageNode', { label: node.label })}
               onMouseDown={(event) => {
                 event.stopPropagation()
                 startCheckerDragSelection(node.id, event)
@@ -302,7 +309,13 @@ function SidebarPanel({
             className={`sidebar-label ${imageFolderCollapsible ? 'is-collapsible' : ''} ${imageFolderCollapsed ? 'is-collapsed' : ''}`}
             type="button"
             style={{ fontSize: `${sidebarFontSize}px` }}
-            title={imageFolderCollapsible ? (imageFolderCollapsed ? '双击展开子目录' : '双击折叠子目录') : undefined}
+            title={
+              imageFolderCollapsible
+                ? imageFolderCollapsed
+                  ? t('tip.sidebar.expandSubfolder')
+                  : t('tip.sidebar.collapseSubfolder')
+                : undefined
+            }
             onClick={(event) => {
               if (metadataManageMode && (!checkedNodes.has(node.id) || event.shiftKey)) {
                 onToggleManageNode?.(node.id, event.shiftKey)
@@ -345,7 +358,7 @@ function SidebarPanel({
 
           {mode === 'video' && node.videoId ? (
             <input
-              aria-label={`toggle-${node.videoId}`}
+              aria-label={t('a11y.sidebar.toggleVideo', { id: node.videoId })}
               checked={playlistIds.includes(node.videoId)}
               type="checkbox"
               onChange={(event) => onToggleVideoPlaylist(node.videoId!, event.target.checked)}
@@ -354,7 +367,7 @@ function SidebarPanel({
 
           {mode === 'music' && node.kind === 'audio' && node.audioId ? (
             <input
-              aria-label={`toggle-${node.audioId}`}
+              aria-label={t('a11y.sidebar.toggleAudio', { id: node.audioId })}
               checked={audioPlaylistIds.includes(node.audioId)}
               type="checkbox"
               onChange={(event) => onToggleAudioPlaylist(node.audioId!, event.target.checked)}
@@ -365,8 +378,8 @@ function SidebarPanel({
             <span className="sidebar-counts" style={{ fontSize: `${sidebarCountFontSize}px` }}>
               <span
                 className={`sidebar-count ${hasOwnImages ? 'sidebar-count-images' : 'sidebar-count-packages'}`}
-                aria-label={hasOwnImages ? `图 ${visibleImageCount}` : `节点 ${descendantNodeCount}`}
-                title={hasOwnImages ? `图 ${visibleImageCount}` : `节点 ${descendantNodeCount}`}
+                aria-label={imageCountLabel}
+                title={imageCountLabel}
               >
                 {hasOwnImages ? visibleImageCount : descendantNodeCount}
               </span>
@@ -406,8 +419,8 @@ function SidebarPanel({
             <button
               className="sidebar-head-icon-btn"
               type="button"
-              aria-label="返回"
-              title="返回"
+              aria-label={t('a11y.common.back')}
+              title={t('tip.common.back')}
               disabled={!canGoToFromSearchMode}
               onClick={onGoToFromSearchMode}
             >

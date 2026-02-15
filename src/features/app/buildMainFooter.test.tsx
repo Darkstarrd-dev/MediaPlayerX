@@ -54,8 +54,19 @@ const sampleAudio: AudioItem = {
 }
 
 describe('buildMainFooter', () => {
+  const t = (key: string) => {
+    if (key === 'a11y.common.prevPage' || key === 'tip.common.prevPage') {
+      return '上一页'
+    }
+    if (key === 'a11y.common.nextPage' || key === 'tip.common.nextPage') {
+      return '下一页'
+    }
+    return key
+  }
+
   it('图片模式分页时在 Footer 右侧渲染翻页控件', () => {
     const node = buildMainFooter({
+      t,
       mode: 'image',
       focusedImage: sampleImage,
       focusedImagePackage: samplePackage,
@@ -81,6 +92,7 @@ describe('buildMainFooter', () => {
 
   it('节点浏览模式不渲染分页控件', () => {
     const node = buildMainFooter({
+      t,
       mode: 'image',
       focusedImage: sampleImage,
       focusedImagePackage: samplePackage,
@@ -102,6 +114,7 @@ describe('buildMainFooter', () => {
 
   it('音乐模式显示当前音频绝对路径', () => {
     const node = buildMainFooter({
+      t,
       mode: 'music',
       focusedImage: null,
       focusedImagePackage: null,

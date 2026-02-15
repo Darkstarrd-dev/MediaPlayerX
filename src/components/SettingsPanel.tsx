@@ -17,6 +17,7 @@ import {
   type SettingsSection,
 } from './settings/renderSettingsMainSection'
 import { buildA11yProps } from '../i18n/a11y'
+import { a11yRegistry } from '../i18n/ariaRegistry'
 import { useI18n } from '../i18n/useI18n'
 import { MainUiIcon } from './MainUiIcon'
 import { toScale } from './settings/settingsScale'
@@ -496,6 +497,7 @@ function SettingsPanel({
   }
 
   const mainSection = renderSettingsMainSection({
+    t,
     activeSection,
     layoutLocked,
     electronNativeChromeEnabled,
@@ -629,7 +631,7 @@ function SettingsPanel({
         </div>
 
         <div className="settings-shell">
-          <aside className="settings-side" aria-label="设置分组">
+          <aside className="settings-side" aria-label={t(a11yRegistry.settingsGroups.labelKey)}>
             {SETTINGS_SECTIONS.map((section) => (
               <button key={section.id} className={activeSection === section.id ? 'is-active' : ''} type="button" onClick={() => setActiveSection(section.id)}>
                 {section.label}
@@ -641,7 +643,7 @@ function SettingsPanel({
         </div>
 
         {bindingTarget ? (
-          <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label="快捷键编辑">
+          <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={t(a11yRegistry.settingsShortcutEditDialog.labelKey)}>
             <section className="settings-floating-panel">
               <h3>{bindingTarget.label}</h3>
               {currentCombos.length > 0 ? (
@@ -682,7 +684,7 @@ function SettingsPanel({
         ) : null}
 
         {capturingTarget ? (
-          <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label="录入快捷键">
+          <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={t(a11yRegistry.settingsShortcutCaptureDialog.labelKey)}>
             <section ref={captureDialogRef} className="settings-floating-panel">
               <h3>录入快捷键</h3>
               <p className="settings-placeholder">按下键盘/鼠标（支持组合键）。</p>

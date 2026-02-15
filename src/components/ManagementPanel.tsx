@@ -2,6 +2,7 @@ import { useEffect, useState, type MouseEvent as ReactMouseEvent, type RefObject
 
 import type { BackendErrorRow } from '../features/app/buildBackendErrorRows'
 import type { ManageAdReviewTaskDto } from '../contracts/backend'
+import { useI18n } from '../i18n/useI18n'
 
 const AD_REVIEW_CONCURRENCY_OPTIONS = Array.from({ length: 9 }, (_, index) => index + 4)
 const AD_REVIEW_WINDOW_OPTIONS = Array.from({ length: 201 }, (_, index) => index)
@@ -129,6 +130,7 @@ function ManagementPanel({
   onStartResize,
   layoutLocked,
 }: ManagementPanelProps) {
+  const { t } = useI18n()
   const [adReviewPanelOpen, setAdReviewPanelOpen] = useState(false)
   const adReviewRunning = adReviewTask?.status === 'running'
   const effectivePanelHeight = adReviewPanelOpen ? Math.max(panelHeight, 320) : panelHeight
@@ -146,7 +148,7 @@ function ManagementPanel({
   return (
     <>
       {collapsed ? (
-        <button aria-label="展开管理容器" className="search-panel-expand-btn" type="button" onClick={onExpand}>
+        <button aria-label={t('a11y.common.expandManagePanel')} className="search-panel-expand-btn" type="button" onClick={onExpand}>
           <span className="search-panel-expand-tip">展开管理容器</span>
         </button>
       ) : (
@@ -195,15 +197,15 @@ function ManagementPanel({
                 <header>
                   <strong>AI广告审核参数</strong>
                 </header>
-                <div className="manage-ad-review-controls-row" role="group" aria-label="AI广告审核控制">
+                <div className="manage-ad-review-controls-row" role="group" aria-label={t('a11y.manage.controls')}>
                   <button
                     className={`manage-ad-review-icon-btn ${adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}`}
                     type="button"
-                    aria-label="AI广告审核策略切换"
+                    aria-label={t('a11y.manage.strategyToggle')}
                     title={
                       adReviewStrategyMode === 'head-tail'
-                        ? '当前策略：头尾抽样。点击切换为全量审核'
-                        : '当前策略：全量审核。点击切换为头尾抽样'
+                        ? t('tip.manage.strategyHeadTailToAll')
+                        : t('tip.manage.strategyAllToHeadTail')
                     }
                     onClick={() => onAdReviewStrategyModeChange(adReviewStrategyMode === 'head-tail' ? 'all' : 'head-tail')}
                   >
@@ -213,8 +215,8 @@ function ManagementPanel({
                   <button
                     className={`manage-ad-review-icon-btn manage-ad-review-exec-btn ${adReviewRunning ? 'is-running' : ''}`}
                     type="button"
-                    aria-label={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
-                    title={adReviewRunning ? '暂停AI广告审核' : '执行AI广告审核'}
+                    aria-label={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
+                    title={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
                     disabled={adReviewPending || (!adReviewRunning && !canExecuteAdReview)}
                     onClick={adReviewRunning ? onPauseAdReview : onStartAdReview}
                   >
@@ -224,7 +226,7 @@ function ManagementPanel({
                   <label className="manage-ad-review-inline-field">
                     <span>并发</span>
                     <select
-                      aria-label="AI广告审核并发"
+                      aria-label={t('a11y.manage.concurrency')}
                       value={adReviewMaxConcurrency}
                       onChange={(event) => onAdReviewMaxConcurrencyChange(Number(event.target.value))}
                     >
@@ -239,7 +241,7 @@ function ManagementPanel({
                   <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
                     <span>头部</span>
                     <select
-                      aria-label="AI广告审核头部窗口样本数"
+                      aria-label={t('a11y.manage.headWindow')}
                       disabled={adReviewStrategyMode !== 'head-tail'}
                       value={adReviewHeadN}
                       onChange={(event) => onAdReviewHeadNChange(Number(event.target.value))}
@@ -255,7 +257,7 @@ function ManagementPanel({
                   <label className={`manage-ad-review-inline-field ${adReviewStrategyMode !== 'head-tail' ? 'is-disabled' : ''}`}>
                     <span>尾部</span>
                     <select
-                      aria-label="AI广告审核尾部窗口样本数"
+                      aria-label={t('a11y.manage.tailWindow')}
                       disabled={adReviewStrategyMode !== 'head-tail'}
                       value={adReviewTailN}
                       onChange={(event) => onAdReviewTailNChange(Number(event.target.value))}
@@ -275,7 +277,7 @@ function ManagementPanel({
                   >
                     <span>停止 clean</span>
                     <select
-                      aria-label="AI广告审核尾部停止clean连续数"
+                      aria-label={t('a11y.manage.tailStopClean')}
                       disabled={adReviewStrategyMode !== 'head-tail'}
                       value={adReviewTailStopCleanStreak}
                       onChange={(event) => onAdReviewTailStopCleanStreakChange(Number(event.target.value))}
@@ -378,7 +380,7 @@ function ManagementPanel({
 
       {!collapsed ? (
         <div
-          aria-label="调整管理容器高度"
+          aria-label={t('a11y.common.adjustManagePanelHeight')}
           aria-orientation="horizontal"
           aria-disabled={layoutLocked}
           className={`vector-splitter ${layoutLocked ? 'is-locked' : ''}`}

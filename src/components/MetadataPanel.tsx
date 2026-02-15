@@ -10,6 +10,7 @@ import { MetadataMusicEditor } from './metadata/MetadataMusicEditor'
 import { MetadataSearchSection } from './metadata/MetadataSearchSection'
 import { MetadataVideoEditor } from './metadata/MetadataVideoEditor'
 import { MainUiIcon } from './MainUiIcon'
+import { useI18n } from '../i18n/useI18n'
 import {
   parseTagsInput,
   resolveTagGroupKey,
@@ -243,6 +244,7 @@ function MetadataPanel({
   onOpenMusicBooklet,
   onResetMusicBookletBinding,
 }: MetadataPanelProps) {
+  const { t } = useI18n()
   const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
   const [showImagePreview, setShowImagePreview] = useState(true)
   const [workTitleDraft, setWorkTitleDraft] = useState('')
@@ -776,26 +778,30 @@ function MetadataPanel({
 
   if (metadataCollapsed) {
     return (
-      <button aria-label="展开元数据面板" className="meta-restore" type="button" onClick={onExpand}>
-        <span className="meta-restore-tip">展开元数据面板</span>
+      <button aria-label={t('a11y.common.expandMetadataPanel')} className="meta-restore" type="button" onClick={onExpand}>
+        <span className="meta-restore-tip">{t('ui.metadata.expandPanel')}</span>
       </button>
     )
   }
+
+  const metadataToggleLabel = showImagePreview
+    ? t('a11y.metadata.switchToMetadataDisplay')
+    : t('a11y.metadata.switchToOriginalImageDisplay')
 
   return (
     <>
       <aside className={metadataPanelClassName} style={{ width: `${metadataRatio * 100}%` }} onContextMenu={handlePanelContextMenu}>
       <div className="metadata-head">
         <button className="metadata-title-btn" type="button" onClick={onCollapse}>
-          元数据面板
+          {t('ui.metadata.panelTitle')}
         </button>
 
         {mode === 'image' ? (
           <button
             className={`metadata-head-icon-btn ${showImagePreview ? 'is-image' : 'is-metadata'}`}
             type="button"
-            aria-label={showImagePreview ? '切换到元数据显示' : '切换到原图显示'}
-            title={showImagePreview ? '切换到元数据显示' : '切换到原图显示'}
+            aria-label={metadataToggleLabel}
+            title={metadataToggleLabel}
             onClick={() => setShowImagePreview((value) => !value)}
           >
             <MainUiIcon name={showImagePreview ? 'dataMode' : 'imageMode'} />

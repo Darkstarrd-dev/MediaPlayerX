@@ -185,4 +185,23 @@ describe('MetadataAdReviewSection', () => {
     expect(screen.getByRole('button', { name: '重置剔除' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /隐藏未勾选图片|显示全部图片/ })).toBeNull()
   })
+
+  it('hides pending-review content and focus button when review has no candidates', () => {
+    const reviewTask = createTask('task-review', 'review')
+    reviewTask.candidates = []
+    reviewTask.suspected_count = 0
+
+    renderSection({
+      adReviewTask: reviewTask,
+      adReviewQueueTasks: [reviewTask],
+      adReviewActiveTaskId: reviewTask.task_id,
+      selectedAdReviewCandidateCount: 0,
+    })
+
+    expect(screen.queryByRole('button', { name: 'focus' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'return' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '重置剔除' })).toBeNull()
+    expect(screen.getByRole('button', { name: /已完成.*无待复核/ })).toBeInTheDocument()
+    expect(screen.getByText('本轮审核已完成，无待复核内容。')).toBeInTheDocument()
+  })
 })

@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
 
 import { VideoControlIcon } from '../../components/VideoControlIcon'
+import type { TranslateFn } from '../../i18n/context'
 import type { AudioItem, BrowserMode, ImageItem, ImagePackage, VideoItem } from '../../types'
 
 interface BuildMainFooterParams {
+  t?: TranslateFn
   mode: BrowserMode
   focusedImage: ImageItem | null
   focusedImagePackage: ImagePackage | null
@@ -18,6 +20,7 @@ interface BuildMainFooterParams {
 }
 
 export function buildMainFooter({
+  t,
   mode,
   focusedImage,
   focusedImagePackage,
@@ -30,6 +33,7 @@ export function buildMainFooter({
   onPrevPage,
   onNextPage,
 }: BuildMainFooterParams): ReactNode {
+  const translate: TranslateFn = t ?? ((key) => key)
   let primary = sidebarFocusedPath ?? '-'
 
   if (mode === 'image' && (focusedImagePackage || focusedImage)) {
@@ -54,11 +58,23 @@ export function buildMainFooter({
 
       {showPagination ? (
         <div className="main-footer-pagination">
-          <button className="main-icon-square-btn" type="button" aria-label="上一页" title="上一页" onClick={onPrevPage}>
+          <button
+            className="main-icon-square-btn"
+            type="button"
+            aria-label={translate('a11y.common.prevPage')}
+            title={translate('tip.common.prevPage')}
+            onClick={onPrevPage}
+          >
             <VideoControlIcon className="main-ui-icon" name="prev" />
           </button>
           <span>{`第 ${normalizedPageIndex + 1} / ${imageTotalPages} 页`}</span>
-          <button className="main-icon-square-btn" type="button" aria-label="下一页" title="下一页" onClick={onNextPage}>
+          <button
+            className="main-icon-square-btn"
+            type="button"
+            aria-label={translate('a11y.common.nextPage')}
+            title={translate('tip.common.nextPage')}
+            onClick={onNextPage}
+          >
             <VideoControlIcon className="main-ui-icon" name="next" />
           </button>
         </div>

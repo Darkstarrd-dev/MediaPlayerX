@@ -5,6 +5,7 @@ import { VideoControlIcon } from './VideoControlIcon'
 import { mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
+import { useI18n } from '../i18n/useI18n'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../types'
 import {
   type ThumbnailGridSession,
@@ -157,6 +158,7 @@ function ImageMainSection({
   nodeBrowseItems = [],
   onSelectNodeBrowseItem,
 }: ImageMainSectionProps) {
+  const { t } = useI18n()
   const [metadataFetchOpen, setMetadataFetchOpen] = useState(false)
 
   const initialThumbnailSession =
@@ -347,10 +349,10 @@ function ImageMainSection({
 
   const manageSummary =
     activeSelectionScope === 'sidebar'
-      ? `已选目录节点: ${sidebarSelectedCount}`
+      ? t('a11y.manage.selectedSidebarNodes', { count: sidebarSelectedCount })
       : activeSelectionScope === 'image'
-        ? `已选媒体条目: ${imageSelectedCount}`
-        : '未选择条目'
+        ? t('a11y.manage.selectedMediaItems', { count: imageSelectedCount })
+        : t('a11y.manage.noSelection')
 
   const currentThumbnailPageImageIds = useMemo(() => {
     if (!manageMode) {
@@ -403,8 +405,8 @@ function ImageMainSection({
               <button
                 className="vector-search-btn main-icon-square-btn"
                 type="button"
-                aria-label="删除"
-                title="删除"
+                aria-label={t('a11y.common.delete')}
+                title={t('tip.common.delete')}
                 disabled={!canManageDelete || pendingManageAction}
                 onClick={onManageDelete}
               >
@@ -414,8 +416,8 @@ function ImageMainSection({
                 <button
                   className={`feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? 'is-active' : ''}`}
                   type="button"
-                  aria-label="广告审核"
-                  title="广告审核"
+                  aria-label={t('a11y.manage.adReview')}
+                  title={t('tip.manage.adReview')}
                   disabled={pendingManageAction}
                   onClick={onToggleAdReviewPanel}
                 >
@@ -425,8 +427,8 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="隐藏"
-                title="隐藏"
+                aria-label={t('a11y.common.hide')}
+                title={t('tip.common.hide')}
                 disabled={!canManageHide || pendingManageAction}
                 onClick={onManageHide}
               >
@@ -435,8 +437,8 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="取消隐藏"
-                title="取消隐藏"
+                aria-label={t('a11y.common.unhide')}
+                title={t('tip.common.unhide')}
                 disabled={!canManageUnhide || pendingManageAction}
                 onClick={onManageUnhide}
               >
@@ -445,8 +447,8 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="全选当前页"
-                title="全选当前页"
+                aria-label={t('a11y.media.selectAllPage')}
+                title={t('tip.media.selectAllPage')}
                 disabled={pendingManageAction || currentThumbnailPageImageIds.length === 0}
                 onClick={() => onReplaceCheckedImages(currentThumbnailPageImageIds)}
               >
@@ -455,8 +457,8 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="清空选择"
-                title="清空选择"
+                aria-label={t('a11y.common.clearSelection')}
+                title={t('tip.common.clearSelection')}
                 disabled={pendingManageAction}
                 onClick={onClearManageSelection}
               >
@@ -470,13 +472,13 @@ function ImageMainSection({
           </>
         ) : metadataManageMode ? (
           <>
-            <strong className="main-toolbar-title">元数据管理</strong>
+            <strong className="main-toolbar-title">{t('ui.header.metadataManage')}</strong>
             <div className="toolbar-actions toolbar-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="同步名称"
-                title="同步名称"
+                aria-label={t('a11y.common.syncName')}
+                title={t('tip.common.syncName')}
                 disabled={metadataPending}
                 onClick={onMetadataSyncName}
               >
@@ -485,8 +487,8 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label="获取元数据"
-                title="获取元数据"
+                aria-label={t('a11y.metadata.fetch')}
+                title={t('a11y.metadata.fetch')}
                 onClick={() => setMetadataFetchOpen(true)}
               >
                 <MainUiIcon name="getMetaData" />
@@ -508,8 +510,8 @@ function ImageMainSection({
                 <button
                   className="toolbar-icon-btn"
                   type="button"
-                  aria-label="动画版"
-                  title="动画版"
+                  aria-label={t('a11y.media.animation')}
+                  title={t('tip.media.animation')}
                   onClick={onJumpToAnimation}
                 >
                   <span aria-hidden="true">▶</span>
@@ -518,8 +520,8 @@ function ImageMainSection({
               <button
                 className={`toolbar-icon-btn ${showNamesOnly ? 'is-names-mode' : 'is-grid-mode'}`}
                 type="button"
-                aria-label={showNamesOnly ? '当前纯文件名模式，切换到缩略图模式' : '当前缩略图模式，切换到纯文件名模式'}
-                title={showNamesOnly ? '切换到缩略图模式' : '切换到纯文件名模式'}
+                aria-label={showNamesOnly ? t('a11y.image.switchToGridMode') : t('a11y.image.switchToNamesMode')}
+                title={showNamesOnly ? t('tip.image.switchToGridMode') : t('tip.image.switchToNamesMode')}
                 onClick={onToggleShowNamesOnly}
               >
                 <MainUiIcon name={showNamesOnly ? 'thumbnail' : 'fileList'} />
@@ -527,8 +529,8 @@ function ImageMainSection({
               <button
                 className="toolbar-icon-btn"
                 type="button"
-                aria-label="进入全屏"
-                title="进入全屏"
+                aria-label={t('a11y.media.enterFullscreen')}
+                title={t('tip.media.enterFullscreen')}
                 onClick={onEnterFullscreen}
                 disabled={!focusedImageExists}
               >

@@ -1,3 +1,5 @@
+import { useI18n } from '../../i18n/useI18n'
+
 interface MetadataSearchSectionProps {
   featureResultCount: number
   featureNameQuery: string
@@ -39,8 +41,10 @@ export function MetadataSearchSection({
   featureGradeFilter,
   onFeatureGradeFilterChange,
 }: MetadataSearchSectionProps) {
+  const { t } = useI18n()
+
   return (
-    <section className="metadata-search-section" aria-label="检索筛选">
+    <section className="metadata-search-section" aria-label={t('a11y.metadata.searchFilters')}>
       <div className="metadata-search-head">
         <strong>{`命中节点: ${featureResultCount} 个`}</strong>
       </div>
@@ -120,7 +124,7 @@ export function MetadataSearchSection({
                   key={tag}
                   className="feature-selected-tag-chip"
                   type="button"
-                  aria-label={`移除tag ${tag}`}
+                  aria-label={t('a11y.metadata.removeTag', { tag })}
                   onClick={() => onSetFeatureTags(featureTags.filter((item) => item !== tag))}
                 >
                   <span>{tag}</span>
@@ -133,9 +137,9 @@ export function MetadataSearchSection({
 
         <div className="feature-rating-group">
           <strong>图包评分</strong>
-          <div className="feature-rating-stars" role="group" aria-label="图包评分筛选">
+          <div className="feature-rating-stars" role="group" aria-label={t('a11y.metadata.ratingFilter')}>
             <button
-              aria-label="图包评分 无评分"
+              aria-label={t('a11y.metadata.ratingNone')}
               aria-pressed={featureGradeFilter === null}
               className={`is-clear ${featureGradeFilter === null ? 'is-active' : ''}`}
               type="button"
@@ -149,7 +153,7 @@ export function MetadataSearchSection({
               return (
                 <button
                   key={score}
-                  aria-label={`图包评分 ${score} 分`}
+                  aria-label={t('a11y.metadata.ratingScore', { score })}
                   aria-pressed={featureGradeFilter === score}
                   className={isActive ? 'is-active' : ''}
                   style={{ color: `hsl(42deg ${35 + score * 13}% 48%)` }}

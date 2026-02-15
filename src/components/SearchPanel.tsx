@@ -1,5 +1,8 @@
 import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
 
+import { buildA11yPropsByRegistry } from '../i18n/a11y'
+import { useI18n } from '../i18n/useI18n'
+
 interface SearchPanelProps {
   visible: boolean
   collapsed: boolean
@@ -61,6 +64,8 @@ function SearchPanel({
   onStartResize,
   layoutLocked,
 }: SearchPanelProps) {
+  const { t } = useI18n()
+
   if (!visible) {
     return null
   }
@@ -68,7 +73,12 @@ function SearchPanel({
   return (
     <>
       {collapsed ? (
-        <button aria-label="展开检索容器" className="search-panel-expand-btn" type="button" onClick={onExpand}>
+        <button
+          {...buildA11yPropsByRegistry({ key: 'commonExpandSearchPanel', t })}
+          className="search-panel-expand-btn"
+          type="button"
+          onClick={onExpand}
+        >
           <span className="search-panel-expand-tip">展开检索容器</span>
         </button>
       ) : (
@@ -146,13 +156,13 @@ function SearchPanel({
                   </div>
 
                   {featureTagPickerOpen ? (
-                    <div className="feature-tags-popover" role="listbox" aria-label="tags 选择">
+                    <div className="feature-tags-popover" role="listbox" {...buildA11yPropsByRegistry({ key: 'tagsSelect', t })}>
                       {featureTagOptions.map((tag) => {
                         const selected = featureTags.includes(tag)
                         return (
                           <button
                             key={tag}
-                            aria-label={tag}
+                            aria-label={t('a11y.tags.selectTag', { tag })}
                             aria-pressed={selected}
                             className={selected ? 'is-active' : ''}
                             type="button"
@@ -170,9 +180,9 @@ function SearchPanel({
 
                 <div className="feature-rating-group">
                   <strong>图包评分</strong>
-                  <div className="feature-rating-stars" role="group" aria-label="图包评分筛选">
+                  <div className="feature-rating-stars" role="group" aria-label={t('a11y.metadata.ratingFilter')}>
                     <button
-                      aria-label="图包评分 无评分"
+                      aria-label={t('a11y.metadata.ratingNone')}
                       aria-pressed={featureGradeFilter === null}
                       className={`is-clear ${featureGradeFilter === null ? 'is-active' : ''}`}
                       type="button"
@@ -186,7 +196,7 @@ function SearchPanel({
                       return (
                         <button
                           key={score}
-                          aria-label={`图包评分 ${score} 分`}
+                          aria-label={t('a11y.metadata.ratingScore', { score })}
                           aria-pressed={featureGradeFilter === score}
                           className={isActive ? 'is-active' : ''}
                           style={{ color: `hsl(42deg ${35 + score * 13}% 48%)` }}
@@ -208,7 +218,7 @@ function SearchPanel({
 
       {!collapsed ? (
         <div
-          aria-label="调整检索容器高度"
+          {...buildA11yPropsByRegistry({ key: 'commonAdjustSearchPanelHeight', t })}
           aria-orientation="horizontal"
           aria-disabled={layoutLocked}
           className={`vector-splitter ${layoutLocked ? 'is-locked' : ''}`}

@@ -4,7 +4,8 @@ import {
   dispatchMusicPlaybackControl,
   onMusicPlaybackState,
 } from '../features/media/musicPlaybackBridge'
-import { buildA11yProps } from '../i18n/a11y'
+import { buildA11yProps, buildA11yPropsByRegistry } from '../i18n/a11y'
+import { a11yRegistry } from '../i18n/ariaRegistry'
 import { useI18n } from '../i18n/useI18n'
 import type { BrowserMode } from '../types'
 
@@ -394,23 +395,11 @@ function AppHeader({
     })
   }, [])
 
-  const settingsButtonA11y = buildA11yProps({
-    id: 'header.settings',
-    labelKey: 'a11y.header.settings',
-    t,
-  })
-  const searchButtonA11y = buildA11yProps({
-    id: 'header.search',
-    labelKey: 'a11y.header.search',
-    t,
-  })
-  const manageButtonA11y = buildA11yProps({
-    id: 'header.manage',
-    labelKey: 'a11y.header.manage',
-    t,
-  })
+  const settingsButtonA11y = buildA11yPropsByRegistry({ key: 'headerSettings', t })
+  const searchButtonA11y = buildA11yPropsByRegistry({ key: 'headerSearch', t })
+  const manageButtonA11y = buildA11yPropsByRegistry({ key: 'headerManage', t })
   const metadataToggleA11y = buildA11yProps({
-    id: 'header.metadataToggle',
+    id: a11yRegistry.headerMetadataToggle.id,
     labelKey: metadataManageMode ? 'a11y.header.switchToImageMode' : 'a11y.header.switchToMetadataMode',
     t,
   })
@@ -462,7 +451,7 @@ function AppHeader({
           </button>
 
           <button
-            aria-label={paletteMode === 'day' ? '切换到夜间配色' : '切换到日间配色'}
+            aria-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
             aria-pressed={paletteMode === 'night'}
             className="header-settings-btn header-icon-only-btn"
             type="button"
@@ -483,10 +472,9 @@ function AppHeader({
 
         <div className="header-group header-group-modes">
           <div className="mode-switch-wrap" onMouseEnter={clearMusicQuickHideTimer} onMouseLeave={scheduleHideMusicActions}>
-            <div className="mode-switch" role="group" aria-label="mode-switch">
+            <div className="mode-switch" role="group" aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}>
               <button
-                data-a11y-id="header.mode.image"
-                aria-label="图片模式"
+                {...buildA11yPropsByRegistry({ key: 'headerModeImage', t })}
                 className={mode === 'image' ? 'is-active' : ''}
                 type="button"
                 onMouseEnter={() => setShowMusicQuickActions(false)}
@@ -496,12 +484,11 @@ function AppHeader({
                   <span className="header-btn-icon">
                     <HeaderActionIcon name="image" />
                   </span>
-                  <span className="header-btn-label">图片模式</span>
+                  <span className="header-btn-label">{t('ui.header.imageMode')}</span>
                 </span>
               </button>
               <button
-                data-a11y-id="header.mode.video"
-                aria-label="视频模式"
+                {...buildA11yPropsByRegistry({ key: 'headerModeVideo', t })}
                 className={mode === 'video' ? 'is-active' : ''}
                 type="button"
                 onMouseEnter={() => setShowMusicQuickActions(false)}
@@ -511,12 +498,11 @@ function AppHeader({
                   <span className="header-btn-icon">
                     <HeaderActionIcon name="video" />
                   </span>
-                  <span className="header-btn-label">视频模式</span>
+                  <span className="header-btn-label">{t('ui.header.videoMode')}</span>
                 </span>
               </button>
               <button
-                data-a11y-id="header.mode.music"
-                aria-label="音乐模式"
+                {...buildA11yPropsByRegistry({ key: 'headerModeMusic', t })}
                 className={mode === 'music' ? 'is-active' : ''}
                 type="button"
                 onMouseEnter={showMusicActions}
@@ -526,12 +512,12 @@ function AppHeader({
                   <span className="header-btn-icon">
                     <HeaderActionIcon name="music" />
                   </span>
-                  <span className="header-btn-label">音乐模式</span>
+                  <span className="header-btn-label">{t('ui.header.musicMode')}</span>
                 </span>
               </button>
               <div className={`music-quick-actions ${showMusicQuickActions ? 'is-visible' : ''}`} onMouseEnter={clearMusicQuickHideTimer}>
                 <button
-                  aria-label={musicQuickPlaying ? '音乐暂停' : '音乐播放'}
+                  aria-label={musicQuickPlaying ? t('a11y.header.musicPause') : t('a11y.header.musicPlay')}
                   className="mode-action-btn"
                   type="button"
                   onClick={() => {
@@ -540,14 +526,9 @@ function AppHeader({
                 >
                   <HeaderActionIcon name={musicQuickPlaying ? 'pause' : 'play'} />
                 </button>
-                <button
-                  aria-label="音乐停止"
-                  className="mode-action-btn"
-                  type="button"
-                  onClick={() => {
-                    dispatchMusicPlaybackControl('stop')
-                  }}
-                >
+                <button {...buildA11yPropsByRegistry({ key: 'headerMusicStop', t })} className="mode-action-btn" type="button" onClick={() => {
+                  dispatchMusicPlaybackControl('stop')
+                }}>
                   <HeaderActionIcon name="stop" />
                 </button>
               </div>
@@ -559,12 +540,12 @@ function AppHeader({
           <div
             className={`header-popover-control ${openHeaderPopover === 'scale' ? 'is-open' : ''}`}
             role="group"
-            aria-label="缩略图缩放级别"
+            aria-label={t(a11yRegistry.headerThumbnailScaleGroup.labelKey)}
             onMouseEnter={() => openPopoverByHover('scale')}
             onMouseLeave={() => closePopoverByHover('scale')}
           >
             <button
-              aria-label="缩略图缩放"
+              aria-label={t(a11yRegistry.headerThumbnailScale.labelKey)}
               className="header-popover-trigger"
               disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
               type="button"
@@ -572,12 +553,12 @@ function AppHeader({
               <HeaderActionIcon name="zoom" />
             </button>
 
-            <div className="header-popover-panel" hidden={openHeaderPopover !== 'scale'} role="dialog" aria-label="缩放级别设置">
-              <div className="header-vertical-slider" role="group" aria-label="缩放级别九档选择">
+            <div className="header-popover-panel" hidden={openHeaderPopover !== 'scale'} role="dialog" aria-label={t(a11yRegistry.headerScaleSettings.labelKey)}>
+              <div className="header-vertical-slider" role="group" aria-label={t(a11yRegistry.headerScaleLevels.labelKey)}>
                 <div className="header-vertical-slider-value">{Math.max(1, Math.min(9, Math.round(scaleDraftValue)))}</div>
                 <div className="header-vertical-slider-body">
                   <input
-                    aria-label="缩放级别滑条"
+                    aria-label={t(a11yRegistry.headerScaleSlider.labelKey)}
                     className="header-vertical-range"
                     max={9}
                     min={1}
@@ -599,12 +580,12 @@ function AppHeader({
           <div
             className={`header-popover-control ${openHeaderPopover === 'autoplay' ? 'is-open' : ''}`}
             role="group"
-            aria-label="自动播放速度"
+            aria-label={t(a11yRegistry.headerAutoPlayGroup.labelKey)}
             onMouseEnter={() => openPopoverByHover('autoplay')}
             onMouseLeave={() => closePopoverByHover('autoplay')}
           >
             <button
-              aria-label="自动播放"
+              aria-label={t(a11yRegistry.headerAutoPlay.labelKey)}
               aria-pressed={autoPlayEnabled}
               className={`header-popover-trigger auto-play-toggle-btn ${autoPlayEnabled ? 'is-active' : ''}`}
               type="button"
@@ -613,12 +594,12 @@ function AppHeader({
               <HeaderActionIcon name={autoPlayEnabled ? 'autoplayOn' : 'autoplayOff'} />
             </button>
 
-            <div className="header-popover-panel" hidden={openHeaderPopover !== 'autoplay'} role="dialog" aria-label="自动播放速度设置">
-              <div className="header-vertical-slider" role="group" aria-label="自动播放九档选择">
+            <div className="header-popover-panel" hidden={openHeaderPopover !== 'autoplay'} role="dialog" aria-label={t(a11yRegistry.headerAutoPlaySettings.labelKey)}>
+              <div className="header-vertical-slider" role="group" aria-label={t(a11yRegistry.headerAutoPlayLevels.labelKey)}>
                 <div className="header-vertical-slider-value">{Math.max(1, Math.min(9, Math.round(autoPlayDraftValue)))}</div>
                 <div className="header-vertical-slider-body">
                   <input
-                    aria-label="自动播放速度滑条"
+                    aria-label={t(a11yRegistry.headerAutoPlaySlider.labelKey)}
                     className="header-vertical-range"
                     max={9}
                     min={1}
@@ -669,9 +650,9 @@ function AppHeader({
       </div>
 
       <div className="header-right">
-        <div aria-label="窗口控制" className="window-controls header-group header-group-window" role="group">
+        <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" role="group">
           <button
-            aria-label="最小化窗口"
+            aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
             className="window-control-btn"
             type="button"
             onClick={() => {
@@ -681,7 +662,7 @@ function AppHeader({
             <HeaderActionIcon name="windowMinimize" />
           </button>
           <button
-            aria-label={windowMaximized ? '还原窗口' : '最大化窗口'}
+            aria-label={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
             className="window-control-btn"
             type="button"
             onClick={() => {
@@ -691,7 +672,7 @@ function AppHeader({
             <HeaderActionIcon name={windowMaximized ? 'windowRestore' : 'windowMaximize'} />
           </button>
           <button
-            aria-label="关闭窗口"
+            aria-label={t(a11yRegistry.headerWindowClose.labelKey)}
             className="window-control-btn window-control-btn--close"
             type="button"
             onClick={() => {
