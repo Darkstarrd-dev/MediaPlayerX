@@ -1,6 +1,6 @@
-import { useShallow } from 'zustand/react/shallow'
+import { useShallow } from "zustand/react/shallow";
 
-import { useUiStore } from '../../store/useUiStore'
+import { useUiStore } from "../../store/useUiStore";
 
 export function useAppSettingsStore() {
   return useUiStore(
@@ -35,6 +35,9 @@ export function useAppSettingsStore() {
       imageRootNodeId: state.imageRootNodeId,
       videoRootNodeId: state.videoRootNodeId,
       musicRootNodeId: state.musicRootNodeId,
+      imageCollapsedFolderNodeIds: state.imageCollapsedFolderNodeIds,
+      videoCollapsedFolderNodeIds: state.videoCollapsedFolderNodeIds,
+      musicCollapsedFolderNodeIds: state.musicCollapsedFolderNodeIds,
       uiLocale: state.uiLocale,
       themeId: state.themeId,
       styleId: state.styleId,
@@ -54,7 +57,8 @@ export function useAppSettingsStore() {
       musicVisualizerToneMapStrength: state.musicVisualizerToneMapStrength,
       musicVisualizerShowFps: state.musicVisualizerShowFps,
       musicVisualizerRenderer: state.musicVisualizerRenderer,
-      musicVisualizerShaderSettingsById: state.musicVisualizerShaderSettingsById,
+      musicVisualizerShaderSettingsById:
+        state.musicVisualizerShaderSettingsById,
       proxyServer: state.proxyServer,
       ehentaiCookies: state.ehentaiCookies,
       adReviewVisionEndpoint: state.adReviewVisionEndpoint,
@@ -70,7 +74,7 @@ export function useAppSettingsStore() {
       setShortcut: state.setShortcut,
       resetShortcuts: state.resetShortcuts,
     })),
-  )
+  );
 }
 
-export type AppSettingsStoreSnapshot = ReturnType<typeof useAppSettingsStore>
+export type AppSettingsStoreSnapshot = ReturnType<typeof useAppSettingsStore>;

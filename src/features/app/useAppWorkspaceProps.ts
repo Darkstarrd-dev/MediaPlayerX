@@ -1,21 +1,22 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from "react";
 
-import {
-  buildImageMainSectionProps,
-} from './buildImageMainSectionProps'
-import { buildMainFooter } from './buildMainFooter'
-import { buildManagementPanelProps } from './buildManagementPanelProps'
-import { buildMetadataManagementPanelProps } from './buildMetadataManagementPanelProps'
-import { buildMetadataPanelProps } from './buildMetadataPanelProps'
-import { buildSearchPanelProps } from './buildSearchPanelProps'
-import { buildSidebarPanelProps } from './buildSidebarPanelProps'
-import { buildMusicMainSectionProps } from './buildMusicMainSectionProps'
-import { buildVideoMainSectionProps } from './buildVideoMainSectionProps'
+import { buildImageMainSectionProps } from "./buildImageMainSectionProps";
+import { buildMainFooter } from "./buildMainFooter";
+import { buildManagementPanelProps } from "./buildManagementPanelProps";
+import { buildMetadataManagementPanelProps } from "./buildMetadataManagementPanelProps";
+import { buildMetadataPanelProps } from "./buildMetadataPanelProps";
+import { buildSearchPanelProps } from "./buildSearchPanelProps";
+import { buildSidebarPanelProps } from "./buildSidebarPanelProps";
+import { buildMusicMainSectionProps } from "./buildMusicMainSectionProps";
+import { buildVideoMainSectionProps } from "./buildVideoMainSectionProps";
 import {
   resolveMusicBookletPreviewRootNodeId,
   resolveMusicBookletState,
-} from './workspaceMusicBooklet'
-import { createMusicBookletBindingActions, createWorkspaceJumpActions } from './workspaceJumpActions'
+} from "./workspaceMusicBooklet";
+import {
+  createMusicBookletBindingActions,
+  createWorkspaceJumpActions,
+} from "./workspaceJumpActions";
 import {
   collectAudioIdsBySidebarOrder,
   collectScopedAudioIdsByFolderNode,
@@ -23,17 +24,20 @@ import {
   normalizeFeatureTags,
   normalizeSeriesId,
   pickFirstBySeriesId,
-} from './workspaceSharedUtils'
-import { buildNodeBrowseItems, resolveRefsInPageForDisplay } from './workspaceImageDerivations'
-import { resolveAdReviewPageDerivations } from './workspaceAdReviewPageDerivations'
-import { resolveAdReviewSidebarContext } from './workspaceAdReviewSidebarContext'
+} from "./workspaceSharedUtils";
+import {
+  buildNodeBrowseItems,
+  resolveRefsInPageForDisplay,
+} from "./workspaceImageDerivations";
+import { resolveAdReviewPageDerivations } from "./workspaceAdReviewPageDerivations";
+import { resolveAdReviewSidebarContext } from "./workspaceAdReviewSidebarContext";
 import {
   createApplyMetadataSyncName,
   createSaveParsedMetadata,
-} from './workspaceMetadataActions'
-import { createAdReviewSettingHandlers } from './workspaceAdReviewHandlers'
-import type { UseAppWorkspacePropsParams } from './useAppWorkspaceProps.types'
-import { useI18n } from '../../i18n/useI18n'
+} from "./workspaceMetadataActions";
+import { createAdReviewSettingHandlers } from "./workspaceAdReviewHandlers";
+import type { UseAppWorkspacePropsParams } from "./useAppWorkspaceProps.types";
+import { useI18n } from "../../i18n/useI18n";
 
 export function useAppWorkspaceProps({
   appSettings,
@@ -203,7 +207,7 @@ export function useAppWorkspaceProps({
   requestMusicPlay,
   musicBookletBindings,
 }: UseAppWorkspacePropsParams) {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   /**
    * The Workspace layer only assembles view-model props:
@@ -213,7 +217,7 @@ export function useAppWorkspaceProps({
   const featureTagOptionsEffective = Array.from(
     new Set(
       normalizeFeatureTags(
-        mode === 'image'
+        mode === "image"
           ? scopedImageSourcesEffective.flatMap((source) => [
               ...source.tags,
               ...flattenExternalTagValues(source.externalMetadata?.tags ?? {}),
@@ -221,7 +225,7 @@ export function useAppWorkspaceProps({
           : featureTagOptions,
       ),
     ),
-  ).sort((left, right) => left.localeCompare(right, 'zh-CN'))
+  ).sort((left, right) => left.localeCompare(right, "zh-CN"));
 
   const {
     adReviewFocusTask,
@@ -237,36 +241,42 @@ export function useAppWorkspaceProps({
     sidebarNodeById,
     selectedSidebarNodeId,
     imageTreeForSidebar,
-  })
+  });
 
-  const previousAdReviewPanelOpenRef = useRef(adReviewPanelOpen)
+  const previousAdReviewPanelOpenRef = useRef(adReviewPanelOpen);
   useEffect(() => {
-    const wasOpen = previousAdReviewPanelOpenRef.current
-    previousAdReviewPanelOpenRef.current = adReviewPanelOpen
+    const wasOpen = previousAdReviewPanelOpenRef.current;
+    previousAdReviewPanelOpenRef.current = adReviewPanelOpen;
 
     if (wasOpen && !adReviewPanelOpen) {
       if (adReviewFocusTaskId) {
-        setAdReviewFocusTaskId(null)
-        setAdReviewPageIndex(0)
+        setAdReviewFocusTaskId(null);
+        setAdReviewPageIndex(0);
       }
-      return
+      return;
     }
 
-    const enteringAdReviewMode = !wasOpen && adReviewPanelOpen
+    const enteringAdReviewMode = !wasOpen && adReviewPanelOpen;
     if (!enteringAdReviewMode) {
-      return
+      return;
     }
 
-    const activeTask = manageAdReview.task
+    const activeTask = manageAdReview.task;
     if (!activeTask) {
-      return
+      return;
     }
 
-    if (activeTask.status === 'running' || activeTask.status === 'paused') {
-      setAdReviewFocusTaskId(activeTask.task_id)
-      setAdReviewPageIndex(0)
+    if (activeTask.status === "running" || activeTask.status === "paused") {
+      setAdReviewFocusTaskId(activeTask.task_id);
+      setAdReviewPageIndex(0);
     }
-  }, [adReviewFocusTaskId, adReviewPanelOpen, manageAdReview.task, setAdReviewFocusTaskId, setAdReviewPageIndex])
+  }, [
+    adReviewFocusTaskId,
+    adReviewPanelOpen,
+    manageAdReview.task,
+    setAdReviewFocusTaskId,
+    setAdReviewPageIndex,
+  ]);
 
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
@@ -277,9 +287,11 @@ export function useAppWorkspaceProps({
     sidebarCountFontSize: appSettings.sidebarCountFontSize,
     sidebarIndentStep: appSettings.sidebarIndentStep,
     sidebarVerticalGap: appSettings.sidebarVerticalGap,
-    currentRootLabel: adReviewResultsMode ? t('ui.sidebar.adReviewResultsRoot') : currentRootLabel,
+    currentRootLabel: adReviewResultsMode
+      ? t("ui.sidebar.adReviewResultsRoot")
+      : currentRootLabel,
     searchResultsMode,
-    searchResultsLabel: t('ui.sidebar.searchResultsRoot'),
+    searchResultsLabel: t("ui.sidebar.searchResultsRoot"),
     adReviewResultsMode,
     selectedSidebarNodeId,
     canSetCurrentRoot: adReviewResultsMode ? false : canSetCurrentRoot,
@@ -303,13 +315,13 @@ export function useAppWorkspaceProps({
     playlistIds,
     goToFromSearchMode,
     onExitAdReviewResultsMode: () => {
-      setAdReviewFocusTaskId(null)
-      setAdReviewPageIndex(0)
+      setAdReviewFocusTaskId(null);
+      setAdReviewPageIndex(0);
     },
     setSelectedSidebarNodeId: (nodeId) => {
-      setSelectedSidebarNodeId(nodeId)
+      setSelectedSidebarNodeId(nodeId);
       if (adReviewResultsMode) {
-        setAdReviewPageIndex(0)
+        setAdReviewPageIndex(0);
       }
     },
     updateSettings: appSettings.updateSettings,
@@ -317,13 +329,39 @@ export function useAppWorkspaceProps({
     selectVideoFromBrowser,
     setSelectedAudioId,
     collapseSidebar,
+    collapsedFolderNodeIds:
+      mode === "image"
+        ? appSettings.imageCollapsedFolderNodeIds
+        : mode === "video"
+          ? appSettings.videoCollapsedFolderNodeIds
+          : appSettings.musicCollapsedFolderNodeIds,
+    setCollapsedFolderNodeIds: (nodeIds) => {
+      const normalizedNodeIds = Array.from(
+        new Set(nodeIds.map((nodeId) => nodeId.trim()).filter(Boolean)),
+      );
+      if (mode === "image") {
+        appSettings.updateSettings({
+          imageCollapsedFolderNodeIds: normalizedNodeIds,
+        });
+        return;
+      }
+      if (mode === "video") {
+        appSettings.updateSettings({
+          videoCollapsedFolderNodeIds: normalizedNodeIds,
+        });
+        return;
+      }
+      appSettings.updateSettings({
+        musicCollapsedFolderNodeIds: normalizedNodeIds,
+      });
+    },
     applyCurrentRootFromSelection,
     setPlaylistIds,
     audioPlaylistIds,
     setAudioPlaylistIds,
     onToggleManageNode: toggleSidebarNodeChecked,
     onCheckManageNode: checkSidebarNode,
-  })
+  });
 
   const searchPanelProps = buildSearchPanelProps({
     vectorMode,
@@ -334,7 +372,11 @@ export function useAppWorkspaceProps({
     vectorPanelRef,
     vectorPanelContentRef,
     featureResultCount:
-      mode === 'video' ? videosForSidebarCount : mode === 'music' ? audiosForSidebarCount : scopedImageSourcesEffective.length,
+      mode === "video"
+        ? videosForSidebarCount
+        : mode === "music"
+          ? audiosForSidebarCount
+          : scopedImageSourcesEffective.length,
     featureNameQuery,
     setFeatureNameQuery,
     featureWorkTitleQuery,
@@ -354,7 +396,7 @@ export function useAppWorkspaceProps({
     setFeatureGradeFilter,
     onStartWorkspaceBottomPanelResize,
     layoutLocked,
-  })
+  });
 
   const managementPanelProps = buildManagementPanelProps({
     mode,
@@ -372,10 +414,10 @@ export function useAppWorkspaceProps({
     errorRows: managementErrorRows,
     onDelete: requestManageDelete,
     onHide: () => {
-      void runManageHideAction(true)
+      void runManageHideAction(true);
     },
     onUnhide: () => {
-      void runManageHideAction(false)
+      void runManageHideAction(false);
     },
     onClearSelection: clearAllSelections,
     adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
@@ -390,33 +432,36 @@ export function useAppWorkspaceProps({
     adReviewTailN: appSettings.adReviewTailN,
     adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
     onStartAdReview: () => {
-      void manageAdReview.startManageAdReview()
+      void manageAdReview.startManageAdReview();
     },
     onPauseAdReview: () => {
-      void manageAdReview.pauseManageAdReview()
+      void manageAdReview.pauseManageAdReview();
     },
-    onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
-    ...createAdReviewSettingHandlers({ updateSettings: appSettings.updateSettings }),
+    onToggleHideUncheckedNonChecked:
+      manageAdReview.toggleHideUncheckedNonChecked,
+    ...createAdReviewSettingHandlers({
+      updateSettings: appSettings.updateSettings,
+    }),
     onDismissAdReviewTask: manageAdReview.dismissTask,
     onStartWorkspaceBottomPanelResize,
     layoutLocked,
-  })
+  });
 
   const applyMetadataSyncName = createApplyMetadataSyncName({
     mode,
     metadataWriteBindings,
     metadataImagePackageEffective,
-  })
+  });
 
   const saveParsedMetadata = createSaveParsedMetadata({
     mode,
     metadataWriteBindings,
     metadataImagePackageEffective,
     saveParsedMetadataErrors: {
-      unsupportedMode: t('ui.metadata.saveParsedUnsupportedMode'),
-      noAvailablePackage: t('ui.metadata.saveParsedNoPackage'),
+      unsupportedMode: t("ui.metadata.saveParsedUnsupportedMode"),
+      noAvailablePackage: t("ui.metadata.saveParsedNoPackage"),
     },
-  })
+  });
 
   const metadataManagementPanelProps = buildMetadataManagementPanelProps({
     metadataManageMode,
@@ -431,22 +476,32 @@ export function useAppWorkspaceProps({
     onSaveParsedMetadata: saveParsedMetadata,
     onStartWorkspaceBottomPanelResize,
     layoutLocked,
-    targetPackageName: metadataImagePackageEffective?.packageName ?? '',
-    targetPackageLabel: metadataImagePackageEffective?.displayName ?? '-',
+    targetPackageName: metadataImagePackageEffective?.packageName ?? "",
+    targetPackageLabel: metadataImagePackageEffective?.displayName ?? "-",
     proxyServer: appSettings.proxyServer,
     ehentaiCookies: appSettings.ehentaiCookies,
-  })
+  });
 
-  const enableLoadingSkeleton = benchSettings.enabled ? benchSettings.imageLoadingSkeleton.mode === 'replace' : true
+  const enableLoadingSkeleton = benchSettings.enabled
+    ? benchSettings.imageLoadingSkeleton.mode === "replace"
+    : true;
 
-  const audioSidebarOrderedIds = collectAudioIdsBySidebarOrder(audioTreeForSidebar, audiosForSidebar)
+  const audioSidebarOrderedIds = collectAudioIdsBySidebarOrder(
+    audioTreeForSidebar,
+    audiosForSidebar,
+  );
   const metadataMusicPlaylistIds = collectScopedAudioIdsByFolderNode({
     selectedSidebarNode,
     audiosForSidebar,
     audioSidebarOrderedIds,
-  })
+  });
   const adReviewGroupByPackageRows =
-    adReviewResultsMode && Boolean(selectedSidebarNode && (selectedSidebarNode.kind === 'folder' || selectedSidebarNode.imageNodeType === 'folder'))
+    adReviewResultsMode &&
+    Boolean(
+      selectedSidebarNode &&
+      (selectedSidebarNode.kind === "folder" ||
+        selectedSidebarNode.imageNodeType === "folder"),
+    );
 
   const {
     visibleImageRefsForMain,
@@ -469,14 +524,18 @@ export function useAppWorkspaceProps({
     refsInPageEffective,
     pageStartEffective,
     imageTotalPagesEffective,
-  })
+  });
 
   const nodeBrowseMode =
-    mode === 'image' &&
+    mode === "image" &&
     !vectorResultsActive &&
     !metadataManageMode &&
     !adReviewResultsMode &&
-    Boolean(selectedSidebarNode && selectedSidebarNode.imageNodeType === 'folder' && selectedSidebarNode.children.length > 0)
+    Boolean(
+      selectedSidebarNode &&
+      selectedSidebarNode.imageNodeType === "folder" &&
+      selectedSidebarNode.children.length > 0,
+    );
 
   const nodeBrowseItems = buildNodeBrowseItems({
     nodeBrowseMode,
@@ -484,60 +543,87 @@ export function useAppWorkspaceProps({
     packageByIdEffective,
     sourceCoverImageUrlBySourceId,
     thumbnailImageUrlById,
-  })
+  });
 
   const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageBase, {
     manageMode,
     hideUncheckedNonChecked: false,
     imageCheckedIdSet,
     packageByIdEffective,
-  })
+  });
 
-  const adReviewTaskForDisplay = adReviewResultsMode ? adReviewFocusTask : manageAdReview.task
-  const adReviewScopeImageIdSet = new Set(adReviewTaskForDisplay?.scope_image_ids ?? manageAdReview.scopeImageIds)
+  const adReviewTaskForDisplay = adReviewResultsMode
+    ? adReviewFocusTask
+    : manageAdReview.task;
+  const adReviewScopeImageIdSet = new Set(
+    adReviewTaskForDisplay?.scope_image_ids ?? manageAdReview.scopeImageIds,
+  );
   const adReviewLlmReviewedImageIdSet = new Set(
     adReviewTaskForDisplay
       ? Object.entries(adReviewTaskForDisplay.image_source_by_id)
-          .filter(([, source]) => source === 'llm' || source === 'llm-error')
+          .filter(([, source]) => source === "llm" || source === "llm-error")
           .map(([imageId]) => imageId)
       : manageAdReview.llmReviewedImageIds,
-  )
+  );
   const adReviewNonLlmReviewedImageIdSet = new Set(
     adReviewTaskForDisplay
       ? Object.entries(adReviewTaskForDisplay.image_source_by_id)
-          .filter(([, source]) => source === 'known-hash' || source === 'strategy-skip')
+          .filter(
+            ([, source]) =>
+              source === "known-hash" || source === "strategy-skip",
+          )
           .map(([imageId]) => imageId)
       : manageAdReview.nonLlmReviewedImageIds,
-  )
-  const adReviewCandidateImageIdSet = new Set(adReviewTaskForDisplay?.candidates.map((candidate) => candidate.image_id) ?? [])
+  );
+  const adReviewCandidateImageIdSet = new Set(
+    adReviewTaskForDisplay?.candidates.map((candidate) => candidate.image_id) ??
+      [],
+  );
 
-  const imageSeriesId = normalizeSeriesId(metadataImagePackageEffective?.seriesId)
-  const videoSeriesId = normalizeSeriesId(focusedVideoEffective?.seriesId)
-  const audioSeriesId = normalizeSeriesId(focusedAudio?.seriesId)
-  const jumpTargetVideo = pickFirstBySeriesId(videoByIdEffective.values(), imageSeriesId)
-  const jumpTargetImage = pickFirstBySeriesId(packageByIdEffective.values(), videoSeriesId)
-  const jumpTargetImageFromAudio = pickFirstBySeriesId(packageByIdEffective.values(), audioSeriesId)
-  const jumpTargetVideoFromAudio = pickFirstBySeriesId(videoByIdEffective.values(), audioSeriesId)
+  const imageSeriesId = normalizeSeriesId(
+    metadataImagePackageEffective?.seriesId,
+  );
+  const videoSeriesId = normalizeSeriesId(focusedVideoEffective?.seriesId);
+  const audioSeriesId = normalizeSeriesId(focusedAudio?.seriesId);
+  const jumpTargetVideo = pickFirstBySeriesId(
+    videoByIdEffective.values(),
+    imageSeriesId,
+  );
+  const jumpTargetImage = pickFirstBySeriesId(
+    packageByIdEffective.values(),
+    videoSeriesId,
+  );
+  const jumpTargetImageFromAudio = pickFirstBySeriesId(
+    packageByIdEffective.values(),
+    audioSeriesId,
+  );
+  const jumpTargetVideoFromAudio = pickFirstBySeriesId(
+    videoByIdEffective.values(),
+    audioSeriesId,
+  );
   const musicBookletState = resolveMusicBookletState({
     focusedAudio,
     imageSources: musicBookletImageSources,
     musicImportDirectories: musicBookletBindings.musicImportDirectories,
     bindingsByAlbumRoot: musicBookletBindings.bindingsByAlbumRoot,
-  })
+  });
   const openMusicCoverSourceId = metadataManageMode
     ? musicBookletState.effectiveCoverSourceId
-    : musicBookletState.effectiveCoverSourceId ?? musicBookletState.autoCoverSourceId
+    : (musicBookletState.effectiveCoverSourceId ??
+      musicBookletState.autoCoverSourceId);
   const openMusicBookletSourceId = metadataManageMode
-    ? musicBookletState.effectiveBookletSourceId ?? musicBookletState.effectiveCoverSourceId
-    :
-        musicBookletState.effectiveBookletSourceId ??
-        musicBookletState.effectiveCoverSourceId ??
-        musicBookletState.autoBookletSourceId ??
-        musicBookletState.autoCoverSourceId
+    ? (musicBookletState.effectiveBookletSourceId ??
+      musicBookletState.effectiveCoverSourceId)
+    : (musicBookletState.effectiveBookletSourceId ??
+      musicBookletState.effectiveCoverSourceId ??
+      musicBookletState.autoBookletSourceId ??
+      musicBookletState.autoCoverSourceId);
   const musicBookletPreviewRootNodeId = resolveMusicBookletPreviewRootNodeId({
-    candidateSourceIds: musicBookletState.candidates.map((candidate) => candidate.sourceId),
+    candidateSourceIds: musicBookletState.candidates.map(
+      (candidate) => candidate.sourceId,
+    ),
     imageSourceNodeIdMap: normalImageSourceNodeIdMap,
-  })
+  });
 
   const {
     jumpToAnimation,
@@ -562,14 +648,15 @@ export function useAppWorkspaceProps({
     openMusicCoverSourceId,
     openMusicBookletSourceId,
     musicBookletPreviewRootNodeId,
-  })
+  });
 
-  const { updateMusicCoverBinding, updateMusicBookletBinding } = createMusicBookletBindingActions({
-    albumRootPath: musicBookletState.albumRootPath,
-    bindingsByAlbumRoot: musicBookletBindings.bindingsByAlbumRoot,
-    resetBindingOverride: musicBookletBindings.resetBindingOverride,
-    setBindingOverride: musicBookletBindings.setBindingOverride,
-  })
+  const { updateMusicCoverBinding, updateMusicBookletBinding } =
+    createMusicBookletBindingActions({
+      albumRootPath: musicBookletState.albumRootPath,
+      bindingsByAlbumRoot: musicBookletBindings.bindingsByAlbumRoot,
+      resetBindingOverride: musicBookletBindings.resetBindingOverride,
+      setBindingOverride: musicBookletBindings.setBindingOverride,
+    });
 
   const imageMainSectionProps = buildImageMainSectionProps({
     vectorResultsActive,
@@ -597,12 +684,14 @@ export function useAppWorkspaceProps({
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
-    pendingManageAction: backendWrite.pending.manage || manageAdReview.deletePending,
+    pendingManageAction:
+      backendWrite.pending.manage || manageAdReview.deletePending,
     manageOperationHint,
-    canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    canManageDelete:
+      sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
     canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
-    canManageHide: mode === 'image' && imageCheckedIds.length > 0,
-    canManageUnhide: mode === 'image' && imageCheckedIds.length > 0,
+    canManageHide: mode === "image" && imageCheckedIds.length > 0,
+    canManageUnhide: mode === "image" && imageCheckedIds.length > 0,
     adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
     adReviewDeletePending: manageAdReview.deletePending,
     adReviewPanelOpen,
@@ -620,7 +709,8 @@ export function useAppWorkspaceProps({
     canJumpToAnimation: Boolean(jumpTargetVideo),
     onJumpToAnimation: jumpToAnimation,
     metadataPending: metadataWriteBindings.metadataPending,
-    metadataTargetPackageLabel: metadataImagePackageEffective?.displayName ?? '-',
+    metadataTargetPackageLabel:
+      metadataImagePackageEffective?.displayName ?? "-",
     metadataFetchDefaultText: metadataManagementPanelProps.defaultFetchText,
     metadataProxyServer: appSettings.proxyServer,
     metadataEhentaiCookies: appSettings.ehentaiCookies,
@@ -630,34 +720,36 @@ export function useAppWorkspaceProps({
     onReplaceCheckedImages: replaceImageCheckedIds,
     onManageDelete: requestManageDelete,
     onManageGroup: () => {
-      void requestManageGroup()
+      void requestManageGroup();
     },
     onManageMove: () => {
-      void requestManageMove()
+      void requestManageMove();
     },
     onManageHide: () => {
-      void runManageHideAction(true)
+      void runManageHideAction(true);
     },
     onManageUnhide: () => {
-      void runManageHideAction(false)
+      void runManageHideAction(false);
     },
     onToggleAdReviewPanel: () => {
       if (manageAdReview.deletePending) {
-        return
+        return;
       }
-      setAdReviewPanelOpen((value) => !value)
+      setAdReviewPanelOpen((value) => !value);
     },
     onClearManageSelection: clearAllSelections,
     nodeBrowseMode,
-    nodeBrowseLabel: nodeBrowseMode ? (selectedSidebarNode?.label ?? t('ui.image.nodeBrowseDefaultLabel')) : '',
+    nodeBrowseLabel: nodeBrowseMode
+      ? (selectedSidebarNode?.label ?? t("ui.image.nodeBrowseDefaultLabel"))
+      : "",
     nodeBrowseItems,
     onSelectNodeBrowseItem: (nodeId, imageSourceId) => {
-      setSelectedSidebarNodeId(nodeId)
+      setSelectedSidebarNodeId(nodeId);
       if (imageSourceId) {
-        setSelectedPackageId(imageSourceId)
+        setSelectedPackageId(imageSourceId);
       }
     },
-  })
+  });
 
   const videoMainSectionProps = buildVideoMainSectionProps({
     manageMode,
@@ -665,24 +757,26 @@ export function useAppWorkspaceProps({
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
-    pendingManageAction: backendWrite.pending.manage || manageAdReview.deletePending,
+    pendingManageAction:
+      backendWrite.pending.manage || manageAdReview.deletePending,
     manageOperationHint,
-    canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    canManageDelete:
+      sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
     canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
-    canManageHide: mode === 'image' && imageCheckedIds.length > 0,
-    canManageUnhide: mode === 'image' && imageCheckedIds.length > 0,
+    canManageHide: mode === "image" && imageCheckedIds.length > 0,
+    canManageUnhide: mode === "image" && imageCheckedIds.length > 0,
     onManageDelete: requestManageDelete,
     onManageGroup: () => {
-      void requestManageGroup()
+      void requestManageGroup();
     },
     onManageMove: () => {
-      void requestManageMove()
+      void requestManageMove();
     },
     onManageHide: () => {
-      void runManageHideAction(true)
+      void runManageHideAction(true);
     },
     onManageUnhide: () => {
-      void runManageHideAction(false)
+      void runManageHideAction(false);
     },
     onClearManageSelection: clearAllSelections,
     durationSec: focusedVideoDurationSec,
@@ -722,7 +816,7 @@ export function useAppWorkspaceProps({
     setFullscreenActiveWithAutoStop,
     metadataPending: metadataWriteBindings.metadataPending,
     onMetadataSyncName: applyMetadataSyncName,
-  })
+  });
 
   const musicMainSectionProps = buildMusicMainSectionProps({
     mode,
@@ -734,16 +828,18 @@ export function useAppWorkspaceProps({
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
-    pendingManageAction: backendWrite.pending.manage || manageAdReview.deletePending,
+    pendingManageAction:
+      backendWrite.pending.manage || manageAdReview.deletePending,
     manageOperationHint,
-    canManageDelete: sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
+    canManageDelete:
+      sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
     canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
     onManageDelete: requestManageDelete,
     onManageGroup: () => {
-      void requestManageGroup()
+      void requestManageGroup();
     },
     onManageMove: () => {
-      void requestManageMove()
+      void requestManageMove();
     },
     onClearManageSelection: clearAllSelections,
     canJumpToManga: Boolean(jumpTargetImageFromAudio),
@@ -759,42 +855,49 @@ export function useAppWorkspaceProps({
     selectedAudioId,
     musicLoopMode,
     musicLoopModeLabels: {
-      single: t('ui.music.loopModeSingle'),
-      folder: t('ui.music.loopModeFolder'),
-      album: t('ui.music.loopModeAlbum'),
-      library: t('ui.music.loopModeLibrary'),
+      single: t("ui.music.loopModeSingle"),
+      folder: t("ui.music.loopModeFolder"),
+      album: t("ui.music.loopModeAlbum"),
+      library: t("ui.music.loopModeLibrary"),
     },
     audioByIdEffective,
     setSelectedAudioId,
     setMusicLoopMode,
     setFullscreenActiveWithAutoStop,
-    musicVisualizerSelectedShaderId: appSettings.musicVisualizerSelectedShaderId,
-    musicVisualizerRenderLongEdgePx: appSettings.musicVisualizerRenderLongEdgePx,
+    musicVisualizerSelectedShaderId:
+      appSettings.musicVisualizerSelectedShaderId,
+    musicVisualizerRenderLongEdgePx:
+      appSettings.musicVisualizerRenderLongEdgePx,
     musicVisualizerFpsCap: appSettings.musicVisualizerFpsCap,
     musicVisualizerToneMapMode: appSettings.musicVisualizerToneMapMode,
     musicVisualizerToneMapExposure: appSettings.musicVisualizerToneMapExposure,
     musicVisualizerToneMapStrength: appSettings.musicVisualizerToneMapStrength,
     musicVisualizerShowFps: appSettings.musicVisualizerShowFps,
     musicVisualizerRenderer: appSettings.musicVisualizerRenderer,
-    musicVisualizerShaderSettingsById: appSettings.musicVisualizerShaderSettingsById,
+    musicVisualizerShaderSettingsById:
+      appSettings.musicVisualizerShaderSettingsById,
     updateSettings: appSettings.updateSettings,
-  })
+  });
 
   const applyMetadataFeatureSearch = (patch: {
-    workTitle?: string
-    circle?: string
-    author?: string
-    tag?: string
+    workTitle?: string;
+    circle?: string;
+    author?: string;
+    tag?: string;
   }) => {
-    applyQuickFeatureSearch(patch)
-  }
+    applyQuickFeatureSearch(patch);
+  };
 
   const metadataPanelProps = buildMetadataPanelProps({
     mode,
     manageMode,
     searchModeActive: vectorMode && !manageMode && !metadataManageMode,
     featureResultCount:
-      mode === 'video' ? videosForSidebarCount : mode === 'music' ? audiosForSidebarCount : scopedImageSourcesEffective.length,
+      mode === "video"
+        ? videosForSidebarCount
+        : mode === "music"
+          ? audiosForSidebarCount
+          : scopedImageSourcesEffective.length,
     featureNameQuery,
     onFeatureNameQueryChange: setFeatureNameQuery,
     featureWorkTitleQuery,
@@ -810,15 +913,20 @@ export function useAppWorkspaceProps({
     onToggleFeatureTagPicker: () => setFeatureTagPickerOpen((value) => !value),
     featureTags,
     onSetFeatureTags: (tags) => {
-      const normalized = Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean)))
-      setFeatureTags(normalized)
+      const normalized = Array.from(
+        new Set(tags.map((tag) => tag.trim()).filter(Boolean)),
+      );
+      setFeatureTags(normalized);
     },
     onClearFeatureTags: () => setFeatureTags([]),
     featureGradeFilter,
     onFeatureGradeFilterChange: setFeatureGradeFilter,
     adReviewFeatureVisible: appSettings.adReviewVisionVerified,
     adReviewPanelOpen,
-    canExecuteAdReview: (activeSelectionScope === 'sidebar' && sidebarCheckedNodeIds.length > 0) || imageCheckedIds.length > 0,
+    canExecuteAdReview:
+      (activeSelectionScope === "sidebar" &&
+        sidebarCheckedNodeIds.length > 0) ||
+      imageCheckedIds.length > 0,
     adReviewPending: manageAdReview.pending,
     adReviewDeletePending: manageAdReview.deletePending,
     adReviewTask: manageAdReview.task,
@@ -834,50 +942,56 @@ export function useAppWorkspaceProps({
     adReviewTailN: appSettings.adReviewTailN,
     adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
     onStartAdReview: async (options) => {
-      const startedTask = await manageAdReview.startManageAdReview(options)
+      const startedTask = await manageAdReview.startManageAdReview(options);
       if (!startedTask) {
-        return
+        return;
       }
-      setAdReviewFocusTaskId(startedTask.task_id)
-      setAdReviewPageIndex(0)
+      setAdReviewFocusTaskId(startedTask.task_id);
+      setAdReviewPageIndex(0);
     },
     onPauseAdReview: () => {
-      void manageAdReview.pauseManageAdReview()
+      void manageAdReview.pauseManageAdReview();
     },
-    onToggleHideUncheckedNonChecked: manageAdReview.toggleHideUncheckedNonChecked,
+    onToggleHideUncheckedNonChecked:
+      manageAdReview.toggleHideUncheckedNonChecked,
     onSelectAdReviewTask: (taskId) => {
-      manageAdReview.selectTask(taskId)
-      setAdReviewPageIndex(0)
+      manageAdReview.selectTask(taskId);
+      setAdReviewPageIndex(0);
     },
     onRemoveAdReviewTask: (taskId) => {
-      void manageAdReview.removeTask(taskId)
+      void manageAdReview.removeTask(taskId);
     },
     onDeleteSelectedAdReviewCandidates: () => {
-      void manageAdReview.confirmDeleteSelectedCandidates()
+      void manageAdReview.confirmDeleteSelectedCandidates();
     },
     onToggleAdReviewFocus: () => {
       if (manageAdReview.deletePending) {
-        return
+        return;
       }
-      const currentTask = manageAdReview.task
+      const currentTask = manageAdReview.task;
       if (!currentTask) {
-        setAdReviewFocusTaskId(null)
-        return
+        setAdReviewFocusTaskId(null);
+        return;
       }
 
-      const canFocusStatus = currentTask.status === 'running' || currentTask.status === 'paused' || currentTask.status === 'review'
+      const canFocusStatus =
+        currentTask.status === "running" ||
+        currentTask.status === "paused" ||
+        currentTask.status === "review";
       if (!canFocusStatus || currentTask.candidates.length === 0) {
-        setAdReviewFocusTaskId(null)
-        setAdReviewPageIndex(0)
-        return
+        setAdReviewFocusTaskId(null);
+        setAdReviewPageIndex(0);
+        return;
       }
 
       setAdReviewFocusTaskId((previous) => {
-        setAdReviewPageIndex(0)
-        return previous === currentTask.task_id ? null : currentTask.task_id
-      })
+        setAdReviewPageIndex(0);
+        return previous === currentTask.task_id ? null : currentTask.task_id;
+      });
     },
-    ...createAdReviewSettingHandlers({ updateSettings: appSettings.updateSettings }),
+    ...createAdReviewSettingHandlers({
+      updateSettings: appSettings.updateSettings,
+    }),
     onDismissAdReviewTask: manageAdReview.dismissTask,
     metadataCollapsed: appSettings.metadataCollapsed,
     metadataRatio: appSettings.metadataRatio,
@@ -916,27 +1030,27 @@ export function useAppWorkspaceProps({
     onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
     onSaveAudioMetadata: metadataWriteBindings.applyAudioMetadata,
     onSearchByWorkTitle: (value) => {
-      applyMetadataFeatureSearch({ workTitle: value })
+      applyMetadataFeatureSearch({ workTitle: value });
     },
     onSearchByCircle: (value) => {
-      applyMetadataFeatureSearch({ circle: value })
+      applyMetadataFeatureSearch({ circle: value });
     },
     onSearchByAuthor: (value) => {
-      applyMetadataFeatureSearch({ author: value })
+      applyMetadataFeatureSearch({ author: value });
     },
     onSearchByTag: (value) => {
-      applyMetadataFeatureSearch({ tag: value })
+      applyMetadataFeatureSearch({ tag: value });
     },
     onMetadataTabChange: setMetadataTab,
     onSelectVideo: selectVideoFromBrowser,
     onSelectAudio: (audioId) => {
-      setSelectedAudioId(audioId)
-      appSettings.updateSettings({ sidebarFocus: 'main' })
+      setSelectedAudioId(audioId);
+      appSettings.updateSettings({ sidebarFocus: "main" });
     },
     onSelectAudioAndPlay: (audioId) => {
-      setSelectedAudioId(audioId)
-      requestMusicPlay()
-      appSettings.updateSettings({ sidebarFocus: 'main' })
+      setSelectedAudioId(audioId);
+      requestMusicPlay();
+      appSettings.updateSettings({ sidebarFocus: "main" });
     },
     onMusicCoverBindingChange: updateMusicCoverBinding,
     onMusicBookletBindingChange: updateMusicBookletBinding,
@@ -944,24 +1058,28 @@ export function useAppWorkspaceProps({
     onOpenMusicBooklet: jumpMusicToBooklet,
     onResetMusicBookletBinding: () => {
       if (!musicBookletState.albumRootPath) {
-        return
+        return;
       }
-      musicBookletBindings.resetBindingOverride(musicBookletState.albumRootPath)
+      musicBookletBindings.resetBindingOverride(
+        musicBookletState.albumRootPath,
+      );
     },
     setPlaylistIds,
     setDragVideoId,
-  })
+  });
 
   const onPrevPageForMain = adReviewResultsMode
     ? () => {
-        setAdReviewPageIndex((value) => Math.max(0, value - 1))
+        setAdReviewPageIndex((value) => Math.max(0, value - 1));
       }
-    : goPrevPage
+    : goPrevPage;
   const onNextPageForMain = adReviewResultsMode
     ? () => {
-        setAdReviewPageIndex((value) => Math.min(Math.max(0, imageTotalPagesForMain - 1), value + 1))
+        setAdReviewPageIndex((value) =>
+          Math.min(Math.max(0, imageTotalPagesForMain - 1), value + 1),
+        );
       }
-    : goNextPage
+    : goNextPage;
 
   const mainFooter = buildMainFooter({
     t,
@@ -970,13 +1088,15 @@ export function useAppWorkspaceProps({
     focusedImagePackage,
     focusedVideo: focusedVideoEffective,
     focusedAudio,
-    sidebarFocusedPath: selectedSidebarNodeId ? (effectiveSidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null) : null,
+    sidebarFocusedPath: selectedSidebarNodeId
+      ? (effectiveSidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null)
+      : null,
     nodeBrowseMode,
     normalizedPageIndex: normalizedPageIndexForMain,
     imageTotalPages: imageTotalPagesForMain,
     onPrevPage: onPrevPageForMain,
     onNextPage: onNextPageForMain,
-  })
+  });
 
   return {
     sidebarPanelProps,
@@ -987,7 +1107,7 @@ export function useAppWorkspaceProps({
     musicMainSectionProps,
     metadataPanelProps,
     mainFooter,
-  }
+  };
 }
 
-export type AppWorkspacePropsResult = ReturnType<typeof useAppWorkspaceProps>
+export type AppWorkspacePropsResult = ReturnType<typeof useAppWorkspaceProps>;

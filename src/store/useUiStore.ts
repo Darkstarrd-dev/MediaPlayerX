@@ -1,17 +1,17 @@
-import { create } from 'zustand'
+import { create } from "zustand";
 
-import { appSettingsSchema, type AppSettings } from '../contracts/settings'
+import { appSettingsSchema, type AppSettings } from "../contracts/settings";
 import {
   DEFAULT_SHORTCUTS,
   normalizeShortcutBinding,
   type ShortcutAction,
   type ShortcutMap,
-} from '../shortcuts'
+} from "../shortcuts";
 
-const DEFAULT_MUSIC_SHADER_ID = 'mcs-szb'
+const DEFAULT_MUSIC_SHADER_ID = "mcs-szb";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  mode: 'image',
+  mode: "image",
   vectorMode: false,
   settingsOpen: false,
   headerHeight: 56,
@@ -34,38 +34,41 @@ export const DEFAULT_SETTINGS: AppSettings = {
   metadataCollapsed: false,
   autoPlayEnabled: false,
   autoPlayInterval: 2,
-  searchField: 'all',
-  searchText: '',
+  searchField: "all",
+  searchText: "",
   vectorThreshold: 0.62,
-  sidebarFocus: 'main',
+  sidebarFocus: "main",
   imageRootNodeId: null,
   videoRootNodeId: null,
   musicRootNodeId: null,
-  uiLocale: 'auto',
-  themeId: 'parchment',
-  styleId: 'flush',
-  paletteId: 'parchment',
-  paletteMode: 'day',
-  paletteDayId: 'parchment',
-  paletteNightId: 'tokyo-night',
+  imageCollapsedFolderNodeIds: [],
+  videoCollapsedFolderNodeIds: [],
+  musicCollapsedFolderNodeIds: [],
+  uiLocale: "auto",
+  themeId: "parchment",
+  styleId: "flush",
+  paletteId: "parchment",
+  paletteMode: "day",
+  paletteDayId: "parchment",
+  paletteNightId: "tokyo-night",
   thumbnailQuality: 40,
   thumbnailWidth: 512,
   thumbnailGenerationConcurrency: 4,
   thumbnailResolveConcurrency: 8,
   musicVisualizerRenderLongEdgePx: 1280,
   musicVisualizerFpsCap: 60,
-  musicVisualizerSelectedShaderId: '',
-  musicVisualizerToneMapMode: 'aces',
+  musicVisualizerSelectedShaderId: "",
+  musicVisualizerToneMapMode: "aces",
   musicVisualizerToneMapExposure: 1,
   musicVisualizerToneMapStrength: 0.55,
   musicVisualizerShowFps: false,
-  musicVisualizerRenderer: 'gpu',
+  musicVisualizerRenderer: "gpu",
   musicVisualizerShaderSettingsById: {
     [DEFAULT_MUSIC_SHADER_ID]: {
       renderLongEdgePx: 1280,
       renderScaleCoeff: 2,
-      compositionMode: 'single',
-      layeredBackgroundShaderId: 'galaxy',
+      compositionMode: "single",
+      layeredBackgroundShaderId: "galaxy",
       layeredForegroundShaderId: DEFAULT_MUSIC_SHADER_ID,
       layeredBackgroundEnabled: true,
       layeredForegroundEnabled: true,
@@ -73,144 +76,149 @@ export const DEFAULT_SETTINGS: AppSettings = {
       layeredForegroundOffsetY: 0,
       layeredForegroundScale: 1,
       fpsCap: 60,
-      toneMapMode: 'aces',
+      toneMapMode: "aces",
       toneMapExposure: 1,
       toneMapStrength: 0.55,
       showFps: false,
-      renderer: 'gpu',
+      renderer: "gpu",
     },
   },
-  proxyServer: '',
-  ehentaiCookies: '',
-  adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
-  adReviewVisionModel: '',
+  proxyServer: "",
+  ehentaiCookies: "",
+  adReviewVisionEndpoint: "http://127.0.0.1:1234/v1/chat/completions",
+  adReviewVisionModel: "",
   adReviewVisionVerified: false,
-  adReviewStrategyMode: 'all',
+  adReviewStrategyMode: "all",
   adReviewHeadN: 8,
   adReviewTailN: 8,
   adReviewTailStopCleanStreak: 6,
   adReviewMaxConcurrency: 4,
-}
+};
 
 const SETTINGS_KEYS: (keyof AppSettings)[] = [
-  'mode',
-  'vectorMode',
-  'settingsOpen',
-  'headerHeight',
-  'settingsBackdropOpacity',
-  'settingsFontSize',
-  'sidebarRatio',
-  'sidebarMinWidth',
-  'layoutLocked',
-  'electronNativeChromeEnabled',
-  'sidebarFontSize',
-  'sidebarCountFontSize',
-  'sidebarIndentStep',
-  'sidebarVerticalGap',
-  'metadataRatio',
-  'workspaceBottomPanelHeight',
-  'fullscreenVideoControlsMaxWidth',
-  'thumbnailScale',
-  'thumbnailGap',
-  'showNamesOnly',
-  'metadataCollapsed',
-  'autoPlayEnabled',
-  'autoPlayInterval',
-  'searchField',
-  'searchText',
-  'vectorThreshold',
-  'sidebarFocus',
-  'imageRootNodeId',
-  'videoRootNodeId',
-  'musicRootNodeId',
-  'uiLocale',
-  'themeId',
-  'styleId',
-  'paletteId',
-  'paletteMode',
-  'paletteDayId',
-  'paletteNightId',
-  'thumbnailQuality',
-  'thumbnailWidth',
-  'thumbnailGenerationConcurrency',
-  'thumbnailResolveConcurrency',
-  'musicVisualizerRenderLongEdgePx',
-  'musicVisualizerFpsCap',
-  'musicVisualizerSelectedShaderId',
-  'musicVisualizerToneMapMode',
-  'musicVisualizerToneMapExposure',
-  'musicVisualizerToneMapStrength',
-  'musicVisualizerShowFps',
-  'musicVisualizerRenderer',
-  'musicVisualizerShaderSettingsById',
-  'proxyServer',
-  'ehentaiCookies',
-  'adReviewVisionEndpoint',
-  'adReviewVisionModel',
-  'adReviewVisionVerified',
-  'adReviewStrategyMode',
-  'adReviewHeadN',
-  'adReviewTailN',
-  'adReviewTailStopCleanStreak',
-  'adReviewMaxConcurrency',
-]
+  "mode",
+  "vectorMode",
+  "settingsOpen",
+  "headerHeight",
+  "settingsBackdropOpacity",
+  "settingsFontSize",
+  "sidebarRatio",
+  "sidebarMinWidth",
+  "layoutLocked",
+  "electronNativeChromeEnabled",
+  "sidebarFontSize",
+  "sidebarCountFontSize",
+  "sidebarIndentStep",
+  "sidebarVerticalGap",
+  "metadataRatio",
+  "workspaceBottomPanelHeight",
+  "fullscreenVideoControlsMaxWidth",
+  "thumbnailScale",
+  "thumbnailGap",
+  "showNamesOnly",
+  "metadataCollapsed",
+  "autoPlayEnabled",
+  "autoPlayInterval",
+  "searchField",
+  "searchText",
+  "vectorThreshold",
+  "sidebarFocus",
+  "imageRootNodeId",
+  "videoRootNodeId",
+  "musicRootNodeId",
+  "imageCollapsedFolderNodeIds",
+  "videoCollapsedFolderNodeIds",
+  "musicCollapsedFolderNodeIds",
+  "uiLocale",
+  "themeId",
+  "styleId",
+  "paletteId",
+  "paletteMode",
+  "paletteDayId",
+  "paletteNightId",
+  "thumbnailQuality",
+  "thumbnailWidth",
+  "thumbnailGenerationConcurrency",
+  "thumbnailResolveConcurrency",
+  "musicVisualizerRenderLongEdgePx",
+  "musicVisualizerFpsCap",
+  "musicVisualizerSelectedShaderId",
+  "musicVisualizerToneMapMode",
+  "musicVisualizerToneMapExposure",
+  "musicVisualizerToneMapStrength",
+  "musicVisualizerShowFps",
+  "musicVisualizerRenderer",
+  "musicVisualizerShaderSettingsById",
+  "proxyServer",
+  "ehentaiCookies",
+  "adReviewVisionEndpoint",
+  "adReviewVisionModel",
+  "adReviewVisionVerified",
+  "adReviewStrategyMode",
+  "adReviewHeadN",
+  "adReviewTailN",
+  "adReviewTailStopCleanStreak",
+  "adReviewMaxConcurrency",
+];
 
 function pickSettings(state: UiStore): AppSettings {
-  const settings = {} as AppSettings
+  const settings = {} as AppSettings;
   for (const key of SETTINGS_KEYS) {
-    ;(settings as Record<string, unknown>)[key] = state[key]
+    (settings as Record<string, unknown>)[key] = state[key];
   }
-  return settings
+  return settings;
 }
 
 interface UiStore extends AppSettings {
-  shortcuts: ShortcutMap
-  updateSettings: (patch: Partial<AppSettings>) => void
-  setShortcut: (action: ShortcutAction, binding: string) => void
-  resetShortcuts: () => void
+  shortcuts: ShortcutMap;
+  updateSettings: (patch: Partial<AppSettings>) => void;
+  setShortcut: (action: ShortcutAction, binding: string) => void;
+  resetShortcuts: () => void;
 }
 
 export const useUiStore = create<UiStore>((set, get) => ({
   ...DEFAULT_SETTINGS,
   shortcuts: { ...DEFAULT_SHORTCUTS },
   updateSettings: (patch) => {
-    const current = pickSettings(get())
+    const current = pickSettings(get());
     const candidate = {
       ...current,
       ...patch,
-    }
+    };
 
-    const parsed = appSettingsSchema.safeParse(candidate)
+    const parsed = appSettingsSchema.safeParse(candidate);
     if (!parsed.success) {
-      console.warn('设置更新失败，输入未通过校验', parsed.error.flatten())
-      return
+      console.warn("设置更新失败，输入未通过校验", parsed.error.flatten());
+      return;
     }
 
-    const hasChanges = SETTINGS_KEYS.some((key) => !Object.is(parsed.data[key], current[key]))
+    const hasChanges = SETTINGS_KEYS.some(
+      (key) => !Object.is(parsed.data[key], current[key]),
+    );
     if (!hasChanges) {
-      return
+      return;
     }
 
-    set(parsed.data)
+    set(parsed.data);
   },
   setShortcut: (action, binding) => {
-    const normalized = normalizeShortcutBinding(binding)
+    const normalized = normalizeShortcutBinding(binding);
     set((state) => ({
       shortcuts: {
         ...state.shortcuts,
         [action]: normalized,
       },
-    }))
+    }));
   },
   resetShortcuts: () => {
-    set({ shortcuts: { ...DEFAULT_SHORTCUTS } })
+    set({ shortcuts: { ...DEFAULT_SHORTCUTS } });
   },
-}))
+}));
 
 export function resetUiStoreState(): void {
   useUiStore.setState((state) => ({
     ...state,
     ...DEFAULT_SETTINGS,
     shortcuts: { ...DEFAULT_SHORTCUTS },
-  }))
+  }));
 }

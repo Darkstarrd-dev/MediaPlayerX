@@ -1,34 +1,36 @@
-import type { ComponentProps } from 'react'
-import { act, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ComponentProps } from "react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { I18nProvider } from '../i18n/I18nProvider'
-import type { AudioItem } from '../types'
-import MusicMainSection from './MusicMainSection'
+import { I18nProvider } from "../i18n/I18nProvider";
+import type { AudioItem } from "../types";
+import MusicMainSection from "./MusicMainSection";
 
 function makeAudio(id: string): AudioItem {
   return {
     id,
     fileName: `${id}.mp3`,
     absolutePath: `Z:/music/${id}.mp3`,
-    treePath: ['Z盘', 'music', `${id}.mp3`],
+    treePath: ["Z盘", "music", `${id}.mp3`],
     durationSec: 90,
     sizeMb: 6,
-    album: 'album',
-    author: 'author',
+    album: "album",
+    author: "author",
     trackTitle: id,
     mediaLocator: {
-      kind: 'filesystem',
+      kind: "filesystem",
       absolutePath: `Z:/music/${id}.mp3`,
-      extension: '.mp3',
-      mediaType: 'audio',
-      mimeType: 'audio/mpeg',
+      extension: ".mp3",
+      mediaType: "audio",
+      mimeType: "audio/mpeg",
     },
-  }
+  };
 }
 
-function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof MusicMainSection>> = {}): ComponentProps<typeof MusicMainSection> {
-  const audios = [makeAudio('track-1')]
+function createMusicMainSectionProps(
+  overrides: Partial<ComponentProps<typeof MusicMainSection>> = {},
+): ComponentProps<typeof MusicMainSection> {
+  const audios = [makeAudio("track-1")];
   return {
     active: true,
     interruptByVideoPlayback: false,
@@ -54,9 +56,9 @@ function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof Mu
     onJumpToBooklet: vi.fn(),
     audios,
     focusedAudio: audios[0],
-    focusedAudioSrc: 'mock://audio-1',
-    musicLoopMode: 'library',
-    musicLoopModeLabel: '全曲库循环',
+    focusedAudioSrc: "mock://audio-1",
+    musicLoopMode: "library",
+    musicLoopModeLabel: "全曲库循环",
     canPrevAudio: false,
     canNextAudio: true,
     fullscreenActive: false,
@@ -64,56 +66,56 @@ function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof Mu
     musicVisualizerShaderSettings: {
       renderLongEdgePx: 1280,
       renderScaleCoeff: 2,
-      compositionMode: 'single',
-      layeredBackgroundShaderId: 'galaxy',
-      layeredForegroundShaderId: 'mcs-szb',
+      compositionMode: "single",
+      layeredBackgroundShaderId: "galaxy",
+      layeredForegroundShaderId: "mcs-szb",
       layeredBackgroundEnabled: true,
       layeredForegroundEnabled: true,
       layeredForegroundOffsetX: 0,
       layeredForegroundOffsetY: 0,
       layeredForegroundScale: 1,
       fpsCap: 60,
-      toneMapMode: 'aces',
+      toneMapMode: "aces",
       toneMapExposure: 1,
       toneMapStrength: 0.55,
       showFps: false,
-      renderer: 'gpu',
+      renderer: "gpu",
     },
     musicVisualizerLayeredBackgroundShaderSettings: {
       renderLongEdgePx: 1280,
       renderScaleCoeff: 2,
-      compositionMode: 'single',
-      layeredBackgroundShaderId: 'galaxy',
-      layeredForegroundShaderId: 'mcs-szb',
+      compositionMode: "single",
+      layeredBackgroundShaderId: "galaxy",
+      layeredForegroundShaderId: "mcs-szb",
       layeredBackgroundEnabled: true,
       layeredForegroundEnabled: true,
       layeredForegroundOffsetX: 0,
       layeredForegroundOffsetY: 0,
       layeredForegroundScale: 1,
       fpsCap: 60,
-      toneMapMode: 'aces',
+      toneMapMode: "aces",
       toneMapExposure: 1,
       toneMapStrength: 0.55,
       showFps: false,
-      renderer: 'gpu',
+      renderer: "gpu",
     },
     musicVisualizerLayeredForegroundShaderSettings: {
       renderLongEdgePx: 1280,
       renderScaleCoeff: 2,
-      compositionMode: 'single',
-      layeredBackgroundShaderId: 'galaxy',
-      layeredForegroundShaderId: 'mcs-szb',
+      compositionMode: "single",
+      layeredBackgroundShaderId: "galaxy",
+      layeredForegroundShaderId: "mcs-szb",
       layeredBackgroundEnabled: true,
       layeredForegroundEnabled: true,
       layeredForegroundOffsetX: 0,
       layeredForegroundOffsetY: 0,
       layeredForegroundScale: 1,
       fpsCap: 60,
-      toneMapMode: 'aces',
+      toneMapMode: "aces",
       toneMapExposure: 1,
       toneMapStrength: 0.55,
       showFps: false,
-      renderer: 'gpu',
+      renderer: "gpu",
     },
     onMusicVisualizerShaderSettingsChange: vi.fn(),
     onMusicVisualizerLayerShaderIdChange: vi.fn(),
@@ -122,111 +124,131 @@ function createMusicMainSectionProps(overrides: Partial<ComponentProps<typeof Mu
     onNextAudio: vi.fn(),
     onCycleMusicLoopMode: vi.fn(),
     ...overrides,
-    musicVisualizerSelectedShaderId: overrides.musicVisualizerSelectedShaderId ?? 'default',
-  }
+    musicVisualizerSelectedShaderId:
+      overrides.musicVisualizerSelectedShaderId ?? "default",
+  };
 }
 
-function renderMusicMainSection(overrides: Partial<ComponentProps<typeof MusicMainSection>> = {}) {
+function renderMusicMainSection(
+  overrides: Partial<ComponentProps<typeof MusicMainSection>> = {},
+) {
   return render(
     <I18nProvider>
       <MusicMainSection {...createMusicMainSectionProps(overrides)} />
     </I18nProvider>,
-  )
+  );
 }
 
-describe('MusicMainSection', () => {
+describe("MusicMainSection", () => {
   beforeEach(() => {
-    vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(async () => undefined)
-    vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined)
-  })
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(
+      async () => undefined,
+    );
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(
+      () => undefined,
+    );
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('音乐工具栏显示专辑与作者，并渲染可视化区域', () => {
-    renderMusicMainSection()
+  it("音乐工具栏显示专辑与作者，并渲染可视化区域", () => {
+    renderMusicMainSection();
 
-    expect(screen.getByText('album / author (1 首)')).toBeInTheDocument()
-    expect(screen.getByLabelText('music visualizer')).toBeInTheDocument()
-  })
+    expect(screen.getByText("album / author (1 首)")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/music visualizer|音乐可视化/),
+    ).toBeInTheDocument();
+  });
 
-  it('支持播放控制、进度条与音量弹层调节', () => {
+  it("支持播放控制、进度条与音量弹层调节", () => {
     const { container } = renderMusicMainSection({
       canPrevAudio: true,
       onPrevAudio: vi.fn(),
       onNextAudio: vi.fn(),
-    })
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: '播放' }))
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalled()
+    fireEvent.click(screen.getByRole("button", { name: "播放" }));
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
 
-    fireEvent.change(screen.getByLabelText('音乐进度滑条'), { target: { value: '25' } })
+    fireEvent.change(screen.getByLabelText("音乐进度滑条"), {
+      target: { value: "25" },
+    });
 
-    const muteButton = screen.getByRole('button', { name: '静音' })
-    fireEvent.mouseEnter(muteButton.parentElement as HTMLElement)
-    const volumeRange = screen.getByLabelText('音量滑条')
-    fireEvent.change(volumeRange, { target: { value: '30' } })
+    const muteButton = screen.getByRole("button", { name: "静音" });
+    fireEvent.mouseEnter(muteButton.parentElement as HTMLElement);
+    const volumeRange = screen.getByLabelText("音量滑条");
+    fireEvent.change(volumeRange, { target: { value: "30" } });
 
-    const audioElement = container.querySelector('audio') as HTMLAudioElement
-    expect(audioElement.currentTime).toBe(25)
-    expect(audioElement.volume).toBeCloseTo(0.3, 3)
-  })
+    const audioElement = container.querySelector("audio") as HTMLAudioElement;
+    expect(audioElement.currentTime).toBe(25);
+    expect(audioElement.volume).toBeCloseTo(0.3, 3);
+  });
 
-  it('循环模式按钮可触发状态切换', () => {
-    const onCycleMusicLoopMode = vi.fn()
-    renderMusicMainSection({ onCycleMusicLoopMode })
+  it("循环模式按钮可触发状态切换", () => {
+    const onCycleMusicLoopMode = vi.fn();
+    renderMusicMainSection({ onCycleMusicLoopMode });
 
-    fireEvent.click(screen.getByRole('button', { name: '循环模式：全曲库循环' }))
-    expect(onCycleMusicLoopMode).toHaveBeenCalledTimes(1)
-  })
+    fireEvent.click(
+      screen.getByRole("button", { name: "循环模式：全曲库循环" }),
+    );
+    expect(onCycleMusicLoopMode).toHaveBeenCalledTimes(1);
+  });
 
-  it('单曲循环在播放结束后会从头继续播放', () => {
+  it("单曲循环在播放结束后会从头继续播放", () => {
     const { container } = renderMusicMainSection({
-      musicLoopMode: 'single',
-      musicLoopModeLabel: '单曲循环',
+      musicLoopMode: "single",
+      musicLoopModeLabel: "单曲循环",
       canNextAudio: false,
-    })
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: '播放' }))
-    const playCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
+    fireEvent.click(screen.getByRole("button", { name: "播放" }));
+    const playCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls
+      .length;
 
-    const audioElement = container.querySelector('audio') as HTMLAudioElement
-    fireEvent.ended(audioElement)
+    const audioElement = container.querySelector("audio") as HTMLAudioElement;
+    fireEvent.ended(audioElement);
 
-    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(playCallCount)
-  })
+    expect(
+      vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length,
+    ).toBeGreaterThan(playCallCount);
+  });
 
-  it('playRequestNonce 递增时会触发播放', () => {
-    const baseAudio = makeAudio('track-1')
+  it("playRequestNonce 递增时会触发播放", () => {
+    const baseAudio = makeAudio("track-1");
     const baseProps = createMusicMainSectionProps({
       audios: [baseAudio],
       focusedAudio: baseAudio,
-      focusedAudioSrc: 'mock://audio-1',
-    })
+      focusedAudioSrc: "mock://audio-1",
+    });
 
     const { rerender } = render(
       <I18nProvider>
         <MusicMainSection {...baseProps} playRequestNonce={0} />
       </I18nProvider>,
-    )
+    );
 
-    const initialPlayCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
+    const initialPlayCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock
+      .calls.length;
 
     rerender(
       <I18nProvider>
         <MusicMainSection {...baseProps} playRequestNonce={1} />
       </I18nProvider>,
-    )
+    );
 
-    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(initialPlayCallCount)
-  })
+    expect(
+      vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length,
+    ).toBeGreaterThan(initialPlayCallCount);
+  });
 
-  it('视频开始播放时会中断音乐播放', () => {
-    const { rerender } = renderMusicMainSection()
+  it("视频开始播放时会中断音乐播放", () => {
+    const { rerender } = renderMusicMainSection();
 
-    fireEvent.click(screen.getByRole('button', { name: '播放' }))
-    const pauseCallCount = vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length
+    fireEvent.click(screen.getByRole("button", { name: "播放" }));
+    const pauseCallCount = vi.mocked(HTMLMediaElement.prototype.pause).mock
+      .calls.length;
 
     rerender(
       <I18nProvider>
@@ -234,225 +256,311 @@ describe('MusicMainSection', () => {
           {...createMusicMainSectionProps({
             active: false,
             interruptByVideoPlayback: true,
-            audios: [makeAudio('track-1')],
-            focusedAudio: makeAudio('track-1'),
-            focusedAudioSrc: 'mock://audio-1',
+            audios: [makeAudio("track-1")],
+            focusedAudio: makeAudio("track-1"),
+            focusedAudioSrc: "mock://audio-1",
           })}
         />
       </I18nProvider>,
-    )
+    );
 
-    expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length).toBeGreaterThan(pauseCallCount)
-  })
+    expect(
+      vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length,
+    ).toBeGreaterThan(pauseCallCount);
+  });
 
-  it('播放中切歌时资源短暂置空后恢复会自动续播', () => {
-    const track1 = makeAudio('track-1')
-    const track2 = makeAudio('track-2')
+  it("播放中切歌时资源短暂置空后恢复会自动续播", () => {
+    const track1 = makeAudio("track-1");
+    const track2 = makeAudio("track-2");
 
     const baseProps = createMusicMainSectionProps({
       audios: [track1, track2],
       canPrevAudio: true,
       canNextAudio: true,
       focusedAudio: track1,
-      focusedAudioSrc: 'mock://audio-track-1',
-    })
+      focusedAudioSrc: "mock://audio-track-1",
+    });
 
     const { rerender } = render(
       <I18nProvider>
         <MusicMainSection {...baseProps} />
       </I18nProvider>,
-    )
+    );
 
-    fireEvent.click(screen.getByRole('button', { name: '播放' }))
-    const playCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
+    fireEvent.click(screen.getByRole("button", { name: "播放" }));
+    const playCallCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls
+      .length;
 
     rerender(
       <I18nProvider>
-        <MusicMainSection {...baseProps} focusedAudio={track2} focusedAudioSrc={null} />
+        <MusicMainSection
+          {...baseProps}
+          focusedAudio={track2}
+          focusedAudioSrc={null}
+        />
       </I18nProvider>,
-    )
+    );
     rerender(
       <I18nProvider>
-        <MusicMainSection {...baseProps} focusedAudio={track2} focusedAudioSrc="mock://audio-track-2" />
+        <MusicMainSection
+          {...baseProps}
+          focusedAudio={track2}
+          focusedAudioSrc="mock://audio-track-2"
+        />
       </I18nProvider>,
-    )
+    );
 
-    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length).toBeGreaterThan(playCallCount)
-  })
+    expect(
+      vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length,
+    ).toBeGreaterThan(playCallCount);
+  });
 
-  it('全屏按钮可切换音乐可视化全屏', () => {
-    const onToggleFullscreen = vi.fn()
-    renderMusicMainSection({ onToggleFullscreen })
+  it("全屏按钮可切换音乐可视化全屏", () => {
+    const onToggleFullscreen = vi.fn();
+    renderMusicMainSection({ onToggleFullscreen });
 
-    fireEvent.click(screen.getByRole('button', { name: '全屏' }))
-    expect(onToggleFullscreen).toHaveBeenCalledTimes(1)
-  })
+    fireEvent.click(screen.getByRole("button", { name: "全屏" }));
+    expect(onToggleFullscreen).toHaveBeenCalledTimes(1);
+  });
 
-  it('全屏时使用底部浮动控制条并隐藏右上角退出按钮', () => {
-    const { container } = renderMusicMainSection({ fullscreenActive: true })
+  it("全屏时使用底部浮动控制条并隐藏右上角退出按钮", () => {
+    const { container } = renderMusicMainSection({ fullscreenActive: true });
 
-    const visualizer = screen.getByLabelText('music visualizer')
-    expect((visualizer as HTMLElement).querySelector('.music-controls-shell.is-fullscreen-floating')).not.toBeNull()
-    expect(container.querySelector('.music-visualizer-exit-fullscreen-btn')).toBeNull()
-  })
+    const visualizer = screen.getByLabelText(/music visualizer|音乐可视化/);
+    expect(
+      (visualizer as HTMLElement).querySelector(
+        ".music-controls-shell.is-fullscreen-floating",
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(".music-visualizer-exit-fullscreen-btn"),
+    ).toBeNull();
+  });
 
-  it('全屏控制条在移出后淡出隐藏，移入后淡入显示', () => {
-    vi.useFakeTimers()
-    const { container } = renderMusicMainSection({ fullscreenActive: true })
+  it("全屏控制条在移出后淡出隐藏，移入后淡入显示", () => {
+    vi.useFakeTimers();
+    const { container } = renderMusicMainSection({ fullscreenActive: true });
 
-    const shell = container.querySelector('.music-controls-shell.is-fullscreen-floating') as HTMLElement
-    expect(shell).toBeInTheDocument()
-    expect(shell.hidden).toBe(false)
-    expect(shell.className).toContain('is-visible')
+    const shell = container.querySelector(
+      ".music-controls-shell.is-fullscreen-floating",
+    ) as HTMLElement;
+    expect(shell).toBeInTheDocument();
+    expect(shell.hidden).toBe(false);
+    expect(shell.className).toContain("is-visible");
 
-    fireEvent.mouseLeave(shell)
-    expect(shell.className).not.toContain('is-visible')
+    fireEvent.mouseLeave(shell);
+    expect(shell.className).not.toContain("is-visible");
 
     act(() => {
-      vi.advanceTimersByTime(300)
-    })
-    expect(shell.hidden).toBe(true)
+      vi.advanceTimersByTime(300);
+    });
+    expect(shell.hidden).toBe(true);
 
-    const hotzone = container.querySelector('.music-controls-fullscreen-hotzone') as HTMLElement
-    fireEvent.mouseEnter(hotzone)
+    const hotzone = container.querySelector(
+      ".music-controls-fullscreen-hotzone",
+    ) as HTMLElement;
+    fireEvent.mouseEnter(hotzone);
 
     act(() => {
-      vi.advanceTimersByTime(20)
-    })
-    expect(shell.hidden).toBe(false)
-    expect(shell.className).toContain('is-visible')
+      vi.advanceTimersByTime(20);
+    });
+    expect(shell.hidden).toBe(false);
+    expect(shell.className).toContain("is-visible");
 
-    vi.useRealTimers()
-  })
+    vi.useRealTimers();
+  });
 
-  it('支持在控制栏打开 Shader 列表', () => {
-    const { container } = renderMusicMainSection()
+  it("支持在控制栏打开 Shader 列表", () => {
+    const { container } = renderMusicMainSection();
 
-    const shaderButton = screen.getByRole('button', { name: /^Shader：/ })
-    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
+    const shaderButton = screen.getByRole("button", { name: /^Shader：/ });
+    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement);
 
-    expect(screen.getByRole('button', { name: 'Default' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Starfield Background' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Galaxy Background' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Escape Background' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Tissue Background' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Galaxy Foreground' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Starfield Foreground' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Fungi' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Nebula' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Rain Drips' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Voxel' })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Default" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Starfield Background" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Galaxy Background" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Escape Background" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Tissue Background" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Galaxy Foreground" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Starfield Foreground" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Fungi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Nebula" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Rain Drips" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Voxel" })).toBeInTheDocument();
 
-    const controlsShell = container.querySelector('.music-controls-shell') as HTMLElement
-    fireEvent.mouseLeave(controlsShell)
+    const controlsShell = container.querySelector(
+      ".music-controls-shell",
+    ) as HTMLElement;
+    fireEvent.mouseLeave(controlsShell);
 
-    expect(screen.queryByRole('button', { name: 'Default' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Starfield Background' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Galaxy Background' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Escape Background' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Tissue Background' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Galaxy Foreground' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Starfield Foreground' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Fungi' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Nebula' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Rain Drips' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Voxel' })).toBeNull()
-  })
+    expect(screen.queryByRole("button", { name: "Default" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Starfield Background" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Galaxy Background" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Escape Background" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Tissue Background" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Galaxy Foreground" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Starfield Foreground" }),
+    ).toBeNull();
+    expect(screen.queryByRole("button", { name: "Fungi" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Nebula" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Rain Drips" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Voxel" })).toBeNull();
+  });
 
-  it('支持在控制栏打开 Shader 设置并更新当前 Shader 配置', () => {
-    const onMusicVisualizerShaderSettingsChange = vi.fn()
-    const onMusicVisualizerLayerShaderSettingsChange = vi.fn()
+  it("支持在控制栏打开 Shader 设置并更新当前 Shader 配置", () => {
+    const onMusicVisualizerShaderSettingsChange = vi.fn();
+    const onMusicVisualizerLayerShaderSettingsChange = vi.fn();
     renderMusicMainSection({
       onMusicVisualizerShaderSettingsChange,
       onMusicVisualizerLayerShaderSettingsChange,
-    })
+    });
 
-    const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
-    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
+    const settingsButton = screen.getByRole("button", { name: "Shader 设置" });
+    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement);
 
-    const renderLongEdgeInput = screen.getByLabelText('渲染长边分辨率')
-    fireEvent.change(renderLongEdgeInput, { target: { value: '5000' } })
-    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
-    fireEvent.keyDown(renderLongEdgeInput, { key: 'Enter', code: 'Enter' })
+    const renderLongEdgeInput = screen.getByLabelText("渲染长边分辨率");
+    fireEvent.change(renderLongEdgeInput, { target: { value: "5000" } });
+    expect(onMusicVisualizerShaderSettingsChange).not.toHaveBeenCalledWith({
+      renderLongEdgePx: 4096,
+    });
+    fireEvent.keyDown(renderLongEdgeInput, { key: "Enter", code: "Enter" });
 
-    const foregroundScaleCoeffSlider = screen.getByLabelText(/前景分辨率系数/)
-    fireEvent.change(foregroundScaleCoeffSlider, { target: { value: '3.6' } })
-    expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith('foreground', { renderScaleCoeff: 3.6 })
-    fireEvent.mouseUp(foregroundScaleCoeffSlider)
+    const foregroundScaleCoeffSlider = screen.getByLabelText(/前景分辨率系数/);
+    fireEvent.change(foregroundScaleCoeffSlider, { target: { value: "3.6" } });
+    expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith(
+      "foreground",
+      { renderScaleCoeff: 3.6 },
+    );
+    fireEvent.mouseUp(foregroundScaleCoeffSlider);
 
-    const backgroundScaleCoeffSlider = screen.getByLabelText(/背景分辨率系数/)
-    fireEvent.change(backgroundScaleCoeffSlider, { target: { value: '1.8' } })
-    expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith('background', { renderScaleCoeff: 1.8 })
-    fireEvent.mouseUp(backgroundScaleCoeffSlider)
+    const backgroundScaleCoeffSlider = screen.getByLabelText(/背景分辨率系数/);
+    fireEvent.change(backgroundScaleCoeffSlider, { target: { value: "1.8" } });
+    expect(onMusicVisualizerLayerShaderSettingsChange).not.toHaveBeenCalledWith(
+      "background",
+      { renderScaleCoeff: 1.8 },
+    );
+    fireEvent.mouseUp(backgroundScaleCoeffSlider);
 
-    fireEvent.change(screen.getByLabelText('帧率限制'), { target: { value: '120' } })
-    fireEvent.change(screen.getByLabelText(/Tone Mapping 曝光/), { target: { value: '1.4' } })
-    fireEvent.click(screen.getByLabelText('显示 FPS 调试信息'))
+    fireEvent.change(screen.getByLabelText("帧率限制"), {
+      target: { value: "120" },
+    });
+    fireEvent.change(screen.getByLabelText(/Tone Mapping 曝光/), {
+      target: { value: "1.4" },
+    });
+    fireEvent.click(screen.getByLabelText("显示 FPS 调试信息"));
 
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ renderLongEdgePx: 4096 })
-    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('foreground', { renderScaleCoeff: 3.6 })
-    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith('background', { renderScaleCoeff: 1.8 })
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ fpsCap: 120 })
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ toneMapExposure: 1.4 })
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ showFps: true })
-  })
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({
+      renderLongEdgePx: 4096,
+    });
+    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith(
+      "foreground",
+      { renderScaleCoeff: 3.6 },
+    );
+    expect(onMusicVisualizerLayerShaderSettingsChange).toHaveBeenCalledWith(
+      "background",
+      { renderScaleCoeff: 1.8 },
+    );
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({
+      fpsCap: 120,
+    });
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({
+      toneMapExposure: 1.4,
+    });
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({
+      showFps: true,
+    });
+  });
 
-  it('Shader 列表支持前景/背景目标切换与目标开关', () => {
-    const onMusicVisualizerLayerShaderIdChange = vi.fn()
-    const onMusicVisualizerShaderSettingsChange = vi.fn()
+  it("Shader 列表支持前景/背景目标切换与目标开关", () => {
+    const onMusicVisualizerLayerShaderIdChange = vi.fn();
+    const onMusicVisualizerShaderSettingsChange = vi.fn();
     renderMusicMainSection({
       onMusicVisualizerLayerShaderIdChange,
       onMusicVisualizerShaderSettingsChange,
-    })
+    });
 
-    const shaderButton = screen.getByRole('button', { name: /^Shader：/ })
-    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
+    const shaderButton = screen.getByRole("button", { name: /^Shader：/ });
+    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement);
 
-    const switchButton = screen.getByRole('button', { name: '切换前景/背景选择' })
-    const toggleButton = screen.getByRole('button', { name: '切换当前层开关' })
+    const switchButton = screen.getByRole("button", {
+      name: "切换前景/背景选择",
+    });
+    const toggleButton = screen.getByRole("button", { name: "切换当前层开关" });
 
-    expect(switchButton).toHaveTextContent('F')
-    expect(toggleButton).toHaveTextContent('on')
+    expect(switchButton).toHaveTextContent("F");
+    expect(toggleButton).toHaveTextContent("on");
 
-    fireEvent.click(switchButton)
-    expect(switchButton).toHaveTextContent('B')
+    fireEvent.click(switchButton);
+    expect(switchButton).toHaveTextContent("B");
 
-    fireEvent.click(toggleButton)
-    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({ layeredBackgroundEnabled: false })
+    fireEvent.click(toggleButton);
+    expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({
+      layeredBackgroundEnabled: false,
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Voxel' }))
-    expect(onMusicVisualizerLayerShaderIdChange).toHaveBeenCalledWith('background', 'voxel')
-  })
+    fireEvent.click(screen.getByRole("button", { name: "Voxel" }));
+    expect(onMusicVisualizerLayerShaderIdChange).toHaveBeenCalledWith(
+      "background",
+      "voxel",
+    );
+  });
 
-  it('Shader 参数面板在切换列表目标层后仍显示统一参数', () => {
-    renderMusicMainSection()
+  it("Shader 参数面板在切换列表目标层后仍显示统一参数", () => {
+    renderMusicMainSection();
 
-    const shaderButton = screen.getByRole('button', { name: /^Shader：/ })
-    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
+    const shaderButton = screen.getByRole("button", { name: /^Shader：/ });
+    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement);
 
-    const switchButton = screen.getByRole('button', { name: '切换前景/背景选择' })
-    expect(switchButton).toHaveTextContent('F')
+    const switchButton = screen.getByRole("button", {
+      name: "切换前景/背景选择",
+    });
+    expect(switchButton).toHaveTextContent("F");
 
-    const settingsButton = screen.getByRole('button', { name: 'Shader 设置' })
-    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
-    expect(screen.getByText('Shader 参数')).toBeInTheDocument()
-    expect(screen.getByLabelText(/前景分辨率系数/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/背景分辨率系数/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/前景X偏移/)).toBeInTheDocument()
+    const settingsButton = screen.getByRole("button", { name: "Shader 设置" });
+    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement);
+    expect(screen.getByText("Shader 参数")).toBeInTheDocument();
+    expect(screen.getByLabelText(/前景分辨率系数/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/背景分辨率系数/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/前景X偏移/)).toBeInTheDocument();
 
-    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement)
-    fireEvent.click(switchButton)
-    expect(switchButton).toHaveTextContent('B')
+    fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement);
+    fireEvent.click(switchButton);
+    expect(switchButton).toHaveTextContent("B");
 
-    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement)
+    fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement);
 
-    expect(screen.getByText('Shader 参数')).toBeInTheDocument()
-    expect(screen.getByLabelText(/前景分辨率系数/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/背景分辨率系数/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/前景X偏移/)).toBeInTheDocument()
-  })
+    expect(screen.getByText("Shader 参数")).toBeInTheDocument();
+    expect(screen.getByLabelText(/前景分辨率系数/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/背景分辨率系数/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/前景X偏移/)).toBeInTheDocument();
+  });
 
-  it('仅开启单层时按钮标签显示该层 shader，双层关闭时显示透明', () => {
+  it("仅开启单层时按钮标签显示该层 shader，双层关闭时显示透明", () => {
     const { rerender } = render(
       <I18nProvider>
         <MusicMainSection
@@ -461,14 +569,16 @@ describe('MusicMainSection', () => {
               ...createMusicMainSectionProps().musicVisualizerShaderSettings,
               layeredBackgroundEnabled: false,
               layeredForegroundEnabled: true,
-              layeredForegroundShaderId: 'voxel',
+              layeredForegroundShaderId: "voxel",
             },
           })}
         />
       </I18nProvider>,
-    )
+    );
 
-    expect(screen.getByRole('button', { name: /^Shader：Voxel/ })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /^Shader：Voxel/ }),
+    ).toBeInTheDocument();
 
     rerender(
       <I18nProvider>
@@ -482,10 +592,14 @@ describe('MusicMainSection', () => {
           })}
         />
       </I18nProvider>,
-    )
+    );
 
-    expect(screen.getByRole('button', { name: /^Shader：透明/ })).toBeInTheDocument()
-    const canvas = screen.getByLabelText('music visualizer').querySelector('canvas') as HTMLCanvasElement
-    expect(canvas.style.opacity).toBe('0')
-  })
-})
+    expect(
+      screen.getByRole("button", { name: /^Shader：透明/ }),
+    ).toBeInTheDocument();
+    const canvas = screen
+      .getByLabelText(/music visualizer|音乐可视化/)
+      .querySelector("canvas") as HTMLCanvasElement;
+    expect(canvas.style.opacity).toBe("0");
+  });
+});

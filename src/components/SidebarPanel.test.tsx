@@ -1,27 +1,27 @@
-import type { ComponentProps } from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import type { ComponentProps } from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-import type { SidebarNode } from '../types'
-import SidebarPanel from './SidebarPanel'
+import type { SidebarNode } from "../types";
+import SidebarPanel from "./SidebarPanel";
 
 const AUDIO_TREE_FIXTURE: SidebarNode[] = [
   {
-    id: 'folder:X盘',
-    label: 'X盘',
-    kind: 'folder',
-    pathKey: 'X盘',
+    id: "folder:X盘",
+    label: "X盘",
+    kind: "folder",
+    pathKey: "X盘",
     descendantNodeCount: 1,
     directAudioCount: 0,
     descendantAudioFolderCount: 1,
-    audioId: 'audio-1',
+    audioId: "audio-1",
     children: [
       {
-        id: 'folder:X盘/Album A',
-        label: 'Album A',
-        kind: 'folder',
-        audioId: 'audio-1',
-        pathKey: 'X盘/Album A',
+        id: "folder:X盘/Album A",
+        label: "Album A",
+        kind: "folder",
+        audioId: "audio-1",
+        pathKey: "X盘/Album A",
         descendantNodeCount: 2,
         directAudioCount: 2,
         descendantAudioFolderCount: 1,
@@ -29,28 +29,28 @@ const AUDIO_TREE_FIXTURE: SidebarNode[] = [
       },
     ],
   },
-]
+];
 
 const IMAGE_TREE_COLLAPSIBLE_FIXTURE: SidebarNode[] = [
   {
-    id: 'folder:图库',
-    label: '图库',
-    kind: 'folder',
-    pathKey: '图库',
-    imageNodeType: 'folder',
+    id: "folder:图库",
+    label: "图库",
+    kind: "folder",
+    pathKey: "图库",
+    imageNodeType: "folder",
     directImageCount: 0,
     descendantNodeCount: 2,
     descendantPackageCount: 1,
     descendantImageCount: 6,
     children: [
       {
-        id: 'package:图库/Vol.1',
-        label: 'Vol.1',
-        kind: 'package',
-        packageId: 'pkg-1',
-        imageSourceId: 'pkg-1',
-        pathKey: '图库/Vol.1',
-        imageNodeType: 'package',
+        id: "package:图库/Vol.1",
+        label: "Vol.1",
+        kind: "package",
+        packageId: "pkg-1",
+        imageSourceId: "pkg-1",
+        pathKey: "图库/Vol.1",
+        imageNodeType: "package",
         directImageCount: 6,
         descendantNodeCount: 1,
         descendantPackageCount: 1,
@@ -59,29 +59,29 @@ const IMAGE_TREE_COLLAPSIBLE_FIXTURE: SidebarNode[] = [
       },
     ],
   },
-]
+];
 
 const IMAGE_TREE_DIRECTORY_FIXTURE: SidebarNode[] = [
   {
-    id: 'folder:目录源',
-    label: '目录源',
-    kind: 'folder',
-    pathKey: '目录源',
-    imageNodeType: 'directory',
-    imageSourceId: 'dir-1',
+    id: "folder:目录源",
+    label: "目录源",
+    kind: "folder",
+    pathKey: "目录源",
+    imageNodeType: "directory",
+    imageSourceId: "dir-1",
     directImageCount: 5,
     descendantNodeCount: 2,
     descendantPackageCount: 1,
     descendantImageCount: 8,
     children: [
       {
-        id: 'package:目录源/Extra',
-        label: 'Extra',
-        kind: 'package',
-        packageId: 'pkg-extra',
-        imageSourceId: 'pkg-extra',
-        pathKey: '目录源/Extra',
-        imageNodeType: 'package',
+        id: "package:目录源/Extra",
+        label: "Extra",
+        kind: "package",
+        packageId: "pkg-extra",
+        imageSourceId: "pkg-extra",
+        pathKey: "目录源/Extra",
+        imageNodeType: "package",
         directImageCount: 3,
         descendantNodeCount: 1,
         descendantPackageCount: 1,
@@ -90,13 +90,15 @@ const IMAGE_TREE_DIRECTORY_FIXTURE: SidebarNode[] = [
       },
     ],
   },
-]
+];
 
-function renderMusicSidebar(overrides: Partial<ComponentProps<typeof SidebarPanel>> = {}) {
-  const onSelectAudio = vi.fn()
-  const onSelectNode = vi.fn()
-  const onToggleManageNode = vi.fn()
-  const onCheckManageNode = vi.fn()
+function renderMusicSidebar(
+  overrides: Partial<ComponentProps<typeof SidebarPanel>> = {},
+) {
+  const onSelectAudio = vi.fn();
+  const onSelectNode = vi.fn();
+  const onToggleManageNode = vi.fn();
+  const onCheckManageNode = vi.fn();
 
   render(
     <SidebarPanel
@@ -136,18 +138,21 @@ function renderMusicSidebar(overrides: Partial<ComponentProps<typeof SidebarPane
       onCheckManageNode={onCheckManageNode}
       {...overrides}
     />,
-  )
+  );
 
   return {
     onSelectAudio,
     onSelectNode,
     onToggleManageNode,
     onCheckManageNode,
-  }
+  };
 }
 
-function renderImageSidebar(nodes: SidebarNode[]) {
-  render(
+function renderImageSidebar(
+  nodes: SidebarNode[],
+  overrides: Partial<ComponentProps<typeof SidebarPanel>> = {},
+) {
+  return render(
     <SidebarPanel
       mode="image"
       sidebarFocus="sidebar"
@@ -182,8 +187,9 @@ function renderImageSidebar(nodes: SidebarNode[]) {
       onToggleVideoPlaylist={vi.fn()}
       onToggleAudioPlaylist={vi.fn()}
       onToggleManageNode={vi.fn()}
+      {...overrides}
     />,
-  )
+  );
 }
 
 function renderVideoSidebar(nodes: SidebarNode[]) {
@@ -223,118 +229,223 @@ function renderVideoSidebar(nodes: SidebarNode[]) {
       onToggleAudioPlaylist={vi.fn()}
       onToggleManageNode={vi.fn()}
     />,
-  )
+  );
 }
 
-describe('SidebarPanel music interactions', () => {
-  it('点击音乐文件夹节点会定位到该节点下第一首音频', () => {
-    const { onSelectAudio, onSelectNode } = renderMusicSidebar()
+describe("SidebarPanel music interactions", () => {
+  it("点击音乐文件夹节点会定位到该节点下第一首音频", () => {
+    const { onSelectAudio, onSelectNode } = renderMusicSidebar();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Album A' }))
+    fireEvent.click(screen.getByRole("button", { name: "Album A" }));
 
-    expect(onSelectNode).toHaveBeenCalledWith('folder:X盘/Album A')
-    expect(onSelectAudio).toHaveBeenCalledWith('audio-1')
-  })
+    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
+    expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
+  });
 
-  it('音乐模式目录节点显示文件夹数，曲目目录显示曲目数', () => {
-    renderMusicSidebar()
+  it("音乐模式目录节点显示文件夹数，曲目目录显示曲目数", () => {
+    renderMusicSidebar();
 
-    expect(screen.getByLabelText('夹 1')).toBeInTheDocument()
-    expect(screen.getByLabelText('曲 2')).toBeInTheDocument()
-  })
+    expect(screen.getByLabelText("夹 1")).toBeInTheDocument();
+    expect(screen.getByLabelText("曲 2")).toBeInTheDocument();
+  });
 
-  it('元数据管理模式下保留管理样式并允许导航同步', () => {
-    const { onSelectAudio, onSelectNode, onToggleManageNode } = renderMusicSidebar({ metadataManageMode: true })
+  it("元数据管理模式下保留管理样式并允许导航同步", () => {
+    const { onSelectAudio, onSelectNode, onToggleManageNode } =
+      renderMusicSidebar({ metadataManageMode: true });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Album A' }))
+    fireEvent.click(screen.getByRole("button", { name: "Album A" }));
 
-    expect(onToggleManageNode).toHaveBeenCalledWith('folder:X盘/Album A', false)
-    expect(onSelectNode).toHaveBeenCalledWith('folder:X盘/Album A')
-    expect(onSelectAudio).toHaveBeenCalledWith('audio-1')
-    expect(document.querySelectorAll('.sidebar-row.is-manage').length).toBeGreaterThan(0)
-  })
+    expect(onToggleManageNode).toHaveBeenCalledWith(
+      "folder:X盘/Album A",
+      false,
+    );
+    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
+    expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
+    expect(
+      document.querySelectorAll(".sidebar-row.is-manage").length,
+    ).toBeGreaterThan(0);
+  });
 
-  it('管理模式下点击节点标签仍会驱动导航，不再拦截为勾选', () => {
-    const { onSelectAudio, onSelectNode, onToggleManageNode } = renderMusicSidebar({ manageMode: true })
+  it("管理模式下点击节点标签仍会驱动导航，不再拦截为勾选", () => {
+    const { onSelectAudio, onSelectNode, onToggleManageNode } =
+      renderMusicSidebar({ manageMode: true });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Album A' }))
+    fireEvent.click(screen.getByRole("button", { name: "Album A" }));
 
-    expect(onToggleManageNode).not.toHaveBeenCalled()
-    expect(onSelectNode).toHaveBeenCalledWith('folder:X盘/Album A')
-    expect(onSelectAudio).toHaveBeenCalledWith('audio-1')
-  })
+    expect(onToggleManageNode).not.toHaveBeenCalled();
+    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
+    expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
+  });
 
-  it('管理模式下节点左侧显示 checker，并支持 shift 点击勾选', () => {
-    const { onToggleManageNode } = renderMusicSidebar({ manageMode: true })
+  it("管理模式下节点左侧显示 checker，并支持 shift 点击勾选", () => {
+    const { onToggleManageNode } = renderMusicSidebar({ manageMode: true });
 
-    const checkboxes = screen.getAllByRole('checkbox', { name: /manage-node-/ })
-    expect(checkboxes).toHaveLength(2)
+    const checkboxes = screen.getAllByRole("checkbox", {
+      name: /manage-node-/,
+    });
+    expect(checkboxes).toHaveLength(2);
 
-    fireEvent.click(checkboxes[1], { shiftKey: true })
-    expect(onToggleManageNode).toHaveBeenCalledWith('folder:X盘/Album A', true)
-  })
+    fireEvent.click(checkboxes[1], { shiftKey: true });
+    expect(onToggleManageNode).toHaveBeenCalledWith("folder:X盘/Album A", true);
+  });
 
-  it('音乐模式目录节点支持双击折叠/展开', () => {
-    renderMusicSidebar()
+  it("音乐模式目录节点支持双击折叠/展开", () => {
+    renderMusicSidebar();
 
-    expect(screen.getByRole('button', { name: 'Album A' })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Album A" })).toBeInTheDocument();
 
-    fireEvent.doubleClick(screen.getByRole('button', { name: 'X盘' }))
-    expect(screen.queryByRole('button', { name: 'Album A' })).toBeNull()
+    fireEvent.doubleClick(screen.getByRole("button", { name: "X盘" }));
+    expect(screen.queryByRole("button", { name: "Album A" })).toBeNull();
 
-    fireEvent.doubleClick(screen.getByRole('button', { name: 'X盘' }))
-    expect(screen.getByRole('button', { name: 'Album A' })).toBeInTheDocument()
-  })
-})
+    fireEvent.doubleClick(screen.getByRole("button", { name: "X盘" }));
+    expect(screen.getByRole("button", { name: "Album A" })).toBeInTheDocument();
+  });
+});
 
-describe('SidebarPanel image collapse interactions', () => {
-  it('双击无自身图片的目录节点可折叠/展开子节点', () => {
-    renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE)
+describe("SidebarPanel image collapse interactions", () => {
+  it("双击无自身图片的目录节点可折叠/展开子节点", () => {
+    renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE);
 
-    expect(screen.getByRole('button', { name: 'Vol.1' })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Vol.1" })).toBeInTheDocument();
 
-    fireEvent.doubleClick(screen.getByRole('button', { name: '图库' }))
-    expect(screen.queryByRole('button', { name: 'Vol.1' })).toBeNull()
+    fireEvent.doubleClick(screen.getByRole("button", { name: "图库" }));
+    expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
 
-    fireEvent.doubleClick(screen.getByRole('button', { name: '图库' }))
-    expect(screen.getByRole('button', { name: 'Vol.1' })).toBeInTheDocument()
-  })
+    fireEvent.doubleClick(screen.getByRole("button", { name: "图库" }));
+    expect(screen.getByRole("button", { name: "Vol.1" })).toBeInTheDocument();
+  });
 
-  it('自身包含图片的目录节点双击不触发折叠', () => {
-    renderImageSidebar(IMAGE_TREE_DIRECTORY_FIXTURE)
+  it("自身包含图片的目录节点双击不触发折叠", () => {
+    renderImageSidebar(IMAGE_TREE_DIRECTORY_FIXTURE);
 
-    fireEvent.doubleClick(screen.getByRole('button', { name: '目录源' }))
-    expect(screen.getByRole('button', { name: 'Extra' })).toBeInTheDocument()
-  })
+    fireEvent.doubleClick(screen.getByRole("button", { name: "目录源" }));
+    expect(screen.getByRole("button", { name: "Extra" })).toBeInTheDocument();
+  });
 
-  it('视频模式目录节点支持双击折叠/展开', () => {
+  it("视频模式目录节点支持双击折叠/展开", () => {
     const videoTree: SidebarNode[] = [
       {
-        id: 'folder:Videos',
-        label: 'Videos',
-        kind: 'folder',
-        pathKey: 'Videos',
+        id: "folder:Videos",
+        label: "Videos",
+        kind: "folder",
+        pathKey: "Videos",
         children: [
           {
-            id: 'video:Videos/clip.mp4',
-            label: 'clip.mp4',
-            kind: 'video',
-            videoId: 'video-1',
-            pathKey: 'Videos/clip.mp4',
+            id: "video:Videos/clip.mp4",
+            label: "clip.mp4",
+            kind: "video",
+            videoId: "video-1",
+            pathKey: "Videos/clip.mp4",
             children: [],
           },
         ],
       },
-    ]
+    ];
 
-    renderVideoSidebar(videoTree)
+    renderVideoSidebar(videoTree);
 
-    expect(screen.getByRole('button', { name: 'clip.mp4' })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "clip.mp4" }),
+    ).toBeInTheDocument();
 
-    fireEvent.doubleClick(screen.getByRole('button', { name: 'Videos' }))
-    expect(screen.queryByRole('button', { name: 'clip.mp4' })).toBeNull()
+    fireEvent.doubleClick(screen.getByRole("button", { name: "Videos" }));
+    expect(screen.queryByRole("button", { name: "clip.mp4" })).toBeNull();
 
-    fireEvent.doubleClick(screen.getByRole('button', { name: 'Videos' }))
-    expect(screen.getByRole('button', { name: 'clip.mp4' })).toBeInTheDocument()
-  })
-})
+    fireEvent.doubleClick(screen.getByRole("button", { name: "Videos" }));
+    expect(
+      screen.getByRole("button", { name: "clip.mp4" }),
+    ).toBeInTheDocument();
+  });
+
+  it("受控折叠状态在临时树切换后保持，不会因模式返回被重置", () => {
+    const onSetCollapsedFolderNodeIds = vi.fn();
+    const { rerender } = renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE, {
+      collapsedFolderNodeIds: ["folder:图库"],
+      onSetCollapsedFolderNodeIds,
+    });
+
+    expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
+
+    rerender(
+      <SidebarPanel
+        mode="image"
+        sidebarFocus="sidebar"
+        sidebarRatio={0.3}
+        sidebarMinWidth={220}
+        sidebarFontSize={14}
+        sidebarCountFontSize={12}
+        sidebarIndentStep={16}
+        sidebarVerticalGap={4}
+        currentRootLabel={null}
+        selectedSidebarNodeId={null}
+        canSetCurrentRoot={true}
+        imageRootNodeId={null}
+        videoRootNodeId={null}
+        musicRootNodeId={null}
+        imageTreeNodes={[]}
+        videoTreeNodes={[]}
+        audioTreeNodes={[]}
+        selectedPackageId=""
+        selectedVideoId=""
+        selectedAudioId=""
+        playlistIds={[]}
+        audioPlaylistIds={[]}
+        onSelectNode={vi.fn()}
+        onSelectPackage={vi.fn()}
+        onSelectVideo={vi.fn()}
+        onSelectAudio={vi.fn()}
+        onCollapseSidebar={vi.fn()}
+        onSetCurrentRoot={vi.fn()}
+        onGoToFromSearchMode={vi.fn()}
+        onResetRoot={vi.fn()}
+        onToggleVideoPlaylist={vi.fn()}
+        onToggleAudioPlaylist={vi.fn()}
+        onToggleManageNode={vi.fn()}
+        collapsedFolderNodeIds={["folder:图库"]}
+        onSetCollapsedFolderNodeIds={onSetCollapsedFolderNodeIds}
+      />,
+    );
+
+    rerender(
+      <SidebarPanel
+        mode="image"
+        sidebarFocus="sidebar"
+        sidebarRatio={0.3}
+        sidebarMinWidth={220}
+        sidebarFontSize={14}
+        sidebarCountFontSize={12}
+        sidebarIndentStep={16}
+        sidebarVerticalGap={4}
+        currentRootLabel={null}
+        selectedSidebarNodeId={null}
+        canSetCurrentRoot={true}
+        imageRootNodeId={null}
+        videoRootNodeId={null}
+        musicRootNodeId={null}
+        imageTreeNodes={IMAGE_TREE_COLLAPSIBLE_FIXTURE}
+        videoTreeNodes={[]}
+        audioTreeNodes={[]}
+        selectedPackageId=""
+        selectedVideoId=""
+        selectedAudioId=""
+        playlistIds={[]}
+        audioPlaylistIds={[]}
+        onSelectNode={vi.fn()}
+        onSelectPackage={vi.fn()}
+        onSelectVideo={vi.fn()}
+        onSelectAudio={vi.fn()}
+        onCollapseSidebar={vi.fn()}
+        onSetCurrentRoot={vi.fn()}
+        onGoToFromSearchMode={vi.fn()}
+        onResetRoot={vi.fn()}
+        onToggleVideoPlaylist={vi.fn()}
+        onToggleAudioPlaylist={vi.fn()}
+        onToggleManageNode={vi.fn()}
+        collapsedFolderNodeIds={["folder:图库"]}
+        onSetCollapsedFolderNodeIds={onSetCollapsedFolderNodeIds}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
+  });
+});

@@ -1,16 +1,18 @@
-import type { MediaRepository } from '../backend/repository'
-import type { AppSettings } from '../../contracts/settings'
-import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
-import { useSettingsPersistence } from './useSettingsPersistence'
+import type { MediaRepository } from "../backend/repository";
+import type { AppSettings } from "../../contracts/settings";
+import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
+import { useSettingsPersistence } from "./useSettingsPersistence";
 
 interface UsePersistedAppSettingsParams {
-  settings: AppSettingsStoreSnapshot
-  repository: MediaRepository
+  settings: AppSettingsStoreSnapshot;
+  repository: MediaRepository;
 }
 
-export const SETTINGS_STATE_KEY = 'ui_settings_v1'
+export const SETTINGS_STATE_KEY = "ui_settings_v1";
 
-export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppSettings {
+export function toPersistedAppSettings(
+  settings: AppSettingsStoreSnapshot,
+): AppSettings {
   return {
     mode: settings.mode,
     vectorMode: settings.vectorMode,
@@ -42,6 +44,9 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     imageRootNodeId: settings.imageRootNodeId,
     videoRootNodeId: settings.videoRootNodeId,
     musicRootNodeId: settings.musicRootNodeId,
+    imageCollapsedFolderNodeIds: settings.imageCollapsedFolderNodeIds,
+    videoCollapsedFolderNodeIds: settings.videoCollapsedFolderNodeIds,
+    musicCollapsedFolderNodeIds: settings.musicCollapsedFolderNodeIds,
     uiLocale: settings.uiLocale,
     themeId: settings.themeId,
     styleId: settings.styleId,
@@ -61,7 +66,8 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     musicVisualizerToneMapStrength: settings.musicVisualizerToneMapStrength,
     musicVisualizerShowFps: settings.musicVisualizerShowFps,
     musicVisualizerRenderer: settings.musicVisualizerRenderer,
-    musicVisualizerShaderSettingsById: settings.musicVisualizerShaderSettingsById,
+    musicVisualizerShaderSettingsById:
+      settings.musicVisualizerShaderSettingsById,
     proxyServer: settings.proxyServer,
     ehentaiCookies: settings.ehentaiCookies,
     adReviewVisionEndpoint: settings.adReviewVisionEndpoint,
@@ -72,7 +78,7 @@ export function toPersistedAppSettings(settings: AppSettingsStoreSnapshot): AppS
     adReviewTailN: settings.adReviewTailN,
     adReviewTailStopCleanStreak: settings.adReviewTailStopCleanStreak,
     adReviewMaxConcurrency: settings.adReviewMaxConcurrency,
-  }
+  };
 }
 
 export function usePersistedAppSettings({
@@ -83,5 +89,5 @@ export function usePersistedAppSettings({
     settings: toPersistedAppSettings(settings),
     repository,
     updateSettings: settings.updateSettings,
-  })
+  });
 }

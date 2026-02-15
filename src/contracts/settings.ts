@@ -1,22 +1,43 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-export const browserModeSchema = z.enum(['image', 'video', 'music'])
+export const browserModeSchema = z.enum(["image", "video", "music"]);
 
-export const searchFieldSchema = z.enum(['all', 'name', 'workTitle', 'circle', 'author', 'tags'])
+export const searchFieldSchema = z.enum([
+  "all",
+  "name",
+  "workTitle",
+  "circle",
+  "author",
+  "tags",
+]);
 
-export const musicVisualizerFpsCapSchema = z.union([z.literal(30), z.literal(60), z.literal(120)])
-export const musicVisualizerToneMapModeSchema = z.enum(['off', 'reinhard', 'aces', 'filmic', 'agx', 'khronos'])
-export const musicVisualizerRendererSchema = z.enum(['gpu', 'cpu'])
-export const musicVisualizerCompositionModeSchema = z.enum(['single', 'layered'])
-export const paletteModeSchema = z.enum(['day', 'night'])
-export const uiLocaleSchema = z.enum(['auto', 'zh-CN', 'en-US'])
+export const musicVisualizerFpsCapSchema = z.union([
+  z.literal(30),
+  z.literal(60),
+  z.literal(120),
+]);
+export const musicVisualizerToneMapModeSchema = z.enum([
+  "off",
+  "reinhard",
+  "aces",
+  "filmic",
+  "agx",
+  "khronos",
+]);
+export const musicVisualizerRendererSchema = z.enum(["gpu", "cpu"]);
+export const musicVisualizerCompositionModeSchema = z.enum([
+  "single",
+  "layered",
+]);
+export const paletteModeSchema = z.enum(["day", "night"]);
+export const uiLocaleSchema = z.enum(["auto", "zh-CN", "en-US"]);
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
   renderScaleCoeff: z.number().min(1).max(5).default(2),
-  compositionMode: musicVisualizerCompositionModeSchema.default('single'),
-  layeredBackgroundShaderId: z.string().max(64).default('galaxy'),
-  layeredForegroundShaderId: z.string().max(64).default('mcs-szb'),
+  compositionMode: musicVisualizerCompositionModeSchema.default("single"),
+  layeredBackgroundShaderId: z.string().max(64).default("galaxy"),
+  layeredForegroundShaderId: z.string().max(64).default("mcs-szb"),
   layeredBackgroundEnabled: z.boolean().default(true),
   layeredForegroundEnabled: z.boolean().default(true),
   layeredForegroundOffsetX: z.number().min(-1).max(1).default(0),
@@ -28,9 +49,12 @@ export const musicVisualizerShaderSettingsSchema = z.object({
   toneMapStrength: z.number().min(0).max(1),
   showFps: z.boolean(),
   renderer: musicVisualizerRendererSchema,
-})
+});
 
-export const musicVisualizerShaderSettingsByIdSchema = z.record(z.string().max(64), musicVisualizerShaderSettingsSchema)
+export const musicVisualizerShaderSettingsByIdSchema = z.record(
+  z.string().max(64),
+  musicVisualizerShaderSettingsSchema,
+);
 
 export const appSettingsSchema = z.object({
   mode: browserModeSchema,
@@ -59,17 +83,20 @@ export const appSettingsSchema = z.object({
   searchField: searchFieldSchema,
   searchText: z.string().max(120),
   vectorThreshold: z.number().min(0).max(1),
-  sidebarFocus: z.enum(['sidebar', 'main']),
+  sidebarFocus: z.enum(["sidebar", "main"]),
   imageRootNodeId: z.string().nullable(),
   videoRootNodeId: z.string().nullable(),
   musicRootNodeId: z.string().nullable(),
+  imageCollapsedFolderNodeIds: z.array(z.string().min(1)),
+  videoCollapsedFolderNodeIds: z.array(z.string().min(1)),
+  musicCollapsedFolderNodeIds: z.array(z.string().min(1)),
   uiLocale: uiLocaleSchema,
   themeId: z.string().min(1),
-  styleId: z.string().min(1).default('flush'),
-  paletteId: z.string().min(1).default('parchment'),
-  paletteMode: paletteModeSchema.default('day'),
-  paletteDayId: z.string().min(1).default('parchment'),
-  paletteNightId: z.string().min(1).default('tokyo-night'),
+  styleId: z.string().min(1).default("flush"),
+  paletteId: z.string().min(1).default("parchment"),
+  paletteMode: paletteModeSchema.default("day"),
+  paletteDayId: z.string().min(1).default("parchment"),
+  paletteNightId: z.string().min(1).default("tokyo-night"),
   thumbnailQuality: z.number().min(1).max(100),
   thumbnailWidth: z.number().min(128).max(2048),
   thumbnailGenerationConcurrency: z.number().int().min(1).max(16),
@@ -88,11 +115,11 @@ export const appSettingsSchema = z.object({
   adReviewVisionEndpoint: z.string().max(512),
   adReviewVisionModel: z.string().max(256),
   adReviewVisionVerified: z.boolean(),
-  adReviewStrategyMode: z.enum(['all', 'head-tail']),
+  adReviewStrategyMode: z.enum(["all", "head-tail"]),
   adReviewHeadN: z.number().int().min(0).max(200),
   adReviewTailN: z.number().int().min(0).max(200),
   adReviewTailStopCleanStreak: z.number().int().min(1).max(200),
   adReviewMaxConcurrency: z.number().int().min(4).max(12),
-})
+});
 
-export type AppSettings = z.infer<typeof appSettingsSchema>
+export type AppSettings = z.infer<typeof appSettingsSchema>;

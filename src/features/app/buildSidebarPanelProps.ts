@@ -1,60 +1,62 @@
-import type { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from "react";
 
-import type { AppSettings } from '../../contracts/settings'
-import type { SidebarNode } from '../../types'
+import type { AppSettings } from "../../contracts/settings";
+import type { SidebarNode } from "../../types";
 
 interface BuildSidebarPanelPropsParams {
-  mode: AppSettings['mode']
-  sidebarFocus: AppSettings['sidebarFocus']
-  sidebarRatio: number
-  sidebarMinWidth: number
-  sidebarFontSize: number
-  sidebarCountFontSize: number
-  sidebarIndentStep: number
-  sidebarVerticalGap: number
-  currentRootLabel: string | null
-  searchResultsMode: boolean
-  searchResultsLabel: string
-  adReviewResultsMode?: boolean
-  selectedSidebarNodeId: string | null
-  canSetCurrentRoot: boolean
-  imageRootNodeId: string | null
-  videoRootNodeId: string | null
-  musicRootNodeId: string | null
-  imageTreeNodes: SidebarNode[]
-  videoTreeNodes: SidebarNode[]
-  audioTreeNodes: SidebarNode[]
-  imageNodeLoadStateById: Record<string, 'pending' | 'running'>
-  selectedPackageId: string
-  selectedVideoId: string
-  selectedAudioId: string
-  vectorResultsActive: boolean
-  featureSearchActive: boolean
-  searchResultsReadOnly: boolean
-  manageMode: boolean
-  metadataManageMode: boolean
-  checkedSidebarNodeIdSet: Set<string>
-  focusedRef: { packageId: string; imageIndex: number } | null
-  playlistIds: string[]
-  goToFromSearchMode: () => void
-  onExitAdReviewResultsMode?: () => void
-  setSelectedSidebarNodeId: (nodeId: string) => void
-  updateSettings: (patch: Partial<AppSettings>) => void
-  setSelectedPackageId: (packageId: string) => void
-  selectVideoFromBrowser: (videoId: string) => void
-  setSelectedAudioId: (audioId: string) => void
-  collapseSidebar: () => void
-  applyCurrentRootFromSelection: () => void
-  setPlaylistIds: Dispatch<SetStateAction<string[]>>
-  audioPlaylistIds: string[]
-  setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
-  onToggleManageNode: (nodeId: string, shiftKey: boolean) => void
-  onCheckManageNode: (nodeId: string) => void
+  mode: AppSettings["mode"];
+  sidebarFocus: AppSettings["sidebarFocus"];
+  sidebarRatio: number;
+  sidebarMinWidth: number;
+  sidebarFontSize: number;
+  sidebarCountFontSize: number;
+  sidebarIndentStep: number;
+  sidebarVerticalGap: number;
+  currentRootLabel: string | null;
+  searchResultsMode: boolean;
+  searchResultsLabel: string;
+  adReviewResultsMode?: boolean;
+  selectedSidebarNodeId: string | null;
+  canSetCurrentRoot: boolean;
+  imageRootNodeId: string | null;
+  videoRootNodeId: string | null;
+  musicRootNodeId: string | null;
+  imageTreeNodes: SidebarNode[];
+  videoTreeNodes: SidebarNode[];
+  audioTreeNodes: SidebarNode[];
+  imageNodeLoadStateById: Record<string, "pending" | "running">;
+  selectedPackageId: string;
+  selectedVideoId: string;
+  selectedAudioId: string;
+  vectorResultsActive: boolean;
+  featureSearchActive: boolean;
+  searchResultsReadOnly: boolean;
+  manageMode: boolean;
+  metadataManageMode: boolean;
+  checkedSidebarNodeIdSet: Set<string>;
+  focusedRef: { packageId: string; imageIndex: number } | null;
+  playlistIds: string[];
+  goToFromSearchMode: () => void;
+  onExitAdReviewResultsMode?: () => void;
+  setSelectedSidebarNodeId: (nodeId: string) => void;
+  updateSettings: (patch: Partial<AppSettings>) => void;
+  setSelectedPackageId: (packageId: string) => void;
+  selectVideoFromBrowser: (videoId: string) => void;
+  setSelectedAudioId: (audioId: string) => void;
+  collapseSidebar: () => void;
+  collapsedFolderNodeIds?: string[];
+  setCollapsedFolderNodeIds?: (nodeIds: string[]) => void;
+  applyCurrentRootFromSelection: () => void;
+  setPlaylistIds: Dispatch<SetStateAction<string[]>>;
+  audioPlaylistIds: string[];
+  setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>;
+  onToggleManageNode: (nodeId: string, shiftKey: boolean) => void;
+  onCheckManageNode: (nodeId: string) => void;
 }
 
 export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
-  const adReviewResultsMode = params.adReviewResultsMode ?? false
-  const sidebarResultMode = params.searchResultsMode || adReviewResultsMode
+  const adReviewResultsMode = params.adReviewResultsMode ?? false;
+  const sidebarResultMode = params.searchResultsMode || adReviewResultsMode;
 
   return {
     mode: params.mode,
@@ -65,7 +67,9 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     sidebarCountFontSize: params.sidebarCountFontSize,
     sidebarIndentStep: params.sidebarIndentStep,
     sidebarVerticalGap: params.sidebarVerticalGap,
-    currentRootLabel: params.searchResultsMode ? params.searchResultsLabel : params.currentRootLabel,
+    currentRootLabel: params.searchResultsMode
+      ? params.searchResultsLabel
+      : params.currentRootLabel,
     selectedSidebarNodeId: params.selectedSidebarNodeId,
     canSetCurrentRoot: params.canSetCurrentRoot,
     imageRootNodeId: params.imageRootNodeId,
@@ -87,49 +91,51 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     canGoToFromSearchMode: adReviewResultsMode
       ? true
       : params.vectorResultsActive
-      ? Boolean(params.focusedRef)
-      : params.featureSearchActive,
+        ? Boolean(params.focusedRef)
+        : params.featureSearchActive,
     playlistIds: params.playlistIds,
     audioPlaylistIds: params.audioPlaylistIds,
     onGoToFromSearchMode: adReviewResultsMode
       ? () => {
-          params.onExitAdReviewResultsMode?.()
+          params.onExitAdReviewResultsMode?.();
         }
       : params.goToFromSearchMode,
     onSelectNode: (nodeId: string) => {
-      if (params.mode === 'image' && params.vectorResultsActive) {
-        return
+      if (params.mode === "image" && params.vectorResultsActive) {
+        return;
       }
 
-      params.setSelectedSidebarNodeId(nodeId)
-      params.updateSettings({ sidebarFocus: 'sidebar' })
+      params.setSelectedSidebarNodeId(nodeId);
+      params.updateSettings({ sidebarFocus: "sidebar" });
     },
     onSelectPackage: params.setSelectedPackageId,
     onSelectVideo: params.selectVideoFromBrowser,
     onSelectAudio: params.setSelectedAudioId,
     onCollapseSidebar: params.collapseSidebar,
+    collapsedFolderNodeIds: params.collapsedFolderNodeIds,
+    onSetCollapsedFolderNodeIds: params.setCollapsedFolderNodeIds,
     onSetCurrentRoot: params.applyCurrentRootFromSelection,
     onResetRoot: () => {
-      if (params.mode === 'image') {
-        params.updateSettings({ imageRootNodeId: null })
-        return
+      if (params.mode === "image") {
+        params.updateSettings({ imageRootNodeId: null });
+        return;
       }
-      if (params.mode === 'video') {
-        params.updateSettings({ videoRootNodeId: null })
-        return
+      if (params.mode === "video") {
+        params.updateSettings({ videoRootNodeId: null });
+        return;
       }
-      params.updateSettings({ musicRootNodeId: null })
+      params.updateSettings({ musicRootNodeId: null });
     },
     onToggleVideoPlaylist: (videoId: string, checked: boolean) => {
       params.setPlaylistIds((previous) => {
         if (checked) {
           if (previous.includes(videoId)) {
-            return previous
+            return previous;
           }
-          return [...previous, videoId]
+          return [...previous, videoId];
         }
-        return previous.filter((id) => id !== videoId)
-      })
+        return previous.filter((id) => id !== videoId);
+      });
     },
     onToggleManageNode: params.onToggleManageNode,
     onCheckManageNode: params.onCheckManageNode,
@@ -137,12 +143,12 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
       params.setAudioPlaylistIds((previous) => {
         if (checked) {
           if (previous.includes(audioId)) {
-            return previous
+            return previous;
           }
-          return [...previous, audioId]
+          return [...previous, audioId];
         }
-        return previous.filter((id) => id !== audioId)
-      })
+        return previous.filter((id) => id !== audioId);
+      });
     },
-  }
+  };
 }
