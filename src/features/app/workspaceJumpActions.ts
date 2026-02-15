@@ -6,9 +6,12 @@ interface CreateWorkspaceJumpActionsParams {
   updateSettings: (patch: { mode?: BrowserMode; imageRootNodeId?: string | null }) => void
   setMetadataTab: (tab: 'info' | 'playlist') => void
   setSelectedPackageId: (id: string) => void
+  setSelectedAudioId: (id: string) => void
   selectVideoFromBrowser: (videoId: string) => void
   jumpTargetVideoId: string | null
   jumpTargetImageId: string | null
+  jumpTargetAudioFromImageId: string | null
+  jumpTargetAudioFromVideoId: string | null
   jumpTargetImageFromAudioId: string | null
   jumpTargetVideoFromAudioId: string | null
   imageSeriesId: string | null
@@ -37,6 +40,26 @@ export function createWorkspaceJumpActions(params: CreateWorkspaceJumpActionsPar
     params.applyQuickFeatureSearch({ seriesId: params.videoSeriesId })
     params.updateSettings({ mode: 'image' })
     params.setSelectedPackageId(params.jumpTargetImageId)
+  }
+
+  const jumpImageToMusic = () => {
+    if (!params.jumpTargetAudioFromImageId || !params.imageSeriesId) {
+      return
+    }
+    params.applyQuickFeatureSearch({ seriesId: params.imageSeriesId })
+    params.updateSettings({ mode: 'music' })
+    params.setSelectedAudioId(params.jumpTargetAudioFromImageId)
+    params.setMetadataTab('info')
+  }
+
+  const jumpVideoToMusic = () => {
+    if (!params.jumpTargetAudioFromVideoId || !params.videoSeriesId) {
+      return
+    }
+    params.applyQuickFeatureSearch({ seriesId: params.videoSeriesId })
+    params.updateSettings({ mode: 'music' })
+    params.setSelectedAudioId(params.jumpTargetAudioFromVideoId)
+    params.setMetadataTab('info')
   }
 
   const jumpMusicToManga = () => {
@@ -84,6 +107,8 @@ export function createWorkspaceJumpActions(params: CreateWorkspaceJumpActionsPar
   return {
     jumpToAnimation,
     jumpToManga,
+    jumpImageToMusic,
+    jumpVideoToMusic,
     jumpMusicToManga,
     jumpMusicToAnimation,
     jumpMusicToCover,

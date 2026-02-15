@@ -30,7 +30,9 @@ interface VideoMainSectionProps {
   metadataPending: boolean
   onMetadataSyncName: () => void
   canJumpToManga: boolean
+  canJumpToMusic: boolean
   onJumpToManga: () => void
+  onJumpToMusic: () => void
   durationSec: number
   videoTime: number
   videoPlaying: boolean
@@ -87,7 +89,9 @@ function VideoMainSection({
   metadataPending,
   onMetadataSyncName,
   canJumpToManga,
+  canJumpToMusic,
   onJumpToManga,
+  onJumpToMusic,
   durationSec,
   videoTime,
   videoPlaying,
@@ -310,17 +314,30 @@ function VideoMainSection({
             <strong className="main-toolbar-title is-video" title={toolbarVideoSummary}>
               {toolbarVideoSummary}
             </strong>
-            {canJumpToManga ? (
+            {canJumpToManga || canJumpToMusic ? (
               <div className="toolbar-actions">
-                <button
-                  className="toolbar-icon-btn"
-                  type="button"
-                  aria-label={t('a11y.media.manga')}
-                  title={t('tip.media.manga')}
-                  onClick={onJumpToManga}
-                >
-                  <span aria-hidden="true">▦</span>
-                </button>
+                {canJumpToManga ? (
+                  <button
+                    className="toolbar-icon-btn"
+                    type="button"
+                    aria-label={t('a11y.media.manga')}
+                    title={t('tip.media.manga')}
+                    onClick={onJumpToManga}
+                  >
+                    <MainUiIcon name="imageMode" />
+                  </button>
+                ) : null}
+                {canJumpToMusic ? (
+                  <button
+                    className="toolbar-icon-btn"
+                    type="button"
+                    aria-label={t('a11y.media.music')}
+                    title={t('tip.media.music')}
+                    onClick={onJumpToMusic}
+                  >
+                    <MainUiIcon name="musicMode" />
+                  </button>
+                ) : null}
               </div>
             ) : null}
           </>

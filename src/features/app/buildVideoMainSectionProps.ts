@@ -50,7 +50,9 @@ interface BuildVideoMainSectionPropsParams {
   metadataPending: boolean
   onMetadataSyncName: () => void
   canJumpToManga: boolean
+  canJumpToMusic: boolean
   onJumpToManga: () => void
+  onJumpToMusic: () => void
   subtitleVisible: boolean
   subtitleTrackUrl: string | null
   subtitleLoading: boolean
@@ -95,7 +97,9 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     metadataPending: params.metadataPending,
     onMetadataSyncName: params.onMetadataSyncName,
     canJumpToManga: params.canJumpToManga,
+    canJumpToMusic: params.canJumpToMusic,
     onJumpToManga: params.onJumpToManga,
+    onJumpToMusic: params.onJumpToMusic,
     subtitleVisible: params.subtitleVisible,
     subtitleTrackUrl: params.subtitleTrackUrl,
     subtitleLoading: params.subtitleLoading,

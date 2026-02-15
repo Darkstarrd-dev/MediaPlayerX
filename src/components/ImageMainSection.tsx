@@ -50,7 +50,9 @@ interface ImageMainSectionProps {
   onToggleShowNamesOnly: () => void
   onEnterFullscreen: () => void
   canJumpToAnimation: boolean
+  canJumpToMusic?: boolean
   onJumpToAnimation: () => void
+  onJumpToMusic?: () => void
   onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
   metadataPending: boolean
   metadataTargetPackageLabel: string
@@ -165,7 +167,9 @@ function ImageMainSection({
   onToggleShowNamesOnly,
   onEnterFullscreen,
   canJumpToAnimation,
+  canJumpToMusic = false,
   onJumpToAnimation,
+  onJumpToMusic = () => undefined,
   onSelectImage,
   metadataPending,
   metadataTargetPackageLabel,
@@ -608,88 +612,105 @@ function ImageMainSection({
                       progress: activePackageImageProgress ?? t('ui.image.defaultProgress'),
                     })}
             </strong>
-            <div className="toolbar-actions">
-              {canJumpToAnimation ? (
+            <div className="toolbar-actions toolbar-actions-image-mode">
+              <div className="toolbar-actions toolbar-actions-image-primary">
                 <button
-                  className="toolbar-icon-btn"
+                  className={`toolbar-icon-btn ${showNamesOnly ? 'is-names-mode' : 'is-grid-mode'}`}
                   type="button"
-                  aria-label={t('a11y.media.animation')}
-                  title={t('tip.media.animation')}
-                  onClick={onJumpToAnimation}
+                  aria-label={showNamesOnly ? t('a11y.image.switchToGridMode') : t('a11y.image.switchToNamesMode')}
+                  title={showNamesOnly ? t('tip.image.switchToGridMode') : t('tip.image.switchToNamesMode')}
+                  onClick={onToggleShowNamesOnly}
                 >
-                  <span aria-hidden="true">▶</span>
+                  <MainUiIcon name={showNamesOnly ? 'thumbnail' : 'fileList'} />
                 </button>
-              ) : null}
-              <button
-                className={`toolbar-icon-btn ${showNamesOnly ? 'is-names-mode' : 'is-grid-mode'}`}
-                type="button"
-                aria-label={showNamesOnly ? t('a11y.image.switchToGridMode') : t('a11y.image.switchToNamesMode')}
-                title={showNamesOnly ? t('tip.image.switchToGridMode') : t('tip.image.switchToNamesMode')}
-                onClick={onToggleShowNamesOnly}
-              >
-                <MainUiIcon name={showNamesOnly ? 'thumbnail' : 'fileList'} />
-              </button>
-              <div
-                className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? 'is-open' : ''}`}
-                role="group"
-                aria-label={t('a11y.header.thumbnailScaleGroup')}
-                onMouseEnter={openScalePopoverByHover}
-                onMouseLeave={closeScalePopoverByHover}
-              >
-                <button
-                  {...buildA11yPropsByRegistry({ key: 'headerThumbnailScale', t })}
-                  className="toolbar-icon-btn header-popover-trigger"
-                  disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
-                  type="button"
-                >
-                  <svg aria-hidden="true" className="main-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.3-4.3" />
-                    <path d="M11 8v6" />
-                    <path d="M8 11h6" />
-                  </svg>
-                </button>
-
                 <div
-                  className="header-popover-panel"
-                  hidden={!openScalePopover}
-                  role="dialog"
-                  aria-label={t('a11y.header.scaleSettings')}
+                  className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? 'is-open' : ''}`}
+                  role="group"
+                  aria-label={t('a11y.header.thumbnailScaleGroup')}
+                  onMouseEnter={openScalePopoverByHover}
+                  onMouseLeave={closeScalePopoverByHover}
                 >
-                  <div className="header-vertical-slider" role="group" aria-label={t('a11y.header.scaleLevels')}>
-                    <div className="header-vertical-slider-value">
-                      {Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(scaleDraftValue)))}
-                    </div>
-                    <div className="header-vertical-slider-body">
-                      <input
-                        {...buildA11yPropsByRegistry({ key: 'headerScaleSlider', t })}
-                        className="header-vertical-range"
-                        max={thumbnailScaleLevelCount}
-                        min={1}
-                        step={0.01}
-                        type="range"
-                        value={scaleDraftValue}
-                        onChange={(event) => {
-                          const nextValue = Number(event.target.value)
-                          setScaleDraftValue(nextValue)
-                          const roundedLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(nextValue)))
-                          onThumbnailScaleLevelChange?.(roundedLevel)
-                        }}
-                      />
+                  <button
+                    {...buildA11yPropsByRegistry({ key: 'headerThumbnailScale', t })}
+                    className="toolbar-icon-btn header-popover-trigger"
+                    disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
+                    type="button"
+                  >
+                    <svg aria-hidden="true" className="main-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.3-4.3" />
+                      <path d="M11 8v6" />
+                      <path d="M8 11h6" />
+                    </svg>
+                  </button>
+
+                  <div
+                    className="header-popover-panel"
+                    hidden={!openScalePopover}
+                    role="dialog"
+                    aria-label={t('a11y.header.scaleSettings')}
+                  >
+                    <div className="header-vertical-slider" role="group" aria-label={t('a11y.header.scaleLevels')}>
+                      <div className="header-vertical-slider-value">
+                        {Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(scaleDraftValue)))}
+                      </div>
+                      <div className="header-vertical-slider-body">
+                        <input
+                          {...buildA11yPropsByRegistry({ key: 'headerScaleSlider', t })}
+                          className="header-vertical-range"
+                          max={thumbnailScaleLevelCount}
+                          min={1}
+                          step={0.01}
+                          type="range"
+                          value={scaleDraftValue}
+                          onChange={(event) => {
+                            const nextValue = Number(event.target.value)
+                            setScaleDraftValue(nextValue)
+                            const roundedLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(nextValue)))
+                            onThumbnailScaleLevelChange?.(roundedLevel)
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
+                <button
+                  className="toolbar-icon-btn"
+                  type="button"
+                  aria-label={t('a11y.media.enterFullscreen')}
+                  title={t('tip.media.enterFullscreen')}
+                  onClick={onEnterFullscreen}
+                  disabled={!focusedImageExists}
+                >
+                  <VideoControlIcon className="main-ui-icon" name="fullscreenExpand" />
+                </button>
               </div>
-              <button
-                className="toolbar-icon-btn"
-                type="button"
-                aria-label={t('a11y.media.enterFullscreen')}
-                title={t('tip.media.enterFullscreen')}
-                onClick={onEnterFullscreen}
-                disabled={!focusedImageExists}
-              >
-                <VideoControlIcon className="main-ui-icon" name="fullscreenExpand" />
-              </button>
+              {canJumpToAnimation || canJumpToMusic ? (
+                <div className="toolbar-actions toolbar-actions-series-jump">
+                  {canJumpToAnimation ? (
+                    <button
+                      className="toolbar-icon-btn"
+                      type="button"
+                      aria-label={t('a11y.media.animation')}
+                      title={t('tip.media.animation')}
+                      onClick={onJumpToAnimation}
+                    >
+                      <MainUiIcon name="videoMode" />
+                    </button>
+                  ) : null}
+                  {canJumpToMusic ? (
+                    <button
+                      className="toolbar-icon-btn"
+                      type="button"
+                      aria-label={t('a11y.media.music')}
+                      title={t('tip.media.music')}
+                      onClick={onJumpToMusic}
+                    >
+                      <MainUiIcon name="musicMode" />
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </>
         )}

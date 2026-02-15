@@ -361,6 +361,15 @@ select option {
   flex-shrink: 0;
 }
 
+.toolbar-actions-image-mode {
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.toolbar-actions-image-primary {
+  flex-shrink: 0;
+}
+
 .toolbar-actions-manage {
   min-width: 0;
   flex-wrap: wrap;

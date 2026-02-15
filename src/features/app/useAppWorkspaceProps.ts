@@ -626,8 +626,16 @@ export function useAppWorkspaceProps({
     videoByIdEffective.values(),
     imageSeriesId,
   );
+  const jumpTargetAudioFromImage = pickFirstBySeriesId(
+    audioByIdEffective.values(),
+    imageSeriesId,
+  );
   const jumpTargetImage = pickFirstBySeriesId(
     packageByIdEffective.values(),
+    videoSeriesId,
+  );
+  const jumpTargetAudioFromVideo = pickFirstBySeriesId(
+    audioByIdEffective.values(),
     videoSeriesId,
   );
   const jumpTargetImageFromAudio = pickFirstBySeriesId(
@@ -665,6 +673,8 @@ export function useAppWorkspaceProps({
   const {
     jumpToAnimation,
     jumpToManga,
+    jumpImageToMusic,
+    jumpVideoToMusic,
     jumpMusicToManga,
     jumpMusicToAnimation,
     jumpMusicToCover,
@@ -672,13 +682,16 @@ export function useAppWorkspaceProps({
   } = createWorkspaceJumpActions({
     applyQuickFeatureSearch: (patch) => applyQuickFeatureSearch(patch),
     updateSettings: (patch) => appSettings.updateSettings(patch),
-    setMetadataTab,
-    setSelectedPackageId,
-    selectVideoFromBrowser,
-    jumpTargetVideoId: jumpTargetVideo?.id ?? null,
-    jumpTargetImageId: jumpTargetImage?.id ?? null,
-    jumpTargetImageFromAudioId: jumpTargetImageFromAudio?.id ?? null,
-    jumpTargetVideoFromAudioId: jumpTargetVideoFromAudio?.id ?? null,
+      setMetadataTab,
+      setSelectedPackageId,
+      setSelectedAudioId,
+      selectVideoFromBrowser,
+      jumpTargetVideoId: jumpTargetVideo?.id ?? null,
+      jumpTargetImageId: jumpTargetImage?.id ?? null,
+      jumpTargetAudioFromImageId: jumpTargetAudioFromImage?.id ?? null,
+      jumpTargetAudioFromVideoId: jumpTargetAudioFromVideo?.id ?? null,
+      jumpTargetImageFromAudioId: jumpTargetImageFromAudio?.id ?? null,
+      jumpTargetVideoFromAudioId: jumpTargetVideoFromAudio?.id ?? null,
     imageSeriesId,
     videoSeriesId,
     audioSeriesId,
@@ -748,7 +761,9 @@ export function useAppWorkspaceProps({
     setVectorFocusIndex,
     setImageFocus,
     canJumpToAnimation: Boolean(jumpTargetVideo),
+    canJumpToMusic: Boolean(jumpTargetAudioFromImage),
     onJumpToAnimation: jumpToAnimation,
+    onJumpToMusic: jumpImageToMusic,
     metadataPending: metadataWriteBindings.metadataPending,
     metadataTargetPackageLabel:
       metadataImagePackageEffective?.displayName ?? "-",
@@ -898,7 +913,9 @@ export function useAppWorkspaceProps({
     focusedVideo: focusedVideoEffective,
     setVideoPlaying,
     canJumpToManga: Boolean(jumpTargetImage),
+    canJumpToMusic: Boolean(jumpTargetAudioFromVideo),
     onJumpToManga: jumpToManga,
+    onJumpToMusic: jumpVideoToMusic,
     goPlaylist,
     setVideoTime,
     setVideoDurationById,

@@ -77,6 +77,11 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         action: t('ui.help.image.keyboard.panelSwitchCtrl1Ctrl3'),
       },
       {
+        key: 'image-series-jump-switch',
+        shortcut: t('ui.help.image.keyboard.fixedSeriesJumpShortcut'),
+        action: t('ui.help.image.keyboard.seriesJumpCtrlF1F3'),
+      },
+      {
         key: 'image-rating',
         shortcut: [
           renderShortcutBinding(shortcuts.rating0, t('ui.help.shortcutNotSet')),

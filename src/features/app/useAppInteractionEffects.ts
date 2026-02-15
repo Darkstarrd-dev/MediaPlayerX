@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppEffects } from './useAppEffects'
 import { usePersistedAppSettings } from './usePersistedAppSettings'
+import { normalizeSeriesId, pickFirstBySeriesId } from './workspaceSharedUtils'
 import { isEditableTarget } from '../../utils/ui'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { AppSessionStateResult } from './useAppSessionState'
@@ -119,6 +120,7 @@ export function useAppInteractionEffects({
   const {
     searchPanelMode,
     searchPanelCollapsed,
+    applyQuickFeatureSearch,
     setSearchPanelMode,
     setSearchPanelCollapsed,
     featureTagPickerOpen,
@@ -318,6 +320,68 @@ export function useAppInteractionEffects({
       return false
     }
 
+    const tryJumpToSeriesMode = (targetMode: 'image' | 'video' | 'music') => {
+      if (targetMode === mode) {
+        return false
+      }
+
+      const currentVideo = videosForSidebar.find((video) => video.id === selectedVideoId) ?? null
+      const currentAudio = audiosForSidebar.find((audio) => audio.id === selectedAudioId) ?? null
+      const seriesId = normalizeSeriesId(
+        mode === 'image' ? activePackage?.seriesId : mode === 'video' ? currentVideo?.seriesId : currentAudio?.seriesId,
+      )
+
+      if (!seriesId) {
+        return false
+      }
+
+      if (targetMode === 'image') {
+        const targetPackage = pickFirstBySeriesId(orderedRootScopedPackages, seriesId)
+        if (!targetPackage) {
+          return false
+        }
+        applyQuickFeatureSearch({ seriesId })
+        updateSettings({ mode: 'image' })
+        setSelectedPackageId(targetPackage.id)
+        const nodeId = imageSourceNodeIdMap.get(targetPackage.id)
+        if (nodeId) {
+          setSelectedSidebarNodeId(nodeId)
+          requestAnimationFrame(() => ensureSidebarNodeVisible(nodeId))
+        }
+        return true
+      }
+
+      if (targetMode === 'video') {
+        const targetVideo = pickFirstBySeriesId(videosForSidebar, seriesId)
+        if (!targetVideo) {
+          return false
+        }
+        applyQuickFeatureSearch({ seriesId })
+        updateSettings({ mode: 'video' })
+        selectVideoFromBrowser(targetVideo.id)
+        const nodeId = videoNodeIdMap.get(targetVideo.id)
+        if (nodeId) {
+          setSelectedSidebarNodeId(nodeId)
+          requestAnimationFrame(() => ensureSidebarNodeVisible(nodeId))
+        }
+        return true
+      }
+
+      const targetAudio = pickFirstBySeriesId(audiosForSidebar, seriesId)
+      if (!targetAudio) {
+        return false
+      }
+      applyQuickFeatureSearch({ seriesId })
+      updateSettings({ mode: 'music' })
+      setSelectedAudioId(targetAudio.id)
+      const nodeId = audioNodeIdMap.get(targetAudio.id)
+      if (nodeId) {
+        setSelectedSidebarNodeId(nodeId)
+        requestAnimationFrame(() => ensureSidebarNodeVisible(nodeId))
+      }
+      return true
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (featureTagPickerOpen) {
         return
@@ -351,6 +415,15 @@ export function useAppInteractionEffects({
 
         if (event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
           if (adReviewDeletePending) {
+            return
+          }
+
+          if (event.code === 'F1' || event.code === 'F2' || event.code === 'F3') {
+            const targetMode = event.code === 'F1' ? 'image' : event.code === 'F2' ? 'video' : 'music'
+            if (tryJumpToSeriesMode(targetMode)) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
             return
           }
 
@@ -468,6 +541,21 @@ export function useAppInteractionEffects({
     deleteConfirmOpen,
     fullscreenActive,
     mode,
+    activePackage,
+    selectedVideoId,
+    videosForSidebar,
+    selectedAudioId,
+    audiosForSidebar,
+    orderedRootScopedPackages,
+    imageSourceNodeIdMap,
+    videoNodeIdMap,
+    audioNodeIdMap,
+    ensureSidebarNodeVisible,
+    setSelectedPackageId,
+    setSelectedAudioId,
+    setSelectedSidebarNodeId,
+    selectVideoFromBrowser,
+    applyQuickFeatureSearch,
     manageMode,
     metadataManageMode,
     adReviewDeletePending,

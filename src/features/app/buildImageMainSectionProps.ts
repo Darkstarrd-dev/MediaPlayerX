@@ -55,7 +55,9 @@ interface BuildImageMainSectionPropsParams {
   setVectorFocusIndex: (value: number) => void
   setImageFocus: (packageId: string, imageIndex: number) => void
   canJumpToAnimation: boolean
+  canJumpToMusic: boolean
   onJumpToAnimation: () => void
+  onJumpToMusic: () => void
   metadataPending: boolean
   metadataTargetPackageLabel: string
   metadataFetchDefaultText: string
@@ -149,7 +151,9 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onThumbnailScaleLevelChange: params.onThumbnailScaleLevelChange,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
     canJumpToAnimation: params.canJumpToAnimation,
+    canJumpToMusic: params.canJumpToMusic,
     onJumpToAnimation: params.onJumpToAnimation,
+    onJumpToMusic: params.onJumpToMusic,
     onEnterFullscreen: () => params.setFullscreenActiveWithAutoStop(true),
     onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => {
       if (params.vectorResultsActive) {

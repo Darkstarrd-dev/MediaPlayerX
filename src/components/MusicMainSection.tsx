@@ -1044,19 +1044,19 @@ function MusicMainSection({
                 </strong>
                 {canJumpToManga || canJumpToAnimation || canJumpToBooklet ? (
                   <div className="toolbar-actions">
+                    {canJumpToBooklet ? (
+                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.booklet')} title={t('tip.media.booklet')} onClick={onJumpToBooklet}>
+                        <span aria-hidden="true">▤</span>
+                      </button>
+                    ) : null}
                     {canJumpToManga ? (
                       <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.manga')} title={t('tip.media.manga')} onClick={onJumpToManga}>
-                        <span aria-hidden="true">▦</span>
+                        <MainUiIcon name="imageMode" />
                       </button>
                     ) : null}
                     {canJumpToAnimation ? (
                       <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.animation')} title={t('tip.media.animation')} onClick={onJumpToAnimation}>
-                        <span aria-hidden="true">▧</span>
-                      </button>
-                    ) : null}
-                    {canJumpToBooklet ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.booklet')} title={t('tip.media.booklet')} onClick={onJumpToBooklet}>
-                        <span aria-hidden="true">▤</span>
+                        <MainUiIcon name="videoMode" />
                       </button>
                     ) : null}
                   </div>
