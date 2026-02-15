@@ -74,7 +74,6 @@ export interface FullscreenLayerProps {
   fullscreenVideoControlsMaxWidth: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
-  autoPlayPresets: number[]
   onSetFooterVisible: (visible: boolean) => void
   onSetDisplay: (display: 'dual' | 'video-only' | 'image-only') => void
   onToggleSwapSides: () => void
@@ -137,7 +136,6 @@ function FullscreenLayer({
   fullscreenVideoControlsMaxWidth,
   autoPlayEnabled,
   autoPlayInterval,
-  autoPlayPresets,
   onSetFooterVisible,
   onSetDisplay,
   onToggleSwapSides,
@@ -753,7 +751,6 @@ function FullscreenLayer({
           autoplayEnabledForFocus={autoplayEnabledForFocus}
           autoPlayEnabled={autoPlayEnabled}
           autoPlayInterval={autoPlayInterval}
-          autoPlayPresets={autoPlayPresets}
           zoomEnabled={zoomEnabled}
           zoomPercent={zoomPercent}
           onToggleDualDisplay={toggleDualDisplay}

@@ -5,6 +5,7 @@ import { VideoControlIcon } from './VideoControlIcon'
 import { mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
+import { buildA11yPropsByRegistry } from '../i18n/a11y'
 import { useI18n } from '../i18n/useI18n'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../types'
 import {
@@ -24,6 +25,10 @@ interface ImageMainSectionProps {
   vectorMode: boolean
   showNamesOnly: boolean
   metadataManageMode: boolean
+  thumbnailScaleLevel?: number
+  thumbnailScaleLevelCount?: number
+  canThumbnailScaleDown?: boolean
+  canThumbnailScaleUp?: boolean
   loading: boolean
   placeholderCount: number
   enableLoadingSkeleton: boolean
@@ -83,6 +88,7 @@ interface ImageMainSectionProps {
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
   onClearManageSelection: () => void
+  onThumbnailScaleLevelChange?: (level: number) => void
   nodeBrowseMode?: boolean
   nodeBrowseLabel?: string
   nodeBrowseItems?: Array<{
@@ -104,6 +110,10 @@ function ImageMainSection({
   vectorMode,
   showNamesOnly,
   metadataManageMode,
+  thumbnailScaleLevel = 1,
+  thumbnailScaleLevelCount = 9,
+  canThumbnailScaleDown = true,
+  canThumbnailScaleUp = true,
   loading,
   placeholderCount,
   enableLoadingSkeleton,
@@ -151,6 +161,7 @@ function ImageMainSection({
   onManageUnhide,
   onToggleAdReviewPanel,
   onClearManageSelection,
+  onThumbnailScaleLevelChange,
   onToggleShowNamesOnly,
   onEnterFullscreen,
   canJumpToAnimation,
@@ -172,6 +183,44 @@ function ImageMainSection({
 }: ImageMainSectionProps) {
   const { t } = useI18n()
   const [metadataFetchOpen, setMetadataFetchOpen] = useState(false)
+  const [openScalePopover, setOpenScalePopover] = useState(false)
+  const [scaleDraftValue, setScaleDraftValue] = useState(
+    Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(thumbnailScaleLevel))),
+  )
+  const scalePopoverHideTimerRef = useRef<number | null>(null)
+
+  const scaleLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(thumbnailScaleLevel)))
+
+  useEffect(() => {
+    setScaleDraftValue(scaleLevel)
+  }, [scaleLevel])
+
+  const clearScalePopoverHideTimer = () => {
+    if (scalePopoverHideTimerRef.current != null) {
+      window.clearTimeout(scalePopoverHideTimerRef.current)
+      scalePopoverHideTimerRef.current = null
+    }
+  }
+
+  const openScalePopoverByHover = () => {
+    clearScalePopoverHideTimer()
+    setOpenScalePopover(true)
+  }
+
+  const closeScalePopoverByHover = () => {
+    clearScalePopoverHideTimer()
+    scalePopoverHideTimerRef.current = window.setTimeout(() => {
+      setOpenScalePopover(false)
+      scalePopoverHideTimerRef.current = null
+    }, 140)
+  }
+
+  useEffect(
+    () => () => {
+      clearScalePopoverHideTimer()
+    },
+    [],
+  )
 
   const initialThumbnailSession =
     !showNamesOnly && !nodeBrowseMode
@@ -580,6 +629,57 @@ function ImageMainSection({
               >
                 <MainUiIcon name={showNamesOnly ? 'thumbnail' : 'fileList'} />
               </button>
+              <div
+                className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? 'is-open' : ''}`}
+                role="group"
+                aria-label={t('a11y.header.thumbnailScaleGroup')}
+                onMouseEnter={openScalePopoverByHover}
+                onMouseLeave={closeScalePopoverByHover}
+              >
+                <button
+                  {...buildA11yPropsByRegistry({ key: 'headerThumbnailScale', t })}
+                  className="toolbar-icon-btn header-popover-trigger"
+                  disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
+                  type="button"
+                >
+                  <svg aria-hidden="true" className="main-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                    <path d="M11 8v6" />
+                    <path d="M8 11h6" />
+                  </svg>
+                </button>
+
+                <div
+                  className="header-popover-panel"
+                  hidden={!openScalePopover}
+                  role="dialog"
+                  aria-label={t('a11y.header.scaleSettings')}
+                >
+                  <div className="header-vertical-slider" role="group" aria-label={t('a11y.header.scaleLevels')}>
+                    <div className="header-vertical-slider-value">
+                      {Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(scaleDraftValue)))}
+                    </div>
+                    <div className="header-vertical-slider-body">
+                      <input
+                        {...buildA11yPropsByRegistry({ key: 'headerScaleSlider', t })}
+                        className="header-vertical-range"
+                        max={thumbnailScaleLevelCount}
+                        min={1}
+                        step={0.01}
+                        type="range"
+                        value={scaleDraftValue}
+                        onChange={(event) => {
+                          const nextValue = Number(event.target.value)
+                          setScaleDraftValue(nextValue)
+                          const roundedLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(nextValue)))
+                          onThumbnailScaleLevelChange?.(roundedLevel)
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
               <button
                 className="toolbar-icon-btn"
                 type="button"

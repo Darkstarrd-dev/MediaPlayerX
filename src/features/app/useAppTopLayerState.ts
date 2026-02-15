@@ -365,7 +365,6 @@ export function useAppTopLayerState({
     fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
     autoPlayEnabled: appSettings.autoPlayEnabled,
     autoPlayInterval: appSettings.autoPlayInterval,
-    autoPlayPresets,
     updateSettings: appSettings.updateSettings,
     setVideoPlaying,
     goPlaylist,

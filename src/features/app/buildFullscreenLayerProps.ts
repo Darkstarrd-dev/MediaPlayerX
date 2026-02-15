@@ -38,7 +38,6 @@ interface BuildFullscreenLayerPropsParams {
   fullscreenVideoControlsMaxWidth: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
-  autoPlayPresets: number[]
   updateSettings: (patch: Partial<AppSettings>) => void
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: (step: number) => void
@@ -100,7 +99,6 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     autoPlayEnabled: params.autoPlayEnabled,
     autoPlayInterval: params.autoPlayInterval,
-    autoPlayPresets: params.autoPlayPresets,
     onSetFooterVisible: params.setShowFullscreenFooter,
     onSetDisplay: params.setFullscreenDisplay,
     onToggleSwapSides: () => params.setFullscreenSwapped((value) => !value),
@@ -114,7 +112,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
       params.updateSettings({ autoPlayEnabled: !params.autoPlayEnabled })
     },
     onSetAutoplayInterval: (seconds) => {
-      params.updateSettings({ autoPlayInterval: seconds, autoPlayEnabled: true })
+      params.updateSettings({ autoPlayInterval: seconds })
     },
     onToggleVideoPlay: () => params.setVideoPlaying((value) => !value),
     onPrevVideo: () => params.goPlaylist(-1),

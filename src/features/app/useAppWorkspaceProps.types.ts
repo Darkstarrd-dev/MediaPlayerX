@@ -88,6 +88,10 @@ export interface UseAppWorkspacePropsParams {
   clearAllSelections: () => void
   vectorResultsActive: boolean
   showNamesOnly: boolean
+  displayThumbnailScaleLevel: number
+  thumbnailScaleLevelCount: number
+  canThumbnailScaleDown: boolean
+  canThumbnailScaleUp: boolean
   backendPageLoading: boolean
   pagedPageSize: number
   activePackageForDisplay: ImagePackage | null

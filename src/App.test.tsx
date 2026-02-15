@@ -2044,23 +2044,44 @@ describe("MediaPlayer 虚拟 UI", () => {
       await keyDown(window, { key: "ArrowRight", code: "ArrowRight" });
       expect(screen.queryByText("加载中...")).not.toBeInTheDocument();
 
-      const autoplayToggle = screen.getByRole("button", { name: "自动播放" });
-      await click(autoplayToggle);
-      expect(autoplayToggle).toHaveAttribute("aria-pressed", "true");
-
       await keyDown(window, { key: "f", code: "KeyF" });
       await waitFor(() => {
         expect(document.querySelector(".fullscreen-layer")).not.toBeNull();
       });
+
+      const fullscreenLayer = document.querySelector(".fullscreen-layer") as Element;
+      fireEvent.mouseMove(fullscreenLayer, {
+        clientY: window.innerHeight - 4,
+      });
+
+      const autoplayToggle = screen.getByRole("button", { name: "自动播放" });
+      await click(autoplayToggle);
+      expect(autoplayToggle).toHaveAttribute("aria-pressed", "true");
+
       expect(screen.queryByText("加载中...")).not.toBeInTheDocument();
 
       await keyDown(window, { key: "f", code: "KeyF" });
       await waitFor(() => {
         expect(document.querySelector(".fullscreen-layer")).toBeNull();
-        expect(
-          screen.getByRole("button", { name: "自动播放" }),
-        ).toHaveAttribute("aria-pressed", "false");
       });
+
+      await keyDown(window, { key: "f", code: "KeyF" });
+      await waitFor(() => {
+        expect(document.querySelector(".fullscreen-layer")).not.toBeNull();
+      });
+
+      const fullscreenLayerAfterReopen = document.querySelector(
+        ".fullscreen-layer",
+      ) as Element;
+      fireEvent.mouseMove(fullscreenLayerAfterReopen, {
+        clientY: window.innerHeight - 4,
+      });
+
+      expect(
+        screen.getByRole("button", { name: "自动播放" }),
+      ).toHaveAttribute("aria-pressed", "false");
+
+      await keyDown(window, { key: "f", code: "KeyF" });
     },
     uiLongTestTimeoutMs,
   );
@@ -2174,15 +2195,7 @@ describe("MediaPlayer 虚拟 UI", () => {
       clientY: window.innerHeight - 4,
     });
 
-    const speedSelect = screen.getByLabelText("全屏自动播放速度");
-    fireEvent.focus(speedSelect);
-    const titleBeforeCtrlWhenSelectFocused = readToolbarTitle();
-    await keyDown(window, {
-      key: "ArrowRight",
-      code: "ArrowRight",
-      ctrlKey: true,
-    });
-    expect(readToolbarTitle()).not.toBe(titleBeforeCtrlWhenSelectFocused);
+    expect(screen.queryByLabelText("全屏自动播放速度")).toBeNull();
 
     const titleBeforeFooterPackage = readToolbarTitle();
     await click(screen.getByRole("button", { name: "下个包" }));

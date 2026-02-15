@@ -441,6 +441,27 @@ select option {
   background: var(--mpx-bg-muted);
 }
 
+.toolbar-actions .main-toolbar-scale-control::before {
+  left: -8px;
+  right: -8px;
+}
+
+.toolbar-actions .main-toolbar-scale-control .header-popover-trigger {
+  width: var(--mpx-icon-button-size);
+  min-width: var(--mpx-icon-button-size);
+  height: var(--mpx-icon-button-size);
+  min-height: var(--mpx-icon-button-size);
+}
+
+.toolbar-actions .main-toolbar-scale-control .header-popover-panel {
+  top: calc(100% + 8px);
+  width: var(--mpx-icon-button-size);
+}
+
+.toolbar-actions .main-toolbar-scale-control .header-vertical-slider-body {
+  width: var(--mpx-icon-button-size);
+}
+
 .name-only {
   border-radius: 8px;
   border: 1px dashed var(--mpx-border-2);

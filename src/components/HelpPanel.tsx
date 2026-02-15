@@ -12,7 +12,7 @@ export interface HelpPanelProps {
   onClose: () => void
 }
 
-type HelpSectionId = 'image'
+type HelpSectionId = 'image' | 'fullscreen'
 
 function renderShortcutBinding(binding: string | undefined, fallback: string): string {
   if (!binding || binding.trim().length === 0) {
@@ -98,6 +98,57 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
     [shortcuts, t],
   )
 
+  const fullscreenShortcutRows = useMemo(
+    () => [
+      {
+        key: 'fullscreen-left-right',
+        shortcut: renderShortcutBinding(shortcuts.imagePrev, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.arrowLeftRight'),
+      },
+      {
+        key: 'fullscreen-up-down',
+        shortcut: `${renderShortcutBinding(shortcuts.imageFirst, t('ui.help.shortcutNotSet'))} / ${renderShortcutBinding(shortcuts.imageLast, t('ui.help.shortcutNotSet'))}`,
+        action: t('ui.help.fullscreen.keyboard.arrowUpDown'),
+      },
+      {
+        key: 'fullscreen-package-prev-next',
+        shortcut: `${renderShortcutBinding(shortcuts.packagePrev, t('ui.help.shortcutNotSet'))} / ${renderShortcutBinding(shortcuts.packageNext, t('ui.help.shortcutNotSet'))}`,
+        action: t('ui.help.fullscreen.keyboard.packagePrevNext'),
+      },
+      {
+        key: 'fullscreen-align',
+        shortcut: [
+          renderShortcutBinding(shortcuts.alignUp, t('ui.help.shortcutNotSet')),
+          renderShortcutBinding(shortcuts.alignDown, t('ui.help.shortcutNotSet')),
+          renderShortcutBinding(shortcuts.alignLeft, t('ui.help.shortcutNotSet')),
+          renderShortcutBinding(shortcuts.alignRight, t('ui.help.shortcutNotSet')),
+        ].join(' / '),
+        action: t('ui.help.fullscreen.keyboard.align'),
+      },
+      {
+        key: 'fullscreen-focus-switch',
+        shortcut: renderShortcutBinding(shortcuts.focusSwitch, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.focusSwitch'),
+      },
+      {
+        key: 'fullscreen-toggle',
+        shortcut: renderShortcutBinding(shortcuts.fullscreenToggle, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.toggleFullscreen'),
+      },
+      {
+        key: 'fullscreen-escape',
+        shortcut: 'Escape',
+        action: t('ui.help.fullscreen.keyboard.escapeExit'),
+      },
+      {
+        key: 'fullscreen-tab-dual',
+        shortcut: 'Tab',
+        action: t('ui.help.fullscreen.keyboard.tabDualFocusSwitch'),
+      },
+    ],
+    [shortcuts, t],
+  )
+
   if (!helpOpen) {
     return null
   }
@@ -134,6 +185,13 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
             >
               {t('ui.help.section.image')}
             </button>
+            <button
+              type="button"
+              className={activeSection === 'fullscreen' ? 'is-active' : ''}
+              onClick={() => setActiveSection('fullscreen')}
+            >
+              {t('ui.help.section.fullscreen')}
+            </button>
           </aside>
 
           <main className="settings-main">
@@ -158,6 +216,37 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
                   <p className="help-group-title">{t('ui.help.image.groupKeyboard')}</p>
                   <ul className="help-list" aria-label={t('a11y.help.imageKeyboardList')}>
                     {imageModeShortcutRows.map((row) => (
+                      <li key={row.key} className="help-shortcut-row">
+                        <span className="help-shortcut-chip">{row.shortcut}</span>
+                        <span>{row.action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            ) : null}
+
+            {activeSection === 'fullscreen' ? (
+              <section className="settings-block help-block">
+                <p className="settings-group-head">{t('ui.help.fullscreen.sectionTitle')}</p>
+
+                <div className="settings-group">
+                  <p className="help-group-title">{t('ui.help.fullscreen.groupMouse')}</p>
+                  <ul className="help-list" aria-label={t('a11y.help.fullscreenMouseList')}>
+                    <li>{t('ui.help.fullscreen.mouse.wheelStepMedia')}</li>
+                    <li>{t('ui.help.fullscreen.mouse.ctrlWheelZoom')}</li>
+                    <li>{t('ui.help.fullscreen.mouse.dragPanImage')}</li>
+                    <li>{t('ui.help.fullscreen.mouse.dragVideoDual')}</li>
+                    <li>{t('ui.help.fullscreen.mouse.clickPaneFocus')}</li>
+                    <li>{t('ui.help.fullscreen.mouse.dragSplitDivider')}</li>
+                    <li>{t('ui.help.fullscreen.mouse.moveBottomShowFooter')}</li>
+                  </ul>
+                </div>
+
+                <div className="settings-group">
+                  <p className="help-group-title">{t('ui.help.fullscreen.groupKeyboard')}</p>
+                  <ul className="help-list" aria-label={t('a11y.help.fullscreenKeyboardList')}>
+                    {fullscreenShortcutRows.map((row) => (
                       <li key={row.key} className="help-shortcut-row">
                         <span className="help-shortcut-chip">{row.shortcut}</span>
                         <span>{row.action}</span>

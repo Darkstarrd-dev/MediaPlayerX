@@ -101,6 +101,10 @@ export function useAppWorkspaceProps({
   clearAllSelections,
   vectorResultsActive,
   showNamesOnly,
+  displayThumbnailScaleLevel,
+  thumbnailScaleLevelCount,
+  canThumbnailScaleDown,
+  canThumbnailScaleUp,
   backendPageLoading,
   pagedPageSize,
   activePackageForDisplay,
@@ -695,6 +699,10 @@ export function useAppWorkspaceProps({
     vectorResultsActive,
     showNamesOnly,
     metadataManageMode,
+    thumbnailScaleLevel: displayThumbnailScaleLevel,
+    thumbnailScaleLevelCount,
+    canThumbnailScaleDown,
+    canThumbnailScaleUp,
     backendPageLoading,
     pagedPageSize,
     enableLoadingSkeleton,
@@ -771,6 +779,19 @@ export function useAppWorkspaceProps({
       setAdReviewPanelOpen((value) => !value);
     },
     onClearManageSelection: clearAllSelections,
+    onThumbnailScaleLevelChange: (level) => {
+      const targetLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(level)));
+      const nextNormalizedScale = Math.max(
+        1,
+        Math.min(thumbnailScaleLevelCount, thumbnailScaleLevelCount - targetLevel + 1),
+      );
+
+      if (nextNormalizedScale === appSettings.thumbnailScale) {
+        return;
+      }
+
+      appSettings.updateSettings({ thumbnailScale: nextNormalizedScale });
+    },
     nodeBrowseMode,
     nodeBrowseLabel: nodeBrowseMode
       ? (selectedSidebarNode?.label ?? t("ui.image.nodeBrowseDefaultLabel"))

@@ -8,6 +8,10 @@ interface BuildImageMainSectionPropsParams {
   vectorResultsActive: boolean
   showNamesOnly: boolean
   metadataManageMode: boolean
+  thumbnailScaleLevel: number
+  thumbnailScaleLevelCount: number
+  canThumbnailScaleDown: boolean
+  canThumbnailScaleUp: boolean
   backendPageLoading: boolean
   pagedPageSize: number
   enableLoadingSkeleton: boolean
@@ -68,6 +72,7 @@ interface BuildImageMainSectionPropsParams {
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
   onClearManageSelection: () => void
+  onThumbnailScaleLevelChange: (level: number) => void
   nodeBrowseMode: boolean
   nodeBrowseLabel: string
   nodeBrowseItems: Array<{
@@ -90,6 +95,10 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     vectorMode: params.vectorResultsActive,
     showNamesOnly: params.showNamesOnly,
     metadataManageMode: params.metadataManageMode,
+    thumbnailScaleLevel: params.thumbnailScaleLevel,
+    thumbnailScaleLevelCount: params.thumbnailScaleLevelCount,
+    canThumbnailScaleDown: params.canThumbnailScaleDown,
+    canThumbnailScaleUp: params.canThumbnailScaleUp,
     loading: params.enableLoadingSkeleton ? params.backendPageLoading : false,
     placeholderCount: Math.max(1, params.pagedPageSize),
     enableLoadingSkeleton: params.enableLoadingSkeleton,
@@ -137,6 +146,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onManageUnhide: params.onManageUnhide,
     onToggleAdReviewPanel: params.onToggleAdReviewPanel,
     onClearManageSelection: params.onClearManageSelection,
+    onThumbnailScaleLevelChange: params.onThumbnailScaleLevelChange,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
     canJumpToAnimation: params.canJumpToAnimation,
     onJumpToAnimation: params.onJumpToAnimation,

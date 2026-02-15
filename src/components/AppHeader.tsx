@@ -35,8 +35,6 @@ type HeaderIconName =
   | 'windowRestore'
   | 'windowClose'
 
-type HeaderPopoverKey = 'scale' | 'autoplay'
-
 const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
   statusIdle: (
     <>
@@ -218,119 +216,38 @@ export interface AppHeaderProps {
   onOpenSettings: () => void
 }
 
-function AppHeader({
-  headerHeight,
-  mode,
-  searchPanelOpen,
-  manageMode,
-  metadataManageMode,
-  thumbnailScaleLevel,
-  canThumbnailScaleDown,
-  canThumbnailScaleUp,
-  autoPlayEnabled,
-  autoPlayInterval,
-  paletteMode,
-  interactionLocked = false,
-  importMenuOpen,
-  taskStatusLabel,
-  taskStatusBusy,
-  importTaskPanelOpen,
-  autoPlayPresets,
-  onToggleImportMenu,
-  onToggleImportTaskPanel,
-  onCloseImportMenu,
-  onImportFiles,
-  onImportFolders,
-  onModeChange,
-  onToggleSearchPanel,
-  onToggleManageMode,
-  onToggleMetadataManageMode,
-  onThumbnailScaleDown,
-  onThumbnailScaleUp,
-  onAutoPlayEnabledChange,
-  onAutoPlayIntervalChange,
-  onTogglePaletteMode,
-  onOpenHelp,
-  onOpenSettings,
-}: AppHeaderProps) {
+function AppHeader(props: AppHeaderProps) {
+  const {
+    headerHeight,
+    mode,
+    searchPanelOpen,
+    manageMode,
+    metadataManageMode,
+    paletteMode,
+    interactionLocked = false,
+    importMenuOpen,
+    taskStatusLabel,
+    taskStatusBusy,
+    importTaskPanelOpen,
+    onToggleImportMenu,
+    onToggleImportTaskPanel,
+    onCloseImportMenu,
+    onImportFiles,
+    onImportFolders,
+    onModeChange,
+    onToggleSearchPanel,
+    onToggleManageMode,
+    onToggleMetadataManageMode,
+    onTogglePaletteMode,
+    onOpenHelp,
+    onOpenSettings,
+  } = props
   const { t } = useI18n()
   const [windowMaximized, setWindowMaximized] = useState(false)
   const [showMusicQuickActions, setShowMusicQuickActions] = useState(false)
   const [musicQuickPlaying, setMusicQuickPlaying] = useState(false)
   const musicQuickSessionArmedRef = useRef(false)
   const previousModeRef = useRef<BrowserMode>(mode)
-  const [scaleCommittedLevel, setScaleCommittedLevel] = useState(Math.max(1, Math.min(9, Math.round(thumbnailScaleLevel))))
-  const [autoPlayCommittedLevel, setAutoPlayCommittedLevel] = useState(Math.max(1, Math.min(9, Math.round(autoPlayInterval))))
-  const [scaleDraftValue, setScaleDraftValue] = useState(scaleCommittedLevel)
-  const [autoPlayDraftValue, setAutoPlayDraftValue] = useState(autoPlayCommittedLevel)
-  const [openHeaderPopover, setOpenHeaderPopover] = useState<HeaderPopoverKey | null>(null)
-  const headerPopoverHideTimerRef = useRef<number | null>(null)
-
-  const scaleLevel = Math.max(1, Math.min(9, Math.round(thumbnailScaleLevel)))
-  const autoPlayPresetLevel = autoPlayPresets.includes(autoPlayInterval)
-    ? autoPlayInterval
-    : Math.max(1, Math.min(9, Math.round(autoPlayInterval)))
-  const autoPlayLevel = Math.max(1, Math.min(9, Math.round(autoPlayPresetLevel)))
-
-  useEffect(() => {
-    setScaleCommittedLevel(scaleLevel)
-  }, [scaleLevel])
-
-  useEffect(() => {
-    setScaleDraftValue(scaleLevel)
-  }, [scaleLevel])
-
-  useEffect(() => {
-    setAutoPlayCommittedLevel(autoPlayLevel)
-  }, [autoPlayLevel])
-
-  useEffect(() => {
-    setAutoPlayDraftValue(autoPlayLevel)
-  }, [autoPlayLevel])
-
-  const updateScaleLevel = (nextLevel: number) => {
-    const target = Math.max(1, Math.min(9, Math.round(nextLevel)))
-    if (target === scaleCommittedLevel) {
-      return
-    }
-
-    const steps = Math.abs(target - scaleCommittedLevel)
-    if (target > scaleCommittedLevel) {
-      for (let index = 0; index < steps; index += 1) {
-        onThumbnailScaleUp()
-      }
-      setScaleCommittedLevel(target)
-      return
-    }
-
-    for (let index = 0; index < steps; index += 1) {
-      onThumbnailScaleDown()
-    }
-    setScaleCommittedLevel(target)
-  }
-
-  const updateAutoPlayLevel = (nextLevel: number) => {
-    const target = Math.max(1, Math.min(9, Math.round(nextLevel)))
-    if (target === autoPlayCommittedLevel) {
-      return
-    }
-    onAutoPlayIntervalChange(target)
-    setAutoPlayCommittedLevel(target)
-  }
-
-  const clearHeaderPopoverHideTimer = () => {
-    if (headerPopoverHideTimerRef.current != null) {
-      window.clearTimeout(headerPopoverHideTimerRef.current)
-      headerPopoverHideTimerRef.current = null
-    }
-  }
-
-  useEffect(
-    () => () => {
-      clearHeaderPopoverHideTimer()
-    },
-    [],
-  )
 
   useEffect(() => {
     if (mode === 'music') {
@@ -352,19 +269,6 @@ function AppHeader({
     }
     previousModeRef.current = mode
   }, [mode])
-
-  const openPopoverByHover = (key: HeaderPopoverKey) => {
-    clearHeaderPopoverHideTimer()
-    setOpenHeaderPopover(key)
-  }
-
-  const closePopoverByHover = (key: HeaderPopoverKey) => {
-    clearHeaderPopoverHideTimer()
-    headerPopoverHideTimerRef.current = window.setTimeout(() => {
-      setOpenHeaderPopover((current) => (current === key ? null : current))
-      headerPopoverHideTimerRef.current = null
-    }, 140)
-  }
 
   useEffect(() => {
     const windowApi = window.mediaPlayerWindow
@@ -539,89 +443,6 @@ function AppHeader({
                 }}>
                   <HeaderActionIcon name="stop" />
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="header-group header-group-playback">
-          <div
-            className={`header-popover-control ${openHeaderPopover === 'scale' ? 'is-open' : ''}`}
-            role="group"
-            aria-label={t(a11yRegistry.headerThumbnailScaleGroup.labelKey)}
-            onMouseEnter={() => openPopoverByHover('scale')}
-            onMouseLeave={() => closePopoverByHover('scale')}
-          >
-            <button
-              aria-label={t(a11yRegistry.headerThumbnailScale.labelKey)}
-              className="header-popover-trigger"
-              disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
-              type="button"
-            >
-              <HeaderActionIcon name="zoom" />
-            </button>
-
-            <div className="header-popover-panel" hidden={openHeaderPopover !== 'scale'} role="dialog" aria-label={t(a11yRegistry.headerScaleSettings.labelKey)}>
-              <div className="header-vertical-slider" role="group" aria-label={t(a11yRegistry.headerScaleLevels.labelKey)}>
-                <div className="header-vertical-slider-value">{Math.max(1, Math.min(9, Math.round(scaleDraftValue)))}</div>
-                <div className="header-vertical-slider-body">
-                  <input
-                    aria-label={t(a11yRegistry.headerScaleSlider.labelKey)}
-                    className="header-vertical-range"
-                    max={9}
-                    min={1}
-                    step={0.01}
-                    type="range"
-                    value={scaleDraftValue}
-                    onChange={(event) => {
-                      const nextValue = Number(event.target.value)
-                      setScaleDraftValue(nextValue)
-                      const roundedLevel = Math.max(1, Math.min(9, Math.round(nextValue)))
-                      updateScaleLevel(roundedLevel)
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`header-popover-control ${openHeaderPopover === 'autoplay' ? 'is-open' : ''}`}
-            role="group"
-            aria-label={t(a11yRegistry.headerAutoPlayGroup.labelKey)}
-            onMouseEnter={() => openPopoverByHover('autoplay')}
-            onMouseLeave={() => closePopoverByHover('autoplay')}
-          >
-            <button
-              aria-label={t(a11yRegistry.headerAutoPlay.labelKey)}
-              aria-pressed={autoPlayEnabled}
-              className={`header-popover-trigger auto-play-toggle-btn ${autoPlayEnabled ? 'is-active' : ''}`}
-              type="button"
-              onClick={() => onAutoPlayEnabledChange(!autoPlayEnabled)}
-            >
-              <HeaderActionIcon name={autoPlayEnabled ? 'autoplayOn' : 'autoplayOff'} />
-            </button>
-
-            <div className="header-popover-panel" hidden={openHeaderPopover !== 'autoplay'} role="dialog" aria-label={t(a11yRegistry.headerAutoPlaySettings.labelKey)}>
-              <div className="header-vertical-slider" role="group" aria-label={t(a11yRegistry.headerAutoPlayLevels.labelKey)}>
-                <div className="header-vertical-slider-value">{Math.max(1, Math.min(9, Math.round(autoPlayDraftValue)))}</div>
-                <div className="header-vertical-slider-body">
-                  <input
-                    aria-label={t(a11yRegistry.headerAutoPlaySlider.labelKey)}
-                    className="header-vertical-range"
-                    max={9}
-                    min={1}
-                    step={0.01}
-                    type="range"
-                    value={autoPlayDraftValue}
-                    onChange={(event) => {
-                      const nextValue = Number(event.target.value)
-                      setAutoPlayDraftValue(nextValue)
-                      const roundedLevel = Math.max(1, Math.min(9, Math.round(nextValue)))
-                      updateAutoPlayLevel(roundedLevel)
-                    }}
-                  />
-                </div>
               </div>
             </div>
           </div>
