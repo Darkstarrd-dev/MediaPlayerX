@@ -25,7 +25,8 @@ interface ManageGroupDialogInput {
   value: string
   onChange: (value: string) => void
   onCancel: () => void
-  onConfirm: () => Promise<void>
+  onGroup: () => Promise<void>
+  onMove: () => Promise<void>
 }
 
 interface UseAppShellPropsParams {
@@ -113,16 +114,19 @@ export function useAppShellProps({
   const manageGroupDialogProps = {
     open: manageGroupDialogParams.open,
     pending: manageGroupDialogParams.pending,
-    title: t('ui.manage.groupDialogTitle'),
     inputLabel: t('ui.manage.groupDialogInputLabel'),
     inputPlaceholder: t('ui.manage.groupDialogInputPlaceholder'),
     value: manageGroupDialogParams.value,
-    cancelLabel: t('ui.common.cancel'),
-    confirmLabel: t('ui.common.confirm'),
+    groupLabel: t('ui.common.groupShort'),
+    moveLabel: t('ui.common.moveShort'),
+    cancelLabel: t('ui.common.cancelShort'),
     onChange: manageGroupDialogParams.onChange,
     onCancel: manageGroupDialogParams.onCancel,
-    onConfirm: () => {
-      void manageGroupDialogParams.onConfirm()
+    onGroup: () => {
+      void manageGroupDialogParams.onGroup()
+    },
+    onMove: () => {
+      void manageGroupDialogParams.onMove()
     },
   }
 

@@ -158,7 +158,6 @@ function ImageMainSection({
   onReplaceCheckedImages,
   onManageDelete,
   onManageGroup = () => undefined,
-  onManageMove = () => undefined,
   onManageHide,
   onManageUnhide,
   onToggleAdReviewPanel,
@@ -493,25 +492,15 @@ function ImageMainSection({
               >
                 <MainUiIcon name="delete" />
               </button>
-                <button
-                  className="feature-action-btn main-icon-square-btn"
-                  type="button"
-                  aria-label={t('a11y.common.group')}
-                  title={t('tip.common.group')}
-                  disabled={pendingManageAction}
-                  onClick={onManageGroup}
-                >
-                <span aria-hidden="true">{t('ui.common.groupShort')}</span>
-              </button>
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.common.move')}
-                title={t('tip.common.move')}
+                aria-label={t('a11y.common.organize')}
+                title={t('tip.common.organize')}
                 disabled={!canManageMoveNodes || pendingManageAction}
-                onClick={onManageMove}
+                onClick={onManageGroup}
               >
-                <span aria-hidden="true">{t('ui.common.moveShort')}</span>
+                <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
               </button>
               {adReviewFeatureEnabled ? (
                 <button

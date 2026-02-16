@@ -140,6 +140,7 @@ export function useAppDisplayAndEffects({
     applyVideoGrade: (grade) => {
       displayResources.metadataWriteBindings.applyVideoMetadata({ grade })
     },
+    requestManageOrganize: manageBindings.requestManageGroup,
     adReviewDeletePending: manageBindings.manageAdReview.deletePending,
   })
 

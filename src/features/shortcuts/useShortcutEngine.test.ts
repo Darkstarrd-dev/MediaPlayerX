@@ -15,6 +15,7 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     fullscreenActive: false,
     fullscreenDisplay: 'dual' as const,
     imageFocusActive: false,
+    manageMode: false,
     videoShortcutActive: false,
     hasFocusedImage: true,
     handleSidebarNavigationKey: vi.fn(() => false),
@@ -31,6 +32,7 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onApplyAutoplayIntervalByIndex: vi.fn(),
     onSetPackageGrade: vi.fn(),
     onSetVideoGrade: vi.fn(),
+    onRequestManageOrganize: vi.fn(),
     onAddFocusedVideoToPlaylist: vi.fn(),
     onRemoveFocusedVideoFromPlaylist: vi.fn(),
     onToggleVideoPlaying: vi.fn(),
@@ -135,5 +137,25 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
     expect(params.onAddFocusedVideoToPlaylist).toHaveBeenCalledTimes(1)
     expect(params.onRemoveFocusedVideoFromPlaylist).toHaveBeenCalledTimes(1)
+  })
+
+  it('M shortcut only triggers organize in manage mode', () => {
+    const params = createBaseParams()
+    const hook = renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'm', code: 'KeyM', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onRequestManageOrganize).not.toHaveBeenCalled()
+
+    hook.unmount()
+    params.manageMode = true
+    renderHook(() => useShortcutEngine(params))
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'm', code: 'KeyM', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onRequestManageOrganize).toHaveBeenCalledTimes(1)
   })
 })

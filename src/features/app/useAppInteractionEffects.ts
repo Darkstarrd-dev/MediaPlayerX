@@ -27,6 +27,7 @@ interface UseAppInteractionEffectsParams {
   setFullscreenActiveWithAutoStop: FullscreenPlaybackBindingsResult['setFullscreenActiveWithAutoStop']
   applyPackageGrade: MetadataWriteBindingsResult['applyPackageGrade']
   applyVideoGrade: (grade: number | null) => void
+  requestManageOrganize: () => void
   adReviewDeletePending: boolean
 }
 
@@ -42,6 +43,7 @@ export function useAppInteractionEffects({
   setFullscreenActiveWithAutoStop,
   applyPackageGrade,
   applyVideoGrade,
+  requestManageOrganize,
   adReviewDeletePending,
 }: UseAppInteractionEffectsParams) {
   const {
@@ -587,6 +589,7 @@ export function useAppInteractionEffects({
     fullscreenActive,
     fullscreenDisplay,
     imageFocusActive,
+    manageMode,
     videoShortcutActive,
     focusedImage: readNavigationState.focusedImage,
     handleSidebarNavigationKey,
@@ -602,6 +605,12 @@ export function useAppInteractionEffects({
     applyAutoplayIntervalByIndex,
     applyPackageGrade,
     applyVideoGrade,
+    requestManageOrganize: () => {
+      if (!manageMode) {
+        return
+      }
+      requestManageOrganize()
+    },
     addFocusedVideoToPlaylist: () => {
       if (mode !== 'video' || !selectedVideoId) {
         return

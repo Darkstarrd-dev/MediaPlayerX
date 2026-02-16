@@ -48,6 +48,7 @@ interface UseManageModeActionsResult {
   setGroupNameDraft: Dispatch<SetStateAction<string>>
   cancelManageGroup: () => void
   confirmManageGroup: () => Promise<void>
+  confirmManageMove: () => Promise<void>
   requestManageMove: () => Promise<void>
   confirmManageDelete: () => Promise<void>
   confirmManageRemoveOnly: () => Promise<void>
@@ -134,40 +135,32 @@ export function useManageModeActions({
   }, [imageCheckedIds.length, setDeleteConfirmOpen, setManageOperationHint, sidebarCheckedNodeIds.length, t])
 
   const runManageMoveAction = useCallback(
-    async (groupMode: boolean, groupNameInput?: string) => {
+    async (groupNameInput?: string): Promise<boolean> => {
       if (sidebarCheckedNodeIds.length === 0) {
-        setManageOperationHint(t('ui.manage.hint.selectSidebarNodesFirst'))
-        return
-      }
-
-      let groupName: string | undefined
-      if (groupMode) {
-        groupName = groupNameInput?.trim()
-        if (!groupName) {
-          setManageOperationHint(t('ui.manage.hint.groupNameRequired'))
-          return
-        }
+        return false
       }
 
       let destinationDirectory: string | null = null
       try {
         destinationDirectory = await backendWrite.pickDirectoryPath(
-          groupMode ? t('ui.manage.dialog.pickGroupTargetTitle') : t('ui.manage.dialog.pickMoveTargetTitle'),
+          groupNameInput ? t('ui.manage.dialog.pickGroupTargetTitle') : t('ui.manage.dialog.pickMoveTargetTitle'),
         )
       } catch (error) {
         setManageOperationHint(t('ui.manage.hint.operationFailed', { message: toErrorDetailWithCode(error, t) }))
-        return
+        return false
       }
 
-      if (!destinationDirectory) {
-        setManageOperationHint(groupMode ? t('ui.manage.hint.groupCancelled') : t('ui.manage.hint.moveCancelled'))
-        return
+      const normalizedDestinationDirectory = destinationDirectory?.trim() ?? ''
+      if (!normalizedDestinationDirectory) {
+        return false
       }
+
+      const groupName = groupNameInput?.trim() || undefined
 
       try {
-        const response = await backendWrite.moveSidebarNodes(sidebarCheckedNodeIds, destinationDirectory, groupName)
+        const response = await backendWrite.moveSidebarNodes(sidebarCheckedNodeIds, normalizedDestinationDirectory, groupName)
         const failedCount = response.failed.length
-        const action = groupMode ? t('ui.manage.action.group') : t('ui.manage.action.move')
+        const action = groupName ? t('ui.manage.action.group') : t('ui.manage.action.move')
         setManageOperationHint(
           failedCount > 0
             ? t('ui.manage.hint.moveResultWithFailures', {
@@ -181,8 +174,10 @@ export function useManageModeActions({
               }),
         )
         clearAllSelections()
+        return true
       } catch (error) {
         setManageOperationHint(t('ui.manage.hint.operationFailed', { message: toErrorDetailWithCode(error, t) }))
+        return false
       }
     },
     [backendWrite, clearAllSelections, setManageOperationHint, sidebarCheckedNodeIds, t],
@@ -190,26 +185,48 @@ export function useManageModeActions({
 
   const requestManageGroup = useCallback(() => {
     if (sidebarCheckedNodeIds.length === 0) {
-      setManageOperationHint(t('ui.manage.hint.selectSidebarNodesFirst'))
       return
     }
     setGroupNameDraft('')
+    setManageOperationHint(null)
     setGroupNameDialogOpen(true)
-  }, [setManageOperationHint, sidebarCheckedNodeIds.length, t])
+  }, [setManageOperationHint, sidebarCheckedNodeIds.length])
 
   const cancelManageGroup = useCallback(() => {
     setGroupNameDialogOpen(false)
-    setManageOperationHint(t('ui.manage.hint.groupCancelled'))
-  }, [setManageOperationHint, t])
+    setGroupNameDraft('')
+  }, [])
 
   const confirmManageGroup = useCallback(async () => {
-    setGroupNameDialogOpen(false)
-    await runManageMoveAction(true, groupNameDraft)
-  }, [groupNameDraft, runManageMoveAction])
+    const normalizedGroupName = groupNameDraft.trim()
+    if (!normalizedGroupName) {
+      setManageOperationHint(t('ui.manage.hint.groupNameRequired'))
+      return
+    }
+
+    const completed = await runManageMoveAction(normalizedGroupName)
+    if (completed) {
+      setGroupNameDialogOpen(false)
+      setGroupNameDraft('')
+    }
+  }, [groupNameDraft, runManageMoveAction, setManageOperationHint, t])
+
+  const confirmManageMove = useCallback(async () => {
+    const completed = await runManageMoveAction(undefined)
+    if (completed) {
+      setGroupNameDialogOpen(false)
+      setGroupNameDraft('')
+    }
+  }, [runManageMoveAction])
 
   const requestManageMove = useCallback(async () => {
-    await runManageMoveAction(false)
-  }, [runManageMoveAction])
+    if (sidebarCheckedNodeIds.length === 0) {
+      return
+    }
+    setGroupNameDraft('')
+    setManageOperationHint(null)
+    setGroupNameDialogOpen(true)
+  }, [setManageOperationHint, sidebarCheckedNodeIds.length])
 
   const confirmManageDelete = useCallback(async () => {
     setDeleteConfirmOpen(false)
@@ -289,6 +306,7 @@ export function useManageModeActions({
     setGroupNameDraft,
     cancelManageGroup,
     confirmManageGroup,
+    confirmManageMove,
     requestManageMove,
     confirmManageDelete,
     confirmManageRemoveOnly,

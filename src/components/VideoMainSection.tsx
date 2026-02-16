@@ -90,7 +90,6 @@ function VideoMainSection({
   canManageUnhide,
   onManageDelete,
   onManageGroup = () => undefined,
-  onManageMove = () => undefined,
   onManageAddToPlaylist = () => undefined,
   onManageHide,
   onManageUnhide,
@@ -254,12 +253,12 @@ function VideoMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.common.group')}
-                title={t('tip.common.group')}
-                disabled={pendingManageAction}
+                aria-label={t('a11y.common.organize')}
+                title={t('tip.common.organize')}
+                disabled={!canManageMoveNodes || pendingManageAction}
                 onClick={onManageGroup}
               >
-                <span aria-hidden="true">{t('ui.common.groupShort')}</span>
+                <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn"
@@ -271,16 +270,7 @@ function VideoMainSection({
               >
                 <span aria-hidden="true">P</span>
               </button>
-              <button
-                className="feature-action-btn main-icon-square-btn"
-                type="button"
-                aria-label={t('a11y.common.move')}
-                title={t('tip.common.move')}
-                disabled={!canManageMoveNodes || pendingManageAction}
-                onClick={onManageMove}
-              >
-                <span aria-hidden="true">{t('ui.common.moveShort')}</span>
-              </button>
+              
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"

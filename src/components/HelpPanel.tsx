@@ -103,6 +103,11 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         shortcut: renderShortcutBinding(shortcuts.videoPlaylistRemove, t('ui.help.shortcutNotSet')),
         action: t('ui.help.image.keyboard.videoPlaylistRemove'),
       },
+      {
+        key: 'manage-organize',
+        shortcut: renderShortcutBinding(shortcuts.manageOrganize, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.image.keyboard.manageOrganize'),
+      },
     ],
     [shortcuts, t],
   )

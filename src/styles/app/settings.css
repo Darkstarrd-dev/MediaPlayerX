@@ -518,6 +518,42 @@
   justify-content: flex-end;
 }
 
+.settings-inline-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.manage-group-actions {
+  justify-content: flex-start;
+}
+
+.manage-group-dialog {
+  background: var(--mpx-main-bg);
+}
+
+.manage-group-actions .feature-action-btn {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
+  background: var(--mpx-btn-secondary-bg);
+  color: var(--mpx-btn-secondary-text);
+}
+
+.manage-group-name-input {
+  border: 1px solid var(--mpx-border-2);
+  border-radius: 8px;
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
+  height: var(--mpx-icon-button-size);
+  min-height: var(--mpx-icon-button-size);
+  padding: 0 8px;
+}
+
+.manage-group-name-input:disabled {
+  color: var(--mpx-input-readonly-text);
+  background: var(--mpx-input-readonly-bg);
+  border-color: var(--mpx-input-readonly-border);
+}
+
 .binding-chip-list {
   margin: 0;
   padding: 0;

@@ -18,6 +18,7 @@ interface UseAppShortcutBindingsParams {
   fullscreenActive: boolean
   fullscreenDisplay: ShortcutEngineParams['fullscreenDisplay']
   imageFocusActive: boolean
+  manageMode: boolean
   videoShortcutActive: boolean
   focusedImage: ImageItem | null
   handleSidebarNavigationKey: ShortcutEngineParams['handleSidebarNavigationKey']
@@ -33,6 +34,7 @@ interface UseAppShortcutBindingsParams {
   applyAutoplayIntervalByIndex: ShortcutEngineParams['onApplyAutoplayIntervalByIndex']
   applyPackageGrade: ShortcutEngineParams['onSetPackageGrade']
   applyVideoGrade: ShortcutEngineParams['onSetVideoGrade']
+  requestManageOrganize: ShortcutEngineParams['onRequestManageOrganize']
   addFocusedVideoToPlaylist: ShortcutEngineParams['onAddFocusedVideoToPlaylist']
   removeFocusedVideoFromPlaylist: ShortcutEngineParams['onRemoveFocusedVideoFromPlaylist']
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
@@ -55,6 +57,7 @@ export function useAppShortcutBindings({
   fullscreenActive,
   fullscreenDisplay,
   imageFocusActive,
+  manageMode,
   videoShortcutActive,
   focusedImage,
   handleSidebarNavigationKey,
@@ -70,6 +73,7 @@ export function useAppShortcutBindings({
   applyAutoplayIntervalByIndex,
   applyPackageGrade,
   applyVideoGrade,
+  requestManageOrganize,
   addFocusedVideoToPlaylist,
   removeFocusedVideoFromPlaylist,
   setVideoPlaying,
@@ -90,6 +94,7 @@ export function useAppShortcutBindings({
     fullscreenActive,
     fullscreenDisplay,
     imageFocusActive,
+    manageMode,
     videoShortcutActive,
     hasFocusedImage: Boolean(focusedImage),
     handleSidebarNavigationKey,
@@ -118,6 +123,7 @@ export function useAppShortcutBindings({
     onApplyAutoplayIntervalByIndex: applyAutoplayIntervalByIndex,
     onSetPackageGrade: applyPackageGrade,
     onSetVideoGrade: applyVideoGrade,
+    onRequestManageOrganize: requestManageOrganize,
     onAddFocusedVideoToPlaylist: addFocusedVideoToPlaylist,
     onRemoveFocusedVideoFromPlaylist: removeFocusedVideoFromPlaylist,
     onToggleVideoPlaying: () => {

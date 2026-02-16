@@ -174,7 +174,8 @@ export function useAppViewComposition({
       value: displayState.groupNameDraft,
       onChange: (value) => displayState.setGroupNameDraft(value),
       onCancel: displayState.cancelManageGroup,
-      onConfirm: displayState.confirmManageGroup,
+      onGroup: displayState.confirmManageGroup,
+      onMove: displayState.confirmManageMove,
     },
     e2eBenchSectionParams: {
       enabled: benchSettings.enabled,

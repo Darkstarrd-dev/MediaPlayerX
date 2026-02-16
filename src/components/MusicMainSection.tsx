@@ -81,7 +81,6 @@ function MusicMainSection({
   onManageDelete,
   canManageMoveNodes = false,
   onManageGroup = () => undefined,
-  onManageMove = () => undefined,
   onClearManageSelection,
   canJumpToManga,
   canJumpToAnimation,
@@ -995,22 +994,12 @@ function MusicMainSection({
                   <button
                     className="feature-action-btn main-icon-square-btn"
                     type="button"
-                    aria-label={t('a11y.common.group')}
-                    title={t('tip.common.group')}
-                    disabled={pendingManageAction}
+                    aria-label={t('a11y.common.organize')}
+                    title={t('tip.common.organize')}
+                    disabled={!canManageMoveNodes || pendingManageAction}
                     onClick={onManageGroup}
                   >
-                    <span aria-hidden="true">{t('ui.common.groupShort')}</span>
-                  </button>
-                  <button
-                    className="feature-action-btn main-icon-square-btn"
-                    type="button"
-                    aria-label={t('a11y.common.move')}
-                    title={t('tip.common.move')}
-                    disabled={!canManageMoveNodes || pendingManageAction}
-                    onClick={onManageMove}
-                  >
-                    <span aria-hidden="true">{t('ui.common.moveShort')}</span>
+                    <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
                   </button>
                   <button
                     className="feature-action-btn main-icon-square-btn"

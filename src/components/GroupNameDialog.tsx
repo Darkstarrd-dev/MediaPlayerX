@@ -3,71 +3,79 @@ import { useMemo } from 'react'
 interface GroupNameDialogProps {
   open: boolean
   pending?: boolean
-  title: string
   inputLabel: string
   inputPlaceholder: string
   value: string
+  groupLabel: string
+  moveLabel: string
   cancelLabel: string
-  confirmLabel: string
   onChange: (value: string) => void
+  onMove: () => void
   onCancel: () => void
-  onConfirm: () => void
+  onGroup: () => void
 }
 
 function GroupNameDialog({
   open,
   pending = false,
-  title,
   inputLabel,
   inputPlaceholder,
   value,
+  groupLabel,
+  moveLabel,
   cancelLabel,
-  confirmLabel,
   onChange,
+  onMove,
   onCancel,
-  onConfirm,
+  onGroup,
 }: GroupNameDialogProps) {
-  const disabledConfirm = useMemo(() => pending || value.trim().length === 0, [pending, value])
+  const disabledGroup = useMemo(() => pending || value.trim().length === 0, [pending, value])
+  const dialogWidthCh = useMemo(() => {
+    const contentLength = Math.max(value.length, inputPlaceholder.length, 18)
+    const clamped = Math.min(64, Math.max(24, contentLength + 4))
+    return `${clamped}ch`
+  }, [inputPlaceholder.length, value.length])
 
   if (!open) {
     return null
   }
 
   return (
-    <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={title} data-overlay-close="group-name-dialog">
-      <section className="settings-floating-panel manage-group-dialog" role="document">
-        <h3>{title}</h3>
-        <label className="settings-field" htmlFor="manage-group-name-input">
-          <span>{inputLabel}</span>
-          <input
-            id="manage-group-name-input"
-            type="text"
-            value={value}
-            placeholder={inputPlaceholder}
-            disabled={pending}
-            onChange={(event) => onChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                if (!disabledConfirm) {
-                  onConfirm()
-                }
-                return
+    <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="group-name-dialog">
+      <section className="settings-floating-panel manage-group-dialog" role="document" style={{ width: `min(92vw, max(270px, ${dialogWidthCh}))` }}>
+        <input
+          id="manage-group-name-input"
+          className="manage-group-name-input"
+          aria-label={inputLabel}
+          type="text"
+          value={value}
+          placeholder={inputPlaceholder}
+          disabled={pending}
+          onChange={(event) => onChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              if (!disabledGroup) {
+                onGroup()
               }
-              if (event.key === 'Escape') {
-                event.preventDefault()
-                onCancel()
-              }
-            }}
-            autoFocus
-          />
-        </label>
-        <div className="settings-floating-actions">
-          <button type="button" onClick={onCancel} disabled={pending}>
-            {cancelLabel}
+              return
+            }
+            if (event.key === 'Escape') {
+              event.preventDefault()
+              onCancel()
+            }
+          }}
+          autoFocus
+        />
+        <div className="settings-floating-actions manage-group-actions">
+          <button className="feature-action-btn main-icon-square-btn" type="button" onClick={onGroup} disabled={disabledGroup}>
+            {groupLabel}
           </button>
-          <button type="button" onClick={onConfirm} disabled={disabledConfirm}>
-            {confirmLabel}
+          <button className="feature-action-btn main-icon-square-btn" type="button" onClick={onMove} disabled={pending}>
+            {moveLabel}
+          </button>
+          <button className="feature-action-btn main-icon-square-btn" type="button" onClick={onCancel} disabled={pending}>
+            {cancelLabel}
           </button>
         </div>
       </section>

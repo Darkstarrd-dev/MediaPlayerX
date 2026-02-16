@@ -29,6 +29,7 @@ export type ShortcutAction =
   | 'videoPlayPause'
   | 'videoPlaylistAdd'
   | 'videoPlaylistRemove'
+  | 'manageOrganize'
   | 'videoPrev'
   | 'videoNext'
   | 'videoSpeedDown'
@@ -73,6 +74,7 @@ export const SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
   { action: 'videoPlayPause', scope: 'video', label: '视频：播放/暂停' },
   { action: 'videoPlaylistAdd', scope: 'video', label: '视频：加入播放列表' },
   { action: 'videoPlaylistRemove', scope: 'video', label: '视频：移出播放列表' },
+  { action: 'manageOrganize', scope: 'global', label: '管理：整理（移动/分组）' },
   { action: 'videoPrev', scope: 'video', label: '视频：上一个' },
   { action: 'videoNext', scope: 'video', label: '视频：下一个' },
   { action: 'videoSpeedDown', scope: 'video', label: '视频：减速' },
@@ -110,6 +112,7 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   videoPlayPause: 'Space',
   videoPlaylistAdd: 'KeyA',
   videoPlaylistRemove: 'KeyD',
+  manageOrganize: 'KeyM',
   videoPrev: 'PageUp',
   videoNext: 'PageDown',
   videoSpeedDown: 'Ctrl+PageUp',

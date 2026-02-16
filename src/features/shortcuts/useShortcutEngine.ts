@@ -24,6 +24,7 @@ interface UseShortcutEngineParams {
   fullscreenActive: boolean
   fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
   imageFocusActive: boolean
+  manageMode: boolean
   videoShortcutActive: boolean
   hasFocusedImage: boolean
   handleSidebarNavigationKey: (event: KeyboardEvent) => boolean
@@ -40,6 +41,7 @@ interface UseShortcutEngineParams {
   onApplyAutoplayIntervalByIndex: (index: 0 | 1 | 2 | 3 | 4) => void
   onSetPackageGrade: (grade: number | null) => void
   onSetVideoGrade: (grade: number | null) => void
+  onRequestManageOrganize: () => void
   onAddFocusedVideoToPlaylist: () => void
   onRemoveFocusedVideoFromPlaylist: () => void
   onToggleVideoPlaying: () => void
@@ -60,6 +62,7 @@ export function useShortcutEngine({
   fullscreenActive,
   fullscreenDisplay,
   imageFocusActive,
+  manageMode,
   videoShortcutActive,
   hasFocusedImage,
   handleSidebarNavigationKey,
@@ -76,6 +79,7 @@ export function useShortcutEngine({
   onApplyAutoplayIntervalByIndex,
   onSetPackageGrade,
   onSetVideoGrade,
+  onRequestManageOrganize,
   onAddFocusedVideoToPlaylist,
   onRemoveFocusedVideoFromPlaylist,
   onToggleVideoPlaying,
@@ -240,6 +244,11 @@ export function useShortcutEngine({
             onRemoveFocusedVideoFromPlaylist()
           }
           return
+        case 'manageOrganize':
+          if (manageMode) {
+            onRequestManageOrganize()
+          }
+          return
         case 'videoPrev':
           if (videoShortcutActive) {
             onGoPlaylist(-1)
@@ -290,11 +299,13 @@ export function useShortcutEngine({
       onSetFullscreenActive,
       onSetPackageGrade,
       onSetVideoGrade,
+      onRequestManageOrganize,
       onAddFocusedVideoToPlaylist,
       onRemoveFocusedVideoFromPlaylist,
       onToggleAutoplay,
       onToggleSidebarFocus,
       onToggleVideoPlaying,
+      manageMode,
       videoShortcutActive,
     ],
   )

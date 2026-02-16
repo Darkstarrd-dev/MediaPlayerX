@@ -44,7 +44,7 @@ function createParams(overrides?: Partial<Parameters<typeof useManageModeActions
 }
 
 describe('useManageModeActions', () => {
-  it('requestManageGroup 在未选中 sidebar 节点时提示并返回', async () => {
+  it('requestManageGroup 在未选中 sidebar 节点时无响应', async () => {
     const params = createParams({
       sidebarCheckedNodeIds: [],
     })
@@ -54,12 +54,13 @@ describe('useManageModeActions', () => {
       await result.current.requestManageGroup()
     })
 
-    expect(params.setManageOperationHint).toHaveBeenCalledWith('请先在左侧勾选目录节点')
+    expect(result.current.groupNameDialogOpen).toBe(false)
+    expect(params.setManageOperationHint).not.toHaveBeenCalled()
     expect(params.backendWrite.pickDirectoryPath).not.toHaveBeenCalled()
     expect(params.backendWrite.moveSidebarNodes).not.toHaveBeenCalled()
   })
 
-  it('requestManageGroup 打开输入弹窗，confirmManageGroup 后执行分组', async () => {
+  it('requestManageGroup 打开整理弹窗，confirmManageGroup 后执行分组', async () => {
     const params = createParams({
       backendWrite: {
         setImageHidden: vi.fn(),
@@ -94,7 +95,7 @@ describe('useManageModeActions', () => {
     expect(params.clearAllSelections).toHaveBeenCalled()
   })
 
-  it('requestManageMove 取消目录选择时不会触发移动', async () => {
+  it('requestManageMove 复用整理弹窗，不会直接触发移动', async () => {
     const params = createParams({
       backendWrite: {
         setImageHidden: vi.fn(),
@@ -110,9 +111,10 @@ describe('useManageModeActions', () => {
       await result.current.requestManageMove()
     })
 
-    expect(params.backendWrite.pickDirectoryPath).toHaveBeenCalledWith('选择移动目标目录')
+    expect(result.current.groupNameDialogOpen).toBe(true)
+    expect(params.backendWrite.pickDirectoryPath).not.toHaveBeenCalled()
     expect(params.backendWrite.moveSidebarNodes).not.toHaveBeenCalled()
-    expect(params.setManageOperationHint).toHaveBeenCalledWith('已取消移动操作')
+    expect(params.setManageOperationHint).toHaveBeenCalledWith(null)
     expect(params.clearAllSelections).not.toHaveBeenCalled()
   })
 
