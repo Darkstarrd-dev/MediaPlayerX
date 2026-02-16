@@ -2338,6 +2338,99 @@ describe("MediaPlayer 虚拟 UI", () => {
     expect(Number(yOffset ?? "0")).not.toBe(0);
   });
 
+  it("视频全屏单显示下，单视频循环在播放结束后不会跳到下一条", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+
+    const videoPane = document.querySelector(".fullscreen-video") as
+      | HTMLElement
+      | null;
+    expect(videoPane).not.toBeNull();
+    fireEvent.mouseEnter(videoPane as HTMLElement);
+
+    const loopButton = within(videoPane as HTMLElement).getByRole("button", {
+      name: "视频循环模式：文件列表循环",
+    });
+    await click(loopButton);
+    expect(
+      within(videoPane as HTMLElement).getByRole("button", {
+        name: "视频循环模式：单视频循环",
+      }),
+    ).toBeInTheDocument();
+
+    const videoElementBefore = document.querySelector(
+      ".fullscreen-media-video-element",
+    ) as HTMLVideoElement | null;
+    expect(videoElementBefore).not.toBeNull();
+    const srcBefore = videoElementBefore?.getAttribute("src") ?? "";
+    expect(srcBefore.length).toBeGreaterThan(0);
+
+    fireEvent.ended(videoElementBefore as HTMLVideoElement);
+    await flushUiUpdates();
+
+    const videoElementAfter = document.querySelector(
+      ".fullscreen-media-video-element",
+    ) as HTMLVideoElement | null;
+    const srcAfter = videoElementAfter?.getAttribute("src") ?? "";
+    expect(srcAfter).toBe(srcBefore);
+  });
+
+  it("视频全屏双显示下，文件列表循环在播放结束后会切到下一条", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+
+    const singleVideoPane = document.querySelector(".fullscreen-video") as
+      | HTMLElement
+      | null;
+    expect(singleVideoPane).not.toBeNull();
+    fireEvent.mouseEnter(singleVideoPane as HTMLElement);
+
+    await click(
+      within(singleVideoPane as HTMLElement).getByRole("button", {
+        name: "独立/复合",
+      }),
+    );
+
+    const dualVideoPane = document.querySelector(".fullscreen-video") as
+      | HTMLElement
+      | null;
+    expect(dualVideoPane).not.toBeNull();
+    fireEvent.mouseEnter(dualVideoPane as HTMLElement);
+
+    const singleLoopButton = within(dualVideoPane as HTMLElement).queryByRole(
+      "button",
+      { name: "视频循环模式：单视频循环" },
+    );
+    if (singleLoopButton) {
+      await click(singleLoopButton);
+    }
+    expect(
+      within(dualVideoPane as HTMLElement).getByRole("button", {
+        name: "视频循环模式：文件列表循环",
+      }),
+    ).toBeInTheDocument();
+
+    const videoElementBefore = document.querySelector(
+      ".fullscreen-media-video-element",
+    ) as HTMLVideoElement | null;
+    expect(videoElementBefore).not.toBeNull();
+    const srcBefore = videoElementBefore?.getAttribute("src") ?? "";
+    expect(srcBefore.length).toBeGreaterThan(0);
+
+    fireEvent.ended(videoElementBefore as HTMLVideoElement);
+    await flushUiUpdates();
+
+    const videoElementAfter = document.querySelector(
+      ".fullscreen-media-video-element",
+    ) as HTMLVideoElement | null;
+    const srcAfter = videoElementAfter?.getAttribute("src") ?? "";
+    expect(srcAfter).not.toBe(srcBefore);
+  });
+
   it(
     "设置面板按 side/main 分栏并包含界面设置聚合与快捷键鼠标录入",
     async () => {

@@ -120,6 +120,14 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     onToggleVideoPlay: () => params.setVideoPlaying((value) => !value),
     onPrevVideo: () => params.goPlaylist(-1),
     onNextVideo: () => params.goPlaylist(1),
+    onVideoEnded: () => {
+      if (params.videoLoopMode === 'single') {
+        params.setVideoTime(0)
+        params.setVideoPlaying(true)
+        return
+      }
+      params.goPlaylist(1)
+    },
     onToggleSubtitle: () => {
       params.setSubtitleVisible((value) => !value)
     },

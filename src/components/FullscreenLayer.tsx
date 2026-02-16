@@ -114,6 +114,7 @@ export interface FullscreenLayerProps {
   onToggleVideoPlay: () => void
   onPrevVideo: () => void
   onNextVideo: () => void
+  onVideoEnded: () => void
   onToggleSubtitle: () => void
   onSelectSubtitle: (subtitleId: string) => void
   playlistEntries: Array<{ id: string; label: string }>
@@ -178,6 +179,7 @@ function FullscreenLayer({
   onToggleVideoPlay,
   onPrevVideo,
   onNextVideo,
+  onVideoEnded,
   onToggleSubtitle,
   onSelectSubtitle,
   playlistEntries,
@@ -697,6 +699,7 @@ function FullscreenLayer({
       focusedVideoCoverColor={focusedVideoCoverColor}
       subtitleTrackUrl={subtitleVisible ? subtitleTrackUrl : null}
       videoFitMode={videoFitMode}
+      videoLoopMode={videoLoopMode}
       videoControlsVisible={videoControlsVisible}
       videoControlsAtTop={videoControlsAtTop}
       videoControlsTop={videoControlsTop}
@@ -710,7 +713,7 @@ function FullscreenLayer({
       onHideControls={hideVideoControls}
       onVideoTimeUpdate={onVideoTimeUpdate}
       onVideoDurationDetected={onVideoDurationDetected}
-      onNextVideo={onNextVideo}
+      onVideoEnded={onVideoEnded}
     />
   )
 

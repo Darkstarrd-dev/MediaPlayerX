@@ -97,6 +97,7 @@ interface FullscreenVideoPaneProps {
   focusedVideoCoverColor: string
   subtitleTrackUrl: string | null
   videoFitMode: VideoFitMode
+  videoLoopMode: 'single' | 'list'
   videoControlsVisible: boolean
   videoControlsAtTop: boolean
   videoControlsTop: number
@@ -110,7 +111,7 @@ interface FullscreenVideoPaneProps {
   onHideControls: () => void
   onVideoTimeUpdate: (time: number) => void
   onVideoDurationDetected: (duration: number) => void
-  onNextVideo: () => void
+  onVideoEnded: () => void
 }
 
 export function FullscreenVideoPane({
@@ -129,6 +130,7 @@ export function FullscreenVideoPane({
   focusedVideoCoverColor,
   subtitleTrackUrl,
   videoFitMode,
+  videoLoopMode,
   videoControlsVisible,
   videoControlsAtTop,
   videoControlsTop,
@@ -142,7 +144,7 @@ export function FullscreenVideoPane({
   onHideControls,
   onVideoTimeUpdate,
   onVideoDurationDetected,
-  onNextVideo,
+  onVideoEnded,
 }: FullscreenVideoPaneProps) {
   const useFixedBottomControls = fullscreenDisplay === 'video-only'
   const controlsAtTop = useFixedBottomControls ? false : videoControlsAtTop
@@ -196,6 +198,7 @@ export function FullscreenVideoPane({
               src={focusedVideoSrc}
               preload="metadata"
               playsInline
+              loop={videoLoopMode === 'single'}
               onTimeUpdate={() => {
                 const currentTime = videoRef.current?.currentTime ?? 0
                 onVideoTimeUpdate(currentTime)
@@ -209,8 +212,11 @@ export function FullscreenVideoPane({
                 onVideoTimeUpdate(currentTime)
               }}
               onEnded={() => {
-                onVideoTimeUpdate(0)
-                onNextVideo()
+                if (videoLoopMode === 'single') {
+                  onVideoTimeUpdate(0)
+                  return
+                }
+                onVideoEnded()
               }}
             >
               {subtitleTrackUrl ? <track default kind="subtitles" label="字幕" src={subtitleTrackUrl} /> : null}

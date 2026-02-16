@@ -88,4 +88,29 @@ describe('buildFullscreenLayerProps', () => {
 
     expect(params.updateSettings).toHaveBeenCalledWith({ autoPlayEnabled: true })
   })
+
+  it('视频结束时，单视频循环会重置进度并继续播放当前视频', () => {
+    const params = {
+      ...createParams(),
+      videoLoopMode: 'single' as const,
+    }
+    const props = buildFullscreenLayerProps(params)
+
+    props.onVideoEnded()
+
+    expect(params.setVideoTime).toHaveBeenCalledWith(0)
+    expect(params.setVideoPlaying).toHaveBeenCalledWith(true)
+    expect(params.goPlaylist).not.toHaveBeenCalled()
+  })
+
+  it('视频结束时，文件列表循环会跳转到下一个视频', () => {
+    const params = createParams()
+    const props = buildFullscreenLayerProps(params)
+
+    props.onVideoEnded()
+
+    expect(params.goPlaylist).toHaveBeenCalledWith(1)
+    expect(params.setVideoTime).not.toHaveBeenCalled()
+    expect(params.setVideoPlaying).not.toHaveBeenCalled()
+  })
 })
