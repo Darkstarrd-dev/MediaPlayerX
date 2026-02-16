@@ -86,6 +86,7 @@ export interface UseAppWorkspacePropsParams {
   requestManageMove: () => Promise<void>
   runManageHideAction: (hidden: boolean) => Promise<void>
   manageAdReview: ManageAdReviewActionsResult
+  clearSidebarSelections: () => void
   clearAllSelections: () => void
   vectorResultsActive: boolean
   showNamesOnly: boolean

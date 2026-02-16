@@ -99,6 +99,7 @@ function renderMusicSidebar(
   const onSelectNode = vi.fn();
   const onToggleManageNode = vi.fn();
   const onCheckManageNode = vi.fn();
+  const onClearSidebarSelection = vi.fn();
 
   render(
     <SidebarPanel
@@ -134,6 +135,7 @@ function renderMusicSidebar(
       onResetRoot={vi.fn()}
       onToggleVideoPlaylist={vi.fn()}
       onToggleAudioPlaylist={vi.fn()}
+      onClearSidebarSelection={onClearSidebarSelection}
       onToggleManageNode={onToggleManageNode}
       onCheckManageNode={onCheckManageNode}
       {...overrides}
@@ -145,6 +147,7 @@ function renderMusicSidebar(
     onSelectNode,
     onToggleManageNode,
     onCheckManageNode,
+    onClearSidebarSelection,
   };
 }
 
@@ -287,6 +290,28 @@ describe("SidebarPanel music interactions", () => {
 
     fireEvent.click(checkboxes[1], { shiftKey: true });
     expect(onToggleManageNode).toHaveBeenCalledWith("folder:X盘/Album A", true);
+  });
+
+  it("管理模式下侧栏头部显示清空选择按钮并仅清空侧栏勾选", () => {
+    const { onClearSidebarSelection } = renderMusicSidebar({
+      manageMode: true,
+      checkedSidebarNodeIds: new Set<string>(["folder:X盘/Album A"]),
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /清.*选/ }));
+
+    expect(onClearSidebarSelection).toHaveBeenCalledTimes(1);
+  });
+
+  it("元数据管理模式下侧栏头部同样显示清空选择按钮", () => {
+    const { onClearSidebarSelection } = renderMusicSidebar({
+      metadataManageMode: true,
+      checkedSidebarNodeIds: new Set<string>(["folder:X盘/Album A"]),
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /清.*选/ }));
+
+    expect(onClearSidebarSelection).toHaveBeenCalledTimes(1);
   });
 
   it("音乐模式目录节点支持双击折叠/展开", () => {

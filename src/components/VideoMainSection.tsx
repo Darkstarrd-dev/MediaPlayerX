@@ -86,14 +86,9 @@ function VideoMainSection({
   canManageDelete,
   canManageMoveNodes = false,
   canManageAddToPlaylist = false,
-  canManageHide,
-  canManageUnhide,
   onManageDelete,
   onManageGroup = () => undefined,
   onManageAddToPlaylist = () => undefined,
-  onManageHide,
-  onManageUnhide,
-  onClearManageSelection,
   metadataPending,
   onMetadataSyncName,
   canJumpToManga,
@@ -241,14 +236,14 @@ function VideoMainSection({
           <>
             <div className="toolbar-actions toolbar-actions-manage">
               <button
-                className="vector-search-btn main-icon-square-btn"
+                className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.common.delete')}
-                title={t('tip.common.delete')}
-                disabled={!canManageDelete || pendingManageAction}
-                onClick={onManageDelete}
+                aria-label={t('a11y.media.addToPlaylist')}
+                title={t('tip.media.addToPlaylist')}
+                disabled={!canManageAddToPlaylist || pendingManageAction}
+                onClick={onManageAddToPlaylist}
               >
-                <MainUiIcon name="delete" />
+                <span aria-hidden="true">P</span>
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn"
@@ -261,45 +256,14 @@ function VideoMainSection({
                 <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="vector-search-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.media.addToPlaylist')}
-                title={t('tip.media.addToPlaylist')}
-                disabled={!canManageAddToPlaylist || pendingManageAction}
-                onClick={onManageAddToPlaylist}
+                aria-label={t('a11y.common.delete')}
+                title={t('tip.common.delete')}
+                disabled={!canManageDelete || pendingManageAction}
+                onClick={onManageDelete}
               >
-                <span aria-hidden="true">P</span>
-              </button>
-              
-              <button
-                className="feature-action-btn main-icon-square-btn"
-                type="button"
-                aria-label={t('a11y.common.hide')}
-                title={t('tip.common.hide')}
-                disabled={!canManageHide || pendingManageAction}
-                onClick={onManageHide}
-              >
-                <MainUiIcon name="hidden" />
-              </button>
-              <button
-                className="feature-action-btn main-icon-square-btn"
-                type="button"
-                aria-label={t('a11y.common.unhide')}
-                title={t('tip.common.unhide')}
-                disabled={!canManageUnhide || pendingManageAction}
-                onClick={onManageUnhide}
-              >
-                <MainUiIcon name="reveal" />
-              </button>
-              <button
-                className="feature-action-btn main-icon-square-btn"
-                type="button"
-                aria-label={t('a11y.common.clearSelection')}
-                title={t('tip.common.clearSelection')}
-                disabled={pendingManageAction}
-                onClick={onClearManageSelection}
-              >
-                <MainUiIcon name="unselectAll" />
+                <MainUiIcon name="delete" />
               </button>
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>

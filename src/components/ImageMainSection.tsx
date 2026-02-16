@@ -432,6 +432,8 @@ function ImageMainSection({
     }
     return ids
   }, [manageMode, packageById, refsInPage])
+  const hasCurrentThumbnailPage = currentThumbnailPageImageIds.length > 0
+  const hasAnyManageSelection = sidebarSelectedCount > 0 || imageSelectedCount > 0
 
   const activePackageImageProgress = (() => {
     if (!activePackage || activePackage.images.length === 0) {
@@ -483,37 +485,19 @@ function ImageMainSection({
           <>
             <div className="toolbar-actions toolbar-actions-manage">
               <button
-                className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? 'is-pending' : ''}`}
-                type="button"
-                aria-label={adReviewDeletePending ? t('ui.manage.deleting') : t('a11y.common.delete')}
-                title={adReviewDeletePending ? t('ui.manage.deleting') : t('tip.common.delete')}
-                disabled={!canManageDelete || pendingManageAction}
-                onClick={onManageDelete}
-              >
-                <MainUiIcon name="delete" />
-              </button>
-              <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.common.organize')}
-                title={t('tip.common.organize')}
-                disabled={!canManageMoveNodes || pendingManageAction}
-                onClick={onManageGroup}
+                aria-label={hasAnyManageSelection ? t('a11y.common.clearSelection') : t('a11y.media.selectAllPage')}
+                title={hasAnyManageSelection ? t('tip.common.clearSelection') : t('tip.media.selectAllPage')}
+                disabled={pendingManageAction || (!hasAnyManageSelection && !hasCurrentThumbnailPage)}
+                onClick={
+                  hasAnyManageSelection
+                    ? onClearManageSelection
+                    : () => onReplaceCheckedImages(currentThumbnailPageImageIds)
+                }
               >
-                <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
+                <MainUiIcon name={hasAnyManageSelection ? 'unselectAll' : 'selectAll'} />
               </button>
-              {adReviewFeatureEnabled ? (
-                <button
-                  className={`feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? 'is-active' : ''}`}
-                  type="button"
-                  aria-label={t('a11y.manage.adReview')}
-                  title={t('tip.manage.adReview')}
-                  disabled={pendingManageAction}
-                  onClick={onToggleAdReviewPanel}
-                >
-                  <MainUiIcon name="adSearch" />
-                </button>
-              ) : null}
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
@@ -537,23 +521,35 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.media.selectAllPage')}
-                title={t('tip.media.selectAllPage')}
-                disabled={pendingManageAction || currentThumbnailPageImageIds.length === 0}
-                onClick={() => onReplaceCheckedImages(currentThumbnailPageImageIds)}
+                aria-label={t('a11y.common.organize')}
+                title={t('tip.common.organize')}
+                disabled={!canManageMoveNodes || pendingManageAction}
+                onClick={onManageGroup}
               >
-                <MainUiIcon name="selectAll" />
+                <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? 'is-pending' : ''}`}
                 type="button"
-                aria-label={t('a11y.common.clearSelection')}
-                title={t('tip.common.clearSelection')}
-                disabled={pendingManageAction}
-                onClick={onClearManageSelection}
+                aria-label={adReviewDeletePending ? t('ui.manage.deleting') : t('a11y.common.delete')}
+                title={adReviewDeletePending ? t('ui.manage.deleting') : t('tip.common.delete')}
+                disabled={!canManageDelete || pendingManageAction}
+                onClick={onManageDelete}
               >
-                <MainUiIcon name="unselectAll" />
+                <MainUiIcon name="delete" />
               </button>
+              {adReviewFeatureEnabled ? (
+                <button
+                  className={`feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? 'is-active' : ''}`}
+                  type="button"
+                  aria-label={t('a11y.manage.adReview')}
+                  title={t('tip.manage.adReview')}
+                  disabled={pendingManageAction}
+                  onClick={onToggleAdReviewPanel}
+                >
+                  <MainUiIcon name="adSearch" />
+                </button>
+              ) : null}
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>
             <strong className="main-toolbar-summary" title={manageSummary}>

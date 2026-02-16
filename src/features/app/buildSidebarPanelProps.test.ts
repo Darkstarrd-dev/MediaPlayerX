@@ -64,6 +64,7 @@ describe('buildSidebarPanelProps', () => {
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
       onCheckManageNode: vi.fn(),
+      onClearSidebarSelection: vi.fn(),
     })
 
     expect(props.currentRootLabel).toBe('检索结果')
@@ -123,6 +124,7 @@ describe('buildSidebarPanelProps', () => {
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
       onCheckManageNode: vi.fn(),
+      onClearSidebarSelection: vi.fn(),
     })
 
     props.onResetRoot()
@@ -184,6 +186,7 @@ describe('buildSidebarPanelProps', () => {
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
       onCheckManageNode: vi.fn(),
+      onClearSidebarSelection: vi.fn(),
     })
 
     expect(props.manageMode).toBe(false)
@@ -238,6 +241,7 @@ describe('buildSidebarPanelProps', () => {
       setAudioPlaylistIds,
       onToggleManageNode: vi.fn(),
       onCheckManageNode: vi.fn(),
+      onClearSidebarSelection: vi.fn(),
     })
 
     props.onResetRoot()
@@ -303,6 +307,7 @@ describe('buildSidebarPanelProps', () => {
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
       onCheckManageNode: vi.fn(),
+      onClearSidebarSelection: vi.fn(),
     })
 
     expect(props.searchResultMode).toBe(true)

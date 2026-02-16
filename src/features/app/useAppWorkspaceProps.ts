@@ -100,6 +100,7 @@ export function useAppWorkspaceProps({
   requestManageMove,
   runManageHideAction,
   manageAdReview,
+  clearSidebarSelections,
   clearAllSelections,
   vectorResultsActive,
   showNamesOnly,
@@ -382,6 +383,7 @@ export function useAppWorkspaceProps({
     setAudioPlaylistIds,
     onToggleManageNode: toggleSidebarNodeChecked,
     onCheckManageNode: checkSidebarNode,
+    onClearSidebarSelection: clearSidebarSelections,
   });
 
   const searchPanelProps = buildSearchPanelProps({

@@ -120,6 +120,7 @@ interface UseAppSidebarScopeStateResult {
   imageCheckedIds: string[]
   imageCheckedIdSet: Set<string>
   activeSelectionScope: 'image' | 'sidebar' | null
+  clearSidebarSelections: () => void
   clearAllSelections: () => void
   toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void
   checkSidebarNode: (nodeId: string) => void
@@ -475,6 +476,7 @@ export function useAppSidebarScopeState({
     imageCheckedIds,
     imageCheckedIdSet,
     activeSelectionScope,
+    clearSidebarSelections,
     clearAllSelections,
     toggleSidebarNodeChecked,
     checkSidebarNode,
@@ -562,6 +564,7 @@ export function useAppSidebarScopeState({
     imageCheckedIds,
     imageCheckedIdSet,
     activeSelectionScope,
+    clearSidebarSelections,
     clearAllSelections,
     toggleSidebarNodeChecked,
     checkSidebarNode,

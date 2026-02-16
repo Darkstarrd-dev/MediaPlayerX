@@ -81,7 +81,6 @@ function MusicMainSection({
   onManageDelete,
   canManageMoveNodes = false,
   onManageGroup = () => undefined,
-  onClearManageSelection,
   canJumpToManga,
   canJumpToAnimation,
   canJumpToBooklet,
@@ -982,16 +981,6 @@ function MusicMainSection({
               <>
                 <div className="toolbar-actions toolbar-actions-manage">
                   <button
-                    className="vector-search-btn main-icon-square-btn"
-                    type="button"
-                    aria-label={t('a11y.common.delete')}
-                    title={t('tip.common.delete')}
-                    disabled={!canManageDelete || pendingManageAction}
-                    onClick={onManageDelete}
-                  >
-                    <MainUiIcon name="delete" />
-                  </button>
-                  <button
                     className="feature-action-btn main-icon-square-btn"
                     type="button"
                     aria-label={t('a11y.common.organize')}
@@ -1002,14 +991,14 @@ function MusicMainSection({
                     <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
                   </button>
                   <button
-                    className="feature-action-btn main-icon-square-btn"
+                    className="vector-search-btn main-icon-square-btn"
                     type="button"
-                    aria-label={t('a11y.common.clearSelection')}
-                    title={t('tip.common.clearSelection')}
-                    disabled={pendingManageAction}
-                    onClick={onClearManageSelection}
+                    aria-label={t('a11y.common.delete')}
+                    title={t('tip.common.delete')}
+                    disabled={!canManageDelete || pendingManageAction}
+                    onClick={onManageDelete}
                   >
-                    <MainUiIcon name="unselectAll" />
+                    <MainUiIcon name="delete" />
                   </button>
                   {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
                 </div>

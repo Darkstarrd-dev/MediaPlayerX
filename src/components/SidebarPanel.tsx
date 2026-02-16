@@ -125,6 +125,7 @@ interface SidebarPanelProps {
   onResetRoot: () => void;
   onToggleVideoPlaylist: (videoId: string, checked: boolean) => void;
   onToggleAudioPlaylist: (audioId: string, checked: boolean) => void;
+  onClearSidebarSelection?: () => void;
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void;
   onCheckManageNode?: (nodeId: string) => void;
   collapsedFolderNodeIds?: string[];
@@ -170,6 +171,7 @@ function SidebarPanel({
   onGoToFromSearchMode,
   onResetRoot,
   onToggleAudioPlaylist,
+  onClearSidebarSelection,
   onToggleManageNode,
   onCheckManageNode,
   collapsedFolderNodeIds,
@@ -569,6 +571,21 @@ function SidebarPanel({
             >
               <MainUiIcon name="return" />
             </button>
+          ) : null}
+
+          {showRootToggle ? (
+            manageStyleEnabled ? (
+              <button
+                className="sidebar-head-icon-btn"
+                type="button"
+                aria-label={t("a11y.common.clearSelection")}
+                title={t("tip.common.clearSelection")}
+                disabled={checkedNodes.size === 0}
+                onClick={onClearSidebarSelection}
+              >
+                <MainUiIcon name="unselectAll" />
+              </button>
+            ) : null
           ) : null}
 
           {showRootToggle ? (
