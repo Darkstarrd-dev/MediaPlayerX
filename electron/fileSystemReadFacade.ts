@@ -49,6 +49,14 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type StartManageCoverReviewRequestDto,
+  type StartManageCoverReviewResponseDto,
+  type ReadManageCoverReviewTaskRequestDto,
+  type ReadManageCoverReviewTaskResponseDto,
+  type PauseManageCoverReviewTaskRequestDto,
+  type PauseManageCoverReviewTaskResponseDto,
+  type ConfirmManageCoverReviewHideRequestDto,
+  type ConfirmManageCoverReviewHideResponseDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
@@ -111,6 +119,7 @@ import { LibraryReadWriteService } from './services/file-system-read/libraryRead
 import { LibrarySnapshotService } from './services/file-system-read/librarySnapshotService'
 import { ManagementMutationService } from './services/file-system-read/managementMutationService'
 import { ManageAdReviewService } from './services/file-system-read/manageAdReviewService'
+import { ManageCoverReviewService } from './services/file-system-read/manageCoverReviewService'
 import { MediaResourceService } from './services/file-system-read/mediaResourceService'
 import { RuntimeDependencyService } from './services/file-system-read/runtimeDependencyService'
 import { ServiceEventBus } from './services/file-system-read/serviceEventBus'
@@ -142,6 +151,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private readonly librarySnapshotService: LibrarySnapshotService
   private readonly managementMutationService: ManagementMutationService
   private readonly manageAdReviewService: ManageAdReviewService
+  private readonly manageCoverReviewService: ManageCoverReviewService
   private readonly mediaResourceService: MediaResourceService
   private readonly runtimeDependencyService: RuntimeDependencyService
   private readonly eventBus: ServiceEventBus
@@ -272,6 +282,14 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       deleteImageItems: (request) => this.deleteImageItems(request),
     })
 
+    this.manageCoverReviewService = new ManageCoverReviewService({
+      database: this.database,
+      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      buildMediaAccessContext: () => this.buildMediaAccessContext(),
+      getZipEntryIndexByPath: () => this.librarySnapshotService.getZipEntryIndexByPath(),
+      setImageHidden: (request) => this.setImageHidden(request),
+    })
+
     this.mediaResourceService = new MediaResourceService({
       mediaProtocolScheme: MEDIA_PROTOCOL_SCHEME,
       thumbnailCacheRootDir: this.thumbnailCacheRootDir,
@@ -303,6 +321,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       librarySnapshotService: this.librarySnapshotService,
       managementMutationService: this.managementMutationService,
       manageAdReviewService: this.manageAdReviewService,
+      manageCoverReviewService: this.manageCoverReviewService,
       mediaResourceService: this.mediaResourceService,
       runtimeDependencyService: this.runtimeDependencyService,
       eventBus: this.eventBus,
@@ -688,6 +707,22 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async confirmManageAdReviewDelete(request: ConfirmManageAdReviewDeleteRequestDto): Promise<ConfirmManageAdReviewDeleteResponseDto> {
     return this.managementHandlers.confirmManageAdReviewDelete(request)
+  }
+
+  async startManageCoverReview(request: StartManageCoverReviewRequestDto): Promise<StartManageCoverReviewResponseDto> {
+    return this.managementHandlers.startManageCoverReview(request)
+  }
+
+  async readManageCoverReviewTask(request: ReadManageCoverReviewTaskRequestDto): Promise<ReadManageCoverReviewTaskResponseDto> {
+    return this.managementHandlers.readManageCoverReviewTask(request)
+  }
+
+  async pauseManageCoverReviewTask(request: PauseManageCoverReviewTaskRequestDto): Promise<PauseManageCoverReviewTaskResponseDto> {
+    return this.managementHandlers.pauseManageCoverReviewTask(request)
+  }
+
+  async confirmManageCoverReviewHide(request: ConfirmManageCoverReviewHideRequestDto): Promise<ConfirmManageCoverReviewHideResponseDto> {
+    return this.managementHandlers.confirmManageCoverReviewHide(request)
   }
 
   async writePackageMetadata(request: WritePackageMetadataRequestDto): Promise<WritePackageMetadataResponseDto> {

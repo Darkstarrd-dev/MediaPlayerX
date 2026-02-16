@@ -35,6 +35,10 @@ import {
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
+  startManageCoverReviewResponseSchema,
+  readManageCoverReviewTaskResponseSchema,
+  pauseManageCoverReviewTaskResponseSchema,
+  confirmManageCoverReviewHideResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
   type EnqueueImportTaskRequestDto,
@@ -99,6 +103,14 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type StartManageCoverReviewRequestDto,
+  type StartManageCoverReviewResponseDto,
+  type ReadManageCoverReviewTaskRequestDto,
+  type ReadManageCoverReviewTaskResponseDto,
+  type PauseManageCoverReviewTaskRequestDto,
+  type PauseManageCoverReviewTaskResponseDto,
+  type ConfirmManageCoverReviewHideRequestDto,
+  type ConfirmManageCoverReviewHideResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
   type ReadAppStateRequestDto,
@@ -275,6 +287,46 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(confirmManageAdReviewDelete(request), options)
     return confirmManageAdReviewDeleteResponseSchema.parse(response)
+  }
+
+  async startManageCoverReview(
+    request: StartManageCoverReviewRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartManageCoverReviewResponseDto> {
+    const startManageCoverReview = requireBackendMethod('startManageCoverReview')
+
+    const response = await withAbort(startManageCoverReview(request), options)
+    return startManageCoverReviewResponseSchema.parse(response)
+  }
+
+  async readManageCoverReviewTask(
+    request: ReadManageCoverReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageCoverReviewTaskResponseDto> {
+    const readManageCoverReviewTask = requireBackendMethod('readManageCoverReviewTask')
+
+    const response = await withAbort(readManageCoverReviewTask(request), options)
+    return readManageCoverReviewTaskResponseSchema.parse(response)
+  }
+
+  async pauseManageCoverReviewTask(
+    request: PauseManageCoverReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PauseManageCoverReviewTaskResponseDto> {
+    const pauseManageCoverReviewTask = requireBackendMethod('pauseManageCoverReviewTask')
+
+    const response = await withAbort(pauseManageCoverReviewTask(request), options)
+    return pauseManageCoverReviewTaskResponseSchema.parse(response)
+  }
+
+  async confirmManageCoverReviewHide(
+    request: ConfirmManageCoverReviewHideRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ConfirmManageCoverReviewHideResponseDto> {
+    const confirmManageCoverReviewHide = requireBackendMethod('confirmManageCoverReviewHide')
+
+    const response = await withAbort(confirmManageCoverReviewHide(request), options)
+    return confirmManageCoverReviewHideResponseSchema.parse(response)
   }
 
   async writePackageMetadata(

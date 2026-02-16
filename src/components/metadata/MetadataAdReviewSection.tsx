@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import type { ManageAdReviewTaskDto } from '../../contracts/backend'
+import type { ManageAdReviewTaskDto, ManageReviewModeDto } from '../../contracts/backend'
 import { useI18n } from '../../i18n/useI18n'
 import {
   AD_REVIEW_CONCURRENCY_OPTIONS,
@@ -10,6 +10,8 @@ import {
 } from './metadataPanelUtils'
 
 interface MetadataAdReviewSectionProps {
+  reviewMode?: ManageReviewModeDto
+  canSwitchReviewMode?: boolean
   adReviewPending: boolean
   adReviewTask: ManageAdReviewTaskDto | null
   adReviewQueueTasks: ManageAdReviewTaskDto[]
@@ -37,10 +39,13 @@ interface MetadataAdReviewSectionProps {
   onAdReviewTailNChange: (value: number) => void
   onAdReviewTailStopCleanStreakChange: (value: number) => void
   onDismissAdReviewTask: () => void
+  onReviewModeChange?: (nextMode: ManageReviewModeDto) => void
   adReviewDeletePending?: boolean
 }
 
 export function MetadataAdReviewSection({
+  reviewMode = 'ad',
+  canSwitchReviewMode = false,
   adReviewPending,
   adReviewTask,
   adReviewQueueTasks,
@@ -68,6 +73,7 @@ export function MetadataAdReviewSection({
   onAdReviewTailNChange,
   onAdReviewTailStopCleanStreakChange,
   onDismissAdReviewTask,
+  onReviewModeChange = () => undefined,
   adReviewDeletePending = false,
 }: MetadataAdReviewSectionProps) {
   const { t } = useI18n()
@@ -141,9 +147,34 @@ export function MetadataAdReviewSection({
   return (
     <section className="metadata-ad-review-section" aria-label={t('a11y.manage.panel')}>
       <header>
-        <strong>{t('ui.manage.adReviewTitle')}</strong>
+        <strong>{reviewMode === 'cover' ? t('ui.manage.coverReviewTitle') : t('ui.manage.adReviewTitle')}</strong>
         {adReviewTask ? <span className={`manage-ad-review-status is-${adReviewTask.status}`}>{resolveStatusLabel(adReviewTask.status)}</span> : null}
       </header>
+
+      {canSwitchReviewMode ? (
+        <div className="metadata-ad-review-controls" role="group" aria-label={t('a11y.manage.controls')}>
+          <div className="metadata-ad-review-primary-row">
+            <button
+              className={`manage-ad-review-icon-btn ${reviewMode === 'ad' ? 'is-active' : ''}`}
+              type="button"
+              disabled={adReviewPending}
+              onClick={() => onReviewModeChange('ad')}
+              title={t('ui.manage.adReviewTitle')}
+            >
+              <span aria-hidden="true">AD</span>
+            </button>
+            <button
+              className={`manage-ad-review-icon-btn ${reviewMode === 'cover' ? 'is-active' : ''}`}
+              type="button"
+              disabled={adReviewPending}
+              onClick={() => onReviewModeChange('cover')}
+              title={t('ui.manage.coverReviewTitle')}
+            >
+              <span aria-hidden="true">C</span>
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="metadata-ad-review-controls" role="group" aria-label={t('a11y.manage.controls')}>
         <div className="metadata-ad-review-primary-row">
@@ -322,9 +353,13 @@ export function MetadataAdReviewSection({
           <p className="manage-ad-review-message">
             {adReviewTask.status === 'review'
               ? adReviewTask.candidates.length > 0
-                ? t('ui.manage.reviewCandidatesMessage', { count: adReviewTask.candidates.length })
-                : t('ui.manage.reviewCompletedMessage')
-              : adReviewTask.message ?? t('ui.manage.runningMessage')}
+                ? reviewMode === 'cover'
+                  ? t('ui.manage.reviewCandidatesMessageCover', { count: adReviewTask.candidates.length })
+                  : t('ui.manage.reviewCandidatesMessage', { count: adReviewTask.candidates.length })
+                : reviewMode === 'cover'
+                  ? t('ui.manage.reviewCompletedMessageCover')
+                  : t('ui.manage.reviewCompletedMessage')
+              : adReviewTask.message ?? (reviewMode === 'cover' ? t('ui.manage.runningMessageCover') : t('ui.manage.runningMessage'))}
           </p>
 
           {adReviewTask.status === 'review' && adReviewTask.candidates.length > 0 ? (
@@ -335,13 +370,21 @@ export function MetadataAdReviewSection({
                 disabled={adReviewPending || !hasCheckedAdReviewCandidates}
                 onClick={onDeleteSelectedAdReviewCandidates}
               >
-                {adReviewDeletePending ? t('ui.manage.deleting') : t('ui.manage.deleteSelectedCount', { count: selectedAdReviewCandidateCount })}
+                {adReviewDeletePending
+                  ? t('ui.manage.deleting')
+                  : reviewMode === 'cover'
+                    ? t('ui.manage.applySelectedCountCover', { count: selectedAdReviewCandidateCount })
+                    : t('ui.manage.deleteSelectedCount', { count: selectedAdReviewCandidateCount })}
               </button>
               <button className="feature-action-btn" type="button" disabled={adReviewPending} onClick={onDismissAdReviewTask}>
                 {t('ui.manage.resetDismiss')}
               </button>
               <span className={`manage-ad-review-selection-tag ${hasCheckedAdReviewCandidates ? 'is-active' : ''}`}>
-                {hasCheckedAdReviewCandidates ? t('ui.manage.selectedCandidatesRemovable') : t('ui.manage.noCandidateSelected')}
+                {hasCheckedAdReviewCandidates
+                  ? reviewMode === 'cover'
+                    ? t('ui.manage.selectedCandidatesHideable')
+                    : t('ui.manage.selectedCandidatesRemovable')
+                  : t('ui.manage.noCandidateSelected')}
               </span>
             </div>
           ) : null}
@@ -363,7 +406,7 @@ export function MetadataAdReviewSection({
           }}
         >
           <section className="settings-floating-panel manage-ad-review-start-dialog" onMouseDown={(event) => event.stopPropagation()}>
-            <h3>{t('ui.manage.startDialogTitle')}</h3>
+            <h3>{reviewMode === 'cover' ? t('ui.manage.startDialogTitleCover') : t('ui.manage.startDialogTitle')}</h3>
             <p className="manage-ad-review-start-description">{t('ui.manage.startDialogDescription')}</p>
             <div className="settings-floating-actions">
               <button type="button" onClick={() => startWithOption(true)}>

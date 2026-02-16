@@ -7,6 +7,8 @@ import {
   testAdReviewVisionModelResponseSchema,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type ConfirmManageCoverReviewHideRequestDto,
+  type ConfirmManageCoverReviewHideResponseDto,
   type DeleteImageItemsRequestDto,
   type DeleteImageItemsResponseDto,
   type ImageItemDto,
@@ -20,10 +22,22 @@ import {
   type PauseManageAdReviewTaskResponseDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
+  type ReadManageCoverReviewTaskRequestDto,
+  type ReadManageCoverReviewTaskResponseDto,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
+  type StartManageCoverReviewRequestDto,
+  type StartManageCoverReviewResponseDto,
+  type PauseManageCoverReviewTaskRequestDto,
+  type PauseManageCoverReviewTaskResponseDto,
+  type SetImageHiddenRequestDto,
+  type SetImageHiddenResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
+  startManageCoverReviewResponseSchema,
+  readManageCoverReviewTaskResponseSchema,
+  pauseManageCoverReviewTaskResponseSchema,
+  confirmManageCoverReviewHideResponseSchema,
 } from '../../../../contracts/backend'
 import { hashLocator, normalizePathKeyForMatch, parseSidebarNodePath, pathHasPrefix } from './utils'
 import { MOCK_LIBRARY_SNAPSHOT_REF, type MockRepositoryState } from './types'
@@ -251,6 +265,107 @@ export class MockAdReviewHandlers {
     return startManageAdReviewResponseSchema.parse({ task })
   }
 
+  startManageCoverReviewSync(request: StartManageCoverReviewRequestDto): StartManageCoverReviewResponseDto {
+    const snapshot = MOCK_LIBRARY_SNAPSHOT_REF.current
+    if (!snapshot) throw new Error('Mock library snapshot not initialized')
+    const selectedImageIds = this.resolveManageAdReviewImageIds(request)
+    const allSources = [...snapshot.image_packages, ...snapshot.image_directories]
+    const imageById = new Map<string, { source: ImagePackageDto; image: ImageItemDto }>()
+    for (const source of allSources) {
+      for (const image of source.images) {
+        imageById.set(image.id, { source, image })
+      }
+    }
+
+    const candidates: ManageAdReviewTaskDto['candidates'] = []
+    const imageSourceById: Record<string, ManageAdReviewImageSourceDto> = {}
+    let knownHashHits = 0
+    let llmSuspected = 0
+    let llmClean = 0
+    let strategySkipped = 0
+
+    for (const imageId of selectedImageIds) {
+      const entry = imageById.get(imageId)
+      if (!entry) {
+        continue
+      }
+
+      const { source, image } = entry
+      let imageSource: ManageAdReviewImageSourceDto = 'llm'
+
+      if (image.ordinal % 9 === 0) {
+        imageSource = 'strategy-skip'
+        strategySkipped += 1
+      } else if (image.ordinal % 5 === 0) {
+        imageSource = 'known-hash'
+        knownHashHits += 1
+      } else {
+        imageSource = 'llm'
+        if (image.ordinal % 3 === 0 || image.ordinal % 2 === 1) {
+          llmSuspected += 1
+        } else {
+          llmClean += 1
+        }
+      }
+
+      imageSourceById[image.id] = imageSource
+
+      const shouldBeCandidate = imageSource === 'known-hash' || (imageSource === 'llm' && (image.ordinal % 3 === 0 || image.ordinal % 2 === 1))
+      if (!shouldBeCandidate) {
+        continue
+      }
+
+      candidates.push({
+        image_id: image.id,
+        package_id: source.id,
+        package_name: source.package_name,
+        display_name: source.display_name,
+        ordinal: image.ordinal,
+        file_name:
+          image.media_locator.kind === 'filesystem'
+            ? image.media_locator.absolute_path.split(/[\\/]/).pop() ?? null
+            : image.media_locator.entry_name,
+        reason: imageSource === 'known-hash' ? 'mock_known_hash_non_body' : 'mock_llm_non_body_candidate',
+        source: imageSource === 'known-hash' ? 'known-hash' : 'llm',
+        hash: hashLocator(`cover:${source.id}:${image.id}`).toString(16).padStart(8, '0'),
+      })
+    }
+
+    const now = Date.now()
+    const taskId = `mock-manage-cover-review-${now}-${Math.round(Math.random() * 10_000)}`
+    const execution = normalizeAdReviewExecution(request)
+    const sourceDistribution = createAdReviewSourceDistribution({
+      knownHash: knownHashHits,
+      llmSuspected,
+      llmClean,
+      strategySkipped,
+    })
+
+    const task: ManageAdReviewTaskDto = {
+      task_id: taskId,
+      status: 'review',
+      progress: 1,
+      total_count: selectedImageIds.length,
+      reviewed_count: selectedImageIds.length,
+      suspected_count: candidates.length,
+      failed_count: 0,
+      known_hash_hits: knownHashHits,
+      llm_calls: llmSuspected + llmClean,
+      scope_image_ids: selectedImageIds,
+      image_source_by_id: imageSourceById,
+      execution,
+      audit: buildAdReviewAudit(sourceDistribution, candidates.length, selectedImageIds.length),
+      message: candidates.length > 0 ? `审核完成：疑似非正文 ${candidates.length} 张` : '审核完成：未发现疑似非正文',
+      error_detail: null,
+      candidates,
+      created_at_ms: now,
+      updated_at_ms: now,
+    }
+
+    this.state.manageCoverReviewTasks.set(taskId, task)
+    return startManageCoverReviewResponseSchema.parse({ task })
+  }
+
   readManageAdReviewTaskSync(request: ReadManageAdReviewTaskRequestDto): ReadManageAdReviewTaskResponseDto {
     return readManageAdReviewTaskResponseSchema.parse({
       task: this.state.manageAdReviewTasks.get(request.task_id) ?? null,
@@ -278,6 +393,37 @@ export class MockAdReviewHandlers {
 
     this.state.manageAdReviewTasks.set(nextTask.task_id, nextTask)
     return pauseManageAdReviewTaskResponseSchema.parse({
+      task: nextTask,
+    })
+  }
+
+  readManageCoverReviewTaskSync(request: ReadManageCoverReviewTaskRequestDto): ReadManageCoverReviewTaskResponseDto {
+    return readManageCoverReviewTaskResponseSchema.parse({
+      task: this.state.manageCoverReviewTasks.get(request.task_id) ?? null,
+    })
+  }
+
+  pauseManageCoverReviewTaskSync(
+    request: PauseManageCoverReviewTaskRequestDto,
+  ): PauseManageCoverReviewTaskResponseDto {
+    const task = this.state.manageCoverReviewTasks.get(request.task_id)
+    if (!task) {
+      throw new Error(`封面封底审核暂停失败：任务不存在 ${request.task_id}`)
+    }
+
+    const nextTask: ManageAdReviewTaskDto =
+      task.status === 'running'
+        ? {
+            ...task,
+            status: 'paused',
+            message: '封面封底审核已暂停',
+            error_detail: null,
+            updated_at_ms: Date.now(),
+          }
+        : task
+
+    this.state.manageCoverReviewTasks.set(nextTask.task_id, nextTask)
+    return pauseManageCoverReviewTaskResponseSchema.parse({
       task: nextTask,
     })
   }
@@ -358,6 +504,61 @@ export class MockAdReviewHandlers {
       task: nextTask,
       deleted_count: deleteResult.deleted_count,
       failed: deleteResult.failed,
+      updated_at_ms: now,
+    })
+  }
+
+  confirmManageCoverReviewHideSync(
+    request: ConfirmManageCoverReviewHideRequestDto,
+    setImageHiddenSync: (req: SetImageHiddenRequestDto) => SetImageHiddenResponseDto,
+  ): ConfirmManageCoverReviewHideResponseDto {
+    const task = this.state.manageCoverReviewTasks.get(request.task_id)
+    if (!task) {
+      throw new Error(`封面封底审核应用隐藏失败：任务不存在 ${request.task_id}`)
+    }
+
+    const candidateIds = new Set(task.candidates.map((item) => item.image_id))
+    const normalizedIds = Array.from(
+      new Set(request.image_ids.map((value) => value.trim()).filter((value) => value.length > 0 && candidateIds.has(value))),
+    )
+    if (normalizedIds.length === 0) {
+      throw new Error('封面封底审核应用隐藏失败：未选中候选项')
+    }
+
+    const setHiddenResult = setImageHiddenSync({
+      image_ids: normalizedIds,
+      hidden: true,
+    })
+
+    const requestedCount = normalizedIds.length
+    const appliedCount = Math.min(requestedCount, Math.max(0, setHiddenResult.updated_count))
+    const removedCandidateImageIds = normalizedIds.slice(0, appliedCount)
+    const removedSet = new Set(removedCandidateImageIds)
+
+    const now = Date.now()
+    const nextImageSourceById = { ...task.image_source_by_id }
+    for (const imageId of removedSet) {
+      delete nextImageSourceById[imageId]
+    }
+
+    const nextCandidates = task.candidates.filter((item) => !removedSet.has(item.image_id))
+
+    const nextTask: ManageAdReviewTaskDto = {
+      ...task,
+      candidates: nextCandidates,
+      suspected_count: nextCandidates.length,
+      scope_image_ids: task.scope_image_ids.filter((imageId) => !removedSet.has(imageId)),
+      image_source_by_id: nextImageSourceById,
+      updated_at_ms: now,
+      message: appliedCount > 0 ? `已隐藏 ${appliedCount} 张疑似非正文` : task.message,
+    }
+
+    this.state.manageCoverReviewTasks.set(task.task_id, nextTask)
+
+    return confirmManageCoverReviewHideResponseSchema.parse({
+      task: nextTask,
+      updated_count: setHiddenResult.updated_count,
+      requested_count: requestedCount,
       updated_at_ms: now,
     })
   }

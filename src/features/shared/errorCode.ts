@@ -38,6 +38,10 @@ function parseErrorCode(error: unknown): ParsedErrorCode {
   }
 }
 
+export function getErrorCode(error: unknown): string | null {
+  return parseErrorCode(error).code
+}
+
 export function toErrorDetailWithCode(error: unknown, t: TranslateFn): string {
   const parsed = parseErrorCode(error)
   if (parsed.code) {

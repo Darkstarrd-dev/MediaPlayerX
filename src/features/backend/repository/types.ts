@@ -27,6 +27,14 @@ import type {
   TestAdReviewVisionModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
+  StartManageCoverReviewRequestDto,
+  StartManageCoverReviewResponseDto,
+  ReadManageCoverReviewTaskRequestDto,
+  ReadManageCoverReviewTaskResponseDto,
+  PauseManageCoverReviewTaskRequestDto,
+  PauseManageCoverReviewTaskResponseDto,
+  ConfirmManageCoverReviewHideRequestDto,
+  ConfirmManageCoverReviewHideResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
@@ -133,6 +141,22 @@ export interface MediaRepository {
     request: ConfirmManageAdReviewDeleteRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ConfirmManageAdReviewDeleteResponseDto>
+  startManageCoverReview?(
+    request: StartManageCoverReviewRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartManageCoverReviewResponseDto>
+  readManageCoverReviewTask?(
+    request: ReadManageCoverReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageCoverReviewTaskResponseDto>
+  pauseManageCoverReviewTask?(
+    request: PauseManageCoverReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PauseManageCoverReviewTaskResponseDto>
+  confirmManageCoverReviewHide?(
+    request: ConfirmManageCoverReviewHideRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ConfirmManageCoverReviewHideResponseDto>
   writePackageMetadata?(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -224,6 +248,16 @@ export interface SynchronousMediaRepository extends MediaRepository {
   confirmManageAdReviewDeleteSync?(
     request: ConfirmManageAdReviewDeleteRequestDto,
   ): ConfirmManageAdReviewDeleteResponseDto
+  startManageCoverReviewSync?(request: StartManageCoverReviewRequestDto): StartManageCoverReviewResponseDto
+  readManageCoverReviewTaskSync?(
+    request: ReadManageCoverReviewTaskRequestDto,
+  ): ReadManageCoverReviewTaskResponseDto
+  pauseManageCoverReviewTaskSync?(
+    request: PauseManageCoverReviewTaskRequestDto,
+  ): PauseManageCoverReviewTaskResponseDto
+  confirmManageCoverReviewHideSync?(
+    request: ConfirmManageCoverReviewHideRequestDto,
+  ): ConfirmManageCoverReviewHideResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
   writePackageExternalMetadataSync?(
     request: WritePackageExternalMetadataRequestDto,

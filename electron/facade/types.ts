@@ -7,6 +7,7 @@ import { LibraryReadWriteService } from '../services/file-system-read/libraryRea
 import { LibrarySnapshotService } from '../services/file-system-read/librarySnapshotService'
 import { ManagementMutationService } from '../services/file-system-read/managementMutationService'
 import { ManageAdReviewService } from '../services/file-system-read/manageAdReviewService'
+import { ManageCoverReviewService } from '../services/file-system-read/manageCoverReviewService'
 import { MediaResourceService } from '../services/file-system-read/mediaResourceService'
 import { RuntimeDependencyService } from '../services/file-system-read/runtimeDependencyService'
 import { ServiceEventBus } from '../services/file-system-read/serviceEventBus'
@@ -27,6 +28,7 @@ export interface FileSystemFacadeContext {
   librarySnapshotService: LibrarySnapshotService
   managementMutationService: ManagementMutationService
   manageAdReviewService: ManageAdReviewService
+  manageCoverReviewService: ManageCoverReviewService
   mediaResourceService: MediaResourceService
   runtimeDependencyService: RuntimeDependencyService
   eventBus: ServiceEventBus

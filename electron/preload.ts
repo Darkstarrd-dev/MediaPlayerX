@@ -50,6 +50,14 @@ import {
   testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
+  startManageCoverReviewRequestSchema,
+  startManageCoverReviewResponseSchema,
+  readManageCoverReviewTaskRequestSchema,
+  readManageCoverReviewTaskResponseSchema,
+  pauseManageCoverReviewTaskRequestSchema,
+  pauseManageCoverReviewTaskResponseSchema,
+  confirmManageCoverReviewHideRequestSchema,
+  confirmManageCoverReviewHideResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -151,6 +159,26 @@ const backendApi = {
     const parsed = confirmManageAdReviewDeleteRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.confirmManageAdReviewDelete, parsed)
     return confirmManageAdReviewDeleteResponseSchema.parse(response)
+  },
+  startManageCoverReview: async (request: unknown) => {
+    const parsed = startManageCoverReviewRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.startManageCoverReview, parsed)
+    return startManageCoverReviewResponseSchema.parse(response)
+  },
+  readManageCoverReviewTask: async (request: unknown) => {
+    const parsed = readManageCoverReviewTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readManageCoverReviewTask, parsed)
+    return readManageCoverReviewTaskResponseSchema.parse(response)
+  },
+  pauseManageCoverReviewTask: async (request: unknown) => {
+    const parsed = pauseManageCoverReviewTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pauseManageCoverReviewTask, parsed)
+    return pauseManageCoverReviewTaskResponseSchema.parse(response)
+  },
+  confirmManageCoverReviewHide: async (request: unknown) => {
+    const parsed = confirmManageCoverReviewHideRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.confirmManageCoverReviewHide, parsed)
+    return confirmManageCoverReviewHideResponseSchema.parse(response)
   },
   writePackageMetadata: async (request: unknown) => {
     const parsed = writePackageMetadataRequestSchema.parse(request)

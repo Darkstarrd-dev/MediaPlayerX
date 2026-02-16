@@ -56,6 +56,14 @@ import type {
   TestAdReviewVisionModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
+  StartManageCoverReviewRequestDto,
+  StartManageCoverReviewResponseDto,
+  ReadManageCoverReviewTaskRequestDto,
+  ReadManageCoverReviewTaskResponseDto,
+  PauseManageCoverReviewTaskRequestDto,
+  PauseManageCoverReviewTaskResponseDto,
+  ConfirmManageCoverReviewHideRequestDto,
+  ConfirmManageCoverReviewHideResponseDto,
   SetImageHiddenRequestDto,
   SetImageHiddenResponseDto,
   DeleteImageItemsRequestDto,
@@ -96,6 +104,16 @@ interface MediaPlayerBackendApi {
   confirmManageAdReviewDelete?: (
     request: ConfirmManageAdReviewDeleteRequestDto,
   ) => Promise<ConfirmManageAdReviewDeleteResponseDto>
+  startManageCoverReview?: (request: StartManageCoverReviewRequestDto) => Promise<StartManageCoverReviewResponseDto>
+  readManageCoverReviewTask?: (
+    request: ReadManageCoverReviewTaskRequestDto,
+  ) => Promise<ReadManageCoverReviewTaskResponseDto>
+  pauseManageCoverReviewTask?: (
+    request: PauseManageCoverReviewTaskRequestDto,
+  ) => Promise<PauseManageCoverReviewTaskResponseDto>
+  confirmManageCoverReviewHide?: (
+    request: ConfirmManageCoverReviewHideRequestDto,
+  ) => Promise<ConfirmManageCoverReviewHideResponseDto>
   writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
   writePackageExternalMetadata?: (
     request: WritePackageExternalMetadataRequestDto,

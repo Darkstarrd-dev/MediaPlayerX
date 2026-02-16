@@ -148,9 +148,9 @@ function ImageMainSection({
   adReviewDeletePending = false,
   adReviewPanelOpen,
   checkedImageIds,
-  adReviewScopeImageIds,
-  adReviewLlmReviewedImageIds,
-  adReviewNonLlmReviewedImageIds,
+  adReviewScopeImageIds: _adReviewScopeImageIds,
+  adReviewLlmReviewedImageIds: _adReviewLlmReviewedImageIds,
+  adReviewNonLlmReviewedImageIds: _adReviewNonLlmReviewedImageIds,
   adReviewCandidateImageIds = EMPTY_IMAGE_ID_SET,
   adReviewResultsMode = false,
   adReviewGroupByPackageRows = false,
@@ -185,6 +185,9 @@ function ImageMainSection({
   onThumbnailWheelSwitchSidebarNode,
 }: ImageMainSectionProps) {
   const { t } = useI18n()
+  void _adReviewScopeImageIds
+  void _adReviewLlmReviewedImageIds
+  void _adReviewNonLlmReviewedImageIds
   const [metadataFetchOpen, setMetadataFetchOpen] = useState(false)
   const [openScalePopover, setOpenScalePopover] = useState(false)
   const [scaleDraftValue, setScaleDraftValue] = useState(
@@ -761,12 +764,8 @@ function ImageMainSection({
               const fileName = mediaLocatorFileName(image.mediaLocator)
               const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
               const isChecked = checkedImageIds.has(image.id)
-              const inAdReviewScope = adReviewScopeImageIds.has(image.id)
-              const isAdReviewLlmReviewed = adReviewLlmReviewedImageIds.has(image.id)
-              const isAdReviewNonLlmReviewed = adReviewNonLlmReviewedImageIds.has(image.id)
               const isAdReviewCandidate = adReviewCandidateImageIds.has(image.id)
               const isAdReviewExcluded = manageMode && isAdReviewCandidate && !isChecked
-              const isAdReviewPending = inAdReviewScope && !isAdReviewLlmReviewed && !isAdReviewNonLlmReviewed
               return (
                 <div
                   key={`${ref.packageId}-${ref.imageIndex}`}
@@ -774,7 +773,7 @@ function ImageMainSection({
                   data-manage-package-id={ref.packageId}
                   data-manage-image-index={String(ref.imageIndex)}
                   data-manage-absolute-index={String(absoluteIndex)}
-                  className={`name-list-row ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${manageMode && image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${manageMode && inAdReviewScope ? 'is-ad-review-scope' : ''} ${manageMode && isAdReviewPending ? 'is-ad-review-pending' : ''} ${manageMode && isAdReviewLlmReviewed ? 'is-ad-reviewed-llm' : ''} ${manageMode && isAdReviewNonLlmReviewed ? 'is-ad-reviewed-non-llm' : ''} ${isAdReviewExcluded ? 'is-ad-review-excluded' : ''}`}
+                  className={`name-list-row ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${manageMode && image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${isAdReviewExcluded ? 'is-ad-review-excluded' : ''}`}
                 >
                   <button
                     className="name-list-row-main"
@@ -823,15 +822,11 @@ function ImageMainSection({
               }
 
                 const absoluteIndex = pageStart + pageIndex
-                const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
-                const imageSrc = imageUrlByIdForRender[image.id] ?? ''
+              const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
+              const imageSrc = imageUrlByIdForRender[image.id] ?? ''
               const isChecked = checkedImageIds.has(image.id)
-              const inAdReviewScope = adReviewScopeImageIds.has(image.id)
-              const isAdReviewLlmReviewed = adReviewLlmReviewedImageIds.has(image.id)
-              const isAdReviewNonLlmReviewed = adReviewNonLlmReviewedImageIds.has(image.id)
               const isAdReviewCandidate = adReviewCandidateImageIds.has(image.id)
               const isAdReviewExcluded = manageMode && isAdReviewCandidate && !isChecked
-              const isAdReviewPending = inAdReviewScope && !isAdReviewLlmReviewed && !isAdReviewNonLlmReviewed
               const previousRef = pageIndex > 0 ? refsInPageForRender[pageIndex - 1] : null
               const startsNewPackageRow = adReviewGroupByPackageRows && (pageIndex === 0 || previousRef?.packageId !== ref.packageId)
               return (
@@ -841,7 +836,7 @@ function ImageMainSection({
                     data-manage-package-id={ref.packageId}
                     data-manage-image-index={String(ref.imageIndex)}
                     data-manage-absolute-index={String(absoluteIndex)}
-                    className={`thumb-card ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${manageMode && image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${manageMode && inAdReviewScope ? 'is-ad-review-scope' : ''} ${manageMode && isAdReviewPending ? 'is-ad-review-pending' : ''} ${manageMode && isAdReviewLlmReviewed ? 'is-ad-reviewed-llm' : ''} ${manageMode && isAdReviewNonLlmReviewed ? 'is-ad-reviewed-non-llm' : ''} ${isAdReviewExcluded ? 'is-ad-review-excluded' : ''}`}
+                    className={`thumb-card ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${manageMode && image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${isAdReviewExcluded ? 'is-ad-review-excluded' : ''}`}
                     style={{ width: `${actualCellWidth}px`, gridColumnStart: startsNewPackageRow ? 1 : undefined }}
                   >
                     <button

@@ -129,28 +129,6 @@
   opacity: 0.64;
 }
 
-.thumb-card.is-manage.is-ad-review-scope,
-.name-list-row.is-manage.is-ad-review-scope {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mpx-accent) 36%, transparent);
-}
-
-.thumb-card.is-manage.is-ad-review-pending,
-.name-list-row.is-manage.is-ad-review-pending {
-  opacity: 0.58;
-}
-
-.thumb-card.is-manage.is-ad-reviewed-llm,
-.name-list-row.is-manage.is-ad-reviewed-llm {
-  border-color: color-mix(in srgb, var(--mpx-accent) 54%, var(--mpx-border-1));
-  background: color-mix(in srgb, var(--mpx-accent-soft) 36%, var(--mpx-bg-elevated));
-}
-
-.thumb-card.is-manage.is-ad-reviewed-non-llm,
-.name-list-row.is-manage.is-ad-reviewed-non-llm {
-  border-color: color-mix(in srgb, var(--mpx-status-warning-text) 45%, var(--mpx-border-1));
-  background: color-mix(in srgb, var(--mpx-status-warning-bg) 36%, var(--mpx-bg-elevated));
-}
-
 .thumb-card.is-manage.is-ad-review-excluded .thumb-media-image {
   filter: blur(6px) saturate(0.68);
   opacity: 0.84;

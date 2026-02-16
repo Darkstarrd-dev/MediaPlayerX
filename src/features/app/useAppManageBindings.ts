@@ -41,6 +41,8 @@ export function useAppManageBindings({
     setGradeByPackage,
     manageMode,
     metadataManageMode,
+    manageReviewMode,
+    setManageReviewMode,
     setManageMode,
     setMetadataManageMode,
     setAdReviewPanelOpen,
@@ -121,6 +123,8 @@ export function useAppManageBindings({
     adReviewTailN,
     adReviewTailStopCleanStreak,
     adReviewMaxConcurrency,
+    reviewMode: manageReviewMode,
+    onReviewModeChange: setManageReviewMode,
     clearAllSelections,
     replaceImageCheckedIds,
     setManageOperationHint,
@@ -135,11 +139,15 @@ export function useAppManageBindings({
     }
 
     const reviewTask = manageAdReview.task
+    const isCoverApplyMode = manageAdReview.applyActionMode === 'cover'
+    const isReviewReady = reviewTask?.status === 'review'
     const shouldRouteToAdReviewDelete =
-      reviewTask?.status === 'review' &&
+      isReviewReady &&
       imageCheckedIds.some((imageId) => reviewTask.candidates.some((candidate) => candidate.image_id === imageId))
 
-    if (shouldRouteToAdReviewDelete) {
+    const shouldRouteToCoverReviewHide = Boolean(isCoverApplyMode && isReviewReady)
+
+    if (shouldRouteToCoverReviewHide || shouldRouteToAdReviewDelete) {
       setDeleteConfirmOpen(false)
       setManageOperationHint(null)
       await manageAdReview.confirmDeleteSelectedCandidates()

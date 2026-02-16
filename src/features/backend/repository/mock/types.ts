@@ -2,12 +2,14 @@ import type {
   LibrarySnapshotDto,
   ImportTaskDto,
   ManageAdReviewTaskDto,
+  ManageCoverReviewTaskDto,
 } from '../../../../contracts/backend'
 
 export interface MockRepositoryState {
   playlistIds: string[]
   importTasks: ImportTaskDto[]
   manageAdReviewTasks: Map<string, ManageAdReviewTaskDto>
+  manageCoverReviewTasks: Map<string, ManageCoverReviewTaskDto>
   appStates: Map<string, string>
   sourceCoverImageUrlBySourceId: Record<string, string>
 }

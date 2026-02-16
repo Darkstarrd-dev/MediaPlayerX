@@ -1092,6 +1092,8 @@ export function useAppWorkspaceProps({
     onFeatureGradeFilterChange: setFeatureGradeFilter,
     adReviewFeatureVisible: appSettings.adReviewVisionVerified,
     adReviewPanelOpen,
+    manageReviewMode: manageAdReview.reviewMode,
+    canSwitchManageReviewMode: manageAdReview.supportsCoverReview,
     canExecuteAdReview:
       (activeSelectionScope === "sidebar" &&
         sidebarCheckedNodeIds.length > 0) ||
@@ -1161,6 +1163,7 @@ export function useAppWorkspaceProps({
     ...createAdReviewSettingHandlers({
       updateSettings: appSettings.updateSettings,
     }),
+    onManageReviewModeChange: manageAdReview.setReviewMode,
     onDismissAdReviewTask: manageAdReview.dismissTask,
     metadataCollapsed: appSettings.metadataCollapsed,
     metadataRatio: appSettings.metadataRatio,

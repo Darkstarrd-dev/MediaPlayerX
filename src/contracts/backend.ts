@@ -309,6 +309,8 @@ export const moveSidebarNodesResponseSchema = z.object({
 
 export const manageAdReviewSelectionScopeSchema = z.enum(['image', 'sidebar'])
 
+export const manageReviewModeSchema = z.enum(['ad', 'cover'])
+
 export const manageAdReviewDecisionSourceSchema = z.enum(['known-hash', 'llm'])
 
 export const manageAdReviewImageSourceSchema = z.enum([
@@ -445,6 +447,38 @@ export const confirmManageAdReviewDeleteResponseSchema = z.object({
       reason: z.string().min(1),
     }),
   ),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const manageCoverReviewTaskSchema = manageAdReviewTaskSchema
+
+export const startManageCoverReviewRequestSchema = startManageAdReviewRequestSchema
+
+export const startManageCoverReviewResponseSchema = z.object({
+  task: manageCoverReviewTaskSchema,
+})
+
+export const readManageCoverReviewTaskRequestSchema = readManageAdReviewTaskRequestSchema
+
+export const readManageCoverReviewTaskResponseSchema = z.object({
+  task: manageCoverReviewTaskSchema.nullable(),
+})
+
+export const pauseManageCoverReviewTaskRequestSchema = pauseManageAdReviewTaskRequestSchema
+
+export const pauseManageCoverReviewTaskResponseSchema = z.object({
+  task: manageCoverReviewTaskSchema,
+})
+
+export const confirmManageCoverReviewHideRequestSchema = z.object({
+  task_id: z.string().min(1),
+  image_ids: z.array(z.string().min(1)).min(1),
+})
+
+export const confirmManageCoverReviewHideResponseSchema = z.object({
+  task: manageCoverReviewTaskSchema,
+  updated_count: nonNegativeIntSchema,
+  requested_count: nonNegativeIntSchema,
   updated_at_ms: z.number().int().positive(),
 })
 
@@ -854,6 +888,7 @@ export type DeleteSidebarNodesResponseDto = z.infer<typeof deleteSidebarNodesRes
 export type MoveSidebarNodesRequestDto = z.infer<typeof moveSidebarNodesRequestSchema>
 export type MoveSidebarNodesResponseDto = z.infer<typeof moveSidebarNodesResponseSchema>
 export type ManageAdReviewSelectionScopeDto = z.infer<typeof manageAdReviewSelectionScopeSchema>
+export type ManageReviewModeDto = z.infer<typeof manageReviewModeSchema>
 export type ManageAdReviewDecisionSourceDto = z.infer<typeof manageAdReviewDecisionSourceSchema>
 export type ManageAdReviewImageSourceDto = z.infer<typeof manageAdReviewImageSourceSchema>
 export type ManageAdReviewTaskStatusDto = z.infer<typeof manageAdReviewTaskStatusSchema>
@@ -865,6 +900,14 @@ export type ManageAdReviewSourceDistributionDto = z.infer<typeof manageAdReviewS
 export type ManageAdReviewTaskAuditDto = z.infer<typeof manageAdReviewTaskAuditSchema>
 export type ManageAdReviewCandidateDto = z.infer<typeof manageAdReviewCandidateSchema>
 export type ManageAdReviewTaskDto = z.infer<typeof manageAdReviewTaskSchema>
+export type ManageCoverReviewDecisionSourceDto = ManageAdReviewDecisionSourceDto
+export type ManageCoverReviewImageSourceDto = ManageAdReviewImageSourceDto
+export type ManageCoverReviewTaskStatusDto = ManageAdReviewTaskStatusDto
+export type ManageCoverReviewStrategyDto = ManageAdReviewStrategyDto
+export type ManageCoverReviewTaskExecutionDto = ManageAdReviewTaskExecutionDto
+export type ManageCoverReviewSourceDistributionDto = ManageAdReviewSourceDistributionDto
+export type ManageCoverReviewTaskAuditDto = ManageAdReviewTaskAuditDto
+export type ManageCoverReviewCandidateDto = ManageAdReviewCandidateDto
 export type StartManageAdReviewRequestDto = z.infer<typeof startManageAdReviewRequestSchema>
 export type StartManageAdReviewResponseDto = z.infer<typeof startManageAdReviewResponseSchema>
 export type ReadManageAdReviewTaskRequestDto = z.infer<typeof readManageAdReviewTaskRequestSchema>
@@ -875,6 +918,15 @@ export type TestAdReviewVisionModelRequestDto = z.infer<typeof testAdReviewVisio
 export type TestAdReviewVisionModelResponseDto = z.infer<typeof testAdReviewVisionModelResponseSchema>
 export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManageAdReviewDeleteRequestSchema>
 export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
+export type ManageCoverReviewTaskDto = z.infer<typeof manageCoverReviewTaskSchema>
+export type StartManageCoverReviewRequestDto = z.infer<typeof startManageCoverReviewRequestSchema>
+export type StartManageCoverReviewResponseDto = z.infer<typeof startManageCoverReviewResponseSchema>
+export type ReadManageCoverReviewTaskRequestDto = z.infer<typeof readManageCoverReviewTaskRequestSchema>
+export type ReadManageCoverReviewTaskResponseDto = z.infer<typeof readManageCoverReviewTaskResponseSchema>
+export type PauseManageCoverReviewTaskRequestDto = z.infer<typeof pauseManageCoverReviewTaskRequestSchema>
+export type PauseManageCoverReviewTaskResponseDto = z.infer<typeof pauseManageCoverReviewTaskResponseSchema>
+export type ConfirmManageCoverReviewHideRequestDto = z.infer<typeof confirmManageCoverReviewHideRequestSchema>
+export type ConfirmManageCoverReviewHideResponseDto = z.infer<typeof confirmManageCoverReviewHideResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
 export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
 export type WritePackageExternalMetadataRequestDto = z.infer<typeof writePackageExternalMetadataRequestSchema>

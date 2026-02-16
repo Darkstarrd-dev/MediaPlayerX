@@ -9,6 +9,8 @@ import {
   type ClearDatabaseResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type ConfirmManageCoverReviewHideRequestDto,
+  type ConfirmManageCoverReviewHideResponseDto,
   type DeleteImageItemsRequestDto,
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
@@ -45,6 +47,8 @@ import {
   type ResolveMediaResourceResponseDto,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
+  type StartManageCoverReviewRequestDto,
+  type StartManageCoverReviewResponseDto,
   type WriteAppStateRequestDto,
   type WriteAppStateResponseDto,
   type WritePackageExternalMetadataRequestDto,
@@ -61,8 +65,12 @@ import {
   type WriteAudioMetadataResponseDto,
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
+  type ReadManageCoverReviewTaskRequestDto,
+  type ReadManageCoverReviewTaskResponseDto,
   type PauseManageAdReviewTaskRequestDto,
   type PauseManageAdReviewTaskResponseDto,
+  type PauseManageCoverReviewTaskRequestDto,
+  type PauseManageCoverReviewTaskResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
   type SaveVideoCoverRequestDto,
@@ -101,6 +109,7 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     playlistIds: INITIAL_SNAPSHOT.videos.slice(0, 3).map((v) => v.id),
     importTasks: [],
     manageAdReviewTasks: new Map(),
+    manageCoverReviewTasks: new Map(),
     appStates: new Map(),
     sourceCoverImageUrlBySourceId: {},
   }
@@ -270,6 +279,50 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
     return resolveAsync(this.confirmManageAdReviewDeleteSync(request), options)
+  }
+
+  startManageCoverReviewSync(request: StartManageCoverReviewRequestDto): StartManageCoverReviewResponseDto {
+    return this.adReview.startManageCoverReviewSync(request)
+  }
+
+  async startManageCoverReview(
+    request: StartManageCoverReviewRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartManageCoverReviewResponseDto> {
+    return resolveAsync(this.startManageCoverReviewSync(request), options)
+  }
+
+  readManageCoverReviewTaskSync(request: ReadManageCoverReviewTaskRequestDto): ReadManageCoverReviewTaskResponseDto {
+    return this.adReview.readManageCoverReviewTaskSync(request)
+  }
+
+  async readManageCoverReviewTask(
+    request: ReadManageCoverReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageCoverReviewTaskResponseDto> {
+    return resolveAsync(this.readManageCoverReviewTaskSync(request), options)
+  }
+
+  pauseManageCoverReviewTaskSync(request: PauseManageCoverReviewTaskRequestDto): PauseManageCoverReviewTaskResponseDto {
+    return this.adReview.pauseManageCoverReviewTaskSync(request)
+  }
+
+  async pauseManageCoverReviewTask(
+    request: PauseManageCoverReviewTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PauseManageCoverReviewTaskResponseDto> {
+    return resolveAsync(this.pauseManageCoverReviewTaskSync(request), options)
+  }
+
+  confirmManageCoverReviewHideSync(request: ConfirmManageCoverReviewHideRequestDto): ConfirmManageCoverReviewHideResponseDto {
+    return this.adReview.confirmManageCoverReviewHideSync(request, (req) => this.setImageHiddenSync(req))
+  }
+
+  async confirmManageCoverReviewHide(
+    request: ConfirmManageCoverReviewHideRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ConfirmManageCoverReviewHideResponseDto> {
+    return resolveAsync(this.confirmManageCoverReviewHideSync(request), options)
   }
 
   writePackageMetadataSync(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto {

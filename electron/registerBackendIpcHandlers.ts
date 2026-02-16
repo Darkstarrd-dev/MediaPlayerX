@@ -49,6 +49,14 @@ import {
   testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
+  startManageCoverReviewRequestSchema,
+  startManageCoverReviewResponseSchema,
+  readManageCoverReviewTaskRequestSchema,
+  readManageCoverReviewTaskResponseSchema,
+  pauseManageCoverReviewTaskRequestSchema,
+  pauseManageCoverReviewTaskResponseSchema,
+  confirmManageCoverReviewHideRequestSchema,
+  confirmManageCoverReviewHideResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -242,6 +250,30 @@ export function registerBackendIpcHandlers(): void {
     const request = confirmManageAdReviewDeleteRequestSchema.parse(payload)
     const response = await ensureService().confirmManageAdReviewDelete(request)
     return confirmManageAdReviewDeleteResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.startManageCoverReview, async (_event, payload: unknown) => {
+    const request = startManageCoverReviewRequestSchema.parse(payload)
+    const response = await ensureService().startManageCoverReview(request)
+    return startManageCoverReviewResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readManageCoverReviewTask, async (_event, payload: unknown) => {
+    const request = readManageCoverReviewTaskRequestSchema.parse(payload)
+    const response = await ensureService().readManageCoverReviewTask(request)
+    return readManageCoverReviewTaskResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.pauseManageCoverReviewTask, async (_event, payload: unknown) => {
+    const request = pauseManageCoverReviewTaskRequestSchema.parse(payload)
+    const response = await ensureService().pauseManageCoverReviewTask(request)
+    return pauseManageCoverReviewTaskResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.confirmManageCoverReviewHide, async (_event, payload: unknown) => {
+    const request = confirmManageCoverReviewHideRequestSchema.parse(payload)
+    const response = await ensureService().confirmManageCoverReviewHide(request)
+    return confirmManageCoverReviewHideResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writePackageMetadata, async (_event, payload: unknown) => {

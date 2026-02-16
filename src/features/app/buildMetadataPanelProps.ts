@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
+import type { ManageReviewModeDto } from '../../contracts/backend'
 import type { MetadataPanelProps } from '../../components/MetadataPanel'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { AudioItem, ImageItem, ImagePackage, VideoItem } from '../../types'
@@ -31,6 +32,8 @@ interface BuildMetadataPanelPropsParams {
   onFeatureGradeFilterChange: (value: number | null) => void
   adReviewFeatureVisible: boolean
   adReviewPanelOpen: boolean
+  manageReviewMode?: ManageReviewModeDto
+  canSwitchManageReviewMode?: boolean
   canExecuteAdReview: boolean
   adReviewPending: boolean
   adReviewDeletePending?: boolean
@@ -59,6 +62,7 @@ interface BuildMetadataPanelPropsParams {
   onAdReviewTailNChange: (value: number) => void
   onAdReviewTailStopCleanStreakChange: (value: number) => void
   onDismissAdReviewTask: () => void
+  onManageReviewModeChange?: (nextMode: ManageReviewModeDto) => void
   metadataCollapsed: boolean
   metadataRatio: number
   hasImageFocus: boolean
@@ -135,6 +139,8 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onFeatureGradeFilterChange: params.onFeatureGradeFilterChange,
     adReviewFeatureVisible: params.adReviewFeatureVisible,
     adReviewPanelOpen: params.adReviewPanelOpen,
+    manageReviewMode: params.manageReviewMode,
+    canSwitchManageReviewMode: params.canSwitchManageReviewMode,
     canExecuteAdReview: params.canExecuteAdReview,
     adReviewPending: params.adReviewPending,
     adReviewDeletePending: params.adReviewDeletePending,
@@ -163,6 +169,7 @@ export function buildMetadataPanelProps(params: BuildMetadataPanelPropsParams): 
     onAdReviewTailNChange: params.onAdReviewTailNChange,
     onAdReviewTailStopCleanStreakChange: params.onAdReviewTailStopCleanStreakChange,
     onDismissAdReviewTask: params.onDismissAdReviewTask,
+    onManageReviewModeChange: params.onManageReviewModeChange,
     metadataCollapsed: params.metadataCollapsed,
     metadataRatio: params.metadataRatio,
     hasImageFocus: params.hasImageFocus,

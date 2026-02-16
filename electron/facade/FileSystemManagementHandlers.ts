@@ -17,6 +17,14 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type StartManageCoverReviewRequestDto,
+  type StartManageCoverReviewResponseDto,
+  type ReadManageCoverReviewTaskRequestDto,
+  type ReadManageCoverReviewTaskResponseDto,
+  type PauseManageCoverReviewTaskRequestDto,
+  type PauseManageCoverReviewTaskResponseDto,
+  type ConfirmManageCoverReviewHideRequestDto,
+  type ConfirmManageCoverReviewHideResponseDto,
 } from '../../src/contracts/backend'
 import { FileSystemFacadeContext } from './types'
 
@@ -75,5 +83,29 @@ export class FileSystemManagementHandlers {
     request: ConfirmManageAdReviewDeleteRequestDto,
   ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
     return this.context.manageAdReviewService.confirmManageAdReviewDelete(request)
+  }
+
+  async startManageCoverReview(
+    request: StartManageCoverReviewRequestDto,
+  ): Promise<StartManageCoverReviewResponseDto> {
+    return this.context.manageCoverReviewService.startManageCoverReview(request)
+  }
+
+  async readManageCoverReviewTask(
+    request: ReadManageCoverReviewTaskRequestDto,
+  ): Promise<ReadManageCoverReviewTaskResponseDto> {
+    return this.context.manageCoverReviewService.readManageCoverReviewTask(request)
+  }
+
+  async pauseManageCoverReviewTask(
+    request: PauseManageCoverReviewTaskRequestDto,
+  ): Promise<PauseManageCoverReviewTaskResponseDto> {
+    return this.context.manageCoverReviewService.pauseManageCoverReviewTask(request)
+  }
+
+  async confirmManageCoverReviewHide(
+    request: ConfirmManageCoverReviewHideRequestDto,
+  ): Promise<ConfirmManageCoverReviewHideResponseDto> {
+    return this.context.manageCoverReviewService.confirmManageCoverReviewHide(request)
   }
 }

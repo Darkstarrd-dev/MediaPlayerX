@@ -38,6 +38,7 @@ export function useAppSessionState({
   )
   const [manageMode, setManageMode] = useState(false)
   const [metadataManageMode, setMetadataManageMode] = useState(false)
+  const [manageReviewMode, setManageReviewMode] = useState<'ad' | 'cover'>('ad')
   const [manageOperationHint, setManageOperationHint] = useState<string | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [importMenuOpen, setImportMenuOpen] = useState(false)
@@ -95,6 +96,8 @@ export function useAppSessionState({
     setManageMode,
     metadataManageMode,
     setMetadataManageMode,
+    manageReviewMode,
+    setManageReviewMode,
     manageOperationHint,
     setManageOperationHint,
     deleteConfirmOpen,

@@ -1,1 +1,1 @@
-export { toErrorDetailWithCode } from '../shared/errorCode'
+export { getErrorCode, toErrorDetailWithCode } from '../shared/errorCode'

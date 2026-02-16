@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { manageAdReviewTaskSchema, type ManageAdReviewTaskDto } from '../../contracts/backend'
+import {
+  manageAdReviewTaskSchema,
+  manageCoverReviewTaskSchema,
+  type ManageAdReviewTaskDto,
+  type ManageReviewModeDto,
+} from '../../contracts/backend'
 import { useI18n } from '../../i18n/useI18n'
 import type { BrowserMode } from '../../types'
 import type { MediaRepository } from '../backend/repository'
-import { toErrorDetailWithCode } from './errorCode'
+import { getErrorCode, toErrorDetailWithCode } from './errorCode'
 
 const REVIEW_POLL_INTERVAL_MS = 1_000
 const REVIEW_START_TIMEOUT_MS = 60_000
@@ -12,8 +17,18 @@ const REVIEW_READ_TIMEOUT_MS = 10_000
 const REVIEW_PAUSE_TIMEOUT_MS = 10_000
 const REVIEW_DELETE_TIMEOUT_MS = 20_000
 const REVIEW_QUEUE_WRITE_TIMEOUT_MS = 10_000
-const AD_REVIEW_QUEUE_STATE_KEY = 'manage_ad_review_queue_v1'
-const AD_REVIEW_SELECTION_STATE_KEY = 'manage_ad_review_selection_v1'
+const REVIEW_QUEUE_STATE_KEY_BY_MODE: Record<ManageReviewModeDto, string> = {
+  ad: 'manage_ad_review_queue_v1',
+  cover: 'manage_cover_review_queue_v1',
+}
+const REVIEW_SELECTION_STATE_KEY_BY_MODE: Record<ManageReviewModeDto, string> = {
+  ad: 'manage_ad_review_selection_v1',
+  cover: 'manage_cover_review_selection_v1',
+}
+
+function resolveTaskSchemaByMode(reviewMode: ManageReviewModeDto) {
+  return reviewMode === 'cover' ? manageCoverReviewTaskSchema : manageAdReviewTaskSchema
+}
 
 interface PersistedSelectionRaw {
   version: number
@@ -24,6 +39,8 @@ interface UseManageAdReviewActionsParams {
   repository: MediaRepository
   mode: BrowserMode
   manageMode: boolean
+  reviewMode?: ManageReviewModeDto
+  onReviewModeChange?: (nextMode: ManageReviewModeDto) => void
   activeSelectionScope: 'sidebar' | 'image' | null
   imageCheckedIds: string[]
   sidebarCheckedNodeIds: string[]
@@ -49,6 +66,10 @@ interface PersistedQueueRaw {
 }
 
 interface UseManageAdReviewActionsResult {
+  reviewMode: ManageReviewModeDto
+  applyActionMode: ManageReviewModeDto
+  supportsCoverReview: boolean
+  setReviewMode: (nextMode: ManageReviewModeDto) => void
   task: ManageAdReviewTaskDto | null
   queueTasks: ManageAdReviewTaskDto[]
   activeTaskId: string | null
@@ -166,12 +187,13 @@ function parseQueueRaw(stateJson: string): PersistedQueueRaw {
   }
 }
 
-function parseQueueTasks(stateJson: string): ManageAdReviewTaskDto[] {
+function parseQueueTasks(stateJson: string, reviewMode: ManageReviewModeDto): ManageAdReviewTaskDto[] {
   const raw = parseQueueRaw(stateJson)
   const tasks: ManageAdReviewTaskDto[] = []
+  const taskSchema = resolveTaskSchemaByMode(reviewMode)
 
   for (const item of raw.items) {
-    const parsedTask = manageAdReviewTaskSchema.safeParse(item.task)
+    const parsedTask = taskSchema.safeParse(item.task)
     if (!parsedTask.success) {
       continue
     }
@@ -196,6 +218,8 @@ export function useManageAdReviewActions({
   repository,
   mode,
   manageMode,
+  reviewMode = 'ad',
+  onReviewModeChange = () => undefined,
   activeSelectionScope,
   imageCheckedIds,
   sidebarCheckedNodeIds,
@@ -225,6 +249,15 @@ export function useManageAdReviewActions({
   const selectionPersistTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
   const selectionByTaskIdRef = useRef<Record<string, string[]>>({})
   const selectionSyncSignatureByTaskIdRef = useRef<Record<string, string>>({})
+  const queueStateKey = REVIEW_QUEUE_STATE_KEY_BY_MODE[reviewMode]
+  const selectionStateKey = REVIEW_SELECTION_STATE_KEY_BY_MODE[reviewMode]
+  const taskSchema = useMemo(() => resolveTaskSchemaByMode(reviewMode), [reviewMode])
+  const supportsCoverReview = Boolean(
+    repository.startManageCoverReview &&
+      repository.readManageCoverReviewTask &&
+      repository.pauseManageCoverReviewTask &&
+      repository.confirmManageCoverReviewHide,
+  )
 
   const activeScope = useMemo(() => {
     if (activeSelectionScope === 'sidebar' && sidebarCheckedNodeIds.length > 0) {
@@ -267,7 +300,7 @@ export function useManageAdReviewActions({
     try {
       await writeAppState(
         {
-          state_key: AD_REVIEW_SELECTION_STATE_KEY,
+          state_key: selectionStateKey,
           state_json: toPersistedSelectionStateJson(selectionByTaskIdRef.current),
         },
         { timeoutMs: REVIEW_QUEUE_WRITE_TIMEOUT_MS },
@@ -275,7 +308,7 @@ export function useManageAdReviewActions({
     } catch {
       // Ignore persistence failures silently to avoid interrupting review workflow.
     }
-  }, [repository.writeAppState])
+  }, [repository.writeAppState, selectionStateKey])
 
   const schedulePersistSelectionState = useCallback(() => {
     if (!repository.writeAppState) {
@@ -299,16 +332,17 @@ export function useManageAdReviewActions({
       try {
         const response = await readAppState(
           {
-            state_key: AD_REVIEW_QUEUE_STATE_KEY,
+            state_key: queueStateKey,
             fallback_json: JSON.stringify({ version: 1, items: [] }),
           },
           { timeoutMs: REVIEW_READ_TIMEOUT_MS },
         )
-        let tasks = parseQueueTasks(response.state_json)
+        let tasks = parseQueueTasks(response.state_json, reviewMode)
         const runningTaskId = tasks.find((item) => item.status === 'running')?.task_id ?? null
-        if (runningTaskId && repository.readManageAdReviewTask) {
+        const readTask = reviewMode === 'cover' ? repository.readManageCoverReviewTask : repository.readManageAdReviewTask
+        if (runningTaskId && readTask) {
           try {
-            const runtimeResponse = await repository.readManageAdReviewTask(
+            const runtimeResponse = await readTask(
               { task_id: runningTaskId },
               { timeoutMs: REVIEW_READ_TIMEOUT_MS },
             )
@@ -344,7 +378,7 @@ export function useManageAdReviewActions({
         return null
       }
     },
-    [repository, setManageOperationHint, t],
+    [queueStateKey, repository, reviewMode, setManageOperationHint, t],
   )
 
   useEffect(() => {
@@ -359,7 +393,7 @@ export function useManageAdReviewActions({
       try {
         const response = await readAppState(
           {
-            state_key: AD_REVIEW_SELECTION_STATE_KEY,
+            state_key: selectionStateKey,
             fallback_json: JSON.stringify({ version: 1, task_selection_by_id: {} }),
           },
           { timeoutMs: REVIEW_READ_TIMEOUT_MS },
@@ -385,7 +419,16 @@ export function useManageAdReviewActions({
     return () => {
       disposed = true
     }
-  }, [repository.readAppState])
+  }, [repository.readAppState, selectionStateKey])
+
+  useEffect(() => {
+    setQueueLoaded(false)
+    setSelectionLoaded(false)
+    setActiveTaskId(null)
+    setHideUncheckedNonChecked(false)
+    selectionByTaskIdRef.current = {}
+    selectionSyncSignatureByTaskIdRef.current = {}
+  }, [reviewMode])
 
   useEffect(() => {
     void loadQueueTasks({ silent: true })
@@ -530,8 +573,11 @@ export function useManageAdReviewActions({
       setManageOperationHint(t('ui.manage.hint.deleteInProgressWait'))
       return null
     }
-    if (!repository.startManageAdReview) {
-      setManageOperationHint(t('ui.manage.hint.unsupportedStart'))
+    const startReview = reviewMode === 'cover' ? repository.startManageCoverReview : repository.startManageAdReview
+    if (!startReview) {
+      setManageOperationHint(
+        reviewMode === 'cover' ? t('ui.manage.hint.unsupportedStartCover') : t('ui.manage.hint.unsupportedStart'),
+      )
       return null
     }
     if (mode !== 'image') {
@@ -578,7 +624,7 @@ export function useManageAdReviewActions({
         ? Math.max(4, Math.min(12, Math.floor(adReviewMaxConcurrency)))
         : undefined
 
-      const response = await repository.startManageAdReview(
+      const response = await startReview(
         {
           selection_scope: activeScope,
           image_ids: imageIds,
@@ -597,8 +643,17 @@ export function useManageAdReviewActions({
       setManageOperationHint(response.task.message ?? t('ui.manage.hint.started'))
       return response.task
     } catch (error) {
+      const errorCode = getErrorCode(error)
+      if (errorCode === 'backend_method_unavailable') {
+        setManageOperationHint(
+          reviewMode === 'cover' ? t('ui.manage.hint.unsupportedStartCover') : t('ui.manage.hint.unsupportedStart'),
+        )
+        return null
+      }
       const message = toErrorDetailWithCode(error, t)
-      setManageOperationHint(t('ui.manage.hint.startFailed', { message }))
+      setManageOperationHint(
+        reviewMode === 'cover' ? t('ui.manage.hint.startFailedCover', { message }) : t('ui.manage.hint.startFailed', { message }),
+      )
       return null
     } finally {
       setPending(false)
@@ -616,6 +671,7 @@ export function useManageAdReviewActions({
     loadQueueTasks,
     manageMode,
     mode,
+    reviewMode,
     repository,
     setManageOperationHint,
     sidebarCheckedNodeIds,
@@ -629,7 +685,8 @@ export function useManageAdReviewActions({
       setManageOperationHint(t('ui.manage.hint.deleteInProgressWait'))
       return
     }
-    if (!repository.pauseManageAdReviewTask) {
+    const pauseReview = reviewMode === 'cover' ? repository.pauseManageCoverReviewTask : repository.pauseManageAdReviewTask
+    if (!pauseReview) {
       setManageOperationHint(t('ui.manage.hint.unsupportedPause'))
       return
     }
@@ -642,7 +699,7 @@ export function useManageAdReviewActions({
 
     setPending(true)
     try {
-      const response = await repository.pauseManageAdReviewTask(
+      const response = await pauseReview(
         { task_id: runningTask.task_id },
         { timeoutMs: REVIEW_PAUSE_TIMEOUT_MS },
       )
@@ -655,7 +712,18 @@ export function useManageAdReviewActions({
     } finally {
       setPending(false)
     }
-  }, [deletePending, loadQueueTasks, queueTasks, repository, setManageOperationHint, t, task, updateTaskInQueue])
+  }, [
+    deletePending,
+    loadQueueTasks,
+    queueTasks,
+    repository.pauseManageAdReviewTask,
+    repository.pauseManageCoverReviewTask,
+    reviewMode,
+    setManageOperationHint,
+    t,
+    task,
+    updateTaskInQueue,
+  ])
 
   const toggleHideUncheckedNonChecked = useCallback(() => {
     if (deletePending) {
@@ -726,7 +794,7 @@ export function useManageAdReviewActions({
       try {
         const response = await readAppState(
           {
-            state_key: AD_REVIEW_QUEUE_STATE_KEY,
+            state_key: queueStateKey,
             fallback_json: JSON.stringify({ version: 1, items: [] }),
           },
           { timeoutMs: REVIEW_READ_TIMEOUT_MS },
@@ -735,14 +803,14 @@ export function useManageAdReviewActions({
         const nextQueue: PersistedQueueRaw = {
           version: rawQueue.version,
           items: rawQueue.items.filter((item) => {
-            const parsedTask = manageAdReviewTaskSchema.safeParse(item.task)
+            const parsedTask = taskSchema.safeParse(item.task)
             return parsedTask.success ? parsedTask.data.task_id !== taskId : true
           }),
         }
 
         await writeAppState(
           {
-            state_key: AD_REVIEW_QUEUE_STATE_KEY,
+            state_key: queueStateKey,
             state_json: JSON.stringify(nextQueue),
           },
           { timeoutMs: REVIEW_QUEUE_WRITE_TIMEOUT_MS },
@@ -771,7 +839,16 @@ export function useManageAdReviewActions({
         return false
       }
     },
-    [queueTasks, repository.readAppState, repository.writeAppState, schedulePersistSelectionState, setManageOperationHint, t],
+    [
+      queueStateKey,
+      queueTasks,
+      repository.readAppState,
+      repository.writeAppState,
+      schedulePersistSelectionState,
+      setManageOperationHint,
+      t,
+      taskSchema,
+    ],
   )
 
   const confirmDeleteSelectedCandidates = useCallback(async () => {
@@ -779,20 +856,30 @@ export function useManageAdReviewActions({
       setManageOperationHint(t('ui.manage.hint.deleteInProgressWait'))
       return false
     }
-    if (!repository.confirmManageAdReviewDelete) {
+    if (reviewMode === 'cover' && !repository.confirmManageCoverReviewHide) {
+      setManageOperationHint(t('ui.manage.hint.unsupportedApplyCover'))
+      return false
+    }
+    if (reviewMode === 'ad' && !repository.confirmManageAdReviewDelete) {
       setManageOperationHint(t('ui.manage.hint.unsupportedDelete'))
       return false
     }
     if (!task) {
-      setManageOperationHint(t('ui.manage.hint.noDeletableResults'))
+      setManageOperationHint(
+        reviewMode === 'cover' ? t('ui.manage.hint.noApplicableResultsCover') : t('ui.manage.hint.noDeletableResults'),
+      )
       return false
     }
     if (task.status !== 'review') {
-      setManageOperationHint(t('ui.manage.hint.reviewNotCompleted'))
+      setManageOperationHint(
+        reviewMode === 'cover' ? t('ui.manage.hint.reviewNotCompletedCover') : t('ui.manage.hint.reviewNotCompleted'),
+      )
       return false
     }
     if (selectedCandidateIds.length === 0) {
-      setManageOperationHint(t('ui.manage.hint.selectCandidatesFirst'))
+      setManageOperationHint(
+        reviewMode === 'cover' ? t('ui.manage.hint.selectCandidatesFirstCover') : t('ui.manage.hint.selectCandidatesFirst'),
+      )
       return false
     }
 
@@ -800,36 +887,60 @@ export function useManageAdReviewActions({
     setDeletePending(true)
     setDeleteProgress({ completed: 0, total: selectedCandidateIds.length })
     try {
-      const response = await repository.confirmManageAdReviewDelete(
-        {
-          task_id: task.task_id,
-          image_ids: selectedCandidateIds,
-        },
-        { timeoutMs: REVIEW_DELETE_TIMEOUT_MS },
-      )
-
-      updateTaskInQueue(response.task)
-      await loadQueueTasks({ silent: true })
-      setDeleteProgress({ completed: selectedCandidateIds.length, total: selectedCandidateIds.length })
-
-      if (response.deleted_count > 0) {
-        clearAllSelections()
-      }
-
-      replaceImageCheckedIds(
-        response.task.candidates.map((candidate) => candidate.image_id),
-        false,
-      )
-
-      if (response.failed.length > 0) {
-        setManageOperationHint(
-          t('ui.manage.hint.deleteWithFailures', {
-            deleted: response.deleted_count,
-            failed: response.failed.length,
-          }),
+      if (reviewMode === 'cover') {
+        const response = await repository.confirmManageCoverReviewHide!(
+          {
+            task_id: task.task_id,
+            image_ids: selectedCandidateIds,
+          },
+          { timeoutMs: REVIEW_DELETE_TIMEOUT_MS },
         )
+
+        updateTaskInQueue(response.task)
+        await loadQueueTasks({ silent: true })
+        setDeleteProgress({ completed: selectedCandidateIds.length, total: selectedCandidateIds.length })
+
+        if (response.updated_count > 0) {
+          clearAllSelections()
+        }
+
+        replaceImageCheckedIds(
+          response.task.candidates.map((candidate) => candidate.image_id),
+          false,
+        )
+        setManageOperationHint(t('ui.manage.hint.coverApplySuccess', { count: response.updated_count }))
       } else {
-        setManageOperationHint(t('ui.manage.hint.deleteSuccess', { count: response.deleted_count }))
+        const response = await repository.confirmManageAdReviewDelete!(
+          {
+            task_id: task.task_id,
+            image_ids: selectedCandidateIds,
+          },
+          { timeoutMs: REVIEW_DELETE_TIMEOUT_MS },
+        )
+
+        updateTaskInQueue(response.task)
+        await loadQueueTasks({ silent: true })
+        setDeleteProgress({ completed: selectedCandidateIds.length, total: selectedCandidateIds.length })
+
+        if (response.deleted_count > 0) {
+          clearAllSelections()
+        }
+
+        replaceImageCheckedIds(
+          response.task.candidates.map((candidate) => candidate.image_id),
+          false,
+        )
+
+        if (response.failed.length > 0) {
+          setManageOperationHint(
+            t('ui.manage.hint.deleteWithFailures', {
+              deleted: response.deleted_count,
+              failed: response.failed.length,
+            }),
+          )
+        } else {
+          setManageOperationHint(t('ui.manage.hint.deleteSuccess', { count: response.deleted_count }))
+        }
       }
 
       const removed = await removeTaskInternal(task.task_id, { silentHint: true, skipRunningCheck: true })
@@ -840,7 +951,9 @@ export function useManageAdReviewActions({
       return true
     } catch (error) {
       const message = toErrorDetailWithCode(error, t)
-      setManageOperationHint(t('ui.manage.hint.deleteFailed', { message }))
+      setManageOperationHint(
+        reviewMode === 'cover' ? t('ui.manage.hint.applyFailedCover', { message }) : t('ui.manage.hint.deleteFailed', { message }),
+      )
       return false
     } finally {
       setPending(false)
@@ -853,7 +966,9 @@ export function useManageAdReviewActions({
     onDeleteRoundCompleted,
     removeTaskInternal,
     replaceImageCheckedIds,
-    repository,
+    repository.confirmManageAdReviewDelete,
+    repository.confirmManageCoverReviewHide,
+    reviewMode,
     selectedCandidateIds,
     setManageOperationHint,
     t,
@@ -904,7 +1019,25 @@ export function useManageAdReviewActions({
     [deletePending, removeTaskInternal, setManageOperationHint, t],
   )
 
+  const setReviewMode = useCallback(
+    (nextMode: ManageReviewModeDto) => {
+      if (nextMode === reviewMode) {
+        return
+      }
+      if (nextMode === 'cover' && !supportsCoverReview) {
+        setManageOperationHint(t('ui.manage.hint.unsupportedStartCover'))
+        return
+      }
+      onReviewModeChange(nextMode)
+    },
+    [onReviewModeChange, reviewMode, setManageOperationHint, supportsCoverReview, t],
+  )
+
   return {
+    reviewMode,
+    applyActionMode: reviewMode,
+    supportsCoverReview,
+    setReviewMode,
     task,
     queueTasks,
     activeTaskId,

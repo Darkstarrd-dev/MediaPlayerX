@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 
-import type { ManageAdReviewTaskDto } from '../contracts/backend'
+import type { ManageAdReviewTaskDto, ManageReviewModeDto } from '../contracts/backend'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
 import type { AudioItem, BrowserMode, ImageItem, ImagePackage, VideoItem } from '../types'
 import { FeatureTagPickerModal } from './metadata/FeatureTagPickerModal'
@@ -43,6 +43,8 @@ export interface MetadataPanelProps {
   onFeatureGradeFilterChange: (value: number | null) => void
   adReviewFeatureVisible: boolean
   adReviewPanelOpen: boolean
+  manageReviewMode?: ManageReviewModeDto
+  canSwitchManageReviewMode?: boolean
   canExecuteAdReview: boolean
   adReviewPending: boolean
   adReviewDeletePending?: boolean
@@ -71,6 +73,7 @@ export interface MetadataPanelProps {
   onAdReviewTailNChange: (value: number) => void
   onAdReviewTailStopCleanStreakChange: (value: number) => void
   onDismissAdReviewTask: () => void
+  onManageReviewModeChange?: (nextMode: ManageReviewModeDto) => void
   metadataCollapsed: boolean
   metadataRatio: number
   hasImageFocus: boolean
@@ -172,6 +175,8 @@ function MetadataPanel({
   onFeatureGradeFilterChange,
   adReviewFeatureVisible,
   adReviewPanelOpen,
+  manageReviewMode = 'ad',
+  canSwitchManageReviewMode = false,
   canExecuteAdReview,
   adReviewPending,
   adReviewDeletePending = false,
@@ -200,6 +205,7 @@ function MetadataPanel({
   onAdReviewTailNChange,
   onAdReviewTailStopCleanStreakChange,
   onDismissAdReviewTask,
+  onManageReviewModeChange = () => undefined,
   metadataCollapsed,
   metadataRatio,
   hasImageFocus,
@@ -550,6 +556,8 @@ function MetadataPanel({
     manageMode && adReviewFeatureVisible && adReviewPanelOpen && mode === 'image' ? (
       <MetadataAdReviewSection
         adReviewPending={adReviewPending}
+        reviewMode={manageReviewMode}
+        canSwitchReviewMode={canSwitchManageReviewMode}
         adReviewTask={adReviewTask}
         adReviewQueueTasks={adReviewQueueTasks}
         adReviewActiveTaskId={adReviewActiveTaskId}
@@ -577,6 +585,7 @@ function MetadataPanel({
         onAdReviewTailNChange={onAdReviewTailNChange}
         onAdReviewTailStopCleanStreakChange={onAdReviewTailStopCleanStreakChange}
         onDismissAdReviewTask={onDismissAdReviewTask}
+        onReviewModeChange={onManageReviewModeChange}
       />
     ) : null
 
