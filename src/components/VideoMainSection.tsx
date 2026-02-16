@@ -294,7 +294,7 @@ function VideoMainSection({
                 disabled={!canManageAddToPlaylist || pendingManageAction}
                 onClick={onManageAddToPlaylist}
               >
-                <span aria-hidden="true">P</span>
+                <MainUiIcon name="playlistAdd" />
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn"
@@ -304,7 +304,7 @@ function VideoMainSection({
                 disabled={!canManageMoveNodes || pendingManageAction}
                 onClick={onManageGroup}
               >
-                <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
+                <MainUiIcon name="organize" />
               </button>
               <button
                 className="vector-search-btn main-icon-square-btn"

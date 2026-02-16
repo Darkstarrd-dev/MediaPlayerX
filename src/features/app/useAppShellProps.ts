@@ -54,6 +54,7 @@ interface UseAppShellPropsParams {
     | 'settingsPanelProps'
     | 'appHeaderProps'
     | 'importTaskPanelProps'
+    | 'helpOverlayOpen'
   >
   workspaceState: AppWorkspacePropsResult
   importInputs: Pick<
@@ -181,6 +182,7 @@ export function useAppShellProps({
     manageDeleteDialogProps,
     manageGroupDialogProps,
     dragOverlayActive,
+    helpOverlayActive: topLayerState.helpOverlayOpen,
     adReviewDeleteOverlayProps: adReviewDeleteOverlayParams,
     e2eBenchSectionProps,
   }

@@ -47,6 +47,7 @@ export function useAppSessionState({
   const [adReviewPageIndex, setAdReviewPageIndex] = useState(0)
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<Record<string, true>>({})
   const [importTaskPanelOpen, setImportTaskPanelOpen] = useState(false)
+  const [helpOverlayOpen, setHelpOverlayOpen] = useState(false)
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
     mode === 'video' ? 'video-only' : 'image-only',
   )
@@ -114,6 +115,8 @@ export function useAppSessionState({
     setDismissedImportTaskIds,
     importTaskPanelOpen,
     setImportTaskPanelOpen,
+    helpOverlayOpen,
+    setHelpOverlayOpen,
     fullscreenEntryDisplay,
     setFullscreenEntryDisplay,
     appBodyRef,

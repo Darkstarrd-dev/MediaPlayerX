@@ -44,6 +44,7 @@ export const zhCnCatalog = {
   'ui.help.image.keyboard.videoPlaylistAdd': '视频模式下将当前焦点视频加入播放列表。',
   'ui.help.image.keyboard.videoPlaylistRemove': '视频模式下将当前焦点视频移出播放列表。',
   'ui.help.image.keyboard.manageOrganize': '文件管理模式下打开整理弹窗（移动/分组，需已选中节点）。',
+  'ui.help.image.keyboard.helpOverlayToggle': '非全屏下切换按钮说明覆盖层（? 打开/关闭，Esc 关闭）。',
   'ui.help.fullscreen.sectionTitle': '全屏模式交互说明',
   'ui.help.fullscreen.groupMouse': '鼠标操作',
   'ui.help.fullscreen.groupKeyboard': '键盘操作',
@@ -677,6 +678,7 @@ export const zhCnCatalog = {
   'a11y.image.switchToNamesMode': '切换到纯文件名模式',
   'a11y.settings.close': '关闭',
   'a11y.help.panel': '帮助面板',
+  'a11y.help.buttonOverlay': '按钮说明覆盖层',
   'a11y.help.close': '关闭帮助',
   'a11y.help.sections': '帮助分类',
   'a11y.help.imageMouseList': '图片模式鼠标操作说明',
@@ -827,6 +829,7 @@ export const zhCnCatalog = {
   'tip.media.booklet': '小册版',
   'tip.media.addToPlaylist': '加入播放列表',
   'tip.music.loopMode': '循环模式：{{label}}',
+  'ui.help.overlayHint': '按 ? 或 Esc 关闭按钮说明',
 } as const
 
 export type ZhCnCatalog = typeof zhCnCatalog

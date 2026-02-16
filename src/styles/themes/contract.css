@@ -131,6 +131,19 @@
 
   --mpx-shadow-panel: 0 10px 26px rgba(60, 48, 30, 0.14);
   --mpx-shadow-popover: 0 8px 20px rgba(0, 0, 0, 0.12);
+  --mpx-tooltip-radius: var(--mpx-radius-md);
+  --mpx-tooltip-padding-x: 10px;
+  --mpx-tooltip-padding-y: 6px;
+  --mpx-tooltip-font-size: 12px;
+  --mpx-tooltip-max-width: 320px;
+  --mpx-tooltip-offset: 10px;
+  --mpx-tooltip-viewport-padding: 8px;
+  --mpx-tooltip-shadow: var(--mpx-shadow-popover);
+  --mpx-help-overlay-mask-opacity: 18%;
+  --mpx-help-overlay-hint-top: 12px;
+  --mpx-help-overlay-top-reserved: 48px;
+  --mpx-help-overlay-tag-max-width: 240px;
+  --mpx-help-overlay-tag-gap: 8px;
 
   /* Component Aliases (Default mappings) */
   --mpx-header-bg: linear-gradient(120deg, #f4ebe0 0%, #f7f4ef 42%, #ece6d8 100%);

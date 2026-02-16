@@ -145,6 +145,7 @@ export function useAppViewComposition({
       settingsPanelProps: topLayerState.settingsPanelProps,
       appHeaderProps: topLayerState.appHeaderProps,
       importTaskPanelProps: topLayerState.importTaskPanelProps,
+      helpOverlayOpen: topLayerState.helpOverlayOpen,
     },
     workspaceState,
     importInputs: {

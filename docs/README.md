@@ -50,18 +50,16 @@
 
 ## 待办
 
-1. Theme brainstorm 迭代入口：使用 `docs/ui/theme-brainstorm-entry.md` 作为新对话提示词，限制读取范围并执行 screenshot gallery 流程。
-2. Shader 开发入口落地：新建 Shader 相关任务默认使用 `docs/music-visualizer-shader-entry.md` 作为首个提示词入口，并持续维护最小读取范围。
-3. 基于 `docs/aria-regression-checklist.md` 执行全量回归签收（zh-CN / en-US、键盘流、屏幕阅读器）。
-4. 文件管理模式 G/M 回归：覆盖跨盘移动（EXDEV fallback）、目标重名冲突、非法分组名、部分成功部分失败提示与 sqlite 快照路径同步验证。
-5. 继续UI界面的文字按钮重构为图形按钮
-6. tooltip的模式和样式设计（是否纳入theme系统管理，tooltip时用覆盖全屏的模式还是单个按钮单个位置的模式）
-7. https://idc.xpzsd.codes/ 供参考的背景特效和边框特效
-10. 基于tags的近似推荐系统
-11. 基于用户自己的stars评分的random推荐系统
-12. 基于作品tags的用户xp分析系统
-13. 基于 `docs/copy-review-checklist.md` 执行文案统一审校，补齐边角错误文案与术语一致性。
-16.全屏模式下软萌风格的control控件修正
+1. 基于 `docs/aria-regression-checklist.md` 执行全量回归签收（zh-CN / en-US、键盘流、屏幕阅读器）。
+2. 基于 `docs/copy-review-checklist.md` 执行文案统一审校，补齐边角错误文案与术语一致性。
+3. Theme brainstorm 迭代入口：使用 `docs/ui/theme-brainstorm-entry.md` 作为新对话提示词，限制读取范围并执行 screenshot gallery 流程。
+4. Shader 开发入口落地：新建 Shader 相关任务默认使用 `docs/music-visualizer-shader-entry.md` 作为首个提示词入口，并持续维护最小读取范围。
+5. 继续 UI 界面的文字按钮重构为图形按钮。
+6. Tooltip/帮助覆盖层二期：继续优化覆盖层密度布局，避免重叠与越界；为每个说明文本框增加可调整指针（leader line）以保证指向关系清晰。
+7. 参考 `https://idc.xpzsd.codes/` 的背景特效和边框特效方案。
+8. 基于 tags 的近似推荐系统。
+9. 基于用户 stars 评分的 random 推荐系统。
+10. 基于作品 tags 的用户 xp 分析系统。
 
 ## 文档维护约定
 

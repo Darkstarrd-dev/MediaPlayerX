@@ -47,6 +47,7 @@ export function useAppTopLayerBindings({
     setDismissedImportTaskIds,
     importTaskPanelOpen,
     setImportTaskPanelOpen,
+    helpOverlayOpen,
     fullscreenEntryDisplay,
   } = sessionState
 
@@ -139,6 +140,7 @@ export function useAppTopLayerBindings({
     canThumbnailScaleUp,
     importMenuOpen,
     importTaskPanelOpen,
+    helpOverlayOpen,
     setImportMenuOpen,
     setImportTaskPanelOpen,
     openImportFilesDialog: importState.openImportFilesDialog,

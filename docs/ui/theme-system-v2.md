@@ -239,6 +239,19 @@ gapped/liquid 风格下，面板有间距和圆角：
 | `--mpx-header-btn-hover-shadow` | `none` | Header 按钮 hover 阴影 |
 | `--mpx-header-btn-active-shadow` | `none` | Header 按钮 active 阴影 |
 | `--mpx-header-btn-active-border` | `var(--mpx-accent)` | Header 按钮激活边框色 |
+| `--mpx-tooltip-radius` | `var(--mpx-radius-md)` | Tooltip 圆角 |
+| `--mpx-tooltip-padding-x` | `10px` | Tooltip 水平内边距 |
+| `--mpx-tooltip-padding-y` | `6px` | Tooltip 垂直内边距 |
+| `--mpx-tooltip-font-size` | `12px` | Tooltip 字号 |
+| `--mpx-tooltip-max-width` | `320px` | Tooltip 最大宽度 |
+| `--mpx-tooltip-offset` | `10px` | Tooltip 与目标间距 |
+| `--mpx-tooltip-viewport-padding` | `8px` | Tooltip 视口安全边距 |
+| `--mpx-tooltip-shadow` | `var(--mpx-shadow-popover)` | Tooltip 阴影 |
+| `--mpx-help-overlay-mask-opacity` | `18%` | 按钮说明覆盖层遮罩透明度 |
+| `--mpx-help-overlay-hint-top` | `12px` | 按钮说明提示条顶部偏移 |
+| `--mpx-help-overlay-top-reserved` | `48px` | 按钮说明标签顶部保留区 |
+| `--mpx-help-overlay-tag-max-width` | `240px` | 按钮说明标签最大宽度 |
+| `--mpx-help-overlay-tag-gap` | `8px` | 按钮说明标签与目标/标签间距 |
 | `--mpx-scrollbar-size` | `10px` | 滚动条粗细 |
 | `--mpx-scrollbar-radius` | `999px` | 滚动条圆角 |
 | `--mpx-range-track-height` | `6px` | 滑条轨道高度 |

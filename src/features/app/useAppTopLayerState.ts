@@ -49,6 +49,7 @@ interface UseAppTopLayerStateParams {
   canThumbnailScaleUp: boolean
   importMenuOpen: boolean
   importTaskPanelOpen: boolean
+  helpOverlayOpen: boolean
   setImportMenuOpen: Dispatch<SetStateAction<boolean>>
   setImportTaskPanelOpen: Dispatch<SetStateAction<boolean>>
   openImportFilesDialog: () => void
@@ -146,6 +147,7 @@ export function useAppTopLayerState({
   canThumbnailScaleUp,
   importMenuOpen,
   importTaskPanelOpen,
+  helpOverlayOpen,
   setImportMenuOpen,
   setImportTaskPanelOpen,
   openImportFilesDialog,
@@ -531,6 +533,7 @@ export function useAppTopLayerState({
     settingsPanelProps,
     appHeaderProps,
     importTaskPanelProps,
+    helpOverlayOpen,
   }
 }
 

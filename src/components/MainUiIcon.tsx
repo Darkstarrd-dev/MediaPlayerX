@@ -26,6 +26,11 @@ export type MainUiIconName =
   | 'selectAll'
   | 'unselectAll'
   | 'adSearch'
+  | 'organize'
+  | 'playlistAdd'
+  | 'booklet'
+  | 'videoInfo'
+  | 'cover'
 
 interface MainUiIconProps {
   name: MainUiIconName
@@ -189,6 +194,42 @@ const MAIN_UI_ICON_NODES: Record<MainUiIconName, ReactElement> = {
         <path d="M8.5 12h2" strokeWidth="1.5" />
         <path d="M13 9h1.5a2 2 0 0 1 0 4H13v-4z" strokeWidth="1.5" />
       </g>
+    </>
+  ),
+  organize: (
+    <>
+      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+      <line x1="12" y1="10" x2="12" y2="16" />
+      <line x1="9" y1="13" x2="15" y2="13" />
+    </>
+  ),
+  playlistAdd: (
+    <>
+      <path d="M4 6h16" />
+      <path d="M4 12h16" />
+      <path d="M4 18h8" />
+      <path d="M18 15v6" />
+      <path d="M15 18h6" />
+    </>
+  ),
+  booklet: (
+    <>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </>
+  ),
+  videoInfo: (
+    <>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </>
+  ),
+  cover: (
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <line x1="8" y1="4" x2="8" y2="20" />
     </>
   ),
 }

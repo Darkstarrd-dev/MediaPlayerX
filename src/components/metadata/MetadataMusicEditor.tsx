@@ -253,7 +253,7 @@ export function MetadataMusicEditor({
               title={t('ui.metadata.openCover')}
               onClick={onOpenMusicCover}
             >
-              <span aria-hidden="true">C</span>
+              <MainUiIcon name="cover" />
             </button>
             <button
               className="toolbar-icon-btn main-icon-square-btn"
@@ -263,7 +263,7 @@ export function MetadataMusicEditor({
               title={t('ui.metadata.openBooklet')}
               onClick={onOpenMusicBooklet}
             >
-              <span aria-hidden="true">▤</span>
+              <MainUiIcon name="booklet" />
             </button>
             <button
               className="toolbar-icon-btn main-icon-square-btn"

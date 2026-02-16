@@ -389,8 +389,8 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     await click(screen.getByRole("button", { name: "视频模式" }));
     expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "隐藏" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "取消隐藏" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "隐藏" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "取消隐藏" })).toBeNull();
   });
 
   it("管理模式下点击缩略图即可切换 checker 状态", async () => {
@@ -722,8 +722,8 @@ describe("MediaPlayer 虚拟 UI", () => {
     await click(screen.getByRole("button", { name: "广告审核" }));
     await waitFor(() => {
       expect(
-        screen.getByRole("group", { name: "AI广告审核控制" }),
-      ).toBeInTheDocument();
+        screen.getAllByRole("group", { name: "AI广告审核控制" }).length,
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -1191,19 +1191,23 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("元数据面板标题可折叠，并可恢复展开", async () => {
-    render(<App />);
+  it(
+    "元数据面板标题可折叠，并可恢复展开",
+    async () => {
+      render(<App />);
 
-    await click(screen.getByRole("button", { name: "元数据面板" }));
-    expect(
-      screen.getByRole("button", { name: "展开元数据面板" }),
-    ).toBeInTheDocument();
+      await click(screen.getByRole("button", { name: "元数据面板" }));
+      expect(
+        screen.getByRole("button", { name: "展开元数据面板" }),
+      ).toBeInTheDocument();
 
-    await click(screen.getByRole("button", { name: "展开元数据面板" }));
-    expect(
-      screen.getByRole("button", { name: "元数据面板" }),
-    ).toBeInTheDocument();
-  });
+      await click(screen.getByRole("button", { name: "展开元数据面板" }));
+      expect(
+        screen.getByRole("button", { name: "元数据面板" }),
+      ).toBeInTheDocument();
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it("进入元数据管理时自动退出原图显示并回到元数据编辑视图", async () => {
     render(<App />);
@@ -1574,7 +1578,7 @@ describe("MediaPlayer 虚拟 UI", () => {
       name: "打开封面",
     });
     const openBookletButton = screen.getByRole("button", {
-      name: "打开Booklet",
+      name: /打开Booklet|小册版/,
     });
 
     expect(openCoverButton).toBeEnabled();

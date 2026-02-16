@@ -64,10 +64,12 @@ describe('AppHeader accessibility labels', () => {
     const searchButton = container.querySelector('button[data-a11y-id="header.search"]')
     const manageButton = container.querySelector('button[data-a11y-id="header.manage"]')
     const metadataToggleButton = container.querySelector('button[data-a11y-id="header.metadataToggle"]')
+    const helpButton = container.querySelector('button[data-a11y-id="header.help"]')
 
     expect(searchButton).toBeInTheDocument()
     expect(manageButton).toBeInTheDocument()
     expect(metadataToggleButton).toBeInTheDocument()
+    expect(helpButton?.getAttribute('title')).toBe('打开帮助')
     expect(screen.getByRole('button', { name: '检索' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '文件管理' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '切换到元数据模式' })).toBeInTheDocument()

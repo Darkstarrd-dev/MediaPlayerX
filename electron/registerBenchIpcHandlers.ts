@@ -62,6 +62,97 @@ function buildRuntimeSnapshot() {
   }
 }
 
+function toNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function buildRuntimeResourceSnapshot() {
+  const processCpuUsage = process.cpuUsage()
+  const processMemoryUsage = process.memoryUsage()
+
+  const appMetrics = app.getAppMetrics().map((metric) => {
+    const cpu = metric.cpu as { percentCPUUsage?: number; idleWakeupsPerSecond?: number } | undefined
+    const memory = metric.memory as
+      | {
+          workingSetSize?: number
+          peakWorkingSetSize?: number
+          privateBytes?: number
+          sharedBytes?: number
+        }
+      | undefined
+
+    return {
+      pid: metric.pid,
+      type: metric.type,
+      cpu_percent: toNumber(cpu?.percentCPUUsage),
+      idle_wakeups_per_sec: toNumber(cpu?.idleWakeupsPerSecond),
+      memory_kb: {
+        working_set: toNumber(memory?.workingSetSize),
+        peak_working_set: toNumber(memory?.peakWorkingSetSize),
+        private_bytes: toNumber(memory?.privateBytes),
+        shared_bytes: toNumber(memory?.sharedBytes),
+      },
+    }
+  })
+
+  const summaryByType: Record<string, { count: number; cpu_percent_total: number; working_set_kb_total: number }> = {}
+  let cpuPercentTotal = 0
+  let workingSetKbTotal = 0
+  let peakWorkingSetKbMax = 0
+
+  for (const metric of appMetrics) {
+    const type = metric.type
+    const cpuPercent = metric.cpu_percent ?? 0
+    const workingSet = metric.memory_kb.working_set ?? 0
+    const peakWorkingSet = metric.memory_kb.peak_working_set ?? 0
+
+    cpuPercentTotal += cpuPercent
+    workingSetKbTotal += workingSet
+    peakWorkingSetKbMax = Math.max(peakWorkingSetKbMax, peakWorkingSet)
+
+    const bucket = summaryByType[type] ?? {
+      count: 0,
+      cpu_percent_total: 0,
+      working_set_kb_total: 0,
+    }
+    bucket.count += 1
+    bucket.cpu_percent_total += cpuPercent
+    bucket.working_set_kb_total += workingSet
+    summaryByType[type] = bucket
+  }
+
+  return {
+    sampled_at_ms: Date.now(),
+    process: {
+      cpu_usage_microseconds: {
+        user: processCpuUsage.user,
+        system: processCpuUsage.system,
+      },
+      memory_usage_bytes: {
+        rss: processMemoryUsage.rss,
+        heap_total: processMemoryUsage.heapTotal,
+        heap_used: processMemoryUsage.heapUsed,
+        external: processMemoryUsage.external,
+        array_buffers: processMemoryUsage.arrayBuffers,
+      },
+    },
+    electron: {
+      process_count: appMetrics.length,
+      cpu_percent_total: Number(cpuPercentTotal.toFixed(3)),
+      working_set_kb_total: Number(workingSetKbTotal.toFixed(3)),
+      peak_working_set_kb_max: Number(peakWorkingSetKbMax.toFixed(3)),
+      by_type: summaryByType,
+      metrics: appMetrics,
+    },
+    system: {
+      cpus_count: os.cpus().length,
+      loadavg: os.loadavg(),
+      totalmem_bytes: os.totalmem(),
+      freemem_bytes: os.freemem(),
+    },
+  }
+}
+
 let benchFinishRequested = false
 
 export function registerBenchIpcHandlers(): void {
@@ -112,6 +203,7 @@ export function registerBenchIpcHandlers(): void {
     const enriched = {
       ...report,
       runtime: buildRuntimeSnapshot(),
+      runtime_resources: buildRuntimeResourceSnapshot(),
       persisted_at_ms: Date.now(),
       output_path: outputPath,
     }

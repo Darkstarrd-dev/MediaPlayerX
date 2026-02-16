@@ -113,8 +113,8 @@ export function useMediaPreloadWindow({
   }, [items, mediaType, preloadItemIds])
 
   useEffect(() => {
+    const preloaders = preloaderByIdRef.current
     return () => {
-      const preloaders = preloaderByIdRef.current
       for (const preloader of preloaders.values()) {
         preloader.pause()
         preloader.removeAttribute('src')

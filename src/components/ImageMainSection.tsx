@@ -546,7 +546,7 @@ function ImageMainSection({
                 disabled={!canManageMoveNodes || pendingManageAction}
                 onClick={onManageGroup}
               >
-                <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
+                <MainUiIcon name="organize" />
               </button>
               <button
                 className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? 'is-pending' : ''}`}

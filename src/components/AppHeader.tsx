@@ -34,6 +34,7 @@ type HeaderIconName =
   | 'windowMaximize'
   | 'windowRestore'
   | 'windowClose'
+  | 'help'
 
 const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
   statusIdle: (
@@ -168,6 +169,13 @@ const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
     <>
       <path d="M18 6 6 18" />
       <path d="m6 6 12 12" />
+    </>
+  ),
+  help: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <path d="M12 17h.01" />
     </>
   ),
 }
@@ -507,7 +515,7 @@ function AppHeader(props: AppHeaderProps) {
       <div className="header-right">
         <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" role="group">
           <button {...helpButtonA11y} className="window-control-btn" type="button" onClick={onOpenHelp}>
-            <span aria-hidden="true">H</span>
+            <HeaderActionIcon name="help" />
           </button>
           <button
             aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}

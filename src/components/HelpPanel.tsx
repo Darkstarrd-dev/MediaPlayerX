@@ -108,6 +108,11 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         shortcut: renderShortcutBinding(shortcuts.manageOrganize, t('ui.help.shortcutNotSet')),
         action: t('ui.help.image.keyboard.manageOrganize'),
       },
+      {
+        key: 'help-overlay-toggle',
+        shortcut: '? / Esc',
+        action: t('ui.help.image.keyboard.helpOverlayToggle'),
+      },
     ],
     [shortcuts, t],
   )

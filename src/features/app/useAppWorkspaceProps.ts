@@ -564,7 +564,7 @@ export function useAppWorkspaceProps({
       }
     : goNextPage;
 
-  const imageSidebarNodeIdsForWheel = useMemo(() => {
+  const imageSidebarNodeIdsForWheel = (() => {
     const orderedIds: string[] = [];
     const walk = (nodes: typeof sidebarImageTreeNodes) => {
       for (const node of nodes) {
@@ -576,13 +576,11 @@ export function useAppWorkspaceProps({
     };
     walk(sidebarImageTreeNodes);
     return orderedIds;
-  }, [sidebarImageTreeNodes]);
+  })();
 
-  const imageSidebarNodeIndexByIdForWheel = useMemo(() => {
-    return new Map(
-      imageSidebarNodeIdsForWheel.map((nodeId, index) => [nodeId, index]),
-    );
-  }, [imageSidebarNodeIdsForWheel]);
+  const imageSidebarNodeIndexByIdForWheel = new Map(
+    imageSidebarNodeIdsForWheel.map((nodeId, index) => [nodeId, index]),
+  );
 
   const nodeBrowseMode =
     mode === "image" &&

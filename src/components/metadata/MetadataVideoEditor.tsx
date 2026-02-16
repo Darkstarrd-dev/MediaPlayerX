@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent 
 
 import type { VideoItem } from '../../types'
 import { useI18n } from '../../i18n/useI18n'
+import { MainUiIcon } from '../MainUiIcon'
+import { VideoControlIcon } from '../VideoControlIcon'
 import { MetadataRatingGroup } from './MetadataRatingGroup'
 
 interface MetadataVideoEditorProps {
@@ -177,16 +179,16 @@ export function MetadataVideoEditor({
 
   return (
     <div className="metadata-content metadata-video-content">
-      <div className="meta-tabs">
-        <button className={metadataTab === 'info' ? 'is-active' : ''} type="button" onClick={() => onMetadataTabChange('info')}>
-          {t('ui.metadata.videoInfoTab')}
-        </button>
+      <div className="meta-tabs" role="group" aria-label={`${t('ui.metadata.videoInfoTab')} / ${t('ui.metadata.playlistTab')}`}>
         <button
-          className={metadataTab === 'playlist' ? 'is-active' : ''}
+          className={`main-icon-square-btn ${metadataTab === 'playlist' ? 'is-active' : ''}`}
           type="button"
-          onClick={() => onMetadataTabChange('playlist')}
+          aria-label={metadataTab === 'info' ? t('ui.metadata.playlistTab') : t('ui.metadata.videoInfoTab')}
+          aria-pressed={metadataTab === 'playlist'}
+          title={metadataTab === 'info' ? t('ui.metadata.playlistTab') : t('ui.metadata.videoInfoTab')}
+          onClick={() => onMetadataTabChange(metadataTab === 'info' ? 'playlist' : 'info')}
         >
-          {t('ui.metadata.playlistTab')}
+          {metadataTab === 'info' ? <MainUiIcon name="videoInfo" /> : <VideoControlIcon className="main-ui-icon" name="playlist" />}
         </button>
       </div>
 
@@ -439,7 +441,7 @@ export function MetadataVideoEditor({
                   title={t('tip.common.delete')}
                   onClick={() => onRemoveVideoFromPlaylist(videoId)}
                 >
-                  <span aria-hidden="true">-</span>
+                  <MainUiIcon name="delete" />
                 </button>
               </div>
             )

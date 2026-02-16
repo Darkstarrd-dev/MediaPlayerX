@@ -1054,7 +1054,7 @@ function MusicMainSection({
                     disabled={!canManageMoveNodes || pendingManageAction}
                     onClick={onManageGroup}
                   >
-                    <span aria-hidden="true">{t('ui.common.organizeShort')}</span>
+                    <MainUiIcon name="organize" />
                   </button>
                   <button
                     className="vector-search-btn main-icon-square-btn"
@@ -1094,12 +1094,12 @@ function MusicMainSection({
                         title={t('ui.metadata.openCover')}
                         onClick={onJumpToCover}
                       >
-                        <span aria-hidden="true">C</span>
+                        <MainUiIcon name="cover" />
                       </button>
                     ) : null}
                     {canJumpToBooklet ? (
                       <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.booklet')} title={t('tip.media.booklet')} onClick={onJumpToBooklet}>
-                        <span aria-hidden="true">▤</span>
+                        <MainUiIcon name="booklet" />
                       </button>
                     ) : null}
                     {canJumpToManga ? (

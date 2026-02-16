@@ -103,6 +103,8 @@ export function useAppInteractionEffects({
     setAdReviewPanelOpen,
     setDeleteConfirmOpen,
     setManageOperationHint,
+    helpOverlayOpen,
+    setHelpOverlayOpen,
   } = sessionState
 
   const {
@@ -267,6 +269,14 @@ export function useAppInteractionEffects({
       return true
     }
 
+    const closeHelpOverlay = () => {
+      if (!helpOverlayOpen) {
+        return false
+      }
+      setHelpOverlayOpen(false)
+      return true
+    }
+
     const closeDeleteConfirm = () => {
       if (!deleteConfirmOpen) {
         return false
@@ -288,6 +298,9 @@ export function useAppInteractionEffects({
         return false
       }
       if (closeDeleteConfirm()) {
+        return true
+      }
+      if (closeHelpOverlay()) {
         return true
       }
       if (closeHelpPanel()) {
@@ -323,6 +336,9 @@ export function useAppInteractionEffects({
       }
       if (layer === 'help') {
         return closeHelpPanel()
+      }
+      if (layer === 'help-overlay') {
+        return closeHelpOverlay()
       }
       if (layer === 'search-panel') {
         return closeSearchPanel()
@@ -512,6 +528,15 @@ export function useAppInteractionEffects({
       }
 
       if (event.key !== 'Escape') {
+        if (!fullscreenActive && !isEditableTarget(event.target) && !event.ctrlKey && !event.altKey && !event.metaKey) {
+          const isHelpOverlayToggle = event.key === '?' || (event.code === 'Slash' && event.shiftKey)
+          if (isHelpOverlayToggle) {
+            event.preventDefault()
+            event.stopPropagation()
+            setHelpOverlayOpen((value) => !value)
+            return
+          }
+        }
         return
       }
 
@@ -586,6 +611,8 @@ export function useAppInteractionEffects({
     setMetadataManageMode,
     settingsOpen,
     helpOpen,
+    helpOverlayOpen,
+    setHelpOverlayOpen,
     setSearchPanelCollapsed,
     setSearchPanelMode,
     updateSettings,
@@ -599,7 +626,7 @@ export function useAppInteractionEffects({
     adReviewDeletePending,
     mode,
     vectorResultsActive,
-    settingsOpen: settingsOpen || helpOpen,
+    settingsOpen: settingsOpen || helpOpen || helpOverlayOpen,
     sidebarFocus,
     fullscreenActive,
     fullscreenDisplay,
