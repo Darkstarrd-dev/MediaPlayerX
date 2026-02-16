@@ -59,9 +59,7 @@ describe('useManageModeActions', () => {
     expect(params.backendWrite.moveSidebarNodes).not.toHaveBeenCalled()
   })
 
-  it('requestManageGroup 成功后会调用 moveSidebarNodes 并清空选择', async () => {
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('group-alpha')
-
+  it('requestManageGroup 打开输入弹窗，confirmManageGroup 后执行分组', async () => {
     const params = createParams({
       backendWrite: {
         setImageHidden: vi.fn(),
@@ -73,8 +71,17 @@ describe('useManageModeActions', () => {
     })
     const { result } = renderHook(() => useManageModeActions(params))
 
+    act(() => {
+      result.current.requestManageGroup()
+    })
+    expect(result.current.groupNameDialogOpen).toBe(true)
+
+    act(() => {
+      result.current.setGroupNameDraft('group-alpha')
+    })
+
     await act(async () => {
-      await result.current.requestManageGroup()
+      await result.current.confirmManageGroup()
     })
 
     expect(params.backendWrite.pickDirectoryPath).toHaveBeenCalledWith('选择分组目标目录')
@@ -85,7 +92,6 @@ describe('useManageModeActions', () => {
     )
     expect(params.setManageOperationHint).toHaveBeenCalledWith('分组完成：成功 2 项')
     expect(params.clearAllSelections).toHaveBeenCalled()
-    promptSpy.mockRestore()
   })
 
   it('requestManageMove 取消目录选择时不会触发移动', async () => {
@@ -108,5 +114,31 @@ describe('useManageModeActions', () => {
     expect(params.backendWrite.moveSidebarNodes).not.toHaveBeenCalled()
     expect(params.setManageOperationHint).toHaveBeenCalledWith('已取消移动操作')
     expect(params.clearAllSelections).not.toHaveBeenCalled()
+  })
+
+  it('confirmManageGroup 输入空目录名时给出提示且不执行移动', async () => {
+    const params = createParams({
+      backendWrite: {
+        setImageHidden: vi.fn(),
+        deleteImageItems: vi.fn(),
+        deleteSidebarNodes: vi.fn(),
+        pickDirectoryPath: vi.fn().mockResolvedValue('D:/target'),
+        moveSidebarNodes: vi.fn().mockResolvedValue(createMoveResponse({ moved_count: 2 })),
+      },
+    })
+    const { result } = renderHook(() => useManageModeActions(params))
+
+    act(() => {
+      result.current.requestManageGroup()
+      result.current.setGroupNameDraft('   ')
+    })
+
+    await act(async () => {
+      await result.current.confirmManageGroup()
+    })
+
+    expect(params.setManageOperationHint).toHaveBeenCalledWith('分组目录名不能为空')
+    expect(params.backendWrite.pickDirectoryPath).not.toHaveBeenCalled()
+    expect(params.backendWrite.moveSidebarNodes).not.toHaveBeenCalled()
   })
 })

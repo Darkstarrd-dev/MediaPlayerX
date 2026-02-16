@@ -8,6 +8,7 @@ import DangerConfirmDialog from './DangerConfirmDialog'
 import DragImportOverlay from './DragImportOverlay'
 import E2eBenchSection from './E2eBenchSection'
 import FullscreenLayer from './FullscreenLayer'
+import GroupNameDialog from './GroupNameDialog'
 import HelpPanel from './HelpPanel'
 import ImportSourceInputs from './ImportSourceInputs'
 import SettingsPanel from './SettingsPanel'
@@ -25,6 +26,7 @@ interface AppShellProps {
   helpPanelProps: ComponentProps<typeof HelpPanel>
   settingsPanelProps: ComponentProps<typeof SettingsPanel>
   manageDeleteDialogProps: ComponentProps<typeof DangerConfirmDialog>
+  manageGroupDialogProps: ComponentProps<typeof GroupNameDialog>
   dragOverlayActive: boolean
   adReviewDeleteOverlayProps: ComponentProps<typeof AdReviewDeleteOverlay>
   e2eBenchSectionProps: ComponentProps<typeof E2eBenchSection>
@@ -43,6 +45,7 @@ function AppShell({
   helpPanelProps,
   settingsPanelProps,
   manageDeleteDialogProps,
+  manageGroupDialogProps,
   dragOverlayActive,
   adReviewDeleteOverlayProps,
   e2eBenchSectionProps,
@@ -57,6 +60,7 @@ function AppShell({
       <HelpPanel {...helpPanelProps} />
       <SettingsPanel {...settingsPanelProps} />
       <DangerConfirmDialog {...manageDeleteDialogProps} />
+      <GroupNameDialog {...manageGroupDialogProps} />
       <DragImportOverlay active={dragOverlayActive} />
       <AdReviewDeleteOverlay {...adReviewDeleteOverlayProps} />
       <E2eBenchSection {...e2eBenchSectionProps} />

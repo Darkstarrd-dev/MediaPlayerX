@@ -1,4 +1,4 @@
-import { useCallback, type Dispatch, type SetStateAction } from 'react'
+import { useCallback, useState, type Dispatch, type SetStateAction } from 'react'
 
 import type {
   DeleteImageItemsResponseDto,
@@ -42,7 +42,12 @@ interface UseManageModeActionsResult {
   toggleManageMode: () => void
   runManageHideAction: (hidden: boolean) => Promise<void>
   requestManageDelete: () => void
-  requestManageGroup: () => Promise<void>
+  requestManageGroup: () => void
+  groupNameDialogOpen: boolean
+  groupNameDraft: string
+  setGroupNameDraft: Dispatch<SetStateAction<string>>
+  cancelManageGroup: () => void
+  confirmManageGroup: () => Promise<void>
   requestManageMove: () => Promise<void>
   confirmManageDelete: () => Promise<void>
   confirmManageRemoveOnly: () => Promise<void>
@@ -64,6 +69,8 @@ export function useManageModeActions({
   updateSettings,
 }: UseManageModeActionsParams): UseManageModeActionsResult {
   const { t } = useI18n()
+  const [groupNameDialogOpen, setGroupNameDialogOpen] = useState(false)
+  const [groupNameDraft, setGroupNameDraft] = useState('')
 
   const toggleManageMode = useCallback(() => {
     const nextOpen = !manageMode
@@ -127,7 +134,7 @@ export function useManageModeActions({
   }, [imageCheckedIds.length, setDeleteConfirmOpen, setManageOperationHint, sidebarCheckedNodeIds.length, t])
 
   const runManageMoveAction = useCallback(
-    async (groupMode: boolean) => {
+    async (groupMode: boolean, groupNameInput?: string) => {
       if (sidebarCheckedNodeIds.length === 0) {
         setManageOperationHint(t('ui.manage.hint.selectSidebarNodesFirst'))
         return
@@ -135,12 +142,7 @@ export function useManageModeActions({
 
       let groupName: string | undefined
       if (groupMode) {
-        const input = window.prompt(t('ui.manage.prompt.groupName'))
-        if (input === null) {
-          setManageOperationHint(t('ui.manage.hint.groupCancelled'))
-          return
-        }
-        groupName = input.trim()
+        groupName = groupNameInput?.trim()
         if (!groupName) {
           setManageOperationHint(t('ui.manage.hint.groupNameRequired'))
           return
@@ -186,9 +188,24 @@ export function useManageModeActions({
     [backendWrite, clearAllSelections, setManageOperationHint, sidebarCheckedNodeIds, t],
   )
 
-  const requestManageGroup = useCallback(async () => {
-    await runManageMoveAction(true)
-  }, [runManageMoveAction])
+  const requestManageGroup = useCallback(() => {
+    if (sidebarCheckedNodeIds.length === 0) {
+      setManageOperationHint(t('ui.manage.hint.selectSidebarNodesFirst'))
+      return
+    }
+    setGroupNameDraft('')
+    setGroupNameDialogOpen(true)
+  }, [setManageOperationHint, sidebarCheckedNodeIds.length, t])
+
+  const cancelManageGroup = useCallback(() => {
+    setGroupNameDialogOpen(false)
+    setManageOperationHint(t('ui.manage.hint.groupCancelled'))
+  }, [setManageOperationHint, t])
+
+  const confirmManageGroup = useCallback(async () => {
+    setGroupNameDialogOpen(false)
+    await runManageMoveAction(true, groupNameDraft)
+  }, [groupNameDraft, runManageMoveAction])
 
   const requestManageMove = useCallback(async () => {
     await runManageMoveAction(false)
@@ -267,6 +284,11 @@ export function useManageModeActions({
     runManageHideAction,
     requestManageDelete,
     requestManageGroup,
+    groupNameDialogOpen,
+    groupNameDraft,
+    setGroupNameDraft,
+    cancelManageGroup,
+    confirmManageGroup,
     requestManageMove,
     confirmManageDelete,
     confirmManageRemoveOnly,

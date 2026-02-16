@@ -19,6 +19,15 @@ interface ManageDeleteDialogInput {
   setDeleteConfirmOpen: (value: boolean | ((previous: boolean) => boolean)) => void
 }
 
+interface ManageGroupDialogInput {
+  open: boolean
+  pending: boolean
+  value: string
+  onChange: (value: string) => void
+  onCancel: () => void
+  onConfirm: () => Promise<void>
+}
+
 interface UseAppShellPropsParams {
   repositoryMode: RepositoryBootstrapDataResult['repositoryMode']
   mode: BrowserMode
@@ -57,6 +66,7 @@ interface UseAppShellPropsParams {
     totalCount: number
   }
   manageDeleteDialogParams: ManageDeleteDialogInput
+  manageGroupDialogParams: ManageGroupDialogInput
   e2eBenchSectionParams: Parameters<typeof buildE2eBenchSectionProps>[0]
 }
 
@@ -81,6 +91,7 @@ export function useAppShellProps({
   dragOverlayActive,
   adReviewDeleteOverlayParams,
   manageDeleteDialogParams,
+  manageGroupDialogParams,
   e2eBenchSectionParams,
 }: UseAppShellPropsParams) {
   const { t } = useI18n()
@@ -98,6 +109,22 @@ export function useAppShellProps({
     cancelLabel: t('ui.common.cancel'),
   })
   const e2eBenchSectionProps = buildE2eBenchSectionProps(e2eBenchSectionParams)
+
+  const manageGroupDialogProps = {
+    open: manageGroupDialogParams.open,
+    pending: manageGroupDialogParams.pending,
+    title: t('ui.manage.groupDialogTitle'),
+    inputLabel: t('ui.manage.groupDialogInputLabel'),
+    inputPlaceholder: t('ui.manage.groupDialogInputPlaceholder'),
+    value: manageGroupDialogParams.value,
+    cancelLabel: t('ui.common.cancel'),
+    confirmLabel: t('ui.common.confirm'),
+    onChange: manageGroupDialogParams.onChange,
+    onCancel: manageGroupDialogParams.onCancel,
+    onConfirm: () => {
+      void manageGroupDialogParams.onConfirm()
+    },
+  }
 
   const importSourceInputsProps = {
     fileImportInputRef: importInputs.fileImportInputRef,
@@ -148,6 +175,7 @@ export function useAppShellProps({
     helpPanelProps: topLayerState.helpPanelProps,
     settingsPanelProps: topLayerState.settingsPanelProps,
     manageDeleteDialogProps,
+    manageGroupDialogProps,
     dragOverlayActive,
     adReviewDeleteOverlayProps: adReviewDeleteOverlayParams,
     e2eBenchSectionProps,

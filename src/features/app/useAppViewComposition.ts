@@ -168,6 +168,14 @@ export function useAppViewComposition({
       targetPaths: manageDeleteTargetPaths,
       setDeleteConfirmOpen,
     },
+    manageGroupDialogParams: {
+      open: displayState.groupNameDialogOpen,
+      pending: displayState.backendWrite.pending.manage,
+      value: displayState.groupNameDraft,
+      onChange: (value) => displayState.setGroupNameDraft(value),
+      onCancel: displayState.cancelManageGroup,
+      onConfirm: displayState.confirmManageGroup,
+    },
     e2eBenchSectionParams: {
       enabled: benchSettings.enabled,
       benchMode: benchSettings.mode,

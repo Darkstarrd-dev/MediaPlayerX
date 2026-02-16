@@ -82,7 +82,7 @@ export interface UseAppWorkspacePropsParams {
   backendWrite: WriteDataAccessResult
   manageOperationHint: string | null
   requestManageDelete: () => void
-  requestManageGroup: () => Promise<void>
+  requestManageGroup: () => void
   requestManageMove: () => Promise<void>
   runManageHideAction: (hidden: boolean) => Promise<void>
   manageAdReview: ManageAdReviewActionsResult
