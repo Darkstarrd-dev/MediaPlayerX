@@ -136,6 +136,10 @@
 
 .logo-wrap {
   position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  padding: 6px 8px 12px;
+  margin: -6px -8px -12px;
 }
 
 .logo-btn {
@@ -157,18 +161,20 @@
 }
 
 .logo-btn:hover {
-  transform: var(--mpx-control-hover-transform);
-  box-shadow: var(--mpx-header-btn-hover-shadow);
+  transform: none;
+  box-shadow: var(--mpx-header-btn-shadow);
+  backdrop-filter: var(--mpx-control-backdrop-filter);
 }
 
 .logo-btn:active {
-  transform: var(--mpx-control-active-transform);
-  box-shadow: var(--mpx-header-btn-active-shadow);
+  transform: none;
+  box-shadow: var(--mpx-header-btn-shadow);
+  backdrop-filter: var(--mpx-control-backdrop-filter);
 }
 
 .import-menu {
   position: absolute;
-  top: 44px;
+  top: calc(100% - 4px);
   left: 0;
   background: var(--mpx-bg-elevated);
   border: 1px solid var(--mpx-border-1);

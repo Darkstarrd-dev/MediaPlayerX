@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
+import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
 import { VideoControlIcon } from './VideoControlIcon'
 import { useMediaPreloadWindow } from './useMediaPreloadWindow'
 import { useI18n } from '../i18n/useI18n'
@@ -340,9 +341,7 @@ function VideoMainSection({
           </>
         ) : (
           <>
-            <strong className="main-toolbar-title is-video" title={toolbarVideoSummary}>
-              {toolbarVideoSummary}
-            </strong>
+            <ToolbarTitleMarquee className="main-toolbar-title is-video" text={toolbarVideoSummary} />
             {canJumpToManga || canJumpToMusic ? (
               <div className="toolbar-actions">
                 {canJumpToManga ? (

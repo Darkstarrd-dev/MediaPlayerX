@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
+import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
 import { resolveLoopModeIconName, resolveMusicToolbarSummary } from './musicMainSectionUtils'
 import { useMediaPreloadWindow } from './useMediaPreloadWindow'
 import { useFullscreenFloatingControls } from './useFullscreenFloatingControls'
@@ -287,6 +288,7 @@ function MusicMainSection({
       }),
     [focusedAudio, t],
   )
+  const musicToolbarTitle = t('ui.music.trackCountSummary', { summary: toolbarSummary, count: audios.length })
 
   const layeredBackgroundShaderLabel = useMemo(() => {
     return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)?.label ?? t('ui.music.backgroundShaderUnselected')
@@ -1081,9 +1083,7 @@ function MusicMainSection({
               </>
             ) : (
               <>
-                <strong className="main-toolbar-title" title={toolbarSummary}>
-                  {t('ui.music.trackCountSummary', { summary: toolbarSummary, count: audios.length })}
-                </strong>
+                <ToolbarTitleMarquee text={musicToolbarTitle} />
                 {canJumpToManga || canJumpToAnimation || canJumpToCover || canJumpToBooklet ? (
                   <div className="toolbar-actions">
                     {canJumpToCover ? (

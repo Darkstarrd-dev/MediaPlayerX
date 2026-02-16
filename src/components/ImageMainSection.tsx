@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type RefObject, type WheelEvent as ReactWheelEvent } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
+import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
 import { VideoControlIcon } from './VideoControlIcon'
 import { mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
@@ -469,6 +470,18 @@ function ImageMainSection({
     return `1/${total}`
   })()
 
+  const browseToolbarTitle = nodeBrowseMode
+    ? t('ui.image.nodeBrowseSummary', {
+        label: nodeBrowseLabel || t('ui.image.nodeBrowseDefaultLabel'),
+        count: nodeBrowseItems.length,
+      })
+    : vectorMode
+      ? t('ui.image.searchResultsView')
+      : t('ui.image.packageProgressSummary', {
+          packageName: activePackage?.displayName ?? t('ui.image.noPackage'),
+          progress: activePackageImageProgress ?? t('ui.image.defaultProgress'),
+        })
+
   const handleThumbnailContainerWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
     if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || event.deltaY === 0) {
       return
@@ -591,19 +604,7 @@ function ImageMainSection({
           </>
         ) : (
           <>
-            <strong className="main-toolbar-title">
-              {nodeBrowseMode
-                ? t('ui.image.nodeBrowseSummary', {
-                    label: nodeBrowseLabel || t('ui.image.nodeBrowseDefaultLabel'),
-                    count: nodeBrowseItems.length,
-                  })
-                : vectorMode
-                  ? t('ui.image.searchResultsView')
-                  : t('ui.image.packageProgressSummary', {
-                      packageName: activePackage?.displayName ?? t('ui.image.noPackage'),
-                      progress: activePackageImageProgress ?? t('ui.image.defaultProgress'),
-                    })}
-            </strong>
+            <ToolbarTitleMarquee text={browseToolbarTitle} />
             <div className="toolbar-actions toolbar-actions-image-mode">
               <div className="toolbar-actions toolbar-actions-image-primary">
                 <button

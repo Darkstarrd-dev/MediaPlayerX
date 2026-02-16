@@ -318,8 +318,16 @@ function AppHeader(props: AppHeaderProps) {
     <header className="app-header" style={{ height: `${headerHeight}px` }}>
       <div className="header-left">
         <div className="header-group header-group-primary">
-          <div className="logo-wrap">
-            <button className="logo-btn" type="button" onClick={onToggleImportMenu}>
+          <div
+            className="logo-wrap"
+            onMouseEnter={() => {
+              if (!importMenuOpen) {
+                onToggleImportMenu()
+              }
+            }}
+            onMouseLeave={onCloseImportMenu}
+          >
+            <button className="logo-btn" type="button">
               MediaPlayerX
             </button>
             {importMenuOpen ? (
