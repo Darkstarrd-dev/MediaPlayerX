@@ -5,9 +5,20 @@ import { buildA11yPropsByRegistry } from '../../i18n/a11y'
 import { useI18n } from '../../i18n/useI18n'
 import type { AlignDirection } from './paneMath'
 import { VideoControlIcon } from '../VideoControlIcon'
-import { MainUiIcon } from '../MainUiIcon'
 
 type FullscreenAutoplayIconName = 'autoplayOn' | 'autoplayOff'
+type FullscreenFooterIconName =
+  | 'swapSides'
+  | 'pagePrev'
+  | 'pageNext'
+  | 'packagePrev'
+  | 'packageNext'
+  | 'alignUp'
+  | 'alignDown'
+  | 'alignLeft'
+  | 'alignRight'
+  | 'zoomPlus'
+  | 'alignReset'
 
 const FULLSCREEN_AUTOPLAY_ICON_NODES: Record<FullscreenAutoplayIconName, ReactElement> = {
   autoplayOn: (
@@ -25,10 +36,82 @@ const FULLSCREEN_AUTOPLAY_ICON_NODES: Record<FullscreenAutoplayIconName, ReactEl
   ),
 }
 
+const FULLSCREEN_FOOTER_ICON_NODES: Record<FullscreenFooterIconName, ReactElement> = {
+  swapSides: (
+    <>
+      <path d="M8 3 4 7l4 4" />
+      <path d="M4 7h16" />
+      <path d="m16 21 4-4-4-4" />
+      <path d="M20 17H4" />
+    </>
+  ),
+  pagePrev: <path d="m15 18-6-6 6-6" />,
+  pageNext: <path d="m9 18 6-6-6-6" />,
+  packagePrev: (
+    <>
+      <path d="m11 17-5-5 5-5" />
+      <path d="m18 17-5-5 5-5" />
+    </>
+  ),
+  packageNext: (
+    <>
+      <path d="m13 17 5-5-5-5" />
+      <path d="m6 17 5-5-5-5" />
+    </>
+  ),
+  alignUp: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" fillOpacity="0.2" stroke="none" />
+    </>
+  ),
+  alignDown: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor" fillOpacity="0.2" stroke="none" />
+    </>
+  ),
+  alignLeft: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" fillOpacity="0.2" stroke="none" />
+    </>
+  ),
+  alignRight: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <rect x="13" y="7" width="4" height="10" rx="1" fill="currentColor" fillOpacity="0.2" stroke="none" />
+    </>
+  ),
+  zoomPlus: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+      <path d="M11 8v6" />
+      <path d="M8 11h6" />
+    </>
+  ),
+  alignReset: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M12 3v18M3 12h18" strokeWidth="1" opacity="0.3" />
+      <rect x="8" y="8" width="8" height="8" rx="1" fill="currentColor" fillOpacity="0.2" stroke="none" />
+    </>
+  ),
+}
+
 function FullscreenAutoplayIcon({ name }: { name: FullscreenAutoplayIconName }) {
   return (
     <svg aria-hidden="true" className="header-action-icon" viewBox="0 0 24 24">
       {FULLSCREEN_AUTOPLAY_ICON_NODES[name]}
+    </svg>
+  )
+}
+
+function FullscreenFooterIcon({ name }: { name: FullscreenFooterIconName }) {
+  return (
+    <svg aria-hidden="true" className="header-action-icon" viewBox="0 0 24 24">
+      {FULLSCREEN_FOOTER_ICON_NODES[name]}
     </svg>
   )
 }
@@ -255,7 +338,9 @@ export function FullscreenFooter({
             </span>
           </button>
           <button aria-label={t('ui.fullscreen.swapSides')} className="video-action-btn fullscreen-action-btn" type="button" disabled={fullscreenDisplay !== 'dual'} onClick={onToggleSwapSides}>
-            <span className="fullscreen-action-content">S</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="swapSides" />
+            </span>
           </button>
 
           <div
@@ -315,16 +400,19 @@ export function FullscreenFooter({
             onMouseLeave={closeZoomPopoverByHover}
           >
             <button
-              aria-label={t('ui.fullscreen.reset')}
+              aria-label={zoomPercent === 100 ? t('ui.fullscreen.zoomIn') : t('ui.fullscreen.reset')}
               className="video-action-btn fullscreen-action-btn header-popover-trigger"
               disabled={!zoomEnabled}
               type="button"
+              title={zoomPercent === 100 ? t('ui.fullscreen.zoomIn') : t('ui.fullscreen.reset')}
               onClick={() => {
                 setZoomDraftValue(100)
                 onSetZoomPercent(100)
               }}
             >
-              <span className="fullscreen-action-content">100</span>
+              <span className="fullscreen-action-content">
+                <FullscreenFooterIcon name={zoomPercent === 100 ? 'zoomPlus' : 'alignReset'} />
+              </span>
             </button>
 
             <div
@@ -365,31 +453,47 @@ export function FullscreenFooter({
 
         <div className="fullscreen-group is-center">
           <button aria-label={t('ui.fullscreen.prevPage')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onStepFocusedPane(-1)}>
-            <span className="fullscreen-action-content">P</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="pagePrev" />
+            </span>
           </button>
           <button aria-label={t('ui.fullscreen.nextPage')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onStepFocusedPane(1)}>
-            <span className="fullscreen-action-content">N</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="pageNext" />
+            </span>
           </button>
           <button aria-label={t('ui.fullscreen.prevPackage')} className="video-action-btn fullscreen-action-btn" type="button" disabled={mode !== 'image'} onClick={onPrevPackage}>
-            <span className="fullscreen-action-content">PF</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="packagePrev" />
+            </span>
           </button>
           <button aria-label={t('ui.fullscreen.nextPackage')} className="video-action-btn fullscreen-action-btn" type="button" disabled={mode !== 'image'} onClick={onNextPackage}>
-            <span className="fullscreen-action-content">NF</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="packageNext" />
+            </span>
           </button>
         </div>
 
         <div className="fullscreen-group is-right">
           <button aria-label={t('ui.fullscreen.alignUp')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onAlignFocusedPane('up')}>
-            <span className="fullscreen-action-content">↑</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="alignUp" />
+            </span>
           </button>
           <button aria-label={t('ui.fullscreen.alignDown')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onAlignFocusedPane('down')}>
-            <span className="fullscreen-action-content">↓</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="alignDown" />
+            </span>
           </button>
           <button aria-label={t('ui.fullscreen.alignLeft')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onAlignFocusedPane('left')}>
-            <span className="fullscreen-action-content">←</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="alignLeft" />
+            </span>
           </button>
           <button aria-label={t('ui.fullscreen.alignRight')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onAlignFocusedPane('right')}>
-            <span className="fullscreen-action-content">→</span>
+            <span className="fullscreen-action-content">
+              <FullscreenFooterIcon name="alignRight" />
+            </span>
           </button>
           <button
             aria-label={t('a11y.common.restoreDefault')}
@@ -400,7 +504,7 @@ export function FullscreenFooter({
             onClick={onResetSinglePane}
           >
             <span className="fullscreen-action-content">
-              <MainUiIcon name="return" />
+              <FullscreenFooterIcon name="alignReset" />
             </span>
           </button>
         </div>

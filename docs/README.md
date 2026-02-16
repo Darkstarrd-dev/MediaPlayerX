@@ -57,17 +57,17 @@
 5. 继续 UI 界面的文字按钮重构为图形按钮。
 6. 补齐剩余未图标化按钮（见 `docs/ui/Soft-Skeuomorphic-icon_design.md`）：
    - MetadataAdReviewSection：审核模式（广告/封面）、策略切换、启动/暂停、焦点切换。
-   - FullscreenFooter：交换左右、缩放复位、上一页/下一页、上一包/下一包、对齐上/下/左/右。
    - Legacy 管理面板（若保留）：策略切换、启动/暂停。
 7. Tooltip/帮助覆盖层二期：继续优化覆盖层密度布局，避免重叠与越界；为每个说明文本框增加可调整指针（leader line）以保证指向关系清晰。
-8. 完善未定义按钮 tooltip：补齐缺失文案 key 与挂载点，保证 icon-only 按钮 hover/focus 都能给出说明。
-9. 调整 tooltip 容器样式以适配 day/night 双模式（含对比度、边框、阴影和背景透明度）。
-10. 将 tooltip 字体大小配置接入设置面板，并纳入 theme token 与持久化设置。
-11. 参考 `docs/ref/subtitle.md` 启动自动字幕生成实施计划，明确阶段拆分、依赖能力、失败回退和验收门禁。
-12. 参考 `https://idc.xpzsd.codes/` 的背景特效和边框特效方案。
-13. 基于 tags 的近似推荐系统。
-14. 基于用户 stars 评分的 random 推荐系统。
-15. 基于作品 tags 的用户 xp 分析系统。
+8. Fullscreen 缩放待修复：zoom 滑条当前无法放大超过 100，且鼠标缩放事件失效（需排查输入同步与事件绑定链路）。
+9. 完善未定义按钮 tooltip：补齐缺失文案 key 与挂载点，保证 icon-only 按钮 hover/focus 都能给出说明。
+10. 调整 tooltip 容器样式以适配 day/night 双模式（含对比度、边框、阴影和背景透明度）。
+11. 将 tooltip 字体大小配置接入设置面板，并纳入 theme token 与持久化设置。
+12. 参考 `docs/ref/subtitle.md` 启动自动字幕生成实施计划，明确阶段拆分、依赖能力、失败回退和验收门禁。
+13. 参考 `https://idc.xpzsd.codes/` 的背景特效和边框特效方案。
+14. 基于 tags 的近似推荐系统。
+15. 基于用户 stars 评分的 random 推荐系统。
+16. 基于作品 tags 的用户 xp 分析系统。
 
 ## 文档维护约定
 
