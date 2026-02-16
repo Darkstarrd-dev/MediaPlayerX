@@ -9,6 +9,7 @@ describe('buildSettingsPanelProps', () => {
 
     const props = buildSettingsPanelProps({
       settingsOpen: true,
+      uiLocale: 'auto',
       styleId: 'flush',
       paletteId: 'parchment',
       paletteMode: 'day',
@@ -83,6 +84,7 @@ describe('buildSettingsPanelProps', () => {
     props.onPaletteModeChange('night')
     props.onPaletteDayChange('geist-light')
     props.onPaletteNightChange('tokyo-night')
+    props.onUiLocaleChange('en-US')
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 })
     expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 })
@@ -105,5 +107,6 @@ describe('buildSettingsPanelProps', () => {
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
     })
+    expect(updateSettings).toHaveBeenNthCalledWith(8, { uiLocale: 'en-US' })
   })
 })

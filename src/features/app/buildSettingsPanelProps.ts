@@ -4,6 +4,7 @@ import { resolvePalettePairForStyle, resolveStyleId } from '../theme/themeRegist
 
 interface BuildSettingsPanelPropsParams {
   settingsOpen: boolean
+  uiLocale: AppSettings['uiLocale']
   styleId: string
   paletteId: string
   paletteMode: AppSettings['paletteMode']
@@ -68,6 +69,7 @@ interface BuildSettingsPanelPropsParams {
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
   return {
     settingsOpen: params.settingsOpen,
+    uiLocale: params.uiLocale,
     styleId: params.styleId,
     paletteId: params.paletteId,
     paletteMode: params.paletteMode,
@@ -117,6 +119,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     mediaCapabilities: params.mediaCapabilities,
     onRefreshRuntimeInfo: params.refreshRuntimeInfo,
     onClose: () => params.updateSettings({ settingsOpen: false }),
+    onUiLocaleChange: (value) => {
+      params.updateSettings({ uiLocale: value })
+    },
     onStyleChange: (value) => {
       const nextStyleId = resolveStyleId(value)
       const nextPair = resolvePalettePairForStyle(nextStyleId, params.paletteDayId, params.paletteNightId)

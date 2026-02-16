@@ -23,6 +23,7 @@ export type SettingsSection = 'layout' | 'system' | 'model' | 'database' | 'shor
 interface RenderSettingsMainSectionParams {
   t: TranslateFn
   activeSection: SettingsSection
+  uiLocale: 'auto' | 'zh-CN' | 'en-US'
   layoutLocked: boolean
   headerHeight: number
   headerHeightScale: number
@@ -81,6 +82,7 @@ interface RenderSettingsMainSectionParams {
   mediaCapabilities: RuntimeMediaCapabilityProbeResult[]
   renderBindingRows: () => JSX.Element
   onResetShortcuts: () => void
+  onUiLocaleChange: (value: 'auto' | 'zh-CN' | 'en-US') => void
   onLayoutLockedChange: (value: boolean) => void
   onHeaderHeightChange: (value: number) => void
   onSettingsBackdropOpacityChange: (value: number) => void
@@ -129,6 +131,7 @@ interface RenderSettingsMainSectionParams {
 export function renderSettingsMainSection({
   t,
   activeSection,
+  uiLocale,
   layoutLocked,
   headerHeight,
   headerHeightScale,
@@ -187,6 +190,7 @@ export function renderSettingsMainSection({
   mediaCapabilities,
   renderBindingRows,
   onResetShortcuts,
+  onUiLocaleChange,
   onLayoutLockedChange,
   onHeaderHeightChange,
   onSettingsBackdropOpacityChange,
@@ -239,6 +243,24 @@ export function renderSettingsMainSection({
 
     return (
       <div className="settings-block">
+        <section className="settings-group">
+          <header className="settings-group-head">
+            <span>{t('ui.settings.languageSection')}</span>
+          </header>
+          <label htmlFor="settings-ui-locale-select">
+            {t('ui.settings.languageLabel')}
+            <select
+              id="settings-ui-locale-select"
+              value={uiLocale}
+              onChange={(event) => onUiLocaleChange(event.target.value as 'auto' | 'zh-CN' | 'en-US')}
+            >
+              <option value="auto">{t('ui.settings.languageOptionAuto')}</option>
+              <option value="zh-CN">{t('ui.settings.languageOptionZhCn')}</option>
+              <option value="en-US">{t('ui.settings.languageOptionEnUs')}</option>
+            </select>
+          </label>
+        </section>
+
         <section className="settings-group">
           <header className="settings-group-head">
             <span>{t('ui.settings.themeSection')}</span>

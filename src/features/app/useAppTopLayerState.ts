@@ -395,6 +395,7 @@ export function useAppTopLayerState({
 
   const settingsPanelProps = buildSettingsPanelProps({
     settingsOpen: appSettings.settingsOpen,
+    uiLocale: appSettings.uiLocale,
     styleId: appSettings.styleId,
     paletteId: appSettings.paletteId,
     paletteMode: appSettings.paletteMode,

@@ -25,6 +25,7 @@ import { toScale } from './settings/settingsScale'
 
 export interface SettingsPanelProps {
   settingsOpen: boolean
+  uiLocale: 'auto' | 'zh-CN' | 'en-US'
   styleId: string
   paletteId: string
   paletteMode: 'day' | 'night'
@@ -73,6 +74,7 @@ export interface SettingsPanelProps {
   mediaCapabilitiesError: string | null
   mediaCapabilities: RuntimeMediaCapabilityProbeResult[]
   onClose: () => void
+  onUiLocaleChange: (value: 'auto' | 'zh-CN' | 'en-US') => void
   onStyleChange: (value: string) => void
   onPaletteModeChange: (value: 'day' | 'night') => void
   onPaletteDayChange: (value: string) => void
@@ -169,6 +171,7 @@ function resolveSettingsSection(raw: unknown): SettingsSection {
 
 function SettingsPanel({
   settingsOpen,
+  uiLocale,
   styleId,
   paletteMode,
   paletteDayId,
@@ -216,6 +219,7 @@ function SettingsPanel({
   mediaCapabilitiesError,
   mediaCapabilities,
   onClose,
+  onUiLocaleChange,
   onStyleChange,
   onPaletteModeChange,
   onPaletteDayChange,
@@ -629,6 +633,7 @@ function SettingsPanel({
   const mainSection = renderSettingsMainSection({
     t,
     activeSection,
+    uiLocale,
     layoutLocked,
     electronNativeChromeEnabled,
     headerHeight,
@@ -686,6 +691,7 @@ function SettingsPanel({
     mediaCapabilities,
     renderBindingRows,
     onResetShortcuts,
+    onUiLocaleChange,
     onLayoutLockedChange,
     onElectronNativeChromeEnabledChange,
     onHeaderHeightChange,
