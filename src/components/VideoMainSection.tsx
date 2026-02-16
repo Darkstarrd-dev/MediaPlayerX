@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
 import { VideoControlIcon } from './VideoControlIcon'
+import { useMediaPreloadWindow } from './useMediaPreloadWindow'
 import { useI18n } from '../i18n/useI18n'
 import type { VideoItem } from '../types'
 import type { VideoFitMode } from '../features/media/videoFitMode'
@@ -45,6 +46,8 @@ interface VideoMainSectionProps {
   videoFitMode: VideoFitMode
   videoLoopMode: 'single' | 'list'
   videoLoopModeLabel: string
+  mediaPreloadMemoryBudgetMb: number
+  videoPreloadItems: Array<{ id: string; src: string; sizeMb: number }>
   videoSourceUrl: string | null
   subtitleTrackUrl: string | null
   subtitleVisible: boolean
@@ -104,6 +107,8 @@ function VideoMainSection({
   videoFitMode,
   videoLoopMode,
   videoLoopModeLabel,
+  mediaPreloadMemoryBudgetMb,
+  videoPreloadItems,
   videoSourceUrl,
   subtitleTrackUrl,
   subtitleVisible,
@@ -135,11 +140,15 @@ function VideoMainSection({
 }: VideoMainSectionProps) {
   const { t } = useI18n()
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const lastSeekPreviewAtRef = useRef(0)
+  const lastSeekPreviewValueRef = useRef<number | null>(null)
   const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false)
   const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] = useState(false)
+  const [seekDraftTime, setSeekDraftTime] = useState<number | null>(null)
   const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
   const clampedTime = Math.min(videoTime, Math.max(0, durationSec))
-  const progressPercent = durationSec > 0 ? clamp((clampedTime / durationSec) * 100, 0, 100) : 0
+  const displayTime = seekDraftTime == null ? clampedTime : clamp(seekDraftTime, 0, Math.max(0, durationSec))
+  const progressPercent = durationSec > 0 ? clamp((displayTime / durationSec) * 100, 0, 100) : 0
   const videoProgressRangeStyle = {
     '--mpx-skeuo-range-pct': `${progressPercent}%`,
   } as CSSProperties
@@ -180,9 +189,45 @@ function VideoMainSection({
     setOpenPopover(null)
   }
 
+  useMediaPreloadWindow({
+    mediaType: 'video',
+    items: videoPreloadItems,
+    activeId: focusedVideo?.id ?? null,
+    budgetMb: mediaPreloadMemoryBudgetMb,
+    lookBehind: 1,
+    lookAhead: 2,
+  })
+
+  const commitSeekDraft = () => {
+    if (seekDraftTime == null) {
+      return
+    }
+    const nextTime = clamp(seekDraftTime, 0, Math.max(0, durationSec))
+    onSeekVideo(nextTime)
+    lastSeekPreviewAtRef.current = Date.now()
+    lastSeekPreviewValueRef.current = nextTime
+    setSeekDraftTime(null)
+  }
+
+  const previewSeekDuringDrag = (nextTime: number) => {
+    const now = Date.now()
+    const lastAt = lastSeekPreviewAtRef.current
+    const lastValue = lastSeekPreviewValueRef.current
+    const hasLargeJump = lastValue == null || Math.abs(nextTime - lastValue) >= 2
+    if (lastAt !== 0 && now - lastAt < 90 && !hasLargeJump) {
+      return
+    }
+    onSeekVideo(nextTime)
+    lastSeekPreviewAtRef.current = now
+    lastSeekPreviewValueRef.current = nextTime
+  }
+
   useEffect(() => {
     setHasPlayedCurrentSource(false)
     setHasSeekPreviewCurrentSource(false)
+    setSeekDraftTime(null)
+    lastSeekPreviewAtRef.current = 0
+    lastSeekPreviewValueRef.current = null
   }, [videoSourceUrl])
 
   useEffect(() => {
@@ -381,7 +426,7 @@ function VideoMainSection({
 
         <div className="video-controls-shell">
         <div className="video-controls-progress">
-          <span className="video-progress-time">{`${formatSeconds(clampedTime)} / ${formatSeconds(durationSec)}`}</span>
+          <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
           <input
             aria-label={t('a11y.media.progress')}
             max={durationSec}
@@ -389,10 +434,20 @@ function VideoMainSection({
             step={0.1}
             style={videoProgressRangeStyle}
             type="range"
-            value={clampedTime}
+            value={displayTime}
             onChange={(event) => {
               setHasSeekPreviewCurrentSource(true)
-              onSeekVideo(Number(event.target.value))
+              const nextTime = clamp(Number(event.target.value), 0, Math.max(0, durationSec))
+              setSeekDraftTime(nextTime)
+              previewSeekDuringDrag(nextTime)
+            }}
+            onMouseUp={commitSeekDraft}
+            onTouchEnd={commitSeekDraft}
+            onBlur={commitSeekDraft}
+            onKeyUp={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                commitSeekDraft()
+              }
             }}
           />
         </div>

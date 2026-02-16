@@ -421,6 +421,7 @@ export function useAppTopLayerState({
     metadataRatio: appSettings.metadataRatio,
     workspaceBottomPanelHeight: appSettings.workspaceBottomPanelHeight,
     fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
+    mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
     thumbnailGap: appSettings.thumbnailGap,
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailWidth: appSettings.thumbnailWidth,

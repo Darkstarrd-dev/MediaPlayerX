@@ -46,6 +46,7 @@ interface RenderSettingsMainSectionParams {
   workspaceBottomPanelHeightScale: number
   fullscreenVideoControlsMaxWidth: number
   fullscreenVideoControlsMaxWidthScale: number
+  mediaPreloadMemoryBudgetMb: number
   thumbnailGap: number
   thumbnailGapScale: number
   thumbnailQuality: number
@@ -97,6 +98,7 @@ interface RenderSettingsMainSectionParams {
   onMetadataRatioChange: (value: number) => void
   onWorkspaceBottomPanelHeightChange: (value: number) => void
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void
+  onMediaPreloadMemoryBudgetMbChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onResetThumbnailQuality: () => void
@@ -154,6 +156,7 @@ export function renderSettingsMainSection({
   workspaceBottomPanelHeightScale,
   fullscreenVideoControlsMaxWidth,
   fullscreenVideoControlsMaxWidthScale,
+  mediaPreloadMemoryBudgetMb,
   thumbnailGap,
   thumbnailGapScale,
   thumbnailQuality,
@@ -205,6 +208,7 @@ export function renderSettingsMainSection({
   onMetadataRatioChange,
   onWorkspaceBottomPanelHeightChange,
   onFullscreenVideoControlsMaxWidthChange,
+  onMediaPreloadMemoryBudgetMbChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onResetThumbnailQuality,
@@ -569,6 +573,17 @@ export function renderSettingsMainSection({
               onChange={(event) =>
                 onFullscreenVideoControlsMaxWidthChange(toAbsolutePx('fullscreenVideoControlsMaxWidth', Number(event.target.value)))
               }
+            />
+          </label>
+          <label>
+            {t('ui.settings.mediaPreloadMemoryBudgetMb', { value: mediaPreloadMemoryBudgetMb })}
+            <input
+              max={4096}
+              min={0}
+              step={64}
+              type="range"
+              value={mediaPreloadMemoryBudgetMb}
+              onChange={(event) => onMediaPreloadMemoryBudgetMbChange(Number(event.target.value))}
             />
           </label>
         </section>

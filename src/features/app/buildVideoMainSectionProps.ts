@@ -33,6 +33,10 @@ interface BuildVideoMainSectionPropsParams {
   videoFitMode: VideoFitMode
   videoLoopMode: 'single' | 'list'
   videoLoopModeLabel: string
+  mediaPreloadMemoryBudgetMb: number
+  videoPreloadOrderIds: string[]
+  videoById: Map<string, VideoItem>
+  videoUrlById: Record<string, string>
   videoSourceUrl: string | null
   fullscreenActive: boolean
   active: boolean
@@ -98,6 +102,21 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     videoFitMode: params.videoFitMode,
     videoLoopMode: params.videoLoopMode,
     videoLoopModeLabel: params.videoLoopModeLabel,
+    mediaPreloadMemoryBudgetMb: params.mediaPreloadMemoryBudgetMb,
+    videoPreloadItems: params.videoPreloadOrderIds
+      .map((videoId) => {
+        const video = params.videoById.get(videoId)
+        const src = params.videoUrlById[videoId] ?? null
+        if (!video || !src) {
+          return null
+        }
+        return {
+          id: videoId,
+          src,
+          sizeMb: Math.max(0, video.sizeMb),
+        }
+      })
+      .filter((item): item is { id: string; src: string; sizeMb: number } => Boolean(item)),
     videoSourceUrl: params.videoSourceUrl,
     fullscreenActive: params.fullscreenActive,
     active: params.active,

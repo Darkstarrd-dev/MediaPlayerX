@@ -32,6 +32,7 @@ export function toPersistedAppSettings(
     metadataRatio: settings.metadataRatio,
     workspaceBottomPanelHeight: settings.workspaceBottomPanelHeight,
     fullscreenVideoControlsMaxWidth: settings.fullscreenVideoControlsMaxWidth,
+    mediaPreloadMemoryBudgetMb: settings.mediaPreloadMemoryBudgetMb,
     thumbnailScale: settings.thumbnailScale,
     thumbnailGap: settings.thumbnailGap,
     showNamesOnly: settings.showNamesOnly,

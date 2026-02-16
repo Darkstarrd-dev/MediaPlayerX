@@ -24,6 +24,7 @@ interface BuildSettingsPanelPropsParams {
   metadataRatio: number
   workspaceBottomPanelHeight: number
   fullscreenVideoControlsMaxWidth: number
+  mediaPreloadMemoryBudgetMb: number
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
@@ -89,6 +90,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     metadataRatio: params.metadataRatio,
     workspaceBottomPanelHeight: params.workspaceBottomPanelHeight,
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
+    mediaPreloadMemoryBudgetMb: params.mediaPreloadMemoryBudgetMb,
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
     thumbnailWidth: params.thumbnailWidth,
@@ -186,6 +188,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onMetadataRatioChange: params.applyMetadataRatio,
     onWorkspaceBottomPanelHeightChange: (value) => params.updateSettings({ workspaceBottomPanelHeight: value }),
     onFullscreenVideoControlsMaxWidthChange: (value) => params.updateSettings({ fullscreenVideoControlsMaxWidth: value }),
+    onMediaPreloadMemoryBudgetMbChange: (value) => params.updateSettings({ mediaPreloadMemoryBudgetMb: value }),
     onThumbnailGapChange: (value) => params.updateSettings({ thumbnailGap: value }),
     onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
     onResetThumbnailQuality: () =>

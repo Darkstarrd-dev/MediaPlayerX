@@ -45,6 +45,8 @@ interface UseResolvedMediaStateResult {
   fullscreenImageSrc: string | null
   focusedVideoSrc: string | null
   focusedAudioSrc: string | null
+  videoUrlById: Record<string, string>
+  audioUrlById: Record<string, string>
   focusedVideoCoverImageSrc: string | null
   sourceCoverImageUrlBySourceId: Record<string, string>
 }
@@ -350,6 +352,26 @@ export function useResolvedMediaState({
   const focusedVideoSrc = focusedVideo ? (resolvedMedia.urlByTargetId[`video:${focusedVideo.id}`] ?? null) : null
   const focusedAudioSrc = focusedAudio ? (resolvedMedia.urlByTargetId[`audio:${focusedAudio.id}`] ?? null) : null
   const focusedVideoCoverImageSrc = focusedVideo ? (videoCoverImageUrlById[focusedVideo.id] ?? null) : null
+  const videoUrlById = useMemo<Record<string, string>>(() => {
+    const next: Record<string, string> = {}
+    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
+      if (!targetId.startsWith('video:')) {
+        continue
+      }
+      next[targetId.slice('video:'.length)] = url
+    }
+    return next
+  }, [resolvedMedia.urlByTargetId])
+  const audioUrlById = useMemo<Record<string, string>>(() => {
+    const next: Record<string, string> = {}
+    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
+      if (!targetId.startsWith('audio:')) {
+        continue
+      }
+      next[targetId.slice('audio:'.length)] = url
+    }
+    return next
+  }, [resolvedMedia.urlByTargetId])
 
   return {
     thumbnailImageUrlById,
@@ -357,6 +379,8 @@ export function useResolvedMediaState({
     fullscreenImageSrc,
     focusedVideoSrc,
     focusedAudioSrc,
+    videoUrlById,
+    audioUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
   }

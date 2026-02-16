@@ -34,6 +34,7 @@ interface BuildMusicMainSectionPropsParams {
   audioSidebarOrderedIds: string[]
   focusedAudio: AudioItem | null
   focusedAudioSrc: string | null
+  audioUrlById: Record<string, string>
   selectedAudioId: string
   musicLoopMode: MusicLoopMode
   musicLoopModeLabels: Record<MusicLoopMode, string>
@@ -50,6 +51,7 @@ interface BuildMusicMainSectionPropsParams {
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
   musicVisualizerShaderSettingsById: AppSettings['musicVisualizerShaderSettingsById']
+  mediaPreloadMemoryBudgetMb: number
   updateSettings: (patch: Partial<AppSettings>) => void
 }
 
@@ -218,6 +220,21 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     audios: params.audiosForSidebar,
     focusedAudio: params.focusedAudio,
     focusedAudioSrc: params.focusedAudioSrc,
+    mediaPreloadMemoryBudgetMb: params.mediaPreloadMemoryBudgetMb,
+    audioPreloadItems: params.audioSidebarOrderedIds
+      .map((audioId) => {
+        const audio = params.audioByIdEffective.get(audioId)
+        const src = params.audioUrlById[audioId] ?? null
+        if (!audio || !src) {
+          return null
+        }
+        return {
+          id: audioId,
+          src,
+          sizeMb: Math.max(0, audio.sizeMb),
+        }
+      })
+      .filter((item): item is { id: string; src: string; sizeMb: number } => Boolean(item)),
     musicLoopMode: params.musicLoopMode,
     musicLoopModeLabel: currentLoopModeLabel,
     canPrevAudio: canStepBetweenTracks,

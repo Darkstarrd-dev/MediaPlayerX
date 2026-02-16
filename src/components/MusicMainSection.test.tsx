@@ -57,6 +57,8 @@ function createMusicMainSectionProps(
     audios,
     focusedAudio: audios[0],
     focusedAudioSrc: "mock://audio-1",
+    mediaPreloadMemoryBudgetMb: 512,
+    audioPreloadItems: [{ id: audios[0].id, src: "mock://audio-1", sizeMb: 6 }],
     musicLoopMode: "library",
     musicLoopModeLabel: "全曲库循环",
     canPrevAudio: false,
@@ -175,6 +177,7 @@ describe("MusicMainSection", () => {
     fireEvent.change(screen.getByLabelText("音乐进度滑条"), {
       target: { value: "25" },
     });
+    fireEvent.mouseUp(screen.getByLabelText("音乐进度滑条"));
 
     const muteButton = screen.getByRole("button", { name: "静音" });
     fireEvent.mouseEnter(muteButton.parentElement as HTMLElement);

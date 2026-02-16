@@ -75,6 +75,7 @@ export const appSettingsSchema = z.object({
   metadataRatio: z.number().min(0.2).max(0.45),
   workspaceBottomPanelHeight: z.number().min(80).max(360),
   fullscreenVideoControlsMaxWidth: z.number().min(640).max(1920),
+  mediaPreloadMemoryBudgetMb: z.number().int().min(0).max(4096),
   thumbnailScale: z.number().min(1).max(9),
   thumbnailGap: z.number().min(0).max(24),
   showNamesOnly: z.boolean(),

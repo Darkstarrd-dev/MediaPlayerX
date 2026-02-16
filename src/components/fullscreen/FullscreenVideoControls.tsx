@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
 
 import { VideoControlIcon } from '../VideoControlIcon'
 import { MusicControlIcon } from '../MusicControlIcon'
@@ -77,12 +77,16 @@ export function FullscreenVideoControlsShell({
 }: FullscreenVideoControlsShellProps) {
   const { t } = useI18n()
   const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
+  const [seekDraftTime, setSeekDraftTime] = useState<number | null>(null)
+  const lastSeekPreviewAtRef = useRef(0)
+  const lastSeekPreviewValueRef = useRef<number | null>(null)
 
   const closePopover = () => {
     setOpenPopover(null)
   }
 
-  const progressPercent = durationSec > 0 ? Math.max(0, Math.min(100, (clampedVideoTime / durationSec) * 100)) : 0
+  const displayTime = seekDraftTime == null ? clampedVideoTime : Math.max(0, Math.min(Math.max(0, durationSec), seekDraftTime))
+  const progressPercent = durationSec > 0 ? Math.max(0, Math.min(100, (displayTime / durationSec) * 100)) : 0
   const videoProgressRangeStyle = {
     '--mpx-skeuo-range-pct': `${progressPercent}%`,
   } as CSSProperties
@@ -102,10 +106,34 @@ export function FullscreenVideoControlsShell({
     setOpenPopover(key)
   }
 
+  const commitSeekDraft = () => {
+    if (seekDraftTime == null) {
+      return
+    }
+    const nextTime = Math.max(0, Math.min(Math.max(0, durationSec), seekDraftTime))
+    onSeekVideo(nextTime)
+    lastSeekPreviewAtRef.current = Date.now()
+    lastSeekPreviewValueRef.current = nextTime
+    setSeekDraftTime(null)
+  }
+
+  const previewSeekDuringDrag = (nextTime: number) => {
+    const now = Date.now()
+    const lastAt = lastSeekPreviewAtRef.current
+    const lastValue = lastSeekPreviewValueRef.current
+    const hasLargeJump = lastValue == null || Math.abs(nextTime - lastValue) >= 2
+    if (lastAt !== 0 && now - lastAt < 90 && !hasLargeJump) {
+      return
+    }
+    onSeekVideo(nextTime)
+    lastSeekPreviewAtRef.current = now
+    lastSeekPreviewValueRef.current = nextTime
+  }
+
   return (
     <div className="video-controls-shell fullscreen-video-controls-shell">
       <div className="video-controls-progress">
-        <span className="video-progress-time">{`${formatSeconds(clampedVideoTime)} / ${formatSeconds(durationSec)}`}</span>
+        <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
         <input
           aria-label={t('a11y.media.fullscreenProgress')}
           max={Math.max(0, durationSec)}
@@ -113,8 +141,20 @@ export function FullscreenVideoControlsShell({
           step={0.1}
           style={videoProgressRangeStyle}
           type="range"
-          value={clampedVideoTime}
-          onChange={(event) => onSeekVideo(Number(event.target.value))}
+          value={displayTime}
+          onChange={(event) => {
+            const nextTime = Math.max(0, Math.min(Math.max(0, durationSec), Number(event.target.value)))
+            setSeekDraftTime(nextTime)
+            previewSeekDuringDrag(nextTime)
+          }}
+          onMouseUp={commitSeekDraft}
+          onTouchEnd={commitSeekDraft}
+          onBlur={commitSeekDraft}
+          onKeyUp={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              commitSeekDraft()
+            }
+          }}
         />
       </div>
 

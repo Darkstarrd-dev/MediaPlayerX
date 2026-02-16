@@ -109,6 +109,7 @@ export const enUsCatalog: { [K in keyof ZhCnCatalog]: string } = {
   'ui.settings.metadataPanelRatio': 'Metadata panel ratio {{percent}}%',
   'ui.settings.workspaceBottomPanelHeightScale': 'Search/manage panel height scale {{scale}} ({{px}}px)',
   'ui.settings.fullscreenVideoControlsMaxWidthScale': 'Fullscreen video controls max width scale {{scale}} ({{px}}px)',
+  'ui.settings.mediaPreloadMemoryBudgetMb': 'Media preload memory budget {{value}}MB',
   'ui.settings.runtimeDiagnosticsLegend': 'Runtime diagnostics',
   'ui.settings.runtimeDiagnosticsHint': 'Used to inspect backend bridge/path differences between EXE and dev:desktop.',
   'ui.settings.repositoryMode': 'Repository mode',

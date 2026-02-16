@@ -144,6 +144,8 @@ export function useAppWorkspaceProps({
   videoLoopMode,
   focusedVideoSrc,
   focusedAudioSrc,
+  videoUrlById,
+  audioUrlById,
   subtitleTrackUrl,
   subtitleVisible,
   subtitleLoading,
@@ -943,6 +945,10 @@ export function useAppWorkspaceProps({
       videoLoopMode === "single"
         ? t("ui.media.videoLoopModeSingle")
         : t("ui.media.videoLoopModeList"),
+    mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
+    videoPreloadOrderIds: sidebarVideoQueueIds,
+    videoById: videoByIdEffective,
+    videoUrlById,
     videoSourceUrl: focusedVideoSrc,
     subtitleTrackUrl,
     subtitleVisible,
@@ -1013,6 +1019,8 @@ export function useAppWorkspaceProps({
     audioSidebarOrderedIds,
     focusedAudio,
     focusedAudioSrc,
+    audioUrlById,
+    mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
     selectedAudioId,
     musicLoopMode,
     musicLoopModeLabels: {

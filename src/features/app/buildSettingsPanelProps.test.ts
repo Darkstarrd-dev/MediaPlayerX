@@ -29,6 +29,7 @@ describe('buildSettingsPanelProps', () => {
       metadataRatio: 0.28,
       workspaceBottomPanelHeight: 164,
       fullscreenVideoControlsMaxWidth: 980,
+      mediaPreloadMemoryBudgetMb: 1024,
       thumbnailGap: 8,
       thumbnailQuality: 40,
       thumbnailWidth: 512,

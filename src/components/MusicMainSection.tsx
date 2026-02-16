@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
 import { resolveLoopModeIconName, resolveMusicToolbarSummary } from './musicMainSectionUtils'
+import { useMediaPreloadWindow } from './useMediaPreloadWindow'
 import { useFullscreenFloatingControls } from './useFullscreenFloatingControls'
 import type { AppSettings } from '../contracts/settings'
 import { useI18n } from '../i18n/useI18n'
@@ -43,6 +44,8 @@ interface MusicMainSectionProps {
   audios: AudioItem[]
   focusedAudio: AudioItem | null
   focusedAudioSrc: string | null
+  mediaPreloadMemoryBudgetMb: number
+  audioPreloadItems: Array<{ id: string; src: string; sizeMb: number }>
   musicLoopMode: MusicLoopMode
   musicLoopModeLabel: string
   canPrevAudio: boolean
@@ -90,6 +93,8 @@ function MusicMainSection({
   audios,
   focusedAudio,
   focusedAudioSrc,
+  mediaPreloadMemoryBudgetMb,
+  audioPreloadItems,
   musicLoopMode,
   musicLoopModeLabel,
   canPrevAudio,
@@ -113,6 +118,8 @@ function MusicMainSection({
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const visualizerGpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const visualizerCpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const lastAudioSeekPreviewAtRef = useRef(0)
+  const lastAudioSeekPreviewValueRef = useRef<number | null>(null)
   const lastPlayRequestNonceRef = useRef(playRequestNonce)
   const visualizerActivateRafRef = useRef<number | null>(null)
   const visualizerActivateRaf2Ref = useRef<number | null>(null)
@@ -121,6 +128,7 @@ function MusicMainSection({
   const [audioVolume, setAudioVolume] = useState(60)
   const [audioMuted, setAudioMuted] = useState(false)
   const [audioTime, setAudioTime] = useState(0)
+  const [audioSeekDraftTime, setAudioSeekDraftTime] = useState<number | null>(null)
   const [audioDurationSec, setAudioDurationSec] = useState(0)
   const [renderLongEdgeDraft, setRenderLongEdgeDraft] = useState('')
   const [foregroundRenderScaleCoeffDraft, setForegroundRenderScaleCoeffDraft] = useState<number | null>(null)
@@ -304,7 +312,8 @@ function MusicMainSection({
   ])
 
   const clampedAudioTime = clamp(audioTime, 0, Math.max(0, audioDurationSec))
-  const audioProgressPercent = audioDurationSec > 0 ? clamp((clampedAudioTime / audioDurationSec) * 100, 0, 100) : 0
+  const displayAudioTime = audioSeekDraftTime == null ? clampedAudioTime : clamp(audioSeekDraftTime, 0, Math.max(0, audioDurationSec))
+  const audioProgressPercent = audioDurationSec > 0 ? clamp((displayAudioTime / audioDurationSec) * 100, 0, 100) : 0
   const musicProgressRangeStyle = {
     '--mpx-skeuo-range-pct': `${audioProgressPercent}%`,
   } as CSSProperties
@@ -395,6 +404,9 @@ function MusicMainSection({
 
   useEffect(() => {
     setAudioTime(0)
+    setAudioSeekDraftTime(null)
+    lastAudioSeekPreviewAtRef.current = 0
+    lastAudioSeekPreviewValueRef.current = null
     setAudioDurationSec(Math.max(0, focusedAudio?.durationSec ?? 0))
     if (!focusedAudio?.id && !focusedAudioSrc) {
       setAudioPlaying(false)
@@ -461,6 +473,48 @@ function MusicMainSection({
 
   const closePopover = () => {
     setOpenPopover(null)
+  }
+
+  useMediaPreloadWindow({
+    mediaType: 'audio',
+    items: audioPreloadItems,
+    activeId: focusedAudio?.id ?? null,
+    budgetMb: mediaPreloadMemoryBudgetMb,
+    lookBehind: 1,
+    lookAhead: 2,
+  })
+
+  const commitAudioSeekDraft = () => {
+    if (audioSeekDraftTime == null) {
+      return
+    }
+    const nextTime = clamp(audioSeekDraftTime, 0, Math.max(0, audioDurationSec))
+    setAudioTime(nextTime)
+    const audio = audioRef.current
+    if (audio) {
+      audio.currentTime = nextTime
+    }
+    setAudioSeekDraftTime(null)
+    lastAudioSeekPreviewAtRef.current = Date.now()
+    lastAudioSeekPreviewValueRef.current = nextTime
+  }
+
+  const previewAudioSeekDuringDrag = (nextTime: number) => {
+    const now = Date.now()
+    const lastAt = lastAudioSeekPreviewAtRef.current
+    const lastValue = lastAudioSeekPreviewValueRef.current
+    const hasLargeJump = lastValue == null || Math.abs(nextTime - lastValue) >= 2
+    if (lastAt !== 0 && now - lastAt < 90 && !hasLargeJump) {
+      return
+    }
+
+    setAudioTime(nextTime)
+    const audio = audioRef.current
+    if (audio) {
+      audio.currentTime = nextTime
+    }
+    lastAudioSeekPreviewAtRef.current = now
+    lastAudioSeekPreviewValueRef.current = nextTime
   }
 
   const {
@@ -559,7 +613,7 @@ function MusicMainSection({
       onMouseLeave={fullscreenActive ? hideFullscreenControls : closePopover}
     >
       <div className="music-controls-progress">
-        <span className="video-progress-time">{`${formatSeconds(clampedAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
+        <span className="video-progress-time">{`${formatSeconds(displayAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
         <input
           aria-label={t('a11y.music.progress')}
           max={Math.max(0, audioDurationSec)}
@@ -567,13 +621,18 @@ function MusicMainSection({
           step={0.1}
           style={musicProgressRangeStyle}
           type="range"
-          value={clampedAudioTime}
+          value={displayAudioTime}
           onChange={(event) => {
             const nextTime = clamp(Number(event.target.value), 0, Math.max(0, audioDurationSec))
-            setAudioTime(nextTime)
-            const audio = audioRef.current
-            if (audio) {
-              audio.currentTime = nextTime
+            setAudioSeekDraftTime(nextTime)
+            previewAudioSeekDuringDrag(nextTime)
+          }}
+          onMouseUp={commitAudioSeekDraft}
+          onTouchEnd={commitAudioSeekDraft}
+          onBlur={commitAudioSeekDraft}
+          onKeyUp={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              commitAudioSeekDraft()
             }
           }}
         />

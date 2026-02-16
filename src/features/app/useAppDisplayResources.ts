@@ -315,6 +315,8 @@ export function useAppDisplayResources({
     fullscreenImageSrc,
     focusedVideoSrc,
     focusedAudioSrc,
+    videoUrlById,
+    audioUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
   } = useResolvedMediaState({
@@ -639,6 +641,8 @@ export function useAppDisplayResources({
     fullscreenImageSrc,
     focusedVideoSrc,
     focusedAudioSrc,
+    videoUrlById,
+    audioUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
     subtitleVisible,

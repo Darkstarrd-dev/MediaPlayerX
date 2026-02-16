@@ -130,6 +130,8 @@ export interface UseAppWorkspacePropsParams {
   videoLoopMode: 'single' | 'list'
   focusedVideoSrc: string | null
   focusedAudioSrc: string | null
+  videoUrlById: Record<string, string>
+  audioUrlById: Record<string, string>
   subtitleTrackUrl: string | null
   subtitleVisible: boolean
   subtitleLoading: boolean

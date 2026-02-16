@@ -23,6 +23,7 @@ export function useAppSettingsStore() {
       metadataRatio: state.metadataRatio,
       workspaceBottomPanelHeight: state.workspaceBottomPanelHeight,
       fullscreenVideoControlsMaxWidth: state.fullscreenVideoControlsMaxWidth,
+      mediaPreloadMemoryBudgetMb: state.mediaPreloadMemoryBudgetMb,
       thumbnailScale: state.thumbnailScale,
       thumbnailGap: state.thumbnailGap,
       showNamesOnly: state.showNamesOnly,

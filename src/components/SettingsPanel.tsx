@@ -45,6 +45,7 @@ export interface SettingsPanelProps {
   metadataRatio: number
   workspaceBottomPanelHeight: number
   fullscreenVideoControlsMaxWidth: number
+  mediaPreloadMemoryBudgetMb: number
   thumbnailGap: number
   thumbnailQuality: number
   thumbnailWidth: number
@@ -93,6 +94,7 @@ export interface SettingsPanelProps {
   onMetadataRatioChange: (value: number) => void
   onWorkspaceBottomPanelHeightChange: (value: number) => void
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void
+  onMediaPreloadMemoryBudgetMbChange: (value: number) => void
   onThumbnailGapChange: (value: number) => void
   onThumbnailQualityChange: (value: number) => void
   onResetThumbnailQuality: () => void
@@ -190,6 +192,7 @@ function SettingsPanel({
   metadataRatio,
   workspaceBottomPanelHeight,
   fullscreenVideoControlsMaxWidth,
+  mediaPreloadMemoryBudgetMb,
   thumbnailGap,
   thumbnailQuality,
   thumbnailWidth,
@@ -238,6 +241,7 @@ function SettingsPanel({
   onMetadataRatioChange,
   onWorkspaceBottomPanelHeightChange,
   onFullscreenVideoControlsMaxWidthChange,
+  onMediaPreloadMemoryBudgetMbChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onResetThumbnailQuality,
@@ -656,6 +660,7 @@ function SettingsPanel({
     workspaceBottomPanelHeightScale,
     fullscreenVideoControlsMaxWidth,
     fullscreenVideoControlsMaxWidthScale,
+    mediaPreloadMemoryBudgetMb,
     thumbnailGap,
     thumbnailGapScale,
     thumbnailQuality,
@@ -707,6 +712,7 @@ function SettingsPanel({
     onMetadataRatioChange,
     onWorkspaceBottomPanelHeightChange,
     onFullscreenVideoControlsMaxWidthChange,
+    onMediaPreloadMemoryBudgetMbChange,
     onThumbnailGapChange,
     onThumbnailQualityChange,
     onResetThumbnailQuality,
