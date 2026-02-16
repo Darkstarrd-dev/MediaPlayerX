@@ -98,6 +98,7 @@ interface UseAppTopLayerStateParams {
   videoVolume: number
   videoMuted: boolean
   videoFitMode: VideoFitMode
+  videoLoopMode: 'single' | 'list'
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: (step: number) => void
   playlistIds: string[]
@@ -110,6 +111,7 @@ interface UseAppTopLayerStateParams {
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
   setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  cycleVideoLoopMode: () => void
   cycleVideoFitMode: () => void
   setSubtitleVisible: Dispatch<SetStateAction<boolean>>
   selectSubtitleById: (subtitleId: string) => Promise<void>
@@ -190,6 +192,7 @@ export function useAppTopLayerState({
   videoVolume,
   videoMuted,
   videoFitMode,
+  videoLoopMode,
   setVideoPlaying,
   goPlaylist,
   playlistIds,
@@ -202,6 +205,7 @@ export function useAppTopLayerState({
   setVideoVolume,
   setVideoRate,
   setVideoFitMode,
+  cycleVideoLoopMode,
   cycleVideoFitMode,
   setSubtitleVisible,
   selectSubtitleById,
@@ -362,6 +366,7 @@ export function useAppTopLayerState({
     videoVolume,
     videoMuted,
     videoFitMode,
+    videoLoopMode,
     fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
     autoPlayEnabled: appSettings.autoPlayEnabled,
     autoPlayInterval: appSettings.autoPlayInterval,
@@ -379,6 +384,7 @@ export function useAppTopLayerState({
     setVideoVolume,
     setVideoRate,
     setVideoFitMode,
+    cycleVideoLoopMode,
     cycleVideoFitMode,
     setSubtitleVisible,
     selectSubtitleById,

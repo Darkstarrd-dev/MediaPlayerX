@@ -11,7 +11,7 @@ import {
 } from 'react'
 
 import type { BrowserMode, ImageItem, VideoItem } from '../types'
-import { clamp, formatSeconds } from '../utils/ui'
+import { clamp } from '../utils/ui'
 import type { VideoFitMode } from '../features/media/videoFitMode'
 import { buildA11yPropsByRegistry } from '../i18n/a11y'
 import { useI18n } from '../i18n/useI18n'
@@ -42,6 +42,31 @@ import {
 
 const DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH = 980
 
+function resolveMediaPathForFooter(item: { mediaLocator: ImageItem['mediaLocator'] } | { mediaLocator: VideoItem['mediaLocator'] }): string {
+  const locator = item.mediaLocator
+  if (locator.kind === 'filesystem') {
+    return locator.absolutePath
+  }
+  return `${locator.archivePath} :: ${locator.entryName}`
+}
+
+function formatImageSizeForFooter(sizeKb: number): string {
+  if (!Number.isFinite(sizeKb) || sizeKb <= 0) {
+    return '-'
+  }
+  if (sizeKb >= 1024) {
+    return `${(sizeKb / 1024).toFixed(2)}MB`
+  }
+  return `${Math.round(sizeKb)}KB`
+}
+
+function formatVideoSizeForFooter(sizeMb: number): string {
+  if (!Number.isFinite(sizeMb) || sizeMb <= 0) {
+    return '-'
+  }
+  return `${Number(sizeMb.toFixed(2))}MB`
+}
+
 export interface FullscreenLayerProps {
   mode: BrowserMode
   fullscreenActive: boolean
@@ -71,6 +96,7 @@ export interface FullscreenLayerProps {
   videoVolume: number
   videoMuted: boolean
   videoFitMode: VideoFitMode
+  videoLoopMode: 'single' | 'list'
   fullscreenVideoControlsMaxWidth: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
@@ -100,6 +126,7 @@ export interface FullscreenLayerProps {
   onToggleVideoMute: () => void
   onChangeVideoVolume: (volume: number) => void
   onChangeVideoRate: (rate: number) => void
+  onCycleVideoLoopMode: () => void
   onCycleVideoFitMode: () => void
   onSetVideoFitMode: (mode: VideoFitMode) => void
   onExit: () => void
@@ -133,6 +160,7 @@ function FullscreenLayer({
   videoVolume,
   videoMuted,
   videoFitMode,
+  videoLoopMode,
   fullscreenVideoControlsMaxWidth,
   autoPlayEnabled,
   autoPlayInterval,
@@ -162,6 +190,7 @@ function FullscreenLayer({
   onToggleVideoMute,
   onChangeVideoVolume,
   onChangeVideoRate,
+  onCycleVideoLoopMode,
   onCycleVideoFitMode,
   onSetVideoFitMode,
   onExit,
@@ -190,6 +219,7 @@ function FullscreenLayer({
   })
   const [videoControlsVisible, setVideoControlsVisible] = useState(false)
   const [draggingPane, setDraggingPane] = useState<PaneKey | null>(null)
+  const [footerHovering, setFooterHovering] = useState(false)
 
   const singlePane = fullscreenDisplay === 'video-only' ? 'video' : fullscreenDisplay === 'image-only' ? 'image' : null
   const focusedPane: PaneKey = fullscreenDisplay === 'dual' ? (fullscreenVideoFocus ? 'video' : 'image') : (singlePane ?? 'image')
@@ -621,6 +651,7 @@ function FullscreenLayer({
       videoPlaying={videoPlaying}
       videoMuted={videoMuted}
       videoFitMode={videoFitMode}
+      videoLoopMode={videoLoopMode}
       videoVolume={videoVolume}
       videoRate={videoRate}
       subtitleVisible={subtitleVisible}
@@ -635,6 +666,7 @@ function FullscreenLayer({
       onPrevVideo={onPrevVideo}
       onNextVideo={onNextVideo}
       onToggleVideoMute={onToggleVideoMute}
+      onCycleVideoLoopMode={onCycleVideoLoopMode}
       onToggleSubtitle={onToggleSubtitle}
       onSelectSubtitle={onSelectSubtitle}
       onChangeVideoVolume={onChangeVideoVolume}
@@ -683,37 +715,31 @@ function FullscreenLayer({
   )
 
   const footerImageInfo = focusedImage
-    ? t('ui.fullscreen.footerImageInfo', {
-        ordinal: focusedImage.ordinal,
-        width: focusedImage.width,
-        height: focusedImage.height,
-      })
+    ? `${resolveMediaPathForFooter(focusedImage)} | ${focusedImage.width} x ${focusedImage.height} | ${formatImageSizeForFooter(focusedImage.sizeKb)}`
     : t('ui.fullscreen.noImage')
   const footerVideoInfo = focusedVideo
-    ? t('ui.fullscreen.footerVideoInfo', {
-        state: videoPlaying ? t('ui.fullscreen.videoStatePlaying') : t('ui.fullscreen.videoStateCover'),
-        current: formatSeconds(clampedVideoTime),
-        duration: formatSeconds(durationSec),
-        fileName: focusedVideo.fileName,
-        width: focusedVideo.width,
-        height: focusedVideo.height,
-      })
+    ? `${resolveMediaPathForFooter(focusedVideo)} | ${focusedVideo.width} x ${focusedVideo.height} | ${formatVideoSizeForFooter(focusedVideo.sizeMb)}`
     : t('ui.fullscreen.noVideo')
-  const footerInfoText =
-    fullscreenDisplay === 'image-only'
-      ? footerImageInfo
+  const footerInfoLeftText =
+    fullscreenDisplay === 'dual'
+      ? (fullscreenSwapped ? footerVideoInfo : footerImageInfo)
       : fullscreenDisplay === 'video-only'
         ? footerVideoInfo
-        : `${footerImageInfo} || ${footerVideoInfo}`
+        : footerImageInfo
+  const footerInfoRightText =
+    fullscreenDisplay === 'dual'
+      ? (fullscreenSwapped ? footerImageInfo : footerVideoInfo)
+      : null
 
   return (
     <div
       className="fullscreen-layer"
       data-overlay-close="fullscreen"
       onMouseMove={(event) => {
-        onSetFooterVisible(event.clientY > window.innerHeight * 0.8)
+        onSetFooterVisible(footerHovering || event.clientY > window.innerHeight * 0.8)
       }}
       onMouseLeave={() => {
+        setFooterHovering(false)
         onSetFooterVisible(false)
         hideVideoControls()
       }}
@@ -746,8 +772,8 @@ function FullscreenLayer({
         <FullscreenFooter
           mode={mode}
           fullscreenDisplay={fullscreenDisplay}
-          fullscreenVideoFocus={fullscreenVideoFocus}
-          footerInfoText={footerInfoText}
+          footerInfoLeftText={footerInfoLeftText}
+          footerInfoRightText={footerInfoRightText}
           autoplayEnabledForFocus={autoplayEnabledForFocus}
           autoPlayEnabled={autoPlayEnabled}
           autoPlayInterval={autoPlayInterval}
@@ -761,17 +787,16 @@ function FullscreenLayer({
           onToggleAutoplay={onToggleAutoplay}
           onSetAutoplayInterval={onSetAutoplayInterval}
           onAlignFocusedPane={alignFocusedPane}
-          onZoomOut={() => {
+          onSetZoomPercent={(percent) => {
             if (singlePane) {
-              adjustPaneZoom(singlePane, -ZOOM_STEP)
-            }
-          }}
-          onZoomIn={() => {
-            if (singlePane) {
-              adjustPaneZoom(singlePane, ZOOM_STEP)
+              updatePaneTransform(singlePane, (previous) => ({
+                ...previous,
+                zoom: clamp(Number((percent / 100).toFixed(3)), MIN_ZOOM, MAX_ZOOM),
+              }))
             }
           }}
           onResetSinglePane={resetSinglePane}
+          onHoverStateChange={setFooterHovering}
           onExit={onExit}
         />
       ) : null}

@@ -144,6 +144,20 @@ export function FullscreenVideoPane({
   onVideoDurationDetected,
   onNextVideo,
 }: FullscreenVideoPaneProps) {
+  const useFixedBottomControls = fullscreenDisplay === 'video-only'
+  const controlsAtTop = useFixedBottomControls ? false : videoControlsAtTop
+  const controlsStyle = useFixedBottomControls
+    ? {
+        bottom: '5%',
+        left: `${videoControlsLeft}px`,
+        width: `${videoControlsWidth}px`,
+      }
+    : {
+        top: `${videoControlsTop}px`,
+        left: `${videoControlsLeft}px`,
+        width: `${videoControlsWidth}px`,
+      }
+
   return (
     <section
       ref={paneRef}
@@ -221,22 +235,14 @@ export function FullscreenVideoPane({
         {fullscreenDisplay !== 'image-only' ? (
           <>
             <div
-              className={`fullscreen-video-controls-hotzone ${videoControlsAtTop ? 'is-top' : 'is-bottom'}`}
-              style={{
-                top: `${videoControlsTop}px`,
-                left: `${videoControlsLeft}px`,
-                width: `${videoControlsWidth}px`,
-              }}
+              className={`fullscreen-video-controls-hotzone ${controlsAtTop ? 'is-top' : 'is-bottom'}`}
+              style={controlsStyle}
               onMouseEnter={onShowControls}
               onMouseLeave={onHideControls}
             />
             <div
-              className={`fullscreen-video-controls ${videoControlsAtTop ? 'is-top' : 'is-bottom'} ${videoControlsVisible ? 'is-visible' : ''}`}
-              style={{
-                top: `${videoControlsTop}px`,
-                left: `${videoControlsLeft}px`,
-                width: `${videoControlsWidth}px`,
-              }}
+              className={`fullscreen-video-controls ${controlsAtTop ? 'is-top' : 'is-bottom'} ${videoControlsVisible ? 'is-visible' : ''}`}
+              style={controlsStyle}
               onMouseEnter={onShowControls}
               onMouseLeave={onHideControls}
             >

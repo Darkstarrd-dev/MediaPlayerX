@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 
 import { VideoControlIcon } from '../VideoControlIcon'
+import { MusicControlIcon } from '../MusicControlIcon'
 import type { VideoFitMode } from '../../features/media/videoFitMode'
 import { useI18n } from '../../i18n/useI18n'
 import { formatSeconds } from '../../utils/ui'
@@ -13,6 +14,7 @@ interface FullscreenVideoControlsShellProps {
   videoPlaying: boolean
   videoMuted: boolean
   videoFitMode: VideoFitMode
+  videoLoopMode: 'single' | 'list'
   videoVolume: number
   videoRate: number
   subtitleVisible: boolean
@@ -27,6 +29,7 @@ interface FullscreenVideoControlsShellProps {
   onPrevVideo: () => void
   onNextVideo: () => void
   onToggleVideoMute: () => void
+  onCycleVideoLoopMode: () => void
   onToggleSubtitle: () => void
   onSelectSubtitle: (subtitleId: string) => void
   onChangeVideoVolume: (volume: number) => void
@@ -45,6 +48,7 @@ export function FullscreenVideoControlsShell({
   videoPlaying,
   videoMuted,
   videoFitMode,
+  videoLoopMode,
   videoVolume,
   videoRate,
   subtitleVisible,
@@ -59,6 +63,7 @@ export function FullscreenVideoControlsShell({
   onPrevVideo,
   onNextVideo,
   onToggleVideoMute,
+  onCycleVideoLoopMode,
   onToggleSubtitle,
   onSelectSubtitle,
   onChangeVideoVolume,
@@ -90,7 +95,8 @@ export function FullscreenVideoControlsShell({
       ? t('a11y.media.videoFitFill')
       : videoFitMode === 'original'
         ? t('a11y.media.videoFitOriginal')
-        : t('a11y.media.videoFitContain')
+      : t('a11y.media.videoFitContain')
+  const videoLoopModeLabel = videoLoopMode === 'single' ? t('ui.media.videoLoopModeSingle') : t('ui.media.videoLoopModeList')
 
   const openPopoverByHover = (key: VideoPopoverKey) => {
     setOpenPopover(key)
@@ -114,35 +120,46 @@ export function FullscreenVideoControlsShell({
 
       <div className="video-controls-row video-controls">
         <div className="video-controls-group is-left">
+          <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" type="button" onClick={onToggleDualDisplay}>
+            <VideoControlIcon name="dual" />
+          </button>
+
           <div
-            className={`video-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
-            onMouseEnter={() => openPopoverByHover('volume')}
+            className={`video-ctrl-popover ${openPopover === 'fit' ? 'is-open' : ''}`}
+            onMouseEnter={() => openPopoverByHover('fit')}
             onMouseLeave={closePopover}
           >
             <button
-              aria-controls="fullscreen-popover-volume"
-              aria-expanded={openPopover === 'volume'}
+              aria-controls="fullscreen-popover-fit"
+              aria-expanded={openPopover === 'fit'}
               aria-haspopup="dialog"
-              aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
-              className="video-action-btn video-action-mute"
+              aria-label={videoFitLabel}
+              className="video-action-btn video-action-fit"
               type="button"
-              onClick={onToggleVideoMute}
+              onClick={onCycleVideoFitMode}
             >
-              <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
+              <VideoControlIcon name="aspect" />
             </button>
-            <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
-              <div className="video-ctrl-volume-axis">
-                <input
-                  aria-label={t('a11y.media.fullscreenVolume')}
-                  className="video-ctrl-volume-range"
-                  max={100}
-                  min={0}
-                  step={1}
-                  style={videoVolumeRangeStyle}
-                  type="range"
-                  value={videoMuted ? 0 : videoVolume}
-                  onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
-                />
+            <div className="video-ctrl-panel is-fit" hidden={openPopover !== 'fit'} id="fullscreen-popover-fit" role="dialog">
+              <div className="video-ctrl-panel-options">
+                {[
+                  { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
+                  { label: t('a11y.media.videoFitFill'), mode: 'fill' as const },
+                  { label: t('a11y.media.videoFitOriginal'), mode: 'original' as const },
+                ].map((option) => (
+                  <button
+                    aria-pressed={videoFitMode === option.mode}
+                    className={`video-ctrl-panel-option ${videoFitMode === option.mode ? 'is-active' : ''}`}
+                    key={option.mode}
+                    type="button"
+                    onClick={() => {
+                      onSetVideoFitMode(option.mode)
+                      closePopover()
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -228,46 +245,6 @@ export function FullscreenVideoControlsShell({
           >
             <VideoControlIcon name="fullscreenCompress" />
           </button>
-
-          <div
-            className={`video-ctrl-popover ${openPopover === 'fit' ? 'is-open' : ''}`}
-            onMouseEnter={() => openPopoverByHover('fit')}
-            onMouseLeave={closePopover}
-          >
-              <button
-                aria-controls="fullscreen-popover-fit"
-                aria-expanded={openPopover === 'fit'}
-                aria-haspopup="dialog"
-                aria-label={videoFitLabel}
-                className="video-action-btn video-action-fit"
-                type="button"
-                onClick={onCycleVideoFitMode}
-              >
-              <VideoControlIcon name="aspect" />
-            </button>
-            <div className="video-ctrl-panel is-fit" hidden={openPopover !== 'fit'} id="fullscreen-popover-fit" role="dialog">
-                <div className="video-ctrl-panel-options">
-                  {[
-                    { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
-                    { label: t('a11y.media.videoFitFill'), mode: 'fill' as const },
-                    { label: t('a11y.media.videoFitOriginal'), mode: 'original' as const },
-                  ].map((option) => (
-                  <button
-                    aria-pressed={videoFitMode === option.mode}
-                    className={`video-ctrl-panel-option ${videoFitMode === option.mode ? 'is-active' : ''}`}
-                    key={option.mode}
-                    type="button"
-                    onClick={() => {
-                      onSetVideoFitMode(option.mode)
-                      closePopover()
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="video-controls-group is-center">
@@ -290,9 +267,6 @@ export function FullscreenVideoControlsShell({
         <div className="video-controls-group is-right">
           <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
             <VideoControlIcon name="camera" />
-          </button>
-          <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" type="button" onClick={onToggleDualDisplay}>
-            <VideoControlIcon name="dual" />
           </button>
 
           <div
@@ -331,6 +305,49 @@ export function FullscreenVideoControlsShell({
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+
+          <button
+            aria-label={t('a11y.media.videoLoopMode', { label: videoLoopModeLabel })}
+            className="video-action-btn video-action-loop-mode"
+            title={t('tip.media.videoLoopMode', { label: videoLoopModeLabel })}
+            type="button"
+            onClick={onCycleVideoLoopMode}
+          >
+            <MusicControlIcon className="video-action-icon" name={videoLoopMode === 'single' ? 'repeatOne' : 'repeatAlbum'} />
+          </button>
+
+          <div
+            className={`video-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
+            onMouseEnter={() => openPopoverByHover('volume')}
+            onMouseLeave={closePopover}
+          >
+            <button
+              aria-controls="fullscreen-popover-volume"
+              aria-expanded={openPopover === 'volume'}
+              aria-haspopup="dialog"
+              aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
+              className="video-action-btn video-action-mute"
+              type="button"
+              onClick={onToggleVideoMute}
+            >
+              <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
+            </button>
+            <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
+              <div className="video-ctrl-volume-axis">
+                <input
+                  aria-label={t('a11y.media.fullscreenVolume')}
+                  className="video-ctrl-volume-range"
+                  max={100}
+                  min={0}
+                  step={1}
+                  style={videoVolumeRangeStyle}
+                  type="range"
+                  value={videoMuted ? 0 : videoVolume}
+                  onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -47,9 +47,16 @@
 
   --mpx-range-track-height: 6px;
   --mpx-range-track-bg: #d6cfc1;
-  --mpx-range-thumb-size: 14px;
+  --mpx-range-thumb-size: 16px;
   --mpx-range-thumb-bg: #2e6f7f;
   --mpx-range-thumb-border: #ffffff;
+  --mpx-range-thumb-border-width: 1.5px;
+  --mpx-range-thumb-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --mpx-range-thumb-hover-shadow: 0 0 0 2px color-mix(in srgb, var(--mpx-range-thumb-bg) 28%, transparent), 0 2px 4px rgba(0, 0, 0, 0.28);
+  --mpx-range-thumb-active-shadow: 0 0 0 2px color-mix(in srgb, var(--mpx-range-thumb-bg) 36%, transparent), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --mpx-range-thumb-focus-ring: 0 0 0 2px color-mix(in srgb, var(--mpx-border-focus) 45%, transparent);
+  --mpx-range-thumb-hover-scale: 1.06;
+  --mpx-range-thumb-active-scale: 1.12;
 
   --mpx-checkbox-size: 16px;
   --mpx-checkbox-radius: 4px;

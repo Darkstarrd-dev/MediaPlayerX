@@ -91,9 +91,25 @@ input[type='range']::-webkit-slider-thumb {
   width: var(--mpx-range-thumb-size);
   height: var(--mpx-range-thumb-size);
   border-radius: 50%;
-  border: 1px solid var(--mpx-range-thumb-border);
+  border: var(--mpx-range-thumb-border-width, 1px) solid var(--mpx-range-thumb-border);
   background: var(--mpx-range-thumb-bg);
+  box-shadow: var(--mpx-range-thumb-shadow);
   margin-top: calc((var(--mpx-range-track-height) - var(--mpx-range-thumb-size)) / 2);
+  transition: transform 0.12s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+input[type='range']:hover::-webkit-slider-thumb {
+  transform: scale(var(--mpx-range-thumb-hover-scale, 1.04));
+  box-shadow: var(--mpx-range-thumb-hover-shadow);
+}
+
+input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(var(--mpx-range-thumb-active-scale, 1.1));
+  box-shadow: var(--mpx-range-thumb-active-shadow);
+}
+
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--mpx-range-thumb-focus-ring), var(--mpx-range-thumb-hover-shadow);
 }
 
 input[type='range']::-moz-range-track {
@@ -107,8 +123,24 @@ input[type='range']::-moz-range-thumb {
   width: var(--mpx-range-thumb-size);
   height: var(--mpx-range-thumb-size);
   border-radius: 50%;
-  border: 1px solid var(--mpx-range-thumb-border);
+  border: var(--mpx-range-thumb-border-width, 1px) solid var(--mpx-range-thumb-border);
   background: var(--mpx-range-thumb-bg);
+  box-shadow: var(--mpx-range-thumb-shadow);
+  transition: transform 0.12s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+input[type='range']:hover::-moz-range-thumb {
+  transform: scale(var(--mpx-range-thumb-hover-scale, 1.04));
+  box-shadow: var(--mpx-range-thumb-hover-shadow);
+}
+
+input[type='range']:active::-moz-range-thumb {
+  transform: scale(var(--mpx-range-thumb-active-scale, 1.1));
+  box-shadow: var(--mpx-range-thumb-active-shadow);
+}
+
+input[type='range']:focus-visible::-moz-range-thumb {
+  box-shadow: var(--mpx-range-thumb-focus-ring), var(--mpx-range-thumb-hover-shadow);
 }
 
 input[type='checkbox'] {

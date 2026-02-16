@@ -12,8 +12,14 @@
   --mpx-scrollbar-thumb-hover-bg: #6f7988;
 
   --mpx-range-track-bg: #26292e;
-  --mpx-range-thumb-bg: #292d32;
-  --mpx-range-thumb-border: #4a3c2e;
+  --mpx-range-thumb-size: 17px;
+  --mpx-range-thumb-bg: #353b44;
+  --mpx-range-thumb-border: #8fa0b8;
+  --mpx-range-thumb-border-width: 1.5px;
+  --mpx-range-thumb-shadow: 1px 1px 3px rgba(8, 10, 14, 0.7), -1px -1px 2px rgba(106, 117, 133, 0.22);
+  --mpx-range-thumb-hover-shadow: 0 0 0 2px rgba(143, 160, 184, 0.28), 1px 2px 4px rgba(6, 8, 12, 0.78), -1px -1px 2px rgba(119, 132, 150, 0.28);
+  --mpx-range-thumb-active-shadow: 0 0 0 2px rgba(143, 160, 184, 0.34), inset 1px 1px 2px rgba(9, 12, 16, 0.74), inset -1px -1px 2px rgba(120, 133, 151, 0.22);
+  --mpx-range-thumb-focus-ring: 0 0 0 2px rgba(255, 159, 67, 0.38);
 
   --mpx-checkbox-bg: var(--mpx-input-bg);
   --mpx-checkbox-border: var(--mpx-input-border);
@@ -96,7 +102,7 @@
   --mpx-card-focus-ring: rgba(255, 159, 67, 0.24);
 
   --mpx-fullscreen-bg: #06080b;
-  --mpx-fullscreen-footer-bg: rgba(8, 10, 14, 0.9);
+  --mpx-fullscreen-footer-bg: var(--mpx-player-surface-bg);
 
   --mpx-video-screen-bg: linear-gradient(135deg, #1b1e24, #14171d);
   --mpx-video-empty-bg: var(--mpx-video-screen-bg);

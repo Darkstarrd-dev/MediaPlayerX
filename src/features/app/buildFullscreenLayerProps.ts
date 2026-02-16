@@ -35,6 +35,7 @@ interface BuildFullscreenLayerPropsParams {
   videoVolume: number
   videoMuted: boolean
   videoFitMode: VideoFitMode
+  videoLoopMode: 'single' | 'list'
   fullscreenVideoControlsMaxWidth: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
@@ -52,6 +53,7 @@ interface BuildFullscreenLayerPropsParams {
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
   setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  cycleVideoLoopMode: () => void
   cycleVideoFitMode: () => void
   setSubtitleVisible: Dispatch<SetStateAction<boolean>>
   selectSubtitleById: (subtitleId: string) => Promise<void>
@@ -96,6 +98,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     videoVolume: params.videoVolume,
     videoMuted: params.videoMuted,
     videoFitMode: params.videoFitMode,
+    videoLoopMode: params.videoLoopMode,
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     autoPlayEnabled: params.autoPlayEnabled,
     autoPlayInterval: params.autoPlayInterval,
@@ -161,6 +164,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     onChangeVideoRate: (rate) => {
       params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
     },
+    onCycleVideoLoopMode: params.cycleVideoLoopMode,
     onCycleVideoFitMode: params.cycleVideoFitMode,
     onSetVideoFitMode: (mode) => {
       params.setVideoFitMode(mode)

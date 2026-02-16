@@ -582,48 +582,6 @@ function MusicMainSection({
       <div className="music-controls-row">
         <div className="music-controls-group is-left">
           <div
-            className={`music-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
-            onMouseEnter={() => setOpenPopover('volume')}
-          >
-            <button
-              aria-controls="music-main-popover-volume"
-              aria-expanded={openPopover === 'volume'}
-              aria-haspopup="dialog"
-              aria-label={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
-              className="video-action-btn"
-              type="button"
-              onClick={() => setAudioMuted((value) => !value)}
-            >
-              <MusicControlIcon name={audioMuted ? 'volumeMuted' : 'volume'} />
-            </button>
-
-            <div
-              className="music-ctrl-panel is-volume"
-              hidden={openPopover !== 'volume'}
-              id="music-main-popover-volume"
-              role="dialog"
-              onMouseLeave={closePopover}
-            >
-              <div className="music-ctrl-volume-axis">
-                <input
-                  aria-label={t('a11y.media.volumeSlider')}
-                  className="music-ctrl-volume-range"
-                  max={100}
-                  min={0}
-                  step={1}
-                  style={musicVolumeRangeStyle}
-                  type="range"
-                  value={audioMuted ? 0 : audioVolume}
-                  onChange={(event) => {
-                    setAudioMuted(false)
-                    setAudioVolume(clamp(Number(event.target.value), 0, 100))
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div
             className={`music-ctrl-popover ${openPopover === 'shader' ? 'is-open' : ''}`}
             onMouseEnter={() => setOpenPopover('shader')}
             onMouseLeave={closePopover}
@@ -928,6 +886,16 @@ function MusicMainSection({
               </div>
             </div>
           </div>
+
+          <button
+            aria-label={fullscreenActive ? t('a11y.media.exitFullscreen') : t('a11y.media.enterFullscreen')}
+            className="video-action-btn"
+            title={fullscreenActive ? t('tip.media.exitFullscreen') : t('tip.media.enterFullscreen')}
+            type="button"
+            onClick={onToggleFullscreen}
+          >
+            <MusicControlIcon name={fullscreenActive ? 'fullscreenCompress' : 'fullscreenExpand'} />
+          </button>
         </div>
 
         <div className="music-controls-group is-center">
@@ -950,15 +918,6 @@ function MusicMainSection({
 
         <div className="music-controls-group is-right">
           <button
-            aria-label={fullscreenActive ? t('a11y.media.exitFullscreen') : t('a11y.media.enterFullscreen')}
-            className="video-action-btn"
-            title={fullscreenActive ? t('tip.media.exitFullscreen') : t('tip.media.enterFullscreen')}
-            type="button"
-            onClick={onToggleFullscreen}
-          >
-            <MusicControlIcon name={fullscreenActive ? 'fullscreenCompress' : 'fullscreenExpand'} />
-          </button>
-          <button
             aria-label={t('a11y.music.loopMode', { label: musicLoopModeLabel })}
             className="video-action-btn"
             title={t('tip.music.loopMode', { label: musicLoopModeLabel })}
@@ -967,6 +926,48 @@ function MusicMainSection({
           >
             <MusicControlIcon name={resolveLoopModeIconName(musicLoopMode)} />
           </button>
+
+          <div
+            className={`music-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
+            onMouseEnter={() => setOpenPopover('volume')}
+          >
+            <button
+              aria-controls="music-main-popover-volume"
+              aria-expanded={openPopover === 'volume'}
+              aria-haspopup="dialog"
+              aria-label={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
+              className="video-action-btn"
+              type="button"
+              onClick={() => setAudioMuted((value) => !value)}
+            >
+              <MusicControlIcon name={audioMuted ? 'volumeMuted' : 'volume'} />
+            </button>
+
+            <div
+              className="music-ctrl-panel is-volume"
+              hidden={openPopover !== 'volume'}
+              id="music-main-popover-volume"
+              role="dialog"
+              onMouseLeave={closePopover}
+            >
+              <div className="music-ctrl-volume-axis">
+                <input
+                  aria-label={t('a11y.media.volumeSlider')}
+                  className="music-ctrl-volume-range"
+                  max={100}
+                  min={0}
+                  step={1}
+                  style={musicVolumeRangeStyle}
+                  type="range"
+                  value={audioMuted ? 0 : audioVolume}
+                  onChange={(event) => {
+                    setAudioMuted(false)
+                    setAudioVolume(clamp(Number(event.target.value), 0, 100))
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

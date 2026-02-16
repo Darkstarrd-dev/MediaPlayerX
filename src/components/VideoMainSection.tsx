@@ -399,35 +399,53 @@ function VideoMainSection({
 
         <div className="video-controls-row video-controls">
           <div className="video-controls-group is-left">
+            {fullscreenActive ? (
+              <button
+                aria-label={t('a11y.media.dualModeFullscreenOnly')}
+                className="video-action-btn video-action-dual"
+                title={t('tip.media.dualModeInFullscreen')}
+                type="button"
+              >
+                <VideoControlIcon name="dual" />
+              </button>
+            ) : null}
+
             <div
-              className={`video-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
-              onMouseEnter={() => setOpenPopover('volume')}
+              className={`video-ctrl-popover ${openPopover === 'fit' ? 'is-open' : ''}`}
+              onMouseEnter={() => setOpenPopover('fit')}
               onMouseLeave={closePopover}
             >
               <button
-                aria-controls="video-main-popover-volume"
-                aria-expanded={openPopover === 'volume'}
+                aria-controls="video-main-popover-fit"
+                aria-expanded={openPopover === 'fit'}
                 aria-haspopup="dialog"
-                className="video-action-btn video-action-mute"
-                aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
+                className="video-action-btn video-action-fit"
+                aria-label={videoFitLabel}
                 type="button"
-                onClick={onToggleMute}
+                onClick={onCycleVideoFitMode}
               >
-                <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
+                <VideoControlIcon name="aspect" />
               </button>
-              <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
-                <div className="video-ctrl-volume-axis">
-                  <input
-                    aria-label={t('a11y.media.volumeSlider')}
-                    className="video-ctrl-volume-range"
-                    max={100}
-                    min={0}
-                    step={1}
-                    style={videoVolumeRangeStyle}
-                    type="range"
-                    value={videoMuted ? 0 : videoVolume}
-                    onChange={(event) => onChangeVolume(Number(event.target.value))}
-                  />
+              <div className="video-ctrl-panel is-fit" hidden={openPopover !== 'fit'} id="video-main-popover-fit" role="dialog">
+                <div className="video-ctrl-panel-options">
+                  {[
+                    { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
+                    { label: t('a11y.media.videoFitFill'), mode: 'fill' as const },
+                    { label: t('a11y.media.videoFitOriginal'), mode: 'original' as const },
+                  ].map((option) => (
+                    <button
+                      aria-pressed={videoFitMode === option.mode}
+                      className={`video-ctrl-panel-option ${videoFitMode === option.mode ? 'is-active' : ''}`}
+                      key={option.mode}
+                      type="button"
+                      onClick={() => {
+                        onSetVideoFitMode(option.mode)
+                        closePopover()
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -513,46 +531,6 @@ function VideoMainSection({
             >
               <VideoControlIcon name="fullscreenExpand" />
             </button>
-
-            <div
-              className={`video-ctrl-popover ${openPopover === 'fit' ? 'is-open' : ''}`}
-              onMouseEnter={() => setOpenPopover('fit')}
-              onMouseLeave={closePopover}
-            >
-              <button
-                aria-controls="video-main-popover-fit"
-                aria-expanded={openPopover === 'fit'}
-                aria-haspopup="dialog"
-                className="video-action-btn video-action-fit"
-                aria-label={videoFitLabel}
-                type="button"
-                onClick={onCycleVideoFitMode}
-              >
-                <VideoControlIcon name="aspect" />
-              </button>
-              <div className="video-ctrl-panel is-fit" hidden={openPopover !== 'fit'} id="video-main-popover-fit" role="dialog">
-                <div className="video-ctrl-panel-options">
-                  {[
-                    { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
-                    { label: t('a11y.media.videoFitFill'), mode: 'fill' as const },
-                    { label: t('a11y.media.videoFitOriginal'), mode: 'original' as const },
-                  ].map((option) => (
-                    <button
-                      aria-pressed={videoFitMode === option.mode}
-                      className={`video-ctrl-panel-option ${videoFitMode === option.mode ? 'is-active' : ''}`}
-                      key={option.mode}
-                      type="button"
-                      onClick={() => {
-                        onSetVideoFitMode(option.mode)
-                        closePopover()
-                      }}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="video-controls-group is-center">
@@ -573,6 +551,34 @@ function VideoMainSection({
           </div>
 
           <div className="video-controls-group is-right">
+            <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
+              <VideoControlIcon name="camera" />
+            </button>
+
+            {fullscreenActive ? (
+              <div
+                className={`video-ctrl-popover ${openPopover === 'playlist' ? 'is-open' : ''}`}
+                onMouseEnter={() => setOpenPopover('playlist')}
+                onMouseLeave={closePopover}
+              >
+                <button
+                  aria-controls="video-main-popover-playlist"
+                  aria-expanded={openPopover === 'playlist'}
+                  aria-haspopup="dialog"
+                  aria-label={t('a11y.media.playlistFullscreenOnly')}
+                  className="video-action-btn video-action-playlist"
+                  title={t('tip.media.playlistInFullscreen')}
+                  type="button"
+                >
+                  <VideoControlIcon name="playlist" />
+                </button>
+                <div className="video-ctrl-panel" hidden={openPopover !== 'playlist'} id="video-main-popover-playlist" role="dialog">
+                  <span className="video-ctrl-panel-title">{t('ui.media.playlist')}</span>
+                  <span className="video-ctrl-panel-note">{t('ui.media.playlistFullscreenHint')}</span>
+                </div>
+              </div>
+            ) : null}
+
             <button
               aria-label={t('a11y.media.videoLoopMode', { label: videoLoopModeLabel })}
               className="video-action-btn video-action-loop-mode"
@@ -585,39 +591,37 @@ function VideoMainSection({
                 name={videoLoopMode === 'single' ? 'repeatOne' : 'repeatAlbum'}
               />
             </button>
-            <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
-              <VideoControlIcon name="camera" />
-            </button>
-            <button
-              aria-label={t('a11y.media.dualModeFullscreenOnly')}
-              className="video-action-btn video-action-dual"
-              disabled={!fullscreenActive}
-              title={fullscreenActive ? t('tip.media.dualModeInFullscreen') : t('tip.media.fullscreenOnly')}
-              type="button"
-            >
-              <VideoControlIcon name="dual" />
-            </button>
 
             <div
-              className={`video-ctrl-popover ${openPopover === 'playlist' ? 'is-open' : ''}`}
-              onMouseEnter={() => setOpenPopover('playlist')}
+              className={`video-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
+              onMouseEnter={() => setOpenPopover('volume')}
               onMouseLeave={closePopover}
             >
               <button
-                aria-controls="video-main-popover-playlist"
-                aria-expanded={openPopover === 'playlist'}
+                aria-controls="video-main-popover-volume"
+                aria-expanded={openPopover === 'volume'}
                 aria-haspopup="dialog"
-                aria-label={t('a11y.media.playlistFullscreenOnly')}
-                className="video-action-btn video-action-playlist"
-                disabled={!fullscreenActive}
-                title={fullscreenActive ? t('tip.media.playlistInFullscreen') : t('tip.media.fullscreenOnly')}
+                className="video-action-btn video-action-mute"
+                aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
                 type="button"
+                onClick={onToggleMute}
               >
-                <VideoControlIcon name="playlist" />
+                <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
               </button>
-              <div className="video-ctrl-panel" hidden={openPopover !== 'playlist'} id="video-main-popover-playlist" role="dialog">
-                <span className="video-ctrl-panel-title">{t('ui.media.playlist')}</span>
-                <span className="video-ctrl-panel-note">{t('ui.media.playlistFullscreenHint')}</span>
+              <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
+                <div className="video-ctrl-volume-axis">
+                  <input
+                    aria-label={t('a11y.media.volumeSlider')}
+                    className="video-ctrl-volume-range"
+                    max={100}
+                    min={0}
+                    step={1}
+                    style={videoVolumeRangeStyle}
+                    type="range"
+                    value={videoMuted ? 0 : videoVolume}
+                    onChange={(event) => onChangeVolume(Number(event.target.value))}
+                  />
+                </div>
               </div>
             </div>
           </div>

@@ -2141,10 +2141,9 @@ describe("MediaPlayer 虚拟 UI", () => {
     });
     await click(screen.getByRole("button", { name: "双显示" }));
     expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
-    expect(screen.getByText(/焦点：图片/)).toBeInTheDocument();
 
     await keyDown(window, { key: "Tab", code: "Tab" });
-    expect(screen.getByText(/焦点：视频/)).toBeInTheDocument();
+    expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
 
     await click(screen.getByRole("button", { name: "单显示" }));
     expect(screen.queryByLabelText("调整全屏分屏比例")).not.toBeInTheDocument();

@@ -42,7 +42,7 @@ export const DEFAULT_PANE_ALIGN: PaneAlign = {
 
 export const MIN_SPLIT = 0.2
 export const MAX_SPLIT = 0.8
-export const MIN_ZOOM = 0.2
+export const MIN_ZOOM = 0.1
 export const MAX_ZOOM = 4
 export const ZOOM_STEP = 0.12
 
