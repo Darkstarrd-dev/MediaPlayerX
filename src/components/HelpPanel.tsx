@@ -164,6 +164,56 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         shortcut: renderShortcutBinding(shortcuts.autoplayToggle, t('ui.help.shortcutNotSet')),
         action: t('ui.help.fullscreen.keyboard.autoplayToggle'),
       },
+      {
+        key: 'fullscreen-video-seek-short',
+        shortcut: `${renderShortcutBinding(shortcuts.videoSeekBackwardShort, t('ui.help.shortcutNotSet'))} / ${renderShortcutBinding(shortcuts.videoSeekForwardShort, t('ui.help.shortcutNotSet'))}`,
+        action: t('ui.help.fullscreen.keyboard.videoSeekShort'),
+      },
+      {
+        key: 'fullscreen-video-play-pause',
+        shortcut: renderShortcutBinding(shortcuts.videoPlayPause, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.videoPlayPause'),
+      },
+      {
+        key: 'fullscreen-video-seek-long',
+        shortcut: `${renderShortcutBinding(shortcuts.videoSeekBackwardLong, t('ui.help.shortcutNotSet'))} / ${renderShortcutBinding(shortcuts.videoSeekForwardLong, t('ui.help.shortcutNotSet'))}`,
+        action: t('ui.help.fullscreen.keyboard.videoSeekLong'),
+      },
+      {
+        key: 'fullscreen-video-seek-frame',
+        shortcut: `${renderShortcutBinding(shortcuts.videoSeekBackwardFrame, t('ui.help.shortcutNotSet'))} / ${renderShortcutBinding(shortcuts.videoSeekForwardFrame, t('ui.help.shortcutNotSet'))}`,
+        action: t('ui.help.fullscreen.keyboard.videoSeekFrame'),
+      },
+      {
+        key: 'fullscreen-video-volume',
+        shortcut: `${renderShortcutBinding(shortcuts.videoVolumeUp, t('ui.help.shortcutNotSet'))} / ${renderShortcutBinding(shortcuts.videoVolumeDown, t('ui.help.shortcutNotSet'))}`,
+        action: t('ui.help.fullscreen.keyboard.videoVolumeStep'),
+      },
+      {
+        key: 'fullscreen-video-mute',
+        shortcut: renderShortcutBinding(shortcuts.videoMute, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.videoMuteToggle'),
+      },
+      {
+        key: 'fullscreen-video-prev-next',
+        shortcut: `${renderShortcutBinding(shortcuts.videoPrev, t('ui.help.shortcutNotSet'))} / ${renderShortcutBinding(shortcuts.videoNext, t('ui.help.shortcutNotSet'))}`,
+        action: t('ui.help.fullscreen.keyboard.videoPrevNext'),
+      },
+      {
+        key: 'fullscreen-video-save-cover',
+        shortcut: renderShortcutBinding(shortcuts.videoSaveCover, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.videoSaveCover'),
+      },
+      {
+        key: 'fullscreen-video-subtitle',
+        shortcut: renderShortcutBinding(shortcuts.videoSubtitleToggle, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.videoSubtitleToggle'),
+      },
+      {
+        key: 'fullscreen-video-fit-cycle',
+        shortcut: renderShortcutBinding(shortcuts.videoFitCycle, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.fullscreen.keyboard.videoFitCycle'),
+      },
     ],
     [shortcuts, t],
   )

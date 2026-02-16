@@ -11,6 +11,7 @@ import type { BrowserMode } from '../../types'
 import { isEditableTarget } from '../../utils/ui'
 
 const IMAGE_NAV_REPEAT_MIN_INTERVAL_MS = 72
+const VIDEO_FRAME_STEP_SECONDS = 1 / 30
 
 type AlignDirection = 'up' | 'down' | 'left' | 'right'
 
@@ -46,8 +47,13 @@ interface UseShortcutEngineParams {
   onRemoveFocusedVideoFromPlaylist: () => void
   onToggleVideoPlaying: () => void
   onGoPlaylist: (delta: number) => void
+  onSeekVideoBy: (deltaSeconds: number) => void
   onAdjustVideoRate: (delta: number) => void
   onAdjustVideoVolume: (delta: number) => void
+  onToggleVideoMute: () => void
+  onSaveVideoCover: () => void
+  onToggleVideoSubtitle: () => void
+  onCycleVideoFitMode: () => void
   onImageWheelNavigatePage: (direction: 'next' | 'prev') => void
   onImageCtrlWheelNavigateSidebar: (direction: 'next' | 'prev') => void
 }
@@ -84,8 +90,13 @@ export function useShortcutEngine({
   onRemoveFocusedVideoFromPlaylist,
   onToggleVideoPlaying,
   onGoPlaylist,
+  onSeekVideoBy,
   onAdjustVideoRate,
   onAdjustVideoVolume,
+  onToggleVideoMute,
+  onSaveVideoCover,
+  onToggleVideoSubtitle,
+  onCycleVideoFitMode,
   onImageWheelNavigatePage,
   onImageCtrlWheelNavigateSidebar,
 }: UseShortcutEngineParams): void {
@@ -259,6 +270,36 @@ export function useShortcutEngine({
             onGoPlaylist(1)
           }
           return
+        case 'videoSeekBackwardShort':
+          if (videoShortcutActive) {
+            onSeekVideoBy(-5)
+          }
+          return
+        case 'videoSeekForwardShort':
+          if (videoShortcutActive) {
+            onSeekVideoBy(5)
+          }
+          return
+        case 'videoSeekBackwardLong':
+          if (videoShortcutActive) {
+            onSeekVideoBy(-30)
+          }
+          return
+        case 'videoSeekForwardLong':
+          if (videoShortcutActive) {
+            onSeekVideoBy(30)
+          }
+          return
+        case 'videoSeekBackwardFrame':
+          if (videoShortcutActive) {
+            onSeekVideoBy(-VIDEO_FRAME_STEP_SECONDS)
+          }
+          return
+        case 'videoSeekForwardFrame':
+          if (videoShortcutActive) {
+            onSeekVideoBy(VIDEO_FRAME_STEP_SECONDS)
+          }
+          return
         case 'videoSpeedDown':
           if (videoShortcutActive) {
             onAdjustVideoRate(-0.25)
@@ -279,6 +320,26 @@ export function useShortcutEngine({
             onAdjustVideoVolume(5)
           }
           return
+        case 'videoMute':
+          if (videoShortcutActive) {
+            onToggleVideoMute()
+          }
+          return
+        case 'videoSaveCover':
+          if (videoShortcutActive) {
+            onSaveVideoCover()
+          }
+          return
+        case 'videoSubtitleToggle':
+          if (videoShortcutActive) {
+            onToggleVideoSubtitle()
+          }
+          return
+        case 'videoFitCycle':
+          if (videoShortcutActive) {
+            onCycleVideoFitMode()
+          }
+          return
         default:
           return
       }
@@ -292,6 +353,7 @@ export function useShortcutEngine({
       onApplyAutoplayIntervalByIndex,
       onGoPackage,
       onGoPlaylist,
+      onSeekVideoBy,
       onMoveImage,
       onMoveImageVertical,
       onJumpImageBoundary,
@@ -304,7 +366,11 @@ export function useShortcutEngine({
       onRemoveFocusedVideoFromPlaylist,
       onToggleAutoplay,
       onToggleSidebarFocus,
+      onToggleVideoMute,
       onToggleVideoPlaying,
+      onSaveVideoCover,
+      onToggleVideoSubtitle,
+      onCycleVideoFitMode,
       manageMode,
       videoShortcutActive,
     ],

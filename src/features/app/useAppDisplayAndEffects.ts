@@ -141,6 +141,19 @@ export function useAppDisplayAndEffects({
       displayResources.metadataWriteBindings.applyVideoMetadata({ grade })
     },
     requestManageOrganize: manageBindings.requestManageGroup,
+    onToggleSubtitleByShortcut: () => {
+      displayResources.setSubtitleVisible((value) => !value)
+    },
+    onSaveVideoCoverByShortcut: () => {
+      if (!mediaState.selectedVideoId) {
+        return
+      }
+      void manageBindings.backendWrite.saveVideoCover(
+        mediaState.selectedVideoId,
+        mediaState.videoTime,
+        displayResources.focusedVideoCoverColor,
+      )
+    },
     adReviewDeletePending: manageBindings.manageAdReview.deletePending,
   })
 

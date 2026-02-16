@@ -209,6 +209,11 @@ function VideoMainSection({
     setSeekDraftTime(null)
   }
 
+  const commitSeekDraftAndBlur = (input: HTMLInputElement) => {
+    commitSeekDraft()
+    input.blur()
+  }
+
   const previewSeekDuringDrag = (nextTime: number) => {
     const now = Date.now()
     const lastAt = lastSeekPreviewAtRef.current
@@ -441,8 +446,8 @@ function VideoMainSection({
               setSeekDraftTime(nextTime)
               previewSeekDuringDrag(nextTime)
             }}
-            onMouseUp={commitSeekDraft}
-            onTouchEnd={commitSeekDraft}
+            onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
+            onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
             onBlur={commitSeekDraft}
             onKeyUp={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {

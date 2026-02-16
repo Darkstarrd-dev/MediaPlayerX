@@ -32,10 +32,20 @@ export type ShortcutAction =
   | 'manageOrganize'
   | 'videoPrev'
   | 'videoNext'
+  | 'videoSeekBackwardShort'
+  | 'videoSeekForwardShort'
+  | 'videoSeekBackwardLong'
+  | 'videoSeekForwardLong'
+  | 'videoSeekBackwardFrame'
+  | 'videoSeekForwardFrame'
   | 'videoSpeedDown'
   | 'videoSpeedUp'
   | 'videoVolumeDown'
   | 'videoVolumeUp'
+  | 'videoMute'
+  | 'videoSaveCover'
+  | 'videoSubtitleToggle'
+  | 'videoFitCycle'
 
 export interface ShortcutDefinition {
   action: ShortcutAction
@@ -77,10 +87,20 @@ export const SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
   { action: 'manageOrganize', scope: 'global', label: '管理：整理（移动/分组）' },
   { action: 'videoPrev', scope: 'video', label: '视频：上一个' },
   { action: 'videoNext', scope: 'video', label: '视频：下一个' },
+  { action: 'videoSeekBackwardShort', scope: 'video', label: '视频：后退 5 秒' },
+  { action: 'videoSeekForwardShort', scope: 'video', label: '视频：前进 5 秒' },
+  { action: 'videoSeekBackwardLong', scope: 'video', label: '视频：后退 30 秒' },
+  { action: 'videoSeekForwardLong', scope: 'video', label: '视频：前进 30 秒' },
+  { action: 'videoSeekBackwardFrame', scope: 'video', label: '视频：后退一帧' },
+  { action: 'videoSeekForwardFrame', scope: 'video', label: '视频：前进一帧' },
   { action: 'videoSpeedDown', scope: 'video', label: '视频：减速' },
   { action: 'videoSpeedUp', scope: 'video', label: '视频：加速' },
   { action: 'videoVolumeDown', scope: 'video', label: '视频：音量-' },
   { action: 'videoVolumeUp', scope: 'video', label: '视频：音量+' },
+  { action: 'videoMute', scope: 'video', label: '视频：静音切换' },
+  { action: 'videoSaveCover', scope: 'video', label: '视频：保存封面' },
+  { action: 'videoSubtitleToggle', scope: 'video', label: '视频：字幕开关' },
+  { action: 'videoFitCycle', scope: 'video', label: '视频：画面适配模式轮换' },
 ]
 
 export const DEFAULT_SHORTCUTS: ShortcutMap = {
@@ -113,12 +133,22 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   videoPlaylistAdd: 'KeyA',
   videoPlaylistRemove: 'KeyD',
   manageOrganize: 'KeyM',
-  videoPrev: 'PageUp',
-  videoNext: 'PageDown',
+  videoPrev: 'Ctrl+ArrowUp',
+  videoNext: 'Ctrl+ArrowDown',
+  videoSeekBackwardShort: 'ArrowLeft',
+  videoSeekForwardShort: 'ArrowRight',
+  videoSeekBackwardLong: 'Ctrl+ArrowLeft',
+  videoSeekForwardLong: 'Ctrl+ArrowRight',
+  videoSeekBackwardFrame: 'Alt+ArrowLeft',
+  videoSeekForwardFrame: 'Alt+ArrowRight',
   videoSpeedDown: 'Ctrl+PageUp',
   videoSpeedUp: 'Ctrl+PageDown',
-  videoVolumeDown: 'Home',
-  videoVolumeUp: 'End',
+  videoVolumeDown: 'ArrowDown',
+  videoVolumeUp: 'ArrowUp',
+  videoMute: 'KeyM',
+  videoSaveCover: 'KeyC',
+  videoSubtitleToggle: 'KeyS',
+  videoFitCycle: 'Backslash',
 }
 
 const MODIFIER_ORDER = ['Ctrl', 'Alt', 'Shift', 'Meta'] as const

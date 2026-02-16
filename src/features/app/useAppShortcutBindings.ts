@@ -39,8 +39,13 @@ interface UseAppShortcutBindingsParams {
   removeFocusedVideoFromPlaylist: ShortcutEngineParams['onRemoveFocusedVideoFromPlaylist']
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: ShortcutEngineParams['onGoPlaylist']
+  seekVideoBy: ShortcutEngineParams['onSeekVideoBy']
   adjustVideoRate: ShortcutEngineParams['onAdjustVideoRate']
   adjustVideoVolume: ShortcutEngineParams['onAdjustVideoVolume']
+  toggleVideoMute: ShortcutEngineParams['onToggleVideoMute']
+  saveVideoCover: ShortcutEngineParams['onSaveVideoCover']
+  toggleVideoSubtitle: ShortcutEngineParams['onToggleVideoSubtitle']
+  cycleVideoFitMode: ShortcutEngineParams['onCycleVideoFitMode']
   onImageWheelNavigatePage: ShortcutEngineParams['onImageWheelNavigatePage']
   onImageCtrlWheelNavigateSidebar: ShortcutEngineParams['onImageCtrlWheelNavigateSidebar']
   updateSettings: AppSettingsStoreSnapshot['updateSettings']
@@ -78,8 +83,13 @@ export function useAppShortcutBindings({
   removeFocusedVideoFromPlaylist,
   setVideoPlaying,
   goPlaylist,
+  seekVideoBy,
   adjustVideoRate,
   adjustVideoVolume,
+  toggleVideoMute,
+  saveVideoCover,
+  toggleVideoSubtitle,
+  cycleVideoFitMode,
   onImageWheelNavigatePage,
   onImageCtrlWheelNavigateSidebar,
   updateSettings,
@@ -130,8 +140,13 @@ export function useAppShortcutBindings({
       setVideoPlaying((value) => !value)
     },
     onGoPlaylist: goPlaylist,
+    onSeekVideoBy: seekVideoBy,
     onAdjustVideoRate: adjustVideoRate,
     onAdjustVideoVolume: adjustVideoVolume,
+    onToggleVideoMute: toggleVideoMute,
+    onSaveVideoCover: saveVideoCover,
+    onToggleVideoSubtitle: toggleVideoSubtitle,
+    onCycleVideoFitMode: cycleVideoFitMode,
     onImageWheelNavigatePage,
     onImageCtrlWheelNavigateSidebar,
   })

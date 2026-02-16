@@ -37,8 +37,13 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onRemoveFocusedVideoFromPlaylist: vi.fn(),
     onToggleVideoPlaying: vi.fn(),
     onGoPlaylist: vi.fn(),
+    onSeekVideoBy: vi.fn(),
     onAdjustVideoRate: vi.fn(),
     onAdjustVideoVolume: vi.fn(),
+    onToggleVideoMute: vi.fn(),
+    onSaveVideoCover: vi.fn(),
+    onToggleVideoSubtitle: vi.fn(),
+    onCycleVideoFitMode: vi.fn(),
     onImageWheelNavigatePage: vi.fn(),
     onImageCtrlWheelNavigateSidebar: vi.fn(),
   }
@@ -137,6 +142,80 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
     expect(params.onAddFocusedVideoToPlaylist).toHaveBeenCalledTimes(1)
     expect(params.onRemoveFocusedVideoFromPlaylist).toHaveBeenCalledTimes(1)
+  })
+
+  it('Space toggles video play/pause in video shortcut scope', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.videoShortcutActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleVideoPlaying).toHaveBeenCalledTimes(1)
+  })
+
+  it('video seek shortcuts map to short/long/frame step deltas', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.videoShortcutActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', code: 'ArrowLeft', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', code: 'ArrowRight', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', code: 'ArrowLeft', ctrlKey: true, bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', code: 'ArrowRight', ctrlKey: true, bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', code: 'ArrowLeft', altKey: true, bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', code: 'ArrowRight', altKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onSeekVideoBy).toHaveBeenNthCalledWith(1, -5)
+    expect(params.onSeekVideoBy).toHaveBeenNthCalledWith(2, 5)
+    expect(params.onSeekVideoBy).toHaveBeenNthCalledWith(3, -30)
+    expect(params.onSeekVideoBy).toHaveBeenNthCalledWith(4, 30)
+    expect(params.onSeekVideoBy).toHaveBeenNthCalledWith(5, -(1 / 30))
+    expect(params.onSeekVideoBy).toHaveBeenNthCalledWith(6, 1 / 30)
+  })
+
+  it('video arrows/keys trigger volume, mute, save-cover, subtitle and fit actions', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.videoShortcutActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', code: 'ArrowUp', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', code: 'ArrowDown', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'm', code: 'KeyM', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', code: 'KeyS', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '\\', code: 'Backslash', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onAdjustVideoVolume).toHaveBeenNthCalledWith(1, 5)
+    expect(params.onAdjustVideoVolume).toHaveBeenNthCalledWith(2, -5)
+    expect(params.onToggleVideoMute).toHaveBeenCalledTimes(1)
+    expect(params.onSaveVideoCover).toHaveBeenCalledTimes(1)
+    expect(params.onToggleVideoSubtitle).toHaveBeenCalledTimes(1)
+    expect(params.onCycleVideoFitMode).toHaveBeenCalledTimes(1)
+  })
+
+  it('video ctrl+up/down shortcuts map to previous/next video', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.videoShortcutActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', code: 'ArrowUp', ctrlKey: true, bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', code: 'ArrowDown', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onGoPlaylist).toHaveBeenNthCalledWith(1, -1)
+    expect(params.onGoPlaylist).toHaveBeenNthCalledWith(2, 1)
   })
 
   it('M shortcut only triggers organize in manage mode', () => {

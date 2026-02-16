@@ -4,7 +4,7 @@ import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppEffects } from './useAppEffects'
 import { usePersistedAppSettings } from './usePersistedAppSettings'
 import { normalizeSeriesId, pickFirstBySeriesId } from './workspaceSharedUtils'
-import { isEditableTarget } from '../../utils/ui'
+import { clamp, isEditableTarget } from '../../utils/ui'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { AppSessionStateResult } from './useAppSessionState'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
@@ -28,6 +28,8 @@ interface UseAppInteractionEffectsParams {
   applyPackageGrade: MetadataWriteBindingsResult['applyPackageGrade']
   applyVideoGrade: (grade: number | null) => void
   requestManageOrganize: () => void
+  onToggleSubtitleByShortcut: () => void
+  onSaveVideoCoverByShortcut: () => void
   adReviewDeletePending: boolean
 }
 
@@ -44,6 +46,8 @@ export function useAppInteractionEffects({
   applyPackageGrade,
   applyVideoGrade,
   requestManageOrganize,
+  onToggleSubtitleByShortcut,
+  onSaveVideoCoverByShortcut,
   adReviewDeletePending,
 }: UseAppInteractionEffectsParams) {
   const {
@@ -103,8 +107,11 @@ export function useAppInteractionEffects({
 
   const {
     selectedVideoId,
+    videoDurationById,
     videoPlaying,
     setVideoPlaying,
+    setVideoTime,
+    setVideoMuted,
     setPlaylistIds,
     videoQueueSource,
     fullscreenActive,
@@ -116,6 +123,7 @@ export function useAppInteractionEffects({
     goPlaylist,
     adjustVideoRate,
     adjustVideoVolume,
+    cycleVideoFitMode,
     selectVideoFromBrowser,
   } = mediaState
 
@@ -159,6 +167,13 @@ export function useAppInteractionEffects({
     goNextPage,
     clearAllSelections,
   } = readNavigationState
+
+  const focusedVideoDurationSec = Math.max(
+    0,
+    videoDurationById[selectedVideoId] ??
+      videosForSidebar.find((video) => video.id === selectedVideoId)?.durationSec ??
+      0,
+  )
 
   const handleImageWheelLikePageNavigation = (direction: 'next' | 'prev') => {
     if (mode !== 'image') {
@@ -624,9 +639,26 @@ export function useAppInteractionEffects({
       setPlaylistIds((previous) => previous.filter((id) => id !== selectedVideoId))
     },
     setVideoPlaying,
-    goPlaylist,
+    goPlaylist: (step) => {
+      goPlaylist(step, Array.from(rootScopedVideoIds))
+    },
+    seekVideoBy: (deltaSeconds) => {
+      setVideoTime((value) => {
+        const nextValue = value + deltaSeconds
+        if (focusedVideoDurationSec <= 0) {
+          return Math.max(0, nextValue)
+        }
+        return clamp(nextValue, 0, focusedVideoDurationSec)
+      })
+    },
     adjustVideoRate,
     adjustVideoVolume,
+    toggleVideoMute: () => {
+      setVideoMuted((value) => !value)
+    },
+    saveVideoCover: onSaveVideoCoverByShortcut,
+    toggleVideoSubtitle: onToggleSubtitleByShortcut,
+    cycleVideoFitMode,
     onImageWheelNavigatePage: handleImageWheelLikePageNavigation,
     onImageCtrlWheelNavigateSidebar: handleImageCtrlWheelLikeSidebarNavigation,
     updateSettings,
