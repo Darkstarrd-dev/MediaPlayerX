@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
 function collectAppRootCandidates(): string[] {
@@ -22,7 +22,46 @@ function collectAppRootCandidates(): string[] {
   }
 
   candidates.add(path.resolve(process.cwd()))
+  if (typeof process.resourcesPath === 'string' && process.resourcesPath.trim().length > 0) {
+    const resourcesPath = path.resolve(process.resourcesPath)
+    candidates.add(resourcesPath)
+    candidates.add(path.resolve(resourcesPath, 'app.asar'))
+    candidates.add(path.resolve(resourcesPath, 'app.asar.unpacked'))
+  }
   return Array.from(candidates)
+}
+
+function resolveBuiltBannerFromDistAssets(root: string): string | null {
+  const assetsDirCandidates = [
+    path.resolve(root, 'dist', 'assets'),
+    path.resolve(root, 'assets'),
+  ]
+
+  for (const assetsDir of assetsDirCandidates) {
+    if (!existsSync(assetsDir)) {
+      continue
+    }
+
+    let entries: string[] = []
+    try {
+      entries = readdirSync(assetsDir)
+    } catch {
+      entries = []
+    }
+
+    const bannerFile = entries.find((entry) => /^banner\..+$/i.test(entry) || /^banner-[^.]+\.(png|jpe?g|webp|gif|svg)$/i.test(entry))
+    if (!bannerFile) {
+      continue
+    }
+
+    const resolved = path.resolve(assetsDir, bannerFile)
+    const dataUrl = resolveImageDataUrl(resolved)
+    if (dataUrl) {
+      return dataUrl
+    }
+  }
+
+  return null
 }
 
 function resolveImageMimeType(filePath: string): string {
@@ -83,6 +122,11 @@ export function resolveStartupSplashBannerSrc(): string | null {
   ] as const
 
   for (const root of collectAppRootCandidates()) {
+    const builtBannerDataUrl = resolveBuiltBannerFromDistAssets(root)
+    if (builtBannerDataUrl) {
+      return builtBannerDataUrl
+    }
+
     for (const relativeCandidate of relativeCandidates) {
       const candidate = path.resolve(root, ...relativeCandidate)
       if (existsSync(candidate)) {
@@ -110,10 +154,10 @@ export function resolveAppWindowIconPath(): string | null {
 
   const platformIconCandidates =
     process.platform === 'win32'
-      ? ['build/icons/icon.ico', 'build/icons/256x256.png', 'src/assets/icon.png']
+      ? ['build/icons/icon.ico', 'app.asar/build/icons/icon.ico', 'app.asar.unpacked/build/icons/icon.ico', 'build/icons/256x256.png', 'src/assets/icon.png']
       : process.platform === 'darwin'
-        ? ['build/icons/icon.icns', 'build/icons/512x512.png', 'src/assets/icon.png']
-        : ['build/icons/512x512.png', 'build/icons/256x256.png', 'src/assets/icon.png']
+        ? ['build/icons/icon.icns', 'app.asar/build/icons/icon.icns', 'app.asar.unpacked/build/icons/icon.icns', 'build/icons/512x512.png', 'src/assets/icon.png']
+        : ['build/icons/512x512.png', 'app.asar/build/icons/512x512.png', 'app.asar.unpacked/build/icons/512x512.png', 'build/icons/256x256.png', 'src/assets/icon.png']
 
   for (const rootPath of collectAppRootCandidates()) {
     for (const relativePath of platformIconCandidates) {

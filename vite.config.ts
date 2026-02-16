@@ -7,8 +7,12 @@ export default defineConfig(({ command }) => ({
   base: command === "build" ? "./" : "/",
   plugins: [react()],
   build: {
+    minify: 'esbuild',
+    cssMinify: true,
+    sourcemap: false,
     chunkSizeWarningLimit: 700,
     rollupOptions: {
+      treeshake: 'recommended',
       output: {
         manualChunks: (id) => {
           const normalizedId = id.replace(/\\/g, "/");
@@ -47,10 +51,6 @@ export default defineConfig(({ command }) => ({
             normalizedId.includes("/zustand/")
           ) {
             return "vendor-react";
-          }
-
-          if (normalizedId.includes("/three/")) {
-            return "vendor-three";
           }
 
           if (
