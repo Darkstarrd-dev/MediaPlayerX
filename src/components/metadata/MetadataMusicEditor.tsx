@@ -1,5 +1,6 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 
+import { MainUiIcon } from '../MainUiIcon'
 import { useI18n } from '../../i18n/useI18n'
 import type { AudioItem } from '../../types'
 
@@ -243,32 +244,40 @@ export function MetadataMusicEditor({
             </label>
           </div>
 
-          <div className="metadata-music-booklet-bindings-actions">
-            <button disabled={!canOpenMusicCover} type="button" onClick={onOpenMusicCover}>
-              {t('ui.metadata.openCover')}
-            </button>
-            <button disabled={!canOpenMusicBooklet} type="button" onClick={onOpenMusicBooklet}>
-              {t('ui.metadata.openBooklet')}
+          <div className="metadata-music-booklet-bindings-actions toolbar-actions">
+            <button
+              className="toolbar-icon-btn main-icon-square-btn"
+              disabled={!canOpenMusicCover}
+              type="button"
+              aria-label={t('ui.metadata.openCover')}
+              title={t('ui.metadata.openCover')}
+              onClick={onOpenMusicCover}
+            >
+              <span aria-hidden="true">C</span>
             </button>
             <button
+              className="toolbar-icon-btn main-icon-square-btn"
+              disabled={!canOpenMusicBooklet}
+              type="button"
+              aria-label={t('ui.metadata.openBooklet')}
+              title={t('ui.metadata.openBooklet')}
+              onClick={onOpenMusicBooklet}
+            >
+              <span aria-hidden="true">▤</span>
+            </button>
+            <button
+              className="toolbar-icon-btn main-icon-square-btn"
               disabled={metadataPending || !musicBookletAlbumRootPath}
               type="button"
+              aria-label={t('a11y.common.restoreDefault')}
+              title={t('tip.common.restoreDefault')}
               onClick={onResetMusicBookletBinding}
             >
-              {t('ui.metadata.resetAuto')}
+              <MainUiIcon name="return" />
             </button>
           </div>
         </div>
-      ) : (
-        <div className="metadata-music-booklet-bindings-actions">
-          <button disabled={!canOpenMusicCover} type="button" onClick={onOpenMusicCover}>
-            {t('ui.metadata.openCover')}
-          </button>
-          <button disabled={!canOpenMusicBooklet} type="button" onClick={onOpenMusicBooklet}>
-            {t('ui.metadata.openBooklet')}
-          </button>
-        </div>
-      )}
+      ) : null}
 
       <div className="metadata-music-playlist" aria-label={t('a11y.music.playlist')}>
         {effectivePlaylistIds.length > 0 ? (

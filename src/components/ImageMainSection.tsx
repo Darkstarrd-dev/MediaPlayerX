@@ -51,8 +51,10 @@ interface ImageMainSectionProps {
   onEnterFullscreen: () => void
   canJumpToAnimation: boolean
   canJumpToMusic?: boolean
+  canJumpToMusicFromBooklet?: boolean
   onJumpToAnimation: () => void
   onJumpToMusic?: () => void
+  onJumpToMusicFromBooklet?: () => void
   onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
   metadataPending: boolean
   metadataTargetPackageLabel: string
@@ -167,8 +169,10 @@ function ImageMainSection({
   onEnterFullscreen,
   canJumpToAnimation,
   canJumpToMusic = false,
+  canJumpToMusicFromBooklet = false,
   onJumpToAnimation,
   onJumpToMusic = () => undefined,
+  onJumpToMusicFromBooklet = () => undefined,
   onSelectImage,
   metadataPending,
   metadataTargetPackageLabel,
@@ -672,8 +676,19 @@ function ImageMainSection({
                 >
                   <VideoControlIcon className="main-ui-icon" name="fullscreenExpand" />
                 </button>
+                {canJumpToMusicFromBooklet ? (
+                  <button
+                    className="toolbar-icon-btn"
+                    type="button"
+                    aria-label={t('a11y.media.music')}
+                    title={t('tip.media.music')}
+                    onClick={onJumpToMusicFromBooklet}
+                  >
+                    <MainUiIcon name="musicMode" />
+                  </button>
+                ) : null}
               </div>
-              {canJumpToAnimation || canJumpToMusic ? (
+              {canJumpToAnimation || (canJumpToMusic && !canJumpToMusicFromBooklet) ? (
                 <div className="toolbar-actions toolbar-actions-series-jump">
                   {canJumpToAnimation ? (
                     <button
@@ -686,7 +701,7 @@ function ImageMainSection({
                       <MainUiIcon name="videoMode" />
                     </button>
                   ) : null}
-                  {canJumpToMusic ? (
+                  {canJumpToMusic && !canJumpToMusicFromBooklet ? (
                     <button
                       className="toolbar-icon-btn"
                       type="button"

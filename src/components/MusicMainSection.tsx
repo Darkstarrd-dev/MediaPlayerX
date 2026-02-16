@@ -37,9 +37,11 @@ interface MusicMainSectionProps {
   onClearManageSelection: () => void
   canJumpToManga: boolean
   canJumpToAnimation: boolean
+  canJumpToCover: boolean
   canJumpToBooklet: boolean
   onJumpToManga: () => void
   onJumpToAnimation: () => void
+  onJumpToCover: () => void
   onJumpToBooklet: () => void
   audios: AudioItem[]
   focusedAudio: AudioItem | null
@@ -86,9 +88,11 @@ function MusicMainSection({
   onManageGroup = () => undefined,
   canJumpToManga,
   canJumpToAnimation,
+  canJumpToCover,
   canJumpToBooklet,
   onJumpToManga,
   onJumpToAnimation,
+  onJumpToCover,
   onJumpToBooklet,
   audios,
   focusedAudio,
@@ -1080,8 +1084,19 @@ function MusicMainSection({
                 <strong className="main-toolbar-title" title={toolbarSummary}>
                   {t('ui.music.trackCountSummary', { summary: toolbarSummary, count: audios.length })}
                 </strong>
-                {canJumpToManga || canJumpToAnimation || canJumpToBooklet ? (
+                {canJumpToManga || canJumpToAnimation || canJumpToCover || canJumpToBooklet ? (
                   <div className="toolbar-actions">
+                    {canJumpToCover ? (
+                      <button
+                        className="toolbar-icon-btn"
+                        type="button"
+                        aria-label={t('ui.metadata.openCover')}
+                        title={t('ui.metadata.openCover')}
+                        onClick={onJumpToCover}
+                      >
+                        <span aria-hidden="true">C</span>
+                      </button>
+                    ) : null}
                     {canJumpToBooklet ? (
                       <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.booklet')} title={t('tip.media.booklet')} onClick={onJumpToBooklet}>
                         <span aria-hidden="true">▤</span>

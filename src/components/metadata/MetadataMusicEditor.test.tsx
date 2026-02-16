@@ -85,8 +85,8 @@ describe('MetadataMusicEditor', () => {
     expect(screen.getByText('Album A')).toBeInTheDocument()
     expect(screen.getByText('Author A')).toBeInTheDocument()
     expect(screen.getByText('Track A')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '打开封面' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: '打开Booklet' })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: '打开封面' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '打开Booklet' })).not.toBeInTheDocument()
     expect(screen.queryByText('Booklet 绑定')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByText('Track A'))

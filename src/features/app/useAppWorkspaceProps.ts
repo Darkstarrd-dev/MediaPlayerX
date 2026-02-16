@@ -690,11 +690,22 @@ export function useAppWorkspaceProps({
     ),
     imageSourceNodeIdMap: normalImageSourceNodeIdMap,
   });
+  const returnMusicAudioId = focusedAudio?.id ??
+    (selectedAudioId && audioByIdEffective.has(selectedAudioId)
+      ? selectedAudioId
+      : null);
+  const currentImageSourceId = metadataImagePackageEffective?.id ?? selectedPackageId;
+  const imageInMusicBookletOrCoverSource = Boolean(
+    currentImageSourceId &&
+      (currentImageSourceId === openMusicCoverSourceId ||
+        currentImageSourceId === openMusicBookletSourceId),
+  );
 
   const {
     jumpToAnimation,
     jumpToManga,
     jumpImageToMusic,
+    jumpImageBookletToMusic,
     jumpVideoToMusic,
     jumpMusicToManga,
     jumpMusicToAnimation,
@@ -713,6 +724,7 @@ export function useAppWorkspaceProps({
       jumpTargetAudioFromVideoId: jumpTargetAudioFromVideo?.id ?? null,
       jumpTargetImageFromAudioId: jumpTargetImageFromAudio?.id ?? null,
       jumpTargetVideoFromAudioId: jumpTargetVideoFromAudio?.id ?? null,
+      returnMusicAudioId,
     imageSeriesId,
     videoSeriesId,
     audioSeriesId,
@@ -783,8 +795,10 @@ export function useAppWorkspaceProps({
     setImageFocus,
     canJumpToAnimation: Boolean(jumpTargetVideo),
     canJumpToMusic: Boolean(jumpTargetAudioFromImage),
+    canJumpToMusicFromBooklet: imageInMusicBookletOrCoverSource && Boolean(returnMusicAudioId),
     onJumpToAnimation: jumpToAnimation,
     onJumpToMusic: jumpImageToMusic,
+    onJumpToMusicFromBooklet: jumpImageBookletToMusic,
     metadataPending: metadataWriteBindings.metadataPending,
     metadataTargetPackageLabel:
       metadataImagePackageEffective?.displayName ?? "-",
@@ -1011,9 +1025,11 @@ export function useAppWorkspaceProps({
     onClearManageSelection: clearAllSelections,
     canJumpToManga: Boolean(jumpTargetImageFromAudio),
     canJumpToAnimation: Boolean(jumpTargetVideoFromAudio),
+    canJumpToCover: Boolean(openMusicCoverSourceId),
     canJumpToBooklet: Boolean(openMusicBookletSourceId),
     onJumpToManga: jumpMusicToManga,
     onJumpToAnimation: jumpMusicToAnimation,
+    onJumpToCover: jumpMusicToCover,
     onJumpToBooklet: jumpMusicToBooklet,
     audiosForSidebar,
     audioSidebarOrderedIds,

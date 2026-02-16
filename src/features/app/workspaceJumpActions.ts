@@ -14,6 +14,7 @@ interface CreateWorkspaceJumpActionsParams {
   jumpTargetAudioFromVideoId: string | null
   jumpTargetImageFromAudioId: string | null
   jumpTargetVideoFromAudioId: string | null
+  returnMusicAudioId: string | null
   imageSeriesId: string | null
   videoSeriesId: string | null
   audioSeriesId: string | null
@@ -49,6 +50,17 @@ export function createWorkspaceJumpActions(params: CreateWorkspaceJumpActionsPar
     params.applyQuickFeatureSearch({ seriesId: params.imageSeriesId })
     params.updateSettings({ mode: 'music' })
     params.setSelectedAudioId(params.jumpTargetAudioFromImageId)
+    params.setMetadataTab('info')
+  }
+
+  const jumpImageBookletToMusic = () => {
+    if (!params.returnMusicAudioId) {
+      return
+    }
+
+    params.applyQuickFeatureSearch({})
+    params.updateSettings({ mode: 'music' })
+    params.setSelectedAudioId(params.returnMusicAudioId)
     params.setMetadataTab('info')
   }
 
@@ -108,6 +120,7 @@ export function createWorkspaceJumpActions(params: CreateWorkspaceJumpActionsPar
     jumpToAnimation,
     jumpToManga,
     jumpImageToMusic,
+    jumpImageBookletToMusic,
     jumpVideoToMusic,
     jumpMusicToManga,
     jumpMusicToAnimation,

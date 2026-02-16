@@ -50,9 +50,11 @@ function createMusicMainSectionProps(
     onClearManageSelection: vi.fn(),
     canJumpToManga: false,
     canJumpToAnimation: false,
+    canJumpToCover: false,
     canJumpToBooklet: false,
     onJumpToManga: vi.fn(),
     onJumpToAnimation: vi.fn(),
+    onJumpToCover: vi.fn(),
     onJumpToBooklet: vi.fn(),
     audios,
     focusedAudio: audios[0],
@@ -324,6 +326,14 @@ describe("MusicMainSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "全屏" }));
     expect(onToggleFullscreen).toHaveBeenCalledTimes(1);
+  });
+
+  it("工具栏封面按钮可触发跳转", () => {
+    const onJumpToCover = vi.fn();
+    renderMusicMainSection({ canJumpToCover: true, onJumpToCover });
+
+    fireEvent.click(screen.getByRole("button", { name: "打开封面" }));
+    expect(onJumpToCover).toHaveBeenCalledTimes(1);
   });
 
   it("全屏时使用底部浮动控制条并隐藏右上角退出按钮", () => {

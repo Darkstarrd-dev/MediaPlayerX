@@ -26,9 +26,11 @@ interface BuildMusicMainSectionPropsParams {
   onClearManageSelection: () => void
   canJumpToManga: boolean
   canJumpToAnimation: boolean
+  canJumpToCover: boolean
   canJumpToBooklet: boolean
   onJumpToManga: () => void
   onJumpToAnimation: () => void
+  onJumpToCover: () => void
   onJumpToBooklet: () => void
   audiosForSidebar: AudioItem[]
   audioSidebarOrderedIds: string[]
@@ -213,9 +215,11 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     onClearManageSelection: params.onClearManageSelection,
     canJumpToManga: params.canJumpToManga,
     canJumpToAnimation: params.canJumpToAnimation,
+    canJumpToCover: params.canJumpToCover,
     canJumpToBooklet: params.canJumpToBooklet,
     onJumpToManga: params.onJumpToManga,
     onJumpToAnimation: params.onJumpToAnimation,
+    onJumpToCover: params.onJumpToCover,
     onJumpToBooklet: params.onJumpToBooklet,
     audios: params.audiosForSidebar,
     focusedAudio: params.focusedAudio,
