@@ -1016,6 +1016,25 @@ export const pushSubtitleAudioResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const subtitlePrecomputeSourceSchema = z.enum(['cache', 'generated'])
+
+export const precomputeSubtitleCuesRequestSchema = z.object({
+  video_path: z.string().min(1),
+  model_dir: z.string().min(1),
+  model_id: z.string().min(1),
+  provider_preference: subtitleSessionProviderPreferenceSchema,
+  language: z.string().min(1).default('auto'),
+  fallback_to_cpu: z.boolean().default(true),
+})
+
+export const precomputeSubtitleCuesResponseSchema = z.object({
+  source: subtitlePrecomputeSourceSchema,
+  cache_key: z.string().min(1),
+  cues: z.array(subtitleCueSchema),
+  events: z.array(subtitleSessionEventSchema),
+  generated_at_ms: z.number().int().positive(),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -1243,6 +1262,9 @@ export type ResetSubtitleSessionResponseDto = z.infer<typeof resetSubtitleSessio
 export type FlushSubtitleSessionResponseDto = z.infer<typeof flushSubtitleSessionResponseSchema>
 export type PushSubtitleAudioRequestDto = z.infer<typeof pushSubtitleAudioRequestSchema>
 export type PushSubtitleAudioResponseDto = z.infer<typeof pushSubtitleAudioResponseSchema>
+export type SubtitlePrecomputeSourceDto = z.infer<typeof subtitlePrecomputeSourceSchema>
+export type PrecomputeSubtitleCuesRequestDto = z.infer<typeof precomputeSubtitleCuesRequestSchema>
+export type PrecomputeSubtitleCuesResponseDto = z.infer<typeof precomputeSubtitleCuesResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

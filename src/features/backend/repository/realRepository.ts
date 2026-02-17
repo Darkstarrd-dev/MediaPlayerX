@@ -28,6 +28,8 @@ import {
   flushSubtitleSessionResponseSchema,
   pushSubtitleAudioRequestSchema,
   pushSubtitleAudioResponseSchema,
+  precomputeSubtitleCuesRequestSchema,
+  precomputeSubtitleCuesResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -93,6 +95,8 @@ import {
   type FlushSubtitleSessionResponseDto,
   type PushSubtitleAudioRequestDto,
   type PushSubtitleAudioResponseDto,
+  type PrecomputeSubtitleCuesRequestDto,
+  type PrecomputeSubtitleCuesResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
@@ -673,6 +677,17 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(pushSubtitleAudio(parsedRequest), options)
     return pushSubtitleAudioResponseSchema.parse(response)
+  }
+
+  async precomputeSubtitleCues(
+    request: PrecomputeSubtitleCuesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PrecomputeSubtitleCuesResponseDto> {
+    const precomputeSubtitleCues = requireBackendMethod('precomputeSubtitleCues')
+    const parsedRequest = precomputeSubtitleCuesRequestSchema.parse(request)
+
+    const response = await withAbort(precomputeSubtitleCues(parsedRequest), options)
+    return precomputeSubtitleCuesResponseSchema.parse(response)
   }
 
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {

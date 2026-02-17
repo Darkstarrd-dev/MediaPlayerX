@@ -31,6 +31,8 @@ import type {
   FlushSubtitleSessionResponseDto,
   PushSubtitleAudioRequestDto,
   PushSubtitleAudioResponseDto,
+  PrecomputeSubtitleCuesRequestDto,
+  PrecomputeSubtitleCuesResponseDto,
   DeleteImageItemsRequestDto,
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
@@ -288,6 +290,10 @@ export interface MediaRepository {
     request: PushSubtitleAudioRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PushSubtitleAudioResponseDto>
+  precomputeSubtitleCues?(
+    request: PrecomputeSubtitleCuesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PrecomputeSubtitleCuesResponseDto>
   readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void

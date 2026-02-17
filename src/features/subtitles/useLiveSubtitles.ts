@@ -14,6 +14,7 @@ import { VideoSubtitleCapture, type CapturedAudioChunk } from './VideoSubtitleCa
 interface UseLiveSubtitlesParams {
   enabled: boolean
   videoElement: HTMLVideoElement | null
+  videoPath: string | null
   currentTimeSec: number
   modelDir: string
   modelId: string | null
@@ -66,6 +67,7 @@ function pickDisplayEventMessage(events: SubtitleSessionEventDto[]): string | nu
 export function useLiveSubtitles({
   enabled,
   videoElement,
+  videoPath,
   currentTimeSec,
   modelDir,
   modelId,
@@ -74,6 +76,7 @@ export function useLiveSubtitles({
   repository,
 }: UseLiveSubtitlesParams) {
   const [cues, setCues] = useState<SubtitleCueDto[]>([])
+  const [precomputedCues, setPrecomputedCues] = useState<SubtitleCueDto[]>([])
   const [previewCue, setPreviewCue] = useState<SubtitlePreviewCueDto | null>(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -83,6 +86,42 @@ export function useLiveSubtitles({
   const pushQueueRef = useRef<CapturedAudioChunk[]>([])
   const pushInFlightRef = useRef(false)
   const sessionRunningRef = useRef(false)
+
+  useEffect(() => {
+    const precomputeSubtitleCues =
+      repository.precomputeSubtitleCues
+        ? (request: Parameters<NonNullable<MediaRepository['precomputeSubtitleCues']>>[0]) =>
+            repository.precomputeSubtitleCues!(request)
+        : null
+
+    if (!enabled || !modelId || modelDir.trim() === '' || !videoPath || !precomputeSubtitleCues) {
+      setPrecomputedCues([])
+      return
+    }
+
+    let cancelled = false
+    setPrecomputedCues([])
+
+    void precomputeSubtitleCues({
+      video_path: videoPath,
+      model_dir: modelDir,
+      model_id: modelId,
+      provider_preference: providerPreference,
+      language: language.trim() || 'auto',
+      fallback_to_cpu: true,
+    })
+      .then((response) => {
+        if (cancelled) {
+          return
+        }
+        setPrecomputedCues(response.cues)
+      })
+      .catch(() => undefined)
+
+    return () => {
+      cancelled = true
+    }
+  }, [enabled, language, modelDir, modelId, providerPreference, repository.precomputeSubtitleCues, videoPath])
 
   useEffect(() => {
     cleanupRef.current = null
@@ -108,6 +147,7 @@ export function useLiveSubtitles({
       setLoading(false)
       setMessage(null)
       setCues([])
+      setPrecomputedCues([])
       setPreviewCue(null)
       pushQueueRef.current = []
       sessionRunningRef.current = false
@@ -263,6 +303,7 @@ export function useLiveSubtitles({
         const messageText = error instanceof Error ? error.message : String(error)
         setMessage(messageText)
         setCues([])
+        setPrecomputedCues([])
         setPreviewCue(null)
         sessionRunningRef.current = false
         capture.detach()
@@ -299,6 +340,20 @@ export function useLiveSubtitles({
   ])
 
   const activeText = useMemo(() => {
+    for (let index = precomputedCues.length - 1; index >= 0; index -= 1) {
+      const cue = precomputedCues[index]
+      if (currentTimeSec >= cue.start_sec && currentTimeSec <= cue.end_sec) {
+        return cue.text
+      }
+    }
+
+    for (let index = precomputedCues.length - 1; index >= 0; index -= 1) {
+      const cue = precomputedCues[index]
+      if (currentTimeSec + 0.35 >= cue.start_sec && currentTimeSec <= cue.end_sec + 2.4) {
+        return cue.text
+      }
+    }
+
     if (
       previewCue &&
       currentTimeSec >= Math.max(0, previewCue.start_sec - 0.2) &&
@@ -322,9 +377,16 @@ export function useLiveSubtitles({
     }
 
     return null
-  }, [cues, currentTimeSec, previewCue])
+  }, [cues, currentTimeSec, precomputedCues, previewCue])
 
   const detectedLanguage = useMemo(() => {
+    for (let index = precomputedCues.length - 1; index >= 0; index -= 1) {
+      const cue = precomputedCues[index]
+      if (cue.lang && cue.lang.trim()) {
+        return cue.lang.trim().toLowerCase()
+      }
+    }
+
     if (previewCue?.lang && previewCue.lang.trim()) {
       return previewCue.lang.trim().toLowerCase()
     }
@@ -336,7 +398,7 @@ export function useLiveSubtitles({
       }
     }
     return null
-  }, [cues, previewCue])
+  }, [cues, precomputedCues, previewCue])
 
   return {
     loading,

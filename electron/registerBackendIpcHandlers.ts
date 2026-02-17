@@ -34,6 +34,8 @@ import {
   flushSubtitleSessionResponseSchema,
   pushSubtitleAudioRequestSchema,
   pushSubtitleAudioResponseSchema,
+  precomputeSubtitleCuesRequestSchema,
+  precomputeSubtitleCuesResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -120,6 +122,7 @@ import { updateRuntimeStoragePaths } from './runtimeStorageUpdate'
 import { MetadataScraperService } from './services/metadata/metadataScraperService'
 import { getAllowedExternalUrlHosts, isExternalUrlAllowed } from './externalUrlPolicy'
 import { SubtitleSessionManager } from './subtitles/subtitleSession'
+import { SubtitlePrecomputeManager } from './subtitles/subtitlePrecomputeManager'
 
 export function registerBackendIpcHandlers(): void {
   const userDataPath = app.getPath('userData')
@@ -135,6 +138,7 @@ export function registerBackendIpcHandlers(): void {
     defaultProxyServer: process.env.MEDIA_PLAYERX_PROXY_SERVER,
   })
   const subtitleSessionManager = new SubtitleSessionManager()
+  const subtitlePrecomputeManager = new SubtitlePrecomputeManager()
 
   const broadcastLibraryChanged = (payload: { reason: string; updated_at_ms: number }) => {
     for (const window of BrowserWindow.getAllWindows()) {
@@ -519,6 +523,12 @@ export function registerBackendIpcHandlers(): void {
     const request = pushSubtitleAudioRequestSchema.parse(payload)
     const response = await subtitleSessionManager.pushAudio(event.sender.id, request)
     return pushSubtitleAudioResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.precomputeSubtitleCues, async (event, payload: unknown) => {
+    const request = precomputeSubtitleCuesRequestSchema.parse(payload)
+    const response = await subtitlePrecomputeManager.precompute(event.sender.id, request)
+    return precomputeSubtitleCuesResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeInfo, async () => {

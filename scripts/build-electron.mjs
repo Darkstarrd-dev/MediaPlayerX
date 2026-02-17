@@ -26,6 +26,10 @@ const buildTargets = [
     entryPoints: ['electron/subtitles/asrWorker.ts'],
     outfile: 'dist-electron/asrWorker.cjs',
   },
+  {
+    entryPoints: ['electron/subtitles/subtitlePrecomputeWorker.ts'],
+    outfile: 'dist-electron/subtitlePrecomputeWorker.cjs',
+  },
 ]
 
 const sharedOptions = {
