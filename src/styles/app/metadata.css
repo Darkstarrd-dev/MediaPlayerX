@@ -430,7 +430,7 @@
   display: block;
   object-fit: contain;
   object-position: center center;
-  box-shadow: var(--mpx-shadow-popover);
+  box-shadow: none;
 }
 
 .metadata-image-placeholder {

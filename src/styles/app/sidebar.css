@@ -13,32 +13,6 @@
   position: relative;
 }
 
-.sidebar::before {
-  content: '';
-  position: absolute;
-  top: calc(var(--mpx-panel-head-height) + var(--mpx-pane-focus-ring-width));
-  right: var(--mpx-pane-focus-ring-width);
-  width: var(--mpx-scrollbar-size);
-  height: 10px;
-  background: var(--mpx-scrollbar-track-bg);
-  border-bottom-left-radius: 8px;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.sidebar::after {
-  content: '';
-  position: absolute;
-  right: var(--mpx-pane-focus-ring-width);
-  bottom: var(--mpx-pane-focus-ring-width);
-  width: var(--mpx-scrollbar-size);
-  height: 10px;
-  background: var(--mpx-scrollbar-track-bg);
-  border-top-left-radius: 8px;
-  pointer-events: none;
-  z-index: 2;
-}
-
 .sidebar :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
   box-shadow: var(--mpx-sidebar-control-shadow, var(--mpx-control-shadow));
   border-color: var(--mpx-sidebar-control-border-color, var(--mpx-border-2));
