@@ -361,6 +361,7 @@ export class ManagementMutationService {
     })
 
     const failed: Array<{ node_id: string; reason: string }> = []
+    const shouldDeleteFiles = request.delete_files ?? true
     const validTargets = parsedTargets.filter((target) => {
       if (target.parsed) {
         return true
@@ -502,8 +503,17 @@ export class ManagementMutationService {
         if (!stat) {
           pathsToPurgeFromSnapshot.add(absolutePath)
           importPathsToRemove.add(absolutePath)
+          deletedCount += 1
           continue
         }
+
+        if (!shouldDeleteFiles) {
+          pathsToPurgeFromSnapshot.add(absolutePath)
+          importPathsToRemove.add(absolutePath)
+          deletedCount += 1
+          continue
+        }
+
         if (stat.isDirectory()) {
           await fs.rm(absolutePath, { recursive: true, force: true })
           deletedCount += 1

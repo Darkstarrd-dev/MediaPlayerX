@@ -234,7 +234,7 @@ export function useManageModeActions({
 
     try {
       if (sidebarCheckedNodeIds.length > 0) {
-        const response = await backendWrite.deleteSidebarNodes(sidebarCheckedNodeIds)
+        const response = await backendWrite.deleteSidebarNodes(sidebarCheckedNodeIds, { deleteFiles: true })
         const failedCount = response.failed.length
         setManageOperationHint(
           failedCount > 0

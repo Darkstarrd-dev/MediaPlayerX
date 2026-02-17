@@ -1023,6 +1023,71 @@ describe('FileSystemMediaReadService', () => {
     expect(nodeStillExists).toBe(false)
   })
 
+  it('管理删除 Sidebar 节点在仅移除模式下只移除数据库记录且保留物理文件', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-remove-only-folder-'))
+    createdRoots.push(root)
+
+    const folderPath = path.join(root, 'remove-only')
+    const imagePath = path.join(folderPath, 'img_01.jpg')
+    await writeBinary(imagePath, [0xff, 0xd8, 0xff, 0xd9])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-folders', [root])
+
+    const sidebarBefore = await service.readImageSidebarTree({
+      feature_filter: {
+        name_query: '',
+        work_title_query: '',
+        series_id_query: '',
+        circle_query: '',
+        author_query: '',
+        tags: [],
+        grade: null,
+      },
+      grade_overrides: {},
+    })
+
+    const targetSource = sidebarBefore.image_directories.find(
+      (item) => path.resolve(item.absolute_path) === path.resolve(folderPath),
+    )
+    expect(targetSource).toBeTruthy()
+    if (!targetSource) {
+      throw new Error('target source not found')
+    }
+
+    const targetNodeId = `folder:${targetSource.tree_path.join('/')}`
+    const result = await service.deleteSidebarNodes({
+      node_ids: [targetNodeId],
+      delete_files: false,
+    })
+
+    expect(result.failed).toHaveLength(0)
+    expect(result.deleted_count).toBeGreaterThan(0)
+
+    const folderStat = await fs.stat(folderPath).catch(() => null)
+    const imageStat = await fs.stat(imagePath).catch(() => null)
+    expect(folderStat?.isDirectory()).toBe(true)
+    expect(imageStat?.isFile()).toBe(true)
+
+    const sidebarAfter = await service.readImageSidebarTree({
+      feature_filter: {
+        name_query: '',
+        work_title_query: '',
+        series_id_query: '',
+        circle_query: '',
+        author_query: '',
+        tags: [],
+        grade: null,
+      },
+      grade_overrides: {},
+    })
+    const nodeStillExists = sidebarAfter.image_directories.some(
+      (item) => path.resolve(item.absolute_path) === path.resolve(folderPath),
+    )
+    expect(nodeStillExists).toBe(false)
+  })
+
   it('管理删除 Sidebar 节点部分失败时返回 deleted_count 与 failed[] 明细', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-delete-sidebar-partial-'))
     createdRoots.push(root)
