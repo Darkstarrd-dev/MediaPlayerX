@@ -319,15 +319,10 @@ export function useAppInteractionEffects({
       for (const node of nodes) {
         const sourceId = node.imageSourceId?.trim() ?? ''
         const isCoverNode = Boolean((node.coverSourceId?.trim() ?? '') || (node.coverImageId?.trim() ?? ''))
-        const isImageNode =
-          node.kind === 'folder' ||
-          node.kind === 'package' ||
-          node.imageNodeType === 'folder' ||
-          node.imageNodeType === 'package' ||
-          node.imageNodeType === 'directory'
+        const isImagePackageNode = node.kind === 'package' || node.imageNodeType === 'package'
         const hasUsableImages = sourceId ? (packageByIdEffective.get(sourceId)?.images.length ?? 0) > 0 : false
 
-        if (sourceId && isImageNode && !isCoverNode && hasUsableImages) {
+        if (sourceId && isImagePackageNode && !isCoverNode && hasUsableImages) {
           return node
         }
 

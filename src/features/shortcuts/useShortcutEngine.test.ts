@@ -237,4 +237,18 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
     expect(params.onRequestManageOrganize).toHaveBeenCalledTimes(1)
   })
+
+  it('image mode without focused image still allows Enter/F fullscreen shortcuts', () => {
+    const params = createBaseParams()
+    params.hasFocusedImage = false
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', code: 'KeyF', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onSetFullscreenActive).toHaveBeenNthCalledWith(1, expect.any(Function))
+    expect(params.onSetFullscreenActive).toHaveBeenNthCalledWith(2, true)
+  })
 })

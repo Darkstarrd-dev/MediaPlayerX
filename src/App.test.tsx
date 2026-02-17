@@ -2232,6 +2232,23 @@ describe("MediaPlayer 虚拟 UI", () => {
     expect(readFullscreenImageAlt()).toBe(imageBeforeWheelDown);
   });
 
+  it("图片模式未建立焦点时按 F 仍可进入全屏并回退到首个图包首图", async () => {
+    render(<App />);
+
+    await keyDown(window, { key: "Escape", code: "Escape" });
+    await keyDown(window, { key: "f", code: "KeyF" });
+
+    await waitFor(() => {
+      expect(document.querySelector(".fullscreen-layer")).not.toBeNull();
+    });
+
+    const fullscreenImage = document.querySelector(
+      ".fullscreen-media-image-element",
+    ) as HTMLImageElement | null;
+    expect(fullscreenImage).not.toBeNull();
+    expect(fullscreenImage?.getAttribute("alt")).toBe("图片 #1");
+  });
+
   it("全屏非双屏支持 F1/F2/F3 切换图片/视频/音乐模式", async () => {
     render(<App />);
 
@@ -2342,6 +2359,10 @@ describe("MediaPlayer 虚拟 UI", () => {
       ".fullscreen-stage .fullscreen-video-controls",
     ) as HTMLElement | null;
     expect(dualFloatingControls).not.toBeNull();
+    expect(dualFloatingControls?.style.bottom).toBe(
+      "var(--mpx-fullscreen-controls-bottom, 5%)",
+    );
+    expect(dualFloatingControls?.style.top).toBe("");
     expect(dualFloatingControls?.querySelector(".fullscreen-meta-row")).not.toBeNull();
     const shellDefault = dualFloatingControls?.querySelector(
       ".fullscreen-video-controls-shell",

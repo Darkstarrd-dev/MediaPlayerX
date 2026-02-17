@@ -176,7 +176,7 @@ export function FullscreenVideoPane({
     }
   }, [focusedVideoSrc, videoPlaying])
 
-  const useFixedBottomControls = fullscreenDisplay === 'video-only'
+  const useFixedBottomControls = fullscreenDisplay !== 'image-only'
   const controlsAtTop = useFixedBottomControls ? false : videoControlsAtTop
   const showVideoFrame = Boolean(
     focusedVideoSrc && (videoPlaying || hasPlayedCurrentSource || hasSeekPreviewCurrentSource || !focusedVideoCoverImageSrc),
@@ -184,10 +184,8 @@ export function FullscreenVideoPane({
   const controlsStyle = useFixedBottomControls
     ? {
         bottom: 'var(--mpx-fullscreen-controls-bottom, 5%)',
-        left: '50%',
-        right: 'auto',
-        transform: 'translateX(-50%)',
-        width: 'min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px))',
+        left: `${videoControlsLeft}px`,
+        width: `${videoControlsWidth}px`,
       }
     : {
         top: `${videoControlsTop}px`,

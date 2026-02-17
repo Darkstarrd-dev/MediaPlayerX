@@ -637,7 +637,7 @@ function FullscreenLayer({
   const videoControlsTop = clamp(Math.round(controlsPreferredTop), 8, controlsMaxTop)
 
   const controlsWidthCap = clamp(fullscreenVideoControlsMaxWidth, 640, 1920) || DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH
-  const singleControlsViewport = fullscreenDisplay === 'image-only' ? effectiveImageViewportSize : effectiveVideoViewportSize
+  const singleControlsViewport = { width: fallbackViewportWidth, height: fallbackViewportHeight }
   const singleControlsWidth = resolveFullscreenControlsWidth({
     viewportWidth: singleControlsViewport.width,
     viewportHeight: singleControlsViewport.height,
@@ -646,12 +646,12 @@ function FullscreenLayer({
   const controlsMaxWidth = Math.max(120, Math.min(effectiveVideoViewportSize.width - 16, controlsWidthCap))
   const controlsPreferredWidth = Math.max(120, videoGeometry.width - 16)
   const videoControlsWidthByGeometry = Math.min(controlsPreferredWidth, controlsMaxWidth)
-  const videoControlsWidth = fullscreenDisplay === 'video-only' ? singleControlsWidth : videoControlsWidthByGeometry
+  const videoControlsWidth = fullscreenDisplay === 'dual' || fullscreenDisplay === 'video-only' ? singleControlsWidth : videoControlsWidthByGeometry
   const controlsMaxLeft = Math.max(8, effectiveVideoViewportSize.width - videoControlsWidth - 8)
   const centeredControlsLeft = Math.round((effectiveVideoViewportSize.width - videoControlsWidth) / 2)
   const videoControlsLeft = clamp(centeredControlsLeft, 8, controlsMaxLeft)
   const fullscreenControlsCssVars = {
-    '--mpx-fullscreen-controls-max-width': `${fullscreenDisplay === 'dual' ? controlsWidthCap : singleControlsWidth}px`,
+    '--mpx-fullscreen-controls-max-width': `${singleControlsWidth}px`,
   } as CSSProperties
 
   const imagePaneClassName = `fullscreen-pane fullscreen-image${fullscreenDisplay === 'dual' && !fullscreenVideoFocus ? ' is-pane-focus' : ''}`

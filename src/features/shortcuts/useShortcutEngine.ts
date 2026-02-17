@@ -229,15 +229,9 @@ export function useShortcutEngine({
           onSetPackageGrade(5)
           return
         case 'enterFullscreen':
-          if (mode === 'image' && !hasFocusedImage) {
-            return
-          }
           onSetFullscreenActive(true)
           return
         case 'fullscreenToggle':
-          if (mode === 'image' && !hasFocusedImage) {
-            return
-          }
           onSetFullscreenActive((value) => !value)
           return
         case 'videoPlayPause':
