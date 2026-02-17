@@ -151,9 +151,6 @@ function SidebarPanel({
   videoTreeNodes,
   audioTreeNodes,
   imageNodeLoadStateById = {},
-  selectedPackageId,
-  selectedAudioId,
-  imageHighlightByNode = false,
   searchResultMode = false,
   searchResultReadonly = false,
   canGoToFromSearchMode = false,
@@ -187,6 +184,9 @@ function SidebarPanel({
     ? new Set(collapsedFolderNodeIds ?? [])
     : localCollapsedImageFolderNodeIds;
   const checkerDragCleanupRef = useRef<(() => void) | null>(null);
+  const labelTextElementByNodeIdRef = useRef<Map<string, HTMLSpanElement>>(new Map());
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(new Set());
   const checkerDragStateRef = useRef<{
     startX: number;
     startY: number;
@@ -209,6 +209,68 @@ function SidebarPanel({
     },
     [detachCheckerDragListeners],
   );
+
+  const refreshOverflowState = useCallback((nodeId: string | null) => {
+    if (!nodeId) {
+      return;
+    }
+    const element = labelTextElementByNodeIdRef.current.get(nodeId);
+    if (!element) {
+      return;
+    }
+    const overflowing = element.scrollWidth - element.clientWidth > 1;
+    setOverflowingNodeIds((previous) => {
+      const next = new Set(previous);
+      if (overflowing) {
+        next.add(nodeId);
+      } else {
+        next.delete(nodeId);
+      }
+      return isSameNodeIdSet(previous, next) ? previous : next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!selectedSidebarNodeId) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      refreshOverflowState(selectedSidebarNodeId);
+    });
+  }, [refreshOverflowState, selectedSidebarNodeId, sidebarFontSize]);
+
+  useEffect(() => {
+    if (!hoveredNodeId) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      refreshOverflowState(hoveredNodeId);
+    });
+  }, [hoveredNodeId, refreshOverflowState, sidebarFontSize]);
+
+  useEffect(() => {
+    if (sidebarFocus !== 'sidebar') {
+      return;
+    }
+
+    const onNavigationKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === 'ArrowUp'
+        || event.key === 'ArrowDown'
+        || event.key === 'PageUp'
+        || event.key === 'PageDown'
+        || event.key === 'Home'
+        || event.key === 'End'
+      ) {
+        setHoveredNodeId(null);
+      }
+    };
+
+    window.addEventListener('keydown', onNavigationKeyDown, true);
+    return () => {
+      window.removeEventListener('keydown', onNavigationKeyDown, true);
+    };
+  }, [sidebarFocus]);
 
   const updateCollapsedImageFolderNodeIds = useCallback(
     (
@@ -358,17 +420,9 @@ function SidebarPanel({
       const isFolder = node.kind === "folder";
       const imageNodeType =
         node.imageNodeType ?? (isFolder ? "folder" : "package");
-      const isActivePackage =
-        mode === "image" &&
-        (imageHighlightByNode
-          ? selectedSidebarNodeId === node.id
-          : node.imageSourceId === selectedPackageId);
-      const isActiveVideo =
-        mode === "video" && selectedSidebarNodeId === node.id;
-      const isActiveAudio =
-        mode === "music" &&
-        (selectedSidebarNodeId === node.id || node.audioId === selectedAudioId);
-      const isKeyboardActive = selectedSidebarNodeId === node.id;
+      const isFocusedNode = selectedSidebarNodeId === node.id;
+      const isHoverActive = hoveredNodeId === node.id;
+      const isPressedActive = isFocusedNode || isHoverActive;
       const loadState =
         mode === "image" ? imageNodeLoadStateById[node.id] : undefined;
       const hasOwnImages =
@@ -401,7 +455,7 @@ function SidebarPanel({
         <div
           key={node.id}
           data-sidebar-node-id={node.id}
-          className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isActivePackage || isActiveVideo || isActiveAudio ? "is-active" : ""} ${isKeyboardActive ? "is-key-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
+          className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isFocusedNode ? "is-active" : ""} ${isHoverActive ? "is-hover-active" : ""} ${isPressedActive ? "is-pressed-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
           style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
         >
           <span
@@ -431,6 +485,12 @@ function SidebarPanel({
             className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""}`}
             type="button"
             style={{ fontSize: `${sidebarFontSize}px` }}
+            onMouseEnter={() => {
+              setHoveredNodeId(node.id);
+            }}
+            onMouseLeave={() => {
+              setHoveredNodeId((previous) => (previous === node.id ? null : previous));
+            }}
             title={
               imageFolderCollapsible
                 ? imageFolderCollapsed
@@ -488,7 +548,18 @@ function SidebarPanel({
               });
             }}
           >
-            {node.label}
+            <span
+              ref={(element) => {
+                if (element) {
+                  labelTextElementByNodeIdRef.current.set(node.id, element);
+                  return;
+                }
+                labelTextElementByNodeIdRef.current.delete(node.id);
+              }}
+              className={`sidebar-label-text ${isPressedActive && overflowingNodeIds.has(node.id) ? "is-marquee" : ""}`}
+            >
+              {node.label}
+            </span>
           </button>
 
           {mode === "music" && node.kind === "audio" && node.audioId ? (

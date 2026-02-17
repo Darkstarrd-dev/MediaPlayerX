@@ -229,12 +229,28 @@ export function useSidebarNavigation({
         flatSidebarNodes.findIndex((node) => node.id === currentId),
       )
 
+      const applyNodeSelection = (node: SidebarNode) => {
+        if (mode === 'image' && node.imageSourceId) {
+          onSelectPackage(node.imageSourceId)
+        }
+        if (mode === 'video' && node.videoId) {
+          onSelectVideo(node.videoId)
+        }
+        if (mode === 'music') {
+          const targetAudioId = resolveFirstAudioId(node)
+          if (targetAudioId) {
+            onSelectAudio(targetAudioId)
+          }
+        }
+      }
+
       const moveSelection = (nextIndex: number) => {
         const nextNode = flatSidebarNodes[clamp(nextIndex, 0, flatSidebarNodes.length - 1)]
         if (!nextNode) {
           return false
         }
         onSetSelectedSidebarNodeId(nextNode.id)
+        applyNodeSelection(nextNode)
         requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id))
         return true
       }
@@ -307,18 +323,7 @@ export function useSidebarNavigation({
           return false
         }
         onSetSelectedSidebarNodeId(node.id)
-        if (mode === 'image' && node.imageSourceId) {
-          onSelectPackage(node.imageSourceId)
-        }
-        if (mode === 'video' && node.videoId) {
-          onSelectVideo(node.videoId)
-        }
-        if (mode === 'music') {
-          const targetAudioId = resolveFirstAudioId(node)
-          if (targetAudioId) {
-            onSelectAudio(targetAudioId)
-          }
-        }
+        applyNodeSelection(node)
         requestAnimationFrame(() => ensureSidebarNodeVisible(node.id))
         return true
       }
