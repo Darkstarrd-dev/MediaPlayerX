@@ -522,6 +522,15 @@
   border-radius: 6px;
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-left .video-action-icon,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-right .video-action-icon,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-left .music-action-icon,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-right .music-action-icon {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.25;
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-prev,
 :root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-next,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-center .video-action-btn:first-child,

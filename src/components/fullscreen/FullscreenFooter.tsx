@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react'
 
 import type { BrowserMode } from '../../types'
 import { buildA11yPropsByRegistry } from '../../i18n/a11y'
@@ -140,6 +140,9 @@ interface FullscreenFooterProps {
   onResetSinglePane: () => void
   onHoverStateChange: (hovering: boolean) => void
   onExit: () => void
+  controlsWidth?: number
+  compact?: boolean
+  hideRightGroup?: boolean
 }
 
 const FULLSCREEN_ZOOM_LEVELS = [200, 175, 150, 125, 100, 75, 50, 25, 10] as const
@@ -180,6 +183,9 @@ export function FullscreenFooter({
   onResetSinglePane,
   onHoverStateChange,
   onExit,
+  controlsWidth,
+  compact = false,
+  hideRightGroup = false,
 }: FullscreenFooterProps) {
   const { t } = useI18n()
   const [openAutoplayPopover, setOpenAutoplayPopover] = useState(false)
@@ -265,9 +271,15 @@ export function FullscreenFooter({
     [],
   )
 
+  const footerStyle =
+    Number.isFinite(controlsWidth) && typeof controlsWidth === 'number'
+      ? ({ '--mpx-fullscreen-controls-width': `${Math.max(120, Math.round(controlsWidth))}px` } as CSSProperties)
+      : undefined
+
   return (
     <footer
-      className={`fullscreen-footer fullscreen-controls-shell ${fullscreenDisplay === 'dual' ? 'is-dual' : 'is-single'}${mode === 'image' ? ' is-image-mode' : ''}`}
+      className={`fullscreen-footer fullscreen-controls-shell ${fullscreenDisplay === 'dual' ? 'is-dual' : 'is-single'}${mode === 'image' ? ' is-image-mode' : ''}${compact ? ' is-compact' : ''}${hideRightGroup ? ' is-hide-right-group' : ''}`}
+      style={footerStyle}
       onMouseDown={(event) => {
         event.stopPropagation()
       }}
@@ -436,7 +448,7 @@ export function FullscreenFooter({
           </button>
         </div>
 
-        <div className="fullscreen-group is-right">
+        {!hideRightGroup ? <div className="fullscreen-group is-right">
           <button aria-label={t('ui.fullscreen.alignUp')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onAlignFocusedPane('up')}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="alignUp" />
@@ -469,7 +481,7 @@ export function FullscreenFooter({
               <FullscreenFooterIcon name="alignReset" />
             </span>
           </button>
-        </div>
+        </div> : null}
       </div>
     </footer>
   )

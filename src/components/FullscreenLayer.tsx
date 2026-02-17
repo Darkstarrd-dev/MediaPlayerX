@@ -43,6 +43,13 @@ import {
 } from './fullscreen/paneMath'
 
 const DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH = 980
+const DUAL_IMAGE_CONTROLS_COMPACT_WIDTH = 700
+const DUAL_IMAGE_CONTROLS_MIN_WITH_RIGHT_GROUP = 680
+const DUAL_VIDEO_CONTROLS_COMPACT_WIDTH = 620
+const DUAL_VIDEO_CONTROLS_MIN_WITH_LEFT_GROUP = 500
+const DUAL_IMAGE_CONTROLS_MIN_TWO_GROUPS = 460
+const DUAL_VIDEO_CONTROLS_MIN_TWO_GROUPS = 360
+const FULLSCREEN_DIVIDER_WIDTH = 8
 
 function resolveMediaPathForFooter(item: { mediaLocator: ImageItem['mediaLocator'] } | { mediaLocator: VideoItem['mediaLocator'] }): string {
   const locator = item.mediaLocator
@@ -448,9 +455,21 @@ function FullscreenLayer({
           return
         }
 
-        const ratioFromLeft = clamp((moveEvent.clientX - rect.left) / rect.width, 0, 1)
+        const availableWidth = Math.max(1, rect.width - FULLSCREEN_DIVIDER_WIDTH)
+        const minImageRatioByControls = DUAL_IMAGE_CONTROLS_MIN_TWO_GROUPS / availableWidth
+        const maxImageRatioByControls = 1 - DUAL_VIDEO_CONTROLS_MIN_TWO_GROUPS / availableWidth
+        let minImageRatio = Math.max(MIN_SPLIT, minImageRatioByControls)
+        let maxImageRatio = Math.min(MAX_SPLIT, maxImageRatioByControls)
+
+        if (minImageRatio > maxImageRatio) {
+          const fallbackRatio = clamp(minImageRatioByControls, MIN_SPLIT, MAX_SPLIT)
+          minImageRatio = fallbackRatio
+          maxImageRatio = fallbackRatio
+        }
+
+        const ratioFromLeft = clamp((moveEvent.clientX - rect.left - FULLSCREEN_DIVIDER_WIDTH / 2) / availableWidth, 0, 1)
         const nextImageRatio = fullscreenSwapped ? 1 - ratioFromLeft : ratioFromLeft
-        onSetSplit(clamp(Number(nextImageRatio.toFixed(3)), MIN_SPLIT, MAX_SPLIT))
+        onSetSplit(clamp(Number(nextImageRatio.toFixed(3)), minImageRatio, maxImageRatio))
       }
 
       const onMouseUp = () => {
@@ -618,7 +637,21 @@ function FullscreenLayer({
     return null
   }
 
-  const imageRatio = clamp(fullscreenSplit, MIN_SPLIT, MAX_SPLIT)
+  const dualAvailableWidth = Math.max(1, effectiveImageViewportSize.width + effectiveVideoViewportSize.width)
+  const minImageRatioByControls = DUAL_IMAGE_CONTROLS_MIN_TWO_GROUPS / dualAvailableWidth
+  const maxImageRatioByControls = 1 - DUAL_VIDEO_CONTROLS_MIN_TWO_GROUPS / dualAvailableWidth
+  let dualMinImageRatio = Math.max(MIN_SPLIT, minImageRatioByControls)
+  let dualMaxImageRatio = Math.min(MAX_SPLIT, maxImageRatioByControls)
+
+  if (dualMinImageRatio > dualMaxImageRatio) {
+    const fallbackRatio = clamp(minImageRatioByControls, MIN_SPLIT, MAX_SPLIT)
+    dualMinImageRatio = fallbackRatio
+    dualMaxImageRatio = fallbackRatio
+  }
+
+  const imageRatio = fullscreenDisplay === 'dual'
+    ? clamp(fullscreenSplit, dualMinImageRatio, dualMaxImageRatio)
+    : clamp(fullscreenSplit, MIN_SPLIT, MAX_SPLIT)
   const videoRatio = 1 - imageRatio
   const paneOrder: PaneKey[] = fullscreenSwapped ? ['video', 'image'] : ['image', 'video']
 
@@ -643,13 +676,24 @@ function FullscreenLayer({
     viewportHeight: singleControlsViewport.height,
     widthCap: controlsWidthCap,
   })
+  const dualImageControlsWidth = Math.max(120, Math.min(singleControlsWidth, effectiveImageViewportSize.width - 16))
+  const dualVideoControlsWidth = Math.max(120, Math.min(singleControlsWidth, effectiveVideoViewportSize.width - 16))
   const controlsMaxWidth = Math.max(120, Math.min(effectiveVideoViewportSize.width - 16, controlsWidthCap))
   const controlsPreferredWidth = Math.max(120, videoGeometry.width - 16)
   const videoControlsWidthByGeometry = Math.min(controlsPreferredWidth, controlsMaxWidth)
-  const videoControlsWidth = fullscreenDisplay === 'dual' || fullscreenDisplay === 'video-only' ? singleControlsWidth : videoControlsWidthByGeometry
+  const videoControlsWidth =
+    fullscreenDisplay === 'dual'
+      ? dualVideoControlsWidth
+      : fullscreenDisplay === 'video-only'
+        ? singleControlsWidth
+        : videoControlsWidthByGeometry
   const controlsMaxLeft = Math.max(8, effectiveVideoViewportSize.width - videoControlsWidth - 8)
   const centeredControlsLeft = Math.round((effectiveVideoViewportSize.width - videoControlsWidth) / 2)
   const videoControlsLeft = clamp(centeredControlsLeft, 8, controlsMaxLeft)
+  const imageControlsCompact = fullscreenDisplay === 'dual' && dualImageControlsWidth < DUAL_IMAGE_CONTROLS_COMPACT_WIDTH
+  const imageControlsHideRightGroup = fullscreenDisplay === 'dual' && dualImageControlsWidth < DUAL_IMAGE_CONTROLS_MIN_WITH_RIGHT_GROUP
+  const videoControlsCompact = fullscreenDisplay === 'dual' && dualVideoControlsWidth < DUAL_VIDEO_CONTROLS_COMPACT_WIDTH
+  const videoControlsHideLeftGroup = fullscreenDisplay === 'dual' && dualVideoControlsWidth < DUAL_VIDEO_CONTROLS_MIN_WITH_LEFT_GROUP
   const fullscreenControlsCssVars = {
     '--mpx-fullscreen-controls-max-width': `${singleControlsWidth}px`,
     '--mpx-fullscreen-controls-width': `${singleControlsWidth}px`,
@@ -696,6 +740,9 @@ function FullscreenLayer({
           onResetSinglePane={resetSinglePane}
           onHoverStateChange={setFooterHovering}
           onExit={onExit}
+          controlsWidth={fullscreenDisplay === 'dual' ? dualImageControlsWidth : undefined}
+          compact={imageControlsCompact}
+          hideRightGroup={imageControlsHideRightGroup}
         />
       )
     : null
@@ -758,6 +805,9 @@ function FullscreenLayer({
       onSelectVideo={onSelectVideo}
       onSaveCover={onSaveCover}
       onExit={onExit}
+      controlsWidth={fullscreenDisplay === 'dual' ? dualVideoControlsWidth : undefined}
+      compact={videoControlsCompact}
+      hideLeftGroup={videoControlsHideLeftGroup}
     />
   )
 

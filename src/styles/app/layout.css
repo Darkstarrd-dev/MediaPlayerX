@@ -1022,11 +1022,30 @@
   min-height: 36px;
 }
 
+.fullscreen-footer.is-compact .fullscreen-controls-row {
+  gap: 6px;
+}
+
 .fullscreen-group {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+.fullscreen-footer.is-compact .fullscreen-group {
+  gap: 6px;
+}
+
+.fullscreen-footer.is-hide-right-group .fullscreen-controls-row {
+  grid-template-columns: auto auto;
+  justify-content: center;
+  column-gap: 14px;
+}
+
+.fullscreen-footer.is-hide-right-group .fullscreen-group.is-left,
+.fullscreen-footer.is-hide-right-group .fullscreen-group.is-center {
+  justify-self: center;
 }
 
 .fullscreen-group.is-left {

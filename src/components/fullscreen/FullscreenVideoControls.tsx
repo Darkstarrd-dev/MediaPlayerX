@@ -42,6 +42,9 @@ interface FullscreenVideoControlsShellProps {
   onSelectVideo: (videoId: string) => void
   onSaveCover: () => void
   onExit: () => void
+  controlsWidth?: number
+  compact?: boolean
+  hideLeftGroup?: boolean
 }
 
 export function FullscreenVideoControlsShell({
@@ -77,6 +80,9 @@ export function FullscreenVideoControlsShell({
   onSelectVideo,
   onSaveCover,
   onExit,
+  controlsWidth,
+  compact = false,
+  hideLeftGroup = false,
 }: FullscreenVideoControlsShellProps) {
   const { t } = useI18n()
   const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
@@ -109,6 +115,10 @@ export function FullscreenVideoControlsShell({
     subtitleLoading ||
     Boolean(subtitlePanelContentText) ||
     subtitleOptions.length > 0
+  const controlsShellStyle =
+    Number.isFinite(controlsWidth) && typeof controlsWidth === 'number'
+      ? ({ '--mpx-fullscreen-controls-width': `${Math.max(120, Math.round(controlsWidth))}px` } as CSSProperties)
+      : undefined
 
   const openPopoverByHover = (key: VideoPopoverKey) => {
     setOpenPopover(key)
@@ -144,7 +154,10 @@ export function FullscreenVideoControlsShell({
   }
 
   return (
-    <div className="video-controls-shell fullscreen-video-controls-shell fullscreen-controls-shell">
+    <div
+      className={`video-controls-shell fullscreen-video-controls-shell fullscreen-controls-shell${compact ? ' is-compact' : ''}${hideLeftGroup ? ' is-hide-left-group' : ''}`}
+      style={controlsShellStyle}
+    >
       {mediaInfoText ? (
         <div className="fullscreen-meta-row is-single">
           <div className="fullscreen-meta-line">
@@ -182,7 +195,7 @@ export function FullscreenVideoControlsShell({
       </div>
 
       <div className="video-controls-row video-controls">
-        <div className="video-controls-group is-left">
+        {!hideLeftGroup ? <div className="video-controls-group is-left">
           <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" type="button" onClick={onToggleDualDisplay}>
             <VideoControlIcon name="dual" />
           </button>
@@ -317,7 +330,7 @@ export function FullscreenVideoControlsShell({
           >
             <VideoControlIcon name="fullscreenCompress" />
           </button>
-        </div>
+        </div> : null}
 
         <div className="video-controls-group is-center">
           <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>

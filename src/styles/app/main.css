@@ -837,6 +837,10 @@
   gap: 10px;
 }
 
+.fullscreen-video-controls-shell.is-compact .video-controls-row {
+  gap: 6px;
+}
+
 .video-controls-progress {
   margin: 0;
   padding: 0;
@@ -865,6 +869,21 @@
   align-items: center;
   gap: 8px;
   flex-wrap: nowrap;
+}
+
+.fullscreen-video-controls-shell.is-compact .video-controls-group {
+  gap: 6px;
+}
+
+.fullscreen-video-controls-shell.is-hide-left-group .video-controls-row {
+  grid-template-columns: auto auto;
+  justify-content: center;
+  column-gap: 14px;
+}
+
+.fullscreen-video-controls-shell.is-hide-left-group .video-controls-group.is-center,
+.fullscreen-video-controls-shell.is-hide-left-group .video-controls-group.is-right {
+  justify-self: center;
 }
 
 .video-controls-group.is-left {
@@ -1031,6 +1050,14 @@
   width: 18px;
   height: 18px;
   display: block;
+}
+
+.fullscreen-video-controls-shell .video-controls-group.is-left .video-action-icon,
+.fullscreen-video-controls-shell .video-controls-group.is-right .video-action-icon,
+.fullscreen-video-controls-shell .video-controls-group.is-left .music-action-icon,
+.fullscreen-video-controls-shell .video-controls-group.is-right .music-action-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .video-controls-row .video-action-btn:hover {
