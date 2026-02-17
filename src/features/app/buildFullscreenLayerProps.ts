@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from 'react'
+import type { CSSProperties, Dispatch, SetStateAction } from 'react'
 
 import type { AppSettings } from '../../contracts/settings'
 import type { FullscreenLayerProps } from '../../components/FullscreenLayer'
@@ -28,6 +28,7 @@ interface BuildFullscreenLayerPropsParams {
   selectedSubtitleId: string | null
   autoSubtitleActive: boolean
   liveSubtitleText: string | null
+  subtitleOverlayStyle: CSSProperties
   bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void
   focusedVideoCoverImageSrc: string | null
   durationSec: number
@@ -94,6 +95,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     selectedSubtitleId: params.selectedSubtitleId,
     autoSubtitleActive: params.autoSubtitleActive,
     liveSubtitleText: params.liveSubtitleText,
+    subtitleOverlayStyle: params.subtitleOverlayStyle,
     bindFullscreenVideoElement: params.bindFullscreenVideoElement,
     focusedVideoCoverImageSrc: params.focusedVideoCoverImageSrc,
     durationSec: params.durationSec,

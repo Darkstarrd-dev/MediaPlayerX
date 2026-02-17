@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { useEffectiveDisplayState } from "./useEffectiveDisplayState";
 import { useMetadataWriteBindings } from "./useMetadataWriteBindings";
@@ -42,6 +42,156 @@ function toAutoSubtitleLanguageLabel(
     return t("ui.media.autoSubtitleLanguageYue");
   }
   return t("ui.media.autoSubtitleLanguageAuto");
+}
+
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
+
+function normalizeHexColor(value: string, fallback: string): string {
+  const normalized = value.trim();
+  if (!HEX_COLOR_PATTERN.test(normalized)) {
+    return fallback;
+  }
+
+  return normalized.toLowerCase();
+}
+
+function parseHexColor(value: string): [number, number, number] | null {
+  const normalized = normalizeHexColor(value, "");
+  if (!normalized) {
+    return null;
+  }
+
+  const red = Number.parseInt(normalized.slice(1, 3), 16);
+  const green = Number.parseInt(normalized.slice(3, 5), 16);
+  const blue = Number.parseInt(normalized.slice(5, 7), 16);
+  if (!Number.isFinite(red) || !Number.isFinite(green) || !Number.isFinite(blue)) {
+    return null;
+  }
+
+  return [red, green, blue];
+}
+
+function toHexChannel(value: number): string {
+  const channel = Math.max(0, Math.min(255, Math.round(value)));
+  return channel.toString(16).padStart(2, "0");
+}
+
+function mixHexColors(left: string, right: string, factor: number): string {
+  const leftRgb = parseHexColor(left);
+  const rightRgb = parseHexColor(right);
+  if (!leftRgb || !rightRgb) {
+    return normalizeHexColor(left, "#ffffff");
+  }
+
+  const t = Math.max(0, Math.min(1, factor));
+  const mixedRed = leftRgb[0] + (rightRgb[0] - leftRgb[0]) * t;
+  const mixedGreen = leftRgb[1] + (rightRgb[1] - leftRgb[1]) * t;
+  const mixedBlue = leftRgb[2] + (rightRgb[2] - leftRgb[2]) * t;
+  return `#${toHexChannel(mixedRed)}${toHexChannel(mixedGreen)}${toHexChannel(mixedBlue)}`;
+}
+
+function applyGradientCurve(curve: string, point: number): number {
+  const x = Math.max(0, Math.min(1, point));
+  if (curve === "linear") {
+    return x;
+  }
+
+  if (curve === "smooth") {
+    return x * x * (3 - 2 * x);
+  }
+
+  if (curve === "smoother") {
+    return x * x * x * (x * (x * 6 - 15) + 10);
+  }
+
+  if (curve === "bezier") {
+    const u = 1 - x;
+    return 3 * u * u * x * 0.1 + 3 * u * x * x + x * x * x;
+  }
+
+  return x;
+}
+
+function resolveGradientDirection(direction: string): string {
+  if (direction === "right-to-left") {
+    return "to left";
+  }
+  if (direction === "top-to-bottom") {
+    return "to bottom";
+  }
+  if (direction === "bottom-to-top") {
+    return "to top";
+  }
+  if (direction === "top-left-to-bottom-right") {
+    return "to bottom right";
+  }
+  if (direction === "top-right-to-bottom-left") {
+    return "to bottom left";
+  }
+  if (direction === "bottom-left-to-top-right") {
+    return "to top right";
+  }
+  if (direction === "bottom-right-to-top-left") {
+    return "to top left";
+  }
+  return "to right";
+}
+
+function buildSubtitleOverlayStyle(settings: AppSettingsStoreSnapshot): CSSProperties {
+  const textFillMode = settings.subtitleTextFillMode;
+  const textColor = normalizeHexColor(settings.subtitleTextColor, "#ffffff");
+  const gradientStartColor = normalizeHexColor(
+    settings.subtitleGradientStartColor,
+    "#ffffff",
+  );
+  const gradientEndColor = normalizeHexColor(
+    settings.subtitleGradientEndColor,
+    "#7fd6ff",
+  );
+  const gradientDirection = resolveGradientDirection(settings.subtitleGradientDirection);
+  const gradientCurve = settings.subtitleGradientCurve;
+  const strokeColor = normalizeHexColor(settings.subtitleStrokeColor, "#000000");
+  const strokeWidth = Math.max(0, Math.min(8, settings.subtitleStrokeWidth));
+  const strokeShadowColor = normalizeHexColor(
+    settings.subtitleStrokeShadowColor,
+    "#000000",
+  );
+  const strokeShadowRadius = Math.max(0, Math.min(24, settings.subtitleStrokeShadowRadius));
+  const offsetY = Math.max(-400, Math.min(400, settings.subtitleOffsetY));
+
+  const style: CSSProperties = {
+    color: textColor,
+    textShadow:
+      strokeShadowRadius > 0
+        ? `0 0 ${strokeShadowRadius.toFixed(0)}px ${strokeShadowColor}`
+        : "none",
+    WebkitTextStroke:
+      strokeWidth > 0 ? `${strokeWidth.toFixed(1)}px ${strokeColor}` : "0 transparent",
+  };
+  (style as Record<string, string>)["--mpx-subtitle-offset-y"] = `${offsetY.toFixed(0)}px`;
+
+  if (textFillMode === "gradient") {
+    const points = [0, 0.25, 0.5, 0.75, 1];
+    const stops = points.map((point) => {
+      const factor = applyGradientCurve(gradientCurve, point);
+      const color = mixHexColors(gradientStartColor, gradientEndColor, factor);
+      const percent = Math.round(point * 100);
+      return `${color} ${percent}%`;
+    });
+    const styleRecord = style as Record<string, string>;
+    style.backgroundImage = `linear-gradient(${gradientDirection}, ${stops.join(", ")})`;
+    style.backgroundClip = "text";
+    style.color = "transparent";
+    styleRecord.WebkitBackgroundClip = "text";
+    styleRecord.WebkitTextFillColor = "transparent";
+  } else {
+    const styleRecord = style as Record<string, string>;
+    style.backgroundImage = "none";
+    style.color = textColor;
+    styleRecord.WebkitTextFillColor = textColor;
+  }
+
+  return style;
 }
 
 function toAutoSubtitleUiMessage(
@@ -457,6 +607,7 @@ export function useAppDisplayResources({
     repository: mediaRepository,
   });
   const autoSubtitleUiMessage = toAutoSubtitleUiMessage(liveSubtitle.message, t);
+  const subtitleOverlayStyle = buildSubtitleOverlayStyle(appSettings);
   const configuredSubtitleLanguage = (appSettings.subtitleLanguage ?? "auto").trim().toLowerCase();
   const autoSubtitleStatusMessage = autoSubtitleUiMessage
     ? autoSubtitleUiMessage
@@ -764,6 +915,7 @@ export function useAppDisplayResources({
     subtitleMessage: autoSubtitleActive ? autoSubtitleStatusMessage : subtitleMessage,
     autoSubtitleActive,
     liveSubtitleText: liveSubtitle.activeText,
+    subtitleOverlayStyle,
     bindMainVideoElement: setMainVideoElement,
     bindFullscreenVideoElement: setFullscreenVideoElement,
     setSubtitleVisible,

@@ -23,6 +23,7 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      themeParameterButtonVisible: false,
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       taskStatusBusy: false,
@@ -39,6 +40,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed,
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     expect(props.searchPanelOpen).toBe(false)
@@ -69,6 +71,7 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      themeParameterButtonVisible: false,
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       taskStatusBusy: false,
@@ -85,6 +88,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed,
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     props.onToggleSearchPanel()
@@ -114,6 +118,7 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      themeParameterButtonVisible: false,
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       taskStatusBusy: false,
@@ -130,6 +135,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed,
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     props.onToggleSearchPanel()
@@ -158,6 +164,7 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      themeParameterButtonVisible: false,
       importMenuOpen: true,
       taskStatusLabel: '空闲',
       taskStatusBusy: false,
@@ -174,6 +181,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     props.onThumbnailScaleUp()
@@ -205,6 +213,7 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      themeParameterButtonVisible: false,
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       taskStatusBusy: false,
@@ -221,6 +230,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     expect(props.searchPanelOpen).toBe(false)
@@ -245,6 +255,7 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'skeuomorphic-light',
       paletteNightId: 'skeuomorphic-dark',
+      themeParameterButtonVisible: false,
       importMenuOpen: false,
       taskStatusLabel: '空闲',
       taskStatusBusy: false,
@@ -261,6 +272,7 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     props.onTogglePaletteMode()

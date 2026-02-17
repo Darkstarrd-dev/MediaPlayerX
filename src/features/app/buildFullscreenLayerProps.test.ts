@@ -25,6 +25,7 @@ function createParams() {
     selectedSubtitleId: null,
     autoSubtitleActive: false,
     liveSubtitleText: null,
+    subtitleOverlayStyle: {},
     bindFullscreenVideoElement: vi.fn(),
     focusedVideoCoverImageSrc: null,
     durationSec: 120,

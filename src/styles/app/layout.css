@@ -635,6 +635,15 @@
   transition: var(--mpx-control-transition);
 }
 
+.window-control-btn--theme-parameter {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.window-control-btn-text {
+  line-height: 1;
+}
+
 .window-control-btn:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);

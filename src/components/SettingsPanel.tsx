@@ -38,6 +38,7 @@ export interface SettingsPanelProps {
   sidebarMinWidth: number
   layoutLocked: boolean
   electronNativeChromeEnabled: boolean
+  themeParameterButtonVisible: boolean
   sidebarFontSize: number
   sidebarCountFontSize: number
   sidebarIndentStep: number
@@ -56,6 +57,26 @@ export interface SettingsPanelProps {
   subtitleFeatureEnabled: boolean
   subtitleLanguage: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue'
   subtitleModelDir: string
+  subtitleTextFillMode: 'solid' | 'gradient'
+  subtitleTextColor: string
+  subtitleGradientStartColor: string
+  subtitleGradientEndColor: string
+  subtitleGradientDirection:
+    | 'left-to-right'
+    | 'right-to-left'
+    | 'top-to-bottom'
+    | 'bottom-to-top'
+    | 'top-left-to-bottom-right'
+    | 'top-right-to-bottom-left'
+    | 'bottom-left-to-top-right'
+    | 'bottom-right-to-top-left'
+  subtitleGradientCurve: 'linear' | 'smooth' | 'bezier' | 'smoother'
+  subtitleStrokeColor: string
+  subtitleStrokeWidth: number
+  subtitleStrokeShadowColor: string
+  subtitleStrokeShadowRadius: number
+  subtitleOffsetY: number
+  subtitleStylePanelExpanded: boolean
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
   subtitleModelsStatus: string | null
@@ -116,6 +137,7 @@ export interface SettingsPanelProps {
   onSidebarMinWidthChange: (value: number) => void
   onLayoutLockedChange: (value: boolean) => void
   onElectronNativeChromeEnabledChange: (value: boolean) => void
+  onThemeParameterButtonVisibleChange: (value: boolean) => void
   onSidebarFontSizeChange: (value: number) => void
   onSidebarCountFontSizeChange: (value: number) => void
   onSidebarIndentStepChange: (value: number) => void
@@ -138,6 +160,28 @@ export interface SettingsPanelProps {
   onSubtitleFeatureEnabledChange: (value: boolean) => void
   onSubtitleLanguageChange: (value: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue') => void
   onSubtitleModelDirPick: () => void
+  onSubtitleTextFillModeChange: (value: 'solid' | 'gradient') => void
+  onSubtitleTextColorChange: (value: string) => void
+  onSubtitleGradientStartColorChange: (value: string) => void
+  onSubtitleGradientEndColorChange: (value: string) => void
+  onSubtitleGradientDirectionChange: (
+    value:
+      | 'left-to-right'
+      | 'right-to-left'
+      | 'top-to-bottom'
+      | 'bottom-to-top'
+      | 'top-left-to-bottom-right'
+      | 'top-right-to-bottom-left'
+      | 'bottom-left-to-top-right'
+      | 'bottom-right-to-top-left',
+  ) => void
+  onSubtitleGradientCurveChange: (value: 'linear' | 'smooth' | 'bezier' | 'smoother') => void
+  onSubtitleStrokeColorChange: (value: string) => void
+  onSubtitleStrokeWidthChange: (value: number) => void
+  onSubtitleStrokeShadowColorChange: (value: string) => void
+  onSubtitleStrokeShadowRadiusChange: (value: number) => void
+  onSubtitleOffsetYChange: (value: number) => void
+  onSubtitleStylePanelExpandedChange: (value: boolean) => void
   onRefreshSubtitleModels: () => void
   onStartSubtitleModelDownload: () => void
   onCancelSubtitleModelDownload: () => void
@@ -221,6 +265,7 @@ function SettingsPanel({
   sidebarMinWidth,
   layoutLocked,
   electronNativeChromeEnabled,
+  themeParameterButtonVisible,
   sidebarFontSize,
   sidebarCountFontSize,
   sidebarIndentStep,
@@ -239,6 +284,18 @@ function SettingsPanel({
   subtitleFeatureEnabled,
   subtitleLanguage,
   subtitleModelDir,
+  subtitleTextFillMode,
+  subtitleTextColor,
+  subtitleGradientStartColor,
+  subtitleGradientEndColor,
+  subtitleGradientDirection,
+  subtitleGradientCurve,
+  subtitleStrokeColor,
+  subtitleStrokeWidth,
+  subtitleStrokeShadowColor,
+  subtitleStrokeShadowRadius,
+  subtitleOffsetY,
+  subtitleStylePanelExpanded,
   subtitleModelsLoading,
   subtitleModelsError,
   subtitleModelsStatus,
@@ -280,6 +337,7 @@ function SettingsPanel({
   onSidebarMinWidthChange,
   onLayoutLockedChange,
   onElectronNativeChromeEnabledChange,
+  onThemeParameterButtonVisibleChange,
   onSidebarFontSizeChange,
   onSidebarCountFontSizeChange,
   onSidebarIndentStepChange,
@@ -302,6 +360,18 @@ function SettingsPanel({
   onSubtitleFeatureEnabledChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
+  onSubtitleTextFillModeChange,
+  onSubtitleTextColorChange,
+  onSubtitleGradientStartColorChange,
+  onSubtitleGradientEndColorChange,
+  onSubtitleGradientDirectionChange,
+  onSubtitleGradientCurveChange,
+  onSubtitleStrokeColorChange,
+  onSubtitleStrokeWidthChange,
+  onSubtitleStrokeShadowColorChange,
+  onSubtitleStrokeShadowRadiusChange,
+  onSubtitleOffsetYChange,
+  onSubtitleStylePanelExpandedChange,
   onRefreshSubtitleModels,
   onStartSubtitleModelDownload,
   onCancelSubtitleModelDownload,
@@ -693,6 +763,7 @@ function SettingsPanel({
     uiLocale,
     layoutLocked,
     electronNativeChromeEnabled,
+    themeParameterButtonVisible,
     headerHeight,
     headerHeightScale,
     settingsFontSize,
@@ -725,6 +796,18 @@ function SettingsPanel({
     subtitleFeatureEnabled,
     subtitleLanguage,
     subtitleModelDir,
+    subtitleTextFillMode,
+    subtitleTextColor,
+    subtitleGradientStartColor,
+    subtitleGradientEndColor,
+    subtitleGradientDirection,
+    subtitleGradientCurve,
+    subtitleStrokeColor,
+    subtitleStrokeWidth,
+    subtitleStrokeShadowColor,
+    subtitleStrokeShadowRadius,
+    subtitleOffsetY,
+    subtitleStylePanelExpanded,
     subtitleModelsLoading,
     subtitleModelsError,
     subtitleModelsStatus,
@@ -762,6 +845,7 @@ function SettingsPanel({
     onUiLocaleChange,
     onLayoutLockedChange,
     onElectronNativeChromeEnabledChange,
+    onThemeParameterButtonVisibleChange,
     onHeaderHeightChange,
     settingsBackdropOpacity,
     onSettingsFontSizeChange,
@@ -796,6 +880,18 @@ function SettingsPanel({
     onSubtitleFeatureEnabledChange,
     onSubtitleLanguageChange,
     onSubtitleModelDirPick,
+    onSubtitleTextFillModeChange,
+    onSubtitleTextColorChange,
+    onSubtitleGradientStartColorChange,
+    onSubtitleGradientEndColorChange,
+    onSubtitleGradientDirectionChange,
+    onSubtitleGradientCurveChange,
+    onSubtitleStrokeColorChange,
+    onSubtitleStrokeWidthChange,
+    onSubtitleStrokeShadowColorChange,
+    onSubtitleStrokeShadowRadiusChange,
+    onSubtitleOffsetYChange,
+    onSubtitleStylePanelExpandedChange,
     onRefreshSubtitleModels,
     onStartSubtitleModelDownload,
     onCancelSubtitleModelDownload,

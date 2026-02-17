@@ -17,7 +17,6 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     imageFocusActive: false,
     manageMode: false,
     videoShortcutActive: false,
-    hasFocusedImage: true,
     handleSidebarNavigationKey: vi.fn(() => false),
     onSetImageFocusActive: vi.fn(),
     onSetFullscreenActive: vi.fn(),
@@ -45,6 +44,7 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onToggleVideoMute: vi.fn(),
     onSaveVideoCover: vi.fn(),
     onToggleVideoSubtitle: vi.fn(),
+    onAdjustVideoSubtitleOffset: vi.fn(),
     onCycleVideoFitMode: vi.fn(),
     onImageWheelNavigatePage: vi.fn(),
     onImageCtrlWheelNavigateSidebar: vi.fn(),
@@ -194,6 +194,8 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'm', code: 'KeyM', bubbles: true, cancelable: true }))
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', bubbles: true, cancelable: true }))
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', code: 'KeyS', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', code: 'ArrowUp', shiftKey: true, bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', code: 'ArrowDown', shiftKey: true, bubbles: true, cancelable: true }))
       window.dispatchEvent(new KeyboardEvent('keydown', { key: '\\', code: 'Backslash', bubbles: true, cancelable: true }))
     })
 
@@ -202,6 +204,8 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     expect(params.onToggleVideoMute).toHaveBeenCalledTimes(1)
     expect(params.onSaveVideoCover).toHaveBeenCalledTimes(1)
     expect(params.onToggleVideoSubtitle).toHaveBeenCalledTimes(1)
+    expect(params.onAdjustVideoSubtitleOffset).toHaveBeenNthCalledWith(1, 16)
+    expect(params.onAdjustVideoSubtitleOffset).toHaveBeenNthCalledWith(2, -16)
     expect(params.onCycleVideoFitMode).toHaveBeenCalledTimes(1)
   })
 
@@ -242,7 +246,6 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
   it('image mode without focused image still allows Enter/F fullscreen shortcuts', () => {
     const params = createBaseParams()
-    params.hasFocusedImage = false
     renderHook(() => useShortcutEngine(params))
 
     act(() => {

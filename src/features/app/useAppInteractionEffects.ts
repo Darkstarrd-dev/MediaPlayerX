@@ -114,6 +114,8 @@ export function useAppInteractionEffects({
     setSidebarRenameDraft,
     helpOverlayOpen,
     setHelpOverlayOpen,
+    themeParameterPanelOpen,
+    setThemeParameterPanelOpen,
   } = sessionState
 
   const {
@@ -311,6 +313,14 @@ export function useAppInteractionEffects({
       return true
     }
 
+    const closeThemeParameterPanel = () => {
+      if (!themeParameterPanelOpen) {
+        return false
+      }
+      setThemeParameterPanelOpen(false)
+      return true
+    }
+
     const closeDeleteConfirm = () => {
       if (!deleteConfirmOpen) {
         return false
@@ -420,6 +430,9 @@ export function useAppInteractionEffects({
       if (closeSidebarRenameDialog()) {
         return true
       }
+      if (closeThemeParameterPanel()) {
+        return true
+      }
       if (closeHelpOverlay()) {
         return true
       }
@@ -462,6 +475,9 @@ export function useAppInteractionEffects({
       }
       if (layer === 'help-overlay') {
         return closeHelpOverlay()
+      }
+      if (layer === 'theme-parameter') {
+        return closeThemeParameterPanel()
       }
       if (layer === 'search-panel') {
         return closeSearchPanel()
@@ -638,9 +654,10 @@ export function useAppInteractionEffects({
         }
 
         if (!event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
+          const eventTarget = event.target
           const sidebarShortcutActive =
             sidebarFocus === 'sidebar' ||
-            ((event.target as HTMLElement | null)?.closest('.sidebar') ?? null) !== null
+            (eventTarget instanceof Element && eventTarget.closest('.sidebar') !== null)
 
           if (sidebarShortcutActive && event.code === 'KeyR') {
             const targetNodeId = selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId) ? selectedSidebarNodeId : null
@@ -841,8 +858,8 @@ export function useAppInteractionEffects({
         return
       }
 
-      const target = event.target as HTMLElement | null
-      const layerRoot = target?.closest('[data-overlay-close]')
+      const target = event.target
+      const layerRoot = target instanceof Element ? target.closest('[data-overlay-close]') : null
       const layer = layerRoot?.getAttribute('data-overlay-close')
       if (!layer) {
         return
@@ -921,6 +938,8 @@ export function useAppInteractionEffects({
     helpOpen,
     helpOverlayOpen,
     setHelpOverlayOpen,
+    themeParameterPanelOpen,
+    setThemeParameterPanelOpen,
     setSearchPanelCollapsed,
     setSearchPanelMode,
     updateSettings,
@@ -934,7 +953,7 @@ export function useAppInteractionEffects({
     adReviewDeletePending,
     mode,
     vectorResultsActive,
-    settingsOpen: settingsOpen || helpOpen || helpOverlayOpen,
+    settingsOpen: settingsOpen || helpOpen || helpOverlayOpen || themeParameterPanelOpen,
     sidebarFocus,
     fullscreenActive,
     fullscreenDisplay,
@@ -942,7 +961,6 @@ export function useAppInteractionEffects({
     imageFocusActive,
     manageMode,
     videoShortcutActive,
-    focusedImage: readNavigationState.focusedImage,
     handleSidebarNavigationKey,
     setImageFocusActive,
     setFullscreenActiveWithAutoStop,
@@ -997,6 +1015,10 @@ export function useAppInteractionEffects({
     },
     saveVideoCover: onSaveVideoCoverByShortcut,
     toggleVideoSubtitle: onToggleSubtitleByShortcut,
+    adjustVideoSubtitleOffset: (delta) => {
+      const nextOffset = clamp(appSettings.subtitleOffsetY + delta, -400, 400)
+      updateSettings({ subtitleOffsetY: nextOffset })
+    },
     cycleVideoFitMode,
     onImageWheelNavigatePage: handleImageWheelLikePageNavigation,
     onImageCtrlWheelNavigateSidebar: handleImageCtrlWheelLikeSidebarNavigation,

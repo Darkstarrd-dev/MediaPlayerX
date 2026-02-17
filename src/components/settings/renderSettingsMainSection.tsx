@@ -35,6 +35,7 @@ interface RenderSettingsMainSectionParams {
   sidebarFontSize: number
   sidebarFontSizeScale: number
   electronNativeChromeEnabled: boolean
+  themeParameterButtonVisible: boolean
   sidebarCountFontSize: number
   sidebarCountFontSizeScale: number
   sidebarIndentStep: number
@@ -58,6 +59,26 @@ interface RenderSettingsMainSectionParams {
   subtitleFeatureEnabled: boolean
   subtitleLanguage: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue'
   subtitleModelDir: string
+  subtitleTextFillMode: 'solid' | 'gradient'
+  subtitleTextColor: string
+  subtitleGradientStartColor: string
+  subtitleGradientEndColor: string
+  subtitleGradientDirection:
+    | 'left-to-right'
+    | 'right-to-left'
+    | 'top-to-bottom'
+    | 'bottom-to-top'
+    | 'top-left-to-bottom-right'
+    | 'top-right-to-bottom-left'
+    | 'bottom-left-to-top-right'
+    | 'bottom-right-to-top-left'
+  subtitleGradientCurve: 'linear' | 'smooth' | 'bezier' | 'smoother'
+  subtitleStrokeColor: string
+  subtitleStrokeWidth: number
+  subtitleStrokeShadowColor: string
+  subtitleStrokeShadowRadius: number
+  subtitleOffsetY: number
+  subtitleStylePanelExpanded: boolean
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
   subtitleModelsStatus: string | null
@@ -121,6 +142,7 @@ interface RenderSettingsMainSectionParams {
   onSidebarMinWidthChange: (value: number) => void
   onSidebarFontSizeChange: (value: number) => void
   onElectronNativeChromeEnabledChange: (value: boolean) => void
+  onThemeParameterButtonVisibleChange: (value: boolean) => void
   onSidebarCountFontSizeChange: (value: number) => void
   onSidebarIndentStepChange: (value: number) => void
   onSidebarVerticalGapChange: (value: number) => void
@@ -148,6 +170,28 @@ interface RenderSettingsMainSectionParams {
   onSubtitleFeatureEnabledChange: (value: boolean) => void
   onSubtitleLanguageChange: (value: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue') => void
   onSubtitleModelDirPick: () => void
+  onSubtitleTextFillModeChange: (value: 'solid' | 'gradient') => void
+  onSubtitleTextColorChange: (value: string) => void
+  onSubtitleGradientStartColorChange: (value: string) => void
+  onSubtitleGradientEndColorChange: (value: string) => void
+  onSubtitleGradientDirectionChange: (
+    value:
+      | 'left-to-right'
+      | 'right-to-left'
+      | 'top-to-bottom'
+      | 'bottom-to-top'
+      | 'top-left-to-bottom-right'
+      | 'top-right-to-bottom-left'
+      | 'bottom-left-to-top-right'
+      | 'bottom-right-to-top-left',
+  ) => void
+  onSubtitleGradientCurveChange: (value: 'linear' | 'smooth' | 'bezier' | 'smoother') => void
+  onSubtitleStrokeColorChange: (value: string) => void
+  onSubtitleStrokeWidthChange: (value: number) => void
+  onSubtitleStrokeShadowColorChange: (value: string) => void
+  onSubtitleStrokeShadowRadiusChange: (value: number) => void
+  onSubtitleOffsetYChange: (value: number) => void
+  onSubtitleStylePanelExpandedChange: (value: boolean) => void
   onRefreshSubtitleModels: () => void
   onStartSubtitleModelDownload: () => void
   onCancelSubtitleModelDownload: () => void
@@ -181,6 +225,7 @@ export function renderSettingsMainSection({
   sidebarFontSize,
   sidebarFontSizeScale,
   electronNativeChromeEnabled,
+  themeParameterButtonVisible,
   sidebarCountFontSize,
   sidebarCountFontSizeScale,
   sidebarIndentStep,
@@ -204,6 +249,18 @@ export function renderSettingsMainSection({
   subtitleFeatureEnabled,
   subtitleLanguage,
   subtitleModelDir,
+  subtitleTextFillMode,
+  subtitleTextColor,
+  subtitleGradientStartColor,
+  subtitleGradientEndColor,
+  subtitleGradientDirection,
+  subtitleGradientCurve,
+  subtitleStrokeColor,
+  subtitleStrokeWidth,
+  subtitleStrokeShadowColor,
+  subtitleStrokeShadowRadius,
+  subtitleOffsetY,
+  subtitleStylePanelExpanded,
   subtitleModelsLoading,
   subtitleModelsError,
   subtitleModelsStatus,
@@ -246,6 +303,7 @@ export function renderSettingsMainSection({
   onSidebarMinWidthChange,
   onSidebarFontSizeChange,
   onElectronNativeChromeEnabledChange,
+  onThemeParameterButtonVisibleChange,
   onSidebarCountFontSizeChange,
   onSidebarIndentStepChange,
   onSidebarVerticalGapChange,
@@ -273,6 +331,18 @@ export function renderSettingsMainSection({
   onSubtitleFeatureEnabledChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
+  onSubtitleTextFillModeChange,
+  onSubtitleTextColorChange,
+  onSubtitleGradientStartColorChange,
+  onSubtitleGradientEndColorChange,
+  onSubtitleGradientDirectionChange,
+  onSubtitleGradientCurveChange,
+  onSubtitleStrokeColorChange,
+  onSubtitleStrokeWidthChange,
+  onSubtitleStrokeShadowColorChange,
+  onSubtitleStrokeShadowRadiusChange,
+  onSubtitleOffsetYChange,
+  onSubtitleStylePanelExpandedChange,
   onRefreshSubtitleModels,
   onStartSubtitleModelDownload,
   onCancelSubtitleModelDownload,
@@ -500,19 +570,33 @@ export function renderSettingsMainSection({
 
         <section className="settings-group">
           <header className="settings-group-head">
+            <span>{t('ui.settings.debugSection')}</span>
+          </header>
+          <div className="settings-debug-toggle-row">
+            <button
+              type="button"
+              className={`settings-debug-toggle-btn ${electronNativeChromeEnabled ? 'is-on' : ''}`}
+              onClick={() => onElectronNativeChromeEnabledChange(!electronNativeChromeEnabled)}
+            >
+              {`${t('ui.settings.debugNativeChrome')} · ${electronNativeChromeEnabled ? t('ui.settings.toggleOn') : t('ui.settings.toggleOff')}`}
+            </button>
+            <button
+              type="button"
+              className={`settings-debug-toggle-btn ${themeParameterButtonVisible ? 'is-on' : ''}`}
+              onClick={() => onThemeParameterButtonVisibleChange(!themeParameterButtonVisible)}
+            >
+              {`${t('ui.settings.showThemeParameterButton')} · ${themeParameterButtonVisible ? t('ui.settings.toggleOn') : t('ui.settings.toggleOff')}`}
+            </button>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <header className="settings-group-head">
             <span>{t('ui.settings.layoutSection')}</span>
           </header>
           <label className="settings-toggle-row">
             <span>{t('ui.settings.layoutLocked')}</span>
             <input type="checkbox" checked={layoutLocked} onChange={(event) => onLayoutLockedChange(event.target.checked)} />
-          </label>
-          <label className="settings-toggle-row">
-            <span>{t('ui.settings.debugNativeChrome')}</span>
-            <input
-              type="checkbox"
-              checked={electronNativeChromeEnabled}
-              onChange={(event) => onElectronNativeChromeEnabledChange(event.target.checked)}
-            />
           </label>
           <label>
             {t('ui.settings.headerHeightScale', { scale: formatScale(headerHeightScale), px: headerHeight })}
@@ -785,6 +869,155 @@ export function renderSettingsMainSection({
               </button>
             </div>
           </label>
+          <label>
+            {t('ui.settings.offlineSubtitleOffsetY')}
+            <input
+              type="range"
+              min={-400}
+              max={400}
+              step={2}
+              value={subtitleOffsetY}
+              onChange={(event) => onSubtitleOffsetYChange(Number(event.target.value))}
+            />
+            <span className="settings-placeholder">{t('ui.settings.offlineSubtitleOffsetYValue', { value: subtitleOffsetY })}</span>
+            <span className="settings-placeholder">{t('ui.settings.offlineSubtitleOffsetYShortcutHint')}</span>
+          </label>
+          <details
+            className="settings-collapsible"
+            open={subtitleStylePanelExpanded}
+            onToggle={(event) =>
+              onSubtitleStylePanelExpandedChange(
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
+            }
+          >
+            <summary>{t('ui.settings.offlineSubtitleStyleSection')}</summary>
+            <div className="settings-collapsible-content">
+              <label>
+                {t('ui.settings.offlineSubtitleTextFillMode')}
+                <select
+                  value={subtitleTextFillMode}
+                  onChange={(event) => onSubtitleTextFillModeChange(event.target.value as 'solid' | 'gradient')}
+                >
+                  <option value="solid">{t('ui.settings.offlineSubtitleTextFillModeSolid')}</option>
+                  <option value="gradient">{t('ui.settings.offlineSubtitleTextFillModeGradient')}</option>
+                </select>
+              </label>
+              {subtitleTextFillMode === 'solid' ? (
+                <label>
+                  {t('ui.settings.offlineSubtitleTextColor')}
+                  <input
+                    type="color"
+                    value={subtitleTextColor}
+                    onChange={(event) => onSubtitleTextColorChange(event.target.value)}
+                  />
+                </label>
+              ) : (
+                <>
+                  <label>
+                    {t('ui.settings.offlineSubtitleGradientStartColor')}
+                    <input
+                      type="color"
+                      value={subtitleGradientStartColor}
+                      onChange={(event) => onSubtitleGradientStartColorChange(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    {t('ui.settings.offlineSubtitleGradientEndColor')}
+                    <input
+                      type="color"
+                      value={subtitleGradientEndColor}
+                      onChange={(event) => onSubtitleGradientEndColorChange(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    {t('ui.settings.offlineSubtitleGradientDirection')}
+                    <select
+                      value={subtitleGradientDirection}
+                      onChange={(event) =>
+                        onSubtitleGradientDirectionChange(
+                          event.target.value as
+                            | 'left-to-right'
+                            | 'right-to-left'
+                            | 'top-to-bottom'
+                            | 'bottom-to-top'
+                            | 'top-left-to-bottom-right'
+                            | 'top-right-to-bottom-left'
+                            | 'bottom-left-to-top-right'
+                            | 'bottom-right-to-top-left',
+                        )
+                      }
+                    >
+                      <option value="left-to-right">{t('ui.settings.offlineSubtitleGradientDirectionLeftToRight')}</option>
+                      <option value="right-to-left">{t('ui.settings.offlineSubtitleGradientDirectionRightToLeft')}</option>
+                      <option value="top-to-bottom">{t('ui.settings.offlineSubtitleGradientDirectionTopToBottom')}</option>
+                      <option value="bottom-to-top">{t('ui.settings.offlineSubtitleGradientDirectionBottomToTop')}</option>
+                      <option value="top-left-to-bottom-right">{t('ui.settings.offlineSubtitleGradientDirectionTopLeftToBottomRight')}</option>
+                      <option value="top-right-to-bottom-left">{t('ui.settings.offlineSubtitleGradientDirectionTopRightToBottomLeft')}</option>
+                      <option value="bottom-left-to-top-right">{t('ui.settings.offlineSubtitleGradientDirectionBottomLeftToTopRight')}</option>
+                      <option value="bottom-right-to-top-left">{t('ui.settings.offlineSubtitleGradientDirectionBottomRightToTopLeft')}</option>
+                    </select>
+                  </label>
+                  <label>
+                    {t('ui.settings.offlineSubtitleGradientCurve')}
+                    <select
+                      value={subtitleGradientCurve}
+                      onChange={(event) =>
+                        onSubtitleGradientCurveChange(
+                          event.target.value as 'linear' | 'smooth' | 'bezier' | 'smoother',
+                        )
+                      }
+                    >
+                      <option value="linear">{t('ui.settings.offlineSubtitleGradientCurveLinear')}</option>
+                      <option value="smooth">{t('ui.settings.offlineSubtitleGradientCurveSmooth')}</option>
+                      <option value="bezier">{t('ui.settings.offlineSubtitleGradientCurveBezier')}</option>
+                      <option value="smoother">{t('ui.settings.offlineSubtitleGradientCurveSmoother')}</option>
+                    </select>
+                  </label>
+                </>
+              )}
+              <label>
+                {t('ui.settings.offlineSubtitleStrokeColor')}
+                <input
+                  type="color"
+                  value={subtitleStrokeColor}
+                  onChange={(event) => onSubtitleStrokeColorChange(event.target.value)}
+                />
+              </label>
+              <label>
+                {t('ui.settings.offlineSubtitleStrokeWidth')}
+                <input
+                  type="range"
+                  min={0}
+                  max={8}
+                  step={0.5}
+                  value={subtitleStrokeWidth}
+                  onChange={(event) => onSubtitleStrokeWidthChange(Number(event.target.value))}
+                />
+                <span className="settings-placeholder">{subtitleStrokeWidth.toFixed(1)}px</span>
+              </label>
+              <label>
+                {t('ui.settings.offlineSubtitleStrokeShadowColor')}
+                <input
+                  type="color"
+                  value={subtitleStrokeShadowColor}
+                  onChange={(event) => onSubtitleStrokeShadowColorChange(event.target.value)}
+                />
+              </label>
+              <label>
+                {t('ui.settings.offlineSubtitleStrokeShadowRadius')}
+                <input
+                  type="range"
+                  min={0}
+                  max={24}
+                  step={1}
+                  value={subtitleStrokeShadowRadius}
+                  onChange={(event) => onSubtitleStrokeShadowRadiusChange(Number(event.target.value))}
+                />
+                <span className="settings-placeholder">{subtitleStrokeShadowRadius.toFixed(0)}px</span>
+              </label>
+            </div>
+          </details>
           <div className="settings-test-row">
             <button
               className="settings-icon-btn main-icon-square-btn"

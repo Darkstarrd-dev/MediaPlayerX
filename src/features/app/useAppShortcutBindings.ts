@@ -1,6 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
 
-import type { ImageItem } from '../../types'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { FullscreenAlignDirection } from './useFullscreenPlaybackBindings'
 import { useShortcutEngine } from '../shortcuts/useShortcutEngine'
@@ -21,7 +20,6 @@ interface UseAppShortcutBindingsParams {
   imageFocusActive: boolean
   manageMode: boolean
   videoShortcutActive: boolean
-  focusedImage: ImageItem | null
   handleSidebarNavigationKey: ShortcutEngineParams['handleSidebarNavigationKey']
   setImageFocusActive: Dispatch<SetStateAction<boolean>>
   setFullscreenActiveWithAutoStop: ShortcutEngineParams['onSetFullscreenActive']
@@ -49,6 +47,7 @@ interface UseAppShortcutBindingsParams {
   toggleVideoMute: ShortcutEngineParams['onToggleVideoMute']
   saveVideoCover: ShortcutEngineParams['onSaveVideoCover']
   toggleVideoSubtitle: ShortcutEngineParams['onToggleVideoSubtitle']
+  adjustVideoSubtitleOffset: ShortcutEngineParams['onAdjustVideoSubtitleOffset']
   cycleVideoFitMode: ShortcutEngineParams['onCycleVideoFitMode']
   onImageWheelNavigatePage: ShortcutEngineParams['onImageWheelNavigatePage']
   onImageCtrlWheelNavigateSidebar: ShortcutEngineParams['onImageCtrlWheelNavigateSidebar']
@@ -69,7 +68,6 @@ export function useAppShortcutBindings({
   imageFocusActive,
   manageMode,
   videoShortcutActive,
-  focusedImage,
   handleSidebarNavigationKey,
   setImageFocusActive,
   setFullscreenActiveWithAutoStop,
@@ -97,6 +95,7 @@ export function useAppShortcutBindings({
   toggleVideoMute,
   saveVideoCover,
   toggleVideoSubtitle,
+  adjustVideoSubtitleOffset,
   cycleVideoFitMode,
   onImageWheelNavigatePage,
   onImageCtrlWheelNavigateSidebar,
@@ -114,7 +113,6 @@ export function useAppShortcutBindings({
     imageFocusActive,
     manageMode,
     videoShortcutActive,
-    hasFocusedImage: Boolean(focusedImage),
     handleSidebarNavigationKey,
     onSetImageFocusActive: setImageFocusActive,
     onSetFullscreenActive: setFullscreenActiveWithAutoStop,
@@ -177,6 +175,7 @@ export function useAppShortcutBindings({
     onToggleVideoMute: toggleVideoMute,
     onSaveVideoCover: saveVideoCover,
     onToggleVideoSubtitle: toggleVideoSubtitle,
+    onAdjustVideoSubtitleOffset: adjustVideoSubtitleOffset,
     onCycleVideoFitMode: cycleVideoFitMode,
     onImageWheelNavigatePage,
     onImageCtrlWheelNavigateSidebar,

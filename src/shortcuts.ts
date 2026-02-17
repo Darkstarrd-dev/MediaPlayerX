@@ -45,6 +45,8 @@ export type ShortcutAction =
   | 'videoMute'
   | 'videoSaveCover'
   | 'videoSubtitleToggle'
+  | 'videoSubtitleOffsetUp'
+  | 'videoSubtitleOffsetDown'
   | 'videoFitCycle'
 
 export interface ShortcutDefinition {
@@ -100,6 +102,8 @@ export const SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
   { action: 'videoMute', scope: 'video', label: '视频：静音切换' },
   { action: 'videoSaveCover', scope: 'video', label: '视频：保存封面' },
   { action: 'videoSubtitleToggle', scope: 'video', label: '视频：字幕开关' },
+  { action: 'videoSubtitleOffsetUp', scope: 'video', label: '视频：字幕上移' },
+  { action: 'videoSubtitleOffsetDown', scope: 'video', label: '视频：字幕下移' },
   { action: 'videoFitCycle', scope: 'video', label: '视频：画面适配模式轮换' },
 ]
 
@@ -148,6 +152,8 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   videoMute: 'KeyM',
   videoSaveCover: 'KeyC',
   videoSubtitleToggle: 'KeyS',
+  videoSubtitleOffsetUp: 'Shift+ArrowUp',
+  videoSubtitleOffsetDown: 'Shift+ArrowDown',
   videoFitCycle: 'Backslash',
 }
 

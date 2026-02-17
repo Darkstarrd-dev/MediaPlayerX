@@ -20,10 +20,10 @@ export const DEFAULT_PALETTE_ID = 'parchment'
 export const DEFAULT_THEME_ID = DEFAULT_PALETTE_ID
 
 const STYLE_PALETTE_ALLOWLIST: Record<string, readonly string[]> = {
-  'soft-skeuomorphic': ['skeuomorphic-light', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-crisp': ['skeuomorphic-light', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-plush': ['skeuomorphic-light', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-etched': ['skeuomorphic-light', 'skeuomorphic-dark'],
+  'soft-skeuomorphic': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-crisp': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-plush': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-etched': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-dark'],
 }
 
 const STYLE_DEFAULT_PALETTE_ID: Record<string, string> = {

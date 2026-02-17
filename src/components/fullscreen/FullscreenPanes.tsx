@@ -1,4 +1,5 @@
 import type {
+  CSSProperties,
   MouseEvent as ReactMouseEvent,
   ReactNode,
   RefObject,
@@ -111,6 +112,7 @@ interface FullscreenVideoPaneProps {
   autoSubtitleActive: boolean
   subtitleVisible: boolean
   liveSubtitleText: string | null
+  subtitleOverlayStyle: CSSProperties
   bindVideoElement: (element: HTMLVideoElement | null) => void
   videoFitMode: VideoFitMode
   videoLoopMode: 'single' | 'list'
@@ -149,6 +151,7 @@ export function FullscreenVideoPane({
   autoSubtitleActive,
   subtitleVisible,
   liveSubtitleText,
+  subtitleOverlayStyle,
   bindVideoElement,
   videoFitMode,
   videoLoopMode,
@@ -286,7 +289,7 @@ export function FullscreenVideoPane({
           ) : null}
 
           {autoSubtitleActive && subtitleVisible && liveSubtitleText ? (
-            <div aria-live="polite" className="subtitle-overlay">
+            <div aria-live="polite" className="subtitle-overlay" style={subtitleOverlayStyle}>
               {liveSubtitleText}
             </div>
           ) : null}

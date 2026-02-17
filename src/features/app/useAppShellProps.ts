@@ -62,6 +62,7 @@ interface UseAppShellPropsParams {
     | 'fullscreenLayerProps'
     | 'helpPanelProps'
     | 'settingsPanelProps'
+    | 'themeParameterPanelProps'
     | 'appHeaderProps'
     | 'importTaskPanelProps'
     | 'helpOverlayOpen'
@@ -207,6 +208,7 @@ export function useAppShellProps({
     fullscreenLayerProps: topLayerState.fullscreenLayerProps,
     helpPanelProps: topLayerState.helpPanelProps,
     settingsPanelProps: topLayerState.settingsPanelProps,
+    themeParameterPanelProps: topLayerState.themeParameterPanelProps,
     manageDeleteDialogProps,
     manageGroupDialogProps,
     sidebarRenameDialogProps,

@@ -98,6 +98,7 @@ export interface FullscreenLayerProps {
   selectedSubtitleId: string | null
   autoSubtitleActive: boolean
   liveSubtitleText: string | null
+  subtitleOverlayStyle: CSSProperties
   bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void
   focusedVideoCoverImageSrc: string | null
   durationSec: number
@@ -166,6 +167,7 @@ function FullscreenLayer({
   selectedSubtitleId,
   autoSubtitleActive,
   liveSubtitleText,
+  subtitleOverlayStyle,
   bindFullscreenVideoElement,
   focusedVideoCoverImageSrc,
   durationSec,
@@ -831,6 +833,7 @@ function FullscreenLayer({
       autoSubtitleActive={autoSubtitleActive}
       subtitleVisible={subtitleVisible}
       liveSubtitleText={liveSubtitleText}
+      subtitleOverlayStyle={subtitleOverlayStyle}
       bindVideoElement={bindFullscreenVideoElement}
       videoFitMode={videoFitMode}
       videoLoopMode={videoLoopMode}

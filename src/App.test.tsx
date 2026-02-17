@@ -290,6 +290,43 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
+  it("非全屏 Sidebar 焦点按 R 打开重命名弹窗，Esc 可关闭", async () => {
+    render(<App />);
+    await flushUiUpdates();
+
+    const sidebarNodeButton = screen.getByRole("button", {
+      name: "coastline_album.zip",
+    });
+    await click(sidebarNodeButton);
+    await keyDown(sidebarNodeButton, { key: "r", code: "KeyR" });
+
+    const renameDialog = screen.getByRole("dialog", { name: "重命名" });
+    expect(renameDialog).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "重命名" })).toBeInTheDocument();
+
+    await keyDown(screen.getByRole("textbox", { name: "重命名" }), {
+      key: "Escape",
+      code: "Escape",
+    });
+    expect(screen.queryByRole("dialog", { name: "重命名" })).toBeNull();
+  });
+
+  it("非全屏 Sidebar 焦点按 Delete 直接打开删除确认弹窗", async () => {
+    render(<App />);
+    await flushUiUpdates();
+
+    const sidebarNodeButton = screen.getByRole("button", {
+      name: "coastline_album.zip",
+    });
+    await click(sidebarNodeButton);
+    await keyDown(sidebarNodeButton, { key: "Delete", code: "Delete" });
+
+    expect(
+      screen.getByRole("dialog", { name: "永久删除确认" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "仅移除" })).toBeInTheDocument();
+  });
+
   it("Esc 可关闭设置与检索状态，且主区右键不误关闭检索", async () => {
     render(<App />);
 
@@ -2323,16 +2360,44 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     await keyDown(window, { key: "f", code: "KeyF" });
     expect(imageModeButton.classList.contains("is-active")).toBe(true);
+    const fullscreenLayer = document.querySelector(
+      ".fullscreen-layer",
+    ) as HTMLElement | null;
+    expect(fullscreenLayer).not.toBeNull();
+    const imageControlsWidth = (fullscreenLayer as HTMLElement).style.getPropertyValue(
+      "--mpx-fullscreen-controls-width",
+    );
+    expect(imageControlsWidth).not.toBe("");
 
     await keyDown(window, { key: "F2", code: "F2" });
     await waitFor(() => {
       expect(videoModeButton.classList.contains("is-active")).toBe(true);
     });
+    const videoControlsWidth = (fullscreenLayer as HTMLElement).style.getPropertyValue(
+      "--mpx-fullscreen-controls-width",
+    );
+    expect(videoControlsWidth).toBe(imageControlsWidth);
+    const videoControlsShell = document.querySelector(
+      ".fullscreen-video-controls-shell.fullscreen-controls-shell",
+    ) as HTMLElement | null;
+    expect(videoControlsShell).not.toBeNull();
 
     await keyDown(window, { key: "F3", code: "F3" });
     await waitFor(() => {
       expect(musicModeButton.classList.contains("is-active")).toBe(true);
     });
+    const musicFullscreenRoot = document.querySelector(
+      ".music-visualizer.is-fullscreen",
+    ) as HTMLElement | null;
+    expect(musicFullscreenRoot).not.toBeNull();
+    const musicControlsWidth = (musicFullscreenRoot as HTMLElement).style.getPropertyValue(
+      "--mpx-fullscreen-controls-width",
+    );
+    expect(musicControlsWidth).toBe(imageControlsWidth);
+    const musicControlsShell = document.querySelector(
+      ".music-controls-shell.is-fullscreen-floating.fullscreen-controls-shell",
+    ) as HTMLElement | null;
+    expect(musicControlsShell).not.toBeNull();
 
     await keyDown(window, { key: "F1", code: "F1" });
     await waitFor(() => {
@@ -2678,7 +2743,10 @@ describe("MediaPlayer 虚拟 UI", () => {
       expect(screen.queryByLabelText("渲染帧率上限")).toBeNull();
       expect(screen.queryByLabelText("Tone Mapping")).toBeNull();
       expect(
-        screen.getByLabelText("调试显示 Electron 外框与菜单"),
+        screen.getByRole("button", { name: /显示 Electron 外框与菜单/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /显示界面参数按钮/ }),
       ).toBeInTheDocument();
 
       const settingsFontSlider = screen.getByLabelText(/设置面板字体系数/);

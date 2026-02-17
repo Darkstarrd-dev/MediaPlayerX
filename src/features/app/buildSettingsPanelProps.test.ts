@@ -22,6 +22,7 @@ describe('buildSettingsPanelProps', () => {
       sidebarMinWidth: 180,
       layoutLocked: false,
       electronNativeChromeEnabled: false,
+      themeParameterButtonVisible: false,
       sidebarFontSize: 14,
       sidebarCountFontSize: 12,
       sidebarIndentStep: 14,
@@ -40,6 +41,18 @@ describe('buildSettingsPanelProps', () => {
       subtitleFeatureEnabled: false,
       subtitleLanguage: 'auto',
       subtitleModelDir: '',
+      subtitleTextFillMode: 'solid',
+      subtitleTextColor: '#ffffff',
+      subtitleGradientStartColor: '#ffffff',
+      subtitleGradientEndColor: '#7fd6ff',
+      subtitleGradientDirection: 'left-to-right',
+      subtitleGradientCurve: 'smooth',
+      subtitleStrokeColor: '#000000',
+      subtitleStrokeWidth: 2,
+      subtitleStrokeShadowColor: '#000000',
+      subtitleStrokeShadowRadius: 6,
+      subtitleOffsetY: 180,
+      subtitleStylePanelExpanded: false,
       subtitleModelsLoading: false,
       subtitleModelsError: null,
       subtitleModelsStatus: null,
@@ -103,6 +116,7 @@ describe('buildSettingsPanelProps', () => {
     props.onUiLocaleChange('en-US')
     props.onSubtitleFeatureEnabledChange(true)
     props.onSubtitleLanguageChange('ja')
+    props.onThemeParameterButtonVisibleChange(true)
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 })
     expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 })
@@ -128,5 +142,6 @@ describe('buildSettingsPanelProps', () => {
     expect(updateSettings).toHaveBeenNthCalledWith(8, { uiLocale: 'en-US' })
     expect(updateSettings).toHaveBeenNthCalledWith(9, { subtitleFeatureEnabled: true })
     expect(updateSettings).toHaveBeenNthCalledWith(10, { subtitleLanguage: 'ja' })
+    expect(updateSettings).toHaveBeenNthCalledWith(11, { themeParameterButtonVisible: true })
   })
 })

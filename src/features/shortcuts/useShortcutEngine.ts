@@ -27,7 +27,6 @@ interface UseShortcutEngineParams {
   imageFocusActive: boolean
   manageMode: boolean
   videoShortcutActive: boolean
-  hasFocusedImage: boolean
   handleSidebarNavigationKey: (event: KeyboardEvent) => boolean
   onSetImageFocusActive: (active: boolean) => void
   onSetFullscreenActive: (value: boolean | ((previous: boolean) => boolean)) => void
@@ -55,6 +54,7 @@ interface UseShortcutEngineParams {
   onToggleVideoMute: () => void
   onSaveVideoCover: () => void
   onToggleVideoSubtitle: () => void
+  onAdjustVideoSubtitleOffset: (delta: number) => void
   onCycleVideoFitMode: () => void
   onImageWheelNavigatePage: (direction: 'next' | 'prev') => void
   onImageCtrlWheelNavigateSidebar: (direction: 'next' | 'prev') => void
@@ -72,7 +72,6 @@ export function useShortcutEngine({
   imageFocusActive,
   manageMode,
   videoShortcutActive,
-  hasFocusedImage,
   handleSidebarNavigationKey,
   onSetImageFocusActive,
   onSetFullscreenActive,
@@ -100,6 +99,7 @@ export function useShortcutEngine({
   onToggleVideoMute,
   onSaveVideoCover,
   onToggleVideoSubtitle,
+  onAdjustVideoSubtitleOffset,
   onCycleVideoFitMode,
   onImageWheelNavigatePage,
   onImageCtrlWheelNavigateSidebar,
@@ -333,6 +333,16 @@ export function useShortcutEngine({
             onToggleVideoSubtitle()
           }
           return
+        case 'videoSubtitleOffsetUp':
+          if (videoShortcutActive) {
+            onAdjustVideoSubtitleOffset(16)
+          }
+          return
+        case 'videoSubtitleOffsetDown':
+          if (videoShortcutActive) {
+            onAdjustVideoSubtitleOffset(-16)
+          }
+          return
         case 'videoFitCycle':
           if (videoShortcutActive) {
             onCycleVideoFitMode()
@@ -344,7 +354,6 @@ export function useShortcutEngine({
     },
     [
       fullscreenActive,
-      hasFocusedImage,
       mode,
       onAdjustVideoRate,
       onAdjustVideoVolume,
@@ -368,6 +377,7 @@ export function useShortcutEngine({
       onToggleVideoPlaying,
       onSaveVideoCover,
       onToggleVideoSubtitle,
+      onAdjustVideoSubtitleOffset,
       onCycleVideoFitMode,
       manageMode,
       videoShortcutActive,

@@ -14,6 +14,7 @@ import HelpPanel from './HelpPanel'
 import ImportSourceInputs from './ImportSourceInputs'
 import SidebarRenameDialog from './SidebarRenameDialog'
 import SettingsPanel from './SettingsPanel'
+import ThemeParameterPanel from './ThemeParameterPanel'
 import TooltipLayer from './TooltipLayer'
 
 interface AppShellProps {
@@ -28,6 +29,7 @@ interface AppShellProps {
   fullscreenLayerProps: ComponentProps<typeof FullscreenLayer>
   helpPanelProps: ComponentProps<typeof HelpPanel>
   settingsPanelProps: ComponentProps<typeof SettingsPanel>
+  themeParameterPanelProps: ComponentProps<typeof ThemeParameterPanel>
   manageDeleteDialogProps: ComponentProps<typeof DangerConfirmDialog>
   manageGroupDialogProps: ComponentProps<typeof GroupNameDialog>
   sidebarRenameDialogProps: ComponentProps<typeof SidebarRenameDialog>
@@ -49,6 +51,7 @@ function AppShell({
   fullscreenLayerProps,
   helpPanelProps,
   settingsPanelProps,
+  themeParameterPanelProps,
   manageDeleteDialogProps,
   manageGroupDialogProps,
   sidebarRenameDialogProps,
@@ -66,6 +69,7 @@ function AppShell({
       <FullscreenLayer {...fullscreenLayerProps} />
       <HelpPanel {...helpPanelProps} />
       <SettingsPanel {...settingsPanelProps} />
+      <ThemeParameterPanel {...themeParameterPanelProps} />
       <DangerConfirmDialog {...manageDeleteDialogProps} />
       <GroupNameDialog {...manageGroupDialogProps} />
       <SidebarRenameDialog {...sidebarRenameDialogProps} />

@@ -46,6 +46,10 @@
     gap: 6px;
   }
 
+  .settings-debug-toggle-row {
+    grid-template-columns: 1fr;
+  }
+
   .settings-compact-control-actions {
     grid-template-columns: minmax(0, 1fr) auto;
   }

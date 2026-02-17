@@ -44,6 +44,23 @@ export const subtitleLanguageSchema = z.enum([
   "ko",
   "yue",
 ]);
+export const subtitleTextFillModeSchema = z.enum(["solid", "gradient"]);
+export const subtitleGradientDirectionSchema = z.enum([
+  "left-to-right",
+  "right-to-left",
+  "top-to-bottom",
+  "bottom-to-top",
+  "top-left-to-bottom-right",
+  "top-right-to-bottom-left",
+  "bottom-left-to-top-right",
+  "bottom-right-to-top-left",
+]);
+export const subtitleGradientCurveSchema = z.enum([
+  "linear",
+  "smooth",
+  "bezier",
+  "smoother",
+]);
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
@@ -81,6 +98,7 @@ export const appSettingsSchema = z.object({
   sidebarMinWidth: z.number().min(80).max(640),
   layoutLocked: z.boolean(),
   electronNativeChromeEnabled: z.boolean(),
+  themeParameterButtonVisible: z.boolean(),
   sidebarFontSize: z.number().min(11).max(24),
   sidebarCountFontSize: z.number().min(10).max(22),
   sidebarIndentStep: z.number().min(8).max(48),
@@ -132,6 +150,18 @@ export const appSettingsSchema = z.object({
   subtitleLanguage: subtitleLanguageSchema,
   subtitleModelDir: z.string().max(1024),
   subtitleSelectedModelId: z.string().max(128).nullable(),
+  subtitleTextFillMode: subtitleTextFillModeSchema,
+  subtitleTextColor: z.string().max(16),
+  subtitleGradientStartColor: z.string().max(16),
+  subtitleGradientEndColor: z.string().max(16),
+  subtitleGradientDirection: subtitleGradientDirectionSchema,
+  subtitleGradientCurve: subtitleGradientCurveSchema,
+  subtitleStrokeColor: z.string().max(16),
+  subtitleStrokeWidth: z.number().min(0).max(8),
+  subtitleStrokeShadowColor: z.string().max(16),
+  subtitleStrokeShadowRadius: z.number().min(0).max(24),
+  subtitleOffsetY: z.number().min(-400).max(400),
+  subtitleStylePanelExpanded: z.boolean(),
   adReviewVisionEndpoint: z.string().max(512),
   adReviewVisionModel: z.string().max(256),
   adReviewVisionVerified: z.boolean(),

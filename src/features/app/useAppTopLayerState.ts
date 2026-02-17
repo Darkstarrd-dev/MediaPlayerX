@@ -1,5 +1,6 @@
 import {
   useMemo,
+  type CSSProperties,
   type Dispatch,
   type SetStateAction,
 } from 'react'
@@ -50,8 +51,10 @@ interface UseAppTopLayerStateParams {
   importMenuOpen: boolean
   importTaskPanelOpen: boolean
   helpOverlayOpen: boolean
+  themeParameterPanelOpen: boolean
   setImportMenuOpen: Dispatch<SetStateAction<boolean>>
   setImportTaskPanelOpen: Dispatch<SetStateAction<boolean>>
+  setThemeParameterPanelOpen: Dispatch<SetStateAction<boolean>>
   openImportFilesDialog: () => void
   openImportFoldersDialog: () => void
   setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
@@ -92,6 +95,7 @@ interface UseAppTopLayerStateParams {
   selectedSubtitleId: string | null
   autoSubtitleActive: boolean
   liveSubtitleText: string | null
+  subtitleOverlayStyle: CSSProperties
   bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void
   focusedVideoCoverImageSrc: string | null
   focusedVideoDurationSec: number
@@ -151,8 +155,10 @@ export function useAppTopLayerState({
   importMenuOpen,
   importTaskPanelOpen,
   helpOverlayOpen,
+  themeParameterPanelOpen,
   setImportMenuOpen,
   setImportTaskPanelOpen,
+  setThemeParameterPanelOpen,
   openImportFilesDialog,
   openImportFoldersDialog,
   setSearchPanelMode,
@@ -190,6 +196,7 @@ export function useAppTopLayerState({
   selectedSubtitleId,
   autoSubtitleActive,
   liveSubtitleText,
+  subtitleOverlayStyle,
   bindFullscreenVideoElement,
   focusedVideoCoverImageSrc,
   focusedVideoDurationSec,
@@ -379,6 +386,7 @@ export function useAppTopLayerState({
     selectedSubtitleId,
     autoSubtitleActive,
     liveSubtitleText,
+    subtitleOverlayStyle,
     bindFullscreenVideoElement,
     focusedVideoCoverImageSrc,
     durationSec: focusedVideoDurationSec,
@@ -437,6 +445,7 @@ export function useAppTopLayerState({
     sidebarMinWidth: appSettings.sidebarMinWidth,
     layoutLocked: appSettings.layoutLocked,
     electronNativeChromeEnabled: appSettings.electronNativeChromeEnabled,
+    themeParameterButtonVisible: appSettings.themeParameterButtonVisible,
     sidebarFontSize: appSettings.sidebarFontSize,
     sidebarCountFontSize: appSettings.sidebarCountFontSize,
     sidebarIndentStep: appSettings.sidebarIndentStep,
@@ -455,6 +464,18 @@ export function useAppTopLayerState({
     subtitleFeatureEnabled: appSettings.subtitleFeatureEnabled,
     subtitleLanguage: appSettings.subtitleLanguage,
     subtitleModelDir: appSettings.subtitleModelDir,
+    subtitleTextFillMode: appSettings.subtitleTextFillMode,
+    subtitleTextColor: appSettings.subtitleTextColor,
+    subtitleGradientStartColor: appSettings.subtitleGradientStartColor,
+    subtitleGradientEndColor: appSettings.subtitleGradientEndColor,
+    subtitleGradientDirection: appSettings.subtitleGradientDirection,
+    subtitleGradientCurve: appSettings.subtitleGradientCurve,
+    subtitleStrokeColor: appSettings.subtitleStrokeColor,
+    subtitleStrokeWidth: appSettings.subtitleStrokeWidth,
+    subtitleStrokeShadowColor: appSettings.subtitleStrokeShadowColor,
+    subtitleStrokeShadowRadius: appSettings.subtitleStrokeShadowRadius,
+    subtitleOffsetY: appSettings.subtitleOffsetY,
+    subtitleStylePanelExpanded: appSettings.subtitleStylePanelExpanded,
     subtitleModelsLoading,
     subtitleModelsError,
     subtitleModelsStatus,
@@ -517,6 +538,7 @@ export function useAppTopLayerState({
     paletteMode: appSettings.paletteMode,
     paletteDayId: appSettings.paletteDayId,
     paletteNightId: appSettings.paletteNightId,
+    themeParameterButtonVisible: appSettings.themeParameterButtonVisible,
     interactionLocked: adReviewDeleting,
     importMenuOpen,
     taskStatusLabel,
@@ -534,6 +556,7 @@ export function useAppTopLayerState({
     setSearchPanelCollapsed,
     onToggleManageMode,
     onToggleMetadataManageMode,
+    onOpenThemeParameter: () => setThemeParameterPanelOpen(true),
   })
 
   const helpPanelProps = {
@@ -541,6 +564,13 @@ export function useAppTopLayerState({
     settingsFontSize: appSettings.settingsFontSize,
     shortcuts: appSettings.shortcuts,
     onClose: () => appSettings.updateSettings({ helpOpen: false }),
+  }
+
+  const themeParameterPanelProps = {
+    open: themeParameterPanelOpen,
+    styleId: appSettings.styleId,
+    settingsFontSize: appSettings.settingsFontSize,
+    onClose: () => setThemeParameterPanelOpen(false),
   }
 
   const importTaskPanelProps = buildImportTaskPanelProps({
@@ -567,6 +597,7 @@ export function useAppTopLayerState({
     fullscreenLayerProps,
     helpPanelProps,
     settingsPanelProps,
+    themeParameterPanelProps,
     appHeaderProps,
     importTaskPanelProps,
     helpOverlayOpen,

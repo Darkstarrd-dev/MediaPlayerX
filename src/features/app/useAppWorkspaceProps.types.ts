@@ -1,4 +1,4 @@
-import type { Dispatch, MouseEvent, RefObject, SetStateAction } from 'react'
+import type { CSSProperties, Dispatch, MouseEvent, RefObject, SetStateAction } from 'react'
 
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { BackendErrorRow } from './buildBackendErrorRows'
@@ -140,6 +140,7 @@ export interface UseAppWorkspacePropsParams {
   selectedSubtitleId: string | null
   autoSubtitleActive: boolean
   liveSubtitleText: string | null
+  subtitleOverlayStyle: CSSProperties
   bindMainVideoElement: (element: HTMLVideoElement | null) => void
   setSubtitleVisible: Dispatch<SetStateAction<boolean>>
   selectSubtitleById: (subtitleId: string) => Promise<void>

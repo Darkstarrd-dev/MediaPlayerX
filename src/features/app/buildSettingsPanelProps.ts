@@ -17,6 +17,7 @@ interface BuildSettingsPanelPropsParams {
   sidebarMinWidth: number
   layoutLocked: boolean
   electronNativeChromeEnabled: boolean
+  themeParameterButtonVisible: boolean
   sidebarFontSize: number
   sidebarCountFontSize: number
   sidebarIndentStep: number
@@ -35,6 +36,18 @@ interface BuildSettingsPanelPropsParams {
   subtitleFeatureEnabled: boolean
   subtitleLanguage: AppSettings['subtitleLanguage']
   subtitleModelDir: string
+  subtitleTextFillMode: AppSettings['subtitleTextFillMode']
+  subtitleTextColor: string
+  subtitleGradientStartColor: string
+  subtitleGradientEndColor: string
+  subtitleGradientDirection: AppSettings['subtitleGradientDirection']
+  subtitleGradientCurve: AppSettings['subtitleGradientCurve']
+  subtitleStrokeColor: string
+  subtitleStrokeWidth: number
+  subtitleStrokeShadowColor: string
+  subtitleStrokeShadowRadius: number
+  subtitleOffsetY: number
+  subtitleStylePanelExpanded: boolean
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
   subtitleModelsStatus: string | null
@@ -98,6 +111,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     sidebarMinWidth: params.sidebarMinWidth,
     layoutLocked: params.layoutLocked,
     electronNativeChromeEnabled: params.electronNativeChromeEnabled,
+    themeParameterButtonVisible: params.themeParameterButtonVisible,
     sidebarFontSize: params.sidebarFontSize,
     sidebarCountFontSize: params.sidebarCountFontSize,
     sidebarIndentStep: params.sidebarIndentStep,
@@ -116,6 +130,18 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
     subtitleLanguage: params.subtitleLanguage,
     subtitleModelDir: params.subtitleModelDir,
+    subtitleTextFillMode: params.subtitleTextFillMode,
+    subtitleTextColor: params.subtitleTextColor,
+    subtitleGradientStartColor: params.subtitleGradientStartColor,
+    subtitleGradientEndColor: params.subtitleGradientEndColor,
+    subtitleGradientDirection: params.subtitleGradientDirection,
+    subtitleGradientCurve: params.subtitleGradientCurve,
+    subtitleStrokeColor: params.subtitleStrokeColor,
+    subtitleStrokeWidth: params.subtitleStrokeWidth,
+    subtitleStrokeShadowColor: params.subtitleStrokeShadowColor,
+    subtitleStrokeShadowRadius: params.subtitleStrokeShadowRadius,
+    subtitleOffsetY: params.subtitleOffsetY,
+    subtitleStylePanelExpanded: params.subtitleStylePanelExpanded,
     subtitleModelsLoading: params.subtitleModelsLoading,
     subtitleModelsError: params.subtitleModelsError,
     subtitleModelsStatus: params.subtitleModelsStatus,
@@ -206,6 +232,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onSidebarMinWidthChange: (value) => params.updateSettings({ sidebarMinWidth: value }),
     onLayoutLockedChange: (value) => params.updateSettings({ layoutLocked: value }),
     onElectronNativeChromeEnabledChange: params.applyElectronNativeChromeEnabled,
+    onThemeParameterButtonVisibleChange: (value) => params.updateSettings({ themeParameterButtonVisible: value }),
     onSidebarFontSizeChange: (value) => params.updateSettings({ sidebarFontSize: value }),
     onSidebarCountFontSizeChange: (value) => params.updateSettings({ sidebarCountFontSize: value }),
     onSidebarIndentStepChange: (value) => params.updateSettings({ sidebarIndentStep: value }),
@@ -240,6 +267,18 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onSubtitleFeatureEnabledChange: (value) => params.updateSettings({ subtitleFeatureEnabled: value }),
     onSubtitleLanguageChange: (value) => params.updateSettings({ subtitleLanguage: value }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
+    onSubtitleTextFillModeChange: (value) => params.updateSettings({ subtitleTextFillMode: value }),
+    onSubtitleTextColorChange: (value) => params.updateSettings({ subtitleTextColor: value }),
+    onSubtitleGradientStartColorChange: (value) => params.updateSettings({ subtitleGradientStartColor: value }),
+    onSubtitleGradientEndColorChange: (value) => params.updateSettings({ subtitleGradientEndColor: value }),
+    onSubtitleGradientDirectionChange: (value) => params.updateSettings({ subtitleGradientDirection: value }),
+    onSubtitleGradientCurveChange: (value) => params.updateSettings({ subtitleGradientCurve: value }),
+    onSubtitleStrokeColorChange: (value) => params.updateSettings({ subtitleStrokeColor: value }),
+    onSubtitleStrokeWidthChange: (value) => params.updateSettings({ subtitleStrokeWidth: value }),
+    onSubtitleStrokeShadowColorChange: (value) => params.updateSettings({ subtitleStrokeShadowColor: value }),
+    onSubtitleStrokeShadowRadiusChange: (value) => params.updateSettings({ subtitleStrokeShadowRadius: value }),
+    onSubtitleOffsetYChange: (value) => params.updateSettings({ subtitleOffsetY: value }),
+    onSubtitleStylePanelExpandedChange: (value) => params.updateSettings({ subtitleStylePanelExpanded: value }),
     onRefreshSubtitleModels: params.refreshSubtitleModels,
     onStartSubtitleModelDownload: params.startSubtitleModelDownload,
     onCancelSubtitleModelDownload: params.cancelSubtitleModelDownload,

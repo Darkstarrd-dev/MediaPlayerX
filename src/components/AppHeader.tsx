@@ -220,6 +220,8 @@ export interface AppHeaderProps {
   onAutoPlayEnabledChange: (enabled: boolean) => void
   onAutoPlayIntervalChange: (value: number) => void
   onTogglePaletteMode: () => void
+  themeParameterButtonVisible: boolean
+  onOpenThemeParameter: () => void
   onOpenHelp: () => void
   onOpenSettings: () => void
 }
@@ -247,6 +249,8 @@ function AppHeader(props: AppHeaderProps) {
     onToggleManageMode,
     onToggleMetadataManageMode,
     onTogglePaletteMode,
+    themeParameterButtonVisible,
+    onOpenThemeParameter,
     onOpenHelp,
     onOpenSettings,
   } = props
@@ -313,6 +317,7 @@ function AppHeader(props: AppHeaderProps) {
   }, [])
 
   const settingsButtonA11y = buildA11yPropsByRegistry({ key: 'headerSettings', t })
+  const themeParameterButtonA11y = buildA11yPropsByRegistry({ key: 'headerThemeParameter', t })
   const helpButtonA11y = buildA11yPropsByRegistry({ key: 'headerHelp', t })
   const searchButtonA11y = buildA11yPropsByRegistry({ key: 'headerSearch', t })
   const manageButtonA11y = buildA11yPropsByRegistry({ key: 'headerManage', t })
@@ -514,6 +519,11 @@ function AppHeader(props: AppHeaderProps) {
 
       <div className="header-right">
         <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" role="group">
+          {themeParameterButtonVisible ? (
+            <button {...themeParameterButtonA11y} className="window-control-btn window-control-btn--theme-parameter" type="button" onClick={onOpenThemeParameter}>
+              <span className="window-control-btn-text">T</span>
+            </button>
+          ) : null}
           <button {...helpButtonA11y} className="window-control-btn" type="button" onClick={onOpenHelp}>
             <HeaderActionIcon name="help" />
           </button>

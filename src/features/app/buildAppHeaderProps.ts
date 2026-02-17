@@ -20,6 +20,7 @@ interface BuildAppHeaderPropsParams {
   paletteMode: AppSettings['paletteMode']
   paletteDayId: string
   paletteNightId: string
+  themeParameterButtonVisible: boolean
   interactionLocked?: boolean
   importMenuOpen: boolean
   taskStatusLabel: string
@@ -37,6 +38,7 @@ interface BuildAppHeaderPropsParams {
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   onToggleManageMode: () => void
   onToggleMetadataManageMode: () => void
+  onOpenThemeParameter: () => void
 }
 
 export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeaderProps {
@@ -123,6 +125,8 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
         themeId: targetPaletteId,
       })
     },
+    themeParameterButtonVisible: params.themeParameterButtonVisible,
+    onOpenThemeParameter: params.onOpenThemeParameter,
     onOpenHelp: () => params.updateSettings({ helpOpen: true }),
     onOpenSettings: () => params.updateSettings({ settingsOpen: true }),
   }

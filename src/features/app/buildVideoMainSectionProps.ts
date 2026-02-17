@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from 'react'
+import type { CSSProperties, Dispatch, SetStateAction } from 'react'
 
 import { clamp } from '../../utils/ui'
 import type { VideoItem } from '../../types'
@@ -70,6 +70,7 @@ interface BuildVideoMainSectionPropsParams {
   selectedSubtitleId: string | null
   autoSubtitleActive: boolean
   liveSubtitleText: string | null
+  subtitleOverlayStyle: CSSProperties
   bindVideoElement: (element: HTMLVideoElement | null) => void
   setSubtitleVisible: Dispatch<SetStateAction<boolean>>
   selectSubtitleById: (subtitleId: string) => Promise<void>
@@ -139,6 +140,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     selectedSubtitleId: params.selectedSubtitleId,
     autoSubtitleActive: params.autoSubtitleActive,
     liveSubtitleText: params.liveSubtitleText,
+    subtitleOverlayStyle: params.subtitleOverlayStyle,
     bindVideoElement: params.bindVideoElement,
     onTogglePlay: () => {
       if (!params.focusedVideoId) {

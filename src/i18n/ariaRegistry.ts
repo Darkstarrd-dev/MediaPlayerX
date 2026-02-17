@@ -25,6 +25,11 @@ export const a11yRegistry = {
     labelKey: 'a11y.header.help',
     titleKey: 'tip.header.help',
   },
+  headerThemeParameter: {
+    id: 'header.themeParameter',
+    labelKey: 'a11y.header.themeParameter',
+    titleKey: 'tip.header.themeParameter',
+  },
   headerMetadataToggle: {
     id: 'header.metadataToggle',
     labelKey: 'a11y.header.switchToMetadataMode',

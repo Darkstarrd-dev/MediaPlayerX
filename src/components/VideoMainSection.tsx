@@ -58,6 +58,7 @@ interface VideoMainSectionProps {
   selectedSubtitleId: string | null
   autoSubtitleActive: boolean
   liveSubtitleText: string | null
+  subtitleOverlayStyle: CSSProperties
   bindVideoElement: (element: HTMLVideoElement | null) => void
   fullscreenActive: boolean
   coverImageUrl: string | null
@@ -122,6 +123,7 @@ function VideoMainSection({
   selectedSubtitleId,
   autoSubtitleActive,
   liveSubtitleText,
+  subtitleOverlayStyle,
   bindVideoElement,
   fullscreenActive,
   coverImageUrl,
@@ -449,7 +451,7 @@ function VideoMainSection({
         ) : null}
 
         {autoSubtitleActive && subtitleVisible && liveSubtitleText ? (
-          <div aria-live="polite" className="subtitle-overlay">
+          <div aria-live="polite" className="subtitle-overlay" style={subtitleOverlayStyle}>
             {liveSubtitleText}
           </div>
         ) : null}

@@ -41,6 +41,8 @@ function createHeaderProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderPr
     onAutoPlayEnabledChange: vi.fn(),
     onAutoPlayIntervalChange: vi.fn(),
     onTogglePaletteMode: vi.fn(),
+    themeParameterButtonVisible: false,
+    onOpenThemeParameter: vi.fn(),
     onOpenHelp: vi.fn(),
     onOpenSettings: vi.fn(),
     ...overrides,
@@ -108,5 +110,22 @@ describe('AppHeader music quick actions', () => {
     expect(quickActions.classList.contains('is-visible')).toBe(true)
 
     unsubscribe()
+  })
+
+  it('在开启界面参数按钮时渲染 T 按钮并触发打开回调', () => {
+    const onOpenThemeParameter = vi.fn()
+    const { container } = render(
+      <AppHeader
+        {...createHeaderProps({
+          themeParameterButtonVisible: true,
+          onOpenThemeParameter,
+        })}
+      />,
+    )
+
+    const themeParameterButton = container.querySelector('button[data-a11y-id="header.themeParameter"]') as HTMLButtonElement | null
+    expect(themeParameterButton).not.toBeNull()
+    fireEvent.click(themeParameterButton as HTMLButtonElement)
+    expect(onOpenThemeParameter).toHaveBeenCalledTimes(1)
   })
 })

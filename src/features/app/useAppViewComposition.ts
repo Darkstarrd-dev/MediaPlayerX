@@ -234,6 +234,7 @@ export function useAppViewComposition({
       fullscreenLayerProps: topLayerState.fullscreenLayerProps,
       helpPanelProps: topLayerState.helpPanelProps,
       settingsPanelProps: topLayerState.settingsPanelProps,
+      themeParameterPanelProps: topLayerState.themeParameterPanelProps,
       appHeaderProps: topLayerState.appHeaderProps,
       importTaskPanelProps: topLayerState.importTaskPanelProps,
       helpOverlayOpen: topLayerState.helpOverlayOpen,

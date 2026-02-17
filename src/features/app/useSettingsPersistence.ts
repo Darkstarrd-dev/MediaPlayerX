@@ -12,9 +12,36 @@ interface UseSettingsPersistenceParams {
 
 const SETTINGS_STATE_KEY = "ui_settings_v1";
 const DEFAULT_MUSIC_SHADER_ID = "mcs-szb";
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
 type MusicVisualizerShaderSettings =
   AppSettings["musicVisualizerShaderSettingsById"][string];
+
+function normalizeHexColor(value: unknown, fallback: string): string {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const normalized = value.trim();
+  if (!HEX_COLOR_PATTERN.test(normalized)) {
+    return fallback;
+  }
+
+  return normalized.toLowerCase();
+}
+
+function normalizeNumberInRange(
+  value: unknown,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return fallback;
+  }
+
+  return Math.max(min, Math.min(max, value));
+}
 
 function normalizeShaderSettingEntry(
   value: unknown,
@@ -227,6 +254,57 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
 
   next.subtitleSelectedModelId = FIXED_SUBTITLE_MODEL_ID;
+  next.subtitleTextFillMode =
+    next.subtitleTextFillMode === "gradient" ? "gradient" : "solid";
+  next.subtitleTextColor = normalizeHexColor(next.subtitleTextColor, "#ffffff");
+  next.subtitleGradientStartColor = normalizeHexColor(
+    next.subtitleGradientStartColor,
+    "#ffffff",
+  );
+  next.subtitleGradientEndColor = normalizeHexColor(
+    next.subtitleGradientEndColor,
+    "#7fd6ff",
+  );
+  next.subtitleGradientDirection =
+    next.subtitleGradientDirection === "left-to-right" ||
+    next.subtitleGradientDirection === "right-to-left" ||
+    next.subtitleGradientDirection === "top-to-bottom" ||
+    next.subtitleGradientDirection === "bottom-to-top" ||
+    next.subtitleGradientDirection === "top-left-to-bottom-right" ||
+    next.subtitleGradientDirection === "top-right-to-bottom-left" ||
+    next.subtitleGradientDirection === "bottom-left-to-top-right" ||
+    next.subtitleGradientDirection === "bottom-right-to-top-left"
+      ? next.subtitleGradientDirection
+      : "left-to-right";
+  next.subtitleGradientCurve =
+    next.subtitleGradientCurve === "linear" ||
+    next.subtitleGradientCurve === "smooth" ||
+    next.subtitleGradientCurve === "bezier" ||
+    next.subtitleGradientCurve === "smoother"
+      ? next.subtitleGradientCurve
+      : "smooth";
+  next.subtitleStrokeColor = normalizeHexColor(next.subtitleStrokeColor, "#000000");
+  next.subtitleStrokeWidth = normalizeNumberInRange(
+    next.subtitleStrokeWidth,
+    2,
+    0,
+    8,
+  );
+  next.subtitleStrokeShadowColor = normalizeHexColor(
+    next.subtitleStrokeShadowColor,
+    "#000000",
+  );
+  next.subtitleStrokeShadowRadius = normalizeNumberInRange(
+    next.subtitleStrokeShadowRadius,
+    6,
+    0,
+    24,
+  );
+  next.subtitleOffsetY = normalizeNumberInRange(next.subtitleOffsetY, 180, -400, 400);
+  next.subtitleStylePanelExpanded =
+    typeof next.subtitleStylePanelExpanded === "boolean"
+      ? next.subtitleStylePanelExpanded
+      : false;
 
   const normalizeCollapsedFolderNodeIds = (raw: unknown): string[] | null => {
     if (!Array.isArray(raw)) {
