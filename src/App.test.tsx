@@ -21,6 +21,15 @@ describe("MediaPlayer 虚拟 UI", () => {
       name: /切换到元数据模式|切换到图像模式|元数据管理/,
     });
 
+  const ensureVideoInfoTab = async () => {
+    const backToInfoButton = screen.queryByRole("button", {
+      name: "视频信息",
+    });
+    if (backToInfoButton) {
+      await click(backToInfoButton);
+    }
+  };
+
   const getFirstManageNodeChecker = () =>
     document.querySelector(
       ".sidebar-row.is-manage .sidebar-manage-checker",
@@ -1403,7 +1412,7 @@ describe("MediaPlayer 虚拟 UI", () => {
     render(<App />);
 
     await click(screen.getByRole("button", { name: "视频模式" }));
-    await click(screen.getByRole("button", { name: "视频信息" }));
+    await ensureVideoInfoTab();
 
     expect(screen.getByLabelText("文件名")).toBeInTheDocument();
     expect(screen.getByText("作品名")).toBeInTheDocument();
@@ -1435,7 +1444,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     await click(screen.getByRole("button", { name: "视频模式" }));
     await click(getMetadataManageModeButton());
-    await click(screen.getByRole("button", { name: "视频信息" }));
+    await ensureVideoInfoTab();
 
     const workTitleInput = screen.getByLabelText(
       "英文标题",
@@ -1663,7 +1672,7 @@ describe("MediaPlayer 虚拟 UI", () => {
     });
 
     await click(screen.getByRole("button", { name: "视频模式" }));
-    await click(screen.getByRole("button", { name: "视频信息" }));
+    await ensureVideoInfoTab();
 
     const videoSeriesLabel = await screen.findByText("系列ID");
     const videoSeriesInput = videoSeriesLabel
@@ -1693,7 +1702,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     await click(screen.getByRole("button", { name: "视频模式" }));
     await click(getMetadataManageModeButton());
-    await click(screen.getByRole("button", { name: "视频信息" }));
+    await ensureVideoInfoTab();
     await click(screen.getByRole("button", { name: "视频评分 5 星" }));
 
     await waitFor(() => {
