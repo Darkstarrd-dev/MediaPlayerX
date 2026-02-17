@@ -17,6 +17,7 @@
     "desktop:pack:signed": "node scripts/electron-pack.mjs --signed",
     "desktop:build": "npm run desktop:bundle && npm run desktop:pack",
     "desktop:start": "npm run desktop:bundle && node scripts/electron-start.mjs",
+    "subtitle:prepare-component": "node scripts/prepare-offline-subtitles-component.mjs",
     "subtitle:phase0": "node scripts/subtitle-phase0-spike.mjs",
     "mock:splash": "tsx scripts/export-startup-splash-mock.mjs",
     "lint": "eslint .",

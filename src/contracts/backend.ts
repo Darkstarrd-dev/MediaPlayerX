@@ -782,6 +782,30 @@ export const openExternalUrlResponseSchema = z.object({
   ok: z.boolean(),
 })
 
+export const subtitleEngineProviderSchema = z.enum(['cpu', 'directml'])
+
+export const subtitleEngineSourceSchema = z.enum([
+  'optional-component',
+  'node-modules',
+  'none',
+])
+
+export const readSubtitleEngineStatusResponseSchema = z.object({
+  installed: z.boolean(),
+  loadable: z.boolean(),
+  optional_component_installed: z.boolean(),
+  source: subtitleEngineSourceSchema,
+  module_root: z.string().min(1).nullable(),
+  optional_component_root: z.string().min(1).nullable(),
+  providers: z.object({
+    cpu: z.boolean(),
+    directml: z.boolean(),
+  }),
+  available_providers: z.array(subtitleEngineProviderSchema),
+  message: z.string().nullable(),
+  checked_at_ms: z.number().int().positive(),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -975,6 +999,9 @@ export type WriteAppStateRequestDto = z.infer<typeof writeAppStateRequestSchema>
 export type WriteAppStateResponseDto = z.infer<typeof writeAppStateResponseSchema>
 export type OpenExternalUrlRequestDto = z.infer<typeof openExternalUrlRequestSchema>
 export type OpenExternalUrlResponseDto = z.infer<typeof openExternalUrlResponseSchema>
+export type SubtitleEngineProviderDto = z.infer<typeof subtitleEngineProviderSchema>
+export type SubtitleEngineSourceDto = z.infer<typeof subtitleEngineSourceSchema>
+export type ReadSubtitleEngineStatusResponseDto = z.infer<typeof readSubtitleEngineStatusResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

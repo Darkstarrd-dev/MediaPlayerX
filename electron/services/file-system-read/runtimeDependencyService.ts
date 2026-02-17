@@ -1,9 +1,12 @@
 import {
+  readSubtitleEngineStatusResponseSchema,
+  type ReadSubtitleEngineStatusResponseDto,
   readRuntimeCapabilitiesResponseSchema,
   type ReadRuntimeCapabilitiesResponseDto,
 } from '../../../src/contracts/backend'
 import { readArchiveWasmSupport } from '../../archiveWasmExtractor'
 import { checkCommandAvailability, getSharpModule } from '../../fileSystemRuntimeHelpers'
+import { probeSubtitleEngineStatus, type SubtitleEngineStatusSnapshot } from '../../subtitles/subtitleEngineProbe'
 
 export interface RuntimeDependencySnapshot {
   sharp: boolean
@@ -11,6 +14,7 @@ export interface RuntimeDependencySnapshot {
   ffprobe: boolean
   sevenZip: boolean
   powershell: boolean
+  subtitleEngine: SubtitleEngineStatusSnapshot
   checkedAtMs: number
 }
 
@@ -39,8 +43,27 @@ export class RuntimeDependencyService {
       ffprobe,
       sevenZip: Boolean(sharpModule?.default) && archiveWasm.rar && archiveWasm.sevenZip,
       powershell,
+      subtitleEngine: probeSubtitleEngineStatus(),
       checkedAtMs: Date.now(),
     }
+  }
+
+  async readSubtitleEngineStatus(): Promise<ReadSubtitleEngineStatusResponseDto> {
+    const dependencies = await this.ensureRuntimeDependencies()
+    const subtitleEngine = dependencies.subtitleEngine
+
+    return readSubtitleEngineStatusResponseSchema.parse({
+      installed: subtitleEngine.installed,
+      loadable: subtitleEngine.loadable,
+      optional_component_installed: subtitleEngine.optionalComponentInstalled,
+      source: subtitleEngine.source,
+      module_root: subtitleEngine.moduleRoot,
+      optional_component_root: subtitleEngine.optionalComponentRoot,
+      providers: subtitleEngine.providers,
+      available_providers: subtitleEngine.availableProviders,
+      message: subtitleEngine.message,
+      checked_at_ms: subtitleEngine.checkedAtMs,
+    })
   }
 
   async ensureRuntimeDependencies(): Promise<RuntimeDependencySnapshot> {
@@ -60,6 +83,35 @@ export class RuntimeDependencyService {
 
   async readRuntimeCapabilities(): Promise<ReadRuntimeCapabilitiesResponseDto> {
     const dependencies = await this.ensureRuntimeDependencies()
+    const subtitleEngine = dependencies.subtitleEngine
+
+    const subtitleEngineCapabilityStatus = subtitleEngine.installed
+      ? 'available'
+      : subtitleEngine.optionalComponentInstalled
+        ? 'degraded'
+        : 'unavailable'
+    const subtitleEngineCapabilityNote = subtitleEngine.installed
+      ? subtitleEngine.source === 'optional-component'
+        ? '离线自动字幕组件已安装并可加载（optional component）'
+        : '离线自动字幕引擎来自开发依赖（node_modules）'
+      : subtitleEngine.optionalComponentInstalled
+        ? `检测到组件目录但加载失败：${subtitleEngine.message ?? 'unknown error'}`
+        : '未安装离线自动字幕组件'
+
+    const subtitleDirectMlStatus = process.platform === 'win32'
+      ? subtitleEngine.installed
+        ? subtitleEngine.providers.directml
+          ? 'available'
+          : 'degraded'
+        : 'unavailable'
+      : 'unavailable'
+    const subtitleDirectMlNote = process.platform === 'win32'
+      ? subtitleEngine.installed
+        ? subtitleEngine.providers.directml
+          ? 'DirectML 可用，可在后续阶段启用 GPU 推理并自动回退 CPU'
+          : 'DirectML 未检测到，自动字幕将回退 CPU'
+        : '离线自动字幕引擎未就绪，暂不可探测 DirectML'
+      : '当前平台不启用 DirectML 路线，仅保留 CPU 路线'
 
     return readRuntimeCapabilitiesResponseSchema.parse({
       dependencies: {
@@ -110,6 +162,16 @@ export class RuntimeDependencyService {
             dependencies.ffmpeg && dependencies.powershell
               ? 'ffmpeg + powershell 可用，执行 webp90 重打包'
               : '依赖不足，回退 safe-entry 模式，仅加载可直接读取条目',
+        },
+        {
+          capability: '离线自动字幕引擎（可选组件）',
+          status: subtitleEngineCapabilityStatus,
+          note: subtitleEngineCapabilityNote,
+        },
+        {
+          capability: '离线自动字幕加速（DirectML）',
+          status: subtitleDirectMlStatus,
+          note: subtitleDirectMlNote,
         },
       ],
       generated_at_ms: Date.now(),

@@ -87,6 +87,8 @@ Last updated: 2026-02-17
 
 ## Phase 1 - 可选安装组件与运行时探测
 
+状态：`in_progress`（执行记录见 `docs/offline-auto-subtitle-phase1-report.md`）
+
 ### 目标
 
 - 将离线自动字幕引擎做成安装可选组件。

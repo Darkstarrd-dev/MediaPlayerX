@@ -1,7 +1,9 @@
 import { spawn } from "node:child_process";
 import { verifySigningEnvironment } from "./verify-signing-env.mjs";
+import { prepareOfflineSubtitlesComponent } from "./prepare-offline-subtitles-component.mjs";
 
 const signed = process.argv.includes("--signed");
+const skipOfflineSubtitlesComponent = process.argv.includes("--without-offline-subtitles-component");
 
 if (signed) {
   verifySigningEnvironment();
@@ -19,6 +21,13 @@ const args = [
 const env = {
   ...process.env,
 };
+
+if (!skipOfflineSubtitlesComponent) {
+  const componentResult = prepareOfflineSubtitlesComponent();
+  if (componentResult.prepared) {
+    env.MPX_OFFLINE_SUBTITLE_COMPONENT_DIR = componentResult.componentRoot;
+  }
+}
 
 if (signed) {
   env.MPX_WINDOWS_SIGN = "1";

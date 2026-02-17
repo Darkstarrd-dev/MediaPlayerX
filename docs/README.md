@@ -25,6 +25,7 @@
 - `ad-review-audit-mode-fix-implementation-plan.md`：广告审核模式 5 项问题修复计划（分 Phase、最小读取、测试门禁、提交推送门禁）。
 - `offline-auto-subtitle-implementation-plan.md`：离线自动字幕实施方案（可选安装、模型按需下载、DirectML/CPU 自动回退、分 Phase 门禁）。
 - `offline-auto-subtitle-phase0-report.md`：离线自动字幕 Phase 0 执行记录（探针脚本、阻塞项、风险清单）。
+- `offline-auto-subtitle-phase1-report.md`：离线自动字幕 Phase 1 执行记录（可选安装组件与运行时探测）。
 
 ## 主题与 UI
 

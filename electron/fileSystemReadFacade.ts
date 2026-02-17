@@ -18,6 +18,7 @@ import {
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
+  type ReadSubtitleEngineStatusResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
@@ -787,6 +788,10 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async readRuntimeCapabilities(): Promise<ReadRuntimeCapabilitiesResponseDto> {
     return this.systemHandlers.readRuntimeCapabilities()
+  }
+
+  async readSubtitleEngineStatus(): Promise<ReadSubtitleEngineStatusResponseDto> {
+    return this.systemHandlers.readSubtitleEngineStatus()
   }
 
   async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {

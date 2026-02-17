@@ -27,6 +27,7 @@ function resolveOptionalEngineRoots() {
   const candidates = [
     envRoot,
     path.join(projectRoot, 'resources', 'optional', 'offline-subtitles'),
+    path.join(projectRoot, 'release', 'offline-subtitles-component'),
     path.join(projectRoot, 'release', 'win-unpacked', 'resources', 'optional', 'offline-subtitles'),
   ].filter((item) => Boolean(item))
 

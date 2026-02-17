@@ -11,6 +11,7 @@ import type {
   ReadClipboardImportPathsResponseDto,
   ReadArchiveLoadStatusResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
+  ReadSubtitleEngineStatusResponseDto,
   DeleteImageItemsRequestDto,
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
@@ -226,6 +227,7 @@ export interface MediaRepository {
   ): Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
+  readSubtitleEngineStatus?(options?: RepositoryRequestOptions): Promise<ReadSubtitleEngineStatusResponseDto>
   readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void

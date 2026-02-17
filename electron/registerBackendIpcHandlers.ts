@@ -14,6 +14,7 @@ import {
   pickDirectoryPathRequestSchema,
   pickDirectoryPathResponseSchema,
   readClipboardImportPathsResponseSchema,
+  readSubtitleEngineStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -420,6 +421,11 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeCapabilities, async () => {
     const response = await ensureService().readRuntimeCapabilities()
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readSubtitleEngineStatus, async () => {
+    const response = await ensureService().readSubtitleEngineStatus()
+    return readSubtitleEngineStatusResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeInfo, async () => {

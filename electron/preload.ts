@@ -14,6 +14,7 @@ import {
   pickDirectoryPathResponseSchema,
   readClipboardImportPathsResponseSchema,
   readArchiveLoadStatusResponseSchema,
+  readSubtitleEngineStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -269,6 +270,10 @@ const backendApi = {
   readRuntimeCapabilities: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeCapabilities)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  },
+  readSubtitleEngineStatus: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readSubtitleEngineStatus)
+    return readSubtitleEngineStatusResponseSchema.parse(response)
   },
   readRuntimeInfo: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeInfo)

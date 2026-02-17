@@ -36,6 +36,7 @@ export const BACKEND_CHANNELS = {
   readImportTasks: 'backend:readImportTasks',
   retryImportTask: 'backend:retryImportTask',
   readRuntimeCapabilities: 'backend:readRuntimeCapabilities',
+  readSubtitleEngineStatus: 'backend:readSubtitleEngineStatus',
   readRuntimeInfo: 'backend:readRuntimeInfo',
   setRuntimeStoragePaths: 'backend:setRuntimeStoragePaths',
   readMediaAccessAudit: 'backend:readMediaAccessAudit',

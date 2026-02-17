@@ -8,6 +8,7 @@ import {
   pickDirectoryPathResponseSchema,
   readClipboardImportPathsResponseSchema,
   readArchiveLoadStatusResponseSchema,
+  readSubtitleEngineStatusResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -52,6 +53,7 @@ import {
   type PickDirectoryPathResponseDto,
   type ReadClipboardImportPathsResponseDto,
   type ReadArchiveLoadStatusResponseDto,
+  type ReadSubtitleEngineStatusResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
@@ -504,6 +506,13 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.readRuntimeCapabilities(), options)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  }
+
+  async readSubtitleEngineStatus(options?: RepositoryRequestOptions): Promise<ReadSubtitleEngineStatusResponseDto> {
+    const readSubtitleEngineStatus = requireBackendMethod('readSubtitleEngineStatus')
+
+    const response = await withAbort(readSubtitleEngineStatus(), options)
+    return readSubtitleEngineStatusResponseSchema.parse(response)
   }
 
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {

@@ -1,4 +1,5 @@
 import {
+  type ReadSubtitleEngineStatusResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ClearDatabaseResponseDto,
@@ -25,6 +26,10 @@ export class FileSystemSystemHandlers {
 
   async readRuntimeCapabilities(): Promise<ReadRuntimeCapabilitiesResponseDto> {
     return this.context.runtimeDependencyService.readRuntimeCapabilities()
+  }
+
+  async readSubtitleEngineStatus(): Promise<ReadSubtitleEngineStatusResponseDto> {
+    return this.context.runtimeDependencyService.readSubtitleEngineStatus()
   }
 
   async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {
