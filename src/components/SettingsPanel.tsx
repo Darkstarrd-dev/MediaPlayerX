@@ -54,11 +54,8 @@ export interface SettingsPanelProps {
   proxyServer: string
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
-  subtitleAcceleration: 'auto' | 'cpu' | 'directml'
   subtitleLanguage: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue'
   subtitleModelDir: string
-  subtitleModelLocationPath: string
-  subtitleSelectedModelId: string | null
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
   subtitleModelsStatus: string | null
@@ -139,14 +136,10 @@ export interface SettingsPanelProps {
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onSubtitleFeatureEnabledChange: (value: boolean) => void
-  onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
   onSubtitleLanguageChange: (value: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue') => void
   onSubtitleModelDirPick: () => void
-  onSubtitleModelLocationPick: () => void
-  onSubtitleSelectedModelIdChange: (value: string) => void
   onRefreshSubtitleModels: () => void
   onStartSubtitleModelDownload: () => void
-  onClearSubtitleLocalModel: () => void
   onCancelSubtitleModelDownload: () => void
   onOpenSubtitleModelPage: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
@@ -244,11 +237,8 @@ function SettingsPanel({
   proxyServer,
   ehentaiCookies,
   subtitleFeatureEnabled,
-  subtitleAcceleration,
   subtitleLanguage,
   subtitleModelDir,
-  subtitleModelLocationPath,
-  subtitleSelectedModelId,
   subtitleModelsLoading,
   subtitleModelsError,
   subtitleModelsStatus,
@@ -310,14 +300,10 @@ function SettingsPanel({
   onProxyServerChange,
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
-  onSubtitleAccelerationChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
-  onSubtitleModelLocationPick,
-  onSubtitleSelectedModelIdChange,
   onRefreshSubtitleModels,
   onStartSubtitleModelDownload,
-  onClearSubtitleLocalModel,
   onCancelSubtitleModelDownload,
   onOpenSubtitleModelPage,
   onAdReviewVisionEndpointChange,
@@ -737,11 +723,8 @@ function SettingsPanel({
     proxyServer,
     ehentaiCookies,
     subtitleFeatureEnabled,
-    subtitleAcceleration,
     subtitleLanguage,
     subtitleModelDir,
-    subtitleModelLocationPath,
-    subtitleSelectedModelId,
     subtitleModelsLoading,
     subtitleModelsError,
     subtitleModelsStatus,
@@ -811,14 +794,10 @@ function SettingsPanel({
     onProxyServerChange,
     onEhentaiCookiesChange,
     onSubtitleFeatureEnabledChange,
-    onSubtitleAccelerationChange,
     onSubtitleLanguageChange,
     onSubtitleModelDirPick,
-    onSubtitleModelLocationPick,
-    onSubtitleSelectedModelIdChange,
     onRefreshSubtitleModels,
     onStartSubtitleModelDownload,
-    onClearSubtitleLocalModel,
     onCancelSubtitleModelDownload,
     onOpenSubtitleModelPage,
     onAdReviewVisionEndpointChange,

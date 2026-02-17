@@ -56,11 +56,8 @@ interface RenderSettingsMainSectionParams {
   proxyServer: string
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
-  subtitleAcceleration: 'auto' | 'cpu' | 'directml'
   subtitleLanguage: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue'
   subtitleModelDir: string
-  subtitleModelLocationPath: string
-  subtitleSelectedModelId: string | null
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
   subtitleModelsStatus: string | null
@@ -149,14 +146,10 @@ interface RenderSettingsMainSectionParams {
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onSubtitleFeatureEnabledChange: (value: boolean) => void
-  onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
   onSubtitleLanguageChange: (value: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue') => void
   onSubtitleModelDirPick: () => void
-  onSubtitleModelLocationPick: () => void
-  onSubtitleSelectedModelIdChange: (value: string) => void
   onRefreshSubtitleModels: () => void
   onStartSubtitleModelDownload: () => void
-  onClearSubtitleLocalModel: () => void
   onCancelSubtitleModelDownload: () => void
   onOpenSubtitleModelPage: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
@@ -209,16 +202,11 @@ export function renderSettingsMainSection({
   proxyServer,
   ehentaiCookies,
   subtitleFeatureEnabled,
-  subtitleAcceleration,
   subtitleLanguage,
   subtitleModelDir,
-  subtitleModelLocationPath,
-  subtitleSelectedModelId,
   subtitleModelsLoading,
   subtitleModelsError,
   subtitleModelsStatus,
-  subtitleRemoteModels,
-  subtitleLocalModels,
   subtitleDownloadTask,
   subtitleDownloadPending,
   adReviewVisionEndpoint,
@@ -283,14 +271,10 @@ export function renderSettingsMainSection({
   onProxyServerChange,
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
-  onSubtitleAccelerationChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
-  onSubtitleModelLocationPick,
-  onSubtitleSelectedModelIdChange,
   onRefreshSubtitleModels,
   onStartSubtitleModelDownload,
-  onClearSubtitleLocalModel,
   onCancelSubtitleModelDownload,
   onOpenSubtitleModelPage,
   onAdReviewVisionEndpointChange,
@@ -772,19 +756,6 @@ export function renderSettingsMainSection({
             />
           </label>
           <label>
-            {t('ui.settings.offlineSubtitleAcceleration')}
-            <select
-              value={subtitleAcceleration}
-              onChange={(event) =>
-                onSubtitleAccelerationChange(event.target.value as 'auto' | 'cpu' | 'directml')
-              }
-            >
-              <option value="auto">{t('ui.settings.offlineSubtitleAccelerationAuto')}</option>
-              <option value="cpu">{t('ui.settings.offlineSubtitleAccelerationCpu')}</option>
-              <option value="directml">{t('ui.settings.offlineSubtitleAccelerationDirectml')}</option>
-            </select>
-          </label>
-          <label>
             {t('ui.settings.offlineSubtitleLanguage')}
             <select
               value={subtitleLanguage}
@@ -814,41 +785,13 @@ export function renderSettingsMainSection({
               </button>
             </div>
           </label>
-          <label>
-            {t('ui.settings.offlineSubtitleModelLocation')}
-            <div className="settings-inline-field">
-              <input
-                type="text"
-                value={subtitleModelLocationPath}
-                readOnly
-                placeholder={t('ui.settings.offlineSubtitleModelLocationPlaceholder')}
-              />
-              <button type="button" onClick={onSubtitleModelLocationPick}>
-                {t('ui.settings.offlineSubtitleChooseModelLocation')}
-              </button>
-            </div>
-          </label>
-          <label>
-            {t('ui.settings.offlineSubtitleModelId')}
-            <select
-              value={subtitleSelectedModelId ?? ''}
-              onChange={(event) => onSubtitleSelectedModelIdChange(event.target.value)}
-            >
-              <option value="">{t('ui.settings.offlineSubtitleModelIdPlaceholder')}</option>
-              {subtitleRemoteModels.map((model) => (
-                <option key={model.id} value={model.id}>
-                  {model.label}
-                </option>
-              ))}
-            </select>
-          </label>
           <div className="settings-test-row">
             <button
               className="settings-icon-btn main-icon-square-btn"
               type="button"
               disabled={subtitleModelsLoading}
-              aria-label={t('ui.settings.offlineSubtitleRefreshModels')}
-              title={t('ui.settings.offlineSubtitleRefreshModels')}
+              aria-label={t('ui.settings.offlineSubtitleRescanDirectory')}
+              title={t('ui.settings.offlineSubtitleRescanDirectory')}
               onClick={onRefreshSubtitleModels}
             >
               <MainUiIcon name="refresh" />
@@ -856,22 +799,12 @@ export function renderSettingsMainSection({
             <button
               className="settings-icon-btn main-icon-square-btn"
               type="button"
-              disabled={subtitleDownloadPending || subtitleModelsLoading || !subtitleSelectedModelId || !subtitleModelDir}
+              disabled={subtitleDownloadPending || subtitleModelsLoading || !subtitleModelDir}
               aria-label={t('ui.settings.offlineSubtitleDownloadModel')}
               title={t('ui.settings.offlineSubtitleDownloadModel')}
               onClick={onStartSubtitleModelDownload}
             >
               <MainUiIcon name="save" />
-            </button>
-            <button
-              className="settings-icon-btn main-icon-square-btn"
-              type="button"
-              disabled={subtitleDownloadPending || subtitleModelsLoading || !subtitleSelectedModelId || !subtitleModelDir}
-              aria-label={t('ui.settings.offlineSubtitleClearModel')}
-              title={t('ui.settings.offlineSubtitleClearModel')}
-              onClick={onClearSubtitleLocalModel}
-            >
-              <MainUiIcon name="delete" />
             </button>
             <button
               className="settings-icon-btn main-icon-square-btn"
@@ -888,6 +821,15 @@ export function renderSettingsMainSection({
             >
               <MainUiIcon name="close" />
             </button>
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              aria-label={t('ui.settings.offlineSubtitleOpenModelPage')}
+              title={t('ui.settings.offlineSubtitleOpenModelPage')}
+              onClick={onOpenSubtitleModelPage}
+            >
+              <MainUiIcon name="videoInfo" />
+            </button>
           </div>
           {subtitleDownloadTask ? (
             <p className="settings-placeholder">
@@ -900,21 +842,11 @@ export function renderSettingsMainSection({
               })}
             </p>
           ) : null}
-          {subtitleDownloadTask?.status === 'failed' ? (
-            <div className="settings-inline-field">
-              <button type="button" disabled={!subtitleSelectedModelId} onClick={onOpenSubtitleModelPage}>
-                {t('ui.settings.offlineSubtitleOpenModelPage')}
-              </button>
-            </div>
-          ) : null}
           {subtitleModelsError ? <p className="settings-danger-text">{subtitleModelsError}</p> : null}
           {subtitleModelsStatus ? <p className="settings-placeholder">{subtitleModelsStatus}</p> : null}
-          <p className="settings-placeholder">
-            {subtitleLocalModels.length === 0
-              ? t('ui.settings.offlineSubtitleNoLocalModels')
-              : t('ui.settings.offlineSubtitleLocalModelsSummary', { count: subtitleLocalModels.length })}
-          </p>
-          <p className="settings-placeholder">{t('ui.settings.offlineSubtitleHint')}</p>
+          {subtitleDownloadTask?.status === 'failed' ? (
+            <p className="settings-placeholder">{t('ui.settings.offlineSubtitleManualInstallHint')}</p>
+          ) : null}
         </fieldset>
 
         <fieldset className="settings-subsection">

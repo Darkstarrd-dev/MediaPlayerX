@@ -98,20 +98,10 @@ export class RuntimeDependencyService {
         ? `检测到组件目录但加载失败：${subtitleEngine.message ?? 'unknown error'}`
         : '未安装离线自动字幕组件'
 
-    const subtitleDirectMlStatus = process.platform === 'win32'
-      ? subtitleEngine.installed
-        ? subtitleEngine.providers.directml
-          ? 'available'
-          : 'degraded'
-        : 'unavailable'
-      : 'unavailable'
-    const subtitleDirectMlNote = process.platform === 'win32'
-      ? subtitleEngine.installed
-        ? subtitleEngine.providers.directml
-          ? 'DirectML 可用，可在后续阶段启用 GPU 推理并自动回退 CPU'
-          : 'DirectML 未检测到，自动字幕将回退 CPU'
-        : '离线自动字幕引擎未就绪，暂不可探测 DirectML'
-      : '当前平台不启用 DirectML 路线，仅保留 CPU 路线'
+    const subtitleDirectMlStatus = subtitleEngine.installed ? 'available' : 'unavailable'
+    const subtitleDirectMlNote = subtitleEngine.installed
+      ? '当前版本固定使用 CPU 推理，不启用 DirectML。'
+      : '离线自动字幕引擎未就绪，暂不可探测 DirectML'
 
     return readRuntimeCapabilitiesResponseSchema.parse({
       dependencies: {

@@ -195,9 +195,21 @@ export class SubtitleModelService {
       })
     }
 
+    const models: Array<ListSubtitleLocalModelsResponseDto['models'][number]> = []
+
+    const candidateDirs: string[] = [normalizedModelDir]
     let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
     try {
       entries = await fs.readdir(normalizedModelDir, { withFileTypes: true })
+      for (const entry of entries) {
+        if (!entry.isDirectory()) {
+          continue
+        }
+        if (entry.name.startsWith('.mpx-subtitle-staging-')) {
+          continue
+        }
+        candidateDirs.push(path.join(normalizedModelDir, entry.name))
+      }
     } catch {
       return listSubtitleLocalModelsResponseSchema.parse({
         model_dir: normalizedModelDir,
@@ -205,17 +217,7 @@ export class SubtitleModelService {
       })
     }
 
-    const models: Array<ListSubtitleLocalModelsResponseDto['models'][number]> = []
-
-    for (const entry of entries) {
-      if (!entry.isDirectory()) {
-        continue
-      }
-      if (entry.name.startsWith('.mpx-subtitle-staging-')) {
-        continue
-      }
-
-      const localModelDir = path.join(normalizedModelDir, entry.name)
+    for (const localModelDir of candidateDirs) {
       let modelFiles: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
       try {
         modelFiles = await fs.readdir(localModelDir, { withFileTypes: true })
@@ -235,10 +237,11 @@ export class SubtitleModelService {
         label?: string
         installed_at_ms?: number
       }>(manifestPath)
+      const defaultId = path.basename(localModelDir)
 
       models.push({
-        id: manifest?.id?.trim() || entry.name,
-        label: manifest?.label?.trim() || entry.name,
+        id: manifest?.id?.trim() || defaultId,
+        label: manifest?.label?.trim() || defaultId,
         model_dir: localModelDir,
         installed_at_ms:
           typeof manifest?.installed_at_ms === 'number' && Number.isFinite(manifest.installed_at_ms)
@@ -409,13 +412,9 @@ export class SubtitleModelService {
     task.dto.message = null
     task.dto.updated_at_ms = nowMs()
 
-    let stagingRoot = ''
+    const tempFiles: string[] = []
     try {
       await ensureDirectory(task.modelDir)
-      const targetRoot = path.join(task.modelDir, task.model.id)
-      stagingRoot = path.join(task.modelDir, `.mpx-subtitle-staging-${task.dto.download_id}`)
-      await removeDirectoryIfExists(stagingRoot)
-      await ensureDirectory(stagingRoot)
 
       let doneBytes = 0
       const totalBytes = Math.max(task.model.size_bytes, 1)
@@ -426,9 +425,10 @@ export class SubtitleModelService {
           throw new Error('download_cancelled')
         }
 
-        const targetPath = path.join(stagingRoot, artifact.relative_path)
+        const targetPath = path.join(task.modelDir, artifact.relative_path)
         await ensureDirectory(path.dirname(targetPath))
         const tempPath = `${targetPath}.partial`
+        tempFiles.push(tempPath)
         const requestConfig = buildAxiosDownloadConfig(
           {
             useProxy: task.dto.use_proxy,
@@ -475,12 +475,13 @@ export class SubtitleModelService {
           }
         }
 
+        await fs.rm(targetPath, { force: true }).catch(() => undefined)
         await fs.rename(tempPath, targetPath)
       }
 
       const installedAtMs = nowMs()
       await fs.writeFile(
-        path.join(stagingRoot, LOCAL_MANIFEST_FILE),
+        path.join(task.modelDir, LOCAL_MANIFEST_FILE),
         `${JSON.stringify(
           {
             id: task.model.id,
@@ -494,10 +495,6 @@ export class SubtitleModelService {
         )}\n`,
         'utf8',
       )
-
-      await removeDirectoryIfExists(targetRoot)
-      await fs.rename(stagingRoot, targetRoot)
-      stagingRoot = ''
 
       task.dto.status = 'completed'
       task.dto.done_bytes = Math.max(task.dto.total_bytes, task.dto.done_bytes)
@@ -523,8 +520,8 @@ export class SubtitleModelService {
         task.dto.message = error instanceof Error ? error.message : String(error)
       }
     } finally {
-      if (stagingRoot) {
-        await removeDirectoryIfExists(stagingRoot).catch(() => undefined)
+      for (const tempPath of tempFiles) {
+        await fs.rm(tempPath, { force: true }).catch(() => undefined)
       }
     }
   }

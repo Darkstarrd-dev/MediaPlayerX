@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { AppSettings } from "../../contracts/settings";
 import type { MediaRepository } from "../backend/repository/types";
 import { resolvePaletteModeById } from "../theme/themeRegistry";
+import { FIXED_SUBTITLE_MODEL_ID } from "../subtitles/fixedModel";
 
 interface UseSettingsPersistenceParams {
   settings: AppSettings;
@@ -205,6 +206,7 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   ) {
     delete next.subtitleAcceleration;
   }
+  next.subtitleAcceleration = "cpu";
 
   if (
     next.subtitleLanguage !== "auto" &&
@@ -224,14 +226,7 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.subtitleModelDir;
   }
 
-  if (typeof next.subtitleSelectedModelId === "string") {
-    const normalizedModelId = next.subtitleSelectedModelId
-      .trim()
-      .slice(0, 128);
-    next.subtitleSelectedModelId = normalizedModelId || null;
-  } else if (next.subtitleSelectedModelId !== null && "subtitleSelectedModelId" in next) {
-    delete next.subtitleSelectedModelId;
-  }
+  next.subtitleSelectedModelId = FIXED_SUBTITLE_MODEL_ID;
 
   const normalizeCollapsedFolderNodeIds = (raw: unknown): string[] | null => {
     if (!Array.isArray(raw)) {

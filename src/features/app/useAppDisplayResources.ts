@@ -19,6 +19,7 @@ import { useLiveSubtitles } from "../subtitles/useLiveSubtitles";
 import type { MediaLocator } from "../../types";
 import { useI18n } from "../../i18n/useI18n";
 import { toErrorDetailWithCode } from "./errorCode";
+import { FIXED_SUBTITLE_MODEL_ID } from "../subtitles/fixedModel";
 
 function toAutoSubtitleLanguageLabel(
   language: string | null,
@@ -41,6 +42,29 @@ function toAutoSubtitleLanguageLabel(
     return t("ui.media.autoSubtitleLanguageYue");
   }
   return t("ui.media.autoSubtitleLanguageAuto");
+}
+
+function toAutoSubtitleUiMessage(
+  rawMessage: string | null,
+  t: ReturnType<typeof useI18n>["t"],
+): string | null {
+  const normalized = (rawMessage ?? "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  if (
+    normalized.startsWith("subtitle_model_missing_local:") ||
+    normalized.startsWith("subtitle_model_files_missing:")
+  ) {
+    return t("ui.media.autoSubtitleModelFilesMissing");
+  }
+
+  if (normalized === "subtitle session API unavailable") {
+    return t("ui.media.autoSubtitleUnavailable");
+  }
+
+  return normalized;
 }
 
 function isSyncSubtitleRepository(
@@ -406,11 +430,10 @@ export function useAppDisplayResources({
     useState<HTMLVideoElement | null>(null);
 
   const subtitleModelDir = appSettings.subtitleModelDir.trim();
-  const subtitleModelId = appSettings.subtitleSelectedModelId?.trim() ?? null;
+  const subtitleModelId = FIXED_SUBTITLE_MODEL_ID;
   const autoSubtitleConfigured =
     appSettings.subtitleFeatureEnabled &&
-    subtitleModelDir.length > 0 &&
-    Boolean(subtitleModelId);
+    subtitleModelDir.length > 0;
   const autoSubtitleApiAvailable =
     typeof mediaRepository.startSubtitleSession === "function" &&
     typeof mediaRepository.stopSubtitleSession === "function" &&
@@ -429,13 +452,14 @@ export function useAppDisplayResources({
     currentTimeSec: Math.max(0, videoTime),
     modelDir: subtitleModelDir,
     modelId: subtitleModelId,
-    providerPreference: appSettings.subtitleAcceleration,
+    providerPreference: "cpu",
     language: appSettings.subtitleLanguage,
     repository: mediaRepository,
   });
+  const autoSubtitleUiMessage = toAutoSubtitleUiMessage(liveSubtitle.message, t);
   const configuredSubtitleLanguage = (appSettings.subtitleLanguage ?? "auto").trim().toLowerCase();
-  const autoSubtitleStatusMessage = liveSubtitle.message
-    ? liveSubtitle.message
+  const autoSubtitleStatusMessage = autoSubtitleUiMessage
+    ? autoSubtitleUiMessage
     : configuredSubtitleLanguage !== "auto"
       ? t("ui.media.autoSubtitleUsingLanguage", {
           language: toAutoSubtitleLanguageLabel(configuredSubtitleLanguage, t),

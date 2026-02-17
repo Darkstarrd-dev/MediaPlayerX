@@ -89,29 +89,48 @@ async function resolveModelRootDir(modelDir: string, modelId: string): Promise<s
   const normalizedDir = path.resolve(modelDir)
   const candidates = [path.join(normalizedDir, modelId), normalizedDir]
 
-  for (const candidate of candidates) {
+  const isValidModelDir = async (candidate: string): Promise<boolean> => {
     if (!(await pathExists(candidate))) {
-      continue
+      return false
     }
 
     const tokensPath = path.join(candidate, 'tokens.txt')
     if (!(await pathExists(tokensPath))) {
-      continue
+      return false
     }
 
     let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
     try {
       entries = await fs.readdir(candidate, { withFileTypes: true })
     } catch {
-      continue
+      return false
     }
 
-    const hasOnnxModel = entries.some((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.onnx'))
-    if (!hasOnnxModel) {
-      continue
-    }
+    return entries.some((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.onnx'))
+  }
 
-    return candidate
+  for (const candidate of candidates) {
+    if (await isValidModelDir(candidate)) {
+      return candidate
+    }
+  }
+
+  let dirEntries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+  try {
+    dirEntries = await fs.readdir(normalizedDir, { withFileTypes: true })
+  } catch {
+    throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`)
+  }
+
+  const fallbackSubdirs = dirEntries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(normalizedDir, entry.name))
+    .sort((left, right) => left.localeCompare(right))
+
+  for (const candidate of fallbackSubdirs) {
+    if (await isValidModelDir(candidate)) {
+      return candidate
+    }
   }
 
   throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`)

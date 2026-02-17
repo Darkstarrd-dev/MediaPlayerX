@@ -33,10 +33,8 @@ interface BuildSettingsPanelPropsParams {
   proxyServer: string
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
-  subtitleAcceleration: AppSettings['subtitleAcceleration']
   subtitleLanguage: AppSettings['subtitleLanguage']
   subtitleModelDir: string
-  subtitleSelectedModelId: string | null
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
   subtitleModelsStatus: string | null
@@ -78,31 +76,13 @@ interface BuildSettingsPanelPropsParams {
   pickDatabaseDirectoryPath: () => void
   pickThumbnailCacheDirectoryPath: () => void
   pickSubtitleModelDirectoryPath: () => void
-  pickSubtitleModelLocationPath: () => void
   refreshSubtitleModels: () => void
   startSubtitleModelDownload: () => void
-  clearSubtitleLocalModel: () => void
   cancelSubtitleModelDownload: () => void
   openSubtitleModelPage: () => void
 }
 
-function buildSubtitleModelLocationPath(modelDir: string, modelId: string | null): string {
-  const normalizedDir = modelDir.trim().replace(/[\\/]+$/, '')
-  const normalizedId = modelId?.trim() ?? ''
-  if (!normalizedDir || !normalizedId) {
-    return ''
-  }
-
-  const separator = normalizedDir.includes('\\') ? '\\' : '/'
-  return `${normalizedDir}${separator}${normalizedId}`
-}
-
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
-  const subtitleModelLocationPath = buildSubtitleModelLocationPath(
-    params.subtitleModelDir,
-    params.subtitleSelectedModelId,
-  )
-
   return {
     settingsOpen: params.settingsOpen,
     uiLocale: params.uiLocale,
@@ -134,11 +114,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     proxyServer: params.proxyServer,
     ehentaiCookies: params.ehentaiCookies,
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
-    subtitleAcceleration: params.subtitleAcceleration,
     subtitleLanguage: params.subtitleLanguage,
     subtitleModelDir: params.subtitleModelDir,
-    subtitleModelLocationPath,
-    subtitleSelectedModelId: params.subtitleSelectedModelId,
     subtitleModelsLoading: params.subtitleModelsLoading,
     subtitleModelsError: params.subtitleModelsError,
     subtitleModelsStatus: params.subtitleModelsStatus,
@@ -261,17 +238,10 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),
     onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
     onSubtitleFeatureEnabledChange: (value) => params.updateSettings({ subtitleFeatureEnabled: value }),
-    onSubtitleAccelerationChange: (value) => params.updateSettings({ subtitleAcceleration: value }),
     onSubtitleLanguageChange: (value) => params.updateSettings({ subtitleLanguage: value }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
-    onSubtitleModelLocationPick: params.pickSubtitleModelLocationPath,
-    onSubtitleSelectedModelIdChange: (value) =>
-      params.updateSettings({
-        subtitleSelectedModelId: value.trim() || null,
-      }),
     onRefreshSubtitleModels: params.refreshSubtitleModels,
     onStartSubtitleModelDownload: params.startSubtitleModelDownload,
-    onClearSubtitleLocalModel: params.clearSubtitleLocalModel,
     onCancelSubtitleModelDownload: params.cancelSubtitleModelDownload,
     onOpenSubtitleModelPage: params.openSubtitleModelPage,
     onAdReviewVisionEndpointChange: (value) =>

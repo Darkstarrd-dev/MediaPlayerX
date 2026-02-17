@@ -101,10 +101,6 @@ export function useLiveSubtitles({
       repository.flushSubtitleSession ? () => repository.flushSubtitleSession!() : null
     const pushSubtitleAudio =
       repository.pushSubtitleAudio ? (request: Parameters<NonNullable<MediaRepository['pushSubtitleAudio']>>[0]) => repository.pushSubtitleAudio!(request) : null
-    const listSubtitleLocalModels =
-      repository.listSubtitleLocalModels
-        ? (request: Parameters<NonNullable<MediaRepository['listSubtitleLocalModels']>>[0]) => repository.listSubtitleLocalModels!(request)
-        : null
 
     if (!enabled || !videoElement || !modelId || modelDir.trim() === '') {
       setLoading(false)
@@ -174,17 +170,6 @@ export function useLiveSubtitles({
       pushQueueRef.current = []
 
       try {
-        if (listSubtitleLocalModels) {
-          const localResponse = await listSubtitleLocalModels({ model_dir: modelDir })
-          const installed = localResponse.models.some((item) => item.id === modelId)
-          if (!installed) {
-            setLoading(false)
-            setCues([])
-            setMessage(`subtitle_model_missing_local:${modelDir}:${modelId}`)
-            return
-          }
-        }
-
         const startResponse = await startSubtitleSession({
           model_dir: modelDir,
           model_id: modelId,
@@ -292,7 +277,6 @@ export function useLiveSubtitles({
     providerPreference,
     language,
     repository.flushSubtitleSession,
-    repository.listSubtitleLocalModels,
     repository.pushSubtitleAudio,
     repository.resetSubtitleSession,
     repository.startSubtitleSession,
