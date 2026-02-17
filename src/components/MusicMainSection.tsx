@@ -628,14 +628,14 @@ function MusicMainSection({
     })
     return {
       '--mpx-fullscreen-controls-max-width': `${controlsWidth}px`,
+      '--mpx-fullscreen-controls-width': `${controlsWidth}px`,
     } as CSSProperties
   }, [fullscreenActive, fullscreenVideoControlsMaxWidth])
 
   const musicControlsShell = (
     <div
-      className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating' : ''}${fullscreenActive && fullscreenControlsVisible ? ' is-visible' : ''}${fullscreenActive && !fullscreenControlsMounted ? ' is-hidden' : ''}`}
+      className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating fullscreen-controls-shell' : ''}${fullscreenActive && fullscreenControlsVisible ? ' is-visible' : ''}${fullscreenActive && !fullscreenControlsMounted ? ' is-hidden' : ''}`}
       hidden={fullscreenActive ? !fullscreenControlsMounted : undefined}
-      style={fullscreenControlsWidthStyle}
       onMouseEnter={fullscreenActive ? showFullscreenControls : undefined}
       onMouseLeave={fullscreenActive ? hideFullscreenControls : closePopover}
     >
@@ -1153,6 +1153,7 @@ function MusicMainSection({
             className={`name-list music-name-list music-visualizer${fullscreenActive ? ' is-fullscreen' : ''}`}
             aria-label={t('a11y.music.visualizer')}
             data-overlay-close={fullscreenActive ? 'fullscreen' : undefined}
+            style={fullscreenControlsWidthStyle}
           >
             <canvas
               key={`${visualizerCanvasVersion}-gpu`}

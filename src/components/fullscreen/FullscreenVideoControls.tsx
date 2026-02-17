@@ -144,7 +144,7 @@ export function FullscreenVideoControlsShell({
   }
 
   return (
-    <div className="video-controls-shell fullscreen-video-controls-shell">
+    <div className="video-controls-shell fullscreen-video-controls-shell fullscreen-controls-shell">
       {mediaInfoText ? (
         <div className="fullscreen-meta-row is-single">
           <div className="fullscreen-meta-line">

@@ -652,6 +652,7 @@ function FullscreenLayer({
   const videoControlsLeft = clamp(centeredControlsLeft, 8, controlsMaxLeft)
   const fullscreenControlsCssVars = {
     '--mpx-fullscreen-controls-max-width': `${singleControlsWidth}px`,
+    '--mpx-fullscreen-controls-width': `${singleControlsWidth}px`,
   } as CSSProperties
 
   const imagePaneClassName = `fullscreen-pane fullscreen-image${fullscreenDisplay === 'dual' && !fullscreenVideoFocus ? ' is-pane-focus' : ''}`

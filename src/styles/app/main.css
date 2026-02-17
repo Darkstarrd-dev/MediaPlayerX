@@ -401,7 +401,7 @@
   right: auto;
 }
 
-.music-controls-shell {
+.music-controls-shell:not(.is-fullscreen-floating) {
   margin-top: 10px;
   padding: 10px 14px;
   border: 1px solid var(--mpx-player-surface-border);
@@ -417,13 +417,7 @@
   bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   transform: translateX(-50%);
   margin-top: 0;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
   z-index: 12;
-  backdrop-filter: blur(8px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -456,7 +450,7 @@
   left: 50%;
   bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   transform: translateX(-50%);
-  width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
+  width: var(--mpx-fullscreen-controls-width, min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px)));
   height: clamp(88px, 18vh, 160px);
   z-index: 11;
 }
@@ -818,7 +812,6 @@
 .video-controls-shell.fullscreen-video-controls-shell {
   margin: 0;
   padding: 8px;
-  gap: 10px;
 }
 
 .video-controls-shell.fullscreen-video-controls-shell .video-controls-progress {
