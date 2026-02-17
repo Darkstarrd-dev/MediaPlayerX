@@ -450,7 +450,8 @@ select option {
   color: var(--mpx-text-1);
 }
 
-.toolbar-actions .toolbar-icon-btn {
+.toolbar-actions .toolbar-icon-btn,
+.main-footer-pagination .toolbar-icon-btn {
   width: var(--mpx-icon-button-size);
   height: var(--mpx-icon-button-size);
   min-width: var(--mpx-icon-button-size);

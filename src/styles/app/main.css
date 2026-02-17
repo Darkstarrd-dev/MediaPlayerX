@@ -3,6 +3,22 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  --mpx-main-focus-ring-width: 3px;
+  --mpx-main-focus-ring-offset: 2px;
+  --mpx-main-focus-day-gap: var(--mpx-sidebar-focus-day-gap, var(--mpx-bg-app));
+  --mpx-main-focus-day-inner: var(--mpx-sidebar-focus-day-inner, color-mix(in srgb, var(--mpx-bg-panel) 76%, #ffffff 24%));
+  --mpx-main-focus-day-mid: var(--mpx-sidebar-focus-day-mid, color-mix(in srgb, var(--mpx-status-info-border) 72%, var(--mpx-accent) 28%));
+  --mpx-main-focus-day-outer: var(--mpx-sidebar-focus-day-outer, color-mix(in srgb, var(--mpx-status-info-text) 62%, var(--mpx-status-info-border) 38%));
+  --mpx-main-focus-day-glow: var(--mpx-sidebar-focus-day-glow, color-mix(in srgb, var(--mpx-status-info-border) 40%, transparent));
+  --mpx-main-focus-day-ambient: var(--mpx-sidebar-focus-day-ambient, color-mix(in srgb, var(--mpx-status-info-text) 20%, transparent));
+  --mpx-main-focus-metal-highlight: var(--mpx-sidebar-focus-metal-highlight, #f8edd1);
+  --mpx-main-focus-metal-topline: var(--mpx-sidebar-focus-metal-topline, #edd8a3);
+  --mpx-main-focus-metal-mid: var(--mpx-sidebar-focus-metal-mid, #c79a4d);
+  --mpx-main-focus-metal-shadow: var(--mpx-sidebar-focus-metal-shadow, #7a5520);
+  --mpx-main-focus-metal-specular: var(--mpx-sidebar-focus-metal-specular, rgba(255, 248, 228, 0.92));
+  --mpx-main-focus-metal-rim-shadow: var(--mpx-sidebar-focus-metal-rim-shadow, rgba(110, 74, 24, 0.58));
+  --mpx-main-focus-metal-glow: var(--mpx-sidebar-focus-metal-glow, rgba(212, 164, 70, 0.34));
+  --mpx-main-focus-metal-ambient: var(--mpx-sidebar-focus-metal-ambient, rgba(158, 110, 30, 0.2));
   background: var(--mpx-main-bg);
   padding: var(--mpx-main-padding);
   gap: 8px;
@@ -13,6 +29,32 @@
   transform: var(--mpx-main-transform);
   transition: var(--mpx-main-transition);
   overflow: hidden;
+}
+
+.workspace.is-focus .main-pane {
+  box-shadow:
+    var(--mpx-main-shadow),
+    0 0 0 var(--mpx-main-focus-ring-offset) var(--mpx-main-focus-day-gap),
+    0 0 0 calc(var(--mpx-main-focus-ring-offset) + 1px) var(--mpx-main-focus-day-inner),
+    0 0 0 calc(var(--mpx-main-focus-ring-offset) + var(--mpx-main-focus-ring-width)) var(--mpx-main-focus-day-mid),
+    0 0 0 calc(var(--mpx-main-focus-ring-offset) + var(--mpx-main-focus-ring-width) + 2px) var(--mpx-main-focus-day-outer),
+    0 0 12px 3px var(--mpx-main-focus-day-glow),
+    0 0 26px 6px var(--mpx-main-focus-day-ambient);
+}
+
+:root[data-mpx-palette-mode='night'][data-mpx-style^='soft-skeuomorphic'] .workspace.is-focus .main-pane {
+  box-shadow:
+    var(--mpx-main-shadow),
+    0 0 0 var(--mpx-main-focus-ring-offset) var(--mpx-bg-app),
+    -1px -1px 0 calc(var(--mpx-main-focus-ring-offset) + 1px) var(--mpx-main-focus-metal-specular),
+    1px 1px 0 calc(var(--mpx-main-focus-ring-offset) + 1px) color-mix(in srgb, var(--mpx-main-focus-metal-topline) 92%, #fff 8%),
+    -1px -1px 0 calc(var(--mpx-main-focus-ring-offset) + 2px) var(--mpx-main-focus-metal-highlight),
+    1px 1px 0 calc(var(--mpx-main-focus-ring-offset) + 2px) var(--mpx-main-focus-metal-mid),
+    1px 2px 0 calc(var(--mpx-main-focus-ring-offset) + 3px) var(--mpx-main-focus-metal-shadow),
+    -1px -2px 0 calc(var(--mpx-main-focus-ring-offset) + 3px) color-mix(in srgb, var(--mpx-main-focus-metal-highlight) 84%, #fff 16%),
+    0 0 0 calc(var(--mpx-main-focus-ring-offset) + 4px) var(--mpx-main-focus-metal-rim-shadow),
+    0 0 12px 2px var(--mpx-main-focus-metal-glow),
+    0 0 24px 5px var(--mpx-main-focus-metal-ambient);
 }
 
 .main-pane :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
@@ -227,7 +269,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .main-footer-meta {
@@ -245,18 +287,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 2px;
 }
 
-.main-footer-pagination button {
-  min-height: var(--mpx-control-height);
-}
-
-.main-footer-pagination .main-icon-square-btn {
-  width: var(--mpx-icon-button-size);
-  height: var(--mpx-icon-button-size);
-  min-width: var(--mpx-icon-button-size);
+.main-footer-pagination .toolbar-icon-btn {
   min-height: var(--mpx-icon-button-size);
-  padding: 0;
 }
 
 .main-footer-pagination span {

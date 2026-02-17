@@ -59,7 +59,7 @@ export function buildMainFooter({
       {showPagination ? (
         <div className="main-footer-pagination">
           <button
-            className="main-icon-square-btn"
+            className="toolbar-icon-btn"
             type="button"
             aria-label={translate('a11y.common.prevPage')}
             title={translate('tip.common.prevPage')}
@@ -69,7 +69,7 @@ export function buildMainFooter({
           </button>
           <span>{translate('ui.footer.pageSummary', { current: normalizedPageIndex + 1, total: imageTotalPages })}</span>
           <button
-            className="main-icon-square-btn"
+            className="toolbar-icon-btn"
             type="button"
             aria-label={translate('a11y.common.nextPage')}
             title={translate('tip.common.nextPage')}

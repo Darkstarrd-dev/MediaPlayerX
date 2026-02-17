@@ -568,6 +568,7 @@ export function useAppEffects({
     document.documentElement.dataset.mpxStyle = nextStyleId
     document.documentElement.dataset.mpxPalette = nextPaletteId
     document.documentElement.dataset.mpxTheme = nextThemeId
+    document.documentElement.dataset.mpxPaletteMode = paletteMode
   }, [paletteDayId, paletteId, paletteMode, paletteNightId, styleId, themeId, updateSettings])
 
   useEffect(() => {

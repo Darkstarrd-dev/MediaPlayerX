@@ -100,6 +100,14 @@
   --mpx-splitter-handle-hover-bg: rgba(255, 159, 67, 0.86);
 
   --mpx-card-focus-ring: rgba(255, 159, 67, 0.24);
+  --mpx-sidebar-focus-metal-highlight: #f4dcab;
+  --mpx-sidebar-focus-metal-topline: #ddb56f;
+  --mpx-sidebar-focus-metal-mid: #b98434;
+  --mpx-sidebar-focus-metal-shadow: #6b4719;
+  --mpx-sidebar-focus-metal-specular: rgba(255, 238, 202, 0.9);
+  --mpx-sidebar-focus-metal-rim-shadow: rgba(53, 35, 12, 0.76);
+  --mpx-sidebar-focus-metal-glow: rgba(235, 178, 80, 0.42);
+  --mpx-sidebar-focus-metal-ambient: rgba(149, 98, 24, 0.26);
 
   --mpx-fullscreen-bg: #06080b;
   --mpx-fullscreen-footer-bg: var(--mpx-player-surface-bg);

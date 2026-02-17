@@ -27,8 +27,8 @@
   --mpx-checkbox-checked-bg: var(--mpx-accent);
   --mpx-checkbox-checked-border: var(--mpx-accent);
 
-  --mpx-bg-app: #f3f4f7;
-  --mpx-bg-workspace: #eceff3;
+  --mpx-bg-app: #eceff4;
+  --mpx-bg-workspace: #e4e9f0;
   --mpx-bg-panel: #ffffff;
   --mpx-bg-elevated: #ffffff;
   --mpx-bg-hover: rgba(57, 47, 34, 0.06);
@@ -42,8 +42,8 @@
   --mpx-text-heading: #25211c;
   --mpx-text-inverse: #fffefb;
 
-  --mpx-border-1: rgba(191, 181, 165, 0.84);
-  --mpx-border-2: #bcad98;
+  --mpx-border-1: rgba(181, 170, 153, 0.86);
+  --mpx-border-2: #b49f83;
   --mpx-border-focus: #9d8458;
 
   --mpx-accent: #9d8458;
@@ -100,6 +100,12 @@
   --mpx-splitter-handle-hover-bg: rgba(140, 116, 75, 0.92);
 
   --mpx-card-focus-ring: rgba(157, 132, 88, 0.26);
+  --mpx-sidebar-focus-day-gap: #eaf0f7;
+  --mpx-sidebar-focus-day-inner: #f8fbff;
+  --mpx-sidebar-focus-day-mid: #6f89ac;
+  --mpx-sidebar-focus-day-outer: #4e688a;
+  --mpx-sidebar-focus-day-glow: rgba(82, 113, 156, 0.36);
+  --mpx-sidebar-focus-day-ambient: rgba(65, 92, 130, 0.22);
 
   --mpx-fullscreen-bg: #080a0d;
   --mpx-fullscreen-footer-bg: var(--mpx-player-surface-bg);
@@ -150,9 +156,9 @@
   --mpx-control-hover-shadow: 5px 5px 14px rgba(131, 117, 92, 0.3), -5px -5px 14px rgba(255, 255, 255, 0.99);
   --mpx-control-active-shadow: inset 3px 3px 6px rgba(133, 119, 94, 0.3), inset -3px -3px 6px rgba(255, 255, 255, 0.95);
 
-  --mpx-main-bg: #ffffff;
-  --mpx-sidebar-bg: #ffffff;
-  --mpx-metadata-bg: #ffffff;
+  --mpx-main-bg: #fefefe;
+  --mpx-sidebar-bg: #fcfcfd;
+  --mpx-metadata-bg: #fcfcfd;
 }
 
 :root[data-mpx-palette="skeuomorphic-light-white"][data-mpx-style^="soft-skeuomorphic"] .image-grid,
