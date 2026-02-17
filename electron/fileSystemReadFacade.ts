@@ -70,6 +70,14 @@ import {
   type PauseManageCoverReviewTaskResponseDto,
   type ConfirmManageCoverReviewHideRequestDto,
   type ConfirmManageCoverReviewHideResponseDto,
+  type StartManageSubtitleCleanupRequestDto,
+  type StartManageSubtitleCleanupResponseDto,
+  type ReadManageSubtitleCleanupTaskRequestDto,
+  type ReadManageSubtitleCleanupTaskResponseDto,
+  type RunManageSubtitleCleanupRequestDto,
+  type RunManageSubtitleCleanupResponseDto,
+  type SaveManageSubtitleCleanupRequestDto,
+  type SaveManageSubtitleCleanupResponseDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
@@ -744,6 +752,30 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async confirmManageCoverReviewHide(request: ConfirmManageCoverReviewHideRequestDto): Promise<ConfirmManageCoverReviewHideResponseDto> {
     return this.managementHandlers.confirmManageCoverReviewHide(request)
+  }
+
+  async startManageSubtitleCleanup(
+    request: StartManageSubtitleCleanupRequestDto,
+  ): Promise<StartManageSubtitleCleanupResponseDto> {
+    return this.managementHandlers.startManageSubtitleCleanup(request)
+  }
+
+  async readManageSubtitleCleanupTask(
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+  ): Promise<ReadManageSubtitleCleanupTaskResponseDto> {
+    return this.managementHandlers.readManageSubtitleCleanupTask(request)
+  }
+
+  async runManageSubtitleCleanup(
+    request: RunManageSubtitleCleanupRequestDto,
+  ): Promise<RunManageSubtitleCleanupResponseDto> {
+    return this.managementHandlers.runManageSubtitleCleanup(request)
+  }
+
+  async saveManageSubtitleCleanup(
+    request: SaveManageSubtitleCleanupRequestDto,
+  ): Promise<SaveManageSubtitleCleanupResponseDto> {
+    return this.managementHandlers.saveManageSubtitleCleanup(request)
   }
 
   async writePackageMetadata(request: WritePackageMetadataRequestDto): Promise<WritePackageMetadataResponseDto> {

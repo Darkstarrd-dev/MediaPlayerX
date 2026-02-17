@@ -2,7 +2,8 @@
 .search-box input,
 .header-right select,
 .settings-block input,
-.settings-block select {
+.settings-block select,
+.settings-block textarea {
   border: 1px solid var(--mpx-input-border);
   border-radius: 8px;
   background: var(--mpx-input-bg);
@@ -21,6 +22,7 @@
 .header-right select:focus,
 .settings-block input:focus,
 .settings-block select:focus,
+.settings-block textarea:focus,
 .feature-query-input:focus {
   background: var(--mpx-input-focus-bg);
   border-color: var(--mpx-input-focus-border);
@@ -292,6 +294,7 @@
 .settings-block input[type='number'],
 .settings-block input[type='color'],
 .settings-block select,
+.settings-block textarea,
 .settings-block input[type='range'] {
   width: 100%;
 }
@@ -299,7 +302,8 @@
 .settings-block input[type='text'],
 .settings-block input[type='number'],
 .settings-block input[type='color'],
-.settings-block select {
+.settings-block select,
+.settings-block textarea {
   min-height: 38px;
 }
 
@@ -331,6 +335,20 @@
   margin-top: 10px;
   display: grid;
   gap: 10px;
+}
+
+.settings-scroll-hidden-textarea {
+  width: 100%;
+  min-height: 148px;
+  resize: vertical;
+  overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.settings-scroll-hidden-textarea::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .settings-theme-inline-row {

@@ -2,12 +2,20 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
+import SubtitleCleanupPanel from './subtitles/SubtitleCleanupPanel'
+import SubtitleOverlay from './subtitles/SubtitleOverlay'
 import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
 import { VideoControlIcon } from './VideoControlIcon'
 import { useMediaPreloadWindow } from './useMediaPreloadWindow'
 import { useI18n } from '../i18n/useI18n'
 import type { VideoItem } from '../types'
 import type { VideoFitMode } from '../features/media/videoFitMode'
+import type {
+  ReadManageSubtitleCleanupTaskResponseDto,
+  RunManageSubtitleCleanupResponseDto,
+  SaveManageSubtitleCleanupResponseDto,
+  StartManageSubtitleCleanupResponseDto,
+} from '../contracts/backend'
 import { clamp, formatSeconds } from '../utils/ui'
 
 type VideoPopoverKey = 'volume' | 'subtitle' | 'speed' | 'fit' | 'playlist'
@@ -63,6 +71,27 @@ interface VideoMainSectionProps {
   fullscreenActive: boolean
   coverImageUrl: string | null
   focusedVideo: VideoItem | null
+  subtitleCleanupVideoId: string | null
+  subtitleCleanupLlmEndpoint: string
+  subtitleCleanupLlmModel: string
+  subtitleCleanupLlmPrompt: string
+  startSubtitleCleanup?: (request: {
+    video_id: string
+  }) => Promise<StartManageSubtitleCleanupResponseDto>
+  readSubtitleCleanupTask?: (request: { task_id: string }) => Promise<ReadManageSubtitleCleanupTaskResponseDto>
+  runSubtitleCleanup?: (request: {
+    task_id: string
+    llm_endpoint: string
+    llm_model: string
+    llm_prompt?: string
+  }) => Promise<RunManageSubtitleCleanupResponseDto>
+  saveSubtitleCleanup?: (request: {
+    task_id: string
+    cleaned_subtitle_text: string
+  }) => Promise<SaveManageSubtitleCleanupResponseDto>
+  onSubtitleCleanupSaved: () => void
+  onSubtitleCleanupLlmEndpointChange: (value: string) => void
+  onSubtitleCleanupLlmModelChange: (value: string) => void
   active: boolean
   onTogglePlay: () => void
   onPrevVideo: () => void
@@ -128,6 +157,17 @@ function VideoMainSection({
   fullscreenActive,
   coverImageUrl,
   focusedVideo,
+  subtitleCleanupVideoId,
+  subtitleCleanupLlmEndpoint,
+  subtitleCleanupLlmModel,
+  subtitleCleanupLlmPrompt,
+  startSubtitleCleanup,
+  readSubtitleCleanupTask,
+  runSubtitleCleanup,
+  saveSubtitleCleanup,
+  onSubtitleCleanupSaved,
+  onSubtitleCleanupLlmEndpointChange,
+  onSubtitleCleanupLlmModelChange,
   active,
   onTogglePlay,
   onPrevVideo,
@@ -155,6 +195,8 @@ function VideoMainSection({
   const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] = useState(false)
   const [seekDraftTime, setSeekDraftTime] = useState<number | null>(null)
   const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
+  const [subtitleCleanupPanelOpen, setSubtitleCleanupPanelOpen] = useState(false)
+  const [manualSubtitleText, setManualSubtitleText] = useState<string | null>(null)
   const clampedTime = Math.min(videoTime, Math.max(0, durationSec))
   const displayTime = seekDraftTime == null ? clampedTime : clamp(seekDraftTime, 0, Math.max(0, durationSec))
   const progressPercent = durationSec > 0 ? clamp((displayTime / durationSec) * 100, 0, 100) : 0
@@ -177,6 +219,7 @@ function VideoMainSection({
     subtitleLoading ||
     Boolean(subtitlePanelContentText) ||
     subtitleOptions.length > 0
+  const subtitleOverlayText = autoSubtitleActive ? liveSubtitleText : manualSubtitleText
   const videoFitLabel =
     videoFitMode === 'fill'
       ? t('a11y.media.videoFitFill')
@@ -299,9 +342,59 @@ function VideoMainSection({
 
     const tracks = video.textTracks
     for (let index = 0; index < tracks.length; index += 1) {
-      tracks[index].mode = subtitleVisible && subtitleTrackUrl ? 'showing' : 'hidden'
+      if (autoSubtitleActive || !subtitleTrackUrl || !subtitleVisible) {
+        tracks[index].mode = 'disabled'
+      } else {
+        tracks[index].mode = 'hidden'
+      }
     }
-  }, [subtitleTrackUrl, subtitleVisible, videoSourceUrl])
+  }, [autoSubtitleActive, subtitleTrackUrl, subtitleVisible, videoSourceUrl])
+
+  useEffect(() => {
+    setManualSubtitleText(null)
+
+    const video = videoRef.current
+    if (!video || !videoSourceUrl || autoSubtitleActive || !subtitleTrackUrl || !subtitleVisible) {
+      return
+    }
+
+    const track = video.textTracks[0]
+    if (!track) {
+      return
+    }
+
+    const syncManualSubtitle = () => {
+      const activeCues = track.activeCues
+      if (!activeCues || activeCues.length === 0) {
+        setManualSubtitleText(null)
+        return
+      }
+
+      const lines: string[] = []
+      for (let i = 0; i < activeCues.length; i += 1) {
+        const cue = activeCues[i] as VTTCue
+        const cueText = typeof cue?.text === 'string' ? cue.text : ''
+        const normalized = cueText
+          .replace(/<[^>]+>/g, '')
+          .replace(/\r?\n+/g, '\n')
+          .trim()
+        if (normalized) {
+          lines.push(normalized)
+        }
+      }
+
+      setManualSubtitleText(lines.length > 0 ? lines.join('\n') : null)
+    }
+
+    syncManualSubtitle()
+    track.addEventListener('cuechange', syncManualSubtitle)
+    video.addEventListener('timeupdate', syncManualSubtitle)
+
+    return () => {
+      track.removeEventListener('cuechange', syncManualSubtitle)
+      video.removeEventListener('timeupdate', syncManualSubtitle)
+    }
+  }, [autoSubtitleActive, subtitleTrackUrl, subtitleVisible, videoSourceUrl])
 
   return (
     <>
@@ -338,6 +431,16 @@ function VideoMainSection({
                 onClick={onManageDelete}
               >
                 <MainUiIcon name="delete" />
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t('ui.media.subtitleCleanupTitle')}
+                title={t('ui.media.subtitleCleanupTitle')}
+                disabled={!subtitleCleanupVideoId}
+                onClick={() => setSubtitleCleanupPanelOpen(true)}
+              >
+                <MainUiIcon name="getMetaData" />
               </button>
               {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
             </div>
@@ -450,11 +553,7 @@ function VideoMainSection({
           </video>
         ) : null}
 
-        {autoSubtitleActive && subtitleVisible && liveSubtitleText ? (
-          <div aria-live="polite" className="subtitle-overlay" style={subtitleOverlayStyle}>
-            {liveSubtitleText}
-          </div>
-        ) : null}
+        <SubtitleOverlay text={subtitleOverlayText} visible={subtitleVisible} style={subtitleOverlayStyle} />
 
         {showCover && coverImageUrl ? (
           <img
@@ -471,8 +570,9 @@ function VideoMainSection({
           </div>
         ) : null}
         </div>
+      </div>
 
-        <div className="video-controls-shell">
+      <div className="video-controls-shell">
         <div className="video-controls-progress">
           <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
           <input
@@ -733,8 +833,24 @@ function VideoMainSection({
             </div>
           </div>
         </div>
-        </div>
       </div>
+
+      <SubtitleCleanupPanel
+        open={subtitleCleanupPanelOpen}
+        videoId={subtitleCleanupVideoId}
+        videoLabel={focusedVideo?.workTitle?.trim() || focusedVideo?.fileName || '-'}
+        llmEndpoint={subtitleCleanupLlmEndpoint}
+        llmModel={subtitleCleanupLlmModel}
+        llmPrompt={subtitleCleanupLlmPrompt}
+        startSubtitleCleanup={startSubtitleCleanup}
+        readSubtitleCleanupTask={readSubtitleCleanupTask}
+        runSubtitleCleanup={runSubtitleCleanup}
+        saveSubtitleCleanup={saveSubtitleCleanup}
+        onSaved={onSubtitleCleanupSaved}
+        onClose={() => setSubtitleCleanupPanelOpen(false)}
+        onLlmEndpointChange={onSubtitleCleanupLlmEndpointChange}
+        onLlmModelChange={onSubtitleCleanupLlmModelChange}
+      />
     </>
   )
 }

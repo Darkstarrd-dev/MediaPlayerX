@@ -84,6 +84,14 @@ import type {
   PauseManageCoverReviewTaskResponseDto,
   ConfirmManageCoverReviewHideRequestDto,
   ConfirmManageCoverReviewHideResponseDto,
+  StartManageSubtitleCleanupRequestDto,
+  StartManageSubtitleCleanupResponseDto,
+  ReadManageSubtitleCleanupTaskRequestDto,
+  ReadManageSubtitleCleanupTaskResponseDto,
+  RunManageSubtitleCleanupRequestDto,
+  RunManageSubtitleCleanupResponseDto,
+  SaveManageSubtitleCleanupRequestDto,
+  SaveManageSubtitleCleanupResponseDto,
   SetImageHiddenRequestDto,
   SetImageHiddenResponseDto,
   DeleteImageItemsRequestDto,
@@ -137,6 +145,18 @@ interface MediaPlayerBackendApi {
   confirmManageCoverReviewHide?: (
     request: ConfirmManageCoverReviewHideRequestDto,
   ) => Promise<ConfirmManageCoverReviewHideResponseDto>
+  startManageSubtitleCleanup?: (
+    request: StartManageSubtitleCleanupRequestDto,
+  ) => Promise<StartManageSubtitleCleanupResponseDto>
+  readManageSubtitleCleanupTask?: (
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+  ) => Promise<ReadManageSubtitleCleanupTaskResponseDto>
+  runManageSubtitleCleanup?: (
+    request: RunManageSubtitleCleanupRequestDto,
+  ) => Promise<RunManageSubtitleCleanupResponseDto>
+  saveManageSubtitleCleanup?: (
+    request: SaveManageSubtitleCleanupRequestDto,
+  ) => Promise<SaveManageSubtitleCleanupResponseDto>
   writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
   writePackageExternalMetadata?: (
     request: WritePackageExternalMetadataRequestDto,

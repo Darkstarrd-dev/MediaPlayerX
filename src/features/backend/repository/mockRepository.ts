@@ -11,6 +11,7 @@ import {
   type ConfirmManageAdReviewDeleteResponseDto,
   type ConfirmManageCoverReviewHideRequestDto,
   type ConfirmManageCoverReviewHideResponseDto,
+  type ManageSubtitleCleanupTaskDto,
   type DeleteImageItemsRequestDto,
   type DeleteImageItemsResponseDto,
   type DeleteSidebarNodesRequestDto,
@@ -92,6 +93,14 @@ import {
   type PauseManageAdReviewTaskResponseDto,
   type PauseManageCoverReviewTaskRequestDto,
   type PauseManageCoverReviewTaskResponseDto,
+  type ReadManageSubtitleCleanupTaskRequestDto,
+  type ReadManageSubtitleCleanupTaskResponseDto,
+  type RunManageSubtitleCleanupRequestDto,
+  type RunManageSubtitleCleanupResponseDto,
+  type SaveManageSubtitleCleanupRequestDto,
+  type SaveManageSubtitleCleanupResponseDto,
+  type StartManageSubtitleCleanupRequestDto,
+  type StartManageSubtitleCleanupResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
   type SaveVideoCoverRequestDto,
@@ -175,6 +184,8 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     provider: 'cpu' | 'directml'
     running: boolean
   } | null = null
+
+  private readonly subtitleCleanupTasks = new Map<string, ManageSubtitleCleanupTaskDto>()
 
   private state: MockRepositoryState = {
     playlistIds: INITIAL_SNAPSHOT.videos.slice(0, 3).map((v) => v.id),
@@ -405,6 +416,107 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<ConfirmManageCoverReviewHideResponseDto> {
     return resolveAsync(this.confirmManageCoverReviewHideSync(request), options)
+  }
+
+  startManageSubtitleCleanupSync(request: StartManageSubtitleCleanupRequestDto): StartManageSubtitleCleanupResponseDto {
+    const now = Date.now()
+    const taskId = `mock-subtitle-cleanup-${now}-${Math.floor(Math.random() * 100_000)}`
+    const task: ManageSubtitleCleanupTaskDto = {
+      task_id: taskId,
+      video_id: request.video_id,
+      subtitle_path: `Z:/mock/${request.video_id}.srt`,
+      status: 'review',
+      raw_stage: 'ready',
+      cleanup_stage: 'ready',
+      raw_subtitle_text: '1\n00:00:00,000 --> 00:00:01,200\nmock raw subtitle\n',
+      cleaned_subtitle_text: '1\n00:00:00,000 --> 00:00:01,200\nmock cleaned subtitle\n',
+      message: 'mock subtitle cleanup ready',
+      error_detail: null,
+      created_at_ms: now,
+      updated_at_ms: now,
+    }
+    this.subtitleCleanupTasks.set(taskId, task)
+    return { task }
+  }
+
+  async startManageSubtitleCleanup(
+    request: StartManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartManageSubtitleCleanupResponseDto> {
+    return resolveAsync(this.startManageSubtitleCleanupSync(request), options)
+  }
+
+  readManageSubtitleCleanupTaskSync(
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+  ): ReadManageSubtitleCleanupTaskResponseDto {
+    return {
+      task: this.subtitleCleanupTasks.get(request.task_id) ?? null,
+    }
+  }
+
+  async readManageSubtitleCleanupTask(
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageSubtitleCleanupTaskResponseDto> {
+    return resolveAsync(this.readManageSubtitleCleanupTaskSync(request), options)
+  }
+
+  runManageSubtitleCleanupSync(request: RunManageSubtitleCleanupRequestDto): RunManageSubtitleCleanupResponseDto {
+    const task = this.subtitleCleanupTasks.get(request.task_id)
+    if (!task) {
+      throw new Error(`subtitle_cleanup_task_not_found:${request.task_id}`)
+    }
+    if (task.raw_stage !== 'ready' || !task.raw_subtitle_text.trim()) {
+      throw new Error('subtitle_cleanup_raw_not_ready')
+    }
+
+    const updatedAtMs = Date.now()
+    const nextTask: ManageSubtitleCleanupTaskDto = {
+      ...task,
+      status: 'review',
+      cleanup_stage: 'ready',
+      cleaned_subtitle_text: task.raw_subtitle_text,
+      message: 'mock subtitle cleanup done',
+      error_detail: null,
+      updated_at_ms: updatedAtMs,
+    }
+    this.subtitleCleanupTasks.set(task.task_id, nextTask)
+    return { task: nextTask }
+  }
+
+  async runManageSubtitleCleanup(
+    request: RunManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RunManageSubtitleCleanupResponseDto> {
+    return resolveAsync(this.runManageSubtitleCleanupSync(request), options)
+  }
+
+  saveManageSubtitleCleanupSync(request: SaveManageSubtitleCleanupRequestDto): SaveManageSubtitleCleanupResponseDto {
+    const task = this.subtitleCleanupTasks.get(request.task_id)
+    if (!task) {
+      throw new Error(`subtitle_cleanup_task_not_found:${request.task_id}`)
+    }
+    const updatedAtMs = Date.now()
+    const nextTask: ManageSubtitleCleanupTaskDto = {
+      ...task,
+      cleaned_subtitle_text: request.cleaned_subtitle_text,
+      status: task.status === 'failed' ? 'failed' : 'review',
+      message: 'mock subtitle cleanup saved',
+      updated_at_ms: updatedAtMs,
+    }
+    this.subtitleCleanupTasks.set(task.task_id, nextTask)
+    return {
+      task: nextTask,
+      saved_path: task.subtitle_path,
+      updated_at_ms: updatedAtMs,
+    }
+  }
+
+  async saveManageSubtitleCleanup(
+    request: SaveManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SaveManageSubtitleCleanupResponseDto> {
+    return resolveAsync(this.saveManageSubtitleCleanupSync(request), options)
   }
 
   writePackageMetadataSync(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto {

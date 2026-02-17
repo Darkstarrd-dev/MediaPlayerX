@@ -80,6 +80,14 @@ import {
   pauseManageCoverReviewTaskResponseSchema,
   confirmManageCoverReviewHideRequestSchema,
   confirmManageCoverReviewHideResponseSchema,
+  startManageSubtitleCleanupRequestSchema,
+  startManageSubtitleCleanupResponseSchema,
+  readManageSubtitleCleanupTaskRequestSchema,
+  readManageSubtitleCleanupTaskResponseSchema,
+  runManageSubtitleCleanupRequestSchema,
+  runManageSubtitleCleanupResponseSchema,
+  saveManageSubtitleCleanupRequestSchema,
+  saveManageSubtitleCleanupResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -206,6 +214,26 @@ const backendApi = {
     const parsed = confirmManageCoverReviewHideRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.confirmManageCoverReviewHide, parsed)
     return confirmManageCoverReviewHideResponseSchema.parse(response)
+  },
+  startManageSubtitleCleanup: async (request: unknown) => {
+    const parsed = startManageSubtitleCleanupRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.startManageSubtitleCleanup, parsed)
+    return startManageSubtitleCleanupResponseSchema.parse(response)
+  },
+  readManageSubtitleCleanupTask: async (request: unknown) => {
+    const parsed = readManageSubtitleCleanupTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readManageSubtitleCleanupTask, parsed)
+    return readManageSubtitleCleanupTaskResponseSchema.parse(response)
+  },
+  runManageSubtitleCleanup: async (request: unknown) => {
+    const parsed = runManageSubtitleCleanupRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.runManageSubtitleCleanup, parsed)
+    return runManageSubtitleCleanupResponseSchema.parse(response)
+  },
+  saveManageSubtitleCleanup: async (request: unknown) => {
+    const parsed = saveManageSubtitleCleanupRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.saveManageSubtitleCleanup, parsed)
+    return saveManageSubtitleCleanupResponseSchema.parse(response)
   },
   writePackageMetadata: async (request: unknown) => {
     const parsed = writePackageMetadataRequestSchema.parse(request)

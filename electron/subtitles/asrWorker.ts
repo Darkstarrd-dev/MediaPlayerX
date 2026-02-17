@@ -19,7 +19,7 @@ import {
   type SubtitleSessionProviderDto,
 } from '../../src/contracts/backend'
 
-type SubtitleWorkerCommand = 'init' | 'stop' | 'reset' | 'flush' | 'push-audio'
+type SubtitleWorkerCommand = 'init' | 'stop' | 'reset' | 'flush' | 'push-audio' | 'transcribe-all'
 
 interface SubtitleWorkerRequest {
   kind: 'request'
@@ -31,6 +31,13 @@ interface SubtitleWorkerRequest {
 interface InitRequestPayload extends StartSubtitleSessionRequestDto {
   engine_module_root: string
   available_providers: Array<'cpu' | 'directml'>
+}
+
+interface TranscribeAllRequestPayload {
+  chunk_base64: string
+  sample_rate_hz: number
+  channel_count: number
+  duration_sec?: number
 }
 
 interface RuntimeSessionState {
@@ -46,6 +53,9 @@ interface RuntimeSessionState {
     getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
       lang?: string
       text?: string
+      tokens?: string[]
+      timestamps?: number[]
+      durations?: number[]
     }
     createStream: () => { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
   }
@@ -226,6 +236,9 @@ function loadSherpaModule(moduleRoot: string): {
     getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
       lang?: string
       text?: string
+      tokens?: string[]
+      timestamps?: number[]
+      durations?: number[]
     }
   }
 } {
@@ -242,6 +255,9 @@ function loadSherpaModule(moduleRoot: string): {
       getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
         lang?: string
         text?: string
+        tokens?: string[]
+        timestamps?: number[]
+        durations?: number[]
       }
     }
   }
@@ -252,7 +268,12 @@ function normalizeRecognizedText(value: string | undefined): string {
   if (!raw) {
     return ''
   }
-  return raw.replace(/<\|[^|]+\|>/g, '').replace(/\s+/g, ' ').trim()
+  return raw
+    .replace(/<\|[^|]+\|>/g, '')
+    .replace(/<[a-z][^>]{0,80}>/gi, '')
+    .replace(/<\/[a-z][^>]{0,80}>/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function normalizeLangTag(value: string | undefined): string | null {
@@ -327,6 +348,149 @@ function decodeFloat32Buffer(chunkBuffer: Buffer): Float32Array {
 
 function makeCueId(sessionId: string, cueSeed: number): string {
   return `${sessionId}:${cueSeed}`
+}
+
+function toFiniteNumbers(value: unknown): number[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+  const numbers: number[] = []
+  for (let i = 0; i < value.length; i += 1) {
+    const candidate = Number(value[i])
+    if (Number.isFinite(candidate)) {
+      numbers.push(candidate)
+    }
+  }
+  return numbers
+}
+
+function normalizeTokenText(value: string): string {
+  return value
+    .replace(/<\|[^|]+\|>/g, '')
+    .replace(/<[a-z][^>]{0,80}>/gi, '')
+    .replace(/<\/[a-z][^>]{0,80}>/gi, '')
+    .replaceAll('▁', ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function clampTime(value: number, durationSec: number): number {
+  const maxSec = Math.max(0, durationSec)
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+  return Math.min(Math.max(value, 0), maxSec + 1)
+}
+
+function buildOfflineResultCues(
+  currentSession: RuntimeSessionState,
+  result: { text?: string; lang?: string; tokens?: string[]; timestamps?: number[]; durations?: number[] },
+  durationSec: number,
+): SubtitleCueDto[] {
+  const fallbackText = normalizeRecognizedText(result.text)
+  const rawTokens = Array.isArray(result.tokens) ? result.tokens.filter((item): item is string => typeof item === 'string') : []
+  const timestamps = toFiniteNumbers(result.timestamps)
+  const durations = toFiniteNumbers(result.durations)
+  if (rawTokens.length === 0 || timestamps.length === 0) {
+    if (!fallbackText) {
+      return []
+    }
+    currentSession.cueSeed += 1
+    return [
+      {
+        id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
+        start_sec: 0,
+        end_sec: Math.max(0.8, durationSec),
+        text: fallbackText,
+        lang: currentSession.requestedLanguage === 'auto' ? normalizeLangTag(result.lang) : currentSession.requestedLanguage,
+      },
+    ]
+  }
+
+  const maxTimestamp = Math.max(...timestamps, 0)
+  const maxDuration = Math.max(...durations, 0)
+  const likelyMs = (durationSec > 0 && maxTimestamp > durationSec * 20) || (durationSec > 0 && maxDuration > durationSec * 20)
+  const timeScale = likelyMs ? 0.001 : 1
+
+  const cues: SubtitleCueDto[] = []
+  const cueLanguage =
+    currentSession.requestedLanguage === 'auto' ? normalizeLangTag(result.lang) : currentSession.requestedLanguage
+
+  let cueStart = -1
+  let cueEnd = 0
+  let textBuffer = ''
+  const pushCue = () => {
+    const text = textBuffer.replace(/\s+/g, ' ').trim()
+    if (!text) {
+      cueStart = -1
+      cueEnd = 0
+      textBuffer = ''
+      return
+    }
+    currentSession.cueSeed += 1
+    cues.push({
+      id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
+      start_sec: clampTime(cueStart >= 0 ? cueStart : 0, durationSec),
+      end_sec: clampTime(Math.max((cueStart >= 0 ? cueStart : 0) + 0.4, cueEnd), durationSec),
+      text,
+      lang: cueLanguage,
+    })
+    cueStart = -1
+    cueEnd = 0
+    textBuffer = ''
+  }
+
+  for (let i = 0; i < rawTokens.length; i += 1) {
+    const tokenText = normalizeTokenText(rawTokens[i])
+    if (!tokenText) {
+      continue
+    }
+
+    const tokenStart = clampTime((timestamps[i] ?? timestamps[timestamps.length - 1] ?? 0) * timeScale, durationSec)
+    const durationCandidate = Math.max(0, (durations[i] ?? 0) * timeScale)
+    const nextStart = clampTime((timestamps[i + 1] ?? tokenStart) * timeScale, durationSec)
+    const tokenEnd = clampTime(
+      durationCandidate > 0 ? tokenStart + durationCandidate : Math.max(tokenStart + 0.25, nextStart),
+      durationSec,
+    )
+
+    if (cueStart < 0) {
+      cueStart = tokenStart
+      cueEnd = tokenEnd
+    } else {
+      cueEnd = Math.max(cueEnd, tokenEnd)
+    }
+
+    if (textBuffer && /^[A-Za-z0-9]/.test(tokenText) && !textBuffer.endsWith(' ')) {
+      textBuffer += ' '
+    }
+    textBuffer += tokenText
+
+    const cueDuration = cueStart >= 0 ? cueEnd - cueStart : 0
+    const hitPunctuation = /[。！？!?；;，,.]$/.test(tokenText)
+    if (hitPunctuation || cueDuration >= 3.8 || textBuffer.length >= 42) {
+      pushCue()
+    }
+  }
+
+  pushCue()
+  if (cues.length > 0) {
+    return cues
+  }
+
+  if (!fallbackText) {
+    return []
+  }
+  currentSession.cueSeed += 1
+  return [
+    {
+      id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
+      start_sec: 0,
+      end_sec: Math.max(0.8, durationSec),
+      text: fallbackText,
+      lang: cueLanguage,
+    },
+  ]
 }
 
 function tryDecodeAndBuildCues(
@@ -535,6 +699,62 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
   })
 }
 
+async function handleTranscribeAll(rawPayload: unknown): Promise<unknown> {
+  const request = rawPayload as TranscribeAllRequestPayload
+  const currentSession = ensureSession()
+
+  const sampleRate = Number.isFinite(request.sample_rate_hz) && request.sample_rate_hz > 0
+    ? Math.floor(request.sample_rate_hz)
+    : 16_000
+  const channelCount = Number.isFinite(request.channel_count) && request.channel_count > 0
+    ? Math.floor(request.channel_count)
+    : 1
+
+  const sourceBuffer = Buffer.from(request.chunk_base64, 'base64')
+  const rawSamples = decodeFloat32Buffer(sourceBuffer)
+  let monoSamples = rawSamples
+  if (channelCount > 1 && rawSamples.length > 0) {
+    const frameCount = Math.floor(rawSamples.length / channelCount)
+    const downmixed = new Float32Array(frameCount)
+    for (let frame = 0; frame < frameCount; frame += 1) {
+      let mixed = 0
+      for (let channel = 0; channel < channelCount; channel += 1) {
+        mixed += rawSamples[frame * channelCount + channel] ?? 0
+      }
+      downmixed[frame] = mixed / channelCount
+    }
+    monoSamples = downmixed
+  }
+
+  const computedDuration = sampleRate > 0 ? monoSamples.length / sampleRate : 0
+  const durationSec = Number.isFinite(request.duration_sec) && (request.duration_sec ?? 0) > 0
+    ? Number(request.duration_sec)
+    : computedDuration
+
+  currentSession.stream = currentSession.recognizer.createStream()
+  currentSession.pendingSamplesSinceDecode = 0
+  currentSession.committedText = ''
+  currentSession.lastChunkEndSec = Math.max(0, durationSec)
+  currentSession.stream.acceptWaveform({ samples: monoSamples, sampleRate })
+
+  const startedAt = nowMs()
+  currentSession.recognizer.decode(currentSession.stream)
+  const elapsedMs = Math.max(1, nowMs() - startedAt)
+  const result = currentSession.recognizer.getResult(currentSession.stream)
+  const cues = buildOfflineResultCues(currentSession, result, durationSec)
+
+  return {
+    session_id: currentSession.sessionId,
+    provider: currentSession.provider,
+    cues,
+    text: normalizeRecognizedText(result.text),
+    duration_sec: durationSec,
+    elapsed_ms: elapsedMs,
+    rtf: durationSec > 0 ? elapsedMs / 1000 / durationSec : null,
+    updated_at_ms: nowMs(),
+  }
+}
+
 async function handleRequest(command: SubtitleWorkerCommand, payload: unknown): Promise<unknown> {
   switch (command) {
     case 'init':
@@ -547,6 +767,8 @@ async function handleRequest(command: SubtitleWorkerCommand, payload: unknown): 
       return await handleFlush()
     case 'push-audio':
       return await handlePushAudio(payload)
+    case 'transcribe-all':
+      return await handleTranscribeAll(payload)
     default:
       throw new Error(`subtitle_asr_worker_unknown_command:${command satisfies never}`)
   }

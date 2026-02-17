@@ -46,6 +46,8 @@ interface BuildSettingsPanelPropsParams {
   subtitleStrokeWidth: number
   subtitleStrokeShadowColor: string
   subtitleStrokeShadowRadius: number
+  subtitleFontSize: number
+  subtitleMaxLineChars: number
   subtitleOffsetY: number
   subtitleStylePanelExpanded: boolean
   subtitleModelsLoading: boolean
@@ -62,6 +64,9 @@ interface BuildSettingsPanelPropsParams {
   adReviewVisionTestMessage: string | null
   adReviewVisionSavePending: boolean
   adReviewVisionSaveMessage: string | null
+  subtitleCleanupLlmEndpoint: string
+  subtitleCleanupLlmModel: string
+  subtitleCleanupLlmPrompt: string
   shortcuts: SettingsPanelProps['shortcuts']
   shortcutConflicts: SettingsPanelProps['shortcutConflicts']
   databaseResetPending: boolean
@@ -140,6 +145,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     subtitleStrokeWidth: params.subtitleStrokeWidth,
     subtitleStrokeShadowColor: params.subtitleStrokeShadowColor,
     subtitleStrokeShadowRadius: params.subtitleStrokeShadowRadius,
+    subtitleFontSize: params.subtitleFontSize,
+    subtitleMaxLineChars: params.subtitleMaxLineChars,
     subtitleOffsetY: params.subtitleOffsetY,
     subtitleStylePanelExpanded: params.subtitleStylePanelExpanded,
     subtitleModelsLoading: params.subtitleModelsLoading,
@@ -156,6 +163,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     adReviewVisionTestMessage: params.adReviewVisionTestMessage,
     adReviewVisionSavePending: params.adReviewVisionSavePending,
     adReviewVisionSaveMessage: params.adReviewVisionSaveMessage,
+    subtitleCleanupLlmEndpoint: params.subtitleCleanupLlmEndpoint,
+    subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
+    subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
     shortcuts: params.shortcuts,
     shortcutConflicts: params.shortcutConflicts,
     databaseResetPending: params.databaseResetPending,
@@ -277,6 +287,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onSubtitleStrokeWidthChange: (value) => params.updateSettings({ subtitleStrokeWidth: value }),
     onSubtitleStrokeShadowColorChange: (value) => params.updateSettings({ subtitleStrokeShadowColor: value }),
     onSubtitleStrokeShadowRadiusChange: (value) => params.updateSettings({ subtitleStrokeShadowRadius: value }),
+    onSubtitleFontSizeChange: (value) => params.updateSettings({ subtitleFontSize: value }),
+    onSubtitleMaxLineCharsChange: (value) => params.updateSettings({ subtitleMaxLineChars: value }),
     onSubtitleOffsetYChange: (value) => params.updateSettings({ subtitleOffsetY: value }),
     onSubtitleStylePanelExpandedChange: (value) => params.updateSettings({ subtitleStylePanelExpanded: value }),
     onRefreshSubtitleModels: params.refreshSubtitleModels,
@@ -295,6 +307,18 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       }),
     onTestAdReviewVisionModel: params.testAdReviewVisionModel,
     onSaveAdReviewVisionModel: params.saveAdReviewVisionModel,
+    onSubtitleCleanupLlmEndpointChange: (value) =>
+      params.updateSettings({
+        subtitleCleanupLlmEndpoint: value,
+      }),
+    onSubtitleCleanupLlmModelChange: (value) =>
+      params.updateSettings({
+        subtitleCleanupLlmModel: value,
+      }),
+    onSubtitleCleanupLlmPromptChange: (value) =>
+      params.updateSettings({
+        subtitleCleanupLlmPrompt: value,
+      }),
     onSetShortcut: params.setShortcut,
     onResetShortcuts: params.resetShortcuts,
     onClearDatabase: params.clearDatabaseForDev,

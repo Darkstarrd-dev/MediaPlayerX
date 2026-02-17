@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto'
-import { promises as fs } from 'node:fs'
+import { existsSync, promises as fs } from 'node:fs'
 import path from 'node:path'
+import { Worker } from 'node:worker_threads'
 import axios from 'axios'
 
 import {
   listVideoSubtitlesResponseSchema,
+  manageSubtitleCleanupTaskSchema,
   prepareSubtitleTrackResponseSchema,
   readAppStateResponseSchema,
   readImageMetadataResponseSchema,
@@ -20,6 +22,7 @@ import {
   type LibrarySnapshotDto,
   type ListVideoSubtitlesRequestDto,
   type ListVideoSubtitlesResponseDto,
+  type ManageSubtitleCleanupTaskDto,
   type MediaLocatorDto,
   type PrepareSubtitleTrackRequestDto,
   type PrepareSubtitleTrackResponseDto,
@@ -31,9 +34,17 @@ import {
   type ReadImagePageResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
+  type ReadManageSubtitleCleanupTaskRequestDto,
+  type ReadManageSubtitleCleanupTaskResponseDto,
+  type RunManageSubtitleCleanupRequestDto,
+  type RunManageSubtitleCleanupResponseDto,
   type ReadPlaylistResponseDto,
+  type SaveManageSubtitleCleanupRequestDto,
+  type SaveManageSubtitleCleanupResponseDto,
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
+  type StartManageSubtitleCleanupRequestDto,
+  type StartManageSubtitleCleanupResponseDto,
   type WriteAppStateRequestDto,
   type WriteAppStateResponseDto,
   type WritePackageGradeRequestDto,
@@ -49,6 +60,7 @@ import {
   type WriteAudioMetadataRequestDto,
   type WriteAudioMetadataResponseDto,
 } from '../../../src/contracts/backend'
+import { normalizeChatCompletionsUrl } from '../../manageAdReview/openAiVisionClient'
 import {
   applyPackageMetadataWrite,
   applyVideoMetadataWrite,
@@ -60,11 +72,269 @@ import { buildImageSidebarTree } from '../../fileSystemSidebarTree'
 import { captureVideoCoverImage } from '../../fileSystemVideoCoverCapture'
 import { detectMimeTypeByExtension, makeStableId, toDeterministicCoverColor, toSafeSizeKb } from '../../fileSystemServiceHelpers'
 import { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
+import { probeSubtitleEngineStatus } from '../../subtitles/subtitleEngineProbe'
 import type { PersistedVideoCoverRecord } from './librarySnapshotService'
 import type { RuntimeDependencySnapshot } from './runtimeDependencyService'
 
 const SOURCE_COVER_EXT_ALLOWLIST = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'])
 const SUBTITLE_EXTENSIONS = new Set(['.vtt', '.srt', '.ass', '.ssa'])
+const SETTINGS_STATE_KEY = 'ui_settings_v1'
+const SUBTITLE_ASR_INIT_TIMEOUT_MS = 90_000
+const SUBTITLE_ASR_TRANSCRIBE_TIMEOUT_BASE_MS = 60_000
+const SUBTITLE_ASR_TRANSCRIBE_TIMEOUT_PER_SEC_MS = 6_000
+const SUBTITLE_ASR_TRANSCRIBE_TIMEOUT_MIN_MS = 180_000
+const SUBTITLE_ASR_TRANSCRIBE_TIMEOUT_CAP_MS = 30 * 60_000
+const SUBTITLE_CLEANUP_LLM_TIMEOUT_MS = 3 * 60_000
+const DEFAULT_SUBTITLE_CLEANUP_PROMPT =
+  'You are a subtitle cleanup assistant. Keep timing lines and numbering valid SRT format. Only return cleaned full SRT content. Remove obvious ASR mistakes, fix punctuation and segmentation, do not invent content.'
+const LANGUAGE_TAG_PATTERN = /^[a-z]{2,3}(?:-[a-z0-9]{2,8}){0,2}$/i
+
+type SubtitleWorkerCommand = 'init' | 'stop' | 'reset' | 'flush' | 'push-audio' | 'transcribe-all'
+
+interface SubtitleWorkerRequest {
+  kind: 'request'
+  request_id: string
+  command: SubtitleWorkerCommand
+  payload: unknown
+}
+
+interface SubtitleWorkerResponse {
+  kind: 'response'
+  request_id: string
+  ok: boolean
+  payload?: unknown
+  error?: string
+}
+
+interface SubtitleWorkerCue {
+  start_sec: number
+  end_sec: number
+  text: string
+}
+
+interface PersistedUiSettingsLike {
+  subtitleModelDir?: unknown
+  subtitleSelectedModelId?: unknown
+  subtitleLanguage?: unknown
+}
+
+function formatSrtTime(seconds: number): string {
+  const clamped = Math.max(0, Number.isFinite(seconds) ? seconds : 0)
+  const wholeMs = Math.floor(clamped * 1000)
+  const ms = wholeMs % 1000
+  const wholeSec = Math.floor(wholeMs / 1000)
+  const sec = wholeSec % 60
+  const wholeMin = Math.floor(wholeSec / 60)
+  const min = wholeMin % 60
+  const hour = Math.floor(wholeMin / 60)
+  return `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')},${String(ms).padStart(3, '0')}`
+}
+
+function cuesToSrt(cues: SubtitleWorkerCue[]): string {
+  const lines: string[] = []
+  let cueIndex = 1
+  for (let index = 0; index < cues.length; index += 1) {
+    const cue = cues[index]
+    const cueText = cue.text.trim()
+    if (!cueText) {
+      continue
+    }
+    lines.push(String(cueIndex))
+    lines.push(`${formatSrtTime(cue.start_sec)} --> ${formatSrtTime(Math.max(cue.start_sec + 0.2, cue.end_sec))}`)
+    lines.push(cueText)
+    lines.push('')
+    cueIndex += 1
+  }
+  return lines.join('\n').trim()
+}
+
+function normalizeLanguageTag(tag: string): string {
+  const parts = tag
+    .trim()
+    .split('-')
+    .filter(Boolean)
+  if (parts.length === 0) {
+    return ''
+  }
+  return parts
+    .map((part, index) => {
+      if (index === 0) {
+        return part.toLowerCase()
+      }
+      if (part.length <= 3 && /^[a-z]+$/i.test(part)) {
+        return part.toUpperCase()
+      }
+      return part.toLowerCase()
+    })
+    .join('-')
+}
+
+function detectSubtitleLanguageLabel(fileName: string, videoStem: string): string | null {
+  const ext = path.extname(fileName)
+  const fileStem = path.basename(fileName, ext)
+  const normalizedVideoStem = videoStem.trim().toLowerCase()
+  const normalizedFileStem = fileStem.trim().toLowerCase()
+  let candidate = ''
+
+  if (normalizedFileStem.startsWith(`${normalizedVideoStem}.`)) {
+    candidate = fileStem.slice(videoStem.length + 1)
+  } else {
+    const segments = fileStem.split('.')
+    if (segments.length >= 2) {
+      candidate = segments[segments.length - 1] ?? ''
+    }
+  }
+
+  const trimmed = candidate.trim()
+  if (!trimmed || !LANGUAGE_TAG_PATTERN.test(trimmed)) {
+    return null
+  }
+
+  const normalized = normalizeLanguageTag(trimmed)
+  return normalized || null
+}
+
+function tryParseSseDataLine(line: string): string | null {
+  const raw = line.trim()
+  if (!raw.startsWith('data:')) {
+    return null
+  }
+  const payload = raw.slice(5).trim()
+  return payload || null
+}
+
+function extractStreamDeltaText(payload: unknown): string {
+  if (!payload || typeof payload !== 'object') {
+    return ''
+  }
+  const choices = (payload as { choices?: unknown }).choices
+  if (!Array.isArray(choices) || choices.length === 0) {
+    return ''
+  }
+  const first = choices[0]
+  if (!first || typeof first !== 'object') {
+    return ''
+  }
+  const delta = (first as { delta?: unknown }).delta
+  if (!delta || typeof delta !== 'object') {
+    return ''
+  }
+  const content = (delta as { content?: unknown }).content
+  if (typeof content === 'string') {
+    return content
+  }
+  if (!Array.isArray(content)) {
+    return ''
+  }
+  return content
+    .map((item) => (item && typeof item === 'object' && typeof (item as { text?: unknown }).text === 'string'
+      ? ((item as { text: string }).text)
+      : ''))
+    .join('')
+}
+
+function extractChatMessageText(payload: unknown): string {
+  if (!payload || typeof payload !== 'object') {
+    return ''
+  }
+  const choices = (payload as { choices?: unknown }).choices
+  if (!Array.isArray(choices) || choices.length === 0) {
+    return ''
+  }
+  const first = choices[0]
+  if (!first || typeof first !== 'object') {
+    return ''
+  }
+  const message = (first as { message?: unknown }).message
+  if (!message || typeof message !== 'object') {
+    return ''
+  }
+  const content = (message as { content?: unknown }).content
+  if (typeof content === 'string') {
+    return content
+  }
+  if (!Array.isArray(content)) {
+    return ''
+  }
+  return content
+    .map((item) => (item && typeof item === 'object' && typeof (item as { text?: unknown }).text === 'string'
+      ? ((item as { text: string }).text)
+      : ''))
+    .join('')
+}
+
+class SubtitleWorkerClient {
+  private requestSeed = 0
+  private readonly pending = new Map<string, { resolve: (value: unknown) => void; reject: (error: Error) => void; timeout: ReturnType<typeof setTimeout> }>()
+
+  constructor(private readonly worker: Worker) {
+    this.worker.on('message', (raw: unknown) => {
+      const message = raw as Partial<SubtitleWorkerResponse>
+      if (message.kind !== 'response' || typeof message.request_id !== 'string') {
+        return
+      }
+      const pending = this.pending.get(message.request_id)
+      if (!pending) {
+        return
+      }
+      clearTimeout(pending.timeout)
+      this.pending.delete(message.request_id)
+      if (!message.ok) {
+        pending.reject(new Error(message.error ?? 'subtitle_worker_failed'))
+        return
+      }
+      pending.resolve(message.payload)
+    })
+
+    this.worker.on('error', (error) => {
+      this.failAll(error)
+    })
+    this.worker.on('exit', (code) => {
+      if (code !== 0) {
+        this.failAll(new Error(`subtitle_worker_exit_${code}`))
+      }
+    })
+  }
+
+  async request(command: SubtitleWorkerCommand, payload: unknown, timeoutMs = 20_000): Promise<unknown> {
+    const requestId = `subtitle-worker-${Date.now()}-${this.requestSeed++}`
+    const requestPayload: SubtitleWorkerRequest = {
+      kind: 'request',
+      request_id: requestId,
+      command,
+      payload,
+    }
+
+    return await new Promise<unknown>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.pending.delete(requestId)
+        reject(new Error(`subtitle_worker_timeout:${command}`))
+      }, timeoutMs)
+
+      this.pending.set(requestId, { resolve, reject, timeout })
+      try {
+        this.worker.postMessage(requestPayload)
+      } catch (error) {
+        clearTimeout(timeout)
+        this.pending.delete(requestId)
+        reject(error instanceof Error ? error : new Error(String(error)))
+      }
+    })
+  }
+
+  async terminate(): Promise<void> {
+    this.failAll(new Error('subtitle_worker_terminated'))
+    await this.worker.terminate()
+  }
+
+  private failAll(error: Error): void {
+    for (const pending of this.pending.values()) {
+      clearTimeout(pending.timeout)
+      pending.reject(error)
+    }
+    this.pending.clear()
+  }
+}
 
 function normalizeExternalMetadataText(value: string | undefined): string {
   return value?.trim() ?? ''
@@ -129,6 +399,8 @@ interface LibraryReadWriteServiceOptions {
 }
 
 export class LibraryReadWriteService {
+  private readonly subtitleCleanupTaskById = new Map<string, ManageSubtitleCleanupTaskDto>()
+
   constructor(private readonly options: LibraryReadWriteServiceOptions) {}
 
   private async convertSubtitleToVtt(sourcePath: string, subtitleId: string): Promise<string> {
@@ -536,6 +808,8 @@ export class LibraryReadWriteService {
           return null
         }
         const absolutePath = path.join(videoDir, entry.name)
+        const subtitleStem = path.basename(entry.name, ext)
+        const languageLabel = detectSubtitleLanguageLabel(entry.name, videoStem)
         const format = ext.slice(1) as 'vtt' | 'srt' | 'ass' | 'ssa'
         const locator: MediaLocatorDto = {
           kind: 'filesystem',
@@ -547,11 +821,11 @@ export class LibraryReadWriteService {
 
         return {
           id: makeStableId('subtitle', absolutePath),
-          label: entry.name,
+          label: languageLabel ?? entry.name,
           source: 'external' as const,
           format,
           locator,
-          score: path.basename(entry.name, ext).toLowerCase() === videoStem ? 0 : 1,
+          score: subtitleStem.toLowerCase() === videoStem || subtitleStem.toLowerCase().startsWith(`${videoStem}.`) ? 0 : 1,
         }
       })
       .filter((item): item is NonNullable<typeof item> => Boolean(item))
@@ -599,6 +873,475 @@ export class LibraryReadWriteService {
       },
       converted: true,
     })
+  }
+
+  async startManageSubtitleCleanup(
+    request: StartManageSubtitleCleanupRequestDto,
+  ): Promise<StartManageSubtitleCleanupResponseDto> {
+    this.options.markInteractiveRead()
+    const snapshot = await this.options.ensureSnapshotLoaded()
+    const video = snapshot.videos.find((item) => item.id === request.video_id)
+    if (!video) {
+      throw new Error(`字幕清洗失败：video 不存在 ${request.video_id}`)
+    }
+
+    const now = Date.now()
+    const taskId = `manage-subtitle-cleanup-${now}-${Math.round(Math.random() * 1_000_000)}`
+    const subtitlePath = path.join(path.dirname(video.absolute_path), `${path.basename(video.absolute_path, path.extname(video.absolute_path))}.srt`)
+    const task: ManageSubtitleCleanupTaskDto = {
+      task_id: taskId,
+      video_id: video.id,
+      subtitle_path: subtitlePath,
+      status: 'running',
+      raw_stage: 'pending',
+      cleanup_stage: 'pending',
+      raw_subtitle_text: '',
+      cleaned_subtitle_text: '',
+      message: '字幕清洗任务进行中',
+      error_detail: null,
+      created_at_ms: now,
+      updated_at_ms: now,
+    }
+
+    this.subtitleCleanupTaskById.set(taskId, task)
+    void this.executeSubtitleRawTask(taskId, video.absolute_path)
+
+    return {
+      task,
+    }
+  }
+
+  async readManageSubtitleCleanupTask(
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+  ): Promise<ReadManageSubtitleCleanupTaskResponseDto> {
+    const task = this.subtitleCleanupTaskById.get(request.task_id) ?? null
+    return {
+      task,
+    }
+  }
+
+  async runManageSubtitleCleanup(
+    request: RunManageSubtitleCleanupRequestDto,
+  ): Promise<RunManageSubtitleCleanupResponseDto> {
+    const task = this.subtitleCleanupTaskById.get(request.task_id)
+    if (!task) {
+      throw new Error(`字幕清洗失败：任务不存在 ${request.task_id}`)
+    }
+    if (task.raw_stage !== 'ready' || !task.raw_subtitle_text.trim()) {
+      throw new Error('字幕清洗失败：请先获取原始字幕')
+    }
+    if (task.cleanup_stage === 'running') {
+      return { task }
+    }
+
+    const nextTask = this.updateSubtitleCleanupTask(task.task_id, (previous) => ({
+      ...previous,
+      status: 'running',
+      cleanup_stage: 'running',
+      error_detail: null,
+      message: '正在进行字幕清洗',
+      updated_at_ms: Date.now(),
+    }))
+
+    void this.executeSubtitleCleanupStage(task.task_id, request.llm_endpoint, request.llm_model, request.llm_prompt)
+    return { task: nextTask }
+  }
+
+  async saveManageSubtitleCleanup(
+    request: SaveManageSubtitleCleanupRequestDto,
+  ): Promise<SaveManageSubtitleCleanupResponseDto> {
+    const task = this.subtitleCleanupTaskById.get(request.task_id)
+    if (!task) {
+      throw new Error(`字幕清洗保存失败：任务不存在 ${request.task_id}`)
+    }
+    const nextText = request.cleaned_subtitle_text
+    await fs.writeFile(task.subtitle_path, nextText, 'utf8')
+
+    const nextTask = this.updateSubtitleCleanupTask(task.task_id, (previous) => ({
+      ...previous,
+      cleaned_subtitle_text: nextText,
+      status: previous.status === 'failed' ? 'failed' : 'review',
+      message: '字幕清洗结果已保存',
+      updated_at_ms: Date.now(),
+    }))
+
+    return {
+      task: nextTask,
+      saved_path: task.subtitle_path,
+      updated_at_ms: Date.now(),
+    }
+  }
+
+  private updateSubtitleCleanupTask(
+    taskId: string,
+    updater: (task: ManageSubtitleCleanupTaskDto) => ManageSubtitleCleanupTaskDto,
+  ): ManageSubtitleCleanupTaskDto {
+    const current = this.subtitleCleanupTaskById.get(taskId)
+    if (!current) {
+      throw new Error(`字幕清洗任务不存在 ${taskId}`)
+    }
+    const next = manageSubtitleCleanupTaskSchema.parse(updater(current))
+    this.subtitleCleanupTaskById.set(taskId, next)
+    return next
+  }
+
+  private async executeSubtitleRawTask(
+    taskId: string,
+    videoPath: string,
+  ): Promise<void> {
+    try {
+      await this.resolveOrGenerateRawSubtitle(taskId, videoPath)
+
+      this.updateSubtitleCleanupTask(taskId, (task) => ({
+        ...task,
+        status: 'review',
+        cleanup_stage: task.cleanup_stage === 'ready' ? 'ready' : 'pending',
+        message: '原始字幕已就绪，可开始清洗',
+        updated_at_ms: Date.now(),
+      }))
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      this.updateSubtitleCleanupTask(taskId, (task) => ({
+        ...task,
+        status: 'failed',
+        raw_stage: task.raw_stage === 'ready' ? 'ready' : 'failed',
+        message: '原始字幕获取失败',
+        error_detail: reason,
+        updated_at_ms: Date.now(),
+      }))
+    }
+  }
+
+  private async executeSubtitleCleanupStage(
+    taskId: string,
+    llmEndpoint: string,
+    llmModel: string,
+    llmPrompt?: string,
+  ): Promise<void> {
+    try {
+      const task = this.subtitleCleanupTaskById.get(taskId)
+      if (!task || task.raw_stage !== 'ready' || !task.raw_subtitle_text.trim()) {
+        throw new Error('字幕清洗失败：原始字幕不可用')
+      }
+
+      await this.runCleanupLlmStreaming(taskId, llmEndpoint, llmModel, task.raw_subtitle_text, llmPrompt)
+
+      this.updateSubtitleCleanupTask(taskId, (current) => ({
+        ...current,
+        status: 'review',
+        cleanup_stage: 'ready',
+        message: '字幕清洗完成，可编辑后保存',
+        updated_at_ms: Date.now(),
+      }))
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      this.updateSubtitleCleanupTask(taskId, (task) => ({
+        ...task,
+        status: 'failed',
+        cleanup_stage: task.cleanup_stage === 'ready' ? 'ready' : 'failed',
+        message: '字幕清洗失败',
+        error_detail: reason,
+        updated_at_ms: Date.now(),
+      }))
+    }
+  }
+
+  private async resolveOrGenerateRawSubtitle(taskId: string, videoPath: string): Promise<string> {
+    const subtitlePath = path.join(path.dirname(videoPath), `${path.basename(videoPath, path.extname(videoPath))}.srt`)
+    const existing = await fs.readFile(subtitlePath, 'utf8').catch(() => null)
+    if (existing && existing.trim()) {
+      this.updateSubtitleCleanupTask(taskId, (task) => ({
+        ...task,
+        subtitle_path: subtitlePath,
+        raw_stage: 'ready',
+        raw_subtitle_text: existing,
+        message: '检测到现有字幕，已载入原稿',
+        updated_at_ms: Date.now(),
+      }))
+      return existing
+    }
+
+    this.updateSubtitleCleanupTask(taskId, (task) => ({
+      ...task,
+      subtitle_path: subtitlePath,
+      raw_stage: 'running',
+      message: '正在进行字幕识别',
+      updated_at_ms: Date.now(),
+    }))
+
+    const rawSrtText = await this.transcribeVideoToSrt(videoPath)
+    await fs.writeFile(subtitlePath, rawSrtText, 'utf8')
+
+    this.updateSubtitleCleanupTask(taskId, (task) => ({
+      ...task,
+      raw_stage: 'ready',
+      raw_subtitle_text: rawSrtText,
+      message: '原始字幕已生成并写入同名 .srt',
+      updated_at_ms: Date.now(),
+    }))
+
+    return rawSrtText
+  }
+
+  private readSubtitleAsrSettings(): { modelDir: string; modelId: string; language: string } {
+    const rawState = this.options.database.readAppState<unknown>(SETTINGS_STATE_KEY, null)
+    const settings = (rawState && typeof rawState === 'object' ? rawState : null) as PersistedUiSettingsLike | null
+    const modelDir = typeof settings?.subtitleModelDir === 'string' ? settings.subtitleModelDir.trim() : ''
+    const modelId = typeof settings?.subtitleSelectedModelId === 'string' ? settings.subtitleSelectedModelId.trim() : ''
+    const language = typeof settings?.subtitleLanguage === 'string' ? settings.subtitleLanguage.trim() : 'auto'
+    if (!modelDir || !modelId) {
+      throw new Error('字幕识别失败：请先在设置中配置离线字幕模型目录和模型ID')
+    }
+    return { modelDir, modelId, language: language || 'auto' }
+  }
+
+  private resolveAsrWorkerPath(): string {
+    const mainEntry = process.argv[1] ? path.resolve(process.argv[1]) : ''
+    const candidates: string[] = []
+    if (mainEntry) {
+      candidates.push(path.join(path.dirname(mainEntry), 'asrWorker.cjs'))
+    }
+    candidates.push(path.join(process.cwd(), 'dist-electron', 'asrWorker.cjs'))
+    for (const candidate of candidates) {
+      if (existsSync(candidate)) {
+        return candidate
+      }
+    }
+    throw new Error('subtitle_asr_worker_not_found')
+  }
+
+  private async transcribeVideoToSrt(videoPath: string): Promise<string> {
+    const runtimeDependencies = await this.options.ensureRuntimeDependencies()
+    if (!runtimeDependencies.ffmpeg) {
+      throw new Error('字幕识别失败：ffmpeg 不可用')
+    }
+
+    const engineStatus = probeSubtitleEngineStatus()
+    if (!engineStatus.installed || !engineStatus.loadable || !engineStatus.moduleRoot) {
+      throw new Error(`字幕识别失败：引擎不可用 (${engineStatus.message ?? 'unknown'})`)
+    }
+
+    const { modelDir, modelId, language } = this.readSubtitleAsrSettings()
+    const cacheDir = path.join(this.options.rootDir, '.mediaplayerx', 'subtitle-cleanup-cache')
+    await fs.mkdir(cacheDir, { recursive: true })
+    const cacheAudioPath = path.join(cacheDir, `${makeStableId('subtitle-cleanup-audio', videoPath)}.f32le`)
+
+    const ffmpegResult = await runProcess(
+      this.options.ffmpegBin,
+      ['-y', '-i', videoPath, '-vn', '-ac', '1', '-ar', '16000', '-f', 'f32le', cacheAudioPath],
+      10 * 60_000,
+    )
+    if (ffmpegResult.code !== 0) {
+      throw new Error(ffmpegResult.stderr.trim() || '字幕识别失败：提取音频失败')
+    }
+
+    const audioBuffer = await fs.readFile(cacheAudioPath)
+    const workerClient = new SubtitleWorkerClient(new Worker(this.resolveAsrWorkerPath()))
+    const cues: SubtitleWorkerCue[] = []
+
+    try {
+      await workerClient.request('init', {
+        model_dir: modelDir,
+        model_id: modelId,
+        provider_preference: 'auto',
+        language,
+        fallback_to_cpu: true,
+        engine_module_root: engineStatus.moduleRoot,
+        available_providers: engineStatus.availableProviders,
+      }, SUBTITLE_ASR_INIT_TIMEOUT_MS)
+
+      const bytesPerSample = 4
+      const sampleRate = 16_000
+      const audioDurationSec = audioBuffer.byteLength / bytesPerSample / sampleRate
+      const transcribeTimeoutMs = Math.max(
+        SUBTITLE_ASR_TRANSCRIBE_TIMEOUT_MIN_MS,
+        Math.min(
+          SUBTITLE_ASR_TRANSCRIBE_TIMEOUT_CAP_MS,
+          Math.ceil(audioDurationSec * SUBTITLE_ASR_TRANSCRIBE_TIMEOUT_PER_SEC_MS) +
+            SUBTITLE_ASR_TRANSCRIBE_TIMEOUT_BASE_MS,
+        ),
+      )
+
+      const transcribePayload = await workerClient.request(
+        'transcribe-all',
+        {
+          chunk_base64: audioBuffer.toString('base64'),
+          sample_rate_hz: sampleRate,
+          channel_count: 1,
+          duration_sec: audioDurationSec,
+        },
+        transcribeTimeoutMs,
+      )
+
+      const cueItems = ((transcribePayload as { cues?: unknown }).cues ?? []) as SubtitleWorkerCue[]
+      for (const cue of cueItems) {
+        if (cue && typeof cue.text === 'string') {
+          cues.push(cue)
+        }
+      }
+
+      if (cues.length === 0) {
+        const fallbackText = typeof (transcribePayload as { text?: unknown }).text === 'string'
+          ? (transcribePayload as { text: string }).text.trim()
+          : ''
+        if (fallbackText) {
+          cues.push({
+            start_sec: 0,
+            end_sec: Math.max(0.8, audioDurationSec),
+            text: fallbackText,
+          })
+        }
+      }
+    } finally {
+      await workerClient.request('stop', { reason: 'subtitle-cleanup-finished' }).catch(() => undefined)
+      await workerClient.terminate().catch(() => undefined)
+      void fs.rm(cacheAudioPath, { force: true }).catch(() => undefined)
+    }
+
+    const mergedCues = cues.filter((cue) => cue.text.trim().length > 0)
+    const srtText = cuesToSrt(mergedCues)
+    if (!srtText.trim()) {
+      throw new Error('字幕识别失败：未生成可用字幕内容')
+    }
+    return srtText
+  }
+
+  private async runCleanupLlmStreaming(
+    taskId: string,
+    llmEndpoint: string,
+    llmModel: string,
+    rawSubtitleText: string,
+    llmPrompt?: string,
+  ): Promise<void> {
+    const endpoint = normalizeChatCompletionsUrl(llmEndpoint)
+    const model = llmModel.trim()
+    if (!model) {
+      throw new Error('字幕清洗失败：LLM 模型不能为空')
+    }
+    const systemPrompt = llmPrompt?.trim() || DEFAULT_SUBTITLE_CLEANUP_PROMPT
+
+    const abortController = new AbortController()
+    const timeout = setTimeout(() => {
+      abortController.abort()
+    }, SUBTITLE_CLEANUP_LLM_TIMEOUT_MS)
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.MEDIA_PLAYERX_LLM_API_KEY?.trim() || 'lm-studio'}`,
+          'Content-Type': 'application/json',
+        },
+        signal: abortController.signal,
+        body: JSON.stringify({
+          model,
+          stream: true,
+          temperature: 0,
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt,
+            },
+            {
+              role: 'user',
+              content: rawSubtitleText,
+            },
+          ],
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => '')
+        throw new Error(`字幕清洗失败：HTTP ${response.status} ${response.statusText} - ${errorText.slice(0, 300)}`)
+      }
+
+      const body = response.body
+      if (!body) {
+        const payload = await response.json().catch(() => null)
+        const oneShotText = extractChatMessageText(payload)
+        this.updateSubtitleCleanupTask(taskId, (task) => ({
+          ...task,
+          cleaned_subtitle_text: oneShotText.trim(),
+          cleanup_stage: 'ready',
+          updated_at_ms: Date.now(),
+        }))
+        return
+      }
+
+      const reader = body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let buffered = ''
+      let streamedText = ''
+      let streamTouched = false
+      let receivedDone = false
+
+      while (!receivedDone) {
+        const { done, value } = await reader.read()
+        if (done) {
+          break
+        }
+        buffered += decoder.decode(value, { stream: true })
+        const lines = buffered.split(/\r?\n/)
+        buffered = lines.pop() ?? ''
+
+        for (const line of lines) {
+          const payloadText = tryParseSseDataLine(line)
+          if (!payloadText) {
+            continue
+          }
+          if (payloadText === '[DONE]') {
+            receivedDone = true
+            break
+          }
+          let payload: unknown = null
+          try {
+            payload = JSON.parse(payloadText)
+          } catch {
+            continue
+          }
+          const delta = extractStreamDeltaText(payload)
+          if (!delta) {
+            continue
+          }
+          streamTouched = true
+          streamedText += delta
+          this.updateSubtitleCleanupTask(taskId, (task) => ({
+            ...task,
+            cleanup_stage: 'running',
+            cleaned_subtitle_text: streamedText,
+            updated_at_ms: Date.now(),
+          }))
+        }
+      }
+
+      if (receivedDone) {
+        await reader.cancel().catch(() => undefined)
+      }
+
+      if (!streamTouched && buffered.trim()) {
+        let payload: unknown = null
+        try {
+          payload = JSON.parse(buffered)
+        } catch {
+          payload = null
+        }
+        streamedText = extractChatMessageText(payload)
+      }
+
+      this.updateSubtitleCleanupTask(taskId, (task) => ({
+        ...task,
+        cleaned_subtitle_text: streamedText.trim(),
+        cleanup_stage: 'ready',
+        updated_at_ms: Date.now(),
+      }))
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('字幕清洗失败：LLM 请求超时')
+      }
+      throw error
+    } finally {
+      clearTimeout(timeout)
+    }
   }
 
   async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> {

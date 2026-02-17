@@ -42,6 +42,7 @@ import { useI18n } from "../../i18n/useI18n";
 
 export function useAppWorkspaceProps({
   appSettings,
+  mediaRepository,
   benchSettings,
   mode,
   vectorMode,
@@ -158,6 +159,7 @@ export function useAppWorkspaceProps({
   bindMainVideoElement,
   setSubtitleVisible,
   selectSubtitleById,
+  refreshSubtitleOptions,
   fullscreenActive,
   focusedVideoCoverColor,
   focusedVideoCoverImageSrc,
@@ -978,12 +980,26 @@ export function useAppWorkspaceProps({
     bindVideoElement: bindMainVideoElement,
     setSubtitleVisible,
     selectSubtitleById,
+    onSubtitleCleanupSaved: refreshSubtitleOptions,
     fullscreenActive,
     active: !fullscreenActive,
     coverColor: focusedVideoCoverColor,
     coverImageUrl: focusedVideoCoverImageSrc,
     focusedVideoId: focusedVideoEffective?.id ?? null,
     focusedVideo: focusedVideoEffective,
+    subtitleCleanupLlmEndpoint: appSettings.subtitleCleanupLlmEndpoint,
+    subtitleCleanupLlmModel: appSettings.subtitleCleanupLlmModel,
+    subtitleCleanupLlmPrompt: appSettings.subtitleCleanupLlmPrompt,
+    startSubtitleCleanup: mediaRepository.startManageSubtitleCleanup,
+    readSubtitleCleanupTask: mediaRepository.readManageSubtitleCleanupTask,
+    runSubtitleCleanup: mediaRepository.runManageSubtitleCleanup,
+    saveSubtitleCleanup: mediaRepository.saveManageSubtitleCleanup,
+    onSubtitleCleanupLlmEndpointChange: (value) => {
+      appSettings.updateSettings({ subtitleCleanupLlmEndpoint: value })
+    },
+    onSubtitleCleanupLlmModelChange: (value) => {
+      appSettings.updateSettings({ subtitleCleanupLlmModel: value })
+    },
     setVideoPlaying,
     canJumpToManga: Boolean(jumpTargetImage),
     canJumpToMusic: Boolean(jumpTargetAudioFromVideo),

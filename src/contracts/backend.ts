@@ -499,6 +499,63 @@ export const confirmManageCoverReviewHideResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const manageSubtitleCleanupTaskStatusSchema = z.enum(['running', 'review', 'failed'])
+
+export const manageSubtitleCleanupStageSchema = z.enum(['pending', 'running', 'ready', 'failed'])
+
+export const manageSubtitleCleanupTaskSchema = z.object({
+  task_id: z.string().min(1),
+  video_id: z.string().min(1),
+  subtitle_path: z.string().min(1),
+  status: manageSubtitleCleanupTaskStatusSchema,
+  raw_stage: manageSubtitleCleanupStageSchema,
+  cleanup_stage: manageSubtitleCleanupStageSchema,
+  raw_subtitle_text: z.string(),
+  cleaned_subtitle_text: z.string(),
+  message: z.string().min(1).nullable(),
+  error_detail: z.string().min(1).nullable(),
+  created_at_ms: z.number().int().positive(),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const startManageSubtitleCleanupRequestSchema = z.object({
+  video_id: z.string().min(1),
+})
+
+export const startManageSubtitleCleanupResponseSchema = z.object({
+  task: manageSubtitleCleanupTaskSchema,
+})
+
+export const readManageSubtitleCleanupTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+})
+
+export const readManageSubtitleCleanupTaskResponseSchema = z.object({
+  task: manageSubtitleCleanupTaskSchema.nullable(),
+})
+
+export const runManageSubtitleCleanupRequestSchema = z.object({
+  task_id: z.string().min(1),
+  llm_endpoint: z.string().min(1),
+  llm_model: z.string().min(1),
+  llm_prompt: z.string().optional(),
+})
+
+export const runManageSubtitleCleanupResponseSchema = z.object({
+  task: manageSubtitleCleanupTaskSchema,
+})
+
+export const saveManageSubtitleCleanupRequestSchema = z.object({
+  task_id: z.string().min(1),
+  cleaned_subtitle_text: z.string(),
+})
+
+export const saveManageSubtitleCleanupResponseSchema = z.object({
+  task: manageSubtitleCleanupTaskSchema,
+  saved_path: z.string().min(1),
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const writePackageMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
   work_title: z.string().min(1),
@@ -1154,6 +1211,17 @@ export type PauseManageCoverReviewTaskRequestDto = z.infer<typeof pauseManageCov
 export type PauseManageCoverReviewTaskResponseDto = z.infer<typeof pauseManageCoverReviewTaskResponseSchema>
 export type ConfirmManageCoverReviewHideRequestDto = z.infer<typeof confirmManageCoverReviewHideRequestSchema>
 export type ConfirmManageCoverReviewHideResponseDto = z.infer<typeof confirmManageCoverReviewHideResponseSchema>
+export type ManageSubtitleCleanupTaskStatusDto = z.infer<typeof manageSubtitleCleanupTaskStatusSchema>
+export type ManageSubtitleCleanupStageDto = z.infer<typeof manageSubtitleCleanupStageSchema>
+export type ManageSubtitleCleanupTaskDto = z.infer<typeof manageSubtitleCleanupTaskSchema>
+export type StartManageSubtitleCleanupRequestDto = z.infer<typeof startManageSubtitleCleanupRequestSchema>
+export type StartManageSubtitleCleanupResponseDto = z.infer<typeof startManageSubtitleCleanupResponseSchema>
+export type ReadManageSubtitleCleanupTaskRequestDto = z.infer<typeof readManageSubtitleCleanupTaskRequestSchema>
+export type ReadManageSubtitleCleanupTaskResponseDto = z.infer<typeof readManageSubtitleCleanupTaskResponseSchema>
+export type RunManageSubtitleCleanupRequestDto = z.infer<typeof runManageSubtitleCleanupRequestSchema>
+export type RunManageSubtitleCleanupResponseDto = z.infer<typeof runManageSubtitleCleanupResponseSchema>
+export type SaveManageSubtitleCleanupRequestDto = z.infer<typeof saveManageSubtitleCleanupRequestSchema>
+export type SaveManageSubtitleCleanupResponseDto = z.infer<typeof saveManageSubtitleCleanupResponseSchema>
 export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
 export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
 export type WritePackageExternalMetadataRequestDto = z.infer<typeof writePackageExternalMetadataRequestSchema>

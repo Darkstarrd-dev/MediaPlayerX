@@ -6,6 +6,7 @@ import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 import type { MusicBookletBindingsResult } from './useMusicBookletBindings'
 import type { WriteDataAccessResult } from '../backend'
+import type { MediaRepository } from '../backend/repository'
 import type {
   AudioItem,
   BrowserMode,
@@ -22,6 +23,7 @@ import type { UiBenchSettings } from '../perf/benchSettings'
 
 export interface UseAppWorkspacePropsParams {
   appSettings: AppSettingsStoreSnapshot
+  mediaRepository: MediaRepository
   benchSettings: UiBenchSettings
   mode: BrowserMode
   vectorMode: boolean
@@ -81,6 +83,7 @@ export interface UseAppWorkspacePropsParams {
   activeSelectionScope: 'image' | 'sidebar' | null
   backendWrite: WriteDataAccessResult
   manageOperationHint: string | null
+  setManageOperationHint: Dispatch<SetStateAction<string | null>>
   requestManageDelete: () => void
   requestManageGroup: () => void
   requestManageMove: () => Promise<void>
@@ -144,6 +147,7 @@ export interface UseAppWorkspacePropsParams {
   bindMainVideoElement: (element: HTMLVideoElement | null) => void
   setSubtitleVisible: Dispatch<SetStateAction<boolean>>
   selectSubtitleById: (subtitleId: string) => Promise<void>
+  refreshSubtitleOptions: () => void
   fullscreenActive: boolean
   focusedVideoCoverColor: string
   focusedVideoCoverImageSrc: string | null

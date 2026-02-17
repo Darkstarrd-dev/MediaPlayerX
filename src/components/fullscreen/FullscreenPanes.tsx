@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 
 import type { VideoFitMode } from '../../features/media/videoFitMode'
 import { clamp } from '../../utils/ui'
+import SubtitleOverlay from '../subtitles/SubtitleOverlay'
 import type { MediaGeometry, PaneKey, PaneTransform } from './paneMath'
 
 interface FullscreenImagePaneProps {
@@ -288,11 +289,7 @@ export function FullscreenVideoPane({
             </video>
           ) : null}
 
-          {autoSubtitleActive && subtitleVisible && liveSubtitleText ? (
-            <div aria-live="polite" className="subtitle-overlay" style={subtitleOverlayStyle}>
-              {liveSubtitleText}
-            </div>
-          ) : null}
+          <SubtitleOverlay text={autoSubtitleActive ? liveSubtitleText : null} visible={subtitleVisible} style={subtitleOverlayStyle} />
 
           {!showVideoFrame && focusedVideoCoverImageSrc ? (
             <img

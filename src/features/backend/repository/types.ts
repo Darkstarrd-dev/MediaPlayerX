@@ -57,6 +57,14 @@ import type {
   PauseManageCoverReviewTaskResponseDto,
   ConfirmManageCoverReviewHideRequestDto,
   ConfirmManageCoverReviewHideResponseDto,
+  StartManageSubtitleCleanupRequestDto,
+  StartManageSubtitleCleanupResponseDto,
+  ReadManageSubtitleCleanupTaskRequestDto,
+  ReadManageSubtitleCleanupTaskResponseDto,
+  RunManageSubtitleCleanupRequestDto,
+  RunManageSubtitleCleanupResponseDto,
+  SaveManageSubtitleCleanupRequestDto,
+  SaveManageSubtitleCleanupResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
@@ -183,6 +191,22 @@ export interface MediaRepository {
     request: ConfirmManageCoverReviewHideRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ConfirmManageCoverReviewHideResponseDto>
+  startManageSubtitleCleanup?(
+    request: StartManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartManageSubtitleCleanupResponseDto>
+  readManageSubtitleCleanupTask?(
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageSubtitleCleanupTaskResponseDto>
+  runManageSubtitleCleanup?(
+    request: RunManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RunManageSubtitleCleanupResponseDto>
+  saveManageSubtitleCleanup?(
+    request: SaveManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SaveManageSubtitleCleanupResponseDto>
   writePackageMetadata?(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -321,6 +345,18 @@ export interface SynchronousMediaRepository extends MediaRepository {
   confirmManageCoverReviewHideSync?(
     request: ConfirmManageCoverReviewHideRequestDto,
   ): ConfirmManageCoverReviewHideResponseDto
+  startManageSubtitleCleanupSync?(
+    request: StartManageSubtitleCleanupRequestDto,
+  ): StartManageSubtitleCleanupResponseDto
+  readManageSubtitleCleanupTaskSync?(
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+  ): ReadManageSubtitleCleanupTaskResponseDto
+  runManageSubtitleCleanupSync?(
+    request: RunManageSubtitleCleanupRequestDto,
+  ): RunManageSubtitleCleanupResponseDto
+  saveManageSubtitleCleanupSync?(
+    request: SaveManageSubtitleCleanupRequestDto,
+  ): SaveManageSubtitleCleanupResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
   writePackageExternalMetadataSync?(
     request: WritePackageExternalMetadataRequestDto,

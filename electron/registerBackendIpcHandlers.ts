@@ -79,6 +79,14 @@ import {
   pauseManageCoverReviewTaskResponseSchema,
   confirmManageCoverReviewHideRequestSchema,
   confirmManageCoverReviewHideResponseSchema,
+  startManageSubtitleCleanupRequestSchema,
+  startManageSubtitleCleanupResponseSchema,
+  readManageSubtitleCleanupTaskRequestSchema,
+  readManageSubtitleCleanupTaskResponseSchema,
+  runManageSubtitleCleanupRequestSchema,
+  runManageSubtitleCleanupResponseSchema,
+  saveManageSubtitleCleanupRequestSchema,
+  saveManageSubtitleCleanupResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -304,6 +312,30 @@ export function registerBackendIpcHandlers(): void {
     const request = confirmManageCoverReviewHideRequestSchema.parse(payload)
     const response = await ensureService().confirmManageCoverReviewHide(request)
     return confirmManageCoverReviewHideResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.startManageSubtitleCleanup, async (_event, payload: unknown) => {
+    const request = startManageSubtitleCleanupRequestSchema.parse(payload)
+    const response = await ensureService().startManageSubtitleCleanup(request)
+    return startManageSubtitleCleanupResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readManageSubtitleCleanupTask, async (_event, payload: unknown) => {
+    const request = readManageSubtitleCleanupTaskRequestSchema.parse(payload)
+    const response = await ensureService().readManageSubtitleCleanupTask(request)
+    return readManageSubtitleCleanupTaskResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.runManageSubtitleCleanup, async (_event, payload: unknown) => {
+    const request = runManageSubtitleCleanupRequestSchema.parse(payload)
+    const response = await ensureService().runManageSubtitleCleanup(request)
+    return runManageSubtitleCleanupResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.saveManageSubtitleCleanup, async (_event, payload: unknown) => {
+    const request = saveManageSubtitleCleanupRequestSchema.parse(payload)
+    const response = await ensureService().saveManageSubtitleCleanup(request)
+    return saveManageSubtitleCleanupResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.writePackageMetadata, async (_event, payload: unknown) => {

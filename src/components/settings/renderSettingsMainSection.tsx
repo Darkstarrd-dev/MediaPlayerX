@@ -77,6 +77,8 @@ interface RenderSettingsMainSectionParams {
   subtitleStrokeWidth: number
   subtitleStrokeShadowColor: string
   subtitleStrokeShadowRadius: number
+  subtitleFontSize: number
+  subtitleMaxLineChars: number
   subtitleOffsetY: number
   subtitleStylePanelExpanded: boolean
   subtitleModelsLoading: boolean
@@ -112,6 +114,9 @@ interface RenderSettingsMainSectionParams {
   adReviewVisionTestMessage: string | null
   adReviewVisionSavePending: boolean
   adReviewVisionSaveMessage: string | null
+  subtitleCleanupLlmEndpoint: string
+  subtitleCleanupLlmModel: string
+  subtitleCleanupLlmPrompt: string
   styleId: string
   paletteMode: 'day' | 'night'
   paletteDayId: string
@@ -190,6 +195,8 @@ interface RenderSettingsMainSectionParams {
   onSubtitleStrokeWidthChange: (value: number) => void
   onSubtitleStrokeShadowColorChange: (value: string) => void
   onSubtitleStrokeShadowRadiusChange: (value: number) => void
+  onSubtitleFontSizeChange: (value: number) => void
+  onSubtitleMaxLineCharsChange: (value: number) => void
   onSubtitleOffsetYChange: (value: number) => void
   onSubtitleStylePanelExpandedChange: (value: boolean) => void
   onRefreshSubtitleModels: () => void
@@ -200,6 +207,9 @@ interface RenderSettingsMainSectionParams {
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
   onSaveAdReviewVisionModel: () => void
+  onSubtitleCleanupLlmEndpointChange: (value: string) => void
+  onSubtitleCleanupLlmModelChange: (value: string) => void
+  onSubtitleCleanupLlmPromptChange: (value: string) => void
   onStyleChange: (value: string) => void
   onPaletteModeChange: (value: 'day' | 'night') => void
   onPaletteDayChange: (value: string) => void
@@ -259,6 +269,8 @@ export function renderSettingsMainSection({
   subtitleStrokeWidth,
   subtitleStrokeShadowColor,
   subtitleStrokeShadowRadius,
+  subtitleFontSize,
+  subtitleMaxLineChars,
   subtitleOffsetY,
   subtitleStylePanelExpanded,
   subtitleModelsLoading,
@@ -273,6 +285,9 @@ export function renderSettingsMainSection({
   adReviewVisionTestMessage,
   adReviewVisionSavePending,
   adReviewVisionSaveMessage,
+  subtitleCleanupLlmEndpoint,
+  subtitleCleanupLlmModel,
+  subtitleCleanupLlmPrompt,
   styleId,
   paletteMode,
   paletteDayId,
@@ -341,6 +356,8 @@ export function renderSettingsMainSection({
   onSubtitleStrokeWidthChange,
   onSubtitleStrokeShadowColorChange,
   onSubtitleStrokeShadowRadiusChange,
+  onSubtitleFontSizeChange,
+  onSubtitleMaxLineCharsChange,
   onSubtitleOffsetYChange,
   onSubtitleStylePanelExpandedChange,
   onRefreshSubtitleModels,
@@ -351,6 +368,9 @@ export function renderSettingsMainSection({
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
   onSaveAdReviewVisionModel,
+  onSubtitleCleanupLlmEndpointChange,
+  onSubtitleCleanupLlmModelChange,
+  onSubtitleCleanupLlmPromptChange,
   onStyleChange,
   onPaletteModeChange,
   onPaletteDayChange,
@@ -997,6 +1017,30 @@ export function renderSettingsMainSection({
                 <span className="settings-placeholder">{subtitleStrokeWidth.toFixed(1)}px</span>
               </label>
               <label>
+                {t('ui.settings.offlineSubtitleFontSize')}
+                <input
+                  type="range"
+                  min={14}
+                  max={72}
+                  step={1}
+                  value={subtitleFontSize}
+                  onChange={(event) => onSubtitleFontSizeChange(Number(event.target.value))}
+                />
+                <span className="settings-placeholder">{t('ui.settings.offlineSubtitleFontSizeValue', { value: subtitleFontSize })}</span>
+              </label>
+              <label>
+                {t('ui.settings.offlineSubtitleMaxLineChars')}
+                <input
+                  type="range"
+                  min={8}
+                  max={80}
+                  step={1}
+                  value={subtitleMaxLineChars}
+                  onChange={(event) => onSubtitleMaxLineCharsChange(Number(event.target.value))}
+                />
+                <span className="settings-placeholder">{t('ui.settings.offlineSubtitleMaxLineCharsValue', { value: subtitleMaxLineChars })}</span>
+              </label>
+              <label>
                 {t('ui.settings.offlineSubtitleStrokeShadowColor')}
                 <input
                   type="color"
@@ -1127,6 +1171,41 @@ export function renderSettingsMainSection({
           </div>
           {adReviewVisionSaveMessage ? <p className="settings-placeholder">{adReviewVisionSaveMessage}</p> : null}
           <p className="settings-placeholder">{t('ui.settings.adReviewVisionHint')}</p>
+        </fieldset>
+
+        <fieldset className="settings-subsection">
+          <legend>{t('ui.settings.subtitleCleanupLlmLegend')}</legend>
+          <label>
+            {t('ui.settings.subtitleCleanupLlmEndpoint')}
+            <input
+              type="text"
+              value={subtitleCleanupLlmEndpoint}
+              onChange={(event) => onSubtitleCleanupLlmEndpointChange(event.target.value)}
+            />
+          </label>
+          <label>
+            {t('ui.settings.subtitleCleanupLlmModel')}
+            <input
+              type="text"
+              value={subtitleCleanupLlmModel}
+              onChange={(event) => onSubtitleCleanupLlmModelChange(event.target.value)}
+            />
+          </label>
+          <details className="settings-collapsible">
+            <summary>{t('ui.settings.subtitleCleanupLlmPromptSection')}</summary>
+            <div className="settings-collapsible-content">
+              <label>
+                {t('ui.settings.subtitleCleanupLlmPrompt')}
+                <textarea
+                  className="settings-scroll-hidden-textarea"
+                  rows={8}
+                  value={subtitleCleanupLlmPrompt}
+                  onChange={(event) => onSubtitleCleanupLlmPromptChange(event.target.value)}
+                />
+              </label>
+            </div>
+          </details>
+          <p className="settings-placeholder">{t('ui.settings.subtitleCleanupLlmHint')}</p>
         </fieldset>
       </div>
     )

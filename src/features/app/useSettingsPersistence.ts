@@ -300,6 +300,36 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     0,
     24,
   );
+  next.subtitleFontSize = normalizeNumberInRange(next.subtitleFontSize, 24, 14, 72);
+  next.subtitleMaxLineChars = Math.round(
+    normalizeNumberInRange(next.subtitleMaxLineChars, 28, 8, 80),
+  );
+  if (
+    next.subtitleSelectionByVideoId &&
+    typeof next.subtitleSelectionByVideoId === "object" &&
+    !Array.isArray(next.subtitleSelectionByVideoId)
+  ) {
+    const normalizedByVideoId: AppSettings["subtitleSelectionByVideoId"] = {};
+    for (const [rawVideoId, rawSubtitleId] of Object.entries(
+      next.subtitleSelectionByVideoId as Record<string, unknown>,
+    )) {
+      const videoId = rawVideoId.trim();
+      const subtitleId =
+        typeof rawSubtitleId === "string" ? rawSubtitleId.trim() : "";
+      if (!videoId || !subtitleId) {
+        continue;
+      }
+      normalizedByVideoId[videoId] = subtitleId.slice(0, 512);
+    }
+    next.subtitleSelectionByVideoId = normalizedByVideoId;
+  } else if ("subtitleSelectionByVideoId" in next) {
+    delete next.subtitleSelectionByVideoId;
+  }
+  if (typeof next.subtitleCleanupLlmPrompt === "string") {
+    next.subtitleCleanupLlmPrompt = next.subtitleCleanupLlmPrompt.slice(0, 12000);
+  } else if ("subtitleCleanupLlmPrompt" in next) {
+    delete next.subtitleCleanupLlmPrompt;
+  }
   next.subtitleOffsetY = normalizeNumberInRange(next.subtitleOffsetY, 180, -400, 400);
   next.subtitleStylePanelExpanded =
     typeof next.subtitleStylePanelExpanded === "boolean"

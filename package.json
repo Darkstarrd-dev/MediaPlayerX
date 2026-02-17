@@ -25,6 +25,7 @@
     "format:write": "node scripts/prettier-check-scoped.mjs --write",
     "preview": "vite preview",
     "bench:streaming": "node scripts/streaming-ingest-benchmark.mjs",
+    "bench:subtitle-rtf": "node scripts/subtitle-rtf-benchmark.mjs",
     "bench:archive-db": "node scripts/archive-db-benchmark.mjs",
     "bench:streaming-matrix": "node scripts/run-streaming-benchmark-matrix.mjs",
     "bench:ui": "node scripts/run-ui-bench.mjs",

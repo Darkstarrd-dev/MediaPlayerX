@@ -27,6 +27,14 @@ import {
   type PauseManageCoverReviewTaskResponseDto,
   type ConfirmManageCoverReviewHideRequestDto,
   type ConfirmManageCoverReviewHideResponseDto,
+  type StartManageSubtitleCleanupRequestDto,
+  type StartManageSubtitleCleanupResponseDto,
+  type ReadManageSubtitleCleanupTaskRequestDto,
+  type ReadManageSubtitleCleanupTaskResponseDto,
+  type RunManageSubtitleCleanupRequestDto,
+  type RunManageSubtitleCleanupResponseDto,
+  type SaveManageSubtitleCleanupRequestDto,
+  type SaveManageSubtitleCleanupResponseDto,
 } from '../../src/contracts/backend'
 import { FileSystemFacadeContext } from './types'
 
@@ -115,5 +123,29 @@ export class FileSystemManagementHandlers {
     request: ConfirmManageCoverReviewHideRequestDto,
   ): Promise<ConfirmManageCoverReviewHideResponseDto> {
     return this.context.manageCoverReviewService.confirmManageCoverReviewHide(request)
+  }
+
+  async startManageSubtitleCleanup(
+    request: StartManageSubtitleCleanupRequestDto,
+  ): Promise<StartManageSubtitleCleanupResponseDto> {
+    return this.context.libraryReadWriteService.startManageSubtitleCleanup(request)
+  }
+
+  async readManageSubtitleCleanupTask(
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+  ): Promise<ReadManageSubtitleCleanupTaskResponseDto> {
+    return this.context.libraryReadWriteService.readManageSubtitleCleanupTask(request)
+  }
+
+  async runManageSubtitleCleanup(
+    request: RunManageSubtitleCleanupRequestDto,
+  ): Promise<RunManageSubtitleCleanupResponseDto> {
+    return this.context.libraryReadWriteService.runManageSubtitleCleanup(request)
+  }
+
+  async saveManageSubtitleCleanup(
+    request: SaveManageSubtitleCleanupRequestDto,
+  ): Promise<SaveManageSubtitleCleanupResponseDto> {
+    return this.context.libraryReadWriteService.saveManageSubtitleCleanup(request)
   }
 }

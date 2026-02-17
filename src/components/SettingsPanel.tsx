@@ -75,6 +75,8 @@ export interface SettingsPanelProps {
   subtitleStrokeWidth: number
   subtitleStrokeShadowColor: string
   subtitleStrokeShadowRadius: number
+  subtitleFontSize: number
+  subtitleMaxLineChars: number
   subtitleOffsetY: number
   subtitleStylePanelExpanded: boolean
   subtitleModelsLoading: boolean
@@ -110,6 +112,9 @@ export interface SettingsPanelProps {
   adReviewVisionTestMessage: string | null
   adReviewVisionSavePending: boolean
   adReviewVisionSaveMessage: string | null
+  subtitleCleanupLlmEndpoint: string
+  subtitleCleanupLlmModel: string
+  subtitleCleanupLlmPrompt: string
   shortcuts: ShortcutMap
   shortcutConflicts: ShortcutConflict[]
   databaseResetPending: boolean
@@ -180,6 +185,8 @@ export interface SettingsPanelProps {
   onSubtitleStrokeWidthChange: (value: number) => void
   onSubtitleStrokeShadowColorChange: (value: string) => void
   onSubtitleStrokeShadowRadiusChange: (value: number) => void
+  onSubtitleFontSizeChange: (value: number) => void
+  onSubtitleMaxLineCharsChange: (value: number) => void
   onSubtitleOffsetYChange: (value: number) => void
   onSubtitleStylePanelExpandedChange: (value: boolean) => void
   onRefreshSubtitleModels: () => void
@@ -190,6 +197,9 @@ export interface SettingsPanelProps {
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
   onSaveAdReviewVisionModel: () => void
+  onSubtitleCleanupLlmEndpointChange: (value: string) => void
+  onSubtitleCleanupLlmModelChange: (value: string) => void
+  onSubtitleCleanupLlmPromptChange: (value: string) => void
   onSetShortcut: (action: ShortcutAction, binding: string) => void
   onResetShortcuts: () => void
   onClearDatabase: () => void
@@ -294,6 +304,8 @@ function SettingsPanel({
   subtitleStrokeWidth,
   subtitleStrokeShadowColor,
   subtitleStrokeShadowRadius,
+  subtitleFontSize,
+  subtitleMaxLineChars,
   subtitleOffsetY,
   subtitleStylePanelExpanded,
   subtitleModelsLoading,
@@ -310,6 +322,9 @@ function SettingsPanel({
   adReviewVisionTestMessage,
   adReviewVisionSavePending,
   adReviewVisionSaveMessage,
+  subtitleCleanupLlmEndpoint,
+  subtitleCleanupLlmModel,
+  subtitleCleanupLlmPrompt,
   shortcuts,
   shortcutConflicts,
   databaseResetPending,
@@ -370,6 +385,8 @@ function SettingsPanel({
   onSubtitleStrokeWidthChange,
   onSubtitleStrokeShadowColorChange,
   onSubtitleStrokeShadowRadiusChange,
+  onSubtitleFontSizeChange,
+  onSubtitleMaxLineCharsChange,
   onSubtitleOffsetYChange,
   onSubtitleStylePanelExpandedChange,
   onRefreshSubtitleModels,
@@ -380,6 +397,9 @@ function SettingsPanel({
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
   onSaveAdReviewVisionModel,
+  onSubtitleCleanupLlmEndpointChange,
+  onSubtitleCleanupLlmModelChange,
+  onSubtitleCleanupLlmPromptChange,
   onSetShortcut,
   onResetShortcuts,
   onClearDatabase,
@@ -806,6 +826,8 @@ function SettingsPanel({
     subtitleStrokeWidth,
     subtitleStrokeShadowColor,
     subtitleStrokeShadowRadius,
+    subtitleFontSize,
+    subtitleMaxLineChars,
     subtitleOffsetY,
     subtitleStylePanelExpanded,
     subtitleModelsLoading,
@@ -822,6 +844,9 @@ function SettingsPanel({
     adReviewVisionTestMessage,
     adReviewVisionSavePending,
     adReviewVisionSaveMessage,
+    subtitleCleanupLlmEndpoint,
+    subtitleCleanupLlmModel,
+    subtitleCleanupLlmPrompt,
     styleId,
     paletteMode,
     paletteDayId,
@@ -890,6 +915,8 @@ function SettingsPanel({
     onSubtitleStrokeWidthChange,
     onSubtitleStrokeShadowColorChange,
     onSubtitleStrokeShadowRadiusChange,
+    onSubtitleFontSizeChange,
+    onSubtitleMaxLineCharsChange,
     onSubtitleOffsetYChange,
     onSubtitleStylePanelExpandedChange,
     onRefreshSubtitleModels,
@@ -900,6 +927,9 @@ function SettingsPanel({
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,
     onSaveAdReviewVisionModel,
+    onSubtitleCleanupLlmEndpointChange,
+    onSubtitleCleanupLlmModelChange,
+    onSubtitleCleanupLlmPromptChange,
     onStyleChange,
     onPaletteModeChange,
     onPaletteDayChange,

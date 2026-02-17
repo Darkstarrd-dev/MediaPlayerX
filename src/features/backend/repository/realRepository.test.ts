@@ -6,6 +6,24 @@ import type {
 } from '../../../contracts/backend'
 import { RealMediaRepository } from './realRepository'
 
+function createSubtitleCleanupTaskDto() {
+  const now = Date.now()
+  return {
+    task_id: 'subtitle-task-1',
+    video_id: 'video-1',
+    subtitle_path: 'Z:/bench/video-1.srt',
+    status: 'review' as const,
+    raw_stage: 'ready' as const,
+    cleanup_stage: 'ready' as const,
+    raw_subtitle_text: '1\n00:00:00,000 --> 00:00:01,000\nraw\n',
+    cleaned_subtitle_text: '1\n00:00:00,000 --> 00:00:01,000\nclean\n',
+    message: 'ok',
+    error_detail: null,
+    created_at_ms: now,
+    updated_at_ms: now,
+  }
+}
+
 function createLibrarySnapshotDto(): LibrarySnapshotDto {
   return {
     image_packages: [
@@ -688,6 +706,63 @@ describe('RealMediaRepository', () => {
       repository.moveSidebarNodes({
         node_ids: ['package:pkg-invalid'],
         destination_directory: 'D:/target',
+      }),
+    ).rejects.toMatchObject({
+      name: 'ZodError',
+    })
+  })
+
+  it('支持字幕清理 IPC 调用并解析响应', async () => {
+    const task = createSubtitleCleanupTaskDto()
+    window.mediaPlayerBackend = {
+      startManageSubtitleCleanup: async () => ({ task }),
+      readManageSubtitleCleanupTask: async () => ({ task }),
+      runManageSubtitleCleanup: async () => ({ task }),
+      saveManageSubtitleCleanup: async () => ({
+        task,
+        saved_path: 'Z:/bench/video-1.srt',
+        updated_at_ms: Date.now(),
+      }),
+    } as unknown as NonNullable<Window['mediaPlayerBackend']>
+
+    const repository = new RealMediaRepository()
+
+    const started = await repository.startManageSubtitleCleanup({
+      video_id: 'video-1',
+    })
+    const read = await repository.readManageSubtitleCleanupTask({ task_id: task.task_id })
+    const run = await repository.runManageSubtitleCleanup({
+      task_id: task.task_id,
+      llm_endpoint: 'http://127.0.0.1:1234/v1/chat/completions',
+      llm_model: 'qwen2.5',
+    })
+    const saved = await repository.saveManageSubtitleCleanup({
+      task_id: task.task_id,
+      cleaned_subtitle_text: task.cleaned_subtitle_text,
+    })
+
+    expect(started.task.task_id).toBe(task.task_id)
+    expect(read.task?.video_id).toBe('video-1')
+    expect(run.task.task_id).toBe(task.task_id)
+    expect(saved.saved_path).toContain('.srt')
+  })
+
+  it('字幕清理 IPC 返回非法 payload 时抛出 ZodError', async () => {
+    window.mediaPlayerBackend = {
+      startManageSubtitleCleanup: async () => ({
+        task: {
+          task_id: 'subtitle-task-invalid',
+          video_id: 'video-1',
+          status: 'review',
+        },
+      }),
+    } as unknown as NonNullable<Window['mediaPlayerBackend']>
+
+    const repository = new RealMediaRepository()
+
+    await expect(
+      repository.startManageSubtitleCleanup({
+        video_id: 'video-1',
       }),
     ).rejects.toMatchObject({
       name: 'ZodError',

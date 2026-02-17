@@ -60,6 +60,10 @@ import {
   readManageCoverReviewTaskResponseSchema,
   pauseManageCoverReviewTaskResponseSchema,
   confirmManageCoverReviewHideResponseSchema,
+  startManageSubtitleCleanupResponseSchema,
+  readManageSubtitleCleanupTaskResponseSchema,
+  runManageSubtitleCleanupResponseSchema,
+  saveManageSubtitleCleanupResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
   type EnqueueImportTaskRequestDto,
@@ -154,6 +158,14 @@ import {
   type PauseManageCoverReviewTaskResponseDto,
   type ConfirmManageCoverReviewHideRequestDto,
   type ConfirmManageCoverReviewHideResponseDto,
+  type StartManageSubtitleCleanupRequestDto,
+  type StartManageSubtitleCleanupResponseDto,
+  type ReadManageSubtitleCleanupTaskRequestDto,
+  type ReadManageSubtitleCleanupTaskResponseDto,
+  type RunManageSubtitleCleanupRequestDto,
+  type RunManageSubtitleCleanupResponseDto,
+  type SaveManageSubtitleCleanupRequestDto,
+  type SaveManageSubtitleCleanupResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
   type ReadAppStateRequestDto,
@@ -380,6 +392,46 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(confirmManageCoverReviewHide(request), options)
     return confirmManageCoverReviewHideResponseSchema.parse(response)
+  }
+
+  async startManageSubtitleCleanup(
+    request: StartManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartManageSubtitleCleanupResponseDto> {
+    const startManageSubtitleCleanup = requireBackendMethod('startManageSubtitleCleanup')
+
+    const response = await withAbort(startManageSubtitleCleanup(request), options)
+    return startManageSubtitleCleanupResponseSchema.parse(response)
+  }
+
+  async readManageSubtitleCleanupTask(
+    request: ReadManageSubtitleCleanupTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageSubtitleCleanupTaskResponseDto> {
+    const readManageSubtitleCleanupTask = requireBackendMethod('readManageSubtitleCleanupTask')
+
+    const response = await withAbort(readManageSubtitleCleanupTask(request), options)
+    return readManageSubtitleCleanupTaskResponseSchema.parse(response)
+  }
+
+  async runManageSubtitleCleanup(
+    request: RunManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RunManageSubtitleCleanupResponseDto> {
+    const runManageSubtitleCleanup = requireBackendMethod('runManageSubtitleCleanup')
+
+    const response = await withAbort(runManageSubtitleCleanup(request), options)
+    return runManageSubtitleCleanupResponseSchema.parse(response)
+  }
+
+  async saveManageSubtitleCleanup(
+    request: SaveManageSubtitleCleanupRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SaveManageSubtitleCleanupResponseDto> {
+    const saveManageSubtitleCleanup = requireBackendMethod('saveManageSubtitleCleanup')
+
+    const response = await withAbort(saveManageSubtitleCleanup(request), options)
+    return saveManageSubtitleCleanupResponseSchema.parse(response)
   }
 
   async writePackageMetadata(

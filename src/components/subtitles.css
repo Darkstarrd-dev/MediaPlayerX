@@ -4,7 +4,9 @@
   bottom: clamp(12px, 6%, 48px);
   transform: translate(-50%, calc(var(--mpx-subtitle-offset-y, 0px) * -1));
   max-width: min(84%, 920px);
-  padding: 0;
+  width: min(84%, 920px);
+  padding: 2px 10px;
+  box-sizing: border-box;
   color: #fff;
   font-size: clamp(14px, 1.2vw, 20px);
   font-weight: 600;
@@ -13,11 +15,50 @@
   text-align: center;
   z-index: 4;
   pointer-events: none;
-  white-space: pre-wrap;
+  white-space: normal;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+}
+
+.subtitle-overlay-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.subtitle-overlay-line {
+  position: relative;
+  display: inline-block;
+  width: fit-content;
+  margin-inline: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  line-height: inherit;
+  padding: 0.06em 0;
+  text-align: center;
+}
+
+.subtitle-overlay-stroke,
+.subtitle-overlay-fill {
+  display: inline-block;
+  white-space: inherit;
+}
+
+.subtitle-overlay-stroke {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.subtitle-overlay-fill {
+  position: relative;
 }
 
 .fullscreen-media-video .subtitle-overlay {
   bottom: clamp(16px, 8%, 72px);
   max-width: min(86%, 1080px);
+  width: min(86%, 1080px);
   font-size: clamp(16px, 1.3vw, 24px);
 }

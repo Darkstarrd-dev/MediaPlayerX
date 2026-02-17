@@ -3,6 +3,12 @@ import type { CSSProperties, Dispatch, SetStateAction } from 'react'
 import { clamp } from '../../utils/ui'
 import type { VideoItem } from '../../types'
 import type { VideoFitMode } from '../media/videoFitMode'
+import type {
+  ReadManageSubtitleCleanupTaskResponseDto,
+  RunManageSubtitleCleanupResponseDto,
+  SaveManageSubtitleCleanupResponseDto,
+  StartManageSubtitleCleanupResponseDto,
+} from '../../contracts/backend'
 
 interface BuildVideoMainSectionPropsParams {
   manageMode: boolean
@@ -44,6 +50,26 @@ interface BuildVideoMainSectionPropsParams {
   coverImageUrl: string | null
   focusedVideoId: string | null
   focusedVideo: VideoItem | null
+  subtitleCleanupLlmEndpoint: string
+  subtitleCleanupLlmModel: string
+  subtitleCleanupLlmPrompt: string
+  startSubtitleCleanup?: (request: {
+    video_id: string
+  }) => Promise<StartManageSubtitleCleanupResponseDto>
+  readSubtitleCleanupTask?: (request: { task_id: string }) => Promise<ReadManageSubtitleCleanupTaskResponseDto>
+  runSubtitleCleanup?: (request: {
+    task_id: string
+    llm_endpoint: string
+    llm_model: string
+    llm_prompt?: string
+  }) => Promise<RunManageSubtitleCleanupResponseDto>
+  saveSubtitleCleanup?: (request: {
+    task_id: string
+    cleaned_subtitle_text: string
+  }) => Promise<SaveManageSubtitleCleanupResponseDto>
+  onSubtitleCleanupSaved: () => void
+  onSubtitleCleanupLlmEndpointChange: (value: string) => void
+  onSubtitleCleanupLlmModelChange: (value: string) => void
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: (step: number) => void
   setVideoTime: Dispatch<SetStateAction<number>>
@@ -126,6 +152,17 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     active: params.active,
     coverImageUrl: params.coverImageUrl,
     focusedVideo: params.focusedVideo,
+    subtitleCleanupVideoId: params.focusedVideoId,
+    subtitleCleanupLlmEndpoint: params.subtitleCleanupLlmEndpoint,
+    subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
+    subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
+    startSubtitleCleanup: params.startSubtitleCleanup,
+    readSubtitleCleanupTask: params.readSubtitleCleanupTask,
+    runSubtitleCleanup: params.runSubtitleCleanup,
+    saveSubtitleCleanup: params.saveSubtitleCleanup,
+    onSubtitleCleanupSaved: params.onSubtitleCleanupSaved,
+    onSubtitleCleanupLlmEndpointChange: params.onSubtitleCleanupLlmEndpointChange,
+    onSubtitleCleanupLlmModelChange: params.onSubtitleCleanupLlmModelChange,
     metadataPending: params.metadataPending,
     onMetadataSyncName: params.onMetadataSyncName,
     canJumpToManga: params.canJumpToManga,

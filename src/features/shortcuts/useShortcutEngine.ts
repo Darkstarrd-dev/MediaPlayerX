@@ -513,7 +513,14 @@ export function useShortcutEngine({
         }
       }
 
-      if (!fullscreenActive && sidebarFocus === 'sidebar') {
+      if (
+        !fullscreenActive &&
+        sidebarFocus === 'sidebar' &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey
+      ) {
         const handledBySidebar = handleSidebarNavigationKey(event)
         if (handledBySidebar) {
           event.preventDefault()

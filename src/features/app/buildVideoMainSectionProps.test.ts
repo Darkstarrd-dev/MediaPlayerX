@@ -1,0 +1,130 @@
+import { describe, expect, it, vi } from 'vitest'
+
+import { buildVideoMainSectionProps } from './buildVideoMainSectionProps'
+
+describe('buildVideoMainSectionProps', () => {
+  it('透传字幕清理仓储回调与设置项', () => {
+    const startSubtitleCleanup = vi.fn()
+    const readSubtitleCleanupTask = vi.fn()
+    const runSubtitleCleanup = vi.fn()
+    const saveSubtitleCleanup = vi.fn()
+    const onSubtitleCleanupSaved = vi.fn()
+
+    const props = buildVideoMainSectionProps({
+      manageMode: true,
+      metadataManageMode: false,
+      sidebarSelectedCount: 0,
+      imageSelectedCount: 0,
+      activeSelectionScope: null,
+      pendingManageAction: false,
+      manageOperationHint: null,
+      canManageDelete: false,
+      canManageMoveNodes: false,
+      canManageAddToPlaylist: false,
+      canManageHide: false,
+      canManageUnhide: false,
+      onManageDelete: vi.fn(),
+      onManageGroup: vi.fn(),
+      onManageMove: vi.fn(),
+      onManageAddToPlaylist: vi.fn(),
+      onManageHide: vi.fn(),
+      onManageUnhide: vi.fn(),
+      onClearManageSelection: vi.fn(),
+      durationSec: 120,
+      videoTime: 8,
+      videoPlaying: false,
+      videoRate: 1,
+      videoVolume: 60,
+      videoMuted: false,
+      videoFitMode: 'contain',
+      videoLoopMode: 'list',
+      videoLoopModeLabel: 'list',
+      mediaPreloadMemoryBudgetMb: 128,
+      videoPreloadOrderIds: ['video-1'],
+      videoById: new Map([
+        [
+          'video-1',
+          {
+            id: 'video-1',
+            fileName: 'video-1.mp4',
+            absolutePath: 'Z:/mock/video-1.mp4',
+            relativePath: 'video-1.mp4',
+            sizeMb: 10,
+            width: 1920,
+            height: 1080,
+            durationSec: 120,
+            frameRate: 30,
+            bitrateKbps: 3000,
+            codec: 'h264',
+            workTitle: 'video-1',
+            seriesId: '',
+            circle: 'unknown',
+            author: 'unknown',
+            tags: [],
+            grade: null,
+            coverColor: 'hsl(0, 0%, 20%)',
+            coverImagePath: null,
+            updatedAtMs: Date.now(),
+          },
+        ],
+      ]) as any,
+      videoUrlById: { 'video-1': 'file:///video-1.mp4' },
+      videoSourceUrl: 'file:///video-1.mp4',
+      fullscreenActive: false,
+      active: true,
+      coverColor: 'hsl(0, 0%, 20%)',
+      coverImageUrl: null,
+      focusedVideoId: 'video-1',
+      focusedVideo: null,
+      subtitleCleanupLlmEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
+      subtitleCleanupLlmModel: 'qwen2.5',
+      subtitleCleanupLlmPrompt: 'cleanup prompt',
+      startSubtitleCleanup,
+      readSubtitleCleanupTask,
+      runSubtitleCleanup,
+      saveSubtitleCleanup,
+      onSubtitleCleanupSaved,
+      onSubtitleCleanupLlmEndpointChange: vi.fn(),
+      onSubtitleCleanupLlmModelChange: vi.fn(),
+      setVideoPlaying: vi.fn(),
+      goPlaylist: vi.fn(),
+      setVideoTime: vi.fn(),
+      setVideoDurationById: vi.fn(),
+      setVideoMuted: vi.fn(),
+      setVideoVolume: vi.fn(),
+      setVideoRate: vi.fn(),
+      setVideoFitMode: vi.fn(),
+      onCycleVideoLoopMode: vi.fn(),
+      cycleVideoFitMode: vi.fn(),
+      saveVideoCover: vi.fn(async () => undefined),
+      setFullscreenActiveWithAutoStop: vi.fn(),
+      metadataPending: false,
+      onMetadataSyncName: vi.fn(),
+      canJumpToManga: false,
+      canJumpToMusic: false,
+      onJumpToManga: vi.fn(),
+      onJumpToMusic: vi.fn(),
+      subtitleVisible: false,
+      subtitleTrackUrl: null,
+      subtitleLoading: false,
+      subtitleMessage: null,
+      subtitleOptions: [],
+      selectedSubtitleId: null,
+      autoSubtitleActive: false,
+      liveSubtitleText: null,
+      subtitleOverlayStyle: {},
+      bindVideoElement: vi.fn(),
+      setSubtitleVisible: vi.fn(),
+      selectSubtitleById: vi.fn(async () => undefined),
+    })
+
+    expect(props.subtitleCleanupLlmEndpoint).toBe('http://127.0.0.1:1234/v1/chat/completions')
+    expect(props.subtitleCleanupLlmModel).toBe('qwen2.5')
+    expect(props.subtitleCleanupLlmPrompt).toBe('cleanup prompt')
+    expect(props.startSubtitleCleanup).toBe(startSubtitleCleanup)
+    expect(props.readSubtitleCleanupTask).toBe(readSubtitleCleanupTask)
+    expect(props.runSubtitleCleanup).toBe(runSubtitleCleanup)
+    expect(props.saveSubtitleCleanup).toBe(saveSubtitleCleanup)
+    expect(props.onSubtitleCleanupSaved).toBe(onSubtitleCleanupSaved)
+  })
+})
