@@ -57,6 +57,7 @@ interface RenderSettingsMainSectionParams {
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
   subtitleAcceleration: 'auto' | 'cpu' | 'directml'
+  subtitleLanguage: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue'
   subtitleModelDir: string
   subtitleModelLocationPath: string
   subtitleSelectedModelId: string | null
@@ -149,6 +150,7 @@ interface RenderSettingsMainSectionParams {
   onEhentaiCookiesChange: (value: string) => void
   onSubtitleFeatureEnabledChange: (value: boolean) => void
   onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
+  onSubtitleLanguageChange: (value: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue') => void
   onSubtitleModelDirPick: () => void
   onSubtitleModelLocationPick: () => void
   onSubtitleSelectedModelIdChange: (value: string) => void
@@ -208,6 +210,7 @@ export function renderSettingsMainSection({
   ehentaiCookies,
   subtitleFeatureEnabled,
   subtitleAcceleration,
+  subtitleLanguage,
   subtitleModelDir,
   subtitleModelLocationPath,
   subtitleSelectedModelId,
@@ -281,6 +284,7 @@ export function renderSettingsMainSection({
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
   onSubtitleAccelerationChange,
+  onSubtitleLanguageChange,
   onSubtitleModelDirPick,
   onSubtitleModelLocationPick,
   onSubtitleSelectedModelIdChange,
@@ -778,6 +782,22 @@ export function renderSettingsMainSection({
               <option value="auto">{t('ui.settings.offlineSubtitleAccelerationAuto')}</option>
               <option value="cpu">{t('ui.settings.offlineSubtitleAccelerationCpu')}</option>
               <option value="directml">{t('ui.settings.offlineSubtitleAccelerationDirectml')}</option>
+            </select>
+          </label>
+          <label>
+            {t('ui.settings.offlineSubtitleLanguage')}
+            <select
+              value={subtitleLanguage}
+              onChange={(event) =>
+                onSubtitleLanguageChange(event.target.value as 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue')
+              }
+            >
+              <option value="auto">{t('ui.settings.offlineSubtitleLanguageAuto')}</option>
+              <option value="zh">{t('ui.settings.offlineSubtitleLanguageZh')}</option>
+              <option value="en">{t('ui.settings.offlineSubtitleLanguageEn')}</option>
+              <option value="ja">{t('ui.settings.offlineSubtitleLanguageJa')}</option>
+              <option value="ko">{t('ui.settings.offlineSubtitleLanguageKo')}</option>
+              <option value="yue">{t('ui.settings.offlineSubtitleLanguageYue')}</option>
             </select>
           </label>
           <label>

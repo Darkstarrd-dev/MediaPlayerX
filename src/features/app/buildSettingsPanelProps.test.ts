@@ -39,6 +39,7 @@ describe('buildSettingsPanelProps', () => {
       ehentaiCookies: '',
       subtitleFeatureEnabled: false,
       subtitleAcceleration: 'auto',
+      subtitleLanguage: 'auto',
       subtitleModelDir: '',
       subtitleSelectedModelId: null,
       subtitleModelsLoading: false,
@@ -106,6 +107,7 @@ describe('buildSettingsPanelProps', () => {
     props.onUiLocaleChange('en-US')
     props.onSubtitleFeatureEnabledChange(true)
     props.onSubtitleAccelerationChange('directml')
+    props.onSubtitleLanguageChange('ja')
     props.onSubtitleSelectedModelIdChange(' sensevoice-small ')
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 })
@@ -132,6 +134,7 @@ describe('buildSettingsPanelProps', () => {
     expect(updateSettings).toHaveBeenNthCalledWith(8, { uiLocale: 'en-US' })
     expect(updateSettings).toHaveBeenNthCalledWith(9, { subtitleFeatureEnabled: true })
     expect(updateSettings).toHaveBeenNthCalledWith(10, { subtitleAcceleration: 'directml' })
-    expect(updateSettings).toHaveBeenNthCalledWith(11, { subtitleSelectedModelId: 'sensevoice-small' })
+    expect(updateSettings).toHaveBeenNthCalledWith(11, { subtitleLanguage: 'ja' })
+    expect(updateSettings).toHaveBeenNthCalledWith(12, { subtitleSelectedModelId: 'sensevoice-small' })
   })
 })

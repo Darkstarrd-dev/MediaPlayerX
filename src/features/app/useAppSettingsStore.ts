@@ -65,6 +65,7 @@ export function useAppSettingsStore() {
       ehentaiCookies: state.ehentaiCookies,
       subtitleFeatureEnabled: state.subtitleFeatureEnabled,
       subtitleAcceleration: state.subtitleAcceleration,
+      subtitleLanguage: state.subtitleLanguage,
       subtitleModelDir: state.subtitleModelDir,
       subtitleSelectedModelId: state.subtitleSelectedModelId,
       adReviewVisionEndpoint: state.adReviewVisionEndpoint,

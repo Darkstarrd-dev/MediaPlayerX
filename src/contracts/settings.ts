@@ -36,6 +36,14 @@ export const subtitleAccelerationSchema = z.enum([
   "cpu",
   "directml",
 ]);
+export const subtitleLanguageSchema = z.enum([
+  "auto",
+  "zh",
+  "en",
+  "ja",
+  "ko",
+  "yue",
+]);
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
@@ -121,6 +129,7 @@ export const appSettingsSchema = z.object({
   ehentaiCookies: z.string().max(4096),
   subtitleFeatureEnabled: z.boolean(),
   subtitleAcceleration: subtitleAccelerationSchema,
+  subtitleLanguage: subtitleLanguageSchema,
   subtitleModelDir: z.string().max(1024),
   subtitleSelectedModelId: z.string().max(128).nullable(),
   adReviewVisionEndpoint: z.string().max(512),

@@ -206,6 +206,18 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.subtitleAcceleration;
   }
 
+  if (
+    next.subtitleLanguage !== "auto" &&
+    next.subtitleLanguage !== "zh" &&
+    next.subtitleLanguage !== "en" &&
+    next.subtitleLanguage !== "ja" &&
+    next.subtitleLanguage !== "ko" &&
+    next.subtitleLanguage !== "yue" &&
+    "subtitleLanguage" in next
+  ) {
+    delete next.subtitleLanguage;
+  }
+
   if (typeof next.subtitleModelDir === "string") {
     next.subtitleModelDir = next.subtitleModelDir.trim().slice(0, 1024);
   } else if ("subtitleModelDir" in next) {

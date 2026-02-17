@@ -20,6 +20,29 @@ import type { MediaLocator } from "../../types";
 import { useI18n } from "../../i18n/useI18n";
 import { toErrorDetailWithCode } from "./errorCode";
 
+function toAutoSubtitleLanguageLabel(
+  language: string | null,
+  t: ReturnType<typeof useI18n>["t"],
+): string {
+  const normalized = (language ?? "").trim().toLowerCase();
+  if (normalized === "zh") {
+    return t("ui.media.autoSubtitleLanguageZh");
+  }
+  if (normalized === "en") {
+    return t("ui.media.autoSubtitleLanguageEn");
+  }
+  if (normalized === "ja") {
+    return t("ui.media.autoSubtitleLanguageJa");
+  }
+  if (normalized === "ko") {
+    return t("ui.media.autoSubtitleLanguageKo");
+  }
+  if (normalized === "yue") {
+    return t("ui.media.autoSubtitleLanguageYue");
+  }
+  return t("ui.media.autoSubtitleLanguageAuto");
+}
+
 function isSyncSubtitleRepository(
   repository: unknown,
 ): repository is SynchronousMediaRepository {
@@ -407,8 +430,19 @@ export function useAppDisplayResources({
     modelDir: subtitleModelDir,
     modelId: subtitleModelId,
     providerPreference: appSettings.subtitleAcceleration,
+    language: appSettings.subtitleLanguage,
     repository: mediaRepository,
   });
+  const configuredSubtitleLanguage = (appSettings.subtitleLanguage ?? "auto").trim().toLowerCase();
+  const autoSubtitleStatusMessage = liveSubtitle.message
+    ? liveSubtitle.message
+    : configuredSubtitleLanguage !== "auto"
+      ? t("ui.media.autoSubtitleUsingLanguage", {
+          language: toAutoSubtitleLanguageLabel(configuredSubtitleLanguage, t),
+        })
+      : t("ui.media.autoSubtitleDetectingLanguage", {
+          language: toAutoSubtitleLanguageLabel(liveSubtitle.detectedLanguage, t),
+        });
 
   useEffect(() => {
     if (!autoSubtitleActive) {
@@ -703,7 +737,7 @@ export function useAppDisplayResources({
     selectedSubtitleId,
     subtitleTrackUrl: autoSubtitleActive ? null : subtitleTrackUrl,
     subtitleLoading: autoSubtitleActive ? liveSubtitle.loading : subtitleLoading,
-    subtitleMessage: autoSubtitleActive ? liveSubtitle.message : subtitleMessage,
+    subtitleMessage: autoSubtitleActive ? autoSubtitleStatusMessage : subtitleMessage,
     autoSubtitleActive,
     liveSubtitleText: liveSubtitle.activeText,
     bindMainVideoElement: setMainVideoElement,

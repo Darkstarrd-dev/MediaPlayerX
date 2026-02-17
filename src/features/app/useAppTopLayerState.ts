@@ -456,6 +456,7 @@ export function useAppTopLayerState({
     ehentaiCookies: appSettings.ehentaiCookies,
     subtitleFeatureEnabled: appSettings.subtitleFeatureEnabled,
     subtitleAcceleration: appSettings.subtitleAcceleration,
+    subtitleLanguage: appSettings.subtitleLanguage,
     subtitleModelDir: appSettings.subtitleModelDir,
     subtitleSelectedModelId: appSettings.subtitleSelectedModelId,
     subtitleModelsLoading,

@@ -55,6 +55,7 @@ export interface SettingsPanelProps {
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
   subtitleAcceleration: 'auto' | 'cpu' | 'directml'
+  subtitleLanguage: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue'
   subtitleModelDir: string
   subtitleModelLocationPath: string
   subtitleSelectedModelId: string | null
@@ -139,6 +140,7 @@ export interface SettingsPanelProps {
   onEhentaiCookiesChange: (value: string) => void
   onSubtitleFeatureEnabledChange: (value: boolean) => void
   onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
+  onSubtitleLanguageChange: (value: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue') => void
   onSubtitleModelDirPick: () => void
   onSubtitleModelLocationPick: () => void
   onSubtitleSelectedModelIdChange: (value: string) => void
@@ -243,6 +245,7 @@ function SettingsPanel({
   ehentaiCookies,
   subtitleFeatureEnabled,
   subtitleAcceleration,
+  subtitleLanguage,
   subtitleModelDir,
   subtitleModelLocationPath,
   subtitleSelectedModelId,
@@ -308,6 +311,7 @@ function SettingsPanel({
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
   onSubtitleAccelerationChange,
+  onSubtitleLanguageChange,
   onSubtitleModelDirPick,
   onSubtitleModelLocationPick,
   onSubtitleSelectedModelIdChange,
@@ -734,6 +738,7 @@ function SettingsPanel({
     ehentaiCookies,
     subtitleFeatureEnabled,
     subtitleAcceleration,
+    subtitleLanguage,
     subtitleModelDir,
     subtitleModelLocationPath,
     subtitleSelectedModelId,
@@ -807,6 +812,7 @@ function SettingsPanel({
     onEhentaiCookiesChange,
     onSubtitleFeatureEnabledChange,
     onSubtitleAccelerationChange,
+    onSubtitleLanguageChange,
     onSubtitleModelDirPick,
     onSubtitleModelLocationPick,
     onSubtitleSelectedModelIdChange,

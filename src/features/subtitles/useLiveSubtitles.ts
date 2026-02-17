@@ -4,6 +4,7 @@ import type {
   FlushSubtitleSessionResponseDto,
   PushSubtitleAudioRequestDto,
   SubtitleCueDto,
+  SubtitleSessionEventDto,
   SubtitleSessionProviderPreferenceDto,
 } from '../../contracts/backend'
 import type { MediaRepository } from '../backend/repository'
@@ -16,6 +17,7 @@ interface UseLiveSubtitlesParams {
   modelDir: string
   modelId: string | null
   providerPreference: SubtitleSessionProviderPreferenceDto
+  language: string
   repository: MediaRepository
 }
 
@@ -43,6 +45,23 @@ function appendCues(previous: SubtitleCueDto[], next: SubtitleCueDto[]): Subtitl
   return ordered.slice(-300)
 }
 
+function pickDisplayEventMessage(events: SubtitleSessionEventDto[]): string | null {
+  const selected = events.find((item) => {
+    if (item.level === 'error') {
+      return true
+    }
+    if (item.code === 'provider_fallback') {
+      return false
+    }
+    if (item.code === 'session_not_running') {
+      return false
+    }
+    return item.level === 'warning'
+  })
+
+  return selected?.message ?? null
+}
+
 export function useLiveSubtitles({
   enabled,
   videoElement,
@@ -50,6 +69,7 @@ export function useLiveSubtitles({
   modelDir,
   modelId,
   providerPreference,
+  language,
   repository,
 }: UseLiveSubtitlesParams) {
   const [cues, setCues] = useState<SubtitleCueDto[]>([])
@@ -141,9 +161,9 @@ export function useLiveSubtitles({
 
     const handleCuesAndEvents = (response: { cues: SubtitleCueDto[]; events: FlushSubtitleSessionResponseDto['events'] }) => {
       setCues((previous) => appendCues(previous, response.cues))
-      const warning = response.events.find((item) => item.level !== 'info')
-      if (warning) {
-        setMessage(warning.message)
+      const displayMessage = pickDisplayEventMessage(response.events)
+      if (displayMessage) {
+        setMessage(displayMessage)
       }
     }
 
@@ -169,7 +189,7 @@ export function useLiveSubtitles({
           model_dir: modelDir,
           model_id: modelId,
           provider_preference: providerPreference,
-          language: 'auto',
+          language: language.trim() || 'auto',
           fallback_to_cpu: true,
         })
 
@@ -179,8 +199,7 @@ export function useLiveSubtitles({
         }
 
         sessionRunningRef.current = true
-        const firstEvent = startResponse.events.find((item) => item.level !== 'info')
-        setMessage(firstEvent?.message ?? null)
+        setMessage(pickDisplayEventMessage(startResponse.events))
 
         await capture.attach(videoElement, (chunk) => {
           if (!sessionRunningRef.current || cancelled || videoElement.paused || videoElement.ended) {
@@ -271,6 +290,7 @@ export function useLiveSubtitles({
     modelDir,
     modelId,
     providerPreference,
+    language,
     repository.flushSubtitleSession,
     repository.listSubtitleLocalModels,
     repository.pushSubtitleAudio,
@@ -281,13 +301,37 @@ export function useLiveSubtitles({
   ])
 
   const activeText = useMemo(() => {
-    const currentCue = cues.find((item) => currentTimeSec >= item.start_sec && currentTimeSec <= item.end_sec)
-    return currentCue?.text ?? null
+    for (let index = cues.length - 1; index >= 0; index -= 1) {
+      const cue = cues[index]
+      if (currentTimeSec >= cue.start_sec && currentTimeSec <= cue.end_sec) {
+        return cue.text
+      }
+    }
+
+    for (let index = cues.length - 1; index >= 0; index -= 1) {
+      const cue = cues[index]
+      if (currentTimeSec + 0.35 >= cue.start_sec && currentTimeSec <= cue.end_sec + 2.4) {
+        return cue.text
+      }
+    }
+
+    return null
   }, [cues, currentTimeSec])
+
+  const detectedLanguage = useMemo(() => {
+    for (let index = cues.length - 1; index >= 0; index -= 1) {
+      const cue = cues[index]
+      if (cue.lang && cue.lang.trim()) {
+        return cue.lang.trim().toLowerCase()
+      }
+    }
+    return null
+  }, [cues])
 
   return {
     loading,
     message,
     activeText,
+    detectedLanguage,
   }
 }

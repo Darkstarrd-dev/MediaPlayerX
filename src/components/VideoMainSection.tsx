@@ -170,6 +170,11 @@ function VideoMainSection({
   const videoScreenBackground = 'var(--mpx-bg-elevated)'
   const videoObjectFit = videoFitMode === 'original' ? 'none' : videoFitMode
   const subtitleToggleLabel = subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')
+  const subtitlePanelContentText = subtitleMessage ? subtitleMessage : null
+  const subtitlePanelHasContent =
+    subtitleLoading ||
+    Boolean(subtitlePanelContentText) ||
+    subtitleOptions.length > 0
   const videoFitLabel =
     videoFitMode === 'fill'
       ? t('a11y.media.videoFitFill')
@@ -548,7 +553,11 @@ function VideoMainSection({
 
             <div
               className={`video-ctrl-popover ${openPopover === 'subtitle' ? 'is-open' : ''}`}
-              onMouseEnter={() => setOpenPopover('subtitle')}
+              onMouseEnter={() => {
+                if (subtitlePanelHasContent) {
+                  setOpenPopover('subtitle')
+                }
+              }}
               onMouseLeave={closePopover}
             >
               <button
@@ -562,9 +571,9 @@ function VideoMainSection({
               >
                 <VideoControlIcon name="subtitle" />
               </button>
-              <div className="video-ctrl-panel" hidden={openPopover !== 'subtitle'} id="video-main-popover-subtitle" role="dialog">
+              <div className="video-ctrl-panel" hidden={openPopover !== 'subtitle' || !subtitlePanelHasContent} id="video-main-popover-subtitle" role="dialog">
                 {subtitleLoading ? <span className="video-ctrl-panel-note">{t('ui.common.loading')}</span> : null}
-                {subtitleMessage ? <span className="video-ctrl-panel-note">{subtitleMessage}</span> : null}
+                {subtitlePanelContentText ? <span className="video-ctrl-panel-note">{subtitlePanelContentText}</span> : null}
                 <div className="video-ctrl-panel-options">
                   {subtitleOptions.map((option) => (
                     <button

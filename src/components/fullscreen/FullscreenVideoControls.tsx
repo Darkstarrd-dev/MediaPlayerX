@@ -104,6 +104,11 @@ export function FullscreenVideoControlsShell({
         ? t('a11y.media.videoFitOriginal')
       : t('a11y.media.videoFitContain')
   const videoLoopModeLabel = videoLoopMode === 'single' ? t('ui.media.videoLoopModeSingle') : t('ui.media.videoLoopModeList')
+  const subtitlePanelContentText = subtitleMessage ? subtitleMessage : null
+  const subtitlePanelHasContent =
+    subtitleLoading ||
+    Boolean(subtitlePanelContentText) ||
+    subtitleOptions.length > 0
 
   const openPopoverByHover = (key: VideoPopoverKey) => {
     setOpenPopover(key)
@@ -224,7 +229,11 @@ export function FullscreenVideoControlsShell({
 
           <div
             className={`video-ctrl-popover ${openPopover === 'subtitle' ? 'is-open' : ''}`}
-            onMouseEnter={() => openPopoverByHover('subtitle')}
+            onMouseEnter={() => {
+              if (subtitlePanelHasContent) {
+                openPopoverByHover('subtitle')
+              }
+            }}
             onMouseLeave={closePopover}
           >
             <button
@@ -238,9 +247,14 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name="subtitle" />
             </button>
-            <div className="video-ctrl-panel" hidden={openPopover !== 'subtitle'} id="fullscreen-popover-subtitle" role="dialog">
+            <div
+              className="video-ctrl-panel"
+              hidden={openPopover !== 'subtitle' || !subtitlePanelHasContent}
+              id="fullscreen-popover-subtitle"
+              role="dialog"
+            >
               {subtitleLoading ? <span className="video-ctrl-panel-note">{t('ui.common.loading')}</span> : null}
-              {subtitleMessage ? <span className="video-ctrl-panel-note">{subtitleMessage}</span> : null}
+              {subtitlePanelContentText ? <span className="video-ctrl-panel-note">{subtitlePanelContentText}</span> : null}
               <div className="video-ctrl-panel-options">
                 {subtitleOptions.map((option) => (
                   <button

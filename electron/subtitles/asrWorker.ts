@@ -41,6 +41,20 @@ interface RuntimeSessionState {
   language: string
   fallbackApplied: boolean
   lastChunkEndSec: number
+  recognizer: {
+    decode: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => void
+    getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
+      lang?: string
+      text?: string
+    }
+    createStream: () => { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
+  }
+  stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
+  sampleRateHz: number
+  pendingSamplesSinceDecode: number
+  committedText: string
+  cueSeed: number
+  requestedLanguage: string
 }
 
 let runtimeSession: RuntimeSessionState | null = null
@@ -103,6 +117,29 @@ async function resolveModelRootDir(modelDir: string, modelId: string): Promise<s
   throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`)
 }
 
+async function resolveModelOnnxPath(modelRootDir: string): Promise<string> {
+  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+  try {
+    entries = await fs.readdir(modelRootDir, { withFileTypes: true })
+  } catch {
+    throw new Error(`subtitle_model_files_missing:${modelRootDir}`)
+  }
+
+  const modelFileNames = entries
+    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.onnx'))
+    .map((entry) => entry.name)
+
+  if (modelFileNames.length === 0) {
+    throw new Error(`subtitle_model_files_missing:${modelRootDir}`)
+  }
+
+  const preferred = modelFileNames.find((name) => name.toLowerCase() === 'model.int8.onnx')
+    ?? modelFileNames.find((name) => name.toLowerCase() === 'model.onnx')
+    ?? modelFileNames[0]
+
+  return path.join(modelRootDir, preferred)
+}
+
 function chooseProvider(payload: InitRequestPayload): {
   provider: SubtitleSessionProviderDto
   fallbackApplied: boolean
@@ -163,22 +200,185 @@ function ensureSession(): RuntimeSessionState {
   return runtimeSession
 }
 
-function loadSherpaModule(moduleRoot: string): void {
+function loadSherpaModule(moduleRoot: string): {
+  OfflineRecognizer: new (config: unknown) => {
+    createStream: () => { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
+    decode: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => void
+    getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
+      lang?: string
+      text?: string
+    }
+  }
+} {
   const packageJsonPath = path.join(moduleRoot, 'package.json')
   if (!existsSync(packageJsonPath)) {
     throw new Error(`subtitle_engine_package_not_found:${packageJsonPath}`)
   }
 
   const moduleRequire = createRequire(packageJsonPath)
-  moduleRequire('sherpa-onnx-node')
+  return moduleRequire('sherpa-onnx-node') as {
+    OfflineRecognizer: new (config: unknown) => {
+      createStream: () => { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
+      decode: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => void
+      getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
+        lang?: string
+        text?: string
+      }
+    }
+  }
+}
+
+function normalizeRecognizedText(value: string | undefined): string {
+  const raw = (value ?? '').trim()
+  if (!raw) {
+    return ''
+  }
+  return raw.replace(/<\|[^|]+\|>/g, '').replace(/\s+/g, ' ').trim()
+}
+
+function normalizeLangTag(value: string | undefined): string | null {
+  const raw = (value ?? '').trim()
+  if (!raw) {
+    return null
+  }
+
+  const tagged = /^<\|([^|]+)\|>$/.exec(raw)
+  if (tagged?.[1]) {
+    return tagged[1].toLowerCase()
+  }
+
+  return raw.toLowerCase()
+}
+
+function normalizeRequestedLanguage(value: string): string {
+  const normalized = value.trim().toLowerCase()
+  if (normalized === 'zh' || normalized === 'en' || normalized === 'ja' || normalized === 'ko' || normalized === 'yue') {
+    return normalized
+  }
+  return 'auto'
+}
+
+function computeTextDelta(previousText: string, currentText: string): string {
+  if (!currentText) {
+    return ''
+  }
+  if (!previousText) {
+    return currentText
+  }
+  if (currentText === previousText) {
+    return ''
+  }
+  if (currentText.startsWith(previousText)) {
+    return currentText.slice(previousText.length).trim()
+  }
+
+  const previousTail = previousText.slice(Math.max(0, previousText.length - 16))
+  const overlapIndex = currentText.indexOf(previousTail)
+  if (overlapIndex >= 0) {
+    return currentText.slice(overlapIndex + previousTail.length).trim()
+  }
+
+  return currentText
+}
+
+function calculateRms(samples: Float32Array): number {
+  if (samples.length === 0) {
+    return 0
+  }
+
+  let squareSum = 0
+  for (let i = 0; i < samples.length; i += 1) {
+    squareSum += samples[i] * samples[i]
+  }
+
+  return Math.sqrt(squareSum / samples.length)
+}
+
+function decodeFloat32Buffer(chunkBuffer: Buffer): Float32Array {
+  if (chunkBuffer.byteLength === 0) {
+    return new Float32Array(0)
+  }
+  const view = new Float32Array(
+    chunkBuffer.buffer,
+    chunkBuffer.byteOffset,
+    Math.floor(chunkBuffer.byteLength / Float32Array.BYTES_PER_ELEMENT),
+  )
+  return new Float32Array(view)
+}
+
+function makeCueId(sessionId: string, cueSeed: number): string {
+  return `${sessionId}:${cueSeed}`
+}
+
+function tryDecodeAndBuildCues(
+  currentSession: RuntimeSessionState,
+  timelineStartSec: number,
+  timelineEndSec: number,
+): SubtitleCueDto[] {
+  currentSession.recognizer.decode(currentSession.stream)
+  const result = currentSession.recognizer.getResult(currentSession.stream)
+  const currentText = normalizeRecognizedText(result.text)
+  if (!currentText) {
+    return []
+  }
+
+  const delta = computeTextDelta(currentSession.committedText, currentText)
+  currentSession.committedText = currentText
+  if (!delta) {
+    return []
+  }
+
+  const durationSec = Math.max(1.2, Math.min(5, delta.length * 0.22))
+  const cueStart = Math.max(0, Math.max(timelineStartSec, timelineEndSec - durationSec * 0.8))
+  const cueEnd = Math.max(cueStart + 0.4, cueStart + durationSec)
+
+  const cueLanguage =
+    currentSession.requestedLanguage === 'auto'
+      ? normalizeLangTag(result.lang)
+      : currentSession.requestedLanguage
+
+  currentSession.cueSeed += 1
+  return [
+    {
+      id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
+      start_sec: cueStart,
+      end_sec: cueEnd,
+      text: delta,
+      lang: cueLanguage,
+    },
+  ]
 }
 
 async function handleInit(rawPayload: unknown): Promise<unknown> {
   const payload = rawPayload as InitRequestPayload
-  loadSherpaModule(path.resolve(payload.engine_module_root))
+  const sherpa = loadSherpaModule(path.resolve(payload.engine_module_root))
 
   const modelRootDir = await resolveModelRootDir(payload.model_dir, payload.model_id)
   const providerDecision = chooseProvider(payload)
+
+  const modelPath = await resolveModelOnnxPath(modelRootDir)
+  const tokensPath = path.join(modelRootDir, 'tokens.txt')
+  const normalizedLanguage = normalizeRequestedLanguage(payload.language)
+  const useInverseTextNormalization =
+    normalizedLanguage === 'zh' || normalizedLanguage === 'yue' ? 1 : 0
+
+  const recognizer = new sherpa.OfflineRecognizer({
+    featConfig: {
+      sampleRate: 16_000,
+      featureDim: 80,
+    },
+    modelConfig: {
+      senseVoice: {
+        model: modelPath,
+        language: normalizedLanguage,
+        useInverseTextNormalization,
+      },
+      tokens: tokensPath,
+      provider: providerDecision.provider,
+      numThreads: 2,
+    },
+  })
+  const stream = recognizer.createStream()
 
   const sessionId = `subtitle-session-${nowMs()}-${Math.floor(Math.random() * 100_000)}`
   const startedAtMs = nowMs()
@@ -191,6 +391,13 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     language: payload.language,
     fallbackApplied: providerDecision.fallbackApplied,
     lastChunkEndSec: 0,
+    recognizer,
+    stream,
+    sampleRateHz: 16_000,
+    pendingSamplesSinceDecode: 0,
+    committedText: '',
+    cueSeed: 0,
+    requestedLanguage: normalizedLanguage,
   }
 
   return startSubtitleSessionResponseSchema.parse({
@@ -230,6 +437,9 @@ async function handleReset(rawPayload: unknown): Promise<unknown> {
   }
 
   currentSession.lastChunkEndSec = request.timeline_sec ?? currentSession.lastChunkEndSec
+  currentSession.stream = currentSession.recognizer.createStream()
+  currentSession.pendingSamplesSinceDecode = 0
+  currentSession.committedText = ''
   return resetSubtitleSessionResponseSchema.parse({
     session_id: currentSession.sessionId,
     ok: true,
@@ -240,9 +450,17 @@ async function handleReset(rawPayload: unknown): Promise<unknown> {
 
 async function handleFlush(): Promise<unknown> {
   const currentSession = runtimeSession
+  const cues = currentSession
+    ? tryDecodeAndBuildCues(
+        currentSession,
+        Math.max(0, currentSession.lastChunkEndSec - 2),
+        currentSession.lastChunkEndSec,
+      )
+    : []
+
   return flushSubtitleSessionResponseSchema.parse({
     session_id: currentSession?.sessionId ?? null,
-    cues: [] satisfies SubtitleCueDto[],
+    cues,
     events: [],
     updated_at_ms: nowMs(),
   })
@@ -266,11 +484,33 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
 
   currentSession.lastChunkEndSec = Math.max(currentSession.lastChunkEndSec, request.chunk_end_sec, expectedEndSec)
 
+  const samples = decodeFloat32Buffer(chunkBuffer)
+  const rms = calculateRms(samples)
+  if (samples.length > 0) {
+    currentSession.sampleRateHz = request.sample_rate_hz
+    currentSession.stream.acceptWaveform({
+      samples,
+      sampleRate: request.sample_rate_hz,
+    })
+    currentSession.pendingSamplesSinceDecode += samples.length / Math.max(1, request.channel_count)
+  }
+
+  const decodeWindowSamples = Math.max(1_600, Math.floor(currentSession.sampleRateHz * 0.6))
+  const shouldDecode =
+    currentSession.pendingSamplesSinceDecode >= decodeWindowSamples &&
+    rms >= 0.002
+
+  let cues: SubtitleCueDto[] = []
+  if (shouldDecode) {
+    currentSession.pendingSamplesSinceDecode = 0
+    cues = tryDecodeAndBuildCues(currentSession, request.chunk_start_sec, request.chunk_end_sec)
+  }
+
   return pushSubtitleAudioResponseSchema.parse({
     session_id: currentSession.sessionId,
     accepted: true,
     provider: currentSession.provider,
-    cues: [] satisfies SubtitleCueDto[],
+    cues,
     events,
     updated_at_ms: nowMs(),
   })

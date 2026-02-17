@@ -74,6 +74,7 @@ export function toPersistedAppSettings(
     ehentaiCookies: settings.ehentaiCookies,
     subtitleFeatureEnabled: settings.subtitleFeatureEnabled,
     subtitleAcceleration: settings.subtitleAcceleration,
+    subtitleLanguage: settings.subtitleLanguage,
     subtitleModelDir: settings.subtitleModelDir,
     subtitleSelectedModelId: settings.subtitleSelectedModelId,
     adReviewVisionEndpoint: settings.adReviewVisionEndpoint,

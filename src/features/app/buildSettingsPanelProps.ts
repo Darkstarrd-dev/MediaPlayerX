@@ -34,6 +34,7 @@ interface BuildSettingsPanelPropsParams {
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
   subtitleAcceleration: AppSettings['subtitleAcceleration']
+  subtitleLanguage: AppSettings['subtitleLanguage']
   subtitleModelDir: string
   subtitleSelectedModelId: string | null
   subtitleModelsLoading: boolean
@@ -134,6 +135,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     ehentaiCookies: params.ehentaiCookies,
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
     subtitleAcceleration: params.subtitleAcceleration,
+    subtitleLanguage: params.subtitleLanguage,
     subtitleModelDir: params.subtitleModelDir,
     subtitleModelLocationPath,
     subtitleSelectedModelId: params.subtitleSelectedModelId,
@@ -260,6 +262,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
     onSubtitleFeatureEnabledChange: (value) => params.updateSettings({ subtitleFeatureEnabled: value }),
     onSubtitleAccelerationChange: (value) => params.updateSettings({ subtitleAcceleration: value }),
+    onSubtitleLanguageChange: (value) => params.updateSettings({ subtitleLanguage: value }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
     onSubtitleModelLocationPick: params.pickSubtitleModelLocationPath,
     onSubtitleSelectedModelIdChange: (value) =>
