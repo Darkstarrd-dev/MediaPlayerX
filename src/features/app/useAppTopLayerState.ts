@@ -90,6 +90,9 @@ interface UseAppTopLayerStateParams {
   subtitleMessage: string | null
   subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
   selectedSubtitleId: string | null
+  autoSubtitleActive: boolean
+  liveSubtitleText: string | null
+  bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void
   focusedVideoCoverImageSrc: string | null
   focusedVideoDurationSec: number
   focusedVideoCoverColor: string
@@ -185,6 +188,9 @@ export function useAppTopLayerState({
   subtitleMessage,
   subtitleOptions,
   selectedSubtitleId,
+  autoSubtitleActive,
+  liveSubtitleText,
+  bindFullscreenVideoElement,
   focusedVideoCoverImageSrc,
   focusedVideoDurationSec,
   focusedVideoCoverColor,
@@ -369,6 +375,9 @@ export function useAppTopLayerState({
     subtitleMessage,
     subtitleOptions,
     selectedSubtitleId,
+    autoSubtitleActive,
+    liveSubtitleText,
+    bindFullscreenVideoElement,
     focusedVideoCoverImageSrc,
     durationSec: focusedVideoDurationSec,
     focusedVideoCoverColor,

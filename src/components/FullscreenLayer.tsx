@@ -89,6 +89,9 @@ export interface FullscreenLayerProps {
   subtitleMessage: string | null
   subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
   selectedSubtitleId: string | null
+  autoSubtitleActive: boolean
+  liveSubtitleText: string | null
+  bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void
   focusedVideoCoverImageSrc: string | null
   durationSec: number
   focusedVideoCoverColor: string
@@ -154,6 +157,9 @@ function FullscreenLayer({
   subtitleMessage,
   subtitleOptions,
   selectedSubtitleId,
+  autoSubtitleActive,
+  liveSubtitleText,
+  bindFullscreenVideoElement,
   focusedVideoCoverImageSrc,
   durationSec,
   focusedVideoCoverColor,
@@ -754,6 +760,10 @@ function FullscreenLayer({
       focusedVideoCoverImageSrc={focusedVideoCoverImageSrc}
       focusedVideoCoverColor={focusedVideoCoverColor}
       subtitleTrackUrl={subtitleVisible ? subtitleTrackUrl : null}
+      autoSubtitleActive={autoSubtitleActive}
+      subtitleVisible={subtitleVisible}
+      liveSubtitleText={liveSubtitleText}
+      bindVideoElement={bindFullscreenVideoElement}
       videoFitMode={videoFitMode}
       videoLoopMode={videoLoopMode}
       videoControlsVisible={videoControlsVisible}

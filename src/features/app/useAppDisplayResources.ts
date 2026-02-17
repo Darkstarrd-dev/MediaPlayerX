@@ -15,6 +15,7 @@ import type { AppManageBindingsResult } from "./useAppManageBindings";
 import type { SynchronousMediaRepository } from "../backend/repository";
 import type { MediaStateResult } from "../media/useMediaState";
 import type { UiBenchSettings } from "../perf/benchSettings";
+import { useLiveSubtitles } from "../subtitles/useLiveSubtitles";
 import type { MediaLocator } from "../../types";
 import { useI18n } from "../../i18n/useI18n";
 import { toErrorDetailWithCode } from "./errorCode";
@@ -101,6 +102,7 @@ export function useAppDisplayResources({
 
   const {
     selectedVideoId,
+    videoTime,
     videoDurationById,
     videoCoverById,
     videoCoverImageById,
@@ -375,17 +377,61 @@ export function useAppDisplayResources({
   const [subtitleTrackUrl, setSubtitleTrackUrl] = useState<string | null>(null);
   const [subtitleLoading, setSubtitleLoading] = useState(false);
   const [subtitleMessage, setSubtitleMessage] = useState<string | null>(null);
+  const [mainVideoElement, setMainVideoElement] =
+    useState<HTMLVideoElement | null>(null);
+  const [fullscreenVideoElement, setFullscreenVideoElement] =
+    useState<HTMLVideoElement | null>(null);
+
+  const subtitleModelDir = appSettings.subtitleModelDir.trim();
+  const subtitleModelId = appSettings.subtitleSelectedModelId?.trim() ?? null;
+  const autoSubtitleConfigured =
+    appSettings.subtitleFeatureEnabled &&
+    subtitleModelDir.length > 0 &&
+    Boolean(subtitleModelId);
+  const autoSubtitleApiAvailable =
+    typeof mediaRepository.startSubtitleSession === "function" &&
+    typeof mediaRepository.stopSubtitleSession === "function" &&
+    typeof mediaRepository.resetSubtitleSession === "function" &&
+    typeof mediaRepository.flushSubtitleSession === "function" &&
+    typeof mediaRepository.pushSubtitleAudio === "function";
+  const autoSubtitleActive =
+    isVideoMode && autoSubtitleConfigured && autoSubtitleApiAvailable;
+
+  const activeVideoElement = fullscreenActive
+    ? fullscreenVideoElement
+    : mainVideoElement;
+  const liveSubtitle = useLiveSubtitles({
+    enabled: autoSubtitleActive,
+    videoElement: activeVideoElement,
+    currentTimeSec: Math.max(0, videoTime),
+    modelDir: subtitleModelDir,
+    modelId: subtitleModelId,
+    providerPreference: appSettings.subtitleAcceleration,
+    repository: mediaRepository,
+  });
+
+  useEffect(() => {
+    if (!autoSubtitleActive) {
+      return;
+    }
+    setSubtitleVisible(true);
+    setSelectedSubtitleId(null);
+    setSelectedSubtitleLocator(null);
+    setSubtitleTrackUrl(null);
+  }, [autoSubtitleActive]);
 
   useEffect(() => {
     const api = mediaRepository.listVideoSubtitles;
     const apiSync = syncMediaRepository?.listVideoSubtitlesSync;
     const videoId = isVideoMode ? (focusedVideoEffective?.id ?? null) : null;
-    if (!isVideoMode || !videoId || (!api && !apiSync)) {
+    if (autoSubtitleActive || !isVideoMode || !videoId || (!api && !apiSync)) {
       setSubtitleOptions([]);
       setSelectedSubtitleId(null);
       setSelectedSubtitleLocator(null);
       setSubtitleTrackUrl(null);
-      setSubtitleVisible(false);
+      if (!autoSubtitleActive) {
+        setSubtitleVisible(false);
+      }
       setSubtitleLoading(false);
       setSubtitleMessage(null);
       return;
@@ -502,6 +548,7 @@ export function useAppDisplayResources({
     };
   }, [
     focusedVideoEffective?.id,
+    autoSubtitleActive,
     isSynchronousSubtitleMode,
     isVideoMode,
     mediaRepository,
@@ -511,6 +558,7 @@ export function useAppDisplayResources({
 
   useEffect(() => {
     if (
+      autoSubtitleActive ||
       !isVideoMode ||
       !focusedVideoEffective?.id ||
       !selectedSubtitleLocator
@@ -557,6 +605,7 @@ export function useAppDisplayResources({
     };
   }, [
     focusedVideoEffective?.id,
+    autoSubtitleActive,
     isSynchronousSubtitleMode,
     isVideoMode,
     mediaRepository,
@@ -566,6 +615,10 @@ export function useAppDisplayResources({
   ]);
 
   const selectSubtitleById = async (subtitleId: string) => {
+    if (autoSubtitleActive) {
+      return;
+    }
+
     const option = subtitleOptions.find((item) => item.id === subtitleId);
     if (!option) {
       return;
@@ -646,11 +699,15 @@ export function useAppDisplayResources({
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
     subtitleVisible,
-    subtitleOptions,
+    subtitleOptions: autoSubtitleActive ? [] : subtitleOptions,
     selectedSubtitleId,
-    subtitleTrackUrl,
-    subtitleLoading,
-    subtitleMessage,
+    subtitleTrackUrl: autoSubtitleActive ? null : subtitleTrackUrl,
+    subtitleLoading: autoSubtitleActive ? liveSubtitle.loading : subtitleLoading,
+    subtitleMessage: autoSubtitleActive ? liveSubtitle.message : subtitleMessage,
+    autoSubtitleActive,
+    liveSubtitleText: liveSubtitle.activeText,
+    bindMainVideoElement: setMainVideoElement,
+    bindFullscreenVideoElement: setFullscreenVideoElement,
     setSubtitleVisible,
     selectSubtitleById,
   };

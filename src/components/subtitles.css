@@ -1,0 +1,26 @@
+.subtitle-overlay {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(12px, 6%, 48px);
+  transform: translateX(-50%);
+  max-width: min(84%, 920px);
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #000 68%, transparent);
+  color: #fff;
+  font-size: clamp(14px, 1.2vw, 20px);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  z-index: 4;
+  pointer-events: none;
+  white-space: pre-wrap;
+}
+
+.fullscreen-media-video .subtitle-overlay {
+  bottom: clamp(16px, 8%, 72px);
+  max-width: min(86%, 1080px);
+  font-size: clamp(16px, 1.3vw, 24px);
+}

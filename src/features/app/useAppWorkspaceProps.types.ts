@@ -138,6 +138,9 @@ export interface UseAppWorkspacePropsParams {
   subtitleMessage: string | null
   subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
   selectedSubtitleId: string | null
+  autoSubtitleActive: boolean
+  liveSubtitleText: string | null
+  bindMainVideoElement: (element: HTMLVideoElement | null) => void
   setSubtitleVisible: Dispatch<SetStateAction<boolean>>
   selectSubtitleById: (subtitleId: string) => Promise<void>
   fullscreenActive: boolean

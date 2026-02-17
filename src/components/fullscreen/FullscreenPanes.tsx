@@ -100,6 +100,10 @@ interface FullscreenVideoPaneProps {
   focusedVideoCoverImageSrc: string | null
   focusedVideoCoverColor: string
   subtitleTrackUrl: string | null
+  autoSubtitleActive: boolean
+  subtitleVisible: boolean
+  liveSubtitleText: string | null
+  bindVideoElement: (element: HTMLVideoElement | null) => void
   videoFitMode: VideoFitMode
   videoLoopMode: 'single' | 'list'
   videoControlsVisible: boolean
@@ -133,6 +137,10 @@ export function FullscreenVideoPane({
   focusedVideoCoverImageSrc,
   focusedVideoCoverColor,
   subtitleTrackUrl,
+  autoSubtitleActive,
+  subtitleVisible,
+  liveSubtitleText,
+  bindVideoElement,
   videoFitMode,
   videoLoopMode,
   videoControlsVisible,
@@ -192,7 +200,10 @@ export function FullscreenVideoPane({
         >
           {focusedVideoSrc ? (
             <video
-              ref={videoRef}
+              ref={(element) => {
+                videoRef.current = element
+                bindVideoElement(element)
+              }}
               className="fullscreen-media-video-element"
               style={{
                 opacity: videoPlaying ? 1 : 0,
@@ -224,8 +235,14 @@ export function FullscreenVideoPane({
                 onVideoEnded()
               }}
             >
-              {subtitleTrackUrl ? <track default kind="subtitles" label="字幕" src={subtitleTrackUrl} /> : null}
+              {!autoSubtitleActive && subtitleTrackUrl ? <track default kind="subtitles" label="字幕" src={subtitleTrackUrl} /> : null}
             </video>
+          ) : null}
+
+          {autoSubtitleActive && subtitleVisible && liveSubtitleText ? (
+            <div aria-live="polite" className="subtitle-overlay">
+              {liveSubtitleText}
+            </div>
           ) : null}
 
           {!videoPlaying && focusedVideoCoverImageSrc ? (

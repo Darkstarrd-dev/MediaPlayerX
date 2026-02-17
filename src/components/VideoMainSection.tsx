@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
@@ -56,6 +56,9 @@ interface VideoMainSectionProps {
   subtitleMessage: string | null
   subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
   selectedSubtitleId: string | null
+  autoSubtitleActive: boolean
+  liveSubtitleText: string | null
+  bindVideoElement: (element: HTMLVideoElement | null) => void
   fullscreenActive: boolean
   coverImageUrl: string | null
   focusedVideo: VideoItem | null
@@ -117,6 +120,9 @@ function VideoMainSection({
   subtitleMessage,
   subtitleOptions,
   selectedSubtitleId,
+  autoSubtitleActive,
+  liveSubtitleText,
+  bindVideoElement,
   fullscreenActive,
   coverImageUrl,
   focusedVideo,
@@ -189,6 +195,14 @@ function VideoMainSection({
   const closePopover = () => {
     setOpenPopover(null)
   }
+
+  const handleVideoElementRef = useCallback(
+    (element: HTMLVideoElement | null) => {
+      videoRef.current = element
+      bindVideoElement(element)
+    },
+    [bindVideoElement],
+  )
 
   useMediaPreloadWindow({
     mediaType: 'video',
@@ -376,7 +390,7 @@ function VideoMainSection({
         <div className="video-screen" style={{ background: videoScreenBackground }}>
         {videoSourceUrl ? (
           <video
-            ref={videoRef}
+            ref={handleVideoElementRef}
             className="video-screen-media"
             style={{
               opacity: showVideoFrame ? 1 : 0,
@@ -409,8 +423,16 @@ function VideoMainSection({
               onVideoEnded()
             }}
           >
-            {subtitleTrackUrl ? <track default kind="subtitles" label={t('ui.media.subtitleTrack')} src={subtitleTrackUrl} /> : null}
+            {!autoSubtitleActive && subtitleTrackUrl ? (
+              <track default kind="subtitles" label={t('ui.media.subtitleTrack')} src={subtitleTrackUrl} />
+            ) : null}
           </video>
+        ) : null}
+
+        {autoSubtitleActive && subtitleVisible && liveSubtitleText ? (
+          <div aria-live="polite" className="subtitle-overlay">
+            {liveSubtitleText}
+          </div>
         ) : null}
 
         {showCover && coverImageUrl ? (

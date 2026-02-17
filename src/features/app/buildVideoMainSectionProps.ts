@@ -68,6 +68,9 @@ interface BuildVideoMainSectionPropsParams {
   subtitleMessage: string | null
   subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
   selectedSubtitleId: string | null
+  autoSubtitleActive: boolean
+  liveSubtitleText: string | null
+  bindVideoElement: (element: HTMLVideoElement | null) => void
   setSubtitleVisible: Dispatch<SetStateAction<boolean>>
   selectSubtitleById: (subtitleId: string) => Promise<void>
 }
@@ -134,6 +137,9 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     subtitleMessage: params.subtitleMessage,
     subtitleOptions: params.subtitleOptions,
     selectedSubtitleId: params.selectedSubtitleId,
+    autoSubtitleActive: params.autoSubtitleActive,
+    liveSubtitleText: params.liveSubtitleText,
+    bindVideoElement: params.bindVideoElement,
     onTogglePlay: () => {
       if (!params.focusedVideoId) {
         return

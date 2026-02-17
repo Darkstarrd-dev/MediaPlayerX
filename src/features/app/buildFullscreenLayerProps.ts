@@ -26,6 +26,9 @@ interface BuildFullscreenLayerPropsParams {
   subtitleMessage: string | null
   subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
   selectedSubtitleId: string | null
+  autoSubtitleActive: boolean
+  liveSubtitleText: string | null
+  bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void
   focusedVideoCoverImageSrc: string | null
   durationSec: number
   focusedVideoCoverColor: string
@@ -89,6 +92,9 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     subtitleMessage: params.subtitleMessage,
     subtitleOptions: params.subtitleOptions,
     selectedSubtitleId: params.selectedSubtitleId,
+    autoSubtitleActive: params.autoSubtitleActive,
+    liveSubtitleText: params.liveSubtitleText,
+    bindFullscreenVideoElement: params.bindFullscreenVideoElement,
     focusedVideoCoverImageSrc: params.focusedVideoCoverImageSrc,
     durationSec: params.durationSec,
     focusedVideoCoverColor: params.focusedVideoCoverColor,
