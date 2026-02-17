@@ -2827,6 +2827,44 @@ describe("MediaPlayer 虚拟 UI", () => {
   );
 
   it(
+    "Theme Parameter 面板支持打开并可通过 Esc/右键关闭",
+    async () => {
+      render(<App />);
+
+      await click(screen.getByRole("button", { name: "设置" }));
+      await click(screen.getByRole("button", { name: /显示界面参数按钮/ }));
+      await keyDown(window, { key: "Escape", code: "Escape" });
+
+      const themeParameterButton = document.querySelector(
+        'button[data-a11y-id="header.themeParameter"]',
+      ) as HTMLButtonElement | null;
+      expect(themeParameterButton).not.toBeNull();
+
+      await click(themeParameterButton as HTMLButtonElement);
+      expect(
+        screen.getByRole("heading", { name: "Theme Parameter" }),
+      ).toBeInTheDocument();
+
+      await keyDown(window, { key: "Escape", code: "Escape" });
+      expect(
+        screen.queryByRole("heading", { name: "Theme Parameter" }),
+      ).toBeNull();
+
+      await click(themeParameterButton as HTMLButtonElement);
+      const themeParameterOverlay = document.querySelector(
+        '[data-overlay-close="theme-parameter"]',
+      ) as HTMLElement | null;
+      expect(themeParameterOverlay).not.toBeNull();
+
+      await mouseDown(themeParameterOverlay as HTMLElement, { button: 2 });
+      expect(
+        screen.queryByRole("heading", { name: "Theme Parameter" }),
+      ).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
     "数据库目录选择器可触发 SQL 与缩略图目录选择",
     async () => {
       const pickDirectoryPathSpy = vi.spyOn(

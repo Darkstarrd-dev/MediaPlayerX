@@ -50,6 +50,20 @@
     grid-template-columns: 1fr;
   }
 
+  .theme-parameter-control {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .theme-parameter-control > code {
+    text-align: left;
+    min-width: 0;
+  }
+
+  .theme-parameter-actions {
+    justify-content: flex-start;
+  }
+
   .settings-compact-control-actions {
     grid-template-columns: minmax(0, 1fr) auto;
   }

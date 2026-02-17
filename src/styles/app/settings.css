@@ -394,6 +394,29 @@
 
 .theme-parameter-block {
   width: min(100%, 900px);
+  gap: 10px;
+}
+
+.theme-parameter-search,
+.theme-parameter-json-field {
+  margin: 0;
+}
+
+.theme-parameter-file-input {
+  display: none;
+}
+
+.theme-parameter-json-field > textarea {
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;
+  border: 1px solid var(--mpx-input-border);
+  border-radius: 8px;
+  background: var(--mpx-input-bg);
+  color: var(--mpx-input-text);
+  padding: 8px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  line-height: 1.4;
 }
 
 .theme-parameter-list {
@@ -420,6 +443,8 @@
 
 .theme-parameter-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: flex-end;
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
 import { buildA11yProps } from '../i18n/a11y'
@@ -25,6 +25,12 @@ interface ThemeParameterDefinition {
   read: (computed: CSSStyleDeclaration) => number
   apply: (root: HTMLElement, value: number, values: ThemeParameterValues) => void
   reset: (root: HTMLElement) => void
+}
+
+interface ThemeParameterSnapshot {
+  version: 1
+  styleId: string
+  values: Record<string, number>
 }
 
 function resolveStyleGroup(styleId: string): StyleGroup {
@@ -543,6 +549,30 @@ function formatValue(value: number, step: number): string {
   return String(Math.round(value))
 }
 
+function includesSearch(text: string, keyword: string): boolean {
+  return text.toLowerCase().includes(keyword.trim().toLowerCase())
+}
+
+function readFileAsText(file: File): Promise<string> {
+  if (typeof file.text === 'function') {
+    return file.text()
+  }
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+        return
+      }
+      reject(new Error('invalid file reader result'))
+    }
+    reader.onerror = () => {
+      reject(reader.error ?? new Error('file reader failed'))
+    }
+    reader.readAsText(file)
+  })
+}
+
 function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: ThemeParameterPanelProps) {
   const { t } = useI18n()
   const styleGroup = resolveStyleGroup(styleId)
@@ -552,12 +582,35 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
     [styleGroup],
   )
   const [values, setValues] = useState<ThemeParameterValues>({})
+  const [searchText, setSearchText] = useState('')
+  const [commonExpanded, setCommonExpanded] = useState(true)
+  const [styleExpanded, setStyleExpanded] = useState(true)
+  const [snapshotJson, setSnapshotJson] = useState('')
+  const [snapshotMessage, setSnapshotMessage] = useState('')
+  const snapshotFileInputRef = useRef<HTMLInputElement | null>(null)
+
+  const filteredCommonParameters = useMemo(() => {
+    const keyword = searchText.trim()
+    if (!keyword) {
+      return COMMON_PARAMETERS
+    }
+    return COMMON_PARAMETERS.filter((parameter) => includesSearch(t(parameter.labelKey), keyword))
+  }, [searchText, t])
+
+  const filteredStyleParameters = useMemo(() => {
+    const keyword = searchText.trim()
+    if (!keyword) {
+      return styleParameters
+    }
+    return styleParameters.filter((parameter) => includesSearch(t(parameter.labelKey), keyword))
+  }, [searchText, styleParameters, t])
 
   useEffect(() => {
     if (!open) {
       return
     }
     setValues(readParameterValues(parameters))
+    setSnapshotMessage('')
   }, [open, parameters, styleId])
 
   if (!open) {
@@ -589,6 +642,130 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
     })
   }
 
+  const buildSnapshotPayload = (): ThemeParameterSnapshot => {
+    return {
+      version: 1,
+      styleId,
+      values: Object.fromEntries(parameters.map((parameter) => [parameter.id, values[parameter.id] ?? parameter.fallback])),
+    }
+  }
+
+  const buildSnapshotJson = (): string => {
+    return JSON.stringify(buildSnapshotPayload(), null, 2)
+  }
+
+  const exportSnapshotJson = () => {
+    setSnapshotJson(buildSnapshotJson())
+    setSnapshotMessage(t('ui.themeParameter.snapshotExported'))
+  }
+
+  const downloadSnapshotJson = () => {
+    const snapshotText = buildSnapshotJson()
+    setSnapshotJson(snapshotText)
+
+    try {
+      if (typeof URL.createObjectURL !== 'function') {
+        throw new Error('blob url unavailable')
+      }
+      const blob = new Blob([snapshotText], { type: 'application/json' })
+      const blobUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      const normalizedStyleId = styleId.replace(/[^a-zA-Z0-9-_]/g, '-')
+      link.href = blobUrl
+      link.download = `theme-parameter-${normalizedStyleId}-${timestamp}.json`
+      link.click()
+      URL.revokeObjectURL(blobUrl)
+      setSnapshotMessage(t('ui.themeParameter.snapshotDownloaded'))
+    } catch {
+      setSnapshotMessage(t('ui.themeParameter.snapshotDownloadFailed'))
+    }
+  }
+
+  const openSnapshotFilePicker = () => {
+    snapshotFileInputRef.current?.click()
+  }
+
+  const loadSnapshotFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+    try {
+      const text = await readFileAsText(file)
+      setSnapshotJson(text)
+      setSnapshotMessage(t('ui.themeParameter.snapshotFileLoaded', { fileName: file.name }))
+    } catch {
+      setSnapshotMessage(t('ui.themeParameter.snapshotFileLoadFailed'))
+    } finally {
+      event.target.value = ''
+    }
+  }
+
+  const copySnapshotJson = async () => {
+    if (!snapshotJson.trim()) {
+      setSnapshotMessage(t('ui.themeParameter.snapshotEmpty'))
+      return
+    }
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('clipboard unavailable')
+      }
+      await navigator.clipboard.writeText(snapshotJson)
+      setSnapshotMessage(t('ui.themeParameter.snapshotCopied'))
+    } catch {
+      setSnapshotMessage(t('ui.themeParameter.snapshotCopyFailed'))
+    }
+  }
+
+  const importSnapshotJson = () => {
+    if (!snapshotJson.trim()) {
+      setSnapshotMessage(t('ui.themeParameter.snapshotEmpty'))
+      return
+    }
+
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(snapshotJson)
+    } catch {
+      setSnapshotMessage(t('ui.themeParameter.snapshotImportFailed'))
+      return
+    }
+
+    if (!parsed || typeof parsed !== 'object') {
+      setSnapshotMessage(t('ui.themeParameter.snapshotImportFailed'))
+      return
+    }
+
+    const payload = parsed as Partial<ThemeParameterSnapshot>
+    if (!payload.values || typeof payload.values !== 'object') {
+      setSnapshotMessage(t('ui.themeParameter.snapshotImportFailed'))
+      return
+    }
+
+    const importedValues = payload.values as Record<string, unknown>
+    const root = document.documentElement
+    const nextValues: ThemeParameterValues = { ...values }
+
+    for (const parameter of parameters) {
+      const rawValue = importedValues[parameter.id]
+      if (typeof rawValue !== 'number' || !Number.isFinite(rawValue)) {
+        continue
+      }
+      const normalized = normalizeByStep(rawValue, parameter.min, parameter.max, parameter.step)
+      nextValues[parameter.id] = normalized
+      parameter.apply(root, normalized, nextValues)
+    }
+
+    setValues(nextValues)
+
+    if (payload.styleId && payload.styleId !== styleId) {
+      setSnapshotMessage(t('ui.themeParameter.snapshotImportedStyleMismatch', { styleId: payload.styleId }))
+      return
+    }
+    setSnapshotMessage(t('ui.themeParameter.snapshotImported'))
+  }
+
   const resetCurrentStyleParameters = () => {
     const root = document.documentElement
     for (const parameter of parameters) {
@@ -597,7 +774,7 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
     setValues(readParameterValues(parameters))
   }
 
-  return (
+    return (
     <div {...panelA11y} className="settings-mask" role="dialog" aria-modal="true" data-overlay-close="theme-parameter">
       <section className="settings-panel theme-parameter-panel" style={{ fontSize: `${settingsFontSize}px` }}>
         <div className="settings-head">
@@ -612,41 +789,72 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
           <section className="settings-block theme-parameter-block">
             <section className="settings-group">
               <header className="settings-group-head">
-                <span>{t('ui.themeParameter.sectionCommon')}</span>
+                <span>{t('ui.themeParameter.toolsSection')}</span>
               </header>
-              <div className="theme-parameter-list">
-                {COMMON_PARAMETERS.map((parameter) => {
-                  const value = values[parameter.id] ?? parameter.fallback
-                  return (
-                    <label key={parameter.id} className="theme-parameter-row" htmlFor={`theme-parameter-${parameter.id}`}>
-                      <span>{t(parameter.labelKey)}</span>
-                      <div className="theme-parameter-control">
-                        <input
-                          id={`theme-parameter-${parameter.id}`}
-                          type="range"
-                          min={parameter.min}
-                          max={parameter.max}
-                          step={parameter.step}
-                          value={value}
-                          onChange={(event) => applyParameter(parameter, Number(event.target.value))}
-                        />
-                        <code>{`${formatValue(value, parameter.step)}${parameter.unit}`}</code>
-                      </div>
-                    </label>
-                  )
-                })}
+              <label className="theme-parameter-search" htmlFor="theme-parameter-search-input">
+                <span>{t('ui.themeParameter.searchLabel')}</span>
+                <input
+                  id="theme-parameter-search-input"
+                  type="text"
+                  value={searchText}
+                  placeholder={t('ui.themeParameter.searchPlaceholder')}
+                  onChange={(event) => setSearchText(event.target.value)}
+                />
+              </label>
+              <div className="theme-parameter-actions">
+                <button type="button" onClick={exportSnapshotJson}>
+                  {t('ui.themeParameter.exportJson')}
+                </button>
+                <button type="button" onClick={downloadSnapshotJson}>
+                  {t('ui.themeParameter.downloadJsonFile')}
+                </button>
+                <button type="button" onClick={openSnapshotFilePicker}>
+                  {t('ui.themeParameter.loadJsonFile')}
+                </button>
+                <button type="button" onClick={() => {
+                  void copySnapshotJson()
+                }}>
+                  {t('ui.themeParameter.copyJson')}
+                </button>
+                <button type="button" onClick={importSnapshotJson}>
+                  {t('ui.themeParameter.importJson')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSnapshotJson('')
+                    setSnapshotMessage('')
+                  }}
+                >
+                  {t('ui.themeParameter.clearJson')}
+                </button>
               </div>
+              <input
+                ref={snapshotFileInputRef}
+                className="theme-parameter-file-input"
+                type="file"
+                accept="application/json,.json"
+                onChange={(event) => {
+                  void loadSnapshotFile(event)
+                }}
+              />
+              <label className="theme-parameter-json-field" htmlFor="theme-parameter-json-input">
+                <span>{t('ui.themeParameter.snapshotLabel')}</span>
+                <textarea
+                  id="theme-parameter-json-input"
+                  value={snapshotJson}
+                  placeholder={t('ui.themeParameter.snapshotPlaceholder')}
+                  onChange={(event) => setSnapshotJson(event.target.value)}
+                />
+              </label>
+              {snapshotMessage ? <p className="settings-placeholder">{snapshotMessage}</p> : null}
             </section>
 
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t('ui.themeParameter.sectionStyle', { styleId })}</span>
-              </header>
-              {styleParameters.length === 0 ? (
-                <p className="settings-placeholder">{t('ui.themeParameter.noStyleSpecific')}</p>
-              ) : (
+            <details className="settings-collapsible" open={commonExpanded} onToggle={(event) => setCommonExpanded((event.currentTarget as HTMLDetailsElement).open)}>
+              <summary>{t('ui.themeParameter.sectionCommon')}</summary>
+              <div className="settings-collapsible-content">
                 <div className="theme-parameter-list">
-                  {styleParameters.map((parameter) => {
+                  {filteredCommonParameters.map((parameter) => {
                     const value = values[parameter.id] ?? parameter.fallback
                     return (
                       <label key={parameter.id} className="theme-parameter-row" htmlFor={`theme-parameter-${parameter.id}`}>
@@ -667,14 +875,53 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
                     )
                   })}
                 </div>
-              )}
-            </section>
+                {filteredCommonParameters.length === 0 ? <p className="settings-placeholder">{t('ui.common.noResults')}</p> : null}
+              </div>
+            </details>
 
-            <div className="theme-parameter-actions">
-              <button type="button" onClick={resetCurrentStyleParameters}>
-                {t('ui.themeParameter.resetCurrentStyle')}
-              </button>
-            </div>
+            <details className="settings-collapsible" open={styleExpanded} onToggle={(event) => setStyleExpanded((event.currentTarget as HTMLDetailsElement).open)}>
+              <summary>{t('ui.themeParameter.sectionStyle', { styleId })}</summary>
+              <div className="settings-collapsible-content">
+                {styleParameters.length === 0 ? (
+                  <p className="settings-placeholder">{t('ui.themeParameter.noStyleSpecific')}</p>
+                ) : (
+                  <div className="theme-parameter-list">
+                    {filteredStyleParameters.map((parameter) => {
+                      const value = values[parameter.id] ?? parameter.fallback
+                      return (
+                        <label key={parameter.id} className="theme-parameter-row" htmlFor={`theme-parameter-${parameter.id}`}>
+                          <span>{t(parameter.labelKey)}</span>
+                          <div className="theme-parameter-control">
+                            <input
+                              id={`theme-parameter-${parameter.id}`}
+                              type="range"
+                              min={parameter.min}
+                              max={parameter.max}
+                              step={parameter.step}
+                              value={value}
+                              onChange={(event) => applyParameter(parameter, Number(event.target.value))}
+                            />
+                            <code>{`${formatValue(value, parameter.step)}${parameter.unit}`}</code>
+                          </div>
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+                {styleParameters.length > 0 && filteredStyleParameters.length === 0 ? <p className="settings-placeholder">{t('ui.common.noResults')}</p> : null}
+              </div>
+            </details>
+
+            <section className="settings-group">
+              <header className="settings-group-head">
+                <span>{t('ui.themeParameter.actionsSection')}</span>
+              </header>
+              <div className="theme-parameter-actions">
+                <button type="button" onClick={resetCurrentStyleParameters}>
+                  {t('ui.themeParameter.resetCurrentStyle')}
+                </button>
+              </div>
+            </section>
           </section>
         </main>
       </section>
