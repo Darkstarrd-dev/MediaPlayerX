@@ -21,6 +21,7 @@ import { FullscreenImagePane, FullscreenVideoPane } from './fullscreen/Fullscree
 import { resolveFullscreenControlsWidth } from './fullscreen/controlsWidth'
 import { useFullscreenImageSource } from './fullscreen/useFullscreenImageSource'
 import { useFullscreenViewportSize } from './fullscreen/useFullscreenViewportSize'
+import { useFullscreenWindowViewport } from './fullscreen/useFullscreenWindowViewport'
 import {
   FullscreenVideoControlsShell,
 } from './fullscreen/FullscreenVideoControls'
@@ -229,6 +230,7 @@ function FullscreenLayer({
     imagePaneRef,
     videoPaneRef,
   })
+  const fullscreenViewport = useFullscreenWindowViewport(fullscreenActive)
   const [imageTransform, setImageTransform] = useState<PaneTransform>(DEFAULT_PANE_TRANSFORM)
   const [videoTransform, setVideoTransform] = useState<PaneTransform>(DEFAULT_PANE_TRANSFORM)
   const [imageAlign, setImageAlign] = useState<PaneAlign>(DEFAULT_PANE_ALIGN)
@@ -250,8 +252,8 @@ function FullscreenLayer({
   const imageAspect = displayedImageAspect ?? resolveMediaAspect(focusedImage?.width ?? 0, focusedImage?.height ?? 0, 1)
   const videoAspect = resolveMediaAspect(focusedVideo?.width ?? 0, focusedVideo?.height ?? 0, 16 / 9)
 
-  const fallbackViewportWidth = typeof window === 'undefined' ? 1920 : window.innerWidth
-  const fallbackViewportHeight = typeof window === 'undefined' ? 1080 : window.innerHeight
+  const fallbackViewportWidth = fullscreenViewport.width
+  const fallbackViewportHeight = fullscreenViewport.height
   const effectiveImageViewportSize =
     fullscreenDisplay === 'image-only'
       ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
@@ -860,7 +862,7 @@ function FullscreenLayer({
       style={fullscreenControlsCssVars}
       data-overlay-close="fullscreen"
       onMouseMove={(event) => {
-        onSetFooterVisible(footerHovering || event.clientY > window.innerHeight * 0.8)
+        onSetFooterVisible(footerHovering || event.clientY > fullscreenViewport.height * 0.8)
       }}
       onMouseLeave={() => {
         setFooterHovering(false)

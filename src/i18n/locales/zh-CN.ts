@@ -175,7 +175,7 @@ export const zhCnCatalog = {
   'ui.settings.sidebarVerticalGapScale': '目录结构上下间隔系数 {{scale}}（{{px}}px）',
   'ui.settings.metadataPanelRatio': '元数据面板比例 {{percent}}%',
   'ui.settings.workspaceBottomPanelHeightScale': '检索/管理容器高度系数 {{scale}}（{{px}}px）',
-  'ui.settings.fullscreenVideoControlsMaxWidthScale': '全屏视频控件最大宽度系数 {{scale}}（{{px}}px）',
+  'ui.settings.fullscreenVideoControlsMaxWidthScale': '全屏播放控件宽度系数 {{scale}}（{{px}}px）',
   'ui.settings.mediaPreloadMemoryBudgetMb': '媒体预读取内存预算 {{value}}MB',
   'ui.settings.runtimeDiagnosticsLegend': '运行时诊断',
   'ui.settings.runtimeDiagnosticsHint': '用于排查 EXE 与 dev:desktop 的后端桥接与数据路径差异。',

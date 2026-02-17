@@ -9,6 +9,8 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "./App";
+import { toAbsolutePx } from "./components/settings/settingsScale";
+import { resolveFullscreenControlsWidth } from "./components/fullscreen/controlsWidth";
 import type { LibrarySnapshotDto } from "./contracts/backend";
 import { MockMediaRepository } from "./features/backend/repository/mockRepository";
 import { resetUiStoreState, useUiStore } from "./store/useUiStore";
@@ -2357,6 +2359,17 @@ describe("MediaPlayer 虚拟 UI", () => {
   it("全屏非双屏支持 F1/F2/F3 切换图片/视频/音乐模式", async () => {
     render(<App />);
 
+    await click(screen.getByRole("button", { name: "设置" }));
+    const fullscreenControlsWidthScaleSlider = screen.getByLabelText(
+      /全屏播放控件宽度系数|Fullscreen playback controls width scale/,
+    ) as HTMLInputElement;
+    const fullscreenControlsWidthScale = 0.8;
+    fireEvent.change(fullscreenControlsWidthScaleSlider, {
+      target: { value: String(fullscreenControlsWidthScale) },
+    });
+    await flushUiUpdates();
+    await keyDown(window, { key: "Escape", code: "Escape" });
+
     const imageModeButton = screen.getByRole("button", {
       name: "图片模式",
     }) as HTMLButtonElement;
@@ -2377,6 +2390,15 @@ describe("MediaPlayer 虚拟 UI", () => {
       "--mpx-fullscreen-controls-width",
     );
     expect(imageControlsWidth).not.toBe("");
+    const expectedControlsWidth = `${resolveFullscreenControlsWidth({
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      widthCap: toAbsolutePx(
+        "fullscreenVideoControlsMaxWidth",
+        fullscreenControlsWidthScale,
+      ),
+    })}px`;
+    expect(imageControlsWidth).toBe(expectedControlsWidth);
 
     await keyDown(window, { key: "F2", code: "F2" });
     await waitFor(() => {
