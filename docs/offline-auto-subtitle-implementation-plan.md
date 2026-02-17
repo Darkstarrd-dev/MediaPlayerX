@@ -124,6 +124,8 @@ Last updated: 2026-02-17
 
 ## Phase 2 - 设置项、模型目录与基础 UI
 
+状态：`completed`（执行记录见 `docs/offline-auto-subtitle-phase2-report.md`）
+
 ### 目标
 
 - 设置面板支持自动字幕开关、加速模式、模型目录、模型选择。

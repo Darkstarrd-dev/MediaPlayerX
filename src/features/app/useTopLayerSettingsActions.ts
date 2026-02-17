@@ -30,6 +30,7 @@ interface TopLayerSettingsActionsResult {
   saveAdReviewVisionModel: () => Promise<void>
   pickDatabaseDirectoryPath: () => Promise<void>
   pickThumbnailCacheDirectoryPath: () => Promise<void>
+  pickSubtitleModelDirectoryPath: () => Promise<void>
 }
 
 export function useTopLayerSettingsActions({
@@ -44,6 +45,7 @@ export function useTopLayerSettingsActions({
     adReviewVisionModel,
     adReviewVisionVerified,
     electronNativeChromeEnabled,
+    subtitleModelDir,
     updateSettings,
   } = appSettings
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
@@ -260,6 +262,24 @@ export function useTopLayerSettingsActions({
     })
   }, [pickRuntimeDirectory, runtimeInfoDiagnostics.data?.thumbnail_cache_path, t])
 
+  const pickSubtitleModelDirectoryPath = useCallback(async () => {
+    if (!mediaRepository.pickDirectoryPath) {
+      return
+    }
+
+    const result = await mediaRepository.pickDirectoryPath({
+      title: t('ui.settings.pickSubtitleModelDirectoryDialogTitle'),
+      default_path: normalizeOptionalPath(subtitleModelDir),
+    })
+
+    const pickedPath = result.path?.trim() ?? ''
+    if (!pickedPath) {
+      return
+    }
+
+    updateSettings({ subtitleModelDir: pickedPath })
+  }, [mediaRepository, subtitleModelDir, t, updateSettings])
+
   return {
     adReviewVisionTestPending,
     adReviewVisionTestMessage,
@@ -272,5 +292,6 @@ export function useTopLayerSettingsActions({
     saveAdReviewVisionModel,
     pickDatabaseDirectoryPath,
     pickThumbnailCacheDirectoryPath,
+    pickSubtitleModelDirectoryPath,
   }
 }

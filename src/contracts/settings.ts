@@ -31,6 +31,11 @@ export const musicVisualizerCompositionModeSchema = z.enum([
 ]);
 export const paletteModeSchema = z.enum(["day", "night"]);
 export const uiLocaleSchema = z.enum(["auto", "zh-CN", "en-US"]);
+export const subtitleAccelerationSchema = z.enum([
+  "auto",
+  "cpu",
+  "directml",
+]);
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
@@ -114,6 +119,10 @@ export const appSettingsSchema = z.object({
   musicVisualizerShaderSettingsById: musicVisualizerShaderSettingsByIdSchema,
   proxyServer: z.string().max(512),
   ehentaiCookies: z.string().max(4096),
+  subtitleFeatureEnabled: z.boolean(),
+  subtitleAcceleration: subtitleAccelerationSchema,
+  subtitleModelDir: z.string().max(1024),
+  subtitleSelectedModelId: z.string().max(128).nullable(),
   adReviewVisionEndpoint: z.string().max(512),
   adReviewVisionModel: z.string().max(256),
   adReviewVisionVerified: z.boolean(),

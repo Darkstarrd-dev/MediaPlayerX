@@ -26,6 +26,7 @@
 - `offline-auto-subtitle-implementation-plan.md`：离线自动字幕实施方案（可选安装、模型按需下载、DirectML/CPU 自动回退、分 Phase 门禁）。
 - `offline-auto-subtitle-phase0-report.md`：离线自动字幕 Phase 0 执行记录（探针脚本、阻塞项、风险清单）。
 - `offline-auto-subtitle-phase1-report.md`：离线自动字幕 Phase 1 执行记录（可选安装组件与运行时探测）。
+- `offline-auto-subtitle-phase2-report.md`：离线自动字幕 Phase 2 执行记录（设置项、模型目录与基础 UI）。
 
 ## 主题与 UI
 

@@ -53,6 +53,10 @@ export interface SettingsPanelProps {
   thumbnailResolveConcurrency: number
   proxyServer: string
   ehentaiCookies: string
+  subtitleFeatureEnabled: boolean
+  subtitleAcceleration: 'auto' | 'cpu' | 'directml'
+  subtitleModelDir: string
+  subtitleSelectedModelId: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -106,6 +110,10 @@ export interface SettingsPanelProps {
   onResetThumbnailResolveConcurrency: () => void
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
+  onSubtitleFeatureEnabledChange: (value: boolean) => void
+  onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
+  onSubtitleModelDirPick: () => void
+  onSubtitleSelectedModelIdChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -200,6 +208,10 @@ function SettingsPanel({
   thumbnailResolveConcurrency,
   proxyServer,
   ehentaiCookies,
+  subtitleFeatureEnabled,
+  subtitleAcceleration,
+  subtitleModelDir,
+  subtitleSelectedModelId,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -253,6 +265,10 @@ function SettingsPanel({
   onResetThumbnailResolveConcurrency,
   onProxyServerChange,
   onEhentaiCookiesChange,
+  onSubtitleFeatureEnabledChange,
+  onSubtitleAccelerationChange,
+  onSubtitleModelDirPick,
+  onSubtitleSelectedModelIdChange,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -669,6 +685,10 @@ function SettingsPanel({
     thumbnailResolveConcurrencyInput,
     proxyServer,
     ehentaiCookies,
+    subtitleFeatureEnabled,
+    subtitleAcceleration,
+    subtitleModelDir,
+    subtitleSelectedModelId,
     adReviewVisionEndpoint,
     adReviewVisionModel,
     adReviewVisionVerified,
@@ -730,6 +750,10 @@ function SettingsPanel({
     onResetThumbnailResolveConcurrency,
     onProxyServerChange,
     onEhentaiCookiesChange,
+    onSubtitleFeatureEnabledChange,
+    onSubtitleAccelerationChange,
+    onSubtitleModelDirPick,
+    onSubtitleSelectedModelIdChange,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,

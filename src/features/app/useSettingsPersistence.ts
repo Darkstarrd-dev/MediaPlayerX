@@ -190,6 +190,37 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
   next.themeId = next.paletteId;
 
+  if (
+    typeof next.subtitleFeatureEnabled !== "boolean" &&
+    "subtitleFeatureEnabled" in next
+  ) {
+    delete next.subtitleFeatureEnabled;
+  }
+
+  if (
+    next.subtitleAcceleration !== "auto" &&
+    next.subtitleAcceleration !== "cpu" &&
+    next.subtitleAcceleration !== "directml" &&
+    "subtitleAcceleration" in next
+  ) {
+    delete next.subtitleAcceleration;
+  }
+
+  if (typeof next.subtitleModelDir === "string") {
+    next.subtitleModelDir = next.subtitleModelDir.trim().slice(0, 1024);
+  } else if ("subtitleModelDir" in next) {
+    delete next.subtitleModelDir;
+  }
+
+  if (typeof next.subtitleSelectedModelId === "string") {
+    const normalizedModelId = next.subtitleSelectedModelId
+      .trim()
+      .slice(0, 128);
+    next.subtitleSelectedModelId = normalizedModelId || null;
+  } else if (next.subtitleSelectedModelId !== null && "subtitleSelectedModelId" in next) {
+    delete next.subtitleSelectedModelId;
+  }
+
   const normalizeCollapsedFolderNodeIds = (raw: unknown): string[] | null => {
     if (!Array.isArray(raw)) {
       return null;

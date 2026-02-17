@@ -37,6 +37,10 @@ describe('buildSettingsPanelProps', () => {
       thumbnailResolveConcurrency: 8,
       proxyServer: '',
       ehentaiCookies: '',
+      subtitleFeatureEnabled: false,
+      subtitleAcceleration: 'auto',
+      subtitleModelDir: '',
+      subtitleSelectedModelId: null,
       adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
       adReviewVisionModel: '',
       adReviewVisionVerified: false,
@@ -70,6 +74,7 @@ describe('buildSettingsPanelProps', () => {
       saveAdReviewVisionModel: vi.fn(),
       pickDatabaseDirectoryPath: vi.fn(),
       pickThumbnailCacheDirectoryPath: vi.fn(),
+      pickSubtitleModelDirectoryPath: vi.fn(),
     })
 
     expect(props.thumbnailWidth).toBe(512)
@@ -86,6 +91,9 @@ describe('buildSettingsPanelProps', () => {
     props.onPaletteDayChange('geist-light')
     props.onPaletteNightChange('tokyo-night')
     props.onUiLocaleChange('en-US')
+    props.onSubtitleFeatureEnabledChange(true)
+    props.onSubtitleAccelerationChange('directml')
+    props.onSubtitleSelectedModelIdChange(' sensevoice-small ')
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 })
     expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 })
@@ -109,5 +117,8 @@ describe('buildSettingsPanelProps', () => {
       paletteNightId: 'tokyo-night',
     })
     expect(updateSettings).toHaveBeenNthCalledWith(8, { uiLocale: 'en-US' })
+    expect(updateSettings).toHaveBeenNthCalledWith(9, { subtitleFeatureEnabled: true })
+    expect(updateSettings).toHaveBeenNthCalledWith(10, { subtitleAcceleration: 'directml' })
+    expect(updateSettings).toHaveBeenNthCalledWith(11, { subtitleSelectedModelId: 'sensevoice-small' })
   })
 })

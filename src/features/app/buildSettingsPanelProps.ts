@@ -32,6 +32,10 @@ interface BuildSettingsPanelPropsParams {
   thumbnailResolveConcurrency: number
   proxyServer: string
   ehentaiCookies: string
+  subtitleFeatureEnabled: boolean
+  subtitleAcceleration: AppSettings['subtitleAcceleration']
+  subtitleModelDir: string
+  subtitleSelectedModelId: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -65,6 +69,7 @@ interface BuildSettingsPanelPropsParams {
   saveAdReviewVisionModel: () => void
   pickDatabaseDirectoryPath: () => void
   pickThumbnailCacheDirectoryPath: () => void
+  pickSubtitleModelDirectoryPath: () => void
 }
 
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
@@ -98,6 +103,10 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     thumbnailResolveConcurrency: params.thumbnailResolveConcurrency,
     proxyServer: params.proxyServer,
     ehentaiCookies: params.ehentaiCookies,
+    subtitleFeatureEnabled: params.subtitleFeatureEnabled,
+    subtitleAcceleration: params.subtitleAcceleration,
+    subtitleModelDir: params.subtitleModelDir,
+    subtitleSelectedModelId: params.subtitleSelectedModelId,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
     adReviewVisionModel: params.adReviewVisionModel,
     adReviewVisionVerified: params.adReviewVisionVerified,
@@ -212,6 +221,13 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       }),
     onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),
     onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
+    onSubtitleFeatureEnabledChange: (value) => params.updateSettings({ subtitleFeatureEnabled: value }),
+    onSubtitleAccelerationChange: (value) => params.updateSettings({ subtitleAcceleration: value }),
+    onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
+    onSubtitleSelectedModelIdChange: (value) =>
+      params.updateSettings({
+        subtitleSelectedModelId: value.trim() || null,
+      }),
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({
         adReviewVisionEndpoint: value,

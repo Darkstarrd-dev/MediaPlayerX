@@ -55,6 +55,10 @@ interface RenderSettingsMainSectionParams {
   thumbnailResolveConcurrencyInput: string
   proxyServer: string
   ehentaiCookies: string
+  subtitleFeatureEnabled: boolean
+  subtitleAcceleration: 'auto' | 'cpu' | 'directml'
+  subtitleModelDir: string
+  subtitleSelectedModelId: string | null
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -116,6 +120,10 @@ interface RenderSettingsMainSectionParams {
   onResetThumbnailResolveConcurrency: () => void
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
+  onSubtitleFeatureEnabledChange: (value: boolean) => void
+  onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
+  onSubtitleModelDirPick: () => void
+  onSubtitleSelectedModelIdChange: (value: string) => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -165,6 +173,10 @@ export function renderSettingsMainSection({
   thumbnailResolveConcurrencyInput,
   proxyServer,
   ehentaiCookies,
+  subtitleFeatureEnabled,
+  subtitleAcceleration,
+  subtitleModelDir,
+  subtitleSelectedModelId,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -226,6 +238,10 @@ export function renderSettingsMainSection({
   onResetThumbnailResolveConcurrency,
   onProxyServerChange,
   onEhentaiCookiesChange,
+  onSubtitleFeatureEnabledChange,
+  onSubtitleAccelerationChange,
+  onSubtitleModelDirPick,
+  onSubtitleSelectedModelIdChange,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -694,6 +710,55 @@ export function renderSettingsMainSection({
   if (activeSection === 'model') {
     return (
       <div className="settings-block">
+        <fieldset className="settings-subsection">
+          <legend>{t('ui.settings.offlineSubtitleLegend')}</legend>
+          <label className="settings-toggle-row">
+            <span>{t('ui.settings.offlineSubtitleEnabled')}</span>
+            <input
+              type="checkbox"
+              checked={subtitleFeatureEnabled}
+              onChange={(event) => onSubtitleFeatureEnabledChange(event.target.checked)}
+            />
+          </label>
+          <label>
+            {t('ui.settings.offlineSubtitleAcceleration')}
+            <select
+              value={subtitleAcceleration}
+              onChange={(event) =>
+                onSubtitleAccelerationChange(event.target.value as 'auto' | 'cpu' | 'directml')
+              }
+            >
+              <option value="auto">{t('ui.settings.offlineSubtitleAccelerationAuto')}</option>
+              <option value="cpu">{t('ui.settings.offlineSubtitleAccelerationCpu')}</option>
+              <option value="directml">{t('ui.settings.offlineSubtitleAccelerationDirectml')}</option>
+            </select>
+          </label>
+          <label>
+            {t('ui.settings.offlineSubtitleModelDir')}
+            <div className="settings-inline-field">
+              <input
+                type="text"
+                value={subtitleModelDir}
+                readOnly
+                placeholder={t('ui.settings.offlineSubtitleModelDirPlaceholder')}
+              />
+              <button type="button" onClick={onSubtitleModelDirPick}>
+                {t('ui.settings.offlineSubtitleChooseModelDir')}
+              </button>
+            </div>
+          </label>
+          <label>
+            {t('ui.settings.offlineSubtitleModelId')}
+            <input
+              type="text"
+              value={subtitleSelectedModelId ?? ''}
+              placeholder={t('ui.settings.offlineSubtitleModelIdPlaceholder')}
+              onChange={(event) => onSubtitleSelectedModelIdChange(event.target.value)}
+            />
+          </label>
+          <p className="settings-placeholder">{t('ui.settings.offlineSubtitleHint')}</p>
+        </fieldset>
+
         <fieldset className="settings-subsection">
           <legend>{t('ui.settings.adReviewVisionLegend')}</legend>
           <label>

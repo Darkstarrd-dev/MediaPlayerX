@@ -333,6 +333,7 @@ export function useAppTopLayerState({
     saveAdReviewVisionModel,
     pickDatabaseDirectoryPath,
     pickThumbnailCacheDirectoryPath,
+    pickSubtitleModelDirectoryPath,
   } = useTopLayerSettingsActions({
     appSettings,
     mediaRepository,
@@ -431,6 +432,10 @@ export function useAppTopLayerState({
     thumbnailResolveConcurrency: appSettings.thumbnailResolveConcurrency,
     proxyServer: appSettings.proxyServer,
     ehentaiCookies: appSettings.ehentaiCookies,
+    subtitleFeatureEnabled: appSettings.subtitleFeatureEnabled,
+    subtitleAcceleration: appSettings.subtitleAcceleration,
+    subtitleModelDir: appSettings.subtitleModelDir,
+    subtitleSelectedModelId: appSettings.subtitleSelectedModelId,
     adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,
     adReviewVisionModel: appSettings.adReviewVisionModel,
     adReviewVisionVerified: appSettings.adReviewVisionVerified,
@@ -464,6 +469,7 @@ export function useAppTopLayerState({
     saveAdReviewVisionModel,
     pickDatabaseDirectoryPath,
     pickThumbnailCacheDirectoryPath,
+    pickSubtitleModelDirectoryPath,
   })
 
   const appHeaderProps = buildAppHeaderProps({
