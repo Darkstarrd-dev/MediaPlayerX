@@ -189,6 +189,89 @@ function ImageMainSection({
   onThumbnailWheelTurnPage,
   onThumbnailWheelSwitchSidebarNode,
 }: ImageMainSectionProps) {
+  const markThumbInputMouse = () => {
+    document.documentElement.dataset.mpxThumbInput = 'mouse'
+  }
+
+  const thumbOriginRafRef = useRef<number | null>(null)
+  const lastOriginElRef = useRef<HTMLElement | null>(null)
+
+  const scrollFocusedThumbIntoView = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) {
+      return
+    }
+    const thumbCard = target.closest('.thumb-card')
+    if (!(thumbCard instanceof HTMLElement)) {
+      return
+    }
+    thumbCard.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })
+  }
+
+  const syncFocusedThumbTransformOrigin = () => {
+    const container = gridRef.current
+    if (!container) {
+      return
+    }
+
+    const focusedThumb = container.querySelector('.thumb-card.is-focused')
+    if (!(focusedThumb instanceof HTMLElement)) {
+      if (lastOriginElRef.current) {
+        lastOriginElRef.current.style.removeProperty('--mpx-thumb-origin-x')
+        lastOriginElRef.current.style.removeProperty('--mpx-thumb-origin-y')
+        lastOriginElRef.current = null
+      }
+      return
+    }
+
+    const containerRect = container.getBoundingClientRect()
+    const rect = focusedThumb.getBoundingClientRect()
+    const scale = 1.1
+    const halo = 22
+    const needX = ((rect.width * (scale - 1)) / 2) + halo
+    const needY = ((rect.height * (scale - 1)) / 2) + halo
+
+    const leftSpace = rect.left - containerRect.left
+    const rightSpace = containerRect.right - rect.right
+    const topSpace = rect.top - containerRect.top
+    const bottomSpace = containerRect.bottom - rect.bottom
+
+    let originX = '50%'
+    if (leftSpace < needX && rightSpace >= needX) {
+      originX = '0%'
+    } else if (rightSpace < needX && leftSpace >= needX) {
+      originX = '100%'
+    } else if (leftSpace < needX && rightSpace < needX) {
+      originX = leftSpace >= rightSpace ? '100%' : '0%'
+    }
+
+    let originY = '50%'
+    if (topSpace < needY && bottomSpace >= needY) {
+      originY = '0%'
+    } else if (bottomSpace < needY && topSpace >= needY) {
+      originY = '100%'
+    } else if (topSpace < needY && bottomSpace < needY) {
+      originY = topSpace >= bottomSpace ? '100%' : '0%'
+    }
+
+    focusedThumb.style.setProperty('--mpx-thumb-origin-x', originX)
+    focusedThumb.style.setProperty('--mpx-thumb-origin-y', originY)
+
+    if (lastOriginElRef.current && lastOriginElRef.current !== focusedThumb) {
+      lastOriginElRef.current.style.removeProperty('--mpx-thumb-origin-x')
+      lastOriginElRef.current.style.removeProperty('--mpx-thumb-origin-y')
+    }
+    lastOriginElRef.current = focusedThumb
+  }
+
+  const scheduleFocusedThumbOriginSync = () => {
+    if (thumbOriginRafRef.current != null) {
+      return
+    }
+    thumbOriginRafRef.current = window.requestAnimationFrame(() => {
+      thumbOriginRafRef.current = null
+      syncFocusedThumbTransformOrigin()
+    })
+  }
   const { t } = useI18n()
   void _adReviewScopeImageIds
   void _adReviewLlmReviewedImageIds
@@ -205,6 +288,59 @@ function ImageMainSection({
   useEffect(() => {
     setScaleDraftValue(scaleLevel)
   }, [scaleLevel])
+
+  useEffect(() => {
+    // Keep focused thumbnail fully visible when navigating via keyboard,
+    // so the focus ring / glow won't get clipped by the scroll viewport.
+    if (document.documentElement.dataset.mpxThumbInput !== 'keyboard') {
+      return
+    }
+
+    const container = gridRef.current
+    if (!container) {
+      return
+    }
+
+    const focusedThumb = container.querySelector('.thumb-card.is-focused')
+    if (!(focusedThumb instanceof HTMLElement)) {
+      return
+    }
+
+    focusedThumb.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })
+    scheduleFocusedThumbOriginSync()
+  }, [focusedRef?.packageId, focusedRef?.imageIndex])
+
+  useEffect(() => {
+    if (IS_TEST_MODE) {
+      return
+    }
+
+    const container = gridRef.current
+    const handle = () => scheduleFocusedThumbOriginSync()
+    if (container) {
+      container.addEventListener('scroll', handle, { passive: true })
+    }
+    window.addEventListener('resize', handle)
+
+    scheduleFocusedThumbOriginSync()
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handle)
+      }
+      window.removeEventListener('resize', handle)
+      if (thumbOriginRafRef.current != null) {
+        window.cancelAnimationFrame(thumbOriginRafRef.current)
+        thumbOriginRafRef.current = null
+      }
+    }
+  }, [nodeBrowseMode, showNamesOnly])
+
+  useEffect(() => {
+    if (IS_TEST_MODE) {
+      return
+    }
+    scheduleFocusedThumbOriginSync()
+  }, [focusedRef?.packageId, focusedRef?.imageIndex])
 
   const clearScalePopoverHideTimer = () => {
     if (scalePopoverHideTimerRef.current != null) {
@@ -735,6 +871,11 @@ function ImageMainSection({
               <button
                 className="thumb-card-main"
                 type="button"
+                onPointerDown={(event) => {
+                  markThumbInputMouse()
+                  scrollFocusedThumbIntoView(event.currentTarget)
+                  scheduleFocusedThumbOriginSync()
+                }}
                 onClick={() => onSelectNodeBrowseItem?.(item.nodeId, item.imageSourceId)}
               >
                 <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
@@ -859,6 +1000,11 @@ function ImageMainSection({
                       className="thumb-card-main"
                       type="button"
                       disabled={isThumbnailInteractionLocked}
+                      onPointerDown={(event) => {
+                        markThumbInputMouse()
+                        scrollFocusedThumbIntoView(event.currentTarget)
+                        scheduleFocusedThumbOriginSync()
+                      }}
                       onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
                       onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
                     >
@@ -911,6 +1057,7 @@ function ImageMainSection({
         onClose={() => setMetadataFetchOpen(false)}
         onSaveParsedMetadata={onMetadataSaveParsed}
       />
+
     </>
   )
 }

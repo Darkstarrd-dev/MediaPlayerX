@@ -552,6 +552,8 @@ export function useShortcutEngine({
 
       const imageNavigationActions: ShortcutAction[] = ['imagePrev', 'imageNext', 'imageFirst', 'imageLast']
       if (mode === 'image' && imageNavigationActions.includes(matchedDefinition.action)) {
+        document.documentElement.dataset.mpxThumbInput = 'keyboard'
+
         if (event.repeat) {
           const now = performance.now()
           if (now - lastImageNavAtRef.current < IMAGE_NAV_REPEAT_MIN_INTERVAL_MS) {
@@ -564,7 +566,12 @@ export function useShortcutEngine({
         const activeElement = document.activeElement
         if (
           activeElement instanceof HTMLElement &&
-          (activeElement.classList.contains('thumb-card') || activeElement.classList.contains('name-list-row'))
+          (
+            activeElement.classList.contains('thumb-card')
+            || activeElement.classList.contains('thumb-card-main')
+            || activeElement.classList.contains('name-list-row')
+            || activeElement.classList.contains('name-list-row-main')
+          )
         ) {
           activeElement.blur()
         }
