@@ -7,11 +7,25 @@
   padding: var(--mpx-main-padding);
   gap: 8px;
   border-radius: var(--mpx-main-radius);
+  border: var(--mpx-main-border-width) var(--mpx-main-border-style) var(--mpx-main-border-color, var(--mpx-border-1));
   box-shadow: var(--mpx-main-shadow);
   backdrop-filter: var(--mpx-main-backdrop-filter);
   transform: var(--mpx-main-transform);
   transition: var(--mpx-main-transition);
   overflow: hidden;
+}
+
+.main-pane :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
+  box-shadow: var(--mpx-main-control-shadow, var(--mpx-control-shadow));
+  border-color: var(--mpx-main-control-border-color, var(--mpx-border-2));
+}
+
+.main-pane :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea):hover {
+  box-shadow: var(--mpx-main-control-hover-shadow, var(--mpx-control-hover-shadow));
+}
+
+.main-pane :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea):active {
+  box-shadow: var(--mpx-main-control-active-shadow, var(--mpx-control-active-shadow));
 }
 
 .main-toolbar {
@@ -25,7 +39,7 @@
   margin: calc(-1 * var(--mpx-main-padding)) calc(-1 * var(--mpx-main-padding)) 0;
   padding: 0 var(--mpx-main-padding);
   background: transparent;
-  border-bottom: 1px solid var(--mpx-border-1);
+  border-bottom: 1px solid var(--mpx-main-border-color, var(--mpx-border-1));
 }
 
 .main-toolbar-title {
@@ -206,7 +220,7 @@
 }
 
 .main-footer {
-  border-top: 1px solid var(--mpx-border-1);
+  border-top: 1px solid var(--mpx-main-border-color, var(--mpx-border-1));
   padding-top: 7px;
   min-height: calc(var(--mpx-control-height) + 7px);
   color: var(--mpx-text-2);
@@ -1050,14 +1064,6 @@
   width: 18px;
   height: 18px;
   display: block;
-}
-
-.fullscreen-video-controls-shell .video-controls-group.is-left .video-action-icon,
-.fullscreen-video-controls-shell .video-controls-group.is-right .video-action-icon,
-.fullscreen-video-controls-shell .video-controls-group.is-left .music-action-icon,
-.fullscreen-video-controls-shell .video-controls-group.is-right .music-action-icon {
-  width: 20px;
-  height: 20px;
 }
 
 .video-controls-row .video-action-btn:hover {

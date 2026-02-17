@@ -42,9 +42,21 @@ describe('ThemeParameterPanel', () => {
     fireEvent.change(getSliderByLabelText('拟物阴影强度'), { target: { value: '24' } })
     expect(document.documentElement.style.getPropertyValue('--mpx-skeuo-shadow-dark')).toContain('color-mix')
 
+    fireEvent.change(getSliderByLabelText('侧栏面板浮起高度'), { target: { value: '18' } })
+    expect(document.documentElement.style.getPropertyValue('--mpx-sidebar-shadow')).toContain('18px')
+
+    fireEvent.change(getSliderByLabelText('主区面板浮起高度'), { target: { value: '17' } })
+    expect(document.documentElement.style.getPropertyValue('--mpx-main-shadow')).toContain('17px')
+
+    fireEvent.change(getSliderByLabelText('拟物面板浮起高度'), { target: { value: '18' } })
+    expect(document.documentElement.style.getPropertyValue('--mpx-panel-shadow')).toContain('18px')
+    expect(document.documentElement.style.getPropertyValue('--mpx-sidebar-shadow')).toBe('var(--mpx-panel-shadow)')
+    expect(document.documentElement.style.getPropertyValue('--mpx-main-shadow')).toBe('var(--mpx-panel-shadow)')
+
     fireEvent.click(screen.getByRole('button', { name: '重置当前风格参数' }))
     expect(document.documentElement.style.getPropertyValue('--mpx-layout-padding')).toBe('')
     expect(document.documentElement.style.getPropertyValue('--mpx-skeuo-shadow-dark')).toBe('')
+    expect(document.documentElement.style.getPropertyValue('--mpx-panel-shadow')).toBe('')
   })
 
   it('按 style 切换专属参数并应用变量覆盖', () => {

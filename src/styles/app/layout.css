@@ -12,7 +12,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 14px;
-  border-bottom: var(--mpx-header-border-width) solid var(--mpx-border-1);
+  border-bottom: var(--mpx-header-border-width) solid var(--mpx-header-border-color, var(--mpx-border-1));
   background: var(--mpx-header-bg);
   position: relative;
   z-index: 4;
@@ -25,6 +25,10 @@
   transform-origin: var(--mpx-header-transform-origin);
   transition: var(--mpx-header-transition);
   -webkit-app-region: drag;
+}
+
+.app-header :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
+  border-color: var(--mpx-header-control-border-color, var(--mpx-border-2));
 }
 
 .header-left,

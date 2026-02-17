@@ -17,6 +17,7 @@ interface ThemeParameterPanelProps {
 interface ThemeParameterDefinition {
   id: string
   labelKey: string
+  labelTokenKeys?: Record<string, string>
   min: number
   max: number
   step: number
@@ -137,6 +138,300 @@ function parseFirstPxValueFromShadow(raw: string, fallback: number): number {
   const value = Number.parseFloat(match[1])
   return Number.isFinite(value) ? value : fallback
 }
+
+function parseFirstNonZeroPxValue(raw: string, fallback: number): number {
+  const matches = raw.matchAll(/(-?[\d.]+)px/g)
+  for (const match of matches) {
+    const value = Number.parseFloat(match[1])
+    if (Number.isFinite(value) && Math.abs(value) > 0.01) {
+      return Math.abs(value)
+    }
+  }
+  return fallback
+}
+
+type SectionScope = 'header' | 'sidebar' | 'main' | 'metadata'
+type SectionTarget = 'pane' | 'control'
+type SectionMetric = 'elevation' | 'shadow-strength' | 'shadow-hardness' | 'border-contrast' | 'border-color'
+
+const SECTION_SCOPES: readonly SectionScope[] = ['header', 'sidebar', 'main', 'metadata']
+const SECTION_METRICS: readonly SectionMetric[] = ['elevation', 'shadow-strength', 'shadow-hardness', 'border-contrast', 'border-color']
+
+function resolveParameterLabel(parameter: ThemeParameterDefinition, t: (key: string, values?: Record<string, string | number>) => string): string {
+  if (!parameter.labelTokenKeys) {
+    return t(parameter.labelKey)
+  }
+  const tokenValues = Object.fromEntries(
+    Object.entries(parameter.labelTokenKeys).map(([token, key]) => [token, t(key)]),
+  )
+  return t(parameter.labelKey, tokenValues)
+}
+
+function createSectionMetricId(scope: SectionScope, target: SectionTarget, metric: SectionMetric): string {
+  return `skeuo-${scope}-${target}-${metric}`
+}
+
+function createSectionMetricStateVariable(scope: SectionScope, target: SectionTarget, metric: SectionMetric): string {
+  return `--mpx-tp-${scope}-${target}-${metric}`
+}
+
+function getSectionScopeLabelKey(scope: SectionScope): string {
+  if (scope === 'header') {
+    return 'ui.themeParameter.scopeHeader'
+  }
+  if (scope === 'sidebar') {
+    return 'ui.themeParameter.scopeSidebar'
+  }
+  if (scope === 'main') {
+    return 'ui.themeParameter.scopeMain'
+  }
+  return 'ui.themeParameter.scopeMetadata'
+}
+
+function getSectionTargetLabelKey(target: SectionTarget): string {
+  return target === 'pane' ? 'ui.themeParameter.targetPane' : 'ui.themeParameter.targetControl'
+}
+
+function getSectionMetricLabelKey(metric: SectionMetric): string {
+  if (metric === 'elevation') {
+    return 'ui.themeParameter.metricElevation'
+  }
+  if (metric === 'shadow-strength') {
+    return 'ui.themeParameter.metricShadowStrength'
+  }
+  if (metric === 'shadow-hardness') {
+    return 'ui.themeParameter.metricShadowHardness'
+  }
+  if (metric === 'border-contrast') {
+    return 'ui.themeParameter.metricBorderContrast'
+  }
+  return 'ui.themeParameter.metricBorderColor'
+}
+
+function getSectionMetricConfig(target: SectionTarget, metric: SectionMetric): {
+  min: number
+  max: number
+  step: number
+  unit: 'px' | '%'
+} {
+  if (metric === 'elevation') {
+    return target === 'pane'
+      ? { min: 6, max: 26, step: 1, unit: 'px' }
+      : { min: 2, max: 14, step: 1, unit: 'px' }
+  }
+  if (metric === 'shadow-strength') {
+    return { min: 8, max: 48, step: 1, unit: '%' }
+  }
+  if (metric === 'shadow-hardness') {
+    return { min: 20, max: 92, step: 1, unit: '%' }
+  }
+  if (metric === 'border-contrast') {
+    return { min: 10, max: 50, step: 1, unit: '%' }
+  }
+  return { min: 0, max: 100, step: 1, unit: '%' }
+}
+
+function getSectionMetricFallback(scope: SectionScope, target: SectionTarget, metric: SectionMetric): number {
+  if (metric === 'elevation') {
+    if (target === 'pane') {
+      return scope === 'header' ? 15 : 14
+    }
+    return scope === 'header' ? 4 : 5
+  }
+  if (metric === 'shadow-strength') {
+    return target === 'pane' ? 26 : 28
+  }
+  if (metric === 'shadow-hardness') {
+    return target === 'pane' ? 58 : 64
+  }
+  if (metric === 'border-contrast') {
+    return target === 'pane' ? 24 : 30
+  }
+  return target === 'pane' ? 32 : 38
+}
+
+function getPaneShadowVariable(scope: SectionScope): string {
+  if (scope === 'header') {
+    return '--mpx-header-shadow'
+  }
+  if (scope === 'sidebar') {
+    return '--mpx-sidebar-shadow'
+  }
+  if (scope === 'main') {
+    return '--mpx-main-shadow'
+  }
+  return '--mpx-metadata-shadow'
+}
+
+function getPaneBorderColorVariable(scope: SectionScope): string {
+  if (scope === 'header') {
+    return '--mpx-header-border-color'
+  }
+  if (scope === 'sidebar') {
+    return '--mpx-sidebar-border-color'
+  }
+  if (scope === 'main') {
+    return '--mpx-main-border-color'
+  }
+  return '--mpx-metadata-border-color'
+}
+
+function getControlShadowVariable(scope: SectionScope): string {
+  return `--mpx-${scope}-control-shadow`
+}
+
+function getControlHoverShadowVariable(scope: SectionScope): string {
+  return `--mpx-${scope}-control-hover-shadow`
+}
+
+function getControlActiveShadowVariable(scope: SectionScope): string {
+  return `--mpx-${scope}-control-active-shadow`
+}
+
+function getControlBorderColorVariable(scope: SectionScope): string {
+  return `--mpx-${scope}-control-border-color`
+}
+
+function getSectionMetricValue(values: ThemeParameterValues, scope: SectionScope, target: SectionTarget, metric: SectionMetric): number {
+  const id = createSectionMetricId(scope, target, metric)
+  const fallback = getSectionMetricFallback(scope, target, metric)
+  const value = values[id]
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+function buildSkeuoBorderColor(contrast: number, tint: number): string {
+  const tintMix = clampValue(tint, 0, 100)
+  const contrastMix = clampValue(contrast, 10, 50)
+  return `color-mix(in srgb, color-mix(in srgb, var(--mpx-palette-accent-raw) ${tintMix}%, var(--mpx-palette-text-raw)) ${contrastMix}%, var(--mpx-palette-surface))`
+}
+
+function applySectionPaneVisual(root: HTMLElement, scope: SectionScope, values: ThemeParameterValues): void {
+  const elevation = clampValue(getSectionMetricValue(values, scope, 'pane', 'elevation'), 6, 26)
+  const strength = clampValue(getSectionMetricValue(values, scope, 'pane', 'shadow-strength'), 8, 48)
+  const hardness = clampValue(getSectionMetricValue(values, scope, 'pane', 'shadow-hardness'), 20, 92)
+  const borderContrast = clampValue(getSectionMetricValue(values, scope, 'pane', 'border-contrast'), 10, 50)
+  const borderTint = clampValue(getSectionMetricValue(values, scope, 'pane', 'border-color'), 0, 100)
+
+  const hardnessFactor = (110 - hardness) / 100
+  const blur = Math.max(8, Math.round(elevation * (2.2 * hardnessFactor + 0.42)))
+  const shadowColor = `color-mix(in srgb, var(--mpx-palette-text-raw) ${strength}%, transparent)`
+  const highlightColor = `color-mix(in srgb, var(--mpx-palette-surface) ${clampValue(100 - Math.round(strength * 0.75), 62, 98)}%, #ffffff)`
+  const borderColor = buildSkeuoBorderColor(borderContrast, borderTint)
+
+  root.style.setProperty(
+    getPaneShadowVariable(scope),
+    `0 ${elevation}px ${blur}px ${shadowColor}, 0 2px ${Math.max(4, Math.round(blur * 0.35))}px color-mix(in srgb, var(--mpx-palette-text-raw) ${Math.max(8, strength - 10)}%, transparent), inset 0 1px 0 ${highlightColor}`,
+  )
+  root.style.setProperty(getPaneBorderColorVariable(scope), borderColor)
+}
+
+function applySectionControlVisual(root: HTMLElement, scope: SectionScope, values: ThemeParameterValues): void {
+  const elevation = clampValue(getSectionMetricValue(values, scope, 'control', 'elevation'), 2, 14)
+  const strength = clampValue(getSectionMetricValue(values, scope, 'control', 'shadow-strength'), 8, 48)
+  const hardness = clampValue(getSectionMetricValue(values, scope, 'control', 'shadow-hardness'), 20, 92)
+  const borderContrast = clampValue(getSectionMetricValue(values, scope, 'control', 'border-contrast'), 10, 50)
+  const borderTint = clampValue(getSectionMetricValue(values, scope, 'control', 'border-color'), 0, 100)
+
+  const hardnessFactor = (108 - hardness) / 100
+  const blur = Math.max(6, Math.round(elevation * (2 * hardnessFactor + 0.38)))
+  const hoverElevation = Math.min(16, elevation + 1)
+  const hoverBlur = blur + 3
+  const pressDepth = Math.max(1, Math.round(elevation * 0.7))
+  const activeBlur = Math.max(2, Math.round(pressDepth * (1.8 - hardness / 120)))
+
+  const darkColor = `color-mix(in srgb, var(--mpx-palette-text-raw) ${strength}%, transparent)`
+  const lightColor = `color-mix(in srgb, var(--mpx-palette-surface) ${clampValue(100 - Math.round(strength * 0.7), 62, 98)}%, #ffffff)`
+  const borderColor = buildSkeuoBorderColor(borderContrast, borderTint)
+
+  const shadow = `${elevation}px ${elevation}px ${blur}px ${darkColor}, -${elevation}px -${elevation}px ${blur}px ${lightColor}`
+  const hoverShadow = `${hoverElevation}px ${hoverElevation}px ${hoverBlur}px ${darkColor}, -${hoverElevation}px -${hoverElevation}px ${hoverBlur}px ${lightColor}`
+  const activeShadow = `inset ${pressDepth}px ${pressDepth}px ${activeBlur * 2}px ${darkColor}, inset -${pressDepth}px -${pressDepth}px ${activeBlur * 2}px ${lightColor}`
+
+  root.style.setProperty(getControlShadowVariable(scope), shadow)
+  root.style.setProperty(getControlHoverShadowVariable(scope), hoverShadow)
+  root.style.setProperty(getControlActiveShadowVariable(scope), activeShadow)
+  root.style.setProperty(getControlBorderColorVariable(scope), borderColor)
+
+  if (scope === 'header') {
+    root.style.setProperty('--mpx-header-btn-shadow', shadow)
+    root.style.setProperty('--mpx-header-btn-hover-shadow', hoverShadow)
+    root.style.setProperty('--mpx-header-btn-active-shadow', activeShadow)
+  }
+}
+
+function resetSectionTargetVisual(root: HTMLElement, scope: SectionScope, target: SectionTarget): void {
+  if (target === 'pane') {
+    removeVariables(root, [getPaneShadowVariable(scope), getPaneBorderColorVariable(scope)])
+    return
+  }
+
+  const vars = [
+    getControlShadowVariable(scope),
+    getControlHoverShadowVariable(scope),
+    getControlActiveShadowVariable(scope),
+    getControlBorderColorVariable(scope),
+  ]
+
+  if (scope === 'header') {
+    vars.push('--mpx-header-btn-shadow', '--mpx-header-btn-hover-shadow', '--mpx-header-btn-active-shadow')
+  }
+  removeVariables(root, vars)
+}
+
+function createSectionMetricParameter(scope: SectionScope, target: SectionTarget, metric: SectionMetric): ThemeParameterDefinition {
+  const config = getSectionMetricConfig(target, metric)
+  const fallback = getSectionMetricFallback(scope, target, metric)
+  const id = createSectionMetricId(scope, target, metric)
+  const stateVar = createSectionMetricStateVariable(scope, target, metric)
+
+  return {
+    id,
+    labelKey: 'ui.themeParameter.sectionMetric',
+    labelTokenKeys: {
+      scope: getSectionScopeLabelKey(scope),
+      target: getSectionTargetLabelKey(target),
+      metric: getSectionMetricLabelKey(metric),
+    },
+    min: config.min,
+    max: config.max,
+    step: config.step,
+    fallback,
+    unit: config.unit,
+    read: (computed) => {
+      if (metric === 'elevation') {
+        if (target === 'pane') {
+          return parseFirstNonZeroPxValue(computed.getPropertyValue(getPaneShadowVariable(scope)).trim(), fallback)
+        }
+        const ownControlShadow = computed.getPropertyValue(getControlShadowVariable(scope)).trim()
+        if (ownControlShadow) {
+          return parseFirstNonZeroPxValue(ownControlShadow, fallback)
+        }
+        if (scope === 'header') {
+          return parseFirstNonZeroPxValue(computed.getPropertyValue('--mpx-header-btn-shadow').trim(), fallback)
+        }
+        return parseFirstNonZeroPxValue(computed.getPropertyValue('--mpx-control-shadow').trim(), fallback)
+      }
+      return parseNumber(computed.getPropertyValue(stateVar).trim(), fallback)
+    },
+    apply: (root, value, values) => {
+      root.style.setProperty(stateVar, `${value}`)
+      if (target === 'pane') {
+        applySectionPaneVisual(root, scope, values)
+      } else {
+        applySectionControlVisual(root, scope, values)
+      }
+    },
+    reset: (root) => {
+      root.style.removeProperty(stateVar)
+      resetSectionTargetVisual(root, scope, target)
+    },
+  }
+}
+
+const SKEUO_SECTION_PARAMETERS: ThemeParameterDefinition[] = [
+  ...SECTION_SCOPES.flatMap((scope) => SECTION_METRICS.map((metric) => createSectionMetricParameter(scope, 'pane', metric))),
+  ...SECTION_SCOPES.flatMap((scope) => SECTION_METRICS.map((metric) => createSectionMetricParameter(scope, 'control', metric))),
+]
 
 const COMMON_PARAMETERS: ThemeParameterDefinition[] = [
   createCssPxParameter({
@@ -262,6 +557,138 @@ const STYLE_PARAMETERS: Record<Exclude<StyleGroup, 'default'>, ThemeParameterDef
       step: 1,
       fallback: 8,
     }),
+    ...SKEUO_SECTION_PARAMETERS,
+    {
+      id: 'skeuo-pane-elevation',
+      labelKey: 'ui.themeParameter.skeuoPaneElevation',
+      min: 8,
+      max: 24,
+      step: 1,
+      fallback: 14,
+      unit: 'px',
+      read: (computed) => {
+        return parseFirstNonZeroPxValue(computed.getPropertyValue('--mpx-panel-shadow').trim(), 14)
+      },
+      apply: (root, value) => {
+        const elevation = clampValue(value, 8, 24)
+        const panelBlur = Math.max(12, Math.round(elevation * 2.1))
+        const headerElevation = elevation + 1
+        const headerBlur = Math.max(14, Math.round(elevation * 2.3))
+        root.style.setProperty(
+          '--mpx-panel-shadow',
+          `0 ${elevation}px ${panelBlur}px var(--mpx-skeuo-shadow-dark), 0 2px 6px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent), inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 96%, #ffffff)`,
+        )
+        root.style.setProperty('--mpx-main-shadow', 'var(--mpx-panel-shadow)')
+        root.style.setProperty('--mpx-sidebar-shadow', 'var(--mpx-panel-shadow)')
+        root.style.setProperty('--mpx-metadata-shadow', 'var(--mpx-panel-shadow)')
+        root.style.setProperty(
+          '--mpx-header-shadow',
+          `0 ${headerElevation}px ${headerBlur}px var(--mpx-skeuo-shadow-dark), 0 2px 6px color-mix(in srgb, var(--mpx-palette-text-raw) 16%, transparent), inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 97%, #ffffff)`,
+        )
+      },
+      reset: (root) => {
+        removeVariables(root, ['--mpx-panel-shadow', '--mpx-main-shadow', '--mpx-sidebar-shadow', '--mpx-metadata-shadow', '--mpx-header-shadow'])
+      },
+    },
+    {
+      id: 'skeuo-header-gap',
+      labelKey: 'ui.themeParameter.skeuoHeaderGap',
+      min: 8,
+      max: 20,
+      step: 1,
+      fallback: 12,
+      unit: 'px',
+      read: (computed) => {
+        const raw = computed.getPropertyValue('--mpx-header-margin').trim()
+        return parseFirstPxValueFromShadow(raw, 12)
+      },
+      apply: (root, value) => {
+        const gap = clampValue(value, 8, 20)
+        root.style.setProperty('--mpx-header-margin', `${gap}px ${gap}px 0px`)
+      },
+      reset: (root) => {
+        removeVariables(root, ['--mpx-header-margin'])
+      },
+    },
+    {
+      id: 'skeuo-container-elevation',
+      labelKey: 'ui.themeParameter.skeuoContainerElevation',
+      min: 4,
+      max: 18,
+      step: 1,
+      fallback: 9,
+      unit: 'px',
+      read: (computed) => {
+        return parseFirstNonZeroPxValue(computed.getPropertyValue('--mpx-card-shadow').trim(), 9)
+      },
+      apply: (root, value) => {
+        const elevation = clampValue(value, 4, 18)
+        const blur = Math.max(8, Math.round(elevation * 2.1))
+        const lightLift = Math.max(2, Math.round(elevation * 0.35))
+        root.style.setProperty(
+          '--mpx-card-shadow',
+          `0 ${elevation}px ${blur}px var(--mpx-skeuo-shadow-dark), -${lightLift}px -${lightLift}px ${Math.max(6, blur - 4)}px var(--mpx-skeuo-shadow-light)`,
+        )
+      },
+      reset: (root) => {
+        removeVariables(root, ['--mpx-card-shadow'])
+      },
+    },
+    {
+      id: 'skeuo-control-elevation',
+      labelKey: 'ui.themeParameter.skeuoControlElevation',
+      min: 3,
+      max: 12,
+      step: 1,
+      fallback: 4,
+      unit: 'px',
+      read: (computed) => {
+        return parseFirstNonZeroPxValue(computed.getPropertyValue('--mpx-control-shadow').trim(), 4)
+      },
+      apply: (root, value) => {
+        const elevation = clampValue(value, 3, 12)
+        const hover = elevation + 1
+        const active = Math.max(2, elevation - 1)
+        const blur = Math.max(7, Math.round(elevation * 2.1))
+        root.style.setProperty(
+          '--mpx-control-shadow',
+          `${elevation}px ${elevation}px ${blur}px var(--mpx-skeuo-shadow-dark), -${elevation}px -${elevation}px ${blur}px var(--mpx-skeuo-shadow-light)`,
+        )
+        root.style.setProperty(
+          '--mpx-control-hover-shadow',
+          `${hover}px ${hover}px ${blur + 3}px var(--mpx-skeuo-shadow-dark), -${hover}px -${hover}px ${blur + 3}px var(--mpx-skeuo-shadow-light)`,
+        )
+        root.style.setProperty(
+          '--mpx-control-active-shadow',
+          `inset ${active}px ${active}px ${active * 2}px var(--mpx-skeuo-shadow-dark), inset -${active}px -${active}px ${active * 2}px var(--mpx-skeuo-shadow-light)`,
+        )
+      },
+      reset: (root) => {
+        removeVariables(root, ['--mpx-control-shadow', '--mpx-control-hover-shadow', '--mpx-control-active-shadow'])
+      },
+    },
+    {
+      id: 'skeuo-border-contrast',
+      labelKey: 'ui.themeParameter.skeuoBorderContrast',
+      min: 14,
+      max: 44,
+      step: 1,
+      fallback: 22,
+      unit: '%',
+      read: (computed) => {
+        return parseFirstPercentValue(computed.getPropertyValue('--mpx-skeuo-border-contrast').trim(), 22)
+      },
+      apply: (root, value) => {
+        const contrast = clampValue(value, 14, 44)
+        const accentContrast = clampValue(contrast + 8, 20, 56)
+        root.style.setProperty('--mpx-skeuo-border-contrast', `${contrast}%`)
+        root.style.setProperty('--mpx-border-1', `color-mix(in srgb, var(--mpx-palette-text-raw) ${contrast}%, var(--mpx-palette-surface))`)
+        root.style.setProperty('--mpx-border-2', `color-mix(in srgb, var(--mpx-palette-accent-raw) ${accentContrast}%, var(--mpx-palette-surface))`)
+      },
+      reset: (root) => {
+        removeVariables(root, ['--mpx-skeuo-border-contrast', '--mpx-border-1', '--mpx-border-2'])
+      },
+    },
     {
       id: 'skeuo-shadow-strength',
       labelKey: 'ui.themeParameter.skeuoShadowStrength',
@@ -594,7 +1021,7 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
     if (!keyword) {
       return COMMON_PARAMETERS
     }
-    return COMMON_PARAMETERS.filter((parameter) => includesSearch(t(parameter.labelKey), keyword))
+    return COMMON_PARAMETERS.filter((parameter) => includesSearch(resolveParameterLabel(parameter, t), keyword))
   }, [searchText, t])
 
   const filteredStyleParameters = useMemo(() => {
@@ -602,7 +1029,7 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
     if (!keyword) {
       return styleParameters
     }
-    return styleParameters.filter((parameter) => includesSearch(t(parameter.labelKey), keyword))
+    return styleParameters.filter((parameter) => includesSearch(resolveParameterLabel(parameter, t), keyword))
   }, [searchText, styleParameters, t])
 
   useEffect(() => {
@@ -858,7 +1285,7 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
                     const value = values[parameter.id] ?? parameter.fallback
                     return (
                       <label key={parameter.id} className="theme-parameter-row" htmlFor={`theme-parameter-${parameter.id}`}>
-                        <span>{t(parameter.labelKey)}</span>
+                        <span>{resolveParameterLabel(parameter, t)}</span>
                         <div className="theme-parameter-control">
                           <input
                             id={`theme-parameter-${parameter.id}`}
@@ -890,7 +1317,7 @@ function ThemeParameterPanel({ open, styleId, settingsFontSize, onClose }: Theme
                       const value = values[parameter.id] ?? parameter.fallback
                       return (
                         <label key={parameter.id} className="theme-parameter-row" htmlFor={`theme-parameter-${parameter.id}`}>
-                          <span>{t(parameter.labelKey)}</span>
+                          <span>{resolveParameterLabel(parameter, t)}</span>
                           <div className="theme-parameter-control">
                             <input
                               id={`theme-parameter-${parameter.id}`}
