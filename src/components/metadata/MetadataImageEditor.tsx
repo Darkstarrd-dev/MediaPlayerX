@@ -1,4 +1,5 @@
-import { mediaLocatorFileName } from '../../features/backend'
+import { mapMediaLocatorToDto, mediaLocatorFileName } from '../../features/backend'
+import { useEffect, useRef, useState } from 'react'
 import type { ParsedExternalMetadata } from '../../features/metadata/parseExternalMetadata'
 import type { ImageItem, ImagePackage } from '../../types'
 import { MetadataRatingGroup } from './MetadataRatingGroup'
@@ -74,6 +75,13 @@ export function MetadataImageEditor({
   onSearchByTag,
 }: MetadataImageEditorProps) {
   const { t } = useI18n()
+  const [resolvedCaptionDims, setResolvedCaptionDims] = useState<{ width: number; height: number } | null>(null)
+  const [resolvedCaptionBytes, setResolvedCaptionBytes] = useState<number | null>(null)
+  const captionRequestIdRef = useRef(0)
+
+  const imageFromPackage = focusedImage && focusedImagePackage
+    ? (focusedImagePackage.images.find((item) => item.id === focusedImage.id) ?? null)
+    : null
   const {
     parsedDraft,
     setParsedDraft,
@@ -118,6 +126,128 @@ export function MetadataImageEditor({
     onSearchByCircle,
   })
 
+  const captionResolutionText = (() => {
+    const width = resolvedCaptionDims?.width ?? imageFromPackage?.width ?? focusedImage?.width ?? 0
+    const height = resolvedCaptionDims?.height ?? imageFromPackage?.height ?? focusedImage?.height ?? 0
+    return width > 0 && height > 0 ? `${width} x ${height}` : '-'
+  })()
+
+  const captionSizeText = (() => {
+    const bytes = resolvedCaptionBytes
+    if (!bytes || bytes <= 0) {
+      const sizeKb = imageFromPackage?.sizeKb ?? focusedImage?.sizeKb ?? 0
+      if (sizeKb <= 0) {
+        return '-'
+      }
+      if (sizeKb >= 1024) {
+        return `${(sizeKb / 1024).toFixed(2)}MB`
+      }
+      return `${Math.round(sizeKb)}KB`
+    }
+    const kb = bytes / 1024
+    if (kb >= 1024) {
+      return `${(kb / 1024).toFixed(2)}MB`
+    }
+    return `${Math.round(kb)}KB`
+  })()
+
+  useEffect(() => {
+    captionRequestIdRef.current += 1
+    const requestId = captionRequestIdRef.current
+
+    setResolvedCaptionDims(null)
+    setResolvedCaptionBytes(null)
+
+    if (!focusedImage) {
+      return
+    }
+
+    const api = window.mediaPlayerBackend
+    if (!api?.resolveMediaResource) {
+      return
+    }
+
+    const controller = new AbortController()
+
+    const loadDimsFromUrl = (url: string): Promise<{ width: number; height: number } | null> => {
+      return new Promise((resolve) => {
+        const img = new Image()
+        img.decoding = 'async'
+        img.loading = 'eager'
+        img.onload = () => {
+          const width = img.naturalWidth || img.width || 0
+          const height = img.naturalHeight || img.height || 0
+          resolve(width > 0 && height > 0 ? { width, height } : null)
+        }
+        img.onerror = () => resolve(null)
+        img.src = url
+      })
+    }
+
+    const resolveContentLength = async (url: string): Promise<number | null> => {
+      try {
+        const head = await fetch(url, { method: 'HEAD', signal: controller.signal })
+        const length = head.headers.get('content-length')
+        const parsed = length ? Number.parseInt(length, 10) : NaN
+        if (Number.isFinite(parsed) && parsed > 0) {
+          return parsed
+        }
+      } catch {
+        // ignore
+      }
+
+      try {
+        const range = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Range: 'bytes=0-0',
+          },
+          signal: controller.signal,
+        })
+        const contentRange = range.headers.get('content-range')
+        if (!contentRange) {
+          return null
+        }
+        const match = /\/(\d+)\s*$/.exec(contentRange)
+        const total = match?.[1] ? Number.parseInt(match[1], 10) : NaN
+        return Number.isFinite(total) && total > 0 ? total : null
+      } catch {
+        return null
+      }
+    }
+
+    void (async () => {
+      try {
+        const resource = await api.resolveMediaResource({
+          locator: mapMediaLocatorToDto(focusedImage.mediaLocator),
+          preferred_variant: 'original',
+        })
+        const url = resource?.resource_url
+        if (!url || controller.signal.aborted || captionRequestIdRef.current !== requestId) {
+          return
+        }
+
+        const [dims, bytes] = await Promise.all([loadDimsFromUrl(url), resolveContentLength(url)])
+        if (controller.signal.aborted || captionRequestIdRef.current !== requestId) {
+          return
+        }
+
+        if (dims) {
+          setResolvedCaptionDims(dims)
+        }
+        if (bytes && bytes > 0) {
+          setResolvedCaptionBytes(bytes)
+        }
+      } catch {
+        // ignore
+      }
+    })()
+
+    return () => {
+      controller.abort()
+    }
+  }, [focusedImage?.id])
+
   return (
     <div className={contentClassName}>
       {showImageCanvas && focusedImage ? (
@@ -136,8 +266,8 @@ export function MetadataImageEditor({
           </div>
           <div className="metadata-image-caption">
             <span>{mediaLocatorFileName(focusedImage.mediaLocator)}</span>
-            <span>{focusedImage.width > 0 && focusedImage.height > 0 ? `${focusedImage.width} x ${focusedImage.height}` : '-'}</span>
-            <span>{focusedImage.sizeKb > 0 ? `${focusedImage.sizeKb}KB` : '-'}</span>
+            <span>{captionResolutionText}</span>
+            <span>{captionSizeText}</span>
           </div>
         </>
       ) : (

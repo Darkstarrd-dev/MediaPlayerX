@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, type RefObject, type WheelEvent a
 import { MainUiIcon } from './MainUiIcon'
 import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
 import { VideoControlIcon } from './VideoControlIcon'
-import { mediaLocatorFileName } from '../features/backend'
+import { mapMediaLocatorToDto, mediaLocatorFileName } from '../features/backend'
 import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
 import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
 import { buildA11yPropsByRegistry } from '../i18n/a11y'
@@ -283,7 +283,7 @@ function ImageMainSection({
   )
   const [nameListDimsById, setNameListDimsById] = useState<Record<string, { width: number; height: number }>>({})
   const nameListDimsLoadingRef = useRef<Set<string>>(new Set())
-  const nameListBodyRef = useRef<HTMLDivElement | null>(null)
+  const [nameListBodyEl, setNameListBodyEl] = useState<HTMLDivElement | null>(null)
   const [nameListRange, setNameListRange] = useState<{ start: number; end: number }>({ start: 0, end: 0 })
   const scalePopoverHideTimerRef = useRef<number | null>(null)
 
@@ -298,7 +298,7 @@ function ImageMainSection({
       return
     }
 
-    const body = nameListBodyRef.current
+    const body = nameListBodyEl
     if (!body) {
       return
     }
@@ -344,7 +344,7 @@ function ImageMainSection({
         window.cancelAnimationFrame(rafId)
       }
     }
-  }, [showNamesOnly, visibleImageRefs.length])
+  }, [nameListBodyEl, showNamesOnly, visibleImageRefs.length])
 
   useEffect(() => {
     // Keep focused thumbnail fully visible when navigating via keyboard,
@@ -618,10 +618,12 @@ function ImageMainSection({
       return
     }
 
-    let cancelled = false
-    const maxConcurrent = 3
+    const canResolveOriginal = typeof api.resolveMediaResource === 'function'
 
-    const itemsToLoad: Array<{ imageId: string; packageId: string; imageIndex: number }> = []
+    let cancelled = false
+    const maxConcurrent = 2
+
+    const itemsToLoad: Array<{ imageId: string; packageId: string; imageIndex: number; locatorDto: ReturnType<typeof mapMediaLocatorToDto> }> = []
     const startIndex = Math.max(0, nameListRange.start)
     const endIndex = Math.min(visibleImageRefs.length, Math.max(nameListRange.end, startIndex))
     for (let index = startIndex; index < endIndex; index += 1) {
@@ -644,16 +646,39 @@ function ImageMainSection({
       }
 
       nameListDimsLoadingRef.current.add(image.id)
-      itemsToLoad.push({ imageId: image.id, packageId: ref.packageId, imageIndex: ref.imageIndex })
+      itemsToLoad.push({
+        imageId: image.id,
+        packageId: ref.packageId,
+        imageIndex: ref.imageIndex,
+        locatorDto: mapMediaLocatorToDto(image.mediaLocator),
+      })
     }
 
     if (itemsToLoad.length === 0) {
       return
     }
 
+    const loadDimsFromUrl = (url: string): Promise<{ width: number; height: number } | null> => {
+      return new Promise((resolve) => {
+        const img = new Image()
+        img.decoding = 'async'
+        img.loading = 'eager'
+        img.onload = () => {
+          const width = img.naturalWidth || img.width || 0
+          const height = img.naturalHeight || img.height || 0
+          resolve(width > 0 && height > 0 ? { width, height } : null)
+        }
+        img.onerror = () => resolve(null)
+        img.src = url
+      })
+    }
+
+    let cursor = 0
     const workers = Array.from({ length: Math.min(maxConcurrent, itemsToLoad.length) }, async () => {
-      while (!cancelled && itemsToLoad.length > 0) {
-        const next = itemsToLoad.pop()
+      while (!cancelled) {
+        const index = cursor
+        cursor += 1
+        const next = itemsToLoad[index]
         if (!next) {
           return
         }
@@ -662,7 +687,7 @@ function ImageMainSection({
           const response = await api.readImageMetadata({
             package_id: next.packageId,
             image_index: next.imageIndex,
-            include_hidden: manageMode ? true : undefined,
+            include_hidden: manageMode,
           })
           const width = response?.image?.width ?? 0
           const height = response?.image?.height ?? 0
@@ -673,6 +698,20 @@ function ImageMainSection({
               }
               return { ...previous, [next.imageId]: { width, height } }
             })
+            continue
+          }
+
+          if (!cancelled && canResolveOriginal) {
+            const resource = await api.resolveMediaResource({ locator: next.locatorDto, preferred_variant: 'original' })
+            const dims = resource?.resource_url ? await loadDimsFromUrl(resource.resource_url) : null
+            if (!cancelled && dims) {
+              setNameListDimsById((previous) => {
+                if (previous[next.imageId]) {
+                  return previous
+                }
+                return { ...previous, [next.imageId]: dims }
+              })
+            }
           }
         } catch {
           // ignore
@@ -1050,7 +1089,7 @@ function ImageMainSection({
           </div>
           <div
             className="name-list-body"
-            ref={nameListBodyRef}
+            ref={setNameListBodyEl}
             onMouseDown={(event) => {
               startMarqueeSelection(event)
               startThumbnailDragToggle(event)
@@ -1086,7 +1125,7 @@ function ImageMainSection({
                     onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
                     onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
                   >
-                     <span>{`${manageMode && image.hidden ? `${t('ui.image.hiddenPrefix')} ` : ''}${pkg.displayName}/${fileName}`}</span>
+                     <span>{`${manageMode && image.hidden ? `${t('ui.image.hiddenPrefix')} ` : ''}${fileName}`}</span>
                      <span>{`${image.sizeKb}KB`}</span>
                      <span>{resolvedWidth > 0 && resolvedHeight > 0 ? `${resolvedWidth} x ${resolvedHeight}` : '-'}</span>
                    </button>

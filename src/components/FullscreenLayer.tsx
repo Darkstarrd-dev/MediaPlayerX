@@ -239,9 +239,14 @@ function FullscreenLayer({
     focusedImageSrc,
     focusedImage,
   })
+  const [displayedImageNaturalSize, setDisplayedImageNaturalSize] = useState<{ width: number; height: number } | null>(null)
   const [videoControlsVisible, setVideoControlsVisible] = useState(false)
   const [draggingPane, setDraggingPane] = useState<PaneKey | null>(null)
   const [footerHovering, setFooterHovering] = useState(false)
+
+  useEffect(() => {
+    setDisplayedImageNaturalSize(null)
+  }, [displayedImageSrc])
 
   const singlePane = fullscreenDisplay === 'video-only' ? 'video' : fullscreenDisplay === 'image-only' ? 'image' : null
   const focusedPane: PaneKey = fullscreenDisplay === 'dual' ? (fullscreenVideoFocus ? 'video' : 'image') : (singlePane ?? 'image')
@@ -706,9 +711,16 @@ function FullscreenLayer({
   const imagePaneClassName = `fullscreen-pane fullscreen-image${fullscreenDisplay === 'dual' && !fullscreenVideoFocus ? ' is-pane-focus' : ''}`
   const videoPaneClassName = `fullscreen-pane fullscreen-video${fullscreenDisplay === 'dual' && fullscreenVideoFocus ? ' is-pane-focus' : ''}`
 
-  const footerImageInfo = focusedImage
-    ? `${resolveMediaPathForFooter(focusedImage)} | ${focusedImage.width} x ${focusedImage.height} | ${formatImageSizeForFooter(focusedImage.sizeKb)}`
-    : t('ui.fullscreen.noImage')
+  const footerImageInfo = (() => {
+    if (!focusedImage) {
+      return t('ui.fullscreen.noImage')
+    }
+
+    const width = displayedImageNaturalSize?.width ?? focusedImage.width
+    const height = displayedImageNaturalSize?.height ?? focusedImage.height
+    const resolutionText = width > 0 && height > 0 ? `${width} x ${height}` : '-'
+    return `${resolveMediaPathForFooter(focusedImage)} | ${resolutionText} | ${formatImageSizeForFooter(focusedImage.sizeKb)}`
+  })()
   const footerVideoInfo = focusedVideo
     ? `${resolveMediaPathForFooter(focusedVideo)} | ${focusedVideo.width} x ${focusedVideo.height} | ${formatVideoSizeForFooter(focusedVideo.sizeMb)}`
     : t('ui.fullscreen.noVideo')
@@ -770,6 +782,7 @@ function FullscreenLayer({
       onImageNaturalSize={(naturalWidth, naturalHeight) => {
         if (naturalWidth > 0 && naturalHeight > 0) {
           setDisplayedImageAspect(naturalWidth / naturalHeight)
+          setDisplayedImageNaturalSize({ width: naturalWidth, height: naturalHeight })
         }
       }}
     />

@@ -132,10 +132,36 @@ export function useEffectiveDisplayState({
           ? 1
           : Math.max(1, Math.ceil(pageSnapshotForDisplay.totalItems / Math.max(1, pagedPageSize))))
       : imageTotalPages
-  const metadataImageEffective =
-    imageFocusActive && metadataSnapshotMatchesFocus
-      ? (effectiveMetadataSnapshot?.image ?? focusedImage)
-      : focusedImage
+  const metadataImageEffective = (() => {
+    if (!imageFocusActive || !metadataSnapshotMatchesFocus) {
+      return focusedImage
+    }
+
+    const snapshotImage = effectiveMetadataSnapshot?.image ?? null
+    if (!snapshotImage) {
+      return focusedImage
+    }
+
+    if (!focusedImage || snapshotImage.id !== focusedImage.id) {
+      return snapshotImage
+    }
+
+    // Keep stable fields (like size/dimensions) if metadata snapshot lacks them.
+    const merged = {
+      ...focusedImage,
+      ...snapshotImage,
+    }
+    if (snapshotImage.width <= 0 && focusedImage.width > 0) {
+      merged.width = focusedImage.width
+    }
+    if (snapshotImage.height <= 0 && focusedImage.height > 0) {
+      merged.height = focusedImage.height
+    }
+    if (snapshotImage.sizeKb <= 0 && focusedImage.sizeKb > 0) {
+      merged.sizeKb = focusedImage.sizeKb
+    }
+    return merged
+  })()
   const metadataImagePackageEffective =
     imageFocusActive && metadataSnapshotMatchesFocus
       ? (effectiveMetadataSnapshot?.package ?? metadataImagePackage)
