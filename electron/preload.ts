@@ -23,6 +23,8 @@ import {
   cancelSubtitleModelDownloadRequestSchema,
   cancelSubtitleModelDownloadResponseSchema,
   readSubtitleModelDownloadsResponseSchema,
+  clearSubtitleLocalModelRequestSchema,
+  clearSubtitleLocalModelResponseSchema,
   startSubtitleSessionRequestSchema,
   startSubtitleSessionResponseSchema,
   stopSubtitleSessionRequestSchema,
@@ -314,6 +316,11 @@ const backendApi = {
   readSubtitleModelDownloads: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readSubtitleModelDownloads)
     return readSubtitleModelDownloadsResponseSchema.parse(response)
+  },
+  clearSubtitleLocalModel: async (request: unknown) => {
+    const parsed = clearSubtitleLocalModelRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearSubtitleLocalModel, parsed)
+    return clearSubtitleLocalModelResponseSchema.parse(response)
   },
   startSubtitleSession: async (request: unknown) => {
     const parsed = startSubtitleSessionRequestSchema.parse(request)

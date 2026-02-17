@@ -56,14 +56,17 @@ export interface SettingsPanelProps {
   subtitleFeatureEnabled: boolean
   subtitleAcceleration: 'auto' | 'cpu' | 'directml'
   subtitleModelDir: string
+  subtitleModelLocationPath: string
   subtitleSelectedModelId: string | null
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
+  subtitleModelsStatus: string | null
   subtitleRemoteModels: Array<{
     id: string
     label: string
     languageCodes: string[]
     sizeBytes: number
+    homepageUrl: string | null
   }>
   subtitleLocalModels: Array<{
     id: string
@@ -137,10 +140,13 @@ export interface SettingsPanelProps {
   onSubtitleFeatureEnabledChange: (value: boolean) => void
   onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
   onSubtitleModelDirPick: () => void
+  onSubtitleModelLocationPick: () => void
   onSubtitleSelectedModelIdChange: (value: string) => void
   onRefreshSubtitleModels: () => void
   onStartSubtitleModelDownload: () => void
+  onClearSubtitleLocalModel: () => void
   onCancelSubtitleModelDownload: () => void
+  onOpenSubtitleModelPage: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -238,9 +244,11 @@ function SettingsPanel({
   subtitleFeatureEnabled,
   subtitleAcceleration,
   subtitleModelDir,
+  subtitleModelLocationPath,
   subtitleSelectedModelId,
   subtitleModelsLoading,
   subtitleModelsError,
+  subtitleModelsStatus,
   subtitleRemoteModels,
   subtitleLocalModels,
   subtitleDownloadTask,
@@ -301,10 +309,13 @@ function SettingsPanel({
   onSubtitleFeatureEnabledChange,
   onSubtitleAccelerationChange,
   onSubtitleModelDirPick,
+  onSubtitleModelLocationPick,
   onSubtitleSelectedModelIdChange,
   onRefreshSubtitleModels,
   onStartSubtitleModelDownload,
+  onClearSubtitleLocalModel,
   onCancelSubtitleModelDownload,
+  onOpenSubtitleModelPage,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -724,9 +735,11 @@ function SettingsPanel({
     subtitleFeatureEnabled,
     subtitleAcceleration,
     subtitleModelDir,
+    subtitleModelLocationPath,
     subtitleSelectedModelId,
     subtitleModelsLoading,
     subtitleModelsError,
+    subtitleModelsStatus,
     subtitleRemoteModels,
     subtitleLocalModels,
     subtitleDownloadTask,
@@ -795,10 +808,13 @@ function SettingsPanel({
     onSubtitleFeatureEnabledChange,
     onSubtitleAccelerationChange,
     onSubtitleModelDirPick,
+    onSubtitleModelLocationPick,
     onSubtitleSelectedModelIdChange,
     onRefreshSubtitleModels,
     onStartSubtitleModelDownload,
+    onClearSubtitleLocalModel,
     onCancelSubtitleModelDownload,
+    onOpenSubtitleModelPage,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,

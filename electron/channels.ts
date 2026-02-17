@@ -42,6 +42,7 @@ export const BACKEND_CHANNELS = {
   startSubtitleModelDownload: 'backend:startSubtitleModelDownload',
   cancelSubtitleModelDownload: 'backend:cancelSubtitleModelDownload',
   readSubtitleModelDownloads: 'backend:readSubtitleModelDownloads',
+  clearSubtitleLocalModel: 'backend:clearSubtitleLocalModel',
   startSubtitleSession: 'backend:startSubtitleSession',
   stopSubtitleSession: 'backend:stopSubtitleSession',
   resetSubtitleSession: 'backend:resetSubtitleSession',

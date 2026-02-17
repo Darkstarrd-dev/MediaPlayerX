@@ -38,6 +38,7 @@ interface BuildSettingsPanelPropsParams {
   subtitleSelectedModelId: string | null
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
+  subtitleModelsStatus: string | null
   subtitleRemoteModels: SettingsPanelProps['subtitleRemoteModels']
   subtitleLocalModels: SettingsPanelProps['subtitleLocalModels']
   subtitleDownloadTask: SettingsPanelProps['subtitleDownloadTask']
@@ -76,12 +77,31 @@ interface BuildSettingsPanelPropsParams {
   pickDatabaseDirectoryPath: () => void
   pickThumbnailCacheDirectoryPath: () => void
   pickSubtitleModelDirectoryPath: () => void
+  pickSubtitleModelLocationPath: () => void
   refreshSubtitleModels: () => void
   startSubtitleModelDownload: () => void
+  clearSubtitleLocalModel: () => void
   cancelSubtitleModelDownload: () => void
+  openSubtitleModelPage: () => void
+}
+
+function buildSubtitleModelLocationPath(modelDir: string, modelId: string | null): string {
+  const normalizedDir = modelDir.trim().replace(/[\\/]+$/, '')
+  const normalizedId = modelId?.trim() ?? ''
+  if (!normalizedDir || !normalizedId) {
+    return ''
+  }
+
+  const separator = normalizedDir.includes('\\') ? '\\' : '/'
+  return `${normalizedDir}${separator}${normalizedId}`
 }
 
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
+  const subtitleModelLocationPath = buildSubtitleModelLocationPath(
+    params.subtitleModelDir,
+    params.subtitleSelectedModelId,
+  )
+
   return {
     settingsOpen: params.settingsOpen,
     uiLocale: params.uiLocale,
@@ -115,9 +135,11 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
     subtitleAcceleration: params.subtitleAcceleration,
     subtitleModelDir: params.subtitleModelDir,
+    subtitleModelLocationPath,
     subtitleSelectedModelId: params.subtitleSelectedModelId,
     subtitleModelsLoading: params.subtitleModelsLoading,
     subtitleModelsError: params.subtitleModelsError,
+    subtitleModelsStatus: params.subtitleModelsStatus,
     subtitleRemoteModels: params.subtitleRemoteModels,
     subtitleLocalModels: params.subtitleLocalModels,
     subtitleDownloadTask: params.subtitleDownloadTask,
@@ -239,13 +261,16 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onSubtitleFeatureEnabledChange: (value) => params.updateSettings({ subtitleFeatureEnabled: value }),
     onSubtitleAccelerationChange: (value) => params.updateSettings({ subtitleAcceleration: value }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
+    onSubtitleModelLocationPick: params.pickSubtitleModelLocationPath,
     onSubtitleSelectedModelIdChange: (value) =>
       params.updateSettings({
         subtitleSelectedModelId: value.trim() || null,
       }),
     onRefreshSubtitleModels: params.refreshSubtitleModels,
     onStartSubtitleModelDownload: params.startSubtitleModelDownload,
+    onClearSubtitleLocalModel: params.clearSubtitleLocalModel,
     onCancelSubtitleModelDownload: params.cancelSubtitleModelDownload,
+    onOpenSubtitleModelPage: params.openSubtitleModelPage,
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({
         adReviewVisionEndpoint: value,

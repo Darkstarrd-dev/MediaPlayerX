@@ -8,6 +8,8 @@ import {
   type CancelSubtitleModelDownloadRequestDto,
   type CancelSubtitleModelDownloadResponseDto,
   type ReadSubtitleModelDownloadsResponseDto,
+  type ClearSubtitleLocalModelRequestDto,
+  type ClearSubtitleLocalModelResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ClearDatabaseResponseDto,
@@ -62,6 +64,12 @@ export class FileSystemSystemHandlers {
 
   async readSubtitleModelDownloads(): Promise<ReadSubtitleModelDownloadsResponseDto> {
     return this.context.subtitleModelService.readDownloadTasks()
+  }
+
+  async clearSubtitleLocalModel(
+    request: ClearSubtitleLocalModelRequestDto,
+  ): Promise<ClearSubtitleLocalModelResponseDto> {
+    return this.context.subtitleModelService.clearLocalModel(request.model_dir, request.model_id)
   }
 
   async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {

@@ -2,14 +2,21 @@ import { createHash } from 'node:crypto'
 import { createWriteStream } from 'node:fs'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import type { Writable } from 'node:stream'
+
+import axios, { type AxiosRequestConfig } from 'axios'
+import { HttpsProxyAgent } from 'https-proxy-agent'
+import { SocksProxyAgent } from 'socks-proxy-agent'
 
 import {
+  clearSubtitleLocalModelResponseSchema,
   cancelSubtitleModelDownloadResponseSchema,
   listSubtitleLocalModelsResponseSchema,
   listSubtitleRemoteModelsResponseSchema,
   readSubtitleModelDownloadsResponseSchema,
   startSubtitleModelDownloadResponseSchema,
   type CancelSubtitleModelDownloadResponseDto,
+  type ClearSubtitleLocalModelResponseDto,
   type ListSubtitleLocalModelsResponseDto,
   type ListSubtitleRemoteModelsResponseDto,
   type ReadSubtitleModelDownloadsResponseDto,
@@ -36,8 +43,73 @@ interface SubtitleDownloadTaskInternal {
 const LOCAL_MANIFEST_FILE = 'model-manifest.json'
 const SAMPLE_WINDOW_MS = 3_000
 
+interface ProxyRequestConfig {
+  useProxy: boolean
+  proxyUrl: string | null
+}
+
 async function ensureDirectory(dirPath: string): Promise<void> {
   await fs.mkdir(dirPath, { recursive: true })
+}
+
+async function removeDirectoryIfExists(dirPath: string): Promise<void> {
+  await fs.rm(dirPath, { recursive: true, force: true })
+}
+
+function buildAxiosDownloadConfig(config: ProxyRequestConfig, signal: AbortSignal): AxiosRequestConfig {
+  const requestConfig: AxiosRequestConfig = {
+    responseType: 'stream',
+    signal,
+    timeout: 120_000,
+    maxBodyLength: Infinity,
+    maxContentLength: Infinity,
+    validateStatus: (status) => status >= 200 && status < 300,
+  }
+
+  if (!config.useProxy || !config.proxyUrl) {
+    return requestConfig
+  }
+
+  const normalizedProxy = config.proxyUrl.trim()
+  if (!normalizedProxy) {
+    return requestConfig
+  }
+
+  let proxyUrl: URL
+  try {
+    proxyUrl = new URL(normalizedProxy)
+  } catch {
+    throw new Error(`proxy_url_invalid:${normalizedProxy}`)
+  }
+
+  const protocol = proxyUrl.protocol.toLowerCase()
+  if (protocol === 'socks:' || protocol === 'socks4:' || protocol === 'socks5:' || protocol === 'socks5h:') {
+    const agent = new SocksProxyAgent(proxyUrl.toString())
+    requestConfig.proxy = false
+    requestConfig.httpAgent = agent
+    requestConfig.httpsAgent = agent
+    return requestConfig
+  }
+
+  if (protocol === 'http:' || protocol === 'https:') {
+    const agent = new HttpsProxyAgent(proxyUrl.toString())
+    requestConfig.proxy = false
+    requestConfig.httpAgent = agent
+    requestConfig.httpsAgent = agent
+    return requestConfig
+  }
+
+  throw new Error(`proxy_protocol_unsupported:${protocol}`)
+}
+
+async function writeChunk(writer: Writable, chunk: Buffer): Promise<void> {
+  if (writer.write(chunk)) {
+    return
+  }
+  await new Promise<void>((resolve, reject) => {
+    writer.once('drain', () => resolve())
+    writer.once('error', (error) => reject(error))
+  })
 }
 
 async function readJsonFile<T>(filePath: string): Promise<T | null> {
@@ -139,8 +211,24 @@ export class SubtitleModelService {
       if (!entry.isDirectory()) {
         continue
       }
+      if (entry.name.startsWith('.mpx-subtitle-staging-')) {
+        continue
+      }
 
       const localModelDir = path.join(normalizedModelDir, entry.name)
+      let modelFiles: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+      try {
+        modelFiles = await fs.readdir(localModelDir, { withFileTypes: true })
+      } catch {
+        continue
+      }
+
+      const hasTokens = modelFiles.some((item) => item.isFile() && item.name.toLowerCase() === 'tokens.txt')
+      const hasOnnx = modelFiles.some((item) => item.isFile() && item.name.toLowerCase().endsWith('.onnx'))
+      if (!hasTokens || !hasOnnx) {
+        continue
+      }
+
       const manifestPath = path.join(localModelDir, LOCAL_MANIFEST_FILE)
       const manifest = await readJsonFile<{
         id?: string
@@ -243,6 +331,53 @@ export class SubtitleModelService {
     })
   }
 
+  async clearLocalModel(modelDir: string, modelId: string): Promise<ClearSubtitleLocalModelResponseDto> {
+    const normalizedModelDir = modelDir.trim()
+    const normalizedModelId = modelId.trim()
+    if (!normalizedModelDir || !normalizedModelId) {
+      return clearSubtitleLocalModelResponseSchema.parse({
+        ok: false,
+        removed_path: null,
+        message: 'subtitle_model_clear_invalid_input',
+      })
+    }
+
+    const baseDir = path.resolve(normalizedModelDir)
+    const targetDir = path.resolve(path.join(baseDir, normalizedModelId))
+    const relative = path.relative(baseDir, targetDir)
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+      return clearSubtitleLocalModelResponseSchema.parse({
+        ok: false,
+        removed_path: null,
+        message: 'subtitle_model_clear_path_outside_model_dir',
+      })
+    }
+
+    try {
+      const stat = await fs.stat(targetDir)
+      if (!stat.isDirectory()) {
+        return clearSubtitleLocalModelResponseSchema.parse({
+          ok: false,
+          removed_path: null,
+          message: 'subtitle_model_clear_target_not_directory',
+        })
+      }
+    } catch {
+      return clearSubtitleLocalModelResponseSchema.parse({
+        ok: false,
+        removed_path: null,
+        message: 'subtitle_model_clear_not_found',
+      })
+    }
+
+    await removeDirectoryIfExists(targetDir)
+    return clearSubtitleLocalModelResponseSchema.parse({
+      ok: true,
+      removed_path: targetDir,
+      message: null,
+    })
+  }
+
   private updateProgress(task: SubtitleDownloadTaskInternal, doneBytes: number, totalBytes: number): void {
     const now = nowMs()
     task.dto.done_bytes = Math.max(0, Math.round(doneBytes))
@@ -274,10 +409,13 @@ export class SubtitleModelService {
     task.dto.message = null
     task.dto.updated_at_ms = nowMs()
 
+    let stagingRoot = ''
     try {
       await ensureDirectory(task.modelDir)
       const targetRoot = path.join(task.modelDir, task.model.id)
-      await ensureDirectory(targetRoot)
+      stagingRoot = path.join(task.modelDir, `.mpx-subtitle-staging-${task.dto.download_id}`)
+      await removeDirectoryIfExists(stagingRoot)
+      await ensureDirectory(stagingRoot)
 
       let doneBytes = 0
       const totalBytes = Math.max(task.model.size_bytes, 1)
@@ -288,36 +426,34 @@ export class SubtitleModelService {
           throw new Error('download_cancelled')
         }
 
-        const targetPath = path.join(targetRoot, artifact.relative_path)
+        const targetPath = path.join(stagingRoot, artifact.relative_path)
         await ensureDirectory(path.dirname(targetPath))
         const tempPath = `${targetPath}.partial`
-        const artifactSize = artifact.size_bytes ?? 0
-
-        const response = await fetch(artifact.url, {
-          signal: task.abortController.signal,
-        })
-
-        if (!response.ok || !response.body) {
-          throw new Error(`download_http_failed: ${response.status} ${response.statusText}`)
-        }
+        const requestConfig = buildAxiosDownloadConfig(
+          {
+            useProxy: task.dto.use_proxy,
+            proxyUrl: task.dto.proxy_url,
+          },
+          task.abortController.signal,
+        )
+        const response = await axios.get<NodeJS.ReadableStream>(artifact.url, requestConfig)
+        const contentLengthRaw = response.headers['content-length']
+        const contentLength = Number(Array.isArray(contentLengthRaw) ? contentLengthRaw[0] : contentLengthRaw ?? 0)
+        const artifactSize = artifact.size_bytes ?? (Number.isFinite(contentLength) ? Math.max(0, contentLength) : 0)
 
         const writer = createWriteStream(tempPath)
-        const reader = response.body.getReader()
+        const stream = response.data
         let artifactDone = 0
 
-        while (true) {
-          const result = await reader.read()
-          if (result.done) {
-            break
-          }
-
+        for await (const chunk of stream) {
           if (task.abortController.signal.aborted) {
             throw new Error('download_cancelled')
           }
 
-          writer.write(result.value)
-          artifactDone += result.value.byteLength
-          doneBytes += result.value.byteLength
+          const chunkBuffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+          await writeChunk(writer, chunkBuffer)
+          artifactDone += chunkBuffer.byteLength
+          doneBytes += chunkBuffer.byteLength
 
           const nextTotal = Math.max(totalBytes, doneBytes + Math.max(0, artifactSize - artifactDone))
           this.updateProgress(task, doneBytes, nextTotal)
@@ -344,7 +480,7 @@ export class SubtitleModelService {
 
       const installedAtMs = nowMs()
       await fs.writeFile(
-        path.join(targetRoot, LOCAL_MANIFEST_FILE),
+        path.join(stagingRoot, LOCAL_MANIFEST_FILE),
         `${JSON.stringify(
           {
             id: task.model.id,
@@ -358,6 +494,10 @@ export class SubtitleModelService {
         )}\n`,
         'utf8',
       )
+
+      await removeDirectoryIfExists(targetRoot)
+      await fs.rename(stagingRoot, targetRoot)
+      stagingRoot = ''
 
       task.dto.status = 'completed'
       task.dto.done_bytes = Math.max(task.dto.total_bytes, task.dto.done_bytes)
@@ -373,15 +513,19 @@ export class SubtitleModelService {
         task.dto.completed_at_ms = task.dto.completed_at_ms ?? nowMs()
         task.dto.speed_bps = 0
         task.dto.eta_sec = null
-        return
+        task.dto.message = task.dto.message ?? '用户取消下载'
+      } else {
+        task.dto.status = 'failed'
+        task.dto.speed_bps = 0
+        task.dto.eta_sec = null
+        task.dto.completed_at_ms = nowMs()
+        task.dto.updated_at_ms = nowMs()
+        task.dto.message = error instanceof Error ? error.message : String(error)
       }
-
-      task.dto.status = 'failed'
-      task.dto.speed_bps = 0
-      task.dto.eta_sec = null
-      task.dto.completed_at_ms = nowMs()
-      task.dto.updated_at_ms = nowMs()
-      task.dto.message = error instanceof Error ? error.message : String(error)
+    } finally {
+      if (stagingRoot) {
+        await removeDirectoryIfExists(stagingRoot).catch(() => undefined)
+      }
     }
   }
 }

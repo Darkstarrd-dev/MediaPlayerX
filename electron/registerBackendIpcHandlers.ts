@@ -23,6 +23,8 @@ import {
   cancelSubtitleModelDownloadRequestSchema,
   cancelSubtitleModelDownloadResponseSchema,
   readSubtitleModelDownloadsResponseSchema,
+  clearSubtitleLocalModelRequestSchema,
+  clearSubtitleLocalModelResponseSchema,
   startSubtitleSessionRequestSchema,
   startSubtitleSessionResponseSchema,
   stopSubtitleSessionRequestSchema,
@@ -473,6 +475,12 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readSubtitleModelDownloads, async () => {
     const response = await ensureService().readSubtitleModelDownloads()
     return readSubtitleModelDownloadsResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.clearSubtitleLocalModel, async (_event, payload: unknown) => {
+    const request = clearSubtitleLocalModelRequestSchema.parse(payload)
+    const response = await ensureService().clearSubtitleLocalModel(request)
+    return clearSubtitleLocalModelResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.startSubtitleSession, async (event, payload: unknown) => {

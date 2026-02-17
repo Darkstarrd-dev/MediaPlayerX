@@ -51,6 +51,8 @@ import {
   type CancelSubtitleModelDownloadRequestDto,
   type CancelSubtitleModelDownloadResponseDto,
   type ReadSubtitleModelDownloadsResponseDto,
+  type ClearSubtitleLocalModelRequestDto,
+  type ClearSubtitleLocalModelResponseDto,
   type StartSubtitleSessionRequestDto,
   type StartSubtitleSessionResponseDto,
   type StopSubtitleSessionRequestDto,
@@ -698,6 +700,26 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
       (left, right) => right.started_at_ms - left.started_at_ms,
     )
     return resolveAsync({ tasks }, options)
+  }
+
+  async clearSubtitleLocalModel(
+    request: ClearSubtitleLocalModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ClearSubtitleLocalModelResponseDto> {
+    const modelDir = request.model_dir.trim()
+    const modelId = request.model_id.trim()
+    if (!modelDir || !modelId) {
+      return resolveAsync({ ok: false, removed_path: null, message: 'subtitle_model_clear_invalid_input' }, options)
+    }
+
+    const currentModels = this.subtitleLocalModelsByDir.get(modelDir) ?? []
+    const nextModels = currentModels.filter((item) => item.id !== modelId)
+    if (nextModels.length === currentModels.length) {
+      return resolveAsync({ ok: false, removed_path: null, message: 'subtitle_model_clear_not_found' }, options)
+    }
+
+    this.subtitleLocalModelsByDir.set(modelDir, nextModels)
+    return resolveAsync({ ok: true, removed_path: `${modelDir}/${modelId}`, message: null }, options)
   }
 
   async startSubtitleSession(

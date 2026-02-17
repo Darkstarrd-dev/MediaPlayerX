@@ -33,11 +33,13 @@ interface TopLayerSettingsActionsResult {
   pickSubtitleModelDirectoryPath: () => Promise<void>
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
+  subtitleModelsStatus: string | null
   subtitleRemoteModels: Array<{
     id: string
     label: string
     languageCodes: string[]
     sizeBytes: number
+    homepageUrl: string | null
   }>
   subtitleLocalModels: Array<{
     id: string
@@ -58,6 +60,66 @@ interface TopLayerSettingsActionsResult {
   refreshSubtitleModels: () => Promise<void>
   startSubtitleModelDownload: () => Promise<void>
   cancelSubtitleModelDownload: () => Promise<void>
+  clearSubtitleLocalModel: () => Promise<void>
+  pickSubtitleModelLocationPath: () => Promise<void>
+  openSubtitleModelPage: () => Promise<void>
+}
+
+function deriveSubtitleModelHomepageUrl(urlText: string): string | null {
+  const normalized = urlText.trim()
+  if (!normalized) {
+    return null
+  }
+
+  let url: URL
+  try {
+    url = new URL(normalized)
+  } catch {
+    return null
+  }
+
+  if (url.hostname.toLowerCase() === 'huggingface.co') {
+    const segments = url.pathname.split('/').filter((segment) => segment.length > 0)
+    if (segments.length >= 2) {
+      return `${url.protocol}//${url.host}/${segments[0]}/${segments[1]}`
+    }
+  }
+
+  return `${url.protocol}//${url.host}${url.pathname}`
+}
+
+function normalizeFsPath(rawPath: string): string {
+  return rawPath.trim().replace(/[\\/]+$/, '')
+}
+
+function pathBasename(rawPath: string): string {
+  const normalized = normalizeFsPath(rawPath)
+  if (!normalized) {
+    return ''
+  }
+  const parts = normalized.split(/[\\/]+/).filter((item) => item.length > 0)
+  return parts[parts.length - 1] ?? ''
+}
+
+function pathDirname(rawPath: string): string {
+  const normalized = normalizeFsPath(rawPath)
+  if (!normalized) {
+    return ''
+  }
+
+  const separator = normalized.includes('\\') ? '\\' : '/'
+  const parts = normalized.split(/[\\/]+/).filter((item) => item.length > 0)
+  if (parts.length <= 1) {
+    return normalized
+  }
+
+  const directoryParts = parts.slice(0, -1)
+  if (/^[A-Za-z]:$/.test(directoryParts[0] ?? '')) {
+    const drive = directoryParts.shift()
+    return `${drive}${separator}${directoryParts.join(separator)}`
+  }
+
+  return directoryParts.join(separator)
 }
 
 export function useTopLayerSettingsActions({
@@ -85,6 +147,7 @@ export function useTopLayerSettingsActions({
   const [runtimePathUpdateMessage, setRuntimePathUpdateMessage] = useState<string | null>(null)
   const [subtitleModelsLoading, setSubtitleModelsLoading] = useState(false)
   const [subtitleModelsError, setSubtitleModelsError] = useState<string | null>(null)
+  const [subtitleModelsStatus, setSubtitleModelsStatus] = useState<string | null>(null)
   const [subtitleRemoteModels, setSubtitleRemoteModels] = useState<TopLayerSettingsActionsResult['subtitleRemoteModels']>([])
   const [subtitleLocalModels, setSubtitleLocalModels] = useState<TopLayerSettingsActionsResult['subtitleLocalModels']>([])
   const [subtitleDownloadTask, setSubtitleDownloadTask] = useState<TopLayerSettingsActionsResult['subtitleDownloadTask']>(null)
@@ -315,20 +378,21 @@ export function useTopLayerSettingsActions({
     updateSettings({ subtitleModelDir: pickedPath })
   }, [mediaRepository, subtitleModelDir, t, updateSettings])
 
-  const syncSubtitleDownloadTasks = useCallback(async () => {
+  const syncSubtitleDownloadTasks = useCallback(async (selectedModelIdOverride?: string | null) => {
     if (!mediaRepository.readSubtitleModelDownloads) {
       setSubtitleDownloadTask(null)
       return
     }
 
     const response = await mediaRepository.readSubtitleModelDownloads()
+    const selectedModelIdForTask = (selectedModelIdOverride ?? subtitleSelectedModelId ?? '').trim()
     const selectedTask =
       response.tasks.find(
         (task) =>
-          task.model_id === subtitleSelectedModelId &&
+          task.model_id === selectedModelIdForTask &&
           (task.status === 'queued' || task.status === 'downloading' || task.status === 'verifying'),
       ) ??
-      response.tasks.find((task) => task.model_id === subtitleSelectedModelId) ??
+      response.tasks.find((task) => task.model_id === selectedModelIdForTask) ??
       response.tasks[0] ??
       null
 
@@ -347,50 +411,68 @@ export function useTopLayerSettingsActions({
     })
   }, [mediaRepository, subtitleSelectedModelId])
 
-  const refreshSubtitleModels = useCallback(async () => {
+  const refreshSubtitleModels = useCallback(async (options?: { modelDirOverride?: string; selectedModelIdOverride?: string | null }) => {
     if (!mediaRepository.listSubtitleRemoteModels) {
       setSubtitleModelsError(t('ui.settings.offlineSubtitleDownloadUnsupported'))
+      setSubtitleModelsStatus(null)
       return
     }
+
+    const effectiveModelDir = (options?.modelDirOverride ?? subtitleModelDir).trim()
+    const effectiveSelectedModelId = (options?.selectedModelIdOverride ?? subtitleSelectedModelId ?? '').trim()
 
     setSubtitleModelsLoading(true)
     setSubtitleModelsError(null)
 
     try {
       const remoteResponse = await mediaRepository.listSubtitleRemoteModels()
-      setSubtitleRemoteModels(
-        remoteResponse.models.map((model) => ({
-          id: model.id,
-          label: model.label,
-          languageCodes: model.language_codes,
-          sizeBytes: model.size_bytes,
-        })),
-      )
+      const nextRemoteModels = remoteResponse.models.map((model) => ({
+        id: model.id,
+        label: model.label,
+        languageCodes: model.language_codes,
+        sizeBytes: model.size_bytes,
+        homepageUrl: deriveSubtitleModelHomepageUrl(model.artifacts[0]?.url ?? ''),
+      }))
+      setSubtitleRemoteModels(nextRemoteModels)
 
-      if (!subtitleSelectedModelId && remoteResponse.models.length > 0) {
+      if (!effectiveSelectedModelId && remoteResponse.models.length > 0) {
         updateSettings({ subtitleSelectedModelId: remoteResponse.models[0].id })
       }
 
-      if (mediaRepository.listSubtitleLocalModels && subtitleModelDir.trim()) {
+      if (mediaRepository.listSubtitleLocalModels && effectiveModelDir) {
         const localResponse = await mediaRepository.listSubtitleLocalModels({
-          model_dir: subtitleModelDir,
+          model_dir: effectiveModelDir,
         })
-        setSubtitleLocalModels(
-          localResponse.models.map((model) => ({
-            id: model.id,
-            label: model.label,
-            modelDir: model.model_dir,
-            sizeBytes: model.size_bytes,
-            source: model.source,
-          })),
+        const nextLocalModels = localResponse.models.map((model) => ({
+          id: model.id,
+          label: model.label,
+          modelDir: model.model_dir,
+          sizeBytes: model.size_bytes,
+          source: model.source,
+        }))
+        setSubtitleLocalModels(nextLocalModels)
+        setSubtitleModelsStatus(
+          t('ui.settings.offlineSubtitleRefreshSummaryAt', {
+            remote: String(nextRemoteModels.length),
+            local: String(nextLocalModels.length),
+            at: new Date(remoteResponse.generated_at_ms).toLocaleTimeString(),
+          }),
         )
       } else {
         setSubtitleLocalModels([])
+        setSubtitleModelsStatus(
+          t('ui.settings.offlineSubtitleRefreshSummaryAt', {
+            remote: String(nextRemoteModels.length),
+            local: '0',
+            at: new Date(remoteResponse.generated_at_ms).toLocaleTimeString(),
+          }),
+        )
       }
 
-      await syncSubtitleDownloadTasks()
+      await syncSubtitleDownloadTasks(effectiveSelectedModelId)
     } catch (error) {
       setSubtitleModelsError(toErrorDetailWithCode(error, t))
+      setSubtitleModelsStatus(null)
     } finally {
       setSubtitleModelsLoading(false)
     }
@@ -399,6 +481,85 @@ export function useTopLayerSettingsActions({
     subtitleModelDir,
     subtitleSelectedModelId,
     syncSubtitleDownloadTasks,
+    t,
+    updateSettings,
+  ])
+
+  const pickSubtitleModelLocationPath = useCallback(async () => {
+    const pickModelFile = mediaRepository.pickFilePath
+    const pickModelDirectory = mediaRepository.pickDirectoryPath
+    if (!pickModelFile && !pickModelDirectory) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleModelLocationPickUnsupported'))
+      return
+    }
+
+    const defaultModelRoot = subtitleModelDir.trim() && subtitleSelectedModelId?.trim()
+      ? `${subtitleModelDir.trim()}\\${subtitleSelectedModelId.trim()}`
+      : subtitleModelDir.trim()
+
+    try {
+      let modelRootPath = ''
+      if (pickModelFile) {
+        const filePick = await pickModelFile({
+          title: t('ui.settings.pickSubtitleModelLocationDialogTitle'),
+          default_path: normalizeOptionalPath(defaultModelRoot),
+          filters: [
+            {
+              name: 'ONNX Model',
+              extensions: ['onnx'],
+            },
+          ],
+        })
+        modelRootPath = filePick.path?.trim() ? pathDirname(filePick.path) : ''
+      }
+
+      if (!modelRootPath && pickModelDirectory) {
+        const directoryPick = await pickModelDirectory({
+          title: t('ui.settings.pickSubtitleModelLocationDialogTitle'),
+          default_path: normalizeOptionalPath(defaultModelRoot),
+        })
+        modelRootPath = directoryPick.path?.trim() ?? ''
+      }
+
+      if (!modelRootPath) {
+        return
+      }
+
+      const normalizedModelRoot = normalizeFsPath(modelRootPath)
+      const nextModelId = pathBasename(normalizedModelRoot)
+      const nextModelDir = pathDirname(normalizedModelRoot)
+      if (!nextModelId || !nextModelDir) {
+        setSubtitleModelsError(t('ui.settings.offlineSubtitleModelLocationInvalid'))
+        return
+      }
+
+      updateSettings({
+        subtitleModelDir: nextModelDir,
+        subtitleSelectedModelId: nextModelId,
+      })
+
+      await refreshSubtitleModels({
+        modelDirOverride: nextModelDir,
+        selectedModelIdOverride: nextModelId,
+      })
+
+      if (mediaRepository.listSubtitleLocalModels) {
+        const localResponse = await mediaRepository.listSubtitleLocalModels({
+          model_dir: nextModelDir,
+        })
+        const matchedModel = localResponse.models.find((item) => item.id === nextModelId)
+        if (!matchedModel) {
+          setSubtitleModelsError(t('ui.settings.offlineSubtitleModelLocationIncomplete', { modelId: nextModelId }))
+        }
+      }
+    } catch (error) {
+      setSubtitleModelsError(toErrorDetailWithCode(error, t))
+    }
+  }, [
+    mediaRepository,
+    refreshSubtitleModels,
+    subtitleModelDir,
+    subtitleSelectedModelId,
     t,
     updateSettings,
   ])
@@ -475,6 +636,84 @@ export function useTopLayerSettingsActions({
     }
   }, [mediaRepository, subtitleDownloadTask, syncSubtitleDownloadTasks, t])
 
+  const clearSubtitleLocalModel = useCallback(async () => {
+    const clearModel = mediaRepository.clearSubtitleLocalModel
+    if (!clearModel) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleClearModelUnsupported'))
+      return
+    }
+
+    const modelDir = subtitleModelDir.trim()
+    if (!modelDir) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleModelDirRequired'))
+      return
+    }
+
+    const modelId = subtitleSelectedModelId?.trim() ?? ''
+    if (!modelId) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleModelRequired'))
+      return
+    }
+
+    setSubtitleModelsError(null)
+    try {
+      const response = await clearModel({
+        model_dir: modelDir,
+        model_id: modelId,
+      })
+      if (!response.ok) {
+        setSubtitleModelsError(response.message ?? t('ui.settings.offlineSubtitleClearModelFailedGeneric'))
+        return
+      }
+
+      await refreshSubtitleModels()
+      setSubtitleModelsStatus(
+        t('ui.settings.offlineSubtitleClearModelDone', {
+          modelId,
+        }),
+      )
+    } catch (error) {
+      setSubtitleModelsError(
+        t('ui.settings.offlineSubtitleClearModelFailed', {
+          message: toErrorDetailWithCode(error, t),
+        }),
+      )
+    }
+  }, [mediaRepository, refreshSubtitleModels, subtitleModelDir, subtitleSelectedModelId, t])
+
+  const openSubtitleModelPage = useCallback(async () => {
+    const modelId = subtitleSelectedModelId?.trim() ?? ''
+    if (!modelId) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleModelRequired'))
+      return
+    }
+
+    const model = subtitleRemoteModels.find((item) => item.id === modelId)
+    const targetUrl = model?.homepageUrl?.trim() ?? ''
+    if (!targetUrl) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleModelPageUnavailable'))
+      return
+    }
+
+    try {
+      const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+      const openExternalUrl = backendApi?.openExternalUrl
+      if (openExternalUrl) {
+        const response = await openExternalUrl({ url: targetUrl })
+        if (response.ok) {
+          return
+        }
+      }
+
+      const popup = window.open(targetUrl, '_blank', 'noopener,noreferrer')
+      if (!popup) {
+        throw new Error('subtitle_open_model_page_blocked')
+      }
+    } catch (error) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleOpenModelPageFailed', { message: toErrorDetailWithCode(error, t) }))
+    }
+  }, [subtitleRemoteModels, subtitleSelectedModelId, t])
+
   useEffect(() => {
     if (!appSettings.settingsOpen) {
       return
@@ -520,6 +759,7 @@ export function useTopLayerSettingsActions({
     pickSubtitleModelDirectoryPath,
     subtitleModelsLoading,
     subtitleModelsError,
+    subtitleModelsStatus,
     subtitleRemoteModels,
     subtitleLocalModels,
     subtitleDownloadTask,
@@ -527,5 +767,8 @@ export function useTopLayerSettingsActions({
     refreshSubtitleModels,
     startSubtitleModelDownload,
     cancelSubtitleModelDownload,
+    clearSubtitleLocalModel,
+    pickSubtitleModelLocationPath,
+    openSubtitleModelPage,
   }
 }

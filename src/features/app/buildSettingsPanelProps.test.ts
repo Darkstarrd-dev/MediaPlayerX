@@ -43,6 +43,7 @@ describe('buildSettingsPanelProps', () => {
       subtitleSelectedModelId: null,
       subtitleModelsLoading: false,
       subtitleModelsError: null,
+      subtitleModelsStatus: null,
       subtitleRemoteModels: [],
       subtitleLocalModels: [],
       subtitleDownloadTask: null,
@@ -81,9 +82,12 @@ describe('buildSettingsPanelProps', () => {
       pickDatabaseDirectoryPath: vi.fn(),
       pickThumbnailCacheDirectoryPath: vi.fn(),
       pickSubtitleModelDirectoryPath: vi.fn(),
+      pickSubtitleModelLocationPath: vi.fn(),
       refreshSubtitleModels: vi.fn(),
       startSubtitleModelDownload: vi.fn(),
+      clearSubtitleLocalModel: vi.fn(),
       cancelSubtitleModelDownload: vi.fn(),
+      openSubtitleModelPage: vi.fn(),
     })
 
     expect(props.thumbnailWidth).toBe(512)

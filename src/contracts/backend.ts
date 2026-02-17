@@ -895,6 +895,17 @@ export const readSubtitleModelDownloadsResponseSchema = z.object({
   tasks: z.array(subtitleModelDownloadTaskSchema),
 })
 
+export const clearSubtitleLocalModelRequestSchema = z.object({
+  model_dir: z.string().min(1),
+  model_id: z.string().min(1),
+})
+
+export const clearSubtitleLocalModelResponseSchema = z.object({
+  ok: z.boolean(),
+  removed_path: z.string().min(1).nullable(),
+  message: z.string().min(1).nullable(),
+})
+
 export const subtitleSessionProviderPreferenceSchema = z.enum(['auto', 'cpu', 'directml'])
 
 export const subtitleSessionProviderSchema = subtitleEngineProviderSchema
@@ -1188,6 +1199,8 @@ export type StartSubtitleModelDownloadResponseDto = z.infer<typeof startSubtitle
 export type CancelSubtitleModelDownloadRequestDto = z.infer<typeof cancelSubtitleModelDownloadRequestSchema>
 export type CancelSubtitleModelDownloadResponseDto = z.infer<typeof cancelSubtitleModelDownloadResponseSchema>
 export type ReadSubtitleModelDownloadsResponseDto = z.infer<typeof readSubtitleModelDownloadsResponseSchema>
+export type ClearSubtitleLocalModelRequestDto = z.infer<typeof clearSubtitleLocalModelRequestSchema>
+export type ClearSubtitleLocalModelResponseDto = z.infer<typeof clearSubtitleLocalModelResponseSchema>
 export type SubtitleSessionProviderPreferenceDto = z.infer<typeof subtitleSessionProviderPreferenceSchema>
 export type SubtitleSessionProviderDto = z.infer<typeof subtitleSessionProviderSchema>
 export type SubtitleCueDto = z.infer<typeof subtitleCueSchema>

@@ -58,14 +58,17 @@ interface RenderSettingsMainSectionParams {
   subtitleFeatureEnabled: boolean
   subtitleAcceleration: 'auto' | 'cpu' | 'directml'
   subtitleModelDir: string
+  subtitleModelLocationPath: string
   subtitleSelectedModelId: string | null
   subtitleModelsLoading: boolean
   subtitleModelsError: string | null
+  subtitleModelsStatus: string | null
   subtitleRemoteModels: Array<{
     id: string
     label: string
     languageCodes: string[]
     sizeBytes: number
+    homepageUrl: string | null
   }>
   subtitleLocalModels: Array<{
     id: string
@@ -147,10 +150,13 @@ interface RenderSettingsMainSectionParams {
   onSubtitleFeatureEnabledChange: (value: boolean) => void
   onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
   onSubtitleModelDirPick: () => void
+  onSubtitleModelLocationPick: () => void
   onSubtitleSelectedModelIdChange: (value: string) => void
   onRefreshSubtitleModels: () => void
   onStartSubtitleModelDownload: () => void
+  onClearSubtitleLocalModel: () => void
   onCancelSubtitleModelDownload: () => void
+  onOpenSubtitleModelPage: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -203,9 +209,11 @@ export function renderSettingsMainSection({
   subtitleFeatureEnabled,
   subtitleAcceleration,
   subtitleModelDir,
+  subtitleModelLocationPath,
   subtitleSelectedModelId,
   subtitleModelsLoading,
   subtitleModelsError,
+  subtitleModelsStatus,
   subtitleRemoteModels,
   subtitleLocalModels,
   subtitleDownloadTask,
@@ -274,10 +282,13 @@ export function renderSettingsMainSection({
   onSubtitleFeatureEnabledChange,
   onSubtitleAccelerationChange,
   onSubtitleModelDirPick,
+  onSubtitleModelLocationPick,
   onSubtitleSelectedModelIdChange,
   onRefreshSubtitleModels,
   onStartSubtitleModelDownload,
+  onClearSubtitleLocalModel,
   onCancelSubtitleModelDownload,
+  onOpenSubtitleModelPage,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -784,6 +795,20 @@ export function renderSettingsMainSection({
             </div>
           </label>
           <label>
+            {t('ui.settings.offlineSubtitleModelLocation')}
+            <div className="settings-inline-field">
+              <input
+                type="text"
+                value={subtitleModelLocationPath}
+                readOnly
+                placeholder={t('ui.settings.offlineSubtitleModelLocationPlaceholder')}
+              />
+              <button type="button" onClick={onSubtitleModelLocationPick}>
+                {t('ui.settings.offlineSubtitleChooseModelLocation')}
+              </button>
+            </div>
+          </label>
+          <label>
             {t('ui.settings.offlineSubtitleModelId')}
             <select
               value={subtitleSelectedModelId ?? ''}
@@ -821,6 +846,16 @@ export function renderSettingsMainSection({
             <button
               className="settings-icon-btn main-icon-square-btn"
               type="button"
+              disabled={subtitleDownloadPending || subtitleModelsLoading || !subtitleSelectedModelId || !subtitleModelDir}
+              aria-label={t('ui.settings.offlineSubtitleClearModel')}
+              title={t('ui.settings.offlineSubtitleClearModel')}
+              onClick={onClearSubtitleLocalModel}
+            >
+              <MainUiIcon name="delete" />
+            </button>
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
               disabled={
                 !subtitleDownloadTask ||
                 (subtitleDownloadTask.status !== 'queued' &&
@@ -845,7 +880,15 @@ export function renderSettingsMainSection({
               })}
             </p>
           ) : null}
+          {subtitleDownloadTask?.status === 'failed' ? (
+            <div className="settings-inline-field">
+              <button type="button" disabled={!subtitleSelectedModelId} onClick={onOpenSubtitleModelPage}>
+                {t('ui.settings.offlineSubtitleOpenModelPage')}
+              </button>
+            </div>
+          ) : null}
           {subtitleModelsError ? <p className="settings-danger-text">{subtitleModelsError}</p> : null}
+          {subtitleModelsStatus ? <p className="settings-placeholder">{subtitleModelsStatus}</p> : null}
           <p className="settings-placeholder">
             {subtitleLocalModels.length === 0
               ? t('ui.settings.offlineSubtitleNoLocalModels')

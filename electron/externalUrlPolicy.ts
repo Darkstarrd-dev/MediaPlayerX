@@ -1,4 +1,10 @@
-const DEFAULT_ALLOWED_EXTERNAL_URL_HOSTS = ['nhentai.net', 'e-hentai.org', 'exhentai.org']
+const DEFAULT_ALLOWED_EXTERNAL_URL_HOSTS = [
+  'nhentai.net',
+  'e-hentai.org',
+  'exhentai.org',
+  'huggingface.co',
+  'hf-mirror.com',
+]
 
 const LOCALHOST_EXTERNAL_URL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]'])
 

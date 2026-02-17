@@ -17,6 +17,8 @@ import {
   cancelSubtitleModelDownloadRequestSchema,
   cancelSubtitleModelDownloadResponseSchema,
   readSubtitleModelDownloadsResponseSchema,
+  clearSubtitleLocalModelRequestSchema,
+  clearSubtitleLocalModelResponseSchema,
   startSubtitleSessionRequestSchema,
   startSubtitleSessionResponseSchema,
   stopSubtitleSessionRequestSchema,
@@ -79,6 +81,8 @@ import {
   type CancelSubtitleModelDownloadRequestDto,
   type CancelSubtitleModelDownloadResponseDto,
   type ReadSubtitleModelDownloadsResponseDto,
+  type ClearSubtitleLocalModelRequestDto,
+  type ClearSubtitleLocalModelResponseDto,
   type StartSubtitleSessionRequestDto,
   type StartSubtitleSessionResponseDto,
   type StopSubtitleSessionRequestDto,
@@ -594,6 +598,17 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(readSubtitleModelDownloads(), options)
     return readSubtitleModelDownloadsResponseSchema.parse(response)
+  }
+
+  async clearSubtitleLocalModel(
+    request: ClearSubtitleLocalModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ClearSubtitleLocalModelResponseDto> {
+    const clearSubtitleLocalModel = requireBackendMethod('clearSubtitleLocalModel')
+    const parsedRequest = clearSubtitleLocalModelRequestSchema.parse(request)
+
+    const response = await withAbort(clearSubtitleLocalModel(parsedRequest), options)
+    return clearSubtitleLocalModelResponseSchema.parse(response)
   }
 
   async startSubtitleSession(

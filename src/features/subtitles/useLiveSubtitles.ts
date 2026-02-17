@@ -71,11 +71,20 @@ export function useLiveSubtitles({
   }, [capture])
 
   useEffect(() => {
-    const startSubtitleSession = repository.startSubtitleSession
-    const stopSubtitleSession = repository.stopSubtitleSession
-    const resetSubtitleSession = repository.resetSubtitleSession
-    const flushSubtitleSession = repository.flushSubtitleSession
-    const pushSubtitleAudio = repository.pushSubtitleAudio
+    const startSubtitleSession =
+      repository.startSubtitleSession ? (request: Parameters<NonNullable<MediaRepository['startSubtitleSession']>>[0]) => repository.startSubtitleSession!(request) : null
+    const stopSubtitleSession =
+      repository.stopSubtitleSession ? (request: Parameters<NonNullable<MediaRepository['stopSubtitleSession']>>[0]) => repository.stopSubtitleSession!(request) : null
+    const resetSubtitleSession =
+      repository.resetSubtitleSession ? (request: Parameters<NonNullable<MediaRepository['resetSubtitleSession']>>[0]) => repository.resetSubtitleSession!(request) : null
+    const flushSubtitleSession =
+      repository.flushSubtitleSession ? () => repository.flushSubtitleSession!() : null
+    const pushSubtitleAudio =
+      repository.pushSubtitleAudio ? (request: Parameters<NonNullable<MediaRepository['pushSubtitleAudio']>>[0]) => repository.pushSubtitleAudio!(request) : null
+    const listSubtitleLocalModels =
+      repository.listSubtitleLocalModels
+        ? (request: Parameters<NonNullable<MediaRepository['listSubtitleLocalModels']>>[0]) => repository.listSubtitleLocalModels!(request)
+        : null
 
     if (!enabled || !videoElement || !modelId || modelDir.trim() === '') {
       setLoading(false)
@@ -145,6 +154,17 @@ export function useLiveSubtitles({
       pushQueueRef.current = []
 
       try {
+        if (listSubtitleLocalModels) {
+          const localResponse = await listSubtitleLocalModels({ model_dir: modelDir })
+          const installed = localResponse.models.some((item) => item.id === modelId)
+          if (!installed) {
+            setLoading(false)
+            setCues([])
+            setMessage(`subtitle_model_missing_local:${modelDir}:${modelId}`)
+            return
+          }
+        }
+
         const startResponse = await startSubtitleSession({
           model_dir: modelDir,
           model_id: modelId,
@@ -223,7 +243,8 @@ export function useLiveSubtitles({
           await stopSubtitleSession({ reason: 'renderer-start-failed' }).catch(() => undefined)
         }
         setLoading(false)
-        setMessage(error instanceof Error ? error.message : String(error))
+        const messageText = error instanceof Error ? error.message : String(error)
+        setMessage(messageText)
         setCues([])
         sessionRunningRef.current = false
         capture.detach()
@@ -244,7 +265,20 @@ export function useLiveSubtitles({
         void stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
       }
     }
-  }, [capture, enabled, modelDir, modelId, providerPreference, repository, videoElement])
+  }, [
+    capture,
+    enabled,
+    modelDir,
+    modelId,
+    providerPreference,
+    repository.flushSubtitleSession,
+    repository.listSubtitleLocalModels,
+    repository.pushSubtitleAudio,
+    repository.resetSubtitleSession,
+    repository.startSubtitleSession,
+    repository.stopSubtitleSession,
+    videoElement,
+  ])
 
   const activeText = useMemo(() => {
     const currentCue = cues.find((item) => currentTimeSec >= item.start_sec && currentTimeSec <= item.end_sec)

@@ -20,6 +20,8 @@ import type {
   CancelSubtitleModelDownloadRequestDto,
   CancelSubtitleModelDownloadResponseDto,
   ReadSubtitleModelDownloadsResponseDto,
+  ClearSubtitleLocalModelRequestDto,
+  ClearSubtitleLocalModelResponseDto,
   StartSubtitleSessionRequestDto,
   StartSubtitleSessionResponseDto,
   StopSubtitleSessionRequestDto,
@@ -259,6 +261,10 @@ export interface MediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<CancelSubtitleModelDownloadResponseDto>
   readSubtitleModelDownloads?(options?: RepositoryRequestOptions): Promise<ReadSubtitleModelDownloadsResponseDto>
+  clearSubtitleLocalModel?(
+    request: ClearSubtitleLocalModelRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ClearSubtitleLocalModelResponseDto>
   startSubtitleSession?(
     request: StartSubtitleSessionRequestDto,
     options?: RepositoryRequestOptions,

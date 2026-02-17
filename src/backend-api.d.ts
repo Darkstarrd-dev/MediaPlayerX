@@ -21,6 +21,8 @@ import type {
   CancelSubtitleModelDownloadRequestDto,
   CancelSubtitleModelDownloadResponseDto,
   ReadSubtitleModelDownloadsResponseDto,
+  ClearSubtitleLocalModelRequestDto,
+  ClearSubtitleLocalModelResponseDto,
   StartSubtitleSessionRequestDto,
   StartSubtitleSessionResponseDto,
   StopSubtitleSessionRequestDto,
@@ -168,6 +170,7 @@ interface MediaPlayerBackendApi {
     request: CancelSubtitleModelDownloadRequestDto,
   ) => Promise<CancelSubtitleModelDownloadResponseDto>
   readSubtitleModelDownloads?: () => Promise<ReadSubtitleModelDownloadsResponseDto>
+  clearSubtitleLocalModel?: (request: ClearSubtitleLocalModelRequestDto) => Promise<ClearSubtitleLocalModelResponseDto>
   startSubtitleSession?: (request: StartSubtitleSessionRequestDto) => Promise<StartSubtitleSessionResponseDto>
   stopSubtitleSession?: (request: StopSubtitleSessionRequestDto) => Promise<StopSubtitleSessionResponseDto>
   resetSubtitleSession?: (request: ResetSubtitleSessionRequestDto) => Promise<ResetSubtitleSessionResponseDto>

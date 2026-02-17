@@ -27,6 +27,8 @@ import {
   type CancelSubtitleModelDownloadRequestDto,
   type CancelSubtitleModelDownloadResponseDto,
   type ReadSubtitleModelDownloadsResponseDto,
+  type ClearSubtitleLocalModelRequestDto,
+  type ClearSubtitleLocalModelResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
@@ -824,6 +826,10 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async readSubtitleModelDownloads(): Promise<ReadSubtitleModelDownloadsResponseDto> {
     return this.systemHandlers.readSubtitleModelDownloads()
+  }
+
+  async clearSubtitleLocalModel(request: ClearSubtitleLocalModelRequestDto): Promise<ClearSubtitleLocalModelResponseDto> {
+    return this.systemHandlers.clearSubtitleLocalModel(request)
   }
 
   async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {

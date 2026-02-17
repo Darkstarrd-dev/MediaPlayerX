@@ -3,19 +3,19 @@ import type { SubtitleRemoteModelDto } from '../../src/contracts/backend'
 export const SUBTITLE_REMOTE_MODEL_CATALOG: SubtitleRemoteModelDto[] = [
   {
     id: 'sensevoice-small-int8-2025-01',
-    label: 'SenseVoice Small INT8 (zh/en/ja/ko/yue)',
+    label: 'SenseVoice Small INT8 (zh/en/ja/ko/yue) 2025-09-09',
     description: '通用多语言离线 ASR 模型（推荐）',
     language_codes: ['zh', 'en', 'ja', 'ko', 'yue'],
     size_bytes: 186_000_000,
-    version: '2025-01',
+    version: '2025-09-09',
     artifacts: [
       {
         relative_path: 'model.int8.onnx',
-        url: 'https://huggingface.co/k2-fsa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2025-01-06/resolve/main/model.int8.onnx',
+        url: 'https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09/resolve/main/model.int8.onnx',
       },
       {
         relative_path: 'tokens.txt',
-        url: 'https://huggingface.co/k2-fsa/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2025-01-06/resolve/main/tokens.txt',
+        url: 'https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09/resolve/main/tokens.txt',
       },
     ],
   },

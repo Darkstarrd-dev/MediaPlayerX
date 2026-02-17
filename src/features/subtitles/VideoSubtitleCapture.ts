@@ -17,7 +17,7 @@ interface AudioWorkletChunkMessage {
 }
 
 function toWorkletModuleUrl(): string {
-  return new URL('/audio-worklets/video-audio-capture.worklet.js', window.location.href).toString()
+  return new URL('./audio-worklets/video-audio-capture.worklet.js', window.location.href).toString()
 }
 
 export class VideoSubtitleCapture {
