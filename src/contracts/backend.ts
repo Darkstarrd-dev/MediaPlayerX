@@ -895,6 +895,90 @@ export const readSubtitleModelDownloadsResponseSchema = z.object({
   tasks: z.array(subtitleModelDownloadTaskSchema),
 })
 
+export const subtitleSessionProviderPreferenceSchema = z.enum(['auto', 'cpu', 'directml'])
+
+export const subtitleSessionProviderSchema = subtitleEngineProviderSchema
+
+export const subtitleCueSchema = z.object({
+  id: z.string().min(1),
+  start_sec: z.number().min(0),
+  end_sec: z.number().min(0),
+  text: z.string().min(1),
+  lang: z.string().min(1).nullable(),
+})
+
+export const subtitleSessionEventSchema = z.object({
+  code: z.string().min(1),
+  level: z.enum(['info', 'warning', 'error']),
+  message: z.string().min(1),
+  at_ms: z.number().int().positive(),
+})
+
+export const startSubtitleSessionRequestSchema = z.object({
+  model_dir: z.string().min(1),
+  model_id: z.string().min(1),
+  provider_preference: subtitleSessionProviderPreferenceSchema,
+  language: z.string().min(1).default('auto'),
+  fallback_to_cpu: z.boolean().default(true),
+})
+
+export const startSubtitleSessionResponseSchema = z.object({
+  session_id: z.string().min(1),
+  provider: subtitleSessionProviderSchema,
+  fallback_applied: z.boolean(),
+  events: z.array(subtitleSessionEventSchema),
+  started_at_ms: z.number().int().positive(),
+})
+
+export const stopSubtitleSessionRequestSchema = z.object({
+  reason: z.string().min(1).optional(),
+})
+
+export const stopSubtitleSessionResponseSchema = z.object({
+  session_id: z.string().min(1).nullable(),
+  stopped: z.boolean(),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const resetSubtitleSessionRequestSchema = z.object({
+  timeline_sec: z.number().min(0).nullable().optional(),
+})
+
+export const resetSubtitleSessionResponseSchema = z.object({
+  session_id: z.string().min(1).nullable(),
+  ok: z.boolean(),
+  events: z.array(subtitleSessionEventSchema),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const flushSubtitleSessionResponseSchema = z.object({
+  session_id: z.string().min(1).nullable(),
+  cues: z.array(subtitleCueSchema),
+  events: z.array(subtitleSessionEventSchema),
+  updated_at_ms: z.number().int().positive(),
+})
+
+export const pushSubtitleAudioRequestSchema = z
+  .object({
+    chunk_base64: z.string().min(1),
+    sample_rate_hz: z.number().int().min(8_000).max(96_000),
+    chunk_start_sec: z.number().min(0),
+    chunk_end_sec: z.number().min(0),
+    channel_count: z.number().int().min(1).max(8).default(1),
+  })
+  .refine((value) => value.chunk_end_sec >= value.chunk_start_sec, {
+    message: 'chunk_end_sec must be >= chunk_start_sec',
+  })
+
+export const pushSubtitleAudioResponseSchema = z.object({
+  session_id: z.string().min(1).nullable(),
+  accepted: z.boolean(),
+  provider: subtitleSessionProviderSchema.nullable(),
+  cues: z.array(subtitleCueSchema),
+  events: z.array(subtitleSessionEventSchema),
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -1104,6 +1188,19 @@ export type StartSubtitleModelDownloadResponseDto = z.infer<typeof startSubtitle
 export type CancelSubtitleModelDownloadRequestDto = z.infer<typeof cancelSubtitleModelDownloadRequestSchema>
 export type CancelSubtitleModelDownloadResponseDto = z.infer<typeof cancelSubtitleModelDownloadResponseSchema>
 export type ReadSubtitleModelDownloadsResponseDto = z.infer<typeof readSubtitleModelDownloadsResponseSchema>
+export type SubtitleSessionProviderPreferenceDto = z.infer<typeof subtitleSessionProviderPreferenceSchema>
+export type SubtitleSessionProviderDto = z.infer<typeof subtitleSessionProviderSchema>
+export type SubtitleCueDto = z.infer<typeof subtitleCueSchema>
+export type SubtitleSessionEventDto = z.infer<typeof subtitleSessionEventSchema>
+export type StartSubtitleSessionRequestDto = z.infer<typeof startSubtitleSessionRequestSchema>
+export type StartSubtitleSessionResponseDto = z.infer<typeof startSubtitleSessionResponseSchema>
+export type StopSubtitleSessionRequestDto = z.infer<typeof stopSubtitleSessionRequestSchema>
+export type StopSubtitleSessionResponseDto = z.infer<typeof stopSubtitleSessionResponseSchema>
+export type ResetSubtitleSessionRequestDto = z.infer<typeof resetSubtitleSessionRequestSchema>
+export type ResetSubtitleSessionResponseDto = z.infer<typeof resetSubtitleSessionResponseSchema>
+export type FlushSubtitleSessionResponseDto = z.infer<typeof flushSubtitleSessionResponseSchema>
+export type PushSubtitleAudioRequestDto = z.infer<typeof pushSubtitleAudioRequestSchema>
+export type PushSubtitleAudioResponseDto = z.infer<typeof pushSubtitleAudioResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

@@ -22,6 +22,10 @@ const buildTargets = [
     entryPoints: ['electron/archiveNormalizeWorker.ts'],
     outfile: 'dist-electron/archiveNormalizeWorker.cjs',
   },
+  {
+    entryPoints: ['electron/subtitles/asrWorker.ts'],
+    outfile: 'dist-electron/asrWorker.cjs',
+  },
 ]
 
 const sharedOptions = {

@@ -51,6 +51,15 @@ import {
   type CancelSubtitleModelDownloadRequestDto,
   type CancelSubtitleModelDownloadResponseDto,
   type ReadSubtitleModelDownloadsResponseDto,
+  type StartSubtitleSessionRequestDto,
+  type StartSubtitleSessionResponseDto,
+  type StopSubtitleSessionRequestDto,
+  type StopSubtitleSessionResponseDto,
+  type ResetSubtitleSessionRequestDto,
+  type ResetSubtitleSessionResponseDto,
+  type FlushSubtitleSessionResponseDto,
+  type PushSubtitleAudioRequestDto,
+  type PushSubtitleAudioResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
   type StartManageAdReviewRequestDto,
@@ -156,6 +165,12 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
   private readonly subtitleLocalModelsByDir = new Map<string, ListSubtitleLocalModelsResponseDto['models']>()
 
   private readonly subtitleDownloadTasks = new Map<string, SubtitleModelDownloadTaskDto>()
+
+  private subtitleSessionState: {
+    sessionId: string
+    provider: 'cpu' | 'directml'
+    running: boolean
+  } | null = null
 
   private state: MockRepositoryState = {
     playlistIds: INITIAL_SNAPSHOT.videos.slice(0, 3).map((v) => v.id),
@@ -683,6 +698,121 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
       (left, right) => right.started_at_ms - left.started_at_ms,
     )
     return resolveAsync({ tasks }, options)
+  }
+
+  async startSubtitleSession(
+    request: StartSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartSubtitleSessionResponseDto> {
+    const directmlAvailable = false
+    const provider =
+      request.provider_preference === 'cpu'
+        ? 'cpu'
+        : directmlAvailable
+          ? 'directml'
+          : 'cpu'
+    const fallbackApplied =
+      (request.provider_preference === 'auto' || request.provider_preference === 'directml') && provider === 'cpu'
+
+    const response: StartSubtitleSessionResponseDto = {
+      session_id: `mock-subtitle-session-${Date.now()}`,
+      provider,
+      fallback_applied: fallbackApplied,
+      events: fallbackApplied
+        ? [
+            {
+              code: 'provider_fallback',
+              level: 'warning',
+              message: 'directml unavailable in mock runtime, fallback to cpu',
+              at_ms: Date.now(),
+            },
+          ]
+        : [],
+      started_at_ms: Date.now(),
+    }
+
+    this.subtitleSessionState = {
+      sessionId: response.session_id,
+      provider: response.provider,
+      running: true,
+    }
+
+    return resolveAsync(response, options)
+  }
+
+  async stopSubtitleSession(
+    request: StopSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StopSubtitleSessionResponseDto> {
+    void request
+    const session = this.subtitleSessionState
+    this.subtitleSessionState = null
+    return resolveAsync(
+      {
+        session_id: session?.sessionId ?? null,
+        stopped: Boolean(session?.running),
+        updated_at_ms: Date.now(),
+      },
+      options,
+    )
+  }
+
+  async resetSubtitleSession(
+    request: ResetSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ResetSubtitleSessionResponseDto> {
+    void request
+    const session = this.subtitleSessionState
+    return resolveAsync(
+      {
+        session_id: session?.sessionId ?? null,
+        ok: Boolean(session?.running),
+        events: [],
+        updated_at_ms: Date.now(),
+      },
+      options,
+    )
+  }
+
+  async flushSubtitleSession(options?: RepositoryRequestOptions): Promise<FlushSubtitleSessionResponseDto> {
+    const session = this.subtitleSessionState
+    return resolveAsync(
+      {
+        session_id: session?.sessionId ?? null,
+        cues: [],
+        events: [],
+        updated_at_ms: Date.now(),
+      },
+      options,
+    )
+  }
+
+  async pushSubtitleAudio(
+    request: PushSubtitleAudioRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PushSubtitleAudioResponseDto> {
+    void request
+    const session = this.subtitleSessionState
+    return resolveAsync(
+      {
+        session_id: session?.sessionId ?? null,
+        accepted: Boolean(session?.running),
+        provider: session?.provider ?? null,
+        cues: [],
+        events: session?.running
+          ? []
+          : [
+              {
+                code: 'session_not_running',
+                level: 'warning',
+                message: 'subtitle session is not running',
+                at_ms: Date.now(),
+              },
+            ],
+        updated_at_ms: Date.now(),
+      },
+      options,
+    )
   }
 
   clearDatabaseSync(): ClearDatabaseResponseDto {

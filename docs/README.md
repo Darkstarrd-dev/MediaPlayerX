@@ -28,6 +28,7 @@
 - `offline-auto-subtitle-phase1-report.md`：离线自动字幕 Phase 1 执行记录（可选安装组件与运行时探测）。
 - `offline-auto-subtitle-phase2-report.md`：离线自动字幕 Phase 2 执行记录（设置项、模型目录与基础 UI）。
 - `offline-auto-subtitle-phase3-report.md`：离线自动字幕 Phase 3 执行记录（模型清单、下载链路、进度与取消）。
+- `offline-auto-subtitle-phase4-report.md`：离线自动字幕 Phase 4 执行记录（会话 IPC、Worker 与 provider 自动回退）。
 
 ## 主题与 UI
 

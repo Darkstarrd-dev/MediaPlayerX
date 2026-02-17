@@ -23,6 +23,15 @@ import {
   cancelSubtitleModelDownloadRequestSchema,
   cancelSubtitleModelDownloadResponseSchema,
   readSubtitleModelDownloadsResponseSchema,
+  startSubtitleSessionRequestSchema,
+  startSubtitleSessionResponseSchema,
+  stopSubtitleSessionRequestSchema,
+  stopSubtitleSessionResponseSchema,
+  resetSubtitleSessionRequestSchema,
+  resetSubtitleSessionResponseSchema,
+  flushSubtitleSessionResponseSchema,
+  pushSubtitleAudioRequestSchema,
+  pushSubtitleAudioResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -106,6 +115,7 @@ import { registerResolveMediaResourceHandler } from './registerResolveMediaResou
 import { updateRuntimeStoragePaths } from './runtimeStorageUpdate'
 import { MetadataScraperService } from './services/metadata/metadataScraperService'
 import { getAllowedExternalUrlHosts, isExternalUrlAllowed } from './externalUrlPolicy'
+import { SubtitleSessionManager } from './subtitles/subtitleSession'
 
 export function registerBackendIpcHandlers(): void {
   const userDataPath = app.getPath('userData')
@@ -120,6 +130,7 @@ export function registerBackendIpcHandlers(): void {
   const metadataScraper = new MetadataScraperService({
     defaultProxyServer: process.env.MEDIA_PLAYERX_PROXY_SERVER,
   })
+  const subtitleSessionManager = new SubtitleSessionManager()
 
   const broadcastLibraryChanged = (payload: { reason: string; updated_at_ms: number }) => {
     for (const window of BrowserWindow.getAllWindows()) {
@@ -462,6 +473,36 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readSubtitleModelDownloads, async () => {
     const response = await ensureService().readSubtitleModelDownloads()
     return readSubtitleModelDownloadsResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.startSubtitleSession, async (event, payload: unknown) => {
+    subtitleSessionManager.bindWebContents(event.sender)
+    const request = startSubtitleSessionRequestSchema.parse(payload)
+    const response = await subtitleSessionManager.startSession(event.sender.id, request)
+    return startSubtitleSessionResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.stopSubtitleSession, async (event, payload: unknown) => {
+    const request = stopSubtitleSessionRequestSchema.parse(payload ?? {})
+    const response = await subtitleSessionManager.stopSession(event.sender.id, request)
+    return stopSubtitleSessionResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.resetSubtitleSession, async (event, payload: unknown) => {
+    const request = resetSubtitleSessionRequestSchema.parse(payload ?? {})
+    const response = await subtitleSessionManager.resetSession(event.sender.id, request)
+    return resetSubtitleSessionResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.flushSubtitleSession, async (event) => {
+    const response = await subtitleSessionManager.flushSession(event.sender.id)
+    return flushSubtitleSessionResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.pushSubtitleAudio, async (event, payload: unknown) => {
+    const request = pushSubtitleAudioRequestSchema.parse(payload)
+    const response = await subtitleSessionManager.pushAudio(event.sender.id, request)
+    return pushSubtitleAudioResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeInfo, async () => {

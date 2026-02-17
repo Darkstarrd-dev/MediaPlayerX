@@ -20,6 +20,15 @@ import type {
   CancelSubtitleModelDownloadRequestDto,
   CancelSubtitleModelDownloadResponseDto,
   ReadSubtitleModelDownloadsResponseDto,
+  StartSubtitleSessionRequestDto,
+  StartSubtitleSessionResponseDto,
+  StopSubtitleSessionRequestDto,
+  StopSubtitleSessionResponseDto,
+  ResetSubtitleSessionRequestDto,
+  ResetSubtitleSessionResponseDto,
+  FlushSubtitleSessionResponseDto,
+  PushSubtitleAudioRequestDto,
+  PushSubtitleAudioResponseDto,
   DeleteImageItemsRequestDto,
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
@@ -250,6 +259,23 @@ export interface MediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<CancelSubtitleModelDownloadResponseDto>
   readSubtitleModelDownloads?(options?: RepositoryRequestOptions): Promise<ReadSubtitleModelDownloadsResponseDto>
+  startSubtitleSession?(
+    request: StartSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartSubtitleSessionResponseDto>
+  stopSubtitleSession?(
+    request: StopSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StopSubtitleSessionResponseDto>
+  resetSubtitleSession?(
+    request: ResetSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ResetSubtitleSessionResponseDto>
+  flushSubtitleSession?(options?: RepositoryRequestOptions): Promise<FlushSubtitleSessionResponseDto>
+  pushSubtitleAudio?(
+    request: PushSubtitleAudioRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PushSubtitleAudioResponseDto>
   readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void

@@ -17,6 +17,15 @@ import {
   cancelSubtitleModelDownloadRequestSchema,
   cancelSubtitleModelDownloadResponseSchema,
   readSubtitleModelDownloadsResponseSchema,
+  startSubtitleSessionRequestSchema,
+  startSubtitleSessionResponseSchema,
+  stopSubtitleSessionRequestSchema,
+  stopSubtitleSessionResponseSchema,
+  resetSubtitleSessionRequestSchema,
+  resetSubtitleSessionResponseSchema,
+  flushSubtitleSessionResponseSchema,
+  pushSubtitleAudioRequestSchema,
+  pushSubtitleAudioResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -70,6 +79,15 @@ import {
   type CancelSubtitleModelDownloadRequestDto,
   type CancelSubtitleModelDownloadResponseDto,
   type ReadSubtitleModelDownloadsResponseDto,
+  type StartSubtitleSessionRequestDto,
+  type StartSubtitleSessionResponseDto,
+  type StopSubtitleSessionRequestDto,
+  type StopSubtitleSessionResponseDto,
+  type ResetSubtitleSessionRequestDto,
+  type ResetSubtitleSessionResponseDto,
+  type FlushSubtitleSessionResponseDto,
+  type PushSubtitleAudioRequestDto,
+  type PushSubtitleAudioResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
@@ -576,6 +594,57 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(readSubtitleModelDownloads(), options)
     return readSubtitleModelDownloadsResponseSchema.parse(response)
+  }
+
+  async startSubtitleSession(
+    request: StartSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartSubtitleSessionResponseDto> {
+    const startSubtitleSession = requireBackendMethod('startSubtitleSession')
+    const parsedRequest = startSubtitleSessionRequestSchema.parse(request)
+
+    const response = await withAbort(startSubtitleSession(parsedRequest), options)
+    return startSubtitleSessionResponseSchema.parse(response)
+  }
+
+  async stopSubtitleSession(
+    request: StopSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StopSubtitleSessionResponseDto> {
+    const stopSubtitleSession = requireBackendMethod('stopSubtitleSession')
+    const parsedRequest = stopSubtitleSessionRequestSchema.parse(request)
+
+    const response = await withAbort(stopSubtitleSession(parsedRequest), options)
+    return stopSubtitleSessionResponseSchema.parse(response)
+  }
+
+  async resetSubtitleSession(
+    request: ResetSubtitleSessionRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ResetSubtitleSessionResponseDto> {
+    const resetSubtitleSession = requireBackendMethod('resetSubtitleSession')
+    const parsedRequest = resetSubtitleSessionRequestSchema.parse(request)
+
+    const response = await withAbort(resetSubtitleSession(parsedRequest), options)
+    return resetSubtitleSessionResponseSchema.parse(response)
+  }
+
+  async flushSubtitleSession(options?: RepositoryRequestOptions): Promise<FlushSubtitleSessionResponseDto> {
+    const flushSubtitleSession = requireBackendMethod('flushSubtitleSession')
+
+    const response = await withAbort(flushSubtitleSession(), options)
+    return flushSubtitleSessionResponseSchema.parse(response)
+  }
+
+  async pushSubtitleAudio(
+    request: PushSubtitleAudioRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<PushSubtitleAudioResponseDto> {
+    const pushSubtitleAudio = requireBackendMethod('pushSubtitleAudio')
+    const parsedRequest = pushSubtitleAudioRequestSchema.parse(request)
+
+    const response = await withAbort(pushSubtitleAudio(parsedRequest), options)
+    return pushSubtitleAudioResponseSchema.parse(response)
   }
 
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {

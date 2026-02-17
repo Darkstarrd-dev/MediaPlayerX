@@ -23,6 +23,15 @@ import {
   cancelSubtitleModelDownloadRequestSchema,
   cancelSubtitleModelDownloadResponseSchema,
   readSubtitleModelDownloadsResponseSchema,
+  startSubtitleSessionRequestSchema,
+  startSubtitleSessionResponseSchema,
+  stopSubtitleSessionRequestSchema,
+  stopSubtitleSessionResponseSchema,
+  resetSubtitleSessionRequestSchema,
+  resetSubtitleSessionResponseSchema,
+  flushSubtitleSessionResponseSchema,
+  pushSubtitleAudioRequestSchema,
+  pushSubtitleAudioResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -305,6 +314,30 @@ const backendApi = {
   readSubtitleModelDownloads: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readSubtitleModelDownloads)
     return readSubtitleModelDownloadsResponseSchema.parse(response)
+  },
+  startSubtitleSession: async (request: unknown) => {
+    const parsed = startSubtitleSessionRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.startSubtitleSession, parsed)
+    return startSubtitleSessionResponseSchema.parse(response)
+  },
+  stopSubtitleSession: async (request: unknown) => {
+    const parsed = stopSubtitleSessionRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.stopSubtitleSession, parsed)
+    return stopSubtitleSessionResponseSchema.parse(response)
+  },
+  resetSubtitleSession: async (request: unknown) => {
+    const parsed = resetSubtitleSessionRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.resetSubtitleSession, parsed)
+    return resetSubtitleSessionResponseSchema.parse(response)
+  },
+  flushSubtitleSession: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.flushSubtitleSession)
+    return flushSubtitleSessionResponseSchema.parse(response)
+  },
+  pushSubtitleAudio: async (request: unknown) => {
+    const parsed = pushSubtitleAudioRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pushSubtitleAudio, parsed)
+    return pushSubtitleAudioResponseSchema.parse(response)
   },
   readRuntimeInfo: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeInfo)

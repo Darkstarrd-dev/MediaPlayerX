@@ -21,6 +21,15 @@ import type {
   CancelSubtitleModelDownloadRequestDto,
   CancelSubtitleModelDownloadResponseDto,
   ReadSubtitleModelDownloadsResponseDto,
+  StartSubtitleSessionRequestDto,
+  StartSubtitleSessionResponseDto,
+  StopSubtitleSessionRequestDto,
+  StopSubtitleSessionResponseDto,
+  ResetSubtitleSessionRequestDto,
+  ResetSubtitleSessionResponseDto,
+  FlushSubtitleSessionResponseDto,
+  PushSubtitleAudioRequestDto,
+  PushSubtitleAudioResponseDto,
   ReadRuntimeInfoResponseDto,
   SetRuntimeStoragePathsRequestDto,
   SetRuntimeStoragePathsResponseDto,
@@ -159,6 +168,11 @@ interface MediaPlayerBackendApi {
     request: CancelSubtitleModelDownloadRequestDto,
   ) => Promise<CancelSubtitleModelDownloadResponseDto>
   readSubtitleModelDownloads?: () => Promise<ReadSubtitleModelDownloadsResponseDto>
+  startSubtitleSession?: (request: StartSubtitleSessionRequestDto) => Promise<StartSubtitleSessionResponseDto>
+  stopSubtitleSession?: (request: StopSubtitleSessionRequestDto) => Promise<StopSubtitleSessionResponseDto>
+  resetSubtitleSession?: (request: ResetSubtitleSessionRequestDto) => Promise<ResetSubtitleSessionResponseDto>
+  flushSubtitleSession?: () => Promise<FlushSubtitleSessionResponseDto>
+  pushSubtitleAudio?: (request: PushSubtitleAudioRequestDto) => Promise<PushSubtitleAudioResponseDto>
   readRuntimeInfo?: () => Promise<ReadRuntimeInfoResponseDto>
   setRuntimeStoragePaths?: (
     request: SetRuntimeStoragePathsRequestDto,
