@@ -265,6 +265,7 @@ export class SubtitleSessionManager {
       return flushSubtitleSessionResponseSchema.parse({
         session_id: null,
         cues: [],
+        preview: null,
         events: [],
         updated_at_ms: nowMs(),
       })
@@ -282,6 +283,7 @@ export class SubtitleSessionManager {
         accepted: false,
         provider: null,
         cues: [],
+        preview: null,
         events: [
           {
             code: 'session_not_running',

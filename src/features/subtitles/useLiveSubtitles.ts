@@ -4,6 +4,7 @@ import type {
   FlushSubtitleSessionResponseDto,
   PushSubtitleAudioRequestDto,
   SubtitleCueDto,
+  SubtitlePreviewCueDto,
   SubtitleSessionEventDto,
   SubtitleSessionProviderPreferenceDto,
 } from '../../contracts/backend'
@@ -73,6 +74,7 @@ export function useLiveSubtitles({
   repository,
 }: UseLiveSubtitlesParams) {
   const [cues, setCues] = useState<SubtitleCueDto[]>([])
+  const [previewCue, setPreviewCue] = useState<SubtitlePreviewCueDto | null>(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -106,6 +108,7 @@ export function useLiveSubtitles({
       setLoading(false)
       setMessage(null)
       setCues([])
+      setPreviewCue(null)
       pushQueueRef.current = []
       sessionRunningRef.current = false
       capture.detach()
@@ -116,6 +119,7 @@ export function useLiveSubtitles({
       setLoading(false)
       setMessage('subtitle session API unavailable')
       setCues([])
+      setPreviewCue(null)
       return
     }
 
@@ -142,6 +146,7 @@ export function useLiveSubtitles({
         const response = await pushSubtitleAudio(request)
         if (!cancelled) {
           setCues((previous) => appendCues(previous, response.cues))
+          setPreviewCue(response.preview ?? null)
         }
       } catch (error) {
         if (!cancelled) {
@@ -155,8 +160,13 @@ export function useLiveSubtitles({
       }
     }
 
-    const handleCuesAndEvents = (response: { cues: SubtitleCueDto[]; events: FlushSubtitleSessionResponseDto['events'] }) => {
+    const handleCuesAndEvents = (response: {
+      cues: SubtitleCueDto[]
+      preview?: SubtitlePreviewCueDto | null
+      events: FlushSubtitleSessionResponseDto['events']
+    }) => {
       setCues((previous) => appendCues(previous, response.cues))
+      setPreviewCue(response.preview ?? null)
       const displayMessage = pickDisplayEventMessage(response.events)
       if (displayMessage) {
         setMessage(displayMessage)
@@ -167,6 +177,7 @@ export function useLiveSubtitles({
       setLoading(true)
       setMessage(null)
       setCues([])
+      setPreviewCue(null)
       pushQueueRef.current = []
 
       try {
@@ -200,6 +211,7 @@ export function useLiveSubtitles({
         const onSeeked = () => {
           pushQueueRef.current = []
           setCues([])
+          setPreviewCue(null)
           void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
         }
         const onPause = () => {
@@ -240,6 +252,7 @@ export function useLiveSubtitles({
           pushQueueRef.current = []
           capture.detach()
           sessionRunningRef.current = false
+          setPreviewCue(null)
           await stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
         }
       } catch (error) {
@@ -250,6 +263,7 @@ export function useLiveSubtitles({
         const messageText = error instanceof Error ? error.message : String(error)
         setMessage(messageText)
         setCues([])
+        setPreviewCue(null)
         sessionRunningRef.current = false
         capture.detach()
       }
@@ -285,6 +299,14 @@ export function useLiveSubtitles({
   ])
 
   const activeText = useMemo(() => {
+    if (
+      previewCue &&
+      currentTimeSec >= Math.max(0, previewCue.start_sec - 0.2) &&
+      currentTimeSec <= previewCue.end_sec + 1.2
+    ) {
+      return previewCue.text
+    }
+
     for (let index = cues.length - 1; index >= 0; index -= 1) {
       const cue = cues[index]
       if (currentTimeSec >= cue.start_sec && currentTimeSec <= cue.end_sec) {
@@ -300,9 +322,13 @@ export function useLiveSubtitles({
     }
 
     return null
-  }, [cues, currentTimeSec])
+  }, [cues, currentTimeSec, previewCue])
 
   const detectedLanguage = useMemo(() => {
+    if (previewCue?.lang && previewCue.lang.trim()) {
+      return previewCue.lang.trim().toLowerCase()
+    }
+
     for (let index = cues.length - 1; index >= 0; index -= 1) {
       const cue = cues[index]
       if (cue.lang && cue.lang.trim()) {
@@ -310,7 +336,7 @@ export function useLiveSubtitles({
       }
     }
     return null
-  }, [cues])
+  }, [cues, previewCue])
 
   return {
     loading,
