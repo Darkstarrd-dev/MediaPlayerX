@@ -9,6 +9,14 @@ import {
   readClipboardImportPathsResponseSchema,
   readArchiveLoadStatusResponseSchema,
   readSubtitleEngineStatusResponseSchema,
+  listSubtitleRemoteModelsResponseSchema,
+  listSubtitleLocalModelsRequestSchema,
+  listSubtitleLocalModelsResponseSchema,
+  startSubtitleModelDownloadRequestSchema,
+  startSubtitleModelDownloadResponseSchema,
+  cancelSubtitleModelDownloadRequestSchema,
+  cancelSubtitleModelDownloadResponseSchema,
+  readSubtitleModelDownloadsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -54,6 +62,14 @@ import {
   type ReadClipboardImportPathsResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ReadSubtitleEngineStatusResponseDto,
+  type ListSubtitleRemoteModelsResponseDto,
+  type ListSubtitleLocalModelsRequestDto,
+  type ListSubtitleLocalModelsResponseDto,
+  type StartSubtitleModelDownloadRequestDto,
+  type StartSubtitleModelDownloadResponseDto,
+  type CancelSubtitleModelDownloadRequestDto,
+  type CancelSubtitleModelDownloadResponseDto,
+  type ReadSubtitleModelDownloadsResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
@@ -513,6 +529,53 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(readSubtitleEngineStatus(), options)
     return readSubtitleEngineStatusResponseSchema.parse(response)
+  }
+
+  async listSubtitleRemoteModels(options?: RepositoryRequestOptions): Promise<ListSubtitleRemoteModelsResponseDto> {
+    const listSubtitleRemoteModels = requireBackendMethod('listSubtitleRemoteModels')
+
+    const response = await withAbort(listSubtitleRemoteModels(), options)
+    return listSubtitleRemoteModelsResponseSchema.parse(response)
+  }
+
+  async listSubtitleLocalModels(
+    request: ListSubtitleLocalModelsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ListSubtitleLocalModelsResponseDto> {
+    const listSubtitleLocalModels = requireBackendMethod('listSubtitleLocalModels')
+    const parsedRequest = listSubtitleLocalModelsRequestSchema.parse(request)
+
+    const response = await withAbort(listSubtitleLocalModels(parsedRequest), options)
+    return listSubtitleLocalModelsResponseSchema.parse(response)
+  }
+
+  async startSubtitleModelDownload(
+    request: StartSubtitleModelDownloadRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartSubtitleModelDownloadResponseDto> {
+    const startSubtitleModelDownload = requireBackendMethod('startSubtitleModelDownload')
+    const parsedRequest = startSubtitleModelDownloadRequestSchema.parse(request)
+
+    const response = await withAbort(startSubtitleModelDownload(parsedRequest), options)
+    return startSubtitleModelDownloadResponseSchema.parse(response)
+  }
+
+  async cancelSubtitleModelDownload(
+    request: CancelSubtitleModelDownloadRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<CancelSubtitleModelDownloadResponseDto> {
+    const cancelSubtitleModelDownload = requireBackendMethod('cancelSubtitleModelDownload')
+    const parsedRequest = cancelSubtitleModelDownloadRequestSchema.parse(request)
+
+    const response = await withAbort(cancelSubtitleModelDownload(parsedRequest), options)
+    return cancelSubtitleModelDownloadResponseSchema.parse(response)
+  }
+
+  async readSubtitleModelDownloads(options?: RepositoryRequestOptions): Promise<ReadSubtitleModelDownloadsResponseDto> {
+    const readSubtitleModelDownloads = requireBackendMethod('readSubtitleModelDownloads')
+
+    const response = await withAbort(readSubtitleModelDownloads(), options)
+    return readSubtitleModelDownloadsResponseSchema.parse(response)
   }
 
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {

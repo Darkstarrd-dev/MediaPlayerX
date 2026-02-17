@@ -36,6 +36,12 @@ interface BuildSettingsPanelPropsParams {
   subtitleAcceleration: AppSettings['subtitleAcceleration']
   subtitleModelDir: string
   subtitleSelectedModelId: string | null
+  subtitleModelsLoading: boolean
+  subtitleModelsError: string | null
+  subtitleRemoteModels: SettingsPanelProps['subtitleRemoteModels']
+  subtitleLocalModels: SettingsPanelProps['subtitleLocalModels']
+  subtitleDownloadTask: SettingsPanelProps['subtitleDownloadTask']
+  subtitleDownloadPending: boolean
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -70,6 +76,9 @@ interface BuildSettingsPanelPropsParams {
   pickDatabaseDirectoryPath: () => void
   pickThumbnailCacheDirectoryPath: () => void
   pickSubtitleModelDirectoryPath: () => void
+  refreshSubtitleModels: () => void
+  startSubtitleModelDownload: () => void
+  cancelSubtitleModelDownload: () => void
 }
 
 export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
@@ -107,6 +116,12 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     subtitleAcceleration: params.subtitleAcceleration,
     subtitleModelDir: params.subtitleModelDir,
     subtitleSelectedModelId: params.subtitleSelectedModelId,
+    subtitleModelsLoading: params.subtitleModelsLoading,
+    subtitleModelsError: params.subtitleModelsError,
+    subtitleRemoteModels: params.subtitleRemoteModels,
+    subtitleLocalModels: params.subtitleLocalModels,
+    subtitleDownloadTask: params.subtitleDownloadTask,
+    subtitleDownloadPending: params.subtitleDownloadPending,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
     adReviewVisionModel: params.adReviewVisionModel,
     adReviewVisionVerified: params.adReviewVisionVerified,
@@ -228,6 +243,9 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       params.updateSettings({
         subtitleSelectedModelId: value.trim() || null,
       }),
+    onRefreshSubtitleModels: params.refreshSubtitleModels,
+    onStartSubtitleModelDownload: params.startSubtitleModelDownload,
+    onCancelSubtitleModelDownload: params.cancelSubtitleModelDownload,
     onAdReviewVisionEndpointChange: (value) =>
       params.updateSettings({
         adReviewVisionEndpoint: value,

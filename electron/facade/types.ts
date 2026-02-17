@@ -10,6 +10,7 @@ import { ManageAdReviewService } from '../services/file-system-read/manageAdRevi
 import { ManageCoverReviewService } from '../services/file-system-read/manageCoverReviewService'
 import { MediaResourceService } from '../services/file-system-read/mediaResourceService'
 import { RuntimeDependencyService } from '../services/file-system-read/runtimeDependencyService'
+import { SubtitleModelService } from '../services/file-system-read/subtitleModelService'
 import { ServiceEventBus } from '../services/file-system-read/serviceEventBus'
 import { LibraryChangedEventPayload } from '../services/file-system-read/fileSystemReadFacadeEvents'
 import type { ClearDatabaseResponseDto, LibrarySnapshotDto } from '../../src/contracts/backend'
@@ -31,6 +32,7 @@ export interface FileSystemFacadeContext {
   manageCoverReviewService: ManageCoverReviewService
   mediaResourceService: MediaResourceService
   runtimeDependencyService: RuntimeDependencyService
+  subtitleModelService: SubtitleModelService
   eventBus: ServiceEventBus
 
   ensureStateLoaded: () => Promise<void>

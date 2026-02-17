@@ -31,6 +31,33 @@ interface TopLayerSettingsActionsResult {
   pickDatabaseDirectoryPath: () => Promise<void>
   pickThumbnailCacheDirectoryPath: () => Promise<void>
   pickSubtitleModelDirectoryPath: () => Promise<void>
+  subtitleModelsLoading: boolean
+  subtitleModelsError: string | null
+  subtitleRemoteModels: Array<{
+    id: string
+    label: string
+    languageCodes: string[]
+    sizeBytes: number
+  }>
+  subtitleLocalModels: Array<{
+    id: string
+    label: string
+    modelDir: string
+    sizeBytes: number
+    source: 'downloaded' | 'manual'
+  }>
+  subtitleDownloadTask: {
+    downloadId: string
+    status: 'queued' | 'downloading' | 'verifying' | 'completed' | 'failed' | 'cancelled'
+    percent: number
+    speedBps: number
+    etaSec: number | null
+    message: string | null
+  } | null
+  subtitleDownloadPending: boolean
+  refreshSubtitleModels: () => Promise<void>
+  startSubtitleModelDownload: () => Promise<void>
+  cancelSubtitleModelDownload: () => Promise<void>
 }
 
 export function useTopLayerSettingsActions({
@@ -45,7 +72,9 @@ export function useTopLayerSettingsActions({
     adReviewVisionModel,
     adReviewVisionVerified,
     electronNativeChromeEnabled,
+    proxyServer,
     subtitleModelDir,
+    subtitleSelectedModelId,
     updateSettings,
   } = appSettings
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
@@ -54,6 +83,12 @@ export function useTopLayerSettingsActions({
   const [adReviewVisionSaveMessage, setAdReviewVisionSaveMessage] = useState<string | null>(null)
   const [runtimePathUpdatePending, setRuntimePathUpdatePending] = useState(false)
   const [runtimePathUpdateMessage, setRuntimePathUpdateMessage] = useState<string | null>(null)
+  const [subtitleModelsLoading, setSubtitleModelsLoading] = useState(false)
+  const [subtitleModelsError, setSubtitleModelsError] = useState<string | null>(null)
+  const [subtitleRemoteModels, setSubtitleRemoteModels] = useState<TopLayerSettingsActionsResult['subtitleRemoteModels']>([])
+  const [subtitleLocalModels, setSubtitleLocalModels] = useState<TopLayerSettingsActionsResult['subtitleLocalModels']>([])
+  const [subtitleDownloadTask, setSubtitleDownloadTask] = useState<TopLayerSettingsActionsResult['subtitleDownloadTask']>(null)
+  const [subtitleDownloadPending, setSubtitleDownloadPending] = useState(false)
 
   useEffect(() => {
     setAdReviewVisionTestMessage(null)
@@ -280,6 +315,196 @@ export function useTopLayerSettingsActions({
     updateSettings({ subtitleModelDir: pickedPath })
   }, [mediaRepository, subtitleModelDir, t, updateSettings])
 
+  const syncSubtitleDownloadTasks = useCallback(async () => {
+    if (!mediaRepository.readSubtitleModelDownloads) {
+      setSubtitleDownloadTask(null)
+      return
+    }
+
+    const response = await mediaRepository.readSubtitleModelDownloads()
+    const selectedTask =
+      response.tasks.find(
+        (task) =>
+          task.model_id === subtitleSelectedModelId &&
+          (task.status === 'queued' || task.status === 'downloading' || task.status === 'verifying'),
+      ) ??
+      response.tasks.find((task) => task.model_id === subtitleSelectedModelId) ??
+      response.tasks[0] ??
+      null
+
+    if (!selectedTask) {
+      setSubtitleDownloadTask(null)
+      return
+    }
+
+    setSubtitleDownloadTask({
+      downloadId: selectedTask.download_id,
+      status: selectedTask.status,
+      percent: selectedTask.percent,
+      speedBps: selectedTask.speed_bps,
+      etaSec: selectedTask.eta_sec,
+      message: selectedTask.message,
+    })
+  }, [mediaRepository, subtitleSelectedModelId])
+
+  const refreshSubtitleModels = useCallback(async () => {
+    if (!mediaRepository.listSubtitleRemoteModels) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleDownloadUnsupported'))
+      return
+    }
+
+    setSubtitleModelsLoading(true)
+    setSubtitleModelsError(null)
+
+    try {
+      const remoteResponse = await mediaRepository.listSubtitleRemoteModels()
+      setSubtitleRemoteModels(
+        remoteResponse.models.map((model) => ({
+          id: model.id,
+          label: model.label,
+          languageCodes: model.language_codes,
+          sizeBytes: model.size_bytes,
+        })),
+      )
+
+      if (!subtitleSelectedModelId && remoteResponse.models.length > 0) {
+        updateSettings({ subtitleSelectedModelId: remoteResponse.models[0].id })
+      }
+
+      if (mediaRepository.listSubtitleLocalModels && subtitleModelDir.trim()) {
+        const localResponse = await mediaRepository.listSubtitleLocalModels({
+          model_dir: subtitleModelDir,
+        })
+        setSubtitleLocalModels(
+          localResponse.models.map((model) => ({
+            id: model.id,
+            label: model.label,
+            modelDir: model.model_dir,
+            sizeBytes: model.size_bytes,
+            source: model.source,
+          })),
+        )
+      } else {
+        setSubtitleLocalModels([])
+      }
+
+      await syncSubtitleDownloadTasks()
+    } catch (error) {
+      setSubtitleModelsError(toErrorDetailWithCode(error, t))
+    } finally {
+      setSubtitleModelsLoading(false)
+    }
+  }, [
+    mediaRepository,
+    subtitleModelDir,
+    subtitleSelectedModelId,
+    syncSubtitleDownloadTasks,
+    t,
+    updateSettings,
+  ])
+
+  const startSubtitleModelDownload = useCallback(async () => {
+    if (!mediaRepository.startSubtitleModelDownload) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleDownloadUnsupported'))
+      return
+    }
+
+    const modelDir = subtitleModelDir.trim()
+    if (!modelDir) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleModelDirRequired'))
+      return
+    }
+
+    const modelId = subtitleSelectedModelId?.trim() ?? ''
+    if (!modelId) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleModelRequired'))
+      return
+    }
+
+    const normalizedProxy = proxyServer.trim()
+    const useProxy = normalizedProxy
+      ? window.confirm(t('ui.settings.offlineSubtitleProxyConfirm', { proxy: normalizedProxy }))
+      : false
+
+    setSubtitleDownloadPending(true)
+    setSubtitleModelsError(null)
+
+    try {
+      const response = await mediaRepository.startSubtitleModelDownload({
+        model_id: modelId,
+        model_dir: modelDir,
+        use_proxy: useProxy,
+        proxy_url: useProxy ? normalizedProxy : null,
+      })
+
+      setSubtitleDownloadTask({
+        downloadId: response.task.download_id,
+        status: response.task.status,
+        percent: response.task.percent,
+        speedBps: response.task.speed_bps,
+        etaSec: response.task.eta_sec,
+        message: response.task.message,
+      })
+      await refreshSubtitleModels()
+    } catch (error) {
+      setSubtitleModelsError(t('ui.settings.offlineSubtitleDownloadFailed', { message: toErrorDetailWithCode(error, t) }))
+    } finally {
+      setSubtitleDownloadPending(false)
+    }
+  }, [
+    mediaRepository,
+    proxyServer,
+    refreshSubtitleModels,
+    subtitleModelDir,
+    subtitleSelectedModelId,
+    t,
+  ])
+
+  const cancelSubtitleModelDownload = useCallback(async () => {
+    if (!mediaRepository.cancelSubtitleModelDownload || !subtitleDownloadTask) {
+      return
+    }
+
+    try {
+      await mediaRepository.cancelSubtitleModelDownload({
+        download_id: subtitleDownloadTask.downloadId,
+      })
+      await syncSubtitleDownloadTasks()
+    } catch (error) {
+      setSubtitleModelsError(toErrorDetailWithCode(error, t))
+    }
+  }, [mediaRepository, subtitleDownloadTask, syncSubtitleDownloadTasks, t])
+
+  useEffect(() => {
+    if (!appSettings.settingsOpen) {
+      return
+    }
+
+    void refreshSubtitleModels()
+  }, [appSettings.settingsOpen, refreshSubtitleModels])
+
+  useEffect(() => {
+    if (!subtitleDownloadTask) {
+      return
+    }
+
+    if (
+      subtitleDownloadTask.status !== 'queued' &&
+      subtitleDownloadTask.status !== 'downloading' &&
+      subtitleDownloadTask.status !== 'verifying'
+    ) {
+      return
+    }
+
+    const timer = window.setInterval(() => {
+      void syncSubtitleDownloadTasks()
+    }, 800)
+
+    return () => {
+      window.clearInterval(timer)
+    }
+  }, [subtitleDownloadTask, syncSubtitleDownloadTasks])
+
   return {
     adReviewVisionTestPending,
     adReviewVisionTestMessage,
@@ -293,5 +518,14 @@ export function useTopLayerSettingsActions({
     pickDatabaseDirectoryPath,
     pickThumbnailCacheDirectoryPath,
     pickSubtitleModelDirectoryPath,
+    subtitleModelsLoading,
+    subtitleModelsError,
+    subtitleRemoteModels,
+    subtitleLocalModels,
+    subtitleDownloadTask,
+    subtitleDownloadPending,
+    refreshSubtitleModels,
+    startSubtitleModelDownload,
+    cancelSubtitleModelDownload,
   }
 }

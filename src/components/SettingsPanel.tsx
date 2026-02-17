@@ -57,6 +57,30 @@ export interface SettingsPanelProps {
   subtitleAcceleration: 'auto' | 'cpu' | 'directml'
   subtitleModelDir: string
   subtitleSelectedModelId: string | null
+  subtitleModelsLoading: boolean
+  subtitleModelsError: string | null
+  subtitleRemoteModels: Array<{
+    id: string
+    label: string
+    languageCodes: string[]
+    sizeBytes: number
+  }>
+  subtitleLocalModels: Array<{
+    id: string
+    label: string
+    modelDir: string
+    sizeBytes: number
+    source: 'downloaded' | 'manual'
+  }>
+  subtitleDownloadTask: {
+    downloadId: string
+    status: 'queued' | 'downloading' | 'verifying' | 'completed' | 'failed' | 'cancelled'
+    percent: number
+    speedBps: number
+    etaSec: number | null
+    message: string | null
+  } | null
+  subtitleDownloadPending: boolean
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -114,6 +138,9 @@ export interface SettingsPanelProps {
   onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
   onSubtitleModelDirPick: () => void
   onSubtitleSelectedModelIdChange: (value: string) => void
+  onRefreshSubtitleModels: () => void
+  onStartSubtitleModelDownload: () => void
+  onCancelSubtitleModelDownload: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -212,6 +239,12 @@ function SettingsPanel({
   subtitleAcceleration,
   subtitleModelDir,
   subtitleSelectedModelId,
+  subtitleModelsLoading,
+  subtitleModelsError,
+  subtitleRemoteModels,
+  subtitleLocalModels,
+  subtitleDownloadTask,
+  subtitleDownloadPending,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -269,6 +302,9 @@ function SettingsPanel({
   onSubtitleAccelerationChange,
   onSubtitleModelDirPick,
   onSubtitleSelectedModelIdChange,
+  onRefreshSubtitleModels,
+  onStartSubtitleModelDownload,
+  onCancelSubtitleModelDownload,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -689,6 +725,12 @@ function SettingsPanel({
     subtitleAcceleration,
     subtitleModelDir,
     subtitleSelectedModelId,
+    subtitleModelsLoading,
+    subtitleModelsError,
+    subtitleRemoteModels,
+    subtitleLocalModels,
+    subtitleDownloadTask,
+    subtitleDownloadPending,
     adReviewVisionEndpoint,
     adReviewVisionModel,
     adReviewVisionVerified,
@@ -754,6 +796,9 @@ function SettingsPanel({
     onSubtitleAccelerationChange,
     onSubtitleModelDirPick,
     onSubtitleSelectedModelIdChange,
+    onRefreshSubtitleModels,
+    onStartSubtitleModelDownload,
+    onCancelSubtitleModelDownload,
     onAdReviewVisionEndpointChange,
     onAdReviewVisionModelChange,
     onTestAdReviewVisionModel,

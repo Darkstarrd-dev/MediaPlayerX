@@ -15,6 +15,14 @@ import {
   pickDirectoryPathResponseSchema,
   readClipboardImportPathsResponseSchema,
   readSubtitleEngineStatusResponseSchema,
+  listSubtitleRemoteModelsResponseSchema,
+  listSubtitleLocalModelsRequestSchema,
+  listSubtitleLocalModelsResponseSchema,
+  startSubtitleModelDownloadRequestSchema,
+  startSubtitleModelDownloadResponseSchema,
+  cancelSubtitleModelDownloadRequestSchema,
+  cancelSubtitleModelDownloadResponseSchema,
+  readSubtitleModelDownloadsResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -426,6 +434,34 @@ export function registerBackendIpcHandlers(): void {
   ipcMain.handle(BACKEND_CHANNELS.readSubtitleEngineStatus, async () => {
     const response = await ensureService().readSubtitleEngineStatus()
     return readSubtitleEngineStatusResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.listSubtitleRemoteModels, async () => {
+    const response = await ensureService().listSubtitleRemoteModels()
+    return listSubtitleRemoteModelsResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.listSubtitleLocalModels, async (_event, payload: unknown) => {
+    const request = listSubtitleLocalModelsRequestSchema.parse(payload)
+    const response = await ensureService().listSubtitleLocalModels(request)
+    return listSubtitleLocalModelsResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.startSubtitleModelDownload, async (_event, payload: unknown) => {
+    const request = startSubtitleModelDownloadRequestSchema.parse(payload)
+    const response = await ensureService().startSubtitleModelDownload(request)
+    return startSubtitleModelDownloadResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.cancelSubtitleModelDownload, async (_event, payload: unknown) => {
+    const request = cancelSubtitleModelDownloadRequestSchema.parse(payload)
+    const response = await ensureService().cancelSubtitleModelDownload(request)
+    return cancelSubtitleModelDownloadResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.readSubtitleModelDownloads, async () => {
+    const response = await ensureService().readSubtitleModelDownloads()
+    return readSubtitleModelDownloadsResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.readRuntimeInfo, async () => {

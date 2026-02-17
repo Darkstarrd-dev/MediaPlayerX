@@ -41,6 +41,12 @@ describe('buildSettingsPanelProps', () => {
       subtitleAcceleration: 'auto',
       subtitleModelDir: '',
       subtitleSelectedModelId: null,
+      subtitleModelsLoading: false,
+      subtitleModelsError: null,
+      subtitleRemoteModels: [],
+      subtitleLocalModels: [],
+      subtitleDownloadTask: null,
+      subtitleDownloadPending: false,
       adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
       adReviewVisionModel: '',
       adReviewVisionVerified: false,
@@ -75,6 +81,9 @@ describe('buildSettingsPanelProps', () => {
       pickDatabaseDirectoryPath: vi.fn(),
       pickThumbnailCacheDirectoryPath: vi.fn(),
       pickSubtitleModelDirectoryPath: vi.fn(),
+      refreshSubtitleModels: vi.fn(),
+      startSubtitleModelDownload: vi.fn(),
+      cancelSubtitleModelDownload: vi.fn(),
     })
 
     expect(props.thumbnailWidth).toBe(512)

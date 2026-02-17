@@ -13,6 +13,14 @@ import type {
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   ReadSubtitleEngineStatusResponseDto,
+  ListSubtitleRemoteModelsResponseDto,
+  ListSubtitleLocalModelsRequestDto,
+  ListSubtitleLocalModelsResponseDto,
+  StartSubtitleModelDownloadRequestDto,
+  StartSubtitleModelDownloadResponseDto,
+  CancelSubtitleModelDownloadRequestDto,
+  CancelSubtitleModelDownloadResponseDto,
+  ReadSubtitleModelDownloadsResponseDto,
   ReadRuntimeInfoResponseDto,
   SetRuntimeStoragePathsRequestDto,
   SetRuntimeStoragePathsResponseDto,
@@ -140,6 +148,17 @@ interface MediaPlayerBackendApi {
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
   readSubtitleEngineStatus?: () => Promise<ReadSubtitleEngineStatusResponseDto>
+  listSubtitleRemoteModels?: () => Promise<ListSubtitleRemoteModelsResponseDto>
+  listSubtitleLocalModels?: (
+    request: ListSubtitleLocalModelsRequestDto,
+  ) => Promise<ListSubtitleLocalModelsResponseDto>
+  startSubtitleModelDownload?: (
+    request: StartSubtitleModelDownloadRequestDto,
+  ) => Promise<StartSubtitleModelDownloadResponseDto>
+  cancelSubtitleModelDownload?: (
+    request: CancelSubtitleModelDownloadRequestDto,
+  ) => Promise<CancelSubtitleModelDownloadResponseDto>
+  readSubtitleModelDownloads?: () => Promise<ReadSubtitleModelDownloadsResponseDto>
   readRuntimeInfo?: () => Promise<ReadRuntimeInfoResponseDto>
   setRuntimeStoragePaths?: (
     request: SetRuntimeStoragePathsRequestDto,

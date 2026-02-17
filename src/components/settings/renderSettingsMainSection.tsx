@@ -59,6 +59,30 @@ interface RenderSettingsMainSectionParams {
   subtitleAcceleration: 'auto' | 'cpu' | 'directml'
   subtitleModelDir: string
   subtitleSelectedModelId: string | null
+  subtitleModelsLoading: boolean
+  subtitleModelsError: string | null
+  subtitleRemoteModels: Array<{
+    id: string
+    label: string
+    languageCodes: string[]
+    sizeBytes: number
+  }>
+  subtitleLocalModels: Array<{
+    id: string
+    label: string
+    modelDir: string
+    sizeBytes: number
+    source: 'downloaded' | 'manual'
+  }>
+  subtitleDownloadTask: {
+    downloadId: string
+    status: 'queued' | 'downloading' | 'verifying' | 'completed' | 'failed' | 'cancelled'
+    percent: number
+    speedBps: number
+    etaSec: number | null
+    message: string | null
+  } | null
+  subtitleDownloadPending: boolean
   adReviewVisionEndpoint: string
   adReviewVisionModel: string
   adReviewVisionVerified: boolean
@@ -124,6 +148,9 @@ interface RenderSettingsMainSectionParams {
   onSubtitleAccelerationChange: (value: 'auto' | 'cpu' | 'directml') => void
   onSubtitleModelDirPick: () => void
   onSubtitleSelectedModelIdChange: (value: string) => void
+  onRefreshSubtitleModels: () => void
+  onStartSubtitleModelDownload: () => void
+  onCancelSubtitleModelDownload: () => void
   onAdReviewVisionEndpointChange: (value: string) => void
   onAdReviewVisionModelChange: (value: string) => void
   onTestAdReviewVisionModel: () => void
@@ -177,6 +204,12 @@ export function renderSettingsMainSection({
   subtitleAcceleration,
   subtitleModelDir,
   subtitleSelectedModelId,
+  subtitleModelsLoading,
+  subtitleModelsError,
+  subtitleRemoteModels,
+  subtitleLocalModels,
+  subtitleDownloadTask,
+  subtitleDownloadPending,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -242,6 +275,9 @@ export function renderSettingsMainSection({
   onSubtitleAccelerationChange,
   onSubtitleModelDirPick,
   onSubtitleSelectedModelIdChange,
+  onRefreshSubtitleModels,
+  onStartSubtitleModelDownload,
+  onCancelSubtitleModelDownload,
   onAdReviewVisionEndpointChange,
   onAdReviewVisionModelChange,
   onTestAdReviewVisionModel,
@@ -749,13 +785,72 @@ export function renderSettingsMainSection({
           </label>
           <label>
             {t('ui.settings.offlineSubtitleModelId')}
-            <input
-              type="text"
+            <select
               value={subtitleSelectedModelId ?? ''}
-              placeholder={t('ui.settings.offlineSubtitleModelIdPlaceholder')}
               onChange={(event) => onSubtitleSelectedModelIdChange(event.target.value)}
-            />
+            >
+              <option value="">{t('ui.settings.offlineSubtitleModelIdPlaceholder')}</option>
+              {subtitleRemoteModels.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.label}
+                </option>
+              ))}
+            </select>
           </label>
+          <div className="settings-test-row">
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={subtitleModelsLoading}
+              aria-label={t('ui.settings.offlineSubtitleRefreshModels')}
+              title={t('ui.settings.offlineSubtitleRefreshModels')}
+              onClick={onRefreshSubtitleModels}
+            >
+              <MainUiIcon name="refresh" />
+            </button>
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={subtitleDownloadPending || subtitleModelsLoading || !subtitleSelectedModelId || !subtitleModelDir}
+              aria-label={t('ui.settings.offlineSubtitleDownloadModel')}
+              title={t('ui.settings.offlineSubtitleDownloadModel')}
+              onClick={onStartSubtitleModelDownload}
+            >
+              <MainUiIcon name="save" />
+            </button>
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={
+                !subtitleDownloadTask ||
+                (subtitleDownloadTask.status !== 'queued' &&
+                  subtitleDownloadTask.status !== 'downloading' &&
+                  subtitleDownloadTask.status !== 'verifying')
+              }
+              aria-label={t('ui.settings.offlineSubtitleCancelDownload')}
+              title={t('ui.settings.offlineSubtitleCancelDownload')}
+              onClick={onCancelSubtitleModelDownload}
+            >
+              <MainUiIcon name="close" />
+            </button>
+          </div>
+          {subtitleDownloadTask ? (
+            <p className="settings-placeholder">
+              {t('ui.settings.offlineSubtitleDownloadProgress', {
+                status: subtitleDownloadTask.status,
+                percent: subtitleDownloadTask.percent.toFixed(1),
+                speed: Math.round(subtitleDownloadTask.speedBps / 1024),
+                eta: subtitleDownloadTask.etaSec == null ? '-' : String(subtitleDownloadTask.etaSec),
+                message: subtitleDownloadTask.message ?? '-',
+              })}
+            </p>
+          ) : null}
+          {subtitleModelsError ? <p className="settings-danger-text">{subtitleModelsError}</p> : null}
+          <p className="settings-placeholder">
+            {subtitleLocalModels.length === 0
+              ? t('ui.settings.offlineSubtitleNoLocalModels')
+              : t('ui.settings.offlineSubtitleLocalModelsSummary', { count: subtitleLocalModels.length })}
+          </p>
           <p className="settings-placeholder">{t('ui.settings.offlineSubtitleHint')}</p>
         </fieldset>
 

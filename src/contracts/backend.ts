@@ -806,6 +806,95 @@ export const readSubtitleEngineStatusResponseSchema = z.object({
   checked_at_ms: z.number().int().positive(),
 })
 
+export const subtitleRemoteModelArtifactSchema = z.object({
+  relative_path: z.string().min(1),
+  url: z.string().url(),
+  size_bytes: nonNegativeIntSchema.optional(),
+  sha256: z.string().regex(/^[a-fA-F0-9]{64}$/).optional(),
+})
+
+export const subtitleRemoteModelSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  description: z.string().min(1).nullable(),
+  language_codes: z.array(z.string().min(1)).min(1),
+  size_bytes: nonNegativeIntSchema,
+  version: z.string().min(1),
+  artifacts: z.array(subtitleRemoteModelArtifactSchema).min(1),
+})
+
+export const listSubtitleRemoteModelsResponseSchema = z.object({
+  models: z.array(subtitleRemoteModelSchema),
+  generated_at_ms: z.number().int().positive(),
+})
+
+export const subtitleLocalModelSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  model_dir: z.string().min(1),
+  installed_at_ms: z.number().int().positive().nullable(),
+  size_bytes: nonNegativeIntSchema,
+  source: z.enum(['downloaded', 'manual']),
+})
+
+export const listSubtitleLocalModelsRequestSchema = z.object({
+  model_dir: z.string().min(1),
+})
+
+export const listSubtitleLocalModelsResponseSchema = z.object({
+  model_dir: z.string().min(1),
+  models: z.array(subtitleLocalModelSchema),
+})
+
+export const subtitleModelDownloadStatusSchema = z.enum([
+  'queued',
+  'downloading',
+  'verifying',
+  'completed',
+  'failed',
+  'cancelled',
+])
+
+export const subtitleModelDownloadTaskSchema = z.object({
+  download_id: z.string().min(1),
+  model_id: z.string().min(1),
+  status: subtitleModelDownloadStatusSchema,
+  done_bytes: nonNegativeIntSchema,
+  total_bytes: nonNegativeIntSchema,
+  percent: z.number().min(0).max(100),
+  speed_bps: z.number().min(0),
+  eta_sec: z.number().min(0).nullable(),
+  use_proxy: z.boolean(),
+  proxy_url: z.string().min(1).nullable(),
+  message: z.string().min(1).nullable(),
+  started_at_ms: z.number().int().positive(),
+  updated_at_ms: z.number().int().positive(),
+  completed_at_ms: z.number().int().positive().nullable(),
+})
+
+export const startSubtitleModelDownloadRequestSchema = z.object({
+  model_id: z.string().min(1),
+  model_dir: z.string().min(1),
+  use_proxy: z.boolean(),
+  proxy_url: z.string().min(1).nullable(),
+})
+
+export const startSubtitleModelDownloadResponseSchema = z.object({
+  task: subtitleModelDownloadTaskSchema,
+})
+
+export const cancelSubtitleModelDownloadRequestSchema = z.object({
+  download_id: z.string().min(1),
+})
+
+export const cancelSubtitleModelDownloadResponseSchema = z.object({
+  ok: z.boolean(),
+})
+
+export const readSubtitleModelDownloadsResponseSchema = z.object({
+  tasks: z.array(subtitleModelDownloadTaskSchema),
+})
+
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
@@ -1002,6 +1091,19 @@ export type OpenExternalUrlResponseDto = z.infer<typeof openExternalUrlResponseS
 export type SubtitleEngineProviderDto = z.infer<typeof subtitleEngineProviderSchema>
 export type SubtitleEngineSourceDto = z.infer<typeof subtitleEngineSourceSchema>
 export type ReadSubtitleEngineStatusResponseDto = z.infer<typeof readSubtitleEngineStatusResponseSchema>
+export type SubtitleRemoteModelArtifactDto = z.infer<typeof subtitleRemoteModelArtifactSchema>
+export type SubtitleRemoteModelDto = z.infer<typeof subtitleRemoteModelSchema>
+export type ListSubtitleRemoteModelsResponseDto = z.infer<typeof listSubtitleRemoteModelsResponseSchema>
+export type SubtitleLocalModelDto = z.infer<typeof subtitleLocalModelSchema>
+export type ListSubtitleLocalModelsRequestDto = z.infer<typeof listSubtitleLocalModelsRequestSchema>
+export type ListSubtitleLocalModelsResponseDto = z.infer<typeof listSubtitleLocalModelsResponseSchema>
+export type SubtitleModelDownloadStatusDto = z.infer<typeof subtitleModelDownloadStatusSchema>
+export type SubtitleModelDownloadTaskDto = z.infer<typeof subtitleModelDownloadTaskSchema>
+export type StartSubtitleModelDownloadRequestDto = z.infer<typeof startSubtitleModelDownloadRequestSchema>
+export type StartSubtitleModelDownloadResponseDto = z.infer<typeof startSubtitleModelDownloadResponseSchema>
+export type CancelSubtitleModelDownloadRequestDto = z.infer<typeof cancelSubtitleModelDownloadRequestSchema>
+export type CancelSubtitleModelDownloadResponseDto = z.infer<typeof cancelSubtitleModelDownloadResponseSchema>
+export type ReadSubtitleModelDownloadsResponseDto = z.infer<typeof readSubtitleModelDownloadsResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

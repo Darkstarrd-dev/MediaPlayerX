@@ -1,5 +1,13 @@
 import {
   type ReadSubtitleEngineStatusResponseDto,
+  type ListSubtitleRemoteModelsResponseDto,
+  type ListSubtitleLocalModelsRequestDto,
+  type ListSubtitleLocalModelsResponseDto,
+  type StartSubtitleModelDownloadRequestDto,
+  type StartSubtitleModelDownloadResponseDto,
+  type CancelSubtitleModelDownloadRequestDto,
+  type CancelSubtitleModelDownloadResponseDto,
+  type ReadSubtitleModelDownloadsResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ClearDatabaseResponseDto,
@@ -30,6 +38,30 @@ export class FileSystemSystemHandlers {
 
   async readSubtitleEngineStatus(): Promise<ReadSubtitleEngineStatusResponseDto> {
     return this.context.runtimeDependencyService.readSubtitleEngineStatus()
+  }
+
+  async listSubtitleRemoteModels(): Promise<ListSubtitleRemoteModelsResponseDto> {
+    return this.context.subtitleModelService.listRemoteModels()
+  }
+
+  async listSubtitleLocalModels(request: ListSubtitleLocalModelsRequestDto): Promise<ListSubtitleLocalModelsResponseDto> {
+    return this.context.subtitleModelService.listLocalModels(request.model_dir)
+  }
+
+  async startSubtitleModelDownload(
+    request: StartSubtitleModelDownloadRequestDto,
+  ): Promise<StartSubtitleModelDownloadResponseDto> {
+    return this.context.subtitleModelService.startDownload(request)
+  }
+
+  async cancelSubtitleModelDownload(
+    request: CancelSubtitleModelDownloadRequestDto,
+  ): Promise<CancelSubtitleModelDownloadResponseDto> {
+    return this.context.subtitleModelService.cancelDownload(request.download_id)
+  }
+
+  async readSubtitleModelDownloads(): Promise<ReadSubtitleModelDownloadsResponseDto> {
+    return this.context.subtitleModelService.readDownloadTasks()
   }
 
   async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {

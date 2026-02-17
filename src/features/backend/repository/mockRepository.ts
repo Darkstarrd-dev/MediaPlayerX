@@ -43,6 +43,14 @@ import {
   type PrepareSubtitleTrackResponseDto,
   type ReadPlaylistResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
+  type ListSubtitleRemoteModelsResponseDto,
+  type ListSubtitleLocalModelsRequestDto,
+  type ListSubtitleLocalModelsResponseDto,
+  type StartSubtitleModelDownloadRequestDto,
+  type StartSubtitleModelDownloadResponseDto,
+  type CancelSubtitleModelDownloadRequestDto,
+  type CancelSubtitleModelDownloadResponseDto,
+  type ReadSubtitleModelDownloadsResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
   type StartManageAdReviewRequestDto,
@@ -81,6 +89,7 @@ import {
   type RetryImportTaskResponseDto,
   type SearchExternalMetadataRequestDto,
   type SearchExternalMetadataResponseDto,
+  type SubtitleModelDownloadTaskDto,
 } from '../../../contracts/backend'
 import {
   type MediaRepository,
@@ -105,6 +114,49 @@ const INITIAL_SNAPSHOT: LibrarySnapshotDto = librarySnapshotDtoSchema.parse({
 MOCK_LIBRARY_SNAPSHOT_REF.current = INITIAL_SNAPSHOT
 
 export class MockMediaRepository implements MediaRepository, SynchronousMediaRepository {
+  private readonly subtitleRemoteModels: ListSubtitleRemoteModelsResponseDto['models'] = [
+    {
+      id: 'sensevoice-small-int8-2025-01',
+      label: 'SenseVoice Small INT8 (zh/en/ja/ko/yue)',
+      description: 'Mock remote model catalog item',
+      language_codes: ['zh', 'en', 'ja', 'ko', 'yue'],
+      size_bytes: 186_000_000,
+      version: '2025-01',
+      artifacts: [
+        {
+          relative_path: 'model.int8.onnx',
+          url: 'https://example.invalid/mock/model.int8.onnx',
+        },
+        {
+          relative_path: 'tokens.txt',
+          url: 'https://example.invalid/mock/tokens.txt',
+        },
+      ],
+    },
+    {
+      id: 'sensevoice-small-fp32-2025-01',
+      label: 'SenseVoice Small FP32 (zh/en/ja/ko/yue)',
+      description: 'Mock remote model catalog item',
+      language_codes: ['zh', 'en', 'ja', 'ko', 'yue'],
+      size_bytes: 740_000_000,
+      version: '2025-01',
+      artifacts: [
+        {
+          relative_path: 'model.onnx',
+          url: 'https://example.invalid/mock/model.onnx',
+        },
+        {
+          relative_path: 'tokens.txt',
+          url: 'https://example.invalid/mock/tokens.txt',
+        },
+      ],
+    },
+  ]
+
+  private readonly subtitleLocalModelsByDir = new Map<string, ListSubtitleLocalModelsResponseDto['models']>()
+
+  private readonly subtitleDownloadTasks = new Map<string, SubtitleModelDownloadTaskDto>()
+
   private state: MockRepositoryState = {
     playlistIds: INITIAL_SNAPSHOT.videos.slice(0, 3).map((v) => v.id),
     importTasks: [],
@@ -531,6 +583,106 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<ReadRuntimeCapabilitiesResponseDto> {
     return resolveAsync(this.readRuntimeCapabilitiesSync(), options)
+  }
+
+  async listSubtitleRemoteModels(options?: RepositoryRequestOptions): Promise<ListSubtitleRemoteModelsResponseDto> {
+    return resolveAsync(
+      {
+        models: this.subtitleRemoteModels,
+        generated_at_ms: Date.now(),
+      },
+      options,
+    )
+  }
+
+  async listSubtitleLocalModels(
+    request: ListSubtitleLocalModelsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ListSubtitleLocalModelsResponseDto> {
+    const key = request.model_dir.trim()
+    const models = this.subtitleLocalModelsByDir.get(key) ?? []
+    return resolveAsync(
+      {
+        model_dir: request.model_dir,
+        models,
+      },
+      options,
+    )
+  }
+
+  async startSubtitleModelDownload(
+    request: StartSubtitleModelDownloadRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartSubtitleModelDownloadResponseDto> {
+    const model = this.subtitleRemoteModels.find((item) => item.id === request.model_id)
+    if (!model) {
+      throw new Error(`subtitle_model_not_found: ${request.model_id}`)
+    }
+
+    const now = Date.now()
+    const task: SubtitleModelDownloadTaskDto = {
+      download_id: `mock-subtitle-download-${now}-${Math.floor(Math.random() * 100000)}`,
+      model_id: model.id,
+      status: 'completed',
+      done_bytes: model.size_bytes,
+      total_bytes: model.size_bytes,
+      percent: 100,
+      speed_bps: 0,
+      eta_sec: 0,
+      use_proxy: request.use_proxy,
+      proxy_url: request.proxy_url,
+      message: 'mock download completed',
+      started_at_ms: now,
+      updated_at_ms: now,
+      completed_at_ms: now,
+    }
+    this.subtitleDownloadTasks.set(task.download_id, task)
+
+    const modelDir = request.model_dir.trim()
+    const currentModels = this.subtitleLocalModelsByDir.get(modelDir) ?? []
+    if (!currentModels.some((item) => item.id === model.id)) {
+      this.subtitleLocalModelsByDir.set(modelDir, [
+        ...currentModels,
+        {
+          id: model.id,
+          label: model.label,
+          model_dir: `${modelDir}/${model.id}`,
+          installed_at_ms: now,
+          size_bytes: model.size_bytes,
+          source: 'downloaded',
+        },
+      ])
+    }
+
+    return resolveAsync({ task }, options)
+  }
+
+  async cancelSubtitleModelDownload(
+    request: CancelSubtitleModelDownloadRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<CancelSubtitleModelDownloadResponseDto> {
+    const task = this.subtitleDownloadTasks.get(request.download_id)
+    if (!task) {
+      return resolveAsync({ ok: false }, options)
+    }
+
+    if (task.status === 'queued' || task.status === 'downloading' || task.status === 'verifying') {
+      task.status = 'cancelled'
+      task.updated_at_ms = Date.now()
+      task.completed_at_ms = task.updated_at_ms
+      task.eta_sec = null
+      task.speed_bps = 0
+      task.message = 'mock download cancelled'
+    }
+
+    return resolveAsync({ ok: true }, options)
+  }
+
+  async readSubtitleModelDownloads(options?: RepositoryRequestOptions): Promise<ReadSubtitleModelDownloadsResponseDto> {
+    const tasks = Array.from(this.subtitleDownloadTasks.values()).sort(
+      (left, right) => right.started_at_ms - left.started_at_ms,
+    )
+    return resolveAsync({ tasks }, options)
   }
 
   clearDatabaseSync(): ClearDatabaseResponseDto {

@@ -19,6 +19,14 @@ import {
   type ReadImageMetadataResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type ReadSubtitleEngineStatusResponseDto,
+  type ListSubtitleRemoteModelsResponseDto,
+  type ListSubtitleLocalModelsRequestDto,
+  type ListSubtitleLocalModelsResponseDto,
+  type StartSubtitleModelDownloadRequestDto,
+  type StartSubtitleModelDownloadResponseDto,
+  type CancelSubtitleModelDownloadRequestDto,
+  type CancelSubtitleModelDownloadResponseDto,
+  type ReadSubtitleModelDownloadsResponseDto,
   type ReadArchiveLoadStatusResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
@@ -123,6 +131,7 @@ import { ManageAdReviewService } from './services/file-system-read/manageAdRevie
 import { ManageCoverReviewService } from './services/file-system-read/manageCoverReviewService'
 import { MediaResourceService } from './services/file-system-read/mediaResourceService'
 import { RuntimeDependencyService } from './services/file-system-read/runtimeDependencyService'
+import { SubtitleModelService } from './services/file-system-read/subtitleModelService'
 import { ServiceEventBus } from './services/file-system-read/serviceEventBus'
 import { FileSystemFacadeContext } from './facade/types'
 import { FileSystemLibraryHandlers } from './facade/FileSystemLibraryHandlers'
@@ -155,6 +164,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private readonly manageCoverReviewService: ManageCoverReviewService
   private readonly mediaResourceService: MediaResourceService
   private readonly runtimeDependencyService: RuntimeDependencyService
+  private readonly subtitleModelService: SubtitleModelService
   private readonly eventBus: ServiceEventBus
 
   private readonly libraryHandlers: FileSystemLibraryHandlers
@@ -183,6 +193,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.mediaTokenService = new MediaTokenService(MEDIA_TOKEN_TTL_MS)
     this.importPathRegistry = new ImportPathRegistry()
     this.runtimeDependencyService = new RuntimeDependencyService(FFMPEG_BIN, FFPROBE_BIN)
+    this.subtitleModelService = new SubtitleModelService()
 
     this.archiveNormalizationService = new ArchiveNormalizationService({
       idleMs: ARCHIVE_NORMALIZE_IDLE_MS,
@@ -325,6 +336,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       manageCoverReviewService: this.manageCoverReviewService,
       mediaResourceService: this.mediaResourceService,
       runtimeDependencyService: this.runtimeDependencyService,
+      subtitleModelService: this.subtitleModelService,
       eventBus: this.eventBus,
       ensureStateLoaded: () => this.ensureStateLoaded(),
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
@@ -792,6 +804,26 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async readSubtitleEngineStatus(): Promise<ReadSubtitleEngineStatusResponseDto> {
     return this.systemHandlers.readSubtitleEngineStatus()
+  }
+
+  async listSubtitleRemoteModels(): Promise<ListSubtitleRemoteModelsResponseDto> {
+    return this.systemHandlers.listSubtitleRemoteModels()
+  }
+
+  async listSubtitleLocalModels(request: ListSubtitleLocalModelsRequestDto): Promise<ListSubtitleLocalModelsResponseDto> {
+    return this.systemHandlers.listSubtitleLocalModels(request)
+  }
+
+  async startSubtitleModelDownload(request: StartSubtitleModelDownloadRequestDto): Promise<StartSubtitleModelDownloadResponseDto> {
+    return this.systemHandlers.startSubtitleModelDownload(request)
+  }
+
+  async cancelSubtitleModelDownload(request: CancelSubtitleModelDownloadRequestDto): Promise<CancelSubtitleModelDownloadResponseDto> {
+    return this.systemHandlers.cancelSubtitleModelDownload(request)
+  }
+
+  async readSubtitleModelDownloads(): Promise<ReadSubtitleModelDownloadsResponseDto> {
+    return this.systemHandlers.readSubtitleModelDownloads()
   }
 
   async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {
