@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n/I18nProvider";
 import type { AudioItem } from "../types";
 import MusicMainSection from "./MusicMainSection";
+import { resolveFullscreenControlsWidth } from "./fullscreen/controlsWidth";
 
 function makeAudio(id: string): AudioItem {
   return {
@@ -142,6 +143,17 @@ function renderMusicMainSection(
       <MusicMainSection {...createMusicMainSectionProps(overrides)} />
     </I18nProvider>,
   );
+}
+
+function setWindowViewport(width: number, height: number) {
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    value: width,
+  });
+  Object.defineProperty(window, "innerHeight", {
+    configurable: true,
+    value: height,
+  });
 }
 
 describe("MusicMainSection", () => {
@@ -388,6 +400,53 @@ describe("MusicMainSection", () => {
     expect(shell.className).toContain("is-visible");
 
     vi.useRealTimers();
+  });
+
+  it("全屏时窗口尺寸变化会同步更新音乐控制条宽度变量", () => {
+    const widthDescriptor = Object.getOwnPropertyDescriptor(window, "innerWidth");
+    const heightDescriptor = Object.getOwnPropertyDescriptor(window, "innerHeight");
+
+    try {
+      setWindowViewport(1280, 720);
+      const { container } = renderMusicMainSection({ fullscreenActive: true });
+
+      const visualizer = container.querySelector(
+        ".music-visualizer.is-fullscreen",
+      ) as HTMLElement;
+      expect(visualizer).toBeInTheDocument();
+
+      const initialWidth = `${resolveFullscreenControlsWidth({
+        viewportWidth: 1280,
+        viewportHeight: 720,
+        widthCap: 980,
+      })}px`;
+      expect(
+        visualizer.style.getPropertyValue("--mpx-fullscreen-controls-width"),
+      ).toBe(initialWidth);
+
+      const resizedWidth = `${resolveFullscreenControlsWidth({
+        viewportWidth: 1920,
+        viewportHeight: 1080,
+        widthCap: 980,
+      })}px`;
+
+      act(() => {
+        setWindowViewport(1920, 1080);
+        fireEvent(window, new Event("resize"));
+      });
+
+      expect(
+        visualizer.style.getPropertyValue("--mpx-fullscreen-controls-width"),
+      ).toBe(resizedWidth);
+      expect(resizedWidth).not.toBe(initialWidth);
+    } finally {
+      if (widthDescriptor) {
+        Object.defineProperty(window, "innerWidth", widthDescriptor);
+      }
+      if (heightDescriptor) {
+        Object.defineProperty(window, "innerHeight", heightDescriptor);
+      }
+    }
   });
 
   it("支持在控制栏打开 Shader 列表", () => {

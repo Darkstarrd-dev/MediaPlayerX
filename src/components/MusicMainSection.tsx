@@ -21,6 +21,16 @@ import { clamp, formatSeconds } from '../utils/ui'
 
 type MusicPopoverKey = 'volume' | 'shader' | 'shaderSettings'
 
+function resolveViewportSize() {
+  if (typeof window === 'undefined') {
+    return { width: 1920, height: 1080 }
+  }
+  return {
+    width: Math.max(1, window.innerWidth),
+    height: Math.max(1, window.innerHeight),
+  }
+}
+
 interface MusicMainSectionProps {
   active: boolean
   interruptByVideoPlayback: boolean
@@ -139,6 +149,7 @@ function MusicMainSection({
   const [audioTime, setAudioTime] = useState(0)
   const [audioSeekDraftTime, setAudioSeekDraftTime] = useState<number | null>(null)
   const [audioDurationSec, setAudioDurationSec] = useState(0)
+  const [fullscreenViewportSize, setFullscreenViewportSize] = useState(resolveViewportSize)
   const [renderLongEdgeDraft, setRenderLongEdgeDraft] = useState('')
   const [foregroundRenderScaleCoeffDraft, setForegroundRenderScaleCoeffDraft] = useState<number | null>(null)
   const [backgroundRenderScaleCoeffDraft, setBackgroundRenderScaleCoeffDraft] = useState<number | null>(null)
@@ -615,22 +626,45 @@ function MusicMainSection({
     }
   }, [applyBackgroundRenderScaleCoeffDraft, backgroundRenderScaleCoeffDraft])
 
+  useEffect(() => {
+    if (!fullscreenActive || typeof window === 'undefined') {
+      return
+    }
+
+    const syncViewportSize = () => {
+      const nextSize = resolveViewportSize()
+      setFullscreenViewportSize((previous) => {
+        if (previous.width === nextSize.width && previous.height === nextSize.height) {
+          return previous
+        }
+        return nextSize
+      })
+    }
+
+    syncViewportSize()
+    window.addEventListener('resize', syncViewportSize)
+    window.addEventListener('fullscreenchange', syncViewportSize)
+
+    return () => {
+      window.removeEventListener('resize', syncViewportSize)
+      window.removeEventListener('fullscreenchange', syncViewportSize)
+    }
+  }, [fullscreenActive])
+
   const fullscreenControlsWidthStyle = useMemo(() => {
     if (!fullscreenActive) {
       return undefined
     }
-    const viewportWidth = typeof window === 'undefined' ? 1920 : window.innerWidth
-    const viewportHeight = typeof window === 'undefined' ? 1080 : window.innerHeight
     const controlsWidth = resolveFullscreenControlsWidth({
-      viewportWidth,
-      viewportHeight,
+      viewportWidth: fullscreenViewportSize.width,
+      viewportHeight: fullscreenViewportSize.height,
       widthCap: fullscreenVideoControlsMaxWidth,
     })
     return {
       '--mpx-fullscreen-controls-max-width': `${controlsWidth}px`,
       '--mpx-fullscreen-controls-width': `${controlsWidth}px`,
     } as CSSProperties
-  }, [fullscreenActive, fullscreenVideoControlsMaxWidth])
+  }, [fullscreenActive, fullscreenVideoControlsMaxWidth, fullscreenViewportSize.height, fullscreenViewportSize.width])
 
   const musicControlsShell = (
     <div
