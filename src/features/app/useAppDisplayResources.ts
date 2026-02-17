@@ -46,13 +46,18 @@ function toAutoSubtitleLanguageLabel(
 
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
-function normalizeHexColor(value: string, fallback: string): string {
-  const normalized = value.trim();
+function normalizeHexColor(value: string | null | undefined, fallback: string): string {
+  const normalized = (value ?? "").trim();
   if (!HEX_COLOR_PATTERN.test(normalized)) {
     return fallback;
   }
 
   return normalized.toLowerCase();
+}
+
+function toFiniteNumber(value: unknown, fallback: number): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 function parseHexColor(value: string): [number, number, number] | null {
@@ -138,7 +143,7 @@ function resolveGradientDirection(direction: string): string {
 }
 
 function buildSubtitleOverlayStyle(settings: AppSettingsStoreSnapshot): CSSProperties {
-  const textFillMode = settings.subtitleTextFillMode;
+  const textFillMode = settings.subtitleTextFillMode === "gradient" ? "gradient" : "solid";
   const textColor = normalizeHexColor(settings.subtitleTextColor, "#ffffff");
   const gradientStartColor = normalizeHexColor(
     settings.subtitleGradientStartColor,
@@ -151,15 +156,18 @@ function buildSubtitleOverlayStyle(settings: AppSettingsStoreSnapshot): CSSPrope
   const gradientDirection = resolveGradientDirection(settings.subtitleGradientDirection);
   const gradientCurve = settings.subtitleGradientCurve;
   const strokeColor = normalizeHexColor(settings.subtitleStrokeColor, "#000000");
-  const strokeWidth = Math.max(0, Math.min(8, settings.subtitleStrokeWidth));
+  const strokeWidth = Math.max(0, Math.min(8, toFiniteNumber(settings.subtitleStrokeWidth, 2)));
   const strokeShadowColor = normalizeHexColor(
     settings.subtitleStrokeShadowColor,
     "#000000",
   );
-  const strokeShadowRadius = Math.max(0, Math.min(24, settings.subtitleStrokeShadowRadius));
-  const subtitleFontSize = Math.max(14, Math.min(72, settings.subtitleFontSize));
-  const subtitleMaxLineChars = Math.max(8, Math.min(80, Math.round(settings.subtitleMaxLineChars)));
-  const offsetY = Math.max(-400, Math.min(400, settings.subtitleOffsetY));
+  const strokeShadowRadius = Math.max(0, Math.min(24, toFiniteNumber(settings.subtitleStrokeShadowRadius, 6)));
+  const subtitleFontSize = Math.max(14, Math.min(72, toFiniteNumber(settings.subtitleFontSize, 24)));
+  const subtitleMaxLineChars = Math.max(
+    8,
+    Math.min(80, Math.round(toFiniteNumber(settings.subtitleMaxLineChars, 28))),
+  );
+  const offsetY = Math.max(-400, Math.min(400, toFiniteNumber(settings.subtitleOffsetY, 180)));
 
   const style: CSSProperties = {
     color: textColor,
@@ -593,7 +601,7 @@ export function useAppDisplayResources({
   const [fullscreenVideoElement, setFullscreenVideoElement] =
     useState<HTMLVideoElement | null>(null);
 
-  const subtitleModelDir = appSettings.subtitleModelDir.trim();
+  const subtitleModelDir = (appSettings.subtitleModelDir ?? "").trim();
   const subtitleModelId = FIXED_SUBTITLE_MODEL_ID;
   const autoSubtitleConfigured =
     appSettings.subtitleFeatureEnabled &&
@@ -693,7 +701,7 @@ export function useAppDisplayResources({
     const apiSync = syncMediaRepository?.listVideoSubtitlesSync;
     const videoId = isVideoMode ? (focusedVideoEffective?.id ?? null) : null;
     if (!isVideoMode || !videoId || (!api && !apiSync)) {
-      setSubtitleOptions([]);
+      setSubtitleOptions((previous) => (previous.length === 0 ? previous : []));
       setSelectedSubtitleId(null);
       setSelectedSubtitleLocator(null);
       setSubtitleTrackUrl(null);
@@ -744,7 +752,7 @@ export function useAppDisplayResources({
     }
 
     if (!api) {
-      setSubtitleOptions([]);
+      setSubtitleOptions((previous) => (previous.length === 0 ? previous : []));
       setSelectedSubtitleId(null);
       setSelectedSubtitleLocator(null);
       setSubtitleTrackUrl(null);
@@ -807,7 +815,7 @@ export function useAppDisplayResources({
           return;
         }
         const message = toErrorDetailWithCode(error, t);
-        setSubtitleOptions([]);
+        setSubtitleOptions((previous) => (previous.length === 0 ? previous : []));
         setSelectedSubtitleId(null);
         setSelectedSubtitleLocator(null);
         setSubtitleTrackUrl(null);

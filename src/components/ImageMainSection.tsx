@@ -204,7 +204,9 @@ function ImageMainSection({
     if (!(thumbCard instanceof HTMLElement)) {
       return
     }
-    thumbCard.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })
+    if (typeof thumbCard.scrollIntoView === 'function') {
+      thumbCard.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })
+    }
   }
 
   const syncFocusedThumbTransformOrigin = () => {
@@ -363,7 +365,9 @@ function ImageMainSection({
       return
     }
 
-    focusedThumb.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })
+    if (typeof focusedThumb.scrollIntoView === 'function') {
+      focusedThumb.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })
+    }
     scheduleFocusedThumbOriginSync()
   }, [focusedRef?.packageId, focusedRef?.imageIndex])
 
