@@ -98,7 +98,6 @@ function renderMusicSidebar(
   const onSelectAudio = vi.fn();
   const onSelectNode = vi.fn();
   const onToggleManageNode = vi.fn();
-  const onCheckManageNode = vi.fn();
   const onClearSidebarSelection = vi.fn();
 
   render(
@@ -137,7 +136,6 @@ function renderMusicSidebar(
       onToggleAudioPlaylist={vi.fn()}
       onClearSidebarSelection={onClearSidebarSelection}
       onToggleManageNode={onToggleManageNode}
-      onCheckManageNode={onCheckManageNode}
       {...overrides}
     />,
   );
@@ -146,7 +144,6 @@ function renderMusicSidebar(
     onSelectAudio,
     onSelectNode,
     onToggleManageNode,
-    onCheckManageNode,
     onClearSidebarSelection,
   };
 }
@@ -275,21 +272,27 @@ describe("SidebarPanel music interactions", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Album A" }));
 
-    expect(onToggleManageNode).not.toHaveBeenCalled();
+    expect(onToggleManageNode).toHaveBeenCalledWith(
+      "folder:X盘/Album A",
+      false,
+    );
     expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
     expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
   });
 
-  it("管理模式下节点左侧显示 checker，并支持 shift 点击勾选", () => {
+  it("管理模式下支持 shift 点击范围选择", () => {
     const { onToggleManageNode } = renderMusicSidebar({ manageMode: true });
 
-    const checkboxes = screen.getAllByRole("checkbox", {
-      name: /manage-node-/,
-    });
-    expect(checkboxes).toHaveLength(2);
+    fireEvent.click(screen.getByRole("button", { name: "X盘" }));
+    onToggleManageNode.mockClear();
 
-    fireEvent.click(checkboxes[1], { shiftKey: true });
-    expect(onToggleManageNode).toHaveBeenCalledWith("folder:X盘/Album A", true);
+    fireEvent.click(screen.getByRole("button", { name: "Album A" }), {
+      shiftKey: true,
+    });
+    expect(onToggleManageNode).toHaveBeenCalledWith(
+      "folder:X盘/Album A",
+      true,
+    );
   });
 
   it("管理模式下侧栏头部显示清空选择按钮并仅清空侧栏勾选", () => {

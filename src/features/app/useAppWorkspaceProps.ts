@@ -390,7 +390,6 @@ export function useAppWorkspaceProps({
     audioPlaylistIds,
     setAudioPlaylistIds,
     onToggleManageNode: toggleSidebarNodeChecked,
-    onCheckManageNode: checkSidebarNode,
     onClearSidebarSelection: clearSidebarSelections,
   });
 

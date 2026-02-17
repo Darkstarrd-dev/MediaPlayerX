@@ -32,10 +32,10 @@ describe("MediaPlayer 虚拟 UI", () => {
     }
   };
 
-  const getFirstManageNodeChecker = () =>
+  const getFirstManageSidebarNodeButton = () =>
     document.querySelector(
-      ".sidebar-row.is-manage .sidebar-manage-checker",
-    ) as HTMLInputElement | null;
+      ".sidebar-row.is-manage .sidebar-label",
+    ) as HTMLButtonElement | null;
 
   const flushUiUpdates = async () => {
     await act(async () => {
@@ -243,9 +243,9 @@ describe("MediaPlayer 虚拟 UI", () => {
         ).toBeGreaterThan(0);
       });
 
-      const firstManageNodeChecker = getFirstManageNodeChecker();
-      expect(firstManageNodeChecker).not.toBeNull();
-      await click(firstManageNodeChecker as HTMLInputElement);
+      const firstManageNodeButton = getFirstManageSidebarNodeButton();
+      expect(firstManageNodeButton).not.toBeNull();
+      await click(firstManageNodeButton as HTMLButtonElement);
 
       await click(screen.getByRole("button", { name: "删除" }));
       expect(
@@ -285,7 +285,7 @@ describe("MediaPlayer 虚拟 UI", () => {
         ).toBeGreaterThan(0);
       });
 
-      await click(getFirstManageNodeChecker() as HTMLInputElement);
+      await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
       await click(screen.getByRole("button", { name: "删除" }));
       expect(
         screen.getByRole("dialog", { name: "永久删除确认" }),
@@ -410,21 +410,24 @@ describe("MediaPlayer 虚拟 UI", () => {
       ).toBeGreaterThan(0);
     });
 
-    const firstSidebarRow = document.querySelector(
-      ".sidebar-row.is-manage",
+    const targetSidebarButton = screen.getByRole("button", {
+      name: "画廊A",
+    }) as HTMLButtonElement;
+    const targetSidebarRow = targetSidebarButton.closest(
+      ".sidebar-row",
     ) as HTMLElement | null;
-    expect(firstSidebarRow).not.toBeNull();
-    await click(getFirstManageNodeChecker() as HTMLInputElement);
-    expect(
-      (firstSidebarRow as HTMLElement).classList.contains("is-selected"),
-    ).toBe(true);
+    expect(targetSidebarRow).not.toBeNull();
+    await click(targetSidebarButton);
+    expect((targetSidebarRow as HTMLElement).classList.contains("is-selected")).toBe(true);
 
     const firstThumbCard = document.querySelector(
-      ".thumb-card.is-manage",
+      ".image-grid.is-manage .thumb-card",
     ) as HTMLElement | null;
     expect(firstThumbCard).not.toBeNull();
     await mouseDown(
-      document.querySelector(".thumb-card-main") as HTMLButtonElement,
+      document.querySelector(
+        ".image-grid.is-manage .thumb-card-main",
+      ) as HTMLButtonElement,
       { button: 0 },
     );
     fireEvent.mouseUp(window);
@@ -432,7 +435,7 @@ describe("MediaPlayer 虚拟 UI", () => {
       (firstThumbCard as HTMLElement).classList.contains("is-selected"),
     ).toBe(true);
     expect(
-      (firstSidebarRow as HTMLElement).classList.contains("is-selected"),
+      (targetSidebarRow as HTMLElement).classList.contains("is-selected"),
     ).toBe(false);
 
     await click(screen.getByRole("button", { name: "视频模式" }));
@@ -603,7 +606,7 @@ describe("MediaPlayer 虚拟 UI", () => {
           .length,
       ).toBeGreaterThan(0);
     });
-    await click(getFirstManageNodeChecker() as HTMLInputElement);
+    await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
 
     await click(screen.getByRole("button", { name: "删除" }));
     await click(
@@ -645,7 +648,7 @@ describe("MediaPlayer 虚拟 UI", () => {
       ).toBeGreaterThan(0);
     });
 
-    await click(getFirstManageNodeChecker() as HTMLInputElement);
+    await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
     await click(screen.getByRole("button", { name: "删除" }));
     await click(
       screen.getByRole("checkbox", {
@@ -2361,7 +2364,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     await click(screen.getByRole("button", { name: "设置" }));
     const fullscreenControlsWidthScaleSlider = screen.getByLabelText(
-      /全屏播放控件宽度系数|Fullscreen playback controls width scale/,
+      /全屏视频控件最大宽度系数|Fullscreen video controls max width scale/,
     ) as HTMLInputElement;
     const fullscreenControlsWidthScale = 0.8;
     fireEvent.change(fullscreenControlsWidthScaleSlider, {

@@ -3,7 +3,7 @@ import {
   useEffect,
   useRef,
   useState,
-  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactElement,
 } from "react";
 
@@ -127,7 +127,6 @@ interface SidebarPanelProps {
   onToggleAudioPlaylist: (audioId: string, checked: boolean) => void;
   onClearSidebarSelection?: () => void;
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void;
-  onCheckManageNode?: (nodeId: string) => void;
   collapsedFolderNodeIds?: string[];
   onSetCollapsedFolderNodeIds?: (nodeIds: string[]) => void;
 }
@@ -170,7 +169,6 @@ function SidebarPanel({
   onToggleAudioPlaylist,
   onClearSidebarSelection,
   onToggleManageNode,
-  onCheckManageNode,
   collapsedFolderNodeIds,
   onSetCollapsedFolderNodeIds,
 }: SidebarPanelProps) {
@@ -183,31 +181,32 @@ function SidebarPanel({
   const collapsedImageFolderNodeIds = onSetCollapsedFolderNodeIds
     ? new Set(collapsedFolderNodeIds ?? [])
     : localCollapsedImageFolderNodeIds;
-  const checkerDragCleanupRef = useRef<(() => void) | null>(null);
+  const manageDragCleanupRef = useRef<(() => void) | null>(null);
   const labelTextElementByNodeIdRef = useRef<Map<string, HTMLSpanElement>>(new Map());
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(new Set());
-  const checkerDragStateRef = useRef<{
+  const suppressManageClickRef = useRef(false);
+  const manageDragStateRef = useRef<{
     startX: number;
     startY: number;
-    startNodeId: string;
     dragStarted: boolean;
-    visitedNodeIds: Set<string>;
+    lastNodeId: string;
+    pointerId: number;
   } | null>(null);
-  const detachCheckerDragListeners = useCallback(() => {
-    const cleanup = checkerDragCleanupRef.current;
+  const detachManageDragListeners = useCallback(() => {
+    const cleanup = manageDragCleanupRef.current;
     if (cleanup) {
-      checkerDragCleanupRef.current = null;
+      manageDragCleanupRef.current = null;
       cleanup();
     }
-    checkerDragStateRef.current = null;
+    manageDragStateRef.current = null;
   }, []);
 
   useEffect(
     () => () => {
-      detachCheckerDragListeners();
+      detachManageDragListeners();
     },
-    [detachCheckerDragListeners],
+    [detachManageDragListeners],
   );
 
   const refreshOverflowState = useCallback((nodeId: string | null) => {
@@ -331,42 +330,59 @@ function SidebarPanel({
     videoTreeNodes,
   ]);
 
-  const startCheckerDragSelection = (
+  const manageStyleEnabled = manageMode || metadataManageMode;
+
+  const startManagePointerToggle = (
     startNodeId: string,
-    event: ReactMouseEvent<HTMLInputElement>,
+    event: ReactPointerEvent<HTMLElement>,
   ) => {
-    if (!manageStyleEnabled || !onCheckManageNode || event.button !== 0) {
+    if (!manageStyleEnabled || !onToggleManageNode) {
+      return;
+    }
+    if (event.button !== 0) {
       return;
     }
 
-    detachCheckerDragListeners();
-    checkerDragStateRef.current = {
+    // Do selection toggle on pointer down so Shift+Click and drag toggling are stable.
+    // Click handler still drives navigation; we suppress click-based toggle to avoid double flips.
+    event.preventDefault();
+    suppressManageClickRef.current = true;
+    onToggleManageNode(startNodeId, event.shiftKey);
+
+    detachManageDragListeners();
+    manageDragStateRef.current = {
       startX: event.clientX,
       startY: event.clientY,
-      startNodeId,
       dragStarted: false,
-      visitedNodeIds: new Set<string>(),
+      lastNodeId: startNodeId,
+      pointerId: event.pointerId,
     };
 
-    const applyCheckedFromElement = (element: Element | null) => {
-      const state = checkerDragStateRef.current;
-      if (!state) {
-        return;
-      }
-
+    const resolveNodeIdAtPoint = (clientX: number, clientY: number): string | null => {
+      const element = document.elementFromPoint(clientX, clientY);
       const row = element?.closest<HTMLElement>("[data-sidebar-node-id]");
-      const nodeId = row?.dataset.sidebarNodeId;
-      if (!nodeId || state.visitedNodeIds.has(nodeId)) {
-        return;
-      }
-
-      state.visitedNodeIds.add(nodeId);
-      onCheckManageNode(nodeId);
+      return row?.dataset.sidebarNodeId ?? null;
     };
 
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const state = checkerDragStateRef.current;
-      if (!state) {
+    const applyToggleForNode = (nodeId: string | null) => {
+      const state = manageDragStateRef.current;
+      if (!state || !nodeId) {
+        return;
+      }
+      if (nodeId === state.lastNodeId) {
+        return;
+      }
+      state.lastNodeId = nodeId;
+      onToggleManageNode(nodeId, false);
+    };
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const state = manageDragStateRef.current;
+      if (!state || moveEvent.pointerId !== state.pointerId) {
+        return;
+      }
+      if ((moveEvent.buttons & 1) !== 1) {
+        detachManageDragListeners();
         return;
       }
 
@@ -376,33 +392,28 @@ function SidebarPanel({
       if (!state.dragStarted && !movedEnough) {
         return;
       }
+      state.dragStarted = true;
 
-      if (!state.dragStarted) {
-        state.dragStarted = true;
-        if (!state.visitedNodeIds.has(state.startNodeId)) {
-          state.visitedNodeIds.add(state.startNodeId);
-          onCheckManageNode(state.startNodeId);
-        }
+      applyToggleForNode(resolveNodeIdAtPoint(moveEvent.clientX, moveEvent.clientY));
+    };
+
+    const onPointerUpOrCancel = (upEvent: PointerEvent) => {
+      const state = manageDragStateRef.current;
+      if (!state || upEvent.pointerId !== state.pointerId) {
+        return;
       }
-
-      applyCheckedFromElement(
-        document.elementFromPoint(moveEvent.clientX, moveEvent.clientY),
-      );
+      detachManageDragListeners();
     };
 
-    const onMouseUp = () => {
-      detachCheckerDragListeners();
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    checkerDragCleanupRef.current = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUpOrCancel);
+    window.addEventListener("pointercancel", onPointerUpOrCancel);
+    manageDragCleanupRef.current = () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUpOrCancel);
+      window.removeEventListener("pointercancel", onPointerUpOrCancel);
     };
   };
-
-  const manageStyleEnabled = manageMode || metadataManageMode;
   const rootSet =
     mode === "image"
       ? Boolean(imageRootNodeId)
@@ -463,33 +474,22 @@ function SidebarPanel({
             aria-hidden="true"
           />
 
-          {manageStyleEnabled ? (
-            <input
-              className="sidebar-manage-checker"
-              type="checkbox"
-              readOnly
-              checked={checkedNodes.has(node.id)}
-              aria-label={t("a11y.sidebar.manageNode", { label: node.label })}
-              onMouseDown={(event) => {
-                event.stopPropagation();
-                startCheckerDragSelection(node.id, event);
-              }}
-              onClick={(event) => {
-                event.stopPropagation();
-                onToggleManageNode?.(node.id, event.shiftKey);
-              }}
-            />
-          ) : null}
-
           <button
             className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""}`}
             type="button"
+            aria-pressed={manageStyleEnabled ? checkedNodes.has(node.id) : undefined}
             style={{ fontSize: `${sidebarFontSize}px` }}
             onMouseEnter={() => {
               setHoveredNodeId(node.id);
             }}
             onMouseLeave={() => {
               setHoveredNodeId((previous) => (previous === node.id ? null : previous));
+            }}
+            onPointerDown={(event) => {
+              if (!manageStyleEnabled) {
+                return;
+              }
+              startManagePointerToggle(node.id, event);
             }}
             title={
               imageFolderCollapsible
@@ -499,11 +499,12 @@ function SidebarPanel({
                 : undefined
             }
             onClick={(event) => {
-              if (
-                metadataManageMode &&
-                (!checkedNodes.has(node.id) || event.shiftKey)
-              ) {
-                onToggleManageNode?.(node.id, event.shiftKey);
+              if (manageStyleEnabled) {
+                if (suppressManageClickRef.current) {
+                  suppressManageClickRef.current = false;
+                } else {
+                  onToggleManageNode?.(node.id, event.shiftKey);
+                }
               }
               if (mode === "image" && searchResultReadonly) {
                 return;

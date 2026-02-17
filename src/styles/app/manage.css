@@ -1,10 +1,40 @@
 .sidebar-row.is-manage {
-  grid-template-columns: 10px var(--mpx-checkbox-size) minmax(0, 1fr) auto auto;
+  user-select: none;
 }
 
-.sidebar-row.is-manage.is-selected {
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mpx-accent) 88%, var(--mpx-text-inverse));
-  background: color-mix(in srgb, var(--mpx-accent-soft) 58%, var(--mpx-bg-selected));
+:root {
+  --mpx-manage-select-ring: color-mix(in srgb, #b46aa7 72%, var(--mpx-text-1) 28%);
+  --mpx-manage-select-glow: color-mix(in srgb, #b46aa7 46%, transparent);
+}
+
+.sidebar .sidebar-row.is-manage.is-selected {
+  position: relative;
+  z-index: 2;
+}
+
+.sidebar .sidebar-row.is-manage.is-selected .sidebar-label {
+  position: relative;
+  z-index: 2;
+  border: 1px solid transparent;
+  background: var(--mpx-bg-selected);
+  border-radius: max(var(--mpx-control-radius), 10px);
+  transform: var(--mpx-control-active-transform);
+  box-shadow:
+    var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow)),
+    inset 0 0 0 1px color-mix(in srgb, var(--mpx-manage-select-ring) 34%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--mpx-manage-select-ring) 52%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
+    0 0 0 4px var(--mpx-manage-select-ring);
+}
+
+.sidebar .sidebar-row.is-manage.is-selected.is-hover-active .sidebar-label,
+.sidebar .sidebar-row.is-manage.is-selected.is-pressed-active .sidebar-label {
+  box-shadow:
+    var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow)),
+    inset 0 0 0 1px color-mix(in srgb, var(--mpx-manage-select-ring) 34%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--mpx-manage-select-ring) 52%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
+    0 0 0 4px var(--mpx-manage-select-ring);
 }
 
 .manage-panel {
@@ -91,11 +121,31 @@
   cursor: default;
 }
 
-.thumb-card.is-manage.is-selected,
+.thumb-card.is-manage.is-selected {
+  z-index: 3;
+  transform: var(--mpx-control-active-transform);
+  border-color: transparent;
+  --mpx-thumb-focus-ring-outer: var(--mpx-manage-select-ring);
+  --mpx-thumb-focus-glow: var(--mpx-manage-select-glow);
+  box-shadow:
+    var(--mpx-card-shadow),
+    inset 0 0 0 1px color-mix(in srgb, var(--mpx-manage-select-ring) 32%, transparent),
+    0 0 0 2px var(--mpx-thumb-focus-ring-inner),
+    0 0 0 4px var(--mpx-thumb-focus-ring-outer),
+    0 0 12px 3px var(--mpx-thumb-focus-glow),
+    0 10px 22px rgba(0, 0, 0, 0.22),
+    0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
 .name-list-row.is-manage.is-selected {
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mpx-accent) 92%, var(--mpx-text-inverse));
-  border-color: color-mix(in srgb, var(--mpx-accent) 78%, var(--mpx-border-1));
-  background: color-mix(in srgb, var(--mpx-accent-soft) 46%, var(--mpx-bg-elevated));
+  position: relative;
+  z-index: 2;
+  background: var(--mpx-bg-selected);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--mpx-manage-select-ring) 30%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--mpx-manage-select-ring) 58%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--mpx-bg-workspace) 82%, transparent),
+    0 0 0 4px var(--mpx-manage-select-ring);
 }
 
 .thumb-card.is-manage.is-hidden {

@@ -63,7 +63,6 @@ describe('buildSidebarPanelProps', () => {
       audioPlaylistIds: [],
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
-      onCheckManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
     })
 
@@ -123,7 +122,6 @@ describe('buildSidebarPanelProps', () => {
       audioPlaylistIds: [],
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
-      onCheckManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
     })
 
@@ -185,7 +183,6 @@ describe('buildSidebarPanelProps', () => {
       audioPlaylistIds: [],
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
-      onCheckManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
     })
 
@@ -240,7 +237,6 @@ describe('buildSidebarPanelProps', () => {
       setPlaylistIds: vi.fn(),
       setAudioPlaylistIds,
       onToggleManageNode: vi.fn(),
-      onCheckManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
     })
 
@@ -306,7 +302,6 @@ describe('buildSidebarPanelProps', () => {
       setPlaylistIds: vi.fn(),
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
-      onCheckManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
     })
 
