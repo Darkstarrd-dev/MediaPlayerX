@@ -7,6 +7,7 @@ import {
   listPalettesByStyle,
   resolvePaletteIdFromPalettes,
   resolvePaletteIdForStyle,
+  resolvePalettePairForStyle,
   resolveStyleIdFromStyles,
   resolveThemeIdFromThemes,
   type PaletteInfo,
@@ -86,5 +87,14 @@ describe('listPalettesByStyle', () => {
 describe('resolvePaletteIdForStyle', () => {
   it('falls back to style default palette when current palette is out of allowlist', () => {
     expect(resolvePaletteIdForStyle('parchment', 'soft-skeuomorphic')).toBe('skeuomorphic-light')
+  })
+})
+
+describe('resolvePalettePairForStyle', () => {
+  it('keeps selected day palette when day/night conflict on day palette', () => {
+    expect(resolvePalettePairForStyle('soft-skeuomorphic', 'skeuomorphic-light-white', 'skeuomorphic-light-white')).toEqual({
+      day: 'skeuomorphic-light-white',
+      night: 'skeuomorphic-dark',
+    })
   })
 })

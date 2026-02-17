@@ -237,6 +237,26 @@ export function resolvePalettePairForStyle(
 
   const dayCandidate = palettes.find((palette) => resolvePaletteModeById(palette.id) === 'day' && palette.id !== resolvedDay)
   const nightCandidate = palettes.find((palette) => resolvePaletteModeById(palette.id) === 'night' && palette.id !== resolvedNight)
+
+  const conflictedMode = resolvePaletteModeById(resolvedDay)
+  if (conflictedMode === 'day') {
+    if (nightCandidate) {
+      return { day: resolvedDay, night: nightCandidate.id }
+    }
+    if (dayCandidate) {
+      return { day: dayCandidate.id, night: resolvedNight }
+    }
+  }
+
+  if (conflictedMode === 'night') {
+    if (dayCandidate) {
+      return { day: dayCandidate.id, night: resolvedNight }
+    }
+    if (nightCandidate) {
+      return { day: resolvedDay, night: nightCandidate.id }
+    }
+  }
+
   if (dayCandidate) {
     return { day: dayCandidate.id, night: resolvedNight }
   }

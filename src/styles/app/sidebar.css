@@ -9,6 +9,35 @@
   backdrop-filter: var(--mpx-sidebar-backdrop-filter);
   transform: var(--mpx-sidebar-transform);
   padding: var(--mpx-sidebar-padding);
+  overflow: hidden;
+  position: relative;
+  --mpx-sidebar-focus-ring-width: 2px;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--mpx-panel-head-height) + var(--mpx-sidebar-focus-ring-width));
+  right: var(--mpx-sidebar-focus-ring-width);
+  width: var(--mpx-scrollbar-size);
+  height: 10px;
+  background: var(--mpx-scrollbar-track-bg);
+  border-bottom-left-radius: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sidebar::after {
+  content: '';
+  position: absolute;
+  right: var(--mpx-sidebar-focus-ring-width);
+  bottom: var(--mpx-sidebar-focus-ring-width);
+  width: var(--mpx-scrollbar-size);
+  height: 10px;
+  background: var(--mpx-scrollbar-track-bg);
+  border-top-left-radius: 8px;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .sidebar :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
@@ -76,7 +105,7 @@
 }
 
 .sidebar.is-focus {
-  box-shadow: inset 0 0 0 2px var(--mpx-accent);
+  box-shadow: var(--mpx-sidebar-shadow), 0 0 0 var(--mpx-sidebar-focus-ring-width) var(--mpx-accent);
 }
 
 .workspace.is-focus {
@@ -136,6 +165,118 @@
 .sidebar-tree {
   overflow: auto;
   padding: 8px 0;
+  flex: 1;
+  min-height: 0;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  position: relative;
+}
+
+.sidebar-tree::-webkit-scrollbar {
+  width: var(--mpx-scrollbar-size);
+  height: var(--mpx-scrollbar-size);
+  -webkit-appearance: none;
+}
+
+.sidebar-tree::-webkit-scrollbar-track {
+  background: var(--mpx-scrollbar-track-bg);
+  border-radius: 0;
+  margin: 0 !important;
+}
+
+.sidebar-tree::-webkit-scrollbar-thumb {
+  background: var(--mpx-scrollbar-thumb-bg);
+  border-radius: var(--mpx-scrollbar-radius);
+}
+
+.sidebar-tree::-webkit-scrollbar-thumb:hover {
+  background: var(--mpx-scrollbar-thumb-hover-bg);
+}
+
+.sidebar-tree::-webkit-scrollbar-button,
+.sidebar-tree::-webkit-scrollbar-button:vertical,
+.sidebar-tree::-webkit-scrollbar-button:horizontal {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: transparent !important;
+  opacity: 0 !important;
+  -webkit-appearance: none !important;
+}
+
+.sidebar-tree::-webkit-scrollbar-button,
+.sidebar-tree::-webkit-scrollbar-button:single-button,
+.sidebar-tree::-webkit-scrollbar-button:vertical:decrement,
+.sidebar-tree::-webkit-scrollbar-button:vertical:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: transparent !important;
+  opacity: 0 !important;
+  -webkit-appearance: none !important;
+}
+
+.sidebar-tree::-webkit-scrollbar-button:single-button:vertical:decrement,
+.sidebar-tree::-webkit-scrollbar-button:single-button:vertical:increment,
+.sidebar-tree::-webkit-scrollbar-button:double-button:vertical:decrement,
+.sidebar-tree::-webkit-scrollbar-button:double-button:vertical:increment,
+.sidebar-tree::-webkit-scrollbar-button:vertical:start:decrement,
+.sidebar-tree::-webkit-scrollbar-button:vertical:end:increment,
+.sidebar-tree::-webkit-scrollbar-button:vertical:start,
+.sidebar-tree::-webkit-scrollbar-button:vertical:end,
+.sidebar-tree::-webkit-scrollbar-button:start:decrement,
+.sidebar-tree::-webkit-scrollbar-button:end:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: transparent !important;
+  opacity: 0 !important;
+  -webkit-appearance: none !important;
+}
+
+.sidebar-tree::-webkit-scrollbar-track-piece:start,
+.sidebar-tree::-webkit-scrollbar-track-piece:end,
+.sidebar-tree::-webkit-scrollbar-track-piece:vertical:start,
+.sidebar-tree::-webkit-scrollbar-track-piece:vertical:end,
+.sidebar-tree::-webkit-scrollbar-track-piece:vertical:start:decrement,
+.sidebar-tree::-webkit-scrollbar-track-piece:vertical:end:increment {
+  margin: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.sidebar-tree::-webkit-scrollbar-corner {
+  background: var(--mpx-scrollbar-track-bg);
 }
 
 .sidebar-row {
