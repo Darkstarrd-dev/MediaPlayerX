@@ -1,9 +1,11 @@
 import { useEffect, useState, type RefObject } from 'react'
 
+import type { BrowserMode } from '../../types'
 import type { PaneViewportSize } from './paneMath'
 
 interface UseFullscreenViewportSizeParams {
   fullscreenActive: boolean
+  mode: BrowserMode
   fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
   fullscreenSwapped: boolean
   imagePaneRef: RefObject<HTMLElement | null>
@@ -17,6 +19,7 @@ interface UseFullscreenViewportSizeResult {
 
 export function useFullscreenViewportSize({
   fullscreenActive,
+  mode,
   fullscreenDisplay,
   fullscreenSwapped,
   imagePaneRef,
@@ -59,7 +62,7 @@ export function useFullscreenViewportSize({
         observer.disconnect()
       }
     }
-  }, [fullscreenActive, fullscreenDisplay, fullscreenSwapped, imagePaneRef, videoPaneRef])
+  }, [fullscreenActive, mode, fullscreenDisplay, fullscreenSwapped, imagePaneRef, videoPaneRef])
 
   return {
     imageViewportSize,

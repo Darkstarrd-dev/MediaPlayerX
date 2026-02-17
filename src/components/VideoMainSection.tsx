@@ -163,7 +163,9 @@ function VideoMainSection({
   const videoVolumeRangeStyle = {
     '--mpx-skeuo-range-pct': `${volumePercent}%`,
   } as CSSProperties
-  const showVideoFrame = Boolean(videoSourceUrl && (videoPlaying || hasPlayedCurrentSource || hasSeekPreviewCurrentSource || !coverImageUrl))
+  const showVideoFrame = Boolean(
+    videoSourceUrl && (videoPlaying || hasPlayedCurrentSource || hasSeekPreviewCurrentSource || !coverImageUrl),
+  )
   const showCover = Boolean(videoSourceUrl && !showVideoFrame && coverImageUrl)
   const videoScreenBackground = 'var(--mpx-bg-elevated)'
   const videoObjectFit = videoFitMode === 'original' ? 'none' : videoFitMode
@@ -403,6 +405,9 @@ function VideoMainSection({
             playsInline
             onTimeUpdate={() => {
               const currentTime = videoRef.current?.currentTime ?? 0
+              if (currentTime > 0.05) {
+                setHasSeekPreviewCurrentSource(true)
+              }
               onVideoTimeUpdate(currentTime)
             }}
             onLoadedMetadata={() => {
@@ -410,13 +415,22 @@ function VideoMainSection({
               if (Number.isFinite(duration) && duration > 0) {
                 onVideoDurationDetected(duration)
               }
-              if (!videoPlaying && !coverImageUrl) {
+              const restoreTime = clamp(clampedTime, 0, Number.isFinite(duration) && duration > 0 ? duration : Math.max(0, clampedTime))
+              if (restoreTime > 0.05 && videoRef.current && Math.abs(videoRef.current.currentTime - restoreTime) > 0.05) {
+                videoRef.current.currentTime = restoreTime
+              }
+              if (clampedTime <= 0 && !videoPlaying && !coverImageUrl) {
                 const video = videoRef.current
                 if (video && video.duration > 0) {
                   video.currentTime = Math.min(0.001, video.duration)
                 }
               }
+            }}
+            onSeeked={() => {
               const currentTime = videoRef.current?.currentTime ?? 0
+              if (currentTime > 0.05) {
+                setHasSeekPreviewCurrentSource(true)
+              }
               onVideoTimeUpdate(currentTime)
             }}
             onEnded={() => {

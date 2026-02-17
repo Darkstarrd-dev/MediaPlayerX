@@ -2232,6 +2232,73 @@ describe("MediaPlayer 虚拟 UI", () => {
     expect(readFullscreenImageAlt()).toBe(imageBeforeWheelDown);
   });
 
+  it("全屏非双屏支持 F1/F2/F3 切换图片/视频/音乐模式", async () => {
+    render(<App />);
+
+    const imageModeButton = screen.getByRole("button", {
+      name: "图片模式",
+    }) as HTMLButtonElement;
+    const videoModeButton = screen.getByRole("button", {
+      name: "视频模式",
+    }) as HTMLButtonElement;
+    const musicModeButton = screen.getByRole("button", {
+      name: "音乐模式",
+    }) as HTMLButtonElement;
+
+    await keyDown(window, { key: "f", code: "KeyF" });
+    expect(imageModeButton.classList.contains("is-active")).toBe(true);
+
+    await keyDown(window, { key: "F2", code: "F2" });
+    await waitFor(() => {
+      expect(videoModeButton.classList.contains("is-active")).toBe(true);
+    });
+
+    await keyDown(window, { key: "F3", code: "F3" });
+    await waitFor(() => {
+      expect(musicModeButton.classList.contains("is-active")).toBe(true);
+    });
+
+    await keyDown(window, { key: "F1", code: "F1" });
+    await waitFor(() => {
+      expect(imageModeButton.classList.contains("is-active")).toBe(true);
+    });
+    expect(screen.queryByText("无可用图片")).not.toBeInTheDocument();
+  });
+
+  it("全屏双显示下 F1/F2/F3 不切换模式", async () => {
+    render(<App />);
+
+    const imageModeButton = screen.getByRole("button", {
+      name: "图片模式",
+    }) as HTMLButtonElement;
+    const videoModeButton = screen.getByRole("button", {
+      name: "视频模式",
+    }) as HTMLButtonElement;
+
+    await click(videoModeButton);
+    expect(videoModeButton.classList.contains("is-active")).toBe(true);
+
+    await keyDown(window, { key: "f", code: "KeyF" });
+
+    const singleVideoPane = document.querySelector(".fullscreen-video") as
+      | HTMLElement
+      | null;
+    expect(singleVideoPane).not.toBeNull();
+    fireEvent.mouseEnter(singleVideoPane as HTMLElement);
+
+    await click(
+      within(singleVideoPane as HTMLElement).getByRole("button", {
+        name: "独立/复合",
+      }),
+    );
+    expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+
+    await keyDown(window, { key: "F1", code: "F1" });
+
+    expect(videoModeButton.classList.contains("is-active")).toBe(true);
+    expect(imageModeButton.classList.contains("is-active")).toBe(false);
+  });
+
   it("视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应", async () => {
     render(<App />);
 
@@ -2275,15 +2342,11 @@ describe("MediaPlayer 虚拟 UI", () => {
       ".fullscreen-stage .fullscreen-video-controls",
     ) as HTMLElement | null;
     expect(dualFloatingControls).not.toBeNull();
-    expect(dualFloatingControls?.querySelector(".fullscreen-meta-row")).toBeNull();
+    expect(dualFloatingControls?.querySelector(".fullscreen-meta-row")).not.toBeNull();
     const shellDefault = dualFloatingControls?.querySelector(
       ".fullscreen-video-controls-shell",
     ) as HTMLElement | null;
-    expect(
-      shellDefault?.firstElementChild?.classList.contains(
-        "video-controls-progress",
-      ),
-    ).toBe(true);
+    expect(shellDefault?.querySelector(".video-controls-progress")).not.toBeNull();
 
     await keyDown(window, {
       key: "ArrowDown",

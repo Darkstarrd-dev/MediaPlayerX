@@ -852,7 +852,7 @@
 .fullscreen-video-controls {
   position: absolute;
   left: 12px;
-  right: 12px;
+  right: auto;
   display: block;
   opacity: 0;
   visibility: hidden;
@@ -870,7 +870,7 @@
 .fullscreen-video-controls-hotzone {
   position: absolute;
   left: 12px;
-  right: 12px;
+  right: auto;
   height: 96px;
   pointer-events: auto;
 }
@@ -906,7 +906,7 @@
   left: 50%;
   right: auto;
   transform: translateX(-50%);
-  width: min(calc(100% - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
+  width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
   bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   z-index: 5;
   border: 1px solid var(--mpx-player-surface-border);
@@ -921,8 +921,8 @@
 }
 
 .fullscreen-footer.is-single {
-  width: min(calc(100% - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
-  max-width: min(calc(100% - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
+  width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
+  max-width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
 }
 
 .fullscreen-footer.is-single .fullscreen-controls-row {
@@ -931,7 +931,7 @@
 }
 
 .fullscreen-footer.is-dual {
-  width: min(calc(100% - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
+  width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
 }
 
 .fullscreen-footer-video-controls {

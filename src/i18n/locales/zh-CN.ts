@@ -35,7 +35,7 @@ export const zhCnCatalog = {
   'ui.help.image.keyboard.toggleFullscreen': '切换全屏。',
   'ui.help.image.keyboard.focusSwitch': '切换 Sidebar / 主区焦点。',
   'ui.help.image.keyboard.fixedModeSwitchShortcut': 'F1 / F2 / F3',
-  'ui.help.image.keyboard.modeSwitchF1F3': '全局（非全屏）切换图片 / 视频 / 音乐模式。',
+  'ui.help.image.keyboard.modeSwitchF1F3': '全局（非全屏，或全屏非双屏）切换图片 / 视频 / 音乐模式。',
   'ui.help.image.keyboard.fixedPanelSwitchShortcut': 'Ctrl+1 / Ctrl+2 / Ctrl+3',
   'ui.help.image.keyboard.panelSwitchCtrl1Ctrl3': '全局（非全屏）切换检索 / 文件管理 / 元数据管理模式。',
   'ui.help.image.keyboard.fixedSeriesJumpShortcut': 'Ctrl+F1 / Ctrl+F2 / Ctrl+F3',

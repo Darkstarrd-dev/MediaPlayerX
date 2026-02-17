@@ -37,7 +37,7 @@ export const enUsCatalog: { [K in keyof ZhCnCatalog]: string } = {
   'ui.help.image.keyboard.toggleFullscreen': 'Toggle fullscreen.',
   'ui.help.image.keyboard.focusSwitch': 'Switch focus between sidebar and main.',
   'ui.help.image.keyboard.fixedModeSwitchShortcut': 'F1 / F2 / F3',
-  'ui.help.image.keyboard.modeSwitchF1F3': 'Global (outside fullscreen): switch image / video / music modes.',
+  'ui.help.image.keyboard.modeSwitchF1F3': 'Global (outside fullscreen, or fullscreen in non-dual mode): switch image / video / music modes.',
   'ui.help.image.keyboard.fixedPanelSwitchShortcut': 'Ctrl+1 / Ctrl+2 / Ctrl+3',
   'ui.help.image.keyboard.panelSwitchCtrl1Ctrl3': 'Global (outside fullscreen): toggle search / file manage / metadata manage modes.',
   'ui.help.image.keyboard.fixedSeriesJumpShortcut': 'Ctrl+F1 / Ctrl+F2 / Ctrl+F3',

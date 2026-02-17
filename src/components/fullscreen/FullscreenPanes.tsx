@@ -4,8 +4,10 @@ import type {
   RefObject,
   WheelEvent as ReactWheelEvent,
 } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { VideoFitMode } from '../../features/media/videoFitMode'
+import { clamp } from '../../utils/ui'
 import type { MediaGeometry, PaneKey, PaneTransform } from './paneMath'
 
 interface FullscreenImagePaneProps {
@@ -96,6 +98,7 @@ interface FullscreenVideoPaneProps {
   videoGeometry: MediaGeometry
   videoTransform: PaneTransform
   videoPlaying: boolean
+  videoTime: number
   focusedVideoSrc: string | null
   focusedVideoCoverImageSrc: string | null
   focusedVideoCoverColor: string
@@ -133,6 +136,7 @@ export function FullscreenVideoPane({
   videoGeometry,
   videoTransform,
   videoPlaying,
+  videoTime,
   focusedVideoSrc,
   focusedVideoCoverImageSrc,
   focusedVideoCoverColor,
@@ -158,13 +162,32 @@ export function FullscreenVideoPane({
   onVideoDurationDetected,
   onVideoEnded,
 }: FullscreenVideoPaneProps) {
+  const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false)
+  const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] = useState(false)
+
+  useEffect(() => {
+    setHasPlayedCurrentSource(false)
+    setHasSeekPreviewCurrentSource(false)
+  }, [focusedVideoSrc])
+
+  useEffect(() => {
+    if (videoPlaying && focusedVideoSrc) {
+      setHasPlayedCurrentSource(true)
+    }
+  }, [focusedVideoSrc, videoPlaying])
+
   const useFixedBottomControls = fullscreenDisplay === 'video-only'
   const controlsAtTop = useFixedBottomControls ? false : videoControlsAtTop
+  const showVideoFrame = Boolean(
+    focusedVideoSrc && (videoPlaying || hasPlayedCurrentSource || hasSeekPreviewCurrentSource || !focusedVideoCoverImageSrc),
+  )
   const controlsStyle = useFixedBottomControls
     ? {
         bottom: 'var(--mpx-fullscreen-controls-bottom, 5%)',
-        left: `${videoControlsLeft}px`,
-        width: `${videoControlsWidth}px`,
+        left: '50%',
+        right: 'auto',
+        transform: 'translateX(-50%)',
+        width: 'min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px))',
       }
     : {
         top: `${videoControlsTop}px`,
@@ -191,13 +214,13 @@ export function FullscreenVideoPane({
       >
         <div
           className="fullscreen-media fullscreen-media-video"
-          style={{
-            width: `${videoGeometry.width}px`,
-            height: `${videoGeometry.height}px`,
-            transform: `translate3d(${videoTransform.offsetX}px, ${videoTransform.offsetY}px, 0)`,
-            background: videoPlaying ? 'var(--mpx-video-screen-bg)' : focusedVideoCoverColor,
-          }}
-        >
+            style={{
+              width: `${videoGeometry.width}px`,
+              height: `${videoGeometry.height}px`,
+              transform: `translate3d(${videoTransform.offsetX}px, ${videoTransform.offsetY}px, 0)`,
+              background: showVideoFrame ? 'var(--mpx-video-screen-bg)' : focusedVideoCoverColor,
+            }}
+          >
           {focusedVideoSrc ? (
             <video
               ref={(element) => {
@@ -206,7 +229,7 @@ export function FullscreenVideoPane({
               }}
               className="fullscreen-media-video-element"
               style={{
-                opacity: videoPlaying ? 1 : 0,
+                opacity: showVideoFrame ? 1 : 0,
                 objectFit: videoFitMode === 'original' ? 'none' : videoFitMode,
                 objectPosition: 'center center',
               }}
@@ -217,6 +240,9 @@ export function FullscreenVideoPane({
               loop={videoLoopMode === 'single'}
               onTimeUpdate={() => {
                 const currentTime = videoRef.current?.currentTime ?? 0
+                if (currentTime > 0.05) {
+                  setHasSeekPreviewCurrentSource(true)
+                }
                 onVideoTimeUpdate(currentTime)
               }}
               onLoadedMetadata={() => {
@@ -224,7 +250,19 @@ export function FullscreenVideoPane({
                 if (Number.isFinite(duration) && duration > 0) {
                   onVideoDurationDetected(duration)
                 }
+                const restoreTime = clamp(videoTime, 0, Number.isFinite(duration) && duration > 0 ? duration : Math.max(0, videoTime))
+                if (restoreTime > 0.05 && videoRef.current && Math.abs(videoRef.current.currentTime - restoreTime) > 0.05) {
+                  videoRef.current.currentTime = restoreTime
+                }
+                if ((videoRef.current?.currentTime ?? 0) > 0.05) {
+                  setHasSeekPreviewCurrentSource(true)
+                }
+              }}
+              onSeeked={() => {
                 const currentTime = videoRef.current?.currentTime ?? 0
+                if (currentTime > 0.05) {
+                  setHasSeekPreviewCurrentSource(true)
+                }
                 onVideoTimeUpdate(currentTime)
               }}
               onEnded={() => {
@@ -245,7 +283,7 @@ export function FullscreenVideoPane({
             </div>
           ) : null}
 
-          {!videoPlaying && focusedVideoCoverImageSrc ? (
+          {!showVideoFrame && focusedVideoCoverImageSrc ? (
             <img
               className="fullscreen-media-video-cover"
               style={{

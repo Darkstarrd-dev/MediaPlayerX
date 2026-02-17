@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppEffects } from './useAppEffects'
@@ -79,6 +79,7 @@ export function useAppInteractionEffects({
     imageFocusActive,
     setImageFocusActive,
     focusByPackage,
+    setFocusByPackage,
     setPageByPackage,
     vectorSearchResults,
     vectorFocusIndex,
@@ -109,6 +110,7 @@ export function useAppInteractionEffects({
 
   const {
     selectedVideoId,
+    playlistIds,
     videoDurationById,
     videoPlaying,
     setVideoPlaying,
@@ -132,6 +134,9 @@ export function useAppInteractionEffects({
   void videoPlaying
 
   const {
+    scopedImageSourcesEffective,
+    packageByIdEffective,
+    imageTreeForSidebar,
     searchPanelMode,
     searchPanelCollapsed,
     applyQuickFeatureSearch,
@@ -146,6 +151,7 @@ export function useAppInteractionEffects({
     flatSidebarNodes,
     sidebarNodeById,
     imageSourceNodeIdMap,
+    normalImageSourceNodeIdMap,
     videoNodeIdMap,
     videosForSidebar,
     audiosForSidebar,
@@ -161,6 +167,7 @@ export function useAppInteractionEffects({
     pagedPageSize,
     activePackage,
     focusedRef,
+    focusedImage,
     moveImage,
     moveImageVertical,
     jumpImageBoundary,
@@ -176,6 +183,21 @@ export function useAppInteractionEffects({
       videosForSidebar.find((video) => video.id === selectedVideoId)?.durationSec ??
       0,
   )
+
+  const previousModeRef = useRef(mode)
+
+  useEffect(() => {
+    const previousMode = previousModeRef.current
+    if (previousMode === mode) {
+      return
+    }
+
+    if (previousMode === 'video' || mode === 'video') {
+      setVideoPlaying(false)
+    }
+
+    previousModeRef.current = mode
+  }, [mode, setVideoPlaying])
 
   const handleImageWheelLikePageNavigation = (direction: 'next' | 'prev') => {
     if (mode !== 'image') {
@@ -291,6 +313,79 @@ export function useAppInteractionEffects({
       }
       setFullscreenActiveWithAutoStop(false)
       return true
+    }
+
+    const findFirstImageNodeFromTree = (nodes: typeof imageTreeForSidebar): (typeof imageTreeForSidebar)[number] | null => {
+      for (const node of nodes) {
+        const sourceId = node.imageSourceId?.trim() ?? ''
+        const isCoverNode = Boolean((node.coverSourceId?.trim() ?? '') || (node.coverImageId?.trim() ?? ''))
+        const isImageNode =
+          node.kind === 'folder' ||
+          node.kind === 'package' ||
+          node.imageNodeType === 'folder' ||
+          node.imageNodeType === 'package' ||
+          node.imageNodeType === 'directory'
+        const hasUsableImages = sourceId ? (packageByIdEffective.get(sourceId)?.images.length ?? 0) > 0 : false
+
+        if (sourceId && isImageNode && !isCoverNode && hasUsableImages) {
+          return node
+        }
+
+        const matchedChild = findFirstImageNodeFromTree(node.children)
+        if (matchedChild) {
+          return matchedChild
+        }
+      }
+      return null
+    }
+
+    const ensureImageFocusFromSidebar = () => {
+      const firstImageSidebarNode = findFirstImageNodeFromTree(imageTreeForSidebar)
+      const selectedPackageUsable =
+        rootScopedPackageIds.has(selectedPackageId) &&
+        (packageByIdEffective.get(selectedPackageId)?.images.length ?? 0) > 0
+
+      const fallbackPackageId = selectedPackageUsable
+        ? selectedPackageId
+        : (
+            firstImageSidebarNode?.imageSourceId?.trim() ||
+            orderedRootScopedPackages.find((pkg) => pkg.images.length > 0)?.id ||
+            scopedImageSourcesEffective.find((source) => source.images.length > 0)?.id ||
+            ''
+          )
+
+      if (!fallbackPackageId) {
+        return false
+      }
+
+      const nextSidebarNodeId =
+        firstImageSidebarNode?.id ??
+        (normalImageSourceNodeIdMap.get(fallbackPackageId) ?? imageSourceNodeIdMap.get(fallbackPackageId) ?? null)
+
+      if (fallbackPackageId !== selectedPackageId) {
+        setSelectedPackageId(fallbackPackageId)
+      }
+
+      setImageFocusActive(true)
+      setFocusByPackage((previous) => ({
+        ...previous,
+        [fallbackPackageId]: 0,
+      }))
+      setPageByPackage((previous) => ({
+        ...previous,
+        [fallbackPackageId]: 0,
+      }))
+
+      if (nextSidebarNodeId) {
+        setSelectedSidebarNodeId(nextSidebarNodeId)
+        requestAnimationFrame(() => ensureSidebarNodeVisible(nextSidebarNodeId))
+      }
+
+      return true
+    }
+
+    if (fullscreenActive && mode === 'image' && !focusedImage) {
+      ensureImageFocusFromSidebar()
     }
 
     const closeTopLayerByPriority = () => {
@@ -417,6 +512,93 @@ export function useAppInteractionEffects({
       return true
     }
 
+    const switchModeByShortcut = (targetMode: 'image' | 'video' | 'music') => {
+      if (targetMode === mode) {
+        return false
+      }
+
+      const alignFullscreenSingleDisplay = () => {
+        if (!fullscreenActive || fullscreenDisplay === 'dual') {
+          return
+        }
+
+        if (targetMode === 'video') {
+          setFullscreenDisplay('video-only')
+          setFullscreenEntryDisplay('video-only')
+          setFullscreenVideoFocus(true)
+          setShowFullscreenFooter(false)
+          return
+        }
+
+        if (targetMode === 'image') {
+          setFullscreenDisplay('image-only')
+          setFullscreenEntryDisplay('image-only')
+          setFullscreenVideoFocus(false)
+          setShowFullscreenFooter(false)
+          return
+        }
+
+        setShowFullscreenFooter(false)
+      }
+
+      if (targetMode === 'image') {
+        updateSettings({ mode: 'image' })
+        alignFullscreenSingleDisplay()
+        return ensureImageFocusFromSidebar()
+      }
+
+      if (targetMode === 'video') {
+        const rootScopedVideoIdList = Array.from(rootScopedVideoIds)
+        const hasVideoFocus =
+          selectedVideoId.trim().length > 0 &&
+          (Object.prototype.hasOwnProperty.call(videoDurationById, selectedVideoId) || videosForSidebar.some((video) => video.id === selectedVideoId))
+        const playlistFirstVideoId = playlistIds[0] ?? null
+        const sidebarFirstVideoId = rootScopedVideoIdList[0] ?? videosForSidebar[0]?.id ?? null
+        const fallbackVideoId = hasVideoFocus
+          ? selectedVideoId
+          : (playlistFirstVideoId ?? sidebarFirstVideoId ?? '')
+        const nextSidebarNodeId = fallbackVideoId
+          ? (videoNodeIdMap.get(fallbackVideoId) ?? (sidebarFirstVideoId ? (videoNodeIdMap.get(sidebarFirstVideoId) ?? null) : null))
+          : null
+
+        updateSettings({ mode: 'video' })
+        alignFullscreenSingleDisplay()
+
+        if (fallbackVideoId && fallbackVideoId !== selectedVideoId) {
+          const queueSource = playlistFirstVideoId && fallbackVideoId === playlistFirstVideoId ? 'playlist' : 'sidebar'
+          selectVideoFromBrowser(fallbackVideoId, { queueSource })
+        }
+
+        if (nextSidebarNodeId) {
+          setSelectedSidebarNodeId(nextSidebarNodeId)
+          requestAnimationFrame(() => ensureSidebarNodeVisible(nextSidebarNodeId))
+        }
+        return true
+      }
+
+      const rootScopedAudioIdList = Array.from(rootScopedAudioIds)
+      const hasAudioFocus = rootScopedAudioIds.has(selectedAudioId)
+      const fallbackAudioId = hasAudioFocus
+        ? selectedAudioId
+        : (rootScopedAudioIdList[0] ?? audiosForSidebar[0]?.id ?? '')
+      const nextSidebarNodeId = fallbackAudioId
+        ? (audioNodeIdMap.get(fallbackAudioId) ?? null)
+        : null
+
+      updateSettings({ mode: 'music' })
+      alignFullscreenSingleDisplay()
+
+      if (fallbackAudioId && fallbackAudioId !== selectedAudioId) {
+        setSelectedAudioId(fallbackAudioId)
+      }
+
+      if (nextSidebarNodeId) {
+        setSelectedSidebarNodeId(nextSidebarNodeId)
+        requestAnimationFrame(() => ensureSidebarNodeVisible(nextSidebarNodeId))
+      }
+      return true
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (featureTagPickerOpen) {
         return
@@ -431,19 +613,19 @@ export function useAppInteractionEffects({
           if (event.code === 'F1') {
             event.preventDefault()
             event.stopPropagation()
-            updateSettings({ mode: 'image' })
+            switchModeByShortcut('image')
             return
           }
           if (event.code === 'F2') {
             event.preventDefault()
             event.stopPropagation()
-            updateSettings({ mode: 'video' })
+            switchModeByShortcut('video')
             return
           }
           if (event.code === 'F3') {
             event.preventDefault()
             event.stopPropagation()
-            updateSettings({ mode: 'music' })
+            switchModeByShortcut('music')
             return
           }
         }
@@ -521,6 +703,17 @@ export function useAppInteractionEffects({
         }
       }
 
+      if (fullscreenActive && fullscreenDisplay !== 'dual' && !event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
+        if (event.code === 'F1' || event.code === 'F2' || event.code === 'F3') {
+          const targetMode = event.code === 'F1' ? 'image' : event.code === 'F2' ? 'video' : 'music'
+          if (switchModeByShortcut(targetMode)) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+          return
+        }
+      }
+
       if (adReviewDeletePending && event.key === 'Escape') {
         event.preventDefault()
         event.stopPropagation()
@@ -584,18 +777,32 @@ export function useAppInteractionEffects({
     clearAllSelections,
     deleteConfirmOpen,
     fullscreenActive,
+    fullscreenDisplay,
     mode,
     activePackage,
+    focusedImage,
     selectedVideoId,
+    playlistIds,
     videosForSidebar,
     selectedAudioId,
     audiosForSidebar,
+    scopedImageSourcesEffective,
+    packageByIdEffective,
+    imageTreeForSidebar,
     orderedRootScopedPackages,
+    rootScopedPackageIds,
+    rootScopedVideoIds,
+    rootScopedAudioIds,
+    flatSidebarNodes,
     imageSourceNodeIdMap,
+    normalImageSourceNodeIdMap,
     videoNodeIdMap,
     audioNodeIdMap,
     ensureSidebarNodeVisible,
+    setImageFocusActive,
+    setFocusByPackage,
     setSelectedPackageId,
+    setPageByPackage,
     setSelectedAudioId,
     setSelectedSidebarNodeId,
     selectVideoFromBrowser,
@@ -605,6 +812,10 @@ export function useAppInteractionEffects({
     adReviewDeletePending,
     setDeleteConfirmOpen,
     setFullscreenActiveWithAutoStop,
+    setFullscreenDisplay,
+    setFullscreenEntryDisplay,
+    setFullscreenVideoFocus,
+    setShowFullscreenFooter,
     setAdReviewPanelOpen,
     setManageMode,
     setManageOperationHint,

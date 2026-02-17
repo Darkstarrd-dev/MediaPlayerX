@@ -214,6 +214,7 @@ function FullscreenLayer({
 
   const { imageViewportSize, videoViewportSize } = useFullscreenViewportSize({
     fullscreenActive,
+    mode,
     fullscreenDisplay,
     fullscreenSwapped,
     imagePaneRef,
@@ -240,13 +241,28 @@ function FullscreenLayer({
   const imageAspect = displayedImageAspect ?? resolveMediaAspect(focusedImage?.width ?? 0, focusedImage?.height ?? 0, 1)
   const videoAspect = resolveMediaAspect(focusedVideo?.width ?? 0, focusedVideo?.height ?? 0, 16 / 9)
 
+  const fallbackViewportWidth = typeof window === 'undefined' ? 1920 : window.innerWidth
+  const fallbackViewportHeight = typeof window === 'undefined' ? 1080 : window.innerHeight
+  const effectiveImageViewportSize =
+    fullscreenDisplay === 'image-only'
+      ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
+      : (imageViewportSize.width <= 64 || imageViewportSize.height <= 64)
+        ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
+        : imageViewportSize
+  const effectiveVideoViewportSize =
+    fullscreenDisplay === 'video-only'
+      ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
+      : (videoViewportSize.width <= 64 || videoViewportSize.height <= 64)
+        ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
+        : videoViewportSize
+
   const imageGeometry = useMemo(
-    () => computeMediaGeometry(imageViewportSize, imageAspect, imageTransform.zoom),
-    [imageAspect, imageTransform.zoom, imageViewportSize],
+    () => computeMediaGeometry(effectiveImageViewportSize, imageAspect, imageTransform.zoom),
+    [effectiveImageViewportSize, imageAspect, imageTransform.zoom],
   )
   const videoGeometry = useMemo(
-    () => computeMediaGeometry(videoViewportSize, videoAspect, videoTransform.zoom),
-    [videoAspect, videoTransform.zoom, videoViewportSize],
+    () => computeMediaGeometry(effectiveVideoViewportSize, videoAspect, videoTransform.zoom),
+    [effectiveVideoViewportSize, videoAspect, videoTransform.zoom],
   )
 
   const setPaneAlign = useCallback((pane: PaneKey, align: PaneAlign) => {
@@ -609,30 +625,30 @@ function FullscreenLayer({
   const activeSingleTransform = singlePane === 'video' ? videoTransform : imageTransform
   const zoomPercent = Math.round(activeSingleTransform.zoom * 100)
 
-  const videoMediaTop = (videoViewportSize.height - videoGeometry.height) / 2 + videoTransform.offsetY
+  const videoMediaTop = (effectiveVideoViewportSize.height - videoGeometry.height) / 2 + videoTransform.offsetY
   const videoMediaBottom = videoMediaTop + videoGeometry.height
   const topGap = videoMediaTop
-  const bottomGap = videoViewportSize.height - videoMediaBottom
+  const bottomGap = effectiveVideoViewportSize.height - videoMediaBottom
   const videoControlsAtTop = bottomGap < topGap
 
   const controlsBlockHeight = 122
-  const controlsMaxTop = Math.max(8, videoViewportSize.height - controlsBlockHeight - 8)
+  const controlsMaxTop = Math.max(8, effectiveVideoViewportSize.height - controlsBlockHeight - 8)
   const controlsPreferredTop = videoControlsAtTop ? videoMediaTop - controlsBlockHeight - 8 : videoMediaBottom + 8
   const videoControlsTop = clamp(Math.round(controlsPreferredTop), 8, controlsMaxTop)
 
   const controlsWidthCap = clamp(fullscreenVideoControlsMaxWidth, 640, 1920) || DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH
-  const singleControlsViewport = fullscreenDisplay === 'image-only' ? imageViewportSize : videoViewportSize
+  const singleControlsViewport = fullscreenDisplay === 'image-only' ? effectiveImageViewportSize : effectiveVideoViewportSize
   const singleControlsWidth = resolveFullscreenControlsWidth({
     viewportWidth: singleControlsViewport.width,
     viewportHeight: singleControlsViewport.height,
     widthCap: controlsWidthCap,
   })
-  const controlsMaxWidth = Math.max(120, Math.min(videoViewportSize.width - 16, controlsWidthCap))
+  const controlsMaxWidth = Math.max(120, Math.min(effectiveVideoViewportSize.width - 16, controlsWidthCap))
   const controlsPreferredWidth = Math.max(120, videoGeometry.width - 16)
   const videoControlsWidthByGeometry = Math.min(controlsPreferredWidth, controlsMaxWidth)
   const videoControlsWidth = fullscreenDisplay === 'video-only' ? singleControlsWidth : videoControlsWidthByGeometry
-  const controlsMaxLeft = Math.max(8, videoViewportSize.width - videoControlsWidth - 8)
-  const centeredControlsLeft = Math.round((videoViewportSize.width - videoControlsWidth) / 2)
+  const controlsMaxLeft = Math.max(8, effectiveVideoViewportSize.width - videoControlsWidth - 8)
+  const centeredControlsLeft = Math.round((effectiveVideoViewportSize.width - videoControlsWidth) / 2)
   const videoControlsLeft = clamp(centeredControlsLeft, 8, controlsMaxLeft)
   const fullscreenControlsCssVars = {
     '--mpx-fullscreen-controls-max-width': `${fullscreenDisplay === 'dual' ? controlsWidthCap : singleControlsWidth}px`,
@@ -756,6 +772,7 @@ function FullscreenLayer({
       videoGeometry={videoGeometry}
       videoTransform={videoTransform}
       videoPlaying={videoPlaying}
+      videoTime={clampedVideoTime}
       focusedVideoSrc={focusedVideoSrc}
       focusedVideoCoverImageSrc={focusedVideoCoverImageSrc}
       focusedVideoCoverColor={focusedVideoCoverColor}
