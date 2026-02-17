@@ -10,6 +10,8 @@ describe('externalUrlPolicy', () => {
       'nhentai.net',
       'e-hentai.org',
       'exhentai.org',
+      'huggingface.co',
+      'hf-mirror.com',
       'example.com',
       'sub.example.com',
       'foo.bar',
