@@ -154,6 +154,26 @@
   --mpx-splitter-handle-bg: rgba(183, 171, 149, 0.72);
   --mpx-splitter-handle-hover-bg: rgba(46, 111, 127, 0.9);
   --mpx-card-focus-ring: rgba(47, 111, 127, 0.18);
+
+  /* Focus ring (pane-level): shared by sidebar + main.
+   * If a palette wants to change it, override --mpx-pane-focus-* directly.
+   */
+  --mpx-pane-focus-ring-width: 3px;
+  --mpx-pane-focus-ring-offset: 2px;
+  --mpx-pane-focus-day-gap: var(--mpx-bg-app);
+  --mpx-pane-focus-day-inner: color-mix(in srgb, var(--mpx-bg-panel) 76%, #ffffff 24%);
+  --mpx-pane-focus-day-mid: color-mix(in srgb, var(--mpx-status-info-border) 72%, var(--mpx-accent) 28%);
+  --mpx-pane-focus-day-outer: color-mix(in srgb, var(--mpx-status-info-text) 62%, var(--mpx-status-info-border) 38%);
+  --mpx-pane-focus-day-glow: color-mix(in srgb, var(--mpx-status-info-border) 40%, transparent);
+  --mpx-pane-focus-day-ambient: color-mix(in srgb, var(--mpx-status-info-text) 20%, transparent);
+  --mpx-pane-focus-metal-highlight: #f8edd1;
+  --mpx-pane-focus-metal-topline: #edd8a3;
+  --mpx-pane-focus-metal-mid: #c79a4d;
+  --mpx-pane-focus-metal-shadow: #7a5520;
+  --mpx-pane-focus-metal-specular: rgba(255, 248, 228, 0.92);
+  --mpx-pane-focus-metal-rim-shadow: rgba(110, 74, 24, 0.58);
+  --mpx-pane-focus-metal-glow: rgba(212, 164, 70, 0.34);
+  --mpx-pane-focus-metal-ambient: rgba(158, 110, 30, 0.2);
   --mpx-fullscreen-bg: #060708;
   --mpx-fullscreen-footer-bg: rgba(10, 12, 14, 0.86);
   --mpx-video-screen-bg: linear-gradient(135deg, #2d2f33, #212022);

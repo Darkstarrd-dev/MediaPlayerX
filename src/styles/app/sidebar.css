@@ -11,29 +11,13 @@
   padding: var(--mpx-sidebar-padding);
   overflow: hidden;
   position: relative;
-  --mpx-sidebar-focus-ring-width: 3px;
-  --mpx-sidebar-focus-ring-offset: 2px;
-  --mpx-sidebar-focus-day-gap: var(--mpx-bg-app);
-  --mpx-sidebar-focus-day-inner: color-mix(in srgb, var(--mpx-bg-panel) 76%, #ffffff 24%);
-  --mpx-sidebar-focus-day-mid: color-mix(in srgb, var(--mpx-status-info-border) 72%, var(--mpx-accent) 28%);
-  --mpx-sidebar-focus-day-outer: color-mix(in srgb, var(--mpx-status-info-text) 62%, var(--mpx-status-info-border) 38%);
-  --mpx-sidebar-focus-day-glow: color-mix(in srgb, var(--mpx-status-info-border) 40%, transparent);
-  --mpx-sidebar-focus-day-ambient: color-mix(in srgb, var(--mpx-status-info-text) 20%, transparent);
-  --mpx-sidebar-focus-metal-highlight: #f8edd1;
-  --mpx-sidebar-focus-metal-topline: #edd8a3;
-  --mpx-sidebar-focus-metal-mid: #c79a4d;
-  --mpx-sidebar-focus-metal-shadow: #7a5520;
-  --mpx-sidebar-focus-metal-specular: rgba(255, 248, 228, 0.92);
-  --mpx-sidebar-focus-metal-rim-shadow: rgba(110, 74, 24, 0.58);
-  --mpx-sidebar-focus-metal-glow: rgba(212, 164, 70, 0.34);
-  --mpx-sidebar-focus-metal-ambient: rgba(158, 110, 30, 0.2);
 }
 
 .sidebar::before {
   content: '';
   position: absolute;
-  top: calc(var(--mpx-panel-head-height) + var(--mpx-sidebar-focus-ring-width));
-  right: var(--mpx-sidebar-focus-ring-width);
+  top: calc(var(--mpx-panel-head-height) + var(--mpx-pane-focus-ring-width));
+  right: var(--mpx-pane-focus-ring-width);
   width: var(--mpx-scrollbar-size);
   height: 10px;
   background: var(--mpx-scrollbar-track-bg);
@@ -45,8 +29,8 @@
 .sidebar::after {
   content: '';
   position: absolute;
-  right: var(--mpx-sidebar-focus-ring-width);
-  bottom: var(--mpx-sidebar-focus-ring-width);
+  right: var(--mpx-pane-focus-ring-width);
+  bottom: var(--mpx-pane-focus-ring-width);
   width: var(--mpx-scrollbar-size);
   height: 10px;
   background: var(--mpx-scrollbar-track-bg);
@@ -122,27 +106,27 @@
 .sidebar.is-focus {
   box-shadow:
     var(--mpx-sidebar-shadow),
-    0 0 0 var(--mpx-sidebar-focus-ring-offset) var(--mpx-sidebar-focus-day-gap),
-    0 0 0 calc(var(--mpx-sidebar-focus-ring-offset) + 1px) var(--mpx-sidebar-focus-day-inner),
-    0 0 0 calc(var(--mpx-sidebar-focus-ring-offset) + var(--mpx-sidebar-focus-ring-width)) var(--mpx-sidebar-focus-day-mid),
-    0 0 0 calc(var(--mpx-sidebar-focus-ring-offset) + var(--mpx-sidebar-focus-ring-width) + 2px) var(--mpx-sidebar-focus-day-outer),
-    0 0 12px 3px var(--mpx-sidebar-focus-day-glow),
-    0 0 26px 6px var(--mpx-sidebar-focus-day-ambient);
+    0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-pane-focus-day-gap),
+    0 0 0 calc(var(--mpx-pane-focus-ring-offset) + 1px) var(--mpx-pane-focus-day-inner),
+    0 0 0 calc(var(--mpx-pane-focus-ring-offset) + var(--mpx-pane-focus-ring-width)) var(--mpx-pane-focus-day-mid),
+    0 0 0 calc(var(--mpx-pane-focus-ring-offset) + var(--mpx-pane-focus-ring-width) + 2px) var(--mpx-pane-focus-day-outer),
+    0 0 12px 3px var(--mpx-pane-focus-day-glow),
+    0 0 26px 6px var(--mpx-pane-focus-day-ambient);
 }
 
 :root[data-mpx-palette-mode='night'][data-mpx-style^='soft-skeuomorphic'] .sidebar.is-focus {
   box-shadow:
     var(--mpx-sidebar-shadow),
-    0 0 0 var(--mpx-sidebar-focus-ring-offset) var(--mpx-bg-app),
-    -1px -1px 0 calc(var(--mpx-sidebar-focus-ring-offset) + 1px) var(--mpx-sidebar-focus-metal-specular),
-    1px 1px 0 calc(var(--mpx-sidebar-focus-ring-offset) + 1px) color-mix(in srgb, var(--mpx-sidebar-focus-metal-topline) 92%, #fff 8%),
-    -1px -1px 0 calc(var(--mpx-sidebar-focus-ring-offset) + 2px) var(--mpx-sidebar-focus-metal-highlight),
-    1px 1px 0 calc(var(--mpx-sidebar-focus-ring-offset) + 2px) var(--mpx-sidebar-focus-metal-mid),
-    1px 2px 0 calc(var(--mpx-sidebar-focus-ring-offset) + 3px) var(--mpx-sidebar-focus-metal-shadow),
-    -1px -2px 0 calc(var(--mpx-sidebar-focus-ring-offset) + 3px) color-mix(in srgb, var(--mpx-sidebar-focus-metal-highlight) 84%, #fff 16%),
-    0 0 0 calc(var(--mpx-sidebar-focus-ring-offset) + 4px) var(--mpx-sidebar-focus-metal-rim-shadow),
-    0 0 12px 2px var(--mpx-sidebar-focus-metal-glow),
-    0 0 24px 5px var(--mpx-sidebar-focus-metal-ambient);
+    0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-bg-app),
+    -1px -1px 0 calc(var(--mpx-pane-focus-ring-offset) + 1px) var(--mpx-pane-focus-metal-specular),
+    1px 1px 0 calc(var(--mpx-pane-focus-ring-offset) + 1px) color-mix(in srgb, var(--mpx-pane-focus-metal-topline) 92%, #fff 8%),
+    -1px -1px 0 calc(var(--mpx-pane-focus-ring-offset) + 2px) var(--mpx-pane-focus-metal-highlight),
+    1px 1px 0 calc(var(--mpx-pane-focus-ring-offset) + 2px) var(--mpx-pane-focus-metal-mid),
+    1px 2px 0 calc(var(--mpx-pane-focus-ring-offset) + 3px) var(--mpx-pane-focus-metal-shadow),
+    -1px -2px 0 calc(var(--mpx-pane-focus-ring-offset) + 3px) color-mix(in srgb, var(--mpx-pane-focus-metal-highlight) 84%, #fff 16%),
+    0 0 0 calc(var(--mpx-pane-focus-ring-offset) + 4px) var(--mpx-pane-focus-metal-rim-shadow),
+    0 0 12px 2px var(--mpx-pane-focus-metal-glow),
+    0 0 24px 5px var(--mpx-pane-focus-metal-ambient);
 }
 
 .workspace.is-focus {
@@ -365,6 +349,17 @@
 
 .sidebar-row.is-processing {
   background: var(--mpx-status-success-bg);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] .sidebar-row:not(.is-pressed-active) .sidebar-label {
+  border: 1px solid var(--mpx-sidebar-node-border, color-mix(in srgb, var(--mpx-border-2) 68%, var(--mpx-bg-panel) 32%));
+  border-radius: 12px;
+  background: var(--mpx-sidebar-node-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-sidebar-node-text, var(--mpx-player-btn-text));
+  box-shadow:
+    2px 2px 3px color-mix(in srgb, var(--mpx-skeuo-shadow-dark) 82%, transparent),
+    -2px -2px 3px color-mix(in srgb, var(--mpx-skeuo-shadow-light) 82%, transparent),
+    0 1px 0 color-mix(in srgb, var(--mpx-sidebar-node-bg, var(--mpx-player-btn-bg)) 78%, #ffffff 22%);
 }
 
 .sidebar-row.is-hover-active .sidebar-label {
