@@ -935,13 +935,6 @@ export const subtitleCueSchema = z.object({
   lang: z.string().min(1).nullable(),
 })
 
-export const subtitlePreviewCueSchema = z.object({
-  start_sec: z.number().min(0),
-  end_sec: z.number().min(0),
-  text: z.string().min(1),
-  lang: z.string().min(1).nullable(),
-})
-
 export const subtitleSessionEventSchema = z.object({
   code: z.string().min(1),
   level: z.enum(['info', 'warning', 'error']),
@@ -989,7 +982,6 @@ export const resetSubtitleSessionResponseSchema = z.object({
 export const flushSubtitleSessionResponseSchema = z.object({
   session_id: z.string().min(1).nullable(),
   cues: z.array(subtitleCueSchema),
-  preview: subtitlePreviewCueSchema.nullable().optional(),
   events: z.array(subtitleSessionEventSchema),
   updated_at_ms: z.number().int().positive(),
 })
@@ -1011,28 +1003,8 @@ export const pushSubtitleAudioResponseSchema = z.object({
   accepted: z.boolean(),
   provider: subtitleSessionProviderSchema.nullable(),
   cues: z.array(subtitleCueSchema),
-  preview: subtitlePreviewCueSchema.nullable().optional(),
   events: z.array(subtitleSessionEventSchema),
   updated_at_ms: z.number().int().positive(),
-})
-
-export const subtitlePrecomputeSourceSchema = z.enum(['cache', 'generated'])
-
-export const precomputeSubtitleCuesRequestSchema = z.object({
-  video_path: z.string().min(1),
-  model_dir: z.string().min(1),
-  model_id: z.string().min(1),
-  provider_preference: subtitleSessionProviderPreferenceSchema,
-  language: z.string().min(1).default('auto'),
-  fallback_to_cpu: z.boolean().default(true),
-})
-
-export const precomputeSubtitleCuesResponseSchema = z.object({
-  source: subtitlePrecomputeSourceSchema,
-  cache_key: z.string().min(1),
-  cues: z.array(subtitleCueSchema),
-  events: z.array(subtitleSessionEventSchema),
-  generated_at_ms: z.number().int().positive(),
 })
 
 export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
@@ -1251,7 +1223,6 @@ export type ClearSubtitleLocalModelResponseDto = z.infer<typeof clearSubtitleLoc
 export type SubtitleSessionProviderPreferenceDto = z.infer<typeof subtitleSessionProviderPreferenceSchema>
 export type SubtitleSessionProviderDto = z.infer<typeof subtitleSessionProviderSchema>
 export type SubtitleCueDto = z.infer<typeof subtitleCueSchema>
-export type SubtitlePreviewCueDto = z.infer<typeof subtitlePreviewCueSchema>
 export type SubtitleSessionEventDto = z.infer<typeof subtitleSessionEventSchema>
 export type StartSubtitleSessionRequestDto = z.infer<typeof startSubtitleSessionRequestSchema>
 export type StartSubtitleSessionResponseDto = z.infer<typeof startSubtitleSessionResponseSchema>
@@ -1262,9 +1233,6 @@ export type ResetSubtitleSessionResponseDto = z.infer<typeof resetSubtitleSessio
 export type FlushSubtitleSessionResponseDto = z.infer<typeof flushSubtitleSessionResponseSchema>
 export type PushSubtitleAudioRequestDto = z.infer<typeof pushSubtitleAudioRequestSchema>
 export type PushSubtitleAudioResponseDto = z.infer<typeof pushSubtitleAudioResponseSchema>
-export type SubtitlePrecomputeSourceDto = z.infer<typeof subtitlePrecomputeSourceSchema>
-export type PrecomputeSubtitleCuesRequestDto = z.infer<typeof precomputeSubtitleCuesRequestSchema>
-export type PrecomputeSubtitleCuesResponseDto = z.infer<typeof precomputeSubtitleCuesResponseSchema>
 export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
 export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
 export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>

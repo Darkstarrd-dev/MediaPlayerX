@@ -49,7 +49,6 @@ export const BACKEND_CHANNELS = {
   resetSubtitleSession: 'backend:resetSubtitleSession',
   flushSubtitleSession: 'backend:flushSubtitleSession',
   pushSubtitleAudio: 'backend:pushSubtitleAudio',
-  precomputeSubtitleCues: 'backend:precomputeSubtitleCues',
   readRuntimeInfo: 'backend:readRuntimeInfo',
   setRuntimeStoragePaths: 'backend:setRuntimeStoragePaths',
   readMediaAccessAudit: 'backend:readMediaAccessAudit',

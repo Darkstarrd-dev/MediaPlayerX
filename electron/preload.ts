@@ -34,8 +34,6 @@ import {
   flushSubtitleSessionResponseSchema,
   pushSubtitleAudioRequestSchema,
   pushSubtitleAudioResponseSchema,
-  precomputeSubtitleCuesRequestSchema,
-  precomputeSubtitleCuesResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -354,11 +352,6 @@ const backendApi = {
     const parsed = pushSubtitleAudioRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pushSubtitleAudio, parsed)
     return pushSubtitleAudioResponseSchema.parse(response)
-  },
-  precomputeSubtitleCues: async (request: unknown) => {
-    const parsed = precomputeSubtitleCuesRequestSchema.parse(request)
-    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.precomputeSubtitleCues, parsed)
-    return precomputeSubtitleCuesResponseSchema.parse(response)
   },
   readRuntimeInfo: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeInfo)

@@ -15,18 +15,9 @@ import {
   type StartSubtitleSessionRequestDto,
   type StopSubtitleSessionRequestDto,
   type SubtitleCueDto,
-  type SubtitlePreviewCueDto,
   type SubtitleSessionEventDto,
   type SubtitleSessionProviderDto,
 } from '../../src/contracts/backend'
-import {
-  DEFAULT_SUBTITLE_SHAPING_OPTIONS,
-  SubtitleCueShaper,
-} from '../../src/features/subtitles/pipeline/shaper'
-import type {
-  SubtitlePreviewCue,
-  SubtitleShapedCue,
-} from '../../src/features/subtitles/pipeline/types'
 
 type SubtitleWorkerCommand = 'init' | 'stop' | 'reset' | 'flush' | 'push-audio'
 
@@ -64,8 +55,6 @@ interface RuntimeSessionState {
   committedText: string
   cueSeed: number
   requestedLanguage: string
-  detectedLanguage: string | null
-  shaper: SubtitleCueShaper
 }
 
 let runtimeSession: RuntimeSessionState | null = null
@@ -340,94 +329,43 @@ function makeCueId(sessionId: string, cueSeed: number): string {
   return `${sessionId}:${cueSeed}`
 }
 
-function resolveCueLanguage(currentSession: RuntimeSessionState): string | null {
-  if (currentSession.requestedLanguage !== 'auto') {
-    return currentSession.requestedLanguage
-  }
-  return currentSession.detectedLanguage
-}
-
-function toSubtitleCueDto(currentSession: RuntimeSessionState, cue: SubtitleShapedCue): SubtitleCueDto {
-  currentSession.cueSeed += 1
-  return {
-    id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
-    start_sec: cue.startSec,
-    end_sec: cue.endSec,
-    text: cue.text,
-    lang: resolveCueLanguage(currentSession),
-  }
-}
-
-function toSubtitlePreviewCueDto(currentSession: RuntimeSessionState, cue: SubtitlePreviewCue | null): SubtitlePreviewCueDto | null {
-  if (!cue) {
-    return null
-  }
-
-  return {
-    start_sec: cue.startSec,
-    end_sec: cue.endSec,
-    text: cue.text,
-    lang: resolveCueLanguage(currentSession),
-  }
-}
-
-function decodeAndShapeSubtitle(
+function tryDecodeAndBuildCues(
   currentSession: RuntimeSessionState,
   timelineStartSec: number,
   timelineEndSec: number,
-): {
-  cues: SubtitleCueDto[]
-  preview: SubtitlePreviewCueDto | null
-} {
+): SubtitleCueDto[] {
   currentSession.recognizer.decode(currentSession.stream)
   const result = currentSession.recognizer.getResult(currentSession.stream)
-  if (currentSession.requestedLanguage === 'auto') {
-    currentSession.detectedLanguage = normalizeLangTag(result.lang)
-  }
-
   const currentText = normalizeRecognizedText(result.text)
   if (!currentText) {
-    return {
-      cues: [],
-      preview: toSubtitlePreviewCueDto(currentSession, currentSession.shaper.getPreviewCue()),
-    }
+    return []
   }
 
   const delta = computeTextDelta(currentSession.committedText, currentText)
   currentSession.committedText = currentText
   if (!delta) {
-    return {
-      cues: [],
-      preview: toSubtitlePreviewCueDto(currentSession, currentSession.shaper.getPreviewCue()),
-    }
+    return []
   }
 
-  const shaped = currentSession.shaper.ingestDelta({
-    text: delta,
-    startSec: timelineStartSec,
-    endSec: timelineEndSec,
-  })
+  const durationSec = Math.max(1.2, Math.min(5, delta.length * 0.22))
+  const cueStart = Math.max(0, Math.max(timelineStartSec, timelineEndSec - durationSec * 0.8))
+  const cueEnd = Math.max(cueStart + 0.4, cueStart + durationSec)
 
-  const cues = shaped.cues.map((cue) => toSubtitleCueDto(currentSession, cue))
+  const cueLanguage =
+    currentSession.requestedLanguage === 'auto'
+      ? normalizeLangTag(result.lang)
+      : currentSession.requestedLanguage
 
-  return {
-    cues,
-    preview: toSubtitlePreviewCueDto(currentSession, shaped.preview),
-  }
-}
-
-function flushBySilence(
-  currentSession: RuntimeSessionState,
-  nowSec: number,
-): {
-  cues: SubtitleCueDto[]
-  preview: SubtitlePreviewCueDto | null
-} {
-  const shaped = currentSession.shaper.flushBySilence(nowSec)
-  return {
-    cues: shaped.cues.map((cue) => toSubtitleCueDto(currentSession, cue)),
-    preview: toSubtitlePreviewCueDto(currentSession, shaped.preview),
-  }
+  currentSession.cueSeed += 1
+  return [
+    {
+      id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
+      start_sec: cueStart,
+      end_sec: cueEnd,
+      text: delta,
+      lang: cueLanguage,
+    },
+  ]
 }
 
 async function handleInit(rawPayload: unknown): Promise<unknown> {
@@ -479,8 +417,6 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     committedText: '',
     cueSeed: 0,
     requestedLanguage: normalizedLanguage,
-    detectedLanguage: null,
-    shaper: new SubtitleCueShaper(DEFAULT_SUBTITLE_SHAPING_OPTIONS),
   }
 
   return startSubtitleSessionResponseSchema.parse({
@@ -523,8 +459,6 @@ async function handleReset(rawPayload: unknown): Promise<unknown> {
   currentSession.stream = currentSession.recognizer.createStream()
   currentSession.pendingSamplesSinceDecode = 0
   currentSession.committedText = ''
-  currentSession.detectedLanguage = null
-  currentSession.shaper.reset()
   return resetSubtitleSessionResponseSchema.parse({
     session_id: currentSession.sessionId,
     ok: true,
@@ -535,28 +469,17 @@ async function handleReset(rawPayload: unknown): Promise<unknown> {
 
 async function handleFlush(): Promise<unknown> {
   const currentSession = runtimeSession
-  let cues: SubtitleCueDto[] = []
-  let preview: SubtitlePreviewCueDto | null = null
-
-  if (currentSession) {
-    const decoded = decodeAndShapeSubtitle(
-      currentSession,
-      Math.max(0, currentSession.lastChunkEndSec - 2),
-      currentSession.lastChunkEndSec,
-    )
-    cues = decoded.cues
-
-    const flushed = currentSession.shaper.flushAll().map((cue) => toSubtitleCueDto(currentSession, cue))
-    if (flushed.length > 0) {
-      cues = [...cues, ...flushed]
-    }
-    preview = toSubtitlePreviewCueDto(currentSession, currentSession.shaper.getPreviewCue())
-  }
+  const cues = currentSession
+    ? tryDecodeAndBuildCues(
+        currentSession,
+        Math.max(0, currentSession.lastChunkEndSec - 2),
+        currentSession.lastChunkEndSec,
+      )
+    : []
 
   return flushSubtitleSessionResponseSchema.parse({
     session_id: currentSession?.sessionId ?? null,
     cues,
-    preview,
     events: [],
     updated_at_ms: nowMs(),
   })
@@ -597,18 +520,9 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
     rms >= 0.002
 
   let cues: SubtitleCueDto[] = []
-  let preview: SubtitlePreviewCueDto | null = toSubtitlePreviewCueDto(currentSession, currentSession.shaper.getPreviewCue())
   if (shouldDecode) {
     currentSession.pendingSamplesSinceDecode = 0
-    const decoded = decodeAndShapeSubtitle(currentSession, request.chunk_start_sec, request.chunk_end_sec)
-    cues = decoded.cues
-    preview = decoded.preview
-  } else if (rms < 0.0015) {
-    const flushed = flushBySilence(currentSession, request.chunk_end_sec)
-    if (flushed.cues.length > 0) {
-      cues = [...cues, ...flushed.cues]
-    }
-    preview = flushed.preview
+    cues = tryDecodeAndBuildCues(currentSession, request.chunk_start_sec, request.chunk_end_sec)
   }
 
   return pushSubtitleAudioResponseSchema.parse({
@@ -616,7 +530,6 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
     accepted: true,
     provider: currentSession.provider,
     cues,
-    preview,
     events,
     updated_at_ms: nowMs(),
   })

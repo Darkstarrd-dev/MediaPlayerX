@@ -815,7 +815,6 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
       {
         session_id: session?.sessionId ?? null,
         cues: [],
-        preview: null,
         events: [],
         updated_at_ms: Date.now(),
       },
@@ -835,7 +834,6 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
         accepted: Boolean(session?.running),
         provider: session?.provider ?? null,
         cues: [],
-        preview: null,
         events: session?.running
           ? []
           : [

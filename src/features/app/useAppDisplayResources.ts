@@ -599,7 +599,6 @@ export function useAppDisplayResources({
   const liveSubtitle = useLiveSubtitles({
     enabled: autoSubtitleActive,
     videoElement: activeVideoElement,
-    videoPath: focusedVideoEffective?.absolutePath ?? null,
     currentTimeSec: Math.max(0, videoTime),
     modelDir: subtitleModelDir,
     modelId: subtitleModelId,
