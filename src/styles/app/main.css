@@ -126,6 +126,10 @@
   border: var(--mpx-card-border-width) solid var(--mpx-border-1);
   border-radius: var(--mpx-card-radius);
   background: var(--mpx-bg-workspace);
+  box-shadow:
+    inset 6px 6px 14px color-mix(in srgb, var(--mpx-skeuo-shadow-dark, #0b0d10) 44%, transparent),
+    inset -6px -6px 14px color-mix(in srgb, var(--mpx-skeuo-shadow-light, #ffffff) 72%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--mpx-skeuo-shadow-light, #ffffff) 65%, transparent);
   padding: 8px;
   isolation: isolate;
   display: grid;
@@ -346,8 +350,8 @@
   overflow: hidden;
 }
 
-.name-list-header,
-.name-list-row {
+
+.name-list-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 120px 140px;
   align-items: center;
@@ -373,7 +377,7 @@
   border: 0;
   border-bottom: 1px solid var(--mpx-border-1);
   background: var(--mpx-bg-elevated);
-  padding: 9px 12px;
+  padding: 0;
   text-align: left;
   color: var(--mpx-text-1);
   cursor: pointer;
@@ -401,7 +405,7 @@
 
 .name-list-row-main {
   border: 0;
-  padding: 9px 0;
+  padding: 9px 12px;
   margin: 0;
   background: transparent;
   display: grid;
@@ -411,6 +415,8 @@
   text-align: left;
   color: var(--mpx-text-1);
   cursor: pointer;
+  width: 100%;
+  border-radius: 0;
 }
 
 .music-name-list .name-list-header,

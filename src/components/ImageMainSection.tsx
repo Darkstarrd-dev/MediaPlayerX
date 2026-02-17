@@ -281,6 +281,10 @@ function ImageMainSection({
   const [scaleDraftValue, setScaleDraftValue] = useState(
     Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(thumbnailScaleLevel))),
   )
+  const [nameListDimsById, setNameListDimsById] = useState<Record<string, { width: number; height: number }>>({})
+  const nameListDimsLoadingRef = useRef<Set<string>>(new Set())
+  const nameListBodyRef = useRef<HTMLDivElement | null>(null)
+  const [nameListRange, setNameListRange] = useState<{ start: number; end: number }>({ start: 0, end: 0 })
   const scalePopoverHideTimerRef = useRef<number | null>(null)
 
   const scaleLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(thumbnailScaleLevel)))
@@ -288,6 +292,59 @@ function ImageMainSection({
   useEffect(() => {
     setScaleDraftValue(scaleLevel)
   }, [scaleLevel])
+
+  useEffect(() => {
+    if (!showNamesOnly) {
+      return
+    }
+
+    const body = nameListBodyRef.current
+    if (!body) {
+      return
+    }
+
+    let rafId: number | null = null
+    const bufferRows = 6
+
+    const compute = () => {
+      const row = body.querySelector('.name-list-row')
+      const rowHeight = row instanceof HTMLElement ? (row.getBoundingClientRect().height || 42) : 42
+      const totalRows = visibleImageRefs.length
+      const scrollTop = body.scrollTop
+      const viewportHeight = body.clientHeight
+      const visibleCount = Math.ceil(viewportHeight / Math.max(1, rowHeight))
+      const start = Math.max(0, Math.floor(scrollTop / Math.max(1, rowHeight)) - bufferRows)
+      const end = Math.min(totalRows, start + visibleCount + bufferRows * 2)
+
+      setNameListRange((previous) => {
+        if (previous.start === start && previous.end === end) {
+          return previous
+        }
+        return { start, end }
+      })
+    }
+
+    const schedule = () => {
+      if (rafId != null) {
+        return
+      }
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null
+        compute()
+      })
+    }
+
+    schedule()
+    body.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      body.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      if (rafId != null) {
+        window.cancelAnimationFrame(rafId)
+      }
+    }
+  }, [showNamesOnly, visibleImageRefs.length])
 
   useEffect(() => {
     // Keep focused thumbnail fully visible when navigating via keyboard,
@@ -546,6 +603,93 @@ function ImageMainSection({
       onGridElementChange(null)
     }
   }, [gridRef, nodeBrowseMode, onGridElementChange, showNamesOnly])
+
+  useEffect(() => {
+    if (!showNamesOnly) {
+      return
+    }
+
+    if (IS_TEST_MODE) {
+      return
+    }
+
+    const api = window.mediaPlayerBackend
+    if (!api?.readImageMetadata) {
+      return
+    }
+
+    let cancelled = false
+    const maxConcurrent = 3
+
+    const itemsToLoad: Array<{ imageId: string; packageId: string; imageIndex: number }> = []
+    const startIndex = Math.max(0, nameListRange.start)
+    const endIndex = Math.min(visibleImageRefs.length, Math.max(nameListRange.end, startIndex))
+    for (let index = startIndex; index < endIndex; index += 1) {
+      const ref = visibleImageRefs[index]
+      const pkg = packageById.get(ref.packageId)
+      const image = pkg?.images[ref.imageIndex]
+      if (!image) {
+        continue
+      }
+
+      const existing = nameListDimsById[image.id]
+      const width = existing?.width ?? image.width
+      const height = existing?.height ?? image.height
+      if (width > 0 && height > 0) {
+        continue
+      }
+
+      if (nameListDimsLoadingRef.current.has(image.id)) {
+        continue
+      }
+
+      nameListDimsLoadingRef.current.add(image.id)
+      itemsToLoad.push({ imageId: image.id, packageId: ref.packageId, imageIndex: ref.imageIndex })
+    }
+
+    if (itemsToLoad.length === 0) {
+      return
+    }
+
+    const workers = Array.from({ length: Math.min(maxConcurrent, itemsToLoad.length) }, async () => {
+      while (!cancelled && itemsToLoad.length > 0) {
+        const next = itemsToLoad.pop()
+        if (!next) {
+          return
+        }
+
+        try {
+          const response = await api.readImageMetadata({
+            package_id: next.packageId,
+            image_index: next.imageIndex,
+            include_hidden: manageMode ? true : undefined,
+          })
+          const width = response?.image?.width ?? 0
+          const height = response?.image?.height ?? 0
+          if (!cancelled && width > 0 && height > 0) {
+            setNameListDimsById((previous) => {
+              if (previous[next.imageId]) {
+                return previous
+              }
+              return { ...previous, [next.imageId]: { width, height } }
+            })
+          }
+        } catch {
+          // ignore
+        } finally {
+          nameListDimsLoadingRef.current.delete(next.imageId)
+        }
+      }
+    })
+
+    void Promise.all(workers)
+    return () => {
+      cancelled = true
+      for (const item of itemsToLoad) {
+        nameListDimsLoadingRef.current.delete(item.imageId)
+      }
+    }
+  }, [manageMode, nameListDimsById, nameListRange.end, nameListRange.start, packageById, showNamesOnly, visibleImageRefs])
 
   const { marqueeStyle, startMarqueeSelection, startThumbnailDragToggle } = useManageImageSelectionInteractions({
     manageMode,
@@ -906,6 +1050,7 @@ function ImageMainSection({
           </div>
           <div
             className="name-list-body"
+            ref={nameListBodyRef}
             onMouseDown={(event) => {
               startMarqueeSelection(event)
               startThumbnailDragToggle(event)
@@ -918,12 +1063,15 @@ function ImageMainSection({
                 return null
               }
 
-              const fileName = mediaLocatorFileName(image.mediaLocator)
-              const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
-              const isChecked = checkedImageIds.has(image.id)
-              const isAdReviewCandidate = adReviewCandidateImageIds.has(image.id)
-              const isAdReviewExcluded = manageMode && isAdReviewCandidate && !isChecked
-              return (
+               const fileName = mediaLocatorFileName(image.mediaLocator)
+               const resolvedDims = nameListDimsById[image.id]
+               const resolvedWidth = resolvedDims?.width ?? image.width
+               const resolvedHeight = resolvedDims?.height ?? image.height
+               const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
+               const isChecked = checkedImageIds.has(image.id)
+               const isAdReviewCandidate = adReviewCandidateImageIds.has(image.id)
+               const isAdReviewExcluded = manageMode && isAdReviewCandidate && !isChecked
+               return (
                 <div
                   key={`${ref.packageId}-${ref.imageIndex}`}
                   data-manage-image-id={image.id}
@@ -938,13 +1086,13 @@ function ImageMainSection({
                     onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
                     onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
                   >
-                    <span>{`${manageMode && image.hidden ? `${t('ui.image.hiddenPrefix')} ` : ''}${pkg.displayName}/${fileName}`}</span>
-                    <span>{`${image.sizeKb}KB`}</span>
-                    <span>{image.width > 0 && image.height > 0 ? `${image.width} x ${image.height}` : '-'}</span>
-                  </button>
-                </div>
-              )
-            })}
+                     <span>{`${manageMode && image.hidden ? `${t('ui.image.hiddenPrefix')} ` : ''}${pkg.displayName}/${fileName}`}</span>
+                     <span>{`${image.sizeKb}KB`}</span>
+                     <span>{resolvedWidth > 0 && resolvedHeight > 0 ? `${resolvedWidth} x ${resolvedHeight}` : '-'}</span>
+                   </button>
+                 </div>
+               )
+             })}
           </div>
         </div>
       ) : (
