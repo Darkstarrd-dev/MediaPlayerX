@@ -23,6 +23,8 @@
 ## 当前实施计划
 
 - `ad-review-audit-mode-fix-implementation-plan.md`：广告审核模式 5 项问题修复计划（分 Phase、最小读取、测试门禁、提交推送门禁）。
+- `offline-auto-subtitle-implementation-plan.md`：离线自动字幕实施方案（可选安装、模型按需下载、DirectML/CPU 自动回退、分 Phase 门禁）。
+- `offline-auto-subtitle-phase0-report.md`：离线自动字幕 Phase 0 执行记录（探针脚本、阻塞项、风险清单）。
 
 ## 主题与 UI
 
@@ -63,7 +65,7 @@
 9. 完善未定义按钮 tooltip：补齐缺失文案 key 与挂载点，保证 icon-only 按钮 hover/focus 都能给出说明。
 10. 调整 tooltip 容器样式以适配 day/night 双模式（含对比度、边框、阴影和背景透明度）。
 11. 将 tooltip 字体大小配置接入设置面板，并纳入 theme token 与持久化设置。
-12. 参考 `docs/ref/subtitle.md` 启动自动字幕生成实施计划，明确阶段拆分、依赖能力、失败回退和验收门禁。
+12. 按 `docs/offline-auto-subtitle-implementation-plan.md` 执行离线自动字幕实施；研究依据保留 `docs/ref/subtitle.md`。
 13. 参考 `https://idc.xpzsd.codes/` 的背景特效和边框特效方案。
 14. 基于 tags 的近似推荐系统。
 15. 基于用户 stars 评分的 random 推荐系统。

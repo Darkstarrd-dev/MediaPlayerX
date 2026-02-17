@@ -196,6 +196,7 @@ export function FullscreenVideoPane({
                 objectPosition: 'center center',
               }}
               src={focusedVideoSrc}
+              crossOrigin="anonymous"
               preload="metadata"
               playsInline
               loop={videoLoopMode === 'single'}

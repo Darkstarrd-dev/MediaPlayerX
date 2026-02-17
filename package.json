@@ -17,6 +17,7 @@
     "desktop:pack:signed": "node scripts/electron-pack.mjs --signed",
     "desktop:build": "npm run desktop:bundle && npm run desktop:pack",
     "desktop:start": "npm run desktop:bundle && node scripts/electron-start.mjs",
+    "subtitle:phase0": "node scripts/subtitle-phase0-spike.mjs",
     "mock:splash": "tsx scripts/export-startup-splash-mock.mjs",
     "lint": "eslint .",
     "format:check": "node scripts/prettier-check-scoped.mjs",
@@ -42,6 +43,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "sharp": "^0.34.5",
+    "sherpa-onnx-node": "^1.12.25",
     "socks-proxy-agent": "^8.0.5",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"

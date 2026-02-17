@@ -384,6 +384,7 @@ function VideoMainSection({
               objectPosition: 'center center',
             }}
             src={videoSourceUrl}
+            crossOrigin="anonymous"
             preload="metadata"
             playsInline
             onTimeUpdate={() => {
