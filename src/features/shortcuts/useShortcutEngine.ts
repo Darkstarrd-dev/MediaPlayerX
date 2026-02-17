@@ -32,6 +32,8 @@ interface UseShortcutEngineParams {
   onSetImageFocusActive: (active: boolean) => void
   onSetFullscreenActive: (value: boolean | ((previous: boolean) => boolean)) => void
   onToggleFullscreenPaneFocus: () => void
+  onToggleFullscreenDualDisplay: () => void
+  onToggleFullscreenSwapSides: () => void
   onToggleSidebarFocus: () => void
   onMoveImage: (delta: number) => void
   onMoveImageVertical: (direction: 'up' | 'down') => void
@@ -75,6 +77,8 @@ export function useShortcutEngine({
   onSetImageFocusActive,
   onSetFullscreenActive,
   onToggleFullscreenPaneFocus,
+  onToggleFullscreenDualDisplay,
+  onToggleFullscreenSwapSides,
   onToggleSidebarFocus,
   onMoveImage,
   onMoveImageVertical,
@@ -439,6 +443,34 @@ export function useShortcutEngine({
       }
 
       if (
+        fullscreenActive &&
+        (mode === 'image' || mode === 'video') &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey &&
+        event.code === 'KeyD'
+      ) {
+        event.preventDefault()
+        onToggleFullscreenDualDisplay()
+        return
+      }
+
+      if (
+        fullscreenActive &&
+        fullscreenDisplay === 'dual' &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey &&
+        event.code === 'KeyS'
+      ) {
+        event.preventDefault()
+        onToggleFullscreenSwapSides()
+        return
+      }
+
+      if (
         !fullscreenActive &&
         mode === 'image' &&
         event.ctrlKey &&
@@ -535,7 +567,9 @@ export function useShortcutEngine({
     mode,
     onSetFullscreenActive,
     onSetImageFocusActive,
+    onToggleFullscreenDualDisplay,
     onToggleFullscreenPaneFocus,
+    onToggleFullscreenSwapSides,
     onGoPackage,
     onAlignFocus,
     onImageCtrlWheelNavigateSidebar,

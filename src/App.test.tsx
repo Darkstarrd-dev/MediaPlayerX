@@ -2316,6 +2316,50 @@ describe("MediaPlayer 虚拟 UI", () => {
     expect(imageModeButton.classList.contains("is-active")).toBe(false);
   });
 
+  it("全屏 D/S 快捷键支持双屏切换、按焦点回单屏与左右交换", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+    expect(screen.queryByLabelText("调整全屏分屏比例")).not.toBeInTheDocument();
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
+    const videoPane = document.querySelector(".fullscreen-video") as HTMLElement | null;
+    expect(imagePane).not.toBeNull();
+    expect(videoPane).not.toBeNull();
+    expect((videoPane as HTMLElement).classList.contains("is-pane-focus")).toBe(true);
+
+    fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
+    expect((imagePane as HTMLElement).classList.contains("is-pane-focus")).toBe(true);
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.queryByLabelText("调整全屏分屏比例")).not.toBeInTheDocument();
+    });
+    expect(document.querySelector(".fullscreen-image")).not.toBeNull();
+    expect(document.querySelector(".fullscreen-video")).toBeNull();
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    const fullscreenContent = document.querySelector(".fullscreen-content") as HTMLElement | null;
+    expect(fullscreenContent).not.toBeNull();
+    const firstPaneBeforeSwap = fullscreenContent?.querySelector(".fullscreen-pane") as HTMLElement | null;
+    const beforeImageFirst = firstPaneBeforeSwap?.classList.contains("fullscreen-image") ?? false;
+
+    await keyDown(window, { key: "s", code: "KeyS" });
+    const firstPaneAfterSwap = fullscreenContent?.querySelector(".fullscreen-pane") as HTMLElement | null;
+    const afterImageFirst = firstPaneAfterSwap?.classList.contains("fullscreen-image") ?? false;
+    expect(afterImageFirst).toBe(!beforeImageFirst);
+  });
+
   it("视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应", async () => {
     render(<App />);
 

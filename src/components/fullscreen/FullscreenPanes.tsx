@@ -55,6 +55,11 @@ export function FullscreenImagePane({
           onSetVideoFocus(false)
         }
       }}
+      onMouseMove={() => {
+        if (fullscreenDisplay === 'dual') {
+          onSetVideoFocus(false)
+        }
+      }}
       onWheel={onWheel}
       onMouseDown={onMouseDown}
     >
@@ -199,6 +204,11 @@ export function FullscreenVideoPane({
       className={className}
       style={{ flex }}
       onClick={() => {
+        if (fullscreenDisplay === 'dual') {
+          onSetVideoFocus(true)
+        }
+      }}
+      onMouseMove={() => {
         if (fullscreenDisplay === 'dual') {
           onSetVideoFocus(true)
         }

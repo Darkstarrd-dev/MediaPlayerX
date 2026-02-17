@@ -22,6 +22,8 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onSetImageFocusActive: vi.fn(),
     onSetFullscreenActive: vi.fn(),
     onToggleFullscreenPaneFocus: vi.fn(),
+    onToggleFullscreenDualDisplay: vi.fn(),
+    onToggleFullscreenSwapSides: vi.fn(),
     onToggleSidebarFocus: vi.fn(),
     onMoveImage: vi.fn(),
     onMoveImageVertical: vi.fn(),
@@ -250,5 +252,30 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
     expect(params.onSetFullscreenActive).toHaveBeenNthCalledWith(1, expect.any(Function))
     expect(params.onSetFullscreenActive).toHaveBeenNthCalledWith(2, true)
+  })
+
+  it('fullscreen image/video mode maps D to dual/single toggle handler', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'd', code: 'KeyD', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleFullscreenDualDisplay).toHaveBeenCalledTimes(1)
+  })
+
+  it('fullscreen dual mode maps S to swap-sides handler', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'dual'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', code: 'KeyS', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleFullscreenSwapSides).toHaveBeenCalledTimes(1)
   })
 })

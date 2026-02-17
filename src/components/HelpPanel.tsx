@@ -165,6 +165,21 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         action: t('ui.help.fullscreen.keyboard.tabDualFocusSwitch'),
       },
       {
+        key: 'fullscreen-mode-switch-f1-f3',
+        shortcut: 'F1 / F2 / F3',
+        action: t('ui.help.image.keyboard.modeSwitchF1F3'),
+      },
+      {
+        key: 'fullscreen-dual-toggle-d',
+        shortcut: 'D',
+        action: `${t('ui.fullscreen.singleDisplay')} / ${t('ui.fullscreen.dualDisplay')}`,
+      },
+      {
+        key: 'fullscreen-swap-sides-s',
+        shortcut: 'S',
+        action: t('ui.fullscreen.swapSides'),
+      },
+      {
         key: 'fullscreen-autoplay-toggle',
         shortcut: renderShortcutBinding(shortcuts.autoplayToggle, t('ui.help.shortcutNotSet')),
         action: t('ui.help.fullscreen.keyboard.autoplayToggle'),

@@ -17,6 +17,7 @@ interface UseAppShortcutBindingsParams {
   sidebarFocus: ShortcutEngineParams['sidebarFocus']
   fullscreenActive: boolean
   fullscreenDisplay: ShortcutEngineParams['fullscreenDisplay']
+  fullscreenVideoFocus: boolean
   imageFocusActive: boolean
   manageMode: boolean
   videoShortcutActive: boolean
@@ -24,7 +25,10 @@ interface UseAppShortcutBindingsParams {
   handleSidebarNavigationKey: ShortcutEngineParams['handleSidebarNavigationKey']
   setImageFocusActive: Dispatch<SetStateAction<boolean>>
   setFullscreenActiveWithAutoStop: ShortcutEngineParams['onSetFullscreenActive']
+  setFullscreenEntryDisplay: Dispatch<SetStateAction<'image-only' | 'video-only'>>
+  setFullscreenDisplay: Dispatch<SetStateAction<'dual' | 'video-only' | 'image-only'>>
   setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
+  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>
   moveImage: ShortcutEngineParams['onMoveImage']
   moveImageVertical: ShortcutEngineParams['onMoveImageVertical']
   jumpImageBoundary: ShortcutEngineParams['onJumpImageBoundary']
@@ -61,6 +65,7 @@ export function useAppShortcutBindings({
   sidebarFocus,
   fullscreenActive,
   fullscreenDisplay,
+  fullscreenVideoFocus,
   imageFocusActive,
   manageMode,
   videoShortcutActive,
@@ -68,7 +73,10 @@ export function useAppShortcutBindings({
   handleSidebarNavigationKey,
   setImageFocusActive,
   setFullscreenActiveWithAutoStop,
+  setFullscreenEntryDisplay,
+  setFullscreenDisplay,
   setFullscreenVideoFocus,
+  setFullscreenSwapped,
   moveImage,
   moveImageVertical,
   jumpImageBoundary,
@@ -115,6 +123,29 @@ export function useAppShortcutBindings({
         return
       }
       setFullscreenVideoFocus((value) => !value)
+    },
+    onToggleFullscreenDualDisplay: () => {
+      if (!fullscreenActive || (mode !== 'image' && mode !== 'video')) {
+        return
+      }
+
+      if (fullscreenDisplay === 'dual') {
+        const nextSingleDisplay = fullscreenVideoFocus ? 'video-only' : 'image-only'
+        setFullscreenEntryDisplay(nextSingleDisplay)
+        setFullscreenDisplay(nextSingleDisplay)
+        return
+      }
+
+      const currentSingleDisplay = fullscreenDisplay === 'video-only' ? 'video-only' : 'image-only'
+      setFullscreenEntryDisplay(currentSingleDisplay)
+      setFullscreenDisplay('dual')
+      setFullscreenVideoFocus(currentSingleDisplay === 'video-only')
+    },
+    onToggleFullscreenSwapSides: () => {
+      if (!fullscreenActive || fullscreenDisplay !== 'dual') {
+        return
+      }
+      setFullscreenSwapped((value) => !value)
     },
     onToggleSidebarFocus: () => {
       if (vectorResultsActive) {
