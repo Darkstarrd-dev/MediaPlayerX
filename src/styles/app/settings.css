@@ -532,6 +532,23 @@
   background: var(--mpx-main-bg);
 }
 
+.sidebar-rename-dialog {
+  width: min(560px, 92%);
+}
+
+.sidebar-rename-title {
+  margin: 0;
+  color: var(--mpx-text-1);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sidebar-rename-error {
+  margin: 0;
+  color: var(--mpx-status-danger-text);
+  font-size: 12px;
+}
+
 .manage-group-actions .feature-action-btn {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
   background: var(--mpx-btn-secondary-bg);

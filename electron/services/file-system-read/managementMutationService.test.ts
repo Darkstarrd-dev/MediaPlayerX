@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { LibrarySnapshotDto } from '../../../src/contracts/backend'
 import type { MediaAccessGuardContext } from '../../fileSystemMediaAccessGuard'
 import { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
-import { createImageSourceFixture } from '../../test-utils/mediaLibraryFixtures'
+import { createImageSourceFixture, createVideoFixture } from '../../test-utils/mediaLibraryFixtures'
 import { ImportPathRegistry } from './importPathRegistry'
 import { ManagementMutationService } from './managementMutationService'
 
@@ -36,6 +36,15 @@ function createSnapshotForPackages(packagePaths: string[]): LibrarySnapshotDto {
     ),
     image_directories: [],
     videos: [],
+    audios: [],
+  }
+}
+
+function createSnapshotForVideos(videoPaths: string[]): LibrarySnapshotDto {
+  return {
+    image_packages: [],
+    image_directories: [],
+    videos: videoPaths.map((absolutePath, index) => createVideoFixture(`video-${index + 1}`, absolutePath)),
     audios: [],
   }
 }
@@ -219,5 +228,84 @@ describe('ManagementMutationService.moveSidebarNodes', () => {
       { fromPath: sourceResolvedA, toPath: movedPathA },
     ])
     expect(sourceResolvedB).not.toBe(sourceResolvedA)
+  })
+})
+
+describe('ManagementMutationService.renameSidebarNode', () => {
+  const tempRoots: string[] = []
+
+  afterEach(async () => {
+    vi.restoreAllMocks()
+    await Promise.all(tempRoots.map((rootDir) => fs.rm(rootDir, { recursive: true, force: true })))
+    tempRoots.length = 0
+  })
+
+  it('重命名视频文件时未输入扩展名应保留原扩展名', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-video-ext-'))
+    tempRoots.push(rootDir)
+
+    const sourcePath = path.join(rootDir, 'videos', 'clip-a.mp4')
+    await ensureFile(sourcePath)
+
+    const snapshot = createSnapshotForVideos([sourcePath])
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.renameSidebarNode({
+      node_id: 'video:clip-a.mp4',
+      new_name: 'clip-b',
+    })
+
+    const sourceResolved = path.resolve(sourcePath)
+    const targetPath = path.resolve(path.join(rootDir, 'videos', 'clip-b.mp4'))
+    const expectedMappings = [{ fromPath: sourceResolved, toPath: targetPath }]
+
+    expect(response.renamed_count).toBe(1)
+    expect(response.failed).toEqual([])
+    expect(response.target_path).toBe(targetPath)
+
+    await expect(fs.stat(sourcePath)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(fs.stat(targetPath)).resolves.toMatchObject({ isFile: expect.any(Function) })
+
+    expect(harness.database.moveSnapshotEntriesByPaths).toHaveBeenCalledWith(expectedMappings)
+    expect(harness.pruneArchiveIndexesByDeletedRoots).toHaveBeenCalledWith([sourceResolved])
+    expect(harness.refreshArchiveIndexesForPaths).toHaveBeenCalledWith([targetPath])
+    expect(harness.replaceImportSourcePaths).toHaveBeenCalledWith(expectedMappings)
+    expect(harness.emitLibraryChanged).toHaveBeenCalledWith({
+      reason: 'manage-rename-sidebar-node',
+      updated_at_ms: expect.any(Number),
+    })
+  })
+
+  it('重命名视频文件时允许名称包含点号并自动保留原扩展名', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-video-change-ext-'))
+    tempRoots.push(rootDir)
+
+    const sourcePath = path.join(rootDir, 'videos', 'clip-a.mp4')
+    await ensureFile(sourcePath)
+
+    const snapshot = createSnapshotForVideos([sourcePath])
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.renameSidebarNode({
+      node_id: 'video:clip-a.mp4',
+      new_name: 'clip-b.mkv',
+    })
+
+    const sourceResolved = path.resolve(sourcePath)
+    const targetPath = path.resolve(path.join(rootDir, 'videos', 'clip-b.mkv.mp4'))
+    const expectedMappings = [{ fromPath: sourceResolved, toPath: targetPath }]
+
+    expect(response.renamed_count).toBe(1)
+    expect(response.failed).toEqual([])
+    expect(response.target_path).toBe(targetPath)
+
+    await expect(fs.stat(sourcePath)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(fs.stat(targetPath)).resolves.toMatchObject({ isFile: expect.any(Function) })
+    expect(harness.database.moveSnapshotEntriesByPaths).toHaveBeenCalledWith(expectedMappings)
+    expect(harness.replaceImportSourcePaths).toHaveBeenCalledWith(expectedMappings)
+    expect(harness.emitLibraryChanged).toHaveBeenCalledWith({
+      reason: 'manage-rename-sidebar-node',
+      updated_at_ms: expect.any(Number),
+    })
   })
 })

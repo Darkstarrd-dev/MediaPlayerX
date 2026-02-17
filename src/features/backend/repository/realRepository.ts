@@ -50,6 +50,7 @@ import {
   deleteImageItemsResponseSchema,
   deleteSidebarNodesResponseSchema,
   moveSidebarNodesResponseSchema,
+  renameSidebarNodeResponseSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskResponseSchema,
   pauseManageAdReviewTaskResponseSchema,
@@ -133,6 +134,8 @@ import {
   type DeleteSidebarNodesResponseDto,
   type MoveSidebarNodesRequestDto,
   type MoveSidebarNodesResponseDto,
+  type RenameSidebarNodeRequestDto,
+  type RenameSidebarNodeResponseDto,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
@@ -277,6 +280,16 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(moveSidebarNodes(request), options)
     return moveSidebarNodesResponseSchema.parse(response)
+  }
+
+  async renameSidebarNode(
+    request: RenameSidebarNodeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RenameSidebarNodeResponseDto> {
+    const renameSidebarNode = requireBackendMethod('renameSidebarNode')
+
+    const response = await withAbort(renameSidebarNode(request), options)
+    return renameSidebarNodeResponseSchema.parse(response)
   }
 
   async startManageAdReview(

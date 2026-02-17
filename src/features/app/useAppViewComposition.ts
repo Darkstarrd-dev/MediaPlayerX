@@ -1,10 +1,14 @@
+import { useCallback, useState } from 'react'
+
 import { useAppShellProps } from './useAppShellProps'
 import { useAppTopLayerBindings } from './useAppTopLayerBindings'
 import { useAppWorkspaceBindings } from './useAppWorkspaceBindings'
+import { toErrorDetailWithCode } from './errorCode'
 import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
 import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
 import type { MediaLocator } from '../../types'
+import { useI18n } from '../../i18n/useI18n'
 
 function resolveMediaLocatorPath(locator: MediaLocator): string {
   if (locator.kind === 'filesystem') {
@@ -74,6 +78,7 @@ export function useAppViewComposition({
   readNavigationState,
   displayState,
 }: UseAppViewCompositionParams) {
+  const { t } = useI18n()
   const {
     benchSettings,
     appSettings,
@@ -101,10 +106,96 @@ export function useAppViewComposition({
     setSelectedPackageId,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
+    sidebarRenameDialogOpen,
+    sidebarRenameTargetNodeId,
+    sidebarRenameDraft,
+    setSidebarRenameDialogOpen,
+    setSidebarRenameTargetNodeId,
+    setSidebarRenameDraft,
+    setManageOperationHint,
     appBodyRef,
     workspaceRef,
     workspaceBodyRef,
   } = sessionState
+
+  const [sidebarRenamePending, setSidebarRenamePending] = useState(false)
+  const [sidebarRenameError, setSidebarRenameError] = useState<string | null>(null)
+
+  const closeSidebarRenameDialog = useCallback(() => {
+    setSidebarRenameDialogOpen(false)
+    setSidebarRenameTargetNodeId(null)
+    setSidebarRenameDraft('')
+    setSidebarRenamePending(false)
+    setSidebarRenameError(null)
+  }, [setSidebarRenameDialogOpen, setSidebarRenameDraft, setSidebarRenameTargetNodeId])
+
+  const confirmSidebarRename = useCallback(async () => {
+    if (!displayState.backendWrite.renameSidebarNode) {
+      const unsupportedMessage = t('ui.manage.hint.renameUnsupported')
+      setManageOperationHint(unsupportedMessage)
+      setSidebarRenameError(unsupportedMessage)
+      closeSidebarRenameDialog()
+      return
+    }
+
+    const targetNodeId = sidebarRenameTargetNodeId?.trim() ?? ''
+    const targetName = sidebarRenameDraft.trim()
+    if (!targetNodeId) {
+      closeSidebarRenameDialog()
+      return
+    }
+    if (!targetName) {
+      const emptyMessage = t('ui.manage.hint.renameNameRequired')
+      setManageOperationHint(emptyMessage)
+      setSidebarRenameError(emptyMessage)
+      return
+    }
+
+    setSidebarRenamePending(true)
+    setSidebarRenameError(null)
+
+    try {
+      const response = await displayState.backendWrite.renameSidebarNode(targetNodeId, targetName)
+      if (response.renamed_count > 0) {
+        const kindDelimiterIndex = targetNodeId.indexOf(':')
+        const kind = kindDelimiterIndex > 0 ? targetNodeId.slice(0, kindDelimiterIndex) : ''
+        const nextPath = response.target_path?.replace(/\\/g, '/') ?? ''
+        if (kind && nextPath) {
+          const nextNodeId = `${kind}:${nextPath}`
+          sessionState.setSelectedSidebarNodeId(nextNodeId)
+          requestAnimationFrame(() => readNavigationState.ensureSidebarNodeVisible(nextNodeId))
+        }
+        setManageOperationHint(t('ui.manage.hint.renameSuccess'))
+        closeSidebarRenameDialog()
+        return
+      }
+
+      const failedReason = response.failed[0]?.reason ?? t('ui.manage.hint.operationFailedUnknownReason')
+      const failedMessage = t('ui.manage.hint.renameFailed', { message: failedReason })
+      setManageOperationHint(failedMessage)
+      setSidebarRenameError(failedMessage)
+    } catch (error) {
+      const failedMessage = t('ui.manage.hint.renameFailed', { message: toErrorDetailWithCode(error, t) })
+      setManageOperationHint(failedMessage)
+      setSidebarRenameError(failedMessage)
+    } finally {
+      readNavigationState.backendRead.retryLibrary()
+      readNavigationState.backendRead.retrySidebar()
+      readNavigationState.backendRead.retryPage()
+      readNavigationState.backendRead.retryMetadata()
+      setSidebarRenamePending(false)
+    }
+  }, [
+    closeSidebarRenameDialog,
+    displayState.backendWrite,
+    readNavigationState,
+    sessionState,
+    setManageOperationHint,
+    sidebarRenameDraft,
+    sidebarRenameTargetNodeId,
+    setSidebarRenamePending,
+    t,
+  ])
 
   const topLayerState = useAppTopLayerBindings({
     runtimeSources,
@@ -177,6 +268,20 @@ export function useAppViewComposition({
       onCancel: displayState.cancelManageGroup,
       onGroup: displayState.confirmManageGroup,
       onMove: displayState.confirmManageMove,
+    },
+    sidebarRenameDialogParams: {
+      open: sidebarRenameDialogOpen,
+      pending: sidebarRenamePending,
+      value: sidebarRenameDraft,
+      errorMessage: sidebarRenameError,
+      onChange: (value) => {
+        setSidebarRenameDraft(value)
+        if (sidebarRenameError) {
+          setSidebarRenameError(null)
+        }
+      },
+      onCancel: closeSidebarRenameDialog,
+      onConfirm: confirmSidebarRename,
     },
     e2eBenchSectionParams: {
       enabled: benchSettings.enabled,

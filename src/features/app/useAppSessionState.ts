@@ -41,6 +41,9 @@ export function useAppSessionState({
   const [manageReviewMode, setManageReviewMode] = useState<'ad' | 'cover'>('ad')
   const [manageOperationHint, setManageOperationHint] = useState<string | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [sidebarRenameDialogOpen, setSidebarRenameDialogOpen] = useState(false)
+  const [sidebarRenameTargetNodeId, setSidebarRenameTargetNodeId] = useState<string | null>(null)
+  const [sidebarRenameDraft, setSidebarRenameDraft] = useState('')
   const [importMenuOpen, setImportMenuOpen] = useState(false)
   const [adReviewPanelOpen, setAdReviewPanelOpen] = useState(false)
   const [adReviewFocusTaskId, setAdReviewFocusTaskId] = useState<string | null>(null)
@@ -103,6 +106,12 @@ export function useAppSessionState({
     setManageOperationHint,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
+    sidebarRenameDialogOpen,
+    setSidebarRenameDialogOpen,
+    sidebarRenameTargetNodeId,
+    setSidebarRenameTargetNodeId,
+    sidebarRenameDraft,
+    setSidebarRenameDraft,
     importMenuOpen,
     setImportMenuOpen,
     adReviewPanelOpen,

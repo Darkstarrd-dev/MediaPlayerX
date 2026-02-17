@@ -59,6 +59,8 @@ import {
   deleteSidebarNodesResponseSchema,
   moveSidebarNodesRequestSchema,
   moveSidebarNodesResponseSchema,
+  renameSidebarNodeRequestSchema,
+  renameSidebarNodeResponseSchema,
   startManageAdReviewRequestSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskRequestSchema,
@@ -242,6 +244,12 @@ export function registerBackendIpcHandlers(): void {
     const request = moveSidebarNodesRequestSchema.parse(payload)
     const response = await ensureService().moveSidebarNodes(request)
     return moveSidebarNodesResponseSchema.parse(response)
+  })
+
+  ipcMain.handle(BACKEND_CHANNELS.renameSidebarNode, async (_event, payload: unknown) => {
+    const request = renameSidebarNodeRequestSchema.parse(payload)
+    const response = await ensureService().renameSidebarNode(request)
+    return renameSidebarNodeResponseSchema.parse(response)
   })
 
   ipcMain.handle(BACKEND_CHANNELS.startManageAdReview, async (_event, payload: unknown) => {

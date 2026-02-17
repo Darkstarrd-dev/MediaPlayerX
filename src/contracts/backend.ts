@@ -307,6 +307,23 @@ export const moveSidebarNodesResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 })
 
+export const renameSidebarNodeRequestSchema = z.object({
+  node_id: z.string().min(1),
+  new_name: z.string().min(1),
+})
+
+export const renameSidebarNodeResponseSchema = z.object({
+  renamed_count: nonNegativeIntSchema,
+  failed: z.array(
+    z.object({
+      node_id: z.string().min(1),
+      reason: z.string().min(1),
+    }),
+  ),
+  target_path: z.string().min(1).nullable(),
+  updated_at_ms: z.number().int().positive(),
+})
+
 export const manageAdReviewSelectionScopeSchema = z.enum(['image', 'sidebar'])
 
 export const manageReviewModeSchema = z.enum(['ad', 'cover'])
@@ -1095,6 +1112,8 @@ export type DeleteSidebarNodesRequestDto = z.infer<typeof deleteSidebarNodesRequ
 export type DeleteSidebarNodesResponseDto = z.infer<typeof deleteSidebarNodesResponseSchema>
 export type MoveSidebarNodesRequestDto = z.infer<typeof moveSidebarNodesRequestSchema>
 export type MoveSidebarNodesResponseDto = z.infer<typeof moveSidebarNodesResponseSchema>
+export type RenameSidebarNodeRequestDto = z.infer<typeof renameSidebarNodeRequestSchema>
+export type RenameSidebarNodeResponseDto = z.infer<typeof renameSidebarNodeResponseSchema>
 export type ManageAdReviewSelectionScopeDto = z.infer<typeof manageAdReviewSelectionScopeSchema>
 export type ManageReviewModeDto = z.infer<typeof manageReviewModeSchema>
 export type ManageAdReviewDecisionSourceDto = z.infer<typeof manageAdReviewDecisionSourceSchema>

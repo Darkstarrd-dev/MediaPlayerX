@@ -12,6 +12,7 @@ import FullscreenLayer from './FullscreenLayer'
 import GroupNameDialog from './GroupNameDialog'
 import HelpPanel from './HelpPanel'
 import ImportSourceInputs from './ImportSourceInputs'
+import SidebarRenameDialog from './SidebarRenameDialog'
 import SettingsPanel from './SettingsPanel'
 import TooltipLayer from './TooltipLayer'
 
@@ -29,6 +30,7 @@ interface AppShellProps {
   settingsPanelProps: ComponentProps<typeof SettingsPanel>
   manageDeleteDialogProps: ComponentProps<typeof DangerConfirmDialog>
   manageGroupDialogProps: ComponentProps<typeof GroupNameDialog>
+  sidebarRenameDialogProps: ComponentProps<typeof SidebarRenameDialog>
   dragOverlayActive: boolean
   helpOverlayActive: boolean
   adReviewDeleteOverlayProps: ComponentProps<typeof AdReviewDeleteOverlay>
@@ -49,6 +51,7 @@ function AppShell({
   settingsPanelProps,
   manageDeleteDialogProps,
   manageGroupDialogProps,
+  sidebarRenameDialogProps,
   dragOverlayActive,
   helpOverlayActive,
   adReviewDeleteOverlayProps,
@@ -65,6 +68,7 @@ function AppShell({
       <SettingsPanel {...settingsPanelProps} />
       <DangerConfirmDialog {...manageDeleteDialogProps} />
       <GroupNameDialog {...manageGroupDialogProps} />
+      <SidebarRenameDialog {...sidebarRenameDialogProps} />
       <DragImportOverlay active={dragOverlayActive} />
       <ButtonHelpOverlay active={helpOverlayActive} />
       <TooltipLayer suspended={helpOverlayActive} />

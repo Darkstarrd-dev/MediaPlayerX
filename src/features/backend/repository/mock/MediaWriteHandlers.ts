@@ -3,6 +3,7 @@ import {
   deleteImageItemsResponseSchema,
   deleteSidebarNodesResponseSchema,
   moveSidebarNodesResponseSchema,
+  renameSidebarNodeResponseSchema,
   enqueueImportTaskResponseSchema,
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
@@ -20,6 +21,8 @@ import {
   type DeleteSidebarNodesResponseDto,
   type MoveSidebarNodesRequestDto,
   type MoveSidebarNodesResponseDto,
+  type RenameSidebarNodeRequestDto,
+  type RenameSidebarNodeResponseDto,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ImportTaskDto,
@@ -64,6 +67,15 @@ function basenameMockPath(value: string): string {
   const normalized = normalizeMockPath(value)
   const segments = normalized.split('/').filter(Boolean)
   return segments[segments.length - 1] ?? normalized
+}
+
+function extnameMockPath(value: string): string {
+  const fileName = basenameMockPath(value)
+  const dotIndex = fileName.lastIndexOf('.')
+  if (dotIndex <= 0) {
+    return ''
+  }
+  return fileName.slice(dotIndex).toLowerCase()
 }
 
 function joinMockPath(basePath: string, childName: string): string {
@@ -514,6 +526,178 @@ export class MockMediaWriteHandlers {
       moved_count: movedMappings.length,
       failed,
       target_directory: targetDirectory,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  renameSidebarNodeSync(
+    request: RenameSidebarNodeRequestDto,
+  ): RenameSidebarNodeResponseDto {
+    const snapshot = MOCK_LIBRARY_SNAPSHOT_REF.current
+    if (!snapshot) throw new Error('Mock snapshot not initialized')
+
+    const parsedTarget = parseSidebarNodePath(request.node_id)
+    if (!parsedTarget) {
+      return renameSidebarNodeResponseSchema.parse({
+        renamed_count: 0,
+        failed: [{ node_id: request.node_id, reason: 'invalid node id' }],
+        target_path: null,
+        updated_at_ms: Date.now(),
+      })
+    }
+
+    const normalizedName = request.new_name.trim()
+    if (!normalizedName) {
+      return renameSidebarNodeResponseSchema.parse({
+        renamed_count: 0,
+        failed: [{ node_id: request.node_id, reason: 'empty target name' }],
+        target_path: null,
+        updated_at_ms: Date.now(),
+      })
+    }
+
+    const toComparablePathKey = (pathValue: string): string =>
+      normalizePathKeyForMatch(normalizeMockPath(pathValue).split('/').filter(Boolean))
+
+    const resolveMatchedPath = (): { path: string; isFile: boolean } | null => {
+      if (parsedTarget.kind === 'folder') {
+        return {
+          path: parsedTarget.pathKey,
+          isFile: false,
+        }
+      }
+
+      const targetPathKey = toComparablePathKey(parsedTarget.pathKey)
+      const isMatched = (candidatePathKey: string) =>
+        toComparablePathKey(candidatePathKey) === targetPathKey
+
+      if (parsedTarget.kind === 'package') {
+        const source = [...snapshot.image_packages, ...snapshot.image_directories].find((item) =>
+          isMatched(item.tree_path.join('/')),
+        )
+        if (!source) {
+          return null
+        }
+        const isFile = snapshot.image_packages.some((item) => item.id === source.id)
+        return {
+          path: source.absolute_path,
+          isFile,
+        }
+      }
+
+      if (parsedTarget.kind === 'video') {
+        const video = snapshot.videos.find((item) => isMatched(item.tree_path.join('/')))
+        if (!video) {
+          return null
+        }
+        return {
+          path: video.absolute_path,
+          isFile: true,
+        }
+      }
+
+      return null
+    }
+
+    const matchedPath = resolveMatchedPath()
+    if (!matchedPath) {
+      return renameSidebarNodeResponseSchema.parse({
+        renamed_count: 0,
+        failed: [{ node_id: request.node_id, reason: 'node not found' }],
+        target_path: null,
+        updated_at_ms: Date.now(),
+      })
+    }
+
+    const fromPath = matchedPath.path
+    let normalizedTargetName = normalizedName
+    if (matchedPath.isFile) {
+      const sourceExtension = extnameMockPath(fromPath)
+      if (sourceExtension) {
+        if (!normalizedTargetName.toLowerCase().endsWith(sourceExtension)) {
+          normalizedTargetName = `${normalizedTargetName}${sourceExtension}`
+        }
+      }
+    }
+
+    const fromDir = normalizeMockPath(fromPath).split('/').slice(0, -1).join('/')
+    const toPath = joinMockPath(fromDir, normalizedTargetName)
+
+    if (toComparablePathKey(toPath) === toComparablePathKey(fromPath)) {
+      return renameSidebarNodeResponseSchema.parse({
+        renamed_count: 0,
+        failed: [{ node_id: request.node_id, reason: 'source equals target' }],
+        target_path: null,
+        updated_at_ms: Date.now(),
+      })
+    }
+
+    const movedMappings = [{ fromPath, toPath }]
+    const movedPathByFromPath = new Map<string, string>([[toComparablePathKey(fromPath), toPath]])
+    const resolveMovedPath = (candidatePath: string): string | null => {
+      const normalizedCandidate = toComparablePathKey(candidatePath)
+      const direct = movedPathByFromPath.get(normalizedCandidate)
+      if (direct) {
+        return direct
+      }
+
+      for (const mapping of movedMappings) {
+        const normalizedFromPath = toComparablePathKey(mapping.fromPath)
+        if (!pathHasPrefix(normalizedCandidate, normalizedFromPath)) {
+          continue
+        }
+        const relativePath = relativeMockPath(mapping.fromPath, candidatePath)
+        if (!relativePath) {
+          return mapping.toPath
+        }
+        return joinMockPath(mapping.toPath, relativePath)
+      }
+      return null
+    }
+
+    const updateSourcePath = (source: { absolute_path: string; tree_path: string[]; images?: Array<{ media_locator: { kind: string; absolute_path?: string; archive_path?: string } }> }) => {
+      const movedPath = resolveMovedPath(source.absolute_path)
+      if (!movedPath) {
+        return
+      }
+
+      source.absolute_path = movedPath
+      source.tree_path = movedPath.split('/').filter(Boolean)
+      if (source.images) {
+        for (const image of source.images) {
+          if (image.media_locator.kind === 'filesystem') {
+            image.media_locator.absolute_path = resolveMovedPath(image.media_locator.absolute_path ?? '') ?? image.media_locator.absolute_path
+            continue
+          }
+          if (image.media_locator.kind === 'archive-entry') {
+            image.media_locator.archive_path = resolveMovedPath(image.media_locator.archive_path ?? '') ?? image.media_locator.archive_path
+          }
+        }
+      }
+    }
+
+    for (const source of snapshot.image_packages) {
+      updateSourcePath(source)
+    }
+    for (const source of snapshot.image_directories) {
+      updateSourcePath(source)
+    }
+    for (const video of snapshot.videos) {
+      const movedPath = resolveMovedPath(video.absolute_path)
+      if (!movedPath) {
+        continue
+      }
+      video.absolute_path = movedPath
+      video.tree_path = movedPath.split('/').filter(Boolean)
+      if (video.media_locator.kind === 'filesystem') {
+        video.media_locator.absolute_path = movedPath
+      }
+    }
+
+    return renameSidebarNodeResponseSchema.parse({
+      renamed_count: 1,
+      failed: [],
+      target_path: toPath,
       updated_at_ms: Date.now(),
     })
   }

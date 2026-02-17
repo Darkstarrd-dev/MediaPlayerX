@@ -17,6 +17,8 @@ import {
   type DeleteSidebarNodesResponseDto,
   type MoveSidebarNodesRequestDto,
   type MoveSidebarNodesResponseDto,
+  type RenameSidebarNodeRequestDto,
+  type RenameSidebarNodeResponseDto,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type LibrarySnapshotDto,
@@ -293,6 +295,17 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<MoveSidebarNodesResponseDto> {
     return resolveAsync(this.moveSidebarNodesSync(request), options)
+  }
+
+  renameSidebarNodeSync(request: RenameSidebarNodeRequestDto): RenameSidebarNodeResponseDto {
+    return this.write.renameSidebarNodeSync(request)
+  }
+
+  async renameSidebarNode(
+    request: RenameSidebarNodeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RenameSidebarNodeResponseDto> {
+    return resolveAsync(this.renameSidebarNodeSync(request), options)
   }
 
   startManageAdReviewSync(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto {

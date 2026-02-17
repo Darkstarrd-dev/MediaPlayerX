@@ -60,6 +60,8 @@ import {
   deleteSidebarNodesResponseSchema,
   moveSidebarNodesRequestSchema,
   moveSidebarNodesResponseSchema,
+  renameSidebarNodeRequestSchema,
+  renameSidebarNodeResponseSchema,
   startManageAdReviewRequestSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskRequestSchema,
@@ -154,6 +156,11 @@ const backendApi = {
     const parsed = moveSidebarNodesRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.moveSidebarNodes, parsed)
     return moveSidebarNodesResponseSchema.parse(response)
+  },
+  renameSidebarNode: async (request: unknown) => {
+    const parsed = renameSidebarNodeRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.renameSidebarNode, parsed)
+    return renameSidebarNodeResponseSchema.parse(response)
   },
   startManageAdReview: async (request: unknown) => {
     const parsed = startManageAdReviewRequestSchema.parse(request)

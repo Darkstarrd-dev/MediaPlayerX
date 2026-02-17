@@ -8,6 +8,8 @@ import {
   type DeleteSidebarNodesResponseDto,
   type MoveSidebarNodesRequestDto,
   type MoveSidebarNodesResponseDto,
+  type RenameSidebarNodeRequestDto,
+  type RenameSidebarNodeResponseDto,
   type ImagePackageDto,
   type LibrarySnapshotDto,
   type SetImageHiddenRequestDto,
@@ -589,6 +591,212 @@ export class ManagementMutationService {
       return false
     }
     return !/[:*?"<>|]/.test(groupName)
+  }
+
+  async renameSidebarNode(
+    request: RenameSidebarNodeRequestDto,
+  ): Promise<RenameSidebarNodeResponseDto> {
+    const normalizedNodeId = request.node_id.trim()
+    const normalizedNewName = request.new_name.trim()
+    if (!normalizedNodeId) {
+      throw new Error('重命名失败：未提供节点 id')
+    }
+
+    if (!normalizedNewName) {
+      throw new Error('重命名失败：未提供新名称')
+    }
+
+    const failed: Array<{ node_id: string; reason: string }> = []
+    const parsed = parseSidebarNodeId(normalizedNodeId)
+    if (!parsed) {
+      failed.push({
+        node_id: normalizedNodeId,
+        reason: 'invalid node id',
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    if (!this.isValidGroupName(normalizedNewName)) {
+      failed.push({
+        node_id: normalizedNodeId,
+        reason: 'invalid target name',
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    await this.options.ensureStateLoaded()
+    const snapshot = await this.options.ensureSnapshotLoaded()
+    const mediaAccessContext = this.options.buildMediaAccessContext()
+
+    let sourcePath: string | null = null
+    if (parsed.kind === 'folder') {
+      sourcePath = resolveAbsolutePathFromPathKey(parsed.pathKey)
+    } else if (parsed.kind === 'package') {
+      for (const source of snapshot.image_packages) {
+        const pathKey = source.tree_path.join('/')
+        if (pathKey === parsed.pathKey) {
+          sourcePath = source.absolute_path
+          break
+        }
+      }
+
+      if (!sourcePath) {
+        for (const source of snapshot.image_directories) {
+          const pathKey = source.tree_path.join('/')
+          if (pathKey === parsed.pathKey) {
+            sourcePath = source.absolute_path
+            break
+          }
+        }
+      }
+    } else {
+      for (const video of snapshot.videos) {
+        const pathKey = video.tree_path.join('/')
+        if (pathKey === parsed.pathKey) {
+          sourcePath = video.absolute_path
+          break
+        }
+      }
+    }
+
+    if (!sourcePath) {
+      failed.push({
+        node_id: normalizedNodeId,
+        reason: 'node not found',
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    const resolvedSourcePath = path.resolve(sourcePath)
+    if (isFileSystemRootPath(resolvedSourcePath)) {
+      failed.push({
+        node_id: normalizedNodeId,
+        reason: 'refuse to rename filesystem root',
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    if (!isPathAllowlisted(resolvedSourcePath, mediaAccessContext)) {
+      failed.push({
+        node_id: normalizedNodeId,
+        reason: 'path outside allowlist',
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    const sourceStat = await fs.stat(resolvedSourcePath).catch(() => null)
+    if (!sourceStat) {
+      failed.push({
+        node_id: normalizedNodeId,
+        reason: 'path not found',
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    let normalizedTargetName = normalizedNewName
+    if (sourceStat.isFile()) {
+      const sourceExtension = path.extname(resolvedSourcePath)
+      if (sourceExtension) {
+        const normalizedSourceExtension = sourceExtension.toLowerCase()
+        if (!normalizedTargetName.toLowerCase().endsWith(normalizedSourceExtension)) {
+          normalizedTargetName = `${normalizedTargetName}${sourceExtension}`
+        }
+      }
+    }
+
+    const targetPath = path.resolve(path.join(path.dirname(resolvedSourcePath), normalizedTargetName))
+    if (normalizeAllowlistKey(targetPath) === normalizeAllowlistKey(resolvedSourcePath)) {
+      failed.push({
+        node_id: normalizedNodeId,
+        reason: 'source equals target',
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    const targetExists = await fs.stat(targetPath).catch(() => null)
+    if (targetExists) {
+      failed.push({
+        node_id: normalizedNodeId,
+        reason: 'destination already exists',
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    try {
+      await this.movePathWithFallback(resolvedSourcePath, targetPath, sourceStat.isDirectory())
+    } catch (error) {
+      const reason = error instanceof Error && error.message ? error.message : String(error)
+      failed.push({
+        node_id: normalizedNodeId,
+        reason,
+      })
+      return {
+        renamed_count: 0,
+        failed,
+        target_path: null,
+        updated_at_ms: Date.now(),
+      }
+    }
+
+    const movedMappings = [{ fromPath: resolvedSourcePath, toPath: targetPath }]
+    this.options.database.moveSnapshotEntriesByPaths(movedMappings)
+    this.options.syncSnapshotFromDatabase()
+    this.options.pruneArchiveIndexesByDeletedRoots([resolvedSourcePath])
+    await this.options.refreshArchiveIndexesForPaths([targetPath]).catch(() => undefined)
+    await this.options.replaceImportSourcePaths(movedMappings).catch(() => undefined)
+    await fs.rm(this.options.thumbnailCacheRootDir, { recursive: true, force: true }).catch(() => undefined)
+
+    this.options.emitLibraryChanged({
+      reason: 'manage-rename-sidebar-node',
+      updated_at_ms: Date.now(),
+    })
+
+    return {
+      renamed_count: 1,
+      failed,
+      target_path: targetPath,
+      updated_at_ms: Date.now(),
+    }
   }
 
   async moveSidebarNodes(

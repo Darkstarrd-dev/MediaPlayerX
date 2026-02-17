@@ -9,6 +9,7 @@ import type {
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesResponseDto,
   MoveSidebarNodesResponseDto,
+  RenameSidebarNodeResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
   SetImageHiddenResponseDto,
@@ -110,6 +111,10 @@ interface UseWriteDataAccessResult {
     destinationDirectory: string,
     groupName?: string,
   ) => Promise<MoveSidebarNodesResponseDto>;
+  renameSidebarNode: (
+    nodeId: string,
+    newName: string,
+  ) => Promise<RenameSidebarNodeResponseDto>;
   writePackageMetadata: (
     packageId: string,
     payload: {
@@ -723,6 +728,50 @@ export function useWriteDataAccess({
     [repository, t],
   );
 
+  const renameSidebarNode = useCallback(
+    async (
+      nodeId: string,
+      newName: string,
+    ): Promise<RenameSidebarNodeResponseDto> => {
+      if (!repository.renameSidebarNode) {
+        throw new Error("manage_rename_node_unsupported");
+      }
+
+      const normalizedNodeId = nodeId.trim();
+      if (!normalizedNodeId) {
+        throw new Error("manage_rename_node_empty_selection");
+      }
+
+      const normalizedNewName = newName.trim();
+      if (!normalizedNewName) {
+        throw new Error("manage_rename_node_empty_name");
+      }
+
+      setManagePending(true);
+      setManageError(null);
+
+      try {
+        const response = await repository.renameSidebarNode(
+          {
+            node_id: normalizedNodeId,
+            new_name: normalizedNewName,
+          },
+          {
+            timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+          },
+        );
+        return response;
+      } catch (error: unknown) {
+        const message = toErrorDetailWithCode(error, t);
+        setManageError(message);
+        throw error instanceof Error ? error : new Error(String(error));
+      } finally {
+        setManagePending(false);
+      }
+    },
+    [repository, t],
+  );
+
   return {
     pending: {
       grade: gradePending,
@@ -746,6 +795,7 @@ export function useWriteDataAccess({
     deleteSidebarNodes,
     pickDirectoryPath,
     moveSidebarNodes,
+    renameSidebarNode,
     writePackageMetadata,
     writePackageExternalMetadata,
     writeVideoMetadata,

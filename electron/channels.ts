@@ -9,6 +9,7 @@ export const BACKEND_CHANNELS = {
   deleteImageItems: 'backend:deleteImageItems',
   deleteSidebarNodes: 'backend:deleteSidebarNodes',
   moveSidebarNodes: 'backend:moveSidebarNodes',
+  renameSidebarNode: 'backend:renameSidebarNode',
   startManageAdReview: 'backend:startManageAdReview',
   readManageAdReviewTask: 'backend:readManageAdReviewTask',
   pauseManageAdReviewTask: 'backend:pauseManageAdReviewTask',

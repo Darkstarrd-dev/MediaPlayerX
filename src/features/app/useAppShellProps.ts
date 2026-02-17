@@ -29,6 +29,16 @@ interface ManageGroupDialogInput {
   onMove: () => Promise<void>
 }
 
+interface SidebarRenameDialogInput {
+  open: boolean
+  pending: boolean
+  value: string
+  errorMessage: string | null
+  onChange: (value: string) => void
+  onCancel: () => void
+  onConfirm: () => Promise<void>
+}
+
 interface UseAppShellPropsParams {
   repositoryMode: RepositoryBootstrapDataResult['repositoryMode']
   mode: BrowserMode
@@ -69,6 +79,7 @@ interface UseAppShellPropsParams {
   }
   manageDeleteDialogParams: ManageDeleteDialogInput
   manageGroupDialogParams: ManageGroupDialogInput
+  sidebarRenameDialogParams: SidebarRenameDialogInput
   e2eBenchSectionParams: Parameters<typeof buildE2eBenchSectionProps>[0]
 }
 
@@ -94,6 +105,7 @@ export function useAppShellProps({
   adReviewDeleteOverlayParams,
   manageDeleteDialogParams,
   manageGroupDialogParams,
+  sidebarRenameDialogParams,
   e2eBenchSectionParams,
 }: UseAppShellPropsParams) {
   const { t } = useI18n()
@@ -128,6 +140,22 @@ export function useAppShellProps({
     },
     onMove: () => {
       void manageGroupDialogParams.onMove()
+    },
+  }
+
+  const sidebarRenameDialogProps = {
+    open: sidebarRenameDialogParams.open,
+    pending: sidebarRenameDialogParams.pending,
+    inputLabel: t('ui.sidebar.renameDialogInputLabel'),
+    inputPlaceholder: t('ui.sidebar.renameDialogInputPlaceholder'),
+    confirmLabel: t('ui.common.confirm'),
+    cancelLabel: t('ui.common.cancel'),
+    value: sidebarRenameDialogParams.value,
+    errorMessage: sidebarRenameDialogParams.errorMessage,
+    onChange: sidebarRenameDialogParams.onChange,
+    onCancel: sidebarRenameDialogParams.onCancel,
+    onConfirm: () => {
+      void sidebarRenameDialogParams.onConfirm()
     },
   }
 
@@ -181,6 +209,7 @@ export function useAppShellProps({
     settingsPanelProps: topLayerState.settingsPanelProps,
     manageDeleteDialogProps,
     manageGroupDialogProps,
+    sidebarRenameDialogProps,
     dragOverlayActive,
     helpOverlayActive: topLayerState.helpOverlayOpen,
     adReviewDeleteOverlayProps: adReviewDeleteOverlayParams,

@@ -50,6 +50,8 @@ import {
   type DeleteSidebarNodesResponseDto,
   type MoveSidebarNodesRequestDto,
   type MoveSidebarNodesResponseDto,
+  type RenameSidebarNodeRequestDto,
+  type RenameSidebarNodeResponseDto,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
@@ -702,6 +704,10 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   async moveSidebarNodes(request: MoveSidebarNodesRequestDto): Promise<MoveSidebarNodesResponseDto> {
     return this.managementHandlers.moveSidebarNodes(request)
+  }
+
+  async renameSidebarNode(request: RenameSidebarNodeRequestDto): Promise<RenameSidebarNodeResponseDto> {
+    return this.managementHandlers.renameSidebarNode(request)
   }
 
   async startManageAdReview(request: StartManageAdReviewRequestDto): Promise<StartManageAdReviewResponseDto> {

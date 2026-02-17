@@ -15,6 +15,10 @@ import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 
+function stripFileExtension(value: string): string {
+  return value.replace(/\.[^./\\]+$/, '')
+}
+
 interface UseAppInteractionEffectsParams {
   appSettings: AppSettingsStoreSnapshot
   mediaRepository: RepositoryBootstrapDataResult['mediaRepository']
@@ -99,11 +103,15 @@ export function useAppInteractionEffects({
     manageMode,
     metadataManageMode,
     deleteConfirmOpen,
+    sidebarRenameDialogOpen,
     setManageMode,
     setMetadataManageMode,
     setAdReviewPanelOpen,
     setDeleteConfirmOpen,
     setManageOperationHint,
+    setSidebarRenameDialogOpen,
+    setSidebarRenameTargetNodeId,
+    setSidebarRenameDraft,
     helpOverlayOpen,
     setHelpOverlayOpen,
   } = sessionState
@@ -176,6 +184,9 @@ export function useAppInteractionEffects({
     goPrevPage,
     goNextPage,
     clearAllSelections,
+    checkSidebarNode,
+    sidebarCheckedNodeIds,
+    imageCheckedIds,
   } = readNavigationState
 
   const focusedVideoDurationSec = Math.max(
@@ -308,6 +319,16 @@ export function useAppInteractionEffects({
       return true
     }
 
+    const closeSidebarRenameDialog = () => {
+      if (!sidebarRenameDialogOpen) {
+        return false
+      }
+      setSidebarRenameDialogOpen(false)
+      setSidebarRenameTargetNodeId(null)
+      setSidebarRenameDraft('')
+      return true
+    }
+
     const closeFullscreenLayer = () => {
       if (!fullscreenActive) {
         return false
@@ -396,6 +417,9 @@ export function useAppInteractionEffects({
       if (closeDeleteConfirm()) {
         return true
       }
+      if (closeSidebarRenameDialog()) {
+        return true
+      }
       if (closeHelpOverlay()) {
         return true
       }
@@ -426,6 +450,9 @@ export function useAppInteractionEffects({
       }
       if (layer === 'delete-confirm') {
         return closeDeleteConfirm()
+      }
+      if (layer === 'sidebar-rename-dialog') {
+        return closeSidebarRenameDialog()
       }
       if (layer === 'settings') {
         return closeSettingsPanel()
@@ -611,6 +638,65 @@ export function useAppInteractionEffects({
         }
 
         if (!event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
+          const sidebarShortcutActive =
+            sidebarFocus === 'sidebar' ||
+            ((event.target as HTMLElement | null)?.closest('.sidebar') ?? null) !== null
+
+          if (sidebarShortcutActive && event.code === 'KeyR') {
+            const targetNodeId = selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId) ? selectedSidebarNodeId : null
+            if (!targetNodeId) {
+              return
+            }
+
+            const targetNode = sidebarNodeById.get(targetNodeId)
+            const preferredDraft = (() => {
+              if (!targetNode) {
+                return ''
+              }
+
+              if (targetNode.videoId) {
+                const video = videosForSidebar.find((item) => item.id === targetNode.videoId)
+                if (video) {
+                  return stripFileExtension(video.fileName)
+                }
+              }
+
+              if (targetNode.packageId) {
+                const source = packageByIdEffective.get(targetNode.packageId)
+                if (source) {
+                  const fileName = source.absolutePath.split(/[\\/]/).pop() ?? targetNode.label
+                  return stripFileExtension(fileName)
+                }
+              }
+
+              return targetNode.label
+            })()
+            event.preventDefault()
+            event.stopPropagation()
+            setSidebarRenameTargetNodeId(targetNodeId)
+            setSidebarRenameDraft(preferredDraft)
+            setSidebarRenameDialogOpen(true)
+            return
+          }
+
+          if (sidebarShortcutActive && event.code === 'Delete') {
+            const hasManageSelection = sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0
+            if (!hasManageSelection) {
+              const targetNodeId = selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId) ? selectedSidebarNodeId : null
+              if (!targetNodeId) {
+                return
+              }
+              clearAllSelections()
+              checkSidebarNode(targetNodeId)
+            }
+
+            event.preventDefault()
+            event.stopPropagation()
+            setManageOperationHint(null)
+            setDeleteConfirmOpen(true)
+            return
+          }
+
           if (event.code === 'F1') {
             event.preventDefault()
             event.stopPropagation()
@@ -776,7 +862,9 @@ export function useAppInteractionEffects({
     }
   }, [
     clearAllSelections,
+    checkSidebarNode,
     deleteConfirmOpen,
+    sidebarRenameDialogOpen,
     fullscreenActive,
     fullscreenDisplay,
     mode,
@@ -795,16 +883,21 @@ export function useAppInteractionEffects({
     rootScopedVideoIds,
     rootScopedAudioIds,
     flatSidebarNodes,
+    sidebarNodeById,
     imageSourceNodeIdMap,
     normalImageSourceNodeIdMap,
     videoNodeIdMap,
     audioNodeIdMap,
     ensureSidebarNodeVisible,
+    sidebarCheckedNodeIds,
+    imageCheckedIds,
     setImageFocusActive,
     setFocusByPackage,
     setSelectedPackageId,
     setPageByPackage,
     setSelectedAudioId,
+    selectedSidebarNodeId,
+    sidebarFocus,
     setSelectedSidebarNodeId,
     selectVideoFromBrowser,
     applyQuickFeatureSearch,
@@ -812,6 +905,9 @@ export function useAppInteractionEffects({
     metadataManageMode,
     adReviewDeletePending,
     setDeleteConfirmOpen,
+    setSidebarRenameDialogOpen,
+    setSidebarRenameTargetNodeId,
+    setSidebarRenameDraft,
     setFullscreenActiveWithAutoStop,
     setFullscreenDisplay,
     setFullscreenEntryDisplay,

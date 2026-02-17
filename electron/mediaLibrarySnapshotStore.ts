@@ -668,11 +668,11 @@ export class MediaLibrarySnapshotStore {
     const sourceRows = this.db
       .prepare(
         `
-          SELECT id, absolute_path
+          SELECT id, source_type, package_name, absolute_path
           FROM media_source
         `,
       )
-      .all() as Array<{ id: string; absolute_path: string }>
+      .all() as Array<{ id: string; source_type: 'package' | 'directory'; package_name: string; absolute_path: string }>
     const videoRows = this.db
       .prepare(
         `
@@ -812,11 +812,11 @@ export class MediaLibrarySnapshotStore {
     const sourceRows = this.db
       .prepare(
         `
-          SELECT id, absolute_path
+          SELECT id, source_type, package_name, absolute_path
           FROM media_source
         `,
       )
-      .all() as Array<{ id: string; absolute_path: string }>
+      .all() as Array<{ id: string; source_type: 'package' | 'directory'; package_name: string; absolute_path: string }>
     const imageRows = this.db
       .prepare(
         `
@@ -828,24 +828,24 @@ export class MediaLibrarySnapshotStore {
     const videoRows = this.db
       .prepare(
         `
-          SELECT id, absolute_path, media_locator_json
+          SELECT id, file_name, absolute_path, media_locator_json
           FROM video_item
         `,
       )
-      .all() as Array<{ id: string; absolute_path: string; media_locator_json: string }>
+      .all() as Array<{ id: string; file_name: string; absolute_path: string; media_locator_json: string }>
     const audioRows = this.db
       .prepare(
         `
-          SELECT id, absolute_path, media_locator_json
+          SELECT id, file_name, absolute_path, media_locator_json
           FROM audio_item
         `,
       )
-      .all() as Array<{ id: string; absolute_path: string; media_locator_json: string }>
+      .all() as Array<{ id: string; file_name: string; absolute_path: string; media_locator_json: string }>
 
     const updateSourcePath = this.db.prepare(
       `
         UPDATE media_source
-        SET absolute_path = ?, tree_path_json = ?, updated_at_ms = ?
+        SET package_name = ?, display_name = ?, absolute_path = ?, tree_path_json = ?, updated_at_ms = ?
         WHERE id = ?
       `,
     )
@@ -859,15 +859,31 @@ export class MediaLibrarySnapshotStore {
     const updateVideoItem = this.db.prepare(
       `
         UPDATE video_item
-        SET absolute_path = ?, tree_path_json = ?, media_locator_json = ?, updated_at_ms = ?
+        SET file_name = ?, absolute_path = ?, tree_path_json = ?, media_locator_json = ?, updated_at_ms = ?
         WHERE id = ?
       `,
     )
     const updateAudioItem = this.db.prepare(
       `
         UPDATE audio_item
-        SET absolute_path = ?, tree_path_json = ?, media_locator_json = ?, updated_at_ms = ?
+        SET file_name = ?, absolute_path = ?, tree_path_json = ?, media_locator_json = ?, updated_at_ms = ?
         WHERE id = ?
+      `,
+    )
+    const updateVideoMetadataWorkTitle = this.db.prepare(
+      `
+        UPDATE video_metadata
+        SET work_title = ?, updated_at_ms = ?
+        WHERE video_id = ?
+          AND lower(trim(work_title)) = lower(?)
+      `,
+    )
+    const updateAudioMetadataTrackTitle = this.db.prepare(
+      `
+        UPDATE audio_metadata
+        SET track_title = ?, updated_at_ms = ?
+        WHERE audio_id = ?
+          AND lower(trim(track_title)) = lower(?)
       `,
     )
 
@@ -884,7 +900,16 @@ export class MediaLibrarySnapshotStore {
         if (!movedPath || normalizeAllowlistKey(movedPath) === normalizeAllowlistKey(row.absolute_path)) {
           continue
         }
-        updateSourcePath.run(movedPath, JSON.stringify(toAbsoluteTreePath(movedPath)), updatedAtMs, row.id)
+        const movedBaseName = path.basename(movedPath)
+        const nextPackageName = row.source_type === 'package' ? movedBaseName : row.package_name
+        updateSourcePath.run(
+          nextPackageName,
+          movedBaseName,
+          movedPath,
+          JSON.stringify(toAbsoluteTreePath(movedPath)),
+          updatedAtMs,
+          row.id,
+        )
         movedSourceCount += 1
       }
 
@@ -926,6 +951,10 @@ export class MediaLibrarySnapshotStore {
           continue
         }
 
+        const nextFileName = path.basename(movedPath)
+        const previousWorkTitle = row.file_name.replace(/\.[^./\\]+$/, '')
+        const nextWorkTitle = nextFileName.replace(/\.[^./\\]+$/, '')
+
         const locator = parseJson<MediaLocatorDto>(row.media_locator_json, {
           kind: 'filesystem',
           absolute_path: row.absolute_path,
@@ -938,12 +967,14 @@ export class MediaLibrarySnapshotStore {
         }
 
         updateVideoItem.run(
+          nextFileName,
           movedPath,
           JSON.stringify(toAbsoluteTreePath(movedPath)),
           JSON.stringify(locator),
           updatedAtMs,
           row.id,
         )
+        updateVideoMetadataWorkTitle.run(nextWorkTitle, updatedAtMs, row.id, previousWorkTitle)
         movedVideoCount += 1
       }
 
@@ -952,6 +983,10 @@ export class MediaLibrarySnapshotStore {
         if (!movedPath || normalizeAllowlistKey(movedPath) === normalizeAllowlistKey(row.absolute_path)) {
           continue
         }
+
+        const nextFileName = path.basename(movedPath)
+        const previousTrackTitle = row.file_name.replace(/\.[^./\\]+$/, '')
+        const nextTrackTitle = nextFileName.replace(/\.[^./\\]+$/, '')
 
         const locator = parseJson<MediaLocatorDto>(row.media_locator_json, {
           kind: 'filesystem',
@@ -965,12 +1000,14 @@ export class MediaLibrarySnapshotStore {
         }
 
         updateAudioItem.run(
+          nextFileName,
           movedPath,
           JSON.stringify(toAbsoluteTreePath(movedPath)),
           JSON.stringify(locator),
           updatedAtMs,
           row.id,
         )
+        updateAudioMetadataTrackTitle.run(nextTrackTitle, updatedAtMs, row.id, previousTrackTitle)
         movedAudioCount += 1
       }
     })
