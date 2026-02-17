@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 
 import type { BrowserMode } from '../../types'
 import { buildA11yPropsByRegistry } from '../../i18n/a11y'
 import { useI18n } from '../../i18n/useI18n'
 import type { AlignDirection } from './paneMath'
+import { FullscreenMetaMarquee } from './FullscreenMetaMarquee'
+import { MainUiIcon } from '../MainUiIcon'
 import { VideoControlIcon } from '../VideoControlIcon'
 
 type FullscreenAutoplayIconName = 'autoplayOn' | 'autoplayOff'
@@ -156,52 +158,6 @@ function resolveNearestZoomLevel(value: number): number {
   return nearest
 }
 
-function FullscreenMetaMarquee({ text }: { text: string }) {
-  const hostRef = useRef<HTMLDivElement | null>(null)
-  const textRef = useRef<HTMLSpanElement | null>(null)
-  const [overflowing, setOverflowing] = useState(false)
-
-  useEffect(() => {
-    const hostElement = hostRef.current
-    const textElement = textRef.current
-    if (!hostElement || !textElement) {
-      return
-    }
-
-    const updateOverflowState = () => {
-      setOverflowing(textElement.scrollWidth > hostElement.clientWidth)
-    }
-
-    updateOverflowState()
-    window.addEventListener('resize', updateOverflowState)
-
-    const resizeObserver = typeof ResizeObserver === 'function'
-      ? new ResizeObserver(() => updateOverflowState())
-      : null
-    if (resizeObserver) {
-      resizeObserver.observe(hostElement)
-      resizeObserver.observe(textElement)
-    }
-
-    return () => {
-      window.removeEventListener('resize', updateOverflowState)
-      resizeObserver?.disconnect()
-    }
-  }, [text])
-
-  const marqueeStyle = useMemo(
-    () => ({ '--mpx-fullscreen-marquee-duration': `${Math.max(8, Math.min(30, Math.round(text.length * 0.24)))}s` }) as CSSProperties,
-    [text.length],
-  )
-
-  return (
-    <div className={`fullscreen-meta-marquee ${overflowing ? 'is-overflow' : ''}`} ref={hostRef} style={marqueeStyle}>
-      <span className="fullscreen-meta-marquee-item" ref={textRef}>{text}</span>
-      {overflowing ? <span aria-hidden="true" className="fullscreen-meta-marquee-item">{text}</span> : null}
-    </div>
-  )
-}
-
 export function FullscreenFooter({
   mode,
   fullscreenDisplay,
@@ -311,7 +267,7 @@ export function FullscreenFooter({
 
   return (
     <footer
-      className={`fullscreen-footer ${fullscreenDisplay === 'dual' ? 'is-dual' : 'is-single'}`}
+      className={`fullscreen-footer ${fullscreenDisplay === 'dual' ? 'is-dual' : 'is-single'}${mode === 'image' ? ' is-image-mode' : ''}`}
       onMouseEnter={() => onHoverStateChange(true)}
       onMouseLeave={() => onHoverStateChange(false)}
     >
@@ -411,7 +367,7 @@ export function FullscreenFooter({
               }}
             >
               <span className="fullscreen-action-content">
-                <FullscreenFooterIcon name={zoomPercent === 100 ? 'zoomPlus' : 'alignReset'} />
+                {zoomPercent === 100 ? <FullscreenFooterIcon name="zoomPlus" /> : <MainUiIcon name="return" />}
               </span>
             </button>
 
@@ -452,22 +408,22 @@ export function FullscreenFooter({
         </div>
 
         <div className="fullscreen-group is-center">
-          <button aria-label={t('ui.fullscreen.prevPage')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onStepFocusedPane(-1)}>
+          <button aria-label={t('ui.fullscreen.prevPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" onClick={() => onStepFocusedPane(-1)}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="pagePrev" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.nextPage')} className="video-action-btn fullscreen-action-btn" type="button" onClick={() => onStepFocusedPane(1)}>
+          <button aria-label={t('ui.fullscreen.nextPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" onClick={() => onStepFocusedPane(1)}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="pageNext" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.prevPackage')} className="video-action-btn fullscreen-action-btn" type="button" disabled={mode !== 'image'} onClick={onPrevPackage}>
+          <button aria-label={t('ui.fullscreen.prevPackage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" disabled={mode !== 'image'} onClick={onPrevPackage}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="packagePrev" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.nextPackage')} className="video-action-btn fullscreen-action-btn" type="button" disabled={mode !== 'image'} onClick={onNextPackage}>
+          <button aria-label={t('ui.fullscreen.nextPackage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" disabled={mode !== 'image'} onClick={onNextPackage}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="packageNext" />
             </span>
@@ -496,9 +452,9 @@ export function FullscreenFooter({
             </span>
           </button>
           <button
-            aria-label={t('a11y.common.restoreDefault')}
+            aria-label={t('ui.fullscreen.alignCenter')}
             className="video-action-btn fullscreen-action-btn"
-            title={t('tip.common.restoreDefault')}
+            title={t('ui.fullscreen.alignCenter')}
             type="button"
             disabled={!zoomEnabled}
             onClick={onResetSinglePane}

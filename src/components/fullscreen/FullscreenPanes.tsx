@@ -19,6 +19,7 @@ interface FullscreenImagePaneProps {
   imageTransform: PaneTransform
   displayedImageSrc: string | null
   focusedImageOrdinal: number | null
+  controlsRows: ReactNode
   onSetVideoFocus: (enabled: boolean) => void
   onWheel: (event: ReactWheelEvent<HTMLElement>) => void
   onMouseDown: (event: ReactMouseEvent<HTMLElement>) => void
@@ -36,6 +37,7 @@ export function FullscreenImagePane({
   imageTransform,
   displayedImageSrc,
   focusedImageOrdinal,
+  controlsRows,
   onSetVideoFocus,
   onWheel,
   onMouseDown,
@@ -76,6 +78,8 @@ export function FullscreenImagePane({
             />
           ) : null}
         </div>
+
+        {fullscreenDisplay !== 'video-only' ? controlsRows : null}
       </div>
     </section>
   )
@@ -150,7 +154,7 @@ export function FullscreenVideoPane({
   const controlsAtTop = useFixedBottomControls ? false : videoControlsAtTop
   const controlsStyle = useFixedBottomControls
     ? {
-        bottom: '5%',
+        bottom: 'var(--mpx-fullscreen-controls-bottom, 5%)',
         left: `${videoControlsLeft}px`,
         width: `${videoControlsWidth}px`,
       }

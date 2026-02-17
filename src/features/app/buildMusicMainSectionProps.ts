@@ -54,6 +54,7 @@ interface BuildMusicMainSectionPropsParams {
   musicVisualizerRenderer: 'gpu' | 'cpu'
   musicVisualizerShaderSettingsById: AppSettings['musicVisualizerShaderSettingsById']
   mediaPreloadMemoryBudgetMb: number
+  fullscreenVideoControlsMaxWidth: number
   updateSettings: (patch: Partial<AppSettings>) => void
 }
 
@@ -225,6 +226,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     focusedAudio: params.focusedAudio,
     focusedAudioSrc: params.focusedAudioSrc,
     mediaPreloadMemoryBudgetMb: params.mediaPreloadMemoryBudgetMb,
+    fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     audioPreloadItems: params.audioSidebarOrderedIds
       .map((audioId) => {
         const audio = params.audioByIdEffective.get(audioId)

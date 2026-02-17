@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react'
@@ -17,6 +18,7 @@ import { buildA11yPropsByRegistry } from '../i18n/a11y'
 import { useI18n } from '../i18n/useI18n'
 import { FullscreenFooter } from './fullscreen/FullscreenFooter'
 import { FullscreenImagePane, FullscreenVideoPane } from './fullscreen/FullscreenPanes'
+import { resolveFullscreenControlsWidth } from './fullscreen/controlsWidth'
 import { useFullscreenImageSource } from './fullscreen/useFullscreenImageSource'
 import { useFullscreenViewportSize } from './fullscreen/useFullscreenViewportSize'
 import {
@@ -613,15 +615,67 @@ function FullscreenLayer({
   const videoControlsTop = clamp(Math.round(controlsPreferredTop), 8, controlsMaxTop)
 
   const controlsWidthCap = clamp(fullscreenVideoControlsMaxWidth, 640, 1920) || DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH
+  const singleControlsViewport = fullscreenDisplay === 'image-only' ? imageViewportSize : videoViewportSize
+  const singleControlsWidth = resolveFullscreenControlsWidth({
+    viewportWidth: singleControlsViewport.width,
+    viewportHeight: singleControlsViewport.height,
+    widthCap: controlsWidthCap,
+  })
   const controlsMaxWidth = Math.max(120, Math.min(videoViewportSize.width - 16, controlsWidthCap))
   const controlsPreferredWidth = Math.max(120, videoGeometry.width - 16)
-  const videoControlsWidth = Math.min(controlsPreferredWidth, controlsMaxWidth)
+  const videoControlsWidthByGeometry = Math.min(controlsPreferredWidth, controlsMaxWidth)
+  const videoControlsWidth = fullscreenDisplay === 'video-only' ? singleControlsWidth : videoControlsWidthByGeometry
   const controlsMaxLeft = Math.max(8, videoViewportSize.width - videoControlsWidth - 8)
   const centeredControlsLeft = Math.round((videoViewportSize.width - videoControlsWidth) / 2)
   const videoControlsLeft = clamp(centeredControlsLeft, 8, controlsMaxLeft)
+  const fullscreenControlsCssVars = {
+    '--mpx-fullscreen-controls-max-width': `${fullscreenDisplay === 'dual' ? controlsWidthCap : singleControlsWidth}px`,
+  } as CSSProperties
 
   const imagePaneClassName = `fullscreen-pane fullscreen-image${fullscreenDisplay === 'dual' && !fullscreenVideoFocus ? ' is-pane-focus' : ''}`
   const videoPaneClassName = `fullscreen-pane fullscreen-video${fullscreenDisplay === 'dual' && fullscreenVideoFocus ? ' is-pane-focus' : ''}`
+
+  const footerImageInfo = focusedImage
+    ? `${resolveMediaPathForFooter(focusedImage)} | ${focusedImage.width} x ${focusedImage.height} | ${formatImageSizeForFooter(focusedImage.sizeKb)}`
+    : t('ui.fullscreen.noImage')
+  const footerVideoInfo = focusedVideo
+    ? `${resolveMediaPathForFooter(focusedVideo)} | ${focusedVideo.width} x ${focusedVideo.height} | ${formatVideoSizeForFooter(focusedVideo.sizeMb)}`
+    : t('ui.fullscreen.noVideo')
+
+  const imageControls = showFullscreenFooter
+    ? (
+        <FullscreenFooter
+          mode={mode}
+          fullscreenDisplay={fullscreenDisplay}
+          footerInfoLeftText={footerImageInfo}
+          footerInfoRightText={null}
+          autoplayEnabledForFocus={autoplayEnabledForFocus}
+          autoPlayEnabled={autoPlayEnabled}
+          autoPlayInterval={autoPlayInterval}
+          zoomEnabled={zoomEnabled}
+          zoomPercent={zoomPercent}
+          onToggleDualDisplay={toggleDualDisplay}
+          onToggleSwapSides={onToggleSwapSides}
+          onStepFocusedPane={stepFocusedPane}
+          onPrevPackage={onPrevPackage}
+          onNextPackage={onNextPackage}
+          onToggleAutoplay={onToggleAutoplay}
+          onSetAutoplayInterval={onSetAutoplayInterval}
+          onAlignFocusedPane={alignFocusedPane}
+          onSetZoomPercent={(percent) => {
+            if (singlePane) {
+              updatePaneTransform(singlePane, (previous) => ({
+                ...previous,
+                zoom: clamp(Number((percent / 100).toFixed(3)), MIN_ZOOM, MAX_ZOOM),
+              }))
+            }
+          }}
+          onResetSinglePane={resetSinglePane}
+          onHoverStateChange={setFooterHovering}
+          onExit={onExit}
+        />
+      )
+    : null
 
   const imagePane = (
     <FullscreenImagePane
@@ -635,6 +689,7 @@ function FullscreenLayer({
       imageTransform={imageTransform}
       displayedImageSrc={displayedImageSrc}
       focusedImageOrdinal={focusedImage?.ordinal ?? null}
+      controlsRows={imageControls}
       onSetVideoFocus={onSetVideoFocus}
       onWheel={(event) => handlePaneWheel('image', event)}
       onMouseDown={(event) => startPaneDrag('image', event)}
@@ -648,6 +703,7 @@ function FullscreenLayer({
 
   const controlsRows = (
     <FullscreenVideoControlsShell
+      mediaInfoText={footerVideoInfo}
       clampedVideoTime={clampedVideoTime}
       durationSec={durationSec}
       videoPlaying={videoPlaying}
@@ -717,26 +773,10 @@ function FullscreenLayer({
     />
   )
 
-  const footerImageInfo = focusedImage
-    ? `${resolveMediaPathForFooter(focusedImage)} | ${focusedImage.width} x ${focusedImage.height} | ${formatImageSizeForFooter(focusedImage.sizeKb)}`
-    : t('ui.fullscreen.noImage')
-  const footerVideoInfo = focusedVideo
-    ? `${resolveMediaPathForFooter(focusedVideo)} | ${focusedVideo.width} x ${focusedVideo.height} | ${formatVideoSizeForFooter(focusedVideo.sizeMb)}`
-    : t('ui.fullscreen.noVideo')
-  const footerInfoLeftText =
-    fullscreenDisplay === 'dual'
-      ? (fullscreenSwapped ? footerVideoInfo : footerImageInfo)
-      : fullscreenDisplay === 'video-only'
-        ? footerVideoInfo
-        : footerImageInfo
-  const footerInfoRightText =
-    fullscreenDisplay === 'dual'
-      ? (fullscreenSwapped ? footerImageInfo : footerVideoInfo)
-      : null
-
   return (
     <div
       className="fullscreen-layer"
+      style={fullscreenControlsCssVars}
       data-overlay-close="fullscreen"
       onMouseMove={(event) => {
         onSetFooterVisible(footerHovering || event.clientY > window.innerHeight * 0.8)
@@ -771,38 +811,6 @@ function FullscreenLayer({
         )}
       </div>
 
-      {showFullscreenFooter && fullscreenDisplay !== 'video-only' ? (
-        <FullscreenFooter
-          mode={mode}
-          fullscreenDisplay={fullscreenDisplay}
-          footerInfoLeftText={footerInfoLeftText}
-          footerInfoRightText={footerInfoRightText}
-          autoplayEnabledForFocus={autoplayEnabledForFocus}
-          autoPlayEnabled={autoPlayEnabled}
-          autoPlayInterval={autoPlayInterval}
-          zoomEnabled={zoomEnabled}
-          zoomPercent={zoomPercent}
-          onToggleDualDisplay={toggleDualDisplay}
-          onToggleSwapSides={onToggleSwapSides}
-          onStepFocusedPane={stepFocusedPane}
-          onPrevPackage={onPrevPackage}
-          onNextPackage={onNextPackage}
-          onToggleAutoplay={onToggleAutoplay}
-          onSetAutoplayInterval={onSetAutoplayInterval}
-          onAlignFocusedPane={alignFocusedPane}
-          onSetZoomPercent={(percent) => {
-            if (singlePane) {
-              updatePaneTransform(singlePane, (previous) => ({
-                ...previous,
-                zoom: clamp(Number((percent / 100).toFixed(3)), MIN_ZOOM, MAX_ZOOM),
-              }))
-            }
-          }}
-          onResetSinglePane={resetSinglePane}
-          onHoverStateChange={setFooterHovering}
-          onExit={onExit}
-        />
-      ) : null}
     </div>
   )
 }

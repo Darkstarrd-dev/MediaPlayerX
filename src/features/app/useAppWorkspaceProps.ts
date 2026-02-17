@@ -1035,6 +1035,7 @@ export function useAppWorkspaceProps({
     focusedAudioSrc,
     audioUrlById,
     mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
+    fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
     selectedAudioId,
     musicLoopMode,
     musicLoopModeLabels: {

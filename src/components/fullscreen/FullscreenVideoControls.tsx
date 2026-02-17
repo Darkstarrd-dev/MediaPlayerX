@@ -5,10 +5,12 @@ import { MusicControlIcon } from '../MusicControlIcon'
 import type { VideoFitMode } from '../../features/media/videoFitMode'
 import { useI18n } from '../../i18n/useI18n'
 import { formatSeconds } from '../../utils/ui'
+import { FullscreenMetaMarquee } from './FullscreenMetaMarquee'
 
 type VideoPopoverKey = 'volume' | 'subtitle' | 'speed' | 'fit' | 'playlist'
 
 interface FullscreenVideoControlsShellProps {
+  mediaInfoText: string | null
   clampedVideoTime: number
   durationSec: number
   videoPlaying: boolean
@@ -43,6 +45,7 @@ interface FullscreenVideoControlsShellProps {
 }
 
 export function FullscreenVideoControlsShell({
+  mediaInfoText,
   clampedVideoTime,
   durationSec,
   videoPlaying,
@@ -137,6 +140,16 @@ export function FullscreenVideoControlsShell({
 
   return (
     <div className="video-controls-shell fullscreen-video-controls-shell">
+      {mediaInfoText ? (
+        <div className="fullscreen-meta-row is-single">
+          <div className="fullscreen-meta-line">
+            <div className="fullscreen-meta-line-segment">
+              <FullscreenMetaMarquee text={mediaInfoText} />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="video-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
         <input

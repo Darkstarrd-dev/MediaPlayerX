@@ -2260,6 +2260,9 @@ describe("MediaPlayer 虚拟 UI", () => {
     expect(
       floatingControls?.querySelector(".video-controls-shell"),
     ).not.toBeNull();
+    expect(
+      floatingControls?.querySelector(".fullscreen-meta-row"),
+    ).not.toBeNull();
     expect(screen.getByLabelText("全屏视频进度滑条")).toBeInTheDocument();
 
     await click(screen.getByRole("button", { name: "独立/复合" }));
@@ -2272,6 +2275,7 @@ describe("MediaPlayer 虚拟 UI", () => {
       ".fullscreen-stage .fullscreen-video-controls",
     ) as HTMLElement | null;
     expect(dualFloatingControls).not.toBeNull();
+    expect(dualFloatingControls?.querySelector(".fullscreen-meta-row")).toBeNull();
     const shellDefault = dualFloatingControls?.querySelector(
       ".fullscreen-video-controls-shell",
     ) as HTMLElement | null;

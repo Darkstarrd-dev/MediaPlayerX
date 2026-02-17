@@ -414,10 +414,14 @@
 .music-controls-shell.is-fullscreen-floating {
   position: absolute;
   left: 50%;
-  bottom: 5%;
+  bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   transform: translateX(-50%);
   margin-top: 0;
-  width: min(calc(100vw - 24px), 980px);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
   z-index: 12;
   backdrop-filter: blur(8px);
   opacity: 0;
@@ -434,12 +438,25 @@
   display: none;
 }
 
+.music-controls-shell .fullscreen-meta-row {
+  margin-bottom: 0;
+}
+
+.music-controls-shell.is-fullscreen-floating .music-controls-progress {
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.music-controls-shell.is-fullscreen-floating .music-controls-row {
+  gap: 10px;
+}
+
 .music-controls-fullscreen-hotzone {
   position: absolute;
   left: 50%;
-  bottom: 5%;
+  bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   transform: translateX(-50%);
-  width: min(calc(100vw - 24px), 980px);
+  width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
   height: clamp(88px, 18vh, 160px);
   z-index: 11;
 }
@@ -782,9 +799,12 @@
 .video-controls-shell {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 12px;
-  padding: 16px 24px;
+  gap: 10px;
+  margin-top: 10px;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-left: 0;
+  padding: 10px 14px;
   border: 1px solid var(--mpx-player-surface-border);
   border-radius: var(--mpx-card-radius);
   background: var(--mpx-player-surface-bg);
@@ -793,6 +813,21 @@
   position: relative;
   z-index: 10;
   box-shadow: var(--mpx-shadow-panel);
+}
+
+.video-controls-shell.fullscreen-video-controls-shell {
+  margin: 0;
+  padding: 8px;
+  gap: 10px;
+}
+
+.video-controls-shell.fullscreen-video-controls-shell .video-controls-progress {
+  gap: 12px;
+}
+
+.video-controls-shell.fullscreen-video-controls-shell .video-controls-row {
+  gap: 10px;
+  min-height: 36px;
 }
 
 .video-controls-row {
@@ -805,8 +840,8 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   position: relative;
-  min-height: 40px;
-  gap: 12px;
+  min-height: 36px;
+  gap: 10px;
 }
 
 .video-controls-progress {
@@ -817,7 +852,8 @@
   backdrop-filter: none;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+  margin-bottom: 0;
 }
 
 .video-progress-time {

@@ -64,13 +64,13 @@
   }
 
   .music-controls-shell.is-fullscreen-floating {
-    width: min(calc(100vw - 16px), 980px);
-    bottom: 5%;
+    width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
+    bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   }
 
   .music-controls-fullscreen-hotzone {
-    width: min(calc(100vw - 16px), 980px);
-    bottom: 5%;
+    width: min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px));
+    bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   }
 
   .music-controls-progress {

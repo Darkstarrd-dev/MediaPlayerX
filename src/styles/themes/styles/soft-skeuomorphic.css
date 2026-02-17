@@ -494,3 +494,67 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range:focus-visible::-moz-range-thumb {
   box-shadow: var(--mpx-range-thumb-focus-ring), var(--mpx-range-thumb-hover-shadow);
 }
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-left,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-right,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-left,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-right,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-footer .fullscreen-group.is-left,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-footer .fullscreen-group.is-right {
+  gap: 10px;
+  padding: 5px 10px;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-center,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-center,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-footer .fullscreen-group.is-center {
+  gap: 16px;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-btn,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group .video-action-btn,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-footer .fullscreen-action-btn,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-footer .header-popover-trigger {
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  min-height: 26px;
+  border-radius: 6px;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-prev,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-next,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-center .video-action-btn:first-child,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-center .video-action-btn:last-child {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  border-radius: 10px;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-play,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-center .video-action-btn:nth-child(2) {
+  width: 45px;
+  min-width: 45px;
+  height: 45px;
+  min-height: 45px;
+  border-radius: 10px;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-prev .video-action-icon,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-next .video-action-icon,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-center .video-action-btn:first-child .music-action-icon,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-center .video-action-btn:last-child .music-action-icon,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-footer .header-action-icon {
+  width: 16px;
+  height: 16px;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-footer.is-image-mode .fullscreen-group.is-center .fullscreen-action-page {
+  width: 45px;
+  min-width: 45px;
+  height: 45px;
+  min-height: 45px;
+  border-radius: 10px;
+}

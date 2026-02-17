@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
 import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
+import { resolveFullscreenControlsWidth } from './fullscreen/controlsWidth'
+import { FullscreenMetaMarquee } from './fullscreen/FullscreenMetaMarquee'
 import { resolveLoopModeIconName, resolveMusicToolbarSummary } from './musicMainSectionUtils'
 import { useMediaPreloadWindow } from './useMediaPreloadWindow'
 import { useFullscreenFloatingControls } from './useFullscreenFloatingControls'
@@ -48,6 +50,7 @@ interface MusicMainSectionProps {
   focusedAudio: AudioItem | null
   focusedAudioSrc: string | null
   mediaPreloadMemoryBudgetMb: number
+  fullscreenVideoControlsMaxWidth: number
   audioPreloadItems: Array<{ id: string; src: string; sizeMb: number }>
   musicLoopMode: MusicLoopMode
   musicLoopModeLabel: string
@@ -99,6 +102,7 @@ function MusicMainSection({
   focusedAudio,
   focusedAudioSrc,
   mediaPreloadMemoryBudgetMb,
+  fullscreenVideoControlsMaxWidth,
   audioPreloadItems,
   musicLoopMode,
   musicLoopModeLabel,
@@ -611,13 +615,40 @@ function MusicMainSection({
     }
   }, [applyBackgroundRenderScaleCoeffDraft, backgroundRenderScaleCoeffDraft])
 
+  const fullscreenControlsWidthStyle = useMemo(() => {
+    if (!fullscreenActive) {
+      return undefined
+    }
+    const viewportWidth = typeof window === 'undefined' ? 1920 : window.innerWidth
+    const viewportHeight = typeof window === 'undefined' ? 1080 : window.innerHeight
+    const controlsWidth = resolveFullscreenControlsWidth({
+      viewportWidth,
+      viewportHeight,
+      widthCap: fullscreenVideoControlsMaxWidth,
+    })
+    return {
+      '--mpx-fullscreen-controls-max-width': `${controlsWidth}px`,
+    } as CSSProperties
+  }, [fullscreenActive, fullscreenVideoControlsMaxWidth])
+
   const musicControlsShell = (
     <div
       className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating' : ''}${fullscreenActive && fullscreenControlsVisible ? ' is-visible' : ''}${fullscreenActive && !fullscreenControlsMounted ? ' is-hidden' : ''}`}
       hidden={fullscreenActive ? !fullscreenControlsMounted : undefined}
+      style={fullscreenControlsWidthStyle}
       onMouseEnter={fullscreenActive ? showFullscreenControls : undefined}
       onMouseLeave={fullscreenActive ? hideFullscreenControls : closePopover}
     >
+      {fullscreenActive && focusedAudio ? (
+        <div className="fullscreen-meta-row is-single">
+          <div className="fullscreen-meta-line">
+            <div className="fullscreen-meta-line-segment">
+              <FullscreenMetaMarquee text={`${focusedAudio.absolutePath} | ${formatSeconds(Math.max(0, focusedAudio.durationSec))} | ${Number(focusedAudio.sizeMb.toFixed(2))}MB`} />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="music-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(displayAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
         <input

@@ -60,6 +60,7 @@ function createMusicMainSectionProps(
     focusedAudio: audios[0],
     focusedAudioSrc: "mock://audio-1",
     mediaPreloadMemoryBudgetMb: 512,
+    fullscreenVideoControlsMaxWidth: 980,
     audioPreloadItems: [{ id: audios[0].id, src: "mock://audio-1", sizeMb: 6 }],
     musicLoopMode: "library",
     musicLoopModeLabel: "全曲库循环",
@@ -345,6 +346,12 @@ describe("MusicMainSection", () => {
         ".music-controls-shell.is-fullscreen-floating",
       ),
     ).not.toBeNull();
+    expect(
+      (visualizer as HTMLElement).querySelector(
+        ".music-controls-shell .fullscreen-meta-row",
+      ),
+    ).not.toBeNull();
+    expect(screen.getByText(/Z:\/music\/track-1\.mp3/)).toBeInTheDocument();
     expect(
       container.querySelector(".music-visualizer-exit-fullscreen-btn"),
     ).toBeNull();
