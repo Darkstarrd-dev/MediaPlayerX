@@ -34,8 +34,8 @@
 .settings-side button,
 .settings-shortcuts-head button,
 .main-footer-pagination button,
-.video-controls button,
-.fullscreen-footer button,
+.video-controls button:not(.video-action-btn),
+.fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
 .main-toolbar button,
 .settings-block button,
 .search-trigger-btn {
