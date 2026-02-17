@@ -335,7 +335,8 @@ export function useAppInteractionEffects({
       return null
     }
 
-    const ensureImageFocusFromSidebar = () => {
+    const ensureImageFocusFromSidebar = (options?: { syncSidebarNode?: boolean }) => {
+      const syncSidebarNode = options?.syncSidebarNode ?? true
       const firstImageSidebarNode = findFirstImageNodeFromTree(imageTreeForSidebar)
       const selectedPackageUsable =
         rootScopedPackageIds.has(selectedPackageId) &&
@@ -372,7 +373,7 @@ export function useAppInteractionEffects({
         [fallbackPackageId]: 0,
       }))
 
-      if (nextSidebarNodeId) {
+      if (syncSidebarNode && nextSidebarNodeId) {
         setSelectedSidebarNodeId(nextSidebarNodeId)
         requestAnimationFrame(() => ensureSidebarNodeVisible(nextSidebarNodeId))
       }
@@ -380,8 +381,12 @@ export function useAppInteractionEffects({
       return true
     }
 
-    if (fullscreenActive && mode === 'image' && !focusedImage) {
-      ensureImageFocusFromSidebar()
+    if (fullscreenActive && !focusedImage) {
+      if (mode === 'image') {
+        ensureImageFocusFromSidebar()
+      } else if (mode === 'video' && fullscreenDisplay === 'dual') {
+        ensureImageFocusFromSidebar({ syncSidebarNode: false })
+      }
     }
 
     const closeTopLayerByPriority = () => {

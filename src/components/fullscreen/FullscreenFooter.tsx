@@ -268,6 +268,12 @@ export function FullscreenFooter({
   return (
     <footer
       className={`fullscreen-footer ${fullscreenDisplay === 'dual' ? 'is-dual' : 'is-single'}${mode === 'image' ? ' is-image-mode' : ''}`}
+      onMouseDown={(event) => {
+        event.stopPropagation()
+      }}
+      onPointerDown={(event) => {
+        event.stopPropagation()
+      }}
       onMouseEnter={() => onHoverStateChange(true)}
       onMouseLeave={() => onHoverStateChange(false)}
     >

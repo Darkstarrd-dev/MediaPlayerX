@@ -2249,6 +2249,65 @@ describe("MediaPlayer 虚拟 UI", () => {
     expect(fullscreenImage?.getAttribute("alt")).toBe("图片 #1");
   });
 
+  it("图片全屏 footer 滑条交互不会触发图片拖拽", async () => {
+    render(<App />);
+
+    await keyDown(window, { key: "f", code: "KeyF" });
+
+    const fullscreenLayer = document.querySelector(
+      ".fullscreen-layer",
+    ) as HTMLElement | null;
+    expect(fullscreenLayer).not.toBeNull();
+    fireEvent.mouseMove(fullscreenLayer as HTMLElement, {
+      clientX: 40,
+      clientY: window.innerHeight,
+    });
+    await flushUiUpdates();
+
+    const imageStage = document.querySelector(
+      ".fullscreen-image .fullscreen-stage",
+    ) as HTMLElement | null;
+    expect(imageStage).not.toBeNull();
+
+    const autoplayControl = document.querySelector(
+      ".fullscreen-autoplay-control",
+    ) as HTMLElement | null;
+    expect(autoplayControl).not.toBeNull();
+    fireEvent.mouseEnter(autoplayControl as HTMLElement);
+    await flushUiUpdates();
+
+    const autoplaySlider = (autoplayControl as HTMLElement).querySelector(
+      "input[type='range']",
+    ) as HTMLInputElement | null;
+    expect(autoplaySlider).not.toBeNull();
+    await mouseDown(autoplaySlider as HTMLElement, {
+      button: 0,
+      clientX: 24,
+      clientY: 24,
+    });
+    expect((imageStage as HTMLElement).classList.contains("is-dragging")).toBe(false);
+
+    const zoomControl = document.querySelector(
+      ".fullscreen-zoom-control",
+    ) as HTMLElement | null;
+    expect(zoomControl).not.toBeNull();
+    fireEvent.mouseEnter(zoomControl as HTMLElement);
+    await flushUiUpdates();
+
+    const zoomSlider = (zoomControl as HTMLElement).querySelector(
+      "input[type='range']",
+    ) as HTMLInputElement | null;
+    expect(zoomSlider).not.toBeNull();
+    await mouseDown(zoomSlider as HTMLElement, {
+      button: 0,
+      clientX: 24,
+      clientY: 24,
+    });
+    expect((imageStage as HTMLElement).classList.contains("is-dragging")).toBe(false);
+
+    fireEvent.mouseUp(window);
+  });
+
   it("全屏非双屏支持 F1/F2/F3 切换图片/视频/音乐模式", async () => {
     render(<App />);
 
@@ -2332,6 +2391,7 @@ describe("MediaPlayer 虚拟 UI", () => {
     const videoPane = document.querySelector(".fullscreen-video") as HTMLElement | null;
     expect(imagePane).not.toBeNull();
     expect(videoPane).not.toBeNull();
+    expect(document.querySelector(".fullscreen-media-image-element")).not.toBeNull();
     expect((videoPane as HTMLElement).classList.contains("is-pane-focus")).toBe(true);
 
     fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
