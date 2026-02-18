@@ -110,4 +110,4 @@ Pane 侧（此前已存在）可继续用：
 ## 6) Soft Skeuomorphic 细节探索
 
 - 细节变体定义与选择基线：`docs/ui/soft-skeuomorphic-detail-brainstorm.md`
-- 新对话入口提示词：`docs/ui/theme-brainstorm-entry.md`
+- 新对话入口提示词：`docs/theme-brainstorm-entry.md`

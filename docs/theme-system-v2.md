@@ -79,7 +79,7 @@ src/features/theme/
 
 仅依赖以下即可开发 Style 或 Palette（不需要读取其它代码文件）：
 
-- 本文档 (`docs/ui/theme-system-v2.md`)
+- 本文档 (`docs/theme-system-v2.md`)
 - `src/styles/themes/styles/_style-template.css`（Style 模板）
 - `src/styles/themes/palettes/_palette-template.css`（Palette 模板）
 - `src/styles/themes/styles/liquid-glass.css`（Style 参考实现）
@@ -102,8 +102,8 @@ html                                        data-mpx-style / data-mpx-palette
    └─ #root
       └─ div.app                            100vw × 100vh, flex column
          ├─ header.app-header               Header 横栏
-         │    ├─ .header-left               Logo + 任务按钮 + 模式切换 + 检索/管理开关
-         │    └─ .header-right              缩放 + 自动播放 + 设置
+         │    ├─ .header-left               Logo + 任务按钮 + 调色板切换 + 设置 + 模式切换 + 检索/管理开关
+         │    └─ .header-right              Theme 参数按钮 + 帮助 + 窗口控制
          │
          ├─ section.backend-error-banner    后端错误横幅（按需出现）
          ├─ section.runtime-warning-banner  运行时能力警告横幅（按需出现）
