@@ -61,7 +61,7 @@
     "@vitejs/plugin-react": "^5.1.4",
     "@vitest/coverage-v8": "^4.0.18",
     "better-sqlite3": "^12.6.2",
-    "electron": "^40.2.1",
+    "electron": "^40.4.1",
     "esbuild": "^0.27.3",
     "eslint": "^9.39.2",
     "eslint-plugin-react-hooks": "^7.0.1",
