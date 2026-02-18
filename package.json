@@ -34,7 +34,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "i18n:check": "node scripts/i18n-check.mjs"
+    "i18n:check": "node scripts/i18n-check.mjs",
+    "quality:ci": "npm run format:check && npm run lint && npm run build && npx vitest run && npm run test:coverage && npm audit --audit-level=high && npx --yes jscpd src electron --config .jscpd.json --silent",
+    "baseline:verify-clean": "node scripts/verify-clean-worktree.mjs"
   },
   "dependencies": {
     "7z-wasm": "^1.2.0",

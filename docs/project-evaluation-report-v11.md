@@ -259,6 +259,7 @@
 | P2-7.4 重复率门禁 | ✅ 已完成 | 新增 `.jscpd.json`（threshold=5，忽略测试文件）并接入 `.github/workflows/ci.yml` |
 | P2-8 超大文件拆分 | ✅ 已完成（第二批收敛） | 已完成 App 测试域五轮拆分并将 `App.state` 降至 1001 行；第二批非测试目标文件全部降到阈值以下（<1200） |
 | P2-9 major 依赖升级 | ⏸ 部分完成 | 独立分支已完成 `globals@17`、`@types/node@25`；`eslint@10` 与 `@eslint/js@10` 受上游 peer 限制阻塞并已回滚，后续不作为评审指标 |
+| 流程治理：CI 门禁与评估基线固化 | ✅ 已完成 | CI 已收敛为 `quality:ci` 统一门禁顺序，并新增 `baseline:verify-clean` 工作区洁净校验脚本 |
 
 ### 0.1 处理建议 Todo Checklist（按第 13 节顺序维护）
 
@@ -274,7 +275,7 @@
 - [x] P2-7.4 设置 jscpd 门禁阈值并接入 CI
 - [x] P2-8 拆分超大文件（第一批 5 个已完成；第二批目标文件已全部降到阈值以下）
 - [ ] P2-9 major 依赖升级（独立分支，`eslint/@eslint/js` 暂不纳入评审指标）
-- [ ] 流程治理：CI 门禁与评估基线固化
+- [x] 流程治理：CI 门禁与评估基线固化
 
 ---
 
@@ -695,6 +696,10 @@ npm run lint
 
 ### 10. CI 门禁配置
 
+**已落地（2026-02-18）**：
+- `.github/workflows/ci.yml` 已改为统一执行 `npm run quality:ci`，门禁顺序与报告保持一致。
+- `quality:ci` 当前顺序：`format:check -> lint -> build -> vitest -> test:coverage -> audit(high) -> jscpd`。
+
 ```yaml
 # 建议的 CI pipeline 检查顺序（全部通过才允许合并）
 steps:
@@ -712,10 +717,12 @@ steps:
 
 ### 11. 评估基线要求
 
+**已落地（2026-02-18）**：
+- 新增 `npm run baseline:verify-clean`（`scripts/verify-clean-worktree.mjs`），用于评估前强制校验工作区洁净。
+
 ```bash
 # 下次评估前确保工作区洁净
-git stash    # 或 commit 所有变更
-git status --porcelain    # 输出应为空
+npm run baseline:verify-clean
 
 # 固定评估基线
 git tag v0.1.0-rc1

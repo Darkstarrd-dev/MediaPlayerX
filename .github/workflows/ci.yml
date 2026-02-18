@@ -23,23 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      - name: Verify clean baseline worktree
+        run: npm run baseline:verify-clean
 
-      - name: Prettier (scoped)
-        run: npm run format:check
-
-      - name: Test with coverage gate
-        run: npm run test:coverage
-
-      - name: Build renderer
-        run: npm run build
+      - name: Run quality gate bundle
+        run: npm run quality:ci
 
       - name: Build electron bundle
         run: npm run build:electron
-
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
-
-      - name: Duplicate code check (jscpd)
-        run: npx --yes jscpd src electron --config .jscpd.json --silent
