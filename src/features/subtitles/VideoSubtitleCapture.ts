@@ -24,12 +24,17 @@ export class VideoSubtitleCapture {
   private audioContext: AudioContext | null = null
   private readonly sourceNodeByVideo = new WeakMap<HTMLVideoElement, MediaElementAudioSourceNode>()
   private readonly gainNodeByVideo = new WeakMap<HTMLVideoElement, GainNode>()
+  private readonly originalDescriptorsByVideo = new WeakMap<HTMLVideoElement, {
+    muted: PropertyDescriptor | undefined
+    volume: PropertyDescriptor | undefined
+  }>()
   private sourceNode: MediaElementAudioSourceNode | null = null
   private gainNode: GainNode | null = null
   private workletNode: AudioWorkletNode | null = null
   private attachedVideo: HTMLVideoElement | null = null
   private chunkListener: ChunkListener | null = null
-  private volumeSyncInterval: ReturnType<typeof setInterval> | null = null
+  private internalMuted: boolean = false
+  private internalVolume: number = 1
 
   async attach(video: HTMLVideoElement, onChunk: ChunkListener): Promise<void> {
     if (this.attachedVideo === video && this.workletNode) {
@@ -42,6 +47,10 @@ export class VideoSubtitleCapture {
     this.chunkListener = onChunk
     this.attachedVideo = video
 
+    // Save current muted/volume state
+    this.internalMuted = video.muted
+    this.internalVolume = video.volume
+
     const context = this.audioContext ?? new AudioContext({ latencyHint: 'interactive' })
     this.audioContext = context
 
@@ -50,6 +59,46 @@ export class VideoSubtitleCapture {
     }
 
     await context.audioWorklet.addModule(toWorkletModuleUrl())
+
+    // Force video to unmuted and full volume BEFORE creating source node
+    // This ensures MediaElementAudioSourceNode gets full audio data
+    const originalMutedDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'muted')
+    const originalVolumeDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'volume')
+    this.originalDescriptorsByVideo.set(video, {
+      muted: originalMutedDescriptor,
+      volume: originalVolumeDescriptor,
+    })
+
+    // Override muted/volume properties to intercept changes
+    Object.defineProperty(video, 'muted', {
+      get: () => this.internalMuted,
+      set: (value: boolean) => {
+        this.internalMuted = value
+        if (this.gainNode) {
+          this.gainNode.gain.value = this.internalMuted ? 0 : this.internalVolume
+        }
+      },
+      configurable: true,
+    })
+
+    Object.defineProperty(video, 'volume', {
+      get: () => this.internalVolume,
+      set: (value: number) => {
+        this.internalVolume = Math.max(0, Math.min(1, value))
+        if (this.gainNode) {
+          this.gainNode.gain.value = this.internalMuted ? 0 : this.internalVolume
+        }
+      },
+      configurable: true,
+    })
+
+    // Set actual video element to unmuted and full volume for audio capture
+    if (originalMutedDescriptor?.set) {
+      originalMutedDescriptor.set.call(video, false)
+    }
+    if (originalVolumeDescriptor?.set) {
+      originalVolumeDescriptor.set.call(video, 1)
+    }
 
     const sourceNode = this.sourceNodeByVideo.get(video) ?? context.createMediaElementSource(video)
     this.sourceNodeByVideo.set(video, sourceNode)
@@ -60,6 +109,9 @@ export class VideoSubtitleCapture {
       gainNode = context.createGain()
       this.gainNodeByVideo.set(video, gainNode)
     }
+    
+    // Set initial gain based on internal state
+    gainNode.gain.value = this.internalMuted ? 0 : this.internalVolume
     
     const workletNode = new AudioWorkletNode(context, 'video-audio-capture', {
       numberOfInputs: 1,
@@ -100,9 +152,9 @@ export class VideoSubtitleCapture {
     }
 
     // Connect audio path: sourceNode -> workletNode -> gainNode -> destination
-    // - sourceNode captures original audio from video element
+    // - sourceNode gets full audio (video is forced to unmuted/volume=1)
     // - workletNode processes for ASR and passes through
-    // - gainNode mirrors video.muted/volume for playback control
+    // - gainNode controls actual playback volume based on intercepted muted/volume
     sourceNode.connect(workletNode)
     workletNode.connect(gainNode)
     gainNode.connect(context.destination)
@@ -110,23 +162,32 @@ export class VideoSubtitleCapture {
     this.sourceNode = sourceNode
     this.gainNode = gainNode
     this.workletNode = workletNode
-    
-    // Sync GainNode with video element's muted/volume state periodically
-    this.volumeSyncInterval = setInterval(() => {
-      if (this.attachedVideo && this.gainNode) {
-        const targetGain = this.attachedVideo.muted ? 0 : this.attachedVideo.volume
-        if (Math.abs(this.gainNode.gain.value - targetGain) > 0.01) {
-          this.gainNode.gain.value = targetGain
-        }
-      }
-    }, 100)
   }
 
   detach(): void {
-    // Stop volume sync interval
-    if (this.volumeSyncInterval) {
-      clearInterval(this.volumeSyncInterval)
-      this.volumeSyncInterval = null
+    // Restore original property descriptors
+    if (this.attachedVideo) {
+      const originalDescriptors = this.originalDescriptorsByVideo.get(this.attachedVideo)
+      if (originalDescriptors) {
+        if (originalDescriptors.muted) {
+          Object.defineProperty(this.attachedVideo, 'muted', originalDescriptors.muted)
+        } else {
+          delete (this.attachedVideo as any).muted
+        }
+        if (originalDescriptors.volume) {
+          Object.defineProperty(this.attachedVideo, 'volume', originalDescriptors.volume)
+        } else {
+          delete (this.attachedVideo as any).volume
+        }
+        
+        // Restore the internal state to the video element
+        if (originalDescriptors.muted?.set) {
+          originalDescriptors.muted.set.call(this.attachedVideo, this.internalMuted)
+        }
+        if (originalDescriptors.volume?.set) {
+          originalDescriptors.volume.set.call(this.attachedVideo, this.internalVolume)
+        }
+      }
     }
 
     if (this.workletNode) {
