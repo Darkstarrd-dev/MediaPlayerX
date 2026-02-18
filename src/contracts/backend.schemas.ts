@@ -1038,6 +1038,7 @@ export const startSubtitleSessionRequestSchema = z.object({
   provider_preference: subtitleSessionProviderPreferenceSchema,
   language: z.string().min(1).default("auto"),
   fallback_to_cpu: z.boolean().default(true),
+  render_mode: z.enum(["simple", "advanced"]).default("advanced"),
 });
 
 export const startSubtitleSessionResponseSchema = z.object({

@@ -34,6 +34,7 @@ interface BuildSettingsPanelPropsParams {
   proxyServer: string
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
+  subtitleRenderMode: 'simple' | 'advanced'
   subtitleLanguage: AppSettings['subtitleLanguage']
   subtitleModelDir: string
   subtitleTextFillMode: AppSettings['subtitleTextFillMode']
@@ -133,6 +134,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     proxyServer: params.proxyServer,
     ehentaiCookies: params.ehentaiCookies,
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
+    subtitleRenderMode: params.subtitleRenderMode,
     subtitleLanguage: params.subtitleLanguage,
     subtitleModelDir: params.subtitleModelDir,
     subtitleTextFillMode: params.subtitleTextFillMode,

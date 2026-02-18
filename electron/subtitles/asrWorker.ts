@@ -65,6 +65,7 @@ interface RuntimeSessionState {
   committedText: string
   cueSeed: number
   requestedLanguage: string
+  renderMode: 'simple' | 'advanced'
 }
 
 let runtimeSession: RuntimeSessionState | null = null
@@ -501,12 +502,57 @@ function tryDecodeAndBuildCues(
   currentSession.recognizer.decode(currentSession.stream)
   const result = currentSession.recognizer.getResult(currentSession.stream)
   const currentText = normalizeRecognizedText(result.text)
+  
+  console.log('[ASR Worker] tryDecodeAndBuildCues:', {
+    renderMode: currentSession.renderMode,
+    currentText,
+    committedText: currentSession.committedText,
+    timelineStartSec,
+    timelineEndSec,
+  })
+  
   if (!currentText) {
     return []
   }
 
+  // Simple mode: 直接使用完整的 ASR 文本，不计算 delta
+  if (currentSession.renderMode === 'simple') {
+    // 如果文本与上次相同，不生成新的 cue
+    if (currentText === currentSession.committedText) {
+      console.log('[ASR Worker] Simple mode: text unchanged, skipping')
+      return []
+    }
+    
+    currentSession.committedText = currentText
+    
+    // 根据文本长度估算显示时长
+    const durationSec = Math.max(1.2, Math.min(5, currentText.length * 0.22))
+    const cueStart = Math.max(0, Math.max(timelineStartSec, timelineEndSec - durationSec * 0.8))
+    const cueEnd = Math.max(cueStart + 0.4, cueStart + durationSec)
+
+    const cueLanguage =
+      currentSession.requestedLanguage === 'auto'
+        ? normalizeLangTag(result.lang)
+        : currentSession.requestedLanguage
+
+    currentSession.cueSeed += 1
+    const cue = {
+      id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
+      start_sec: cueStart,
+      end_sec: cueEnd,
+      text: currentText,
+      lang: cueLanguage,
+    }
+    console.log('[ASR Worker] Simple mode: generated cue:', cue)
+    return [cue]
+  }
+
+  // Advanced mode: 使用增量 delta 计算
   const delta = computeTextDelta(currentSession.committedText, currentText)
   currentSession.committedText = currentText
+  
+  console.log('[ASR Worker] Advanced mode: delta =', delta)
+  
   if (!delta) {
     return []
   }
@@ -521,15 +567,15 @@ function tryDecodeAndBuildCues(
       : currentSession.requestedLanguage
 
   currentSession.cueSeed += 1
-  return [
-    {
-      id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
-      start_sec: cueStart,
-      end_sec: cueEnd,
-      text: delta,
-      lang: cueLanguage,
-    },
-  ]
+  const cue = {
+    id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
+    start_sec: cueStart,
+    end_sec: cueEnd,
+    text: delta,
+    lang: cueLanguage,
+  }
+  console.log('[ASR Worker] Advanced mode: generated cue:', cue)
+  return [cue]
 }
 
 async function handleInit(rawPayload: unknown): Promise<unknown> {
@@ -566,6 +612,8 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
   const sessionId = `subtitle-session-${nowMs()}-${Math.floor(Math.random() * 100_000)}`
   const startedAtMs = nowMs()
 
+  console.log('[ASR Worker] Creating session with renderMode:', payload.render_mode ?? 'advanced')
+
   runtimeSession = {
     sessionId,
     provider: providerDecision.provider,
@@ -581,7 +629,14 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     committedText: '',
     cueSeed: 0,
     requestedLanguage: normalizedLanguage,
+    renderMode: payload.render_mode ?? 'advanced',
   }
+
+  console.log('[ASR Worker] Session created:', {
+    sessionId,
+    renderMode: runtimeSession.renderMode,
+    language: normalizedLanguage,
+  })
 
   return startSubtitleSessionResponseSchema.parse({
     session_id: sessionId,
@@ -669,6 +724,16 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
 
   const samples = decodeFloat32Buffer(chunkBuffer)
   const rms = calculateRms(samples)
+  
+  console.log('[ASR Worker] Audio chunk received:', {
+    samples: samples.length,
+    rms: rms.toFixed(6),
+    rmsThreshold: 0.002,
+    meetsRmsThreshold: rms >= 0.002,
+    chunkStartSec: request.chunk_start_sec.toFixed(2),
+    chunkEndSec: request.chunk_end_sec.toFixed(2),
+  })
+  
   if (samples.length > 0) {
     currentSession.sampleRateHz = request.sample_rate_hz
     currentSession.stream.acceptWaveform({
@@ -682,6 +747,15 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
   const shouldDecode =
     currentSession.pendingSamplesSinceDecode >= decodeWindowSamples &&
     rms >= 0.002
+
+  console.log('[ASR Worker] Decode decision:', {
+    pendingSamples: currentSession.pendingSamplesSinceDecode,
+    decodeWindowSamples,
+    meetsSampleThreshold: currentSession.pendingSamplesSinceDecode >= decodeWindowSamples,
+    rms: rms.toFixed(6),
+    meetsRmsThreshold: rms >= 0.002,
+    shouldDecode,
+  })
 
   let cues: SubtitleCueDto[] = []
   if (shouldDecode) {

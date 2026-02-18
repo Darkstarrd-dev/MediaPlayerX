@@ -462,6 +462,7 @@ export function useAppTopLayerState({
     proxyServer: appSettings.proxyServer,
     ehentaiCookies: appSettings.ehentaiCookies,
     subtitleFeatureEnabled: appSettings.subtitleFeatureEnabled,
+    subtitleRenderMode: appSettings.subtitleRenderMode,
     subtitleLanguage: appSettings.subtitleLanguage,
     subtitleModelDir: appSettings.subtitleModelDir,
     subtitleTextFillMode: appSettings.subtitleTextFillMode,

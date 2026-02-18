@@ -39,6 +39,7 @@ describe('buildSettingsPanelProps', () => {
       proxyServer: '',
       ehentaiCookies: '',
       subtitleFeatureEnabled: false,
+      subtitleRenderMode: 'advanced',
       subtitleLanguage: 'auto',
       subtitleModelDir: '',
       subtitleTextFillMode: 'solid',

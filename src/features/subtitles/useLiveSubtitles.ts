@@ -18,6 +18,7 @@ interface UseLiveSubtitlesParams {
   modelId: string | null
   providerPreference: SubtitleSessionProviderPreferenceDto
   language: string
+  renderMode: 'simple' | 'advanced'
   repository: MediaRepository
 }
 
@@ -70,6 +71,7 @@ export function useLiveSubtitles({
   modelId,
   providerPreference,
   language,
+  renderMode,
   repository,
 }: UseLiveSubtitlesParams) {
   const [cues, setCues] = useState<SubtitleCueDto[]>([])
@@ -140,6 +142,10 @@ export function useLiveSubtitles({
           channel_count: nextChunk.channelCount,
         }
         const response = await pushSubtitleAudio(request)
+        console.log('[Live Subtitle] Push audio response:', {
+          cuesCount: response.cues.length,
+          cues: response.cues,
+        })
         if (!cancelled) {
           setCues((previous) => appendCues(previous, response.cues))
         }
@@ -164,19 +170,30 @@ export function useLiveSubtitles({
     }
 
     const start = async () => {
+      console.log('[Live Subtitle] Starting session with renderMode:', renderMode)
       setLoading(true)
       setMessage(null)
       setCues([])
       pushQueueRef.current = []
 
       try {
+        console.log('[Live Subtitle] Calling startSubtitleSession with:', {
+          model_dir: modelDir,
+          model_id: modelId,
+          provider_preference: providerPreference,
+          language: language.trim() || 'auto',
+          render_mode: renderMode,
+        })
         const startResponse = await startSubtitleSession({
           model_dir: modelDir,
           model_id: modelId,
           provider_preference: providerPreference,
           language: language.trim() || 'auto',
           fallback_to_cpu: true,
+          render_mode: renderMode,
         })
+
+        console.log('[Live Subtitle] Session started:', startResponse)
 
         if (cancelled) {
           await stopSubtitleSession({ reason: 'cancelled-before-ready' }).catch(() => undefined)
@@ -276,6 +293,7 @@ export function useLiveSubtitles({
     modelId,
     providerPreference,
     language,
+    renderMode,
     repository.flushSubtitleSession,
     repository.pushSubtitleAudio,
     repository.resetSubtitleSession,

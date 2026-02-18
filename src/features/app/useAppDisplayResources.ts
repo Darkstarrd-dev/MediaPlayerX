@@ -631,6 +631,7 @@ export function useAppDisplayResources({
     modelId: subtitleModelId,
     providerPreference: "cpu",
     language: appSettings.subtitleLanguage,
+    renderMode: appSettings.subtitleRenderMode,
     repository: mediaRepository,
   });
   const autoSubtitleUiMessage = toAutoSubtitleUiMessage(liveSubtitle.message, t);

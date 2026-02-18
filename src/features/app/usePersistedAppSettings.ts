@@ -74,6 +74,7 @@ export function toPersistedAppSettings(
     proxyServer: settings.proxyServer,
     ehentaiCookies: settings.ehentaiCookies,
     subtitleFeatureEnabled: settings.subtitleFeatureEnabled,
+    subtitleRenderMode: settings.subtitleRenderMode,
     subtitleAcceleration: settings.subtitleAcceleration,
     subtitleLanguage: settings.subtitleLanguage,
     subtitleModelDir: settings.subtitleModelDir,

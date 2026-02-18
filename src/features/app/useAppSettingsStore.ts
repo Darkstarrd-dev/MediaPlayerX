@@ -65,6 +65,7 @@ export function useAppSettingsStore() {
       proxyServer: state.proxyServer,
       ehentaiCookies: state.ehentaiCookies,
       subtitleFeatureEnabled: state.subtitleFeatureEnabled,
+      subtitleRenderMode: state.subtitleRenderMode,
       subtitleAcceleration: state.subtitleAcceleration,
       subtitleLanguage: state.subtitleLanguage,
       subtitleModelDir: state.subtitleModelDir,
