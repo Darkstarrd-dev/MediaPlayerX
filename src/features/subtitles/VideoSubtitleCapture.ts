@@ -23,10 +23,13 @@ function toWorkletModuleUrl(): string {
 export class VideoSubtitleCapture {
   private audioContext: AudioContext | null = null
   private readonly sourceNodeByVideo = new WeakMap<HTMLVideoElement, MediaElementAudioSourceNode>()
+  private readonly gainNodeByVideo = new WeakMap<HTMLVideoElement, GainNode>()
   private sourceNode: MediaElementAudioSourceNode | null = null
+  private gainNode: GainNode | null = null
   private workletNode: AudioWorkletNode | null = null
   private attachedVideo: HTMLVideoElement | null = null
   private chunkListener: ChunkListener | null = null
+  private volumeSyncInterval: ReturnType<typeof setInterval> | null = null
 
   async attach(video: HTMLVideoElement, onChunk: ChunkListener): Promise<void> {
     if (this.attachedVideo === video && this.workletNode) {
@@ -50,6 +53,14 @@ export class VideoSubtitleCapture {
 
     const sourceNode = this.sourceNodeByVideo.get(video) ?? context.createMediaElementSource(video)
     this.sourceNodeByVideo.set(video, sourceNode)
+    
+    // Create or reuse GainNode for volume control
+    let gainNode = this.gainNodeByVideo.get(video)
+    if (!gainNode) {
+      gainNode = context.createGain()
+      this.gainNodeByVideo.set(video, gainNode)
+    }
+    
     const workletNode = new AudioWorkletNode(context, 'video-audio-capture', {
       numberOfInputs: 1,
       numberOfOutputs: 1,
@@ -88,15 +99,36 @@ export class VideoSubtitleCapture {
       })
     }
 
-    // Only connect sourceNode to workletNode for audio capture
-    // Do NOT connect to context.destination to avoid mute/volume interference
+    // Connect audio path: sourceNode -> workletNode -> gainNode -> destination
+    // - sourceNode captures original audio from video element
+    // - workletNode processes for ASR and passes through
+    // - gainNode mirrors video.muted/volume for playback control
     sourceNode.connect(workletNode)
+    workletNode.connect(gainNode)
+    gainNode.connect(context.destination)
 
     this.sourceNode = sourceNode
+    this.gainNode = gainNode
     this.workletNode = workletNode
+    
+    // Sync GainNode with video element's muted/volume state periodically
+    this.volumeSyncInterval = setInterval(() => {
+      if (this.attachedVideo && this.gainNode) {
+        const targetGain = this.attachedVideo.muted ? 0 : this.attachedVideo.volume
+        if (Math.abs(this.gainNode.gain.value - targetGain) > 0.01) {
+          this.gainNode.gain.value = targetGain
+        }
+      }
+    }, 100)
   }
 
   detach(): void {
+    // Stop volume sync interval
+    if (this.volumeSyncInterval) {
+      clearInterval(this.volumeSyncInterval)
+      this.volumeSyncInterval = null
+    }
+
     if (this.workletNode) {
       try {
         this.workletNode.port.onmessage = null
@@ -109,6 +141,15 @@ export class VideoSubtitleCapture {
         // ignore cleanup errors
       }
       this.workletNode = null
+    }
+
+    if (this.gainNode) {
+      try {
+        this.gainNode.disconnect()
+      } catch {
+        // ignore cleanup errors
+      }
+      this.gainNode = null
     }
 
     if (this.sourceNode) {
