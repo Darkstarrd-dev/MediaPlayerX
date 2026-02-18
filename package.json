@@ -3,7 +3,7 @@
   "description": "MediaPlayerX desktop media library manager built with Electron and React.",
   "author": "MediaPlayerX Contributors",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.75.0",
   "type": "module",
   "main": "dist-electron/main.cjs",
   "scripts": {
