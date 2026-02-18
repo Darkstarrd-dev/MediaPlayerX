@@ -13,12 +13,16 @@
 - 交互：`interaction-v1.md`
 - 后端约束：`backend-integration-guardrails.md`
 - i18n/a11y 约束：`i18n-aria-guardrails.md`
+- Shader 开发入口：`music-visualizer-shader-entry.md`
+- Shader 实施手册：`music-visualizer-shader-migration-playbook.md`
+- Theme 规范（SSOT）：`theme-system-v2.md`
+- Theme 迭代入口：`theme-brainstorm-entry.md`
 - 当前评估：`project-evaluation-report-v12.md`
 - 风险台账：`dependency-risk-register.md`
 
 ## 子目录
 
-- `ui/`：主题系统与 UI 调试文档/资源。
+- `ui/`：UI mock、主题调试页与样式实验资源。
 - `perf/`：性能方案与基准结果。
 - `ref/`：参考资料与实验样例。
 - `archive/`：历史文档归档。

@@ -83,6 +83,10 @@ npm run test
 - `docs/interaction-v1.md`
 - `docs/backend-integration-guardrails.md`
 - `docs/i18n-aria-guardrails.md`
+- `docs/music-visualizer-shader-entry.md`
+- `docs/music-visualizer-shader-migration-playbook.md`
+- `docs/theme-system-v2.md`
+- `docs/theme-brainstorm-entry.md`
 - `docs/windows-release-signing-runbook.md`
 - `docs/offline-auto-subtitle-implementation-plan.md`
 - `docs/project-evaluation-report-v12.md`
@@ -91,10 +95,11 @@ npm run test
 - `docs/perf/2026-02-07-scan-benchmark.md`
 - `docs/perf/2026-02-08-ui-perf-benchmark-plan.md`
 - `docs/perf/2026-02-08-streaming-ingest-benchmark-plan.md`
-- `docs/ui/theme-system-v2.md`
 - `docs/ui/theme-playground.html`
 
 文档为当前阶段单一事实源（SSOT）；历史资料统一归档到 `docs/archive/`。
+
+Shader 与 Theme 开发请优先阅读：`docs/music-visualizer-shader-entry.md`、`docs/music-visualizer-shader-migration-playbook.md`、`docs/theme-system-v2.md`、`docs/theme-brainstorm-entry.md`。
 
 ## 质量基线
 

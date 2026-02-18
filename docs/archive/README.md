@@ -9,7 +9,6 @@
 - `offline-auto-subtitle/`：离线自动字幕历史 Phase 执行报告。
 - `stability-notes/`：历史稳定性问题记录、排查结论与修复复盘。
 - `checklists/`：历史阶段性检查清单。
-- `shader-guides/`：历史 Shader 开发入口与迁移说明。
 
 ## 使用约定
 

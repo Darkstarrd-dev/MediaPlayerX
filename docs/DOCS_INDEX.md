@@ -14,6 +14,10 @@
 | `interaction-v1.md` | SSOT | 交互规则与键位行为 |
 | `backend-integration-guardrails.md` | SSOT | 后端接入约束与门禁 |
 | `i18n-aria-guardrails.md` | SSOT | i18n 与可访问性约束 |
+| `music-visualizer-shader-entry.md` | SSOT | Shader 开发任务入口与最小读取范围 |
+| `music-visualizer-shader-migration-playbook.md` | SSOT | Shader 迁移流程、约束与验收标准 |
+| `theme-system-v2.md` | SSOT | 主题系统规范与 token 契约 |
+| `theme-brainstorm-entry.md` | SSOT | Theme 迭代提示词入口与执行流程 |
 | `project-evaluation-report-v12.md` | 质量基线 | 当前项目评估结果 |
 | `dependency-risk-register.md` | 风险治理 | 依赖风险台账 |
 | `offline-auto-subtitle-implementation-plan.md` | 当前计划 | 离线自动字幕实施计划 |
@@ -26,7 +30,7 @@
 
 | 路径 | 用途 | 备注 |
 |---|---|---|
-| `ui/` | 主题系统文档与 UI mock/调试资源 | 当前仍使用 |
+| `ui/` | UI mock、主题调试页与样式实验文档 | 当前仍使用 |
 | `perf/` | 性能方案与基准结果 | 当前仍使用 |
 | `ref/` | 外部参考资料与实验样例 | 当前仍使用 |
 | `archive/` | 历史文档归档区 | 非当前迭代文档 |
@@ -40,7 +44,6 @@
 | `archive/offline-auto-subtitle/` | 离线字幕历史阶段报告 |
 | `archive/stability-notes/` | 历史稳定性问题记录 |
 | `archive/checklists/` | 历史阶段性检查清单 |
-| `archive/shader-guides/` | 历史 Shader 迁移/提示入口文档 |
 
 ## 维护约定
 
