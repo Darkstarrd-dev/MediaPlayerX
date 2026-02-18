@@ -186,7 +186,7 @@
 |---|---|---|---|---|---|---|---|
 | TypeScript 构建失败 (`TS6133`) | 高 | 中 | `npm run build` | 打开 | 移除/使用 `checkSidebarNode` 参数，恢复 `tsc -b` 通过 | 前端 | 1d |
 | 覆盖率链路 11 超时失败 | 高 | 中 | `npm run test:coverage` | 打开 | 拆分 `App.test.tsx` 慢测；为热点用例设定更合理 timeout 或重构断言路径 | 前端测试 | 2d |
-| 依赖 moderate 漏洞 10 项 | 中 | 中 | `npm audit --audit-level=high` | 打开 | 分层升级 ESLint/tooling 依赖，先在分支回归 test+build | 全栈 | 1w |
+| 依赖 moderate 漏洞 10 项 | 中 | 中 | `npm audit --audit-level=high` | 已登记（非阻断） | 见 `docs/dependency-risk-register.md`；按月复审并等待 eslint 生态兼容窗口 | 全栈 | 2026-03-15 |
 
 ### 10.2 改进建议（P0/P1/P2）
 - **P0（立即）**：修复 `checkSidebarNode` 未使用导致的 `build` 失败。
@@ -248,7 +248,7 @@
 | P0-2 覆盖率超时 | ✅ 已完成 | `src/App.test.tsx` 增补长测超时，`npm run test:coverage` 通过（77 files / 414 tests） |
 | P0-3 格式化漂移 | ✅ 已完成 | `npm run format:write` + `npm run format:check` 通过 |
 | P1-4 circular chunk | ✅ 已完成 | `vite.config.ts` 分包调整后 `vite build` 无 circular 警告 |
-| P1-5 audit moderate 10 | ⏸ 暂缓 | `npm audit --audit-level=high` 仍为 10 moderate（high/critical=0），属上游链路问题 |
+| P1-5 audit moderate 10 | ✅ 已完成（风险登记） | 已完成依赖风险登记 `docs/dependency-risk-register.md`，并按 `audit-level=high` 维持 CI 阻断口径（high/critical=0） |
 | P1-6 outdated patch/minor | ✅ 已完成（按排除口径） | 已完成 `electron@40.4.1`、`jsdom@28.1.0`、`@types/react@19.2.14`、`@vitejs/plugin-react@5.1.4`、`typescript-eslint@8.56.0`；当前仅剩 `eslint/@eslint-js/eslint-plugin-react-refresh` |
 | P2-7 重复代码治理 | ✅ 已完成 | 已完成热点定位、测试与 IPC 去重、并落地 jscpd 门禁；门禁口径重复率降至 3.37% |
 | P2-7.2 首个去重落地 | ✅ 已开始 | `src/components/ImageMainSection.test.tsx` 已提取 `createImageMainSectionProps`，减少重复测试装配代码 |
@@ -267,7 +267,7 @@
 - [x] P0-2 修复覆盖率模式超时失败（先止血，后续可继续拆分 App.test.tsx）
 - [x] P0-3 修复 Prettier 格式化漂移
 - [x] P1-4 消除 Vite circular chunk 警告
-- [ ] P1-5 处理依赖安全告警（本轮按要求先跳过依赖处理）
+- [x] P1-5 处理依赖安全告警（moderate 风险已登记并设定复审窗口）
 - [x] P1-6 升级过期依赖（patch/minor 已完成；`eslint` 生态按排除口径追踪）
 - [x] P2-7.1 生成重复代码定位报告（jscpd HTML/JSON）
 - [x] P2-7.2 重复块分类治理（IPC/Schema/UI/DB/Tests，测试侧已完成 ImageMainSection/SidebarPanel/ThemeParameterPanel/realRepository 四处）
