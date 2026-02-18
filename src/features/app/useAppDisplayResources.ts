@@ -21,6 +21,8 @@ import { useI18n } from "../../i18n/useI18n";
 import { toErrorDetailWithCode } from "./errorCode";
 import { FIXED_SUBTITLE_MODEL_ID } from "../subtitles/fixedModel";
 
+const AUTO_SUBTITLE_ID = "__auto__";
+
 function toAutoSubtitleLanguageLabel(
   language: string | null,
   t: ReturnType<typeof useI18n>["t"],
@@ -596,6 +598,8 @@ export function useAppDisplayResources({
   const [subtitleMessage, setSubtitleMessage] = useState<string | null>(null);
   const [subtitleReloadNonce, setSubtitleReloadNonce] = useState(0);
   const [manualSubtitleOverride, setManualSubtitleOverride] = useState(false);
+  const [autoLoadAttemptedRef] = useState(() => ({ current: new Set<string>() }));
+  const subtitleOptionsRef = useRef<VideoSubtitleOption[]>([]);
   const [mainVideoElement, setMainVideoElement] =
     useState<HTMLVideoElement | null>(null);
   const [fullscreenVideoElement, setFullscreenVideoElement] =
@@ -642,6 +646,13 @@ export function useAppDisplayResources({
           language: toAutoSubtitleLanguageLabel(liveSubtitle.detectedLanguage, t),
         });
 
+  // 调试日志：记录自动字幕文本变化
+  useEffect(() => {
+    if (autoSubtitleRunning && liveSubtitle.activeText) {
+      console.log('[Subtitle Render] Auto subtitle text:', `"${liveSubtitle.activeText}"`, 'at', videoTime.toFixed(2));
+    }
+  }, [autoSubtitleRunning, liveSubtitle.activeText, videoTime]);
+
   const refreshSubtitleOptions = useCallback(() => {
     setSubtitleReloadNonce((value) => value + 1);
   }, []);
@@ -650,11 +661,39 @@ export function useAppDisplayResources({
 
   const selectSubtitleById = useCallback(
     async (subtitleId: string, sourceOptions?: VideoSubtitleOption[]) => {
-      const option = (sourceOptions ?? subtitleOptions).find((item) => item.id === subtitleId);
-      if (!option) {
+      console.log('[Subtitle] selectSubtitleById called:', subtitleId);
+      
+      // 如果选择自动字幕
+      if (subtitleId === AUTO_SUBTITLE_ID) {
+        console.log('[Subtitle] Switching to auto subtitle mode');
+        setManualSubtitleOverride(false);
+        setSelectedSubtitleId(AUTO_SUBTITLE_ID);
+        setSelectedSubtitleLocator(null);
+        setSubtitleTrackUrl(null);
+        setSubtitleVisible(true);
+        if (focusedVideoEffective?.id) {
+          const currentMap = subtitleSelectionByVideoIdRef.current;
+          const current = currentMap[focusedVideoEffective.id] ?? "";
+          if (current !== AUTO_SUBTITLE_ID) {
+            appSettings.updateSettings({
+              subtitleSelectionByVideoId: {
+                ...currentMap,
+                [focusedVideoEffective.id]: AUTO_SUBTITLE_ID,
+              },
+            });
+          }
+        }
+        console.log('[Subtitle] Auto subtitle mode activated');
         return;
       }
 
+      const option = (sourceOptions ?? subtitleOptionsRef.current).find((item) => item.id === subtitleId);
+      if (!option) {
+        console.warn('[Subtitle] Subtitle option not found:', subtitleId);
+        return;
+      }
+
+      console.log('[Subtitle] Loading manual subtitle:', option.label);
       setSubtitleLoading(true);
       setSubtitleMessage(null);
       try {
@@ -688,6 +727,7 @@ export function useAppDisplayResources({
                 };
         }
 
+        console.log('[Subtitle] Manual subtitle loaded successfully:', option.label);
         setManualSubtitleOverride(true);
         setSelectedSubtitleId(option.id);
         setSelectedSubtitleLocator(locator);
@@ -705,6 +745,7 @@ export function useAppDisplayResources({
           }
         }
       } catch (error: unknown) {
+        console.error('[Subtitle] Failed to load subtitle:', error);
         setSubtitleMessage(
           t("ui.media.subtitleSelectFailed", {
             message: toErrorDetailWithCode(error, t),
@@ -719,7 +760,6 @@ export function useAppDisplayResources({
       appSettings,
       focusedVideoEffective?.id,
       mediaRepository,
-      subtitleOptions,
       t,
     ],
   );
@@ -727,6 +767,10 @@ export function useAppDisplayResources({
   useEffect(() => {
     subtitleSelectionByVideoIdRef.current = subtitleSelectionByVideoId;
   }, [subtitleSelectionByVideoId]);
+
+  useEffect(() => {
+    subtitleOptionsRef.current = subtitleOptions;
+  }, [subtitleOptions]);
 
   const clearPersistedSubtitleSelection = useCallback(
     (videoId: string) => {
@@ -742,7 +786,20 @@ export function useAppDisplayResources({
   );
 
   useEffect(() => {
-    setManualSubtitleOverride(false);
+    // 检查持久化选择，如果是自动字幕则不设置 override
+    const videoId = focusedVideoEffective?.id;
+    if (!videoId) {
+      setManualSubtitleOverride(false);
+      return;
+    }
+    const persistedSubtitleId = subtitleSelectionByVideoIdRef.current[videoId] ?? null;
+    if (persistedSubtitleId === AUTO_SUBTITLE_ID) {
+      setManualSubtitleOverride(false);
+    } else if (persistedSubtitleId) {
+      setManualSubtitleOverride(true);
+    } else {
+      setManualSubtitleOverride(false);
+    }
   }, [focusedVideoEffective?.id]);
 
   useEffect(() => {
@@ -750,7 +807,7 @@ export function useAppDisplayResources({
       return;
     }
     setSubtitleVisible(true);
-    setSelectedSubtitleId(null);
+    // 只清理手动字幕的状态，不要清除 selectedSubtitleId（可能是 AUTO_SUBTITLE_ID）
     setSelectedSubtitleLocator(null);
     setSubtitleTrackUrl(null);
   }, [autoSubtitleActive]);
@@ -795,14 +852,37 @@ export function useAppDisplayResources({
               }),
         } as MediaLocator,
       }));
-      setSubtitleOptions(options);
+      // 如果自动字幕可用，添加自动字幕选项
+      const finalOptions = autoSubtitleActive
+        ? [
+            {
+              id: AUTO_SUBTITLE_ID,
+              label: t("ui.media.autoSubtitleOption"),
+              format: "vtt" as const,
+              locator: null as unknown as MediaLocator, // 自动字幕不需要 locator
+            },
+            ...options,
+          ]
+        : options;
+      setSubtitleOptions(finalOptions);
       const persistedSubtitleId = subtitleSelectionByVideoIdRef.current[videoId] ?? null;
-      if (persistedSubtitleId && options.some((item) => item.id === persistedSubtitleId) && !autoSubtitleRunning) {
-        void selectSubtitleById(persistedSubtitleId, options);
-      } else if (persistedSubtitleId && !options.some((item) => item.id === persistedSubtitleId)) {
+      const autoLoadKey = `${videoId}:${persistedSubtitleId}`;
+      
+      // 不要在用户刚选择自动字幕后立即自动加载手动字幕
+      const currentlySelectedIsAuto = selectedSubtitleId === AUTO_SUBTITLE_ID;
+      if (persistedSubtitleId && finalOptions.some((item) => item.id === persistedSubtitleId) && !autoSubtitleRunning && !currentlySelectedIsAuto) {
+        setSelectedSubtitleId(persistedSubtitleId);
+        // 自动加载持久化的字幕（但只尝试一次）
+        if (!autoLoadAttemptedRef.current.has(autoLoadKey)) {
+          autoLoadAttemptedRef.current.add(autoLoadKey);
+          console.log('[Subtitle] Auto-loading persisted subtitle:', persistedSubtitleId, 'for video:', videoId);
+          void selectSubtitleById(persistedSubtitleId, finalOptions);
+        }
+      } else if (persistedSubtitleId && !finalOptions.some((item) => item.id === persistedSubtitleId)) {
         clearPersistedSubtitleSelection(videoId);
+        setSelectedSubtitleId(null);
       }
-      if (options.length === 0) {
+      if (finalOptions.length === 0) {
         setSubtitleVisible(false);
         setSubtitleMessage(t("ui.media.subtitleNotFoundInDirectory"));
       }
@@ -822,10 +902,11 @@ export function useAppDisplayResources({
     }
 
     let active = true;
-    setSelectedSubtitleId(null);
-    setSelectedSubtitleLocator(null);
-    setSubtitleTrackUrl(null);
-    setSubtitleVisible(false);
+    // 不要重置 subtitleVisible，保持用户的选择
+    // setSelectedSubtitleId(null);
+    // setSelectedSubtitleLocator(null);
+    // setSubtitleTrackUrl(null);
+    // setSubtitleVisible(false);
     setSubtitleLoading(true);
     setSubtitleMessage(null);
 
@@ -857,14 +938,37 @@ export function useAppDisplayResources({
                 }),
           } as MediaLocator,
         }));
-        setSubtitleOptions(options);
+        // 如果自动字幕可用，添加自动字幕选项
+        const finalOptions = autoSubtitleActive
+          ? [
+              {
+                id: AUTO_SUBTITLE_ID,
+                label: t("ui.media.autoSubtitleOption"),
+                format: "vtt" as const,
+                locator: null as unknown as MediaLocator, // 自动字幕不需要 locator
+              },
+              ...options,
+            ]
+          : options;
+        setSubtitleOptions(finalOptions);
         const persistedSubtitleId = subtitleSelectionByVideoIdRef.current[videoId] ?? null;
-        if (persistedSubtitleId && options.some((item) => item.id === persistedSubtitleId) && !autoSubtitleRunning) {
-          void selectSubtitleById(persistedSubtitleId, options);
-        } else if (persistedSubtitleId && !options.some((item) => item.id === persistedSubtitleId)) {
+        const autoLoadKey = `${videoId}:${persistedSubtitleId}`;
+        
+        // 不要在用户刚选择自动字幕后立即自动加载手动字幕
+        const currentlySelectedIsAuto = selectedSubtitleId === AUTO_SUBTITLE_ID;
+        if (persistedSubtitleId && finalOptions.some((item) => item.id === persistedSubtitleId) && !autoSubtitleRunning && !currentlySelectedIsAuto) {
+          setSelectedSubtitleId(persistedSubtitleId);
+          // 自动加载持久化的字幕（但只尝试一次）
+          if (!autoLoadAttemptedRef.current.has(autoLoadKey)) {
+            autoLoadAttemptedRef.current.add(autoLoadKey);
+            console.log('[Subtitle] Auto-loading persisted subtitle:', persistedSubtitleId, 'for video:', videoId);
+            void selectSubtitleById(persistedSubtitleId, finalOptions);
+          }
+        } else if (persistedSubtitleId && !finalOptions.some((item) => item.id === persistedSubtitleId)) {
           clearPersistedSubtitleSelection(videoId);
+          setSelectedSubtitleId(null);
         }
-        if (options.length === 0) {
+        if (finalOptions.length === 0) {
           setSubtitleVisible(false);
           setSubtitleMessage(t("ui.media.subtitleNotFoundInDirectory"));
         }
@@ -896,15 +1000,24 @@ export function useAppDisplayResources({
     isSynchronousSubtitleMode,
     isVideoMode,
     mediaRepository,
+    autoSubtitleActive,
     autoSubtitleRunning,
     subtitleReloadNonce,
     syncMediaRepository,
     clearPersistedSubtitleSelection,
     selectSubtitleById,
+    autoLoadAttemptedRef,
     t,
   ]);
 
   useEffect(() => {
+    console.log('[Subtitle Track] Checking subtitle track URL conditions:', {
+      autoSubtitleRunning,
+      isVideoMode,
+      hasVideo: !!focusedVideoEffective?.id,
+      hasLocator: !!selectedSubtitleLocator,
+    });
+    
     if (
       autoSubtitleRunning ||
       !isVideoMode ||
@@ -915,11 +1028,14 @@ export function useAppDisplayResources({
       return;
     }
 
+    console.log('[Subtitle Track] Resolving subtitle track URL for locator:', selectedSubtitleLocator);
+
     if (isSynchronousSubtitleMode && syncMediaRepository) {
       const response = syncMediaRepository.resolveMediaResourceSync({
         locator: toLocatorDto(selectedSubtitleLocator),
         preferred_variant: "original",
       });
+      console.log('[Subtitle Track] Resolved track URL (sync):', response.resource_url);
       setSubtitleTrackUrl(response.resource_url);
       return;
     }
@@ -934,12 +1050,14 @@ export function useAppDisplayResources({
         if (!active) {
           return;
         }
+        console.log('[Subtitle Track] Resolved track URL (async):', response.resource_url);
         setSubtitleTrackUrl(response.resource_url);
       })
       .catch((error: unknown) => {
         if (!active) {
           return;
         }
+        console.error('[Subtitle Track] Failed to resolve track URL:', error);
         setSubtitleTrackUrl(null);
         setSubtitleMessage(
           t("ui.media.subtitleResolveFailed", {

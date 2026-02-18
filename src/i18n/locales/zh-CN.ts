@@ -697,6 +697,7 @@ export const zhCnCatalog = {
   'ui.media.autoSubtitleListening': '自动字幕运行中，等待语音识别结果',
   'ui.media.autoSubtitleModelFilesMissing': '模型文件不完整或模型目录不正确，请检查模型目录与文件。',
   'ui.media.autoSubtitleUnavailable': '当前后端不可用自动字幕引擎。',
+  'ui.media.autoSubtitleOption': '自动字幕',
   'ui.media.videoCoverAlt': '视频封面',
   'ui.media.noVideoSource': '无可用视频源',
   'ui.media.videoLoopModeSingle': '单视频循环',

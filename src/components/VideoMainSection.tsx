@@ -220,6 +220,19 @@ function VideoMainSection({
     Boolean(subtitlePanelContentText) ||
     subtitleOptions.length > 0
   const subtitleOverlayText = autoSubtitleActive ? liveSubtitleText : manualSubtitleText
+  
+  // 调试日志：记录字幕渲染状态
+  useEffect(() => {
+    console.log('[Subtitle Render] Overlay state:', {
+      autoSubtitleActive,
+      liveSubtitleText: liveSubtitleText ? `"${liveSubtitleText}"` : 'null',
+      manualSubtitleText: manualSubtitleText ? `"${manualSubtitleText}"` : 'null',
+      subtitleOverlayText: subtitleOverlayText ? `"${subtitleOverlayText}"` : 'null',
+      subtitleVisible,
+      subtitleTrackUrl,
+    });
+  }, [autoSubtitleActive, liveSubtitleText, manualSubtitleText, subtitleOverlayText, subtitleVisible, subtitleTrackUrl]);
+  
   const videoFitLabel =
     videoFitMode === 'fill'
       ? t('a11y.media.videoFitFill')
@@ -355,11 +368,20 @@ function VideoMainSection({
 
     const video = videoRef.current
     if (!video || !videoSourceUrl || autoSubtitleActive || !subtitleTrackUrl || !subtitleVisible) {
+      console.log('[Subtitle Render] Manual subtitle sync disabled:', {
+        hasVideo: !!video,
+        hasSource: !!videoSourceUrl,
+        autoActive: autoSubtitleActive,
+        hasTrackUrl: !!subtitleTrackUrl,
+        visible: subtitleVisible,
+      });
       return
     }
 
+    console.log('[Subtitle Render] Setting up manual subtitle sync');
     const track = video.textTracks[0]
     if (!track) {
+      console.warn('[Subtitle Render] No text track found');
       return
     }
 
@@ -383,7 +405,9 @@ function VideoMainSection({
         }
       }
 
-      setManualSubtitleText(lines.length > 0 ? lines.join('\n') : null)
+      const text = lines.length > 0 ? lines.join('\n') : null;
+      console.log('[Subtitle Render] Manual subtitle text:', text ? `"${text}"` : 'null', 'at', video.currentTime.toFixed(2));
+      setManualSubtitleText(text)
     }
 
     syncManualSubtitle()

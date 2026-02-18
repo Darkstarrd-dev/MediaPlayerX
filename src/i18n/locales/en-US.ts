@@ -699,6 +699,7 @@ export const enUsCatalog: { [K in keyof ZhCnCatalog]: string } = {
   'ui.media.autoSubtitleListening': 'Auto subtitle is running and waiting for speech recognition output',
   'ui.media.autoSubtitleModelFilesMissing': 'Model files are incomplete or model directory is incorrect. Please verify model directory and files.',
   'ui.media.autoSubtitleUnavailable': 'Auto subtitle engine is unavailable in current backend.',
+  'ui.media.autoSubtitleOption': 'Auto Subtitle',
   'ui.media.videoCoverAlt': 'Video cover',
   'ui.media.noVideoSource': 'No video source available',
   'ui.media.videoLoopModeSingle': 'Single video loop',

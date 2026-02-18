@@ -694,7 +694,7 @@ export class LibraryReadWriteService {
               : 1,
         };
       })
-      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item) && item.score === 0)
       .sort(
         (left, right) =>
           left.score - right.score ||
