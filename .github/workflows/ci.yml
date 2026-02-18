@@ -40,3 +40,6 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
+
+      - name: Duplicate code check (jscpd)
+        run: npx --yes jscpd src electron --config .jscpd.json --silent

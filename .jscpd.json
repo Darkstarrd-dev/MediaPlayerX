@@ -1,0 +1,14 @@
+{
+  "threshold": 5,
+  "reporters": ["console", "html"],
+  "minLines": 10,
+  "minTokens": 50,
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/dist/**",
+    "**/dist-electron/**",
+    "**/release/**",
+    "**/node_modules/**"
+  ]
+}
