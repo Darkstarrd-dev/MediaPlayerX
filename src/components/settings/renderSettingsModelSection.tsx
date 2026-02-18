@@ -150,7 +150,6 @@ export function renderSettingsModelSection({
             className={`settings-debug-toggle-btn ${subtitleRenderMode === "advanced" ? "is-on" : ""}`}
             onClick={() => {
               const newMode = subtitleRenderMode === "simple" ? "advanced" : "simple"
-              console.log('[Settings] Subtitle render mode changing:', subtitleRenderMode, '->', newMode)
               onSubtitleRenderModeChange(newMode)
             }}
           >

@@ -79,17 +79,6 @@ export class VideoSubtitleCapture {
       const endSec = Math.max(0, this.attachedVideo.currentTime || 0)
       const startSec = Math.max(0, endSec - videoDurationSec)
 
-      // Calculate RMS for debugging
-      const rms = Math.sqrt(samples.reduce((sum, s) => sum + s * s, 0) / samples.length)
-      console.log('[Audio Capture] Chunk received:', {
-        samples: samples.length,
-        rms: rms.toFixed(6),
-        startSec: startSec.toFixed(2),
-        endSec: endSec.toFixed(2),
-        videoMuted: this.attachedVideo.muted,
-        videoVolume: this.attachedVideo.volume,
-      })
-
       this.chunkListener({
         sampleRateHz: sampleRate,
         channelCount,
