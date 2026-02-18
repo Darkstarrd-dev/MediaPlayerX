@@ -67,7 +67,7 @@ describe('buildVideoMainSectionProps', () => {
             updatedAtMs: Date.now(),
           },
         ],
-      ]) as any,
+      ]) as unknown as Map<string, never>,
       videoUrlById: { 'video-1': 'file:///video-1.mp4' },
       videoSourceUrl: 'file:///video-1.mp4',
       fullscreenActive: false,
