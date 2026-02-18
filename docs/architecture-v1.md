@@ -1,5 +1,7 @@
 # MediaPlayer 架构设计 V1
 
+Last updated: 2026-02-18
+
 ## 设计原则
 
 - 本地优先，数据归用户本机所有。
@@ -10,11 +12,11 @@
 
 ## 运行时分层
 
-### 当前实现阶段（虚拟 UI）
+### 当前实现阶段（实链路）
 
-- 已完成 Renderer 交互骨架与本地模拟状态；并进入后端接入 Phase-2。
+- 已完成从“虚拟 UI”到“真实后端链路”的迁移，当前以实链路稳定性与质量收敛为主。
 - Electron Main / Preload 已接入真实只读 I/O 与媒体访问协议白名单。
-- 媒体浏览链路已支持真实图片/视频渲染，虚拟数据仅作为回退与测试输入。
+- 媒体浏览链路已支持真实图片/视频渲染，Mock 数据仅保留测试用途。
 - 扫描与重处理遵循性能门禁（双规并行 + Correctness 优先）。
 - Main 已接入写链路（评分/封面保存）与 optimistic rollback 协议契约。
 - 压缩包扫描接入归一化策略：`rar/7z` 走“内存解包 -> 非 webp 图片转 `webp(90)` -> `zip(store)` 并原地替换”；zip 非 `store/deflate` 图片条目 -> `webp(90)` 后转存 zip(store)。
@@ -29,9 +31,9 @@
 - 代码结构重构（按职责块）已完成：
   - Renderer 侧入口已收敛为薄编排：`src/App.tsx` -> `useAppController` -> `useAppDataPipeline`。
   - `useAppDataPipeline` 仅保留编排职责；运行时源、读链路、导航链路、显示/副作用、顶部层绑定、工作区绑定、视图组装已拆到独立 hooks。
-  - Main 侧 `FileSystemMediaReadService` 拆分已完成：`electron/fileSystemReadService.ts` 收敛为 Facade 入口（`2` 行），`electron/fileSystemReadFacade.ts` 负责组装并委托领域服务（约 `548` 行）。
+  - Main 侧 `FileSystemMediaReadService` 拆分已完成：`electron/fileSystemReadService.ts` 收敛为 Facade 入口，`electron/fileSystemReadFacade.ts` 负责组装并委托领域服务。
   - `fileSystemReadService` 领域服务拆分已落地：Token、Runtime、EventBus、ImportPathRegistry、ArchiveNormalization、LibrarySnapshot、ImportTask、LibraryReadWrite、ManagementMutation、MediaResource。
-  - 当前关键入口文件规模：`src/App.tsx` `10` 行，`src/features/app/useAppController.ts` `5` 行，`src/features/app/useAppDataPipeline.ts` `34` 行。
+  - 当前关键入口文件保持薄入口形态，不承载业务细节。
 - 管理模式图片选择交互接线已完成：`ImageMainSection` 已统一改用 `useManageImageSelectionInteractions`，旧实现已移除。
 - 音乐可视化资源注册已模块化：Shader 通过 `import.meta.glob('./shaders/*.ts')` 自动发现，替换/新增 Shader 不需要修改 App 壳层组装代码。
 - 大文件拆分已完成：`src/App.css` 已拆分为 `src/styles/app/*` 聚合样式，`electron/mediaLibraryDatabase.ts` 已拆分为 Facade + stores（schema/snapshot/metadata/playlist/task/app state）。
@@ -105,7 +107,7 @@
 
 - `contracts`：Zod schema 与强类型 IPC 请求/响应。
 - `domain`：纯业务规则与用例编排。
-- `infra`：文件系统、SQLite、LanceDB、LM Studio 适配器、文件监控适配器。
+- `infra`：文件系统、SQLite、向量检索适配器、LLM 适配器、文件监控适配器。
 - `ui`：React 页面/组件与纯 UI 状态。
 
 模块之间不得直接读取彼此内部实现，必须通过接口合约交互。
@@ -133,10 +135,10 @@
 - 音频元数据覆盖（`album`、`author`、`track_title`、`series_id`）与更新时戳。
 - 任务状态与操作日志。
 
-### LanceDB 职责
+### 向量字段职责（当前实现）
 
-- 图片级向量存储。
-- 相似检索与候选召回。
+- 图片级向量当前存储在 SQLite（`feature_vector_json`）字段。
+- 相似检索由仓库层读取向量字段并执行计算，不引入独立向量数据库。
 
 ### 压缩包内部命名策略
 
@@ -167,12 +169,12 @@
 
 - 单元测试：领域规则、路径处理、调度逻辑、schema 校验。
 - 组件测试：核心面板行为与模式切换。
-- 集成测试：SQLite + LanceDB + 文件系统联动链路。
+- 集成测试：SQLite + 文件系统联动链路。
 - E2E：保持用户手动执行的脚本化检查清单。
 
 ## 可维护性与稳定性改进专项（已完成）
 
-- 专项实施文档：`docs/maintainability-improvement-execution-v1.md`（临时文档，已移除）。
+- 专项实施文档：已归档到 `docs/archive/implementation-plans/`，不再作为当前执行入口。
 - 执行优先级：
   - P0：SQLite 存储层与媒体访问安全守卫测试。
   - P1：核心编排链路集成测试与 `build*Props` 纯函数测试。

@@ -1,6 +1,12 @@
 # 离线自动字幕实施方案 (v1)
 
-Last updated: 2026-02-17
+Last updated: 2026-02-18
+
+执行状态更新（2026-02-18）：
+
+- Phase 0 ~ Phase 5 已完成，阶段报告已归档到 `docs/archive/offline-auto-subtitle/`。
+- Phase 6 门禁已并入当前质量基线（见 `docs/project-evaluation-report-v12.md`）。
+- 下文保留原实施分解结构，作为可追溯的实现记录。
 
 ## 1. 目标与范围
 
@@ -50,11 +56,13 @@ Last updated: 2026-02-17
 
 ## 5. Phase 计划
 
+说明：以下 TODO/Checklist 为实施期任务分解记录，不等同于当前未完成项。
+
 ---
 
 ## Phase 0 - Spike 与风险清零
 
-状态：`in_progress`（已启动，执行记录见 `docs/offline-auto-subtitle-phase0-report.md`）
+状态：`completed`（执行记录见 `docs/archive/offline-auto-subtitle/offline-auto-subtitle-phase0-report.md`）
 
 ### 目标
 
@@ -64,7 +72,7 @@ Last updated: 2026-02-17
 
 ### 涉及文件（新增或临时验证）
 
-- `docs/ref/subtitle.md`（仅参考）
+- `docs/ref/`（仅参考，历史验证材料已归档）
 - `src/components/VideoMainSection.tsx`（调试点）
 - `src/components/fullscreen/FullscreenPanes.tsx`（调试点）
 - `src/features/music-visualizer/audioAnalyser.ts`（参考 WebAudio 接法）
@@ -87,7 +95,7 @@ Last updated: 2026-02-17
 
 ## Phase 1 - 可选安装组件与运行时探测
 
-状态：`in_progress`（执行记录见 `docs/offline-auto-subtitle-phase1-report.md`）
+状态：`completed`（执行记录见 `docs/archive/offline-auto-subtitle/offline-auto-subtitle-phase1-report.md`）
 
 ### 目标
 
@@ -124,7 +132,7 @@ Last updated: 2026-02-17
 
 ## Phase 2 - 设置项、模型目录与基础 UI
 
-状态：`completed`（执行记录见 `docs/offline-auto-subtitle-phase2-report.md`）
+状态：`completed`（执行记录见 `docs/archive/offline-auto-subtitle/offline-auto-subtitle-phase2-report.md`）
 
 ### 目标
 
@@ -164,6 +172,8 @@ Last updated: 2026-02-17
 ---
 
 ## Phase 3 - 模型清单与下载管理（含 Proxy 询问）
+
+状态：`completed`（执行记录见 `docs/archive/offline-auto-subtitle/offline-auto-subtitle-phase3-report.md`）
 
 ### 目标
 
@@ -212,6 +222,8 @@ Last updated: 2026-02-17
 
 ## Phase 4 - 自动字幕会话（Main + Worker）与 provider 自动回退
 
+状态：`completed`（执行记录见 `docs/archive/offline-auto-subtitle/offline-auto-subtitle-phase4-report.md`）
+
 ### 目标
 
 - 建立自动字幕会话通道，支持启动/停止/reset/flush。
@@ -249,6 +261,8 @@ Last updated: 2026-02-17
 
 ## Phase 5 - Renderer 音频抓取与自动字幕渲染
 
+状态：`completed`（执行记录见 `docs/archive/offline-auto-subtitle/offline-auto-subtitle-phase5-report.md`）
+
 ### 目标
 
 - 在视频模式和全屏视频中显示自动字幕 Overlay。
@@ -285,6 +299,8 @@ Last updated: 2026-02-17
 ---
 
 ## Phase 6 - 回归、门禁与发布
+
+状态：`completed`（门禁结果见 `docs/project-evaluation-report-v12.md`）
 
 ### 目标
 
@@ -332,6 +348,6 @@ Last updated: 2026-02-17
 
 ## 8. 里程碑建议
 
-- M1：Phase 0-2 完成（可安装、可配置、可下载）。
-- M2：Phase 3-5 完成（可识别、可显示、可回退）。
-- M3：Phase 6 完成（门禁通过并可发布）。
+- M1：Phase 0-2 已完成（可安装、可配置、可下载）。
+- M2：Phase 3-5 已完成（可识别、可显示、可回退）。
+- M3：Phase 6 已完成（门禁通过并进入持续维护）。

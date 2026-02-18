@@ -1,5 +1,7 @@
 # i18n / aria 开发约束（长期执行）
 
+Last updated: 2026-02-18
+
 ## 适用范围
 
 - 适用于 renderer 侧所有新增或修改的 UI 文案、可访问名称 (Accessible Name) 与 tooltip。
