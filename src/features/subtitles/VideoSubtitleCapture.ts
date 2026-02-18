@@ -16,14 +16,20 @@ interface AudioWorkletChunkMessage {
   samples: ArrayBuffer
 }
 
+interface SharedAudioChain {
+  context: AudioContext
+  sourceNode: MediaElementAudioSourceNode
+  gainNode: GainNode
+}
+
+const sharedAudioChainByVideo = new WeakMap<HTMLVideoElement, SharedAudioChain>()
+
 function toWorkletModuleUrl(): string {
   return new URL('./audio-worklets/video-audio-capture.worklet.js', window.location.href).toString()
 }
 
 export class VideoSubtitleCapture {
   private audioContext: AudioContext | null = null
-  private readonly sourceNodeByVideo = new WeakMap<HTMLVideoElement, MediaElementAudioSourceNode>()
-  private readonly gainNodeByVideo = new WeakMap<HTMLVideoElement, GainNode>()
   private readonly originalDescriptorsByVideo = new WeakMap<HTMLVideoElement, {
     muted: PropertyDescriptor | undefined
     volume: PropertyDescriptor | undefined
@@ -51,7 +57,8 @@ export class VideoSubtitleCapture {
     this.internalMuted = video.muted
     this.internalVolume = video.volume
 
-    const context = this.audioContext ?? new AudioContext({ latencyHint: 'interactive' })
+    const sharedChain = sharedAudioChainByVideo.get(video)
+    const context = sharedChain?.context ?? this.audioContext ?? new AudioContext({ latencyHint: 'interactive' })
     this.audioContext = context
 
     if (context.state !== 'running') {
@@ -100,14 +107,16 @@ export class VideoSubtitleCapture {
       originalVolumeDescriptor.set.call(video, 1)
     }
 
-    const sourceNode = this.sourceNodeByVideo.get(video) ?? context.createMediaElementSource(video)
-    this.sourceNodeByVideo.set(video, sourceNode)
-    
-    // Create or reuse GainNode for volume control
-    let gainNode = this.gainNodeByVideo.get(video)
-    if (!gainNode) {
-      gainNode = context.createGain()
-      this.gainNodeByVideo.set(video, gainNode)
+    // Reuse shared chain for same video element to avoid
+    // "HTMLMediaElement already connected previously" runtime error.
+    const sourceNode = sharedChain?.sourceNode ?? context.createMediaElementSource(video)
+    const gainNode = sharedChain?.gainNode ?? context.createGain()
+    if (!sharedChain) {
+      sharedAudioChainByVideo.set(video, {
+        context,
+        sourceNode,
+        gainNode,
+      })
     }
     
     // Set initial gain based on internal state
@@ -172,12 +181,12 @@ export class VideoSubtitleCapture {
         if (originalDescriptors.muted) {
           Object.defineProperty(this.attachedVideo, 'muted', originalDescriptors.muted)
         } else {
-          delete (this.attachedVideo as any).muted
+          delete (this.attachedVideo as unknown as Record<string, unknown>).muted
         }
         if (originalDescriptors.volume) {
           Object.defineProperty(this.attachedVideo, 'volume', originalDescriptors.volume)
         } else {
-          delete (this.attachedVideo as any).volume
+          delete (this.attachedVideo as unknown as Record<string, unknown>).volume
         }
         
         // Restore the internal state to the video element
@@ -228,9 +237,8 @@ export class VideoSubtitleCapture {
 
   dispose(): void {
     this.detach()
-    if (this.audioContext) {
-      void this.audioContext.close().catch(() => undefined)
-      this.audioContext = null
-    }
+    // Do not close context here. Closing + reattaching the same video element
+    // can trigger createMediaElementSource errors in some browsers/electron builds.
+    this.audioContext = null
   }
 }

@@ -632,6 +632,18 @@ export function useAppDisplayResources({
     providerPreference: "cpu",
     language: appSettings.subtitleLanguage,
     renderMode: appSettings.subtitleRenderMode,
+    advancedOptions: {
+      vad: {
+        preset: appSettings.subtitleAdvancedVadPreset,
+        threshold: appSettings.subtitleAdvancedVadThreshold,
+        minSilenceSec: appSettings.subtitleAdvancedVadMinSilenceSec,
+        minSpeechSec: appSettings.subtitleAdvancedVadMinSpeechSec,
+        maxSpeechSec: appSettings.subtitleAdvancedVadMaxSpeechSec,
+      },
+      speaker: {
+        similarityThreshold: appSettings.subtitleAdvancedSpeakerThreshold,
+      },
+    },
     repository: mediaRepository,
   });
   const autoSubtitleUiMessage = toAutoSubtitleUiMessage(liveSubtitle.message, t);

@@ -62,6 +62,11 @@ export const subtitleGradientCurveSchema = z.enum([
   "smoother",
 ]);
 export const subtitleRenderModeSchema = z.enum(["simple", "advanced"]);
+export const subtitleAdvancedVadPresetSchema = z.enum([
+  "balanced",
+  "conservative",
+  "aggressive",
+]);
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
@@ -148,6 +153,12 @@ export const appSettingsSchema = z.object({
   ehentaiCookies: z.string().max(4096),
   subtitleFeatureEnabled: z.boolean(),
   subtitleRenderMode: subtitleRenderModeSchema.default("advanced"),
+  subtitleAdvancedVadPreset: subtitleAdvancedVadPresetSchema.default("balanced"),
+  subtitleAdvancedVadThreshold: z.number().min(0.1).max(0.9).default(0.45),
+  subtitleAdvancedVadMinSilenceSec: z.number().min(0.1).max(1.2).default(0.3),
+  subtitleAdvancedVadMinSpeechSec: z.number().min(0.05).max(1).default(0.25),
+  subtitleAdvancedVadMaxSpeechSec: z.number().min(3).max(30).default(15),
+  subtitleAdvancedSpeakerThreshold: z.number().min(0.45).max(0.85).default(0.5),
   subtitleAcceleration: subtitleAccelerationSchema,
   subtitleLanguage: subtitleLanguageSchema,
   subtitleModelDir: z.string().max(1024),
@@ -174,10 +185,10 @@ export const appSettingsSchema = z.object({
   subtitleCleanupLlmModel: z.string().max(256),
   subtitleCleanupLlmPrompt: z.string().max(12000),
   adReviewStrategyMode: z.enum(["all", "head-tail"]),
-  adReviewHeadN: z.number().int().min(0).max(200),
-  adReviewTailN: z.number().int().min(0).max(200),
-  adReviewTailStopCleanStreak: z.number().int().min(1).max(200),
-  adReviewMaxConcurrency: z.number().int().min(4).max(12),
+  adReviewHeadN: z.number().int().min(1).max(20),
+  adReviewTailN: z.number().int().min(1).max(20),
+  adReviewTailStopCleanStreak: z.number().int().min(1).max(20),
+  adReviewMaxConcurrency: z.number().int().min(1).max(20),
 });
 
 export type AppSettings = z.infer<typeof appSettingsSchema>;

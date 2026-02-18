@@ -56,6 +56,12 @@ export interface SettingsPanelProps {
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
   subtitleRenderMode: 'simple' | 'advanced'
+  subtitleAdvancedVadPreset: 'balanced' | 'conservative' | 'aggressive'
+  subtitleAdvancedVadThreshold: number
+  subtitleAdvancedVadMinSilenceSec: number
+  subtitleAdvancedVadMinSpeechSec: number
+  subtitleAdvancedVadMaxSpeechSec: number
+  subtitleAdvancedSpeakerThreshold: number
   subtitleLanguage: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue'
   subtitleModelDir: string
   subtitleTextFillMode: 'solid' | 'gradient'
@@ -165,6 +171,12 @@ export interface SettingsPanelProps {
   onEhentaiCookiesChange: (value: string) => void
   onSubtitleFeatureEnabledChange: (value: boolean) => void
   onSubtitleRenderModeChange: (value: 'simple' | 'advanced') => void
+  onSubtitleAdvancedVadPresetChange: (value: 'balanced' | 'conservative' | 'aggressive') => void
+  onSubtitleAdvancedVadThresholdChange: (value: number) => void
+  onSubtitleAdvancedVadMinSilenceSecChange: (value: number) => void
+  onSubtitleAdvancedVadMinSpeechSecChange: (value: number) => void
+  onSubtitleAdvancedVadMaxSpeechSecChange: (value: number) => void
+  onSubtitleAdvancedSpeakerThresholdChange: (value: number) => void
   onSubtitleLanguageChange: (value: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue') => void
   onSubtitleModelDirPick: () => void
   onSubtitleTextFillModeChange: (value: 'solid' | 'gradient') => void
@@ -295,6 +307,12 @@ function SettingsPanel({
   ehentaiCookies,
   subtitleFeatureEnabled,
   subtitleRenderMode,
+  subtitleAdvancedVadPreset,
+  subtitleAdvancedVadThreshold,
+  subtitleAdvancedVadMinSilenceSec,
+  subtitleAdvancedVadMinSpeechSec,
+  subtitleAdvancedVadMaxSpeechSec,
+  subtitleAdvancedSpeakerThreshold,
   subtitleLanguage,
   subtitleModelDir,
   subtitleTextFillMode,
@@ -377,6 +395,12 @@ function SettingsPanel({
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
   onSubtitleRenderModeChange,
+  onSubtitleAdvancedVadPresetChange,
+  onSubtitleAdvancedVadThresholdChange,
+  onSubtitleAdvancedVadMinSilenceSecChange,
+  onSubtitleAdvancedVadMinSpeechSecChange,
+  onSubtitleAdvancedVadMaxSpeechSecChange,
+  onSubtitleAdvancedSpeakerThresholdChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
   onSubtitleTextFillModeChange,
@@ -819,6 +843,12 @@ function SettingsPanel({
     ehentaiCookies,
     subtitleFeatureEnabled,
     subtitleRenderMode,
+    subtitleAdvancedVadPreset,
+    subtitleAdvancedVadThreshold,
+    subtitleAdvancedVadMinSilenceSec,
+    subtitleAdvancedVadMinSpeechSec,
+    subtitleAdvancedVadMaxSpeechSec,
+    subtitleAdvancedSpeakerThreshold,
     subtitleLanguage,
     subtitleModelDir,
     subtitleTextFillMode,
@@ -909,6 +939,12 @@ function SettingsPanel({
     onEhentaiCookiesChange,
     onSubtitleFeatureEnabledChange,
     onSubtitleRenderModeChange,
+    onSubtitleAdvancedVadPresetChange,
+    onSubtitleAdvancedVadThresholdChange,
+    onSubtitleAdvancedVadMinSilenceSecChange,
+    onSubtitleAdvancedVadMinSpeechSecChange,
+    onSubtitleAdvancedVadMaxSpeechSecChange,
+    onSubtitleAdvancedSpeakerThresholdChange,
     onSubtitleLanguageChange,
     onSubtitleModelDirPick,
     onSubtitleTextFillModeChange,

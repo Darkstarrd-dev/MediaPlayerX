@@ -7,6 +7,12 @@ export function renderSettingsModelSection({
   t,
   subtitleFeatureEnabled,
   subtitleRenderMode,
+  subtitleAdvancedVadPreset,
+  subtitleAdvancedVadThreshold,
+  subtitleAdvancedVadMinSilenceSec,
+  subtitleAdvancedVadMinSpeechSec,
+  subtitleAdvancedVadMaxSpeechSec,
+  subtitleAdvancedSpeakerThreshold,
   subtitleLanguage,
   subtitleModelDir,
   subtitleTextFillMode,
@@ -40,6 +46,12 @@ export function renderSettingsModelSection({
   subtitleCleanupLlmPrompt,
   onSubtitleFeatureEnabledChange,
   onSubtitleRenderModeChange,
+  onSubtitleAdvancedVadPresetChange,
+  onSubtitleAdvancedVadThresholdChange,
+  onSubtitleAdvancedVadMinSilenceSecChange,
+  onSubtitleAdvancedVadMinSpeechSecChange,
+  onSubtitleAdvancedVadMaxSpeechSecChange,
+  onSubtitleAdvancedSpeakerThresholdChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
   onSubtitleTextFillModeChange,
@@ -72,6 +84,12 @@ export function renderSettingsModelSection({
   | "t"
   | "subtitleFeatureEnabled"
   | "subtitleRenderMode"
+  | "subtitleAdvancedVadPreset"
+  | "subtitleAdvancedVadThreshold"
+  | "subtitleAdvancedVadMinSilenceSec"
+  | "subtitleAdvancedVadMinSpeechSec"
+  | "subtitleAdvancedVadMaxSpeechSec"
+  | "subtitleAdvancedSpeakerThreshold"
   | "subtitleLanguage"
   | "subtitleModelDir"
   | "subtitleTextFillMode"
@@ -105,6 +123,12 @@ export function renderSettingsModelSection({
   | "subtitleCleanupLlmPrompt"
   | "onSubtitleFeatureEnabledChange"
   | "onSubtitleRenderModeChange"
+  | "onSubtitleAdvancedVadPresetChange"
+  | "onSubtitleAdvancedVadThresholdChange"
+  | "onSubtitleAdvancedVadMinSilenceSecChange"
+  | "onSubtitleAdvancedVadMinSpeechSecChange"
+  | "onSubtitleAdvancedVadMaxSpeechSecChange"
+  | "onSubtitleAdvancedSpeakerThresholdChange"
   | "onSubtitleLanguageChange"
   | "onSubtitleModelDirPick"
   | "onSubtitleTextFillModeChange"
@@ -156,6 +180,127 @@ export function renderSettingsModelSection({
             {`${t("ui.settings.offlineSubtitleRenderMode")} · ${subtitleRenderMode === "simple" ? t("ui.settings.offlineSubtitleRenderModeSimple") : t("ui.settings.offlineSubtitleRenderModeAdvanced")}`}
           </button>
         </div>
+        {subtitleRenderMode === "advanced" ? (
+          <details className="settings-collapsible" open>
+            <summary>{t("ui.settings.offlineSubtitleAdvancedSection")}</summary>
+            <div className="settings-collapsible-content">
+              <label>
+                {t("ui.settings.offlineSubtitleVadPreset")}
+                <select
+                  value={subtitleAdvancedVadPreset}
+                  onChange={(event) =>
+                    onSubtitleAdvancedVadPresetChange(
+                      event.target.value as
+                        | "balanced"
+                        | "conservative"
+                        | "aggressive",
+                    )
+                  }
+                >
+                  <option value="balanced">
+                    {t("ui.settings.offlineSubtitleVadPresetBalanced")}
+                  </option>
+                  <option value="conservative">
+                    {t("ui.settings.offlineSubtitleVadPresetConservative")}
+                  </option>
+                  <option value="aggressive">
+                    {t("ui.settings.offlineSubtitleVadPresetAggressive")}
+                  </option>
+                </select>
+              </label>
+              <label>
+                {t("ui.settings.offlineSubtitleVadThreshold")}
+                <input
+                  type="range"
+                  min={0.1}
+                  max={0.9}
+                  step={0.01}
+                  value={subtitleAdvancedVadThreshold}
+                  onChange={(event) =>
+                    onSubtitleAdvancedVadThresholdChange(
+                      Number(event.target.value),
+                    )
+                  }
+                />
+                <span className="settings-placeholder">
+                  {subtitleAdvancedVadThreshold.toFixed(2)}
+                </span>
+              </label>
+              <label>
+                {t("ui.settings.offlineSubtitleVadMinSilenceSec")}
+                <input
+                  type="range"
+                  min={0.1}
+                  max={1.2}
+                  step={0.01}
+                  value={subtitleAdvancedVadMinSilenceSec}
+                  onChange={(event) =>
+                    onSubtitleAdvancedVadMinSilenceSecChange(
+                      Number(event.target.value),
+                    )
+                  }
+                />
+                <span className="settings-placeholder">
+                  {subtitleAdvancedVadMinSilenceSec.toFixed(2)}s
+                </span>
+              </label>
+              <label>
+                {t("ui.settings.offlineSubtitleVadMinSpeechSec")}
+                <input
+                  type="range"
+                  min={0.05}
+                  max={1}
+                  step={0.01}
+                  value={subtitleAdvancedVadMinSpeechSec}
+                  onChange={(event) =>
+                    onSubtitleAdvancedVadMinSpeechSecChange(
+                      Number(event.target.value),
+                    )
+                  }
+                />
+                <span className="settings-placeholder">
+                  {subtitleAdvancedVadMinSpeechSec.toFixed(2)}s
+                </span>
+              </label>
+              <label>
+                {t("ui.settings.offlineSubtitleVadMaxSpeechSec")}
+                <input
+                  type="range"
+                  min={3}
+                  max={30}
+                  step={1}
+                  value={subtitleAdvancedVadMaxSpeechSec}
+                  onChange={(event) =>
+                    onSubtitleAdvancedVadMaxSpeechSecChange(
+                      Number(event.target.value),
+                    )
+                  }
+                />
+                <span className="settings-placeholder">
+                  {subtitleAdvancedVadMaxSpeechSec.toFixed(0)}s
+                </span>
+              </label>
+              <label>
+                {t("ui.settings.offlineSubtitleSpeakerThreshold")}
+                <input
+                  type="range"
+                  min={0.45}
+                  max={0.85}
+                  step={0.01}
+                  value={subtitleAdvancedSpeakerThreshold}
+                  onChange={(event) =>
+                    onSubtitleAdvancedSpeakerThresholdChange(
+                      Number(event.target.value),
+                    )
+                  }
+                />
+                <span className="settings-placeholder">
+                  {subtitleAdvancedSpeakerThreshold.toFixed(2)}
+                </span>
+              </label>
+            </div>
+          </details>
+        ) : null}
         <label>
           {t("ui.settings.offlineSubtitleLanguage")}
           <select

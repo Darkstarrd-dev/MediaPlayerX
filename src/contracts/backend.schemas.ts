@@ -354,9 +354,9 @@ export const manageAdReviewAllStrategySchema = z.object({
 
 export const manageAdReviewHeadTailStrategySchema = z.object({
   mode: z.literal("head-tail"),
-  head_n: nonNegativeIntSchema,
-  tail_n: nonNegativeIntSchema,
-  tail_stop_clean_streak: z.number().int().min(1).max(200),
+  head_n: z.number().int().min(1).max(20),
+  tail_n: z.number().int().min(1).max(20),
+  tail_stop_clean_streak: z.number().int().min(1).max(20),
 });
 
 export const manageAdReviewStrategySchema = z.discriminatedUnion("mode", [
@@ -366,7 +366,7 @@ export const manageAdReviewStrategySchema = z.discriminatedUnion("mode", [
 
 export const manageAdReviewTaskExecutionSchema = z.object({
   strategy: manageAdReviewStrategySchema,
-  max_concurrency: z.number().int().min(4).max(12),
+  max_concurrency: z.number().int().min(1).max(20),
 });
 
 export const manageAdReviewSourceDistributionSchema = z.object({
@@ -424,7 +424,7 @@ export const startManageAdReviewRequestSchema = z.object({
   llm_endpoint: z.string().min(1),
   llm_model: z.string().min(1),
   strategy: manageAdReviewStrategySchema.optional(),
-  max_concurrency: z.number().int().min(4).max(12).optional(),
+  max_concurrency: z.number().int().min(1).max(20).optional(),
 });
 
 export const startManageAdReviewResponseSchema = z.object({
@@ -1023,6 +1023,9 @@ export const subtitleCueSchema = z.object({
   end_sec: z.number().min(0),
   text: z.string().min(1),
   lang: z.string().min(1).nullable(),
+  speaker: z.number().int().min(0).nullable().optional(),
+  speaker_changed: z.boolean().optional(),
+  speaker_similarity: z.number().min(-1).max(1).optional(),
 });
 
 export const subtitleSessionEventSchema = z.object({
@@ -1039,6 +1042,24 @@ export const startSubtitleSessionRequestSchema = z.object({
   language: z.string().min(1).default("auto"),
   fallback_to_cpu: z.boolean().default(true),
   render_mode: z.enum(["simple", "advanced"]).default("advanced"),
+  advanced_options: z
+    .object({
+      vad: z
+        .object({
+          preset: z.enum(["balanced", "conservative", "aggressive"]).default("balanced"),
+          threshold: z.number().min(0.1).max(0.9).default(0.45),
+          min_silence_sec: z.number().min(0.1).max(1.2).default(0.3),
+          min_speech_sec: z.number().min(0.05).max(1).default(0.25),
+          max_speech_sec: z.number().min(3).max(30).default(15),
+        })
+        .optional(),
+      speaker: z
+        .object({
+          similarity_threshold: z.number().min(0.45).max(0.85).default(0.5),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 export const startSubtitleSessionResponseSchema = z.object({

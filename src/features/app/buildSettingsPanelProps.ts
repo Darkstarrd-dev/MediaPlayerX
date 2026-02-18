@@ -35,6 +35,12 @@ interface BuildSettingsPanelPropsParams {
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
   subtitleRenderMode: 'simple' | 'advanced'
+  subtitleAdvancedVadPreset: 'balanced' | 'conservative' | 'aggressive'
+  subtitleAdvancedVadThreshold: number
+  subtitleAdvancedVadMinSilenceSec: number
+  subtitleAdvancedVadMinSpeechSec: number
+  subtitleAdvancedVadMaxSpeechSec: number
+  subtitleAdvancedSpeakerThreshold: number
   subtitleLanguage: AppSettings['subtitleLanguage']
   subtitleModelDir: string
   subtitleTextFillMode: AppSettings['subtitleTextFillMode']
@@ -135,6 +141,12 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     ehentaiCookies: params.ehentaiCookies,
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
     subtitleRenderMode: params.subtitleRenderMode,
+    subtitleAdvancedVadPreset: params.subtitleAdvancedVadPreset,
+    subtitleAdvancedVadThreshold: params.subtitleAdvancedVadThreshold,
+    subtitleAdvancedVadMinSilenceSec: params.subtitleAdvancedVadMinSilenceSec,
+    subtitleAdvancedVadMinSpeechSec: params.subtitleAdvancedVadMinSpeechSec,
+    subtitleAdvancedVadMaxSpeechSec: params.subtitleAdvancedVadMaxSpeechSec,
+    subtitleAdvancedSpeakerThreshold: params.subtitleAdvancedSpeakerThreshold,
     subtitleLanguage: params.subtitleLanguage,
     subtitleModelDir: params.subtitleModelDir,
     subtitleTextFillMode: params.subtitleTextFillMode,
@@ -278,6 +290,40 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
     onSubtitleFeatureEnabledChange: (value) => params.updateSettings({ subtitleFeatureEnabled: value }),
     onSubtitleRenderModeChange: (value) => params.updateSettings({ subtitleRenderMode: value }),
+    onSubtitleAdvancedVadPresetChange: (value) => {
+      if (value === 'conservative') {
+        params.updateSettings({
+          subtitleAdvancedVadPreset: value,
+          subtitleAdvancedVadThreshold: 0.52,
+          subtitleAdvancedVadMinSilenceSec: 0.45,
+          subtitleAdvancedVadMinSpeechSec: 0.25,
+          subtitleAdvancedVadMaxSpeechSec: 20,
+        })
+        return
+      }
+      if (value === 'aggressive') {
+        params.updateSettings({
+          subtitleAdvancedVadPreset: value,
+          subtitleAdvancedVadThreshold: 0.38,
+          subtitleAdvancedVadMinSilenceSec: 0.22,
+          subtitleAdvancedVadMinSpeechSec: 0.2,
+          subtitleAdvancedVadMaxSpeechSec: 10,
+        })
+        return
+      }
+      params.updateSettings({
+        subtitleAdvancedVadPreset: value,
+        subtitleAdvancedVadThreshold: 0.45,
+        subtitleAdvancedVadMinSilenceSec: 0.3,
+        subtitleAdvancedVadMinSpeechSec: 0.25,
+        subtitleAdvancedVadMaxSpeechSec: 15,
+      })
+    },
+    onSubtitleAdvancedVadThresholdChange: (value) => params.updateSettings({ subtitleAdvancedVadThreshold: value }),
+    onSubtitleAdvancedVadMinSilenceSecChange: (value) => params.updateSettings({ subtitleAdvancedVadMinSilenceSec: value }),
+    onSubtitleAdvancedVadMinSpeechSecChange: (value) => params.updateSettings({ subtitleAdvancedVadMinSpeechSec: value }),
+    onSubtitleAdvancedVadMaxSpeechSecChange: (value) => params.updateSettings({ subtitleAdvancedVadMaxSpeechSec: value }),
+    onSubtitleAdvancedSpeakerThresholdChange: (value) => params.updateSettings({ subtitleAdvancedSpeakerThreshold: value }),
     onSubtitleLanguageChange: (value) => params.updateSettings({ subtitleLanguage: value }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
     onSubtitleTextFillModeChange: (value) => params.updateSettings({ subtitleTextFillMode: value }),

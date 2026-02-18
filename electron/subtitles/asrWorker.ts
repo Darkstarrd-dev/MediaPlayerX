@@ -63,11 +63,63 @@ interface RuntimeSessionState {
   sampleRateHz: number
   pendingSamplesSinceDecode: number
   committedText: string
+  simpleLastRawText: string
+  simpleWindowText: string
   cueSeed: number
   requestedLanguage: string
   renderMode: 'simple' | 'advanced'
   lastSpeechEndSec: number // Track when speech last ended (for silence detection)
+  vad: VadRuntime | null
+  speaker: SpeakerRuntime | null
+  similarityThreshold: number
+  profileUpdateAlpha: number
 }
+
+interface VadSegmentLike {
+  samples?: Float32Array | number[]
+  start?: number
+  end?: number
+  startSec?: number
+  endSec?: number
+}
+
+interface VadLike {
+  acceptWaveform: (samples: Float32Array) => void
+  isEmpty: () => boolean
+  front: (enableExternalBuffer?: boolean) => VadSegmentLike
+  pop: () => void
+}
+
+interface VadRuntime {
+  detector: VadLike
+}
+
+interface SpeakerExtractorStreamLike {
+  acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void
+  inputFinished?: () => void
+}
+
+interface SpeakerExtractorLike {
+  createStream: () => SpeakerExtractorStreamLike
+  isReady?: (stream: SpeakerExtractorStreamLike) => boolean
+  compute: (stream: SpeakerExtractorStreamLike, enableExternalBuffer?: boolean) => Float32Array | number[]
+}
+
+interface SpeakerProfile {
+  id: number
+  embedding: Float32Array
+}
+
+interface SpeakerRuntime {
+  extractor: SpeakerExtractorLike
+  profiles: SpeakerProfile[]
+  currentSpeakerId: number | null
+  recentBestScores: number[]
+  segmentCount: number
+  lastHintSegmentCount: number
+}
+
+const MAX_SPEAKER_COUNT = 3
 
 let runtimeSession: RuntimeSessionState | null = null
 
@@ -171,6 +223,25 @@ async function resolveModelOnnxPath(modelRootDir: string): Promise<string> {
   return path.join(modelRootDir, preferred)
 }
 
+async function resolveAuxiliaryModelPath(modelRootDir: string, matcher: (lowerName: string) => boolean): Promise<string | null> {
+  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+  try {
+    entries = await fs.readdir(modelRootDir, { withFileTypes: true })
+  } catch {
+    return null
+  }
+
+  const match = entries
+    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.onnx'))
+    .map((entry) => entry.name)
+    .find((name) => matcher(name.toLowerCase()))
+
+  if (!match) {
+    return null
+  }
+  return path.join(modelRootDir, match)
+}
+
 function chooseProvider(payload: InitRequestPayload): {
   provider: SubtitleSessionProviderDto
   fallbackApplied: boolean
@@ -218,6 +289,47 @@ function chooseProvider(payload: InitRequestPayload): {
   }
 }
 
+function resolveVadTuning(payload: InitRequestPayload): {
+  threshold: number
+  minSilenceDuration: number
+  minSpeechDuration: number
+  maxSpeechDuration: number
+} {
+  const preset = payload.advanced_options?.vad?.preset ?? 'balanced'
+  const presetDefaults =
+    preset === 'conservative'
+      ? {
+          threshold: 0.52,
+          minSilenceDuration: 0.45,
+          minSpeechDuration: 0.25,
+          maxSpeechDuration: 20,
+        }
+      : preset === 'aggressive'
+        ? {
+            threshold: 0.38,
+            minSilenceDuration: 0.22,
+            minSpeechDuration: 0.2,
+            maxSpeechDuration: 10,
+          }
+        : {
+            threshold: 0.45,
+            minSilenceDuration: 0.3,
+            minSpeechDuration: 0.25,
+            maxSpeechDuration: 15,
+          }
+
+  return {
+    threshold: payload.advanced_options?.vad?.threshold ?? presetDefaults.threshold,
+    minSilenceDuration: payload.advanced_options?.vad?.min_silence_sec ?? presetDefaults.minSilenceDuration,
+    minSpeechDuration: payload.advanced_options?.vad?.min_speech_sec ?? presetDefaults.minSpeechDuration,
+    maxSpeechDuration: payload.advanced_options?.vad?.max_speech_sec ?? presetDefaults.maxSpeechDuration,
+  }
+}
+
+function resolveSpeakerThreshold(payload: InitRequestPayload): number {
+  return payload.advanced_options?.speaker?.similarity_threshold ?? 0.5
+}
+
 function ensureParentPort(): asserts parentPort is NonNullable<typeof parentPort> {
   if (!parentPort) {
     throw new Error('subtitle_asr_worker_missing_parent_port')
@@ -243,6 +355,9 @@ function loadSherpaModule(moduleRoot: string): {
       durations?: number[]
     }
   }
+  VoiceActivityDetector?: new (config: unknown) => VadLike
+  Vad?: new (config: unknown, bufferSizeInSeconds?: number) => VadLike
+  SpeakerEmbeddingExtractor?: new (config: unknown) => SpeakerExtractorLike
 } {
   const packageJsonPath = path.join(moduleRoot, 'package.json')
   if (!existsSync(packageJsonPath)) {
@@ -262,6 +377,9 @@ function loadSherpaModule(moduleRoot: string): {
         durations?: number[]
       }
     }
+    VoiceActivityDetector?: new (config: unknown) => VadLike
+    Vad?: new (config: unknown, bufferSizeInSeconds?: number) => VadLike
+    SpeakerEmbeddingExtractor?: new (config: unknown) => SpeakerExtractorLike
   }
 }
 
@@ -336,6 +454,26 @@ function calculateRms(samples: Float32Array): number {
   return Math.sqrt(squareSum / samples.length)
 }
 
+function downmixToMono(interleaved: Float32Array, channelCount: number): Float32Array {
+  if (channelCount <= 1) {
+    return interleaved
+  }
+  if (interleaved.length === 0) {
+    return interleaved
+  }
+
+  const frameCount = Math.floor(interleaved.length / channelCount)
+  const mono = new Float32Array(frameCount)
+  for (let frame = 0; frame < frameCount; frame += 1) {
+    let sum = 0
+    for (let channel = 0; channel < channelCount; channel += 1) {
+      sum += interleaved[frame * channelCount + channel] ?? 0
+    }
+    mono[frame] = sum / channelCount
+  }
+  return mono
+}
+
 function decodeFloat32Buffer(chunkBuffer: Buffer): Float32Array {
   if (chunkBuffer.byteLength === 0) {
     return new Float32Array(0)
@@ -350,6 +488,283 @@ function decodeFloat32Buffer(chunkBuffer: Buffer): Float32Array {
 
 function makeCueId(sessionId: string, cueSeed: number): string {
   return `${sessionId}:${cueSeed}`
+}
+
+function charLength(value: string): number {
+  return Array.from(value).length
+}
+
+function sliceTailByChars(value: string, count: number): string {
+  if (count <= 0) {
+    return ''
+  }
+  const chars = Array.from(value)
+  return chars.slice(Math.max(0, chars.length - count)).join('')
+}
+
+function pickSimpleDisplayText(fullText: string, maxChars = 54): string {
+  const normalized = fullText.replace(/\s+/g, ' ').trim()
+  if (!normalized) {
+    return ''
+  }
+  if (charLength(normalized) <= maxChars) {
+    return normalized
+  }
+
+  const separators = ['。', '！', '？', '!', '?', '.', ';', '；', ',', '，', '、']
+  let lastSeparatorIndex = -1
+  for (let index = normalized.length - 1; index >= 0; index -= 1) {
+    if (separators.includes(normalized[index] ?? '')) {
+      lastSeparatorIndex = index
+      break
+    }
+  }
+
+  if (lastSeparatorIndex >= 0 && lastSeparatorIndex + 1 < normalized.length) {
+    const tail = normalized.slice(lastSeparatorIndex + 1).trim()
+    if (tail && charLength(tail) <= maxChars + 16) {
+      return sliceTailByChars(tail, maxChars)
+    }
+  }
+
+  return sliceTailByChars(normalized, maxChars)
+}
+
+function sanitizePayloadForPostMessage(payload: unknown): unknown {
+  try {
+    return JSON.parse(JSON.stringify(payload))
+  } catch {
+    return payload
+  }
+}
+
+function normalizeEmbedding(value: Float32Array | number[] | null | undefined): Float32Array | null {
+  if (!value) {
+    return null
+  }
+  const output = value instanceof Float32Array ? value : new Float32Array(value)
+  if (output.length === 0) {
+    return null
+  }
+  return output
+}
+
+function cosineSimilarity(left: Float32Array, right: Float32Array): number {
+  const size = Math.min(left.length, right.length)
+  if (size === 0) {
+    return -1
+  }
+
+  let dot = 0
+  let leftNorm = 0
+  let rightNorm = 0
+  for (let i = 0; i < size; i += 1) {
+    const l = left[i] ?? 0
+    const r = right[i] ?? 0
+    dot += l * r
+    leftNorm += l * l
+    rightNorm += r * r
+  }
+
+  if (leftNorm <= 0 || rightNorm <= 0) {
+    return -1
+  }
+  return dot / (Math.sqrt(leftNorm) * Math.sqrt(rightNorm))
+}
+
+function identifySpeaker(
+  speakerRuntime: SpeakerRuntime,
+  embedding: Float32Array,
+  similarityThreshold: number,
+  profileUpdateAlpha: number,
+  segmentDurationSec: number,
+): { speakerId: number; bestScore: number } {
+  let bestId = -1
+  let bestScore = -1
+  let currentSpeakerScore = -1
+
+  for (let i = 0; i < speakerRuntime.profiles.length; i += 1) {
+    const profile = speakerRuntime.profiles[i]
+    const score = cosineSimilarity(embedding, profile.embedding)
+    if (score > bestScore) {
+      bestScore = score
+      bestId = profile.id
+    }
+    if (profile.id === speakerRuntime.currentSpeakerId) {
+      currentSpeakerScore = score
+    }
+  }
+
+  // Hysteresis: avoid frequent speaker jumps for short/unstable segments.
+  const stickyThreshold = Math.max(0.35, similarityThreshold - 0.12)
+  if (speakerRuntime.currentSpeakerId !== null && currentSpeakerScore >= stickyThreshold) {
+    bestId = speakerRuntime.currentSpeakerId
+    bestScore = currentSpeakerScore
+  }
+
+  if (bestId >= 0 && bestScore >= similarityThreshold) {
+    const targetProfile = speakerRuntime.profiles.find((profile) => profile.id === bestId)
+    if (targetProfile) {
+      const alpha = Math.min(Math.max(profileUpdateAlpha, 0.05), 0.95)
+      const size = Math.min(targetProfile.embedding.length, embedding.length)
+      for (let i = 0; i < size; i += 1) {
+        targetProfile.embedding[i] = (1 - alpha) * targetProfile.embedding[i] + alpha * embedding[i]
+      }
+    }
+    return { speakerId: bestId, bestScore }
+  }
+
+  // Do not keep creating new speakers from short/noisy segments.
+  const createThreshold = Math.max(0.35, similarityThreshold - 0.08)
+  const allowCreate =
+    speakerRuntime.profiles.length === 0 || (
+      segmentDurationSec >= 0.9 &&
+      bestScore < createThreshold &&
+      speakerRuntime.profiles.length < MAX_SPEAKER_COUNT
+    )
+
+  if (!allowCreate && bestId >= 0) {
+    return { speakerId: bestId, bestScore }
+  }
+
+  const nextId = speakerRuntime.profiles.length
+  speakerRuntime.profiles.push({
+    id: nextId,
+    embedding: new Float32Array(embedding),
+  })
+  return { speakerId: nextId, bestScore }
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) {
+    return min
+  }
+  return Math.min(Math.max(value, min), max)
+}
+
+function computeMedian(values: number[]): number {
+  if (values.length === 0) {
+    return 0
+  }
+  const sorted = [...values].sort((a, b) => a - b)
+  const middle = Math.floor(sorted.length / 2)
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2
+  }
+  return sorted[middle]
+}
+
+function maybeBuildSpeakerThresholdHint(currentSession: RuntimeSessionState): SubtitleSessionEventDto | null {
+  const speakerRuntime = currentSession.speaker
+  if (!speakerRuntime) {
+    return null
+  }
+  if (speakerRuntime.recentBestScores.length < 20) {
+    return null
+  }
+  if (speakerRuntime.segmentCount - speakerRuntime.lastHintSegmentCount < 20) {
+    return null
+  }
+
+  const medianScore = computeMedian(speakerRuntime.recentBestScores)
+  const suggestedThreshold = clampNumber(medianScore - 0.03, 0.55, 0.72)
+  speakerRuntime.lastHintSegmentCount = speakerRuntime.segmentCount
+
+  return createEvent(
+    'speaker_threshold_hint',
+    'info',
+    `speaker score median=${medianScore.toFixed(3)}, suggest threshold=${suggestedThreshold.toFixed(2)}, current=${currentSession.similarityThreshold.toFixed(2)}`,
+  )
+}
+
+function extractSpeakerEmbedding(
+  speakerRuntime: SpeakerRuntime,
+  samples: Float32Array,
+  sampleRate: number,
+): Float32Array | null {
+  if (samples.length < Math.floor(sampleRate * 0.45)) {
+    return null
+  }
+  const stream = speakerRuntime.extractor.createStream()
+  stream.acceptWaveform({
+    samples,
+    sampleRate,
+  })
+  stream.inputFinished?.()
+
+  if (typeof speakerRuntime.extractor.isReady === 'function' && !speakerRuntime.extractor.isReady(stream)) {
+    return null
+  }
+  return normalizeEmbedding(speakerRuntime.extractor.compute(stream, false))
+}
+
+function parseVadSegment(rawSegment: VadSegmentLike, sampleRateHz: number): { samples: Float32Array; startSec: number | null; endSec: number | null } | null {
+  const inputSamples = rawSegment.samples
+  if (!inputSamples) {
+    return null
+  }
+  const samples = inputSamples instanceof Float32Array ? inputSamples : new Float32Array(inputSamples)
+  if (samples.length === 0) {
+    return null
+  }
+
+  const startRaw = Number(rawSegment.startSec ?? rawSegment.start)
+  const endRaw = Number(rawSegment.endSec ?? rawSegment.end)
+
+  const startCandidate = Number.isFinite(startRaw)
+    ? (rawSegment.startSec != null ? startRaw : startRaw / Math.max(1, sampleRateHz))
+    : Number.NaN
+  const endCandidate = Number.isFinite(endRaw)
+    ? (rawSegment.endSec != null ? endRaw : endRaw / Math.max(1, sampleRateHz))
+    : Number.NaN
+
+  return {
+    samples,
+    startSec: Number.isFinite(startCandidate) ? startCandidate : null,
+    endSec: Number.isFinite(endCandidate) ? endCandidate : null,
+  }
+}
+
+function consumeVadSegments(
+  currentSession: RuntimeSessionState,
+  vadDetector: VadLike,
+  sampleRateHz: number,
+  fallbackChunkStartSec: number,
+  fallbackChunkEndSec: number,
+): SubtitleCueDto[] {
+  const cues: SubtitleCueDto[] = []
+
+  while (!vadDetector.isEmpty()) {
+    const parsedSegment = parseVadSegment(vadDetector.front(false), sampleRateHz)
+    vadDetector.pop()
+    if (!parsedSegment || parsedSegment.samples.length === 0) {
+      continue
+    }
+
+    const segmentDurationSec = parsedSegment.samples.length / sampleRateHz
+    if (segmentDurationSec < 0.2) {
+      continue
+    }
+
+    const segmentEndSec = Number.isFinite(parsedSegment.endSec)
+      ? Number(parsedSegment.endSec)
+      : fallbackChunkEndSec
+    const segmentStartSec = Number.isFinite(parsedSegment.startSec)
+      ? Number(parsedSegment.startSec)
+      : Math.max(fallbackChunkStartSec, segmentEndSec - segmentDurationSec)
+
+    cues.push(
+      ...decodeSegmentAndBuildCue(
+        currentSession,
+        parsedSegment.samples,
+        sampleRateHz,
+        Math.max(0, segmentStartSec),
+        Math.max(segmentStartSec + 0.35, segmentEndSec),
+      ),
+    )
+  }
+
+  return cues
 }
 
 function toFiniteNumbers(value: unknown): number[] {
@@ -495,6 +910,76 @@ function buildOfflineResultCues(
   ]
 }
 
+function decodeSegmentAndBuildCue(
+  currentSession: RuntimeSessionState,
+  samples: Float32Array,
+  sampleRateHz: number,
+  startSec: number,
+  endSec: number,
+): SubtitleCueDto[] {
+  const stream = currentSession.recognizer.createStream()
+  stream.acceptWaveform({
+    samples,
+    sampleRate: sampleRateHz,
+  })
+
+  currentSession.recognizer.decode(stream)
+  const result = currentSession.recognizer.getResult(stream)
+  const text = normalizeRecognizedText(result.text)
+  if (!text) {
+    return []
+  }
+
+  const cueLanguage =
+    currentSession.requestedLanguage === 'auto'
+      ? normalizeLangTag(result.lang)
+      : currentSession.requestedLanguage
+
+  let speakerId: number | null = currentSession.speaker?.currentSpeakerId ?? null
+  let speakerChanged = false
+  let speakerSimilarity: number | undefined
+  if (currentSession.speaker) {
+    const embedding = extractSpeakerEmbedding(currentSession.speaker, samples, sampleRateHz)
+    if (embedding) {
+      const detected = identifySpeaker(
+        currentSession.speaker,
+        embedding,
+        currentSession.similarityThreshold,
+        currentSession.profileUpdateAlpha,
+        samples.length / Math.max(1, sampleRateHz),
+      )
+      speakerSimilarity = detected.bestScore
+      currentSession.speaker.segmentCount += 1
+      currentSession.speaker.recentBestScores.push(detected.bestScore)
+      if (currentSession.speaker.recentBestScores.length > 60) {
+        currentSession.speaker.recentBestScores.shift()
+      }
+
+      const detectedSpeakerId = detected.speakerId
+      speakerChanged = currentSession.speaker.currentSpeakerId !== detectedSpeakerId
+      currentSession.speaker.currentSpeakerId = detectedSpeakerId
+      speakerId = detectedSpeakerId
+    }
+  }
+
+  const normalizedStart = Math.max(0, startSec)
+  const normalizedEnd = Math.max(normalizedStart + 0.35, endSec)
+
+  currentSession.cueSeed += 1
+  return [
+    {
+      id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
+      start_sec: normalizedStart,
+      end_sec: normalizedEnd,
+      text,
+      lang: cueLanguage,
+      speaker: speakerId,
+      speaker_changed: speakerChanged,
+      speaker_similarity: speakerSimilarity,
+    },
+  ]
+}
+
 function tryDecodeAndBuildCues(
   currentSession: RuntimeSessionState,
   timelineStartSec: number,
@@ -512,23 +997,37 @@ function tryDecodeAndBuildCues(
   if (currentSession.renderMode === 'simple') {
     // 检测静音间隔：如果距离上次语音结束超过 1.5 秒，清空已提交的文本
     const silenceDuration = timelineEndSec - currentSession.lastSpeechEndSec
-    if (silenceDuration > 1.5 && currentSession.committedText) {
+    if (silenceDuration > 1.5 && (currentSession.committedText || currentSession.simpleWindowText)) {
       console.log(`[ASR] Silence detected (${silenceDuration.toFixed(1)}s), clearing previous text`)
       currentSession.committedText = ''
+      currentSession.simpleLastRawText = ''
+      currentSession.simpleWindowText = ''
     }
-    
-    // 如果文本与上次相同，不生成新的 cue
-    if (currentText === currentSession.committedText) {
+
+    const delta = computeTextDelta(currentSession.simpleLastRawText, currentText)
+    currentSession.simpleLastRawText = currentText
+
+    // 如果文本无新增，不生成新的 cue
+    if (!delta) {
       return []
     }
-    
-    // 计算增量文本（用于调试输出）
-    const delta = currentText.slice(currentSession.committedText.length)
-    currentSession.committedText = currentText
+
+    const normalizedDelta = delta.trim()
+    if (charLength(normalizedDelta) <= 1 && !/[0-9A-Za-z]/.test(normalizedDelta)) {
+      return []
+    }
+
+    currentSession.simpleWindowText = `${currentSession.simpleWindowText} ${normalizedDelta}`.trim()
+    const displayText = pickSimpleDisplayText(currentSession.simpleWindowText)
+    if (!displayText || displayText === currentSession.committedText) {
+      return []
+    }
+
+    currentSession.committedText = displayText
     currentSession.lastSpeechEndSec = timelineEndSec
-    
-    // 根据文本长度估算显示时长
-    const durationSec = Math.max(1.2, Math.min(5, currentText.length * 0.22))
+
+    // 根据显示文本长度估算显示时长
+    const durationSec = Math.max(1.2, Math.min(3.2, charLength(displayText) * 0.16))
     const cueStart = Math.max(0, Math.max(timelineStartSec, timelineEndSec - durationSec * 0.8))
     const cueEnd = Math.max(cueStart + 0.4, cueStart + durationSec)
 
@@ -542,13 +1041,15 @@ function tryDecodeAndBuildCues(
       id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
       start_sec: cueStart,
       end_sec: cueEnd,
-      text: currentText,
+      text: displayText,
       lang: cueLanguage,
+      speaker: null,
+      speaker_changed: false,
     }
-    
+
     // 只在有增量时输出调试信息
-    console.log(`[ASR] +${delta.length} chars: "${delta}" [${cueStart.toFixed(1)}s - ${cueEnd.toFixed(1)}s]`)
-    
+    console.log(`[ASR] +${normalizedDelta.length} chars: "${normalizedDelta}" [${cueStart.toFixed(1)}s - ${cueEnd.toFixed(1)}s]`)
+
     return [cue]
   }
 
@@ -577,6 +1078,8 @@ function tryDecodeAndBuildCues(
     end_sec: cueEnd,
     text: delta,
     lang: cueLanguage,
+    speaker: null,
+    speaker_changed: false,
   }
   
   return [cue]
@@ -588,10 +1091,36 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
 
   const modelRootDir = await resolveModelRootDir(payload.model_dir, payload.model_id)
   const providerDecision = chooseProvider(payload)
+  const runtimeEvents = [...providerDecision.events]
 
   const modelPath = await resolveModelOnnxPath(modelRootDir)
   const tokensPath = path.join(modelRootDir, 'tokens.txt')
+  const modelDirRootCandidate = path.resolve(payload.model_dir)
+  const vadModelPath =
+    await resolveAuxiliaryModelPath(
+      modelRootDir,
+      (name) => name.includes('silero') && name.includes('vad'),
+    )
+    ?? (modelDirRootCandidate !== modelRootDir
+      ? await resolveAuxiliaryModelPath(
+          modelDirRootCandidate,
+          (name) => name.includes('silero') && name.includes('vad'),
+        )
+      : null)
+  const speakerModelPath =
+    await resolveAuxiliaryModelPath(
+      modelRootDir,
+      (name) => name.includes('eres2net') || (name.includes('3dspeaker') && name.includes('sv')),
+    )
+    ?? (modelDirRootCandidate !== modelRootDir
+      ? await resolveAuxiliaryModelPath(
+          modelDirRootCandidate,
+          (name) => name.includes('eres2net') || (name.includes('3dspeaker') && name.includes('sv')),
+        )
+      : null)
   const normalizedLanguage = normalizeRequestedLanguage(payload.language)
+  const vadTuning = resolveVadTuning(payload)
+  const speakerThreshold = resolveSpeakerThreshold(payload)
   const useInverseTextNormalization =
     normalizedLanguage === 'zh' || normalizedLanguage === 'yue' ? 1 : 0
 
@@ -613,6 +1142,77 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
   })
   const stream = recognizer.createStream()
 
+  let vad: VadRuntime | null = null
+  const VadConstructor = sherpa.VoiceActivityDetector ?? sherpa.Vad
+  if (payload.render_mode === 'advanced' && VadConstructor && vadModelPath) {
+    try {
+      const detector = new VadConstructor({
+        sileroVad: {
+          model: vadModelPath,
+          threshold: vadTuning.threshold,
+          minSilenceDuration: vadTuning.minSilenceDuration,
+          minSpeechDuration: vadTuning.minSpeechDuration,
+          maxSpeechDuration: vadTuning.maxSpeechDuration,
+        },
+        sampleRate: 16_000,
+        numThreads: 2,
+      }, 30)
+      vad = { detector }
+    } catch (error) {
+      runtimeEvents.push(
+        createEvent(
+          'advanced_vad_init_failed',
+          'warning',
+          error instanceof Error ? error.message : String(error),
+        ),
+      )
+    }
+  } else if (payload.render_mode === 'advanced') {
+    const exportKeys = Object.keys(sherpa).sort().join(',')
+    runtimeEvents.push(
+      createEvent(
+        'advanced_vad_unavailable',
+        'warning',
+        `silero vad model or constructor is unavailable; fallback to legacy decoding; exports=${exportKeys}`,
+      ),
+    )
+  }
+
+  let speaker: SpeakerRuntime | null = null
+  if (payload.render_mode === 'advanced' && sherpa.SpeakerEmbeddingExtractor && speakerModelPath) {
+    try {
+      const extractor = new sherpa.SpeakerEmbeddingExtractor({
+        model: speakerModelPath,
+        numThreads: 1,
+      })
+      speaker = {
+        extractor,
+        profiles: [],
+        currentSpeakerId: null,
+        recentBestScores: [],
+        segmentCount: 0,
+        lastHintSegmentCount: 0,
+      }
+    } catch (error) {
+      runtimeEvents.push(
+        createEvent(
+          'advanced_speaker_init_failed',
+          'warning',
+          error instanceof Error ? error.message : String(error),
+        ),
+      )
+    }
+  } else if (payload.render_mode === 'advanced') {
+    const exportKeys = Object.keys(sherpa).sort().join(',')
+    runtimeEvents.push(
+      createEvent(
+        'advanced_speaker_unavailable',
+        'warning',
+        `speaker embedding model or constructor is unavailable; speaker split is disabled; exports=${exportKeys}`,
+      ),
+    )
+  }
+
   const sessionId = `subtitle-session-${nowMs()}-${Math.floor(Math.random() * 100_000)}`
   const startedAtMs = nowMs()
 
@@ -629,10 +1229,16 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     sampleRateHz: 16_000,
     pendingSamplesSinceDecode: 0,
     committedText: '',
+    simpleLastRawText: '',
+    simpleWindowText: '',
     cueSeed: 0,
     requestedLanguage: normalizedLanguage,
     renderMode: payload.render_mode ?? 'advanced',
     lastSpeechEndSec: 0,
+    vad,
+    speaker,
+    similarityThreshold: speakerThreshold,
+    profileUpdateAlpha: 0.3,
   }
 
   console.log(`[ASR] Session started: ${payload.render_mode ?? 'advanced'} mode, language: ${normalizedLanguage}`)
@@ -641,7 +1247,7 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     session_id: sessionId,
     provider: providerDecision.provider,
     fallback_applied: providerDecision.fallbackApplied,
-    events: providerDecision.events,
+    events: runtimeEvents,
     started_at_ms: startedAtMs,
   })
 }
@@ -677,6 +1283,15 @@ async function handleReset(rawPayload: unknown): Promise<unknown> {
   currentSession.stream = currentSession.recognizer.createStream()
   currentSession.pendingSamplesSinceDecode = 0
   currentSession.committedText = ''
+  currentSession.simpleLastRawText = ''
+  currentSession.simpleWindowText = ''
+  currentSession.speaker?.profiles.splice(0, currentSession.speaker.profiles.length)
+  if (currentSession.speaker) {
+    currentSession.speaker.currentSpeakerId = null
+    currentSession.speaker.recentBestScores = []
+    currentSession.speaker.segmentCount = 0
+    currentSession.speaker.lastHintSegmentCount = 0
+  }
   return resetSubtitleSessionResponseSchema.parse({
     session_id: currentSession.sessionId,
     ok: true,
@@ -687,13 +1302,33 @@ async function handleReset(rawPayload: unknown): Promise<unknown> {
 
 async function handleFlush(): Promise<unknown> {
   const currentSession = runtimeSession
-  const cues = currentSession
-    ? tryDecodeAndBuildCues(
+  let cues: SubtitleCueDto[] = []
+
+  if (currentSession) {
+    const canFlushVad =
+      currentSession.renderMode === 'advanced' &&
+      currentSession.vad !== null
+
+    if (canFlushVad) {
+      const vadDetector = currentSession.vad!.detector
+      if (typeof (vadDetector as { flush?: () => void }).flush === 'function') {
+        ;(vadDetector as { flush: () => void }).flush()
+      }
+      cues = consumeVadSegments(
+        currentSession,
+        vadDetector,
+        16_000,
+        Math.max(0, currentSession.lastChunkEndSec - 2),
+        currentSession.lastChunkEndSec,
+      )
+    } else {
+      cues = tryDecodeAndBuildCues(
         currentSession,
         Math.max(0, currentSession.lastChunkEndSec - 2),
         currentSession.lastChunkEndSec,
       )
-    : []
+    }
+  }
 
   return flushSubtitleSessionResponseSchema.parse({
     session_id: currentSession?.sessionId ?? null,
@@ -721,27 +1356,53 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
 
   currentSession.lastChunkEndSec = Math.max(currentSession.lastChunkEndSec, request.chunk_end_sec, expectedEndSec)
 
-  const samples = decodeFloat32Buffer(chunkBuffer)
+  const rawSamples = decodeFloat32Buffer(chunkBuffer)
+  const samples = downmixToMono(rawSamples, Math.max(1, request.channel_count))
   const rms = calculateRms(samples)
-  
-  if (samples.length > 0) {
-    currentSession.sampleRateHz = request.sample_rate_hz
-    currentSession.stream.acceptWaveform({
-      samples,
-      sampleRate: request.sample_rate_hz,
-    })
-    currentSession.pendingSamplesSinceDecode += samples.length / Math.max(1, request.channel_count)
-  }
-
-  const decodeWindowSamples = Math.max(1_600, Math.floor(currentSession.sampleRateHz * 0.6))
-  const shouldDecode =
-    currentSession.pendingSamplesSinceDecode >= decodeWindowSamples &&
-    rms >= 0.002
 
   let cues: SubtitleCueDto[] = []
-  if (shouldDecode) {
-    currentSession.pendingSamplesSinceDecode = 0
-    cues = tryDecodeAndBuildCues(currentSession, request.chunk_start_sec, request.chunk_end_sec)
+
+  const canUseAdvancedSegmentation =
+    currentSession.renderMode === 'advanced' &&
+    currentSession.vad !== null &&
+    request.sample_rate_hz === 16_000
+
+  if (canUseAdvancedSegmentation && samples.length > 0) {
+    const vadDetector = currentSession.vad!.detector
+    vadDetector.acceptWaveform(samples)
+    cues.push(
+      ...consumeVadSegments(
+        currentSession,
+        vadDetector,
+        16_000,
+        request.chunk_start_sec,
+        request.chunk_end_sec,
+      ),
+    )
+
+    const thresholdHintEvent = maybeBuildSpeakerThresholdHint(currentSession)
+    if (thresholdHintEvent) {
+      events.push(thresholdHintEvent)
+    }
+  } else {
+    if (samples.length > 0) {
+      currentSession.sampleRateHz = request.sample_rate_hz
+      currentSession.stream.acceptWaveform({
+        samples,
+        sampleRate: request.sample_rate_hz,
+      })
+      currentSession.pendingSamplesSinceDecode += samples.length
+    }
+
+    const decodeWindowSamples = Math.max(1_600, Math.floor(currentSession.sampleRateHz * 0.6))
+    const shouldDecode =
+      currentSession.pendingSamplesSinceDecode >= decodeWindowSamples &&
+      rms >= 0.002
+
+    if (shouldDecode) {
+      currentSession.pendingSamplesSinceDecode = 0
+      cues = tryDecodeAndBuildCues(currentSession, request.chunk_start_sec, request.chunk_end_sec)
+    }
   }
 
   return pushSubtitleAudioResponseSchema.parse({
@@ -789,6 +1450,8 @@ async function handleTranscribeAll(rawPayload: unknown): Promise<unknown> {
   currentSession.stream = currentSession.recognizer.createStream()
   currentSession.pendingSamplesSinceDecode = 0
   currentSession.committedText = ''
+  currentSession.simpleLastRawText = ''
+  currentSession.simpleWindowText = ''
   currentSession.lastChunkEndSec = Math.max(0, durationSec)
   currentSession.stream.acceptWaveform({ samples: monoSamples, sampleRate })
 
@@ -847,7 +1510,7 @@ parentPort.on('message', (message: unknown) => {
         kind: 'response',
         request_id: request.request_id,
         ok: true,
-        payload,
+        payload: sanitizePayloadForPostMessage(payload),
       })
     })
     .catch((error: unknown) => {

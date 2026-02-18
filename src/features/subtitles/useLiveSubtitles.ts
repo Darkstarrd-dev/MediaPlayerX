@@ -19,6 +19,18 @@ interface UseLiveSubtitlesParams {
   providerPreference: SubtitleSessionProviderPreferenceDto
   language: string
   renderMode: 'simple' | 'advanced'
+  advancedOptions: {
+    vad: {
+      preset: 'balanced' | 'conservative' | 'aggressive'
+      threshold: number
+      minSilenceSec: number
+      minSpeechSec: number
+      maxSpeechSec: number
+    }
+    speaker: {
+      similarityThreshold: number
+    }
+  }
   repository: MediaRepository
 }
 
@@ -63,6 +75,50 @@ function pickDisplayEventMessage(events: SubtitleSessionEventDto[]): string | nu
   return selected?.message ?? null
 }
 
+function formatCueDisplayText(cue: SubtitleCueDto): string {
+  if (typeof cue.speaker === 'number' && cue.speaker >= 0) {
+    return `S${cue.speaker + 1}: ${cue.text}`
+  }
+  return cue.text
+}
+
+function buildAdvancedDisplayText(cues: SubtitleCueDto[], currentTimeSec: number): string | null {
+  const activeCues = cues
+    .filter((cue) => currentTimeSec + 0.35 >= cue.start_sec && currentTimeSec <= cue.end_sec + 2.4)
+    .slice(-4)
+
+  if (activeCues.length === 0) {
+    return null
+  }
+
+  const lines: string[] = []
+  for (let i = 0; i < activeCues.length; i += 1) {
+    const cue = activeCues[i]
+    const hasSpeaker = typeof cue.speaker === 'number' && cue.speaker >= 0
+    const speakerLabel = hasSpeaker ? `S${cue.speaker! + 1}` : null
+
+    if (!hasSpeaker) {
+      lines.push(cue.text)
+      continue
+    }
+
+    const previous = activeCues[i - 1]
+    const sameSpeakerAsPrevious =
+      i > 0 &&
+      typeof previous?.speaker === 'number' &&
+      previous.speaker === cue.speaker &&
+      !cue.speaker_changed
+
+    if (sameSpeakerAsPrevious && lines.length > 0) {
+      lines[lines.length - 1] = `${lines[lines.length - 1]} ${cue.text}`.trim()
+    } else {
+      lines.push(`[${speakerLabel}] ${cue.text}`)
+    }
+  }
+
+  return lines.join('\n').trim() || null
+}
+
 export function useLiveSubtitles({
   enabled,
   videoElement,
@@ -72,8 +128,16 @@ export function useLiveSubtitles({
   providerPreference,
   language,
   renderMode,
+  advancedOptions,
   repository,
 }: UseLiveSubtitlesParams) {
+  const vadPreset = advancedOptions.vad.preset
+  const vadThreshold = advancedOptions.vad.threshold
+  const vadMinSilenceSec = advancedOptions.vad.minSilenceSec
+  const vadMinSpeechSec = advancedOptions.vad.minSpeechSec
+  const vadMaxSpeechSec = advancedOptions.vad.maxSpeechSec
+  const speakerSimilarityThreshold = advancedOptions.speaker.similarityThreshold
+
   const [cues, setCues] = useState<SubtitleCueDto[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -179,6 +243,21 @@ export function useLiveSubtitles({
           language: language.trim() || 'auto',
           fallback_to_cpu: true,
           render_mode: renderMode,
+          advanced_options:
+            renderMode === 'advanced'
+              ? {
+                  vad: {
+                    preset: vadPreset,
+                    threshold: vadThreshold,
+                    min_silence_sec: vadMinSilenceSec,
+                    min_speech_sec: vadMinSpeechSec,
+                    max_speech_sec: vadMaxSpeechSec,
+                  },
+                  speaker: {
+                    similarity_threshold: speakerSimilarityThreshold,
+                  },
+                }
+              : undefined,
         })
 
         if (cancelled) {
@@ -280,6 +359,12 @@ export function useLiveSubtitles({
     providerPreference,
     language,
     renderMode,
+    vadPreset,
+    vadThreshold,
+    vadMinSilenceSec,
+    vadMinSpeechSec,
+    vadMaxSpeechSec,
+    speakerSimilarityThreshold,
     repository.flushSubtitleSession,
     repository.pushSubtitleAudio,
     repository.resetSubtitleSession,
@@ -289,22 +374,26 @@ export function useLiveSubtitles({
   ])
 
   const activeText = useMemo(() => {
+    if (renderMode === 'advanced') {
+      return buildAdvancedDisplayText(cues, currentTimeSec)
+    }
+
     for (let index = cues.length - 1; index >= 0; index -= 1) {
       const cue = cues[index]
       if (currentTimeSec >= cue.start_sec && currentTimeSec <= cue.end_sec) {
-        return cue.text
+        return formatCueDisplayText(cue)
       }
     }
 
     for (let index = cues.length - 1; index >= 0; index -= 1) {
       const cue = cues[index]
       if (currentTimeSec + 0.35 >= cue.start_sec && currentTimeSec <= cue.end_sec + 2.4) {
-        return cue.text
+        return formatCueDisplayText(cue)
       }
     }
 
     return null
-  }, [cues, currentTimeSec])
+  }, [cues, currentTimeSec, renderMode])
 
   const detectedLanguage = useMemo(() => {
     for (let index = cues.length - 1; index >= 0; index -= 1) {
