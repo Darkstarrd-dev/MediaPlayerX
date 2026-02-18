@@ -294,6 +294,48 @@ export function useAppWorkspaceProps({
     setAdReviewPageIndex,
   ]);
 
+  const onToggleAdReviewFocus = () => {
+    if (manageAdReview.deletePending) {
+      return;
+    }
+    const currentTask = manageAdReview.task;
+    if (!currentTask) {
+      setAdReviewFocusTaskId(null);
+      return;
+    }
+
+    const canFocusStatus =
+      currentTask.status === "running" ||
+      currentTask.status === "paused" ||
+      currentTask.status === "review";
+    if (!canFocusStatus || currentTask.candidates.length === 0) {
+      setAdReviewFocusTaskId(null);
+      setAdReviewPageIndex(0);
+      return;
+    }
+
+    const firstCandidate = currentTask.candidates[0] ?? null;
+    if (firstCandidate) {
+      const targetNodeId = normalImageSourceNodeIdMap.get(firstCandidate.package_id);
+      if (targetNodeId) {
+        setSelectedSidebarNodeId(targetNodeId);
+      }
+      setSelectedPackageId(firstCandidate.package_id);
+
+      const focusRef = orderedRootScopedImageRefs.find((ref) => {
+        const imageId =
+          packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]?.id ?? null;
+        return imageId === firstCandidate.image_id;
+      });
+      if (focusRef) {
+        setImageFocus(focusRef.packageId, focusRef.imageIndex);
+      }
+    }
+
+    setAdReviewFocusTaskId(currentTask.task_id);
+    setAdReviewPageIndex(0);
+  };
+
   const sidebarVideoQueueIds = useMemo(() => {
     const orderedByTree = collectVideoIdsBySidebarOrder(videoTreeForSidebar);
     if (orderedByTree.length > 0) {
@@ -427,6 +469,16 @@ export function useAppWorkspaceProps({
     layoutLocked,
   });
 
+  const {
+    onAdReviewStrategyModeChange,
+    onAdReviewMaxConcurrencyChange,
+    onAdReviewHeadNChange,
+    onAdReviewTailNChange,
+    onAdReviewTailStopCleanStreakChange,
+  } = createAdReviewSettingHandlers({
+    updateSettings: appSettings.updateSettings,
+  });
+
   const managementPanelProps = buildManagementPanelProps({
     mode,
     manageMode,
@@ -468,9 +520,11 @@ export function useAppWorkspaceProps({
     },
     onToggleHideUncheckedNonChecked:
       manageAdReview.toggleHideUncheckedNonChecked,
-    ...createAdReviewSettingHandlers({
-      updateSettings: appSettings.updateSettings,
-    }),
+    onAdReviewStrategyModeChange,
+    onAdReviewMaxConcurrencyChange,
+    onAdReviewHeadNChange,
+    onAdReviewTailNChange,
+    onAdReviewTailStopCleanStreakChange,
     onDismissAdReviewTask: manageAdReview.dismissTask,
     onStartWorkspaceBottomPanelResize,
     layoutLocked,
@@ -784,8 +838,24 @@ export function useAppWorkspaceProps({
     canManageHide: mode === "image" && imageCheckedIds.length > 0,
     canManageUnhide: mode === "image" && imageCheckedIds.length > 0,
     adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
+    adReviewPending: manageAdReview.pending,
     adReviewDeletePending: manageAdReview.deletePending,
     adReviewPanelOpen,
+    manageReviewMode: manageAdReview.reviewMode,
+    canSwitchManageReviewMode: manageAdReview.supportsCoverReview,
+    adReviewTask: manageAdReview.task,
+    adReviewFocusTaskId,
+    adReviewStrategyMode: appSettings.adReviewStrategyMode,
+    adReviewMaxConcurrency: appSettings.adReviewMaxConcurrency,
+    adReviewHeadN: appSettings.adReviewHeadN,
+    adReviewTailN: appSettings.adReviewTailN,
+    adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
+    canExecuteAdReview:
+      (activeSelectionScope === "sidebar" &&
+        sidebarCheckedNodeIds.length > 0) ||
+      imageCheckedIds.length > 0,
+    hasCheckedAdReviewCandidates: manageAdReview.hasCheckedCandidateSelection,
+    selectedAdReviewCandidateCount: manageAdReview.selectedCandidateCount,
     checkedImageIdSet: imageCheckedIdSet,
     adReviewScopeImageIdSet,
     adReviewLlmReviewedImageIdSet,
@@ -833,6 +903,56 @@ export function useAppWorkspaceProps({
       }
       setAdReviewPanelOpen((value) => !value);
     },
+    onManageReviewModeChange: manageAdReview.setReviewMode,
+    onToggleAdReviewFocus,
+    onAdReviewStrategyModeChange,
+    onAdReviewMaxConcurrencyChange,
+    onAdReviewHeadNChange,
+    onAdReviewTailNChange,
+    onAdReviewTailStopCleanStreakChange,
+    onStartAdReview: (options) => {
+      void manageAdReview.startManageAdReview(options);
+    },
+    onPauseAdReview: () => {
+      void manageAdReview.pauseManageAdReview();
+    },
+    onRemoveAdReviewTask: (taskId) => {
+      void manageAdReview.removeTask(taskId);
+    },
+    onDeleteSelectedAdReviewCandidates: () => {
+      void (async () => {
+        const result = await manageAdReview.confirmDeleteSelectedCandidates();
+        if (!result.ok) {
+          return;
+        }
+
+        setAdReviewFocusTaskId(null);
+        setAdReviewPageIndex(0);
+
+        if (result.firstHitPackageId) {
+          const targetNodeId = normalImageSourceNodeIdMap.get(
+            result.firstHitPackageId,
+          );
+          if (targetNodeId) {
+            setSelectedSidebarNodeId(targetNodeId);
+          }
+          setSelectedPackageId(result.firstHitPackageId);
+        }
+
+        if (result.firstHitImageId) {
+          const focusRef = orderedRootScopedImageRefs.find((ref) => {
+            const imageId =
+              packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]?.id ??
+              null;
+            return imageId === result.firstHitImageId;
+          });
+          if (focusRef) {
+            setImageFocus(focusRef.packageId, focusRef.imageIndex);
+          }
+        }
+      })();
+    },
+    onDismissAdReviewTask: manageAdReview.dismissTask,
     onClearManageSelection: clearAllSelections,
     onThumbnailScaleLevelChange: (level) => {
       const targetLevel = Math.max(

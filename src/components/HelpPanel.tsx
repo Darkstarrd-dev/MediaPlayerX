@@ -12,7 +12,7 @@ export interface HelpPanelProps {
   onClose: () => void
 }
 
-type HelpSectionId = 'image' | 'fullscreen'
+type HelpSectionId = 'image' | 'fullscreen' | 'adReviewStrategy'
 
 function renderShortcutBinding(binding: string | undefined, fallback: string): string {
   if (!binding || binding.trim().length === 0) {
@@ -281,6 +281,13 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
             >
               {t('ui.help.section.fullscreen')}
             </button>
+            <button
+              type="button"
+              className={activeSection === 'adReviewStrategy' ? 'is-active' : ''}
+              onClick={() => setActiveSection('adReviewStrategy')}
+            >
+              {t('ui.help.section.adReviewStrategy')}
+            </button>
           </aside>
 
           <main className="settings-main">
@@ -341,6 +348,52 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
                         <span>{row.action}</span>
                       </li>
                     ))}
+                  </ul>
+                </div>
+              </section>
+            ) : null}
+
+            {activeSection === 'adReviewStrategy' ? (
+              <section className="settings-block help-block">
+                <p className="settings-group-head">{t('ui.help.adReviewStrategy.sectionTitle')}</p>
+
+                <div className="settings-group">
+                  <p className="help-group-title">{t('ui.help.adReviewStrategy.groupOverview')}</p>
+                  <ul className="help-list" aria-label={t('a11y.help.adReviewStrategyOverviewList')}>
+                    <li>{t('ui.help.adReviewStrategy.overview.modeAll')}</li>
+                    <li>{t('ui.help.adReviewStrategy.overview.modeHeadTail')}</li>
+                    <li>{t('ui.help.adReviewStrategy.overview.knownHashFirst')}</li>
+                  </ul>
+                </div>
+
+                <div className="settings-group">
+                  <p className="help-group-title">{t('ui.help.adReviewStrategy.groupHeadTailFlow')}</p>
+                  <ul className="help-list" aria-label={t('a11y.help.adReviewStrategyFlowList')}>
+                    <li>{t('ui.help.adReviewStrategy.flow.step1')}</li>
+                    <li>{t('ui.help.adReviewStrategy.flow.step2')}</li>
+                    <li>{t('ui.help.adReviewStrategy.flow.step3')}</li>
+                    <li>{t('ui.help.adReviewStrategy.flow.step4')}</li>
+                    <li>{t('ui.help.adReviewStrategy.flow.step5')}</li>
+                  </ul>
+                </div>
+
+                <div className="settings-group">
+                  <p className="help-group-title">{t('ui.help.adReviewStrategy.groupDefaults')}</p>
+                  <ul className="help-list" aria-label={t('a11y.help.adReviewStrategyDefaultsList')}>
+                    <li>{t('ui.help.adReviewStrategy.defaults.strategyMode')}</li>
+                    <li>{t('ui.help.adReviewStrategy.defaults.headN')}</li>
+                    <li>{t('ui.help.adReviewStrategy.defaults.tailN')}</li>
+                    <li>{t('ui.help.adReviewStrategy.defaults.tailStop')}</li>
+                    <li>{t('ui.help.adReviewStrategy.defaults.maxConcurrency')}</li>
+                  </ul>
+                </div>
+
+                <div className="settings-group">
+                  <p className="help-group-title">{t('ui.help.adReviewStrategy.groupRiskAndUsage')}</p>
+                  <ul className="help-list" aria-label={t('a11y.help.adReviewStrategyRiskList')}>
+                    <li>{t('ui.help.adReviewStrategy.risk.middleLeak')}</li>
+                    <li>{t('ui.help.adReviewStrategy.risk.whenUseAll')}</li>
+                    <li>{t('ui.help.adReviewStrategy.risk.whenUseHeadTail')}</li>
                   </ul>
                 </div>
               </section>

@@ -35,6 +35,7 @@ export interface RuntimeTaskState {
   candidateHashByImageId: Map<string, string>;
   abortController: AbortController | null;
   pauseRequested: boolean;
+  resumeFromPaused?: boolean;
 }
 
 export interface ImageEntryRef {

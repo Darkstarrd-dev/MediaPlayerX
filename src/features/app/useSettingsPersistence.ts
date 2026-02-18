@@ -394,8 +394,8 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     Number.isFinite(next.adReviewMaxConcurrency)
   ) {
     next.adReviewMaxConcurrency = Math.max(
-      4,
-      Math.min(12, Math.floor(next.adReviewMaxConcurrency)),
+      1,
+      Math.min(20, Math.floor(next.adReviewMaxConcurrency)),
     );
   }
 

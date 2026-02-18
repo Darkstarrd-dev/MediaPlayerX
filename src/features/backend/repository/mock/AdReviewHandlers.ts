@@ -43,7 +43,8 @@ import { hashLocator, normalizePathKeyForMatch, parseSidebarNodePath, pathHasPre
 import { MOCK_LIBRARY_SNAPSHOT_REF, type MockRepositoryState } from './types'
 
 const DEFAULT_AD_REVIEW_MAX_CONCURRENCY = 4
-const MAX_AD_REVIEW_MAX_CONCURRENCY = 12
+const MIN_AD_REVIEW_MAX_CONCURRENCY = 1
+const MAX_AD_REVIEW_MAX_CONCURRENCY = 20
 
 export function normalizeAdReviewExecution(request: StartManageAdReviewRequestDto): ManageAdReviewTaskExecutionDto {
   const strategy = request.strategy
@@ -52,15 +53,15 @@ export function normalizeAdReviewExecution(request: StartManageAdReviewRequestDt
       ? { mode: 'all' }
       : {
           mode: 'head-tail',
-          head_n: Math.max(0, Math.floor(strategy.head_n)),
-          tail_n: Math.max(0, Math.floor(strategy.tail_n)),
-          tail_stop_clean_streak: Math.max(1, Math.floor(strategy.tail_stop_clean_streak)),
+          head_n: Math.max(1, Math.min(20, Math.floor(strategy.head_n))),
+          tail_n: Math.max(1, Math.min(20, Math.floor(strategy.tail_n))),
+          tail_stop_clean_streak: Math.max(1, Math.min(20, Math.floor(strategy.tail_stop_clean_streak))),
         }
 
   const maxConcurrency = Number.isFinite(request.max_concurrency)
     ? Math.min(
         MAX_AD_REVIEW_MAX_CONCURRENCY,
-        Math.max(DEFAULT_AD_REVIEW_MAX_CONCURRENCY, Math.floor(request.max_concurrency as number)),
+        Math.max(MIN_AD_REVIEW_MAX_CONCURRENCY, Math.floor(request.max_concurrency as number)),
       )
     : DEFAULT_AD_REVIEW_MAX_CONCURRENCY
 

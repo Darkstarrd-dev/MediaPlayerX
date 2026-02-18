@@ -14,7 +14,8 @@ import {
 import type { ManageAdReviewDecision } from '../../manageAdReview'
 
 const DEFAULT_REVIEW_MAX_CONCURRENCY = 4
-const REVIEW_MAX_CONCURRENCY_LIMIT = 12
+const REVIEW_MIN_CONCURRENCY_LIMIT = 1
+const REVIEW_MAX_CONCURRENCY_LIMIT = 20
 export const DEFAULT_VISION_TEST_TIMEOUT_MS = 12_000
 export const MAX_VISION_TEST_IMAGE_BYTES = 12 * 1024 * 1024
 const INVALID_DESCRIPTION_PATTERN =
@@ -242,7 +243,7 @@ function normalizeMaxConcurrency(value: number | undefined): number {
     return DEFAULT_REVIEW_MAX_CONCURRENCY
   }
 
-  return Math.min(REVIEW_MAX_CONCURRENCY_LIMIT, Math.max(DEFAULT_REVIEW_MAX_CONCURRENCY, Math.floor(value as number)))
+  return Math.min(REVIEW_MAX_CONCURRENCY_LIMIT, Math.max(REVIEW_MIN_CONCURRENCY_LIMIT, Math.floor(value as number)))
 }
 
 export function normalizeTaskExecution(request: StartManageAdReviewRequestDto): ManageAdReviewTaskExecutionDto {
@@ -252,9 +253,9 @@ export function normalizeTaskExecution(request: StartManageAdReviewRequestDto): 
       ? { mode: 'all' }
       : {
           mode: 'head-tail',
-          head_n: Math.max(0, Math.floor(strategy.head_n)),
-          tail_n: Math.max(0, Math.floor(strategy.tail_n)),
-          tail_stop_clean_streak: Math.max(1, Math.floor(strategy.tail_stop_clean_streak)),
+          head_n: Math.max(1, Math.min(20, Math.floor(strategy.head_n))),
+          tail_n: Math.max(1, Math.min(20, Math.floor(strategy.tail_n))),
+          tail_stop_clean_streak: Math.max(1, Math.min(20, Math.floor(strategy.tail_stop_clean_streak))),
         }
 
   return manageAdReviewTaskExecutionSchema.parse({

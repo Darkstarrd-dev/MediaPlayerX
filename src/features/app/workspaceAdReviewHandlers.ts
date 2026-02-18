@@ -11,25 +11,25 @@ export function createAdReviewSettingHandlers({ updateSettings }: CreateAdReview
 
   const onAdReviewMaxConcurrencyChange = (value: number) => {
     updateSettings({
-      adReviewMaxConcurrency: Math.max(4, Math.min(12, Math.floor(value))),
+      adReviewMaxConcurrency: Math.max(1, Math.min(20, Math.floor(value))),
     })
   }
 
   const onAdReviewHeadNChange = (value: number) => {
     updateSettings({
-      adReviewHeadN: Math.max(0, Math.min(200, Math.floor(value))),
+      adReviewHeadN: Math.max(1, Math.min(20, Math.floor(value))),
     })
   }
 
   const onAdReviewTailNChange = (value: number) => {
     updateSettings({
-      adReviewTailN: Math.max(0, Math.min(200, Math.floor(value))),
+      adReviewTailN: Math.max(1, Math.min(20, Math.floor(value))),
     })
   }
 
   const onAdReviewTailStopCleanStreakChange = (value: number) => {
     updateSettings({
-      adReviewTailStopCleanStreak: Math.max(1, Math.min(200, Math.floor(value))),
+      adReviewTailStopCleanStreak: Math.max(1, Math.min(20, Math.floor(value))),
     })
   }
 

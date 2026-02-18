@@ -427,6 +427,17 @@ select option {
   flex-wrap: wrap;
 }
 
+.toolbar-actions-manage-secondary {
+  margin-left: auto;
+  min-width: 0;
+  gap: 10px;
+}
+
+.toolbar-actions-manage-secondary .main-toolbar-summary {
+  margin-left: 0;
+  max-width: 260px;
+}
+
 .main-toolbar-summary {
   min-width: 0;
   margin-left: auto;
@@ -523,6 +534,130 @@ select option {
 .toolbar-actions .main-toolbar-scale-control .header-vertical-slider-body {
   width: var(--mpx-icon-button-size);
 }
+
+.toolbar-actions .main-toolbar-ad-review-strategy-control {
+  position: relative;
+}
+
+.toolbar-actions .main-toolbar-ad-review-strategy-panel {
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(360px, calc(100vw - 32px));
+  transform: none;
+  display: block;
+  padding: 10px 12px;
+}
+
+.main-toolbar-ad-review-strategy-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mpx-text-1);
+}
+
+.main-toolbar-ad-review-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.main-toolbar-ad-review-slider-row > span {
+  width: 78px;
+  flex: 0 0 78px;
+  font-size: 12px;
+  color: var(--mpx-text-2);
+}
+
+.main-toolbar-ad-review-slider-row + .main-toolbar-ad-review-slider-row {
+  margin-top: 8px;
+}
+
+.main-toolbar-ad-review-slider-row > strong {
+  font-size: 12px;
+  text-align: right;
+  color: var(--mpx-text-1);
+}
+
+.main-toolbar-ad-review-slider-row > input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 170px;
+  width: auto;
+}
+
+.main-toolbar-ad-review-slider-hint {
+  margin: 3px 0 8px;
+  font-size: 11px;
+  color: var(--mpx-text-3);
+}
+
+.main-toolbar-ad-review-review-pill {
+  appearance: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--mpx-icon-button-size);
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--mpx-accent) 40%, var(--mpx-border-1));
+  background: color-mix(in srgb, var(--mpx-accent-soft) 52%, var(--mpx-bg-elevated));
+  color: var(--mpx-text-1);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.main-toolbar-ad-review-review-pill.is-active {
+  border-color: color-mix(in srgb, var(--mpx-accent) 70%, var(--mpx-border-1));
+}
+
+.main-toolbar-ad-review-review-pill:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.main-toolbar-ad-review-running-pill {
+  appearance: none;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--mpx-icon-button-size);
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--mpx-border-1) 85%, var(--mpx-accent));
+  background: color-mix(in srgb, var(--mpx-bg-elevated) 78%, var(--mpx-accent-soft));
+  color: var(--mpx-text-1);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.toolbar-actions .main-toolbar-ad-review-progress-control {
+  position: relative;
+}
+
+.toolbar-actions .main-toolbar-ad-review-progress-panel {
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(420px, calc(100vw - 32px));
+  transform: none;
+  display: block;
+  padding: 10px 12px;
+}
+
+.main-toolbar-ad-review-progress-line {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--mpx-text-2);
+  white-space: normal;
+}
+
+.main-toolbar-ad-review-progress-line + .main-toolbar-ad-review-progress-line {
+  margin-top: 6px;
+}
+
 
 .name-only {
   border-radius: 8px;

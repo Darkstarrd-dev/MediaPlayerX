@@ -1,5 +1,6 @@
 import type { RefObject } from 'react'
 
+import type { ManageAdReviewTaskDto, ManageReviewModeDto } from '../../contracts/backend'
 import type { AppSettings } from '../../contracts/settings'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../../types'
@@ -41,8 +42,21 @@ interface BuildImageMainSectionPropsParams {
   canManageHide: boolean
   canManageUnhide: boolean
   adReviewFeatureEnabled: boolean
+  adReviewPending: boolean
   adReviewDeletePending?: boolean
   adReviewPanelOpen: boolean
+  manageReviewMode: ManageReviewModeDto
+  canSwitchManageReviewMode: boolean
+  adReviewTask: ManageAdReviewTaskDto | null
+  adReviewFocusTaskId: string | null
+  adReviewStrategyMode: 'all' | 'head-tail'
+  adReviewMaxConcurrency: number
+  adReviewHeadN: number
+  adReviewTailN: number
+  adReviewTailStopCleanStreak: number
+  canExecuteAdReview: boolean
+  hasCheckedAdReviewCandidates: boolean
+  selectedAdReviewCandidateCount: number
   checkedImageIdSet: Set<string>
   adReviewScopeImageIdSet: Set<string>
   adReviewLlmReviewedImageIdSet: Set<string>
@@ -75,6 +89,18 @@ interface BuildImageMainSectionPropsParams {
   onManageHide: () => void
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
+  onManageReviewModeChange: (nextMode: ManageReviewModeDto) => void
+  onToggleAdReviewFocus: () => void
+  onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
+  onAdReviewMaxConcurrencyChange: (value: number) => void
+  onAdReviewHeadNChange: (value: number) => void
+  onAdReviewTailNChange: (value: number) => void
+  onAdReviewTailStopCleanStreakChange: (value: number) => void
+  onStartAdReview: (options?: { skipReviewedNodes?: boolean }) => void
+  onPauseAdReview: () => void
+  onRemoveAdReviewTask: (taskId: string) => void
+  onDeleteSelectedAdReviewCandidates: () => void
+  onDismissAdReviewTask: () => void
   onClearManageSelection: () => void
   onThumbnailScaleLevelChange: (level: number) => void
   nodeBrowseMode: boolean
@@ -132,8 +158,21 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     canManageHide: params.canManageHide,
     canManageUnhide: params.canManageUnhide,
     adReviewFeatureEnabled: params.adReviewFeatureEnabled,
+    adReviewPending: params.adReviewPending,
     adReviewDeletePending: params.adReviewDeletePending,
     adReviewPanelOpen: params.adReviewPanelOpen,
+    manageReviewMode: params.manageReviewMode,
+    canSwitchManageReviewMode: params.canSwitchManageReviewMode,
+    adReviewTask: params.adReviewTask,
+    adReviewFocusTaskId: params.adReviewFocusTaskId,
+    adReviewStrategyMode: params.adReviewStrategyMode,
+    adReviewMaxConcurrency: params.adReviewMaxConcurrency,
+    adReviewHeadN: params.adReviewHeadN,
+    adReviewTailN: params.adReviewTailN,
+    adReviewTailStopCleanStreak: params.adReviewTailStopCleanStreak,
+    canExecuteAdReview: params.canExecuteAdReview,
+    hasCheckedAdReviewCandidates: params.hasCheckedAdReviewCandidates,
+    selectedAdReviewCandidateCount: params.selectedAdReviewCandidateCount,
     checkedImageIds: params.checkedImageIdSet,
     adReviewScopeImageIds: params.adReviewScopeImageIdSet,
     adReviewLlmReviewedImageIds: params.adReviewLlmReviewedImageIdSet,
@@ -149,6 +188,18 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onManageHide: params.onManageHide,
     onManageUnhide: params.onManageUnhide,
     onToggleAdReviewPanel: params.onToggleAdReviewPanel,
+    onManageReviewModeChange: params.onManageReviewModeChange,
+    onToggleAdReviewFocus: params.onToggleAdReviewFocus,
+    onAdReviewStrategyModeChange: params.onAdReviewStrategyModeChange,
+    onAdReviewMaxConcurrencyChange: params.onAdReviewMaxConcurrencyChange,
+    onAdReviewHeadNChange: params.onAdReviewHeadNChange,
+    onAdReviewTailNChange: params.onAdReviewTailNChange,
+    onAdReviewTailStopCleanStreakChange: params.onAdReviewTailStopCleanStreakChange,
+    onStartAdReview: params.onStartAdReview,
+    onPauseAdReview: params.onPauseAdReview,
+    onRemoveAdReviewTask: params.onRemoveAdReviewTask,
+    onDeleteSelectedAdReviewCandidates: params.onDeleteSelectedAdReviewCandidates,
+    onDismissAdReviewTask: params.onDismissAdReviewTask,
     onClearManageSelection: params.onClearManageSelection,
     onThumbnailScaleLevelChange: params.onThumbnailScaleLevelChange,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),

@@ -26,6 +26,7 @@ import {
   resolveImageIdForRef,
 } from "./imageMainSectionPreload";
 import MetadataFetchPanel from "./metadata/MetadataFetchPanel";
+import { formatPercent } from "./metadata/metadataPanelUtils";
 
 const IS_TEST_MODE = import.meta.env.MODE === "test";
 const EMPTY_IMAGE_ID_SET = new Set<string>();
@@ -67,8 +68,21 @@ function ImageMainSection({
   canManageHide,
   canManageUnhide,
   adReviewFeatureEnabled,
+  adReviewPending = false,
   adReviewDeletePending = false,
   adReviewPanelOpen,
+  manageReviewMode = "ad",
+  canSwitchManageReviewMode = false,
+  adReviewTask = null,
+  adReviewFocusTaskId = null,
+  adReviewStrategyMode = "all",
+  adReviewMaxConcurrency = 4,
+  adReviewHeadN = 4,
+  adReviewTailN = 4,
+  adReviewTailStopCleanStreak = 4,
+  canExecuteAdReview = false,
+  hasCheckedAdReviewCandidates = false,
+  selectedAdReviewCandidateCount = 0,
   checkedImageIds,
   adReviewScopeImageIds: _adReviewScopeImageIds,
   adReviewLlmReviewedImageIds: _adReviewLlmReviewedImageIds,
@@ -83,6 +97,18 @@ function ImageMainSection({
   onManageHide,
   onManageUnhide,
   onToggleAdReviewPanel,
+  onManageReviewModeChange = () => undefined,
+  onToggleAdReviewFocus = () => undefined,
+  onAdReviewStrategyModeChange = () => undefined,
+  onAdReviewMaxConcurrencyChange = () => undefined,
+  onAdReviewHeadNChange = () => undefined,
+  onAdReviewTailNChange = () => undefined,
+  onAdReviewTailStopCleanStreakChange = () => undefined,
+  onStartAdReview = (_options?: { skipReviewedNodes?: boolean }) => undefined,
+  onPauseAdReview = () => undefined,
+  onRemoveAdReviewTask = () => undefined,
+  onDeleteSelectedAdReviewCandidates = () => undefined,
+  onDismissAdReviewTask = () => undefined,
   onClearManageSelection,
   onThumbnailScaleLevelChange,
   onToggleShowNamesOnly,
@@ -203,6 +229,12 @@ function ImageMainSection({
   void _adReviewNonLlmReviewedImageIds;
   const [metadataFetchOpen, setMetadataFetchOpen] = useState(false);
   const [openScalePopover, setOpenScalePopover] = useState(false);
+  const [adReviewStartDialogOpen, setAdReviewStartDialogOpen] =
+    useState(false);
+  const [openAdReviewStrategyPopover, setOpenAdReviewStrategyPopover] =
+    useState(false);
+  const [openAdReviewProgressPopover, setOpenAdReviewProgressPopover] =
+    useState(false);
   const [scaleDraftValue, setScaleDraftValue] = useState(
     Math.max(
       1,
@@ -221,6 +253,8 @@ function ImageMainSection({
     end: number;
   }>({ start: 0, end: 0 });
   const scalePopoverHideTimerRef = useRef<number | null>(null);
+  const adReviewStrategyPopoverHideTimerRef = useRef<number | null>(null);
+  const adReviewProgressPopoverHideTimerRef = useRef<number | null>(null);
 
   const scaleLevel = Math.max(
     1,
@@ -369,9 +403,25 @@ function ImageMainSection({
     }, 140);
   };
 
+  const clearAdReviewStrategyPopoverHideTimer = () => {
+    if (adReviewStrategyPopoverHideTimerRef.current != null) {
+      window.clearTimeout(adReviewStrategyPopoverHideTimerRef.current);
+      adReviewStrategyPopoverHideTimerRef.current = null;
+    }
+  };
+
+  const clearAdReviewProgressPopoverHideTimer = () => {
+    if (adReviewProgressPopoverHideTimerRef.current != null) {
+      window.clearTimeout(adReviewProgressPopoverHideTimerRef.current);
+      adReviewProgressPopoverHideTimerRef.current = null;
+    }
+  };
+
   useEffect(
     () => () => {
       clearScalePopoverHideTimer();
+      clearAdReviewStrategyPopoverHideTimer();
+      clearAdReviewProgressPopoverHideTimer();
     },
     [],
   );
@@ -816,6 +866,159 @@ function ImageMainSection({
           progress: activePackageImageProgress ?? t("ui.image.defaultProgress"),
         });
 
+  const focusEnabledTask =
+    adReviewTask &&
+    (adReviewTask.status === "running" ||
+      adReviewTask.status === "paused" ||
+      adReviewTask.status === "review")
+      ? adReviewTask
+      : null;
+  const hasAdReviewFocusCandidates = Boolean(
+    focusEnabledTask && focusEnabledTask.candidates.length > 0,
+  );
+  const adReviewFocusActive = Boolean(
+    focusEnabledTask && adReviewFocusTaskId === focusEnabledTask.task_id,
+  );
+  const showAdReviewToolbarControls =
+    manageMode && adReviewFeatureEnabled && adReviewPanelOpen;
+  const isReviewWithCandidates = Boolean(
+    adReviewTask &&
+      adReviewTask.status === "review" &&
+      adReviewTask.candidates.length > 0,
+  );
+  const isReviewRunningOrPaused = Boolean(
+    adReviewTask &&
+      (adReviewTask.status === "running" || adReviewTask.status === "paused"),
+  );
+  const adReviewRunning = adReviewTask?.status === "running";
+  const openAdReviewProgressPopoverByHover = () => {
+    clearAdReviewProgressPopoverHideTimer();
+    setOpenAdReviewProgressPopover(true);
+  };
+
+  const closeAdReviewProgressPopoverByHover = () => {
+    clearAdReviewProgressPopoverHideTimer();
+    adReviewProgressPopoverHideTimerRef.current = window.setTimeout(() => {
+      setOpenAdReviewProgressPopover(false);
+      adReviewProgressPopoverHideTimerRef.current = null;
+    }, 90);
+  };
+
+  useEffect(() => {
+    if (adReviewRunning) {
+      setAdReviewStartDialogOpen(false);
+    }
+  }, [adReviewRunning]);
+
+  const triggerToolbarAdReviewStartOrPause = () => {
+    if (adReviewTask?.status === "paused") {
+      onPauseAdReview();
+      return;
+    }
+    if (adReviewRunning) {
+      onPauseAdReview();
+      return;
+    }
+    setAdReviewStartDialogOpen(true);
+  };
+
+  const startToolbarAdReviewWithOption = (skipReviewedNodes: boolean) => {
+    setAdReviewStartDialogOpen(false);
+    onStartAdReview({ skipReviewedNodes });
+  };
+
+  const openAdReviewStrategyPopoverByHover = () => {
+    clearAdReviewStrategyPopoverHideTimer();
+    setOpenAdReviewStrategyPopover(true);
+  };
+
+  const closeAdReviewStrategyPopoverByHover = () => {
+    clearAdReviewStrategyPopoverHideTimer();
+    adReviewStrategyPopoverHideTimerRef.current = window.setTimeout(() => {
+      setOpenAdReviewStrategyPopover(false);
+      adReviewStrategyPopoverHideTimerRef.current = null;
+    }, 90);
+  };
+
+  const renderScaleControl = () => (
+    <div
+      className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? "is-open" : ""}`}
+      role="group"
+      aria-label={t("a11y.header.thumbnailScaleGroup")}
+      onMouseEnter={openScalePopoverByHover}
+      onMouseLeave={closeScalePopoverByHover}
+    >
+      <button
+        {...buildA11yPropsByRegistry({
+          key: "headerThumbnailScale",
+          t,
+        })}
+        className="toolbar-icon-btn header-popover-trigger"
+        disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          className="main-ui-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+          <path d="M11 8v6" />
+          <path d="M8 11h6" />
+        </svg>
+      </button>
+
+      <div
+        className="header-popover-panel"
+        hidden={!openScalePopover}
+        role="dialog"
+        aria-label={t("a11y.header.scaleSettings")}
+      >
+        <div
+          className="header-vertical-slider"
+          role="group"
+          aria-label={t("a11y.header.scaleLevels")}
+        >
+          <div className="header-vertical-slider-value">
+            {Math.max(
+              1,
+              Math.min(thumbnailScaleLevelCount, Math.round(scaleDraftValue)),
+            )}
+          </div>
+          <div className="header-vertical-slider-body">
+            <input
+              {...buildA11yPropsByRegistry({
+                key: "headerScaleSlider",
+                t,
+              })}
+              className="header-vertical-range"
+              max={thumbnailScaleLevelCount}
+              min={1}
+              step={0.01}
+              type="range"
+              value={scaleDraftValue}
+              onChange={(event) => {
+                const nextValue = Number(event.target.value);
+                setScaleDraftValue(nextValue);
+                const roundedLevel = Math.max(
+                  1,
+                  Math.min(thumbnailScaleLevelCount, Math.round(nextValue)),
+                );
+                onThumbnailScaleLevelChange?.(roundedLevel);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const handleThumbnailContainerWheel = (
     event: ReactWheelEvent<HTMLDivElement>,
   ) => {
@@ -930,13 +1133,329 @@ function ImageMainSection({
                   <MainUiIcon name="adSearch" />
                 </button>
               ) : null}
-              {manageOperationHint ? (
+              {showAdReviewToolbarControls && !isReviewRunningOrPaused && !isReviewWithCandidates && canSwitchManageReviewMode ? (
+                <button
+                  className="manage-ad-review-icon-btn main-icon-square-btn"
+                  type="button"
+                  disabled={pendingManageAction || adReviewPending}
+                  onClick={() =>
+                    onManageReviewModeChange(
+                      manageReviewMode === "ad" ? "cover" : "ad",
+                    )
+                  }
+                  title={
+                    manageReviewMode === "ad"
+                      ? t("ui.manage.adReviewTitle")
+                      : t("ui.manage.coverReviewTitle")
+                  }
+                >
+                  <span aria-hidden="true">
+                    {manageReviewMode === "ad" ? "AD" : "C"}
+                  </span>
+                </button>
+              ) : null}
+              {showAdReviewToolbarControls && !isReviewRunningOrPaused && !isReviewWithCandidates && manageReviewMode === "ad" ? (
+                <div
+                  className={`header-popover-control main-toolbar-ad-review-strategy-control ${
+                    openAdReviewStrategyPopover ? "is-open" : ""
+                  }`}
+                  onMouseEnter={openAdReviewStrategyPopoverByHover}
+                  onMouseLeave={closeAdReviewStrategyPopoverByHover}
+                >
+                  <button
+                    className={`manage-ad-review-icon-btn main-icon-square-btn header-popover-trigger ${
+                      adReviewStrategyMode === "head-tail" ? "is-active" : ""
+                    }`}
+                    type="button"
+                    aria-label={t("a11y.manage.strategyToggle")}
+                    title={
+                      adReviewStrategyMode === "head-tail"
+                        ? t("tip.manage.strategyHeadTailToAll")
+                        : t("tip.manage.strategyAllToHeadTail")
+                    }
+                    disabled={pendingManageAction || adReviewPending}
+                    onClick={() =>
+                      onAdReviewStrategyModeChange(
+                        adReviewStrategyMode === "head-tail" ? "all" : "head-tail",
+                      )
+                    }
+                  >
+                    <span aria-hidden="true">
+                      {adReviewStrategyMode === "head-tail" ? "H" : "A"}
+                    </span>
+                  </button>
+
+                  <div
+                    className="header-popover-panel main-toolbar-ad-review-strategy-panel"
+                    hidden={
+                      !openAdReviewStrategyPopover ||
+                      adReviewStrategyMode !== "head-tail"
+                    }
+                    role="dialog"
+                    aria-label={t("a11y.manage.strategyPanel")}
+                  >
+                    <p className="main-toolbar-ad-review-strategy-title">
+                      {t("ui.manage.strategyHeadTailPanelTitle")}
+                    </p>
+
+                    <div className="main-toolbar-ad-review-slider-row">
+                      <span>{t("ui.manage.concurrency")}</span>
+                      <input
+                        type="range"
+                        min={1}
+                        max={20}
+                        step={1}
+                        value={adReviewMaxConcurrency}
+                        onChange={(event) =>
+                          onAdReviewMaxConcurrencyChange(Number(event.target.value))
+                        }
+                      />
+                      <strong>{adReviewMaxConcurrency}</strong>
+                    </div>
+                    <p className="main-toolbar-ad-review-slider-hint">
+                      {t("ui.manage.strategyHintConcurrency")}
+                    </p>
+
+                    <div className="main-toolbar-ad-review-slider-row">
+                      <span>{t("ui.manage.headWindow")}</span>
+                      <input
+                        type="range"
+                        min={1}
+                        max={20}
+                        step={1}
+                        value={adReviewHeadN}
+                        onChange={(event) =>
+                          onAdReviewHeadNChange(Number(event.target.value))
+                        }
+                      />
+                      <strong>{adReviewHeadN}</strong>
+                    </div>
+                    <p className="main-toolbar-ad-review-slider-hint">
+                      {t("ui.manage.strategyHintHead")}
+                    </p>
+
+                    <div className="main-toolbar-ad-review-slider-row">
+                      <span>{t("ui.manage.tailWindow")}</span>
+                      <input
+                        type="range"
+                        min={1}
+                        max={20}
+                        step={1}
+                        value={adReviewTailN}
+                        onChange={(event) =>
+                          onAdReviewTailNChange(Number(event.target.value))
+                        }
+                      />
+                      <strong>{adReviewTailN}</strong>
+                    </div>
+                    <p className="main-toolbar-ad-review-slider-hint">
+                      {t("ui.manage.strategyHintTail")}
+                    </p>
+
+                    <div className="main-toolbar-ad-review-slider-row">
+                      <span>{t("ui.manage.tailStopClean")}</span>
+                      <input
+                        type="range"
+                        min={1}
+                        max={20}
+                        step={1}
+                        value={adReviewTailStopCleanStreak}
+                        onChange={(event) =>
+                          onAdReviewTailStopCleanStreakChange(
+                            Number(event.target.value),
+                          )
+                        }
+                      />
+                      <strong>{adReviewTailStopCleanStreak}</strong>
+                    </div>
+                    <p className="main-toolbar-ad-review-slider-hint">
+                      {t("ui.manage.strategyHintTailStop")}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+              {showAdReviewToolbarControls && isReviewRunningOrPaused ? (
+                <>
+                  <div
+                    className={`header-popover-control main-toolbar-ad-review-progress-control ${openAdReviewProgressPopover ? "is-open" : ""}`}
+                    onMouseEnter={openAdReviewProgressPopoverByHover}
+                    onMouseLeave={closeAdReviewProgressPopoverByHover}
+                  >
+                    <button
+                      className="main-toolbar-ad-review-running-pill"
+                      type="button"
+                      aria-label={t("ui.manage.progress", {
+                        percent: Math.round((adReviewTask?.progress ?? 0) * 100),
+                        reviewed: adReviewTask?.reviewed_count ?? 0,
+                        total: adReviewTask?.total_count ?? 0,
+                      })}
+                      title={t("ui.manage.progress", {
+                        percent: Math.round((adReviewTask?.progress ?? 0) * 100),
+                        reviewed: adReviewTask?.reviewed_count ?? 0,
+                        total: adReviewTask?.total_count ?? 0,
+                      })}
+                    >
+                      {t("ui.manage.progress", {
+                        percent: Math.round((adReviewTask?.progress ?? 0) * 100),
+                        reviewed: adReviewTask?.reviewed_count ?? 0,
+                        total: adReviewTask?.total_count ?? 0,
+                      })}
+                    </button>
+
+                    <div
+                      className="header-popover-panel main-toolbar-ad-review-progress-panel"
+                      hidden={!openAdReviewProgressPopover}
+                      role="dialog"
+                      aria-label={t("ui.manage.progress", {
+                        percent: Math.round((adReviewTask?.progress ?? 0) * 100),
+                        reviewed: adReviewTask?.reviewed_count ?? 0,
+                        total: adReviewTask?.total_count ?? 0,
+                      })}
+                    >
+                      {adReviewTask ? (
+                        <>
+                          <p className="main-toolbar-ad-review-progress-line">
+                            {`策略 ${adReviewTask.execution?.strategy.mode === "head-tail" ? "head-tail" : "all"} 并发 ${adReviewTask.execution?.max_concurrency ?? adReviewMaxConcurrency}`}
+                          </p>
+                          <p className="main-toolbar-ad-review-progress-line">
+                            {`头部 ${adReviewTask.execution?.strategy.mode === "head-tail" ? adReviewTask.execution.strategy.head_n : "-"} 尾部 ${adReviewTask.execution?.strategy.mode === "head-tail" ? adReviewTask.execution.strategy.tail_n : "-"} 尾部截止 ${adReviewTask.execution?.strategy.mode === "head-tail" ? adReviewTask.execution.strategy.tail_stop_clean_streak : "-"}`}
+                          </p>
+                          {adReviewTask.audit ? (
+                            <>
+                              <p className="main-toolbar-ad-review-progress-line">
+                                {`来源 known-hash ${adReviewTask.audit.source_distribution.known_hash} strategy-skip ${adReviewTask.audit.source_distribution.strategy_skipped}`}
+                              </p>
+                              <p className="main-toolbar-ad-review-progress-line">
+                                {`LLM 疑似 ${adReviewTask.audit.source_distribution.llm_suspected} 正常 ${adReviewTask.audit.source_distribution.llm_clean} 失败 ${adReviewTask.audit.source_distribution.llm_failed}`}
+                              </p>
+                              <p className="main-toolbar-ad-review-progress-line">
+                                {`命中率 LLM ${formatPercent(adReviewTask.audit.llm_hit_rate)} 总体 ${formatPercent(adReviewTask.audit.overall_hit_rate)}`}
+                              </p>
+                            </>
+                          ) : null}
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                  <button
+                    className={`manage-ad-review-icon-btn main-icon-square-btn manage-ad-review-exec-btn ${adReviewRunning ? "is-running" : ""}`}
+                    type="button"
+                    aria-label={
+                      adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
+                    }
+                    title={
+                      adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
+                    }
+                    disabled={
+                      pendingManageAction ||
+                      adReviewPending ||
+                      (!adReviewRunning && !canExecuteAdReview)
+                    }
+                    onClick={triggerToolbarAdReviewStartOrPause}
+                  >
+                    <span aria-hidden="true">{adReviewRunning ? "⏸" : "▶"}</span>
+                  </button>
+                  {adReviewTask ? (
+                    <button
+                      className="manage-ad-review-icon-btn main-icon-square-btn"
+                      type="button"
+                      aria-label={t("ui.manage.removeTask")}
+                      title={t("ui.manage.removeTask")}
+                      disabled={pendingManageAction || adReviewPending || adReviewDeletePending || adReviewTask.status === "running"}
+                      onClick={() => onRemoveAdReviewTask(adReviewTask.task_id)}
+                    >
+                      <span aria-hidden="true">X</span>
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
+              {showAdReviewToolbarControls && isReviewWithCandidates ? (
+                <>
+                  <button
+                    className={`main-toolbar-ad-review-review-pill ${adReviewFocusActive ? "is-active" : ""}`}
+                    type="button"
+                    aria-label={t("a11y.manage.focus")}
+                    title={t("a11y.manage.focus")}
+                    disabled={pendingManageAction || adReviewPending || !hasAdReviewFocusCandidates}
+                    onClick={() => {
+                      if (!adReviewFocusActive) {
+                        onToggleAdReviewFocus()
+                      }
+                    }}
+                  >
+                    {t("ui.manage.reviewToolbarProgress", {
+                      selected: selectedAdReviewCandidateCount,
+                      total: adReviewTask?.candidates.length ?? 0,
+                    })}
+                  </button>
+                  {adReviewTask ? (
+                    <button
+                      className="manage-ad-review-icon-btn main-icon-square-btn"
+                      type="button"
+                      aria-label={t("ui.manage.removeTask")}
+                      title={t("ui.manage.removeTask")}
+                      disabled={pendingManageAction || adReviewPending || adReviewDeletePending}
+                      onClick={() => onRemoveAdReviewTask(adReviewTask.task_id)}
+                    >
+                      <span aria-hidden="true">X</span>
+                    </button>
+                  ) : null}
+                  <button
+                    className="manage-ad-review-icon-btn main-icon-square-btn"
+                    type="button"
+                    aria-label={t("ui.manage.delete")}
+                    title={t("ui.manage.delete")}
+                    disabled={
+                      pendingManageAction ||
+                      adReviewPending ||
+                      !hasCheckedAdReviewCandidates
+                    }
+                    onClick={onDeleteSelectedAdReviewCandidates}
+                  >
+                    <span aria-hidden="true">D</span>
+                  </button>
+                  <button
+                    className="manage-ad-review-icon-btn main-icon-square-btn"
+                    type="button"
+                    aria-label={t("ui.manage.resetDismiss")}
+                    title={t("ui.manage.resetDismiss")}
+                    disabled={pendingManageAction || adReviewPending}
+                    onClick={onDismissAdReviewTask}
+                  >
+                    <span aria-hidden="true">R</span>
+                  </button>
+                </>
+              ) : null}
+              {showAdReviewToolbarControls && !isReviewWithCandidates && !isReviewRunningOrPaused ? (
+                <button
+                  className={`manage-ad-review-icon-btn main-icon-square-btn manage-ad-review-exec-btn ${adReviewRunning ? "is-running" : ""}`}
+                  type="button"
+                  aria-label={
+                    adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
+                  }
+                  title={
+                    adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
+                  }
+                  disabled={
+                    pendingManageAction ||
+                    adReviewPending ||
+                    (!adReviewRunning && !canExecuteAdReview)
+                  }
+                  onClick={triggerToolbarAdReviewStartOrPause}
+                >
+                  <span aria-hidden="true">{adReviewRunning ? "⏸" : "▶"}</span>
+                </button>
+              ) : null}
+              {!showAdReviewToolbarControls && manageOperationHint ? (
                 <span className="main-toolbar-hint">{manageOperationHint}</span>
               ) : null}
             </div>
-            <strong className="main-toolbar-summary" title={manageSummary}>
-              {manageSummary}
-            </strong>
+            <div className="toolbar-actions toolbar-actions-manage-secondary">
+              <strong className="main-toolbar-summary" title={manageSummary}>
+                {manageSummary}
+              </strong>
+              {renderScaleControl()}
+            </div>
           </>
         ) : metadataManageMode ? (
           <>
@@ -990,88 +1509,7 @@ function ImageMainSection({
                 >
                   <MainUiIcon name={showNamesOnly ? "thumbnail" : "fileList"} />
                 </button>
-                <div
-                  className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? "is-open" : ""}`}
-                  role="group"
-                  aria-label={t("a11y.header.thumbnailScaleGroup")}
-                  onMouseEnter={openScalePopoverByHover}
-                  onMouseLeave={closeScalePopoverByHover}
-                >
-                  <button
-                    {...buildA11yPropsByRegistry({
-                      key: "headerThumbnailScale",
-                      t,
-                    })}
-                    className="toolbar-icon-btn header-popover-trigger"
-                    disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      className="main-ui-icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.3-4.3" />
-                      <path d="M11 8v6" />
-                      <path d="M8 11h6" />
-                    </svg>
-                  </button>
-
-                  <div
-                    className="header-popover-panel"
-                    hidden={!openScalePopover}
-                    role="dialog"
-                    aria-label={t("a11y.header.scaleSettings")}
-                  >
-                    <div
-                      className="header-vertical-slider"
-                      role="group"
-                      aria-label={t("a11y.header.scaleLevels")}
-                    >
-                      <div className="header-vertical-slider-value">
-                        {Math.max(
-                          1,
-                          Math.min(
-                            thumbnailScaleLevelCount,
-                            Math.round(scaleDraftValue),
-                          ),
-                        )}
-                      </div>
-                      <div className="header-vertical-slider-body">
-                        <input
-                          {...buildA11yPropsByRegistry({
-                            key: "headerScaleSlider",
-                            t,
-                          })}
-                          className="header-vertical-range"
-                          max={thumbnailScaleLevelCount}
-                          min={1}
-                          step={0.01}
-                          type="range"
-                          value={scaleDraftValue}
-                          onChange={(event) => {
-                            const nextValue = Number(event.target.value);
-                            setScaleDraftValue(nextValue);
-                            const roundedLevel = Math.max(
-                              1,
-                              Math.min(
-                                thumbnailScaleLevelCount,
-                                Math.round(nextValue),
-                              ),
-                            );
-                            onThumbnailScaleLevelChange?.(roundedLevel);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {renderScaleControl()}
                 <button
                   className="toolbar-icon-btn"
                   type="button"
@@ -1176,6 +1614,54 @@ function ImageMainSection({
             height: `${marqueeStyle.height}px`,
           }}
         />
+      ) : null}
+
+      {adReviewStartDialogOpen ? (
+        <div
+          className="manage-ad-review-start-mask"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t("a11y.manage.startModeDialog")}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setAdReviewStartDialogOpen(false);
+            }
+          }}
+        >
+          <section
+            className="settings-floating-panel manage-ad-review-start-dialog"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <h3>
+              {manageReviewMode === "cover"
+                ? t("ui.manage.startDialogTitleCover")
+                : t("ui.manage.startDialogTitle")}
+            </h3>
+            <p className="manage-ad-review-start-description">
+              {t("ui.manage.startDialogDescription")}
+            </p>
+            <div className="settings-floating-actions">
+              <button
+                type="button"
+                onClick={() => startToolbarAdReviewWithOption(true)}
+              >
+                {t("ui.manage.startSkipScanned")}
+              </button>
+              <button
+                type="button"
+                onClick={() => startToolbarAdReviewWithOption(false)}
+              >
+                {t("ui.manage.startDontSkipScanned")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdReviewStartDialogOpen(false)}
+              >
+                {t("ui.common.cancel")}
+              </button>
+            </div>
+          </section>
+        </div>
       ) : null}
 
       <MetadataFetchPanel

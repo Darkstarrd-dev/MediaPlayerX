@@ -26,9 +26,9 @@ const DEFAULT_STRATEGY: AdReviewStrategy = {
 function normalizeHeadTailStrategy(strategy: AdReviewHeadTailStrategy): AdReviewHeadTailStrategy {
   return {
     mode: 'head-tail',
-    headN: Math.max(0, Math.floor(strategy.headN)),
-    tailN: Math.max(0, Math.floor(strategy.tailN)),
-    tailStopCleanStreak: Math.max(1, Math.floor(strategy.tailStopCleanStreak)),
+    headN: Math.max(1, Math.min(20, Math.floor(strategy.headN))),
+    tailN: Math.max(1, Math.min(20, Math.floor(strategy.tailN))),
+    tailStopCleanStreak: Math.max(1, Math.min(20, Math.floor(strategy.tailStopCleanStreak))),
   }
 }
 

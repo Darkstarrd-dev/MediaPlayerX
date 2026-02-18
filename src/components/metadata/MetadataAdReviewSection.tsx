@@ -41,6 +41,7 @@ interface MetadataAdReviewSectionProps {
   onDismissAdReviewTask: () => void
   onReviewModeChange?: (nextMode: ManageReviewModeDto) => void
   adReviewDeletePending?: boolean
+  controlsInToolbar?: boolean
 }
 
 export function MetadataAdReviewSection({
@@ -75,6 +76,7 @@ export function MetadataAdReviewSection({
   onDismissAdReviewTask,
   onReviewModeChange = () => undefined,
   adReviewDeletePending = false,
+  controlsInToolbar = false,
 }: MetadataAdReviewSectionProps) {
   const { t } = useI18n()
   void _adReviewHideUncheckedNonChecked
@@ -87,12 +89,17 @@ export function MetadataAdReviewSection({
     : null
   const focusVisible = Boolean(focusEnabledTask && focusEnabledTask.candidates.length > 0)
   const focusActive = Boolean(focusEnabledTask && adReviewFocusTaskId === focusEnabledTask.task_id)
+  const reviewWithCandidates = Boolean(adReviewTask?.status === 'review' && adReviewTask.candidates.length > 0)
 
   useEffect(() => {
     if (adReviewRunning) {
       setStartDialogOpen(false)
     }
   }, [adReviewRunning])
+
+  if (controlsInToolbar) {
+    return null
+  }
 
   const triggerStartOrPause = () => {
     if (adReviewRunning) {
@@ -178,30 +185,34 @@ export function MetadataAdReviewSection({
 
       <div className="metadata-ad-review-controls" role="group" aria-label={t('a11y.manage.controls')}>
         <div className="metadata-ad-review-primary-row">
-          <button
-            className={`manage-ad-review-icon-btn ${adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}`}
-            type="button"
-            aria-label={t('a11y.manage.strategyToggle')}
-            title={
-              adReviewStrategyMode === 'head-tail'
-                ? t('tip.manage.strategyHeadTailToAll')
-                : t('tip.manage.strategyAllToHeadTail')
-            }
-            onClick={() => onAdReviewStrategyModeChange(adReviewStrategyMode === 'head-tail' ? 'all' : 'head-tail')}
-          >
-            <span aria-hidden="true">{adReviewStrategyMode === 'head-tail' ? '⇵' : '∞'}</span>
-          </button>
+          {(
+            <button
+              className={`manage-ad-review-icon-btn ${adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}`}
+              type="button"
+              aria-label={t('a11y.manage.strategyToggle')}
+              title={
+                adReviewStrategyMode === 'head-tail'
+                  ? t('tip.manage.strategyHeadTailToAll')
+                  : t('tip.manage.strategyAllToHeadTail')
+              }
+              onClick={() => onAdReviewStrategyModeChange(adReviewStrategyMode === 'head-tail' ? 'all' : 'head-tail')}
+            >
+              <span aria-hidden="true">{adReviewStrategyMode === 'head-tail' ? '⇵' : '∞'}</span>
+            </button>
+          )}
 
-          <button
-            className={`manage-ad-review-icon-btn manage-ad-review-exec-btn ${adReviewRunning ? 'is-running' : ''}`}
-            type="button"
-            aria-label={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
-            title={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
-            disabled={adReviewPending || (!adReviewRunning && !canExecuteAdReview)}
-            onClick={triggerStartOrPause}
-          >
-            <span aria-hidden="true">{adReviewRunning ? '⏸' : '▶'}</span>
-          </button>
+          {(
+            <button
+              className={`manage-ad-review-icon-btn manage-ad-review-exec-btn ${adReviewRunning ? 'is-running' : ''}`}
+              type="button"
+              aria-label={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
+              title={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
+              disabled={adReviewPending || (!adReviewRunning && !canExecuteAdReview)}
+              onClick={triggerStartOrPause}
+            >
+              <span aria-hidden="true">{adReviewRunning ? '⏸' : '▶'}</span>
+            </button>
+          )}
 
           {focusVisible ? (
             <button
@@ -304,16 +315,18 @@ export function MetadataAdReviewSection({
                   <span>{reviewProgressLabel}</span>
                 </button>
 
-                <button
-                  className="feature-action-btn"
-                  type="button"
-                  disabled={adReviewPending || adReviewDeletePending || queueTask.status === 'running'}
-                  onClick={() => {
-                    onRemoveAdReviewTask(queueTask.task_id)
-                  }}
-                >
-                  {adReviewDeletePending && queueTask.task_id === adReviewTask?.task_id ? t('ui.manage.deleting') : t('ui.manage.removeTask')}
-                </button>
+                {!(controlsInToolbar && reviewWithCandidates && queueTask.task_id === adReviewTask?.task_id) ? (
+                  <button
+                    className="feature-action-btn"
+                    type="button"
+                    disabled={adReviewPending || adReviewDeletePending || queueTask.status === 'running'}
+                    onClick={() => {
+                      onRemoveAdReviewTask(queueTask.task_id)
+                    }}
+                  >
+                    {adReviewDeletePending && queueTask.task_id === adReviewTask?.task_id ? t('ui.manage.deleting') : t('ui.manage.removeTask')}
+                  </button>
+                ) : null}
               </div>
             )
           })}
@@ -350,17 +363,19 @@ export function MetadataAdReviewSection({
             </div>
           ) : null}
 
-          <p className="manage-ad-review-message">
-            {adReviewTask.status === 'review'
-              ? adReviewTask.candidates.length > 0
-                ? reviewMode === 'cover'
-                  ? t('ui.manage.reviewCandidatesMessageCover', { count: adReviewTask.candidates.length })
-                  : t('ui.manage.reviewCandidatesMessage', { count: adReviewTask.candidates.length })
-                : reviewMode === 'cover'
-                  ? t('ui.manage.reviewCompletedMessageCover')
-                  : t('ui.manage.reviewCompletedMessage')
-              : adReviewTask.message ?? (reviewMode === 'cover' ? t('ui.manage.runningMessageCover') : t('ui.manage.runningMessage'))}
-          </p>
+          {!reviewWithCandidates ? (
+            <p className="manage-ad-review-message">
+              {adReviewTask.status === 'review'
+                ? adReviewTask.candidates.length > 0
+                  ? reviewMode === 'cover'
+                    ? t('ui.manage.reviewCandidatesMessageCover', { count: adReviewTask.candidates.length })
+                    : t('ui.manage.reviewCandidatesMessage', { count: adReviewTask.candidates.length })
+                  : reviewMode === 'cover'
+                    ? t('ui.manage.reviewCompletedMessageCover')
+                    : t('ui.manage.reviewCompletedMessage')
+                : adReviewTask.message ?? (reviewMode === 'cover' ? t('ui.manage.runningMessageCover') : t('ui.manage.runningMessage'))}
+            </p>
+          ) : null}
 
           {adReviewTask.status === 'review' && adReviewTask.candidates.length > 0 ? (
             <div className="manage-ad-review-actions">

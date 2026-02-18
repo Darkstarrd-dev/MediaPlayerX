@@ -1,6 +1,6 @@
-export const AD_REVIEW_CONCURRENCY_OPTIONS = Array.from({ length: 9 }, (_, index) => index + 4)
-export const AD_REVIEW_WINDOW_OPTIONS = Array.from({ length: 201 }, (_, index) => index)
-export const AD_REVIEW_STREAK_OPTIONS = Array.from({ length: 200 }, (_, index) => index + 1)
+export const AD_REVIEW_CONCURRENCY_OPTIONS = Array.from({ length: 20 }, (_, index) => index + 1)
+export const AD_REVIEW_WINDOW_OPTIONS = Array.from({ length: 20 }, (_, index) => index + 1)
+export const AD_REVIEW_STREAK_OPTIONS = Array.from({ length: 20 }, (_, index) => index + 1)
 
 export function formatPercent(value: number): string {
   const normalized = Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0

@@ -586,6 +586,7 @@ function MetadataPanel({
         onAdReviewTailStopCleanStreakChange={onAdReviewTailStopCleanStreakChange}
         onDismissAdReviewTask={onDismissAdReviewTask}
         onReviewModeChange={onManageReviewModeChange}
+        controlsInToolbar
       />
     ) : null
 

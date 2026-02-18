@@ -54,7 +54,16 @@ interface UseManageAdReviewActionsParams {
   clearAllSelections: () => void
   replaceImageCheckedIds: (imageIds: string[], append?: boolean) => void
   setManageOperationHint: (message: string | null) => void
-  onDeleteRoundCompleted?: () => void
+  onDeleteRoundCompleted?: (payload: {
+    firstHitImageId: string | null
+    firstHitPackageId: string | null
+  }) => void
+}
+
+interface DeleteSelectedCandidatesResult {
+  ok: boolean
+  firstHitImageId: string | null
+  firstHitPackageId: string | null
 }
 
 interface PersistedQueueRaw {
@@ -90,7 +99,7 @@ interface UseManageAdReviewActionsResult {
   startManageAdReview: (options?: { skipReviewedNodes?: boolean }) => Promise<ManageAdReviewTaskDto | null>
   pauseManageAdReview: () => Promise<void>
   toggleHideUncheckedNonChecked: () => void
-  confirmDeleteSelectedCandidates: () => Promise<boolean>
+  confirmDeleteSelectedCandidates: () => Promise<DeleteSelectedCandidatesResult>
   dismissTask: () => void
   selectTask: (taskId: string) => void
   removeTask: (taskId: string, options?: { silentHint?: boolean }) => Promise<boolean>
@@ -321,6 +330,15 @@ export function useManageAdReviewActions({
       void persistSelectionState()
     }, 120)
   }, [disposeSelectionPersistTimer, persistSelectionState, repository.writeAppState])
+
+  useEffect(
+    () => () => {
+      if (selectionPersistTimerRef.current !== null) {
+        void persistSelectionState()
+      }
+    },
+    [persistSelectionState],
+  )
 
   const loadQueueTasks = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -612,16 +630,16 @@ export function useManageAdReviewActions({
         normalizedStrategyMode === 'head-tail'
           ? {
               mode: 'head-tail' as const,
-              head_n: Math.max(0, Math.floor(adReviewHeadN)),
-              tail_n: Math.max(0, Math.floor(adReviewTailN)),
-              tail_stop_clean_streak: Math.max(1, Math.floor(adReviewTailStopCleanStreak)),
+              head_n: Math.max(1, Math.min(20, Math.floor(adReviewHeadN))),
+              tail_n: Math.max(1, Math.min(20, Math.floor(adReviewTailN))),
+              tail_stop_clean_streak: Math.max(1, Math.min(20, Math.floor(adReviewTailStopCleanStreak))),
             }
           : {
               mode: 'all' as const,
             }
 
       const maxConcurrency = Number.isFinite(adReviewMaxConcurrency)
-        ? Math.max(4, Math.min(12, Math.floor(adReviewMaxConcurrency)))
+        ? Math.max(1, Math.min(20, Math.floor(adReviewMaxConcurrency)))
         : undefined
 
       const response = await startReview(
@@ -691,8 +709,11 @@ export function useManageAdReviewActions({
       return
     }
 
-    const runningTask = task?.status === 'running' ? task : queueTasks.find((item) => item.status === 'running') ?? null
-    if (!runningTask) {
+    const runnableTask =
+      task?.status === 'running' || task?.status === 'paused'
+        ? task
+        : queueTasks.find((item) => item.status === 'running' || item.status === 'paused') ?? null
+    if (!runnableTask) {
       setManageOperationHint(t('ui.manage.hint.noRunningTask'))
       return
     }
@@ -700,7 +721,7 @@ export function useManageAdReviewActions({
     setPending(true)
     try {
       const response = await pauseReview(
-        { task_id: runningTask.task_id },
+        { task_id: runnableTask.task_id },
         { timeoutMs: REVIEW_PAUSE_TIMEOUT_MS },
       )
       updateTaskInQueue(response.task)
@@ -852,35 +873,38 @@ export function useManageAdReviewActions({
   )
 
   const confirmDeleteSelectedCandidates = useCallback(async () => {
+    const firstHitImageId = task?.candidates?.[0]?.image_id ?? null
+    const firstHitPackageId = task?.candidates?.[0]?.package_id ?? null
+
     if (deletePending) {
       setManageOperationHint(t('ui.manage.hint.deleteInProgressWait'))
-      return false
+      return { ok: false, firstHitImageId, firstHitPackageId }
     }
     if (reviewMode === 'cover' && !repository.confirmManageCoverReviewHide) {
       setManageOperationHint(t('ui.manage.hint.unsupportedApplyCover'))
-      return false
+      return { ok: false, firstHitImageId, firstHitPackageId }
     }
     if (reviewMode === 'ad' && !repository.confirmManageAdReviewDelete) {
       setManageOperationHint(t('ui.manage.hint.unsupportedDelete'))
-      return false
+      return { ok: false, firstHitImageId, firstHitPackageId }
     }
     if (!task) {
       setManageOperationHint(
         reviewMode === 'cover' ? t('ui.manage.hint.noApplicableResultsCover') : t('ui.manage.hint.noDeletableResults'),
       )
-      return false
+      return { ok: false, firstHitImageId, firstHitPackageId }
     }
     if (task.status !== 'review') {
       setManageOperationHint(
         reviewMode === 'cover' ? t('ui.manage.hint.reviewNotCompletedCover') : t('ui.manage.hint.reviewNotCompleted'),
       )
-      return false
+      return { ok: false, firstHitImageId, firstHitPackageId }
     }
     if (selectedCandidateIds.length === 0) {
       setManageOperationHint(
         reviewMode === 'cover' ? t('ui.manage.hint.selectCandidatesFirstCover') : t('ui.manage.hint.selectCandidatesFirst'),
       )
-      return false
+      return { ok: false, firstHitImageId, firstHitPackageId }
     }
 
     setPending(true)
@@ -946,15 +970,26 @@ export function useManageAdReviewActions({
       const removed = await removeTaskInternal(task.task_id, { silentHint: true, skipRunningCheck: true })
       if (removed) {
         clearAllSelections()
-        onDeleteRoundCompleted?.()
+        onDeleteRoundCompleted?.({
+          firstHitImageId,
+          firstHitPackageId,
+        })
       }
-      return true
+      return {
+        ok: true,
+        firstHitImageId,
+        firstHitPackageId,
+      }
     } catch (error) {
       const message = toErrorDetailWithCode(error, t)
       setManageOperationHint(
         reviewMode === 'cover' ? t('ui.manage.hint.applyFailedCover', { message }) : t('ui.manage.hint.deleteFailed', { message }),
       )
-      return false
+      return {
+        ok: false,
+        firstHitImageId,
+        firstHitPackageId,
+      }
     } finally {
       setPending(false)
       setDeletePending(false)

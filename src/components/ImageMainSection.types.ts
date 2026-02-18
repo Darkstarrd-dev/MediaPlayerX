@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 
+import type { ManageAdReviewTaskDto, ManageReviewModeDto } from "../contracts/backend";
 import type { ParsedExternalMetadata } from "../features/metadata/parseExternalMetadata";
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from "../types";
 
@@ -60,8 +61,21 @@ export interface ImageMainSectionProps {
   canManageHide: boolean;
   canManageUnhide: boolean;
   adReviewFeatureEnabled: boolean;
+  adReviewPending?: boolean;
   adReviewDeletePending?: boolean;
   adReviewPanelOpen: boolean;
+  manageReviewMode?: ManageReviewModeDto;
+  canSwitchManageReviewMode?: boolean;
+  adReviewTask?: ManageAdReviewTaskDto | null;
+  adReviewFocusTaskId?: string | null;
+  adReviewStrategyMode?: "all" | "head-tail";
+  adReviewMaxConcurrency?: number;
+  adReviewHeadN?: number;
+  adReviewTailN?: number;
+  adReviewTailStopCleanStreak?: number;
+  canExecuteAdReview?: boolean;
+  hasCheckedAdReviewCandidates?: boolean;
+  selectedAdReviewCandidateCount?: number;
   checkedImageIds: ReadonlySet<string>;
   adReviewScopeImageIds: ReadonlySet<string>;
   adReviewLlmReviewedImageIds: ReadonlySet<string>;
@@ -77,6 +91,18 @@ export interface ImageMainSectionProps {
   onManageHide: () => void;
   onManageUnhide: () => void;
   onToggleAdReviewPanel: () => void;
+  onManageReviewModeChange?: (nextMode: ManageReviewModeDto) => void;
+  onToggleAdReviewFocus?: () => void;
+  onAdReviewStrategyModeChange?: (value: "all" | "head-tail") => void;
+  onAdReviewMaxConcurrencyChange?: (value: number) => void;
+  onAdReviewHeadNChange?: (value: number) => void;
+  onAdReviewTailNChange?: (value: number) => void;
+  onAdReviewTailStopCleanStreakChange?: (value: number) => void;
+  onStartAdReview?: (options?: { skipReviewedNodes?: boolean }) => void;
+  onPauseAdReview?: () => void;
+  onRemoveAdReviewTask?: (taskId: string) => void;
+  onDeleteSelectedAdReviewCandidates?: () => void;
+  onDismissAdReviewTask?: () => void;
   onClearManageSelection: () => void;
   onThumbnailScaleLevelChange?: (level: number) => void;
   nodeBrowseMode?: boolean;

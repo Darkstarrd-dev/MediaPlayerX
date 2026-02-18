@@ -223,6 +223,50 @@ export class ManageAdReviewService {
         error_detail: null,
         updated_at_ms: Date.now(),
       };
+    } else if (queueItem.task.status === "paused") {
+      const queue = this.readQueueState();
+      const hasOtherRunningTask = queue.items.some(
+        (item) =>
+          item.task.task_id !== request.task_id && item.task.status === "running",
+      );
+
+      if (hasOtherRunningTask) {
+        nextTask = {
+          ...queueItem.task,
+          status: "pending",
+          message: "排队中，等待前序任务完成",
+          error_detail: null,
+          updated_at_ms: Date.now(),
+        };
+      } else {
+        nextTask = {
+          ...queueItem.task,
+          status: "running",
+          message: "广告审核任务进行中",
+          error_detail: null,
+          updated_at_ms: Date.now(),
+        };
+
+        const snapshot = await this.options.ensureSnapshotLoaded();
+        const imageById = this.buildImageById(snapshot);
+        const runtimeState: RuntimeTaskState = {
+          task: nextTask,
+          request: queueItem.request,
+          effectiveNodeIds: queueItem.effective_node_ids,
+          nodeHashById: queueItem.node_hash_by_id,
+          candidateHashByImageId: new Map(
+            queueItem.task.candidates.map((candidate) => [
+              candidate.image_id,
+              candidate.hash,
+            ]),
+          ),
+          abortController: new AbortController(),
+          pauseRequested: false,
+          resumeFromPaused: true,
+        };
+        this.tasks.set(request.task_id, runtimeState);
+        void this.executeTask(request.task_id, queueItem.task.scope_image_ids, imageById);
+      }
     }
 
     this.updateQueueTask(nextTask.task_id, () => nextTask);
@@ -568,6 +612,7 @@ export class ManageAdReviewService {
     const request = runtimeTask.request;
     const taskExecution =
       runtimeTask.task.execution ?? normalizeTaskExecution(request);
+    const resumeFromPaused = Boolean(runtimeTask.resumeFromPaused);
     let shouldStartNextPending = false;
 
     try {
@@ -587,18 +632,33 @@ export class ManageAdReviewService {
         );
       }
 
-      runtimeTask.task = {
-        ...runtimeTask.task,
-        total_count: selectedImageIds.length,
-        scope_image_ids: selectedImageIds,
-        execution: taskExecution,
-        audit: toTaskAudit({
-          sourceDistribution: createEmptySourceDistribution(),
-          suspectedCount: 0,
-          totalCount: selectedImageIds.length,
-        }),
-        updated_at_ms: Date.now(),
-      };
+      if (resumeFromPaused) {
+        const reviewedImageIdSet = new Set(
+          Object.keys(runtimeTask.task.image_source_by_id),
+        );
+        selectedImageIds = selectedImageIds.filter(
+          (imageId) => !reviewedImageIdSet.has(imageId),
+        );
+        runtimeTask.task = {
+          ...runtimeTask.task,
+          status: "running",
+          execution: taskExecution,
+          updated_at_ms: Date.now(),
+        };
+      } else {
+        runtimeTask.task = {
+          ...runtimeTask.task,
+          total_count: selectedImageIds.length,
+          scope_image_ids: selectedImageIds,
+          execution: taskExecution,
+          audit: toTaskAudit({
+            sourceDistribution: createEmptySourceDistribution(),
+            suspectedCount: 0,
+            totalCount: selectedImageIds.length,
+          }),
+          updated_at_ms: Date.now(),
+        };
+      }
       this.updateQueueTask(taskId, () => runtimeTask.task);
 
       if (selectedImageIds.length === 0) {
@@ -853,6 +913,7 @@ export class ManageAdReviewService {
       this.updateQueueTask(taskId, () => runtimeTask.task);
       shouldStartNextPending = true;
       runtimeTask.pauseRequested = false;
+      runtimeTask.resumeFromPaused = false;
     } catch (error) {
       const isAbortError =
         error instanceof Error && error.name === "AbortError";
@@ -1089,27 +1150,39 @@ export class ManageAdReviewService {
           );
 
     const noNeedToRun = selectedImageIds.length === 0;
+    const resumeFromPaused =
+      pendingItem.task.reviewed_count > 0 ||
+      Object.keys(pendingItem.task.image_source_by_id).length > 0 ||
+      pendingItem.task.candidates.length > 0;
     const now = Date.now();
     const nextTask: ManageAdReviewTaskDto = {
       ...pendingItem.task,
       status: noNeedToRun ? "review" : "running",
-      progress: noNeedToRun ? 1 : 0,
-      total_count: selectedImageIds.length,
-      reviewed_count: 0,
-      suspected_count: 0,
-      failed_count: 0,
-      known_hash_hits: 0,
-      llm_calls: 0,
+      progress: noNeedToRun
+        ? 1
+        : resumeFromPaused
+          ? pendingItem.task.progress
+          : 0,
+      total_count: resumeFromPaused
+        ? pendingItem.task.total_count
+        : selectedImageIds.length,
+      reviewed_count: resumeFromPaused ? pendingItem.task.reviewed_count : 0,
+      suspected_count: resumeFromPaused ? pendingItem.task.suspected_count : 0,
+      failed_count: resumeFromPaused ? pendingItem.task.failed_count : 0,
+      known_hash_hits: resumeFromPaused ? pendingItem.task.known_hash_hits : 0,
+      llm_calls: resumeFromPaused ? pendingItem.task.llm_calls : 0,
       scope_image_ids: selectedImageIds,
-      image_source_by_id: {},
-      audit: toTaskAudit({
-        sourceDistribution: createEmptySourceDistribution(),
-        suspectedCount: 0,
-        totalCount: selectedImageIds.length,
-      }),
+      image_source_by_id: resumeFromPaused ? pendingItem.task.image_source_by_id : {},
+      audit: resumeFromPaused
+        ? pendingItem.task.audit
+        : toTaskAudit({
+            sourceDistribution: createEmptySourceDistribution(),
+            suspectedCount: 0,
+            totalCount: selectedImageIds.length,
+          }),
       message: noNeedToRun ? "已审核(未变更)，无需执行" : "广告审核任务进行中",
       error_detail: null,
-      candidates: [],
+      candidates: resumeFromPaused ? pendingItem.task.candidates : [],
       updated_at_ms: now,
     };
 
@@ -1128,9 +1201,17 @@ export class ManageAdReviewService {
       request: pendingItem.request,
       effectiveNodeIds: pendingItem.effective_node_ids,
       nodeHashById: pendingItem.node_hash_by_id,
-      candidateHashByImageId: new Map<string, string>(),
+      candidateHashByImageId: resumeFromPaused
+        ? new Map(
+            pendingItem.task.candidates.map((candidate) => [
+              candidate.image_id,
+              candidate.hash,
+            ]),
+          )
+        : new Map<string, string>(),
       abortController: new AbortController(),
       pauseRequested: false,
+      resumeFromPaused,
     };
     this.tasks.set(nextTask.task_id, runtimeTask);
 
