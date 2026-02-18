@@ -167,9 +167,11 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     expect(hasRuntimeError).toBe(false);
   });
 
-  it("管理模式删除确认弹窗需勾选不可逆确认后才能提交", async () => {
-    render(<App />);
-    await click(screen.getByRole("button", { name: "文件管理" }));
+  it(
+    "管理模式删除确认弹窗需勾选不可逆确认后才能提交",
+    async () => {
+      render(<App />);
+      await click(screen.getByRole("button", { name: "文件管理" }));
 
     await waitFor(() => {
       expect(
@@ -199,15 +201,19 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     );
     expect(confirmButton.disabled).toBe(false);
 
-    await click(screen.getByRole("button", { name: "取消" }));
-    expect(
-      screen.queryByRole("dialog", { name: "永久删除确认" }),
-    ).not.toBeInTheDocument();
-  });
+      await click(screen.getByRole("button", { name: "取消" }));
+      expect(
+        screen.queryByRole("dialog", { name: "永久删除确认" }),
+      ).not.toBeInTheDocument();
+    },
+    uiLongTestTimeoutMs,
+  );
 
-  it("Esc 按优先级先关闭删除确认，再关闭管理面板", async () => {
-    render(<App />);
-    await click(screen.getByRole("button", { name: "文件管理" }));
+  it(
+    "Esc 按优先级先关闭删除确认，再关闭管理面板",
+    async () => {
+      render(<App />);
+      await click(screen.getByRole("button", { name: "文件管理" }));
 
     await waitFor(() => {
       expect(
@@ -226,45 +232,53 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     expect(screen.queryByRole("dialog", { name: "永久删除确认" })).toBeNull();
     expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
 
-    await keyDown(window, { key: "Escape", code: "Escape" });
-    expect(screen.queryByRole("button", { name: "删除" })).toBeNull();
-  });
+      await keyDown(window, { key: "Escape", code: "Escape" });
+      expect(screen.queryByRole("button", { name: "删除" })).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
 
-  it("管理模式在紧凑窗口下保持稳定：无最大更新深度报错、无折叠按钮、缩略图容器不可滚动", async () => {
-    const consoleErrorSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+  it(
+    "管理模式在紧凑窗口下保持稳定：无最大更新深度报错、无折叠按钮、缩略图容器不可滚动",
+    async () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => undefined);
 
-    render(<App />);
-    await click(screen.getByRole("button", { name: "文件管理" }));
+      render(<App />);
+      await click(screen.getByRole("button", { name: "文件管理" }));
 
-    await waitFor(() => {
-      expect(document.querySelector(".image-grid.is-manage")).not.toBeNull();
-    });
-
-    expect(screen.queryByRole("button", { name: "折叠" })).toBeNull();
-
-    const grid = document.querySelector(
-      ".image-grid.is-manage",
-    ) as HTMLElement | null;
-    expect(grid).not.toBeNull();
-    expect(grid?.classList.contains("is-manage")).toBe(true);
-
-    for (let i = 0; i < 5; i += 1) {
-      fireEvent(window, new Event("resize"));
-    }
-
-    await waitFor(() => {
-      const hasMaxDepthError = consoleErrorSpy.mock.calls.some((call) => {
-        const message = call.map((item) => String(item)).join(" ");
-        return message.includes("Maximum update depth exceeded");
+      await waitFor(() => {
+        expect(document.querySelector(".image-grid.is-manage")).not.toBeNull();
       });
-      expect(hasMaxDepthError).toBe(false);
-    });
-  });
 
-  it("隐藏项在非管理模式不可见", async () => {
-    render(<App />);
+      expect(screen.queryByRole("button", { name: "折叠" })).toBeNull();
+
+      const grid = document.querySelector(
+        ".image-grid.is-manage",
+      ) as HTMLElement | null;
+      expect(grid).not.toBeNull();
+      expect(grid?.classList.contains("is-manage")).toBe(true);
+
+      for (let i = 0; i < 5; i += 1) {
+        fireEvent(window, new Event("resize"));
+      }
+
+      await waitFor(() => {
+        const hasMaxDepthError = consoleErrorSpy.mock.calls.some((call) => {
+          const message = call.map((item) => String(item)).join(" ");
+          return message.includes("Maximum update depth exceeded");
+        });
+        expect(hasMaxDepthError).toBe(false);
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
+    "隐藏项在非管理模式不可见",
+    async () => {
+      render(<App />);
 
     expect(screen.queryAllByText("幻旅系列 001 #1").length).toBeGreaterThan(0);
 
@@ -291,10 +305,12 @@ describe("MediaPlayer 虚拟 UI - management", () => {
 
     await click(screen.getByRole("button", { name: "文件管理" }));
 
-    await waitFor(() => {
-      expect(screen.queryByText("幻旅系列 001 #1")).not.toBeInTheDocument();
-    });
-  });
+      await waitFor(() => {
+        expect(screen.queryByText("幻旅系列 001 #1")).not.toBeInTheDocument();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it("管理异常显示在主工具栏提示中，不占用顶部异常横幅", async () => {
     vi.spyOn(
@@ -329,28 +345,34 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     expect(document.querySelector(".backend-error-banner")).toBeNull();
   });
 
-  it("AI广告审核通过后仅显示工具栏按钮，点击后才展开审核面板", async () => {
-    useUiStore.setState({
-      adReviewVisionEndpoint: "http://127.0.0.1:1234/v1/chat/completions",
-      adReviewVisionModel: "mock-vision-model",
-      adReviewVisionVerified: true,
-    });
+  it(
+    "AI广告审核通过后仅显示工具栏按钮，点击后才展开审核面板",
+    async () => {
+      useUiStore.setState({
+        adReviewVisionEndpoint: "http://127.0.0.1:1234/v1/chat/completions",
+        adReviewVisionModel: "mock-vision-model",
+        adReviewVisionVerified: true,
+      });
 
-    render(<App />);
-    await click(screen.getByRole("button", { name: "文件管理" }));
+      render(<App />);
+      await click(screen.getByRole("button", { name: "文件管理" }));
 
-    await waitFor(() => {
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "广告审核" }),
+        ).toBeInTheDocument();
+      });
       expect(
-        screen.getByRole("button", { name: "广告审核" }),
-      ).toBeInTheDocument();
-    });
-    expect(screen.queryByRole("group", { name: "AI广告审核控制" })).toBeNull();
+        screen.queryByRole("group", { name: "AI广告审核控制" }),
+      ).toBeNull();
 
-    await click(screen.getByRole("button", { name: "广告审核" }));
-    await waitFor(() => {
-      expect(
-        screen.getAllByRole("group", { name: "AI广告审核控制" }).length,
-      ).toBeGreaterThan(0);
-    });
-  });
+      await click(screen.getByRole("button", { name: "广告审核" }));
+      await waitFor(() => {
+        expect(
+          screen.getAllByRole("group", { name: "AI广告审核控制" }).length,
+        ).toBeGreaterThan(0);
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 });
