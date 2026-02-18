@@ -1,8 +1,8 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-const nonNegativeIntSchema = z.number().int().nonnegative()
+const nonNegativeIntSchema = z.number().int().nonnegative();
 
-export const browserModeDtoSchema = z.enum(['image', 'video', 'music'])
+export const browserModeDtoSchema = z.enum(["image", "video", "music"]);
 
 export const featureFilterDtoSchema = z.object({
   name_query: z.string(),
@@ -12,26 +12,26 @@ export const featureFilterDtoSchema = z.object({
   author_query: z.string(),
   tags: z.array(z.string()),
   grade: z.number().int().min(0).max(5).nullable(),
-})
+});
 
-export const mediaLocatorDtoSchema = z.discriminatedUnion('kind', [
+export const mediaLocatorDtoSchema = z.discriminatedUnion("kind", [
   z.object({
-    kind: z.literal('filesystem'),
+    kind: z.literal("filesystem"),
     absolute_path: z.string().min(1),
     extension: z.string().min(1),
-    media_type: z.enum(['image', 'video', 'audio', 'subtitle']),
+    media_type: z.enum(["image", "video", "audio", "subtitle"]),
     mime_type: z.string().min(1),
   }),
   z.object({
-    kind: z.literal('archive-entry'),
+    kind: z.literal("archive-entry"),
     archive_path: z.string().min(1),
-    archive_format: z.enum(['zip', 'rar', '7z']),
+    archive_format: z.enum(["zip", "rar", "7z"]),
     entry_name: z.string().min(1),
     extension: z.string().min(1),
-    media_type: z.enum(['image', 'video', 'audio', 'subtitle']),
+    media_type: z.enum(["image", "video", "audio", "subtitle"]),
     mime_type: z.string().min(1),
   }),
-])
+]);
 
 export const imageItemDtoSchema = z.object({
   id: z.string().min(1),
@@ -43,10 +43,10 @@ export const imageItemDtoSchema = z.object({
   color: z.string().min(1),
   media_locator: mediaLocatorDtoSchema,
   hidden: z.boolean().optional(),
-})
+});
 
 export const imageSourceExternalMetadataDtoSchema = z.object({
-  source_site: z.enum(['nhentai', 'ehentai', 'others']),
+  source_site: z.enum(["nhentai", "ehentai", "others"]),
   source_url: z.string().min(1),
   source_remote_id: z.string().min(1),
   source_token: z.string(),
@@ -61,13 +61,13 @@ export const imageSourceExternalMetadataDtoSchema = z.object({
   favorited: z.string().nullable().optional(),
   tags: z.record(z.string(), z.string()),
   raw_json: z.string(),
-})
+});
 
 export const imageSourceCoverDtoSchema = z.object({
   cover_color: z.string().min(1),
   cover_image_path: z.string().min(1).nullable(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const imagePackageDtoSchema = z.object({
   id: z.string().min(1),
@@ -76,7 +76,7 @@ export const imagePackageDtoSchema = z.object({
   absolute_path: z.string().min(1),
   tree_path: z.array(z.string().min(1)).min(1),
   work_title: z.string().min(1),
-  series_id: z.string().default(''),
+  series_id: z.string().default(""),
   circle: z.string().min(1),
   author: z.string().min(1),
   tags: z.array(z.string()),
@@ -84,7 +84,7 @@ export const imagePackageDtoSchema = z.object({
   external_metadata: imageSourceExternalMetadataDtoSchema.nullable().optional(),
   source_cover: imageSourceCoverDtoSchema.nullable().optional(),
   images: z.array(imageItemDtoSchema),
-})
+});
 
 export const videoItemDtoSchema = z.object({
   id: z.string().min(1),
@@ -98,16 +98,16 @@ export const videoItemDtoSchema = z.object({
   cover_color: z.string().min(1),
   cover_image_path: z.string().min(1).nullable().optional(),
   work_title: z.string().min(1),
-  work_title_jpn: z.string().default(''),
-  series_id: z.string().default(''),
+  work_title_jpn: z.string().default(""),
+  series_id: z.string().default(""),
   circle: z.string().min(1),
-  circle_jpn: z.string().default(''),
+  circle_jpn: z.string().default(""),
   author: z.string().min(1),
-  author_jpn: z.string().default(''),
+  author_jpn: z.string().default(""),
   tags: z.array(z.string()),
   grade: z.number().int().min(0).max(5).nullable().optional(),
   media_locator: mediaLocatorDtoSchema,
-})
+});
 
 export const audioItemDtoSchema = z.object({
   id: z.string().min(1),
@@ -116,41 +116,41 @@ export const audioItemDtoSchema = z.object({
   tree_path: z.array(z.string().min(1)).min(1),
   duration_sec: nonNegativeIntSchema,
   size_mb: nonNegativeIntSchema,
-  album: z.string().default(''),
-  author: z.string().default(''),
-  track_title: z.string().default(''),
-  series_id: z.string().default(''),
+  album: z.string().default(""),
+  author: z.string().default(""),
+  track_title: z.string().default(""),
+  series_id: z.string().default(""),
   media_locator: mediaLocatorDtoSchema,
-})
+});
 
 export const focusedImageRefDtoSchema = z.object({
   package_id: z.string().min(1),
   image_index: nonNegativeIntSchema,
-})
+});
 
 export const sidebarNodeDtoSchema: z.ZodType<{
-  id: string
-  label: string
-  kind: 'folder' | 'package' | 'video' | 'audio'
-  image_node_type?: 'folder' | 'package' | 'directory'
-  children: Array<unknown>
-  package_id?: string
-  video_id?: string
-  audio_id?: string
-  image_source_id?: string
-  cover_source_id?: string
-  cover_image_id?: string
-  direct_image_count?: number
-  descendant_package_count?: number
-  descendant_image_count?: number
-  descendant_node_count?: number
-  path_key: string
+  id: string;
+  label: string;
+  kind: "folder" | "package" | "video" | "audio";
+  image_node_type?: "folder" | "package" | "directory";
+  children: Array<unknown>;
+  package_id?: string;
+  video_id?: string;
+  audio_id?: string;
+  image_source_id?: string;
+  cover_source_id?: string;
+  cover_image_id?: string;
+  direct_image_count?: number;
+  descendant_package_count?: number;
+  descendant_image_count?: number;
+  descendant_node_count?: number;
+  path_key: string;
 }> = z.lazy(() =>
   z.object({
     id: z.string().min(1),
     label: z.string().min(1),
-    kind: z.enum(['folder', 'package', 'video', 'audio']),
-    image_node_type: z.enum(['folder', 'package', 'directory']).optional(),
+    kind: z.enum(["folder", "package", "video", "audio"]),
+    image_node_type: z.enum(["folder", "package", "directory"]).optional(),
     children: z.array(sidebarNodeDtoSchema),
     package_id: z.string().min(1).optional(),
     video_id: z.string().min(1).optional(),
@@ -164,28 +164,31 @@ export const sidebarNodeDtoSchema: z.ZodType<{
     descendant_node_count: nonNegativeIntSchema.optional(),
     path_key: z.string().min(1),
   }),
-)
+);
 
 export const librarySnapshotDtoSchema = z.object({
   image_packages: z.array(imagePackageDtoSchema),
   image_directories: z.array(imagePackageDtoSchema),
   videos: z.array(videoItemDtoSchema),
   audios: z.array(audioItemDtoSchema).optional(),
-})
+});
 
-export const gradeOverrideMapSchema = z.record(z.string(), z.number().int().min(0).max(5).nullable())
+export const gradeOverrideMapSchema = z.record(
+  z.string(),
+  z.number().int().min(0).max(5).nullable(),
+);
 
 export const readImageSidebarTreeRequestSchema = z.object({
   feature_filter: featureFilterDtoSchema,
   grade_overrides: gradeOverrideMapSchema.optional(),
   include_hidden: z.boolean().optional(),
-})
+});
 
 export const readImageSidebarTreeResponseSchema = z.object({
   image_packages: z.array(imagePackageDtoSchema),
   image_directories: z.array(imagePackageDtoSchema),
   tree: z.array(sidebarNodeDtoSchema),
-})
+});
 
 export const readImagePageRequestSchema = z.object({
   source_id: z.string().min(1).nullable(),
@@ -195,7 +198,7 @@ export const readImagePageRequestSchema = z.object({
   include_hidden: z.boolean().optional(),
   feature_filter: featureFilterDtoSchema,
   grade_overrides: gradeOverrideMapSchema.optional(),
-})
+});
 
 export const readImagePageResponseSchema = z.object({
   source_id: z.string().min(1).nullable(),
@@ -203,13 +206,13 @@ export const readImagePageResponseSchema = z.object({
   page_index: nonNegativeIntSchema,
   page_size: z.number().int().positive(),
   refs: z.array(focusedImageRefDtoSchema),
-})
+});
 
 export const readImageMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
   image_index: nonNegativeIntSchema,
   include_hidden: z.boolean().optional(),
-})
+});
 
 export const readImageMetadataResponseSchema = z
   .object({
@@ -217,11 +220,11 @@ export const readImageMetadataResponseSchema = z
     image: imageItemDtoSchema,
     grade: z.number().int().min(0).max(5).nullable(),
   })
-  .nullable()
+  .nullable();
 
 export const resolveMediaResourceRequestSchema = z.object({
   locator: mediaLocatorDtoSchema,
-  preferred_variant: z.enum(['original', 'thumbnail']).optional(),
+  preferred_variant: z.enum(["original", "thumbnail"]).optional(),
   thumbnail: z
     .object({
       max_edge: z.number().int().min(64).max(2048).optional(),
@@ -229,38 +232,38 @@ export const resolveMediaResourceRequestSchema = z.object({
       generation_concurrency: z.number().int().min(1).max(16).optional(),
     })
     .optional(),
-})
+});
 
 export const resolveMediaResourceResponseSchema = z.object({
   resource_url: z.string().min(1),
   mime_type: z.string().min(1),
   expires_at_ms: z.number().int().positive(),
-})
+});
 
 export const writePackageGradeRequestSchema = z.object({
   package_id: z.string().min(1),
   grade: z.number().int().min(0).max(5).nullable(),
-})
+});
 
 export const writePackageGradeResponseSchema = z.object({
   package_id: z.string().min(1),
   grade: z.number().int().min(0).max(5).nullable(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const setImageHiddenRequestSchema = z.object({
   image_ids: z.array(z.string().min(1)).min(1),
   hidden: z.boolean(),
-})
+});
 
 export const setImageHiddenResponseSchema = z.object({
   updated_count: nonNegativeIntSchema,
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const deleteImageItemsRequestSchema = z.object({
   image_ids: z.array(z.string().min(1)).min(1),
-})
+});
 
 export const deleteImageItemsResponseSchema = z.object({
   deleted_count: nonNegativeIntSchema,
@@ -271,12 +274,12 @@ export const deleteImageItemsResponseSchema = z.object({
     }),
   ),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const deleteSidebarNodesRequestSchema = z.object({
   node_ids: z.array(z.string().min(1)).min(1),
   delete_files: z.boolean().optional(),
-})
+});
 
 export const deleteSidebarNodesResponseSchema = z.object({
   deleted_count: nonNegativeIntSchema,
@@ -287,13 +290,13 @@ export const deleteSidebarNodesResponseSchema = z.object({
     }),
   ),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const moveSidebarNodesRequestSchema = z.object({
   node_ids: z.array(z.string().min(1)).min(1),
   destination_directory: z.string().min(1),
   group_name: z.string().min(1).optional(),
-})
+});
 
 export const moveSidebarNodesResponseSchema = z.object({
   moved_count: nonNegativeIntSchema,
@@ -305,12 +308,12 @@ export const moveSidebarNodesResponseSchema = z.object({
   ),
   target_directory: z.string().min(1),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const renameSidebarNodeRequestSchema = z.object({
   node_id: z.string().min(1),
   new_name: z.string().min(1),
-})
+});
 
 export const renameSidebarNodeResponseSchema = z.object({
   renamed_count: nonNegativeIntSchema,
@@ -322,43 +325,49 @@ export const renameSidebarNodeResponseSchema = z.object({
   ),
   target_path: z.string().min(1).nullable(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
-export const manageAdReviewSelectionScopeSchema = z.enum(['image', 'sidebar'])
+export const manageAdReviewSelectionScopeSchema = z.enum(["image", "sidebar"]);
 
-export const manageReviewModeSchema = z.enum(['ad', 'cover'])
+export const manageReviewModeSchema = z.enum(["ad", "cover"]);
 
-export const manageAdReviewDecisionSourceSchema = z.enum(['known-hash', 'llm'])
+export const manageAdReviewDecisionSourceSchema = z.enum(["known-hash", "llm"]);
 
 export const manageAdReviewImageSourceSchema = z.enum([
-  'known-hash',
-  'llm',
-  'llm-error',
-  'strategy-skip',
-])
+  "known-hash",
+  "llm",
+  "llm-error",
+  "strategy-skip",
+]);
 
-export const manageAdReviewTaskStatusSchema = z.enum(['pending', 'running', 'paused', 'review', 'failed'])
+export const manageAdReviewTaskStatusSchema = z.enum([
+  "pending",
+  "running",
+  "paused",
+  "review",
+  "failed",
+]);
 
 export const manageAdReviewAllStrategySchema = z.object({
-  mode: z.literal('all'),
-})
+  mode: z.literal("all"),
+});
 
 export const manageAdReviewHeadTailStrategySchema = z.object({
-  mode: z.literal('head-tail'),
+  mode: z.literal("head-tail"),
   head_n: nonNegativeIntSchema,
   tail_n: nonNegativeIntSchema,
   tail_stop_clean_streak: z.number().int().min(1).max(200),
-})
+});
 
-export const manageAdReviewStrategySchema = z.discriminatedUnion('mode', [
+export const manageAdReviewStrategySchema = z.discriminatedUnion("mode", [
   manageAdReviewAllStrategySchema,
   manageAdReviewHeadTailStrategySchema,
-])
+]);
 
 export const manageAdReviewTaskExecutionSchema = z.object({
   strategy: manageAdReviewStrategySchema,
   max_concurrency: z.number().int().min(4).max(12),
-})
+});
 
 export const manageAdReviewSourceDistributionSchema = z.object({
   known_hash: nonNegativeIntSchema,
@@ -366,13 +375,13 @@ export const manageAdReviewSourceDistributionSchema = z.object({
   llm_clean: nonNegativeIntSchema,
   llm_failed: nonNegativeIntSchema,
   strategy_skipped: nonNegativeIntSchema,
-})
+});
 
 export const manageAdReviewTaskAuditSchema = z.object({
   source_distribution: manageAdReviewSourceDistributionSchema,
   llm_hit_rate: z.number().min(0).max(1),
   overall_hit_rate: z.number().min(0).max(1),
-})
+});
 
 export const manageAdReviewCandidateSchema = z.object({
   image_id: z.string().min(1),
@@ -384,7 +393,7 @@ export const manageAdReviewCandidateSchema = z.object({
   reason: z.string().min(1),
   source: manageAdReviewDecisionSourceSchema,
   hash: z.string().min(1),
-})
+});
 
 export const manageAdReviewTaskSchema = z.object({
   task_id: z.string().min(1),
@@ -405,7 +414,7 @@ export const manageAdReviewTaskSchema = z.object({
   candidates: z.array(manageAdReviewCandidateSchema),
   created_at_ms: z.number().int().positive(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const startManageAdReviewRequestSchema = z.object({
   selection_scope: manageAdReviewSelectionScopeSchema,
@@ -416,44 +425,44 @@ export const startManageAdReviewRequestSchema = z.object({
   llm_model: z.string().min(1),
   strategy: manageAdReviewStrategySchema.optional(),
   max_concurrency: z.number().int().min(4).max(12).optional(),
-})
+});
 
 export const startManageAdReviewResponseSchema = z.object({
   task: manageAdReviewTaskSchema,
-})
+});
 
 export const readManageAdReviewTaskRequestSchema = z.object({
   task_id: z.string().min(1),
-})
+});
 
 export const readManageAdReviewTaskResponseSchema = z.object({
   task: manageAdReviewTaskSchema.nullable(),
-})
+});
 
 export const pauseManageAdReviewTaskRequestSchema = z.object({
   task_id: z.string().min(1),
-})
+});
 
 export const pauseManageAdReviewTaskResponseSchema = z.object({
   task: manageAdReviewTaskSchema,
-})
+});
 
 export const testAdReviewVisionModelRequestSchema = z.object({
   llm_endpoint: z.string().min(1),
   llm_model: z.string().min(1),
   image_base64: z.string().min(1),
   timeout_ms: z.number().int().min(1_000).max(60_000).optional(),
-})
+});
 
 export const testAdReviewVisionModelResponseSchema = z.object({
   ok: z.boolean(),
   message: z.string().min(1),
-})
+});
 
 export const confirmManageAdReviewDeleteRequestSchema = z.object({
   task_id: z.string().min(1),
   image_ids: z.array(z.string().min(1)).min(1),
-})
+});
 
 export const confirmManageAdReviewDeleteResponseSchema = z.object({
   task: manageAdReviewTaskSchema,
@@ -465,43 +474,55 @@ export const confirmManageAdReviewDeleteResponseSchema = z.object({
     }),
   ),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
-export const manageCoverReviewTaskSchema = manageAdReviewTaskSchema
+export const manageCoverReviewTaskSchema = manageAdReviewTaskSchema;
 
-export const startManageCoverReviewRequestSchema = startManageAdReviewRequestSchema
+export const startManageCoverReviewRequestSchema =
+  startManageAdReviewRequestSchema;
 
 export const startManageCoverReviewResponseSchema = z.object({
   task: manageCoverReviewTaskSchema,
-})
+});
 
-export const readManageCoverReviewTaskRequestSchema = readManageAdReviewTaskRequestSchema
+export const readManageCoverReviewTaskRequestSchema =
+  readManageAdReviewTaskRequestSchema;
 
 export const readManageCoverReviewTaskResponseSchema = z.object({
   task: manageCoverReviewTaskSchema.nullable(),
-})
+});
 
-export const pauseManageCoverReviewTaskRequestSchema = pauseManageAdReviewTaskRequestSchema
+export const pauseManageCoverReviewTaskRequestSchema =
+  pauseManageAdReviewTaskRequestSchema;
 
 export const pauseManageCoverReviewTaskResponseSchema = z.object({
   task: manageCoverReviewTaskSchema,
-})
+});
 
 export const confirmManageCoverReviewHideRequestSchema = z.object({
   task_id: z.string().min(1),
   image_ids: z.array(z.string().min(1)).min(1),
-})
+});
 
 export const confirmManageCoverReviewHideResponseSchema = z.object({
   task: manageCoverReviewTaskSchema,
   updated_count: nonNegativeIntSchema,
   requested_count: nonNegativeIntSchema,
   updated_at_ms: z.number().int().positive(),
-})
+});
 
-export const manageSubtitleCleanupTaskStatusSchema = z.enum(['running', 'review', 'failed'])
+export const manageSubtitleCleanupTaskStatusSchema = z.enum([
+  "running",
+  "review",
+  "failed",
+]);
 
-export const manageSubtitleCleanupStageSchema = z.enum(['pending', 'running', 'ready', 'failed'])
+export const manageSubtitleCleanupStageSchema = z.enum([
+  "pending",
+  "running",
+  "ready",
+  "failed",
+]);
 
 export const manageSubtitleCleanupTaskSchema = z.object({
   task_id: z.string().min(1),
@@ -516,45 +537,45 @@ export const manageSubtitleCleanupTaskSchema = z.object({
   error_detail: z.string().min(1).nullable(),
   created_at_ms: z.number().int().positive(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const startManageSubtitleCleanupRequestSchema = z.object({
   video_id: z.string().min(1),
-})
+});
 
 export const startManageSubtitleCleanupResponseSchema = z.object({
   task: manageSubtitleCleanupTaskSchema,
-})
+});
 
 export const readManageSubtitleCleanupTaskRequestSchema = z.object({
   task_id: z.string().min(1),
-})
+});
 
 export const readManageSubtitleCleanupTaskResponseSchema = z.object({
   task: manageSubtitleCleanupTaskSchema.nullable(),
-})
+});
 
 export const runManageSubtitleCleanupRequestSchema = z.object({
   task_id: z.string().min(1),
   llm_endpoint: z.string().min(1),
   llm_model: z.string().min(1),
   llm_prompt: z.string().optional(),
-})
+});
 
 export const runManageSubtitleCleanupResponseSchema = z.object({
   task: manageSubtitleCleanupTaskSchema,
-})
+});
 
 export const saveManageSubtitleCleanupRequestSchema = z.object({
   task_id: z.string().min(1),
   cleaned_subtitle_text: z.string(),
-})
+});
 
 export const saveManageSubtitleCleanupResponseSchema = z.object({
   task: manageSubtitleCleanupTaskSchema,
   saved_path: z.string().min(1),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const writePackageMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
@@ -564,15 +585,15 @@ export const writePackageMetadataRequestSchema = z.object({
   author: z.string().min(1),
   tags: z.array(z.string()),
   sync_work_title_to_package_name: z.boolean().optional(),
-})
+});
 
 export const searchExternalMetadataRequestSchema = z.object({
   input_text: z.string().optional(),
   input_id: z.string().optional(),
-  source: z.enum(['nhentai', 'ehentai']).optional(),
+  source: z.enum(["nhentai", "ehentai"]).optional(),
   proxy_server: z.string().optional(),
   ehentai_cookies: z.string().optional(),
-})
+});
 
 export const searchExternalMetadataDebugStepSchema = z.object({
   at_ms: z.number().int().nonnegative(),
@@ -580,20 +601,20 @@ export const searchExternalMetadataDebugStepSchema = z.object({
   message: z.string().min(1),
   request: z.unknown().optional(),
   response: z.unknown().optional(),
-})
+});
 
 export const searchExternalMetadataDebugSchema = z.object({
-  source: z.enum(['nhentai', 'ehentai']),
+  source: z.enum(["nhentai", "ehentai"]),
   started_at_ms: z.number().int().nonnegative(),
   finished_at_ms: z.number().int().nonnegative(),
   success: z.boolean(),
   result_count: nonNegativeIntSchema,
   error_message: z.string().min(1).optional(),
   steps: z.array(searchExternalMetadataDebugStepSchema),
-})
+});
 
 export const externalMetadataResultItemSchema = z.object({
-  source: z.enum(['nhentai', 'ehentai']),
+  source: z.enum(["nhentai", "ehentai"]),
   id: z.string().min(1),
   title: z.string().min(1),
   title_original: z.string().nullable().optional(),
@@ -606,21 +627,21 @@ export const externalMetadataResultItemSchema = z.object({
   rating: z.string().nullable().optional(),
   favorited: z.number().int().nonnegative().nullable().optional(),
   raw: z.unknown(),
-})
+});
 
 export const searchExternalMetadataResponseSchema = z.object({
   items: z.array(externalMetadataResultItemSchema),
   debug: searchExternalMetadataDebugSchema.optional(),
-})
+});
 
 export const writePackageMetadataResponseSchema = z.object({
   package: imagePackageDtoSchema,
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const writePackageExternalMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
-  source_site: z.enum(['nhentai', 'ehentai', 'others']),
+  source_site: z.enum(["nhentai", "ehentai", "others"]),
   source_url: z.string().min(1),
   source_remote_id: z.string().min(1),
   source_token: z.string().optional(),
@@ -636,12 +657,12 @@ export const writePackageExternalMetadataRequestSchema = z.object({
   tags: z.record(z.string(), z.string()),
   raw_json: z.string().min(1),
   thumb_url: z.string().optional(),
-})
+});
 
 export const writePackageExternalMetadataResponseSchema = z.object({
   package: imagePackageDtoSchema,
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const writeVideoMetadataRequestSchema = z.object({
   video_id: z.string().min(1),
@@ -655,12 +676,12 @@ export const writeVideoMetadataRequestSchema = z.object({
   tags: z.array(z.string()),
   grade: z.number().int().min(0).max(5).nullable().optional(),
   sync_file_name_to_work_title: z.boolean().optional(),
-})
+});
 
 export const writeVideoMetadataResponseSchema = z.object({
   video: videoItemDtoSchema,
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const writeAudioMetadataRequestSchema = z.object({
   audio_id: z.string().min(1),
@@ -668,85 +689,90 @@ export const writeAudioMetadataRequestSchema = z.object({
   author: z.string().optional(),
   track_title: z.string().optional(),
   series_id: z.string().optional(),
-})
+});
 
 export const writeAudioMetadataResponseSchema = z.object({
   audio: audioItemDtoSchema,
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const saveVideoCoverRequestSchema = z.object({
   video_id: z.string().min(1),
   time_sec: z.number().nonnegative(),
   fallback_color: z.string().min(1).optional(),
-})
+});
 
 export const saveVideoCoverResponseSchema = z.object({
   video_id: z.string().min(1),
   cover_color: z.string().min(1),
   cover_image_path: z.string().min(1).nullable(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const readPlaylistResponseSchema = z.object({
   video_ids: z.array(z.string().min(1)),
-})
+});
 
-export const subtitleFormatDtoSchema = z.enum(['vtt', 'srt', 'ass', 'ssa'])
+export const subtitleFormatDtoSchema = z.enum(["vtt", "srt", "ass", "ssa"]);
 
 export const subtitleSourceDtoSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
-  source: z.enum(['external']),
+  source: z.enum(["external"]),
   format: subtitleFormatDtoSchema,
   locator: mediaLocatorDtoSchema,
-})
+});
 
 export const listVideoSubtitlesRequestSchema = z.object({
   video_id: z.string().min(1),
-})
+});
 
 export const listVideoSubtitlesResponseSchema = z.object({
   subtitles: z.array(subtitleSourceDtoSchema),
   ffmpeg_available: z.boolean(),
-})
+});
 
 export const prepareSubtitleTrackRequestSchema = z.object({
   subtitle_id: z.string().min(1),
   locator: mediaLocatorDtoSchema,
   format: subtitleFormatDtoSchema,
-})
+});
 
 export const prepareSubtitleTrackResponseSchema = z.object({
   locator: mediaLocatorDtoSchema,
   converted: z.boolean(),
-})
+});
 
 export const writePlaylistRequestSchema = z.object({
   video_ids: z.array(z.string().min(1)),
-})
+});
 
 export const writePlaylistResponseSchema = z.object({
   video_ids: z.array(z.string().min(1)),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
-export const importTaskStatusSchema = z.enum(['pending', 'running', 'completed', 'failed'])
+export const importTaskStatusSchema = z.enum([
+  "pending",
+  "running",
+  "completed",
+  "failed",
+]);
 
 export const importTaskSourceSchema = z.enum([
-  'dialog-files',
-  'dialog-folders',
-  'drag-drop',
-  'paste',
-  'dialog-files-music',
-  'dialog-folders-music',
-  'drag-drop-music',
-  'paste-music',
-])
+  "dialog-files",
+  "dialog-folders",
+  "drag-drop",
+  "paste",
+  "dialog-files-music",
+  "dialog-folders-music",
+  "drag-drop-music",
+  "paste-music",
+]);
 
 export const importTaskDtoSchema = z.object({
   task_id: z.string().min(1),
-  task_type: z.literal('import'),
+  task_type: z.literal("import"),
   source: importTaskSourceSchema,
   paths: z.array(z.string().min(1)),
   status: importTaskStatusSchema,
@@ -757,112 +783,112 @@ export const importTaskDtoSchema = z.object({
   error_detail: z.string().min(1).nullable(),
   created_at_ms: z.number().int().positive(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const enqueueImportTaskRequestSchema = z.object({
   source: importTaskSourceSchema,
   paths: z.array(z.string().min(1)).min(1),
-})
+});
 
 export const enqueueImportTaskResponseSchema = z.object({
   task: importTaskDtoSchema,
-})
+});
 
 export const readImportTasksResponseSchema = z.object({
   tasks: z.array(importTaskDtoSchema),
-})
+});
 
 export const retryImportTaskRequestSchema = z.object({
   task_id: z.string().min(1),
-})
+});
 
 export const retryImportTaskResponseSchema = z.object({
   task: importTaskDtoSchema,
-})
+});
 
 export const pickImportPathsRequestSchema = z.object({
-  mode: z.enum(['files', 'folders']),
-  target_mode: z.enum(['image', 'video', 'music']).optional(),
-})
+  mode: z.enum(["files", "folders"]),
+  target_mode: z.enum(["image", "video", "music"]).optional(),
+});
 
 export const pickImportPathsResponseSchema = z.object({
   paths: z.array(z.string().min(1)),
-})
+});
 
 export const fileDialogFilterSchema = z.object({
   name: z.string().min(1),
   extensions: z.array(z.string().min(1)).min(1),
-})
+});
 
 export const pickFilePathRequestSchema = z.object({
   title: z.string().min(1).optional(),
   default_path: z.string().min(1).optional(),
   filters: z.array(fileDialogFilterSchema).optional(),
-})
+});
 
 export const pickFilePathResponseSchema = z.object({
   canceled: z.boolean(),
   path: z.string().min(1).nullable(),
-})
+});
 
 export const pickDirectoryPathRequestSchema = z.object({
   title: z.string().min(1).optional(),
   default_path: z.string().min(1).optional(),
-})
+});
 
 export const pickDirectoryPathResponseSchema = z.object({
   canceled: z.boolean(),
   path: z.string().min(1).nullable(),
-})
+});
 
 export const readClipboardImportPathsResponseSchema = z.object({
   paths: z.array(z.string().min(1)),
-})
+});
 
 export const clearDatabaseResponseSchema = z.object({
   cleared: z.boolean(),
   cleared_at_ms: z.number().int().positive(),
-})
+});
 
 export const readArchiveLoadStatusResponseSchema = z.object({
   running_archive_path: z.string().min(1).nullable(),
   pending_archive_paths: z.array(z.string().min(1)),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const readAppStateRequestSchema = z.object({
   state_key: z.string().min(1),
   fallback_json: z.string().optional(),
-})
+});
 
 export const readAppStateResponseSchema = z.object({
   state_json: z.string(),
-})
+});
 
 export const writeAppStateRequestSchema = z.object({
   state_key: z.string().min(1),
   state_json: z.string().min(1),
-})
+});
 
 export const writeAppStateResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const openExternalUrlRequestSchema = z.object({
   url: z.string().url(),
-})
+});
 
 export const openExternalUrlResponseSchema = z.object({
   ok: z.boolean(),
-})
+});
 
-export const subtitleEngineProviderSchema = z.enum(['cpu', 'directml'])
+export const subtitleEngineProviderSchema = z.enum(["cpu", "directml"]);
 
 export const subtitleEngineSourceSchema = z.enum([
-  'optional-component',
-  'node-modules',
-  'none',
-])
+  "optional-component",
+  "node-modules",
+  "none",
+]);
 
 export const readSubtitleEngineStatusResponseSchema = z.object({
   installed: z.boolean(),
@@ -878,14 +904,17 @@ export const readSubtitleEngineStatusResponseSchema = z.object({
   available_providers: z.array(subtitleEngineProviderSchema),
   message: z.string().nullable(),
   checked_at_ms: z.number().int().positive(),
-})
+});
 
 export const subtitleRemoteModelArtifactSchema = z.object({
   relative_path: z.string().min(1),
   url: z.string().url(),
   size_bytes: nonNegativeIntSchema.optional(),
-  sha256: z.string().regex(/^[a-fA-F0-9]{64}$/).optional(),
-})
+  sha256: z
+    .string()
+    .regex(/^[a-fA-F0-9]{64}$/)
+    .optional(),
+});
 
 export const subtitleRemoteModelSchema = z.object({
   id: z.string().min(1),
@@ -895,12 +924,12 @@ export const subtitleRemoteModelSchema = z.object({
   size_bytes: nonNegativeIntSchema,
   version: z.string().min(1),
   artifacts: z.array(subtitleRemoteModelArtifactSchema).min(1),
-})
+});
 
 export const listSubtitleRemoteModelsResponseSchema = z.object({
   models: z.array(subtitleRemoteModelSchema),
   generated_at_ms: z.number().int().positive(),
-})
+});
 
 export const subtitleLocalModelSchema = z.object({
   id: z.string().min(1),
@@ -908,26 +937,26 @@ export const subtitleLocalModelSchema = z.object({
   model_dir: z.string().min(1),
   installed_at_ms: z.number().int().positive().nullable(),
   size_bytes: nonNegativeIntSchema,
-  source: z.enum(['downloaded', 'manual']),
-})
+  source: z.enum(["downloaded", "manual"]),
+});
 
 export const listSubtitleLocalModelsRequestSchema = z.object({
   model_dir: z.string().min(1),
-})
+});
 
 export const listSubtitleLocalModelsResponseSchema = z.object({
   model_dir: z.string().min(1),
   models: z.array(subtitleLocalModelSchema),
-})
+});
 
 export const subtitleModelDownloadStatusSchema = z.enum([
-  'queued',
-  'downloading',
-  'verifying',
-  'completed',
-  'failed',
-  'cancelled',
-])
+  "queued",
+  "downloading",
+  "verifying",
+  "completed",
+  "failed",
+  "cancelled",
+]);
 
 export const subtitleModelDownloadTaskSchema = z.object({
   download_id: z.string().min(1),
@@ -944,45 +973,49 @@ export const subtitleModelDownloadTaskSchema = z.object({
   started_at_ms: z.number().int().positive(),
   updated_at_ms: z.number().int().positive(),
   completed_at_ms: z.number().int().positive().nullable(),
-})
+});
 
 export const startSubtitleModelDownloadRequestSchema = z.object({
   model_id: z.string().min(1),
   model_dir: z.string().min(1),
   use_proxy: z.boolean(),
   proxy_url: z.string().min(1).nullable(),
-})
+});
 
 export const startSubtitleModelDownloadResponseSchema = z.object({
   task: subtitleModelDownloadTaskSchema,
-})
+});
 
 export const cancelSubtitleModelDownloadRequestSchema = z.object({
   download_id: z.string().min(1),
-})
+});
 
 export const cancelSubtitleModelDownloadResponseSchema = z.object({
   ok: z.boolean(),
-})
+});
 
 export const readSubtitleModelDownloadsResponseSchema = z.object({
   tasks: z.array(subtitleModelDownloadTaskSchema),
-})
+});
 
 export const clearSubtitleLocalModelRequestSchema = z.object({
   model_dir: z.string().min(1),
   model_id: z.string().min(1),
-})
+});
 
 export const clearSubtitleLocalModelResponseSchema = z.object({
   ok: z.boolean(),
   removed_path: z.string().min(1).nullable(),
   message: z.string().min(1).nullable(),
-})
+});
 
-export const subtitleSessionProviderPreferenceSchema = z.enum(['auto', 'cpu', 'directml'])
+export const subtitleSessionProviderPreferenceSchema = z.enum([
+  "auto",
+  "cpu",
+  "directml",
+]);
 
-export const subtitleSessionProviderSchema = subtitleEngineProviderSchema
+export const subtitleSessionProviderSchema = subtitleEngineProviderSchema;
 
 export const subtitleCueSchema = z.object({
   id: z.string().min(1),
@@ -990,22 +1023,22 @@ export const subtitleCueSchema = z.object({
   end_sec: z.number().min(0),
   text: z.string().min(1),
   lang: z.string().min(1).nullable(),
-})
+});
 
 export const subtitleSessionEventSchema = z.object({
   code: z.string().min(1),
-  level: z.enum(['info', 'warning', 'error']),
+  level: z.enum(["info", "warning", "error"]),
   message: z.string().min(1),
   at_ms: z.number().int().positive(),
-})
+});
 
 export const startSubtitleSessionRequestSchema = z.object({
   model_dir: z.string().min(1),
   model_id: z.string().min(1),
   provider_preference: subtitleSessionProviderPreferenceSchema,
-  language: z.string().min(1).default('auto'),
+  language: z.string().min(1).default("auto"),
   fallback_to_cpu: z.boolean().default(true),
-})
+});
 
 export const startSubtitleSessionResponseSchema = z.object({
   session_id: z.string().min(1),
@@ -1013,35 +1046,35 @@ export const startSubtitleSessionResponseSchema = z.object({
   fallback_applied: z.boolean(),
   events: z.array(subtitleSessionEventSchema),
   started_at_ms: z.number().int().positive(),
-})
+});
 
 export const stopSubtitleSessionRequestSchema = z.object({
   reason: z.string().min(1).optional(),
-})
+});
 
 export const stopSubtitleSessionResponseSchema = z.object({
   session_id: z.string().min(1).nullable(),
   stopped: z.boolean(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const resetSubtitleSessionRequestSchema = z.object({
   timeline_sec: z.number().min(0).nullable().optional(),
-})
+});
 
 export const resetSubtitleSessionResponseSchema = z.object({
   session_id: z.string().min(1).nullable(),
   ok: z.boolean(),
   events: z.array(subtitleSessionEventSchema),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const flushSubtitleSessionResponseSchema = z.object({
   session_id: z.string().min(1).nullable(),
   cues: z.array(subtitleCueSchema),
   events: z.array(subtitleSessionEventSchema),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const pushSubtitleAudioRequestSchema = z
   .object({
@@ -1052,8 +1085,8 @@ export const pushSubtitleAudioRequestSchema = z
     channel_count: z.number().int().min(1).max(8).default(1),
   })
   .refine((value) => value.chunk_end_sec >= value.chunk_start_sec, {
-    message: 'chunk_end_sec must be >= chunk_start_sec',
-  })
+    message: "chunk_end_sec must be >= chunk_start_sec",
+  });
 
 export const pushSubtitleAudioResponseSchema = z.object({
   session_id: z.string().min(1).nullable(),
@@ -1062,15 +1095,19 @@ export const pushSubtitleAudioResponseSchema = z.object({
   cues: z.array(subtitleCueSchema),
   events: z.array(subtitleSessionEventSchema),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
-export const runtimeCapabilityStatusSchema = z.enum(['available', 'degraded', 'unavailable'])
+export const runtimeCapabilityStatusSchema = z.enum([
+  "available",
+  "degraded",
+  "unavailable",
+]);
 
 export const runtimeCapabilityMatrixItemSchema = z.object({
   capability: z.string().min(1),
   status: runtimeCapabilityStatusSchema,
   note: z.string().min(1),
-})
+});
 
 export const readRuntimeCapabilitiesResponseSchema = z.object({
   dependencies: z.object({
@@ -1081,21 +1118,21 @@ export const readRuntimeCapabilitiesResponseSchema = z.object({
     powershell: z.boolean(),
   }),
   strategies: z.object({
-    thumbnail: z.enum(['sharp-webp-cache', 'original-fallback']),
-    video_probe: z.enum(['ffprobe', 'metadata-fallback']),
-    video_cover: z.enum(['ffmpeg', 'color-only-fallback']),
-    archive_rar_7z: z.enum(['normalize-to-zip-store', 'skip-unsupported']),
-    archive_zip_repack: z.enum(['repack-webp-store', 'safe-entry-fallback']),
+    thumbnail: z.enum(["sharp-webp-cache", "original-fallback"]),
+    video_probe: z.enum(["ffprobe", "metadata-fallback"]),
+    video_cover: z.enum(["ffmpeg", "color-only-fallback"]),
+    archive_rar_7z: z.enum(["normalize-to-zip-store", "skip-unsupported"]),
+    archive_zip_repack: z.enum(["repack-webp-store", "safe-entry-fallback"]),
   }),
   minimum_matrix: z.array(runtimeCapabilityMatrixItemSchema),
   generated_at_ms: z.number().int().positive(),
-})
+});
 
 export const runtimeMediaCapabilityHintSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
   content_type: z.string().min(1),
-})
+});
 
 export const readRuntimeInfoResponseSchema = z.object({
   app_version: z.string().min(1),
@@ -1110,7 +1147,7 @@ export const readRuntimeInfoResponseSchema = z.object({
   gpu_feature_status: z.record(z.string(), z.string()).optional(),
   gpu_info_basic: z.record(z.string(), z.unknown()).optional(),
   media_capability_hints: z.array(runtimeMediaCapabilityHintSchema).optional(),
-})
+});
 
 export const setRuntimeStoragePathsRequestSchema = z
   .object({
@@ -1118,15 +1155,15 @@ export const setRuntimeStoragePathsRequestSchema = z
     thumbnail_cache_dir: z.string().min(1).optional(),
   })
   .refine((value) => Boolean(value.database_dir || value.thumbnail_cache_dir), {
-    message: 'database_dir / thumbnail_cache_dir 至少提供一个',
-  })
+    message: "database_dir / thumbnail_cache_dir 至少提供一个",
+  });
 
 export const setRuntimeStoragePathsResponseSchema = z.object({
   database_path: z.string().min(1),
   thumbnail_cache_path: z.string().min(1),
   moved_database: z.boolean(),
   updated_at_ms: z.number().int().positive(),
-})
+});
 
 export const mediaAccessAuditResponseSchema = z.object({
   resolve_requests: nonNegativeIntSchema,
@@ -1140,172 +1177,6 @@ export const mediaAccessAuditResponseSchema = z.object({
   token_cleanup_removed: nonNegativeIntSchema,
   token_active: nonNegativeIntSchema,
   generated_at_ms: z.number().int().positive(),
-})
+});
 
-export type FeatureFilterDto = z.infer<typeof featureFilterDtoSchema>
-export type MediaLocatorDto = z.infer<typeof mediaLocatorDtoSchema>
-export type ImageItemDto = z.infer<typeof imageItemDtoSchema>
-export type ImagePackageDto = z.infer<typeof imagePackageDtoSchema>
-export type VideoItemDto = z.infer<typeof videoItemDtoSchema>
-export type AudioItemDto = z.infer<typeof audioItemDtoSchema>
-export type FocusedImageRefDto = z.infer<typeof focusedImageRefDtoSchema>
-export type SidebarNodeDto = z.infer<typeof sidebarNodeDtoSchema>
-export type LibrarySnapshotDto = z.infer<typeof librarySnapshotDtoSchema>
-export type ReadImageSidebarTreeRequestDto = z.infer<typeof readImageSidebarTreeRequestSchema>
-export type ReadImageSidebarTreeResponseDto = z.infer<typeof readImageSidebarTreeResponseSchema>
-export type ReadImagePageRequestDto = z.infer<typeof readImagePageRequestSchema>
-export type ReadImagePageResponseDto = z.infer<typeof readImagePageResponseSchema>
-export type ReadImageMetadataRequestDto = z.infer<typeof readImageMetadataRequestSchema>
-export type ReadImageMetadataResponseDto = z.infer<typeof readImageMetadataResponseSchema>
-export type ResolveMediaResourceRequestDto = z.infer<typeof resolveMediaResourceRequestSchema>
-export type ResolveMediaResourceResponseDto = z.infer<typeof resolveMediaResourceResponseSchema>
-export type WritePackageGradeRequestDto = z.infer<typeof writePackageGradeRequestSchema>
-export type WritePackageGradeResponseDto = z.infer<typeof writePackageGradeResponseSchema>
-export type SetImageHiddenRequestDto = z.infer<typeof setImageHiddenRequestSchema>
-export type SetImageHiddenResponseDto = z.infer<typeof setImageHiddenResponseSchema>
-export type DeleteImageItemsRequestDto = z.infer<typeof deleteImageItemsRequestSchema>
-export type DeleteImageItemsResponseDto = z.infer<typeof deleteImageItemsResponseSchema>
-export type DeleteSidebarNodesRequestDto = z.infer<typeof deleteSidebarNodesRequestSchema>
-export type DeleteSidebarNodesResponseDto = z.infer<typeof deleteSidebarNodesResponseSchema>
-export type MoveSidebarNodesRequestDto = z.infer<typeof moveSidebarNodesRequestSchema>
-export type MoveSidebarNodesResponseDto = z.infer<typeof moveSidebarNodesResponseSchema>
-export type RenameSidebarNodeRequestDto = z.infer<typeof renameSidebarNodeRequestSchema>
-export type RenameSidebarNodeResponseDto = z.infer<typeof renameSidebarNodeResponseSchema>
-export type ManageAdReviewSelectionScopeDto = z.infer<typeof manageAdReviewSelectionScopeSchema>
-export type ManageReviewModeDto = z.infer<typeof manageReviewModeSchema>
-export type ManageAdReviewDecisionSourceDto = z.infer<typeof manageAdReviewDecisionSourceSchema>
-export type ManageAdReviewImageSourceDto = z.infer<typeof manageAdReviewImageSourceSchema>
-export type ManageAdReviewTaskStatusDto = z.infer<typeof manageAdReviewTaskStatusSchema>
-export type ManageAdReviewAllStrategyDto = z.infer<typeof manageAdReviewAllStrategySchema>
-export type ManageAdReviewHeadTailStrategyDto = z.infer<typeof manageAdReviewHeadTailStrategySchema>
-export type ManageAdReviewStrategyDto = z.infer<typeof manageAdReviewStrategySchema>
-export type ManageAdReviewTaskExecutionDto = z.infer<typeof manageAdReviewTaskExecutionSchema>
-export type ManageAdReviewSourceDistributionDto = z.infer<typeof manageAdReviewSourceDistributionSchema>
-export type ManageAdReviewTaskAuditDto = z.infer<typeof manageAdReviewTaskAuditSchema>
-export type ManageAdReviewCandidateDto = z.infer<typeof manageAdReviewCandidateSchema>
-export type ManageAdReviewTaskDto = z.infer<typeof manageAdReviewTaskSchema>
-export type ManageCoverReviewDecisionSourceDto = ManageAdReviewDecisionSourceDto
-export type ManageCoverReviewImageSourceDto = ManageAdReviewImageSourceDto
-export type ManageCoverReviewTaskStatusDto = ManageAdReviewTaskStatusDto
-export type ManageCoverReviewStrategyDto = ManageAdReviewStrategyDto
-export type ManageCoverReviewTaskExecutionDto = ManageAdReviewTaskExecutionDto
-export type ManageCoverReviewSourceDistributionDto = ManageAdReviewSourceDistributionDto
-export type ManageCoverReviewTaskAuditDto = ManageAdReviewTaskAuditDto
-export type ManageCoverReviewCandidateDto = ManageAdReviewCandidateDto
-export type StartManageAdReviewRequestDto = z.infer<typeof startManageAdReviewRequestSchema>
-export type StartManageAdReviewResponseDto = z.infer<typeof startManageAdReviewResponseSchema>
-export type ReadManageAdReviewTaskRequestDto = z.infer<typeof readManageAdReviewTaskRequestSchema>
-export type ReadManageAdReviewTaskResponseDto = z.infer<typeof readManageAdReviewTaskResponseSchema>
-export type PauseManageAdReviewTaskRequestDto = z.infer<typeof pauseManageAdReviewTaskRequestSchema>
-export type PauseManageAdReviewTaskResponseDto = z.infer<typeof pauseManageAdReviewTaskResponseSchema>
-export type TestAdReviewVisionModelRequestDto = z.infer<typeof testAdReviewVisionModelRequestSchema>
-export type TestAdReviewVisionModelResponseDto = z.infer<typeof testAdReviewVisionModelResponseSchema>
-export type ConfirmManageAdReviewDeleteRequestDto = z.infer<typeof confirmManageAdReviewDeleteRequestSchema>
-export type ConfirmManageAdReviewDeleteResponseDto = z.infer<typeof confirmManageAdReviewDeleteResponseSchema>
-export type ManageCoverReviewTaskDto = z.infer<typeof manageCoverReviewTaskSchema>
-export type StartManageCoverReviewRequestDto = z.infer<typeof startManageCoverReviewRequestSchema>
-export type StartManageCoverReviewResponseDto = z.infer<typeof startManageCoverReviewResponseSchema>
-export type ReadManageCoverReviewTaskRequestDto = z.infer<typeof readManageCoverReviewTaskRequestSchema>
-export type ReadManageCoverReviewTaskResponseDto = z.infer<typeof readManageCoverReviewTaskResponseSchema>
-export type PauseManageCoverReviewTaskRequestDto = z.infer<typeof pauseManageCoverReviewTaskRequestSchema>
-export type PauseManageCoverReviewTaskResponseDto = z.infer<typeof pauseManageCoverReviewTaskResponseSchema>
-export type ConfirmManageCoverReviewHideRequestDto = z.infer<typeof confirmManageCoverReviewHideRequestSchema>
-export type ConfirmManageCoverReviewHideResponseDto = z.infer<typeof confirmManageCoverReviewHideResponseSchema>
-export type ManageSubtitleCleanupTaskStatusDto = z.infer<typeof manageSubtitleCleanupTaskStatusSchema>
-export type ManageSubtitleCleanupStageDto = z.infer<typeof manageSubtitleCleanupStageSchema>
-export type ManageSubtitleCleanupTaskDto = z.infer<typeof manageSubtitleCleanupTaskSchema>
-export type StartManageSubtitleCleanupRequestDto = z.infer<typeof startManageSubtitleCleanupRequestSchema>
-export type StartManageSubtitleCleanupResponseDto = z.infer<typeof startManageSubtitleCleanupResponseSchema>
-export type ReadManageSubtitleCleanupTaskRequestDto = z.infer<typeof readManageSubtitleCleanupTaskRequestSchema>
-export type ReadManageSubtitleCleanupTaskResponseDto = z.infer<typeof readManageSubtitleCleanupTaskResponseSchema>
-export type RunManageSubtitleCleanupRequestDto = z.infer<typeof runManageSubtitleCleanupRequestSchema>
-export type RunManageSubtitleCleanupResponseDto = z.infer<typeof runManageSubtitleCleanupResponseSchema>
-export type SaveManageSubtitleCleanupRequestDto = z.infer<typeof saveManageSubtitleCleanupRequestSchema>
-export type SaveManageSubtitleCleanupResponseDto = z.infer<typeof saveManageSubtitleCleanupResponseSchema>
-export type WritePackageMetadataRequestDto = z.infer<typeof writePackageMetadataRequestSchema>
-export type WritePackageMetadataResponseDto = z.infer<typeof writePackageMetadataResponseSchema>
-export type WritePackageExternalMetadataRequestDto = z.infer<typeof writePackageExternalMetadataRequestSchema>
-export type WritePackageExternalMetadataResponseDto = z.infer<typeof writePackageExternalMetadataResponseSchema>
-export type SearchExternalMetadataRequestDto = z.infer<typeof searchExternalMetadataRequestSchema>
-export type ExternalMetadataResultItemDto = z.infer<typeof externalMetadataResultItemSchema>
-export type SearchExternalMetadataDebugStepDto = z.infer<typeof searchExternalMetadataDebugStepSchema>
-export type SearchExternalMetadataDebugDto = z.infer<typeof searchExternalMetadataDebugSchema>
-export type SearchExternalMetadataResponseDto = z.infer<typeof searchExternalMetadataResponseSchema>
-export type WriteVideoMetadataRequestDto = z.infer<typeof writeVideoMetadataRequestSchema>
-export type WriteVideoMetadataResponseDto = z.infer<typeof writeVideoMetadataResponseSchema>
-export type WriteAudioMetadataRequestDto = z.infer<typeof writeAudioMetadataRequestSchema>
-export type WriteAudioMetadataResponseDto = z.infer<typeof writeAudioMetadataResponseSchema>
-export type SaveVideoCoverRequestDto = z.infer<typeof saveVideoCoverRequestSchema>
-export type SaveVideoCoverResponseDto = z.infer<typeof saveVideoCoverResponseSchema>
-export type ReadPlaylistResponseDto = z.infer<typeof readPlaylistResponseSchema>
-export type SubtitleFormatDto = z.infer<typeof subtitleFormatDtoSchema>
-export type SubtitleSourceDto = z.infer<typeof subtitleSourceDtoSchema>
-export type ListVideoSubtitlesRequestDto = z.infer<typeof listVideoSubtitlesRequestSchema>
-export type ListVideoSubtitlesResponseDto = z.infer<typeof listVideoSubtitlesResponseSchema>
-export type PrepareSubtitleTrackRequestDto = z.infer<typeof prepareSubtitleTrackRequestSchema>
-export type PrepareSubtitleTrackResponseDto = z.infer<typeof prepareSubtitleTrackResponseSchema>
-export type WritePlaylistRequestDto = z.infer<typeof writePlaylistRequestSchema>
-export type WritePlaylistResponseDto = z.infer<typeof writePlaylistResponseSchema>
-export type ImportTaskStatusDto = z.infer<typeof importTaskStatusSchema>
-export type ImportTaskSourceDto = z.infer<typeof importTaskSourceSchema>
-export type ImportTaskDto = z.infer<typeof importTaskDtoSchema>
-export type EnqueueImportTaskRequestDto = z.infer<typeof enqueueImportTaskRequestSchema>
-export type EnqueueImportTaskResponseDto = z.infer<typeof enqueueImportTaskResponseSchema>
-export type ReadImportTasksResponseDto = z.infer<typeof readImportTasksResponseSchema>
-export type RetryImportTaskRequestDto = z.infer<typeof retryImportTaskRequestSchema>
-export type RetryImportTaskResponseDto = z.infer<typeof retryImportTaskResponseSchema>
-export type PickImportPathsRequestDto = z.infer<typeof pickImportPathsRequestSchema>
-export type PickImportPathsResponseDto = z.infer<typeof pickImportPathsResponseSchema>
-export type FileDialogFilterDto = z.infer<typeof fileDialogFilterSchema>
-export type PickFilePathRequestDto = z.infer<typeof pickFilePathRequestSchema>
-export type PickFilePathResponseDto = z.infer<typeof pickFilePathResponseSchema>
-export type PickDirectoryPathRequestDto = z.infer<typeof pickDirectoryPathRequestSchema>
-export type PickDirectoryPathResponseDto = z.infer<typeof pickDirectoryPathResponseSchema>
-export type ReadClipboardImportPathsResponseDto = z.infer<typeof readClipboardImportPathsResponseSchema>
-export type ClearDatabaseResponseDto = z.infer<typeof clearDatabaseResponseSchema>
-export type ReadArchiveLoadStatusResponseDto = z.infer<typeof readArchiveLoadStatusResponseSchema>
-export type ReadAppStateRequestDto = z.infer<typeof readAppStateRequestSchema>
-export type ReadAppStateResponseDto = z.infer<typeof readAppStateResponseSchema>
-export type WriteAppStateRequestDto = z.infer<typeof writeAppStateRequestSchema>
-export type WriteAppStateResponseDto = z.infer<typeof writeAppStateResponseSchema>
-export type OpenExternalUrlRequestDto = z.infer<typeof openExternalUrlRequestSchema>
-export type OpenExternalUrlResponseDto = z.infer<typeof openExternalUrlResponseSchema>
-export type SubtitleEngineProviderDto = z.infer<typeof subtitleEngineProviderSchema>
-export type SubtitleEngineSourceDto = z.infer<typeof subtitleEngineSourceSchema>
-export type ReadSubtitleEngineStatusResponseDto = z.infer<typeof readSubtitleEngineStatusResponseSchema>
-export type SubtitleRemoteModelArtifactDto = z.infer<typeof subtitleRemoteModelArtifactSchema>
-export type SubtitleRemoteModelDto = z.infer<typeof subtitleRemoteModelSchema>
-export type ListSubtitleRemoteModelsResponseDto = z.infer<typeof listSubtitleRemoteModelsResponseSchema>
-export type SubtitleLocalModelDto = z.infer<typeof subtitleLocalModelSchema>
-export type ListSubtitleLocalModelsRequestDto = z.infer<typeof listSubtitleLocalModelsRequestSchema>
-export type ListSubtitleLocalModelsResponseDto = z.infer<typeof listSubtitleLocalModelsResponseSchema>
-export type SubtitleModelDownloadStatusDto = z.infer<typeof subtitleModelDownloadStatusSchema>
-export type SubtitleModelDownloadTaskDto = z.infer<typeof subtitleModelDownloadTaskSchema>
-export type StartSubtitleModelDownloadRequestDto = z.infer<typeof startSubtitleModelDownloadRequestSchema>
-export type StartSubtitleModelDownloadResponseDto = z.infer<typeof startSubtitleModelDownloadResponseSchema>
-export type CancelSubtitleModelDownloadRequestDto = z.infer<typeof cancelSubtitleModelDownloadRequestSchema>
-export type CancelSubtitleModelDownloadResponseDto = z.infer<typeof cancelSubtitleModelDownloadResponseSchema>
-export type ReadSubtitleModelDownloadsResponseDto = z.infer<typeof readSubtitleModelDownloadsResponseSchema>
-export type ClearSubtitleLocalModelRequestDto = z.infer<typeof clearSubtitleLocalModelRequestSchema>
-export type ClearSubtitleLocalModelResponseDto = z.infer<typeof clearSubtitleLocalModelResponseSchema>
-export type SubtitleSessionProviderPreferenceDto = z.infer<typeof subtitleSessionProviderPreferenceSchema>
-export type SubtitleSessionProviderDto = z.infer<typeof subtitleSessionProviderSchema>
-export type SubtitleCueDto = z.infer<typeof subtitleCueSchema>
-export type SubtitleSessionEventDto = z.infer<typeof subtitleSessionEventSchema>
-export type StartSubtitleSessionRequestDto = z.infer<typeof startSubtitleSessionRequestSchema>
-export type StartSubtitleSessionResponseDto = z.infer<typeof startSubtitleSessionResponseSchema>
-export type StopSubtitleSessionRequestDto = z.infer<typeof stopSubtitleSessionRequestSchema>
-export type StopSubtitleSessionResponseDto = z.infer<typeof stopSubtitleSessionResponseSchema>
-export type ResetSubtitleSessionRequestDto = z.infer<typeof resetSubtitleSessionRequestSchema>
-export type ResetSubtitleSessionResponseDto = z.infer<typeof resetSubtitleSessionResponseSchema>
-export type FlushSubtitleSessionResponseDto = z.infer<typeof flushSubtitleSessionResponseSchema>
-export type PushSubtitleAudioRequestDto = z.infer<typeof pushSubtitleAudioRequestSchema>
-export type PushSubtitleAudioResponseDto = z.infer<typeof pushSubtitleAudioResponseSchema>
-export type RuntimeCapabilityStatusDto = z.infer<typeof runtimeCapabilityStatusSchema>
-export type RuntimeCapabilityMatrixItemDto = z.infer<typeof runtimeCapabilityMatrixItemSchema>
-export type ReadRuntimeCapabilitiesResponseDto = z.infer<typeof readRuntimeCapabilitiesResponseSchema>
-export type RuntimeMediaCapabilityHintDto = z.infer<typeof runtimeMediaCapabilityHintSchema>
-export type ReadRuntimeInfoResponseDto = z.infer<typeof readRuntimeInfoResponseSchema>
-export type SetRuntimeStoragePathsRequestDto = z.infer<typeof setRuntimeStoragePathsRequestSchema>
-export type SetRuntimeStoragePathsResponseDto = z.infer<typeof setRuntimeStoragePathsResponseSchema>
-export type MediaAccessAuditResponseDto = z.infer<typeof mediaAccessAuditResponseSchema>
+export type * from "./backend.types";

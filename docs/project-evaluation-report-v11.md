@@ -257,6 +257,7 @@
 | P2-7.2 第四个去重落地 | ✅ 已完成 | `src/features/backend/repository/realRepository.test.ts` 提取 `createCoreBackend` 与通用 task fixture，去除大段重复 IPC mock |
 | P2-7.3 IPC handler 工厂化 | ✅ 已完成 | `electron/registerBackendIpcHandlers.ts` 落地 `registerIpcQuery/registerIpcCommand`，批量替换重复 schema parse + service 转发模板 |
 | P2-7.4 重复率门禁 | ✅ 已完成 | 新增 `.jscpd.json`（threshold=5，忽略测试文件）并接入 `.github/workflows/ci.yml` |
+| P2-8 超大文件拆分 | ✅ 已完成 | 五个超大文件已拆分落地（入口文件分层 + 类型拆分 + helper/实现下沉），并完成格式化/构建验证 |
 
 ### 0.1 处理建议 Todo Checklist（按第 13 节顺序维护）
 
@@ -270,7 +271,7 @@
 - [x] P2-7.2 重复块分类治理（IPC/Schema/UI/DB/Tests，测试侧已完成 ImageMainSection/SidebarPanel/ThemeParameterPanel/realRepository 四处）
 - [x] P2-7.3 IPC handler 工厂化落地
 - [x] P2-7.4 设置 jscpd 门禁阈值并接入 CI
-- [ ] P2-8 拆分超大文件（每次 1 个）
+- [x] P2-8 拆分超大文件（五个目标文件已完成拆分）
 - [ ] P2-9 major 依赖升级（独立分支）
 - [ ] 流程治理：CI 门禁与评估基线固化
 

@@ -4,7 +4,6 @@ import { buildImageMainSectionProps } from "./buildImageMainSectionProps";
 import { buildMainFooter } from "./buildMainFooter";
 import { buildManagementPanelProps } from "./buildManagementPanelProps";
 import { buildMetadataManagementPanelProps } from "./buildMetadataManagementPanelProps";
-import { buildMetadataPanelProps } from "./buildMetadataPanelProps";
 import { buildSearchPanelProps } from "./buildSearchPanelProps";
 import { buildSidebarPanelProps } from "./buildSidebarPanelProps";
 import { buildMusicMainSectionProps } from "./buildMusicMainSectionProps";
@@ -37,6 +36,7 @@ import {
   createSaveParsedMetadata,
 } from "./workspaceMetadataActions";
 import { createAdReviewSettingHandlers } from "./workspaceAdReviewHandlers";
+import { buildWorkspaceMetadataPanelProps } from "./workspaceMetadataPanelProps";
 import type { UseAppWorkspacePropsParams } from "./useAppWorkspaceProps.types";
 import { useI18n } from "../../i18n/useI18n";
 
@@ -219,7 +219,6 @@ export function useAppWorkspaceProps({
   collapseSidebar,
   applyCurrentRootFromSelection,
   toggleSidebarNodeChecked,
-  checkSidebarNode,
   setAudioPlaylistIds,
   requestMusicPlay,
   musicBookletBindings,
@@ -296,12 +295,12 @@ export function useAppWorkspaceProps({
   ]);
 
   const sidebarVideoQueueIds = useMemo(() => {
-    const orderedByTree = collectVideoIdsBySidebarOrder(videoTreeForSidebar)
+    const orderedByTree = collectVideoIdsBySidebarOrder(videoTreeForSidebar);
     if (orderedByTree.length > 0) {
-      return orderedByTree
+      return orderedByTree;
     }
-    return videosForSidebar.map((video) => video.id)
-  }, [videoTreeForSidebar, videosForSidebar])
+    return videosForSidebar.map((video) => video.id);
+  }, [videoTreeForSidebar, videosForSidebar]);
 
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
@@ -354,8 +353,8 @@ export function useAppWorkspaceProps({
     selectVideoFromBrowser: (videoId, options) => {
       selectVideoFromBrowser(videoId, {
         ...options,
-        queueSource: options?.queueSource ?? 'sidebar',
-      })
+        queueSource: options?.queueSource ?? "sidebar",
+      });
     },
     setSelectedAudioId,
     collapseSidebar,
@@ -693,15 +692,17 @@ export function useAppWorkspaceProps({
     ),
     imageSourceNodeIdMap: normalImageSourceNodeIdMap,
   });
-  const returnMusicAudioId = focusedAudio?.id ??
+  const returnMusicAudioId =
+    focusedAudio?.id ??
     (selectedAudioId && audioByIdEffective.has(selectedAudioId)
       ? selectedAudioId
       : null);
-  const currentImageSourceId = metadataImagePackageEffective?.id ?? selectedPackageId;
+  const currentImageSourceId =
+    metadataImagePackageEffective?.id ?? selectedPackageId;
   const imageInMusicBookletOrCoverSource = Boolean(
     currentImageSourceId &&
-      (currentImageSourceId === openMusicCoverSourceId ||
-        currentImageSourceId === openMusicBookletSourceId),
+    (currentImageSourceId === openMusicCoverSourceId ||
+      currentImageSourceId === openMusicBookletSourceId),
   );
 
   const {
@@ -717,17 +718,17 @@ export function useAppWorkspaceProps({
   } = createWorkspaceJumpActions({
     applyQuickFeatureSearch: (patch) => applyQuickFeatureSearch(patch),
     updateSettings: (patch) => appSettings.updateSettings(patch),
-      setMetadataTab,
-      setSelectedPackageId,
-      setSelectedAudioId,
-      selectVideoFromBrowser,
-      jumpTargetVideoId: jumpTargetVideo?.id ?? null,
-      jumpTargetImageId: jumpTargetImage?.id ?? null,
-      jumpTargetAudioFromImageId: jumpTargetAudioFromImage?.id ?? null,
-      jumpTargetAudioFromVideoId: jumpTargetAudioFromVideo?.id ?? null,
-      jumpTargetImageFromAudioId: jumpTargetImageFromAudio?.id ?? null,
-      jumpTargetVideoFromAudioId: jumpTargetVideoFromAudio?.id ?? null,
-      returnMusicAudioId,
+    setMetadataTab,
+    setSelectedPackageId,
+    setSelectedAudioId,
+    selectVideoFromBrowser,
+    jumpTargetVideoId: jumpTargetVideo?.id ?? null,
+    jumpTargetImageId: jumpTargetImage?.id ?? null,
+    jumpTargetAudioFromImageId: jumpTargetAudioFromImage?.id ?? null,
+    jumpTargetAudioFromVideoId: jumpTargetAudioFromVideo?.id ?? null,
+    jumpTargetImageFromAudioId: jumpTargetImageFromAudio?.id ?? null,
+    jumpTargetVideoFromAudioId: jumpTargetVideoFromAudio?.id ?? null,
+    returnMusicAudioId,
     imageSeriesId,
     videoSeriesId,
     audioSeriesId,
@@ -798,7 +799,8 @@ export function useAppWorkspaceProps({
     setImageFocus,
     canJumpToAnimation: Boolean(jumpTargetVideo),
     canJumpToMusic: Boolean(jumpTargetAudioFromImage),
-    canJumpToMusicFromBooklet: imageInMusicBookletOrCoverSource && Boolean(returnMusicAudioId),
+    canJumpToMusicFromBooklet:
+      imageInMusicBookletOrCoverSource && Boolean(returnMusicAudioId),
     onJumpToAnimation: jumpToAnimation,
     onJumpToMusic: jumpImageToMusic,
     onJumpToMusicFromBooklet: jumpImageBookletToMusic,
@@ -833,10 +835,16 @@ export function useAppWorkspaceProps({
     },
     onClearManageSelection: clearAllSelections,
     onThumbnailScaleLevelChange: (level) => {
-      const targetLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(level)));
+      const targetLevel = Math.max(
+        1,
+        Math.min(thumbnailScaleLevelCount, Math.round(level)),
+      );
       const nextNormalizedScale = Math.max(
         1,
-        Math.min(thumbnailScaleLevelCount, thumbnailScaleLevelCount - targetLevel + 1),
+        Math.min(
+          thumbnailScaleLevelCount,
+          thumbnailScaleLevelCount - targetLevel + 1,
+        ),
       );
 
       if (nextNormalizedScale === appSettings.thumbnailScale) {
@@ -912,8 +920,8 @@ export function useAppWorkspaceProps({
       sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
     canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
     canManageAddToPlaylist: sidebarCheckedNodeIds.some((nodeId) => {
-      const node = sidebarNodeById.get(nodeId)
-      return Boolean(node?.videoId)
+      const node = sidebarNodeById.get(nodeId);
+      return Boolean(node?.videoId);
     }),
     canManageHide: mode === "image" && imageCheckedIds.length > 0,
     canManageUnhide: mode === "image" && imageCheckedIds.length > 0,
@@ -931,17 +939,17 @@ export function useAppWorkspaceProps({
             .map((nodeId) => sidebarNodeById.get(nodeId)?.videoId ?? null)
             .filter((videoId): videoId is string => Boolean(videoId)),
         ),
-      )
+      );
       if (checkedVideoIds.length === 0) {
-        return
+        return;
       }
       setPlaylistIds((previous) => {
-        const next = new Set(previous)
+        const next = new Set(previous);
         for (const videoId of checkedVideoIds) {
-          next.add(videoId)
+          next.add(videoId);
         }
-        return Array.from(next)
-      })
+        return Array.from(next);
+      });
     },
     onManageHide: () => {
       void runManageHideAction(true);
@@ -994,10 +1002,10 @@ export function useAppWorkspaceProps({
     runSubtitleCleanup: mediaRepository.runManageSubtitleCleanup,
     saveSubtitleCleanup: mediaRepository.saveManageSubtitleCleanup,
     onSubtitleCleanupLlmEndpointChange: (value) => {
-      appSettings.updateSettings({ subtitleCleanupLlmEndpoint: value })
+      appSettings.updateSettings({ subtitleCleanupLlmEndpoint: value });
     },
     onSubtitleCleanupLlmModelChange: (value) => {
-      appSettings.updateSettings({ subtitleCleanupLlmModel: value })
+      appSettings.updateSettings({ subtitleCleanupLlmModel: value });
     },
     setVideoPlaying,
     canJumpToManga: Boolean(jumpTargetImage),
@@ -1058,7 +1066,8 @@ export function useAppWorkspaceProps({
     focusedAudioSrc,
     audioUrlById,
     mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
-    fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
+    fullscreenVideoControlsMaxWidth:
+      appSettings.fullscreenVideoControlsMaxWidth,
     selectedAudioId,
     musicLoopMode,
     musicLoopModeLabels: {
@@ -1086,199 +1095,70 @@ export function useAppWorkspaceProps({
     updateSettings: appSettings.updateSettings,
   });
 
-  const applyMetadataFeatureSearch = (patch: {
-    workTitle?: string;
-    circle?: string;
-    author?: string;
-    tag?: string;
-  }) => {
-    applyQuickFeatureSearch(patch);
-  };
-
-  const metadataPanelProps = buildMetadataPanelProps({
+  const metadataPanelProps = buildWorkspaceMetadataPanelProps({
+    appSettings,
+    manageAdReview,
+    metadataWriteBindings,
+    musicBookletState,
+    musicBookletBindings,
     mode,
     manageMode,
-    searchModeActive: vectorMode && !manageMode && !metadataManageMode,
-    featureResultCount:
-      mode === "video"
-        ? videosForSidebarCount
-        : mode === "music"
-          ? audiosForSidebarCount
-          : scopedImageSourcesEffective.length,
+    vectorMode,
+    metadataManageMode,
+    videosForSidebarCount,
+    audiosForSidebarCount,
+    scopedImageSourcesEffective,
     featureNameQuery,
-    onFeatureNameQueryChange: setFeatureNameQuery,
+    setFeatureNameQuery,
     featureWorkTitleQuery,
-    onFeatureWorkTitleQueryChange: setFeatureWorkTitleQuery,
+    setFeatureWorkTitleQuery,
     featureCircleQuery,
-    onFeatureCircleQueryChange: setFeatureCircleQuery,
+    setFeatureCircleQuery,
     featureAuthorQuery,
-    onFeatureAuthorQueryChange: setFeatureAuthorQuery,
+    setFeatureAuthorQuery,
     featureCircleOptions,
     featureAuthorOptions,
-    featureTagOptions: featureTagOptionsEffective,
+    featureTagOptionsEffective,
     featureTagPickerOpen,
-    onToggleFeatureTagPicker: () => setFeatureTagPickerOpen((value) => !value),
+    setFeatureTagPickerOpen,
     featureTags,
-    onSetFeatureTags: (tags) => {
-      const normalized = Array.from(
-        new Set(tags.map((tag) => tag.trim()).filter(Boolean)),
-      );
-      setFeatureTags(normalized);
-    },
-    onClearFeatureTags: () => setFeatureTags([]),
+    setFeatureTags,
     featureGradeFilter,
-    onFeatureGradeFilterChange: setFeatureGradeFilter,
-    adReviewFeatureVisible: appSettings.adReviewVisionVerified,
+    setFeatureGradeFilter,
     adReviewPanelOpen,
-    manageReviewMode: manageAdReview.reviewMode,
-    canSwitchManageReviewMode: manageAdReview.supportsCoverReview,
-    canExecuteAdReview:
-      (activeSelectionScope === "sidebar" &&
-        sidebarCheckedNodeIds.length > 0) ||
-      imageCheckedIds.length > 0,
-    adReviewPending: manageAdReview.pending,
-    adReviewDeletePending: manageAdReview.deletePending,
-    adReviewTask: manageAdReview.task,
-    adReviewQueueTasks: manageAdReview.queueTasks,
-    adReviewActiveTaskId: manageAdReview.activeTaskId,
-    adReviewHideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
-    hasCheckedAdReviewCandidates: manageAdReview.hasCheckedCandidateSelection,
-    selectedAdReviewCandidateCount: manageAdReview.selectedCandidateCount,
+    activeSelectionScope,
+    sidebarCheckedNodeIds,
+    imageCheckedIds,
     adReviewFocusTaskId,
-    adReviewStrategyMode: appSettings.adReviewStrategyMode,
-    adReviewMaxConcurrency: appSettings.adReviewMaxConcurrency,
-    adReviewHeadN: appSettings.adReviewHeadN,
-    adReviewTailN: appSettings.adReviewTailN,
-    adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
-    onStartAdReview: async (options) => {
-      const startedTask = await manageAdReview.startManageAdReview(options);
-      if (!startedTask) {
-        return;
-      }
-      setAdReviewFocusTaskId(startedTask.task_id);
-      setAdReviewPageIndex(0);
-    },
-    onPauseAdReview: () => {
-      void manageAdReview.pauseManageAdReview();
-    },
-    onToggleHideUncheckedNonChecked:
-      manageAdReview.toggleHideUncheckedNonChecked,
-    onSelectAdReviewTask: (taskId) => {
-      manageAdReview.selectTask(taskId);
-      setAdReviewPageIndex(0);
-    },
-    onRemoveAdReviewTask: (taskId) => {
-      void manageAdReview.removeTask(taskId);
-    },
-    onDeleteSelectedAdReviewCandidates: () => {
-      void manageAdReview.confirmDeleteSelectedCandidates();
-    },
-    onToggleAdReviewFocus: () => {
-      if (manageAdReview.deletePending) {
-        return;
-      }
-      const currentTask = manageAdReview.task;
-      if (!currentTask) {
-        setAdReviewFocusTaskId(null);
-        return;
-      }
-
-      const canFocusStatus =
-        currentTask.status === "running" ||
-        currentTask.status === "paused" ||
-        currentTask.status === "review";
-      if (!canFocusStatus || currentTask.candidates.length === 0) {
-        setAdReviewFocusTaskId(null);
-        setAdReviewPageIndex(0);
-        return;
-      }
-
-      setAdReviewFocusTaskId((previous) => {
-        setAdReviewPageIndex(0);
-        return previous === currentTask.task_id ? null : currentTask.task_id;
-      });
-    },
-    ...createAdReviewSettingHandlers({
-      updateSettings: appSettings.updateSettings,
-    }),
-    onManageReviewModeChange: manageAdReview.setReviewMode,
-    onDismissAdReviewTask: manageAdReview.dismissTask,
-    metadataCollapsed: appSettings.metadataCollapsed,
-    metadataRatio: appSettings.metadataRatio,
-    hasImageFocus: imageFocusActive,
-    focusedImage: metadataImageEffective,
-    focusedImageSrc: metadataImageSrc,
-    focusedImagePackage: metadataImagePackageEffective,
-    currentGrade: currentGradeEffective,
-    currentVideoGrade: focusedVideoEffective?.grade ?? null,
-    metadataPending: metadataWriteBindings.metadataPending,
-    editable: metadataManageMode,
-    focusedVideo: focusedVideoEffective,
+    setAdReviewFocusTaskId,
+    setAdReviewPageIndex,
+    imageFocusActive,
+    metadataImageEffective,
+    metadataImageSrc,
+    metadataImagePackageEffective,
+    currentGradeEffective,
+    focusedVideoEffective,
     focusedAudio,
-    audioPlaylistIds: metadataMusicPlaylistIds,
+    metadataMusicPlaylistIds,
     selectedAudioId,
-    audioById: audioByIdEffective,
-    musicBookletAlbumRootPath: musicBookletState.albumRootPath,
-    musicBookletCandidates: musicBookletState.candidates.map((candidate) => ({
-      sourceId: candidate.sourceId,
-      label: candidate.label,
-      imageCount: candidate.imageCount,
-    })),
-    musicCoverBindingValue: musicBookletState.coverBindingValue,
-    musicBookletBindingValue: musicBookletState.bookletBindingValue,
-    canOpenMusicCover: Boolean(openMusicCoverSourceId),
-    canOpenMusicBooklet: Boolean(openMusicBookletSourceId),
+    audioByIdEffective,
+    openMusicCoverSourceId,
+    openMusicBookletSourceId,
     metadataTab,
     playlistIds,
     selectedVideoId,
     dragVideoId,
-    videoById: videoByIdEffective,
-    updateSettings: appSettings.updateSettings,
-    onGradeChange: metadataWriteBindings.applyPackageGrade,
-    onSavePackageMetadata: metadataWriteBindings.applyPackageMetadata,
-    onSavePackageParsedMetadata: saveParsedMetadata,
-    onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
-    onSaveAudioMetadata: metadataWriteBindings.applyAudioMetadata,
-    onSearchByWorkTitle: (value) => {
-      applyMetadataFeatureSearch({ workTitle: value });
-    },
-    onSearchByCircle: (value) => {
-      applyMetadataFeatureSearch({ circle: value });
-    },
-    onSearchByAuthor: (value) => {
-      applyMetadataFeatureSearch({ author: value });
-    },
-    onSearchByTag: (value) => {
-      applyMetadataFeatureSearch({ tag: value });
-    },
-    onMetadataTabChange: setMetadataTab,
-    onSelectVideo: (videoId) => {
-      selectVideoFromBrowser(videoId, { queueSource: 'playlist' })
-    },
-    onSelectVideoAndPlay: (videoId) => {
-      selectVideoFromBrowser(videoId, { play: true, queueSource: 'playlist' })
-    },
-    onSelectAudio: (audioId) => {
-      setSelectedAudioId(audioId);
-      appSettings.updateSettings({ sidebarFocus: "main" });
-    },
-    onSelectAudioAndPlay: (audioId) => {
-      setSelectedAudioId(audioId);
-      requestMusicPlay();
-      appSettings.updateSettings({ sidebarFocus: "main" });
-    },
-    onMusicCoverBindingChange: updateMusicCoverBinding,
-    onMusicBookletBindingChange: updateMusicBookletBinding,
-    onOpenMusicCover: jumpMusicToCover,
-    onOpenMusicBooklet: jumpMusicToBooklet,
-    onResetMusicBookletBinding: () => {
-      if (!musicBookletState.albumRootPath) {
-        return;
-      }
-      musicBookletBindings.resetBindingOverride(
-        musicBookletState.albumRootPath,
-      );
-    },
+    videoByIdEffective,
+    saveParsedMetadata,
+    applyQuickFeatureSearch,
+    setMetadataTab,
+    selectVideoFromBrowser,
+    setSelectedAudioId,
+    requestMusicPlay,
+    updateMusicCoverBinding,
+    updateMusicBookletBinding,
+    jumpMusicToCover,
+    jumpMusicToBooklet,
     setPlaylistIds,
     setDragVideoId,
   });
