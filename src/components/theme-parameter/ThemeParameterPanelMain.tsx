@@ -9,7 +9,7 @@ import { formatValue } from "./themeParameterUtils";
 import type {
   ThemeParameterDefinition,
   ThemeParameterValues,
-} from "../ThemeParameterPanel";
+} from "./themeParameterDefinitions";
 
 interface ThemeParameterPanelMainProps {
   t: (key: string, values?: Record<string, string | number>) => string;

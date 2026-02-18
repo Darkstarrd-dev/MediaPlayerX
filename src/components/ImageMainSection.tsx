@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -131,7 +132,7 @@ function ImageMainSection({
     }
   };
 
-  const syncFocusedThumbTransformOrigin = () => {
+  const syncFocusedThumbTransformOrigin = useCallback(() => {
     const container = gridRef.current;
     if (!container) {
       return;
@@ -185,9 +186,9 @@ function ImageMainSection({
       lastOriginElRef.current.style.removeProperty("--mpx-thumb-origin-y");
     }
     lastOriginElRef.current = focusedThumb;
-  };
+  }, [gridRef]);
 
-  const scheduleFocusedThumbOriginSync = () => {
+  const scheduleFocusedThumbOriginSync = useCallback(() => {
     if (thumbOriginRafRef.current != null) {
       return;
     }
@@ -195,7 +196,7 @@ function ImageMainSection({
       thumbOriginRafRef.current = null;
       syncFocusedThumbTransformOrigin();
     });
-  };
+  }, [syncFocusedThumbTransformOrigin]);
   const { t } = useI18n();
   void _adReviewScopeImageIds;
   void _adReviewLlmReviewedImageIds;
@@ -314,7 +315,7 @@ function ImageMainSection({
       });
     }
     scheduleFocusedThumbOriginSync();
-  }, [focusedRef?.packageId, focusedRef?.imageIndex]);
+  }, [focusedRef?.packageId, focusedRef?.imageIndex, gridRef, scheduleFocusedThumbOriginSync]);
 
   useEffect(() => {
     if (IS_TEST_MODE) {
@@ -339,14 +340,14 @@ function ImageMainSection({
         thumbOriginRafRef.current = null;
       }
     };
-  }, [nodeBrowseMode, showNamesOnly]);
+  }, [nodeBrowseMode, showNamesOnly, gridRef, scheduleFocusedThumbOriginSync]);
 
   useEffect(() => {
     if (IS_TEST_MODE) {
       return;
     }
     scheduleFocusedThumbOriginSync();
-  }, [focusedRef?.packageId, focusedRef?.imageIndex]);
+  }, [focusedRef?.packageId, focusedRef?.imageIndex, scheduleFocusedThumbOriginSync]);
 
   const clearScalePopoverHideTimer = () => {
     if (scalePopoverHideTimerRef.current != null) {
@@ -610,6 +611,7 @@ function ImageMainSection({
       imageIndex: number;
       locatorDto: ReturnType<typeof mapMediaLocatorToDto>;
     }> = [];
+    const loadingSet = nameListDimsLoadingRef.current;
     const startIndex = Math.max(0, nameListRange.start);
     const endIndex = Math.min(
       visibleImageRefs.length,
@@ -630,11 +632,11 @@ function ImageMainSection({
         continue;
       }
 
-      if (nameListDimsLoadingRef.current.has(image.id)) {
+      if (loadingSet.has(image.id)) {
         continue;
       }
 
-      nameListDimsLoadingRef.current.add(image.id);
+      loadingSet.add(image.id);
       itemsToLoad.push({
         imageId: image.id,
         packageId: ref.packageId,
@@ -714,7 +716,7 @@ function ImageMainSection({
           } catch {
             // ignore
           } finally {
-            nameListDimsLoadingRef.current.delete(next.imageId);
+            loadingSet.delete(next.imageId);
           }
         }
       },
@@ -724,7 +726,7 @@ function ImageMainSection({
     return () => {
       cancelled = true;
       for (const item of itemsToLoad) {
-        nameListDimsLoadingRef.current.delete(item.imageId);
+        loadingSet.delete(item.imageId);
       }
     };
   }, [

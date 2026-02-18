@@ -78,7 +78,7 @@ function SubtitleCleanupPanel({
       return
     }
     setCleanedDraft(task.cleaned_subtitle_text)
-  }, [task?.task_id, task?.cleaned_subtitle_text])
+  }, [task])
 
   useEffect(() => {
     if (!open || !task || task.status !== 'running' || !readSubtitleCleanupTask) {

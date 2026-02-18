@@ -246,7 +246,7 @@ export function MetadataImageEditor({
     return () => {
       controller.abort()
     }
-  }, [focusedImage?.id])
+  }, [focusedImage])
 
   return (
     <div className={contentClassName}>

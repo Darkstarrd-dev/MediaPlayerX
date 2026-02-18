@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import type * as Backend from "./backend";
+import type * as Backend from "./backend.schemas";
 
 type Infer<T extends z.ZodTypeAny> = z.infer<T>;
 

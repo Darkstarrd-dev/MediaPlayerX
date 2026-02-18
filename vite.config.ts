@@ -33,12 +33,11 @@ export default defineConfig(({ command }) => ({
             return "ui-metadata";
           }
 
-          if (normalizedId.includes("/src/components/fullscreen/")) {
-            return "ui-fullscreen";
-          }
-
-          if (normalizedId.includes("/src/components/MusicMainSection")) {
-            return "ui-music-main";
+          if (
+            normalizedId.includes("/src/components/fullscreen/") ||
+            normalizedId.includes("/src/components/MusicMainSection")
+          ) {
+            return "ui-media-playback";
           }
 
           if (!normalizedId.includes("/node_modules/")) {

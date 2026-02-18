@@ -259,18 +259,24 @@ function FullscreenLayer({
 
   const fallbackViewportWidth = fullscreenViewport.width
   const fallbackViewportHeight = fullscreenViewport.height
-  const effectiveImageViewportSize =
-    fullscreenDisplay === 'image-only'
-      ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
-      : (imageViewportSize.width <= 64 || imageViewportSize.height <= 64)
-        ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
-        : imageViewportSize
-  const effectiveVideoViewportSize =
-    fullscreenDisplay === 'video-only'
-      ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
-      : (videoViewportSize.width <= 64 || videoViewportSize.height <= 64)
-        ? { width: fallbackViewportWidth, height: fallbackViewportHeight }
-        : videoViewportSize
+  const effectiveImageViewportSize = useMemo(() => {
+    if (fullscreenDisplay === 'image-only') {
+      return { width: fallbackViewportWidth, height: fallbackViewportHeight }
+    }
+    if (imageViewportSize.width <= 64 || imageViewportSize.height <= 64) {
+      return { width: fallbackViewportWidth, height: fallbackViewportHeight }
+    }
+    return imageViewportSize
+  }, [fallbackViewportHeight, fallbackViewportWidth, fullscreenDisplay, imageViewportSize])
+  const effectiveVideoViewportSize = useMemo(() => {
+    if (fullscreenDisplay === 'video-only') {
+      return { width: fallbackViewportWidth, height: fallbackViewportHeight }
+    }
+    if (videoViewportSize.width <= 64 || videoViewportSize.height <= 64) {
+      return { width: fallbackViewportWidth, height: fallbackViewportHeight }
+    }
+    return videoViewportSize
+  }, [fallbackViewportHeight, fallbackViewportWidth, fullscreenDisplay, videoViewportSize])
 
   const imageGeometry = useMemo(
     () => computeMediaGeometry(effectiveImageViewportSize, imageAspect, imageTransform.zoom),

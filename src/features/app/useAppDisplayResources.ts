@@ -648,26 +648,85 @@ export function useAppDisplayResources({
   const subtitleSelectionByVideoId = appSettings.subtitleSelectionByVideoId;
   const subtitleSelectionByVideoIdRef = useRef(subtitleSelectionByVideoId);
 
+  const selectSubtitleById = useCallback(
+    async (subtitleId: string, sourceOptions?: VideoSubtitleOption[]) => {
+      const option = (sourceOptions ?? subtitleOptions).find((item) => item.id === subtitleId);
+      if (!option) {
+        return;
+      }
+
+      setSubtitleLoading(true);
+      setSubtitleMessage(null);
+      try {
+        let locator = option.locator;
+        if (option.format !== "vtt") {
+          if (!mediaRepository.prepareSubtitleTrack) {
+            throw new Error(t("ui.media.subtitleConverterUnsupported"));
+          }
+          const prepared = await mediaRepository.prepareSubtitleTrack({
+            subtitle_id: option.id,
+            format: option.format,
+            locator: toLocatorDto(locator),
+          });
+          locator =
+            prepared.locator.kind === "filesystem"
+              ? {
+                  kind: "filesystem",
+                  absolutePath: prepared.locator.absolute_path,
+                  extension: prepared.locator.extension,
+                  mediaType: prepared.locator.media_type,
+                  mimeType: prepared.locator.mime_type,
+                }
+              : {
+                  kind: "archive-entry",
+                  archivePath: prepared.locator.archive_path,
+                  archiveFormat: prepared.locator.archive_format,
+                  entryName: prepared.locator.entry_name,
+                  extension: prepared.locator.extension,
+                  mediaType: prepared.locator.media_type,
+                  mimeType: prepared.locator.mime_type,
+                };
+        }
+
+        setManualSubtitleOverride(true);
+        setSelectedSubtitleId(option.id);
+        setSelectedSubtitleLocator(locator);
+        setSubtitleVisible(true);
+        if (focusedVideoEffective?.id) {
+          const currentMap = subtitleSelectionByVideoIdRef.current;
+          const current = currentMap[focusedVideoEffective.id] ?? "";
+          if (current !== option.id) {
+            appSettings.updateSettings({
+              subtitleSelectionByVideoId: {
+                ...currentMap,
+                [focusedVideoEffective.id]: option.id,
+              },
+            });
+          }
+        }
+      } catch (error: unknown) {
+        setSubtitleMessage(
+          t("ui.media.subtitleSelectFailed", {
+            message: toErrorDetailWithCode(error, t),
+          }),
+        );
+        setSubtitleVisible(false);
+      } finally {
+        setSubtitleLoading(false);
+      }
+    },
+    [
+      appSettings,
+      focusedVideoEffective?.id,
+      mediaRepository,
+      subtitleOptions,
+      t,
+    ],
+  );
+
   useEffect(() => {
     subtitleSelectionByVideoIdRef.current = subtitleSelectionByVideoId;
   }, [subtitleSelectionByVideoId]);
-
-  const persistSubtitleSelection = useCallback(
-    (videoId: string, subtitleId: string) => {
-      const currentMap = subtitleSelectionByVideoIdRef.current;
-      const current = currentMap[videoId] ?? "";
-      if (current === subtitleId) {
-        return;
-      }
-      appSettings.updateSettings({
-        subtitleSelectionByVideoId: {
-          ...currentMap,
-          [videoId]: subtitleId,
-        },
-      });
-    },
-    [appSettings],
-  );
 
   const clearPersistedSubtitleSelection = useCallback(
     (videoId: string) => {
@@ -841,6 +900,7 @@ export function useAppDisplayResources({
     subtitleReloadNonce,
     syncMediaRepository,
     clearPersistedSubtitleSelection,
+    selectSubtitleById,
     t,
   ]);
 
@@ -901,67 +961,6 @@ export function useAppDisplayResources({
     syncMediaRepository,
     t,
   ]);
-
-  const selectSubtitleById = async (
-    subtitleId: string,
-    sourceOptions?: VideoSubtitleOption[],
-  ) => {
-    const option = (sourceOptions ?? subtitleOptions).find((item) => item.id === subtitleId);
-    if (!option) {
-      return;
-    }
-
-    setSubtitleLoading(true);
-    setSubtitleMessage(null);
-    try {
-      let locator = option.locator;
-      if (option.format !== "vtt") {
-        if (!mediaRepository.prepareSubtitleTrack) {
-          throw new Error(t("ui.media.subtitleConverterUnsupported"));
-        }
-        const prepared = await mediaRepository.prepareSubtitleTrack({
-          subtitle_id: option.id,
-          format: option.format,
-          locator: toLocatorDto(locator),
-        });
-        locator =
-          prepared.locator.kind === "filesystem"
-            ? {
-                kind: "filesystem",
-                absolutePath: prepared.locator.absolute_path,
-                extension: prepared.locator.extension,
-                mediaType: prepared.locator.media_type,
-                mimeType: prepared.locator.mime_type,
-              }
-            : {
-                kind: "archive-entry",
-                archivePath: prepared.locator.archive_path,
-                archiveFormat: prepared.locator.archive_format,
-                entryName: prepared.locator.entry_name,
-                extension: prepared.locator.extension,
-                mediaType: prepared.locator.media_type,
-                mimeType: prepared.locator.mime_type,
-              };
-      }
-
-      setManualSubtitleOverride(true);
-      setSelectedSubtitleId(option.id);
-      setSelectedSubtitleLocator(locator);
-      setSubtitleVisible(true);
-      if (focusedVideoEffective?.id) {
-        persistSubtitleSelection(focusedVideoEffective.id, option.id);
-      }
-    } catch (error: unknown) {
-      setSubtitleMessage(
-        t("ui.media.subtitleSelectFailed", {
-          message: toErrorDetailWithCode(error, t),
-        }),
-      );
-      setSubtitleVisible(false);
-    } finally {
-      setSubtitleLoading(false);
-    }
-  };
 
   return {
     backendPageSnapshot,

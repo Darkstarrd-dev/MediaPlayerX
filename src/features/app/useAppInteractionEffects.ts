@@ -942,8 +942,10 @@ export function useAppInteractionEffects({
     setThemeParameterPanelOpen,
     setSearchPanelCollapsed,
     setSearchPanelMode,
+    selectedPackageId,
     updateSettings,
     vectorMode,
+    videoDurationById,
     featureTagPickerOpen,
   ])
 
