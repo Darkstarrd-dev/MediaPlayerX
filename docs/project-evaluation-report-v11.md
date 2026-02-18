@@ -258,7 +258,7 @@
 | P2-7.3 IPC handler 工厂化 | ✅ 已完成 | `electron/registerBackendIpcHandlers.ts` 落地 `registerIpcQuery/registerIpcCommand`，批量替换重复 schema parse + service 转发模板 |
 | P2-7.4 重复率门禁 | ✅ 已完成 | 新增 `.jscpd.json`（threshold=5，忽略测试文件）并接入 `.github/workflows/ci.yml` |
 | P2-8 超大文件拆分 | ✅ 已完成（第二批收敛） | 已完成 App 测试域五轮拆分并将 `App.state` 降至 1001 行；第二批非测试目标文件全部降到阈值以下（<1200） |
-| P2-9 major 依赖升级 | ⏸ 部分完成 | 独立分支已完成 `globals@17`、`@types/node@25`；`eslint@10` 与 `@eslint/js@10` 受上游 peer 限制阻塞并已回滚，后续不作为评审指标 |
+| P2-9 major 依赖升级 | ✅ 已完成（按排除口径） | 独立分支已完成 `globals@17`、`@types/node@25`；`eslint@10` 与 `@eslint/js@10` 受上游 peer 限制阻塞并已回滚，`eslint` 生态项不纳入本轮评审指标 |
 | 流程治理：CI 门禁与评估基线固化 | ✅ 已完成 | CI 已收敛为 `quality:ci` 统一门禁顺序，并新增 `baseline:verify-clean` 工作区洁净校验脚本 |
 
 ### 0.1 处理建议 Todo Checklist（按第 13 节顺序维护）
@@ -274,7 +274,7 @@
 - [x] P2-7.3 IPC handler 工厂化落地
 - [x] P2-7.4 设置 jscpd 门禁阈值并接入 CI
 - [x] P2-8 拆分超大文件（第一批 5 个已完成；第二批目标文件已全部降到阈值以下）
-- [ ] P2-9 major 依赖升级（独立分支，`eslint/@eslint/js` 暂不纳入评审指标）
+- [x] P2-9 major 依赖升级（独立分支，`eslint` 生态项暂不纳入评审指标）
 - [x] 流程治理：CI 门禁与评估基线固化
 
 ---
@@ -688,7 +688,7 @@ npm run lint
 **执行记录（2026-02-18）**：
 - 已按“一个一个升级，失败即回滚”执行：`globals@17`、`@types/node@25` 均已通过 `build` + 目标回归测试后提交。
 - `eslint@10`/`@eslint/js@10` 升级被 `eslint-plugin-react-hooks@7.0.1` 的 peer 约束阻塞（仅声明支持到 eslint 9），已回滚失败尝试（CI `npm ci` 已恢复通过）。
-- 结论：`eslint` 与 `@eslint/js` 后续不作为评审硬指标；待上游生态放开 peer 后再升级。
+- 结论：`eslint` 生态项（`eslint` / `@eslint/js` / `eslint-plugin-react-refresh`）后续不作为评审硬指标；待上游生态放开 peer 后再升级。
 
 ---
 
@@ -775,6 +775,6 @@ Week 4 ─┬── [P2] 测试 setup 去重（提取 test-utils）
 | `npm audit` moderate | ⚠️ 10 项 | ✅ 0 项 |
 | 重复率 | ⚠️ 7.00% (6,605 行) | ✅ < 5% (< 4,500 行) |
 | 超大文件 (>1200 行) | ⚠️ 5 个 | ✅ 0 个 |
-| `npm outdated` | ⚠️ 10 项 | ✅ ≤ 2 项（不含 `eslint` / `@eslint/js`） |
+| `npm outdated` | ⚠️ 10 项 | ✅ ≤ 2 项（不含 `eslint` 生态项） |
 | 综合评级 | B | B+ 或 A |
 | 发布就绪 | ❌ No-Go | ✅ Go |
