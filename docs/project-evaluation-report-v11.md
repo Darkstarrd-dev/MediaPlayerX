@@ -249,7 +249,7 @@
 | P0-3 格式化漂移 | ✅ 已完成 | `npm run format:write` + `npm run format:check` 通过 |
 | P1-4 circular chunk | ✅ 已完成 | `vite.config.ts` 分包调整后 `vite build` 无 circular 警告 |
 | P1-5 audit moderate 10 | ⏸ 暂缓 | `npm audit --audit-level=high` 仍为 10 moderate（high/critical=0），属上游链路问题 |
-| P1-6 outdated patch/minor | ⏸ 部分完成 | 已验证 `electron` 可升至 `40.4.1`；`jsdom` 升级触发回归，已回滚至 `28.0.0`；其余依赖本轮按要求先跳过 |
+| P1-6 outdated patch/minor | ✅ 已完成（按排除口径） | 已完成 `electron@40.4.1`、`jsdom@28.1.0`、`@types/react@19.2.14`、`@vitejs/plugin-react@5.1.4`、`typescript-eslint@8.56.0`；当前仅剩 `eslint/@eslint-js/eslint-plugin-react-refresh` |
 | P2-7 重复代码治理 | ✅ 已完成 | 已完成热点定位、测试与 IPC 去重、并落地 jscpd 门禁；门禁口径重复率降至 3.37% |
 | P2-7.2 首个去重落地 | ✅ 已开始 | `src/components/ImageMainSection.test.tsx` 已提取 `createImageMainSectionProps`，减少重复测试装配代码 |
 | P2-7.2 第二个去重落地 | ✅ 已完成 | `src/components/SidebarPanel.test.tsx` 提取 `createSidebarPanelProps` 并统一多场景渲染入口 |
@@ -267,7 +267,7 @@
 - [x] P0-3 修复 Prettier 格式化漂移
 - [x] P1-4 消除 Vite circular chunk 警告
 - [ ] P1-5 处理依赖安全告警（本轮按要求先跳过依赖处理）
-- [ ] P1-6 升级过期依赖（本轮按要求先跳过依赖处理）
+- [x] P1-6 升级过期依赖（patch/minor 已完成；`eslint` 生态按排除口径追踪）
 - [x] P2-7.1 生成重复代码定位报告（jscpd HTML/JSON）
 - [x] P2-7.2 重复块分类治理（IPC/Schema/UI/DB/Tests，测试侧已完成 ImageMainSection/SidebarPanel/ThemeParameterPanel/realRepository 四处）
 - [x] P2-7.3 IPC handler 工厂化落地
