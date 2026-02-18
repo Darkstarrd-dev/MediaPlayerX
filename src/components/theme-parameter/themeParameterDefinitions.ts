@@ -1,24 +1,19 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import {
+  clampValue,
+  normalizeByStep,
+  parseBackdropFilter,
+  parseFirstNonZeroPxValue,
+  parseFirstPercentValue,
+  parseFirstPxValueFromShadow,
+  parseNumber,
+  readCssPxVariable,
+  removeVariables,
+} from "./themeParameterCore";
+import type { StyleGroup } from "./themeParameterCore";
 
-import { MainUiIcon } from "../MainUiIcon";
-import { buildA11yProps } from "../../i18n/a11y";
-import { useI18n } from "../../i18n/useI18n";
-import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
-import { includesSearch, readFileAsText } from "./themeParameterUtils";
+export { resolveStyleGroup } from "./themeParameterCore";
 
-type StyleGroup =
-  | "default"
-  | "soft-skeuomorphic"
-  | "liquid-glass"
-  | "neobrutalism";
 export type ThemeParameterValues = Record<string, number>;
-
-interface ThemeParameterPanelProps {
-  open: boolean;
-  styleId: string;
-  settingsFontSize: number;
-  onClose: () => void;
-}
 
 export interface ThemeParameterDefinition {
   id: string;
@@ -36,62 +31,6 @@ export interface ThemeParameterDefinition {
     values: ThemeParameterValues,
   ) => void;
   reset: (root: HTMLElement) => void;
-}
-
-interface ThemeParameterSnapshot {
-  version: 1;
-  styleId: string;
-  values: Record<string, number>;
-}
-
-function resolveStyleGroup(styleId: string): StyleGroup {
-  if (styleId.startsWith("soft-skeuomorphic")) {
-    return "soft-skeuomorphic";
-  }
-  if (styleId === "liquid-glass") {
-    return "liquid-glass";
-  }
-  if (styleId === "neobrutalism") {
-    return "neobrutalism";
-  }
-  return "default";
-}
-
-function clampValue(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function normalizeByStep(
-  value: number,
-  min: number,
-  max: number,
-  step: number,
-): number {
-  const clamped = clampValue(value, min, max);
-  const stepped = Math.round(clamped / step) * step;
-  return Number(stepped.toFixed(step < 1 ? 2 : 0));
-}
-
-function parseNumber(raw: string, fallback: number): number {
-  const parsed = Number.parseFloat(raw);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function readCssPxVariable(
-  computed: CSSStyleDeclaration,
-  variableName: string,
-  fallback: number,
-): number {
-  return parseNumber(computed.getPropertyValue(variableName).trim(), fallback);
-}
-
-function removeVariables(
-  root: HTMLElement,
-  variableNames: readonly string[],
-): void {
-  for (const variableName of variableNames) {
-    root.style.removeProperty(variableName);
-  }
 }
 
 function createCssPxParameter({
@@ -129,51 +68,6 @@ function createCssPxParameter({
   };
 }
 
-function parseBackdropFilter(
-  value: string,
-): { blur: number; saturation: number } | null {
-  const blurMatch = value.match(/blur\(([-\d.]+)px\)/i);
-  const saturationMatch = value.match(/saturate\(([-\d.]+)%\)/i);
-  if (!blurMatch || !saturationMatch) {
-    return null;
-  }
-  const blur = Number.parseFloat(blurMatch[1]);
-  const saturation = Number.parseFloat(saturationMatch[1]);
-  if (!Number.isFinite(blur) || !Number.isFinite(saturation)) {
-    return null;
-  }
-  return { blur, saturation };
-}
-
-function parseFirstPercentValue(raw: string, fallback: number): number {
-  const match = raw.match(/([\d.]+)%/);
-  if (!match) {
-    return fallback;
-  }
-  const value = Number.parseFloat(match[1]);
-  return Number.isFinite(value) ? value : fallback;
-}
-
-function parseFirstPxValueFromShadow(raw: string, fallback: number): number {
-  const match = raw.match(/([\d.]+)px/);
-  if (!match) {
-    return fallback;
-  }
-  const value = Number.parseFloat(match[1]);
-  return Number.isFinite(value) ? value : fallback;
-}
-
-function parseFirstNonZeroPxValue(raw: string, fallback: number): number {
-  const matches = raw.matchAll(/(-?[\d.]+)px/g);
-  for (const match of matches) {
-    const value = Number.parseFloat(match[1]);
-    if (Number.isFinite(value) && Math.abs(value) > 0.01) {
-      return Math.abs(value);
-    }
-  }
-  return fallback;
-}
-
 type SectionScope = "header" | "sidebar" | "main" | "metadata";
 type SectionTarget = "pane" | "control";
 type SectionMetric =
@@ -197,7 +91,7 @@ const SECTION_METRICS: readonly SectionMetric[] = [
   "border-color",
 ];
 
-function resolveParameterLabel(
+export function resolveParameterLabel(
   parameter: ThemeParameterDefinition,
   t: (key: string, values?: Record<string, string | number>) => string,
 ): string {
@@ -589,7 +483,7 @@ const SKEUO_SECTION_PARAMETERS: ThemeParameterDefinition[] = [
   ),
 ];
 
-const COMMON_PARAMETERS: ThemeParameterDefinition[] = [
+export const COMMON_PARAMETERS: ThemeParameterDefinition[] = [
   createCssPxParameter({
     id: "layout-padding",
     labelKey: "ui.themeParameter.layoutPadding",
@@ -664,9 +558,9 @@ const COMMON_PARAMETERS: ThemeParameterDefinition[] = [
   }),
 ];
 
-const EMPTY_PARAMETERS: ThemeParameterDefinition[] = [];
+export const EMPTY_PARAMETERS: ThemeParameterDefinition[] = [];
 
-const STYLE_PARAMETERS: Record<
+export const STYLE_PARAMETERS: Record<
   Exclude<StyleGroup, "default">,
   ThemeParameterDefinition[]
 > = {
@@ -1271,7 +1165,7 @@ const STYLE_PARAMETERS: Record<
   ],
 };
 
-function readParameterValues(
+export function readParameterValues(
   parameters: ThemeParameterDefinition[],
 ): ThemeParameterValues {
   const computed = getComputedStyle(document.documentElement);
@@ -1287,305 +1181,3 @@ function readParameterValues(
     }),
   );
 }
-
-function ThemeParameterPanel({
-  open,
-  styleId,
-  settingsFontSize,
-  onClose,
-}: ThemeParameterPanelProps) {
-  const { t } = useI18n();
-  const styleGroup = resolveStyleGroup(styleId);
-  const styleParameters =
-    styleGroup === "default" ? EMPTY_PARAMETERS : STYLE_PARAMETERS[styleGroup];
-  const parameters = useMemo(
-    () =>
-      styleGroup === "default"
-        ? COMMON_PARAMETERS
-        : [...COMMON_PARAMETERS, ...STYLE_PARAMETERS[styleGroup]],
-    [styleGroup],
-  );
-  const [values, setValues] = useState<ThemeParameterValues>({});
-  const [searchText, setSearchText] = useState("");
-  const [commonExpanded, setCommonExpanded] = useState(true);
-  const [styleExpanded, setStyleExpanded] = useState(true);
-  const [snapshotJson, setSnapshotJson] = useState("");
-  const [snapshotMessage, setSnapshotMessage] = useState("");
-  const snapshotFileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const filteredCommonParameters = useMemo(() => {
-    const keyword = searchText.trim();
-    if (!keyword) {
-      return COMMON_PARAMETERS;
-    }
-    return COMMON_PARAMETERS.filter((parameter) =>
-      includesSearch(resolveParameterLabel(parameter, t), keyword),
-    );
-  }, [searchText, t]);
-
-  const filteredStyleParameters = useMemo(() => {
-    const keyword = searchText.trim();
-    if (!keyword) {
-      return styleParameters;
-    }
-    return styleParameters.filter((parameter) =>
-      includesSearch(resolveParameterLabel(parameter, t), keyword),
-    );
-  }, [searchText, styleParameters, t]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    setValues(readParameterValues(parameters));
-    setSnapshotMessage("");
-  }, [open, parameters, styleId]);
-
-  if (!open) {
-    return null;
-  }
-
-  const panelA11y = buildA11yProps({
-    id: "themeParameter.panel",
-    labelKey: "a11y.themeParameter.panel",
-    t,
-  });
-  const closeA11y = buildA11yProps({
-    id: "themeParameter.close",
-    labelKey: "a11y.themeParameter.close",
-    titleKey: "tip.themeParameter.close",
-    t,
-  });
-
-  const applyParameter = (
-    parameter: ThemeParameterDefinition,
-    rawValue: number,
-  ) => {
-    const nextValue = normalizeByStep(
-      rawValue,
-      parameter.min,
-      parameter.max,
-      parameter.step,
-    );
-    const root = document.documentElement;
-    setValues((previous) => {
-      const nextValues = {
-        ...previous,
-        [parameter.id]: nextValue,
-      };
-      parameter.apply(root, nextValue, nextValues);
-      return nextValues;
-    });
-  };
-
-  const buildSnapshotPayload = (): ThemeParameterSnapshot => {
-    return {
-      version: 1,
-      styleId,
-      values: Object.fromEntries(
-        parameters.map((parameter) => [
-          parameter.id,
-          values[parameter.id] ?? parameter.fallback,
-        ]),
-      ),
-    };
-  };
-
-  const buildSnapshotJson = (): string => {
-    return JSON.stringify(buildSnapshotPayload(), null, 2);
-  };
-
-  const exportSnapshotJson = () => {
-    setSnapshotJson(buildSnapshotJson());
-    setSnapshotMessage(t("ui.themeParameter.snapshotExported"));
-  };
-
-  const downloadSnapshotJson = () => {
-    const snapshotText = buildSnapshotJson();
-    setSnapshotJson(snapshotText);
-
-    try {
-      if (typeof URL.createObjectURL !== "function") {
-        throw new Error("blob url unavailable");
-      }
-      const blob = new Blob([snapshotText], { type: "application/json" });
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const normalizedStyleId = styleId.replace(/[^a-zA-Z0-9-_]/g, "-");
-      link.href = blobUrl;
-      link.download = `theme-parameter-${normalizedStyleId}-${timestamp}.json`;
-      link.click();
-      URL.revokeObjectURL(blobUrl);
-      setSnapshotMessage(t("ui.themeParameter.snapshotDownloaded"));
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotDownloadFailed"));
-    }
-  };
-
-  const openSnapshotFilePicker = () => {
-    snapshotFileInputRef.current?.click();
-  };
-
-  const loadSnapshotFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-    try {
-      const text = await readFileAsText(file);
-      setSnapshotJson(text);
-      setSnapshotMessage(
-        t("ui.themeParameter.snapshotFileLoaded", { fileName: file.name }),
-      );
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotFileLoadFailed"));
-    } finally {
-      event.target.value = "";
-    }
-  };
-
-  const copySnapshotJson = async () => {
-    if (!snapshotJson.trim()) {
-      setSnapshotMessage(t("ui.themeParameter.snapshotEmpty"));
-      return;
-    }
-    try {
-      if (!navigator.clipboard?.writeText) {
-        throw new Error("clipboard unavailable");
-      }
-      await navigator.clipboard.writeText(snapshotJson);
-      setSnapshotMessage(t("ui.themeParameter.snapshotCopied"));
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotCopyFailed"));
-    }
-  };
-
-  const importSnapshotJson = () => {
-    if (!snapshotJson.trim()) {
-      setSnapshotMessage(t("ui.themeParameter.snapshotEmpty"));
-      return;
-    }
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(snapshotJson);
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
-    }
-
-    if (!parsed || typeof parsed !== "object") {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
-    }
-
-    const payload = parsed as Partial<ThemeParameterSnapshot>;
-    if (!payload.values || typeof payload.values !== "object") {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
-    }
-
-    const importedValues = payload.values as Record<string, unknown>;
-    const root = document.documentElement;
-    const nextValues: ThemeParameterValues = { ...values };
-
-    for (const parameter of parameters) {
-      const rawValue = importedValues[parameter.id];
-      if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
-        continue;
-      }
-      const normalized = normalizeByStep(
-        rawValue,
-        parameter.min,
-        parameter.max,
-        parameter.step,
-      );
-      nextValues[parameter.id] = normalized;
-      parameter.apply(root, normalized, nextValues);
-    }
-
-    setValues(nextValues);
-
-    if (payload.styleId && payload.styleId !== styleId) {
-      setSnapshotMessage(
-        t("ui.themeParameter.snapshotImportedStyleMismatch", {
-          styleId: payload.styleId,
-        }),
-      );
-      return;
-    }
-    setSnapshotMessage(t("ui.themeParameter.snapshotImported"));
-  };
-
-  const resetCurrentStyleParameters = () => {
-    const root = document.documentElement;
-    for (const parameter of parameters) {
-      parameter.reset(root);
-    }
-    setValues(readParameterValues(parameters));
-  };
-
-  const resolveLabel = (parameter: ThemeParameterDefinition): string => {
-    return resolveParameterLabel(parameter, t);
-  };
-
-  return (
-    <div
-      {...panelA11y}
-      className="settings-mask"
-      role="dialog"
-      aria-modal="true"
-      data-overlay-close="theme-parameter"
-    >
-      <section
-        className="settings-panel theme-parameter-panel"
-        style={{ fontSize: `${settingsFontSize}px` }}
-      >
-        <div className="settings-head">
-          <span className="settings-head-spacer" aria-hidden="true" />
-          <h2>{t("ui.themeParameter.panel")}</h2>
-          <button
-            {...closeA11y}
-            className="settings-icon-btn main-icon-square-btn"
-            type="button"
-            onClick={onClose}
-          >
-            <MainUiIcon name="close" />
-          </button>
-        </div>
-
-        <ThemeParameterPanelMain
-          t={t}
-          styleId={styleId}
-          searchText={searchText}
-          setSearchText={setSearchText}
-          snapshotJson={snapshotJson}
-          setSnapshotJson={setSnapshotJson}
-          snapshotMessage={snapshotMessage}
-          setSnapshotMessage={setSnapshotMessage}
-          snapshotFileInputRef={snapshotFileInputRef}
-          loadSnapshotFile={loadSnapshotFile}
-          exportSnapshotJson={exportSnapshotJson}
-          downloadSnapshotJson={downloadSnapshotJson}
-          openSnapshotFilePicker={openSnapshotFilePicker}
-          copySnapshotJson={copySnapshotJson}
-          importSnapshotJson={importSnapshotJson}
-          commonExpanded={commonExpanded}
-          setCommonExpanded={setCommonExpanded}
-          styleExpanded={styleExpanded}
-          setStyleExpanded={setStyleExpanded}
-          filteredCommonParameters={filteredCommonParameters}
-          filteredStyleParameters={filteredStyleParameters}
-          styleParameters={styleParameters}
-          values={values}
-          applyParameter={applyParameter}
-          resolveLabel={resolveLabel}
-          resetCurrentStyleParameters={resetCurrentStyleParameters}
-        />
-      </section>
-    </div>
-  );
-}
-
-export default ThemeParameterPanel;

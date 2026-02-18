@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
+import type { MusicMainSectionProps, MusicPopoverKey } from './MusicMainSection.types'
 import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
 import { resolveFullscreenControlsWidth } from './fullscreen/controlsWidth'
 import { FullscreenMetaMarquee } from './fullscreen/FullscreenMetaMarquee'
@@ -9,9 +10,7 @@ import { useFullscreenWindowViewport } from './fullscreen/useFullscreenWindowVie
 import { resolveLoopModeIconName, resolveMusicToolbarSummary } from './musicMainSectionUtils'
 import { useMediaPreloadWindow } from './useMediaPreloadWindow'
 import { useFullscreenFloatingControls } from './useFullscreenFloatingControls'
-import type { AppSettings } from '../contracts/settings'
 import { useI18n } from '../i18n/useI18n'
-import type { AudioItem, MusicLoopMode } from '../types'
 import {
   emitMusicPlaybackState,
   onMusicPlaybackControl,
@@ -19,62 +18,6 @@ import {
 import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from '../features/music-visualizer/shaderRegistry'
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp, formatSeconds } from '../utils/ui'
-
-type MusicPopoverKey = 'volume' | 'shader' | 'shaderSettings'
-
-interface MusicMainSectionProps {
-  active: boolean
-  interruptByVideoPlayback: boolean
-  playRequestNonce: number
-  manageMode: boolean
-  metadataManageMode: boolean
-  sidebarSelectedCount: number
-  imageSelectedCount: number
-  activeSelectionScope: 'sidebar' | 'image' | null
-  pendingManageAction: boolean
-  manageOperationHint: string | null
-  canManageDelete: boolean
-  canManageMoveNodes?: boolean
-  onManageDelete: () => void
-  onManageGroup?: () => void
-  onManageMove?: () => void
-  onClearManageSelection: () => void
-  canJumpToManga: boolean
-  canJumpToAnimation: boolean
-  canJumpToCover: boolean
-  canJumpToBooklet: boolean
-  onJumpToManga: () => void
-  onJumpToAnimation: () => void
-  onJumpToCover: () => void
-  onJumpToBooklet: () => void
-  audios: AudioItem[]
-  focusedAudio: AudioItem | null
-  focusedAudioSrc: string | null
-  mediaPreloadMemoryBudgetMb: number
-  fullscreenVideoControlsMaxWidth: number
-  audioPreloadItems: Array<{ id: string; src: string; sizeMb: number }>
-  musicLoopMode: MusicLoopMode
-  musicLoopModeLabel: string
-  canPrevAudio: boolean
-  canNextAudio: boolean
-  fullscreenActive: boolean
-  paletteMode?: 'day' | 'night'
-  onToggleFullscreen: () => void
-  musicVisualizerSelectedShaderId: string
-  musicVisualizerShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string]
-  musicVisualizerLayeredBackgroundShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string]
-  musicVisualizerLayeredForegroundShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string]
-  onMusicVisualizerSelectedShaderIdChange?: (value: string) => void
-  onMusicVisualizerShaderSettingsChange: (patch: Partial<AppSettings['musicVisualizerShaderSettingsById'][string]>) => void
-  onMusicVisualizerLayerShaderIdChange?: (layer: 'foreground' | 'background', value: string) => void
-  onMusicVisualizerLayerShaderSettingsChange?: (
-    layer: 'foreground' | 'background',
-    patch: Partial<AppSettings['musicVisualizerShaderSettingsById'][string]>,
-  ) => void
-  onPrevAudio: () => void
-  onNextAudio: () => void
-  onCycleMusicLoopMode: () => void
-}
 
 function MusicMainSection({
   active,

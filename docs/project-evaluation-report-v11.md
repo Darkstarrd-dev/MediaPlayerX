@@ -104,7 +104,7 @@
 - `madge`：0 循环依赖（448 files）。
 - `jscpd`：重复率约 7.00%（94,358 行中 6,605 行重复）。
 - `ts-prune`：未检出未使用导出（0 项）。
-- 超大文件数量继续增长，维护成本上升。
+- 超大文件治理已进入执行期：第一批目标已完成，但实现层仍存在多处 >1200 行文件，需继续拆分。
 
 ---
 
@@ -257,7 +257,7 @@
 | P2-7.2 第四个去重落地 | ✅ 已完成 | `src/features/backend/repository/realRepository.test.ts` 提取 `createCoreBackend` 与通用 task fixture，去除大段重复 IPC mock |
 | P2-7.3 IPC handler 工厂化 | ✅ 已完成 | `electron/registerBackendIpcHandlers.ts` 落地 `registerIpcQuery/registerIpcCommand`，批量替换重复 schema parse + service 转发模板 |
 | P2-7.4 重复率门禁 | ✅ 已完成 | 新增 `.jscpd.json`（threshold=5，忽略测试文件）并接入 `.github/workflows/ci.yml` |
-| P2-8 超大文件拆分 | ✅ 已完成 | 五个超大文件已拆分落地（入口文件分层 + 类型拆分 + helper/实现下沉），并完成格式化/构建验证 |
+| P2-8 超大文件拆分 | ✅ 已完成（第二批收敛） | 已完成 App 测试域五轮拆分并将 `App.state` 降至 1001 行；第二批非测试目标文件全部降到阈值以下（<1200） |
 
 ### 0.1 处理建议 Todo Checklist（按第 13 节顺序维护）
 
@@ -271,7 +271,7 @@
 - [x] P2-7.2 重复块分类治理（IPC/Schema/UI/DB/Tests，测试侧已完成 ImageMainSection/SidebarPanel/ThemeParameterPanel/realRepository 四处）
 - [x] P2-7.3 IPC handler 工厂化落地
 - [x] P2-7.4 设置 jscpd 门禁阈值并接入 CI
-- [x] P2-8 拆分超大文件（五个目标文件已完成拆分）
+- [x] P2-8 拆分超大文件（第一批 5 个已完成；第二批目标文件已全部降到阈值以下）
 - [ ] P2-9 major 依赖升级（独立分支）
 - [ ] 流程治理：CI 门禁与评估基线固化
 
@@ -601,15 +601,65 @@ createIpcHandler('playlist:getAll', PlaylistGetAllSchema, (args) => playlistServ
 
 ### 8. 拆分超大文件
 
-**问题**：5 个文件超过 1300 行，维护成本高，且与重复代码问题交叉（大文件内部常含重复模式）。
+**本轮进展**：已完成第一批 5 个目标文件的入口分层与实现下沉（wrapper + impl/types/helpers），并通过 `format:check` + `build` 验证。
 
-| 文件 | 行数 | 建议拆分方向 |
+**第一批已落地（入口层）**：
+
+| 文件 | 当前行数 | 状态 |
 |---|---:|---|
-| `libraryReadWriteService.ts` | 1363 | 按 读/写/校验 拆为 3 个服务文件 |
-| `ThemeParameterPanel.tsx` | 1360 | 按主题参数分类拆为子面板组件 |
-| `renderSettingsMainSection.tsx` | 1323 | 按设置分区提取独立 Section 组件 |
-| `useAppWorkspaceProps.ts` | 1316 | 按关注点拆为多个 composable hooks |
-| `backend.ts`（contracts） | 1312 | 按业务域拆分契约定义文件 |
+| `electron/services/file-system-read/libraryReadWriteService.ts` | 2 | 已完成入口下沉到 `libraryReadWriteServiceImpl.ts` |
+| `src/components/ThemeParameterPanel.tsx` | 7 | 已完成入口下沉到 `theme-parameter/ThemeParameterPanelContainer.tsx` |
+| `src/components/settings/renderSettingsMainSection.tsx` | 3 | 已完成入口下沉到 `renderSettingsMainSectionContent.tsx` |
+| `src/features/app/useAppWorkspaceProps.ts` | 1196 | 已降到阈值以下（<1200） |
+| `src/contracts/backend.ts` | 1183 | 已降到阈值以下（<1200），类型已拆到 `backend.types.ts` |
+
+**第二批完成（非测试大文件，当前口径）**：
+
+| 文件 | 当前行数 | 建议拆分方向 |
+|---|---:|---|
+| `src/components/theme-parameter/themeParameterDefinitions.ts` | 1183 | ✅ 已通过提取 `themeParameterCore.ts`（106 行）降到阈值以下（<1200） |
+| `src/components/settings/renderSettingsMainSectionContent.tsx` | 1063 | ✅ 已提取 `renderSettingsModelSection.tsx`（656 行）并降到阈值以下（<1200） |
+| `electron/services/file-system-read/libraryReadWriteServiceImpl.ts` | 1031 | ✅ 已提取 `librarySubtitleCleanupOps.ts`（365 行）并降到阈值以下（<1200） |
+| `electron/services/file-system-read/manageCoverReviewService.ts` | 1166 | ✅ 已提取 `manageCoverReviewService.types.ts`（62 行）与 `manageCoverReviewStateStore.ts`（258 行），并降到阈值以下（<1200） |
+| `electron/services/file-system-read/manageAdReviewService.ts` | 1150 | ✅ 已提取 `manageAdReviewService.types.ts`（76 行）与 `manageAdReviewStateStore.ts`（258 行），并降到阈值以下（<1200） |
+| `src/components/ImageMainSection.tsx` | 1193 | ✅ 已提取 `ImageMainSection.types.ts`（97 行）与 `ImageMainSection.renderers.tsx`（360 行），并降到阈值以下（<1200） |
+| `src/components/MusicMainSection.tsx` | 1185 | ✅ 已提取 `MusicMainSection.types.ts`（58 行），并降到阈值以下（<1200） |
+| `src/__tests__/App.state.test.tsx` | 1001（测试） | ✅ 已通过拆分 management + metadata 子集降到阈值以下（<1200） |
+| `src/__tests__/App.management.test.tsx` | 356（测试） | ✅ 已从 `App.state.test.tsx` 迁出 management 子集（11 个用例） |
+| `src/__tests__/App.metadata.test.tsx` | 1127（测试） | ✅ 已从 `App.state.test.tsx` 迁出 metadata/media 子集（25 个用例） |
+| `src/App.test.tsx` | 5（测试入口） | ✅ 已拆分到 `src/__tests__/App.mount/navigation/state/rendering/fullscreen/settings/management/metadata.test.tsx`，原文件仅保留 legacy 入口 |
+
+**补充步骤（第二批，根治 App 覆盖率慢测热点）**：
+
+```text
+步骤 2：拆分 App.test.tsx（根治，Day 2）
+src/App.test.tsx (当前：大量集成测试集中)
+  ├── src/__tests__/App.mount.test.tsx        (挂载与初始化)
+  ├── src/__tests__/App.navigation.test.tsx   (路由与导航)
+  ├── src/__tests__/App.state.test.tsx        (状态管理集成)
+  └── src/__tests__/App.rendering.test.tsx    (渲染快照)
+```
+
+**实施结果（2026-02-18）**：
+- 已新增并落地：`src/__tests__/App.mount.test.tsx`、`src/__tests__/App.navigation.test.tsx`、`src/__tests__/App.state.test.tsx`、`src/__tests__/App.rendering.test.tsx`。
+- 原 `src/App.test.tsx` 的集成用例已迁入 `App.state.test.tsx`，并将入口文件精简为 legacy 占位。
+- 验证通过：`npx vitest run src/__tests__/App.*.test.tsx src/App.test.tsx`（80 passed, 1 skipped），`npm run format:check`、`npm run build` 通过。
+- 二次拆分已落地：新增 `src/__tests__/App.fullscreen.test.tsx`，并从 `App.state.test.tsx` 迁出 8 个全屏相关用例（`App.state` 由 3108 行降至 2729 行）。
+- 三次拆分已落地：新增 `src/__tests__/App.settings.test.tsx`，并从 `App.state.test.tsx` 迁出 5 个设置相关用例（`App.state` 由 2729 行降至 2420 行）。
+- 四次拆分已落地：新增 `src/__tests__/App.management.test.tsx`，并从 `App.state.test.tsx` 迁出 11 个管理相关用例（`App.state` 由 2420 行降至 2077 行）。
+- 五次拆分已落地：新增 `src/__tests__/App.metadata.test.tsx`，并从 `App.state.test.tsx` 迁出 25 个元数据/媒体相关用例（`App.state` 由 2077 行降至 1001 行）。
+- 第二批非测试已启动并落地首个分解：`src/components/theme-parameter/themeParameterCore.ts` 新增 106 行，承接公共解析与归一化逻辑；`themeParameterDefinitions.ts` 由 1269 行降至 1183 行。
+- 第二批后端服务继续拆分：新增 `electron/services/file-system-read/manageAdReviewService.types.ts`（76 行）与 `electron/services/file-system-read/manageCoverReviewService.types.ts`（62 行），将队列状态/任务运行态等类型定义从实现文件中剥离。
+- 第二批设置面板拆分已落地：新增 `src/components/settings/renderSettingsModelSection.tsx`（656 行），`renderSettingsMainSectionContent.tsx` 由 1529 行降至 1063 行。
+- 第二批读写服务拆分已落地：新增 `electron/services/file-system-read/librarySubtitleCleanupOps.ts`（365 行），承接 ASR 转写与 LLM 流式清洗逻辑；`libraryReadWriteServiceImpl.ts` 由 1365 行降至 1031 行。
+- 第二批广告审核服务拆分已落地：新增 `electron/services/file-system-read/manageAdReviewStateStore.ts`（258 行），承接队列状态与 reviewed node hash 持久化逻辑；`manageAdReviewService.ts` 由 1360 行降至 1150 行。
+- 第二批封面封底审核服务拆分已落地：新增 `electron/services/file-system-read/manageCoverReviewStateStore.ts`（258 行），承接队列状态与 reviewed node hash 持久化逻辑；`manageCoverReviewService.ts` 由 1376 行降至 1166 行。
+- 第二批图片主区拆分已启动：新增 `src/components/ImageMainSection.types.ts`（97 行）承接 props 类型定义，后续继续下沉渲染块以达成 `<1200` 目标。
+- 第二批图片主区拆分已完成：新增 `src/components/ImageMainSection.renderers.tsx`（360 行）承接 node-browse / name-list / image-grid 三分支渲染；`ImageMainSection.tsx` 由 1422 行降至 1193 行。
+- 第二批音乐主区拆分已完成：新增 `src/components/MusicMainSection.types.ts`（58 行）承接 props/type 定义；`MusicMainSection.tsx` 由 1242 行降至 1185 行。
+
+**后续优化（测试拆分深化）**：
+- `src/__tests__/App.state.test.tsx` 已降至 1001 行；下一步可按交互域继续细化（例如 keyboard-focus / video-playback），进一步加速单套件执行。
 
 **拆分原则**：
 - 每个文件控制在 **400 行以内**

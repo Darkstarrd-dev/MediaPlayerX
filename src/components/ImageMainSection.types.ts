@@ -1,0 +1,97 @@
+import type { RefObject } from "react";
+
+import type { ParsedExternalMetadata } from "../features/metadata/parseExternalMetadata";
+import type { FocusedImageRef, ImagePackage, VectorCandidate } from "../types";
+
+export interface ImageMainSectionProps {
+  vectorMode: boolean;
+  showNamesOnly: boolean;
+  metadataManageMode: boolean;
+  thumbnailScaleLevel?: number;
+  thumbnailScaleLevelCount?: number;
+  canThumbnailScaleDown?: boolean;
+  canThumbnailScaleUp?: boolean;
+  loading: boolean;
+  placeholderCount: number;
+  enableLoadingSkeleton: boolean;
+  activePackage: ImagePackage | null;
+  focusedRef: FocusedImageRef | null;
+  focusedImageExists: boolean;
+  visibleImageRefs: FocusedImageRef[];
+  refsInPage: FocusedImageRef[];
+  pageStart: number;
+  actualCellWidth: number;
+  actualMediaHeight: number;
+  thumbnailColumns: number;
+  thumbnailGap: number;
+  vectorCandidates: VectorCandidate[];
+  packageById: Map<string, ImagePackage>;
+  imageUrlById: Record<string, string>;
+  gridRef: RefObject<HTMLDivElement | null>;
+  onGridElementChange: (element: HTMLDivElement | null) => void;
+  onToggleShowNamesOnly: () => void;
+  onEnterFullscreen: () => void;
+  canJumpToAnimation: boolean;
+  canJumpToMusic?: boolean;
+  canJumpToMusicFromBooklet?: boolean;
+  onJumpToAnimation: () => void;
+  onJumpToMusic?: () => void;
+  onJumpToMusicFromBooklet?: () => void;
+  onSelectImage: (
+    packageId: string,
+    imageIndex: number,
+    absoluteIndex: number,
+  ) => void;
+  metadataPending: boolean;
+  metadataTargetPackageLabel: string;
+  metadataFetchDefaultText: string;
+  metadataProxyServer: string;
+  metadataEhentaiCookies: string;
+  onMetadataSyncName: () => void;
+  onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>;
+  manageMode: boolean;
+  sidebarSelectedCount: number;
+  imageSelectedCount: number;
+  activeSelectionScope: "sidebar" | "image" | null;
+  pendingManageAction: boolean;
+  manageOperationHint: string | null;
+  canManageDelete: boolean;
+  canManageMoveNodes?: boolean;
+  canManageHide: boolean;
+  canManageUnhide: boolean;
+  adReviewFeatureEnabled: boolean;
+  adReviewDeletePending?: boolean;
+  adReviewPanelOpen: boolean;
+  checkedImageIds: ReadonlySet<string>;
+  adReviewScopeImageIds: ReadonlySet<string>;
+  adReviewLlmReviewedImageIds: ReadonlySet<string>;
+  adReviewNonLlmReviewedImageIds: ReadonlySet<string>;
+  adReviewCandidateImageIds?: ReadonlySet<string>;
+  adReviewResultsMode?: boolean;
+  adReviewGroupByPackageRows?: boolean;
+  onToggleImageChecked: (imageId: string, checked?: boolean) => void;
+  onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void;
+  onManageDelete: () => void;
+  onManageGroup?: () => void;
+  onManageMove?: () => void;
+  onManageHide: () => void;
+  onManageUnhide: () => void;
+  onToggleAdReviewPanel: () => void;
+  onClearManageSelection: () => void;
+  onThumbnailScaleLevelChange?: (level: number) => void;
+  nodeBrowseMode?: boolean;
+  nodeBrowseLabel?: string;
+  nodeBrowseItems?: Array<{
+    nodeId: string;
+    imageSourceId?: string;
+    imageNodeType: "folder" | "package" | "directory";
+    label: string;
+    packageCount: number;
+    imageCount: number;
+    descendantNodeCount: number;
+    coverImageUrl: string | null;
+  }>;
+  onSelectNodeBrowseItem?: (nodeId: string, imageSourceId?: string) => void;
+  onThumbnailWheelTurnPage?: (direction: "next" | "prev") => void;
+  onThumbnailWheelSwitchSidebarNode?: (direction: "next" | "prev") => void;
+}

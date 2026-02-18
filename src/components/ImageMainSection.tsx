@@ -1,14 +1,21 @@
-import { useEffect, useMemo, useRef, useState, type RefObject, type WheelEvent as ReactWheelEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type WheelEvent as ReactWheelEvent,
+} from "react";
 
-import { MainUiIcon } from './MainUiIcon'
-import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
-import { VideoControlIcon } from './VideoControlIcon'
-import { mapMediaLocatorToDto, mediaLocatorFileName } from '../features/backend'
-import { useManageImageSelectionInteractions } from '../features/management/useManageImageSelectionInteractions'
-import type { ParsedExternalMetadata } from '../features/metadata/parseExternalMetadata'
-import { buildA11yPropsByRegistry } from '../i18n/a11y'
-import { useI18n } from '../i18n/useI18n'
-import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../types'
+import { MainUiIcon } from "./MainUiIcon";
+import { ToolbarTitleMarquee } from "./ToolbarTitleMarquee";
+import { VideoControlIcon } from "./VideoControlIcon";
+import { renderImageMainContent } from "./ImageMainSection.renderers";
+import type { ImageMainSectionProps } from "./ImageMainSection.types";
+import { mapMediaLocatorToDto } from "../features/backend";
+import { useManageImageSelectionInteractions } from "../features/management/useManageImageSelectionInteractions";
+import { buildA11yPropsByRegistry } from "../i18n/a11y";
+import { useI18n } from "../i18n/useI18n";
+import type { FocusedImageRef } from "../types";
 import {
   type ThumbnailGridSession,
   buildThumbnailGridSession,
@@ -16,100 +23,11 @@ import {
   isEqualRecord,
   preloadSessionImageUrls,
   resolveImageIdForRef,
-} from './imageMainSectionPreload'
-import MetadataFetchPanel from './metadata/MetadataFetchPanel'
+} from "./imageMainSectionPreload";
+import MetadataFetchPanel from "./metadata/MetadataFetchPanel";
 
-const IS_TEST_MODE = import.meta.env.MODE === 'test'
-const EMPTY_IMAGE_ID_SET = new Set<string>()
-
-interface ImageMainSectionProps {
-  vectorMode: boolean
-  showNamesOnly: boolean
-  metadataManageMode: boolean
-  thumbnailScaleLevel?: number
-  thumbnailScaleLevelCount?: number
-  canThumbnailScaleDown?: boolean
-  canThumbnailScaleUp?: boolean
-  loading: boolean
-  placeholderCount: number
-  enableLoadingSkeleton: boolean
-  activePackage: ImagePackage | null
-  focusedRef: FocusedImageRef | null
-  focusedImageExists: boolean
-  visibleImageRefs: FocusedImageRef[]
-  refsInPage: FocusedImageRef[]
-  pageStart: number
-  actualCellWidth: number
-  actualMediaHeight: number
-  thumbnailColumns: number
-  thumbnailGap: number
-  vectorCandidates: VectorCandidate[]
-  packageById: Map<string, ImagePackage>
-  imageUrlById: Record<string, string>
-  gridRef: RefObject<HTMLDivElement | null>
-  onGridElementChange: (element: HTMLDivElement | null) => void
-  onToggleShowNamesOnly: () => void
-  onEnterFullscreen: () => void
-  canJumpToAnimation: boolean
-  canJumpToMusic?: boolean
-  canJumpToMusicFromBooklet?: boolean
-  onJumpToAnimation: () => void
-  onJumpToMusic?: () => void
-  onJumpToMusicFromBooklet?: () => void
-  onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
-  metadataPending: boolean
-  metadataTargetPackageLabel: string
-  metadataFetchDefaultText: string
-  metadataProxyServer: string
-  metadataEhentaiCookies: string
-  onMetadataSyncName: () => void
-  onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
-  manageMode: boolean
-  sidebarSelectedCount: number
-  imageSelectedCount: number
-  activeSelectionScope: 'sidebar' | 'image' | null
-  pendingManageAction: boolean
-  manageOperationHint: string | null
-  canManageDelete: boolean
-  canManageMoveNodes?: boolean
-  canManageHide: boolean
-  canManageUnhide: boolean
-  adReviewFeatureEnabled: boolean
-  adReviewDeletePending?: boolean
-  adReviewPanelOpen: boolean
-  checkedImageIds: ReadonlySet<string>
-  adReviewScopeImageIds: ReadonlySet<string>
-  adReviewLlmReviewedImageIds: ReadonlySet<string>
-  adReviewNonLlmReviewedImageIds: ReadonlySet<string>
-  adReviewCandidateImageIds?: ReadonlySet<string>
-  adReviewResultsMode?: boolean
-  adReviewGroupByPackageRows?: boolean
-  onToggleImageChecked: (imageId: string, checked?: boolean) => void
-  onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
-  onManageDelete: () => void
-  onManageGroup?: () => void
-  onManageMove?: () => void
-  onManageHide: () => void
-  onManageUnhide: () => void
-  onToggleAdReviewPanel: () => void
-  onClearManageSelection: () => void
-  onThumbnailScaleLevelChange?: (level: number) => void
-  nodeBrowseMode?: boolean
-  nodeBrowseLabel?: string
-  nodeBrowseItems?: Array<{
-    nodeId: string
-    imageSourceId?: string
-    imageNodeType: 'folder' | 'package' | 'directory'
-    label: string
-    packageCount: number
-    imageCount: number
-    descendantNodeCount: number
-    coverImageUrl: string | null
-  }>
-  onSelectNodeBrowseItem?: (nodeId: string, imageSourceId?: string) => void
-  onThumbnailWheelTurnPage?: (direction: 'next' | 'prev') => void
-  onThumbnailWheelSwitchSidebarNode?: (direction: 'next' | 'prev') => void
-}
+const IS_TEST_MODE = import.meta.env.MODE === "test";
+const EMPTY_IMAGE_ID_SET = new Set<string>();
 
 function ImageMainSection({
   vectorMode,
@@ -183,252 +101,279 @@ function ImageMainSection({
   onMetadataSyncName,
   onMetadataSaveParsed,
   nodeBrowseMode = false,
-  nodeBrowseLabel = '',
+  nodeBrowseLabel = "",
   nodeBrowseItems = [],
   onSelectNodeBrowseItem,
   onThumbnailWheelTurnPage,
   onThumbnailWheelSwitchSidebarNode,
 }: ImageMainSectionProps) {
   const markThumbInputMouse = () => {
-    document.documentElement.dataset.mpxThumbInput = 'mouse'
-  }
+    document.documentElement.dataset.mpxThumbInput = "mouse";
+  };
 
-  const thumbOriginRafRef = useRef<number | null>(null)
-  const lastOriginElRef = useRef<HTMLElement | null>(null)
+  const thumbOriginRafRef = useRef<number | null>(null);
+  const lastOriginElRef = useRef<HTMLElement | null>(null);
 
   const scrollFocusedThumbIntoView = (target: EventTarget | null) => {
     if (!(target instanceof HTMLElement)) {
-      return
+      return;
     }
-    const thumbCard = target.closest('.thumb-card')
+    const thumbCard = target.closest(".thumb-card");
     if (!(thumbCard instanceof HTMLElement)) {
-      return
+      return;
     }
-    if (typeof thumbCard.scrollIntoView === 'function') {
-      thumbCard.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })
+    if (typeof thumbCard.scrollIntoView === "function") {
+      thumbCard.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+        behavior: "auto",
+      });
     }
-  }
+  };
 
   const syncFocusedThumbTransformOrigin = () => {
-    const container = gridRef.current
+    const container = gridRef.current;
     if (!container) {
-      return
+      return;
     }
 
-    const focusedThumb = container.querySelector('.thumb-card.is-focused')
+    const focusedThumb = container.querySelector(".thumb-card.is-focused");
     if (!(focusedThumb instanceof HTMLElement)) {
       if (lastOriginElRef.current) {
-        lastOriginElRef.current.style.removeProperty('--mpx-thumb-origin-x')
-        lastOriginElRef.current.style.removeProperty('--mpx-thumb-origin-y')
-        lastOriginElRef.current = null
+        lastOriginElRef.current.style.removeProperty("--mpx-thumb-origin-x");
+        lastOriginElRef.current.style.removeProperty("--mpx-thumb-origin-y");
+        lastOriginElRef.current = null;
       }
-      return
+      return;
     }
 
-    const containerRect = container.getBoundingClientRect()
-    const rect = focusedThumb.getBoundingClientRect()
-    const scale = 1.1
-    const halo = 22
-    const needX = ((rect.width * (scale - 1)) / 2) + halo
-    const needY = ((rect.height * (scale - 1)) / 2) + halo
+    const containerRect = container.getBoundingClientRect();
+    const rect = focusedThumb.getBoundingClientRect();
+    const scale = 1.1;
+    const halo = 22;
+    const needX = (rect.width * (scale - 1)) / 2 + halo;
+    const needY = (rect.height * (scale - 1)) / 2 + halo;
 
-    const leftSpace = rect.left - containerRect.left
-    const rightSpace = containerRect.right - rect.right
-    const topSpace = rect.top - containerRect.top
-    const bottomSpace = containerRect.bottom - rect.bottom
+    const leftSpace = rect.left - containerRect.left;
+    const rightSpace = containerRect.right - rect.right;
+    const topSpace = rect.top - containerRect.top;
+    const bottomSpace = containerRect.bottom - rect.bottom;
 
-    let originX = '50%'
+    let originX = "50%";
     if (leftSpace < needX && rightSpace >= needX) {
-      originX = '0%'
+      originX = "0%";
     } else if (rightSpace < needX && leftSpace >= needX) {
-      originX = '100%'
+      originX = "100%";
     } else if (leftSpace < needX && rightSpace < needX) {
-      originX = leftSpace >= rightSpace ? '100%' : '0%'
+      originX = leftSpace >= rightSpace ? "100%" : "0%";
     }
 
-    let originY = '50%'
+    let originY = "50%";
     if (topSpace < needY && bottomSpace >= needY) {
-      originY = '0%'
+      originY = "0%";
     } else if (bottomSpace < needY && topSpace >= needY) {
-      originY = '100%'
+      originY = "100%";
     } else if (topSpace < needY && bottomSpace < needY) {
-      originY = topSpace >= bottomSpace ? '100%' : '0%'
+      originY = topSpace >= bottomSpace ? "100%" : "0%";
     }
 
-    focusedThumb.style.setProperty('--mpx-thumb-origin-x', originX)
-    focusedThumb.style.setProperty('--mpx-thumb-origin-y', originY)
+    focusedThumb.style.setProperty("--mpx-thumb-origin-x", originX);
+    focusedThumb.style.setProperty("--mpx-thumb-origin-y", originY);
 
     if (lastOriginElRef.current && lastOriginElRef.current !== focusedThumb) {
-      lastOriginElRef.current.style.removeProperty('--mpx-thumb-origin-x')
-      lastOriginElRef.current.style.removeProperty('--mpx-thumb-origin-y')
+      lastOriginElRef.current.style.removeProperty("--mpx-thumb-origin-x");
+      lastOriginElRef.current.style.removeProperty("--mpx-thumb-origin-y");
     }
-    lastOriginElRef.current = focusedThumb
-  }
+    lastOriginElRef.current = focusedThumb;
+  };
 
   const scheduleFocusedThumbOriginSync = () => {
     if (thumbOriginRafRef.current != null) {
-      return
+      return;
     }
     thumbOriginRafRef.current = window.requestAnimationFrame(() => {
-      thumbOriginRafRef.current = null
-      syncFocusedThumbTransformOrigin()
-    })
-  }
-  const { t } = useI18n()
-  void _adReviewScopeImageIds
-  void _adReviewLlmReviewedImageIds
-  void _adReviewNonLlmReviewedImageIds
-  const [metadataFetchOpen, setMetadataFetchOpen] = useState(false)
-  const [openScalePopover, setOpenScalePopover] = useState(false)
+      thumbOriginRafRef.current = null;
+      syncFocusedThumbTransformOrigin();
+    });
+  };
+  const { t } = useI18n();
+  void _adReviewScopeImageIds;
+  void _adReviewLlmReviewedImageIds;
+  void _adReviewNonLlmReviewedImageIds;
+  const [metadataFetchOpen, setMetadataFetchOpen] = useState(false);
+  const [openScalePopover, setOpenScalePopover] = useState(false);
   const [scaleDraftValue, setScaleDraftValue] = useState(
-    Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(thumbnailScaleLevel))),
-  )
-  const [nameListDimsById, setNameListDimsById] = useState<Record<string, { width: number; height: number }>>({})
-  const nameListDimsLoadingRef = useRef<Set<string>>(new Set())
-  const [nameListBodyEl, setNameListBodyEl] = useState<HTMLDivElement | null>(null)
-  const [nameListRange, setNameListRange] = useState<{ start: number; end: number }>({ start: 0, end: 0 })
-  const scalePopoverHideTimerRef = useRef<number | null>(null)
+    Math.max(
+      1,
+      Math.min(thumbnailScaleLevelCount, Math.round(thumbnailScaleLevel)),
+    ),
+  );
+  const [nameListDimsById, setNameListDimsById] = useState<
+    Record<string, { width: number; height: number }>
+  >({});
+  const nameListDimsLoadingRef = useRef<Set<string>>(new Set());
+  const [nameListBodyEl, setNameListBodyEl] = useState<HTMLDivElement | null>(
+    null,
+  );
+  const [nameListRange, setNameListRange] = useState<{
+    start: number;
+    end: number;
+  }>({ start: 0, end: 0 });
+  const scalePopoverHideTimerRef = useRef<number | null>(null);
 
-  const scaleLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(thumbnailScaleLevel)))
+  const scaleLevel = Math.max(
+    1,
+    Math.min(thumbnailScaleLevelCount, Math.round(thumbnailScaleLevel)),
+  );
 
   useEffect(() => {
-    setScaleDraftValue(scaleLevel)
-  }, [scaleLevel])
+    setScaleDraftValue(scaleLevel);
+  }, [scaleLevel]);
 
   useEffect(() => {
     if (!showNamesOnly) {
-      return
+      return;
     }
 
-    const body = nameListBodyEl
+    const body = nameListBodyEl;
     if (!body) {
-      return
+      return;
     }
 
-    let rafId: number | null = null
-    const bufferRows = 6
+    let rafId: number | null = null;
+    const bufferRows = 6;
 
     const compute = () => {
-      const row = body.querySelector('.name-list-row')
-      const rowHeight = row instanceof HTMLElement ? (row.getBoundingClientRect().height || 42) : 42
-      const totalRows = visibleImageRefs.length
-      const scrollTop = body.scrollTop
-      const viewportHeight = body.clientHeight
-      const visibleCount = Math.ceil(viewportHeight / Math.max(1, rowHeight))
-      const start = Math.max(0, Math.floor(scrollTop / Math.max(1, rowHeight)) - bufferRows)
-      const end = Math.min(totalRows, start + visibleCount + bufferRows * 2)
+      const row = body.querySelector(".name-list-row");
+      const rowHeight =
+        row instanceof HTMLElement
+          ? row.getBoundingClientRect().height || 42
+          : 42;
+      const totalRows = visibleImageRefs.length;
+      const scrollTop = body.scrollTop;
+      const viewportHeight = body.clientHeight;
+      const visibleCount = Math.ceil(viewportHeight / Math.max(1, rowHeight));
+      const start = Math.max(
+        0,
+        Math.floor(scrollTop / Math.max(1, rowHeight)) - bufferRows,
+      );
+      const end = Math.min(totalRows, start + visibleCount + bufferRows * 2);
 
       setNameListRange((previous) => {
         if (previous.start === start && previous.end === end) {
-          return previous
+          return previous;
         }
-        return { start, end }
-      })
-    }
+        return { start, end };
+      });
+    };
 
     const schedule = () => {
       if (rafId != null) {
-        return
+        return;
       }
       rafId = window.requestAnimationFrame(() => {
-        rafId = null
-        compute()
-      })
-    }
+        rafId = null;
+        compute();
+      });
+    };
 
-    schedule()
-    body.addEventListener('scroll', schedule, { passive: true })
-    window.addEventListener('resize', schedule)
+    schedule();
+    body.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
     return () => {
-      body.removeEventListener('scroll', schedule)
-      window.removeEventListener('resize', schedule)
+      body.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
       if (rafId != null) {
-        window.cancelAnimationFrame(rafId)
+        window.cancelAnimationFrame(rafId);
       }
-    }
-  }, [nameListBodyEl, showNamesOnly, visibleImageRefs.length])
+    };
+  }, [nameListBodyEl, showNamesOnly, visibleImageRefs.length]);
 
   useEffect(() => {
     // Keep focused thumbnail fully visible when navigating via keyboard,
     // so the focus ring / glow won't get clipped by the scroll viewport.
-    if (document.documentElement.dataset.mpxThumbInput !== 'keyboard') {
-      return
+    if (document.documentElement.dataset.mpxThumbInput !== "keyboard") {
+      return;
     }
 
-    const container = gridRef.current
+    const container = gridRef.current;
     if (!container) {
-      return
+      return;
     }
 
-    const focusedThumb = container.querySelector('.thumb-card.is-focused')
+    const focusedThumb = container.querySelector(".thumb-card.is-focused");
     if (!(focusedThumb instanceof HTMLElement)) {
-      return
+      return;
     }
 
-    if (typeof focusedThumb.scrollIntoView === 'function') {
-      focusedThumb.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })
+    if (typeof focusedThumb.scrollIntoView === "function") {
+      focusedThumb.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+        behavior: "auto",
+      });
     }
-    scheduleFocusedThumbOriginSync()
-  }, [focusedRef?.packageId, focusedRef?.imageIndex])
+    scheduleFocusedThumbOriginSync();
+  }, [focusedRef?.packageId, focusedRef?.imageIndex]);
 
   useEffect(() => {
     if (IS_TEST_MODE) {
-      return
+      return;
     }
 
-    const container = gridRef.current
-    const handle = () => scheduleFocusedThumbOriginSync()
+    const container = gridRef.current;
+    const handle = () => scheduleFocusedThumbOriginSync();
     if (container) {
-      container.addEventListener('scroll', handle, { passive: true })
+      container.addEventListener("scroll", handle, { passive: true });
     }
-    window.addEventListener('resize', handle)
+    window.addEventListener("resize", handle);
 
-    scheduleFocusedThumbOriginSync()
+    scheduleFocusedThumbOriginSync();
     return () => {
       if (container) {
-        container.removeEventListener('scroll', handle)
+        container.removeEventListener("scroll", handle);
       }
-      window.removeEventListener('resize', handle)
+      window.removeEventListener("resize", handle);
       if (thumbOriginRafRef.current != null) {
-        window.cancelAnimationFrame(thumbOriginRafRef.current)
-        thumbOriginRafRef.current = null
+        window.cancelAnimationFrame(thumbOriginRafRef.current);
+        thumbOriginRafRef.current = null;
       }
-    }
-  }, [nodeBrowseMode, showNamesOnly])
+    };
+  }, [nodeBrowseMode, showNamesOnly]);
 
   useEffect(() => {
     if (IS_TEST_MODE) {
-      return
+      return;
     }
-    scheduleFocusedThumbOriginSync()
-  }, [focusedRef?.packageId, focusedRef?.imageIndex])
+    scheduleFocusedThumbOriginSync();
+  }, [focusedRef?.packageId, focusedRef?.imageIndex]);
 
   const clearScalePopoverHideTimer = () => {
     if (scalePopoverHideTimerRef.current != null) {
-      window.clearTimeout(scalePopoverHideTimerRef.current)
-      scalePopoverHideTimerRef.current = null
+      window.clearTimeout(scalePopoverHideTimerRef.current);
+      scalePopoverHideTimerRef.current = null;
     }
-  }
+  };
 
   const openScalePopoverByHover = () => {
-    clearScalePopoverHideTimer()
-    setOpenScalePopover(true)
-  }
+    clearScalePopoverHideTimer();
+    setOpenScalePopover(true);
+  };
 
   const closeScalePopoverByHover = () => {
-    clearScalePopoverHideTimer()
+    clearScalePopoverHideTimer();
     scalePopoverHideTimerRef.current = window.setTimeout(() => {
-      setOpenScalePopover(false)
-      scalePopoverHideTimerRef.current = null
-    }, 140)
-  }
+      setOpenScalePopover(false);
+      scalePopoverHideTimerRef.current = null;
+    }, 140);
+  };
 
   useEffect(
     () => () => {
-      clearScalePopoverHideTimer()
+      clearScalePopoverHideTimer();
     },
     [],
-  )
+  );
 
   const initialThumbnailSession =
     !showNamesOnly && !nodeBrowseMode
@@ -440,36 +385,42 @@ function ImageMainSection({
           thumbnailColumns,
           thumbnailGap,
         })
-      : null
+      : null;
   const initialThumbnailUrls = initialThumbnailSession
     ? collectSessionImageUrls(initialThumbnailSession, imageUrlById)
-    : null
+    : null;
 
-  const [bufferedRefsInPage, setBufferedRefsInPage] = useState<FocusedImageRef[]>(() => {
+  const [bufferedRefsInPage, setBufferedRefsInPage] = useState<
+    FocusedImageRef[]
+  >(() => {
     if (initialThumbnailSession && initialThumbnailUrls) {
-      return initialThumbnailSession.refs
+      return initialThumbnailSession.refs;
     }
-    return []
-  })
-  const [bufferedThumbnailSessionKey, setBufferedThumbnailSessionKey] = useState<string | null>(() => {
-    if (initialThumbnailSession && initialThumbnailUrls) {
-      return initialThumbnailSession.key
-    }
-    return null
-  })
-  const [bufferedImageUrlById, setBufferedImageUrlById] = useState<Record<string, string>>(() => {
+    return [];
+  });
+  const [bufferedThumbnailSessionKey, setBufferedThumbnailSessionKey] =
+    useState<string | null>(() => {
+      if (initialThumbnailSession && initialThumbnailUrls) {
+        return initialThumbnailSession.key;
+      }
+      return null;
+    });
+  const [bufferedImageUrlById, setBufferedImageUrlById] = useState<
+    Record<string, string>
+  >(() => {
     if (initialThumbnailUrls) {
-      return initialThumbnailUrls
+      return initialThumbnailUrls;
     }
-    return {}
-  })
-  const [pendingThumbnailSession, setPendingThumbnailSession] = useState<ThumbnailGridSession | null>(() => {
-    if (initialThumbnailSession && !initialThumbnailUrls) {
-      return initialThumbnailSession
-    }
-    return null
-  })
-  const pendingDecodeSequenceRef = useRef(0)
+    return {};
+  });
+  const [pendingThumbnailSession, setPendingThumbnailSession] =
+    useState<ThumbnailGridSession | null>(() => {
+      if (initialThumbnailSession && !initialThumbnailUrls) {
+        return initialThumbnailSession;
+      }
+      return null;
+    });
+  const pendingDecodeSequenceRef = useRef(0);
 
   const thumbnailGridSession = useMemo(
     () =>
@@ -489,50 +440,59 @@ function ImageMainSection({
       thumbnailColumns,
       thumbnailGap,
     ],
-  )
+  );
 
   useEffect(() => {
     if (nodeBrowseMode) {
-      setPendingThumbnailSession(null)
-      setBufferedRefsInPage(refsInPage)
-      setBufferedThumbnailSessionKey(null)
-      setBufferedImageUrlById((previous) => (isEqualRecord(previous, imageUrlById) ? previous : imageUrlById))
-      return
+      setPendingThumbnailSession(null);
+      setBufferedRefsInPage(refsInPage);
+      setBufferedThumbnailSessionKey(null);
+      setBufferedImageUrlById((previous) =>
+        isEqualRecord(previous, imageUrlById) ? previous : imageUrlById,
+      );
+      return;
     }
 
     if (showNamesOnly) {
-      setPendingThumbnailSession(null)
-      return
+      setPendingThumbnailSession(null);
+      return;
     }
 
     if (!thumbnailGridSession) {
-      setPendingThumbnailSession(null)
-      setBufferedRefsInPage([])
-      setBufferedThumbnailSessionKey(null)
-      setBufferedImageUrlById((previous) => (Object.keys(previous).length === 0 ? previous : {}))
-      return
+      setPendingThumbnailSession(null);
+      setBufferedRefsInPage([]);
+      setBufferedThumbnailSessionKey(null);
+      setBufferedImageUrlById((previous) =>
+        Object.keys(previous).length === 0 ? previous : {},
+      );
+      return;
     }
 
-    const readyUrls = collectSessionImageUrls(thumbnailGridSession, imageUrlById)
+    const readyUrls = collectSessionImageUrls(
+      thumbnailGridSession,
+      imageUrlById,
+    );
 
     if (bufferedThumbnailSessionKey === thumbnailGridSession.key) {
       if (readyUrls) {
-        setBufferedRefsInPage(thumbnailGridSession.refs)
-        setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
-        setPendingThumbnailSession(null)
-        return
+        setBufferedRefsInPage(thumbnailGridSession.refs);
+        setBufferedImageUrlById((previous) =>
+          isEqualRecord(previous, readyUrls) ? previous : readyUrls,
+        );
+        setPendingThumbnailSession(null);
+        return;
       }
 
-      setPendingThumbnailSession(thumbnailGridSession)
-      return
+      setPendingThumbnailSession(thumbnailGridSession);
+      return;
     }
 
     setPendingThumbnailSession((previous) => {
       if (previous?.key === thumbnailGridSession.key) {
-        return previous
+        return previous;
       }
-      return thumbnailGridSession
-    })
+      return thumbnailGridSession;
+    });
   }, [
     bufferedThumbnailSessionKey,
     imageUrlById,
@@ -540,286 +500,340 @@ function ImageMainSection({
     refsInPage,
     showNamesOnly,
     thumbnailGridSession,
-  ])
+  ]);
 
   useEffect(() => {
     if (!pendingThumbnailSession) {
-      return
+      return;
     }
 
-    const readyUrls = collectSessionImageUrls(pendingThumbnailSession, imageUrlById)
+    const readyUrls = collectSessionImageUrls(
+      pendingThumbnailSession,
+      imageUrlById,
+    );
     if (!readyUrls) {
-      return
+      return;
     }
 
     if (IS_TEST_MODE) {
-      setPendingThumbnailSession(null)
-      setBufferedThumbnailSessionKey(pendingThumbnailSession.key)
-      setBufferedRefsInPage(pendingThumbnailSession.refs)
-      setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
-      return
+      setPendingThumbnailSession(null);
+      setBufferedThumbnailSessionKey(pendingThumbnailSession.key);
+      setBufferedRefsInPage(pendingThumbnailSession.refs);
+      setBufferedImageUrlById((previous) =>
+        isEqualRecord(previous, readyUrls) ? previous : readyUrls,
+      );
+      return;
     }
 
-    pendingDecodeSequenceRef.current += 1
-    const sequence = pendingDecodeSequenceRef.current
-    let cancelled = false
+    pendingDecodeSequenceRef.current += 1;
+    const sequence = pendingDecodeSequenceRef.current;
+    let cancelled = false;
 
     void preloadSessionImageUrls(readyUrls)
       .catch(() => undefined)
       .then(() => {
         if (cancelled || pendingDecodeSequenceRef.current !== sequence) {
-          return
+          return;
         }
 
-        setPendingThumbnailSession(null)
-        setBufferedThumbnailSessionKey(pendingThumbnailSession.key)
-        setBufferedRefsInPage(pendingThumbnailSession.refs)
-        setBufferedImageUrlById((previous) => (isEqualRecord(previous, readyUrls) ? previous : readyUrls))
-      })
+        setPendingThumbnailSession(null);
+        setBufferedThumbnailSessionKey(pendingThumbnailSession.key);
+        setBufferedRefsInPage(pendingThumbnailSession.refs);
+        setBufferedImageUrlById((previous) =>
+          isEqualRecord(previous, readyUrls) ? previous : readyUrls,
+        );
+      });
 
     return () => {
-      cancelled = true
-    }
-  }, [imageUrlById, pendingThumbnailSession])
+      cancelled = true;
+    };
+  }, [imageUrlById, pendingThumbnailSession]);
 
-  const thumbnailBufferPending = !showNamesOnly && !nodeBrowseMode && pendingThumbnailSession !== null
-  const refsInPageForRender = showNamesOnly || nodeBrowseMode ? refsInPage : bufferedRefsInPage
-  const imageUrlByIdForRender = showNamesOnly || nodeBrowseMode ? imageUrlById : bufferedImageUrlById
+  const thumbnailBufferPending =
+    !showNamesOnly && !nodeBrowseMode && pendingThumbnailSession !== null;
+  const refsInPageForRender =
+    showNamesOnly || nodeBrowseMode ? refsInPage : bufferedRefsInPage;
+  const imageUrlByIdForRender =
+    showNamesOnly || nodeBrowseMode ? imageUrlById : bufferedImageUrlById;
   const hasRenderableThumbnailBatch =
     !showNamesOnly &&
     !nodeBrowseMode &&
     refsInPageForRender.length > 0 &&
     refsInPageForRender.every((ref) => {
-      const imageId = resolveImageIdForRef(packageById, ref)
-      return Boolean(imageId && imageUrlByIdForRender[imageId])
-    })
-  const isThumbnailInteractionLocked = !showNamesOnly && !nodeBrowseMode && thumbnailBufferPending
+      const imageId = resolveImageIdForRef(packageById, ref);
+      return Boolean(imageId && imageUrlByIdForRender[imageId]);
+    });
+  const isThumbnailInteractionLocked =
+    !showNamesOnly && !nodeBrowseMode && thumbnailBufferPending;
   const showSkeleton =
     !showNamesOnly &&
     !nodeBrowseMode &&
     enableLoadingSkeleton &&
-    (!hasRenderableThumbnailBatch && (thumbnailBufferPending || (loading && refsInPageForRender.length === 0)))
-  const skeletonCount = Math.max(1, thumbnailBufferPending ? (pendingThumbnailSession?.refs.length ?? placeholderCount) : placeholderCount)
+    !hasRenderableThumbnailBatch &&
+    (thumbnailBufferPending || (loading && refsInPageForRender.length === 0));
+  const skeletonCount = Math.max(
+    1,
+    thumbnailBufferPending
+      ? (pendingThumbnailSession?.refs.length ?? placeholderCount)
+      : placeholderCount,
+  );
 
   useEffect(() => {
-    onGridElementChange(gridRef.current)
+    onGridElementChange(gridRef.current);
     return () => {
-      onGridElementChange(null)
-    }
-  }, [gridRef, nodeBrowseMode, onGridElementChange, showNamesOnly])
+      onGridElementChange(null);
+    };
+  }, [gridRef, nodeBrowseMode, onGridElementChange, showNamesOnly]);
 
   useEffect(() => {
     if (!showNamesOnly) {
-      return
+      return;
     }
 
     if (IS_TEST_MODE) {
-      return
+      return;
     }
 
-    const api = window.mediaPlayerBackend
+    const api = window.mediaPlayerBackend;
     if (!api?.readImageMetadata) {
-      return
+      return;
     }
 
-    const canResolveOriginal = typeof api.resolveMediaResource === 'function'
+    const canResolveOriginal = typeof api.resolveMediaResource === "function";
 
-    let cancelled = false
-    const maxConcurrent = 2
+    let cancelled = false;
+    const maxConcurrent = 2;
 
-    const itemsToLoad: Array<{ imageId: string; packageId: string; imageIndex: number; locatorDto: ReturnType<typeof mapMediaLocatorToDto> }> = []
-    const startIndex = Math.max(0, nameListRange.start)
-    const endIndex = Math.min(visibleImageRefs.length, Math.max(nameListRange.end, startIndex))
+    const itemsToLoad: Array<{
+      imageId: string;
+      packageId: string;
+      imageIndex: number;
+      locatorDto: ReturnType<typeof mapMediaLocatorToDto>;
+    }> = [];
+    const startIndex = Math.max(0, nameListRange.start);
+    const endIndex = Math.min(
+      visibleImageRefs.length,
+      Math.max(nameListRange.end, startIndex),
+    );
     for (let index = startIndex; index < endIndex; index += 1) {
-      const ref = visibleImageRefs[index]
-      const pkg = packageById.get(ref.packageId)
-      const image = pkg?.images[ref.imageIndex]
+      const ref = visibleImageRefs[index];
+      const pkg = packageById.get(ref.packageId);
+      const image = pkg?.images[ref.imageIndex];
       if (!image) {
-        continue
+        continue;
       }
 
-      const existing = nameListDimsById[image.id]
-      const width = existing?.width ?? image.width
-      const height = existing?.height ?? image.height
+      const existing = nameListDimsById[image.id];
+      const width = existing?.width ?? image.width;
+      const height = existing?.height ?? image.height;
       if (width > 0 && height > 0) {
-        continue
+        continue;
       }
 
       if (nameListDimsLoadingRef.current.has(image.id)) {
-        continue
+        continue;
       }
 
-      nameListDimsLoadingRef.current.add(image.id)
+      nameListDimsLoadingRef.current.add(image.id);
       itemsToLoad.push({
         imageId: image.id,
         packageId: ref.packageId,
         imageIndex: ref.imageIndex,
         locatorDto: mapMediaLocatorToDto(image.mediaLocator),
-      })
+      });
     }
 
     if (itemsToLoad.length === 0) {
-      return
+      return;
     }
 
-    const loadDimsFromUrl = (url: string): Promise<{ width: number; height: number } | null> => {
+    const loadDimsFromUrl = (
+      url: string,
+    ): Promise<{ width: number; height: number } | null> => {
       return new Promise((resolve) => {
-        const img = new Image()
-        img.decoding = 'async'
-        img.loading = 'eager'
+        const img = new Image();
+        img.decoding = "async";
+        img.loading = "eager";
         img.onload = () => {
-          const width = img.naturalWidth || img.width || 0
-          const height = img.naturalHeight || img.height || 0
-          resolve(width > 0 && height > 0 ? { width, height } : null)
-        }
-        img.onerror = () => resolve(null)
-        img.src = url
-      })
-    }
+          const width = img.naturalWidth || img.width || 0;
+          const height = img.naturalHeight || img.height || 0;
+          resolve(width > 0 && height > 0 ? { width, height } : null);
+        };
+        img.onerror = () => resolve(null);
+        img.src = url;
+      });
+    };
 
-    let cursor = 0
-    const workers = Array.from({ length: Math.min(maxConcurrent, itemsToLoad.length) }, async () => {
-      while (!cancelled) {
-        const index = cursor
-        cursor += 1
-        const next = itemsToLoad[index]
-        if (!next) {
-          return
-        }
-
-        try {
-          const response = await api.readImageMetadata({
-            package_id: next.packageId,
-            image_index: next.imageIndex,
-            include_hidden: manageMode,
-          })
-          const width = response?.image?.width ?? 0
-          const height = response?.image?.height ?? 0
-          if (!cancelled && width > 0 && height > 0) {
-            setNameListDimsById((previous) => {
-              if (previous[next.imageId]) {
-                return previous
-              }
-              return { ...previous, [next.imageId]: { width, height } }
-            })
-            continue
+    let cursor = 0;
+    const workers = Array.from(
+      { length: Math.min(maxConcurrent, itemsToLoad.length) },
+      async () => {
+        while (!cancelled) {
+          const index = cursor;
+          cursor += 1;
+          const next = itemsToLoad[index];
+          if (!next) {
+            return;
           }
 
-          if (!cancelled && canResolveOriginal) {
-            const resource = await api.resolveMediaResource({ locator: next.locatorDto, preferred_variant: 'original' })
-            const dims = resource?.resource_url ? await loadDimsFromUrl(resource.resource_url) : null
-            if (!cancelled && dims) {
+          try {
+            const response = await api.readImageMetadata({
+              package_id: next.packageId,
+              image_index: next.imageIndex,
+              include_hidden: manageMode,
+            });
+            const width = response?.image?.width ?? 0;
+            const height = response?.image?.height ?? 0;
+            if (!cancelled && width > 0 && height > 0) {
               setNameListDimsById((previous) => {
                 if (previous[next.imageId]) {
-                  return previous
+                  return previous;
                 }
-                return { ...previous, [next.imageId]: dims }
-              })
+                return { ...previous, [next.imageId]: { width, height } };
+              });
+              continue;
             }
+
+            if (!cancelled && canResolveOriginal) {
+              const resource = await api.resolveMediaResource({
+                locator: next.locatorDto,
+                preferred_variant: "original",
+              });
+              const dims = resource?.resource_url
+                ? await loadDimsFromUrl(resource.resource_url)
+                : null;
+              if (!cancelled && dims) {
+                setNameListDimsById((previous) => {
+                  if (previous[next.imageId]) {
+                    return previous;
+                  }
+                  return { ...previous, [next.imageId]: dims };
+                });
+              }
+            }
+          } catch {
+            // ignore
+          } finally {
+            nameListDimsLoadingRef.current.delete(next.imageId);
           }
-        } catch {
-          // ignore
-        } finally {
-          nameListDimsLoadingRef.current.delete(next.imageId)
         }
-      }
-    })
+      },
+    );
 
-    void Promise.all(workers)
+    void Promise.all(workers);
     return () => {
-      cancelled = true
+      cancelled = true;
       for (const item of itemsToLoad) {
-        nameListDimsLoadingRef.current.delete(item.imageId)
+        nameListDimsLoadingRef.current.delete(item.imageId);
       }
-    }
-  }, [manageMode, nameListDimsById, nameListRange.end, nameListRange.start, packageById, showNamesOnly, visibleImageRefs])
-
-  const { marqueeStyle, startMarqueeSelection, startThumbnailDragToggle } = useManageImageSelectionInteractions({
+    };
+  }, [
     manageMode,
-    onReplaceCheckedImages,
-    onToggleImageChecked,
-    onSelectImage,
-    focusOnFirstToggle: !adReviewResultsMode,
-  })
+    nameListDimsById,
+    nameListRange.end,
+    nameListRange.start,
+    packageById,
+    showNamesOnly,
+    visibleImageRefs,
+  ]);
+
+  const { marqueeStyle, startMarqueeSelection, startThumbnailDragToggle } =
+    useManageImageSelectionInteractions({
+      manageMode,
+      onReplaceCheckedImages,
+      onToggleImageChecked,
+      onSelectImage,
+      focusOnFirstToggle: !adReviewResultsMode,
+    });
 
   const manageSummary =
-    activeSelectionScope === 'sidebar'
-      ? t('a11y.manage.selectedSidebarNodes', { count: sidebarSelectedCount })
-      : activeSelectionScope === 'image'
-        ? t('a11y.manage.selectedMediaItems', { count: imageSelectedCount })
-        : t('a11y.manage.noSelection')
+    activeSelectionScope === "sidebar"
+      ? t("a11y.manage.selectedSidebarNodes", { count: sidebarSelectedCount })
+      : activeSelectionScope === "image"
+        ? t("a11y.manage.selectedMediaItems", { count: imageSelectedCount })
+        : t("a11y.manage.noSelection");
 
   const currentThumbnailPageImageIds = useMemo(() => {
     if (!manageMode) {
-      return []
+      return [];
     }
 
-    const ids: string[] = []
+    const ids: string[] = [];
     for (const ref of refsInPage) {
-      const imageId = resolveImageIdForRef(packageById, ref)
+      const imageId = resolveImageIdForRef(packageById, ref);
       if (imageId) {
-        ids.push(imageId)
+        ids.push(imageId);
       }
     }
-    return ids
-  }, [manageMode, packageById, refsInPage])
-  const hasCurrentThumbnailPage = currentThumbnailPageImageIds.length > 0
-  const hasAnyManageSelection = sidebarSelectedCount > 0 || imageSelectedCount > 0
+    return ids;
+  }, [manageMode, packageById, refsInPage]);
+  const hasCurrentThumbnailPage = currentThumbnailPageImageIds.length > 0;
+  const hasAnyManageSelection =
+    sidebarSelectedCount > 0 || imageSelectedCount > 0;
 
   const activePackageImageProgress = (() => {
     if (!activePackage || activePackage.images.length === 0) {
-      return null
+      return null;
     }
 
-    const total = activePackage.images.length
+    const total = activePackage.images.length;
 
     if (focusedRef?.packageId === activePackage.id) {
-      const current = Math.max(1, Math.min(total, focusedRef.imageIndex + 1))
-      return `${current}/${total}`
+      const current = Math.max(1, Math.min(total, focusedRef.imageIndex + 1));
+      return `${current}/${total}`;
     }
 
-    const firstInPage = refsInPage.find((ref) => ref.packageId === activePackage.id)
+    const firstInPage = refsInPage.find(
+      (ref) => ref.packageId === activePackage.id,
+    );
     if (firstInPage) {
-      const current = Math.max(1, Math.min(total, firstInPage.imageIndex + 1))
-      return `${current}/${total}`
+      const current = Math.max(1, Math.min(total, firstInPage.imageIndex + 1));
+      return `${current}/${total}`;
     }
 
-    const firstVisible = visibleImageRefs.find((ref) => ref.packageId === activePackage.id)
+    const firstVisible = visibleImageRefs.find(
+      (ref) => ref.packageId === activePackage.id,
+    );
     if (firstVisible) {
-      const current = Math.max(1, Math.min(total, firstVisible.imageIndex + 1))
-      return `${current}/${total}`
+      const current = Math.max(1, Math.min(total, firstVisible.imageIndex + 1));
+      return `${current}/${total}`;
     }
 
-    return `1/${total}`
-  })()
+    return `1/${total}`;
+  })();
 
   const browseToolbarTitle = nodeBrowseMode
-    ? t('ui.image.nodeBrowseSummary', {
-        label: nodeBrowseLabel || t('ui.image.nodeBrowseDefaultLabel'),
+    ? t("ui.image.nodeBrowseSummary", {
+        label: nodeBrowseLabel || t("ui.image.nodeBrowseDefaultLabel"),
         count: nodeBrowseItems.length,
       })
     : vectorMode
-      ? t('ui.image.searchResultsView')
-      : t('ui.image.packageProgressSummary', {
-          packageName: activePackage?.displayName ?? t('ui.image.noPackage'),
-          progress: activePackageImageProgress ?? t('ui.image.defaultProgress'),
-        })
+      ? t("ui.image.searchResultsView")
+      : t("ui.image.packageProgressSummary", {
+          packageName: activePackage?.displayName ?? t("ui.image.noPackage"),
+          progress: activePackageImageProgress ?? t("ui.image.defaultProgress"),
+        });
 
-  const handleThumbnailContainerWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
-    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || event.deltaY === 0) {
-      return
+  const handleThumbnailContainerWheel = (
+    event: ReactWheelEvent<HTMLDivElement>,
+  ) => {
+    if (
+      Math.abs(event.deltaY) <= Math.abs(event.deltaX) ||
+      event.deltaY === 0
+    ) {
+      return;
     }
 
-    const direction: 'next' | 'prev' = event.deltaY > 0 ? 'next' : 'prev'
-    event.preventDefault()
+    const direction: "next" | "prev" = event.deltaY > 0 ? "next" : "prev";
+    event.preventDefault();
 
     if (event.ctrlKey) {
-      onThumbnailWheelSwitchSidebarNode?.(direction)
-      return
+      onThumbnailWheelSwitchSidebarNode?.(direction);
+      return;
     }
 
-    onThumbnailWheelTurnPage?.(direction)
-  }
+    onThumbnailWheelTurnPage?.(direction);
+  };
 
   return (
     <>
@@ -830,22 +844,35 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={hasAnyManageSelection ? t('a11y.common.clearSelection') : t('a11y.media.selectAllPage')}
-                title={hasAnyManageSelection ? t('tip.common.clearSelection') : t('tip.media.selectAllPage')}
-                disabled={pendingManageAction || (!hasAnyManageSelection && !hasCurrentThumbnailPage)}
+                aria-label={
+                  hasAnyManageSelection
+                    ? t("a11y.common.clearSelection")
+                    : t("a11y.media.selectAllPage")
+                }
+                title={
+                  hasAnyManageSelection
+                    ? t("tip.common.clearSelection")
+                    : t("tip.media.selectAllPage")
+                }
+                disabled={
+                  pendingManageAction ||
+                  (!hasAnyManageSelection && !hasCurrentThumbnailPage)
+                }
                 onClick={
                   hasAnyManageSelection
                     ? onClearManageSelection
                     : () => onReplaceCheckedImages(currentThumbnailPageImageIds)
                 }
               >
-                <MainUiIcon name={hasAnyManageSelection ? 'unselectAll' : 'selectAll'} />
+                <MainUiIcon
+                  name={hasAnyManageSelection ? "unselectAll" : "selectAll"}
+                />
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.common.hide')}
-                title={t('tip.common.hide')}
+                aria-label={t("a11y.common.hide")}
+                title={t("tip.common.hide")}
                 disabled={!canManageHide || pendingManageAction}
                 onClick={onManageHide}
               >
@@ -854,8 +881,8 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.common.unhide')}
-                title={t('tip.common.unhide')}
+                aria-label={t("a11y.common.unhide")}
+                title={t("tip.common.unhide")}
                 disabled={!canManageUnhide || pendingManageAction}
                 onClick={onManageUnhide}
               >
@@ -864,18 +891,26 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.common.organize')}
-                title={t('tip.common.organize')}
+                aria-label={t("a11y.common.organize")}
+                title={t("tip.common.organize")}
                 disabled={!canManageMoveNodes || pendingManageAction}
                 onClick={onManageGroup}
               >
                 <MainUiIcon name="organize" />
               </button>
               <button
-                className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? 'is-pending' : ''}`}
+                className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? "is-pending" : ""}`}
                 type="button"
-                aria-label={adReviewDeletePending ? t('ui.manage.deleting') : t('a11y.common.delete')}
-                title={adReviewDeletePending ? t('ui.manage.deleting') : t('tip.common.delete')}
+                aria-label={
+                  adReviewDeletePending
+                    ? t("ui.manage.deleting")
+                    : t("a11y.common.delete")
+                }
+                title={
+                  adReviewDeletePending
+                    ? t("ui.manage.deleting")
+                    : t("tip.common.delete")
+                }
                 disabled={!canManageDelete || pendingManageAction}
                 onClick={onManageDelete}
               >
@@ -883,17 +918,19 @@ function ImageMainSection({
               </button>
               {adReviewFeatureEnabled ? (
                 <button
-                  className={`feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? 'is-active' : ''}`}
+                  className={`feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? "is-active" : ""}`}
                   type="button"
-                  aria-label={t('a11y.manage.adReview')}
-                  title={t('tip.manage.adReview')}
+                  aria-label={t("a11y.manage.adReview")}
+                  title={t("tip.manage.adReview")}
                   disabled={pendingManageAction}
                   onClick={onToggleAdReviewPanel}
                 >
                   <MainUiIcon name="adSearch" />
                 </button>
               ) : null}
-              {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
+              {manageOperationHint ? (
+                <span className="main-toolbar-hint">{manageOperationHint}</span>
+              ) : null}
             </div>
             <strong className="main-toolbar-summary" title={manageSummary}>
               {manageSummary}
@@ -901,13 +938,15 @@ function ImageMainSection({
           </>
         ) : metadataManageMode ? (
           <>
-            <strong className="main-toolbar-title">{t('ui.header.metadataManage')}</strong>
+            <strong className="main-toolbar-title">
+              {t("ui.header.metadataManage")}
+            </strong>
             <div className="toolbar-actions toolbar-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.common.syncName')}
-                title={t('tip.common.syncName')}
+                aria-label={t("a11y.common.syncName")}
+                title={t("tip.common.syncName")}
                 disabled={metadataPending}
                 onClick={onMetadataSyncName}
               >
@@ -916,13 +955,15 @@ function ImageMainSection({
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
-                aria-label={t('a11y.metadata.fetch')}
-                title={t('a11y.metadata.fetch')}
+                aria-label={t("a11y.metadata.fetch")}
+                title={t("a11y.metadata.fetch")}
                 onClick={() => setMetadataFetchOpen(true)}
               >
                 <MainUiIcon name="getMetaData" />
               </button>
-              {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
+              {manageOperationHint ? (
+                <span className="main-toolbar-hint">{manageOperationHint}</span>
+              ) : null}
             </div>
           </>
         ) : (
@@ -931,28 +972,48 @@ function ImageMainSection({
             <div className="toolbar-actions toolbar-actions-image-mode">
               <div className="toolbar-actions toolbar-actions-image-primary">
                 <button
-                  className={`toolbar-icon-btn ${showNamesOnly ? 'is-names-mode' : 'is-grid-mode'}`}
+                  className={`toolbar-icon-btn ${showNamesOnly ? "is-names-mode" : "is-grid-mode"}`}
                   type="button"
-                  aria-label={showNamesOnly ? t('a11y.image.switchToGridMode') : t('a11y.image.switchToNamesMode')}
-                  title={showNamesOnly ? t('tip.image.switchToGridMode') : t('tip.image.switchToNamesMode')}
+                  aria-label={
+                    showNamesOnly
+                      ? t("a11y.image.switchToGridMode")
+                      : t("a11y.image.switchToNamesMode")
+                  }
+                  title={
+                    showNamesOnly
+                      ? t("tip.image.switchToGridMode")
+                      : t("tip.image.switchToNamesMode")
+                  }
                   onClick={onToggleShowNamesOnly}
                 >
-                  <MainUiIcon name={showNamesOnly ? 'thumbnail' : 'fileList'} />
+                  <MainUiIcon name={showNamesOnly ? "thumbnail" : "fileList"} />
                 </button>
                 <div
-                  className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? 'is-open' : ''}`}
+                  className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? "is-open" : ""}`}
                   role="group"
-                  aria-label={t('a11y.header.thumbnailScaleGroup')}
+                  aria-label={t("a11y.header.thumbnailScaleGroup")}
                   onMouseEnter={openScalePopoverByHover}
                   onMouseLeave={closeScalePopoverByHover}
                 >
                   <button
-                    {...buildA11yPropsByRegistry({ key: 'headerThumbnailScale', t })}
+                    {...buildA11yPropsByRegistry({
+                      key: "headerThumbnailScale",
+                      t,
+                    })}
                     className="toolbar-icon-btn header-popover-trigger"
                     disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
                     type="button"
                   >
-                    <svg aria-hidden="true" className="main-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      aria-hidden="true"
+                      className="main-ui-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <circle cx="11" cy="11" r="8" />
                       <path d="m21 21-4.3-4.3" />
                       <path d="M11 8v6" />
@@ -964,15 +1025,28 @@ function ImageMainSection({
                     className="header-popover-panel"
                     hidden={!openScalePopover}
                     role="dialog"
-                    aria-label={t('a11y.header.scaleSettings')}
+                    aria-label={t("a11y.header.scaleSettings")}
                   >
-                    <div className="header-vertical-slider" role="group" aria-label={t('a11y.header.scaleLevels')}>
+                    <div
+                      className="header-vertical-slider"
+                      role="group"
+                      aria-label={t("a11y.header.scaleLevels")}
+                    >
                       <div className="header-vertical-slider-value">
-                        {Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(scaleDraftValue)))}
+                        {Math.max(
+                          1,
+                          Math.min(
+                            thumbnailScaleLevelCount,
+                            Math.round(scaleDraftValue),
+                          ),
+                        )}
                       </div>
                       <div className="header-vertical-slider-body">
                         <input
-                          {...buildA11yPropsByRegistry({ key: 'headerScaleSlider', t })}
+                          {...buildA11yPropsByRegistry({
+                            key: "headerScaleSlider",
+                            t,
+                          })}
                           className="header-vertical-range"
                           max={thumbnailScaleLevelCount}
                           min={1}
@@ -980,10 +1054,16 @@ function ImageMainSection({
                           type="range"
                           value={scaleDraftValue}
                           onChange={(event) => {
-                            const nextValue = Number(event.target.value)
-                            setScaleDraftValue(nextValue)
-                            const roundedLevel = Math.max(1, Math.min(thumbnailScaleLevelCount, Math.round(nextValue)))
-                            onThumbnailScaleLevelChange?.(roundedLevel)
+                            const nextValue = Number(event.target.value);
+                            setScaleDraftValue(nextValue);
+                            const roundedLevel = Math.max(
+                              1,
+                              Math.min(
+                                thumbnailScaleLevelCount,
+                                Math.round(nextValue),
+                              ),
+                            );
+                            onThumbnailScaleLevelChange?.(roundedLevel);
                           }}
                         />
                       </div>
@@ -993,33 +1073,37 @@ function ImageMainSection({
                 <button
                   className="toolbar-icon-btn"
                   type="button"
-                  aria-label={t('a11y.media.enterFullscreen')}
-                  title={t('tip.media.enterFullscreen')}
+                  aria-label={t("a11y.media.enterFullscreen")}
+                  title={t("tip.media.enterFullscreen")}
                   onClick={onEnterFullscreen}
                   disabled={!focusedImageExists}
                 >
-                  <VideoControlIcon className="main-ui-icon" name="fullscreenExpand" />
+                  <VideoControlIcon
+                    className="main-ui-icon"
+                    name="fullscreenExpand"
+                  />
                 </button>
                 {canJumpToMusicFromBooklet ? (
                   <button
                     className="toolbar-icon-btn"
                     type="button"
-                    aria-label={t('a11y.media.music')}
-                    title={t('tip.media.music')}
+                    aria-label={t("a11y.media.music")}
+                    title={t("tip.media.music")}
                     onClick={onJumpToMusicFromBooklet}
                   >
                     <MainUiIcon name="musicMode" />
                   </button>
                 ) : null}
               </div>
-              {canJumpToAnimation || (canJumpToMusic && !canJumpToMusicFromBooklet) ? (
+              {canJumpToAnimation ||
+              (canJumpToMusic && !canJumpToMusicFromBooklet) ? (
                 <div className="toolbar-actions toolbar-actions-series-jump">
                   {canJumpToAnimation ? (
                     <button
                       className="toolbar-icon-btn"
                       type="button"
-                      aria-label={t('a11y.media.animation')}
-                      title={t('tip.media.animation')}
+                      aria-label={t("a11y.media.animation")}
+                      title={t("tip.media.animation")}
                       onClick={onJumpToAnimation}
                     >
                       <MainUiIcon name="videoMode" />
@@ -1029,8 +1113,8 @@ function ImageMainSection({
                     <button
                       className="toolbar-icon-btn"
                       type="button"
-                      aria-label={t('a11y.media.music')}
-                      title={t('tip.media.music')}
+                      aria-label={t("a11y.media.music")}
+                      title={t("tip.media.music")}
                       onClick={onJumpToMusic}
                     >
                       <MainUiIcon name="musicMode" />
@@ -1043,188 +1127,42 @@ function ImageMainSection({
         )}
       </div>
 
-      {nodeBrowseMode ? (
-        <div
-          className="image-grid node-browse-grid"
-          ref={gridRef}
-          onWheel={handleThumbnailContainerWheel}
-          style={{
-            gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
-            gap: `${thumbnailGap}px`,
-          }}
-        >
-          {nodeBrowseItems.map((item) => (
-            <div key={item.nodeId} className="thumb-card" style={{ width: `${actualCellWidth}px` }}>
-              <button
-                className="thumb-card-main"
-                type="button"
-                onPointerDown={(event) => {
-                  markThumbInputMouse()
-                  scrollFocusedThumbIntoView(event.currentTarget)
-                  scheduleFocusedThumbOriginSync()
-                }}
-                onClick={() => onSelectNodeBrowseItem?.(item.nodeId, item.imageSourceId)}
-              >
-                <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
-                  <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
-                    {item.coverImageUrl ? (
-                      <img
-                        className="thumb-media-image"
-                        src={item.coverImageUrl}
-                        alt={item.label}
-                        loading="lazy"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="thumb-media-empty" />
-                    )}
-                  </div>
-                </div>
-              </button>
-            </div>
-          ))}
-        </div>
-      ) : showNamesOnly ? (
-        <div className={`name-list ${manageMode ? 'is-manage' : ''}`} ref={gridRef}>
-          <div className="name-list-header">
-            <span>{t('ui.metadata.fileName')}</span>
-            <span>{t('ui.image.fileSize')}</span>
-            <span>{t('ui.image.resolution')}</span>
-          </div>
-          <div
-            className="name-list-body"
-            ref={setNameListBodyEl}
-            onMouseDown={(event) => {
-              startMarqueeSelection(event)
-              startThumbnailDragToggle(event)
-            }}
-          >
-            {visibleImageRefs.map((ref, absoluteIndex) => {
-              const pkg = packageById.get(ref.packageId)
-              const image = pkg?.images[ref.imageIndex]
-              if (!pkg || !image) {
-                return null
-              }
-
-               const fileName = mediaLocatorFileName(image.mediaLocator)
-               const resolvedDims = nameListDimsById[image.id]
-               const resolvedWidth = resolvedDims?.width ?? image.width
-               const resolvedHeight = resolvedDims?.height ?? image.height
-               const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
-               const isChecked = checkedImageIds.has(image.id)
-               const isAdReviewCandidate = adReviewCandidateImageIds.has(image.id)
-               const isAdReviewExcluded = manageMode && isAdReviewCandidate && !isChecked
-               return (
-                <div
-                  key={`${ref.packageId}-${ref.imageIndex}`}
-                  data-manage-image-id={image.id}
-                  data-manage-package-id={ref.packageId}
-                  data-manage-image-index={String(ref.imageIndex)}
-                  data-manage-absolute-index={String(absoluteIndex)}
-                  className={`name-list-row ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${manageMode && image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${isAdReviewExcluded ? 'is-ad-review-excluded' : ''}`}
-                >
-                  <button
-                    className="name-list-row-main"
-                    type="button"
-                    onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
-                    onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
-                  >
-                     <span>{`${manageMode && image.hidden ? `${t('ui.image.hiddenPrefix')} ` : ''}${fileName}`}</span>
-                     <span>{`${image.sizeKb}KB`}</span>
-                     <span>{resolvedWidth > 0 && resolvedHeight > 0 ? `${resolvedWidth} x ${resolvedHeight}` : '-'}</span>
-                   </button>
-                 </div>
-               )
-             })}
-          </div>
-        </div>
-      ) : (
-        <div
-          className={`image-grid ${manageMode ? 'is-manage' : ''} ${isThumbnailInteractionLocked ? 'is-pending-swap' : ''}`}
-          ref={gridRef}
-          aria-busy={isThumbnailInteractionLocked || undefined}
-          onWheel={handleThumbnailContainerWheel}
-          onMouseDown={manageMode && !isThumbnailInteractionLocked ? startThumbnailDragToggle : undefined}
-          style={{
-            gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
-            gap: `${thumbnailGap}px`,
-          }}
-        >
-          {showSkeleton
-            ? Array.from({ length: skeletonCount }).map((_, index) => (
-                <div
-                  key={`skeleton-${index}`}
-                  className="thumb-card is-skeleton"
-                  style={{ width: `${actualCellWidth}px` }}
-                >
-                  <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
-                    <div className="thumb-media thumb-media-empty" style={{ width: '100%', height: '100%' }} />
-                  </div>
-                </div>
-              ))
-            : refsInPageForRender.map((ref, pageIndex) => {
-              const pkg = packageById.get(ref.packageId)
-              const image = pkg?.images[ref.imageIndex]
-              if (!pkg || !image) {
-                return null
-              }
-
-                const absoluteIndex = pageStart + pageIndex
-              const isFocused = focusedRef?.packageId === ref.packageId && focusedRef.imageIndex === ref.imageIndex
-              const imageSrc = imageUrlByIdForRender[image.id] ?? ''
-              const isChecked = checkedImageIds.has(image.id)
-              const isAdReviewCandidate = adReviewCandidateImageIds.has(image.id)
-              const isAdReviewExcluded = manageMode && isAdReviewCandidate && !isChecked
-              const previousRef = pageIndex > 0 ? refsInPageForRender[pageIndex - 1] : null
-              const startsNewPackageRow = adReviewGroupByPackageRows && (pageIndex === 0 || previousRef?.packageId !== ref.packageId)
-              return (
-                <div
-                    key={`${ref.packageId}-${ref.imageIndex}`}
-                    data-manage-image-id={image.id}
-                    data-manage-package-id={ref.packageId}
-                    data-manage-image-index={String(ref.imageIndex)}
-                    data-manage-absolute-index={String(absoluteIndex)}
-                    className={`thumb-card ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${manageMode && image.hidden ? 'is-hidden' : ''} ${isFocused ? 'is-focused' : ''} ${isAdReviewExcluded ? 'is-ad-review-excluded' : ''}`}
-                    style={{ width: `${actualCellWidth}px`, gridColumnStart: startsNewPackageRow ? 1 : undefined }}
-                  >
-                    <button
-                      className="thumb-card-main"
-                      type="button"
-                      disabled={isThumbnailInteractionLocked}
-                      onPointerDown={(event) => {
-                        markThumbInputMouse()
-                        scrollFocusedThumbIntoView(event.currentTarget)
-                        scheduleFocusedThumbOriginSync()
-                      }}
-                      onClick={!manageMode ? () => onSelectImage(ref.packageId, ref.imageIndex, absoluteIndex) : undefined}
-                      onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
-                    >
-                      {manageMode && image.hidden ? <span className="manage-hidden-badge">{t('ui.image.hiddenBadge')}</span> : null}
-                      <span className="visually-hidden">{`${pkg.displayName} #${image.ordinal}`}</span>
-                      {vectorMode ? (
-                        <span className="visually-hidden">{t('ui.image.similarityScore', { score: (vectorCandidates[absoluteIndex]?.score ?? 0).toFixed(2) })}</span>
-                      ) : null}
-                      <div className="thumb-placeholder" style={{ aspectRatio: '1 / 1' }}>
-                        <div className="thumb-media" style={{ width: '100%', height: '100%' }}>
-                          {imageSrc ? (
-                            <img
-                              className="thumb-media-image"
-                              src={imageSrc}
-                              alt={`${pkg.displayName} #${image.ordinal}`}
-                              loading="lazy"
-                              draggable={false}
-                            />
-                          ) : (
-                            <div className="thumb-media-empty" />
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                )
-              })}
-        </div>
-      )}
+      {renderImageMainContent({
+        nodeBrowseMode,
+        showNamesOnly,
+        manageMode,
+        gridRef,
+        handleThumbnailContainerWheel,
+        thumbnailColumns,
+        actualCellWidth,
+        thumbnailGap,
+        nodeBrowseItems,
+        markThumbInputMouse,
+        scrollFocusedThumbIntoView,
+        scheduleFocusedThumbOriginSync,
+        onSelectNodeBrowseItem,
+        t,
+        setNameListBodyEl,
+        startMarqueeSelection,
+        startThumbnailDragToggle,
+        visibleImageRefs,
+        packageById,
+        nameListDimsById,
+        focusedRef,
+        checkedImageIds,
+        adReviewCandidateImageIds,
+        onSelectImage,
+        onEnterFullscreen,
+        refsInPageForRender,
+        isThumbnailInteractionLocked,
+        imageUrlByIdForRender,
+        pageStart,
+        adReviewGroupByPackageRows,
+        showSkeleton,
+        skeletonCount,
+        vectorMode,
+        vectorCandidates,
+      })}
 
       {marqueeStyle && marqueeStyle.width > 2 && marqueeStyle.height > 2 ? (
         <div
@@ -1248,9 +1186,8 @@ function ImageMainSection({
         onClose={() => setMetadataFetchOpen(false)}
         onSaveParsedMetadata={onMetadataSaveParsed}
       />
-
     </>
-  )
+  );
 }
 
-export default ImageMainSection
+export default ImageMainSection;
