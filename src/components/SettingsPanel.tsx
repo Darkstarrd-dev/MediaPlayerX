@@ -55,6 +55,7 @@ export interface SettingsPanelProps {
   proxyServer: string
   ehentaiCookies: string
   subtitleFeatureEnabled: boolean
+  subtitleRenderMode: 'simple' | 'advanced'
   subtitleLanguage: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue'
   subtitleModelDir: string
   subtitleTextFillMode: 'solid' | 'gradient'
@@ -163,6 +164,7 @@ export interface SettingsPanelProps {
   onProxyServerChange: (value: string) => void
   onEhentaiCookiesChange: (value: string) => void
   onSubtitleFeatureEnabledChange: (value: boolean) => void
+  onSubtitleRenderModeChange: (value: 'simple' | 'advanced') => void
   onSubtitleLanguageChange: (value: 'auto' | 'zh' | 'en' | 'ja' | 'ko' | 'yue') => void
   onSubtitleModelDirPick: () => void
   onSubtitleTextFillModeChange: (value: 'solid' | 'gradient') => void
@@ -292,6 +294,7 @@ function SettingsPanel({
   proxyServer,
   ehentaiCookies,
   subtitleFeatureEnabled,
+  subtitleRenderMode,
   subtitleLanguage,
   subtitleModelDir,
   subtitleTextFillMode,
@@ -373,6 +376,7 @@ function SettingsPanel({
   onProxyServerChange,
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
+  onSubtitleRenderModeChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
   onSubtitleTextFillModeChange,
@@ -814,6 +818,7 @@ function SettingsPanel({
     proxyServer,
     ehentaiCookies,
     subtitleFeatureEnabled,
+    subtitleRenderMode,
     subtitleLanguage,
     subtitleModelDir,
     subtitleTextFillMode,
@@ -903,6 +908,7 @@ function SettingsPanel({
     onProxyServerChange,
     onEhentaiCookiesChange,
     onSubtitleFeatureEnabledChange,
+    onSubtitleRenderModeChange,
     onSubtitleLanguageChange,
     onSubtitleModelDirPick,
     onSubtitleTextFillModeChange,

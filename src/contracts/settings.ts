@@ -61,6 +61,7 @@ export const subtitleGradientCurveSchema = z.enum([
   "bezier",
   "smoother",
 ]);
+export const subtitleRenderModeSchema = z.enum(["simple", "advanced"]);
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
@@ -146,6 +147,7 @@ export const appSettingsSchema = z.object({
   proxyServer: z.string().max(512),
   ehentaiCookies: z.string().max(4096),
   subtitleFeatureEnabled: z.boolean(),
+  subtitleRenderMode: subtitleRenderModeSchema.default("advanced"),
   subtitleAcceleration: subtitleAccelerationSchema,
   subtitleLanguage: subtitleLanguageSchema,
   subtitleModelDir: z.string().max(1024),

@@ -275,6 +275,7 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),
     onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
     onSubtitleFeatureEnabledChange: (value) => params.updateSettings({ subtitleFeatureEnabled: value }),
+    onSubtitleRenderModeChange: (value) => params.updateSettings({ subtitleRenderMode: value }),
     onSubtitleLanguageChange: (value) => params.updateSettings({ subtitleLanguage: value }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
     onSubtitleTextFillModeChange: (value) => params.updateSettings({ subtitleTextFillMode: value }),

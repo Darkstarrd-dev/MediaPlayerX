@@ -50,6 +50,7 @@ export interface RenderSettingsMainSectionParams {
   proxyServer: string;
   ehentaiCookies: string;
   subtitleFeatureEnabled: boolean;
+  subtitleRenderMode: "simple" | "advanced";
   subtitleLanguage: "auto" | "zh" | "en" | "ja" | "ko" | "yue";
   subtitleModelDir: string;
   subtitleTextFillMode: "solid" | "gradient";
@@ -178,6 +179,7 @@ export interface RenderSettingsMainSectionParams {
   onProxyServerChange: (value: string) => void;
   onEhentaiCookiesChange: (value: string) => void;
   onSubtitleFeatureEnabledChange: (value: boolean) => void;
+  onSubtitleRenderModeChange: (value: "simple" | "advanced") => void;
   onSubtitleLanguageChange: (
     value: "auto" | "zh" | "en" | "ja" | "ko" | "yue",
   ) => void;

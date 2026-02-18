@@ -6,6 +6,7 @@ import type { RenderSettingsMainSectionParams } from "./renderSettingsMainSectio
 export function renderSettingsModelSection({
   t,
   subtitleFeatureEnabled,
+  subtitleRenderMode,
   subtitleLanguage,
   subtitleModelDir,
   subtitleTextFillMode,
@@ -38,6 +39,7 @@ export function renderSettingsModelSection({
   subtitleCleanupLlmModel,
   subtitleCleanupLlmPrompt,
   onSubtitleFeatureEnabledChange,
+  onSubtitleRenderModeChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
   onSubtitleTextFillModeChange,
@@ -69,6 +71,7 @@ export function renderSettingsModelSection({
   RenderSettingsMainSectionParams,
   | "t"
   | "subtitleFeatureEnabled"
+  | "subtitleRenderMode"
   | "subtitleLanguage"
   | "subtitleModelDir"
   | "subtitleTextFillMode"
@@ -101,6 +104,7 @@ export function renderSettingsModelSection({
   | "subtitleCleanupLlmModel"
   | "subtitleCleanupLlmPrompt"
   | "onSubtitleFeatureEnabledChange"
+  | "onSubtitleRenderModeChange"
   | "onSubtitleLanguageChange"
   | "onSubtitleModelDirPick"
   | "onSubtitleTextFillModeChange"
@@ -133,16 +137,22 @@ export function renderSettingsModelSection({
     <div className="settings-block">
       <fieldset className="settings-subsection">
         <legend>{t("ui.settings.offlineSubtitleLegend")}</legend>
-        <label className="settings-toggle-row">
-          <span>{t("ui.settings.offlineSubtitleEnabled")}</span>
-          <input
-            type="checkbox"
-            checked={subtitleFeatureEnabled}
-            onChange={(event) =>
-              onSubtitleFeatureEnabledChange(event.target.checked)
-            }
-          />
-        </label>
+        <div className="settings-debug-toggle-row">
+          <button
+            type="button"
+            className={`settings-debug-toggle-btn ${subtitleFeatureEnabled ? "is-on" : ""}`}
+            onClick={() => onSubtitleFeatureEnabledChange(!subtitleFeatureEnabled)}
+          >
+            {`${t("ui.settings.offlineSubtitleEnabled")} · ${subtitleFeatureEnabled ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
+          </button>
+          <button
+            type="button"
+            className={`settings-debug-toggle-btn ${subtitleRenderMode === "advanced" ? "is-on" : ""}`}
+            onClick={() => onSubtitleRenderModeChange(subtitleRenderMode === "simple" ? "advanced" : "simple")}
+          >
+            {`${t("ui.settings.offlineSubtitleRenderMode")} · ${subtitleRenderMode === "simple" ? t("ui.settings.offlineSubtitleRenderModeSimple") : t("ui.settings.offlineSubtitleRenderModeAdvanced")}`}
+          </button>
+        </div>
         <label>
           {t("ui.settings.offlineSubtitleLanguage")}
           <select
