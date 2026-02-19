@@ -1,8 +1,8 @@
-import { existsSync } from 'node:fs'
-import { promises as fs } from 'node:fs'
-import { createRequire } from 'node:module'
-import path from 'node:path'
-import { parentPort } from 'node:worker_threads'
+import { existsSync } from "node:fs";
+import { promises as fs } from "node:fs";
+import { createRequire } from "node:module";
+import path from "node:path";
+import { parentPort } from "node:worker_threads";
 
 import {
   flushSubtitleSessionResponseSchema,
@@ -17,145 +17,182 @@ import {
   type SubtitleCueDto,
   type SubtitleSessionEventDto,
   type SubtitleSessionProviderDto,
-} from '../../src/contracts/backend'
+} from "../../src/contracts/backend";
 
-type SubtitleWorkerCommand = 'init' | 'stop' | 'reset' | 'flush' | 'push-audio' | 'transcribe-all'
+type SubtitleWorkerCommand =
+  | "init"
+  | "stop"
+  | "reset"
+  | "flush"
+  | "push-audio"
+  | "transcribe-all";
 
 interface SubtitleWorkerRequest {
-  kind: 'request'
-  request_id: string
-  command: SubtitleWorkerCommand
-  payload: unknown
+  kind: "request";
+  request_id: string;
+  command: SubtitleWorkerCommand;
+  payload: unknown;
 }
 
 interface InitRequestPayload extends StartSubtitleSessionRequestDto {
-  engine_module_root: string
-  available_providers: Array<'cpu' | 'directml'>
+  engine_module_root: string;
+  available_providers: Array<"cpu" | "directml">;
 }
 
 interface TranscribeAllRequestPayload {
-  chunk_base64: string
-  sample_rate_hz: number
-  channel_count: number
-  duration_sec?: number
+  chunk_base64: string;
+  sample_rate_hz: number;
+  channel_count: number;
+  duration_sec?: number;
 }
 
 interface RuntimeSessionState {
-  sessionId: string
-  sessionEpoch: number
-  lastChunkSeq: number
-  provider: SubtitleSessionProviderDto
-  startedAtMs: number
-  modelRootDir: string
-  language: string
-  fallbackApplied: boolean
-  lastChunkEndSec: number
+  sessionId: string;
+  sessionEpoch: number;
+  lastChunkSeq: number;
+  provider: SubtitleSessionProviderDto;
+  startedAtMs: number;
+  modelRootDir: string;
+  language: string;
+  fallbackApplied: boolean;
+  lastChunkEndSec: number;
   recognizer: {
-    decode: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => void
-    getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
-      lang?: string
-      text?: string
-      tokens?: string[]
-      timestamps?: number[]
-      durations?: number[]
-    }
-    createStream: () => { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
-  }
-  stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
-  sampleRateHz: number
-  pendingSamplesSinceDecode: number
-  committedText: string
-  simpleLastRawText: string
-  simpleWindowText: string
-  simpleLastNonEmptySec: number
-  cueSeed: number
-  requestedLanguage: string
-  renderMode: 'simple' | 'advanced'
-  lastSpeechEndSec: number // Track when speech last ended (for silence detection)
-  vad: VadRuntime | null
-  speaker: SpeakerRuntime | null
-  lineBySpeaker: Map<number, 'A' | 'B'>
-  currentLineId: 'A' | 'B' | null
-  lineSwitchSec: number
-  lineStreakCount: number
-  similarityThreshold: number
-  profileUpdateAlpha: number
+    decode: (stream: {
+      acceptWaveform: (obj: {
+        samples: Float32Array;
+        sampleRate: number;
+      }) => void;
+    }) => void;
+    getResult: (stream: {
+      acceptWaveform: (obj: {
+        samples: Float32Array;
+        sampleRate: number;
+      }) => void;
+    }) => {
+      lang?: string;
+      text?: string;
+      tokens?: string[];
+      timestamps?: number[];
+      durations?: number[];
+    };
+    createStream: () => {
+      acceptWaveform: (obj: {
+        samples: Float32Array;
+        sampleRate: number;
+      }) => void;
+    };
+  };
+  stream: {
+    acceptWaveform: (obj: {
+      samples: Float32Array;
+      sampleRate: number;
+    }) => void;
+  };
+  sampleRateHz: number;
+  pendingSamplesSinceDecode: number;
+  committedText: string;
+  simpleLastRawText: string;
+  simpleWindowText: string;
+  simpleLastNonEmptySec: number;
+  cueSeed: number;
+  requestedLanguage: string;
+  renderMode: "simple" | "advanced";
+  lastSpeechEndSec: number; // Track when speech last ended (for silence detection)
+  vad: VadRuntime | null;
+  speaker: SpeakerRuntime | null;
+  lineBySpeaker: Map<number, "A" | "B">;
+  currentLineId: "A" | "B" | null;
+  lineSwitchSec: number;
+  lineStreakCount: number;
+  similarityThreshold: number;
+  profileUpdateAlpha: number;
 }
 
 interface VadSegmentLike {
-  samples?: Float32Array | number[]
-  start?: number
-  end?: number
-  startSec?: number
-  endSec?: number
+  samples?: Float32Array | number[];
+  start?: number;
+  end?: number;
+  startSec?: number;
+  endSec?: number;
 }
 
 interface VadLike {
-  acceptWaveform: (samples: Float32Array) => void
-  isEmpty: () => boolean
-  front: (enableExternalBuffer?: boolean) => VadSegmentLike
-  pop: () => void
+  acceptWaveform: (samples: Float32Array) => void;
+  isEmpty: () => boolean;
+  front: (enableExternalBuffer?: boolean) => VadSegmentLike;
+  pop: () => void;
 }
 
 interface VadRuntime {
-  detector: VadLike
+  detector: VadLike;
 }
 
 interface SpeakerExtractorStreamLike {
-  acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void
-  inputFinished?: () => void
+  acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void;
+  inputFinished?: () => void;
 }
 
 interface SpeakerExtractorLike {
-  createStream: () => SpeakerExtractorStreamLike
-  isReady?: (stream: SpeakerExtractorStreamLike) => boolean
-  compute: (stream: SpeakerExtractorStreamLike, enableExternalBuffer?: boolean) => Float32Array | number[]
+  createStream: () => SpeakerExtractorStreamLike;
+  isReady?: (stream: SpeakerExtractorStreamLike) => boolean;
+  compute: (
+    stream: SpeakerExtractorStreamLike,
+    enableExternalBuffer?: boolean,
+  ) => Float32Array | number[];
 }
 
 interface SpeakerProfile {
-  id: number
-  embedding: Float32Array
+  id: number;
+  embedding: Float32Array;
 }
 
 interface SpeakerRuntime {
-  extractor: SpeakerExtractorLike
-  profiles: SpeakerProfile[]
-  currentSpeakerId: number | null
-  lastSwitchSec: number
-  pendingSwitchSpeakerId: number | null
-  pendingSwitchCount: number
-  pendingSwitchDurationSec: number
-  pendingSwitchScoreSum: number
-  pendingSwitchIsNew: boolean
-  pendingSwitchEmbedding: Float32Array | null
-  recentBestScores: number[]
-  segmentCount: number
-  lastHintSegmentCount: number
+  extractor: SpeakerExtractorLike;
+  profiles: SpeakerProfile[];
+  currentSpeakerId: number | null;
+  lastSwitchSec: number;
+  pendingSwitchSpeakerId: number | null;
+  pendingSwitchCount: number;
+  pendingSwitchDurationSec: number;
+  pendingSwitchScoreSum: number;
+  pendingSwitchIsNew: boolean;
+  pendingSwitchEmbedding: Float32Array | null;
+  recentBestScores: number[];
+  segmentCount: number;
+  lastHintSegmentCount: number;
 }
 
-const MAX_SPEAKER_COUNT = 2
-const SUBTITLE_DEBUG_LOGS = process.env.SUBTITLE_DEBUG_LOGS === '1' || process.env.SUBTITLE_DEBUG_LOGS === 'true'
+const MAX_SPEAKER_COUNT = 2;
+const SUBTITLE_DEBUG_LOGS =
+  process.env.SUBTITLE_DEBUG_LOGS === "1" ||
+  process.env.SUBTITLE_DEBUG_LOGS === "true";
 
-let runtimeSession: RuntimeSessionState | null = null
+let runtimeSession: RuntimeSessionState | null = null;
 
-function emitWorkerDebug(event: string, payload: Record<string, unknown>): void {
+function emitWorkerDebug(
+  event: string,
+  payload: Record<string, unknown>,
+): void {
   if (!SUBTITLE_DEBUG_LOGS) {
-    return
+    return;
   }
-  console.info('[subtitle][worker]', JSON.stringify({
-    event,
-    at_ms: nowMs(),
-    ...payload,
-  }))
+  console.info(
+    "[subtitle][worker]",
+    JSON.stringify({
+      event,
+      at_ms: nowMs(),
+      ...payload,
+    }),
+  );
 }
 
 function nowMs(): number {
-  return Date.now()
+  return Date.now();
 }
 
 function createEvent(
   code: string,
-  level: SubtitleSessionEventDto['level'],
+  level: SubtitleSessionEventDto["level"],
   message: string,
 ): SubtitleSessionEventDto {
   return {
@@ -163,174 +200,187 @@ function createEvent(
     level,
     message,
     at_ms: nowMs(),
-  }
+  };
 }
 
 async function pathExists(targetPath: string): Promise<boolean> {
   try {
-    await fs.access(targetPath)
-    return true
+    await fs.access(targetPath);
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
-async function resolveModelRootDir(modelDir: string, modelId: string): Promise<string> {
-  const normalizedDir = path.resolve(modelDir)
-  const candidates = [path.join(normalizedDir, modelId), normalizedDir]
+async function resolveModelRootDir(
+  modelDir: string,
+  modelId: string,
+): Promise<string> {
+  const normalizedDir = path.resolve(modelDir);
+  const candidates = [path.join(normalizedDir, modelId), normalizedDir];
 
   const isValidModelDir = async (candidate: string): Promise<boolean> => {
     if (!(await pathExists(candidate))) {
-      return false
+      return false;
     }
 
-    const tokensPath = path.join(candidate, 'tokens.txt')
+    const tokensPath = path.join(candidate, "tokens.txt");
     if (!(await pathExists(tokensPath))) {
-      return false
+      return false;
     }
 
-    let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+    let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = [];
     try {
-      entries = await fs.readdir(candidate, { withFileTypes: true })
+      entries = await fs.readdir(candidate, { withFileTypes: true });
     } catch {
-      return false
+      return false;
     }
 
-    return entries.some((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.onnx'))
-  }
+    return entries.some(
+      (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".onnx"),
+    );
+  };
 
   for (const candidate of candidates) {
     if (await isValidModelDir(candidate)) {
-      return candidate
+      return candidate;
     }
   }
 
-  let dirEntries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+  let dirEntries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = [];
   try {
-    dirEntries = await fs.readdir(normalizedDir, { withFileTypes: true })
+    dirEntries = await fs.readdir(normalizedDir, { withFileTypes: true });
   } catch {
-    throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`)
+    throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`);
   }
 
   const fallbackSubdirs = dirEntries
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(normalizedDir, entry.name))
-    .sort((left, right) => left.localeCompare(right))
+    .sort((left, right) => left.localeCompare(right));
 
   for (const candidate of fallbackSubdirs) {
     if (await isValidModelDir(candidate)) {
-      return candidate
+      return candidate;
     }
   }
 
-  throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`)
+  throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`);
 }
 
 async function resolveModelOnnxPath(modelRootDir: string): Promise<string> {
-  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = [];
   try {
-    entries = await fs.readdir(modelRootDir, { withFileTypes: true })
+    entries = await fs.readdir(modelRootDir, { withFileTypes: true });
   } catch {
-    throw new Error(`subtitle_model_files_missing:${modelRootDir}`)
+    throw new Error(`subtitle_model_files_missing:${modelRootDir}`);
   }
 
   const modelFileNames = entries
-    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.onnx'))
-    .map((entry) => entry.name)
+    .filter(
+      (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".onnx"),
+    )
+    .map((entry) => entry.name);
 
   if (modelFileNames.length === 0) {
-    throw new Error(`subtitle_model_files_missing:${modelRootDir}`)
+    throw new Error(`subtitle_model_files_missing:${modelRootDir}`);
   }
 
-  const preferred = modelFileNames.find((name) => name.toLowerCase() === 'model.int8.onnx')
-    ?? modelFileNames.find((name) => name.toLowerCase() === 'model.onnx')
-    ?? modelFileNames[0]
+  const preferred =
+    modelFileNames.find((name) => name.toLowerCase() === "model.int8.onnx") ??
+    modelFileNames.find((name) => name.toLowerCase() === "model.onnx") ??
+    modelFileNames[0];
 
-  return path.join(modelRootDir, preferred)
+  return path.join(modelRootDir, preferred);
 }
 
-async function resolveAuxiliaryModelPath(modelRootDir: string, matcher: (lowerName: string) => boolean): Promise<string | null> {
-  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+async function resolveAuxiliaryModelPath(
+  modelRootDir: string,
+  matcher: (lowerName: string) => boolean,
+): Promise<string | null> {
+  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = [];
   try {
-    entries = await fs.readdir(modelRootDir, { withFileTypes: true })
+    entries = await fs.readdir(modelRootDir, { withFileTypes: true });
   } catch {
-    return null
+    return null;
   }
 
   const match = entries
-    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.onnx'))
+    .filter(
+      (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".onnx"),
+    )
     .map((entry) => entry.name)
-    .find((name) => matcher(name.toLowerCase()))
+    .find((name) => matcher(name.toLowerCase()));
 
   if (!match) {
-    return null
+    return null;
   }
-  return path.join(modelRootDir, match)
+  return path.join(modelRootDir, match);
 }
 
 function chooseProvider(payload: InitRequestPayload): {
-  provider: SubtitleSessionProviderDto
-  fallbackApplied: boolean
-  events: SubtitleSessionEventDto[]
+  provider: SubtitleSessionProviderDto;
+  fallbackApplied: boolean;
+  events: SubtitleSessionEventDto[];
 } {
-  const available = new Set(payload.available_providers)
-  const events: SubtitleSessionEventDto[] = []
+  const available = new Set(payload.available_providers);
+  const events: SubtitleSessionEventDto[] = [];
 
-  if (!available.has('cpu')) {
-    throw new Error('subtitle_provider_unavailable:cpu')
+  if (!available.has("cpu")) {
+    throw new Error("subtitle_provider_unavailable:cpu");
   }
 
-  if (payload.provider_preference === 'cpu') {
+  if (payload.provider_preference === "cpu") {
     return {
-      provider: 'cpu',
+      provider: "cpu",
       fallbackApplied: false,
       events,
-    }
+    };
   }
 
-  if (available.has('directml')) {
+  if (available.has("directml")) {
     return {
-      provider: 'directml',
+      provider: "directml",
       fallbackApplied: false,
       events,
-    }
+    };
   }
 
   if (!payload.fallback_to_cpu) {
-    throw new Error('subtitle_provider_unavailable:directml')
+    throw new Error("subtitle_provider_unavailable:directml");
   }
 
   events.push(
     createEvent(
-      'provider_fallback',
-      'warning',
+      "provider_fallback",
+      "warning",
       `directml unavailable, fallback to cpu (${payload.provider_preference})`,
     ),
-  )
+  );
 
   return {
-    provider: 'cpu',
+    provider: "cpu",
     fallbackApplied: true,
     events,
-  }
+  };
 }
 
 function resolveVadTuning(payload: InitRequestPayload): {
-  threshold: number
-  minSilenceDuration: number
-  minSpeechDuration: number
-  maxSpeechDuration: number
+  threshold: number;
+  minSilenceDuration: number;
+  minSpeechDuration: number;
+  maxSpeechDuration: number;
 } {
-  const preset = payload.advanced_options?.vad?.preset ?? 'balanced'
+  const preset = payload.advanced_options?.vad?.preset ?? "balanced";
   const presetDefaults =
-    preset === 'conservative'
+    preset === "conservative"
       ? {
           threshold: 0.52,
           minSilenceDuration: 0.45,
           minSpeechDuration: 0.25,
           maxSpeechDuration: 20,
         }
-      : preset === 'aggressive'
+      : preset === "aggressive"
         ? {
             threshold: 0.36,
             minSilenceDuration: 0.1,
@@ -342,366 +392,424 @@ function resolveVadTuning(payload: InitRequestPayload): {
             minSilenceDuration: 0.14,
             minSpeechDuration: 0.18,
             maxSpeechDuration: 3,
-          }
+          };
 
   return {
-    threshold: payload.advanced_options?.vad?.threshold ?? presetDefaults.threshold,
-    minSilenceDuration: payload.advanced_options?.vad?.min_silence_sec ?? presetDefaults.minSilenceDuration,
-    minSpeechDuration: payload.advanced_options?.vad?.min_speech_sec ?? presetDefaults.minSpeechDuration,
-    maxSpeechDuration: payload.advanced_options?.vad?.max_speech_sec ?? presetDefaults.maxSpeechDuration,
-  }
+    threshold:
+      payload.advanced_options?.vad?.threshold ?? presetDefaults.threshold,
+    minSilenceDuration:
+      payload.advanced_options?.vad?.min_silence_sec ??
+      presetDefaults.minSilenceDuration,
+    minSpeechDuration:
+      payload.advanced_options?.vad?.min_speech_sec ??
+      presetDefaults.minSpeechDuration,
+    maxSpeechDuration:
+      payload.advanced_options?.vad?.max_speech_sec ??
+      presetDefaults.maxSpeechDuration,
+  };
 }
 
 function resolveSpeakerThreshold(payload: InitRequestPayload): number {
-  return payload.advanced_options?.speaker?.similarity_threshold ?? 0.5
+  return payload.advanced_options?.speaker?.similarity_threshold ?? 0.5;
 }
 
-function ensureParentPort(): asserts parentPort is NonNullable<typeof parentPort> {
+function ensureParentPort(): asserts parentPort is NonNullable<
+  typeof parentPort
+> {
   if (!parentPort) {
-    throw new Error('subtitle_asr_worker_missing_parent_port')
+    throw new Error("subtitle_asr_worker_missing_parent_port");
   }
 }
 
 function ensureSession(): RuntimeSessionState {
   if (!runtimeSession) {
-    throw new Error('subtitle_session_not_running')
+    throw new Error("subtitle_session_not_running");
   }
-  return runtimeSession
+  return runtimeSession;
 }
 
 function loadSherpaModule(moduleRoot: string): {
   OfflineRecognizer: new (config: unknown) => {
-    createStream: () => { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
-    decode: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => void
-    getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
-      lang?: string
-      text?: string
-      tokens?: string[]
-      timestamps?: number[]
-      durations?: number[]
-    }
-  }
-  VoiceActivityDetector?: new (config: unknown) => VadLike
-  Vad?: new (config: unknown, bufferSizeInSeconds?: number) => VadLike
-  SpeakerEmbeddingExtractor?: new (config: unknown) => SpeakerExtractorLike
+    createStream: () => {
+      acceptWaveform: (obj: {
+        samples: Float32Array;
+        sampleRate: number;
+      }) => void;
+    };
+    decode: (stream: {
+      acceptWaveform: (obj: {
+        samples: Float32Array;
+        sampleRate: number;
+      }) => void;
+    }) => void;
+    getResult: (stream: {
+      acceptWaveform: (obj: {
+        samples: Float32Array;
+        sampleRate: number;
+      }) => void;
+    }) => {
+      lang?: string;
+      text?: string;
+      tokens?: string[];
+      timestamps?: number[];
+      durations?: number[];
+    };
+  };
+  VoiceActivityDetector?: new (config: unknown) => VadLike;
+  Vad?: new (config: unknown, bufferSizeInSeconds?: number) => VadLike;
+  SpeakerEmbeddingExtractor?: new (config: unknown) => SpeakerExtractorLike;
 } {
-  const packageJsonPath = path.join(moduleRoot, 'package.json')
+  const packageJsonPath = path.join(moduleRoot, "package.json");
   if (!existsSync(packageJsonPath)) {
-    throw new Error(`subtitle_engine_package_not_found:${packageJsonPath}`)
+    throw new Error(`subtitle_engine_package_not_found:${packageJsonPath}`);
   }
 
-  const moduleRequire = createRequire(packageJsonPath)
-  return moduleRequire('sherpa-onnx-node') as {
+  const moduleRequire = createRequire(packageJsonPath);
+  return moduleRequire("sherpa-onnx-node") as {
     OfflineRecognizer: new (config: unknown) => {
-      createStream: () => { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }
-      decode: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => void
-      getResult: (stream: { acceptWaveform: (obj: { samples: Float32Array; sampleRate: number }) => void }) => {
-        lang?: string
-        text?: string
-        tokens?: string[]
-        timestamps?: number[]
-        durations?: number[]
-      }
-    }
-    VoiceActivityDetector?: new (config: unknown) => VadLike
-    Vad?: new (config: unknown, bufferSizeInSeconds?: number) => VadLike
-    SpeakerEmbeddingExtractor?: new (config: unknown) => SpeakerExtractorLike
-  }
+      createStream: () => {
+        acceptWaveform: (obj: {
+          samples: Float32Array;
+          sampleRate: number;
+        }) => void;
+      };
+      decode: (stream: {
+        acceptWaveform: (obj: {
+          samples: Float32Array;
+          sampleRate: number;
+        }) => void;
+      }) => void;
+      getResult: (stream: {
+        acceptWaveform: (obj: {
+          samples: Float32Array;
+          sampleRate: number;
+        }) => void;
+      }) => {
+        lang?: string;
+        text?: string;
+        tokens?: string[];
+        timestamps?: number[];
+        durations?: number[];
+      };
+    };
+    VoiceActivityDetector?: new (config: unknown) => VadLike;
+    Vad?: new (config: unknown, bufferSizeInSeconds?: number) => VadLike;
+    SpeakerEmbeddingExtractor?: new (config: unknown) => SpeakerExtractorLike;
+  };
 }
 
 function normalizeRecognizedText(value: string | undefined): string {
-  const raw = (value ?? '').trim()
+  const raw = (value ?? "").trim();
   if (!raw) {
-    return ''
+    return "";
   }
   return raw
-    .replace(/<\|[^|]+\|>/g, '')
-    .replace(/<[a-z][^>]{0,80}>/gi, '')
-    .replace(/<\/[a-z][^>]{0,80}>/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim()
+    .replace(/<\|[^|]+\|>/g, "")
+    .replace(/<[a-z][^>]{0,80}>/gi, "")
+    .replace(/<\/[a-z][^>]{0,80}>/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function normalizeLangTag(value: string | undefined): string | null {
-  const raw = (value ?? '').trim()
+  const raw = (value ?? "").trim();
   if (!raw) {
-    return null
+    return null;
   }
 
-  const tagged = /^<\|([^|]+)\|>$/.exec(raw)
+  const tagged = /^<\|([^|]+)\|>$/.exec(raw);
   if (tagged?.[1]) {
-    return tagged[1].toLowerCase()
+    return tagged[1].toLowerCase();
   }
 
-  return raw.toLowerCase()
+  return raw.toLowerCase();
 }
 
 function normalizeRequestedLanguage(value: string): string {
-  const normalized = value.trim().toLowerCase()
-  if (normalized === 'zh' || normalized === 'en' || normalized === 'ja' || normalized === 'ko' || normalized === 'yue') {
-    return normalized
+  const normalized = value.trim().toLowerCase();
+  if (
+    normalized === "zh" ||
+    normalized === "en" ||
+    normalized === "ja" ||
+    normalized === "ko" ||
+    normalized === "yue"
+  ) {
+    return normalized;
   }
-  return 'auto'
+  return "auto";
 }
 
 function computeTextDelta(previousText: string, currentText: string): string {
   if (!currentText) {
-    return ''
+    return "";
   }
   if (!previousText) {
-    return currentText
+    return currentText;
   }
   if (currentText === previousText) {
-    return ''
+    return "";
   }
   if (currentText.startsWith(previousText)) {
-    return currentText.slice(previousText.length).trim()
+    return currentText.slice(previousText.length).trim();
   }
 
-  const previousTail = previousText.slice(Math.max(0, previousText.length - 16))
-  const overlapIndex = currentText.indexOf(previousTail)
+  const previousTail = previousText.slice(
+    Math.max(0, previousText.length - 16),
+  );
+  const overlapIndex = currentText.indexOf(previousTail);
   if (overlapIndex >= 0) {
-    return currentText.slice(overlapIndex + previousTail.length).trim()
+    return currentText.slice(overlapIndex + previousTail.length).trim();
   }
 
-  return currentText
+  return currentText;
 }
 
 function computeOverlapDelta(
   previousText: string,
   currentText: string,
   maxOverlapChars = 64,
-): { kind: 'none' | 'append' | 'replace'; delta: string } {
+): { kind: "none" | "append" | "replace"; delta: string } {
   if (!currentText) {
-    return { kind: 'none', delta: '' }
+    return { kind: "none", delta: "" };
   }
   if (!previousText) {
-    return { kind: 'append', delta: currentText }
+    return { kind: "append", delta: currentText };
   }
   if (currentText === previousText) {
-    return { kind: 'none', delta: '' }
+    return { kind: "none", delta: "" };
   }
 
   if (currentText.startsWith(previousText)) {
-    return { kind: 'append', delta: currentText.slice(previousText.length).trim() }
+    return {
+      kind: "append",
+      delta: currentText.slice(previousText.length).trim(),
+    };
   }
 
-  const previousChars = Array.from(previousText)
-  const currentChars = Array.from(currentText)
-  const overlapLimit = Math.min(maxOverlapChars, previousChars.length, currentChars.length)
+  const previousChars = Array.from(previousText);
+  const currentChars = Array.from(currentText);
+  const overlapLimit = Math.min(
+    maxOverlapChars,
+    previousChars.length,
+    currentChars.length,
+  );
   for (let overlap = overlapLimit; overlap >= 1; overlap -= 1) {
-    const prevSuffix = previousChars.slice(previousChars.length - overlap).join('')
-    const currPrefix = currentChars.slice(0, overlap).join('')
+    const prevSuffix = previousChars
+      .slice(previousChars.length - overlap)
+      .join("");
+    const currPrefix = currentChars.slice(0, overlap).join("");
     if (prevSuffix === currPrefix) {
       return {
-        kind: 'append',
-        delta: currentChars.slice(overlap).join('').trim(),
-      }
+        kind: "append",
+        delta: currentChars.slice(overlap).join("").trim(),
+      };
     }
   }
 
-  const rollback = currentChars.length < previousChars.length * 0.7
+  const rollback = currentChars.length < previousChars.length * 0.7;
   if (rollback) {
-    return { kind: 'replace', delta: currentText }
+    return { kind: "replace", delta: currentText };
   }
-  return { kind: 'replace', delta: currentText }
+  return { kind: "replace", delta: currentText };
 }
 
 function calculateRms(samples: Float32Array): number {
   if (samples.length === 0) {
-    return 0
+    return 0;
   }
 
-  let squareSum = 0
+  let squareSum = 0;
   for (let i = 0; i < samples.length; i += 1) {
-    squareSum += samples[i] * samples[i]
+    squareSum += samples[i] * samples[i];
   }
 
-  return Math.sqrt(squareSum / samples.length)
+  return Math.sqrt(squareSum / samples.length);
 }
 
-function downmixToMono(interleaved: Float32Array, channelCount: number): Float32Array {
+function downmixToMono(
+  interleaved: Float32Array,
+  channelCount: number,
+): Float32Array {
   if (channelCount <= 1) {
-    return interleaved
+    return interleaved;
   }
   if (interleaved.length === 0) {
-    return interleaved
+    return interleaved;
   }
 
-  const frameCount = Math.floor(interleaved.length / channelCount)
-  const mono = new Float32Array(frameCount)
+  const frameCount = Math.floor(interleaved.length / channelCount);
+  const mono = new Float32Array(frameCount);
   for (let frame = 0; frame < frameCount; frame += 1) {
-    let sum = 0
+    let sum = 0;
     for (let channel = 0; channel < channelCount; channel += 1) {
-      sum += interleaved[frame * channelCount + channel] ?? 0
+      sum += interleaved[frame * channelCount + channel] ?? 0;
     }
-    mono[frame] = sum / channelCount
+    mono[frame] = sum / channelCount;
   }
-  return mono
+  return mono;
 }
 
 function decodeFloat32Buffer(chunkBuffer: Buffer): Float32Array {
   if (chunkBuffer.byteLength === 0) {
-    return new Float32Array(0)
+    return new Float32Array(0);
   }
   const view = new Float32Array(
     chunkBuffer.buffer,
     chunkBuffer.byteOffset,
     Math.floor(chunkBuffer.byteLength / Float32Array.BYTES_PER_ELEMENT),
-  )
-  return new Float32Array(view)
+  );
+  return new Float32Array(view);
 }
 
 function makeCueId(sessionId: string, cueSeed: number): string {
-  return `${sessionId}:${cueSeed}`
+  return `${sessionId}:${cueSeed}`;
 }
 
 function charLength(value: string): number {
-  return Array.from(value).length
+  return Array.from(value).length;
 }
 
 function sliceTailByChars(value: string, count: number): string {
   if (count <= 0) {
-    return ''
+    return "";
   }
-  const chars = Array.from(value)
-  return chars.slice(Math.max(0, chars.length - count)).join('')
-}
-
-function pickSimpleDisplayText(fullText: string, maxChars = 54): string {
-  const normalized = fullText.replace(/\s+/g, ' ').trim()
-  if (!normalized) {
-    return ''
-  }
-  if (charLength(normalized) <= maxChars) {
-    return normalized
-  }
-
-  const separators = ['。', '！', '？', '!', '?', '.', ';', '；', ',', '，', '、']
-  let lastSeparatorIndex = -1
-  for (let index = normalized.length - 1; index >= 0; index -= 1) {
-    if (separators.includes(normalized[index] ?? '')) {
-      lastSeparatorIndex = index
-      break
-    }
-  }
-
-  if (lastSeparatorIndex >= 0 && lastSeparatorIndex + 1 < normalized.length) {
-    const tail = normalized.slice(lastSeparatorIndex + 1).trim()
-    if (tail && charLength(tail) <= maxChars + 16) {
-      return sliceTailByChars(tail, maxChars)
-    }
-  }
-
-  return sliceTailByChars(normalized, maxChars)
+  const chars = Array.from(value);
+  return chars.slice(Math.max(0, chars.length - count)).join("");
 }
 
 function pickLatestSimpleSnippet(fullText: string, maxChars = 28): string {
-  const normalized = fullText.replace(/\s+/g, ' ').trim()
+  const normalized = fullText.replace(/\s+/g, " ").trim();
   if (!normalized) {
-    return ''
+    return "";
   }
 
-  const separators = ['。', '！', '？', '!', '?', '.', ';', '；', ',', '，', '、']
-  const chars = Array.from(normalized)
-  let lastSeparatorPos = -1
+  const separators = [
+    "。",
+    "！",
+    "？",
+    "!",
+    "?",
+    ".",
+    ";",
+    "；",
+    ",",
+    "，",
+    "、",
+  ];
+  const chars = Array.from(normalized);
+  let lastSeparatorPos = -1;
   for (let i = chars.length - 1; i >= 0; i -= 1) {
-    if (separators.includes(chars[i] ?? '')) {
-      lastSeparatorPos = i
-      break
+    if (separators.includes(chars[i] ?? "")) {
+      lastSeparatorPos = i;
+      break;
     }
   }
 
   if (lastSeparatorPos >= 0 && lastSeparatorPos + 1 < chars.length) {
-    const tail = chars.slice(lastSeparatorPos + 1).join('').trim()
+    const tail = chars
+      .slice(lastSeparatorPos + 1)
+      .join("")
+      .trim();
     if (tail) {
-      return sliceTailByChars(tail, maxChars)
+      return sliceTailByChars(tail, maxChars);
     }
   }
 
-  return sliceTailByChars(normalized, maxChars)
+  return sliceTailByChars(normalized, maxChars);
 }
 
-function splitCompletedSentence(pendingText: string): { completed: string | null; rest: string } {
-  const normalized = pendingText.replace(/\s+/g, ' ').trim()
+function splitCompletedSentence(pendingText: string): {
+  completed: string | null;
+  rest: string;
+} {
+  const normalized = pendingText.replace(/\s+/g, " ").trim();
   if (!normalized) {
-    return { completed: null, rest: '' }
+    return { completed: null, rest: "" };
   }
 
-  const separators = ['。', '！', '？', '!', '?', '.']
-  const chars = Array.from(normalized)
-  let lastSeparator = -1
+  const separators = ["。", "！", "？", "!", "?", "."];
+  const chars = Array.from(normalized);
+  let lastSeparator = -1;
   for (let i = 0; i < chars.length; i += 1) {
-    if (separators.includes(chars[i] ?? '')) {
-      lastSeparator = i
+    if (separators.includes(chars[i] ?? "")) {
+      lastSeparator = i;
     }
   }
 
   if (lastSeparator < 0) {
-    return { completed: null, rest: normalized }
+    return { completed: null, rest: normalized };
   }
 
-  const completed = chars.slice(0, lastSeparator + 1).join('').trim()
-  const rest = chars.slice(lastSeparator + 1).join('').trim()
+  const completed = chars
+    .slice(0, lastSeparator + 1)
+    .join("")
+    .trim();
+  const rest = chars
+    .slice(lastSeparator + 1)
+    .join("")
+    .trim();
   return {
     completed: completed || null,
     rest,
-  }
+  };
 }
 
 function sanitizePayloadForPostMessage(payload: unknown): unknown {
   try {
-    return JSON.parse(JSON.stringify(payload))
+    return JSON.parse(JSON.stringify(payload));
   } catch {
-    return payload
+    return payload;
   }
 }
 
-function normalizeEmbedding(value: Float32Array | number[] | null | undefined): Float32Array | null {
+function normalizeEmbedding(
+  value: Float32Array | number[] | null | undefined,
+): Float32Array | null {
   if (!value) {
-    return null
+    return null;
   }
-  const output = value instanceof Float32Array ? value : new Float32Array(value)
+  const output =
+    value instanceof Float32Array ? value : new Float32Array(value);
   if (output.length === 0) {
-    return null
+    return null;
   }
-  return output
+  return output;
 }
 
 function cosineSimilarity(left: Float32Array, right: Float32Array): number {
-  const size = Math.min(left.length, right.length)
+  const size = Math.min(left.length, right.length);
   if (size === 0) {
-    return -1
+    return -1;
   }
 
-  let dot = 0
-  let leftNorm = 0
-  let rightNorm = 0
+  let dot = 0;
+  let leftNorm = 0;
+  let rightNorm = 0;
   for (let i = 0; i < size; i += 1) {
-    const l = left[i] ?? 0
-    const r = right[i] ?? 0
-    dot += l * r
-    leftNorm += l * l
-    rightNorm += r * r
+    const l = left[i] ?? 0;
+    const r = right[i] ?? 0;
+    dot += l * r;
+    leftNorm += l * l;
+    rightNorm += r * r;
   }
 
   if (leftNorm <= 0 || rightNorm <= 0) {
-    return -1
+    return -1;
   }
-  return dot / (Math.sqrt(leftNorm) * Math.sqrt(rightNorm))
+  return dot / (Math.sqrt(leftNorm) * Math.sqrt(rightNorm));
 }
 
 function clearPendingSwitch(speakerRuntime: SpeakerRuntime): void {
-  speakerRuntime.pendingSwitchSpeakerId = null
-  speakerRuntime.pendingSwitchCount = 0
-  speakerRuntime.pendingSwitchDurationSec = 0
-  speakerRuntime.pendingSwitchScoreSum = 0
-  speakerRuntime.pendingSwitchIsNew = false
-  speakerRuntime.pendingSwitchEmbedding = null
+  speakerRuntime.pendingSwitchSpeakerId = null;
+  speakerRuntime.pendingSwitchCount = 0;
+  speakerRuntime.pendingSwitchDurationSec = 0;
+  speakerRuntime.pendingSwitchScoreSum = 0;
+  speakerRuntime.pendingSwitchIsNew = false;
+  speakerRuntime.pendingSwitchEmbedding = null;
 }
 
-function pickOppositeLine(line: 'A' | 'B'): 'A' | 'B' {
-  return line === 'A' ? 'B' : 'A'
+function pickOppositeLine(line: "A" | "B"): "A" | "B" {
+  return line === "A" ? "B" : "A";
 }
 
 function assignLineIdForCue(
@@ -710,82 +818,84 @@ function assignLineIdForCue(
   speakerChanged: boolean,
   speakerSimilarity: number | undefined,
   cueEndSec: number,
-): 'A' | 'B' {
+): "A" | "B" {
   const canApplyCorrection =
     currentSession.speaker !== null &&
     currentSession.speaker.profiles.length >= 2 &&
-    typeof speakerSimilarity === 'number' &&
+    typeof speakerSimilarity === "number" &&
     Number.isFinite(speakerSimilarity) &&
     speakerSimilarity < currentSession.similarityThreshold - 0.02 &&
     currentSession.currentLineId !== null &&
     currentSession.lineStreakCount >= 2 &&
-    cueEndSec - currentSession.lineSwitchSec >= 0.3
+    cueEndSec - currentSession.lineSwitchSec >= 0.3;
 
   if (speakerChanged && currentSession.currentLineId) {
-    const toggledLine = pickOppositeLine(currentSession.currentLineId)
-    currentSession.currentLineId = toggledLine
-    currentSession.lineSwitchSec = cueEndSec
-    currentSession.lineStreakCount = 1
-    if (typeof speakerId === 'number' && speakerId >= 0) {
-      currentSession.lineBySpeaker.set(speakerId, toggledLine)
+    const toggledLine = pickOppositeLine(currentSession.currentLineId);
+    currentSession.currentLineId = toggledLine;
+    currentSession.lineSwitchSec = cueEndSec;
+    currentSession.lineStreakCount = 1;
+    if (typeof speakerId === "number" && speakerId >= 0) {
+      currentSession.lineBySpeaker.set(speakerId, toggledLine);
     }
-    return toggledLine
+    return toggledLine;
   }
 
-  if (typeof speakerId === 'number' && speakerId >= 0) {
-    const mappedLine = currentSession.lineBySpeaker.get(speakerId)
+  if (typeof speakerId === "number" && speakerId >= 0) {
+    const mappedLine = currentSession.lineBySpeaker.get(speakerId);
     if (mappedLine) {
       if (canApplyCorrection && mappedLine === currentSession.currentLineId) {
-        const correctedLine = pickOppositeLine(mappedLine)
-        currentSession.currentLineId = correctedLine
-        currentSession.lineSwitchSec = cueEndSec
-        currentSession.lineStreakCount = 1
-        currentSession.lineBySpeaker.set(speakerId, correctedLine)
-        return correctedLine
+        const correctedLine = pickOppositeLine(mappedLine);
+        currentSession.currentLineId = correctedLine;
+        currentSession.lineSwitchSec = cueEndSec;
+        currentSession.lineStreakCount = 1;
+        currentSession.lineBySpeaker.set(speakerId, correctedLine);
+        return correctedLine;
       }
 
       if (mappedLine === currentSession.currentLineId) {
-        currentSession.lineStreakCount += 1
+        currentSession.lineStreakCount += 1;
       } else {
-        currentSession.lineStreakCount = 1
-        currentSession.lineSwitchSec = cueEndSec
+        currentSession.lineStreakCount = 1;
+        currentSession.lineSwitchSec = cueEndSec;
       }
-      currentSession.currentLineId = mappedLine
-      return mappedLine
+      currentSession.currentLineId = mappedLine;
+      return mappedLine;
     }
 
-    let assignedLine: 'A' | 'B'
+    let assignedLine: "A" | "B";
     if (currentSession.lineBySpeaker.size === 0) {
-      assignedLine = 'A'
+      assignedLine = "A";
     } else if (currentSession.lineBySpeaker.size === 1) {
-      const firstLine = currentSession.lineBySpeaker.values().next().value as 'A' | 'B'
-      assignedLine = pickOppositeLine(firstLine)
+      const firstLine = currentSession.lineBySpeaker.values().next().value as
+        | "A"
+        | "B";
+      assignedLine = pickOppositeLine(firstLine);
     } else if (currentSession.currentLineId) {
-      assignedLine = pickOppositeLine(currentSession.currentLineId)
+      assignedLine = pickOppositeLine(currentSession.currentLineId);
     } else {
-      assignedLine = 'A'
+      assignedLine = "A";
     }
 
-    currentSession.lineBySpeaker.set(speakerId, assignedLine)
+    currentSession.lineBySpeaker.set(speakerId, assignedLine);
     if (currentSession.currentLineId === assignedLine) {
-      currentSession.lineStreakCount += 1
+      currentSession.lineStreakCount += 1;
     } else {
-      currentSession.lineStreakCount = 1
-      currentSession.lineSwitchSec = cueEndSec
+      currentSession.lineStreakCount = 1;
+      currentSession.lineSwitchSec = cueEndSec;
     }
-    currentSession.currentLineId = assignedLine
-    return assignedLine
+    currentSession.currentLineId = assignedLine;
+    return assignedLine;
   }
 
   if (currentSession.currentLineId) {
-    currentSession.lineStreakCount += 1
-    return currentSession.currentLineId
+    currentSession.lineStreakCount += 1;
+    return currentSession.currentLineId;
   }
 
-  currentSession.currentLineId = 'A'
-  currentSession.lineStreakCount = 1
-  currentSession.lineSwitchSec = cueEndSec
-  return 'A'
+  currentSession.currentLineId = "A";
+  currentSession.lineStreakCount = 1;
+  currentSession.lineSwitchSec = cueEndSec;
+  return "A";
 }
 
 function identifySpeaker(
@@ -800,88 +910,98 @@ function identifySpeaker(
     speakerRuntime.profiles.push({
       id: 0,
       embedding: new Float32Array(embedding),
-    })
-    clearPendingSwitch(speakerRuntime)
-    speakerRuntime.lastSwitchSec = segmentEndSec
-    return { speakerId: 0, bestScore: 1 }
+    });
+    clearPendingSwitch(speakerRuntime);
+    speakerRuntime.lastSwitchSec = segmentEndSec;
+    return { speakerId: 0, bestScore: 1 };
   }
 
-  let bestId = -1
-  let bestScore = -1
-  let currentSpeakerScore = -1
-  let bestOtherId = -1
-  let bestOtherScore = -1
+  let bestId = -1;
+  let bestScore = -1;
+  let currentSpeakerScore = -1;
+  let bestOtherId = -1;
+  let bestOtherScore = -1;
 
   for (let i = 0; i < speakerRuntime.profiles.length; i += 1) {
-    const profile = speakerRuntime.profiles[i]
-    const score = cosineSimilarity(embedding, profile.embedding)
+    const profile = speakerRuntime.profiles[i];
+    const score = cosineSimilarity(embedding, profile.embedding);
     if (score > bestScore) {
-      bestScore = score
-      bestId = profile.id
+      bestScore = score;
+      bestId = profile.id;
     }
     if (profile.id === speakerRuntime.currentSpeakerId) {
-      currentSpeakerScore = score
+      currentSpeakerScore = score;
     } else if (score > bestOtherScore) {
-      bestOtherScore = score
-      bestOtherId = profile.id
+      bestOtherScore = score;
+      bestOtherId = profile.id;
     }
   }
 
-  const assignThreshold = Math.max(0.34, similarityThreshold - 0.06)
-  const stickyThreshold = Math.max(0.36, similarityThreshold - 0.1)
-  const createThreshold = Math.max(0.3, similarityThreshold - 0.08)
-  const switchMargin = 0.02
-  const switchCooldownSec = 0.45
-  const strongSwitchMargin = 0.05
-  const strongSwitchMinSegmentSec = 0.68
+  const assignThreshold = Math.max(0.34, similarityThreshold - 0.06);
+  const stickyThreshold = Math.max(0.36, similarityThreshold - 0.1);
+  const createThreshold = Math.max(0.3, similarityThreshold - 0.08);
+  const switchMargin = 0.02;
+  const switchCooldownSec = 0.45;
+  const strongSwitchMargin = 0.05;
+  const strongSwitchMinSegmentSec = 0.68;
   const inSwitchCooldown =
     speakerRuntime.lastSwitchSec > 0 &&
-    segmentEndSec - speakerRuntime.lastSwitchSec < switchCooldownSec
+    segmentEndSec - speakerRuntime.lastSwitchSec < switchCooldownSec;
 
   const updateSpeakerProfile = (speakerId: number, score: number): void => {
-    const targetProfile = speakerRuntime.profiles.find((profile) => profile.id === speakerId)
-    const hasRivalProfile = speakerRuntime.profiles.length >= 2 && bestOtherScore >= 0
-    const stableAgainstRival = !hasRivalProfile || score - bestOtherScore >= 0.045
+    const targetProfile = speakerRuntime.profiles.find(
+      (profile) => profile.id === speakerId,
+    );
+    const hasRivalProfile =
+      speakerRuntime.profiles.length >= 2 && bestOtherScore >= 0;
+    const stableAgainstRival =
+      !hasRivalProfile || score - bestOtherScore >= 0.045;
     const shouldUpdateProfile =
       !inSwitchCooldown &&
       bestId === speakerId &&
       score >= Math.max(0.52, assignThreshold + 0.02) &&
       segmentDurationSec >= 0.65 &&
-      stableAgainstRival
+      stableAgainstRival;
     if (!targetProfile || !shouldUpdateProfile) {
-      return
+      return;
     }
-    const alpha = Math.min(Math.max(profileUpdateAlpha, 0.05), 0.95)
-    const size = Math.min(targetProfile.embedding.length, embedding.length)
+    const alpha = Math.min(Math.max(profileUpdateAlpha, 0.05), 0.95);
+    const size = Math.min(targetProfile.embedding.length, embedding.length);
     for (let i = 0; i < size; i += 1) {
-      targetProfile.embedding[i] = (1 - alpha) * targetProfile.embedding[i] + alpha * embedding[i]
+      targetProfile.embedding[i] =
+        (1 - alpha) * targetProfile.embedding[i] + alpha * embedding[i];
     }
-  }
+  };
 
-  if (speakerRuntime.currentSpeakerId !== null && currentSpeakerScore >= stickyThreshold) {
+  if (
+    speakerRuntime.currentSpeakerId !== null &&
+    currentSpeakerScore >= stickyThreshold
+  ) {
     const shouldBypassStickyOnLowConfidence =
       speakerRuntime.profiles.length >= MAX_SPEAKER_COUNT &&
-      currentSpeakerScore < assignThreshold - 0.08
+      currentSpeakerScore < assignThreshold - 0.08;
     const shouldStayCurrent =
-      !shouldBypassStickyOnLowConfidence && (
-        bestId < 0 ||
+      !shouldBypassStickyOnLowConfidence &&
+      (bestId < 0 ||
         bestId === speakerRuntime.currentSpeakerId ||
         bestScore < assignThreshold ||
-        bestScore - currentSpeakerScore < switchMargin
-      )
+        bestScore - currentSpeakerScore < switchMargin);
     if (shouldStayCurrent) {
-      clearPendingSwitch(speakerRuntime)
-      updateSpeakerProfile(speakerRuntime.currentSpeakerId, currentSpeakerScore)
+      clearPendingSwitch(speakerRuntime);
+      updateSpeakerProfile(
+        speakerRuntime.currentSpeakerId,
+        currentSpeakerScore,
+      );
       return {
         speakerId: speakerRuntime.currentSpeakerId,
         bestScore: currentSpeakerScore,
-      }
+      };
     }
   }
 
-  let candidateId = bestId
-  let candidateScore = bestScore
-  let candidateIsNew = false
+  let candidateId = bestId;
+  let candidateScore = bestScore;
+  let candidateIsNew = false;
 
   if (
     speakerRuntime.currentSpeakerId !== null &&
@@ -892,9 +1012,9 @@ function identifySpeaker(
     currentSpeakerScore < assignThreshold - 0.06 &&
     bestOtherScore >= currentSpeakerScore - 0.01
   ) {
-    candidateId = bestOtherId
-    candidateScore = bestOtherScore
-    candidateIsNew = false
+    candidateId = bestOtherId;
+    candidateScore = bestOtherScore;
+    candidateIsNew = false;
   }
 
   if (candidateId < 0 || candidateScore < assignThreshold) {
@@ -903,20 +1023,20 @@ function identifySpeaker(
       segmentDurationSec >= 0.55 &&
       (currentSpeakerScore < createThreshold || currentSpeakerScore < 0)
     ) {
-      candidateId = speakerRuntime.profiles.length
-      candidateScore = bestScore
-      candidateIsNew = true
+      candidateId = speakerRuntime.profiles.length;
+      candidateScore = bestScore;
+      candidateIsNew = true;
     } else if (
       bestId >= 0 &&
       speakerRuntime.currentSpeakerId !== null &&
       bestId !== speakerRuntime.currentSpeakerId &&
       speakerRuntime.profiles.length >= MAX_SPEAKER_COUNT
     ) {
-      candidateId = bestId
-      candidateScore = bestScore
+      candidateId = bestId;
+      candidateScore = bestScore;
     } else if (speakerRuntime.currentSpeakerId !== null) {
-      candidateId = speakerRuntime.currentSpeakerId
-      candidateScore = currentSpeakerScore
+      candidateId = speakerRuntime.currentSpeakerId;
+      candidateScore = currentSpeakerScore;
     }
   }
 
@@ -928,46 +1048,46 @@ function identifySpeaker(
     currentSpeakerScore < assignThreshold - 0.08 &&
     !inSwitchCooldown
   ) {
-    const newSpeakerId = speakerRuntime.profiles.length
+    const newSpeakerId = speakerRuntime.profiles.length;
     speakerRuntime.profiles.push({
       id: newSpeakerId,
       embedding: new Float32Array(embedding),
-    })
-    clearPendingSwitch(speakerRuntime)
-    speakerRuntime.lastSwitchSec = segmentEndSec
-    return { speakerId: newSpeakerId, bestScore: currentSpeakerScore }
+    });
+    clearPendingSwitch(speakerRuntime);
+    speakerRuntime.lastSwitchSec = segmentEndSec;
+    return { speakerId: newSpeakerId, bestScore: currentSpeakerScore };
   }
 
   if (speakerRuntime.currentSpeakerId === null) {
     if (candidateIsNew) {
-      const newSpeakerId = speakerRuntime.profiles.length
+      const newSpeakerId = speakerRuntime.profiles.length;
       speakerRuntime.profiles.push({
         id: newSpeakerId,
         embedding: new Float32Array(embedding),
-      })
-      clearPendingSwitch(speakerRuntime)
-      speakerRuntime.lastSwitchSec = segmentEndSec
-      return { speakerId: newSpeakerId, bestScore: candidateScore }
+      });
+      clearPendingSwitch(speakerRuntime);
+      speakerRuntime.lastSwitchSec = segmentEndSec;
+      return { speakerId: newSpeakerId, bestScore: candidateScore };
     }
 
     if (candidateId >= 0) {
-      clearPendingSwitch(speakerRuntime)
-      updateSpeakerProfile(candidateId, candidateScore)
-      speakerRuntime.lastSwitchSec = segmentEndSec
-      return { speakerId: candidateId, bestScore: candidateScore }
+      clearPendingSwitch(speakerRuntime);
+      updateSpeakerProfile(candidateId, candidateScore);
+      speakerRuntime.lastSwitchSec = segmentEndSec;
+      return { speakerId: candidateId, bestScore: candidateScore };
     }
 
-    clearPendingSwitch(speakerRuntime)
-    return { speakerId: 0, bestScore: candidateScore }
+    clearPendingSwitch(speakerRuntime);
+    return { speakerId: 0, bestScore: candidateScore };
   }
 
   if (candidateId === speakerRuntime.currentSpeakerId || candidateId < 0) {
-    clearPendingSwitch(speakerRuntime)
-    updateSpeakerProfile(speakerRuntime.currentSpeakerId, currentSpeakerScore)
+    clearPendingSwitch(speakerRuntime);
+    updateSpeakerProfile(speakerRuntime.currentSpeakerId, currentSpeakerScore);
     return {
       speakerId: speakerRuntime.currentSpeakerId,
       bestScore: currentSpeakerScore >= 0 ? currentSpeakerScore : bestScore,
-    }
+    };
   }
 
   if (
@@ -975,17 +1095,18 @@ function identifySpeaker(
     !inSwitchCooldown &&
     speakerRuntime.currentSpeakerId !== null &&
     segmentDurationSec >= strongSwitchMinSegmentSec &&
-    candidateScore >= Math.max(assignThreshold + 0.04, similarityThreshold + 0.01) &&
+    candidateScore >=
+      Math.max(assignThreshold + 0.04, similarityThreshold + 0.01) &&
     currentSpeakerScore >= 0 &&
     candidateScore - currentSpeakerScore >= strongSwitchMargin
   ) {
-    clearPendingSwitch(speakerRuntime)
-    speakerRuntime.lastSwitchSec = segmentEndSec
-    updateSpeakerProfile(candidateId, candidateScore)
+    clearPendingSwitch(speakerRuntime);
+    speakerRuntime.lastSwitchSec = segmentEndSec;
+    updateSpeakerProfile(candidateId, candidateScore);
     return {
       speakerId: candidateId,
       bestScore: candidateScore,
-    }
+    };
   }
 
   if (
@@ -1000,56 +1121,65 @@ function identifySpeaker(
     candidateScore >= assignThreshold - 0.02 &&
     candidateScore - currentSpeakerScore >= 0.03
   ) {
-    clearPendingSwitch(speakerRuntime)
-    speakerRuntime.lastSwitchSec = segmentEndSec
-    updateSpeakerProfile(candidateId, candidateScore)
+    clearPendingSwitch(speakerRuntime);
+    speakerRuntime.lastSwitchSec = segmentEndSec;
+    updateSpeakerProfile(candidateId, candidateScore);
     return {
       speakerId: candidateId,
       bestScore: candidateScore,
-    }
+    };
   }
 
   const samePendingCandidate =
     speakerRuntime.pendingSwitchSpeakerId === candidateId &&
-    speakerRuntime.pendingSwitchIsNew === candidateIsNew
+    speakerRuntime.pendingSwitchIsNew === candidateIsNew;
 
   if (!samePendingCandidate) {
-    speakerRuntime.pendingSwitchSpeakerId = candidateId
-    speakerRuntime.pendingSwitchCount = 0
-    speakerRuntime.pendingSwitchDurationSec = 0
-    speakerRuntime.pendingSwitchScoreSum = 0
-    speakerRuntime.pendingSwitchIsNew = candidateIsNew
-    speakerRuntime.pendingSwitchEmbedding = candidateIsNew ? new Float32Array(embedding) : null
+    speakerRuntime.pendingSwitchSpeakerId = candidateId;
+    speakerRuntime.pendingSwitchCount = 0;
+    speakerRuntime.pendingSwitchDurationSec = 0;
+    speakerRuntime.pendingSwitchScoreSum = 0;
+    speakerRuntime.pendingSwitchIsNew = candidateIsNew;
+    speakerRuntime.pendingSwitchEmbedding = candidateIsNew
+      ? new Float32Array(embedding)
+      : null;
   }
 
-  speakerRuntime.pendingSwitchCount += 1
-  speakerRuntime.pendingSwitchDurationSec += Math.max(0, segmentDurationSec)
-  speakerRuntime.pendingSwitchScoreSum += Number.isFinite(candidateScore) ? candidateScore : 0
+  speakerRuntime.pendingSwitchCount += 1;
+  speakerRuntime.pendingSwitchDurationSec += Math.max(0, segmentDurationSec);
+  speakerRuntime.pendingSwitchScoreSum += Number.isFinite(candidateScore)
+    ? candidateScore
+    : 0;
 
   if (candidateIsNew && speakerRuntime.pendingSwitchEmbedding) {
-    const pendingEmbedding = speakerRuntime.pendingSwitchEmbedding
-    const size = Math.min(pendingEmbedding.length, embedding.length)
+    const pendingEmbedding = speakerRuntime.pendingSwitchEmbedding;
+    const size = Math.min(pendingEmbedding.length, embedding.length);
     for (let i = 0; i < size; i += 1) {
-      pendingEmbedding[i] = pendingEmbedding[i] * 0.6 + embedding[i] * 0.4
+      pendingEmbedding[i] = pendingEmbedding[i] * 0.6 + embedding[i] * 0.4;
     }
   }
 
-  const pendingAverageScore = speakerRuntime.pendingSwitchScoreSum / Math.max(1, speakerRuntime.pendingSwitchCount)
+  const pendingAverageScore =
+    speakerRuntime.pendingSwitchScoreSum /
+    Math.max(1, speakerRuntime.pendingSwitchCount);
   const pendingEnoughEvidence = candidateIsNew
-    ? speakerRuntime.pendingSwitchCount >= 2 && speakerRuntime.pendingSwitchDurationSec >= 0.9
-    : speakerRuntime.pendingSwitchCount >= 2 && speakerRuntime.pendingSwitchDurationSec >= 0.35
+    ? speakerRuntime.pendingSwitchCount >= 2 &&
+      speakerRuntime.pendingSwitchDurationSec >= 0.9
+    : speakerRuntime.pendingSwitchCount >= 2 &&
+      speakerRuntime.pendingSwitchDurationSec >= 0.35;
 
-  const currentScoreLow = currentSpeakerScore < createThreshold || currentSpeakerScore < 0
+  const currentScoreLow =
+    currentSpeakerScore < createThreshold || currentSpeakerScore < 0;
   const candidateAdvantage =
     currentSpeakerScore >= 0
       ? pendingAverageScore - currentSpeakerScore
-      : pendingAverageScore
+      : pendingAverageScore;
 
   const confirmExistingSpeaker =
     !candidateIsNew &&
     pendingEnoughEvidence &&
     pendingAverageScore >= assignThreshold &&
-    candidateAdvantage >= switchMargin
+    candidateAdvantage >= switchMargin;
 
   const confirmExistingSpeakerLowConfidence =
     !candidateIsNew &&
@@ -1057,37 +1187,44 @@ function identifySpeaker(
     pendingEnoughEvidence &&
     pendingAverageScore >= Math.max(0.26, assignThreshold - 0.12) &&
     currentSpeakerScore < assignThreshold - 0.08 &&
-    candidateAdvantage >= 0.005
+    candidateAdvantage >= 0.005;
 
   const confirmNewSpeaker =
     candidateIsNew &&
     speakerRuntime.profiles.length < MAX_SPEAKER_COUNT &&
     pendingEnoughEvidence &&
-    currentScoreLow
+    currentScoreLow;
 
-  const allowConfirm = !inSwitchCooldown
-  if (allowConfirm && (confirmExistingSpeaker || confirmExistingSpeakerLowConfidence || confirmNewSpeaker)) {
+  const allowConfirm = !inSwitchCooldown;
+  if (
+    allowConfirm &&
+    (confirmExistingSpeaker ||
+      confirmExistingSpeakerLowConfidence ||
+      confirmNewSpeaker)
+  ) {
     if (candidateIsNew) {
-      const newSpeakerId = speakerRuntime.profiles.length
+      const newSpeakerId = speakerRuntime.profiles.length;
       speakerRuntime.profiles.push({
         id: newSpeakerId,
-        embedding: new Float32Array(speakerRuntime.pendingSwitchEmbedding ?? embedding),
-      })
-      clearPendingSwitch(speakerRuntime)
-      speakerRuntime.lastSwitchSec = segmentEndSec
+        embedding: new Float32Array(
+          speakerRuntime.pendingSwitchEmbedding ?? embedding,
+        ),
+      });
+      clearPendingSwitch(speakerRuntime);
+      speakerRuntime.lastSwitchSec = segmentEndSec;
       return {
         speakerId: newSpeakerId,
         bestScore: pendingAverageScore,
-      }
+      };
     }
 
-    clearPendingSwitch(speakerRuntime)
-    speakerRuntime.lastSwitchSec = segmentEndSec
-    updateSpeakerProfile(candidateId, pendingAverageScore)
+    clearPendingSwitch(speakerRuntime);
+    speakerRuntime.lastSwitchSec = segmentEndSec;
+    updateSpeakerProfile(candidateId, pendingAverageScore);
     return {
       speakerId: candidateId,
       bestScore: pendingAverageScore,
-    }
+    };
   }
 
   if (
@@ -1097,13 +1234,13 @@ function identifySpeaker(
     candidateScore >= Math.max(assignThreshold + 0.03, similarityThreshold) &&
     candidateAdvantage >= 0.01
   ) {
-    clearPendingSwitch(speakerRuntime)
-    speakerRuntime.lastSwitchSec = segmentEndSec
-    updateSpeakerProfile(candidateId, candidateScore)
+    clearPendingSwitch(speakerRuntime);
+    speakerRuntime.lastSwitchSec = segmentEndSec;
+    updateSpeakerProfile(candidateId, candidateScore);
     return {
       speakerId: candidateId,
       bestScore: candidateScore,
-    }
+    };
   }
 
   if (
@@ -1113,65 +1250,69 @@ function identifySpeaker(
     segmentDurationSec >= 1.4 &&
     currentScoreLow
   ) {
-    const newSpeakerId = speakerRuntime.profiles.length
+    const newSpeakerId = speakerRuntime.profiles.length;
     speakerRuntime.profiles.push({
       id: newSpeakerId,
-      embedding: new Float32Array(speakerRuntime.pendingSwitchEmbedding ?? embedding),
-    })
-    clearPendingSwitch(speakerRuntime)
-    speakerRuntime.lastSwitchSec = segmentEndSec
+      embedding: new Float32Array(
+        speakerRuntime.pendingSwitchEmbedding ?? embedding,
+      ),
+    });
+    clearPendingSwitch(speakerRuntime);
+    speakerRuntime.lastSwitchSec = segmentEndSec;
     return {
       speakerId: newSpeakerId,
       bestScore: pendingAverageScore,
-    }
+    };
   }
 
   return {
     speakerId: speakerRuntime.currentSpeakerId,
     bestScore: currentSpeakerScore >= 0 ? currentSpeakerScore : bestScore,
-  }
+  };
 }
 
 function clampNumber(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) {
-    return min
+    return min;
   }
-  return Math.min(Math.max(value, min), max)
+  return Math.min(Math.max(value, min), max);
 }
 
 function computeMedian(values: number[]): number {
   if (values.length === 0) {
-    return 0
+    return 0;
   }
-  const sorted = [...values].sort((a, b) => a - b)
-  const middle = Math.floor(sorted.length / 2)
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 0) {
-    return (sorted[middle - 1] + sorted[middle]) / 2
+    return (sorted[middle - 1] + sorted[middle]) / 2;
   }
-  return sorted[middle]
+  return sorted[middle];
 }
 
-function maybeBuildSpeakerThresholdHint(currentSession: RuntimeSessionState): SubtitleSessionEventDto | null {
-  const speakerRuntime = currentSession.speaker
+function maybeBuildSpeakerThresholdHint(
+  currentSession: RuntimeSessionState,
+): SubtitleSessionEventDto | null {
+  const speakerRuntime = currentSession.speaker;
   if (!speakerRuntime) {
-    return null
+    return null;
   }
   if (speakerRuntime.recentBestScores.length < 20) {
-    return null
+    return null;
   }
   if (speakerRuntime.segmentCount - speakerRuntime.lastHintSegmentCount < 20) {
-    return null
+    return null;
   }
 
-  const medianScore = computeMedian(speakerRuntime.recentBestScores)
-  const suggestedThreshold = clampNumber(medianScore - 0.03, 0.55, 0.72)
-  speakerRuntime.lastHintSegmentCount = speakerRuntime.segmentCount
+  const medianScore = computeMedian(speakerRuntime.recentBestScores);
+  const suggestedThreshold = clampNumber(medianScore - 0.03, 0.55, 0.72);
+  speakerRuntime.lastHintSegmentCount = speakerRuntime.segmentCount;
 
   return createEvent(
-    'speaker_threshold_hint',
-    'info',
+    "speaker_threshold_hint",
+    "info",
     `speaker score median=${medianScore.toFixed(3)}, suggest threshold=${suggestedThreshold.toFixed(2)}, current=${currentSession.similarityThreshold.toFixed(2)}`,
-  )
+  );
 }
 
 function extractSpeakerEmbedding(
@@ -1180,46 +1321,63 @@ function extractSpeakerEmbedding(
   sampleRate: number,
 ): Float32Array | null {
   if (samples.length < Math.floor(sampleRate * 0.45)) {
-    return null
+    return null;
   }
-  const stream = speakerRuntime.extractor.createStream()
+  const stream = speakerRuntime.extractor.createStream();
   stream.acceptWaveform({
     samples,
     sampleRate,
-  })
-  stream.inputFinished?.()
+  });
+  stream.inputFinished?.();
 
-  if (typeof speakerRuntime.extractor.isReady === 'function' && !speakerRuntime.extractor.isReady(stream)) {
-    return null
+  if (
+    typeof speakerRuntime.extractor.isReady === "function" &&
+    !speakerRuntime.extractor.isReady(stream)
+  ) {
+    return null;
   }
-  return normalizeEmbedding(speakerRuntime.extractor.compute(stream, false))
+  return normalizeEmbedding(speakerRuntime.extractor.compute(stream, false));
 }
 
-function parseVadSegment(rawSegment: VadSegmentLike, sampleRateHz: number): { samples: Float32Array; startSec: number | null; endSec: number | null } | null {
-  const inputSamples = rawSegment.samples
+function parseVadSegment(
+  rawSegment: VadSegmentLike,
+  sampleRateHz: number,
+): {
+  samples: Float32Array;
+  startSec: number | null;
+  endSec: number | null;
+} | null {
+  const inputSamples = rawSegment.samples;
   if (!inputSamples) {
-    return null
+    return null;
   }
-  const samples = inputSamples instanceof Float32Array ? inputSamples : new Float32Array(inputSamples)
+  const samples =
+    inputSamples instanceof Float32Array
+      ? inputSamples
+      : new Float32Array(inputSamples);
   if (samples.length === 0) {
-    return null
+    return null;
   }
 
-  const startRaw = Number(rawSegment.startSec ?? rawSegment.start)
-  const endRaw = Number(rawSegment.endSec ?? rawSegment.end)
+  const startRaw = Number(rawSegment.startSec ?? rawSegment.start);
+  const endRaw = Number(rawSegment.endSec ?? rawSegment.end);
 
   const startCandidate = Number.isFinite(startRaw)
-    ? (rawSegment.startSec != null ? startRaw : startRaw / Math.max(1, sampleRateHz))
-    : Number.NaN
+    ? rawSegment.startSec != null
+      ? startRaw
+      : startRaw / Math.max(1, sampleRateHz)
+    : Number.NaN;
   const endCandidate = Number.isFinite(endRaw)
-    ? (rawSegment.endSec != null ? endRaw : endRaw / Math.max(1, sampleRateHz))
-    : Number.NaN
+    ? rawSegment.endSec != null
+      ? endRaw
+      : endRaw / Math.max(1, sampleRateHz)
+    : Number.NaN;
 
   return {
     samples,
     startSec: Number.isFinite(startCandidate) ? startCandidate : null,
     endSec: Number.isFinite(endCandidate) ? endCandidate : null,
-  }
+  };
 }
 
 function consumeVadSegments(
@@ -1229,54 +1387,63 @@ function consumeVadSegments(
   fallbackChunkStartSec: number,
   fallbackChunkEndSec: number,
 ): SubtitleCueDto[] {
-  const cues: SubtitleCueDto[] = []
-  const timelineMin = Math.max(0, fallbackChunkStartSec - 0.45)
-  const timelineMax = Math.max(timelineMin + 0.2, fallbackChunkEndSec + 0.45)
+  const cues: SubtitleCueDto[] = [];
+  const timelineMin = Math.max(0, fallbackChunkStartSec - 0.45);
+  const timelineMax = Math.max(timelineMin + 0.2, fallbackChunkEndSec + 0.45);
 
   while (!vadDetector.isEmpty()) {
-    const parsedSegment = parseVadSegment(vadDetector.front(false), sampleRateHz)
-    vadDetector.pop()
+    const parsedSegment = parseVadSegment(
+      vadDetector.front(false),
+      sampleRateHz,
+    );
+    vadDetector.pop();
     if (!parsedSegment || parsedSegment.samples.length === 0) {
-      continue
+      continue;
     }
 
-    const segmentDurationSec = parsedSegment.samples.length / sampleRateHz
+    const segmentDurationSec = parsedSegment.samples.length / sampleRateHz;
     if (segmentDurationSec < 0.14) {
-      continue
+      continue;
     }
 
     const preferredEndSec = Number.isFinite(parsedSegment.endSec)
       ? Number(parsedSegment.endSec)
-      : fallbackChunkEndSec
+      : fallbackChunkEndSec;
     const preferredStartSec = Number.isFinite(parsedSegment.startSec)
       ? Number(parsedSegment.startSec)
-      : Math.max(fallbackChunkStartSec, preferredEndSec - segmentDurationSec)
+      : Math.max(fallbackChunkStartSec, preferredEndSec - segmentDurationSec);
 
-    const vadWindowSpan = preferredEndSec - preferredStartSec
+    const vadWindowSpan = preferredEndSec - preferredStartSec;
     const hasOutlierTimestamp =
       preferredStartSec < timelineMin ||
       preferredStartSec > timelineMax ||
       preferredEndSec < timelineMin ||
       preferredEndSec > timelineMax ||
       vadWindowSpan <= 0 ||
-      vadWindowSpan > 12
+      vadWindowSpan > 12;
 
     const segmentEndSec = hasOutlierTimestamp
       ? fallbackChunkEndSec
-      : Math.max(timelineMin, Math.min(timelineMax, preferredEndSec))
+      : Math.max(timelineMin, Math.min(timelineMax, preferredEndSec));
     const segmentStartSecRaw = hasOutlierTimestamp
       ? Math.max(fallbackChunkStartSec, segmentEndSec - segmentDurationSec)
       : Math.max(
           timelineMin,
           Math.min(
             segmentEndSec - 0.05,
-            Math.max(preferredStartSec, segmentEndSec - Math.max(segmentDurationSec, 0.1)),
+            Math.max(
+              preferredStartSec,
+              segmentEndSec - Math.max(segmentDurationSec, 0.1),
+            ),
           ),
-        )
-    const segmentStartSec = Math.min(segmentStartSecRaw, Math.max(0, segmentEndSec - 0.05))
+        );
+    const segmentStartSec = Math.min(
+      segmentStartSecRaw,
+      Math.max(0, segmentEndSec - 0.05),
+    );
 
     if (hasOutlierTimestamp) {
-      emitWorkerDebug('vad_timestamp_fallback', {
+      emitWorkerDebug("vad_timestamp_fallback", {
         session_id: currentSession.sessionId,
         session_epoch: currentSession.sessionEpoch,
         raw_start_sec: Number(preferredStartSec.toFixed(3)),
@@ -1285,7 +1452,7 @@ function consumeVadSegments(
         fallback_end_sec: Number(segmentEndSec.toFixed(3)),
         chunk_start_sec: Number(fallbackChunkStartSec.toFixed(3)),
         chunk_end_sec: Number(fallbackChunkEndSec.toFixed(3)),
-      })
+      });
     }
 
     cues.push(
@@ -1296,144 +1463,174 @@ function consumeVadSegments(
         Math.max(0, segmentStartSec),
         Math.max(segmentStartSec + 0.35, segmentEndSec),
       ),
-    )
+    );
   }
 
-  return cues
+  return cues;
 }
 
 function toFiniteNumbers(value: unknown): number[] {
   if (!Array.isArray(value)) {
-    return []
+    return [];
   }
-  const numbers: number[] = []
+  const numbers: number[] = [];
   for (let i = 0; i < value.length; i += 1) {
-    const candidate = Number(value[i])
+    const candidate = Number(value[i]);
     if (Number.isFinite(candidate)) {
-      numbers.push(candidate)
+      numbers.push(candidate);
     }
   }
-  return numbers
+  return numbers;
 }
 
 function normalizeTokenText(value: string): string {
   return value
-    .replace(/<\|[^|]+\|>/g, '')
-    .replace(/<[a-z][^>]{0,80}>/gi, '')
-    .replace(/<\/[a-z][^>]{0,80}>/gi, '')
-    .replaceAll('▁', ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+    .replace(/<\|[^|]+\|>/g, "")
+    .replace(/<[a-z][^>]{0,80}>/gi, "")
+    .replace(/<\/[a-z][^>]{0,80}>/gi, "")
+    .replaceAll("▁", " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function clampTime(value: number, durationSec: number): number {
-  const maxSec = Math.max(0, durationSec)
+  const maxSec = Math.max(0, durationSec);
   if (!Number.isFinite(value)) {
-    return 0
+    return 0;
   }
-  return Math.min(Math.max(value, 0), maxSec + 1)
+  return Math.min(Math.max(value, 0), maxSec + 1);
 }
 
 function buildOfflineResultCues(
   currentSession: RuntimeSessionState,
-  result: { text?: string; lang?: string; tokens?: string[]; timestamps?: number[]; durations?: number[] },
+  result: {
+    text?: string;
+    lang?: string;
+    tokens?: string[];
+    timestamps?: number[];
+    durations?: number[];
+  },
   durationSec: number,
 ): SubtitleCueDto[] {
-  const fallbackText = normalizeRecognizedText(result.text)
-  const rawTokens = Array.isArray(result.tokens) ? result.tokens.filter((item): item is string => typeof item === 'string') : []
-  const timestamps = toFiniteNumbers(result.timestamps)
-  const durations = toFiniteNumbers(result.durations)
+  const fallbackText = normalizeRecognizedText(result.text);
+  const rawTokens = Array.isArray(result.tokens)
+    ? result.tokens.filter((item): item is string => typeof item === "string")
+    : [];
+  const timestamps = toFiniteNumbers(result.timestamps);
+  const durations = toFiniteNumbers(result.durations);
   if (rawTokens.length === 0 || timestamps.length === 0) {
     if (!fallbackText) {
-      return []
+      return [];
     }
-    currentSession.cueSeed += 1
+    currentSession.cueSeed += 1;
     return [
       {
         id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
         start_sec: 0,
         end_sec: Math.max(0.8, durationSec),
         text: fallbackText,
-        lang: currentSession.requestedLanguage === 'auto' ? normalizeLangTag(result.lang) : currentSession.requestedLanguage,
+        lang:
+          currentSession.requestedLanguage === "auto"
+            ? normalizeLangTag(result.lang)
+            : currentSession.requestedLanguage,
       },
-    ]
+    ];
   }
 
-  const maxTimestamp = Math.max(...timestamps, 0)
-  const maxDuration = Math.max(...durations, 0)
-  const likelyMs = (durationSec > 0 && maxTimestamp > durationSec * 20) || (durationSec > 0 && maxDuration > durationSec * 20)
-  const timeScale = likelyMs ? 0.001 : 1
+  const maxTimestamp = Math.max(...timestamps, 0);
+  const maxDuration = Math.max(...durations, 0);
+  const likelyMs =
+    (durationSec > 0 && maxTimestamp > durationSec * 20) ||
+    (durationSec > 0 && maxDuration > durationSec * 20);
+  const timeScale = likelyMs ? 0.001 : 1;
 
-  const cues: SubtitleCueDto[] = []
+  const cues: SubtitleCueDto[] = [];
   const cueLanguage =
-    currentSession.requestedLanguage === 'auto' ? normalizeLangTag(result.lang) : currentSession.requestedLanguage
+    currentSession.requestedLanguage === "auto"
+      ? normalizeLangTag(result.lang)
+      : currentSession.requestedLanguage;
 
-  let cueStart = -1
-  let cueEnd = 0
-  let textBuffer = ''
+  let cueStart = -1;
+  let cueEnd = 0;
+  let textBuffer = "";
   const pushCue = () => {
-    const text = textBuffer.replace(/\s+/g, ' ').trim()
+    const text = textBuffer.replace(/\s+/g, " ").trim();
     if (!text) {
-      cueStart = -1
-      cueEnd = 0
-      textBuffer = ''
-      return
+      cueStart = -1;
+      cueEnd = 0;
+      textBuffer = "";
+      return;
     }
-    currentSession.cueSeed += 1
+    currentSession.cueSeed += 1;
     cues.push({
       id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
       start_sec: clampTime(cueStart >= 0 ? cueStart : 0, durationSec),
-      end_sec: clampTime(Math.max((cueStart >= 0 ? cueStart : 0) + 0.4, cueEnd), durationSec),
+      end_sec: clampTime(
+        Math.max((cueStart >= 0 ? cueStart : 0) + 0.4, cueEnd),
+        durationSec,
+      ),
       text,
       lang: cueLanguage,
-    })
-    cueStart = -1
-    cueEnd = 0
-    textBuffer = ''
-  }
+    });
+    cueStart = -1;
+    cueEnd = 0;
+    textBuffer = "";
+  };
 
   for (let i = 0; i < rawTokens.length; i += 1) {
-    const tokenText = normalizeTokenText(rawTokens[i])
+    const tokenText = normalizeTokenText(rawTokens[i]);
     if (!tokenText) {
-      continue
+      continue;
     }
 
-    const tokenStart = clampTime((timestamps[i] ?? timestamps[timestamps.length - 1] ?? 0) * timeScale, durationSec)
-    const durationCandidate = Math.max(0, (durations[i] ?? 0) * timeScale)
-    const nextStart = clampTime((timestamps[i + 1] ?? tokenStart) * timeScale, durationSec)
-    const tokenEnd = clampTime(
-      durationCandidate > 0 ? tokenStart + durationCandidate : Math.max(tokenStart + 0.25, nextStart),
+    const tokenStart = clampTime(
+      (timestamps[i] ?? timestamps[timestamps.length - 1] ?? 0) * timeScale,
       durationSec,
-    )
+    );
+    const durationCandidate = Math.max(0, (durations[i] ?? 0) * timeScale);
+    const nextStart = clampTime(
+      (timestamps[i + 1] ?? tokenStart) * timeScale,
+      durationSec,
+    );
+    const tokenEnd = clampTime(
+      durationCandidate > 0
+        ? tokenStart + durationCandidate
+        : Math.max(tokenStart + 0.25, nextStart),
+      durationSec,
+    );
 
     if (cueStart < 0) {
-      cueStart = tokenStart
-      cueEnd = tokenEnd
+      cueStart = tokenStart;
+      cueEnd = tokenEnd;
     } else {
-      cueEnd = Math.max(cueEnd, tokenEnd)
+      cueEnd = Math.max(cueEnd, tokenEnd);
     }
 
-    if (textBuffer && /^[A-Za-z0-9]/.test(tokenText) && !textBuffer.endsWith(' ')) {
-      textBuffer += ' '
+    if (
+      textBuffer &&
+      /^[A-Za-z0-9]/.test(tokenText) &&
+      !textBuffer.endsWith(" ")
+    ) {
+      textBuffer += " ";
     }
-    textBuffer += tokenText
+    textBuffer += tokenText;
 
-    const cueDuration = cueStart >= 0 ? cueEnd - cueStart : 0
-    const hitPunctuation = /[。！？!?；;，,.]$/.test(tokenText)
+    const cueDuration = cueStart >= 0 ? cueEnd - cueStart : 0;
+    const hitPunctuation = /[。！？!?；;，,.]$/.test(tokenText);
     if (hitPunctuation || cueDuration >= 3.8 || textBuffer.length >= 42) {
-      pushCue()
+      pushCue();
     }
   }
 
-  pushCue()
+  pushCue();
   if (cues.length > 0) {
-    return cues
+    return cues;
   }
 
   if (!fallbackText) {
-    return []
+    return [];
   }
-  currentSession.cueSeed += 1
+  currentSession.cueSeed += 1;
   return [
     {
       id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
@@ -1442,7 +1639,7 @@ function buildOfflineResultCues(
       text: fallbackText,
       lang: cueLanguage,
     },
-  ]
+  ];
 }
 
 function decodeSegmentAndBuildCue(
@@ -1452,32 +1649,37 @@ function decodeSegmentAndBuildCue(
   startSec: number,
   endSec: number,
 ): SubtitleCueDto[] {
-  const stream = currentSession.recognizer.createStream()
+  const stream = currentSession.recognizer.createStream();
   stream.acceptWaveform({
     samples,
     sampleRate: sampleRateHz,
-  })
+  });
 
-  const decodeStartedAt = nowMs()
-  currentSession.recognizer.decode(stream)
-  const decodeMs = Math.max(1, nowMs() - decodeStartedAt)
-  const result = currentSession.recognizer.getResult(stream)
-  const text = normalizeRecognizedText(result.text)
+  const decodeStartedAt = nowMs();
+  currentSession.recognizer.decode(stream);
+  const decodeMs = Math.max(1, nowMs() - decodeStartedAt);
+  const result = currentSession.recognizer.getResult(stream);
+  const text = normalizeRecognizedText(result.text);
   if (!text) {
-    return []
+    return [];
   }
 
   const cueLanguage =
-    currentSession.requestedLanguage === 'auto'
+    currentSession.requestedLanguage === "auto"
       ? normalizeLangTag(result.lang)
-      : currentSession.requestedLanguage
+      : currentSession.requestedLanguage;
 
-  let speakerId: number | null = currentSession.speaker?.currentSpeakerId ?? null
-  let speakerChanged = false
-  let speakerSimilarity: number | undefined
+  let speakerId: number | null =
+    currentSession.speaker?.currentSpeakerId ?? null;
+  let speakerChanged = false;
+  let speakerSimilarity: number | undefined;
   if (currentSession.speaker) {
-    const previousSpeakerId = currentSession.speaker.currentSpeakerId
-    const embedding = extractSpeakerEmbedding(currentSession.speaker, samples, sampleRateHz)
+    const previousSpeakerId = currentSession.speaker.currentSpeakerId;
+    const embedding = extractSpeakerEmbedding(
+      currentSession.speaker,
+      samples,
+      sampleRateHz,
+    );
     if (embedding) {
       const detected = identifySpeaker(
         currentSession.speaker,
@@ -1486,28 +1688,33 @@ function decodeSegmentAndBuildCue(
         currentSession.profileUpdateAlpha,
         samples.length / Math.max(1, sampleRateHz),
         endSec,
-      )
-      speakerSimilarity = detected.bestScore
-      currentSession.speaker.segmentCount += 1
-      currentSession.speaker.recentBestScores.push(detected.bestScore)
+      );
+      speakerSimilarity = detected.bestScore;
+      currentSession.speaker.segmentCount += 1;
+      currentSession.speaker.recentBestScores.push(detected.bestScore);
       if (currentSession.speaker.recentBestScores.length > 60) {
-        currentSession.speaker.recentBestScores.shift()
+        currentSession.speaker.recentBestScores.shift();
       }
 
-      const detectedSpeakerId = detected.speakerId
-      speakerChanged = currentSession.speaker.currentSpeakerId !== detectedSpeakerId
-      currentSession.speaker.currentSpeakerId = detectedSpeakerId
-      speakerId = detectedSpeakerId
+      const detectedSpeakerId = detected.speakerId;
+      speakerChanged =
+        currentSession.speaker.currentSpeakerId !== detectedSpeakerId;
+      currentSession.speaker.currentSpeakerId = detectedSpeakerId;
+      speakerId = detectedSpeakerId;
 
-      const pendingScoreAvg = currentSession.speaker.pendingSwitchCount > 0
-        ? currentSession.speaker.pendingSwitchScoreSum / currentSession.speaker.pendingSwitchCount
-        : 0
-      emitWorkerDebug('speaker_decision', {
+      const pendingScoreAvg =
+        currentSession.speaker.pendingSwitchCount > 0
+          ? currentSession.speaker.pendingSwitchScoreSum /
+            currentSession.speaker.pendingSwitchCount
+          : 0;
+      emitWorkerDebug("speaker_decision", {
         session_id: currentSession.sessionId,
         session_epoch: currentSession.sessionEpoch,
         segment_start_sec: Number(startSec.toFixed(3)),
         segment_end_sec: Number(endSec.toFixed(3)),
-        segment_duration_sec: Number((samples.length / Math.max(1, sampleRateHz)).toFixed(3)),
+        segment_duration_sec: Number(
+          (samples.length / Math.max(1, sampleRateHz)).toFixed(3),
+        ),
         asr_decode_ms: decodeMs,
         speaker_previous_id: previousSpeakerId,
         speaker_current_id: detectedSpeakerId,
@@ -1516,25 +1723,33 @@ function decodeSegmentAndBuildCue(
         speaker_candidate_id: currentSession.speaker.pendingSwitchSpeakerId,
         speaker_candidate_is_new: currentSession.speaker.pendingSwitchIsNew,
         pending_count: currentSession.speaker.pendingSwitchCount,
-        pending_duration_sec: Number(currentSession.speaker.pendingSwitchDurationSec.toFixed(3)),
+        pending_duration_sec: Number(
+          currentSession.speaker.pendingSwitchDurationSec.toFixed(3),
+        ),
         pending_score_avg: Number(pendingScoreAvg.toFixed(4)),
-      })
+      });
     }
   }
 
-  const normalizedStart = Math.max(0, startSec)
-  const normalizedEnd = Math.max(normalizedStart + 0.35, endSec)
+  const normalizedStart = Math.max(0, startSec);
+  const normalizedEnd = Math.max(normalizedStart + 0.35, endSec);
 
-  const cueText = text
+  const cueText = text;
   if (!cueText) {
-    return []
+    return [];
   }
 
-  const cueStart = normalizedStart
-  const cueEnd = normalizedEnd
-  const lineId = assignLineIdForCue(currentSession, speakerId, speakerChanged, speakerSimilarity, cueEnd)
+  const cueStart = normalizedStart;
+  const cueEnd = normalizedEnd;
+  const lineId = assignLineIdForCue(
+    currentSession,
+    speakerId,
+    speakerChanged,
+    speakerSimilarity,
+    cueEnd,
+  );
 
-  currentSession.cueSeed += 1
+  currentSession.cueSeed += 1;
   return [
     {
       id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
@@ -1547,7 +1762,7 @@ function decodeSegmentAndBuildCue(
       speaker_changed: speakerChanged,
       speaker_similarity: speakerSimilarity,
     },
-  ]
+  ];
 }
 
 function tryDecodeAndBuildCues(
@@ -1555,73 +1770,95 @@ function tryDecodeAndBuildCues(
   timelineStartSec: number,
   timelineEndSec: number,
 ): SubtitleCueDto[] {
-  currentSession.recognizer.decode(currentSession.stream)
-  const result = currentSession.recognizer.getResult(currentSession.stream)
-  const currentText = normalizeRecognizedText(result.text)
-  
+  currentSession.recognizer.decode(currentSession.stream);
+  const result = currentSession.recognizer.getResult(currentSession.stream);
+  const currentText = normalizeRecognizedText(result.text);
+
   if (!currentText) {
-    return []
+    return [];
   }
 
   // Simple mode: 直接使用完整的 ASR 文本，不计算 delta
-  if (currentSession.renderMode === 'simple') {
+  if (currentSession.renderMode === "simple") {
     // 检测静音间隔：基于最后一次非空 ASR 时间，而非最后一次提交 cue
-    const silenceDuration = timelineEndSec - currentSession.simpleLastNonEmptySec
-    if (silenceDuration > 1.5 && (currentSession.committedText || currentSession.simpleWindowText)) {
-      console.log(`[ASR] Silence detected (${silenceDuration.toFixed(1)}s), clearing previous text`)
-      currentSession.committedText = ''
-      currentSession.simpleLastRawText = ''
-      currentSession.simpleWindowText = ''
+    const silenceDuration =
+      timelineEndSec - currentSession.simpleLastNonEmptySec;
+    if (
+      silenceDuration > 1.5 &&
+      (currentSession.committedText || currentSession.simpleWindowText)
+    ) {
+      console.log(
+        `[ASR] Silence detected (${silenceDuration.toFixed(1)}s), clearing previous text`,
+      );
+      currentSession.committedText = "";
+      currentSession.simpleLastRawText = "";
+      currentSession.simpleWindowText = "";
     }
-    currentSession.simpleLastNonEmptySec = timelineEndSec
+    currentSession.simpleLastNonEmptySec = timelineEndSec;
 
-    const deltaResult = computeOverlapDelta(currentSession.simpleLastRawText, currentText, 64)
-    currentSession.simpleLastRawText = currentText
+    const deltaResult = computeOverlapDelta(
+      currentSession.simpleLastRawText,
+      currentText,
+      64,
+    );
+    currentSession.simpleLastRawText = currentText;
 
     // 如果文本无新增，不生成新的 cue
-    if (deltaResult.kind === 'none' || !deltaResult.delta) {
-      return []
+    if (deltaResult.kind === "none" || !deltaResult.delta) {
+      return [];
     }
 
-    const normalizedDelta = deltaResult.delta.trim()
-    if (charLength(normalizedDelta) <= 1 && !/[0-9A-Za-z]/.test(normalizedDelta)) {
-      return []
+    const normalizedDelta = deltaResult.delta.trim();
+    if (
+      charLength(normalizedDelta) <= 1 &&
+      !/[0-9A-Za-z]/.test(normalizedDelta)
+    ) {
+      return [];
     }
 
-    if (deltaResult.kind === 'replace') {
-      currentSession.simpleWindowText = currentText
+    if (deltaResult.kind === "replace") {
+      currentSession.simpleWindowText = currentText;
     } else {
-      currentSession.simpleWindowText = `${currentSession.simpleWindowText} ${normalizedDelta}`.trim()
+      currentSession.simpleWindowText =
+        `${currentSession.simpleWindowText} ${normalizedDelta}`.trim();
     }
 
-    const sentenceSplit = splitCompletedSentence(currentSession.simpleWindowText)
-    let displayText = ''
+    const sentenceSplit = splitCompletedSentence(
+      currentSession.simpleWindowText,
+    );
+    let displayText = "";
     if (sentenceSplit.completed) {
-      displayText = pickLatestSimpleSnippet(sentenceSplit.completed, 28)
-      currentSession.simpleWindowText = sentenceSplit.rest
+      displayText = pickLatestSimpleSnippet(sentenceSplit.completed, 28);
+      currentSession.simpleWindowText = sentenceSplit.rest;
     } else if (silenceDuration > 0.45 && currentSession.simpleWindowText) {
-      displayText = pickLatestSimpleSnippet(currentSession.simpleWindowText, 28)
-      currentSession.simpleWindowText = ''
+      displayText = pickLatestSimpleSnippet(
+        currentSession.simpleWindowText,
+        28,
+      );
+      currentSession.simpleWindowText = "";
     }
 
     if (!displayText || displayText === currentSession.committedText) {
-      return []
+      return [];
     }
 
-    currentSession.committedText = displayText
-    currentSession.lastSpeechEndSec = timelineEndSec
+    currentSession.committedText = displayText;
+    currentSession.lastSpeechEndSec = timelineEndSec;
 
     // Simple 模式句子短暂停留，避免历史内容长驻
-    const durationSec = Math.max(0.45, Math.min(0.75, charLength(displayText) * 0.025))
-    const cueStart = Math.max(0, timelineEndSec - 0.05)
-    const cueEnd = Math.max(cueStart + 0.25, timelineEndSec + durationSec)
+    const durationSec = Math.max(
+      0.45,
+      Math.min(0.75, charLength(displayText) * 0.025),
+    );
+    const cueStart = Math.max(0, timelineEndSec - 0.05);
+    const cueEnd = Math.max(cueStart + 0.25, timelineEndSec + durationSec);
 
     const cueLanguage =
-      currentSession.requestedLanguage === 'auto'
+      currentSession.requestedLanguage === "auto"
         ? normalizeLangTag(result.lang)
-        : currentSession.requestedLanguage
+        : currentSession.requestedLanguage;
 
-    currentSession.cueSeed += 1
+    currentSession.cueSeed += 1;
     const cue = {
       id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
       start_sec: cueStart,
@@ -1630,33 +1867,38 @@ function tryDecodeAndBuildCues(
       lang: cueLanguage,
       speaker: null,
       speaker_changed: false,
-    }
+    };
 
     // 只在有增量时输出调试信息
-    console.log(`[ASR] +${normalizedDelta.length} chars: "${normalizedDelta}" [${cueStart.toFixed(1)}s - ${cueEnd.toFixed(1)}s]`)
+    console.log(
+      `[ASR] +${normalizedDelta.length} chars: "${normalizedDelta}" [${cueStart.toFixed(1)}s - ${cueEnd.toFixed(1)}s]`,
+    );
 
-    return [cue]
+    return [cue];
   }
 
   // Advanced mode: 使用增量 delta 计算
-  const delta = computeTextDelta(currentSession.committedText, currentText)
-  currentSession.committedText = currentText
-  currentSession.lastSpeechEndSec = timelineEndSec
-  
+  const delta = computeTextDelta(currentSession.committedText, currentText);
+  currentSession.committedText = currentText;
+  currentSession.lastSpeechEndSec = timelineEndSec;
+
   if (!delta) {
-    return []
+    return [];
   }
 
-  const durationSec = Math.max(1.2, Math.min(5, delta.length * 0.22))
-  const cueStart = Math.max(0, Math.max(timelineStartSec, timelineEndSec - durationSec * 0.8))
-  const cueEnd = Math.max(cueStart + 0.4, cueStart + durationSec)
+  const durationSec = Math.max(1.2, Math.min(5, delta.length * 0.22));
+  const cueStart = Math.max(
+    0,
+    Math.max(timelineStartSec, timelineEndSec - durationSec * 0.8),
+  );
+  const cueEnd = Math.max(cueStart + 0.4, cueStart + durationSec);
 
   const cueLanguage =
-    currentSession.requestedLanguage === 'auto'
+    currentSession.requestedLanguage === "auto"
       ? normalizeLangTag(result.lang)
-      : currentSession.requestedLanguage
+      : currentSession.requestedLanguage;
 
-  currentSession.cueSeed += 1
+  currentSession.cueSeed += 1;
   const cue = {
     id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
     start_sec: cueStart,
@@ -1665,49 +1907,56 @@ function tryDecodeAndBuildCues(
     lang: cueLanguage,
     speaker: null,
     speaker_changed: false,
-  }
-  
-  return [cue]
+  };
+
+  return [cue];
 }
 
 async function handleInit(rawPayload: unknown): Promise<unknown> {
-  const payload = rawPayload as InitRequestPayload
-  const sherpa = loadSherpaModule(path.resolve(payload.engine_module_root))
+  const payload = rawPayload as InitRequestPayload;
+  const sherpa = loadSherpaModule(path.resolve(payload.engine_module_root));
 
-  const modelRootDir = await resolveModelRootDir(payload.model_dir, payload.model_id)
-  const providerDecision = chooseProvider(payload)
-  const runtimeEvents = [...providerDecision.events]
+  const modelRootDir = await resolveModelRootDir(
+    payload.model_dir,
+    payload.model_id,
+  );
+  const providerDecision = chooseProvider(payload);
+  const runtimeEvents = [...providerDecision.events];
 
-  const modelPath = await resolveModelOnnxPath(modelRootDir)
-  const tokensPath = path.join(modelRootDir, 'tokens.txt')
-  const modelDirRootCandidate = path.resolve(payload.model_dir)
+  const modelPath = await resolveModelOnnxPath(modelRootDir);
+  const tokensPath = path.join(modelRootDir, "tokens.txt");
+  const modelDirRootCandidate = path.resolve(payload.model_dir);
   const vadModelPath =
-    await resolveAuxiliaryModelPath(
+    (await resolveAuxiliaryModelPath(
       modelRootDir,
-      (name) => name.includes('silero') && name.includes('vad'),
-    )
-    ?? (modelDirRootCandidate !== modelRootDir
+      (name) => name.includes("silero") && name.includes("vad"),
+    )) ??
+    (modelDirRootCandidate !== modelRootDir
       ? await resolveAuxiliaryModelPath(
           modelDirRootCandidate,
-          (name) => name.includes('silero') && name.includes('vad'),
+          (name) => name.includes("silero") && name.includes("vad"),
         )
-      : null)
+      : null);
   const speakerModelPath =
-    await resolveAuxiliaryModelPath(
+    (await resolveAuxiliaryModelPath(
       modelRootDir,
-      (name) => name.includes('eres2net') || (name.includes('3dspeaker') && name.includes('sv')),
-    )
-    ?? (modelDirRootCandidate !== modelRootDir
+      (name) =>
+        name.includes("eres2net") ||
+        (name.includes("3dspeaker") && name.includes("sv")),
+    )) ??
+    (modelDirRootCandidate !== modelRootDir
       ? await resolveAuxiliaryModelPath(
           modelDirRootCandidate,
-          (name) => name.includes('eres2net') || (name.includes('3dspeaker') && name.includes('sv')),
+          (name) =>
+            name.includes("eres2net") ||
+            (name.includes("3dspeaker") && name.includes("sv")),
         )
-      : null)
-  const normalizedLanguage = normalizeRequestedLanguage(payload.language)
-  const vadTuning = resolveVadTuning(payload)
-  const speakerThreshold = resolveSpeakerThreshold(payload)
+      : null);
+  const normalizedLanguage = normalizeRequestedLanguage(payload.language);
+  const vadTuning = resolveVadTuning(payload);
+  const speakerThreshold = resolveSpeakerThreshold(payload);
   const useInverseTextNormalization =
-    normalizedLanguage === 'zh' || normalizedLanguage === 'yue' ? 1 : 0
+    normalizedLanguage === "zh" || normalizedLanguage === "yue" ? 1 : 0;
 
   const recognizer = new sherpa.OfflineRecognizer({
     featConfig: {
@@ -1724,53 +1973,61 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
       provider: providerDecision.provider,
       numThreads: 2,
     },
-  })
-  const stream = recognizer.createStream()
+  });
+  const stream = recognizer.createStream();
 
-  let vad: VadRuntime | null = null
-  const VadConstructor = sherpa.VoiceActivityDetector ?? sherpa.Vad
-  const wantsVad = payload.render_mode === 'advanced' || payload.render_mode === 'simple'
+  let vad: VadRuntime | null = null;
+  const VadConstructor = sherpa.VoiceActivityDetector ?? sherpa.Vad;
+  const wantsVad =
+    payload.render_mode === "advanced" || payload.render_mode === "simple";
   if (wantsVad && VadConstructor && vadModelPath) {
     try {
-      const detector = new VadConstructor({
-        sileroVad: {
-          model: vadModelPath,
-          threshold: vadTuning.threshold,
-          minSilenceDuration: vadTuning.minSilenceDuration,
-          minSpeechDuration: vadTuning.minSpeechDuration,
-          maxSpeechDuration: vadTuning.maxSpeechDuration,
+      const detector = new VadConstructor(
+        {
+          sileroVad: {
+            model: vadModelPath,
+            threshold: vadTuning.threshold,
+            minSilenceDuration: vadTuning.minSilenceDuration,
+            minSpeechDuration: vadTuning.minSpeechDuration,
+            maxSpeechDuration: vadTuning.maxSpeechDuration,
+          },
+          sampleRate: 16_000,
+          numThreads: 2,
         },
-        sampleRate: 16_000,
-        numThreads: 2,
-      }, 30)
-      vad = { detector }
+        30,
+      );
+      vad = { detector };
     } catch (error) {
       runtimeEvents.push(
         createEvent(
-          'advanced_vad_init_failed',
-          'warning',
+          "advanced_vad_init_failed",
+          "warning",
           error instanceof Error ? error.message : String(error),
         ),
-      )
+      );
     }
   } else if (wantsVad) {
-    const exportKeys = Object.keys(sherpa).sort().join(',')
+    const exportKeys = Object.keys(sherpa).sort().join(",");
     runtimeEvents.push(
       createEvent(
-        'advanced_vad_unavailable',
-        'warning',
+        "advanced_vad_unavailable",
+        "warning",
         `silero vad model or constructor is unavailable; fallback to legacy decoding; exports=${exportKeys}`,
       ),
-    )
+    );
   }
 
-  let speaker: SpeakerRuntime | null = null
-  if (payload.render_mode === 'advanced' && sherpa.SpeakerEmbeddingExtractor && speakerModelPath) {
+  let speaker: SpeakerRuntime | null = null;
+  if (
+    payload.render_mode === "advanced" &&
+    sherpa.SpeakerEmbeddingExtractor &&
+    speakerModelPath
+  ) {
     try {
       const extractor = new sherpa.SpeakerEmbeddingExtractor({
         model: speakerModelPath,
         numThreads: 1,
-      })
+      });
       speaker = {
         extractor,
         profiles: [],
@@ -1785,29 +2042,29 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
         recentBestScores: [],
         segmentCount: 0,
         lastHintSegmentCount: 0,
-      }
+      };
     } catch (error) {
       runtimeEvents.push(
         createEvent(
-          'advanced_speaker_init_failed',
-          'warning',
+          "advanced_speaker_init_failed",
+          "warning",
           error instanceof Error ? error.message : String(error),
         ),
-      )
+      );
     }
-  } else if (payload.render_mode === 'advanced') {
-    const exportKeys = Object.keys(sherpa).sort().join(',')
+  } else if (payload.render_mode === "advanced") {
+    const exportKeys = Object.keys(sherpa).sort().join(",");
     runtimeEvents.push(
       createEvent(
-        'advanced_speaker_unavailable',
-        'warning',
+        "advanced_speaker_unavailable",
+        "warning",
         `speaker embedding model or constructor is unavailable; speaker split is disabled; exports=${exportKeys}`,
       ),
-    )
+    );
   }
 
-  const sessionId = `subtitle-session-${nowMs()}-${Math.floor(Math.random() * 100_000)}`
-  const startedAtMs = nowMs()
+  const sessionId = `subtitle-session-${nowMs()}-${Math.floor(Math.random() * 100_000)}`;
+  const startedAtMs = nowMs();
 
   runtimeSession = {
     sessionId,
@@ -1823,25 +2080,27 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     stream,
     sampleRateHz: 16_000,
     pendingSamplesSinceDecode: 0,
-    committedText: '',
-    simpleLastRawText: '',
-    simpleWindowText: '',
+    committedText: "",
+    simpleLastRawText: "",
+    simpleWindowText: "",
     simpleLastNonEmptySec: 0,
     cueSeed: 0,
     requestedLanguage: normalizedLanguage,
-    renderMode: payload.render_mode ?? 'advanced',
+    renderMode: payload.render_mode ?? "advanced",
     lastSpeechEndSec: 0,
     vad,
     speaker,
-    lineBySpeaker: new Map<number, 'A' | 'B'>(),
+    lineBySpeaker: new Map<number, "A" | "B">(),
     currentLineId: null,
     lineSwitchSec: -1,
     lineStreakCount: 0,
     similarityThreshold: speakerThreshold,
     profileUpdateAlpha: 0.3,
-  }
+  };
 
-  console.log(`[ASR] Session started: ${payload.render_mode ?? 'advanced'} mode, language: ${normalizedLanguage}`)
+  console.log(
+    `[ASR] Session started: ${payload.render_mode ?? "advanced"} mode, language: ${normalizedLanguage}`,
+  );
 
   return startSubtitleSessionResponseSchema.parse({
     session_id: sessionId,
@@ -1849,80 +2108,95 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     fallback_applied: providerDecision.fallbackApplied,
     events: runtimeEvents,
     started_at_ms: startedAtMs,
-  })
+  });
 }
 
 async function handleStop(rawPayload: unknown): Promise<unknown> {
-  const request = (rawPayload ?? {}) as StopSubtitleSessionRequestDto
-  const currentSession = runtimeSession
-  runtimeSession = null
+  const request = (rawPayload ?? {}) as StopSubtitleSessionRequestDto;
+  const currentSession = runtimeSession;
+  runtimeSession = null;
 
   const response = stopSubtitleSessionResponseSchema.parse({
     session_id: currentSession?.sessionId ?? null,
     stopped: Boolean(currentSession),
     updated_at_ms: nowMs(),
-  })
+  });
 
-  void request
-  return response
+  void request;
+  return response;
 }
 
-function resetSessionStateForTimeline(currentSession: RuntimeSessionState, timelineSec: number): void {
-  currentSession.lastChunkEndSec = Math.max(0, timelineSec)
-  currentSession.stream = currentSession.recognizer.createStream()
-  currentSession.pendingSamplesSinceDecode = 0
-  currentSession.committedText = ''
-  currentSession.simpleLastRawText = ''
-  currentSession.simpleWindowText = ''
-  currentSession.simpleLastNonEmptySec = Math.max(0, timelineSec)
-  currentSession.lastChunkSeq = -1
-  currentSession.lineBySpeaker.clear()
-  currentSession.currentLineId = null
-  currentSession.lineSwitchSec = Math.max(0, timelineSec)
-  currentSession.lineStreakCount = 0
-  currentSession.speaker?.profiles.splice(0, currentSession.speaker.profiles.length)
+function resetSessionStateForTimeline(
+  currentSession: RuntimeSessionState,
+  timelineSec: number,
+): void {
+  currentSession.lastChunkEndSec = Math.max(0, timelineSec);
+  currentSession.stream = currentSession.recognizer.createStream();
+  currentSession.pendingSamplesSinceDecode = 0;
+  currentSession.committedText = "";
+  currentSession.simpleLastRawText = "";
+  currentSession.simpleWindowText = "";
+  currentSession.simpleLastNonEmptySec = Math.max(0, timelineSec);
+  currentSession.lastChunkSeq = -1;
+  currentSession.lineBySpeaker.clear();
+  currentSession.currentLineId = null;
+  currentSession.lineSwitchSec = Math.max(0, timelineSec);
+  currentSession.lineStreakCount = 0;
+  currentSession.speaker?.profiles.splice(
+    0,
+    currentSession.speaker.profiles.length,
+  );
   if (currentSession.speaker) {
-    currentSession.speaker.currentSpeakerId = null
-    currentSession.speaker.lastSwitchSec = -1
-    clearPendingSwitch(currentSession.speaker)
-    currentSession.speaker.recentBestScores = []
-    currentSession.speaker.segmentCount = 0
-    currentSession.speaker.lastHintSegmentCount = 0
+    currentSession.speaker.currentSpeakerId = null;
+    currentSession.speaker.lastSwitchSec = -1;
+    clearPendingSwitch(currentSession.speaker);
+    currentSession.speaker.recentBestScores = [];
+    currentSession.speaker.segmentCount = 0;
+    currentSession.speaker.lastHintSegmentCount = 0;
   }
 }
 
 async function handleReset(rawPayload: unknown): Promise<unknown> {
-  const request = (rawPayload ?? {}) as ResetSubtitleSessionRequestDto
-  const currentSession = runtimeSession
+  const request = (rawPayload ?? {}) as ResetSubtitleSessionRequestDto;
+  const currentSession = runtimeSession;
   if (!currentSession) {
     return resetSubtitleSessionResponseSchema.parse({
       session_id: null,
       ok: false,
-      events: [createEvent('session_not_running', 'warning', 'subtitle session is not running')],
+      events: [
+        createEvent(
+          "session_not_running",
+          "warning",
+          "subtitle session is not running",
+        ),
+      ],
       updated_at_ms: nowMs(),
-    })
+    });
   }
 
-  resetSessionStateForTimeline(currentSession, request.timeline_sec ?? currentSession.lastChunkEndSec)
+  resetSessionStateForTimeline(
+    currentSession,
+    request.timeline_sec ?? currentSession.lastChunkEndSec,
+  );
   return resetSubtitleSessionResponseSchema.parse({
     session_id: currentSession.sessionId,
     ok: true,
     events: [],
     updated_at_ms: nowMs(),
-  })
+  });
 }
 
 async function handleFlush(): Promise<unknown> {
-  const currentSession = runtimeSession
-  let cues: SubtitleCueDto[] = []
+  const currentSession = runtimeSession;
+  let cues: SubtitleCueDto[] = [];
 
   if (currentSession) {
-    const canFlushVad = currentSession.vad !== null
+    const canFlushVad = currentSession.vad !== null;
 
     if (canFlushVad) {
-      const vadDetector = currentSession.vad!.detector
-      if (typeof (vadDetector as { flush?: () => void }).flush === 'function') {
-        ;(vadDetector as { flush: () => void }).flush()
+      const vadDetector = currentSession.vad!.detector;
+      if (typeof (vadDetector as { flush?: () => void }).flush === "function") {
+        (vadDetector as { flush: () => void }).flush();
       }
       cues = consumeVadSegments(
         currentSession,
@@ -1930,13 +2204,13 @@ async function handleFlush(): Promise<unknown> {
         16_000,
         Math.max(0, currentSession.lastChunkEndSec - 2),
         currentSession.lastChunkEndSec,
-      )
+      );
     } else {
       cues = tryDecodeAndBuildCues(
         currentSession,
         Math.max(0, currentSession.lastChunkEndSec - 2),
         currentSession.lastChunkEndSec,
-      )
+      );
     }
   }
 
@@ -1945,16 +2219,20 @@ async function handleFlush(): Promise<unknown> {
     cues,
     events: [],
     updated_at_ms: nowMs(),
-  })
+  });
 }
 
 async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
-  const request = rawPayload as PushSubtitleAudioRequestDto
-  const currentSession = ensureSession()
+  const request = rawPayload as PushSubtitleAudioRequestDto;
+  const currentSession = ensureSession();
 
-  const requestEpoch = Number.isFinite(request.session_epoch) ? Math.max(0, Math.floor(request.session_epoch)) : 0
-  const requestChunkSeq = Number.isFinite(request.chunk_seq) ? Math.max(0, Math.floor(request.chunk_seq)) : 0
-  let epochResetApplied = false
+  const requestEpoch = Number.isFinite(request.session_epoch)
+    ? Math.max(0, Math.floor(request.session_epoch))
+    : 0;
+  const requestChunkSeq = Number.isFinite(request.chunk_seq)
+    ? Math.max(0, Math.floor(request.chunk_seq))
+    : 0;
+  let epochResetApplied = false;
 
   if (requestEpoch < currentSession.sessionEpoch) {
     return pushSubtitleAudioResponseSchema.parse({
@@ -1962,80 +2240,126 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
       accepted: false,
       provider: currentSession.provider,
       cues: [],
-      events: [createEvent('chunk_stale_epoch', 'warning', 'chunk epoch is older than active session epoch')],
+      events: [
+        createEvent(
+          "chunk_stale_epoch",
+          "warning",
+          "chunk epoch is older than active session epoch",
+        ),
+      ],
       session_epoch: currentSession.sessionEpoch,
       chunk_seq: requestChunkSeq,
       queue_len: 0,
       updated_at_ms: nowMs(),
-    })
+    });
   }
 
   if (requestEpoch > currentSession.sessionEpoch) {
-    currentSession.sessionEpoch = requestEpoch
-    resetSessionStateForTimeline(currentSession, request.chunk_start_sec)
-    epochResetApplied = true
+    currentSession.sessionEpoch = requestEpoch;
+    resetSessionStateForTimeline(currentSession, request.chunk_start_sec);
+    epochResetApplied = true;
   }
 
-  const previousChunkSeq = currentSession.lastChunkSeq
+  const previousChunkSeq = currentSession.lastChunkSeq;
   if (requestChunkSeq <= previousChunkSeq) {
     return pushSubtitleAudioResponseSchema.parse({
       session_id: currentSession.sessionId,
       accepted: false,
       provider: currentSession.provider,
       cues: [],
-      events: [createEvent('chunk_stale_seq', 'warning', 'chunk seq is not newer than last applied seq')],
+      events: [
+        createEvent(
+          "chunk_stale_seq",
+          "warning",
+          "chunk seq is not newer than last applied seq",
+        ),
+      ],
       session_epoch: currentSession.sessionEpoch,
       chunk_seq: requestChunkSeq,
       queue_len: 0,
       updated_at_ms: nowMs(),
-    })
+    });
   }
 
-  currentSession.lastChunkSeq = requestChunkSeq
+  currentSession.lastChunkSeq = requestChunkSeq;
 
-  const chunkBuffer = Buffer.from(request.chunk_base64, 'base64')
-  const chunkDurationSec = chunkBuffer.byteLength / 4 / request.sample_rate_hz / Math.max(1, request.channel_count)
-  const expectedEndSec = request.chunk_start_sec + Math.max(0, chunkDurationSec)
+  const chunkBuffer = Buffer.from(request.chunk_base64, "base64");
+  const chunkDurationSec =
+    chunkBuffer.byteLength /
+    4 /
+    request.sample_rate_hz /
+    Math.max(1, request.channel_count);
+  const expectedEndSec =
+    request.chunk_start_sec + Math.max(0, chunkDurationSec);
 
-  const events: SubtitleSessionEventDto[] = []
+  const events: SubtitleSessionEventDto[] = [];
   if (epochResetApplied) {
-    events.push(createEvent('chunk_epoch_reset', 'info', 'session state reset due to newer chunk epoch'))
+    events.push(
+      createEvent(
+        "chunk_epoch_reset",
+        "info",
+        "session state reset due to newer chunk epoch",
+      ),
+    );
   }
   if (previousChunkSeq >= 0 && requestChunkSeq > previousChunkSeq + 1) {
-    events.push(createEvent('chunk_seq_gap', 'warning', 'chunk seq gap detected; possible upstream drop/merge'))
+    events.push(
+      createEvent(
+        "chunk_seq_gap",
+        "warning",
+        "chunk seq gap detected; possible upstream drop/merge",
+      ),
+    );
   }
   if (request.chunk_end_sec + 0.0001 < request.chunk_start_sec) {
-    events.push(createEvent('chunk_invalid_range', 'warning', 'chunk_end_sec is less than chunk_start_sec'))
+    events.push(
+      createEvent(
+        "chunk_invalid_range",
+        "warning",
+        "chunk_end_sec is less than chunk_start_sec",
+      ),
+    );
   }
   if (request.chunk_start_sec + 0.0001 < currentSession.lastChunkEndSec) {
-    events.push(createEvent('chunk_non_monotonic', 'warning', 'chunk start is earlier than previous chunk end'))
+    events.push(
+      createEvent(
+        "chunk_non_monotonic",
+        "warning",
+        "chunk start is earlier than previous chunk end",
+      ),
+    );
   }
 
-  emitWorkerDebug('push_audio_received', {
+  emitWorkerDebug("push_audio_received", {
     session_id: currentSession.sessionId,
     session_epoch: currentSession.sessionEpoch,
     chunk_seq: requestChunkSeq,
     chunk_start_sec: Number(request.chunk_start_sec.toFixed(3)),
     chunk_end_sec: Number(request.chunk_end_sec.toFixed(3)),
-    chunk_duration_sec: Number((request.chunk_end_sec - request.chunk_start_sec).toFixed(3)),
+    chunk_duration_sec: Number(
+      (request.chunk_end_sec - request.chunk_start_sec).toFixed(3),
+    ),
     event_codes: events.map((item) => item.code),
-  })
+  });
 
-  currentSession.lastChunkEndSec = Math.max(currentSession.lastChunkEndSec, request.chunk_end_sec, expectedEndSec)
+  currentSession.lastChunkEndSec = Math.max(
+    currentSession.lastChunkEndSec,
+    request.chunk_end_sec,
+    expectedEndSec,
+  );
 
-  const rawSamples = decodeFloat32Buffer(chunkBuffer)
-  const samples = downmixToMono(rawSamples, Math.max(1, request.channel_count))
-  const rms = calculateRms(samples)
+  const rawSamples = decodeFloat32Buffer(chunkBuffer);
+  const samples = downmixToMono(rawSamples, Math.max(1, request.channel_count));
+  const rms = calculateRms(samples);
 
-  let cues: SubtitleCueDto[] = []
+  let cues: SubtitleCueDto[] = [];
 
   const canUseVadSegmentation =
-    currentSession.vad !== null &&
-    request.sample_rate_hz === 16_000
+    currentSession.vad !== null && request.sample_rate_hz === 16_000;
 
   if (canUseVadSegmentation && samples.length > 0) {
-    const vadDetector = currentSession.vad!.detector
-    vadDetector.acceptWaveform(samples)
+    const vadDetector = currentSession.vad!.detector;
+    vadDetector.acceptWaveform(samples);
     cues.push(
       ...consumeVadSegments(
         currentSession,
@@ -2044,32 +2368,39 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
         request.chunk_start_sec,
         request.chunk_end_sec,
       ),
-    )
+    );
 
     if (currentSession.speaker) {
-      const thresholdHintEvent = maybeBuildSpeakerThresholdHint(currentSession)
+      const thresholdHintEvent = maybeBuildSpeakerThresholdHint(currentSession);
       if (thresholdHintEvent) {
-        events.push(thresholdHintEvent)
+        events.push(thresholdHintEvent);
       }
     }
   } else {
     if (samples.length > 0) {
-      currentSession.sampleRateHz = request.sample_rate_hz
+      currentSession.sampleRateHz = request.sample_rate_hz;
       currentSession.stream.acceptWaveform({
         samples,
         sampleRate: request.sample_rate_hz,
-      })
-      currentSession.pendingSamplesSinceDecode += samples.length
+      });
+      currentSession.pendingSamplesSinceDecode += samples.length;
     }
 
-    const decodeWindowSamples = Math.max(1_600, Math.floor(currentSession.sampleRateHz * 0.6))
+    const decodeWindowSamples = Math.max(
+      1_600,
+      Math.floor(currentSession.sampleRateHz * 0.6),
+    );
     const shouldDecode =
       currentSession.pendingSamplesSinceDecode >= decodeWindowSamples &&
-      rms >= 0.002
+      rms >= 0.002;
 
     if (shouldDecode) {
-      currentSession.pendingSamplesSinceDecode = 0
-      cues = tryDecodeAndBuildCues(currentSession, request.chunk_start_sec, request.chunk_end_sec)
+      currentSession.pendingSamplesSinceDecode = 0;
+      cues = tryDecodeAndBuildCues(
+        currentSession,
+        request.chunk_start_sec,
+        request.chunk_end_sec,
+      );
     }
   }
 
@@ -2083,49 +2414,52 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
     chunk_seq: requestChunkSeq,
     queue_len: 0,
     updated_at_ms: nowMs(),
-  })
+  });
 }
 
 async function handleTranscribeAll(rawPayload: unknown): Promise<unknown> {
-  const request = rawPayload as TranscribeAllRequestPayload
-  const currentSession = ensureSession()
+  const request = rawPayload as TranscribeAllRequestPayload;
+  const currentSession = ensureSession();
 
-  const sampleRate = Number.isFinite(request.sample_rate_hz) && request.sample_rate_hz > 0
-    ? Math.floor(request.sample_rate_hz)
-    : 16_000
-  const channelCount = Number.isFinite(request.channel_count) && request.channel_count > 0
-    ? Math.floor(request.channel_count)
-    : 1
+  const sampleRate =
+    Number.isFinite(request.sample_rate_hz) && request.sample_rate_hz > 0
+      ? Math.floor(request.sample_rate_hz)
+      : 16_000;
+  const channelCount =
+    Number.isFinite(request.channel_count) && request.channel_count > 0
+      ? Math.floor(request.channel_count)
+      : 1;
 
-  const sourceBuffer = Buffer.from(request.chunk_base64, 'base64')
-  const rawSamples = decodeFloat32Buffer(sourceBuffer)
-  let monoSamples = rawSamples
+  const sourceBuffer = Buffer.from(request.chunk_base64, "base64");
+  const rawSamples = decodeFloat32Buffer(sourceBuffer);
+  let monoSamples = rawSamples;
   if (channelCount > 1 && rawSamples.length > 0) {
-    const frameCount = Math.floor(rawSamples.length / channelCount)
-    const downmixed = new Float32Array(frameCount)
+    const frameCount = Math.floor(rawSamples.length / channelCount);
+    const downmixed = new Float32Array(frameCount);
     for (let frame = 0; frame < frameCount; frame += 1) {
-      let mixed = 0
+      let mixed = 0;
       for (let channel = 0; channel < channelCount; channel += 1) {
-        mixed += rawSamples[frame * channelCount + channel] ?? 0
+        mixed += rawSamples[frame * channelCount + channel] ?? 0;
       }
-      downmixed[frame] = mixed / channelCount
+      downmixed[frame] = mixed / channelCount;
     }
-    monoSamples = downmixed
+    monoSamples = downmixed;
   }
 
-  const computedDuration = sampleRate > 0 ? monoSamples.length / sampleRate : 0
-  const durationSec = Number.isFinite(request.duration_sec) && (request.duration_sec ?? 0) > 0
-    ? Number(request.duration_sec)
-    : computedDuration
+  const computedDuration = sampleRate > 0 ? monoSamples.length / sampleRate : 0;
+  const durationSec =
+    Number.isFinite(request.duration_sec) && (request.duration_sec ?? 0) > 0
+      ? Number(request.duration_sec)
+      : computedDuration;
 
-  resetSessionStateForTimeline(currentSession, durationSec)
-  currentSession.stream.acceptWaveform({ samples: monoSamples, sampleRate })
+  resetSessionStateForTimeline(currentSession, durationSec);
+  currentSession.stream.acceptWaveform({ samples: monoSamples, sampleRate });
 
-  const startedAt = nowMs()
-  currentSession.recognizer.decode(currentSession.stream)
-  const elapsedMs = Math.max(1, nowMs() - startedAt)
-  const result = currentSession.recognizer.getResult(currentSession.stream)
-  const cues = buildOfflineResultCues(currentSession, result, durationSec)
+  const startedAt = nowMs();
+  currentSession.recognizer.decode(currentSession.stream);
+  const elapsedMs = Math.max(1, nowMs() - startedAt);
+  const result = currentSession.recognizer.getResult(currentSession.stream);
+  const cues = buildOfflineResultCues(currentSession, result, durationSec);
 
   return {
     session_id: currentSession.sessionId,
@@ -2136,56 +2470,66 @@ async function handleTranscribeAll(rawPayload: unknown): Promise<unknown> {
     elapsed_ms: elapsedMs,
     rtf: durationSec > 0 ? elapsedMs / 1000 / durationSec : null,
     updated_at_ms: nowMs(),
-  }
+  };
 }
 
-async function handleRequest(command: SubtitleWorkerCommand, payload: unknown): Promise<unknown> {
+async function handleRequest(
+  command: SubtitleWorkerCommand,
+  payload: unknown,
+): Promise<unknown> {
   switch (command) {
-    case 'init':
-      return await handleInit(payload)
-    case 'stop':
-      return await handleStop(payload)
-    case 'reset':
-      return await handleReset(payload)
-    case 'flush':
-      return await handleFlush()
-    case 'push-audio':
-      return await handlePushAudio(payload)
-    case 'transcribe-all':
-      return await handleTranscribeAll(payload)
+    case "init":
+      return await handleInit(payload);
+    case "stop":
+      return await handleStop(payload);
+    case "reset":
+      return await handleReset(payload);
+    case "flush":
+      return await handleFlush();
+    case "push-audio":
+      return await handlePushAudio(payload);
+    case "transcribe-all":
+      return await handleTranscribeAll(payload);
     default:
-      throw new Error(`subtitle_asr_worker_unknown_command:${command satisfies never}`)
+      throw new Error(
+        `subtitle_asr_worker_unknown_command:${command satisfies never}`,
+      );
   }
 }
 
-ensureParentPort()
+ensureParentPort();
 
-parentPort.on('message', (message: unknown) => {
-  if (!message || typeof message !== 'object') {
-    return
+parentPort.on("message", (message: unknown) => {
+  if (!message || typeof message !== "object") {
+    return;
   }
 
-  const request = message as Partial<SubtitleWorkerRequest>
-  if (request.kind !== 'request' || typeof request.request_id !== 'string' || typeof request.command !== 'string') {
-    return
+  const request = message as Partial<SubtitleWorkerRequest>;
+  if (
+    request.kind !== "request" ||
+    typeof request.request_id !== "string" ||
+    typeof request.command !== "string"
+  ) {
+    return;
   }
 
   void handleRequest(request.command as SubtitleWorkerCommand, request.payload)
     .then((payload) => {
       parentPort.postMessage({
-        kind: 'response',
+        kind: "response",
         request_id: request.request_id,
         ok: true,
         payload: sanitizePayloadForPostMessage(payload),
-      })
+      });
     })
     .catch((error: unknown) => {
-      const messageText = error instanceof Error && error.message ? error.message : String(error)
+      const messageText =
+        error instanceof Error && error.message ? error.message : String(error);
       parentPort.postMessage({
-        kind: 'response',
+        kind: "response",
         request_id: request.request_id,
         ok: false,
         error: messageText,
-      })
-    })
-})
+      });
+    });
+});

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type {
   FlushSubtitleSessionResponseDto,
@@ -6,152 +6,170 @@ import type {
   SubtitleCueDto,
   SubtitleSessionEventDto,
   SubtitleSessionProviderPreferenceDto,
-} from '../../contracts/backend'
-import type { MediaRepository } from '../backend/repository'
-import { VideoSubtitleCapture, type CapturedAudioChunk } from './VideoSubtitleCapture'
+} from "../../contracts/backend";
+import type { MediaRepository } from "../backend/repository";
+import {
+  VideoSubtitleCapture,
+  type CapturedAudioChunk,
+} from "./VideoSubtitleCapture";
 
 function isSubtitleDebugEnabled(): boolean {
-  if (typeof globalThis === 'undefined') {
-    return false
+  if (typeof globalThis === "undefined") {
+    return false;
   }
   try {
-    const value = globalThis.localStorage?.getItem('subtitle.debug.logs')
-    return value === '1' || value === 'true'
+    const value = globalThis.localStorage?.getItem("subtitle.debug.logs");
+    return value === "1" || value === "true";
   } catch {
-    return false
+    return false;
   }
 }
 
 function readSubtitleDebugBoolean(key: string): boolean {
-  if (typeof globalThis === 'undefined') {
-    return false
+  if (typeof globalThis === "undefined") {
+    return false;
   }
   try {
-    const raw = globalThis.localStorage?.getItem(key)
-    return raw === '1' || raw === 'true'
+    const raw = globalThis.localStorage?.getItem(key);
+    return raw === "1" || raw === "true";
   } catch {
-    return false
+    return false;
   }
 }
 
 function readSubtitleDebugOffsetSec(): number {
-  if (typeof globalThis === 'undefined') {
-    return 0
+  if (typeof globalThis === "undefined") {
+    return 0;
   }
   try {
-    const raw = globalThis.localStorage?.getItem('subtitle.debug.offsetSec')
+    const raw = globalThis.localStorage?.getItem("subtitle.debug.offsetSec");
     if (!raw) {
-      return 0
+      return 0;
     }
-    const value = Number(raw)
+    const value = Number(raw);
     if (!Number.isFinite(value)) {
-      return 0
+      return 0;
     }
-    return Math.max(-2, Math.min(2, value))
+    return Math.max(-2, Math.min(2, value));
   } catch {
-    return 0
+    return 0;
   }
 }
 
 function isAbortLikeError(error: unknown): boolean {
   if (!error) {
-    return false
+    return false;
   }
-  if (typeof error === 'object' && 'name' in error && (error as { name?: unknown }).name === 'AbortError') {
-    return true
+  if (
+    typeof error === "object" &&
+    "name" in error &&
+    (error as { name?: unknown }).name === "AbortError"
+  ) {
+    return true;
   }
-  const message = error instanceof Error ? error.message : String(error)
-  const normalized = message.trim().toLowerCase()
+  const message = error instanceof Error ? error.message : String(error);
+  const normalized = message.trim().toLowerCase();
   if (!normalized) {
-    return false
+    return false;
   }
   return (
-    normalized.includes('abort') ||
-    normalized.includes('cancel') ||
-    normalized.includes('canceled') ||
-    normalized.includes('cancelled') ||
-    normalized.includes('请求已取消')
-  )
+    normalized.includes("abort") ||
+    normalized.includes("cancel") ||
+    normalized.includes("canceled") ||
+    normalized.includes("cancelled") ||
+    normalized.includes("请求已取消")
+  );
 }
 
-type SubtitleDebugOffsetMode = 'off' | 'renderer'
+type SubtitleDebugOffsetMode = "off" | "renderer";
 
 function readSubtitleDebugOffsetMode(): SubtitleDebugOffsetMode {
-  if (typeof globalThis === 'undefined') {
-    return 'off'
+  if (typeof globalThis === "undefined") {
+    return "off";
   }
   try {
-    const raw = (globalThis.localStorage?.getItem('subtitle.debug.offsetMode') ?? '').trim().toLowerCase()
-    if (raw === 'off') {
-      return 'off'
+    const raw = (
+      globalThis.localStorage?.getItem("subtitle.debug.offsetMode") ?? ""
+    )
+      .trim()
+      .toLowerCase();
+    if (raw === "off") {
+      return "off";
     }
-    return 'renderer'
+    return "renderer";
   } catch {
-    return 'renderer'
+    return "renderer";
   }
 }
 
-const SUBTITLE_DEBUG_LOGS = isSubtitleDebugEnabled()
+const SUBTITLE_DEBUG_LOGS = isSubtitleDebugEnabled();
 
-function emitSubtitleDebug(event: string, payload: Record<string, unknown>): void {
+function emitSubtitleDebug(
+  event: string,
+  payload: Record<string, unknown>,
+): void {
   if (!SUBTITLE_DEBUG_LOGS) {
-    return
+    return;
   }
-  console.info('[subtitle][metrics]', JSON.stringify({
-    event,
-    at_ms: Math.round(performance.now()),
-    ...payload,
-  }))
+  console.info(
+    "[subtitle][metrics]",
+    JSON.stringify({
+      event,
+      at_ms: Math.round(performance.now()),
+      ...payload,
+    }),
+  );
 }
 
 interface UseLiveSubtitlesParams {
-  enabled: boolean
-  videoElement: HTMLVideoElement | null
-  videoPath: string | null
-  currentTimeSec: number
-  modelDir: string
-  modelId: string | null
-  providerPreference: SubtitleSessionProviderPreferenceDto
-  language: string
-  renderMode: 'simple' | 'advanced'
+  enabled: boolean;
+  videoElement: HTMLVideoElement | null;
+  videoPath: string | null;
+  currentTimeSec: number;
+  modelDir: string;
+  modelId: string | null;
+  providerPreference: SubtitleSessionProviderPreferenceDto;
+  language: string;
+  validPlaybackRateThreshold: number;
+  renderMode: "simple" | "advanced";
   advancedOptions: {
     vad: {
-      preset: 'balanced' | 'conservative' | 'aggressive'
-      threshold: number
-      minSilenceSec: number
-      minSpeechSec: number
-      maxSpeechSec: number
-    }
+      preset: "balanced" | "conservative" | "aggressive";
+      threshold: number;
+      minSilenceSec: number;
+      minSpeechSec: number;
+      maxSpeechSec: number;
+    };
     speaker: {
-      similarityThreshold: number
-    }
-  }
-  repository: MediaRepository
+      similarityThreshold: number;
+    };
+  };
+  repository: MediaRepository;
 }
 
 interface PersistenceBatchPayload {
-  cues: SubtitleCueDto[]
-  sessionEpoch: number
-  chunkSeq: number
-  batchStartSec: number | null
-  batchEndSec: number | null
-  playbackRate: number
-  enforceValidRangeGuard: boolean
-  allowFirstOverlapReplaceOnce: boolean
-  seekAnchorSec: number | null
-  currentValidRange: GeneratedRangeDto | null
+  cues: SubtitleCueDto[];
+  sessionEpoch: number;
+  chunkSeq: number;
+  batchStartSec: number | null;
+  batchEndSec: number | null;
+  playbackRate: number;
+  enforceValidRangeGuard: boolean;
+  allowFirstOverlapReplaceOnce: boolean;
+  seekAnchorSec: number | null;
+  currentValidRange: GeneratedRangeDto | null;
 }
 
 interface PersistenceSyncState {
-  timelineHasCue: boolean
-  timelineHasCueNear: boolean
-  timelineInGeneratedRange: boolean
-  activeRange: GeneratedRangeDto | null
+  timelineHasCue: boolean;
+  timelineHasCueNear: boolean;
+  timelineInGeneratedRange: boolean;
+  activeRange: GeneratedRangeDto | null;
 }
 
 interface GeneratedRangeDto {
-  start_sec: number
-  end_sec: number
+  start_sec: number;
+  end_sec: number;
 }
 
 function resolveActiveGeneratedRange(
@@ -159,149 +177,185 @@ function resolveActiveGeneratedRange(
   timelineSec: number,
 ): GeneratedRangeDto | null {
   for (let index = 0; index < ranges.length; index += 1) {
-    const range = ranges[index]
-    if (range.start_sec - 0.01 <= timelineSec && range.end_sec + 0.01 >= timelineSec) {
-      return range
+    const range = ranges[index];
+    if (
+      range.start_sec - 0.01 <= timelineSec &&
+      range.end_sec + 0.01 >= timelineSec
+    ) {
+      return range;
     }
   }
-  return null
+  return null;
 }
 
 function toDisplayCue(cue: SubtitleCueDto): SubtitleCueDto {
-  const originalStart = Math.max(0, cue.start_sec)
-  const originalEnd = Math.max(originalStart + 0.12, cue.end_sec)
-  const rawDurationSec = Math.max(0.12, originalEnd - originalStart)
+  const originalStart = Math.max(0, cue.start_sec);
+  const originalEnd = Math.max(originalStart + 0.12, cue.end_sec);
+  const rawDurationSec = Math.max(0.12, originalEnd - originalStart);
 
-  const normalizedText = cue.text.replace(/\s+/g, ' ').trim()
-  const cjkCount = (normalizedText.match(/[\u3400-\u9FFF\uF900-\uFAFF]/g) ?? []).length
-  const latinOrDigitCount = (normalizedText.match(/[A-Za-z0-9]/g) ?? []).length
-  const otherVisibleCount = Math.max(0, normalizedText.replace(/[\s]/g, '').length - cjkCount - latinOrDigitCount)
-  const effectiveCharUnits = cjkCount + latinOrDigitCount * 0.45 + otherVisibleCount * 0.6
+  const normalizedText = cue.text.replace(/\s+/g, " ").trim();
+  const cjkCount = (normalizedText.match(/[\u3400-\u9FFF\uF900-\uFAFF]/g) ?? [])
+    .length;
+  const latinOrDigitCount = (normalizedText.match(/[A-Za-z0-9]/g) ?? []).length;
+  const otherVisibleCount = Math.max(
+    0,
+    normalizedText.replace(/[\s]/g, "").length - cjkCount - latinOrDigitCount,
+  );
+  const effectiveCharUnits =
+    cjkCount + latinOrDigitCount * 0.45 + otherVisibleCount * 0.6;
 
   const mappedLeadSec = (() => {
-    const minChars = 3
-    const maxChars = 20
-    const minSec = 0.3
-    const maxSec = 2
-    const clampedChars = Math.max(minChars, Math.min(maxChars, effectiveCharUnits))
-    const ratio = (clampedChars - minChars) / (maxChars - minChars)
-    return minSec + ratio * (maxSec - minSec)
-  })()
+    const minChars = 3;
+    const maxChars = 20;
+    const minSec = 0.3;
+    const maxSec = 2;
+    const clampedChars = Math.max(
+      minChars,
+      Math.min(maxChars, effectiveCharUnits),
+    );
+    const ratio = (clampedChars - minChars) / (maxChars - minChars);
+    return minSec + ratio * (maxSec - minSec);
+  })();
 
-  const speechSecByChars = Math.max(0.25, Math.min(6, effectiveCharUnits * 0.17))
-  const leadOffsetSec = mappedLeadSec + speechSecByChars
+  const speechSecByChars = Math.max(
+    0.25,
+    Math.min(6, effectiveCharUnits * 0.17),
+  );
+  const leadOffsetSec = mappedLeadSec + speechSecByChars;
 
-  const expandedStart = Math.max(0, originalStart - 0.5)
-  const expandedEnd = Math.max(expandedStart + 0.25, originalEnd + 0.5)
-  const shiftedStart = Math.max(0, expandedStart - leadOffsetSec)
-  const displayDurationSec = Math.max(rawDurationSec + 0.5, speechSecByChars + 0.55, 0.85)
-  const shiftedEnd = Math.max(shiftedStart + 0.25, shiftedStart + displayDurationSec, expandedEnd - leadOffsetSec)
+  const expandedStart = Math.max(0, originalStart - 0.5);
+  const expandedEnd = Math.max(expandedStart + 0.25, originalEnd + 0.5);
+  const shiftedStart = Math.max(0, expandedStart - leadOffsetSec);
+  const displayDurationSec = Math.max(
+    rawDurationSec + 0.5,
+    speechSecByChars + 0.55,
+    0.85,
+  );
+  const shiftedEnd = Math.max(
+    shiftedStart + 0.25,
+    shiftedStart + displayDurationSec,
+    expandedEnd - leadOffsetSec,
+  );
 
   return {
     ...cue,
     start_sec: Number(shiftedStart.toFixed(3)),
     end_sec: Number(shiftedEnd.toFixed(3)),
-  }
+  };
 }
 
 function toDisplayCues(cues: SubtitleCueDto[]): SubtitleCueDto[] {
   if (cues.length === 0) {
-    return cues
+    return cues;
   }
-  return cues.map((cue) => toDisplayCue(cue))
+  return cues.map((cue) => toDisplayCue(cue));
 }
 
 function normalizeCueTextForDedup(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[\s\p{P}\p{S}]+/gu, '')
-    .trim()
+    .replace(/[\s\p{P}\p{S}]+/gu, "")
+    .trim();
 }
 
 function computeDiceSimilarity(left: string, right: string): number {
   if (!left || !right) {
-    return 0
+    return 0;
   }
   if (left === right) {
-    return 1
+    return 1;
   }
-  const leftChars = Array.from(left)
-  const rightChars = Array.from(right)
+  const leftChars = Array.from(left);
+  const rightChars = Array.from(right);
   if (leftChars.length < 2 || rightChars.length < 2) {
-    const rightSet = new Set(rightChars)
-    const hit = leftChars.reduce((sum, ch) => sum + (rightSet.has(ch) ? 1 : 0), 0)
-    return hit / Math.max(leftChars.length, rightChars.length)
+    const rightSet = new Set(rightChars);
+    const hit = leftChars.reduce(
+      (sum, ch) => sum + (rightSet.has(ch) ? 1 : 0),
+      0,
+    );
+    return hit / Math.max(leftChars.length, rightChars.length);
   }
 
-  const leftBigrams = new Map<string, number>()
+  const leftBigrams = new Map<string, number>();
   for (let i = 0; i < leftChars.length - 1; i += 1) {
-    const key = `${leftChars[i]}${leftChars[i + 1]}`
-    leftBigrams.set(key, (leftBigrams.get(key) ?? 0) + 1)
+    const key = `${leftChars[i]}${leftChars[i + 1]}`;
+    leftBigrams.set(key, (leftBigrams.get(key) ?? 0) + 1);
   }
 
-  let intersection = 0
-  let rightCount = 0
+  let intersection = 0;
+  let rightCount = 0;
   for (let i = 0; i < rightChars.length - 1; i += 1) {
-    const key = `${rightChars[i]}${rightChars[i + 1]}`
-    rightCount += 1
-    const leftCount = leftBigrams.get(key) ?? 0
+    const key = `${rightChars[i]}${rightChars[i + 1]}`;
+    rightCount += 1;
+    const leftCount = leftBigrams.get(key) ?? 0;
     if (leftCount > 0) {
-      intersection += 1
-      leftBigrams.set(key, leftCount - 1)
+      intersection += 1;
+      leftBigrams.set(key, leftCount - 1);
     }
   }
 
-  const leftCount = Math.max(1, leftChars.length - 1)
-  const denominator = leftCount + Math.max(1, rightCount)
-  return (2 * intersection) / denominator
+  const leftCount = Math.max(1, leftChars.length - 1);
+  const denominator = leftCount + Math.max(1, rightCount);
+  return (2 * intersection) / denominator;
 }
 
 function computeCueTextSimilarity(leftText: string, rightText: string): number {
-  const left = normalizeCueTextForDedup(leftText)
-  const right = normalizeCueTextForDedup(rightText)
+  const left = normalizeCueTextForDedup(leftText);
+  const right = normalizeCueTextForDedup(rightText);
   if (!left || !right) {
-    return 0
+    return 0;
   }
   if (left === right) {
-    return 1
+    return 1;
   }
-  const containment = left.includes(right) || right.includes(left)
-    ? Math.min(left.length, right.length) / Math.max(left.length, right.length)
-    : 0
-  const dice = computeDiceSimilarity(left, right)
-  return Math.max(containment, dice)
+  const containment =
+    left.includes(right) || right.includes(left)
+      ? Math.min(left.length, right.length) /
+        Math.max(left.length, right.length)
+      : 0;
+  const dice = computeDiceSimilarity(left, right);
+  return Math.max(containment, dice);
 }
 
 function cueOverlapRatio(left: SubtitleCueDto, right: SubtitleCueDto): number {
-  const overlapStart = Math.max(left.start_sec, right.start_sec)
-  const overlapEnd = Math.min(left.end_sec, right.end_sec)
-  const overlap = Math.max(0, overlapEnd - overlapStart)
-  const leftDuration = Math.max(0.05, left.end_sec - left.start_sec)
-  const rightDuration = Math.max(0.05, right.end_sec - right.start_sec)
-  return overlap / Math.min(leftDuration, rightDuration)
+  const overlapStart = Math.max(left.start_sec, right.start_sec);
+  const overlapEnd = Math.min(left.end_sec, right.end_sec);
+  const overlap = Math.max(0, overlapEnd - overlapStart);
+  const leftDuration = Math.max(0.05, left.end_sec - left.start_sec);
+  const rightDuration = Math.max(0.05, right.end_sec - right.start_sec);
+  return overlap / Math.min(leftDuration, rightDuration);
 }
 
-function areLikelyDuplicateCue(left: SubtitleCueDto, right: SubtitleCueDto): boolean {
-  const similarity = computeCueTextSimilarity(left.text, right.text)
+function areLikelyDuplicateCue(
+  left: SubtitleCueDto,
+  right: SubtitleCueDto,
+): boolean {
+  const similarity = computeCueTextSimilarity(left.text, right.text);
   if (similarity < 0.82) {
-    return false
+    return false;
   }
-  const leftCenter = (left.start_sec + left.end_sec) * 0.5
-  const rightCenter = (right.start_sec + right.end_sec) * 0.5
-  const centerDiff = Math.abs(leftCenter - rightCenter)
+  const leftCenter = (left.start_sec + left.end_sec) * 0.5;
+  const rightCenter = (right.start_sec + right.end_sec) * 0.5;
+  const centerDiff = Math.abs(leftCenter - rightCenter);
   if (similarity >= 0.92 && centerDiff <= 0.8) {
-    return true
+    return true;
   }
   if (centerDiff <= 0.45 && similarity >= 0.85) {
-    return true
+    return true;
   }
-  return cueOverlapRatio(left, right) >= 0.5 && similarity >= 0.82
+  return cueOverlapRatio(left, right) >= 0.5 && similarity >= 0.82;
 }
 
-function mergeDuplicateCues(base: SubtitleCueDto, incoming: SubtitleCueDto): SubtitleCueDto {
-  const mergedStart = Math.min(base.start_sec, incoming.start_sec)
-  const mergedEnd = Math.max(base.end_sec, incoming.end_sec)
-  const mergedText = incoming.text.trim().length >= base.text.trim().length ? incoming.text : base.text
+function mergeDuplicateCues(
+  base: SubtitleCueDto,
+  incoming: SubtitleCueDto,
+): SubtitleCueDto {
+  const mergedStart = Math.min(base.start_sec, incoming.start_sec);
+  const mergedEnd = Math.max(base.end_sec, incoming.end_sec);
+  const mergedText =
+    incoming.text.trim().length >= base.text.trim().length
+      ? incoming.text
+      : base.text;
   return {
     ...base,
     text: mergedText,
@@ -312,122 +366,163 @@ function mergeDuplicateCues(base: SubtitleCueDto, incoming: SubtitleCueDto): Sub
     line: incoming.line ?? base.line,
     speaker_changed: incoming.speaker_changed ?? base.speaker_changed,
     speaker_similarity: incoming.speaker_similarity ?? base.speaker_similarity,
-  }
+  };
 }
 
-function hasCueAtTimeline(cues: SubtitleCueDto[], timelineSec: number): boolean {
+function hasCueAtTimeline(
+  cues: SubtitleCueDto[],
+  timelineSec: number,
+): boolean {
   for (let index = 0; index < cues.length; index += 1) {
-    const cue = cues[index]
-    if (cue.start_sec - 0.01 <= timelineSec && cue.end_sec + 0.12 >= timelineSec) {
-      return true
+    const cue = cues[index];
+    if (
+      cue.start_sec - 0.01 <= timelineSec &&
+      cue.end_sec + 0.12 >= timelineSec
+    ) {
+      return true;
     }
   }
-  return false
+  return false;
 }
 
 function hasCueNearTimeline(
   cues: SubtitleCueDto[],
   timelineSec: number,
   options?: {
-    backtrackSec?: number
-    lookaheadSec?: number
+    backtrackSec?: number;
+    lookaheadSec?: number;
   },
 ): boolean {
-  const backtrackSec = Math.max(0, options?.backtrackSec ?? 0.25)
-  const lookaheadSec = Math.max(0, options?.lookaheadSec ?? 1.2)
-  const nearStart = Math.max(0, timelineSec - backtrackSec)
-  const nearEnd = timelineSec + lookaheadSec
+  const backtrackSec = Math.max(0, options?.backtrackSec ?? 0.25);
+  const lookaheadSec = Math.max(0, options?.lookaheadSec ?? 1.2);
+  const nearStart = Math.max(0, timelineSec - backtrackSec);
+  const nearEnd = timelineSec + lookaheadSec;
   for (let index = 0; index < cues.length; index += 1) {
-    const cue = cues[index]
+    const cue = cues[index];
     if (cue.end_sec + 0.001 >= nearStart && cue.start_sec <= nearEnd + 0.001) {
-      return true
+      return true;
     }
   }
-  return false
+  return false;
 }
 
-function isTimelineInRanges(ranges: GeneratedRangeDto[], timelineSec: number): boolean {
+function isTimelineInRanges(
+  ranges: GeneratedRangeDto[],
+  timelineSec: number,
+): boolean {
   for (let index = 0; index < ranges.length; index += 1) {
-    const range = ranges[index]
-    if (range.start_sec - 0.01 <= timelineSec && range.end_sec + 0.01 >= timelineSec) {
-      return true
+    const range = ranges[index];
+    if (
+      range.start_sec - 0.01 <= timelineSec &&
+      range.end_sec + 0.01 >= timelineSec
+    ) {
+      return true;
     }
   }
-  return false
+  return false;
 }
 
 function encodeFloat32ToBase64(samples: Float32Array): string {
-  const bytes = new Uint8Array(samples.buffer, samples.byteOffset, samples.byteLength)
-  let binary = ''
-  const chunkSize = 0x8000
+  const bytes = new Uint8Array(
+    samples.buffer,
+    samples.byteOffset,
+    samples.byteLength,
+  );
+  let binary = "";
+  const chunkSize = 0x8000;
   for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    const next = bytes.subarray(offset, Math.min(bytes.length, offset + chunkSize))
-    binary += String.fromCharCode(...next)
+    const next = bytes.subarray(
+      offset,
+      Math.min(bytes.length, offset + chunkSize),
+    );
+    binary += String.fromCharCode(...next);
   }
-  return btoa(binary)
+  return btoa(binary);
 }
 
-function appendCues(previous: SubtitleCueDto[], next: SubtitleCueDto[]): SubtitleCueDto[] {
+function appendCues(
+  previous: SubtitleCueDto[],
+  next: SubtitleCueDto[],
+): SubtitleCueDto[] {
   if (next.length === 0) {
-    return previous
+    return previous;
   }
-  const mergedById = new Map<string, SubtitleCueDto>()
+  const mergedById = new Map<string, SubtitleCueDto>();
   for (const cue of [...previous, ...next]) {
-    mergedById.set(cue.id, cue)
+    mergedById.set(cue.id, cue);
   }
-  const ordered = Array.from(mergedById.values()).sort((left, right) => left.start_sec - right.start_sec)
-  const deduped: SubtitleCueDto[] = []
+  const ordered = Array.from(mergedById.values()).sort(
+    (left, right) => left.start_sec - right.start_sec,
+  );
+  const deduped: SubtitleCueDto[] = [];
   for (const cue of ordered) {
-    let duplicateIndex = -1
-    for (let index = deduped.length - 1; index >= Math.max(0, deduped.length - 8); index -= 1) {
+    let duplicateIndex = -1;
+    for (
+      let index = deduped.length - 1;
+      index >= Math.max(0, deduped.length - 8);
+      index -= 1
+    ) {
       if (areLikelyDuplicateCue(deduped[index], cue)) {
-        duplicateIndex = index
-        break
+        duplicateIndex = index;
+        break;
       }
     }
     if (duplicateIndex >= 0) {
-      deduped[duplicateIndex] = mergeDuplicateCues(deduped[duplicateIndex], cue)
-      continue
+      deduped[duplicateIndex] = mergeDuplicateCues(
+        deduped[duplicateIndex],
+        cue,
+      );
+      continue;
     }
-    deduped.push(cue)
+    deduped.push(cue);
   }
-  return deduped.slice(-300)
+  return deduped.slice(-300);
 }
 
 function concatFloat32(chunks: Float32Array[]): Float32Array {
-  const total = chunks.reduce((sum, part) => sum + part.length, 0)
-  const output = new Float32Array(total)
-  let offset = 0
+  const total = chunks.reduce((sum, part) => sum + part.length, 0);
+  const output = new Float32Array(total);
+  let offset = 0;
   for (const part of chunks) {
-    output.set(part, offset)
-    offset += part.length
+    output.set(part, offset);
+    offset += part.length;
   }
-  return output
+  return output;
 }
 
-function popBatchChunk(queue: CapturedAudioChunk[], maxWallDurationSec = 0.4): CapturedAudioChunk | null {
-  const first = queue.shift()
+function popBatchChunk(
+  queue: CapturedAudioChunk[],
+  maxWallDurationSec = 0.4,
+): CapturedAudioChunk | null {
+  const first = queue.shift();
   if (!first) {
-    return null
+    return null;
   }
 
-  const maxSamples = Math.max(1, Math.floor(first.sampleRateHz * maxWallDurationSec) * Math.max(1, first.channelCount))
-  const parts: Float32Array[] = [first.samples]
-  let totalSamples = first.samples.length
-  let endSec = first.endSec
+  const maxSamples = Math.max(
+    1,
+    Math.floor(first.sampleRateHz * maxWallDurationSec) *
+      Math.max(1, first.channelCount),
+  );
+  const parts: Float32Array[] = [first.samples];
+  let totalSamples = first.samples.length;
+  let endSec = first.endSec;
 
   while (queue.length > 0) {
-    const next = queue[0]
-    if (next.sampleRateHz !== first.sampleRateHz || next.channelCount !== first.channelCount) {
-      break
+    const next = queue[0];
+    if (
+      next.sampleRateHz !== first.sampleRateHz ||
+      next.channelCount !== first.channelCount
+    ) {
+      break;
     }
     if (totalSamples + next.samples.length > maxSamples) {
-      break
+      break;
     }
-    queue.shift()
-    parts.push(next.samples)
-    totalSamples += next.samples.length
-    endSec = next.endSec
+    queue.shift();
+    parts.push(next.samples);
+    totalSamples += next.samples.length;
+    endSec = next.endSec;
   }
 
   return {
@@ -436,34 +531,36 @@ function popBatchChunk(queue: CapturedAudioChunk[], maxWallDurationSec = 0.4): C
     startSec: first.startSec,
     endSec,
     samples: parts.length === 1 ? first.samples : concatFloat32(parts),
-  }
+  };
 }
 
-function pickDisplayEventMessage(events: SubtitleSessionEventDto[]): string | null {
+function pickDisplayEventMessage(
+  events: SubtitleSessionEventDto[],
+): string | null {
   const selected = events.find((item) => {
-    if (item.level === 'error') {
-      return true
+    if (item.level === "error") {
+      return true;
     }
-    if (item.code === 'provider_fallback') {
-      return false
+    if (item.code === "provider_fallback") {
+      return false;
     }
-    if (item.code === 'session_not_running') {
-      return false
+    if (item.code === "session_not_running") {
+      return false;
     }
-    return item.level === 'warning'
-  })
+    return item.level === "warning";
+  });
 
-  return selected?.message ?? null
+  return selected?.message ?? null;
 }
 
 function resolveCueTrack(cue: SubtitleCueDto): string {
-  if (cue.line === 'A' || cue.line === 'B') {
-    return cue.line
+  if (cue.line === "A" || cue.line === "B") {
+    return cue.line;
   }
-  if (typeof cue.speaker === 'number' && cue.speaker >= 0) {
-    return `S${cue.speaker + 1}`
+  if (typeof cue.speaker === "number" && cue.speaker >= 0) {
+    return `S${cue.speaker + 1}`;
   }
-  return 'T'
+  return "T";
 }
 
 function buildAdvancedDisplayText(
@@ -472,36 +569,43 @@ function buildAdvancedDisplayText(
   offsetSec: number,
   offsetMode: SubtitleDebugOffsetMode,
   options?: {
-    maxLines?: number
-    includeTrackLabel?: boolean
+    maxLines?: number;
+    includeTrackLabel?: boolean;
   },
 ): string | null {
-  const shouldApplyOffsetToRenderer = offsetMode === 'renderer'
-  const adjustedCurrentTimeSec = shouldApplyOffsetToRenderer ? currentTimeSec - offsetSec : currentTimeSec
-  const maxLines = Math.max(1, options?.maxLines ?? 2)
-  const includeTrackLabel = options?.includeTrackLabel ?? true
+  const shouldApplyOffsetToRenderer = offsetMode === "renderer";
+  const adjustedCurrentTimeSec = shouldApplyOffsetToRenderer
+    ? currentTimeSec - offsetSec
+    : currentTimeSec;
+  const maxLines = Math.max(1, options?.maxLines ?? 2);
+  const includeTrackLabel = options?.includeTrackLabel ?? true;
   const activeCues = cues
-    .filter((cue) => adjustedCurrentTimeSec + 0.35 >= cue.start_sec && adjustedCurrentTimeSec <= cue.end_sec + 2.4)
-    .slice(-8)
+    .filter(
+      (cue) =>
+        adjustedCurrentTimeSec + 0.35 >= cue.start_sec &&
+        adjustedCurrentTimeSec <= cue.end_sec + 2.4,
+    )
+    .slice(-8);
 
   if (activeCues.length === 0) {
-    return null
+    return null;
   }
 
-  const latestCueByTrack = new Map<string, SubtitleCueDto>()
+  const latestCueByTrack = new Map<string, SubtitleCueDto>();
   for (let i = 0; i < activeCues.length; i += 1) {
-    const cue = activeCues[i]
-    const track = resolveCueTrack(cue)
-    const previous = latestCueByTrack.get(track)
+    const cue = activeCues[i];
+    const track = resolveCueTrack(cue);
+    const previous = latestCueByTrack.get(track);
     if (!previous) {
-      latestCueByTrack.set(track, cue)
-      continue
+      latestCueByTrack.set(track, cue);
+      continue;
     }
     if (
-      cue.start_sec > previous.start_sec + 0.0005
-      || (Math.abs(cue.start_sec - previous.start_sec) <= 0.0005 && cue.end_sec >= previous.end_sec)
+      cue.start_sec > previous.start_sec + 0.0005 ||
+      (Math.abs(cue.start_sec - previous.start_sec) <= 0.0005 &&
+        cue.end_sec >= previous.end_sec)
     ) {
-      latestCueByTrack.set(track, cue)
+      latestCueByTrack.set(track, cue);
     }
   }
 
@@ -509,17 +613,19 @@ function buildAdvancedDisplayText(
     .map(([track, cue]) => ({ track, cue }))
     .sort((left, right) => {
       if (Math.abs(left.cue.start_sec - right.cue.start_sec) > 0.0005) {
-        return left.cue.start_sec - right.cue.start_sec
+        return left.cue.start_sec - right.cue.start_sec;
       }
-      return left.cue.end_sec - right.cue.end_sec
+      return left.cue.end_sec - right.cue.end_sec;
     })
-    .slice(-maxLines)
+    .slice(-maxLines);
 
   const lines = selectedByTrack
-    .map(({ track, cue }) => (includeTrackLabel ? `[${track}] ${cue.text}` : cue.text))
-    .filter((line) => line.trim().length > 0)
+    .map(({ track, cue }) =>
+      includeTrackLabel ? `[${track}] ${cue.text}` : cue.text,
+    )
+    .filter((line) => line.trim().length > 0);
 
-  return lines.join('\n').trim() || null
+  return lines.join("\n").trim() || null;
 }
 
 export function useLiveSubtitles({
@@ -531,249 +637,318 @@ export function useLiveSubtitles({
   modelId,
   providerPreference,
   language,
+  validPlaybackRateThreshold,
   renderMode,
   advancedOptions,
   repository,
 }: UseLiveSubtitlesParams) {
-  const vadPreset = advancedOptions.vad.preset
-  const vadThreshold = advancedOptions.vad.threshold
-  const vadMinSilenceSec = advancedOptions.vad.minSilenceSec
-  const vadMinSpeechSec = advancedOptions.vad.minSpeechSec
-  const vadMaxSpeechSec = advancedOptions.vad.maxSpeechSec
-  const speakerSimilarityThreshold = advancedOptions.speaker.similarityThreshold
+  const vadPreset = advancedOptions.vad.preset;
+  const vadThreshold = advancedOptions.vad.threshold;
+  const vadMinSilenceSec = advancedOptions.vad.minSilenceSec;
+  const vadMinSpeechSec = advancedOptions.vad.minSpeechSec;
+  const vadMaxSpeechSec = advancedOptions.vad.maxSpeechSec;
+  const speakerSimilarityThreshold =
+    advancedOptions.speaker.similarityThreshold;
 
-  const [cues, setCues] = useState<SubtitleCueDto[]>([])
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const [cues, setCues] = useState<SubtitleCueDto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const capture = useMemo(() => new VideoSubtitleCapture(), [])
-  const cleanupRef = useRef<(() => Promise<void>) | null>(null)
-  const pushQueueRef = useRef<CapturedAudioChunk[]>([])
-  const pushInFlightRef = useRef(false)
-  const sessionRunningRef = useRef(false)
-  const sessionEpochRef = useRef(0)
-  const chunkSeqRef = useRef(0)
-  const lastAppliedSeqRef = useRef(-1)
-  const pushAbortRef = useRef<AbortController | null>(null)
-  const pushAbortCountRef = useRef(0)
-  const subtitleOffsetSecRef = useRef(0)
-  const subtitlePersistenceEnabledRef = useRef(false)
-  const persistenceQueueRef = useRef<PersistenceBatchPayload[]>([])
-  const persistenceInFlightRef = useRef(false)
-  const replayFromPersistenceRef = useRef(false)
-  const replayForceUntilSecRef = useRef<number | null>(null)
-  const pendingFirstOverlapReplaceRef = useRef(false)
-  const firstOverlapReplaceSeekAnchorSecRef = useRef<number | null>(null)
-  const persistenceWindowCuesRef = useRef<SubtitleCueDto[]>([])
-  const persistenceWindowRawCuesRef = useRef<SubtitleCueDto[]>([])
-  const persistenceGeneratedRangesRef = useRef<GeneratedRangeDto[]>([])
-  const persistenceReadInFlightRef = useRef(false)
-  const persistenceLastReadAtMsRef = useRef(0)
-  const persistenceLastReadTimelineSecRef = useRef(-1)
-  const replayLockRangeRef = useRef<GeneratedRangeDto | null>(null)
-  const highRateReplayHintShownRef = useRef(false)
-  const skipCaptureChunksRef = useRef(0)
-  const seekingInProgressRef = useRef(false)
-  const validPlaybackRateThresholdRef = useRef(1.0)
-  const currentValidRangeRef = useRef<GeneratedRangeDto | null>(null)
+  const capture = useMemo(() => new VideoSubtitleCapture(), []);
+  const cleanupRef = useRef<(() => Promise<void>) | null>(null);
+  const pushQueueRef = useRef<CapturedAudioChunk[]>([]);
+  const pushInFlightRef = useRef(false);
+  const sessionRunningRef = useRef(false);
+  const sessionEpochRef = useRef(0);
+  const chunkSeqRef = useRef(0);
+  const lastAppliedSeqRef = useRef(-1);
+  const pushAbortRef = useRef<AbortController | null>(null);
+  const pushAbortCountRef = useRef(0);
+  const subtitleOffsetSecRef = useRef(0);
+  const subtitlePersistenceEnabledRef = useRef(false);
+  const persistenceQueueRef = useRef<PersistenceBatchPayload[]>([]);
+  const persistenceInFlightRef = useRef(false);
+  const replayFromPersistenceRef = useRef(false);
+  const replayForceUntilSecRef = useRef<number | null>(null);
+  const pendingFirstOverlapReplaceRef = useRef(false);
+  const firstOverlapReplaceSeekAnchorSecRef = useRef<number | null>(null);
+  const persistenceWindowCuesRef = useRef<SubtitleCueDto[]>([]);
+  const persistenceWindowRawCuesRef = useRef<SubtitleCueDto[]>([]);
+  const persistenceGeneratedRangesRef = useRef<GeneratedRangeDto[]>([]);
+  const persistenceReadInFlightRef = useRef(false);
+  const persistenceLastReadAtMsRef = useRef(0);
+  const persistenceLastReadTimelineSecRef = useRef(-1);
+  const replayLockRangeRef = useRef<GeneratedRangeDto | null>(null);
+  const highRateReplayHintShownRef = useRef(false);
+  const skipCaptureChunksRef = useRef(0);
+  const seekingInProgressRef = useRef(false);
+  const validPlaybackRateThresholdRef = useRef(1.0);
+  const currentValidRangeRef = useRef<GeneratedRangeDto | null>(null);
 
   useEffect(() => {
-    cleanupRef.current = null
+    cleanupRef.current = null;
 
     return () => {
-      capture.dispose()
-    }
-  }, [capture])
+      capture.dispose();
+    };
+  }, [capture]);
 
   useEffect(() => {
-    const startSubtitleSession =
-      repository.startSubtitleSession ? (request: Parameters<NonNullable<MediaRepository['startSubtitleSession']>>[0]) => repository.startSubtitleSession!(request) : null
-    const stopSubtitleSession =
-      repository.stopSubtitleSession ? (request: Parameters<NonNullable<MediaRepository['stopSubtitleSession']>>[0]) => repository.stopSubtitleSession!(request) : null
-    const resetSubtitleSession =
-      repository.resetSubtitleSession
-        ? (
-            request: Parameters<NonNullable<MediaRepository['resetSubtitleSession']>>[0],
-            options?: Parameters<NonNullable<MediaRepository['resetSubtitleSession']>>[1],
-          ) => repository.resetSubtitleSession!(request, options)
-        : null
-    const flushSubtitleSession =
-      repository.flushSubtitleSession
-        ? (options?: Parameters<NonNullable<MediaRepository['flushSubtitleSession']>>[0]) => repository.flushSubtitleSession!(options)
-        : null
-    const pushSubtitleAudio =
-      repository.pushSubtitleAudio
-        ? (
-            request: Parameters<NonNullable<MediaRepository['pushSubtitleAudio']>>[0],
-            options?: Parameters<NonNullable<MediaRepository['pushSubtitleAudio']>>[1],
-          ) => repository.pushSubtitleAudio!(request, options)
-        : null
-    const startSubtitlePersistence =
-      repository.startSubtitlePersistence
-        ? (
-            request: Parameters<NonNullable<MediaRepository['startSubtitlePersistence']>>[0],
-            options?: Parameters<NonNullable<MediaRepository['startSubtitlePersistence']>>[1],
-          ) => repository.startSubtitlePersistence!(request, options)
-        : null
-    const appendSubtitlePersistence =
-      repository.appendSubtitlePersistence
-        ? (
-            request: Parameters<NonNullable<MediaRepository['appendSubtitlePersistence']>>[0],
-            options?: Parameters<NonNullable<MediaRepository['appendSubtitlePersistence']>>[1],
-          ) => repository.appendSubtitlePersistence!(request, options)
-        : null
+    const startSubtitleSession = repository.startSubtitleSession
+      ? (
+          request: Parameters<
+            NonNullable<MediaRepository["startSubtitleSession"]>
+          >[0],
+        ) => repository.startSubtitleSession!(request)
+      : null;
+    const stopSubtitleSession = repository.stopSubtitleSession
+      ? (
+          request: Parameters<
+            NonNullable<MediaRepository["stopSubtitleSession"]>
+          >[0],
+        ) => repository.stopSubtitleSession!(request)
+      : null;
+    const resetSubtitleSession = repository.resetSubtitleSession
+      ? (
+          request: Parameters<
+            NonNullable<MediaRepository["resetSubtitleSession"]>
+          >[0],
+          options?: Parameters<
+            NonNullable<MediaRepository["resetSubtitleSession"]>
+          >[1],
+        ) => repository.resetSubtitleSession!(request, options)
+      : null;
+    const flushSubtitleSession = repository.flushSubtitleSession
+      ? (
+          options?: Parameters<
+            NonNullable<MediaRepository["flushSubtitleSession"]>
+          >[0],
+        ) => repository.flushSubtitleSession!(options)
+      : null;
+    const pushSubtitleAudio = repository.pushSubtitleAudio
+      ? (
+          request: Parameters<
+            NonNullable<MediaRepository["pushSubtitleAudio"]>
+          >[0],
+          options?: Parameters<
+            NonNullable<MediaRepository["pushSubtitleAudio"]>
+          >[1],
+        ) => repository.pushSubtitleAudio!(request, options)
+      : null;
+    const startSubtitlePersistence = repository.startSubtitlePersistence
+      ? (
+          request: Parameters<
+            NonNullable<MediaRepository["startSubtitlePersistence"]>
+          >[0],
+          options?: Parameters<
+            NonNullable<MediaRepository["startSubtitlePersistence"]>
+          >[1],
+        ) => repository.startSubtitlePersistence!(request, options)
+      : null;
+    const appendSubtitlePersistence = repository.appendSubtitlePersistence
+      ? (
+          request: Parameters<
+            NonNullable<MediaRepository["appendSubtitlePersistence"]>
+          >[0],
+          options?: Parameters<
+            NonNullable<MediaRepository["appendSubtitlePersistence"]>
+          >[1],
+        ) => repository.appendSubtitlePersistence!(request, options)
+      : null;
     const readSubtitlePersistenceWindow =
       repository.readSubtitlePersistenceWindow
         ? (
-            request: Parameters<NonNullable<MediaRepository['readSubtitlePersistenceWindow']>>[0],
-            options?: Parameters<NonNullable<MediaRepository['readSubtitlePersistenceWindow']>>[1],
+            request: Parameters<
+              NonNullable<MediaRepository["readSubtitlePersistenceWindow"]>
+            >[0],
+            options?: Parameters<
+              NonNullable<MediaRepository["readSubtitlePersistenceWindow"]>
+            >[1],
           ) => repository.readSubtitlePersistenceWindow!(request, options)
-        : null
+        : null;
 
-    if (!enabled || !videoElement || !modelId || modelDir.trim() === '') {
-      setLoading(false)
-      setMessage(null)
-      setCues([])
-      pushAbortRef.current?.abort()
-      pushAbortRef.current = null
-      pushQueueRef.current = []
-      sessionRunningRef.current = false
-      subtitlePersistenceEnabledRef.current = false
-      persistenceQueueRef.current = []
-      persistenceInFlightRef.current = false
-      replayFromPersistenceRef.current = false
-      replayForceUntilSecRef.current = null
-      pendingFirstOverlapReplaceRef.current = false
-      firstOverlapReplaceSeekAnchorSecRef.current = null
-      persistenceWindowCuesRef.current = []
-      persistenceWindowRawCuesRef.current = []
-      persistenceGeneratedRangesRef.current = []
-      persistenceReadInFlightRef.current = false
-      persistenceLastReadAtMsRef.current = 0
-      persistenceLastReadTimelineSecRef.current = -1
-      replayLockRangeRef.current = null
-      highRateReplayHintShownRef.current = false
-      skipCaptureChunksRef.current = 0
-      currentValidRangeRef.current = null
-      sessionEpochRef.current = 0
-      chunkSeqRef.current = 0
-      lastAppliedSeqRef.current = -1
-      capture.detach()
-      return
+    if (!enabled || !videoElement || !modelId || modelDir.trim() === "") {
+      setLoading(false);
+      setMessage(null);
+      setCues([]);
+      pushAbortRef.current?.abort();
+      pushAbortRef.current = null;
+      pushQueueRef.current = [];
+      sessionRunningRef.current = false;
+      subtitlePersistenceEnabledRef.current = false;
+      persistenceQueueRef.current = [];
+      persistenceInFlightRef.current = false;
+      replayFromPersistenceRef.current = false;
+      replayForceUntilSecRef.current = null;
+      pendingFirstOverlapReplaceRef.current = false;
+      firstOverlapReplaceSeekAnchorSecRef.current = null;
+      persistenceWindowCuesRef.current = [];
+      persistenceWindowRawCuesRef.current = [];
+      persistenceGeneratedRangesRef.current = [];
+      persistenceReadInFlightRef.current = false;
+      persistenceLastReadAtMsRef.current = 0;
+      persistenceLastReadTimelineSecRef.current = -1;
+      replayLockRangeRef.current = null;
+      highRateReplayHintShownRef.current = false;
+      skipCaptureChunksRef.current = 0;
+      currentValidRangeRef.current = null;
+      sessionEpochRef.current = 0;
+      chunkSeqRef.current = 0;
+      lastAppliedSeqRef.current = -1;
+      capture.detach();
+      return;
     }
 
-    if (!startSubtitleSession || !stopSubtitleSession || !resetSubtitleSession || !flushSubtitleSession || !pushSubtitleAudio) {
-      setLoading(false)
-      setMessage('subtitle session API unavailable')
-      setCues([])
-      return
+    if (
+      !startSubtitleSession ||
+      !stopSubtitleSession ||
+      !resetSubtitleSession ||
+      !flushSubtitleSession ||
+      !pushSubtitleAudio
+    ) {
+      setLoading(false);
+      setMessage("subtitle session API unavailable");
+      setCues([]);
+      return;
     }
 
-    let cancelled = false
+    let cancelled = false;
 
     const beginNewEpoch = (reason: string) => {
       if (pushAbortRef.current) {
-        pushAbortRef.current.abort()
-        pushAbortCountRef.current += 1
+        pushAbortRef.current.abort();
+        pushAbortCountRef.current += 1;
       }
-      sessionEpochRef.current += 1
-      chunkSeqRef.current = 0
-      lastAppliedSeqRef.current = -1
-      const droppedQueueLen = pushQueueRef.current.length
-      pushQueueRef.current = []
-      pushAbortRef.current = null
-      persistenceQueueRef.current = []
-      replayFromPersistenceRef.current = false
-      replayForceUntilSecRef.current = null
-      pendingFirstOverlapReplaceRef.current = false
-      firstOverlapReplaceSeekAnchorSecRef.current = null
-      replayLockRangeRef.current = null
-      highRateReplayHintShownRef.current = false
-      skipCaptureChunksRef.current = 0
-      currentValidRangeRef.current = null
-      emitSubtitleDebug('renderer_epoch_begin', {
+      sessionEpochRef.current += 1;
+      chunkSeqRef.current = 0;
+      lastAppliedSeqRef.current = -1;
+      const droppedQueueLen = pushQueueRef.current.length;
+      pushQueueRef.current = [];
+      pushAbortRef.current = null;
+      persistenceQueueRef.current = [];
+      replayFromPersistenceRef.current = false;
+      replayForceUntilSecRef.current = null;
+      pendingFirstOverlapReplaceRef.current = false;
+      firstOverlapReplaceSeekAnchorSecRef.current = null;
+      replayLockRangeRef.current = null;
+      highRateReplayHintShownRef.current = false;
+      skipCaptureChunksRef.current = 0;
+      currentValidRangeRef.current = null;
+      emitSubtitleDebug("renderer_epoch_begin", {
         reason,
         session_epoch: sessionEpochRef.current,
         dropped_queue_len: droppedQueueLen,
         push_abort_count: pushAbortCountRef.current,
-      })
-    }
+      });
+    };
 
     const startValidRangeIfQualified = () => {
-      const playbackRate = Math.max(0.1, videoElement.playbackRate || 1)
+      const playbackRate = Math.max(0.1, videoElement.playbackRate || 1);
       if (playbackRate > validPlaybackRateThresholdRef.current) {
-        currentValidRangeRef.current = null
-        return
+        currentValidRangeRef.current = null;
+        return;
       }
-      const timelineSec = Math.max(0, videoElement.currentTime || 0)
+      const timelineSec = Math.max(0, videoElement.currentTime || 0);
       currentValidRangeRef.current = {
         start_sec: timelineSec,
         end_sec: timelineSec,
-      }
-    }
+      };
+    };
 
     const updateValidRangeIfQualified = (timelineSec: number) => {
-      const playbackRate = Math.max(0.1, videoElement.playbackRate || 1)
+      const playbackRate = Math.max(0.1, videoElement.playbackRate || 1);
       if (playbackRate > validPlaybackRateThresholdRef.current) {
-        currentValidRangeRef.current = null
-        return
+        currentValidRangeRef.current = null;
+        return;
       }
       if (!currentValidRangeRef.current) {
         currentValidRangeRef.current = {
           start_sec: timelineSec,
           end_sec: timelineSec,
-        }
-        return
+        };
+        return;
       }
       currentValidRangeRef.current = {
         start_sec: currentValidRangeRef.current.start_sec,
         end_sec: Math.max(currentValidRangeRef.current.end_sec, timelineSec),
-      }
-    }
+      };
+    };
 
     const syncPersistenceWindow = async (
       timelineSec: number,
       options?: { hydrateCues?: boolean; force?: boolean },
     ): Promise<PersistenceSyncState> => {
-      if (!subtitlePersistenceEnabledRef.current || !readSubtitlePersistenceWindow) {
-        return { timelineHasCue: false, timelineHasCueNear: false, timelineInGeneratedRange: false, activeRange: null }
+      if (
+        !subtitlePersistenceEnabledRef.current ||
+        !readSubtitlePersistenceWindow
+      ) {
+        return {
+          timelineHasCue: false,
+          timelineHasCueNear: false,
+          timelineInGeneratedRange: false,
+          activeRange: null,
+        };
       }
 
-      const now = performance.now()
-      const requestEpoch = sessionEpochRef.current
-      const force = options?.force === true
-      const hydrateCues = options?.hydrateCues === true
-      const minIntervalMs = replayFromPersistenceRef.current ? 180 : 750
+      const now = performance.now();
+      const requestEpoch = sessionEpochRef.current;
+      const force = options?.force === true;
+      const hydrateCues = options?.hydrateCues === true;
+      const minIntervalMs = replayFromPersistenceRef.current ? 180 : 750;
       if (
-        !force
-        && now - persistenceLastReadAtMsRef.current < minIntervalMs
-        && Math.abs(timelineSec - persistenceLastReadTimelineSecRef.current) < 1.2
+        !force &&
+        now - persistenceLastReadAtMsRef.current < minIntervalMs &&
+        Math.abs(timelineSec - persistenceLastReadTimelineSecRef.current) < 1.2
       ) {
-        const timelineHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
-        const timelineHasCueNear = hasCueNearTimeline(persistenceWindowCuesRef.current, timelineSec)
-        const timelineInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
+        const timelineHasCue = hasCueAtTimeline(
+          persistenceWindowCuesRef.current,
+          timelineSec,
+        );
+        const timelineHasCueNear = hasCueNearTimeline(
+          persistenceWindowCuesRef.current,
+          timelineSec,
+        );
+        const timelineInGeneratedRange = isTimelineInRanges(
+          persistenceGeneratedRangesRef.current,
+          timelineSec,
+        );
         return {
           timelineHasCue,
           timelineHasCueNear,
           timelineInGeneratedRange,
-          activeRange: resolveActiveGeneratedRange(persistenceGeneratedRangesRef.current, timelineSec),
-        }
+          activeRange: resolveActiveGeneratedRange(
+            persistenceGeneratedRangesRef.current,
+            timelineSec,
+          ),
+        };
       }
       if (persistenceReadInFlightRef.current && !force) {
-        const timelineHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
-        const timelineHasCueNear = hasCueNearTimeline(persistenceWindowCuesRef.current, timelineSec)
-        const timelineInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
+        const timelineHasCue = hasCueAtTimeline(
+          persistenceWindowCuesRef.current,
+          timelineSec,
+        );
+        const timelineHasCueNear = hasCueNearTimeline(
+          persistenceWindowCuesRef.current,
+          timelineSec,
+        );
+        const timelineInGeneratedRange = isTimelineInRanges(
+          persistenceGeneratedRangesRef.current,
+          timelineSec,
+        );
         return {
           timelineHasCue,
           timelineHasCueNear,
           timelineInGeneratedRange,
-          activeRange: resolveActiveGeneratedRange(persistenceGeneratedRangesRef.current, timelineSec),
-        }
+          activeRange: resolveActiveGeneratedRange(
+            persistenceGeneratedRangesRef.current,
+            timelineSec,
+          ),
+        };
       }
 
-      persistenceReadInFlightRef.current = true
-      persistenceLastReadAtMsRef.current = now
-      persistenceLastReadTimelineSecRef.current = timelineSec
+      persistenceReadInFlightRef.current = true;
+      persistenceLastReadAtMsRef.current = now;
+      persistenceLastReadTimelineSecRef.current = timelineSec;
       try {
         const response = await readSubtitlePersistenceWindow({
           timeline_sec: timelineSec,
@@ -781,70 +956,92 @@ export function useLiveSubtitles({
           lookahead_sec: 6,
           limit: 60,
           prefer_persisted_file: true,
-        })
+        });
         if (requestEpoch !== sessionEpochRef.current) {
-          const timelineHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
-          const timelineHasCueNear = hasCueNearTimeline(persistenceWindowCuesRef.current, timelineSec)
-          const timelineInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
+          const timelineHasCue = hasCueAtTimeline(
+            persistenceWindowCuesRef.current,
+            timelineSec,
+          );
+          const timelineHasCueNear = hasCueNearTimeline(
+            persistenceWindowCuesRef.current,
+            timelineSec,
+          );
+          const timelineInGeneratedRange = isTimelineInRanges(
+            persistenceGeneratedRangesRef.current,
+            timelineSec,
+          );
           return {
             timelineHasCue,
             timelineHasCueNear,
             timelineInGeneratedRange,
-            activeRange: resolveActiveGeneratedRange(persistenceGeneratedRangesRef.current, timelineSec),
-          }
+            activeRange: resolveActiveGeneratedRange(
+              persistenceGeneratedRangesRef.current,
+              timelineSec,
+            ),
+          };
         }
-        const displayCues = toDisplayCues(response.cues)
-        persistenceWindowRawCuesRef.current = response.cues
-        persistenceWindowCuesRef.current = displayCues
-        persistenceGeneratedRangesRef.current = response.generated_ranges
+        const displayCues = toDisplayCues(response.cues);
+        persistenceWindowRawCuesRef.current = response.cues;
+        persistenceWindowCuesRef.current = displayCues;
+        persistenceGeneratedRangesRef.current = response.generated_ranges;
         if (!cancelled && hydrateCues) {
-          setCues(displayCues)
+          setCues(displayCues);
         }
-        const timelineHasCueNear = hasCueNearTimeline(displayCues, timelineSec)
+        const timelineHasCueNear = hasCueNearTimeline(displayCues, timelineSec);
         return {
           timelineHasCue: response.timeline_has_cue,
           timelineHasCueNear,
           timelineInGeneratedRange: response.timeline_in_generated_range,
-          activeRange: resolveActiveGeneratedRange(response.generated_ranges, timelineSec),
-        }
+          activeRange: resolveActiveGeneratedRange(
+            response.generated_ranges,
+            timelineSec,
+          ),
+        };
       } catch {
-        if (!cancelled && hydrateCues && requestEpoch === sessionEpochRef.current) {
-          setCues([])
+        if (
+          !cancelled &&
+          hydrateCues &&
+          requestEpoch === sessionEpochRef.current
+        ) {
+          setCues([]);
         }
         return {
           timelineHasCue: false,
           timelineHasCueNear: false,
           timelineInGeneratedRange: false,
           activeRange: null,
-        }
+        };
       } finally {
-        persistenceReadInFlightRef.current = false
+        persistenceReadInFlightRef.current = false;
       }
-    }
+    };
 
     const drainPushQueue = async () => {
       if (pushInFlightRef.current || cancelled || !sessionRunningRef.current) {
-        return
+        return;
       }
-      const nextChunk = popBatchChunk(pushQueueRef.current, renderMode === 'advanced' ? 0.2 : 0.35)
+      const nextChunk = popBatchChunk(
+        pushQueueRef.current,
+        renderMode === "advanced" ? 0.2 : 0.35,
+      );
       if (!nextChunk) {
-        return
+        return;
       }
 
-      const sessionEpoch = sessionEpochRef.current
-      const chunkSeq = chunkSeqRef.current++
-      const queueLenBeforePush = pushQueueRef.current.length
-      const playbackTimeSec = Math.max(0, videoElement.currentTime || 0)
-      subtitleOffsetSecRef.current = readSubtitleDebugOffsetSec()
-      const offsetMode = readSubtitleDebugOffsetMode()
-      const chunkStartSec = nextChunk.startSec
-      const chunkEndSec = nextChunk.endSec
+      const sessionEpoch = sessionEpochRef.current;
+      const chunkSeq = chunkSeqRef.current++;
+      const queueLenBeforePush = pushQueueRef.current.length;
+      const playbackTimeSec = Math.max(0, videoElement.currentTime || 0);
+      subtitleOffsetSecRef.current = readSubtitleDebugOffsetSec();
+      const offsetMode = readSubtitleDebugOffsetMode();
+      const chunkStartSec = nextChunk.startSec;
+      const chunkEndSec = nextChunk.endSec;
 
-      pushInFlightRef.current = true
+      pushInFlightRef.current = true;
       try {
-        const abortController = new AbortController()
-        pushAbortRef.current = abortController
-        const sendAt = performance.now()
+        const abortController = new AbortController();
+        pushAbortRef.current = abortController;
+        const sendAt = performance.now();
         const request: PushSubtitleAudioRequestDto = {
           chunk_base64: encodeFloat32ToBase64(nextChunk.samples),
           sample_rate_hz: nextChunk.sampleRateHz,
@@ -853,34 +1050,38 @@ export function useLiveSubtitles({
           channel_count: nextChunk.channelCount,
           session_epoch: sessionEpoch,
           chunk_seq: chunkSeq,
-        }
-        const response = await pushSubtitleAudio(request, { signal: abortController.signal })
-        const rttMs = Math.round(performance.now() - sendAt)
+        };
+        const response = await pushSubtitleAudio(request, {
+          signal: abortController.signal,
+        });
+        const rttMs = Math.round(performance.now() - sendAt);
 
         if (response.session_epoch !== sessionEpochRef.current) {
-          emitSubtitleDebug('renderer_push_drop_epoch_mismatch', {
+          emitSubtitleDebug("renderer_push_drop_epoch_mismatch", {
             request_epoch: sessionEpoch,
             response_epoch: response.session_epoch,
             chunk_seq: chunkSeq,
-          })
-          return
+          });
+          return;
         }
         if (response.chunk_seq < lastAppliedSeqRef.current) {
-          emitSubtitleDebug('renderer_push_drop_out_of_order', {
+          emitSubtitleDebug("renderer_push_drop_out_of_order", {
             chunk_seq: response.chunk_seq,
             last_applied_seq: lastAppliedSeqRef.current,
-          })
-          return
+          });
+          return;
         }
-        lastAppliedSeqRef.current = response.chunk_seq
+        lastAppliedSeqRef.current = response.chunk_seq;
 
-        emitSubtitleDebug('renderer_push_result', {
+        emitSubtitleDebug("renderer_push_result", {
           session_epoch: sessionEpoch,
           chunk_seq: chunkSeq,
           playback_time_sec: Number(playbackTimeSec.toFixed(3)),
           chunk_start_sec: Number(nextChunk.startSec.toFixed(3)),
           chunk_end_sec: Number(nextChunk.endSec.toFixed(3)),
-          chunk_duration_sec: Number((nextChunk.endSec - nextChunk.startSec).toFixed(3)),
+          chunk_duration_sec: Number(
+            (nextChunk.endSec - nextChunk.startSec).toFixed(3),
+          ),
           asr_chunk_start_sec: Number(chunkStartSec.toFixed(3)),
           asr_chunk_end_sec: Number(chunkEndSec.toFixed(3)),
           queue_len_before_push: queueLenBeforePush,
@@ -891,13 +1092,16 @@ export function useLiveSubtitles({
           push_abort_count: pushAbortCountRef.current,
           response_events: response.events.map((item) => item.code),
           response_cues: response.cues.length,
-        })
+        });
 
         if (!cancelled) {
           if (!replayFromPersistenceRef.current) {
-            setCues((previous) => appendCues(previous, response.cues))
+            setCues((previous) => appendCues(previous, response.cues));
           }
-          const currentPlaybackRate = Math.max(0.1, videoElement.playbackRate || 1)
+          const currentPlaybackRate = Math.max(
+            0.1,
+            videoElement.playbackRate || 1,
+          );
           enqueuePersistenceCues(
             response.cues,
             response.session_epoch,
@@ -905,38 +1109,43 @@ export function useLiveSubtitles({
             nextChunk.startSec,
             nextChunk.endSec,
             currentPlaybackRate,
-          )
+          );
         }
       } catch (error) {
         if (!cancelled && !isAbortLikeError(error)) {
-          setMessage(error instanceof Error ? error.message : String(error))
-          emitSubtitleDebug('renderer_push_error', {
+          setMessage(error instanceof Error ? error.message : String(error));
+          emitSubtitleDebug("renderer_push_error", {
             session_epoch: sessionEpoch,
             chunk_seq: chunkSeq,
             error: error instanceof Error ? error.message : String(error),
-          })
+          });
         }
       } finally {
-        pushAbortRef.current = null
-        pushInFlightRef.current = false
+        pushAbortRef.current = null;
+        pushInFlightRef.current = false;
         if (!cancelled) {
-          void drainPushQueue()
+          void drainPushQueue();
         }
       }
-    }
+    };
 
     const drainPersistenceQueue = async () => {
-      if (persistenceInFlightRef.current || cancelled || !subtitlePersistenceEnabledRef.current || !appendSubtitlePersistence) {
-        return
+      if (
+        persistenceInFlightRef.current ||
+        cancelled ||
+        !subtitlePersistenceEnabledRef.current ||
+        !appendSubtitlePersistence
+      ) {
+        return;
       }
       if (persistenceQueueRef.current.length === 0) {
-        return
+        return;
       }
 
-      persistenceInFlightRef.current = true
+      persistenceInFlightRef.current = true;
       try {
-        const batches = persistenceQueueRef.current
-        persistenceQueueRef.current = []
+        const batches = persistenceQueueRef.current;
+        persistenceQueueRef.current = [];
         for (const batch of batches) {
           await appendSubtitlePersistence({
             cues: batch.cues,
@@ -946,20 +1155,21 @@ export function useLiveSubtitles({
             batch_end_sec: batch.batchEndSec,
             playback_rate: batch.playbackRate,
             enforce_valid_range_guard: batch.enforceValidRangeGuard,
-            allow_first_overlap_replace_once: batch.allowFirstOverlapReplaceOnce,
+            allow_first_overlap_replace_once:
+              batch.allowFirstOverlapReplaceOnce,
             seek_anchor_sec: batch.seekAnchorSec,
             current_valid_range: batch.currentValidRange,
-          })
+          });
         }
       } catch {
         // ignore subtitle persistence failures during playback
       } finally {
-        persistenceInFlightRef.current = false
+        persistenceInFlightRef.current = false;
         if (!cancelled && persistenceQueueRef.current.length > 0) {
-          void drainPersistenceQueue()
+          void drainPersistenceQueue();
         }
       }
-    }
+    };
 
     const enqueuePersistenceCues = (
       nextCues: SubtitleCueDto[],
@@ -970,22 +1180,25 @@ export function useLiveSubtitles({
       playbackRate: number,
     ) => {
       if (!subtitlePersistenceEnabledRef.current) {
-        return
+        return;
       }
       const currentValidRange = currentValidRangeRef.current
         ? {
-            start_sec: Number(currentValidRangeRef.current.start_sec.toFixed(3)),
+            start_sec: Number(
+              currentValidRangeRef.current.start_sec.toFixed(3),
+            ),
             end_sec: Number(currentValidRangeRef.current.end_sec.toFixed(3)),
           }
-        : null
-      const enforceValidRangeGuard = replayFromPersistenceRef.current || seekingInProgressRef.current
-      let allowFirstOverlapReplaceOnce = false
-      let seekAnchorSec: number | null = null
+        : null;
+      const enforceValidRangeGuard =
+        replayFromPersistenceRef.current || seekingInProgressRef.current;
+      let allowFirstOverlapReplaceOnce = false;
+      let seekAnchorSec: number | null = null;
       if (nextCues.length > 0 && pendingFirstOverlapReplaceRef.current) {
-        allowFirstOverlapReplaceOnce = true
-        seekAnchorSec = firstOverlapReplaceSeekAnchorSecRef.current
-        pendingFirstOverlapReplaceRef.current = false
-        firstOverlapReplaceSeekAnchorSecRef.current = null
+        allowFirstOverlapReplaceOnce = true;
+        seekAnchorSec = firstOverlapReplaceSeekAnchorSecRef.current;
+        pendingFirstOverlapReplaceRef.current = false;
+        firstOverlapReplaceSeekAnchorSecRef.current = null;
       }
       persistenceQueueRef.current.push({
         cues: nextCues,
@@ -998,17 +1211,26 @@ export function useLiveSubtitles({
         allowFirstOverlapReplaceOnce,
         seekAnchorSec,
         currentValidRange,
-      })
-      void drainPersistenceQueue()
-    }
+      });
+      void drainPersistenceQueue();
+    };
 
-    const handleCuesAndEvents = (response: { cues: SubtitleCueDto[]; events: FlushSubtitleSessionResponseDto['events'] }) => {
+    const handleCuesAndEvents = (response: {
+      cues: SubtitleCueDto[];
+      events: FlushSubtitleSessionResponseDto["events"];
+    }) => {
       if (!replayFromPersistenceRef.current) {
-        setCues((previous) => appendCues(previous, response.cues))
+        setCues((previous) => appendCues(previous, response.cues));
       }
-      const startSec = response.cues.length > 0 ? response.cues[0].start_sec : null
-      const endSec = response.cues.length > 0 ? response.cues[response.cues.length - 1].end_sec : null
-      const currentPlaybackRate = videoElement ? Math.max(0.1, videoElement.playbackRate || 1) : 1.0
+      const startSec =
+        response.cues.length > 0 ? response.cues[0].start_sec : null;
+      const endSec =
+        response.cues.length > 0
+          ? response.cues[response.cues.length - 1].end_sec
+          : null;
+      const currentPlaybackRate = videoElement
+        ? Math.max(0.1, videoElement.playbackRate || 1)
+        : 1.0;
       enqueuePersistenceCues(
         response.cues,
         sessionEpochRef.current,
@@ -1016,29 +1238,29 @@ export function useLiveSubtitles({
         startSec,
         endSec,
         currentPlaybackRate,
-      )
-      const displayMessage = pickDisplayEventMessage(response.events)
+      );
+      const displayMessage = pickDisplayEventMessage(response.events);
       if (displayMessage) {
-        setMessage(displayMessage)
+        setMessage(displayMessage);
       }
-    }
+    };
 
     const start = async () => {
-      setLoading(true)
-      setMessage(null)
-      setCues([])
-      beginNewEpoch('start')
+      setLoading(true);
+      setMessage(null);
+      setCues([]);
+      beginNewEpoch("start");
 
       try {
         const startResponse = await startSubtitleSession({
           model_dir: modelDir,
           model_id: modelId,
           provider_preference: providerPreference,
-          language: language.trim() || 'auto',
+          language: language.trim() || "auto",
           fallback_to_cpu: true,
           render_mode: renderMode,
           advanced_options:
-            renderMode === 'advanced'
+            renderMode === "advanced"
               ? {
                   vad: {
                     preset: vadPreset,
@@ -1052,187 +1274,238 @@ export function useLiveSubtitles({
                   },
                 }
               : undefined,
-        })
+        });
 
         if (cancelled) {
-          await stopSubtitleSession({ reason: 'cancelled-before-ready' }).catch(() => undefined)
-          return
+          await stopSubtitleSession({ reason: "cancelled-before-ready" }).catch(
+            () => undefined,
+          );
+          return;
         }
 
-        sessionRunningRef.current = true
-        setMessage(pickDisplayEventMessage(startResponse.events))
+        sessionRunningRef.current = true;
+        setMessage(pickDisplayEventMessage(startResponse.events));
 
-        subtitlePersistenceEnabledRef.current = false
-        validPlaybackRateThresholdRef.current = 1.0
-        persistenceQueueRef.current = []
-        replayFromPersistenceRef.current = false
-        replayForceUntilSecRef.current = null
-        pendingFirstOverlapReplaceRef.current = false
-        firstOverlapReplaceSeekAnchorSecRef.current = null
-        replayLockRangeRef.current = null
-        highRateReplayHintShownRef.current = false
-        currentValidRangeRef.current = null
-        persistenceWindowCuesRef.current = []
-        persistenceWindowRawCuesRef.current = []
-        persistenceGeneratedRangesRef.current = []
-        persistenceLastReadAtMsRef.current = 0
-        persistenceLastReadTimelineSecRef.current = -1
-        if (startSubtitlePersistence && videoPath && videoPath.trim() !== '') {
+        subtitlePersistenceEnabledRef.current = false;
+        validPlaybackRateThresholdRef.current = 1.0;
+        persistenceQueueRef.current = [];
+        replayFromPersistenceRef.current = false;
+        replayForceUntilSecRef.current = null;
+        pendingFirstOverlapReplaceRef.current = false;
+        firstOverlapReplaceSeekAnchorSecRef.current = null;
+        replayLockRangeRef.current = null;
+        highRateReplayHintShownRef.current = false;
+        currentValidRangeRef.current = null;
+        persistenceWindowCuesRef.current = [];
+        persistenceWindowRawCuesRef.current = [];
+        persistenceGeneratedRangesRef.current = [];
+        persistenceLastReadAtMsRef.current = 0;
+        persistenceLastReadTimelineSecRef.current = -1;
+        if (startSubtitlePersistence && videoPath && videoPath.trim() !== "") {
           try {
             const persistenceResponse = await startSubtitlePersistence({
               video_path: videoPath,
-              language: language.trim() || 'auto',
+              language: language.trim() || "auto",
               reset_existing: false,
-              valid_playback_rate_threshold: 1.0,
-            })
-            subtitlePersistenceEnabledRef.current = persistenceResponse.enabled
+              valid_playback_rate_threshold: validPlaybackRateThreshold,
+            });
+            subtitlePersistenceEnabledRef.current = persistenceResponse.enabled;
             if (persistenceResponse.enabled) {
-              const timelineSec = Math.max(0, videoElement.currentTime || 0)
-              replayFromPersistenceRef.current = true
+              const timelineSec = Math.max(0, videoElement.currentTime || 0);
+              replayFromPersistenceRef.current = true;
               const persistedState = await syncPersistenceWindow(timelineSec, {
                 hydrateCues: true,
                 force: true,
-              })
-              const shouldReplayFromPersistence = persistedState.timelineInGeneratedRange && persistedState.timelineHasCueNear
-              replayFromPersistenceRef.current = shouldReplayFromPersistence
+              });
+              const shouldReplayFromPersistence =
+                persistedState.timelineInGeneratedRange &&
+                persistedState.timelineHasCueNear;
+              replayFromPersistenceRef.current = shouldReplayFromPersistence;
               replayLockRangeRef.current = shouldReplayFromPersistence
                 ? persistedState.activeRange
-                : null
+                : null;
             }
           } catch (error) {
-            subtitlePersistenceEnabledRef.current = false
+            subtitlePersistenceEnabledRef.current = false;
             if (!cancelled && !isAbortLikeError(error)) {
-              setMessage(error instanceof Error ? error.message : String(error))
+              setMessage(
+                error instanceof Error ? error.message : String(error),
+              );
             }
           }
         }
 
         await capture.attach(videoElement, (chunk) => {
-          if (!sessionRunningRef.current || cancelled || videoElement.paused || videoElement.ended) {
-            return
+          if (
+            !sessionRunningRef.current ||
+            cancelled ||
+            videoElement.paused ||
+            videoElement.ended
+          ) {
+            return;
           }
 
           // 如果正在 seeking，等待窗口刷新完成
           if (seekingInProgressRef.current) {
-            emitSubtitleDebug('renderer_skip_generation_during_seeking', {
+            emitSubtitleDebug("renderer_skip_generation_during_seeking", {
               timeline_sec: Number(chunk.endSec.toFixed(3)),
-            })
-            return
+            });
+            return;
           }
 
           if (skipCaptureChunksRef.current > 0) {
-            skipCaptureChunksRef.current -= 1
-            emitSubtitleDebug('renderer_skip_generation_after_seek_reset', {
+            skipCaptureChunksRef.current -= 1;
+            emitSubtitleDebug("renderer_skip_generation_after_seek_reset", {
               timeline_sec: Number(chunk.endSec.toFixed(3)),
               remaining_skip_chunks: skipCaptureChunksRef.current,
-            })
-            return
+            });
+            return;
           }
 
-          const timelineSec = Math.max(0, chunk.endSec)
-          const playbackRate = Math.max(0.1, videoElement.playbackRate || 1)
-          updateValidRangeIfQualified(timelineSec)
+          const timelineSec = Math.max(0, chunk.endSec);
+          const playbackRate = Math.max(0.1, videoElement.playbackRate || 1);
+          updateValidRangeIfQualified(timelineSec);
 
-          const replayForceUntilSec = replayForceUntilSecRef.current
+          const replayForceUntilSec = replayForceUntilSecRef.current;
           if (replayForceUntilSec !== null) {
             if (timelineSec <= replayForceUntilSec + 0.02) {
-              replayFromPersistenceRef.current = true
+              replayFromPersistenceRef.current = true;
             } else {
-              replayForceUntilSecRef.current = null
+              replayForceUntilSecRef.current = null;
             }
           }
 
-          const lockRange = replayLockRangeRef.current
+          const lockRange = replayLockRangeRef.current;
           if (lockRange) {
-            if (timelineSec >= lockRange.start_sec - 0.02 && timelineSec <= lockRange.end_sec + 0.03) {
-              const lockHasCueNear = hasCueNearTimeline(persistenceWindowCuesRef.current, timelineSec)
-              replayFromPersistenceRef.current = lockHasCueNear
+            if (
+              timelineSec >= lockRange.start_sec - 0.02 &&
+              timelineSec <= lockRange.end_sec + 0.03
+            ) {
+              const lockHasCueNear = hasCueNearTimeline(
+                persistenceWindowCuesRef.current,
+                timelineSec,
+              );
+              replayFromPersistenceRef.current = lockHasCueNear;
               if (!lockHasCueNear) {
-                replayLockRangeRef.current = null
+                replayLockRangeRef.current = null;
               }
             } else if (timelineSec > lockRange.end_sec + 0.03) {
-              replayLockRangeRef.current = null
-              replayFromPersistenceRef.current = false
-              setCues([])
+              replayLockRangeRef.current = null;
+              replayFromPersistenceRef.current = false;
+              setCues([]);
             }
           }
 
-          const cachedHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
-          const cachedHasCueNear = hasCueNearTimeline(persistenceWindowCuesRef.current, timelineSec)
+          const cachedHasCue = hasCueAtTimeline(
+            persistenceWindowCuesRef.current,
+            timelineSec,
+          );
+          const cachedHasCueNear = hasCueNearTimeline(
+            persistenceWindowCuesRef.current,
+            timelineSec,
+          );
 
-          if (playbackRate > 2.05 && subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
-            replayFromPersistenceRef.current = true
+          if (
+            playbackRate > 2.05 &&
+            subtitlePersistenceEnabledRef.current &&
+            readSubtitlePersistenceWindow
+          ) {
+            replayFromPersistenceRef.current = true;
             if (!highRateReplayHintShownRef.current) {
-              highRateReplayHintShownRef.current = true
-              setMessage('播放速度超过 2x：切换为仅回放已生成字幕')
+              highRateReplayHintShownRef.current = true;
+              setMessage("播放速度超过 2x：切换为仅回放已生成字幕");
             }
             void syncPersistenceWindow(timelineSec, {
               hydrateCues: true,
               force: false,
             }).then((result) => {
               if (cancelled) {
-                return
+                return;
               }
-              replayFromPersistenceRef.current = true
-              replayLockRangeRef.current = result.timelineInGeneratedRange ? result.activeRange : null
-            })
-            return
+              replayFromPersistenceRef.current = true;
+              replayLockRangeRef.current = result.timelineInGeneratedRange
+                ? result.activeRange
+                : null;
+            });
+            return;
           }
           if (highRateReplayHintShownRef.current && playbackRate <= 2.01) {
-            highRateReplayHintShownRef.current = false
-            setMessage((previous) => (
-              previous === '播放速度超过 2x：切换为仅回放已生成字幕'
+            highRateReplayHintShownRef.current = false;
+            setMessage((previous) =>
+              previous === "播放速度超过 2x：切换为仅回放已生成字幕"
                 ? null
-                : previous
-            ))
+                : previous,
+            );
           }
 
-          if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
-            const cachedInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
+          if (
+            subtitlePersistenceEnabledRef.current &&
+            readSubtitlePersistenceWindow
+          ) {
+            const cachedInGeneratedRange = isTimelineInRanges(
+              persistenceGeneratedRangesRef.current,
+              timelineSec,
+            );
 
             if (cachedInGeneratedRange && cachedHasCueNear) {
-              replayFromPersistenceRef.current = true
+              replayFromPersistenceRef.current = true;
             } else if (cachedInGeneratedRange && !cachedHasCueNear) {
-              replayFromPersistenceRef.current = false
-              replayLockRangeRef.current = null
+              replayFromPersistenceRef.current = false;
+              replayLockRangeRef.current = null;
             }
 
             const shouldRefreshPersistence =
-              replayFromPersistenceRef.current
-              || cachedInGeneratedRange
-              || Math.abs(timelineSec - persistenceLastReadTimelineSecRef.current) >= 2
+              replayFromPersistenceRef.current ||
+              cachedInGeneratedRange ||
+              Math.abs(
+                timelineSec - persistenceLastReadTimelineSecRef.current,
+              ) >= 2;
             if (shouldRefreshPersistence) {
               void syncPersistenceWindow(timelineSec, {
-                hydrateCues: replayFromPersistenceRef.current || cachedInGeneratedRange || cachedHasCue || cachedHasCueNear,
-                force: replayFromPersistenceRef.current || cachedInGeneratedRange,
+                hydrateCues:
+                  replayFromPersistenceRef.current ||
+                  cachedInGeneratedRange ||
+                  cachedHasCue ||
+                  cachedHasCueNear,
+                force:
+                  replayFromPersistenceRef.current || cachedInGeneratedRange,
               }).then((result) => {
                 if (cancelled) {
-                  return
+                  return;
                 }
-                const shouldReplayFromPersistence = result.timelineInGeneratedRange && result.timelineHasCueNear
-                replayFromPersistenceRef.current = shouldReplayFromPersistence
-                replayLockRangeRef.current = shouldReplayFromPersistence ? result.activeRange : null
-              })
+                const shouldReplayFromPersistence =
+                  result.timelineInGeneratedRange && result.timelineHasCueNear;
+                replayFromPersistenceRef.current = shouldReplayFromPersistence;
+                replayLockRangeRef.current = shouldReplayFromPersistence
+                  ? result.activeRange
+                  : null;
+              });
             }
           }
 
           if (replayFromPersistenceRef.current) {
-            emitSubtitleDebug('renderer_skip_generation_for_persisted_cue', {
+            emitSubtitleDebug("renderer_skip_generation_for_persisted_cue", {
               timeline_sec: Number(timelineSec.toFixed(3)),
-            })
-            return
+            });
+            return;
           }
 
           const highWaterMark =
             playbackRate <= 1.5
-              ? (renderMode === 'advanced' ? 18 : 28)
+              ? renderMode === "advanced"
+                ? 18
+                : 28
               : playbackRate <= 2.5
-                ? (renderMode === 'advanced' ? 30 : 42)
-                : (renderMode === 'advanced' ? 50 : 60)
+                ? renderMode === "advanced"
+                  ? 30
+                  : 42
+                : renderMode === "advanced"
+                  ? 50
+                  : 60;
           if (pushQueueRef.current.length > highWaterMark) {
-            const queueLenBeforeCompaction = pushQueueRef.current.length
-            const first = pushQueueRef.current.shift()
-            const second = pushQueueRef.current.shift()
+            const queueLenBeforeCompaction = pushQueueRef.current.length;
+            const first = pushQueueRef.current.shift();
+            const second = pushQueueRef.current.shift();
             if (first && second) {
               pushQueueRef.current.unshift({
                 sampleRateHz: first.sampleRateHz,
@@ -1240,44 +1513,46 @@ export function useLiveSubtitles({
                 startSec: first.startSec,
                 endSec: second.endSec,
                 samples: concatFloat32([first.samples, second.samples]),
-              })
+              });
             } else {
               if (first) {
-                pushQueueRef.current.unshift(first)
+                pushQueueRef.current.unshift(first);
               }
               if (second) {
-                pushQueueRef.current.unshift(second)
+                pushQueueRef.current.unshift(second);
               }
             }
-            emitSubtitleDebug('renderer_queue_compaction', {
+            emitSubtitleDebug("renderer_queue_compaction", {
               mode: renderMode,
               high_water_mark: highWaterMark,
               queue_len_before: queueLenBeforeCompaction,
               queue_len_after: pushQueueRef.current.length,
-            })
+            });
           }
-          pushQueueRef.current.push(chunk)
-          emitSubtitleDebug('renderer_capture_chunk', {
+          pushQueueRef.current.push(chunk);
+          emitSubtitleDebug("renderer_capture_chunk", {
             mode: renderMode,
-            playback_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
+            playback_time_sec: Number(
+              Math.max(0, videoElement.currentTime || 0).toFixed(3),
+            ),
             chunk_start_sec: Number(chunk.startSec.toFixed(3)),
             chunk_end_sec: Number(chunk.endSec.toFixed(3)),
             offset_sec: subtitleOffsetSecRef.current,
             offset_mode: readSubtitleDebugOffsetMode(),
             queue_len: pushQueueRef.current.length,
-          })
-          void drainPushQueue()
-        })
+          });
+          void drainPushQueue();
+        });
 
         const onSeeked = () => {
-          capture.resetBuffer()
-          skipCaptureChunksRef.current = 12
-          beginNewEpoch('seeked')
-          replayForceUntilSecRef.current = null
-          currentValidRangeRef.current = null
-          const timelineSec = Math.max(0, videoElement.currentTime || 0)
-          seekingInProgressRef.current = true
-          replayFromPersistenceRef.current = true
+          capture.resetBuffer();
+          skipCaptureChunksRef.current = 12;
+          beginNewEpoch("seeked");
+          replayForceUntilSecRef.current = null;
+          currentValidRangeRef.current = null;
+          const timelineSec = Math.max(0, videoElement.currentTime || 0);
+          seekingInProgressRef.current = true;
+          replayFromPersistenceRef.current = true;
 
           void (async () => {
             let persistedState: PersistenceSyncState = {
@@ -1285,259 +1560,306 @@ export function useLiveSubtitles({
               timelineHasCueNear: false,
               timelineInGeneratedRange: false,
               activeRange: null,
-            }
+            };
 
-            if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
+            if (
+              subtitlePersistenceEnabledRef.current &&
+              readSubtitlePersistenceWindow
+            ) {
               try {
-                persistedState = await syncPersistenceWindow(timelineSec, { hydrateCues: true, force: true })
+                persistedState = await syncPersistenceWindow(timelineSec, {
+                  hydrateCues: true,
+                  force: true,
+                });
               } catch {
                 if (!cancelled) {
-                  setCues([])
+                  setCues([]);
                 }
               }
             } else if (!cancelled) {
-              setCues([])
+              setCues([]);
             }
 
             if (cancelled) {
-              return
+              return;
             }
 
-            if (readSubtitleDebugBoolean('subtitle.debug.suppressControlResets')) {
-              emitSubtitleDebug('renderer_control_event_ignored', {
-                reason: 'seeked',
-                current_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
-              })
+            if (
+              readSubtitleDebugBoolean("subtitle.debug.suppressControlResets")
+            ) {
+              emitSubtitleDebug("renderer_control_event_ignored", {
+                reason: "seeked",
+                current_time_sec: Number(
+                  Math.max(0, videoElement.currentTime || 0).toFixed(3),
+                ),
+              });
             } else {
-              await resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
+              await resetSubtitleSession({
+                timeline_sec: Math.max(0, videoElement.currentTime || 0),
+              }).catch(() => undefined);
             }
 
             if (cancelled) {
-              return
+              return;
             }
 
-            if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
-              const shouldReplayFromPersistence = persistedState.timelineInGeneratedRange && persistedState.timelineHasCueNear
-              replayFromPersistenceRef.current = shouldReplayFromPersistence
-              replayLockRangeRef.current = shouldReplayFromPersistence ? persistedState.activeRange : null
-              pendingFirstOverlapReplaceRef.current = persistedState.timelineInGeneratedRange
-              firstOverlapReplaceSeekAnchorSecRef.current = persistedState.timelineInGeneratedRange
-                ? Number(timelineSec.toFixed(3))
-                : null
-              const firstRawCueStartSec = persistenceWindowRawCuesRef.current[0]?.start_sec ?? null
-              if (
+            if (
+              subtitlePersistenceEnabledRef.current &&
+              readSubtitlePersistenceWindow
+            ) {
+              const shouldReplayFromPersistence =
+                persistedState.timelineInGeneratedRange &&
+                persistedState.timelineHasCueNear;
+              replayFromPersistenceRef.current = shouldReplayFromPersistence;
+              replayLockRangeRef.current = shouldReplayFromPersistence
+                ? persistedState.activeRange
+                : null;
+              pendingFirstOverlapReplaceRef.current =
+                persistedState.timelineInGeneratedRange;
+              firstOverlapReplaceSeekAnchorSecRef.current =
                 persistedState.timelineInGeneratedRange
-                && Number.isFinite(firstRawCueStartSec)
-                && timelineSec < Number(firstRawCueStartSec)
+                  ? Number(timelineSec.toFixed(3))
+                  : null;
+              const firstRawCueStartSec =
+                persistenceWindowRawCuesRef.current[0]?.start_sec ?? null;
+              if (
+                persistedState.timelineInGeneratedRange &&
+                Number.isFinite(firstRawCueStartSec) &&
+                timelineSec < Number(firstRawCueStartSec)
               ) {
-                replayForceUntilSecRef.current = Number(firstRawCueStartSec) + 0.05
+                replayForceUntilSecRef.current =
+                  Number(firstRawCueStartSec) + 0.05;
               } else {
-                replayForceUntilSecRef.current = null
+                replayForceUntilSecRef.current = null;
               }
-              emitSubtitleDebug('renderer_seeking_window_refreshed', {
+              emitSubtitleDebug("renderer_seeking_window_refreshed", {
                 timeline_sec: Number(timelineSec.toFixed(3)),
                 in_generated_range: persistedState.timelineInGeneratedRange,
                 has_cue: persistedState.timelineHasCue,
                 has_cue_near: persistedState.timelineHasCueNear,
                 replay_force_until_sec: replayForceUntilSecRef.current,
-              })
+              });
             } else {
-              replayFromPersistenceRef.current = false
-              replayForceUntilSecRef.current = null
-              pendingFirstOverlapReplaceRef.current = false
-              firstOverlapReplaceSeekAnchorSecRef.current = null
-              replayLockRangeRef.current = null
+              replayFromPersistenceRef.current = false;
+              replayForceUntilSecRef.current = null;
+              pendingFirstOverlapReplaceRef.current = false;
+              firstOverlapReplaceSeekAnchorSecRef.current = null;
+              replayLockRangeRef.current = null;
             }
 
-            seekingInProgressRef.current = false
+            seekingInProgressRef.current = false;
             if (!videoElement.paused) {
-              startValidRangeIfQualified()
+              startValidRangeIfQualified();
             }
           })().catch(() => {
             if (!cancelled) {
-              replayFromPersistenceRef.current = false
-              replayForceUntilSecRef.current = null
-              pendingFirstOverlapReplaceRef.current = false
-              firstOverlapReplaceSeekAnchorSecRef.current = null
-              replayLockRangeRef.current = null
-              seekingInProgressRef.current = false
+              replayFromPersistenceRef.current = false;
+              replayForceUntilSecRef.current = null;
+              pendingFirstOverlapReplaceRef.current = false;
+              firstOverlapReplaceSeekAnchorSecRef.current = null;
+              replayLockRangeRef.current = null;
+              seekingInProgressRef.current = false;
               if (!videoElement.paused) {
-                startValidRangeIfQualified()
+                startValidRangeIfQualified();
               }
-              setCues([])
+              setCues([]);
             }
-          })
-        }
+          });
+        };
         const onPause = () => {
-          currentValidRangeRef.current = null
+          currentValidRangeRef.current = null;
           void flushSubtitleSession()
             .then(handleCuesAndEvents)
-            .catch(() => undefined)
-        }
+            .catch(() => undefined);
+        };
         const onPlay = () => {
-          if (readSubtitleDebugBoolean('subtitle.debug.suppressControlResets')) {
-            emitSubtitleDebug('renderer_control_event_ignored', {
-              reason: 'play',
-              current_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
-            })
-            return
+          if (
+            readSubtitleDebugBoolean("subtitle.debug.suppressControlResets")
+          ) {
+            emitSubtitleDebug("renderer_control_event_ignored", {
+              reason: "play",
+              current_time_sec: Number(
+                Math.max(0, videoElement.currentTime || 0).toFixed(3),
+              ),
+            });
+            return;
           }
-          beginNewEpoch('play')
-          capture.resetBuffer()
-          skipCaptureChunksRef.current = 1
-          startValidRangeIfQualified()
-          void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
-        }
+          beginNewEpoch("play");
+          capture.resetBuffer();
+          skipCaptureChunksRef.current = 1;
+          startValidRangeIfQualified();
+          void resetSubtitleSession({
+            timeline_sec: Math.max(0, videoElement.currentTime || 0),
+          }).catch(() => undefined);
+        };
         const onRateChange = () => {
-          const playbackRate = Math.max(0.1, videoElement.playbackRate || 1)
+          const playbackRate = Math.max(0.1, videoElement.playbackRate || 1);
           if (playbackRate > validPlaybackRateThresholdRef.current) {
-            currentValidRangeRef.current = null
+            currentValidRangeRef.current = null;
           } else if (!videoElement.paused) {
-            startValidRangeIfQualified()
+            startValidRangeIfQualified();
           }
-          if (readSubtitleDebugBoolean('subtitle.debug.suppressControlResets')) {
-            emitSubtitleDebug('renderer_control_event_ignored', {
-              reason: 'ratechange',
-              current_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
+          if (
+            readSubtitleDebugBoolean("subtitle.debug.suppressControlResets")
+          ) {
+            emitSubtitleDebug("renderer_control_event_ignored", {
+              reason: "ratechange",
+              current_time_sec: Number(
+                Math.max(0, videoElement.currentTime || 0).toFixed(3),
+              ),
               playback_rate: Number(playbackRate.toFixed(3)),
-            })
-            return
+            });
+            return;
           }
-          beginNewEpoch('ratechange')
-          capture.resetBuffer()
-          skipCaptureChunksRef.current = 1
-          if (playbackRate <= validPlaybackRateThresholdRef.current && !videoElement.paused) {
-            startValidRangeIfQualified()
+          beginNewEpoch("ratechange");
+          capture.resetBuffer();
+          skipCaptureChunksRef.current = 1;
+          if (
+            playbackRate <= validPlaybackRateThresholdRef.current &&
+            !videoElement.paused
+          ) {
+            startValidRangeIfQualified();
           }
-          setCues([])
-          void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
-        }
+          setCues([]);
+          void resetSubtitleSession({
+            timeline_sec: Math.max(0, videoElement.currentTime || 0),
+          }).catch(() => undefined);
+        };
 
-        videoElement.addEventListener('seeked', onSeeked)
-        videoElement.addEventListener('pause', onPause)
-        videoElement.addEventListener('play', onPlay)
-        videoElement.addEventListener('ratechange', onRateChange)
+        videoElement.addEventListener("seeked", onSeeked);
+        videoElement.addEventListener("pause", onPause);
+        videoElement.addEventListener("play", onPlay);
+        videoElement.addEventListener("ratechange", onRateChange);
 
         if (!videoElement.paused) {
-          startValidRangeIfQualified()
+          startValidRangeIfQualified();
         }
 
         if (cancelled) {
-          videoElement.removeEventListener('seeked', onSeeked)
-          videoElement.removeEventListener('pause', onPause)
-          videoElement.removeEventListener('play', onPlay)
-          videoElement.removeEventListener('ratechange', onRateChange)
-          await stopSubtitleSession({ reason: 'cancelled-after-ready' }).catch(() => undefined)
-          sessionRunningRef.current = false
-          capture.detach()
-          return
+          videoElement.removeEventListener("seeked", onSeeked);
+          videoElement.removeEventListener("pause", onPause);
+          videoElement.removeEventListener("play", onPlay);
+          videoElement.removeEventListener("ratechange", onRateChange);
+          await stopSubtitleSession({ reason: "cancelled-after-ready" }).catch(
+            () => undefined,
+          );
+          sessionRunningRef.current = false;
+          capture.detach();
+          return;
         }
 
-        setLoading(false)
+        setLoading(false);
 
         cleanupRef.current = async () => {
-          videoElement.removeEventListener('seeked', onSeeked)
-          videoElement.removeEventListener('pause', onPause)
-          videoElement.removeEventListener('play', onPlay)
-          videoElement.removeEventListener('ratechange', onRateChange)
-          pushQueueRef.current = []
+          videoElement.removeEventListener("seeked", onSeeked);
+          videoElement.removeEventListener("pause", onPause);
+          videoElement.removeEventListener("play", onPlay);
+          videoElement.removeEventListener("ratechange", onRateChange);
+          pushQueueRef.current = [];
           if (pushAbortRef.current) {
-            pushAbortRef.current.abort()
-            pushAbortCountRef.current += 1
+            pushAbortRef.current.abort();
+            pushAbortCountRef.current += 1;
           }
-          pushAbortRef.current = null
-          capture.detach()
-          sessionRunningRef.current = false
-          subtitlePersistenceEnabledRef.current = false
-          persistenceQueueRef.current = []
-          persistenceInFlightRef.current = false
-          replayFromPersistenceRef.current = false
-          replayForceUntilSecRef.current = null
-          pendingFirstOverlapReplaceRef.current = false
-          firstOverlapReplaceSeekAnchorSecRef.current = null
-          replayLockRangeRef.current = null
-          highRateReplayHintShownRef.current = false
-          skipCaptureChunksRef.current = 0
-          currentValidRangeRef.current = null
-          persistenceWindowCuesRef.current = []
-          persistenceWindowRawCuesRef.current = []
-          persistenceGeneratedRangesRef.current = []
-          persistenceReadInFlightRef.current = false
-          persistenceLastReadAtMsRef.current = 0
-          persistenceLastReadTimelineSecRef.current = -1
-          await stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
-        }
+          pushAbortRef.current = null;
+          capture.detach();
+          sessionRunningRef.current = false;
+          subtitlePersistenceEnabledRef.current = false;
+          persistenceQueueRef.current = [];
+          persistenceInFlightRef.current = false;
+          replayFromPersistenceRef.current = false;
+          replayForceUntilSecRef.current = null;
+          pendingFirstOverlapReplaceRef.current = false;
+          firstOverlapReplaceSeekAnchorSecRef.current = null;
+          replayLockRangeRef.current = null;
+          highRateReplayHintShownRef.current = false;
+          skipCaptureChunksRef.current = 0;
+          currentValidRangeRef.current = null;
+          persistenceWindowCuesRef.current = [];
+          persistenceWindowRawCuesRef.current = [];
+          persistenceGeneratedRangesRef.current = [];
+          persistenceReadInFlightRef.current = false;
+          persistenceLastReadAtMsRef.current = 0;
+          persistenceLastReadTimelineSecRef.current = -1;
+          await stopSubtitleSession({ reason: "renderer-dispose" }).catch(
+            () => undefined,
+          );
+        };
       } catch (error) {
         if (sessionRunningRef.current) {
-          await stopSubtitleSession({ reason: 'renderer-start-failed' }).catch(() => undefined)
+          await stopSubtitleSession({ reason: "renderer-start-failed" }).catch(
+            () => undefined,
+          );
         }
         if (pushAbortRef.current) {
-          pushAbortRef.current.abort()
-          pushAbortCountRef.current += 1
+          pushAbortRef.current.abort();
+          pushAbortCountRef.current += 1;
         }
-        pushAbortRef.current = null
-        setLoading(false)
-        const messageText = error instanceof Error ? error.message : String(error)
-        setMessage(messageText)
-        setCues([])
-        sessionRunningRef.current = false
-        subtitlePersistenceEnabledRef.current = false
-        persistenceQueueRef.current = []
-        persistenceInFlightRef.current = false
-        replayFromPersistenceRef.current = false
-        replayForceUntilSecRef.current = null
-        pendingFirstOverlapReplaceRef.current = false
-        firstOverlapReplaceSeekAnchorSecRef.current = null
-        replayLockRangeRef.current = null
-        highRateReplayHintShownRef.current = false
-        skipCaptureChunksRef.current = 0
-        currentValidRangeRef.current = null
-        persistenceWindowCuesRef.current = []
-        persistenceWindowRawCuesRef.current = []
-        persistenceGeneratedRangesRef.current = []
-        persistenceReadInFlightRef.current = false
-        persistenceLastReadAtMsRef.current = 0
-        persistenceLastReadTimelineSecRef.current = -1
-        capture.detach()
+        pushAbortRef.current = null;
+        setLoading(false);
+        const messageText =
+          error instanceof Error ? error.message : String(error);
+        setMessage(messageText);
+        setCues([]);
+        sessionRunningRef.current = false;
+        subtitlePersistenceEnabledRef.current = false;
+        persistenceQueueRef.current = [];
+        persistenceInFlightRef.current = false;
+        replayFromPersistenceRef.current = false;
+        replayForceUntilSecRef.current = null;
+        pendingFirstOverlapReplaceRef.current = false;
+        firstOverlapReplaceSeekAnchorSecRef.current = null;
+        replayLockRangeRef.current = null;
+        highRateReplayHintShownRef.current = false;
+        skipCaptureChunksRef.current = 0;
+        currentValidRangeRef.current = null;
+        persistenceWindowCuesRef.current = [];
+        persistenceWindowRawCuesRef.current = [];
+        persistenceGeneratedRangesRef.current = [];
+        persistenceReadInFlightRef.current = false;
+        persistenceLastReadAtMsRef.current = 0;
+        persistenceLastReadTimelineSecRef.current = -1;
+        capture.detach();
       }
-    }
+    };
 
-    void start()
+    void start();
 
     return () => {
-      cancelled = true
-      const cleanup = cleanupRef.current
-      cleanupRef.current = null
+      cancelled = true;
+      const cleanup = cleanupRef.current;
+      cleanupRef.current = null;
       if (cleanup) {
-        void cleanup()
+        void cleanup();
       } else {
-        capture.detach()
-        sessionRunningRef.current = false
+        capture.detach();
+        sessionRunningRef.current = false;
         if (pushAbortRef.current) {
-          pushAbortRef.current.abort()
-          pushAbortCountRef.current += 1
+          pushAbortRef.current.abort();
+          pushAbortCountRef.current += 1;
         }
-        pushAbortRef.current = null
-        subtitlePersistenceEnabledRef.current = false
-        persistenceQueueRef.current = []
-        persistenceInFlightRef.current = false
-        replayFromPersistenceRef.current = false
-        replayForceUntilSecRef.current = null
-        pendingFirstOverlapReplaceRef.current = false
-        firstOverlapReplaceSeekAnchorSecRef.current = null
-        replayLockRangeRef.current = null
-        highRateReplayHintShownRef.current = false
-        skipCaptureChunksRef.current = 0
-        currentValidRangeRef.current = null
-        persistenceWindowCuesRef.current = []
-        persistenceWindowRawCuesRef.current = []
-        persistenceGeneratedRangesRef.current = []
-        persistenceReadInFlightRef.current = false
-        persistenceLastReadAtMsRef.current = 0
-        persistenceLastReadTimelineSecRef.current = -1
-        void stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
+        pushAbortRef.current = null;
+        subtitlePersistenceEnabledRef.current = false;
+        persistenceQueueRef.current = [];
+        persistenceInFlightRef.current = false;
+        replayFromPersistenceRef.current = false;
+        replayForceUntilSecRef.current = null;
+        pendingFirstOverlapReplaceRef.current = false;
+        firstOverlapReplaceSeekAnchorSecRef.current = null;
+        replayLockRangeRef.current = null;
+        highRateReplayHintShownRef.current = false;
+        skipCaptureChunksRef.current = 0;
+        currentValidRangeRef.current = null;
+        persistenceWindowCuesRef.current = [];
+        persistenceWindowRawCuesRef.current = [];
+        persistenceGeneratedRangesRef.current = [];
+        persistenceReadInFlightRef.current = false;
+        persistenceLastReadAtMsRef.current = 0;
+        persistenceLastReadTimelineSecRef.current = -1;
+        void stopSubtitleSession({ reason: "renderer-dispose" }).catch(
+          () => undefined,
+        );
       }
-    }
+    };
   }, [
     capture,
     enabled,
@@ -1552,6 +1874,7 @@ export function useLiveSubtitles({
     vadMinSilenceSec,
     vadMinSpeechSec,
     vadMaxSpeechSec,
+    validPlaybackRateThreshold,
     speakerSimilarityThreshold,
     repository.flushSubtitleSession,
     repository.pushSubtitleAudio,
@@ -1562,39 +1885,51 @@ export function useLiveSubtitles({
     repository.startSubtitleSession,
     repository.stopSubtitleSession,
     videoElement,
-  ])
+  ]);
 
   const activeText = useMemo(() => {
-    const subtitleOffsetSec = readSubtitleDebugOffsetSec()
-    const offsetMode = readSubtitleDebugOffsetMode()
+    const subtitleOffsetSec = readSubtitleDebugOffsetSec();
+    const offsetMode = readSubtitleDebugOffsetMode();
 
-    if (renderMode === 'advanced') {
-      return buildAdvancedDisplayText(cues, currentTimeSec, subtitleOffsetSec, offsetMode, {
-        maxLines: 2,
-        includeTrackLabel: true,
-      })
+    if (renderMode === "advanced") {
+      return buildAdvancedDisplayText(
+        cues,
+        currentTimeSec,
+        subtitleOffsetSec,
+        offsetMode,
+        {
+          maxLines: 2,
+          includeTrackLabel: true,
+        },
+      );
     }
 
-    return buildAdvancedDisplayText(cues, currentTimeSec, subtitleOffsetSec, offsetMode, {
-      maxLines: 1,
-      includeTrackLabel: false,
-    })
-  }, [cues, currentTimeSec, renderMode])
+    return buildAdvancedDisplayText(
+      cues,
+      currentTimeSec,
+      subtitleOffsetSec,
+      offsetMode,
+      {
+        maxLines: 1,
+        includeTrackLabel: false,
+      },
+    );
+  }, [cues, currentTimeSec, renderMode]);
 
   const detectedLanguage = useMemo(() => {
     for (let index = cues.length - 1; index >= 0; index -= 1) {
-      const cue = cues[index]
+      const cue = cues[index];
       if (cue.lang && cue.lang.trim()) {
-        return cue.lang.trim().toLowerCase()
+        return cue.lang.trim().toLowerCase();
       }
     }
-    return null
-  }, [cues])
+    return null;
+  }, [cues]);
 
   return {
     loading,
     message,
     activeText,
     detectedLanguage,
-  }
+  };
 }

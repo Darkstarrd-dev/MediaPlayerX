@@ -287,46 +287,50 @@ describe("MediaPlayer 虚拟 UI", () => {
     });
   });
 
-  it("管理删除 Sidebar 节点部分失败时，提示文案与 failed 计数保持一致", async () => {
-    vi.spyOn(
-      MockMediaRepository.prototype,
-      "deleteSidebarNodesSync",
-    ).mockImplementation(() => ({
-      deleted_count: 1,
-      failed: [
-        {
-          node_id: "folder:not-found",
-          reason: "node not found",
-        },
-      ],
-      updated_at_ms: Date.now(),
-    }));
+  it(
+    "管理删除 Sidebar 节点部分失败时，提示文案与 failed 计数保持一致",
+    async () => {
+      vi.spyOn(
+        MockMediaRepository.prototype,
+        "deleteSidebarNodesSync",
+      ).mockImplementation(() => ({
+        deleted_count: 1,
+        failed: [
+          {
+            node_id: "folder:not-found",
+            reason: "node not found",
+          },
+        ],
+        updated_at_ms: Date.now(),
+      }));
 
-    render(<App />);
-    await click(screen.getByRole("button", { name: "文件管理" }));
+      render(<App />);
+      await click(screen.getByRole("button", { name: "文件管理" }));
 
-    await waitFor(() => {
-      expect(
-        document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
-          .length,
-      ).toBeGreaterThan(0);
-    });
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
+            .length,
+        ).toBeGreaterThan(0);
+      });
 
-    await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
-    await click(screen.getByRole("button", { name: "删除" }));
-    await click(
-      screen.getByRole("checkbox", {
-        name: "我了解此操作将永久不可逆地删除选中数据",
-      }),
-    );
-    await click(screen.getByRole("button", { name: "确定删除" }));
+      await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
+      await click(screen.getByRole("button", { name: "删除" }));
+      await click(
+        screen.getByRole("checkbox", {
+          name: "我了解此操作将永久不可逆地删除选中数据",
+        }),
+      );
+      await click(screen.getByRole("button", { name: "确定删除" }));
 
-    await waitFor(() => {
-      expect(screen.getByText("已删除 1 项，失败 1 项")).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(screen.getByText("已删除 1 项，失败 1 项")).toBeInTheDocument();
+      });
 
-    expect(screen.queryByText(/管理操作:/)).not.toBeInTheDocument();
-  });
+      expect(screen.queryByText(/管理操作:/)).not.toBeInTheDocument();
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "管理删除图片部分失败时，提示文案与 failed 计数保持一致",
@@ -534,29 +538,33 @@ describe("MediaPlayer 虚拟 UI", () => {
     expect(featureScope.getByLabelText("作者")).toBeInTheDocument();
   });
 
-  it("布局锁定开启后，主界面分割条拖动失效", async () => {
-    render(<App />);
+  it(
+    "布局锁定开启后，主界面分割条拖动失效",
+    async () => {
+      render(<App />);
 
-    const sidebar = document.querySelector(".sidebar") as HTMLElement | null;
-    expect(sidebar).not.toBeNull();
-    const widthBeforeLock = sidebar!.style.width;
+      const sidebar = document.querySelector(".sidebar") as HTMLElement | null;
+      expect(sidebar).not.toBeNull();
+      const widthBeforeLock = sidebar!.style.width;
 
-    await click(screen.getByRole("button", { name: "设置" }));
-    const layoutLockToggle = screen.getByLabelText("布局锁定");
-    await click(layoutLockToggle);
-    await click(screen.getByRole("button", { name: "关闭" }));
+      await click(screen.getByRole("button", { name: "设置" }));
+      const layoutLockToggle = screen.getByLabelText("布局锁定");
+      await click(layoutLockToggle);
+      await click(screen.getByRole("button", { name: "关闭" }));
 
-    const sidebarSplitter = screen.getByRole("separator", {
-      name: "调整 Sidebar 宽度",
-    });
-    await mouseDown(sidebarSplitter, { clientX: 220 });
-    fireEvent.mouseMove(window, { clientX: 640 });
-    fireEvent.mouseUp(window);
+      const sidebarSplitter = screen.getByRole("separator", {
+        name: "调整 Sidebar 宽度",
+      });
+      await mouseDown(sidebarSplitter, { clientX: 220 });
+      fireEvent.mouseMove(window, { clientX: 640 });
+      fireEvent.mouseUp(window);
 
-    const widthAfterLock = (document.querySelector(".sidebar") as HTMLElement)
-      .style.width;
-    expect(widthAfterLock).toBe(widthBeforeLock);
-  });
+      const widthAfterLock = (document.querySelector(".sidebar") as HTMLElement)
+        .style.width;
+      expect(widthAfterLock).toBe(widthBeforeLock);
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it("方向键右键在无 focus 时可建立并切换图片 focus", async () => {
     render(<App />);

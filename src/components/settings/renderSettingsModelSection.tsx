@@ -13,6 +13,7 @@ export function renderSettingsModelSection({
   subtitleAdvancedVadMinSpeechSec,
   subtitleAdvancedVadMaxSpeechSec,
   subtitleAdvancedSpeakerThreshold,
+  subtitleValidPlaybackRateThreshold,
   subtitleLanguage,
   subtitleModelDir,
   subtitleTextFillMode,
@@ -52,6 +53,7 @@ export function renderSettingsModelSection({
   onSubtitleAdvancedVadMinSpeechSecChange,
   onSubtitleAdvancedVadMaxSpeechSecChange,
   onSubtitleAdvancedSpeakerThresholdChange,
+  onSubtitleValidPlaybackRateThresholdChange,
   onSubtitleLanguageChange,
   onSubtitleModelDirPick,
   onSubtitleTextFillModeChange,
@@ -90,6 +92,7 @@ export function renderSettingsModelSection({
   | "subtitleAdvancedVadMinSpeechSec"
   | "subtitleAdvancedVadMaxSpeechSec"
   | "subtitleAdvancedSpeakerThreshold"
+  | "subtitleValidPlaybackRateThreshold"
   | "subtitleLanguage"
   | "subtitleModelDir"
   | "subtitleTextFillMode"
@@ -129,6 +132,7 @@ export function renderSettingsModelSection({
   | "onSubtitleAdvancedVadMinSpeechSecChange"
   | "onSubtitleAdvancedVadMaxSpeechSecChange"
   | "onSubtitleAdvancedSpeakerThresholdChange"
+  | "onSubtitleValidPlaybackRateThresholdChange"
   | "onSubtitleLanguageChange"
   | "onSubtitleModelDirPick"
   | "onSubtitleTextFillModeChange"
@@ -165,7 +169,9 @@ export function renderSettingsModelSection({
           <button
             type="button"
             className={`settings-debug-toggle-btn ${subtitleFeatureEnabled ? "is-on" : ""}`}
-            onClick={() => onSubtitleFeatureEnabledChange(!subtitleFeatureEnabled)}
+            onClick={() =>
+              onSubtitleFeatureEnabledChange(!subtitleFeatureEnabled)
+            }
           >
             {`${t("ui.settings.offlineSubtitleEnabled")} · ${subtitleFeatureEnabled ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
           </button>
@@ -173,8 +179,9 @@ export function renderSettingsModelSection({
             type="button"
             className={`settings-debug-toggle-btn ${subtitleRenderMode === "advanced" ? "is-on" : ""}`}
             onClick={() => {
-              const newMode = subtitleRenderMode === "simple" ? "advanced" : "simple"
-              onSubtitleRenderModeChange(newMode)
+              const newMode =
+                subtitleRenderMode === "simple" ? "advanced" : "simple";
+              onSubtitleRenderModeChange(newMode);
             }}
           >
             {`${t("ui.settings.offlineSubtitleRenderMode")} · ${subtitleRenderMode === "simple" ? t("ui.settings.offlineSubtitleRenderModeSimple") : t("ui.settings.offlineSubtitleRenderModeAdvanced")}`}
@@ -296,6 +303,24 @@ export function renderSettingsModelSection({
                 />
                 <span className="settings-placeholder">
                   {subtitleAdvancedSpeakerThreshold.toFixed(2)}
+                </span>
+              </label>
+              <label>
+                {t("ui.settings.offlineSubtitleValidPlaybackRateThreshold")}
+                <input
+                  type="range"
+                  min={0.1}
+                  max={3}
+                  step={0.05}
+                  value={subtitleValidPlaybackRateThreshold}
+                  onChange={(event) =>
+                    onSubtitleValidPlaybackRateThresholdChange(
+                      Number(event.target.value),
+                    )
+                  }
+                />
+                <span className="settings-placeholder">
+                  {subtitleValidPlaybackRateThreshold.toFixed(2)}x
                 </span>
               </label>
             </div>

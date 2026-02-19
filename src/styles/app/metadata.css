@@ -41,7 +41,8 @@
 }
 
 .metadata-panel {
-  border-left: var(--mpx-metadata-border-width) var(--mpx-metadata-border-style) var(--mpx-metadata-border-color, var(--mpx-border-1));
+  border-left: var(--mpx-metadata-border-width) var(--mpx-metadata-border-style)
+    var(--mpx-metadata-border-color, var(--mpx-border-1));
   background: var(--mpx-metadata-bg);
   padding: var(--mpx-metadata-padding);
   min-width: 180px;
@@ -57,17 +58,41 @@
   -ms-overflow-style: none;
 }
 
-.metadata-panel :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
+.metadata-panel
+  :where(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea
+  ) {
   box-shadow: var(--mpx-metadata-control-shadow, var(--mpx-control-shadow));
   border-color: var(--mpx-metadata-control-border-color, var(--mpx-border-2));
 }
 
-.metadata-panel :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea):hover {
-  box-shadow: var(--mpx-metadata-control-hover-shadow, var(--mpx-control-hover-shadow));
+.metadata-panel
+  :where(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea
+  ):hover {
+  box-shadow: var(
+    --mpx-metadata-control-hover-shadow,
+    var(--mpx-control-hover-shadow)
+  );
 }
 
-.metadata-panel :where(button, input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea):active {
-  box-shadow: var(--mpx-metadata-control-active-shadow, var(--mpx-control-active-shadow));
+.metadata-panel
+  :where(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea
+  ):active {
+  box-shadow: var(
+    --mpx-metadata-control-active-shadow,
+    var(--mpx-control-active-shadow)
+  );
 }
 
 .metadata-panel::-webkit-scrollbar {
@@ -89,7 +114,8 @@
   height: var(--mpx-panel-head-height);
   min-height: var(--mpx-panel-head-height);
   flex-shrink: 0;
-  margin: calc(-1 * var(--mpx-metadata-padding)) calc(-1 * var(--mpx-metadata-padding)) 0;
+  margin: calc(-1 * var(--mpx-metadata-padding))
+    calc(-1 * var(--mpx-metadata-padding)) 0;
   padding: 0 var(--mpx-metadata-padding);
   background: transparent;
   border-bottom: 1px solid var(--mpx-metadata-border-color, var(--mpx-border-1));
@@ -328,7 +354,8 @@
 .metadata-edit-grid textarea {
   min-height: 96px;
   resize: vertical;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 .metadata-edit-grid input[readonly] {
@@ -417,8 +444,10 @@
   overflow: hidden;
   color: var(--mpx-text-inverse);
   font-weight: 700;
-  text-shadow: 0 1px 2px color-mix(in srgb, var(--mpx-bg-tooltip) 42%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mpx-text-inverse) 28%, transparent);
+  text-shadow: 0 1px 2px
+    color-mix(in srgb, var(--mpx-bg-tooltip) 42%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--mpx-text-inverse) 28%, transparent);
 }
 
 .metadata-image-real {
@@ -446,6 +475,8 @@
 
 .meta-tabs {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
 }
@@ -458,6 +489,45 @@
   color: var(--mpx-btn-secondary-text);
   font-weight: var(--mpx-control-font-weight);
   padding: 0 var(--mpx-control-padding-x);
+}
+
+.metadata-playlist-save-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.metadata-playlist-save-row select {
+  min-width: 0;
+  flex: 1;
+}
+
+.metadata-playlist-save-dialog {
+  border: 1px solid var(--mpx-border-1);
+  border-radius: 10px;
+  background: var(--mpx-bg-elevated);
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.metadata-playlist-save-dialog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metadata-playlist-save-dialog-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metadata-playlist-save-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .metadata-video-content {

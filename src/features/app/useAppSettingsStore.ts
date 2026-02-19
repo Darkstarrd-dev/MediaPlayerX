@@ -72,6 +72,8 @@ export function useAppSettingsStore() {
       subtitleAdvancedVadMinSpeechSec: state.subtitleAdvancedVadMinSpeechSec,
       subtitleAdvancedVadMaxSpeechSec: state.subtitleAdvancedVadMaxSpeechSec,
       subtitleAdvancedSpeakerThreshold: state.subtitleAdvancedSpeakerThreshold,
+      subtitleValidPlaybackRateThreshold:
+        state.subtitleValidPlaybackRateThreshold,
       subtitleAcceleration: state.subtitleAcceleration,
       subtitleLanguage: state.subtitleLanguage,
       subtitleModelDir: state.subtitleModelDir,
@@ -91,6 +93,7 @@ export function useAppSettingsStore() {
       subtitleSelectionByVideoId: state.subtitleSelectionByVideoId,
       subtitleOffsetY: state.subtitleOffsetY,
       subtitleStylePanelExpanded: state.subtitleStylePanelExpanded,
+      videoSavedPlaylists: state.videoSavedPlaylists,
       adReviewVisionEndpoint: state.adReviewVisionEndpoint,
       adReviewVisionModel: state.adReviewVisionModel,
       adReviewVisionVerified: state.adReviewVisionVerified,

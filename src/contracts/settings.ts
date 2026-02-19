@@ -31,11 +31,7 @@ export const musicVisualizerCompositionModeSchema = z.enum([
 ]);
 export const paletteModeSchema = z.enum(["day", "night"]);
 export const uiLocaleSchema = z.enum(["auto", "zh-CN", "en-US"]);
-export const subtitleAccelerationSchema = z.enum([
-  "auto",
-  "cpu",
-  "directml",
-]);
+export const subtitleAccelerationSchema = z.enum(["auto", "cpu", "directml"]);
 export const subtitleLanguageSchema = z.enum([
   "auto",
   "zh",
@@ -153,12 +149,14 @@ export const appSettingsSchema = z.object({
   ehentaiCookies: z.string().max(4096),
   subtitleFeatureEnabled: z.boolean(),
   subtitleRenderMode: subtitleRenderModeSchema.default("advanced"),
-  subtitleAdvancedVadPreset: subtitleAdvancedVadPresetSchema.default("balanced"),
+  subtitleAdvancedVadPreset:
+    subtitleAdvancedVadPresetSchema.default("balanced"),
   subtitleAdvancedVadThreshold: z.number().min(0.1).max(0.9).default(0.42),
   subtitleAdvancedVadMinSilenceSec: z.number().min(0.1).max(1.2).default(0.14),
   subtitleAdvancedVadMinSpeechSec: z.number().min(0.05).max(1).default(0.18),
   subtitleAdvancedVadMaxSpeechSec: z.number().min(3).max(30).default(3),
   subtitleAdvancedSpeakerThreshold: z.number().min(0.45).max(0.85).default(0.5),
+  subtitleValidPlaybackRateThreshold: z.number().min(0.1).max(10).default(1),
   subtitleAcceleration: subtitleAccelerationSchema,
   subtitleLanguage: subtitleLanguageSchema,
   subtitleModelDir: z.string().max(1024),
@@ -175,9 +173,16 @@ export const appSettingsSchema = z.object({
   subtitleStrokeShadowRadius: z.number().min(0).max(24),
   subtitleFontSize: z.number().min(14).max(72),
   subtitleMaxLineChars: z.number().int().min(8).max(80),
-  subtitleSelectionByVideoId: z.record(z.string().min(1), z.string().min(1).max(512)),
+  subtitleSelectionByVideoId: z.record(
+    z.string().min(1),
+    z.string().min(1).max(512),
+  ),
   subtitleOffsetY: z.number().min(-400).max(400),
   subtitleStylePanelExpanded: z.boolean(),
+  videoSavedPlaylists: z.record(
+    z.string().min(1).max(64),
+    z.array(z.string().min(1)).max(2000),
+  ),
   adReviewVisionEndpoint: z.string().max(512),
   adReviewVisionModel: z.string().max(256),
   adReviewVisionVerified: z.boolean(),

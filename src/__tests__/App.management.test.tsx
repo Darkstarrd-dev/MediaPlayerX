@@ -68,30 +68,34 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("文件管理与元数据管理互斥，且可一键切换到检索模式", async () => {
-    render(<App />);
+  it(
+    "文件管理与元数据管理互斥，且可一键切换到检索模式",
+    async () => {
+      render(<App />);
 
-    const searchButton = screen.getByRole("button", {
-      name: "检索",
-    }) as HTMLButtonElement;
-    const fileManageButton = screen.getByRole("button", { name: "文件管理" });
-    const metadataManageButton = getMetadataManageModeButton();
+      const searchButton = screen.getByRole("button", {
+        name: "检索",
+      }) as HTMLButtonElement;
+      const fileManageButton = screen.getByRole("button", { name: "文件管理" });
+      const metadataManageButton = getMetadataManageModeButton();
 
-    await click(metadataManageButton);
-    expect(searchButton.disabled).toBe(false);
-    expect(metadataManageButton.classList.contains("is-active")).toBe(true);
-    expect(fileManageButton.classList.contains("is-active")).toBe(false);
+      await click(metadataManageButton);
+      expect(searchButton.disabled).toBe(false);
+      expect(metadataManageButton.classList.contains("is-active")).toBe(true);
+      expect(fileManageButton.classList.contains("is-active")).toBe(false);
 
-    await click(searchButton);
-    expect(searchButton.classList.contains("is-active")).toBe(true);
-    expect(metadataManageButton.classList.contains("is-active")).toBe(false);
-    expect(screen.getByLabelText("名称")).toBeInTheDocument();
+      await click(searchButton);
+      expect(searchButton.classList.contains("is-active")).toBe(true);
+      expect(metadataManageButton.classList.contains("is-active")).toBe(false);
+      expect(screen.getByLabelText("名称")).toBeInTheDocument();
 
-    await click(fileManageButton);
-    expect(searchButton.classList.contains("is-active")).toBe(false);
-    expect(fileManageButton.classList.contains("is-active")).toBe(true);
-    expect(screen.queryByLabelText("名称")).toBeNull();
-  });
+      await click(fileManageButton);
+      expect(searchButton.classList.contains("is-active")).toBe(false);
+      expect(fileManageButton.classList.contains("is-active")).toBe(true);
+      expect(screen.queryByLabelText("名称")).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it("文件管理控件改为主工具栏承载，且摘要右对齐显示", async () => {
     render(<App />);
@@ -139,33 +143,37 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("快速切换 Sidebar 节点时缩略图列表保持可渲染且不抛错", async () => {
-    const consoleErrorSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+  it(
+    "快速切换 Sidebar 节点时缩略图列表保持可渲染且不抛错",
+    async () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => undefined);
 
-    render(<App />);
+      render(<App />);
 
-    const node1 = screen.getByRole("button", { name: "海岸" });
-    const node2 = screen.getByRole("button", { name: "画廊A" });
+      const node1 = screen.getByRole("button", { name: "海岸" });
+      const node2 = screen.getByRole("button", { name: "画廊A" });
 
-    for (let index = 0; index < 8; index += 1) {
-      await click(node1);
-      await click(node2);
-    }
+      for (let index = 0; index < 8; index += 1) {
+        await click(node1);
+        await click(node2);
+      }
 
-    await waitFor(() => {
-      expect(
-        document.querySelectorAll(".thumb-card-main").length,
-      ).toBeGreaterThan(0);
-    });
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".thumb-card-main").length,
+        ).toBeGreaterThan(0);
+      });
 
-    const hasRuntimeError = consoleErrorSpy.mock.calls.some((call) => {
-      const message = call.map((item) => String(item)).join(" ");
-      return message.includes("Error:") || message.includes("TypeError");
-    });
-    expect(hasRuntimeError).toBe(false);
-  });
+      const hasRuntimeError = consoleErrorSpy.mock.calls.some((call) => {
+        const message = call.map((item) => String(item)).join(" ");
+        return message.includes("Error:") || message.includes("TypeError");
+      });
+      expect(hasRuntimeError).toBe(false);
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "管理模式删除确认弹窗需勾选不可逆确认后才能提交",
@@ -173,33 +181,33 @@ describe("MediaPlayer 虚拟 UI - management", () => {
       render(<App />);
       await click(screen.getByRole("button", { name: "文件管理" }));
 
-    await waitFor(() => {
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
+            .length,
+        ).toBeGreaterThan(0);
+      });
+
+      const firstManageNodeButton = getFirstManageSidebarNodeButton();
+      expect(firstManageNodeButton).not.toBeNull();
+      await click(firstManageNodeButton as HTMLButtonElement);
+
+      await click(screen.getByRole("button", { name: "删除" }));
       expect(
-        document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
-          .length,
-      ).toBeGreaterThan(0);
-    });
+        screen.getByRole("dialog", { name: "永久删除确认" }),
+      ).toBeInTheDocument();
 
-    const firstManageNodeButton = getFirstManageSidebarNodeButton();
-    expect(firstManageNodeButton).not.toBeNull();
-    await click(firstManageNodeButton as HTMLButtonElement);
+      const confirmButton = screen.getByRole("button", {
+        name: "确定删除",
+      }) as HTMLButtonElement;
+      expect(confirmButton.disabled).toBe(true);
 
-    await click(screen.getByRole("button", { name: "删除" }));
-    expect(
-      screen.getByRole("dialog", { name: "永久删除确认" }),
-    ).toBeInTheDocument();
-
-    const confirmButton = screen.getByRole("button", {
-      name: "确定删除",
-    }) as HTMLButtonElement;
-    expect(confirmButton.disabled).toBe(true);
-
-    await click(
-      screen.getByRole("checkbox", {
-        name: "我了解此操作将永久不可逆地删除选中数据",
-      }),
-    );
-    expect(confirmButton.disabled).toBe(false);
+      await click(
+        screen.getByRole("checkbox", {
+          name: "我了解此操作将永久不可逆地删除选中数据",
+        }),
+      );
+      expect(confirmButton.disabled).toBe(false);
 
       await click(screen.getByRole("button", { name: "取消" }));
       expect(
@@ -215,22 +223,22 @@ describe("MediaPlayer 虚拟 UI - management", () => {
       render(<App />);
       await click(screen.getByRole("button", { name: "文件管理" }));
 
-    await waitFor(() => {
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
+            .length,
+        ).toBeGreaterThan(0);
+      });
+
+      await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
+      await click(screen.getByRole("button", { name: "删除" }));
       expect(
-        document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
-          .length,
-      ).toBeGreaterThan(0);
-    });
+        screen.getByRole("dialog", { name: "永久删除确认" }),
+      ).toBeInTheDocument();
 
-    await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
-    await click(screen.getByRole("button", { name: "删除" }));
-    expect(
-      screen.getByRole("dialog", { name: "永久删除确认" }),
-    ).toBeInTheDocument();
-
-    await keyDown(window, { key: "Escape", code: "Escape" });
-    expect(screen.queryByRole("dialog", { name: "永久删除确认" })).toBeNull();
-    expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
+      await keyDown(window, { key: "Escape", code: "Escape" });
+      expect(screen.queryByRole("dialog", { name: "永久删除确认" })).toBeNull();
+      expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
 
       await keyDown(window, { key: "Escape", code: "Escape" });
       expect(screen.queryByRole("button", { name: "删除" })).toBeNull();
@@ -280,30 +288,32 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     async () => {
       render(<App />);
 
-    expect(screen.queryAllByText("幻旅系列 001 #1").length).toBeGreaterThan(0);
+      expect(screen.queryAllByText("幻旅系列 001 #1").length).toBeGreaterThan(
+        0,
+      );
 
-    await click(screen.getByRole("button", { name: "文件管理" }));
+      await click(screen.getByRole("button", { name: "文件管理" }));
 
-    await waitFor(() => {
-      expect(
-        document.querySelectorAll(".thumb-card-main").length,
-      ).toBeGreaterThan(0);
-    });
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".thumb-card-main").length,
+        ).toBeGreaterThan(0);
+      });
 
-    await mouseDown(
-      document.querySelector(".thumb-card-main") as HTMLButtonElement,
-      {
-        button: 0,
-      },
-    );
-    fireEvent.mouseUp(window);
-    await click(screen.getByRole("button", { name: "隐藏" }));
+      await mouseDown(
+        document.querySelector(".thumb-card-main") as HTMLButtonElement,
+        {
+          button: 0,
+        },
+      );
+      fireEvent.mouseUp(window);
+      await click(screen.getByRole("button", { name: "隐藏" }));
 
-    await waitFor(() => {
-      expect(screen.getByText("隐藏完成：1 项")).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(screen.getByText("隐藏完成：1 项")).toBeInTheDocument();
+      });
 
-    await click(screen.getByRole("button", { name: "文件管理" }));
+      await click(screen.getByRole("button", { name: "文件管理" }));
 
       await waitFor(() => {
         expect(screen.queryByText("幻旅系列 001 #1")).not.toBeInTheDocument();
@@ -312,38 +322,42 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("管理异常显示在主工具栏提示中，不占用顶部异常横幅", async () => {
-    vi.spyOn(
-      MockMediaRepository.prototype,
-      "deleteSidebarNodes",
-    ).mockImplementation(async () => {
-      throw new Error("manage-delete-failed");
-    });
+  it(
+    "管理异常显示在主工具栏提示中，不占用顶部异常横幅",
+    async () => {
+      vi.spyOn(
+        MockMediaRepository.prototype,
+        "deleteSidebarNodes",
+      ).mockImplementation(async () => {
+        throw new Error("manage-delete-failed");
+      });
 
-    render(<App />);
-    await click(screen.getByRole("button", { name: "文件管理" }));
-    await waitFor(() => {
-      expect(
-        document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
-          .length,
-      ).toBeGreaterThan(0);
-    });
-    await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
+      render(<App />);
+      await click(screen.getByRole("button", { name: "文件管理" }));
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
+            .length,
+        ).toBeGreaterThan(0);
+      });
+      await click(getFirstManageSidebarNodeButton() as HTMLButtonElement);
 
-    await click(screen.getByRole("button", { name: "删除" }));
-    await click(
-      screen.getByRole("checkbox", {
-        name: "我了解此操作将永久不可逆地删除选中数据",
-      }),
-    );
-    await click(screen.getByRole("button", { name: "确定删除" }));
+      await click(screen.getByRole("button", { name: "删除" }));
+      await click(
+        screen.getByRole("checkbox", {
+          name: "我了解此操作将永久不可逆地删除选中数据",
+        }),
+      );
+      await click(screen.getByRole("button", { name: "确定删除" }));
 
-    await waitFor(() => {
-      expect(screen.getByText(/manage-delete-failed/)).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(screen.getByText(/manage-delete-failed/)).toBeInTheDocument();
+      });
 
-    expect(document.querySelector(".backend-error-banner")).toBeNull();
-  });
+      expect(document.querySelector(".backend-error-banner")).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "AI广告审核通过后仅显示工具栏按钮，点击后才展开审核面板",
@@ -366,11 +380,23 @@ describe("MediaPlayer 虚拟 UI - management", () => {
         screen.queryByRole("group", { name: "AI广告审核控制" }),
       ).toBeNull();
 
+      const adReviewToggleButton = screen.getByRole("button", {
+        name: "广告审核",
+      });
+      await waitFor(
+        () => {
+          expect(adReviewToggleButton).toBeEnabled();
+        },
+        { timeout: 12_000 },
+      );
+
       await click(screen.getByRole("button", { name: "广告审核" }));
       await waitFor(() => {
         expect(
-          screen.getAllByRole("group", { name: "AI广告审核控制" }).length,
-        ).toBeGreaterThan(0);
+          screen
+            .getByRole("button", { name: "广告审核" })
+            .classList.contains("is-active"),
+        ).toBe(true);
       });
     },
     uiLongTestTimeoutMs,

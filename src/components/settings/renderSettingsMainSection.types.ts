@@ -57,6 +57,7 @@ export interface RenderSettingsMainSectionParams {
   subtitleAdvancedVadMinSpeechSec: number;
   subtitleAdvancedVadMaxSpeechSec: number;
   subtitleAdvancedSpeakerThreshold: number;
+  subtitleValidPlaybackRateThreshold: number;
   subtitleLanguage: "auto" | "zh" | "en" | "ja" | "ko" | "yue";
   subtitleModelDir: string;
   subtitleTextFillMode: "solid" | "gradient";
@@ -194,6 +195,7 @@ export interface RenderSettingsMainSectionParams {
   onSubtitleAdvancedVadMinSpeechSecChange: (value: number) => void;
   onSubtitleAdvancedVadMaxSpeechSecChange: (value: number) => void;
   onSubtitleAdvancedSpeakerThresholdChange: (value: number) => void;
+  onSubtitleValidPlaybackRateThresholdChange: (value: number) => void;
   onSubtitleLanguageChange: (
     value: "auto" | "zh" | "en" | "ja" | "ko" | "yue",
   ) => void;

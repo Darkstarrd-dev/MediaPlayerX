@@ -291,6 +291,7 @@ export function buildWorkspaceMetadataPanelProps({
     canOpenMusicBooklet: Boolean(openMusicBookletSourceId),
     metadataTab,
     playlistIds,
+    savedVideoPlaylists: appSettings.videoSavedPlaylists,
     selectedVideoId,
     dragVideoId,
     videoById: videoByIdEffective,

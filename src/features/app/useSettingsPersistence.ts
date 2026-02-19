@@ -283,7 +283,10 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     next.subtitleGradientCurve === "smoother"
       ? next.subtitleGradientCurve
       : "smooth";
-  next.subtitleStrokeColor = normalizeHexColor(next.subtitleStrokeColor, "#000000");
+  next.subtitleStrokeColor = normalizeHexColor(
+    next.subtitleStrokeColor,
+    "#000000",
+  );
   next.subtitleStrokeWidth = normalizeNumberInRange(
     next.subtitleStrokeWidth,
     2,
@@ -300,7 +303,12 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     0,
     24,
   );
-  next.subtitleFontSize = normalizeNumberInRange(next.subtitleFontSize, 24, 14, 72);
+  next.subtitleFontSize = normalizeNumberInRange(
+    next.subtitleFontSize,
+    24,
+    14,
+    72,
+  );
   next.subtitleMaxLineChars = Math.round(
     normalizeNumberInRange(next.subtitleMaxLineChars, 28, 8, 80),
   );
@@ -326,15 +334,55 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.subtitleSelectionByVideoId;
   }
   if (typeof next.subtitleCleanupLlmPrompt === "string") {
-    next.subtitleCleanupLlmPrompt = next.subtitleCleanupLlmPrompt.slice(0, 12000);
+    next.subtitleCleanupLlmPrompt = next.subtitleCleanupLlmPrompt.slice(
+      0,
+      12000,
+    );
   } else if ("subtitleCleanupLlmPrompt" in next) {
     delete next.subtitleCleanupLlmPrompt;
   }
-  next.subtitleOffsetY = normalizeNumberInRange(next.subtitleOffsetY, 180, -400, 400);
+  next.subtitleOffsetY = normalizeNumberInRange(
+    next.subtitleOffsetY,
+    180,
+    -400,
+    400,
+  );
+  next.subtitleValidPlaybackRateThreshold = normalizeNumberInRange(
+    next.subtitleValidPlaybackRateThreshold,
+    1,
+    0.1,
+    10,
+  );
   next.subtitleStylePanelExpanded =
     typeof next.subtitleStylePanelExpanded === "boolean"
       ? next.subtitleStylePanelExpanded
       : false;
+  if (
+    next.videoSavedPlaylists &&
+    typeof next.videoSavedPlaylists === "object" &&
+    !Array.isArray(next.videoSavedPlaylists)
+  ) {
+    const normalizedSavedPlaylists: AppSettings["videoSavedPlaylists"] = {};
+    for (const [rawName, rawIds] of Object.entries(
+      next.videoSavedPlaylists as Record<string, unknown>,
+    )) {
+      const name = rawName.trim().slice(0, 64);
+      if (!name || !Array.isArray(rawIds)) {
+        continue;
+      }
+      const ids = Array.from(
+        new Set(
+          rawIds
+            .map((id) => (typeof id === "string" ? id.trim() : ""))
+            .filter(Boolean),
+        ),
+      ).slice(0, 2000);
+      normalizedSavedPlaylists[name] = ids;
+    }
+    next.videoSavedPlaylists = normalizedSavedPlaylists;
+  } else {
+    next.videoSavedPlaylists = {};
+  }
 
   const normalizeCollapsedFolderNodeIds = (raw: unknown): string[] | null => {
     if (!Array.isArray(raw)) {

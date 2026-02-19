@@ -1,102 +1,107 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from "vitest";
 
-import type { AudioItem, ImageItem, ImagePackage, VideoItem } from '../../types'
-import { buildMetadataPanelProps } from './buildMetadataPanelProps'
+import type {
+  AudioItem,
+  ImageItem,
+  ImagePackage,
+  VideoItem,
+} from "../../types";
+import { buildMetadataPanelProps } from "./buildMetadataPanelProps";
 
 const IMAGE_FIXTURE: ImageItem = {
-  id: 'img-1',
+  id: "img-1",
   ordinal: 1,
   width: 1920,
   height: 1080,
   sizeKb: 256,
   cluster: 0,
-  color: '#335577',
+  color: "#335577",
   mediaLocator: {
-    kind: 'filesystem',
-    absolutePath: 'D:/img-1.jpg',
-    extension: '.jpg',
-    mediaType: 'image',
-    mimeType: 'image/jpeg',
+    kind: "filesystem",
+    absolutePath: "D:/img-1.jpg",
+    extension: ".jpg",
+    mediaType: "image",
+    mimeType: "image/jpeg",
   },
-}
+};
 
 const PACKAGE_FIXTURE: ImagePackage = {
-  id: 'pkg-1',
-  packageName: 'pkg-1.zip',
-  displayName: 'pkg-1',
-  absolutePath: 'D:/pkg-1.zip',
-  treePath: ['pkg-1.zip'],
-  workTitle: 'pkg-1',
-  circle: '未知',
-  author: '未知',
+  id: "pkg-1",
+  packageName: "pkg-1.zip",
+  displayName: "pkg-1",
+  absolutePath: "D:/pkg-1.zip",
+  treePath: ["pkg-1.zip"],
+  workTitle: "pkg-1",
+  circle: "未知",
+  author: "未知",
   tags: [],
   mockGrade: 3,
   images: [IMAGE_FIXTURE],
-}
+};
 
 const VIDEO_FIXTURE: VideoItem = {
-  id: 'video-a',
-  fileName: 'video-a.mp4',
-  absolutePath: 'D:/video-a.mp4',
-  treePath: ['video-a.mp4'],
+  id: "video-a",
+  fileName: "video-a.mp4",
+  absolutePath: "D:/video-a.mp4",
+  treePath: ["video-a.mp4"],
   durationSec: 10,
   width: 1280,
   height: 720,
   sizeMb: 42,
-  coverColor: 'hsl(210, 44%, 40%)',
+  coverColor: "hsl(210, 44%, 40%)",
   coverImagePath: null,
-  workTitle: 'video-a',
-  circle: '未知',
-  author: '未知',
+  workTitle: "video-a",
+  circle: "未知",
+  author: "未知",
   tags: [],
   grade: null,
   mediaLocator: {
-    kind: 'filesystem',
-    absolutePath: 'D:/video-a.mp4',
-    extension: '.mp4',
-    mediaType: 'video',
-    mimeType: 'video/mp4',
+    kind: "filesystem",
+    absolutePath: "D:/video-a.mp4",
+    extension: ".mp4",
+    mediaType: "video",
+    mimeType: "video/mp4",
   },
-}
+};
 
 const AUDIO_FIXTURE: AudioItem = {
-  id: 'audio-a',
-  fileName: 'audio-a.mp3',
-  absolutePath: 'D:/audio-a.mp3',
-  treePath: ['audio-a.mp3'],
+  id: "audio-a",
+  fileName: "audio-a.mp3",
+  absolutePath: "D:/audio-a.mp3",
+  treePath: ["audio-a.mp3"],
   durationSec: 95,
   sizeMb: 8,
-  album: 'album-a',
-  author: 'author-a',
-  trackTitle: 'track-a',
-  seriesId: 'series-a',
+  album: "album-a",
+  author: "author-a",
+  trackTitle: "track-a",
+  seriesId: "series-a",
   mediaLocator: {
-    kind: 'filesystem',
-    absolutePath: 'D:/audio-a.mp3',
-    extension: '.mp3',
-    mediaType: 'audio',
-    mimeType: 'audio/mpeg',
+    kind: "filesystem",
+    absolutePath: "D:/audio-a.mp3",
+    extension: ".mp3",
+    mediaType: "audio",
+    mimeType: "audio/mpeg",
   },
-}
+};
 
-describe('buildMetadataPanelProps', () => {
-  it('折叠展开与移除播放列表操作会正确透传到 setter', () => {
-    const updateSettings = vi.fn()
-    const setPlaylistIds = vi.fn()
-    const setDragVideoId = vi.fn()
+describe("buildMetadataPanelProps", () => {
+  it("折叠展开与移除播放列表操作会正确透传到 setter", () => {
+    const updateSettings = vi.fn();
+    const setPlaylistIds = vi.fn();
+    const setDragVideoId = vi.fn();
 
     const props = buildMetadataPanelProps({
-      mode: 'image',
+      mode: "image",
       manageMode: false,
       searchModeActive: false,
       featureResultCount: 0,
-      featureNameQuery: '',
+      featureNameQuery: "",
       onFeatureNameQueryChange: vi.fn(),
-      featureWorkTitleQuery: '',
+      featureWorkTitleQuery: "",
       onFeatureWorkTitleQueryChange: vi.fn(),
-      featureCircleQuery: '',
+      featureCircleQuery: "",
       onFeatureCircleQueryChange: vi.fn(),
-      featureAuthorQuery: '',
+      featureAuthorQuery: "",
       onFeatureAuthorQueryChange: vi.fn(),
       featureCircleOptions: [],
       featureAuthorOptions: [],
@@ -119,7 +124,7 @@ describe('buildMetadataPanelProps', () => {
       hasCheckedAdReviewCandidates: false,
       selectedAdReviewCandidateCount: 0,
       adReviewFocusTaskId: null,
-      adReviewStrategyMode: 'all',
+      adReviewStrategyMode: "all",
       adReviewMaxConcurrency: 4,
       adReviewHeadN: 8,
       adReviewTailN: 8,
@@ -140,7 +145,7 @@ describe('buildMetadataPanelProps', () => {
       metadataRatio: 0.28,
       hasImageFocus: true,
       focusedImage: IMAGE_FIXTURE,
-      focusedImageSrc: 'about:blank#image',
+      focusedImageSrc: "about:blank#image",
       focusedImagePackage: PACKAGE_FIXTURE,
       currentGrade: 3,
       currentVideoGrade: null,
@@ -148,24 +153,33 @@ describe('buildMetadataPanelProps', () => {
       editable: false,
       focusedVideo: VIDEO_FIXTURE,
       focusedAudio: AUDIO_FIXTURE,
-      audioPlaylistIds: ['audio-a'],
-      selectedAudioId: 'audio-a',
-      audioById: new Map([['audio-a', AUDIO_FIXTURE]]),
-      musicBookletAlbumRootPath: 'D:/album-a',
+      audioPlaylistIds: ["audio-a"],
+      selectedAudioId: "audio-a",
+      audioById: new Map([["audio-a", AUDIO_FIXTURE]]),
+      musicBookletAlbumRootPath: "D:/album-a",
       musicBookletCandidates: [
-        { sourceId: 'cover-source', label: 'cover', imageCount: 1 },
+        { sourceId: "cover-source", label: "cover", imageCount: 1 },
       ],
-      musicCoverBindingValue: '__auto__',
-      musicBookletBindingValue: '__auto__',
+      musicCoverBindingValue: "__auto__",
+      musicBookletBindingValue: "__auto__",
       canOpenMusicCover: false,
       canOpenMusicBooklet: false,
-      metadataTab: 'playlist',
-      playlistIds: ['video-a', 'video-b'],
-      selectedVideoId: 'video-a',
+      metadataTab: "playlist",
+      playlistIds: ["video-a", "video-b"],
+      savedVideoPlaylists: { A: ["video-a", "video-b"] },
+      selectedVideoId: "video-a",
       dragVideoId: null,
       videoById: new Map([
-        ['video-a', VIDEO_FIXTURE],
-        ['video-b', { ...VIDEO_FIXTURE, id: 'video-b', fileName: 'video-b.mp4', workTitle: 'video-b' }],
+        ["video-a", VIDEO_FIXTURE],
+        [
+          "video-b",
+          {
+            ...VIDEO_FIXTURE,
+            id: "video-b",
+            fileName: "video-b.mp4",
+            workTitle: "video-b",
+          },
+        ],
       ]),
       updateSettings,
       onGradeChange: vi.fn(),
@@ -188,36 +202,57 @@ describe('buildMetadataPanelProps', () => {
       onResetMusicBookletBinding: vi.fn(),
       setPlaylistIds,
       setDragVideoId,
-    })
+    });
 
-    props.onCollapse()
-    props.onExpand()
-    expect(updateSettings).toHaveBeenNthCalledWith(1, { metadataCollapsed: true })
-    expect(updateSettings).toHaveBeenNthCalledWith(2, { metadataCollapsed: false })
+    props.onCollapse();
+    props.onExpand();
+    expect(updateSettings).toHaveBeenNthCalledWith(1, {
+      metadataCollapsed: true,
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(2, {
+      metadataCollapsed: false,
+    });
 
-    props.onRemoveVideoFromPlaylist('video-b')
-    const removeUpdater = setPlaylistIds.mock.calls[0]?.[0] as ((value: string[]) => string[]) | undefined
-    expect(removeUpdater?.(['video-a', 'video-b'])).toEqual(['video-a'])
+    props.onRemoveVideoFromPlaylist("video-b");
+    const removeUpdater = setPlaylistIds.mock.calls[0]?.[0] as
+      | ((value: string[]) => string[])
+      | undefined;
+    expect(removeUpdater?.(["video-a", "video-b"])).toEqual(["video-a"]);
 
-    props.onDragStart('video-a')
-    expect(setDragVideoId).toHaveBeenCalledWith('video-a')
-  })
+    props.onDragStart("video-a");
+    expect(setDragVideoId).toHaveBeenCalledWith("video-a");
 
-  it('拖拽 drop 到目标视频时会重排播放列表，非法场景保持不变', () => {
-    const setPlaylistIds = vi.fn()
+    props.onCreateNamedPlaylist("new-list");
+    expect(updateSettings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        videoSavedPlaylists: expect.objectContaining({
+          "new-list": [],
+        }),
+      }),
+    );
+    expect(setPlaylistIds).toHaveBeenCalledWith([]);
+    expect(setDragVideoId).toHaveBeenCalledWith(null);
+
+    props.onDeleteSavedPlaylist("A");
+    expect(setPlaylistIds).toHaveBeenCalledWith([]);
+    expect(setDragVideoId).toHaveBeenCalledWith(null);
+  });
+
+  it("拖拽 drop 到目标视频时会重排播放列表，非法场景保持不变", () => {
+    const setPlaylistIds = vi.fn();
 
     const props = buildMetadataPanelProps({
-      mode: 'video',
+      mode: "video",
       manageMode: true,
       searchModeActive: true,
       featureResultCount: 3,
-      featureNameQuery: '',
+      featureNameQuery: "",
       onFeatureNameQueryChange: vi.fn(),
-      featureWorkTitleQuery: '',
+      featureWorkTitleQuery: "",
       onFeatureWorkTitleQueryChange: vi.fn(),
-      featureCircleQuery: '',
+      featureCircleQuery: "",
       onFeatureCircleQueryChange: vi.fn(),
-      featureAuthorQuery: '',
+      featureAuthorQuery: "",
       onFeatureAuthorQueryChange: vi.fn(),
       featureCircleOptions: [],
       featureAuthorOptions: [],
@@ -240,7 +275,7 @@ describe('buildMetadataPanelProps', () => {
       hasCheckedAdReviewCandidates: false,
       selectedAdReviewCandidateCount: 0,
       adReviewFocusTaskId: null,
-      adReviewStrategyMode: 'all',
+      adReviewStrategyMode: "all",
       adReviewMaxConcurrency: 4,
       adReviewHeadN: 8,
       adReviewTailN: 8,
@@ -269,25 +304,42 @@ describe('buildMetadataPanelProps', () => {
       editable: false,
       focusedVideo: VIDEO_FIXTURE,
       focusedAudio: AUDIO_FIXTURE,
-      audioPlaylistIds: ['audio-a'],
-      selectedAudioId: 'audio-a',
-      audioById: new Map([['audio-a', AUDIO_FIXTURE]]),
-      musicBookletAlbumRootPath: 'D:/album-a',
+      audioPlaylistIds: ["audio-a"],
+      selectedAudioId: "audio-a",
+      audioById: new Map([["audio-a", AUDIO_FIXTURE]]),
+      musicBookletAlbumRootPath: "D:/album-a",
       musicBookletCandidates: [
-        { sourceId: 'cover-source', label: 'cover', imageCount: 1 },
+        { sourceId: "cover-source", label: "cover", imageCount: 1 },
       ],
-      musicCoverBindingValue: '__auto__',
-      musicBookletBindingValue: '__auto__',
+      musicCoverBindingValue: "__auto__",
+      musicBookletBindingValue: "__auto__",
       canOpenMusicCover: false,
       canOpenMusicBooklet: false,
-      metadataTab: 'playlist',
-      playlistIds: ['video-a', 'video-b', 'video-c'],
-      selectedVideoId: 'video-a',
-      dragVideoId: 'video-b',
+      metadataTab: "playlist",
+      playlistIds: ["video-a", "video-b", "video-c"],
+      savedVideoPlaylists: {},
+      selectedVideoId: "video-a",
+      dragVideoId: "video-b",
       videoById: new Map([
-        ['video-a', VIDEO_FIXTURE],
-        ['video-b', { ...VIDEO_FIXTURE, id: 'video-b', fileName: 'video-b.mp4', workTitle: 'video-b' }],
-        ['video-c', { ...VIDEO_FIXTURE, id: 'video-c', fileName: 'video-c.mp4', workTitle: 'video-c' }],
+        ["video-a", VIDEO_FIXTURE],
+        [
+          "video-b",
+          {
+            ...VIDEO_FIXTURE,
+            id: "video-b",
+            fileName: "video-b.mp4",
+            workTitle: "video-b",
+          },
+        ],
+        [
+          "video-c",
+          {
+            ...VIDEO_FIXTURE,
+            id: "video-c",
+            fileName: "video-c.mp4",
+            workTitle: "video-c",
+          },
+        ],
       ]),
       updateSettings: vi.fn(),
       onGradeChange: vi.fn(),
@@ -310,13 +362,19 @@ describe('buildMetadataPanelProps', () => {
       onResetMusicBookletBinding: vi.fn(),
       setPlaylistIds,
       setDragVideoId: vi.fn(),
-    })
+    });
 
-    props.onDropToVideo('video-a')
-    const reorderUpdater = setPlaylistIds.mock.calls[0]?.[0] as ((value: string[]) => string[]) | undefined
-    expect(reorderUpdater?.(['video-a', 'video-b', 'video-c'])).toEqual(['video-b', 'video-a', 'video-c'])
+    props.onDropToVideo("video-a");
+    const reorderUpdater = setPlaylistIds.mock.calls[0]?.[0] as
+      | ((value: string[]) => string[])
+      | undefined;
+    expect(reorderUpdater?.(["video-a", "video-b", "video-c"])).toEqual([
+      "video-b",
+      "video-a",
+      "video-c",
+    ]);
 
-    props.onDropToVideo('video-b')
-    expect(setPlaylistIds).toHaveBeenCalledTimes(1)
-  })
-})
+    props.onDropToVideo("video-b");
+    expect(setPlaylistIds).toHaveBeenCalledTimes(1);
+  });
+});

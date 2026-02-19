@@ -1,113 +1,119 @@
-import type { AppSettings } from '../../contracts/settings'
-import type { SettingsPanelProps } from '../../components/SettingsPanel'
-import { resolvePalettePairForStyle, resolveStyleId } from '../theme/themeRegistry'
+import type { AppSettings } from "../../contracts/settings";
+import type { SettingsPanelProps } from "../../components/SettingsPanel";
+import {
+  resolvePalettePairForStyle,
+  resolveStyleId,
+} from "../theme/themeRegistry";
 
 interface BuildSettingsPanelPropsParams {
-  settingsOpen: boolean
-  uiLocale: AppSettings['uiLocale']
-  styleId: string
-  paletteId: string
-  paletteMode: AppSettings['paletteMode']
-  paletteDayId: string
-  paletteNightId: string
-  headerHeight: number
-  settingsBackdropOpacity: number
-  settingsFontSize: number
-  sidebarRatio: number
-  sidebarMinWidth: number
-  layoutLocked: boolean
-  electronNativeChromeEnabled: boolean
-  themeParameterButtonVisible: boolean
-  sidebarFontSize: number
-  sidebarCountFontSize: number
-  sidebarIndentStep: number
-  sidebarVerticalGap: number
-  metadataRatio: number
-  workspaceBottomPanelHeight: number
-  fullscreenVideoControlsMaxWidth: number
-  mediaPreloadMemoryBudgetMb: number
-  thumbnailGap: number
-  thumbnailQuality: number
-  thumbnailWidth: number
-  thumbnailGenerationConcurrency: number
-  thumbnailResolveConcurrency: number
-  proxyServer: string
-  ehentaiCookies: string
-  subtitleFeatureEnabled: boolean
-  subtitleRenderMode: 'simple' | 'advanced'
-  subtitleAdvancedVadPreset: 'balanced' | 'conservative' | 'aggressive'
-  subtitleAdvancedVadThreshold: number
-  subtitleAdvancedVadMinSilenceSec: number
-  subtitleAdvancedVadMinSpeechSec: number
-  subtitleAdvancedVadMaxSpeechSec: number
-  subtitleAdvancedSpeakerThreshold: number
-  subtitleLanguage: AppSettings['subtitleLanguage']
-  subtitleModelDir: string
-  subtitleTextFillMode: AppSettings['subtitleTextFillMode']
-  subtitleTextColor: string
-  subtitleGradientStartColor: string
-  subtitleGradientEndColor: string
-  subtitleGradientDirection: AppSettings['subtitleGradientDirection']
-  subtitleGradientCurve: AppSettings['subtitleGradientCurve']
-  subtitleStrokeColor: string
-  subtitleStrokeWidth: number
-  subtitleStrokeShadowColor: string
-  subtitleStrokeShadowRadius: number
-  subtitleFontSize: number
-  subtitleMaxLineChars: number
-  subtitleOffsetY: number
-  subtitleStylePanelExpanded: boolean
-  subtitleModelsLoading: boolean
-  subtitleModelsError: string | null
-  subtitleModelsStatus: string | null
-  subtitleRemoteModels: SettingsPanelProps['subtitleRemoteModels']
-  subtitleLocalModels: SettingsPanelProps['subtitleLocalModels']
-  subtitleDownloadTask: SettingsPanelProps['subtitleDownloadTask']
-  subtitleDownloadPending: boolean
-  adReviewVisionEndpoint: string
-  adReviewVisionModel: string
-  adReviewVisionVerified: boolean
-  adReviewVisionTestPending: boolean
-  adReviewVisionTestMessage: string | null
-  adReviewVisionSavePending: boolean
-  adReviewVisionSaveMessage: string | null
-  subtitleCleanupLlmEndpoint: string
-  subtitleCleanupLlmModel: string
-  subtitleCleanupLlmPrompt: string
-  shortcuts: SettingsPanelProps['shortcuts']
-  shortcutConflicts: SettingsPanelProps['shortcutConflicts']
-  databaseResetPending: boolean
-  databaseResetError: string | null
-  runtimePathUpdatePending: boolean
-  runtimePathUpdateMessage: string | null
-  repositoryMode: SettingsPanelProps['repositoryMode']
-  backendBridgeInjected: boolean
-  runtimeInfoLoading: boolean
-  runtimeInfoError: string | null
-  runtimeInfo: SettingsPanelProps['runtimeInfo']
-  mediaCapabilitiesLoading: boolean
-  mediaCapabilitiesError: string | null
-  mediaCapabilities: SettingsPanelProps['mediaCapabilities']
-  refreshRuntimeInfo: () => void
-  updateSettings: (patch: Partial<AppSettings>) => void
-  applySidebarRatio: (value: number) => void
-  applyMetadataRatio: (value: number) => void
-  applyElectronNativeChromeEnabled: (value: boolean) => void
-  setShortcut: SettingsPanelProps['onSetShortcut']
-  resetShortcuts: () => void
-  clearDatabaseForDev: () => void
-  testAdReviewVisionModel: () => void
-  saveAdReviewVisionModel: () => void
-  pickDatabaseDirectoryPath: () => void
-  pickThumbnailCacheDirectoryPath: () => void
-  pickSubtitleModelDirectoryPath: () => void
-  refreshSubtitleModels: () => void
-  startSubtitleModelDownload: () => void
-  cancelSubtitleModelDownload: () => void
-  openSubtitleModelPage: () => void
+  settingsOpen: boolean;
+  uiLocale: AppSettings["uiLocale"];
+  styleId: string;
+  paletteId: string;
+  paletteMode: AppSettings["paletteMode"];
+  paletteDayId: string;
+  paletteNightId: string;
+  headerHeight: number;
+  settingsBackdropOpacity: number;
+  settingsFontSize: number;
+  sidebarRatio: number;
+  sidebarMinWidth: number;
+  layoutLocked: boolean;
+  electronNativeChromeEnabled: boolean;
+  themeParameterButtonVisible: boolean;
+  sidebarFontSize: number;
+  sidebarCountFontSize: number;
+  sidebarIndentStep: number;
+  sidebarVerticalGap: number;
+  metadataRatio: number;
+  workspaceBottomPanelHeight: number;
+  fullscreenVideoControlsMaxWidth: number;
+  mediaPreloadMemoryBudgetMb: number;
+  thumbnailGap: number;
+  thumbnailQuality: number;
+  thumbnailWidth: number;
+  thumbnailGenerationConcurrency: number;
+  thumbnailResolveConcurrency: number;
+  proxyServer: string;
+  ehentaiCookies: string;
+  subtitleFeatureEnabled: boolean;
+  subtitleRenderMode: "simple" | "advanced";
+  subtitleAdvancedVadPreset: "balanced" | "conservative" | "aggressive";
+  subtitleAdvancedVadThreshold: number;
+  subtitleAdvancedVadMinSilenceSec: number;
+  subtitleAdvancedVadMinSpeechSec: number;
+  subtitleAdvancedVadMaxSpeechSec: number;
+  subtitleAdvancedSpeakerThreshold: number;
+  subtitleValidPlaybackRateThreshold: number;
+  subtitleLanguage: AppSettings["subtitleLanguage"];
+  subtitleModelDir: string;
+  subtitleTextFillMode: AppSettings["subtitleTextFillMode"];
+  subtitleTextColor: string;
+  subtitleGradientStartColor: string;
+  subtitleGradientEndColor: string;
+  subtitleGradientDirection: AppSettings["subtitleGradientDirection"];
+  subtitleGradientCurve: AppSettings["subtitleGradientCurve"];
+  subtitleStrokeColor: string;
+  subtitleStrokeWidth: number;
+  subtitleStrokeShadowColor: string;
+  subtitleStrokeShadowRadius: number;
+  subtitleFontSize: number;
+  subtitleMaxLineChars: number;
+  subtitleOffsetY: number;
+  subtitleStylePanelExpanded: boolean;
+  subtitleModelsLoading: boolean;
+  subtitleModelsError: string | null;
+  subtitleModelsStatus: string | null;
+  subtitleRemoteModels: SettingsPanelProps["subtitleRemoteModels"];
+  subtitleLocalModels: SettingsPanelProps["subtitleLocalModels"];
+  subtitleDownloadTask: SettingsPanelProps["subtitleDownloadTask"];
+  subtitleDownloadPending: boolean;
+  adReviewVisionEndpoint: string;
+  adReviewVisionModel: string;
+  adReviewVisionVerified: boolean;
+  adReviewVisionTestPending: boolean;
+  adReviewVisionTestMessage: string | null;
+  adReviewVisionSavePending: boolean;
+  adReviewVisionSaveMessage: string | null;
+  subtitleCleanupLlmEndpoint: string;
+  subtitleCleanupLlmModel: string;
+  subtitleCleanupLlmPrompt: string;
+  shortcuts: SettingsPanelProps["shortcuts"];
+  shortcutConflicts: SettingsPanelProps["shortcutConflicts"];
+  databaseResetPending: boolean;
+  databaseResetError: string | null;
+  runtimePathUpdatePending: boolean;
+  runtimePathUpdateMessage: string | null;
+  repositoryMode: SettingsPanelProps["repositoryMode"];
+  backendBridgeInjected: boolean;
+  runtimeInfoLoading: boolean;
+  runtimeInfoError: string | null;
+  runtimeInfo: SettingsPanelProps["runtimeInfo"];
+  mediaCapabilitiesLoading: boolean;
+  mediaCapabilitiesError: string | null;
+  mediaCapabilities: SettingsPanelProps["mediaCapabilities"];
+  refreshRuntimeInfo: () => void;
+  updateSettings: (patch: Partial<AppSettings>) => void;
+  applySidebarRatio: (value: number) => void;
+  applyMetadataRatio: (value: number) => void;
+  applyElectronNativeChromeEnabled: (value: boolean) => void;
+  setShortcut: SettingsPanelProps["onSetShortcut"];
+  resetShortcuts: () => void;
+  clearDatabaseForDev: () => void;
+  testAdReviewVisionModel: () => void;
+  saveAdReviewVisionModel: () => void;
+  pickDatabaseDirectoryPath: () => void;
+  pickThumbnailCacheDirectoryPath: () => void;
+  pickSubtitleModelDirectoryPath: () => void;
+  refreshSubtitleModels: () => void;
+  startSubtitleModelDownload: () => void;
+  cancelSubtitleModelDownload: () => void;
+  openSubtitleModelPage: () => void;
 }
 
-export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): SettingsPanelProps {
+export function buildSettingsPanelProps(
+  params: BuildSettingsPanelPropsParams,
+): SettingsPanelProps {
   return {
     settingsOpen: params.settingsOpen,
     uiLocale: params.uiLocale,
@@ -147,6 +153,8 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     subtitleAdvancedVadMinSpeechSec: params.subtitleAdvancedVadMinSpeechSec,
     subtitleAdvancedVadMaxSpeechSec: params.subtitleAdvancedVadMaxSpeechSec,
     subtitleAdvancedSpeakerThreshold: params.subtitleAdvancedSpeakerThreshold,
+    subtitleValidPlaybackRateThreshold:
+      params.subtitleValidPlaybackRateThreshold,
     subtitleLanguage: params.subtitleLanguage,
     subtitleModelDir: params.subtitleModelDir,
     subtitleTextFillMode: params.subtitleTextFillMode,
@@ -197,87 +205,124 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onRefreshRuntimeInfo: params.refreshRuntimeInfo,
     onClose: () => params.updateSettings({ settingsOpen: false }),
     onUiLocaleChange: (value) => {
-      params.updateSettings({ uiLocale: value })
+      params.updateSettings({ uiLocale: value });
     },
     onStyleChange: (value) => {
-      const nextStyleId = resolveStyleId(value)
-      const nextPair = resolvePalettePairForStyle(nextStyleId, params.paletteDayId, params.paletteNightId)
-      const nextPaletteId = params.paletteMode === 'night' ? nextPair.night : nextPair.day
+      const nextStyleId = resolveStyleId(value);
+      const nextPair = resolvePalettePairForStyle(
+        nextStyleId,
+        params.paletteDayId,
+        params.paletteNightId,
+      );
+      const nextPaletteId =
+        params.paletteMode === "night" ? nextPair.night : nextPair.day;
       params.updateSettings({
         styleId: nextStyleId,
         paletteDayId: nextPair.day,
         paletteNightId: nextPair.night,
         paletteId: nextPaletteId,
         themeId: nextPaletteId,
-      })
+      });
     },
     onPaletteModeChange: (value) => {
-      const nextMode: AppSettings['paletteMode'] = value === 'night' ? 'night' : 'day'
-      const pair = resolvePalettePairForStyle(params.styleId, params.paletteDayId, params.paletteNightId)
-      const nextPaletteId = nextMode === 'night' ? pair.night : pair.day
+      const nextMode: AppSettings["paletteMode"] =
+        value === "night" ? "night" : "day";
+      const pair = resolvePalettePairForStyle(
+        params.styleId,
+        params.paletteDayId,
+        params.paletteNightId,
+      );
+      const nextPaletteId = nextMode === "night" ? pair.night : pair.day;
       params.updateSettings({
         paletteMode: nextMode,
         paletteDayId: pair.day,
         paletteNightId: pair.night,
         paletteId: nextPaletteId,
         themeId: nextPaletteId,
-      })
+      });
     },
     onPaletteDayChange: (value) => {
-      const pair = resolvePalettePairForStyle(params.styleId, value, params.paletteNightId)
+      const pair = resolvePalettePairForStyle(
+        params.styleId,
+        value,
+        params.paletteNightId,
+      );
       params.updateSettings({
         paletteDayId: pair.day,
         paletteNightId: pair.night,
-        ...(params.paletteMode === 'day'
+        ...(params.paletteMode === "day"
           ? {
               paletteId: pair.day,
               themeId: pair.day,
             }
           : {}),
-      })
+      });
     },
     onPaletteNightChange: (value) => {
-      const pair = resolvePalettePairForStyle(params.styleId, params.paletteDayId, value)
+      const pair = resolvePalettePairForStyle(
+        params.styleId,
+        params.paletteDayId,
+        value,
+      );
       params.updateSettings({
         paletteDayId: pair.day,
         paletteNightId: pair.night,
-        ...(params.paletteMode === 'night'
+        ...(params.paletteMode === "night"
           ? {
               paletteId: pair.night,
               themeId: pair.night,
             }
           : {}),
-      })
+      });
     },
-    onHeaderHeightChange: (value) => params.updateSettings({ headerHeight: value }),
-    onSettingsBackdropOpacityChange: (value) => params.updateSettings({ settingsBackdropOpacity: value }),
-    onSettingsFontSizeChange: (value) => params.updateSettings({ settingsFontSize: value }),
+    onHeaderHeightChange: (value) =>
+      params.updateSettings({ headerHeight: value }),
+    onSettingsBackdropOpacityChange: (value) =>
+      params.updateSettings({ settingsBackdropOpacity: value }),
+    onSettingsFontSizeChange: (value) =>
+      params.updateSettings({ settingsFontSize: value }),
     onSidebarRatioChange: params.applySidebarRatio,
-    onSidebarMinWidthChange: (value) => params.updateSettings({ sidebarMinWidth: value }),
-    onLayoutLockedChange: (value) => params.updateSettings({ layoutLocked: value }),
-    onElectronNativeChromeEnabledChange: params.applyElectronNativeChromeEnabled,
-    onThemeParameterButtonVisibleChange: (value) => params.updateSettings({ themeParameterButtonVisible: value }),
-    onSidebarFontSizeChange: (value) => params.updateSettings({ sidebarFontSize: value }),
-    onSidebarCountFontSizeChange: (value) => params.updateSettings({ sidebarCountFontSize: value }),
-    onSidebarIndentStepChange: (value) => params.updateSettings({ sidebarIndentStep: value }),
-    onSidebarVerticalGapChange: (value) => params.updateSettings({ sidebarVerticalGap: value }),
+    onSidebarMinWidthChange: (value) =>
+      params.updateSettings({ sidebarMinWidth: value }),
+    onLayoutLockedChange: (value) =>
+      params.updateSettings({ layoutLocked: value }),
+    onElectronNativeChromeEnabledChange:
+      params.applyElectronNativeChromeEnabled,
+    onThemeParameterButtonVisibleChange: (value) =>
+      params.updateSettings({ themeParameterButtonVisible: value }),
+    onSidebarFontSizeChange: (value) =>
+      params.updateSettings({ sidebarFontSize: value }),
+    onSidebarCountFontSizeChange: (value) =>
+      params.updateSettings({ sidebarCountFontSize: value }),
+    onSidebarIndentStepChange: (value) =>
+      params.updateSettings({ sidebarIndentStep: value }),
+    onSidebarVerticalGapChange: (value) =>
+      params.updateSettings({ sidebarVerticalGap: value }),
     onMetadataRatioChange: params.applyMetadataRatio,
-    onWorkspaceBottomPanelHeightChange: (value) => params.updateSettings({ workspaceBottomPanelHeight: value }),
-    onFullscreenVideoControlsMaxWidthChange: (value) => params.updateSettings({ fullscreenVideoControlsMaxWidth: value }),
-    onMediaPreloadMemoryBudgetMbChange: (value) => params.updateSettings({ mediaPreloadMemoryBudgetMb: value }),
-    onThumbnailGapChange: (value) => params.updateSettings({ thumbnailGap: value }),
-    onThumbnailQualityChange: (value) => params.updateSettings({ thumbnailQuality: value }),
+    onWorkspaceBottomPanelHeightChange: (value) =>
+      params.updateSettings({ workspaceBottomPanelHeight: value }),
+    onFullscreenVideoControlsMaxWidthChange: (value) =>
+      params.updateSettings({ fullscreenVideoControlsMaxWidth: value }),
+    onMediaPreloadMemoryBudgetMbChange: (value) =>
+      params.updateSettings({ mediaPreloadMemoryBudgetMb: value }),
+    onThumbnailGapChange: (value) =>
+      params.updateSettings({ thumbnailGap: value }),
+    onThumbnailQualityChange: (value) =>
+      params.updateSettings({ thumbnailQuality: value }),
     onResetThumbnailQuality: () =>
       params.updateSettings({
         thumbnailQuality: 40,
       }),
-    onThumbnailWidthChange: (value) => params.updateSettings({ thumbnailWidth: value }),
+    onThumbnailWidthChange: (value) =>
+      params.updateSettings({ thumbnailWidth: value }),
     onResetThumbnailWidth: () =>
       params.updateSettings({
         thumbnailWidth: 512,
       }),
-    onThumbnailGenerationConcurrencyChange: (value) => params.updateSettings({ thumbnailGenerationConcurrency: value }),
-    onThumbnailResolveConcurrencyChange: (value) => params.updateSettings({ thumbnailResolveConcurrency: value }),
+    onThumbnailGenerationConcurrencyChange: (value) =>
+      params.updateSettings({ thumbnailGenerationConcurrency: value }),
+    onThumbnailResolveConcurrencyChange: (value) =>
+      params.updateSettings({ thumbnailResolveConcurrency: value }),
     onResetThumbnailGenerationConcurrency: () =>
       params.updateSettings({
         thumbnailGenerationConcurrency: 4,
@@ -286,30 +331,34 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       params.updateSettings({
         thumbnailResolveConcurrency: 8,
       }),
-    onProxyServerChange: (value) => params.updateSettings({ proxyServer: value }),
-    onEhentaiCookiesChange: (value) => params.updateSettings({ ehentaiCookies: value }),
-    onSubtitleFeatureEnabledChange: (value) => params.updateSettings({ subtitleFeatureEnabled: value }),
-    onSubtitleRenderModeChange: (value) => params.updateSettings({ subtitleRenderMode: value }),
+    onProxyServerChange: (value) =>
+      params.updateSettings({ proxyServer: value }),
+    onEhentaiCookiesChange: (value) =>
+      params.updateSettings({ ehentaiCookies: value }),
+    onSubtitleFeatureEnabledChange: (value) =>
+      params.updateSettings({ subtitleFeatureEnabled: value }),
+    onSubtitleRenderModeChange: (value) =>
+      params.updateSettings({ subtitleRenderMode: value }),
     onSubtitleAdvancedVadPresetChange: (value) => {
-      if (value === 'conservative') {
+      if (value === "conservative") {
         params.updateSettings({
           subtitleAdvancedVadPreset: value,
           subtitleAdvancedVadThreshold: 0.52,
           subtitleAdvancedVadMinSilenceSec: 0.45,
           subtitleAdvancedVadMinSpeechSec: 0.25,
           subtitleAdvancedVadMaxSpeechSec: 20,
-        })
-        return
+        });
+        return;
       }
-      if (value === 'aggressive') {
+      if (value === "aggressive") {
         params.updateSettings({
           subtitleAdvancedVadPreset: value,
           subtitleAdvancedVadThreshold: 0.36,
           subtitleAdvancedVadMinSilenceSec: 0.1,
           subtitleAdvancedVadMinSpeechSec: 0.15,
           subtitleAdvancedVadMaxSpeechSec: 3,
-        })
-        return
+        });
+        return;
       }
       params.updateSettings({
         subtitleAdvancedVadPreset: value,
@@ -317,29 +366,51 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
         subtitleAdvancedVadMinSilenceSec: 0.14,
         subtitleAdvancedVadMinSpeechSec: 0.18,
         subtitleAdvancedVadMaxSpeechSec: 3,
-      })
+      });
     },
-    onSubtitleAdvancedVadThresholdChange: (value) => params.updateSettings({ subtitleAdvancedVadThreshold: value }),
-    onSubtitleAdvancedVadMinSilenceSecChange: (value) => params.updateSettings({ subtitleAdvancedVadMinSilenceSec: value }),
-    onSubtitleAdvancedVadMinSpeechSecChange: (value) => params.updateSettings({ subtitleAdvancedVadMinSpeechSec: value }),
-    onSubtitleAdvancedVadMaxSpeechSecChange: (value) => params.updateSettings({ subtitleAdvancedVadMaxSpeechSec: value }),
-    onSubtitleAdvancedSpeakerThresholdChange: (value) => params.updateSettings({ subtitleAdvancedSpeakerThreshold: value }),
-    onSubtitleLanguageChange: (value) => params.updateSettings({ subtitleLanguage: value }),
+    onSubtitleAdvancedVadThresholdChange: (value) =>
+      params.updateSettings({ subtitleAdvancedVadThreshold: value }),
+    onSubtitleAdvancedVadMinSilenceSecChange: (value) =>
+      params.updateSettings({ subtitleAdvancedVadMinSilenceSec: value }),
+    onSubtitleAdvancedVadMinSpeechSecChange: (value) =>
+      params.updateSettings({ subtitleAdvancedVadMinSpeechSec: value }),
+    onSubtitleAdvancedVadMaxSpeechSecChange: (value) =>
+      params.updateSettings({ subtitleAdvancedVadMaxSpeechSec: value }),
+    onSubtitleAdvancedSpeakerThresholdChange: (value) =>
+      params.updateSettings({ subtitleAdvancedSpeakerThreshold: value }),
+    onSubtitleValidPlaybackRateThresholdChange: (value) =>
+      params.updateSettings({ subtitleValidPlaybackRateThreshold: value }),
+    onSubtitleLanguageChange: (value) =>
+      params.updateSettings({ subtitleLanguage: value }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
-    onSubtitleTextFillModeChange: (value) => params.updateSettings({ subtitleTextFillMode: value }),
-    onSubtitleTextColorChange: (value) => params.updateSettings({ subtitleTextColor: value }),
-    onSubtitleGradientStartColorChange: (value) => params.updateSettings({ subtitleGradientStartColor: value }),
-    onSubtitleGradientEndColorChange: (value) => params.updateSettings({ subtitleGradientEndColor: value }),
-    onSubtitleGradientDirectionChange: (value) => params.updateSettings({ subtitleGradientDirection: value }),
-    onSubtitleGradientCurveChange: (value) => params.updateSettings({ subtitleGradientCurve: value }),
-    onSubtitleStrokeColorChange: (value) => params.updateSettings({ subtitleStrokeColor: value }),
-    onSubtitleStrokeWidthChange: (value) => params.updateSettings({ subtitleStrokeWidth: value }),
-    onSubtitleStrokeShadowColorChange: (value) => params.updateSettings({ subtitleStrokeShadowColor: value }),
-    onSubtitleStrokeShadowRadiusChange: (value) => params.updateSettings({ subtitleStrokeShadowRadius: value }),
-    onSubtitleFontSizeChange: (value) => params.updateSettings({ subtitleFontSize: value }),
-    onSubtitleMaxLineCharsChange: (value) => params.updateSettings({ subtitleMaxLineChars: value }),
-    onSubtitleOffsetYChange: (value) => params.updateSettings({ subtitleOffsetY: value }),
-    onSubtitleStylePanelExpandedChange: (value) => params.updateSettings({ subtitleStylePanelExpanded: value }),
+    onSubtitleTextFillModeChange: (value) =>
+      params.updateSettings({ subtitleTextFillMode: value }),
+    onSubtitleTextColorChange: (value) =>
+      params.updateSettings({ subtitleTextColor: value }),
+    onSubtitleGradientStartColorChange: (value) =>
+      params.updateSettings({ subtitleGradientStartColor: value }),
+    onSubtitleGradientEndColorChange: (value) =>
+      params.updateSettings({ subtitleGradientEndColor: value }),
+    onSubtitleGradientDirectionChange: (value) =>
+      params.updateSettings({ subtitleGradientDirection: value }),
+    onSubtitleGradientCurveChange: (value) =>
+      params.updateSettings({ subtitleGradientCurve: value }),
+    onSubtitleStrokeColorChange: (value) =>
+      params.updateSettings({ subtitleStrokeColor: value }),
+    onSubtitleStrokeWidthChange: (value) =>
+      params.updateSettings({ subtitleStrokeWidth: value }),
+    onSubtitleStrokeShadowColorChange: (value) =>
+      params.updateSettings({ subtitleStrokeShadowColor: value }),
+    onSubtitleStrokeShadowRadiusChange: (value) =>
+      params.updateSettings({ subtitleStrokeShadowRadius: value }),
+    onSubtitleFontSizeChange: (value) =>
+      params.updateSettings({ subtitleFontSize: value }),
+    onSubtitleMaxLineCharsChange: (value) =>
+      params.updateSettings({ subtitleMaxLineChars: value }),
+    onSubtitleOffsetYChange: (value) =>
+      params.updateSettings({ subtitleOffsetY: value }),
+    onSubtitleStylePanelExpandedChange: (value) =>
+      params.updateSettings({ subtitleStylePanelExpanded: value }),
     onRefreshSubtitleModels: params.refreshSubtitleModels,
     onStartSubtitleModelDownload: params.startSubtitleModelDownload,
     onCancelSubtitleModelDownload: params.cancelSubtitleModelDownload,
@@ -373,5 +444,5 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
     onClearDatabase: params.clearDatabaseForDev,
     onPickDatabaseDirectoryPath: params.pickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath: params.pickThumbnailCacheDirectoryPath,
-  }
+  };
 }

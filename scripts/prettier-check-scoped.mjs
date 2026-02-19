@@ -21,7 +21,7 @@ const ROOT_INCLUDE_FILES = new Set([
 ]);
 
 const INCLUDED_PREFIXES = ["electron/", "scripts/", "src/"];
-const EXCLUDED_PREFIXES = ["docs/ref/"];
+const EXCLUDED_PREFIXES = ["docs/ref/", "docs/ui/DesignRef/"];
 
 function runGit(args) {
   return execFileSync("git", args, { encoding: "utf8" }).trim();

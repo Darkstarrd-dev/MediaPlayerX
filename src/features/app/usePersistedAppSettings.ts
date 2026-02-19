@@ -81,6 +81,8 @@ export function toPersistedAppSettings(
     subtitleAdvancedVadMinSpeechSec: settings.subtitleAdvancedVadMinSpeechSec,
     subtitleAdvancedVadMaxSpeechSec: settings.subtitleAdvancedVadMaxSpeechSec,
     subtitleAdvancedSpeakerThreshold: settings.subtitleAdvancedSpeakerThreshold,
+    subtitleValidPlaybackRateThreshold:
+      settings.subtitleValidPlaybackRateThreshold,
     subtitleAcceleration: settings.subtitleAcceleration,
     subtitleLanguage: settings.subtitleLanguage,
     subtitleModelDir: settings.subtitleModelDir,
@@ -100,6 +102,7 @@ export function toPersistedAppSettings(
     subtitleSelectionByVideoId: settings.subtitleSelectionByVideoId,
     subtitleOffsetY: settings.subtitleOffsetY,
     subtitleStylePanelExpanded: settings.subtitleStylePanelExpanded,
+    videoSavedPlaylists: settings.videoSavedPlaylists,
     adReviewVisionEndpoint: settings.adReviewVisionEndpoint,
     adReviewVisionModel: settings.adReviewVisionModel,
     adReviewVisionVerified: settings.adReviewVisionVerified,

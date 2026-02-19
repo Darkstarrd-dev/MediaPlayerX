@@ -104,7 +104,7 @@ function ImageMainSection({
   onAdReviewHeadNChange = () => undefined,
   onAdReviewTailNChange = () => undefined,
   onAdReviewTailStopCleanStreakChange = () => undefined,
-  onStartAdReview = (_options?: { skipReviewedNodes?: boolean }) => undefined,
+  onStartAdReview = () => undefined,
   onPauseAdReview = () => undefined,
   onRemoveAdReviewTask = () => undefined,
   onDeleteSelectedAdReviewCandidates = () => undefined,
@@ -229,8 +229,7 @@ function ImageMainSection({
   void _adReviewNonLlmReviewedImageIds;
   const [metadataFetchOpen, setMetadataFetchOpen] = useState(false);
   const [openScalePopover, setOpenScalePopover] = useState(false);
-  const [adReviewStartDialogOpen, setAdReviewStartDialogOpen] =
-    useState(false);
+  const [adReviewStartDialogOpen, setAdReviewStartDialogOpen] = useState(false);
   const [openAdReviewStrategyPopover, setOpenAdReviewStrategyPopover] =
     useState(false);
   const [openAdReviewProgressPopover, setOpenAdReviewProgressPopover] =
@@ -349,7 +348,12 @@ function ImageMainSection({
       });
     }
     scheduleFocusedThumbOriginSync();
-  }, [focusedRef?.packageId, focusedRef?.imageIndex, gridRef, scheduleFocusedThumbOriginSync]);
+  }, [
+    focusedRef?.packageId,
+    focusedRef?.imageIndex,
+    gridRef,
+    scheduleFocusedThumbOriginSync,
+  ]);
 
   useEffect(() => {
     if (IS_TEST_MODE) {
@@ -381,7 +385,11 @@ function ImageMainSection({
       return;
     }
     scheduleFocusedThumbOriginSync();
-  }, [focusedRef?.packageId, focusedRef?.imageIndex, scheduleFocusedThumbOriginSync]);
+  }, [
+    focusedRef?.packageId,
+    focusedRef?.imageIndex,
+    scheduleFocusedThumbOriginSync,
+  ]);
 
   const clearScalePopoverHideTimer = () => {
     if (scalePopoverHideTimerRef.current != null) {
@@ -883,12 +891,12 @@ function ImageMainSection({
     manageMode && adReviewFeatureEnabled && adReviewPanelOpen;
   const isReviewWithCandidates = Boolean(
     adReviewTask &&
-      adReviewTask.status === "review" &&
-      adReviewTask.candidates.length > 0,
+    adReviewTask.status === "review" &&
+    adReviewTask.candidates.length > 0,
   );
   const isReviewRunningOrPaused = Boolean(
     adReviewTask &&
-      (adReviewTask.status === "running" || adReviewTask.status === "paused"),
+    (adReviewTask.status === "running" || adReviewTask.status === "paused"),
   );
   const adReviewRunning = adReviewTask?.status === "running";
   const openAdReviewProgressPopoverByHover = () => {
@@ -1133,7 +1141,10 @@ function ImageMainSection({
                   <MainUiIcon name="adSearch" />
                 </button>
               ) : null}
-              {showAdReviewToolbarControls && !isReviewRunningOrPaused && !isReviewWithCandidates && canSwitchManageReviewMode ? (
+              {showAdReviewToolbarControls &&
+              !isReviewRunningOrPaused &&
+              !isReviewWithCandidates &&
+              canSwitchManageReviewMode ? (
                 <button
                   className="manage-ad-review-icon-btn main-icon-square-btn"
                   type="button"
@@ -1154,7 +1165,10 @@ function ImageMainSection({
                   </span>
                 </button>
               ) : null}
-              {showAdReviewToolbarControls && !isReviewRunningOrPaused && !isReviewWithCandidates && manageReviewMode === "ad" ? (
+              {showAdReviewToolbarControls &&
+              !isReviewRunningOrPaused &&
+              !isReviewWithCandidates &&
+              manageReviewMode === "ad" ? (
                 <div
                   className={`header-popover-control main-toolbar-ad-review-strategy-control ${
                     openAdReviewStrategyPopover ? "is-open" : ""
@@ -1176,7 +1190,9 @@ function ImageMainSection({
                     disabled={pendingManageAction || adReviewPending}
                     onClick={() =>
                       onAdReviewStrategyModeChange(
-                        adReviewStrategyMode === "head-tail" ? "all" : "head-tail",
+                        adReviewStrategyMode === "head-tail"
+                          ? "all"
+                          : "head-tail",
                       )
                     }
                   >
@@ -1207,7 +1223,9 @@ function ImageMainSection({
                         step={1}
                         value={adReviewMaxConcurrency}
                         onChange={(event) =>
-                          onAdReviewMaxConcurrencyChange(Number(event.target.value))
+                          onAdReviewMaxConcurrencyChange(
+                            Number(event.target.value),
+                          )
                         }
                       />
                       <strong>{adReviewMaxConcurrency}</strong>
@@ -1285,18 +1303,24 @@ function ImageMainSection({
                       className="main-toolbar-ad-review-running-pill"
                       type="button"
                       aria-label={t("ui.manage.progress", {
-                        percent: Math.round((adReviewTask?.progress ?? 0) * 100),
+                        percent: Math.round(
+                          (adReviewTask?.progress ?? 0) * 100,
+                        ),
                         reviewed: adReviewTask?.reviewed_count ?? 0,
                         total: adReviewTask?.total_count ?? 0,
                       })}
                       title={t("ui.manage.progress", {
-                        percent: Math.round((adReviewTask?.progress ?? 0) * 100),
+                        percent: Math.round(
+                          (adReviewTask?.progress ?? 0) * 100,
+                        ),
                         reviewed: adReviewTask?.reviewed_count ?? 0,
                         total: adReviewTask?.total_count ?? 0,
                       })}
                     >
                       {t("ui.manage.progress", {
-                        percent: Math.round((adReviewTask?.progress ?? 0) * 100),
+                        percent: Math.round(
+                          (adReviewTask?.progress ?? 0) * 100,
+                        ),
                         reviewed: adReviewTask?.reviewed_count ?? 0,
                         total: adReviewTask?.total_count ?? 0,
                       })}
@@ -1307,7 +1331,9 @@ function ImageMainSection({
                       hidden={!openAdReviewProgressPopover}
                       role="dialog"
                       aria-label={t("ui.manage.progress", {
-                        percent: Math.round((adReviewTask?.progress ?? 0) * 100),
+                        percent: Math.round(
+                          (adReviewTask?.progress ?? 0) * 100,
+                        ),
                         reviewed: adReviewTask?.reviewed_count ?? 0,
                         total: adReviewTask?.total_count ?? 0,
                       })}
@@ -1341,10 +1367,14 @@ function ImageMainSection({
                     className={`manage-ad-review-icon-btn main-icon-square-btn manage-ad-review-exec-btn ${adReviewRunning ? "is-running" : ""}`}
                     type="button"
                     aria-label={
-                      adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
+                      adReviewRunning
+                        ? t("a11y.manage.pause")
+                        : t("a11y.manage.start")
                     }
                     title={
-                      adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
+                      adReviewRunning
+                        ? t("a11y.manage.pause")
+                        : t("a11y.manage.start")
                     }
                     disabled={
                       pendingManageAction ||
@@ -1353,7 +1383,9 @@ function ImageMainSection({
                     }
                     onClick={triggerToolbarAdReviewStartOrPause}
                   >
-                    <span aria-hidden="true">{adReviewRunning ? "⏸" : "▶"}</span>
+                    <span aria-hidden="true">
+                      {adReviewRunning ? "⏸" : "▶"}
+                    </span>
                   </button>
                   {adReviewTask ? (
                     <button
@@ -1361,7 +1393,12 @@ function ImageMainSection({
                       type="button"
                       aria-label={t("ui.manage.removeTask")}
                       title={t("ui.manage.removeTask")}
-                      disabled={pendingManageAction || adReviewPending || adReviewDeletePending || adReviewTask.status === "running"}
+                      disabled={
+                        pendingManageAction ||
+                        adReviewPending ||
+                        adReviewDeletePending ||
+                        adReviewTask.status === "running"
+                      }
                       onClick={() => onRemoveAdReviewTask(adReviewTask.task_id)}
                     >
                       <span aria-hidden="true">X</span>
@@ -1376,10 +1413,14 @@ function ImageMainSection({
                     type="button"
                     aria-label={t("a11y.manage.focus")}
                     title={t("a11y.manage.focus")}
-                    disabled={pendingManageAction || adReviewPending || !hasAdReviewFocusCandidates}
+                    disabled={
+                      pendingManageAction ||
+                      adReviewPending ||
+                      !hasAdReviewFocusCandidates
+                    }
                     onClick={() => {
                       if (!adReviewFocusActive) {
-                        onToggleAdReviewFocus()
+                        onToggleAdReviewFocus();
                       }
                     }}
                   >
@@ -1394,7 +1435,11 @@ function ImageMainSection({
                       type="button"
                       aria-label={t("ui.manage.removeTask")}
                       title={t("ui.manage.removeTask")}
-                      disabled={pendingManageAction || adReviewPending || adReviewDeletePending}
+                      disabled={
+                        pendingManageAction ||
+                        adReviewPending ||
+                        adReviewDeletePending
+                      }
                       onClick={() => onRemoveAdReviewTask(adReviewTask.task_id)}
                     >
                       <span aria-hidden="true">X</span>
@@ -1426,15 +1471,21 @@ function ImageMainSection({
                   </button>
                 </>
               ) : null}
-              {showAdReviewToolbarControls && !isReviewWithCandidates && !isReviewRunningOrPaused ? (
+              {showAdReviewToolbarControls &&
+              !isReviewWithCandidates &&
+              !isReviewRunningOrPaused ? (
                 <button
                   className={`manage-ad-review-icon-btn main-icon-square-btn manage-ad-review-exec-btn ${adReviewRunning ? "is-running" : ""}`}
                   type="button"
                   aria-label={
-                    adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
+                    adReviewRunning
+                      ? t("a11y.manage.pause")
+                      : t("a11y.manage.start")
                   }
                   title={
-                    adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
+                    adReviewRunning
+                      ? t("a11y.manage.pause")
+                      : t("a11y.manage.start")
                   }
                   disabled={
                     pendingManageAction ||

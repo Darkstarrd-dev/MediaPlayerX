@@ -3,137 +3,148 @@ import {
   type CSSProperties,
   type Dispatch,
   type SetStateAction,
-} from 'react'
+} from "react";
 
-import { findShortcutConflicts } from '../../shortcuts'
-import type { BrowserMode, ImageItem, VideoItem } from '../../types'
-import type { ImportTaskDto } from '../../contracts/backend'
-import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
-import type { MediaRepository, RepositoryMode } from '../backend/repository'
-import { buildAppHeaderProps } from './buildAppHeaderProps'
-import { buildBackendErrorRows } from './buildBackendErrorRows'
-import { buildFullscreenLayerProps } from './buildFullscreenLayerProps'
-import { buildImportTaskPanelProps } from './buildImportTaskPanelProps'
-import { buildSettingsPanelProps } from './buildSettingsPanelProps'
-import { useTopLayerSettingsActions } from './useTopLayerSettingsActions'
-import { useDatabaseResetAction } from './useDatabaseResetAction'
-import { useImportTaskPanelState } from './useImportTaskPanelState'
-import { useRuntimeInfoDiagnostics } from './useRuntimeInfoDiagnostics'
-import { useRuntimeWarningDismiss } from './useRuntimeWarningDismiss'
-import { useI18n } from '../../i18n/useI18n'
-import type { PlaylistPersistenceResult } from '../media/usePlaylistPersistence'
-import type { VideoFitMode } from '../media/videoFitMode'
+import { findShortcutConflicts } from "../../shortcuts";
+import type { BrowserMode, ImageItem, VideoItem } from "../../types";
+import type { ImportTaskDto } from "../../contracts/backend";
+import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
+import type { MediaRepository, RepositoryMode } from "../backend/repository";
+import { buildAppHeaderProps } from "./buildAppHeaderProps";
+import { buildBackendErrorRows } from "./buildBackendErrorRows";
+import { buildFullscreenLayerProps } from "./buildFullscreenLayerProps";
+import { buildImportTaskPanelProps } from "./buildImportTaskPanelProps";
+import { buildSettingsPanelProps } from "./buildSettingsPanelProps";
+import { useTopLayerSettingsActions } from "./useTopLayerSettingsActions";
+import { useDatabaseResetAction } from "./useDatabaseResetAction";
+import { useImportTaskPanelState } from "./useImportTaskPanelState";
+import { useRuntimeInfoDiagnostics } from "./useRuntimeInfoDiagnostics";
+import { useRuntimeWarningDismiss } from "./useRuntimeWarningDismiss";
+import { useI18n } from "../../i18n/useI18n";
+import type { PlaylistPersistenceResult } from "../media/usePlaylistPersistence";
+import type { VideoFitMode } from "../media/videoFitMode";
 import type {
   ReadOnlyDataAccessResult,
   RuntimeCapabilitiesResult,
   WriteDataAccessResult,
-} from '../backend'
+} from "../backend";
 
-type SearchPanelMode = 'vector' | 'feature'
-type FullscreenAlignDirection = 'up' | 'down' | 'left' | 'right'
+type SearchPanelMode = "vector" | "feature";
+type FullscreenAlignDirection = "up" | "down" | "left" | "right";
 
 interface UseAppTopLayerStateParams {
-  appSettings: AppSettingsStoreSnapshot
-  mediaRepository: MediaRepository
-  repositoryMode: RepositoryMode
-  backendRead: ReadOnlyDataAccessResult
-  backendWrite: WriteDataAccessResult
-  playlistPersistence: PlaylistPersistenceResult
-  runtimeCapabilities: RuntimeCapabilitiesResult
-  autoPlayPresets: number[]
-  mode: BrowserMode
-  manageMode: boolean
-  metadataManageMode: boolean
-  displayThumbnailScaleLevel: number
-  thumbnailScaleLevelCount: number
-  canThumbnailScaleDown: boolean
-  canThumbnailScaleUp: boolean
-  importMenuOpen: boolean
-  importTaskPanelOpen: boolean
-  helpOverlayOpen: boolean
-  themeParameterPanelOpen: boolean
-  setImportMenuOpen: Dispatch<SetStateAction<boolean>>
-  setImportTaskPanelOpen: Dispatch<SetStateAction<boolean>>
-  setThemeParameterPanelOpen: Dispatch<SetStateAction<boolean>>
-  openImportFilesDialog: () => void
-  openImportFoldersDialog: () => void
-  setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>
-  setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
-  onToggleManageMode: () => void
-  onToggleMetadataManageMode: () => void
-  importTasks: ImportTaskDto[]
-  dismissedImportTaskIds: Record<string, true>
-  setDismissedImportTaskIds: Dispatch<SetStateAction<Record<string, true>>>
-  enqueuePending: boolean
+  appSettings: AppSettingsStoreSnapshot;
+  mediaRepository: MediaRepository;
+  repositoryMode: RepositoryMode;
+  backendRead: ReadOnlyDataAccessResult;
+  backendWrite: WriteDataAccessResult;
+  playlistPersistence: PlaylistPersistenceResult;
+  runtimeCapabilities: RuntimeCapabilitiesResult;
+  autoPlayPresets: number[];
+  mode: BrowserMode;
+  manageMode: boolean;
+  metadataManageMode: boolean;
+  displayThumbnailScaleLevel: number;
+  thumbnailScaleLevelCount: number;
+  canThumbnailScaleDown: boolean;
+  canThumbnailScaleUp: boolean;
+  importMenuOpen: boolean;
+  importTaskPanelOpen: boolean;
+  helpOverlayOpen: boolean;
+  themeParameterPanelOpen: boolean;
+  setImportMenuOpen: Dispatch<SetStateAction<boolean>>;
+  setImportTaskPanelOpen: Dispatch<SetStateAction<boolean>>;
+  setThemeParameterPanelOpen: Dispatch<SetStateAction<boolean>>;
+  openImportFilesDialog: () => void;
+  openImportFoldersDialog: () => void;
+  setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>;
+  setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>;
+  onToggleManageMode: () => void;
+  onToggleMetadataManageMode: () => void;
+  importTasks: ImportTaskDto[];
+  dismissedImportTaskIds: Record<string, true>;
+  setDismissedImportTaskIds: Dispatch<SetStateAction<Record<string, true>>>;
+  enqueuePending: boolean;
   archiveLoadStatus: {
-    runningArchivePath: string | null
-    pendingArchivePaths: string[]
-  }
-  normalizePathForCompare: (value: string) => string
-  retryImportTask: (taskId: string) => Promise<void>
-  adReviewRunning: boolean
-  adReviewDeleting: boolean
-  taskError: string | null
-  clearTaskError: () => void
-  fullscreenActive: boolean
-  showFullscreenFooter: boolean
-  fullscreenDisplay: 'image-only' | 'video-only' | 'dual'
-  fullscreenEntryDisplay: 'image-only' | 'video-only'
-  fullscreenAlignRequest: { id: number; direction: FullscreenAlignDirection } | null
-  fullscreenSwapped: boolean
-  fullscreenVideoFocus: boolean
-  fullscreenSplit: number
-  focusedImage: ImageItem | null
-  fullscreenImageSrc: string | null
-  focusedVideo: VideoItem | null
-  focusedVideoSrc: string | null
-  subtitleTrackUrl: string | null
-  subtitleVisible: boolean
-  subtitleLoading: boolean
-  subtitleMessage: string | null
-  subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
-  selectedSubtitleId: string | null
-  autoSubtitleActive: boolean
-  liveSubtitleText: string | null
-  subtitleOverlayStyle: CSSProperties
-  bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void
-  focusedVideoCoverImageSrc: string | null
-  focusedVideoDurationSec: number
-  focusedVideoCoverColor: string
-  videoTime: number
-  videoPlaying: boolean
-  videoRate: number
-  videoVolume: number
-  videoMuted: boolean
-  videoFitMode: VideoFitMode
-  videoLoopMode: 'single' | 'list'
-  setVideoPlaying: Dispatch<SetStateAction<boolean>>
-  goPlaylist: (step: number) => void
-  playlistIds: string[]
-  selectedVideoId: string
-  videoById: Map<string, VideoItem>
-  selectVideoFromBrowser: (videoId: string) => void
-  setVideoTime: Dispatch<SetStateAction<number>>
-  setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
-  setVideoMuted: Dispatch<SetStateAction<boolean>>
-  setVideoVolume: Dispatch<SetStateAction<number>>
-  setVideoRate: Dispatch<SetStateAction<number>>
-  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
-  cycleVideoLoopMode: () => void
-  cycleVideoFitMode: () => void
-  setSubtitleVisible: Dispatch<SetStateAction<boolean>>
-  selectSubtitleById: (subtitleId: string) => Promise<void>
-  setFullscreenActiveWithAutoStop: (value: boolean | ((previous: boolean) => boolean)) => void
-  setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>
-  setFullscreenDisplay: Dispatch<SetStateAction<'image-only' | 'video-only' | 'dual'>>
-  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>
-  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
-  setFullscreenSplit: Dispatch<SetStateAction<number>>
-  moveImage: (step: number) => void
-  goPackage: (step: number) => void
-  applySidebarRatio: (value: number) => void
-  applyMetadataRatio: (value: number) => void
-  focusedVideoEffectiveId: string | null
+    runningArchivePath: string | null;
+    pendingArchivePaths: string[];
+  };
+  normalizePathForCompare: (value: string) => string;
+  retryImportTask: (taskId: string) => Promise<void>;
+  adReviewRunning: boolean;
+  adReviewDeleting: boolean;
+  taskError: string | null;
+  clearTaskError: () => void;
+  fullscreenActive: boolean;
+  showFullscreenFooter: boolean;
+  fullscreenDisplay: "image-only" | "video-only" | "dual";
+  fullscreenEntryDisplay: "image-only" | "video-only";
+  fullscreenAlignRequest: {
+    id: number;
+    direction: FullscreenAlignDirection;
+  } | null;
+  fullscreenSwapped: boolean;
+  fullscreenVideoFocus: boolean;
+  fullscreenSplit: number;
+  focusedImage: ImageItem | null;
+  fullscreenImageSrc: string | null;
+  focusedVideo: VideoItem | null;
+  focusedVideoSrc: string | null;
+  subtitleTrackUrl: string | null;
+  subtitleVisible: boolean;
+  subtitleLoading: boolean;
+  subtitleMessage: string | null;
+  subtitleOptions: Array<{
+    id: string;
+    label: string;
+    format: "vtt" | "srt" | "ass" | "ssa";
+  }>;
+  selectedSubtitleId: string | null;
+  autoSubtitleActive: boolean;
+  liveSubtitleText: string | null;
+  subtitleOverlayStyle: CSSProperties;
+  bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void;
+  focusedVideoCoverImageSrc: string | null;
+  focusedVideoDurationSec: number;
+  focusedVideoCoverColor: string;
+  videoTime: number;
+  videoPlaying: boolean;
+  videoRate: number;
+  videoVolume: number;
+  videoMuted: boolean;
+  videoFitMode: VideoFitMode;
+  videoLoopMode: "single" | "list";
+  setVideoPlaying: Dispatch<SetStateAction<boolean>>;
+  goPlaylist: (step: number) => void;
+  playlistIds: string[];
+  selectedVideoId: string;
+  videoById: Map<string, VideoItem>;
+  selectVideoFromBrowser: (videoId: string) => void;
+  setVideoTime: Dispatch<SetStateAction<number>>;
+  setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>;
+  setVideoMuted: Dispatch<SetStateAction<boolean>>;
+  setVideoVolume: Dispatch<SetStateAction<number>>;
+  setVideoRate: Dispatch<SetStateAction<number>>;
+  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>;
+  cycleVideoLoopMode: () => void;
+  cycleVideoFitMode: () => void;
+  setSubtitleVisible: Dispatch<SetStateAction<boolean>>;
+  selectSubtitleById: (subtitleId: string) => Promise<void>;
+  setFullscreenActiveWithAutoStop: (
+    value: boolean | ((previous: boolean) => boolean),
+  ) => void;
+  setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>;
+  setFullscreenDisplay: Dispatch<
+    SetStateAction<"image-only" | "video-only" | "dual">
+  >;
+  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>;
+  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>;
+  setFullscreenSplit: Dispatch<SetStateAction<number>>;
+  moveImage: (step: number) => void;
+  goPackage: (step: number) => void;
+  applySidebarRatio: (value: number) => void;
+  applyMetadataRatio: (value: number) => void;
+  focusedVideoEffectiveId: string | null;
 }
 
 export function useAppTopLayerState({
@@ -236,7 +247,7 @@ export function useAppTopLayerState({
   applyMetadataRatio,
   focusedVideoEffectiveId,
 }: UseAppTopLayerStateParams) {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   /**
    * Top-layer state is responsible only for cross-panel orchestration:
@@ -249,53 +260,58 @@ export function useAppTopLayerState({
     playlistPersistence,
     runtimeCapabilities,
     labels: {
-      library: t('ui.settings.backendError.library'),
-      sidebar: t('ui.settings.backendError.sidebar'),
-      page: t('ui.settings.backendError.page'),
-      metadata: t('ui.settings.backendError.metadata'),
-      gradeWrite: t('ui.settings.backendError.gradeWrite'),
-      metadataWrite: t('ui.settings.backendError.metadataWrite'),
-      coverWrite: t('ui.settings.backendError.coverWrite'),
-      manageWrite: t('ui.settings.backendError.manageWrite'),
-      playlistRead: t('ui.settings.backendError.playlistRead'),
-      playlistWrite: t('ui.settings.backendError.playlistWrite'),
-      runtimeCapability: t('ui.settings.backendError.runtimeCapability'),
+      library: t("ui.settings.backendError.library"),
+      sidebar: t("ui.settings.backendError.sidebar"),
+      page: t("ui.settings.backendError.page"),
+      metadata: t("ui.settings.backendError.metadata"),
+      gradeWrite: t("ui.settings.backendError.gradeWrite"),
+      metadataWrite: t("ui.settings.backendError.metadataWrite"),
+      coverWrite: t("ui.settings.backendError.coverWrite"),
+      manageWrite: t("ui.settings.backendError.manageWrite"),
+      playlistRead: t("ui.settings.backendError.playlistRead"),
+      playlistWrite: t("ui.settings.backendError.playlistWrite"),
+      runtimeCapability: t("ui.settings.backendError.runtimeCapability"),
     },
-  })
+  });
 
-  const runtimeInfoDiagnostics = useRuntimeInfoDiagnostics()
+  const runtimeInfoDiagnostics = useRuntimeInfoDiagnostics();
 
   const bridgeMissingInProduction =
     import.meta.env.PROD &&
-    repositoryMode === 'real' &&
-    !runtimeInfoDiagnostics.backendBridgeInjected
+    repositoryMode === "real" &&
+    !runtimeInfoDiagnostics.backendBridgeInjected;
 
   const bridgeMissingRow = bridgeMissingInProduction
     ? {
-        key: 'backend-bridge',
-        label: t('ui.settings.backendBridge'),
-        message: t('ui.settings.bridgeMissingWarning'),
+        key: "backend-bridge",
+        label: t("ui.settings.backendBridge"),
+        message: t("ui.settings.bridgeMissingWarning"),
         onRetry: runtimeInfoDiagnostics.retry,
       }
-    : null
+    : null;
 
-  const managementErrorRows = manageMode ? backendErrorRows.filter((row) => row.key === 'manage-write') : []
+  const managementErrorRows = manageMode
+    ? backendErrorRows.filter((row) => row.key === "manage-write")
+    : [];
   const bannerBackendErrorRows = [
     bridgeMissingRow,
-    ...backendErrorRows.filter((row) => row.key !== 'manage-write'),
-  ].filter((row): row is NonNullable<typeof row> => Boolean(row))
+    ...backendErrorRows.filter((row) => row.key !== "manage-write"),
+  ].filter((row): row is NonNullable<typeof row> => Boolean(row));
 
-  const runtimeCapabilityWarnings = (runtimeCapabilities.data?.minimum_matrix ?? []).filter(
-    (item) => item.status !== 'available',
-  )
+  const runtimeCapabilityWarnings = (
+    runtimeCapabilities.data?.minimum_matrix ?? []
+  ).filter((item) => item.status !== "available");
   const runtimeWarningKey = useMemo(
-    () => runtimeCapabilityWarnings.map((item) => `${item.capability}|${item.status}|${item.note}`).join('||'),
+    () =>
+      runtimeCapabilityWarnings
+        .map((item) => `${item.capability}|${item.status}|${item.note}`)
+        .join("||"),
     [runtimeCapabilityWarnings],
-  )
+  );
   const runtimeWarningDismiss = useRuntimeWarningDismiss({
     runtimeWarningKey,
     warningCount: runtimeCapabilityWarnings.length,
-  })
+  });
 
   const {
     activeImportTaskCount,
@@ -318,22 +334,22 @@ export function useAppTopLayerState({
     adReviewRunning,
     adReviewDeleting,
     taskStatusLabels: {
-      loading: t('ui.header.taskStatusLoading'),
-      deleting: t('ui.header.taskStatusDeleting'),
-      reviewing: t('ui.header.taskStatusReviewing'),
-      idle: t('ui.header.taskStatusIdle'),
+      loading: t("ui.header.taskStatusLoading"),
+      deleting: t("ui.header.taskStatusDeleting"),
+      reviewing: t("ui.header.taskStatusReviewing"),
+      idle: t("ui.header.taskStatusIdle"),
     },
-  })
+  });
 
-  const {
-    databaseResetPending,
-    databaseResetError,
-    clearDatabaseForDev,
-  } = useDatabaseResetAction({
-    mediaRepository,
-  })
+  const { databaseResetPending, databaseResetError, clearDatabaseForDev } =
+    useDatabaseResetAction({
+      mediaRepository,
+    });
 
-  const shortcutConflicts = useMemo(() => findShortcutConflicts(appSettings.shortcuts), [appSettings.shortcuts])
+  const shortcutConflicts = useMemo(
+    () => findShortcutConflicts(appSettings.shortcuts),
+    [appSettings.shortcuts],
+  );
   const {
     adReviewVisionTestPending,
     adReviewVisionTestMessage,
@@ -362,7 +378,7 @@ export function useAppTopLayerState({
     appSettings,
     mediaRepository,
     runtimeInfoDiagnostics,
-  })
+  });
 
   const fullscreenLayerProps = buildFullscreenLayerProps({
     mode,
@@ -398,7 +414,8 @@ export function useAppTopLayerState({
     videoMuted,
     videoFitMode,
     videoLoopMode,
-    fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
+    fullscreenVideoControlsMaxWidth:
+      appSettings.fullscreenVideoControlsMaxWidth,
     autoPlayEnabled: appSettings.autoPlayEnabled,
     autoPlayInterval: appSettings.autoPlayInterval,
     updateSettings: appSettings.updateSettings,
@@ -428,7 +445,7 @@ export function useAppTopLayerState({
     setFullscreenSplit,
     moveImage,
     goPackage,
-  })
+  });
 
   const settingsPanelProps = buildSettingsPanelProps({
     settingsOpen: appSettings.settingsOpen,
@@ -452,7 +469,8 @@ export function useAppTopLayerState({
     sidebarVerticalGap: appSettings.sidebarVerticalGap,
     metadataRatio: appSettings.metadataRatio,
     workspaceBottomPanelHeight: appSettings.workspaceBottomPanelHeight,
-    fullscreenVideoControlsMaxWidth: appSettings.fullscreenVideoControlsMaxWidth,
+    fullscreenVideoControlsMaxWidth:
+      appSettings.fullscreenVideoControlsMaxWidth,
     mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
     thumbnailGap: appSettings.thumbnailGap,
     thumbnailQuality: appSettings.thumbnailQuality,
@@ -465,10 +483,16 @@ export function useAppTopLayerState({
     subtitleRenderMode: appSettings.subtitleRenderMode,
     subtitleAdvancedVadPreset: appSettings.subtitleAdvancedVadPreset,
     subtitleAdvancedVadThreshold: appSettings.subtitleAdvancedVadThreshold,
-    subtitleAdvancedVadMinSilenceSec: appSettings.subtitleAdvancedVadMinSilenceSec,
-    subtitleAdvancedVadMinSpeechSec: appSettings.subtitleAdvancedVadMinSpeechSec,
-    subtitleAdvancedVadMaxSpeechSec: appSettings.subtitleAdvancedVadMaxSpeechSec,
-    subtitleAdvancedSpeakerThreshold: appSettings.subtitleAdvancedSpeakerThreshold,
+    subtitleAdvancedVadMinSilenceSec:
+      appSettings.subtitleAdvancedVadMinSilenceSec,
+    subtitleAdvancedVadMinSpeechSec:
+      appSettings.subtitleAdvancedVadMinSpeechSec,
+    subtitleAdvancedVadMaxSpeechSec:
+      appSettings.subtitleAdvancedVadMaxSpeechSec,
+    subtitleAdvancedSpeakerThreshold:
+      appSettings.subtitleAdvancedSpeakerThreshold,
+    subtitleValidPlaybackRateThreshold:
+      appSettings.subtitleValidPlaybackRateThreshold,
     subtitleLanguage: appSettings.subtitleLanguage,
     subtitleModelDir: appSettings.subtitleModelDir,
     subtitleTextFillMode: appSettings.subtitleTextFillMode,
@@ -533,7 +557,7 @@ export function useAppTopLayerState({
     startSubtitleModelDownload,
     cancelSubtitleModelDownload,
     openSubtitleModelPage,
-  })
+  });
 
   const appHeaderProps = buildAppHeaderProps({
     headerHeight: appSettings.headerHeight,
@@ -569,21 +593,21 @@ export function useAppTopLayerState({
     onToggleManageMode,
     onToggleMetadataManageMode,
     onOpenThemeParameter: () => setThemeParameterPanelOpen(true),
-  })
+  });
 
   const helpPanelProps = {
     helpOpen: appSettings.helpOpen,
     settingsFontSize: appSettings.settingsFontSize,
     shortcuts: appSettings.shortcuts,
     onClose: () => appSettings.updateSettings({ helpOpen: false }),
-  }
+  };
 
   const themeParameterPanelProps = {
     open: themeParameterPanelOpen,
     styleId: appSettings.styleId,
     settingsFontSize: appSettings.settingsFontSize,
     onClose: () => setThemeParameterPanelOpen(false),
-  }
+  };
 
   const importTaskPanelProps = buildImportTaskPanelProps({
     open: importTaskPanelOpen,
@@ -599,7 +623,7 @@ export function useAppTopLayerState({
     clearTaskError,
     retryImportTaskFromPanel,
     setDismissedImportTaskIds,
-  })
+  });
 
   return {
     bannerBackendErrorRows,
@@ -613,7 +637,7 @@ export function useAppTopLayerState({
     appHeaderProps,
     importTaskPanelProps,
     helpOverlayOpen,
-  }
+  };
 }
 
-export type AppTopLayerStateResult = ReturnType<typeof useAppTopLayerState>
+export type AppTopLayerStateResult = ReturnType<typeof useAppTopLayerState>;

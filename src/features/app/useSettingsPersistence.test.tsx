@@ -1,23 +1,23 @@
-import { act, renderHook, waitFor } from '@testing-library/react'
-import { useState } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { useState } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { DEFAULT_SETTINGS } from '../../store/useUiStore'
-import { useSettingsPersistence } from './useSettingsPersistence'
+import { DEFAULT_SETTINGS } from "../../store/useUiStore";
+import { useSettingsPersistence } from "./useSettingsPersistence";
 
-describe('useSettingsPersistence', () => {
+describe("useSettingsPersistence", () => {
   afterEach(() => {
-    vi.useRealTimers()
-  })
+    vi.useRealTimers();
+  });
 
-  it('migrates legacy themeId into styleId + paletteId on hydration', async () => {
-    const updateSettings = vi.fn()
+  it("migrates legacy themeId into styleId + paletteId on hydration", async () => {
+    const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({
-      state_json: JSON.stringify({ themeId: 'tokyo-night' }),
-    })
+      state_json: JSON.stringify({ themeId: "tokyo-night" }),
+    });
     const repository = {
       readAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     renderHook(() =>
       useSettingsPersistence({
@@ -25,29 +25,29 @@ describe('useSettingsPersistence', () => {
         repository,
         updateSettings,
       }),
-    )
+    );
 
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(
         expect.objectContaining({
-          themeId: 'tokyo-night',
-          styleId: 'flush',
-          paletteId: 'tokyo-night',
+          themeId: "tokyo-night",
+          styleId: "flush",
+          paletteId: "tokyo-night",
         }),
-      )
-    })
-  })
+      );
+    });
+  });
 
-  it('hydrates and clamps ad review settings into safe ranges', async () => {
-    const updateSettings = vi.fn()
+  it("hydrates and clamps ad review settings into safe ranges", async () => {
+    const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
         adReviewMaxConcurrency: 99,
       }),
-    })
+    });
     const repository = {
       readAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     renderHook(() =>
       useSettingsPersistence({
@@ -55,27 +55,27 @@ describe('useSettingsPersistence', () => {
         repository,
         updateSettings,
       }),
-    )
+    );
 
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(
         expect.objectContaining({
-          adReviewMaxConcurrency: 12,
+          adReviewMaxConcurrency: 20,
         }),
-      )
-    })
-  })
+      );
+    });
+  });
 
-  it('hydrates uiLocale when value is supported', async () => {
-    const updateSettings = vi.fn()
+  it("hydrates uiLocale when value is supported", async () => {
+    const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
-        uiLocale: 'en-US',
+        uiLocale: "en-US",
       }),
-    })
+    });
     const repository = {
       readAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     renderHook(() =>
       useSettingsPersistence({
@@ -83,27 +83,27 @@ describe('useSettingsPersistence', () => {
         repository,
         updateSettings,
       }),
-    )
+    );
 
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(
         expect.objectContaining({
-          uiLocale: 'en-US',
+          uiLocale: "en-US",
         }),
-      )
-    })
-  })
+      );
+    });
+  });
 
-  it('drops invalid uiLocale value during hydration', async () => {
-    const updateSettings = vi.fn()
+  it("drops invalid uiLocale value during hydration", async () => {
+    const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
-        uiLocale: 'de-DE',
+        uiLocale: "de-DE",
       }),
-    })
+    });
     const repository = {
       readAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     renderHook(() =>
       useSettingsPersistence({
@@ -111,26 +111,29 @@ describe('useSettingsPersistence', () => {
         repository,
         updateSettings,
       }),
-    )
+    );
 
     await waitFor(() => {
-      expect(updateSettings).toHaveBeenCalled()
-    })
+      expect(updateSettings).toHaveBeenCalled();
+    });
 
-    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<string, unknown>
-    expect(hydrationPatch).not.toHaveProperty('uiLocale')
-  })
+    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(hydrationPatch).not.toHaveProperty("uiLocale");
+  });
 
-  it('migrates legacy vectorPanelHeight into workspaceBottomPanelHeight on hydration', async () => {
-    const updateSettings = vi.fn()
+  it("migrates legacy vectorPanelHeight into workspaceBottomPanelHeight on hydration", async () => {
+    const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
         vectorPanelHeight: 248,
       }),
-    })
+    });
     const repository = {
       readAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     renderHook(() =>
       useSettingsPersistence({
@@ -138,34 +141,34 @@ describe('useSettingsPersistence', () => {
         repository,
         updateSettings,
       }),
-    )
+    );
 
     await waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(
         expect.objectContaining({
           workspaceBottomPanelHeight: 248,
         }),
-      )
-    })
-  })
+      );
+    });
+  });
 
-  it('sanitizes music visualizer settings on hydration', async () => {
-    const updateSettings = vi.fn()
+  it("sanitizes music visualizer settings on hydration", async () => {
+    const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
         musicVisualizerRenderLongEdgePx: 99999,
         musicVisualizerFpsCap: 75,
         musicVisualizerSelectedShaderId: 1,
-        musicVisualizerToneMapMode: 'filmic',
+        musicVisualizerToneMapMode: "filmic",
         musicVisualizerToneMapExposure: 8,
         musicVisualizerToneMapStrength: -3,
-        musicVisualizerShowFps: 'true',
-        musicVisualizerRenderer: 'metal',
+        musicVisualizerShowFps: "true",
+        musicVisualizerRenderer: "metal",
       }),
-    })
+    });
     const repository = {
       readAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     renderHook(() =>
       useSettingsPersistence({
@@ -173,47 +176,52 @@ describe('useSettingsPersistence', () => {
         repository,
         updateSettings,
       }),
-    )
+    );
 
     await waitFor(() => {
-      expect(updateSettings).toHaveBeenCalled()
-    })
+      expect(updateSettings).toHaveBeenCalled();
+    });
 
-    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<string, unknown>
-    expect(hydrationPatch.musicVisualizerRenderLongEdgePx).toBe(4096)
-    expect(hydrationPatch).not.toHaveProperty('musicVisualizerFpsCap')
-    expect(hydrationPatch).not.toHaveProperty('musicVisualizerSelectedShaderId')
-    expect(hydrationPatch.musicVisualizerToneMapMode).toBe('filmic')
-    expect(hydrationPatch.musicVisualizerToneMapExposure).toBe(2)
-    expect(hydrationPatch.musicVisualizerToneMapStrength).toBe(0)
-    expect(hydrationPatch).not.toHaveProperty('musicVisualizerShowFps')
-    expect(hydrationPatch).not.toHaveProperty('musicVisualizerRenderer')
-  })
+    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(hydrationPatch.musicVisualizerRenderLongEdgePx).toBe(4096);
+    expect(hydrationPatch).not.toHaveProperty("musicVisualizerFpsCap");
+    expect(hydrationPatch).not.toHaveProperty(
+      "musicVisualizerSelectedShaderId",
+    );
+    expect(hydrationPatch.musicVisualizerToneMapMode).toBe("filmic");
+    expect(hydrationPatch.musicVisualizerToneMapExposure).toBe(2);
+    expect(hydrationPatch.musicVisualizerToneMapStrength).toBe(0);
+    expect(hydrationPatch).not.toHaveProperty("musicVisualizerShowFps");
+    expect(hydrationPatch).not.toHaveProperty("musicVisualizerRenderer");
+  });
 
-  it('sanitizes per-shader visualizer settings map on hydration', async () => {
-    const updateSettings = vi.fn()
+  it("sanitizes per-shader visualizer settings map on hydration", async () => {
+    const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
-        musicVisualizerSelectedShaderId: 'singularity',
+        musicVisualizerSelectedShaderId: "singularity",
         musicVisualizerShaderSettingsById: {
           singularity: {
             renderLongEdgePx: 99999,
             fpsCap: 120,
-            toneMapMode: 'khronos',
+            toneMapMode: "khronos",
             toneMapExposure: 9,
             toneMapStrength: -2,
             showFps: true,
-            renderer: 'gpu',
+            renderer: "gpu",
           },
           bad: {
-            renderLongEdgePx: 'x',
+            renderLongEdgePx: "x",
           },
         },
       }),
-    })
+    });
     const repository = {
       readAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     renderHook(() =>
       useSettingsPersistence({
@@ -221,183 +229,210 @@ describe('useSettingsPersistence', () => {
         repository,
         updateSettings,
       }),
-    )
+    );
 
     await waitFor(() => {
-      expect(updateSettings).toHaveBeenCalled()
-    })
+      expect(updateSettings).toHaveBeenCalled();
+    });
 
-    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<string, unknown>
-    expect(hydrationPatch.musicVisualizerSelectedShaderId).toBe('singularity')
+    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(hydrationPatch.musicVisualizerSelectedShaderId).toBe("singularity");
     expect(hydrationPatch.musicVisualizerShaderSettingsById).toEqual({
       singularity: {
         renderLongEdgePx: 4096,
         renderScaleCoeff: 2,
-        compositionMode: 'single',
-        layeredBackgroundShaderId: 'galaxy',
-        layeredForegroundShaderId: 'mcs-szb',
+        compositionMode: "single",
+        layeredBackgroundShaderId: "galaxy",
+        layeredForegroundShaderId: "mcs-szb",
         layeredBackgroundEnabled: true,
         layeredForegroundEnabled: true,
         layeredForegroundOffsetX: 0,
         layeredForegroundOffsetY: 0,
         layeredForegroundScale: 1,
         fpsCap: 120,
-        toneMapMode: 'khronos',
+        toneMapMode: "khronos",
         toneMapExposure: 2,
         toneMapStrength: 0,
         showFps: true,
-        renderer: 'gpu',
+        renderer: "gpu",
       },
-    })
-  })
+    });
+  });
 
-  it('does not overwrite local changes made before hydration resolves', async () => {
+  it("does not overwrite local changes made before hydration resolves", async () => {
     const deferred: { resolve: (value: unknown) => void } = {
       resolve: () => void 0,
-    }
+    };
     const readAppState = vi.fn().mockImplementation(
       () =>
         new Promise((resolve) => {
-          deferred.resolve = resolve
+          deferred.resolve = resolve;
         }),
-    )
+    );
 
     const repository = {
       readAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     function useHarness() {
-      const [settings, setSettings] = useState(DEFAULT_SETTINGS)
-      const updateSettings = (patch: Parameters<typeof useSettingsPersistence>[0]['updateSettings'] extends (arg: infer A) => void ? A : never) => {
+      const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+      const updateSettings = (
+        patch: Parameters<
+          typeof useSettingsPersistence
+        >[0]["updateSettings"] extends (arg: infer A) => void
+          ? A
+          : never,
+      ) => {
         setSettings((prev) => ({
           ...prev,
           ...patch,
-        }))
-      }
+        }));
+      };
 
       useSettingsPersistence({
         settings,
         repository,
         updateSettings,
-      })
+      });
 
       return {
         settings,
         updateSettings,
-      }
+      };
     }
 
-    const { result } = renderHook(() => useHarness())
+    const { result } = renderHook(() => useHarness());
 
     act(() => {
       result.current.updateSettings({
-        adReviewVisionEndpoint: 'http://localhost:1234/v1/chat/completions',
-        adReviewVisionModel: 'local-new-model',
-      })
-    })
+        adReviewVisionEndpoint: "http://localhost:1234/v1/chat/completions",
+        adReviewVisionModel: "local-new-model",
+      });
+    });
 
     deferred.resolve({
       state_json: JSON.stringify({
-        adReviewVisionEndpoint: 'http://127.0.0.1:1234/v1/chat/completions',
-        adReviewVisionModel: 'persisted-old-model',
+        adReviewVisionEndpoint: "http://127.0.0.1:1234/v1/chat/completions",
+        adReviewVisionModel: "persisted-old-model",
       }),
-    })
+    });
 
     await waitFor(() => {
-      expect(result.current.settings.adReviewVisionEndpoint).toBe('http://localhost:1234/v1/chat/completions')
-      expect(result.current.settings.adReviewVisionModel).toBe('local-new-model')
-    })
-  })
+      expect(result.current.settings.adReviewVisionEndpoint).toBe(
+        "http://localhost:1234/v1/chat/completions",
+      );
+      expect(result.current.settings.adReviewVisionModel).toBe(
+        "local-new-model",
+      );
+    });
+  });
 
-  it('still persists settings when readAppState is unavailable', async () => {
-    vi.useFakeTimers()
-    const writeAppState = vi.fn().mockResolvedValue({})
+  it("still persists settings when readAppState is unavailable", async () => {
+    vi.useFakeTimers();
+    const writeAppState = vi.fn().mockResolvedValue({});
     const repository = {
       writeAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     function useHarness() {
-      const [settings, setSettings] = useState(DEFAULT_SETTINGS)
-      const updateSettings = (patch: Parameters<typeof useSettingsPersistence>[0]['updateSettings'] extends (arg: infer A) => void ? A : never) => {
+      const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+      const updateSettings = (
+        patch: Parameters<
+          typeof useSettingsPersistence
+        >[0]["updateSettings"] extends (arg: infer A) => void
+          ? A
+          : never,
+      ) => {
         setSettings((prev) => ({
           ...prev,
           ...patch,
-        }))
-      }
+        }));
+      };
 
       useSettingsPersistence({
         settings,
         repository,
         updateSettings,
-      })
+      });
 
       return {
         settings,
         updateSettings,
-      }
+      };
     }
 
-    const { result } = renderHook(() => useHarness())
+    const { result } = renderHook(() => useHarness());
 
     act(() => {
-      result.current.updateSettings({ adReviewVisionModel: 'persist-model' })
-      vi.advanceTimersByTime(1200)
-    })
+      result.current.updateSettings({ adReviewVisionModel: "persist-model" });
+      vi.advanceTimersByTime(1200);
+    });
 
-    await Promise.resolve()
-    await Promise.resolve()
-    expect(writeAppState).toHaveBeenCalledTimes(1)
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(writeAppState).toHaveBeenCalledTimes(1);
 
-    vi.useRealTimers()
-  })
+    vi.useRealTimers();
+  });
 
-  it('flushes pending settings before window unload', async () => {
-    vi.useFakeTimers()
-    const writeAppState = vi.fn().mockResolvedValue({})
+  it("flushes pending settings before window unload", async () => {
+    vi.useFakeTimers();
+    const writeAppState = vi.fn().mockResolvedValue({});
     const repository = {
       writeAppState,
-    } as unknown as Parameters<typeof useSettingsPersistence>[0]['repository']
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
 
     function useHarness() {
-      const [settings, setSettings] = useState(DEFAULT_SETTINGS)
-      const updateSettings = (patch: Parameters<typeof useSettingsPersistence>[0]['updateSettings'] extends (arg: infer A) => void ? A : never) => {
+      const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+      const updateSettings = (
+        patch: Parameters<
+          typeof useSettingsPersistence
+        >[0]["updateSettings"] extends (arg: infer A) => void
+          ? A
+          : never,
+      ) => {
         setSettings((prev) => ({
           ...prev,
           ...patch,
-        }))
-      }
+        }));
+      };
 
       useSettingsPersistence({
         settings,
         repository,
         updateSettings,
-      })
+      });
 
       return {
         settings,
         updateSettings,
-      }
+      };
     }
 
-    const { result } = renderHook(() => useHarness())
-    await Promise.resolve()
+    const { result } = renderHook(() => useHarness());
+    await Promise.resolve();
 
     act(() => {
-      result.current.updateSettings({ headerHeight: 72 })
-    })
+      result.current.updateSettings({ headerHeight: 72 });
+    });
 
     act(() => {
-      window.dispatchEvent(new Event('beforeunload'))
-    })
+      window.dispatchEvent(new Event("beforeunload"));
+    });
 
-    await Promise.resolve()
-    await Promise.resolve()
-    expect(writeAppState).toHaveBeenCalledTimes(1)
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(writeAppState).toHaveBeenCalledTimes(1);
     expect(writeAppState).toHaveBeenCalledWith(
       expect.objectContaining({
-        state_key: 'ui_settings_v1',
+        state_key: "ui_settings_v1",
       }),
-    )
-    expect(writeAppState.mock.calls[0][0].state_json).toContain('"headerHeight":72')
-  })
-})
+    );
+    expect(writeAppState.mock.calls[0][0].state_json).toContain(
+      '"headerHeight":72',
+    );
+  });
+});

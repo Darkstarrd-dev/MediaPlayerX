@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import { useEffectiveDisplayState } from "./useEffectiveDisplayState";
 import { useMetadataWriteBindings } from "./useMetadataWriteBindings";
@@ -48,7 +55,10 @@ function toAutoSubtitleLanguageLabel(
 
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
-function normalizeHexColor(value: string | null | undefined, fallback: string): string {
+function normalizeHexColor(
+  value: string | null | undefined,
+  fallback: string,
+): string {
   const normalized = (value ?? "").trim();
   if (!HEX_COLOR_PATTERN.test(normalized)) {
     return fallback;
@@ -71,7 +81,11 @@ function parseHexColor(value: string): [number, number, number] | null {
   const red = Number.parseInt(normalized.slice(1, 3), 16);
   const green = Number.parseInt(normalized.slice(3, 5), 16);
   const blue = Number.parseInt(normalized.slice(5, 7), 16);
-  if (!Number.isFinite(red) || !Number.isFinite(green) || !Number.isFinite(blue)) {
+  if (
+    !Number.isFinite(red) ||
+    !Number.isFinite(green) ||
+    !Number.isFinite(blue)
+  ) {
     return null;
   }
 
@@ -144,8 +158,11 @@ function resolveGradientDirection(direction: string): string {
   return "to right";
 }
 
-function buildSubtitleOverlayStyle(settings: AppSettingsStoreSnapshot): CSSProperties {
-  const textFillMode = settings.subtitleTextFillMode === "gradient" ? "gradient" : "solid";
+function buildSubtitleOverlayStyle(
+  settings: AppSettingsStoreSnapshot,
+): CSSProperties {
+  const textFillMode =
+    settings.subtitleTextFillMode === "gradient" ? "gradient" : "solid";
   const textColor = normalizeHexColor(settings.subtitleTextColor, "#ffffff");
   const gradientStartColor = normalizeHexColor(
     settings.subtitleGradientStartColor,
@@ -155,21 +172,38 @@ function buildSubtitleOverlayStyle(settings: AppSettingsStoreSnapshot): CSSPrope
     settings.subtitleGradientEndColor,
     "#7fd6ff",
   );
-  const gradientDirection = resolveGradientDirection(settings.subtitleGradientDirection);
+  const gradientDirection = resolveGradientDirection(
+    settings.subtitleGradientDirection,
+  );
   const gradientCurve = settings.subtitleGradientCurve;
-  const strokeColor = normalizeHexColor(settings.subtitleStrokeColor, "#000000");
-  const strokeWidth = Math.max(0, Math.min(8, toFiniteNumber(settings.subtitleStrokeWidth, 2)));
+  const strokeColor = normalizeHexColor(
+    settings.subtitleStrokeColor,
+    "#000000",
+  );
+  const strokeWidth = Math.max(
+    0,
+    Math.min(8, toFiniteNumber(settings.subtitleStrokeWidth, 2)),
+  );
   const strokeShadowColor = normalizeHexColor(
     settings.subtitleStrokeShadowColor,
     "#000000",
   );
-  const strokeShadowRadius = Math.max(0, Math.min(24, toFiniteNumber(settings.subtitleStrokeShadowRadius, 6)));
-  const subtitleFontSize = Math.max(14, Math.min(72, toFiniteNumber(settings.subtitleFontSize, 24)));
+  const strokeShadowRadius = Math.max(
+    0,
+    Math.min(24, toFiniteNumber(settings.subtitleStrokeShadowRadius, 6)),
+  );
+  const subtitleFontSize = Math.max(
+    14,
+    Math.min(72, toFiniteNumber(settings.subtitleFontSize, 24)),
+  );
   const subtitleMaxLineChars = Math.max(
     8,
     Math.min(80, Math.round(toFiniteNumber(settings.subtitleMaxLineChars, 28))),
   );
-  const offsetY = Math.max(-400, Math.min(400, toFiniteNumber(settings.subtitleOffsetY, 180)));
+  const offsetY = Math.max(
+    -400,
+    Math.min(400, toFiniteNumber(settings.subtitleOffsetY, 180)),
+  );
 
   const style: CSSProperties = {
     color: textColor,
@@ -181,10 +215,14 @@ function buildSubtitleOverlayStyle(settings: AppSettingsStoreSnapshot): CSSPrope
         ? `drop-shadow(0 0 ${strokeShadowRadius.toFixed(0)}px ${strokeShadowColor})`
         : "none",
     WebkitTextStroke:
-      strokeWidth > 0 ? `${strokeWidth.toFixed(1)}px ${strokeColor}` : "0 transparent",
+      strokeWidth > 0
+        ? `${strokeWidth.toFixed(1)}px ${strokeColor}`
+        : "0 transparent",
   };
-  (style as Record<string, string>)["--mpx-subtitle-offset-y"] = `${offsetY.toFixed(0)}px`;
-  (style as Record<string, string>)["--mpx-subtitle-max-line-chars"] = String(subtitleMaxLineChars);
+  (style as Record<string, string>)["--mpx-subtitle-offset-y"] =
+    `${offsetY.toFixed(0)}px`;
+  (style as Record<string, string>)["--mpx-subtitle-max-line-chars"] =
+    String(subtitleMaxLineChars);
 
   if (textFillMode === "gradient") {
     const points = [0, 0.25, 0.5, 0.75, 1];
@@ -438,59 +476,56 @@ export function useAppDisplayResources({
     !(backendRead.page?.loading ?? false) &&
     !(backendRead.metadata?.loading ?? false);
 
-  const nodeBrowseCoverThumbnailLocators = useMemo(
-    () => {
-      if (
-        !nodeBrowseMode ||
-        !canWarmupNodeBrowseCoverThumbnails ||
-        !selectedSidebarNode
-      ) {
-        return [];
+  const nodeBrowseCoverThumbnailLocators = useMemo(() => {
+    if (
+      !nodeBrowseMode ||
+      !canWarmupNodeBrowseCoverThumbnails ||
+      !selectedSidebarNode
+    ) {
+      return [];
+    }
+
+    const next: Array<{
+      sourceId: string;
+      imageId: string;
+      locator: MediaLocator;
+    }> = [];
+    const seenImageIds = new Set<string>();
+
+    for (const child of selectedSidebarNode.children) {
+      const sourceId = child.coverSourceId?.trim() ?? "";
+      const imageId = child.coverImageId?.trim() ?? "";
+      if (!sourceId || !imageId || seenImageIds.has(imageId)) {
+        continue;
       }
 
-      const next: Array<{
-        sourceId: string;
-        imageId: string;
-        locator: MediaLocator;
-      }> = [];
-      const seenImageIds = new Set<string>();
-
-      for (const child of selectedSidebarNode.children) {
-        const sourceId = child.coverSourceId?.trim() ?? "";
-        const imageId = child.coverImageId?.trim() ?? "";
-        if (!sourceId || !imageId || seenImageIds.has(imageId)) {
-          continue;
-        }
-
-        const source = packageByIdEffective.get(sourceId);
-        if (!source || source.sourceCover?.coverImagePath) {
-          continue;
-        }
-
-        const image = source.images.find(
-          (item) => item.id === imageId && !item.hidden,
-        );
-        if (!image) {
-          continue;
-        }
-
-        seenImageIds.add(imageId);
-        next.push({
-          sourceId,
-          imageId,
-          locator: image.mediaLocator,
-        });
+      const source = packageByIdEffective.get(sourceId);
+      if (!source || source.sourceCover?.coverImagePath) {
+        continue;
       }
 
-      return next;
-    },
-    [
-      canWarmupNodeBrowseCoverThumbnails,
-      nodeBrowseMode,
-      packageByIdEffective,
-      selectedSidebarNode,
-    ],
-  );
+      const image = source.images.find(
+        (item) => item.id === imageId && !item.hidden,
+      );
+      if (!image) {
+        continue;
+      }
+
+      seenImageIds.add(imageId);
+      next.push({
+        sourceId,
+        imageId,
+        locator: image.mediaLocator,
+      });
+    }
+
+    return next;
+  }, [
+    canWarmupNodeBrowseCoverThumbnails,
+    nodeBrowseMode,
+    packageByIdEffective,
+    selectedSidebarNode,
+  ]);
 
   const { refsInPageBase } = resolveAdReviewPageDerivations({
     adReviewResultsMode,
@@ -598,7 +633,9 @@ export function useAppDisplayResources({
   const [subtitleMessage, setSubtitleMessage] = useState<string | null>(null);
   const [subtitleReloadNonce, setSubtitleReloadNonce] = useState(0);
   const [manualSubtitleOverride, setManualSubtitleOverride] = useState(false);
-  const [autoLoadAttemptedRef] = useState(() => ({ current: new Set<string>() }));
+  const [autoLoadAttemptedRef] = useState(() => ({
+    current: new Set<string>(),
+  }));
   const subtitleOptionsRef = useRef<VideoSubtitleOption[]>([]);
   const [mainVideoElement, setMainVideoElement] =
     useState<HTMLVideoElement | null>(null);
@@ -608,8 +645,7 @@ export function useAppDisplayResources({
   const subtitleModelDir = (appSettings.subtitleModelDir ?? "").trim();
   const subtitleModelId = FIXED_SUBTITLE_MODEL_ID;
   const autoSubtitleConfigured =
-    appSettings.subtitleFeatureEnabled &&
-    subtitleModelDir.length > 0;
+    appSettings.subtitleFeatureEnabled && subtitleModelDir.length > 0;
   const autoSubtitleApiAvailable =
     typeof mediaRepository.startSubtitleSession === "function" &&
     typeof mediaRepository.stopSubtitleSession === "function" &&
@@ -632,6 +668,7 @@ export function useAppDisplayResources({
     modelId: subtitleModelId,
     providerPreference: "cpu",
     language: appSettings.subtitleLanguage,
+    validPlaybackRateThreshold: appSettings.subtitleValidPlaybackRateThreshold,
     renderMode: appSettings.subtitleRenderMode,
     advancedOptions: {
       vad: {
@@ -647,9 +684,14 @@ export function useAppDisplayResources({
     },
     repository: mediaRepository,
   });
-  const autoSubtitleUiMessage = toAutoSubtitleUiMessage(liveSubtitle.message, t);
+  const autoSubtitleUiMessage = toAutoSubtitleUiMessage(
+    liveSubtitle.message,
+    t,
+  );
   const subtitleOverlayStyle = buildSubtitleOverlayStyle(appSettings);
-  const configuredSubtitleLanguage = (appSettings.subtitleLanguage ?? "auto").trim().toLowerCase();
+  const configuredSubtitleLanguage = (appSettings.subtitleLanguage ?? "auto")
+    .trim()
+    .toLowerCase();
   const autoSubtitleStatusMessage = autoSubtitleUiMessage
     ? autoSubtitleUiMessage
     : configuredSubtitleLanguage !== "auto"
@@ -657,13 +699,21 @@ export function useAppDisplayResources({
           language: toAutoSubtitleLanguageLabel(configuredSubtitleLanguage, t),
         })
       : t("ui.media.autoSubtitleDetectingLanguage", {
-          language: toAutoSubtitleLanguageLabel(liveSubtitle.detectedLanguage, t),
+          language: toAutoSubtitleLanguageLabel(
+            liveSubtitle.detectedLanguage,
+            t,
+          ),
         });
 
   // 调试日志：记录自动字幕文本变化
   useEffect(() => {
     if (autoSubtitleRunning && liveSubtitle.activeText) {
-      console.log('[Subtitle Render] Auto subtitle text:', `"${liveSubtitle.activeText}"`, 'at', videoTime.toFixed(2));
+      console.log(
+        "[Subtitle Render] Auto subtitle text:",
+        `"${liveSubtitle.activeText}"`,
+        "at",
+        videoTime.toFixed(2),
+      );
     }
   }, [autoSubtitleRunning, liveSubtitle.activeText, videoTime]);
 
@@ -675,11 +725,11 @@ export function useAppDisplayResources({
 
   const selectSubtitleById = useCallback(
     async (subtitleId: string, sourceOptions?: VideoSubtitleOption[]) => {
-      console.log('[Subtitle] selectSubtitleById called:', subtitleId);
-      
+      console.log("[Subtitle] selectSubtitleById called:", subtitleId);
+
       // 如果选择自动字幕
       if (subtitleId === AUTO_SUBTITLE_ID) {
-        console.log('[Subtitle] Switching to auto subtitle mode');
+        console.log("[Subtitle] Switching to auto subtitle mode");
         setManualSubtitleOverride(false);
         setSelectedSubtitleId(AUTO_SUBTITLE_ID);
         setSelectedSubtitleLocator(null);
@@ -697,17 +747,19 @@ export function useAppDisplayResources({
             });
           }
         }
-        console.log('[Subtitle] Auto subtitle mode activated');
+        console.log("[Subtitle] Auto subtitle mode activated");
         return;
       }
 
-      const option = (sourceOptions ?? subtitleOptionsRef.current).find((item) => item.id === subtitleId);
+      const option = (sourceOptions ?? subtitleOptionsRef.current).find(
+        (item) => item.id === subtitleId,
+      );
       if (!option) {
-        console.warn('[Subtitle] Subtitle option not found:', subtitleId);
+        console.warn("[Subtitle] Subtitle option not found:", subtitleId);
         return;
       }
 
-      console.log('[Subtitle] Loading manual subtitle:', option.label);
+      console.log("[Subtitle] Loading manual subtitle:", option.label);
       setSubtitleLoading(true);
       setSubtitleMessage(null);
       try {
@@ -741,7 +793,10 @@ export function useAppDisplayResources({
                 };
         }
 
-        console.log('[Subtitle] Manual subtitle loaded successfully:', option.label);
+        console.log(
+          "[Subtitle] Manual subtitle loaded successfully:",
+          option.label,
+        );
         setManualSubtitleOverride(true);
         setSelectedSubtitleId(option.id);
         setSelectedSubtitleLocator(locator);
@@ -759,7 +814,7 @@ export function useAppDisplayResources({
           }
         }
       } catch (error: unknown) {
-        console.error('[Subtitle] Failed to load subtitle:', error);
+        console.error("[Subtitle] Failed to load subtitle:", error);
         setSubtitleMessage(
           t("ui.media.subtitleSelectFailed", {
             message: toErrorDetailWithCode(error, t),
@@ -770,12 +825,7 @@ export function useAppDisplayResources({
         setSubtitleLoading(false);
       }
     },
-    [
-      appSettings,
-      focusedVideoEffective?.id,
-      mediaRepository,
-      t,
-    ],
+    [appSettings, focusedVideoEffective?.id, mediaRepository, t],
   );
 
   useEffect(() => {
@@ -806,7 +856,8 @@ export function useAppDisplayResources({
       setManualSubtitleOverride(false);
       return;
     }
-    const persistedSubtitleId = subtitleSelectionByVideoIdRef.current[videoId] ?? null;
+    const persistedSubtitleId =
+      subtitleSelectionByVideoIdRef.current[videoId] ?? null;
     if (persistedSubtitleId === AUTO_SUBTITLE_ID) {
       setManualSubtitleOverride(false);
     } else if (persistedSubtitleId) {
@@ -879,20 +930,34 @@ export function useAppDisplayResources({
           ]
         : options;
       setSubtitleOptions(finalOptions);
-      const persistedSubtitleId = subtitleSelectionByVideoIdRef.current[videoId] ?? null;
+      const persistedSubtitleId =
+        subtitleSelectionByVideoIdRef.current[videoId] ?? null;
       const autoLoadKey = `${videoId}:${persistedSubtitleId}`;
-      
+
       // 不要在用户刚选择自动字幕后立即自动加载手动字幕
       const currentlySelectedIsAuto = selectedSubtitleId === AUTO_SUBTITLE_ID;
-      if (persistedSubtitleId && finalOptions.some((item) => item.id === persistedSubtitleId) && !autoSubtitleRunning && !currentlySelectedIsAuto) {
+      if (
+        persistedSubtitleId &&
+        finalOptions.some((item) => item.id === persistedSubtitleId) &&
+        !autoSubtitleRunning &&
+        !currentlySelectedIsAuto
+      ) {
         setSelectedSubtitleId(persistedSubtitleId);
         // 自动加载持久化的字幕（但只尝试一次）
         if (!autoLoadAttemptedRef.current.has(autoLoadKey)) {
           autoLoadAttemptedRef.current.add(autoLoadKey);
-          console.log('[Subtitle] Auto-loading persisted subtitle:', persistedSubtitleId, 'for video:', videoId);
+          console.log(
+            "[Subtitle] Auto-loading persisted subtitle:",
+            persistedSubtitleId,
+            "for video:",
+            videoId,
+          );
           void selectSubtitleById(persistedSubtitleId, finalOptions);
         }
-      } else if (persistedSubtitleId && !finalOptions.some((item) => item.id === persistedSubtitleId)) {
+      } else if (
+        persistedSubtitleId &&
+        !finalOptions.some((item) => item.id === persistedSubtitleId)
+      ) {
         clearPersistedSubtitleSelection(videoId);
         setSelectedSubtitleId(null);
       }
@@ -965,20 +1030,34 @@ export function useAppDisplayResources({
             ]
           : options;
         setSubtitleOptions(finalOptions);
-        const persistedSubtitleId = subtitleSelectionByVideoIdRef.current[videoId] ?? null;
+        const persistedSubtitleId =
+          subtitleSelectionByVideoIdRef.current[videoId] ?? null;
         const autoLoadKey = `${videoId}:${persistedSubtitleId}`;
-        
+
         // 不要在用户刚选择自动字幕后立即自动加载手动字幕
         const currentlySelectedIsAuto = selectedSubtitleId === AUTO_SUBTITLE_ID;
-        if (persistedSubtitleId && finalOptions.some((item) => item.id === persistedSubtitleId) && !autoSubtitleRunning && !currentlySelectedIsAuto) {
+        if (
+          persistedSubtitleId &&
+          finalOptions.some((item) => item.id === persistedSubtitleId) &&
+          !autoSubtitleRunning &&
+          !currentlySelectedIsAuto
+        ) {
           setSelectedSubtitleId(persistedSubtitleId);
           // 自动加载持久化的字幕（但只尝试一次）
           if (!autoLoadAttemptedRef.current.has(autoLoadKey)) {
             autoLoadAttemptedRef.current.add(autoLoadKey);
-            console.log('[Subtitle] Auto-loading persisted subtitle:', persistedSubtitleId, 'for video:', videoId);
+            console.log(
+              "[Subtitle] Auto-loading persisted subtitle:",
+              persistedSubtitleId,
+              "for video:",
+              videoId,
+            );
             void selectSubtitleById(persistedSubtitleId, finalOptions);
           }
-        } else if (persistedSubtitleId && !finalOptions.some((item) => item.id === persistedSubtitleId)) {
+        } else if (
+          persistedSubtitleId &&
+          !finalOptions.some((item) => item.id === persistedSubtitleId)
+        ) {
           clearPersistedSubtitleSelection(videoId);
           setSelectedSubtitleId(null);
         }
@@ -992,7 +1071,9 @@ export function useAppDisplayResources({
           return;
         }
         const message = toErrorDetailWithCode(error, t);
-        setSubtitleOptions((previous) => (previous.length === 0 ? previous : []));
+        setSubtitleOptions((previous) =>
+          previous.length === 0 ? previous : [],
+        );
         setSelectedSubtitleId(null);
         setSelectedSubtitleLocator(null);
         setSubtitleTrackUrl(null);
@@ -1011,6 +1092,7 @@ export function useAppDisplayResources({
     };
   }, [
     focusedVideoEffective?.id,
+    selectedSubtitleId,
     isSynchronousSubtitleMode,
     isVideoMode,
     mediaRepository,
@@ -1025,13 +1107,13 @@ export function useAppDisplayResources({
   ]);
 
   useEffect(() => {
-    console.log('[Subtitle Track] Checking subtitle track URL conditions:', {
+    console.log("[Subtitle Track] Checking subtitle track URL conditions:", {
       autoSubtitleRunning,
       isVideoMode,
       hasVideo: !!focusedVideoEffective?.id,
       hasLocator: !!selectedSubtitleLocator,
     });
-    
+
     if (
       autoSubtitleRunning ||
       !isVideoMode ||
@@ -1042,14 +1124,20 @@ export function useAppDisplayResources({
       return;
     }
 
-    console.log('[Subtitle Track] Resolving subtitle track URL for locator:', selectedSubtitleLocator);
+    console.log(
+      "[Subtitle Track] Resolving subtitle track URL for locator:",
+      selectedSubtitleLocator,
+    );
 
     if (isSynchronousSubtitleMode && syncMediaRepository) {
       const response = syncMediaRepository.resolveMediaResourceSync({
         locator: toLocatorDto(selectedSubtitleLocator),
         preferred_variant: "original",
       });
-      console.log('[Subtitle Track] Resolved track URL (sync):', response.resource_url);
+      console.log(
+        "[Subtitle Track] Resolved track URL (sync):",
+        response.resource_url,
+      );
       setSubtitleTrackUrl(response.resource_url);
       return;
     }
@@ -1064,14 +1152,17 @@ export function useAppDisplayResources({
         if (!active) {
           return;
         }
-        console.log('[Subtitle Track] Resolved track URL (async):', response.resource_url);
+        console.log(
+          "[Subtitle Track] Resolved track URL (async):",
+          response.resource_url,
+        );
         setSubtitleTrackUrl(response.resource_url);
       })
       .catch((error: unknown) => {
         if (!active) {
           return;
         }
-        console.error('[Subtitle Track] Failed to resolve track URL:', error);
+        console.error("[Subtitle Track] Failed to resolve track URL:", error);
         setSubtitleTrackUrl(null);
         setSubtitleMessage(
           t("ui.media.subtitleResolveFailed", {
@@ -1124,8 +1215,12 @@ export function useAppDisplayResources({
     subtitleOptions,
     selectedSubtitleId,
     subtitleTrackUrl: autoSubtitleRunning ? null : subtitleTrackUrl,
-    subtitleLoading: autoSubtitleRunning ? liveSubtitle.loading : subtitleLoading,
-    subtitleMessage: autoSubtitleRunning ? autoSubtitleStatusMessage : subtitleMessage,
+    subtitleLoading: autoSubtitleRunning
+      ? liveSubtitle.loading
+      : subtitleLoading,
+    subtitleMessage: autoSubtitleRunning
+      ? autoSubtitleStatusMessage
+      : subtitleMessage,
     autoSubtitleActive: autoSubtitleRunning,
     liveSubtitleText: liveSubtitle.activeText,
     subtitleOverlayStyle,
