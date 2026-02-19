@@ -57,9 +57,17 @@ interface SubtitleSessionState {
   persistence: SubtitlePersistenceState | null
 }
 
+interface ValidRange {
+  start_sec: number
+  end_sec: number
+}
+
 interface SubtitlePersistenceState {
   subtitlePath: string
   cues: SubtitleCueRecord[]
+  validRanges: ValidRange[]
+  validPlaybackRateThreshold: number
+  lastFileMtimeMs: number
   lastAppliedEpoch: number
   lastAppliedChunkSeq: number
 }
@@ -97,8 +105,20 @@ function formatSrtTimestamp(seconds: number): string {
   return `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')},${String(ms).padStart(3, '0')}`
 }
 
-function cuesToSrtText(cues: SubtitleCueRecord[]): string {
+function cuesToSrtText(cues: SubtitleCueRecord[], validRanges: ValidRange[], validPlaybackRateThreshold: number): string {
   const lines: string[] = []
+  
+  // 写入元数据头部
+  if (validRanges.length > 0) {
+    const rangesStr = validRanges
+      .map((range) => `${range.start_sec.toFixed(1)}-${range.end_sec.toFixed(1)}`)
+      .join(',')
+    lines.push(`# ValidRanges: ${rangesStr}`)
+  }
+  lines.push(`# ValidPlaybackRateThreshold: ${validPlaybackRateThreshold.toFixed(1)}`)
+  lines.push('')
+  
+  // 写入字幕条目
   let cueIndex = 1
   for (const cue of cues) {
     const text = cue.text.trim()
@@ -112,6 +132,47 @@ function cuesToSrtText(cues: SubtitleCueRecord[]): string {
     cueIndex += 1
   }
   return lines.join('\n').trim()
+}
+
+function parseSrtMetadata(rawText: string): { validRanges: ValidRange[]; validPlaybackRateThreshold: number } {
+  const lines = rawText.split('\n')
+  const validRanges: ValidRange[] = []
+  let validPlaybackRateThreshold = 1.0
+  
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed.startsWith('#')) {
+      break  // 元数据只在文件开头
+    }
+    
+    // 解析 ValidRanges
+    const rangesMatch = trimmed.match(/^#\s*ValidRanges:\s*(.+)$/)
+    if (rangesMatch) {
+      const rangesStr = rangesMatch[1].trim()
+      const rangeParts = rangesStr.split(',')
+      for (const part of rangeParts) {
+        const [startStr, endStr] = part.trim().split('-')
+        const startSec = Number(startStr)
+        const endSec = Number(endStr)
+        if (Number.isFinite(startSec) && Number.isFinite(endSec) && startSec >= 0 && endSec >= startSec) {
+          validRanges.push({ start_sec: startSec, end_sec: endSec })
+        }
+      }
+      continue
+    }
+    
+    // 解析 ValidPlaybackRateThreshold
+    const thresholdMatch = trimmed.match(/^#\s*ValidPlaybackRateThreshold:\s*(.+)$/)
+    if (thresholdMatch) {
+      const value = Number(thresholdMatch[1].trim())
+      if (Number.isFinite(value) && value > 0) {
+        validPlaybackRateThreshold = value
+      }
+      continue
+    }
+  }
+  
+  return { validRanges, validPlaybackRateThreshold }
 }
 
 function normalizePersistenceLocaleTag(rawLanguage: string): string {
@@ -245,6 +306,104 @@ function parseSrtText(rawText: string): SubtitleCueRecord[] {
   return dedupeCuesByTimeAndText(cues)
 }
 
+async function refreshPersistenceStateFromFile(persistence: SubtitlePersistenceState): Promise<void> {
+  const stat = await fs.stat(persistence.subtitlePath).catch((error: unknown) => {
+    if ((error as { code?: string })?.code === 'ENOENT') {
+      return null
+    }
+    throw error
+  })
+  if (!stat) {
+    return
+  }
+
+  const fileMtimeMs = Number(stat.mtimeMs)
+  if (Number.isFinite(fileMtimeMs) && fileMtimeMs <= persistence.lastFileMtimeMs + 0.5) {
+    return
+  }
+
+  const rawText = await fs.readFile(persistence.subtitlePath, 'utf8').catch((error: unknown) => {
+    if ((error as { code?: string })?.code === 'ENOENT') {
+      return ''
+    }
+    throw error
+  })
+  if (!rawText.trim()) {
+    persistence.cues = []
+    persistence.validRanges = []
+    persistence.lastFileMtimeMs = Number.isFinite(fileMtimeMs) ? fileMtimeMs : nowMs()
+    return
+  }
+
+  const metadata = parseSrtMetadata(rawText)
+  persistence.validRanges = metadata.validRanges
+  persistence.validPlaybackRateThreshold = metadata.validPlaybackRateThreshold
+  persistence.cues = parseSrtText(rawText)
+  persistence.lastFileMtimeMs = Number.isFinite(fileMtimeMs) ? fileMtimeMs : nowMs()
+}
+
+function mergeValidRanges(ranges: ValidRange[]): ValidRange[] {
+  if (ranges.length === 0) {
+    return []
+  }
+  
+  const sorted = [...ranges].sort((a, b) => a.start_sec - b.start_sec)
+  const merged: ValidRange[] = []
+  
+  for (const range of sorted) {
+    if (merged.length === 0) {
+      merged.push({ ...range })
+      continue
+    }
+    
+    const last = merged[merged.length - 1]
+    // 如果重叠或相邻（间隔 < 1.0s），合并
+    if (range.start_sec <= last.end_sec + 1.0) {
+      last.end_sec = Math.max(last.end_sec, range.end_sec)
+    } else {
+      merged.push({ ...range })
+    }
+  }
+  
+  return merged
+}
+
+function isBatchInValidRanges(batchStartSec: number, batchEndSec: number, ranges: ValidRange[]): boolean {
+  // 检查 batch 是否完全在某个合规区间内
+  for (const range of ranges) {
+    if (batchStartSec >= range.start_sec && batchEndSec <= range.end_sec) {
+      return true
+    }
+  }
+  return false
+}
+
+function normalizeValidRange(input: ValidRange): ValidRange {
+  const startSec = Math.max(0, Math.min(input.start_sec, input.end_sec))
+  const endSec = Math.max(startSec, Math.max(input.start_sec, input.end_sec))
+  return {
+    start_sec: Number(startSec.toFixed(3)),
+    end_sec: Number(endSec.toFixed(3)),
+  }
+}
+
+function upsertValidRange(ranges: ValidRange[], incoming: ValidRange): { ranges: ValidRange[]; changed: boolean } {
+  const normalizedIncoming = normalizeValidRange(incoming)
+  const merged = mergeValidRanges([...ranges, normalizedIncoming])
+  if (merged.length !== ranges.length) {
+    return { ranges: merged, changed: true }
+  }
+  for (let i = 0; i < merged.length; i += 1) {
+    if (
+      Math.abs(merged[i].start_sec - ranges[i].start_sec) > 0.0005
+      || Math.abs(merged[i].end_sec - ranges[i].end_sec) > 0.0005
+    ) {
+      return { ranges: merged, changed: true }
+    }
+  }
+  return { ranges, changed: false }
+}
+
 function toCueRecord(cue: AppendSubtitlePersistenceRequestDto['cues'][number]): SubtitleCueRecord {
   return {
     id: cue.id,
@@ -369,19 +528,19 @@ function cueOverlapRatio(left: SubtitleCueRecord, right: SubtitleCueRecord): num
 
 function areLikelyDuplicateCue(left: SubtitleCueRecord, right: SubtitleCueRecord): boolean {
   const similarity = computeCueTextSimilarity(left.text, right.text)
-  if (similarity < 0.72) {
+  if (similarity < 0.82) {
     return false
   }
   const leftCenter = (left.start_sec + left.end_sec) * 0.5
   const rightCenter = (right.start_sec + right.end_sec) * 0.5
   const centerDiff = Math.abs(leftCenter - rightCenter)
-  if (similarity >= 0.9 && centerDiff <= 1.4) {
+  if (similarity >= 0.92 && centerDiff <= 0.8) {
     return true
   }
-  if (centerDiff <= 0.65 && similarity >= 0.78) {
+  if (centerDiff <= 0.45 && similarity >= 0.85) {
     return true
   }
-  return cueOverlapRatio(left, right) >= 0.45 && similarity >= 0.74
+  return cueOverlapRatio(left, right) >= 0.5 && similarity >= 0.82
 }
 
 function mergeDuplicateCue(base: SubtitleCueRecord, incoming: SubtitleCueRecord): SubtitleCueRecord {
@@ -638,8 +797,12 @@ export class SubtitleSessionManager {
       await ensureParentDirectory(subtitlePath)
 
       let initialCues: SubtitleCueRecord[] = []
+      let initialValidRanges: ValidRange[] = []
+      let initialValidPlaybackRateThreshold = request.valid_playback_rate_threshold ?? 1.0
+      
       if (request.reset_existing) {
-        await fs.writeFile(subtitlePath, '', 'utf8')
+        const emptyContent = cuesToSrtText([], [], initialValidPlaybackRateThreshold)
+        await fs.writeFile(subtitlePath, emptyContent, 'utf8')
       } else {
         const existingText = await fs.readFile(subtitlePath, 'utf8').catch((error: unknown) => {
           if ((error as { code?: string })?.code === 'ENOENT') {
@@ -661,16 +824,31 @@ export class SubtitleSessionManager {
           : ''
         const restoredText = existingText || legacyText
         if (restoredText && restoredText.trim()) {
+          const metadata = parseSrtMetadata(restoredText)
+          initialValidRanges = metadata.validRanges
+          initialValidPlaybackRateThreshold = metadata.validPlaybackRateThreshold
           initialCues = parseSrtText(restoredText)
           if (!existingText && legacyText) {
-            await fs.writeFile(subtitlePath, cuesToSrtText(initialCues), 'utf8')
+            const migratedContent = cuesToSrtText(initialCues, initialValidRanges, initialValidPlaybackRateThreshold)
+            await fs.writeFile(subtitlePath, migratedContent, 'utf8')
           }
         }
       }
 
+      const initialFileStat = await fs.stat(subtitlePath).catch((error: unknown) => {
+        if ((error as { code?: string })?.code === 'ENOENT') {
+          return null
+        }
+        throw error
+      })
+      const initialFileMtimeMs = initialFileStat ? Number(initialFileStat.mtimeMs) : nowMs()
+
       session.persistence = {
         subtitlePath,
         cues: initialCues,
+        validRanges: initialValidRanges,
+        validPlaybackRateThreshold: initialValidPlaybackRateThreshold,
+        lastFileMtimeMs: Number.isFinite(initialFileMtimeMs) ? initialFileMtimeMs : nowMs(),
         lastAppliedEpoch: -1,
         lastAppliedChunkSeq: -1,
       }
@@ -751,9 +929,29 @@ export class SubtitleSessionManager {
       }))
       .sort((left, right) => left.start_sec - right.start_sec)
 
+    const playbackRate = request.playback_rate ?? 1.0
+    let validRangeChanged = false
+    if (
+      request.current_valid_range
+      && playbackRate <= persistence.validPlaybackRateThreshold
+    ) {
+      const updated = upsertValidRange(persistence.validRanges, request.current_valid_range)
+      persistence.validRanges = updated.ranges
+      validRangeChanged = updated.changed
+    }
+
     if (incomingCues.length === 0) {
       persistence.lastAppliedEpoch = request.session_epoch
       persistence.lastAppliedChunkSeq = request.chunk_seq
+      if (validRangeChanged) {
+        const nextSrt = cuesToSrtText(persistence.cues, persistence.validRanges, persistence.validPlaybackRateThreshold)
+        const tempPath = `${persistence.subtitlePath}.tmp`
+        await fs.writeFile(tempPath, nextSrt, 'utf8')
+        await fs.unlink(persistence.subtitlePath).catch(() => undefined)
+        await fs.rename(tempPath, persistence.subtitlePath)
+        const fileStat = await fs.stat(persistence.subtitlePath).catch(() => null)
+        persistence.lastFileMtimeMs = fileStat ? Number(fileStat.mtimeMs) : nowMs()
+      }
       return appendSubtitlePersistenceResponseSchema.parse({
         accepted: true,
         subtitle_path: persistence.subtitlePath,
@@ -769,6 +967,52 @@ export class SubtitleSessionManager {
     const batchEndSec = request.batch_end_sec ?? incomingCues[incomingCues.length - 1].end_sec
     const rangeStartSec = Math.max(0, Math.min(batchStartSec, batchEndSec))
     const rangeEndSec = Math.max(rangeStartSec, Math.max(batchStartSec, batchEndSec))
+    
+    // 合规区间判定仅用于 seek/replay 防重场景；正常连续播放不应阻断写盘
+    const shouldEnforceValidRangeGuard = request.enforce_valid_range_guard === true
+    const isInValidRange = shouldEnforceValidRangeGuard
+      ? isBatchInValidRanges(rangeStartSec, rangeEndSec, persistence.validRanges)
+      : false
+    if (isInValidRange) {
+      persistence.lastAppliedEpoch = request.session_epoch
+      persistence.lastAppliedChunkSeq = request.chunk_seq
+      return appendSubtitlePersistenceResponseSchema.parse({
+        accepted: false,
+        subtitle_path: persistence.subtitlePath,
+        cue_count: persistence.cues.length,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: incomingCues.length,
+        replaced_cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
+    }
+    
+    // 时间戳验证：拒绝明显异常的时间戳
+    const timestampTolerance = 2.0
+    const validatedCues = incomingCues.filter((cue) => {
+      if (cue.start_sec < rangeStartSec - timestampTolerance) {
+        return false
+      }
+      if (cue.end_sec > rangeEndSec + timestampTolerance) {
+        return false
+      }
+      return true
+    })
+    
+    if (validatedCues.length === 0) {
+      persistence.lastAppliedEpoch = request.session_epoch
+      persistence.lastAppliedChunkSeq = request.chunk_seq
+      return appendSubtitlePersistenceResponseSchema.parse({
+        accepted: true,
+        subtitle_path: persistence.subtitlePath,
+        cue_count: persistence.cues.length,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: incomingCues.length,
+        replaced_cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
+    }
+    
     const boundaryEpsSec = 0.25
 
     const existingRanges = mergeCueRanges(persistence.cues)
@@ -784,7 +1028,7 @@ export class SubtitleSessionManager {
         subtitle_path: persistence.subtitlePath,
         cue_count: persistence.cues.length,
         accepted_cue_count: 0,
-        skipped_inner_cue_count: incomingCues.length,
+        skipped_inner_cue_count: validatedCues.length,
         replaced_cue_count: 0,
         updated_at_ms: nowMs(),
       })
@@ -792,17 +1036,19 @@ export class SubtitleSessionManager {
 
     const replacedCueCount = persistence.cues.filter((cue) => cueOverlapsRange(cue, rangeStartSec, rangeEndSec)).length
     const remainingCues = persistence.cues.filter((cue) => !cueOverlapsRange(cue, rangeStartSec, rangeEndSec))
-    const mergedCues = dedupeCuesByTimeAndText([...remainingCues, ...incomingCues])
+    const mergedCues = dedupeCuesByTimeAndText([...remainingCues, ...validatedCues])
 
     persistence.cues = mergedCues
     persistence.lastAppliedEpoch = request.session_epoch
     persistence.lastAppliedChunkSeq = request.chunk_seq
 
-    const nextSrt = cuesToSrtText(persistence.cues)
+    const nextSrt = cuesToSrtText(persistence.cues, persistence.validRanges, persistence.validPlaybackRateThreshold)
     const tempPath = `${persistence.subtitlePath}.tmp`
     await fs.writeFile(tempPath, nextSrt, 'utf8')
     await fs.unlink(persistence.subtitlePath).catch(() => undefined)
     await fs.rename(tempPath, persistence.subtitlePath)
+    const fileStat = await fs.stat(persistence.subtitlePath).catch(() => null)
+    persistence.lastFileMtimeMs = fileStat ? Number(fileStat.mtimeMs) : nowMs()
 
     return appendSubtitlePersistenceResponseSchema.parse({
       accepted: true,
@@ -821,7 +1067,7 @@ export class SubtitleSessionManager {
   ): Promise<ReadSubtitlePersistenceWindowResponseDto> {
     const session = this.sessions.get(webContentsId)
     const persistence = session?.persistence
-    if (!session || !persistence || persistence.cues.length === 0) {
+    if (!session || !persistence) {
       return readSubtitlePersistenceWindowResponseSchema.parse({
         subtitle_path: persistence?.subtitlePath ?? null,
         cues: [],
@@ -834,9 +1080,33 @@ export class SubtitleSessionManager {
       })
     }
 
+    if (request.prefer_persisted_file) {
+      await refreshPersistenceStateFromFile(persistence).catch(() => undefined)
+    }
+
+    if (persistence.cues.length === 0) {
+      return readSubtitlePersistenceWindowResponseSchema.parse({
+        subtitle_path: persistence.subtitlePath,
+        cues: [],
+        generated_ranges: persistence.validRanges,
+        timeline_in_generated_range: isBatchInValidRanges(request.timeline_sec, request.timeline_sec, persistence.validRanges),
+        timeline_has_cue: false,
+        generated_start_sec: null,
+        generated_end_sec: null,
+        updated_at_ms: nowMs(),
+      })
+    }
+
     const rangeStart = Math.max(0, request.timeline_sec - request.backtrack_sec)
     const rangeEnd = request.timeline_sec + request.lookahead_sec
-    const generatedRanges = mergeCueRanges(persistence.cues)
+    // 防重判定优先使用 ValidRanges（覆盖“无 cue 起点”场景，如 seek 到 0s）
+    // 兜底：若历史文件尚无 ValidRanges，则退回到 cue 合并区间。
+    const generatedRanges = persistence.validRanges.length > 0
+      ? persistence.validRanges.map((range) => ({
+          startSec: range.start_sec,
+          endSec: range.end_sec,
+        }))
+      : mergeCueRanges(persistence.cues)
     const timelineInGeneratedRange = generatedRanges.some((range) => {
       return range.startSec - 0.01 <= request.timeline_sec && range.endSec + 0.01 >= request.timeline_sec
     })

@@ -1034,12 +1034,185 @@ Status: in_progress
 
 ### 2026-02-19  Phase G 第十三轮（seekback 锁区回放 + 相似文本去重加严）
 
-- 针对“seekback 每次都再生一条、时间微错开”的复测结果，继续加固：
+- 针对"seekback 每次都再生一条、时间微错开"的复测结果，继续加固：
   1. seek 后若命中已生成区间，建立 `replayLockRange`，在该区间内强制只回放持久化字幕，不再触发实时再生成；
-  2. Renderer/主进程持久化两端去重从“文本完全一致”升级为“文本相似度 + 时间邻近/重叠”联合判定；
-  3. >2x 仍保持“仅回放已生成字幕”降级策略，并在降回 <=2x 时自动清除提示。
+  2. Renderer/主进程持久化两端去重从"文本完全一致"升级为"文本相似度 + 时间邻近/重叠"联合判定；
+  3. >2x 仍保持"仅回放已生成字幕"降级策略，并在降回 <=2x 时自动清除提示。
 - 目标：消除 seekback 产生的同义/近似重复条目，避免 .auto-live 文件继续污染。
 - 验证：`bun run build:electron`、`bun run build` 通过。
+
+### 2026-02-19  Phase G 第十四轮（seekback 同步 range 检查 + seeking 标志）
+
+- 问题根因：
+  - capture 回调中虽然计算了 `cachedInGeneratedRange`，但只用于决定是否刷新 persistence（异步），未同步阻止生成；
+  - seekback 后 `syncPersistenceWindow` 是异步的，在它完成前 capture 回调已经开始推送 chunk 到队列。
+- 本轮修复（三层防护）：
+  1. **同步 range 检查**：在 capture 回调中计算 `cachedInGeneratedRange` 后，立即同步检查并 return，阻止已生成区间重复生成；
+  2. **seeking 标志**：新增 `seekingInProgressRef`，onSeeked 触发时设置为 true，在 `syncPersistenceWindow` 完成后设置为 false；capture 回调中如果 seeking=true 则跳过生成；
+  3. **加严去重阈值**：相似度从 0.72 提高到 0.82，时间窗口从 1.4s 缩短到 0.8s，重叠比从 0.45 提高到 0.5，作为兜底保护。
+- 代码落点：
+  - `src/features/subtitles/useLiveSubtitles.ts`：新增 `seekingInProgressRef`，capture 回调中添加同步 range 检查与 seeking 检查，onSeeked 中设置/清除 seeking 标志；
+  - `src/features/subtitles/useLiveSubtitles.ts` 与 `electron/subtitles/subtitleSession.ts`：`areLikelyDuplicateCue` 函数加严阈值。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+- 下一步：等待用户复测 seekback 场景（从头播放到 10s，seekback 到 0s 重新播放），确认是否仍会重复生成。
+
+### 2026-02-19  Phase G 第十五轮（合规生成区间策略 - 第一轮实现）
+
+- 问题根因（用户反馈）：
+  - 第十四轮的 range 检查依赖 `persistenceGeneratedRangesRef`，但这只是"已写入的 cue 时间范围"，不是"合规播放生成的时间段"；
+  - 日文短句（通常 9 字）相似度判定失效：2-3 字不同导致相似度约 66%，远低于 0.82 阈值，无法捕获重复；
+  - seekback 后仍会重复生成，且时间戳异常（如 0.0s 出现在 10s batch 中）。
+- 用户最早要求的策略：
+  - 维护"合规生成区间"（正常速度 <= 1.0x 播放生成的时间段），记录在 `.auto-live.<locale>.srt` 文件头部；
+  - seekback 到合规区间内，完全拒绝写入；
+  - seekforward 到合规区间外，允许写入并更新合规区间；
+  - 重叠部分用新 cue 替换旧 cue（仅删除第一条重叠的）。
+- 本轮实现（第一轮：合规区间判定 + 拒绝写入）：
+  1. **数据结构扩展**：
+     - `SubtitlePersistenceState` 新增 `validRanges: ValidRange[]` 和 `validPlaybackRateThreshold: number`；
+     - `ValidRange` 定义为 `{ start_sec: number; end_sec: number }`。
+  2. **IPC 协议扩展**：
+     - `AppendSubtitlePersistenceRequestDto` 新增 `playback_rate: number` 字段；
+     - `StartSubtitlePersistenceRequestDto` 新增 `valid_playback_rate_threshold?: number` 字段（默认 1.0）。
+  3. **SRT 元数据格式**：
+     - 文件头部写入 `# ValidRanges: 0.0-30.5,54.2-90.8` 和 `# ValidPlaybackRateThreshold: 1.0`；
+     - 实现 `parseSrtMetadata()` 和 `cuesToSrtText()` 支持元数据读写。
+  4. **合规区间判定逻辑**：
+     - `isBatchInValidRanges()`：检查 batch 是否完全在合规区间内；
+     - `mergeValidRanges()`：合并重叠或相邻（间隔 < 1.0s）的区间；
+     - `appendPersistence` 中：如果 batch 完全在合规区间内，拒绝写入并返回 `accepted=false`。
+  5. **合规区间更新**：
+     - 仅在 `playbackRate <= validPlaybackRateThreshold` 时，将新 batch 时间范围加入合规区间并自动合并。
+  6. **时间戳验证**（兜底保护）：
+     - 拒绝 `start_sec < batchStartSec - 2.0` 或 `end_sec > batchEndSec + 2.0` 的 cue，防止异常时间戳污染。
+  7. **Renderer 侧改动**：
+     - `PersistenceBatchPayload` 新增 `playbackRate` 字段；
+     - `enqueuePersistenceCues()` 和 `drainPersistenceQueue()` 传递当前播放速度。
+- 代码落点：
+  - `electron/subtitles/subtitleSession.ts`：扩展数据结构、实现元数据解析/序列化、合规区间判定/合并逻辑、修改 `startPersistence` 和 `appendPersistence`；
+  - `src/contracts/backend.schemas.ts`：扩展 IPC 协议；
+  - `src/features/subtitles/useLiveSubtitles.ts`：传递播放速度。
+- 参数配置（用户确认）：
+  - 合规播放速度阈值：1.0x（未来可调）；
+  - 区间合并间隔：1.0s；
+  - 时间戳验证容差：2.0s。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+- 下一步：
+  - 用户测试场景 1：从 0s 播放到 30s，检查 SRT 文件头部是否有 `# ValidRanges: 0.0-30.x`；
+  - 用户测试场景 2：seekback 到 5s，继续播放到 10s，检查是否拒绝写入（5~10s 不应该有新条目）；
+  - 用户测试场景 3：seekforward 到 60s，播放到 90s，检查合规区间是否更新为 `0.0-30.x,60.0-90.x`；
+  - 用户测试场景 4：seekback 到 54s，播放到 65s，检查合规区间是否合并为 `0.0-30.x,54.0-90.x`，且 60~65s 的旧条目是否被替换。
+- 说明：本轮仅实现"合规区间判定 + 拒绝写入"，尚未实现"重叠替换逻辑"（将在第二轮实现）。
+
+### 2026-02-19  Phase G 第十六轮（按播放状态维护连续合规区间）
+
+- 用户纠偏后确认根因：
+  - 合规区间不应基于 cue/batch 离散时间窗，而应基于"播放状态机"形成连续区间；
+  - 只看播放开始/暂停/seek/ratechange，不看 batch 连续性。
+- 本轮修正（方案 A）：
+  1. `useLiveSubtitles` 新增连续合规区间状态：
+     - `currentValidRangeRef`（当前正在播放记录的区间）；
+     - `validPlaybackRateThresholdRef`（当前固定 1.0x）。
+  2. 新增播放状态驱动逻辑：
+     - `startValidRangeIfQualified()`：播放开始且 `rate<=threshold` 时开启区间；
+     - `updateValidRangeIfQualified()`：播放中持续推进 `end_sec`；
+     - `pause/seek/ratechange(超阈值)` 时关闭当前区间；
+     - seek 后若继续播放且速率合规，按新位置开启新区间。
+  3. 持久化请求扩展：
+     - `appendSubtitlePersistence` 新增 `current_valid_range` 字段（可空）；
+     - renderer 每次入持久化队列都携带当前区间快照（即使 `cues=[]` 也允许入队）。
+  4. 主进程 `appendPersistence` 修正：
+     - 不再用 batch 直接更新合规区间；
+     - 改为仅在 `playback_rate<=threshold` 且收到 `current_valid_range` 时执行 `upsertValidRange`；
+     - `incomingCues=[]` 但区间变化时也会落盘元数据，保证区间连续推进可持久化；
+     - 继续保留"batch 完全落在合规区间内 -> 拒绝写入"策略。
+- 结果预期：
+  - 从 0s 连续播放到 30s，`ValidRanges` 应收敛为单条 `0-30`；
+  - seekforward/seekback 后按播放状态形成少量区间并自动合并，不再出现大量离散碎片。
+- 验证：`bun run build`、`bun run build:electron` 通过。
+
+### 2026-02-19  Phase G 第十七轮（修复正常播放被 ValidRanges 误拦截）
+
+- 用户复测定位到新问题：
+  - 连续正常播放时 `ValidRanges` 持续增长，但写盘被大量拦截，最终只剩极少字幕落盘；
+  - 根因是主进程 `appendPersistence` 对所有 batch 都执行了 `isBatchInValidRanges` 拒写判定。
+- 设计修正：
+  - `ValidRanges` 拒写守卫仅用于 seek/replay 防重，不用于正常连续播放。
+- 本轮改动：
+  1. IPC 扩展：
+     - `AppendSubtitlePersistenceRequestDto` 新增 `enforce_valid_range_guard: boolean`（默认 `false`）。
+  2. Renderer 侧：
+     - `enqueuePersistenceCues` 入队时按快照携带 `enforceValidRangeGuard`；
+     - 仅当 `replayFromPersistenceRef` 或 `seekingInProgressRef` 为 `true` 时置为 `true`。
+  3. Main 侧：
+     - `appendPersistence` 中 `isBatchInValidRanges` 仅在 `request.enforce_valid_range_guard===true` 时生效；
+     - 正常播放写盘恢复，seek/replay 仍保留防重拦截。
+- 代码落点：
+  - `src/contracts/backend.schemas.ts`
+  - `src/features/subtitles/useLiveSubtitles.ts`
+  - `electron/subtitles/subtitleSession.ts`
+- 预期结果：
+  - 正常连续播放：字幕持续落盘；
+  - seek 到已生成区间：阻止重复写入；
+  - 离开已生成区间：恢复正常写入。
+
+### 2026-02-19  Phase G 第十八轮（修复 seek 到 0s 首句重复写入）
+
+- 用户复测结果：
+  - 大部分 seek 防重已恢复正常；
+  - 仅在多次 seekback 到 `00:00` 时，首句仍可重复写入 1 次，后续句子可被正常拦截。
+- 根因：
+  - `readPersistenceWindow` 的 `timeline_in_generated_range` 与 `generated_ranges` 使用的是 `mergeCueRanges(cues)`；
+  - 当 timeline=0s 且首条 cue 从 2~3s 开始时，尽管 `ValidRanges` 已覆盖 `0-xxx`，仍会被判定为“不在已生成区间”，导致首批生成放行。
+- 本轮修复：
+  - `readPersistenceWindow` 改为优先使用 `persistence.validRanges` 作为返回区间；
+  - 仅在 `validRanges` 为空时，才回退到 `mergeCueRanges(cues)`。
+- 影响：
+  - seek 到 `0s` 将正确命中 `ValidRanges`，首句不再重复写入；
+  - 旧文件（无 `ValidRanges`）仍保持原有 cue 区间回退行为。
+- 代码落点：
+  - `electron/subtitles/subtitleSession.ts`
+
+### 2026-02-20  Phase G 第十九轮（seekback 进入 ValidRanges 后切换文件回放单一真相源）
+
+- 用户新增要求：
+  - seekback 命中 `ValidRanges` 后，显示不再基于 renderer 内存 cues，改为以已落盘字幕文件为准；
+  - 允许区间内补洞：若当前附近无 cue，临时放开生成补漏。
+- 本轮改动：
+  1. 协议扩展：
+     - `readSubtitlePersistenceWindow` 请求新增 `prefer_persisted_file`（默认 `false`）。
+  2. 主进程文件刷新：
+     - `SubtitlePersistenceState` 新增 `lastFileMtimeMs`；
+     - 新增 `refreshPersistenceStateFromFile()`，按文件 mtime 增量刷新 `cues/validRanges/threshold`；
+     - `readPersistenceWindow` 在 `prefer_persisted_file=true` 时优先从文件刷新；
+     - 空 cue 情况下仍基于 `ValidRanges` 返回 `generated_ranges/timeline_in_generated_range`。
+  3. Renderer 回放判定收敛：
+     - 新增 `hasCueNearTimeline(back=0.25s, ahead=1.2s)`；
+     - replay-only 判定改为 `inValidRange && hasCueNearTimeline`；
+     - 命中 `ValidRanges` 不再同步早退，继续读窗口刷新文件侧 cues；
+     - `syncPersistenceWindow` 请求窗口扩大为 `backtrack=1.5s/lookahead=6s/limit=60`，并传 `prefer_persisted_file=true`；
+     - replay 模式下不再用 live push/flush 结果覆盖显示（避免内存 cues 污染文件回放）。
+- 预期效果：
+  - seekback 到片首后，显示以文件字幕为准，2/3 行可按 offset 正常出现；
+  - `ValidRanges` 内遇到无 cue 洞位时，允许生成补漏（如“日本语”漏句场景）。
+- 代码落点：
+  - `src/contracts/backend.schemas.ts`
+  - `electron/subtitles/subtitleSession.ts`
+  - `src/features/subtitles/useLiveSubtitles.ts`
+
+### 2026-02-20  Phase G 第二十轮（仅显示层修正：offset 重叠时后句覆盖前句）
+
+- 用户确认：
+  - 重叠问题仅发生在显示层（offset 后时间窗重叠），不属于生成/写盘问题。
+- 本轮改动（仅 renderer 显示逻辑）：
+  1. `buildAdvancedDisplayText` 取消同轨文本拼接显示；
+  2. 同轨若有多条 active cue，改为“后开始优先”（`latest-start wins`）：
+     - 第二条开始显示时，第一条立即退出显示；
+  3. 每轨仅保留一条当前句，再按时间排序输出，最多 `maxLines` 行。
+- 不变更范围：
+  - 未改动生成链路、去重写盘、`ValidRanges` 判定与持久化。
+- 代码落点：
+  - `src/features/subtitles/useLiveSubtitles.ts`
 
 
 ---

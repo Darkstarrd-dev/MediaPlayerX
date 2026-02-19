@@ -1129,6 +1129,7 @@ export const startSubtitlePersistenceRequestSchema = z.object({
   video_path: z.string().min(1),
   language: z.string().min(1).default("auto"),
   reset_existing: z.boolean().default(true),
+  valid_playback_rate_threshold: z.number().min(0.1).max(10).optional().default(1.0),
 });
 
 export const startSubtitlePersistenceResponseSchema = z.object({
@@ -1144,6 +1145,12 @@ export const appendSubtitlePersistenceRequestSchema = z.object({
   chunk_seq: z.number().int().min(0).default(0),
   batch_start_sec: z.number().min(0).nullable().default(null),
   batch_end_sec: z.number().min(0).nullable().default(null),
+  playback_rate: z.number().min(0.1).max(10).optional().default(1.0),
+  enforce_valid_range_guard: z.boolean().optional().default(false),
+  current_valid_range: z.object({
+    start_sec: z.number().min(0),
+    end_sec: z.number().min(0),
+  }).nullable().optional().default(null),
 });
 
 export const appendSubtitlePersistenceResponseSchema = z.object({
@@ -1161,6 +1168,7 @@ export const readSubtitlePersistenceWindowRequestSchema = z.object({
   backtrack_sec: z.number().min(0).max(30).default(1),
   lookahead_sec: z.number().min(0).max(30).default(3),
   limit: z.number().int().min(1).max(200).default(24),
+  prefer_persisted_file: z.boolean().optional().default(false),
 });
 
 export const subtitleGeneratedRangeSchema = z.object({
