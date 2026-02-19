@@ -330,11 +330,31 @@ export function useAppEffects({
   }, [orderedRootScopedPackages, rootScopedPackageIds, selectedPackageId, setSelectedPackageId])
 
   useEffect(() => {
+    if (mode !== 'image' || vectorResultsActive) {
+      return
+    }
+
+    const nextImageNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? null
+    if (!nextImageNodeId) {
+      return
+    }
+
+    if (nextImageNodeId !== selectedSidebarNodeId) {
+      setSelectedSidebarNodeId(nextImageNodeId)
+    }
+  }, [imageSourceNodeIdMap, mode, selectedPackageId, selectedSidebarNodeId, setSelectedSidebarNodeId, vectorResultsActive])
+
+  useEffect(() => {
     if (mode !== 'image') {
       return
     }
 
-    if (selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)) {
+    const selectedNode = selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null) : null
+    const selectedNodeMatchesImageMode =
+      selectedNode !== null &&
+      (selectedNode.kind === 'folder' || selectedNode.kind === 'package')
+
+    if (selectedNodeMatchesImageMode) {
       return
     }
 
@@ -428,7 +448,25 @@ export function useAppEffects({
       return
     }
 
-    if (selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)) {
+    const nextAudioNodeId = audioNodeIdMap.get(selectedAudioId) ?? null
+    if (!nextAudioNodeId) {
+      return
+    }
+
+    if (nextAudioNodeId !== selectedSidebarNodeId) {
+      setSelectedSidebarNodeId(nextAudioNodeId)
+    }
+  }, [audioNodeIdMap, mode, selectedAudioId, selectedSidebarNodeId, setSelectedSidebarNodeId])
+
+  useEffect(() => {
+    if (mode !== 'music') {
+      return
+    }
+
+    const selectedNode = selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null) : null
+    const selectedNodeMatchesMusicMode = selectedNode !== null && selectedNode.kind === 'audio'
+
+    if (selectedNodeMatchesMusicMode) {
       return
     }
 

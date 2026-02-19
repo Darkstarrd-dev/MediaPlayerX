@@ -45,7 +45,7 @@ interface BuildFullscreenLayerPropsParams {
   autoPlayInterval: number
   updateSettings: (patch: Partial<AppSettings>) => void
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
-  goPlaylist: (step: number) => void
+  goPlaylist: (step: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => void
   playlistIds: string[]
   selectedVideoId: string
   videoById: Map<string, VideoItem>
@@ -134,7 +134,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
         params.setVideoPlaying(true)
         return
       }
-      params.goPlaylist(1)
+      params.goPlaylist(1, undefined, { preserveRate: true })
     },
     onToggleSubtitle: () => {
       params.setSubtitleVisible((value) => !value)

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppEffects } from './useAppEffects'
 import { usePersistedAppSettings } from './usePersistedAppSettings'
+import { usePersistedSessionCursor } from './usePersistedSessionCursor'
 import { normalizeSeriesId, pickFirstBySeriesId } from './workspaceSharedUtils'
 import { clamp, isEditableTarget } from '../../utils/ui'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
@@ -123,6 +124,7 @@ export function useAppInteractionEffects({
     playlistIds,
     videoDurationById,
     videoPlaying,
+    videoTime,
     setVideoPlaying,
     setVideoTime,
     setVideoMuted,
@@ -1142,5 +1144,28 @@ export function useAppInteractionEffects({
   usePersistedAppSettings({
     settings: appSettings,
     repository: mediaRepository,
+  })
+
+  usePersistedSessionCursor({
+    repository: mediaRepository,
+    mode,
+    updateMode: (nextMode) => updateSettings({ mode: nextMode }),
+    fullscreenActive,
+    selectedPackageId,
+    focusByPackage,
+    pagedPageSize,
+    packageByIdEffective,
+    setSelectedPackageId,
+    setImageFocusActive,
+    setFocusByPackage,
+    setPageByPackage,
+    selectedVideoId,
+    videoTime,
+    rootScopedVideoIds,
+    selectVideoFromBrowser,
+    setVideoTime,
+    selectedAudioId,
+    rootScopedAudioIds,
+    setSelectedAudioId,
   })
 }

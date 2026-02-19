@@ -113,7 +113,7 @@ describe('buildFullscreenLayerProps', () => {
 
     props.onVideoEnded()
 
-    expect(params.goPlaylist).toHaveBeenCalledWith(1)
+    expect(params.goPlaylist).toHaveBeenCalledWith(1, undefined, { preserveRate: true })
     expect(params.setVideoTime).not.toHaveBeenCalled()
     expect(params.setVideoPlaying).not.toHaveBeenCalled()
   })

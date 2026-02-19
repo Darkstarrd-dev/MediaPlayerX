@@ -71,7 +71,7 @@ interface BuildVideoMainSectionPropsParams {
   onSubtitleCleanupLlmEndpointChange: (value: string) => void
   onSubtitleCleanupLlmModelChange: (value: string) => void
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
-  goPlaylist: (step: number) => void
+  goPlaylist: (step: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => void
   setVideoTime: Dispatch<SetStateAction<number>>
   setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
   setVideoMuted: Dispatch<SetStateAction<boolean>>
@@ -193,7 +193,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
         params.setVideoPlaying(true)
         return
       }
-      params.goPlaylist(1)
+      params.goPlaylist(1, undefined, { preserveRate: true })
     },
     onSeekVideo: (time: number) => {
       params.setVideoTime(clamp(time, 0, params.durationSec))

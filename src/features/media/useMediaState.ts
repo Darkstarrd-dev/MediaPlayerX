@@ -55,8 +55,11 @@ interface UseMediaStateResult {
   showFullscreenFooter: boolean
   setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>
   videoQueueSource: 'sidebar' | 'playlist'
-  goPlaylist: (delta: number, sidebarQueueIds?: string[]) => void
-  selectVideoFromBrowser: (videoId: string, options?: { play?: boolean; queueSource?: 'sidebar' | 'playlist' }) => void
+  goPlaylist: (delta: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => void
+  selectVideoFromBrowser: (
+    videoId: string,
+    options?: { play?: boolean; queueSource?: 'sidebar' | 'playlist'; preserveRate?: boolean },
+  ) => void
   adjustVideoRate: (delta: number) => void
   adjustVideoVolume: (delta: number) => void
   cycleVideoLoopMode: () => void
@@ -93,7 +96,7 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
   const [videoQueueSource, setVideoQueueSource] = useState<'sidebar' | 'playlist'>('sidebar')
 
   const goPlaylist = useCallback(
-    (delta: number, sidebarQueueIds?: string[]) => {
+    (delta: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => {
       const fallbackSidebarQueueIds = videos.map((video) => video.id)
       const queueIds =
         videoQueueSource === 'playlist' && playlistIds.length > 0
@@ -118,18 +121,30 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
 
       setSelectedVideoId(nextId)
       setVideoTime(0)
+      if (!options?.preserveRate) {
+        setVideoRate(1)
+      }
     },
     [playlistIds, selectedVideoId, videoQueueSource, videos],
   )
 
-  const selectVideoFromBrowser = useCallback((videoId: string, options?: { play?: boolean; queueSource?: 'sidebar' | 'playlist' }) => {
-    setSelectedVideoId(videoId)
-    setVideoTime(0)
-    if (options?.queueSource) {
-      setVideoQueueSource(options.queueSource)
-    }
-    setVideoPlaying((previous) => (options?.play ? true : previous))
-  }, [])
+  const selectVideoFromBrowser = useCallback(
+    (
+      videoId: string,
+      options?: { play?: boolean; queueSource?: 'sidebar' | 'playlist'; preserveRate?: boolean },
+    ) => {
+      setSelectedVideoId(videoId)
+      setVideoTime(0)
+      if (!options?.preserveRate) {
+        setVideoRate(1)
+      }
+      if (options?.queueSource) {
+        setVideoQueueSource(options.queueSource)
+      }
+      setVideoPlaying((previous) => (options?.play ? true : previous))
+    },
+    [],
+  )
 
   const adjustVideoRate = useCallback((delta: number) => {
     setVideoRate((value) => clamp(Number((value + delta).toFixed(2)), 0.1, 4))
