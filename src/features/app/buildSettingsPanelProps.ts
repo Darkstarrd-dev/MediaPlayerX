@@ -304,19 +304,19 @@ export function buildSettingsPanelProps(params: BuildSettingsPanelPropsParams): 
       if (value === 'aggressive') {
         params.updateSettings({
           subtitleAdvancedVadPreset: value,
-          subtitleAdvancedVadThreshold: 0.38,
-          subtitleAdvancedVadMinSilenceSec: 0.22,
-          subtitleAdvancedVadMinSpeechSec: 0.2,
-          subtitleAdvancedVadMaxSpeechSec: 10,
+          subtitleAdvancedVadThreshold: 0.36,
+          subtitleAdvancedVadMinSilenceSec: 0.1,
+          subtitleAdvancedVadMinSpeechSec: 0.15,
+          subtitleAdvancedVadMaxSpeechSec: 3,
         })
         return
       }
       params.updateSettings({
         subtitleAdvancedVadPreset: value,
-        subtitleAdvancedVadThreshold: 0.45,
-        subtitleAdvancedVadMinSilenceSec: 0.3,
-        subtitleAdvancedVadMinSpeechSec: 0.25,
-        subtitleAdvancedVadMaxSpeechSec: 15,
+        subtitleAdvancedVadThreshold: 0.42,
+        subtitleAdvancedVadMinSilenceSec: 0.14,
+        subtitleAdvancedVadMinSpeechSec: 0.18,
+        subtitleAdvancedVadMaxSpeechSec: 3,
       })
     },
     onSubtitleAdvancedVadThresholdChange: (value) => params.updateSettings({ subtitleAdvancedVadThreshold: value }),

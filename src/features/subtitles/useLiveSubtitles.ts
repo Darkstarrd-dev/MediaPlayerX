@@ -10,6 +10,8 @@ import type {
 import type { MediaRepository } from '../backend/repository'
 import { VideoSubtitleCapture, type CapturedAudioChunk } from './VideoSubtitleCapture'
 
+const SUBTITLE_DEBUG_LOGS = false
+
 interface UseLiveSubtitlesParams {
   enabled: boolean
   videoElement: HTMLVideoElement | null
@@ -56,6 +58,51 @@ function appendCues(previous: SubtitleCueDto[], next: SubtitleCueDto[]): Subtitl
   }
   const ordered = Array.from(dedupedById.values()).sort((left, right) => left.start_sec - right.start_sec)
   return ordered.slice(-300)
+}
+
+function concatFloat32(chunks: Float32Array[]): Float32Array {
+  const total = chunks.reduce((sum, part) => sum + part.length, 0)
+  const output = new Float32Array(total)
+  let offset = 0
+  for (const part of chunks) {
+    output.set(part, offset)
+    offset += part.length
+  }
+  return output
+}
+
+function popBatchChunk(queue: CapturedAudioChunk[], maxWallDurationSec = 0.4): CapturedAudioChunk | null {
+  const first = queue.shift()
+  if (!first) {
+    return null
+  }
+
+  const maxSamples = Math.max(1, Math.floor(first.sampleRateHz * maxWallDurationSec) * Math.max(1, first.channelCount))
+  const parts: Float32Array[] = [first.samples]
+  let totalSamples = first.samples.length
+  let endSec = first.endSec
+
+  while (queue.length > 0) {
+    const next = queue[0]
+    if (next.sampleRateHz !== first.sampleRateHz || next.channelCount !== first.channelCount) {
+      break
+    }
+    if (totalSamples + next.samples.length > maxSamples) {
+      break
+    }
+    queue.shift()
+    parts.push(next.samples)
+    totalSamples += next.samples.length
+    endSec = next.endSec
+  }
+
+  return {
+    sampleRateHz: first.sampleRateHz,
+    channelCount: first.channelCount,
+    startSec: first.startSec,
+    endSec,
+    samples: parts.length === 1 ? first.samples : concatFloat32(parts),
+  }
 }
 
 function pickDisplayEventMessage(events: SubtitleSessionEventDto[]): string | null {
@@ -147,6 +194,10 @@ export function useLiveSubtitles({
   const pushQueueRef = useRef<CapturedAudioChunk[]>([])
   const pushInFlightRef = useRef(false)
   const sessionRunningRef = useRef(false)
+  const sessionEpochRef = useRef(0)
+  const chunkSeqRef = useRef(0)
+  const lastAppliedSeqRef = useRef(-1)
+  const pushAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     cleanupRef.current = null
@@ -162,18 +213,35 @@ export function useLiveSubtitles({
     const stopSubtitleSession =
       repository.stopSubtitleSession ? (request: Parameters<NonNullable<MediaRepository['stopSubtitleSession']>>[0]) => repository.stopSubtitleSession!(request) : null
     const resetSubtitleSession =
-      repository.resetSubtitleSession ? (request: Parameters<NonNullable<MediaRepository['resetSubtitleSession']>>[0]) => repository.resetSubtitleSession!(request) : null
+      repository.resetSubtitleSession
+        ? (
+            request: Parameters<NonNullable<MediaRepository['resetSubtitleSession']>>[0],
+            options?: Parameters<NonNullable<MediaRepository['resetSubtitleSession']>>[1],
+          ) => repository.resetSubtitleSession!(request, options)
+        : null
     const flushSubtitleSession =
-      repository.flushSubtitleSession ? () => repository.flushSubtitleSession!() : null
+      repository.flushSubtitleSession
+        ? (options?: Parameters<NonNullable<MediaRepository['flushSubtitleSession']>>[0]) => repository.flushSubtitleSession!(options)
+        : null
     const pushSubtitleAudio =
-      repository.pushSubtitleAudio ? (request: Parameters<NonNullable<MediaRepository['pushSubtitleAudio']>>[0]) => repository.pushSubtitleAudio!(request) : null
+      repository.pushSubtitleAudio
+        ? (
+            request: Parameters<NonNullable<MediaRepository['pushSubtitleAudio']>>[0],
+            options?: Parameters<NonNullable<MediaRepository['pushSubtitleAudio']>>[1],
+          ) => repository.pushSubtitleAudio!(request, options)
+        : null
 
     if (!enabled || !videoElement || !modelId || modelDir.trim() === '') {
       setLoading(false)
       setMessage(null)
       setCues([])
+      pushAbortRef.current?.abort()
+      pushAbortRef.current = null
       pushQueueRef.current = []
       sessionRunningRef.current = false
+      sessionEpochRef.current = 0
+      chunkSeqRef.current = 0
+      lastAppliedSeqRef.current = -1
       capture.detach()
       return
     }
@@ -187,25 +255,63 @@ export function useLiveSubtitles({
 
     let cancelled = false
 
+    const beginNewEpoch = (reason: string) => {
+      sessionEpochRef.current += 1
+      chunkSeqRef.current = 0
+      lastAppliedSeqRef.current = -1
+      pushQueueRef.current = []
+      pushAbortRef.current?.abort()
+      pushAbortRef.current = null
+      if (SUBTITLE_DEBUG_LOGS) {
+        console.info('[subtitle][epoch]', reason, sessionEpochRef.current)
+      }
+    }
+
     const drainPushQueue = async () => {
       if (pushInFlightRef.current || cancelled || !sessionRunningRef.current) {
         return
       }
-      const nextChunk = pushQueueRef.current.shift()
+      const nextChunk = popBatchChunk(pushQueueRef.current, renderMode === 'advanced' ? 0.2 : 0.35)
       if (!nextChunk) {
         return
       }
 
+      const sessionEpoch = sessionEpochRef.current
+      const chunkSeq = chunkSeqRef.current++
+
       pushInFlightRef.current = true
       try {
+        const abortController = new AbortController()
+        pushAbortRef.current = abortController
+        const sendAt = performance.now()
         const request: PushSubtitleAudioRequestDto = {
           chunk_base64: encodeFloat32ToBase64(nextChunk.samples),
           sample_rate_hz: nextChunk.sampleRateHz,
           chunk_start_sec: nextChunk.startSec,
           chunk_end_sec: nextChunk.endSec,
           channel_count: nextChunk.channelCount,
+          session_epoch: sessionEpoch,
+          chunk_seq: chunkSeq,
         }
-        const response = await pushSubtitleAudio(request)
+        const response = await pushSubtitleAudio(request, { signal: abortController.signal })
+
+        if (response.session_epoch !== sessionEpochRef.current) {
+          return
+        }
+        if (response.chunk_seq < lastAppliedSeqRef.current) {
+          return
+        }
+        lastAppliedSeqRef.current = response.chunk_seq
+
+        if (SUBTITLE_DEBUG_LOGS) {
+          console.debug('[subtitle][push]', {
+            epoch: sessionEpoch,
+            seq: chunkSeq,
+            rttMs: Math.round(performance.now() - sendAt),
+            queueLen: pushQueueRef.current.length,
+          })
+        }
+
         if (!cancelled) {
           setCues((previous) => appendCues(previous, response.cues))
         }
@@ -214,6 +320,7 @@ export function useLiveSubtitles({
           setMessage(error instanceof Error ? error.message : String(error))
         }
       } finally {
+        pushAbortRef.current = null
         pushInFlightRef.current = false
         if (!cancelled) {
           void drainPushQueue()
@@ -233,7 +340,7 @@ export function useLiveSubtitles({
       setLoading(true)
       setMessage(null)
       setCues([])
-      pushQueueRef.current = []
+      beginNewEpoch('start')
 
       try {
         const startResponse = await startSubtitleSession({
@@ -272,15 +379,33 @@ export function useLiveSubtitles({
           if (!sessionRunningRef.current || cancelled || videoElement.paused || videoElement.ended) {
             return
           }
-          if (pushQueueRef.current.length > 8) {
-            pushQueueRef.current.shift()
+          const highWaterMark = renderMode === 'advanced' ? 14 : 24
+          if (pushQueueRef.current.length > highWaterMark) {
+            const first = pushQueueRef.current.shift()
+            const second = pushQueueRef.current.shift()
+            if (first && second) {
+              pushQueueRef.current.unshift({
+                sampleRateHz: first.sampleRateHz,
+                channelCount: first.channelCount,
+                startSec: first.startSec,
+                endSec: second.endSec,
+                samples: concatFloat32([first.samples, second.samples]),
+              })
+            } else {
+              if (first) {
+                pushQueueRef.current.unshift(first)
+              }
+              if (second) {
+                pushQueueRef.current.unshift(second)
+              }
+            }
           }
           pushQueueRef.current.push(chunk)
           void drainPushQueue()
         })
 
         const onSeeked = () => {
-          pushQueueRef.current = []
+          beginNewEpoch('seeked')
           setCues([])
           void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
         }
@@ -290,9 +415,12 @@ export function useLiveSubtitles({
             .catch(() => undefined)
         }
         const onPlay = () => {
+          beginNewEpoch('play')
           void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
         }
         const onRateChange = () => {
+          beginNewEpoch('ratechange')
+          setCues([])
           void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
         }
 
@@ -320,6 +448,8 @@ export function useLiveSubtitles({
           videoElement.removeEventListener('play', onPlay)
           videoElement.removeEventListener('ratechange', onRateChange)
           pushQueueRef.current = []
+          pushAbortRef.current?.abort()
+          pushAbortRef.current = null
           capture.detach()
           sessionRunningRef.current = false
           await stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
@@ -328,6 +458,8 @@ export function useLiveSubtitles({
         if (sessionRunningRef.current) {
           await stopSubtitleSession({ reason: 'renderer-start-failed' }).catch(() => undefined)
         }
+        pushAbortRef.current?.abort()
+        pushAbortRef.current = null
         setLoading(false)
         const messageText = error instanceof Error ? error.message : String(error)
         setMessage(messageText)
@@ -348,6 +480,8 @@ export function useLiveSubtitles({
       } else {
         capture.detach()
         sessionRunningRef.current = false
+        pushAbortRef.current?.abort()
+        pushAbortRef.current = null
         void stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
       }
     }
@@ -387,7 +521,7 @@ export function useLiveSubtitles({
 
     for (let index = cues.length - 1; index >= 0; index -= 1) {
       const cue = cues[index]
-      if (currentTimeSec + 0.35 >= cue.start_sec && currentTimeSec <= cue.end_sec + 2.4) {
+      if (currentTimeSec + 0.15 >= cue.start_sec && currentTimeSec <= cue.end_sec + 0.5) {
         return formatCueDisplayText(cue)
       }
     }

@@ -325,6 +325,68 @@ Status: in_progress
 - 构建验证：`bun run build:electron`、`bun run build` 通过。
 - 待办：请复测 E-M4 / E-M5 与偶发 `createMediaElementSource` 报错是否消失。
 
+### 2026-02-19  Phase E 第六轮（P0 首批实现）
+
+- 已实现 `session_epoch + chunk_seq` 请求/响应链路（schema、renderer 推流、worker 校验回包）。
+- 已实现 epoch/seq 乱序与过期保护：过期 epoch/seq 直接拒收并返回 warning 事件。
+- 已将 push 背压从“队列满直接丢 chunk”改为“batch 合并（<=0.4s）+ 高水位压缩”，降低丢音导致的文本回卷。
+- 已将 Simple 增量替换为 `overlap(64)+revision(replace)` 策略，并改为基于 `simpleLastNonEmptySec` 的静音重置计时。
+- 已补充 push 侧结构化调试日志骨架（可通过 `SUBTITLE_DEBUG_LOGS` 开关开启）。
+- 构建验证：`bun run build:electron`、`bun run build` 通过。
+- 下一步：请复测 E-M4 / E-M5，重点观察：
+  1. ratechange 后是否仍有堆积/跳变；
+  2. speaker 是否仍分裂到 S3+；
+  3. Advanced 延迟是否明显改善。
+
+### 2026-02-19  Phase E 第七轮（针对最新复测失败的修正）
+
+- 你反馈：
+  - E-M4 仍堆叠并出现不规则穿插。
+  - E-M5 男女区分提升，但男声仍在 S2/S3 间抖动，且延迟 > 2s。
+- 本轮已修：
+  - Simple 输出改为“始终取最新 raw ASR 尾句（`pickLatestSimpleSnippet`）”，避免窗口拼接导致的中段穿插。
+  - Speaker 切换加入 `switch_margin=0.05` 与 `cooldown=0.75s`，并将新 speaker 创建门槛提高到 `segment>=1.2s`。
+  - Advanced 默认 VAD 调低等待：balanced 调整为 `threshold=0.42/minSilence=0.22/minSpeech=0.30/maxSpeech=8`，aggressive 调整为 `0.38/0.18/0.25/7`。
+  - Renderer 端 advanced push batch 从 `0.4s` 缩小到 `0.2s`，并收紧高水位队列阈值，优先降感知延迟。
+- 构建验证：`bun run build:electron`、`bun run build` 通过。
+- 待办：请再次复测 E-M4/E-M5，确认是否进入 P1 收敛阶段。
+
+### 2026-02-19  Phase E 第八轮（针对“堆积仍在 + speaker 编号漂移 + 高延迟”）
+
+- 你反馈：
+  - E-M4：无规则穿插减轻，但“历史句长期残留 + 末尾持续追加”仍明显。
+  - E-M5：分离能力提升，但 speaker 编号锁定不稳（男声在 S2/S3 摆动），延迟 0.5~2s 波动。
+- 本轮修正：
+  - Simple 最终显示进一步收敛为“仅取最新 raw ASR 尾句（max 28 chars）”，避免历史文本长驻。
+  - Speaker 稳定化增强：`stickyThreshold` 提高、`createThreshold` 提高、`createMinSegmentSec=1.6`、切换冷却期间禁止新建 speaker。
+  - Advanced 低延迟调优：balanced 默认改为 `0.42 / 0.18 / 0.20 / 4`，aggressive 改为 `0.38 / 0.14 / 0.20 / 4`，降低 endpoint 等待上限。
+- 构建验证：`bun run build:electron`、`bun run build` 通过。
+- 待办：复测 E-M4/E-M5，确认是否满足进入 P1 的门槛。
+
+### 2026-02-19  Phase E 第九轮（针对“历史句不消失 + 同编号混人”）
+
+- 你反馈：
+  - E-M4：历史句长驻，后续文本持续追加在尾部。
+  - E-M5：延迟改善，但同一 speaker 编号内仍会混入不同说话人。
+- 本轮修正：
+  - Simple 改为“只在句子完成（标点）或短静音时输出一句”，并将显示停留时间收敛为 `0.45~0.75s`，目标是“句后快速消失”。
+  - Speaker 判定重新平衡：降低过强黏滞，缩小切换 margin，并放宽第二说话人创建门槛（防止全部混入同一编号）。
+  - 进一步收敛显示长度（最新尾句 max 28 chars）。
+- 构建验证：`bun run build:electron`、`bun run build` 通过。
+- 待办：请复测 E-M4/E-M5，重点观察“句后 0.5s 消失”与“同编号混人”是否下降。
+
+### 2026-02-19  Phase E 第十轮（针对“句后仍堆积 + 二人同号混入”）
+
+- 你反馈：
+  - E-M4：首段可消失，但后续仍会堆积并再次出现中段穿插。
+  - E-M5：延迟可压到 <1s，但同编号混人仍存在。
+- 本轮修正：
+  - Simple 输出规则改为“句子完成（标点）优先输出；短静音强制截断输出；输出后立即从 pending 文本移除”，并把停留窗口固定在 `0.45~0.75s`。
+  - Advanced speaker 再平衡：降低黏滞与切换门槛，允许更早创建第二说话人，减少“同编号混入”；同时保持 `MAX_SPEAKER_COUNT=2` 防止编号膨胀。
+  - VAD 延迟参数进一步压缩（balanced 默认 `0.42/0.14/0.18/3`，aggressive 默认 `0.36/0.10/0.15/3`）。
+- 构建验证：`bun run build:electron`、`bun run build` 通过。
+- 待办：请复测 E-M4 / E-M5，确认是否达到进入 P1 两阶段 speaker 方案前的可用线。
+
 ---
 
 ## 8. 风险审计（动态维护）

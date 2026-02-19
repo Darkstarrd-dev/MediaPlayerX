@@ -1047,10 +1047,10 @@ export const startSubtitleSessionRequestSchema = z.object({
       vad: z
         .object({
           preset: z.enum(["balanced", "conservative", "aggressive"]).default("balanced"),
-          threshold: z.number().min(0.1).max(0.9).default(0.45),
-          min_silence_sec: z.number().min(0.1).max(1.2).default(0.3),
-          min_speech_sec: z.number().min(0.05).max(1).default(0.25),
-          max_speech_sec: z.number().min(3).max(30).default(15),
+          threshold: z.number().min(0.1).max(0.9).default(0.42),
+          min_silence_sec: z.number().min(0.1).max(1.2).default(0.14),
+          min_speech_sec: z.number().min(0.05).max(1).default(0.18),
+          max_speech_sec: z.number().min(3).max(30).default(3),
         })
         .optional(),
       speaker: z
@@ -1105,6 +1105,8 @@ export const pushSubtitleAudioRequestSchema = z
     chunk_start_sec: z.number().min(0),
     chunk_end_sec: z.number().min(0),
     channel_count: z.number().int().min(1).max(8).default(1),
+    session_epoch: z.number().int().min(0).default(0),
+    chunk_seq: z.number().int().min(0).default(0),
   })
   .refine((value) => value.chunk_end_sec >= value.chunk_start_sec, {
     message: "chunk_end_sec must be >= chunk_start_sec",
@@ -1116,6 +1118,9 @@ export const pushSubtitleAudioResponseSchema = z.object({
   provider: subtitleSessionProviderSchema.nullable(),
   cues: z.array(subtitleCueSchema),
   events: z.array(subtitleSessionEventSchema),
+  session_epoch: z.number().int().min(0).default(0),
+  chunk_seq: z.number().int().min(0).default(0),
+  queue_len: z.number().int().min(0).default(0),
   updated_at_ms: z.number().int().positive(),
 });
 

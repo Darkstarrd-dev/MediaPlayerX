@@ -42,6 +42,8 @@ interface TranscribeAllRequestPayload {
 
 interface RuntimeSessionState {
   sessionId: string
+  sessionEpoch: number
+  lastChunkSeq: number
   provider: SubtitleSessionProviderDto
   startedAtMs: number
   modelRootDir: string
@@ -65,6 +67,7 @@ interface RuntimeSessionState {
   committedText: string
   simpleLastRawText: string
   simpleWindowText: string
+  simpleLastNonEmptySec: number
   cueSeed: number
   requestedLanguage: string
   renderMode: 'simple' | 'advanced'
@@ -114,12 +117,13 @@ interface SpeakerRuntime {
   extractor: SpeakerExtractorLike
   profiles: SpeakerProfile[]
   currentSpeakerId: number | null
+  lastSwitchSec: number
   recentBestScores: number[]
   segmentCount: number
   lastHintSegmentCount: number
 }
 
-const MAX_SPEAKER_COUNT = 3
+const MAX_SPEAKER_COUNT = 2
 
 let runtimeSession: RuntimeSessionState | null = null
 
@@ -306,16 +310,16 @@ function resolveVadTuning(payload: InitRequestPayload): {
         }
       : preset === 'aggressive'
         ? {
-            threshold: 0.38,
-            minSilenceDuration: 0.22,
-            minSpeechDuration: 0.2,
-            maxSpeechDuration: 10,
+            threshold: 0.36,
+            minSilenceDuration: 0.1,
+            minSpeechDuration: 0.15,
+            maxSpeechDuration: 3,
           }
         : {
-            threshold: 0.45,
-            minSilenceDuration: 0.3,
-            minSpeechDuration: 0.25,
-            maxSpeechDuration: 15,
+            threshold: 0.42,
+            minSilenceDuration: 0.14,
+            minSpeechDuration: 0.18,
+            maxSpeechDuration: 3,
           }
 
   return {
@@ -441,6 +445,46 @@ function computeTextDelta(previousText: string, currentText: string): string {
   return currentText
 }
 
+function computeOverlapDelta(
+  previousText: string,
+  currentText: string,
+  maxOverlapChars = 64,
+): { kind: 'none' | 'append' | 'replace'; delta: string } {
+  if (!currentText) {
+    return { kind: 'none', delta: '' }
+  }
+  if (!previousText) {
+    return { kind: 'append', delta: currentText }
+  }
+  if (currentText === previousText) {
+    return { kind: 'none', delta: '' }
+  }
+
+  if (currentText.startsWith(previousText)) {
+    return { kind: 'append', delta: currentText.slice(previousText.length).trim() }
+  }
+
+  const previousChars = Array.from(previousText)
+  const currentChars = Array.from(currentText)
+  const overlapLimit = Math.min(maxOverlapChars, previousChars.length, currentChars.length)
+  for (let overlap = overlapLimit; overlap >= 1; overlap -= 1) {
+    const prevSuffix = previousChars.slice(previousChars.length - overlap).join('')
+    const currPrefix = currentChars.slice(0, overlap).join('')
+    if (prevSuffix === currPrefix) {
+      return {
+        kind: 'append',
+        delta: currentChars.slice(overlap).join('').trim(),
+      }
+    }
+  }
+
+  const rollback = currentChars.length < previousChars.length * 0.7
+  if (rollback) {
+    return { kind: 'replace', delta: currentText }
+  }
+  return { kind: 'replace', delta: currentText }
+}
+
 function calculateRms(samples: Float32Array): number {
   if (samples.length === 0) {
     return 0
@@ -530,6 +574,59 @@ function pickSimpleDisplayText(fullText: string, maxChars = 54): string {
   return sliceTailByChars(normalized, maxChars)
 }
 
+function pickLatestSimpleSnippet(fullText: string, maxChars = 28): string {
+  const normalized = fullText.replace(/\s+/g, ' ').trim()
+  if (!normalized) {
+    return ''
+  }
+
+  const separators = ['。', '！', '？', '!', '?', '.', ';', '；', ',', '，', '、']
+  const chars = Array.from(normalized)
+  let lastSeparatorPos = -1
+  for (let i = chars.length - 1; i >= 0; i -= 1) {
+    if (separators.includes(chars[i] ?? '')) {
+      lastSeparatorPos = i
+      break
+    }
+  }
+
+  if (lastSeparatorPos >= 0 && lastSeparatorPos + 1 < chars.length) {
+    const tail = chars.slice(lastSeparatorPos + 1).join('').trim()
+    if (tail) {
+      return sliceTailByChars(tail, maxChars)
+    }
+  }
+
+  return sliceTailByChars(normalized, maxChars)
+}
+
+function splitCompletedSentence(pendingText: string): { completed: string | null; rest: string } {
+  const normalized = pendingText.replace(/\s+/g, ' ').trim()
+  if (!normalized) {
+    return { completed: null, rest: '' }
+  }
+
+  const separators = ['。', '！', '？', '!', '?', '.']
+  const chars = Array.from(normalized)
+  let lastSeparator = -1
+  for (let i = 0; i < chars.length; i += 1) {
+    if (separators.includes(chars[i] ?? '')) {
+      lastSeparator = i
+    }
+  }
+
+  if (lastSeparator < 0) {
+    return { completed: null, rest: normalized }
+  }
+
+  const completed = chars.slice(0, lastSeparator + 1).join('').trim()
+  const rest = chars.slice(lastSeparator + 1).join('').trim()
+  return {
+    completed: completed || null,
+    rest,
+  }
+}
+
 function sanitizePayloadForPostMessage(payload: unknown): unknown {
   try {
     return JSON.parse(JSON.stringify(payload))
@@ -578,6 +675,7 @@ function identifySpeaker(
   similarityThreshold: number,
   profileUpdateAlpha: number,
   segmentDurationSec: number,
+  segmentEndSec: number,
 ): { speakerId: number; bestScore: number } {
   let bestId = -1
   let bestScore = -1
@@ -596,8 +694,24 @@ function identifySpeaker(
   }
 
   // Hysteresis: avoid frequent speaker jumps for short/unstable segments.
-  const stickyThreshold = Math.max(0.35, similarityThreshold - 0.12)
+  const stickyThreshold = Math.max(0.40, similarityThreshold - 0.08)
+  const switchMargin = 0.02
+  const switchCooldownSec = 0.55
+  const inSwitchCooldown =
+    speakerRuntime.lastSwitchSec > 0 &&
+    segmentEndSec - speakerRuntime.lastSwitchSec < switchCooldownSec
+
   if (speakerRuntime.currentSpeakerId !== null && currentSpeakerScore >= stickyThreshold) {
+    if (
+      bestId >= 0 &&
+      bestId !== speakerRuntime.currentSpeakerId &&
+      bestScore >= similarityThreshold &&
+      bestScore - currentSpeakerScore >= switchMargin &&
+      !inSwitchCooldown
+    ) {
+      speakerRuntime.lastSwitchSec = segmentEndSec
+      return { speakerId: bestId, bestScore }
+    }
     bestId = speakerRuntime.currentSpeakerId
     bestScore = currentSpeakerScore
   }
@@ -623,7 +737,20 @@ function identifySpeaker(
       speakerRuntime.profiles.length < MAX_SPEAKER_COUNT
     )
 
-  if (!allowCreate && bestId >= 0) {
+  if (!allowCreate) {
+    if (speakerRuntime.currentSpeakerId !== null) {
+      return {
+        speakerId: speakerRuntime.currentSpeakerId,
+        bestScore: currentSpeakerScore >= 0 ? currentSpeakerScore : bestScore,
+      }
+    }
+    if (bestId >= 0) {
+      return { speakerId: bestId, bestScore }
+    }
+    return { speakerId: 0, bestScore }
+  }
+
+  if (bestId >= 0 && bestScore >= Math.max(0.72, similarityThreshold + 0.18)) {
     return { speakerId: bestId, bestScore }
   }
 
@@ -632,6 +759,7 @@ function identifySpeaker(
     id: nextId,
     embedding: new Float32Array(embedding),
   })
+  speakerRuntime.lastSwitchSec = segmentEndSec
   return { speakerId: nextId, bestScore }
 }
 
@@ -947,6 +1075,7 @@ function decodeSegmentAndBuildCue(
         currentSession.similarityThreshold,
         currentSession.profileUpdateAlpha,
         samples.length / Math.max(1, sampleRateHz),
+        endSec,
       )
       speakerSimilarity = detected.bestScore
       currentSession.speaker.segmentCount += 1
@@ -965,13 +1094,27 @@ function decodeSegmentAndBuildCue(
   const normalizedStart = Math.max(0, startSec)
   const normalizedEnd = Math.max(normalizedStart + 0.35, endSec)
 
+  const cueText = currentSession.renderMode === 'simple'
+    ? pickLatestSimpleSnippet(text, 28)
+    : text
+  if (!cueText) {
+    return []
+  }
+
+  const cueStart = currentSession.renderMode === 'simple'
+    ? Math.max(0, normalizedEnd - 0.05)
+    : normalizedStart
+  const cueEnd = currentSession.renderMode === 'simple'
+    ? Math.max(cueStart + 0.25, normalizedEnd + 0.55)
+    : normalizedEnd
+
   currentSession.cueSeed += 1
   return [
     {
       id: makeCueId(currentSession.sessionId, currentSession.cueSeed),
-      start_sec: normalizedStart,
-      end_sec: normalizedEnd,
-      text,
+      start_sec: cueStart,
+      end_sec: cueEnd,
+      text: cueText,
       lang: cueLanguage,
       speaker: speakerId,
       speaker_changed: speakerChanged,
@@ -995,30 +1138,45 @@ function tryDecodeAndBuildCues(
 
   // Simple mode: 直接使用完整的 ASR 文本，不计算 delta
   if (currentSession.renderMode === 'simple') {
-    // 检测静音间隔：如果距离上次语音结束超过 1.5 秒，清空已提交的文本
-    const silenceDuration = timelineEndSec - currentSession.lastSpeechEndSec
+    // 检测静音间隔：基于最后一次非空 ASR 时间，而非最后一次提交 cue
+    const silenceDuration = timelineEndSec - currentSession.simpleLastNonEmptySec
     if (silenceDuration > 1.5 && (currentSession.committedText || currentSession.simpleWindowText)) {
       console.log(`[ASR] Silence detected (${silenceDuration.toFixed(1)}s), clearing previous text`)
       currentSession.committedText = ''
       currentSession.simpleLastRawText = ''
       currentSession.simpleWindowText = ''
     }
+    currentSession.simpleLastNonEmptySec = timelineEndSec
 
-    const delta = computeTextDelta(currentSession.simpleLastRawText, currentText)
+    const deltaResult = computeOverlapDelta(currentSession.simpleLastRawText, currentText, 64)
     currentSession.simpleLastRawText = currentText
 
     // 如果文本无新增，不生成新的 cue
-    if (!delta) {
+    if (deltaResult.kind === 'none' || !deltaResult.delta) {
       return []
     }
 
-    const normalizedDelta = delta.trim()
+    const normalizedDelta = deltaResult.delta.trim()
     if (charLength(normalizedDelta) <= 1 && !/[0-9A-Za-z]/.test(normalizedDelta)) {
       return []
     }
 
-    currentSession.simpleWindowText = `${currentSession.simpleWindowText} ${normalizedDelta}`.trim()
-    const displayText = pickSimpleDisplayText(currentSession.simpleWindowText)
+    if (deltaResult.kind === 'replace') {
+      currentSession.simpleWindowText = currentText
+    } else {
+      currentSession.simpleWindowText = `${currentSession.simpleWindowText} ${normalizedDelta}`.trim()
+    }
+
+    const sentenceSplit = splitCompletedSentence(currentSession.simpleWindowText)
+    let displayText = ''
+    if (sentenceSplit.completed) {
+      displayText = pickLatestSimpleSnippet(sentenceSplit.completed, 28)
+      currentSession.simpleWindowText = sentenceSplit.rest
+    } else if (silenceDuration > 0.45 && currentSession.simpleWindowText) {
+      displayText = pickLatestSimpleSnippet(currentSession.simpleWindowText, 28)
+      currentSession.simpleWindowText = ''
+    }
+
     if (!displayText || displayText === currentSession.committedText) {
       return []
     }
@@ -1026,10 +1184,10 @@ function tryDecodeAndBuildCues(
     currentSession.committedText = displayText
     currentSession.lastSpeechEndSec = timelineEndSec
 
-    // 根据显示文本长度估算显示时长
-    const durationSec = Math.max(1.2, Math.min(3.2, charLength(displayText) * 0.16))
-    const cueStart = Math.max(0, Math.max(timelineStartSec, timelineEndSec - durationSec * 0.8))
-    const cueEnd = Math.max(cueStart + 0.4, cueStart + durationSec)
+    // Simple 模式句子短暂停留，避免历史内容长驻
+    const durationSec = Math.max(0.45, Math.min(0.75, charLength(displayText) * 0.025))
+    const cueStart = Math.max(0, timelineEndSec - 0.05)
+    const cueEnd = Math.max(cueStart + 0.25, timelineEndSec + durationSec)
 
     const cueLanguage =
       currentSession.requestedLanguage === 'auto'
@@ -1144,7 +1302,8 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
 
   let vad: VadRuntime | null = null
   const VadConstructor = sherpa.VoiceActivityDetector ?? sherpa.Vad
-  if (payload.render_mode === 'advanced' && VadConstructor && vadModelPath) {
+  const wantsVad = payload.render_mode === 'advanced' || payload.render_mode === 'simple'
+  if (wantsVad && VadConstructor && vadModelPath) {
     try {
       const detector = new VadConstructor({
         sileroVad: {
@@ -1167,7 +1326,7 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
         ),
       )
     }
-  } else if (payload.render_mode === 'advanced') {
+  } else if (wantsVad) {
     const exportKeys = Object.keys(sherpa).sort().join(',')
     runtimeEvents.push(
       createEvent(
@@ -1189,6 +1348,7 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
         extractor,
         profiles: [],
         currentSpeakerId: null,
+        lastSwitchSec: -1,
         recentBestScores: [],
         segmentCount: 0,
         lastHintSegmentCount: 0,
@@ -1218,6 +1378,8 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
 
   runtimeSession = {
     sessionId,
+    sessionEpoch: 0,
+    lastChunkSeq: -1,
     provider: providerDecision.provider,
     startedAtMs,
     modelRootDir,
@@ -1231,6 +1393,7 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     committedText: '',
     simpleLastRawText: '',
     simpleWindowText: '',
+    simpleLastNonEmptySec: 0,
     cueSeed: 0,
     requestedLanguage: normalizedLanguage,
     renderMode: payload.render_mode ?? 'advanced',
@@ -1267,6 +1430,25 @@ async function handleStop(rawPayload: unknown): Promise<unknown> {
   return response
 }
 
+function resetSessionStateForTimeline(currentSession: RuntimeSessionState, timelineSec: number): void {
+  currentSession.lastChunkEndSec = Math.max(0, timelineSec)
+  currentSession.stream = currentSession.recognizer.createStream()
+  currentSession.pendingSamplesSinceDecode = 0
+  currentSession.committedText = ''
+  currentSession.simpleLastRawText = ''
+  currentSession.simpleWindowText = ''
+  currentSession.simpleLastNonEmptySec = Math.max(0, timelineSec)
+  currentSession.lastChunkSeq = -1
+  currentSession.speaker?.profiles.splice(0, currentSession.speaker.profiles.length)
+  if (currentSession.speaker) {
+    currentSession.speaker.currentSpeakerId = null
+    currentSession.speaker.lastSwitchSec = -1
+    currentSession.speaker.recentBestScores = []
+    currentSession.speaker.segmentCount = 0
+    currentSession.speaker.lastHintSegmentCount = 0
+  }
+}
+
 async function handleReset(rawPayload: unknown): Promise<unknown> {
   const request = (rawPayload ?? {}) as ResetSubtitleSessionRequestDto
   const currentSession = runtimeSession
@@ -1279,19 +1461,7 @@ async function handleReset(rawPayload: unknown): Promise<unknown> {
     })
   }
 
-  currentSession.lastChunkEndSec = request.timeline_sec ?? currentSession.lastChunkEndSec
-  currentSession.stream = currentSession.recognizer.createStream()
-  currentSession.pendingSamplesSinceDecode = 0
-  currentSession.committedText = ''
-  currentSession.simpleLastRawText = ''
-  currentSession.simpleWindowText = ''
-  currentSession.speaker?.profiles.splice(0, currentSession.speaker.profiles.length)
-  if (currentSession.speaker) {
-    currentSession.speaker.currentSpeakerId = null
-    currentSession.speaker.recentBestScores = []
-    currentSession.speaker.segmentCount = 0
-    currentSession.speaker.lastHintSegmentCount = 0
-  }
+  resetSessionStateForTimeline(currentSession, request.timeline_sec ?? currentSession.lastChunkEndSec)
   return resetSubtitleSessionResponseSchema.parse({
     session_id: currentSession.sessionId,
     ok: true,
@@ -1305,9 +1475,7 @@ async function handleFlush(): Promise<unknown> {
   let cues: SubtitleCueDto[] = []
 
   if (currentSession) {
-    const canFlushVad =
-      currentSession.renderMode === 'advanced' &&
-      currentSession.vad !== null
+    const canFlushVad = currentSession.vad !== null
 
     if (canFlushVad) {
       const vadDetector = currentSession.vad!.detector
@@ -1342,11 +1510,58 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
   const request = rawPayload as PushSubtitleAudioRequestDto
   const currentSession = ensureSession()
 
+  const requestEpoch = Number.isFinite(request.session_epoch) ? Math.max(0, Math.floor(request.session_epoch)) : 0
+  const requestChunkSeq = Number.isFinite(request.chunk_seq) ? Math.max(0, Math.floor(request.chunk_seq)) : 0
+  let epochResetApplied = false
+
+  if (requestEpoch < currentSession.sessionEpoch) {
+    return pushSubtitleAudioResponseSchema.parse({
+      session_id: currentSession.sessionId,
+      accepted: false,
+      provider: currentSession.provider,
+      cues: [],
+      events: [createEvent('chunk_stale_epoch', 'warning', 'chunk epoch is older than active session epoch')],
+      session_epoch: currentSession.sessionEpoch,
+      chunk_seq: requestChunkSeq,
+      queue_len: 0,
+      updated_at_ms: nowMs(),
+    })
+  }
+
+  if (requestEpoch > currentSession.sessionEpoch) {
+    currentSession.sessionEpoch = requestEpoch
+    resetSessionStateForTimeline(currentSession, request.chunk_start_sec)
+    epochResetApplied = true
+  }
+
+  const previousChunkSeq = currentSession.lastChunkSeq
+  if (requestChunkSeq <= previousChunkSeq) {
+    return pushSubtitleAudioResponseSchema.parse({
+      session_id: currentSession.sessionId,
+      accepted: false,
+      provider: currentSession.provider,
+      cues: [],
+      events: [createEvent('chunk_stale_seq', 'warning', 'chunk seq is not newer than last applied seq')],
+      session_epoch: currentSession.sessionEpoch,
+      chunk_seq: requestChunkSeq,
+      queue_len: 0,
+      updated_at_ms: nowMs(),
+    })
+  }
+
+  currentSession.lastChunkSeq = requestChunkSeq
+
   const chunkBuffer = Buffer.from(request.chunk_base64, 'base64')
   const chunkDurationSec = chunkBuffer.byteLength / 4 / request.sample_rate_hz / Math.max(1, request.channel_count)
   const expectedEndSec = request.chunk_start_sec + Math.max(0, chunkDurationSec)
 
   const events: SubtitleSessionEventDto[] = []
+  if (epochResetApplied) {
+    events.push(createEvent('chunk_epoch_reset', 'info', 'session state reset due to newer chunk epoch'))
+  }
+  if (previousChunkSeq >= 0 && requestChunkSeq > previousChunkSeq + 1) {
+    events.push(createEvent('chunk_seq_gap', 'warning', 'chunk seq gap detected; possible upstream drop/merge'))
+  }
   if (request.chunk_end_sec + 0.0001 < request.chunk_start_sec) {
     events.push(createEvent('chunk_invalid_range', 'warning', 'chunk_end_sec is less than chunk_start_sec'))
   }
@@ -1362,12 +1577,11 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
 
   let cues: SubtitleCueDto[] = []
 
-  const canUseAdvancedSegmentation =
-    currentSession.renderMode === 'advanced' &&
+  const canUseVadSegmentation =
     currentSession.vad !== null &&
     request.sample_rate_hz === 16_000
 
-  if (canUseAdvancedSegmentation && samples.length > 0) {
+  if (canUseVadSegmentation && samples.length > 0) {
     const vadDetector = currentSession.vad!.detector
     vadDetector.acceptWaveform(samples)
     cues.push(
@@ -1380,9 +1594,11 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
       ),
     )
 
-    const thresholdHintEvent = maybeBuildSpeakerThresholdHint(currentSession)
-    if (thresholdHintEvent) {
-      events.push(thresholdHintEvent)
+    if (currentSession.speaker) {
+      const thresholdHintEvent = maybeBuildSpeakerThresholdHint(currentSession)
+      if (thresholdHintEvent) {
+        events.push(thresholdHintEvent)
+      }
     }
   } else {
     if (samples.length > 0) {
@@ -1411,6 +1627,9 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
     provider: currentSession.provider,
     cues,
     events,
+    session_epoch: currentSession.sessionEpoch,
+    chunk_seq: requestChunkSeq,
+    queue_len: 0,
     updated_at_ms: nowMs(),
   })
 }
@@ -1447,12 +1666,7 @@ async function handleTranscribeAll(rawPayload: unknown): Promise<unknown> {
     ? Number(request.duration_sec)
     : computedDuration
 
-  currentSession.stream = currentSession.recognizer.createStream()
-  currentSession.pendingSamplesSinceDecode = 0
-  currentSession.committedText = ''
-  currentSession.simpleLastRawText = ''
-  currentSession.simpleWindowText = ''
-  currentSession.lastChunkEndSec = Math.max(0, durationSec)
+  resetSessionStateForTimeline(currentSession, durationSec)
   currentSession.stream.acceptWaveform({ samples: monoSamples, sampleRate })
 
   const startedAt = nowMs()
