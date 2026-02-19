@@ -213,6 +213,10 @@ export class MediaLibrarySnapshotStore {
           now,
         )
 
+        // Delete all existing images for this source before upserting new ones
+        // to avoid UNIQUE(source_id, ordinal) constraint conflicts when ordinals change
+        deleteStaleImagesBySource.run(source.id, revision)
+
         for (const image of source.images) {
           const imageVector = (image as { feature_vector?: unknown }).feature_vector
           upsertImage.run(
@@ -231,8 +235,6 @@ export class MediaLibrarySnapshotStore {
             now,
           )
         }
-
-        deleteStaleImagesBySource.run(source.id, revision)
       }
 
       for (const video of snapshot.videos) {
