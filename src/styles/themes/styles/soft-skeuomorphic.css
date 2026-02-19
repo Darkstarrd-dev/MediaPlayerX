@@ -107,6 +107,46 @@
   );
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
+  --mpx-layout-padding: 14px;
+  --mpx-header-margin: 12px 12px 0;
+  --mpx-panel-padding: 14px;
+  --mpx-panel-radius: 18px;
+  --mpx-header-radius: 16px;
+  --mpx-card-radius: 13px;
+
+  --mpx-panel-shadow: 0 14px 28px color-mix(in srgb, var(--mpx-palette-shadow-color) 88%, transparent),
+    0 2px 6px color-mix(in srgb, var(--mpx-palette-shadow-color) 72%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-bg-elevated));
+  --mpx-header-shadow: 0 14px 30px color-mix(in srgb, var(--mpx-palette-shadow-color) 92%, transparent),
+    0 2px 6px color-mix(in srgb, var(--mpx-palette-shadow-color) 76%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 97%, var(--mpx-bg-elevated));
+  --mpx-card-shadow: 0 9px 18px color-mix(in srgb, var(--mpx-palette-shadow-color) 86%, transparent),
+    -3px -3px 8px color-mix(in srgb, var(--mpx-palette-surface) 95%, var(--mpx-bg-elevated));
+
+  --mpx-control-shadow: 4px 4px 11px color-mix(in srgb, var(--mpx-palette-shadow-color) 94%, transparent),
+    -4px -4px 11px color-mix(in srgb, var(--mpx-palette-surface) 98%, var(--mpx-bg-elevated));
+  --mpx-control-hover-shadow: 5px 5px 14px color-mix(in srgb, var(--mpx-palette-shadow-color) 96%, transparent),
+    -5px -5px 14px color-mix(in srgb, var(--mpx-palette-surface) 99%, var(--mpx-bg-elevated));
+  --mpx-control-active-shadow: inset 3px 3px 6px color-mix(in srgb, var(--mpx-palette-shadow-color) 96%, transparent),
+    inset -3px -3px 6px color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-bg-elevated));
+
+  --mpx-main-bg: color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-palette-base));
+  --mpx-sidebar-bg: color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base));
+  --mpx-metadata-bg: color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base));
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .image-grid,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-rating-group,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-edit-grid,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-booklet-bindings,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-playlist,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .feature-tag-picker-panel,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .playlist-item {
+  border-color: color-mix(in srgb, var(--mpx-border-1) 90%, var(--mpx-palette-accent-raw) 10%);
+  box-shadow: var(--mpx-card-shadow);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"] .video-controls-shell:not(.fullscreen-video-controls-shell) {
   border-radius: 8px;
   backdrop-filter: none;
