@@ -96,6 +96,17 @@ const SOURCE_COVER_EXT_ALLOWLIST = new Set([
 ]);
 const SUBTITLE_EXTENSIONS = new Set([".vtt", ".srt", ".ass", ".ssa"]);
 
+function isAutoLiveSubtitleFile(fileName: string): boolean {
+  const lower = fileName.toLowerCase();
+  return (
+    lower.includes('.auto-live.') ||
+    lower.endsWith('.auto-live.srt') ||
+    lower.endsWith('.auto-live.vtt') ||
+    lower.endsWith('.auto-live.ass') ||
+    lower.endsWith('.auto-live.ssa')
+  );
+}
+
 function normalizeExternalMetadataText(value: string | undefined): string {
   return value?.trim() ?? "";
 }
@@ -662,6 +673,9 @@ export class LibraryReadWriteService {
     const subtitles = entries
       .filter((entry) => entry.isFile())
       .map((entry) => {
+        if (isAutoLiveSubtitleFile(entry.name)) {
+          return null;
+        }
         const ext = path.extname(entry.name).toLowerCase();
         if (!SUBTITLE_EXTENSIONS.has(ext)) {
           return null;

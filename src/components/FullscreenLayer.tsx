@@ -616,7 +616,7 @@ function FullscreenLayer({
       return
     }
 
-    video.playbackRate = clamp(videoRate, 0.1, 4)
+    video.playbackRate = clamp(videoRate, 0.1, 10)
     video.muted = videoMuted
     video.volume = clamp(videoVolume / 100, 0, 1)
 

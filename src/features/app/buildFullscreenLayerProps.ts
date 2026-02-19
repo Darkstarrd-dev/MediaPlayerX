@@ -178,7 +178,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
       params.setVideoVolume(clamp(volume, 0, 100))
     },
     onChangeVideoRate: (rate) => {
-      params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
+      params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 10))
     },
     onCycleVideoLoopMode: params.cycleVideoLoopMode,
     onCycleVideoFitMode: params.cycleVideoFitMode,

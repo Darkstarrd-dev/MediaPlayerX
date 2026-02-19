@@ -147,7 +147,7 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
   )
 
   const adjustVideoRate = useCallback((delta: number) => {
-    setVideoRate((value) => clamp(Number((value + delta).toFixed(2)), 0.1, 4))
+    setVideoRate((value) => clamp(Number((value + delta).toFixed(2)), 0.1, 10))
   }, [])
 
   const adjustVideoVolume = useCallback((delta: number) => {

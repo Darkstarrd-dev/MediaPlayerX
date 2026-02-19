@@ -137,9 +137,176 @@ interface PersistenceBatchPayload {
   batchEndSec: number | null
 }
 
+interface PersistenceSyncState {
+  timelineHasCue: boolean
+  timelineInGeneratedRange: boolean
+  activeRange: GeneratedRangeDto | null
+}
+
 interface GeneratedRangeDto {
   start_sec: number
   end_sec: number
+}
+
+function resolveActiveGeneratedRange(
+  ranges: GeneratedRangeDto[],
+  timelineSec: number,
+): GeneratedRangeDto | null {
+  for (let index = 0; index < ranges.length; index += 1) {
+    const range = ranges[index]
+    if (range.start_sec - 0.01 <= timelineSec && range.end_sec + 0.01 >= timelineSec) {
+      return range
+    }
+  }
+  return null
+}
+
+function toDisplayCue(cue: SubtitleCueDto): SubtitleCueDto {
+  const originalStart = Math.max(0, cue.start_sec)
+  const originalEnd = Math.max(originalStart + 0.12, cue.end_sec)
+  const rawDurationSec = Math.max(0.12, originalEnd - originalStart)
+
+  const normalizedText = cue.text.replace(/\s+/g, ' ').trim()
+  const cjkCount = (normalizedText.match(/[\u3400-\u9FFF\uF900-\uFAFF]/g) ?? []).length
+  const latinOrDigitCount = (normalizedText.match(/[A-Za-z0-9]/g) ?? []).length
+  const otherVisibleCount = Math.max(0, normalizedText.replace(/[\s]/g, '').length - cjkCount - latinOrDigitCount)
+  const effectiveCharUnits = cjkCount + latinOrDigitCount * 0.45 + otherVisibleCount * 0.6
+
+  const mappedLeadSec = (() => {
+    const minChars = 3
+    const maxChars = 20
+    const minSec = 0.3
+    const maxSec = 2
+    const clampedChars = Math.max(minChars, Math.min(maxChars, effectiveCharUnits))
+    const ratio = (clampedChars - minChars) / (maxChars - minChars)
+    return minSec + ratio * (maxSec - minSec)
+  })()
+
+  const speechSecByChars = Math.max(0.25, Math.min(6, effectiveCharUnits * 0.17))
+  const leadOffsetSec = mappedLeadSec + speechSecByChars
+
+  const expandedStart = Math.max(0, originalStart - 0.5)
+  const expandedEnd = Math.max(expandedStart + 0.25, originalEnd + 0.5)
+  const shiftedStart = Math.max(0, expandedStart - leadOffsetSec)
+  const displayDurationSec = Math.max(rawDurationSec + 0.5, speechSecByChars + 0.55, 0.85)
+  const shiftedEnd = Math.max(shiftedStart + 0.25, shiftedStart + displayDurationSec, expandedEnd - leadOffsetSec)
+
+  return {
+    ...cue,
+    start_sec: Number(shiftedStart.toFixed(3)),
+    end_sec: Number(shiftedEnd.toFixed(3)),
+  }
+}
+
+function toDisplayCues(cues: SubtitleCueDto[]): SubtitleCueDto[] {
+  if (cues.length === 0) {
+    return cues
+  }
+  return cues.map((cue) => toDisplayCue(cue))
+}
+
+function normalizeCueTextForDedup(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, '')
+    .trim()
+}
+
+function computeDiceSimilarity(left: string, right: string): number {
+  if (!left || !right) {
+    return 0
+  }
+  if (left === right) {
+    return 1
+  }
+  const leftChars = Array.from(left)
+  const rightChars = Array.from(right)
+  if (leftChars.length < 2 || rightChars.length < 2) {
+    const rightSet = new Set(rightChars)
+    const hit = leftChars.reduce((sum, ch) => sum + (rightSet.has(ch) ? 1 : 0), 0)
+    return hit / Math.max(leftChars.length, rightChars.length)
+  }
+
+  const leftBigrams = new Map<string, number>()
+  for (let i = 0; i < leftChars.length - 1; i += 1) {
+    const key = `${leftChars[i]}${leftChars[i + 1]}`
+    leftBigrams.set(key, (leftBigrams.get(key) ?? 0) + 1)
+  }
+
+  let intersection = 0
+  let rightCount = 0
+  for (let i = 0; i < rightChars.length - 1; i += 1) {
+    const key = `${rightChars[i]}${rightChars[i + 1]}`
+    rightCount += 1
+    const leftCount = leftBigrams.get(key) ?? 0
+    if (leftCount > 0) {
+      intersection += 1
+      leftBigrams.set(key, leftCount - 1)
+    }
+  }
+
+  const leftCount = Math.max(1, leftChars.length - 1)
+  const denominator = leftCount + Math.max(1, rightCount)
+  return (2 * intersection) / denominator
+}
+
+function computeCueTextSimilarity(leftText: string, rightText: string): number {
+  const left = normalizeCueTextForDedup(leftText)
+  const right = normalizeCueTextForDedup(rightText)
+  if (!left || !right) {
+    return 0
+  }
+  if (left === right) {
+    return 1
+  }
+  const containment = left.includes(right) || right.includes(left)
+    ? Math.min(left.length, right.length) / Math.max(left.length, right.length)
+    : 0
+  const dice = computeDiceSimilarity(left, right)
+  return Math.max(containment, dice)
+}
+
+function cueOverlapRatio(left: SubtitleCueDto, right: SubtitleCueDto): number {
+  const overlapStart = Math.max(left.start_sec, right.start_sec)
+  const overlapEnd = Math.min(left.end_sec, right.end_sec)
+  const overlap = Math.max(0, overlapEnd - overlapStart)
+  const leftDuration = Math.max(0.05, left.end_sec - left.start_sec)
+  const rightDuration = Math.max(0.05, right.end_sec - right.start_sec)
+  return overlap / Math.min(leftDuration, rightDuration)
+}
+
+function areLikelyDuplicateCue(left: SubtitleCueDto, right: SubtitleCueDto): boolean {
+  const similarity = computeCueTextSimilarity(left.text, right.text)
+  if (similarity < 0.72) {
+    return false
+  }
+  const leftCenter = (left.start_sec + left.end_sec) * 0.5
+  const rightCenter = (right.start_sec + right.end_sec) * 0.5
+  const centerDiff = Math.abs(leftCenter - rightCenter)
+  if (similarity >= 0.9 && centerDiff <= 1.4) {
+    return true
+  }
+  if (centerDiff <= 0.65 && similarity >= 0.78) {
+    return true
+  }
+  return cueOverlapRatio(left, right) >= 0.45 && similarity >= 0.74
+}
+
+function mergeDuplicateCues(base: SubtitleCueDto, incoming: SubtitleCueDto): SubtitleCueDto {
+  const mergedStart = Math.min(base.start_sec, incoming.start_sec)
+  const mergedEnd = Math.max(base.end_sec, incoming.end_sec)
+  const mergedText = incoming.text.trim().length >= base.text.trim().length ? incoming.text : base.text
+  return {
+    ...base,
+    text: mergedText,
+    start_sec: Number(mergedStart.toFixed(3)),
+    end_sec: Number(mergedEnd.toFixed(3)),
+    lang: incoming.lang ?? base.lang,
+    speaker: incoming.speaker ?? base.speaker,
+    line: incoming.line ?? base.line,
+    speaker_changed: incoming.speaker_changed ?? base.speaker_changed,
+    speaker_similarity: incoming.speaker_similarity ?? base.speaker_similarity,
+  }
 }
 
 function hasCueAtTimeline(cues: SubtitleCueDto[], timelineSec: number): boolean {
@@ -177,13 +344,27 @@ function appendCues(previous: SubtitleCueDto[], next: SubtitleCueDto[]): Subtitl
   if (next.length === 0) {
     return previous
   }
-  const merged = [...previous, ...next]
-  const dedupedById = new Map<string, SubtitleCueDto>()
-  for (const cue of merged) {
-    dedupedById.set(cue.id, cue)
+  const mergedById = new Map<string, SubtitleCueDto>()
+  for (const cue of [...previous, ...next]) {
+    mergedById.set(cue.id, cue)
   }
-  const ordered = Array.from(dedupedById.values()).sort((left, right) => left.start_sec - right.start_sec)
-  return ordered.slice(-300)
+  const ordered = Array.from(mergedById.values()).sort((left, right) => left.start_sec - right.start_sec)
+  const deduped: SubtitleCueDto[] = []
+  for (const cue of ordered) {
+    let duplicateIndex = -1
+    for (let index = deduped.length - 1; index >= Math.max(0, deduped.length - 8); index -= 1) {
+      if (areLikelyDuplicateCue(deduped[index], cue)) {
+        duplicateIndex = index
+        break
+      }
+    }
+    if (duplicateIndex >= 0) {
+      deduped[duplicateIndex] = mergeDuplicateCues(deduped[duplicateIndex], cue)
+      continue
+    }
+    deduped.push(cue)
+  }
+  return deduped.slice(-300)
 }
 
 function concatFloat32(chunks: Float32Array[]): Float32Array {
@@ -351,6 +532,8 @@ export function useLiveSubtitles({
   const persistenceReadInFlightRef = useRef(false)
   const persistenceLastReadAtMsRef = useRef(0)
   const persistenceLastReadTimelineSecRef = useRef(-1)
+  const replayLockRangeRef = useRef<GeneratedRangeDto | null>(null)
+  const highRateReplayHintShownRef = useRef(false)
 
   useEffect(() => {
     cleanupRef.current = null
@@ -422,6 +605,8 @@ export function useLiveSubtitles({
       persistenceReadInFlightRef.current = false
       persistenceLastReadAtMsRef.current = 0
       persistenceLastReadTimelineSecRef.current = -1
+      replayLockRangeRef.current = null
+      highRateReplayHintShownRef.current = false
       sessionEpochRef.current = 0
       chunkSeqRef.current = 0
       lastAppliedSeqRef.current = -1
@@ -451,6 +636,8 @@ export function useLiveSubtitles({
       pushAbortRef.current = null
       persistenceQueueRef.current = []
       replayFromPersistenceRef.current = false
+      replayLockRangeRef.current = null
+      highRateReplayHintShownRef.current = false
       emitSubtitleDebug('renderer_epoch_begin', {
         reason,
         session_epoch: sessionEpochRef.current,
@@ -462,9 +649,9 @@ export function useLiveSubtitles({
     const syncPersistenceWindow = async (
       timelineSec: number,
       options?: { hydrateCues?: boolean; force?: boolean },
-    ): Promise<{ timelineHasCue: boolean; timelineInGeneratedRange: boolean }> => {
+    ): Promise<PersistenceSyncState> => {
       if (!subtitlePersistenceEnabledRef.current || !readSubtitlePersistenceWindow) {
-        return { timelineHasCue: false, timelineInGeneratedRange: false }
+        return { timelineHasCue: false, timelineInGeneratedRange: false, activeRange: null }
       }
 
       const now = performance.now()
@@ -478,12 +665,20 @@ export function useLiveSubtitles({
       ) {
         const timelineHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
         const timelineInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
-        return { timelineHasCue, timelineInGeneratedRange }
+        return {
+          timelineHasCue,
+          timelineInGeneratedRange,
+          activeRange: resolveActiveGeneratedRange(persistenceGeneratedRangesRef.current, timelineSec),
+        }
       }
       if (persistenceReadInFlightRef.current && !force) {
         const timelineHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
         const timelineInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
-        return { timelineHasCue, timelineInGeneratedRange }
+        return {
+          timelineHasCue,
+          timelineInGeneratedRange,
+          activeRange: resolveActiveGeneratedRange(persistenceGeneratedRangesRef.current, timelineSec),
+        }
       }
 
       persistenceReadInFlightRef.current = true
@@ -499,11 +694,12 @@ export function useLiveSubtitles({
         persistenceWindowCuesRef.current = response.cues
         persistenceGeneratedRangesRef.current = response.generated_ranges
         if (!cancelled && hydrateCues) {
-          setCues(response.cues)
+          setCues(toDisplayCues(response.cues))
         }
         return {
           timelineHasCue: response.timeline_has_cue,
           timelineInGeneratedRange: response.timeline_in_generated_range,
+          activeRange: resolveActiveGeneratedRange(response.generated_ranges, timelineSec),
         }
       } catch {
         if (!cancelled && hydrateCues) {
@@ -512,6 +708,7 @@ export function useLiveSubtitles({
         return {
           timelineHasCue: false,
           timelineInGeneratedRange: false,
+          activeRange: null,
         }
       } finally {
         persistenceReadInFlightRef.current = false
@@ -727,6 +924,8 @@ export function useLiveSubtitles({
         subtitlePersistenceEnabledRef.current = false
         persistenceQueueRef.current = []
         replayFromPersistenceRef.current = false
+        replayLockRangeRef.current = null
+        highRateReplayHintShownRef.current = false
         persistenceWindowCuesRef.current = []
         persistenceGeneratedRangesRef.current = []
         persistenceLastReadAtMsRef.current = 0
@@ -746,7 +945,10 @@ export function useLiveSubtitles({
                 hydrateCues: true,
                 force: true,
               })
-              replayFromPersistenceRef.current = persistedState.timelineHasCue
+              replayFromPersistenceRef.current = persistedState.timelineInGeneratedRange
+              replayLockRangeRef.current = persistedState.timelineInGeneratedRange
+                ? persistedState.activeRange
+                : null
             }
           } catch (error) {
             subtitlePersistenceEnabledRef.current = false
@@ -762,9 +964,48 @@ export function useLiveSubtitles({
           }
 
           const timelineSec = Math.max(0, chunk.endSec)
+          const playbackRate = Math.max(0.1, videoElement.playbackRate || 1)
+          const lockRange = replayLockRangeRef.current
+          if (lockRange) {
+            if (timelineSec >= lockRange.start_sec - 0.02 && timelineSec <= lockRange.end_sec + 0.03) {
+              replayFromPersistenceRef.current = true
+            } else if (timelineSec > lockRange.end_sec + 0.03) {
+              replayLockRangeRef.current = null
+              replayFromPersistenceRef.current = false
+              setCues([])
+            }
+          }
+
           const cachedHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
           if (cachedHasCue) {
             replayFromPersistenceRef.current = true
+          }
+
+          if (playbackRate > 2.05 && subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
+            replayFromPersistenceRef.current = true
+            if (!highRateReplayHintShownRef.current) {
+              highRateReplayHintShownRef.current = true
+              setMessage('播放速度超过 2x：切换为仅回放已生成字幕')
+            }
+            void syncPersistenceWindow(timelineSec, {
+              hydrateCues: true,
+              force: false,
+            }).then((result) => {
+              if (cancelled) {
+                return
+              }
+              replayFromPersistenceRef.current = result.timelineInGeneratedRange
+              replayLockRangeRef.current = result.timelineInGeneratedRange ? result.activeRange : null
+            })
+            return
+          }
+          if (highRateReplayHintShownRef.current && playbackRate <= 2.01) {
+            highRateReplayHintShownRef.current = false
+            setMessage((previous) => (
+              previous === '播放速度超过 2x：切换为仅回放已生成字幕'
+                ? null
+                : previous
+            ))
           }
 
           if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
@@ -781,7 +1022,8 @@ export function useLiveSubtitles({
                 if (cancelled) {
                   return
                 }
-                replayFromPersistenceRef.current = result.timelineHasCue
+                replayFromPersistenceRef.current = result.timelineInGeneratedRange
+                replayLockRangeRef.current = result.timelineInGeneratedRange ? result.activeRange : null
               })
             }
           }
@@ -793,7 +1035,12 @@ export function useLiveSubtitles({
             return
           }
 
-          const highWaterMark = renderMode === 'advanced' ? 14 : 24
+          const highWaterMark =
+            playbackRate <= 1.5
+              ? (renderMode === 'advanced' ? 18 : 28)
+              : playbackRate <= 2.5
+                ? (renderMode === 'advanced' ? 30 : 42)
+                : (renderMode === 'advanced' ? 50 : 60)
           if (pushQueueRef.current.length > highWaterMark) {
             const queueLenBeforeCompaction = pushQueueRef.current.length
             const first = pushQueueRef.current.shift()
@@ -842,17 +1089,20 @@ export function useLiveSubtitles({
             void syncPersistenceWindow(timelineSec, { hydrateCues: true, force: true })
               .then((result) => {
                 if (!cancelled) {
-                  replayFromPersistenceRef.current = result.timelineHasCue
+                  replayFromPersistenceRef.current = result.timelineInGeneratedRange
+                  replayLockRangeRef.current = result.timelineInGeneratedRange ? result.activeRange : null
                 }
               })
               .catch(() => {
                 if (!cancelled) {
                   replayFromPersistenceRef.current = false
+                  replayLockRangeRef.current = null
                   setCues([])
                 }
               })
           } else {
             replayFromPersistenceRef.current = false
+            replayLockRangeRef.current = null
             setCues([])
           }
 
@@ -930,6 +1180,8 @@ export function useLiveSubtitles({
           persistenceQueueRef.current = []
           persistenceInFlightRef.current = false
           replayFromPersistenceRef.current = false
+          replayLockRangeRef.current = null
+          highRateReplayHintShownRef.current = false
           persistenceWindowCuesRef.current = []
           persistenceGeneratedRangesRef.current = []
           persistenceReadInFlightRef.current = false
@@ -955,6 +1207,8 @@ export function useLiveSubtitles({
         persistenceQueueRef.current = []
         persistenceInFlightRef.current = false
         replayFromPersistenceRef.current = false
+        replayLockRangeRef.current = null
+        highRateReplayHintShownRef.current = false
         persistenceWindowCuesRef.current = []
         persistenceGeneratedRangesRef.current = []
         persistenceReadInFlightRef.current = false
@@ -984,6 +1238,8 @@ export function useLiveSubtitles({
         persistenceQueueRef.current = []
         persistenceInFlightRef.current = false
         replayFromPersistenceRef.current = false
+        replayLockRangeRef.current = null
+        highRateReplayHintShownRef.current = false
         persistenceWindowCuesRef.current = []
         persistenceGeneratedRangesRef.current = []
         persistenceReadInFlightRef.current = false

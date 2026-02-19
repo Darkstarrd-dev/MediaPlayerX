@@ -979,7 +979,7 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     return resolveAsync(
       {
         enabled: Boolean(this.subtitleSessionState?.running),
-        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.srt' : null,
+        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.auto.srt' : null,
         cue_count: 0,
         updated_at_ms: Date.now(),
       },
@@ -995,7 +995,7 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     return resolveAsync(
       {
         accepted: Boolean(this.subtitleSessionState?.running),
-        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.srt' : null,
+        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.auto.srt' : null,
         cue_count: 0,
         accepted_cue_count: 0,
         skipped_inner_cue_count: 0,
@@ -1013,7 +1013,7 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     void request
     return resolveAsync(
       {
-        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.srt' : null,
+        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.auto.srt' : null,
         cues: [],
         generated_ranges: [],
         timeline_in_generated_range: false,

@@ -114,10 +114,37 @@ function cuesToSrtText(cues: SubtitleCueRecord[]): string {
   return lines.join('\n').trim()
 }
 
-function resolveAutoSubtitlePath(videoPath: string): string {
+function normalizePersistenceLocaleTag(rawLanguage: string): string {
+  const input = rawLanguage.trim()
+  if (!input) {
+    return 'auto'
+  }
+  if (input.toLowerCase() === 'auto') {
+    return 'auto'
+  }
+
+  const cleaned = input.replace(/_/g, '-').replace(/[^A-Za-z0-9-]/g, '')
+  const parts = cleaned.split('-').filter((part) => part.length > 0)
+  if (parts.length === 0) {
+    return 'auto'
+  }
+
+  const normalized = parts.map((part, index) => {
+    if (index === 0) {
+      return part.toLowerCase()
+    }
+    if (part.length === 2) {
+      return part.toUpperCase()
+    }
+    return part.toLowerCase()
+  })
+  return normalized.join('-')
+}
+
+function resolveAutoSubtitlePath(videoPath: string, localeTag: string): string {
   const videoDir = path.dirname(videoPath)
   const stem = path.basename(videoPath, path.extname(videoPath))
-  return path.join(videoDir, `${stem}.auto-live.srt`)
+  return path.join(videoDir, `${stem}.auto-live.${localeTag}.srt`)
 }
 
 function normalizePathForCompare(inputPath: string): string {
@@ -270,12 +297,130 @@ function toCueDedupKey(cue: SubtitleCueRecord): string {
   return `${startMs}|${endMs}|${normalizedText}`
 }
 
-function dedupeCuesByTimeAndText(cues: SubtitleCueRecord[]): SubtitleCueRecord[] {
-  const byKey = new Map<string, SubtitleCueRecord>()
-  for (const cue of cues) {
-    byKey.set(toCueDedupKey(cue), cue)
+function normalizeCueTextForDedup(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, '')
+    .trim()
+}
+
+function computeDiceSimilarity(left: string, right: string): number {
+  if (!left || !right) {
+    return 0
   }
-  return Array.from(byKey.values()).sort((left, right) => left.start_sec - right.start_sec)
+  if (left === right) {
+    return 1
+  }
+  const leftChars = Array.from(left)
+  const rightChars = Array.from(right)
+  if (leftChars.length < 2 || rightChars.length < 2) {
+    const rightSet = new Set(rightChars)
+    const hit = leftChars.reduce((sum, ch) => sum + (rightSet.has(ch) ? 1 : 0), 0)
+    return hit / Math.max(leftChars.length, rightChars.length)
+  }
+
+  const leftBigrams = new Map<string, number>()
+  for (let i = 0; i < leftChars.length - 1; i += 1) {
+    const key = `${leftChars[i]}${leftChars[i + 1]}`
+    leftBigrams.set(key, (leftBigrams.get(key) ?? 0) + 1)
+  }
+
+  let intersection = 0
+  let rightCount = 0
+  for (let i = 0; i < rightChars.length - 1; i += 1) {
+    const key = `${rightChars[i]}${rightChars[i + 1]}`
+    rightCount += 1
+    const leftCount = leftBigrams.get(key) ?? 0
+    if (leftCount > 0) {
+      intersection += 1
+      leftBigrams.set(key, leftCount - 1)
+    }
+  }
+
+  const leftCount = Math.max(1, leftChars.length - 1)
+  const denominator = leftCount + Math.max(1, rightCount)
+  return (2 * intersection) / denominator
+}
+
+function computeCueTextSimilarity(leftText: string, rightText: string): number {
+  const left = normalizeCueTextForDedup(leftText)
+  const right = normalizeCueTextForDedup(rightText)
+  if (!left || !right) {
+    return 0
+  }
+  if (left === right) {
+    return 1
+  }
+  const containment = left.includes(right) || right.includes(left)
+    ? Math.min(left.length, right.length) / Math.max(left.length, right.length)
+    : 0
+  const dice = computeDiceSimilarity(left, right)
+  return Math.max(containment, dice)
+}
+
+function cueOverlapRatio(left: SubtitleCueRecord, right: SubtitleCueRecord): number {
+  const overlapStart = Math.max(left.start_sec, right.start_sec)
+  const overlapEnd = Math.min(left.end_sec, right.end_sec)
+  const overlap = Math.max(0, overlapEnd - overlapStart)
+  const leftDuration = Math.max(0.05, left.end_sec - left.start_sec)
+  const rightDuration = Math.max(0.05, right.end_sec - right.start_sec)
+  return overlap / Math.min(leftDuration, rightDuration)
+}
+
+function areLikelyDuplicateCue(left: SubtitleCueRecord, right: SubtitleCueRecord): boolean {
+  const similarity = computeCueTextSimilarity(left.text, right.text)
+  if (similarity < 0.72) {
+    return false
+  }
+  const leftCenter = (left.start_sec + left.end_sec) * 0.5
+  const rightCenter = (right.start_sec + right.end_sec) * 0.5
+  const centerDiff = Math.abs(leftCenter - rightCenter)
+  if (similarity >= 0.9 && centerDiff <= 1.4) {
+    return true
+  }
+  if (centerDiff <= 0.65 && similarity >= 0.78) {
+    return true
+  }
+  return cueOverlapRatio(left, right) >= 0.45 && similarity >= 0.74
+}
+
+function mergeDuplicateCue(base: SubtitleCueRecord, incoming: SubtitleCueRecord): SubtitleCueRecord {
+  const preferIncomingText = incoming.text.trim().length >= base.text.trim().length
+  return {
+    ...base,
+    text: preferIncomingText ? incoming.text : base.text,
+    start_sec: Math.min(base.start_sec, incoming.start_sec),
+    end_sec: Math.max(base.end_sec, incoming.end_sec),
+    lang: incoming.lang ?? base.lang,
+    speaker: incoming.speaker ?? base.speaker,
+    line: incoming.line ?? base.line,
+    speaker_changed: incoming.speaker_changed ?? base.speaker_changed,
+    speaker_similarity: incoming.speaker_similarity ?? base.speaker_similarity,
+  }
+}
+
+function dedupeCuesByTimeAndText(cues: SubtitleCueRecord[]): SubtitleCueRecord[] {
+  const byExactKey = new Map<string, SubtitleCueRecord>()
+  for (const cue of cues) {
+    byExactKey.set(toCueDedupKey(cue), cue)
+  }
+  const ordered = Array.from(byExactKey.values()).sort((left, right) => left.start_sec - right.start_sec)
+  const deduped: SubtitleCueRecord[] = []
+  for (const cue of ordered) {
+    let duplicateIndex = -1
+    for (let index = deduped.length - 1; index >= Math.max(0, deduped.length - 8); index -= 1) {
+      if (areLikelyDuplicateCue(deduped[index], cue)) {
+        duplicateIndex = index
+        break
+      }
+    }
+    if (duplicateIndex >= 0) {
+      deduped[duplicateIndex] = mergeDuplicateCue(deduped[duplicateIndex], cue)
+      continue
+    }
+    deduped.push(cue)
+  }
+  return deduped
 }
 
 class SubtitleWorkerClient {
@@ -487,7 +632,8 @@ export class SubtitleSessionManager {
       })
     }
 
-    const subtitlePath = resolveAutoSubtitlePath(resolvedVideoPath)
+    const localeTag = normalizePersistenceLocaleTag(request.language)
+    const subtitlePath = resolveAutoSubtitlePath(resolvedVideoPath, localeTag)
     try {
       await ensureParentDirectory(subtitlePath)
 
@@ -501,8 +647,24 @@ export class SubtitleSessionManager {
           }
           throw error
         })
-        if (existingText && existingText.trim()) {
-          initialCues = parseSrtText(existingText)
+        const legacyPath = path.join(
+          path.dirname(resolvedVideoPath),
+          `${path.basename(resolvedVideoPath, path.extname(resolvedVideoPath))}.auto-live.srt`,
+        )
+        const legacyText = !existingText
+          ? await fs.readFile(legacyPath, 'utf8').catch((error: unknown) => {
+              if ((error as { code?: string })?.code === 'ENOENT') {
+                return ''
+              }
+              throw error
+            })
+          : ''
+        const restoredText = existingText || legacyText
+        if (restoredText && restoredText.trim()) {
+          initialCues = parseSrtText(restoredText)
+          if (!existingText && legacyText) {
+            await fs.writeFile(subtitlePath, cuesToSrtText(initialCues), 'utf8')
+          }
         }
       }
 

@@ -218,7 +218,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
       params.setVideoVolume(clamp(volume, 0, 100))
     },
     onChangeRate: (rate: number) => {
-      params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 4))
+      params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 10))
     },
     onCycleVideoLoopMode: params.onCycleVideoLoopMode,
     onCycleVideoFitMode: params.cycleVideoFitMode,

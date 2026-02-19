@@ -988,6 +988,59 @@ Status: in_progress
 - 影响：避免节点切换或异常路径导致弹窗报错，并防止持久化链路整体失效。
 - 验证：`bun run build:electron`、`bun run build` 通过。
 
+### 2026-02-19  Phase G 第十轮（自动字幕文件命名/可见性与高倍速测试）
+
+- 按产品要求完成 4 项变更：
+  1. 自动字幕 sidecar (`.auto-live.*`) 不再出现在常规字幕列表（仅自动字幕链路静默读写）；
+  2. 自动字幕文件名升级为 `*.auto-live.<locale>.srt`（如 `auto/zh/en-US`），并兼容旧版 `*.auto-live.srt` 自动迁移读取；
+  3. 生成 cue 时间窗统一做 `start-0.5s` 与 `end+0.5s` 扩展，覆盖“先说后出字”的滞后现象；
+  4. 倍速选项新增到 `3x~10x`（主播放与全屏一致）。
+- 代码落点：
+  - 字幕列表过滤：`electron/services/file-system-read/libraryReadWriteServiceImpl.ts`
+  - sidecar 命名与旧文件迁移：`electron/subtitles/subtitleSession.ts`
+  - cue 时间窗扩展：`electron/subtitles/asrWorker.ts`
+  - 倍速上限与选项：`src/components/VideoMainSection.tsx`、`src/components/fullscreen/FullscreenVideoControls.tsx`、`src/components/FullscreenLayer.tsx`、`src/features/app/buildVideoMainSectionProps.ts`、`src/features/app/buildFullscreenLayerProps.ts`、`src/features/media/useMediaState.ts`
+- 验证：`bun run build:electron`、`bun run build` 通过。
+
+### 2026-02-19  Phase G 第十一轮（回滚写盘时间偏移，改为显示层策略）
+
+- 根据最新复测反馈，撤回“生成即写入时间窗扩展”策略，避免写盘时间轴污染与高倍速劣化。
+- 新策略：
+  1. `.auto-live.<locale>.srt` 继续保存原始 ASR 时间戳（不做前后扩展/前移）；
+  2. 显示时才应用“头尾+0.5s扩展，再按原始时长前移”的窗口变换；
+  3. 持久化写盘、覆盖判定与生成链路统一使用原始时间戳。
+- 代码落点：
+  - 取消写盘前扩展：`electron/subtitles/asrWorker.ts`
+  - 显示层窗口变换：`src/features/subtitles/useLiveSubtitles.ts`
+- 验证：`bun run build:electron`、`bun run build` 通过。
+
+### 2026-02-19  Phase G 第十二轮（字符驱动显示映射 + seekback 去重 + >2x 降级）
+
+- 依据复测反馈完成策略升级：
+  1. **显示映射改为字符驱动**：
+     - 不再使用固定“按原始时长前移”；
+     - 使用“3~20 字映射 0.3~2s 回退 + 发音时长估计”计算 `leadOffsetSec`；
+     - 显示时长由 `rawDuration` 与 `speechDuration` 共同约束，改善“开始时间与长度耦合失真”。
+  2. **seekback 穿插重复抑制**：
+     - Renderer 与主进程持久化层同时加入“同文本 + 近时间窗”近似去重（中心点差/重叠比）；
+     - 防止内容一致但时间微错位的重复条目并存。
+  3. **高倍速降级策略**：
+     - 当 `playbackRate > 2x` 且持久化可用时，切换为“仅回放已生成字幕”，暂停实时生成；
+     - 降低高倍速实时转写导致的缺字与错乱风险。
+- 说明：
+  - `.auto-live.<locale>.srt` 持续保存原始时间戳；
+  - 显示映射仅作用于“解析/回放 auto 持久化字幕”链路，不写回文件。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+
+### 2026-02-19  Phase G 第十三轮（seekback 锁区回放 + 相似文本去重加严）
+
+- 针对“seekback 每次都再生一条、时间微错开”的复测结果，继续加固：
+  1. seek 后若命中已生成区间，建立 `replayLockRange`，在该区间内强制只回放持久化字幕，不再触发实时再生成；
+  2. Renderer/主进程持久化两端去重从“文本完全一致”升级为“文本相似度 + 时间邻近/重叠”联合判定；
+  3. >2x 仍保持“仅回放已生成字幕”降级策略，并在降回 <=2x 时自动清除提示。
+- 目标：消除 seekback 产生的同义/近似重复条目，避免 .auto-live 文件继续污染。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+
 
 ---
 

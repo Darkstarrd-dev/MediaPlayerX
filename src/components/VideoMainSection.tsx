@@ -327,7 +327,7 @@ function VideoMainSection({
       return
     }
 
-    video.playbackRate = clamp(videoRate, 0.1, 4)
+    video.playbackRate = clamp(videoRate, 0.1, 10)
     video.muted = videoMuted
     video.volume = clamp(videoVolume / 100, 0, 1)
 
@@ -736,7 +736,7 @@ function VideoMainSection({
               </button>
               <div className="video-ctrl-panel is-speed" hidden={openPopover !== 'speed'} id="video-main-popover-speed" role="dialog">
                 <div className="video-ctrl-panel-options">
-                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                  {[0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rate) => (
                     <button
                       aria-pressed={Math.abs(videoRate - rate) < 0.01}
                       className={`video-ctrl-panel-option ${Math.abs(videoRate - rate) < 0.01 ? 'is-active' : ''}`}
