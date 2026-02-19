@@ -1012,6 +1012,25 @@ export class SubtitleSessionManager {
         updated_at_ms: nowMs(),
       })
     }
+
+    const batchInValidRange = isBatchInValidRanges(rangeStartSec, rangeEndSec, persistence.validRanges)
+    const overlapsPersistedCueInBatch = validatedCues.some((incomingCue) => {
+      return persistence.cues.some((existingCue) => cueOverlapsRange(existingCue, incomingCue.start_sec, incomingCue.end_sec))
+    })
+    // 允许在 ValidRanges 内补洞，但不允许覆盖已存在的持久化 cue。
+    if (batchInValidRange && overlapsPersistedCueInBatch) {
+      persistence.lastAppliedEpoch = request.session_epoch
+      persistence.lastAppliedChunkSeq = request.chunk_seq
+      return appendSubtitlePersistenceResponseSchema.parse({
+        accepted: false,
+        subtitle_path: persistence.subtitlePath,
+        cue_count: persistence.cues.length,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: validatedCues.length,
+        replaced_cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
+    }
     
     const boundaryEpsSec = 0.25
 

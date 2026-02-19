@@ -235,6 +235,17 @@ export class VideoSubtitleCapture {
     this.chunkListener = null
   }
 
+  resetBuffer(): void {
+    if (!this.workletNode) {
+      return
+    }
+    try {
+      this.workletNode.port.postMessage({ type: 'reset' })
+    } catch {
+      // ignore reset failures
+    }
+  }
+
   dispose(): void {
     this.detach()
     // Do not close context here. Closing + reattaching the same video element

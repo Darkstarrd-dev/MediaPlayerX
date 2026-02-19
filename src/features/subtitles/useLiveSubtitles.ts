@@ -559,13 +559,16 @@ export function useLiveSubtitles({
   const persistenceQueueRef = useRef<PersistenceBatchPayload[]>([])
   const persistenceInFlightRef = useRef(false)
   const replayFromPersistenceRef = useRef(false)
+  const replayForceUntilSecRef = useRef<number | null>(null)
   const persistenceWindowCuesRef = useRef<SubtitleCueDto[]>([])
+  const persistenceWindowRawCuesRef = useRef<SubtitleCueDto[]>([])
   const persistenceGeneratedRangesRef = useRef<GeneratedRangeDto[]>([])
   const persistenceReadInFlightRef = useRef(false)
   const persistenceLastReadAtMsRef = useRef(0)
   const persistenceLastReadTimelineSecRef = useRef(-1)
   const replayLockRangeRef = useRef<GeneratedRangeDto | null>(null)
   const highRateReplayHintShownRef = useRef(false)
+  const skipCaptureChunksRef = useRef(0)
   const seekingInProgressRef = useRef(false)
   const validPlaybackRateThresholdRef = useRef(1.0)
   const currentValidRangeRef = useRef<GeneratedRangeDto | null>(null)
@@ -635,13 +638,16 @@ export function useLiveSubtitles({
       persistenceQueueRef.current = []
       persistenceInFlightRef.current = false
       replayFromPersistenceRef.current = false
+      replayForceUntilSecRef.current = null
       persistenceWindowCuesRef.current = []
+      persistenceWindowRawCuesRef.current = []
       persistenceGeneratedRangesRef.current = []
       persistenceReadInFlightRef.current = false
       persistenceLastReadAtMsRef.current = 0
       persistenceLastReadTimelineSecRef.current = -1
       replayLockRangeRef.current = null
       highRateReplayHintShownRef.current = false
+      skipCaptureChunksRef.current = 0
       currentValidRangeRef.current = null
       sessionEpochRef.current = 0
       chunkSeqRef.current = 0
@@ -672,8 +678,10 @@ export function useLiveSubtitles({
       pushAbortRef.current = null
       persistenceQueueRef.current = []
       replayFromPersistenceRef.current = false
+      replayForceUntilSecRef.current = null
       replayLockRangeRef.current = null
       highRateReplayHintShownRef.current = false
+      skipCaptureChunksRef.current = 0
       currentValidRangeRef.current = null
       emitSubtitleDebug('renderer_epoch_begin', {
         reason,
@@ -724,6 +732,7 @@ export function useLiveSubtitles({
       }
 
       const now = performance.now()
+      const requestEpoch = sessionEpochRef.current
       const force = options?.force === true
       const hydrateCues = options?.hydrateCues === true
       const minIntervalMs = replayFromPersistenceRef.current ? 180 : 750
@@ -765,7 +774,19 @@ export function useLiveSubtitles({
           limit: 60,
           prefer_persisted_file: true,
         })
+        if (requestEpoch !== sessionEpochRef.current) {
+          const timelineHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
+          const timelineHasCueNear = hasCueNearTimeline(persistenceWindowCuesRef.current, timelineSec)
+          const timelineInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
+          return {
+            timelineHasCue,
+            timelineHasCueNear,
+            timelineInGeneratedRange,
+            activeRange: resolveActiveGeneratedRange(persistenceGeneratedRangesRef.current, timelineSec),
+          }
+        }
         const displayCues = toDisplayCues(response.cues)
+        persistenceWindowRawCuesRef.current = response.cues
         persistenceWindowCuesRef.current = displayCues
         persistenceGeneratedRangesRef.current = response.generated_ranges
         if (!cancelled && hydrateCues) {
@@ -779,7 +800,7 @@ export function useLiveSubtitles({
           activeRange: resolveActiveGeneratedRange(response.generated_ranges, timelineSec),
         }
       } catch {
-        if (!cancelled && hydrateCues) {
+        if (!cancelled && hydrateCues && requestEpoch === sessionEpochRef.current) {
           setCues([])
         }
         return {
@@ -1025,10 +1046,12 @@ export function useLiveSubtitles({
         validPlaybackRateThresholdRef.current = 1.0
         persistenceQueueRef.current = []
         replayFromPersistenceRef.current = false
+        replayForceUntilSecRef.current = null
         replayLockRangeRef.current = null
         highRateReplayHintShownRef.current = false
         currentValidRangeRef.current = null
         persistenceWindowCuesRef.current = []
+        persistenceWindowRawCuesRef.current = []
         persistenceGeneratedRangesRef.current = []
         persistenceLastReadAtMsRef.current = 0
         persistenceLastReadTimelineSecRef.current = -1
@@ -1075,9 +1098,28 @@ export function useLiveSubtitles({
             return
           }
 
+          if (skipCaptureChunksRef.current > 0) {
+            skipCaptureChunksRef.current -= 1
+            emitSubtitleDebug('renderer_skip_generation_after_seek_reset', {
+              timeline_sec: Number(chunk.endSec.toFixed(3)),
+              remaining_skip_chunks: skipCaptureChunksRef.current,
+            })
+            return
+          }
+
           const timelineSec = Math.max(0, chunk.endSec)
           const playbackRate = Math.max(0.1, videoElement.playbackRate || 1)
           updateValidRangeIfQualified(timelineSec)
+
+          const replayForceUntilSec = replayForceUntilSecRef.current
+          if (replayForceUntilSec !== null) {
+            if (timelineSec <= replayForceUntilSec + 0.02) {
+              replayFromPersistenceRef.current = true
+            } else {
+              replayForceUntilSecRef.current = null
+            }
+          }
+
           const lockRange = replayLockRangeRef.current
           if (lockRange) {
             if (timelineSec >= lockRange.start_sec - 0.02 && timelineSec <= lockRange.end_sec + 0.03) {
@@ -1206,58 +1248,95 @@ export function useLiveSubtitles({
         })
 
         const onSeeked = () => {
+          capture.resetBuffer()
+          skipCaptureChunksRef.current = 12
           beginNewEpoch('seeked')
+          replayForceUntilSecRef.current = null
           currentValidRangeRef.current = null
           const timelineSec = Math.max(0, videoElement.currentTime || 0)
-          if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
-            seekingInProgressRef.current = true
-            replayFromPersistenceRef.current = true
-            void syncPersistenceWindow(timelineSec, { hydrateCues: true, force: true })
-              .then((result) => {
+          seekingInProgressRef.current = true
+          replayFromPersistenceRef.current = true
+
+          void (async () => {
+            let persistedState: PersistenceSyncState = {
+              timelineHasCue: false,
+              timelineHasCueNear: false,
+              timelineInGeneratedRange: false,
+              activeRange: null,
+            }
+
+            if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
+              try {
+                persistedState = await syncPersistenceWindow(timelineSec, { hydrateCues: true, force: true })
+              } catch {
                 if (!cancelled) {
-                  const shouldReplayFromPersistence = result.timelineInGeneratedRange && result.timelineHasCueNear
-                  replayFromPersistenceRef.current = shouldReplayFromPersistence
-                  replayLockRangeRef.current = shouldReplayFromPersistence ? result.activeRange : null
-                  seekingInProgressRef.current = false
-                  if (!videoElement.paused) {
-                    startValidRangeIfQualified()
-                  }
-                  emitSubtitleDebug('renderer_seeking_window_refreshed', {
-                    timeline_sec: Number(timelineSec.toFixed(3)),
-                    in_generated_range: result.timelineInGeneratedRange,
-                    has_cue: result.timelineHasCue,
-                    has_cue_near: result.timelineHasCueNear,
-                  })
-                }
-              })
-              .catch(() => {
-                if (!cancelled) {
-                  replayFromPersistenceRef.current = false
-                  replayLockRangeRef.current = null
-                  seekingInProgressRef.current = false
-                  if (!videoElement.paused) {
-                    startValidRangeIfQualified()
-                  }
                   setCues([])
                 }
+              }
+            } else if (!cancelled) {
+              setCues([])
+            }
+
+            if (cancelled) {
+              return
+            }
+
+            if (readSubtitleDebugBoolean('subtitle.debug.suppressControlResets')) {
+              emitSubtitleDebug('renderer_control_event_ignored', {
+                reason: 'seeked',
+                current_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
               })
-          } else {
-            replayFromPersistenceRef.current = false
-            replayLockRangeRef.current = null
+            } else {
+              await resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
+            }
+
+            if (cancelled) {
+              return
+            }
+
+            if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
+              const shouldReplayFromPersistence = persistedState.timelineInGeneratedRange && persistedState.timelineHasCueNear
+              replayFromPersistenceRef.current = shouldReplayFromPersistence
+              replayLockRangeRef.current = shouldReplayFromPersistence ? persistedState.activeRange : null
+              const firstRawCueStartSec = persistenceWindowRawCuesRef.current[0]?.start_sec ?? null
+              if (
+                persistedState.timelineInGeneratedRange
+                && Number.isFinite(firstRawCueStartSec)
+                && timelineSec < Number(firstRawCueStartSec)
+              ) {
+                replayForceUntilSecRef.current = Number(firstRawCueStartSec) + 0.05
+              } else {
+                replayForceUntilSecRef.current = null
+              }
+              emitSubtitleDebug('renderer_seeking_window_refreshed', {
+                timeline_sec: Number(timelineSec.toFixed(3)),
+                in_generated_range: persistedState.timelineInGeneratedRange,
+                has_cue: persistedState.timelineHasCue,
+                has_cue_near: persistedState.timelineHasCueNear,
+                replay_force_until_sec: replayForceUntilSecRef.current,
+              })
+            } else {
+              replayFromPersistenceRef.current = false
+              replayForceUntilSecRef.current = null
+              replayLockRangeRef.current = null
+            }
+
+            seekingInProgressRef.current = false
             if (!videoElement.paused) {
               startValidRangeIfQualified()
             }
-            setCues([])
-          }
-
-          if (readSubtitleDebugBoolean('subtitle.debug.suppressControlResets')) {
-            emitSubtitleDebug('renderer_control_event_ignored', {
-              reason: 'seeked',
-              current_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
-            })
-            return
-          }
-          void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
+          })().catch(() => {
+            if (!cancelled) {
+              replayFromPersistenceRef.current = false
+              replayForceUntilSecRef.current = null
+              replayLockRangeRef.current = null
+              seekingInProgressRef.current = false
+              if (!videoElement.paused) {
+                startValidRangeIfQualified()
+              }
+              setCues([])
+            }
+          })
         }
         const onPause = () => {
           currentValidRangeRef.current = null
@@ -1274,6 +1353,8 @@ export function useLiveSubtitles({
             return
           }
           beginNewEpoch('play')
+          capture.resetBuffer()
+          skipCaptureChunksRef.current = 1
           startValidRangeIfQualified()
           void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
         }
@@ -1293,6 +1374,8 @@ export function useLiveSubtitles({
             return
           }
           beginNewEpoch('ratechange')
+          capture.resetBuffer()
+          skipCaptureChunksRef.current = 1
           if (playbackRate <= validPlaybackRateThresholdRef.current && !videoElement.paused) {
             startValidRangeIfQualified()
           }
@@ -1339,10 +1422,13 @@ export function useLiveSubtitles({
           persistenceQueueRef.current = []
           persistenceInFlightRef.current = false
           replayFromPersistenceRef.current = false
+          replayForceUntilSecRef.current = null
           replayLockRangeRef.current = null
           highRateReplayHintShownRef.current = false
+          skipCaptureChunksRef.current = 0
           currentValidRangeRef.current = null
           persistenceWindowCuesRef.current = []
+          persistenceWindowRawCuesRef.current = []
           persistenceGeneratedRangesRef.current = []
           persistenceReadInFlightRef.current = false
           persistenceLastReadAtMsRef.current = 0
@@ -1367,10 +1453,13 @@ export function useLiveSubtitles({
         persistenceQueueRef.current = []
         persistenceInFlightRef.current = false
         replayFromPersistenceRef.current = false
+        replayForceUntilSecRef.current = null
         replayLockRangeRef.current = null
         highRateReplayHintShownRef.current = false
+        skipCaptureChunksRef.current = 0
         currentValidRangeRef.current = null
         persistenceWindowCuesRef.current = []
+        persistenceWindowRawCuesRef.current = []
         persistenceGeneratedRangesRef.current = []
         persistenceReadInFlightRef.current = false
         persistenceLastReadAtMsRef.current = 0
@@ -1399,9 +1488,13 @@ export function useLiveSubtitles({
         persistenceQueueRef.current = []
         persistenceInFlightRef.current = false
         replayFromPersistenceRef.current = false
+        replayForceUntilSecRef.current = null
         replayLockRangeRef.current = null
         highRateReplayHintShownRef.current = false
+        skipCaptureChunksRef.current = 0
+        currentValidRangeRef.current = null
         persistenceWindowCuesRef.current = []
+        persistenceWindowRawCuesRef.current = []
         persistenceGeneratedRangesRef.current = []
         persistenceReadInFlightRef.current = false
         persistenceLastReadAtMsRef.current = 0

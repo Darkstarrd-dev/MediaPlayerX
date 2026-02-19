@@ -1214,6 +1214,47 @@ Status: in_progress
 - 代码落点：
   - `src/features/subtitles/useLiveSubtitles.ts`
 
+### 2026-02-20  Phase G 第二十一轮（修复 seekback 首句被旧位置语义污染）
+
+- 用户问题：seekback 到片首后，偶发将 seek 前位置的语义带回并写入首条 cue。
+- 根因归因：
+  - seek 后音频 worklet 可能残留旧缓冲样本，导致 seek 后首批 ASR chunk 混入旧位置语音；
+  - 持久化窗口异步读取在 epoch 变化后存在旧响应回写风险。
+- 本轮修复：
+  1. AudioWorklet 增加 `reset` 控制消息，seek/play/ratechange 时主动清空内部缓冲；
+  2. Renderer 在 seek 后丢弃前 4 个采集 chunk（仅短时），避免残留样本进入 ASR；
+  3. `syncPersistenceWindow` 增加 epoch 一致性校验，旧 epoch 响应不再覆盖当前窗口状态。
+- 代码落点：
+  - `public/audio-worklets/video-audio-capture.worklet.js`
+  - `src/features/subtitles/VideoSubtitleCapture.ts`
+  - `src/features/subtitles/useLiveSubtitles.ts`
+
+### 2026-02-20  Phase G 第二十二轮（seek 流程串行化：先回放窗口再 reset 完成后放开生成）
+
+- 用户复测后仍有污染：seekback 后首条偶发带入后段语义。
+- 本轮修复加固：
+  1. `onSeeked` 改为串行异步流程：
+     - 先 `syncPersistenceWindow(force)` 获取文件窗口；
+     - 再等待 `resetSubtitleSession` 完成；
+     - 最后才解除 `seekingInProgress` 放开生成；
+  2. seek 后临时丢弃采集 chunk 从 4 提升到 12；
+  3. 异常兜底：任一步失败都保持清空并安全退出 replay 锁。
+- 目标：彻底避免 reset 未完成时首批 chunk 进入 ASR 导致语义串台。
+
+### 2026-02-20  Phase G 第二十三轮（片首强制回放 + ValidRanges 内重叠写入硬阻断）
+
+- 用户复测仍存在问题：seekback 到片首后，首条 cue 仍偶发被后段语义覆盖。
+- 本轮加固：
+  1. Renderer 增加 `replayForceUntilSec`：
+     - seek 命中 `ValidRanges` 且时间点在首条持久化 cue 前时，强制只回放直到首条 cue 起点；
+     - 期间不放开生成，避免“首条前空窗”触发补洞误写。
+  2. Renderer 新增 `persistenceWindowRawCuesRef`：
+     - 以原始 cue 时间计算首条起点（不受显示 offset 影响），用于上面的强制回放边界。
+  3. Main 新增写盘硬保护：
+     - 即便未启用 `enforce_valid_range_guard`，只要 batch 落在 `ValidRanges` 且 incoming cue 与已持久化 cue 时间重叠，直接拒绝写入；
+     - 保留“无重叠可补洞”能力。
+- 目标：在保留补洞能力前提下，彻底阻断片首已存在 cue 被覆盖。
+
 
 ---
 

@@ -8,6 +8,17 @@ class VideoAudioCaptureProcessor extends AudioWorkletProcessor {
     this._sourcePos = 0;
     this._lastSample = 0;
     this._targetSampleCount = 0;
+
+    this.port.onmessage = (event) => {
+      const message = event?.data;
+      if (!message || message.type !== 'reset') {
+        return;
+      }
+      this._pendingSamples = [];
+      this._sourcePos = 0;
+      this._lastSample = 0;
+      this._targetSampleCount = 0;
+    };
   }
 
   _mixToMono(inputChannels) {
