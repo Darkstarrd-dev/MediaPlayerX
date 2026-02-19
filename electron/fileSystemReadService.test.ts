@@ -726,6 +726,47 @@ describe('FileSystemMediaReadService', () => {
     expect(importedByReference).toBe(true)
   })
 
+  it('重复导入已登记文件夹时会重新扫描并纳入新增文件', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-folder-reimport-root-'))
+    const outsideRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-folder-reimport-source-'))
+    createdRoots.push(root)
+    createdRoots.push(outsideRoot)
+
+    const outsideFolderPath = path.join(outsideRoot, 'incoming-gallery')
+    const firstImagePath = path.join(outsideFolderPath, 'scene-1.jpg')
+    const secondImagePath = path.join(outsideFolderPath, 'scene-2.jpg')
+    await writeBinary(firstImagePath, [0xff, 0xd8, 0xff, 0xd9])
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+
+    await enqueueImportAndWait(service, 'dialog-folders', [outsideFolderPath])
+
+    const firstSnapshot = await service.readLibrarySnapshot()
+    const importedImageCountAfterFirstImport = [...firstSnapshot.image_packages, ...firstSnapshot.image_directories]
+      .flatMap((source) => source.images)
+      .filter(
+        (image) =>
+          image.media_locator.kind === 'filesystem' &&
+          path.resolve(image.media_locator.absolute_path).startsWith(path.resolve(outsideFolderPath)),
+      ).length
+    expect(importedImageCountAfterFirstImport).toBe(1)
+
+    await writeBinary(secondImagePath, [0xff, 0xd8, 0xff, 0xd9])
+
+    await enqueueImportAndWait(service, 'dialog-folders', [outsideFolderPath])
+
+    const secondSnapshot = await service.readLibrarySnapshot()
+    const importedImageCountAfterSecondImport = [...secondSnapshot.image_packages, ...secondSnapshot.image_directories]
+      .flatMap((source) => source.images)
+      .filter(
+        (image) =>
+          image.media_locator.kind === 'filesystem' &&
+          path.resolve(image.media_locator.absolute_path).startsWith(path.resolve(outsideFolderPath)),
+      ).length
+    expect(importedImageCountAfterSecondImport).toBe(2)
+  })
+
   it('音乐导入仅支持音频文件，非音频任务会失败', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-music-reject-'))
     const outsideRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-import-music-reject-source-'))

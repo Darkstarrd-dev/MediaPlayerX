@@ -164,6 +164,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
   let addedFileCount = 0
   let addedMusicDirectoryCount = 0
   let addedMusicFileCount = 0
+  let hasReimportedDirectory = false
 
   for (const sourcePath of existing.sourcePaths) {
     const inspected = await inspectImportPath(sourcePath, {
@@ -200,11 +201,17 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
           if (!directoryMap.has(key)) {
             directoryMap.set(key, absolutePath)
             addedDirectoryCount += 1
+          } else {
+            hasReimportedDirectory = true
           }
 
-          if (params.musicImportMode && !musicDirectoryMap.has(key)) {
-            musicDirectoryMap.set(key, absolutePath)
-            addedMusicDirectoryCount += 1
+          if (params.musicImportMode) {
+            if (!musicDirectoryMap.has(key)) {
+              musicDirectoryMap.set(key, absolutePath)
+              addedMusicDirectoryCount += 1
+            } else {
+              hasReimportedDirectory = true
+            }
           }
         }
 
@@ -234,7 +241,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
 
   const addedTotal = addedDirectoryCount + addedFileCount
   const addedMusicTotal = addedMusicDirectoryCount + addedMusicFileCount
-  if (addedTotal > 0 || (params.musicImportMode && addedMusicTotal > 0)) {
+  if (addedTotal > 0 || hasReimportedDirectory || (params.musicImportMode && addedMusicTotal > 0)) {
     params.database.writeImportSources({
       directories: Array.from(directoryMap.values()),
       files: Array.from(fileMap.values()),
