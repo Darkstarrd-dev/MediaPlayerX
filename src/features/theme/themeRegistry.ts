@@ -20,10 +20,10 @@ export const DEFAULT_PALETTE_ID = 'parchment'
 export const DEFAULT_THEME_ID = DEFAULT_PALETTE_ID
 
 const STYLE_PALETTE_ALLOWLIST: Record<string, readonly string[]> = {
-  'soft-skeuomorphic': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-crisp': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-plush': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-etched': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-dark'],
+  'soft-skeuomorphic': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-crisp': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-plush': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark'],
+  'soft-skeuomorphic-etched': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark'],
 }
 
 const STYLE_DEFAULT_PALETTE_ID: Record<string, string> = {
@@ -56,6 +56,7 @@ const NIGHT_KEYWORDS = ['dark', 'night', 'dim', 'mocha', 'black']
 const DAY_KEYWORDS = ['light', 'day', 'paper', 'parchment', 'solarized']
 const LABEL_OVERRIDES: Record<string, string> = {
   'skeuomorphic-light-white': 'Light White',
+  'skeuomorphic-luxury-white': 'Luxury White',
 }
 
 // Styles and palettes are loaded via styles/themes/index.css; here we only need file metadata for lists/resolution.

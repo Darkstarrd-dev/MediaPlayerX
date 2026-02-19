@@ -170,28 +170,35 @@ export function FullscreenVideoControlsShell({
 
       <div className="video-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
-        <input
-          aria-label={t('a11y.media.fullscreenProgress')}
-          max={Math.max(0, durationSec)}
-          min={0}
-          step={0.1}
-          style={videoProgressRangeStyle}
-          type="range"
-          value={displayTime}
-          onChange={(event) => {
-            const nextTime = Math.max(0, Math.min(Math.max(0, durationSec), Number(event.target.value)))
-            setSeekDraftTime(nextTime)
-            previewSeekDuringDrag(nextTime)
-          }}
-          onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
-          onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
-          onBlur={commitSeekDraft}
-          onKeyUp={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              commitSeekDraft()
-            }
-          }}
-        />
+        <div className="mpx-progress-bar" style={videoProgressRangeStyle}>
+          <input
+            aria-label={t('a11y.media.fullscreenProgress')}
+            className="mpx-progress-input"
+            max={Math.max(0, durationSec)}
+            min={0}
+            step={0.1}
+            type="range"
+            value={displayTime}
+            onChange={(event) => {
+              const nextTime = Math.max(0, Math.min(Math.max(0, durationSec), Number(event.target.value)))
+              setSeekDraftTime(nextTime)
+              previewSeekDuringDrag(nextTime)
+            }}
+            onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
+            onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
+            onBlur={commitSeekDraft}
+            onKeyUp={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                commitSeekDraft()
+              }
+            }}
+          />
+          <div className="mpx-progress-groove" aria-hidden="true" />
+          <div className="mpx-progress-fill" aria-hidden="true" />
+          <div className="mpx-progress-thumb" aria-hidden="true">
+            <div className="mpx-progress-thumb-core" />
+          </div>
+        </div>
       </div>
 
       <div className="video-controls-row video-controls">
@@ -421,17 +428,23 @@ export function FullscreenVideoControlsShell({
             </button>
             <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
               <div className="video-ctrl-volume-axis">
-                <input
-                  aria-label={t('a11y.media.fullscreenVolume')}
-                  className="video-ctrl-volume-range"
-                  max={100}
-                  min={0}
-                  step={1}
-                  style={videoVolumeRangeStyle}
-                  type="range"
-                  value={videoMuted ? 0 : videoVolume}
-                  onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
-                />
+                <div className="mpx-volume-bar" style={videoVolumeRangeStyle}>
+                  <input
+                    aria-label={t('a11y.media.fullscreenVolume')}
+                    className="video-ctrl-volume-range mpx-volume-input"
+                    max={100}
+                    min={0}
+                    step={1}
+                    type="range"
+                    value={videoMuted ? 0 : videoVolume}
+                    onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
+                  />
+                  <div className="mpx-volume-groove" aria-hidden="true" />
+                  <div className="mpx-volume-fill" aria-hidden="true" />
+                  <div className="mpx-volume-thumb" aria-hidden="true">
+                    <div className="mpx-volume-thumb-core" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>

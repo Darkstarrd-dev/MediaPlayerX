@@ -75,7 +75,7 @@ describe('resolvePaletteIdFromPalettes', () => {
 describe('listPalettesByStyle', () => {
   it('limits soft-skeuomorphic to dedicated palettes', () => {
     const ids = listPalettesByStyle('soft-skeuomorphic').map((item) => item.id)
-    expect(ids).toEqual(['skeuomorphic-light-white', 'skeuomorphic-dark', 'skeuomorphic-light', 'skeuomorphic-scroll'])
+    expect(ids).toEqual(['skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark', 'skeuomorphic-light', 'skeuomorphic-scroll'])
   })
 
   it('keeps unrestricted styles compatible with default palette', () => {

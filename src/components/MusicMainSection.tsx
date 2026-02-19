@@ -594,28 +594,35 @@ function MusicMainSection({
 
       <div className="music-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(displayAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
-        <input
-          aria-label={t('a11y.music.progress')}
-          max={Math.max(0, audioDurationSec)}
-          min={0}
-          step={0.1}
-          style={musicProgressRangeStyle}
-          type="range"
-          value={displayAudioTime}
-          onChange={(event) => {
-            const nextTime = clamp(Number(event.target.value), 0, Math.max(0, audioDurationSec))
-            setAudioSeekDraftTime(nextTime)
-            previewAudioSeekDuringDrag(nextTime)
-          }}
-          onMouseUp={commitAudioSeekDraft}
-          onTouchEnd={commitAudioSeekDraft}
-          onBlur={commitAudioSeekDraft}
-          onKeyUp={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              commitAudioSeekDraft()
-            }
-          }}
-        />
+        <div className="mpx-progress-bar" style={musicProgressRangeStyle}>
+          <input
+            aria-label={t('a11y.music.progress')}
+            className="mpx-progress-input"
+            max={Math.max(0, audioDurationSec)}
+            min={0}
+            step={0.1}
+            type="range"
+            value={displayAudioTime}
+            onChange={(event) => {
+              const nextTime = clamp(Number(event.target.value), 0, Math.max(0, audioDurationSec))
+              setAudioSeekDraftTime(nextTime)
+              previewAudioSeekDuringDrag(nextTime)
+            }}
+            onMouseUp={commitAudioSeekDraft}
+            onTouchEnd={commitAudioSeekDraft}
+            onBlur={commitAudioSeekDraft}
+            onKeyUp={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                commitAudioSeekDraft()
+              }
+            }}
+          />
+          <div className="mpx-progress-groove" aria-hidden="true" />
+          <div className="mpx-progress-fill" aria-hidden="true" />
+          <div className="mpx-progress-thumb" aria-hidden="true">
+            <div className="mpx-progress-thumb-core" />
+          </div>
+        </div>
       </div>
 
       <div className="music-controls-row">
@@ -990,20 +997,26 @@ function MusicMainSection({
               onMouseLeave={closePopover}
             >
               <div className="music-ctrl-volume-axis">
-                <input
-                  aria-label={t('a11y.media.volumeSlider')}
-                  className="music-ctrl-volume-range"
-                  max={100}
-                  min={0}
-                  step={1}
-                  style={musicVolumeRangeStyle}
-                  type="range"
-                  value={audioMuted ? 0 : audioVolume}
-                  onChange={(event) => {
-                    setAudioMuted(false)
-                    setAudioVolume(clamp(Number(event.target.value), 0, 100))
-                  }}
-                />
+                <div className="mpx-volume-bar" style={musicVolumeRangeStyle}>
+                  <input
+                    aria-label={t('a11y.media.volumeSlider')}
+                    className="music-ctrl-volume-range mpx-volume-input"
+                    max={100}
+                    min={0}
+                    step={1}
+                    type="range"
+                    value={audioMuted ? 0 : audioVolume}
+                    onChange={(event) => {
+                      setAudioMuted(false)
+                      setAudioVolume(clamp(Number(event.target.value), 0, 100))
+                    }}
+                  />
+                  <div className="mpx-volume-groove" aria-hidden="true" />
+                  <div className="mpx-volume-fill" aria-hidden="true" />
+                  <div className="mpx-volume-thumb" aria-hidden="true">
+                    <div className="mpx-volume-thumb-core" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>

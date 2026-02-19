@@ -599,29 +599,36 @@ function VideoMainSection({
       <div className="video-controls-shell">
         <div className="video-controls-progress">
           <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
-          <input
-            aria-label={t('a11y.media.progress')}
-            max={durationSec}
-            min={0}
-            step={0.1}
-            style={videoProgressRangeStyle}
-            type="range"
-            value={displayTime}
-            onChange={(event) => {
-              setHasSeekPreviewCurrentSource(true)
-              const nextTime = clamp(Number(event.target.value), 0, Math.max(0, durationSec))
-              setSeekDraftTime(nextTime)
-              previewSeekDuringDrag(nextTime)
-            }}
-            onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
-            onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
-            onBlur={commitSeekDraft}
-            onKeyUp={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                commitSeekDraft()
-              }
-            }}
-          />
+          <div className="mpx-progress-bar" style={videoProgressRangeStyle}>
+            <input
+              aria-label={t('a11y.media.progress')}
+              className="mpx-progress-input"
+              max={durationSec}
+              min={0}
+              step={0.1}
+              type="range"
+              value={displayTime}
+              onChange={(event) => {
+                setHasSeekPreviewCurrentSource(true)
+                const nextTime = clamp(Number(event.target.value), 0, Math.max(0, durationSec))
+                setSeekDraftTime(nextTime)
+                previewSeekDuringDrag(nextTime)
+              }}
+              onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
+              onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
+              onBlur={commitSeekDraft}
+              onKeyUp={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  commitSeekDraft()
+                }
+              }}
+            />
+            <div className="mpx-progress-groove" aria-hidden="true" />
+            <div className="mpx-progress-fill" aria-hidden="true" />
+            <div className="mpx-progress-thumb" aria-hidden="true">
+              <div className="mpx-progress-thumb-core" />
+            </div>
+          </div>
         </div>
 
         <div className="video-controls-row video-controls">
@@ -841,17 +848,23 @@ function VideoMainSection({
               </button>
               <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
                 <div className="video-ctrl-volume-axis">
-                  <input
-                    aria-label={t('a11y.media.volumeSlider')}
-                    className="video-ctrl-volume-range"
-                    max={100}
-                    min={0}
-                    step={1}
-                    style={videoVolumeRangeStyle}
-                    type="range"
-                    value={videoMuted ? 0 : videoVolume}
-                    onChange={(event) => onChangeVolume(Number(event.target.value))}
-                  />
+                  <div className="mpx-volume-bar" style={videoVolumeRangeStyle}>
+                    <input
+                      aria-label={t('a11y.media.volumeSlider')}
+                      className="video-ctrl-volume-range mpx-volume-input"
+                      max={100}
+                      min={0}
+                      step={1}
+                      type="range"
+                      value={videoMuted ? 0 : videoVolume}
+                      onChange={(event) => onChangeVolume(Number(event.target.value))}
+                    />
+                    <div className="mpx-volume-groove" aria-hidden="true" />
+                    <div className="mpx-volume-fill" aria-hidden="true" />
+                    <div className="mpx-volume-thumb" aria-hidden="true">
+                      <div className="mpx-volume-thumb-core" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
