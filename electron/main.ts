@@ -551,7 +551,8 @@ function createMainWindow(): BrowserWindow {
   window.webContents.on(
     "console-message",
     (_event, level, message, line, sourceId) => {
-      if (resolveBenchMode()) {
+      const isSubtitleMetrics = message.includes("[subtitle][metrics]");
+      if (resolveBenchMode() || isSubtitleMetrics) {
         console.log("[renderer]", { level, message, line, sourceId });
       }
     },

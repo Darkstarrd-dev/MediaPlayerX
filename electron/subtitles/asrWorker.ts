@@ -118,14 +118,32 @@ interface SpeakerRuntime {
   profiles: SpeakerProfile[]
   currentSpeakerId: number | null
   lastSwitchSec: number
+  pendingSwitchSpeakerId: number | null
+  pendingSwitchCount: number
+  pendingSwitchDurationSec: number
+  pendingSwitchScoreSum: number
+  pendingSwitchIsNew: boolean
+  pendingSwitchEmbedding: Float32Array | null
   recentBestScores: number[]
   segmentCount: number
   lastHintSegmentCount: number
 }
 
 const MAX_SPEAKER_COUNT = 2
+const SUBTITLE_DEBUG_LOGS = process.env.SUBTITLE_DEBUG_LOGS === '1' || process.env.SUBTITLE_DEBUG_LOGS === 'true'
 
 let runtimeSession: RuntimeSessionState | null = null
+
+function emitWorkerDebug(event: string, payload: Record<string, unknown>): void {
+  if (!SUBTITLE_DEBUG_LOGS) {
+    return
+  }
+  console.info('[subtitle][worker]', JSON.stringify({
+    event,
+    at_ms: nowMs(),
+    ...payload,
+  }))
+}
 
 function nowMs(): number {
   return Date.now()
@@ -669,6 +687,15 @@ function cosineSimilarity(left: Float32Array, right: Float32Array): number {
   return dot / (Math.sqrt(leftNorm) * Math.sqrt(rightNorm))
 }
 
+function clearPendingSwitch(speakerRuntime: SpeakerRuntime): void {
+  speakerRuntime.pendingSwitchSpeakerId = null
+  speakerRuntime.pendingSwitchCount = 0
+  speakerRuntime.pendingSwitchDurationSec = 0
+  speakerRuntime.pendingSwitchScoreSum = 0
+  speakerRuntime.pendingSwitchIsNew = false
+  speakerRuntime.pendingSwitchEmbedding = null
+}
+
 function identifySpeaker(
   speakerRuntime: SpeakerRuntime,
   embedding: Float32Array,
@@ -677,9 +704,21 @@ function identifySpeaker(
   segmentDurationSec: number,
   segmentEndSec: number,
 ): { speakerId: number; bestScore: number } {
+  if (speakerRuntime.profiles.length === 0) {
+    speakerRuntime.profiles.push({
+      id: 0,
+      embedding: new Float32Array(embedding),
+    })
+    clearPendingSwitch(speakerRuntime)
+    speakerRuntime.lastSwitchSec = segmentEndSec
+    return { speakerId: 0, bestScore: 1 }
+  }
+
   let bestId = -1
   let bestScore = -1
   let currentSpeakerScore = -1
+  let bestOtherId = -1
+  let bestOtherScore = -1
 
   for (let i = 0; i < speakerRuntime.profiles.length; i += 1) {
     const profile = speakerRuntime.profiles[i]
@@ -690,77 +729,315 @@ function identifySpeaker(
     }
     if (profile.id === speakerRuntime.currentSpeakerId) {
       currentSpeakerScore = score
+    } else if (score > bestOtherScore) {
+      bestOtherScore = score
+      bestOtherId = profile.id
     }
   }
 
-  // Hysteresis: avoid frequent speaker jumps for short/unstable segments.
-  const stickyThreshold = Math.max(0.40, similarityThreshold - 0.08)
+  const assignThreshold = Math.max(0.34, similarityThreshold - 0.06)
+  const stickyThreshold = Math.max(0.36, similarityThreshold - 0.1)
+  const createThreshold = Math.max(0.3, similarityThreshold - 0.08)
   const switchMargin = 0.02
-  const switchCooldownSec = 0.55
+  const switchCooldownSec = 0.45
+  const strongSwitchMargin = 0.05
+  const strongSwitchMinSegmentSec = 0.68
   const inSwitchCooldown =
     speakerRuntime.lastSwitchSec > 0 &&
     segmentEndSec - speakerRuntime.lastSwitchSec < switchCooldownSec
 
+  const updateSpeakerProfile = (speakerId: number, score: number): void => {
+    const targetProfile = speakerRuntime.profiles.find((profile) => profile.id === speakerId)
+    const hasRivalProfile = speakerRuntime.profiles.length >= 2 && bestOtherScore >= 0
+    const stableAgainstRival = !hasRivalProfile || score - bestOtherScore >= 0.045
+    const shouldUpdateProfile =
+      !inSwitchCooldown &&
+      bestId === speakerId &&
+      score >= Math.max(0.52, assignThreshold + 0.02) &&
+      segmentDurationSec >= 0.65 &&
+      stableAgainstRival
+    if (!targetProfile || !shouldUpdateProfile) {
+      return
+    }
+    const alpha = Math.min(Math.max(profileUpdateAlpha, 0.05), 0.95)
+    const size = Math.min(targetProfile.embedding.length, embedding.length)
+    for (let i = 0; i < size; i += 1) {
+      targetProfile.embedding[i] = (1 - alpha) * targetProfile.embedding[i] + alpha * embedding[i]
+    }
+  }
+
   if (speakerRuntime.currentSpeakerId !== null && currentSpeakerScore >= stickyThreshold) {
-    if (
-      bestId >= 0 &&
-      bestId !== speakerRuntime.currentSpeakerId &&
-      bestScore >= similarityThreshold &&
-      bestScore - currentSpeakerScore >= switchMargin &&
-      !inSwitchCooldown
-    ) {
-      speakerRuntime.lastSwitchSec = segmentEndSec
-      return { speakerId: bestId, bestScore }
-    }
-    bestId = speakerRuntime.currentSpeakerId
-    bestScore = currentSpeakerScore
-  }
-
-  if (bestId >= 0 && bestScore >= similarityThreshold) {
-    const targetProfile = speakerRuntime.profiles.find((profile) => profile.id === bestId)
-    if (targetProfile) {
-      const alpha = Math.min(Math.max(profileUpdateAlpha, 0.05), 0.95)
-      const size = Math.min(targetProfile.embedding.length, embedding.length)
-      for (let i = 0; i < size; i += 1) {
-        targetProfile.embedding[i] = (1 - alpha) * targetProfile.embedding[i] + alpha * embedding[i]
-      }
-    }
-    return { speakerId: bestId, bestScore }
-  }
-
-  // Do not keep creating new speakers from short/noisy segments.
-  const createThreshold = Math.max(0.35, similarityThreshold - 0.08)
-  const allowCreate =
-    speakerRuntime.profiles.length === 0 || (
-      segmentDurationSec >= 0.9 &&
-      bestScore < createThreshold &&
-      speakerRuntime.profiles.length < MAX_SPEAKER_COUNT
-    )
-
-  if (!allowCreate) {
-    if (speakerRuntime.currentSpeakerId !== null) {
+    const shouldBypassStickyOnLowConfidence =
+      speakerRuntime.profiles.length >= MAX_SPEAKER_COUNT &&
+      currentSpeakerScore < assignThreshold - 0.08
+    const shouldStayCurrent =
+      !shouldBypassStickyOnLowConfidence && (
+        bestId < 0 ||
+        bestId === speakerRuntime.currentSpeakerId ||
+        bestScore < assignThreshold ||
+        bestScore - currentSpeakerScore < switchMargin
+      )
+    if (shouldStayCurrent) {
+      clearPendingSwitch(speakerRuntime)
+      updateSpeakerProfile(speakerRuntime.currentSpeakerId, currentSpeakerScore)
       return {
         speakerId: speakerRuntime.currentSpeakerId,
-        bestScore: currentSpeakerScore >= 0 ? currentSpeakerScore : bestScore,
+        bestScore: currentSpeakerScore,
       }
     }
-    if (bestId >= 0) {
-      return { speakerId: bestId, bestScore }
+  }
+
+  let candidateId = bestId
+  let candidateScore = bestScore
+  let candidateIsNew = false
+
+  if (
+    speakerRuntime.currentSpeakerId !== null &&
+    speakerRuntime.profiles.length >= MAX_SPEAKER_COUNT &&
+    bestId === speakerRuntime.currentSpeakerId &&
+    bestOtherId >= 0 &&
+    currentSpeakerScore >= 0 &&
+    currentSpeakerScore < assignThreshold - 0.06 &&
+    bestOtherScore >= currentSpeakerScore - 0.01
+  ) {
+    candidateId = bestOtherId
+    candidateScore = bestOtherScore
+    candidateIsNew = false
+  }
+
+  if (candidateId < 0 || candidateScore < assignThreshold) {
+    if (
+      speakerRuntime.profiles.length < MAX_SPEAKER_COUNT &&
+      segmentDurationSec >= 0.55 &&
+      (currentSpeakerScore < createThreshold || currentSpeakerScore < 0)
+    ) {
+      candidateId = speakerRuntime.profiles.length
+      candidateScore = bestScore
+      candidateIsNew = true
+    } else if (
+      bestId >= 0 &&
+      speakerRuntime.currentSpeakerId !== null &&
+      bestId !== speakerRuntime.currentSpeakerId &&
+      speakerRuntime.profiles.length >= MAX_SPEAKER_COUNT
+    ) {
+      candidateId = bestId
+      candidateScore = bestScore
+    } else if (speakerRuntime.currentSpeakerId !== null) {
+      candidateId = speakerRuntime.currentSpeakerId
+      candidateScore = currentSpeakerScore
     }
-    return { speakerId: 0, bestScore }
   }
 
-  if (bestId >= 0 && bestScore >= Math.max(0.72, similarityThreshold + 0.18)) {
-    return { speakerId: bestId, bestScore }
+  if (
+    speakerRuntime.profiles.length === 1 &&
+    speakerRuntime.currentSpeakerId !== null &&
+    segmentDurationSec >= 0.58 &&
+    currentSpeakerScore >= 0 &&
+    currentSpeakerScore < assignThreshold - 0.08 &&
+    !inSwitchCooldown
+  ) {
+    const newSpeakerId = speakerRuntime.profiles.length
+    speakerRuntime.profiles.push({
+      id: newSpeakerId,
+      embedding: new Float32Array(embedding),
+    })
+    clearPendingSwitch(speakerRuntime)
+    speakerRuntime.lastSwitchSec = segmentEndSec
+    return { speakerId: newSpeakerId, bestScore: currentSpeakerScore }
   }
 
-  const nextId = speakerRuntime.profiles.length
-  speakerRuntime.profiles.push({
-    id: nextId,
-    embedding: new Float32Array(embedding),
-  })
-  speakerRuntime.lastSwitchSec = segmentEndSec
-  return { speakerId: nextId, bestScore }
+  if (speakerRuntime.currentSpeakerId === null) {
+    if (candidateIsNew) {
+      const newSpeakerId = speakerRuntime.profiles.length
+      speakerRuntime.profiles.push({
+        id: newSpeakerId,
+        embedding: new Float32Array(embedding),
+      })
+      clearPendingSwitch(speakerRuntime)
+      speakerRuntime.lastSwitchSec = segmentEndSec
+      return { speakerId: newSpeakerId, bestScore: candidateScore }
+    }
+
+    if (candidateId >= 0) {
+      clearPendingSwitch(speakerRuntime)
+      updateSpeakerProfile(candidateId, candidateScore)
+      speakerRuntime.lastSwitchSec = segmentEndSec
+      return { speakerId: candidateId, bestScore: candidateScore }
+    }
+
+    clearPendingSwitch(speakerRuntime)
+    return { speakerId: 0, bestScore: candidateScore }
+  }
+
+  if (candidateId === speakerRuntime.currentSpeakerId || candidateId < 0) {
+    clearPendingSwitch(speakerRuntime)
+    updateSpeakerProfile(speakerRuntime.currentSpeakerId, currentSpeakerScore)
+    return {
+      speakerId: speakerRuntime.currentSpeakerId,
+      bestScore: currentSpeakerScore >= 0 ? currentSpeakerScore : bestScore,
+    }
+  }
+
+  if (
+    !candidateIsNew &&
+    !inSwitchCooldown &&
+    speakerRuntime.currentSpeakerId !== null &&
+    segmentDurationSec >= strongSwitchMinSegmentSec &&
+    candidateScore >= Math.max(assignThreshold + 0.04, similarityThreshold + 0.01) &&
+    currentSpeakerScore >= 0 &&
+    candidateScore - currentSpeakerScore >= strongSwitchMargin
+  ) {
+    clearPendingSwitch(speakerRuntime)
+    speakerRuntime.lastSwitchSec = segmentEndSec
+    updateSpeakerProfile(candidateId, candidateScore)
+    return {
+      speakerId: candidateId,
+      bestScore: candidateScore,
+    }
+  }
+
+  if (
+    !candidateIsNew &&
+    !inSwitchCooldown &&
+    speakerRuntime.currentSpeakerId !== null &&
+    speakerRuntime.profiles.length >= MAX_SPEAKER_COUNT &&
+    candidateId !== speakerRuntime.currentSpeakerId &&
+    segmentDurationSec >= 0.48 &&
+    currentSpeakerScore >= 0 &&
+    currentSpeakerScore < assignThreshold - 0.09 &&
+    candidateScore >= assignThreshold - 0.02 &&
+    candidateScore - currentSpeakerScore >= 0.03
+  ) {
+    clearPendingSwitch(speakerRuntime)
+    speakerRuntime.lastSwitchSec = segmentEndSec
+    updateSpeakerProfile(candidateId, candidateScore)
+    return {
+      speakerId: candidateId,
+      bestScore: candidateScore,
+    }
+  }
+
+  const samePendingCandidate =
+    speakerRuntime.pendingSwitchSpeakerId === candidateId &&
+    speakerRuntime.pendingSwitchIsNew === candidateIsNew
+
+  if (!samePendingCandidate) {
+    speakerRuntime.pendingSwitchSpeakerId = candidateId
+    speakerRuntime.pendingSwitchCount = 0
+    speakerRuntime.pendingSwitchDurationSec = 0
+    speakerRuntime.pendingSwitchScoreSum = 0
+    speakerRuntime.pendingSwitchIsNew = candidateIsNew
+    speakerRuntime.pendingSwitchEmbedding = candidateIsNew ? new Float32Array(embedding) : null
+  }
+
+  speakerRuntime.pendingSwitchCount += 1
+  speakerRuntime.pendingSwitchDurationSec += Math.max(0, segmentDurationSec)
+  speakerRuntime.pendingSwitchScoreSum += Number.isFinite(candidateScore) ? candidateScore : 0
+
+  if (candidateIsNew && speakerRuntime.pendingSwitchEmbedding) {
+    const pendingEmbedding = speakerRuntime.pendingSwitchEmbedding
+    const size = Math.min(pendingEmbedding.length, embedding.length)
+    for (let i = 0; i < size; i += 1) {
+      pendingEmbedding[i] = pendingEmbedding[i] * 0.6 + embedding[i] * 0.4
+    }
+  }
+
+  const pendingAverageScore = speakerRuntime.pendingSwitchScoreSum / Math.max(1, speakerRuntime.pendingSwitchCount)
+  const pendingEnoughEvidence = candidateIsNew
+    ? speakerRuntime.pendingSwitchCount >= 2 && speakerRuntime.pendingSwitchDurationSec >= 0.9
+    : speakerRuntime.pendingSwitchCount >= 2 && speakerRuntime.pendingSwitchDurationSec >= 0.35
+
+  const currentScoreLow = currentSpeakerScore < createThreshold || currentSpeakerScore < 0
+  const candidateAdvantage =
+    currentSpeakerScore >= 0
+      ? pendingAverageScore - currentSpeakerScore
+      : pendingAverageScore
+
+  const confirmExistingSpeaker =
+    !candidateIsNew &&
+    pendingEnoughEvidence &&
+    pendingAverageScore >= assignThreshold &&
+    candidateAdvantage >= switchMargin
+
+  const confirmExistingSpeakerLowConfidence =
+    !candidateIsNew &&
+    speakerRuntime.profiles.length >= MAX_SPEAKER_COUNT &&
+    pendingEnoughEvidence &&
+    pendingAverageScore >= Math.max(0.26, assignThreshold - 0.12) &&
+    currentSpeakerScore < assignThreshold - 0.08 &&
+    candidateAdvantage >= 0.005
+
+  const confirmNewSpeaker =
+    candidateIsNew &&
+    speakerRuntime.profiles.length < MAX_SPEAKER_COUNT &&
+    pendingEnoughEvidence &&
+    currentScoreLow
+
+  const allowConfirm = !inSwitchCooldown
+  if (allowConfirm && (confirmExistingSpeaker || confirmExistingSpeakerLowConfidence || confirmNewSpeaker)) {
+    if (candidateIsNew) {
+      const newSpeakerId = speakerRuntime.profiles.length
+      speakerRuntime.profiles.push({
+        id: newSpeakerId,
+        embedding: new Float32Array(speakerRuntime.pendingSwitchEmbedding ?? embedding),
+      })
+      clearPendingSwitch(speakerRuntime)
+      speakerRuntime.lastSwitchSec = segmentEndSec
+      return {
+        speakerId: newSpeakerId,
+        bestScore: pendingAverageScore,
+      }
+    }
+
+    clearPendingSwitch(speakerRuntime)
+    speakerRuntime.lastSwitchSec = segmentEndSec
+    updateSpeakerProfile(candidateId, pendingAverageScore)
+    return {
+      speakerId: candidateId,
+      bestScore: pendingAverageScore,
+    }
+  }
+
+  if (
+    allowConfirm &&
+    !candidateIsNew &&
+    segmentDurationSec >= 1.25 &&
+    candidateScore >= Math.max(assignThreshold + 0.03, similarityThreshold) &&
+    candidateAdvantage >= 0.01
+  ) {
+    clearPendingSwitch(speakerRuntime)
+    speakerRuntime.lastSwitchSec = segmentEndSec
+    updateSpeakerProfile(candidateId, candidateScore)
+    return {
+      speakerId: candidateId,
+      bestScore: candidateScore,
+    }
+  }
+
+  if (
+    allowConfirm &&
+    candidateIsNew &&
+    speakerRuntime.profiles.length < MAX_SPEAKER_COUNT &&
+    segmentDurationSec >= 1.4 &&
+    currentScoreLow
+  ) {
+    const newSpeakerId = speakerRuntime.profiles.length
+    speakerRuntime.profiles.push({
+      id: newSpeakerId,
+      embedding: new Float32Array(speakerRuntime.pendingSwitchEmbedding ?? embedding),
+    })
+    clearPendingSwitch(speakerRuntime)
+    speakerRuntime.lastSwitchSec = segmentEndSec
+    return {
+      speakerId: newSpeakerId,
+      bestScore: pendingAverageScore,
+    }
+  }
+
+  return {
+    speakerId: speakerRuntime.currentSpeakerId,
+    bestScore: currentSpeakerScore >= 0 ? currentSpeakerScore : bestScore,
+  }
 }
 
 function clampNumber(value: number, min: number, max: number): number {
@@ -870,7 +1147,7 @@ function consumeVadSegments(
     }
 
     const segmentDurationSec = parsedSegment.samples.length / sampleRateHz
-    if (segmentDurationSec < 0.2) {
+    if (segmentDurationSec < 0.14) {
       continue
     }
 
@@ -1051,7 +1328,9 @@ function decodeSegmentAndBuildCue(
     sampleRate: sampleRateHz,
   })
 
+  const decodeStartedAt = nowMs()
   currentSession.recognizer.decode(stream)
+  const decodeMs = Math.max(1, nowMs() - decodeStartedAt)
   const result = currentSession.recognizer.getResult(stream)
   const text = normalizeRecognizedText(result.text)
   if (!text) {
@@ -1067,6 +1346,7 @@ function decodeSegmentAndBuildCue(
   let speakerChanged = false
   let speakerSimilarity: number | undefined
   if (currentSession.speaker) {
+    const previousSpeakerId = currentSession.speaker.currentSpeakerId
     const embedding = extractSpeakerEmbedding(currentSession.speaker, samples, sampleRateHz)
     if (embedding) {
       const detected = identifySpeaker(
@@ -1088,6 +1368,27 @@ function decodeSegmentAndBuildCue(
       speakerChanged = currentSession.speaker.currentSpeakerId !== detectedSpeakerId
       currentSession.speaker.currentSpeakerId = detectedSpeakerId
       speakerId = detectedSpeakerId
+
+      const pendingScoreAvg = currentSession.speaker.pendingSwitchCount > 0
+        ? currentSession.speaker.pendingSwitchScoreSum / currentSession.speaker.pendingSwitchCount
+        : 0
+      emitWorkerDebug('speaker_decision', {
+        session_id: currentSession.sessionId,
+        session_epoch: currentSession.sessionEpoch,
+        segment_start_sec: Number(startSec.toFixed(3)),
+        segment_end_sec: Number(endSec.toFixed(3)),
+        segment_duration_sec: Number((samples.length / Math.max(1, sampleRateHz)).toFixed(3)),
+        asr_decode_ms: decodeMs,
+        speaker_previous_id: previousSpeakerId,
+        speaker_current_id: detectedSpeakerId,
+        speaker_changed: speakerChanged,
+        speaker_similarity_best: Number(detected.bestScore.toFixed(4)),
+        speaker_candidate_id: currentSession.speaker.pendingSwitchSpeakerId,
+        speaker_candidate_is_new: currentSession.speaker.pendingSwitchIsNew,
+        pending_count: currentSession.speaker.pendingSwitchCount,
+        pending_duration_sec: Number(currentSession.speaker.pendingSwitchDurationSec.toFixed(3)),
+        pending_score_avg: Number(pendingScoreAvg.toFixed(4)),
+      })
     }
   }
 
@@ -1349,6 +1650,12 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
         profiles: [],
         currentSpeakerId: null,
         lastSwitchSec: -1,
+        pendingSwitchSpeakerId: null,
+        pendingSwitchCount: 0,
+        pendingSwitchDurationSec: 0,
+        pendingSwitchScoreSum: 0,
+        pendingSwitchIsNew: false,
+        pendingSwitchEmbedding: null,
         recentBestScores: [],
         segmentCount: 0,
         lastHintSegmentCount: 0,
@@ -1443,6 +1750,7 @@ function resetSessionStateForTimeline(currentSession: RuntimeSessionState, timel
   if (currentSession.speaker) {
     currentSession.speaker.currentSpeakerId = null
     currentSession.speaker.lastSwitchSec = -1
+    clearPendingSwitch(currentSession.speaker)
     currentSession.speaker.recentBestScores = []
     currentSession.speaker.segmentCount = 0
     currentSession.speaker.lastHintSegmentCount = 0
@@ -1568,6 +1876,16 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
   if (request.chunk_start_sec + 0.0001 < currentSession.lastChunkEndSec) {
     events.push(createEvent('chunk_non_monotonic', 'warning', 'chunk start is earlier than previous chunk end'))
   }
+
+  emitWorkerDebug('push_audio_received', {
+    session_id: currentSession.sessionId,
+    session_epoch: currentSession.sessionEpoch,
+    chunk_seq: requestChunkSeq,
+    chunk_start_sec: Number(request.chunk_start_sec.toFixed(3)),
+    chunk_end_sec: Number(request.chunk_end_sec.toFixed(3)),
+    chunk_duration_sec: Number((request.chunk_end_sec - request.chunk_start_sec).toFixed(3)),
+    event_codes: events.map((item) => item.code),
+  })
 
   currentSession.lastChunkEndSec = Math.max(currentSession.lastChunkEndSec, request.chunk_end_sec, expectedEndSec)
 

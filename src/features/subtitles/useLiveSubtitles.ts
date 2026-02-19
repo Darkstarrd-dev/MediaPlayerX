@@ -10,7 +10,78 @@ import type {
 import type { MediaRepository } from '../backend/repository'
 import { VideoSubtitleCapture, type CapturedAudioChunk } from './VideoSubtitleCapture'
 
-const SUBTITLE_DEBUG_LOGS = false
+function isSubtitleDebugEnabled(): boolean {
+  if (typeof globalThis === 'undefined') {
+    return false
+  }
+  try {
+    const value = globalThis.localStorage?.getItem('subtitle.debug.logs')
+    return value === '1' || value === 'true'
+  } catch {
+    return false
+  }
+}
+
+function readSubtitleDebugBoolean(key: string): boolean {
+  if (typeof globalThis === 'undefined') {
+    return false
+  }
+  try {
+    const raw = globalThis.localStorage?.getItem(key)
+    return raw === '1' || raw === 'true'
+  } catch {
+    return false
+  }
+}
+
+function readSubtitleDebugOffsetSec(): number {
+  if (typeof globalThis === 'undefined') {
+    return 0
+  }
+  try {
+    const raw = globalThis.localStorage?.getItem('subtitle.debug.offsetSec')
+    if (!raw) {
+      return 0
+    }
+    const value = Number(raw)
+    if (!Number.isFinite(value)) {
+      return 0
+    }
+    return Math.max(-2, Math.min(2, value))
+  } catch {
+    return 0
+  }
+}
+
+type SubtitleDebugOffsetMode = 'off' | 'renderer'
+
+function readSubtitleDebugOffsetMode(): SubtitleDebugOffsetMode {
+  if (typeof globalThis === 'undefined') {
+    return 'off'
+  }
+  try {
+    const raw = (globalThis.localStorage?.getItem('subtitle.debug.offsetMode') ?? '').trim().toLowerCase()
+    if (raw === 'off') {
+      return 'off'
+    }
+    return 'renderer'
+  } catch {
+    return 'renderer'
+  }
+}
+
+const SUBTITLE_DEBUG_LOGS = isSubtitleDebugEnabled()
+
+function emitSubtitleDebug(event: string, payload: Record<string, unknown>): void {
+  if (!SUBTITLE_DEBUG_LOGS) {
+    return
+  }
+  console.info('[subtitle][metrics]', JSON.stringify({
+    event,
+    at_ms: Math.round(performance.now()),
+    ...payload,
+  }))
+}
 
 interface UseLiveSubtitlesParams {
   enabled: boolean
@@ -129,9 +200,16 @@ function formatCueDisplayText(cue: SubtitleCueDto): string {
   return cue.text
 }
 
-function buildAdvancedDisplayText(cues: SubtitleCueDto[], currentTimeSec: number): string | null {
+function buildAdvancedDisplayText(
+  cues: SubtitleCueDto[],
+  currentTimeSec: number,
+  offsetSec: number,
+  offsetMode: SubtitleDebugOffsetMode,
+): string | null {
+  const shouldApplyOffsetToRenderer = offsetMode === 'renderer'
+  const adjustedCurrentTimeSec = shouldApplyOffsetToRenderer ? currentTimeSec - offsetSec : currentTimeSec
   const activeCues = cues
-    .filter((cue) => currentTimeSec + 0.35 >= cue.start_sec && currentTimeSec <= cue.end_sec + 2.4)
+    .filter((cue) => adjustedCurrentTimeSec + 0.35 >= cue.start_sec && adjustedCurrentTimeSec <= cue.end_sec + 2.4)
     .slice(-4)
 
   if (activeCues.length === 0) {
@@ -198,6 +276,8 @@ export function useLiveSubtitles({
   const chunkSeqRef = useRef(0)
   const lastAppliedSeqRef = useRef(-1)
   const pushAbortRef = useRef<AbortController | null>(null)
+  const pushAbortCountRef = useRef(0)
+  const subtitleOffsetSecRef = useRef(0)
 
   useEffect(() => {
     cleanupRef.current = null
@@ -256,15 +336,22 @@ export function useLiveSubtitles({
     let cancelled = false
 
     const beginNewEpoch = (reason: string) => {
+      if (pushAbortRef.current) {
+        pushAbortRef.current.abort()
+        pushAbortCountRef.current += 1
+      }
       sessionEpochRef.current += 1
       chunkSeqRef.current = 0
       lastAppliedSeqRef.current = -1
+      const droppedQueueLen = pushQueueRef.current.length
       pushQueueRef.current = []
-      pushAbortRef.current?.abort()
       pushAbortRef.current = null
-      if (SUBTITLE_DEBUG_LOGS) {
-        console.info('[subtitle][epoch]', reason, sessionEpochRef.current)
-      }
+      emitSubtitleDebug('renderer_epoch_begin', {
+        reason,
+        session_epoch: sessionEpochRef.current,
+        dropped_queue_len: droppedQueueLen,
+        push_abort_count: pushAbortCountRef.current,
+      })
     }
 
     const drainPushQueue = async () => {
@@ -278,6 +365,12 @@ export function useLiveSubtitles({
 
       const sessionEpoch = sessionEpochRef.current
       const chunkSeq = chunkSeqRef.current++
+      const queueLenBeforePush = pushQueueRef.current.length
+      const playbackTimeSec = Math.max(0, videoElement.currentTime || 0)
+      subtitleOffsetSecRef.current = readSubtitleDebugOffsetSec()
+      const offsetMode = readSubtitleDebugOffsetMode()
+      const chunkStartSec = nextChunk.startSec
+      const chunkEndSec = nextChunk.endSec
 
       pushInFlightRef.current = true
       try {
@@ -287,30 +380,50 @@ export function useLiveSubtitles({
         const request: PushSubtitleAudioRequestDto = {
           chunk_base64: encodeFloat32ToBase64(nextChunk.samples),
           sample_rate_hz: nextChunk.sampleRateHz,
-          chunk_start_sec: nextChunk.startSec,
-          chunk_end_sec: nextChunk.endSec,
+          chunk_start_sec: chunkStartSec,
+          chunk_end_sec: chunkEndSec,
           channel_count: nextChunk.channelCount,
           session_epoch: sessionEpoch,
           chunk_seq: chunkSeq,
         }
         const response = await pushSubtitleAudio(request, { signal: abortController.signal })
+        const rttMs = Math.round(performance.now() - sendAt)
 
         if (response.session_epoch !== sessionEpochRef.current) {
+          emitSubtitleDebug('renderer_push_drop_epoch_mismatch', {
+            request_epoch: sessionEpoch,
+            response_epoch: response.session_epoch,
+            chunk_seq: chunkSeq,
+          })
           return
         }
         if (response.chunk_seq < lastAppliedSeqRef.current) {
+          emitSubtitleDebug('renderer_push_drop_out_of_order', {
+            chunk_seq: response.chunk_seq,
+            last_applied_seq: lastAppliedSeqRef.current,
+          })
           return
         }
         lastAppliedSeqRef.current = response.chunk_seq
 
-        if (SUBTITLE_DEBUG_LOGS) {
-          console.debug('[subtitle][push]', {
-            epoch: sessionEpoch,
-            seq: chunkSeq,
-            rttMs: Math.round(performance.now() - sendAt),
-            queueLen: pushQueueRef.current.length,
-          })
-        }
+        emitSubtitleDebug('renderer_push_result', {
+          session_epoch: sessionEpoch,
+          chunk_seq: chunkSeq,
+          playback_time_sec: Number(playbackTimeSec.toFixed(3)),
+          chunk_start_sec: Number(nextChunk.startSec.toFixed(3)),
+          chunk_end_sec: Number(nextChunk.endSec.toFixed(3)),
+          chunk_duration_sec: Number((nextChunk.endSec - nextChunk.startSec).toFixed(3)),
+          asr_chunk_start_sec: Number(chunkStartSec.toFixed(3)),
+          asr_chunk_end_sec: Number(chunkEndSec.toFixed(3)),
+          queue_len_before_push: queueLenBeforePush,
+          queue_len_after_push: pushQueueRef.current.length,
+          chunk_rtt_ms: rttMs,
+          offset_sec: subtitleOffsetSecRef.current,
+          offset_mode: offsetMode,
+          push_abort_count: pushAbortCountRef.current,
+          response_events: response.events.map((item) => item.code),
+          response_cues: response.cues.length,
+        })
 
         if (!cancelled) {
           setCues((previous) => appendCues(previous, response.cues))
@@ -318,6 +431,11 @@ export function useLiveSubtitles({
       } catch (error) {
         if (!cancelled) {
           setMessage(error instanceof Error ? error.message : String(error))
+          emitSubtitleDebug('renderer_push_error', {
+            session_epoch: sessionEpoch,
+            chunk_seq: chunkSeq,
+            error: error instanceof Error ? error.message : String(error),
+          })
         }
       } finally {
         pushAbortRef.current = null
@@ -381,6 +499,7 @@ export function useLiveSubtitles({
           }
           const highWaterMark = renderMode === 'advanced' ? 14 : 24
           if (pushQueueRef.current.length > highWaterMark) {
+            const queueLenBeforeCompaction = pushQueueRef.current.length
             const first = pushQueueRef.current.shift()
             const second = pushQueueRef.current.shift()
             if (first && second) {
@@ -399,14 +518,37 @@ export function useLiveSubtitles({
                 pushQueueRef.current.unshift(second)
               }
             }
+            emitSubtitleDebug('renderer_queue_compaction', {
+              mode: renderMode,
+              high_water_mark: highWaterMark,
+              queue_len_before: queueLenBeforeCompaction,
+              queue_len_after: pushQueueRef.current.length,
+            })
           }
           pushQueueRef.current.push(chunk)
+          emitSubtitleDebug('renderer_capture_chunk', {
+            mode: renderMode,
+            playback_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
+            chunk_start_sec: Number(chunk.startSec.toFixed(3)),
+            chunk_end_sec: Number(chunk.endSec.toFixed(3)),
+            offset_sec: subtitleOffsetSecRef.current,
+            offset_mode: readSubtitleDebugOffsetMode(),
+            queue_len: pushQueueRef.current.length,
+          })
           void drainPushQueue()
         })
 
         const onSeeked = () => {
           beginNewEpoch('seeked')
           setCues([])
+
+          if (readSubtitleDebugBoolean('subtitle.debug.suppressControlResets')) {
+            emitSubtitleDebug('renderer_control_event_ignored', {
+              reason: 'seeked',
+              current_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
+            })
+            return
+          }
           void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
         }
         const onPause = () => {
@@ -415,10 +557,25 @@ export function useLiveSubtitles({
             .catch(() => undefined)
         }
         const onPlay = () => {
+          if (readSubtitleDebugBoolean('subtitle.debug.suppressControlResets')) {
+            emitSubtitleDebug('renderer_control_event_ignored', {
+              reason: 'play',
+              current_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
+            })
+            return
+          }
           beginNewEpoch('play')
           void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
         }
         const onRateChange = () => {
+          if (readSubtitleDebugBoolean('subtitle.debug.suppressControlResets')) {
+            emitSubtitleDebug('renderer_control_event_ignored', {
+              reason: 'ratechange',
+              current_time_sec: Number(Math.max(0, videoElement.currentTime || 0).toFixed(3)),
+              playback_rate: Number((videoElement.playbackRate || 1).toFixed(3)),
+            })
+            return
+          }
           beginNewEpoch('ratechange')
           setCues([])
           void resetSubtitleSession({ timeline_sec: Math.max(0, videoElement.currentTime || 0) }).catch(() => undefined)
@@ -448,7 +605,10 @@ export function useLiveSubtitles({
           videoElement.removeEventListener('play', onPlay)
           videoElement.removeEventListener('ratechange', onRateChange)
           pushQueueRef.current = []
-          pushAbortRef.current?.abort()
+          if (pushAbortRef.current) {
+            pushAbortRef.current.abort()
+            pushAbortCountRef.current += 1
+          }
           pushAbortRef.current = null
           capture.detach()
           sessionRunningRef.current = false
@@ -458,7 +618,10 @@ export function useLiveSubtitles({
         if (sessionRunningRef.current) {
           await stopSubtitleSession({ reason: 'renderer-start-failed' }).catch(() => undefined)
         }
-        pushAbortRef.current?.abort()
+        if (pushAbortRef.current) {
+          pushAbortRef.current.abort()
+          pushAbortCountRef.current += 1
+        }
         pushAbortRef.current = null
         setLoading(false)
         const messageText = error instanceof Error ? error.message : String(error)
@@ -480,7 +643,10 @@ export function useLiveSubtitles({
       } else {
         capture.detach()
         sessionRunningRef.current = false
-        pushAbortRef.current?.abort()
+        if (pushAbortRef.current) {
+          pushAbortRef.current.abort()
+          pushAbortCountRef.current += 1
+        }
         pushAbortRef.current = null
         void stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
       }
@@ -508,20 +674,25 @@ export function useLiveSubtitles({
   ])
 
   const activeText = useMemo(() => {
+    const subtitleOffsetSec = readSubtitleDebugOffsetSec()
+    const offsetMode = readSubtitleDebugOffsetMode()
+    const shouldApplyOffsetToRenderer = offsetMode === 'renderer'
+    const adjustedCurrentTimeSec = shouldApplyOffsetToRenderer ? currentTimeSec - subtitleOffsetSec : currentTimeSec
+
     if (renderMode === 'advanced') {
-      return buildAdvancedDisplayText(cues, currentTimeSec)
+      return buildAdvancedDisplayText(cues, currentTimeSec, subtitleOffsetSec, offsetMode)
     }
 
     for (let index = cues.length - 1; index >= 0; index -= 1) {
       const cue = cues[index]
-      if (currentTimeSec >= cue.start_sec && currentTimeSec <= cue.end_sec) {
+      if (adjustedCurrentTimeSec >= cue.start_sec && adjustedCurrentTimeSec <= cue.end_sec) {
         return formatCueDisplayText(cue)
       }
     }
 
     for (let index = cues.length - 1; index >= 0; index -= 1) {
       const cue = cues[index]
-      if (currentTimeSec + 0.15 >= cue.start_sec && currentTimeSec <= cue.end_sec + 0.5) {
+      if (adjustedCurrentTimeSec + 0.15 >= cue.start_sec && adjustedCurrentTimeSec <= cue.end_sec + 0.5) {
         return formatCueDisplayText(cue)
       }
     }
