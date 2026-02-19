@@ -67,7 +67,7 @@ export const zhCnCatalog = {
   'ui.help.fullscreen.keyboard.modeSwitchF1F3': '全屏非双显示下切换图片 / 视频 / 音乐模式（双显示下不切换）。',
   'ui.help.fullscreen.keyboard.toggleDualDisplay': '图片/视频全屏下切换单显示 / 双显示；双显示回单显示时按当前焦点回退。',
   'ui.help.fullscreen.keyboard.swapSidesDual': '双显示下切换左右窗格顺序。',
-  'ui.help.fullscreen.keyboard.autoplayToggle': '切换自动播放（仅图片全屏）。',
+  'ui.help.fullscreen.keyboard.autoplayToggle': '切换自动播放（全屏下图片焦点）。',
   'ui.help.fullscreen.keyboard.videoSeekShort': '视频模式/视频焦点：后退 5 秒 / 前进 5 秒。',
   'ui.help.fullscreen.keyboard.videoPlayPause': '视频模式/视频焦点：播放 / 暂停。',
   'ui.help.fullscreen.keyboard.videoSeekLong': '视频模式/视频焦点：后退 30 秒 / 前进 30 秒。',

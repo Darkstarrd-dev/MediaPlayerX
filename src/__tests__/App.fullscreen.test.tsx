@@ -426,4 +426,109 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       firstPaneAfterSwap?.classList.contains("fullscreen-image") ?? false;
     expect(afterImageFirst).toBe(!beforeImageFirst);
   });
+
+  it("从video模式进入dual模式时，image pane应自动加载图片且autoplay按钮可用", async () => {
+    render(<App />);
+
+    // 切换到video模式
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    
+    // 进入全屏（video-only）
+    await keyDown(window, { key: "f", code: "KeyF" });
+    expect(screen.queryByLabelText("调整全屏分屏比例")).not.toBeInTheDocument();
+
+    // 切换到dual模式
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    // 验证image pane存在且已加载图片
+    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
+    expect(imagePane).not.toBeNull();
+    expect(document.querySelector(".fullscreen-media-image-element")).not.toBeNull();
+
+    // 切换焦点到image pane
+    fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
+    await flushUiUpdates();
+    expect((imagePane as HTMLElement).classList.contains("is-pane-focus")).toBe(true);
+
+    // 显示footer
+    const fullscreenLayer = document.querySelector(".fullscreen-layer") as HTMLElement | null;
+    expect(fullscreenLayer).not.toBeNull();
+    fireEvent.mouseMove(fullscreenLayer as Element, {
+      clientY: window.innerHeight - 4,
+    });
+    await flushUiUpdates();
+
+    // 验证autoplay按钮存在且可用
+    const autoplayButton = screen.queryByRole("button", { name: /自动播放|autoplay/i });
+    expect(autoplayButton).not.toBeNull();
+    expect(autoplayButton).not.toBeDisabled();
+  });
+
+  it("从video模式进入dual后，image pane焦点下可用滚轮翻页", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
+    expect(imagePane).not.toBeNull();
+    fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
+    await flushUiUpdates();
+
+    const readImageSrc = () =>
+      (document.querySelector(".fullscreen-media-image-element") as HTMLImageElement | null)
+        ?.getAttribute("src") ?? null;
+
+    const beforeSrc = readImageSrc();
+    expect(beforeSrc).not.toBeNull();
+
+    fireEvent.wheel(imagePane as HTMLElement, { deltaY: 120 });
+    await flushUiUpdates();
+
+    await waitFor(() => {
+      const afterSrc = readImageSrc();
+      expect(afterSrc).not.toBeNull();
+      expect(afterSrc).not.toBe(beforeSrc);
+    });
+  });
+
+  it("image已有焦点时从video进入dual后，快捷键P可切换autoplay", async () => {
+    render(<App />);
+
+    await keyDown(window, { key: "ArrowRight", code: "ArrowRight" });
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
+    expect(imagePane).not.toBeNull();
+    fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
+    await flushUiUpdates();
+
+    const fullscreenLayer = document.querySelector(".fullscreen-layer") as HTMLElement | null;
+    expect(fullscreenLayer).not.toBeNull();
+    fireEvent.mouseMove(fullscreenLayer as Element, {
+      clientY: window.innerHeight - 4,
+    });
+    await flushUiUpdates();
+
+    const autoplayButton = screen.getByRole("button", { name: /自动播放|autoplay/i });
+    expect(autoplayButton).toHaveAttribute("aria-pressed", "false");
+
+    await keyDown(window, { key: "p", code: "KeyP" });
+
+    await waitFor(() => {
+      expect(autoplayButton).toHaveAttribute("aria-pressed", "true");
+    });
+  });
 });

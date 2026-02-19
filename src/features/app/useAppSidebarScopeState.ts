@@ -165,13 +165,28 @@ export function useAppSidebarScopeState({
   updateSettings,
 }: UseAppSidebarScopeStateParams): UseAppSidebarScopeStateResult {
   const sidebarSnapshot = backendRead.sidebar.data ?? backendRead.sidebar.snapshot
-  const scopedSearchPackagesEffective = sidebarSnapshot?.imagePackages ?? bootstrapImagePackages
-  const scopedSearchDirectoriesEffective = sidebarSnapshot?.imageDirectories ?? bootstrapImageDirectories
+  const librarySnapshotEffective = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
+  const imagePackagesFromLibrary = librarySnapshotEffective?.imagePackages ?? bootstrapImagePackages
+  const imageDirectoriesFromLibrary = librarySnapshotEffective?.imageDirectories ?? bootstrapImageDirectories
+  const scopedSearchPackagesEffective = useMemo(() => {
+    if (mode !== 'image') {
+      return imagePackagesFromLibrary
+    }
+    const snapshotPackages = sidebarSnapshot?.imagePackages
+    return snapshotPackages && snapshotPackages.length > 0 ? snapshotPackages : imagePackagesFromLibrary
+  }, [imagePackagesFromLibrary, mode, sidebarSnapshot])
+
+  const scopedSearchDirectoriesEffective = useMemo(() => {
+    if (mode !== 'image') {
+      return imageDirectoriesFromLibrary
+    }
+    const snapshotDirectories = sidebarSnapshot?.imageDirectories
+    return snapshotDirectories && snapshotDirectories.length > 0 ? snapshotDirectories : imageDirectoriesFromLibrary
+  }, [imageDirectoriesFromLibrary, mode, sidebarSnapshot])
   const scopedImageSourcesEffective = useMemo(
     () => [...scopedSearchPackagesEffective, ...scopedSearchDirectoriesEffective],
     [scopedSearchDirectoriesEffective, scopedSearchPackagesEffective],
   )
-  const librarySnapshotEffective = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
   const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos
   const audiosEffective = librarySnapshotEffective?.audios ?? bootstrapAudios
   const packageByIdEffective = useMemo(
@@ -205,12 +220,12 @@ export function useAppSidebarScopeState({
   })
 
   const imageTreeRawLocal = useMemo(
-    () => buildImageSidebarTree(bootstrapImagePackages, bootstrapImageDirectories),
-    [bootstrapImageDirectories, bootstrapImagePackages],
+    () => buildImageSidebarTree(scopedSearchPackagesEffective, scopedSearchDirectoriesEffective),
+    [scopedSearchDirectoriesEffective, scopedSearchPackagesEffective],
   )
   const imageTreeRaw = useMemo(
-    () => sidebarTreeSnapshot ?? imageTreeRawLocal,
-    [imageTreeRawLocal, sidebarTreeSnapshot],
+    () => (mode === 'image' ? (sidebarTreeSnapshot ?? imageTreeRawLocal) : imageTreeRawLocal),
+    [imageTreeRawLocal, mode, sidebarTreeSnapshot],
   )
 
   const imageRootNode = useMemo(

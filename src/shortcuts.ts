@@ -118,7 +118,7 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   alignDown: 'Alt+ArrowDown',
   alignLeft: 'Alt+ArrowLeft',
   alignRight: 'Alt+ArrowRight',
-  autoplayToggle: 'KeyA',
+  autoplayToggle: 'KeyP',
   autoplayInterval1: '',
   autoplayInterval2: '',
   autoplayInterval3: '',

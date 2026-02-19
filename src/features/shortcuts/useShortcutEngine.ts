@@ -161,32 +161,32 @@ export function useShortcutEngine({
           }
           return
         case 'autoplayToggle':
-          if (mode === 'image' && fullscreenActive) {
+          if (fullscreenActive && (mode === 'image' || (fullscreenDisplay === 'dual' && imageFocusActive))) {
             onToggleAutoplay()
           }
           return
         case 'autoplayInterval1':
-          if (mode === 'image' && fullscreenActive) {
+          if (fullscreenActive && (mode === 'image' || (fullscreenDisplay === 'dual' && imageFocusActive))) {
             onApplyAutoplayIntervalByIndex(0)
           }
           return
         case 'autoplayInterval2':
-          if (mode === 'image' && fullscreenActive) {
+          if (fullscreenActive && (mode === 'image' || (fullscreenDisplay === 'dual' && imageFocusActive))) {
             onApplyAutoplayIntervalByIndex(1)
           }
           return
         case 'autoplayInterval3':
-          if (mode === 'image' && fullscreenActive) {
+          if (fullscreenActive && (mode === 'image' || (fullscreenDisplay === 'dual' && imageFocusActive))) {
             onApplyAutoplayIntervalByIndex(2)
           }
           return
         case 'autoplayInterval4':
-          if (mode === 'image' && fullscreenActive) {
+          if (fullscreenActive && (mode === 'image' || (fullscreenDisplay === 'dual' && imageFocusActive))) {
             onApplyAutoplayIntervalByIndex(3)
           }
           return
         case 'autoplayInterval5':
-          if (mode === 'image' && fullscreenActive) {
+          if (fullscreenActive && (mode === 'image' || (fullscreenDisplay === 'dual' && imageFocusActive))) {
             onApplyAutoplayIntervalByIndex(4)
           }
           return
@@ -477,6 +477,17 @@ export function useShortcutEngine({
       ) {
         event.preventDefault()
         onToggleFullscreenSwapSides()
+        return
+      }
+
+      if (
+        fullscreenActive &&
+        fullscreenDisplay === 'dual' &&
+        imageFocusActive &&
+        shortcutMatches(shortcuts.autoplayToggle, event)
+      ) {
+        event.preventDefault()
+        executeShortcut('autoplayToggle')
         return
       }
 

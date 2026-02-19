@@ -28,6 +28,8 @@ interface UseImageBrowserViewModelParams {
   thumbnailColumns: number
   pagedPageSize: number
   fullscreenActive: boolean
+  fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
+  fullscreenVideoFocus: boolean
 }
 
 interface UseImageBrowserViewModelResult {
@@ -77,7 +79,12 @@ export function useImageBrowserViewModel({
   thumbnailColumns,
   pagedPageSize,
   fullscreenActive,
+  fullscreenDisplay,
+  fullscreenVideoFocus,
 }: UseImageBrowserViewModelParams): UseImageBrowserViewModelResult {
+  const canNavigateImageInCurrentContext =
+    mode === 'image' || (fullscreenActive && fullscreenDisplay === 'dual' && !fullscreenVideoFocus && imageFocusActive)
+
   const activePackage = packageById.get(selectedPackageId) ?? orderedRootScopedPackages[0] ?? null
 
   const activeVectorRef = vectorSearchResults[vectorFocusIndex]
@@ -170,7 +177,7 @@ export function useImageBrowserViewModel({
 
   const moveImage = useCallback(
     (delta: number) => {
-      if (mode !== 'image') {
+      if (!canNavigateImageInCurrentContext) {
         return
       }
 
@@ -221,9 +228,9 @@ export function useImageBrowserViewModel({
     },
     [
       activePackage,
+      canNavigateImageInCurrentContext,
       focusByPackage,
       fullscreenActive,
-      mode,
       orderedRootScopedImageRefs,
       setImageFocus,
       setVectorFocusIndex,
@@ -235,7 +242,7 @@ export function useImageBrowserViewModel({
 
   const moveImageVertical = useCallback(
     (direction: 'up' | 'down') => {
-      if (mode !== 'image') {
+      if (!canNavigateImageInCurrentContext) {
         return
       }
 
@@ -280,8 +287,8 @@ export function useImageBrowserViewModel({
     },
     [
       activePackage,
+      canNavigateImageInCurrentContext,
       focusByPackage,
-      mode,
       setImageFocus,
       setVectorFocusIndex,
       showNamesOnly,
@@ -294,7 +301,7 @@ export function useImageBrowserViewModel({
 
   const jumpImageBoundary = useCallback(
     (target: 'first' | 'last') => {
-      if (mode !== 'image') {
+      if (!canNavigateImageInCurrentContext) {
         return
       }
 
@@ -321,12 +328,12 @@ export function useImageBrowserViewModel({
       const nextIndex = target === 'first' ? 0 : activePackage.images.length - 1
       setImageFocus(activePackage.id, nextIndex)
     },
-    [activePackage, mode, setImageFocus, setVectorFocusIndex, vectorResultsActive, vectorSearchResults],
+    [activePackage, canNavigateImageInCurrentContext, setImageFocus, setVectorFocusIndex, vectorResultsActive, vectorSearchResults],
   )
 
   const goPackage = useCallback(
     (delta: number) => {
-      if (mode !== 'image' || vectorResultsActive) {
+      if (!canNavigateImageInCurrentContext || vectorResultsActive) {
         return
       }
 
@@ -344,7 +351,7 @@ export function useImageBrowserViewModel({
 
       setSelectedPackageId(nextPackage.id)
     },
-    [mode, orderedRootScopedPackages, selectedPackageId, setSelectedPackageId, vectorResultsActive],
+    [canNavigateImageInCurrentContext, orderedRootScopedPackages, selectedPackageId, setSelectedPackageId, vectorResultsActive],
   )
 
   const setPackageGrade = useCallback(

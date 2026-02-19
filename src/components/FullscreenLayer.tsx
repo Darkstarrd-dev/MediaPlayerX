@@ -251,7 +251,7 @@ function FullscreenLayer({
   const singlePane = fullscreenDisplay === 'video-only' ? 'video' : fullscreenDisplay === 'image-only' ? 'image' : null
   const focusedPane: PaneKey = fullscreenDisplay === 'dual' ? (fullscreenVideoFocus ? 'video' : 'image') : (singlePane ?? 'image')
   const zoomEnabled = fullscreenDisplay !== 'dual'
-  const autoplayEnabledForFocus = mode === 'image' && focusedPane === 'image'
+  const autoplayEnabledForFocus = focusedPane === 'image' && (fullscreenDisplay === 'dual' || mode === 'image')
   const clampedVideoTime = clamp(videoTime, 0, Math.max(0, durationSec))
 
   const imageAspect = displayedImageAspect ?? resolveMediaAspect(focusedImage?.width ?? 0, focusedImage?.height ?? 0, 1)

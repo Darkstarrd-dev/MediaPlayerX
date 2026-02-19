@@ -21,7 +21,7 @@ interface UseAppNavigationStateParams {
   sessionState: AppSessionStateResult
   repositoryBootstrap: RepositoryBootstrapDataResult
   archiveLoadStatus: ArchiveLoadStatusResult
-  mediaState: Pick<MediaStateResult, 'selectVideoFromBrowser' | 'fullscreenActive'>
+  mediaState: Pick<MediaStateResult, 'selectVideoFromBrowser' | 'fullscreenActive' | 'fullscreenDisplay' | 'fullscreenVideoFocus'>
   readState: AppReadStateResult
 }
 
@@ -92,6 +92,8 @@ export function useAppNavigationState({
   const {
     selectVideoFromBrowser,
     fullscreenActive,
+    fullscreenDisplay,
+    fullscreenVideoFocus,
   } = mediaState
 
   const {
@@ -541,6 +543,8 @@ export function useAppNavigationState({
     thumbnailColumns,
     pagedPageSize,
     fullscreenActive,
+    fullscreenDisplay,
+    fullscreenVideoFocus,
   })
 
   return {

@@ -85,7 +85,7 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     const hook = renderHook(() => useShortcutEngine(params))
 
     act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', code: 'KeyA', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP', bubbles: true, cancelable: true }))
     })
 
     expect(params.onToggleAutoplay).not.toHaveBeenCalled()
@@ -94,10 +94,27 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     params.fullscreenActive = true
     renderHook(() => useShortcutEngine(params))
     act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', code: 'KeyA', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP', bubbles: true, cancelable: true }))
     })
 
     expect(params.onToggleAutoplay).toHaveBeenCalledTimes(1)
+  })
+
+  it('fullscreen dual + image focus in video mode maps autoplay shortcut to autoplay toggle', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'dual'
+    params.imageFocusActive = true
+    params.videoShortcutActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleAutoplay).toHaveBeenCalledTimes(1)
+    expect(params.onAddFocusedVideoToPlaylist).not.toHaveBeenCalled()
   })
 
   it('digit rating shortcuts apply package grade in non-fullscreen image mode', () => {

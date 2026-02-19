@@ -11,7 +11,7 @@ interface UseAppReadAndNavigationParams {
   sessionState: AppSessionStateResult
   repositoryBootstrap: RepositoryBootstrapDataResult
   archiveLoadStatus: ArchiveLoadStatusResult
-  mediaState: Pick<MediaStateResult, 'selectVideoFromBrowser' | 'fullscreenActive'>
+  mediaState: Pick<MediaStateResult, 'selectVideoFromBrowser' | 'fullscreenActive' | 'fullscreenDisplay' | 'fullscreenVideoFocus'>
 }
 
 export function useAppReadAndNavigation({

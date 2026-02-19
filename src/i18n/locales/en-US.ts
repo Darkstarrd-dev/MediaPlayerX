@@ -69,7 +69,7 @@ export const enUsCatalog: { [K in keyof ZhCnCatalog]: string } = {
   'ui.help.fullscreen.keyboard.modeSwitchF1F3': 'In fullscreen non-dual mode, switch image / video / music modes (disabled in dual display).',
   'ui.help.fullscreen.keyboard.toggleDualDisplay': 'In image/video fullscreen, toggle single / dual display; when leaving dual, fallback to current focused pane.',
   'ui.help.fullscreen.keyboard.swapSidesDual': 'In dual display, swap left/right pane order.',
-  'ui.help.fullscreen.keyboard.autoplayToggle': 'Toggle autoplay (image fullscreen only).',
+  'ui.help.fullscreen.keyboard.autoplayToggle': 'Toggle autoplay (fullscreen image-focused pane).',
   'ui.help.fullscreen.keyboard.videoSeekShort': 'Video mode / video-focused pane: seek backward 5s / forward 5s.',
   'ui.help.fullscreen.keyboard.videoPlayPause': 'Video mode / video-focused pane: play / pause.',
   'ui.help.fullscreen.keyboard.videoSeekLong': 'Video mode / video-focused pane: seek backward 30s / forward 30s.',

@@ -51,6 +51,8 @@ interface UseAppEffectsParams {
   audioNodeIdMap: Map<string, string>
   ensureSidebarNodeVisible: (nodeId: string) => void
   fullscreenActive: boolean
+  fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
+  fullscreenVideoFocus: boolean
   autoPlayEnabled: boolean
   autoPlayInterval: number
   moveImage: (delta: number) => void
@@ -128,6 +130,8 @@ export function useAppEffects({
   audioNodeIdMap,
   ensureSidebarNodeVisible,
   fullscreenActive,
+  fullscreenDisplay,
+  fullscreenVideoFocus,
   autoPlayEnabled,
   autoPlayInterval,
   moveImage,
@@ -482,7 +486,8 @@ export function useAppEffects({
   }, [fullscreenActive])
 
   useEffect(() => {
-    if (mode !== 'image' || !autoPlayEnabled) {
+    const canAutoplayImages = mode === 'image' || (fullscreenActive && fullscreenDisplay === 'dual' && !fullscreenVideoFocus && imageFocusActive)
+    if (!canAutoplayImages || !autoPlayEnabled) {
       return
     }
 
@@ -491,7 +496,7 @@ export function useAppEffects({
     }, autoPlayInterval * 1000)
 
     return () => window.clearInterval(timer)
-  }, [autoPlayEnabled, autoPlayInterval, mode, moveImage])
+  }, [autoPlayEnabled, autoPlayInterval, fullscreenActive, fullscreenDisplay, fullscreenVideoFocus, imageFocusActive, mode, moveImage])
 
   const activeTopPanelKind = manageMode ? 'manage' : metadataManageMode ? 'metadata' : vectorMode ? 'search' : 'none'
 

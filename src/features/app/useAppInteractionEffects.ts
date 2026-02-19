@@ -352,7 +352,9 @@ export function useAppInteractionEffects({
         const sourceId = node.imageSourceId?.trim() ?? ''
         const isCoverNode = Boolean((node.coverSourceId?.trim() ?? '') || (node.coverImageId?.trim() ?? ''))
         const isImagePackageNode = node.kind === 'package' || node.imageNodeType === 'package'
-        const hasUsableImages = sourceId ? (packageByIdEffective.get(sourceId)?.images.length ?? 0) > 0 : false
+        const hasUsableImages = sourceId
+          ? (packageByIdEffective.get(sourceId)?.images.some((image) => !image.hidden) ?? false)
+          : false
 
         if (sourceId && isImagePackageNode && !isCoverNode && hasUsableImages) {
           return node
@@ -366,42 +368,73 @@ export function useAppInteractionEffects({
       return null
     }
 
-    const ensureImageFocusFromSidebar = (options?: { syncSidebarNode?: boolean }) => {
+    const ensureImageFocusFromSidebar = (options?: { syncSidebarNode?: boolean, preferSidebarFirst?: boolean }) => {
       const syncSidebarNode = options?.syncSidebarNode ?? true
+      const preferSidebarFirst = options?.preferSidebarFirst ?? false
       const firstImageSidebarNode = findFirstImageNodeFromTree(imageTreeForSidebar)
+
+      const findFirstVisibleImageIndex = (packageId: string): number => {
+        const images = packageByIdEffective.get(packageId)?.images ?? []
+        const firstVisibleIndex = images.findIndex((image) => !image.hidden)
+        return firstVisibleIndex >= 0 ? firstVisibleIndex : 0
+      }
+
       const selectedPackageUsable =
         rootScopedPackageIds.has(selectedPackageId) &&
-        (packageByIdEffective.get(selectedPackageId)?.images.length ?? 0) > 0
+        (packageByIdEffective.get(selectedPackageId)?.images.some((image) => !image.hidden) ?? false)
 
-      const fallbackPackageId = selectedPackageUsable
-        ? selectedPackageId
-        : (
-            firstImageSidebarNode?.imageSourceId?.trim() ||
-            orderedRootScopedPackages.find((pkg) => pkg.images.length > 0)?.id ||
-            scopedImageSourcesEffective.find((source) => source.images.length > 0)?.id ||
+      const firstSidebarPackageId = firstImageSidebarNode?.imageSourceId?.trim() ?? ''
+      const fallbackPackageId = preferSidebarFirst
+        ? (
+            firstSidebarPackageId ||
+            (selectedPackageUsable ? selectedPackageId : '') ||
+            orderedRootScopedPackages.find((pkg) => pkg.images.some((image) => !image.hidden))?.id ||
+            scopedImageSourcesEffective.find((source) => source.images.some((image) => !image.hidden))?.id ||
             ''
           )
+        : selectedPackageUsable
+          ? selectedPackageId
+          : (
+              firstSidebarPackageId ||
+              orderedRootScopedPackages.find((pkg) => pkg.images.some((image) => !image.hidden))?.id ||
+              scopedImageSourcesEffective.find((source) => source.images.some((image) => !image.hidden))?.id ||
+              ''
+            )
 
-      if (!fallbackPackageId) {
+      const fallbackPackageIdWithLooseFallback =
+        fallbackPackageId ||
+        firstSidebarPackageId ||
+        selectedPackageId ||
+        orderedRootScopedPackages[0]?.id ||
+        scopedImageSourcesEffective[0]?.id ||
+        ''
+
+      if (!fallbackPackageIdWithLooseFallback) {
         return false
       }
 
       const nextSidebarNodeId =
         firstImageSidebarNode?.id ??
-        (normalImageSourceNodeIdMap.get(fallbackPackageId) ?? imageSourceNodeIdMap.get(fallbackPackageId) ?? null)
+        (
+          normalImageSourceNodeIdMap.get(fallbackPackageIdWithLooseFallback)
+          ?? imageSourceNodeIdMap.get(fallbackPackageIdWithLooseFallback)
+          ?? null
+        )
 
-      if (fallbackPackageId !== selectedPackageId) {
-        setSelectedPackageId(fallbackPackageId)
+      if (fallbackPackageIdWithLooseFallback !== selectedPackageId) {
+        setSelectedPackageId(fallbackPackageIdWithLooseFallback)
       }
+
+      const fallbackImageIndex = findFirstVisibleImageIndex(fallbackPackageIdWithLooseFallback)
 
       setImageFocusActive(true)
       setFocusByPackage((previous) => ({
         ...previous,
-        [fallbackPackageId]: 0,
+        [fallbackPackageIdWithLooseFallback]: fallbackImageIndex,
       }))
       setPageByPackage((previous) => ({
         ...previous,
-        [fallbackPackageId]: 0,
+        [fallbackPackageIdWithLooseFallback]: Math.floor(fallbackImageIndex / Math.max(1, pagedPageSize)),
       }))
 
       if (syncSidebarNode && nextSidebarNodeId) {
@@ -412,12 +445,10 @@ export function useAppInteractionEffects({
       return true
     }
 
-    if (fullscreenActive && !focusedImage) {
-      if (mode === 'image') {
-        ensureImageFocusFromSidebar()
-      } else if (mode === 'video' && fullscreenDisplay === 'dual') {
-        ensureImageFocusFromSidebar({ syncSidebarNode: false })
-      }
+    if (fullscreenActive && mode === 'video' && fullscreenDisplay === 'dual' && (!focusedImage || !imageFocusActive)) {
+      ensureImageFocusFromSidebar({ syncSidebarNode: false, preferSidebarFirst: true })
+    } else if (fullscreenActive && !focusedImage && mode === 'image') {
+      ensureImageFocusFromSidebar()
     }
 
     const closeTopLayerByPriority = () => {
@@ -887,6 +918,8 @@ export function useAppInteractionEffects({
     mode,
     activePackage,
     focusedImage,
+    imageFocusActive,
+    pagedPageSize,
     selectedVideoId,
     playlistIds,
     videosForSidebar,
@@ -1070,6 +1103,8 @@ export function useAppInteractionEffects({
     audioNodeIdMap,
     ensureSidebarNodeVisible,
     fullscreenActive,
+    fullscreenDisplay,
+    fullscreenVideoFocus,
     autoPlayEnabled,
     autoPlayInterval,
     moveImage,
