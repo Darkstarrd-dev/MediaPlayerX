@@ -1024,6 +1024,7 @@ export const subtitleCueSchema = z.object({
   text: z.string().min(1),
   lang: z.string().min(1).nullable(),
   speaker: z.number().int().min(0).nullable().optional(),
+  line: z.enum(["A", "B"]).optional(),
   speaker_changed: z.boolean().optional(),
   speaker_similarity: z.number().min(-1).max(1).optional(),
 });
@@ -1121,6 +1122,45 @@ export const pushSubtitleAudioResponseSchema = z.object({
   session_epoch: z.number().int().min(0).default(0),
   chunk_seq: z.number().int().min(0).default(0),
   queue_len: z.number().int().min(0).default(0),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const startSubtitlePersistenceRequestSchema = z.object({
+  video_path: z.string().min(1),
+  language: z.string().min(1).default("auto"),
+  reset_existing: z.boolean().default(true),
+});
+
+export const startSubtitlePersistenceResponseSchema = z.object({
+  enabled: z.boolean(),
+  subtitle_path: z.string().min(1).nullable(),
+  cue_count: z.number().int().min(0).default(0),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const appendSubtitlePersistenceRequestSchema = z.object({
+  cues: z.array(subtitleCueSchema),
+});
+
+export const appendSubtitlePersistenceResponseSchema = z.object({
+  accepted: z.boolean(),
+  subtitle_path: z.string().min(1).nullable(),
+  cue_count: z.number().int().min(0).default(0),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const readSubtitlePersistenceWindowRequestSchema = z.object({
+  timeline_sec: z.number().min(0),
+  backtrack_sec: z.number().min(0).max(30).default(1),
+  lookahead_sec: z.number().min(0).max(30).default(3),
+  limit: z.number().int().min(1).max(200).default(24),
+});
+
+export const readSubtitlePersistenceWindowResponseSchema = z.object({
+  subtitle_path: z.string().min(1).nullable(),
+  cues: z.array(subtitleCueSchema),
+  generated_start_sec: z.number().min(0).nullable(),
+  generated_end_sec: z.number().min(0).nullable(),
   updated_at_ms: z.number().int().positive(),
 });
 

@@ -28,6 +28,12 @@ import {
   flushSubtitleSessionResponseSchema,
   pushSubtitleAudioRequestSchema,
   pushSubtitleAudioResponseSchema,
+  startSubtitlePersistenceRequestSchema,
+  startSubtitlePersistenceResponseSchema,
+  appendSubtitlePersistenceRequestSchema,
+  appendSubtitlePersistenceResponseSchema,
+  readSubtitlePersistenceWindowRequestSchema,
+  readSubtitlePersistenceWindowResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -97,6 +103,12 @@ import {
   type FlushSubtitleSessionResponseDto,
   type PushSubtitleAudioRequestDto,
   type PushSubtitleAudioResponseDto,
+  type StartSubtitlePersistenceRequestDto,
+  type StartSubtitlePersistenceResponseDto,
+  type AppendSubtitlePersistenceRequestDto,
+  type AppendSubtitlePersistenceResponseDto,
+  type ReadSubtitlePersistenceWindowRequestDto,
+  type ReadSubtitlePersistenceWindowResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
@@ -725,6 +737,39 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(pushSubtitleAudio(parsedRequest), options)
     return pushSubtitleAudioResponseSchema.parse(response)
+  }
+
+  async startSubtitlePersistence(
+    request: StartSubtitlePersistenceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartSubtitlePersistenceResponseDto> {
+    const startSubtitlePersistence = requireBackendMethod('startSubtitlePersistence')
+    const parsedRequest = startSubtitlePersistenceRequestSchema.parse(request)
+
+    const response = await withAbort(startSubtitlePersistence(parsedRequest), options)
+    return startSubtitlePersistenceResponseSchema.parse(response)
+  }
+
+  async appendSubtitlePersistence(
+    request: AppendSubtitlePersistenceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<AppendSubtitlePersistenceResponseDto> {
+    const appendSubtitlePersistence = requireBackendMethod('appendSubtitlePersistence')
+    const parsedRequest = appendSubtitlePersistenceRequestSchema.parse(request)
+
+    const response = await withAbort(appendSubtitlePersistence(parsedRequest), options)
+    return appendSubtitlePersistenceResponseSchema.parse(response)
+  }
+
+  async readSubtitlePersistenceWindow(
+    request: ReadSubtitlePersistenceWindowRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadSubtitlePersistenceWindowResponseDto> {
+    const readSubtitlePersistenceWindow = requireBackendMethod('readSubtitlePersistenceWindow')
+    const parsedRequest = readSubtitlePersistenceWindowRequestSchema.parse(request)
+
+    const response = await withAbort(readSubtitlePersistenceWindow(parsedRequest), options)
+    return readSubtitlePersistenceWindowResponseSchema.parse(response)
   }
 
   async readArchiveLoadStatus(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto> {

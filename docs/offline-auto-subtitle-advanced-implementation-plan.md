@@ -44,7 +44,7 @@ Status: in_progress
 
 - 仅在现有架构增量修改，不重写字幕系统。
 - 优先低风险改造：先打通链路，再做参数与体验优化。
-- 保持 Simple/Advanced 双模式兼容，不破坏 Simple。
+- 保持模式入口兼容；允许将 Simple 底层合并到 Advanced pipeline（Simple 仅作为展示壳）。
 
 ---
 
@@ -205,6 +205,11 @@ Status: in_progress
   - [x] F3b: speaker 状态机微调（强证据快切 + 更新节流）
 - [ ] F4: 扫描参数区间并回填（非单点默认值）
 - [x] F5: 仅在 B1 不达标时进入 B2（概率滤波/HMM）
+- [ ] G1: Simple 模式合并到 Advanced 底层（保留 UI 入口，单行壳渲染）
+- [ ] G2: 行级分离优先（line-first）状态机落地，弱化绝对 S1/S2 身份依赖
+- [ ] G3: 短句/语气词召回策略落地（白名单 + 邻域合并 + 误检上限）
+- [ ] G4: 预生成闭环落地（同链路高速生成 + 增量写盘 + seek 超界续生成）
+  - [x] G4a: 播放时增量写盘 + seek 回读最小闭环（`.auto-live.srt`）
 
 ---
 
@@ -248,6 +253,52 @@ Status: in_progress
 - [ ] 已确认 offset 结论不再基于“会触发 reset”的未证实前提。
 - [ ] 已完成 B1 并回填 E-M5 三项观测（全 S1 / 抖动 / 延迟）。
 - [ ] B1 指标达标，或给出进入 B2 的明确触发依据。
+
+---
+
+## Phase G - 择优路线落地（基于多专家意见的自主择优）
+
+状态：`in_progress`
+
+### 目标
+
+- 不做机械融合；采用“与现有实测一致 + 工程风险最低”的择优路线。
+- 从“绝对身份正确”切换到“行级可读分离优先”。
+- 在当前稳定链路上推进预生成，避免另起一套慢速离线导出链路。
+
+### 择优采纳结论
+
+1. **Simple 去留**
+   - 采纳：保留 `simple/advanced` 入口，但 Simple 合并到 Advanced 底层，仅做单行展示策略。
+   - 原因：当前 Simple 在实测中价值低于 Advanced，继续双底层维护收益低。
+2. **行级分离优先**
+   - 采纳：优先保证同时间窗双人分行可读，允许短窗身份错判。
+   - 实施：Worker 保留 `speakerId` 用于调试统计，渲染层使用 `lineId(A/B)` 聚合。
+3. **短句召回**
+   - 采纳：白名单 + 置信阈值 + 邻域合并三段式策略。
+   - 门禁：误检率设置硬上限（先按 `<= 1 条/分钟` 观测，达标后再收紧）。
+4. **预生成闭环**
+   - 采纳：复用实时同链路（VAD+ASR+speaker/line），后台加速生成并增量写盘。
+   - 要求：播放读取默认回偏移 1s；seek 回退命中缓存；超界自动续生成。
+5. **offset 策略**
+   - 采纳：仅 renderer-only；禁止默认 worker 时间轴注入（与 O-4 归因一致）。
+
+### TODO
+
+1. G1: 完成 Simple->Advanced 底层合并设计（保留开关回滚点）。
+2. G2: 实现 `lineId` 分配状态机与渲染聚合改造。
+3. G3: 落地短句召回与误检统计字段（按分钟统计）。
+4. G4: 预生成最小闭环（内存索引 + 增量 SRT/JSONL 写盘 + seek 续算）。
+5. G5: 2x/3x/4x RTF 测试脚本与上限报告。
+
+### Checklist
+
+- [ ] Simple 入口保留且底层已共享，无回归。
+- [ ] E-M5 长时同号塌缩不可见，短窗错号 <= 1 句。
+- [ ] 短句召回提升且误检在门限内。
+- [ ] 预生成可稳定 >=2x，且 seek 前后闭环可用。
+
+> 注：G4 已先落地最小可用闭环（增量 SRT 写盘 + 1s 回偏移 seek 回读）；`>=2x` 高速预生成与 JSONL 明细仍待 G5/G4 后续轮次完成。
 
 ---
 
@@ -815,6 +866,72 @@ Status: in_progress
 - 验证：`bun run build:electron`、`bun run build` 通过。
 - 下一步：请复测 E-M5，重点观察“换人后 1~2 句错号”是否缩短到 0~1 句。
 
+### 2026-02-19  Phase G 第一轮（多专家意见择优采纳）
+
+- 已完成“非机械融合”的择优落地决策，并写入 Phase G：
+  1. Simple 保留入口但合并到 Advanced 底层；
+  2. 行级分离优先（line-first）替代绝对身份优先；
+  3. 短句召回采用白名单+邻域合并并绑定误检门禁；
+  4. 预生成采用同链路复用+增量写盘+seek 续生成；
+  5. offset 继续锁定 renderer-only。
+- 当前状态：Phase G `in_progress`，等待按 G1~G5 逐项实施。
+
+### 2026-02-19  Phase G 第二轮（G1/G2 首批代码落地）
+
+- 已开始按择优路线实施，完成首批可运行改造：
+  1. `subtitleCue` 协议新增可选 `line` 字段（`A/B`），用于行级分离展示；
+  2. Worker 新增 `lineBySpeaker/currentLineId` 状态，并在每条 cue 上输出 `line`；
+  3. Renderer 展示改为统一走 line-first 聚合函数：
+     - Advanced: 双行显示（`maxLines=2`）；
+     - Simple: 单行壳显示（`maxLines=1`，不显示 track 标签）。
+  4. `decodeSegmentAndBuildCue` 的文本/时间裁剪去掉 simple 特殊分支，Simple/Advanced 在该路径共享同一底层句级输出。
+- 影响：
+  - G2（行级分离优先）进入可观测阶段；
+  - G1（Simple 底层合并）进入部分完成状态，尚需清理 fallback 分支与参数策略。
+- 下一步：
+  1. 复测 E-M5，观察 line-first 后“换人短窗错判”是否继续收敛；
+  2. 继续 G1 收口（移除 simple 历史分支残留）；
+  3. 落地 G3（短句召回门禁统计）。
+
+### 2026-02-19  Phase G 第三轮（基于复测反馈增强 line-first 纠错）
+
+- 你反馈：
+  - G1 方向有效（Simple 已呈现“Advanced 底层 + 单行壳”体验）；
+  - G2 仍接近上一版本表现（换人短窗错判未明显继续收敛）。
+- 本轮增强（`electron/subtitles/asrWorker.ts`）：
+  1. 行分配新增短窗纠错条件：双 profile 存在 + 相似度低于阈值余量 + 同行连续输出>=2 句 + 纠错冷却满足时，允许切换到对侧行；
+  2. 新增行状态统计字段：`lineSwitchSec`、`lineStreakCount`，用于抑制抖动并避免过快翻转。
+- 预期：
+  - 不依赖绝对 S1/S2 正确性的前提下，减少“换人后 1~2 句仍落同一行”。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+- 下一步：请复测 E-M5，重点观察短窗错判是否进一步缩短。
+
+### 2026-02-19  Phase G 第四轮（G4 最小闭环：播放时持久化 + seek 回读）
+
+- 按“先可用再提速”完成 G4 最小闭环实现：
+  1. 新增字幕持久化 IPC 协议：`startSubtitlePersistence / appendSubtitlePersistence / readSubtitlePersistenceWindow`；
+  2. `SubtitleSessionManager` 增加会话级持久化状态，落盘同目录 sidecar：`<video>.auto-live.srt`；
+  3. 播放中每批新 cue 增量入持久化队列并写盘；
+  4. seek 时优先回读已生成窗口（默认 `backtrack=1s`，`lookahead=3s`），再继续实时链路续算。
+- 已同步打通前后端契约与仓储层：
+  - `backend.schemas/types`、`preload`、`channels`、`registerBackendIpcHandlers`、`real/mock repository`、`backend-api.d.ts`。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+- 风险与剩余：
+  - 当前为 SRT 单文件增量重写策略，尚未引入 JSONL 明细与高速（>=2x）后台预生成；
+  - 下一轮进入 G5：补 RTF 压测脚本与上限报告，再决定是否引入批量预转写任务。
+
+### 2026-02-19  Phase G 第五轮（修复“请求已取消”噪声与写盘兜底）
+
+- 针对你反馈的两个问题做定向修复：
+  1. popover 频繁出现“请求已取消”；
+  2. 视频目录未观察到持久化字幕文件。
+- 已修复：
+  1. `useLiveSubtitles` 对 abort/cancel 类错误改为静默处理，不再上抛成用户可见错误提示；
+  2. 持久化初始化失败不再完全吞掉，非取消错误会回传可见消息；
+  3. `subtitleSession` 写盘新增兜底路径：若视频目录不可写，自动回退到系统临时目录 `MediaPlayerX/auto-subtitles` 并记录主进程 warning 日志。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+- 说明：默认仍优先写入视频同目录 `*.auto-live.srt`；仅在目录权限/路径异常时触发临时目录回退。
+
 
 ---
 
@@ -832,12 +949,22 @@ Status: in_progress
 ## 9. 关联文件（预计）
 
 - `electron/subtitles/asrWorker.ts`
+- `electron/subtitles/subtitleSession.ts`
+- `electron/registerBackendIpcHandlers.ts`
+- `electron/preload.ts`
+- `electron/channels.ts`
 - `src/features/subtitles/useLiveSubtitles.ts`
+- `src/features/app/useAppDisplayResources.ts`
 - `src/features/subtitles/VideoSubtitleCapture.ts`
+- `src/features/backend/repository/types.ts`
+- `src/features/backend/repository/realRepository.ts`
+- `src/features/backend/repository/mockRepository.ts`
 - `src/components/settings/renderSettingsModelSection.tsx`
 - `src/components/settings/renderSettingsMainSectionContent.tsx`
 - `src/features/app/useAppSettingsStore.ts`
 - `src/features/app/usePersistedAppSettings.ts`
 - `src/contracts/backend.schemas.ts`
+- `src/contracts/backend.types.ts`
+- `src/backend-api.d.ts`
 - `src/i18n/locales/zh-CN.ts`
 - `src/i18n/locales/en-US.ts`

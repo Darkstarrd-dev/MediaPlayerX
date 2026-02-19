@@ -74,6 +74,10 @@ interface RuntimeSessionState {
   lastSpeechEndSec: number // Track when speech last ended (for silence detection)
   vad: VadRuntime | null
   speaker: SpeakerRuntime | null
+  lineBySpeaker: Map<number, 'A' | 'B'>
+  currentLineId: 'A' | 'B' | null
+  lineSwitchSec: number
+  lineStreakCount: number
   similarityThreshold: number
   profileUpdateAlpha: number
 }
@@ -694,6 +698,94 @@ function clearPendingSwitch(speakerRuntime: SpeakerRuntime): void {
   speakerRuntime.pendingSwitchScoreSum = 0
   speakerRuntime.pendingSwitchIsNew = false
   speakerRuntime.pendingSwitchEmbedding = null
+}
+
+function pickOppositeLine(line: 'A' | 'B'): 'A' | 'B' {
+  return line === 'A' ? 'B' : 'A'
+}
+
+function assignLineIdForCue(
+  currentSession: RuntimeSessionState,
+  speakerId: number | null,
+  speakerChanged: boolean,
+  speakerSimilarity: number | undefined,
+  cueEndSec: number,
+): 'A' | 'B' {
+  const canApplyCorrection =
+    currentSession.speaker !== null &&
+    currentSession.speaker.profiles.length >= 2 &&
+    typeof speakerSimilarity === 'number' &&
+    Number.isFinite(speakerSimilarity) &&
+    speakerSimilarity < currentSession.similarityThreshold - 0.02 &&
+    currentSession.currentLineId !== null &&
+    currentSession.lineStreakCount >= 2 &&
+    cueEndSec - currentSession.lineSwitchSec >= 0.3
+
+  if (speakerChanged && currentSession.currentLineId) {
+    const toggledLine = pickOppositeLine(currentSession.currentLineId)
+    currentSession.currentLineId = toggledLine
+    currentSession.lineSwitchSec = cueEndSec
+    currentSession.lineStreakCount = 1
+    if (typeof speakerId === 'number' && speakerId >= 0) {
+      currentSession.lineBySpeaker.set(speakerId, toggledLine)
+    }
+    return toggledLine
+  }
+
+  if (typeof speakerId === 'number' && speakerId >= 0) {
+    const mappedLine = currentSession.lineBySpeaker.get(speakerId)
+    if (mappedLine) {
+      if (canApplyCorrection && mappedLine === currentSession.currentLineId) {
+        const correctedLine = pickOppositeLine(mappedLine)
+        currentSession.currentLineId = correctedLine
+        currentSession.lineSwitchSec = cueEndSec
+        currentSession.lineStreakCount = 1
+        currentSession.lineBySpeaker.set(speakerId, correctedLine)
+        return correctedLine
+      }
+
+      if (mappedLine === currentSession.currentLineId) {
+        currentSession.lineStreakCount += 1
+      } else {
+        currentSession.lineStreakCount = 1
+        currentSession.lineSwitchSec = cueEndSec
+      }
+      currentSession.currentLineId = mappedLine
+      return mappedLine
+    }
+
+    let assignedLine: 'A' | 'B'
+    if (currentSession.lineBySpeaker.size === 0) {
+      assignedLine = 'A'
+    } else if (currentSession.lineBySpeaker.size === 1) {
+      const firstLine = currentSession.lineBySpeaker.values().next().value as 'A' | 'B'
+      assignedLine = pickOppositeLine(firstLine)
+    } else if (currentSession.currentLineId) {
+      assignedLine = pickOppositeLine(currentSession.currentLineId)
+    } else {
+      assignedLine = 'A'
+    }
+
+    currentSession.lineBySpeaker.set(speakerId, assignedLine)
+    if (currentSession.currentLineId === assignedLine) {
+      currentSession.lineStreakCount += 1
+    } else {
+      currentSession.lineStreakCount = 1
+      currentSession.lineSwitchSec = cueEndSec
+    }
+    currentSession.currentLineId = assignedLine
+    return assignedLine
+  }
+
+  if (currentSession.currentLineId) {
+    currentSession.lineStreakCount += 1
+    return currentSession.currentLineId
+  }
+
+  currentSession.currentLineId = 'A'
+  currentSession.lineStreakCount = 1
+  currentSession.lineSwitchSec = cueEndSec
+  return 'A'
 }
 
 function identifySpeaker(
@@ -1395,19 +1487,14 @@ function decodeSegmentAndBuildCue(
   const normalizedStart = Math.max(0, startSec)
   const normalizedEnd = Math.max(normalizedStart + 0.35, endSec)
 
-  const cueText = currentSession.renderMode === 'simple'
-    ? pickLatestSimpleSnippet(text, 28)
-    : text
+  const cueText = text
   if (!cueText) {
     return []
   }
 
-  const cueStart = currentSession.renderMode === 'simple'
-    ? Math.max(0, normalizedEnd - 0.05)
-    : normalizedStart
-  const cueEnd = currentSession.renderMode === 'simple'
-    ? Math.max(cueStart + 0.25, normalizedEnd + 0.55)
-    : normalizedEnd
+  const cueStart = normalizedStart
+  const cueEnd = normalizedEnd
+  const lineId = assignLineIdForCue(currentSession, speakerId, speakerChanged, speakerSimilarity, cueEnd)
 
   currentSession.cueSeed += 1
   return [
@@ -1418,6 +1505,7 @@ function decodeSegmentAndBuildCue(
       text: cueText,
       lang: cueLanguage,
       speaker: speakerId,
+      line: lineId,
       speaker_changed: speakerChanged,
       speaker_similarity: speakerSimilarity,
     },
@@ -1707,6 +1795,10 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     lastSpeechEndSec: 0,
     vad,
     speaker,
+    lineBySpeaker: new Map<number, 'A' | 'B'>(),
+    currentLineId: null,
+    lineSwitchSec: -1,
+    lineStreakCount: 0,
     similarityThreshold: speakerThreshold,
     profileUpdateAlpha: 0.3,
   }
@@ -1746,6 +1838,10 @@ function resetSessionStateForTimeline(currentSession: RuntimeSessionState, timel
   currentSession.simpleWindowText = ''
   currentSession.simpleLastNonEmptySec = Math.max(0, timelineSec)
   currentSession.lastChunkSeq = -1
+  currentSession.lineBySpeaker.clear()
+  currentSession.currentLineId = null
+  currentSession.lineSwitchSec = Math.max(0, timelineSec)
+  currentSession.lineStreakCount = 0
   currentSession.speaker?.profiles.splice(0, currentSession.speaker.profiles.length)
   if (currentSession.speaker) {
     currentSession.speaker.currentSpeakerId = null

@@ -32,6 +32,12 @@ import type {
   FlushSubtitleSessionResponseDto,
   PushSubtitleAudioRequestDto,
   PushSubtitleAudioResponseDto,
+  StartSubtitlePersistenceRequestDto,
+  StartSubtitlePersistenceResponseDto,
+  AppendSubtitlePersistenceRequestDto,
+  AppendSubtitlePersistenceResponseDto,
+  ReadSubtitlePersistenceWindowRequestDto,
+  ReadSubtitlePersistenceWindowResponseDto,
   ReadRuntimeInfoResponseDto,
   SetRuntimeStoragePathsRequestDto,
   SetRuntimeStoragePathsResponseDto,
@@ -199,6 +205,15 @@ interface MediaPlayerBackendApi {
   resetSubtitleSession?: (request: ResetSubtitleSessionRequestDto) => Promise<ResetSubtitleSessionResponseDto>
   flushSubtitleSession?: () => Promise<FlushSubtitleSessionResponseDto>
   pushSubtitleAudio?: (request: PushSubtitleAudioRequestDto) => Promise<PushSubtitleAudioResponseDto>
+  startSubtitlePersistence?: (
+    request: StartSubtitlePersistenceRequestDto,
+  ) => Promise<StartSubtitlePersistenceResponseDto>
+  appendSubtitlePersistence?: (
+    request: AppendSubtitlePersistenceRequestDto,
+  ) => Promise<AppendSubtitlePersistenceResponseDto>
+  readSubtitlePersistenceWindow?: (
+    request: ReadSubtitlePersistenceWindowRequestDto,
+  ) => Promise<ReadSubtitlePersistenceWindowResponseDto>
   readRuntimeInfo?: () => Promise<ReadRuntimeInfoResponseDto>
   setRuntimeStoragePaths?: (
     request: SetRuntimeStoragePathsRequestDto,

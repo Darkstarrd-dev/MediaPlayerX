@@ -1,89 +1,184 @@
-# 自动字幕专家评审输入包模板 V2（聚焦 offset CPU 与两阶段 speaker）
+# 自动字幕专家评审输入包 V4（自洽版，可脱离项目讨论）
 
 Last updated: 2026-02-19  
-Owner: MediaPlayerX Subtitle Pipeline  
-Target: 外部专家评审（ASR/VAD/在线说话人分离）
+Owner: MediaPlayerX Subtitle Runtime  
+Checkpoint: `b324147` + 后续未提交调参  
+目标：让外部专家**不依赖项目代码仓库**，仅凭本文就能完成技术评审与方案设计。
 
 ---
 
-## 0. 本模板用途
+## 1. 背景与本次评审边界
 
-- 用于向外部专家提交**可复现实验包**，集中解决两个问题：
-  1. `ASR 时间偏移 (timeline offset)` 为什么引入高 CPU 且没有明显收益。
-  2. `两阶段说话人决策 (two-stage speaker decision)` 如何继续改到可锁定且低延迟。
-- 本模板是输入包“骨架”，提交前请把 `pending` 项全部回填。
+当前离线字幕链路已从“不可用”进入“基本可用”，现阶段问题从“系统性失败”收敛为“局部质量问题”。
 
----
+本次评审只讨论 4 个问题：
 
-## 1. 当前复测结论（必须原样给专家）
-
-### 1.1 E-M5 最新结果（2026-02-19）
-
-1. “全在 S1”现象：**否**。  
-2. 高频抖动：**不会高频抖动，但也不会稳定锁定**。  
-3. 延迟：**约 2s**。
-
-### 1.2 问题定义（Problem Statement）
-
-- P-A（性能）：开启/调整 offset 后，出现可感知 CPU 占用上升，并伴随字幕时序收益不明显，甚至有副作用。  
-- P-B（质量）：两阶段决策降低了高频抖动，但“锁定能力不足 + 切换延迟偏大（~2s）”。
+1. **Simple 模式是否应保留**（当前体验明显不如 Advanced）。
+2. **行级分离优先 (Line-first Separation)** 是否应替代“严格 S1/S2 身份正确性优先”。
+3. **短句/单字/语气词漏识别**（如“啊”“哈哈”）如何提升召回。
+4. **预生成 (Pre-generation) + 增量落盘**：利用当前高速稳定链路实现“边生成边写文件、播放回偏移对齐、seek 可回看”。
 
 ---
 
-## 2. 评审目标与验收指标
+## 2. 已知事实（可直接用于结论）
 
-| 维度 | 指标 | 目标值 | 备注 |
-|---|---:|---:|---|
-| 性能 | Renderer CPU 增量（offset 开 vs 关） | <= +5% | 同一素材、同一时长窗口 |
-| 性能 | Worker CPU 增量（offset 开 vs 关） | <= +5% | 同上 |
-| 时延 | Advanced 端到端延迟 P50 | <= 900ms | capture -> subtitle render |
-| 时延 | Advanced 端到端延迟 P95 | <= 1400ms | 极值可接受上限 |
-| 质量 | 说话人锁定稳定率 | >= 90% | 双人样本人工标注 |
-| 质量 | 错误切换率 | <= 10% | 含误切 + 漏切 |
+### 2.1 手测结论（最新）
 
----
+- E-M4（Simple）: `pass`，但实用性低于 Advanced。  
+- E-M5（Advanced）: `fail`（非系统性）
+  - 长时间单号塌缩：已从“频繁”下降到“偶发/短窗”。
+  - 主要剩余问题：换人后 1~2 句编号错判。
+  - 延迟：已从 ~2s 降到接近句末即出。
+  - seek 回退堆积：已修复。
 
-## 3. 专家必答问题（必须逐条回答）
+### 2.2 offset 归因实验（受控）
 
-### Q1. offset 机制问题（性能 + 效果）
+| Case | 配置 | chunk_rtt_ms avg/p95 | asr_decode_ms avg/p95 | 结论 |
+|---|---|---:|---:|---|
+| O-4A | renderer-only offset +0.5 | 25.4 / 130 | 121.52 / 229 | 风险可控 |
+| O-4B | worker-only offset +0.5 | 39.11 / 202 | 121.78 / 310 | 尾延迟显著恶化 |
 
-请回答：
+明确结论：offset 注入 worker 时间轴风险高；renderer-only 可保留。
 
-1. 现有 offset 方案中，CPU 放大的**主因链路**是什么（按概率排序）。  
-2. 为什么“理论上轻量”的双时间线处理在本项目会出现可感知开销（请给出证据，不要只给猜测）。  
-3. 为什么 offset 没有显著改善字幕同步（请拆成：采集、VAD 端点、解码、渲染窗口四段）。  
-4. 若保留 offset 能力，推荐的低开销实现架构是什么（必须给伪代码）。
+### 2.3 当前最接近目标的行为特征
 
-### Q2. 两阶段 speaker 决策优化
-
-请回答：
-
-1. 当前两阶段状态机为何“抗抖动但不锁定”（从阈值、证据窗、profile 更新、切换门控解释）。  
-2. 在保持 `MAX_SPEAKER_COUNT=2` 条件下，如何让“锁定稳定 + 切换不慢”同时成立。  
-3. 给出至少两套可落地方案：
-   - 方案 A：参数与状态机微调（低改动）。
-   - 方案 B：引入额外判据（如 turn prior / confidence / look-ahead）但保持实时性。  
-4. 给出每套方案的风险、预期收益、回归测试点。
+- 大部分时间可以区分两人。
+- 仍有“短时间窗口错判”：换人后 1~2 句归到前一人。
+- 业务侧优先级已改变：
+  - **不要求严格 S1/S2 绝对身份一致**。
+  - **优先要求同时间窗两人可分行显示，避免混在一行**。
 
 ---
 
-## 4. 当前实现快照（供专家快速建立上下文）
+## 3. 系统实现（自包含代码）
 
-### 4.1 数据流
+以下为当前实现核心逻辑的等价代码，已足够脱离仓库讨论。
 
-`WebAudio Capture -> Renderer Push Queue -> Worker(VAD -> ASR -> Speaker) -> Cue -> Renderer Display`
-
-### 4.2 两阶段 speaker 现状（骨架）
+### 3.1 IPC 数据契约
 
 ```ts
-type SpeakerProfile = { id: number; embedding: Float32Array }
+type PushSubtitleAudioRequestDto = {
+  chunk_base64: string
+  sample_rate_hz: number
+  chunk_start_sec: number
+  chunk_end_sec: number
+  channel_count: number
+  session_epoch: number
+  chunk_seq: number
+}
 
+type SubtitleCueDto = {
+  id: string
+  text: string
+  start_sec: number
+  end_sec: number
+  lang?: string
+  speaker?: number
+  speaker_changed?: boolean
+}
+
+type SubtitleSessionEventDto = {
+  code: string
+  level: 'info' | 'warning' | 'error'
+  message: string
+  created_at_ms: number
+}
+
+type PushSubtitleAudioResponseDto = {
+  cues: SubtitleCueDto[]
+  events: SubtitleSessionEventDto[]
+  queue_len: number
+  session_epoch: number
+  chunk_seq: number
+  updated_at_ms: number
+}
+```
+
+### 3.2 Renderer 关键行为（会话/seek/队列）
+
+```ts
+function beginNewEpoch(reason: string) {
+  abortInFlightPushIfAny()
+  sessionEpoch += 1
+  chunkSeq = 0
+  lastAppliedSeq = -1
+  pushQueue = []
+  emit('renderer_epoch_begin', { reason, session_epoch: sessionEpoch })
+}
+
+// 关键修复：seek 必定 reset + clear cues（即使在调试 suppress 模式）
+function onSeeked(videoCurrentTime: number) {
+  beginNewEpoch('seeked')
+  cues = []
+  resetSubtitleSession({ timeline_sec: videoCurrentTime })
+}
+
+async function drainPushQueue() {
+  const chunk = popBatchChunk(pushQueue, advancedMode ? 0.2 : 0.35)
+  if (!chunk) return
+
+  const req: PushSubtitleAudioRequestDto = {
+    chunk_base64: encodeFloat32ToBase64(chunk.samples),
+    sample_rate_hz: chunk.sampleRateHz,
+    chunk_start_sec: chunk.startSec,
+    chunk_end_sec: chunk.endSec,
+    channel_count: chunk.channelCount,
+    session_epoch: sessionEpoch,
+    chunk_seq: chunkSeq++,
+  }
+
+  const res = await pushSubtitleAudio(req)
+  if (res.session_epoch !== sessionEpoch) return
+  if (res.chunk_seq < lastAppliedSeq) return
+
+  lastAppliedSeq = res.chunk_seq
+  cues = appendCues(cues, res.cues)
+}
+```
+
+### 3.3 Worker 参数解析（当前默认值）
+
+```ts
+function resolveVadTuning(preset: 'balanced' | 'conservative' | 'aggressive') {
+  if (preset === 'conservative') {
+    return { threshold: 0.52, minSilenceDuration: 0.45, minSpeechDuration: 0.25, maxSpeechDuration: 20 }
+  }
+  if (preset === 'aggressive') {
+    return { threshold: 0.36, minSilenceDuration: 0.10, minSpeechDuration: 0.15, maxSpeechDuration: 3 }
+  }
+  return { threshold: 0.42, minSilenceDuration: 0.14, minSpeechDuration: 0.18, maxSpeechDuration: 3 }
+}
+
+function resolveSpeakerThreshold() {
+  return 0.50
+}
+```
+
+### 3.4 Worker 分段与短句过滤（当前）
+
+```ts
+function consumeVadSegments(vadSegments, sampleRateHz) {
+  const cues: SubtitleCueDto[] = []
+  for (const seg of vadSegments) {
+    const durSec = seg.samples.length / sampleRateHz
+    if (durSec < 0.14) {
+      // 当前最短过滤门槛（从 0.2 下调到 0.14）
+      continue
+    }
+    cues.push(...decodeSegmentAndBuildCue(seg.samples, seg.startSec, seg.endSec))
+  }
+  return cues
+}
+```
+
+### 3.5 Worker 说话人两阶段决策（当前）
+
+```ts
 type SpeakerRuntime = {
-  profiles: SpeakerProfile[]
+  profiles: Array<{ id: number; embedding: Float32Array }>
   currentSpeakerId: number | null
   lastSwitchSec: number
 
-  // Stage-1: 候选累积
   pendingSwitchSpeakerId: number | null
   pendingSwitchCount: number
   pendingSwitchDurationSec: number
@@ -92,222 +187,230 @@ type SpeakerRuntime = {
   pendingSwitchEmbedding: Float32Array | null
 }
 
-function identifySpeakerV2(
-  embedding: Float32Array,
-  rt: SpeakerRuntime,
-  similarityThreshold: number,
-  segmentDurationSec: number,
-  segmentEndSec: number,
-): number {
-  // 1) 计算与已有 profile 的相似度
-  const { bestId, bestScore, currentScore } = scoreAgainstProfiles(embedding, rt)
+// 关键阈值（当前）
+const switchCooldownSec = 0.45
+const switchMargin = 0.02
+const strongSwitchMargin = 0.05
+const strongSwitchMinSegSec = 0.68
 
-  // 2) 若当前 speaker 仍有足够置信，则继续保持（抗抖动）
-  if (shouldKeepCurrent(currentScore, bestScore, similarityThreshold)) {
-    clearPending(rt)
-    updateProfileIfNeeded(rt.currentSpeakerId, embedding, currentScore)
-    return rt.currentSpeakerId ?? 0
-  }
+// existing speaker 两阶段确认窗口（当前）
+const pendingExistingCount = 2
+const pendingExistingDurSec = 0.35
 
-  // 3) 生成候选：已有 speaker 或新 speaker
-  const candidate = buildCandidate(bestId, bestScore, currentScore, rt, similarityThreshold, segmentDurationSec)
+// new speaker 两阶段确认窗口（当前）
+const pendingNewCount = 2
+const pendingNewDurSec = 0.90
 
-  // 4) 两阶段：先累计证据，再确认提交
-  appendPendingEvidence(rt, candidate, embedding, segmentDurationSec)
-  if (canConfirmSwitch(rt, candidate, similarityThreshold, currentScore, segmentEndSec)) {
-    const nextSpeakerId = commitCandidate(rt, candidate, embedding, segmentEndSec)
-    return nextSpeakerId
-  }
-
-  // 5) 未确认前保持当前 speaker（这是当前延迟来源之一，需专家评估）
+function identifySpeaker(rt: SpeakerRuntime, emb: Float32Array, segDur: number, segEnd: number): number {
+  // 1) score against profiles -> bestId/bestScore/currentScore/bestOtherScore
+  // 2) sticky keep (with low-confidence bypass)
+  // 3) candidate build (existing/new)
+  // 4) strong fast switch path
+  // 5) pending evidence accumulate
+  // 6) confirm existing/new
+  // 7) fallback current
   return rt.currentSpeakerId ?? 0
 }
 ```
 
-### 4.3 offset 现状（历史方案骨架，已回滚）
+---
+
+## 4. 当前真实问题定义（供专家直接对焦）
+
+### P1. Simple 模式价值不足
+
+- 当前实际表现：Simple 在稳定性、可读性、延迟整体不优于 Advanced。
+- 待决策：
+  - 方案 A：移除 Simple（仅保留 Advanced）。
+  - 方案 B：Simple 退化为 Advanced 的单行展示壳（共享同一底层链路）。
+
+### P2. 行级分离优先（替代严格身份优先）
+
+- 业务目标：同一时间窗内两人**分两行显示**，允许标签身份短窗误差。
+- 当前瓶颈：切换后 1~2 句短窗错判导致同号并线。
+
+### P3. 短句/语气词遗漏
+
+- 现状：已改善，但仍有漏词。
+- 目标：在误检可控前提下，进一步提升召回。
+
+### P4. 预生成
+
+- 已观察：2x 播放可用半时长拿到完整字幕（说明链路吞吐已足够）。
+- 历史问题：raw srt 预生成速度反而接近 2x 视频时长。
+- 目标：统一为“实时同链路 + 后台加速 + 增量落盘”。
+
+---
+
+## 5. 行级分离优先：建议实现骨架（供专家评估）
 
 ```ts
-type OffsetConfig = {
-  subtitleAsrTimelineOffsetSec: number // [-2, +2]
+type LineId = 'A' | 'B'
+
+type LineState = {
+  id: LineId
+  lastEndSec: number
+  recentEmbedding: Float32Array | null
+  holdUntilSec: number
 }
 
-function applyAsrTimelineOffset(baseTimelineSec: number, offsetSec: number): number {
-  // 逻辑本身很轻量；问题可能不在此函数本身
-  return Math.max(0, baseTimelineSec + offsetSec)
+type LineAssignInput = {
+  startSec: number
+  endSec: number
+  text: string
+  speakerEmbedding: Float32Array | null
 }
 
-function pushChunkWithOffset(chunk: AudioChunk, offsetSec: number) {
-  // 每个 chunk 都会映射到 ASR timeline
-  // 若 offset 变化触发会话重建/队列抖动，可能出现额外 CPU 与延迟
-  const asrStart = applyAsrTimelineOffset(chunk.startSec, offsetSec)
-  const asrEnd = applyAsrTimelineOffset(chunk.endSec, offsetSec)
-  return pushSubtitleAudio({
-    chunk_start_sec: asrStart,
-    chunk_end_sec: asrEnd,
-    chunk_base64: encodeFloat32ToBase64(chunk.samples),
-  })
+function assignLine(input: LineAssignInput, lineA: LineState, lineB: LineState): LineId {
+  // continuity score
+  const contA = continuity(input.startSec, lineA.lastEndSec)
+  const contB = continuity(input.startSec, lineB.lastEndSec)
+
+  // similarity score
+  const simA = similarity(input.speakerEmbedding, lineA.recentEmbedding)
+  const simB = similarity(input.speakerEmbedding, lineB.recentEmbedding)
+
+  // combined score, with anti-collapse term
+  const scoreA = contA * 0.5 + simA * 0.5 - collapsePenalty(lineA, lineB)
+  const scoreB = contB * 0.5 + simB * 0.5 - collapsePenalty(lineB, lineA)
+
+  return scoreA >= scoreB ? 'A' : 'B'
+}
+
+function renderLines(window: Array<{ line: LineId; text: string }>): string {
+  const a = window.filter(x => x.line === 'A').map(x => x.text).join(' ').trim()
+  const b = window.filter(x => x.line === 'B').map(x => x.text).join(' ').trim()
+  return [a, b].filter(Boolean).join('\n')
 }
 ```
 
----
-
-## 5. 已知现象与待验证假设
-
-### 5.1 offset 高 CPU：待验证假设（Hypotheses）
-
-> 以下为“可能”，必须由日志与实验确认。
-
-1. offset 调整触发了会话 reset/restart，导致 VAD/ASR 状态重建频繁。  
-2. reset 后 queue 回压策略触发额外重试/压缩，带来计算与 IPC 放大。  
-3. timeline 对齐窗口变化导致 active cue 过滤与重绘频率上升。  
-4. Worker/Renderer 两侧同时做时间修正，产生重复工作但收益抵消。  
-5. offset 只平移时间轴，无法解决主要延迟来源（VAD 端点等待 + 证据窗确认）。
-
-### 5.2 两阶段不锁定 + 2s 延迟：待验证假设
-
-1. 证据窗阈值偏保守（count/duration）导致提交晚。  
-2. current profile 持续更新把边界样本“吸回”，降低切换判据对比度。  
-3. 候选分数与当前分数差值门限固定，未按段长/语速自适应。  
-4. VAD 分段偏长使 speaker 决策采样频率下降，天然增加感知延迟。
+说明：该方案目标是“可读分离”，不是“全局身份永远正确”。
 
 ---
 
-## 6. 评审数据包清单（提交前必须齐全）
+## 6. 短句召回：建议策略骨架（供专家评估）
 
-### 6.1 输入样本
+```ts
+const SHORT_INTERJECTION = new Set(['啊', '哈', '哈哈', '哎', '嗯', '哦', '诶'])
 
-- `testdata/speaker-scan/voice_03m13s_04m13s.wav`（必选）
-- 双人快切样本（建议新增，`pending`）
-- 背景噪声样本（建议新增，`pending`）
+function shouldKeepShort(seg: { durSec: number; text: string; conf: number }): boolean {
+  if (seg.durSec >= 0.18) return true
+  if (seg.text.length <= 2 && SHORT_INTERJECTION.has(seg.text)) return seg.conf >= 0.24
+  if (/^[\u4e00-\u9fa5]{1,2}[！!？?。.]?$/.test(seg.text)) return seg.conf >= 0.28
+  return false
+}
 
-### 6.2 日志字段（JSONL 建议）
-
-```yaml
-timestamp_ms:
-session_id:
-session_epoch:
-chunk_seq:
-playback_time_sec:
-asr_timeline_sec:
-offset_sec:
-
-queue_len:
-push_inflight:
-chunk_duration_sec:
-
-vad_segment_start_sec:
-vad_segment_end_sec:
-vad_segment_duration_sec:
-
-asr_decode_ms:
-asr_text_len:
-
-speaker_current_id:
-speaker_candidate_id:
-speaker_candidate_is_new:
-speaker_similarity_best:
-speaker_similarity_current:
-pending_count:
-pending_duration_sec:
-pending_score_avg:
-speaker_changed:
-
-cue_start_sec:
-cue_end_sec:
-cue_render_time_ms:
+function emitShortAware(seg, prevCue, nextCueHint) {
+  if (!shouldKeepShort(seg)) return null
+  return mergeNeighbor(seg, prevCue, nextCueHint, 0.30)
+}
 ```
 
-### 6.3 性能采样（至少 60s）
-
-- Renderer CPU（均值/P95）
-- Worker CPU（均值/P95）
-- 内存峰值
-- 事件计数：reset 次数、session 重建次数、chunk reject 次数
+建议专家给出：
+- 语气词白名单是否需要按语言分组；
+- 置信阈值如何随噪声动态调整；
+- 误检上限目标（例如 <= 3%）。
 
 ---
 
-## 7. 最小实验矩阵（专家必须跑完）
+## 7. 预生成 + 增量落盘：建议架构（供专家评估）
 
-| Case | 目标 | 配置 | 观测重点 | 状态 |
-|---|---|---|---|---|
-| O-1 | offset 基线 | offset=0 | CPU/延迟基线 | pending |
-| O-2 | offset 稳态 | offset=+0.5 固定 | 仅平移时是否增 CPU | pending |
-| O-3 | offset 动态 | 每 10s 调整一次 | 是否触发重建与抖动 | pending |
-| O-4 | offset 归因 | renderer-only vs worker-only | 开销来自哪一侧 | pending |
-| S-1 | 两阶段基线 | 当前实现 | 锁定率/延迟 | pending |
-| S-2 | 窗口缩短 | 降低 pending count/duration | 延迟是否下降且不抖动 | pending |
-| S-3 | 自适应门限 | 按段长/语速动态门限 | 锁定率是否提升 | pending |
-| S-4 | Profile 更新节流 | 非稳定段不更新 profile | 同号混人是否下降 | pending |
+### 7.1 核心目标
+
+1. 高速离线推理（RTF 目标 < 0.5，继续测试 3x/4x 极限）。
+2. 增量写入 SRT/JSON 索引。
+3. 播放端统一回偏移 1s。
+4. seek 回退直接命中已生成内容；超出已生成范围自动续算。
+
+### 7.2 结构与流程
+
+```ts
+type PreGenState = {
+  mediaId: string
+  generatedUntilSec: number
+  cues: SubtitleCueDto[]
+  srtPath: string
+  jsonlPath: string
+  lastFlushAtMs: number
+}
+
+async function preGenerate(mediaAudio, state: PreGenState) {
+  for await (const chunk of mediaAudio) {
+    const cues = await runVadAsrSpeaker(chunk) // 与实时链路同源
+    if (cues.length === 0) continue
+
+    appendCueIndex(state.cues, cues)
+    appendSrt(state.srtPath, cues)
+    appendJsonl(state.jsonlPath, cues)
+    state.generatedUntilSec = Math.max(state.generatedUntilSec, cues[cues.length - 1].end_sec)
+  }
+}
+
+function readForPlayback(currentSec: number, state: PreGenState): SubtitleCueDto[] {
+  const t = Math.max(0, currentSec - 1.0) // 回偏移 1s
+  if (t > state.generatedUntilSec - 2.0) {
+    triggerBackgroundGenerate(t)
+  }
+  return queryWindow(state.cues, t)
+}
+```
+
+### 7.3 必测指标
+
+- RTF：1x / 2x / 3x / 4x
+- 稳定输出率（无中断）
+- seek 命中率（回退直接可读）
+- 实时显示与最终文件一致性
 
 ---
 
-## 8. 期望专家输出格式（必须遵循）
+## 8. 专家必答清单（不可跳项）
+
+1. Simple 模式建议：删除 / 合并 / 保留，给理由与迁移方案。  
+2. 行级分离优先是否可落地，给状态机与参数。  
+3. 短句召回如何提升且不显著误检。  
+4. 预生成如何复用当前链路并达到 >=2x，3x/4x 上限怎么测。  
+5. 最终推荐路线（低改动优先）与分阶段计划。
+
+---
+
+## 9. 验收门禁（本轮）
+
+1. 长时间单号塌缩：基本不可见。  
+2. 换人后错号窗口：`<= 1` 句。  
+3. 短句/语气词召回：主观明显提升 + 有定量统计。  
+4. 预生成速度：稳定 `>= 2x`，并给出 `3x/4x` 极限结论。  
+5. seek：回退不堆积，前进超界可自动续生成。
+
+---
+
+## 10. 评审输出格式（固定）
 
 ```md
-## A. Root Cause（按证据强度排序）
-1. offset 高 CPU 根因：
-2. offset 无效根因：
-3. 两阶段不锁定根因：
+## 1. 决策
+- Simple 模式：
+- 行级分离优先：
+- 预生成路线：
 
-## B. 方案设计
-### B1. 低改动方案（参数/状态机）
+## 2. 方案 A（低改动）
 - 改动点：
-- 伪代码：
-- 预期：
+- 参数：
 - 风险：
+- 验证：
 
-### B2. 中改动方案（新增判据）
+## 3. 方案 B（中改动）
 - 改动点：
-- 伪代码：
-- 预期：
+- 参数：
 - 风险：
+- 验证：
 
-## C. 参数建议（给默认值）
-- VAD:
-- Speaker threshold:
-- pending window:
-- profile update:
+## 4. 预生成实现
+- 任务拆分：
+- 数据结构：
+- 并发/落盘：
+- seek 与偏移策略：
 
-## D. 验证结果
-- 指标表：
-- 对比图：
-- Go/No-Go:
+## 5. 最终推荐
+- Go/No-Go：
+- 里程碑：
 ```
-
----
-
-## 9. 代码定位（供专家直接入手）
-
-- Worker speaker 决策主逻辑：`electron/subtitles/asrWorker.ts`  
-- Renderer 推流与会话控制：`src/features/subtitles/useLiveSubtitles.ts`  
-- 评审计划总文档：`docs/offline-auto-subtitle-advanced-implementation-plan.md`
-
----
-
-## 10. 回填区（提交评审前）
-
-### 10.1 当前参数快照
-
-```yaml
-advanced:
-  vad_preset: pending
-  vad_threshold: pending
-  vad_min_silence_sec: pending
-  vad_min_speech_sec: pending
-  vad_max_speech_sec: pending
-
-speaker:
-  similarity_threshold: pending
-  max_speakers: 2
-  pending_count_confirm: pending
-  pending_duration_confirm_sec: pending
-  profile_update_alpha: pending
-```
-
-### 10.2 附件列表
-
-- [ ] 音频样本
-- [ ] JSONL 日志
-- [ ] CPU/内存统计
-- [ ] 人工标注（speaker 切换点）
-- [ ] 本模板回填完整版本

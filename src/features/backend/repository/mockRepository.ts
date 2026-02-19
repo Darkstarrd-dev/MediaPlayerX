@@ -65,6 +65,12 @@ import {
   type FlushSubtitleSessionResponseDto,
   type PushSubtitleAudioRequestDto,
   type PushSubtitleAudioResponseDto,
+  type StartSubtitlePersistenceRequestDto,
+  type StartSubtitlePersistenceResponseDto,
+  type AppendSubtitlePersistenceRequestDto,
+  type AppendSubtitlePersistenceResponseDto,
+  type ReadSubtitlePersistenceWindowRequestDto,
+  type ReadSubtitlePersistenceWindowResponseDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
   type StartManageAdReviewRequestDto,
@@ -959,6 +965,55 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
         session_epoch: request.session_epoch ?? 0,
         chunk_seq: request.chunk_seq ?? 0,
         queue_len: 0,
+        updated_at_ms: Date.now(),
+      },
+      options,
+    )
+  }
+
+  async startSubtitlePersistence(
+    request: StartSubtitlePersistenceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartSubtitlePersistenceResponseDto> {
+    void request
+    return resolveAsync(
+      {
+        enabled: Boolean(this.subtitleSessionState?.running),
+        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.srt' : null,
+        cue_count: 0,
+        updated_at_ms: Date.now(),
+      },
+      options,
+    )
+  }
+
+  async appendSubtitlePersistence(
+    request: AppendSubtitlePersistenceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<AppendSubtitlePersistenceResponseDto> {
+    void request
+    return resolveAsync(
+      {
+        accepted: Boolean(this.subtitleSessionState?.running),
+        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.srt' : null,
+        cue_count: 0,
+        updated_at_ms: Date.now(),
+      },
+      options,
+    )
+  }
+
+  async readSubtitlePersistenceWindow(
+    request: ReadSubtitlePersistenceWindowRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadSubtitlePersistenceWindowResponseDto> {
+    void request
+    return resolveAsync(
+      {
+        subtitle_path: this.subtitleSessionState?.running ? 'mock://subtitle.auto-live.srt' : null,
+        cues: [],
+        generated_start_sec: null,
+        generated_end_sec: null,
         updated_at_ms: Date.now(),
       },
       options,

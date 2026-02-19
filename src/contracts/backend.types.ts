@@ -433,6 +433,24 @@ export type PushSubtitleAudioRequestDto = Infer<
 export type PushSubtitleAudioResponseDto = Infer<
   typeof Backend.pushSubtitleAudioResponseSchema
 >;
+export type StartSubtitlePersistenceRequestDto = Infer<
+  typeof Backend.startSubtitlePersistenceRequestSchema
+>;
+export type StartSubtitlePersistenceResponseDto = Infer<
+  typeof Backend.startSubtitlePersistenceResponseSchema
+>;
+export type AppendSubtitlePersistenceRequestDto = Infer<
+  typeof Backend.appendSubtitlePersistenceRequestSchema
+>;
+export type AppendSubtitlePersistenceResponseDto = Infer<
+  typeof Backend.appendSubtitlePersistenceResponseSchema
+>;
+export type ReadSubtitlePersistenceWindowRequestDto = Infer<
+  typeof Backend.readSubtitlePersistenceWindowRequestSchema
+>;
+export type ReadSubtitlePersistenceWindowResponseDto = Infer<
+  typeof Backend.readSubtitlePersistenceWindowResponseSchema
+>;
 export type RuntimeCapabilityStatusDto = Infer<
   typeof Backend.runtimeCapabilityStatusSchema
 >;

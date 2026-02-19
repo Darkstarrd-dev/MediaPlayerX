@@ -41,6 +41,12 @@ import {
   flushSubtitleSessionResponseSchema,
   pushSubtitleAudioRequestSchema,
   pushSubtitleAudioResponseSchema,
+  startSubtitlePersistenceRequestSchema,
+  startSubtitlePersistenceResponseSchema,
+  appendSubtitlePersistenceRequestSchema,
+  appendSubtitlePersistenceResponseSchema,
+  readSubtitlePersistenceWindowRequestSchema,
+  readSubtitlePersistenceWindowResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -697,6 +703,42 @@ export function registerBackendIpcHandlers(): void {
         request,
       );
       return pushSubtitleAudioResponseSchema.parse(response);
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.startSubtitlePersistence,
+    async (event, payload: unknown) => {
+      const request = startSubtitlePersistenceRequestSchema.parse(payload);
+      const response = await subtitleSessionManager.startPersistence(
+        event.sender.id,
+        request,
+      );
+      return startSubtitlePersistenceResponseSchema.parse(response);
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.appendSubtitlePersistence,
+    async (event, payload: unknown) => {
+      const request = appendSubtitlePersistenceRequestSchema.parse(payload);
+      const response = await subtitleSessionManager.appendPersistence(
+        event.sender.id,
+        request,
+      );
+      return appendSubtitlePersistenceResponseSchema.parse(response);
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.readSubtitlePersistenceWindow,
+    async (event, payload: unknown) => {
+      const request = readSubtitlePersistenceWindowRequestSchema.parse(payload);
+      const response = await subtitleSessionManager.readPersistenceWindow(
+        event.sender.id,
+        request,
+      );
+      return readSubtitlePersistenceWindowResponseSchema.parse(response);
     },
   );
 

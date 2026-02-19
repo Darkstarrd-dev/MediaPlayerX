@@ -31,6 +31,12 @@ import type {
   FlushSubtitleSessionResponseDto,
   PushSubtitleAudioRequestDto,
   PushSubtitleAudioResponseDto,
+  StartSubtitlePersistenceRequestDto,
+  StartSubtitlePersistenceResponseDto,
+  AppendSubtitlePersistenceRequestDto,
+  AppendSubtitlePersistenceResponseDto,
+  ReadSubtitlePersistenceWindowRequestDto,
+  ReadSubtitlePersistenceWindowResponseDto,
   DeleteImageItemsRequestDto,
   DeleteImageItemsResponseDto,
   DeleteSidebarNodesRequestDto,
@@ -312,6 +318,18 @@ export interface MediaRepository {
     request: PushSubtitleAudioRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<PushSubtitleAudioResponseDto>
+  startSubtitlePersistence?(
+    request: StartSubtitlePersistenceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartSubtitlePersistenceResponseDto>
+  appendSubtitlePersistence?(
+    request: AppendSubtitlePersistenceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<AppendSubtitlePersistenceResponseDto>
+  readSubtitlePersistenceWindow?(
+    request: ReadSubtitlePersistenceWindowRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadSubtitlePersistenceWindowResponseDto>
   readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void

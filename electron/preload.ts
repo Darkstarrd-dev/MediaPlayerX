@@ -34,6 +34,12 @@ import {
   flushSubtitleSessionResponseSchema,
   pushSubtitleAudioRequestSchema,
   pushSubtitleAudioResponseSchema,
+  startSubtitlePersistenceRequestSchema,
+  startSubtitlePersistenceResponseSchema,
+  appendSubtitlePersistenceRequestSchema,
+  appendSubtitlePersistenceResponseSchema,
+  readSubtitlePersistenceWindowRequestSchema,
+  readSubtitlePersistenceWindowResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
@@ -380,6 +386,21 @@ const backendApi = {
     const parsed = pushSubtitleAudioRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.pushSubtitleAudio, parsed)
     return pushSubtitleAudioResponseSchema.parse(response)
+  },
+  startSubtitlePersistence: async (request: unknown) => {
+    const parsed = startSubtitlePersistenceRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.startSubtitlePersistence, parsed)
+    return startSubtitlePersistenceResponseSchema.parse(response)
+  },
+  appendSubtitlePersistence: async (request: unknown) => {
+    const parsed = appendSubtitlePersistenceRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.appendSubtitlePersistence, parsed)
+    return appendSubtitlePersistenceResponseSchema.parse(response)
+  },
+  readSubtitlePersistenceWindow: async (request: unknown) => {
+    const parsed = readSubtitlePersistenceWindowRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readSubtitlePersistenceWindow, parsed)
+    return readSubtitlePersistenceWindowResponseSchema.parse(response)
   },
   readRuntimeInfo: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeInfo)
