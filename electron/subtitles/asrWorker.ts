@@ -1230,6 +1230,8 @@ function consumeVadSegments(
   fallbackChunkEndSec: number,
 ): SubtitleCueDto[] {
   const cues: SubtitleCueDto[] = []
+  const timelineMin = Math.max(0, fallbackChunkStartSec - 0.45)
+  const timelineMax = Math.max(timelineMin + 0.2, fallbackChunkEndSec + 0.45)
 
   while (!vadDetector.isEmpty()) {
     const parsedSegment = parseVadSegment(vadDetector.front(false), sampleRateHz)
@@ -1243,12 +1245,48 @@ function consumeVadSegments(
       continue
     }
 
-    const segmentEndSec = Number.isFinite(parsedSegment.endSec)
+    const preferredEndSec = Number.isFinite(parsedSegment.endSec)
       ? Number(parsedSegment.endSec)
       : fallbackChunkEndSec
-    const segmentStartSec = Number.isFinite(parsedSegment.startSec)
+    const preferredStartSec = Number.isFinite(parsedSegment.startSec)
       ? Number(parsedSegment.startSec)
-      : Math.max(fallbackChunkStartSec, segmentEndSec - segmentDurationSec)
+      : Math.max(fallbackChunkStartSec, preferredEndSec - segmentDurationSec)
+
+    const vadWindowSpan = preferredEndSec - preferredStartSec
+    const hasOutlierTimestamp =
+      preferredStartSec < timelineMin ||
+      preferredStartSec > timelineMax ||
+      preferredEndSec < timelineMin ||
+      preferredEndSec > timelineMax ||
+      vadWindowSpan <= 0 ||
+      vadWindowSpan > 12
+
+    const segmentEndSec = hasOutlierTimestamp
+      ? fallbackChunkEndSec
+      : Math.max(timelineMin, Math.min(timelineMax, preferredEndSec))
+    const segmentStartSecRaw = hasOutlierTimestamp
+      ? Math.max(fallbackChunkStartSec, segmentEndSec - segmentDurationSec)
+      : Math.max(
+          timelineMin,
+          Math.min(
+            segmentEndSec - 0.05,
+            Math.max(preferredStartSec, segmentEndSec - Math.max(segmentDurationSec, 0.1)),
+          ),
+        )
+    const segmentStartSec = Math.min(segmentStartSecRaw, Math.max(0, segmentEndSec - 0.05))
+
+    if (hasOutlierTimestamp) {
+      emitWorkerDebug('vad_timestamp_fallback', {
+        session_id: currentSession.sessionId,
+        session_epoch: currentSession.sessionEpoch,
+        raw_start_sec: Number(preferredStartSec.toFixed(3)),
+        raw_end_sec: Number(preferredEndSec.toFixed(3)),
+        fallback_start_sec: Number(segmentStartSec.toFixed(3)),
+        fallback_end_sec: Number(segmentEndSec.toFixed(3)),
+        chunk_start_sec: Number(fallbackChunkStartSec.toFixed(3)),
+        chunk_end_sec: Number(fallbackChunkEndSec.toFixed(3)),
+      })
+    }
 
     cues.push(
       ...decodeSegmentAndBuildCue(

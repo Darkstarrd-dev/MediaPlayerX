@@ -1140,12 +1140,19 @@ export const startSubtitlePersistenceResponseSchema = z.object({
 
 export const appendSubtitlePersistenceRequestSchema = z.object({
   cues: z.array(subtitleCueSchema),
+  session_epoch: z.number().int().min(0).default(0),
+  chunk_seq: z.number().int().min(0).default(0),
+  batch_start_sec: z.number().min(0).nullable().default(null),
+  batch_end_sec: z.number().min(0).nullable().default(null),
 });
 
 export const appendSubtitlePersistenceResponseSchema = z.object({
   accepted: z.boolean(),
   subtitle_path: z.string().min(1).nullable(),
   cue_count: z.number().int().min(0).default(0),
+  accepted_cue_count: z.number().int().min(0).default(0),
+  skipped_inner_cue_count: z.number().int().min(0).default(0),
+  replaced_cue_count: z.number().int().min(0).default(0),
   updated_at_ms: z.number().int().positive(),
 });
 
@@ -1156,9 +1163,17 @@ export const readSubtitlePersistenceWindowRequestSchema = z.object({
   limit: z.number().int().min(1).max(200).default(24),
 });
 
+export const subtitleGeneratedRangeSchema = z.object({
+  start_sec: z.number().min(0),
+  end_sec: z.number().min(0),
+});
+
 export const readSubtitlePersistenceWindowResponseSchema = z.object({
   subtitle_path: z.string().min(1).nullable(),
   cues: z.array(subtitleCueSchema),
+  generated_ranges: z.array(subtitleGeneratedRangeSchema),
+  timeline_in_generated_range: z.boolean().default(false),
+  timeline_has_cue: z.boolean().default(false),
   generated_start_sec: z.number().min(0).nullable(),
   generated_end_sec: z.number().min(0).nullable(),
   updated_at_ms: z.number().int().positive(),

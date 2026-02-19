@@ -932,6 +932,62 @@ Status: in_progress
 - 验证：`bun run build:electron`、`bun run build` 通过。
 - 说明：默认仍优先写入视频同目录 `*.auto-live.srt`；仅在目录权限/路径异常时触发临时目录回退。
 
+### 2026-02-19  Phase G 第六轮（实现混合覆盖策略 + 时间轴稳健化）
+
+- 针对“中段起播/seek 回跳/回写覆盖”一致性问题，完成两类核心改造：
+  1. **写盘策略改造（按你要求的 2+3 混合规则）**
+     - `appendSubtitlePersistence` 新增 `session_epoch/chunk_seq/batch_start_sec/batch_end_sec` 元数据；
+     - 主进程持久化层引入水位线（epoch/seq）拒绝旧批次；
+     - 覆盖规则：
+       - 新批次完全落在已生成区间内部 -> 保留旧字幕（跳过新批次）；
+       - 新批次切入已生成区间边界 -> 允许覆盖重叠区；
+       - 区间外新内容 -> 直接追加；
+     - 写盘改为 `tmp -> rename` 原子替换，降低半写风险。
+  2. **Worker 时间轴稳健化**
+     - VAD 分段时间戳增加异常检测（超出 chunk 窗口、跨度异常、反向区间）；
+     - 异常时回退到 chunk 时间窗推导，新增 `vad_timestamp_fallback` 调试事件。
+- Renderer 同步：
+  - 持久化队列改为 batch 级（携带 epoch/seq 与 batch 时间窗），`beginNewEpoch` 时清空写盘队列避免旧批次串写。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+- 影响：
+  - 解决“seek 后旧批次覆盖新时间域”与“完全内含重算覆盖已生成字幕”的主要风险；
+  - 为后续 `missing_ranges` 驱动补生（G4 完整闭环）奠定基础。
+
+### 2026-02-19  Phase G 第七轮（seek 命中已写字幕时停止重生成）
+
+- 针对“seek 到已有内容仍会改写”继续加固：
+  1. `readSubtitlePersistenceWindow` 返回 `generated_ranges`、`timeline_in_generated_range`、`timeline_has_cue`；
+  2. Renderer 新增“回放已持久化字幕优先”模式：
+     - seek 后先强制读取持久化窗口；
+     - 若命中 `timeline_has_cue=true`，暂停 ASR 推送，仅按持久化字幕播放显示；
+     - 仅当时间点不在已写 cue 上时，恢复生成；
+  3. 持久化读取增加轻量轮询节流（回放模式高频、生成模式低频），用于在边界处自动切换“生成/只读回放”。
+- 行为结果（对齐你的规则）：
+  - 跳到已写字幕中间，不再重生成、不再切后半句；
+  - 从前方推进到已写区边界，允许一次边界覆盖后，进入已写 cue 区域即停生成；
+  - 已写区内的空隙不强制冻结，可继续补生成。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+
+### 2026-02-19  Phase G 第八轮（跨会话保留与路径策略修正）
+
+- 处理你反馈的 2/3/4：
+  1. **切换节点再切回会重置**：`startSubtitlePersistence` 改为默认不清空，启动时回读现有 `.auto-live.srt` 并恢复内存索引；
+  2. **重启 app 后会重置**：同样通过回读 SRT 恢复，避免新会话覆盖旧内容；
+  3. **落盘跑到临时目录**：移除自动 fallback 到 `auto-subtitles`，改为只写视频同目录 sidecar，目录不可写时直接报错。
+- Renderer 同步改动：启动持久化时 `reset_existing=false`，并在启动点先做一次强制窗口回读，命中则直接进入“只读回放”模式。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+
+### 2026-02-19  Phase G 第九轮（修复 Windows 根路径 EPERM）
+
+- 问题：`backend:startSubtitlePersistence` 在路径为盘符根或无效视频路径时触发 `EPERM: mkdir 'X:\\'`。
+- 修复：
+  1. 新增 `resolvePersistableVideoPath`，过滤空路径/盘符根路径等不可持久化输入；
+  2. 新增 `ensureParentDirectory`，若目标目录即根目录则跳过 `mkdir`；
+  3. `startPersistence` 改为内部兜底返回 `enabled=false`，不再抛异常中断前端流程；
+  4. 保持“只写视频同目录”策略，不再回退临时目录。
+- 影响：避免节点切换或异常路径导致弹窗报错，并防止持久化链路整体失效。
+- 验证：`bun run build:electron`、`bun run build` 通过。
+
 
 ---
 

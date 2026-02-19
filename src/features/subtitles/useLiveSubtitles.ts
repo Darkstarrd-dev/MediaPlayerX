@@ -129,6 +129,39 @@ interface UseLiveSubtitlesParams {
   repository: MediaRepository
 }
 
+interface PersistenceBatchPayload {
+  cues: SubtitleCueDto[]
+  sessionEpoch: number
+  chunkSeq: number
+  batchStartSec: number | null
+  batchEndSec: number | null
+}
+
+interface GeneratedRangeDto {
+  start_sec: number
+  end_sec: number
+}
+
+function hasCueAtTimeline(cues: SubtitleCueDto[], timelineSec: number): boolean {
+  for (let index = 0; index < cues.length; index += 1) {
+    const cue = cues[index]
+    if (cue.start_sec - 0.01 <= timelineSec && cue.end_sec + 0.12 >= timelineSec) {
+      return true
+    }
+  }
+  return false
+}
+
+function isTimelineInRanges(ranges: GeneratedRangeDto[], timelineSec: number): boolean {
+  for (let index = 0; index < ranges.length; index += 1) {
+    const range = ranges[index]
+    if (range.start_sec - 0.01 <= timelineSec && range.end_sec + 0.01 >= timelineSec) {
+      return true
+    }
+  }
+  return false
+}
+
 function encodeFloat32ToBase64(samples: Float32Array): string {
   const bytes = new Uint8Array(samples.buffer, samples.byteOffset, samples.byteLength)
   let binary = ''
@@ -310,8 +343,14 @@ export function useLiveSubtitles({
   const pushAbortCountRef = useRef(0)
   const subtitleOffsetSecRef = useRef(0)
   const subtitlePersistenceEnabledRef = useRef(false)
-  const persistenceQueueRef = useRef<SubtitleCueDto[]>([])
+  const persistenceQueueRef = useRef<PersistenceBatchPayload[]>([])
   const persistenceInFlightRef = useRef(false)
+  const replayFromPersistenceRef = useRef(false)
+  const persistenceWindowCuesRef = useRef<SubtitleCueDto[]>([])
+  const persistenceGeneratedRangesRef = useRef<GeneratedRangeDto[]>([])
+  const persistenceReadInFlightRef = useRef(false)
+  const persistenceLastReadAtMsRef = useRef(0)
+  const persistenceLastReadTimelineSecRef = useRef(-1)
 
   useEffect(() => {
     cleanupRef.current = null
@@ -377,6 +416,12 @@ export function useLiveSubtitles({
       subtitlePersistenceEnabledRef.current = false
       persistenceQueueRef.current = []
       persistenceInFlightRef.current = false
+      replayFromPersistenceRef.current = false
+      persistenceWindowCuesRef.current = []
+      persistenceGeneratedRangesRef.current = []
+      persistenceReadInFlightRef.current = false
+      persistenceLastReadAtMsRef.current = 0
+      persistenceLastReadTimelineSecRef.current = -1
       sessionEpochRef.current = 0
       chunkSeqRef.current = 0
       lastAppliedSeqRef.current = -1
@@ -404,12 +449,73 @@ export function useLiveSubtitles({
       const droppedQueueLen = pushQueueRef.current.length
       pushQueueRef.current = []
       pushAbortRef.current = null
+      persistenceQueueRef.current = []
+      replayFromPersistenceRef.current = false
       emitSubtitleDebug('renderer_epoch_begin', {
         reason,
         session_epoch: sessionEpochRef.current,
         dropped_queue_len: droppedQueueLen,
         push_abort_count: pushAbortCountRef.current,
       })
+    }
+
+    const syncPersistenceWindow = async (
+      timelineSec: number,
+      options?: { hydrateCues?: boolean; force?: boolean },
+    ): Promise<{ timelineHasCue: boolean; timelineInGeneratedRange: boolean }> => {
+      if (!subtitlePersistenceEnabledRef.current || !readSubtitlePersistenceWindow) {
+        return { timelineHasCue: false, timelineInGeneratedRange: false }
+      }
+
+      const now = performance.now()
+      const force = options?.force === true
+      const hydrateCues = options?.hydrateCues === true
+      const minIntervalMs = replayFromPersistenceRef.current ? 180 : 750
+      if (
+        !force
+        && now - persistenceLastReadAtMsRef.current < minIntervalMs
+        && Math.abs(timelineSec - persistenceLastReadTimelineSecRef.current) < 1.2
+      ) {
+        const timelineHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
+        const timelineInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
+        return { timelineHasCue, timelineInGeneratedRange }
+      }
+      if (persistenceReadInFlightRef.current && !force) {
+        const timelineHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
+        const timelineInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
+        return { timelineHasCue, timelineInGeneratedRange }
+      }
+
+      persistenceReadInFlightRef.current = true
+      persistenceLastReadAtMsRef.current = now
+      persistenceLastReadTimelineSecRef.current = timelineSec
+      try {
+        const response = await readSubtitlePersistenceWindow({
+          timeline_sec: timelineSec,
+          backtrack_sec: 1,
+          lookahead_sec: 3,
+          limit: 30,
+        })
+        persistenceWindowCuesRef.current = response.cues
+        persistenceGeneratedRangesRef.current = response.generated_ranges
+        if (!cancelled && hydrateCues) {
+          setCues(response.cues)
+        }
+        return {
+          timelineHasCue: response.timeline_has_cue,
+          timelineInGeneratedRange: response.timeline_in_generated_range,
+        }
+      } catch {
+        if (!cancelled && hydrateCues) {
+          setCues([])
+        }
+        return {
+          timelineHasCue: false,
+          timelineInGeneratedRange: false,
+        }
+      } finally {
+        persistenceReadInFlightRef.current = false
+      }
     }
 
     const drainPushQueue = async () => {
@@ -485,7 +591,13 @@ export function useLiveSubtitles({
 
         if (!cancelled) {
           setCues((previous) => appendCues(previous, response.cues))
-          enqueuePersistenceCues(response.cues)
+          enqueuePersistenceCues(
+            response.cues,
+            response.session_epoch,
+            response.chunk_seq,
+            nextChunk.startSec,
+            nextChunk.endSec,
+          )
         }
       } catch (error) {
         if (!cancelled && !isAbortLikeError(error)) {
@@ -515,9 +627,17 @@ export function useLiveSubtitles({
 
       persistenceInFlightRef.current = true
       try {
-        const cues = persistenceQueueRef.current
+        const batches = persistenceQueueRef.current
         persistenceQueueRef.current = []
-        await appendSubtitlePersistence({ cues })
+        for (const batch of batches) {
+          await appendSubtitlePersistence({
+            cues: batch.cues,
+            session_epoch: batch.sessionEpoch,
+            chunk_seq: batch.chunkSeq,
+            batch_start_sec: batch.batchStartSec,
+            batch_end_sec: batch.batchEndSec,
+          })
+        }
       } catch {
         // ignore subtitle persistence failures during playback
       } finally {
@@ -528,17 +648,37 @@ export function useLiveSubtitles({
       }
     }
 
-    const enqueuePersistenceCues = (nextCues: SubtitleCueDto[]) => {
+    const enqueuePersistenceCues = (
+      nextCues: SubtitleCueDto[],
+      sessionEpoch: number,
+      chunkSeq: number,
+      batchStartSec: number | null,
+      batchEndSec: number | null,
+    ) => {
       if (!subtitlePersistenceEnabledRef.current || nextCues.length === 0) {
         return
       }
-      persistenceQueueRef.current.push(...nextCues)
+      persistenceQueueRef.current.push({
+        cues: nextCues,
+        sessionEpoch,
+        chunkSeq,
+        batchStartSec,
+        batchEndSec,
+      })
       void drainPersistenceQueue()
     }
 
     const handleCuesAndEvents = (response: { cues: SubtitleCueDto[]; events: FlushSubtitleSessionResponseDto['events'] }) => {
       setCues((previous) => appendCues(previous, response.cues))
-      enqueuePersistenceCues(response.cues)
+      const startSec = response.cues.length > 0 ? response.cues[0].start_sec : null
+      const endSec = response.cues.length > 0 ? response.cues[response.cues.length - 1].end_sec : null
+      enqueuePersistenceCues(
+        response.cues,
+        sessionEpochRef.current,
+        Math.max(0, lastAppliedSeqRef.current),
+        startSec,
+        endSec,
+      )
       const displayMessage = pickDisplayEventMessage(response.events)
       if (displayMessage) {
         setMessage(displayMessage)
@@ -586,14 +726,28 @@ export function useLiveSubtitles({
 
         subtitlePersistenceEnabledRef.current = false
         persistenceQueueRef.current = []
+        replayFromPersistenceRef.current = false
+        persistenceWindowCuesRef.current = []
+        persistenceGeneratedRangesRef.current = []
+        persistenceLastReadAtMsRef.current = 0
+        persistenceLastReadTimelineSecRef.current = -1
         if (startSubtitlePersistence && videoPath && videoPath.trim() !== '') {
           try {
             const persistenceResponse = await startSubtitlePersistence({
               video_path: videoPath,
               language: language.trim() || 'auto',
-              reset_existing: true,
+              reset_existing: false,
             })
             subtitlePersistenceEnabledRef.current = persistenceResponse.enabled
+            if (persistenceResponse.enabled) {
+              const timelineSec = Math.max(0, videoElement.currentTime || 0)
+              replayFromPersistenceRef.current = true
+              const persistedState = await syncPersistenceWindow(timelineSec, {
+                hydrateCues: true,
+                force: true,
+              })
+              replayFromPersistenceRef.current = persistedState.timelineHasCue
+            }
           } catch (error) {
             subtitlePersistenceEnabledRef.current = false
             if (!cancelled && !isAbortLikeError(error)) {
@@ -606,6 +760,39 @@ export function useLiveSubtitles({
           if (!sessionRunningRef.current || cancelled || videoElement.paused || videoElement.ended) {
             return
           }
+
+          const timelineSec = Math.max(0, chunk.endSec)
+          const cachedHasCue = hasCueAtTimeline(persistenceWindowCuesRef.current, timelineSec)
+          if (cachedHasCue) {
+            replayFromPersistenceRef.current = true
+          }
+
+          if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
+            const cachedInGeneratedRange = isTimelineInRanges(persistenceGeneratedRangesRef.current, timelineSec)
+            const shouldRefreshPersistence =
+              replayFromPersistenceRef.current
+              || cachedInGeneratedRange
+              || Math.abs(timelineSec - persistenceLastReadTimelineSecRef.current) >= 2
+            if (shouldRefreshPersistence) {
+              void syncPersistenceWindow(timelineSec, {
+                hydrateCues: replayFromPersistenceRef.current || cachedHasCue,
+                force: replayFromPersistenceRef.current || cachedInGeneratedRange,
+              }).then((result) => {
+                if (cancelled) {
+                  return
+                }
+                replayFromPersistenceRef.current = result.timelineHasCue
+              })
+            }
+          }
+
+          if (replayFromPersistenceRef.current) {
+            emitSubtitleDebug('renderer_skip_generation_for_persisted_cue', {
+              timeline_sec: Number(timelineSec.toFixed(3)),
+            })
+            return
+          }
+
           const highWaterMark = renderMode === 'advanced' ? 14 : 24
           if (pushQueueRef.current.length > highWaterMark) {
             const queueLenBeforeCompaction = pushQueueRef.current.length
@@ -651,23 +838,21 @@ export function useLiveSubtitles({
           beginNewEpoch('seeked')
           const timelineSec = Math.max(0, videoElement.currentTime || 0)
           if (subtitlePersistenceEnabledRef.current && readSubtitlePersistenceWindow) {
-            void readSubtitlePersistenceWindow({
-              timeline_sec: timelineSec,
-              backtrack_sec: 1,
-              lookahead_sec: 3,
-              limit: 24,
-            })
-              .then((response) => {
+            replayFromPersistenceRef.current = true
+            void syncPersistenceWindow(timelineSec, { hydrateCues: true, force: true })
+              .then((result) => {
                 if (!cancelled) {
-                  setCues(response.cues)
+                  replayFromPersistenceRef.current = result.timelineHasCue
                 }
               })
               .catch(() => {
                 if (!cancelled) {
+                  replayFromPersistenceRef.current = false
                   setCues([])
                 }
               })
           } else {
+            replayFromPersistenceRef.current = false
             setCues([])
           }
 
@@ -744,6 +929,12 @@ export function useLiveSubtitles({
           subtitlePersistenceEnabledRef.current = false
           persistenceQueueRef.current = []
           persistenceInFlightRef.current = false
+          replayFromPersistenceRef.current = false
+          persistenceWindowCuesRef.current = []
+          persistenceGeneratedRangesRef.current = []
+          persistenceReadInFlightRef.current = false
+          persistenceLastReadAtMsRef.current = 0
+          persistenceLastReadTimelineSecRef.current = -1
           await stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
         }
       } catch (error) {
@@ -763,6 +954,12 @@ export function useLiveSubtitles({
         subtitlePersistenceEnabledRef.current = false
         persistenceQueueRef.current = []
         persistenceInFlightRef.current = false
+        replayFromPersistenceRef.current = false
+        persistenceWindowCuesRef.current = []
+        persistenceGeneratedRangesRef.current = []
+        persistenceReadInFlightRef.current = false
+        persistenceLastReadAtMsRef.current = 0
+        persistenceLastReadTimelineSecRef.current = -1
         capture.detach()
       }
     }
@@ -786,6 +983,12 @@ export function useLiveSubtitles({
         subtitlePersistenceEnabledRef.current = false
         persistenceQueueRef.current = []
         persistenceInFlightRef.current = false
+        replayFromPersistenceRef.current = false
+        persistenceWindowCuesRef.current = []
+        persistenceGeneratedRangesRef.current = []
+        persistenceReadInFlightRef.current = false
+        persistenceLastReadAtMsRef.current = 0
+        persistenceLastReadTimelineSecRef.current = -1
         void stopSubtitleSession({ reason: 'renderer-dispose' }).catch(() => undefined)
       }
     }

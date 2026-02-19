@@ -1,6 +1,5 @@
 import { existsSync } from 'node:fs'
 import { promises as fs } from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { Worker } from 'node:worker_threads'
 
@@ -61,7 +60,8 @@ interface SubtitleSessionState {
 interface SubtitlePersistenceState {
   subtitlePath: string
   cues: SubtitleCueRecord[]
-  cueById: Map<string, SubtitleCueRecord>
+  lastAppliedEpoch: number
+  lastAppliedChunkSeq: number
 }
 
 interface SubtitleCueRecord {
@@ -74,6 +74,11 @@ interface SubtitleCueRecord {
   line?: 'A' | 'B'
   speaker_changed?: boolean
   speaker_similarity?: number
+}
+
+interface CueRange {
+  startSec: number
+  endSec: number
 }
 
 function nowMs(): number {
@@ -115,10 +120,102 @@ function resolveAutoSubtitlePath(videoPath: string): string {
   return path.join(videoDir, `${stem}.auto-live.srt`)
 }
 
-function resolveFallbackSubtitlePath(videoPath: string): string {
-  const stem = path.basename(videoPath, path.extname(videoPath))
-  const hash = Buffer.from(path.resolve(videoPath)).toString('base64url').slice(0, 12)
-  return path.join(os.tmpdir(), 'MediaPlayerX', 'auto-subtitles', `${stem}.${hash}.auto-live.srt`)
+function normalizePathForCompare(inputPath: string): string {
+  return path.resolve(inputPath).replace(/[\\/]+$/, '').toLowerCase()
+}
+
+function resolvePersistableVideoPath(rawPath: string): string | null {
+  const trimmed = rawPath.trim()
+  if (!trimmed) {
+    return null
+  }
+  const resolved = path.resolve(trimmed)
+  const parsed = path.parse(resolved)
+  const normalizedResolved = normalizePathForCompare(resolved)
+  const normalizedRoot = normalizePathForCompare(parsed.root)
+  if (!parsed.base || normalizedResolved === normalizedRoot) {
+    return null
+  }
+  return resolved
+}
+
+async function ensureParentDirectory(filePath: string): Promise<void> {
+  const parentDir = path.dirname(filePath)
+  const parsed = path.parse(parentDir)
+  const normalizedParent = normalizePathForCompare(parentDir)
+  const normalizedRoot = normalizePathForCompare(parsed.root)
+  if (normalizedParent === normalizedRoot) {
+    return
+  }
+  await fs.mkdir(parentDir, { recursive: true })
+}
+
+function parseSrtTimestamp(timestamp: string): number {
+  const match = timestamp.trim().match(/^(\d+):(\d+):(\d+)[,.](\d{1,3})$/)
+  if (!match) {
+    return Number.NaN
+  }
+  const hour = Number(match[1])
+  const minute = Number(match[2])
+  const second = Number(match[3])
+  const ms = Number(match[4].padEnd(3, '0'))
+  if (![hour, minute, second, ms].every((value) => Number.isFinite(value))) {
+    return Number.NaN
+  }
+  return hour * 3600 + minute * 60 + second + ms / 1000
+}
+
+function parseSrtText(rawText: string): SubtitleCueRecord[] {
+  const normalized = rawText.replace(/\r\n/g, '\n').trim()
+  if (!normalized) {
+    return []
+  }
+
+  const blocks = normalized
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter((block) => block.length > 0)
+
+  const cues: SubtitleCueRecord[] = []
+  let seed = 0
+  for (const block of blocks) {
+    const lines = block
+      .split('\n')
+      .map((line) => line.trimEnd())
+      .filter((line) => line.length > 0)
+    if (lines.length < 2) {
+      continue
+    }
+
+    const timingIndex = lines[0].includes('-->') ? 0 : 1
+    const timingLine = lines[timingIndex]
+    if (!timingLine || !timingLine.includes('-->')) {
+      continue
+    }
+    const [startRaw, endRaw] = timingLine.split('-->').map((value) => value.trim())
+    const startSec = parseSrtTimestamp(startRaw)
+    const endSec = parseSrtTimestamp(endRaw)
+    if (!Number.isFinite(startSec) || !Number.isFinite(endSec)) {
+      continue
+    }
+
+    const textLines = lines.slice(timingIndex + 1)
+    const text = textLines.join('\n').trim()
+    if (!text) {
+      continue
+    }
+
+    seed += 1
+    cues.push({
+      id: `persisted:${Math.round(startSec * 1000)}:${Math.round(endSec * 1000)}:${seed}`,
+      start_sec: Math.max(0, startSec),
+      end_sec: Math.max(startSec + 0.12, endSec),
+      text,
+      lang: null,
+    })
+  }
+
+  return dedupeCuesByTimeAndText(cues)
 }
 
 function toCueRecord(cue: AppendSubtitlePersistenceRequestDto['cues'][number]): SubtitleCueRecord {
@@ -133,6 +230,52 @@ function toCueRecord(cue: AppendSubtitlePersistenceRequestDto['cues'][number]): 
     speaker_changed: cue.speaker_changed,
     speaker_similarity: cue.speaker_similarity,
   }
+}
+
+function cueOverlapsRange(cue: SubtitleCueRecord, rangeStartSec: number, rangeEndSec: number): boolean {
+  return cue.end_sec + 0.001 >= rangeStartSec && cue.start_sec <= rangeEndSec + 0.001
+}
+
+function mergeCueRanges(cues: SubtitleCueRecord[], maxGapSec = 0.35): CueRange[] {
+  if (cues.length === 0) {
+    return []
+  }
+  const ordered = [...cues].sort((left, right) => left.start_sec - right.start_sec)
+  const ranges: CueRange[] = []
+  for (const cue of ordered) {
+    const startSec = Math.max(0, cue.start_sec)
+    const endSec = Math.max(startSec, cue.end_sec)
+    const previous = ranges[ranges.length - 1]
+    if (!previous) {
+      ranges.push({ startSec, endSec })
+      continue
+    }
+    if (startSec <= previous.endSec + maxGapSec) {
+      previous.endSec = Math.max(previous.endSec, endSec)
+    } else {
+      ranges.push({ startSec, endSec })
+    }
+  }
+  return ranges
+}
+
+function isCueAtTimeline(cue: SubtitleCueRecord, timelineSec: number): boolean {
+  return cue.start_sec - 0.01 <= timelineSec && cue.end_sec + 0.12 >= timelineSec
+}
+
+function toCueDedupKey(cue: SubtitleCueRecord): string {
+  const startMs = Math.round(Math.max(0, cue.start_sec) * 1000)
+  const endMs = Math.round(Math.max(cue.start_sec, cue.end_sec) * 1000)
+  const normalizedText = cue.text.replace(/\s+/g, ' ').trim()
+  return `${startMs}|${endMs}|${normalizedText}`
+}
+
+function dedupeCuesByTimeAndText(cues: SubtitleCueRecord[]): SubtitleCueRecord[] {
+  const byKey = new Map<string, SubtitleCueRecord>()
+  for (const cue of cues) {
+    byKey.set(toCueDedupKey(cue), cue)
+  }
+  return Array.from(byKey.values()).sort((left, right) => left.start_sec - right.start_sec)
 }
 
 class SubtitleWorkerClient {
@@ -334,38 +477,61 @@ export class SubtitleSessionManager {
       })
     }
 
-    const resolvedVideoPath = path.resolve(request.video_path)
-    let subtitlePath = resolveAutoSubtitlePath(resolvedVideoPath)
-    try {
-      await fs.mkdir(path.dirname(subtitlePath), { recursive: true })
-      if (request.reset_existing) {
-        await fs.writeFile(subtitlePath, '', 'utf8')
-      }
-    } catch (primaryError) {
-      subtitlePath = resolveFallbackSubtitlePath(resolvedVideoPath)
-      await fs.mkdir(path.dirname(subtitlePath), { recursive: true })
-      if (request.reset_existing) {
-        await fs.writeFile(subtitlePath, '', 'utf8')
-      }
-      console.warn('[subtitle] start persistence fallback path used', {
-        requested_video_path: request.video_path,
-        subtitle_path: subtitlePath,
-        reason: primaryError instanceof Error ? primaryError.message : String(primaryError),
+    const resolvedVideoPath = resolvePersistableVideoPath(request.video_path)
+    if (!resolvedVideoPath) {
+      return startSubtitlePersistenceResponseSchema.parse({
+        enabled: false,
+        subtitle_path: null,
+        cue_count: 0,
+        updated_at_ms: nowMs(),
       })
     }
 
-    session.persistence = {
-      subtitlePath,
-      cues: [],
-      cueById: new Map<string, SubtitleCueRecord>(),
-    }
+    const subtitlePath = resolveAutoSubtitlePath(resolvedVideoPath)
+    try {
+      await ensureParentDirectory(subtitlePath)
 
-    return startSubtitlePersistenceResponseSchema.parse({
-      enabled: true,
-      subtitle_path: subtitlePath,
-      cue_count: 0,
-      updated_at_ms: nowMs(),
-    })
+      let initialCues: SubtitleCueRecord[] = []
+      if (request.reset_existing) {
+        await fs.writeFile(subtitlePath, '', 'utf8')
+      } else {
+        const existingText = await fs.readFile(subtitlePath, 'utf8').catch((error: unknown) => {
+          if ((error as { code?: string })?.code === 'ENOENT') {
+            return ''
+          }
+          throw error
+        })
+        if (existingText && existingText.trim()) {
+          initialCues = parseSrtText(existingText)
+        }
+      }
+
+      session.persistence = {
+        subtitlePath,
+        cues: initialCues,
+        lastAppliedEpoch: -1,
+        lastAppliedChunkSeq: -1,
+      }
+
+      return startSubtitlePersistenceResponseSchema.parse({
+        enabled: true,
+        subtitle_path: subtitlePath,
+        cue_count: initialCues.length,
+        updated_at_ms: nowMs(),
+      })
+    } catch (error) {
+      console.warn('[subtitle] start persistence disabled', {
+        video_path: request.video_path,
+        subtitle_path: subtitlePath,
+        reason: error instanceof Error ? error.message : String(error),
+      })
+      return startSubtitlePersistenceResponseSchema.parse({
+        enabled: false,
+        subtitle_path: null,
+        cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
+    }
   }
 
   async appendPersistence(
@@ -379,37 +545,110 @@ export class SubtitleSessionManager {
         accepted: false,
         subtitle_path: null,
         cue_count: 0,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: 0,
+        replaced_cue_count: 0,
         updated_at_ms: nowMs(),
       })
     }
 
-    let changed = false
-    for (const cue of request.cues) {
-      const nextCue = toCueRecord(cue)
-      const previous = persistence.cueById.get(nextCue.id)
-      if (
-        previous &&
-        previous.start_sec === nextCue.start_sec &&
-        previous.end_sec === nextCue.end_sec &&
-        previous.text === nextCue.text
-      ) {
-        continue
-      }
-      persistence.cueById.set(nextCue.id, nextCue)
-      changed = true
+    if (request.session_epoch < persistence.lastAppliedEpoch) {
+      return appendSubtitlePersistenceResponseSchema.parse({
+        accepted: false,
+        subtitle_path: persistence.subtitlePath,
+        cue_count: persistence.cues.length,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: 0,
+        replaced_cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
     }
 
-    if (changed) {
-      persistence.cues = Array.from(persistence.cueById.values()).sort(
-        (left, right) => left.start_sec - right.start_sec,
-      )
-      await fs.writeFile(persistence.subtitlePath, cuesToSrtText(persistence.cues), 'utf8')
+    if (
+      request.session_epoch === persistence.lastAppliedEpoch
+      && request.chunk_seq <= persistence.lastAppliedChunkSeq
+    ) {
+      return appendSubtitlePersistenceResponseSchema.parse({
+        accepted: false,
+        subtitle_path: persistence.subtitlePath,
+        cue_count: persistence.cues.length,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: 0,
+        replaced_cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
     }
+
+    const incomingCues = request.cues
+      .map((cue) => toCueRecord(cue))
+      .filter((cue) => cue.text.trim().length > 0)
+      .map((cue) => ({
+        ...cue,
+        start_sec: Math.max(0, cue.start_sec),
+        end_sec: Math.max(cue.start_sec + 0.12, cue.end_sec),
+      }))
+      .sort((left, right) => left.start_sec - right.start_sec)
+
+    if (incomingCues.length === 0) {
+      persistence.lastAppliedEpoch = request.session_epoch
+      persistence.lastAppliedChunkSeq = request.chunk_seq
+      return appendSubtitlePersistenceResponseSchema.parse({
+        accepted: true,
+        subtitle_path: persistence.subtitlePath,
+        cue_count: persistence.cues.length,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: 0,
+        replaced_cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
+    }
+
+    const batchStartSec = request.batch_start_sec ?? incomingCues[0].start_sec
+    const batchEndSec = request.batch_end_sec ?? incomingCues[incomingCues.length - 1].end_sec
+    const rangeStartSec = Math.max(0, Math.min(batchStartSec, batchEndSec))
+    const rangeEndSec = Math.max(rangeStartSec, Math.max(batchStartSec, batchEndSec))
+    const boundaryEpsSec = 0.25
+
+    const existingRanges = mergeCueRanges(persistence.cues)
+    const containingRange = existingRanges.find((range) => {
+      return rangeStartSec >= range.startSec + boundaryEpsSec && rangeEndSec <= range.endSec - boundaryEpsSec
+    })
+
+    if (containingRange) {
+      persistence.lastAppliedEpoch = request.session_epoch
+      persistence.lastAppliedChunkSeq = request.chunk_seq
+      return appendSubtitlePersistenceResponseSchema.parse({
+        accepted: true,
+        subtitle_path: persistence.subtitlePath,
+        cue_count: persistence.cues.length,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: incomingCues.length,
+        replaced_cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
+    }
+
+    const replacedCueCount = persistence.cues.filter((cue) => cueOverlapsRange(cue, rangeStartSec, rangeEndSec)).length
+    const remainingCues = persistence.cues.filter((cue) => !cueOverlapsRange(cue, rangeStartSec, rangeEndSec))
+    const mergedCues = dedupeCuesByTimeAndText([...remainingCues, ...incomingCues])
+
+    persistence.cues = mergedCues
+    persistence.lastAppliedEpoch = request.session_epoch
+    persistence.lastAppliedChunkSeq = request.chunk_seq
+
+    const nextSrt = cuesToSrtText(persistence.cues)
+    const tempPath = `${persistence.subtitlePath}.tmp`
+    await fs.writeFile(tempPath, nextSrt, 'utf8')
+    await fs.unlink(persistence.subtitlePath).catch(() => undefined)
+    await fs.rename(tempPath, persistence.subtitlePath)
 
     return appendSubtitlePersistenceResponseSchema.parse({
       accepted: true,
       subtitle_path: persistence.subtitlePath,
       cue_count: persistence.cues.length,
+      accepted_cue_count: incomingCues.length,
+      skipped_inner_cue_count: 0,
+      replaced_cue_count: replacedCueCount,
       updated_at_ms: nowMs(),
     })
   }
@@ -424,6 +663,9 @@ export class SubtitleSessionManager {
       return readSubtitlePersistenceWindowResponseSchema.parse({
         subtitle_path: persistence?.subtitlePath ?? null,
         cues: [],
+        generated_ranges: [],
+        timeline_in_generated_range: false,
+        timeline_has_cue: false,
         generated_start_sec: null,
         generated_end_sec: null,
         updated_at_ms: nowMs(),
@@ -432,6 +674,11 @@ export class SubtitleSessionManager {
 
     const rangeStart = Math.max(0, request.timeline_sec - request.backtrack_sec)
     const rangeEnd = request.timeline_sec + request.lookahead_sec
+    const generatedRanges = mergeCueRanges(persistence.cues)
+    const timelineInGeneratedRange = generatedRanges.some((range) => {
+      return range.startSec - 0.01 <= request.timeline_sec && range.endSec + 0.01 >= request.timeline_sec
+    })
+    const timelineHasCue = persistence.cues.some((cue) => isCueAtTimeline(cue, request.timeline_sec))
     const matched = persistence.cues
       .filter((cue) => cue.end_sec + 0.001 >= rangeStart && cue.start_sec <= rangeEnd + 0.001)
       .slice(-request.limit)
@@ -439,6 +686,12 @@ export class SubtitleSessionManager {
     return readSubtitlePersistenceWindowResponseSchema.parse({
       subtitle_path: persistence.subtitlePath,
       cues: matched,
+      generated_ranges: generatedRanges.map((range) => ({
+        start_sec: range.startSec,
+        end_sec: range.endSec,
+      })),
+      timeline_in_generated_range: timelineInGeneratedRange,
+      timeline_has_cue: timelineHasCue,
       generated_start_sec: persistence.cues[0]?.start_sec ?? null,
       generated_end_sec: persistence.cues[persistence.cues.length - 1]?.end_sec ?? null,
       updated_at_ms: nowMs(),
