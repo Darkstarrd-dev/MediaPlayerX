@@ -1147,6 +1147,8 @@ export const appendSubtitlePersistenceRequestSchema = z.object({
   batch_end_sec: z.number().min(0).nullable().default(null),
   playback_rate: z.number().min(0.1).max(10).optional().default(1.0),
   enforce_valid_range_guard: z.boolean().optional().default(false),
+  allow_first_overlap_replace_once: z.boolean().optional().default(false),
+  seek_anchor_sec: z.number().min(0).nullable().optional().default(null),
   current_valid_range: z.object({
     start_sec: z.number().min(0),
     end_sec: z.number().min(0),

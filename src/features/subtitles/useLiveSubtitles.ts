@@ -137,6 +137,8 @@ interface PersistenceBatchPayload {
   batchEndSec: number | null
   playbackRate: number
   enforceValidRangeGuard: boolean
+  allowFirstOverlapReplaceOnce: boolean
+  seekAnchorSec: number | null
   currentValidRange: GeneratedRangeDto | null
 }
 
@@ -560,6 +562,8 @@ export function useLiveSubtitles({
   const persistenceInFlightRef = useRef(false)
   const replayFromPersistenceRef = useRef(false)
   const replayForceUntilSecRef = useRef<number | null>(null)
+  const pendingFirstOverlapReplaceRef = useRef(false)
+  const firstOverlapReplaceSeekAnchorSecRef = useRef<number | null>(null)
   const persistenceWindowCuesRef = useRef<SubtitleCueDto[]>([])
   const persistenceWindowRawCuesRef = useRef<SubtitleCueDto[]>([])
   const persistenceGeneratedRangesRef = useRef<GeneratedRangeDto[]>([])
@@ -639,6 +643,8 @@ export function useLiveSubtitles({
       persistenceInFlightRef.current = false
       replayFromPersistenceRef.current = false
       replayForceUntilSecRef.current = null
+      pendingFirstOverlapReplaceRef.current = false
+      firstOverlapReplaceSeekAnchorSecRef.current = null
       persistenceWindowCuesRef.current = []
       persistenceWindowRawCuesRef.current = []
       persistenceGeneratedRangesRef.current = []
@@ -679,6 +685,8 @@ export function useLiveSubtitles({
       persistenceQueueRef.current = []
       replayFromPersistenceRef.current = false
       replayForceUntilSecRef.current = null
+      pendingFirstOverlapReplaceRef.current = false
+      firstOverlapReplaceSeekAnchorSecRef.current = null
       replayLockRangeRef.current = null
       highRateReplayHintShownRef.current = false
       skipCaptureChunksRef.current = 0
@@ -938,6 +946,8 @@ export function useLiveSubtitles({
             batch_end_sec: batch.batchEndSec,
             playback_rate: batch.playbackRate,
             enforce_valid_range_guard: batch.enforceValidRangeGuard,
+            allow_first_overlap_replace_once: batch.allowFirstOverlapReplaceOnce,
+            seek_anchor_sec: batch.seekAnchorSec,
             current_valid_range: batch.currentValidRange,
           })
         }
@@ -969,6 +979,14 @@ export function useLiveSubtitles({
           }
         : null
       const enforceValidRangeGuard = replayFromPersistenceRef.current || seekingInProgressRef.current
+      let allowFirstOverlapReplaceOnce = false
+      let seekAnchorSec: number | null = null
+      if (nextCues.length > 0 && pendingFirstOverlapReplaceRef.current) {
+        allowFirstOverlapReplaceOnce = true
+        seekAnchorSec = firstOverlapReplaceSeekAnchorSecRef.current
+        pendingFirstOverlapReplaceRef.current = false
+        firstOverlapReplaceSeekAnchorSecRef.current = null
+      }
       persistenceQueueRef.current.push({
         cues: nextCues,
         sessionEpoch,
@@ -977,6 +995,8 @@ export function useLiveSubtitles({
         batchEndSec,
         playbackRate,
         enforceValidRangeGuard,
+        allowFirstOverlapReplaceOnce,
+        seekAnchorSec,
         currentValidRange,
       })
       void drainPersistenceQueue()
@@ -1047,6 +1067,8 @@ export function useLiveSubtitles({
         persistenceQueueRef.current = []
         replayFromPersistenceRef.current = false
         replayForceUntilSecRef.current = null
+        pendingFirstOverlapReplaceRef.current = false
+        firstOverlapReplaceSeekAnchorSecRef.current = null
         replayLockRangeRef.current = null
         highRateReplayHintShownRef.current = false
         currentValidRangeRef.current = null
@@ -1298,6 +1320,10 @@ export function useLiveSubtitles({
               const shouldReplayFromPersistence = persistedState.timelineInGeneratedRange && persistedState.timelineHasCueNear
               replayFromPersistenceRef.current = shouldReplayFromPersistence
               replayLockRangeRef.current = shouldReplayFromPersistence ? persistedState.activeRange : null
+              pendingFirstOverlapReplaceRef.current = persistedState.timelineInGeneratedRange
+              firstOverlapReplaceSeekAnchorSecRef.current = persistedState.timelineInGeneratedRange
+                ? Number(timelineSec.toFixed(3))
+                : null
               const firstRawCueStartSec = persistenceWindowRawCuesRef.current[0]?.start_sec ?? null
               if (
                 persistedState.timelineInGeneratedRange
@@ -1318,6 +1344,8 @@ export function useLiveSubtitles({
             } else {
               replayFromPersistenceRef.current = false
               replayForceUntilSecRef.current = null
+              pendingFirstOverlapReplaceRef.current = false
+              firstOverlapReplaceSeekAnchorSecRef.current = null
               replayLockRangeRef.current = null
             }
 
@@ -1329,6 +1357,8 @@ export function useLiveSubtitles({
             if (!cancelled) {
               replayFromPersistenceRef.current = false
               replayForceUntilSecRef.current = null
+              pendingFirstOverlapReplaceRef.current = false
+              firstOverlapReplaceSeekAnchorSecRef.current = null
               replayLockRangeRef.current = null
               seekingInProgressRef.current = false
               if (!videoElement.paused) {
@@ -1423,6 +1453,8 @@ export function useLiveSubtitles({
           persistenceInFlightRef.current = false
           replayFromPersistenceRef.current = false
           replayForceUntilSecRef.current = null
+          pendingFirstOverlapReplaceRef.current = false
+          firstOverlapReplaceSeekAnchorSecRef.current = null
           replayLockRangeRef.current = null
           highRateReplayHintShownRef.current = false
           skipCaptureChunksRef.current = 0
@@ -1454,6 +1486,8 @@ export function useLiveSubtitles({
         persistenceInFlightRef.current = false
         replayFromPersistenceRef.current = false
         replayForceUntilSecRef.current = null
+        pendingFirstOverlapReplaceRef.current = false
+        firstOverlapReplaceSeekAnchorSecRef.current = null
         replayLockRangeRef.current = null
         highRateReplayHintShownRef.current = false
         skipCaptureChunksRef.current = 0
@@ -1489,6 +1523,8 @@ export function useLiveSubtitles({
         persistenceInFlightRef.current = false
         replayFromPersistenceRef.current = false
         replayForceUntilSecRef.current = null
+        pendingFirstOverlapReplaceRef.current = false
+        firstOverlapReplaceSeekAnchorSecRef.current = null
         replayLockRangeRef.current = null
         highRateReplayHintShownRef.current = false
         skipCaptureChunksRef.current = 0

@@ -1255,6 +1255,40 @@ Status: in_progress
      - 保留“无重叠可补洞”能力。
 - 目标：在保留补洞能力前提下，彻底阻断片首已存在 cue 被覆盖。
 
+### 2026-02-20  Phase G 第二十四轮（重叠替换策略改为“每条新 cue 仅删除首条重叠旧 cue”）
+
+- 用户确认的替换规则落地：
+  - 新 cue 与旧 cue 重叠时，不再按整段范围清空重叠旧 cue；
+  - 改为“每条新 cue 最多删除 1 条（第一条命中的）旧 cue”。
+- 本轮实现：
+  1. 在 `appendPersistence` 中按 `validatedCues` 顺序遍历；
+  2. 对每条新 cue 在现有 `persistence.cues` 中查找第一条未被移除且时间重叠的旧 cue，并标记移除；
+  3. 最终仅移除被标记的旧 cue，再与 `validatedCues` 合并去重写盘。
+- 结果：
+  - 替换粒度更细，避免 batch 范围替换造成过度删除；
+  - 与“允许补洞但不覆盖已有有效内容”的目标一致。
+
+### 2026-02-20  Phase G 第二十五轮（seekback 后一次性放行“首条重叠替换”）
+
+- 用户新增策略：
+  - 在已确认“seekback 不会把后段语义带回前段”前提下，seek 后即使位于 `ValidRanges`，允许**首条生成结果**在有重叠时执行替换；
+  - 仅限一次，后续恢复既有防覆写逻辑。
+- 本轮实现：
+  1. append 协议扩展：
+     - `allow_first_overlap_replace_once: boolean`（默认 `false`）
+     - `seek_anchor_sec: number | null`（默认 `null`）
+  2. Renderer 状态机：
+     - seek 命中已生成区间后，设置一次性 pending 标志与 `seek_anchor_sec`；
+     - 第一批非空 cue 入持久化队列时携带该标志并立即消费；
+     - 后续批次不再携带，自动恢复正常防覆写。
+  3. Main 写盘策略：
+     - 当一次性标志生效且 batch 位于 `seek_anchor_sec ±2s` 且确有重叠时，放行本次重叠替换；
+     - 同时跳过对应的 `ValidRanges` 拒写与 `containingRange` 拒写；
+     - 其余场景仍按原策略拒绝覆盖。
+- 预期结果：
+  - seek 后首条可用于修正重叠旧句；
+  - 第二条起恢复“ValidRanges 内不覆写”的稳定策略。
+
 
 ---
 

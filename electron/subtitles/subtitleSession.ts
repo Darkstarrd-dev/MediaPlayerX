@@ -967,25 +967,20 @@ export class SubtitleSessionManager {
     const batchEndSec = request.batch_end_sec ?? incomingCues[incomingCues.length - 1].end_sec
     const rangeStartSec = Math.max(0, Math.min(batchStartSec, batchEndSec))
     const rangeEndSec = Math.max(rangeStartSec, Math.max(batchStartSec, batchEndSec))
-    
+    const seekAnchorSec = request.seek_anchor_sec
+    const hasSeekAnchor = typeof seekAnchorSec === 'number' && Number.isFinite(seekAnchorSec)
+    const seekAnchorToleranceSec = 2.0
+    const allowFirstOverlapReplaceForBatch =
+      request.allow_first_overlap_replace_once === true
+      && hasSeekAnchor
+      && rangeEndSec + 0.001 >= Number(seekAnchorSec) - seekAnchorToleranceSec
+      && rangeStartSec <= Number(seekAnchorSec) + seekAnchorToleranceSec
+
     // 合规区间判定仅用于 seek/replay 防重场景；正常连续播放不应阻断写盘
     const shouldEnforceValidRangeGuard = request.enforce_valid_range_guard === true
     const isInValidRange = shouldEnforceValidRangeGuard
       ? isBatchInValidRanges(rangeStartSec, rangeEndSec, persistence.validRanges)
       : false
-    if (isInValidRange) {
-      persistence.lastAppliedEpoch = request.session_epoch
-      persistence.lastAppliedChunkSeq = request.chunk_seq
-      return appendSubtitlePersistenceResponseSchema.parse({
-        accepted: false,
-        subtitle_path: persistence.subtitlePath,
-        cue_count: persistence.cues.length,
-        accepted_cue_count: 0,
-        skipped_inner_cue_count: incomingCues.length,
-        replaced_cue_count: 0,
-        updated_at_ms: nowMs(),
-      })
-    }
     
     // 时间戳验证：拒绝明显异常的时间戳
     const timestampTolerance = 2.0
@@ -1017,8 +1012,24 @@ export class SubtitleSessionManager {
     const overlapsPersistedCueInBatch = validatedCues.some((incomingCue) => {
       return persistence.cues.some((existingCue) => cueOverlapsRange(existingCue, incomingCue.start_sec, incomingCue.end_sec))
     })
+    const allowFirstOverlapReplaceForOverlaps = allowFirstOverlapReplaceForBatch && overlapsPersistedCueInBatch
+
+    if (isInValidRange && !allowFirstOverlapReplaceForOverlaps) {
+      persistence.lastAppliedEpoch = request.session_epoch
+      persistence.lastAppliedChunkSeq = request.chunk_seq
+      return appendSubtitlePersistenceResponseSchema.parse({
+        accepted: false,
+        subtitle_path: persistence.subtitlePath,
+        cue_count: persistence.cues.length,
+        accepted_cue_count: 0,
+        skipped_inner_cue_count: validatedCues.length,
+        replaced_cue_count: 0,
+        updated_at_ms: nowMs(),
+      })
+    }
+
     // 允许在 ValidRanges 内补洞，但不允许覆盖已存在的持久化 cue。
-    if (batchInValidRange && overlapsPersistedCueInBatch) {
+    if (batchInValidRange && overlapsPersistedCueInBatch && !allowFirstOverlapReplaceForOverlaps) {
       persistence.lastAppliedEpoch = request.session_epoch
       persistence.lastAppliedChunkSeq = request.chunk_seq
       return appendSubtitlePersistenceResponseSchema.parse({
@@ -1039,7 +1050,7 @@ export class SubtitleSessionManager {
       return rangeStartSec >= range.startSec + boundaryEpsSec && rangeEndSec <= range.endSec - boundaryEpsSec
     })
 
-    if (containingRange) {
+    if (containingRange && !allowFirstOverlapReplaceForOverlaps) {
       persistence.lastAppliedEpoch = request.session_epoch
       persistence.lastAppliedChunkSeq = request.chunk_seq
       return appendSubtitlePersistenceResponseSchema.parse({
@@ -1053,8 +1064,23 @@ export class SubtitleSessionManager {
       })
     }
 
-    const replacedCueCount = persistence.cues.filter((cue) => cueOverlapsRange(cue, rangeStartSec, rangeEndSec)).length
-    const remainingCues = persistence.cues.filter((cue) => !cueOverlapsRange(cue, rangeStartSec, rangeEndSec))
+    const removedExistingIndexes = new Set<number>()
+    for (const incomingCue of validatedCues) {
+      for (let index = 0; index < persistence.cues.length; index += 1) {
+        if (removedExistingIndexes.has(index)) {
+          continue
+        }
+        const existingCue = persistence.cues[index]
+        if (!cueOverlapsRange(existingCue, incomingCue.start_sec, incomingCue.end_sec)) {
+          continue
+        }
+        removedExistingIndexes.add(index)
+        break
+      }
+    }
+
+    const replacedCueCount = removedExistingIndexes.size
+    const remainingCues = persistence.cues.filter((_, index) => !removedExistingIndexes.has(index))
     const mergedCues = dedupeCuesByTimeAndText([...remainingCues, ...validatedCues])
 
     persistence.cues = mergedCues
