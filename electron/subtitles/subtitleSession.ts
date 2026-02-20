@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { promises as fs } from 'node:fs'
+import { fork, type ChildProcess } from 'node:child_process'
 import path from 'node:path'
 import { Worker } from 'node:worker_threads'
 
@@ -582,6 +583,88 @@ function dedupeCuesByTimeAndText(cues: SubtitleCueRecord[]): SubtitleCueRecord[]
   return deduped
 }
 
+interface SubtitleWorkerTransport {
+  on(event: 'message', listener: (message: unknown) => void): this
+  on(event: 'error', listener: (error: Error) => void): this
+  on(event: 'exit', listener: (code: number | null) => void): this
+  postMessage(payload: unknown): void
+  terminate(): Promise<void>
+}
+
+class WorkerThreadSubtitleTransport implements SubtitleWorkerTransport {
+  constructor(private readonly worker: Worker) {}
+
+  on(event: 'message' | 'error' | 'exit', listener: (payload: unknown) => void): this {
+    this.worker.on(event, listener)
+    return this
+  }
+
+  postMessage(payload: unknown): void {
+    this.worker.postMessage(payload)
+  }
+
+  async terminate(): Promise<void> {
+    await this.worker.terminate()
+  }
+}
+
+class ChildProcessSubtitleTransport implements SubtitleWorkerTransport {
+  private exited = false
+
+  constructor(private readonly child: ChildProcess) {
+    this.child.once('exit', () => {
+      this.exited = true
+    })
+  }
+
+  on(event: 'message' | 'error' | 'exit', listener: (payload: unknown) => void): this {
+    this.child.on(event, listener as (...args: unknown[]) => void)
+    return this
+  }
+
+  postMessage(payload: unknown): void {
+    if (!this.child.connected) {
+      throw new Error('subtitle_asr_process_ipc_disconnected')
+    }
+    this.child.send(payload)
+  }
+
+  async terminate(): Promise<void> {
+    if (this.exited) {
+      return
+    }
+
+    await new Promise<void>((resolve) => {
+      let settled = false
+
+      const finish = () => {
+        if (settled) {
+          return
+        }
+        settled = true
+        clearTimeout(timeout)
+        resolve()
+      }
+
+      const timeout = setTimeout(() => {
+        finish()
+      }, 2_000)
+      timeout.unref?.()
+
+      this.child.once('exit', () => {
+        finish()
+      })
+
+      if (this.child.killed) {
+        finish()
+        return
+      }
+
+      this.child.kill('SIGKILL')
+    })
+  }
+}
+
 class SubtitleWorkerClient {
   private requestSeed = 0
 
@@ -594,7 +677,7 @@ class SubtitleWorkerClient {
     }
   >()
 
-  constructor(private readonly worker: Worker) {
+  constructor(private readonly worker: SubtitleWorkerTransport) {
     this.worker.on('message', (message: unknown) => {
       this.handleMessage(message)
     })
@@ -712,7 +795,7 @@ export class SubtitleSessionManager {
     }
 
     const workerPath = this.resolveWorkerScriptPath()
-    const workerClient = new SubtitleWorkerClient(new Worker(workerPath))
+    const workerClient = new SubtitleWorkerClient(this.createWorkerTransport(workerPath))
 
     try {
       const payload = await workerClient.request(
@@ -1257,5 +1340,19 @@ export class SubtitleSessionManager {
     }
 
     throw new Error('subtitle_asr_worker_not_found')
+  }
+
+  private createWorkerTransport(workerPath: string): SubtitleWorkerTransport {
+    const preferProcessTransport =
+      process.env.MEDIA_PLAYERX_SUBTITLE_WORKER_TRANSPORT?.trim().toLowerCase() !== 'thread'
+
+    if (preferProcessTransport) {
+      const child = fork(workerPath, [], {
+        stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+      })
+      return new ChildProcessSubtitleTransport(child)
+    }
+
+    return new WorkerThreadSubtitleTransport(new Worker(workerPath))
   }
 }

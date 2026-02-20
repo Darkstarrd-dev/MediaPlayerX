@@ -413,11 +413,25 @@ function resolveSpeakerThreshold(payload: InitRequestPayload): number {
   return payload.advanced_options?.speaker?.similarity_threshold ?? 0.5;
 }
 
-function ensureParentPort(): asserts parentPort is NonNullable<
-  typeof parentPort
-> {
-  if (!parentPort) {
-    throw new Error("subtitle_asr_worker_missing_parent_port");
+function bindIncomingMessageChannel(
+  handler: (message: unknown) => void,
+): void {
+  if (parentPort) {
+    parentPort.on("message", handler);
+    return;
+  }
+
+  process.on("message", handler);
+}
+
+function postOutgoingMessage(payload: unknown): void {
+  if (parentPort) {
+    parentPort.postMessage(payload);
+    return;
+  }
+
+  if (typeof process.send === "function") {
+    process.send(payload);
   }
 }
 
@@ -2497,9 +2511,7 @@ async function handleRequest(
   }
 }
 
-ensureParentPort();
-
-parentPort.on("message", (message: unknown) => {
+bindIncomingMessageChannel((message: unknown) => {
   if (!message || typeof message !== "object") {
     return;
   }
@@ -2515,7 +2527,7 @@ parentPort.on("message", (message: unknown) => {
 
   void handleRequest(request.command as SubtitleWorkerCommand, request.payload)
     .then((payload) => {
-      parentPort.postMessage({
+      postOutgoingMessage({
         kind: "response",
         request_id: request.request_id,
         ok: true,
@@ -2525,7 +2537,7 @@ parentPort.on("message", (message: unknown) => {
     .catch((error: unknown) => {
       const messageText =
         error instanceof Error && error.message ? error.message : String(error);
-      parentPort.postMessage({
+      postOutgoingMessage({
         kind: "response",
         request_id: request.request_id,
         ok: false,
