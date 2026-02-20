@@ -18,21 +18,11 @@ import {
   type SubtitleSessionEventDto,
   type SubtitleSessionProviderDto,
 } from "../../src/contracts/backend";
-
-type SubtitleWorkerCommand =
-  | "init"
-  | "stop"
-  | "reset"
-  | "flush"
-  | "push-audio"
-  | "transcribe-all";
-
-interface SubtitleWorkerRequest {
-  kind: "request";
-  request_id: string;
-  command: SubtitleWorkerCommand;
-  payload: unknown;
-}
+import {
+  SUBTITLE_WORKER_HEARTBEAT_INTERVAL_MS,
+  type SubtitleWorkerCommand,
+  type SubtitleWorkerIncomingEnvelope,
+} from "./subtitleWorkerProtocol";
 
 interface InitRequestPayload extends StartSubtitleSessionRequestDto {
   engine_module_root: string;
@@ -433,6 +423,18 @@ function postOutgoingMessage(payload: unknown): void {
   if (typeof process.send === "function") {
     process.send(payload);
   }
+}
+
+function startHeartbeat(): void {
+  const timer = setInterval(() => {
+    postOutgoingMessage({
+      kind: "heartbeat",
+      worker_pid: process.pid,
+      at_ms: Date.now(),
+    });
+  }, SUBTITLE_WORKER_HEARTBEAT_INTERVAL_MS);
+
+  timer.unref?.();
 }
 
 function ensureSession(): RuntimeSessionState {
@@ -2511,12 +2513,14 @@ async function handleRequest(
   }
 }
 
+startHeartbeat();
+
 bindIncomingMessageChannel((message: unknown) => {
   if (!message || typeof message !== "object") {
     return;
   }
 
-  const request = message as Partial<SubtitleWorkerRequest>;
+  const request = message as Partial<SubtitleWorkerIncomingEnvelope>;
   if (
     request.kind !== "request" ||
     typeof request.request_id !== "string" ||

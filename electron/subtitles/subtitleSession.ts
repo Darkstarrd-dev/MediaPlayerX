@@ -33,29 +33,25 @@ import {
   type SubtitleSessionProviderDto,
 } from '../../src/contracts/backend'
 import { probeSubtitleEngineStatus } from './subtitleEngineProbe'
-
-type SubtitleWorkerCommand = 'init' | 'stop' | 'reset' | 'flush' | 'push-audio'
-
-interface SubtitleWorkerRequest {
-  kind: 'request'
-  request_id: string
-  command: SubtitleWorkerCommand
-  payload: unknown
-}
-
-interface SubtitleWorkerResponse {
-  kind: 'response'
-  request_id: string
-  ok: boolean
-  payload?: unknown
-  error?: string
-}
+import {
+  SUBTITLE_WORKER_HEARTBEAT_TIMEOUT_MS,
+  type SubtitleWorkerCommand,
+  type SubtitleWorkerRequestEnvelope,
+  type SubtitleWorkerResponseEnvelope,
+} from './subtitleWorkerProtocol'
 
 interface SubtitleSessionState {
   sessionId: string
   provider: SubtitleSessionProviderDto
   workerClient: SubtitleWorkerClient
   persistence: SubtitlePersistenceState | null
+  initPayload: {
+    request: StartSubtitleSessionRequestDto
+    engineModuleRoot: string
+    availableProviders: Array<'cpu' | 'directml'>
+  }
+  heartbeatMonitorTimer: ReturnType<typeof setInterval> | null
+  restartPromise: Promise<void> | null
 }
 
 interface SubtitleSessionManagerOptions {
@@ -672,6 +668,8 @@ class ChildProcessSubtitleTransport implements SubtitleWorkerTransport {
 class SubtitleWorkerClient {
   private requestSeed = 0
 
+  private lastHeartbeatAtMs = Date.now()
+
   private readonly pending = new Map<
     string,
     {
@@ -697,9 +695,13 @@ class SubtitleWorkerClient {
     })
   }
 
+  readHeartbeatAgeMs(now = Date.now()): number {
+    return Math.max(0, now - this.lastHeartbeatAtMs)
+  }
+
   async request(command: SubtitleWorkerCommand, payload: unknown, timeoutMs = 15_000): Promise<unknown> {
     const requestId = `subtitle-worker-${Date.now()}-${this.requestSeed++}`
-    const requestPayload: SubtitleWorkerRequest = {
+    const requestPayload: SubtitleWorkerRequestEnvelope = {
       kind: 'request',
       request_id: requestId,
       command,
@@ -738,7 +740,17 @@ class SubtitleWorkerClient {
       return
     }
 
-    const message = rawMessage as Partial<SubtitleWorkerResponse>
+    const heartbeatMessage = rawMessage as { kind?: string; at_ms?: unknown }
+    if (heartbeatMessage.kind === 'heartbeat') {
+      const atMs =
+        typeof heartbeatMessage.at_ms === 'number' && Number.isFinite(heartbeatMessage.at_ms)
+          ? heartbeatMessage.at_ms
+          : Date.now()
+      this.lastHeartbeatAtMs = atMs
+      return
+    }
+
+    const message = rawMessage as Partial<SubtitleWorkerResponseEnvelope>
     if (message.kind !== 'response' || typeof message.request_id !== 'string') {
       return
     }
@@ -796,6 +808,121 @@ export class SubtitleSessionManager {
     return await this.options.runWithGpuToken(`subtitle-${command}`, requestTask)
   }
 
+  private isRecoverableWorkerError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error)
+    return (
+      message.startsWith('subtitle_asr_worker_timeout:') ||
+      message.startsWith('subtitle_asr_worker_exit_') ||
+      message === 'subtitle_asr_process_ipc_disconnected' ||
+      message === 'subtitle_asr_worker_terminated'
+    )
+  }
+
+  private clearHeartbeatMonitor(session: SubtitleSessionState): void {
+    if (!session.heartbeatMonitorTimer) {
+      return
+    }
+    clearInterval(session.heartbeatMonitorTimer)
+    session.heartbeatMonitorTimer = null
+  }
+
+  private startHeartbeatMonitor(webContentsId: number, session: SubtitleSessionState): void {
+    this.clearHeartbeatMonitor(session)
+    const timer = setInterval(() => {
+      const current = this.sessions.get(webContentsId)
+      if (!current || current !== session) {
+        this.clearHeartbeatMonitor(session)
+        return
+      }
+
+      if (current.restartPromise) {
+        return
+      }
+
+      const heartbeatAgeMs = current.workerClient.readHeartbeatAgeMs()
+      if (heartbeatAgeMs <= SUBTITLE_WORKER_HEARTBEAT_TIMEOUT_MS) {
+        return
+      }
+
+      current.restartPromise = this.restartSessionWorker(webContentsId, current, 'heartbeat-timeout').finally(() => {
+        current.restartPromise = null
+      })
+    }, Math.max(1_000, Math.floor(SUBTITLE_WORKER_HEARTBEAT_TIMEOUT_MS / 2)))
+    timer.unref?.()
+    session.heartbeatMonitorTimer = timer
+  }
+
+  private async restartSessionWorker(
+    webContentsId: number,
+    session: SubtitleSessionState,
+    reason: 'heartbeat-timeout' | 'request-failed',
+  ): Promise<void> {
+    const activeSession = this.sessions.get(webContentsId)
+    if (!activeSession || activeSession !== session) {
+      return
+    }
+
+    const workerPath = this.resolveWorkerScriptPath()
+    const nextWorkerClient = new SubtitleWorkerClient(this.createWorkerTransport(workerPath))
+
+    try {
+      const payload = await this.requestWithGpuQuota(
+        nextWorkerClient,
+        'init',
+        {
+          ...session.initPayload.request,
+          engine_module_root: session.initPayload.engineModuleRoot,
+          available_providers: session.initPayload.availableProviders,
+        },
+        20_000,
+      )
+      const response = startSubtitleSessionResponseSchema.parse(payload)
+
+      const previousWorkerClient = session.workerClient
+      session.workerClient = nextWorkerClient
+      session.sessionId = response.session_id
+      session.provider = response.provider
+      await previousWorkerClient.terminate().catch(() => undefined)
+      this.startHeartbeatMonitor(webContentsId, session)
+      console.warn('[subtitle] worker restarted', {
+        webContentsId,
+        reason,
+      })
+    } catch (error) {
+      await nextWorkerClient.terminate().catch(() => undefined)
+      throw error
+    }
+  }
+
+  private async requestSessionWorker(
+    webContentsId: number,
+    session: SubtitleSessionState,
+    command: SubtitleWorkerCommand,
+    payload: unknown,
+    timeoutMs?: number,
+  ): Promise<unknown> {
+    if (session.restartPromise) {
+      await session.restartPromise
+    }
+
+    try {
+      return await this.requestWithGpuQuota(session.workerClient, command, payload, timeoutMs)
+    } catch (error) {
+      if (!this.isRecoverableWorkerError(error)) {
+        throw error
+      }
+
+      if (!session.restartPromise) {
+        session.restartPromise = this.restartSessionWorker(webContentsId, session, 'request-failed').finally(() => {
+          session.restartPromise = null
+        })
+      }
+
+      await session.restartPromise
+      return await this.requestWithGpuQuota(session.workerClient, command, payload, timeoutMs)
+    }
+  }
+
   bindWebContents(webContents: WebContents): void {
     if (this.webContentsBound.has(webContents.id)) {
       return
@@ -823,26 +950,36 @@ export class SubtitleSessionManager {
 
     const workerPath = this.resolveWorkerScriptPath()
     const workerClient = new SubtitleWorkerClient(this.createWorkerTransport(workerPath))
+    const initPayload = {
+      ...request,
+      engine_module_root: engineStatus.moduleRoot,
+      available_providers: engineStatus.availableProviders,
+    }
 
     try {
       const payload = await this.requestWithGpuQuota(
         workerClient,
         'init',
-        {
-          ...request,
-          engine_module_root: engineStatus.moduleRoot,
-          available_providers: engineStatus.availableProviders,
-        },
+        initPayload,
         20_000,
       )
 
       const response = startSubtitleSessionResponseSchema.parse(payload)
-      this.sessions.set(webContentsId, {
+      const session: SubtitleSessionState = {
         sessionId: response.session_id,
         provider: response.provider,
         workerClient,
         persistence: null,
-      })
+        initPayload: {
+          request,
+          engineModuleRoot: engineStatus.moduleRoot,
+          availableProviders: engineStatus.availableProviders,
+        },
+        heartbeatMonitorTimer: null,
+        restartPromise: null,
+      }
+      this.sessions.set(webContentsId, session)
+      this.startHeartbeatMonitor(webContentsId, session)
 
       return response
     } catch (error) {
@@ -863,7 +1000,10 @@ export class SubtitleSessionManager {
 
     let responsePayload: unknown = null
     try {
-      responsePayload = await session.workerClient.request('stop', request, 8_000)
+      if (session.restartPromise) {
+        await session.restartPromise.catch(() => undefined)
+      }
+      responsePayload = await this.requestSessionWorker(webContentsId, session, 'stop', request, 8_000)
     } catch {
       responsePayload = {
         session_id: session.sessionId,
@@ -871,6 +1011,7 @@ export class SubtitleSessionManager {
         updated_at_ms: nowMs(),
       }
     } finally {
+      this.clearHeartbeatMonitor(session)
       await session.workerClient.terminate().catch(() => undefined)
       this.sessions.delete(webContentsId)
     }
@@ -1307,7 +1448,7 @@ export class SubtitleSessionManager {
       })
     }
 
-    const payload = await this.requestWithGpuQuota(session.workerClient, 'reset', request)
+    const payload = await this.requestSessionWorker(webContentsId, session, 'reset', request)
     return resetSubtitleSessionResponseSchema.parse(payload)
   }
 
@@ -1323,7 +1464,7 @@ export class SubtitleSessionManager {
       })
     }
 
-    const payload = await this.requestWithGpuQuota(session.workerClient, 'flush', {})
+    const payload = await this.requestSessionWorker(webContentsId, session, 'flush', {})
     return flushSubtitleSessionResponseSchema.parse(payload)
   }
 
@@ -1348,7 +1489,7 @@ export class SubtitleSessionManager {
       })
     }
 
-    const payload = await this.requestWithGpuQuota(session.workerClient, 'push-audio', request)
+    const payload = await this.requestSessionWorker(webContentsId, session, 'push-audio', request)
     return pushSubtitleAudioResponseSchema.parse(payload)
   }
 
