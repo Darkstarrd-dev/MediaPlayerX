@@ -18,6 +18,21 @@ interface ResolveAdReviewPageDerivationsParams {
   imageTotalPagesEffective: number
 }
 
+export function shouldGroupAdReviewByPackageRows(
+  adReviewResultsMode: boolean,
+  selectedSidebarNode: SidebarNode | null,
+): boolean {
+  if (!adReviewResultsMode) {
+    return false
+  }
+
+  if (!selectedSidebarNode) {
+    return true
+  }
+
+  return selectedSidebarNode.kind === 'folder' || selectedSidebarNode.imageNodeType === 'folder'
+}
+
 interface ResolveAdReviewPageDerivationsResult {
   visibleImageRefsForMain: FocusedImageRef[]
   refsInPageBase: FocusedImageRef[]

@@ -416,9 +416,12 @@ function SidebarPanel({
     if (event.button !== 0) {
       return;
     }
+    if (event.detail > 1) {
+      return;
+    }
 
     // Do selection toggle on pointer down so Shift+Click and drag toggling are stable.
-    // Click handler still drives navigation; we suppress click-based toggle to avoid double flips.
+    // Click handler only performs fallback toggle in manage styles; navigation happens in non-manage styles.
     event.preventDefault();
     suppressManageClickRef.current = true;
     onToggleManageNode(startNodeId, event.shiftKey);
@@ -580,6 +583,7 @@ function SidebarPanel({
                 } else {
                   onToggleManageNode?.(node.id, event.shiftKey);
                 }
+                return;
               }
               if (mode === "image" && searchResultReadonly) {
                 return;

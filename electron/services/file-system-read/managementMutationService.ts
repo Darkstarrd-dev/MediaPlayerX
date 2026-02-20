@@ -917,6 +917,16 @@ export class ManagementMutationService {
     const failed: RenameItemsResponseDto['failed'] = []
     const plannedOperations: PlannedOperation[] = []
 
+    const toTargetKey = (target: RenameItemTargetDto): string => {
+      if (target.kind === 'sidebar-node') {
+        return `sidebar-node:${target.node_id}`
+      }
+      if (target.kind === 'image-item') {
+        return `image-item:${target.image_id}`
+      }
+      return `archive-entry:${path.resolve(target.archive_path)}#${target.entry_name}`
+    }
+
     const buildFields = (
       source: ImagePackageDto | null,
       video: LibrarySnapshotDto['videos'][number] | null,
@@ -1139,11 +1149,15 @@ export class ManagementMutationService {
       }
     }
 
+    const failedTargetKeySet = new Set(failed.map((item) => toTargetKey(item.target)))
+    const operationByTargetKey = new Map<string, PlannedOperation>()
+    for (const operation of plannedOperations) {
+      operationByTargetKey.set(toTargetKey(operation.target), operation)
+    }
+
     const operationsToApply = failFast && failed.length > 0
       ? []
-      : plannedOperations.filter(
-          (operation) => !failed.some((failedItem) => JSON.stringify(failedItem.target) === JSON.stringify(operation.target)),
-        )
+      : plannedOperations.filter((operation) => !failedTargetKeySet.has(toTargetKey(operation.target)))
 
     const results: RenameItemsResponseDto['results'] = operationsToApply.map((operation) => ({
       target: operation.target,
@@ -1156,7 +1170,7 @@ export class ManagementMutationService {
     }))
 
     for (const failedItem of failed) {
-      const operation = plannedOperations.find((item) => JSON.stringify(item.target) === JSON.stringify(failedItem.target))
+      const operation = operationByTargetKey.get(toTargetKey(failedItem.target))
       if (!operation) {
         continue
       }

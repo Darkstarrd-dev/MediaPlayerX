@@ -84,6 +84,7 @@ interface BuildImageMainSectionPropsParams {
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   onManageDelete: () => void
+  onManageRename: () => void
   onManageGroup: () => void
   onManageMove: () => void
   onManageHide: () => void
@@ -183,6 +184,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onToggleImageChecked: params.onToggleImageChecked,
     onReplaceCheckedImages: params.onReplaceCheckedImages,
     onManageDelete: params.onManageDelete,
+    onManageRename: params.onManageRename,
     onManageGroup: params.onManageGroup,
     onManageMove: params.onManageMove,
     onManageHide: params.onManageHide,

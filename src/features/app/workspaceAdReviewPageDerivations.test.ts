@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 
 import type { ManageAdReviewTaskDto } from '../../contracts/backend'
 import type { FocusedImageRef, ImagePackage, SidebarNode } from '../../types'
-import { resolveAdReviewPageDerivations } from './workspaceAdReviewPageDerivations'
+import {
+  resolveAdReviewPageDerivations,
+  shouldGroupAdReviewByPackageRows,
+} from './workspaceAdReviewPageDerivations'
 
 function createPackage(id: string, treePath: string[], imageIds: string[]): ImagePackage {
   return {
@@ -83,6 +86,10 @@ function createReviewTask(candidateImageIds: string[]): ManageAdReviewTaskDto {
 }
 
 describe('resolveAdReviewPageDerivations', () => {
+  it('groups by package rows when ad-review view has no sidebar selection', () => {
+    expect(shouldGroupAdReviewByPackageRows(true, null)).toBe(true)
+  })
+
   it('treats folder node by kind when imageNodeType is missing', () => {
     const packageById = new Map<string, ImagePackage>([
       ['pkg-a', createPackage('pkg-a', ['C:', 'Users', 'A', 'pkg-a.zip'], ['img-1'])],
@@ -268,5 +275,61 @@ describe('resolveAdReviewPageDerivations', () => {
     expect(resultPage2.refsInPageBase).toEqual([
       { packageId: 'pkg-b', imageIndex: 4 },
     ])
+  })
+
+  it('keeps package row wrapping for 2/3/7 distribution on a 4x4 grid', () => {
+    const packageById = new Map<string, ImagePackage>([
+      ['pkg-a', createPackage('pkg-a', ['C:', 'Users', 'A', 'pkg-a.zip'], ['img-1', 'img-2'])],
+      ['pkg-b', createPackage('pkg-b', ['C:', 'Users', 'A', 'pkg-b.zip'], ['img-3', 'img-4', 'img-5'])],
+      ['pkg-c', createPackage('pkg-c', ['C:', 'Users', 'A', 'pkg-c.zip'], ['img-6', 'img-7', 'img-8', 'img-9', 'img-10', 'img-11', 'img-12'])],
+    ])
+
+    const orderedRootScopedImageRefs: FocusedImageRef[] = [
+      { packageId: 'pkg-a', imageIndex: 0 },
+      { packageId: 'pkg-a', imageIndex: 1 },
+      { packageId: 'pkg-b', imageIndex: 0 },
+      { packageId: 'pkg-b', imageIndex: 1 },
+      { packageId: 'pkg-b', imageIndex: 2 },
+      { packageId: 'pkg-c', imageIndex: 0 },
+      { packageId: 'pkg-c', imageIndex: 1 },
+      { packageId: 'pkg-c', imageIndex: 2 },
+      { packageId: 'pkg-c', imageIndex: 3 },
+      { packageId: 'pkg-c', imageIndex: 4 },
+      { packageId: 'pkg-c', imageIndex: 5 },
+      { packageId: 'pkg-c', imageIndex: 6 },
+    ]
+
+    const result = resolveAdReviewPageDerivations({
+      adReviewResultsMode: true,
+      orderedRootScopedImageRefs,
+      packageByIdEffective: packageById,
+      adReviewFocusTask: createReviewTask([
+        'img-1',
+        'img-2',
+        'img-3',
+        'img-4',
+        'img-5',
+        'img-6',
+        'img-7',
+        'img-8',
+        'img-9',
+        'img-10',
+        'img-11',
+        'img-12',
+      ]),
+      selectedSidebarNode: null,
+      pagedPageSize: 16,
+      thumbnailColumns: 4,
+      adReviewGroupByPackageRows: true,
+      adReviewPageIndex: 0,
+      normalizedPageIndexEffective: 0,
+      visibleImageRefs: [],
+      refsInPageEffective: [],
+      pageStartEffective: 0,
+      imageTotalPagesEffective: 1,
+    })
+
+    expect(result.imageTotalPagesForMain).toBe(1)
+    expect(result.refsInPageBase).toEqual(orderedRootScopedImageRefs)
   })
 })

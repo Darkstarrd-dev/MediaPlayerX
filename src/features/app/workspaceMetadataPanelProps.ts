@@ -42,6 +42,7 @@ interface BuildWorkspaceMetadataPanelPropsParams {
     value: string | null | ((prev: string | null) => string | null),
   ) => void;
   setAdReviewPageIndex: (value: number) => void;
+  setSelectedSidebarNodeId: (nodeId: string | null) => void;
   imageFocusActive: boolean;
   metadataImageEffective: any;
   metadataImageSrc: string | null;
@@ -115,6 +116,7 @@ export function buildWorkspaceMetadataPanelProps({
   adReviewFocusTaskId,
   setAdReviewFocusTaskId,
   setAdReviewPageIndex,
+  setSelectedSidebarNodeId,
   imageFocusActive,
   metadataImageEffective,
   metadataImageSrc,
@@ -216,6 +218,7 @@ export function buildWorkspaceMetadataPanelProps({
       }
       setAdReviewFocusTaskId(startedTask.task_id);
       setAdReviewPageIndex(0);
+      setSelectedSidebarNodeId(null);
     },
     onPauseAdReview: () => {
       void manageAdReview.pauseManageAdReview();

@@ -93,6 +93,7 @@ function ImageMainSection({
   onToggleImageChecked,
   onReplaceCheckedImages,
   onManageDelete,
+  onManageRename = () => undefined,
   onManageGroup = () => undefined,
   onManageHide,
   onManageUnhide,
@@ -1112,6 +1113,16 @@ function ImageMainSection({
                 onClick={onManageGroup}
               >
                 <MainUiIcon name="organize" />
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t("a11y.common.rename")}
+                title={t("tip.common.rename")}
+                disabled={!hasAnyManageSelection || pendingManageAction}
+                onClick={onManageRename}
+              >
+                <MainUiIcon name="rename" />
               </button>
               <button
                 className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? "is-pending" : ""}`}

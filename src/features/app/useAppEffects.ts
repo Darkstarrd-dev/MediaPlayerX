@@ -59,6 +59,8 @@ interface UseAppEffectsParams {
   vectorMode: boolean
   manageMode: boolean
   metadataManageMode: boolean
+  adReviewPanelOpen: boolean
+  adReviewFocusTaskId: string | null
   searchPanelCollapsed: boolean
   searchPanelMode: 'vector' | 'feature'
   workspaceBottomPanelHeight: number
@@ -138,6 +140,8 @@ export function useAppEffects({
   vectorMode,
   manageMode,
   metadataManageMode,
+  adReviewPanelOpen,
+  adReviewFocusTaskId,
   searchPanelCollapsed,
   searchPanelMode,
   workspaceBottomPanelHeight,
@@ -330,7 +334,8 @@ export function useAppEffects({
   }, [orderedRootScopedPackages, rootScopedPackageIds, selectedPackageId, setSelectedPackageId])
 
   useEffect(() => {
-    if (mode !== 'image' || vectorResultsActive) {
+    const adReviewFocusActive = adReviewPanelOpen && Boolean(adReviewFocusTaskId)
+    if (mode !== 'image' || vectorResultsActive || sidebarFocus === 'sidebar' || adReviewFocusActive) {
       return
     }
 
@@ -342,10 +347,21 @@ export function useAppEffects({
     if (nextImageNodeId !== selectedSidebarNodeId) {
       setSelectedSidebarNodeId(nextImageNodeId)
     }
-  }, [imageSourceNodeIdMap, mode, selectedPackageId, selectedSidebarNodeId, setSelectedSidebarNodeId, vectorResultsActive])
+  }, [
+    adReviewFocusTaskId,
+    adReviewPanelOpen,
+    imageSourceNodeIdMap,
+    mode,
+    selectedPackageId,
+    selectedSidebarNodeId,
+    setSelectedSidebarNodeId,
+    sidebarFocus,
+    vectorResultsActive,
+  ])
 
   useEffect(() => {
-    if (mode !== 'image') {
+    const adReviewFocusActive = adReviewPanelOpen && Boolean(adReviewFocusTaskId)
+    if (mode !== 'image' || adReviewFocusActive) {
       return
     }
 
@@ -381,6 +397,8 @@ export function useAppEffects({
     vectorResultPackageNodeIdMap,
     vectorResultsActive,
     vectorSidebarNodes,
+    adReviewPanelOpen,
+    adReviewFocusTaskId,
   ])
 
   useEffect(() => {

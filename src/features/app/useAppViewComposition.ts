@@ -186,6 +186,35 @@ export function useAppViewComposition({
     setSidebarRenameTargetImageIds,
   ])
 
+  const openManageRenameDialog = useCallback(() => {
+    const targetNodeIds = readNavigationState.sidebarCheckedNodeIds
+    const targetImageIds = readNavigationState.imageCheckedIds
+    const hasTargets = targetNodeIds.length > 0 || targetImageIds.length > 0
+    if (!hasTargets) {
+      return
+    }
+
+    setSidebarRenameTargetNodeId(null)
+    setSidebarRenameTargetNodeIds(targetNodeIds)
+    setSidebarRenameTargetImageIds(targetImageIds)
+    setSidebarRenameDraft('')
+    setSidebarRenameMode('replace')
+    setSidebarRenamePreviewRows([])
+    setSidebarRenameError(null)
+    setSidebarRenameDialogOpen(true)
+  }, [
+    readNavigationState.imageCheckedIds,
+    readNavigationState.sidebarCheckedNodeIds,
+    setSidebarRenameDialogOpen,
+    setSidebarRenameDraft,
+    setSidebarRenameMode,
+    setSidebarRenameError,
+    setSidebarRenameTargetImageIds,
+    setSidebarRenameTargetNodeId,
+    setSidebarRenameTargetNodeIds,
+    setSidebarRenamePreviewRows,
+  ])
+
   const buildBatchRenameRequest = useCallback((previewOnly: boolean): RenameItemsRequestDto | null => {
     const targets = [
       ...sidebarRenameTargetNodeIds.map((nodeId) => ({ kind: 'sidebar-node' as const, node_id: nodeId })),
@@ -404,6 +433,9 @@ export function useAppViewComposition({
     if (!batchModeActive) {
       return
     }
+    if (sidebarRenameMode === 'remove-range') {
+      return
+    }
     void refreshSidebarRenamePreview()
   }, [
     refreshSidebarRenamePreview,
@@ -425,6 +457,14 @@ export function useAppViewComposition({
     displayState,
     managementErrorRows: topLayerState.managementErrorRows,
   })
+
+  const workspaceStateWithRename = {
+    ...workspaceState,
+    imageMainSectionProps: {
+      ...workspaceState.imageMainSectionProps,
+      onManageRename: openManageRenameDialog,
+    },
+  }
 
   const manageDeleteTargetPaths = buildManageDeleteTargetPaths(readNavigationState)
 
@@ -455,7 +495,7 @@ export function useAppViewComposition({
       importTaskPanelProps: topLayerState.importTaskPanelProps,
       helpOverlayOpen: topLayerState.helpOverlayOpen,
     },
-    workspaceState,
+    workspaceState: workspaceStateWithRename,
     importInputs: {
       fileImportInputRef: importState.fileImportInputRef,
       folderImportInputRef: importState.folderImportInputRef,

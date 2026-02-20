@@ -27,7 +27,10 @@ import {
   buildNodeBrowseItems,
   resolveRefsInPageForDisplay,
 } from "./workspaceImageDerivations";
-import { resolveAdReviewPageDerivations } from "./workspaceAdReviewPageDerivations";
+import {
+  resolveAdReviewPageDerivations,
+  shouldGroupAdReviewByPackageRows,
+} from "./workspaceAdReviewPageDerivations";
 import { resolveAdReviewSidebarContext } from "./workspaceAdReviewSidebarContext";
 import {
   createApplyMetadataSyncName,
@@ -279,16 +282,52 @@ export function useAppWorkspaceProps({
       return;
     }
 
-    if (activeTask.status === "running" || activeTask.status === "paused") {
+    const canAutoFocusTask =
+      activeTask.status === "running" ||
+      activeTask.status === "paused" ||
+      activeTask.status === "review";
+    if (canAutoFocusTask) {
       setAdReviewFocusTaskId(activeTask.task_id);
       setAdReviewPageIndex(0);
+      setSelectedSidebarNodeId(null);
     }
+  }, [
+    adReviewFocusTaskId,
+    adReviewPanelOpen,
+    manageAdReview.task,
+    setSelectedSidebarNodeId,
+    setAdReviewFocusTaskId,
+    setAdReviewPageIndex,
+  ]);
+
+  useEffect(() => {
+    if (!adReviewPanelOpen || adReviewFocusTaskId) {
+      return;
+    }
+
+    const activeTask = manageAdReview.task;
+    if (!activeTask) {
+      return;
+    }
+
+    const canAutoFocusTask =
+      activeTask.status === "running" ||
+      activeTask.status === "paused" ||
+      activeTask.status === "review";
+    if (!canAutoFocusTask) {
+      return;
+    }
+
+    setAdReviewFocusTaskId(activeTask.task_id);
+    setAdReviewPageIndex(0);
+    setSelectedSidebarNodeId(null);
   }, [
     adReviewFocusTaskId,
     adReviewPanelOpen,
     manageAdReview.task,
     setAdReviewFocusTaskId,
     setAdReviewPageIndex,
+    setSelectedSidebarNodeId,
   ]);
 
   const onToggleAdReviewFocus = () => {
@@ -311,24 +350,7 @@ export function useAppWorkspaceProps({
       return;
     }
 
-    const firstCandidate = currentTask.candidates[0] ?? null;
-    if (firstCandidate) {
-      const targetNodeId = normalImageSourceNodeIdMap.get(firstCandidate.package_id);
-      if (targetNodeId) {
-        setSelectedSidebarNodeId(targetNodeId);
-      }
-      setSelectedPackageId(firstCandidate.package_id);
-
-      const focusRef = orderedRootScopedImageRefs.find((ref) => {
-        const imageId =
-          packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]?.id ?? null;
-        return imageId === firstCandidate.image_id;
-      });
-      if (focusRef) {
-        setImageFocus(focusRef.packageId, focusRef.imageIndex);
-      }
-    }
-
+    setSelectedSidebarNodeId(null);
     setAdReviewFocusTaskId(currentTask.task_id);
     setAdReviewPageIndex(0);
   };
@@ -489,13 +511,10 @@ export function useAppWorkspaceProps({
     audiosForSidebar,
     audioSidebarOrderedIds,
   });
-  const adReviewGroupByPackageRows =
-    adReviewResultsMode &&
-    Boolean(
-      selectedSidebarNode &&
-      (selectedSidebarNode.kind === "folder" ||
-        selectedSidebarNode.imageNodeType === "folder"),
-    );
+  const adReviewGroupByPackageRows = shouldGroupAdReviewByPackageRows(
+    adReviewResultsMode,
+    selectedSidebarNode,
+  );
 
   const {
     visibleImageRefsForMain,
@@ -796,6 +815,7 @@ export function useAppWorkspaceProps({
     onToggleImageChecked: toggleImageChecked,
     onReplaceCheckedImages: replaceImageCheckedIds,
     onManageDelete: requestManageDelete,
+    onManageRename: () => undefined,
     onManageGroup: () => {
       void requestManageGroup();
     },
@@ -822,7 +842,15 @@ export function useAppWorkspaceProps({
     onAdReviewTailNChange,
     onAdReviewTailStopCleanStreakChange,
     onStartAdReview: (options) => {
-      void manageAdReview.startManageAdReview(options);
+      void (async () => {
+        const startedTask = await manageAdReview.startManageAdReview(options);
+        if (!startedTask) {
+          return;
+        }
+        setAdReviewFocusTaskId(startedTask.task_id);
+        setAdReviewPageIndex(0);
+        setSelectedSidebarNodeId(null);
+      })();
     },
     onPauseAdReview: () => {
       void manageAdReview.pauseManageAdReview();
@@ -1163,6 +1191,7 @@ export function useAppWorkspaceProps({
     adReviewFocusTaskId,
     setAdReviewFocusTaskId,
     setAdReviewPageIndex,
+    setSelectedSidebarNodeId,
     imageFocusActive,
     metadataImageEffective,
     metadataImageSrc,

@@ -47,7 +47,12 @@ export function resolveAdReviewSidebarContext({
     ? queueTasks.find((item) => item.task_id === adReviewFocusTaskId) ?? null
     : null
 
-  const adReviewResultsMode = mode === 'image' && Boolean(adReviewFocusTask && adReviewFocusTask.candidates.length > 0)
+  const canUseAdReviewResultsMode =
+    adReviewFocusTask &&
+    (adReviewFocusTask.status === 'running' ||
+      adReviewFocusTask.status === 'paused' ||
+      adReviewFocusTask.status === 'review')
+  const adReviewResultsMode = mode === 'image' && Boolean(canUseAdReviewResultsMode)
   const adReviewSidebarNodes = adReviewResultsMode
     ? buildAdReviewSidebarState({
         focusTask: adReviewFocusTask,

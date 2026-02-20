@@ -86,6 +86,7 @@ export interface ImageMainSectionProps {
   onToggleImageChecked: (imageId: string, checked?: boolean) => void;
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void;
   onManageDelete: () => void;
+  onManageRename?: () => void;
   onManageGroup?: () => void;
   onManageMove?: () => void;
   onManageHide: () => void;

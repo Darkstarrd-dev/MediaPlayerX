@@ -249,7 +249,7 @@ describe("SidebarPanel music interactions", () => {
     expect(screen.getByLabelText("曲 2")).toBeInTheDocument();
   });
 
-  it("元数据管理模式下保留管理样式并允许导航同步", () => {
+  it("元数据管理模式下点击节点标签仅切换勾选并保留管理样式", () => {
     const { onSelectAudio, onSelectNode, onToggleManageNode } =
       renderMusicSidebar({ metadataManageMode: true });
 
@@ -259,14 +259,14 @@ describe("SidebarPanel music interactions", () => {
       "folder:X盘/Album A",
       false,
     );
-    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
-    expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
+    expect(onSelectNode).not.toHaveBeenCalled();
+    expect(onSelectAudio).not.toHaveBeenCalled();
     expect(
       document.querySelectorAll(".sidebar-row.is-manage").length,
     ).toBeGreaterThan(0);
   });
 
-  it("管理模式下点击节点标签仍会驱动导航，不再拦截为勾选", () => {
+  it("管理模式下点击节点标签仅切换勾选，不触发导航", () => {
     const { onSelectAudio, onSelectNode, onToggleManageNode } =
       renderMusicSidebar({ manageMode: true });
 
@@ -276,8 +276,8 @@ describe("SidebarPanel music interactions", () => {
       "folder:X盘/Album A",
       false,
     );
-    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
-    expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
+    expect(onSelectNode).not.toHaveBeenCalled();
+    expect(onSelectAudio).not.toHaveBeenCalled();
   });
 
   it("管理模式下支持 shift 点击范围选择", () => {
@@ -383,6 +383,23 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(
       screen.getByRole("button", { name: "clip.mp4" }),
     ).toBeInTheDocument();
+  });
+
+  it("管理模式下双击可折叠目录", () => {
+    const onToggleManageNode = vi.fn();
+    renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE, {
+      manageMode: true,
+      onToggleManageNode,
+    });
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "图库" }));
+
+    expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
+    expect(onToggleManageNode).not.toHaveBeenCalled();
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "图库" }));
+    expect(screen.getByRole("button", { name: "Vol.1" })).toBeInTheDocument();
+    expect(onToggleManageNode).not.toHaveBeenCalled();
   });
 
   it("受控折叠状态在临时树切换后保持，不会因模式返回被重置", () => {

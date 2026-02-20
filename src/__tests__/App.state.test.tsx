@@ -81,6 +81,29 @@ describe("MediaPlayer 虚拟 UI", () => {
     ).toBeNull();
   });
 
+  it("Sidebar 聚焦目录节点时双击可稳定折叠与展开", async () => {
+    render(<App />);
+    await flushUiUpdates();
+
+    const rootFolderButton = screen.getByRole("button", { name: "X盘" });
+    expect(screen.getByRole("button", { name: "收藏" })).toBeInTheDocument();
+
+    await click(rootFolderButton);
+    fireEvent.doubleClick(rootFolderButton);
+    await flushUiUpdates();
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "收藏" })).toBeNull();
+    });
+
+    fireEvent.doubleClick(rootFolderButton);
+    await flushUiUpdates();
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "收藏" })).toBeInTheDocument();
+    });
+  });
+
   it("非全屏 Sidebar 焦点按 R 打开重命名弹窗，Esc 可关闭", async () => {
     render(<App />);
     await flushUiUpdates();

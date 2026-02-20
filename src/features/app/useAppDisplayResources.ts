@@ -10,7 +10,10 @@ import {
 import { useEffectiveDisplayState } from "./useEffectiveDisplayState";
 import { useMetadataWriteBindings } from "./useMetadataWriteBindings";
 import { buildCoverImageLocator } from "./mediaPathUtils";
-import { resolveAdReviewPageDerivations } from "./workspaceAdReviewPageDerivations";
+import {
+  resolveAdReviewPageDerivations,
+  shouldGroupAdReviewByPackageRows,
+} from "./workspaceAdReviewPageDerivations";
 import { resolveAdReviewSidebarContext } from "./workspaceAdReviewSidebarContext";
 import { resolveRefsInPageForDisplay } from "./workspaceImageDerivations";
 import { useResolvedMediaState } from "./useResolvedMediaState";
@@ -451,13 +454,10 @@ export function useAppDisplayResources({
       selectedSidebarNodeId,
       imageTreeForSidebar,
     });
-  const adReviewGroupByPackageRows =
-    adReviewResultsMode &&
-    Boolean(
-      selectedSidebarNode &&
-      (selectedSidebarNode.kind === "folder" ||
-        selectedSidebarNode.imageNodeType === "folder"),
-    );
+  const adReviewGroupByPackageRows = shouldGroupAdReviewByPackageRows(
+    adReviewResultsMode,
+    selectedSidebarNode,
+  );
 
   const nodeBrowseMode =
     appSettings.mode === "image" &&
