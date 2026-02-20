@@ -93,4 +93,40 @@ describe("runTaskInProcess", () => {
     const attemptCount = Number((await readFile(markerPath, "utf8")).trim());
     expect(attemptCount).toBe(3);
   });
+
+  it("emits timeout and cancel audit stages", async () => {
+    const tempCase = await createTempCaseDir("mpx-task-orchestrator-");
+    tempDirs.push(tempCase.rootDir);
+    const workerPath = path.join(tempCase.rootDir, "timeout-worker.cjs");
+
+    await writeFile(
+      workerPath,
+      [
+        "process.on('message', (message) => {",
+        "  if (!message || typeof message !== 'object') return;",
+        "  if (message.kind === 'cancel') return;",
+        "});",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const stages: string[] = [];
+    await expect(
+      runTaskInProcess<{ value: number }, { ok: boolean }>({
+        workerPath,
+        taskName: "timeout-worker",
+        payload: { value: 1 },
+        timeoutMs: 1_050,
+        maxRetries: 0,
+        onAudit: ({ stage }) => {
+          stages.push(stage);
+        },
+      }),
+    ).rejects.toThrow(/timeout/i);
+
+    expect(stages).toContain("timeout");
+    expect(stages).toContain("cancel-sent");
+    expect(stages).toContain("attempt-failed");
+    expect(stages).toContain("failed");
+  });
 });

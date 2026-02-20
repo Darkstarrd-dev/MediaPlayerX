@@ -154,6 +154,23 @@ async function renderThumbnailWithProcessWorker(payload: {
     heartbeatTimeoutMs: 12_000,
     maxRetries: 1,
     serialization: 'advanced',
+    onAudit: ({ stage, attempt, maxRetries, message }) => {
+      if (
+        stage === 'cancel-sent' ||
+        stage === 'timeout' ||
+        stage === 'heartbeat-timeout' ||
+        stage === 'retry-scheduled' ||
+        stage === 'failed'
+      ) {
+        console.warn('thumbnail render process audit', {
+          cachePath: payload.cachePath,
+          stage,
+          attempt,
+          maxRetries,
+          message,
+        })
+      }
+    },
   })
 
   return true

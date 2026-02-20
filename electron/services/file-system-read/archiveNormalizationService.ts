@@ -412,6 +412,23 @@ export class ArchiveNormalizationService {
         timeoutMs: ArchiveNormalizationService.ARCHIVE_NORMALIZE_PROCESS_TIMEOUT_MS,
         heartbeatTimeoutMs: 12_000,
         maxRetries: 1,
+        onAudit: ({ stage, attempt, maxRetries, message }) => {
+          if (
+            stage === 'cancel-sent' ||
+            stage === 'timeout' ||
+            stage === 'heartbeat-timeout' ||
+            stage === 'retry-scheduled' ||
+            stage === 'failed'
+          ) {
+            console.warn('archive normalize process audit', {
+              archivePath: sourceArchivePath,
+              stage,
+              attempt,
+              maxRetries,
+              message,
+            })
+          }
+        },
       })
 
       return typeof workerResult.outputZipPath === 'string'

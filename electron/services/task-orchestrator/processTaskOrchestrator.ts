@@ -17,6 +17,25 @@ interface RunProcessTaskOptions<TPayload> {
   maxRetries?: number
   serialization?: 'json' | 'advanced'
   onProgress?: (payload: { progress: number | null; message: string | null }) => void
+  onAudit?: (payload: {
+    stage:
+      | 'attempt-start'
+      | 'request-sent'
+      | 'cancel-sent'
+      | 'timeout'
+      | 'heartbeat-timeout'
+      | 'worker-error'
+      | 'worker-exit'
+      | 'attempt-failed'
+      | 'retry-scheduled'
+      | 'succeeded'
+      | 'failed'
+    taskName: string
+    requestId: string
+    attempt: number
+    maxRetries: number
+    message: string | null
+  }) => void
 }
 
 function toErrorMessage(error: unknown): string {
@@ -35,6 +54,8 @@ function shouldRetryTaskError(message: string): boolean {
 
 async function runTaskAttempt<TPayload, TResult>(
   requestId: string,
+  attempt: number,
+  maxRetries: number,
   options: RunProcessTaskOptions<TPayload>,
 ): Promise<TResult> {
   return await new Promise<TResult>((resolve, reject) => {
@@ -44,9 +65,19 @@ async function runTaskAttempt<TPayload, TResult>(
     })
 
     let settled = false
+    let cancelSent = false
     let lastHeartbeatAtMs = Date.now()
     let heartbeatObserved = false
     let stderrBuffer = ''
+
+    options.onAudit?.({
+      stage: 'attempt-start',
+      taskName: options.taskName,
+      requestId,
+      attempt,
+      maxRetries,
+      message: null,
+    })
 
     const heartbeatTimeoutMs = Math.max(1_000, options.heartbeatTimeoutMs ?? TASK_WORKER_HEARTBEAT_TIMEOUT_MS)
     const requestEnvelope: TaskWorkerRequestEnvelope = {
@@ -55,7 +86,10 @@ async function runTaskAttempt<TPayload, TResult>(
       payload: options.payload,
     }
 
-    const sendCancel = () => {
+    const sendCancel = (message: string) => {
+      if (cancelSent) {
+        return
+      }
       if (!child.connected) {
         return
       }
@@ -65,14 +99,31 @@ async function runTaskAttempt<TPayload, TResult>(
           request_id: requestId,
         }
         child.send(cancelEnvelope)
+        cancelSent = true
+        options.onAudit?.({
+          stage: 'cancel-sent',
+          taskName: options.taskName,
+          requestId,
+          attempt,
+          maxRetries,
+          message,
+        })
       } catch {
         // ignore cancellation delivery failures during teardown
       }
     }
 
     const timeoutId = setTimeout(() => {
+      options.onAudit?.({
+        stage: 'timeout',
+        taskName: options.taskName,
+        requestId,
+        attempt,
+        maxRetries,
+        message: `${options.taskName} task timeout`,
+      })
       finish(new Error(`${options.taskName} task timeout`), null)
-      sendCancel()
+      sendCancel(`${options.taskName} task timeout`)
       child.kill('SIGKILL')
     }, Math.max(1_000, options.timeoutMs))
     timeoutId.unref?.()
@@ -84,8 +135,16 @@ async function runTaskAttempt<TPayload, TResult>(
       if (Date.now() - lastHeartbeatAtMs <= heartbeatTimeoutMs) {
         return
       }
+      options.onAudit?.({
+        stage: 'heartbeat-timeout',
+        taskName: options.taskName,
+        requestId,
+        attempt,
+        maxRetries,
+        message: `${options.taskName} worker heartbeat timeout`,
+      })
       finish(new Error(`${options.taskName} worker heartbeat timeout`), null)
-      sendCancel()
+      sendCancel(`${options.taskName} worker heartbeat timeout`)
       child.kill('SIGKILL')
     }, Math.max(1_000, Math.floor(heartbeatTimeoutMs / 2)))
     heartbeatTimer.unref?.()
@@ -169,6 +228,14 @@ async function runTaskAttempt<TPayload, TResult>(
     })
 
     child.once('error', (error) => {
+      options.onAudit?.({
+        stage: 'worker-error',
+        taskName: options.taskName,
+        requestId,
+        attempt,
+        maxRetries,
+        message: toErrorMessage(error),
+      })
       finish(error, null)
     })
 
@@ -177,9 +244,25 @@ async function runTaskAttempt<TPayload, TResult>(
         return
       }
       if (code === 0 && !signal) {
+        options.onAudit?.({
+          stage: 'worker-exit',
+          taskName: options.taskName,
+          requestId,
+          attempt,
+          maxRetries,
+          message: `${options.taskName} worker exited before response`,
+        })
         finish(new Error(`${options.taskName} worker exited before response`), null)
         return
       }
+      options.onAudit?.({
+        stage: 'worker-exit',
+        taskName: options.taskName,
+        requestId,
+        attempt,
+        maxRetries,
+        message: `${options.taskName} worker exit ${code ?? 'null'} signal ${signal ?? 'none'}`,
+      })
       finish(new Error(`${options.taskName} worker exit ${code ?? 'null'} signal ${signal ?? 'none'}`), null)
     })
 
@@ -190,6 +273,14 @@ async function runTaskAttempt<TPayload, TResult>(
 
     try {
       child.send(requestEnvelope)
+      options.onAudit?.({
+        stage: 'request-sent',
+        taskName: options.taskName,
+        requestId,
+        attempt,
+        maxRetries,
+        message: null,
+      })
     } catch (error) {
       finish(new Error(`${options.taskName} worker send failed: ${toErrorMessage(error)}`), null)
     }
@@ -206,17 +297,51 @@ export async function runTaskInProcess<TPayload, TResult>(
   while (attempt <= maxRetries) {
     const requestId = `${options.taskName}-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`
     try {
-      return await runTaskAttempt<TPayload, TResult>(requestId, options)
+      const result = await runTaskAttempt<TPayload, TResult>(requestId, attempt, maxRetries, options)
+      options.onAudit?.({
+        stage: 'succeeded',
+        taskName: options.taskName,
+        requestId,
+        attempt,
+        maxRetries,
+        message: null,
+      })
+      return result
     } catch (error) {
       const message = toErrorMessage(error)
       lastError = error instanceof Error ? error : new Error(message)
+      options.onAudit?.({
+        stage: 'attempt-failed',
+        taskName: options.taskName,
+        requestId,
+        attempt,
+        maxRetries,
+        message,
+      })
       if (attempt >= maxRetries || !shouldRetryTaskError(message)) {
         break
       }
+      options.onAudit?.({
+        stage: 'retry-scheduled',
+        taskName: options.taskName,
+        requestId,
+        attempt,
+        maxRetries,
+        message,
+      })
       attempt += 1
       continue
     }
   }
+
+  options.onAudit?.({
+    stage: 'failed',
+    taskName: options.taskName,
+    requestId: `${options.taskName}-failed`,
+    attempt,
+    maxRetries,
+    message: lastError?.message ?? `${options.taskName} task failed`,
+  })
 
   throw (lastError ?? new Error(`${options.taskName} task failed`))
 }
