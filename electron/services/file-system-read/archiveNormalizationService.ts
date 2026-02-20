@@ -1,6 +1,6 @@
 import { existsSync, promises as fs } from 'node:fs'
+import { fork } from 'node:child_process'
 import path from 'node:path'
-import { Worker } from 'node:worker_threads'
 
 import {
   readArchiveLoadStatusResponseSchema,
@@ -29,6 +29,8 @@ interface ArchiveNormalizationServiceOptions {
 }
 
 export class ArchiveNormalizationService {
+  private static readonly ARCHIVE_NORMALIZE_PROCESS_TIMEOUT_MS = 20 * 60_000
+
   // 低优先级队列用于后台归一化（空闲窗口执行），高优先级用于“用户刚打开目标包”时抢占执行。
   private archiveNormalizationPendingLow = new Set<string>()
 
@@ -322,19 +324,28 @@ export class ArchiveNormalizationService {
     }
 
     return await new Promise<string>((resolve, reject) => {
-      const worker = new Worker(workerPath, {
-        workerData: {
-          sourceArchivePath,
-          webpQuality: 90,
-        },
+      const child = fork(workerPath, [], {
+        stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
       })
 
       let settled = false
+      let stderrBuffer = ''
+      const timeoutId = setTimeout(() => {
+        const timeoutError = new Error(`archive normalization process timeout: ${sourceArchivePath}`)
+        finish(timeoutError, null)
+        child.kill('SIGKILL')
+      }, ArchiveNormalizationService.ARCHIVE_NORMALIZE_PROCESS_TIMEOUT_MS)
+
+      child.stderr?.on('data', (chunk) => {
+        stderrBuffer += String(chunk)
+      })
+
       const finish = (error: Error | null, outputZipPath: string | null) => {
         if (settled) {
           return
         }
         settled = true
+        clearTimeout(timeoutId)
         if (error) {
           reject(error)
         } else {
@@ -342,7 +353,7 @@ export class ArchiveNormalizationService {
         }
       }
 
-      worker.once('message', (payload: unknown) => {
+      child.once('message', (payload: unknown) => {
         const message = payload as { ok?: boolean; error?: string; outputZipPath?: string }
         if (message?.ok) {
           finish(null, typeof message.outputZipPath === 'string' ? message.outputZipPath : null)
@@ -351,15 +362,34 @@ export class ArchiveNormalizationService {
         finish(new Error(message?.error ?? `archive normalization worker failed: ${sourceArchivePath}`), null)
       })
 
-      worker.once('error', (error) => {
+      child.once('error', (error) => {
         finish(error, null)
       })
 
-      worker.once('exit', (code) => {
-        if (!settled && code !== 0) {
-          finish(new Error(`archive normalization worker exit ${code} for ${sourceArchivePath}`), null)
+      child.once('exit', (code, signal) => {
+        if (!settled && (code !== 0 || signal)) {
+          const stderrHint = stderrBuffer.trim()
+          const reason = stderrHint.length > 0
+            ? `${stderrHint}`
+            : `archive normalization process exit ${code ?? 'null'} signal ${signal ?? 'none'}`
+          finish(new Error(`${reason} for ${sourceArchivePath}`), null)
         }
       })
+
+      if (!child.connected) {
+        finish(new Error(`archive normalization process ipc disconnected: ${sourceArchivePath}`), null)
+        return
+      }
+
+      try {
+        child.send({
+          sourceArchivePath,
+          webpQuality: 90,
+        })
+      } catch (error) {
+        const reason = error instanceof Error && error.message ? error.message : String(error)
+        finish(new Error(`archive normalization process send failed: ${reason}`), null)
+      }
     })
   }
 
