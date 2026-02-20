@@ -28,6 +28,8 @@ interface ArchiveNormalizationServiceOptions {
   emitArchiveLoadStatusChanged: (payload: ReadArchiveLoadStatusResponseDto) => void
   withArchiveWriteLock?: <T>(archivePath: string, task: () => Promise<T>) => Promise<T>
   runWithCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>
+  readPersistedQueuePaths?: () => string[]
+  writePersistedQueuePaths?: (paths: string[]) => void
 }
 
 export class ArchiveNormalizationService {
@@ -60,6 +62,8 @@ export class ArchiveNormalizationService {
 
   private archiveNormalizeWorkerScriptPath: string | null = null
 
+  private persistedQueueRecovered = false
+
   constructor(private readonly options: ArchiveNormalizationServiceOptions) {}
 
   dispose(): void {
@@ -76,6 +80,7 @@ export class ArchiveNormalizationService {
     this.archiveNormalizationStateBySourcePath.clear()
     this.archiveNormalizationRetryCountBySourcePath.clear()
     this.archiveNormalizationCircuitOpenUntilBySourcePath.clear()
+    this.persistPendingQueueState()
     this.dispose()
     this.emitStatusChanged()
   }
@@ -89,6 +94,19 @@ export class ArchiveNormalizationService {
     this.archiveNormalizationCircuitOpenUntilBySourcePath.delete(resolvedPath)
     if (this.archiveNormalizationRunningPath === resolvedPath) {
       this.archiveNormalizationRunningPath = null
+    }
+    this.persistPendingQueueState()
+  }
+
+  recoverPersistedQueue(): void {
+    if (this.persistedQueueRecovered) {
+      return
+    }
+    this.persistedQueueRecovered = true
+
+    const persistedPaths = this.options.readPersistedQueuePaths?.() ?? []
+    for (const persistedPath of persistedPaths) {
+      this.queueRar7zNormalization(persistedPath, 'low')
     }
   }
 
@@ -146,6 +164,7 @@ export class ArchiveNormalizationService {
       this.archiveNormalizationPendingLow.delete(resolvedPath)
       this.archiveNormalizationPendingHigh.add(resolvedPath)
       this.emitStatusChanged()
+      this.persistPendingQueueState()
       this.scheduleDrain(0)
       return
     }
@@ -154,7 +173,28 @@ export class ArchiveNormalizationService {
       this.archiveNormalizationPendingLow.add(resolvedPath)
     }
     this.emitStatusChanged()
+    this.persistPendingQueueState()
     this.scheduleDrain(this.options.recheckMs)
+  }
+
+  private buildPersistedQueuePaths(): string[] {
+    const paths = [
+      ...this.archiveNormalizationPendingHigh,
+      ...this.archiveNormalizationPendingLow,
+      ...(this.archiveNormalizationRunningPath ? [this.archiveNormalizationRunningPath] : []),
+    ]
+    const deduped = Array.from(new Set(paths.map((value) => path.resolve(value))))
+    deduped.sort((left, right) => left.localeCompare(right, 'zh-CN'))
+    return deduped
+  }
+
+  private persistPendingQueueState(): void {
+    if (!this.options.writePersistedQueuePaths) {
+      return
+    }
+
+    const paths = this.buildPersistedQueuePaths()
+    this.options.writePersistedQueuePaths(paths)
   }
 
   async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {
@@ -453,6 +493,7 @@ export class ArchiveNormalizationService {
     this.archiveNormalizationPendingHigh.delete(resolvedPath)
     this.archiveNormalizationPendingLow.delete(resolvedPath)
     this.archiveNormalizationRunningPath = resolvedPath
+    this.persistPendingQueueState()
 
     this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
       status: 'running',
@@ -507,6 +548,7 @@ export class ArchiveNormalizationService {
           updatedAtMs: Date.now(),
         })
         this.emitStatusChanged()
+        this.persistPendingQueueState()
         console.warn('archive normalization retry scheduled', {
           archivePath: resolvedPath,
           reason,
@@ -533,10 +575,12 @@ export class ArchiveNormalizationService {
           reason: 'archive-normalize-failed',
           updated_at_ms: Date.now(),
         })
+        this.persistPendingQueueState()
       }
     } finally {
       this.archiveNormalizationRunningPath = null
       this.emitStatusChanged()
+      this.persistPendingQueueState()
       if (this.archiveNormalizationPendingHigh.size > 0 || this.archiveNormalizationPendingLow.size > 0) {
         this.scheduleDrain(retryDelayMs ?? 0)
       }

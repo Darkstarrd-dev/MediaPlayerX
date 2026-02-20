@@ -172,6 +172,8 @@ export interface FileSystemMediaReadServiceOptions {
 export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private static readonly SYNC_PRUNE_ENTRY_THRESHOLD = 256
 
+  private static readonly ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY = 'archive_normalize_queue_paths'
+
   private readonly rootDir: string
   private readonly coverOutputRootDir: string
   private readonly thumbnailCacheRootDir: string
@@ -250,6 +252,10 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       emitArchiveLoadStatusChanged: (payload) => this.eventBus.emit('archiveLoadStatusChanged', payload),
       withArchiveWriteLock: (archivePath, task) => this.archivePathLockService.withWriteLock(archivePath, task),
       runWithCpuToken: (taskName, task) => this.taskResourceGovernor.runWithCpuToken(taskName, task),
+      readPersistedQueuePaths: () =>
+        this.database.readAppState<string[]>(FileSystemMediaReadService.ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY, []),
+      writePersistedQueuePaths: (paths) =>
+        this.database.writeAppState(FileSystemMediaReadService.ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY, paths),
     })
 
     this.librarySnapshotService = new LibrarySnapshotService({
@@ -484,6 +490,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       return
     }
     this.importPathRegistry.hydrate(this.database.readImportSources())
+    this.archiveNormalizationService.recoverPersistedQueue()
     this.stateHydrated = true
   }
 
