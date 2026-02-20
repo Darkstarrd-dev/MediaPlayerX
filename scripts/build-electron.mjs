@@ -26,6 +26,10 @@ const buildTargets = [
     entryPoints: ['electron/subtitles/asrWorker.ts'],
     outfile: 'dist-electron/asrWorker.cjs',
   },
+  {
+    entryPoints: ['electron/thumbnailRenderWorker.ts'],
+    outfile: 'dist-electron/thumbnailRenderWorker.cjs',
+  },
 ]
 
 const sharedOptions = {

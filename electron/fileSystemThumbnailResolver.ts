@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto'
+import { fork } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
@@ -11,10 +13,12 @@ const THUMBNAIL_MIN_EDGE = 64
 const THUMBNAIL_MAX_EDGE = 2048
 const THUMBNAIL_MIN_QUALITY = 1
 const THUMBNAIL_MAX_QUALITY = 100
+const THUMBNAIL_RENDER_WORKER_TIMEOUT_MS = 30_000
 
 // 限制全局并发缩略图生成任务数，防止 Sharp 峰值内存/线程池过载
 const DEFAULT_MAX_CONCURRENT_THUMBNAIL_GENERATION = 4
 let maxConcurrentThumbnailGeneration = DEFAULT_MAX_CONCURRENT_THUMBNAIL_GENERATION
+let thumbnailRenderWorkerScriptPath: string | null = null
 
 // 全局任务队列与去重池
 const pendingThumbnailTasks = new Map<string, Promise<MediaLocatorDto | null>>()
@@ -93,6 +97,141 @@ function resolveThumbnailOptionsFromRequest(request: ResolveMediaResourceRequest
     maxEdge: clampThumbnailMaxEdge(request.thumbnail?.max_edge),
     quality: clampThumbnailQuality(request.thumbnail?.quality),
   }
+}
+
+function resolveThumbnailWorkerScriptPath(): string | null {
+  if (thumbnailRenderWorkerScriptPath) {
+    return thumbnailRenderWorkerScriptPath
+  }
+
+  const mainEntry = process.argv[1] ? path.resolve(process.argv[1]) : ''
+  const candidates: string[] = []
+  if (mainEntry) {
+    candidates.push(path.join(path.dirname(mainEntry), 'thumbnailRenderWorker.cjs'))
+  }
+  candidates.push(path.join(process.cwd(), 'dist-electron', 'thumbnailRenderWorker.cjs'))
+
+  for (const candidate of candidates) {
+    if (!existsSync(candidate)) {
+      continue
+    }
+    thumbnailRenderWorkerScriptPath = candidate
+    return candidate
+  }
+
+  return null
+}
+
+async function renderThumbnailWithProcessWorker(payload: {
+  workerPath: string
+  sourceBuffer: Buffer
+  options: ThumbnailRenderOptions
+  tempPath: string
+  cachePath: string
+}): Promise<boolean> {
+  return await new Promise<boolean>((resolve, reject) => {
+    const child = fork(payload.workerPath, [], {
+      stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+      serialization: 'advanced',
+    })
+
+    let settled = false
+    const timeoutId = setTimeout(() => {
+      finish(new Error('thumbnail render process timeout'), false)
+      child.kill('SIGKILL')
+    }, THUMBNAIL_RENDER_WORKER_TIMEOUT_MS)
+    timeoutId.unref?.()
+
+    const finish = (error: Error | null, result: boolean) => {
+      if (settled) {
+        return
+      }
+      settled = true
+      clearTimeout(timeoutId)
+      if (error) {
+        reject(error)
+      } else {
+        resolve(result)
+      }
+    }
+
+    child.once('message', (rawPayload: unknown) => {
+      const message = rawPayload as { ok?: boolean; error?: string }
+      if (message?.ok) {
+        finish(null, true)
+        return
+      }
+      finish(new Error(message?.error ?? 'thumbnail render process failed'), false)
+    })
+
+    child.once('error', (error) => {
+      finish(error, false)
+    })
+
+    child.once('exit', (code, signal) => {
+      if (settled) {
+        return
+      }
+      if (code === 0 && !signal) {
+        finish(null, true)
+        return
+      }
+      finish(new Error(`thumbnail render process exit ${code ?? 'null'} signal ${signal ?? 'none'}`), false)
+    })
+
+    if (!child.connected) {
+      finish(new Error('thumbnail render process ipc disconnected'), false)
+      return
+    }
+
+    try {
+      child.send({
+        sourceBuffer: payload.sourceBuffer,
+        maxEdge: payload.options.maxEdge,
+        quality: payload.options.quality,
+        tempPath: payload.tempPath,
+        cachePath: payload.cachePath,
+      })
+    } catch (error) {
+      const reason = error instanceof Error && error.message ? error.message : String(error)
+      finish(new Error(`thumbnail render process send failed: ${reason}`), false)
+    }
+  })
+}
+
+async function renderThumbnailInProcess(payload: {
+  sourceBuffer: Buffer
+  options: ThumbnailRenderOptions
+  tempPath: string
+  cachePath: string
+}): Promise<boolean> {
+  const sharpModule = await getSharpModule()
+  if (!sharpModule?.default) {
+    return false
+  }
+
+  const sharp = sharpModule.default
+  const generated = await sharp(payload.sourceBuffer, { failOn: 'none' })
+    .rotate()
+    .resize({
+      width: payload.options.maxEdge,
+      height: payload.options.maxEdge,
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .webp({ quality: payload.options.quality })
+    .toFile(payload.tempPath)
+    .catch(() => null)
+
+  if (!generated) {
+    await fs.rm(payload.tempPath, { force: true })
+    return false
+  }
+
+  await fs.rename(payload.tempPath, payload.cachePath).catch(async () => {
+    await fs.rm(payload.tempPath, { force: true })
+  })
+  return true
 }
 
 async function computeThumbnailCachePath(
@@ -182,11 +321,6 @@ export async function maybeResolveThumbnailLocator({
     return null
   }
 
-  const sharpModule = await getSharpModule()
-  if (!sharpModule?.default) {
-    return null
-  }
-
   const cachePath = await computeThumbnailCachePath(locator, options, thumbnailCacheRootDir)
   if (!cachePath) {
     return null
@@ -222,28 +356,27 @@ export async function maybeResolveThumbnailLocator({
       try {
         await fs.mkdir(thumbnailCacheRootDir, { recursive: true })
         const tempPath = `${cachePath}.${process.pid}.${Date.now()}.tmp.webp`
-        const sharp = sharpModule.default
 
-        const generated = await sharp(sourceBuffer, { failOn: 'none' })
-          .rotate()
-          .resize({
-            width: options.maxEdge,
-            height: options.maxEdge,
-            fit: 'inside',
-            withoutEnlargement: true,
-          })
-          .webp({ quality: options.quality })
-          .toFile(tempPath)
-          .catch(() => null)
+        const workerPath = resolveThumbnailWorkerScriptPath()
+        const generated = workerPath
+          ? await renderThumbnailWithProcessWorker({
+              workerPath,
+              sourceBuffer,
+              options,
+              tempPath,
+              cachePath,
+            }).catch(() => false)
+          : await renderThumbnailInProcess({
+              sourceBuffer,
+              options,
+              tempPath,
+              cachePath,
+            })
 
         if (!generated) {
           await fs.rm(tempPath, { force: true })
           return null
         }
-
-        await fs.rename(tempPath, cachePath).catch(async () => {
-          await fs.rm(tempPath, { force: true })
-        })
 
         return {
           kind: 'filesystem',
