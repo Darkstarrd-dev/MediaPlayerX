@@ -1,3 +1,11 @@
+import {
+  TASK_WORKER_HEARTBEAT_INTERVAL_MS,
+  TASK_WORKER_HEARTBEAT_TIMEOUT_MS,
+  type TaskWorkerCancelEnvelope,
+  type TaskWorkerHeartbeatEnvelope,
+  type TaskWorkerResponseEnvelope,
+} from '../services/task-orchestrator/taskWorkerProtocol'
+
 export type SubtitleWorkerCommand = 'init' | 'stop' | 'reset' | 'flush' | 'push-audio' | 'transcribe-all'
 
 export interface SubtitleWorkerRequestEnvelope {
@@ -7,27 +15,18 @@ export interface SubtitleWorkerRequestEnvelope {
   payload: unknown
 }
 
-export interface SubtitleWorkerResponseEnvelope {
-  kind: 'response'
-  request_id: string
-  ok: boolean
-  payload?: unknown
-  error?: string
-}
+export type SubtitleWorkerResponseEnvelope = TaskWorkerResponseEnvelope
 
-export interface SubtitleWorkerHeartbeatEnvelope {
-  kind: 'heartbeat'
-  worker_pid: number
-  at_ms: number
-}
+export type SubtitleWorkerHeartbeatEnvelope = TaskWorkerHeartbeatEnvelope
 
 export type SubtitleWorkerIncomingEnvelope =
   | SubtitleWorkerRequestEnvelope
+  | TaskWorkerCancelEnvelope
 
 export type SubtitleWorkerOutgoingEnvelope =
   | SubtitleWorkerResponseEnvelope
   | SubtitleWorkerHeartbeatEnvelope
 
-export const SUBTITLE_WORKER_HEARTBEAT_INTERVAL_MS = 2_000
+export const SUBTITLE_WORKER_HEARTBEAT_INTERVAL_MS = TASK_WORKER_HEARTBEAT_INTERVAL_MS
 
-export const SUBTITLE_WORKER_HEARTBEAT_TIMEOUT_MS = 10_000
+export const SUBTITLE_WORKER_HEARTBEAT_TIMEOUT_MS = TASK_WORKER_HEARTBEAT_TIMEOUT_MS
