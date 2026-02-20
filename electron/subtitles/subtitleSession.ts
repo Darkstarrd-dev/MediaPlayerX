@@ -710,6 +710,7 @@ class SubtitleWorkerClient {
 
     return await new Promise<unknown>((resolve, reject) => {
       const timeout = setTimeout(() => {
+        this.sendCancelRequest(requestId)
         this.pending.delete(requestId)
         reject(new Error(`subtitle_asr_worker_timeout:${command}`))
       }, timeoutMs)
@@ -777,6 +778,17 @@ class SubtitleWorkerClient {
       pending.reject(error)
     }
     this.pending.clear()
+  }
+
+  private sendCancelRequest(requestId: string): void {
+    try {
+      this.worker.postMessage({
+        kind: 'cancel',
+        request_id: requestId,
+      })
+    } catch {
+      // ignore cancel delivery failures on timeout teardown
+    }
   }
 }
 

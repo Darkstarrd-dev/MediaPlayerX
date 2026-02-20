@@ -158,6 +158,7 @@ const SUBTITLE_DEBUG_LOGS =
   process.env.SUBTITLE_DEBUG_LOGS === "true";
 
 let runtimeSession: RuntimeSessionState | null = null;
+const cancelledRequestIds = new Set<string>();
 
 function emitWorkerDebug(
   event: string,
@@ -2520,6 +2521,15 @@ bindIncomingMessageChannel((message: unknown) => {
     return;
   }
 
+  const maybeCancel = message as { kind?: string; request_id?: unknown };
+  if (
+    maybeCancel.kind === "cancel" &&
+    typeof maybeCancel.request_id === "string"
+  ) {
+    cancelledRequestIds.add(maybeCancel.request_id);
+    return;
+  }
+
   const request = message as Partial<SubtitleWorkerIncomingEnvelope>;
   if (
     request.kind !== "request" ||
@@ -2529,8 +2539,17 @@ bindIncomingMessageChannel((message: unknown) => {
     return;
   }
 
+  if (cancelledRequestIds.has(request.request_id)) {
+    cancelledRequestIds.delete(request.request_id);
+    return;
+  }
+
   void handleRequest(request.command as SubtitleWorkerCommand, request.payload)
     .then((payload) => {
+      if (cancelledRequestIds.has(request.request_id)) {
+        cancelledRequestIds.delete(request.request_id);
+        return;
+      }
       postOutgoingMessage({
         kind: "response",
         request_id: request.request_id,
@@ -2539,6 +2558,10 @@ bindIncomingMessageChannel((message: unknown) => {
       });
     })
     .catch((error: unknown) => {
+      if (cancelledRequestIds.has(request.request_id)) {
+        cancelledRequestIds.delete(request.request_id);
+        return;
+      }
       const messageText =
         error instanceof Error && error.message ? error.message : String(error);
       postOutgoingMessage({
