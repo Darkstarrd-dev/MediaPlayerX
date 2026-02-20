@@ -58,6 +58,10 @@ interface SubtitleSessionState {
   persistence: SubtitlePersistenceState | null
 }
 
+interface SubtitleSessionManagerOptions {
+  runWithGpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>
+}
+
 interface ValidRange {
   start_sec: number
   end_sec: number
@@ -769,6 +773,29 @@ export class SubtitleSessionManager {
 
   private readonly webContentsBound = new Set<number>()
 
+  constructor(private readonly options: SubtitleSessionManagerOptions = {}) {}
+
+  private async requestWithGpuQuota(
+    workerClient: SubtitleWorkerClient,
+    command: SubtitleWorkerCommand,
+    payload: unknown,
+    timeoutMs?: number,
+  ): Promise<unknown> {
+    const requestTask = async () => {
+      if (typeof timeoutMs === 'number') {
+        return await workerClient.request(command, payload, timeoutMs)
+      }
+      return await workerClient.request(command, payload)
+    }
+
+    const heavyCommand = command === 'init' || command === 'push-audio' || command === 'flush' || command === 'reset'
+    if (!heavyCommand || !this.options.runWithGpuToken) {
+      return await requestTask()
+    }
+
+    return await this.options.runWithGpuToken(`subtitle-${command}`, requestTask)
+  }
+
   bindWebContents(webContents: WebContents): void {
     if (this.webContentsBound.has(webContents.id)) {
       return
@@ -798,7 +825,8 @@ export class SubtitleSessionManager {
     const workerClient = new SubtitleWorkerClient(this.createWorkerTransport(workerPath))
 
     try {
-      const payload = await workerClient.request(
+      const payload = await this.requestWithGpuQuota(
+        workerClient,
         'init',
         {
           ...request,
@@ -1279,7 +1307,7 @@ export class SubtitleSessionManager {
       })
     }
 
-    const payload = await session.workerClient.request('reset', request)
+    const payload = await this.requestWithGpuQuota(session.workerClient, 'reset', request)
     return resetSubtitleSessionResponseSchema.parse(payload)
   }
 
@@ -1295,7 +1323,7 @@ export class SubtitleSessionManager {
       })
     }
 
-    const payload = await session.workerClient.request('flush', {})
+    const payload = await this.requestWithGpuQuota(session.workerClient, 'flush', {})
     return flushSubtitleSessionResponseSchema.parse(payload)
   }
 
@@ -1320,7 +1348,7 @@ export class SubtitleSessionManager {
       })
     }
 
-    const payload = await session.workerClient.request('push-audio', request)
+    const payload = await this.requestWithGpuQuota(session.workerClient, 'push-audio', request)
     return pushSubtitleAudioResponseSchema.parse(payload)
   }
 

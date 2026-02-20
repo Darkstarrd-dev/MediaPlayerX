@@ -50,4 +50,10 @@ export const ARCHIVE_NORMALIZE_IDLE_MS = resolveConcurrency(process.env.MEDIA_PL
 
 export const ARCHIVE_NORMALIZE_RECHECK_MS = resolveConcurrency(process.env.MEDIA_PLAYERX_ARCHIVE_NORMALIZE_RECHECK_MS, 400, 5_000)
 
+export const FFPROBE_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_FFPROBE_CONCURRENCY, 3, 8)
+
+export const GLOBAL_CPU_TOKEN_LIMIT = resolveConcurrency(process.env.MEDIA_PLAYERX_CPU_TOKEN_LIMIT, 2, 16)
+
+export const GLOBAL_GPU_TOKEN_LIMIT = resolveConcurrency(process.env.MEDIA_PLAYERX_GPU_TOKEN_LIMIT, 1, 8)
+
 export const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'])

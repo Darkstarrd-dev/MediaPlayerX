@@ -87,6 +87,7 @@ interface LibrarySnapshotServiceOptions {
   imageExtensionsForWebpConvert: ReadonlySet<string>
   directoryScanConcurrency: number
   archiveScanConcurrency: number
+  ffprobeConcurrency: number
   ffmpegBin: string
   ffprobeBin: string
   zipGeneralPurposeFlagEncrypted: number
@@ -103,6 +104,7 @@ interface LibrarySnapshotServiceOptions {
     audioId: string,
     payload: { album: string; author: string; trackTitle: string; seriesId: string },
   ) => void
+  withArchiveReadLock?: <T>(archivePath: string, task: () => Promise<T>) => Promise<T>
 }
 
 interface MusicImportPathContext {
@@ -160,6 +162,13 @@ export class LibrarySnapshotService {
   private normalizedArchiveCacheBySourcePath = new Map<string, NormalizedArchiveCacheRecord>()
 
   constructor(private readonly options: LibrarySnapshotServiceOptions) {}
+
+  private async withArchiveReadLock<T>(archivePath: string, task: () => Promise<T>): Promise<T> {
+    if (this.options.withArchiveReadLock) {
+      return await this.options.withArchiveReadLock(archivePath, task)
+    }
+    return await task()
+  }
 
   invalidateCache(): void {
     this.snapshotCache = null
@@ -236,14 +245,15 @@ export class LibrarySnapshotService {
   async refreshArchiveIndexesForPaths(archivePaths: Iterable<string>): Promise<void> {
     const normalizedPaths = Array.from(new Set(Array.from(archivePaths).map((value) => path.resolve(value))))
     for (const archivePath of normalizedPaths) {
-      const stat = await fs.stat(archivePath).catch(() => null)
-      if (!stat || !stat.isFile()) {
-        this.archiveEntryIndexByPath.delete(archivePath)
-        this.zipEntryIndexByPath.delete(archivePath)
-        continue
-      }
+      const centralEntries = await this.withArchiveReadLock(archivePath, async () => {
+        const stat = await fs.stat(archivePath).catch(() => null)
+        if (!stat || !stat.isFile()) {
+          return null
+        }
 
-      const centralEntries = await scanZipCentralEntries(archivePath).catch(() => null)
+        return await scanZipCentralEntries(archivePath).catch(() => null)
+      })
+
       if (!centralEntries) {
         this.archiveEntryIndexByPath.delete(archivePath)
         this.zipEntryIndexByPath.delete(archivePath)
@@ -296,7 +306,9 @@ export class LibrarySnapshotService {
       return fs.readFile(locator.absolute_path)
     }
 
-    const payload = await readArchiveEntryMedia(locator, locator.mime_type, this.zipEntryIndexByPath)
+    const payload = await this.withArchiveReadLock(locator.archive_path, () =>
+      readArchiveEntryMedia(locator, locator.mime_type, this.zipEntryIndexByPath),
+    )
     return Buffer.from(payload.body)
   }
 
@@ -531,7 +543,9 @@ export class LibrarySnapshotService {
       const replacementStat = await fs.stat(replacementZipPath).catch(() => null)
 
       if (replacementStat?.isFile()) {
-        const entries = await scanZipCentralEntries(replacementZipPath).catch(() => [])
+        const entries = await this.withArchiveReadLock(replacementZipPath, async () =>
+          await scanZipCentralEntries(replacementZipPath).catch(() => []),
+        )
         return {
           archivePathForMediaRead: replacementZipPath,
           imageEntries: entries.filter(
@@ -556,7 +570,9 @@ export class LibrarySnapshotService {
 
     let sourceEntries: ZipCentralEntry[] = []
     try {
-      sourceEntries = await scanZipCentralEntries(file.absolutePath)
+      sourceEntries = await this.withArchiveReadLock(file.absolutePath, async () =>
+        await scanZipCentralEntries(file.absolutePath),
+      )
     } catch {
       sourceEntries = []
     }
@@ -573,7 +589,9 @@ export class LibrarySnapshotService {
 
     try {
       const normalized = await this.normalizeArchiveToZip(file)
-      const normalizedEntries = await scanZipCentralEntries(normalized.normalizedArchivePath)
+      const normalizedEntries = await this.withArchiveReadLock(normalized.normalizedArchivePath, async () =>
+        await scanZipCentralEntries(normalized.normalizedArchivePath),
+      )
       return {
         archivePathForMediaRead: normalized.normalizedArchivePath,
         imageEntries: normalizedEntries.filter(
@@ -963,17 +981,18 @@ export class LibrarySnapshotService {
 
     imagePackages.sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
-    const videoItems = (await Promise.all(videos.map((file) => this.createVideoSource(file)))).sort((left, right) =>
+    const videoItems = (await parallelMapLimit(videos, this.options.ffprobeConcurrency, async (file) => this.createVideoSource(file))).sort((left, right) =>
       left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
     )
 
-    const audioSourceResults = await Promise.all(
-      audios.map((file) =>
+    const audioSourceResults = await parallelMapLimit(
+      audios,
+      this.options.ffprobeConcurrency,
+      async (file) =>
         this.createAudioSource(file, {
           directoryRoots: musicImportDirectoryRoots,
           fileAllowlistKeys: musicImportFileAllowlistKeys,
         }),
-      ),
     )
     const audioItems = audioSourceResults
       .map((result) => result.audio)

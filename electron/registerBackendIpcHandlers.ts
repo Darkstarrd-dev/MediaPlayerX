@@ -147,6 +147,11 @@ import { registerResolveMediaResourceHandler } from "./registerResolveMediaResou
 import { updateRuntimeStoragePaths } from "./runtimeStorageUpdate";
 import { MetadataScraperService } from "./services/metadata/metadataScraperService";
 import {
+  GLOBAL_CPU_TOKEN_LIMIT,
+  GLOBAL_GPU_TOKEN_LIMIT,
+} from "./services/file-system-read/fileSystemReadFacadeConfig";
+import { TaskResourceGovernor } from "./services/file-system-read/taskResourceGovernor";
+import {
   getAllowedExternalUrlHosts,
   isExternalUrlAllowed,
 } from "./externalUrlPolicy";
@@ -179,7 +184,14 @@ export function registerBackendIpcHandlers(): void {
   const metadataScraper = new MetadataScraperService({
     defaultProxyServer: process.env.MEDIA_PLAYERX_PROXY_SERVER,
   });
-  const subtitleSessionManager = new SubtitleSessionManager();
+  const taskResourceGovernor = new TaskResourceGovernor({
+    cpuTokenLimit: GLOBAL_CPU_TOKEN_LIMIT,
+    gpuTokenLimit: GLOBAL_GPU_TOKEN_LIMIT,
+  });
+  const subtitleSessionManager = new SubtitleSessionManager({
+    runWithGpuToken: (taskName, task) =>
+      taskResourceGovernor.runWithGpuToken(taskName, task),
+  });
 
   const broadcastLibraryChanged = (payload: {
     reason: string;
@@ -213,6 +225,7 @@ export function registerBackendIpcHandlers(): void {
       rootDir: libraryRoot,
       databaseFilePath: databasePath,
       thumbnailCacheRootDir: thumbnailCachePath,
+      taskResourceGovernor,
     });
     service.onLibraryChanged((payload) => {
       broadcastLibraryChanged(payload);

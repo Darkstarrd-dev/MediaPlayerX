@@ -26,10 +26,18 @@ interface ArchiveNormalizationServiceOptions {
   onArchiveNormalized: (sourceArchivePath: string, outputZipPath: string) => Promise<void>
   emitLibraryChanged: (payload: { reason: 'archive-normalized' | 'archive-normalize-failed'; updated_at_ms: number }) => void
   emitArchiveLoadStatusChanged: (payload: ReadArchiveLoadStatusResponseDto) => void
+  withArchiveWriteLock?: <T>(archivePath: string, task: () => Promise<T>) => Promise<T>
+  runWithCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>
 }
 
 export class ArchiveNormalizationService {
   private static readonly ARCHIVE_NORMALIZE_PROCESS_TIMEOUT_MS = 20 * 60_000
+
+  private static readonly ARCHIVE_NORMALIZE_MAX_RETRY = 2
+
+  private static readonly ARCHIVE_NORMALIZE_RETRY_BASE_MS = 1_000
+
+  private static readonly ARCHIVE_NORMALIZE_CIRCUIT_BREAKER_MS = 30_000
 
   // 低优先级队列用于后台归一化（空闲窗口执行），高优先级用于“用户刚打开目标包”时抢占执行。
   private archiveNormalizationPendingLow = new Set<string>()
@@ -45,6 +53,10 @@ export class ArchiveNormalizationService {
   private thumbnailRenderingInFlight = 0
 
   private archiveNormalizationStateBySourcePath = new Map<string, ArchiveNormalizationTaskState>()
+
+  private archiveNormalizationRetryCountBySourcePath = new Map<string, number>()
+
+  private archiveNormalizationCircuitOpenUntilBySourcePath = new Map<string, number>()
 
   private archiveNormalizeWorkerScriptPath: string | null = null
 
@@ -62,6 +74,8 @@ export class ArchiveNormalizationService {
     this.archiveNormalizationPendingHigh.clear()
     this.archiveNormalizationRunningPath = null
     this.archiveNormalizationStateBySourcePath.clear()
+    this.archiveNormalizationRetryCountBySourcePath.clear()
+    this.archiveNormalizationCircuitOpenUntilBySourcePath.clear()
     this.dispose()
     this.emitStatusChanged()
   }
@@ -71,6 +85,8 @@ export class ArchiveNormalizationService {
     this.archiveNormalizationPendingLow.delete(resolvedPath)
     this.archiveNormalizationPendingHigh.delete(resolvedPath)
     this.archiveNormalizationStateBySourcePath.delete(resolvedPath)
+    this.archiveNormalizationRetryCountBySourcePath.delete(resolvedPath)
+    this.archiveNormalizationCircuitOpenUntilBySourcePath.delete(resolvedPath)
     if (this.archiveNormalizationRunningPath === resolvedPath) {
       this.archiveNormalizationRunningPath = null
     }
@@ -100,6 +116,20 @@ export class ArchiveNormalizationService {
     if (!this.options.isTargetEligible(resolvedPath)) {
       return
     }
+
+    const now = Date.now()
+    const circuitOpenUntil = this.archiveNormalizationCircuitOpenUntilBySourcePath.get(resolvedPath) ?? 0
+    if (circuitOpenUntil > now) {
+      this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
+        status: 'failed',
+        error: `circuit-open-until-${circuitOpenUntil}`,
+        updatedAtMs: now,
+      })
+      this.emitStatusChanged()
+      this.scheduleDrain(Math.max(this.options.recheckMs, circuitOpenUntil - now))
+      return
+    }
+    this.archiveNormalizationCircuitOpenUntilBySourcePath.delete(resolvedPath)
 
     const state = this.archiveNormalizationStateBySourcePath.get(resolvedPath)
     if (state?.status === 'running' || state?.status === 'completed') {
@@ -315,6 +345,7 @@ export class ArchiveNormalizationService {
   }
 
   private async runRar7zNormalizationJob(sourceArchivePath: string): Promise<string> {
+    const runJob = async () => {
     const workerPath = this.resolveWorkerScriptPath()
     if (!workerPath) {
       const normalized = await normalizeArchiveToStoreZipInPlace(sourceArchivePath, {
@@ -391,6 +422,12 @@ export class ArchiveNormalizationService {
         finish(new Error(`archive normalization process send failed: ${reason}`), null)
       }
     })
+    }
+
+    if (this.options.runWithCpuToken) {
+      return await this.options.runWithCpuToken('archive-normalize', runJob)
+    }
+    return await runJob()
   }
 
   private async drainQueue(): Promise<void> {
@@ -424,10 +461,21 @@ export class ArchiveNormalizationService {
     })
     this.emitStatusChanged()
 
+    let retryDelayMs: number | null = null
+
     try {
-      await this.cleanupNormalizationArtifactsForSource(resolvedPath)
-      const outputZipPath = await this.runRar7zNormalizationJob(resolvedPath)
+      const outputZipPath = await (this.options.withArchiveWriteLock
+        ? this.options.withArchiveWriteLock(resolvedPath, async () => {
+            await this.cleanupNormalizationArtifactsForSource(resolvedPath)
+            return await this.runRar7zNormalizationJob(resolvedPath)
+          })
+        : (async () => {
+            await this.cleanupNormalizationArtifactsForSource(resolvedPath)
+            return await this.runRar7zNormalizationJob(resolvedPath)
+          })())
       await this.options.onArchiveNormalized(resolvedPath, outputZipPath)
+      this.archiveNormalizationRetryCountBySourcePath.delete(resolvedPath)
+      this.archiveNormalizationCircuitOpenUntilBySourcePath.delete(resolvedPath)
       this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
         status: 'completed',
         error: null,
@@ -440,25 +488,57 @@ export class ArchiveNormalizationService {
       })
     } catch (error) {
       const reason = error instanceof Error && error.message ? error.message : String(error)
-      this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
-        status: 'failed',
-        error: reason,
-        updatedAtMs: Date.now(),
-      })
-      this.emitStatusChanged()
-      console.warn('archive normalization failed (rar/7z)', {
-        archivePath: resolvedPath,
-        reason,
-      })
-      this.options.emitLibraryChanged({
-        reason: 'archive-normalize-failed',
-        updated_at_ms: Date.now(),
-      })
+      const retryCount = (this.archiveNormalizationRetryCountBySourcePath.get(resolvedPath) ?? 0) + 1
+
+      if (retryCount <= ArchiveNormalizationService.ARCHIVE_NORMALIZE_MAX_RETRY) {
+        this.archiveNormalizationRetryCountBySourcePath.set(resolvedPath, retryCount)
+        retryDelayMs = Math.min(
+          15_000,
+          ArchiveNormalizationService.ARCHIVE_NORMALIZE_RETRY_BASE_MS * 2 ** (retryCount - 1),
+        )
+        if (nextTarget.priority === 'high') {
+          this.archiveNormalizationPendingHigh.add(resolvedPath)
+        } else {
+          this.archiveNormalizationPendingLow.add(resolvedPath)
+        }
+        this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
+          status: 'pending',
+          error: `retry-${retryCount}:${reason}`,
+          updatedAtMs: Date.now(),
+        })
+        this.emitStatusChanged()
+        console.warn('archive normalization retry scheduled', {
+          archivePath: resolvedPath,
+          reason,
+          retryCount,
+          retryDelayMs,
+        })
+      } else {
+        this.archiveNormalizationRetryCountBySourcePath.set(resolvedPath, retryCount)
+        const circuitOpenUntil = Date.now() + ArchiveNormalizationService.ARCHIVE_NORMALIZE_CIRCUIT_BREAKER_MS
+        this.archiveNormalizationCircuitOpenUntilBySourcePath.set(resolvedPath, circuitOpenUntil)
+        this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
+          status: 'failed',
+          error: `circuit-open-until-${circuitOpenUntil}:${reason}`,
+          updatedAtMs: Date.now(),
+        })
+        this.emitStatusChanged()
+        console.warn('archive normalization failed (rar/7z)', {
+          archivePath: resolvedPath,
+          reason,
+          retryCount,
+          circuitOpenUntil,
+        })
+        this.options.emitLibraryChanged({
+          reason: 'archive-normalize-failed',
+          updated_at_ms: Date.now(),
+        })
+      }
     } finally {
       this.archiveNormalizationRunningPath = null
       this.emitStatusChanged()
       if (this.archiveNormalizationPendingHigh.size > 0 || this.archiveNormalizationPendingLow.size > 0) {
-        this.scheduleDrain(0)
+        this.scheduleDrain(retryDelayMs ?? 0)
       }
     }
   }

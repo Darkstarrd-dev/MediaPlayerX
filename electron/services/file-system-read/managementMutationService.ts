@@ -115,10 +115,18 @@ interface ManagementMutationServiceOptions {
   replaceImportSourcePaths: (mappings: Array<{ fromPath: string; toPath: string }>) => Promise<void>
   buildMediaAccessContext: () => MediaAccessGuardContext
   emitLibraryChanged: (payload: { reason: string; updated_at_ms: number }) => void
+  withArchiveWriteLock?: <T>(archivePath: string, task: () => Promise<T>) => Promise<T>
 }
 
 export class ManagementMutationService {
   constructor(private readonly options: ManagementMutationServiceOptions) {}
+
+  private async withArchiveWriteLock<T>(archivePath: string, task: () => Promise<T>): Promise<T> {
+    if (this.options.withArchiveWriteLock) {
+      return await this.options.withArchiveWriteLock(archivePath, task)
+    }
+    return await task()
+  }
 
   async setImageHidden(
     request: SetImageHiddenRequestDto,
@@ -148,107 +156,111 @@ export class ManagementMutationService {
     archivePath: string,
     deletedEntryNames: Set<string>,
   ): Promise<void> {
-    const allEntries = await scanZipCentralEntries(archivePath)
-    const keepEntries = allEntries.filter((entry) => !deletedEntryNames.has(entry.entryName))
+    await this.withArchiveWriteLock(archivePath, async () => {
+      const allEntries = await scanZipCentralEntries(archivePath)
+      const keepEntries = allEntries.filter((entry) => !deletedEntryNames.has(entry.entryName))
 
-    const zipEntries: Array<{ entryName: string; content: Buffer }> = []
-    for (const entry of keepEntries) {
-      const content = await readZipEntryContent(archivePath, entry)
-      zipEntries.push({
-        entryName: entry.entryName,
-        content,
-      })
-    }
-
-    const tempPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-tmp.zip`
-    const backupPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-bak`
-
-    await writeStoredZipFromEntries(tempPath, zipEntries)
-    await scanZipCentralEntries(tempPath)
-
-    await fs.rename(archivePath, backupPath)
-    let replaced = false
-    try {
-      await fs.rename(tempPath, archivePath)
-      replaced = true
-      await fs.rm(backupPath, { force: true })
-    } finally {
-      if (!replaced) {
-        await fs.rename(backupPath, archivePath).catch(() => undefined)
+      const zipEntries: Array<{ entryName: string; content: Buffer }> = []
+      for (const entry of keepEntries) {
+        const content = await readZipEntryContent(archivePath, entry)
+        zipEntries.push({
+          entryName: entry.entryName,
+          content,
+        })
       }
-      await fs.rm(tempPath, { force: true }).catch(() => undefined)
-    }
+
+      const tempPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-tmp.zip`
+      const backupPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-bak`
+
+      await writeStoredZipFromEntries(tempPath, zipEntries)
+      await scanZipCentralEntries(tempPath)
+
+      await fs.rename(archivePath, backupPath)
+      let replaced = false
+      try {
+        await fs.rename(tempPath, archivePath)
+        replaced = true
+        await fs.rm(backupPath, { force: true })
+      } finally {
+        if (!replaced) {
+          await fs.rename(backupPath, archivePath).catch(() => undefined)
+        }
+        await fs.rm(tempPath, { force: true }).catch(() => undefined)
+      }
+    })
   }
 
   private async repackArchiveWithRenamedEntries(
     archivePath: string,
     entryNameMappings: Array<{ fromEntryName: string; toEntryName: string }>,
   ): Promise<void> {
-    const mappingByFromEntry = new Map<string, string>()
-    for (const mapping of entryNameMappings) {
-      const fromEntryName = mapping.fromEntryName.trim()
-      const toEntryName = mapping.toEntryName.trim()
-      if (!fromEntryName || !toEntryName || fromEntryName === toEntryName) {
-        continue
+    await this.withArchiveWriteLock(archivePath, async () => {
+      const mappingByFromEntry = new Map<string, string>()
+      for (const mapping of entryNameMappings) {
+        const fromEntryName = mapping.fromEntryName.trim()
+        const toEntryName = mapping.toEntryName.trim()
+        if (!fromEntryName || !toEntryName || fromEntryName === toEntryName) {
+          continue
+        }
+        if (!isSafeArchiveEntryName(fromEntryName) || !isSafeArchiveEntryName(toEntryName)) {
+          throw new Error('archive entry illegal')
+        }
+        const ext = path.extname(fromEntryName).toLowerCase()
+        if (!ZIP_IMAGE_ENTRY_EXTENSIONS.has(ext)) {
+          throw new Error('archive entry is not image')
+        }
+        mappingByFromEntry.set(fromEntryName, toEntryName)
       }
-      if (!isSafeArchiveEntryName(fromEntryName) || !isSafeArchiveEntryName(toEntryName)) {
-        throw new Error('archive entry illegal')
+
+      if (mappingByFromEntry.size === 0) {
+        return
       }
-      const ext = path.extname(fromEntryName).toLowerCase()
-      if (!ZIP_IMAGE_ENTRY_EXTENSIONS.has(ext)) {
-        throw new Error('archive entry is not image')
+
+      const allEntries = await scanZipCentralEntries(archivePath)
+      const presentEntryNames = new Set(allEntries.map((entry) => entry.entryName))
+      for (const fromEntryName of mappingByFromEntry.keys()) {
+        if (!presentEntryNames.has(fromEntryName)) {
+          throw new Error(`archive entry not found: ${fromEntryName}`)
+        }
       }
-      mappingByFromEntry.set(fromEntryName, toEntryName)
-    }
 
-    if (mappingByFromEntry.size === 0) {
-      return
-    }
-
-    const allEntries = await scanZipCentralEntries(archivePath)
-    const presentEntryNames = new Set(allEntries.map((entry) => entry.entryName))
-    for (const fromEntryName of mappingByFromEntry.keys()) {
-      if (!presentEntryNames.has(fromEntryName)) {
-        throw new Error(`archive entry not found: ${fromEntryName}`)
+      const plannedEntryNameSet = new Set<string>()
+      for (const entry of allEntries) {
+        const nextEntryName = mappingByFromEntry.get(entry.entryName) ?? entry.entryName
+        if (plannedEntryNameSet.has(nextEntryName)) {
+          throw new Error('archive entry destination already exists')
+        }
+        plannedEntryNameSet.add(nextEntryName)
       }
-    }
 
-    const plannedEntryNameSet = new Set<string>()
-    for (const entry of allEntries) {
-      const nextEntryName = mappingByFromEntry.get(entry.entryName) ?? entry.entryName
-      if (plannedEntryNameSet.has(nextEntryName)) {
-        throw new Error('archive entry destination already exists')
+      const zipEntries: Array<{ entryName: string; content: Buffer }> = []
+      for (const entry of allEntries) {
+        const content = await readZipEntryContent(archivePath, entry)
+        zipEntries.push({
+          entryName: mappingByFromEntry.get(entry.entryName) ?? entry.entryName,
+          content,
+        })
       }
-      plannedEntryNameSet.add(nextEntryName)
-    }
 
-    const zipEntries: Array<{ entryName: string; content: Buffer }> = []
-    for (const entry of allEntries) {
-      const content = await readZipEntryContent(archivePath, entry)
-      zipEntries.push({
-        entryName: mappingByFromEntry.get(entry.entryName) ?? entry.entryName,
-        content,
-      })
-    }
+      const tempPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-tmp.zip`
+      const backupPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-bak`
 
-    const tempPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-tmp.zip`
-    const backupPath = `${archivePath}.${Date.now()}.${Math.round(Math.random() * 100_000)}.mpx-bak`
+      await writeStoredZipFromEntries(tempPath, zipEntries)
+      await scanZipCentralEntries(tempPath)
 
-    await writeStoredZipFromEntries(tempPath, zipEntries)
-    await scanZipCentralEntries(tempPath)
-
-    await fs.rename(archivePath, backupPath)
-    let replaced = false
-    try {
-      await fs.rename(tempPath, archivePath)
-      replaced = true
-      await fs.rm(backupPath, { force: true })
-    } finally {
-      if (!replaced) {
-        await fs.rename(backupPath, archivePath).catch(() => undefined)
+      await fs.rename(archivePath, backupPath)
+      let replaced = false
+      try {
+        await fs.rename(tempPath, archivePath)
+        replaced = true
+        await fs.rm(backupPath, { force: true })
+      } finally {
+        if (!replaced) {
+          await fs.rename(backupPath, archivePath).catch(() => undefined)
+        }
+        await fs.rm(tempPath, { force: true }).catch(() => undefined)
       }
-      await fs.rm(tempPath, { force: true }).catch(() => undefined)
-    }
+    })
   }
 
   async deleteImageItems(

@@ -44,6 +44,8 @@ interface MediaResourceServiceOptions {
   readImageBufferForThumbnail: (locator: MediaLocatorDto) => Promise<Buffer>
   onThumbnailRenderingStart: () => void
   onThumbnailRenderingEnd: () => void
+  runWithThumbnailCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>
+  withArchiveReadLock?: <T>(archivePath: string, task: () => Promise<T>) => Promise<T>
   hasPendingArchiveNormalization: () => boolean
   scheduleArchiveNormalizationDrain: (delayMs: number) => void
   getZipEntryIndexByPath: () => Map<string, Map<string, import('../../zipArchiveHelpers').ZipCentralEntry>>
@@ -179,6 +181,7 @@ export class MediaResourceService {
       readImageBufferForThumbnail: this.options.readImageBufferForThumbnail,
       onRenderingStart: this.options.onThumbnailRenderingStart,
       onRenderingEnd: this.options.onThumbnailRenderingEnd,
+      runWithCpuToken: this.options.runWithThumbnailCpuToken,
       hasPendingArchiveNormalization: this.options.hasPendingArchiveNormalization,
       scheduleArchiveNormalizationDrain: this.options.scheduleArchiveNormalizationDrain,
       archiveNormalizeRecheckMs: this.options.archiveNormalizeRecheckMs,
@@ -210,7 +213,11 @@ export class MediaResourceService {
       return readFilesystemMedia(locator, record.mimeType, rangeHeader)
     }
 
-    return readArchiveEntryMedia(locator, record.mimeType, this.options.getZipEntryIndexByPath())
+    const readTask = () => readArchiveEntryMedia(locator, record.mimeType, this.options.getZipEntryIndexByPath())
+    if (this.options.withArchiveReadLock) {
+      return await this.options.withArchiveReadLock(locator.archive_path, readTask)
+    }
+    return await readTask()
   }
 
   async readMediaResourceByTokenStream(
@@ -225,7 +232,11 @@ export class MediaResourceService {
       return readFilesystemMediaStream(locator, record.mimeType, rangeHeader, signal)
     }
 
-    return readArchiveEntryMediaStream(locator, record.mimeType, this.options.getZipEntryIndexByPath(), signal)
+    const readTask = () => readArchiveEntryMediaStream(locator, record.mimeType, this.options.getZipEntryIndexByPath(), signal)
+    if (this.options.withArchiveReadLock) {
+      return await this.options.withArchiveReadLock(locator.archive_path, readTask)
+    }
+    return await readTask()
   }
 
   private requireMediaTokenRecord(token: string): MediaTokenRecord {

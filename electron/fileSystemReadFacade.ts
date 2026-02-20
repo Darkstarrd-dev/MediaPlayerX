@@ -120,7 +120,10 @@ import {
   COLOR_PALETTE,
   DIRECTORY_SCAN_CONCURRENCY,
   FFMPEG_BIN,
+  FFPROBE_CONCURRENCY,
   FFPROBE_BIN,
+  GLOBAL_CPU_TOKEN_LIMIT,
+  GLOBAL_GPU_TOKEN_LIMIT,
   IMAGE_EXTENSIONS,
   IMAGE_EXTENSIONS_FOR_WEBP_CONVERT,
   LEGACY_IMPORTS_DIR_NAME,
@@ -147,7 +150,10 @@ import { ManageAdReviewService } from './services/file-system-read/manageAdRevie
 import { ManageCoverReviewService } from './services/file-system-read/manageCoverReviewService'
 import { MediaResourceService } from './services/file-system-read/mediaResourceService'
 import { RuntimeDependencyService } from './services/file-system-read/runtimeDependencyService'
+import { ArchivePathLockService } from './services/file-system-read/archivePathLockService'
+import { cleanupStartupTempArtifacts } from './services/file-system-read/startupTempCleanup'
 import { SubtitleModelService } from './services/file-system-read/subtitleModelService'
+import { TaskResourceGovernor } from './services/file-system-read/taskResourceGovernor'
 import { ServiceEventBus } from './services/file-system-read/serviceEventBus'
 import { FileSystemFacadeContext } from './facade/types'
 import { FileSystemLibraryHandlers } from './facade/FileSystemLibraryHandlers'
@@ -158,6 +164,7 @@ export interface FileSystemMediaReadServiceOptions {
   rootDir: string
   databaseFilePath?: string
   thumbnailCacheRootDir?: string
+  taskResourceGovernor?: TaskResourceGovernor
   onLibraryChanged?: LibraryChangedListener
   onArchiveLoadStatusChanged?: ArchiveLoadStatusListener
 }
@@ -183,6 +190,9 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private readonly mediaResourceService: MediaResourceService
   private readonly runtimeDependencyService: RuntimeDependencyService
   private readonly subtitleModelService: SubtitleModelService
+  private readonly taskResourceGovernor: TaskResourceGovernor
+  private readonly ownsTaskResourceGovernor: boolean
+  private readonly archivePathLockService: ArchivePathLockService
   private readonly eventBus: ServiceEventBus
 
   private readonly libraryHandlers: FileSystemLibraryHandlers
@@ -194,6 +204,8 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private pruneMissingSnapshotPromise: Promise<void> | null = null
 
   private pruneMissingSnapshotQueued = false
+
+  private startupCleanupPromise: Promise<void> | null = null
 
   private disposed = false
 
@@ -218,6 +230,14 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.importPathRegistry = new ImportPathRegistry()
     this.runtimeDependencyService = new RuntimeDependencyService(FFMPEG_BIN, FFPROBE_BIN)
     this.subtitleModelService = new SubtitleModelService()
+    this.ownsTaskResourceGovernor = !options.taskResourceGovernor
+    this.taskResourceGovernor =
+      options.taskResourceGovernor ??
+      new TaskResourceGovernor({
+        cpuTokenLimit: GLOBAL_CPU_TOKEN_LIMIT,
+        gpuTokenLimit: GLOBAL_GPU_TOKEN_LIMIT,
+      })
+    this.archivePathLockService = new ArchivePathLockService()
 
     this.archiveNormalizationService = new ArchiveNormalizationService({
       idleMs: ARCHIVE_NORMALIZE_IDLE_MS,
@@ -228,6 +248,8 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       onArchiveNormalized: (sourcePath, outputPath) => this.replaceImportedFileSourcePath(sourcePath, outputPath),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
       emitArchiveLoadStatusChanged: (payload) => this.eventBus.emit('archiveLoadStatusChanged', payload),
+      withArchiveWriteLock: (archivePath, task) => this.archivePathLockService.withWriteLock(archivePath, task),
+      runWithCpuToken: (taskName, task) => this.taskResourceGovernor.runWithCpuToken(taskName, task),
     })
 
     this.librarySnapshotService = new LibrarySnapshotService({
@@ -244,6 +266,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       imageExtensionsForWebpConvert: IMAGE_EXTENSIONS_FOR_WEBP_CONVERT,
       directoryScanConcurrency: DIRECTORY_SCAN_CONCURRENCY,
       archiveScanConcurrency: ARCHIVE_SCAN_CONCURRENCY,
+      ffprobeConcurrency: FFPROBE_CONCURRENCY,
       ffmpegBin: FFMPEG_BIN,
       ffprobeBin: FFPROBE_BIN,
       zipGeneralPurposeFlagEncrypted: ZIP_GENERAL_PURPOSE_FLAG_ENCRYPTED,
@@ -263,6 +286,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
           trackTitle: payload.trackTitle,
           seriesId: payload.seriesId,
         }),
+      withArchiveReadLock: (archivePath, task) => this.archivePathLockService.withReadLock(archivePath, task),
     })
 
     this.importTaskService = new ImportTaskService({
@@ -308,6 +332,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       replaceImportSourcePaths: (mappings) => this.replaceImportSourcePaths(mappings),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
+      withArchiveWriteLock: (archivePath, task) => this.archivePathLockService.withWriteLock(archivePath, task),
     })
 
     this.manageAdReviewService = new ManageAdReviewService({
@@ -339,6 +364,8 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       readImageBufferForThumbnail: (locator) => this.librarySnapshotService.readImageBufferForThumbnail(locator),
       onThumbnailRenderingStart: () => this.emitLibraryChanged({ reason: 'thumbnail-rendering-start', updated_at_ms: Date.now() }),
       onThumbnailRenderingEnd: () => this.emitLibraryChanged({ reason: 'thumbnail-rendering-end', updated_at_ms: Date.now() }),
+      runWithThumbnailCpuToken: (taskName, task) => this.taskResourceGovernor.runWithCpuToken(taskName, task),
+      withArchiveReadLock: (archivePath, task) => this.archivePathLockService.withReadLock(archivePath, task),
       hasPendingArchiveNormalization: () => this.archiveNormalizationService.hasPending(),
       scheduleArchiveNormalizationDrain: (delay) => this.scheduleArchiveNormalizationDrain(delay),
       getZipEntryIndexByPath: () => this.librarySnapshotService.getZipEntryIndexByPath(),
@@ -374,6 +401,8 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.libraryHandlers = new FileSystemLibraryHandlers(context)
     this.managementHandlers = new FileSystemManagementHandlers(context)
     this.systemHandlers = new FileSystemSystemHandlers(context)
+
+    void this.scheduleStartupTempCleanup()
   }
 
   onLibraryChanged(listener: LibraryChangedListener): () => void {
@@ -442,6 +471,9 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   dispose(): void {
     this.disposed = true
+    if (this.ownsTaskResourceGovernor) {
+      this.taskResourceGovernor.dispose()
+    }
     this.archiveNormalizationService.dispose()
     this.eventBus.clear()
     this.database.dispose()
@@ -453,6 +485,51 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     }
     this.importPathRegistry.hydrate(this.database.readImportSources())
     this.stateHydrated = true
+  }
+
+  private async scheduleStartupTempCleanup(): Promise<void> {
+    if (this.startupCleanupPromise) {
+      await this.startupCleanupPromise
+      return
+    }
+
+    this.startupCleanupPromise = Promise.resolve()
+      .then(async () => {
+        const snapshot = this.database.readSnapshot()
+        const importSources = this.database.readImportSources()
+
+        const knownArchivePaths = Array.from(
+          new Set([
+            ...snapshot.image_packages.map((item) => path.resolve(item.absolute_path)),
+            ...importSources.files
+              .map((item) => path.resolve(item))
+              .filter((item) => this.isRar7zPath(item) || path.extname(item).toLowerCase() === '.zip'),
+          ]),
+        )
+
+        const cleanupResult = await cleanupStartupTempArtifacts({
+          thumbnailCacheRootDir: this.thumbnailCacheRootDir,
+          normalizedArchiveRootDir: this.normalizedArchiveRootDir,
+          knownArchivePaths,
+          withArchiveWriteLock: (archivePath, task) => this.archivePathLockService.withWriteLock(archivePath, task),
+        })
+
+        if (cleanupResult.removedCount > 0) {
+          console.info('startup temp cleanup finished', {
+            removedCount: cleanupResult.removedCount,
+          })
+        }
+      })
+      .catch((error) => {
+        console.warn('startup temp cleanup failed', {
+          reason: error instanceof Error && error.message ? error.message : String(error),
+        })
+      })
+      .finally(() => {
+        this.startupCleanupPromise = null
+      })
+
+    await this.startupCleanupPromise
   }
 
   private async replaceImportedFileSourcePath(sourceArchivePath: string, outputZipPath: string): Promise<void> {

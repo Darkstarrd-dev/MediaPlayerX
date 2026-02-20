@@ -289,6 +289,7 @@ interface ResolveThumbnailLocatorParams {
   readImageBufferForThumbnail: (locator: MediaLocatorDto) => Promise<Buffer>
   onRenderingStart: () => void
   onRenderingEnd: () => void
+  runWithCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>
   hasPendingArchiveNormalization: () => boolean
   scheduleArchiveNormalizationDrain: (delayMs: number) => void
   archiveNormalizeRecheckMs: number
@@ -302,6 +303,7 @@ export async function maybeResolveThumbnailLocator({
   readImageBufferForThumbnail,
   onRenderingStart,
   onRenderingEnd,
+  runWithCpuToken,
   hasPendingArchiveNormalization,
   scheduleArchiveNormalizationDrain,
   archiveNormalizeRecheckMs,
@@ -352,45 +354,51 @@ export async function maybeResolveThumbnailLocator({
         return null
       }
 
-      onRenderingStart()
-      try {
-        await fs.mkdir(thumbnailCacheRootDir, { recursive: true })
-        const tempPath = `${cachePath}.${process.pid}.${Date.now()}.tmp.webp`
+      const generateTask = async () => {
+        onRenderingStart()
+        try {
+          await fs.mkdir(thumbnailCacheRootDir, { recursive: true })
+          const tempPath = `${cachePath}.${process.pid}.${Date.now()}.tmp.webp`
 
-        const workerPath = resolveThumbnailWorkerScriptPath()
-        const generated = workerPath
-          ? await renderThumbnailWithProcessWorker({
-              workerPath,
-              sourceBuffer,
-              options,
-              tempPath,
-              cachePath,
-            }).catch(() => false)
-          : await renderThumbnailInProcess({
-              sourceBuffer,
-              options,
-              tempPath,
-              cachePath,
-            })
+          const workerPath = resolveThumbnailWorkerScriptPath()
+          const generated = workerPath
+            ? await renderThumbnailWithProcessWorker({
+                workerPath,
+                sourceBuffer,
+                options,
+                tempPath,
+                cachePath,
+              }).catch(() => false)
+            : await renderThumbnailInProcess({
+                sourceBuffer,
+                options,
+                tempPath,
+                cachePath,
+              })
 
-        if (!generated) {
-          await fs.rm(tempPath, { force: true })
-          return null
-        }
+          if (!generated) {
+            await fs.rm(tempPath, { force: true })
+            return null
+          }
 
-        return {
-          kind: 'filesystem',
-          absolute_path: cachePath,
-          extension: '.webp',
-          media_type: 'image',
-          mime_type: 'image/webp',
-        } as MediaLocatorDto
-      } finally {
-        onRenderingEnd()
-        if (hasPendingArchiveNormalization()) {
-          scheduleArchiveNormalizationDrain(archiveNormalizeRecheckMs)
+          return {
+            kind: 'filesystem',
+            absolute_path: cachePath,
+            extension: '.webp',
+            media_type: 'image',
+            mime_type: 'image/webp',
+          } as MediaLocatorDto
+        } finally {
+          onRenderingEnd()
+          if (hasPendingArchiveNormalization()) {
+            scheduleArchiveNormalizationDrain(archiveNormalizeRecheckMs)
+          }
         }
       }
+
+      return runWithCpuToken
+        ? await runWithCpuToken('thumbnail-render', generateTask)
+        : await generateTask()
     } finally {
       // 任务完成后（无论成功失败），从 pending 表移除
       pendingThumbnailTasks.delete(cachePath)
