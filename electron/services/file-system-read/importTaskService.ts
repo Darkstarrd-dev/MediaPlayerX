@@ -11,6 +11,7 @@ import {
 } from '../../../src/contracts/backend'
 import { executeImportTask } from '../../fileSystemImportTasks'
 import type { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
+import type { SnapshotRefreshOptions } from './librarySnapshotService'
 
 interface ImportTaskServiceOptions {
   rootDir: string
@@ -21,8 +22,8 @@ interface ImportTaskServiceOptions {
   archiveExtensions: ReadonlySet<string>
   database: MediaLibraryDatabase
   invalidateCache: () => void
-  ensureSnapshotLoaded: () => Promise<unknown>
-  emitLibraryChanged: (payload: { reason: 'import-task-finished'; updated_at_ms: number }) => void
+  refreshSnapshot: (options?: SnapshotRefreshOptions) => Promise<unknown>
+  emitLibraryChanged: (payload: { reason: 'import-task-updated' | 'import-task-finished'; updated_at_ms: number }) => void
 }
 
 export class ImportTaskService {
@@ -237,7 +238,7 @@ export class ImportTaskService {
       musicImportMode,
       database: this.options.database,
       invalidateCache: this.options.invalidateCache,
-      ensureSnapshotLoaded: this.options.ensureSnapshotLoaded,
+      refreshSnapshot: this.options.refreshSnapshot,
       emitLibraryChanged: this.options.emitLibraryChanged,
     })
 

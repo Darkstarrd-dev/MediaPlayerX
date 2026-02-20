@@ -2,6 +2,7 @@ import type { ReadArchiveLoadStatusResponseDto } from '../../../src/contracts/ba
 
 export interface LibraryChangedEventPayload {
   reason:
+    | 'import-task-updated'
     | 'import-task-finished'
     | 'archive-normalized'
     | 'archive-normalize-failed'

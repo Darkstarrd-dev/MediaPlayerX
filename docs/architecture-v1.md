@@ -19,6 +19,7 @@ Last updated: 2026-02-18
 - 媒体浏览链路已支持真实图片/视频渲染，Mock 数据仅保留测试用途。
 - 扫描与重处理遵循性能门禁（双规并行 + Correctness 优先）。
 - Main 已接入写链路（评分/封面保存）与 optimistic rollback 协议契约。
+- 读链路（snapshot/sidebar/page/playlist）采用“快速返回最近一次 SQLite 快照 + 后台刷新/清理”策略，禁止被长耗时扫描阻塞。
 - 压缩包扫描接入归一化策略：`rar/7z` 走“内存解包 -> 非 webp 图片转 `webp(90)` -> `zip(store)` 并原地替换”；zip 非 `store/deflate` 图片条目 -> `webp(90)` 后转存 zip(store)。
 - SQLite 基座已启用（含 migration/init/version）；扫描产物以事务 upsert + stale 清理写入数据库，读取统一以 SQLite 为 SSOT。
 - 播放列表写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `readPlaylist/writePlaylist`，重启后可恢复。
@@ -157,6 +158,7 @@ Last updated: 2026-02-18
   - cancelled
 - 任务支持暂停恢复与失败重试。
 - 并发度与批量参数可配置。
+- 导入任务完成语义：以“薄扫描 + SQLite 入库完成”为准；归一化/重处理任务在后台继续推进，并通过任务消息持续回报阶段与已处理数量。
 
 ## 安全约束
 

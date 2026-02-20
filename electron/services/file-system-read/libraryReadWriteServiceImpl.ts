@@ -73,7 +73,10 @@ import { buildImageSidebarTree } from "../../fileSystemSidebarTree";
 import { captureVideoCoverImage } from "../../fileSystemVideoCoverCapture";
 import {
   detectMimeTypeByExtension,
+  isPathInsideRoot,
   makeStableId,
+  normalizeAllowlistKey,
+  toAbsoluteTreePath,
   toDeterministicCoverColor,
   toSafeSizeKb,
 } from "../../fileSystemServiceHelpers";
@@ -95,6 +98,20 @@ const SOURCE_COVER_EXT_ALLOWLIST = new Set([
   ".bmp",
 ]);
 const SUBTITLE_EXTENSIONS = new Set([".vtt", ".srt", ".ass", ".ssa"]);
+const MUSIC_ISOLATED_FALLBACK_GROUP = "unknown artist";
+
+function normalizeTreeSegment(value: string, fallback: string): string {
+  const normalized = value
+    .replace(/[\\/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+function resolveIsolatedAudioGroup(album: string): string {
+  const candidate = album.trim().length > 0 ? album : MUSIC_ISOLATED_FALLBACK_GROUP;
+  return normalizeTreeSegment(candidate, MUSIC_ISOLATED_FALLBACK_GROUP);
+}
 
 function isAutoLiveSubtitleFile(fileName: string): boolean {
   const lower = fileName.toLowerCase();
@@ -559,6 +576,23 @@ export class LibraryReadWriteService {
       audio.series_id = request.series_id.trim();
     }
 
+    const normalizedAudioPath = path.resolve(audio.absolute_path);
+    const normalizedAudioPathKey = normalizeAllowlistKey(normalizedAudioPath);
+    const musicImportSources = this.options.database.readMusicImportSources();
+    const musicFileAllowlistKeys = new Set(
+      musicImportSources.files.map((value) => normalizeAllowlistKey(path.resolve(value))),
+    );
+    const musicDirectoryRoots = Array.from(
+      new Set(musicImportSources.directories.map((value) => path.resolve(value))),
+    );
+    const isExplicitMusicFile = musicFileAllowlistKeys.has(normalizedAudioPathKey);
+    const underMusicDirectory = musicDirectoryRoots.some((rootPath) =>
+      isPathInsideRoot(rootPath, normalizedAudioPath),
+    );
+    audio.tree_path = isExplicitMusicFile && !underMusicDirectory
+      ? [resolveIsolatedAudioGroup(audio.album), audio.file_name]
+      : toAbsoluteTreePath(audio.absolute_path);
+
     const updatedAtMs = Date.now();
     this.options.database.writeAudioMetadata(audio.id, {
       album: audio.album,
@@ -566,6 +600,7 @@ export class LibraryReadWriteService {
       trackTitle: audio.track_title,
       seriesId: audio.series_id,
     });
+    this.options.database.writeAudioTreePath(audio.id, audio.tree_path);
 
     this.options.emitLibraryChanged({
       reason: "write-audio-metadata",
@@ -625,7 +660,6 @@ export class LibraryReadWriteService {
   }
 
   async readPlaylist(): Promise<ReadPlaylistResponseDto> {
-    await this.options.ensureSnapshotLoaded();
     const videoIds = this.options.database.readPlaylist();
     return readPlaylistResponseSchema.parse({
       video_ids: videoIds,
@@ -635,7 +669,6 @@ export class LibraryReadWriteService {
   async writePlaylist(
     request: WritePlaylistRequestDto,
   ): Promise<WritePlaylistResponseDto> {
-    await this.options.ensureSnapshotLoaded();
     const nextVideoIds = this.options.database.writePlaylist(request.video_ids);
 
     this.options.emitLibraryChanged({

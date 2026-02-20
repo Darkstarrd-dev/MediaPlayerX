@@ -192,6 +192,10 @@ export class MediaLibraryDatabase {
     return this.snapshotStore.setImagesHidden(imageIds, hidden)
   }
 
+  writeAudioTreePath(audioId: string, treePath: string[]): void {
+    this.snapshotStore.writeAudioTreePath(audioId, treePath)
+  }
+
   deleteImageItems(imageIds: string[]): { deletedCount: number; touchedSourceIds: string[] } {
     return this.snapshotStore.deleteImageItems(imageIds)
   }

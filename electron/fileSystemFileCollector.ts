@@ -25,7 +25,11 @@ interface CollectMediaFilesParams {
   videoExtensions: ReadonlySet<string>
   audioExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
-  probeImageDimensionsFromFile: (absolutePath: string) => Promise<{ width: number; height: number }>
+  onRecordDiscovered?: (payload: {
+    scannedCount: number
+    absolutePath: string
+    extension: string
+  }) => void
 }
 
 export async function collectMediaFiles(params: CollectMediaFilesParams): Promise<FileRecord[]> {
@@ -48,6 +52,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
 
   const files: FileRecord[] = []
   const seen = new Set<string>()
+  let scannedCount = 0
 
   const isMusicManagedPath = (absolutePath: string): boolean => {
     if (musicFileAllowlistKeys.has(normalizeAllowlistKey(absolutePath))) {
@@ -63,6 +68,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
       return
     }
     seen.add(key)
+    scannedCount += 1
     files.push({
       absolutePath,
       relativePath: normalizePathKey(absolutePath),
@@ -70,6 +76,11 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
       sizeBytes,
       width,
       height,
+    })
+    params.onRecordDiscovered?.({
+      scannedCount,
+      absolutePath,
+      extension,
     })
   }
 
@@ -137,20 +148,12 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
               return null
             }
 
-            let width = 0
-            let height = 0
-            if (params.imageExtensions.has(record.extension)) {
-              const dimensions = await params.probeImageDimensionsFromFile(record.absolutePath)
-              width = dimensions.width
-              height = dimensions.height
-            }
-
             return {
               absolutePath: record.absolutePath,
               extension: record.extension,
               sizeBytes: stat.size,
-              width,
-              height,
+              width: 0,
+              height: 0,
             }
           },
         )
@@ -215,20 +218,12 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
         return null
       }
 
-      let width = 0
-      let height = 0
-      if (params.imageExtensions.has(extension)) {
-        const dimensions = await params.probeImageDimensionsFromFile(absolutePath)
-        width = dimensions.width
-        height = dimensions.height
-      }
-
       return {
         absolutePath,
         extension,
         sizeBytes: stat.size,
-        width,
-        height,
+        width: 0,
+        height: 0,
       }
     })
 

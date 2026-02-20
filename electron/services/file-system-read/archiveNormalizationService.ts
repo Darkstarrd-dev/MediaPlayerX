@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, promises as fs } from 'node:fs'
 import path from 'node:path'
 import { Worker } from 'node:worker_threads'
 
@@ -221,10 +221,71 @@ export class ArchiveNormalizationService {
     if (this.options.hasRunningImportTasks()) {
       return true
     }
+    if (this.thumbnailRenderingInFlight > 0) {
+      return true
+    }
     if (this.options.isSnapshotLoading()) {
       return true
     }
     return false
+  }
+
+  private async cleanupNormalizationArtifactsForSource(sourceArchivePath: string): Promise<void> {
+    const finalZipPath = resolveArchiveReplacementZipPath(sourceArchivePath)
+    const finalZipName = path.basename(finalZipPath)
+    const finalZipDir = path.dirname(finalZipPath)
+    const directoryEntries = await fs.readdir(finalZipDir, { withFileTypes: true }).catch(() => null)
+    if (!directoryEntries || directoryEntries.length === 0) {
+      return
+    }
+
+    const tempPaths: string[] = []
+    const backupPaths: string[] = []
+
+    for (const entry of directoryEntries) {
+      if (!entry.isFile()) {
+        continue
+      }
+
+      const name = entry.name
+      if (name.startsWith(`${finalZipName}.mpx-normalizing-`) && name.endsWith('.tmp')) {
+        tempPaths.push(path.join(finalZipDir, name))
+        continue
+      }
+
+      if (name.startsWith(`${finalZipName}.mpx-backup-`)) {
+        backupPaths.push(path.join(finalZipDir, name))
+      }
+    }
+
+    for (const tempPath of tempPaths) {
+      await fs.rm(tempPath, { force: true }).catch(() => undefined)
+    }
+
+    if (backupPaths.length === 0) {
+      return
+    }
+
+    const finalExists = await fs
+      .stat(finalZipPath)
+      .then((stat) => stat.isFile())
+      .catch(() => false)
+    if (finalExists) {
+      for (const backupPath of backupPaths) {
+        await fs.rm(backupPath, { force: true }).catch(() => undefined)
+      }
+      return
+    }
+
+    backupPaths.sort((left, right) => right.localeCompare(left, 'en-US'))
+    const restorePath = backupPaths[0]
+    if (restorePath) {
+      await fs.rename(restorePath, finalZipPath).catch(() => undefined)
+    }
+
+    for (const backupPath of backupPaths.slice(1)) {
+      await fs.rm(backupPath, { force: true }).catch(() => undefined)
+    }
   }
 
   private resolveWorkerScriptPath(): string | null {
@@ -334,6 +395,7 @@ export class ArchiveNormalizationService {
     this.emitStatusChanged()
 
     try {
+      await this.cleanupNormalizationArtifactsForSource(resolvedPath)
       const outputZipPath = await this.runRar7zNormalizationJob(resolvedPath)
       await this.options.onArchiveNormalized(resolvedPath, outputZipPath)
       this.archiveNormalizationStateBySourcePath.set(resolvedPath, {

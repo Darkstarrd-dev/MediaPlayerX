@@ -141,7 +141,7 @@ import {
 } from './services/file-system-read/fileSystemReadFacadeEvents'
 import { ImportTaskService } from './services/file-system-read/importTaskService'
 import { LibraryReadWriteService } from './services/file-system-read/libraryReadWriteService'
-import { LibrarySnapshotService } from './services/file-system-read/librarySnapshotService'
+import { LibrarySnapshotService, type SnapshotRefreshOptions } from './services/file-system-read/librarySnapshotService'
 import { ManagementMutationService } from './services/file-system-read/managementMutationService'
 import { ManageAdReviewService } from './services/file-system-read/manageAdReviewService'
 import { ManageCoverReviewService } from './services/file-system-read/manageCoverReviewService'
@@ -163,6 +163,8 @@ export interface FileSystemMediaReadServiceOptions {
 }
 
 export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
+  private static readonly SYNC_PRUNE_ENTRY_THRESHOLD = 256
+
   private readonly rootDir: string
   private readonly coverOutputRootDir: string
   private readonly thumbnailCacheRootDir: string
@@ -188,6 +190,12 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private readonly systemHandlers: FileSystemSystemHandlers
 
   private stateHydrated = false
+
+  private pruneMissingSnapshotPromise: Promise<void> | null = null
+
+  private pruneMissingSnapshotQueued = false
+
+  private disposed = false
 
   constructor(optionsOrRootDir: FileSystemMediaReadServiceOptions | string) {
     const options = typeof optionsOrRootDir === 'string' ? { rootDir: optionsOrRootDir } : optionsOrRootDir
@@ -266,7 +274,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       archiveExtensions: ARCHIVE_EXTENSIONS,
       database: this.database,
       invalidateCache: () => this.invalidateCache(),
-      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      refreshSnapshot: (options) => this.refreshSnapshotFromFilesystem(options),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     })
 
@@ -324,6 +332,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       archiveNormalizeRecheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
       mediaTokenService: this.mediaTokenService,
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      refreshArchiveIndexesForPaths: (paths) => this.refreshArchiveIndexesForPaths(paths),
       markInteractiveRead: () => this.markInteractiveRead(),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
       ensureRuntimeDependencies: () => this.runtimeDependencyService.ensureRuntimeDependencies(),
@@ -432,6 +441,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   }
 
   dispose(): void {
+    this.disposed = true
     this.archiveNormalizationService.dispose()
     this.eventBus.clear()
     this.database.dispose()
@@ -604,7 +614,29 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   private async ensureSnapshotLoaded(): Promise<LibrarySnapshotDto> {
     const snapshot = await this.librarySnapshotService.ensureSnapshotLoaded(() => this.ensureStateLoaded())
-    return this.pruneMissingSnapshotEntries(snapshot)
+    if (this.shouldPruneSynchronously(snapshot)) {
+      return this.pruneMissingSnapshotEntries(snapshot)
+    }
+    this.schedulePruneMissingSnapshotEntries()
+    return snapshot
+  }
+
+  private async refreshSnapshotFromFilesystem(options?: SnapshotRefreshOptions): Promise<LibrarySnapshotDto> {
+    const snapshot = await this.librarySnapshotService.refreshSnapshot(() => this.ensureStateLoaded(), options)
+    if (this.shouldPruneSynchronously(snapshot)) {
+      return this.pruneMissingSnapshotEntries(snapshot)
+    }
+    this.schedulePruneMissingSnapshotEntries()
+    return snapshot
+  }
+
+  private shouldPruneSynchronously(snapshot: LibrarySnapshotDto): boolean {
+    const totalEntries =
+      snapshot.image_packages.length +
+      snapshot.image_directories.length +
+      snapshot.videos.length +
+      (snapshot.audios?.length ?? 0)
+    return totalEntries <= FileSystemMediaReadService.SYNC_PRUNE_ENTRY_THRESHOLD
   }
 
   private async pathExists(targetPath: string): Promise<boolean> {
@@ -652,6 +684,43 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     })
 
     return nextSnapshot
+  }
+
+  private schedulePruneMissingSnapshotEntries(): void {
+    if (this.disposed) {
+      return
+    }
+
+    if (this.pruneMissingSnapshotPromise) {
+      this.pruneMissingSnapshotQueued = true
+      return
+    }
+
+    this.pruneMissingSnapshotPromise = Promise.resolve()
+      .then(async () => {
+        const snapshot = this.librarySnapshotService.peekSnapshotCache() ?? this.syncSnapshotFromDatabase()
+        await this.pruneMissingSnapshotEntries(snapshot)
+      })
+      .catch((error) => {
+        if (this.disposed) {
+          return
+        }
+        console.warn('auto prune missing snapshot entries failed', {
+          reason: error instanceof Error && error.message ? error.message : String(error),
+        })
+      })
+      .finally(() => {
+        if (this.disposed) {
+          this.pruneMissingSnapshotPromise = null
+          this.pruneMissingSnapshotQueued = false
+          return
+        }
+        this.pruneMissingSnapshotPromise = null
+        if (this.pruneMissingSnapshotQueued) {
+          this.pruneMissingSnapshotQueued = false
+          this.schedulePruneMissingSnapshotEntries()
+        }
+      })
   }
 
   async clearDatabase(): Promise<ClearDatabaseResponseDto> {

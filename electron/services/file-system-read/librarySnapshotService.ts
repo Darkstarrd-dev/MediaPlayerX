@@ -24,6 +24,7 @@ import {
   isPathInsideRoot,
   makeStableId,
   normalizeAllowlistKey,
+  normalizePathKey,
   toAbsoluteTreePath,
   toDeterministicCoverColor,
   toSafeFsName,
@@ -33,7 +34,7 @@ import { createArchiveSource, createDirectorySource } from '../../fileSystemSour
 import {
   readArchiveEntryMedia,
 } from '../../fileSystemMediaReaders'
-import { probeAudioMetadata, probeImageDimensionsFromFile, probeVideoMetadata } from '../../fileSystemRuntimeHelpers'
+import { probeAudioMetadata, probeVideoMetadata } from '../../fileSystemRuntimeHelpers'
 import { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
 import { writeStoredZipFromDirectory } from '../../fileSystemZipStoreWriter'
 import {
@@ -109,8 +110,24 @@ interface MusicImportPathContext {
   fileAllowlistKeys: Set<string>
 }
 
+export interface SnapshotRefreshProgress {
+  stage: 'collecting' | 'building' | 'persisting'
+  scanned_file_count: number
+  discovered_container_count?: number
+  unit_kind?: 'container'
+  unit_processed_count?: number
+  unit_total_count?: number
+  message: string
+}
+
+export interface SnapshotRefreshOptions {
+  onProgress?: (payload: SnapshotRefreshProgress) => void
+}
+
 const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
 const MUSIC_ISOLATED_FALLBACK_GROUP = 'unknown artist'
+const COLLECTING_PREVIEW_CONTAINER_LIMIT = 120
+const COLLECTING_PREVIEW_PERSIST_INTERVAL_MS = 1_500
 
 function normalizeTreeSegment(value: string, fallback: string): string {
   const normalized = value
@@ -133,6 +150,8 @@ export class LibrarySnapshotService {
   private snapshotCache: LibrarySnapshotDto | null = null
 
   private loadingPromise: Promise<LibrarySnapshotDto> | null = null
+
+  private warmupRefreshTriggered = false
 
   private archiveEntryIndexByPath = new Map<string, Set<string>>()
 
@@ -167,6 +186,10 @@ export class LibrarySnapshotService {
     return this.zipEntryIndexByPath
   }
 
+  peekSnapshotCache(): LibrarySnapshotDto | null {
+    return this.snapshotCache
+  }
+
   syncSnapshotFromDatabase(): LibrarySnapshotDto {
     const snapshot = this.options.database.readSnapshot()
     this.snapshotCache = snapshot
@@ -180,8 +203,28 @@ export class LibrarySnapshotService {
 
     await ensureStateLoaded()
 
+    this.snapshotCache = this.options.database.readSnapshot()
+
+    if (!this.warmupRefreshTriggered && this.hasImportSources() && this.isSnapshotEmpty(this.snapshotCache)) {
+      this.warmupRefreshTriggered = true
+      void this.refreshSnapshot(ensureStateLoaded).catch((error) => {
+        console.warn('snapshot warmup refresh failed', {
+          reason: error instanceof Error && error.message ? error.message : String(error),
+        })
+      })
+    }
+
+    return this.snapshotCache
+  }
+
+  async refreshSnapshot(
+    ensureStateLoaded: () => Promise<void>,
+    options?: SnapshotRefreshOptions,
+  ): Promise<LibrarySnapshotDto> {
+    await ensureStateLoaded()
+
     if (!this.loadingPromise) {
-      this.loadingPromise = this.loadSnapshot().finally(() => {
+      this.loadingPromise = this.loadSnapshot(options).finally(() => {
         this.loadingPromise = null
       })
     }
@@ -257,7 +300,11 @@ export class LibrarySnapshotService {
     return Buffer.from(payload.body)
   }
 
-  private async collectFiles(): Promise<FileRecord[]> {
+  private async collectFiles(
+    options?: {
+      onFileDiscovered?: (payload: { scannedCount: number; absolutePath: string; extension: string }) => void
+    },
+  ): Promise<FileRecord[]> {
     const musicImportSources = this.options.getMusicImportSources()
 
     return collectMediaFiles({
@@ -272,7 +319,7 @@ export class LibrarySnapshotService {
       videoExtensions: this.options.videoExtensions,
       audioExtensions: this.options.audioExtensions,
       archiveExtensions: this.options.archiveExtensions,
-      probeImageDimensionsFromFile,
+      onRecordDiscovered: options?.onFileDiscovered,
     })
   }
 
@@ -552,8 +599,211 @@ export class LibrarySnapshotService {
     }
   }
 
-  private async loadSnapshot(): Promise<LibrarySnapshotDto> {
-    const files = await this.collectFiles()
+  private emitRefreshProgress(
+    options: SnapshotRefreshOptions | undefined,
+    payload: SnapshotRefreshProgress,
+  ): void {
+    options?.onProgress?.(payload)
+  }
+
+  private hasImportSources(): boolean {
+    const importDirectoryRoots = this.options.importPathRegistry.getImportDirectoryRoots()
+    const importFilePaths = this.options.importPathRegistry.getImportFilePaths()
+    const musicImportSources = this.options.getMusicImportSources()
+    return (
+      importDirectoryRoots.length > 0 ||
+      importFilePaths.length > 0 ||
+      musicImportSources.directories.length > 0 ||
+      musicImportSources.files.length > 0
+    )
+  }
+
+  private isSnapshotEmpty(snapshot: LibrarySnapshotDto): boolean {
+    return (
+      snapshot.image_packages.length === 0 &&
+      snapshot.image_directories.length === 0 &&
+      snapshot.videos.length === 0 &&
+      (snapshot.audios?.length ?? 0) === 0
+    )
+  }
+
+  private async loadSnapshot(options?: SnapshotRefreshOptions): Promise<LibrarySnapshotDto> {
+    let scannedFileCount = 0
+    let discoveredContainerCount = 0
+    let lastProgressReportedAt = 0
+    let lastPreviewPersistedAtMs = 0
+    let lastPreviewPersistedContainerCount = 0
+
+    const baseSnapshot = this.options.database.readSnapshot()
+    const previewDirectoryImageFilesByPath = new Map<string, FileRecord[]>()
+    const previewDirectoryImageFileKeysByPath = new Map<string, Set<string>>()
+    const previewArchivePaths = new Set<string>()
+
+    const persistCollectingPreviewSnapshot = (force = false): void => {
+      if (
+        !force &&
+        discoveredContainerCount < COLLECTING_PREVIEW_CONTAINER_LIMIT &&
+        lastPreviewPersistedContainerCount > 0
+      ) {
+        return
+      }
+
+      const now = Date.now()
+      if (
+        !force &&
+        discoveredContainerCount - lastPreviewPersistedContainerCount < 24 &&
+        now - lastPreviewPersistedAtMs < COLLECTING_PREVIEW_PERSIST_INTERVAL_MS
+      ) {
+        return
+      }
+
+      const previewContainerRefs: Array<{ kind: 'directory' | 'archive'; path: string }> = []
+      for (const directoryPath of previewDirectoryImageFilesByPath.keys()) {
+        previewContainerRefs.push({ kind: 'directory', path: directoryPath })
+      }
+      for (const archivePath of previewArchivePaths.values()) {
+        previewContainerRefs.push({ kind: 'archive', path: archivePath })
+      }
+      previewContainerRefs.sort((left, right) => left.path.localeCompare(right.path, 'zh-CN'))
+
+      const limitedRefs = previewContainerRefs.slice(0, COLLECTING_PREVIEW_CONTAINER_LIMIT)
+      if (limitedRefs.length === 0) {
+        return
+      }
+
+      const packageGradeOverridesBySourceId = this.options.getPackageGradeOverridesBySourceId()
+      const previewDirectories: ImagePackageDto[] = []
+      const previewPackages: ImagePackageDto[] = []
+
+      for (const ref of limitedRefs) {
+        if (ref.kind === 'directory') {
+          const imageFiles = previewDirectoryImageFilesByPath.get(ref.path)
+          if (!imageFiles || imageFiles.length === 0) {
+            continue
+          }
+          previewDirectories.push(
+            createDirectorySource({
+              directoryPath: ref.path,
+              imageFiles,
+              colorPalette: [...this.options.colorPalette],
+              packageGradeOverridesBySourceId,
+            }),
+          )
+          continue
+        }
+
+        const extension = path.extname(ref.path).toLowerCase()
+        const archiveFile: FileRecord = {
+          absolutePath: ref.path,
+          relativePath: normalizePathKey(ref.path),
+          extension,
+          sizeBytes: 0,
+          width: 0,
+          height: 0,
+        }
+        previewPackages.push(
+          createArchiveSource({
+            file: archiveFile,
+            imageEntries: [],
+            archivePathForMediaRead: ref.path,
+            colorPalette: [...this.options.colorPalette],
+            packageGradeOverridesBySourceId,
+          }),
+        )
+      }
+
+      const packageByPath = new Map(baseSnapshot.image_packages.map((item) => [item.absolute_path, item]))
+      const directoryByPath = new Map(baseSnapshot.image_directories.map((item) => [item.absolute_path, item]))
+
+      for (const item of previewPackages) {
+        packageByPath.set(item.absolute_path, item)
+      }
+      for (const item of previewDirectories) {
+        directoryByPath.set(item.absolute_path, item)
+      }
+
+      const previewSnapshot = librarySnapshotDtoSchema.parse({
+        image_packages: Array.from(packageByPath.values()).sort((left, right) =>
+          left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
+        ),
+        image_directories: Array.from(directoryByPath.values()).sort((left, right) =>
+          left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
+        ),
+        videos: baseSnapshot.videos,
+        audios: baseSnapshot.audios ?? [],
+      })
+
+      this.snapshotCache = previewSnapshot
+      this.options.database.replaceSnapshot(previewSnapshot)
+      lastPreviewPersistedAtMs = now
+      lastPreviewPersistedContainerCount = discoveredContainerCount
+    }
+
+    console.info('library snapshot refresh started')
+    this.emitRefreshProgress(options, {
+      stage: 'collecting',
+      scanned_file_count: scannedFileCount,
+      discovered_container_count: discoveredContainerCount,
+      message: '薄扫描进行中',
+    })
+
+    const files = await this.collectFiles({
+      onFileDiscovered: (payload) => {
+        scannedFileCount = payload.scannedCount
+
+        if (this.options.imageExtensions.has(payload.extension)) {
+          const directoryPath = path.dirname(payload.absolutePath)
+          let imageFiles = previewDirectoryImageFilesByPath.get(directoryPath)
+          if (!imageFiles) {
+            imageFiles = []
+            previewDirectoryImageFilesByPath.set(directoryPath, imageFiles)
+          }
+
+          let fileKeys = previewDirectoryImageFileKeysByPath.get(directoryPath)
+          if (!fileKeys) {
+            fileKeys = new Set<string>()
+            previewDirectoryImageFileKeysByPath.set(directoryPath, fileKeys)
+          }
+
+          const fileKey = normalizeAllowlistKey(payload.absolutePath)
+          if (!fileKeys.has(fileKey)) {
+            fileKeys.add(fileKey)
+            imageFiles.push({
+              absolutePath: payload.absolutePath,
+              relativePath: normalizePathKey(payload.absolutePath),
+              extension: payload.extension,
+              sizeBytes: 0,
+              width: 0,
+              height: 0,
+            })
+          }
+        }
+
+        if (this.options.archiveExtensions.has(payload.extension)) {
+          previewArchivePaths.add(path.resolve(payload.absolutePath))
+        }
+
+        discoveredContainerCount = previewDirectoryImageFilesByPath.size + previewArchivePaths.size
+        persistCollectingPreviewSnapshot(false)
+
+        const now = Date.now()
+        if (
+          scannedFileCount === 1 ||
+          scannedFileCount % 200 === 0 ||
+          discoveredContainerCount % 32 === 0 ||
+          now - lastProgressReportedAt >= 300
+        ) {
+          lastProgressReportedAt = now
+          this.emitRefreshProgress(options, {
+            stage: 'collecting',
+            scanned_file_count: scannedFileCount,
+            discovered_container_count: discoveredContainerCount,
+            message: `薄扫描进行中，已处理 ${scannedFileCount} 个文件，已发现 ${discoveredContainerCount} 个容器`,
+          })
+        }
+      },
+    })
+    persistCollectingPreviewSnapshot(true)
     const musicImportSources = this.options.getMusicImportSources()
     const musicImportDirectoryRoots = Array.from(new Set(musicImportSources.directories.map((value) => path.resolve(value))))
     const musicImportFileAllowlistKeys = new Set(
@@ -589,6 +839,17 @@ export class LibrarySnapshotService {
       }
     }
 
+    const totalContainerCount = directoryImageMap.size + archives.length
+    this.emitRefreshProgress(options, {
+      stage: 'building',
+      scanned_file_count: scannedFileCount,
+      discovered_container_count: discoveredContainerCount,
+      unit_kind: 'container',
+      unit_processed_count: 0,
+      unit_total_count: Math.max(1, totalContainerCount),
+      message: `薄扫描完成，开始构建容器（0/${Math.max(1, totalContainerCount)}）`,
+    })
+
     const musicRootMediaFlags = new Map<string, { hasAudio: boolean; hasImage: boolean }>()
     for (const rootPath of musicImportDirectoryRoots) {
       musicRootMediaFlags.set(rootPath, { hasAudio: false, hasImage: false })
@@ -621,29 +882,62 @@ export class LibrarySnapshotService {
     const nextArchiveEntryIndexByPath = new Map<string, Set<string>>()
     const nextZipEntryIndexByPath = new Map<string, Map<string, ZipCentralEntry>>()
 
-    const imageDirectories = Array.from(directoryImageMap.entries())
-      .map(([directoryPath, imageFiles]) => {
-        imageFiles.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
-        const bookletRoot = bookletRootPaths.find((rootPath) => isPathInsideRoot(rootPath, directoryPath))
-        return createDirectorySource({
+    const totalContainerCountSafe = Math.max(1, totalContainerCount)
+    let builtContainerCount = 0
+    let lastBuildingProgressReportedAtMs = 0
+    const reportBuildingProgress = (message: string, force = false): void => {
+      const now = Date.now()
+      if (!force && now - lastBuildingProgressReportedAtMs < 280 && builtContainerCount % 24 !== 0) {
+        return
+      }
+
+      lastBuildingProgressReportedAtMs = now
+      this.emitRefreshProgress(options, {
+        stage: 'building',
+        scanned_file_count: scannedFileCount,
+        discovered_container_count: discoveredContainerCount,
+        unit_kind: 'container',
+        unit_processed_count: Math.min(totalContainerCountSafe, builtContainerCount),
+        unit_total_count: totalContainerCountSafe,
+        message,
+      })
+    }
+
+    const packageGradeOverridesBySourceId = this.options.getPackageGradeOverridesBySourceId()
+    const sortedDirectoryEntries = Array.from(directoryImageMap.entries()).sort((left, right) =>
+      left[0].localeCompare(right[0], 'zh-CN'),
+    )
+    const imageDirectories: ImagePackageDto[] = []
+    for (const [directoryPath, imageFiles] of sortedDirectoryEntries) {
+      imageFiles.sort((left, right) => left.relativePath.localeCompare(right.relativePath, 'zh-CN'))
+      const bookletRoot = bookletRootPaths.find((rootPath) => isPathInsideRoot(rootPath, directoryPath))
+      imageDirectories.push(
+        createDirectorySource({
           directoryPath,
           imageFiles,
           colorPalette: [...this.options.colorPalette],
-          packageGradeOverridesBySourceId: this.options.getPackageGradeOverridesBySourceId(),
+          packageGradeOverridesBySourceId,
           treePathOverride: bookletRoot ? buildBookletTreePath(directoryPath) : undefined,
-        })
-      })
-      .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
+        }),
+      )
+      builtContainerCount += 1
+      reportBuildingProgress(`构建容器进行中（${Math.min(totalContainerCountSafe, builtContainerCount)}/${totalContainerCountSafe}）`)
+    }
+
+    imageDirectories.sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
     const preparedArchives = await parallelMapLimit(archives, this.options.archiveScanConcurrency, async (archive) => {
-        const prepared = await this.prepareArchiveEntries(archive)
-        const imageEntries = prepared.imageEntries.sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
-        return {
-          archive,
-          archivePathForMediaRead: prepared.archivePathForMediaRead,
-          imageEntries,
-        }
-      })
+      const prepared = await this.prepareArchiveEntries(archive)
+      const imageEntries = prepared.imageEntries.sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
+      builtContainerCount += 1
+      reportBuildingProgress(`构建容器进行中（${Math.min(totalContainerCountSafe, builtContainerCount)}/${totalContainerCountSafe}）`)
+      return {
+        archive,
+        archivePathForMediaRead: prepared.archivePathForMediaRead,
+        imageEntries,
+      }
+    })
+    reportBuildingProgress(`构建容器完成（${Math.min(totalContainerCountSafe, builtContainerCount)}/${totalContainerCountSafe}）`, true)
 
     const imagePackages: ImagePackageDto[] = []
     for (const prepared of preparedArchives) {
@@ -662,7 +956,7 @@ export class LibrarySnapshotService {
           imageEntries: prepared.imageEntries,
           archivePathForMediaRead: prepared.archivePathForMediaRead,
           colorPalette: [...this.options.colorPalette],
-          packageGradeOverridesBySourceId: this.options.getPackageGradeOverridesBySourceId(),
+          packageGradeOverridesBySourceId,
         }),
       )
     }
@@ -692,6 +986,16 @@ export class LibrarySnapshotService {
       audios: audioItems,
     })
 
+    this.emitRefreshProgress(options, {
+      stage: 'persisting',
+      scanned_file_count: scannedFileCount,
+      discovered_container_count: discoveredContainerCount,
+      unit_kind: 'container',
+      unit_processed_count: totalContainerCountSafe,
+      unit_total_count: totalContainerCountSafe,
+      message: '写入数据库中',
+    })
+
     this.archiveEntryIndexByPath = nextArchiveEntryIndexByPath
     this.zipEntryIndexByPath = nextZipEntryIndexByPath
 
@@ -707,6 +1011,23 @@ export class LibrarySnapshotService {
       )
     }
 
-    return this.options.database.readSnapshot()
+    const snapshot = this.options.database.readSnapshot()
+    console.info('library snapshot refresh finished', {
+      scannedFileCount,
+      imagePackageCount: snapshot.image_packages.length,
+      imageDirectoryCount: snapshot.image_directories.length,
+      videoCount: snapshot.videos.length,
+      audioCount: snapshot.audios?.length ?? 0,
+    })
+    this.emitRefreshProgress(options, {
+      stage: 'persisting',
+      scanned_file_count: scannedFileCount,
+      discovered_container_count: discoveredContainerCount,
+      unit_kind: 'container',
+      unit_processed_count: totalContainerCountSafe,
+      unit_total_count: totalContainerCountSafe,
+      message: `快照刷新完成，已写入 ${scannedFileCount} 个文件`,
+    })
+    return snapshot
   }
 }

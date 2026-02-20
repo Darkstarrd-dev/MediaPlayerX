@@ -37,6 +37,7 @@ interface MediaResourceServiceOptions {
   archiveNormalizeRecheckMs: number
   mediaTokenService: MediaTokenService
   ensureSnapshotLoaded: () => Promise<unknown>
+  refreshArchiveIndexesForPaths: (archivePaths: Iterable<string>) => Promise<void>
   markInteractiveRead: () => void
   buildMediaAccessContext: () => MediaAccessGuardContext
   ensureRuntimeDependencies: () => Promise<RuntimeDependencySnapshot>
@@ -56,6 +57,8 @@ export class MediaResourceService {
   }
 
   private resolveDeniedLogAtByKey = new Map<string, number>()
+
+  private archiveIndexRefreshByPath = new Map<string, Promise<void>>()
 
   constructor(private readonly options: MediaResourceServiceOptions) {}
 
@@ -77,6 +80,47 @@ export class MediaResourceService {
     }
 
     return true
+  }
+
+  private async refreshArchiveIndexForPath(archivePath: string): Promise<void> {
+    const key = normalizeAllowlistKey(archivePath)
+    const existing = this.archiveIndexRefreshByPath.get(key)
+    if (existing) {
+      await existing
+      return
+    }
+
+    const refreshPromise = this.options
+      .refreshArchiveIndexesForPaths([archivePath])
+      .catch((error) => {
+        console.warn('resolveMediaResource archive index refresh failed', {
+          archivePath,
+          reason: error instanceof Error && error.message ? error.message : String(error),
+        })
+      })
+      .finally(() => {
+        this.archiveIndexRefreshByPath.delete(key)
+      })
+
+    this.archiveIndexRefreshByPath.set(key, refreshPromise)
+    await refreshPromise
+  }
+
+  private async assertLocatorAllowedWithRecovery(locator: MediaLocatorDto): Promise<MediaLocatorDto> {
+    try {
+      return await assertLocatorAllowed(locator, this.options.buildMediaAccessContext())
+    } catch (error) {
+      if (
+        !(error instanceof MediaAccessError) ||
+        error.reason !== 'archive_entry_not_allowlisted' ||
+        locator.kind !== 'archive-entry'
+      ) {
+        throw error
+      }
+
+      await this.refreshArchiveIndexForPath(locator.archive_path)
+      return assertLocatorAllowed(locator, this.options.buildMediaAccessContext())
+    }
   }
 
   async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
@@ -109,7 +153,7 @@ export class MediaResourceService {
 
     let locator: MediaLocatorDto
     try {
-      locator = await assertLocatorAllowed(request.locator, this.options.buildMediaAccessContext())
+      locator = await this.assertLocatorAllowedWithRecovery(request.locator)
     } catch (error) {
       if (error instanceof MediaAccessError) {
         this.countResolveDenied(error.reason)

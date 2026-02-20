@@ -570,6 +570,23 @@ export class MediaLibrarySnapshotStore {
     return touched
   }
 
+  writeAudioTreePath(audioId: string, treePath: string[]): void {
+    const normalizedAudioId = audioId.trim()
+    if (!normalizedAudioId) {
+      return
+    }
+
+    this.db
+      .prepare(
+        `
+          UPDATE audio_item
+          SET tree_path_json = ?, updated_at_ms = ?
+          WHERE id = ?
+        `,
+      )
+      .run(JSON.stringify(treePath), Date.now(), normalizedAudioId)
+  }
+
   deleteImageItems(imageIds: string[]): { deletedCount: number; touchedSourceIds: string[] } {
     const normalizedIds = Array.from(new Set(imageIds.map((value) => value.trim()).filter(Boolean)))
     if (normalizedIds.length === 0) {

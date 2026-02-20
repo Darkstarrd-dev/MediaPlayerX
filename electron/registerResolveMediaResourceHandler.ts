@@ -12,6 +12,29 @@ const MEDIA_ACCESS_FALLBACK_TTL_MS = 60_000
 export function registerResolveMediaResourceHandler(ensureService: () => FileSystemMediaReadService): void {
   let resolveMediaResourceCount = 0
   let resolveMediaResourceFailureCount = 0
+  let resolveMediaAccessFallbackCount = 0
+  const resolveMediaAccessFallbackCountByReason: Record<string, number> = {}
+  const resolveMediaAccessFallbackLogAtByReason = new Map<string, number>()
+
+  const shouldLogMediaAccessFallback = (reason: string): boolean => {
+    const now = Date.now()
+    const reasonCount = (resolveMediaAccessFallbackCountByReason[reason] ?? 0) + 1
+    resolveMediaAccessFallbackCountByReason[reason] = reasonCount
+
+    const previousAt = resolveMediaAccessFallbackLogAtByReason.get(reason)
+    const inCooldown = typeof previousAt === 'number' && now - previousAt < 2_500
+    const shouldLog =
+      isRuntimeDiagnosticsVerboseEnabled() || reasonCount <= 5 || reasonCount % 50 === 0 || !inCooldown
+
+    if (shouldLog) {
+      resolveMediaAccessFallbackLogAtByReason.set(reason, now)
+      if (resolveMediaAccessFallbackLogAtByReason.size > 256) {
+        resolveMediaAccessFallbackLogAtByReason.clear()
+      }
+    }
+
+    return shouldLog
+  }
 
   ipcMain.handle(BACKEND_CHANNELS.resolveMediaResource, async (_event, payload: unknown) => {
     const request = resolveMediaResourceRequestSchema.parse(payload)
@@ -50,9 +73,14 @@ export function registerResolveMediaResourceHandler(ensureService: () => FileSys
         throw error
       }
 
-      console.warn('resolveMediaResource fallback', {
-        reason: error.reason,
-      })
+      resolveMediaAccessFallbackCount += 1
+      if (shouldLogMediaAccessFallback(error.reason)) {
+        console.warn('resolveMediaResource fallback', {
+          reason: error.reason,
+          fallbackCount: resolveMediaAccessFallbackCount,
+          reasonCount: resolveMediaAccessFallbackCountByReason[error.reason] ?? 0,
+        })
+      }
 
       return resolveMediaResourceResponseSchema.parse({
         resource_url: MEDIA_ACCESS_FALLBACK_URL,

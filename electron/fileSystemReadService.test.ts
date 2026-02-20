@@ -425,6 +425,52 @@ describe('FileSystemMediaReadService', () => {
     ).rejects.toThrow(/entry 非法|entry 不在白名单/)
   })
 
+  it('服务重启后首次读取 zip entry 可自愈白名单并返回资源', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-zip-restart-allowlist-'))
+    createdRoots.push(root)
+
+    const zipPath = path.join(root, 'gallery.zip')
+    await writeStoredZip(zipPath, [
+      { name: '01.webp', content: Buffer.from([0x52, 0x49, 0x46, 0x46]) },
+      { name: '02.jpg', content: Buffer.from([0xff, 0xd8, 0xff, 0xd9]) },
+    ])
+
+    const first = new FileSystemMediaReadService(root)
+    createdServices.push(first)
+    await enqueueImportAndWait(first, 'dialog-files', [zipPath])
+    await first.readLibrarySnapshot()
+
+    const restarted = new FileSystemMediaReadService(root)
+    createdServices.push(restarted)
+    const snapshot = await restarted.readLibrarySnapshot()
+    const packageDto = snapshot.image_packages.find((item) => item.absolute_path === zipPath)
+    const webpImage = packageDto?.images.find(
+      (image) => image.media_locator.kind === 'archive-entry' && image.media_locator.entry_name === '01.webp',
+    )
+
+    expect(webpImage).toBeTruthy()
+
+    const resolved = await restarted.resolveMediaResource({
+      locator: {
+        kind: 'archive-entry',
+        archive_path: zipPath,
+        archive_format: 'zip',
+        entry_name: '01.webp',
+        extension: '.webp',
+        media_type: 'image',
+        mime_type: 'image/webp',
+      },
+    })
+
+    expect(resolved.mime_type).toBe('image/webp')
+
+    const token = decodeURIComponent(new URL(resolved.resource_url).pathname.replace(/^\//, ''))
+    const payload = await restarted.readMediaResourceByToken(token, null)
+    expect(payload.status).toBe(200)
+    expect(payload.headers['content-type']).toBe('image/webp')
+    expect(payload.body.length).toBeGreaterThan(0)
+  })
+
   it('缩略图请求可生成 Sharp WebP 缓存并复用受控协议返回', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-thumb-cache-'))
     createdRoots.push(root)

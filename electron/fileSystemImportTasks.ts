@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import type { ImportTaskRecord, MediaLibraryDatabase } from './mediaLibraryDatabase'
 import { isPathInsideRoot, normalizeAllowlistKey } from './fileSystemServiceHelpers'
+import type { SnapshotRefreshOptions } from './services/file-system-read/librarySnapshotService'
 
 interface ImportPathInspection {
   absolutePath: string
@@ -104,8 +105,8 @@ interface ExecuteImportTaskParams {
   musicImportMode: boolean
   database: MediaLibraryDatabase
   invalidateCache: () => void
-  ensureSnapshotLoaded: () => Promise<unknown>
-  emitLibraryChanged: (payload: { reason: 'import-task-finished'; updated_at_ms: number }) => void
+  refreshSnapshot: (options?: SnapshotRefreshOptions) => Promise<unknown>
+  emitLibraryChanged: (payload: { reason: 'import-task-updated' | 'import-task-finished'; updated_at_ms: number }) => void
 }
 
 export async function executeImportTask(params: ExecuteImportTaskParams): Promise<ImportTaskRecord> {
@@ -114,15 +115,44 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
     throw new Error(`导入任务不存在: ${params.taskId}`)
   }
 
+  const upsertTask = (patch: Partial<ImportTaskRecord>): ImportTaskRecord => {
+    const current = params.database.readTask(params.taskId) ?? existing
+    const next: ImportTaskRecord = {
+      ...current,
+      ...patch,
+      updatedAtMs: patch.updatedAtMs ?? Date.now(),
+    }
+    params.database.upsertTask(next)
+    return next
+  }
+
+  let lastImportTaskUpdatedEmitAtMs = 0
+  const emitImportTaskUpdated = (force = false) => {
+    const now = Date.now()
+    if (!force && now - lastImportTaskUpdatedEmitAtMs < 800) {
+      return
+    }
+    lastImportTaskUpdatedEmitAtMs = now
+    params.emitLibraryChanged({
+      reason: 'import-task-updated',
+      updated_at_ms: now,
+    })
+  }
+
   const totalCount = existing.sourcePaths.length
   const startedAtMs = Date.now()
-  params.database.upsertTask({
-    ...existing,
+  upsertTask({
     status: 'running',
     progress: totalCount > 0 ? existing.processedCount / totalCount : 1,
     message: '导入进行中',
     errorDetail: null,
     updatedAtMs: startedAtMs,
+  })
+  emitImportTaskUpdated(true)
+  console.info('import task started', {
+    taskId: params.taskId,
+    sourcePathCount: totalCount,
+    musicImportMode: params.musicImportMode,
   })
 
   let processedCount = 0
@@ -227,16 +257,15 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
     }
 
     processedCount += 1
-    params.database.upsertTask({
-      ...existing,
+    upsertTask({
       status: 'running',
       progress: totalCount > 0 ? processedCount / totalCount : 1,
       processedCount,
       totalCount,
       message: `导入进行中 ${processedCount}/${totalCount} | 新增引用 ${addedDirectoryCount + addedFileCount}`,
       errorDetail: failedMessages.length > 0 ? failedMessages.slice(0, 3).join(' | ') : null,
-      updatedAtMs: Date.now(),
     })
+    emitImportTaskUpdated()
   }
 
   const addedTotal = addedDirectoryCount + addedFileCount
@@ -255,7 +284,68 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
     }
 
     params.invalidateCache()
-    await params.ensureSnapshotLoaded()
+
+    let lastRefreshReportAtMs = 0
+    let lastRefreshReportedCount = 0
+    let lastRefreshContainerReportedCount = 0
+    let runningContainerProcessed = Math.max(processedCount, 0)
+    let runningContainerTotal = Math.max(totalCount, 1)
+    const refreshStartedAtMs = Date.now()
+    await params.refreshSnapshot({
+      onProgress: (progress) => {
+        const discoveredContainerCount = Math.max(0, progress.discovered_container_count ?? 0)
+        if (progress.stage !== 'collecting') {
+          const unitProcessed = Math.max(0, progress.unit_processed_count ?? runningContainerProcessed)
+          const unitTotal = Math.max(1, progress.unit_total_count ?? runningContainerTotal, unitProcessed)
+          runningContainerProcessed = unitProcessed
+          runningContainerTotal = unitTotal
+
+          const stageProgress =
+            progress.stage === 'building' ? Math.min(0.95, 0.55 + (0.4 * unitProcessed) / unitTotal) : 0.98
+          upsertTask({
+            status: 'running',
+            processedCount: unitProcessed,
+            totalCount: unitTotal,
+            progress: stageProgress,
+            message: progress.message,
+          })
+          emitImportTaskUpdated()
+          return
+        }
+
+        const now = Date.now()
+        if (
+          progress.scanned_file_count > 0 &&
+          progress.scanned_file_count - lastRefreshReportedCount < 200 &&
+          discoveredContainerCount - lastRefreshContainerReportedCount < 32 &&
+          now - lastRefreshReportAtMs < 350
+        ) {
+          return
+        }
+
+        lastRefreshReportAtMs = now
+        lastRefreshReportedCount = progress.scanned_file_count
+        lastRefreshContainerReportedCount = discoveredContainerCount
+        const scanWeight = 0.45 * (1 - 1 / (1 + progress.scanned_file_count / 400))
+        const progressValue = Math.max(totalCount > 0 ? processedCount / totalCount : 0.5, 0.5 + scanWeight)
+        const previewContainerTotal = Math.max(1, discoveredContainerCount)
+        upsertTask({
+          status: 'running',
+          processedCount: discoveredContainerCount,
+          totalCount: previewContainerTotal,
+          progress: Math.min(0.95, progressValue),
+          message: progress.message,
+          errorDetail: failedMessages.length > 0 ? failedMessages.slice(0, 3).join(' | ') : null,
+        })
+        emitImportTaskUpdated()
+        console.info('import task thin-scan progress', {
+          taskId: params.taskId,
+          scannedFileCount: progress.scanned_file_count,
+          discoveredContainerCount,
+          elapsedMs: now - refreshStartedAtMs,
+        })
+      },
+    })
 
     params.emitLibraryChanged({
       reason: 'import-task-finished',
@@ -273,8 +363,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
         : `导入完成，共 ${acceptedCount} 项，新增引用 ${addedTotal} 项（目录 ${addedDirectoryCount} + 文件 ${addedFileCount}）`
       : `导入失败，成功 ${acceptedCount} 项，失败 ${failedCount} 项`
 
-  params.database.upsertTask({
-    ...existing,
+  upsertTask({
     status,
     progress: 1,
     processedCount: totalCount,
@@ -282,6 +371,17 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
     message,
     errorDetail: failedMessages.length > 0 ? failedMessages.join('\n') : null,
     updatedAtMs: finishedAtMs,
+  })
+  emitImportTaskUpdated(true)
+  console.info('import task finished', {
+    taskId: params.taskId,
+    status,
+    acceptedCount,
+    failedCount,
+    addedDirectoryCount,
+    addedFileCount,
+    addedMusicDirectoryCount,
+    addedMusicFileCount,
   })
 
   const finalTask = params.database.readTask(params.taskId)
