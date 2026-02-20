@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { runTaskInProcess } from "./processTaskOrchestrator";
+import { disposeTaskProcessRunners, runTaskInProcess } from "./processTaskOrchestrator";
 
 interface TempCaseDir {
   rootDir: string;
@@ -19,6 +19,7 @@ describe("runTaskInProcess", () => {
   const tempDirs: string[] = [];
 
   afterEach(async () => {
+    await disposeTaskProcessRunners();
     await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
   });
 

@@ -33,6 +33,12 @@ interface ParsedRequest {
   legacy: boolean
 }
 
+const cancelledRequestIds = new Set<string>()
+
+const queuedMessages: unknown[] = []
+
+let workerRunning = false
+
 function postResult(payload: ThumbnailRenderResult): void {
   if (parentPort) {
     parentPort.postMessage(payload)
@@ -103,10 +109,9 @@ function parseRequest(raw: unknown): ParsedRequest {
 }
 
 function maybeExit(code: number): void {
-  if (parentPort) {
-    return
+  if (!parentPort && process.env.MEDIA_PLAYERX_TASK_WORKER_ONESHOT === '1') {
+    process.exitCode = code
   }
-  process.exitCode = code
 }
 
 function normalizePayload(raw: unknown): {
@@ -150,6 +155,12 @@ function normalizePayload(raw: unknown): {
 
 async function runThumbnailRender(rawPayload: unknown): Promise<void> {
   const parsedRequest = parseRequest(rawPayload)
+
+  if (cancelledRequestIds.has(parsedRequest.requestId)) {
+    cancelledRequestIds.delete(parsedRequest.requestId)
+    return
+  }
+
   const payload = normalizePayload(parsedRequest.payload)
   const heartbeatTimer = setInterval(() => {
     postHeartbeat()
@@ -228,6 +239,13 @@ async function runThumbnailRender(rawPayload: unknown): Promise<void> {
       .webp({ quality: payload.quality })
       .toFile(payload.tempPath)
 
+    if (cancelledRequestIds.has(parsedRequest.requestId)) {
+      cancelledRequestIds.delete(parsedRequest.requestId)
+      await fs.rm(payload.tempPath, { force: true }).catch(() => undefined)
+      clearInterval(heartbeatTimer)
+      return
+    }
+
     if (!parsedRequest.legacy) {
       postProgress({
         kind: 'progress',
@@ -278,17 +296,49 @@ async function runThumbnailRender(rawPayload: unknown): Promise<void> {
   }
 }
 
-if (parentPort) {
-  void runThumbnailRender(workerData)
-} else {
-  const messageTimeout = setTimeout(() => {
-    postResult({ ok: false, error: 'thumbnail worker missing payload message' })
-    process.exit(1)
-  }, 5_000)
-  messageTimeout.unref?.()
+function enqueueMessage(message: unknown): void {
+  if (message && typeof message === 'object') {
+    const cancelEnvelope = message as { kind?: unknown; request_id?: unknown }
+    if (cancelEnvelope.kind === 'cancel' && typeof cancelEnvelope.request_id === 'string') {
+      cancelledRequestIds.add(cancelEnvelope.request_id)
+      return
+    }
+  }
 
-  process.once('message', (message) => {
-    clearTimeout(messageTimeout)
-    void runThumbnailRender(message)
+  queuedMessages.push(message)
+  void drainQueue()
+}
+
+async function drainQueue(): Promise<void> {
+  if (workerRunning) {
+    return
+  }
+
+  const next = queuedMessages.shift()
+  if (typeof next === 'undefined') {
+    return
+  }
+
+  workerRunning = true
+  try {
+    await runThumbnailRender(next)
+  } finally {
+    workerRunning = false
+    if (queuedMessages.length > 0) {
+      void drainQueue()
+    }
+  }
+}
+
+if (parentPort) {
+  if (typeof workerData !== 'undefined') {
+    enqueueMessage(workerData)
+  }
+  parentPort.on('message', (message) => {
+    enqueueMessage(message)
+  })
+} else {
+  process.on('message', (message) => {
+    enqueueMessage(message)
   })
 }
