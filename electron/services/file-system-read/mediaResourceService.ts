@@ -42,8 +42,9 @@ interface MediaResourceServiceOptions {
   buildMediaAccessContext: () => MediaAccessGuardContext
   ensureRuntimeDependencies: () => Promise<RuntimeDependencySnapshot>
   readImageBufferForThumbnail: (locator: MediaLocatorDto) => Promise<Buffer>
-  onThumbnailRenderingStart: () => void
-  onThumbnailRenderingEnd: () => void
+  onThumbnailRenderingStart: (taskKey: string) => void
+  onThumbnailRenderingProgress: (taskKey: string, payload: { progress: number | null; message: string | null }) => void
+  onThumbnailRenderingEnd: (taskKey: string) => void
   runWithThumbnailCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>
   withArchiveReadLock?: <T>(archivePath: string, task: () => Promise<T>) => Promise<T>
   hasPendingArchiveNormalization: () => boolean
@@ -180,6 +181,7 @@ export class MediaResourceService {
       ensureRuntimeDependencies: this.options.ensureRuntimeDependencies,
       readImageBufferForThumbnail: this.options.readImageBufferForThumbnail,
       onRenderingStart: this.options.onThumbnailRenderingStart,
+      onRenderingProgress: this.options.onThumbnailRenderingProgress,
       onRenderingEnd: this.options.onThumbnailRenderingEnd,
       runWithCpuToken: this.options.runWithThumbnailCpuToken,
       hasPendingArchiveNormalization: this.options.hasPendingArchiveNormalization,

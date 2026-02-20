@@ -48,11 +48,17 @@ export class ArchiveNormalizationService {
 
   private archiveNormalizationRunningPath: string | null = null
 
+  private archiveNormalizationRunningProgress: number | null = null
+
+  private archiveNormalizationRunningMessage: string | null = null
+
   private archiveNormalizationDrainTimer: ReturnType<typeof setTimeout> | null = null
 
   private lastInteractiveReadAtMs = Date.now()
 
   private thumbnailRenderingInFlight = 0
+
+  private thumbnailRenderingProgressByTaskKey = new Map<string, { progress: number | null; message: string | null }>()
 
   private archiveNormalizationStateBySourcePath = new Map<string, ArchiveNormalizationTaskState>()
 
@@ -77,6 +83,10 @@ export class ArchiveNormalizationService {
     this.archiveNormalizationPendingLow.clear()
     this.archiveNormalizationPendingHigh.clear()
     this.archiveNormalizationRunningPath = null
+    this.archiveNormalizationRunningProgress = null
+    this.archiveNormalizationRunningMessage = null
+    this.thumbnailRenderingInFlight = 0
+    this.thumbnailRenderingProgressByTaskKey.clear()
     this.archiveNormalizationStateBySourcePath.clear()
     this.archiveNormalizationRetryCountBySourcePath.clear()
     this.archiveNormalizationCircuitOpenUntilBySourcePath.clear()
@@ -94,6 +104,8 @@ export class ArchiveNormalizationService {
     this.archiveNormalizationCircuitOpenUntilBySourcePath.delete(resolvedPath)
     if (this.archiveNormalizationRunningPath === resolvedPath) {
       this.archiveNormalizationRunningPath = null
+      this.archiveNormalizationRunningProgress = null
+      this.archiveNormalizationRunningMessage = null
     }
     this.persistPendingQueueState()
   }
@@ -121,12 +133,30 @@ export class ArchiveNormalizationService {
     }
   }
 
-  onThumbnailRenderingStart(): void {
+  onThumbnailRenderingStart(taskKey: string): void {
     this.thumbnailRenderingInFlight += 1
+    this.thumbnailRenderingProgressByTaskKey.set(taskKey, {
+      progress: 0,
+      message: 'thumbnail-render-started',
+    })
+    this.emitStatusChanged()
   }
 
-  onThumbnailRenderingEnd(): void {
+  onThumbnailRenderingProgress(taskKey: string, payload: { progress: number | null; message: string | null }): void {
+    if (!this.thumbnailRenderingProgressByTaskKey.has(taskKey)) {
+      this.thumbnailRenderingInFlight += 1
+    }
+    this.thumbnailRenderingProgressByTaskKey.set(taskKey, {
+      progress: payload.progress,
+      message: payload.message,
+    })
+    this.emitStatusChanged()
+  }
+
+  onThumbnailRenderingEnd(taskKey: string): void {
     this.thumbnailRenderingInFlight = Math.max(0, this.thumbnailRenderingInFlight - 1)
+    this.thumbnailRenderingProgressByTaskKey.delete(taskKey)
+    this.emitStatusChanged()
   }
 
   queueRar7zNormalization(sourceArchivePath: string, priority: 'low' | 'high' = 'low'): void {
@@ -218,6 +248,32 @@ export class ArchiveNormalizationService {
     this.options.emitArchiveLoadStatusChanged(this.buildArchiveLoadStatusPayload())
   }
 
+  private buildThumbnailProgressSnapshot(): {
+    runningCount: number
+    runningProgress: number | null
+    runningMessage: string | null
+  } {
+    const entries = Array.from(this.thumbnailRenderingProgressByTaskKey.values())
+    const runningCount = Math.max(this.thumbnailRenderingInFlight, entries.length)
+
+    const numericProgress = entries
+      .map((entry) => entry.progress)
+      .filter((value): value is number => typeof value === 'number' && Number.isFinite(value))
+    const runningProgress =
+      numericProgress.length > 0
+        ? Math.max(0, Math.min(1, numericProgress.reduce((sum, value) => sum + value, 0) / numericProgress.length))
+        : null
+
+    const runningMessage =
+      entries.find((entry) => typeof entry.message === 'string' && entry.message.trim().length > 0)?.message ?? null
+
+    return {
+      runningCount,
+      runningProgress,
+      runningMessage,
+    }
+  }
+
   private buildArchiveLoadStatusPayload(): ReadArchiveLoadStatusResponseDto {
     const pendingArchivePaths = Array.from(
       new Set([...this.archiveNormalizationPendingHigh, ...this.archiveNormalizationPendingLow]),
@@ -230,9 +286,18 @@ export class ArchiveNormalizationService {
         ? this.archiveNormalizationRunningPath
         : null
 
+    const runningArchiveProgress = runningArchivePath ? this.archiveNormalizationRunningProgress : null
+    const runningArchiveMessage = runningArchivePath ? this.archiveNormalizationRunningMessage : null
+    const thumbnailProgressSnapshot = this.buildThumbnailProgressSnapshot()
+
     return readArchiveLoadStatusResponseSchema.parse({
       running_archive_path: runningArchivePath,
+      running_archive_progress: runningArchiveProgress,
+      running_archive_message: runningArchiveMessage,
       pending_archive_paths: pendingArchivePaths,
+      thumbnail_running_count: thumbnailProgressSnapshot.runningCount,
+      thumbnail_running_progress: thumbnailProgressSnapshot.runningProgress,
+      thumbnail_running_message: thumbnailProgressSnapshot.runningMessage,
       updated_at_ms: Date.now(),
     })
   }
@@ -412,6 +477,11 @@ export class ArchiveNormalizationService {
         timeoutMs: ArchiveNormalizationService.ARCHIVE_NORMALIZE_PROCESS_TIMEOUT_MS,
         heartbeatTimeoutMs: 12_000,
         maxRetries: 1,
+        onProgress: ({ progress, message }) => {
+          this.archiveNormalizationRunningProgress = progress
+          this.archiveNormalizationRunningMessage = message
+          this.emitStatusChanged()
+        },
         onAudit: ({ stage, attempt, maxRetries, message }) => {
           if (
             stage === 'cancel-sent' ||
@@ -465,6 +535,8 @@ export class ArchiveNormalizationService {
     this.archiveNormalizationPendingHigh.delete(resolvedPath)
     this.archiveNormalizationPendingLow.delete(resolvedPath)
     this.archiveNormalizationRunningPath = resolvedPath
+    this.archiveNormalizationRunningProgress = 0
+    this.archiveNormalizationRunningMessage = 'archive-normalize-started'
     this.persistPendingQueueState()
 
     this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
@@ -551,6 +623,8 @@ export class ArchiveNormalizationService {
       }
     } finally {
       this.archiveNormalizationRunningPath = null
+      this.archiveNormalizationRunningProgress = null
+      this.archiveNormalizationRunningMessage = null
       this.emitStatusChanged()
       this.persistPendingQueueState()
       if (this.archiveNormalizationPendingHigh.size > 0 || this.archiveNormalizationPendingLow.size > 0) {

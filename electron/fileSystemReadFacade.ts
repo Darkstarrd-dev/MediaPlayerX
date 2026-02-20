@@ -368,8 +368,18 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
       ensureRuntimeDependencies: () => this.runtimeDependencyService.ensureRuntimeDependencies(),
       readImageBufferForThumbnail: (locator) => this.librarySnapshotService.readImageBufferForThumbnail(locator),
-      onThumbnailRenderingStart: () => this.emitLibraryChanged({ reason: 'thumbnail-rendering-start', updated_at_ms: Date.now() }),
-      onThumbnailRenderingEnd: () => this.emitLibraryChanged({ reason: 'thumbnail-rendering-end', updated_at_ms: Date.now() }),
+      onThumbnailRenderingStart: (taskKey) => {
+        this.archiveNormalizationService.onThumbnailRenderingStart(taskKey)
+        this.emitLibraryChanged({ reason: 'thumbnail-rendering-start', updated_at_ms: Date.now() })
+      },
+      onThumbnailRenderingProgress: (taskKey, payload) => {
+        this.archiveNormalizationService.onThumbnailRenderingProgress(taskKey, payload)
+        this.emitLibraryChanged({ reason: 'thumbnail-rendering-progress', updated_at_ms: Date.now() })
+      },
+      onThumbnailRenderingEnd: (taskKey) => {
+        this.archiveNormalizationService.onThumbnailRenderingEnd(taskKey)
+        this.emitLibraryChanged({ reason: 'thumbnail-rendering-end', updated_at_ms: Date.now() })
+      },
       runWithThumbnailCpuToken: (taskName, task) => this.taskResourceGovernor.runWithCpuToken(taskName, task),
       withArchiveReadLock: (archivePath, task) => this.archivePathLockService.withReadLock(archivePath, task),
       hasPendingArchiveNormalization: () => this.archiveNormalizationService.hasPending(),
@@ -421,7 +431,11 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   private emitLibraryChanged(payload: LibraryChangedEventPayload): void {
     this.eventBus.emit('libraryChanged', payload)
-    if (payload.reason !== 'import-task-updated' && payload.reason !== 'archive-load-status-updated') {
+    if (
+      payload.reason !== 'import-task-updated' &&
+      payload.reason !== 'archive-load-status-updated' &&
+      payload.reason !== 'thumbnail-rendering-progress'
+    ) {
       this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_IDLE_MS)
     }
   }

@@ -7,6 +7,11 @@ export interface ImportTaskPanelProps {
   activeTaskCount: number
   pendingArchiveCount: number
   runningArchive: boolean
+  runningArchiveProgress: number | null
+  runningArchiveMessage: string | null
+  thumbnailRunningCount: number
+  thumbnailRunningProgress: number | null
+  thumbnailRunningMessage: string | null
   enqueuePending: boolean
   taskError: string | null
   tasks: ImportTaskDto[]
@@ -55,6 +60,11 @@ function ImportTaskPanel({
   activeTaskCount,
   pendingArchiveCount,
   runningArchive,
+  runningArchiveProgress,
+  runningArchiveMessage,
+  thumbnailRunningCount,
+  thumbnailRunningProgress,
+  thumbnailRunningMessage,
   enqueuePending,
   taskError,
   tasks,
@@ -66,6 +76,14 @@ function ImportTaskPanel({
   onRemoveTask,
 }: ImportTaskPanelProps) {
   const { t } = useI18n()
+  const runningArchiveProgressPercent =
+    typeof runningArchiveProgress === 'number' && Number.isFinite(runningArchiveProgress)
+      ? Math.round(clamp(runningArchiveProgress, 0, 1) * 100)
+      : null
+  const thumbnailRunningProgressPercent =
+    typeof thumbnailRunningProgress === 'number' && Number.isFinite(thumbnailRunningProgress)
+      ? Math.round(clamp(thumbnailRunningProgress, 0, 1) * 100)
+      : null
 
   if (!open) {
     return null
@@ -77,7 +95,23 @@ function ImportTaskPanel({
         <strong>{t('ui.importTask.title')}</strong>
         <span>{t('ui.importTask.activeCount', { count: activeTaskCount })}</span>
         <span>{t('ui.importTask.pendingArchiveCount', { count: pendingArchiveCount })}</span>
-        {runningArchive ? <span>{t('ui.importTask.runningArchive')}</span> : null}
+        {runningArchive ? (
+          <span>
+            {runningArchiveProgressPercent === null
+              ? t('ui.importTask.runningArchive')
+              : t('ui.importTask.runningArchiveProgress', { progress: runningArchiveProgressPercent })}
+          </span>
+        ) : null}
+        {runningArchiveMessage ? <span>{t('ui.importTask.runningArchiveMessage', { message: runningArchiveMessage })}</span> : null}
+        {thumbnailRunningCount > 0 ? (
+          <span>{t('ui.importTask.thumbnailRunningCount', { count: thumbnailRunningCount })}</span>
+        ) : null}
+        {thumbnailRunningCount > 0 && thumbnailRunningProgressPercent !== null ? (
+          <span>{t('ui.importTask.thumbnailRunningProgress', { progress: thumbnailRunningProgressPercent })}</span>
+        ) : null}
+        {thumbnailRunningCount > 0 && thumbnailRunningMessage ? (
+          <span>{t('ui.importTask.thumbnailRunningMessage', { message: thumbnailRunningMessage })}</span>
+        ) : null}
         {enqueuePending ? <span>{t('ui.importTask.enqueuing')}</span> : null}
         <button type="button" onClick={onClose}>
           {t('ui.common.close')}

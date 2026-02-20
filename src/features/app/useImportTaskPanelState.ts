@@ -9,7 +9,12 @@ interface UseImportTaskPanelStateParams {
   enqueuePending: boolean
   archiveLoadStatus: {
     runningArchivePath: string | null
+    runningArchiveProgress: number | null
+    runningArchiveMessage: string | null
     pendingArchivePaths: string[]
+    thumbnailRunningCount: number
+    thumbnailRunningProgress: number | null
+    thumbnailRunningMessage: string | null
   }
   normalizePathForCompare: (value: string) => string
   retryImportTask: (taskId: string) => Promise<void>
@@ -28,6 +33,11 @@ interface UseImportTaskPanelStateResult {
   importTasksForPanel: ImportTaskDto[]
   normalizedPendingArchivePathSet: Set<string>
   normalizedRunningArchivePath: string | null
+  runningArchiveProgress: number | null
+  runningArchiveMessage: string | null
+  thumbnailRunningCount: number
+  thumbnailRunningProgress: number | null
+  thumbnailRunningMessage: string | null
   taskStatusLabel: string
   taskStatusBusy: boolean
   clearFinishedImportTasks: () => void
@@ -79,7 +89,8 @@ export function useImportTaskPanelState({
     : null
 
   const archiveLoadBusy = normalizedPendingArchivePathSet.size > 0 || normalizedRunningArchivePath !== null
-  const importBusy = enqueuePending || activeImportTasks.length > 0 || archiveLoadBusy
+  const thumbnailBusy = archiveLoadStatus.thumbnailRunningCount > 0
+  const importBusy = enqueuePending || activeImportTasks.length > 0 || archiveLoadBusy || thumbnailBusy
   const taskStatusBusy = importBusy || adReviewRunning || adReviewDeleting
   const taskStatusLabel = importBusy
     ? taskStatusLabels.loading
@@ -129,6 +140,11 @@ export function useImportTaskPanelState({
     importTasksForPanel,
     normalizedPendingArchivePathSet,
     normalizedRunningArchivePath,
+    runningArchiveProgress: archiveLoadStatus.runningArchiveProgress,
+    runningArchiveMessage: archiveLoadStatus.runningArchiveMessage,
+    thumbnailRunningCount: archiveLoadStatus.thumbnailRunningCount,
+    thumbnailRunningProgress: archiveLoadStatus.thumbnailRunningProgress,
+    thumbnailRunningMessage: archiveLoadStatus.thumbnailRunningMessage,
     taskStatusLabel,
     taskStatusBusy,
     clearFinishedImportTasks,

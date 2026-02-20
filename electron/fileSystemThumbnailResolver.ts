@@ -128,6 +128,7 @@ async function renderThumbnailWithProcessWorker(payload: {
   options: ThumbnailRenderOptions
   tempPath: string
   cachePath: string
+  onProgress?: (payload: { progress: number | null; message: string | null }) => void
 }): Promise<boolean> {
   await runTaskInProcess<
     {
@@ -154,6 +155,7 @@ async function renderThumbnailWithProcessWorker(payload: {
     heartbeatTimeoutMs: 12_000,
     maxRetries: 1,
     serialization: 'advanced',
+    onProgress: payload.onProgress,
     onAudit: ({ stage, attempt, maxRetries, message }) => {
       if (
         stage === 'cancel-sent' ||
@@ -181,13 +183,16 @@ async function renderThumbnailInProcess(payload: {
   options: ThumbnailRenderOptions
   tempPath: string
   cachePath: string
+  onProgress?: (payload: { progress: number | null; message: string | null }) => void
 }): Promise<boolean> {
+  payload.onProgress?.({ progress: 0.1, message: 'thumbnail-render-bootstrap' })
   const sharpModule = await getSharpModule()
   if (!sharpModule?.default) {
     return false
   }
 
   const sharp = sharpModule.default
+  payload.onProgress?.({ progress: 0.4, message: 'thumbnail-render-encoding' })
   const generated = await sharp(payload.sourceBuffer, { failOn: 'none' })
     .rotate()
     .resize({
@@ -205,9 +210,11 @@ async function renderThumbnailInProcess(payload: {
     return false
   }
 
+  payload.onProgress?.({ progress: 0.85, message: 'thumbnail-render-moving-cache' })
   await fs.rename(payload.tempPath, payload.cachePath).catch(async () => {
     await fs.rm(payload.tempPath, { force: true })
   })
+  payload.onProgress?.({ progress: 1, message: 'thumbnail-render-complete' })
   return true
 }
 
@@ -264,8 +271,9 @@ interface ResolveThumbnailLocatorParams {
   thumbnailCacheRootDir: string
   ensureRuntimeDependencies: () => Promise<{ sharp: boolean }>
   readImageBufferForThumbnail: (locator: MediaLocatorDto) => Promise<Buffer>
-  onRenderingStart: () => void
-  onRenderingEnd: () => void
+  onRenderingStart: (taskKey: string) => void
+  onRenderingProgress: (taskKey: string, payload: { progress: number | null; message: string | null }) => void
+  onRenderingEnd: (taskKey: string) => void
   runWithCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>
   hasPendingArchiveNormalization: () => boolean
   scheduleArchiveNormalizationDrain: (delayMs: number) => void
@@ -279,6 +287,7 @@ export async function maybeResolveThumbnailLocator({
   ensureRuntimeDependencies,
   readImageBufferForThumbnail,
   onRenderingStart,
+  onRenderingProgress,
   onRenderingEnd,
   runWithCpuToken,
   hasPendingArchiveNormalization,
@@ -332,10 +341,11 @@ export async function maybeResolveThumbnailLocator({
       }
 
       const generateTask = async () => {
-        onRenderingStart()
+        onRenderingStart(cachePath)
         try {
           await fs.mkdir(thumbnailCacheRootDir, { recursive: true })
           const tempPath = `${cachePath}.${process.pid}.${Date.now()}.tmp.webp`
+          onRenderingProgress(cachePath, { progress: 0.05, message: 'thumbnail-read-complete' })
 
         const workerPath = resolveThumbnailWorkerScriptPath()
         const generated = workerPath
@@ -345,9 +355,16 @@ export async function maybeResolveThumbnailLocator({
               options,
               tempPath,
               cachePath,
+              onProgress: (payload) => {
+                onRenderingProgress(cachePath, payload)
+              },
             }).catch((error) => {
               console.warn('thumbnail render process failed', {
                 reason: error instanceof Error && error.message ? error.message : String(error),
+              })
+              onRenderingProgress(cachePath, {
+                progress: null,
+                message: 'thumbnail-render-failed',
               })
               return false
             })
@@ -355,13 +372,18 @@ export async function maybeResolveThumbnailLocator({
               sourceBuffer,
               options,
               tempPath,
-                cachePath,
+              cachePath,
+              onProgress: (payload) => {
+                onRenderingProgress(cachePath, payload)
+              },
               })
 
           if (!generated) {
             await fs.rm(tempPath, { force: true })
             return null
           }
+
+          onRenderingProgress(cachePath, { progress: 1, message: 'thumbnail-ready' })
 
           return {
             kind: 'filesystem',
@@ -371,7 +393,7 @@ export async function maybeResolveThumbnailLocator({
             mime_type: 'image/webp',
           } as MediaLocatorDto
         } finally {
-          onRenderingEnd()
+          onRenderingEnd(cachePath)
           if (hasPendingArchiveNormalization()) {
             scheduleArchiveNormalizationDrain(archiveNormalizeRecheckMs)
           }

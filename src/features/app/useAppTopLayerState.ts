@@ -67,7 +67,12 @@ interface UseAppTopLayerStateParams {
   enqueuePending: boolean;
   archiveLoadStatus: {
     runningArchivePath: string | null;
+    runningArchiveProgress: number | null;
+    runningArchiveMessage: string | null;
     pendingArchivePaths: string[];
+    thumbnailRunningCount: number;
+    thumbnailRunningProgress: number | null;
+    thumbnailRunningMessage: string | null;
   };
   normalizePathForCompare: (value: string) => string;
   retryImportTask: (taskId: string) => Promise<void>;
@@ -318,6 +323,11 @@ export function useAppTopLayerState({
     importTasksForPanel,
     normalizedPendingArchivePathSet,
     normalizedRunningArchivePath,
+    runningArchiveProgress,
+    runningArchiveMessage,
+    thumbnailRunningCount,
+    thumbnailRunningProgress,
+    thumbnailRunningMessage,
     taskStatusLabel,
     taskStatusBusy,
     clearFinishedImportTasks,
@@ -614,6 +624,11 @@ export function useAppTopLayerState({
     activeTaskCount: activeImportTaskCount,
     pendingArchiveCount: normalizedPendingArchivePathSet.size,
     runningArchive: Boolean(normalizedRunningArchivePath),
+    runningArchiveProgress,
+    runningArchiveMessage,
+    thumbnailRunningCount,
+    thumbnailRunningProgress,
+    thumbnailRunningMessage,
     enqueuePending,
     taskError,
     tasks: importTasksForPanel,

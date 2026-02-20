@@ -3,6 +3,7 @@ import { parentPort, workerData } from 'node:worker_threads'
 import { normalizeArchiveToStoreZipInPlace } from './archiveWasmExtractor'
 import {
   TASK_WORKER_HEARTBEAT_INTERVAL_MS,
+  type TaskWorkerProgressEnvelope,
   type TaskWorkerRequestEnvelope,
   type TaskWorkerResponseEnvelope,
 } from './services/task-orchestrator/taskWorkerProtocol'
@@ -54,6 +55,17 @@ function postResponse(response: TaskWorkerResponseEnvelope): void {
 
   if (typeof process.send === 'function') {
     process.send(response)
+  }
+}
+
+function postProgress(progress: TaskWorkerProgressEnvelope): void {
+  if (parentPort) {
+    parentPort.postMessage(progress)
+    return
+  }
+
+  if (typeof process.send === 'function') {
+    process.send(progress)
   }
 }
 
@@ -125,12 +137,37 @@ async function runNormalize(rawPayload: unknown): Promise<void> {
   }
 
   try {
+    if (!parsedRequest.legacy) {
+      postProgress({
+        kind: 'progress',
+        request_id: parsedRequest.requestId,
+        progress: 0.1,
+        message: 'archive-normalize-started',
+      })
+    }
+
     const result = await normalizeArchiveToStoreZipInPlace(payload.sourceArchivePath, {
       webpQuality: payload.webpQuality,
     })
+
+    if (!parsedRequest.legacy) {
+      postProgress({
+        kind: 'progress',
+        request_id: parsedRequest.requestId,
+        progress: 0.95,
+        message: 'archive-normalize-finalizing',
+      })
+    }
+
     if (parsedRequest.legacy) {
       postResult({ ok: true, outputZipPath: result.outputZipPath })
     } else {
+      postProgress({
+        kind: 'progress',
+        request_id: parsedRequest.requestId,
+        progress: 1,
+        message: 'archive-normalize-complete',
+      })
       postResponse({
         kind: 'response',
         request_id: parsedRequest.requestId,

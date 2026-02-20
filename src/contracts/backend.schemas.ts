@@ -1095,7 +1095,12 @@ export const clearDatabaseResponseSchema = z.object({
 
 export const readArchiveLoadStatusResponseSchema = z.object({
   running_archive_path: z.string().min(1).nullable(),
+  running_archive_progress: z.number().min(0).max(1).nullable().optional(),
+  running_archive_message: z.string().min(1).nullable().optional(),
   pending_archive_paths: z.array(z.string().min(1)),
+  thumbnail_running_count: z.number().int().min(0).optional(),
+  thumbnail_running_progress: z.number().min(0).max(1).nullable().optional(),
+  thumbnail_running_message: z.string().min(1).nullable().optional(),
   updated_at_ms: z.number().int().positive(),
 });
 

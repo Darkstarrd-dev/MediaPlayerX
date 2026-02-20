@@ -8,6 +8,11 @@ interface BuildImportTaskPanelPropsParams {
   activeTaskCount: number
   pendingArchiveCount: number
   runningArchive: boolean
+  runningArchiveProgress: number | null
+  runningArchiveMessage: string | null
+  thumbnailRunningCount: number
+  thumbnailRunningProgress: number | null
+  thumbnailRunningMessage: string | null
   enqueuePending: boolean
   taskError: string | null
   tasks: ImportTaskDto[]
@@ -25,6 +30,11 @@ export function buildImportTaskPanelProps(params: BuildImportTaskPanelPropsParam
     activeTaskCount: params.activeTaskCount,
     pendingArchiveCount: params.pendingArchiveCount,
     runningArchive: params.runningArchive,
+    runningArchiveProgress: params.runningArchiveProgress,
+    runningArchiveMessage: params.runningArchiveMessage,
+    thumbnailRunningCount: params.thumbnailRunningCount,
+    thumbnailRunningProgress: params.thumbnailRunningProgress,
+    thumbnailRunningMessage: params.thumbnailRunningMessage,
     enqueuePending: params.enqueuePending,
     taskError: params.taskError,
     tasks: params.tasks,

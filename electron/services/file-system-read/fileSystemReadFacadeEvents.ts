@@ -16,6 +16,9 @@ export interface LibraryChangedEventPayload {
     | 'manage-hide'
     | 'manage-delete-image-items'
     | 'manage-delete-sidebar-nodes'
+    | 'thumbnail-rendering-start'
+    | 'thumbnail-rendering-progress'
+    | 'thumbnail-rendering-end'
   updated_at_ms: number
 }
 

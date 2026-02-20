@@ -4,6 +4,7 @@ import { promises as fs } from 'node:fs'
 import { getSharpModule } from './fileSystemRuntimeHelpers'
 import {
   TASK_WORKER_HEARTBEAT_INTERVAL_MS,
+  type TaskWorkerProgressEnvelope,
   type TaskWorkerRequestEnvelope,
   type TaskWorkerResponseEnvelope,
 } from './services/task-orchestrator/taskWorkerProtocol'
@@ -51,6 +52,17 @@ function postResponse(response: TaskWorkerResponseEnvelope): void {
 
   if (typeof process.send === 'function') {
     process.send(response)
+  }
+}
+
+function postProgress(progress: TaskWorkerProgressEnvelope): void {
+  if (parentPort) {
+    parentPort.postMessage(progress)
+    return
+  }
+
+  if (typeof process.send === 'function') {
+    process.send(progress)
   }
 }
 
@@ -197,6 +209,14 @@ async function runThumbnailRender(rawPayload: unknown): Promise<void> {
 
   try {
     const sharp = sharpModule.default
+    if (!parsedRequest.legacy) {
+      postProgress({
+        kind: 'progress',
+        request_id: parsedRequest.requestId,
+        progress: 0.3,
+        message: 'thumbnail-render-encoding',
+      })
+    }
     await sharp(payload.sourceBuffer, { failOn: 'none' })
       .rotate()
       .resize({
@@ -208,12 +228,27 @@ async function runThumbnailRender(rawPayload: unknown): Promise<void> {
       .webp({ quality: payload.quality })
       .toFile(payload.tempPath)
 
+    if (!parsedRequest.legacy) {
+      postProgress({
+        kind: 'progress',
+        request_id: parsedRequest.requestId,
+        progress: 0.85,
+        message: 'thumbnail-render-moving-cache',
+      })
+    }
+
     await fs.rename(payload.tempPath, payload.cachePath).catch(async () => {
       await fs.rm(payload.tempPath, { force: true })
     })
     if (parsedRequest.legacy) {
       postResult({ ok: true })
     } else {
+      postProgress({
+        kind: 'progress',
+        request_id: parsedRequest.requestId,
+        progress: 1,
+        message: 'thumbnail-render-complete',
+      })
       postResponse({
         kind: 'response',
         request_id: parsedRequest.requestId,
