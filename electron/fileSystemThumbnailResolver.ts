@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto'
-import { fork } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
 import type { MediaLocatorDto, ResolveMediaResourceRequestDto } from '../src/contracts/backend'
 import { getSharpModule } from './fileSystemRuntimeHelpers'
+import { runTaskInProcess } from './services/task-orchestrator/processTaskOrchestrator'
 
 const THUMBNAIL_DEFAULT_MAX_EDGE = 320
 const THUMBNAIL_DEFAULT_QUALITY = 82
@@ -129,74 +129,34 @@ async function renderThumbnailWithProcessWorker(payload: {
   tempPath: string
   cachePath: string
 }): Promise<boolean> {
-  return await new Promise<boolean>((resolve, reject) => {
-    const child = fork(payload.workerPath, [], {
-      stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
-      serialization: 'advanced',
-    })
-
-    let settled = false
-    const timeoutId = setTimeout(() => {
-      finish(new Error('thumbnail render process timeout'), false)
-      child.kill('SIGKILL')
-    }, THUMBNAIL_RENDER_WORKER_TIMEOUT_MS)
-    timeoutId.unref?.()
-
-    const finish = (error: Error | null, result: boolean) => {
-      if (settled) {
-        return
-      }
-      settled = true
-      clearTimeout(timeoutId)
-      if (error) {
-        reject(error)
-      } else {
-        resolve(result)
-      }
+  await runTaskInProcess<
+    {
+      sourceBuffer: Buffer
+      maxEdge: number
+      quality: number
+      tempPath: string
+      cachePath: string
+    },
+    {
+      cachePath?: string
     }
-
-    child.once('message', (rawPayload: unknown) => {
-      const message = rawPayload as { ok?: boolean; error?: string }
-      if (message?.ok) {
-        finish(null, true)
-        return
-      }
-      finish(new Error(message?.error ?? 'thumbnail render process failed'), false)
-    })
-
-    child.once('error', (error) => {
-      finish(error, false)
-    })
-
-    child.once('exit', (code, signal) => {
-      if (settled) {
-        return
-      }
-      if (code === 0 && !signal) {
-        finish(null, true)
-        return
-      }
-      finish(new Error(`thumbnail render process exit ${code ?? 'null'} signal ${signal ?? 'none'}`), false)
-    })
-
-    if (!child.connected) {
-      finish(new Error('thumbnail render process ipc disconnected'), false)
-      return
-    }
-
-    try {
-      child.send({
-        sourceBuffer: payload.sourceBuffer,
-        maxEdge: payload.options.maxEdge,
-        quality: payload.options.quality,
-        tempPath: payload.tempPath,
-        cachePath: payload.cachePath,
-      })
-    } catch (error) {
-      const reason = error instanceof Error && error.message ? error.message : String(error)
-      finish(new Error(`thumbnail render process send failed: ${reason}`), false)
-    }
+  >({
+    workerPath: payload.workerPath,
+    taskName: 'thumbnail-render',
+    payload: {
+      sourceBuffer: payload.sourceBuffer,
+      maxEdge: payload.options.maxEdge,
+      quality: payload.options.quality,
+      tempPath: payload.tempPath,
+      cachePath: payload.cachePath,
+    },
+    timeoutMs: THUMBNAIL_RENDER_WORKER_TIMEOUT_MS,
+    heartbeatTimeoutMs: 12_000,
+    maxRetries: 1,
+    serialization: 'advanced',
   })
+
+  return true
 }
 
 async function renderThumbnailInProcess(payload: {
@@ -360,19 +320,24 @@ export async function maybeResolveThumbnailLocator({
           await fs.mkdir(thumbnailCacheRootDir, { recursive: true })
           const tempPath = `${cachePath}.${process.pid}.${Date.now()}.tmp.webp`
 
-          const workerPath = resolveThumbnailWorkerScriptPath()
-          const generated = workerPath
-            ? await renderThumbnailWithProcessWorker({
-                workerPath,
-                sourceBuffer,
-                options,
-                tempPath,
-                cachePath,
-              }).catch(() => false)
-            : await renderThumbnailInProcess({
-                sourceBuffer,
-                options,
-                tempPath,
+        const workerPath = resolveThumbnailWorkerScriptPath()
+        const generated = workerPath
+          ? await renderThumbnailWithProcessWorker({
+              workerPath,
+              sourceBuffer,
+              options,
+              tempPath,
+              cachePath,
+            }).catch((error) => {
+              console.warn('thumbnail render process failed', {
+                reason: error instanceof Error && error.message ? error.message : String(error),
+              })
+              return false
+            })
+          : await renderThumbnailInProcess({
+              sourceBuffer,
+              options,
+              tempPath,
                 cachePath,
               })
 

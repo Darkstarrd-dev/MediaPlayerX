@@ -2,6 +2,11 @@ import { parentPort, workerData } from 'node:worker_threads'
 import { promises as fs } from 'node:fs'
 
 import { getSharpModule } from './fileSystemRuntimeHelpers'
+import {
+  TASK_WORKER_HEARTBEAT_INTERVAL_MS,
+  type TaskWorkerRequestEnvelope,
+  type TaskWorkerResponseEnvelope,
+} from './services/task-orchestrator/taskWorkerProtocol'
 
 interface ThumbnailRenderPayload {
   sourceBuffer?: unknown
@@ -21,6 +26,12 @@ interface ThumbnailRenderResult {
   error?: string
 }
 
+interface ParsedRequest {
+  requestId: string
+  payload: unknown
+  legacy: boolean
+}
+
 function postResult(payload: ThumbnailRenderResult): void {
   if (parentPort) {
     parentPort.postMessage(payload)
@@ -30,6 +41,60 @@ function postResult(payload: ThumbnailRenderResult): void {
   if (typeof process.send === 'function') {
     process.send(payload)
   }
+}
+
+function postResponse(response: TaskWorkerResponseEnvelope): void {
+  if (parentPort) {
+    parentPort.postMessage(response)
+    return
+  }
+
+  if (typeof process.send === 'function') {
+    process.send(response)
+  }
+}
+
+function postHeartbeat(): void {
+  const payload = {
+    kind: 'heartbeat',
+    worker_pid: process.pid,
+    at_ms: Date.now(),
+  }
+
+  if (parentPort) {
+    parentPort.postMessage(payload)
+    return
+  }
+
+  if (typeof process.send === 'function') {
+    process.send(payload)
+  }
+}
+
+function parseRequest(raw: unknown): ParsedRequest {
+  if (raw && typeof raw === 'object') {
+    const request = raw as Partial<TaskWorkerRequestEnvelope>
+    if (request.kind === 'request' && typeof request.request_id === 'string') {
+      return {
+        requestId: request.request_id,
+        payload: request.payload,
+        legacy: false,
+      }
+    }
+  }
+
+  return {
+    requestId: 'legacy-request',
+    payload: raw,
+    legacy: true,
+  }
+}
+
+function maybeExit(code: number): void {
+  if (parentPort) {
+    return
+  }
+  process.exitCode = code
 }
 
 function normalizePayload(raw: unknown): {
@@ -72,22 +137,61 @@ function normalizePayload(raw: unknown): {
 }
 
 async function runThumbnailRender(rawPayload: unknown): Promise<void> {
-  const payload = normalizePayload(rawPayload)
+  const parsedRequest = parseRequest(rawPayload)
+  const payload = normalizePayload(parsedRequest.payload)
+  const heartbeatTimer = setInterval(() => {
+    postHeartbeat()
+  }, TASK_WORKER_HEARTBEAT_INTERVAL_MS)
+  heartbeatTimer.unref?.()
+
   if (!payload.sourceBuffer || payload.sourceBuffer.length <= 0) {
-    postResult({ ok: false, error: 'thumbnail worker missing sourceBuffer' })
-    process.exit(1)
+    const error = 'thumbnail worker missing sourceBuffer'
+    if (parsedRequest.legacy) {
+      postResult({ ok: false, error })
+    } else {
+      postResponse({
+        kind: 'response',
+        request_id: parsedRequest.requestId,
+        ok: false,
+        error,
+      })
+    }
+    clearInterval(heartbeatTimer)
+    maybeExit(1)
     return
   }
   if (!payload.tempPath || !payload.cachePath) {
-    postResult({ ok: false, error: 'thumbnail worker missing target path' })
-    process.exit(1)
+    const error = 'thumbnail worker missing target path'
+    if (parsedRequest.legacy) {
+      postResult({ ok: false, error })
+    } else {
+      postResponse({
+        kind: 'response',
+        request_id: parsedRequest.requestId,
+        ok: false,
+        error,
+      })
+    }
+    clearInterval(heartbeatTimer)
+    maybeExit(1)
     return
   }
 
   const sharpModule = await getSharpModule()
   if (!sharpModule?.default) {
-    postResult({ ok: false, error: 'thumbnail worker sharp unavailable' })
-    process.exit(1)
+    const error = 'thumbnail worker sharp unavailable'
+    if (parsedRequest.legacy) {
+      postResult({ ok: false, error })
+    } else {
+      postResponse({
+        kind: 'response',
+        request_id: parsedRequest.requestId,
+        ok: false,
+        error,
+      })
+    }
+    clearInterval(heartbeatTimer)
+    maybeExit(1)
     return
   }
 
@@ -107,13 +211,35 @@ async function runThumbnailRender(rawPayload: unknown): Promise<void> {
     await fs.rename(payload.tempPath, payload.cachePath).catch(async () => {
       await fs.rm(payload.tempPath, { force: true })
     })
-    postResult({ ok: true })
-    process.exit(0)
+    if (parsedRequest.legacy) {
+      postResult({ ok: true })
+    } else {
+      postResponse({
+        kind: 'response',
+        request_id: parsedRequest.requestId,
+        ok: true,
+        payload: {
+          cachePath: payload.cachePath,
+        },
+      })
+    }
+    clearInterval(heartbeatTimer)
+    maybeExit(0)
   } catch (error) {
     const reason = error instanceof Error && error.message ? error.message : String(error)
     await fs.rm(payload.tempPath, { force: true }).catch(() => undefined)
-    postResult({ ok: false, error: reason })
-    process.exit(1)
+    if (parsedRequest.legacy) {
+      postResult({ ok: false, error: reason })
+    } else {
+      postResponse({
+        kind: 'response',
+        request_id: parsedRequest.requestId,
+        ok: false,
+        error: reason,
+      })
+    }
+    clearInterval(heartbeatTimer)
+    maybeExit(1)
   }
 }
 

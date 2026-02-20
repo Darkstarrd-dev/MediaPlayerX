@@ -1,5 +1,4 @@
 import { existsSync, promises as fs } from 'node:fs'
-import { fork } from 'node:child_process'
 import path from 'node:path'
 
 import {
@@ -10,6 +9,7 @@ import {
   normalizeArchiveToStoreZipInPlace,
   resolveArchiveReplacementZipPath,
 } from '../../archiveWasmExtractor'
+import { runTaskInProcess } from '../task-orchestrator/processTaskOrchestrator'
 
 export interface ArchiveNormalizationTaskState {
   status: 'pending' | 'running' | 'completed' | 'failed'
@@ -386,82 +386,37 @@ export class ArchiveNormalizationService {
 
   private async runRar7zNormalizationJob(sourceArchivePath: string): Promise<string> {
     const runJob = async () => {
-    const workerPath = this.resolveWorkerScriptPath()
-    if (!workerPath) {
-      const normalized = await normalizeArchiveToStoreZipInPlace(sourceArchivePath, {
-        webpQuality: 90,
-      })
-      return normalized.outputZipPath
-    }
-
-    return await new Promise<string>((resolve, reject) => {
-      const child = fork(workerPath, [], {
-        stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
-      })
-
-      let settled = false
-      let stderrBuffer = ''
-      const timeoutId = setTimeout(() => {
-        const timeoutError = new Error(`archive normalization process timeout: ${sourceArchivePath}`)
-        finish(timeoutError, null)
-        child.kill('SIGKILL')
-      }, ArchiveNormalizationService.ARCHIVE_NORMALIZE_PROCESS_TIMEOUT_MS)
-
-      child.stderr?.on('data', (chunk) => {
-        stderrBuffer += String(chunk)
-      })
-
-      const finish = (error: Error | null, outputZipPath: string | null) => {
-        if (settled) {
-          return
-        }
-        settled = true
-        clearTimeout(timeoutId)
-        if (error) {
-          reject(error)
-        } else {
-          resolve(outputZipPath ?? resolveArchiveReplacementZipPath(sourceArchivePath))
-        }
-      }
-
-      child.once('message', (payload: unknown) => {
-        const message = payload as { ok?: boolean; error?: string; outputZipPath?: string }
-        if (message?.ok) {
-          finish(null, typeof message.outputZipPath === 'string' ? message.outputZipPath : null)
-          return
-        }
-        finish(new Error(message?.error ?? `archive normalization worker failed: ${sourceArchivePath}`), null)
-      })
-
-      child.once('error', (error) => {
-        finish(error, null)
-      })
-
-      child.once('exit', (code, signal) => {
-        if (!settled && (code !== 0 || signal)) {
-          const stderrHint = stderrBuffer.trim()
-          const reason = stderrHint.length > 0
-            ? `${stderrHint}`
-            : `archive normalization process exit ${code ?? 'null'} signal ${signal ?? 'none'}`
-          finish(new Error(`${reason} for ${sourceArchivePath}`), null)
-        }
-      })
-
-      if (!child.connected) {
-        finish(new Error(`archive normalization process ipc disconnected: ${sourceArchivePath}`), null)
-        return
-      }
-
-      try {
-        child.send({
-          sourceArchivePath,
+      const workerPath = this.resolveWorkerScriptPath()
+      if (!workerPath) {
+        const normalized = await normalizeArchiveToStoreZipInPlace(sourceArchivePath, {
           webpQuality: 90,
         })
-      } catch (error) {
-        const reason = error instanceof Error && error.message ? error.message : String(error)
-        finish(new Error(`archive normalization process send failed: ${reason}`), null)
+        return normalized.outputZipPath
       }
-    })
+
+      const workerResult = await runTaskInProcess<
+        {
+          sourceArchivePath: string
+          webpQuality: number
+        },
+        {
+          outputZipPath?: string
+        }
+      >({
+        workerPath,
+        taskName: 'archive-normalize',
+        payload: {
+          sourceArchivePath,
+          webpQuality: 90,
+        },
+        timeoutMs: ArchiveNormalizationService.ARCHIVE_NORMALIZE_PROCESS_TIMEOUT_MS,
+        heartbeatTimeoutMs: 12_000,
+        maxRetries: 1,
+      })
+
+      return typeof workerResult.outputZipPath === 'string'
+        ? workerResult.outputZipPath
+        : resolveArchiveReplacementZipPath(sourceArchivePath)
     }
 
     if (this.options.runWithCpuToken) {
