@@ -62,19 +62,19 @@ function renderSplashCardMarkup(bannerSrc: string | null): string {
 
 function renderCommonStyles(): string {
   return `:root {
-        --splash-window-bg: ${STARTUP_SPLASH_TOKENS.windowBackground};
+        --splash-window-bg: var(--mpx-slot-boot-splash-window-bg, ${STARTUP_SPLASH_TOKENS.windowBackground});
         --splash-radial-left: ${STARTUP_SPLASH_TOKENS.radialLeft};
         --splash-radial-right: ${STARTUP_SPLASH_TOKENS.radialRight};
         --splash-linear-top: ${STARTUP_SPLASH_TOKENS.linearTop};
         --splash-linear-mid: ${STARTUP_SPLASH_TOKENS.linearMid};
         --splash-linear-bottom: ${STARTUP_SPLASH_TOKENS.linearBottom};
-        --splash-card-bg: ${STARTUP_SPLASH_TOKENS.cardBackground};
-        --splash-card-border: ${STARTUP_SPLASH_TOKENS.cardBorder};
+        --splash-card-bg: var(--mpx-slot-boot-splash-card-bg, ${STARTUP_SPLASH_TOKENS.cardBackground});
+        --splash-card-border: var(--mpx-slot-boot-splash-card-border, ${STARTUP_SPLASH_TOKENS.cardBorder});
         --splash-card-radius: ${STARTUP_SPLASH_TOKENS.cardRadius}px;
-        --splash-card-shadow: ${STARTUP_SPLASH_TOKENS.cardShadow};
+        --splash-card-shadow: var(--mpx-slot-boot-splash-card-shadow, ${STARTUP_SPLASH_TOKENS.cardShadow});
         --splash-brand-color: ${STARTUP_SPLASH_TOKENS.brandColor};
         --splash-desc-color: ${STARTUP_SPLASH_TOKENS.descColor};
-        --splash-track-bg: ${STARTUP_SPLASH_TOKENS.trackBackground};
+        --splash-track-bg: var(--mpx-slot-boot-splash-card-track-bg, ${STARTUP_SPLASH_TOKENS.trackBackground});
         --splash-track-start: ${STARTUP_SPLASH_TOKENS.trackStart};
         --splash-track-mid: ${STARTUP_SPLASH_TOKENS.trackMid};
         --splash-track-end: ${STARTUP_SPLASH_TOKENS.trackEnd};
@@ -103,6 +103,11 @@ function renderCommonStyles(): string {
         font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       }
 
+      [data-slot='boot-splash-root'] {
+        background: var(--mpx-slot-boot-splash-root-bg, transparent);
+        color: var(--mpx-slot-boot-splash-root-text, inherit);
+      }
+
       .splash {
         width: 100%;
         height: 100%;
@@ -112,9 +117,17 @@ function renderCommonStyles(): string {
         background: transparent;
       }
 
+      [data-slot='boot-splash-stage'] {
+        background: var(--mpx-slot-boot-splash-stage-bg, transparent);
+      }
+
       .card-stage {
         position: relative;
         width: min(560px, calc(100vw - 48px));
+      }
+
+      [data-slot='boot-splash-stage-card-stage'] {
+        color: var(--mpx-slot-boot-splash-stage-card-stage-text, inherit);
       }
 
       .card-stage.has-character {
@@ -135,6 +148,10 @@ function renderCommonStyles(): string {
         z-index: 2;
       }
 
+      [data-slot='boot-splash-stage-character'] {
+        filter: var(--mpx-slot-boot-splash-stage-character-filter, drop-shadow(0 14px 24px rgba(59, 39, 21, 0.18)));
+      }
+
       .card {
         width: 100%;
         position: relative;
@@ -144,6 +161,10 @@ function renderCommonStyles(): string {
         background: var(--splash-card-bg);
         border: 1px solid var(--splash-card-border);
         box-shadow: var(--splash-card-shadow);
+      }
+
+      [data-slot='boot-splash-card'] {
+        color: var(--mpx-slot-boot-splash-card-text, inherit);
       }
 
       .brand {
@@ -166,6 +187,11 @@ function renderCommonStyles(): string {
         border-radius: 999px;
         background: var(--splash-track-bg);
         overflow: hidden;
+      }
+
+      [data-slot='boot-splash-card-track'] {
+        border-color: var(--mpx-slot-boot-splash-card-track-border, transparent);
+        box-shadow: var(--mpx-slot-boot-splash-card-track-shadow, none);
       }
 
       .track::before {

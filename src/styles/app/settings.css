@@ -61,6 +61,21 @@
   justify-content: center;
 }
 
+[data-slot='fg-header-g1-settings-root-panel'] {
+  background: var(--mpx-slot-fg-header-g1-settings-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
+  color: var(--mpx-slot-fg-header-g1-settings-root-panel-text, inherit);
+}
+
+[data-slot='fg-header-g4-theme-parameter-root-panel'] {
+  background: var(--mpx-slot-fg-header-g4-theme-parameter-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
+  color: var(--mpx-slot-fg-header-g4-theme-parameter-root-panel-text, inherit);
+}
+
+[data-slot='fg-header-g4-help-root-panel'] {
+  background: var(--mpx-slot-fg-header-g4-help-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
+  color: var(--mpx-slot-fg-header-g4-help-root-panel-text, inherit);
+}
+
 .settings-panel {
   width: 80vw;
   height: 80vh;
@@ -618,6 +633,31 @@
   z-index: 3002;
 }
 
+[data-slot='fg-main-toolbar-manage-group-name-panel'] {
+  background: var(--mpx-slot-fg-main-toolbar-manage-group-name-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
+  color: var(--mpx-slot-fg-main-toolbar-manage-group-name-panel-text, inherit);
+}
+
+[data-slot='fg-main-toolbar-manage-delete-confirm-panel'] {
+  background: var(--mpx-slot-fg-main-toolbar-manage-delete-confirm-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
+  color: var(--mpx-slot-fg-main-toolbar-manage-delete-confirm-panel-text, inherit);
+}
+
+[data-slot='fg-sidebar-shortcut-rename-panel'] {
+  background: var(--mpx-slot-fg-sidebar-shortcut-rename-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
+  color: var(--mpx-slot-fg-sidebar-shortcut-rename-panel-text, inherit);
+}
+
+[data-slot='fg-main-toolbar-image-metadata-fetch-panel'] {
+  background: var(--mpx-slot-fg-main-toolbar-image-metadata-fetch-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
+  color: var(--mpx-slot-fg-main-toolbar-image-metadata-fetch-panel-text, inherit);
+}
+
+[data-slot='fg-main-toolbar-manage-subtitle-cleanup-panel'] {
+  background: var(--mpx-slot-fg-main-toolbar-manage-subtitle-cleanup-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
+  color: var(--mpx-slot-fg-main-toolbar-manage-subtitle-cleanup-panel-text, inherit);
+}
+
 .settings-floating-panel {
   width: min(540px, 92%);
   border: 1px solid var(--mpx-border-2);
@@ -628,6 +668,18 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+[data-slot='fg-header-g1-settings-shortcut-edit-panel'] .settings-floating-panel {
+  border-color: var(--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border, var(--mpx-border-2));
+  background: var(--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-text, inherit);
+}
+
+[data-slot='fg-header-g1-settings-shortcut-capture-panel'] .settings-floating-panel {
+  border-color: var(--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-border, var(--mpx-border-2));
+  background: var(--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-text, inherit);
 }
 
 .settings-floating-panel h3 {

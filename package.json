@@ -31,6 +31,7 @@
     "bench:ui": "node scripts/run-ui-bench.mjs",
     "bench:ui-matrix": "node scripts/run-ui-bench-matrix.mjs",
     "theme:gallery": "node scripts/capture-theme-gallery.mjs",
+    "theme:verify:slots": "node scripts/verify-ui-slot-governance.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

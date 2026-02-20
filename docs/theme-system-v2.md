@@ -43,6 +43,28 @@ styles/<name>.css     → :root[data-mpx-style="x"]    → 布局效果 + 效果
 
 组件层样式只消费 `--mpx-*` token，禁止硬编码视觉值（颜色、尺寸、圆角、阴影等）。
 
+### 1.5 Slot 治理（新增）
+
+Theme 系统现在与稳定槽位治理绑定，必须同时遵循：
+
+- `docs/ui_definition.md`：稳定路径 + 当前实现锚点 + 拟定唯一标识（`data-slot`）
+- `docs/token_design.md`：稳定路径 -> `--mpx-slot-*` 前缀映射
+
+强约束：新增/修改/删除 UI 槽位时，代码与两张表必须同步更新，不允许只改其中一处。
+
+校验命令：
+
+```bash
+npm run theme:verify:slots
+```
+
+该命令会同时检查：
+
+1. `ui_definition` 与 `token_design` 的稳定路径是否一一对应
+2. token 前缀是否符合 `--mpx-slot-<stable-path-kebab>-*`
+3. `ui_definition` 中拟定的 `data-slot` 是否已在 `src/` 与 `electron/` 出现
+4. 源码中的 `data-slot` 是否存在未登记项
+
 ---
 
 ## 2. 文件结构

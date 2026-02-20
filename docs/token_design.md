@@ -69,6 +69,7 @@
 | `fg.sidebar.main.scroll.track` | `--mpx-slot-fg-sidebar-main-scroll-track-*` |
 | `fg.sidebar.main.scroll.thumb` | `--mpx-slot-fg-sidebar-main-scroll-thumb-*` |
 | `fg.sidebar.shortcut.rename.panel` | `--mpx-slot-fg-sidebar-shortcut-rename-panel-*` |
+| `fg.sidebar.footer` | `--mpx-slot-fg-sidebar-footer-*` |
 | `fg.main.toolbar` | `--mpx-slot-fg-main-toolbar-*` |
 | `fg.main.toolbar.state.manage` | `--mpx-slot-fg-main-toolbar-state-manage-*` |
 | `fg.main.toolbar.state.metadata` | `--mpx-slot-fg-main-toolbar-state-metadata-*` |
@@ -128,6 +129,7 @@
 | `fg.meta.main.search.featureTagPicker.panel` | `--mpx-slot-fg-meta-main-search-feature-tag-picker-panel-*` |
 | `fg.meta.main.adReview` | `--mpx-slot-fg-meta-main-ad-review-*` |
 | `fg.meta.main.adReview.start.panel` | `--mpx-slot-fg-meta-main-ad-review-start-panel-*` |
+| `fg.meta.footer` | `--mpx-slot-fg-meta-footer-*` |
 | `bg.fs.mask` | `--mpx-slot-bg-fs-mask-*` |
 | `fs.layer.content` | `--mpx-slot-fs-layer-content-*` |
 | `fs.nondual.root` | `--mpx-slot-fs-nondual-root-*` |

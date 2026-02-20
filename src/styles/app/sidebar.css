@@ -1,11 +1,11 @@
 .sidebar {
-  border-right: var(--mpx-sidebar-border-width) var(--mpx-sidebar-border-style) var(--mpx-sidebar-border-color, var(--mpx-border-1));
-  background: var(--mpx-sidebar-bg);
+  border-right: var(--mpx-sidebar-border-width) var(--mpx-sidebar-border-style) var(--mpx-slot-fg-sidebar-root-border, var(--mpx-sidebar-border-color, var(--mpx-border-1)));
+  background: var(--mpx-slot-fg-sidebar-root-bg, var(--mpx-sidebar-bg));
   display: flex;
   flex-direction: column;
   transition: var(--mpx-sidebar-transition);
-  border-radius: var(--mpx-sidebar-radius);
-  box-shadow: var(--mpx-sidebar-shadow);
+  border-radius: var(--mpx-slot-fg-sidebar-root-radius, var(--mpx-sidebar-radius));
+  box-shadow: var(--mpx-slot-fg-sidebar-root-shadow, var(--mpx-sidebar-shadow));
   backdrop-filter: var(--mpx-sidebar-backdrop-filter);
   transform: var(--mpx-sidebar-transform);
   padding: var(--mpx-sidebar-padding);
@@ -43,7 +43,7 @@
   );
   clip-path: polygon(0 0, 100% 50%, 0 100%);
   cursor: pointer;
-  box-shadow: var(--mpx-shadow-popover);
+  box-shadow: var(--mpx-slot-fg-sidebar-expand-shadow, var(--mpx-shadow-popover));
 }
 
 .sidebar-expand-btn:hover,
@@ -116,7 +116,7 @@
   min-height: var(--mpx-panel-head-height);
   flex-shrink: 0;
   padding: 0 10px;
-  border-bottom: 1px solid var(--mpx-sidebar-border-color, var(--mpx-border-1));
+  border-bottom: 1px solid var(--mpx-slot-fg-sidebar-toolbar-border, var(--mpx-sidebar-border-color, var(--mpx-border-1)));
 }
 
 .sidebar-head-actions {
@@ -128,7 +128,7 @@
 .sidebar-title-btn {
   border: 0;
   background: transparent;
-  color: var(--mpx-text-1);
+  color: var(--mpx-slot-fg-sidebar-toolbar-title-text, var(--mpx-text-1));
   font-weight: 700;
   font-size: 15px;
   line-height: 1.2;
@@ -143,6 +143,24 @@
 
 .sidebar-head-actions > button {
   height: var(--mpx-icon-button-size);
+}
+
+[data-slot='fg-sidebar-toolbar-back'] {
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-back-border, var(--mpx-border-2));
+  background: var(--mpx-slot-fg-sidebar-toolbar-back-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-sidebar-toolbar-back-text, var(--mpx-text-1));
+}
+
+[data-slot='fg-sidebar-toolbar-clear'] {
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-clear-border, var(--mpx-border-2));
+  background: var(--mpx-slot-fg-sidebar-toolbar-clear-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-sidebar-toolbar-clear-text, var(--mpx-text-1));
+}
+
+[data-slot='fg-sidebar-toolbar-root-toggle'] {
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-border, var(--mpx-border-2));
+  background: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-text, var(--mpx-text-1));
 }
 
 .sidebar-head-icon-btn.is-root-set {
@@ -165,12 +183,45 @@
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;
   position: relative;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: var(--mpx-slot-fg-sidebar-main-bg, transparent);
 }
 
 .sidebar-tree::-webkit-scrollbar {
-  width: var(--mpx-scrollbar-size);
-  height: var(--mpx-scrollbar-size);
+  width: 0;
+  height: 0;
   -webkit-appearance: none;
+}
+
+.sidebar-tree::before {
+  content: '';
+  position: absolute;
+  right: 2px;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: var(--mpx-scrollbar-radius);
+  background: var(--mpx-slot-fg-sidebar-main-scroll-track-bg, var(--mpx-scrollbar-track-bg));
+  opacity: var(--mpx-sidebar-scroll-indicator-opacity, 0);
+  pointer-events: none;
+}
+
+.sidebar-tree::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  width: 4px;
+  height: var(--mpx-sidebar-scroll-thumb-height, 0px);
+  top: var(--mpx-sidebar-scroll-thumb-top, 0px);
+  border-radius: var(--mpx-scrollbar-radius);
+  background: var(--mpx-slot-fg-sidebar-main-scroll-thumb-bg, var(--mpx-scrollbar-thumb-bg));
+  opacity: var(--mpx-sidebar-scroll-indicator-opacity, 0);
+  pointer-events: none;
+}
+
+.sidebar-tree:hover::after {
+  background: var(--mpx-slot-fg-sidebar-main-scroll-thumb-hover-bg, var(--mpx-scrollbar-thumb-hover-bg));
 }
 
 .sidebar-tree::-webkit-scrollbar-track {
@@ -349,7 +400,7 @@
   background: transparent;
   text-align: left;
   padding: 4px 2px;
-  color: var(--mpx-text-1);
+  color: var(--mpx-slot-fg-sidebar-main-label-text, var(--mpx-text-1));
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -458,4 +509,8 @@
 
 .sidebar-splitter:hover::after {
   content: none;
+}
+
+[data-slot='fg-sidebar-footer'] {
+  color: var(--mpx-slot-fg-sidebar-footer-text, inherit);
 }

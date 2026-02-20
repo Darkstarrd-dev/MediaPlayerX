@@ -387,6 +387,16 @@
   z-index: 22;
 }
 
+[data-slot='fg-main-toolbar-image-ad-review-start-panel'] {
+  background: var(--mpx-slot-fg-main-toolbar-image-ad-review-start-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
+  color: var(--mpx-slot-fg-main-toolbar-image-ad-review-start-panel-text, inherit);
+}
+
+[data-slot='fg-meta-main-ad-review-start-panel'] {
+  background: var(--mpx-slot-fg-meta-main-ad-review-start-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
+  color: var(--mpx-slot-fg-meta-main-ad-review-start-panel-text, inherit);
+}
+
 .manage-ad-review-start-dialog {
   width: min(480px, 92vw);
 }
@@ -406,6 +416,12 @@
   padding: 20px;
   background: color-mix(in srgb, var(--mpx-bg-tooltip) 56%, transparent);
   backdrop-filter: blur(3px);
+}
+
+[data-slot='fg-main-toolbar-image-delete-progress-ovl'] {
+  background: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 56%, transparent));
+  color: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-text, inherit);
+  box-shadow: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-shadow, none);
 }
 
 .ad-review-delete-overlay-card {
@@ -468,6 +484,12 @@
   pointer-events: none;
   z-index: 6;
   border-radius: 6px;
+}
+
+[data-slot='fg-main-content-image-marquee-ovl'] {
+  border-color: var(--mpx-slot-fg-main-content-image-marquee-ovl-border, var(--mpx-accent));
+  background: var(--mpx-slot-fg-main-content-image-marquee-ovl-bg, color-mix(in srgb, var(--mpx-accent) 14%, transparent));
+  box-shadow: var(--mpx-slot-fg-main-content-image-marquee-ovl-shadow, none);
 }
 
 .manage-confirm-dialog {

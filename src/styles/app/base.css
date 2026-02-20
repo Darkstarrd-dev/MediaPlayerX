@@ -222,12 +222,13 @@ select option {
 .fg-sysinfo {
   display: flex;
   flex-direction: column;
+  background: var(--mpx-slot-fg-sysinfo-root-bg, transparent);
 }
 
 .backend-error-banner {
-  border-bottom: 1px solid var(--mpx-status-danger-border);
-  background: var(--mpx-status-danger-bg);
-  color: var(--mpx-status-danger-text);
+  border-bottom: 1px solid var(--mpx-slot-fg-sysinfo-backend-error-border, var(--mpx-status-danger-border));
+  background: var(--mpx-slot-fg-sysinfo-backend-error-bg, var(--mpx-status-danger-bg));
+  color: var(--mpx-slot-fg-sysinfo-backend-error-text, var(--mpx-status-danger-text));
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
@@ -260,9 +261,9 @@ select option {
 }
 
 .runtime-warning-banner {
-  border-bottom: 1px solid var(--mpx-status-warning-border);
-  background: var(--mpx-status-warning-bg);
-  color: var(--mpx-status-warning-text);
+  border-bottom: 1px solid var(--mpx-slot-fg-sysinfo-runtime-warning-border, var(--mpx-status-warning-border));
+  background: var(--mpx-slot-fg-sysinfo-runtime-warning-bg, var(--mpx-status-warning-bg));
+  color: var(--mpx-slot-fg-sysinfo-runtime-warning-text, var(--mpx-status-warning-text));
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
@@ -301,9 +302,9 @@ select option {
 }
 
 .import-task-panel {
-  border-bottom: 1px solid var(--mpx-status-info-border);
-  background: var(--mpx-status-info-bg);
-  color: var(--mpx-status-info-text);
+  border-bottom: 1px solid var(--mpx-slot-fg-header-g1-task-import-task-panel-border, var(--mpx-status-info-border));
+  background: var(--mpx-slot-fg-header-g1-task-import-task-panel-bg, var(--mpx-status-info-bg));
+  color: var(--mpx-slot-fg-header-g1-task-import-task-panel-text, var(--mpx-status-info-text));
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
@@ -327,6 +328,7 @@ select option {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  color: var(--mpx-slot-fg-header-g1-task-import-task-error-panel-text, inherit);
 }
 
 .import-task-panel ul {
@@ -536,6 +538,13 @@ select option {
   width: var(--mpx-icon-button-size);
 }
 
+[data-slot='fg-main-toolbar-image-scale-pop'] .header-popover-panel {
+  border-color: var(--mpx-slot-fg-main-toolbar-image-scale-pop-border, var(--mpx-border-1));
+  background: var(--mpx-slot-fg-main-toolbar-image-scale-pop-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-main-toolbar-image-scale-pop-text, var(--mpx-text-1));
+  box-shadow: var(--mpx-slot-fg-main-toolbar-image-scale-pop-shadow, var(--mpx-shadow-popover));
+}
+
 .toolbar-actions .main-toolbar-scale-control .header-vertical-slider-body {
   width: var(--mpx-icon-button-size);
 }
@@ -551,6 +560,13 @@ select option {
   transform: none;
   display: block;
   padding: 10px 12px;
+}
+
+[data-slot='fg-main-toolbar-image-ad-review-strategy-pop'] {
+  border-color: var(--mpx-slot-fg-main-toolbar-image-ad-review-strategy-pop-border, var(--mpx-border-1));
+  background: var(--mpx-slot-fg-main-toolbar-image-ad-review-strategy-pop-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-main-toolbar-image-ad-review-strategy-pop-text, var(--mpx-text-1));
+  box-shadow: var(--mpx-slot-fg-main-toolbar-image-ad-review-strategy-pop-shadow, var(--mpx-shadow-popover));
 }
 
 .main-toolbar-ad-review-strategy-title {
@@ -649,6 +665,13 @@ select option {
   transform: none;
   display: block;
   padding: 10px 12px;
+}
+
+[data-slot='fg-main-toolbar-image-ad-review-progress-pop'] {
+  border-color: var(--mpx-slot-fg-main-toolbar-image-ad-review-progress-pop-border, var(--mpx-border-1));
+  background: var(--mpx-slot-fg-main-toolbar-image-ad-review-progress-pop-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-main-toolbar-image-ad-review-progress-pop-text, var(--mpx-text-1));
+  box-shadow: var(--mpx-slot-fg-main-toolbar-image-ad-review-progress-pop-shadow, var(--mpx-shadow-popover));
 }
 
 .main-toolbar-ad-review-progress-line {
