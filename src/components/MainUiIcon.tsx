@@ -32,6 +32,8 @@ export type MainUiIconName =
   | 'booklet'
   | 'videoInfo'
   | 'cover'
+  | 'prev'
+  | 'next'
 
 interface MainUiIconProps {
   name: MainUiIconName
@@ -237,6 +239,16 @@ const MAIN_UI_ICON_NODES: Record<MainUiIconName, ReactElement> = {
     <>
       <rect x="4" y="4" width="16" height="16" rx="2" />
       <line x1="8" y1="4" x2="8" y2="20" />
+    </>
+  ),
+  prev: (
+    <>
+      <path d="m15 18-6-6 6-6" />
+    </>
+  ),
+  next: (
+    <>
+      <path d="m9 18 6-6-6-6" />
     </>
   ),
 }

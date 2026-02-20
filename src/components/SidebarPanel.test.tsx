@@ -1,5 +1,5 @@
-import type { ComponentProps } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { useState, type ComponentProps } from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { SidebarNode } from "../types";
@@ -92,6 +92,186 @@ const IMAGE_TREE_DIRECTORY_FIXTURE: SidebarNode[] = [
   },
 ];
 
+const IMAGE_TREE_PARENT_NAV_FIXTURE: SidebarNode[] = [
+  {
+    id: "folder:X盘",
+    label: "X盘",
+    kind: "folder",
+    pathKey: "X盘",
+    imageNodeType: "folder",
+    directImageCount: 0,
+    descendantNodeCount: 7,
+    descendantPackageCount: 3,
+    descendantImageCount: 12,
+    children: [
+      {
+        id: "folder:X盘/图库A",
+        label: "图库A",
+        kind: "folder",
+        pathKey: "X盘/图库A",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        descendantNodeCount: 2,
+        descendantPackageCount: 1,
+        descendantImageCount: 4,
+        children: [
+          {
+            id: "package:X盘/图库A/Vol.1",
+            label: "Vol.1",
+            kind: "package",
+            packageId: "pkg-a-1",
+            imageSourceId: "pkg-a-1",
+            pathKey: "X盘/图库A/Vol.1",
+            imageNodeType: "package",
+            directImageCount: 4,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 4,
+            children: [],
+          },
+        ],
+      },
+      {
+        id: "folder:X盘/CoverRoot",
+        label: "CoverRoot",
+        kind: "folder",
+        pathKey: "X盘/CoverRoot",
+        imageNodeType: "directory",
+        imageSourceId: "cover-root",
+        directImageCount: 2,
+        descendantNodeCount: 2,
+        descendantPackageCount: 1,
+        descendantImageCount: 3,
+        children: [
+          {
+            id: "package:X盘/CoverRoot/CoverPkg",
+            label: "CoverPkg",
+            kind: "package",
+            packageId: "pkg-cover",
+            imageSourceId: "pkg-cover",
+            pathKey: "X盘/CoverRoot/CoverPkg",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+        ],
+      },
+      {
+        id: "folder:X盘/图库B",
+        label: "图库B",
+        kind: "folder",
+        pathKey: "X盘/图库B",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        descendantNodeCount: 2,
+        descendantPackageCount: 1,
+        descendantImageCount: 5,
+        children: [
+          {
+            id: "package:X盘/图库B/Vol.1",
+            label: "Vol.1",
+            kind: "package",
+            packageId: "pkg-b-1",
+            imageSourceId: "pkg-b-1",
+            pathKey: "X盘/图库B/Vol.1",
+            imageNodeType: "package",
+            directImageCount: 5,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 5,
+            children: [],
+          },
+        ],
+      },
+    ],
+  },
+];
+
+const IMAGE_TREE_MULTI_DRIVE_FIXTURE: SidebarNode[] = [
+  {
+    id: "folder:C:",
+    label: "C:",
+    kind: "folder",
+    pathKey: "C:",
+    imageNodeType: "folder",
+    directImageCount: 0,
+    descendantNodeCount: 3,
+    descendantPackageCount: 1,
+    descendantImageCount: 2,
+    children: [
+      {
+        id: "folder:C:/图库C",
+        label: "图库C",
+        kind: "folder",
+        pathKey: "C:/图库C",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        descendantNodeCount: 2,
+        descendantPackageCount: 1,
+        descendantImageCount: 2,
+        children: [
+          {
+            id: "package:C:/图库C/Vol.1",
+            label: "C-Vol",
+            kind: "package",
+            packageId: "pkg-c-1",
+            imageSourceId: "pkg-c-1",
+            pathKey: "C:/图库C/Vol.1",
+            imageNodeType: "package",
+            directImageCount: 2,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 2,
+            children: [],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "folder:D:",
+    label: "D:",
+    kind: "folder",
+    pathKey: "D:",
+    imageNodeType: "folder",
+    directImageCount: 0,
+    descendantNodeCount: 3,
+    descendantPackageCount: 1,
+    descendantImageCount: 3,
+    children: [
+      {
+        id: "folder:D:/图库D",
+        label: "图库D",
+        kind: "folder",
+        pathKey: "D:/图库D",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        descendantNodeCount: 2,
+        descendantPackageCount: 0,
+        descendantImageCount: 3,
+        children: [
+          {
+            id: "folder:D:/图库D/解压包",
+            label: "D-Dir",
+            kind: "folder",
+            pathKey: "D:/图库D/解压包",
+            imageNodeType: "directory",
+            imageSourceId: "dir-d-1",
+            directImageCount: 3,
+            descendantNodeCount: 1,
+            descendantPackageCount: 0,
+            descendantImageCount: 3,
+            children: [],
+          },
+        ],
+      },
+    ],
+  },
+];
+
 function renderMusicSidebar(
   overrides: Partial<ComponentProps<typeof SidebarPanel>> = {},
 ) {
@@ -152,7 +332,9 @@ function renderImageSidebar(
   nodes: SidebarNode[],
   overrides: Partial<ComponentProps<typeof SidebarPanel>> = {},
 ) {
-  return render(
+  const onSelectNode = vi.fn();
+  const onSelectPackage = vi.fn();
+  const result = render(
     <SidebarPanel
       mode="image"
       sidebarFocus="sidebar"
@@ -176,8 +358,8 @@ function renderImageSidebar(
       selectedAudioId=""
       playlistIds={[]}
       audioPlaylistIds={[]}
-      onSelectNode={vi.fn()}
-      onSelectPackage={vi.fn()}
+      onSelectNode={onSelectNode}
+      onSelectPackage={onSelectPackage}
       onSelectVideo={vi.fn()}
       onSelectAudio={vi.fn()}
       onCollapseSidebar={vi.fn()}
@@ -190,6 +372,62 @@ function renderImageSidebar(
       {...overrides}
     />,
   );
+
+  return {
+    ...result,
+    onSelectNode,
+    onSelectPackage,
+  };
+}
+
+function renderControlledImageSidebar(
+  nodes: SidebarNode[],
+  selectedSidebarNodeId: string,
+) {
+  function ControlledSidebar() {
+    const [collapsedFolderNodeIds, setCollapsedFolderNodeIds] = useState<string[]>([]);
+    return (
+      <SidebarPanel
+        mode="image"
+        sidebarFocus="sidebar"
+        sidebarRatio={0.3}
+        sidebarMinWidth={220}
+        sidebarFontSize={14}
+        sidebarCountFontSize={12}
+        sidebarIndentStep={16}
+        sidebarVerticalGap={4}
+        currentRootLabel={null}
+        selectedSidebarNodeId={selectedSidebarNodeId}
+        canSetCurrentRoot={true}
+        imageRootNodeId={null}
+        videoRootNodeId={null}
+        musicRootNodeId={null}
+        imageTreeNodes={nodes}
+        videoTreeNodes={[]}
+        audioTreeNodes={[]}
+        selectedPackageId=""
+        selectedVideoId=""
+        selectedAudioId=""
+        playlistIds={[]}
+        audioPlaylistIds={[]}
+        onSelectNode={vi.fn()}
+        onSelectPackage={vi.fn()}
+        onSelectVideo={vi.fn()}
+        onSelectAudio={vi.fn()}
+        onCollapseSidebar={vi.fn()}
+        onSetCurrentRoot={vi.fn()}
+        onGoToFromSearchMode={vi.fn()}
+        onResetRoot={vi.fn()}
+        onToggleVideoPlaylist={vi.fn()}
+        onToggleAudioPlaylist={vi.fn()}
+        onToggleManageNode={vi.fn()}
+        collapsedFolderNodeIds={collapsedFolderNodeIds}
+        onSetCollapsedFolderNodeIds={setCollapsedFolderNodeIds}
+      />
+    );
+  }
+
+  render(<ControlledSidebar />);
 }
 
 function renderVideoSidebar(nodes: SidebarNode[]) {
@@ -545,5 +783,66 @@ describe("SidebarPanel image collapse interactions", () => {
     );
 
     expect(screen.getByRole("button", { name: "Vol.1" })).toBeInTheDocument();
+  });
+
+  it("点击折叠全部按钮会折叠所有含图父级节点", () => {
+    renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE);
+
+    fireEvent.click(screen.getByRole("button", { name: "折叠全部含图父级" }));
+
+    expect(screen.getByRole("button", { name: "X盘" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "图库A" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "图库B" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "CoverPkg" })).toBeNull();
+  });
+
+  it("多盘符场景下折叠会对所有目标父级节点生效", () => {
+    renderImageSidebar(IMAGE_TREE_MULTI_DRIVE_FIXTURE);
+
+    fireEvent.click(screen.getByRole("button", { name: "折叠全部含图父级" }));
+
+    expect(screen.queryByRole("button", { name: "C-Vol" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "D-Dir" })).toBeNull();
+    expect(screen.getByRole("button", { name: "图库C" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "图库D" })).toBeInTheDocument();
+  });
+
+  it("折叠全部按钮再次点击会展开所有含图父级节点", () => {
+    renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE);
+
+    fireEvent.click(screen.getByRole("button", { name: "折叠全部含图父级" }));
+    fireEvent.click(screen.getByRole("button", { name: "展开全部含图父级" }));
+
+    expect(screen.getAllByRole("button", { name: "Vol.1" }).length).toBe(2);
+  });
+
+  it("受控模式下折叠全部后不会被自动展开回去", async () => {
+    renderControlledImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE, "package:X盘/图库A/Vol.1");
+
+    fireEvent.click(screen.getByRole("button", { name: "折叠全部含图父级" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "CoverPkg" })).toBeNull();
+    });
+  });
+
+  it("图片模式可跳转到下一个目标父级节点", () => {
+    const { onSelectNode } = renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE, {
+      selectedSidebarNodeId: "folder:X盘/图库A",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "下一个含图父级" }));
+
+    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/CoverRoot");
+  });
+
+  it("图片模式在首个含图父级节点时禁用上一个按钮", () => {
+    renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE, {
+      selectedSidebarNodeId: "folder:X盘/图库A",
+    });
+
+    expect(screen.getByRole("button", { name: "上一个含图父级" })).toBeDisabled();
   });
 });

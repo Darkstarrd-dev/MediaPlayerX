@@ -70,6 +70,52 @@ function resolveAncestorNodeIds(
   return path;
 }
 
+function resolveNodeOrderIndexById(nodes: SidebarNode[]): Map<string, number> {
+  const indexById = new Map<string, number>();
+  let cursor = 0;
+
+  const walk = (items: SidebarNode[]) => {
+    for (const node of items) {
+      indexById.set(node.id, cursor);
+      cursor += 1;
+      if (node.children.length > 0) {
+        walk(node.children);
+      }
+    }
+  };
+
+  walk(nodes);
+  return indexById;
+}
+
+function resolveImagePackageParentNodeIds(nodes: SidebarNode[]): string[] {
+  const orderedNodeIds: string[] = [];
+  const walk = (items: SidebarNode[], depth: number) => {
+    for (const node of items) {
+      const canBeParentTarget = node.kind === "folder" && depth > 0;
+      const hasDirectImageSourceChild = node.children.some((child) => {
+        const childImageNodeType =
+          child.imageNodeType ?? (child.kind === "folder" ? "folder" : "package");
+        return (
+          child.kind === "package"
+          || childImageNodeType === "package"
+          || childImageNodeType === "directory"
+        );
+      });
+      if (canBeParentTarget && hasDirectImageSourceChild) {
+        orderedNodeIds.push(node.id);
+      }
+
+      if (node.children.length > 0) {
+        walk(node.children, depth + 1);
+      }
+    }
+  };
+
+  walk(nodes, 0);
+  return orderedNodeIds;
+}
+
 function isSameNodeIdSet(left: Set<string>, right: Set<string>): boolean {
   if (left.size !== right.size) {
     return false;
@@ -186,8 +232,8 @@ function SidebarPanel({
     return localCollapsedImageFolderNodeIds;
   }, [collapsedFolderNodeIds, localCollapsedImageFolderNodeIds, onSetCollapsedFolderNodeIds]);
   const manageDragCleanupRef = useRef<(() => void) | null>(null);
-  const sidebarTreeRef = useRef<HTMLDivElement | null>(null);
   const labelTextElementByNodeIdRef = useRef<Map<string, HTMLSpanElement>>(new Map());
+  const suppressAutoExpandAncestorFoldersRef = useRef(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(new Set());
   const suppressManageClickRef = useRef(false);
@@ -276,75 +322,6 @@ function SidebarPanel({
     };
   }, [sidebarFocus]);
 
-  const updateSidebarScrollIndicator = useCallback(() => {
-    const element = sidebarTreeRef.current;
-    if (!element) {
-      return;
-    }
-
-    const maxScrollTop = Math.max(0, element.scrollHeight - element.clientHeight);
-    if (maxScrollTop <= 0) {
-      element.style.setProperty('--mpx-sidebar-scroll-indicator-opacity', '0');
-      element.style.setProperty('--mpx-sidebar-scroll-thumb-height', '0px');
-      element.style.setProperty('--mpx-sidebar-scroll-thumb-top', '0px');
-      return;
-    }
-
-    const trackPadding = 8;
-    const trackHeight = Math.max(0, element.clientHeight - trackPadding * 2);
-    const visibleRatio = element.clientHeight / Math.max(1, element.scrollHeight);
-    const thumbHeight = Math.min(trackHeight, Math.max(18, trackHeight * visibleRatio));
-    const maxThumbOffset = Math.max(0, trackHeight - thumbHeight);
-    const thumbTop = trackPadding + (element.scrollTop / maxScrollTop) * maxThumbOffset;
-
-    element.style.setProperty('--mpx-sidebar-scroll-indicator-opacity', '1');
-    element.style.setProperty('--mpx-sidebar-scroll-thumb-height', `${thumbHeight}px`);
-    element.style.setProperty('--mpx-sidebar-scroll-thumb-top', `${thumbTop}px`);
-  }, []);
-
-  useEffect(() => {
-    const element = sidebarTreeRef.current;
-    if (!element) {
-      return;
-    }
-
-    let rafId = 0;
-    const schedule = () => {
-      if (rafId !== 0) {
-        cancelAnimationFrame(rafId);
-      }
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        updateSidebarScrollIndicator();
-      });
-    };
-
-    schedule();
-    element.addEventListener('scroll', schedule, { passive: true });
-    const resizeObserver = new ResizeObserver(schedule);
-    resizeObserver.observe(element);
-
-    return () => {
-      element.removeEventListener('scroll', schedule);
-      resizeObserver.disconnect();
-      if (rafId !== 0) {
-        cancelAnimationFrame(rafId);
-      }
-    };
-  }, [
-    updateSidebarScrollIndicator,
-    mode,
-    imageTreeNodes,
-    videoTreeNodes,
-    audioTreeNodes,
-    collapsedImageFolderNodeIds,
-    sidebarVerticalGap,
-    sidebarFontSize,
-    searchResultMode,
-    manageMode,
-    metadataManageMode,
-  ]);
-
   const updateCollapsedImageFolderNodeIds = useCallback(
     (
     updater: (previous: Set<string>) => Set<string>,
@@ -364,17 +341,166 @@ function SidebarPanel({
     [collapsedFolderNodeIds, onSetCollapsedFolderNodeIds],
   );
 
+  const activeTreeNodes =
+    mode === "image"
+      ? imageTreeNodes
+      : mode === "video"
+        ? videoTreeNodes
+        : audioTreeNodes;
+
+  const imageNodeById = useMemo(() => {
+    const map = new Map<string, SidebarNode>();
+    const walk = (nodes: SidebarNode[]) => {
+      for (const node of nodes) {
+        map.set(node.id, node);
+        if (node.children.length > 0) {
+          walk(node.children);
+        }
+      }
+    };
+    walk(imageTreeNodes);
+    return map;
+  }, [imageTreeNodes]);
+
+  const imagePackageParentNodeIds = useMemo(
+    () => (mode === "image" ? resolveImagePackageParentNodeIds(imageTreeNodes) : []),
+    [imageTreeNodes, mode],
+  );
+
+  const imagePackageParentNodeIdSet = useMemo(
+    () => new Set(imagePackageParentNodeIds),
+    [imagePackageParentNodeIds],
+  );
+
+  const imageNodeOrderIndexById = useMemo(
+    () => (mode === "image" ? resolveNodeOrderIndexById(imageTreeNodes) : new Map<string, number>()),
+    [imageTreeNodes, mode],
+  );
+
+  const allImagePackageParentsCollapsed = useMemo(() => {
+    if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
+      return false;
+    }
+    return imagePackageParentNodeIds.every((nodeId) => collapsedImageFolderNodeIds.has(nodeId));
+  }, [collapsedImageFolderNodeIds, imagePackageParentNodeIds, mode]);
+
+  const imageParentNavigation = useMemo(() => {
+    if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
+      return {
+        previousNodeId: null as string | null,
+        nextNodeId: null as string | null,
+      };
+    }
+
+    const selectedTargetIndex = selectedSidebarNodeId
+      ? imagePackageParentNodeIds.indexOf(selectedSidebarNodeId)
+      : -1;
+    if (selectedTargetIndex >= 0) {
+      return {
+        previousNodeId: imagePackageParentNodeIds[selectedTargetIndex - 1] ?? null,
+        nextNodeId: imagePackageParentNodeIds[selectedTargetIndex + 1] ?? null,
+      };
+    }
+
+    const selectedOrder = selectedSidebarNodeId
+      ? imageNodeOrderIndexById.get(selectedSidebarNodeId)
+      : undefined;
+    if (selectedOrder === undefined) {
+      return {
+        previousNodeId: null,
+        nextNodeId: imagePackageParentNodeIds[0] ?? null,
+      };
+    }
+
+    let previousNodeId: string | null = null;
+    let nextNodeId: string | null = null;
+    for (const targetNodeId of imagePackageParentNodeIds) {
+      const targetOrder = imageNodeOrderIndexById.get(targetNodeId);
+      if (targetOrder === undefined) {
+        continue;
+      }
+      if (targetOrder < selectedOrder) {
+        previousNodeId = targetNodeId;
+        continue;
+      }
+      if (targetOrder > selectedOrder) {
+        nextNodeId = targetNodeId;
+        break;
+      }
+    }
+
+    return {
+      previousNodeId,
+      nextNodeId,
+    };
+  }, [
+    imageNodeOrderIndexById,
+    imagePackageParentNodeIds,
+    mode,
+    selectedSidebarNodeId,
+  ]);
+
+  const jumpToImageParentNode = useCallback((targetNodeId: string | null) => {
+    if (mode !== "image" || !targetNodeId) {
+      return;
+    }
+
+    onSelectNode(targetNodeId);
+    const targetNode = imageNodeById.get(targetNodeId);
+    if (targetNode?.imageSourceId) {
+      onSelectPackage(targetNode.imageSourceId);
+    }
+  }, [imageNodeById, mode, onSelectNode, onSelectPackage]);
+
+  const toggleCollapseImagePackageParentNodes = useCallback(() => {
+    if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
+      return;
+    }
+
+    suppressAutoExpandAncestorFoldersRef.current = true;
+    updateCollapsedImageFolderNodeIds((previous) => {
+      const next = new Set(previous);
+      if (allImagePackageParentsCollapsed) {
+        let changed = false;
+        for (const nodeId of imagePackageParentNodeIds) {
+          if (!next.delete(nodeId)) {
+            continue;
+          }
+          changed = true;
+        }
+        return changed ? next : previous;
+      }
+
+      let changed = false;
+      for (const nodeId of imagePackageParentNodeIds) {
+        if (next.has(nodeId)) {
+          continue;
+        }
+        next.add(nodeId);
+        changed = true;
+      }
+      return changed ? next : previous;
+    });
+
+    requestAnimationFrame(() => {
+      suppressAutoExpandAncestorFoldersRef.current = false;
+    });
+  }, [
+    allImagePackageParentsCollapsed,
+    imagePackageParentNodeIds,
+    mode,
+    updateCollapsedImageFolderNodeIds,
+  ]);
+
   useEffect(() => {
     if (!selectedSidebarNodeId) {
       return;
     }
 
-    const activeTreeNodes =
-      mode === "image"
-        ? imageTreeNodes
-        : mode === "video"
-          ? videoTreeNodes
-          : audioTreeNodes;
+    if (suppressAutoExpandAncestorFoldersRef.current) {
+      return;
+    }
+
     const ancestorNodeIds = resolveAncestorNodeIds(
       activeTreeNodes,
       selectedSidebarNodeId,
@@ -388,6 +514,9 @@ function SidebarPanel({
       let changed = false;
 
       for (const ancestorNodeId of ancestorNodeIds) {
+        if (allImagePackageParentsCollapsed && imagePackageParentNodeIdSet.has(ancestorNodeId)) {
+          continue;
+        }
         if (next.delete(ancestorNodeId)) {
           changed = true;
         }
@@ -396,12 +525,11 @@ function SidebarPanel({
       return changed ? next : previous;
     });
   }, [
-    audioTreeNodes,
-    imageTreeNodes,
-    mode,
+    activeTreeNodes,
+    allImagePackageParentsCollapsed,
+    imagePackageParentNodeIdSet,
     selectedSidebarNodeId,
     updateCollapsedImageFolderNodeIds,
-    videoTreeNodes,
   ]);
 
   const manageStyleEnabled = manageMode || metadataManageMode;
@@ -502,6 +630,11 @@ function SidebarPanel({
     ? t("a11y.sidebar.restoreRoot")
     : t("a11y.sidebar.setAsRoot");
   const rootToggleIconName = rootSet ? "return" : "setRoot";
+  const collapseImageParentsLabel = allImagePackageParentsCollapsed
+    ? t("a11y.sidebar.expandImageParents")
+    : t("a11y.sidebar.collapseImageParents");
+  const previousImageParentLabel = t("a11y.sidebar.previousImageParent");
+  const nextImageParentLabel = t("a11y.sidebar.nextImageParent");
 
   const renderNodes = (nodes: SidebarNode[], depth = 0): ReactElement[] => {
     return nodes.flatMap((node) => {
@@ -521,7 +654,8 @@ function SidebarPanel({
         imageNodeType,
       );
       const imageFolderCollapsed =
-        imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
+        (imageFolderCollapsible || (mode === "image" && node.kind === "folder"))
+        && collapsedImageFolderNodeIds.has(node.id);
       const visibleImageCount = node.directImageCount ?? 0;
       const descendantNodeCount =
         node.descendantNodeCount ?? node.children.length;
@@ -744,6 +878,58 @@ function SidebarPanel({
           ) : null}
 
           {showRootToggle ? (
+            mode === "image" ? (
+              <button
+                className="sidebar-head-icon-btn"
+                data-slot="fg-sidebar-toolbar-collapse-all"
+                type="button"
+                aria-label={collapseImageParentsLabel}
+                title={allImagePackageParentsCollapsed ? t("tip.sidebar.expandImageParents") : t("tip.sidebar.collapseImageParents")}
+                disabled={imagePackageParentNodeIds.length === 0}
+                onClick={toggleCollapseImagePackageParentNodes}
+              >
+                <MainUiIcon name={allImagePackageParentsCollapsed ? "expand" : "collapse"} />
+              </button>
+            ) : null
+          ) : null}
+
+          {showRootToggle ? (
+            mode === "image" ? (
+              <button
+                className="sidebar-head-icon-btn"
+                data-slot="fg-sidebar-toolbar-prev-image-parent"
+                type="button"
+                aria-label={previousImageParentLabel}
+                title={t("tip.sidebar.previousImageParent")}
+                disabled={!imageParentNavigation.previousNodeId}
+                onClick={() => {
+                  jumpToImageParentNode(imageParentNavigation.previousNodeId);
+                }}
+              >
+                <MainUiIcon name="prev" />
+              </button>
+            ) : null
+          ) : null}
+
+          {showRootToggle ? (
+            mode === "image" ? (
+              <button
+                className="sidebar-head-icon-btn"
+                data-slot="fg-sidebar-toolbar-next-image-parent"
+                type="button"
+                aria-label={nextImageParentLabel}
+                title={t("tip.sidebar.nextImageParent")}
+                disabled={!imageParentNavigation.nextNodeId}
+                onClick={() => {
+                  jumpToImageParentNode(imageParentNavigation.nextNodeId);
+                }}
+              >
+                <MainUiIcon name="next" />
+              </button>
+            ) : null
+          ) : null}
+
+          {showRootToggle ? (
             <button
               className={`sidebar-head-icon-btn ${rootSet ? "is-root-set" : ""}`}
               data-slot="fg-sidebar-toolbar-root-toggle"
@@ -762,15 +948,12 @@ function SidebarPanel({
       <div
         className="sidebar-tree"
         data-slot="fg-sidebar-main"
-        ref={sidebarTreeRef}
         style={{
           display: "flex",
           flexDirection: "column",
           gap: `${sidebarVerticalGap}px`,
         }}
       >
-        <span hidden data-slot="fg-sidebar-main-scroll-track" />
-        <span hidden data-slot="fg-sidebar-main-scroll-thumb" />
         {mode === "image"
           ? renderNodes(imageTreeNodes)
           : mode === "video"

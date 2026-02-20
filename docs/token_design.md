@@ -63,11 +63,12 @@
 | `fg.sidebar.toolbar.title` | `--mpx-slot-fg-sidebar-toolbar-title-*` |
 | `fg.sidebar.toolbar.back` | `--mpx-slot-fg-sidebar-toolbar-back-*` |
 | `fg.sidebar.toolbar.clear` | `--mpx-slot-fg-sidebar-toolbar-clear-*` |
+| `fg.sidebar.toolbar.collapseAll` | `--mpx-slot-fg-sidebar-toolbar-collapse-all-*` |
+| `fg.sidebar.toolbar.prevImageParent` | `--mpx-slot-fg-sidebar-toolbar-prev-image-parent-*` |
+| `fg.sidebar.toolbar.nextImageParent` | `--mpx-slot-fg-sidebar-toolbar-next-image-parent-*` |
 | `fg.sidebar.toolbar.rootToggle` | `--mpx-slot-fg-sidebar-toolbar-root-toggle-*` |
 | `fg.sidebar.main` | `--mpx-slot-fg-sidebar-main-*` |
 | `fg.sidebar.main.label` | `--mpx-slot-fg-sidebar-main-label-*` |
-| `fg.sidebar.main.scroll.track` | `--mpx-slot-fg-sidebar-main-scroll-track-*` |
-| `fg.sidebar.main.scroll.thumb` | `--mpx-slot-fg-sidebar-main-scroll-thumb-*` |
 | `fg.sidebar.shortcut.rename.panel` | `--mpx-slot-fg-sidebar-shortcut-rename-panel-*` |
 | `fg.sidebar.footer` | `--mpx-slot-fg-sidebar-footer-*` |
 | `fg.main.toolbar` | `--mpx-slot-fg-main-toolbar-*` |

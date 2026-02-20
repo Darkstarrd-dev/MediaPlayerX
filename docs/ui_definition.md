@@ -78,11 +78,12 @@
 | `fg.sidebar.toolbar.title` | `.sidebar-title-btn` | `data-slot="fg-sidebar-toolbar-title"` | always in sidebar | 结构标题/折叠触发 | |
 | `fg.sidebar.toolbar.back` | `.sidebar-head-icon-btn`(return) | `data-slot="fg-sidebar-toolbar-back"` | `searchResultMode` | 搜索结果返回 | |
 | `fg.sidebar.toolbar.clear` | `.sidebar-head-icon-btn`(unselectAll) | `data-slot="fg-sidebar-toolbar-clear"` | `manageMode || metadataManageMode` | 清空选择 | |
+| `fg.sidebar.toolbar.collapseAll` | `.sidebar-head-icon-btn`(collapse) | `data-slot="fg-sidebar-toolbar-collapse-all"` | `mode=image && !searchResultMode` | 一键折叠含图父级节点 | |
+| `fg.sidebar.toolbar.prevImageParent` | `.sidebar-head-icon-btn`(prev) | `data-slot="fg-sidebar-toolbar-prev-image-parent"` | `mode=image && !searchResultMode` | 跳转到上一个含图父级节点 | |
+| `fg.sidebar.toolbar.nextImageParent` | `.sidebar-head-icon-btn`(next) | `data-slot="fg-sidebar-toolbar-next-image-parent"` | `mode=image && !searchResultMode` | 跳转到下一个含图父级节点 | |
 | `fg.sidebar.toolbar.rootToggle` | `.sidebar-head-icon-btn`(setRoot/return) | `data-slot="fg-sidebar-toolbar-root-toggle"` | `!searchResultMode` | 根范围切换 | |
 | `fg.sidebar.main` | `.sidebar-tree` | `data-slot="fg-sidebar-main"` | `!sidebarCollapsed` | 侧栏主列表区 | 可滚动 |
 | `fg.sidebar.main.label` | `.sidebar-label` | `data-slot="fg-sidebar-main-label"` | per node | 节点标签按钮 | |
-| `fg.sidebar.main.scroll.track` | `.sidebar-tree::before` | `data-slot="fg-sidebar-main-scroll-track"` | 内容可滚动 | 自定义滚动轨道 | 非原生滚动条 |
-| `fg.sidebar.main.scroll.thumb` | `.sidebar-tree::after` | `data-slot="fg-sidebar-main-scroll-thumb"` | 内容可滚动 | 自定义滚动 thumb | JS 更新变量定位 |
 | `fg.sidebar.shortcut.rename.panel` | `.settings-floating-mask > .sidebar-rename-dialog` | `data-slot="fg-sidebar-shortcut-rename-panel"` | sidebar 上下文触发 `KeyR` 且存在目标节点 | 侧栏重命名弹窗 | 触发逻辑在 `useAppInteractionEffects` |
 | `fg.sidebar.footer` | 预留 | `data-slot="fg-sidebar-footer"` | 预留 | 空槽位 | 保留用于未来扩展 |
 
