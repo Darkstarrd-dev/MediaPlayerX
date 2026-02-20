@@ -108,6 +108,7 @@ export function renderImageMainContent({
           <div
             key={item.nodeId}
             className="thumb-card"
+            data-slot="fg-main-content-image-node-grid-card"
             style={{ width: `${actualCellWidth}px` }}
           >
             <button
@@ -196,6 +197,7 @@ export function renderImageMainContent({
                 data-manage-image-index={String(ref.imageIndex)}
                 data-manage-absolute-index={String(absoluteIndex)}
                 className={`name-list-row ${manageMode ? "is-manage" : ""} ${manageMode && isChecked ? "is-selected" : ""} ${manageMode && image.hidden ? "is-hidden" : ""} ${isFocused ? "is-focused" : ""} ${isAdReviewExcluded ? "is-ad-review-excluded" : ""}`}
+                data-slot="fg-main-content-image-name-list-row"
               >
                 <button
                   className="name-list-row-main"
@@ -212,7 +214,7 @@ export function renderImageMainContent({
                   }
                   onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
                 >
-                  <span>{`${manageMode && image.hidden ? `${t("ui.image.hiddenPrefix")} ` : ""}${fileName}`}</span>
+                  <span className="name-list-row-label" data-slot="fg-main-content-image-name-list-label">{`${manageMode && image.hidden ? `${t("ui.image.hiddenPrefix")} ` : ""}${fileName}`}</span>
                   <span>{`${image.sizeKb}KB`}</span>
                   <span>
                     {resolvedWidth > 0 && resolvedHeight > 0
@@ -250,6 +252,7 @@ export function renderImageMainContent({
             <div
               key={`skeleton-${index}`}
               className="thumb-card is-skeleton"
+              data-slot="fg-main-content-image-grid-card"
               style={{ width: `${actualCellWidth}px` }}
             >
               <div
@@ -292,6 +295,7 @@ export function renderImageMainContent({
                 data-manage-image-index={String(ref.imageIndex)}
                 data-manage-absolute-index={String(absoluteIndex)}
                 className={`thumb-card ${manageMode ? "is-manage" : ""} ${manageMode && isChecked ? "is-selected" : ""} ${manageMode && image.hidden ? "is-hidden" : ""} ${isFocused ? "is-focused" : ""} ${isAdReviewExcluded ? "is-ad-review-excluded" : ""}`}
+                data-slot="fg-main-content-image-grid-card"
                 style={{
                   width: `${actualCellWidth}px`,
                   gridColumnStart: startsNewPackageRow ? 1 : undefined,

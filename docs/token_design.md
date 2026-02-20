@@ -77,8 +77,12 @@
 | `fg.main.toolbar.manage.groupName.panel` | `--mpx-slot-fg-main-toolbar-manage-group-name-panel-*` |
 | `fg.main.toolbar.manage.deleteConfirm.panel` | `--mpx-slot-fg-main-toolbar-manage-delete-confirm-panel-*` |
 | `fg.main.content.image.grid` | `--mpx-slot-fg-main-content-image-grid-*` |
+| `fg.main.content.image.grid.card` | `--mpx-slot-fg-main-content-image-grid-card-*` |
 | `fg.main.content.image.nodeGrid` | `--mpx-slot-fg-main-content-image-node-grid-*` |
+| `fg.main.content.image.nodeGrid.card` | `--mpx-slot-fg-main-content-image-node-grid-card-*` |
 | `fg.main.content.image.nameList` | `--mpx-slot-fg-main-content-image-name-list-*` |
+| `fg.main.content.image.nameList.row` | `--mpx-slot-fg-main-content-image-name-list-row-*` |
+| `fg.main.content.image.nameList.label` | `--mpx-slot-fg-main-content-image-name-list-label-*` |
 | `fg.main.content.image.marquee.ovl` | `--mpx-slot-fg-main-content-image-marquee-ovl-*` |
 | `fg.main.toolbar.image.scale.pop` | `--mpx-slot-fg-main-toolbar-image-scale-pop-*` |
 | `fg.main.toolbar.image.adReviewStrategy.pop` | `--mpx-slot-fg-main-toolbar-image-ad-review-strategy-pop-*` |

@@ -102,8 +102,12 @@
 | 稳定路径 | 当前实现锚点 | 唯一标识（拟定） | 出现条件 | 说明 | 其他 |
 |---|---|---|---|---|---|
 | `fg.main.content.image.grid` | `.image-grid` | `data-slot="fg-main-content-image-grid"` | `mode=image && !nodeBrowseMode && !showNamesOnly` | 缩略图网格 | |
+| `fg.main.content.image.grid.card` | `.image-grid .thumb-card` | `data-slot="fg-main-content-image-grid-card"` | `mode=image && !nodeBrowseMode && !showNamesOnly` | 缩略图卡片项 | 包含普通项与 skeleton 项 |
 | `fg.main.content.image.nodeGrid` | `.image-grid.node-browse-grid` | `data-slot="fg-main-content-image-node-grid"` | `mode=image && nodeBrowseMode` | 节点浏览网格 | |
+| `fg.main.content.image.nodeGrid.card` | `.image-grid.node-browse-grid .thumb-card` | `data-slot="fg-main-content-image-node-grid-card"` | `mode=image && nodeBrowseMode` | 节点浏览卡片项 | |
 | `fg.main.content.image.nameList` | `.name-list` | `data-slot="fg-main-content-image-name-list"` | `mode=image && showNamesOnly` | 文件名列表模式 | |
+| `fg.main.content.image.nameList.row` | `.name-list-row` | `data-slot="fg-main-content-image-name-list-row"` | `mode=image && showNamesOnly` | 文件名列表行容器 | |
+| `fg.main.content.image.nameList.label` | `.name-list-row-label` | `data-slot="fg-main-content-image-name-list-label"` | `mode=image && showNamesOnly` | 文件名列文本（首列） | |
 | `fg.main.content.image.marquee.ovl` | `.manage-selection-marquee` | `data-slot="fg-main-content-image-marquee-ovl"` | 框选中 | 管理框选遮罩 | fixed 定位 |
 | `fg.main.toolbar.image.scale.pop` | `.main-toolbar-scale-control .header-popover-panel` | `data-slot="fg-main-toolbar-image-scale-pop"` | scale popover open | 缩略图比例弹层 | 下拉窄面板 |
 | `fg.main.toolbar.image.adReviewStrategy.pop` | `.main-toolbar-ad-review-strategy-panel` | `data-slot="fg-main-toolbar-image-ad-review-strategy-pop"` | 对应按钮 hover/open | 审核策略 popover | 左对齐下拉 |
