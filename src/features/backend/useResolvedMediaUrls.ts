@@ -26,6 +26,7 @@ const CACHE_INVALIDATION_IGNORED_LIBRARY_CHANGE_REASONS = new Set([
   'write-package-external-metadata',
   'write-video-metadata',
   'thumbnail-rendering-start',
+  'thumbnail-rendering-progress',
   'thumbnail-rendering-end',
 ])
 

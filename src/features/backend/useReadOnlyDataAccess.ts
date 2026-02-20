@@ -22,7 +22,11 @@ import type { BrowserMode, FocusedImageRef } from '../../types'
 const DEFAULT_IPC_TIMEOUT_MS = 8_000
 const PAGE_READ_DEBOUNCE_MS = 72
 const METADATA_READ_DEBOUNCE_MS = 84
-const TRANSIENT_LIBRARY_CHANGE_REASONS = new Set(['thumbnail-rendering-start', 'thumbnail-rendering-end'])
+const TRANSIENT_LIBRARY_CHANGE_REASONS = new Set([
+  'thumbnail-rendering-start',
+  'thumbnail-rendering-progress',
+  'thumbnail-rendering-end',
+])
 
 interface UseReadOnlyDataAccessParams {
   repository: MediaRepository

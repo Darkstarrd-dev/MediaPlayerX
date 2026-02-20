@@ -52,7 +52,7 @@ export const ARCHIVE_NORMALIZE_RECHECK_MS = resolveConcurrency(process.env.MEDIA
 
 export const FFPROBE_CONCURRENCY = resolveConcurrency(process.env.MEDIA_PLAYERX_FFPROBE_CONCURRENCY, 3, 8)
 
-export const GLOBAL_CPU_TOKEN_LIMIT = resolveConcurrency(process.env.MEDIA_PLAYERX_CPU_TOKEN_LIMIT, 2, 16)
+export const GLOBAL_CPU_TOKEN_LIMIT = resolveConcurrency(process.env.MEDIA_PLAYERX_CPU_TOKEN_LIMIT, 1, 16)
 
 export const GLOBAL_GPU_TOKEN_LIMIT = resolveConcurrency(process.env.MEDIA_PLAYERX_GPU_TOKEN_LIMIT, 1, 8)
 

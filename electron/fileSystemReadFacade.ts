@@ -371,15 +371,12 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       readImageBufferForThumbnail: (locator) => this.librarySnapshotService.readImageBufferForThumbnail(locator),
       onThumbnailRenderingStart: (taskKey) => {
         this.archiveNormalizationService.onThumbnailRenderingStart(taskKey)
-        this.emitLibraryChanged({ reason: 'thumbnail-rendering-start', updated_at_ms: Date.now() })
       },
       onThumbnailRenderingProgress: (taskKey, payload) => {
         this.archiveNormalizationService.onThumbnailRenderingProgress(taskKey, payload)
-        this.emitLibraryChanged({ reason: 'thumbnail-rendering-progress', updated_at_ms: Date.now() })
       },
       onThumbnailRenderingEnd: (taskKey) => {
         this.archiveNormalizationService.onThumbnailRenderingEnd(taskKey)
-        this.emitLibraryChanged({ reason: 'thumbnail-rendering-end', updated_at_ms: Date.now() })
       },
       runWithThumbnailCpuToken: (taskName, task) => this.taskResourceGovernor.runWithCpuToken(taskName, task),
       withArchiveReadLock: (archivePath, task) => this.archivePathLockService.withReadLock(archivePath, task),

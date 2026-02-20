@@ -27,7 +27,8 @@ import { useImportDragOverlay } from "./useImportDragOverlay";
 import { useImportPaste } from "./useImportPaste";
 
 const IMPORT_TASK_TIMEOUT_MS = 20_000;
-const IMPORT_TASK_POLL_INTERVAL_MS = 500;
+const IMPORT_TASK_POLL_BUSY_MS = 500;
+const IMPORT_TASK_POLL_IDLE_MS = 2_200;
 
 interface UseImportPipelineResult {
   fileImportInputRef: RefObject<HTMLInputElement | null>;
@@ -104,6 +105,40 @@ function resolveImportTaskSource(
   }
 }
 
+function isImportTaskActive(task: ImportTaskDto): boolean {
+  return task.status === "pending" || task.status === "running";
+}
+
+function hasActiveImportTasks(tasks: ImportTaskDto[]): boolean {
+  return tasks.some((task) => isImportTaskActive(task));
+}
+
+function areImportTasksEquivalent(
+  left: ImportTaskDto[],
+  right: ImportTaskDto[],
+): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let index = 0; index < left.length; index += 1) {
+    const leftTask = left[index];
+    const rightTask = right[index];
+    if (
+      leftTask.task_id !== rightTask.task_id ||
+      leftTask.status !== rightTask.status ||
+      leftTask.progress !== rightTask.progress ||
+      leftTask.processed_count !== rightTask.processed_count ||
+      leftTask.total_count !== rightTask.total_count ||
+      leftTask.message !== rightTask.message
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export function useImportPipeline({
   repository,
   mode,
@@ -134,13 +169,20 @@ export function useImportPipeline({
   const [importTasks, setImportTasks] =
     useState<ImportTaskDto[]>(initialImportTasks);
 
+  const applyImportTasks = useCallback((nextTasks: ImportTaskDto[]) => {
+    setImportTasks((previous) =>
+      areImportTasksEquivalent(previous, nextTasks) ? previous : nextTasks,
+    );
+  }, []);
+
   const refreshTasks = useCallback(async () => {
     const response = isSynchronousTestMode
       ? repository.readImportTasksSync()
       : await repository.readImportTasks({ timeoutMs: IMPORT_TASK_TIMEOUT_MS });
-    setImportTasks(response.tasks);
+    applyImportTasks(response.tasks);
     setTaskError(null);
-  }, [isSynchronousTestMode, repository]);
+    return response.tasks;
+  }, [applyImportTasks, isSynchronousTestMode, repository]);
 
   const enqueueImportPaths = useCallback(
     async (source: BaseImportTaskSource, paths: string[]) => {
@@ -312,18 +354,43 @@ export function useImportPipeline({
       return;
     }
 
-    void refreshTasks().catch((error: unknown) => {
-      handleImportError(error);
-    });
+    let disposed = false;
+    let timerId: number | null = null;
 
-    const timer = window.setInterval(() => {
-      void refreshTasks().catch((error: unknown) => {
+    const clearTimer = () => {
+      if (timerId === null) {
+        return;
+      }
+      window.clearTimeout(timerId);
+      timerId = null;
+    };
+
+    const scheduleNext = (tasks: ImportTaskDto[] | null) => {
+      if (disposed) {
+        return;
+      }
+      const hasActiveTasks = tasks ? hasActiveImportTasks(tasks) : true;
+      timerId = window.setTimeout(() => {
+        timerId = null;
+        void runPoll();
+      }, hasActiveTasks ? IMPORT_TASK_POLL_BUSY_MS : IMPORT_TASK_POLL_IDLE_MS);
+    };
+
+    const runPoll = async () => {
+      try {
+        const tasks = await refreshTasks();
+        scheduleNext(tasks);
+      } catch (error: unknown) {
         handleImportError(error);
-      });
-    }, IMPORT_TASK_POLL_INTERVAL_MS);
+        scheduleNext(null);
+      }
+    };
+
+    void runPoll();
 
     return () => {
-      window.clearInterval(timer);
+      disposed = true;
+      clearTimer();
     };
   }, [handleImportError, isSynchronousTestMode, refreshTasks]);
 
