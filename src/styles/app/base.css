@@ -219,6 +219,11 @@ select option {
   color: var(--mpx-input-text);
 }
 
+.fg-sysinfo {
+  display: flex;
+  flex-direction: column;
+}
+
 .backend-error-banner {
   border-bottom: 1px solid var(--mpx-status-danger-border);
   background: var(--mpx-status-danger-bg);

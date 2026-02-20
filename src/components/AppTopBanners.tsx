@@ -26,8 +26,15 @@ function AppTopBanners({
   onDismissRuntimeWarning,
   importTaskPanelProps,
 }: AppTopBannersProps) {
+  const hasSysinfo =
+    importTaskPanelProps.open || backendErrorRows.length > 0 || runtimeWarningVisible
+
+  if (!hasSysinfo) {
+    return null
+  }
+
   return (
-    <>
+    <section className="fg-sysinfo" role="region" aria-label="system info">
       <BackendErrorBanner rows={backendErrorRows} repositoryMode={repositoryMode} />
 
       <RuntimeWarningBanner
@@ -37,7 +44,7 @@ function AppTopBanners({
       />
 
       <ImportTaskPanel {...importTaskPanelProps} />
-    </>
+    </section>
   )
 }
 

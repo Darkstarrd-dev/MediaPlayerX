@@ -2,9 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 
 import { buildImageMainSectionProps } from "./buildImageMainSectionProps";
 import { buildMainFooter } from "./buildMainFooter";
-import { buildManagementPanelProps } from "./buildManagementPanelProps";
 import { buildMetadataManagementPanelProps } from "./buildMetadataManagementPanelProps";
-import { buildSearchPanelProps } from "./buildSearchPanelProps";
 import { buildSidebarPanelProps } from "./buildSidebarPanelProps";
 import { buildMusicMainSectionProps } from "./buildMusicMainSectionProps";
 import { buildVideoMainSectionProps } from "./buildVideoMainSectionProps";
@@ -90,7 +88,6 @@ export function useAppWorkspaceProps({
   onStartWorkspaceBottomPanelResize,
   layoutLocked,
   currentRootLabel,
-  managementErrorRows,
   sidebarCheckedNodeIds,
   imageCheckedIds,
   activeSelectionScope,
@@ -434,41 +431,6 @@ export function useAppWorkspaceProps({
     onClearSidebarSelection: clearSidebarSelections,
   });
 
-  const searchPanelProps = buildSearchPanelProps({
-    vectorMode,
-    manageMode,
-    searchPanelCollapsed,
-    setSearchPanelCollapsed,
-    workspaceBottomPanelHeight,
-    vectorPanelRef,
-    vectorPanelContentRef,
-    featureResultCount:
-      mode === "video"
-        ? videosForSidebarCount
-        : mode === "music"
-          ? audiosForSidebarCount
-          : scopedImageSourcesEffective.length,
-    featureNameQuery,
-    setFeatureNameQuery,
-    featureWorkTitleQuery,
-    setFeatureWorkTitleQuery,
-    featureCircleQuery,
-    setFeatureCircleQuery,
-    featureAuthorQuery,
-    setFeatureAuthorQuery,
-    featureCircleOptions,
-    featureAuthorOptions,
-    featureTagOptions: featureTagOptionsEffective,
-    featureTagPickerOpen,
-    setFeatureTagPickerOpen,
-    featureTags,
-    setFeatureTags,
-    featureGradeFilter,
-    setFeatureGradeFilter,
-    onStartWorkspaceBottomPanelResize,
-    layoutLocked,
-  });
-
   const {
     onAdReviewStrategyModeChange,
     onAdReviewMaxConcurrencyChange,
@@ -477,57 +439,6 @@ export function useAppWorkspaceProps({
     onAdReviewTailStopCleanStreakChange,
   } = createAdReviewSettingHandlers({
     updateSettings: appSettings.updateSettings,
-  });
-
-  const managementPanelProps = buildManagementPanelProps({
-    mode,
-    manageMode,
-    searchPanelCollapsed,
-    setSearchPanelCollapsed,
-    workspaceBottomPanelHeight,
-    vectorPanelRef,
-    vectorPanelContentRef,
-    sidebarSelectedCount: sidebarCheckedNodeIds.length,
-    imageSelectedCount: imageCheckedIds.length,
-    activeSelectionScope,
-    pending: backendWrite.pending.manage || manageAdReview.deletePending,
-    operationHint: manageOperationHint,
-    errorRows: managementErrorRows,
-    onDelete: requestManageDelete,
-    onHide: () => {
-      void runManageHideAction(true);
-    },
-    onUnhide: () => {
-      void runManageHideAction(false);
-    },
-    onClearSelection: clearAllSelections,
-    adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
-    adReviewPending: manageAdReview.pending,
-    adReviewDeletePending: manageAdReview.deletePending,
-    adReviewTask: manageAdReview.task,
-    adReviewHideUncheckedNonChecked: manageAdReview.hideUncheckedNonChecked,
-    hasCheckedAdReviewCandidates: manageAdReview.hasCheckedCandidateSelection,
-    adReviewStrategyMode: appSettings.adReviewStrategyMode,
-    adReviewMaxConcurrency: appSettings.adReviewMaxConcurrency,
-    adReviewHeadN: appSettings.adReviewHeadN,
-    adReviewTailN: appSettings.adReviewTailN,
-    adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
-    onStartAdReview: () => {
-      void manageAdReview.startManageAdReview();
-    },
-    onPauseAdReview: () => {
-      void manageAdReview.pauseManageAdReview();
-    },
-    onToggleHideUncheckedNonChecked:
-      manageAdReview.toggleHideUncheckedNonChecked,
-    onAdReviewStrategyModeChange,
-    onAdReviewMaxConcurrencyChange,
-    onAdReviewHeadNChange,
-    onAdReviewTailNChange,
-    onAdReviewTailStopCleanStreakChange,
-    onDismissAdReviewTask: manageAdReview.dismissTask,
-    onStartWorkspaceBottomPanelResize,
-    layoutLocked,
   });
 
   const applyMetadataSyncName = createApplyMetadataSyncName({
@@ -1302,8 +1213,6 @@ export function useAppWorkspaceProps({
 
   return {
     sidebarPanelProps,
-    searchPanelProps,
-    managementPanelProps,
     imageMainSectionProps,
     videoMainSectionProps,
     musicMainSectionProps,

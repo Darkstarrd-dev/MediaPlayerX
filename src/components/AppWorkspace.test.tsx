@@ -42,8 +42,6 @@ function renderWorkspace(mode: 'image' | 'video' | 'music') {
       onStartSidebarResize={vi.fn()}
       onStartMetadataResize={vi.fn()}
       sidebarPanelProps={{} as never}
-      searchPanelProps={{} as never}
-      managementPanelProps={{} as never}
       imageMainSectionProps={{} as never}
       videoMainSectionProps={{} as never}
       musicMainSectionProps={{} as never}
@@ -82,8 +80,6 @@ describe('AppWorkspace', () => {
         onStartSidebarResize={vi.fn()}
         onStartMetadataResize={vi.fn()}
         sidebarPanelProps={{} as never}
-        searchPanelProps={{} as never}
-        managementPanelProps={{} as never}
         imageMainSectionProps={{} as never}
         videoMainSectionProps={{} as never}
         musicMainSectionProps={{} as never}

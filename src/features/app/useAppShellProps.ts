@@ -191,8 +191,6 @@ export function useAppShellProps({
     onStartSidebarResize,
     onStartMetadataResize,
     sidebarPanelProps: workspaceState.sidebarPanelProps,
-    searchPanelProps: workspaceState.searchPanelProps,
-    managementPanelProps: workspaceState.managementPanelProps,
     imageMainSectionProps: workspaceState.imageMainSectionProps,
     videoMainSectionProps: workspaceState.videoMainSectionProps,
     musicMainSectionProps: workspaceState.musicMainSectionProps,

@@ -11,8 +11,6 @@ import MetadataPanel from './MetadataPanel'
 import MusicMainSection from './MusicMainSection'
 import SidebarPanel from './SidebarPanel'
 import VideoMainSection from './VideoMainSection'
-import type ManagementPanel from './ManagementPanel'
-import type SearchPanel from './SearchPanel'
 
 interface AppWorkspaceProps {
   mode: BrowserMode
@@ -29,8 +27,6 @@ interface AppWorkspaceProps {
   onStartSidebarResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   onStartMetadataResize: (event: ReactMouseEvent<HTMLDivElement>) => void
   sidebarPanelProps: ComponentProps<typeof SidebarPanel>
-  searchPanelProps: ComponentProps<typeof SearchPanel>
-  managementPanelProps: ComponentProps<typeof ManagementPanel>
   imageMainSectionProps: ComponentProps<typeof ImageMainSection>
   videoMainSectionProps: ComponentProps<typeof VideoMainSection>
   musicMainSectionProps: ComponentProps<typeof MusicMainSection>

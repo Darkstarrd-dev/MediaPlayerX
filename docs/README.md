@@ -17,8 +17,16 @@
 - Shader 实施手册：`music-visualizer-shader-migration-playbook.md`
 - Theme 规范（SSOT）：`theme-system-v2.md`
 - Theme 迭代入口：`theme-brainstorm-entry.md`
+- UI 稳定路径表：`ui_definition.md`
+- UI 槽位 Token 前缀表：`token_design.md`
 - 当前评估：`project-evaluation-report-v12.md`
 - 风险台账：`dependency-risk-register.md`
+
+## UI 表维护约束
+
+- 新增 UI 槽位：同时新增 `ui_definition.md` 与 `token_design.md` 条目。
+- 修改 UI 槽位：两张表同步修改。
+- 删除 UI 槽位：两张表同步删除（如需兼容先标记 deprecated 再移除）。
 
 ## 子目录
 
