@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
+import { SkeuoRunway } from './primitives/SkeuoRunway'
 import type { MusicMainSectionProps, MusicPopoverKey } from './MusicMainSection.types'
 import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
 import { resolveFullscreenControlsWidth } from './fullscreen/controlsWidth'
@@ -268,13 +269,7 @@ function MusicMainSection({
   const clampedAudioTime = clamp(audioTime, 0, Math.max(0, audioDurationSec))
   const displayAudioTime = audioSeekDraftTime == null ? clampedAudioTime : clamp(audioSeekDraftTime, 0, Math.max(0, audioDurationSec))
   const audioProgressPercent = audioDurationSec > 0 ? clamp((displayAudioTime / audioDurationSec) * 100, 0, 100) : 0
-  const musicProgressRangeStyle = {
-    '--mpx-skeuo-range-pct': `${audioProgressPercent}%`,
-  } as CSSProperties
   const audioVolumePercent = clamp(audioMuted ? 0 : audioVolume, 0, 100)
-  const musicVolumeRangeStyle = {
-    '--mpx-skeuo-range-pct': `${audioVolumePercent}%`,
-  } as CSSProperties
   const toneMapExposurePercent = clamp(((musicVisualizerShaderSettings.toneMapExposure - 0.5) / 1.5) * 100, 0, 100)
   const toneMapExposureRangeStyle = {
     '--mpx-skeuo-range-pct': `${toneMapExposurePercent}%`,
@@ -594,39 +589,34 @@ function MusicMainSection({
 
       <div className="music-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(displayAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
-        <div className="mpx-progress-bar" style={musicProgressRangeStyle}>
-          <input
-            aria-label={t('a11y.music.progress')}
-            className="mpx-progress-input"
-            max={Math.max(0, audioDurationSec)}
-            min={0}
-            step={0.1}
-            type="range"
-            value={displayAudioTime}
-            onChange={(event) => {
-              const nextTime = clamp(Number(event.target.value), 0, Math.max(0, audioDurationSec))
-              setAudioSeekDraftTime(nextTime)
-              previewAudioSeekDuringDrag(nextTime)
-            }}
-            onMouseUp={commitAudioSeekDraft}
-            onTouchEnd={commitAudioSeekDraft}
-            onBlur={commitAudioSeekDraft}
-            onKeyUp={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                commitAudioSeekDraft()
-              }
-            }}
-          />
-          <div className="mpx-progress-groove" aria-hidden="true" />
-          <div className="mpx-progress-fill" aria-hidden="true" />
-          <div className="mpx-progress-thumb" aria-hidden="true">
-            <div className="mpx-progress-thumb-core" />
-          </div>
-        </div>
+        <SkeuoRunway
+          ariaLabel={t('a11y.music.progress')}
+          className="is-progress"
+          fillTone="gold"
+          max={Math.max(0, audioDurationSec)}
+          min={0}
+          rangePercent={audioProgressPercent}
+          step={0.1}
+          thumbTone="pearl"
+          value={displayAudioTime}
+          onChange={(event) => {
+            const nextTime = clamp(Number(event.target.value), 0, Math.max(0, audioDurationSec))
+            setAudioSeekDraftTime(nextTime)
+            previewAudioSeekDuringDrag(nextTime)
+          }}
+          onMouseUp={commitAudioSeekDraft}
+          onTouchEnd={commitAudioSeekDraft}
+          onBlur={commitAudioSeekDraft}
+          onKeyUp={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              commitAudioSeekDraft()
+            }
+          }}
+        />
       </div>
 
       <div className="music-controls-row">
-        <div className="music-controls-group is-left">
+        <div className="music-controls-group is-left mpx-skeuo-well">
           <div
             className={`music-ctrl-popover ${openPopover === 'shader' ? 'is-open' : ''}`}
             onMouseEnter={() => setOpenPopover('shader')}
@@ -962,7 +952,7 @@ function MusicMainSection({
           </button>
         </div>
 
-        <div className="music-controls-group is-right">
+        <div className="music-controls-group is-right mpx-skeuo-well">
           <button
             aria-label={t('a11y.music.loopMode', { label: musicLoopModeLabel })}
             className="video-action-btn"
@@ -997,26 +987,22 @@ function MusicMainSection({
               onMouseLeave={closePopover}
             >
               <div className="music-ctrl-volume-axis">
-                <div className="mpx-volume-bar" style={musicVolumeRangeStyle}>
-                  <input
-                    aria-label={t('a11y.media.volumeSlider')}
-                    className="music-ctrl-volume-range mpx-volume-input"
-                    max={100}
-                    min={0}
-                    step={1}
-                    type="range"
-                    value={audioMuted ? 0 : audioVolume}
-                    onChange={(event) => {
-                      setAudioMuted(false)
-                      setAudioVolume(clamp(Number(event.target.value), 0, 100))
-                    }}
-                  />
-                  <div className="mpx-volume-groove" aria-hidden="true" />
-                  <div className="mpx-volume-fill" aria-hidden="true" />
-                  <div className="mpx-volume-thumb" aria-hidden="true">
-                    <div className="mpx-volume-thumb-core" />
-                  </div>
-                </div>
+                <SkeuoRunway
+                  ariaLabel={t('a11y.media.volumeSlider')}
+                  className="is-volume"
+                  fillTone="graphite"
+                  inputClassName="music-ctrl-volume-range"
+                  max={100}
+                  min={0}
+                  rangePercent={audioVolumePercent}
+                  step={1}
+                  thumbTone="graphite"
+                  value={audioMuted ? 0 : audioVolume}
+                  onChange={(event) => {
+                    setAudioMuted(false)
+                    setAudioVolume(clamp(Number(event.target.value), 0, 100))
+                  }}
+                />
               </div>
             </div>
           </div>

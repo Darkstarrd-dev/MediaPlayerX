@@ -947,7 +947,7 @@
   flex: 1;
 }
 
-.mpx-progress-bar {
+.mpx-runway {
   position: relative;
   flex: 1;
   height: 24px;
@@ -955,31 +955,13 @@
   align-items: center;
 }
 
-.mpx-progress-input {
+.mpx-runway-input {
   width: 100%;
 }
 
-.mpx-progress-groove,
-.mpx-progress-fill,
-.mpx-progress-thumb {
-  display: none;
-}
-
-.mpx-volume-bar {
-  position: relative;
-  width: 100%;
-  height: 24px;
-  display: flex;
-  align-items: center;
-}
-
-.mpx-volume-input {
-  width: 100%;
-}
-
-.mpx-volume-groove,
-.mpx-volume-fill,
-.mpx-volume-thumb {
+.mpx-runway-groove,
+.mpx-runway-fill,
+.mpx-runway-thumb {
   display: none;
 }
 

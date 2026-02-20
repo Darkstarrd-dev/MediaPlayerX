@@ -27,7 +27,7 @@
   --mpx-checkbox-checked-bg: var(--mpx-accent);
   --mpx-checkbox-checked-border: var(--mpx-accent);
 
-  --mpx-bg-app: #ece7de;
+  --mpx-bg-app: #e0dfde;
   --mpx-bg-workspace: #e7e0d4;
   --mpx-bg-panel: #fbf7f1;
   --mpx-bg-elevated: #fffcf8;
@@ -110,7 +110,7 @@
   --mpx-fullscreen-bg: #080a0d;
   --mpx-fullscreen-footer-bg: var(--mpx-player-surface-bg);
 
-  --mpx-video-screen-bg: linear-gradient(135deg, #2b2f36, #1f242c);
+  --mpx-video-screen-bg: #000000;
   --mpx-video-empty-bg: var(--mpx-video-screen-bg);
   --mpx-video-empty-text: #f4f6fa;
 

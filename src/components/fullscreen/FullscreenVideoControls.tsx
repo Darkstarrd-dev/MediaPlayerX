@@ -2,6 +2,7 @@ import { useRef, useState, type CSSProperties } from 'react'
 
 import { VideoControlIcon } from '../VideoControlIcon'
 import { MusicControlIcon } from '../MusicControlIcon'
+import { SkeuoRunway } from '../primitives/SkeuoRunway'
 import type { VideoFitMode } from '../../features/media/videoFitMode'
 import { useI18n } from '../../i18n/useI18n'
 import { formatSeconds } from '../../utils/ui'
@@ -96,13 +97,7 @@ export function FullscreenVideoControlsShell({
 
   const displayTime = seekDraftTime == null ? clampedVideoTime : Math.max(0, Math.min(Math.max(0, durationSec), seekDraftTime))
   const progressPercent = durationSec > 0 ? Math.max(0, Math.min(100, (displayTime / durationSec) * 100)) : 0
-  const videoProgressRangeStyle = {
-    '--mpx-skeuo-range-pct': `${progressPercent}%`,
-  } as CSSProperties
   const volumePercent = Math.max(0, Math.min(100, videoMuted ? 0 : videoVolume))
-  const videoVolumeRangeStyle = {
-    '--mpx-skeuo-range-pct': `${volumePercent}%`,
-  } as CSSProperties
   const videoFitLabel =
     videoFitMode === 'fill'
       ? t('a11y.media.videoFitFill')
@@ -170,39 +165,34 @@ export function FullscreenVideoControlsShell({
 
       <div className="video-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
-        <div className="mpx-progress-bar" style={videoProgressRangeStyle}>
-          <input
-            aria-label={t('a11y.media.fullscreenProgress')}
-            className="mpx-progress-input"
-            max={Math.max(0, durationSec)}
-            min={0}
-            step={0.1}
-            type="range"
-            value={displayTime}
-            onChange={(event) => {
-              const nextTime = Math.max(0, Math.min(Math.max(0, durationSec), Number(event.target.value)))
-              setSeekDraftTime(nextTime)
-              previewSeekDuringDrag(nextTime)
-            }}
-            onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
-            onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
-            onBlur={commitSeekDraft}
-            onKeyUp={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                commitSeekDraft()
-              }
-            }}
-          />
-          <div className="mpx-progress-groove" aria-hidden="true" />
-          <div className="mpx-progress-fill" aria-hidden="true" />
-          <div className="mpx-progress-thumb" aria-hidden="true">
-            <div className="mpx-progress-thumb-core" />
-          </div>
-        </div>
+        <SkeuoRunway
+          ariaLabel={t('a11y.media.fullscreenProgress')}
+          className="is-progress"
+          fillTone="gold"
+          max={Math.max(0, durationSec)}
+          min={0}
+          rangePercent={progressPercent}
+          step={0.1}
+          thumbTone="pearl"
+          value={displayTime}
+          onChange={(event) => {
+            const nextTime = Math.max(0, Math.min(Math.max(0, durationSec), Number(event.target.value)))
+            setSeekDraftTime(nextTime)
+            previewSeekDuringDrag(nextTime)
+          }}
+          onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
+          onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
+          onBlur={commitSeekDraft}
+          onKeyUp={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              commitSeekDraft()
+            }
+          }}
+        />
       </div>
 
       <div className="video-controls-row video-controls">
-        {!hideLeftGroup ? <div className="video-controls-group is-left">
+        {!hideLeftGroup ? <div className="video-controls-group is-left mpx-skeuo-well">
           <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" type="button" onClick={onToggleDualDisplay}>
             <VideoControlIcon name="dual" />
           </button>
@@ -356,7 +346,7 @@ export function FullscreenVideoControlsShell({
           </button>
         </div>
 
-        <div className="video-controls-group is-right">
+        <div className="video-controls-group is-right mpx-skeuo-well">
           <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
             <VideoControlIcon name="camera" />
           </button>
@@ -428,23 +418,19 @@ export function FullscreenVideoControlsShell({
             </button>
             <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
               <div className="video-ctrl-volume-axis">
-                <div className="mpx-volume-bar" style={videoVolumeRangeStyle}>
-                  <input
-                    aria-label={t('a11y.media.fullscreenVolume')}
-                    className="video-ctrl-volume-range mpx-volume-input"
-                    max={100}
-                    min={0}
-                    step={1}
-                    type="range"
-                    value={videoMuted ? 0 : videoVolume}
-                    onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
-                  />
-                  <div className="mpx-volume-groove" aria-hidden="true" />
-                  <div className="mpx-volume-fill" aria-hidden="true" />
-                  <div className="mpx-volume-thumb" aria-hidden="true">
-                    <div className="mpx-volume-thumb-core" />
-                  </div>
-                </div>
+                <SkeuoRunway
+                  ariaLabel={t('a11y.media.fullscreenVolume')}
+                  className="is-volume"
+                  fillTone="graphite"
+                  inputClassName="video-ctrl-volume-range"
+                  max={100}
+                  min={0}
+                  rangePercent={volumePercent}
+                  step={1}
+                  thumbTone="graphite"
+                  value={videoMuted ? 0 : videoVolume}
+                  onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
+                />
               </div>
             </div>
           </div>
