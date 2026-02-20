@@ -951,6 +951,7 @@ function ImageMainSection({
   const renderScaleControl = () => (
     <div
       className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? "is-open" : ""}`}
+      data-slot="fg-main-toolbar-image-scale-pop"
       role="group"
       aria-label={t("a11y.header.thumbnailScaleGroup")}
       onMouseEnter={openScalePopoverByHover}
@@ -1050,9 +1051,10 @@ function ImageMainSection({
 
   return (
     <>
-      <div className="main-toolbar">
+      <div className="main-toolbar" data-slot="fg-main-toolbar">
         {manageMode ? (
           <>
+            <span hidden data-slot="fg-main-toolbar-state-manage" />
             <div className="toolbar-actions toolbar-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
@@ -1203,6 +1205,7 @@ function ImageMainSection({
 
                   <div
                     className="header-popover-panel main-toolbar-ad-review-strategy-panel"
+                    data-slot="fg-main-toolbar-image-ad-review-strategy-pop"
                     hidden={
                       !openAdReviewStrategyPopover ||
                       adReviewStrategyMode !== "head-tail"
@@ -1328,6 +1331,7 @@ function ImageMainSection({
 
                     <div
                       className="header-popover-panel main-toolbar-ad-review-progress-panel"
+                      data-slot="fg-main-toolbar-image-ad-review-progress-pop"
                       hidden={!openAdReviewProgressPopover}
                       role="dialog"
                       aria-label={t("ui.manage.progress", {
@@ -1510,6 +1514,7 @@ function ImageMainSection({
           </>
         ) : metadataManageMode ? (
           <>
+            <span hidden data-slot="fg-main-toolbar-state-metadata" />
             <strong className="main-toolbar-title">
               {t("ui.header.metadataManage")}
             </strong>
@@ -1540,6 +1545,7 @@ function ImageMainSection({
           </>
         ) : (
           <>
+            <span hidden data-slot="fg-main-toolbar-state-normal" />
             <ToolbarTitleMarquee text={browseToolbarTitle} />
             <div className="toolbar-actions toolbar-actions-image-mode">
               <div className="toolbar-actions toolbar-actions-image-primary">
@@ -1658,6 +1664,7 @@ function ImageMainSection({
       {marqueeStyle && marqueeStyle.width > 2 && marqueeStyle.height > 2 ? (
         <div
           className="manage-selection-marquee"
+          data-slot="fg-main-content-image-marquee-ovl"
           style={{
             left: `${marqueeStyle.left}px`,
             top: `${marqueeStyle.top}px`,
@@ -1670,6 +1677,7 @@ function ImageMainSection({
       {adReviewStartDialogOpen ? (
         <div
           className="manage-ad-review-start-mask"
+          data-slot="fg-main-toolbar-image-ad-review-start-panel"
           role="dialog"
           aria-modal="true"
           aria-label={t("a11y.manage.startModeDialog")}

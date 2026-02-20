@@ -870,6 +870,7 @@ function MetadataPanel({
       <button
         aria-label={t("a11y.common.expandMetadataPanel")}
         className="meta-restore"
+        data-slot="fg-meta-restore"
         type="button"
         onClick={onExpand}
       >
@@ -886,12 +887,14 @@ function MetadataPanel({
     <>
       <aside
         className={metadataPanelClassName}
+        data-slot="fg-meta-root"
         style={{ width: `${metadataRatio * 100}%` }}
         onContextMenu={handlePanelContextMenu}
       >
-        <div className="metadata-head">
+        <div className="metadata-head" data-slot="fg-meta-toolbar">
           <button
             className="metadata-title-btn"
+            data-slot="fg-meta-toolbar-title"
             type="button"
             onClick={onCollapse}
           >
@@ -901,6 +904,7 @@ function MetadataPanel({
           {mode === "image" ? (
             <button
               className={`metadata-head-icon-btn ${showImagePreview ? "is-image" : "is-metadata"}`}
+              data-slot="fg-meta-toolbar-toggle"
               type="button"
               aria-label={metadataToggleLabel}
               title={metadataToggleLabel}
@@ -911,133 +915,142 @@ function MetadataPanel({
           ) : null}
         </div>
 
-        {adReviewSection}
+        <div data-slot="fg-meta-main">
+          {adReviewSection ? <div data-slot="fg-meta-main-ad-review">{adReviewSection}</div> : null}
 
-        {metadataSearchSection}
+          {metadataSearchSection ? <div data-slot="fg-meta-main-search">{metadataSearchSection}</div> : null}
 
-        {mode === "image" ? (
-          <MetadataImageEditor
-            contentClassName={imagePreviewClassName}
-            showImageCanvas={showImageCanvas}
-            focusedImage={focusedImage}
-            focusedImagePackage={focusedImagePackage}
-            displayedImageSrc={displayedImageSrc}
-            metadataPending={metadataPending}
-            editable={editable}
-            currentGrade={currentGrade}
-            workTitleDraft={workTitleDraft}
-            seriesIdDraft={seriesIdDraft}
-            circleDraft={circleDraft}
-            authorDraft={authorDraft}
-            tagsDraft={tagsDraft}
-            onWorkTitleDraftChange={setWorkTitleDraft}
-            onSeriesIdDraftChange={setSeriesIdDraft}
-            onCircleDraftChange={setCircleDraft}
-            onAuthorDraftChange={setAuthorDraft}
-            onTagsDraftChange={setTagsDraft}
-            onSubmitPackageWorkTitle={persistPackageWorkTitle}
-            onSubmitPackageSeriesId={persistPackageSeriesId}
-            onSubmitPackageCircle={persistPackageCircle}
-            onSubmitPackageAuthor={persistPackageAuthor}
-            onSubmitPackageTags={persistPackageTags}
-            onSubmitParsedMetadata={onSavePackageParsedMetadata}
-            onGradeChange={onGradeChange}
-            onSearchByWorkTitle={onSearchByWorkTitle}
-            onSearchByCircle={onSearchByCircle}
-            onSearchByAuthor={onSearchByAuthor}
-            onSearchByTag={onSearchByTag}
-          />
-        ) : mode === "video" ? (
-          <MetadataVideoEditor
-            metadataTab={metadataTab}
-            focusedVideo={focusedVideo}
-            metadataPending={metadataPending}
-            editable={editable}
-            currentVideoGrade={currentVideoGrade}
-            videoWorkTitleDraft={videoWorkTitleDraft}
-            videoWorkTitleJpnDraft={videoWorkTitleJpnDraft}
-            videoSeriesIdDraft={videoSeriesIdDraft}
-            videoCircleDraft={videoCircleDraft}
-            videoCircleJpnDraft={videoCircleJpnDraft}
-            videoAuthorDraft={videoAuthorDraft}
-            videoAuthorJpnDraft={videoAuthorJpnDraft}
-            videoTagsDraft={videoTagsDraft}
-            playlistIds={playlistIds}
-            savedVideoPlaylists={savedVideoPlaylists}
-            selectedVideoId={selectedVideoId}
-            dragVideoId={dragVideoId}
-            videoById={videoById}
-            onMetadataTabChange={onMetadataTabChange}
-            onVideoWorkTitleDraftChange={setVideoWorkTitleDraft}
-            onVideoWorkTitleJpnDraftChange={setVideoWorkTitleJpnDraft}
-            onVideoSeriesIdDraftChange={setVideoSeriesIdDraft}
-            onVideoCircleDraftChange={setVideoCircleDraft}
-            onVideoCircleJpnDraftChange={setVideoCircleJpnDraft}
-            onVideoAuthorDraftChange={setVideoAuthorDraft}
-            onVideoAuthorJpnDraftChange={setVideoAuthorJpnDraft}
-            onVideoTagsDraftChange={setVideoTagsDraft}
-            onSubmitVideoWorkTitle={persistVideoWorkTitle}
-            onSubmitVideoWorkTitleJpn={persistVideoWorkTitleJpn}
-            onSubmitVideoSeriesId={persistVideoSeriesId}
-            onSubmitVideoCircle={persistVideoCircle}
-            onSubmitVideoCircleJpn={persistVideoCircleJpn}
-            onSubmitVideoAuthor={persistVideoAuthor}
-            onSubmitVideoAuthorJpn={persistVideoAuthorJpn}
-            onSubmitVideoTags={persistVideoTags}
-            onVideoGradeChange={persistVideoGrade}
-            onSearchByWorkTitle={onSearchByWorkTitle}
-            onSearchByCircle={onSearchByCircle}
-            onSearchByAuthor={onSearchByAuthor}
-            onSearchByTag={onSearchByTag}
-            onSelectVideo={onSelectVideo}
-            onSelectVideoAndPlay={onSelectVideoAndPlay ?? onSelectVideo}
-            onSaveCurrentPlaylist={onSaveCurrentPlaylist}
-            onCreateNamedPlaylist={onCreateNamedPlaylist}
-            onLoadSavedPlaylist={onLoadSavedPlaylist}
-            onDeleteSavedPlaylist={onDeleteSavedPlaylist}
-            onRemoveVideoFromPlaylist={onRemoveVideoFromPlaylist}
-            onDragStart={onDragStart}
-            onDropToVideo={onDropToVideo}
-            onDragEnd={onDragEnd ?? (() => undefined)}
-          />
-        ) : (
-          <MetadataMusicEditor
-            focusedAudio={focusedAudio}
-            audioPlaylistIds={audioPlaylistIds}
-            selectedAudioId={selectedAudioId}
-            audioById={audioById}
-            musicBookletAlbumRootPath={musicBookletAlbumRootPath}
-            musicBookletCandidates={musicBookletCandidates}
-            musicCoverBindingValue={musicCoverBindingValue}
-            musicBookletBindingValue={musicBookletBindingValue}
-            canOpenMusicCover={canOpenMusicCover}
-            canOpenMusicBooklet={canOpenMusicBooklet}
-            metadataPending={metadataPending}
-            editable={editable}
-            audioAlbumDraft={audioAlbumDraft}
-            audioAuthorDraft={audioAuthorDraft}
-            audioTrackTitleDraft={audioTrackTitleDraft}
-            audioSeriesIdDraft={audioSeriesIdDraft}
-            onAudioAlbumDraftChange={setAudioAlbumDraft}
-            onAudioAuthorDraftChange={setAudioAuthorDraft}
-            onAudioTrackTitleDraftChange={setAudioTrackTitleDraft}
-            onAudioSeriesIdDraftChange={setAudioSeriesIdDraft}
-            onSubmitAudioAlbum={persistAudioAlbum}
-            onSubmitAudioAuthor={persistAudioAuthor}
-            onSubmitAudioTrackTitle={persistAudioTrackTitle}
-            onSubmitAudioSeriesId={persistAudioSeriesId}
-            onSearchByWorkTitle={onSearchByWorkTitle}
-            onSearchByCircle={onSearchByCircle}
-            onSearchByAuthor={onSearchByAuthor}
-            onSelectAudio={onSelectAudio}
-            onSelectAudioAndPlay={onSelectAudioAndPlay}
-            onMusicCoverBindingChange={onMusicCoverBindingChange}
-            onMusicBookletBindingChange={onMusicBookletBindingChange}
-            onOpenMusicCover={onOpenMusicCover}
-            onOpenMusicBooklet={onOpenMusicBooklet}
-            onResetMusicBookletBinding={onResetMusicBookletBinding}
-          />
-        )}
+          {mode === "image" ? (
+          <div data-slot="fg-meta-main-image-editor">
+            <MetadataImageEditor
+              contentClassName={imagePreviewClassName}
+              showImageCanvas={showImageCanvas}
+              focusedImage={focusedImage}
+              focusedImagePackage={focusedImagePackage}
+              displayedImageSrc={displayedImageSrc}
+              metadataPending={metadataPending}
+              editable={editable}
+              currentGrade={currentGrade}
+              workTitleDraft={workTitleDraft}
+              seriesIdDraft={seriesIdDraft}
+              circleDraft={circleDraft}
+              authorDraft={authorDraft}
+              tagsDraft={tagsDraft}
+              onWorkTitleDraftChange={setWorkTitleDraft}
+              onSeriesIdDraftChange={setSeriesIdDraft}
+              onCircleDraftChange={setCircleDraft}
+              onAuthorDraftChange={setAuthorDraft}
+              onTagsDraftChange={setTagsDraft}
+              onSubmitPackageWorkTitle={persistPackageWorkTitle}
+              onSubmitPackageSeriesId={persistPackageSeriesId}
+              onSubmitPackageCircle={persistPackageCircle}
+              onSubmitPackageAuthor={persistPackageAuthor}
+              onSubmitPackageTags={persistPackageTags}
+              onSubmitParsedMetadata={onSavePackageParsedMetadata}
+              onGradeChange={onGradeChange}
+              onSearchByWorkTitle={onSearchByWorkTitle}
+              onSearchByCircle={onSearchByCircle}
+              onSearchByAuthor={onSearchByAuthor}
+              onSearchByTag={onSearchByTag}
+            />
+          </div>
+          ) : mode === "video" ? (
+          <div data-slot="fg-meta-main-video-editor">
+            <MetadataVideoEditor
+              metadataTab={metadataTab}
+              focusedVideo={focusedVideo}
+              metadataPending={metadataPending}
+              editable={editable}
+              currentVideoGrade={currentVideoGrade}
+              videoWorkTitleDraft={videoWorkTitleDraft}
+              videoWorkTitleJpnDraft={videoWorkTitleJpnDraft}
+              videoSeriesIdDraft={videoSeriesIdDraft}
+              videoCircleDraft={videoCircleDraft}
+              videoCircleJpnDraft={videoCircleJpnDraft}
+              videoAuthorDraft={videoAuthorDraft}
+              videoAuthorJpnDraft={videoAuthorJpnDraft}
+              videoTagsDraft={videoTagsDraft}
+              playlistIds={playlistIds}
+              savedVideoPlaylists={savedVideoPlaylists}
+              selectedVideoId={selectedVideoId}
+              dragVideoId={dragVideoId}
+              videoById={videoById}
+              onMetadataTabChange={onMetadataTabChange}
+              onVideoWorkTitleDraftChange={setVideoWorkTitleDraft}
+              onVideoWorkTitleJpnDraftChange={setVideoWorkTitleJpnDraft}
+              onVideoSeriesIdDraftChange={setVideoSeriesIdDraft}
+              onVideoCircleDraftChange={setVideoCircleDraft}
+              onVideoCircleJpnDraftChange={setVideoCircleJpnDraft}
+              onVideoAuthorDraftChange={setVideoAuthorDraft}
+              onVideoAuthorJpnDraftChange={setVideoAuthorJpnDraft}
+              onVideoTagsDraftChange={setVideoTagsDraft}
+              onSubmitVideoWorkTitle={persistVideoWorkTitle}
+              onSubmitVideoWorkTitleJpn={persistVideoWorkTitleJpn}
+              onSubmitVideoSeriesId={persistVideoSeriesId}
+              onSubmitVideoCircle={persistVideoCircle}
+              onSubmitVideoCircleJpn={persistVideoCircleJpn}
+              onSubmitVideoAuthor={persistVideoAuthor}
+              onSubmitVideoAuthorJpn={persistVideoAuthorJpn}
+              onSubmitVideoTags={persistVideoTags}
+              onVideoGradeChange={persistVideoGrade}
+              onSearchByWorkTitle={onSearchByWorkTitle}
+              onSearchByCircle={onSearchByCircle}
+              onSearchByAuthor={onSearchByAuthor}
+              onSearchByTag={onSearchByTag}
+              onSelectVideo={onSelectVideo}
+              onSelectVideoAndPlay={onSelectVideoAndPlay ?? onSelectVideo}
+              onSaveCurrentPlaylist={onSaveCurrentPlaylist}
+              onCreateNamedPlaylist={onCreateNamedPlaylist}
+              onLoadSavedPlaylist={onLoadSavedPlaylist}
+              onDeleteSavedPlaylist={onDeleteSavedPlaylist}
+              onRemoveVideoFromPlaylist={onRemoveVideoFromPlaylist}
+              onDragStart={onDragStart}
+              onDropToVideo={onDropToVideo}
+              onDragEnd={onDragEnd ?? (() => undefined)}
+            />
+          </div>
+          ) : (
+          <div data-slot="fg-meta-main-music-editor">
+            <MetadataMusicEditor
+              focusedAudio={focusedAudio}
+              audioPlaylistIds={audioPlaylistIds}
+              selectedAudioId={selectedAudioId}
+              audioById={audioById}
+              musicBookletAlbumRootPath={musicBookletAlbumRootPath}
+              musicBookletCandidates={musicBookletCandidates}
+              musicCoverBindingValue={musicCoverBindingValue}
+              musicBookletBindingValue={musicBookletBindingValue}
+              canOpenMusicCover={canOpenMusicCover}
+              canOpenMusicBooklet={canOpenMusicBooklet}
+              metadataPending={metadataPending}
+              editable={editable}
+              audioAlbumDraft={audioAlbumDraft}
+              audioAuthorDraft={audioAuthorDraft}
+              audioTrackTitleDraft={audioTrackTitleDraft}
+              audioSeriesIdDraft={audioSeriesIdDraft}
+              onAudioAlbumDraftChange={setAudioAlbumDraft}
+              onAudioAuthorDraftChange={setAudioAuthorDraft}
+              onAudioTrackTitleDraftChange={setAudioTrackTitleDraft}
+              onAudioSeriesIdDraftChange={setAudioSeriesIdDraft}
+              onSubmitAudioAlbum={persistAudioAlbum}
+              onSubmitAudioAuthor={persistAudioAuthor}
+              onSubmitAudioTrackTitle={persistAudioTrackTitle}
+              onSubmitAudioSeriesId={persistAudioSeriesId}
+              onSearchByWorkTitle={onSearchByWorkTitle}
+              onSearchByCircle={onSearchByCircle}
+              onSearchByAuthor={onSearchByAuthor}
+              onSelectAudio={onSelectAudio}
+              onSelectAudioAndPlay={onSelectAudioAndPlay}
+              onMusicCoverBindingChange={onMusicCoverBindingChange}
+              onMusicBookletBindingChange={onMusicBookletBindingChange}
+              onOpenMusicCover={onOpenMusicCover}
+              onOpenMusicBooklet={onOpenMusicBooklet}
+              onResetMusicBookletBinding={onResetMusicBookletBinding}
+            />
+          </div>
+          )}
+          <div hidden data-slot="fg-meta-footer" />
+        </div>
       </aside>
       <FeatureTagPickerModal
         open={featureTagPickerOpen}

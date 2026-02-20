@@ -417,9 +417,10 @@ function VideoMainSection({
 
   return (
     <>
-      <div className="main-toolbar">
+      <div className="main-toolbar" data-slot="fg-main-toolbar">
         {manageMode ? (
           <>
+            <span hidden data-slot="fg-main-toolbar-state-manage" />
             <div className="toolbar-actions toolbar-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
@@ -469,6 +470,7 @@ function VideoMainSection({
           </>
         ) : metadataManageMode ? (
           <>
+            <span hidden data-slot="fg-main-toolbar-state-metadata" />
             <strong className="main-toolbar-title">{t('ui.header.metadataManage')}</strong>
             <div className="toolbar-actions toolbar-actions-manage">
               <button
@@ -486,6 +488,7 @@ function VideoMainSection({
           </>
         ) : (
           <>
+            <span hidden data-slot="fg-main-toolbar-state-normal" />
             <ToolbarTitleMarquee className="main-toolbar-title is-video" text={toolbarVideoSummary} />
             {canJumpToManga || canJumpToMusic ? (
               <div className="toolbar-actions">
@@ -517,12 +520,13 @@ function VideoMainSection({
         )}
       </div>
 
-      <div className="video-preview">
-        <div className="video-screen" style={{ background: videoScreenBackground }}>
+      <div className="video-preview" data-slot="fg-main-content-video-preview">
+        <div className="video-screen" data-slot="fg-main-content-video-preview-screen" style={{ background: videoScreenBackground }}>
         {videoSourceUrl ? (
           <video
             ref={handleVideoElementRef}
             className="video-screen-media"
+            data-slot="fg-main-content-video-preview-media"
             style={{
               opacity: showVideoFrame ? 1 : 0,
               objectFit: videoObjectFit,
@@ -577,6 +581,7 @@ function VideoMainSection({
         {showCover && coverImageUrl ? (
           <img
             className="video-screen-cover-image"
+            data-slot="fg-main-content-video-preview-cover"
             style={{ objectFit: videoObjectFit, objectPosition: 'center center' }}
             src={coverImageUrl}
             alt={t('ui.media.videoCoverAlt')}
@@ -584,15 +589,15 @@ function VideoMainSection({
         ) : null}
 
         {!videoSourceUrl ? (
-          <div className="video-screen-empty">
+          <div className="video-screen-empty" data-slot="fg-main-content-video-preview-empty">
             <span>{t('ui.media.noVideoSource')}</span>
           </div>
         ) : null}
         </div>
       </div>
 
-      <div className="video-controls-shell">
-        <div className="video-controls-progress">
+      <div className="video-controls-shell" data-slot="fg-main-content-video-controls">
+        <div className="video-controls-progress" data-slot="fg-main-content-video-controls-progress">
           <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
           <SkeuoRunway
             ariaLabel={t('a11y.media.progress')}
@@ -622,7 +627,7 @@ function VideoMainSection({
         </div>
 
         <div className="video-controls-row video-controls">
-          <div className="video-controls-group is-left mpx-skeuo-well">
+          <div className="video-controls-group is-left mpx-skeuo-well" data-slot="fg-main-content-video-controls-left">
             {fullscreenActive ? (
               <button
                 aria-label={t('a11y.media.dualModeFullscreenOnly')}
@@ -650,7 +655,7 @@ function VideoMainSection({
               >
                 <VideoControlIcon name="aspect" />
               </button>
-              <div className="video-ctrl-panel is-fit" hidden={openPopover !== 'fit'} id="video-main-popover-fit" role="dialog">
+              <div className="video-ctrl-panel is-fit" data-slot="fg-main-content-video-controls-fit-pop" hidden={openPopover !== 'fit'} id="video-main-popover-fit" role="dialog">
                 <div className="video-ctrl-panel-options">
                   {[
                     { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
@@ -694,7 +699,7 @@ function VideoMainSection({
               >
                 <VideoControlIcon name="subtitle" />
               </button>
-              <div className="video-ctrl-panel" hidden={openPopover !== 'subtitle' || !subtitlePanelHasContent} id="video-main-popover-subtitle" role="dialog">
+              <div className="video-ctrl-panel" data-slot="fg-main-content-video-controls-subtitle-pop" hidden={openPopover !== 'subtitle' || !subtitlePanelHasContent} id="video-main-popover-subtitle" role="dialog">
                 {subtitleLoading ? <span className="video-ctrl-panel-note">{t('ui.common.loading')}</span> : null}
                 {subtitlePanelContentText ? <span className="video-ctrl-panel-note">{subtitlePanelContentText}</span> : null}
                 <div className="video-ctrl-panel-options">
@@ -731,7 +736,7 @@ function VideoMainSection({
               >
                 <VideoControlIcon name="speed" />
               </button>
-              <div className="video-ctrl-panel is-speed" hidden={openPopover !== 'speed'} id="video-main-popover-speed" role="dialog">
+              <div className="video-ctrl-panel is-speed" data-slot="fg-main-content-video-controls-speed-pop" hidden={openPopover !== 'speed'} id="video-main-popover-speed" role="dialog">
                 <div className="video-ctrl-panel-options">
                   {[0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rate) => (
                     <button
@@ -761,7 +766,7 @@ function VideoMainSection({
             </button>
           </div>
 
-          <div className="video-controls-group is-center">
+          <div className="video-controls-group is-center" data-slot="fg-main-content-video-controls-center">
             <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
               <VideoControlIcon name="prev" />
             </button>
@@ -778,7 +783,7 @@ function VideoMainSection({
             </button>
           </div>
 
-          <div className="video-controls-group is-right mpx-skeuo-well">
+          <div className="video-controls-group is-right mpx-skeuo-well" data-slot="fg-main-content-video-controls-right">
             <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
               <VideoControlIcon name="camera" />
             </button>
@@ -800,7 +805,7 @@ function VideoMainSection({
                 >
                   <VideoControlIcon name="playlist" />
                 </button>
-                <div className="video-ctrl-panel" hidden={openPopover !== 'playlist'} id="video-main-popover-playlist" role="dialog">
+                <div className="video-ctrl-panel" data-slot="fg-main-content-video-controls-playlist-pop" hidden={openPopover !== 'playlist'} id="video-main-popover-playlist" role="dialog">
                   <span className="video-ctrl-panel-title">{t('ui.media.playlist')}</span>
                   <span className="video-ctrl-panel-note">{t('ui.media.playlistFullscreenHint')}</span>
                 </div>
@@ -836,7 +841,7 @@ function VideoMainSection({
               >
                 <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
               </button>
-              <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
+              <div className="video-ctrl-panel is-volume" data-slot="fg-main-content-video-controls-volume-pop" hidden={openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
                 <div className="video-ctrl-volume-axis">
                   <SkeuoRunway
                     ariaLabel={t('a11y.media.volumeSlider')}

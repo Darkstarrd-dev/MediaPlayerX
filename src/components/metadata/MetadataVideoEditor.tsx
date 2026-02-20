@@ -384,6 +384,7 @@ export function MetadataVideoEditor({
       {playlistNameDialogMode ? (
         <div
           className="metadata-playlist-save-dialog"
+          data-slot="fg-meta-main-video-editor-playlist-name-dialog-panel"
           role="dialog"
           aria-label={
             playlistNameDialogMode === "save"

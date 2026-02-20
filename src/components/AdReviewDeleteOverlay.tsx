@@ -36,6 +36,7 @@ function AdReviewDeleteOverlay({
   return (
     <div
       className="ad-review-delete-overlay"
+      data-slot="fg-main-toolbar-image-delete-progress-ovl"
       role="dialog"
       aria-modal="true"
       aria-label={t('a11y.manage.deleteOverlay')}

@@ -773,6 +773,7 @@ function FullscreenLayer({
     <FullscreenImagePane
       paneRef={imagePaneRef}
       className={imagePaneClassName}
+      dataSlot={fullscreenDisplay === 'dual' ? 'fs-dual-pane-image' : undefined}
       flex={imageRatio}
       fullscreenDisplay={fullscreenDisplay}
       singlePane={singlePane}
@@ -839,6 +840,7 @@ function FullscreenLayer({
       paneRef={videoPaneRef}
       videoRef={videoRef}
       className={videoPaneClassName}
+      dataSlot={fullscreenDisplay === 'dual' ? 'fs-dual-pane-video' : undefined}
       flex={videoRatio}
       fullscreenDisplay={fullscreenDisplay}
       singlePane={singlePane}
@@ -878,6 +880,7 @@ function FullscreenLayer({
   return (
     <div
       className="fullscreen-layer"
+      data-slot="bg-fs-mask"
       style={fullscreenControlsCssVars}
       data-overlay-close="fullscreen"
       onMouseMove={(event) => {
@@ -889,27 +892,33 @@ function FullscreenLayer({
         hideVideoControls()
       }}
     >
-      <div className="fullscreen-content" ref={contentRef}>
+      <span hidden data-slot="fs-layer-root" />
+      <div className="fullscreen-content" data-slot="fs-layer-content" ref={contentRef}>
         {fullscreenDisplay === 'dual' ? (
-          paneOrder.map((pane, index) => (
-            <Fragment key={pane}>
-              {pane === 'image' ? imagePane : videoPane}
-              {index === 0 ? (
-                <div
-                  {...buildA11yPropsByRegistry({ key: 'commonAdjustFullscreenSplit', t })}
-                  aria-orientation="vertical"
-                  className="fullscreen-divider"
-                  role="separator"
-                  tabIndex={-1}
-                  onMouseDown={startSplitDrag}
-                />
-              ) : null}
-            </Fragment>
-          ))
+          <>
+            <span hidden data-slot="fs-dual-root" />
+            <span hidden data-slot="fs-dual-pane-image" />
+            <span hidden data-slot="fs-dual-pane-video" />
+            {paneOrder.map((pane, index) => (
+              <Fragment key={pane}>
+                {pane === 'image' ? imagePane : videoPane}
+                {index === 0 ? (
+                  <div
+                    {...buildA11yPropsByRegistry({ key: 'commonAdjustFullscreenSplit', t })}
+                    aria-orientation="vertical"
+                    className="fullscreen-divider"
+                    role="separator"
+                    tabIndex={-1}
+                    onMouseDown={startSplitDrag}
+                  />
+                ) : null}
+              </Fragment>
+            ))}
+          </>
         ) : fullscreenDisplay === 'image-only' ? (
-          <section className="fullscreen-single-pane">{imagePane}</section>
+          <section className="fullscreen-single-pane" data-slot="fs-nondual-root">{imagePane}</section>
         ) : (
-          <section className="fullscreen-single-pane">{videoPane}</section>
+          <section className="fullscreen-single-pane" data-slot="fs-nondual-root">{videoPane}</section>
         )}
       </div>
 

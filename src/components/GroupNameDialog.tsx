@@ -41,7 +41,7 @@ function GroupNameDialog({
   }
 
   return (
-    <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="group-name-dialog">
+    <div className="settings-floating-mask" data-slot="fg-main-toolbar-manage-group-name-panel" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="group-name-dialog">
       <section className="settings-floating-panel manage-group-dialog" role="document" style={{ width: `min(92vw, max(270px, ${dialogWidthCh}))` }}>
         <input
           id="manage-group-name-input"

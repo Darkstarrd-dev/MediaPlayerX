@@ -1127,6 +1127,7 @@ function SettingsPanel({
     <div
       {...settingsPanelA11y}
       className="settings-mask"
+      data-slot="fg-header-g1-settings-root-panel"
       role="dialog"
       aria-modal="true"
       data-overlay-close="settings"
@@ -1183,6 +1184,7 @@ function SettingsPanel({
         {bindingTarget ? (
           <div
             className="settings-floating-mask"
+            data-slot="fg-header-g1-settings-shortcut-edit-panel"
             role="dialog"
             aria-modal="true"
             aria-label={t(a11yRegistry.settingsShortcutEditDialog.labelKey)}
@@ -1237,6 +1239,7 @@ function SettingsPanel({
         {capturingTarget ? (
           <div
             className="settings-floating-mask"
+            data-slot="fg-header-g1-settings-shortcut-capture-panel"
             role="dialog"
             aria-modal="true"
             aria-label={t(a11yRegistry.settingsShortcutCaptureDialog.labelKey)}

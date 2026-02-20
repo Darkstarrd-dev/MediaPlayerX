@@ -411,6 +411,7 @@ export function MetadataAdReviewSection({
       {startDialogOpen ? (
         <div
           className="manage-ad-review-start-mask"
+          data-slot="fg-meta-main-ad-review-start-panel"
           role="dialog"
           aria-modal="true"
           aria-label={t('a11y.manage.startModeDialog')}

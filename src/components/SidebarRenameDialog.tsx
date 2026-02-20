@@ -32,7 +32,7 @@ function SidebarRenameDialog({
   }
 
   return (
-    <div className="settings-floating-mask" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="sidebar-rename-dialog">
+    <div className="settings-floating-mask" data-slot="fg-sidebar-shortcut-rename-panel" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="sidebar-rename-dialog">
       <section className="settings-floating-panel manage-group-dialog sidebar-rename-dialog" role="document">
         <h3 className="sidebar-rename-title">{inputLabel}</h3>
         <input

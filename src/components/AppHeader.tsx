@@ -326,11 +326,16 @@ function AppHeader(props: AppHeaderProps) {
     labelKey: metadataManageMode ? 'a11y.header.switchToImageMode' : 'a11y.header.switchToMetadataMode',
     t,
   })
+  const taskStateSlot = importTaskPanelOpen
+    ? 'fg-header-g1-task-state-open'
+    : taskStatusBusy
+      ? 'fg-header-g1-task-state-busy'
+      : 'fg-header-g1-task-state-idle'
 
   return (
-    <header className="app-header" style={{ height: `${headerHeight}px` }}>
+    <header className="app-header" data-slot="fg-header-root" style={{ height: `${headerHeight}px` }}>
       <div className="header-left">
-        <div className="header-group header-group-primary">
+        <div className="header-group header-group-primary" data-slot="fg-header-g1">
           <div
             className="logo-wrap"
             onMouseEnter={() => {
@@ -340,11 +345,11 @@ function AppHeader(props: AppHeaderProps) {
             }}
             onMouseLeave={onCloseImportMenu}
           >
-            <button className="logo-btn" type="button">
+            <button className="logo-btn" data-slot="fg-header-logo" type="button">
               MediaPlayerX
             </button>
             {importMenuOpen ? (
-              <div className="import-menu">
+              <div className="import-menu" data-slot="fg-header-logo-import-menu-panel">
                 <button
                   type="button"
                   onClick={() => {
@@ -370,28 +375,34 @@ function AppHeader(props: AppHeaderProps) {
           <button
             aria-label={taskStatusLabel}
             className={`task-status-btn ${taskStatusBusy ? 'is-busy' : 'is-idle'} ${importTaskPanelOpen ? 'is-open' : ''}`}
+            data-slot="fg-header-g1-task-button"
+            data-slot-state={taskStateSlot}
             type="button"
             onClick={onToggleImportTaskPanel}
           >
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
+              <span className="header-btn-content">
+              <span className="header-btn-icon" data-slot={taskStateSlot}>
                 <HeaderActionIcon name={taskStatusBusy ? 'statusBusy' : 'statusIdle'} />
               </span>
               <span className="header-btn-label">{taskStatusLabel}</span>
             </span>
           </button>
+          <span hidden={!(!taskStatusBusy && !importTaskPanelOpen)} data-slot="fg-header-g1-task-state-idle" />
+          <span hidden={!(taskStatusBusy && !importTaskPanelOpen)} data-slot="fg-header-g1-task-state-busy" />
+          <span hidden={!importTaskPanelOpen} data-slot="fg-header-g1-task-state-open" />
 
-          <button
-            aria-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
-            aria-pressed={paletteMode === 'night'}
-            className="header-settings-btn header-icon-only-btn"
-            type="button"
-            onClick={onTogglePaletteMode}
-          >
+            <button
+              aria-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
+              aria-pressed={paletteMode === 'night'}
+              className="header-settings-btn header-icon-only-btn"
+              data-slot="fg-header-g1-palette"
+              type="button"
+              onClick={onTogglePaletteMode}
+            >
             <HeaderActionIcon name={paletteMode === 'day' ? 'day' : 'night'} />
           </button>
 
-          <button {...settingsButtonA11y} className="header-settings-btn" type="button" onClick={onOpenSettings}>
+          <button {...settingsButtonA11y} className="header-settings-btn" data-slot="fg-header-g1-settings" type="button" onClick={onOpenSettings}>
             <span className="header-btn-content">
               <span className="header-btn-icon">
                 <HeaderActionIcon name="settings" />
@@ -401,12 +412,13 @@ function AppHeader(props: AppHeaderProps) {
           </button>
         </div>
 
-        <div className="header-group header-group-modes">
+        <div className="header-group header-group-modes" data-slot="fg-header-g2">
           <div className="mode-switch-wrap">
             <div className="mode-switch" role="group" aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}>
               <button
                 {...buildA11yPropsByRegistry({ key: 'headerModeImage', t })}
                 className={mode === 'image' ? 'is-active' : ''}
+                data-slot="fg-header-g2-mode-image"
                 type="button"
                 disabled={interactionLocked}
                 onClick={() => onModeChange('image')}
@@ -421,6 +433,7 @@ function AppHeader(props: AppHeaderProps) {
               <button
                 {...buildA11yPropsByRegistry({ key: 'headerModeVideo', t })}
                 className={mode === 'video' ? 'is-active' : ''}
+                data-slot="fg-header-g2-mode-video"
                 type="button"
                 disabled={interactionLocked}
                 onClick={() => onModeChange('video')}
@@ -435,6 +448,7 @@ function AppHeader(props: AppHeaderProps) {
               <button
                 {...buildA11yPropsByRegistry({ key: 'headerModeMusic', t })}
                 className={mode === 'music' ? 'is-active' : ''}
+                data-slot="fg-header-g2-mode-music"
                 type="button"
                 disabled={interactionLocked}
                 onClick={() => onModeChange('music')}
@@ -446,7 +460,7 @@ function AppHeader(props: AppHeaderProps) {
                   <span className="header-btn-label">{t('ui.header.musicMode')}</span>
                 </span>
               </button>
-              <div className={`music-quick-actions ${showMusicQuickActions && mode !== 'music' ? 'is-visible' : ''}`}>
+              <div className={`music-quick-actions ${showMusicQuickActions && mode !== 'music' ? 'is-visible' : ''}`} data-slot="fg-header-g2-music-quick">
                 <button
                   aria-label={musicQuickPlaying ? t('a11y.header.musicPause') : t('a11y.header.musicPlay')}
                   className="mode-action-btn"
@@ -469,10 +483,11 @@ function AppHeader(props: AppHeaderProps) {
           </div>
         </div>
 
-        <div className="header-group header-group-search">
+        <div className="header-group header-group-search" data-slot="fg-header-g3">
           <button
             {...searchButtonA11y}
             className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
+            data-slot="fg-header-g3-search"
             type="button"
             disabled={interactionLocked}
             onClick={onToggleSearchPanel}
@@ -488,6 +503,7 @@ function AppHeader(props: AppHeaderProps) {
           <button
             {...manageButtonA11y}
             className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`}
+            data-slot="fg-header-g3-manage"
             type="button"
             disabled={interactionLocked}
             onClick={onToggleManageMode}
@@ -503,6 +519,7 @@ function AppHeader(props: AppHeaderProps) {
           <button
             {...metadataToggleA11y}
             className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`}
+            data-slot="fg-header-g3-metadata"
             type="button"
             disabled={interactionLocked}
             onClick={onToggleMetadataManageMode}
@@ -518,18 +535,19 @@ function AppHeader(props: AppHeaderProps) {
       </div>
 
       <div className="header-right">
-        <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" role="group">
+        <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" data-slot="fg-header-g4" role="group">
           {themeParameterButtonVisible ? (
-            <button {...themeParameterButtonA11y} className="window-control-btn window-control-btn--theme-parameter" type="button" onClick={onOpenThemeParameter}>
+            <button {...themeParameterButtonA11y} className="window-control-btn window-control-btn--theme-parameter" data-slot="fg-header-g4-theme-parameter" type="button" onClick={onOpenThemeParameter}>
               <span className="window-control-btn-text">T</span>
             </button>
           ) : null}
-          <button {...helpButtonA11y} className="window-control-btn" type="button" onClick={onOpenHelp}>
+          <button {...helpButtonA11y} className="window-control-btn" data-slot="fg-header-g4-help" type="button" onClick={onOpenHelp}>
             <HeaderActionIcon name="help" />
           </button>
           <button
             aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
             className="window-control-btn"
+            data-slot="fg-header-g4-window-min"
             type="button"
             onClick={() => {
               void window.mediaPlayerWindow?.minimize()
@@ -540,6 +558,7 @@ function AppHeader(props: AppHeaderProps) {
           <button
             aria-label={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
             className="window-control-btn"
+            data-slot="fg-header-g4-window-maxrestore"
             type="button"
             onClick={() => {
               void window.mediaPlayerWindow?.toggleMaximize()
@@ -550,6 +569,7 @@ function AppHeader(props: AppHeaderProps) {
           <button
             aria-label={t(a11yRegistry.headerWindowClose.labelKey)}
             className="window-control-btn window-control-btn--close"
+            data-slot="fg-header-g4-window-close"
             type="button"
             onClick={() => {
               void window.mediaPlayerWindow?.close()

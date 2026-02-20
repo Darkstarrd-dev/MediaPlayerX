@@ -278,6 +278,7 @@ function ThemeParameterPanel({
     <div
       {...panelA11y}
       className="settings-mask"
+      data-slot="fg-header-g4-theme-parameter-root-panel"
       role="dialog"
       aria-modal="true"
       data-overlay-close="theme-parameter"

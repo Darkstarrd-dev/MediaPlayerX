@@ -151,6 +151,7 @@ export function FullscreenVideoControlsShell({
   return (
     <div
       className={`video-controls-shell fullscreen-video-controls-shell fullscreen-controls-shell${compact ? ' is-compact' : ''}${hideLeftGroup ? ' is-hide-left-group' : ''}`}
+      data-slot="fs-video-controls-shell"
       style={controlsShellStyle}
     >
       {mediaInfoText ? (
@@ -163,7 +164,7 @@ export function FullscreenVideoControlsShell({
         </div>
       ) : null}
 
-      <div className="video-controls-progress">
+      <div className="video-controls-progress" data-slot="fg-main-content-video-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
         <SkeuoRunway
           ariaLabel={t('a11y.media.fullscreenProgress')}
@@ -192,7 +193,7 @@ export function FullscreenVideoControlsShell({
       </div>
 
       <div className="video-controls-row video-controls">
-        {!hideLeftGroup ? <div className="video-controls-group is-left mpx-skeuo-well">
+        {!hideLeftGroup ? <div className="video-controls-group is-left mpx-skeuo-well" data-slot="fg-main-content-video-controls-left">
           <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" type="button" onClick={onToggleDualDisplay}>
             <VideoControlIcon name="dual" />
           </button>
@@ -213,7 +214,7 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name="aspect" />
             </button>
-            <div className="video-ctrl-panel is-fit" hidden={openPopover !== 'fit'} id="fullscreen-popover-fit" role="dialog">
+            <div className="video-ctrl-panel is-fit" data-slot="fs-video-controls-fit-pop" hidden={openPopover !== 'fit'} id="fullscreen-popover-fit" role="dialog">
               <div className="video-ctrl-panel-options">
                 {[
                   { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
@@ -259,6 +260,7 @@ export function FullscreenVideoControlsShell({
             </button>
             <div
               className="video-ctrl-panel"
+              data-slot="fs-video-controls-subtitle-pop"
               hidden={openPopover !== 'subtitle' || !subtitlePanelHasContent}
               id="fullscreen-popover-subtitle"
               role="dialog"
@@ -299,7 +301,7 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name="speed" />
             </button>
-            <div className="video-ctrl-panel is-speed" hidden={openPopover !== 'speed'} id="fullscreen-popover-speed" role="dialog">
+            <div className="video-ctrl-panel is-speed" data-slot="fs-video-controls-speed-pop" hidden={openPopover !== 'speed'} id="fullscreen-popover-speed" role="dialog">
               <div className="video-ctrl-panel-options">
                 {[0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rate) => (
                   <button
@@ -329,7 +331,7 @@ export function FullscreenVideoControlsShell({
           </button>
         </div> : null}
 
-        <div className="video-controls-group is-center">
+        <div className="video-controls-group is-center" data-slot="fg-main-content-video-controls-center">
           <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
             <VideoControlIcon name="prev" />
           </button>
@@ -346,7 +348,7 @@ export function FullscreenVideoControlsShell({
           </button>
         </div>
 
-        <div className="video-controls-group is-right mpx-skeuo-well">
+        <div className="video-controls-group is-right mpx-skeuo-well" data-slot="fg-main-content-video-controls-right">
           <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
             <VideoControlIcon name="camera" />
           </button>
@@ -366,7 +368,7 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name="playlist" />
             </button>
-            <div className="video-ctrl-panel" hidden={openPopover !== 'playlist'} id="fullscreen-popover-playlist" role="dialog">
+            <div className="video-ctrl-panel" data-slot="fs-video-controls-playlist-pop" hidden={openPopover !== 'playlist'} id="fullscreen-popover-playlist" role="dialog">
               {playlistEntries.length === 0 ? (
                 <span className="video-ctrl-panel-note">{t('ui.media.emptyPlaylist')}</span>
               ) : (
@@ -416,7 +418,7 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
             </button>
-            <div className="video-ctrl-panel is-volume" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
+            <div className="video-ctrl-panel is-volume" data-slot="fs-video-controls-volume-pop" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
               <div className="video-ctrl-volume-axis">
                 <SkeuoRunway
                   ariaLabel={t('a11y.media.fullscreenVolume')}

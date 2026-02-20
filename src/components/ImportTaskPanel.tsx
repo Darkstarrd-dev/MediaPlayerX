@@ -72,7 +72,7 @@ function ImportTaskPanel({
   }
 
   return (
-    <section className="import-task-panel" role="status" aria-live="polite">
+    <section className="import-task-panel" data-slot="fg-header-g1-task-import-task-panel" role="status" aria-live="polite">
       <header>
         <strong>{t('ui.importTask.title')}</strong>
         <span>{t('ui.importTask.activeCount', { count: activeTaskCount })}</span>
@@ -90,7 +90,7 @@ function ImportTaskPanel({
         </button>
       </header>
       {taskError ? (
-        <p>
+        <p data-slot="fg-header-g1-task-import-task-error-panel">
           <span>{taskError}</span>
           <button type="button" onClick={onClearError}>
             {t('ui.common.clear')}

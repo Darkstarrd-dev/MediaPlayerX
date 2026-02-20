@@ -59,7 +59,7 @@ export function FeatureTagPickerModal({
           onCancel()
         }}
       >
-        <div className="feature-tag-modal-panel">
+        <div className="feature-tag-modal-panel" data-slot="fg-meta-main-search-feature-tag-picker-panel">
           <div className="feature-tag-picker-head">
             <strong>{t('ui.tags.selectTitle')}</strong>
             <div className="feature-control-actions">

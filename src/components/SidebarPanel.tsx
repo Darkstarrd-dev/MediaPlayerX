@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -178,10 +179,14 @@ function SidebarPanel({
     localCollapsedImageFolderNodeIds,
     setLocalCollapsedImageFolderNodeIds,
   ] = useState<Set<string>>(new Set());
-  const collapsedImageFolderNodeIds = onSetCollapsedFolderNodeIds
-    ? new Set(collapsedFolderNodeIds ?? [])
-    : localCollapsedImageFolderNodeIds;
+  const collapsedImageFolderNodeIds = useMemo(() => {
+    if (onSetCollapsedFolderNodeIds) {
+      return new Set(collapsedFolderNodeIds ?? []);
+    }
+    return localCollapsedImageFolderNodeIds;
+  }, [collapsedFolderNodeIds, localCollapsedImageFolderNodeIds, onSetCollapsedFolderNodeIds]);
   const manageDragCleanupRef = useRef<(() => void) | null>(null);
+  const sidebarTreeRef = useRef<HTMLDivElement | null>(null);
   const labelTextElementByNodeIdRef = useRef<Map<string, HTMLSpanElement>>(new Map());
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(new Set());
@@ -270,6 +275,75 @@ function SidebarPanel({
       window.removeEventListener('keydown', onNavigationKeyDown, true);
     };
   }, [sidebarFocus]);
+
+  const updateSidebarScrollIndicator = useCallback(() => {
+    const element = sidebarTreeRef.current;
+    if (!element) {
+      return;
+    }
+
+    const maxScrollTop = Math.max(0, element.scrollHeight - element.clientHeight);
+    if (maxScrollTop <= 0) {
+      element.style.setProperty('--mpx-sidebar-scroll-indicator-opacity', '0');
+      element.style.setProperty('--mpx-sidebar-scroll-thumb-height', '0px');
+      element.style.setProperty('--mpx-sidebar-scroll-thumb-top', '0px');
+      return;
+    }
+
+    const trackPadding = 8;
+    const trackHeight = Math.max(0, element.clientHeight - trackPadding * 2);
+    const visibleRatio = element.clientHeight / Math.max(1, element.scrollHeight);
+    const thumbHeight = Math.min(trackHeight, Math.max(18, trackHeight * visibleRatio));
+    const maxThumbOffset = Math.max(0, trackHeight - thumbHeight);
+    const thumbTop = trackPadding + (element.scrollTop / maxScrollTop) * maxThumbOffset;
+
+    element.style.setProperty('--mpx-sidebar-scroll-indicator-opacity', '1');
+    element.style.setProperty('--mpx-sidebar-scroll-thumb-height', `${thumbHeight}px`);
+    element.style.setProperty('--mpx-sidebar-scroll-thumb-top', `${thumbTop}px`);
+  }, []);
+
+  useEffect(() => {
+    const element = sidebarTreeRef.current;
+    if (!element) {
+      return;
+    }
+
+    let rafId = 0;
+    const schedule = () => {
+      if (rafId !== 0) {
+        cancelAnimationFrame(rafId);
+      }
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        updateSidebarScrollIndicator();
+      });
+    };
+
+    schedule();
+    element.addEventListener('scroll', schedule, { passive: true });
+    const resizeObserver = new ResizeObserver(schedule);
+    resizeObserver.observe(element);
+
+    return () => {
+      element.removeEventListener('scroll', schedule);
+      resizeObserver.disconnect();
+      if (rafId !== 0) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [
+    updateSidebarScrollIndicator,
+    mode,
+    imageTreeNodes,
+    videoTreeNodes,
+    audioTreeNodes,
+    collapsedImageFolderNodeIds,
+    sidebarVerticalGap,
+    sidebarFontSize,
+    searchResultMode,
+    manageMode,
+    metadataManageMode,
+  ]);
 
   const updateCollapsedImageFolderNodeIds = useCallback(
     (
@@ -476,6 +550,7 @@ function SidebarPanel({
 
           <button
             className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""}`}
+            data-slot="fg-sidebar-main-label"
             type="button"
             aria-pressed={manageStyleEnabled ? checkedNodes.has(node.id) : undefined}
             style={{ fontSize: `${sidebarFontSize}px` }}
@@ -617,14 +692,16 @@ function SidebarPanel({
   return (
     <aside
       className={`sidebar ${sidebarFocus === "sidebar" ? "is-focus" : ""}`}
+      data-slot="fg-sidebar-root"
       style={{
         width: `${sidebarRatio * 100}%`,
         minWidth: `${sidebarMinWidth}px`,
       }}
     >
-      <div className="sidebar-head">
+      <div className="sidebar-head" data-slot="fg-sidebar-toolbar">
         <button
           className="sidebar-title-btn"
+          data-slot="fg-sidebar-toolbar-title"
           type="button"
           onClick={onCollapseSidebar}
         >
@@ -633,11 +710,12 @@ function SidebarPanel({
 
         <div className="sidebar-head-actions">
           {searchResultMode ? (
-            <button
-              className="sidebar-head-icon-btn"
-              type="button"
-              aria-label={t("a11y.common.back")}
-              title={t("tip.common.back")}
+              <button
+                className="sidebar-head-icon-btn"
+                data-slot="fg-sidebar-toolbar-back"
+                type="button"
+                aria-label={t("a11y.common.back")}
+                title={t("tip.common.back")}
               disabled={!canGoToFromSearchMode}
               onClick={onGoToFromSearchMode}
             >
@@ -649,6 +727,7 @@ function SidebarPanel({
             manageStyleEnabled ? (
               <button
                 className="sidebar-head-icon-btn"
+                data-slot="fg-sidebar-toolbar-clear"
                 type="button"
                 aria-label={t("a11y.common.clearSelection")}
                 title={t("tip.common.clearSelection")}
@@ -663,6 +742,7 @@ function SidebarPanel({
           {showRootToggle ? (
             <button
               className={`sidebar-head-icon-btn ${rootSet ? "is-root-set" : ""}`}
+              data-slot="fg-sidebar-toolbar-root-toggle"
               type="button"
               aria-label={rootToggleLabel}
               title={rootToggleLabel}
@@ -677,18 +757,23 @@ function SidebarPanel({
 
       <div
         className="sidebar-tree"
+        data-slot="fg-sidebar-main"
+        ref={sidebarTreeRef}
         style={{
           display: "flex",
           flexDirection: "column",
           gap: `${sidebarVerticalGap}px`,
         }}
       >
+        <span hidden data-slot="fg-sidebar-main-scroll-track" />
+        <span hidden data-slot="fg-sidebar-main-scroll-thumb" />
         {mode === "image"
           ? renderNodes(imageTreeNodes)
           : mode === "video"
             ? renderNodes(videoTreeNodes)
             : renderNodes(audioTreeNodes)}
       </div>
+      <div hidden data-slot="fg-sidebar-footer" />
     </aside>
   );
 }

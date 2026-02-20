@@ -573,6 +573,7 @@ function MusicMainSection({
   const musicControlsShell = (
     <div
       className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating fullscreen-controls-shell' : ''}${fullscreenActive && fullscreenControlsVisible ? ' is-visible' : ''}${fullscreenActive && !fullscreenControlsMounted ? ' is-hidden' : ''}`}
+      data-slot="fg-main-content-music-controls"
       hidden={fullscreenActive ? !fullscreenControlsMounted : undefined}
       onMouseEnter={fullscreenActive ? showFullscreenControls : undefined}
       onMouseLeave={fullscreenActive ? hideFullscreenControls : closePopover}
@@ -587,7 +588,7 @@ function MusicMainSection({
         </div>
       ) : null}
 
-      <div className="music-controls-progress">
+      <div className="music-controls-progress" data-slot="fg-main-content-music-controls-progress">
         <span className="video-progress-time">{`${formatSeconds(displayAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
         <SkeuoRunway
           ariaLabel={t('a11y.music.progress')}
@@ -616,7 +617,7 @@ function MusicMainSection({
       </div>
 
       <div className="music-controls-row">
-        <div className="music-controls-group is-left mpx-skeuo-well">
+        <div className="music-controls-group is-left mpx-skeuo-well" data-slot="fg-main-content-music-controls-left">
           <div
             className={`music-ctrl-popover ${openPopover === 'shader' ? 'is-open' : ''}`}
             onMouseEnter={() => setOpenPopover('shader')}
@@ -632,7 +633,7 @@ function MusicMainSection({
             >
               <MusicControlIcon name="shaderList" />
             </button>
-            <div className="music-ctrl-panel is-shader" hidden={openPopover !== 'shader'} id="music-main-popover-shader" role="dialog">
+            <div className="music-ctrl-panel is-shader" data-slot="fg-main-content-music-controls-shader-pop" hidden={openPopover !== 'shader'} id="music-main-popover-shader" role="dialog">
               <span className="music-ctrl-panel-title">{t('ui.music.shaderTitle')}</span>
               <div className="music-ctrl-shader-toolbar">
                 <button
@@ -692,6 +693,7 @@ function MusicMainSection({
             </button>
             <div
               className="music-ctrl-panel is-shader is-shader-settings"
+              data-slot="fg-main-content-music-controls-shader-settings-pop"
               hidden={openPopover !== 'shaderSettings'}
               id="music-main-popover-shader-settings"
               role="dialog"
@@ -934,7 +936,7 @@ function MusicMainSection({
           </button>
         </div>
 
-        <div className="music-controls-group is-center">
+        <div className="music-controls-group is-center" data-slot="fg-main-content-music-controls-center">
           <button aria-label={t('a11y.media.prev')} className="video-action-btn" disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
             <MusicControlIcon name="prev" />
           </button>
@@ -952,7 +954,7 @@ function MusicMainSection({
           </button>
         </div>
 
-        <div className="music-controls-group is-right mpx-skeuo-well">
+        <div className="music-controls-group is-right mpx-skeuo-well" data-slot="fg-main-content-music-controls-right">
           <button
             aria-label={t('a11y.music.loopMode', { label: musicLoopModeLabel })}
             className="video-action-btn"
@@ -981,6 +983,7 @@ function MusicMainSection({
 
             <div
               className="music-ctrl-panel is-volume"
+              data-slot="fg-main-content-music-controls-volume-pop"
               hidden={openPopover !== 'volume'}
               id="music-main-popover-volume"
               role="dialog"
@@ -1015,9 +1018,10 @@ function MusicMainSection({
     <>
       {active ? (
         <>
-          <div className="main-toolbar">
+          <div className="main-toolbar" data-slot="fg-main-toolbar">
             {manageMode ? (
               <>
+                <span hidden data-slot="fg-main-toolbar-state-manage" />
                 <div className="toolbar-actions toolbar-actions-manage">
                   <button
                     className="feature-action-btn main-icon-square-btn"
@@ -1047,6 +1051,7 @@ function MusicMainSection({
               </>
             ) : metadataManageMode ? (
               <>
+                <span hidden data-slot="fg-main-toolbar-state-metadata" />
                 <strong className="main-toolbar-title">{t('ui.header.metadataManage')}</strong>
                 {manageOperationHint ? (
                   <div className="toolbar-actions toolbar-actions-manage">
@@ -1056,6 +1061,7 @@ function MusicMainSection({
               </>
             ) : (
               <>
+                <span hidden data-slot="fg-main-toolbar-state-normal" />
                 <ToolbarTitleMarquee text={musicToolbarTitle} />
                 {canJumpToManga || canJumpToAnimation || canJumpToCover || canJumpToBooklet ? (
                   <div className="toolbar-actions">
@@ -1093,6 +1099,7 @@ function MusicMainSection({
 
           <div
             className={`name-list music-name-list music-visualizer${fullscreenActive ? ' is-fullscreen' : ''}`}
+            data-slot="fg-main-content-music-preview"
             aria-label={t('a11y.music.visualizer')}
             data-overlay-close={fullscreenActive ? 'fullscreen' : undefined}
             style={fullscreenControlsWidthStyle}
@@ -1101,12 +1108,14 @@ function MusicMainSection({
               key={`${visualizerCanvasVersion}-gpu`}
               ref={visualizerGpuCanvasRef}
               className="music-visualizer-canvas"
+              data-slot="fg-main-content-music-preview-canvas-gpu"
               style={gpuCanvasStyle}
             />
             <canvas
               key={`${visualizerCanvasVersion}-cpu`}
               ref={visualizerCpuCanvasRef}
               className="music-visualizer-canvas"
+              data-slot="fg-main-content-music-preview-canvas-cpu"
               style={cpuCanvasStyle}
             />
             {runtimeShowFps && visualizerStats ? (

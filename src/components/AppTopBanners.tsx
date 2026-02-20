@@ -34,7 +34,7 @@ function AppTopBanners({
   }
 
   return (
-    <section className="fg-sysinfo" role="region" aria-label="system info">
+    <section className="fg-sysinfo" data-slot="fg-sysinfo-root" role="region" aria-label="system info">
       <BackendErrorBanner rows={backendErrorRows} repositoryMode={repositoryMode} />
 
       <RuntimeWarningBanner

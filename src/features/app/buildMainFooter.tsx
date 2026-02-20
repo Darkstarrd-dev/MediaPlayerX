@@ -52,12 +52,12 @@ export function buildMainFooter({
 
   return (
     <>
-      <div className="main-footer-meta">
+      <div className="main-footer-meta" data-slot="fg-main-footer-meta">
         <span>{primary}</span>
       </div>
 
       {showPagination ? (
-        <div className="main-footer-pagination">
+        <div className="main-footer-pagination" data-slot="fg-main-footer-pagination">
           <button
             className="toolbar-icon-btn"
             type="button"

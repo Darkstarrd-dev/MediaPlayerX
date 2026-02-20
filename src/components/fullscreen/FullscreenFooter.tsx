@@ -279,6 +279,7 @@ export function FullscreenFooter({
   return (
     <footer
       className={`fullscreen-footer fullscreen-controls-shell ${fullscreenDisplay === 'dual' ? 'is-dual' : 'is-single'}${mode === 'image' ? ' is-image-mode' : ''}${compact ? ' is-compact' : ''}${hideRightGroup ? ' is-hide-right-group' : ''}`}
+      data-slot="fs-image-controls-shell"
       style={footerStyle}
       onMouseDown={(event) => {
         event.stopPropagation()
@@ -339,6 +340,7 @@ export function FullscreenFooter({
 
             <div
               className="header-popover-panel header-popover-panel--upward fullscreen-autoplay-popover"
+              data-slot="fs-image-controls-autoplay-pop"
               hidden={!openAutoplayPopover || !autoplayEnabledForFocus}
               role="dialog"
               aria-label={t('a11y.header.autoPlaySettings')}
@@ -391,6 +393,7 @@ export function FullscreenFooter({
 
             <div
               className="header-popover-panel header-popover-panel--upward fullscreen-zoom-popover"
+              data-slot="fs-image-controls-zoom-pop"
               hidden={!openZoomPopover || !zoomEnabled}
               role="dialog"
               aria-label={t('ui.fullscreen.zoomIn')}

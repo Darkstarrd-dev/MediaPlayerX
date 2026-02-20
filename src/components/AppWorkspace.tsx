@@ -102,9 +102,15 @@ function AppWorkspace({
   )
 
   return (
-    <div className="app-body" ref={appBodyRef}>
+    <div className="app-body" data-slot="bg-app-workspace" ref={appBodyRef}>
       {sidebarCollapsed ? (
-        <button {...buildA11yPropsByRegistry({ key: 'commonExpandSidebar', t })} className="sidebar-expand-btn" type="button" onClick={onExpandSidebar}>
+        <button
+          {...buildA11yPropsByRegistry({ key: 'commonExpandSidebar', t })}
+          className="sidebar-expand-btn"
+          data-slot="fg-sidebar-expand"
+          type="button"
+          onClick={onExpandSidebar}
+        >
           <span className="sidebar-expand-tip">{t('ui.sidebar.expand')}</span>
         </button>
       ) : (
@@ -131,12 +137,13 @@ function AppWorkspace({
         <div className="workspace-body" ref={workspaceBodyRef}>
           <main
             className="main-pane"
+            data-slot="fg-main-root"
             style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - var(--mpx-splitter-width))` }}
           >
             {mainSection}
             {musicSection}
 
-            <footer className="main-footer">{mainFooter}</footer>
+            <footer className="main-footer" data-slot="fg-main-footer">{mainFooter}</footer>
           </main>
 
           {metadataCollapsed ? null : (

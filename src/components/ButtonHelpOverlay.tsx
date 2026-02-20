@@ -229,7 +229,7 @@ function ButtonHelpOverlay({ active }: ButtonHelpOverlayProps) {
   }
 
   return createPortal(
-    <div className="help-overlay" data-overlay-close="help-overlay" role="dialog" aria-modal="false" aria-label={t('a11y.help.buttonOverlay')}>
+    <div className="help-overlay" data-slot="fg-header-g4-help-root-button-overlay-ovl" data-overlay-close="help-overlay" role="dialog" aria-modal="false" aria-label={t('a11y.help.buttonOverlay')}>
       <div className="help-overlay-mask" aria-hidden="true" />
       <div className="help-overlay-hint">{composedHint}</div>
       {items.map((item) => (

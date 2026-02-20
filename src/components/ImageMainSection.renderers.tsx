@@ -96,6 +96,7 @@ export function renderImageMainContent({
     return (
       <div
         className="image-grid node-browse-grid"
+        data-slot="fg-main-content-image-node-grid"
         ref={gridRef}
         onWheel={handleThumbnailContainerWheel}
         style={{
@@ -153,6 +154,7 @@ export function renderImageMainContent({
     return (
       <div
         className={`name-list ${manageMode ? "is-manage" : ""}`}
+        data-slot="fg-main-content-image-name-list"
         ref={gridRef}
       >
         <div className="name-list-header">
@@ -229,6 +231,7 @@ export function renderImageMainContent({
   return (
     <div
       className={`image-grid ${manageMode ? "is-manage" : ""} ${isThumbnailInteractionLocked ? "is-pending-swap" : ""}`}
+      data-slot="fg-main-content-image-grid"
       ref={gridRef}
       aria-busy={isThumbnailInteractionLocked || undefined}
       onWheel={handleThumbnailContainerWheel}

@@ -61,7 +61,14 @@ function AppShell({
   e2eBenchSectionProps,
 }: AppShellProps) {
   return (
-    <div className="app" onDragEnter={onDragEnterImport} onDragLeave={onDragLeaveImport} onDragOver={onDragOverImport} onDrop={onDropImport}>
+    <div
+      className="app"
+      data-slot="bg-app-root"
+      onDragEnter={onDragEnterImport}
+      onDragLeave={onDragLeaveImport}
+      onDragOver={onDragOverImport}
+      onDrop={onDropImport}
+    >
       <AppHeader {...appHeaderProps} />
       <ImportSourceInputs {...importSourceInputsProps} />
       <AppTopBanners {...appTopBannersProps} />

@@ -419,7 +419,7 @@ function MetadataFetchPanel({
   }
 
   return (
-    <div className="settings-mask" role="dialog" aria-modal="true" aria-label={t('a11y.metadata.fetchDialog')} data-overlay-close="metadata-fetch-panel">
+    <div className="settings-mask" data-slot="fg-main-toolbar-image-metadata-fetch-panel" role="dialog" aria-modal="true" aria-label={t('a11y.metadata.fetchDialog')} data-overlay-close="metadata-fetch-panel">
       <section className="settings-panel metadata-fetch-panel" data-overlay-close="metadata-fetch-panel">
         <header className="settings-head metadata-fetch-head">
           <span className="settings-head-spacer" />

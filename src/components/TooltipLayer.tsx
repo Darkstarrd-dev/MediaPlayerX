@@ -290,6 +290,7 @@ function TooltipLayer({ suspended = false }: TooltipLayerProps) {
   return createPortal(
     <div
       className={`app-tooltip-bubble${tooltip.placement === 'bottom' ? ' is-bottom' : ''}`}
+      data-slot="fg-app-tooltip-ovl"
       role="tooltip"
       style={{ top: `${tooltip.top}px`, left: `${tooltip.left}px` }}
     >

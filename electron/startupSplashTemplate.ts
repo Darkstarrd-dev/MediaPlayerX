@@ -45,16 +45,16 @@ function escapeHtmlAttribute(value: string): string {
 
 function renderSplashCardMarkup(bannerSrc: string | null): string {
   const bannerMarkup = bannerSrc
-    ? `<img class="character" src="${escapeHtmlAttribute(bannerSrc)}" alt="" aria-hidden="true" />`
+    ? `<img class="character" data-slot="boot-splash-stage-character" src="${escapeHtmlAttribute(bannerSrc)}" alt="" aria-hidden="true" />`
     : ''
   const stageClassName = bannerMarkup.length > 0 ? 'card-stage has-character' : 'card-stage'
 
-  return `<section class="${stageClassName}">
+  return `<section class="${stageClassName}" data-slot="boot-splash-stage-card-stage">
         ${bannerMarkup}
-        <section class="card" role="status" aria-live="polite">
+        <section class="card" data-slot="boot-splash-card" role="status" aria-live="polite">
         <h1 class="brand">${STARTUP_SPLASH_COPY.title}</h1>
         <p class="desc">${STARTUP_SPLASH_COPY.description}</p>
-        <div class="track" aria-hidden="true"></div>
+        <div class="track" data-slot="boot-splash-card-track" aria-hidden="true"></div>
         <p class="hint">${STARTUP_SPLASH_COPY.hint}</p>
         </section>
       </section>`
@@ -228,6 +228,7 @@ function renderStartupSplashDocument(bodyContent: string): string {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta data-slot="boot-splash-window" name="mpx-splash-window-slot" content="boot-splash-window" />
     <title>MediaPlayerX</title>
     <style>
       ${renderCommonStyles()}
@@ -241,8 +242,10 @@ function renderStartupSplashDocument(bodyContent: string): string {
 
 export function renderStartupSplashHtml(options: StartupSplashRenderOptions = {}): string {
   const bannerSrc = options.bannerSrc ?? null
-  return renderStartupSplashDocument(`<main class="splash" aria-label="MediaPlayerX 启动页">
-      ${renderSplashCardMarkup(bannerSrc)}
+  return renderStartupSplashDocument(`<main data-slot="boot-splash-root" aria-label="MediaPlayerX 启动页">
+      <section class="splash" data-slot="boot-splash-stage">
+        ${renderSplashCardMarkup(bannerSrc)}
+      </section>
     </main>`)
 }
 

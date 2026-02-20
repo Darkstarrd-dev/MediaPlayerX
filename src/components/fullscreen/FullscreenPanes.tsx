@@ -15,6 +15,7 @@ import type { MediaGeometry, PaneKey, PaneTransform } from './paneMath'
 interface FullscreenImagePaneProps {
   paneRef: RefObject<HTMLElement | null>
   className: string
+  dataSlot?: string
   flex: number
   fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
   singlePane: PaneKey | null
@@ -33,6 +34,7 @@ interface FullscreenImagePaneProps {
 export function FullscreenImagePane({
   paneRef,
   className,
+  dataSlot,
   flex,
   fullscreenDisplay,
   singlePane,
@@ -51,6 +53,7 @@ export function FullscreenImagePane({
     <section
       ref={paneRef}
       className={className}
+      data-slot={dataSlot}
       style={{ flex }}
       onClick={() => {
         if (fullscreenDisplay === 'dual') {
@@ -98,6 +101,7 @@ interface FullscreenVideoPaneProps {
   paneRef: RefObject<HTMLElement | null>
   videoRef: RefObject<HTMLVideoElement | null>
   className: string
+  dataSlot?: string
   flex: number
   fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
   singlePane: PaneKey | null
@@ -137,6 +141,7 @@ export function FullscreenVideoPane({
   paneRef,
   videoRef,
   className,
+  dataSlot,
   flex,
   fullscreenDisplay,
   singlePane,
@@ -206,6 +211,7 @@ export function FullscreenVideoPane({
     <section
       ref={paneRef}
       className={className}
+      data-slot={dataSlot}
       style={{ flex }}
       onClick={() => {
         if (fullscreenDisplay === 'dual') {
