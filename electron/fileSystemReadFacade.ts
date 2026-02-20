@@ -152,6 +152,7 @@ import { MediaResourceService } from './services/file-system-read/mediaResourceS
 import { RuntimeDependencyService } from './services/file-system-read/runtimeDependencyService'
 import { ArchivePathLockService } from './services/file-system-read/archivePathLockService'
 import { cleanupStartupTempArtifacts } from './services/file-system-read/startupTempCleanup'
+import { disposeTaskProcessRunners } from './services/task-orchestrator/processTaskOrchestrator'
 import { SubtitleModelService } from './services/file-system-read/subtitleModelService'
 import { TaskResourceGovernor } from './services/file-system-read/taskResourceGovernor'
 import { ServiceEventBus } from './services/file-system-read/serviceEventBus'
@@ -491,6 +492,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   dispose(): void {
     this.disposed = true
+    void disposeTaskProcessRunners().catch(() => undefined)
     if (this.ownsTaskResourceGovernor) {
       this.taskResourceGovernor.dispose()
     }
