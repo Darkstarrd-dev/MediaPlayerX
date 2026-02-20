@@ -72,7 +72,7 @@ function ImportTaskPanel({
   }
 
   return (
-    <section className="import-task-panel" data-slot="fg-header-g1-task-import-task-panel" role="status" aria-live="polite">
+    <section className="import-task-panel sysinfo-card-shell" data-slot="fg-header-g1-task-import-task-panel" role="status" aria-live="polite">
       <header>
         <strong>{t('ui.importTask.title')}</strong>
         <span>{t('ui.importTask.activeCount', { count: activeTaskCount })}</span>

@@ -30,7 +30,7 @@ function RuntimeWarningBanner({ visible, warnings, onDismiss }: RuntimeWarningBa
   }
 
   return (
-    <section className="runtime-warning-banner" data-slot="fg-sysinfo-runtime-warning" role="status" aria-live="polite">
+    <section className="runtime-warning-banner sysinfo-card-shell" data-slot="fg-sysinfo-runtime-warning" role="status" aria-live="polite">
       <header>
         <strong>{t('ui.runtimeWarning.title')}</strong>
         <button type="button" onClick={onDismiss}>

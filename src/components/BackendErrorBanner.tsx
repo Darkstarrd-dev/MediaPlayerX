@@ -12,7 +12,7 @@ function BackendErrorBanner({ rows, repositoryMode }: BackendErrorBannerProps) {
   }
 
   return (
-    <section className="backend-error-banner" data-slot="fg-sysinfo-backend-error" role="status" aria-live="polite">
+    <section className="backend-error-banner sysinfo-card-shell" data-slot="fg-sysinfo-backend-error" role="status" aria-live="polite">
       <header>
         <strong>{`后端读取异常（${repositoryMode}）`}</strong>
       </header>

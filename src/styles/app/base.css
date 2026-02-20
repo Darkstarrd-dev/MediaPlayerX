@@ -222,12 +222,25 @@ select option {
 .fg-sysinfo {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  margin: var(--mpx-slot-fg-sysinfo-root-margin, var(--mpx-slot-fg-header-root-margin, var(--mpx-header-margin)));
   background: var(--mpx-slot-fg-sysinfo-root-bg, transparent);
 }
 
+.sysinfo-card-shell {
+  border: var(--mpx-header-border-width) solid var(--mpx-slot-fg-header-root-border, var(--mpx-header-border-color, var(--mpx-border-1)));
+  background: var(--mpx-slot-fg-header-root-bg, var(--mpx-header-bg));
+  border-radius: var(--mpx-slot-fg-header-root-radius, var(--mpx-header-radius));
+  box-shadow: var(--mpx-slot-fg-header-root-shadow, var(--mpx-header-shadow));
+  backdrop-filter: var(--mpx-slot-fg-header-root-backdrop-filter, var(--mpx-header-backdrop-filter));
+  transform: var(--mpx-header-transform);
+  transform-origin: var(--mpx-header-transform-origin);
+  transition: var(--mpx-header-transition);
+  overflow: hidden;
+}
+
 .backend-error-banner {
-  border-bottom: 1px solid var(--mpx-slot-fg-sysinfo-backend-error-border, var(--mpx-status-danger-border));
-  background: var(--mpx-slot-fg-sysinfo-backend-error-bg, var(--mpx-status-danger-bg));
+  border-left: 3px solid var(--mpx-slot-fg-sysinfo-backend-error-border, var(--mpx-status-danger-border));
   color: var(--mpx-slot-fg-sysinfo-backend-error-text, var(--mpx-status-danger-text));
   padding: 8px 12px;
   display: flex;
@@ -261,8 +274,7 @@ select option {
 }
 
 .runtime-warning-banner {
-  border-bottom: 1px solid var(--mpx-slot-fg-sysinfo-runtime-warning-border, var(--mpx-status-warning-border));
-  background: var(--mpx-slot-fg-sysinfo-runtime-warning-bg, var(--mpx-status-warning-bg));
+  border-left: 3px solid var(--mpx-slot-fg-sysinfo-runtime-warning-border, var(--mpx-status-warning-border));
   color: var(--mpx-slot-fg-sysinfo-runtime-warning-text, var(--mpx-status-warning-text));
   padding: 8px 12px;
   display: flex;
@@ -302,8 +314,7 @@ select option {
 }
 
 .import-task-panel {
-  border-bottom: 1px solid var(--mpx-slot-fg-header-g1-task-import-task-panel-border, var(--mpx-status-info-border));
-  background: var(--mpx-slot-fg-header-g1-task-import-task-panel-bg, var(--mpx-status-info-bg));
+  border-left: 3px solid var(--mpx-slot-fg-header-g1-task-import-task-panel-border, var(--mpx-status-info-border));
   color: var(--mpx-slot-fg-header-g1-task-import-task-panel-text, var(--mpx-status-info-text));
   padding: 8px 12px;
   display: flex;
