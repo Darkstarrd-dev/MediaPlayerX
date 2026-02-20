@@ -25,6 +25,9 @@ interface UseImportTaskPanelStateParams {
     deleting: string
     reviewing: string
     idle: string
+    importRunning: (payload: { activeCount: number; enqueuePending: boolean }) => string
+    archiveRunning: (payload: { progress: number | null; pendingCount: number }) => string
+    thumbnailRunning: (payload: { runningCount: number; progress: number | null }) => string
   }
 }
 
@@ -92,13 +95,29 @@ export function useImportTaskPanelState({
   const thumbnailBusy = archiveLoadStatus.thumbnailRunningCount > 0
   const importBusy = enqueuePending || activeImportTasks.length > 0 || archiveLoadBusy || thumbnailBusy
   const taskStatusBusy = importBusy || adReviewRunning || adReviewDeleting
-  const taskStatusLabel = importBusy
-    ? taskStatusLabels.loading
-    : adReviewDeleting
-      ? taskStatusLabels.deleting
-      : adReviewRunning
-        ? taskStatusLabels.reviewing
-        : taskStatusLabels.idle
+  let taskStatusLabel = taskStatusLabels.idle
+  if (importBusy) {
+    if (normalizedRunningArchivePath !== null || normalizedPendingArchivePathSet.size > 0) {
+      taskStatusLabel = taskStatusLabels.archiveRunning({
+        progress: archiveLoadStatus.runningArchiveProgress,
+        pendingCount: normalizedPendingArchivePathSet.size,
+      })
+    } else if (thumbnailBusy) {
+      taskStatusLabel = taskStatusLabels.thumbnailRunning({
+        runningCount: archiveLoadStatus.thumbnailRunningCount,
+        progress: archiveLoadStatus.thumbnailRunningProgress,
+      })
+    } else {
+      taskStatusLabel = taskStatusLabels.importRunning({
+        activeCount: activeImportTasks.length,
+        enqueuePending,
+      })
+    }
+  } else if (adReviewDeleting) {
+    taskStatusLabel = taskStatusLabels.deleting
+  } else if (adReviewRunning) {
+    taskStatusLabel = taskStatusLabels.reviewing
+  }
 
   const clearFinishedImportTasks = useCallback(() => {
     setDismissedImportTaskIds((previous) => {

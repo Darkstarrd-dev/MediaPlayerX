@@ -348,6 +348,31 @@ export function useAppTopLayerState({
       deleting: t("ui.header.taskStatusDeleting"),
       reviewing: t("ui.header.taskStatusReviewing"),
       idle: t("ui.header.taskStatusIdle"),
+      importRunning: ({ activeCount, enqueuePending }) =>
+        t("ui.header.taskStatusImportRunning", {
+          count: Math.max(1, activeCount + (enqueuePending ? 1 : 0)),
+        }),
+      archiveRunning: ({ progress, pendingCount }) => {
+        if (typeof progress === "number" && Number.isFinite(progress)) {
+          return t("ui.header.taskStatusArchiveRunning", {
+            progress: Math.round(Math.max(0, Math.min(1, progress)) * 100),
+          });
+        }
+        return t("ui.header.taskStatusArchivePending", {
+          count: Math.max(1, pendingCount),
+        });
+      },
+      thumbnailRunning: ({ runningCount, progress }) => {
+        if (typeof progress === "number" && Number.isFinite(progress)) {
+          return t("ui.header.taskStatusThumbnailRunning", {
+            count: Math.max(1, runningCount),
+            progress: Math.round(Math.max(0, Math.min(1, progress)) * 100),
+          });
+        }
+        return t("ui.header.taskStatusThumbnailQueued", {
+          count: Math.max(1, runningCount),
+        });
+      },
     },
   });
 
