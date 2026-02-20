@@ -57,6 +57,8 @@ import {
   deleteSidebarNodesResponseSchema,
   moveSidebarNodesResponseSchema,
   renameSidebarNodeResponseSchema,
+  renameSidebarNodesResponseSchema,
+  renameItemsResponseSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskResponseSchema,
   pauseManageAdReviewTaskResponseSchema,
@@ -152,6 +154,10 @@ import {
   type MoveSidebarNodesResponseDto,
   type RenameSidebarNodeRequestDto,
   type RenameSidebarNodeResponseDto,
+  type RenameSidebarNodesRequestDto,
+  type RenameSidebarNodesResponseDto,
+  type RenameItemsRequestDto,
+  type RenameItemsResponseDto,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
@@ -314,6 +320,26 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(renameSidebarNode(request), options)
     return renameSidebarNodeResponseSchema.parse(response)
+  }
+
+  async renameSidebarNodes(
+    request: RenameSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RenameSidebarNodesResponseDto> {
+    const renameSidebarNodes = requireBackendMethod('renameSidebarNodes')
+
+    const response = await withAbort(renameSidebarNodes(request), options)
+    return renameSidebarNodesResponseSchema.parse(response)
+  }
+
+  async renameItems(
+    request: RenameItemsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RenameItemsResponseDto> {
+    const renameItems = requireBackendMethod('renameItems')
+
+    const response = await withAbort(renameItems(request), options)
+    return renameItemsResponseSchema.parse(response)
   }
 
   async startManageAdReview(

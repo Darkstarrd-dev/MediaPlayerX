@@ -9,6 +9,10 @@ import {
   type MoveSidebarNodesResponseDto,
   type RenameSidebarNodeRequestDto,
   type RenameSidebarNodeResponseDto,
+  type RenameSidebarNodesRequestDto,
+  type RenameSidebarNodesResponseDto,
+  type RenameItemsRequestDto,
+  type RenameItemsResponseDto,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
   type ReadManageAdReviewTaskRequestDto,
@@ -69,6 +73,18 @@ export class FileSystemManagementHandlers {
     request: RenameSidebarNodeRequestDto,
   ): Promise<RenameSidebarNodeResponseDto> {
     return this.context.managementMutationService.renameSidebarNode(request)
+  }
+
+  async renameSidebarNodes(
+    request: RenameSidebarNodesRequestDto,
+  ): Promise<RenameSidebarNodesResponseDto> {
+    return this.context.managementMutationService.renameSidebarNodes(request)
+  }
+
+  async renameItems(
+    request: RenameItemsRequestDto,
+  ): Promise<RenameItemsResponseDto> {
+    return this.context.managementMutationService.renameItems(request)
   }
 
   async startManageAdReview(

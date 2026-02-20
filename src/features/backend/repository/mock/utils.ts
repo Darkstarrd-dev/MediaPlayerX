@@ -256,7 +256,7 @@ export function renumberSourceImages(source: ImagePackageDto): void {
 }
 
 export function parseSidebarNodePath(nodeId: string): {
-  kind: 'folder' | 'package' | 'video'
+  kind: 'folder' | 'package' | 'video' | 'audio'
   pathKey: string
 } | null {
   const delimiterIndex = nodeId.indexOf(':')
@@ -265,7 +265,7 @@ export function parseSidebarNodePath(nodeId: string): {
   }
 
   const kind = nodeId.slice(0, delimiterIndex)
-  if (kind !== 'folder' && kind !== 'package' && kind !== 'video') {
+  if (kind !== 'folder' && kind !== 'package' && kind !== 'video' && kind !== 'audio') {
     return null
   }
 

@@ -93,6 +93,15 @@ Last updated: 2026-02-18
 - `zip` 内部文件重命名仅作为整理工具。
 - `zip` 内部重命名/重排序不影响核心业务语义。
 
+### 批量重命名（新增）
+
+- 统一使用 `renameItems` 契约，支持目标：`sidebar-node`、`image-item`、`archive-entry`。
+- 支持模式：`single`、`replace`、`numbering`、`remove-range`、`metadata`。
+- 批量执行默认 `fail_fast=true`，任一冲突可直接失败并返回失败明细。
+- 必须支持 `preview_only=true` 预览，不落盘，仅返回 `source/target` 结果清单。
+- `zip` 内部条目重命名仅允许图片扩展名白名单，执行采用“重打包临时文件 -> 原子替换 -> 失败回滚”。
+- metadata 模板默认：`[author.jp(if exist)(author.en(if exist))]/[author(if only one exist)]-[circle just like author ] - [title.jp(if exist)]/[title(if only one exist)]`。
+
 ## 移除与冲突策略
 
 - 磁盘文件丢失时，自动从数据库索引移除。

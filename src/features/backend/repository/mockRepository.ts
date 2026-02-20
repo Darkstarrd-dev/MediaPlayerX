@@ -20,6 +20,10 @@ import {
   type MoveSidebarNodesResponseDto,
   type RenameSidebarNodeRequestDto,
   type RenameSidebarNodeResponseDto,
+  type RenameSidebarNodesRequestDto,
+  type RenameSidebarNodesResponseDto,
+  type RenameItemsRequestDto,
+  type RenameItemsResponseDto,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type LibrarySnapshotDto,
@@ -318,11 +322,33 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     return this.write.renameSidebarNodeSync(request)
   }
 
+  renameSidebarNodesSync(request: RenameSidebarNodesRequestDto): RenameSidebarNodesResponseDto {
+    return this.write.renameSidebarNodesSync(request)
+  }
+
   async renameSidebarNode(
     request: RenameSidebarNodeRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<RenameSidebarNodeResponseDto> {
     return resolveAsync(this.renameSidebarNodeSync(request), options)
+  }
+
+  async renameSidebarNodes(
+    request: RenameSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RenameSidebarNodesResponseDto> {
+    return resolveAsync(this.renameSidebarNodesSync(request), options)
+  }
+
+  renameItemsSync(request: RenameItemsRequestDto): RenameItemsResponseDto {
+    return this.write.renameItemsSync(request)
+  }
+
+  async renameItems(
+    request: RenameItemsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RenameItemsResponseDto> {
+    return resolveAsync(this.renameItemsSync(request), options)
   }
 
   startManageAdReviewSync(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto {

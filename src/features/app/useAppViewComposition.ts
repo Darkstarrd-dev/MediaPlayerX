@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useAppShellProps } from './useAppShellProps'
 import { useAppTopLayerBindings } from './useAppTopLayerBindings'
@@ -8,6 +8,7 @@ import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
 import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
 import type { MediaLocator } from '../../types'
+import type { RenameItemsRequestDto } from '../../contracts/backend'
 import { useI18n } from '../../i18n/useI18n'
 
 function resolveMediaLocatorPath(locator: MediaLocator): string {
@@ -108,10 +109,36 @@ export function useAppViewComposition({
     setDeleteConfirmOpen,
     sidebarRenameDialogOpen,
     sidebarRenameTargetNodeId,
+    sidebarRenameTargetNodeIds,
+    sidebarRenameTargetImageIds,
     sidebarRenameDraft,
+    sidebarRenameMode,
+    sidebarRenameReplaceFrom,
+    sidebarRenameReplaceTo,
+    sidebarRenameNumberBase,
+    sidebarRenameNumberStart,
+    sidebarRenameNumberStep,
+    sidebarRenameNumberPadWidth,
+    sidebarRenameRemoveStart,
+    sidebarRenameRemoveEnd,
+    sidebarRenameMetadataTemplate,
+    sidebarRenamePreviewRows,
     setSidebarRenameDialogOpen,
     setSidebarRenameTargetNodeId,
+    setSidebarRenameTargetNodeIds,
+    setSidebarRenameTargetImageIds,
     setSidebarRenameDraft,
+    setSidebarRenameMode,
+    setSidebarRenameReplaceFrom,
+    setSidebarRenameReplaceTo,
+    setSidebarRenameNumberBase,
+    setSidebarRenameNumberStart,
+    setSidebarRenameNumberStep,
+    setSidebarRenameNumberPadWidth,
+    setSidebarRenameRemoveStart,
+    setSidebarRenameRemoveEnd,
+    setSidebarRenameMetadataTemplate,
+    setSidebarRenamePreviewRows,
     setManageOperationHint,
     appBodyRef,
     workspaceRef,
@@ -124,12 +151,181 @@ export function useAppViewComposition({
   const closeSidebarRenameDialog = useCallback(() => {
     setSidebarRenameDialogOpen(false)
     setSidebarRenameTargetNodeId(null)
+    setSidebarRenameTargetNodeIds([])
+    setSidebarRenameTargetImageIds([])
     setSidebarRenameDraft('')
+    setSidebarRenameMode('single')
+    setSidebarRenameReplaceFrom('')
+    setSidebarRenameReplaceTo('')
+    setSidebarRenameNumberBase('item-')
+    setSidebarRenameNumberStart('1')
+    setSidebarRenameNumberStep('1')
+    setSidebarRenameNumberPadWidth('3')
+    setSidebarRenameRemoveStart('1')
+    setSidebarRenameRemoveEnd('1')
+    setSidebarRenameMetadataTemplate('[author.jp(if exist)(author.en(if exist))]/[author(if only one exist)]-[circle just like author ] - [title.jp(if exist)]/[title(if only one exist)]')
+    setSidebarRenamePreviewRows([])
     setSidebarRenamePending(false)
     setSidebarRenameError(null)
-  }, [setSidebarRenameDialogOpen, setSidebarRenameDraft, setSidebarRenameTargetNodeId])
+  }, [
+    setSidebarRenameDialogOpen,
+    setSidebarRenameDraft,
+    setSidebarRenameMode,
+    setSidebarRenameNumberBase,
+    setSidebarRenameNumberPadWidth,
+    setSidebarRenameNumberStart,
+    setSidebarRenameNumberStep,
+    setSidebarRenamePreviewRows,
+    setSidebarRenameRemoveEnd,
+    setSidebarRenameRemoveStart,
+    setSidebarRenameMetadataTemplate,
+    setSidebarRenameReplaceFrom,
+    setSidebarRenameReplaceTo,
+    setSidebarRenameTargetNodeId,
+    setSidebarRenameTargetNodeIds,
+    setSidebarRenameTargetImageIds,
+  ])
+
+  const buildBatchRenameRequest = useCallback((previewOnly: boolean): RenameItemsRequestDto | null => {
+    const targets = [
+      ...sidebarRenameTargetNodeIds.map((nodeId) => ({ kind: 'sidebar-node' as const, node_id: nodeId })),
+      ...sidebarRenameTargetImageIds.map((imageId) => ({ kind: 'image-item' as const, image_id: imageId })),
+    ]
+
+    if (targets.length === 0) {
+      return null
+    }
+
+    if (sidebarRenameMode === 'single') {
+      return {
+        targets,
+        mode: 'single',
+        single_new_name: sidebarRenameDraft,
+        fail_fast: true,
+        preview_only: previewOnly,
+      }
+    }
+
+    if (sidebarRenameMode === 'replace') {
+      return {
+        targets,
+        mode: 'replace',
+        replace_from: sidebarRenameReplaceFrom,
+        replace_to: sidebarRenameReplaceTo,
+        fail_fast: true,
+        preview_only: previewOnly,
+      }
+    }
+    if (sidebarRenameMode === 'numbering') {
+      return {
+        targets,
+        mode: 'numbering',
+        numbering_base_name: sidebarRenameNumberBase,
+        numbering_start: Number.parseInt(sidebarRenameNumberStart, 10) || 1,
+        numbering_step: Number.parseInt(sidebarRenameNumberStep, 10) || 1,
+        numbering_pad_width: Number.parseInt(sidebarRenameNumberPadWidth, 10) || 3,
+        fail_fast: true,
+        preview_only: previewOnly,
+      }
+    }
+    if (sidebarRenameMode === 'remove-range') {
+      return {
+        targets,
+        mode: 'remove-range',
+        remove_start: Number.parseInt(sidebarRenameRemoveStart, 10) || 1,
+        remove_end: Number.parseInt(sidebarRenameRemoveEnd, 10) || 1,
+        fail_fast: true,
+        preview_only: previewOnly,
+      }
+    }
+    return {
+      targets,
+      mode: 'metadata',
+      metadata_template: sidebarRenameMetadataTemplate,
+      fail_fast: true,
+      preview_only: previewOnly,
+    }
+  }, [
+    sidebarRenameMode,
+    sidebarRenameNumberBase,
+    sidebarRenameNumberPadWidth,
+    sidebarRenameNumberStart,
+    sidebarRenameNumberStep,
+    sidebarRenameRemoveEnd,
+    sidebarRenameRemoveStart,
+    sidebarRenameMetadataTemplate,
+    sidebarRenameReplaceFrom,
+    sidebarRenameReplaceTo,
+    sidebarRenameTargetImageIds,
+    sidebarRenameTargetNodeIds,
+    sidebarRenameDraft,
+  ])
+
+  const refreshSidebarRenamePreview = useCallback(async () => {
+    if (!displayState.backendWrite.renameItems) {
+      return
+    }
+    const request = buildBatchRenameRequest(true)
+    if (!request) {
+      setSidebarRenamePreviewRows([])
+      return
+    }
+
+    try {
+      const response = await displayState.backendWrite.renameItems(request)
+      setSidebarRenamePreviewRows(response.results.map((item) => ({
+        nodeId: JSON.stringify(item.target),
+        sourceName: item.source_name,
+        targetName: item.target_name,
+        reason: item.reason,
+      })))
+    } catch {
+      setSidebarRenamePreviewRows([])
+    }
+  }, [buildBatchRenameRequest, displayState.backendWrite, setSidebarRenamePreviewRows])
 
   const confirmSidebarRename = useCallback(async () => {
+    const batchModeActive = sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length > 1 || sidebarRenameMode !== 'single'
+    if (batchModeActive) {
+      if (!displayState.backendWrite.renameItems) {
+        const unsupportedMessage = t('ui.manage.hint.renameUnsupported')
+        setManageOperationHint(unsupportedMessage)
+        setSidebarRenameError(unsupportedMessage)
+        return
+      }
+      const request = buildBatchRenameRequest(false)
+      if (!request) {
+        closeSidebarRenameDialog()
+        return
+      }
+
+      setSidebarRenamePending(true)
+      setSidebarRenameError(null)
+      try {
+        const response = await displayState.backendWrite.renameItems(request)
+        if (response.failed.length === 0 && response.renamed_count > 0) {
+          setManageOperationHint(t('ui.manage.hint.renameSuccess'))
+          closeSidebarRenameDialog()
+        } else {
+          const failedReason = response.failed[0]?.reason ?? t('ui.manage.hint.operationFailedUnknownReason')
+          const failedMessage = t('ui.manage.hint.renameFailed', { message: failedReason })
+          setManageOperationHint(failedMessage)
+          setSidebarRenameError(failedMessage)
+        }
+      } catch (error) {
+        const failedMessage = t('ui.manage.hint.renameFailed', { message: toErrorDetailWithCode(error, t) })
+        setManageOperationHint(failedMessage)
+        setSidebarRenameError(failedMessage)
+      } finally {
+        readNavigationState.backendRead.retryLibrary()
+        readNavigationState.backendRead.retrySidebar()
+        readNavigationState.backendRead.retryPage()
+        readNavigationState.backendRead.retryMetadata()
+        setSidebarRenamePending(false)
+      }
+      return
+    }
+
     if (!displayState.backendWrite.renameSidebarNode) {
       const unsupportedMessage = t('ui.manage.hint.renameUnsupported')
       setManageOperationHint(unsupportedMessage)
@@ -186,15 +382,35 @@ export function useAppViewComposition({
       setSidebarRenamePending(false)
     }
   }, [
+    buildBatchRenameRequest,
     closeSidebarRenameDialog,
     displayState.backendWrite,
     readNavigationState,
     sessionState,
     setManageOperationHint,
     sidebarRenameDraft,
+    sidebarRenameMode,
     sidebarRenameTargetNodeId,
-    setSidebarRenamePending,
+    sidebarRenameTargetImageIds.length,
+    sidebarRenameTargetNodeIds.length,
     t,
+  ])
+
+  useEffect(() => {
+    if (!sidebarRenameDialogOpen) {
+      return
+    }
+    const batchModeActive = sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length > 1 || sidebarRenameMode !== 'single'
+    if (!batchModeActive) {
+      return
+    }
+    void refreshSidebarRenamePreview()
+  }, [
+    refreshSidebarRenamePreview,
+    sidebarRenameDialogOpen,
+    sidebarRenameMode,
+    sidebarRenameTargetImageIds.length,
+    sidebarRenameTargetNodeIds.length,
   ])
 
   const topLayerState = useAppTopLayerBindings({
@@ -273,13 +489,38 @@ export function useAppViewComposition({
     sidebarRenameDialogParams: {
       open: sidebarRenameDialogOpen,
       pending: sidebarRenamePending,
+      mode: sidebarRenameMode,
+      targetCount: sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length,
       value: sidebarRenameDraft,
+      replaceFrom: sidebarRenameReplaceFrom,
+      replaceTo: sidebarRenameReplaceTo,
+      numberBase: sidebarRenameNumberBase,
+      numberStart: sidebarRenameNumberStart,
+      numberStep: sidebarRenameNumberStep,
+      numberPadWidth: sidebarRenameNumberPadWidth,
+      removeStart: sidebarRenameRemoveStart,
+      removeEnd: sidebarRenameRemoveEnd,
+      metadataTemplate: sidebarRenameMetadataTemplate,
+      previewRows: sidebarRenamePreviewRows,
       errorMessage: sidebarRenameError,
       onChange: (value) => {
         setSidebarRenameDraft(value)
         if (sidebarRenameError) {
           setSidebarRenameError(null)
         }
+      },
+      onModeChange: setSidebarRenameMode,
+      onReplaceFromChange: setSidebarRenameReplaceFrom,
+      onReplaceToChange: setSidebarRenameReplaceTo,
+      onNumberBaseChange: setSidebarRenameNumberBase,
+      onNumberStartChange: setSidebarRenameNumberStart,
+      onNumberStepChange: setSidebarRenameNumberStep,
+      onNumberPadWidthChange: setSidebarRenameNumberPadWidth,
+      onRemoveStartChange: setSidebarRenameRemoveStart,
+      onRemoveEndChange: setSidebarRenameRemoveEnd,
+      onMetadataTemplateChange: setSidebarRenameMetadataTemplate,
+      onRefreshPreview: () => {
+        void refreshSidebarRenamePreview()
       },
       onCancel: closeSidebarRenameDialog,
       onConfirm: confirmSidebarRename,

@@ -43,7 +43,20 @@ export function useAppSessionState({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [sidebarRenameDialogOpen, setSidebarRenameDialogOpen] = useState(false)
   const [sidebarRenameTargetNodeId, setSidebarRenameTargetNodeId] = useState<string | null>(null)
+  const [sidebarRenameTargetNodeIds, setSidebarRenameTargetNodeIds] = useState<string[]>([])
+  const [sidebarRenameTargetImageIds, setSidebarRenameTargetImageIds] = useState<string[]>([])
   const [sidebarRenameDraft, setSidebarRenameDraft] = useState('')
+  const [sidebarRenameMode, setSidebarRenameMode] = useState<'single' | 'replace' | 'numbering' | 'remove-range' | 'metadata'>('single')
+  const [sidebarRenameReplaceFrom, setSidebarRenameReplaceFrom] = useState('')
+  const [sidebarRenameReplaceTo, setSidebarRenameReplaceTo] = useState('')
+  const [sidebarRenameNumberBase, setSidebarRenameNumberBase] = useState('item-')
+  const [sidebarRenameNumberStart, setSidebarRenameNumberStart] = useState('1')
+  const [sidebarRenameNumberStep, setSidebarRenameNumberStep] = useState('1')
+  const [sidebarRenameNumberPadWidth, setSidebarRenameNumberPadWidth] = useState('3')
+  const [sidebarRenameRemoveStart, setSidebarRenameRemoveStart] = useState('1')
+  const [sidebarRenameRemoveEnd, setSidebarRenameRemoveEnd] = useState('1')
+  const [sidebarRenameMetadataTemplate, setSidebarRenameMetadataTemplate] = useState('[author.jp(if exist)(author.en(if exist))]/[author(if only one exist)]-[circle just like author ] - [title.jp(if exist)]/[title(if only one exist)]')
+  const [sidebarRenamePreviewRows, setSidebarRenamePreviewRows] = useState<Array<{ nodeId: string; sourceName: string; targetName: string; reason: string | null }>>([])
   const [importMenuOpen, setImportMenuOpen] = useState(false)
   const [adReviewPanelOpen, setAdReviewPanelOpen] = useState(false)
   const [adReviewFocusTaskId, setAdReviewFocusTaskId] = useState<string | null>(null)
@@ -111,8 +124,34 @@ export function useAppSessionState({
     setSidebarRenameDialogOpen,
     sidebarRenameTargetNodeId,
     setSidebarRenameTargetNodeId,
+    sidebarRenameTargetNodeIds,
+    setSidebarRenameTargetNodeIds,
+    sidebarRenameTargetImageIds,
+    setSidebarRenameTargetImageIds,
     sidebarRenameDraft,
     setSidebarRenameDraft,
+    sidebarRenameMode,
+    setSidebarRenameMode,
+    sidebarRenameReplaceFrom,
+    setSidebarRenameReplaceFrom,
+    sidebarRenameReplaceTo,
+    setSidebarRenameReplaceTo,
+    sidebarRenameNumberBase,
+    setSidebarRenameNumberBase,
+    sidebarRenameNumberStart,
+    setSidebarRenameNumberStart,
+    sidebarRenameNumberStep,
+    setSidebarRenameNumberStep,
+    sidebarRenameNumberPadWidth,
+    setSidebarRenameNumberPadWidth,
+    sidebarRenameRemoveStart,
+    setSidebarRenameRemoveStart,
+    sidebarRenameRemoveEnd,
+    setSidebarRenameRemoveEnd,
+    sidebarRenameMetadataTemplate,
+    setSidebarRenameMetadataTemplate,
+    sidebarRenamePreviewRows,
+    setSidebarRenamePreviewRows,
     importMenuOpen,
     setImportMenuOpen,
     adReviewPanelOpen,

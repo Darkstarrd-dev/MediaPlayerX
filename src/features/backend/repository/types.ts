@@ -45,6 +45,10 @@ import type {
   MoveSidebarNodesResponseDto,
   RenameSidebarNodeRequestDto,
   RenameSidebarNodeResponseDto,
+  RenameSidebarNodesRequestDto,
+  RenameSidebarNodesResponseDto,
+  RenameItemsRequestDto,
+  RenameItemsResponseDto,
   StartManageAdReviewRequestDto,
   StartManageAdReviewResponseDto,
   ReadManageAdReviewTaskRequestDto,
@@ -161,6 +165,14 @@ export interface MediaRepository {
     request: RenameSidebarNodeRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<RenameSidebarNodeResponseDto>
+  renameSidebarNodes?(
+    request: RenameSidebarNodesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RenameSidebarNodesResponseDto>
+  renameItems?(
+    request: RenameItemsRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RenameItemsResponseDto>
   startManageAdReview?(
     request: StartManageAdReviewRequestDto,
     options?: RepositoryRequestOptions,
@@ -346,6 +358,8 @@ export interface SynchronousMediaRepository extends MediaRepository {
   deleteSidebarNodesSync?(request: DeleteSidebarNodesRequestDto): DeleteSidebarNodesResponseDto
   moveSidebarNodesSync?(request: MoveSidebarNodesRequestDto): MoveSidebarNodesResponseDto
   renameSidebarNodeSync?(request: RenameSidebarNodeRequestDto): RenameSidebarNodeResponseDto
+  renameSidebarNodesSync?(request: RenameSidebarNodesRequestDto): RenameSidebarNodesResponseDto
+  renameItemsSync?(request: RenameItemsRequestDto): RenameItemsResponseDto
   startManageAdReviewSync?(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto
   readManageAdReviewTaskSync?(request: ReadManageAdReviewTaskRequestDto): ReadManageAdReviewTaskResponseDto
   pauseManageAdReviewTaskSync?(request: PauseManageAdReviewTaskRequestDto): PauseManageAdReviewTaskResponseDto

@@ -723,6 +723,27 @@
   font-size: 12px;
 }
 
+.sidebar-rename-preview-summary {
+  margin: 0;
+  color: var(--mpx-text-2);
+  font-size: 12px;
+}
+
+.sidebar-rename-preview-list {
+  display: grid;
+  gap: 4px;
+}
+
+.sidebar-rename-preview-row {
+  margin: 0;
+  color: var(--mpx-text-1);
+  font-size: 12px;
+}
+
+.sidebar-rename-preview-row.is-failed {
+  color: var(--mpx-status-danger-text);
+}
+
 .manage-group-actions .feature-action-btn {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
   background: var(--mpx-btn-secondary-bg);

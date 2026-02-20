@@ -73,6 +73,19 @@ export type RenameSidebarNodeRequestDto = Infer<
 export type RenameSidebarNodeResponseDto = Infer<
   typeof Backend.renameSidebarNodeResponseSchema
 >;
+export type BatchRenameSidebarModeDto = Infer<
+  typeof Backend.batchRenameSidebarModeSchema
+>;
+export type RenameSidebarNodesRequestDto = Infer<
+  typeof Backend.renameSidebarNodesRequestSchema
+>;
+export type RenameSidebarNodesResponseDto = Infer<
+  typeof Backend.renameSidebarNodesResponseSchema
+>;
+export type RenameItemTargetDto = Infer<typeof Backend.renameItemTargetSchema>;
+export type RenameItemsModeDto = Infer<typeof Backend.renameItemsModeSchema>;
+export type RenameItemsRequestDto = Infer<typeof Backend.renameItemsRequestSchema>;
+export type RenameItemsResponseDto = Infer<typeof Backend.renameItemsResponseSchema>;
 export type ManageAdReviewSelectionScopeDto = Infer<
   typeof Backend.manageAdReviewSelectionScopeSchema
 >;

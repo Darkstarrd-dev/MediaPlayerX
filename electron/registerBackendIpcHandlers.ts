@@ -74,6 +74,10 @@ import {
   moveSidebarNodesResponseSchema,
   renameSidebarNodeRequestSchema,
   renameSidebarNodeResponseSchema,
+  renameSidebarNodesRequestSchema,
+  renameSidebarNodesResponseSchema,
+  renameItemsRequestSchema,
+  renameItemsResponseSchema,
   startManageAdReviewRequestSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskRequestSchema,
@@ -338,6 +342,20 @@ export function registerBackendIpcHandlers(): void {
     renameSidebarNodeRequestSchema,
     renameSidebarNodeResponseSchema,
     (request) => ensureService().renameSidebarNode(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.renameSidebarNodes,
+    renameSidebarNodesRequestSchema,
+    renameSidebarNodesResponseSchema,
+    (request) => ensureService().renameSidebarNodes(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.renameItems,
+    renameItemsRequestSchema,
+    renameItemsResponseSchema,
+    (request) => ensureService().renameItems(request),
   );
 
   registerIpcCommand(

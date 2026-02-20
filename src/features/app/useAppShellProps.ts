@@ -32,9 +32,32 @@ interface ManageGroupDialogInput {
 interface SidebarRenameDialogInput {
   open: boolean
   pending: boolean
+  mode: 'single' | 'replace' | 'numbering' | 'remove-range' | 'metadata'
+  targetCount: number
   value: string
+  replaceFrom: string
+  replaceTo: string
+  numberBase: string
+  numberStart: string
+  numberStep: string
+  numberPadWidth: string
+  removeStart: string
+  removeEnd: string
+  metadataTemplate: string
+  previewRows: Array<{ nodeId: string; sourceName: string; targetName: string; reason: string | null }>
   errorMessage: string | null
   onChange: (value: string) => void
+  onModeChange: (value: 'single' | 'replace' | 'numbering' | 'remove-range' | 'metadata') => void
+  onReplaceFromChange: (value: string) => void
+  onReplaceToChange: (value: string) => void
+  onNumberBaseChange: (value: string) => void
+  onNumberStartChange: (value: string) => void
+  onNumberStepChange: (value: string) => void
+  onNumberPadWidthChange: (value: string) => void
+  onRemoveStartChange: (value: string) => void
+  onRemoveEndChange: (value: string) => void
+  onMetadataTemplateChange: (value: string) => void
+  onRefreshPreview: () => void
   onCancel: () => void
   onConfirm: () => Promise<void>
 }
@@ -147,13 +170,59 @@ export function useAppShellProps({
   const sidebarRenameDialogProps = {
     open: sidebarRenameDialogParams.open,
     pending: sidebarRenameDialogParams.pending,
+    mode: sidebarRenameDialogParams.mode,
+    targetCount: sidebarRenameDialogParams.targetCount,
     inputLabel: t('ui.sidebar.renameDialogInputLabel'),
     inputPlaceholder: t('ui.sidebar.renameDialogInputPlaceholder'),
+    modeLabel: t('ui.sidebar.renameDialogModeLabel'),
+    modeOptionReplace: t('ui.sidebar.renameDialogModeReplace'),
+    modeOptionNumbering: t('ui.sidebar.renameDialogModeNumbering'),
+    modeOptionRemoveRange: t('ui.sidebar.renameDialogModeRemoveRange'),
+    modeOptionMetadata: t('ui.sidebar.renameDialogModeMetadata'),
+    modeOptionSingle: t('ui.sidebar.renameDialogModeSingle'),
+    replaceFromPlaceholder: t('ui.sidebar.renameDialogReplaceFromPlaceholder'),
+    replaceToPlaceholder: t('ui.sidebar.renameDialogReplaceToPlaceholder'),
+    numberBasePlaceholder: t('ui.sidebar.renameDialogNumberBasePlaceholder'),
+    numberStartPlaceholder: t('ui.sidebar.renameDialogNumberStartPlaceholder'),
+    numberStepPlaceholder: t('ui.sidebar.renameDialogNumberStepPlaceholder'),
+    numberPadWidthPlaceholder: t('ui.sidebar.renameDialogNumberPadWidthPlaceholder'),
+    removeStartPlaceholder: t('ui.sidebar.renameDialogRemoveStartPlaceholder'),
+    removeEndPlaceholder: t('ui.sidebar.renameDialogRemoveEndPlaceholder'),
+    metadataTemplatePlaceholder: t('ui.sidebar.renameDialogMetadataTemplatePlaceholder'),
+    previewLabel: t('ui.sidebar.renameDialogPreviewLabel'),
+    previewSummaryText:
+      sidebarRenameDialogParams.previewRows.length > 0
+        ? t('ui.sidebar.renameDialogPreviewSummary', {
+            total: String(sidebarRenameDialogParams.previewRows.length),
+            failed: String(sidebarRenameDialogParams.previewRows.filter((row) => row.reason).length),
+          })
+        : null,
     confirmLabel: t('ui.common.confirm'),
     cancelLabel: t('ui.common.cancel'),
     value: sidebarRenameDialogParams.value,
+    replaceFrom: sidebarRenameDialogParams.replaceFrom,
+    replaceTo: sidebarRenameDialogParams.replaceTo,
+    numberBase: sidebarRenameDialogParams.numberBase,
+    numberStart: sidebarRenameDialogParams.numberStart,
+    numberStep: sidebarRenameDialogParams.numberStep,
+    numberPadWidth: sidebarRenameDialogParams.numberPadWidth,
+    removeStart: sidebarRenameDialogParams.removeStart,
+    removeEnd: sidebarRenameDialogParams.removeEnd,
+    metadataTemplate: sidebarRenameDialogParams.metadataTemplate,
+    previewRows: sidebarRenameDialogParams.previewRows,
     errorMessage: sidebarRenameDialogParams.errorMessage,
     onChange: sidebarRenameDialogParams.onChange,
+    onModeChange: sidebarRenameDialogParams.onModeChange,
+    onReplaceFromChange: sidebarRenameDialogParams.onReplaceFromChange,
+    onReplaceToChange: sidebarRenameDialogParams.onReplaceToChange,
+    onNumberBaseChange: sidebarRenameDialogParams.onNumberBaseChange,
+    onNumberStartChange: sidebarRenameDialogParams.onNumberStartChange,
+    onNumberStepChange: sidebarRenameDialogParams.onNumberStepChange,
+    onNumberPadWidthChange: sidebarRenameDialogParams.onNumberPadWidthChange,
+    onRemoveStartChange: sidebarRenameDialogParams.onRemoveStartChange,
+    onRemoveEndChange: sidebarRenameDialogParams.onRemoveEndChange,
+    onMetadataTemplateChange: sidebarRenameDialogParams.onMetadataTemplateChange,
+    onRefreshPreview: sidebarRenameDialogParams.onRefreshPreview,
     onCancel: sidebarRenameDialogParams.onCancel,
     onConfirm: () => {
       void sidebarRenameDialogParams.onConfirm()

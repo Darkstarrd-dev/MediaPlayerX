@@ -10,6 +10,10 @@ import type {
   DeleteSidebarNodesResponseDto,
   MoveSidebarNodesResponseDto,
   RenameSidebarNodeResponseDto,
+  RenameSidebarNodesRequestDto,
+  RenameSidebarNodesResponseDto,
+  RenameItemsRequestDto,
+  RenameItemsResponseDto,
   SaveVideoCoverRequestDto,
   SaveVideoCoverResponseDto,
   SetImageHiddenResponseDto,
@@ -115,6 +119,12 @@ interface UseWriteDataAccessResult {
     nodeId: string,
     newName: string,
   ) => Promise<RenameSidebarNodeResponseDto>;
+  renameSidebarNodes: (
+    request: RenameSidebarNodesRequestDto,
+  ) => Promise<RenameSidebarNodesResponseDto>;
+  renameItems: (
+    request: RenameItemsRequestDto,
+  ) => Promise<RenameItemsResponseDto>;
   writePackageMetadata: (
     packageId: string,
     payload: {
@@ -772,6 +782,71 @@ export function useWriteDataAccess({
     [repository, t],
   );
 
+  const renameSidebarNodes = useCallback(
+    async (
+      request: RenameSidebarNodesRequestDto,
+    ): Promise<RenameSidebarNodesResponseDto> => {
+      if (!repository.renameSidebarNodes) {
+        throw new Error("manage_rename_nodes_unsupported");
+      }
+
+      const normalizedNodeIds = Array.from(
+        new Set(request.node_ids.map((id) => id.trim()).filter(Boolean)),
+      );
+      if (normalizedNodeIds.length === 0) {
+        throw new Error("manage_rename_nodes_empty_selection");
+      }
+
+      setManagePending(true);
+      setManageError(null);
+
+      try {
+        return await repository.renameSidebarNodes(
+          {
+            ...request,
+            node_ids: normalizedNodeIds,
+          },
+          {
+            timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+          },
+        );
+      } catch (error: unknown) {
+        const message = toErrorDetailWithCode(error, t);
+        setManageError(message);
+        throw error instanceof Error ? error : new Error(String(error));
+      } finally {
+        setManagePending(false);
+      }
+    },
+    [repository, t],
+  );
+
+  const renameItems = useCallback(
+    async (
+      request: RenameItemsRequestDto,
+    ): Promise<RenameItemsResponseDto> => {
+      if (!repository.renameItems) {
+        throw new Error("manage_rename_items_unsupported");
+      }
+
+      setManagePending(true);
+      setManageError(null);
+
+      try {
+        return await repository.renameItems(request, {
+          timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+        });
+      } catch (error: unknown) {
+        const message = toErrorDetailWithCode(error, t);
+        setManageError(message);
+        throw error instanceof Error ? error : new Error(String(error));
+      } finally {
+        setManagePending(false);
+      }
+    },
+    [repository, t],
+  );
+
   return {
     pending: {
       grade: gradePending,
@@ -796,6 +871,8 @@ export function useWriteDataAccess({
     pickDirectoryPath,
     moveSidebarNodes,
     renameSidebarNode,
+    renameSidebarNodes,
+    renameItems,
     writePackageMetadata,
     writePackageExternalMetadata,
     writeVideoMetadata,

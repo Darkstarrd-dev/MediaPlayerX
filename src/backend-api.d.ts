@@ -108,6 +108,10 @@ import type {
   MoveSidebarNodesResponseDto,
   RenameSidebarNodeRequestDto,
   RenameSidebarNodeResponseDto,
+  RenameSidebarNodesRequestDto,
+  RenameSidebarNodesResponseDto,
+  RenameItemsRequestDto,
+  RenameItemsResponseDto,
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
   ReadAppStateRequestDto,
@@ -130,6 +134,8 @@ interface MediaPlayerBackendApi {
   deleteSidebarNodes?: (request: DeleteSidebarNodesRequestDto) => Promise<DeleteSidebarNodesResponseDto>
   moveSidebarNodes?: (request: MoveSidebarNodesRequestDto) => Promise<MoveSidebarNodesResponseDto>
   renameSidebarNode?: (request: RenameSidebarNodeRequestDto) => Promise<RenameSidebarNodeResponseDto>
+  renameSidebarNodes?: (request: RenameSidebarNodesRequestDto) => Promise<RenameSidebarNodesResponseDto>
+  renameItems?: (request: RenameItemsRequestDto) => Promise<RenameItemsResponseDto>
   startManageAdReview?: (request: StartManageAdReviewRequestDto) => Promise<StartManageAdReviewResponseDto>
   readManageAdReviewTask?: (request: ReadManageAdReviewTaskRequestDto) => Promise<ReadManageAdReviewTaskResponseDto>
   pauseManageAdReviewTask?: (

@@ -6,8 +6,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { LibrarySnapshotDto } from '../../../src/contracts/backend'
 import type { MediaAccessGuardContext } from '../../fileSystemMediaAccessGuard'
+import { writeStoredZipFromEntries } from '../../fileSystemZipStoreWriter'
 import { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
 import { createImageSourceFixture, createVideoFixture } from '../../test-utils/mediaLibraryFixtures'
+import { scanZipCentralEntries } from '../../zipArchiveHelpers'
 import { ImportPathRegistry } from './importPathRegistry'
 import { ManagementMutationService } from './managementMutationService'
 
@@ -57,6 +59,7 @@ async function ensureFile(filePath: string): Promise<void> {
 function createServiceHarness(rootDir: string, snapshot: LibrarySnapshotDto) {
   const database = {
     moveSnapshotEntriesByPaths: vi.fn(),
+    renameImageArchiveEntries: vi.fn(),
   }
   const ensureStateLoaded = vi.fn().mockResolvedValue(undefined)
   const ensureSnapshotLoaded = vi.fn().mockResolvedValue(snapshot)
@@ -307,5 +310,167 @@ describe('ManagementMutationService.renameSidebarNode', () => {
       reason: 'manage-rename-sidebar-node',
       updated_at_ms: expect.any(Number),
     })
+  })
+})
+
+describe('ManagementMutationService.renameItems', () => {
+  const tempRoots: string[] = []
+
+  afterEach(async () => {
+    vi.restoreAllMocks()
+    await Promise.all(tempRoots.map((rootDir) => fs.rm(rootDir, { recursive: true, force: true })))
+    tempRoots.length = 0
+  })
+
+  it('应支持 image-item 的 preview-only 与 metadata 模板预览', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-items-preview-'))
+    tempRoots.push(rootDir)
+
+    const sourcePath = path.join(rootDir, 'pkg', 'sample.zip')
+    await ensureFile(sourcePath)
+    const snapshot = createSnapshotForPackages([sourcePath])
+    snapshot.image_packages[0].author = 'AuthorEn'
+    snapshot.image_packages[0].circle = 'CircleEn'
+    snapshot.image_packages[0].work_title = 'TitleEn'
+    snapshot.image_packages[0].external_metadata = {
+      source_site: 'others',
+      source_url: 'https://example.com',
+      source_remote_id: '1',
+      source_token: '',
+      title: 'TitleEn',
+      title_jpn: 'TitleJp',
+      group_name: 'CircleEn',
+      group_name_jpn: 'CircleJp',
+      artist: 'AuthorEn',
+      artist_jpn: 'AuthorJp',
+      posted: '',
+      rating: null,
+      favorited: null,
+      tags: {},
+      raw_json: '{}',
+    }
+    const imageId = snapshot.image_packages[0].images[0].id
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.renameItems({
+      targets: [{ kind: 'image-item', image_id: imageId }],
+      mode: 'metadata',
+      metadata_template:
+        '[author.jp(if exist)(author.en(if exist))]/[author(if only one exist)]-[circle just like author ] - [title.jp(if exist)]/[title(if only one exist)]',
+      fail_fast: true,
+      preview_only: true,
+    })
+
+    expect(response.preview_only).toBe(true)
+    expect(response.renamed_count).toBe(0)
+    expect(response.failed).toEqual([])
+    expect(response.results).toHaveLength(1)
+    expect(response.results[0].target_name).toBe('AuthorJp(AuthorEn)-CircleJp(CircleEn) - TitleJp.jpg')
+    expect(harness.database.moveSnapshotEntriesByPaths).not.toHaveBeenCalled()
+    expect(harness.database.renameImageArchiveEntries).not.toHaveBeenCalled()
+  })
+
+  it('应支持 archive-entry 改名并回写 zip 与数据库映射', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-items-zip-'))
+    tempRoots.push(rootDir)
+
+    const archivePath = path.join(rootDir, 'pkg', 'archive.zip')
+    await writeStoredZipFromEntries(archivePath, [
+      { entryName: '01.jpg', content: Buffer.from('a') },
+      { entryName: '02.jpg', content: Buffer.from('b') },
+    ])
+
+    const snapshot = createSnapshotForPackages([archivePath])
+    snapshot.image_packages[0].images[0].media_locator = {
+      kind: 'archive-entry',
+      archive_path: archivePath,
+      archive_format: 'zip',
+      entry_name: '01.jpg',
+      extension: '.jpg',
+      media_type: 'image',
+      mime_type: 'image/jpeg',
+    }
+
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.renameItems({
+      targets: [{ kind: 'archive-entry', archive_path: archivePath, entry_name: '01.jpg' }],
+      mode: 'single',
+      single_new_name: 'renamed-01',
+      fail_fast: true,
+      preview_only: false,
+    })
+
+    expect(response.failed).toEqual([])
+    expect(response.renamed_count).toBe(1)
+    expect(harness.database.renameImageArchiveEntries).toHaveBeenCalledWith([
+      {
+        archivePath: path.resolve(archivePath),
+        fromEntryName: '01.jpg',
+        toEntryName: 'renamed-01.jpg',
+      },
+    ])
+
+    const entries = await scanZipCentralEntries(archivePath)
+    const names = entries.map((entry) => entry.entryName).sort()
+    expect(names).toEqual(['02.jpg', 'renamed-01.jpg'])
+  })
+
+  it('fail_fast 开启时命中重名冲突应中断并不落盘', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-items-failfast-'))
+    tempRoots.push(rootDir)
+
+    const sourcePathA = path.join(rootDir, 'source', 'a.zip')
+    const sourcePathB = path.join(rootDir, 'source', 'b.zip')
+    await ensureFile(sourcePathA)
+    await ensureFile(sourcePathB)
+
+    const snapshot = createSnapshotForPackages([sourcePathA, sourcePathB])
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.renameItems({
+      targets: [
+        { kind: 'sidebar-node', node_id: 'package:a.zip' },
+        { kind: 'sidebar-node', node_id: 'package:b.zip' },
+      ],
+      mode: 'single',
+      single_new_name: 'same',
+      fail_fast: true,
+      preview_only: false,
+    })
+
+    expect(response.renamed_count).toBe(0)
+    expect(response.failed.length).toBeGreaterThan(0)
+    expect(response.failed[0]?.reason).toContain('duplicate destination in batch')
+    expect(harness.database.moveSnapshotEntriesByPaths).not.toHaveBeenCalled()
+  })
+
+  it('archive-entry 非图片扩展名应拒绝重命名', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-items-non-image-'))
+    tempRoots.push(rootDir)
+
+    const archivePath = path.join(rootDir, 'pkg', 'archive.zip')
+    await writeStoredZipFromEntries(archivePath, [
+      { entryName: 'note.txt', content: Buffer.from('hello') },
+    ])
+
+    const snapshot = createSnapshotForPackages([archivePath])
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.renameItems({
+      targets: [{ kind: 'archive-entry', archive_path: archivePath, entry_name: 'note.txt' }],
+      mode: 'single',
+      single_new_name: 'note-renamed',
+      fail_fast: true,
+      preview_only: false,
+    })
+
+    expect(response.renamed_count).toBe(0)
+    expect(response.failed.length).toBe(1)
+    expect(response.failed[0]?.reason).toContain('archive entry is not image')
+    expect(harness.database.renameImageArchiveEntries).not.toHaveBeenCalled()
+
+    const entries = await scanZipCentralEntries(archivePath)
+    expect(entries.map((entry) => entry.entryName)).toEqual(['note.txt'])
   })
 })

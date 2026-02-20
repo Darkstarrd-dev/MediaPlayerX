@@ -112,7 +112,11 @@ export function useAppInteractionEffects({
     setManageOperationHint,
     setSidebarRenameDialogOpen,
     setSidebarRenameTargetNodeId,
+    setSidebarRenameTargetNodeIds,
+    setSidebarRenameTargetImageIds,
     setSidebarRenameDraft,
+    setSidebarRenameMode,
+    setSidebarRenamePreviewRows,
     helpOverlayOpen,
     setHelpOverlayOpen,
     themeParameterPanelOpen,
@@ -337,7 +341,11 @@ export function useAppInteractionEffects({
       }
       setSidebarRenameDialogOpen(false)
       setSidebarRenameTargetNodeId(null)
+      setSidebarRenameTargetNodeIds([])
+      setSidebarRenameTargetImageIds([])
       setSidebarRenameDraft('')
+      setSidebarRenameMode('single')
+      setSidebarRenamePreviewRows([])
       return true
     }
 
@@ -692,7 +700,29 @@ export function useAppInteractionEffects({
             sidebarFocus === 'sidebar' ||
             (eventTarget instanceof Element && eventTarget.closest('.sidebar') !== null)
 
-          if (sidebarShortcutActive && event.code === 'KeyR') {
+          if (event.code === 'KeyR') {
+            const checkedNodeIds = sidebarCheckedNodeIds.filter((nodeId) => sidebarNodeById.has(nodeId))
+            const targetNodeIds = checkedNodeIds.length > 0 ? checkedNodeIds : []
+            const targetImageIds = manageMode ? imageCheckedIds : []
+            const batchSelectionActive = manageMode && (targetNodeIds.length > 0 || targetImageIds.length > 0)
+
+            if (batchSelectionActive) {
+              event.preventDefault()
+              event.stopPropagation()
+              setSidebarRenameTargetNodeId(null)
+              setSidebarRenameTargetNodeIds(targetNodeIds)
+              setSidebarRenameTargetImageIds(targetImageIds)
+              setSidebarRenameDraft('')
+              setSidebarRenameMode('replace')
+              setSidebarRenamePreviewRows([])
+              setSidebarRenameDialogOpen(true)
+              return
+            }
+
+            if (!sidebarShortcutActive) {
+              return
+            }
+
             const targetNodeId = selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId) ? selectedSidebarNodeId : null
             if (!targetNodeId) {
               return
@@ -724,7 +754,11 @@ export function useAppInteractionEffects({
             event.preventDefault()
             event.stopPropagation()
             setSidebarRenameTargetNodeId(targetNodeId)
+            setSidebarRenameTargetNodeIds([targetNodeId])
+            setSidebarRenameTargetImageIds([])
             setSidebarRenameDraft(preferredDraft)
+            setSidebarRenameMode('single')
+            setSidebarRenamePreviewRows([])
             setSidebarRenameDialogOpen(true)
             return
           }
@@ -959,7 +993,11 @@ export function useAppInteractionEffects({
     setDeleteConfirmOpen,
     setSidebarRenameDialogOpen,
     setSidebarRenameTargetNodeId,
+    setSidebarRenameTargetNodeIds,
+    setSidebarRenameTargetImageIds,
     setSidebarRenameDraft,
+    setSidebarRenameMode,
+    setSidebarRenamePreviewRows,
     setFullscreenActiveWithAutoStop,
     setFullscreenDisplay,
     setFullscreenEntryDisplay,

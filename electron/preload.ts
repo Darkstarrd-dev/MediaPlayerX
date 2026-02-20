@@ -68,6 +68,10 @@ import {
   moveSidebarNodesResponseSchema,
   renameSidebarNodeRequestSchema,
   renameSidebarNodeResponseSchema,
+  renameSidebarNodesRequestSchema,
+  renameSidebarNodesResponseSchema,
+  renameItemsRequestSchema,
+  renameItemsResponseSchema,
   startManageAdReviewRequestSchema,
   startManageAdReviewResponseSchema,
   readManageAdReviewTaskRequestSchema,
@@ -175,6 +179,16 @@ const backendApi = {
     const parsed = renameSidebarNodeRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.renameSidebarNode, parsed)
     return renameSidebarNodeResponseSchema.parse(response)
+  },
+  renameSidebarNodes: async (request: unknown) => {
+    const parsed = renameSidebarNodesRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.renameSidebarNodes, parsed)
+    return renameSidebarNodesResponseSchema.parse(response)
+  },
+  renameItems: async (request: unknown) => {
+    const parsed = renameItemsRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.renameItems, parsed)
+    return renameItemsResponseSchema.parse(response)
   },
   startManageAdReview: async (request: unknown) => {
     const parsed = startManageAdReviewRequestSchema.parse(request)

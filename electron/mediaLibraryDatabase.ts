@@ -213,6 +213,12 @@ export class MediaLibraryDatabase {
     return this.snapshotStore.moveSnapshotEntriesByPaths(mappings)
   }
 
+  renameImageArchiveEntries(
+    mappings: Array<{ archivePath: string; fromEntryName: string; toEntryName: string }>,
+  ): { updatedImageCount: number } {
+    return this.snapshotStore.renameImageArchiveEntries(mappings)
+  }
+
   writeSourceMetadata(
     sourceId: string,
     payload: {

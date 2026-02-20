@@ -4,6 +4,7 @@ import {
   deleteSidebarNodesResponseSchema,
   moveSidebarNodesResponseSchema,
   renameSidebarNodeResponseSchema,
+  renameSidebarNodesResponseSchema,
   enqueueImportTaskResponseSchema,
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
@@ -23,6 +24,10 @@ import {
   type MoveSidebarNodesResponseDto,
   type RenameSidebarNodeRequestDto,
   type RenameSidebarNodeResponseDto,
+  type RenameSidebarNodesRequestDto,
+  type RenameSidebarNodesResponseDto,
+  type RenameItemsRequestDto,
+  type RenameItemsResponseDto,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ImportTaskDto,
@@ -700,6 +705,131 @@ export class MockMediaWriteHandlers {
       target_path: toPath,
       updated_at_ms: Date.now(),
     })
+  }
+
+  renameSidebarNodesSync(
+    request: RenameSidebarNodesRequestDto,
+  ): RenameSidebarNodesResponseDto {
+    const snapshot = MOCK_LIBRARY_SNAPSHOT_REF.current
+    if (!snapshot) throw new Error('Mock snapshot not initialized')
+
+    const normalizedNodeIds = Array.from(new Set(request.node_ids.map((value) => value.trim()).filter(Boolean)))
+    const failed: Array<{ node_id: string; reason: string }> = []
+    const results: RenameSidebarNodesResponseDto['results'] = []
+    const previewOnly = request.preview_only ?? false
+
+    const getNodeLabel = (nodeId: string): string => {
+      const parsed = parseSidebarNodePath(nodeId)
+      if (!parsed) {
+        return 'unknown'
+      }
+      const targetPathKey = normalizePathKeyForMatch(parsed.pathKey.split('/').filter(Boolean))
+      if (parsed.kind === 'package') {
+        const source = [...snapshot.image_packages, ...snapshot.image_directories].find(
+          (item) => normalizePathKeyForMatch(item.tree_path) === targetPathKey,
+        )
+        return source?.display_name ?? basenameMockPath(parsed.pathKey)
+      }
+      if (parsed.kind === 'video') {
+        const video = snapshot.videos.find((item) => normalizePathKeyForMatch(item.tree_path) === targetPathKey)
+        return video?.file_name ?? basenameMockPath(parsed.pathKey)
+      }
+      if (parsed.kind === 'audio') {
+        const audio = (snapshot.audios ?? []).find((item) => normalizePathKeyForMatch(item.tree_path) === targetPathKey)
+        return audio?.file_name ?? basenameMockPath(parsed.pathKey)
+      }
+      return basenameMockPath(parsed.pathKey)
+    }
+
+    if (previewOnly) {
+      for (const nodeId of normalizedNodeIds) {
+        const sourceName = getNodeLabel(nodeId)
+        results.push({
+          node_id: nodeId,
+          source_name: sourceName,
+          target_name: sourceName,
+          source_path: sourceName,
+          target_path: sourceName,
+          applied: false,
+          reason: null,
+        })
+      }
+      return renameSidebarNodesResponseSchema.parse({
+        renamed_count: 0,
+        failed,
+        preview_only: true,
+        results,
+        updated_at_ms: Date.now(),
+      })
+    }
+
+    for (const nodeId of normalizedNodeIds) {
+      const sourceName = getNodeLabel(nodeId)
+      results.push({
+        node_id: nodeId,
+        source_name: sourceName,
+        target_name: sourceName,
+        source_path: sourceName,
+        target_path: sourceName,
+        applied: true,
+        reason: null,
+      })
+    }
+
+    return renameSidebarNodesResponseSchema.parse({
+      renamed_count: normalizedNodeIds.length,
+      failed,
+      preview_only: false,
+      results,
+      updated_at_ms: Date.now(),
+    })
+  }
+
+  renameItemsSync(
+    request: RenameItemsRequestDto,
+  ): RenameItemsResponseDto {
+    const toSidebarRequest = {
+      node_ids: request.targets
+        .filter((target) => target.kind === 'sidebar-node')
+        .map((target) => target.node_id),
+      mode: request.mode === 'single' ? 'replace' : request.mode,
+      preview_only: request.preview_only,
+      fail_fast: request.fail_fast,
+      replace_from: request.replace_from,
+      replace_to: request.replace_to,
+      numbering_base_name: request.numbering_base_name,
+      numbering_start: request.numbering_start,
+      numbering_step: request.numbering_step,
+      numbering_pad_width: request.numbering_pad_width,
+      remove_start: request.remove_start,
+      remove_end: request.remove_end,
+    }
+
+    const sidebarResponse = this.renameSidebarNodesSync(toSidebarRequest)
+    return {
+      renamed_count: sidebarResponse.renamed_count,
+      failed: sidebarResponse.failed.map((item) => ({
+        target: {
+          kind: 'sidebar-node',
+          node_id: item.node_id,
+        },
+        reason: item.reason,
+      })),
+      preview_only: sidebarResponse.preview_only,
+      results: sidebarResponse.results.map((item) => ({
+        target: {
+          kind: 'sidebar-node',
+          node_id: item.node_id,
+        },
+        source_name: item.source_name,
+        target_name: item.target_name,
+        source_path: item.source_path,
+        target_path: item.target_path,
+        applied: item.applied,
+        reason: item.reason,
+      })),
+      updated_at_ms: sidebarResponse.updated_at_ms,
+    }
   }
 
   writePackageMetadataSync(

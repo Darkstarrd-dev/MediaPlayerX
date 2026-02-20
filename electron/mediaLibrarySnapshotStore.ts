@@ -1021,4 +1021,73 @@ export class MediaLibrarySnapshotStore {
       movedAudioCount,
     }
   }
+
+  renameImageArchiveEntries(
+    mappings: Array<{ archivePath: string; fromEntryName: string; toEntryName: string }>,
+  ): { updatedImageCount: number } {
+    const mappingByKey = new Map<string, { archiveKey: string; fromEntryName: string; toEntryName: string }>()
+    for (const mapping of mappings) {
+      const archivePath = path.resolve(mapping.archivePath)
+      const fromEntryName = mapping.fromEntryName.trim()
+      const toEntryName = mapping.toEntryName.trim()
+      if (!fromEntryName || !toEntryName || fromEntryName === toEntryName) {
+        continue
+      }
+      const archiveKey = normalizeAllowlistKey(archivePath)
+      mappingByKey.set(`${archiveKey}::${fromEntryName}`, {
+        archiveKey,
+        fromEntryName,
+        toEntryName,
+      })
+    }
+
+    const normalizedMappings = Array.from(mappingByKey.values())
+    if (normalizedMappings.length === 0) {
+      return { updatedImageCount: 0 }
+    }
+
+    const imageRows = this.db
+      .prepare(
+        `
+          SELECT id, media_locator_json
+          FROM image_item
+        `,
+      )
+      .all() as Array<{ id: string; media_locator_json: string }>
+
+    const updateImageLocator = this.db.prepare(
+      `
+        UPDATE image_item
+        SET media_locator_json = ?, updated_at_ms = ?
+        WHERE id = ?
+      `,
+    )
+
+    let updatedImageCount = 0
+    this.runInTransaction(() => {
+      const updatedAtMs = Date.now()
+      for (const row of imageRows) {
+        const locator = parseJson<MediaLocatorDto>(row.media_locator_json, {
+          kind: 'filesystem',
+          absolute_path: '',
+          extension: '.jpg',
+          media_type: 'image',
+          mime_type: 'image/jpeg',
+        })
+        if (locator.kind !== 'archive-entry') {
+          continue
+        }
+        const key = `${normalizeAllowlistKey(path.resolve(locator.archive_path))}::${locator.entry_name}`
+        const mapping = mappingByKey.get(key)
+        if (!mapping) {
+          continue
+        }
+        locator.entry_name = mapping.toEntryName
+        updateImageLocator.run(JSON.stringify(locator), updatedAtMs, row.id)
+        updatedImageCount += 1
+      }
+    })
+
+    return { updatedImageCount }
+  }
 }
