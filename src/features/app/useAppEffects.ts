@@ -329,7 +329,8 @@ export function useAppEffects({
     }
 
     if (!rootScopedPackageIds.has(selectedPackageId)) {
-      setSelectedPackageId(orderedRootScopedPackages[0].id)
+      const firstReadyPackage = orderedRootScopedPackages.find((item) => item.images.length > 0)
+      setSelectedPackageId((firstReadyPackage ?? orderedRootScopedPackages[0]).id)
     }
   }, [orderedRootScopedPackages, rootScopedPackageIds, selectedPackageId, setSelectedPackageId])
 

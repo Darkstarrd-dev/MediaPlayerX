@@ -328,10 +328,16 @@ export function useReadOnlyDataAccess({
     }
 
     let throttleTimer: ReturnType<typeof window.setTimeout> | null = null
-    let queuedRefreshScope: 'all' | 'grade-dependent' | null = null
+    let queuedRefreshScope: 'all' | 'library-sidebar' | 'grade-dependent' | null = null
 
-    const scheduleRefresh = (scope: 'all' | 'grade-dependent') => {
-      queuedRefreshScope = queuedRefreshScope === 'all' || scope === 'all' ? 'all' : 'grade-dependent'
+    const scheduleRefresh = (scope: 'all' | 'library-sidebar' | 'grade-dependent') => {
+      if (queuedRefreshScope === 'all' || scope === 'all') {
+        queuedRefreshScope = 'all'
+      } else if (queuedRefreshScope === 'library-sidebar' || scope === 'library-sidebar') {
+        queuedRefreshScope = 'library-sidebar'
+      } else {
+        queuedRefreshScope = 'grade-dependent'
+      }
 
       if (throttleTimer !== null) {
         return
@@ -344,6 +350,12 @@ export function useReadOnlyDataAccess({
 
         if (scopeToRun === 'all') {
           retryAllSlices()
+          return
+        }
+
+        if (scopeToRun === 'library-sidebar') {
+          retryLibrary()
+          retrySidebar()
           return
         }
 
@@ -376,6 +388,11 @@ export function useReadOnlyDataAccess({
         return
       }
 
+      if (payload.reason === 'import-task-updated') {
+        scheduleRefresh('library-sidebar')
+        return
+      }
+
       scheduleRefresh('all')
     })
 
@@ -385,7 +402,16 @@ export function useReadOnlyDataAccess({
       }
       unsubscribe()
     }
-  }, [featureGradeFilter, isSynchronousTestMode, repository, retryAllSlices, retryPage, retrySidebar, suspendLibraryChangedRefresh])
+  }, [
+    featureGradeFilter,
+    isSynchronousTestMode,
+    repository,
+    retryAllSlices,
+    retryLibrary,
+    retryPage,
+    retrySidebar,
+    suspendLibraryChangedRefresh,
+  ])
 
   useEffect(() => {
     if (isSynchronousTestMode || suspendLibraryChangedRefresh || !deferredAllRefreshRef.current) {

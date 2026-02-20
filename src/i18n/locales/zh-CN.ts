@@ -1197,6 +1197,8 @@ export const zhCnCatalog = {
   "tip.sidebar.expandImageParents": "展开全部含图父级",
   "tip.sidebar.previousImageParent": "定位到上一个含图父级",
   "tip.sidebar.nextImageParent": "定位到下一个含图父级",
+  "tip.sidebar.processingPending": "归一化排队中，暂不可预览",
+  "tip.sidebar.processingRunning": "归一化处理中，暂不可预览",
   "tip.image.switchToGridMode": "切换到缩略图模式",
   "tip.image.switchToNamesMode": "切换到纯文件名模式",
   "tip.manage.adReview": "广告审核",

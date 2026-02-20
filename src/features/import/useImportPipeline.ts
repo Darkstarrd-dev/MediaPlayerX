@@ -27,7 +27,7 @@ import { useImportDragOverlay } from "./useImportDragOverlay";
 import { useImportPaste } from "./useImportPaste";
 
 const IMPORT_TASK_TIMEOUT_MS = 20_000;
-const IMPORT_TASK_POLL_INTERVAL_MS = 1_500;
+const IMPORT_TASK_POLL_INTERVAL_MS = 500;
 
 interface UseImportPipelineResult {
   fileImportInputRef: RefObject<HTMLInputElement | null>;

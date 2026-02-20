@@ -672,6 +672,8 @@ function SidebarPanel({
       const imageCountLabel = hasOwnImages
         ? t("a11y.sidebar.imageCount", { count: visibleImageCount })
         : t("a11y.sidebar.nodeCount", { count: descendantNodeCount });
+      const showProcessingCountPlaceholder =
+        mode === "image" && hasOwnImages && Boolean(loadState);
 
       const row = (
         <div
@@ -704,7 +706,11 @@ function SidebarPanel({
               startManagePointerToggle(node.id, event);
             }}
             title={
-              imageFolderCollapsible
+              loadState === "running"
+                ? t("tip.sidebar.processingRunning")
+                : loadState === "pending"
+                  ? t("tip.sidebar.processingPending")
+                  : imageFolderCollapsible
                 ? imageFolderCollapsed
                   ? t("tip.sidebar.expandSubfolder")
                   : t("tip.sidebar.collapseSubfolder")
@@ -723,6 +729,9 @@ function SidebarPanel({
                 return;
               }
               onSelectNode(node.id);
+              if (mode === "image" && node.imageSourceId && loadState) {
+                return;
+              }
               if (mode === "image" && node.imageSourceId) {
                 onSelectPackage(node.imageSourceId);
               }
@@ -797,7 +806,11 @@ function SidebarPanel({
                 aria-label={imageCountLabel}
                 title={imageCountLabel}
               >
-                {hasOwnImages ? visibleImageCount : descendantNodeCount}
+                {showProcessingCountPlaceholder
+                  ? "..."
+                  : hasOwnImages
+                    ? visibleImageCount
+                    : descendantNodeCount}
               </span>
             </span>
           ) : null}

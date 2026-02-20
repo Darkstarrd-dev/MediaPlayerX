@@ -569,6 +569,27 @@ describe("SidebarPanel music interactions", () => {
 });
 
 describe("SidebarPanel image collapse interactions", () => {
+  it("处理中图片节点点击仅聚焦，不触发包切换", () => {
+    const { onSelectNode, onSelectPackage } = renderImageSidebar(
+      IMAGE_TREE_COLLAPSIBLE_FIXTURE,
+      {
+        imageNodeLoadStateById: {
+          "package:图库/Vol.1": "running",
+        },
+      },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Vol.1" }));
+
+    expect(onSelectNode).toHaveBeenCalledWith("package:图库/Vol.1");
+    expect(onSelectPackage).not.toHaveBeenCalled();
+    expect(screen.getByText("...")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Vol.1" })).toHaveAttribute(
+      "title",
+      "归一化处理中，暂不可预览",
+    );
+  });
+
   it("双击无自身图片的目录节点可折叠/展开子节点", () => {
     renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE);
 

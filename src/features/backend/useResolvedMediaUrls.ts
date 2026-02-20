@@ -20,6 +20,7 @@ const FAILURE_RETRY_BASE_MS = 3_000
 const FAILURE_RETRY_MAX_MS = 20_000
 
 const CACHE_INVALIDATION_IGNORED_LIBRARY_CHANGE_REASONS = new Set([
+  'import-task-updated',
   'write-package-grade',
   'write-package-metadata',
   'write-package-external-metadata',

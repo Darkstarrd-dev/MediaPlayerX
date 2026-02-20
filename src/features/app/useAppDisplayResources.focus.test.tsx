@@ -53,6 +53,7 @@ vi.mock('./workspaceAdReviewSidebarContext', () => ({
 }))
 
 vi.mock('./workspaceAdReviewPageDerivations', () => ({
+  shouldGroupAdReviewByPackageRows: vi.fn(() => true),
   resolveAdReviewPageDerivations: vi.fn(() => ({
     visibleImageRefsForMain: [
       { packageId: 'pkg-focus', imageIndex: 0 },

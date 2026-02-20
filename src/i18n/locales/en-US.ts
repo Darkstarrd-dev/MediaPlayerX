@@ -1300,6 +1300,8 @@ export const enUsCatalog: { [K in keyof ZhCnCatalog]: string } = {
   "tip.sidebar.expandImageParents": "Expand all image parent nodes",
   "tip.sidebar.previousImageParent": "Jump to previous image parent node",
   "tip.sidebar.nextImageParent": "Jump to next image parent node",
+  "tip.sidebar.processingPending": "Normalization queued, preview unavailable",
+  "tip.sidebar.processingRunning": "Normalizing, preview unavailable",
   "tip.image.switchToGridMode": "Switch to thumbnail mode",
   "tip.image.switchToNamesMode": "Switch to names-only mode",
   "tip.manage.adReview": "Ad review",
