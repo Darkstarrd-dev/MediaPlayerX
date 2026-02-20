@@ -46,6 +46,8 @@ export function useAppManageBindings({
     setManageMode,
     setMetadataManageMode,
     setAdReviewPanelOpen,
+    adReviewPanelOpen,
+    adReviewFocusTaskId,
     setManageOperationHint,
     setDeleteConfirmOpen,
   } = sessionState
@@ -128,6 +130,8 @@ export function useAppManageBindings({
     clearAllSelections,
     replaceImageCheckedIds,
     setManageOperationHint,
+    adReviewPanelOpen,
+    adReviewFocusTaskId,
     onDeleteRoundCompleted: () => {
       setAdReviewPanelOpen(false)
     },

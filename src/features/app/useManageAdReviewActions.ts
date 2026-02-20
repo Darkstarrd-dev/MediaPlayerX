@@ -54,6 +54,8 @@ interface UseManageAdReviewActionsParams {
   clearAllSelections: () => void
   replaceImageCheckedIds: (imageIds: string[], append?: boolean) => void
   setManageOperationHint: (message: string | null) => void
+  adReviewPanelOpen?: boolean
+  adReviewFocusTaskId?: string | null
   onDeleteRoundCompleted?: (payload: {
     firstHitImageId: string | null
     firstHitPackageId: string | null
@@ -242,6 +244,8 @@ export function useManageAdReviewActions({
   clearAllSelections,
   replaceImageCheckedIds,
   setManageOperationHint,
+  adReviewPanelOpen = true,
+  adReviewFocusTaskId = null,
   onDeleteRoundCompleted,
 }: UseManageAdReviewActionsParams): UseManageAdReviewActionsResult {
   const { t } = useI18n()
@@ -479,7 +483,27 @@ export function useManageAdReviewActions({
   )
 
   useEffect(() => {
+    const activeTaskId = task?.task_id ?? null
+    if (!activeTaskId) {
+      return
+    }
+
+    const focusMismatched = Boolean(adReviewFocusTaskId && adReviewFocusTaskId !== activeTaskId)
+    if (!manageMode || !adReviewPanelOpen || focusMismatched) {
+      delete selectionSyncSignatureByTaskIdRef.current[activeTaskId]
+    }
+  }, [adReviewFocusTaskId, adReviewPanelOpen, manageMode, task?.task_id])
+
+  useEffect(() => {
+    if (!manageMode || !adReviewPanelOpen) {
+      return
+    }
+
     if (!selectionLoaded || !task) {
+      return
+    }
+
+    if (adReviewFocusTaskId && adReviewFocusTaskId !== task.task_id) {
       return
     }
 
@@ -503,7 +527,14 @@ export function useManageAdReviewActions({
     replaceImageCheckedIds(selectedImageIds, false)
 
     selectionSyncSignatureByTaskIdRef.current[task.task_id] = candidateSignature
-  }, [replaceImageCheckedIds, selectionLoaded, task])
+  }, [
+    adReviewFocusTaskId,
+    adReviewPanelOpen,
+    manageMode,
+    replaceImageCheckedIds,
+    selectionLoaded,
+    task,
+  ])
 
   useEffect(() => {
     if (!selectionLoaded || !task) {
@@ -539,7 +570,15 @@ export function useManageAdReviewActions({
       [task.task_id]: deselectedImageIds,
     }
     schedulePersistSelectionState()
-  }, [imageCheckedIds, schedulePersistSelectionState, selectionLoaded, task])
+  }, [
+    adReviewFocusTaskId,
+    adReviewPanelOpen,
+    imageCheckedIds,
+    manageMode,
+    schedulePersistSelectionState,
+    selectionLoaded,
+    task,
+  ])
 
   useEffect(() => {
     if (!selectionLoaded || !queueLoaded) {

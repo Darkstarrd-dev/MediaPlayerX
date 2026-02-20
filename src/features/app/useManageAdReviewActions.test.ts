@@ -431,6 +431,9 @@ describe('useManageAdReviewActions', () => {
       readAppState,
       writeAppState,
     } as unknown as MediaRepository
+    const clearAllSelections = vi.fn()
+    const replaceImageCheckedIds = vi.fn()
+    const setManageOperationHint = vi.fn()
 
     const { rerender } = renderHook(
       (props: { imageCheckedIds: string[] }) =>
@@ -448,9 +451,9 @@ describe('useManageAdReviewActions', () => {
           adReviewTailN: 0,
           adReviewTailStopCleanStreak: 1,
           adReviewMaxConcurrency: 4,
-          clearAllSelections: vi.fn(),
-          replaceImageCheckedIds: vi.fn(),
-          setManageOperationHint: vi.fn(),
+          clearAllSelections,
+          replaceImageCheckedIds,
+          setManageOperationHint,
         }),
       {
         initialProps: {
@@ -459,8 +462,10 @@ describe('useManageAdReviewActions', () => {
       },
     )
 
-    await waitFor(() => {
-      expect(readAppState).toHaveBeenCalled()
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+      await Promise.resolve()
     })
 
     rerender({
@@ -476,5 +481,233 @@ describe('useManageAdReviewActions', () => {
       task_selection_by_id: Record<string, string[]>
     }
     expect(parsed.task_selection_by_id['task-review']).toEqual(['img-2'])
+  })
+
+  it('does not persist all-candidate deselection when exiting review panel', async () => {
+    const reviewTask = createTask('task-review', 'review', {
+      progress: 1,
+      reviewed_count: 2,
+      total_count: 2,
+      candidates: [
+        {
+          image_id: 'img-1',
+          package_id: 'pkg-1',
+          package_name: 'pkg-1.zip',
+          display_name: 'pkg-1',
+          ordinal: 1,
+          file_name: '001.jpg',
+          reason: 'suspected',
+          source: 'llm',
+          hash: 'hash-1',
+        },
+        {
+          image_id: 'img-2',
+          package_id: 'pkg-1',
+          package_name: 'pkg-1.zip',
+          display_name: 'pkg-1',
+          ordinal: 2,
+          file_name: '002.jpg',
+          reason: 'suspected',
+          source: 'llm',
+          hash: 'hash-2',
+        },
+      ],
+    })
+
+    const readAppState = vi.fn().mockImplementation(async (request: { state_key: string }) => {
+      if (request.state_key === 'manage_ad_review_selection_v1') {
+        return {
+          state_json: createSelectionStateJson({
+            'task-review': [],
+          }),
+        }
+      }
+
+      return {
+        state_json: createQueueStateJson([reviewTask]),
+      }
+    })
+    const writeAppState = vi.fn().mockResolvedValue({ updated_at_ms: Date.now() })
+
+    const repository = {
+      readAppState,
+      writeAppState,
+    } as unknown as MediaRepository
+    const clearAllSelections = vi.fn()
+    const replaceImageCheckedIds = vi.fn()
+    const setManageOperationHint = vi.fn()
+
+    const { rerender } = renderHook(
+      (props: {
+        imageCheckedIds: string[]
+        manageMode: boolean
+        adReviewPanelOpen: boolean
+      }) =>
+        useManageAdReviewActions({
+          repository,
+          mode: 'image',
+          manageMode: props.manageMode,
+          activeSelectionScope: 'image',
+          imageCheckedIds: props.imageCheckedIds,
+          sidebarCheckedNodeIds: [],
+          llmEndpoint: '',
+          llmModel: '',
+          adReviewStrategyMode: 'all',
+          adReviewHeadN: 0,
+          adReviewTailN: 0,
+          adReviewTailStopCleanStreak: 1,
+          adReviewMaxConcurrency: 4,
+          clearAllSelections,
+          replaceImageCheckedIds,
+          setManageOperationHint,
+          adReviewPanelOpen: props.adReviewPanelOpen,
+          adReviewFocusTaskId: 'task-review',
+        }),
+      {
+        initialProps: {
+          imageCheckedIds: ['img-1', 'img-2'],
+          manageMode: true,
+          adReviewPanelOpen: true,
+        },
+      },
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    writeAppState.mockClear()
+
+    rerender({
+      imageCheckedIds: [],
+      manageMode: false,
+      adReviewPanelOpen: false,
+    })
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(writeAppState).not.toHaveBeenCalled()
+  })
+
+  it('restores task-isolated deselection after leaving and re-entering review panel', async () => {
+    const reviewTask = createTask('task-review', 'review', {
+      progress: 1,
+      reviewed_count: 3,
+      total_count: 3,
+      candidates: [
+        {
+          image_id: 'img-1',
+          package_id: 'pkg-1',
+          package_name: 'pkg-1.zip',
+          display_name: 'pkg-1',
+          ordinal: 1,
+          file_name: '001.jpg',
+          reason: 'suspected',
+          source: 'llm',
+          hash: 'hash-1',
+        },
+        {
+          image_id: 'img-2',
+          package_id: 'pkg-1',
+          package_name: 'pkg-1.zip',
+          display_name: 'pkg-1',
+          ordinal: 2,
+          file_name: '002.jpg',
+          reason: 'suspected',
+          source: 'llm',
+          hash: 'hash-2',
+        },
+        {
+          image_id: 'img-3',
+          package_id: 'pkg-1',
+          package_name: 'pkg-1.zip',
+          display_name: 'pkg-1',
+          ordinal: 3,
+          file_name: '003.jpg',
+          reason: 'suspected',
+          source: 'llm',
+          hash: 'hash-3',
+        },
+      ],
+    })
+
+    const readAppState = vi.fn().mockImplementation(async (request: { state_key: string }) => {
+      if (request.state_key === 'manage_ad_review_selection_v1') {
+        return {
+          state_json: createSelectionStateJson({
+            'task-review': ['img-2'],
+          }),
+        }
+      }
+
+      return {
+        state_json: createQueueStateJson([reviewTask]),
+      }
+    })
+
+    const repository = {
+      readAppState,
+    } as unknown as MediaRepository
+    const replaceImageCheckedIds = vi.fn()
+
+    const { rerender } = renderHook(
+      (props: {
+        manageMode: boolean
+        adReviewPanelOpen: boolean
+        imageCheckedIds: string[]
+      }) =>
+        useManageAdReviewActions({
+          repository,
+          mode: 'image',
+          manageMode: props.manageMode,
+          activeSelectionScope: null,
+          imageCheckedIds: props.imageCheckedIds,
+          sidebarCheckedNodeIds: [],
+          llmEndpoint: '',
+          llmModel: '',
+          adReviewStrategyMode: 'all',
+          adReviewHeadN: 0,
+          adReviewTailN: 0,
+          adReviewTailStopCleanStreak: 1,
+          adReviewMaxConcurrency: 4,
+          clearAllSelections: vi.fn(),
+          replaceImageCheckedIds,
+          setManageOperationHint: vi.fn(),
+          adReviewPanelOpen: props.adReviewPanelOpen,
+          adReviewFocusTaskId: 'task-review',
+        }),
+      {
+        initialProps: {
+          manageMode: true,
+          adReviewPanelOpen: true,
+          imageCheckedIds: ['img-1', 'img-3'],
+        },
+      },
+    )
+
+    await waitFor(() => {
+      expect(replaceImageCheckedIds).toHaveBeenCalledWith(['img-1', 'img-3'], false)
+    })
+
+    replaceImageCheckedIds.mockClear()
+
+    rerender({
+      manageMode: false,
+      adReviewPanelOpen: false,
+      imageCheckedIds: [],
+    })
+
+    rerender({
+      manageMode: true,
+      adReviewPanelOpen: true,
+      imageCheckedIds: ['img-1', 'img-3'],
+    })
+
+    await waitFor(() => {
+      expect(replaceImageCheckedIds).toHaveBeenCalledWith(['img-1', 'img-3'], false)
+    })
   })
 })
