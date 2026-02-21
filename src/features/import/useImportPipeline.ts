@@ -29,6 +29,13 @@ import { useImportPaste } from "./useImportPaste";
 const IMPORT_TASK_TIMEOUT_MS = 20_000;
 const IMPORT_TASK_POLL_BUSY_MS = 500;
 const IMPORT_TASK_POLL_IDLE_MS = 2_200;
+const IMPORT_TASK_POLL_BUSY_MAX_MS = 2_400;
+const IMPORT_TASK_POLL_IDLE_MAX_MS = 6_000;
+const IMPORT_TASK_EVENT_REFRESH_MS = 500;
+
+const IMPORT_TASK_RELATED_LIBRARY_CHANGE_REASONS = new Set([
+  "import-task-finished",
+]);
 
 interface UseImportPipelineResult {
   fileImportInputRef: RefObject<HTMLInputElement | null>;
@@ -356,6 +363,11 @@ export function useImportPipeline({
 
     let disposed = false;
     let timerId: number | null = null;
+    let nextPollAtMs = 0;
+    let runningPoll = false;
+    let queuedPoll = false;
+    let busyBackoffLevel = 0;
+    let lastPolledTasks: ImportTaskDto[] | null = null;
 
     const clearTimer = () => {
       if (timerId === null) {
@@ -363,36 +375,105 @@ export function useImportPipeline({
       }
       window.clearTimeout(timerId);
       timerId = null;
+      nextPollAtMs = 0;
     };
 
-    const scheduleNext = (tasks: ImportTaskDto[] | null) => {
+    const schedulePoll = (delayMs: number) => {
       if (disposed) {
         return;
       }
-      const hasActiveTasks = tasks ? hasActiveImportTasks(tasks) : true;
+      clearTimer();
+      const normalizedDelay = Math.max(80, Math.round(delayMs));
+      nextPollAtMs = Date.now() + normalizedDelay;
       timerId = window.setTimeout(() => {
         timerId = null;
+        nextPollAtMs = 0;
         void runPoll();
-      }, hasActiveTasks ? IMPORT_TASK_POLL_BUSY_MS : IMPORT_TASK_POLL_IDLE_MS);
+      }, normalizedDelay);
+    };
+
+    const scheduleSoonerPoll = (delayMs: number) => {
+      if (disposed) {
+        return;
+      }
+      const remainingMs = nextPollAtMs > 0 ? nextPollAtMs - Date.now() : Number.POSITIVE_INFINITY;
+      if (remainingMs <= delayMs) {
+        return;
+      }
+      schedulePoll(delayMs);
+    };
+
+    const computeNextDelayMs = (tasks: ImportTaskDto[] | null, hadError: boolean) => {
+      if (hadError || tasks === null) {
+        busyBackoffLevel = Math.min(4, busyBackoffLevel + 1);
+        return Math.min(IMPORT_TASK_POLL_BUSY_MS * 2 ** busyBackoffLevel, IMPORT_TASK_POLL_BUSY_MAX_MS);
+      }
+
+      const hasActiveTasks = hasActiveImportTasks(tasks);
+      const sameAsLast = lastPolledTasks !== null && areImportTasksEquivalent(lastPolledTasks, tasks);
+      lastPolledTasks = tasks;
+
+      if (hasActiveTasks) {
+        busyBackoffLevel = sameAsLast ? Math.min(3, busyBackoffLevel + 1) : 0;
+        return Math.min(IMPORT_TASK_POLL_BUSY_MS * 2 ** busyBackoffLevel, IMPORT_TASK_POLL_BUSY_MAX_MS);
+      }
+
+      busyBackoffLevel = 0;
+      return sameAsLast
+        ? Math.min(IMPORT_TASK_POLL_IDLE_MS + 1_000, IMPORT_TASK_POLL_IDLE_MAX_MS)
+        : IMPORT_TASK_POLL_IDLE_MS;
+    };
+
+    const requestEventDrivenPoll = () => {
+      if (disposed) {
+        return;
+      }
+      if (runningPoll) {
+        queuedPoll = true;
+        return;
+      }
+      scheduleSoonerPoll(IMPORT_TASK_EVENT_REFRESH_MS);
     };
 
     const runPoll = async () => {
+      if (disposed) {
+        return;
+      }
+      if (runningPoll) {
+        queuedPoll = true;
+        return;
+      }
+
+      runningPoll = true;
       try {
         const tasks = await refreshTasks();
-        scheduleNext(tasks);
+        schedulePoll(computeNextDelayMs(tasks, false));
       } catch (error: unknown) {
         handleImportError(error);
-        scheduleNext(null);
+        schedulePoll(computeNextDelayMs(null, true));
+      } finally {
+        runningPoll = false;
+        if (queuedPoll) {
+          queuedPoll = false;
+          requestEventDrivenPoll();
+        }
       }
     };
 
     void runPoll();
+    const unsubscribe = repository.onLibraryChanged?.((payload) => {
+      if (!IMPORT_TASK_RELATED_LIBRARY_CHANGE_REASONS.has(payload.reason)) {
+        return;
+      }
+      requestEventDrivenPoll();
+    });
 
     return () => {
       disposed = true;
       clearTimer();
+      unsubscribe?.();
     };
-  }, [handleImportError, isSynchronousTestMode, refreshTasks]);
+  }, [handleImportError, isSynchronousTestMode, refreshTasks, repository]);
 
   const enqueuePastePaths = useCallback(
     (paths: string[]) => {

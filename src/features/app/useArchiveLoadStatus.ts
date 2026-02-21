@@ -26,15 +26,19 @@ const ARCHIVE_STATUS_ACTIVE_POLL_MS = 450
 
 const ARCHIVE_STATUS_IDLE_POLL_MS = 1_600
 
-const ARCHIVE_STATUS_REFRESH_REASONS = new Set([
-  'import-task-updated',
+const ARCHIVE_STATUS_EVENT_THROTTLE_MS = 160
+
+const ARCHIVE_STATUS_CRITICAL_REFRESH_REASONS = new Set([
   'import-task-finished',
   'archive-load-status-updated',
   'archive-normalized',
   'archive-normalize-failed',
+  'thumbnail-rendering-end',
+])
+
+const ARCHIVE_STATUS_THROTTLED_REFRESH_REASONS = new Set([
   'thumbnail-rendering-start',
   'thumbnail-rendering-progress',
-  'thumbnail-rendering-end',
 ])
 
 function isArchiveLoadStatusBusy(status: ArchiveLoadStatusState): boolean {
@@ -118,6 +122,7 @@ export function useArchiveLoadStatus({ repository }: UseArchiveLoadStatusParams)
     let queuedRefresh = false
     let currentStatus = EMPTY_ARCHIVE_LOAD_STATUS
     let pollTimerId: ReturnType<typeof setTimeout> | null = null
+    let eventThrottleTimerId: ReturnType<typeof setTimeout> | null = null
 
     const applyStatus = (nextStatus: ArchiveLoadStatusState) => {
       currentStatus = nextStatus
@@ -135,6 +140,17 @@ export function useArchiveLoadStatus({ repository }: UseArchiveLoadStatusParams)
         pollTimerId = null
         void refreshArchiveLoadStatus()
       }, Math.max(100, delayMs))
+    }
+
+    const scheduleThrottledEventRefresh = () => {
+      if (disposed || eventThrottleTimerId !== null) {
+        return
+      }
+      eventThrottleTimerId = setTimeout(() => {
+        eventThrottleTimerId = null
+        queuedRefresh = true
+        void refreshArchiveLoadStatus()
+      }, ARCHIVE_STATUS_EVENT_THROTTLE_MS)
     }
 
     const refreshArchiveLoadStatus = async () => {
@@ -168,17 +184,24 @@ export function useArchiveLoadStatus({ repository }: UseArchiveLoadStatusParams)
 
     void refreshArchiveLoadStatus()
     const unsubscribe = repository.onLibraryChanged?.((payload) => {
-      if (!ARCHIVE_STATUS_REFRESH_REASONS.has(payload.reason)) {
+      if (ARCHIVE_STATUS_CRITICAL_REFRESH_REASONS.has(payload.reason)) {
+        queuedRefresh = true
+        void refreshArchiveLoadStatus()
         return
       }
-      queuedRefresh = true
-      void refreshArchiveLoadStatus()
+      if (!ARCHIVE_STATUS_THROTTLED_REFRESH_REASONS.has(payload.reason)) {
+        return
+      }
+      scheduleThrottledEventRefresh()
     })
 
     return () => {
       disposed = true
       if (pollTimerId !== null) {
         clearTimeout(pollTimerId)
+      }
+      if (eventThrottleTimerId !== null) {
+        clearTimeout(eventThrottleTimerId)
       }
       unsubscribe?.()
     }
