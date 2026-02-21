@@ -173,10 +173,14 @@ export function useAppWorkspaceBindings({
     normalImageSourceNodeIdMap,
   } = readNavigationState
 
-  const musicBookletLibrarySnapshot = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
-  const musicBookletImageSources = musicBookletLibrarySnapshot
-    ? [...musicBookletLibrarySnapshot.imagePackages, ...musicBookletLibrarySnapshot.imageDirectories]
-    : scopedImageSourcesEffective
+  const musicBookletLibrarySnapshot = mode === 'music'
+    ? (backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot)
+    : null
+  const musicBookletImageSources = mode === 'music'
+    ? (musicBookletLibrarySnapshot
+      ? [...musicBookletLibrarySnapshot.imagePackages, ...musicBookletLibrarySnapshot.imageDirectories]
+      : scopedImageSourcesEffective)
+    : []
 
   void orderedRootScopedPackages
 

@@ -109,6 +109,7 @@ interface CreateArchiveSourceParams {
   archivePathForMediaRead: string
   colorPalette: readonly string[]
   packageGradeOverridesBySourceId: Map<string, number | null>
+  treePathOverride?: string[]
 }
 
 export function createArchiveSource(params: CreateArchiveSourceParams): ImagePackageDto {
@@ -119,12 +120,16 @@ export function createArchiveSource(params: CreateArchiveSourceParams): ImagePac
 
   const sortedEntries = [...params.imageEntries].sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
 
+  const treePath = params.treePathOverride && params.treePathOverride.length > 0
+    ? [...params.treePathOverride]
+    : toAbsoluteTreePath(params.file.absolutePath)
+
   return {
     id: sourceId,
     package_name: fileName,
     display_name: displayName,
     absolute_path: params.file.absolutePath,
-    tree_path: toAbsoluteTreePath(params.file.absolutePath),
+    tree_path: treePath,
     work_title: displayName,
     series_id: '',
     circle: '未知',

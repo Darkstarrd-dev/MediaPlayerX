@@ -136,6 +136,7 @@ function E2eBenchController({
   const forceFinishTimerRef = useRef<number | null>(null)
   const importTaskIdRef = useRef<string | null>(null)
   const importPendingRef = useRef(false)
+  const importEnqueueInFlightRef = useRef(false)
   const directionRef = useRef<1 | -1>(1)
   const totalPagesRef = useRef<number | null>(totalPages)
   useEffect(() => {
@@ -207,6 +208,55 @@ function E2eBenchController({
 
     setPhase(reason === 'ok' ? 'finished' : 'failed')
   }, [])
+
+  const enqueueImportIfPending = useCallback(
+    (when: 'warmup' | 'after-step-0' | 'waiting_data') => {
+      if (!importPendingRef.current || importEnqueueInFlightRef.current) {
+        return
+      }
+
+      const paths = tuningRef.current.importPaths
+      if (paths.length <= 0) {
+        importPendingRef.current = false
+        return
+      }
+
+      importEnqueueInFlightRef.current = true
+      importPendingRef.current = false
+
+      benchMark('e2e_import_enqueue_start', {
+        when,
+        paths,
+      })
+
+      void (async () => {
+        try {
+          const response = await repository.enqueueImportTask(
+            {
+              source: 'dialog-folders',
+              paths,
+            },
+            { timeoutMs: 20_000 },
+          )
+          importTaskIdRef.current = response.task.task_id
+          benchMark('e2e_import_enqueued', {
+            task_id: response.task.task_id,
+            paths,
+            when,
+          })
+        } catch (err: unknown) {
+          benchMark('e2e_import_enqueue_failed', {
+            message: err instanceof Error ? err.message : String(err),
+            paths,
+            when,
+          })
+        } finally {
+          importEnqueueInFlightRef.current = false
+        }
+      })()
+    },
+    [repository],
+  )
 
   const requestNavigation = useCallback(
     (step: number, fromPage: number) => {
@@ -390,6 +440,10 @@ function E2eBenchController({
       return
     }
 
+    if (importPendingRef.current && importTaskIdRef.current === null) {
+      enqueueImportIfPending('waiting_data')
+    }
+
     const targetPackage = preferredPackage
     if (!targetPackage) {
       return
@@ -424,7 +478,18 @@ function E2eBenchController({
     navRecordsRef.current = []
     pendingNavRef.current = null
     requestNavigation(0, pageIndex)
-  }, [finish, pageIndex, phase, preferredPackage, refsInPageCount, requestNavigation, selectedPackageId, setSelectedPackageId, totalPages])
+  }, [
+    finish,
+    pageIndex,
+    phase,
+    preferredPackage,
+    refsInPageCount,
+    enqueueImportIfPending,
+    requestNavigation,
+    selectedPackageId,
+    setSelectedPackageId,
+    totalPages,
+  ])
 
   useLayoutEffect(() => {
     // Intentionally run on every render.
@@ -502,38 +567,7 @@ function E2eBenchController({
     })
 
     if (pending.step === 0 && importPendingRef.current) {
-      importPendingRef.current = false
-      const paths = tuningRef.current.importPaths
-      if (paths.length > 0) {
-        benchMark('e2e_import_enqueue_start', {
-          when: 'after-step-0',
-          paths,
-        })
-
-        void (async () => {
-          try {
-            const response = await repository.enqueueImportTask(
-              {
-                source: 'dialog-folders',
-                paths,
-              },
-              { timeoutMs: 20_000 },
-            )
-            importTaskIdRef.current = response.task.task_id
-            benchMark('e2e_import_enqueued', {
-              task_id: response.task.task_id,
-              paths,
-              when: 'after-step-0',
-            })
-          } catch (err: unknown) {
-            benchMark('e2e_import_enqueue_failed', {
-              message: err instanceof Error ? err.message : String(err),
-              paths,
-              when: 'after-step-0',
-            })
-          }
-        })()
-      }
+      enqueueImportIfPending('after-step-0')
     }
 
     pendingNavRef.current = null
@@ -556,7 +590,17 @@ function E2eBenchController({
       totalPagesRef.current = totalPages
       requestNavigation(nextStep, pageIndex)
     }, tuning.browseIntervalMs)
-  }, [finish, pageIndex, phase, repository, requestNavigation, totalPages, tuning.browseIntervalMs, tuning.browseSteps])
+  }, [
+    enqueueImportIfPending,
+    finish,
+    pageIndex,
+    phase,
+    repository,
+    requestNavigation,
+    totalPages,
+    tuning.browseIntervalMs,
+    tuning.browseSteps,
+  ])
 
   if (!benchSettings.enabled || benchSettings.mode !== 'e2e') {
     return null

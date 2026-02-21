@@ -13,6 +13,8 @@ export interface FileRecord {
   height: number
 }
 
+const SLOW_FS_IO_LOG_THRESHOLD_MS = 2_000
+
 interface CollectMediaFilesParams {
   rootDir: string
   importDirectoryRoots: string[]
@@ -52,7 +54,40 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
 
   const files: FileRecord[] = []
   const seen = new Set<string>()
+  const slowIoLogOnceKeys = new Set<string>()
   let scannedCount = 0
+
+  const warnSlowIoOnce = (kind: 'readdir' | 'stat', targetPath: string, elapsedMs: number) => {
+    if (elapsedMs < SLOW_FS_IO_LOG_THRESHOLD_MS) {
+      return
+    }
+
+    const key = `${kind}:${normalizeAllowlistKey(targetPath)}`
+    if (slowIoLogOnceKeys.has(key)) {
+      return
+    }
+
+    slowIoLogOnceKeys.add(key)
+    console.warn('slow filesystem io detected', {
+      kind,
+      targetPath,
+      elapsedMs,
+    })
+  }
+
+  const timedReadDir = async (targetPath: string) => {
+    const startedAt = Date.now()
+    const entries = await fs.readdir(targetPath, { withFileTypes: true }).catch(() => null)
+    warnSlowIoOnce('readdir', targetPath, Date.now() - startedAt)
+    return entries
+  }
+
+  const timedStat = async (targetPath: string) => {
+    const startedAt = Date.now()
+    const stat = await fs.stat(targetPath).catch(() => null)
+    warnSlowIoOnce('stat', targetPath, Date.now() - startedAt)
+    return stat
+  }
 
   const isMusicManagedPath = (absolutePath: string): boolean => {
     if (musicFileAllowlistKeys.has(normalizeAllowlistKey(absolutePath))) {
@@ -88,7 +123,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
 
   while (levelDirectories.length > 0) {
     const nestedDirectories = await parallelMapLimit(levelDirectories, params.directoryScanConcurrency, async (current) => {
-      const entries = await fs.readdir(current, { withFileTypes: true }).catch(() => null)
+      const entries = await timedReadDir(current)
       if (!entries) {
         return []
       }
@@ -143,7 +178,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
           pendingImageOrArchiveRecords,
           params.directoryScanConcurrency,
           async (record) => {
-            const stat = await fs.stat(record.absolutePath).catch(() => null)
+            const stat = await timedStat(record.absolutePath)
             if (!stat || !stat.isFile()) {
               return null
             }
@@ -171,7 +206,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
           pendingMediaRecords,
           params.directoryScanConcurrency,
           async (mediaRecord) => {
-            const stat = await fs.stat(mediaRecord.absolutePath).catch(() => null)
+            const stat = await timedStat(mediaRecord.absolutePath)
             return {
               absolutePath: mediaRecord.absolutePath,
               extension: mediaRecord.extension,
@@ -199,7 +234,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
         return null
       }
 
-      const stat = await fs.stat(absolutePath).catch(() => null)
+      const stat = await timedStat(absolutePath)
       if (!stat || !stat.isFile()) {
         return null
       }

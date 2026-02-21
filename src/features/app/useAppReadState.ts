@@ -15,12 +15,14 @@ interface UseAppReadStateParams {
   appSettings: AppSettingsStoreSnapshot
   sessionState: AppSessionStateResult
   repositoryBootstrap: RepositoryBootstrapDataResult
+  importBusy: boolean
 }
 
 export function useAppReadState({
   appSettings,
   sessionState,
   repositoryBootstrap,
+  importBusy,
 }: UseAppReadStateParams) {
   const {
     mode,
@@ -159,6 +161,7 @@ export function useAppReadState({
     repository: mediaRepository,
     mode,
     includeHidden: manageMode && mode === 'image',
+    importBusy,
     suspendLibraryChangedRefresh: metadataManageMode,
     selectedSourceId: selectedPackageId || null,
     pageIndex: showNamesOnly ? 0 : vectorResultsActive ? vectorPage : (pageByPackage[selectedPackageId] ?? 0),

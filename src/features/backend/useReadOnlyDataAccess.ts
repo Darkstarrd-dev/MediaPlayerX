@@ -32,6 +32,7 @@ interface UseReadOnlyDataAccessParams {
   repository: MediaRepository
   mode: BrowserMode
   includeHidden: boolean
+  importBusy?: boolean
   suspendLibraryChangedRefresh?: boolean
   selectedSourceId: string | null
   pageIndex: number
@@ -91,6 +92,7 @@ export function useReadOnlyDataAccess({
   repository,
   mode,
   includeHidden,
+  importBusy = false,
   suspendLibraryChangedRefresh = false,
   selectedSourceId,
   pageIndex,
@@ -260,10 +262,12 @@ export function useReadOnlyDataAccess({
       return
     }
 
+    const pageReadDebounceMs = importBusy ? 360 : PAGE_READ_DEBOUNCE_MS
+
     return scheduleReadSlice({
       requestIdRef: pageRequestIdRef,
       setState: setPageState,
-      debounceMs: PAGE_READ_DEBOUNCE_MS,
+      debounceMs: pageReadDebounceMs,
       fetcher: (signal) =>
         repository.readImagePage(
           {
@@ -279,10 +283,24 @@ export function useReadOnlyDataAccess({
         ),
       mapDto: mapImagePageDto,
     })
-  }, [featureFilter, gradeOverridesForRead, includeHidden, isSynchronousTestMode, mode, pageIndex, pageRetryNonce, pageSize, repository, selectedSourceId, showNamesOnly, vectorResultsActive])
+  }, [
+    featureFilter,
+    gradeOverridesForRead,
+    importBusy,
+    includeHidden,
+    isSynchronousTestMode,
+    mode,
+    pageIndex,
+    pageRetryNonce,
+    pageSize,
+    repository,
+    selectedSourceId,
+    showNamesOnly,
+    vectorResultsActive,
+  ])
 
   useEffect(() => {
-    if (isSynchronousTestMode || mode !== 'image' || !focusedRef || vectorResultsActive) {
+    if (isSynchronousTestMode || mode !== 'image' || !focusedRef || vectorResultsActive || importBusy) {
       return
     }
 
@@ -301,7 +319,16 @@ export function useReadOnlyDataAccess({
         ),
       mapDto: mapImageMetadataDto,
     })
-  }, [focusedRef, includeHidden, isSynchronousTestMode, metadataRetryNonce, mode, repository, vectorResultsActive])
+  }, [
+    focusedRef,
+    importBusy,
+    includeHidden,
+    isSynchronousTestMode,
+    metadataRetryNonce,
+    mode,
+    repository,
+    vectorResultsActive,
+  ])
 
   const retryLibrary = useCallback(() => {
     setLibraryRetryNonce((value) => value + 1)
@@ -332,13 +359,15 @@ export function useReadOnlyDataAccess({
     }
 
     let throttleTimer: ReturnType<typeof window.setTimeout> | null = null
-    let queuedRefreshScope: 'all' | 'library-sidebar' | 'grade-dependent' | null = null
+    let queuedRefreshScope: 'all' | 'library-sidebar' | 'library-only' | 'grade-dependent' | null = null
 
-    const scheduleRefresh = (scope: 'all' | 'library-sidebar' | 'grade-dependent') => {
+    const scheduleRefresh = (scope: 'all' | 'library-sidebar' | 'library-only' | 'grade-dependent') => {
       if (queuedRefreshScope === 'all' || scope === 'all') {
         queuedRefreshScope = 'all'
       } else if (queuedRefreshScope === 'library-sidebar' || scope === 'library-sidebar') {
         queuedRefreshScope = 'library-sidebar'
+      } else if (queuedRefreshScope === 'library-only' || scope === 'library-only') {
+        queuedRefreshScope = 'library-only'
       } else {
         queuedRefreshScope = 'grade-dependent'
       }
@@ -360,6 +389,11 @@ export function useReadOnlyDataAccess({
         if (scopeToRun === 'library-sidebar') {
           retryLibrary()
           retrySidebar()
+          return
+        }
+
+        if (scopeToRun === 'library-only') {
+          retryLibrary()
           return
         }
 
@@ -393,7 +427,7 @@ export function useReadOnlyDataAccess({
       }
 
       if (payload.reason === 'import-task-updated') {
-        scheduleRefresh('library-sidebar')
+        scheduleRefresh('library-only')
         return
       }
 

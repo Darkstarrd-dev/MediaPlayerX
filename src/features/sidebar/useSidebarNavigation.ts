@@ -93,6 +93,10 @@ export function useSidebarNavigation({
   const sidebarNodeById = useMemo(() => new Map(flatSidebarNodes.map((node) => [node.id, node])), [flatSidebarNodes])
 
   const imageSourceNodeIdMap = useMemo(() => {
+    if (mode !== 'image') {
+      return new Map<string, string>()
+    }
+
     const map = new Map<string, string>()
     const walk = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
@@ -106,9 +110,13 @@ export function useSidebarNavigation({
     }
     walk(imageTreeForSidebar)
     return map
-  }, [imageTreeForSidebar])
+  }, [imageTreeForSidebar, mode])
 
   const videoNodeIdMap = useMemo(() => {
+    if (mode !== 'video') {
+      return new Map<string, string>()
+    }
+
     const map = new Map<string, string>()
     const walk = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
@@ -122,9 +130,13 @@ export function useSidebarNavigation({
     }
     walk(videoTreeForSidebar)
     return map
-  }, [videoTreeForSidebar])
+  }, [mode, videoTreeForSidebar])
 
   const audioNodeIdMap = useMemo(() => {
+    if (mode !== 'music') {
+      return new Map<string, string>()
+    }
+
     const folderNodeIdByPathKey = new Map<string, string>()
     const walkFolders = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
@@ -151,7 +163,7 @@ export function useSidebarNavigation({
     }
 
     return map
-  }, [audioTreeForSidebar, audiosForSidebar])
+  }, [audioTreeForSidebar, audiosForSidebar, mode])
 
   const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
   const canSetCurrentRoot = selectedSidebarNode?.kind === 'folder'

@@ -130,6 +130,25 @@ interface UseAppSidebarScopeStateResult {
   orderedRootScopedImageRefs: FocusedImageRef[]
 }
 
+function buildImageSourceNodeIdMapFromSources(
+  imagePackages: ImagePackage[],
+  imageDirectories: ImagePackage[],
+): Map<string, string> {
+  const map = new Map<string, string>()
+
+  for (const source of imagePackages) {
+    const pathKey = source.treePath.join('/')
+    map.set(source.id, `package:${pathKey}`)
+  }
+
+  for (const source of imageDirectories) {
+    const pathKey = source.treePath.join('/')
+    map.set(source.id, `folder:${pathKey}`)
+  }
+
+  return map
+}
+
 export function useAppSidebarScopeState({
   backendRead,
   mode,
@@ -164,6 +183,9 @@ export function useAppSidebarScopeState({
   setGradeByPackage,
   updateSettings,
 }: UseAppSidebarScopeStateParams): UseAppSidebarScopeStateResult {
+  const isImageMode = mode === 'image'
+  const isVideoMode = mode === 'video'
+  const isMusicMode = mode === 'music'
   const sidebarSnapshot = backendRead.sidebar.data ?? backendRead.sidebar.snapshot
   const librarySnapshotEffective = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
   const imagePackagesFromLibrary = librarySnapshotEffective?.imagePackages ?? bootstrapImagePackages
@@ -194,6 +216,10 @@ export function useAppSidebarScopeState({
     [scopedImageSourcesEffective],
   )
   const validImageIdSet = useMemo(() => {
+    if (!isImageMode) {
+      return new Set<string>()
+    }
+
     const next = new Set<string>()
     for (const source of scopedImageSourcesEffective) {
       for (const image of source.images) {
@@ -201,7 +227,7 @@ export function useAppSidebarScopeState({
       }
     }
     return next
-  }, [scopedImageSourcesEffective])
+  }, [isImageMode, scopedImageSourcesEffective])
   const videoByIdEffective = useMemo(
     () => new Map(videosEffective.map((video) => [video.id, video])),
     [videosEffective],
@@ -220,53 +246,90 @@ export function useAppSidebarScopeState({
   })
 
   const imageTreeRawLocal = useMemo(
-    () => buildImageSidebarTree(scopedSearchPackagesEffective, scopedSearchDirectoriesEffective),
-    [scopedSearchDirectoriesEffective, scopedSearchPackagesEffective],
+    () => (isImageMode ? buildImageSidebarTree(scopedSearchPackagesEffective, scopedSearchDirectoriesEffective) : []),
+    [isImageMode, scopedSearchDirectoriesEffective, scopedSearchPackagesEffective],
   )
   const imageTreeRaw = useMemo(
-    () => (mode === 'image' ? (sidebarTreeSnapshot ?? imageTreeRawLocal) : imageTreeRawLocal),
-    [imageTreeRawLocal, mode, sidebarTreeSnapshot],
+    () => (isImageMode ? (sidebarTreeSnapshot ?? imageTreeRawLocal) : imageTreeRawLocal),
+    [imageTreeRawLocal, isImageMode, sidebarTreeSnapshot],
   )
 
   const imageRootNode = useMemo(
-    () => findNodeById(imageTreeRaw, imageRootNodeId),
-    [imageTreeRaw, imageRootNodeId],
+    () => (isImageMode ? findNodeById(imageTreeRaw, imageRootNodeId) : null),
+    [imageRootNodeId, imageTreeRaw, isImageMode],
   )
 
-  const { rootScopedPackageIds, rootScopedPackages, allScopedRefs } = useRootScopedImageData({
+  const rootScopedImageData = useRootScopedImageData({
     imageRootNode,
-    scopedImageSources: scopedImageSourcesEffective,
+    scopedImageSources: isImageMode ? scopedImageSourcesEffective : [],
   })
 
-  const { imageTreeForSidebarNormal, normalImageSourceNodeIdMap } = useImageSidebarBaseState({
+  const rootScopedPackageIds = useMemo(
+    () => (isImageMode ? rootScopedImageData.rootScopedPackageIds : new Set<string>()),
+    [isImageMode, rootScopedImageData.rootScopedPackageIds],
+  )
+  const rootScopedPackages = useMemo(
+    () => (isImageMode ? rootScopedImageData.rootScopedPackages : []),
+    [isImageMode, rootScopedImageData.rootScopedPackages],
+  )
+  const allScopedRefs = useMemo(
+    () => (isImageMode ? rootScopedImageData.allScopedRefs : []),
+    [isImageMode, rootScopedImageData.allScopedRefs],
+  )
+
+  const { imageTreeForSidebarNormal, normalImageSourceNodeIdMap: normalImageSourceNodeIdMapFromTree } = useImageSidebarBaseState({
     imageTreeRaw,
     imageRootNode,
   })
 
+  const normalImageSourceNodeIdMap = useMemo(
+    () =>
+      isImageMode
+        ? normalImageSourceNodeIdMapFromTree
+        : buildImageSourceNodeIdMapFromSources(scopedSearchPackagesEffective, scopedSearchDirectoriesEffective),
+    [
+      isImageMode,
+      normalImageSourceNodeIdMapFromTree,
+      scopedSearchDirectoriesEffective,
+      scopedSearchPackagesEffective,
+    ],
+  )
+
   const vectorSidebarState = useMemo(
-    () => buildVectorSidebarState(vectorSearchResults, packageByIdEffective),
-    [packageByIdEffective, vectorSearchResults],
+    () =>
+      isImageMode
+        ? buildVectorSidebarState(vectorSearchResults, packageByIdEffective)
+        : { nodes: [], packageNodeIdMap: new Map<string, string>() },
+    [isImageMode, packageByIdEffective, vectorSearchResults],
   )
 
   const vectorSidebarNodes = vectorSidebarState.nodes
   const vectorResultPackageNodeIdMap = vectorSidebarState.packageNodeIdMap
 
   const imageTreeForSidebar = useMemo(() => {
+    if (!isImageMode) {
+      return []
+    }
     if (vectorResultsActive) {
       return vectorSidebarNodes
     }
     return imageTreeForSidebarNormal
-  }, [imageTreeForSidebarNormal, vectorResultsActive, vectorSidebarNodes])
+  }, [imageTreeForSidebarNormal, isImageMode, vectorResultsActive, vectorSidebarNodes])
 
   const imageNodeLoadStateById = useMemo(
-    () =>
-      buildImageNodeLoadState({
+    () => {
+      if (!isImageMode) {
+        return {}
+      }
+
+      return buildImageNodeLoadState({
         archiveLoadStatus,
         imageTreeForSidebar,
         scopedImageSources: scopedImageSourcesEffective,
         normalizePathForCompare,
-      }),
-    [archiveLoadStatus, imageTreeForSidebar, scopedImageSourcesEffective],
+      })
+    },
+    [archiveLoadStatus, imageTreeForSidebar, isImageMode, scopedImageSourcesEffective],
   )
 
   const normalizedVideoFeatureFilter = useMemo(
@@ -401,12 +464,12 @@ export function useAppSidebarScopeState({
   }, [audiosEffective, featureSearchActive, mode, normalizedAudioFeatureFilter])
 
   const { videoRootNode, rootScopedVideoIds, videosForSidebar, videoTreeForSidebar } = useVideoSidebarState({
-    videos: searchedVideos,
+    videos: isVideoMode ? searchedVideos : [],
     videoRootNodeId,
   })
 
   const { musicRootNode, rootScopedAudioIds, audiosForSidebar, audioTreeForSidebar } = useAudioSidebarState({
-    audios: searchedAudios,
+    audios: isMusicMode ? searchedAudios : [],
     musicRootNodeId,
   })
 
@@ -527,11 +590,16 @@ export function useAppSidebarScopeState({
   }, [flatSidebarNodes, packageByIdEffective, rootScopedPackageIds, rootScopedPackages])
 
   const orderedRootScopedPackages = useMemo(
-    () =>
-      sidebarOrderedImageSourceIds
+    () => {
+      if (!isImageMode) {
+        return []
+      }
+
+      return sidebarOrderedImageSourceIds
         .map((sourceId) => packageByIdEffective.get(sourceId))
-        .filter((pkg): pkg is ImagePackage => Boolean(pkg)),
-    [packageByIdEffective, sidebarOrderedImageSourceIds],
+        .filter((pkg): pkg is ImagePackage => Boolean(pkg))
+    },
+    [isImageMode, packageByIdEffective, sidebarOrderedImageSourceIds],
   )
 
   const orderedRootScopedImageRefs = useMemo<FocusedImageRef[]>(() => {

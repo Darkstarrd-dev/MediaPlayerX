@@ -10,6 +10,7 @@ interface UseAppReadAndNavigationParams {
   appSettings: AppSettingsStoreSnapshot
   sessionState: AppSessionStateResult
   repositoryBootstrap: RepositoryBootstrapDataResult
+  importBusy: boolean
   archiveLoadStatus: ArchiveLoadStatusResult
   mediaState: Pick<MediaStateResult, 'selectVideoFromBrowser' | 'fullscreenActive' | 'fullscreenDisplay' | 'fullscreenVideoFocus'>
 }
@@ -18,6 +19,7 @@ export function useAppReadAndNavigation({
   appSettings,
   sessionState,
   repositoryBootstrap,
+  importBusy,
   archiveLoadStatus,
   mediaState,
 }: UseAppReadAndNavigationParams) {
@@ -25,6 +27,7 @@ export function useAppReadAndNavigation({
     appSettings,
     sessionState,
     repositoryBootstrap,
+    importBusy,
   })
 
   const navigationState = useAppNavigationState({

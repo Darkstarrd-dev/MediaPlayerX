@@ -128,7 +128,9 @@ export interface SnapshotRefreshOptions {
 
 const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
 const MUSIC_ISOLATED_FALLBACK_GROUP = 'unknown artist'
+const ARCHIVE_PLACEHOLDER_ROOT_LABEL = 'Archive Pending Index'
 const COLLECTING_PREVIEW_CONTAINER_LIMIT = 120
+const COLLECTING_PREVIEW_CONTAINER_UPDATE_DELTA = 8
 const COLLECTING_PREVIEW_PERSIST_INTERVAL_MS = 1_500
 
 function normalizeTreeSegment(value: string, fallback: string): string {
@@ -658,18 +660,10 @@ export class LibrarySnapshotService {
     const previewArchivePaths = new Set<string>()
 
     const persistCollectingPreviewSnapshot = (force = false): void => {
-      if (
-        !force &&
-        discoveredContainerCount < COLLECTING_PREVIEW_CONTAINER_LIMIT &&
-        lastPreviewPersistedContainerCount > 0
-      ) {
-        return
-      }
-
       const now = Date.now()
       if (
         !force &&
-        discoveredContainerCount - lastPreviewPersistedContainerCount < 24 &&
+        discoveredContainerCount - lastPreviewPersistedContainerCount < COLLECTING_PREVIEW_CONTAINER_UPDATE_DELTA &&
         now - lastPreviewPersistedAtMs < COLLECTING_PREVIEW_PERSIST_INTERVAL_MS
       ) {
         return
@@ -726,6 +720,10 @@ export class LibrarySnapshotService {
             archivePathForMediaRead: ref.path,
             colorPalette: [...this.options.colorPalette],
             packageGradeOverridesBySourceId,
+            treePathOverride:
+              extension === '.rar' || extension === '.7z'
+                ? [ARCHIVE_PLACEHOLDER_ROOT_LABEL, path.basename(ref.path)]
+                : undefined,
           }),
         )
       }
@@ -752,7 +750,6 @@ export class LibrarySnapshotService {
       })
 
       this.snapshotCache = previewSnapshot
-      this.options.database.replaceSnapshot(previewSnapshot)
       lastPreviewPersistedAtMs = now
       lastPreviewPersistedContainerCount = discoveredContainerCount
     }

@@ -130,6 +130,46 @@ function isSameNodeIdSet(left: Set<string>, right: Set<string>): boolean {
   return true;
 }
 
+interface VisibleSidebarRow {
+  node: SidebarNode;
+  depth: number;
+}
+
+function flattenVisibleSidebarRows(
+  nodes: SidebarNode[],
+  depth: number,
+  mode: BrowserMode,
+  collapsedImageFolderNodeIds: Set<string>,
+  rows: VisibleSidebarRow[],
+): void {
+  for (const node of nodes) {
+    rows.push({ node, depth });
+
+    if (node.children.length === 0) {
+      continue;
+    }
+
+    const imageNodeType =
+      node.imageNodeType ?? (node.kind === "folder" ? "folder" : "package");
+    const imageFolderCollapsible = canFolderCollapse(mode, node, imageNodeType);
+    const imageFolderCollapsed =
+      (imageFolderCollapsible || (mode === "image" && node.kind === "folder")) &&
+      collapsedImageFolderNodeIds.has(node.id);
+
+    if (imageFolderCollapsed) {
+      continue;
+    }
+
+    flattenVisibleSidebarRows(
+      node.children,
+      depth + 1,
+      mode,
+      collapsedImageFolderNodeIds,
+      rows,
+    );
+  }
+}
+
 interface SidebarPanelProps {
   mode: BrowserMode;
   sidebarFocus: "sidebar" | "main";
@@ -347,8 +387,15 @@ function SidebarPanel({
       : mode === "video"
         ? videoTreeNodes
         : audioTreeNodes;
+  const sidebarTreeRef = useRef<HTMLDivElement | null>(null);
+  const [sidebarScrollTop, setSidebarScrollTop] = useState(0);
+  const [sidebarViewportHeight, setSidebarViewportHeight] = useState(0);
 
   const imageNodeById = useMemo(() => {
+    if (mode !== "image") {
+      return new Map<string, SidebarNode>();
+    }
+
     const map = new Map<string, SidebarNode>();
     const walk = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
@@ -360,7 +407,7 @@ function SidebarPanel({
     };
     walk(imageTreeNodes);
     return map;
-  }, [imageTreeNodes]);
+  }, [imageTreeNodes, mode]);
 
   const imagePackageParentNodeIds = useMemo(
     () => (mode === "image" ? resolveImagePackageParentNodeIds(imageTreeNodes) : []),
@@ -636,56 +683,182 @@ function SidebarPanel({
   const previousImageParentLabel = t("a11y.sidebar.previousImageParent");
   const nextImageParentLabel = t("a11y.sidebar.nextImageParent");
 
-  const renderNodes = (nodes: SidebarNode[], depth = 0): ReactElement[] => {
-    return nodes.flatMap((node) => {
-      const isFolder = node.kind === "folder";
-      const imageNodeType =
-        node.imageNodeType ?? (isFolder ? "folder" : "package");
-      const isFocusedNode = selectedSidebarNodeId === node.id;
-      const isHoverActive = hoveredNodeId === node.id;
-      const isPressedActive = isFocusedNode || isHoverActive;
-      const loadState =
-        mode === "image" ? imageNodeLoadStateById[node.id] : undefined;
-      const hasOwnImages =
-        imageNodeType === "package" || imageNodeType === "directory";
-      const imageFolderCollapsible = canFolderCollapse(
-        mode,
-        node,
-        imageNodeType,
-      );
-      const imageFolderCollapsed =
-        (imageFolderCollapsible || (mode === "image" && node.kind === "folder"))
-        && collapsedImageFolderNodeIds.has(node.id);
-      const visibleImageCount = node.directImageCount ?? 0;
-      const descendantNodeCount =
-        node.descendantNodeCount ?? node.children.length;
-      const directAudioCount = node.directAudioCount ?? 0;
-      const descendantAudioFolderCount = node.descendantAudioFolderCount ?? 0;
-      const musicCountIsTrack = directAudioCount > 0;
-      const musicCountValue = musicCountIsTrack
-        ? directAudioCount
-        : descendantAudioFolderCount;
-      const musicCountLabel = musicCountIsTrack
-        ? t("a11y.sidebar.musicTrackCount", { count: musicCountValue })
-        : t("a11y.sidebar.musicFolderCount", { count: musicCountValue });
-      const musicCountClassName = `sidebar-count ${musicCountIsTrack ? "sidebar-count-images" : "sidebar-count-packages"}`;
-      const imageCountLabel = hasOwnImages
-        ? t("a11y.sidebar.imageCount", { count: visibleImageCount })
-        : t("a11y.sidebar.nodeCount", { count: descendantNodeCount });
-      const showProcessingCountPlaceholder =
-        mode === "image" && hasOwnImages && Boolean(loadState);
+  const visibleSidebarRows = useMemo(() => {
+    const rows: VisibleSidebarRow[] = [];
+    flattenVisibleSidebarRows(
+      activeTreeNodes,
+      0,
+      mode,
+      collapsedImageFolderNodeIds,
+      rows,
+    );
+    return rows;
+  }, [activeTreeNodes, collapsedImageFolderNodeIds, mode]);
 
-      const row = (
-        <div
-          key={node.id}
-          data-sidebar-node-id={node.id}
-          className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isFocusedNode ? "is-active" : ""} ${isHoverActive ? "is-hover-active" : ""} ${isPressedActive ? "is-pressed-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
-          style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
-        >
-          <span
-            className={`sidebar-bullet ${loadState ? `is-${loadState}` : ""}`}
-            aria-hidden="true"
-          />
+  const estimatedRowHeight = useMemo(
+    () => Math.max(24, Math.round(sidebarFontSize + sidebarVerticalGap + 14)),
+    [sidebarFontSize, sidebarVerticalGap],
+  );
+  const virtualizeThreshold = 220;
+  const shouldVirtualize =
+    sidebarViewportHeight > 0 &&
+    visibleSidebarRows.length > virtualizeThreshold;
+
+  const virtualRange = useMemo(() => {
+    if (!shouldVirtualize) {
+      return {
+        startIndex: 0,
+        endIndex: visibleSidebarRows.length,
+        topSpacerHeight: 0,
+        bottomSpacerHeight: 0,
+      };
+    }
+
+    const overscanRows = 10;
+    const safeScrollTop = Math.max(0, sidebarScrollTop);
+    const startIndex = Math.max(
+      0,
+      Math.floor(safeScrollTop / estimatedRowHeight) - overscanRows,
+    );
+    const visibleCount =
+      Math.ceil(sidebarViewportHeight / estimatedRowHeight) + overscanRows * 2;
+    const endIndex = Math.min(
+      visibleSidebarRows.length,
+      startIndex + Math.max(1, visibleCount),
+    );
+
+    return {
+      startIndex,
+      endIndex,
+      topSpacerHeight: startIndex * estimatedRowHeight,
+      bottomSpacerHeight: Math.max(
+        0,
+        (visibleSidebarRows.length - endIndex) * estimatedRowHeight,
+      ),
+    };
+  }, [
+    estimatedRowHeight,
+    shouldVirtualize,
+    sidebarScrollTop,
+    sidebarViewportHeight,
+    visibleSidebarRows.length,
+  ]);
+
+  const rowsForRender = useMemo(
+    () =>
+      visibleSidebarRows.slice(
+        virtualRange.startIndex,
+        virtualRange.endIndex,
+      ),
+    [visibleSidebarRows, virtualRange.endIndex, virtualRange.startIndex],
+  );
+
+  useEffect(() => {
+    const container = sidebarTreeRef.current;
+    if (!container) {
+      return;
+    }
+
+    const refreshViewport = () => {
+      setSidebarViewportHeight(container.clientHeight);
+    };
+
+    refreshViewport();
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      refreshViewport();
+    });
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedSidebarNodeId) {
+      return;
+    }
+
+    const targetIndex = visibleSidebarRows.findIndex(
+      (row) => row.node.id === selectedSidebarNodeId,
+    );
+    if (targetIndex < 0) {
+      return;
+    }
+
+    const container = sidebarTreeRef.current;
+    if (!container) {
+      return;
+    }
+
+    const rowTop = targetIndex * estimatedRowHeight;
+    const rowBottom = rowTop + estimatedRowHeight;
+    const viewTop = container.scrollTop;
+    const viewBottom = viewTop + container.clientHeight;
+
+    if (rowTop < viewTop) {
+      container.scrollTop = Math.max(0, rowTop - 4);
+      return;
+    }
+
+    if (rowBottom > viewBottom) {
+      container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
+    }
+  }, [estimatedRowHeight, selectedSidebarNodeId, visibleSidebarRows]);
+
+  const renderRow = ({ node, depth }: VisibleSidebarRow): ReactElement => {
+    const isFolder = node.kind === "folder";
+    const imageNodeType =
+      node.imageNodeType ?? (isFolder ? "folder" : "package");
+    const isFocusedNode = selectedSidebarNodeId === node.id;
+    const isHoverActive = hoveredNodeId === node.id;
+    const isPressedActive = isFocusedNode || isHoverActive;
+    const loadState =
+      mode === "image" ? imageNodeLoadStateById[node.id] : undefined;
+    const hasOwnImages =
+      imageNodeType === "package" || imageNodeType === "directory";
+    const imageFolderCollapsible = canFolderCollapse(
+      mode,
+      node,
+      imageNodeType,
+    );
+    const imageFolderCollapsed =
+      (imageFolderCollapsible || (mode === "image" && node.kind === "folder"))
+      && collapsedImageFolderNodeIds.has(node.id);
+    const visibleImageCount = node.directImageCount ?? 0;
+    const descendantNodeCount =
+      node.descendantNodeCount ?? node.children.length;
+    const directAudioCount = node.directAudioCount ?? 0;
+    const descendantAudioFolderCount = node.descendantAudioFolderCount ?? 0;
+    const musicCountIsTrack = directAudioCount > 0;
+    const musicCountValue = musicCountIsTrack
+      ? directAudioCount
+      : descendantAudioFolderCount;
+    const musicCountLabel = musicCountIsTrack
+      ? t("a11y.sidebar.musicTrackCount", { count: musicCountValue })
+      : t("a11y.sidebar.musicFolderCount", { count: musicCountValue });
+    const musicCountClassName = `sidebar-count ${musicCountIsTrack ? "sidebar-count-images" : "sidebar-count-packages"}`;
+    const imageCountLabel = hasOwnImages
+      ? t("a11y.sidebar.imageCount", { count: visibleImageCount })
+      : t("a11y.sidebar.nodeCount", { count: descendantNodeCount });
+    const showProcessingCountPlaceholder =
+      mode === "image" && hasOwnImages && Boolean(loadState);
+
+    return (
+      <div
+        key={node.id}
+        data-sidebar-node-id={node.id}
+        className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isFocusedNode ? "is-active" : ""} ${isHoverActive ? "is-hover-active" : ""} ${isPressedActive ? "is-pressed-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
+        style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
+      >
+        <span
+          className={`sidebar-bullet ${loadState ? `is-${loadState}` : ""}`}
+          aria-hidden="true"
+        />
 
           <button
             className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""}`}
@@ -829,15 +1002,8 @@ function SidebarPanel({
               </span>
             </span>
           ) : null}
-        </div>
-      );
-
-      if (node.children.length === 0 || imageFolderCollapsed) {
-        return [row];
-      }
-
-      return [row, ...renderNodes(node.children, depth + 1)];
-    });
+      </div>
+    );
   };
 
   return (
@@ -959,19 +1125,37 @@ function SidebarPanel({
       </div>
 
       <div
+        ref={sidebarTreeRef}
         className="sidebar-tree"
         data-slot="fg-sidebar-main"
+        onScroll={(event) => {
+          setSidebarScrollTop(event.currentTarget.scrollTop);
+        }}
         style={{
           display: "flex",
           flexDirection: "column",
           gap: `${sidebarVerticalGap}px`,
         }}
       >
-        {mode === "image"
-          ? renderNodes(imageTreeNodes)
-          : mode === "video"
-            ? renderNodes(videoTreeNodes)
-            : renderNodes(audioTreeNodes)}
+        {shouldVirtualize && virtualRange.topSpacerHeight > 0 ? (
+          <div
+            aria-hidden="true"
+            style={{
+              height: `${virtualRange.topSpacerHeight}px`,
+              pointerEvents: "none",
+            }}
+          />
+        ) : null}
+        {rowsForRender.map(renderRow)}
+        {shouldVirtualize && virtualRange.bottomSpacerHeight > 0 ? (
+          <div
+            aria-hidden="true"
+            style={{
+              height: `${virtualRange.bottomSpacerHeight}px`,
+              pointerEvents: "none",
+            }}
+          />
+        ) : null}
       </div>
       <div hidden data-slot="fg-sidebar-footer" />
     </aside>

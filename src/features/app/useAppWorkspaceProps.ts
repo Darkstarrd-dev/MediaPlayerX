@@ -553,6 +553,10 @@ export function useAppWorkspaceProps({
     : goNextPage;
 
   const imageSidebarNodeIdsForWheel = (() => {
+    if (mode !== "image") {
+      return [];
+    }
+
     const orderedIds: string[] = [];
     const walk = (nodes: typeof sidebarImageTreeNodes) => {
       for (const node of nodes) {
