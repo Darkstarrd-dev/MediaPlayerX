@@ -5,6 +5,7 @@ import type {
   EnqueueImportTaskRequestDto,
   EnqueueImportTaskResponseDto,
   LibrarySnapshotDto,
+  LibrarySnapshotLiteDto,
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   MediaAccessAuditResponseDto,
@@ -74,6 +75,121 @@ function createLibrarySnapshot(): LibrarySnapshotDto {
     image_packages: [createPackageDto('pkg-base', 'base')],
     image_directories: [],
     videos: [],
+  }
+}
+
+function createBaselineRepository(overrides?: Partial<MediaRepository>): MediaRepository {
+  const snapshot = createLibrarySnapshot()
+  const source = snapshot.image_packages[0]!
+  const sidebarResponse = createSidebarResponse(source)
+  const pageResponse: ReadImagePageResponseDto = {
+    source_id: source.id,
+    total_items: source.images.length,
+    page_index: 0,
+    page_size: 12,
+    refs: [{ package_id: source.id, image_index: 0 }],
+  }
+  const metadataResponse: ReadImageMetadataResponseDto = {
+    package: source,
+    image: source.images[0],
+    grade: source.mock_grade,
+  }
+  const baseRepository: MediaRepository = {
+    getInitialLibrarySnapshot: () => snapshot,
+    readLibrarySnapshot: async () => snapshot,
+    readImageSidebarTree: async () => sidebarResponse,
+    readImagePage: async () => pageResponse,
+    readImageMetadata: async () => metadataResponse,
+    resolveMediaResource: async () => ({
+      resource_url: 'about:blank#media',
+      mime_type: 'image/jpeg',
+      expires_at_ms: Date.now() + 1_000,
+    }),
+    writePackageGrade: async (request: WritePackageGradeRequestDto) => ({
+      package_id: request.package_id,
+      grade: request.grade,
+      updated_at_ms: Date.now(),
+    }),
+    saveVideoCover: async (request: SaveVideoCoverRequestDto) => ({
+      video_id: request.video_id,
+      cover_color: request.fallback_color ?? 'hsl(120, 44%, 40%)',
+      cover_image_path: null,
+      updated_at_ms: Date.now(),
+    }),
+    readPlaylist: async () => ({ video_ids: [] }),
+    writePlaylist: async (request: WritePlaylistRequestDto) => ({
+      video_ids: request.video_ids,
+      updated_at_ms: Date.now(),
+    }),
+    enqueueImportTask: async (request: EnqueueImportTaskRequestDto) => ({
+      task: {
+        task_id: 'task-baseline',
+        task_type: 'import',
+        source: request.source,
+        paths: request.paths,
+        status: 'completed',
+        progress: 1,
+        processed_count: request.paths.length,
+        total_count: request.paths.length,
+        message: 'ok',
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    }),
+    readImportTasks: async () => ({ tasks: [] }),
+    retryImportTask: async (request: RetryImportTaskRequestDto) => ({
+      task: {
+        task_id: request.task_id,
+        task_type: 'import',
+        source: 'dialog-files',
+        paths: ['Z:/bench/retry.jpg'],
+        status: 'completed',
+        progress: 1,
+        processed_count: 1,
+        total_count: 1,
+        message: 'retried',
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    }),
+    readMediaAccessAudit: async () => ({
+      resolve_requests: 0,
+      resolve_granted: 0,
+      resolve_denied_total: 0,
+      resolve_denied_by_reason: {},
+      token_reads: 0,
+      token_hits: 0,
+      token_misses: 0,
+      token_expired: 0,
+      token_cleanup_removed: 0,
+      token_active: 0,
+      generated_at_ms: Date.now(),
+    }),
+    readRuntimeCapabilities: async () => ({
+      dependencies: {
+        sharp: true,
+        ffmpeg: true,
+        ffprobe: true,
+        seven_zip: true,
+        powershell: true,
+      },
+      strategies: {
+        thumbnail: 'sharp-webp-cache',
+        video_probe: 'ffprobe',
+        video_cover: 'ffmpeg',
+        archive_rar_7z: 'normalize-to-zip-store',
+        archive_zip_repack: 'repack-webp-store',
+      },
+      minimum_matrix: [],
+      generated_at_ms: Date.now(),
+    }),
+  }
+
+  return {
+    ...baseRepository,
+    ...overrides,
   }
 }
 
@@ -920,6 +1036,49 @@ describe('useReadOnlyDataAccess', () => {
     })
   })
 
+  it('importBusy 期间延迟 import-task-updated 的 library 刷新并在结束后补一次', async () => {
+    const snapshot = createLibrarySnapshot()
+    const readLibrarySnapshot = vi.fn(async () => snapshot)
+    let listener: ((payload: { reason: string; updated_at_ms: number }) => void) | null = null
+
+    const repository = createBaselineRepository({
+      getInitialLibrarySnapshot: () => null,
+      readLibrarySnapshot,
+      onLibraryChanged: (registeredListener) => {
+        listener = registeredListener
+        return () => {
+          if (listener === registeredListener) {
+            listener = null
+          }
+        }
+      },
+    })
+
+    const { rerender } = renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository, { importBusy: true }),
+    })
+
+    await waitFor(() => {
+      expect(readLibrarySnapshot).toHaveBeenCalledTimes(1)
+    })
+
+    await act(async () => {
+      listener?.({
+        reason: 'import-task-updated',
+        updated_at_ms: Date.now(),
+      })
+      await new Promise((resolve) => setTimeout(resolve, 220))
+    })
+
+    expect(readLibrarySnapshot).toHaveBeenCalledTimes(1)
+
+    rerender(createHookParams(repository, { importBusy: false }))
+
+    await waitFor(() => {
+      expect(readLibrarySnapshot.mock.calls.length).toBeGreaterThanOrEqual(2)
+    })
+  })
+
   it('筛选切换时可取消旧请求，且旧响应不会覆盖新状态', async () => {
     const repository = new CancellationAwareRepository()
     const { result, rerender } = renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
@@ -959,6 +1118,57 @@ describe('useReadOnlyDataAccess', () => {
       expect(result.current.sidebar.error).toBeNull()
       expect(result.current.sidebar.data?.imagePackages[0]?.displayName).toBe('charlie')
     })
+  })
+
+  it('lite 快照仅在接口缺失错误时回退到 legacy snapshot', async () => {
+    const legacySnapshot = createLibrarySnapshot()
+    const readLibrarySnapshotLite = vi
+      .fn<() => Promise<LibrarySnapshotLiteDto>>()
+      .mockRejectedValue(new Error('readLibrarySnapshotLite is not a function'))
+    const readLibrarySnapshot = vi
+      .fn<() => Promise<LibrarySnapshotDto>>()
+      .mockResolvedValue(legacySnapshot)
+
+    const repository = createBaselineRepository({
+      getInitialLibrarySnapshot: () => null,
+      readLibrarySnapshotLite,
+      readLibrarySnapshot,
+    })
+
+    const { result } = renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository),
+    })
+
+    await waitFor(() => {
+      expect(readLibrarySnapshotLite).toHaveBeenCalledTimes(1)
+      expect(readLibrarySnapshot).toHaveBeenCalledTimes(1)
+      expect(result.current.library.error).toBeNull()
+      expect(result.current.library.data?.imagePackages.length).toBe(legacySnapshot.image_packages.length)
+    })
+
+  })
+
+  it('lite 快照遇到非接口缺失错误时不回退 legacy snapshot', async () => {
+    const readLibrarySnapshotLite = vi
+      .fn<() => Promise<LibrarySnapshotLiteDto>>()
+      .mockRejectedValue(new Error('readLibrarySnapshotLite timeout'))
+    const readLibrarySnapshot = vi.fn<() => Promise<LibrarySnapshotDto>>()
+
+    const repository = createBaselineRepository({
+      getInitialLibrarySnapshot: () => null,
+      readLibrarySnapshotLite,
+      readLibrarySnapshot,
+    })
+
+    const { result } = renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository),
+    })
+
+    await waitFor(() => {
+      expect(result.current.library.error).toBe('readLibrarySnapshotLite timeout')
+    })
+    expect(readLibrarySnapshotLite).toHaveBeenCalledTimes(1)
+    expect(readLibrarySnapshot).not.toHaveBeenCalled()
   })
 
   it('管理模式开启时会向 Sidebar/Page/Metadata 请求透传 include_hidden=true', async () => {

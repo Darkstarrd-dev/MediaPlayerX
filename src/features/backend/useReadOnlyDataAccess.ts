@@ -5,6 +5,7 @@ import {
   mapImageMetadataDto,
   mapImagePageDto,
   mapImageSidebarTreeDto,
+  mapLibrarySnapshotAnyDto,
   mapLibrarySnapshotDto,
   type ImageMetadataViewModel,
   type ImagePageViewModel,
@@ -18,6 +19,7 @@ import {
 } from './readSliceUtils'
 import type { MediaRepository, SynchronousMediaRepository } from './repository'
 import type { BrowserMode, FocusedImageRef } from '../../types'
+import { getBenchSettings } from '../perf/benchSettings'
 
 const DEFAULT_IPC_TIMEOUT_MS = 8_000
 const PAGE_READ_DEBOUNCE_MS = 72
@@ -27,6 +29,52 @@ const TRANSIENT_LIBRARY_CHANGE_REASONS = new Set([
   'thumbnail-rendering-progress',
   'thumbnail-rendering-end',
 ])
+
+function parseOptionalBoolean(value: unknown): boolean | null {
+  if (typeof value === 'boolean') {
+    return value
+  }
+  if (typeof value !== 'string') {
+    return null
+  }
+  const normalized = value.trim().toLowerCase()
+  if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on') {
+    return true
+  }
+  if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') {
+    return false
+  }
+  return null
+}
+
+function resolveLiteLibrarySnapshotEnabled(): boolean {
+  const benchSettings = getBenchSettings()
+  if (benchSettings.enabled && typeof benchSettings.librarySnapshotLite === 'boolean') {
+    return benchSettings.librarySnapshotLite
+  }
+
+  const envValue = parseOptionalBoolean(import.meta.env.VITE_ENABLE_LITE_LIBRARY_SNAPSHOT)
+  if (envValue !== null) {
+    return envValue
+  }
+  return true
+}
+
+function shouldFallbackToLegacySnapshotRead(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false
+  }
+  const message = error.message.toLowerCase()
+  if (!message.includes('readlibrarysnapshotlite')) {
+    return false
+  }
+  return (
+    message.includes('not a function') ||
+    message.includes('is undefined') ||
+    message.includes('no handler registered') ||
+    message.includes('does not exist')
+  )
+}
 
 interface UseReadOnlyDataAccessParams {
   repository: MediaRepository
@@ -130,6 +178,7 @@ export function useReadOnlyDataAccess({
   const pageRequestIdRef = useRef(0)
   const metadataRequestIdRef = useRef(0)
   const deferredAllRefreshRef = useRef(false)
+  const deferredLibraryOnlyRefreshRef = useRef(false)
 
   const [libraryRetryNonce, setLibraryRetryNonce] = useState(0)
   const [sidebarRetryNonce, setSidebarRetryNonce] = useState(0)
@@ -162,6 +211,8 @@ export function useReadOnlyDataAccess({
     () => (featureGradeFilter === null ? undefined : gradeByPackage),
     [featureGradeFilter, gradeByPackage],
   )
+
+  const enableLiteLibrarySnapshot = useMemo(() => resolveLiteLibrarySnapshotEnabled(), [])
 
   // In test mode, allow the synchronous repository path so hook request timing is
   // deterministic in unit tests and avoids async jitter.
@@ -231,10 +282,23 @@ export function useReadOnlyDataAccess({
     return scheduleReadSlice({
       requestIdRef: libraryRequestIdRef,
       setState: setLibraryState,
-      fetcher: (signal) => repository.readLibrarySnapshot({ signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS }),
-      mapDto: mapLibrarySnapshotDto,
+      fetcher: async (signal) => {
+        const requestOptions = { signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS }
+        if (enableLiteLibrarySnapshot && repository.readLibrarySnapshotLite) {
+          try {
+            return await repository.readLibrarySnapshotLite(requestOptions)
+          } catch (error) {
+            if (!shouldFallbackToLegacySnapshotRead(error)) {
+              throw error
+            }
+            return await repository.readLibrarySnapshot(requestOptions)
+          }
+        }
+        return await repository.readLibrarySnapshot(requestOptions)
+      },
+      mapDto: mapLibrarySnapshotAnyDto,
     })
-  }, [isSynchronousTestMode, libraryRetryNonce, repository])
+  }, [enableLiteLibrarySnapshot, isSynchronousTestMode, libraryRetryNonce, repository])
 
   useEffect(() => {
     if (isSynchronousTestMode || mode !== 'image') {
@@ -427,6 +491,10 @@ export function useReadOnlyDataAccess({
       }
 
       if (payload.reason === 'import-task-updated') {
+        if (importBusy) {
+          deferredLibraryOnlyRefreshRef.current = true
+          return
+        }
         scheduleRefresh('library-only')
         return
       }
@@ -444,6 +512,7 @@ export function useReadOnlyDataAccess({
     featureGradeFilter,
     isSynchronousTestMode,
     repository,
+    importBusy,
     retryAllSlices,
     retryLibrary,
     retryPage,
@@ -458,6 +527,14 @@ export function useReadOnlyDataAccess({
     deferredAllRefreshRef.current = false
     retryAllSlices()
   }, [isSynchronousTestMode, retryAllSlices, suspendLibraryChangedRefresh])
+
+  useEffect(() => {
+    if (isSynchronousTestMode || importBusy || !deferredLibraryOnlyRefreshRef.current) {
+      return
+    }
+    deferredLibraryOnlyRefreshRef.current = false
+    retryLibrary()
+  }, [importBusy, isSynchronousTestMode, retryLibrary])
 
   const errors: BackendReadErrors = {
     library: libraryState.error,
