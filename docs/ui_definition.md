@@ -127,6 +127,7 @@
 | `fg.main.content.video.preview.media` | `.video-screen-media` | `data-slot="fg-main-content-video-preview-media"` | 有视频源 | video 元件 | |
 | `fg.main.content.video.preview.cover` | `.video-screen-cover-image` | `data-slot="fg-main-content-video-preview-cover"` | 有封面且未出帧 | 封面层 | |
 | `fg.main.content.video.preview.empty` | `.video-screen-empty` | `data-slot="fg-main-content-video-preview-empty"` | 无视频源 | 空态提示 | |
+| `fg.main.content.video.preview.subtitle.ovl` | `<SubtitleOverlay />`（`.video-screen` 内） | `-` | `subtitleVisible && (autoSubtitleActive || subtitleTrackUrl!=null)` | 预览区字幕覆盖层 | 与视频/封面同层叠加 |
 | `fg.main.content.video.controls` | `.video-controls-shell` | `data-slot="fg-main-content-video-controls"` | `mode=video` | 控制壳容器 | |
 | `fg.main.content.video.controls.progress` | `.video-controls-progress` + `SkeuoRunway` | `data-slot="fg-main-content-video-controls-progress"` | `mode=video` | 进度控制 | |
 | `fg.main.content.video.controls.left` | `.video-controls-group.is-left` | `data-slot="fg-main-content-video-controls-left"` | `mode=video` | 左控制组 | |
@@ -138,6 +139,8 @@
 | `fg.main.content.video.controls.playlist.pop` | `#video-main-popover-playlist.video-ctrl-panel` | `data-slot="fg-main-content-video-controls-playlist-pop"` | playlist open | 播放列表弹层 | fullscreen 时可见 |
 | `fg.main.content.video.controls.volume.pop` | `#video-main-popover-volume.video-ctrl-panel.is-volume` | `data-slot="fg-main-content-video-controls-volume-pop"` | volume open | 音量弹层 | 纵向轴（旋转） |
 | `fg.main.toolbar.manage.subtitleCleanup.panel` | `.settings-mask > .settings-panel.metadata-fetch-panel`（SubtitleCleanupPanel） | `data-slot="fg-main-toolbar-manage-subtitle-cleanup-panel"` | manage 工具栏点击字幕清洗按钮后 | 字幕清洗面板 | 全屏遮罩 |
+| `fg.main.toolbar.manage.subtitleCleanup.rawPreview.panel` | `.metadata-fetch-preview-card`（Raw） | `-` | `subtitleCleanupOpen && !rawCollapsed` | 字幕清洗原文预览区 | 可折叠 textarea |
+| `fg.main.toolbar.manage.subtitleCleanup.cleanPreview.panel` | `.metadata-fetch-preview-card`（Cleaned） | `-` | `subtitleCleanupOpen && !cleanCollapsed` | 字幕清洗结果预览区 | 可编辑 textarea |
 
 ### 5.3 Main / Music
 
@@ -146,7 +149,10 @@
 | `fg.main.content.music.preview` | `.music-name-list.music-visualizer` | `data-slot="fg-main-content-music-preview"` | `mode=music && active` | 音乐预览容器 | |
 | `fg.main.content.music.preview.canvas.gpu` | `.music-visualizer-canvas`(gpu) | `data-slot="fg-main-content-music-preview-canvas-gpu"` | runtime | GPU 画布 | |
 | `fg.main.content.music.preview.canvas.cpu` | `.music-visualizer-canvas`(cpu) | `data-slot="fg-main-content-music-preview-canvas-cpu"` | fallback | CPU 画布 | |
+| `fg.main.content.music.preview.hud.ovl` | `.music-visualizer-hud` | `-` | `runtimeShowFps || visualizerRuntimeError!=null` | 可视化调试/错误 HUD | 与画布同层覆盖 |
+| `fg.main.content.music.preview.fullscreenHotzone.ovl` | `.music-controls-fullscreen-hotzone` | `-` | `mode=music && fullscreenActive` | 全屏控制热区 | 触发浮动控件显示 |
 | `fg.main.content.music.controls` | `.music-controls-shell` | `data-slot="fg-main-content-music-controls"` | `mode=music && active` | 音乐控制壳 | |
+| `fg.main.content.music.controls.fullscreenFloating.panel` | `.music-controls-shell.is-fullscreen-floating` | `-` | `mode=music && fullscreenActive && controlsMounted` | 音乐全屏浮动控制层 | 与主内容分离的悬浮壳 |
 | `fg.main.content.music.controls.progress` | `.music-controls-progress` + `SkeuoRunway` | `data-slot="fg-main-content-music-controls-progress"` | 同上 | 进度控制 | |
 | `fg.main.content.music.controls.left` | `.music-controls-group.is-left` | `data-slot="fg-main-content-music-controls-left"` | 同上 | 左控制组 | |
 | `fg.main.content.music.controls.center` | `.music-controls-group.is-center` | `data-slot="fg-main-content-music-controls-center"` | 同上 | 中控制组 | |
@@ -173,9 +179,12 @@
 | `fg.meta.toolbar.toggle` | `.metadata-head-icon-btn` | `data-slot="fg-meta-toolbar-toggle"` | `mode=image` | 图像预览/元数据切换 | |
 | `fg.meta.main` | `MetadataImageEditor/MetadataVideoEditor/MetadataMusicEditor` | `data-slot="fg-meta-main"` | `!metadataCollapsed` | Meta 主体编辑区 | 按模式分流 |
 | `fg.meta.main.imageEditor` | `<MetadataImageEditor />` | `data-slot="fg-meta-main-image-editor"` | `mode=image` | 图像元数据编辑 | |
+| `fg.meta.main.imageEditor.preferenceMetrics.panel` | `.metadata-edit-grid`（Preference Metrics 只读字段） | `-` | `mode=image && editable` | 图像偏好行为指标展示区 | event/pages/completion/lastEvent |
 | `fg.meta.main.videoEditor` | `<MetadataVideoEditor />` | `data-slot="fg-meta-main-video-editor"` | `mode=video` | 视频元数据编辑 | |
+| `fg.meta.main.videoEditor.preferenceMetrics.panel` | `.metadata-edit-grid`（Preference Metrics 只读字段） | `-` | `mode=video && editable` | 视频偏好行为指标展示区 | event/watch/completion/lastEvent |
 | `fg.meta.main.videoEditor.playlistNameDialog.panel` | `.metadata-playlist-save-dialog` | `data-slot="fg-meta-main-video-editor-playlist-name-dialog-panel"` | save/create playlist 时 | 播放列表命名对话区 | 内联于 meta，不是全屏遮罩 |
 | `fg.meta.main.musicEditor` | `<MetadataMusicEditor />` | `data-slot="fg-meta-main-music-editor"` | `mode=music` | 音乐元数据编辑 | |
+| `fg.meta.main.musicEditor.bookletBinding.panel` | `.metadata-music-booklet-bindings` | `-` | `mode=music && editable` | 封面/Booklet 绑定配置区 | coverSource/bookletSource + 快捷动作 |
 | `fg.meta.main.search` | `<MetadataSearchSection />` | `data-slot="fg-meta-main-search"` | `searchModeActive` | 元数据检索区 | |
 | `fg.meta.main.search.featureTagPicker.panel` | `.feature-tag-modal-overlay > .feature-tag-modal-panel` | `data-slot="fg-meta-main-search-feature-tag-picker-panel"` | tag picker open | 标签选择模态面板 | 全屏遮罩+居中 |
 | `fg.meta.main.adReview` | `<MetadataAdReviewSection />` | `data-slot="fg-meta-main-ad-review"` | `mode=image && manageMode && adReviewPanelOpen` | 审核区 | |
@@ -198,9 +207,14 @@
 | `fs.video.controls.speed.pop` | `#fullscreen-popover-speed.video-ctrl-panel` | `data-slot="fs-video-controls-speed-pop"` | speed open | 全屏速度弹层 | 上弹定位 |
 | `fs.video.controls.playlist.pop` | `#fullscreen-popover-playlist.video-ctrl-panel` | `data-slot="fs-video-controls-playlist-pop"` | playlist open | 全屏播放列表弹层 | 上弹定位 |
 | `fs.video.controls.volume.pop` | `#fullscreen-popover-volume.video-ctrl-panel.is-volume` | `data-slot="fs-video-controls-volume-pop"` | volume open | 全屏音量弹层 | 纵向轴（旋转） |
+| `fs.video.controls.hotzone.ovl` | `.fullscreen-video-controls-hotzone` | `-` | `fullscreenDisplay != image-only` | 全屏视频控件触发热区 | 顶/底锚点随视频位置切换 |
+| `fs.video.controls.float.panel` | `.fullscreen-video-controls` | `-` | `fullscreenDisplay != image-only && videoControlsVisible` | 全屏视频浮动控件容器 | 承载 `fs.video.controls.*` 子项 |
 | `fs.image.controls.shell` | `.fullscreen-footer` | `data-slot="fs-image-controls-shell"` | 图像 pane 可见 | 全屏图像控制壳 | |
 | `fs.image.controls.autoplay.pop` | `.fullscreen-autoplay-popover` | `data-slot="fs-image-controls-autoplay-pop"` | autoplay popover open | 自动播放参数弹层 | upward |
 | `fs.image.controls.zoom.pop` | `.fullscreen-zoom-popover` | `data-slot="fs-image-controls-zoom-pop"` | zoom popover open | 缩放参数弹层 | upward |
+| `fs.image.convertPreview.panel` | `.fullscreen-image-compare` | `-` | `mode=image && imageConvertPreviewMode` | 图包转换左右对比容器 | 左原图右预览图 |
+| `fs.image.convertPreview.splitter` | `.fullscreen-image-compare-divider` | `-` | `mode=image && imageConvertPreviewMode && !imageConvertPreviewError` | 对比中线拖拽控件 | 调整对比比例 |
+| `fs.image.convertPreview.error.ovl` | `.fullscreen-image-compare-error` | `-` | `mode=image && imageConvertPreviewMode && imageConvertPreviewError!=null` | 转换预览失败提示层 | 回退原图显示 |
 
 ## 8. Boot（Splash）
 
