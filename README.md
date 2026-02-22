@@ -11,6 +11,11 @@
 - 已移除历史 3D 空间漫游能力与相关设置项，当前版本聚焦 2D 浏览、管理与元数据链路。
 - 已完成本轮 P1 质量修复：`lint` 告警清零、`madge --circular` 归零、Vite circular chunk 警告消除。
 
+## 待执行计划
+
+- [ ] 用户行为偏好分析（User Behavior Preference Analysis）与基于用户行为偏好的作品推荐（Behavior-Based Content Recommendation）：完成指标消费、推荐策略定义与前端推荐结果展示链路。
+  - 参考文档：`docs/ref/Xpanalysis.md`、`docs/preference-metrics-spec-v1.md`。
+
 ## 当前质量快照（v12）
 
 - 质量门禁：`npm run lint` 0 warning，`npm run build` 通过，`npm run test:coverage` 通过。
@@ -92,6 +97,8 @@ npm run test
 - `docs/windows-release-signing-runbook.md`
 - `docs/offline-auto-subtitle-implementation-plan.md`
 - `docs/project-evaluation-report-v12.md`
+- `docs/preference-metrics-spec-v1.md`
+- `docs/ref/Xpanalysis.md`
 - `docs/dependency-risk-register.md`
 - `docs/archive/README.md`
 - `docs/perf/2026-02-07-scan-benchmark.md`
