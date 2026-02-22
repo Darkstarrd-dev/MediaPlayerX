@@ -124,6 +124,40 @@ describe("useSettingsPersistence", () => {
     expect(hydrationPatch).not.toHaveProperty("uiLocale");
   });
 
+  it("sanitizes fullscreen resampling settings on hydration", async () => {
+    const updateSettings = vi.fn();
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        fullscreenResamplingEnabled: "yes",
+        fullscreenUpsamplingKernel: "invalid",
+        fullscreenDownsamplingKernel: "nearest",
+      }),
+    });
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalled();
+    });
+
+    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(hydrationPatch).not.toHaveProperty("fullscreenResamplingEnabled");
+    expect(hydrationPatch).not.toHaveProperty("fullscreenUpsamplingKernel");
+    expect(hydrationPatch.fullscreenDownsamplingKernel).toBe("nearest");
+  });
+
   it("migrates legacy vectorPanelHeight into workspaceBottomPanelHeight on hydration", async () => {
     const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({

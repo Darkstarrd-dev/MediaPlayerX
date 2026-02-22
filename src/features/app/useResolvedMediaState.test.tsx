@@ -306,6 +306,95 @@ describe('useResolvedMediaState', () => {
     expect(originalTargetIds).toContain('image-original:img-4')
   })
 
+  it('启用全屏重采样时会追加 fullscreen 目标并携带 kernel', () => {
+    const packageData = createPackageWithImages(12)
+    for (const image of packageData.images) {
+      image.width = 4000
+      image.height = 3000
+    }
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const allRefs: FocusedImageRef[] = Array.from({ length: 12 }).map((_, index) => ({
+      packageId: packageData.id,
+      imageIndex: index,
+    }))
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        actualCellWidth: 240,
+        actualMediaHeight: 180,
+        thumbnailQuality: 82,
+        thumbnailWidth: 512,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: packageData.images[6],
+        metadataImage: null,
+        focusedRef: { packageId: packageData.id, imageIndex: 6 },
+        orderedRootScopedImageRefs: allRefs,
+        fullscreenActive: true,
+        fullscreenPrefetchRadius: 2,
+        fullscreenResamplingEnabled: true,
+        fullscreenDownsamplingKernel: 'mitchell',
+        fullscreenUpsamplingKernel: 'nearest',
+        showNamesOnly: true,
+        refsInPage: [],
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    const call = vi.mocked(useResolvedMediaUrls).mock.calls[0]?.[0]
+    const fullscreenTargets = call?.targets.filter((target) => target.targetId.startsWith('image-fullscreen:')) ?? []
+
+    expect(fullscreenTargets.map((target) => target.targetId)).toContain('image-fullscreen:img-6')
+    expect(fullscreenTargets.map((target) => target.targetId)).toContain('image-fullscreen:img-8')
+    expect(fullscreenTargets.map((target) => target.targetId)).toContain('image-fullscreen:img-4')
+    expect(fullscreenTargets.every((target) => target.fullscreenKernel === 'mitchell')).toBe(true)
+  })
+
+  it('fullscreenImageSrc 优先使用 fullscreen URL', () => {
+    const packageData = createPackageWithImages(2)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    vi.mocked(useResolvedMediaUrls).mockReturnValue({
+      urlByTargetId: {
+        'image-fullscreen:img-0': 'media://fullscreen',
+        'image-original:img-0': 'media://original',
+        'image-thumb:img-0': 'media://thumb',
+      },
+      errorByTargetId: {},
+    })
+
+    const { result } = renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        actualCellWidth: 240,
+        actualMediaHeight: 180,
+        thumbnailQuality: 82,
+        thumbnailWidth: 512,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: packageData.images[0],
+        metadataImage: null,
+        focusedRef: { packageId: packageData.id, imageIndex: 0 },
+        orderedRootScopedImageRefs: [{ packageId: packageData.id, imageIndex: 0 }],
+        fullscreenActive: true,
+        fullscreenResamplingEnabled: true,
+        showNamesOnly: true,
+        refsInPage: [],
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    expect(result.current.fullscreenImageSrc).toBe('media://fullscreen')
+  })
+
   it('聚焦音频时会下发 audio 资源解析目标', () => {
     const packageData = createPackageWithImages(1)
     const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])

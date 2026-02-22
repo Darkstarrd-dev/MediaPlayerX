@@ -40,6 +40,9 @@ describe("buildSettingsPanelProps", () => {
       thumbnailWarmupConcurrency: 2,
       fullscreenPrefetchRadius: 6,
       fullscreenDecodeCacheSize: 10,
+      fullscreenResamplingEnabled: false,
+      fullscreenUpsamplingKernel: "lanczos3",
+      fullscreenDownsamplingKernel: "lanczos3",
       proxyServer: "",
       ehentaiCookies: "",
       subtitleFeatureEnabled: false,
@@ -138,6 +141,9 @@ describe("buildSettingsPanelProps", () => {
     props.onThumbnailWarmupConcurrencyChange(4);
     props.onFullscreenPrefetchRadiusChange(8);
     props.onFullscreenDecodeCacheSizeChange(16);
+    props.onFullscreenResamplingEnabledChange(true);
+    props.onFullscreenDownsamplingKernelChange("mitchell");
+    props.onFullscreenUpsamplingKernelChange("nearest");
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 });
     expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 });
@@ -183,6 +189,15 @@ describe("buildSettingsPanelProps", () => {
     });
     expect(updateSettings).toHaveBeenNthCalledWith(15, {
       fullscreenDecodeCacheSize: 16,
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(16, {
+      fullscreenResamplingEnabled: true,
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(17, {
+      fullscreenDownsamplingKernel: "mitchell",
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(18, {
+      fullscreenUpsamplingKernel: "nearest",
     });
   });
 });

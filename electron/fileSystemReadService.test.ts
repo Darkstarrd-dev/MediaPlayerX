@@ -510,6 +510,46 @@ describe('FileSystemMediaReadService', () => {
     expect(cachedFiles.some((fileName) => fileName.endsWith('.webp'))).toBe(true)
   })
 
+  it('全屏重采样请求可生成 WebP 缓存并通过受控协议返回', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-fullscreen-cache-'))
+    createdRoots.push(root)
+
+    const imagePath = path.join(root, 'fullscreen-source.png')
+    await writeTinyPng(imagePath)
+
+    const service = new FileSystemMediaReadService(root)
+    createdServices.push(service)
+    await enqueueImportAndWait(service, 'dialog-files', [imagePath])
+    await service.readLibrarySnapshot()
+
+    const resolved = await service.resolveMediaResource({
+      locator: {
+        kind: 'filesystem',
+        absolute_path: imagePath,
+        extension: '.png',
+        media_type: 'image',
+        mime_type: 'image/png',
+      },
+      preferred_variant: 'original',
+      fullscreen_resize: {
+        target_width: 1280,
+        target_height: 720,
+        kernel: 'lanczos3',
+      },
+    })
+
+    expect(resolved.mime_type).toBe('image/webp')
+    const token = decodeURIComponent(new URL(resolved.resource_url).pathname.replace(/^\//, ''))
+    const payload = await service.readMediaResourceByToken(token, null)
+    expect(payload.status).toBe(200)
+    expect(payload.headers['content-type']).toBe('image/webp')
+    expect(payload.body.length).toBeGreaterThan(0)
+
+    const thumbnailCacheRoot = path.join(root, '.mediaplayerx', 'thumbnail-cache')
+    const cachedFiles = await fs.readdir(thumbnailCacheRoot)
+    expect(cachedFiles.some((fileName) => fileName.endsWith('.webp'))).toBe(true)
+  })
+
   it('可输出运行时依赖预检与最小可用矩阵', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-runtime-cap-'))
     createdRoots.push(root)
