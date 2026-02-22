@@ -137,6 +137,17 @@ Last updated: 2026-02-22
 - 用户整理字段（`grade`、封面、播放列表、显示名、手动元数据）。
 - 音频元数据覆盖（`album`、`author`、`track_title`、`series_id`）与更新时戳。
 - 任务状态与操作日志。
+- 偏好行为指标专表：
+  - `image_preference_metrics`（按图包聚合，记录事件次数、已读页数、完成度、最近行为时间）
+  - `video_preference_metrics`（按视频聚合，记录事件次数、观看时长、完成度、最近行为时间）
+
+### 偏好行为指标写入策略（Preference Metrics）
+
+- 采集与展示解耦：运行时先写内存缓冲，避免高频拖慢主链路；展示通过快照 DTO 读取专表结果。
+- 图片事件仅在“图片全屏会话”中采集；会话结束触发一次落库（退出全屏/模式切换/退出 App）。
+- 视频事件支持全屏与非全屏采集；非全屏会话 `<10s` 视为噪音不落库；其余会话在停止/切换节点/切换模式/退出 App 时一次落库。
+- 统一入口：Renderer 通过 `writeAppState(xp_preference_metrics_v1)` 上送缓冲快照，Main 在 `writeAppState` 分支解析并写入专表，保持 IPC 面稳定。
+- 指标口径与字段定义以 `docs/preference-metrics-spec-v1.md` 为唯一事实源。
 
 ### 向量字段职责（当前实现）
 
