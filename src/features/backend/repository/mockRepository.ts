@@ -111,6 +111,13 @@ import {
   type RunManageSubtitleCleanupResponseDto,
   type SaveManageSubtitleCleanupRequestDto,
   type SaveManageSubtitleCleanupResponseDto,
+  type ImageConvertTaskDto,
+  type StartImageConvertTaskRequestDto,
+  type StartImageConvertTaskResponseDto,
+  type ReadImageConvertTaskRequestDto,
+  type ReadImageConvertTaskResponseDto,
+  type CancelImageConvertTaskRequestDto,
+  type CancelImageConvertTaskResponseDto,
   type StartManageSubtitleCleanupRequestDto,
   type StartManageSubtitleCleanupResponseDto,
   type TestAdReviewVisionModelRequestDto,
@@ -198,6 +205,8 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
   } | null = null
 
   private readonly subtitleCleanupTasks = new Map<string, ManageSubtitleCleanupTaskDto>()
+
+  private readonly imageConvertTasks = new Map<string, ImageConvertTaskDto>()
 
   private state: MockRepositoryState = {
     playlistIds: INITIAL_SNAPSHOT.videos.slice(0, 3).map((v) => v.id),
@@ -589,6 +598,74 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<SaveManageSubtitleCleanupResponseDto> {
     return resolveAsync(this.saveManageSubtitleCleanupSync(request), options)
+  }
+
+  startImageConvertTaskSync(
+    request: StartImageConvertTaskRequestDto,
+  ): StartImageConvertTaskResponseDto {
+    void request
+    const now = Date.now()
+    const taskId = `mock-image-convert-${now}-${Math.floor(Math.random() * 100_000)}`
+    const task: ImageConvertTaskDto = {
+      task_id: taskId,
+      status: 'running',
+      progress: 0,
+      total_count: 1,
+      processed_count: 0,
+      success_count: 0,
+      failed_count: 0,
+      message: 'mock convert task started',
+      error_detail: null,
+      created_at_ms: now,
+      updated_at_ms: now,
+    }
+    this.imageConvertTasks.set(taskId, task)
+    return { task }
+  }
+
+  async startImageConvertTask(
+    request: StartImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartImageConvertTaskResponseDto> {
+    return resolveAsync(this.startImageConvertTaskSync(request), options)
+  }
+
+  readImageConvertTaskSync(
+    request: ReadImageConvertTaskRequestDto,
+  ): ReadImageConvertTaskResponseDto {
+    const task = this.imageConvertTasks.get(request.task_id) ?? null
+    return { task }
+  }
+
+  async readImageConvertTask(
+    request: ReadImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadImageConvertTaskResponseDto> {
+    return resolveAsync(this.readImageConvertTaskSync(request), options)
+  }
+
+  cancelImageConvertTaskSync(
+    request: CancelImageConvertTaskRequestDto,
+  ): CancelImageConvertTaskResponseDto {
+    const task = this.imageConvertTasks.get(request.task_id)
+    if (!task) {
+      throw new Error(`image_convert_task_not_found:${request.task_id}`)
+    }
+    const nextTask: ImageConvertTaskDto = {
+      ...task,
+      status: 'cancelled',
+      message: 'mock convert task cancelled',
+      updated_at_ms: Date.now(),
+    }
+    this.imageConvertTasks.set(request.task_id, nextTask)
+    return { task: nextTask }
+  }
+
+  async cancelImageConvertTask(
+    request: CancelImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<CancelImageConvertTaskResponseDto> {
+    return resolveAsync(this.cancelImageConvertTaskSync(request), options)
   }
 
   writePackageMetadataSync(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto {

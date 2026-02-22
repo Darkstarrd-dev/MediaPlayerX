@@ -99,6 +99,12 @@ import type {
   RunManageSubtitleCleanupResponseDto,
   SaveManageSubtitleCleanupRequestDto,
   SaveManageSubtitleCleanupResponseDto,
+  StartImageConvertTaskRequestDto,
+  StartImageConvertTaskResponseDto,
+  ReadImageConvertTaskRequestDto,
+  ReadImageConvertTaskResponseDto,
+  CancelImageConvertTaskRequestDto,
+  CancelImageConvertTaskResponseDto,
   SetImageHiddenRequestDto,
   SetImageHiddenResponseDto,
   DeleteImageItemsRequestDto,
@@ -171,6 +177,15 @@ interface MediaPlayerBackendApi {
   saveManageSubtitleCleanup?: (
     request: SaveManageSubtitleCleanupRequestDto,
   ) => Promise<SaveManageSubtitleCleanupResponseDto>
+  startImageConvertTask?: (
+    request: StartImageConvertTaskRequestDto,
+  ) => Promise<StartImageConvertTaskResponseDto>
+  readImageConvertTask?: (
+    request: ReadImageConvertTaskRequestDto,
+  ) => Promise<ReadImageConvertTaskResponseDto>
+  cancelImageConvertTask?: (
+    request: CancelImageConvertTaskRequestDto,
+  ) => Promise<CancelImageConvertTaskResponseDto>
   writePackageMetadata?: (request: WritePackageMetadataRequestDto) => Promise<WritePackageMetadataResponseDto>
   writePackageExternalMetadata?: (
     request: WritePackageExternalMetadataRequestDto,

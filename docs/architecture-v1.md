@@ -1,6 +1,6 @@
 # MediaPlayer 架构设计 V1
 
-Last updated: 2026-02-18
+Last updated: 2026-02-22
 
 ## 设计原则
 
@@ -39,6 +39,8 @@ Last updated: 2026-02-18
 - 音乐可视化资源注册已模块化：Shader 通过 `import.meta.glob('./shaders/*.ts')` 自动发现，替换/新增 Shader 不需要修改 App 壳层组装代码。
 - 大文件拆分已完成：`src/App.css` 已拆分为 `src/styles/app/*` 聚合样式，`electron/mediaLibraryDatabase.ts` 已拆分为 Facade + stores（schema/snapshot/metadata/playlist/task/app state）。
 - 管理模式广告图片审核 (LLM Ad Review) 已完成纵向接线：`Renderer -> Repository -> preload/ipc -> Main service -> manageAdReview core` 全链路可用。
+- 管理模式 RS 图包转换已接入真实后端任务：`start/read/cancelImageConvertTask` 由 Main 异步执行目录/zip 转换，执行态通过轮询上报 `total/processed/success/failed`。
+- RS 转换写入策略采用临时文件 + 备份回滚：目录文件遵循“新文件就位后删除源文件”，zip 重打包遵循“临时 zip 校验后原子替换”，失败时回滚并保留诊断错误。
 
 ### Electron Main 进程
 

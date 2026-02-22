@@ -125,6 +125,7 @@ export interface SnapshotRefreshProgress {
 
 export interface SnapshotRefreshOptions {
   onProgress?: (payload: SnapshotRefreshProgress) => void
+  force?: boolean
 }
 
 const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
@@ -237,6 +238,20 @@ export class LibrarySnapshotService {
     options?: SnapshotRefreshOptions,
   ): Promise<LibrarySnapshotDto> {
     await ensureStateLoaded()
+
+    if (options?.force) {
+      if (this.loadingPromise) {
+        await this.loadingPromise.catch(() => undefined)
+      }
+      const forcedLoadPromise = this.loadSnapshot(options)
+      this.loadingPromise = forcedLoadPromise.finally(() => {
+        if (this.loadingPromise === forcedLoadPromise) {
+          this.loadingPromise = null
+        }
+      })
+      this.snapshotCache = await this.loadingPromise
+      return this.snapshotCache
+    }
 
     if (!this.loadingPromise) {
       this.loadingPromise = this.loadSnapshot(options).finally(() => {

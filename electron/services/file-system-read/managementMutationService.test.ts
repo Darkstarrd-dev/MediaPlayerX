@@ -56,6 +56,13 @@ async function ensureFile(filePath: string): Promise<void> {
   await fs.writeFile(filePath, Buffer.from('fixture'))
 }
 
+const ONE_PIXEL_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO5XKx8AAAAASUVORK5CYII='
+
+async function writeTinyPng(filePath: string): Promise<void> {
+  await fs.mkdir(path.dirname(filePath), { recursive: true })
+  await fs.writeFile(filePath, Buffer.from(ONE_PIXEL_PNG_BASE64, 'base64'))
+}
+
 function createServiceHarness(rootDir: string, snapshot: LibrarySnapshotDto) {
   const database = {
     moveSnapshotEntriesByPaths: vi.fn(),
@@ -472,5 +479,155 @@ describe('ManagementMutationService.renameItems', () => {
 
     const entries = await scanZipCentralEntries(archivePath)
     expect(entries.map((entry) => entry.entryName)).toEqual(['note.txt'])
+  })
+})
+
+describe('ManagementMutationService.runImageConvertTask', () => {
+  const tempRoots: string[] = []
+
+  afterEach(async () => {
+    vi.restoreAllMocks()
+    await Promise.all(tempRoots.map((rootDir) => fs.rm(rootDir, { recursive: true, force: true })))
+    tempRoots.length = 0
+  })
+
+  it('目录目标重名冲突时应失败并保持源文件与目标文件不变', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-image-convert-dir-collision-'))
+    tempRoots.push(rootDir)
+
+    const sourcePath = path.join(rootDir, 'gallery', 'page-01.jpg')
+    const destinationPath = path.join(rootDir, 'gallery', 'page-01.webp')
+    await writeTinyPng(sourcePath)
+    await fs.writeFile(destinationPath, Buffer.from('existing-target'))
+
+    const source = createImageSourceFixture({
+      sourceId: 'dir-1',
+      packageName: 'gallery',
+      absolutePath: path.join(rootDir, 'gallery'),
+      sourceType: 'directory',
+    })
+    source.tree_path = ['gallery']
+    source.images = [
+      {
+        ...source.images[0],
+        media_locator: {
+          kind: 'filesystem',
+          absolute_path: sourcePath,
+          extension: '.jpg',
+          media_type: 'image',
+          mime_type: 'image/jpeg',
+        },
+      },
+    ]
+
+    const snapshot: LibrarySnapshotDto = {
+      image_packages: [],
+      image_directories: [source],
+      videos: [],
+      audios: [],
+    }
+
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.runImageConvertTask({
+      node_ids: ['package:gallery'],
+      scale_factor: 1,
+      target_format: 'webp',
+      quality: 80,
+      concurrency: 2,
+    })
+
+    expect(response.total_count).toBe(1)
+    expect(response.processed_count).toBe(1)
+    expect(response.success_count).toBe(0)
+    expect(response.failed_count).toBe(1)
+    expect(response.first_error_detail).toContain('destination already exists')
+    expect(harness.emitLibraryChanged).not.toHaveBeenCalled()
+
+    const sourceBuffer = await fs.readFile(sourcePath)
+    const destinationBuffer = await fs.readFile(destinationPath)
+    expect(sourceBuffer.length).toBeGreaterThan(0)
+    expect(destinationBuffer.toString('utf8')).toBe('existing-target')
+  })
+
+  it('zip 原子替换失败时应回滚到原始压缩包', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-image-convert-zip-rollback-'))
+    tempRoots.push(rootDir)
+
+    const archivePath = path.join(rootDir, 'pkg', 'bundle.zip')
+    await writeStoredZipFromEntries(archivePath, [
+      { entryName: '01.png', content: Buffer.from(ONE_PIXEL_PNG_BASE64, 'base64') },
+      { entryName: '02.png', content: Buffer.from(ONE_PIXEL_PNG_BASE64, 'base64') },
+      { entryName: 'note.txt', content: Buffer.from('note', 'utf8') },
+    ])
+
+    const source = createImageSourceFixture({
+      sourceId: 'pkg-1',
+      packageName: 'bundle.zip',
+      absolutePath: archivePath,
+      sourceType: 'package',
+    })
+    source.tree_path = ['bundle.zip']
+    source.images = [
+      {
+        ...source.images[0],
+        media_locator: {
+          kind: 'archive-entry',
+          archive_path: archivePath,
+          archive_format: 'zip',
+          entry_name: '01.png',
+          extension: '.png',
+          media_type: 'image',
+          mime_type: 'image/png',
+        },
+      },
+      {
+        ...source.images[1],
+        media_locator: {
+          kind: 'archive-entry',
+          archive_path: archivePath,
+          archive_format: 'zip',
+          entry_name: '02.png',
+          extension: '.png',
+          media_type: 'image',
+          mime_type: 'image/png',
+        },
+      },
+    ]
+
+    const snapshot: LibrarySnapshotDto = {
+      image_packages: [source],
+      image_directories: [],
+      videos: [],
+      audios: [],
+    }
+
+    const harness = createServiceHarness(rootDir, snapshot)
+    const originalRename = fs.rename.bind(fs)
+    vi.spyOn(fs, 'rename').mockImplementation(async (fromPath, toPath) => {
+      const from = path.resolve(String(fromPath))
+      const to = path.resolve(String(toPath))
+      if (from.includes('.mpx-tmp.zip') && to === path.resolve(archivePath)) {
+        throw new Error('injected replace failure')
+      }
+      return originalRename(fromPath, toPath)
+    })
+
+    const response = await harness.service.runImageConvertTask({
+      node_ids: ['package:bundle.zip'],
+      scale_factor: 1,
+      target_format: 'webp',
+      quality: 80,
+      concurrency: 1,
+    })
+
+    expect(response.total_count).toBe(2)
+    expect(response.success_count).toBe(0)
+    expect(response.failed_count).toBe(2)
+    expect(response.first_error_detail).toContain('injected replace failure')
+    expect(harness.emitLibraryChanged).not.toHaveBeenCalled()
+
+    const entries = await scanZipCentralEntries(archivePath)
+    expect(entries.map((entry) => entry.entryName).sort()).toEqual(['01.png', '02.png', 'note.txt'])
   })
 })

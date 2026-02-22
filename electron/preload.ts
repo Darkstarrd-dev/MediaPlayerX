@@ -99,6 +99,12 @@ import {
   runManageSubtitleCleanupResponseSchema,
   saveManageSubtitleCleanupRequestSchema,
   saveManageSubtitleCleanupResponseSchema,
+  startImageConvertTaskRequestSchema,
+  startImageConvertTaskResponseSchema,
+  readImageConvertTaskRequestSchema,
+  readImageConvertTaskResponseSchema,
+  cancelImageConvertTaskRequestSchema,
+  cancelImageConvertTaskResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -259,6 +265,21 @@ const backendApi = {
     const parsed = saveManageSubtitleCleanupRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.saveManageSubtitleCleanup, parsed)
     return saveManageSubtitleCleanupResponseSchema.parse(response)
+  },
+  startImageConvertTask: async (request: unknown) => {
+    const parsed = startImageConvertTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.startImageConvertTask, parsed)
+    return startImageConvertTaskResponseSchema.parse(response)
+  },
+  readImageConvertTask: async (request: unknown) => {
+    const parsed = readImageConvertTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readImageConvertTask, parsed)
+    return readImageConvertTaskResponseSchema.parse(response)
+  },
+  cancelImageConvertTask: async (request: unknown) => {
+    const parsed = cancelImageConvertTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.cancelImageConvertTask, parsed)
+    return cancelImageConvertTaskResponseSchema.parse(response)
   },
   writePackageMetadata: async (request: unknown) => {
     const parsed = writePackageMetadataRequestSchema.parse(request)

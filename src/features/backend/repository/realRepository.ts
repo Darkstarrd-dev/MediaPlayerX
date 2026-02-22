@@ -73,6 +73,9 @@ import {
   readManageSubtitleCleanupTaskResponseSchema,
   runManageSubtitleCleanupResponseSchema,
   saveManageSubtitleCleanupResponseSchema,
+  startImageConvertTaskResponseSchema,
+  readImageConvertTaskResponseSchema,
+  cancelImageConvertTaskResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
   type EnqueueImportTaskRequestDto,
@@ -186,6 +189,12 @@ import {
   type RunManageSubtitleCleanupResponseDto,
   type SaveManageSubtitleCleanupRequestDto,
   type SaveManageSubtitleCleanupResponseDto,
+  type StartImageConvertTaskRequestDto,
+  type StartImageConvertTaskResponseDto,
+  type ReadImageConvertTaskRequestDto,
+  type ReadImageConvertTaskResponseDto,
+  type CancelImageConvertTaskRequestDto,
+  type CancelImageConvertTaskResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
   type ReadAppStateRequestDto,
@@ -480,6 +489,36 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(saveManageSubtitleCleanup(request), options)
     return saveManageSubtitleCleanupResponseSchema.parse(response)
+  }
+
+  async startImageConvertTask(
+    request: StartImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartImageConvertTaskResponseDto> {
+    const startImageConvertTask = requireBackendMethod('startImageConvertTask')
+
+    const response = await withAbort(startImageConvertTask(request), options)
+    return startImageConvertTaskResponseSchema.parse(response)
+  }
+
+  async readImageConvertTask(
+    request: ReadImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadImageConvertTaskResponseDto> {
+    const readImageConvertTask = requireBackendMethod('readImageConvertTask')
+
+    const response = await withAbort(readImageConvertTask(request), options)
+    return readImageConvertTaskResponseSchema.parse(response)
+  }
+
+  async cancelImageConvertTask(
+    request: CancelImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<CancelImageConvertTaskResponseDto> {
+    const cancelImageConvertTask = requireBackendMethod('cancelImageConvertTask')
+
+    const response = await withAbort(cancelImageConvertTask(request), options)
+    return cancelImageConvertTaskResponseSchema.parse(response)
   }
 
   async writePackageMetadata(

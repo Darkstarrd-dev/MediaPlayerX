@@ -83,6 +83,12 @@ import {
   type RunManageSubtitleCleanupResponseDto,
   type SaveManageSubtitleCleanupRequestDto,
   type SaveManageSubtitleCleanupResponseDto,
+  type StartImageConvertTaskRequestDto,
+  type StartImageConvertTaskResponseDto,
+  type ReadImageConvertTaskRequestDto,
+  type ReadImageConvertTaskResponseDto,
+  type CancelImageConvertTaskRequestDto,
+  type CancelImageConvertTaskResponseDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
@@ -371,6 +377,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       importPathRegistry: this.importPathRegistry,
       ensureStateLoaded: () => this.ensureStateLoaded(),
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+      refreshSnapshotFromFilesystem: (options) => this.refreshSnapshotFromFilesystem(options),
       syncSnapshotFromDatabase: () => this.syncSnapshotFromDatabase(),
       refreshArchiveIndexesForPaths: (paths) => this.refreshArchiveIndexesForPaths(paths),
       pruneArchiveIndexesByDeletedRoots: (paths) => this.pruneArchiveIndexesByDeletedRoots(paths),
@@ -1293,6 +1300,24 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     request: SaveManageSubtitleCleanupRequestDto,
   ): Promise<SaveManageSubtitleCleanupResponseDto> {
     return this.managementHandlers.saveManageSubtitleCleanup(request)
+  }
+
+  async startImageConvertTask(
+    request: StartImageConvertTaskRequestDto,
+  ): Promise<StartImageConvertTaskResponseDto> {
+    return this.managementHandlers.startImageConvertTask(request)
+  }
+
+  async readImageConvertTask(
+    request: ReadImageConvertTaskRequestDto,
+  ): Promise<ReadImageConvertTaskResponseDto> {
+    return this.managementHandlers.readImageConvertTask(request)
+  }
+
+  async cancelImageConvertTask(
+    request: CancelImageConvertTaskRequestDto,
+  ): Promise<CancelImageConvertTaskResponseDto> {
+    return this.managementHandlers.cancelImageConvertTask(request)
   }
 
   async writePackageMetadata(request: WritePackageMetadataRequestDto): Promise<WritePackageMetadataResponseDto> {

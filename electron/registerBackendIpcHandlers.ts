@@ -106,6 +106,12 @@ import {
   runManageSubtitleCleanupResponseSchema,
   saveManageSubtitleCleanupRequestSchema,
   saveManageSubtitleCleanupResponseSchema,
+  startImageConvertTaskRequestSchema,
+  startImageConvertTaskResponseSchema,
+  readImageConvertTaskRequestSchema,
+  readImageConvertTaskResponseSchema,
+  cancelImageConvertTaskRequestSchema,
+  cancelImageConvertTaskResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -560,6 +566,27 @@ export function registerBackendIpcHandlers(): void {
     saveManageSubtitleCleanupRequestSchema,
     saveManageSubtitleCleanupResponseSchema,
     (request) => ensureService().saveManageSubtitleCleanup(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.startImageConvertTask,
+    startImageConvertTaskRequestSchema,
+    startImageConvertTaskResponseSchema,
+    (request) => ensureService().startImageConvertTask(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.readImageConvertTask,
+    readImageConvertTaskRequestSchema,
+    readImageConvertTaskResponseSchema,
+    (request) => ensureService().readImageConvertTask(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.cancelImageConvertTask,
+    cancelImageConvertTaskRequestSchema,
+    cancelImageConvertTaskResponseSchema,
+    (request) => ensureService().cancelImageConvertTask(request),
   );
 
   registerIpcCommand(

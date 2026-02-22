@@ -39,11 +39,100 @@ import {
   type RunManageSubtitleCleanupResponseDto,
   type SaveManageSubtitleCleanupRequestDto,
   type SaveManageSubtitleCleanupResponseDto,
+  type ImageConvertTaskDto,
+  type StartImageConvertTaskRequestDto,
+  type StartImageConvertTaskResponseDto,
+  type ReadImageConvertTaskRequestDto,
+  type ReadImageConvertTaskResponseDto,
+  type CancelImageConvertTaskRequestDto,
+  type CancelImageConvertTaskResponseDto,
 } from '../../src/contracts/backend'
 import { FileSystemFacadeContext } from './types'
 
 export class FileSystemManagementHandlers {
+  private readonly imageConvertTasks = new Map<string, ImageConvertTaskDto>()
+  private readonly imageConvertTaskRuntime = new Map<string, { cancelRequested: boolean }>()
+
   constructor(private context: FileSystemFacadeContext) {}
+
+  private updateImageConvertTask(
+    taskId: string,
+    updater: (task: ImageConvertTaskDto) => ImageConvertTaskDto,
+  ): ImageConvertTaskDto {
+    const currentTask = this.imageConvertTasks.get(taskId)
+    if (!currentTask) {
+      throw new Error(`image_convert_task_not_found:${taskId}`)
+    }
+    const nextTask = updater(currentTask)
+    this.imageConvertTasks.set(taskId, nextTask)
+    return nextTask
+  }
+
+  private isImageConvertCancelledError(error: unknown): boolean {
+    if (!(error instanceof Error)) {
+      return false
+    }
+    return error.name === 'ImageConvertCancelledError' || error.message === 'image_convert_cancelled'
+  }
+
+  private executeImageConvertTask(taskId: string, request: StartImageConvertTaskRequestDto): void {
+    const runtime = this.imageConvertTaskRuntime.get(taskId)
+    if (!runtime) {
+      return
+    }
+
+    void this.context.managementMutationService.runImageConvertTask(request, {
+      isCancelled: () => runtime.cancelRequested,
+      onProgress: (payload) => {
+        this.updateImageConvertTask(taskId, (task) => ({
+          ...task,
+          status: 'running',
+          progress: payload.total_count > 0
+            ? Math.max(0, Math.min(1, payload.processed_count / payload.total_count))
+            : 0,
+          total_count: payload.total_count,
+          processed_count: payload.processed_count,
+          success_count: payload.success_count,
+          failed_count: payload.failed_count,
+          message: payload.message,
+          updated_at_ms: Date.now(),
+        }))
+      },
+    })
+      .then((result) => {
+        const nextStatus = runtime.cancelRequested ? 'cancelled' : result.failed_count > 0 ? 'failed' : 'completed'
+        this.updateImageConvertTask(taskId, (task) => ({
+          ...task,
+          status: nextStatus,
+          progress: 1,
+          total_count: result.total_count,
+          processed_count: result.processed_count,
+          success_count: result.success_count,
+          failed_count: result.failed_count,
+          message: runtime.cancelRequested
+            ? 'convert task cancelled'
+            : nextStatus === 'completed'
+              ? 'convert task completed'
+              : 'convert task finished with failure',
+          error_detail: nextStatus === 'failed' ? result.first_error_detail : null,
+          updated_at_ms: Date.now(),
+        }))
+      })
+      .catch((error) => {
+        const cancelled = runtime.cancelRequested || this.isImageConvertCancelledError(error)
+        const reason = error instanceof Error && error.message ? error.message : String(error)
+        this.updateImageConvertTask(taskId, (task) => ({
+          ...task,
+          status: cancelled ? 'cancelled' : 'failed',
+          message: cancelled ? 'convert task cancelled' : 'convert task failed',
+          error_detail: cancelled ? null : reason,
+          updated_at_ms: Date.now(),
+        }))
+      })
+      .finally(() => {
+        this.imageConvertTaskRuntime.delete(taskId)
+      })
+  }
 
   async setImageHidden(
     request: SetImageHiddenRequestDto,
@@ -163,5 +252,66 @@ export class FileSystemManagementHandlers {
     request: SaveManageSubtitleCleanupRequestDto,
   ): Promise<SaveManageSubtitleCleanupResponseDto> {
     return this.context.libraryReadWriteService.saveManageSubtitleCleanup(request)
+  }
+
+  async startImageConvertTask(
+    request: StartImageConvertTaskRequestDto,
+  ): Promise<StartImageConvertTaskResponseDto> {
+    const now = Date.now()
+    const taskId = `image-convert-${now}-${Math.floor(Math.random() * 100_000)}`
+    const task: ImageConvertTaskDto = {
+      task_id: taskId,
+      status: 'running',
+      progress: 0,
+      total_count: 0,
+      processed_count: 0,
+      success_count: 0,
+      failed_count: 0,
+      message: 'convert task started',
+      error_detail: null,
+      created_at_ms: now,
+      updated_at_ms: now,
+    }
+    this.imageConvertTasks.set(taskId, task)
+    this.imageConvertTaskRuntime.set(taskId, { cancelRequested: false })
+    this.executeImageConvertTask(taskId, request)
+    return { task }
+  }
+
+  async readImageConvertTask(
+    request: ReadImageConvertTaskRequestDto,
+  ): Promise<ReadImageConvertTaskResponseDto> {
+    return {
+      task: this.imageConvertTasks.get(request.task_id) ?? null,
+    }
+  }
+
+  async cancelImageConvertTask(
+    request: CancelImageConvertTaskRequestDto,
+  ): Promise<CancelImageConvertTaskResponseDto> {
+    const existingTask = this.imageConvertTasks.get(request.task_id)
+    if (!existingTask) {
+      throw new Error(`image_convert_task_not_found:${request.task_id}`)
+    }
+    const runtime = this.imageConvertTaskRuntime.get(request.task_id)
+    if (runtime) {
+      runtime.cancelRequested = true
+    }
+    const isTerminal =
+      existingTask.status === 'cancelled' ||
+      existingTask.status === 'completed' ||
+      existingTask.status === 'failed'
+    const nextTask: ImageConvertTaskDto = isTerminal
+      ? {
+          ...existingTask,
+          updated_at_ms: Date.now(),
+        }
+      : {
+          ...existingTask,
+          message: 'convert task cancellation requested',
+          updated_at_ms: Date.now(),
+        }
+    this.imageConvertTasks.set(nextTask.task_id, nextTask)
+    return { task: nextTask }
   }
 }

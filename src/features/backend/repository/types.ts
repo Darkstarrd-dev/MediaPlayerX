@@ -75,6 +75,12 @@ import type {
   RunManageSubtitleCleanupResponseDto,
   SaveManageSubtitleCleanupRequestDto,
   SaveManageSubtitleCleanupResponseDto,
+  StartImageConvertTaskRequestDto,
+  StartImageConvertTaskResponseDto,
+  ReadImageConvertTaskRequestDto,
+  ReadImageConvertTaskResponseDto,
+  CancelImageConvertTaskRequestDto,
+  CancelImageConvertTaskResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
@@ -227,6 +233,18 @@ export interface MediaRepository {
     request: SaveManageSubtitleCleanupRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<SaveManageSubtitleCleanupResponseDto>
+  startImageConvertTask?(
+    request: StartImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartImageConvertTaskResponseDto>
+  readImageConvertTask?(
+    request: ReadImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadImageConvertTaskResponseDto>
+  cancelImageConvertTask?(
+    request: CancelImageConvertTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<CancelImageConvertTaskResponseDto>
   writePackageMetadata?(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -391,6 +409,15 @@ export interface SynchronousMediaRepository extends MediaRepository {
   saveManageSubtitleCleanupSync?(
     request: SaveManageSubtitleCleanupRequestDto,
   ): SaveManageSubtitleCleanupResponseDto
+  startImageConvertTaskSync?(
+    request: StartImageConvertTaskRequestDto,
+  ): StartImageConvertTaskResponseDto
+  readImageConvertTaskSync?(
+    request: ReadImageConvertTaskRequestDto,
+  ): ReadImageConvertTaskResponseDto
+  cancelImageConvertTaskSync?(
+    request: CancelImageConvertTaskRequestDto,
+  ): CancelImageConvertTaskResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
   writePackageExternalMetadataSync?(
     request: WritePackageExternalMetadataRequestDto,

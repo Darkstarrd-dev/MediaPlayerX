@@ -27,6 +27,10 @@ import type {
   WriteVideoMetadataResponseDto,
   WriteAudioMetadataRequestDto,
   WriteAudioMetadataResponseDto,
+  StartImageConvertTaskRequestDto,
+  StartImageConvertTaskResponseDto,
+  CancelImageConvertTaskRequestDto,
+  CancelImageConvertTaskResponseDto,
 } from "../../contracts/backend";
 import { useI18n } from "../../i18n/useI18n";
 import { toErrorDetailWithCode } from "../shared/errorCode";
@@ -186,6 +190,12 @@ interface UseWriteDataAccessResult {
     timeSec: number,
     optimisticColor: string,
   ) => Promise<void>;
+  startImageConvertTask: (
+    request: StartImageConvertTaskRequestDto,
+  ) => Promise<StartImageConvertTaskResponseDto>;
+  cancelImageConvertTask: (
+    request: CancelImageConvertTaskRequestDto,
+  ) => Promise<CancelImageConvertTaskResponseDto>;
 }
 
 export function useWriteDataAccess({
@@ -847,6 +857,56 @@ export function useWriteDataAccess({
     [repository, t],
   );
 
+  const startImageConvertTask = useCallback(
+    async (
+      request: StartImageConvertTaskRequestDto,
+    ): Promise<StartImageConvertTaskResponseDto> => {
+      if (!repository.startImageConvertTask) {
+        throw new Error("manage_image_convert_start_unsupported");
+      }
+
+      setManagePending(true);
+      setManageError(null);
+      try {
+        return await repository.startImageConvertTask(request, {
+          timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+        });
+      } catch (error: unknown) {
+        const message = toErrorDetailWithCode(error, t);
+        setManageError(message);
+        throw error instanceof Error ? error : new Error(String(error));
+      } finally {
+        setManagePending(false);
+      }
+    },
+    [repository, t],
+  );
+
+  const cancelImageConvertTask = useCallback(
+    async (
+      request: CancelImageConvertTaskRequestDto,
+    ): Promise<CancelImageConvertTaskResponseDto> => {
+      if (!repository.cancelImageConvertTask) {
+        throw new Error("manage_image_convert_cancel_unsupported");
+      }
+
+      setManagePending(true);
+      setManageError(null);
+      try {
+        return await repository.cancelImageConvertTask(request, {
+          timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
+        });
+      } catch (error: unknown) {
+        const message = toErrorDetailWithCode(error, t);
+        setManageError(message);
+        throw error instanceof Error ? error : new Error(String(error));
+      } finally {
+        setManagePending(false);
+      }
+    },
+    [repository, t],
+  );
+
   return {
     pending: {
       grade: gradePending,
@@ -878,6 +938,8 @@ export function useWriteDataAccess({
     writeVideoMetadata,
     writeAudioMetadata,
     saveVideoCover,
+    startImageConvertTask,
+    cancelImageConvertTask,
   };
 }
 
