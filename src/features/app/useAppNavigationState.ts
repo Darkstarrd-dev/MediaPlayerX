@@ -154,6 +154,8 @@ export function useAppNavigationState({
   } = useAppSidebarScopeState({
     backendRead,
     mode,
+    fullscreenActive,
+    fullscreenDisplay,
     bootstrapLibrarySnapshot,
     bootstrapImagePackages,
     bootstrapImageDirectories,

@@ -643,6 +643,11 @@
   color: var(--mpx-slot-fg-main-toolbar-manage-delete-confirm-panel-text, inherit);
 }
 
+[data-slot='fg-main-toolbar-image-rs-panel'] {
+  background: var(--mpx-slot-fg-main-toolbar-image-rs-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
+  color: var(--mpx-slot-fg-main-toolbar-image-rs-panel-text, inherit);
+}
+
 [data-slot='fg-sidebar-shortcut-rename-panel'] {
   background: var(--mpx-slot-fg-sidebar-shortcut-rename-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
   color: var(--mpx-slot-fg-sidebar-shortcut-rename-panel-text, inherit);

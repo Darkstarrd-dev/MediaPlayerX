@@ -489,6 +489,44 @@ describe("MediaPlayer 虚拟 UI", () => {
       );
     });
 
+    const fullscreenImagePane = document.querySelector(
+      ".fullscreen-image",
+    ) as HTMLElement | null;
+    expect(fullscreenImagePane).not.toBeNull();
+    fireEvent.mouseEnter(fullscreenImagePane as HTMLElement);
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+
+    await waitFor(() => {
+      expect(screen.queryByText("无可用视频源")).not.toBeInTheDocument();
+      const fullscreenVideo = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      expect(fullscreenVideo).not.toBeNull();
+      expect(fullscreenVideo?.getAttribute("src")).toContain(
+        "about:blank#mock-video",
+      );
+    });
+
+    const fullscreenVideoPane = document.querySelector(
+      ".fullscreen-video",
+    ) as HTMLElement | null;
+    expect(fullscreenVideoPane).not.toBeNull();
+    fireEvent.mouseMove(fullscreenVideoPane as HTMLElement);
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+
+    await waitFor(() => {
+      expect(screen.queryByText("无可用视频源")).not.toBeInTheDocument();
+      const singleVideo = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      expect(singleVideo).not.toBeNull();
+      expect(singleVideo?.getAttribute("src")).toContain(
+        "about:blank#mock-video",
+      );
+    });
+
     await keyDown(window, { key: "f", code: "KeyF" });
     await click(screen.getByRole("button", { name: "视频模式" }));
 
@@ -501,6 +539,48 @@ describe("MediaPlayer 虚拟 UI", () => {
         "about:blank#mock-video",
       );
     });
+
+    await keyDown(window, { key: "f", code: "KeyF" });
+
+    await waitFor(() => {
+      const fullscreenVideo = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      expect(fullscreenVideo).not.toBeNull();
+      expect(fullscreenVideo?.getAttribute("src")).toContain(
+        "about:blank#mock-video",
+      );
+    });
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+
+    await waitFor(() => {
+      const dualImage = document.querySelector(
+        ".fullscreen-media-image-element",
+      ) as HTMLImageElement | null;
+      expect(dualImage).not.toBeNull();
+    });
+
+    const dualImagePane = document.querySelector(
+      ".fullscreen-image",
+    ) as HTMLElement | null;
+    expect(dualImagePane).not.toBeNull();
+    fireEvent.mouseMove(dualImagePane as HTMLElement);
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+
+    await waitFor(() => {
+      expect(screen.queryByText("无可用图片")).not.toBeInTheDocument();
+      const singleImage = document.querySelector(
+        ".fullscreen-media-image-element",
+      ) as HTMLImageElement | null;
+      expect(singleImage).not.toBeNull();
+      expect(singleImage?.getAttribute("src")).toContain(
+        "data:image/svg+xml",
+      );
+    });
+
+    await keyDown(window, { key: "f", code: "KeyF" });
   });
 
   it(

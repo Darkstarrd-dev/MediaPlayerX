@@ -25,7 +25,6 @@ interface UsePersistedSessionCursorParams {
   repository: MediaRepository;
   mode: BrowserMode;
   importBusy: boolean;
-  updateMode: (mode: BrowserMode) => void;
   fullscreenActive: boolean;
   selectedPackageId: string;
   focusByPackage: Record<string, number>;
@@ -112,7 +111,6 @@ export function usePersistedSessionCursor({
   repository,
   mode,
   importBusy,
-  updateMode,
   fullscreenActive,
   selectedPackageId,
   focusByPackage,
@@ -279,14 +277,6 @@ export function usePersistedSessionCursor({
       }
     }
 
-    if (persisted.mode === "image") {
-      updateMode("image");
-    } else if (persisted.mode === "video") {
-      updateMode("video");
-    } else if (persisted.mode === "music") {
-      updateMode("music");
-    }
-
     appliedRef.current = true;
   }, [
     importBusy,
@@ -305,7 +295,6 @@ export function usePersistedSessionCursor({
     setPageByPackage,
     setSelectedAudioId,
     setSelectedPackageId,
-    updateMode,
   ]);
 
   useEffect(() => {

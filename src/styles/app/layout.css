@@ -944,6 +944,65 @@
   background: color-mix(in srgb, var(--mpx-fullscreen-bg) 45%, transparent);
 }
 
+.fullscreen-image-compare {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.fullscreen-image-compare-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.fullscreen-image-compare-layer.is-preview {
+  clip-path: inset(0 0 0 var(--mpx-fs-compare-split, 50%));
+}
+
+.fullscreen-image-compare-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  margin-left: -8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-image-compare-divider::before {
+  content: '';
+  width: 2px;
+  height: 100%;
+  background: color-mix(in srgb, var(--mpx-text-inverse) 82%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--mpx-bg-tooltip) 35%, transparent);
+}
+
+.fullscreen-image-compare-error {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid color-mix(in srgb, var(--mpx-status-danger-border) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--mpx-status-danger-bg) 70%, transparent);
+  color: var(--mpx-status-danger-text);
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 8px 10px;
+}
+
 .fullscreen-media-video-element {
   background: #000;
 }
@@ -1261,6 +1320,35 @@
   border-color: var(--mpx-slot-fs-image-controls-zoom-pop-border, var(--mpx-border-1));
   background: var(--mpx-slot-fs-image-controls-zoom-pop-bg, var(--mpx-bg-elevated));
   box-shadow: var(--mpx-slot-fs-image-controls-zoom-pop-shadow, var(--mpx-shadow-popover));
+}
+
+.fullscreen-convert-format-popover {
+  width: auto;
+  min-width: 84px;
+  padding: 8px;
+}
+
+.fullscreen-convert-format-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fullscreen-convert-format-btn {
+  border: 1px solid var(--mpx-border-2);
+  border-radius: 6px;
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.fullscreen-convert-format-btn.is-active {
+  border-color: var(--mpx-player-btn-active-border);
+  background: var(--mpx-player-btn-active-bg);
+  color: var(--mpx-player-btn-text);
 }
 
 .fullscreen-inline-field {

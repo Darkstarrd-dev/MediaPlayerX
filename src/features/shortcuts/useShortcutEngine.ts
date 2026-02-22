@@ -418,6 +418,14 @@ export function useShortcutEngine({
         return;
       }
 
+      const imageConvertExecuting =
+        document.documentElement.dataset.mpxImageConvertExecuting === "1";
+      if (imageConvertExecuting && event.key !== "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
       if (event.key === "Escape" && fullscreenActive) {
         event.preventDefault();
         onSetFullscreenActive(false);
@@ -669,6 +677,12 @@ export function useShortcutEngine({
   useEffect(() => {
     const handleWheel = (event: WheelEvent) => {
       if (suspended) {
+        return;
+      }
+
+      if (document.documentElement.dataset.mpxImageConvertExecuting === "1") {
+        event.preventDefault();
+        event.stopPropagation();
         return;
       }
 

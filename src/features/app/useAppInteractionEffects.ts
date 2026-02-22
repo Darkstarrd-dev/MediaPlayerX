@@ -699,6 +699,14 @@ export function useAppInteractionEffects({
         return
       }
 
+      const imageConvertExecuting =
+        document.documentElement.dataset.mpxImageConvertExecuting === '1'
+      if (imageConvertExecuting && event.key !== 'Escape') {
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+
       if (!fullscreenActive) {
         if (isEditableTarget(event.target)) {
           return
@@ -922,6 +930,14 @@ export function useAppInteractionEffects({
 
     const onMouseDown = (event: MouseEvent) => {
       if (featureTagPickerOpen) {
+        return
+      }
+
+      if (document.documentElement.dataset.mpxImageConvertExecuting === '1') {
+        if (event.button === 2) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
         return
       }
 

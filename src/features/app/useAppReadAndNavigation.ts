@@ -27,6 +27,7 @@ export function useAppReadAndNavigation({
     appSettings,
     sessionState,
     repositoryBootstrap,
+    mediaState,
     importBusy,
   })
 

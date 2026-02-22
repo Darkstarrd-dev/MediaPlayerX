@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { FeatureFilterDto } from '../../contracts/backend'
+import type {
+  FeatureFilterDto,
+  ReadImageConvertTaskRequestDto,
+  ReadImageConvertTaskResponseDto,
+} from '../../contracts/backend'
 import {
   mapImageMetadataDto,
   mapImagePageDto,
@@ -94,6 +98,7 @@ interface UseReadOnlyDataAccessParams {
   mode: BrowserMode
   includeHidden: boolean
   importBusy?: boolean
+  enableImageSidebarRead?: boolean
   suspendLibraryChangedRefresh?: boolean
   selectedSourceId: string | null
   pageIndex: number
@@ -156,6 +161,7 @@ export function useReadOnlyDataAccess({
   mode,
   includeHidden,
   importBusy = false,
+  enableImageSidebarRead = false,
   suspendLibraryChangedRefresh = false,
   selectedSourceId,
   pageIndex,
@@ -257,6 +263,7 @@ export function useReadOnlyDataAccess({
   )
 
   const enableLiteLibrarySnapshot = useMemo(() => resolveLiteLibrarySnapshotEnabled(), [])
+  const shouldReadImageSidebar = mode === 'image' || enableImageSidebarRead
   const enableImportRefreshThrottle = useMemo(() => resolveImportRefreshThrottleEnabled(), [])
 
   // In test mode, allow the synchronous repository path so hook request timing is
@@ -269,7 +276,7 @@ export function useReadOnlyDataAccess({
     }
 
     const sidebarDto =
-      mode === 'image'
+      shouldReadImageSidebar
         ? repository.readImageSidebarTreeSync({
             feature_filter: featureFilter,
             grade_overrides: gradeOverridesForRead,
@@ -304,6 +311,7 @@ export function useReadOnlyDataAccess({
       metadataData: metadataDto ? mapImageMetadataDto(metadataDto) : null,
     }
   }, [
+    shouldReadImageSidebar,
     featureFilter,
     focusedRef,
     gradeOverridesForRead,
@@ -346,7 +354,7 @@ export function useReadOnlyDataAccess({
   }, [enableLiteLibrarySnapshot, isSynchronousTestMode, libraryRetryNonce, repository])
 
   useEffect(() => {
-    if (isSynchronousTestMode || mode !== 'image') {
+    if (isSynchronousTestMode || !shouldReadImageSidebar) {
       return
     }
 
@@ -364,7 +372,7 @@ export function useReadOnlyDataAccess({
         ),
       mapDto: mapImageSidebarTreeDto,
     })
-  }, [featureFilter, gradeOverridesForRead, includeHidden, isSynchronousTestMode, mode, repository, sidebarRetryNonce])
+  }, [featureFilter, gradeOverridesForRead, includeHidden, isSynchronousTestMode, repository, shouldReadImageSidebar, sidebarRetryNonce])
 
   useEffect(() => {
     if (isSynchronousTestMode || mode !== 'image' || vectorResultsActive) {
@@ -454,6 +462,20 @@ export function useReadOnlyDataAccess({
   const retryMetadata = useCallback(() => {
     setMetadataRetryNonce((value) => value + 1)
   }, [])
+
+  const readImageConvertTask = useCallback(
+    async (
+      request: ReadImageConvertTaskRequestDto,
+    ): Promise<ReadImageConvertTaskResponseDto> => {
+      if (!repository.readImageConvertTask) {
+        throw new Error('manage_image_convert_read_unsupported')
+      }
+      return repository.readImageConvertTask(request, {
+        timeoutMs: DEFAULT_IPC_TIMEOUT_MS,
+      })
+    },
+    [repository],
+  )
 
   const triggerSliceRefresh = useCallback(
     (slice: 'library' | 'sidebar' | 'page' | 'metadata', hash: string, loading: boolean, retry: () => void) => {
@@ -712,6 +734,7 @@ export function useReadOnlyDataAccess({
       retrySidebar: () => undefined,
       retryPage: () => undefined,
       retryMetadata: () => undefined,
+      readImageConvertTask,
     }
   }
 
@@ -725,6 +748,7 @@ export function useReadOnlyDataAccess({
     retrySidebar,
     retryPage,
     retryMetadata,
+    readImageConvertTask,
   }
 }
 

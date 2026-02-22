@@ -1331,6 +1331,51 @@ describe('useReadOnlyDataAccess', () => {
     )
   })
 
+  it('video 模式在 dual 上下文启用时会额外读取 image sidebar 数据', async () => {
+    const snapshot = createLibrarySnapshot()
+    const source = snapshot.image_packages[0]
+    if (!source) {
+      throw new Error('mock source not found')
+    }
+
+    const readImageSidebarTree = vi.fn(
+      async (request: ReadImageSidebarTreeRequestDto): Promise<ReadImageSidebarTreeResponseDto> => {
+        void request
+        return createSidebarResponse(source)
+      },
+    )
+
+    const repository = createBaselineRepository({
+      readImageSidebarTree,
+    })
+
+    const { rerender } = renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository, {
+        mode: 'video',
+        focusedRef: null,
+        selectedSourceId: null,
+        enableImageSidebarRead: false,
+      }),
+    })
+
+    await waitFor(() => {
+      expect(readImageSidebarTree).toHaveBeenCalledTimes(0)
+    })
+
+    rerender(
+      createHookParams(repository, {
+        mode: 'video',
+        focusedRef: null,
+        selectedSourceId: null,
+        enableImageSidebarRead: true,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(readImageSidebarTree).toHaveBeenCalledTimes(1)
+    })
+  })
+
   it('includeHidden 从 true 切换到 false 时会驱动 Sidebar/Page/Metadata 同步收敛', async () => {
     const snapshot = createLibrarySnapshot()
     const source = snapshot.image_packages[0]

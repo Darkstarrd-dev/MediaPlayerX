@@ -473,6 +473,33 @@ select option {
   white-space: nowrap;
 }
 
+.main-toolbar-image-convert-dialog {
+  width: min(520px, 92vw);
+}
+
+.main-toolbar-image-convert-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.main-toolbar-image-convert-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.main-toolbar-image-convert-row > span {
+  font-size: 12px;
+  color: var(--mpx-text-2);
+}
+
+.main-toolbar-image-convert-row > input[type='range'],
+.main-toolbar-image-convert-row > select {
+  width: 100%;
+}
+
 .toolbar-actions .feature-action-btn.is-active {
   border-color: color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-border-2));
   background: color-mix(in srgb, var(--mpx-accent-soft) 64%, var(--mpx-bg-muted));

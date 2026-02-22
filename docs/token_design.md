@@ -91,6 +91,7 @@
 | `fg.main.toolbar.image.adReviewStart.panel` | `--mpx-slot-fg-main-toolbar-image-ad-review-start-panel-*` |
 | `fg.main.toolbar.image.metadataFetch.panel` | `--mpx-slot-fg-main-toolbar-image-metadata-fetch-panel-*` |
 | `fg.main.toolbar.image.deleteProgress.ovl` | `--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-*` |
+| `fg.main.toolbar.image.rs.panel` | `--mpx-slot-fg-main-toolbar-image-rs-panel-*` |
 | `fg.main.content.video.preview` | `--mpx-slot-fg-main-content-video-preview-*` |
 | `fg.main.content.video.preview.screen` | `--mpx-slot-fg-main-content-video-preview-screen-*` |
 | `fg.main.content.video.preview.media` | `--mpx-slot-fg-main-content-video-preview-media-*` |

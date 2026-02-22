@@ -25,6 +25,11 @@ interface FullscreenImagePaneProps {
   displayedImageSrc: string | null
   focusedImageOrdinal: number | null
   controlsRows: ReactNode
+  imageConvertPreviewMode?: boolean
+  imageConvertPreviewSrc?: string | null
+  imageConvertPreviewError?: string | null
+  imageConvertCompareSplit?: number
+  onSetImageConvertCompareSplit?: (value: number) => void
   onSetVideoFocus: (enabled: boolean) => void
   onWheel: (event: ReactWheelEvent<HTMLElement>) => void
   onMouseDown: (event: ReactMouseEvent<HTMLElement>) => void
@@ -44,11 +49,45 @@ export function FullscreenImagePane({
   displayedImageSrc,
   focusedImageOrdinal,
   controlsRows,
+  imageConvertPreviewMode = false,
+  imageConvertPreviewSrc,
+  imageConvertPreviewError,
+  imageConvertCompareSplit = 0.5,
+  onSetImageConvertCompareSplit,
   onSetVideoFocus,
   onWheel,
   onMouseDown,
   onImageNaturalSize,
 }: FullscreenImagePaneProps) {
+  const clampedCompareSplit = Math.max(0.05, Math.min(0.95, imageConvertCompareSplit))
+
+  const startCompareDividerDrag = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    if (!imageConvertPreviewMode || !onSetImageConvertCompareSplit || event.button !== 0) {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const stageElement = paneRef.current?.querySelector('.fullscreen-stage')
+      const rect = stageElement?.getBoundingClientRect()
+      if (!rect || rect.width <= 1) {
+        return
+      }
+      const ratio = (moveEvent.clientX - rect.left) / rect.width
+      onSetImageConvertCompareSplit(Math.max(0.05, Math.min(0.95, Number(ratio.toFixed(3)))))
+    }
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }
+
   return (
     <section
       ref={paneRef}
@@ -78,16 +117,49 @@ export function FullscreenImagePane({
           }}
         >
           {displayedImageSrc ? (
-            <img
-              className="fullscreen-media-image-element"
-              src={displayedImageSrc}
-              alt={`图片 #${focusedImageOrdinal ?? '-'}`}
-              draggable={false}
-              onLoad={(event) => {
-                const imageElement = event.currentTarget
-                onImageNaturalSize(imageElement.naturalWidth, imageElement.naturalHeight)
-              }}
-            />
+            imageConvertPreviewMode ? (
+              <div className="fullscreen-image-compare" style={{ '--mpx-fs-compare-split': `${Math.round(clampedCompareSplit * 100)}%` } as CSSProperties}>
+                <img
+                  className="fullscreen-image-compare-layer"
+                  src={displayedImageSrc}
+                  alt={`图片 #${focusedImageOrdinal ?? '-'}`}
+                  draggable={false}
+                  onLoad={(event) => {
+                    const imageElement = event.currentTarget
+                    onImageNaturalSize(imageElement.naturalWidth, imageElement.naturalHeight)
+                  }}
+                />
+                {imageConvertPreviewError ? null : (
+                  <img
+                    className="fullscreen-image-compare-layer is-preview"
+                    src={imageConvertPreviewSrc ?? displayedImageSrc}
+                    alt={`转换预览 #${focusedImageOrdinal ?? '-'}`}
+                    draggable={false}
+                  />
+                )}
+                {imageConvertPreviewError ? null : (
+                  <button
+                    aria-label="调整预览分割位置"
+                    className="fullscreen-image-compare-divider"
+                    type="button"
+                    style={{ left: `${Math.round(clampedCompareSplit * 100)}%` }}
+                    onMouseDown={startCompareDividerDrag}
+                  />
+                )}
+                {imageConvertPreviewError ? <div className="fullscreen-image-compare-error">预览失败，已回退为原图显示：{imageConvertPreviewError}</div> : null}
+              </div>
+            ) : (
+              <img
+                className="fullscreen-media-image-element"
+                src={displayedImageSrc}
+                alt={`图片 #${focusedImageOrdinal ?? '-'}`}
+                draggable={false}
+                onLoad={(event) => {
+                  const imageElement = event.currentTarget
+                  onImageNaturalSize(imageElement.naturalWidth, imageElement.naturalHeight)
+                }}
+              />
+            )
           ) : null}
         </div>
 

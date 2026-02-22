@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { AppSessionStateResult } from './useAppSessionState'
 import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
+import type { MediaStateResult } from '../media/useMediaState'
 import { useFeatureSearch } from '../search/useFeatureSearch'
 import { useReadOnlyDataAccess } from '../backend'
 import { computeThumbnailGridLayout, resolveThumbnailCardChromePx } from '../layout/thumbnailLayout'
@@ -15,6 +16,7 @@ interface UseAppReadStateParams {
   appSettings: AppSettingsStoreSnapshot
   sessionState: AppSessionStateResult
   repositoryBootstrap: RepositoryBootstrapDataResult
+  mediaState: Pick<MediaStateResult, 'fullscreenActive' | 'fullscreenDisplay'>
   importBusy: boolean
 }
 
@@ -22,6 +24,7 @@ export function useAppReadState({
   appSettings,
   sessionState,
   repositoryBootstrap,
+  mediaState,
   importBusy,
 }: UseAppReadStateParams) {
   const {
@@ -39,6 +42,11 @@ export function useAppReadState({
     bootstrapVideos,
     bootstrapAudios,
   } = repositoryBootstrap
+
+  const {
+    fullscreenActive,
+    fullscreenDisplay,
+  } = mediaState
 
   const {
     selectedPackageId,
@@ -162,6 +170,8 @@ export function useAppReadState({
     mode,
     includeHidden: manageMode && mode === 'image',
     importBusy,
+    enableImageSidebarRead:
+      mode === 'video' && fullscreenActive && (fullscreenDisplay === 'dual' || fullscreenDisplay === 'image-only'),
     suspendLibraryChangedRefresh: metadataManageMode,
     selectedSourceId: selectedPackageId || null,
     pageIndex: showNamesOnly ? 0 : vectorResultsActive ? vectorPage : (pageByPackage[selectedPackageId] ?? 0),
