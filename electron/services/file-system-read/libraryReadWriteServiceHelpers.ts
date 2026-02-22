@@ -1,0 +1,234 @@
+import { createHash } from "node:crypto";
+import path from "node:path";
+
+import type { ImagePackageDto } from "../../../src/contracts/backend";
+
+const SOURCE_COVER_EXT_ALLOWLIST = new Set([
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif",
+  ".bmp",
+]);
+
+const MUSIC_ISOLATED_FALLBACK_GROUP = "unknown artist";
+
+export const SUBTITLE_EXTENSIONS = new Set([".vtt", ".srt", ".ass", ".ssa"]);
+export const XP_PREFERENCE_METRICS_STATE_KEY = "xp_preference_metrics_v1";
+
+interface PersistedImagePreferenceMetric {
+  eventCount: number;
+  pagesRead: number;
+  totalPages: number;
+  completionRatio: number;
+  lastEventTimeMs: number | null;
+}
+
+interface PersistedVideoPreferenceMetric {
+  eventCount: number;
+  watchSeconds: number;
+  totalSeconds: number;
+  completionRatio: number;
+  lastEventTimeMs: number | null;
+}
+
+function clampNonNegativeInt(value: unknown): number {
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+  return Math.floor(parsed);
+}
+
+function clampNonNegativeNumber(value: unknown): number {
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number(value ?? NaN);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+  return parsed;
+}
+
+function clampCompletionRatio(value: unknown): number {
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number(value ?? NaN);
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(1, parsed));
+}
+
+function parsePreferenceLastEventTime(value: unknown): number | null {
+  if (value === null || typeof value === "undefined") {
+    return null;
+  }
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number(value ?? NaN);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  return Math.floor(parsed);
+}
+
+export function parsePersistedPreferenceMetrics(raw: unknown): {
+  imageBySourceId: Map<string, PersistedImagePreferenceMetric>;
+  videoById: Map<string, PersistedVideoPreferenceMetric>;
+} {
+  const result = {
+    imageBySourceId: new Map<string, PersistedImagePreferenceMetric>(),
+    videoById: new Map<string, PersistedVideoPreferenceMetric>(),
+  };
+
+  if (!raw || typeof raw !== "object") {
+    return result;
+  }
+
+  const record = raw as Record<string, unknown>;
+  const imageRecord = record.image_by_source_id;
+  if (imageRecord && typeof imageRecord === "object") {
+    for (const [sourceIdRaw, value] of Object.entries(
+      imageRecord as Record<string, unknown>,
+    )) {
+      const sourceId = sourceIdRaw.trim();
+      if (!sourceId || !value || typeof value !== "object") {
+        continue;
+      }
+      const metric = value as Record<string, unknown>;
+      result.imageBySourceId.set(sourceId, {
+        eventCount: clampNonNegativeInt(metric.event_count),
+        pagesRead: clampNonNegativeInt(metric.pages_read),
+        totalPages: clampNonNegativeInt(metric.total_pages),
+        completionRatio: clampCompletionRatio(metric.completion_ratio),
+        lastEventTimeMs: parsePreferenceLastEventTime(
+          metric.last_event_time_ms,
+        ),
+      });
+    }
+  }
+
+  const videoRecord = record.video_by_id;
+  if (videoRecord && typeof videoRecord === "object") {
+    for (const [videoIdRaw, value] of Object.entries(
+      videoRecord as Record<string, unknown>,
+    )) {
+      const videoId = videoIdRaw.trim();
+      if (!videoId || !value || typeof value !== "object") {
+        continue;
+      }
+      const metric = value as Record<string, unknown>;
+      result.videoById.set(videoId, {
+        eventCount: clampNonNegativeInt(metric.event_count),
+        watchSeconds: clampNonNegativeNumber(metric.watch_seconds),
+        totalSeconds: clampNonNegativeInt(metric.total_seconds),
+        completionRatio: clampCompletionRatio(metric.completion_ratio),
+        lastEventTimeMs: parsePreferenceLastEventTime(
+          metric.last_event_time_ms,
+        ),
+      });
+    }
+  }
+
+  return result;
+}
+
+function normalizeTreeSegment(value: string, fallback: string): string {
+  const normalized = value
+    .replace(/[\\/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+export function resolveIsolatedAudioGroup(album: string): string {
+  const candidate =
+    album.trim().length > 0 ? album : MUSIC_ISOLATED_FALLBACK_GROUP;
+  return normalizeTreeSegment(candidate, MUSIC_ISOLATED_FALLBACK_GROUP);
+}
+
+export function isAutoLiveSubtitleFile(fileName: string): boolean {
+  const lower = fileName.toLowerCase();
+  return (
+    lower.includes(".auto-live.") ||
+    lower.endsWith(".auto-live.srt") ||
+    lower.endsWith(".auto-live.vtt") ||
+    lower.endsWith(".auto-live.ass") ||
+    lower.endsWith(".auto-live.ssa")
+  );
+}
+
+export function normalizeExternalMetadataText(
+  value: string | undefined,
+): string {
+  return value?.trim() ?? "";
+}
+
+export function resolveCoverFileExtension(coverUrl: string): string {
+  try {
+    const parsed = new URL(coverUrl);
+    const ext = path.extname(parsed.pathname).toLowerCase();
+    if (SOURCE_COVER_EXT_ALLOWLIST.has(ext)) {
+      return ext;
+    }
+  } catch {
+    // ignore invalid url
+  }
+  return ".jpg";
+}
+
+export function resolveFallbackCoverColor(sourceId: string): string {
+  const hash = createHash("sha1").update(sourceId).digest("hex");
+  const hue = Number.parseInt(hash.slice(0, 2), 16) % 360;
+  return `hsl(${hue} 36% 42%)`;
+}
+
+export function filterHiddenImagesFromSource(
+  source: ImagePackageDto,
+  includeHidden: boolean,
+): ImagePackageDto {
+  if (includeHidden) {
+    return source;
+  }
+
+  const visibleImages = source.images.filter(
+    (image) => !(image.hidden ?? false),
+  );
+  if (visibleImages.length === source.images.length) {
+    return source;
+  }
+
+  return {
+    ...source,
+    images: visibleImages,
+  };
+}
+
+export function filterHiddenImagesFromSources(
+  sources: ImagePackageDto[],
+  includeHidden: boolean,
+): ImagePackageDto[] {
+  if (includeHidden) {
+    return sources;
+  }
+  return sources.map((source) =>
+    filterHiddenImagesFromSource(source, includeHidden),
+  );
+}
+
+export function ensureNotAborted(signal?: AbortSignal): void {
+  if (!signal) {
+    return;
+  }
+  if (signal.aborted) {
+    throw new Error("read request aborted");
+  }
+}

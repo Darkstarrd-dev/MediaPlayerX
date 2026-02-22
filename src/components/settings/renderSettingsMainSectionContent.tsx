@@ -8,6 +8,7 @@ import type { JSX } from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
 import { renderSettingsModelSection } from "./renderSettingsModelSection";
+import { renderSettingsSystemSection } from "./renderSettingsSystemSection";
 import { formatScale, SIZE_SCALE_CONFIG, toAbsolutePx } from "./settingsScale";
 import type { RenderSettingsMainSectionParams } from "./renderSettingsMainSection.types";
 
@@ -803,7 +804,9 @@ export function renderSettingsMainSection({
           </label>
 
           <label className="settings-toggle-row">
-            <span title={t("ui.settings.fullscreenResamplingEnabledTooltip")}>{t("ui.settings.fullscreenResamplingEnabled")}</span>
+            <span title={t("ui.settings.fullscreenResamplingEnabledTooltip")}>
+              {t("ui.settings.fullscreenResamplingEnabled")}
+            </span>
             <input
               type="checkbox"
               checked={fullscreenResamplingEnabled}
@@ -816,7 +819,11 @@ export function renderSettingsMainSection({
           {fullscreenResamplingEnabled ? (
             <>
               <label htmlFor="settings-fullscreen-downsampling-kernel-select">
-                <span title={t("ui.settings.fullscreenDownsamplingKernelTooltip")}>{t("ui.settings.fullscreenDownsamplingKernel")}</span>
+                <span
+                  title={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
+                >
+                  {t("ui.settings.fullscreenDownsamplingKernel")}
+                </span>
                 <select
                   id="settings-fullscreen-downsampling-kernel-select"
                   value={fullscreenDownsamplingKernel}
@@ -846,7 +853,11 @@ export function renderSettingsMainSection({
               </label>
 
               <label htmlFor="settings-fullscreen-upsampling-kernel-select">
-                <span title={t("ui.settings.fullscreenUpsamplingKernelTooltip")}>{t("ui.settings.fullscreenUpsamplingKernel")}</span>
+                <span
+                  title={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
+                >
+                  {t("ui.settings.fullscreenUpsamplingKernel")}
+                </span>
                 <select
                   id="settings-fullscreen-upsampling-kernel-select"
                   value={fullscreenUpsamplingKernel}
@@ -882,147 +893,18 @@ export function renderSettingsMainSection({
   }
 
   if (activeSection === "system") {
-    const rendererIsProd = import.meta.env.PROD;
-    const bridgeMissingInProduction =
-      rendererIsProd && repositoryMode === "real" && !backendBridgeInjected;
-    const gpuFeatureRows = runtimeInfo?.gpu_feature_status
-      ? Object.entries(runtimeInfo.gpu_feature_status).sort(([left], [right]) =>
-          left.localeCompare(right),
-        )
-      : [];
-    const gpuInfoJson = runtimeInfo?.gpu_info_basic
-      ? JSON.stringify(runtimeInfo.gpu_info_basic, null, 2)
-      : null;
-
-    return (
-      <div className="settings-block">
-        <fieldset className="settings-subsection">
-          <legend>{t("ui.settings.runtimeDiagnosticsLegend")}</legend>
-          <p className="settings-placeholder">
-            {t("ui.settings.runtimeDiagnosticsHint")}
-          </p>
-          <div className="settings-runtime-grid">
-            <span>{t("ui.settings.rendererProd")}</span>
-            <code>{rendererIsProd ? "true" : "false"}</code>
-            <span>{t("ui.settings.repositoryMode")}</span>
-            <code>{repositoryMode}</code>
-            <span>{t("ui.settings.backendBridge")}</span>
-            <code>{backendBridgeInjected ? "true" : "false"}</code>
-            <span>{t("ui.settings.appVersion")}</span>
-            <code>{runtimeInfo?.app_version ?? "-"}</code>
-            <span>{t("ui.settings.mainIsPackaged")}</span>
-            <code>
-              {typeof runtimeInfo?.is_packaged === "boolean"
-                ? String(runtimeInfo.is_packaged)
-                : "-"}
-            </code>
-            <span>{t("ui.settings.platformArch")}</span>
-            <code>
-              {runtimeInfo
-                ? `${runtimeInfo.platform}/${runtimeInfo.arch}`
-                : "-"}
-            </code>
-            <span>{t("ui.settings.userDataPath")}</span>
-            <code>{runtimeInfo?.user_data_path ?? "-"}</code>
-            <span>{t("ui.settings.libraryRoot")}</span>
-            <code>{runtimeInfo?.library_root ?? "-"}</code>
-            <span>{t("ui.settings.databasePath")}</span>
-            <code>{runtimeInfo?.database_path ?? "-"}</code>
-          </div>
-          <div className="settings-runtime-actions">
-            <button
-              className="settings-icon-btn main-icon-square-btn"
-              type="button"
-              disabled={runtimeInfoLoading}
-              aria-label={
-                runtimeInfoLoading
-                  ? t("a11y.settings.loadingDiagnostics")
-                  : t("a11y.settings.refreshDiagnostics")
-              }
-              title={
-                runtimeInfoLoading
-                  ? t("a11y.settings.loadingDiagnostics")
-                  : t("a11y.settings.refreshDiagnostics")
-              }
-              onClick={onRefreshRuntimeInfo}
-            >
-              <MainUiIcon name="refresh" />
-            </button>
-          </div>
-          {runtimeInfoError ? (
-            <p className="settings-danger-text">{runtimeInfoError}</p>
-          ) : null}
-          {bridgeMissingInProduction ? (
-            <p className="settings-danger-text">
-              {t("ui.settings.bridgeMissingWarning")}
-            </p>
-          ) : null}
-        </fieldset>
-
-        <fieldset className="settings-subsection">
-          <legend>{t("ui.settings.gpuDiagnosticsLegend")}</legend>
-          <div className="settings-runtime-grid">
-            <span>{t("ui.settings.hardwareAccelerationEnabled")}</span>
-            <code>
-              {typeof runtimeInfo?.hardware_acceleration_enabled === "boolean"
-                ? String(runtimeInfo.hardware_acceleration_enabled)
-                : "-"}
-            </code>
-          </div>
-          {gpuFeatureRows.length > 0 ? (
-            <div className="settings-runtime-grid">
-              {gpuFeatureRows.flatMap(([key, value]) => [
-                <span key={`${key}:label`}>{key}</span>,
-                <code key={`${key}:value`}>{value}</code>,
-              ])}
-            </div>
-          ) : (
-            <p className="settings-placeholder">
-              {t("ui.settings.gpuFeatureStatusEmpty")}
-            </p>
-          )}
-          {gpuInfoJson ? (
-            <pre className="settings-code-block">{gpuInfoJson}</pre>
-          ) : (
-            <p className="settings-placeholder">
-              {t("ui.settings.gpuInfoEmpty")}
-            </p>
-          )}
-        </fieldset>
-
-        <fieldset className="settings-subsection">
-          <legend>{t("ui.settings.mediaCapabilitiesLegend")}</legend>
-          {mediaCapabilitiesLoading ? (
-            <p className="settings-placeholder">
-              {t("ui.settings.mediaCapabilitiesLoading")}
-            </p>
-          ) : null}
-          {mediaCapabilitiesError ? (
-            <p className="settings-danger-text">{mediaCapabilitiesError}</p>
-          ) : null}
-          {mediaCapabilities.length > 0 ? (
-            <div className="settings-runtime-grid">
-              {mediaCapabilities.flatMap((item) => [
-                <span key={`${item.id}:label`}>{item.label}</span>,
-                <code key={`${item.id}:value`}>
-                  {item.supported
-                    ? t("ui.settings.mediaCapabilitySupported", {
-                        supported: item.supported,
-                        smooth: item.smooth,
-                        powerEfficient: item.powerEfficient ?? "unknown",
-                      })
-                    : item.error
-                      ? t("ui.settings.mediaCapabilityUnsupportedWithError", {
-                          error: item.error,
-                        })
-                      : t("ui.settings.mediaCapabilityUnsupported")}
-                </code>,
-              ])}
-            </div>
-          ) : null}
-        </fieldset>
-      </div>
-    );
+    return renderSettingsSystemSection({
+      t,
+      repositoryMode,
+      backendBridgeInjected,
+      runtimeInfoLoading,
+      runtimeInfoError,
+      runtimeInfo,
+      mediaCapabilitiesLoading,
+      mediaCapabilitiesError,
+      mediaCapabilities,
+      onRefreshRuntimeInfo,
+    });
   }
 
   if (activeSection === "model") {

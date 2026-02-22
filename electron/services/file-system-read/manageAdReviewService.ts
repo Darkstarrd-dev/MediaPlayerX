@@ -27,14 +27,15 @@ import {
 import { assertLocatorAllowed } from "../../fileSystemMediaAccessGuard";
 import { readArchiveEntryMedia } from "../../fileSystemMediaReaders";
 import { OpenAiVisionClient, runManageAdReview } from "../../manageAdReview";
-import type { ManageAdReviewDecision } from "../../manageAdReview";
 import {
   DEFAULT_VISION_TEST_TIMEOUT_MS,
+  buildAdReviewCandidates,
   type ParsedSidebarNodeRef,
   applyDecisionToSourceDistribution,
   createEmptySourceDistribution,
   decodeVisionTestImageBytes,
   isValidVisionDescription,
+  mergeAdReviewCandidates,
   normalizeImageSource,
   normalizeTaskExecution,
   normalizeSidebarNodeSelection,
@@ -227,7 +228,8 @@ export class ManageAdReviewService {
       const queue = this.readQueueState();
       const hasOtherRunningTask = queue.items.some(
         (item) =>
-          item.task.task_id !== request.task_id && item.task.status === "running",
+          item.task.task_id !== request.task_id &&
+          item.task.status === "running",
       );
 
       if (hasOtherRunningTask) {
@@ -265,7 +267,11 @@ export class ManageAdReviewService {
           resumeFromPaused: true,
         };
         this.tasks.set(request.task_id, runtimeState);
-        void this.executeTask(request.task_id, queueItem.task.scope_image_ids, imageById);
+        void this.executeTask(
+          request.task_id,
+          queueItem.task.scope_image_ids,
+          imageById,
+        );
       }
     }
 
@@ -867,9 +873,9 @@ export class ManageAdReviewService {
           }
 
           const result = await runSelection(nodeImageIds);
-          const nextCandidates = this.mergeCandidates(
+          const nextCandidates = mergeAdReviewCandidates(
             runtimeTask.task.candidates,
-            this.buildCandidates(result.items, imageById),
+            buildAdReviewCandidates(result.items, imageById),
           );
           runtimeTask.candidateHashByImageId = new Map(
             nextCandidates.map((candidate) => [
@@ -888,7 +894,7 @@ export class ManageAdReviewService {
         }
       } else {
         const result = await runSelection(selectedImageIds);
-        const candidates = this.buildCandidates(result.items, imageById);
+        const candidates = buildAdReviewCandidates(result.items, imageById);
         runtimeTask.candidateHashByImageId = new Map(
           candidates.map((candidate) => [candidate.image_id, candidate.hash]),
         );
@@ -952,65 +958,6 @@ export class ManageAdReviewService {
         await this.startNextPendingTaskIfIdle();
       }
     }
-  }
-
-  private buildCandidates(
-    decisions: ManageAdReviewDecision[],
-    imageById: Map<string, ImageEntryRef>,
-  ): ManageAdReviewCandidateDto[] {
-    const candidates: ManageAdReviewCandidateDto[] = [];
-
-    for (const decision of decisions) {
-      if (decision.status !== "suspected") {
-        continue;
-      }
-
-      const found = imageById.get(decision.imageId);
-      if (!found) {
-        continue;
-      }
-
-      candidates.push({
-        image_id: decision.imageId,
-        package_id: found.source.id,
-        package_name: found.source.package_name,
-        display_name: found.source.display_name,
-        ordinal: found.image.ordinal,
-        file_name: toImageFileName(found.image),
-        reason: decision.reason.trim() || "suspected_ad",
-        source: resolveCandidateSource(decision.source),
-        hash: decision.hash,
-      });
-    }
-
-    candidates.sort((left, right) => {
-      if (left.package_id !== right.package_id) {
-        return left.package_id.localeCompare(right.package_id);
-      }
-      return left.ordinal - right.ordinal;
-    });
-
-    return candidates;
-  }
-
-  private mergeCandidates(
-    previous: ManageAdReviewCandidateDto[],
-    incoming: ManageAdReviewCandidateDto[],
-  ): ManageAdReviewCandidateDto[] {
-    const candidateByImageId = new Map<string, ManageAdReviewCandidateDto>();
-    for (const candidate of previous) {
-      candidateByImageId.set(candidate.image_id, candidate);
-    }
-    for (const candidate of incoming) {
-      candidateByImageId.set(candidate.image_id, candidate);
-    }
-
-    return Array.from(candidateByImageId.values()).sort((left, right) => {
-      if (left.package_id !== right.package_id) {
-        return left.package_id.localeCompare(right.package_id);
-      }
-      return left.ordinal - right.ordinal;
-    });
   }
 
   private async readImageBytes(image: ImageItemDto): Promise<Uint8Array> {
@@ -1172,7 +1119,9 @@ export class ManageAdReviewService {
       known_hash_hits: resumeFromPaused ? pendingItem.task.known_hash_hits : 0,
       llm_calls: resumeFromPaused ? pendingItem.task.llm_calls : 0,
       scope_image_ids: selectedImageIds,
-      image_source_by_id: resumeFromPaused ? pendingItem.task.image_source_by_id : {},
+      image_source_by_id: resumeFromPaused
+        ? pendingItem.task.image_source_by_id
+        : {},
       audit: resumeFromPaused
         ? pendingItem.task.audit
         : toTaskAudit({

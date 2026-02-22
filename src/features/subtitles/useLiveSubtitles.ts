@@ -4,629 +4,43 @@ import type {
   FlushSubtitleSessionResponseDto,
   PushSubtitleAudioRequestDto,
   SubtitleCueDto,
-  SubtitleSessionEventDto,
-  SubtitleSessionProviderPreferenceDto,
 } from "../../contracts/backend";
-import type { MediaRepository } from "../backend/repository";
 import {
   VideoSubtitleCapture,
   type CapturedAudioChunk,
 } from "./VideoSubtitleCapture";
-
-function isSubtitleDebugEnabled(): boolean {
-  if (typeof globalThis === "undefined") {
-    return false;
-  }
-  try {
-    const value = globalThis.localStorage?.getItem("subtitle.debug.logs");
-    return value === "1" || value === "true";
-  } catch {
-    return false;
-  }
-}
-
-function readSubtitleDebugBoolean(key: string): boolean {
-  if (typeof globalThis === "undefined") {
-    return false;
-  }
-  try {
-    const raw = globalThis.localStorage?.getItem(key);
-    return raw === "1" || raw === "true";
-  } catch {
-    return false;
-  }
-}
-
-function readSubtitleDebugOffsetSec(): number {
-  if (typeof globalThis === "undefined") {
-    return 0;
-  }
-  try {
-    const raw = globalThis.localStorage?.getItem("subtitle.debug.offsetSec");
-    if (!raw) {
-      return 0;
-    }
-    const value = Number(raw);
-    if (!Number.isFinite(value)) {
-      return 0;
-    }
-    return Math.max(-2, Math.min(2, value));
-  } catch {
-    return 0;
-  }
-}
-
-function isAbortLikeError(error: unknown): boolean {
-  if (!error) {
-    return false;
-  }
-  if (
-    typeof error === "object" &&
-    "name" in error &&
-    (error as { name?: unknown }).name === "AbortError"
-  ) {
-    return true;
-  }
-  const message = error instanceof Error ? error.message : String(error);
-  const normalized = message.trim().toLowerCase();
-  if (!normalized) {
-    return false;
-  }
-  return (
-    normalized.includes("abort") ||
-    normalized.includes("cancel") ||
-    normalized.includes("canceled") ||
-    normalized.includes("cancelled") ||
-    normalized.includes("请求已取消")
-  );
-}
-
-type SubtitleDebugOffsetMode = "off" | "renderer";
-
-function readSubtitleDebugOffsetMode(): SubtitleDebugOffsetMode {
-  if (typeof globalThis === "undefined") {
-    return "off";
-  }
-  try {
-    const raw = (
-      globalThis.localStorage?.getItem("subtitle.debug.offsetMode") ?? ""
-    )
-      .trim()
-      .toLowerCase();
-    if (raw === "off") {
-      return "off";
-    }
-    return "renderer";
-  } catch {
-    return "renderer";
-  }
-}
-
-const SUBTITLE_DEBUG_LOGS = isSubtitleDebugEnabled();
-
-function emitSubtitleDebug(
-  event: string,
-  payload: Record<string, unknown>,
-): void {
-  if (!SUBTITLE_DEBUG_LOGS) {
-    return;
-  }
-  console.info(
-    "[subtitle][metrics]",
-    JSON.stringify({
-      event,
-      at_ms: Math.round(performance.now()),
-      ...payload,
-    }),
-  );
-}
-
-interface UseLiveSubtitlesParams {
-  enabled: boolean;
-  videoElement: HTMLVideoElement | null;
-  videoPath: string | null;
-  currentTimeSec: number;
-  modelDir: string;
-  modelId: string | null;
-  providerPreference: SubtitleSessionProviderPreferenceDto;
-  language: string;
-  validPlaybackRateThreshold: number;
-  renderMode: "simple" | "advanced";
-  advancedOptions: {
-    vad: {
-      preset: "balanced" | "conservative" | "aggressive";
-      threshold: number;
-      minSilenceSec: number;
-      minSpeechSec: number;
-      maxSpeechSec: number;
-    };
-    speaker: {
-      similarityThreshold: number;
-    };
-  };
-  repository: MediaRepository;
-}
-
-interface PersistenceBatchPayload {
-  cues: SubtitleCueDto[];
-  sessionEpoch: number;
-  chunkSeq: number;
-  batchStartSec: number | null;
-  batchEndSec: number | null;
-  playbackRate: number;
-  enforceValidRangeGuard: boolean;
-  allowFirstOverlapReplaceOnce: boolean;
-  seekAnchorSec: number | null;
-  currentValidRange: GeneratedRangeDto | null;
-}
-
-interface PersistenceSyncState {
-  timelineHasCue: boolean;
-  timelineHasCueNear: boolean;
-  timelineInGeneratedRange: boolean;
-  activeRange: GeneratedRangeDto | null;
-}
-
-interface GeneratedRangeDto {
-  start_sec: number;
-  end_sec: number;
-}
-
-function resolveActiveGeneratedRange(
-  ranges: GeneratedRangeDto[],
-  timelineSec: number,
-): GeneratedRangeDto | null {
-  for (let index = 0; index < ranges.length; index += 1) {
-    const range = ranges[index];
-    if (
-      range.start_sec - 0.01 <= timelineSec &&
-      range.end_sec + 0.01 >= timelineSec
-    ) {
-      return range;
-    }
-  }
-  return null;
-}
-
-function toDisplayCue(cue: SubtitleCueDto): SubtitleCueDto {
-  const originalStart = Math.max(0, cue.start_sec);
-  const originalEnd = Math.max(originalStart + 0.12, cue.end_sec);
-  const rawDurationSec = Math.max(0.12, originalEnd - originalStart);
-
-  const normalizedText = cue.text.replace(/\s+/g, " ").trim();
-  const cjkCount = (normalizedText.match(/[\u3400-\u9FFF\uF900-\uFAFF]/g) ?? [])
-    .length;
-  const latinOrDigitCount = (normalizedText.match(/[A-Za-z0-9]/g) ?? []).length;
-  const otherVisibleCount = Math.max(
-    0,
-    normalizedText.replace(/[\s]/g, "").length - cjkCount - latinOrDigitCount,
-  );
-  const effectiveCharUnits =
-    cjkCount + latinOrDigitCount * 0.45 + otherVisibleCount * 0.6;
-
-  const mappedLeadSec = (() => {
-    const minChars = 3;
-    const maxChars = 20;
-    const minSec = 0.3;
-    const maxSec = 2;
-    const clampedChars = Math.max(
-      minChars,
-      Math.min(maxChars, effectiveCharUnits),
-    );
-    const ratio = (clampedChars - minChars) / (maxChars - minChars);
-    return minSec + ratio * (maxSec - minSec);
-  })();
-
-  const speechSecByChars = Math.max(
-    0.25,
-    Math.min(6, effectiveCharUnits * 0.17),
-  );
-  const leadOffsetSec = mappedLeadSec + speechSecByChars;
-
-  const expandedStart = Math.max(0, originalStart - 0.5);
-  const expandedEnd = Math.max(expandedStart + 0.25, originalEnd + 0.5);
-  const shiftedStart = Math.max(0, expandedStart - leadOffsetSec);
-  const displayDurationSec = Math.max(
-    rawDurationSec + 0.5,
-    speechSecByChars + 0.55,
-    0.85,
-  );
-  const shiftedEnd = Math.max(
-    shiftedStart + 0.25,
-    shiftedStart + displayDurationSec,
-    expandedEnd - leadOffsetSec,
-  );
-
-  return {
-    ...cue,
-    start_sec: Number(shiftedStart.toFixed(3)),
-    end_sec: Number(shiftedEnd.toFixed(3)),
-  };
-}
-
-function toDisplayCues(cues: SubtitleCueDto[]): SubtitleCueDto[] {
-  if (cues.length === 0) {
-    return cues;
-  }
-  return cues.map((cue) => toDisplayCue(cue));
-}
-
-function normalizeCueTextForDedup(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[\s\p{P}\p{S}]+/gu, "")
-    .trim();
-}
-
-function computeDiceSimilarity(left: string, right: string): number {
-  if (!left || !right) {
-    return 0;
-  }
-  if (left === right) {
-    return 1;
-  }
-  const leftChars = Array.from(left);
-  const rightChars = Array.from(right);
-  if (leftChars.length < 2 || rightChars.length < 2) {
-    const rightSet = new Set(rightChars);
-    const hit = leftChars.reduce(
-      (sum, ch) => sum + (rightSet.has(ch) ? 1 : 0),
-      0,
-    );
-    return hit / Math.max(leftChars.length, rightChars.length);
-  }
-
-  const leftBigrams = new Map<string, number>();
-  for (let i = 0; i < leftChars.length - 1; i += 1) {
-    const key = `${leftChars[i]}${leftChars[i + 1]}`;
-    leftBigrams.set(key, (leftBigrams.get(key) ?? 0) + 1);
-  }
-
-  let intersection = 0;
-  let rightCount = 0;
-  for (let i = 0; i < rightChars.length - 1; i += 1) {
-    const key = `${rightChars[i]}${rightChars[i + 1]}`;
-    rightCount += 1;
-    const leftCount = leftBigrams.get(key) ?? 0;
-    if (leftCount > 0) {
-      intersection += 1;
-      leftBigrams.set(key, leftCount - 1);
-    }
-  }
-
-  const leftCount = Math.max(1, leftChars.length - 1);
-  const denominator = leftCount + Math.max(1, rightCount);
-  return (2 * intersection) / denominator;
-}
-
-function computeCueTextSimilarity(leftText: string, rightText: string): number {
-  const left = normalizeCueTextForDedup(leftText);
-  const right = normalizeCueTextForDedup(rightText);
-  if (!left || !right) {
-    return 0;
-  }
-  if (left === right) {
-    return 1;
-  }
-  const containment =
-    left.includes(right) || right.includes(left)
-      ? Math.min(left.length, right.length) /
-        Math.max(left.length, right.length)
-      : 0;
-  const dice = computeDiceSimilarity(left, right);
-  return Math.max(containment, dice);
-}
-
-function cueOverlapRatio(left: SubtitleCueDto, right: SubtitleCueDto): number {
-  const overlapStart = Math.max(left.start_sec, right.start_sec);
-  const overlapEnd = Math.min(left.end_sec, right.end_sec);
-  const overlap = Math.max(0, overlapEnd - overlapStart);
-  const leftDuration = Math.max(0.05, left.end_sec - left.start_sec);
-  const rightDuration = Math.max(0.05, right.end_sec - right.start_sec);
-  return overlap / Math.min(leftDuration, rightDuration);
-}
-
-function areLikelyDuplicateCue(
-  left: SubtitleCueDto,
-  right: SubtitleCueDto,
-): boolean {
-  const similarity = computeCueTextSimilarity(left.text, right.text);
-  if (similarity < 0.82) {
-    return false;
-  }
-  const leftCenter = (left.start_sec + left.end_sec) * 0.5;
-  const rightCenter = (right.start_sec + right.end_sec) * 0.5;
-  const centerDiff = Math.abs(leftCenter - rightCenter);
-  if (similarity >= 0.92 && centerDiff <= 0.8) {
-    return true;
-  }
-  if (centerDiff <= 0.45 && similarity >= 0.85) {
-    return true;
-  }
-  return cueOverlapRatio(left, right) >= 0.5 && similarity >= 0.82;
-}
-
-function mergeDuplicateCues(
-  base: SubtitleCueDto,
-  incoming: SubtitleCueDto,
-): SubtitleCueDto {
-  const mergedStart = Math.min(base.start_sec, incoming.start_sec);
-  const mergedEnd = Math.max(base.end_sec, incoming.end_sec);
-  const mergedText =
-    incoming.text.trim().length >= base.text.trim().length
-      ? incoming.text
-      : base.text;
-  return {
-    ...base,
-    text: mergedText,
-    start_sec: Number(mergedStart.toFixed(3)),
-    end_sec: Number(mergedEnd.toFixed(3)),
-    lang: incoming.lang ?? base.lang,
-    speaker: incoming.speaker ?? base.speaker,
-    line: incoming.line ?? base.line,
-    speaker_changed: incoming.speaker_changed ?? base.speaker_changed,
-    speaker_similarity: incoming.speaker_similarity ?? base.speaker_similarity,
-  };
-}
-
-function hasCueAtTimeline(
-  cues: SubtitleCueDto[],
-  timelineSec: number,
-): boolean {
-  for (let index = 0; index < cues.length; index += 1) {
-    const cue = cues[index];
-    if (
-      cue.start_sec - 0.01 <= timelineSec &&
-      cue.end_sec + 0.12 >= timelineSec
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function hasCueNearTimeline(
-  cues: SubtitleCueDto[],
-  timelineSec: number,
-  options?: {
-    backtrackSec?: number;
-    lookaheadSec?: number;
-  },
-): boolean {
-  const backtrackSec = Math.max(0, options?.backtrackSec ?? 0.25);
-  const lookaheadSec = Math.max(0, options?.lookaheadSec ?? 1.2);
-  const nearStart = Math.max(0, timelineSec - backtrackSec);
-  const nearEnd = timelineSec + lookaheadSec;
-  for (let index = 0; index < cues.length; index += 1) {
-    const cue = cues[index];
-    if (cue.end_sec + 0.001 >= nearStart && cue.start_sec <= nearEnd + 0.001) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function isTimelineInRanges(
-  ranges: GeneratedRangeDto[],
-  timelineSec: number,
-): boolean {
-  for (let index = 0; index < ranges.length; index += 1) {
-    const range = ranges[index];
-    if (
-      range.start_sec - 0.01 <= timelineSec &&
-      range.end_sec + 0.01 >= timelineSec
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function encodeFloat32ToBase64(samples: Float32Array): string {
-  const bytes = new Uint8Array(
-    samples.buffer,
-    samples.byteOffset,
-    samples.byteLength,
-  );
-  let binary = "";
-  const chunkSize = 0x8000;
-  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    const next = bytes.subarray(
-      offset,
-      Math.min(bytes.length, offset + chunkSize),
-    );
-    binary += String.fromCharCode(...next);
-  }
-  return btoa(binary);
-}
-
-function appendCues(
-  previous: SubtitleCueDto[],
-  next: SubtitleCueDto[],
-): SubtitleCueDto[] {
-  if (next.length === 0) {
-    return previous;
-  }
-  const mergedById = new Map<string, SubtitleCueDto>();
-  for (const cue of [...previous, ...next]) {
-    mergedById.set(cue.id, cue);
-  }
-  const ordered = Array.from(mergedById.values()).sort(
-    (left, right) => left.start_sec - right.start_sec,
-  );
-  const deduped: SubtitleCueDto[] = [];
-  for (const cue of ordered) {
-    let duplicateIndex = -1;
-    for (
-      let index = deduped.length - 1;
-      index >= Math.max(0, deduped.length - 8);
-      index -= 1
-    ) {
-      if (areLikelyDuplicateCue(deduped[index], cue)) {
-        duplicateIndex = index;
-        break;
-      }
-    }
-    if (duplicateIndex >= 0) {
-      deduped[duplicateIndex] = mergeDuplicateCues(
-        deduped[duplicateIndex],
-        cue,
-      );
-      continue;
-    }
-    deduped.push(cue);
-  }
-  return deduped.slice(-300);
-}
-
-function concatFloat32(chunks: Float32Array[]): Float32Array {
-  const total = chunks.reduce((sum, part) => sum + part.length, 0);
-  const output = new Float32Array(total);
-  let offset = 0;
-  for (const part of chunks) {
-    output.set(part, offset);
-    offset += part.length;
-  }
-  return output;
-}
-
-function popBatchChunk(
-  queue: CapturedAudioChunk[],
-  maxWallDurationSec = 0.4,
-): CapturedAudioChunk | null {
-  const first = queue.shift();
-  if (!first) {
-    return null;
-  }
-
-  const maxSamples = Math.max(
-    1,
-    Math.floor(first.sampleRateHz * maxWallDurationSec) *
-      Math.max(1, first.channelCount),
-  );
-  const parts: Float32Array[] = [first.samples];
-  let totalSamples = first.samples.length;
-  let endSec = first.endSec;
-
-  while (queue.length > 0) {
-    const next = queue[0];
-    if (
-      next.sampleRateHz !== first.sampleRateHz ||
-      next.channelCount !== first.channelCount
-    ) {
-      break;
-    }
-    if (totalSamples + next.samples.length > maxSamples) {
-      break;
-    }
-    queue.shift();
-    parts.push(next.samples);
-    totalSamples += next.samples.length;
-    endSec = next.endSec;
-  }
-
-  return {
-    sampleRateHz: first.sampleRateHz,
-    channelCount: first.channelCount,
-    startSec: first.startSec,
-    endSec,
-    samples: parts.length === 1 ? first.samples : concatFloat32(parts),
-  };
-}
-
-function pickDisplayEventMessage(
-  events: SubtitleSessionEventDto[],
-): string | null {
-  const selected = events.find((item) => {
-    if (item.level === "error") {
-      return true;
-    }
-    if (item.code === "provider_fallback") {
-      return false;
-    }
-    if (item.code === "session_not_running") {
-      return false;
-    }
-    return item.level === "warning";
-  });
-
-  return selected?.message ?? null;
-}
-
-function resolveCueTrack(cue: SubtitleCueDto): string {
-  if (cue.line === "A" || cue.line === "B") {
-    return cue.line;
-  }
-  if (typeof cue.speaker === "number" && cue.speaker >= 0) {
-    return `S${cue.speaker + 1}`;
-  }
-  return "T";
-}
-
-function buildAdvancedDisplayText(
-  cues: SubtitleCueDto[],
-  currentTimeSec: number,
-  offsetSec: number,
-  offsetMode: SubtitleDebugOffsetMode,
-  options?: {
-    maxLines?: number;
-    includeTrackLabel?: boolean;
-  },
-): string | null {
-  const shouldApplyOffsetToRenderer = offsetMode === "renderer";
-  const adjustedCurrentTimeSec = shouldApplyOffsetToRenderer
-    ? currentTimeSec - offsetSec
-    : currentTimeSec;
-  const maxLines = Math.max(1, options?.maxLines ?? 2);
-  const includeTrackLabel = options?.includeTrackLabel ?? true;
-  const activeCues = cues
-    .filter(
-      (cue) =>
-        adjustedCurrentTimeSec + 0.35 >= cue.start_sec &&
-        adjustedCurrentTimeSec <= cue.end_sec + 2.4,
-    )
-    .slice(-8);
-
-  if (activeCues.length === 0) {
-    return null;
-  }
-
-  const latestCueByTrack = new Map<string, SubtitleCueDto>();
-  for (let i = 0; i < activeCues.length; i += 1) {
-    const cue = activeCues[i];
-    const track = resolveCueTrack(cue);
-    const previous = latestCueByTrack.get(track);
-    if (!previous) {
-      latestCueByTrack.set(track, cue);
-      continue;
-    }
-    if (
-      cue.start_sec > previous.start_sec + 0.0005 ||
-      (Math.abs(cue.start_sec - previous.start_sec) <= 0.0005 &&
-        cue.end_sec >= previous.end_sec)
-    ) {
-      latestCueByTrack.set(track, cue);
-    }
-  }
-
-  const selectedByTrack = Array.from(latestCueByTrack.entries())
-    .map(([track, cue]) => ({ track, cue }))
-    .sort((left, right) => {
-      if (Math.abs(left.cue.start_sec - right.cue.start_sec) > 0.0005) {
-        return left.cue.start_sec - right.cue.start_sec;
-      }
-      return left.cue.end_sec - right.cue.end_sec;
-    })
-    .slice(-maxLines);
-
-  const lines = selectedByTrack
-    .map(({ track, cue }) =>
-      includeTrackLabel ? `[${track}] ${cue.text}` : cue.text,
-    )
-    .filter((line) => line.trim().length > 0);
-
-  return lines.join("\n").trim() || null;
-}
+import {
+  emitSubtitleDebug,
+  isAbortLikeError,
+  readSubtitleDebugBoolean,
+  readSubtitleDebugOffsetMode,
+  readSubtitleDebugOffsetSec,
+} from "./liveSubtitlesDebug";
+import {
+  appendCues,
+  hasCueAtTimeline,
+  hasCueNearTimeline,
+  isTimelineInRanges,
+  resolveActiveGeneratedRange,
+  toDisplayCues,
+  type GeneratedRangeDto,
+} from "./liveSubtitlesCueOps";
+import {
+  buildDisplayTextByMode,
+  detectLatestCueLanguage,
+  pickDisplayEventMessage,
+} from "./liveSubtitlesDisplay";
+import {
+  concatFloat32,
+  encodeFloat32ToBase64,
+  popBatchChunk,
+} from "./liveSubtitlesAudioQueue";
+import { createLiveSubtitlesRepositoryApi } from "./liveSubtitlesRepositoryApi";
+import {
+  type PersistenceBatchPayload,
+  type PersistenceSyncState,
+  type UseLiveSubtitlesParams,
+} from "./liveSubtitlesTypes";
 
 export function useLiveSubtitles({
   enabled,
@@ -649,6 +63,16 @@ export function useLiveSubtitles({
   const vadMaxSpeechSec = advancedOptions.vad.maxSpeechSec;
   const speakerSimilarityThreshold =
     advancedOptions.speaker.similarityThreshold;
+  const {
+    startSubtitleSession: repositoryStartSubtitleSession,
+    stopSubtitleSession: repositoryStopSubtitleSession,
+    resetSubtitleSession: repositoryResetSubtitleSession,
+    flushSubtitleSession: repositoryFlushSubtitleSession,
+    pushSubtitleAudio: repositoryPushSubtitleAudio,
+    startSubtitlePersistence: repositoryStartSubtitlePersistence,
+    appendSubtitlePersistence: repositoryAppendSubtitlePersistence,
+    readSubtitlePersistenceWindow: repositoryReadSubtitlePersistenceWindow,
+  } = repository;
 
   const [cues, setCues] = useState<SubtitleCueDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -687,94 +111,39 @@ export function useLiveSubtitles({
 
   useEffect(() => {
     cleanupRef.current = null;
-
-    return () => {
-      capture.dispose();
-    };
+    return () => capture.dispose();
   }, [capture]);
 
   useEffect(() => {
-    const startSubtitleSession = repository.startSubtitleSession
-      ? (
-          request: Parameters<
-            NonNullable<MediaRepository["startSubtitleSession"]>
-          >[0],
-        ) => repository.startSubtitleSession!(request)
-      : null;
-    const stopSubtitleSession = repository.stopSubtitleSession
-      ? (
-          request: Parameters<
-            NonNullable<MediaRepository["stopSubtitleSession"]>
-          >[0],
-        ) => repository.stopSubtitleSession!(request)
-      : null;
-    const resetSubtitleSession = repository.resetSubtitleSession
-      ? (
-          request: Parameters<
-            NonNullable<MediaRepository["resetSubtitleSession"]>
-          >[0],
-          options?: Parameters<
-            NonNullable<MediaRepository["resetSubtitleSession"]>
-          >[1],
-        ) => repository.resetSubtitleSession!(request, options)
-      : null;
-    const flushSubtitleSession = repository.flushSubtitleSession
-      ? (
-          options?: Parameters<
-            NonNullable<MediaRepository["flushSubtitleSession"]>
-          >[0],
-        ) => repository.flushSubtitleSession!(options)
-      : null;
-    const pushSubtitleAudio = repository.pushSubtitleAudio
-      ? (
-          request: Parameters<
-            NonNullable<MediaRepository["pushSubtitleAudio"]>
-          >[0],
-          options?: Parameters<
-            NonNullable<MediaRepository["pushSubtitleAudio"]>
-          >[1],
-        ) => repository.pushSubtitleAudio!(request, options)
-      : null;
-    const startSubtitlePersistence = repository.startSubtitlePersistence
-      ? (
-          request: Parameters<
-            NonNullable<MediaRepository["startSubtitlePersistence"]>
-          >[0],
-          options?: Parameters<
-            NonNullable<MediaRepository["startSubtitlePersistence"]>
-          >[1],
-        ) => repository.startSubtitlePersistence!(request, options)
-      : null;
-    const appendSubtitlePersistence = repository.appendSubtitlePersistence
-      ? (
-          request: Parameters<
-            NonNullable<MediaRepository["appendSubtitlePersistence"]>
-          >[0],
-          options?: Parameters<
-            NonNullable<MediaRepository["appendSubtitlePersistence"]>
-          >[1],
-        ) => repository.appendSubtitlePersistence!(request, options)
-      : null;
-    const readSubtitlePersistenceWindow =
-      repository.readSubtitlePersistenceWindow
-        ? (
-            request: Parameters<
-              NonNullable<MediaRepository["readSubtitlePersistenceWindow"]>
-            >[0],
-            options?: Parameters<
-              NonNullable<MediaRepository["readSubtitlePersistenceWindow"]>
-            >[1],
-          ) => repository.readSubtitlePersistenceWindow!(request, options)
-        : null;
+    const {
+      startSubtitleSession,
+      stopSubtitleSession,
+      resetSubtitleSession,
+      flushSubtitleSession,
+      pushSubtitleAudio,
+      startSubtitlePersistence,
+      appendSubtitlePersistence,
+      readSubtitlePersistenceWindow,
+    } = createLiveSubtitlesRepositoryApi({
+      startSubtitleSession: repositoryStartSubtitleSession,
+      stopSubtitleSession: repositoryStopSubtitleSession,
+      resetSubtitleSession: repositoryResetSubtitleSession,
+      flushSubtitleSession: repositoryFlushSubtitleSession,
+      pushSubtitleAudio: repositoryPushSubtitleAudio,
+      startSubtitlePersistence: repositoryStartSubtitlePersistence,
+      appendSubtitlePersistence: repositoryAppendSubtitlePersistence,
+      readSubtitlePersistenceWindow: repositoryReadSubtitlePersistenceWindow,
+    });
 
-    if (!enabled || !videoElement || !modelId || modelDir.trim() === "") {
-      setLoading(false);
-      setMessage(null);
-      setCues([]);
-      pushAbortRef.current?.abort();
+    const abortInFlightPush = () => {
+      if (pushAbortRef.current) {
+        pushAbortRef.current.abort();
+        pushAbortCountRef.current += 1;
+      }
       pushAbortRef.current = null;
-      pushQueueRef.current = [];
-      sessionRunningRef.current = false;
+    };
+
+    const resetPersistenceRuntimeState = () => {
       subtitlePersistenceEnabledRef.current = false;
       persistenceQueueRef.current = [];
       persistenceInFlightRef.current = false;
@@ -792,10 +161,31 @@ export function useLiveSubtitles({
       highRateReplayHintShownRef.current = false;
       skipCaptureChunksRef.current = 0;
       currentValidRangeRef.current = null;
-      sessionEpochRef.current = 0;
-      chunkSeqRef.current = 0;
-      lastAppliedSeqRef.current = -1;
-      capture.detach();
+    };
+
+    const resetRuntimeState = (options?: {
+      detachCapture?: boolean;
+      resetEpoch?: boolean;
+    }) => {
+      abortInFlightPush();
+      pushQueueRef.current = [];
+      sessionRunningRef.current = false;
+      resetPersistenceRuntimeState();
+      if (options?.resetEpoch) {
+        sessionEpochRef.current = 0;
+        chunkSeqRef.current = 0;
+        lastAppliedSeqRef.current = -1;
+      }
+      if (options?.detachCapture) {
+        capture.detach();
+      }
+    };
+
+    if (!enabled || !videoElement || !modelId || modelDir.trim() === "") {
+      setLoading(false);
+      setMessage(null);
+      setCues([]);
+      resetRuntimeState({ detachCapture: true, resetEpoch: true });
       return;
     }
 
@@ -1743,8 +1133,7 @@ export function useLiveSubtitles({
           await stopSubtitleSession({ reason: "cancelled-after-ready" }).catch(
             () => undefined,
           );
-          sessionRunningRef.current = false;
-          capture.detach();
+          resetRuntimeState({ detachCapture: true });
           return;
         }
 
@@ -1755,31 +1144,7 @@ export function useLiveSubtitles({
           videoElement.removeEventListener("pause", onPause);
           videoElement.removeEventListener("play", onPlay);
           videoElement.removeEventListener("ratechange", onRateChange);
-          pushQueueRef.current = [];
-          if (pushAbortRef.current) {
-            pushAbortRef.current.abort();
-            pushAbortCountRef.current += 1;
-          }
-          pushAbortRef.current = null;
-          capture.detach();
-          sessionRunningRef.current = false;
-          subtitlePersistenceEnabledRef.current = false;
-          persistenceQueueRef.current = [];
-          persistenceInFlightRef.current = false;
-          replayFromPersistenceRef.current = false;
-          replayForceUntilSecRef.current = null;
-          pendingFirstOverlapReplaceRef.current = false;
-          firstOverlapReplaceSeekAnchorSecRef.current = null;
-          replayLockRangeRef.current = null;
-          highRateReplayHintShownRef.current = false;
-          skipCaptureChunksRef.current = 0;
-          currentValidRangeRef.current = null;
-          persistenceWindowCuesRef.current = [];
-          persistenceWindowRawCuesRef.current = [];
-          persistenceGeneratedRangesRef.current = [];
-          persistenceReadInFlightRef.current = false;
-          persistenceLastReadAtMsRef.current = 0;
-          persistenceLastReadTimelineSecRef.current = -1;
+          resetRuntimeState({ detachCapture: true });
           await stopSubtitleSession({ reason: "renderer-dispose" }).catch(
             () => undefined,
           );
@@ -1790,35 +1155,12 @@ export function useLiveSubtitles({
             () => undefined,
           );
         }
-        if (pushAbortRef.current) {
-          pushAbortRef.current.abort();
-          pushAbortCountRef.current += 1;
-        }
-        pushAbortRef.current = null;
         setLoading(false);
         const messageText =
           error instanceof Error ? error.message : String(error);
         setMessage(messageText);
         setCues([]);
-        sessionRunningRef.current = false;
-        subtitlePersistenceEnabledRef.current = false;
-        persistenceQueueRef.current = [];
-        persistenceInFlightRef.current = false;
-        replayFromPersistenceRef.current = false;
-        replayForceUntilSecRef.current = null;
-        pendingFirstOverlapReplaceRef.current = false;
-        firstOverlapReplaceSeekAnchorSecRef.current = null;
-        replayLockRangeRef.current = null;
-        highRateReplayHintShownRef.current = false;
-        skipCaptureChunksRef.current = 0;
-        currentValidRangeRef.current = null;
-        persistenceWindowCuesRef.current = [];
-        persistenceWindowRawCuesRef.current = [];
-        persistenceGeneratedRangesRef.current = [];
-        persistenceReadInFlightRef.current = false;
-        persistenceLastReadAtMsRef.current = 0;
-        persistenceLastReadTimelineSecRef.current = -1;
-        capture.detach();
+        resetRuntimeState({ detachCapture: true });
       }
     };
 
@@ -1831,30 +1173,7 @@ export function useLiveSubtitles({
       if (cleanup) {
         void cleanup();
       } else {
-        capture.detach();
-        sessionRunningRef.current = false;
-        if (pushAbortRef.current) {
-          pushAbortRef.current.abort();
-          pushAbortCountRef.current += 1;
-        }
-        pushAbortRef.current = null;
-        subtitlePersistenceEnabledRef.current = false;
-        persistenceQueueRef.current = [];
-        persistenceInFlightRef.current = false;
-        replayFromPersistenceRef.current = false;
-        replayForceUntilSecRef.current = null;
-        pendingFirstOverlapReplaceRef.current = false;
-        firstOverlapReplaceSeekAnchorSecRef.current = null;
-        replayLockRangeRef.current = null;
-        highRateReplayHintShownRef.current = false;
-        skipCaptureChunksRef.current = 0;
-        currentValidRangeRef.current = null;
-        persistenceWindowCuesRef.current = [];
-        persistenceWindowRawCuesRef.current = [];
-        persistenceGeneratedRangesRef.current = [];
-        persistenceReadInFlightRef.current = false;
-        persistenceLastReadAtMsRef.current = 0;
-        persistenceLastReadTimelineSecRef.current = -1;
+        resetRuntimeState({ detachCapture: true });
         void stopSubtitleSession({ reason: "renderer-dispose" }).catch(
           () => undefined,
         );
@@ -1876,60 +1195,30 @@ export function useLiveSubtitles({
     vadMaxSpeechSec,
     validPlaybackRateThreshold,
     speakerSimilarityThreshold,
-    repository.flushSubtitleSession,
-    repository.pushSubtitleAudio,
-    repository.startSubtitlePersistence,
-    repository.appendSubtitlePersistence,
-    repository.readSubtitlePersistenceWindow,
-    repository.resetSubtitleSession,
-    repository.startSubtitleSession,
-    repository.stopSubtitleSession,
+    repositoryFlushSubtitleSession,
+    repositoryPushSubtitleAudio,
+    repositoryStartSubtitlePersistence,
+    repositoryAppendSubtitlePersistence,
+    repositoryReadSubtitlePersistenceWindow,
+    repositoryResetSubtitleSession,
+    repositoryStartSubtitleSession,
+    repositoryStopSubtitleSession,
     videoElement,
   ]);
 
   const activeText = useMemo(() => {
     const subtitleOffsetSec = readSubtitleDebugOffsetSec();
     const offsetMode = readSubtitleDebugOffsetMode();
-
-    if (renderMode === "advanced") {
-      return buildAdvancedDisplayText(
-        cues,
-        currentTimeSec,
-        subtitleOffsetSec,
-        offsetMode,
-        {
-          maxLines: 2,
-          includeTrackLabel: true,
-        },
-      );
-    }
-
-    return buildAdvancedDisplayText(
+    return buildDisplayTextByMode(
       cues,
       currentTimeSec,
       subtitleOffsetSec,
       offsetMode,
-      {
-        maxLines: 1,
-        includeTrackLabel: false,
-      },
+      renderMode,
     );
   }, [cues, currentTimeSec, renderMode]);
 
-  const detectedLanguage = useMemo(() => {
-    for (let index = cues.length - 1; index >= 0; index -= 1) {
-      const cue = cues[index];
-      if (cue.lang && cue.lang.trim()) {
-        return cue.lang.trim().toLowerCase();
-      }
-    }
-    return null;
-  }, [cues]);
+  const detectedLanguage = useMemo(() => detectLatestCueLanguage(cues), [cues]);
 
-  return {
-    loading,
-    message,
-    activeText,
-    detectedLanguage,
-  };
+  return { loading, message, activeText, detectedLanguage };
 }
