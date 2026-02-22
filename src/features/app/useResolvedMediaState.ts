@@ -36,8 +36,15 @@ interface UseResolvedMediaStateParams {
   focusedRef: FocusedImageRef | null
   orderedRootScopedImageRefs: FocusedImageRef[]
   fullscreenActive: boolean
+  fullscreenPrefetchRadius?: number
   showNamesOnly: boolean
   refsInPage: FocusedImageRef[]
+  visibleImageRefs?: FocusedImageRef[]
+  normalizedPageIndex?: number
+  imageTotalPages?: number
+  pagedPageSize?: number
+  thumbnailWarmupRadius?: number
+  thumbnailWarmupConcurrency?: number
   focusedVideo: VideoItem | null
   focusedAudio: AudioItem | null
   focusedVideoCoverImageLocator: MediaLocator | null
@@ -73,8 +80,15 @@ export function useResolvedMediaState({
   focusedRef,
   orderedRootScopedImageRefs,
   fullscreenActive,
+  fullscreenPrefetchRadius = 4,
   showNamesOnly,
   refsInPage,
+  visibleImageRefs,
+  normalizedPageIndex,
+  imageTotalPages,
+  pagedPageSize,
+  thumbnailWarmupRadius = 0,
+  thumbnailWarmupConcurrency = 1,
   focusedVideo,
   focusedAudio,
   focusedVideoCoverImageLocator,
@@ -100,20 +114,26 @@ export function useResolvedMediaState({
       }
     }
 
-    const pushThumbnailImageTarget = (ref: FocusedImageRef) => {
+    const pushThumbnailImageTarget = (ref: FocusedImageRef): boolean => {
       const image = packageById.get(ref.packageId)?.images[ref.imageIndex]
       if (!image) {
-        return
+        return false
+      }
+
+      const targetId = `image-thumb:${image.id}`
+      if (targetById.has(targetId)) {
+        return false
       }
 
       pushTarget({
-        targetId: `image-thumb:${image.id}`,
+        targetId,
         locator: image.mediaLocator,
         variant: 'thumbnail',
         thumbnailMaxEdge,
         thumbnailQuality,
         thumbnailGenerationConcurrency,
       })
+      return true
     }
 
     const pushOriginalImageTarget = (image: ImageItem | null) => {
@@ -158,7 +178,7 @@ export function useResolvedMediaState({
         (ref) => ref.packageId === focusedRef.packageId && ref.imageIndex === focusedRef.imageIndex,
       )
       if (focusedIndex >= 0) {
-        const prefetchRadius = fullscreenActive ? 4 : 2
+        const prefetchRadius = fullscreenActive ? Math.max(2, Math.floor(fullscreenPrefetchRadius)) : 2
         for (let offset = 1; offset <= prefetchRadius; offset += 1) {
           pushOriginalImageTargetByRef(orderedRootScopedImageRefs[focusedIndex + offset], true)
           pushOriginalImageTargetByRef(orderedRootScopedImageRefs[focusedIndex - offset], true)
@@ -171,6 +191,49 @@ export function useResolvedMediaState({
       const effectiveRefsForThumbnails = importBusy ? refsInPage.slice(0, IMPORT_BUSY_THUMBNAIL_LIMIT) : refsInPage
       for (const ref of effectiveRefsForThumbnails) {
         pushThumbnailImageTarget(ref)
+      }
+
+      const refsForWarmup = visibleImageRefs ?? refsInPage
+      const effectivePageSize = Math.max(0, Math.floor(pagedPageSize ?? refsInPage.length))
+      const effectiveWarmupRadius = Math.max(0, Math.floor(thumbnailWarmupRadius))
+      const effectiveWarmupConcurrency = Math.max(1, Math.floor(thumbnailWarmupConcurrency))
+      const effectiveTotalPages = Math.max(0, Math.floor(imageTotalPages ?? 0))
+      const effectivePageIndex = Math.max(0, Math.floor(normalizedPageIndex ?? 0))
+      const canWarmupAdjacentPages =
+        !importBusy &&
+        effectiveWarmupRadius > 0 &&
+        effectivePageSize > 0 &&
+        effectiveTotalPages > 1 &&
+        refsForWarmup.length > effectivePageSize
+
+      if (canWarmupAdjacentPages) {
+        const maxWarmupTargets = effectiveWarmupConcurrency * effectivePageSize
+        let warmupCount = 0
+        for (let offset = 1; offset <= effectiveWarmupRadius && warmupCount < maxWarmupTargets; offset += 1) {
+          for (const direction of [-1, 1] as const) {
+            const adjacentPageIndex = effectivePageIndex + direction * offset
+            if (adjacentPageIndex < 0 || adjacentPageIndex >= effectiveTotalPages) {
+              continue
+            }
+
+            const start = adjacentPageIndex * effectivePageSize
+            const end = Math.min(start + effectivePageSize, refsForWarmup.length)
+            for (let index = start; index < end; index += 1) {
+              if (warmupCount >= maxWarmupTargets) {
+                break
+              }
+
+              const ref = refsForWarmup[index]
+              if (!ref) {
+                continue
+              }
+
+              if (pushThumbnailImageTarget(ref)) {
+                warmupCount += 1
+              }
+            }
+          }
+        }
       }
     }
 
@@ -233,9 +296,16 @@ export function useResolvedMediaState({
     metadataImage,
     focusedRef,
     fullscreenActive,
+    fullscreenPrefetchRadius,
     orderedRootScopedImageRefs,
     packageById,
     refsInPage,
+    visibleImageRefs,
+    normalizedPageIndex,
+    imageTotalPages,
+    pagedPageSize,
+    thumbnailWarmupRadius,
+    thumbnailWarmupConcurrency,
     showNamesOnly,
     sourceCoverLocators,
   ])

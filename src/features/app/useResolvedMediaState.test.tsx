@@ -201,6 +201,111 @@ describe('useResolvedMediaState', () => {
     expect(secondThumbTarget?.thumbnailMaxEdge).toBe(640)
   })
 
+  it('启用相邻页预热时会在当前页后追加相邻页缩略图目标', () => {
+    const packageData = createPackageWithImages(12)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const allRefs: FocusedImageRef[] = Array.from({ length: 12 }).map((_, index) => ({
+      packageId: packageData.id,
+      imageIndex: index,
+    }))
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        actualCellWidth: 240,
+        actualMediaHeight: 180,
+        thumbnailQuality: 82,
+        thumbnailWidth: 512,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: null,
+        metadataImage: null,
+        focusedRef: null,
+        orderedRootScopedImageRefs: allRefs,
+        fullscreenActive: false,
+        showNamesOnly: false,
+        refsInPage: allRefs.slice(4, 8),
+        visibleImageRefs: allRefs,
+        normalizedPageIndex: 1,
+        imageTotalPages: 3,
+        pagedPageSize: 4,
+        thumbnailWarmupRadius: 1,
+        thumbnailWarmupConcurrency: 1,
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    const call =
+      vi
+        .mocked(useResolvedMediaUrls)
+        .mock.calls
+        .map((args) => args[0])
+        .find((args) => args.targets.some((target) => target.targetId.startsWith('image-thumb:'))) ?? null
+
+    const thumbnailTargetIds =
+      call?.targets
+        .filter((target) => target.targetId.startsWith('image-thumb:'))
+        .map((target) => target.targetId) ?? []
+
+    expect(thumbnailTargetIds).toEqual([
+      'image-thumb:img-4',
+      'image-thumb:img-5',
+      'image-thumb:img-6',
+      'image-thumb:img-7',
+      'image-thumb:img-0',
+      'image-thumb:img-1',
+      'image-thumb:img-2',
+      'image-thumb:img-3',
+    ])
+  })
+
+  it('全屏预取深度使用设置值替代硬编码半径', () => {
+    const packageData = createPackageWithImages(20)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const allRefs: FocusedImageRef[] = Array.from({ length: 20 }).map((_, index) => ({
+      packageId: packageData.id,
+      imageIndex: index,
+    }))
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        actualCellWidth: 240,
+        actualMediaHeight: 180,
+        thumbnailQuality: 82,
+        thumbnailWidth: 512,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: packageData.images[10],
+        metadataImage: null,
+        focusedRef: { packageId: packageData.id, imageIndex: 10 },
+        orderedRootScopedImageRefs: allRefs,
+        fullscreenActive: true,
+        fullscreenPrefetchRadius: 6,
+        showNamesOnly: true,
+        refsInPage: [],
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    const call = vi.mocked(useResolvedMediaUrls).mock.calls[0]?.[0]
+    const originalTargetIds =
+      call?.targets
+        .filter((target) => target.targetId.startsWith('image-original:'))
+        .map((target) => target.targetId) ?? []
+
+    expect(originalTargetIds).toContain('image-original:img-16')
+    expect(originalTargetIds).toContain('image-original:img-4')
+  })
+
   it('聚焦音频时会下发 audio 资源解析目标', () => {
     const packageData = createPackageWithImages(1)
     const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
@@ -462,4 +567,3 @@ describe('useResolvedMediaState', () => {
     expect(mainCall?.options?.maxConcurrent).toBe(8)
   })
 })
-
