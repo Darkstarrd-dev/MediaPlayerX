@@ -980,6 +980,7 @@ export function useAppWorkspaceProps({
     videoById: videoByIdEffective,
     videoUrlById,
     videoSourceUrl: focusedVideoSrc,
+    popoverDebugPinned: appSettings.popoverDebugPinned,
     subtitleTrackUrl,
     subtitleVisible,
     subtitleLoading,
@@ -1035,6 +1036,7 @@ export function useAppWorkspaceProps({
   const musicMainSectionProps = buildMusicMainSectionProps({
     mode,
     fullscreenActive,
+    popoverDebugPinned: appSettings.popoverDebugPinned,
     paletteMode: appSettings.paletteMode,
     videoPlaying,
     playRequestNonce: musicPlayRequestNonce,

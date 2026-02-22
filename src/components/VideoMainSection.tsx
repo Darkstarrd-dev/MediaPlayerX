@@ -35,6 +35,7 @@ interface VideoMainSectionProps {
   canManageHide: boolean
   canManageUnhide: boolean
   onManageDelete: () => void
+  onManageRename?: () => void
   onManageGroup?: () => void
   onManageMove?: () => void
   onManageAddToPlaylist?: () => void
@@ -59,6 +60,7 @@ interface VideoMainSectionProps {
   mediaPreloadMemoryBudgetMb: number
   videoPreloadItems: Array<{ id: string; src: string; sizeMb: number }>
   videoSourceUrl: string | null
+  popoverDebugPinned: boolean
   subtitleTrackUrl: string | null
   subtitleVisible: boolean
   subtitleLoading: boolean
@@ -125,6 +127,7 @@ function VideoMainSection({
   canManageMoveNodes = false,
   canManageAddToPlaylist = false,
   onManageDelete,
+  onManageRename = () => undefined,
   onManageGroup = () => undefined,
   onManageAddToPlaylist = () => undefined,
   metadataPending,
@@ -145,6 +148,7 @@ function VideoMainSection({
   mediaPreloadMemoryBudgetMb,
   videoPreloadItems,
   videoSourceUrl,
+  popoverDebugPinned,
   subtitleTrackUrl,
   subtitleVisible,
   subtitleLoading,
@@ -251,8 +255,12 @@ function VideoMainSection({
       : activeSelectionScope === 'image'
         ? t('a11y.manage.selectedMediaItems', { count: imageSelectedCount })
         : t('a11y.manage.noSelection')
+  const hasAnyManageSelection = sidebarSelectedCount > 0 || imageSelectedCount > 0
 
   const closePopover = () => {
+    if (popoverDebugPinned) {
+      return
+    }
     setOpenPopover(null)
   }
 
@@ -441,6 +449,16 @@ function VideoMainSection({
                 onClick={onManageGroup}
               >
                 <MainUiIcon name="organize" />
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t('a11y.common.rename')}
+                title={t('tip.common.rename')}
+                disabled={!hasAnyManageSelection || pendingManageAction}
+                onClick={onManageRename}
+              >
+                <MainUiIcon name="rename" />
               </button>
               <button
                 className="vector-search-btn main-icon-square-btn"
@@ -640,13 +658,13 @@ function VideoMainSection({
             ) : null}
 
             <div
-              className={`video-ctrl-popover ${openPopover === 'fit' ? 'is-open' : ''}`}
+              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'fit' ? 'is-open' : ''}`}
               onMouseEnter={() => setOpenPopover('fit')}
               onMouseLeave={closePopover}
             >
               <button
                 aria-controls="video-main-popover-fit"
-                aria-expanded={openPopover === 'fit'}
+                aria-expanded={popoverDebugPinned || openPopover === 'fit'}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-fit"
                 aria-label={videoFitLabel}
@@ -656,7 +674,7 @@ function VideoMainSection({
               >
                 <VideoControlIcon name="aspect" />
               </button>
-              <div className="video-ctrl-panel is-fit" data-slot="fg-main-content-video-controls-fit-pop" hidden={openPopover !== 'fit'} id="video-main-popover-fit" role="dialog">
+              <div className="video-ctrl-panel is-fit" data-slot="fg-main-content-video-controls-fit-pop" hidden={!popoverDebugPinned && openPopover !== 'fit'} id="video-main-popover-fit" role="dialog">
                 <div className="video-ctrl-panel-options">
                   {[
                     { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
@@ -681,7 +699,7 @@ function VideoMainSection({
             </div>
 
             <div
-              className={`video-ctrl-popover ${openPopover === 'subtitle' ? 'is-open' : ''}`}
+              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'subtitle' ? 'is-open' : ''}`}
               onMouseEnter={() => {
                 if (subtitlePanelHasContent) {
                   setOpenPopover('subtitle')
@@ -691,7 +709,7 @@ function VideoMainSection({
             >
               <button
                 aria-controls="video-main-popover-subtitle"
-                aria-expanded={openPopover === 'subtitle'}
+                aria-expanded={popoverDebugPinned || openPopover === 'subtitle'}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-subtitle"
                 aria-label={subtitleToggleLabel}
@@ -701,7 +719,7 @@ function VideoMainSection({
               >
                 <VideoControlIcon name="subtitle" />
               </button>
-              <div className="video-ctrl-panel" data-slot="fg-main-content-video-controls-subtitle-pop" hidden={openPopover !== 'subtitle' || !subtitlePanelHasContent} id="video-main-popover-subtitle" role="dialog">
+              <div className="video-ctrl-panel" data-slot="fg-main-content-video-controls-subtitle-pop" hidden={!popoverDebugPinned && (openPopover !== 'subtitle' || !subtitlePanelHasContent)} id="video-main-popover-subtitle" role="dialog">
                 {subtitleLoading ? <span className="video-ctrl-panel-note">{t('ui.common.loading')}</span> : null}
                 {subtitlePanelContentText ? <span className="video-ctrl-panel-note">{subtitlePanelContentText}</span> : null}
                 <div className="video-ctrl-panel-options">
@@ -724,13 +742,13 @@ function VideoMainSection({
             </div>
 
             <div
-              className={`video-ctrl-popover ${openPopover === 'speed' ? 'is-open' : ''}`}
+              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'speed' ? 'is-open' : ''}`}
               onMouseEnter={() => setOpenPopover('speed')}
               onMouseLeave={closePopover}
             >
               <button
                 aria-controls="video-main-popover-speed"
-                aria-expanded={openPopover === 'speed'}
+                aria-expanded={popoverDebugPinned || openPopover === 'speed'}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-speed"
                 aria-label={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
@@ -739,7 +757,7 @@ function VideoMainSection({
               >
                 <VideoControlIcon name="speed" />
               </button>
-              <div className="video-ctrl-panel is-speed" data-slot="fg-main-content-video-controls-speed-pop" hidden={openPopover !== 'speed'} id="video-main-popover-speed" role="dialog">
+              <div className="video-ctrl-panel is-speed" data-slot="fg-main-content-video-controls-speed-pop" hidden={!popoverDebugPinned && openPopover !== 'speed'} id="video-main-popover-speed" role="dialog">
                 <div className="video-ctrl-panel-options">
                   {[0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rate) => (
                     <button
@@ -795,13 +813,13 @@ function VideoMainSection({
 
             {fullscreenActive ? (
               <div
-                className={`video-ctrl-popover ${openPopover === 'playlist' ? 'is-open' : ''}`}
+                  className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'playlist' ? 'is-open' : ''}`}
                 onMouseEnter={() => setOpenPopover('playlist')}
                 onMouseLeave={closePopover}
               >
                 <button
                   aria-controls="video-main-popover-playlist"
-                  aria-expanded={openPopover === 'playlist'}
+                    aria-expanded={popoverDebugPinned || openPopover === 'playlist'}
                   aria-haspopup="dialog"
                   aria-label={t('a11y.media.playlistFullscreenOnly')}
                   className="video-action-btn video-action-playlist"
@@ -810,7 +828,7 @@ function VideoMainSection({
                 >
                   <VideoControlIcon name="playlist" />
                 </button>
-                <div className="video-ctrl-panel" data-slot="fg-main-content-video-controls-playlist-pop" hidden={openPopover !== 'playlist'} id="video-main-popover-playlist" role="dialog">
+                  <div className="video-ctrl-panel" data-slot="fg-main-content-video-controls-playlist-pop" hidden={!popoverDebugPinned && openPopover !== 'playlist'} id="video-main-popover-playlist" role="dialog">
                   <span className="video-ctrl-panel-title">{t('ui.media.playlist')}</span>
                   <span className="video-ctrl-panel-note">{t('ui.media.playlistFullscreenHint')}</span>
                 </div>
@@ -831,13 +849,13 @@ function VideoMainSection({
             </button>
 
             <div
-              className={`video-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
+              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'volume' ? 'is-open' : ''}`}
               onMouseEnter={() => setOpenPopover('volume')}
               onMouseLeave={closePopover}
             >
               <button
                 aria-controls="video-main-popover-volume"
-                aria-expanded={openPopover === 'volume'}
+                aria-expanded={popoverDebugPinned || openPopover === 'volume'}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-mute"
                 aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
@@ -847,7 +865,7 @@ function VideoMainSection({
               >
                 <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
               </button>
-              <div className="video-ctrl-panel is-volume" data-slot="fg-main-content-video-controls-volume-pop" hidden={openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
+              <div className="video-ctrl-panel is-volume" data-slot="fg-main-content-video-controls-volume-pop" hidden={!popoverDebugPinned && openPopover !== 'volume'} id="video-main-popover-volume" role="dialog">
                 <div className="video-ctrl-volume-axis">
                   <SkeuoRunway
                     ariaLabel={t('a11y.media.volumeSlider')}

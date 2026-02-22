@@ -70,6 +70,7 @@ describe('buildVideoMainSectionProps', () => {
       ]) as unknown as Map<string, never>,
       videoUrlById: { 'video-1': 'file:///video-1.mp4' },
       videoSourceUrl: 'file:///video-1.mp4',
+      popoverDebugPinned: false,
       fullscreenActive: false,
       active: true,
       coverColor: 'hsl(0, 0%, 20%)',

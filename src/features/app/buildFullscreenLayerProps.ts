@@ -44,6 +44,7 @@ interface BuildFullscreenLayerPropsParams {
   fullscreenDecodeCacheSize?: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
+  popoverDebugPinned: boolean
   imageConvertPreviewMode?: boolean
   imageConvertPreviewScale?: number
   imageConvertPreviewLongestEdgePx?: number | null
@@ -124,6 +125,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     fullscreenDecodeCacheSize: params.fullscreenDecodeCacheSize ?? 10,
     autoPlayEnabled: params.autoPlayEnabled,
     autoPlayInterval: params.autoPlayInterval,
+    popoverDebugPinned: params.popoverDebugPinned,
     imageConvertPreviewMode: params.imageConvertPreviewMode,
     imageConvertPreviewScale: params.imageConvertPreviewScale,
     imageConvertPreviewLongestEdgePx: params.imageConvertPreviewLongestEdgePx,

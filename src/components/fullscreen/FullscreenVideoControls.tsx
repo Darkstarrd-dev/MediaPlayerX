@@ -43,6 +43,7 @@ interface FullscreenVideoControlsShellProps {
   onSelectVideo: (videoId: string) => void
   onSaveCover: () => void
   onExit: () => void
+  popoverDebugPinned: boolean
   controlsWidth?: number
   compact?: boolean
   hideLeftGroup?: boolean
@@ -81,6 +82,7 @@ export function FullscreenVideoControlsShell({
   onSelectVideo,
   onSaveCover,
   onExit,
+  popoverDebugPinned,
   controlsWidth,
   compact = false,
   hideLeftGroup = false,
@@ -92,6 +94,9 @@ export function FullscreenVideoControlsShell({
   const lastSeekPreviewValueRef = useRef<number | null>(null)
 
   const closePopover = () => {
+    if (popoverDebugPinned) {
+      return
+    }
     setOpenPopover(null)
   }
 
@@ -199,13 +204,13 @@ export function FullscreenVideoControlsShell({
           </button>
 
           <div
-            className={`video-ctrl-popover ${openPopover === 'fit' ? 'is-open' : ''}`}
+            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'fit' ? 'is-open' : ''}`}
             onMouseEnter={() => openPopoverByHover('fit')}
             onMouseLeave={closePopover}
           >
             <button
               aria-controls="fullscreen-popover-fit"
-              aria-expanded={openPopover === 'fit'}
+               aria-expanded={popoverDebugPinned || openPopover === 'fit'}
               aria-haspopup="dialog"
               aria-label={videoFitLabel}
               className="video-action-btn video-action-fit"
@@ -215,7 +220,7 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name="aspect" />
             </button>
-            <div className="video-ctrl-panel is-fit" data-slot="fs-video-controls-fit-pop" hidden={openPopover !== 'fit'} id="fullscreen-popover-fit" role="dialog">
+            <div className="video-ctrl-panel is-fit" data-slot="fs-video-controls-fit-pop" hidden={!popoverDebugPinned && openPopover !== 'fit'} id="fullscreen-popover-fit" role="dialog">
               <div className="video-ctrl-panel-options">
                 {[
                   { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
@@ -240,7 +245,7 @@ export function FullscreenVideoControlsShell({
           </div>
 
           <div
-            className={`video-ctrl-popover ${openPopover === 'subtitle' ? 'is-open' : ''}`}
+            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'subtitle' ? 'is-open' : ''}`}
             onMouseEnter={() => {
               if (subtitlePanelHasContent) {
                 openPopoverByHover('subtitle')
@@ -250,7 +255,7 @@ export function FullscreenVideoControlsShell({
           >
             <button
               aria-controls="fullscreen-popover-subtitle"
-              aria-expanded={openPopover === 'subtitle'}
+               aria-expanded={popoverDebugPinned || openPopover === 'subtitle'}
               aria-haspopup="dialog"
               aria-label={subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')}
               className="video-action-btn video-action-subtitle"
@@ -263,7 +268,7 @@ export function FullscreenVideoControlsShell({
             <div
               className="video-ctrl-panel"
               data-slot="fs-video-controls-subtitle-pop"
-              hidden={openPopover !== 'subtitle' || !subtitlePanelHasContent}
+               hidden={!popoverDebugPinned && (openPopover !== 'subtitle' || !subtitlePanelHasContent)}
               id="fullscreen-popover-subtitle"
               role="dialog"
             >
@@ -289,13 +294,13 @@ export function FullscreenVideoControlsShell({
           </div>
 
           <div
-            className={`video-ctrl-popover ${openPopover === 'speed' ? 'is-open' : ''}`}
+            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'speed' ? 'is-open' : ''}`}
             onMouseEnter={() => openPopoverByHover('speed')}
             onMouseLeave={closePopover}
           >
             <button
               aria-controls="fullscreen-popover-speed"
-              aria-expanded={openPopover === 'speed'}
+               aria-expanded={popoverDebugPinned || openPopover === 'speed'}
               aria-haspopup="dialog"
               aria-label={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
               className="video-action-btn video-action-speed"
@@ -304,7 +309,7 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name="speed" />
             </button>
-            <div className="video-ctrl-panel is-speed" data-slot="fs-video-controls-speed-pop" hidden={openPopover !== 'speed'} id="fullscreen-popover-speed" role="dialog">
+            <div className="video-ctrl-panel is-speed" data-slot="fs-video-controls-speed-pop" hidden={!popoverDebugPinned && openPopover !== 'speed'} id="fullscreen-popover-speed" role="dialog">
               <div className="video-ctrl-panel-options">
                 {[0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rate) => (
                   <button
@@ -359,13 +364,13 @@ export function FullscreenVideoControlsShell({
           </button>
 
           <div
-            className={`video-ctrl-popover ${openPopover === 'playlist' ? 'is-open' : ''}`}
+            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'playlist' ? 'is-open' : ''}`}
             onMouseEnter={() => openPopoverByHover('playlist')}
             onMouseLeave={closePopover}
           >
             <button
               aria-controls="fullscreen-popover-playlist"
-              aria-expanded={openPopover === 'playlist'}
+               aria-expanded={popoverDebugPinned || openPopover === 'playlist'}
               aria-haspopup="dialog"
               aria-label={t('a11y.media.playlist')}
               className="video-action-btn video-action-playlist"
@@ -374,7 +379,7 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name="playlist" />
             </button>
-            <div className="video-ctrl-panel" data-slot="fs-video-controls-playlist-pop" hidden={openPopover !== 'playlist'} id="fullscreen-popover-playlist" role="dialog">
+            <div className="video-ctrl-panel" data-slot="fs-video-controls-playlist-pop" hidden={!popoverDebugPinned && openPopover !== 'playlist'} id="fullscreen-popover-playlist" role="dialog">
               {playlistEntries.length === 0 ? (
                 <span className="video-ctrl-panel-note">{t('ui.media.emptyPlaylist')}</span>
               ) : (
@@ -409,13 +414,13 @@ export function FullscreenVideoControlsShell({
           </button>
 
           <div
-            className={`video-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
+            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'volume' ? 'is-open' : ''}`}
             onMouseEnter={() => openPopoverByHover('volume')}
             onMouseLeave={closePopover}
           >
             <button
               aria-controls="fullscreen-popover-volume"
-              aria-expanded={openPopover === 'volume'}
+               aria-expanded={popoverDebugPinned || openPopover === 'volume'}
               aria-haspopup="dialog"
               aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               className="video-action-btn video-action-mute"
@@ -425,7 +430,7 @@ export function FullscreenVideoControlsShell({
             >
               <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
             </button>
-            <div className="video-ctrl-panel is-volume" data-slot="fs-video-controls-volume-pop" hidden={openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
+            <div className="video-ctrl-panel is-volume" data-slot="fs-video-controls-volume-pop" hidden={!popoverDebugPinned && openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
               <div className="video-ctrl-volume-axis">
                 <SkeuoRunway
                   ariaLabel={t('a11y.media.fullscreenVolume')}

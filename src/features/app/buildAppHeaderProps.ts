@@ -21,6 +21,7 @@ interface BuildAppHeaderPropsParams {
   paletteDayId: string
   paletteNightId: string
   themeParameterButtonVisible: boolean
+  popoverDebugPinned: boolean
   interactionLocked?: boolean
   importMenuOpen: boolean
   taskStatusLabel: string
@@ -126,6 +127,8 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
       })
     },
     themeParameterButtonVisible: params.themeParameterButtonVisible,
+    popoverDebugPinned: params.popoverDebugPinned,
+    onTogglePopoverDebugPinned: () => params.updateSettings({ popoverDebugPinned: !params.popoverDebugPinned }),
     onOpenThemeParameter: params.onOpenThemeParameter,
     onOpenHelp: () => params.updateSettings({ helpOpen: true }),
     onOpenSettings: () => params.updateSettings({ settingsOpen: true }),

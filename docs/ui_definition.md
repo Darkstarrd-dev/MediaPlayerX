@@ -53,6 +53,7 @@
 | `fg.header.g3.metadata` | `.search-trigger-btn` (metadata) | `data-slot="fg-header-g3-metadata"` | always | 元数据管理开关 | 仅开关态 |
 | `fg.header.g4` | `.header-group-window` | `data-slot="fg-header-g4"` | always | 第 4 组 | 窗口控制 |
 | `fg.header.g4.themeParameter` | `.window-control-btn--theme-parameter` | `data-slot="fg-header-g4-theme-parameter"` | `themeParameterButtonVisible` | 主题参数按钮 | 打开 ThemeParameter 面板 |
+| `fg.header.g4.popoverDebugPin` | `.window-control-btn`（O/C） | `data-slot="fg-header-g4-popover-debug-pin"` | always | 调试悬浮层固定开关 | `C`=关闭，`O`=开启 |
 | `fg.header.g4.themeParameter.root.panel` | `.settings-mask > .settings-panel.theme-parameter-panel` | `data-slot="fg-header-g4-theme-parameter-root-panel"` | `themeParameterOpen` | Theme 参数面板 | 全屏遮罩+居中主面板 |
 | `fg.header.g4.help` | `.window-control-btn` (help) | `data-slot="fg-header-g4-help"` | always | 帮助按钮 | 打开 Help 面板 |
 | `fg.header.g4.help.root.panel` | `.settings-mask > .settings-panel`（HelpPanel） | `data-slot="fg-header-g4-help-root-panel"` | `helpOpen` | Help 面板 | 全屏遮罩+居中主面板 |

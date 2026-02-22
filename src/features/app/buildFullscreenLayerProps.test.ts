@@ -40,6 +40,7 @@ function createParams() {
     fullscreenVideoControlsMaxWidth: 960,
     autoPlayEnabled: false,
     autoPlayInterval: 3,
+    popoverDebugPinned: false,
     updateSettings: vi.fn(),
     setVideoPlaying: vi.fn(),
     goPlaylist: vi.fn(),

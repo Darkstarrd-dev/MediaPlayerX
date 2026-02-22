@@ -39,6 +39,7 @@ export interface MusicMainSectionProps {
   canPrevAudio: boolean
   canNextAudio: boolean
   fullscreenActive: boolean
+  popoverDebugPinned: boolean
   paletteMode?: 'day' | 'night'
   onToggleFullscreen: () => void
   musicVisualizerSelectedShaderId: string

@@ -42,6 +42,8 @@ function createHeaderProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderPr
     onAutoPlayIntervalChange: vi.fn(),
     onTogglePaletteMode: vi.fn(),
     themeParameterButtonVisible: false,
+    popoverDebugPinned: false,
+    onTogglePopoverDebugPinned: vi.fn(),
     onOpenThemeParameter: vi.fn(),
     onOpenHelp: vi.fn(),
     onOpenSettings: vi.fn(),
@@ -127,5 +129,13 @@ describe('AppHeader music quick actions', () => {
     expect(themeParameterButton).not.toBeNull()
     fireEvent.click(themeParameterButton as HTMLButtonElement)
     expect(onOpenThemeParameter).toHaveBeenCalledTimes(1)
+  })
+
+  it('点击 O/C 按钮会触发调试固定开关', () => {
+    const onTogglePopoverDebugPinned = vi.fn()
+    render(<AppHeader {...createHeaderProps({ onTogglePopoverDebugPinned, popoverDebugPinned: false })} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '调试固定悬浮层' }))
+    expect(onTogglePopoverDebugPinned).toHaveBeenCalledTimes(1)
   })
 })

@@ -26,6 +26,7 @@ export function toPersistedAppSettings(
     layoutLocked: settings.layoutLocked,
     electronNativeChromeEnabled: settings.electronNativeChromeEnabled,
     themeParameterButtonVisible: settings.themeParameterButtonVisible,
+    popoverDebugPinned: settings.popoverDebugPinned,
     sidebarFontSize: settings.sidebarFontSize,
     sidebarCountFontSize: settings.sidebarCountFontSize,
     sidebarIndentStep: settings.sidebarIndentStep,

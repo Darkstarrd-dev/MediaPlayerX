@@ -38,6 +38,8 @@ function createProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderProps {
     onAutoPlayIntervalChange: vi.fn(),
     onTogglePaletteMode: vi.fn(),
     themeParameterButtonVisible: false,
+    popoverDebugPinned: false,
+    onTogglePopoverDebugPinned: vi.fn(),
     onOpenThemeParameter: vi.fn(),
     onOpenHelp: vi.fn(),
     onOpenSettings: vi.fn(),

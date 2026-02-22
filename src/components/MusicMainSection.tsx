@@ -54,6 +54,7 @@ function MusicMainSection({
   canPrevAudio,
   canNextAudio,
   fullscreenActive,
+  popoverDebugPinned,
   paletteMode = 'day',
   onToggleFullscreen,
   musicVisualizerSelectedShaderId,
@@ -421,6 +422,9 @@ function MusicMainSection({
   }, [backgroundLayerRenderScaleCoeff])
 
   const closePopover = () => {
+    if (popoverDebugPinned) {
+      return
+    }
     setOpenPopover(null)
   }
 
@@ -570,11 +574,14 @@ function MusicMainSection({
     } as CSSProperties
   }, [fullscreenActive, fullscreenVideoControlsMaxWidth, fullscreenViewport.height, fullscreenViewport.width])
 
+  const effectiveFullscreenControlsMounted = popoverDebugPinned || fullscreenControlsMounted
+  const effectiveFullscreenControlsVisible = popoverDebugPinned || fullscreenControlsVisible
+
   const musicControlsShell = (
     <div
-      className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating fullscreen-controls-shell' : ''}${fullscreenActive && fullscreenControlsVisible ? ' is-visible' : ''}${fullscreenActive && !fullscreenControlsMounted ? ' is-hidden' : ''}`}
+      className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating fullscreen-controls-shell' : ''}${fullscreenActive && effectiveFullscreenControlsVisible ? ' is-visible' : ''}${fullscreenActive && !effectiveFullscreenControlsMounted ? ' is-hidden' : ''}`}
       data-slot="fg-main-content-music-controls"
-      hidden={fullscreenActive ? !fullscreenControlsMounted : undefined}
+      hidden={fullscreenActive ? !effectiveFullscreenControlsMounted : undefined}
       onMouseEnter={fullscreenActive ? showFullscreenControls : undefined}
       onMouseLeave={fullscreenActive ? hideFullscreenControls : closePopover}
     >
@@ -619,13 +626,13 @@ function MusicMainSection({
       <div className="music-controls-row">
         <div className="music-controls-group is-left mpx-skeuo-well" data-slot="fg-main-content-music-controls-left">
           <div
-            className={`music-ctrl-popover ${openPopover === 'shader' ? 'is-open' : ''}`}
+            className={`music-ctrl-popover ${popoverDebugPinned || openPopover === 'shader' ? 'is-open' : ''}`}
             onMouseEnter={() => setOpenPopover('shader')}
             onMouseLeave={closePopover}
           >
             <button
               aria-controls="music-main-popover-shader"
-              aria-expanded={openPopover === 'shader'}
+                aria-expanded={popoverDebugPinned || openPopover === 'shader'}
               aria-haspopup="dialog"
               aria-label={t('a11y.music.shaderSelected', { label: selectedShaderLabel })}
               className="video-action-btn"
@@ -634,7 +641,7 @@ function MusicMainSection({
             >
               <MusicControlIcon name="shaderList" />
             </button>
-            <div className="music-ctrl-panel is-shader" data-slot="fg-main-content-music-controls-shader-pop" hidden={openPopover !== 'shader'} id="music-main-popover-shader" role="dialog">
+            <div className="music-ctrl-panel is-shader" data-slot="fg-main-content-music-controls-shader-pop" hidden={!popoverDebugPinned && openPopover !== 'shader'} id="music-main-popover-shader" role="dialog">
               <span className="music-ctrl-panel-title">{t('ui.music.shaderTitle')}</span>
               <div className="music-ctrl-shader-toolbar">
                 <button
@@ -680,13 +687,13 @@ function MusicMainSection({
           </div>
 
           <div
-            className={`music-ctrl-popover is-dock-left ${openPopover === 'shaderSettings' ? 'is-open' : ''}`}
+            className={`music-ctrl-popover is-dock-left ${popoverDebugPinned || openPopover === 'shaderSettings' ? 'is-open' : ''}`}
             onMouseEnter={() => setOpenPopover('shaderSettings')}
             onMouseLeave={closePopover}
           >
             <button
               aria-controls="music-main-popover-shader-settings"
-              aria-expanded={openPopover === 'shaderSettings'}
+                aria-expanded={popoverDebugPinned || openPopover === 'shaderSettings'}
               aria-haspopup="dialog"
               aria-label={t('a11y.music.shaderSettings')}
               className="video-action-btn"
@@ -698,7 +705,7 @@ function MusicMainSection({
             <div
               className="music-ctrl-panel is-shader is-shader-settings"
               data-slot="fg-main-content-music-controls-shader-settings-pop"
-              hidden={openPopover !== 'shaderSettings'}
+              hidden={!popoverDebugPinned && openPopover !== 'shaderSettings'}
               id="music-main-popover-shader-settings"
               role="dialog"
             >
@@ -971,12 +978,12 @@ function MusicMainSection({
           </button>
 
           <div
-            className={`music-ctrl-popover ${openPopover === 'volume' ? 'is-open' : ''}`}
+            className={`music-ctrl-popover ${popoverDebugPinned || openPopover === 'volume' ? 'is-open' : ''}`}
             onMouseEnter={() => setOpenPopover('volume')}
           >
             <button
               aria-controls="music-main-popover-volume"
-              aria-expanded={openPopover === 'volume'}
+                aria-expanded={popoverDebugPinned || openPopover === 'volume'}
               aria-haspopup="dialog"
               aria-label={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               className="video-action-btn"
@@ -990,7 +997,7 @@ function MusicMainSection({
             <div
               className="music-ctrl-panel is-volume"
               data-slot="fg-main-content-music-controls-volume-pop"
-              hidden={openPopover !== 'volume'}
+              hidden={!popoverDebugPinned && openPopover !== 'volume'}
               id="music-main-popover-volume"
               role="dialog"
               onMouseLeave={closePopover}

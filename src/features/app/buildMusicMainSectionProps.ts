@@ -8,6 +8,7 @@ import { clamp } from '../../utils/ui'
 interface BuildMusicMainSectionPropsParams {
   mode: 'image' | 'video' | 'music'
   fullscreenActive: boolean
+  popoverDebugPinned: boolean
   paletteMode: 'day' | 'night'
   videoPlaying: boolean
   playRequestNonce: number
@@ -246,6 +247,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     canPrevAudio: canStepBetweenTracks,
     canNextAudio: canStepBetweenTracks,
     fullscreenActive: params.fullscreenActive,
+    popoverDebugPinned: params.popoverDebugPinned,
     paletteMode: params.paletteMode,
     onToggleFullscreen: () => {
       params.setFullscreenActiveWithAutoStop(!params.fullscreenActive)

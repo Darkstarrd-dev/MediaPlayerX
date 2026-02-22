@@ -30,6 +30,11 @@ export const a11yRegistry = {
     labelKey: 'a11y.header.themeParameter',
     titleKey: 'tip.header.themeParameter',
   },
+  headerPopoverDebugPinned: {
+    id: 'header.popoverDebugPinned',
+    labelKey: 'a11y.header.popoverDebugPinned',
+    titleKey: 'tip.header.popoverDebugPinned',
+  },
   headerMetadataToggle: {
     id: 'header.metadataToggle',
     labelKey: 'a11y.header.switchToMetadataMode',

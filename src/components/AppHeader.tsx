@@ -221,6 +221,8 @@ export interface AppHeaderProps {
   onAutoPlayIntervalChange: (value: number) => void
   onTogglePaletteMode: () => void
   themeParameterButtonVisible: boolean
+  popoverDebugPinned: boolean
+  onTogglePopoverDebugPinned: () => void
   onOpenThemeParameter: () => void
   onOpenHelp: () => void
   onOpenSettings: () => void
@@ -250,6 +252,8 @@ function AppHeader(props: AppHeaderProps) {
     onToggleMetadataManageMode,
     onTogglePaletteMode,
     themeParameterButtonVisible,
+    popoverDebugPinned,
+    onTogglePopoverDebugPinned,
     onOpenThemeParameter,
     onOpenHelp,
     onOpenSettings,
@@ -318,6 +322,7 @@ function AppHeader(props: AppHeaderProps) {
 
   const settingsButtonA11y = buildA11yPropsByRegistry({ key: 'headerSettings', t })
   const themeParameterButtonA11y = buildA11yPropsByRegistry({ key: 'headerThemeParameter', t })
+  const popoverDebugPinnedButtonA11y = buildA11yPropsByRegistry({ key: 'headerPopoverDebugPinned', t })
   const helpButtonA11y = buildA11yPropsByRegistry({ key: 'headerHelp', t })
   const searchButtonA11y = buildA11yPropsByRegistry({ key: 'headerSearch', t })
   const manageButtonA11y = buildA11yPropsByRegistry({ key: 'headerManage', t })
@@ -544,6 +549,16 @@ function AppHeader(props: AppHeaderProps) {
               <span className="window-control-btn-text">T</span>
             </button>
           ) : null}
+          <button
+            {...popoverDebugPinnedButtonA11y}
+            aria-pressed={popoverDebugPinned}
+            className="window-control-btn window-control-btn--theme-parameter"
+            data-slot="fg-header-g4-popover-debug-pin"
+            type="button"
+            onClick={onTogglePopoverDebugPinned}
+          >
+            <span className="window-control-btn-text">{popoverDebugPinned ? 'O' : 'C'}</span>
+          </button>
           <button {...helpButtonA11y} className="window-control-btn" data-slot="fg-header-g4-help" type="button" onClick={onOpenHelp}>
             <HeaderActionIcon name="help" />
           </button>

@@ -68,6 +68,7 @@ function createMusicMainSectionProps(
     canPrevAudio: false,
     canNextAudio: true,
     fullscreenActive: false,
+    popoverDebugPinned: false,
     onToggleFullscreen: vi.fn(),
     musicVisualizerShaderSettings: {
       renderLongEdgePx: 1280,

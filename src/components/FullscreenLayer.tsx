@@ -219,6 +219,7 @@ export interface FullscreenLayerProps {
   fullscreenDecodeCacheSize?: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
+  popoverDebugPinned: boolean
   imageConvertPreviewMode?: boolean
   imageConvertPreviewScale?: number
   imageConvertPreviewLongestEdgePx?: number | null
@@ -301,6 +302,7 @@ function FullscreenLayer({
   fullscreenDecodeCacheSize = 10,
   autoPlayEnabled,
   autoPlayInterval,
+  popoverDebugPinned,
   imageConvertPreviewMode = false,
   imageConvertPreviewScale = 1,
   imageConvertPreviewLongestEdgePx = null,
@@ -708,6 +710,10 @@ function FullscreenLayer({
   }, [])
 
   const hideVideoControls = useCallback(() => {
+    if (popoverDebugPinned) {
+      setVideoControlsVisible(true)
+      return
+    }
     if (hideVideoControlsTimerRef.current !== null) {
       window.clearTimeout(hideVideoControlsTimerRef.current)
     }
@@ -715,7 +721,15 @@ function FullscreenLayer({
       setVideoControlsVisible(false)
       hideVideoControlsTimerRef.current = null
     }, 150)
-  }, [])
+  }, [popoverDebugPinned])
+
+  useEffect(() => {
+    if (!fullscreenActive || !popoverDebugPinned) {
+      return
+    }
+    setVideoControlsVisible(true)
+    onSetFooterVisible(true)
+  }, [fullscreenActive, onSetFooterVisible, popoverDebugPinned])
 
   useEffect(() => {
     if (!fullscreenActive) {
@@ -918,6 +932,7 @@ function FullscreenLayer({
           onNextPackage={onNextPackage}
           onToggleAutoplay={onToggleAutoplay}
           onSetAutoplayInterval={onSetAutoplayInterval}
+          popoverDebugPinned={popoverDebugPinned}
           onAlignFocusedPane={alignFocusedPane}
           onSetZoomPercent={(percent) => {
             if (singlePane) {
@@ -1012,6 +1027,7 @@ function FullscreenLayer({
       onSelectVideo={onSelectVideo}
       onSaveCover={onSaveCover}
       onExit={onExit}
+      popoverDebugPinned={popoverDebugPinned}
       controlsWidth={effectiveFullscreenDisplay === 'dual' ? dualVideoControlsWidth : undefined}
       compact={videoControlsCompact}
       hideLeftGroup={videoControlsHideLeftGroup}
@@ -1067,9 +1083,17 @@ function FullscreenLayer({
       style={fullscreenControlsCssVars}
       data-overlay-close="fullscreen"
       onMouseMove={(event) => {
+        if (popoverDebugPinned) {
+          onSetFooterVisible(true)
+          return
+        }
         onSetFooterVisible(footerHovering || event.clientY > fullscreenViewport.height * 0.8)
       }}
       onMouseLeave={() => {
+        if (popoverDebugPinned) {
+          onSetFooterVisible(true)
+          return
+        }
         setFooterHovering(false)
         onSetFooterVisible(false)
         hideVideoControls()

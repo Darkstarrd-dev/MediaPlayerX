@@ -143,6 +143,7 @@ interface FullscreenFooterProps {
   onResetSinglePane: () => void
   onHoverStateChange: (hovering: boolean) => void
   onExit: () => void
+  popoverDebugPinned?: boolean
   controlsWidth?: number
   compact?: boolean
   hideRightGroup?: boolean
@@ -196,6 +197,7 @@ export function FullscreenFooter({
   onResetSinglePane,
   onHoverStateChange,
   onExit,
+  popoverDebugPinned = false,
   controlsWidth,
   compact = false,
   hideRightGroup = false,
@@ -281,6 +283,9 @@ export function FullscreenFooter({
   }
 
   const openAutoplayPopoverByHover = () => {
+    if (popoverDebugPinned) {
+      return
+    }
     if (!autoplayEnabledForFocus) {
       return
     }
@@ -289,6 +294,9 @@ export function FullscreenFooter({
   }
 
   const closeAutoplayPopoverByHover = () => {
+    if (popoverDebugPinned) {
+      return
+    }
     clearAutoplayPopoverHideTimer()
     autoplayPopoverHideTimerRef.current = window.setTimeout(() => {
       setOpenAutoplayPopover(false)
@@ -297,6 +305,9 @@ export function FullscreenFooter({
   }
 
   const openZoomPopoverByHover = () => {
+    if (popoverDebugPinned) {
+      return
+    }
     if (!zoomEnabled) {
       return
     }
@@ -305,6 +316,9 @@ export function FullscreenFooter({
   }
 
   const closeZoomPopoverByHover = () => {
+    if (popoverDebugPinned) {
+      return
+    }
     clearZoomPopoverHideTimer()
     zoomPopoverHideTimerRef.current = window.setTimeout(() => {
       setOpenZoomPopover(false)
@@ -332,6 +346,11 @@ export function FullscreenFooter({
   const commitPreviewQualityDraft = () => {
     onChangeImageConvertPreviewQuality?.(Math.max(10, Math.min(100, Math.round(previewQualityDraftValue))))
   }
+  const showAutoplayPopover = popoverDebugPinned || openAutoplayPopover
+  const showZoomPopover = popoverDebugPinned || openZoomPopover
+  const showPreviewScalePopover = popoverDebugPinned || openPreviewScalePopover
+  const showPreviewFormatPopover = popoverDebugPinned || openPreviewFormatPopover
+  const showPreviewQualityPopover = popoverDebugPinned || openPreviewQualityPopover
 
   return (
     <footer
@@ -378,7 +397,7 @@ export function FullscreenFooter({
               </button>
 
               <div
-                className={`header-popover-control header-popover-control--upward fullscreen-autoplay-control ${openAutoplayPopover ? 'is-open' : ''}`}
+                className={`header-popover-control header-popover-control--upward fullscreen-autoplay-control ${showAutoplayPopover ? 'is-open' : ''}`}
                 role="group"
                 aria-label={t('a11y.header.autoPlayGroup')}
                 onMouseEnter={openAutoplayPopoverByHover}
@@ -400,7 +419,7 @@ export function FullscreenFooter({
                 <div
                   className="header-popover-panel header-popover-panel--upward fullscreen-autoplay-popover"
                   data-slot="fs-image-controls-autoplay-pop"
-                  hidden={!openAutoplayPopover || !autoplayEnabledForFocus}
+                  hidden={!showAutoplayPopover || !autoplayEnabledForFocus}
                   role="dialog"
                   aria-label={t('a11y.header.autoPlaySettings')}
                 >
@@ -432,9 +451,12 @@ export function FullscreenFooter({
           {imageConvertPreviewMode ? (
             <>
               <div
-                className={`header-popover-control header-popover-control--upward ${openPreviewScalePopover ? 'is-open' : ''}`}
+                className={`header-popover-control header-popover-control--upward ${showPreviewScalePopover ? 'is-open' : ''}`}
                 onMouseEnter={() => setOpenPreviewScalePopover(true)}
                 onMouseLeave={() => {
+                  if (popoverDebugPinned) {
+                    return
+                  }
                   commitPreviewScaleDraft()
                   setOpenPreviewScalePopover(false)
                 }}
@@ -447,7 +469,7 @@ export function FullscreenFooter({
                 >
                   <span className="fullscreen-action-content">S</span>
                 </button>
-                <div className="header-popover-panel header-popover-panel--upward" hidden={!openPreviewScalePopover} role="dialog" aria-label="Scale">
+                <div className="header-popover-panel header-popover-panel--upward" hidden={!showPreviewScalePopover} role="dialog" aria-label="Scale">
                   <div className="header-vertical-slider" role="group" aria-label="Scale levels">
                     <div className="header-vertical-slider-value">{previewScaleDraftValue.toFixed(1)}</div>
                     <div className="header-vertical-slider-body">
@@ -475,11 +497,16 @@ export function FullscreenFooter({
                 </div>
               </div>
 
-              <div className={`header-popover-control header-popover-control--upward ${openPreviewFormatPopover ? 'is-open' : ''}`} onMouseEnter={() => setOpenPreviewFormatPopover(true)} onMouseLeave={() => setOpenPreviewFormatPopover(false)}>
+              <div className={`header-popover-control header-popover-control--upward ${showPreviewFormatPopover ? 'is-open' : ''}`} onMouseEnter={() => setOpenPreviewFormatPopover(true)} onMouseLeave={() => {
+                if (popoverDebugPinned) {
+                  return
+                }
+                setOpenPreviewFormatPopover(false)
+              }}>
                 <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" title={`Format ${imageConvertPreviewFormat.toUpperCase()}`}>
                   <span className="fullscreen-action-content">F</span>
                 </button>
-                <div className="header-popover-panel header-popover-panel--upward fullscreen-convert-format-popover" hidden={!openPreviewFormatPopover} role="dialog" aria-label="Format">
+                <div className="header-popover-panel header-popover-panel--upward fullscreen-convert-format-popover" hidden={!showPreviewFormatPopover} role="dialog" aria-label="Format">
                   <div className="fullscreen-convert-format-options" role="group" aria-label="Format options">
                     {IMAGE_CONVERT_FORMAT_OPTIONS.map((option) => (
                       <button
@@ -496,9 +523,12 @@ export function FullscreenFooter({
               </div>
 
               <div
-                className={`header-popover-control header-popover-control--upward ${openPreviewQualityPopover ? 'is-open' : ''}`}
+                className={`header-popover-control header-popover-control--upward ${showPreviewQualityPopover ? 'is-open' : ''}`}
                 onMouseEnter={() => setOpenPreviewQualityPopover(true)}
                 onMouseLeave={() => {
+                  if (popoverDebugPinned) {
+                    return
+                  }
                   commitPreviewQualityDraft()
                   setOpenPreviewQualityPopover(false)
                 }}
@@ -506,7 +536,7 @@ export function FullscreenFooter({
                 <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" title={`Quality ${imageConvertPreviewQuality}`}>
                   <span className="fullscreen-action-content">Q</span>
                 </button>
-                <div className="header-popover-panel header-popover-panel--upward" hidden={!openPreviewQualityPopover} role="dialog" aria-label="Quality">
+                <div className="header-popover-panel header-popover-panel--upward" hidden={!showPreviewQualityPopover} role="dialog" aria-label="Quality">
                   <div className="header-vertical-slider" role="group" aria-label="Quality levels">
                     <div className="header-vertical-slider-value">{Math.round(previewQualityDraftValue)}</div>
                     <div className="header-vertical-slider-body">
@@ -536,7 +566,7 @@ export function FullscreenFooter({
           ) : null}
 
           <div
-            className={`header-popover-control header-popover-control--upward fullscreen-zoom-control ${openZoomPopover ? 'is-open' : ''}`}
+            className={`header-popover-control header-popover-control--upward fullscreen-zoom-control ${showZoomPopover ? 'is-open' : ''}`}
             role="group"
             aria-label={t('ui.fullscreen.zoomIn')}
             onMouseEnter={openZoomPopoverByHover}
@@ -561,7 +591,7 @@ export function FullscreenFooter({
             <div
               className="header-popover-panel header-popover-panel--upward fullscreen-zoom-popover"
               data-slot="fs-image-controls-zoom-pop"
-              hidden={!openZoomPopover || !zoomEnabled}
+               hidden={!showZoomPopover || !zoomEnabled}
               role="dialog"
               aria-label={t('ui.fullscreen.zoomIn')}
             >

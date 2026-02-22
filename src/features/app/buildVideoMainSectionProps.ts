@@ -44,6 +44,7 @@ interface BuildVideoMainSectionPropsParams {
   videoById: Map<string, VideoItem>
   videoUrlById: Record<string, string>
   videoSourceUrl: string | null
+  popoverDebugPinned: boolean
   fullscreenActive: boolean
   active: boolean
   coverColor: string
@@ -148,6 +149,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
       })
       .filter((item): item is { id: string; src: string; sizeMb: number } => Boolean(item)),
     videoSourceUrl: params.videoSourceUrl,
+    popoverDebugPinned: params.popoverDebugPinned,
     fullscreenActive: params.fullscreenActive,
     active: params.active,
     coverImageUrl: params.coverImageUrl,

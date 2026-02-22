@@ -48,6 +48,7 @@
 | `fg.header.g3.metadata` | `--mpx-slot-fg-header-g3-metadata-*` |
 | `fg.header.g4` | `--mpx-slot-fg-header-g4-*` |
 | `fg.header.g4.themeParameter` | `--mpx-slot-fg-header-g4-theme-parameter-*` |
+| `fg.header.g4.popoverDebugPin` | `--mpx-slot-fg-header-g4-popover-debug-pin-*` |
 | `fg.header.g4.themeParameter.root.panel` | `--mpx-slot-fg-header-g4-theme-parameter-root-panel-*` |
 | `fg.header.g4.help` | `--mpx-slot-fg-header-g4-help-*` |
 | `fg.header.g4.help.root.panel` | `--mpx-slot-fg-header-g4-help-root-panel-*` |
