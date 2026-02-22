@@ -78,6 +78,14 @@ export interface ImagePackage {
     coverImagePath: string | null
     updatedAtMs: number
   } | null
+  preferenceMetrics?: {
+    eventCount: number
+    pagesRead: number
+    totalPages: number
+    completionRatio: number
+    lastEventTimeMs: number | null
+    updatedAtMs: number
+  } | null
   images: ImageItem[]
 }
 
@@ -101,6 +109,14 @@ export interface VideoItem {
   authorJpn?: string
   tags: string[]
   grade: number | null
+  preferenceMetrics?: {
+    eventCount: number
+    watchSeconds: number
+    totalSeconds: number
+    completionRatio: number
+    lastEventTimeMs: number | null
+    updatedAtMs: number
+  } | null
   mediaLocator: MediaLocator
 }
 

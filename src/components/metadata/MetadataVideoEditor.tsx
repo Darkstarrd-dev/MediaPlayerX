@@ -166,6 +166,19 @@ export function MetadataVideoEditor({
   >(null);
   const [playlistNameDraft, setPlaylistNameDraft] = useState("");
   const [selectedSavedPlaylist, setSelectedSavedPlaylist] = useState("");
+  const videoPreference = focusedVideo?.preferenceMetrics ?? null;
+  const videoWatchSecondsText = videoPreference
+    ? `${Math.max(0, videoPreference.watchSeconds).toFixed(1)}s / ${Math.max(0, videoPreference.totalSeconds)}s`
+    : "-";
+  const videoCompletionPercentText = videoPreference
+    ? `${(Math.max(0, Math.min(1, videoPreference.completionRatio)) * 100).toFixed(1)}%`
+    : "-";
+  const videoLastEventTimeText =
+    videoPreference?.lastEventTimeMs && videoPreference.lastEventTimeMs > 0
+      ? new Date(videoPreference.lastEventTimeMs).toLocaleString("zh-CN", {
+          hour12: false,
+        })
+      : "-";
 
   const savedPlaylistEntries = useMemo(
     () =>
@@ -512,6 +525,30 @@ export function MetadataVideoEditor({
                       commitOnEnter(event, onSubmitVideoSeriesId);
                     }}
                   />
+                </label>
+              ) : null}
+              {editable ? (
+                <label>
+                  <span>{t("ui.metadata.preferenceEventCount")}</span>
+                  <input readOnly value={videoPreference?.eventCount ?? 0} />
+                </label>
+              ) : null}
+              {editable ? (
+                <label>
+                  <span>{t("ui.metadata.preferenceWatchSeconds")}</span>
+                  <input readOnly value={videoWatchSecondsText} />
+                </label>
+              ) : null}
+              {editable ? (
+                <label>
+                  <span>{t("ui.metadata.preferenceCompletionRatio")}</span>
+                  <input readOnly value={videoCompletionPercentText} />
+                </label>
+              ) : null}
+              {editable ? (
+                <label>
+                  <span>{t("ui.metadata.preferenceLastEventAt")}</span>
+                  <input readOnly value={videoLastEventTimeText} />
                 </label>
               ) : null}
               <label>

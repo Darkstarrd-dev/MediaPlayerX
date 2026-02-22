@@ -2,7 +2,7 @@ import type { SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 
 export const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
 
-const SCHEMA_VERSION = 9
+const SCHEMA_VERSION = 10
 
 export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
   const versionRow = db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
@@ -191,6 +191,28 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
     );
 
     CREATE INDEX IF NOT EXISTS idx_task_log_updated_at ON task_log(updated_at_ms DESC);
+
+    CREATE TABLE IF NOT EXISTS image_preference_metrics (
+      source_id TEXT PRIMARY KEY,
+      event_count INTEGER NOT NULL DEFAULT 0,
+      pages_read INTEGER NOT NULL DEFAULT 0,
+      total_pages INTEGER NOT NULL DEFAULT 0,
+      completion_ratio REAL NOT NULL DEFAULT 0,
+      last_event_time_ms INTEGER,
+      updated_at_ms INTEGER NOT NULL,
+      FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS video_preference_metrics (
+      video_id TEXT PRIMARY KEY,
+      event_count INTEGER NOT NULL DEFAULT 0,
+      watch_seconds REAL NOT NULL DEFAULT 0,
+      total_seconds INTEGER NOT NULL DEFAULT 0,
+      completion_ratio REAL NOT NULL DEFAULT 0,
+      last_event_time_ms INTEGER,
+      updated_at_ms INTEGER NOT NULL,
+      FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
+    );
   `)
 
   if (currentVersion < 2) {
@@ -312,6 +334,32 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
         series_id TEXT NOT NULL DEFAULT '',
         updated_at_ms INTEGER NOT NULL,
         FOREIGN KEY(audio_id) REFERENCES audio_item(id) ON DELETE CASCADE
+      );
+    `)
+  }
+
+  if (currentVersion < 10) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS image_preference_metrics (
+        source_id TEXT PRIMARY KEY,
+        event_count INTEGER NOT NULL DEFAULT 0,
+        pages_read INTEGER NOT NULL DEFAULT 0,
+        total_pages INTEGER NOT NULL DEFAULT 0,
+        completion_ratio REAL NOT NULL DEFAULT 0,
+        last_event_time_ms INTEGER,
+        updated_at_ms INTEGER NOT NULL,
+        FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS video_preference_metrics (
+        video_id TEXT PRIMARY KEY,
+        event_count INTEGER NOT NULL DEFAULT 0,
+        watch_seconds REAL NOT NULL DEFAULT 0,
+        total_seconds INTEGER NOT NULL DEFAULT 0,
+        completion_ratio REAL NOT NULL DEFAULT 0,
+        last_event_time_ms INTEGER,
+        updated_at_ms INTEGER NOT NULL,
+        FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
       );
     `)
   }

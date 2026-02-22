@@ -256,6 +256,92 @@ export class MediaLibraryMetadataStore {
     )
   }
 
+  readImagePreferenceMetrics(): Map<
+    string,
+    {
+      eventCount: number
+      pagesRead: number
+      totalPages: number
+      completionRatio: number
+      lastEventTimeMs: number | null
+      updatedAtMs: number
+    }
+  > {
+    const rows = this.db
+      .prepare(
+        `
+          SELECT source_id, event_count, pages_read, total_pages, completion_ratio, last_event_time_ms, updated_at_ms
+          FROM image_preference_metrics
+        `,
+      )
+      .all() as Array<{
+      source_id: string
+      event_count: number
+      pages_read: number
+      total_pages: number
+      completion_ratio: number
+      last_event_time_ms: number | null
+      updated_at_ms: number
+    }>
+
+    return new Map(
+      rows.map((row) => [
+        row.source_id,
+        {
+          eventCount: row.event_count,
+          pagesRead: row.pages_read,
+          totalPages: row.total_pages,
+          completionRatio: row.completion_ratio,
+          lastEventTimeMs: row.last_event_time_ms,
+          updatedAtMs: row.updated_at_ms,
+        },
+      ]),
+    )
+  }
+
+  readVideoPreferenceMetrics(): Map<
+    string,
+    {
+      eventCount: number
+      watchSeconds: number
+      totalSeconds: number
+      completionRatio: number
+      lastEventTimeMs: number | null
+      updatedAtMs: number
+    }
+  > {
+    const rows = this.db
+      .prepare(
+        `
+          SELECT video_id, event_count, watch_seconds, total_seconds, completion_ratio, last_event_time_ms, updated_at_ms
+          FROM video_preference_metrics
+        `,
+      )
+      .all() as Array<{
+      video_id: string
+      event_count: number
+      watch_seconds: number
+      total_seconds: number
+      completion_ratio: number
+      last_event_time_ms: number | null
+      updated_at_ms: number
+    }>
+
+    return new Map(
+      rows.map((row) => [
+        row.video_id,
+        {
+          eventCount: row.event_count,
+          watchSeconds: row.watch_seconds,
+          totalSeconds: row.total_seconds,
+          completionRatio: row.completion_ratio,
+          lastEventTimeMs: row.last_event_time_ms,
+          updatedAtMs: row.updated_at_ms,
+        },
+      ]),
+    )
+  }
+
   writePackageGrade(sourceId: string, grade: number | null): void {
     this.db
       .prepare(
@@ -494,5 +580,91 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .run(sourceId, coverColor, coverImagePath, Date.now())
+  }
+
+  writeImagePreferenceMetrics(
+    sourceId: string,
+    payload: {
+      eventCount: number
+      pagesRead: number
+      totalPages: number
+      completionRatio: number
+      lastEventTimeMs: number | null
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO image_preference_metrics (
+            source_id,
+            event_count,
+            pages_read,
+            total_pages,
+            completion_ratio,
+            last_event_time_ms,
+            updated_at_ms
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(source_id) DO UPDATE SET
+            event_count = excluded.event_count,
+            pages_read = excluded.pages_read,
+            total_pages = excluded.total_pages,
+            completion_ratio = excluded.completion_ratio,
+            last_event_time_ms = excluded.last_event_time_ms,
+            updated_at_ms = excluded.updated_at_ms
+        `,
+      )
+      .run(
+        sourceId,
+        payload.eventCount,
+        payload.pagesRead,
+        payload.totalPages,
+        payload.completionRatio,
+        payload.lastEventTimeMs,
+        Date.now(),
+      )
+  }
+
+  writeVideoPreferenceMetrics(
+    videoId: string,
+    payload: {
+      eventCount: number
+      watchSeconds: number
+      totalSeconds: number
+      completionRatio: number
+      lastEventTimeMs: number | null
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO video_preference_metrics (
+            video_id,
+            event_count,
+            watch_seconds,
+            total_seconds,
+            completion_ratio,
+            last_event_time_ms,
+            updated_at_ms
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(video_id) DO UPDATE SET
+            event_count = excluded.event_count,
+            watch_seconds = excluded.watch_seconds,
+            total_seconds = excluded.total_seconds,
+            completion_ratio = excluded.completion_ratio,
+            last_event_time_ms = excluded.last_event_time_ms,
+            updated_at_ms = excluded.updated_at_ms
+        `,
+      )
+      .run(
+        videoId,
+        payload.eventCount,
+        payload.watchSeconds,
+        payload.totalSeconds,
+        payload.completionRatio,
+        payload.lastEventTimeMs,
+        Date.now(),
+      )
   }
 }

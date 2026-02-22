@@ -4,6 +4,7 @@ import { useAppShortcutBindings } from './useAppShortcutBindings'
 import { useAppEffects } from './useAppEffects'
 import { usePersistedAppSettings } from './usePersistedAppSettings'
 import { usePersistedSessionCursor } from './usePersistedSessionCursor'
+import { usePreferenceMetricsBuffer } from './usePreferenceMetricsBuffer'
 import { normalizeSeriesId, pickFirstBySeriesId } from './workspaceSharedUtils'
 import { clamp, isEditableTarget } from '../../utils/ui'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
@@ -1233,5 +1234,17 @@ export function useAppInteractionEffects({
     selectedAudioId,
     rootScopedAudioIds,
     setSelectedAudioId,
+  })
+
+  usePreferenceMetricsBuffer({
+    repository: mediaRepository,
+    mode,
+    fullscreenActive,
+    focusedImageRef: focusedRef,
+    packageById: packageByIdEffective,
+    videos: videosForSidebar,
+    selectedVideoId,
+    videoPlaying,
+    videoTime,
   })
 }

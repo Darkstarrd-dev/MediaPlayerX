@@ -69,6 +69,24 @@ export const imageSourceCoverDtoSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 });
 
+export const imagePreferenceMetricsDtoSchema = z.object({
+  event_count: nonNegativeIntSchema,
+  pages_read: nonNegativeIntSchema,
+  total_pages: nonNegativeIntSchema,
+  completion_ratio: z.number().min(0).max(1),
+  last_event_time_ms: z.number().int().positive().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const videoPreferenceMetricsDtoSchema = z.object({
+  event_count: nonNegativeIntSchema,
+  watch_seconds: z.number().min(0),
+  total_seconds: nonNegativeIntSchema,
+  completion_ratio: z.number().min(0).max(1),
+  last_event_time_ms: z.number().int().positive().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
 export const imagePackageDtoSchema = z.object({
   id: z.string().min(1),
   package_name: z.string().min(1),
@@ -83,6 +101,7 @@ export const imagePackageDtoSchema = z.object({
   mock_grade: z.number().int().min(0).max(5).nullable(),
   external_metadata: imageSourceExternalMetadataDtoSchema.nullable().optional(),
   source_cover: imageSourceCoverDtoSchema.nullable().optional(),
+  preference_metrics: imagePreferenceMetricsDtoSchema.nullable().optional(),
   images: z.array(imageItemDtoSchema),
 });
 
@@ -100,6 +119,7 @@ export const imageSourceLiteDtoSchema = z.object({
   mock_grade: z.number().int().min(0).max(5).nullable(),
   external_metadata: imageSourceExternalMetadataDtoSchema.nullable().optional(),
   source_cover: imageSourceCoverDtoSchema.nullable().optional(),
+  preference_metrics: imagePreferenceMetricsDtoSchema.nullable().optional(),
 });
 
 export const videoItemDtoSchema = z.object({
@@ -122,6 +142,7 @@ export const videoItemDtoSchema = z.object({
   author_jpn: z.string().default(""),
   tags: z.array(z.string()),
   grade: z.number().int().min(0).max(5).nullable().optional(),
+  preference_metrics: videoPreferenceMetricsDtoSchema.nullable().optional(),
   media_locator: mediaLocatorDtoSchema,
 });
 

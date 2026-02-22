@@ -151,6 +151,18 @@ export function MetadataImageEditor({
     return `${Math.round(kb)}KB`
   })()
 
+  const imagePreference = focusedImagePackage?.preferenceMetrics ?? null
+  const imageCompletionPercent = imagePreference
+    ? `${(Math.max(0, Math.min(1, imagePreference.completionRatio)) * 100).toFixed(1)}%`
+    : '-'
+  const imagePagesReadSummary = imagePreference
+    ? `${Math.max(0, imagePreference.pagesRead)} / ${Math.max(0, imagePreference.totalPages)}`
+    : '-'
+  const imageLastEventTimeText =
+    imagePreference?.lastEventTimeMs && imagePreference.lastEventTimeMs > 0
+      ? new Date(imagePreference.lastEventTimeMs).toLocaleString('zh-CN', { hour12: false })
+      : '-'
+
   useEffect(() => {
     captionRequestIdRef.current += 1
     const requestId = captionRequestIdRef.current
@@ -566,6 +578,38 @@ export function MetadataImageEditor({
                     />
                     <small className="metadata-field-hint" aria-hidden="true">
                       series_id
+                    </small>
+                  </label>
+
+                  <label>
+                    <span>{t('ui.metadata.preferenceEventCount')}</span>
+                    <input readOnly value={imagePreference?.eventCount ?? 0} />
+                    <small className="metadata-field-hint" aria-hidden="true">
+                      preference_metrics.event_count (read-only)
+                    </small>
+                  </label>
+
+                  <label>
+                    <span>{t('ui.metadata.preferencePagesRead')}</span>
+                    <input readOnly value={imagePagesReadSummary} />
+                    <small className="metadata-field-hint" aria-hidden="true">
+                      preference_metrics.pages_read / total_pages (read-only)
+                    </small>
+                  </label>
+
+                  <label>
+                    <span>{t('ui.metadata.preferenceCompletionRatio')}</span>
+                    <input readOnly value={imageCompletionPercent} />
+                    <small className="metadata-field-hint" aria-hidden="true">
+                      preference_metrics.completion_ratio (read-only)
+                    </small>
+                  </label>
+
+                  <label>
+                    <span>{t('ui.metadata.preferenceLastEventAt')}</span>
+                    <input readOnly value={imageLastEventTimeText} />
+                    <small className="metadata-field-hint" aria-hidden="true">
+                      preference_metrics.last_event_time_ms (read-only)
                     </small>
                   </label>
 

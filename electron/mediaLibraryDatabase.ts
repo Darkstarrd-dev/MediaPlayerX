@@ -188,6 +188,34 @@ export class MediaLibraryDatabase {
     return this.metadataStore.readSourceCovers()
   }
 
+  readImagePreferenceMetrics(): Map<
+    string,
+    {
+      eventCount: number
+      pagesRead: number
+      totalPages: number
+      completionRatio: number
+      lastEventTimeMs: number | null
+      updatedAtMs: number
+    }
+  > {
+    return this.metadataStore.readImagePreferenceMetrics()
+  }
+
+  readVideoPreferenceMetrics(): Map<
+    string,
+    {
+      eventCount: number
+      watchSeconds: number
+      totalSeconds: number
+      completionRatio: number
+      lastEventTimeMs: number | null
+      updatedAtMs: number
+    }
+  > {
+    return this.metadataStore.readVideoPreferenceMetrics()
+  }
+
   writePackageGrade(sourceId: string, grade: number | null): void {
     this.metadataStore.writePackageGrade(sourceId, grade)
   }
@@ -302,6 +330,32 @@ export class MediaLibraryDatabase {
     this.metadataStore.writeSourceCover(sourceId, coverColor, coverImagePath)
   }
 
+  writeImagePreferenceMetrics(
+    sourceId: string,
+    payload: {
+      eventCount: number
+      pagesRead: number
+      totalPages: number
+      completionRatio: number
+      lastEventTimeMs: number | null
+    },
+  ): void {
+    this.metadataStore.writeImagePreferenceMetrics(sourceId, payload)
+  }
+
+  writeVideoPreferenceMetrics(
+    videoId: string,
+    payload: {
+      eventCount: number
+      watchSeconds: number
+      totalSeconds: number
+      completionRatio: number
+      lastEventTimeMs: number | null
+    },
+  ): void {
+    this.metadataStore.writeVideoPreferenceMetrics(videoId, payload)
+  }
+
   readPlaylist(): string[] {
     return this.playlistStore.readPlaylist()
   }
@@ -335,6 +389,8 @@ export class MediaLibraryDatabase {
       this.db.prepare('DELETE FROM audio_metadata').run()
       this.db.prepare('DELETE FROM media_source_cover').run()
       this.db.prepare('DELETE FROM media_source_external_metadata').run()
+      this.db.prepare('DELETE FROM image_preference_metrics').run()
+      this.db.prepare('DELETE FROM video_preference_metrics').run()
       this.db.prepare('DELETE FROM package_grade').run()
       this.db.prepare('DELETE FROM image_item').run()
       this.db.prepare('DELETE FROM media_source').run()

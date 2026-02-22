@@ -320,11 +320,18 @@ export class MediaLibrarySnapshotStore {
             external.raw_json AS external_raw_json,
             source_cover.cover_color AS source_cover_color,
             source_cover.cover_image_path AS source_cover_image_path,
-            source_cover.updated_at_ms AS source_cover_updated_at_ms
+            source_cover.updated_at_ms AS source_cover_updated_at_ms,
+            preference.event_count AS preference_event_count,
+            preference.pages_read AS preference_pages_read,
+            preference.total_pages AS preference_total_pages,
+            preference.completion_ratio AS preference_completion_ratio,
+            preference.last_event_time_ms AS preference_last_event_time_ms,
+            preference.updated_at_ms AS preference_updated_at_ms
           FROM media_source AS source
           LEFT JOIN package_grade AS grade ON grade.source_id = source.id
           LEFT JOIN media_source_external_metadata AS external ON external.source_id = source.id
           LEFT JOIN media_source_cover AS source_cover ON source_cover.source_id = source.id
+          LEFT JOIN image_preference_metrics AS preference ON preference.source_id = source.id
           ORDER BY source.absolute_path COLLATE NOCASE
         `,
       )
@@ -428,6 +435,17 @@ export class MediaLibrarySnapshotStore {
                 updated_at_ms: row.source_cover_updated_at_ms,
               }
             : null,
+        preference_metrics:
+          typeof row.preference_event_count === 'number' && typeof row.preference_total_pages === 'number'
+            ? {
+                event_count: row.preference_event_count,
+                pages_read: row.preference_pages_read ?? 0,
+                total_pages: row.preference_total_pages,
+                completion_ratio: row.preference_completion_ratio ?? 0,
+                last_event_time_ms: row.preference_last_event_time_ms,
+                updated_at_ms: row.preference_updated_at_ms ?? Date.now(),
+              }
+            : null,
         images,
       }
 
@@ -461,10 +479,17 @@ export class MediaLibrarySnapshotStore {
             metadata.author,
             metadata.author_jpn,
             metadata.tags_json,
-            metadata.grade
+            metadata.grade,
+            preference.event_count AS preference_event_count,
+            preference.watch_seconds AS preference_watch_seconds,
+            preference.total_seconds AS preference_total_seconds,
+            preference.completion_ratio AS preference_completion_ratio,
+            preference.last_event_time_ms AS preference_last_event_time_ms,
+            preference.updated_at_ms AS preference_updated_at_ms
           FROM video_item AS video
           LEFT JOIN video_cover AS cover ON cover.video_id = video.id
           LEFT JOIN video_metadata AS metadata ON metadata.video_id = video.id
+          LEFT JOIN video_preference_metrics AS preference ON preference.video_id = video.id
           ORDER BY video.absolute_path COLLATE NOCASE
         `,
       )
@@ -492,6 +517,17 @@ export class MediaLibrarySnapshotStore {
         author_jpn: row.author_jpn ?? '',
         tags: row.tags_json ? parseJson<string[]>(row.tags_json, []) : [],
         grade: row.grade,
+        preference_metrics:
+          typeof row.preference_event_count === 'number' && typeof row.preference_total_seconds === 'number'
+            ? {
+                event_count: row.preference_event_count,
+                watch_seconds: row.preference_watch_seconds ?? 0,
+                total_seconds: row.preference_total_seconds,
+                completion_ratio: row.preference_completion_ratio ?? 0,
+                last_event_time_ms: row.preference_last_event_time_ms,
+                updated_at_ms: row.preference_updated_at_ms ?? Date.now(),
+              }
+            : null,
         media_locator: parseJson<MediaLocatorDto>(row.media_locator_json, {
           kind: 'filesystem',
           absolute_path: row.absolute_path,

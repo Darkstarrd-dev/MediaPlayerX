@@ -125,6 +125,16 @@ export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
           updatedAtMs: source.source_cover.updated_at_ms,
         }
       : null,
+    preferenceMetrics: source.preference_metrics
+      ? {
+          eventCount: source.preference_metrics.event_count,
+          pagesRead: source.preference_metrics.pages_read,
+          totalPages: source.preference_metrics.total_pages,
+          completionRatio: source.preference_metrics.completion_ratio,
+          lastEventTimeMs: source.preference_metrics.last_event_time_ms,
+          updatedAtMs: source.preference_metrics.updated_at_ms,
+        }
+      : null,
     images: source.images.map(mapImageItemDto),
   }
 }
@@ -168,6 +178,16 @@ export function mapImageSourceLiteDto(source: ImageSourceLiteDto): ImagePackage 
           updatedAtMs: source.source_cover.updated_at_ms,
         }
       : null,
+    preferenceMetrics: source.preference_metrics
+      ? {
+          eventCount: source.preference_metrics.event_count,
+          pagesRead: source.preference_metrics.pages_read,
+          totalPages: source.preference_metrics.total_pages,
+          completionRatio: source.preference_metrics.completion_ratio,
+          lastEventTimeMs: source.preference_metrics.last_event_time_ms,
+          updatedAtMs: source.preference_metrics.updated_at_ms,
+        }
+      : null,
     images: [],
   }
 }
@@ -194,6 +214,16 @@ export function mapVideoItemDto(video: VideoItemDto): VideoItem {
     authorJpn: video.author_jpn ?? '',
     tags: [...(video.tags ?? [])],
     grade: video.grade ?? null,
+    preferenceMetrics: video.preference_metrics
+      ? {
+          eventCount: video.preference_metrics.event_count,
+          watchSeconds: video.preference_metrics.watch_seconds,
+          totalSeconds: video.preference_metrics.total_seconds,
+          completionRatio: video.preference_metrics.completion_ratio,
+          lastEventTimeMs: video.preference_metrics.last_event_time_ms,
+          updatedAtMs: video.preference_metrics.updated_at_ms,
+        }
+      : null,
     mediaLocator: mapMediaLocatorDto(video.media_locator),
   }
 }

@@ -29,6 +29,12 @@ export interface SourceRow {
   source_cover_color: string | null
   source_cover_image_path: string | null
   source_cover_updated_at_ms: number | null
+  preference_event_count: number | null
+  preference_pages_read: number | null
+  preference_total_pages: number | null
+  preference_completion_ratio: number | null
+  preference_last_event_time_ms: number | null
+  preference_updated_at_ms: number | null
 }
 
 export interface ImageRow {
@@ -65,6 +71,12 @@ export interface VideoRow {
   author_jpn: string | null
   tags_json: string | null
   grade: number | null
+  preference_event_count: number | null
+  preference_watch_seconds: number | null
+  preference_total_seconds: number | null
+  preference_completion_ratio: number | null
+  preference_last_event_time_ms: number | null
+  preference_updated_at_ms: number | null
 }
 
 export interface AudioRow {

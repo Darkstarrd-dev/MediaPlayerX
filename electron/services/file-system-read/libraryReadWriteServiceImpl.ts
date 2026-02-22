@@ -99,6 +99,127 @@ const SOURCE_COVER_EXT_ALLOWLIST = new Set([
 ]);
 const SUBTITLE_EXTENSIONS = new Set([".vtt", ".srt", ".ass", ".ssa"]);
 const MUSIC_ISOLATED_FALLBACK_GROUP = "unknown artist";
+const XP_PREFERENCE_METRICS_STATE_KEY = "xp_preference_metrics_v1";
+
+interface PersistedImagePreferenceMetric {
+  eventCount: number;
+  pagesRead: number;
+  totalPages: number;
+  completionRatio: number;
+  lastEventTimeMs: number | null;
+}
+
+interface PersistedVideoPreferenceMetric {
+  eventCount: number;
+  watchSeconds: number;
+  totalSeconds: number;
+  completionRatio: number;
+  lastEventTimeMs: number | null;
+}
+
+function clampNonNegativeInt(value: unknown): number {
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+  return Math.floor(parsed);
+}
+
+function clampNonNegativeNumber(value: unknown): number {
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number(value ?? NaN);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+  return parsed;
+}
+
+function clampCompletionRatio(value: unknown): number {
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number(value ?? NaN);
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(1, parsed));
+}
+
+function parsePreferenceLastEventTime(value: unknown): number | null {
+  if (value === null || typeof value === "undefined") {
+    return null;
+  }
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number(value ?? NaN);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  return Math.floor(parsed);
+}
+
+function parsePersistedPreferenceMetrics(raw: unknown): {
+  imageBySourceId: Map<string, PersistedImagePreferenceMetric>;
+  videoById: Map<string, PersistedVideoPreferenceMetric>;
+} {
+  const result = {
+    imageBySourceId: new Map<string, PersistedImagePreferenceMetric>(),
+    videoById: new Map<string, PersistedVideoPreferenceMetric>(),
+  };
+
+  if (!raw || typeof raw !== "object") {
+    return result;
+  }
+
+  const record = raw as Record<string, unknown>;
+  const imageRecord = record.image_by_source_id;
+  if (imageRecord && typeof imageRecord === "object") {
+    for (const [sourceIdRaw, value] of Object.entries(
+      imageRecord as Record<string, unknown>,
+    )) {
+      const sourceId = sourceIdRaw.trim();
+      if (!sourceId || !value || typeof value !== "object") {
+        continue;
+      }
+      const metric = value as Record<string, unknown>;
+      result.imageBySourceId.set(sourceId, {
+        eventCount: clampNonNegativeInt(metric.event_count),
+        pagesRead: clampNonNegativeInt(metric.pages_read),
+        totalPages: clampNonNegativeInt(metric.total_pages),
+        completionRatio: clampCompletionRatio(metric.completion_ratio),
+        lastEventTimeMs: parsePreferenceLastEventTime(metric.last_event_time_ms),
+      });
+    }
+  }
+
+  const videoRecord = record.video_by_id;
+  if (videoRecord && typeof videoRecord === "object") {
+    for (const [videoIdRaw, value] of Object.entries(
+      videoRecord as Record<string, unknown>,
+    )) {
+      const videoId = videoIdRaw.trim();
+      if (!videoId || !value || typeof value !== "object") {
+        continue;
+      }
+      const metric = value as Record<string, unknown>;
+      result.videoById.set(videoId, {
+        eventCount: clampNonNegativeInt(metric.event_count),
+        watchSeconds: clampNonNegativeNumber(metric.watch_seconds),
+        totalSeconds: clampNonNegativeInt(metric.total_seconds),
+        completionRatio: clampCompletionRatio(metric.completion_ratio),
+        lastEventTimeMs: parsePreferenceLastEventTime(metric.last_event_time_ms),
+      });
+    }
+  }
+
+  return result;
+}
 
 function normalizeTreeSegment(value: string, fallback: string): string {
   const normalized = value
@@ -1088,10 +1209,31 @@ export class LibraryReadWriteService {
     request: WriteAppStateRequestDto,
   ): Promise<WriteAppStateResponseDto> {
     this.options.markInteractiveRead();
-    this.options.database.writeAppState(
-      request.state_key,
-      JSON.parse(request.state_json),
-    );
+    const parsedState = JSON.parse(request.state_json);
+    this.options.database.writeAppState(request.state_key, parsedState);
+
+    if (request.state_key === XP_PREFERENCE_METRICS_STATE_KEY) {
+      const parsedMetrics = parsePersistedPreferenceMetrics(parsedState);
+      for (const [sourceId, metric] of parsedMetrics.imageBySourceId) {
+        this.options.database.writeImagePreferenceMetrics(sourceId, {
+          eventCount: metric.eventCount,
+          pagesRead: metric.pagesRead,
+          totalPages: metric.totalPages,
+          completionRatio: metric.completionRatio,
+          lastEventTimeMs: metric.lastEventTimeMs,
+        });
+      }
+      for (const [videoId, metric] of parsedMetrics.videoById) {
+        this.options.database.writeVideoPreferenceMetrics(videoId, {
+          eventCount: metric.eventCount,
+          watchSeconds: metric.watchSeconds,
+          totalSeconds: metric.totalSeconds,
+          completionRatio: metric.completionRatio,
+          lastEventTimeMs: metric.lastEventTimeMs,
+        });
+      }
+    }
+
     return writeAppStateResponseSchema.parse({
       updated_at_ms: Date.now(),
     });

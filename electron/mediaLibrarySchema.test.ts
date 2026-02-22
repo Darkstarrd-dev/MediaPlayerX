@@ -36,7 +36,7 @@ describe('mediaLibrarySchema', () => {
     migrateMediaLibrarySchema(harness.db)
 
     const version = harness.db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
-    expect(version?.user_version).toBe(9)
+    expect(version?.user_version).toBe(10)
 
     const tableRows = harness.db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -59,6 +59,8 @@ describe('mediaLibrarySchema', () => {
         'app_state',
         'root_config',
         'task_log',
+        'image_preference_metrics',
+        'video_preference_metrics',
       ]),
     )
   })
@@ -129,6 +131,6 @@ describe('mediaLibrarySchema', () => {
     expect(sourceColumns).toContain('series_id')
 
     const version = harness.db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
-    expect(version?.user_version).toBe(9)
+    expect(version?.user_version).toBe(10)
   })
 })
