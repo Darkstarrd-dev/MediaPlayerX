@@ -631,9 +631,54 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
+  logRuntimeDiagnostic(
+    "window-all-closed",
+    {
+      platform: process.platform,
+      willQuit: process.platform !== "darwin",
+    },
+    "info",
+    true,
+  );
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+app.on("before-quit", () => {
+  logRuntimeDiagnostic(
+    "app-before-quit",
+    {
+      memoryUsage: process.memoryUsage(),
+      windowCount: BrowserWindow.getAllWindows().length,
+    },
+    "info",
+    true,
+  );
+});
+
+app.on("will-quit", () => {
+  logRuntimeDiagnostic(
+    "app-will-quit",
+    {
+      memoryUsage: process.memoryUsage(),
+      windowCount: BrowserWindow.getAllWindows().length,
+    },
+    "info",
+    true,
+  );
+});
+
+app.on("quit", (_event, exitCode) => {
+  logRuntimeDiagnostic(
+    "app-quit",
+    {
+      exitCode,
+      memoryUsage: process.memoryUsage(),
+    },
+    "info",
+    true,
+  );
 });
 
 app.on("child-process-gone", (_event, details) => {
@@ -659,6 +704,15 @@ process.on("unhandledRejection", (reason) => {
     "unhandled-rejection",
     { reason: serializeUnknownError(reason) },
     "error",
+    true,
+  );
+});
+
+process.on("exit", (code) => {
+  logRuntimeDiagnostic(
+    "process-exit",
+    { code },
+    "info",
     true,
   );
 });

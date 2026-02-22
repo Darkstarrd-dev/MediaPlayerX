@@ -86,14 +86,17 @@ export class FileSystemSystemHandlers {
   }
 
   async enqueueImportTask(request: EnqueueImportTaskRequestDto): Promise<EnqueueImportTaskResponseDto> {
+    await this.context.ensureStateLoaded()
     return this.context.importTaskService.enqueueImportTask(request)
   }
 
   async readImportTasks(): Promise<{ tasks: ImportTaskDto[] }> {
+    await this.context.ensureStateLoaded()
     return this.context.importTaskService.readImportTasks()
   }
 
   async retryImportTask(request: RetryImportTaskRequestDto): Promise<RetryImportTaskResponseDto> {
+    await this.context.ensureStateLoaded()
     return this.context.importTaskService.retryImportTask(request)
   }
 

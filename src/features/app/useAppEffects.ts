@@ -380,7 +380,8 @@ export function useAppEffects({
       fallbackNodeId =
         (focusedRef ? vectorResultPackageNodeIdMap.get(focusedRef.packageId) ?? null : null) ?? vectorSidebarNodes[0]?.id ?? null
     } else {
-      fallbackNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? flatSidebarNodes[0]?.id ?? null
+      const firstImagePackageNodeId = imageSourceNodeIdMap.values().next().value ?? null
+      fallbackNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? firstImagePackageNodeId ?? flatSidebarNodes[0]?.id ?? null
     }
 
     if (fallbackNodeId !== selectedSidebarNodeId) {
@@ -403,6 +404,10 @@ export function useAppEffects({
   ])
 
   useEffect(() => {
+    if (mode !== 'video') {
+      return
+    }
+
     if (videosForSidebar.length === 0) {
       if (selectedVideoId !== '') {
         selectVideoFromBrowser('')
@@ -413,7 +418,7 @@ export function useAppEffects({
     if (!rootScopedVideoIds.has(selectedVideoId)) {
       selectVideoFromBrowser(videosForSidebar[0].id)
     }
-  }, [rootScopedVideoIds, selectVideoFromBrowser, selectedVideoId, videosForSidebar])
+  }, [mode, rootScopedVideoIds, selectVideoFromBrowser, selectedVideoId, videosForSidebar])
 
   useEffect(() => {
     if (mode !== 'video') {

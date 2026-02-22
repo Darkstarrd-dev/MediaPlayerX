@@ -6,9 +6,10 @@ import { useResponsiveZoomEffect } from './useResponsiveZoomEffect'
 
 export function useAppDataPipeline() {
   const runtimeSources = useAppRuntimeSources()
-  const importBusy = runtimeSources.importState.enqueuePending || runtimeSources.importState.importTasks.some(
-    (task) => task.status === 'pending' || task.status === 'running',
-  )
+  const importState = runtimeSources.importState
+  const importBusy =
+    Boolean(importState?.enqueuePending) ||
+    (importState?.importTasks ?? []).some((task) => task.status === 'pending' || task.status === 'running')
 
   useResponsiveZoomEffect()
 
@@ -25,6 +26,7 @@ export function useAppDataPipeline() {
     appSettings: runtimeSources.appSettings,
     benchSettings: runtimeSources.benchSettings,
     mediaRepository: runtimeSources.repositoryBootstrap.mediaRepository,
+    importBusy,
     sessionState: runtimeSources.sessionState,
     mediaState: runtimeSources.mediaState,
     readNavigationState,

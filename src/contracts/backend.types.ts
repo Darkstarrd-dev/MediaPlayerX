@@ -8,11 +8,15 @@ export type FeatureFilterDto = Infer<typeof Backend.featureFilterDtoSchema>;
 export type MediaLocatorDto = Infer<typeof Backend.mediaLocatorDtoSchema>;
 export type ImageItemDto = Infer<typeof Backend.imageItemDtoSchema>;
 export type ImagePackageDto = Infer<typeof Backend.imagePackageDtoSchema>;
+export type ImageSourceLiteDto = Infer<typeof Backend.imageSourceLiteDtoSchema>;
 export type VideoItemDto = Infer<typeof Backend.videoItemDtoSchema>;
 export type AudioItemDto = Infer<typeof Backend.audioItemDtoSchema>;
 export type FocusedImageRefDto = Infer<typeof Backend.focusedImageRefDtoSchema>;
 export type SidebarNodeDto = Infer<typeof Backend.sidebarNodeDtoSchema>;
 export type LibrarySnapshotDto = Infer<typeof Backend.librarySnapshotDtoSchema>;
+export type LibrarySnapshotLiteDto = Infer<
+  typeof Backend.librarySnapshotLiteDtoSchema
+>;
 export type ReadImageSidebarTreeRequestDto = Infer<
   typeof Backend.readImageSidebarTreeRequestSchema
 >;

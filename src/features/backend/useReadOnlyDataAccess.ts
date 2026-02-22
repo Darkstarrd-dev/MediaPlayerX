@@ -60,6 +60,19 @@ function resolveLiteLibrarySnapshotEnabled(): boolean {
   return true
 }
 
+/**
+ * 解析 P3 节流策略开关。
+ * bench 模式下可通过 `importRefreshThrottle: false` 禁用 120ms 聚合窗口与
+ * import-task-updated 的范围收窄，以便与旧刷新逻辑做对照基线。
+ */
+function resolveImportRefreshThrottleEnabled(): boolean {
+  const benchSettings = getBenchSettings()
+  if (benchSettings.enabled && typeof benchSettings.importRefreshThrottle === 'boolean') {
+    return benchSettings.importRefreshThrottle
+  }
+  return true
+}
+
 function shouldFallbackToLegacySnapshotRead(error: unknown): boolean {
   if (!(error instanceof Error)) {
     return false
@@ -104,6 +117,8 @@ interface BackendReadErrors {
   page: string | null
   metadata: string | null
 }
+
+type RefreshScope = 'all' | 'library-sidebar-page' | 'library-sidebar' | 'library-only' | 'grade-dependent'
 
 function buildFeatureFilter(params: {
   featureNameQuery: string
@@ -179,6 +194,15 @@ export function useReadOnlyDataAccess({
   const metadataRequestIdRef = useRef(0)
   const deferredAllRefreshRef = useRef(false)
   const deferredLibraryOnlyRefreshRef = useRef(false)
+  const refreshHashRef = useRef<{ library: string | null; sidebar: string | null; page: string | null; metadata: string | null }>({
+    library: null,
+    sidebar: null,
+    page: null,
+    metadata: null,
+  })
+  const deferredLibraryRefreshAfterLoadRef = useRef(false)
+  const deferredSidebarRefreshAfterLoadRef = useRef(false)
+  const pendingRefreshScopeRef = useRef<RefreshScope | null>(null)
 
   const [libraryRetryNonce, setLibraryRetryNonce] = useState(0)
   const [sidebarRetryNonce, setSidebarRetryNonce] = useState(0)
@@ -212,7 +236,28 @@ export function useReadOnlyDataAccess({
     [featureGradeFilter, gradeByPackage],
   )
 
+  const featureFilterHash = useMemo(() => JSON.stringify(featureFilter), [featureFilter])
+  const gradeOverridesHash = useMemo(
+    () => (gradeOverridesForRead ? JSON.stringify(gradeOverridesForRead) : ''),
+    [gradeOverridesForRead],
+  )
+  const libraryRefreshHash = 'library:v1'
+  const sidebarRefreshHash = useMemo(
+    () => `sidebar:${includeHidden ? '1' : '0'}:${featureFilterHash}:${gradeOverridesHash}`,
+    [featureFilterHash, gradeOverridesHash, includeHidden],
+  )
+  const pageRefreshHash = useMemo(
+    () =>
+      `page:${selectedSourceId ?? ''}:${Math.max(0, pageIndex)}:${Math.max(1, pageSize)}:${showNamesOnly ? '1' : '0'}:${includeHidden ? '1' : '0'}:${featureFilterHash}:${gradeOverridesHash}`,
+    [featureFilterHash, gradeOverridesHash, includeHidden, pageIndex, pageSize, selectedSourceId, showNamesOnly],
+  )
+  const metadataRefreshHash = useMemo(
+    () => `metadata:${focusedRef?.packageId ?? ''}:${focusedRef?.imageIndex ?? -1}:${includeHidden ? '1' : '0'}`,
+    [focusedRef?.imageIndex, focusedRef?.packageId, includeHidden],
+  )
+
   const enableLiteLibrarySnapshot = useMemo(() => resolveLiteLibrarySnapshotEnabled(), [])
+  const enableImportRefreshThrottle = useMemo(() => resolveImportRefreshThrottleEnabled(), [])
 
   // In test mode, allow the synchronous repository path so hook request timing is
   // deterministic in unit tests and avoids async jitter.
@@ -410,24 +455,84 @@ export function useReadOnlyDataAccess({
     setMetadataRetryNonce((value) => value + 1)
   }, [])
 
-  const retryAllSlices = useCallback(() => {
-    setLibraryRetryNonce((value) => value + 1)
-    setSidebarRetryNonce((value) => value + 1)
-    setPageRetryNonce((value) => value + 1)
-    setMetadataRetryNonce((value) => value + 1)
-  }, [])
+  const triggerSliceRefresh = useCallback(
+    (slice: 'library' | 'sidebar' | 'page' | 'metadata', hash: string, loading: boolean, retry: () => void) => {
+      if (loading && refreshHashRef.current[slice] === hash) {
+        return
+      }
+      refreshHashRef.current[slice] = hash
+      retry()
+    },
+    [],
+  )
+
+  const triggerLibraryRefresh = useCallback(() => {
+    if (libraryState.loading && refreshHashRef.current.library === libraryRefreshHash) {
+      deferredLibraryRefreshAfterLoadRef.current = true
+      return
+    }
+    refreshHashRef.current.library = libraryRefreshHash
+    retryLibrary()
+  }, [libraryRefreshHash, libraryState.loading, retryLibrary])
+
+  const triggerSidebarRefresh = useCallback(() => {
+    if (sidebarState.loading && refreshHashRef.current.sidebar === sidebarRefreshHash) {
+      deferredSidebarRefreshAfterLoadRef.current = true
+      return
+    }
+    refreshHashRef.current.sidebar = sidebarRefreshHash
+    retrySidebar()
+  }, [retrySidebar, sidebarRefreshHash, sidebarState.loading])
+
+  const triggerPageRefresh = useCallback(() => {
+    triggerSliceRefresh('page', pageRefreshHash, pageState.loading, retryPage)
+  }, [pageRefreshHash, pageState.loading, retryPage, triggerSliceRefresh])
+
+  const triggerMetadataRefresh = useCallback(() => {
+    triggerSliceRefresh('metadata', metadataRefreshHash, metadataState.loading, retryMetadata)
+  }, [metadataRefreshHash, metadataState.loading, retryMetadata, triggerSliceRefresh])
 
   useEffect(() => {
     if (isSynchronousTestMode || !repository.onLibraryChanged) {
       return
     }
 
-    let throttleTimer: ReturnType<typeof window.setTimeout> | null = null
-    let queuedRefreshScope: 'all' | 'library-sidebar' | 'library-only' | 'grade-dependent' | null = null
+    const fireRefreshForScope = (scope: RefreshScope) => {
+      if (scope === 'all') {
+        triggerLibraryRefresh()
+        triggerSidebarRefresh()
+        triggerPageRefresh()
+        triggerMetadataRefresh()
+      } else if (scope === 'library-sidebar-page') {
+        triggerLibraryRefresh()
+        triggerSidebarRefresh()
+        triggerPageRefresh()
+      } else if (scope === 'library-sidebar') {
+        triggerLibraryRefresh()
+        triggerSidebarRefresh()
+      } else if (scope === 'library-only') {
+        triggerLibraryRefresh()
+      } else if (scope === 'grade-dependent') {
+        triggerSidebarRefresh()
+        triggerPageRefresh()
+      }
+    }
 
-    const scheduleRefresh = (scope: 'all' | 'library-sidebar' | 'library-only' | 'grade-dependent') => {
+    // 恢复上一轮 effect 被 cleanup 中断的待执行刷新作用域
+    const carriedScope = pendingRefreshScopeRef.current
+    if (carriedScope !== null) {
+      pendingRefreshScopeRef.current = null
+      fireRefreshForScope(carriedScope)
+    }
+
+    let throttleTimer: ReturnType<typeof window.setTimeout> | null = null
+    let queuedRefreshScope: RefreshScope | null = null
+
+    const scheduleRefresh = (scope: RefreshScope) => {
       if (queuedRefreshScope === 'all' || scope === 'all') {
         queuedRefreshScope = 'all'
+      } else if (queuedRefreshScope === 'library-sidebar-page' || scope === 'library-sidebar-page') {
+        queuedRefreshScope = 'library-sidebar-page'
       } else if (queuedRefreshScope === 'library-sidebar' || scope === 'library-sidebar') {
         queuedRefreshScope = 'library-sidebar'
       } else if (queuedRefreshScope === 'library-only' || scope === 'library-only') {
@@ -440,32 +545,17 @@ export function useReadOnlyDataAccess({
         return
       }
 
+      // importRefreshThrottle=false 时跳过 120ms 聚合窗口，直接同步触发（bench 回滚基线用）
+      const throttleMs = enableImportRefreshThrottle ? 120 : 0
       throttleTimer = window.setTimeout(() => {
         throttleTimer = null
         const scopeToRun = queuedRefreshScope
         queuedRefreshScope = null
 
-        if (scopeToRun === 'all') {
-          retryAllSlices()
-          return
+        if (scopeToRun !== null) {
+          fireRefreshForScope(scopeToRun)
         }
-
-        if (scopeToRun === 'library-sidebar') {
-          retryLibrary()
-          retrySidebar()
-          return
-        }
-
-        if (scopeToRun === 'library-only') {
-          retryLibrary()
-          return
-        }
-
-        if (scopeToRun === 'grade-dependent') {
-          retrySidebar()
-          retryPage()
-        }
-      }, 120)
+      }, throttleMs)
     }
 
     const unsubscribe = repository.onLibraryChanged((payload) => {
@@ -490,12 +580,18 @@ export function useReadOnlyDataAccess({
         return
       }
 
+      if (payload.reason === 'write-package-metadata' || payload.reason === 'write-package-external-metadata') {
+        scheduleRefresh('library-sidebar-page')
+        return
+      }
+
       if (payload.reason === 'import-task-updated') {
         if (importBusy) {
           deferredLibraryOnlyRefreshRef.current = true
           return
         }
-        scheduleRefresh('library-only')
+        // importRefreshThrottle=false 时恢复旧行为：import-task-updated 触发全量刷新
+        scheduleRefresh(enableImportRefreshThrottle ? 'library-only' : 'all')
         return
       }
 
@@ -505,18 +601,23 @@ export function useReadOnlyDataAccess({
     return () => {
       if (throttleTimer !== null) {
         window.clearTimeout(throttleTimer)
+        // 定时器被取消但有待执行的刷新，保存到 ref 供下一轮 effect 恢复
+        if (queuedRefreshScope !== null) {
+          pendingRefreshScopeRef.current = queuedRefreshScope
+        }
       }
       unsubscribe()
     }
   }, [
+    enableImportRefreshThrottle,
     featureGradeFilter,
     isSynchronousTestMode,
     repository,
     importBusy,
-    retryAllSlices,
-    retryLibrary,
-    retryPage,
-    retrySidebar,
+    triggerLibraryRefresh,
+    triggerMetadataRefresh,
+    triggerPageRefresh,
+    triggerSidebarRefresh,
     suspendLibraryChangedRefresh,
   ])
 
@@ -525,16 +626,44 @@ export function useReadOnlyDataAccess({
       return
     }
     deferredAllRefreshRef.current = false
-    retryAllSlices()
-  }, [isSynchronousTestMode, retryAllSlices, suspendLibraryChangedRefresh])
+    triggerLibraryRefresh()
+    triggerSidebarRefresh()
+    triggerPageRefresh()
+    triggerMetadataRefresh()
+  }, [
+    isSynchronousTestMode,
+    suspendLibraryChangedRefresh,
+    triggerLibraryRefresh,
+    triggerMetadataRefresh,
+    triggerPageRefresh,
+    triggerSidebarRefresh,
+  ])
 
   useEffect(() => {
     if (isSynchronousTestMode || importBusy || !deferredLibraryOnlyRefreshRef.current) {
       return
     }
     deferredLibraryOnlyRefreshRef.current = false
+    triggerLibraryRefresh()
+  }, [importBusy, isSynchronousTestMode, triggerLibraryRefresh])
+
+  useEffect(() => {
+    if (isSynchronousTestMode || libraryState.loading || !deferredLibraryRefreshAfterLoadRef.current) {
+      return
+    }
+    deferredLibraryRefreshAfterLoadRef.current = false
+    refreshHashRef.current.library = null
     retryLibrary()
-  }, [importBusy, isSynchronousTestMode, retryLibrary])
+  }, [isSynchronousTestMode, libraryState.loading, retryLibrary])
+
+  useEffect(() => {
+    if (isSynchronousTestMode || sidebarState.loading || !deferredSidebarRefreshAfterLoadRef.current) {
+      return
+    }
+    deferredSidebarRefreshAfterLoadRef.current = false
+    refreshHashRef.current.sidebar = null
+    retrySidebar()
+  }, [isSynchronousTestMode, sidebarState.loading, retrySidebar])
 
   const errors: BackendReadErrors = {
     library: libraryState.error,

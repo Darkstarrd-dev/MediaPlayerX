@@ -1,5 +1,6 @@
 export const BACKEND_CHANNELS = {
   readLibrarySnapshot: 'backend:readLibrarySnapshot',
+  readLibrarySnapshotLite: 'backend:readLibrarySnapshotLite',
   readImageSidebarTree: 'backend:readImageSidebarTree',
   readImagePage: 'backend:readImagePage',
   readImageMetadata: 'backend:readImageMetadata',

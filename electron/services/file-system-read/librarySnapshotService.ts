@@ -105,6 +105,7 @@ interface LibrarySnapshotServiceOptions {
     payload: { album: string; author: string; trackTitle: string; seriesId: string },
   ) => void
   withArchiveReadLock?: <T>(archivePath: string, task: () => Promise<T>) => Promise<T>
+  isInteractiveReadHot?: () => boolean
 }
 
 interface MusicImportPathContext {
@@ -216,7 +217,10 @@ export class LibrarySnapshotService {
 
     this.snapshotCache = this.options.database.readSnapshot()
 
-    if (!this.warmupRefreshTriggered && this.hasImportSources() && this.isSnapshotEmpty(this.snapshotCache)) {
+    const hasImport = this.hasImportSources()
+    const isEmpty = this.isSnapshotEmpty(this.snapshotCache)
+
+    if (!this.warmupRefreshTriggered && hasImport && isEmpty) {
       this.warmupRefreshTriggered = true
       void this.refreshSnapshot(ensureStateLoaded).catch((error) => {
         console.warn('snapshot warmup refresh failed', {
@@ -653,6 +657,7 @@ export class LibrarySnapshotService {
     let lastProgressReportedAt = 0
     let lastPreviewPersistedAtMs = 0
     let lastPreviewPersistedContainerCount = 0
+    const isInteractiveReadHot = (): boolean => this.options.isInteractiveReadHot?.() ?? false
 
     const baseSnapshot = this.options.database.readSnapshot()
     const previewDirectoryImageFilesByPath = new Map<string, FileRecord[]>()
@@ -802,11 +807,14 @@ export class LibrarySnapshotService {
         persistCollectingPreviewSnapshot(false)
 
         const now = Date.now()
+        const collectingFileReportDelta = isInteractiveReadHot() ? 600 : 200
+        const collectingContainerReportDelta = isInteractiveReadHot() ? 96 : 32
+        const collectingReportIntervalMs = isInteractiveReadHot() ? 1_000 : 300
         if (
           scannedFileCount === 1 ||
-          scannedFileCount % 200 === 0 ||
-          discoveredContainerCount % 32 === 0 ||
-          now - lastProgressReportedAt >= 300
+          scannedFileCount % collectingFileReportDelta === 0 ||
+          discoveredContainerCount % collectingContainerReportDelta === 0 ||
+          now - lastProgressReportedAt >= collectingReportIntervalMs
         ) {
           lastProgressReportedAt = now
           this.emitRefreshProgress(options, {
@@ -902,7 +910,13 @@ export class LibrarySnapshotService {
     let lastBuildingProgressReportedAtMs = 0
     const reportBuildingProgress = (message: string, force = false): void => {
       const now = Date.now()
-      if (!force && now - lastBuildingProgressReportedAtMs < 280 && builtContainerCount % 24 !== 0) {
+      const buildingReportIntervalMs = isInteractiveReadHot() ? 1_000 : 280
+      const buildingReportCountDelta = isInteractiveReadHot() ? 96 : 24
+      if (
+        !force &&
+        now - lastBuildingProgressReportedAtMs < buildingReportIntervalMs &&
+        builtContainerCount % buildingReportCountDelta !== 0
+      ) {
         return
       }
 
@@ -941,7 +955,14 @@ export class LibrarySnapshotService {
 
     imageDirectories.sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
-    const preparedArchives = await parallelMapLimit(archives, this.options.archiveScanConcurrency, async (archive) => {
+    const archiveScanConcurrency = isInteractiveReadHot()
+      ? Math.max(1, Math.ceil(this.options.archiveScanConcurrency / 2))
+      : this.options.archiveScanConcurrency
+    const ffprobeConcurrency = isInteractiveReadHot()
+      ? Math.max(1, Math.ceil(this.options.ffprobeConcurrency / 2))
+      : this.options.ffprobeConcurrency
+
+    const preparedArchives = await parallelMapLimit(archives, archiveScanConcurrency, async (archive) => {
       const prepared = await this.prepareArchiveEntries(archive)
       const imageEntries = prepared.imageEntries.sort((left, right) => left.entryName.localeCompare(right.entryName, 'zh-CN'))
       builtContainerCount += 1
@@ -978,13 +999,13 @@ export class LibrarySnapshotService {
 
     imagePackages.sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
-    const videoItems = (await parallelMapLimit(videos, this.options.ffprobeConcurrency, async (file) => this.createVideoSource(file))).sort((left, right) =>
+    const videoItems = (await parallelMapLimit(videos, ffprobeConcurrency, async (file) => this.createVideoSource(file))).sort((left, right) =>
       left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'),
     )
 
     const audioSourceResults = await parallelMapLimit(
       audios,
-      this.options.ffprobeConcurrency,
+      ffprobeConcurrency,
       async (file) =>
         this.createAudioSource(file, {
           directoryRoots: musicImportDirectoryRoots,

@@ -44,6 +44,7 @@ describe('useAppDataPipeline integration', () => {
       benchSettings: { enabled: false },
       repositoryBootstrap: { mediaRepository: { id: 'repo-a' } },
       archiveLoadStatus: { byPath: {} },
+      importState: { enqueuePending: false, importTasks: [] },
       sessionState: { manageMode: false },
       mediaState: { fullscreenActive: false },
     }
@@ -63,6 +64,7 @@ describe('useAppDataPipeline integration', () => {
       appSettings: runtimeSources.appSettings,
       sessionState: runtimeSources.sessionState,
       repositoryBootstrap: runtimeSources.repositoryBootstrap,
+      importBusy: false,
       archiveLoadStatus: runtimeSources.archiveLoadStatus,
       mediaState: runtimeSources.mediaState,
     })
@@ -70,6 +72,7 @@ describe('useAppDataPipeline integration', () => {
       appSettings: runtimeSources.appSettings,
       benchSettings: runtimeSources.benchSettings,
       mediaRepository: runtimeSources.repositoryBootstrap.mediaRepository,
+      importBusy: false,
       sessionState: runtimeSources.sessionState,
       mediaState: runtimeSources.mediaState,
       readNavigationState,
@@ -88,6 +91,7 @@ describe('useAppDataPipeline integration', () => {
       benchSettings: { enabled: false },
       repositoryBootstrap: { mediaRepository: { id: 'repo-a' } },
       archiveLoadStatus: { byPath: { a: 'pending' } },
+      importState: { enqueuePending: false, importTasks: [] },
       sessionState: { manageMode: false },
       mediaState: { fullscreenActive: false },
     }
@@ -96,6 +100,7 @@ describe('useAppDataPipeline integration', () => {
       benchSettings: { enabled: true },
       repositoryBootstrap: { mediaRepository: { id: 'repo-b' } },
       archiveLoadStatus: { byPath: { b: 'running' } },
+      importState: { enqueuePending: false, importTasks: [] },
       sessionState: { manageMode: true },
       mediaState: { fullscreenActive: true },
     }

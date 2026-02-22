@@ -5,7 +5,7 @@ import { benchEnd, benchMark } from '../features/perf/benchRecorder'
 import { getBenchSettings } from '../features/perf/benchSettings'
 import type { BrowserMode, ImagePackage } from '../types'
 
-type Phase = 'init' | 'warmup' | 'waiting_data' | 'seed_wait' | 'browsing' | 'finished' | 'failed'
+type Phase = 'init' | 'warmup' | 'waiting_data' | 'seed_wait' | 'browsing' | 'awaiting_import' | 'finished' | 'failed'
 
 function nowPerf(): number {
   return typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now()
@@ -93,6 +93,7 @@ function E2eBenchController({
   goPrevPage,
 }: E2eBenchControllerProps) {
   const benchSettings = getBenchSettings()
+  const isLiteSnapshot = benchSettings.librarySnapshotLite === true
 
   const tuning = useMemo(() => {
     const e2e = benchSettings.e2e
@@ -102,6 +103,7 @@ function E2eBenchController({
       browseIntervalMs: resolveNumber(e2e.browseIntervalMs, 800, 50, 20_000),
       warmupMs: resolveNumber(e2e.warmupMs, 800, 0, 60_000),
       maxDurationMs: resolveNumber(e2e.maxDurationMs, 90_000, 5_000, 10 * 60_000),
+      waitImportCompletion: typeof e2e.waitImportCompletion === 'boolean' ? e2e.waitImportCompletion : true,
     }
   }, [benchSettings.e2e])
 
@@ -112,7 +114,11 @@ function E2eBenchController({
 
   const preferredPackage = useMemo(() => {
     let best: ImagePackage | null = null
+    let fallback: ImagePackage | null = null
     for (const pkg of orderedPackages) {
+      if (!fallback) {
+        fallback = pkg
+      }
       if (pkg.images.length <= 0) {
         continue
       }
@@ -120,7 +126,7 @@ function E2eBenchController({
         best = pkg
       }
     }
-    return best
+    return best ?? fallback
   }, [orderedPackages])
 
   const [phase, setPhase] = useState<Phase>('init')
@@ -144,6 +150,16 @@ function E2eBenchController({
   }, [totalPages])
   const stepRef = useRef(0)
   const navRecordsRef = useRef<NavRecord[]>([])
+  const waitingDataStartedAtRef = useRef<number | null>(null)
+  const readyGateStatsRef = useRef({
+    preferred_missing_count: 0,
+    selected_mismatch_count: 0,
+    selected_set_count: 0,
+    page_index_null_count: 0,
+    refs_empty_count: 0,
+    total_pages_insufficient_count: 0,
+    ready_wait_ms: null as number | null,
+  })
   const pendingNavRef = useRef<{
     step: number
     fromPage: number
@@ -197,6 +213,7 @@ function E2eBenchController({
           paths: tuningSnapshot.importPaths,
           task_id: importTaskIdRef.current,
         },
+        ready_gate: { ...readyGateStatsRef.current },
       },
     }
 
@@ -324,20 +341,51 @@ function E2eBenchController({
       return
     }
 
-    setPhase('warmup')
     importPendingRef.current = false
-    benchMark('e2e_begin', {
-      browse_steps: tuning.browseSteps,
-      browse_interval_ms: tuning.browseIntervalMs,
-      warmup_ms: tuning.warmupMs,
-      import_paths: tuning.importPaths,
-    })
-
-    forceFinishTimerRef.current = window.setTimeout(() => {
-      void finish('timeout')
-    }, tuning.maxDurationMs)
-
+    waitingDataStartedAtRef.current = null
+    readyGateStatsRef.current = {
+      preferred_missing_count: 0,
+      selected_mismatch_count: 0,
+      selected_set_count: 0,
+      page_index_null_count: 0,
+      refs_empty_count: 0,
+      total_pages_insufficient_count: 0,
+      ready_wait_ms: null,
+    }
     void (async () => {
+      const clearDatabase = repository.clearDatabase
+      if (clearDatabase && repository.readLibrarySnapshotLite) {
+        benchMark('e2e_preflight_check_start')
+        const [snapshotLite, importTasks] = await Promise.all([
+          repository.readLibrarySnapshotLite({ timeoutMs: 20_000 }),
+          repository.readImportTasks({ timeoutMs: 20_000 }),
+        ])
+        const sourceCount = snapshotLite.image_packages.length + snapshotLite.image_directories.length
+        const importTaskCount = importTasks.tasks.length
+        if (sourceCount > 0 || importTaskCount > 0) {
+          benchMark('e2e_preflight_residual_state', {
+            source_count: sourceCount,
+            import_task_count: importTaskCount,
+          })
+          await clearDatabase({ timeoutMs: 30_000 })
+          benchMark('e2e_preflight_cleared')
+        } else {
+          benchMark('e2e_preflight_clean')
+        }
+      }
+
+      setPhase('warmup')
+      benchMark('e2e_begin', {
+        browse_steps: tuning.browseSteps,
+        browse_interval_ms: tuning.browseIntervalMs,
+        warmup_ms: tuning.warmupMs,
+        import_paths: tuning.importPaths,
+      })
+
+      forceFinishTimerRef.current = window.setTimeout(() => {
+        void finish('timeout')
+      }, tuning.maxDurationMs)
+
       if (tuning.warmupMs > 0) {
         await sleep(tuning.warmupMs)
       }
@@ -383,12 +431,12 @@ function E2eBenchController({
       setPhase('waiting_data')
     })().catch((err: unknown) => {
       setError(err instanceof Error ? err.message : String(err))
-      void finish('scenario_failed')
+      void finish('preflight_failed')
     })
   }, [benchSettings.enabled, benchSettings.mode, finish, mode, repository, tuning.browseIntervalMs, tuning.browseSteps, tuning.importPaths, tuning.maxDurationMs, tuning.warmupMs])
 
   useEffect(() => {
-    if (phase !== 'seed_wait') {
+    if (phase !== 'seed_wait' && phase !== 'awaiting_import') {
       return
     }
     if (finishOnceRef.current) {
@@ -397,26 +445,35 @@ function E2eBenchController({
 
     const taskId = importTaskIdRef.current
     if (!taskId) {
-      void finish('seed_no_import_task')
+      void finish(phase === 'seed_wait' ? 'seed_no_import_task' : 'import_not_enqueued')
       return
     }
 
     let active = true
     void (async () => {
-      benchMark('e2e_seed_wait_started', { task_id: taskId })
+      if (phase === 'seed_wait') {
+        benchMark('e2e_seed_wait_started', { task_id: taskId })
+      } else {
+        benchMark('e2e_import_wait_started', { task_id: taskId })
+      }
       while (active && !finishOnceRef.current) {
         try {
           const response = await repository.readImportTasks({ timeoutMs: 8_000 })
           const task = response.tasks.find((item) => item.task_id === taskId) ?? null
           if (task) {
             if (task.status === 'completed') {
-              benchMark('e2e_seed_completed', { task_id: taskId })
+              benchMark('e2e_import_completed', {
+                task_id: taskId,
+                processed_count: task.processed_count,
+                total_count: task.total_count,
+                progress: task.progress,
+              })
               await finish('ok')
               return
             }
             if (task.status === 'failed') {
-              benchMark('e2e_seed_failed', { task_id: taskId, error: task.error_detail })
-              await finish('seed_failed')
+              benchMark('e2e_import_failed', { task_id: taskId, error: task.error_detail })
+              await finish(phase === 'seed_wait' ? 'seed_failed' : 'import_failed')
               return
             }
           }
@@ -440,28 +497,52 @@ function E2eBenchController({
       return
     }
 
+    if (waitingDataStartedAtRef.current === null) {
+      waitingDataStartedAtRef.current = nowPerf()
+      benchMark('e2e_waiting_data_started', {
+        selected_package_id: selectedPackageId || null,
+        preferred_package_id: preferredPackage?.id ?? null,
+      })
+    }
+
     if (importPendingRef.current && importTaskIdRef.current === null) {
       enqueueImportIfPending('waiting_data')
     }
 
     const targetPackage = preferredPackage
     if (!targetPackage) {
+      readyGateStatsRef.current.preferred_missing_count += 1
       return
     }
 
     if (!selectedPackageId || selectedPackageId !== targetPackage.id) {
+      readyGateStatsRef.current.selected_mismatch_count += 1
+      readyGateStatsRef.current.selected_set_count += 1
       setSelectedPackageId(targetPackage.id)
       return
     }
 
-    if (pageIndex === null || refsInPageCount <= 0) {
+    if (pageIndex === null) {
+      readyGateStatsRef.current.page_index_null_count += 1
+      return
+    }
+
+    if (refsInPageCount <= 0 && !isLiteSnapshot) {
+      readyGateStatsRef.current.refs_empty_count += 1
       return
     }
 
     totalPagesRef.current = totalPages
     if (!totalPages || totalPages <= 1) {
-      void finish('insufficient_pages')
+      readyGateStatsRef.current.total_pages_insufficient_count += 1
+      // 不立即 finish，继续等待导入构建数据（totalPages 可能因 snapshotCache fallback 导致暂时为空）
+      // maxDurationMs 超时兜底
       return
+    }
+
+    const waitingDataStartedAt = waitingDataStartedAtRef.current
+    if (waitingDataStartedAt !== null) {
+      readyGateStatsRef.current.ready_wait_ms = nowPerf() - waitingDataStartedAt
     }
 
     benchMark('e2e_ready', {
@@ -469,6 +550,9 @@ function E2eBenchController({
       initial_page_index: pageIndex,
       total_pages: totalPages,
       refs_in_page: refsInPageCount,
+      is_lite: isLiteSnapshot,
+      ready_wait_ms: readyGateStatsRef.current.ready_wait_ms,
+      ready_gate: { ...readyGateStatsRef.current },
     })
 
     setPhase('browsing')
@@ -480,6 +564,7 @@ function E2eBenchController({
     requestNavigation(0, pageIndex)
   }, [
     finish,
+    isLiteSnapshot,
     pageIndex,
     phase,
     preferredPackage,
@@ -575,6 +660,17 @@ function E2eBenchController({
     setStepDisplay(stepRef.current)
 
     if (stepRef.current >= tuning.browseSteps) {
+      benchMark('e2e_browse_completed', {
+        steps: tuning.browseSteps,
+        wait_import_completion: tuning.waitImportCompletion,
+        import_task_id: importTaskIdRef.current,
+      })
+
+      if (tuning.waitImportCompletion && tuning.importPaths.length > 0) {
+        setPhase('awaiting_import')
+        return
+      }
+
       void finish('ok')
       return
     }
@@ -600,6 +696,8 @@ function E2eBenchController({
     totalPages,
     tuning.browseIntervalMs,
     tuning.browseSteps,
+    tuning.importPaths.length,
+    tuning.waitImportCompletion,
   ])
 
   if (!benchSettings.enabled || benchSettings.mode !== 'e2e') {

@@ -3,6 +3,7 @@ import type { AppSettings } from "../../contracts/settings";
 import type { MediaRepository } from "../backend/repository/types";
 import { resolvePaletteModeById } from "../theme/themeRegistry";
 import { FIXED_SUBTITLE_MODEL_ID } from "../subtitles/fixedModel";
+import { getBenchSettings } from "../perf/benchSettings";
 
 interface UseSettingsPersistenceParams {
   settings: AppSettings;
@@ -666,6 +667,7 @@ export function useSettingsPersistence({
   repository,
   updateSettings,
 }: UseSettingsPersistenceParams) {
+  const benchEnabled = getBenchSettings().enabled;
   const isHydratedRef = useRef(false);
   const lastSavedJsonRef = useRef("");
   const pendingJsonRef = useRef<string | null>(null);
@@ -711,6 +713,11 @@ export function useSettingsPersistence({
 
   // Hydrate from DB on mount
   useEffect(() => {
+    if (benchEnabled) {
+      isHydratedRef.current = true;
+      return;
+    }
+
     if (!repository.readAppState) {
       isHydratedRef.current = true;
       return;
@@ -738,7 +745,7 @@ export function useSettingsPersistence({
         console.warn("Failed to hydrate settings from DB", err);
         isHydratedRef.current = true;
       });
-  }, [repository, updateSettings]);
+  }, [benchEnabled, repository, updateSettings]);
 
   // Persist to DB on change
   const persistSettingsJson = useCallback(
@@ -761,7 +768,7 @@ export function useSettingsPersistence({
   );
 
   useEffect(() => {
-    if (!isHydratedRef.current || !repository.writeAppState) {
+    if (benchEnabled || !isHydratedRef.current || !repository.writeAppState) {
       return;
     }
 
@@ -784,9 +791,13 @@ export function useSettingsPersistence({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [settings, repository, persistSettingsJson]);
+  }, [benchEnabled, settings, repository, persistSettingsJson]);
 
   useEffect(() => {
+    if (benchEnabled) {
+      return;
+    }
+
     const flushPending = () => {
       const pending = pendingJsonRef.current;
       if (!pending || pending === lastSavedJsonRef.current) {
@@ -802,5 +813,5 @@ export function useSettingsPersistence({
       flushPending();
       window.removeEventListener("beforeunload", flushPending);
     };
-  }, [persistSettingsJson]);
+  }, [benchEnabled, persistSettingsJson]);
 }

@@ -13,6 +13,8 @@ import { executeImportTask } from '../../fileSystemImportTasks'
 import type { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
 import type { SnapshotRefreshOptions } from './librarySnapshotService'
 
+const IMPORT_TASK_UPDATED_MIN_INTERVAL_MS = 600
+
 interface ImportTaskServiceOptions {
   rootDir: string
   legacyImportsDirName: string
@@ -21,7 +23,7 @@ interface ImportTaskServiceOptions {
   audioExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   database: MediaLibraryDatabase
-  invalidateCache: () => void
+  invalidateSnapshotCache: () => void
   refreshSnapshot: (options?: SnapshotRefreshOptions) => Promise<unknown>
   emitLibraryChanged: (payload: { reason: 'import-task-updated' | 'import-task-finished'; updated_at_ms: number }) => void
 }
@@ -35,13 +37,18 @@ export class ImportTaskService {
 
   recoverInterruptedImportTasks(): void {
     const tasks = this.options.database.readTasks()
+    const now = Date.now()
     if (tasks.length === 0) {
+      this.options.database.deleteTasksByStatus(['completed', 'failed'])
       return
     }
 
-    const now = Date.now()
     for (const task of tasks) {
       if (task.taskType !== 'import' || (task.status !== 'pending' && task.status !== 'running')) {
+        continue
+      }
+      // 跳过当前进程中仍在运行的任务，避免 recovery 杀死活动导入
+      if (task.status === 'running' && this.runningImportTaskIds.has(task.taskId)) {
         continue
       }
 
@@ -54,6 +61,8 @@ export class ImportTaskService {
         updatedAtMs: now,
       })
     }
+
+    this.options.database.deleteTasksByStatus(['completed', 'failed'])
   }
 
   hasRunningImportTasks(): boolean {
@@ -237,9 +246,10 @@ export class ImportTaskService {
       archiveExtensions: this.options.archiveExtensions,
       musicImportMode,
       database: this.options.database,
-      invalidateCache: this.options.invalidateCache,
+      invalidateSnapshotCache: this.options.invalidateSnapshotCache,
       refreshSnapshot: this.options.refreshSnapshot,
       emitLibraryChanged: this.options.emitLibraryChanged,
+      importTaskUpdatedMinIntervalMs: IMPORT_TASK_UPDATED_MIN_INTERVAL_MS,
     })
 
     return this.toImportTaskDto(finalTask)

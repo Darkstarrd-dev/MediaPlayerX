@@ -5,6 +5,7 @@ import {
   VIDEO_ITEMS,
 } from '../../../mockData'
 import {
+  librarySnapshotLiteDtoSchema,
   librarySnapshotDtoSchema,
   type ClearDatabaseResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
@@ -27,6 +28,7 @@ import {
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type LibrarySnapshotDto,
+  type LibrarySnapshotLiteDto,
   type MediaAccessAuditResponseDto,
   type PickDirectoryPathRequestDto,
   type PickDirectoryPathResponseDto,
@@ -217,6 +219,44 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
 
   async readLibrarySnapshot(options?: RepositoryRequestOptions): Promise<LibrarySnapshotDto> {
     return resolveAsync(this.getInitialLibrarySnapshot(), options)
+  }
+
+  async readLibrarySnapshotLite(options?: RepositoryRequestOptions): Promise<LibrarySnapshotLiteDto> {
+    const snapshot = this.getInitialLibrarySnapshot()
+    const liteSnapshot = librarySnapshotLiteDtoSchema.parse({
+      ...snapshot,
+      image_packages: snapshot.image_packages.map((source) => ({
+        id: source.id,
+        package_name: source.package_name,
+        display_name: source.display_name,
+        absolute_path: source.absolute_path,
+        tree_path: source.tree_path,
+        work_title: source.work_title,
+        series_id: source.series_id,
+        circle: source.circle,
+        author: source.author,
+        tags: source.tags,
+        mock_grade: source.mock_grade,
+        external_metadata: source.external_metadata,
+        source_cover: source.source_cover,
+      })),
+      image_directories: snapshot.image_directories.map((source) => ({
+        id: source.id,
+        package_name: source.package_name,
+        display_name: source.display_name,
+        absolute_path: source.absolute_path,
+        tree_path: source.tree_path,
+        work_title: source.work_title,
+        series_id: source.series_id,
+        circle: source.circle,
+        author: source.author,
+        tags: source.tags,
+        mock_grade: source.mock_grade,
+        external_metadata: source.external_metadata,
+        source_cover: source.source_cover,
+      })),
+    })
+    return resolveAsync(liteSnapshot, options)
   }
 
   readImageSidebarTreeSync(request: ReadImageSidebarTreeRequestDto): ReadImageSidebarTreeResponseDto {

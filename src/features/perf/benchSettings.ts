@@ -21,6 +21,7 @@ export interface UiBenchE2eTuning {
   browseIntervalMs?: number
   warmupMs?: number
   maxDurationMs?: number
+  waitImportCompletion?: boolean
 }
 
 export interface UiBenchSettings {
@@ -28,6 +29,9 @@ export interface UiBenchSettings {
   mode: UiBenchMode | null
   candidateId: string | null
   runTag: string | null
+  librarySnapshotLite?: boolean
+  /** false = 禁用 P3 节流（120ms 聚合窗口 + import-task-updated 范围收窄），用于基线对比回滚 */
+  importRefreshThrottle?: boolean
   resolvedMedia: ResolvedMediaTuning
   imageLoadingSkeleton: ImageLoadingSkeletonTuning
   reactProfiler: boolean

@@ -79,6 +79,7 @@ import type {
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
   LibrarySnapshotDto,
+  LibrarySnapshotLiteDto,
   MediaAccessAuditResponseDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
@@ -125,6 +126,7 @@ export interface RepositoryRequestOptions {
 export interface MediaRepository {
   getInitialLibrarySnapshot(): LibrarySnapshotDto | null
   readLibrarySnapshot(options?: RepositoryRequestOptions): Promise<LibrarySnapshotDto>
+  readLibrarySnapshotLite?(options?: RepositoryRequestOptions): Promise<LibrarySnapshotLiteDto>
   readImageSidebarTree(
     request: ReadImageSidebarTreeRequestDto,
     options?: RepositoryRequestOptions,

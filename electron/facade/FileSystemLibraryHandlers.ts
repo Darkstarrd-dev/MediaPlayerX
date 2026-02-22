@@ -25,8 +25,40 @@ import {
   type SaveVideoCoverRequestDto,
   type SaveVideoCoverResponseDto,
   type LibrarySnapshotDto,
+  type LibrarySnapshotLiteDto,
+  type ImageSourceLiteDto,
 } from '../../src/contracts/backend'
 import { FileSystemFacadeContext } from './types'
+
+/**
+ * 从 full snapshot 构造 lite DTO（剥离 images[]）。
+ * 当 DB 尚未写入（扫描期间 replaceSnapshot 未完成）但 snapshotCache 已有预览数据时，
+ * 用此函数从缓存构造 lite 返回，避免前端拿到空 packages 导致 sidebar 无法渲染。
+ */
+function buildLiteDtoFromSnapshot(snapshot: LibrarySnapshotDto): LibrarySnapshotLiteDto {
+  const mapToLite = (pkg: LibrarySnapshotDto['image_packages'][number]): ImageSourceLiteDto => ({
+    id: pkg.id,
+    package_name: pkg.package_name,
+    display_name: pkg.display_name,
+    absolute_path: pkg.absolute_path,
+    tree_path: pkg.tree_path,
+    work_title: pkg.work_title,
+    series_id: pkg.series_id,
+    circle: pkg.circle,
+    author: pkg.author,
+    tags: pkg.tags,
+    mock_grade: pkg.mock_grade,
+    external_metadata: pkg.external_metadata,
+    source_cover: pkg.source_cover,
+  })
+
+  return {
+    image_packages: snapshot.image_packages.map(mapToLite),
+    image_directories: snapshot.image_directories.map(mapToLite),
+    videos: snapshot.videos,
+    audios: snapshot.audios,
+  }
+}
 
 export class FileSystemLibraryHandlers {
   constructor(private context: FileSystemFacadeContext) {}
@@ -36,14 +68,30 @@ export class FileSystemLibraryHandlers {
     return this.context.ensureSnapshotLoaded()
   }
 
-  async readImageSidebarTree(
-    request: ReadImageSidebarTreeRequestDto,
-  ): Promise<ReadImageSidebarTreeResponseDto> {
-    return this.context.libraryReadWriteService.readImageSidebarTree(request)
+  async readLibrarySnapshotLite(): Promise<LibrarySnapshotLiteDto> {
+    this.context.markInteractiveRead()
+    const snapshot = await this.context.ensureSnapshotLoaded()
+    const dbResult = this.context.database.readSnapshotLite()
+    // DB 为空（扫描期间 replaceSnapshot 未完成）但缓存有数据时，从缓存构造 lite DTO
+    if (
+      dbResult.image_packages.length === 0 &&
+      dbResult.image_directories.length === 0 &&
+      (snapshot.image_packages.length > 0 || snapshot.image_directories.length > 0)
+    ) {
+      return buildLiteDtoFromSnapshot(snapshot)
+    }
+    return dbResult
   }
 
-  async readImagePage(request: ReadImagePageRequestDto): Promise<ReadImagePageResponseDto> {
-    return this.context.libraryReadWriteService.readImagePage(request)
+  async readImageSidebarTree(
+    request: ReadImageSidebarTreeRequestDto,
+    signal?: AbortSignal,
+  ): Promise<ReadImageSidebarTreeResponseDto> {
+    return this.context.libraryReadWriteService.readImageSidebarTree(request, signal)
+  }
+
+  async readImagePage(request: ReadImagePageRequestDto, signal?: AbortSignal): Promise<ReadImagePageResponseDto> {
+    return this.context.libraryReadWriteService.readImagePage(request, signal)
   }
 
   async readImageMetadata(

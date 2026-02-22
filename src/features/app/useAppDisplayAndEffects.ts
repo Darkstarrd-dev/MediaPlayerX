@@ -16,6 +16,7 @@ interface UseAppDisplayAndEffectsParams {
   appSettings: AppSettingsStoreSnapshot
   benchSettings: UiBenchSettings
   mediaRepository: RepositoryBootstrapDataResult['mediaRepository']
+  importBusy: boolean
   sessionState: AppSessionStateResult
   mediaState: MediaStateResult
   readNavigationState: AppReadAndNavigationResult
@@ -25,6 +26,7 @@ export function useAppDisplayAndEffects({
   appSettings,
   benchSettings,
   mediaRepository,
+  importBusy,
   sessionState,
   mediaState,
   readNavigationState,
@@ -77,6 +79,7 @@ export function useAppDisplayAndEffects({
     appSettings,
     benchSettings,
     mediaRepository,
+    importBusy,
     sessionState,
     mediaState,
     readNavigationState,
@@ -129,6 +132,7 @@ export function useAppDisplayAndEffects({
   useAppInteractionEffects({
     appSettings,
     mediaRepository,
+    importBusy,
     sessionState,
     mediaState,
     readNavigationState,

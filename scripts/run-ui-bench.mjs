@@ -68,16 +68,20 @@ const args = parseArgs(process.argv.slice(2))
 const benchMode = String(args.mode ?? process.env.MEDIA_PLAYERX_BENCH ?? '').trim() || 'e2e'
 const candidateId = String(args['candidate-id'] ?? 'C0')
 const runTag = String(args['run-tag'] ?? buildRunTag())
+const isolateUserDataDir = args['reuse-user-data-dir'] === undefined ? true : !toBool(args['reuse-user-data-dir'])
 
 const outDir = path.resolve(String(args['out-dir'] ?? path.join(projectRoot, 'docs', 'perf', 'ui-runs')))
 const libraryRoot = path.resolve(String(args['library-root'] ?? path.join(projectRoot, 'library-bench', `${candidateId}`)))
-const userDataDir = path.resolve(
+const userDataBaseDir = path.resolve(
   String(args['user-data-dir'] ?? path.join(projectRoot, 'bench-user-data', `${benchMode}-${candidateId}-${runTag}`)),
 )
+const userDataDir = isolateUserDataDir ? path.join(userDataBaseDir, buildRunTag()) : userDataBaseDir
 
 const config = {
   candidateId,
   runTag,
+  librarySnapshotLite: args['library-snapshot-lite'] !== undefined ? toBool(args['library-snapshot-lite']) : undefined,
+  importRefreshThrottle: args['import-refresh-throttle'] !== undefined ? toBool(args['import-refresh-throttle']) : undefined,
   reactProfiler: args['react-profiler'] ? true : true,
   resolvedMedia: {
     applyMode: args['apply-mode'] ?? undefined,
@@ -93,6 +97,7 @@ const config = {
     browseIntervalMs: args['browse-interval-ms'] ? Number(args['browse-interval-ms']) : undefined,
     warmupMs: args['warmup-ms'] ? Number(args['warmup-ms']) : undefined,
     maxDurationMs: args['max-duration-ms'] ? Number(args['max-duration-ms']) : undefined,
+    waitImportCompletion: args['wait-import-completion'] !== undefined ? toBool(args['wait-import-completion']) : undefined,
   },
   dom: {
     targetCount: args['target-count'] ? Number(args['target-count']) : undefined,

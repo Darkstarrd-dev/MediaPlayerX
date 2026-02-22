@@ -1,0 +1,501 @@
+{
+  "bench": {
+    "mode": "e2e",
+    "candidate_id": "C0",
+    "run_tag": "p3-off-lite-off-r3",
+    "settings": {
+      "enabled": true,
+      "mode": "e2e",
+      "candidateId": "C0",
+      "runTag": "p3-off-lite-off-r3",
+      "resolvedMedia": {},
+      "imageLoadingSkeleton": {},
+      "reactProfiler": true,
+      "e2e": {
+        "importPaths": [
+          "Z:/Selection/002Errors"
+        ],
+        "browseSteps": 3,
+        "browseIntervalMs": 1000,
+        "warmupMs": 1000,
+        "maxDurationMs": 600000,
+        "waitImportCompletion": true
+      },
+      "librarySnapshotLite": false,
+      "importRefreshThrottle": false
+    }
+  },
+  "timestamps": {
+    "started_at_perf_ms": 163.19999998807907,
+    "ended_at_perf_ms": 50176.5,
+    "elapsed_ms": 50013.30000001192
+  },
+  "raf_gap_ms": {
+    "count": 4586,
+    "p50_ms": 8.30000000000291,
+    "p95_ms": 8.5,
+    "p99_ms": 8.799999999999272,
+    "max_ms": 3016.6000000000004
+  },
+  "longtask_ms": {
+    "count": 11,
+    "max_ms": 2123,
+    "total_ms": 8844
+  },
+  "react_profiler": {
+    "total_events": 0,
+    "by_id": {}
+  },
+  "ipc_timings": {
+    "total_events": 728,
+    "by_name": {
+      "readLibrarySnapshotLite": {
+        "count": 1,
+        "p50_ms": 2378,
+        "p95_ms": 2378,
+        "p99_ms": 2378,
+        "max_ms": 2378
+      },
+      "readImportTasks": {
+        "count": 48,
+        "p50_ms": 8.5,
+        "p95_ms": 3615.319999969003,
+        "p99_ms": 8228.264999964238,
+        "max_ms": 8430.599999964237
+      },
+      "readLibrarySnapshot": {
+        "count": 6,
+        "p50_ms": 1309.4499999582767,
+        "p95_ms": 4487.999999985099,
+        "p99_ms": 4951.919999977947,
+        "max_ms": 5067.899999976158
+      },
+      "readImageSidebarTree": {
+        "count": 6,
+        "p50_ms": 1377.699999988079,
+        "p95_ms": 6514.175000011921,
+        "p99_ms": 6980.915000021458,
+        "max_ms": 7097.600000023842
+      },
+      "readImagePage": {
+        "count": 11,
+        "p50_ms": 1299.699999988079,
+        "p95_ms": 5856.050000041723,
+        "p99_ms": 6776.570000046493,
+        "max_ms": 7006.700000047684
+      },
+      "resolveMediaResource": {
+        "count": 655,
+        "p50_ms": 90,
+        "p95_ms": 529.4300000250339,
+        "p99_ms": 4702.891999974251,
+        "max_ms": 4703.300000011921
+      },
+      "enqueueImportTask": {
+        "count": 1,
+        "p50_ms": 29.399999976158142,
+        "p95_ms": 29.399999976158142,
+        "p99_ms": 29.399999976158142,
+        "max_ms": 29.399999976158142
+      }
+    }
+  },
+  "marks": [
+    {
+      "name": "bench_booted",
+      "at_perf_ms": 163.29999995231628,
+      "data": {
+        "mode": "e2e",
+        "candidate_id": "C0",
+        "run_tag": "p3-off-lite-off-r3"
+      }
+    },
+    {
+      "name": "e2e_preflight_check_start",
+      "at_perf_ms": 213.19999998807907
+    },
+    {
+      "name": "e2e_preflight_residual_state",
+      "at_perf_ms": 2592.099999964237,
+      "data": {
+        "source_count": 2841,
+        "import_task_count": 0
+      }
+    },
+    {
+      "name": "e2e_preflight_cleared",
+      "at_perf_ms": 7465.199999988079
+    },
+    {
+      "name": "e2e_begin",
+      "at_perf_ms": 7465.199999988079,
+      "data": {
+        "browse_steps": 3,
+        "browse_interval_ms": 1000,
+        "warmup_ms": 1000,
+        "import_paths": [
+          "Z:/Selection/002Errors"
+        ]
+      }
+    },
+    {
+      "name": "e2e_warmup_done",
+      "at_perf_ms": 8471.599999964237
+    },
+    {
+      "name": "e2e_import_scheduled",
+      "at_perf_ms": 8471.599999964237,
+      "data": {
+        "when": "after-step-0",
+        "paths": [
+          "Z:/Selection/002Errors"
+        ]
+      }
+    },
+    {
+      "name": "e2e_waiting_data_started",
+      "at_perf_ms": 8472.699999988079,
+      "data": {
+        "selected_package_id": "pkg-79ed85b7c794",
+        "preferred_package_id": null
+      }
+    },
+    {
+      "name": "e2e_import_enqueue_start",
+      "at_perf_ms": 8473.299999952316,
+      "data": {
+        "when": "waiting_data",
+        "paths": [
+          "Z:/Selection/002Errors"
+        ]
+      }
+    },
+    {
+      "name": "e2e_import_enqueued",
+      "at_perf_ms": 8502.799999952316,
+      "data": {
+        "task_id": "import-1771727535530-290293",
+        "paths": [
+          "Z:/Selection/002Errors"
+        ],
+        "when": "waiting_data"
+      }
+    },
+    {
+      "name": "e2e_ready",
+      "at_perf_ms": 13469.5,
+      "data": {
+        "selected_package_id": "dir-428a9363aef6",
+        "initial_page_index": 0,
+        "total_pages": 35,
+        "refs_in_page": 25,
+        "is_lite": false,
+        "ready_wait_ms": 4996.900000035763,
+        "ready_gate": {
+          "preferred_missing_count": 2,
+          "selected_mismatch_count": 2,
+          "selected_set_count": 2,
+          "page_index_null_count": 2,
+          "refs_empty_count": 0,
+          "total_pages_insufficient_count": 0,
+          "ready_wait_ms": 4996.900000035763
+        }
+      }
+    },
+    {
+      "name": "e2e_nav_request",
+      "at_perf_ms": 13469.599999964237,
+      "data": {
+        "step": 0,
+        "from_page": 0,
+        "to_page": 1,
+        "direction": 1
+      }
+    },
+    {
+      "name": "e2e_nav_data_committed",
+      "at_perf_ms": 15139.199999988079,
+      "data": {
+        "step": 0,
+        "from_page": 0,
+        "to_page": 1,
+        "direction": 1,
+        "data_latency_ms": 1669.6000000238419,
+        "loading_latency_ms": null
+      }
+    },
+    {
+      "name": "e2e_nav_request",
+      "at_perf_ms": 16145.099999964237,
+      "data": {
+        "step": 1,
+        "from_page": 1,
+        "to_page": 2,
+        "direction": 1
+      }
+    },
+    {
+      "name": "e2e_nav_data_committed",
+      "at_perf_ms": 18207.19999998808,
+      "data": {
+        "step": 1,
+        "from_page": 1,
+        "to_page": 2,
+        "direction": 1,
+        "data_latency_ms": 2062.100000023842,
+        "loading_latency_ms": null
+      }
+    },
+    {
+      "name": "e2e_nav_request",
+      "at_perf_ms": 19212.19999998808,
+      "data": {
+        "step": 2,
+        "from_page": 2,
+        "to_page": 3,
+        "direction": 1
+      }
+    },
+    {
+      "name": "e2e_nav_data_committed",
+      "at_perf_ms": 21204.599999964237,
+      "data": {
+        "step": 2,
+        "from_page": 2,
+        "to_page": 3,
+        "direction": 1,
+        "data_latency_ms": 1992.300000011921,
+        "loading_latency_ms": null
+      }
+    },
+    {
+      "name": "e2e_browse_completed",
+      "at_perf_ms": 21204.599999964237,
+      "data": {
+        "steps": 3,
+        "wait_import_completion": true,
+        "import_task_id": "import-1771727535530-290293"
+      }
+    },
+    {
+      "name": "e2e_import_wait_started",
+      "at_perf_ms": 21205.69999998808,
+      "data": {
+        "task_id": "import-1771727535530-290293"
+      }
+    },
+    {
+      "name": "e2e_import_completed",
+      "at_perf_ms": 50176.299999952316,
+      "data": {
+        "task_id": "import-1771727535530-290293",
+        "processed_count": 1,
+        "total_count": 1,
+        "progress": 1
+      }
+    },
+    {
+      "name": "e2e_finish",
+      "at_perf_ms": 50176.299999952316,
+      "data": {
+        "reason": "ok"
+      }
+    }
+  ],
+  "e2e": {
+    "reason": "ok",
+    "phase": "awaiting_import",
+    "scenario": "browse+import",
+    "nav": {
+      "steps": [
+        {
+          "step": 0,
+          "from_page": 0,
+          "to_page": 1,
+          "direction": 1,
+          "request_at_perf_ms": 13469.599999964237,
+          "loading_commit_at_perf_ms": null,
+          "data_commit_at_perf_ms": 15139.199999988079,
+          "loading_commit_latency_ms": null,
+          "data_commit_latency_ms": 1669.6000000238419
+        },
+        {
+          "step": 1,
+          "from_page": 1,
+          "to_page": 2,
+          "direction": 1,
+          "request_at_perf_ms": 16145.099999964237,
+          "loading_commit_at_perf_ms": null,
+          "data_commit_at_perf_ms": 18207.19999998808,
+          "loading_commit_latency_ms": null,
+          "data_commit_latency_ms": 2062.100000023842
+        },
+        {
+          "step": 2,
+          "from_page": 2,
+          "to_page": 3,
+          "direction": 1,
+          "request_at_perf_ms": 19212.19999998808,
+          "loading_commit_at_perf_ms": null,
+          "data_commit_at_perf_ms": 21204.5,
+          "loading_commit_latency_ms": null,
+          "data_commit_latency_ms": 1992.300000011921
+        }
+      ],
+      "data_commit_latency_ms": {
+        "count": 3,
+        "p50_ms": 1992.300000011921,
+        "p95_ms": 2055.12000002265,
+        "p99_ms": 2060.7040000236034,
+        "max_ms": 2062.100000023842
+      },
+      "loading_commit_latency_ms": {
+        "count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null
+      }
+    },
+    "import": {
+      "paths": [
+        "Z:/Selection/002Errors"
+      ],
+      "task_id": "import-1771727535530-290293"
+    },
+    "ready_gate": {
+      "preferred_missing_count": 2,
+      "selected_mismatch_count": 2,
+      "selected_set_count": 2,
+      "page_index_null_count": 2,
+      "refs_empty_count": 0,
+      "total_pages_insufficient_count": 0,
+      "ready_wait_ms": 4996.900000035763
+    }
+  },
+  "runtime": {
+    "platform": "win32",
+    "arch": "x64",
+    "node": "24.13.0",
+    "electron": "40.4.1",
+    "chrome": "144.0.7559.173",
+    "v8": "14.4.258.24-electron.0",
+    "os": {
+      "type": "Windows_NT",
+      "release": "10.0.26200",
+      "version": "Windows 11 Pro",
+      "totalmem_bytes": 68523839488,
+      "cpus": {
+        "model": "Genuine Intel(R) 0000",
+        "speed_mhz": 806,
+        "count": 32
+      }
+    }
+  },
+  "runtime_resources": {
+    "sampled_at_ms": 1771727577233,
+    "process": {
+      "cpu_usage_microseconds": {
+        "user": 26765000,
+        "system": 14359000
+      },
+      "memory_usage_bytes": {
+        "rss": 958697472,
+        "heap_total": 789676032,
+        "heap_used": 730735968,
+        "external": 8477908,
+        "array_buffers": 0
+      }
+    },
+    "electron": {
+      "process_count": 4,
+      "cpu_percent_total": 0,
+      "working_set_kb_total": 1877652,
+      "peak_working_set_kb_max": 1420944,
+      "by_type": {
+        "Browser": {
+          "count": 1,
+          "cpu_percent_total": 0,
+          "working_set_kb_total": 936236
+        },
+        "GPU": {
+          "count": 1,
+          "cpu_percent_total": 0,
+          "working_set_kb_total": 129108
+        },
+        "Utility": {
+          "count": 1,
+          "cpu_percent_total": 0,
+          "working_set_kb_total": 53032
+        },
+        "Tab": {
+          "count": 1,
+          "cpu_percent_total": 0,
+          "working_set_kb_total": 759276
+        }
+      },
+      "metrics": [
+        {
+          "pid": 168396,
+          "type": "Browser",
+          "cpu_percent": 0,
+          "idle_wakeups_per_sec": 0,
+          "memory_kb": {
+            "working_set": 936236,
+            "peak_working_set": 1420944,
+            "private_bytes": 903540,
+            "shared_bytes": null
+          }
+        },
+        {
+          "pid": 168880,
+          "type": "GPU",
+          "cpu_percent": 0,
+          "idle_wakeups_per_sec": 0,
+          "memory_kb": {
+            "working_set": 129108,
+            "peak_working_set": 141620,
+            "private_bytes": 180600,
+            "shared_bytes": null
+          }
+        },
+        {
+          "pid": 116964,
+          "type": "Utility",
+          "cpu_percent": 0,
+          "idle_wakeups_per_sec": 0,
+          "memory_kb": {
+            "working_set": 53032,
+            "peak_working_set": 53112,
+            "private_bytes": 14160,
+            "shared_bytes": null
+          }
+        },
+        {
+          "pid": 167976,
+          "type": "Tab",
+          "cpu_percent": 0,
+          "idle_wakeups_per_sec": 0,
+          "memory_kb": {
+            "working_set": 759276,
+            "peak_working_set": 931608,
+            "private_bytes": 702016,
+            "shared_bytes": null
+          }
+        }
+      ]
+    },
+    "system": {
+      "cpus_count": 32,
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "totalmem_bytes": 68523839488,
+      "freemem_bytes": 29471870976
+    }
+  },
+  "persisted_at_ms": 1771727577233,
+  "output_path": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\docs\\perf\\ui-runs\\ui-e2e-C0-p3-off-lite-off-r3.json"
+}

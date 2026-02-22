@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type {
   EnqueueImportTaskRequestDto,
@@ -27,6 +27,7 @@ import type {
   WritePackageGradeRequestDto,
   WritePackageGradeResponseDto,
 } from '../../contracts/backend'
+import { setBenchSettings } from '../perf/benchSettings'
 import { useReadOnlyDataAccess } from './useReadOnlyDataAccess'
 import type { MediaRepository, RepositoryRequestOptions } from './repository'
 
@@ -859,6 +860,11 @@ class RetrySnapshotRepository implements MediaRepository {
 }
 
 describe('useReadOnlyDataAccess', () => {
+  afterEach(() => {
+    // 恢复全局 bench 设置，避免影响其他测试
+    setBenchSettings({ enabled: false })
+  })
+
   it('仅在评分筛选启用时透传 grade_overrides', async () => {
     const repository = new GradeRefreshTrackingRepository()
     const gradeOverrides = { 'pkg-base': 4 }
@@ -1536,5 +1542,75 @@ describe('useReadOnlyDataAccess', () => {
     expect(pageIncludeHiddenValues).toContain(false)
     expect(metadataIncludeHiddenValues).toContain(true)
     expect(metadataIncludeHiddenValues).toContain(false)
+  })
+
+  it('importRefreshThrottle=true（默认）时 import-task-updated 仅刷新 library，不刷新 sidebar/page/metadata', async () => {
+    const repository = new GradeRefreshTrackingRepository()
+
+    renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository),
+    })
+
+    await waitFor(() => {
+      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1)
+      expect(repository.readImagePage).toHaveBeenCalledTimes(1)
+      expect(repository.readImageMetadata).toHaveBeenCalledTimes(1)
+    })
+
+    const sidebarCallsBefore = repository.readImageSidebarTree.mock.calls.length
+    const pageCallsBefore = repository.readImagePage.mock.calls.length
+    const metadataCallsBefore = repository.readImageMetadata.mock.calls.length
+
+    await act(async () => {
+      repository.emitLibraryChanged('import-task-updated')
+      await new Promise((resolve) => setTimeout(resolve, 220))
+    })
+
+    // library-only scope：sidebar/page/metadata 不被刷新
+    expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(sidebarCallsBefore)
+    expect(repository.readImagePage).toHaveBeenCalledTimes(pageCallsBefore)
+    expect(repository.readImageMetadata).toHaveBeenCalledTimes(metadataCallsBefore)
+  })
+
+  it('importRefreshThrottle=false 时 import-task-updated 触发全量刷新（恢复旧行为）', async () => {
+    setBenchSettings({
+      enabled: true,
+      mode: 'e2e',
+      candidateId: 'test',
+      runTag: 'test',
+      importRefreshThrottle: false,
+      resolvedMedia: {},
+      imageLoadingSkeleton: { mode: 'off' },
+      reactProfiler: false,
+      e2e: {},
+    })
+
+    const repository = new GradeRefreshTrackingRepository()
+
+    renderHook((params: ReturnType<typeof createHookParams>) => useReadOnlyDataAccess(params), {
+      initialProps: createHookParams(repository),
+    })
+
+    await waitFor(() => {
+      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1)
+      expect(repository.readImagePage).toHaveBeenCalledTimes(1)
+      expect(repository.readImageMetadata).toHaveBeenCalledTimes(1)
+    })
+
+    const sidebarCallsBefore = repository.readImageSidebarTree.mock.calls.length
+    const pageCallsBefore = repository.readImagePage.mock.calls.length
+    const metadataCallsBefore = repository.readImageMetadata.mock.calls.length
+
+    await act(async () => {
+      repository.emitLibraryChanged('import-task-updated')
+      await new Promise((resolve) => setTimeout(resolve, 220))
+    })
+
+    // all scope：sidebar/page/metadata 均被刷新
+    await waitFor(() => {
+      expect(repository.readImageSidebarTree.mock.calls.length).toBeGreaterThan(sidebarCallsBefore)
+      expect(repository.readImagePage.mock.calls.length).toBeGreaterThan(pageCallsBefore)
+      expect(repository.readImageMetadata.mock.calls.length).toBeGreaterThan(metadataCallsBefore)
+    })
   })
 })

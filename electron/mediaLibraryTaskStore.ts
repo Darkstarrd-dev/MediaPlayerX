@@ -4,6 +4,25 @@ import { clampProgress, parseJson } from './mediaLibraryStoreUtils'
 export class MediaLibraryTaskStore {
   constructor(private readonly db: SQLiteDatabaseLike) {}
 
+  deleteTasksByStatus(statuses: ReadonlyArray<ImportTaskStatus>): number {
+    const normalized = Array.from(new Set(statuses))
+    if (normalized.length === 0) {
+      return 0
+    }
+
+    const placeholders = normalized.map(() => '?').join(', ')
+    const result = this.db
+      .prepare(
+        `
+          DELETE FROM task_log
+          WHERE status IN (${placeholders})
+        `,
+      )
+      .run(...normalized) as { changes?: number } | undefined
+
+    return result?.changes ?? 0
+  }
+
   upsertTask(task: ImportTaskRecord): void {
     this.db
       .prepare(

@@ -108,6 +108,7 @@ describe('useAppDisplayResources (ad-review focus refs)', () => {
           e2e: {},
         },
         mediaRepository,
+        importBusy: false,
         sessionState: {
           imageFocusActive: false,
           manageMode: true,

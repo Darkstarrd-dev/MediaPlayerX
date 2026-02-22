@@ -4,6 +4,7 @@ import path from 'node:path'
 import { promises as fs } from 'node:fs'
 
 import { BENCH_CHANNELS } from './channels'
+import { logRuntimeDiagnostic } from './runtimeDiagnostics'
 
 function parseBenchConfigFromEnv(raw: string | undefined): unknown {
   const value = (raw ?? '').trim()
@@ -213,8 +214,29 @@ export function registerBenchIpcHandlers(): void {
 
     if (!benchFinishRequested) {
       benchFinishRequested = true
+      logRuntimeDiagnostic(
+        'bench-finish-requested',
+        {
+          bench,
+          candidate_id: candidateIdRaw,
+          run_tag: runTagRaw,
+          output_path: outputPath,
+        },
+        'info',
+        true,
+      )
       setTimeout(() => {
         try {
+          logRuntimeDiagnostic(
+            'bench-app-quit-dispatch',
+            {
+              bench,
+              candidate_id: candidateIdRaw,
+              run_tag: runTagRaw,
+            },
+            'info',
+            true,
+          )
           app.quit()
         } catch {
           // ignore

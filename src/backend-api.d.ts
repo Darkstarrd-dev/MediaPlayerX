@@ -42,6 +42,7 @@ import type {
   SetRuntimeStoragePathsRequestDto,
   SetRuntimeStoragePathsResponseDto,
   LibrarySnapshotDto,
+  LibrarySnapshotLiteDto,
   ReadImageMetadataRequestDto,
   ReadImageMetadataResponseDto,
   ReadImagePageRequestDto,
@@ -124,6 +125,7 @@ import type {
 
 interface MediaPlayerBackendApi {
   readLibrarySnapshot: () => Promise<LibrarySnapshotDto>
+  readLibrarySnapshotLite?: () => Promise<LibrarySnapshotLiteDto>
   readImageSidebarTree: (request: ReadImageSidebarTreeRequestDto) => Promise<ReadImageSidebarTreeResponseDto>
   readImagePage: (request: ReadImagePageRequestDto) => Promise<ReadImagePageResponseDto>
   readImageMetadata: (request: ReadImageMetadataRequestDto) => Promise<ReadImageMetadataResponseDto>

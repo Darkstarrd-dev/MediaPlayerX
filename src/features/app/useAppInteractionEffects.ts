@@ -23,6 +23,7 @@ function stripFileExtension(value: string): string {
 interface UseAppInteractionEffectsParams {
   appSettings: AppSettingsStoreSnapshot
   mediaRepository: RepositoryBootstrapDataResult['mediaRepository']
+  importBusy: boolean
   sessionState: AppSessionStateResult
   mediaState: MediaStateResult
   readNavigationState: AppReadAndNavigationResult
@@ -41,6 +42,7 @@ interface UseAppInteractionEffectsParams {
 export function useAppInteractionEffects({
   appSettings,
   mediaRepository,
+  importBusy,
   sessionState,
   mediaState,
   readNavigationState,
@@ -1191,6 +1193,7 @@ export function useAppInteractionEffects({
   usePersistedSessionCursor({
     repository: mediaRepository,
     mode,
+    importBusy,
     updateMode: (nextMode) => updateSettings({ mode: nextMode }),
     fullscreenActive,
     selectedPackageId,

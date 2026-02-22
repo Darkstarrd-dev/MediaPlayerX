@@ -2,9 +2,9 @@ import { mkdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 
-import type { LibrarySnapshotDto } from '../src/contracts/backend'
+import type { LibrarySnapshotDto, LibrarySnapshotLiteDto } from '../src/contracts/backend'
 import { MediaLibraryAppStateStore } from './mediaLibraryAppStateStore'
-import type { ImportTaskRecord, SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
+import type { ImportTaskRecord, ImportTaskStatus, SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 import { MediaLibraryMetadataStore } from './mediaLibraryMetadataStore'
 import { MediaLibraryPlaylistStore } from './mediaLibraryPlaylistStore'
 import { DATABASE_RELATIVE_PATH, migrateMediaLibrarySchema } from './mediaLibrarySchema'
@@ -115,6 +115,10 @@ export class MediaLibraryDatabase {
 
   readSnapshot(): LibrarySnapshotDto {
     return this.snapshotStore.readSnapshot()
+  }
+
+  readSnapshotLite(): LibrarySnapshotLiteDto {
+    return this.snapshotStore.readSnapshotLite()
   }
 
   readPackageGrades(): Map<string, number | null> {
@@ -316,6 +320,10 @@ export class MediaLibraryDatabase {
 
   readTasks(): ImportTaskRecord[] {
     return this.taskStore.readTasks()
+  }
+
+  deleteTasksByStatus(statuses: ReadonlyArray<ImportTaskStatus>): number {
+    return this.taskStore.deleteTasksByStatus(statuses)
   }
 
   clearDatabase(): void {

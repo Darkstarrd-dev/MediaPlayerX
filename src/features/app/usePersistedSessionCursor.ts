@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 
 import type { BrowserMode } from "../../types";
 import type { MediaRepository } from "../backend/repository";
+import { getBenchSettings } from "../perf/benchSettings";
 
 const SESSION_CURSOR_STATE_KEY = "ui_session_cursor_v1";
 
@@ -23,12 +24,16 @@ interface PersistedSessionCursor {
 interface UsePersistedSessionCursorParams {
   repository: MediaRepository;
   mode: BrowserMode;
+  importBusy: boolean;
   updateMode: (mode: BrowserMode) => void;
   fullscreenActive: boolean;
   selectedPackageId: string;
   focusByPackage: Record<string, number>;
   pagedPageSize: number;
-  packageByIdEffective: Map<string, { images: Array<{ hidden?: boolean }> }>;
+  packageByIdEffective: Map<
+    string,
+    { id: string; images: Array<{ hidden?: boolean }> }
+  >;
   setSelectedPackageId: (id: string) => void;
   setImageFocusActive: (active: boolean) => void;
   setFocusByPackage: (
@@ -106,6 +111,7 @@ function normalizePersistedCursor(
 export function usePersistedSessionCursor({
   repository,
   mode,
+  importBusy,
   updateMode,
   fullscreenActive,
   selectedPackageId,
@@ -125,6 +131,7 @@ export function usePersistedSessionCursor({
   rootScopedAudioIds,
   setSelectedAudioId,
 }: UsePersistedSessionCursorParams): void {
+  const benchEnabled = getBenchSettings().enabled;
   const hydratedRef = useRef(false);
   const appliedRef = useRef(false);
   const pendingHydratedCursorRef = useRef<PersistedSessionCursor | null>(null);
@@ -151,6 +158,12 @@ export function usePersistedSessionCursor({
   );
 
   useEffect(() => {
+    if (benchEnabled) {
+      hydratedRef.current = true;
+      appliedRef.current = true;
+      return;
+    }
+
     if (!repository.readAppState) {
       hydratedRef.current = true;
       return;
@@ -173,10 +186,10 @@ export function usePersistedSessionCursor({
       .finally(() => {
         hydratedRef.current = true;
       });
-  }, [repository]);
+  }, [benchEnabled, repository]);
 
   useEffect(() => {
-    if (!hydratedRef.current || appliedRef.current) {
+    if (!hydratedRef.current || appliedRef.current || importBusy || fullscreenActive) {
       return;
     }
 
@@ -196,28 +209,44 @@ export function usePersistedSessionCursor({
       return;
     }
 
-    const imagePackageId = persisted.image.packageId;
-    const imagePackage = imagePackageId
-      ? (packageByIdEffective.get(imagePackageId) ?? null)
+    let resolvedImagePackageId = persisted.image.packageId;
+    let resolvedImagePackage = resolvedImagePackageId
+      ? (packageByIdEffective.get(resolvedImagePackageId) ?? null)
       : null;
+
     if (
-      imagePackageId &&
-      imagePackage &&
-      imagePackage.images.some((image) => !image.hidden)
+      !resolvedImagePackageId ||
+      !resolvedImagePackage ||
+      !resolvedImagePackage.images.some((image) => !image.hidden)
     ) {
-      const maxIndex = Math.max(0, imagePackage.images.length - 1);
+      for (const candidate of packageByIdEffective.values()) {
+        if (!candidate.images.some((image) => !image.hidden)) {
+          continue;
+        }
+        resolvedImagePackageId = candidate.id;
+        resolvedImagePackage = candidate;
+        break;
+      }
+    }
+
+    if (persisted.mode === "image") {
+      if (!resolvedImagePackageId || !resolvedImagePackage) {
+        return;
+      }
+
+      const maxIndex = Math.max(0, resolvedImagePackage.images.length - 1);
       const nextImageIndex = Math.min(persisted.image.imageIndex, maxIndex);
-      if (imagePackageId !== selectedPackageId) {
-        setSelectedPackageId(imagePackageId);
+      if (resolvedImagePackageId !== selectedPackageId) {
+        setSelectedPackageId(resolvedImagePackageId);
       }
       setImageFocusActive(true);
       setFocusByPackage((previous) => ({
         ...previous,
-        [imagePackageId]: nextImageIndex,
+        [resolvedImagePackageId]: nextImageIndex,
       }));
       setPageByPackage((previous) => ({
         ...previous,
-        [imagePackageId]: Math.floor(
+        [resolvedImagePackageId]: Math.floor(
           nextImageIndex / Math.max(1, pagedPageSize),
         ),
       }));
@@ -260,6 +289,8 @@ export function usePersistedSessionCursor({
 
     appliedRef.current = true;
   }, [
+    importBusy,
+    fullscreenActive,
     packageByIdEffective,
     pagedPageSize,
     rootScopedAudioIds,
@@ -278,7 +309,12 @@ export function usePersistedSessionCursor({
   ]);
 
   useEffect(() => {
-    if (!hydratedRef.current || !repository.writeAppState || fullscreenActive) {
+    if (
+      benchEnabled ||
+      !hydratedRef.current ||
+      !repository.writeAppState ||
+      fullscreenActive
+    ) {
       return;
     }
 
@@ -328,9 +364,14 @@ export function usePersistedSessionCursor({
     selectedPackageId,
     selectedVideoId,
     videoTime,
+    benchEnabled,
   ]);
 
   useEffect(() => {
+    if (benchEnabled) {
+      return;
+    }
+
     const flushPending = () => {
       const pending = pendingJsonRef.current;
       if (!pending || pending === lastSavedJsonRef.current) {
@@ -346,5 +387,5 @@ export function usePersistedSessionCursor({
       flushPending();
       window.removeEventListener("beforeunload", flushPending);
     };
-  }, [persistCursorJson]);
+  }, [benchEnabled, persistCursorJson]);
 }

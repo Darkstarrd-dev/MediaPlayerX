@@ -7,6 +7,7 @@ import {
   type ClearDatabaseResponseDto,
   type ImportTaskDto,
   type LibrarySnapshotDto,
+  type LibrarySnapshotLiteDto,
   type MediaAccessAuditResponseDto,
   type ReadPlaylistResponseDto,
   type ListVideoSubtitlesRequestDto,
@@ -170,8 +171,27 @@ export interface FileSystemMediaReadServiceOptions {
   onArchiveLoadStatusChanged?: ArchiveLoadStatusListener
 }
 
+interface QueuedReadTask<T> {
+  key: string
+  start: (signal: AbortSignal) => Promise<T>
+  promise: Promise<T>
+  resolve: (value: T | PromiseLike<T>) => void
+  reject: (reason?: unknown) => void
+}
+
+interface ActiveReadTask<T> {
+  key: string
+  controller: AbortController
+  promise: Promise<T>
+  resolve: (value: T | PromiseLike<T>) => void
+  reject: (reason?: unknown) => void
+  superseded: boolean
+}
+
 export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private static readonly SYNC_PRUNE_ENTRY_THRESHOLD = 256
+
+  private static readonly INTERACTIVE_READ_HOT_WINDOW_MS = 2_500
 
   private static readonly ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY = 'archive_normalize_queue_paths'
 
@@ -209,6 +229,24 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private pruneMissingSnapshotQueued = false
 
   private startupCleanupPromise: Promise<void> | null = null
+
+  private lastInteractiveReadAtMs = 0
+
+  private readLibrarySnapshotInFlight: Promise<LibrarySnapshotDto> | null = null
+
+  private readLibrarySnapshotLiteInFlight: Promise<LibrarySnapshotLiteDto> | null = null
+
+  private readonly maxConcurrentImageSidebarTreeReads = 1
+
+  private activeImageSidebarTreeTasks: ActiveReadTask<ReadImageSidebarTreeResponseDto>[] = []
+
+  private queuedImageSidebarTreeTask: QueuedReadTask<ReadImageSidebarTreeResponseDto> | null = null
+
+  private readonly maxConcurrentImagePageReads = 2
+
+  private activeImagePageTasks: ActiveReadTask<ReadImagePageResponseDto>[] = []
+
+  private queuedImagePageTask: QueuedReadTask<ReadImagePageResponseDto> | null = null
 
   private disposed = false
 
@@ -294,6 +332,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
           seriesId: payload.seriesId,
         }),
       withArchiveReadLock: (archivePath, task) => this.archivePathLockService.withReadLock(archivePath, task),
+      isInteractiveReadHot: () => this.isInteractiveReadHot(),
     })
 
     this.importTaskService = new ImportTaskService({
@@ -304,7 +343,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       audioExtensions: AUDIO_EXTENSIONS,
       archiveExtensions: ARCHIVE_EXTENSIONS,
       database: this.database,
-      invalidateCache: () => this.invalidateCache(),
+      invalidateSnapshotCache: () => this.invalidateSnapshotCache(),
       refreshSnapshot: (options) => this.refreshSnapshotFromFilesystem(options),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     })
@@ -365,7 +404,6 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       mediaTokenService: this.mediaTokenService,
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
       refreshArchiveIndexesForPaths: (paths) => this.refreshArchiveIndexesForPaths(paths),
-      markInteractiveRead: () => this.markInteractiveRead(),
       buildMediaAccessContext: () => this.buildMediaAccessContext(),
       ensureRuntimeDependencies: () => this.runtimeDependencyService.ensureRuntimeDependencies(),
       readImageBufferForThumbnail: (locator) => this.librarySnapshotService.readImageBufferForThumbnail(locator),
@@ -439,7 +477,12 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   }
 
   private markInteractiveRead(): void {
+    this.lastInteractiveReadAtMs = Date.now()
     this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_IDLE_MS)
+  }
+
+  private isInteractiveReadHot(): boolean {
+    return false
   }
 
   private isRar7zPath(targetPath: string): boolean {
@@ -487,8 +530,233 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.mediaTokenService.cleanupExpiredTokens()
   }
 
+  /**
+   * 仅清理快照缓存与媒体令牌，不重置 stateHydrated。
+   * 在活跃导入任务写入数据库后调用，避免 ensureStateLoaded 触发 recovery 误杀运行中的任务。
+   * 同时重新水合 importPathRegistry，保证快照扫描能找到新写入的 import sources。
+   */
+  invalidateSnapshotCache(): void {
+    this.librarySnapshotService.invalidateCache()
+    const importSources = this.database.readImportSources()
+    this.importPathRegistry.hydrate(importSources)
+    this.mediaTokenService.cleanupExpiredTokens()
+  }
+
+  private createQueuedReadTask<T>(key: string, start: (signal: AbortSignal) => Promise<T>): QueuedReadTask<T> {
+    let resolvePromise: ((value: T | PromiseLike<T>) => void) | undefined
+    let rejectPromise: ((reason?: unknown) => void) | undefined
+    let settled = false
+    const promise = new Promise<T>((resolve, reject) => {
+      resolvePromise = (value) => {
+        if (settled) {
+          return
+        }
+        settled = true
+        resolve(value)
+      }
+      rejectPromise = (reason) => {
+        if (settled) {
+          return
+        }
+        settled = true
+        reject(reason)
+      }
+    })
+    if (!resolvePromise || !rejectPromise) {
+      throw new Error('createQueuedReadTask: promise callbacks not initialized')
+    }
+    return {
+      key,
+      start,
+      promise,
+      resolve: resolvePromise,
+      reject: rejectPromise,
+    }
+  }
+
+  private createActiveReadTask<T>(key: string): ActiveReadTask<T> {
+    let resolvePromise: ((value: T | PromiseLike<T>) => void) | undefined
+    let rejectPromise: ((reason?: unknown) => void) | undefined
+    let settled = false
+    const promise = new Promise<T>((resolve, reject) => {
+      resolvePromise = (value) => {
+        if (settled) {
+          return
+        }
+        settled = true
+        resolve(value)
+      }
+      rejectPromise = (reason) => {
+        if (settled) {
+          return
+        }
+        settled = true
+        reject(reason)
+      }
+    })
+    if (!resolvePromise || !rejectPromise) {
+      throw new Error('createActiveReadTask: promise callbacks not initialized')
+    }
+    return {
+      key,
+      controller: new AbortController(),
+      promise,
+      resolve: resolvePromise,
+      reject: rejectPromise,
+      superseded: false,
+    }
+  }
+
+  private isAbortLikeError(error: unknown): boolean {
+    if (!(error instanceof Error)) {
+      return false
+    }
+    if (error.name === 'AbortError') {
+      return true
+    }
+    return /abort/i.test(error.message)
+  }
+
+  private clearQueuedReadTasks(reason: string): void {
+    if (this.queuedImageSidebarTreeTask) {
+      this.queuedImageSidebarTreeTask.reject(new Error(reason))
+      this.queuedImageSidebarTreeTask = null
+    }
+    if (this.queuedImagePageTask) {
+      this.queuedImagePageTask.reject(new Error(reason))
+      this.queuedImagePageTask = null
+    }
+  }
+
+  private clearActiveReadTasks(reason: string): void {
+    for (const task of this.activeImageSidebarTreeTasks) {
+      task.reject(new Error(reason))
+      task.controller.abort(reason)
+    }
+    this.activeImageSidebarTreeTasks = []
+    for (const task of this.activeImagePageTasks) {
+      task.reject(new Error(reason))
+      task.controller.abort(reason)
+    }
+    this.activeImagePageTasks = []
+  }
+
+  private startImageSidebarTreeTask(
+    key: string,
+    start: (signal: AbortSignal) => Promise<ReadImageSidebarTreeResponseDto>,
+  ): Promise<ReadImageSidebarTreeResponseDto> {
+    const activeTask = this.createActiveReadTask<ReadImageSidebarTreeResponseDto>(key)
+    this.activeImageSidebarTreeTasks.push(activeTask)
+    void start(activeTask.controller.signal)
+      .then((response) => {
+        activeTask.resolve(response)
+      })
+      .catch((error: unknown) => {
+        if (activeTask.superseded && this.isAbortLikeError(error)) {
+          return
+        }
+        activeTask.reject(error)
+      })
+      .finally(() => {
+        this.onImageSidebarTreeTaskSettled(activeTask)
+        this.startQueuedImageSidebarTreeTaskIfPossible()
+      })
+    return activeTask.promise
+  }
+
+  private startQueuedImageSidebarTreeTaskIfPossible(): void {
+    if (this.activeImageSidebarTreeTasks.length >= this.maxConcurrentImageSidebarTreeReads) {
+      return
+    }
+    if (!this.queuedImageSidebarTreeTask) {
+      return
+    }
+    const queuedTask = this.queuedImageSidebarTreeTask
+    this.queuedImageSidebarTreeTask = null
+    const nextTask = this.startImageSidebarTreeTask(queuedTask.key, queuedTask.start)
+    queuedTask.resolve(nextTask)
+  }
+
+  private supersedeActiveImageSidebarTreeTask(requestKey: string, replacement: Promise<ReadImageSidebarTreeResponseDto>): void {
+    const staleTaskIndex = this.activeImageSidebarTreeTasks.findIndex((item) => item.key !== requestKey)
+    if (staleTaskIndex < 0) {
+      return
+    }
+    const [staleTask] = this.activeImageSidebarTreeTasks.splice(staleTaskIndex, 1)
+    staleTask.superseded = true
+    staleTask.resolve(replacement)
+    staleTask.controller.abort('read request superseded')
+  }
+
+  private onImageSidebarTreeTaskSettled(task: ActiveReadTask<ReadImageSidebarTreeResponseDto>): void {
+    const taskIndex = this.activeImageSidebarTreeTasks.indexOf(task)
+    if (taskIndex < 0) {
+      return
+    }
+    this.activeImageSidebarTreeTasks.splice(taskIndex, 1)
+  }
+
+  private startImagePageTask(
+    key: string,
+    start: (signal: AbortSignal) => Promise<ReadImagePageResponseDto>,
+  ): Promise<ReadImagePageResponseDto> {
+    const activeTask = this.createActiveReadTask<ReadImagePageResponseDto>(key)
+    this.activeImagePageTasks.push(activeTask)
+    void start(activeTask.controller.signal)
+      .then((response) => {
+        activeTask.resolve(response)
+      })
+      .catch((error: unknown) => {
+        if (activeTask.superseded && this.isAbortLikeError(error)) {
+          return
+        }
+        activeTask.reject(error)
+      })
+      .finally(() => {
+        this.onImagePageTaskSettled(activeTask)
+        this.startQueuedImagePageTaskIfPossible()
+      })
+    return activeTask.promise
+  }
+
+  private startQueuedImagePageTaskIfPossible(): void {
+    if (this.activeImagePageTasks.length >= this.maxConcurrentImagePageReads) {
+      return
+    }
+    if (!this.queuedImagePageTask) {
+      return
+    }
+    const queuedTask = this.queuedImagePageTask
+    this.queuedImagePageTask = null
+    const nextTask = this.startImagePageTask(queuedTask.key, queuedTask.start)
+    queuedTask.resolve(nextTask)
+  }
+
+  private supersedeActiveImagePageTask(requestKey: string, replacement: Promise<ReadImagePageResponseDto>): void {
+    const staleTaskIndex = this.activeImagePageTasks.findIndex((item) => item.key !== requestKey)
+    if (staleTaskIndex < 0) {
+      return
+    }
+    const [staleTask] = this.activeImagePageTasks.splice(staleTaskIndex, 1)
+    staleTask.superseded = true
+    staleTask.resolve(replacement)
+    staleTask.controller.abort('read request superseded')
+  }
+
+  private onImagePageTaskSettled(task: ActiveReadTask<ReadImagePageResponseDto>): void {
+    const taskIndex = this.activeImagePageTasks.indexOf(task)
+    if (taskIndex < 0) {
+      return
+    }
+    this.activeImagePageTasks.splice(taskIndex, 1)
+  }
+
   dispose(): void {
     this.disposed = true
+    this.readLibrarySnapshotInFlight = null
+    this.readLibrarySnapshotLiteInFlight = null
+    this.clearActiveReadTasks('read queue cleared: service disposed')
+    this.clearQueuedReadTasks('read queue cleared: service disposed')
     void disposeTaskProcessRunners().catch(() => undefined)
     if (this.ownsTaskResourceGovernor) {
       this.taskResourceGovernor.dispose()
@@ -502,6 +770,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     if (this.stateHydrated) {
       return
     }
+    this.importTaskService.recoverInterruptedImportTasks()
     this.importPathRegistry.hydrate(this.database.readImportSources())
     this.archiveNormalizationService.recoverPersistedQueue()
     this.stateHydrated = true
@@ -834,6 +1103,10 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.mediaTokenService.clearActiveTokens()
     this.importTaskService.clearRuntimeState()
     this.librarySnapshotService.clearRuntimeState()
+    this.readLibrarySnapshotInFlight = null
+    this.readLibrarySnapshotLiteInFlight = null
+    this.clearActiveReadTasks('read queue cleared: database cleared')
+    this.clearQueuedReadTasks('read queue cleared: database cleared')
     this.invalidateCache()
 
     this.emitLibraryChanged({
@@ -849,15 +1122,81 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   // Delegate handlers
   async readLibrarySnapshot(): Promise<LibrarySnapshotDto> {
-    return this.libraryHandlers.readLibrarySnapshot()
+    if (this.readLibrarySnapshotInFlight) {
+      return this.readLibrarySnapshotInFlight
+    }
+
+    const readTask = this.libraryHandlers.readLibrarySnapshot().finally(() => {
+      if (this.readLibrarySnapshotInFlight === readTask) {
+        this.readLibrarySnapshotInFlight = null
+      }
+    })
+    this.readLibrarySnapshotInFlight = readTask
+    return readTask
+  }
+
+  async readLibrarySnapshotLite(): Promise<LibrarySnapshotLiteDto> {
+    if (this.readLibrarySnapshotLiteInFlight) {
+      return this.readLibrarySnapshotLiteInFlight
+    }
+
+    const readTask = this.libraryHandlers.readLibrarySnapshotLite().finally(() => {
+      if (this.readLibrarySnapshotLiteInFlight === readTask) {
+        this.readLibrarySnapshotLiteInFlight = null
+      }
+    })
+    this.readLibrarySnapshotLiteInFlight = readTask
+    return readTask
   }
 
   async readImageSidebarTree(request: ReadImageSidebarTreeRequestDto): Promise<ReadImageSidebarTreeResponseDto> {
-    return this.libraryHandlers.readImageSidebarTree(request)
+    const requestKey = JSON.stringify(request)
+    const activeTask = this.activeImageSidebarTreeTasks.find((item) => item.key === requestKey)
+    if (activeTask) {
+      return activeTask.promise
+    }
+    if (this.queuedImageSidebarTreeTask?.key === requestKey) {
+      return this.queuedImageSidebarTreeTask.promise
+    }
+
+    const startTask = (signal: AbortSignal) => this.libraryHandlers.readImageSidebarTree(request, signal)
+    if (this.activeImageSidebarTreeTasks.length < this.maxConcurrentImageSidebarTreeReads) {
+      return this.startImageSidebarTreeTask(requestKey, startTask)
+    }
+
+    const nextQueuedTask = this.createQueuedReadTask(requestKey, startTask)
+    if (this.queuedImageSidebarTreeTask) {
+      this.queuedImageSidebarTreeTask.resolve(nextQueuedTask.promise)
+    }
+    this.queuedImageSidebarTreeTask = nextQueuedTask
+    this.supersedeActiveImageSidebarTreeTask(requestKey, nextQueuedTask.promise)
+    this.startQueuedImageSidebarTreeTaskIfPossible()
+    return nextQueuedTask.promise
   }
 
   async readImagePage(request: ReadImagePageRequestDto): Promise<ReadImagePageResponseDto> {
-    return this.libraryHandlers.readImagePage(request)
+    const requestKey = JSON.stringify(request)
+    const activeTask = this.activeImagePageTasks.find((item) => item.key === requestKey)
+    if (activeTask) {
+      return activeTask.promise
+    }
+    if (this.queuedImagePageTask?.key === requestKey) {
+      return this.queuedImagePageTask.promise
+    }
+
+    const startTask = (signal: AbortSignal) => this.libraryHandlers.readImagePage(request, signal)
+    if (this.activeImagePageTasks.length < this.maxConcurrentImagePageReads) {
+      return this.startImagePageTask(requestKey, startTask)
+    }
+
+    const nextQueuedTask = this.createQueuedReadTask(requestKey, startTask)
+    if (this.queuedImagePageTask) {
+      this.queuedImagePageTask.resolve(nextQueuedTask.promise)
+    }
+    this.queuedImagePageTask = nextQueuedTask
+    this.supersedeActiveImagePageTask(requestKey, nextQueuedTask.promise)
+    this.startQueuedImagePageTaskIfPossible()
+    return nextQueuedTask.promise
   }
 
   async readImageMetadata(request: ReadImageMetadataRequestDto): Promise<ReadImageMetadataResponseDto> {

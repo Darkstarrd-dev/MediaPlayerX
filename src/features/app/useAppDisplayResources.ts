@@ -327,16 +327,20 @@ interface UseAppDisplayResourcesParams {
   appSettings: AppSettingsStoreSnapshot;
   benchSettings: UiBenchSettings;
   mediaRepository: RepositoryBootstrapDataResult["mediaRepository"];
+  importBusy: boolean;
   sessionState: AppSessionStateResult;
   mediaState: MediaStateResult;
   readNavigationState: AppReadAndNavigationResult;
   manageBindings: AppManageBindingsResult;
 }
 
+const NODE_BROWSE_WARMUP_MAX_TARGETS = 96;
+
 export function useAppDisplayResources({
   appSettings,
   benchSettings,
   mediaRepository,
+  importBusy,
   sessionState,
   mediaState,
   readNavigationState,
@@ -471,6 +475,7 @@ export function useAppDisplayResources({
     );
 
   const canWarmupNodeBrowseCoverThumbnails =
+    !importBusy &&
     !(backendRead.library?.loading ?? false) &&
     !(backendRead.sidebar?.loading ?? false) &&
     !(backendRead.page?.loading ?? false) &&
@@ -493,6 +498,10 @@ export function useAppDisplayResources({
     const seenImageIds = new Set<string>();
 
     for (const child of selectedSidebarNode.children) {
+      if (next.length >= NODE_BROWSE_WARMUP_MAX_TARGETS) {
+        break;
+      }
+
       const sourceId = child.coverSourceId?.trim() ?? "";
       const imageId = child.coverImageId?.trim() ?? "";
       if (!sourceId || !imageId || seenImageIds.has(imageId)) {
@@ -579,6 +588,7 @@ export function useAppDisplayResources({
     repository: mediaRepository,
     benchSettings,
     maxConcurrent: appSettings.thumbnailResolveConcurrency,
+    importBusy,
     actualCellWidth,
     actualMediaHeight,
     thumbnailQuality: appSettings.thumbnailQuality,

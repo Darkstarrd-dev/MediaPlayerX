@@ -6,6 +6,7 @@ import {
   ipcMain,
   shell,
 } from "electron";
+import { appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -13,6 +14,7 @@ import {
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
+  librarySnapshotLiteDtoSchema,
   mediaAccessAuditResponseSchema,
   pickImportPathsRequestSchema,
   pickImportPathsResponseSchema,
@@ -156,8 +158,50 @@ import {
   isExternalUrlAllowed,
 } from "./externalUrlPolicy";
 import { SubtitleSessionManager } from "./subtitles/subtitleSession";
+import { resolveBenchMode } from "./mainBenchRuntime";
+
+interface IpcBreakdownEntry {
+  timestamp: string;
+  channel: string;
+  action_ms: number;
+  schema_parse_ms: number;
+  json_serialize_proxy_ms: number | null;
+  payload_bytes: number | null;
+  request_id: number;
+}
+
+function resolveIpcBreakdownLogPath(): string | null {
+  const diagnosticsDir = (process.env.MEDIA_PLAYERX_DIAGNOSTICS_DIR ?? "").trim();
+  const resolved = diagnosticsDir
+    ? path.resolve(diagnosticsDir)
+    : path.join(app.getPath("userData"), "logs");
+  mkdirSync(resolved, { recursive: true });
+  return path.join(resolved, "ipc-breakdown.ndjson");
+}
+
+function appendIpcBreakdown(pathOrNull: string | null, entry: IpcBreakdownEntry): void {
+  if (!pathOrNull) {
+    return;
+  }
+  try {
+    appendFileSync(pathOrNull, `${JSON.stringify(entry)}\n`, "utf8");
+  } catch {
+    // ignore diagnostics write failures
+  }
+}
 
 export function registerBackendIpcHandlers(): void {
+  const benchMode = resolveBenchMode();
+  const shouldCaptureIpcBreakdown = benchMode !== null;
+  const ipcBreakdownLogPath = shouldCaptureIpcBreakdown
+    ? resolveIpcBreakdownLogPath()
+    : null;
+  const tracedIpcChannels = new Set<string>([
+    BACKEND_CHANNELS.readLibrarySnapshot,
+    BACKEND_CHANNELS.readLibrarySnapshotLite,
+  ]);
+  let ipcBreakdownRequestId = 0;
+
   const userDataPath = app.getPath("userData");
   const defaultLibraryRoot = path.join(
     app.getPath("pictures"),
@@ -237,7 +281,7 @@ export function registerBackendIpcHandlers(): void {
   const hasPersistedDatabasePayload = async (): Promise<boolean> => {
     const activeService = ensureService();
     const [snapshot, playlist, importTasks] = await Promise.all([
-      activeService.readLibrarySnapshot(),
+      activeService.readLibrarySnapshotLite(),
       activeService.readPlaylist(),
       activeService.readImportTasks(),
     ]);
@@ -259,10 +303,58 @@ export function registerBackendIpcHandlers(): void {
     channel: string,
     responseSchema: ParseSchema<TResponse>,
     action: () => Promise<unknown> | unknown,
+    options?: { skipResponseSchemaParse?: boolean },
   ): void => {
     ipcMain.handle(channel, async () => {
+      if (!shouldCaptureIpcBreakdown || !tracedIpcChannels.has(channel)) {
+        const response = await action();
+        if (options?.skipResponseSchemaParse) {
+          return response as TResponse;
+        }
+        return responseSchema.parse(response);
+      }
+
+      const requestId = ++ipcBreakdownRequestId;
+      const actionStart = performance.now();
       const response = await action();
-      return responseSchema.parse(response);
+      const actionEnd = performance.now();
+
+      let parsed: TResponse;
+      let parseDurationMs = 0;
+      if (options?.skipResponseSchemaParse) {
+        parsed = response as TResponse;
+      } else {
+        const parseStart = performance.now();
+        parsed = responseSchema.parse(response);
+        const parseEnd = performance.now();
+        parseDurationMs = parseEnd - parseStart;
+      }
+
+      let payloadBytes: number | null = null;
+      let jsonSerializeProxyMs: number | null = null;
+      try {
+        const serializeStart = performance.now();
+        const serialized = JSON.stringify(parsed);
+        const serializeEnd = performance.now();
+        jsonSerializeProxyMs = serializeEnd - serializeStart;
+        payloadBytes = Buffer.byteLength(serialized, "utf8");
+      } catch {
+        payloadBytes = null;
+        jsonSerializeProxyMs = null;
+      }
+
+      appendIpcBreakdown(ipcBreakdownLogPath, {
+        timestamp: new Date().toISOString(),
+        channel,
+        action_ms: Number((actionEnd - actionStart).toFixed(3)),
+        schema_parse_ms: Number(parseDurationMs.toFixed(3)),
+        json_serialize_proxy_ms:
+          jsonSerializeProxyMs === null ? null : Number(jsonSerializeProxyMs.toFixed(3)),
+        payload_bytes: payloadBytes,
+        request_id: requestId,
+      });
+
+      return parsed;
     });
   };
 
@@ -292,6 +384,14 @@ export function registerBackendIpcHandlers(): void {
     BACKEND_CHANNELS.readLibrarySnapshot,
     librarySnapshotDtoSchema,
     () => ensureService().readLibrarySnapshot(),
+    { skipResponseSchemaParse: true },
+  );
+
+  registerIpcQuery(
+    BACKEND_CHANNELS.readLibrarySnapshotLite,
+    librarySnapshotLiteDtoSchema,
+    () => ensureService().readLibrarySnapshotLite(),
+    { skipResponseSchemaParse: true },
   );
 
   registerIpcCommand(

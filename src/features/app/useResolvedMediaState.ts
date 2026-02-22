@@ -15,10 +15,16 @@ import type {
   VideoItem,
 } from '../../types'
 
+// 导入忙碌期间：限制缩略图解析目标数量，减少对主进程的 IPC 压力
+const IMPORT_BUSY_THUMBNAIL_LIMIT = 16
+// 导入忙碌期间：降低最大并发数，避免与 snapshot 刷新争抢资源
+const IMPORT_BUSY_MAX_CONCURRENT = 2
+
 interface UseResolvedMediaStateParams {
   repository: MediaRepository
   benchSettings: UiBenchSettings
   maxConcurrent: number
+  importBusy?: boolean
   actualCellWidth: number
   actualMediaHeight: number
   thumbnailQuality: number
@@ -55,6 +61,7 @@ export function useResolvedMediaState({
   repository,
   benchSettings,
   maxConcurrent,
+  importBusy = false,
   actualCellWidth,
   actualMediaHeight,
   thumbnailQuality,
@@ -160,7 +167,9 @@ export function useResolvedMediaState({
     }
 
     if (!showNamesOnly) {
-      for (const ref of refsInPage) {
+      // 导入忙碌期间仅解析首屏可视区内的缩略图，减少 IPC 竞争
+      const effectiveRefsForThumbnails = importBusy ? refsInPage.slice(0, IMPORT_BUSY_THUMBNAIL_LIMIT) : refsInPage
+      for (const ref of effectiveRefsForThumbnails) {
         pushThumbnailImageTarget(ref)
       }
     }
@@ -220,6 +229,7 @@ export function useResolvedMediaState({
     focusedAudio,
     focusedVideo,
     focusedVideoCoverImageLocator,
+    importBusy,
     metadataImage,
     focusedRef,
     fullscreenActive,
@@ -238,7 +248,7 @@ export function useResolvedMediaState({
       : {
           applyMode: 'raf',
           stateScope: 'active-only',
-          maxConcurrent,
+          maxConcurrent: importBusy ? Math.min(maxConcurrent, IMPORT_BUSY_MAX_CONCURRENT) : maxConcurrent,
         },
   })
 

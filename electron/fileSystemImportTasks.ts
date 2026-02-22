@@ -104,9 +104,10 @@ interface ExecuteImportTaskParams {
   archiveExtensions: ReadonlySet<string>
   musicImportMode: boolean
   database: MediaLibraryDatabase
-  invalidateCache: () => void
+  invalidateSnapshotCache: () => void
   refreshSnapshot: (options?: SnapshotRefreshOptions) => Promise<unknown>
   emitLibraryChanged: (payload: { reason: 'import-task-updated' | 'import-task-finished'; updated_at_ms: number }) => void
+  importTaskUpdatedMinIntervalMs: number
 }
 
 export async function executeImportTask(params: ExecuteImportTaskParams): Promise<ImportTaskRecord> {
@@ -129,7 +130,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
   let lastImportTaskUpdatedEmitAtMs = 0
   const emitImportTaskUpdated = (force = false) => {
     const now = Date.now()
-    if (!force && now - lastImportTaskUpdatedEmitAtMs < 800) {
+    if (!force && now - lastImportTaskUpdatedEmitAtMs < params.importTaskUpdatedMinIntervalMs) {
       return
     }
     lastImportTaskUpdatedEmitAtMs = now
@@ -283,7 +284,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
       })
     }
 
-    params.invalidateCache()
+    params.invalidateSnapshotCache()
 
     let lastRefreshReportAtMs = 0
     let lastRefreshReportedCount = 0

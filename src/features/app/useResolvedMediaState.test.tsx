@@ -286,4 +286,180 @@ describe('useResolvedMediaState', () => {
     expect(warmupCall?.options?.maxConcurrent).toBe(1)
     expect(warmupCall?.options?.stateScope).toBe('active-only')
   })
+
+  it('importBusy=true 时缩略图目标数限制为首屏可视区范围', () => {
+    const packageData = createPackageWithImages(30)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const allRefs: FocusedImageRef[] = Array.from({ length: 30 }).map((_, index) => ({
+      packageId: packageData.id,
+      imageIndex: index,
+    }))
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        importBusy: true,
+        actualCellWidth: 240,
+        actualMediaHeight: 180,
+        thumbnailQuality: 82,
+        thumbnailWidth: 512,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: null,
+        metadataImage: null,
+        focusedRef: null,
+        orderedRootScopedImageRefs: [],
+        fullscreenActive: false,
+        showNamesOnly: false,
+        refsInPage: allRefs,
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    const call =
+      vi
+        .mocked(useResolvedMediaUrls)
+        .mock.calls
+        .map((args) => args[0])
+        .find((args) => args.targets.some((t) => t.targetId.startsWith('image-thumb:'))) ?? null
+
+    const thumbTargets = call?.targets.filter((t) => t.targetId.startsWith('image-thumb:')) ?? []
+    expect(thumbTargets.length).toBeLessThan(30)
+    expect(thumbTargets.length).toBe(16)
+  })
+
+  it('importBusy=false 时不限制缩略图目标数', () => {
+    const packageData = createPackageWithImages(30)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const allRefs: FocusedImageRef[] = Array.from({ length: 30 }).map((_, index) => ({
+      packageId: packageData.id,
+      imageIndex: index,
+    }))
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        importBusy: false,
+        actualCellWidth: 240,
+        actualMediaHeight: 180,
+        thumbnailQuality: 82,
+        thumbnailWidth: 512,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: null,
+        metadataImage: null,
+        focusedRef: null,
+        orderedRootScopedImageRefs: [],
+        fullscreenActive: false,
+        showNamesOnly: false,
+        refsInPage: allRefs,
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    const call =
+      vi
+        .mocked(useResolvedMediaUrls)
+        .mock.calls
+        .map((args) => args[0])
+        .find((args) => args.targets.some((t) => t.targetId.startsWith('image-thumb:'))) ?? null
+
+    const thumbTargets = call?.targets.filter((t) => t.targetId.startsWith('image-thumb:')) ?? []
+    expect(thumbTargets.length).toBe(30)
+  })
+
+  it('importBusy=true 时 maxConcurrent 被限制为 2', () => {
+    const packageData = createPackageWithImages(4)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const allRefs: FocusedImageRef[] = Array.from({ length: 4 }).map((_, index) => ({
+      packageId: packageData.id,
+      imageIndex: index,
+    }))
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        importBusy: true,
+        actualCellWidth: 240,
+        actualMediaHeight: 180,
+        thumbnailQuality: 82,
+        thumbnailWidth: 512,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: null,
+        metadataImage: null,
+        focusedRef: null,
+        orderedRootScopedImageRefs: [],
+        fullscreenActive: false,
+        showNamesOnly: false,
+        refsInPage: allRefs,
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    const mainCall =
+      vi
+        .mocked(useResolvedMediaUrls)
+        .mock.calls
+        .map((args) => args[0])
+        .find((args) => args.targets.some((t) => t.targetId.startsWith('image-thumb:'))) ?? null
+
+    expect(mainCall?.options?.maxConcurrent).toBe(2)
+  })
+
+  it('importBusy=false 时 maxConcurrent 使用配置值', () => {
+    const packageData = createPackageWithImages(4)
+    const packageById = new Map<string, ImagePackage>([[packageData.id, packageData]])
+    const allRefs: FocusedImageRef[] = Array.from({ length: 4 }).map((_, index) => ({
+      packageId: packageData.id,
+      imageIndex: index,
+    }))
+
+    renderHook(() =>
+      useResolvedMediaState({
+        repository: {} as MediaRepository,
+        benchSettings: createBenchSettings(),
+        maxConcurrent: 8,
+        importBusy: false,
+        actualCellWidth: 240,
+        actualMediaHeight: 180,
+        thumbnailQuality: 82,
+        thumbnailWidth: 512,
+        thumbnailGenerationConcurrency: 4,
+        packageById,
+        focusedImage: null,
+        metadataImage: null,
+        focusedRef: null,
+        orderedRootScopedImageRefs: [],
+        fullscreenActive: false,
+        showNamesOnly: false,
+        refsInPage: allRefs,
+        focusedVideo: null,
+        focusedAudio: null,
+        focusedVideoCoverImageLocator: null,
+      }),
+    )
+
+    const mainCall =
+      vi
+        .mocked(useResolvedMediaUrls)
+        .mock.calls
+        .map((args) => args[0])
+        .find((args) => args.targets.some((t) => t.targetId.startsWith('image-thumb:'))) ?? null
+
+    expect(mainCall?.options?.maxConcurrent).toBe(8)
+  })
 })
+

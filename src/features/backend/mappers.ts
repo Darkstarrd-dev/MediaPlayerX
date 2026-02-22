@@ -3,7 +3,9 @@ import type {
   FocusedImageRefDto,
   ImageItemDto,
   ImagePackageDto,
+  ImageSourceLiteDto,
   LibrarySnapshotDto,
+  LibrarySnapshotLiteDto,
   MediaLocatorDto,
   ReadImageMetadataResponseDto,
   ReadImagePageResponseDto,
@@ -124,6 +126,49 @@ export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
         }
       : null,
     images: source.images.map(mapImageItemDto),
+  }
+}
+
+export function mapImageSourceLiteDto(source: ImageSourceLiteDto): ImagePackage {
+  return {
+    id: source.id,
+    packageName: source.package_name,
+    displayName: source.display_name,
+    absolutePath: source.absolute_path,
+    treePath: [...source.tree_path],
+    workTitle: source.work_title,
+    seriesId: source.series_id ?? '',
+    circle: source.circle,
+    author: source.author,
+    tags: [...source.tags],
+    mockGrade: source.mock_grade ?? undefined,
+    externalMetadata: source.external_metadata
+      ? {
+          sourceSite: source.external_metadata.source_site,
+          sourceUrl: source.external_metadata.source_url,
+          sourceRemoteId: source.external_metadata.source_remote_id,
+          sourceToken: source.external_metadata.source_token,
+          title: source.external_metadata.title,
+          titleJpn: source.external_metadata.title_jpn,
+          groupName: source.external_metadata.group_name,
+          groupNameJpn: source.external_metadata.group_name_jpn,
+          artist: source.external_metadata.artist,
+          artistJpn: source.external_metadata.artist_jpn,
+          posted: source.external_metadata.posted,
+          rating: source.external_metadata.rating ?? null,
+          favorited: source.external_metadata.favorited ?? null,
+          tags: { ...source.external_metadata.tags },
+          rawJson: source.external_metadata.raw_json,
+        }
+      : null,
+    sourceCover: source.source_cover
+      ? {
+          coverColor: source.source_cover.cover_color,
+          coverImagePath: source.source_cover.cover_image_path ?? null,
+          updatedAtMs: source.source_cover.updated_at_ms,
+        }
+      : null,
+    images: [],
   }
 }
 
@@ -254,6 +299,23 @@ export function mapLibrarySnapshotDto(snapshot: LibrarySnapshotDto): LibrarySnap
     videos: snapshot.videos.map(mapVideoItemDto),
     audios: (snapshot.audios ?? []).map(mapAudioItemDto),
   }
+}
+
+export function mapLibrarySnapshotLiteDto(snapshot: LibrarySnapshotLiteDto): LibrarySnapshotViewModel {
+  return {
+    imagePackages: snapshot.image_packages.map(mapImageSourceLiteDto),
+    imageDirectories: snapshot.image_directories.map(mapImageSourceLiteDto),
+    videos: snapshot.videos.map(mapVideoItemDto),
+    audios: (snapshot.audios ?? []).map(mapAudioItemDto),
+  }
+}
+
+export function mapLibrarySnapshotAnyDto(snapshot: LibrarySnapshotDto | LibrarySnapshotLiteDto): LibrarySnapshotViewModel {
+  const firstImageSource = snapshot.image_packages[0] ?? snapshot.image_directories[0]
+  if (firstImageSource && 'images' in firstImageSource) {
+    return mapLibrarySnapshotDto(snapshot as LibrarySnapshotDto)
+  }
+  return mapLibrarySnapshotLiteDto(snapshot as LibrarySnapshotLiteDto)
 }
 
 export function mapImageSidebarTreeDto(response: ReadImageSidebarTreeResponseDto): ImageSidebarTreeViewModel {

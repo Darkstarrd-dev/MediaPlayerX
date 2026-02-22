@@ -86,6 +86,22 @@ export const imagePackageDtoSchema = z.object({
   images: z.array(imageItemDtoSchema),
 });
 
+export const imageSourceLiteDtoSchema = z.object({
+  id: z.string().min(1),
+  package_name: z.string().min(1),
+  display_name: z.string().min(1),
+  absolute_path: z.string().min(1),
+  tree_path: z.array(z.string().min(1)).min(1),
+  work_title: z.string().min(1),
+  series_id: z.string().default(""),
+  circle: z.string().min(1),
+  author: z.string().min(1),
+  tags: z.array(z.string()),
+  mock_grade: z.number().int().min(0).max(5).nullable(),
+  external_metadata: imageSourceExternalMetadataDtoSchema.nullable().optional(),
+  source_cover: imageSourceCoverDtoSchema.nullable().optional(),
+});
+
 export const videoItemDtoSchema = z.object({
   id: z.string().min(1),
   file_name: z.string().min(1),
@@ -169,6 +185,13 @@ export const sidebarNodeDtoSchema: z.ZodType<{
 export const librarySnapshotDtoSchema = z.object({
   image_packages: z.array(imagePackageDtoSchema),
   image_directories: z.array(imagePackageDtoSchema),
+  videos: z.array(videoItemDtoSchema),
+  audios: z.array(audioItemDtoSchema).optional(),
+});
+
+export const librarySnapshotLiteDtoSchema = z.object({
+  image_packages: z.array(imageSourceLiteDtoSchema),
+  image_directories: z.array(imageSourceLiteDtoSchema),
   videos: z.array(videoItemDtoSchema),
   audios: z.array(audioItemDtoSchema).optional(),
 });

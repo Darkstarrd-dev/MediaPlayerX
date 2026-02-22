@@ -5,6 +5,7 @@ import {
   enqueueImportTaskRequestSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
+  librarySnapshotLiteDtoSchema,
   mediaAccessAuditResponseSchema,
   pickImportPathsRequestSchema,
   pickImportPathsResponseSchema,
@@ -129,6 +130,10 @@ const backendApi = {
   readLibrarySnapshot: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readLibrarySnapshot)
     return librarySnapshotDtoSchema.parse(response)
+  },
+  readLibrarySnapshotLite: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readLibrarySnapshotLite)
+    return librarySnapshotLiteDtoSchema.parse(response)
   },
   readImageSidebarTree: async (request: unknown) => {
     const parsed = readImageSidebarTreeRequestSchema.parse(request)

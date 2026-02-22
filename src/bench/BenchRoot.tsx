@@ -47,6 +47,33 @@ function isSkeletonMode(value: string): value is ImageLoadingSkeletonMode {
   return value === 'off' || value === 'replace'
 }
 
+function parseOptionalBoolean(value: unknown): boolean | undefined {
+  if (typeof value === 'boolean') {
+    return value
+  }
+  if (typeof value === 'number') {
+    if (value === 1) {
+      return true
+    }
+    if (value === 0) {
+      return false
+    }
+    return undefined
+  }
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  const normalized = value.trim().toLowerCase()
+  if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on') {
+    return true
+  }
+  if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') {
+    return false
+  }
+  return undefined
+}
+
 function parseResolvedMediaTuning(config: Record<string, unknown>): ResolvedMediaTuning {
   const raw = isRecord(config.resolvedMedia) ? config.resolvedMedia : {}
   const applyModeRaw = typeof raw.applyMode === 'string' ? raw.applyMode : typeof raw.apply_mode === 'string' ? raw.apply_mode : ''
@@ -101,6 +128,9 @@ function parseE2eTuning(config: Record<string, unknown>): UiBenchE2eTuning {
       : typeof raw.max_duration_ms === 'number'
         ? raw.max_duration_ms
         : null
+  const waitImportCompletionRaw =
+    parseOptionalBoolean(raw.waitImportCompletion ?? raw.wait_import_completion) ??
+    parseOptionalBoolean(config.waitImportCompletion ?? config.wait_import_completion)
 
   return {
     importPaths,
@@ -115,6 +145,7 @@ function parseE2eTuning(config: Record<string, unknown>): UiBenchE2eTuning {
     warmupMs: typeof warmupRaw === 'number' && Number.isFinite(warmupRaw) && warmupRaw >= 0 ? Math.round(warmupRaw) : undefined,
     maxDurationMs:
       typeof maxDurationRaw === 'number' && Number.isFinite(maxDurationRaw) && maxDurationRaw > 0 ? Math.round(maxDurationRaw) : undefined,
+    waitImportCompletion: waitImportCompletionRaw,
   }
 }
 
@@ -149,6 +180,8 @@ function BenchRoot({ benchMode }: BenchRootProps) {
         mode,
         candidateId,
         runTag,
+        librarySnapshotLite: parseOptionalBoolean(config.librarySnapshotLite ?? config.library_snapshot_lite),
+        importRefreshThrottle: parseOptionalBoolean(config.importRefreshThrottle ?? config.import_refresh_throttle),
         resolvedMedia: parseResolvedMediaTuning(config),
         imageLoadingSkeleton: parseSkeletonTuning(config),
         reactProfiler: Boolean(config.reactProfiler ?? true),

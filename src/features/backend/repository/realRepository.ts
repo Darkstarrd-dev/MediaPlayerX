@@ -2,6 +2,7 @@ import {
   clearDatabaseResponseSchema,
   enqueueImportTaskResponseSchema,
   librarySnapshotDtoSchema,
+  librarySnapshotLiteDtoSchema,
   mediaAccessAuditResponseSchema,
   pickImportPathsResponseSchema,
   pickFilePathResponseSchema,
@@ -114,6 +115,7 @@ import {
   type ReadRuntimeCapabilitiesResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
+  type LibrarySnapshotLiteDto,
   type ReadImportTasksResponseDto,
   type ReadImageMetadataRequestDto,
   type ReadImageMetadataResponseDto,
@@ -215,6 +217,14 @@ export class RealMediaRepository implements MediaRepository {
     return withIpcTiming('readLibrarySnapshot', async () => {
       const response = await withAbort(api.readLibrarySnapshot(), options)
       return librarySnapshotDtoSchema.parse(response)
+    })
+  }
+
+  async readLibrarySnapshotLite(options?: RepositoryRequestOptions): Promise<LibrarySnapshotLiteDto> {
+    const readLibrarySnapshotLite = requireBackendMethod('readLibrarySnapshotLite')
+    return withIpcTiming('readLibrarySnapshotLite', async () => {
+      const response = await withAbort(readLibrarySnapshotLite(), options)
+      return librarySnapshotLiteDtoSchema.parse(response)
     })
   }
 

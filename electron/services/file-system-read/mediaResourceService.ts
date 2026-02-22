@@ -38,7 +38,6 @@ interface MediaResourceServiceOptions {
   mediaTokenService: MediaTokenService
   ensureSnapshotLoaded: () => Promise<unknown>
   refreshArchiveIndexesForPaths: (archivePaths: Iterable<string>) => Promise<void>
-  markInteractiveRead: () => void
   buildMediaAccessContext: () => MediaAccessGuardContext
   ensureRuntimeDependencies: () => Promise<RuntimeDependencySnapshot>
   readImageBufferForThumbnail: (locator: MediaLocatorDto) => Promise<Buffer>
@@ -148,7 +147,6 @@ export class MediaResourceService {
   async resolveMediaResource(
     request: ResolveMediaResourceRequestDto,
   ): Promise<ResolveMediaResourceResponseDto> {
-    this.options.markInteractiveRead()
     await this.options.ensureSnapshotLoaded()
     this.options.mediaTokenService.cleanupExpiredTokens()
 

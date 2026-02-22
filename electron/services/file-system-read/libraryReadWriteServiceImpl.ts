@@ -180,6 +180,15 @@ function filterHiddenImagesFromSources(
   );
 }
 
+function ensureNotAborted(signal?: AbortSignal): void {
+  if (!signal) {
+    return;
+  }
+  if (signal.aborted) {
+    throw new Error("read request aborted");
+  }
+}
+
 interface LibraryReadWriteServiceOptions {
   database: MediaLibraryDatabase;
   ffmpegBin: string;
@@ -237,11 +246,15 @@ export class LibraryReadWriteService {
 
   async readImageSidebarTree(
     request: ReadImageSidebarTreeRequestDto,
+    signal?: AbortSignal,
   ): Promise<ReadImageSidebarTreeResponseDto> {
     this.options.markInteractiveRead();
+    ensureNotAborted(signal);
     const snapshot = await this.options.ensureSnapshotLoaded();
+    ensureNotAborted(signal);
     const includeHidden = request.include_hidden ?? false;
     const filtered = filterLibrarySources(snapshot, request);
+    ensureNotAborted(signal);
     const filteredPackages = filterHiddenImagesFromSources(
       filtered.imagePackages,
       includeHidden,
@@ -250,6 +263,7 @@ export class LibraryReadWriteService {
       filtered.imageDirectories,
       includeHidden,
     );
+    ensureNotAborted(signal);
 
     return readImageSidebarTreeResponseSchema.parse({
       image_packages: filteredPackages,
@@ -260,14 +274,18 @@ export class LibraryReadWriteService {
 
   async readImagePage(
     request: ReadImagePageRequestDto,
+    signal?: AbortSignal,
   ): Promise<ReadImagePageResponseDto> {
     this.options.markInteractiveRead();
+    ensureNotAborted(signal);
     const snapshot = await this.options.ensureSnapshotLoaded();
+    ensureNotAborted(signal);
     const includeHidden = request.include_hidden ?? false;
     const filtered = filterLibrarySources(snapshot, {
       feature_filter: request.feature_filter,
       grade_overrides: request.grade_overrides,
     });
+    ensureNotAborted(signal);
 
     const allSources = [
       ...filtered.imagePackages,
@@ -281,6 +299,7 @@ export class LibraryReadWriteService {
       allSources.find((source) => source.images.length > 0) ??
       allSources[0] ??
       null;
+    ensureNotAborted(signal);
 
     if (
       request.source_id &&
@@ -308,6 +327,7 @@ export class LibraryReadWriteService {
       selectedSource,
       includeHidden,
     );
+    ensureNotAborted(signal);
     const totalItems = selectedSourceVisible.images.length;
     const pageSize = request.show_names_only
       ? Math.max(1, totalItems)
@@ -325,6 +345,7 @@ export class LibraryReadWriteService {
         package_id: selectedSource.id,
         image_index: pageStart + index,
       }));
+    ensureNotAborted(signal);
 
     return readImagePageResponseSchema.parse({
       source_id: selectedSource.id,
