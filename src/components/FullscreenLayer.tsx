@@ -60,6 +60,110 @@ function resolveMediaPathForFooter(item: { mediaLocator: ImageItem['mediaLocator
   return `${locator.archivePath} :: ${locator.entryName}`
 }
 
+function replacePathExtension(pathLike: string, nextExtension: string): string {
+  const normalizedNextExtension = nextExtension.startsWith('.') ? nextExtension : `.${nextExtension}`
+  const slashIndex = Math.max(pathLike.lastIndexOf('/'), pathLike.lastIndexOf('\\'))
+  const dotIndex = pathLike.lastIndexOf('.')
+  if (dotIndex <= slashIndex) {
+    return `${pathLike}${normalizedNextExtension}`
+  }
+  return `${pathLike.slice(0, dotIndex)}${normalizedNextExtension}`
+}
+
+function resolveConvertedImagePathForFooter(
+  image: ImageItem,
+  targetFormat: 'webp' | 'jpeg' | 'png' | 'avif',
+): string {
+  const targetExtension = targetFormat === 'jpeg' ? '.jpg' : `.${targetFormat}`
+  const locator = image.mediaLocator
+  if (locator.kind === 'filesystem') {
+    return replacePathExtension(locator.absolutePath, targetExtension)
+  }
+  const nextEntryName = replacePathExtension(locator.entryName, targetExtension)
+  return `${locator.archivePath} :: ${nextEntryName}`
+}
+
+function estimateDataUrlSizeKb(dataUrl: string | null | undefined): number {
+  if (!dataUrl || !dataUrl.startsWith('data:')) {
+    return 0
+  }
+  const commaIndex = dataUrl.indexOf(',')
+  if (commaIndex <= 0) {
+    return 0
+  }
+  const metadata = dataUrl.slice(0, commaIndex)
+  const payload = dataUrl.slice(commaIndex + 1).replace(/\s/g, '')
+  if (metadata.includes(';base64')) {
+    const padding = payload.endsWith('==') ? 2 : payload.endsWith('=') ? 1 : 0
+    const bytes = Math.max(0, Math.floor((payload.length * 3) / 4) - padding)
+    return bytes / 1024
+  }
+  try {
+    const decoded = decodeURIComponent(payload)
+    return new TextEncoder().encode(decoded).byteLength / 1024
+  } catch {
+    return payload.length / 1024
+  }
+}
+
+function resolveDataUrlMimeType(dataUrl: string | null | undefined): string | null {
+  if (!dataUrl || !dataUrl.startsWith('data:')) {
+    return null
+  }
+  const commaIndex = dataUrl.indexOf(',')
+  if (commaIndex <= 0) {
+    return null
+  }
+  const metadata = dataUrl.slice(5, commaIndex)
+  const semicolonIndex = metadata.indexOf(';')
+  const mimeType = semicolonIndex >= 0 ? metadata.slice(0, semicolonIndex) : metadata
+  return mimeType.trim().toLowerCase() || null
+}
+
+function resolveFormatLabelByMimeType(mimeType: string | null): string | null {
+  if (!mimeType) {
+    return null
+  }
+  if (mimeType === 'image/jpeg') {
+    return 'JPEG'
+  }
+  if (mimeType === 'image/png') {
+    return 'PNG'
+  }
+  if (mimeType === 'image/webp') {
+    return 'WEBP'
+  }
+  if (mimeType === 'image/avif') {
+    return 'AVIF'
+  }
+  return mimeType.toUpperCase()
+}
+
+function resolveImageConvertTargetSize(
+  sourceWidth: number,
+  sourceHeight: number,
+  scaleFactor: number,
+  longestEdgePx: number | null,
+): { width: number; height: number } {
+  const safeSourceWidth = Math.max(1, Math.round(sourceWidth))
+  const safeSourceHeight = Math.max(1, Math.round(sourceHeight))
+
+  if (longestEdgePx != null && Number.isFinite(longestEdgePx) && longestEdgePx > 0) {
+    const sourceLongestEdge = Math.max(safeSourceWidth, safeSourceHeight)
+    const resizeRatio = Math.min(1, longestEdgePx / sourceLongestEdge)
+    return {
+      width: Math.max(1, Math.round(safeSourceWidth * resizeRatio)),
+      height: Math.max(1, Math.round(safeSourceHeight * resizeRatio)),
+    }
+  }
+
+  const safeScaleFactor = Math.max(0.1, Math.min(1, scaleFactor))
+  return {
+    width: Math.max(1, Math.round(safeSourceWidth * safeScaleFactor)),
+    height: Math.max(1, Math.round(safeSourceHeight * safeScaleFactor)),
+  }
+}
+
 function formatImageSizeForFooter(sizeKb: number): string {
   if (!Number.isFinite(sizeKb) || sizeKb <= 0) {
     return '-'
@@ -114,6 +218,13 @@ export interface FullscreenLayerProps {
   fullscreenVideoControlsMaxWidth: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
+  imageConvertPreviewMode?: boolean
+  imageConvertPreviewScale?: number
+  imageConvertPreviewLongestEdgePx?: number | null
+  imageConvertPreviewFormat?: 'webp' | 'jpeg' | 'png' | 'avif'
+  imageConvertPreviewQuality?: number
+  imageConvertPreviewRenderedSrc?: string | null
+  imageConvertPreviewError?: string | null
   onSetFooterVisible: (visible: boolean) => void
   onSetDisplay: (display: 'dual' | 'video-only' | 'image-only') => void
   onToggleSwapSides: () => void
@@ -125,6 +236,11 @@ export interface FullscreenLayerProps {
   onNextPackage: () => void
   onToggleAutoplay: () => void
   onSetAutoplayInterval: (seconds: number) => void
+  onChangeImageConvertPreviewScale?: (value: number) => void
+  onChangeImageConvertPreviewFormat?: (value: 'webp' | 'jpeg' | 'png' | 'avif') => void
+  onChangeImageConvertPreviewQuality?: (value: number) => void
+  onConfirmImageConvertPreview?: () => void
+  onCancelImageConvertPreview?: () => void
   onToggleVideoPlay: () => void
   onPrevVideo: () => void
   onNextVideo: () => void
@@ -183,6 +299,13 @@ function FullscreenLayer({
   fullscreenVideoControlsMaxWidth,
   autoPlayEnabled,
   autoPlayInterval,
+  imageConvertPreviewMode = false,
+  imageConvertPreviewScale = 1,
+  imageConvertPreviewLongestEdgePx = null,
+  imageConvertPreviewFormat = 'webp',
+  imageConvertPreviewQuality = 80,
+  imageConvertPreviewRenderedSrc = null,
+  imageConvertPreviewError = null,
   onSetFooterVisible,
   onSetDisplay,
   onToggleSwapSides,
@@ -194,6 +317,11 @@ function FullscreenLayer({
   onNextPackage,
   onToggleAutoplay,
   onSetAutoplayInterval,
+  onChangeImageConvertPreviewScale,
+  onChangeImageConvertPreviewFormat,
+  onChangeImageConvertPreviewQuality,
+  onConfirmImageConvertPreview,
+  onCancelImageConvertPreview,
   onToggleVideoPlay,
   onPrevVideo,
   onNextVideo,
@@ -221,11 +349,14 @@ function FullscreenLayer({
   const videoPaneRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const hideVideoControlsTimerRef = useRef<number | null>(null)
+  const imageConvertPreviewActive = mode === 'image' && imageConvertPreviewMode
+  const effectiveFullscreenDisplay = imageConvertPreviewActive ? 'image-only' : fullscreenDisplay
+  const [imageConvertCompareSplit, setImageConvertCompareSplit] = useState(0.5)
 
   const { imageViewportSize, videoViewportSize } = useFullscreenViewportSize({
     fullscreenActive,
     mode,
-    fullscreenDisplay,
+    fullscreenDisplay: effectiveFullscreenDisplay,
     fullscreenSwapped,
     imagePaneRef,
     videoPaneRef,
@@ -248,10 +379,10 @@ function FullscreenLayer({
     setDisplayedImageNaturalSize(null)
   }, [displayedImageSrc])
 
-  const singlePane = fullscreenDisplay === 'video-only' ? 'video' : fullscreenDisplay === 'image-only' ? 'image' : null
-  const focusedPane: PaneKey = fullscreenDisplay === 'dual' ? (fullscreenVideoFocus ? 'video' : 'image') : (singlePane ?? 'image')
-  const zoomEnabled = fullscreenDisplay !== 'dual'
-  const autoplayEnabledForFocus = focusedPane === 'image' && (fullscreenDisplay === 'dual' || mode === 'image')
+  const singlePane = effectiveFullscreenDisplay === 'video-only' ? 'video' : effectiveFullscreenDisplay === 'image-only' ? 'image' : null
+  const focusedPane: PaneKey = effectiveFullscreenDisplay === 'dual' ? (fullscreenVideoFocus ? 'video' : 'image') : (singlePane ?? 'image')
+  const zoomEnabled = effectiveFullscreenDisplay !== 'dual'
+  const autoplayEnabledForFocus = !imageConvertPreviewActive && focusedPane === 'image' && (effectiveFullscreenDisplay === 'dual' || mode === 'image')
   const clampedVideoTime = clamp(videoTime, 0, Math.max(0, durationSec))
 
   const imageAspect = displayedImageAspect ?? resolveMediaAspect(focusedImage?.width ?? 0, focusedImage?.height ?? 0, 1)
@@ -260,23 +391,23 @@ function FullscreenLayer({
   const fallbackViewportWidth = fullscreenViewport.width
   const fallbackViewportHeight = fullscreenViewport.height
   const effectiveImageViewportSize = useMemo(() => {
-    if (fullscreenDisplay === 'image-only') {
+    if (effectiveFullscreenDisplay === 'image-only') {
       return { width: fallbackViewportWidth, height: fallbackViewportHeight }
     }
     if (imageViewportSize.width <= 64 || imageViewportSize.height <= 64) {
       return { width: fallbackViewportWidth, height: fallbackViewportHeight }
     }
     return imageViewportSize
-  }, [fallbackViewportHeight, fallbackViewportWidth, fullscreenDisplay, imageViewportSize])
+  }, [effectiveFullscreenDisplay, fallbackViewportHeight, fallbackViewportWidth, imageViewportSize])
   const effectiveVideoViewportSize = useMemo(() => {
-    if (fullscreenDisplay === 'video-only') {
+    if (effectiveFullscreenDisplay === 'video-only') {
       return { width: fallbackViewportWidth, height: fallbackViewportHeight }
     }
     if (videoViewportSize.width <= 64 || videoViewportSize.height <= 64) {
       return { width: fallbackViewportWidth, height: fallbackViewportHeight }
     }
     return videoViewportSize
-  }, [fallbackViewportHeight, fallbackViewportWidth, fullscreenDisplay, videoViewportSize])
+  }, [effectiveFullscreenDisplay, fallbackViewportHeight, fallbackViewportWidth, videoViewportSize])
 
   const imageGeometry = useMemo(
     () => computeMediaGeometry(effectiveImageViewportSize, imageAspect, imageTransform.zoom),
@@ -378,7 +509,7 @@ function FullscreenLayer({
 
       event.preventDefault()
 
-      const stepTargetPane: PaneKey = fullscreenDisplay === 'dual' ? pane : focusedPane
+      const stepTargetPane: PaneKey = effectiveFullscreenDisplay === 'dual' ? pane : focusedPane
       if (event.deltaY > 0) {
         if (stepTargetPane === 'video') {
           onNextVideo()
@@ -397,7 +528,7 @@ function FullscreenLayer({
     [
       adjustPaneZoom,
       focusedPane,
-      fullscreenDisplay,
+      effectiveFullscreenDisplay,
       onNextImage,
       onNextVideo,
       onPrevImage,
@@ -410,7 +541,7 @@ function FullscreenLayer({
   const startPaneDrag = useCallback(
     (pane: PaneKey, event: ReactMouseEvent<HTMLElement>) => {
       const canDragSinglePane = zoomEnabled && Boolean(singlePane) && pane === singlePane
-      const canDragDualVideo = fullscreenDisplay === 'dual' && pane === 'video'
+      const canDragDualVideo = effectiveFullscreenDisplay === 'dual' && pane === 'video'
 
       if (event.button !== 0 || (!canDragSinglePane && !canDragDualVideo)) {
         return
@@ -453,12 +584,12 @@ function FullscreenLayer({
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [fullscreenDisplay, imageTransform, setPaneAlign, singlePane, updatePaneTransform, videoTransform, zoomEnabled],
+    [effectiveFullscreenDisplay, imageTransform, setPaneAlign, singlePane, updatePaneTransform, videoTransform, zoomEnabled],
   )
 
   const startSplitDrag = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
-      if (event.button !== 0 || fullscreenDisplay !== 'dual') {
+      if (event.button !== 0 || effectiveFullscreenDisplay !== 'dual') {
         return
       }
 
@@ -495,16 +626,19 @@ function FullscreenLayer({
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [fullscreenDisplay, fullscreenSwapped, onSetSplit],
+    [effectiveFullscreenDisplay, fullscreenSwapped, onSetSplit],
   )
 
   const toggleDualDisplay = useCallback(() => {
-    if (fullscreenDisplay === 'dual') {
-      onSetDisplay(fullscreenEntryDisplay)
+    if (effectiveFullscreenDisplay === 'dual') {
+      onSetDisplay(imageConvertPreviewActive ? 'image-only' : fullscreenEntryDisplay)
+      return
+    }
+    if (imageConvertPreviewActive) {
       return
     }
     onSetDisplay('dual')
-  }, [fullscreenDisplay, fullscreenEntryDisplay, onSetDisplay])
+  }, [effectiveFullscreenDisplay, fullscreenEntryDisplay, imageConvertPreviewActive, onSetDisplay])
 
   const stepFocusedPane = useCallback(
     (delta: -1 | 1) => {
@@ -585,7 +719,7 @@ function FullscreenLayer({
       return
     }
 
-    if (fullscreenDisplay !== 'dual') {
+    if (effectiveFullscreenDisplay !== 'dual') {
       return
     }
 
@@ -594,7 +728,13 @@ function FullscreenLayer({
     setImageTransform({ ...DEFAULT_PANE_TRANSFORM })
     setVideoTransform({ ...DEFAULT_PANE_TRANSFORM })
     setDraggingPane(null)
-  }, [fullscreenActive, fullscreenDisplay])
+  }, [effectiveFullscreenDisplay, fullscreenActive])
+
+  useEffect(() => {
+    if (!imageConvertPreviewActive) {
+      setImageConvertCompareSplit(0.5)
+    }
+  }, [imageConvertPreviewActive])
 
   useLayoutEffect(() => {
     setImageTransform((previous) => {
@@ -620,7 +760,7 @@ function FullscreenLayer({
     video.muted = videoMuted
     video.volume = clamp(videoVolume / 100, 0, 1)
 
-    const videoVisible = fullscreenDisplay === 'video-only' || fullscreenDisplay === 'dual'
+    const videoVisible = effectiveFullscreenDisplay === 'video-only' || effectiveFullscreenDisplay === 'dual'
     if (!fullscreenActive || !videoVisible || !focusedVideoSrc) {
       video.pause()
       return
@@ -635,7 +775,7 @@ function FullscreenLayer({
     } else {
       video.pause()
     }
-  }, [clampedVideoTime, focusedVideoSrc, fullscreenActive, fullscreenDisplay, videoMuted, videoPlaying, videoRate, videoVolume])
+  }, [clampedVideoTime, effectiveFullscreenDisplay, focusedVideoSrc, fullscreenActive, videoMuted, videoPlaying, videoRate, videoVolume])
 
   useEffect(() => {
     const video = videoRef.current
@@ -664,7 +804,7 @@ function FullscreenLayer({
     dualMaxImageRatio = fallbackRatio
   }
 
-  const imageRatio = fullscreenDisplay === 'dual'
+  const imageRatio = effectiveFullscreenDisplay === 'dual'
     ? clamp(fullscreenSplit, dualMinImageRatio, dualMaxImageRatio)
     : clamp(fullscreenSplit, MIN_SPLIT, MAX_SPLIT)
   const videoRatio = 1 - imageRatio
@@ -697,29 +837,54 @@ function FullscreenLayer({
   const controlsPreferredWidth = Math.max(120, videoGeometry.width - 16)
   const videoControlsWidthByGeometry = Math.min(controlsPreferredWidth, controlsMaxWidth)
   const videoControlsWidth =
-    fullscreenDisplay === 'dual'
+    effectiveFullscreenDisplay === 'dual'
       ? dualVideoControlsWidth
-      : fullscreenDisplay === 'video-only'
+      : effectiveFullscreenDisplay === 'video-only'
         ? singleControlsWidth
         : videoControlsWidthByGeometry
   const controlsMaxLeft = Math.max(8, effectiveVideoViewportSize.width - videoControlsWidth - 8)
   const centeredControlsLeft = Math.round((effectiveVideoViewportSize.width - videoControlsWidth) / 2)
   const videoControlsLeft = clamp(centeredControlsLeft, 8, controlsMaxLeft)
-  const imageControlsCompact = fullscreenDisplay === 'dual' && dualImageControlsWidth < DUAL_IMAGE_CONTROLS_COMPACT_WIDTH
-  const imageControlsHideRightGroup = fullscreenDisplay === 'dual' && dualImageControlsWidth < DUAL_IMAGE_CONTROLS_MIN_WITH_RIGHT_GROUP
-  const videoControlsCompact = fullscreenDisplay === 'dual' && dualVideoControlsWidth < DUAL_VIDEO_CONTROLS_COMPACT_WIDTH
-  const videoControlsHideLeftGroup = fullscreenDisplay === 'dual' && dualVideoControlsWidth < DUAL_VIDEO_CONTROLS_MIN_WITH_LEFT_GROUP
+  const imageControlsCompact = effectiveFullscreenDisplay === 'dual' && dualImageControlsWidth < DUAL_IMAGE_CONTROLS_COMPACT_WIDTH
+  const imageControlsHideRightGroup = effectiveFullscreenDisplay === 'dual' && dualImageControlsWidth < DUAL_IMAGE_CONTROLS_MIN_WITH_RIGHT_GROUP
+  const videoControlsCompact = effectiveFullscreenDisplay === 'dual' && dualVideoControlsWidth < DUAL_VIDEO_CONTROLS_COMPACT_WIDTH
+  const videoControlsHideLeftGroup = effectiveFullscreenDisplay === 'dual' && dualVideoControlsWidth < DUAL_VIDEO_CONTROLS_MIN_WITH_LEFT_GROUP
   const fullscreenControlsCssVars = {
     '--mpx-fullscreen-controls-max-width': `${singleControlsWidth}px`,
     '--mpx-fullscreen-controls-width': `${singleControlsWidth}px`,
   } as CSSProperties
 
-  const imagePaneClassName = `fullscreen-pane fullscreen-image${fullscreenDisplay === 'dual' && !fullscreenVideoFocus ? ' is-pane-focus' : ''}`
-  const videoPaneClassName = `fullscreen-pane fullscreen-video${fullscreenDisplay === 'dual' && fullscreenVideoFocus ? ' is-pane-focus' : ''}`
+  const imagePaneClassName = `fullscreen-pane fullscreen-image${effectiveFullscreenDisplay === 'dual' && !fullscreenVideoFocus ? ' is-pane-focus' : ''}`
+  const videoPaneClassName = `fullscreen-pane fullscreen-video${effectiveFullscreenDisplay === 'dual' && fullscreenVideoFocus ? ' is-pane-focus' : ''}`
 
   const footerImageInfo = (() => {
     if (!focusedImage) {
       return t('ui.fullscreen.noImage')
+    }
+
+    if (imageConvertPreviewActive) {
+      const sourceWidth = displayedImageNaturalSize?.width ?? focusedImage.width
+      const sourceHeight = displayedImageNaturalSize?.height ?? focusedImage.height
+      const convertedSize = resolveImageConvertTargetSize(
+        sourceWidth,
+        sourceHeight,
+        imageConvertPreviewScale,
+        imageConvertPreviewLongestEdgePx,
+      )
+      const convertedWidth = convertedSize.width
+      const convertedHeight = convertedSize.height
+      const resolutionText = convertedWidth > 0 && convertedHeight > 0 ? `${convertedWidth} x ${convertedHeight}` : '-'
+      const convertedPath = resolveConvertedImagePathForFooter(focusedImage, imageConvertPreviewFormat)
+      const convertedSizeKb = estimateDataUrlSizeKb(imageConvertPreviewRenderedSrc)
+      const actualFormatLabel = resolveFormatLabelByMimeType(resolveDataUrlMimeType(imageConvertPreviewRenderedSrc))
+      const requestedFormatLabel = imageConvertPreviewFormat.toUpperCase()
+      const formatText = actualFormatLabel && actualFormatLabel !== requestedFormatLabel
+        ? `${requestedFormatLabel}->${actualFormatLabel}`
+        : requestedFormatLabel
+      const previewParamsText = imageConvertPreviewLongestEdgePx != null
+        ? `LE${Math.round(imageConvertPreviewLongestEdgePx)} F${formatText} Q${Math.round(imageConvertPreviewQuality)}`
+        : `S${imageConvertPreviewScale.toFixed(1)} F${formatText} Q${Math.round(imageConvertPreviewQuality)}`
+      return `${previewParamsText} | ${convertedPath} | ${resolutionText} | ${formatImageSizeForFooter(convertedSizeKb)}`
     }
 
     const width = displayedImageNaturalSize?.width ?? focusedImage.width
@@ -735,7 +900,7 @@ function FullscreenLayer({
     ? (
         <FullscreenFooter
           mode={mode}
-          fullscreenDisplay={fullscreenDisplay}
+          fullscreenDisplay={effectiveFullscreenDisplay}
           footerInfoLeftText={footerImageInfo}
           footerInfoRightText={null}
           autoplayEnabledForFocus={autoplayEnabledForFocus}
@@ -762,9 +927,19 @@ function FullscreenLayer({
           onResetSinglePane={resetSinglePane}
           onHoverStateChange={setFooterHovering}
           onExit={onExit}
-          controlsWidth={fullscreenDisplay === 'dual' ? dualImageControlsWidth : undefined}
+          controlsWidth={effectiveFullscreenDisplay === 'dual' ? dualImageControlsWidth : undefined}
           compact={imageControlsCompact}
           hideRightGroup={imageControlsHideRightGroup}
+          imageConvertPreviewMode={imageConvertPreviewActive}
+          imageConvertPreviewScale={imageConvertPreviewScale}
+          imageConvertPreviewLongestEdgePx={imageConvertPreviewLongestEdgePx}
+          imageConvertPreviewFormat={imageConvertPreviewFormat}
+          imageConvertPreviewQuality={imageConvertPreviewQuality}
+          onChangeImageConvertPreviewScale={onChangeImageConvertPreviewScale}
+          onChangeImageConvertPreviewFormat={onChangeImageConvertPreviewFormat}
+          onChangeImageConvertPreviewQuality={onChangeImageConvertPreviewQuality}
+          onConfirmImageConvertPreview={onConfirmImageConvertPreview}
+          onCancelImageConvertPreview={onCancelImageConvertPreview}
         />
       )
     : null
@@ -773,9 +948,9 @@ function FullscreenLayer({
     <FullscreenImagePane
       paneRef={imagePaneRef}
       className={imagePaneClassName}
-      dataSlot={fullscreenDisplay === 'dual' ? 'fs-dual-pane-image' : undefined}
+      dataSlot={effectiveFullscreenDisplay === 'dual' ? 'fs-dual-pane-image' : undefined}
       flex={imageRatio}
-      fullscreenDisplay={fullscreenDisplay}
+      fullscreenDisplay={effectiveFullscreenDisplay}
       singlePane={singlePane}
       draggingPane={draggingPane}
       imageGeometry={imageGeometry}
@@ -783,6 +958,11 @@ function FullscreenLayer({
       displayedImageSrc={displayedImageSrc}
       focusedImageOrdinal={focusedImage?.ordinal ?? null}
       controlsRows={imageControls}
+      imageConvertPreviewMode={imageConvertPreviewActive}
+      imageConvertPreviewSrc={imageConvertPreviewRenderedSrc}
+      imageConvertPreviewError={imageConvertPreviewError}
+      imageConvertCompareSplit={imageConvertCompareSplit}
+      onSetImageConvertCompareSplit={setImageConvertCompareSplit}
       onSetVideoFocus={onSetVideoFocus}
       onWheel={(event) => handlePaneWheel('image', event)}
       onMouseDown={(event) => startPaneDrag('image', event)}
@@ -829,7 +1009,7 @@ function FullscreenLayer({
       onSelectVideo={onSelectVideo}
       onSaveCover={onSaveCover}
       onExit={onExit}
-      controlsWidth={fullscreenDisplay === 'dual' ? dualVideoControlsWidth : undefined}
+      controlsWidth={effectiveFullscreenDisplay === 'dual' ? dualVideoControlsWidth : undefined}
       compact={videoControlsCompact}
       hideLeftGroup={videoControlsHideLeftGroup}
     />
@@ -840,9 +1020,9 @@ function FullscreenLayer({
       paneRef={videoPaneRef}
       videoRef={videoRef}
       className={videoPaneClassName}
-      dataSlot={fullscreenDisplay === 'dual' ? 'fs-dual-pane-video' : undefined}
+      dataSlot={effectiveFullscreenDisplay === 'dual' ? 'fs-dual-pane-video' : undefined}
       flex={videoRatio}
-      fullscreenDisplay={fullscreenDisplay}
+      fullscreenDisplay={effectiveFullscreenDisplay}
       singlePane={singlePane}
       draggingPane={draggingPane}
       videoGeometry={videoGeometry}
@@ -894,7 +1074,7 @@ function FullscreenLayer({
     >
       <span hidden data-slot="fs-layer-root" />
       <div className="fullscreen-content" data-slot="fs-layer-content" ref={contentRef}>
-        {fullscreenDisplay === 'dual' ? (
+        {effectiveFullscreenDisplay === 'dual' ? (
           <>
             <span hidden data-slot="fs-dual-root" />
             <span hidden data-slot="fs-dual-pane-image" />
@@ -915,7 +1095,7 @@ function FullscreenLayer({
               </Fragment>
             ))}
           </>
-        ) : fullscreenDisplay === 'image-only' ? (
+        ) : effectiveFullscreenDisplay === 'image-only' ? (
           <section className="fullscreen-single-pane" data-slot="fs-nondual-root">{imagePane}</section>
         ) : (
           <section className="fullscreen-single-pane" data-slot="fs-nondual-root">{videoPane}</section>

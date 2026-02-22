@@ -8,6 +8,9 @@ import { FullscreenMetaMarquee } from './FullscreenMetaMarquee'
 import { MainUiIcon } from '../MainUiIcon'
 import { VideoControlIcon } from '../VideoControlIcon'
 
+const IMAGE_CONVERT_FORMAT_OPTIONS = ['webp', 'jpeg', 'png', 'avif'] as const
+type ImageConvertFormat = (typeof IMAGE_CONVERT_FORMAT_OPTIONS)[number]
+
 type FullscreenAutoplayIconName = 'autoplayOn' | 'autoplayOff'
 type FullscreenFooterIconName =
   | 'swapSides'
@@ -143,6 +146,16 @@ interface FullscreenFooterProps {
   controlsWidth?: number
   compact?: boolean
   hideRightGroup?: boolean
+  imageConvertPreviewMode?: boolean
+  imageConvertPreviewScale?: number
+  imageConvertPreviewLongestEdgePx?: number | null
+  imageConvertPreviewFormat?: ImageConvertFormat
+  imageConvertPreviewQuality?: number
+  onChangeImageConvertPreviewScale?: (value: number) => void
+  onChangeImageConvertPreviewFormat?: (value: ImageConvertFormat) => void
+  onChangeImageConvertPreviewQuality?: (value: number) => void
+  onConfirmImageConvertPreview?: () => void
+  onCancelImageConvertPreview?: () => void
 }
 
 const FULLSCREEN_ZOOM_LEVELS = [200, 175, 150, 125, 100, 75, 50, 25, 10] as const
@@ -186,10 +199,29 @@ export function FullscreenFooter({
   controlsWidth,
   compact = false,
   hideRightGroup = false,
+  imageConvertPreviewMode = false,
+  imageConvertPreviewScale = 1,
+  imageConvertPreviewLongestEdgePx = null,
+  imageConvertPreviewFormat = 'webp',
+  imageConvertPreviewQuality = 80,
+  onChangeImageConvertPreviewScale,
+  onChangeImageConvertPreviewFormat,
+  onChangeImageConvertPreviewQuality,
+  onConfirmImageConvertPreview,
+  onCancelImageConvertPreview,
 }: FullscreenFooterProps) {
   const { t } = useI18n()
   const [openAutoplayPopover, setOpenAutoplayPopover] = useState(false)
   const [openZoomPopover, setOpenZoomPopover] = useState(false)
+  const [openPreviewScalePopover, setOpenPreviewScalePopover] = useState(false)
+  const [openPreviewFormatPopover, setOpenPreviewFormatPopover] = useState(false)
+  const [openPreviewQualityPopover, setOpenPreviewQualityPopover] = useState(false)
+  const [previewScaleDraftValue, setPreviewScaleDraftValue] = useState(
+    Math.max(0.1, Math.min(1, Number(imageConvertPreviewScale.toFixed(1)))),
+  )
+  const [previewQualityDraftValue, setPreviewQualityDraftValue] = useState(
+    Math.max(10, Math.min(100, Math.round(imageConvertPreviewQuality))),
+  )
   const [autoPlayDraftValue, setAutoPlayDraftValue] = useState(Math.max(1, Math.min(9, Math.round(autoPlayInterval))))
   const [zoomDraftValue, setZoomDraftValue] = useState(resolveNearestZoomLevel(zoomPercent))
   const autoplayPopoverHideTimerRef = useRef<number | null>(null)
@@ -204,6 +236,14 @@ export function FullscreenFooter({
   }, [zoomPercent])
 
   useEffect(() => {
+    setPreviewScaleDraftValue(Math.max(0.1, Math.min(1, Number(imageConvertPreviewScale.toFixed(1)))))
+  }, [imageConvertPreviewScale])
+
+  useEffect(() => {
+    setPreviewQualityDraftValue(Math.max(10, Math.min(100, Math.round(imageConvertPreviewQuality))))
+  }, [imageConvertPreviewQuality])
+
+  useEffect(() => {
     if (autoplayEnabledForFocus) {
       return
     }
@@ -216,6 +256,15 @@ export function FullscreenFooter({
     }
     setOpenZoomPopover(false)
   }, [zoomEnabled])
+
+  useEffect(() => {
+    if (imageConvertPreviewMode) {
+      return
+    }
+    setOpenPreviewScalePopover(false)
+    setOpenPreviewFormatPopover(false)
+    setOpenPreviewQualityPopover(false)
+  }, [imageConvertPreviewMode])
 
   const clearAutoplayPopoverHideTimer = () => {
     if (autoplayPopoverHideTimerRef.current != null) {
@@ -276,6 +325,14 @@ export function FullscreenFooter({
       ? ({ '--mpx-fullscreen-controls-width': `${Math.max(120, Math.round(controlsWidth))}px` } as CSSProperties)
       : undefined
 
+  const commitPreviewScaleDraft = () => {
+    onChangeImageConvertPreviewScale?.(Math.max(0.1, Math.min(1, Number(previewScaleDraftValue.toFixed(1)))))
+  }
+
+  const commitPreviewQualityDraft = () => {
+    onChangeImageConvertPreviewQuality?.(Math.max(10, Math.min(100, Math.round(previewQualityDraftValue))))
+  }
+
   return (
     <footer
       className={`fullscreen-footer fullscreen-controls-shell ${fullscreenDisplay === 'dual' ? 'is-dual' : 'is-single'}${mode === 'image' ? ' is-image-mode' : ''}${compact ? ' is-compact' : ''}${hideRightGroup ? ' is-hide-right-group' : ''}`}
@@ -307,66 +364,176 @@ export function FullscreenFooter({
 
       <div className="fullscreen-controls-row">
         <div className="fullscreen-group is-left">
-          <button aria-label={fullscreenDisplay === 'dual' ? t('ui.fullscreen.singleDisplay') : t('ui.fullscreen.dualDisplay')} className={`video-action-btn fullscreen-action-btn ${fullscreenDisplay === 'dual' ? 'is-active' : ''}`} type="button" onClick={onToggleDualDisplay}>
-            <span className="fullscreen-action-content">
-              <VideoControlIcon name="dual" />
-            </span>
-          </button>
-          <button aria-label={t('ui.fullscreen.swapSides')} className="video-action-btn fullscreen-action-btn" type="button" disabled={fullscreenDisplay !== 'dual'} onClick={onToggleSwapSides}>
-            <span className="fullscreen-action-content">
-              <FullscreenFooterIcon name="swapSides" />
-            </span>
-          </button>
+          {imageConvertPreviewMode ? null : (
+            <>
+              <button aria-label={fullscreenDisplay === 'dual' ? t('ui.fullscreen.singleDisplay') : t('ui.fullscreen.dualDisplay')} className={`video-action-btn fullscreen-action-btn ${fullscreenDisplay === 'dual' ? 'is-active' : ''}`} type="button" onClick={onToggleDualDisplay}>
+                <span className="fullscreen-action-content">
+                  <VideoControlIcon name="dual" />
+                </span>
+              </button>
+              <button aria-label={t('ui.fullscreen.swapSides')} className="video-action-btn fullscreen-action-btn" type="button" disabled={fullscreenDisplay !== 'dual'} onClick={onToggleSwapSides}>
+                <span className="fullscreen-action-content">
+                  <FullscreenFooterIcon name="swapSides" />
+                </span>
+              </button>
 
-          <div
-            className={`header-popover-control header-popover-control--upward fullscreen-autoplay-control ${openAutoplayPopover ? 'is-open' : ''}`}
-            role="group"
-            aria-label={t('a11y.header.autoPlayGroup')}
-            onMouseEnter={openAutoplayPopoverByHover}
-            onMouseLeave={closeAutoplayPopoverByHover}
-          >
-            <button
-              {...buildA11yPropsByRegistry({ key: 'headerAutoPlay', t })}
-              aria-pressed={autoPlayEnabled}
-              className={`video-action-btn fullscreen-action-btn header-popover-trigger auto-play-toggle-btn ${autoPlayEnabled ? 'is-active' : ''}`}
-              disabled={!autoplayEnabledForFocus}
-              type="button"
-              onClick={onToggleAutoplay}
-            >
-              <span className="fullscreen-action-content">
-                <FullscreenAutoplayIcon name={autoPlayEnabled ? 'autoplayOn' : 'autoplayOff'} />
-              </span>
-            </button>
+              <div
+                className={`header-popover-control header-popover-control--upward fullscreen-autoplay-control ${openAutoplayPopover ? 'is-open' : ''}`}
+                role="group"
+                aria-label={t('a11y.header.autoPlayGroup')}
+                onMouseEnter={openAutoplayPopoverByHover}
+                onMouseLeave={closeAutoplayPopoverByHover}
+              >
+                <button
+                  {...buildA11yPropsByRegistry({ key: 'headerAutoPlay', t })}
+                  aria-pressed={autoPlayEnabled}
+                  className={`video-action-btn fullscreen-action-btn header-popover-trigger auto-play-toggle-btn ${autoPlayEnabled ? 'is-active' : ''}`}
+                  disabled={!autoplayEnabledForFocus}
+                  type="button"
+                  onClick={onToggleAutoplay}
+                >
+                  <span className="fullscreen-action-content">
+                    <FullscreenAutoplayIcon name={autoPlayEnabled ? 'autoplayOn' : 'autoplayOff'} />
+                  </span>
+                </button>
 
-            <div
-              className="header-popover-panel header-popover-panel--upward fullscreen-autoplay-popover"
-              data-slot="fs-image-controls-autoplay-pop"
-              hidden={!openAutoplayPopover || !autoplayEnabledForFocus}
-              role="dialog"
-              aria-label={t('a11y.header.autoPlaySettings')}
-            >
-              <div className="header-vertical-slider" role="group" aria-label={t('a11y.header.autoPlayLevels')}>
-                <div className="header-vertical-slider-value">{Math.max(1, Math.min(9, Math.round(autoPlayDraftValue)))}</div>
-                <div className="header-vertical-slider-body">
-                  <input
-                    {...buildA11yPropsByRegistry({ key: 'headerAutoPlaySlider', t })}
-                    className="header-vertical-range header-vertical-range--ascending-up"
-                    max={9}
-                    min={1}
-                    step={0.01}
-                    type="range"
-                    value={autoPlayDraftValue}
-                    onChange={(event) => {
-                      const nextValue = Number(event.target.value)
-                      setAutoPlayDraftValue(nextValue)
-                      const roundedLevel = Math.max(1, Math.min(9, Math.round(nextValue)))
-                      onSetAutoplayInterval(roundedLevel)
-                    }}
-                  />
+                <div
+                  className="header-popover-panel header-popover-panel--upward fullscreen-autoplay-popover"
+                  data-slot="fs-image-controls-autoplay-pop"
+                  hidden={!openAutoplayPopover || !autoplayEnabledForFocus}
+                  role="dialog"
+                  aria-label={t('a11y.header.autoPlaySettings')}
+                >
+                  <div className="header-vertical-slider" role="group" aria-label={t('a11y.header.autoPlayLevels')}>
+                    <div className="header-vertical-slider-value">{Math.max(1, Math.min(9, Math.round(autoPlayDraftValue)))}</div>
+                    <div className="header-vertical-slider-body">
+                      <input
+                        {...buildA11yPropsByRegistry({ key: 'headerAutoPlaySlider', t })}
+                        className="header-vertical-range header-vertical-range--ascending-up"
+                        max={9}
+                        min={1}
+                        step={0.01}
+                        type="range"
+                        value={autoPlayDraftValue}
+                        onChange={(event) => {
+                          const nextValue = Number(event.target.value)
+                          setAutoPlayDraftValue(nextValue)
+                          const roundedLevel = Math.max(1, Math.min(9, Math.round(nextValue)))
+                          onSetAutoplayInterval(roundedLevel)
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
+
+          {imageConvertPreviewMode ? (
+            <>
+              <div
+                className={`header-popover-control header-popover-control--upward ${openPreviewScalePopover ? 'is-open' : ''}`}
+                onMouseEnter={() => setOpenPreviewScalePopover(true)}
+                onMouseLeave={() => {
+                  commitPreviewScaleDraft()
+                  setOpenPreviewScalePopover(false)
+                }}
+              >
+                <button
+                  className="video-action-btn fullscreen-action-btn header-popover-trigger"
+                  type="button"
+                  title={imageConvertPreviewLongestEdgePx != null ? `LongestEdge ${Math.round(imageConvertPreviewLongestEdgePx)} (scale disabled)` : `Scale ${imageConvertPreviewScale.toFixed(1)}`}
+                  disabled={imageConvertPreviewLongestEdgePx != null}
+                >
+                  <span className="fullscreen-action-content">S</span>
+                </button>
+                <div className="header-popover-panel header-popover-panel--upward" hidden={!openPreviewScalePopover} role="dialog" aria-label="Scale">
+                  <div className="header-vertical-slider" role="group" aria-label="Scale levels">
+                    <div className="header-vertical-slider-value">{previewScaleDraftValue.toFixed(1)}</div>
+                    <div className="header-vertical-slider-body">
+                      <input
+                        className="header-vertical-range header-vertical-range--ascending-up"
+                        max={1}
+                        min={0.1}
+                        step={0.1}
+                        type="range"
+                        value={previewScaleDraftValue}
+                        disabled={imageConvertPreviewLongestEdgePx != null}
+                        onChange={(event) => {
+                          setPreviewScaleDraftValue(Number(event.target.value))
+                        }}
+                        onMouseUp={commitPreviewScaleDraft}
+                        onTouchEnd={commitPreviewScaleDraft}
+                        onKeyUp={(event) => {
+                          if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                            commitPreviewScaleDraft()
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`header-popover-control header-popover-control--upward ${openPreviewFormatPopover ? 'is-open' : ''}`} onMouseEnter={() => setOpenPreviewFormatPopover(true)} onMouseLeave={() => setOpenPreviewFormatPopover(false)}>
+                <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" title={`Format ${imageConvertPreviewFormat.toUpperCase()}`}>
+                  <span className="fullscreen-action-content">F</span>
+                </button>
+                <div className="header-popover-panel header-popover-panel--upward fullscreen-convert-format-popover" hidden={!openPreviewFormatPopover} role="dialog" aria-label="Format">
+                  <div className="fullscreen-convert-format-options" role="group" aria-label="Format options">
+                    {IMAGE_CONVERT_FORMAT_OPTIONS.map((option) => (
+                      <button
+                        key={option}
+                        className={`fullscreen-convert-format-btn ${option === imageConvertPreviewFormat ? 'is-active' : ''}`}
+                        type="button"
+                        onClick={() => onChangeImageConvertPreviewFormat?.(option)}
+                      >
+                        {option.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={`header-popover-control header-popover-control--upward ${openPreviewQualityPopover ? 'is-open' : ''}`}
+                onMouseEnter={() => setOpenPreviewQualityPopover(true)}
+                onMouseLeave={() => {
+                  commitPreviewQualityDraft()
+                  setOpenPreviewQualityPopover(false)
+                }}
+              >
+                <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" title={`Quality ${imageConvertPreviewQuality}`}>
+                  <span className="fullscreen-action-content">Q</span>
+                </button>
+                <div className="header-popover-panel header-popover-panel--upward" hidden={!openPreviewQualityPopover} role="dialog" aria-label="Quality">
+                  <div className="header-vertical-slider" role="group" aria-label="Quality levels">
+                    <div className="header-vertical-slider-value">{Math.round(previewQualityDraftValue)}</div>
+                    <div className="header-vertical-slider-body">
+                      <input
+                        className="header-vertical-range header-vertical-range--ascending-up"
+                        max={100}
+                        min={10}
+                        step={1}
+                        type="range"
+                        value={previewQualityDraftValue}
+                        onChange={(event) => {
+                          setPreviewQualityDraftValue(Number(event.target.value))
+                        }}
+                        onMouseUp={commitPreviewQualityDraft}
+                        onTouchEnd={commitPreviewQualityDraft}
+                        onKeyUp={(event) => {
+                          if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                            commitPreviewQualityDraft()
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : null}
 
           <div
             className={`header-popover-control header-popover-control--upward fullscreen-zoom-control ${openZoomPopover ? 'is-open' : ''}`}
@@ -429,6 +596,16 @@ export function FullscreenFooter({
         </div>
 
         <div className="fullscreen-group is-center">
+          {imageConvertPreviewMode ? (
+            <>
+              <button className="video-action-btn fullscreen-action-btn" type="button" onClick={onConfirmImageConvertPreview}>
+                <span className="fullscreen-action-content">OK</span>
+              </button>
+              <button className="video-action-btn fullscreen-action-btn" type="button" onClick={onCancelImageConvertPreview}>
+                <span className="fullscreen-action-content">X</span>
+              </button>
+            </>
+          ) : null}
           <button aria-label={t('ui.fullscreen.prevPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" onClick={() => onStepFocusedPane(-1)}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="pagePrev" />

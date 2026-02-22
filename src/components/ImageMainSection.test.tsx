@@ -1,10 +1,11 @@
 import { createRef } from 'react'
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { ImagePackage } from '../types'
 import ImageMainSection from './ImageMainSection'
+import type { ImageMainSectionProps } from './ImageMainSection.types'
 
 vi.mock('./metadata/MetadataFetchPanel', () => ({
   default: () => null,
@@ -245,6 +246,82 @@ function renderNodeBrowseSection() {
       onSelectNodeBrowseItem={vi.fn()}
     />,
   )
+}
+
+function createManageImageConvertProps(
+  overrides: Partial<ImageMainSectionProps> = {},
+): ImageMainSectionProps {
+  const defaultProps: ImageMainSectionProps = {
+    vectorMode: false,
+    showNamesOnly: false,
+    metadataManageMode: false,
+    loading: false,
+    placeholderCount: 1,
+    enableLoadingSkeleton: false,
+    activePackage: packageWithImages,
+    focusedRef: null,
+    focusedImageExists: false,
+    visibleImageRefs: [{ packageId: packageWithImages.id, imageIndex: 0 }],
+    refsInPage: [{ packageId: packageWithImages.id, imageIndex: 0 }],
+    pageStart: 0,
+    actualCellWidth: 120,
+    actualMediaHeight: 108,
+    thumbnailColumns: 2,
+    thumbnailGap: 8,
+    vectorCandidates: [],
+    packageById: new Map([[packageWithImages.id, packageWithImages]]),
+    imageUrlById: { 'img-1': 'mock://thumb-1' },
+    gridRef: createRef<HTMLDivElement>(),
+    onGridElementChange: vi.fn(),
+    onToggleShowNamesOnly: vi.fn(),
+    onEnterFullscreen: vi.fn(),
+    canJumpToAnimation: false,
+    onJumpToAnimation: vi.fn(),
+    onSelectImage: vi.fn(),
+    metadataPending: false,
+    metadataTargetPackageLabel: packageWithImages.displayName,
+    metadataFetchDefaultText: packageWithImages.packageName,
+    metadataProxyServer: '',
+    metadataEhentaiCookies: '',
+    onMetadataSyncName: vi.fn(),
+    onMetadataSaveParsed: async () => undefined,
+    manageMode: true,
+    sidebarSelectedCount: 1,
+    imageSelectedCount: 0,
+    activeSelectionScope: 'sidebar',
+    pendingManageAction: false,
+    manageOperationHint: null,
+    canManageDelete: true,
+    canManageMoveNodes: true,
+    canManageImageConvert: true,
+    canManageHide: true,
+    canManageUnhide: true,
+    adReviewFeatureEnabled: false,
+    adReviewPanelOpen: false,
+    checkedImageIds: new Set(),
+    adReviewScopeImageIds: new Set(),
+    adReviewLlmReviewedImageIds: new Set(),
+    adReviewNonLlmReviewedImageIds: new Set(),
+    onToggleImageChecked: vi.fn(),
+    onReplaceCheckedImages: vi.fn(),
+    onManageDelete: vi.fn(),
+    onManageGroup: vi.fn(),
+    onManageMove: vi.fn(),
+    onManageHide: vi.fn(),
+    onManageUnhide: vi.fn(),
+    onToggleAdReviewPanel: vi.fn(),
+    onClearManageSelection: vi.fn(),
+    onStartImageConvertTask: async () => ({
+      task: {
+        task_id: 'task-default',
+      },
+    }),
+  }
+
+  return {
+    ...defaultProps,
+    ...overrides,
+  }
 }
 
 describe('ImageMainSection layout', () => {
@@ -802,5 +879,186 @@ describe('ImageMainSection layout', () => {
 
     fireEvent.wheel(grid, { deltaY: -120, ctrlKey: true })
     expect(onThumbnailWheelSwitchSidebarNode).toHaveBeenCalledWith('prev')
+  })
+})
+
+describe('ImageMainSection RS execution', () => {
+  afterEach(() => {
+    window.mediaPlayerBackend = undefined
+    document.documentElement.dataset.mpxImageConvertExecuting = '0'
+  })
+
+  it('点击确定后应锁定 RS 交互并写入执行态 dataset', async () => {
+    const onStartImageConvertTask = vi.fn(async () => ({
+      task: {
+        task_id: 'task-rs-running',
+      },
+    }))
+
+    window.mediaPlayerBackend = {
+      readImageConvertTask: vi.fn(async () => ({
+        task: {
+          task_id: 'task-rs-running',
+          status: 'running',
+          progress: 0.3,
+          message: 'running',
+        },
+      })),
+    } as unknown as typeof window.mediaPlayerBackend
+
+    render(
+      <ImageMainSection
+        {...createManageImageConvertProps({ onStartImageConvertTask })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'RS' }))
+    fireEvent.click(screen.getByRole('button', { name: '确定' }))
+
+    await waitFor(() => {
+      expect(onStartImageConvertTask).toHaveBeenCalledWith({
+        node_ids: [],
+        scale_factor: 1,
+        target_format: 'webp',
+        quality: 80,
+        concurrency: 4,
+      })
+      expect(document.documentElement.dataset.mpxImageConvertExecuting).toBe('1')
+    })
+
+    expect(screen.getByRole('button', { name: 'RS' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '预览' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '确定' })).toBeDisabled()
+    const scaleSlider = document.querySelector(
+      '.main-toolbar-image-convert-panel input[type="range"]',
+    ) as HTMLInputElement | null
+    expect(scaleSlider).not.toBeNull()
+    expect(scaleSlider?.disabled).toBe(true)
+  })
+
+  it('最长边有值时应携带 longest_edge_px 参数', async () => {
+    const onStartImageConvertTask = vi.fn(async () => ({
+      task: {
+        task_id: 'task-rs-longest-edge',
+      },
+    }))
+
+    window.mediaPlayerBackend = {
+      readImageConvertTask: vi.fn(async () => ({
+        task: {
+          task_id: 'task-rs-longest-edge',
+          status: 'running',
+          progress: 0.1,
+          message: 'running',
+        },
+      })),
+    } as unknown as typeof window.mediaPlayerBackend
+
+    render(
+      <ImageMainSection
+        {...createManageImageConvertProps({
+          imageConvertLongestEdgePx: 1600,
+          onStartImageConvertTask,
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'RS' }))
+    fireEvent.click(screen.getByRole('button', { name: '确定' }))
+
+    await waitFor(() => {
+      expect(onStartImageConvertTask).toHaveBeenCalledWith({
+        node_ids: [],
+        scale_factor: 1,
+        longest_edge_px: 1600,
+        target_format: 'webp',
+        quality: 80,
+        concurrency: 4,
+      })
+    })
+  })
+
+  it('执行中点击取消应调用后端 cancel 并清理执行态', async () => {
+    const cancelImageConvertTask = vi.fn(async () => ({
+      task: {
+        task_id: 'task-rs-cancel',
+        status: 'cancelled',
+      },
+    }))
+
+    window.mediaPlayerBackend = {
+      readImageConvertTask: vi.fn(async () => ({
+        task: {
+          task_id: 'task-rs-cancel',
+          status: 'running',
+          progress: 0.2,
+          message: 'running',
+        },
+      })),
+      cancelImageConvertTask,
+    } as unknown as typeof window.mediaPlayerBackend
+
+    render(
+      <ImageMainSection
+        {...createManageImageConvertProps({
+          onStartImageConvertTask: async () => ({
+            task: {
+              task_id: 'task-rs-cancel',
+            },
+          }),
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'RS' }))
+    fireEvent.click(screen.getByRole('button', { name: '确定' }))
+
+    await waitFor(() => {
+      expect(document.documentElement.dataset.mpxImageConvertExecuting).toBe('1')
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+
+    await waitFor(() => {
+      expect(cancelImageConvertTask).toHaveBeenCalledWith({
+        task_id: 'task-rs-cancel',
+      })
+      expect(document.documentElement.dataset.mpxImageConvertExecuting).toBe('0')
+    })
+  })
+
+  it('非执行态点击取消应关闭 panel，预览态下不渲染 RS 弹层', async () => {
+    const onCancelImageConvertPreview = vi.fn()
+
+    const { rerender } = render(
+      <ImageMainSection
+        {...createManageImageConvertProps({
+          onCancelImageConvertPreview,
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'RS' }))
+    expect(document.querySelector('.main-toolbar-image-convert-panel')).not.toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+
+    await waitFor(() => {
+      expect(onCancelImageConvertPreview).toHaveBeenCalledTimes(0)
+      expect(document.querySelector('.main-toolbar-image-convert-panel')).toBeNull()
+      expect(document.documentElement.dataset.mpxImageConvertExecuting).toBe('0')
+    })
+
+    rerender(
+      <ImageMainSection
+        {...createManageImageConvertProps({
+          imageConvertPreviewMode: true,
+          onCancelImageConvertPreview,
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'RS' }))
+    expect(document.querySelector('.main-toolbar-image-convert-panel')).toBeNull()
   })
 })

@@ -43,6 +43,18 @@ interface BuildFullscreenLayerPropsParams {
   fullscreenVideoControlsMaxWidth: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
+  imageConvertPreviewMode?: boolean
+  imageConvertPreviewScale?: number
+  imageConvertPreviewLongestEdgePx?: number | null
+  imageConvertPreviewFormat?: 'webp' | 'jpeg' | 'png' | 'avif'
+  imageConvertPreviewQuality?: number
+  imageConvertPreviewRenderedSrc?: string | null
+  imageConvertPreviewError?: string | null
+  onChangeImageConvertPreviewScale?: (value: number) => void
+  onChangeImageConvertPreviewFormat?: (value: 'webp' | 'jpeg' | 'png' | 'avif') => void
+  onChangeImageConvertPreviewQuality?: (value: number) => void
+  onConfirmImageConvertPreview?: () => void
+  onCancelImageConvertPreview?: () => void
   updateSettings: (patch: Partial<AppSettings>) => void
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: (step: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => void
@@ -110,6 +122,13 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     autoPlayEnabled: params.autoPlayEnabled,
     autoPlayInterval: params.autoPlayInterval,
+    imageConvertPreviewMode: params.imageConvertPreviewMode,
+    imageConvertPreviewScale: params.imageConvertPreviewScale,
+    imageConvertPreviewLongestEdgePx: params.imageConvertPreviewLongestEdgePx,
+    imageConvertPreviewFormat: params.imageConvertPreviewFormat,
+    imageConvertPreviewQuality: params.imageConvertPreviewQuality,
+    imageConvertPreviewRenderedSrc: params.imageConvertPreviewRenderedSrc,
+    imageConvertPreviewError: params.imageConvertPreviewError,
     onSetFooterVisible: params.setShowFullscreenFooter,
     onSetDisplay: params.setFullscreenDisplay,
     onToggleSwapSides: () => params.setFullscreenSwapped((value) => !value),
@@ -125,6 +144,11 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     onSetAutoplayInterval: (seconds) => {
       params.updateSettings({ autoPlayInterval: seconds })
     },
+    onChangeImageConvertPreviewScale: params.onChangeImageConvertPreviewScale,
+    onChangeImageConvertPreviewFormat: params.onChangeImageConvertPreviewFormat,
+    onChangeImageConvertPreviewQuality: params.onChangeImageConvertPreviewQuality,
+    onConfirmImageConvertPreview: params.onConfirmImageConvertPreview,
+    onCancelImageConvertPreview: params.onCancelImageConvertPreview,
     onToggleVideoPlay: () => params.setVideoPlaying((value) => !value),
     onPrevVideo: () => params.goPlaylist(-1),
     onNextVideo: () => params.goPlaylist(1),

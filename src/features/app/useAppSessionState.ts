@@ -68,6 +68,14 @@ export function useAppSessionState({
   const [fullscreenEntryDisplay, setFullscreenEntryDisplay] = useState<'image-only' | 'video-only'>(
     mode === 'video' ? 'video-only' : 'image-only',
   )
+  const [imageConvertScale, setImageConvertScale] = useState(1)
+  const [imageConvertLongestEdgePx, setImageConvertLongestEdgePx] = useState<number | null>(null)
+  const [imageConvertFormat, setImageConvertFormat] = useState<'webp' | 'jpeg' | 'png' | 'avif'>('webp')
+  const [imageConvertQuality, setImageConvertQuality] = useState(80)
+  const [imageConvertPreviewMode, setImageConvertPreviewMode] = useState(false)
+  const [imageConvertPreviewScale, setImageConvertPreviewScale] = useState(1)
+  const [imageConvertPreviewFormat, setImageConvertPreviewFormat] = useState<'webp' | 'jpeg' | 'png' | 'avif'>('webp')
+  const [imageConvertPreviewQuality, setImageConvertPreviewQuality] = useState(80)
 
   const appBodyRef = useRef<HTMLDivElement>(null)
   const workspaceRef = useRef<HTMLElement>(null)
@@ -170,6 +178,22 @@ export function useAppSessionState({
     setThemeParameterPanelOpen,
     fullscreenEntryDisplay,
     setFullscreenEntryDisplay,
+    imageConvertScale,
+    setImageConvertScale,
+    imageConvertLongestEdgePx,
+    setImageConvertLongestEdgePx,
+    imageConvertFormat,
+    setImageConvertFormat,
+    imageConvertQuality,
+    setImageConvertQuality,
+    imageConvertPreviewMode,
+    setImageConvertPreviewMode,
+    imageConvertPreviewScale,
+    setImageConvertPreviewScale,
+    imageConvertPreviewFormat,
+    setImageConvertPreviewFormat,
+    imageConvertPreviewQuality,
+    setImageConvertPreviewQuality,
     appBodyRef,
     workspaceRef,
     workspaceBodyRef,

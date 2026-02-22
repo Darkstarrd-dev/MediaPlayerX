@@ -109,6 +109,22 @@ export function useAppWorkspaceProps({
   thumbnailScaleLevelCount,
   canThumbnailScaleDown,
   canThumbnailScaleUp,
+  imageConvertScale,
+  setImageConvertScale,
+  imageConvertLongestEdgePx,
+  setImageConvertLongestEdgePx,
+  imageConvertFormat,
+  setImageConvertFormat,
+  imageConvertQuality,
+  setImageConvertQuality,
+  imageConvertPreviewMode,
+  setImageConvertPreviewMode,
+  imageConvertPreviewScale,
+  setImageConvertPreviewScale,
+  imageConvertPreviewFormat,
+  setImageConvertPreviewFormat,
+  imageConvertPreviewQuality,
+  setImageConvertPreviewQuality,
   backendPageLoading,
   pagedPageSize,
   activePackageForDisplay,
@@ -574,6 +590,46 @@ export function useAppWorkspaceProps({
     imageSidebarNodeIdsForWheel.map((nodeId, index) => [nodeId, index]),
   );
 
+  const selectedConvertibleSidebarNodeIds =
+    mode === "image"
+      ? sidebarCheckedNodeIds.filter((nodeId) => {
+          const node = sidebarNodeById.get(nodeId);
+          return (
+            Boolean(node) &&
+            (node?.imageNodeType === "package" ||
+              node?.imageNodeType === "directory")
+          );
+        })
+      : [];
+  const canManageImageConvert =
+    mode === "image" &&
+    activeSelectionScope === "sidebar" &&
+    sidebarCheckedNodeIds.length > 0 &&
+    selectedConvertibleSidebarNodeIds.length === sidebarCheckedNodeIds.length;
+
+  useEffect(() => {
+    if (fullscreenActive) {
+      return;
+    }
+    if (!imageConvertPreviewMode) {
+      return;
+    }
+    setImageConvertPreviewMode(false);
+    setImageConvertPreviewScale(imageConvertScale);
+    setImageConvertPreviewFormat(imageConvertFormat);
+    setImageConvertPreviewQuality(imageConvertQuality);
+  }, [
+    fullscreenActive,
+    imageConvertFormat,
+    imageConvertPreviewMode,
+    imageConvertQuality,
+    imageConvertScale,
+    setImageConvertPreviewFormat,
+    setImageConvertPreviewMode,
+    setImageConvertPreviewQuality,
+    setImageConvertPreviewScale,
+  ]);
+
   const nodeBrowseMode =
     mode === "image" &&
     !vectorResultsActive &&
@@ -734,6 +790,7 @@ export function useAppWorkspaceProps({
     });
 
   const imageMainSectionProps = buildImageMainSectionProps({
+    fullscreenActive,
     vectorResultsActive,
     showNamesOnly,
     metadataManageMode,
@@ -741,6 +798,14 @@ export function useAppWorkspaceProps({
     thumbnailScaleLevelCount,
     canThumbnailScaleDown,
     canThumbnailScaleUp,
+    imageConvertScale,
+    imageConvertLongestEdgePx,
+    imageConvertFormat,
+    imageConvertQuality,
+    imageConvertPreviewMode,
+    imageConvertPreviewScale,
+    imageConvertPreviewFormat,
+    imageConvertPreviewQuality,
     backendPageLoading,
     pagedPageSize,
     enableLoadingSkeleton,
@@ -769,6 +834,7 @@ export function useAppWorkspaceProps({
     canManageDelete:
       sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0,
     canManageMoveNodes: sidebarCheckedNodeIds.length > 0,
+    canManageImageConvert,
     canManageHide: mode === "image" && imageCheckedIds.length > 0,
     canManageUnhide: mode === "image" && imageCheckedIds.length > 0,
     adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
@@ -825,6 +891,26 @@ export function useAppWorkspaceProps({
     },
     onManageMove: () => {
       void requestManageMove();
+    },
+    onStartImageConvertTask: async (request) => {
+      if (!canManageImageConvert) {
+        return;
+      }
+      const normalizedNodeIds = Array.from(
+        new Set(
+          selectedConvertibleSidebarNodeIds
+            .map((nodeId) => nodeId.trim())
+            .filter(Boolean),
+        ),
+      );
+      if (normalizedNodeIds.length === 0) {
+        return;
+      }
+
+      return await backendWrite.startImageConvertTask({
+        ...request,
+        node_ids: normalizedNodeIds,
+      });
     },
     onManageHide: () => {
       void runManageHideAction(true);
@@ -915,6 +1001,48 @@ export function useAppWorkspaceProps({
       }
 
       appSettings.updateSettings({ thumbnailScale: nextNormalizedScale });
+    },
+    onImageConvertScaleChange: (value) => {
+      setImageConvertScale(Math.max(0.1, Math.min(1, Number(value.toFixed(1)))));
+    },
+    onImageConvertLongestEdgePxChange: (value) => {
+      if (value == null || !Number.isFinite(value)) {
+        setImageConvertLongestEdgePx(null);
+        return;
+      }
+      setImageConvertLongestEdgePx(
+        Math.max(1, Math.min(16384, Math.round(value))),
+      );
+    },
+    onImageConvertFormatChange: (value) => {
+      setImageConvertFormat(value);
+    },
+    onImageConvertQualityChange: (value) => {
+      setImageConvertQuality(Math.max(10, Math.min(100, Math.round(value))));
+    },
+    onOpenImageConvertPreview: () => {
+      if (!canManageImageConvert) {
+        return;
+      }
+      setImageConvertPreviewScale(imageConvertScale);
+      setImageConvertPreviewFormat(imageConvertFormat);
+      setImageConvertPreviewQuality(imageConvertQuality);
+      setImageConvertPreviewMode(true);
+      setFullscreenActiveWithAutoStop(true);
+    },
+    onConfirmImageConvertPreview: () => {
+      setImageConvertScale(imageConvertPreviewScale);
+      setImageConvertFormat(imageConvertPreviewFormat);
+      setImageConvertQuality(imageConvertPreviewQuality);
+      setImageConvertPreviewMode(false);
+      setFullscreenActiveWithAutoStop(false);
+    },
+    onCancelImageConvertPreview: () => {
+      setImageConvertPreviewScale(imageConvertScale);
+      setImageConvertPreviewFormat(imageConvertFormat);
+      setImageConvertPreviewQuality(imageConvertQuality);
+      setImageConvertPreviewMode(false);
+      setFullscreenActiveWithAutoStop(false);
     },
     nodeBrowseMode,
     nodeBrowseLabel: nodeBrowseMode

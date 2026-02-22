@@ -116,6 +116,7 @@
 | `fg.main.toolbar.image.adReviewStart.panel` | `.manage-ad-review-start-mask > .manage-ad-review-start-dialog` | `data-slot="fg-main-toolbar-image-ad-review-start-panel"` | 从图像主区工具栏启动审核时 | 审核启动对话框 | 居中浮层 |
 | `fg.main.toolbar.image.metadataFetch.panel` | `.settings-mask > .settings-panel.metadata-fetch-panel` | `data-slot="fg-main-toolbar-image-metadata-fetch-panel"` | 点击 metadata fetch 后 | 元数据抓取面板 | 全屏遮罩 |
 | `fg.main.toolbar.image.deleteProgress.ovl` | `.ad-review-delete-overlay` | `data-slot="fg-main-toolbar-image-delete-progress-ovl"` | 批量删除执行中 | 删除等待进度覆盖层 | 全屏遮罩+进度条 |
+| `fg.main.toolbar.image.rs.panel` | `.main-toolbar-image-convert-panel` | `data-slot="fg-main-toolbar-image-rs-panel"` | manage 模式点击 `RS` 后 | 图包转换参数面板 | 6 行参数/动作区（含 Longest Edge） |
 
 ### 5.2 Main / Video
 

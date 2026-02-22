@@ -31,7 +31,30 @@ import { formatPercent } from "./metadata/metadataPanelUtils";
 const IS_TEST_MODE = import.meta.env.MODE === "test";
 const EMPTY_IMAGE_ID_SET = new Set<string>();
 
+type ImageConvertTaskStatus =
+  | "pending"
+  | "running"
+  | "completed"
+  | "cancelled"
+  | "failed";
+
+function resolveTaskIdFromStartResponse(response: unknown): string | null {
+  if (!response || typeof response !== "object") {
+    return null;
+  }
+  const directTaskId = (response as { task_id?: unknown }).task_id;
+  if (typeof directTaskId === "string" && directTaskId.trim().length > 0) {
+    return directTaskId;
+  }
+  const nestedTaskId = (response as { task?: { task_id?: unknown } }).task?.task_id;
+  if (typeof nestedTaskId === "string" && nestedTaskId.trim().length > 0) {
+    return nestedTaskId;
+  }
+  return null;
+}
+
 function ImageMainSection({
+  fullscreenActive = false,
   vectorMode,
   showNamesOnly,
   metadataManageMode,
@@ -39,6 +62,14 @@ function ImageMainSection({
   thumbnailScaleLevelCount = 9,
   canThumbnailScaleDown = true,
   canThumbnailScaleUp = true,
+  imageConvertScale = 1,
+  imageConvertLongestEdgePx = null,
+  imageConvertFormat = "webp",
+  imageConvertQuality = 80,
+  imageConvertPreviewMode = false,
+  imageConvertPreviewScale = 1,
+  imageConvertPreviewFormat = "webp",
+  imageConvertPreviewQuality = 80,
   loading,
   placeholderCount,
   enableLoadingSkeleton,
@@ -65,6 +96,7 @@ function ImageMainSection({
   manageOperationHint,
   canManageDelete,
   canManageMoveNodes = false,
+  canManageImageConvert = false,
   canManageHide,
   canManageUnhide,
   adReviewFeatureEnabled,
@@ -95,6 +127,7 @@ function ImageMainSection({
   onManageDelete,
   onManageRename = () => undefined,
   onManageGroup = () => undefined,
+  onStartImageConvertTask = async () => undefined,
   onManageHide,
   onManageUnhide,
   onToggleAdReviewPanel,
@@ -112,6 +145,13 @@ function ImageMainSection({
   onDismissAdReviewTask = () => undefined,
   onClearManageSelection,
   onThumbnailScaleLevelChange,
+  onImageConvertScaleChange = () => undefined,
+  onImageConvertLongestEdgePxChange = () => undefined,
+  onImageConvertFormatChange = () => undefined,
+  onImageConvertQualityChange = () => undefined,
+  onOpenImageConvertPreview = () => undefined,
+  onConfirmImageConvertPreview = () => undefined,
+  onCancelImageConvertPreview = () => undefined,
   onToggleShowNamesOnly,
   onEnterFullscreen,
   canJumpToAnimation,
@@ -244,7 +284,15 @@ function ImageMainSection({
   const [nameListDimsById, setNameListDimsById] = useState<
     Record<string, { width: number; height: number }>
   >({});
+  const [imageConvertPanelOpen, setImageConvertPanelOpen] = useState(false);
+  const [imageConvertConcurrency, setImageConvertConcurrency] = useState(4);
+  const [imageConvertTaskId, setImageConvertTaskId] = useState<string | null>(null);
+  const [imageConvertTaskStatus, setImageConvertTaskStatus] =
+    useState<ImageConvertTaskStatus | null>(null);
+  const [imageConvertTaskProgress, setImageConvertTaskProgress] = useState(0);
+  const [imageConvertTaskMessage, setImageConvertTaskMessage] = useState<string | null>(null);
   const nameListDimsLoadingRef = useRef<Set<string>>(new Set());
+  const imageConvertPollTimerRef = useRef<number | null>(null);
   const [nameListBodyEl, setNameListBodyEl] = useState<HTMLDivElement | null>(
     null,
   );
@@ -831,6 +879,9 @@ function ImageMainSection({
   const hasCurrentThumbnailPage = currentThumbnailPageImageIds.length > 0;
   const hasAnyManageSelection =
     sidebarSelectedCount > 0 || imageSelectedCount > 0;
+  const imageConvertExecuting =
+    imageConvertTaskStatus === "pending" || imageConvertTaskStatus === "running";
+  const convertInteractionLocked = pendingManageAction || imageConvertExecuting;
 
   const activePackageImageProgress = (() => {
     if (!activePackage || activePackage.images.length === 0) {
@@ -918,6 +969,95 @@ function ImageMainSection({
       setAdReviewStartDialogOpen(false);
     }
   }, [adReviewRunning]);
+
+  const clearImageConvertPollTimer = useCallback(() => {
+    if (imageConvertPollTimerRef.current != null) {
+      window.clearInterval(imageConvertPollTimerRef.current);
+      imageConvertPollTimerRef.current = null;
+    }
+  }, []);
+
+  const stopImageConvertExecution = useCallback(() => {
+    clearImageConvertPollTimer();
+    setImageConvertTaskId(null);
+    setImageConvertTaskStatus(null);
+    setImageConvertTaskProgress(0);
+    setImageConvertTaskMessage(null);
+  }, [clearImageConvertPollTimer]);
+
+  useEffect(() => {
+    document.documentElement.dataset.mpxImageConvertExecuting =
+      imageConvertExecuting ? "1" : "0";
+    return () => {
+      document.documentElement.dataset.mpxImageConvertExecuting = "0";
+    };
+  }, [imageConvertExecuting]);
+
+  useEffect(
+    () => () => {
+      clearImageConvertPollTimer();
+      document.documentElement.dataset.mpxImageConvertExecuting = "0";
+    },
+    [clearImageConvertPollTimer],
+  );
+
+  useEffect(() => {
+    if (!imageConvertTaskId || !imageConvertExecuting) {
+      clearImageConvertPollTimer();
+      return;
+    }
+
+    const api = window.mediaPlayerBackend;
+    const readImageConvertTask = api?.readImageConvertTask;
+    if (!readImageConvertTask) {
+      return;
+    }
+
+    const pollTask = async () => {
+      try {
+        const response = await readImageConvertTask({ task_id: imageConvertTaskId });
+        const task = (response as { task?: { status?: ImageConvertTaskStatus; progress?: number; message?: string | null } })?.task;
+        if (!task) {
+          return;
+        }
+        const nextStatus = task.status ?? "running";
+        const nextProgress = Number.isFinite(task.progress)
+          ? Math.max(0, Math.min(1, Number(task.progress)))
+          : 0;
+        setImageConvertTaskStatus(nextStatus);
+        setImageConvertTaskProgress(nextProgress);
+        setImageConvertTaskMessage(task.message ?? null);
+
+        if (nextStatus === "completed" || nextStatus === "cancelled" || nextStatus === "failed") {
+          clearImageConvertPollTimer();
+        }
+      } catch {
+        // ignore polling errors and keep current UI state
+      }
+    };
+
+    void pollTask();
+    clearImageConvertPollTimer();
+    imageConvertPollTimerRef.current = window.setInterval(() => {
+      void pollTask();
+    }, 350);
+    return () => {
+      clearImageConvertPollTimer();
+    };
+  }, [clearImageConvertPollTimer, imageConvertExecuting, imageConvertTaskId]);
+
+  useEffect(() => {
+    if (!manageMode) {
+      setImageConvertPanelOpen(false);
+      stopImageConvertExecution();
+    }
+  }, [manageMode, stopImageConvertExecution]);
+
+  useEffect(() => {
+    if (fullscreenActive) {
+      setImageConvertPanelOpen(false);
+    }
+  }, [fullscreenActive]);
 
   const triggerToolbarAdReviewStartOrPause = () => {
     if (adReviewTask?.status === "paused") {
@@ -1071,7 +1211,7 @@ function ImageMainSection({
                     : t("tip.media.selectAllPage")
                 }
                 disabled={
-                  pendingManageAction ||
+                  convertInteractionLocked ||
                   (!hasAnyManageSelection && !hasCurrentThumbnailPage)
                 }
                 onClick={
@@ -1089,7 +1229,7 @@ function ImageMainSection({
                 type="button"
                 aria-label={t("a11y.common.hide")}
                 title={t("tip.common.hide")}
-                disabled={!canManageHide || pendingManageAction}
+                disabled={!canManageHide || convertInteractionLocked}
                 onClick={onManageHide}
               >
                 <MainUiIcon name="hidden" />
@@ -1099,7 +1239,7 @@ function ImageMainSection({
                 type="button"
                 aria-label={t("a11y.common.unhide")}
                 title={t("tip.common.unhide")}
-                disabled={!canManageUnhide || pendingManageAction}
+                disabled={!canManageUnhide || convertInteractionLocked}
                 onClick={onManageUnhide}
               >
                 <MainUiIcon name="reveal" />
@@ -1109,7 +1249,7 @@ function ImageMainSection({
                 type="button"
                 aria-label={t("a11y.common.organize")}
                 title={t("tip.common.organize")}
-                disabled={!canManageMoveNodes || pendingManageAction}
+                disabled={!canManageMoveNodes || convertInteractionLocked}
                 onClick={onManageGroup}
               >
                 <MainUiIcon name="organize" />
@@ -1119,10 +1259,22 @@ function ImageMainSection({
                 type="button"
                 aria-label={t("a11y.common.rename")}
                 title={t("tip.common.rename")}
-                disabled={!hasAnyManageSelection || pendingManageAction}
+                disabled={!hasAnyManageSelection || convertInteractionLocked}
                 onClick={onManageRename}
               >
                 <MainUiIcon name="rename" />
+              </button>
+              <button
+                className={`feature-action-btn main-icon-square-btn ${
+                  imageConvertPanelOpen || imageConvertPreviewMode ? "is-active" : ""
+                }`}
+                type="button"
+                aria-label="RS"
+                title="RS"
+                disabled={!canManageImageConvert || convertInteractionLocked}
+                onClick={() => setImageConvertPanelOpen((value) => !value)}
+              >
+                <span aria-hidden="true">RS</span>
               </button>
               <button
                 className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? "is-pending" : ""}`}
@@ -1137,7 +1289,7 @@ function ImageMainSection({
                     ? t("ui.manage.deleting")
                     : t("tip.common.delete")
                 }
-                disabled={!canManageDelete || pendingManageAction}
+                disabled={!canManageDelete || convertInteractionLocked}
                 onClick={onManageDelete}
               >
                 <MainUiIcon name="delete" />
@@ -1148,7 +1300,7 @@ function ImageMainSection({
                   type="button"
                   aria-label={t("a11y.manage.adReview")}
                   title={t("tip.manage.adReview")}
-                  disabled={pendingManageAction}
+                  disabled={convertInteractionLocked}
                   onClick={onToggleAdReviewPanel}
                 >
                   <MainUiIcon name="adSearch" />
@@ -1161,7 +1313,7 @@ function ImageMainSection({
                 <button
                   className="manage-ad-review-icon-btn main-icon-square-btn"
                   type="button"
-                  disabled={pendingManageAction || adReviewPending}
+                  disabled={convertInteractionLocked || adReviewPending}
                   onClick={() =>
                     onManageReviewModeChange(
                       manageReviewMode === "ad" ? "cover" : "ad",
@@ -1392,7 +1544,7 @@ function ImageMainSection({
                         : t("a11y.manage.start")
                     }
                     disabled={
-                      pendingManageAction ||
+                      convertInteractionLocked ||
                       adReviewPending ||
                       (!adReviewRunning && !canExecuteAdReview)
                     }
@@ -1514,6 +1666,194 @@ function ImageMainSection({
               ) : null}
               {!showAdReviewToolbarControls && manageOperationHint ? (
                 <span className="main-toolbar-hint">{manageOperationHint}</span>
+              ) : null}
+              {imageConvertPanelOpen && !fullscreenActive && !imageConvertPreviewMode ? (
+                <div
+                  className="settings-floating-mask"
+                  data-slot="fg-main-toolbar-image-rs-panel"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="RS 转换设置"
+                  onMouseDown={(event) => {
+                    if (event.target !== event.currentTarget || imageConvertExecuting) {
+                      return;
+                    }
+                    if (imageConvertPreviewMode) {
+                      onCancelImageConvertPreview();
+                    }
+                    stopImageConvertExecution();
+                    setImageConvertPanelOpen(false);
+                  }}
+                >
+                  <section
+                    className="settings-floating-panel main-toolbar-image-convert-panel main-toolbar-image-convert-dialog"
+                    onMouseDown={(event) => {
+                      event.stopPropagation();
+                    }}
+                  >
+                    <h3 className="main-toolbar-image-convert-title">RS 转换设置</h3>
+                    <label className="main-toolbar-image-convert-row">
+                      <span>Scale {imageConvertScale.toFixed(1)}</span>
+                      <input
+                        type="range"
+                        min={0.1}
+                        max={1.0}
+                        step={0.1}
+                        value={imageConvertScale}
+                        disabled={imageConvertExecuting}
+                        onChange={(event) =>
+                          onImageConvertScaleChange(Number(event.target.value))
+                        }
+                      />
+                    </label>
+                    <label className="main-toolbar-image-convert-row">
+                      <span>Longest Edge</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={16384}
+                        step={1}
+                        placeholder="留空=按Scale"
+                        value={imageConvertLongestEdgePx == null ? "" : imageConvertLongestEdgePx}
+                        disabled={imageConvertExecuting}
+                        onChange={(event) => {
+                          const rawValue = event.target.value.trim();
+                          if (rawValue.length === 0) {
+                            onImageConvertLongestEdgePxChange(null);
+                            return;
+                          }
+                          const parsed = Number(rawValue);
+                          if (!Number.isFinite(parsed)) {
+                            return;
+                          }
+                          onImageConvertLongestEdgePxChange(parsed);
+                        }}
+                      />
+                    </label>
+                    <label className="main-toolbar-image-convert-row">
+                      <span>Format</span>
+                      <select
+                        value={imageConvertFormat}
+                        disabled={imageConvertExecuting}
+                        onChange={(event) =>
+                          onImageConvertFormatChange(
+                            event.target.value as "webp" | "jpeg" | "png" | "avif",
+                          )
+                        }
+                      >
+                        <option value="webp">Webp</option>
+                        <option value="jpeg">Jpeg</option>
+                        <option value="png">Png</option>
+                        <option value="avif">Avif</option>
+                      </select>
+                    </label>
+                    <label className="main-toolbar-image-convert-row">
+                      <span>Quality {imageConvertQuality}</span>
+                      <input
+                        type="range"
+                        min={10}
+                        max={100}
+                        step={5}
+                        value={imageConvertQuality}
+                        disabled={imageConvertExecuting}
+                        onChange={(event) =>
+                          onImageConvertQualityChange(Number(event.target.value))
+                        }
+                      />
+                    </label>
+                    <label className="main-toolbar-image-convert-row">
+                      <span>Threads {imageConvertConcurrency}</span>
+                      <input
+                        type="range"
+                        min={1}
+                        max={16}
+                        step={1}
+                        value={imageConvertConcurrency}
+                        disabled={imageConvertExecuting}
+                        onChange={(event) =>
+                          setImageConvertConcurrency(Number(event.target.value))
+                        }
+                      />
+                    </label>
+                    {imageConvertTaskStatus ? (
+                      <p className="main-toolbar-hint">
+                        {`RS ${imageConvertTaskStatus} ${Math.round(imageConvertTaskProgress * 100)}%${imageConvertTaskMessage ? ` | ${imageConvertTaskMessage}` : ""}`}
+                      </p>
+                    ) : null}
+                    <div className="settings-floating-actions manage-group-actions">
+                      <button
+                        type="button"
+                        disabled={imageConvertExecuting}
+                        title={
+                          imageConvertPreviewMode
+                            ? `Preview ${imageConvertPreviewScale.toFixed(1)} ${imageConvertPreviewFormat.toUpperCase()} Q${Math.round(imageConvertPreviewQuality)}`
+                            : "预览"
+                        }
+                        onClick={() => {
+                          setImageConvertPanelOpen(false);
+                          onOpenImageConvertPreview();
+                        }}
+                      >
+                        预览
+                      </button>
+                      <button
+                        type="button"
+                        disabled={imageConvertExecuting}
+                        onClick={async () => {
+                          if (imageConvertPreviewMode) {
+                            onConfirmImageConvertPreview();
+                          }
+                          setImageConvertTaskStatus("pending");
+                          setImageConvertTaskProgress(0);
+                          setImageConvertTaskMessage(null);
+                          const startResponse = (await onStartImageConvertTask({
+                            node_ids: [],
+                            scale_factor: imageConvertScale,
+                            ...(imageConvertLongestEdgePx != null
+                              ? { longest_edge_px: imageConvertLongestEdgePx }
+                              : {}),
+                            target_format: imageConvertFormat,
+                            quality: imageConvertQuality,
+                            concurrency: imageConvertConcurrency,
+                          })) as unknown;
+                          const nextTaskId = resolveTaskIdFromStartResponse(startResponse);
+                          if (!nextTaskId) {
+                            setImageConvertTaskStatus("failed");
+                            setImageConvertTaskMessage("missing task id");
+                            return;
+                          }
+                          setImageConvertTaskId(nextTaskId);
+                          setImageConvertTaskStatus("running");
+                        }}
+                      >
+                        确定
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (imageConvertExecuting && imageConvertTaskId) {
+                            try {
+                              await window.mediaPlayerBackend?.cancelImageConvertTask?.({ task_id: imageConvertTaskId });
+                              setImageConvertTaskStatus("cancelled");
+                              setImageConvertTaskMessage("cancel requested");
+                            } catch {
+                              setImageConvertTaskMessage("cancel failed");
+                            }
+                            stopImageConvertExecution();
+                            return;
+                          }
+                          if (imageConvertPreviewMode) {
+                            onCancelImageConvertPreview();
+                          }
+                          stopImageConvertExecution();
+                          setImageConvertPanelOpen(false);
+                        }}
+                      >
+                        取消
+                      </button>
+                    </div>
+                  </section>
+                </div>
               ) : null}
             </div>
             <div className="toolbar-actions toolbar-actions-manage-secondary">

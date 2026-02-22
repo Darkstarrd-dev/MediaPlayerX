@@ -97,6 +97,22 @@ export interface UseAppWorkspacePropsParams {
   thumbnailScaleLevelCount: number
   canThumbnailScaleDown: boolean
   canThumbnailScaleUp: boolean
+  imageConvertScale: number
+  setImageConvertScale: Dispatch<SetStateAction<number>>
+  imageConvertLongestEdgePx: number | null
+  setImageConvertLongestEdgePx: Dispatch<SetStateAction<number | null>>
+  imageConvertFormat: 'webp' | 'jpeg' | 'png' | 'avif'
+  setImageConvertFormat: Dispatch<SetStateAction<'webp' | 'jpeg' | 'png' | 'avif'>>
+  imageConvertQuality: number
+  setImageConvertQuality: Dispatch<SetStateAction<number>>
+  imageConvertPreviewMode: boolean
+  setImageConvertPreviewMode: Dispatch<SetStateAction<boolean>>
+  imageConvertPreviewScale: number
+  setImageConvertPreviewScale: Dispatch<SetStateAction<number>>
+  imageConvertPreviewFormat: 'webp' | 'jpeg' | 'png' | 'avif'
+  setImageConvertPreviewFormat: Dispatch<SetStateAction<'webp' | 'jpeg' | 'png' | 'avif'>>
+  imageConvertPreviewQuality: number
+  setImageConvertPreviewQuality: Dispatch<SetStateAction<number>>
   backendPageLoading: boolean
   pagedPageSize: number
   activePackageForDisplay: ImagePackage | null

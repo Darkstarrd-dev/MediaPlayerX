@@ -227,6 +227,29 @@ export type SaveManageSubtitleCleanupRequestDto = Infer<
 export type SaveManageSubtitleCleanupResponseDto = Infer<
   typeof Backend.saveManageSubtitleCleanupResponseSchema
 >;
+export type ImageConvertTaskStatusDto = Infer<
+  typeof Backend.imageConvertTaskStatusSchema
+>;
+export type ImageConvertFormatDto = Infer<typeof Backend.imageConvertFormatSchema>;
+export type ImageConvertTaskDto = Infer<typeof Backend.imageConvertTaskSchema>;
+export type StartImageConvertTaskRequestDto = Infer<
+  typeof Backend.startImageConvertTaskRequestSchema
+>;
+export type StartImageConvertTaskResponseDto = Infer<
+  typeof Backend.startImageConvertTaskResponseSchema
+>;
+export type ReadImageConvertTaskRequestDto = Infer<
+  typeof Backend.readImageConvertTaskRequestSchema
+>;
+export type ReadImageConvertTaskResponseDto = Infer<
+  typeof Backend.readImageConvertTaskResponseSchema
+>;
+export type CancelImageConvertTaskRequestDto = Infer<
+  typeof Backend.cancelImageConvertTaskRequestSchema
+>;
+export type CancelImageConvertTaskResponseDto = Infer<
+  typeof Backend.cancelImageConvertTaskResponseSchema
+>;
 export type WritePackageMetadataRequestDto = Infer<
   typeof Backend.writePackageMetadataRequestSchema
 >;

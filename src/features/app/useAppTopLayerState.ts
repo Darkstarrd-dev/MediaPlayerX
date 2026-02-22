@@ -108,6 +108,20 @@ interface UseAppTopLayerStateParams {
   autoSubtitleActive: boolean;
   liveSubtitleText: string | null;
   subtitleOverlayStyle: CSSProperties;
+  imageConvertPreviewMode?: boolean;
+  imageConvertPreviewScale?: number;
+  imageConvertPreviewLongestEdgePx?: number | null;
+  imageConvertPreviewFormat?: "webp" | "jpeg" | "png" | "avif";
+  imageConvertPreviewQuality?: number;
+  imageConvertPreviewRenderedSrc?: string | null;
+  imageConvertPreviewError?: string | null;
+  onChangeImageConvertPreviewScale?: (value: number) => void;
+  onChangeImageConvertPreviewFormat?: (
+    value: "webp" | "jpeg" | "png" | "avif",
+  ) => void;
+  onChangeImageConvertPreviewQuality?: (value: number) => void;
+  onConfirmImageConvertPreview?: () => void;
+  onCancelImageConvertPreview?: () => void;
   bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void;
   focusedVideoCoverImageSrc: string | null;
   focusedVideoDurationSec: number;
@@ -213,6 +227,18 @@ export function useAppTopLayerState({
   autoSubtitleActive,
   liveSubtitleText,
   subtitleOverlayStyle,
+  imageConvertPreviewMode = false,
+  imageConvertPreviewScale = 1,
+  imageConvertPreviewLongestEdgePx = null,
+  imageConvertPreviewFormat = "webp",
+  imageConvertPreviewQuality = 80,
+  imageConvertPreviewRenderedSrc = null,
+  imageConvertPreviewError = null,
+  onChangeImageConvertPreviewScale,
+  onChangeImageConvertPreviewFormat,
+  onChangeImageConvertPreviewQuality,
+  onConfirmImageConvertPreview,
+  onCancelImageConvertPreview,
   bindFullscreenVideoElement,
   focusedVideoCoverImageSrc,
   focusedVideoDurationSec,
@@ -438,6 +464,18 @@ export function useAppTopLayerState({
     autoSubtitleActive,
     liveSubtitleText,
     subtitleOverlayStyle,
+    imageConvertPreviewMode,
+    imageConvertPreviewScale,
+    imageConvertPreviewLongestEdgePx,
+    imageConvertPreviewFormat,
+    imageConvertPreviewQuality,
+    imageConvertPreviewRenderedSrc,
+    imageConvertPreviewError,
+    onChangeImageConvertPreviewScale,
+    onChangeImageConvertPreviewFormat,
+    onChangeImageConvertPreviewQuality,
+    onConfirmImageConvertPreview,
+    onCancelImageConvertPreview,
     bindFullscreenVideoElement,
     focusedVideoCoverImageSrc,
     durationSec: focusedVideoDurationSec,

@@ -1,11 +1,16 @@
 import type { RefObject } from 'react'
 
-import type { ManageAdReviewTaskDto, ManageReviewModeDto } from '../../contracts/backend'
+import type {
+  ManageAdReviewTaskDto,
+  ManageReviewModeDto,
+  StartImageConvertTaskRequestDto,
+} from '../../contracts/backend'
 import type { AppSettings } from '../../contracts/settings'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../../types'
 
 interface BuildImageMainSectionPropsParams {
+  fullscreenActive: boolean
   vectorResultsActive: boolean
   showNamesOnly: boolean
   metadataManageMode: boolean
@@ -13,6 +18,14 @@ interface BuildImageMainSectionPropsParams {
   thumbnailScaleLevelCount: number
   canThumbnailScaleDown: boolean
   canThumbnailScaleUp: boolean
+  imageConvertScale: number
+  imageConvertLongestEdgePx: number | null
+  imageConvertFormat: 'webp' | 'jpeg' | 'png' | 'avif'
+  imageConvertQuality: number
+  imageConvertPreviewMode: boolean
+  imageConvertPreviewScale: number
+  imageConvertPreviewFormat: 'webp' | 'jpeg' | 'png' | 'avif'
+  imageConvertPreviewQuality: number
   backendPageLoading: boolean
   pagedPageSize: number
   enableLoadingSkeleton: boolean
@@ -39,6 +52,7 @@ interface BuildImageMainSectionPropsParams {
   manageOperationHint: string | null
   canManageDelete: boolean
   canManageMoveNodes: boolean
+  canManageImageConvert: boolean
   canManageHide: boolean
   canManageUnhide: boolean
   adReviewFeatureEnabled: boolean
@@ -87,6 +101,9 @@ interface BuildImageMainSectionPropsParams {
   onManageRename: () => void
   onManageGroup: () => void
   onManageMove: () => void
+  onStartImageConvertTask: (
+    request: StartImageConvertTaskRequestDto,
+  ) => Promise<unknown>
   onManageHide: () => void
   onManageUnhide: () => void
   onToggleAdReviewPanel: () => void
@@ -104,6 +121,13 @@ interface BuildImageMainSectionPropsParams {
   onDismissAdReviewTask: () => void
   onClearManageSelection: () => void
   onThumbnailScaleLevelChange: (level: number) => void
+  onImageConvertScaleChange: (value: number) => void
+  onImageConvertLongestEdgePxChange: (value: number | null) => void
+  onImageConvertFormatChange: (value: 'webp' | 'jpeg' | 'png' | 'avif') => void
+  onImageConvertQualityChange: (value: number) => void
+  onOpenImageConvertPreview: () => void
+  onConfirmImageConvertPreview: () => void
+  onCancelImageConvertPreview: () => void
   nodeBrowseMode: boolean
   nodeBrowseLabel: string
   nodeBrowseItems: Array<{
@@ -123,6 +147,7 @@ interface BuildImageMainSectionPropsParams {
 
 export function buildImageMainSectionProps(params: BuildImageMainSectionPropsParams) {
   return {
+    fullscreenActive: params.fullscreenActive,
     vectorMode: params.vectorResultsActive,
     showNamesOnly: params.showNamesOnly,
     metadataManageMode: params.metadataManageMode,
@@ -130,6 +155,14 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     thumbnailScaleLevelCount: params.thumbnailScaleLevelCount,
     canThumbnailScaleDown: params.canThumbnailScaleDown,
     canThumbnailScaleUp: params.canThumbnailScaleUp,
+    imageConvertScale: params.imageConvertScale,
+    imageConvertLongestEdgePx: params.imageConvertLongestEdgePx,
+    imageConvertFormat: params.imageConvertFormat,
+    imageConvertQuality: params.imageConvertQuality,
+    imageConvertPreviewMode: params.imageConvertPreviewMode,
+    imageConvertPreviewScale: params.imageConvertPreviewScale,
+    imageConvertPreviewFormat: params.imageConvertPreviewFormat,
+    imageConvertPreviewQuality: params.imageConvertPreviewQuality,
     loading: params.enableLoadingSkeleton ? params.backendPageLoading : false,
     placeholderCount: Math.max(1, params.pagedPageSize),
     enableLoadingSkeleton: params.enableLoadingSkeleton,
@@ -156,6 +189,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     manageOperationHint: params.manageOperationHint,
     canManageDelete: params.canManageDelete,
     canManageMoveNodes: params.canManageMoveNodes,
+    canManageImageConvert: params.canManageImageConvert,
     canManageHide: params.canManageHide,
     canManageUnhide: params.canManageUnhide,
     adReviewFeatureEnabled: params.adReviewFeatureEnabled,
@@ -187,6 +221,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onManageRename: params.onManageRename,
     onManageGroup: params.onManageGroup,
     onManageMove: params.onManageMove,
+    onStartImageConvertTask: params.onStartImageConvertTask,
     onManageHide: params.onManageHide,
     onManageUnhide: params.onManageUnhide,
     onToggleAdReviewPanel: params.onToggleAdReviewPanel,
@@ -204,6 +239,13 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onDismissAdReviewTask: params.onDismissAdReviewTask,
     onClearManageSelection: params.onClearManageSelection,
     onThumbnailScaleLevelChange: params.onThumbnailScaleLevelChange,
+    onImageConvertScaleChange: params.onImageConvertScaleChange,
+    onImageConvertLongestEdgePxChange: params.onImageConvertLongestEdgePxChange,
+    onImageConvertFormatChange: params.onImageConvertFormatChange,
+    onImageConvertQualityChange: params.onImageConvertQualityChange,
+    onOpenImageConvertPreview: params.onOpenImageConvertPreview,
+    onConfirmImageConvertPreview: params.onConfirmImageConvertPreview,
+    onCancelImageConvertPreview: params.onCancelImageConvertPreview,
     onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
     canJumpToAnimation: params.canJumpToAnimation,
     canJumpToMusic: params.canJumpToMusic,

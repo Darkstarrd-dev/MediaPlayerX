@@ -843,6 +843,64 @@ export const saveManageSubtitleCleanupResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 });
 
+export const imageConvertTaskStatusSchema = z.enum([
+  "pending",
+  "running",
+  "completed",
+  "cancelled",
+  "failed",
+]);
+
+export const imageConvertFormatSchema = z.enum([
+  "webp",
+  "jpeg",
+  "png",
+  "avif",
+]);
+
+export const imageConvertTaskSchema = z.object({
+  task_id: z.string().min(1),
+  status: imageConvertTaskStatusSchema,
+  progress: z.number().min(0).max(1),
+  total_count: nonNegativeIntSchema,
+  processed_count: nonNegativeIntSchema,
+  success_count: nonNegativeIntSchema,
+  failed_count: nonNegativeIntSchema,
+  message: z.string().min(1).nullable(),
+  error_detail: z.string().min(1).nullable(),
+  created_at_ms: z.number().int().positive(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const startImageConvertTaskRequestSchema = z.object({
+  node_ids: z.array(z.string().min(1)).min(1),
+  scale_factor: z.number().min(0.1).max(1.0),
+  longest_edge_px: z.number().int().min(1).max(16384).optional(),
+  target_format: imageConvertFormatSchema,
+  quality: z.number().int().min(10).max(100),
+  concurrency: z.number().int().min(1).max(16),
+});
+
+export const startImageConvertTaskResponseSchema = z.object({
+  task: imageConvertTaskSchema,
+});
+
+export const readImageConvertTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+});
+
+export const readImageConvertTaskResponseSchema = z.object({
+  task: imageConvertTaskSchema.nullable(),
+});
+
+export const cancelImageConvertTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+});
+
+export const cancelImageConvertTaskResponseSchema = z.object({
+  task: imageConvertTaskSchema,
+});
+
 export const writePackageMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
   work_title: z.string().min(1),

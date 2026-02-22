@@ -1,10 +1,15 @@
 import type { RefObject } from "react";
 
-import type { ManageAdReviewTaskDto, ManageReviewModeDto } from "../contracts/backend";
+import type {
+  ManageAdReviewTaskDto,
+  ManageReviewModeDto,
+  StartImageConvertTaskRequestDto,
+} from "../contracts/backend";
 import type { ParsedExternalMetadata } from "../features/metadata/parseExternalMetadata";
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from "../types";
 
 export interface ImageMainSectionProps {
+  fullscreenActive?: boolean;
   vectorMode: boolean;
   showNamesOnly: boolean;
   metadataManageMode: boolean;
@@ -12,6 +17,14 @@ export interface ImageMainSectionProps {
   thumbnailScaleLevelCount?: number;
   canThumbnailScaleDown?: boolean;
   canThumbnailScaleUp?: boolean;
+  imageConvertScale?: number;
+  imageConvertLongestEdgePx?: number | null;
+  imageConvertFormat?: "webp" | "jpeg" | "png" | "avif";
+  imageConvertQuality?: number;
+  imageConvertPreviewMode?: boolean;
+  imageConvertPreviewScale?: number;
+  imageConvertPreviewFormat?: "webp" | "jpeg" | "png" | "avif";
+  imageConvertPreviewQuality?: number;
   loading: boolean;
   placeholderCount: number;
   enableLoadingSkeleton: boolean;
@@ -58,6 +71,7 @@ export interface ImageMainSectionProps {
   manageOperationHint: string | null;
   canManageDelete: boolean;
   canManageMoveNodes?: boolean;
+  canManageImageConvert?: boolean;
   canManageHide: boolean;
   canManageUnhide: boolean;
   adReviewFeatureEnabled: boolean;
@@ -89,6 +103,9 @@ export interface ImageMainSectionProps {
   onManageRename?: () => void;
   onManageGroup?: () => void;
   onManageMove?: () => void;
+  onStartImageConvertTask?: (
+    request: StartImageConvertTaskRequestDto,
+  ) => Promise<unknown>;
   onManageHide: () => void;
   onManageUnhide: () => void;
   onToggleAdReviewPanel: () => void;
@@ -106,6 +123,13 @@ export interface ImageMainSectionProps {
   onDismissAdReviewTask?: () => void;
   onClearManageSelection: () => void;
   onThumbnailScaleLevelChange?: (level: number) => void;
+  onImageConvertScaleChange?: (value: number) => void;
+  onImageConvertLongestEdgePxChange?: (value: number | null) => void;
+  onImageConvertFormatChange?: (value: "webp" | "jpeg" | "png" | "avif") => void;
+  onImageConvertQualityChange?: (value: number) => void;
+  onOpenImageConvertPreview?: () => void;
+  onConfirmImageConvertPreview?: () => void;
+  onCancelImageConvertPreview?: () => void;
   nodeBrowseMode?: boolean;
   nodeBrowseLabel?: string;
   nodeBrowseItems?: Array<{
