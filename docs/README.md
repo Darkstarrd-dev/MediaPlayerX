@@ -21,6 +21,13 @@
 - UI 槽位 Token 前缀表：`token_design.md`
 - 当前评估：`project-evaluation-report-v12.md`
 - 风险台账：`dependency-risk-register.md`
+- 性能实施计划：`thumb_acceleration_implementation_plan.md`
+
+## SSOT 同步提醒
+
+- 当实现“高级分页 / 加载性能”相关交互或默认值调整时，必须同步更新：
+  - `interaction-v1.md`（交互、分组、参数语义、Tooltip 用途）
+  - `thumb_acceleration_implementation_plan.md`（阶段、验收、回滚策略）
 
 ## UI 表维护约束
 
