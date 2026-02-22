@@ -204,6 +204,8 @@ export function renderSettingsMainSection({
   onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
 }: RenderSettingsMainSectionParams): JSX.Element {
+  const settingsTip = (key: string): string => t(`ui.settings.tooltip.${key}`);
+
   if (activeSection === "layout") {
     const styles = listStyles();
     const selectedStyleId = resolveStyleIdFromStyles(styleId, styles);
@@ -220,7 +222,10 @@ export function renderSettingsMainSection({
           <header className="settings-group-head">
             <span>{t("ui.settings.languageSection")}</span>
           </header>
-          <label htmlFor="settings-ui-locale-select">
+          <label
+            htmlFor="settings-ui-locale-select"
+            title={settingsTip("uiLocale")}
+          >
             {t("ui.settings.languageLabel")}
             <select
               id="settings-ui-locale-select"
@@ -249,7 +254,8 @@ export function renderSettingsMainSection({
             <span>{t("ui.settings.themeSection")}</span>
           </header>
           <div className="settings-theme-inline-row">
-            <label htmlFor="theme-style-select">
+            <label htmlFor="theme-style-select" title={settingsTip("style")}
+            >
               {t("ui.settings.styleLabel")}
               <select
                 id="theme-style-select"
@@ -263,7 +269,10 @@ export function renderSettingsMainSection({
                 ))}
               </select>
             </label>
-            <label htmlFor="theme-palette-day-select">
+            <label
+              htmlFor="theme-palette-day-select"
+              title={settingsTip("paletteDay")}
+            >
               {t("ui.settings.paletteDayDefault")}
               {paletteMode === "day" ? t("ui.settings.currentActiveTag") : ""}
               <select
@@ -279,7 +288,10 @@ export function renderSettingsMainSection({
                 ))}
               </select>
             </label>
-            <label htmlFor="theme-palette-night-select">
+            <label
+              htmlFor="theme-palette-night-select"
+              title={settingsTip("paletteNight")}
+            >
               {t("ui.settings.paletteNightDefault")}
               {paletteMode === "night" ? t("ui.settings.currentActiveTag") : ""}
               <select
@@ -316,7 +328,7 @@ export function renderSettingsMainSection({
               <MainUiIcon name={paletteMode === "day" ? "day" : "night"} />
             </button>
           </div>
-          <label>
+          <label title={settingsTip("backdropOpacity")}>
             {t("ui.settings.backdropOpacity", {
               value: settingsBackdropOpacity.toFixed(0),
             })}
@@ -337,7 +349,7 @@ export function renderSettingsMainSection({
           <header className="settings-group-head">
             <span>{t("ui.settings.thumbnailSection")}</span>
           </header>
-          <label>
+          <label title={settingsTip("thumbnailGap")}>
             {t("ui.settings.thumbnailGapScale", {
               scale: formatScale(thumbnailGapScale),
               px: thumbnailGap,
@@ -356,7 +368,10 @@ export function renderSettingsMainSection({
             />
           </label>
           <div className="settings-thumbnail-four-row">
-            <div className="settings-compact-control-cell">
+            <div
+              className="settings-compact-control-cell"
+              title={settingsTip("thumbnailQuality")}
+            >
               <span>{t("ui.settings.thumbnailQuality")}</span>
               <div className="settings-compact-control-actions">
                 <input
@@ -380,7 +395,10 @@ export function renderSettingsMainSection({
                 </button>
               </div>
             </div>
-            <div className="settings-compact-control-cell">
+            <div
+              className="settings-compact-control-cell"
+              title={settingsTip("thumbnailResolution")}
+            >
               <span>{t("ui.settings.thumbnailResolution")}</span>
               <div className="settings-compact-control-actions">
                 <input
@@ -406,7 +424,10 @@ export function renderSettingsMainSection({
                 </button>
               </div>
             </div>
-            <div className="settings-compact-control-cell">
+            <div
+              className="settings-compact-control-cell"
+              title={settingsTip("thumbnailGenerationConcurrency")}
+            >
               <span>{t("ui.settings.thumbnailGenerationConcurrency")}</span>
               <div className="settings-compact-control-actions">
                 <input
@@ -434,7 +455,10 @@ export function renderSettingsMainSection({
                 </button>
               </div>
             </div>
-            <div className="settings-compact-control-cell">
+            <div
+              className="settings-compact-control-cell"
+              title={settingsTip("thumbnailResolveConcurrency")}
+            >
               <span>{t("ui.settings.thumbnailResolveConcurrency")}</span>
               <div className="settings-compact-control-actions">
                 <input
@@ -497,7 +521,10 @@ export function renderSettingsMainSection({
           <header className="settings-group-head">
             <span>{t("ui.settings.layoutSection")}</span>
           </header>
-          <label className="settings-toggle-row">
+          <label
+            className="settings-toggle-row"
+            title={settingsTip("layoutLocked")}
+          >
             <span>{t("ui.settings.layoutLocked")}</span>
             <input
               type="checkbox"
@@ -505,7 +532,7 @@ export function renderSettingsMainSection({
               onChange={(event) => onLayoutLockedChange(event.target.checked)}
             />
           </label>
-          <label>
+          <label title={settingsTip("headerHeight")}>
             {t("ui.settings.headerHeightScale", {
               scale: formatScale(headerHeightScale),
               px: headerHeight,
@@ -523,7 +550,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("settingsFontScale")}>
             {t("ui.settings.settingsFontScale", {
               scale: formatScale(settingsFontSizeScale),
               px: settingsFontSize,
@@ -541,7 +568,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("sidebarRatio")}>
             {t("ui.settings.sidebarRatio", {
               percent: (sidebarRatio * 100).toFixed(0),
             })}
@@ -556,7 +583,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("sidebarMinWidth")}>
             {t("ui.settings.sidebarMinWidthScale", {
               scale: formatScale(sidebarMinWidthScale),
               px: sidebarMinWidth,
@@ -574,7 +601,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("sidebarFontScale")}>
             {t("ui.settings.sidebarFontScale", {
               scale: formatScale(sidebarFontSizeScale),
               px: sidebarFontSize,
@@ -592,7 +619,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("sidebarCountFontScale")}>
             {t("ui.settings.sidebarCountFontScale", {
               scale: formatScale(sidebarCountFontSizeScale),
               px: sidebarCountFontSize,
@@ -613,7 +640,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("sidebarIndentScale")}>
             {t("ui.settings.sidebarIndentScale", {
               scale: formatScale(sidebarIndentStepScale),
               px: sidebarIndentStep,
@@ -631,7 +658,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("sidebarVerticalGapScale")}>
             {t("ui.settings.sidebarVerticalGapScale", {
               scale: formatScale(sidebarVerticalGapScale),
               px: sidebarVerticalGap,
@@ -652,7 +679,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("metadataPanelRatio")}>
             {t("ui.settings.metadataPanelRatio", {
               percent: (metadataRatio * 100).toFixed(0),
             })}
@@ -667,7 +694,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("workspaceBottomPanelHeightScale")}>
             {t("ui.settings.workspaceBottomPanelHeightScale", {
               scale: formatScale(workspaceBottomPanelHeightScale),
               px: workspaceBottomPanelHeight,
@@ -688,7 +715,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("fullscreenVideoControlsMaxWidthScale")}>
             {t("ui.settings.fullscreenVideoControlsMaxWidthScale", {
               scale: formatScale(fullscreenVideoControlsMaxWidthScale),
               px: fullscreenVideoControlsMaxWidth,
@@ -709,7 +736,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label>
+          <label title={settingsTip("mediaPreloadMemoryBudgetMb")}>
             {t("ui.settings.mediaPreloadMemoryBudgetMb", {
               value: mediaPreloadMemoryBudgetMb,
             })}
@@ -737,7 +764,10 @@ export function renderSettingsMainSection({
             <span>{t("ui.settings.performanceLoadSection")}</span>
           </header>
 
-          <label htmlFor="settings-thumbnail-warmup-radius-select">
+          <label
+            htmlFor="settings-thumbnail-warmup-radius-select"
+            title={settingsTip("thumbnailWarmupRadius")}
+          >
             {t("ui.settings.thumbnailWarmupRadius")}
             <select
               id="settings-thumbnail-warmup-radius-select"
@@ -753,7 +783,10 @@ export function renderSettingsMainSection({
             </select>
           </label>
 
-          <label htmlFor="settings-thumbnail-warmup-concurrency-select">
+          <label
+            htmlFor="settings-thumbnail-warmup-concurrency-select"
+            title={settingsTip("thumbnailWarmupConcurrency")}
+          >
             {t("ui.settings.thumbnailWarmupConcurrency")}
             <select
               id="settings-thumbnail-warmup-concurrency-select"
@@ -769,7 +802,10 @@ export function renderSettingsMainSection({
             </select>
           </label>
 
-          <label htmlFor="settings-fullscreen-prefetch-radius-select">
+          <label
+            htmlFor="settings-fullscreen-prefetch-radius-select"
+            title={settingsTip("fullscreenPrefetchRadius")}
+          >
             {t("ui.settings.fullscreenPrefetchRadius")}
             <select
               id="settings-fullscreen-prefetch-radius-select"
@@ -786,7 +822,10 @@ export function renderSettingsMainSection({
             </select>
           </label>
 
-          <label htmlFor="settings-fullscreen-decode-cache-size-select">
+          <label
+            htmlFor="settings-fullscreen-decode-cache-size-select"
+            title={settingsTip("fullscreenDecodeCacheSize")}
+          >
             {t("ui.settings.fullscreenDecodeCacheSize")}
             <select
               id="settings-fullscreen-decode-cache-size-select"
@@ -803,7 +842,10 @@ export function renderSettingsMainSection({
             </select>
           </label>
 
-          <label className="settings-toggle-row">
+          <label
+            className="settings-toggle-row"
+            title={t("ui.settings.fullscreenResamplingEnabledTooltip")}
+          >
             <span title={t("ui.settings.fullscreenResamplingEnabledTooltip")}>
               {t("ui.settings.fullscreenResamplingEnabled")}
             </span>
@@ -818,7 +860,10 @@ export function renderSettingsMainSection({
 
           {fullscreenResamplingEnabled ? (
             <>
-              <label htmlFor="settings-fullscreen-downsampling-kernel-select">
+              <label
+                htmlFor="settings-fullscreen-downsampling-kernel-select"
+                title={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
+              >
                 <span
                   title={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
                 >
@@ -852,7 +897,10 @@ export function renderSettingsMainSection({
                 </select>
               </label>
 
-              <label htmlFor="settings-fullscreen-upsampling-kernel-select">
+              <label
+                htmlFor="settings-fullscreen-upsampling-kernel-select"
+                title={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
+              >
                 <span
                   title={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
                 >
@@ -1042,7 +1090,7 @@ export function renderSettingsMainSection({
         <p className="settings-placeholder">
           {t("ui.settings.databaseResetHint")}
         </p>
-        <label>
+        <label title={settingsTip("databaseReset")}>
           {t("ui.settings.databaseResetLabel")}
           <button
             type="button"
@@ -1067,7 +1115,7 @@ export function renderSettingsMainSection({
           <p className="settings-placeholder">
             {t("ui.settings.databaseDirectoryMigrationHint")}
           </p>
-          <label>
+          <label title={settingsTip("sqlDatabasePath")}>
             {t("ui.settings.sqlDatabasePathLabel")}
             <div className="settings-inline-field">
               <input
@@ -1087,7 +1135,7 @@ export function renderSettingsMainSection({
               </button>
             </div>
           </label>
-          <label>
+          <label title={settingsTip("thumbnailCacheDirectory")}>
             {t("ui.settings.thumbnailCacheDirectoryLabel")}
             <div className="settings-inline-field">
               <input
@@ -1117,7 +1165,7 @@ export function renderSettingsMainSection({
           <p className="settings-placeholder">
             {t("ui.settings.networkProxyHint")}
           </p>
-          <label>
+          <label title={settingsTip("proxyServer")}>
             {t("ui.settings.proxyServerLabel")}
             <input
               type="text"
@@ -1126,7 +1174,7 @@ export function renderSettingsMainSection({
               onChange={(event) => onProxyServerChange(event.target.value)}
             />
           </label>
-          <label>
+          <label title={settingsTip("ehentaiCookies")}>
             {t("ui.settings.ehentaiCookiesLabel")}
             <input
               type="text"

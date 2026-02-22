@@ -629,6 +629,7 @@ function MusicMainSection({
               aria-haspopup="dialog"
               aria-label={t('a11y.music.shaderSelected', { label: selectedShaderLabel })}
               className="video-action-btn"
+              title={t('a11y.music.shaderSelected', { label: selectedShaderLabel })}
               type="button"
             >
               <MusicControlIcon name="shaderList" />
@@ -639,6 +640,7 @@ function MusicMainSection({
                 <button
                   aria-label={t('a11y.music.shaderToggleLayer')}
                   className="music-ctrl-shader-toolbar-btn"
+                  title={t('a11y.music.shaderToggleLayer')}
                   type="button"
                   onClick={toggleShaderListTargetLayer}
                 >
@@ -647,6 +649,7 @@ function MusicMainSection({
                 <button
                   aria-label={t('a11y.music.shaderToggleEnabled')}
                   className={`music-ctrl-shader-toolbar-btn ${shaderListTargetEnabled ? 'is-on' : 'is-off'}`}
+                  title={t('a11y.music.shaderToggleEnabled')}
                   type="button"
                   onClick={toggleShaderListTargetEnabled}
                 >
@@ -687,6 +690,7 @@ function MusicMainSection({
               aria-haspopup="dialog"
               aria-label={t('a11y.music.shaderSettings')}
               className="video-action-btn"
+              title={t('a11y.music.shaderSettings')}
               type="button"
             >
               <MusicControlIcon name="shaderParameter" />
@@ -937,19 +941,20 @@ function MusicMainSection({
         </div>
 
         <div className="music-controls-group is-center" data-slot="fg-main-content-music-controls-center">
-          <button aria-label={t('a11y.media.prev')} className="video-action-btn" disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
+          <button aria-label={t('a11y.media.prev')} className="video-action-btn" title={t('a11y.media.prev')} disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
             <MusicControlIcon name="prev" />
           </button>
           <button
             aria-label={audioPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
             className="video-action-btn"
+            title={audioPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
             disabled={!focusedAudioSrc}
             type="button"
             onClick={toggleAudioPlayback}
           >
             <MusicControlIcon name={audioPlaying ? 'pause' : 'play'} />
           </button>
-          <button aria-label={t('a11y.media.next')} className="video-action-btn" disabled={!canNextAudio} type="button" onClick={onNextAudio}>
+          <button aria-label={t('a11y.media.next')} className="video-action-btn" title={t('a11y.media.next')} disabled={!canNextAudio} type="button" onClick={onNextAudio}>
             <MusicControlIcon name="next" />
           </button>
         </div>
@@ -975,6 +980,7 @@ function MusicMainSection({
               aria-haspopup="dialog"
               aria-label={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               className="video-action-btn"
+              title={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               type="button"
               onClick={() => setAudioMuted((value) => !value)}
             >

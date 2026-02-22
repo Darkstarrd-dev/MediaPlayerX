@@ -141,6 +141,7 @@ export function FullscreenImagePane({
                   <button
                     aria-label="调整预览分割位置"
                     className="fullscreen-image-compare-divider"
+                    title="调整预览分割位置"
                     type="button"
                     style={{ left: `${Math.round(clampedCompareSplit * 100)}%` }}
                     onMouseDown={startCompareDividerDrag}

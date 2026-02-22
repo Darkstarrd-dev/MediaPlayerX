@@ -125,6 +125,7 @@ export function MetadataSearchSection({
                   className="feature-selected-tag-chip"
                   type="button"
                   aria-label={t('a11y.metadata.removeTag', { tag })}
+                  title={t('a11y.metadata.removeTag', { tag })}
                   onClick={() => onSetFeatureTags(featureTags.filter((item) => item !== tag))}
                 >
                   <span>{tag}</span>
@@ -140,6 +141,7 @@ export function MetadataSearchSection({
           <div className="feature-rating-stars" role="group" aria-label={t('a11y.metadata.ratingFilter')}>
             <button
               aria-label={t('a11y.metadata.ratingNone')}
+              title={t('a11y.metadata.ratingNone')}
               aria-pressed={featureGradeFilter === null}
               className={`is-clear ${featureGradeFilter === null ? 'is-active' : ''}`}
               type="button"
@@ -154,6 +156,7 @@ export function MetadataSearchSection({
                 <button
                   key={score}
                   aria-label={t('a11y.metadata.ratingScore', { score })}
+                  title={t('a11y.metadata.ratingScore', { score })}
                   aria-pressed={featureGradeFilter === score}
                   className={isActive ? 'is-active' : ''}
                   style={{ color: `hsl(42deg ${35 + score * 13}% 48%)` }}

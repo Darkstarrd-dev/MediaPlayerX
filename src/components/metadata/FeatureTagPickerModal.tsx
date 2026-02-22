@@ -103,6 +103,7 @@ export function FeatureTagPickerModal({
                         <button
                           key={tag}
                           aria-label={t('a11y.tags.selectTag', { tag })}
+                          title={t('a11y.tags.selectTag', { tag })}
                           aria-pressed={selected}
                           className={selected ? 'is-active' : ''}
                           type="button"

@@ -92,6 +92,7 @@ export function MetadataRatingGroup({
         >
           <button
             aria-label={t('a11y.metadata.ratingNoneWithGroup', { group: groupAriaLabel })}
+            title={t('a11y.metadata.ratingNoneWithGroup', { group: groupAriaLabel })}
             aria-pressed={value === null}
             className={`is-clear ${value === null ? 'is-active' : ''}`}
             type="button"
@@ -109,6 +110,7 @@ export function MetadataRatingGroup({
               <button
                 key={score}
                 aria-label={t('a11y.metadata.ratingStarsWithGroup', { group: groupAriaLabel, score })}
+                title={t('a11y.metadata.ratingStarsWithGroup', { group: groupAriaLabel, score })}
                 aria-pressed={value === score}
                 className={isActive ? 'is-active' : ''}
                 type="button"

@@ -457,9 +457,13 @@ function SettingsPanel({
 
   const renderBindingRows = () => {
     return (
-      <div className="shortcut-list">
-        {SHORTCUT_DEFINITIONS.map((definition) => (
-          <label key={definition.action} className="shortcut-row">
+        <div className="shortcut-list">
+          {SHORTCUT_DEFINITIONS.map((definition) => (
+          <label
+            key={definition.action}
+            className="shortcut-row"
+            title={definition.label}
+          >
             <span>{definition.label}</span>
             <button
               className="shortcut-binding-trigger"

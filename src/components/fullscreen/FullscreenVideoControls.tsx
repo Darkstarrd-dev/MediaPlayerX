@@ -194,7 +194,7 @@ export function FullscreenVideoControlsShell({
 
       <div className="video-controls-row video-controls">
         {!hideLeftGroup ? <div className="video-controls-group is-left mpx-skeuo-well" data-slot="fg-main-content-video-controls-left">
-          <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" type="button" onClick={onToggleDualDisplay}>
+          <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" title={t('a11y.media.dualMode')} type="button" onClick={onToggleDualDisplay}>
             <VideoControlIcon name="dual" />
           </button>
 
@@ -209,6 +209,7 @@ export function FullscreenVideoControlsShell({
               aria-haspopup="dialog"
               aria-label={videoFitLabel}
               className="video-action-btn video-action-fit"
+              title={videoFitLabel}
               type="button"
               onClick={onCycleVideoFitMode}
             >
@@ -253,6 +254,7 @@ export function FullscreenVideoControlsShell({
               aria-haspopup="dialog"
               aria-label={subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')}
               className="video-action-btn video-action-subtitle"
+              title={subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')}
               type="button"
               onClick={onToggleSubtitle}
             >
@@ -297,6 +299,7 @@ export function FullscreenVideoControlsShell({
               aria-haspopup="dialog"
               aria-label={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
               className="video-action-btn video-action-speed"
+              title={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
               type="button"
             >
               <VideoControlIcon name="speed" />
@@ -324,6 +327,7 @@ export function FullscreenVideoControlsShell({
           <button
             aria-label={t('a11y.media.exitFullscreen')}
             className="video-action-btn video-action-fullscreen video-fullscreen-btn"
+            title={t('a11y.media.exitFullscreen')}
             type="button"
             onClick={onExit}
           >
@@ -332,24 +336,25 @@ export function FullscreenVideoControlsShell({
         </div> : null}
 
         <div className="video-controls-group is-center" data-slot="fg-main-content-video-controls-center">
-          <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
+          <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" title={t('a11y.media.prev')} type="button" onClick={onPrevVideo}>
             <VideoControlIcon name="prev" />
           </button>
           <button
             aria-label={videoPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
             className="video-action-btn video-action-play"
+            title={videoPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
             type="button"
             onClick={onToggleVideoPlay}
           >
             <VideoControlIcon name={videoPlaying ? 'pause' : 'play'} />
           </button>
-          <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
+          <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" title={t('a11y.media.next')} type="button" onClick={onNextVideo}>
             <VideoControlIcon name="next" />
           </button>
         </div>
 
         <div className="video-controls-group is-right mpx-skeuo-well" data-slot="fg-main-content-video-controls-right">
-          <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
+          <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" title={t('a11y.media.saveAsCover')} type="button" onClick={onSaveCover}>
             <VideoControlIcon name="camera" />
           </button>
 
@@ -364,6 +369,7 @@ export function FullscreenVideoControlsShell({
               aria-haspopup="dialog"
               aria-label={t('a11y.media.playlist')}
               className="video-action-btn video-action-playlist"
+              title={t('a11y.media.playlist')}
               type="button"
             >
               <VideoControlIcon name="playlist" />
@@ -413,6 +419,7 @@ export function FullscreenVideoControlsShell({
               aria-haspopup="dialog"
               aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               className="video-action-btn video-action-mute"
+              title={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               type="button"
               onClick={onToggleVideoMute}
             >

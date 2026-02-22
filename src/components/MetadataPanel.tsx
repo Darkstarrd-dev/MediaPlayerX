@@ -871,6 +871,7 @@ function MetadataPanel({
         aria-label={t("a11y.common.expandMetadataPanel")}
         className="meta-restore"
         data-slot="fg-meta-restore"
+        title={t("a11y.common.expandMetadataPanel")}
         type="button"
         onClick={onExpand}
       >

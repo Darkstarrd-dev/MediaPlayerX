@@ -650,6 +650,7 @@ function VideoMainSection({
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-fit"
                 aria-label={videoFitLabel}
+                title={videoFitLabel}
                 type="button"
                 onClick={onCycleVideoFitMode}
               >
@@ -694,6 +695,7 @@ function VideoMainSection({
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-subtitle"
                 aria-label={subtitleToggleLabel}
+                title={subtitleToggleLabel}
                 type="button"
                 onClick={onToggleSubtitle}
               >
@@ -732,6 +734,7 @@ function VideoMainSection({
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-speed"
                 aria-label={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
+                title={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
                 type="button"
               >
                 <VideoControlIcon name="speed" />
@@ -759,6 +762,7 @@ function VideoMainSection({
             <button
               aria-label={t('a11y.media.hotkeyFullscreen')}
               className="video-action-btn video-action-fullscreen video-fullscreen-btn"
+              title={t('a11y.media.hotkeyFullscreen')}
               type="button"
               onClick={onEnterFullscreen}
             >
@@ -767,24 +771,25 @@ function VideoMainSection({
           </div>
 
           <div className="video-controls-group is-center" data-slot="fg-main-content-video-controls-center">
-            <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" type="button" onClick={onPrevVideo}>
+            <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" title={t('a11y.media.prev')} type="button" onClick={onPrevVideo}>
               <VideoControlIcon name="prev" />
             </button>
             <button
               aria-label={videoPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
               className="video-action-btn video-action-play"
+              title={videoPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
               type="button"
               onClick={onTogglePlay}
             >
               <VideoControlIcon name={videoPlaying ? 'pause' : 'play'} />
             </button>
-            <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" type="button" onClick={onNextVideo}>
+            <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" title={t('a11y.media.next')} type="button" onClick={onNextVideo}>
               <VideoControlIcon name="next" />
             </button>
           </div>
 
           <div className="video-controls-group is-right mpx-skeuo-well" data-slot="fg-main-content-video-controls-right">
-            <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" type="button" onClick={onSaveCover}>
+            <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" title={t('a11y.media.saveAsCover')} type="button" onClick={onSaveCover}>
               <VideoControlIcon name="camera" />
             </button>
 
@@ -836,6 +841,7 @@ function VideoMainSection({
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-mute"
                 aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
+                title={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
                 type="button"
                 onClick={onToggleMute}
               >
