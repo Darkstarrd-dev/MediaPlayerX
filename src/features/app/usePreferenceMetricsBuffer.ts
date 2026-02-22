@@ -82,7 +82,9 @@ export function usePreferenceMetricsBuffer({
   videoTime,
 }: UsePreferenceMetricsBufferParams): void {
   const repositoryRef = useRef(repository);
-  const imageMetricsBySourceIdRef = useRef(new Map<string, BufferedImageMetric>());
+  const imageMetricsBySourceIdRef = useRef(
+    new Map<string, BufferedImageMetric>(),
+  );
   const videoMetricsByIdRef = useRef(new Map<string, BufferedVideoMetric>());
   const imageSessionRef = useRef<ImageSessionState>({
     active: false,
@@ -140,7 +142,9 @@ export function usePreferenceMetricsBuffer({
         if (totalSeconds > 0 && totalSeconds > existing.totalSeconds) {
           existing.totalSeconds = totalSeconds;
           existing.completionRatio =
-            totalSeconds > 0 ? clampRatio(existing.watchSeconds / totalSeconds) : 0;
+            totalSeconds > 0
+              ? clampRatio(existing.watchSeconds / totalSeconds)
+              : 0;
         }
         continue;
       }
@@ -160,8 +164,8 @@ export function usePreferenceMetricsBuffer({
   }, [videos]);
 
   const flushToDatabase = useCallback((reason: string) => {
-    const writeAppState = repositoryRef.current.writeAppState;
-    if (!writeAppState) {
+    const repository = repositoryRef.current;
+    if (!repository?.writeAppState) {
       return;
     }
 
@@ -202,7 +206,7 @@ export function usePreferenceMetricsBuffer({
     writeChainRef.current = writeChainRef.current
       .catch(() => undefined)
       .then(async () => {
-        await writeAppState({
+        await repository.writeAppState?.({
           state_key: PREFERENCE_METRICS_STATE_KEY,
           state_json: stateJson,
         });
@@ -218,7 +222,9 @@ export function usePreferenceMetricsBuffer({
 
     const pagesRead = clampNonNegativeInt(session.maxIndex + 1);
     const totalPages = clampNonNegativeInt(session.totalPages);
-    const existing = imageMetricsBySourceIdRef.current.get(session.sourceId) ?? {
+    const existing = imageMetricsBySourceIdRef.current.get(
+      session.sourceId,
+    ) ?? {
       eventCount: 0,
       pagesRead: 0,
       totalPages,
@@ -303,7 +309,9 @@ export function usePreferenceMetricsBuffer({
       }
     } else if (shouldTrackImage && focusedImageRef) {
       const currentPackage = packageById.get(focusedImageRef.packageId) ?? null;
-      const totalPages = clampNonNegativeInt(currentPackage?.images.length ?? 0);
+      const totalPages = clampNonNegativeInt(
+        currentPackage?.images.length ?? 0,
+      );
       if (!currentImageSession.active) {
         imageSessionRef.current = {
           active: true,
@@ -334,8 +342,11 @@ export function usePreferenceMetricsBuffer({
     const shouldTrackVideo =
       mode === "video" && videoPlaying && Boolean(selectedVideoId);
     const currentVideoSession = videoSessionRef.current;
-    const selectedVideo = videos.find((video) => video.id === selectedVideoId) ?? null;
-    const selectedVideoDuration = clampNonNegativeInt(selectedVideo?.durationSec ?? 0);
+    const selectedVideo =
+      videos.find((video) => video.id === selectedVideoId) ?? null;
+    const selectedVideoDuration = clampNonNegativeInt(
+      selectedVideo?.durationSec ?? 0,
+    );
 
     if (!shouldTrackVideo) {
       if (currentVideoSession.active) {

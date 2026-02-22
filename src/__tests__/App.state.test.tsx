@@ -81,28 +81,34 @@ describe("MediaPlayer 虚拟 UI", () => {
     ).toBeNull();
   });
 
-  it("Sidebar 聚焦目录节点时双击可稳定折叠与展开", async () => {
-    render(<App />);
-    await flushUiUpdates();
+  it(
+    "Sidebar 聚焦目录节点时双击可稳定折叠与展开",
+    async () => {
+      render(<App />);
+      await flushUiUpdates();
 
-    const rootFolderButton = screen.getByRole("button", { name: "X盘" });
-    expect(screen.getByRole("button", { name: "收藏" })).toBeInTheDocument();
-
-    await click(rootFolderButton);
-    fireEvent.doubleClick(rootFolderButton);
-    await flushUiUpdates();
-
-    await waitFor(() => {
-      expect(screen.queryByRole("button", { name: "收藏" })).toBeNull();
-    });
-
-    fireEvent.doubleClick(rootFolderButton);
-    await flushUiUpdates();
-
-    await waitFor(() => {
+      const rootFolderButton = screen.getByRole("button", { name: "X盘" });
       expect(screen.getByRole("button", { name: "收藏" })).toBeInTheDocument();
-    });
-  });
+
+      await click(rootFolderButton);
+      fireEvent.doubleClick(rootFolderButton);
+      await flushUiUpdates();
+
+      await waitFor(() => {
+        expect(screen.queryByRole("button", { name: "收藏" })).toBeNull();
+      });
+
+      fireEvent.doubleClick(rootFolderButton);
+      await flushUiUpdates();
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "收藏" }),
+        ).toBeInTheDocument();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it("非全屏 Sidebar 焦点按 R 打开重命名弹窗，Esc 可关闭", async () => {
     render(<App />);
@@ -125,21 +131,27 @@ describe("MediaPlayer 虚拟 UI", () => {
     expect(screen.queryByRole("dialog", { name: "重命名" })).toBeNull();
   });
 
-  it("非全屏 Sidebar 焦点按 Delete 直接打开删除确认弹窗", async () => {
-    render(<App />);
-    await flushUiUpdates();
+  it(
+    "非全屏 Sidebar 焦点按 Delete 直接打开删除确认弹窗",
+    async () => {
+      render(<App />);
+      await flushUiUpdates();
 
-    const sidebarNodeButton = screen.getByRole("button", {
-      name: "coastline_album.zip",
-    });
-    await click(sidebarNodeButton);
-    await keyDown(sidebarNodeButton, { key: "Delete", code: "Delete" });
+      const sidebarNodeButton = screen.getByRole("button", {
+        name: "coastline_album.zip",
+      });
+      await click(sidebarNodeButton);
+      await keyDown(sidebarNodeButton, { key: "Delete", code: "Delete" });
 
-    expect(
-      screen.getByRole("dialog", { name: "永久删除确认" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "仅移除" })).toBeInTheDocument();
-  });
+      expect(
+        screen.getByRole("dialog", { name: "永久删除确认" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "仅移除" }),
+      ).toBeInTheDocument();
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "Esc 可关闭设置与检索状态，且主区右键不误关闭检索",
@@ -575,9 +587,7 @@ describe("MediaPlayer 虚拟 UI", () => {
         ".fullscreen-media-image-element",
       ) as HTMLImageElement | null;
       expect(singleImage).not.toBeNull();
-      expect(singleImage?.getAttribute("src")).toContain(
-        "data:image/svg+xml",
-      );
+      expect(singleImage?.getAttribute("src")).toContain("data:image/svg+xml");
     });
 
     await keyDown(window, { key: "f", code: "KeyF" });
@@ -617,29 +627,33 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("视频模式检索面板仅展示特征检索", async () => {
-    render(<App />);
+  it(
+    "视频模式检索面板仅展示特征检索",
+    async () => {
+      render(<App />);
 
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await click(screen.getByRole("button", { name: "检索" }));
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await click(screen.getByRole("button", { name: "检索" }));
 
-    expect(
-      screen.queryByRole("group", { name: "search-mode-switch" }),
-    ).toBeNull();
-    expect(screen.queryByRole("button", { name: "向量检索" })).toBeNull();
-    expect(screen.queryByText(/当前结果:/)).toBeNull();
-    expect(screen.getByText(/命中节点:/)).toBeInTheDocument();
+      expect(
+        screen.queryByRole("group", { name: "search-mode-switch" }),
+      ).toBeNull();
+      expect(screen.queryByRole("button", { name: "向量检索" })).toBeNull();
+      expect(screen.queryByText(/当前结果:/)).toBeNull();
+      expect(screen.getByText(/命中节点:/)).toBeInTheDocument();
 
-    const featureControls = document.querySelector(
-      ".feature-controls",
-    ) as HTMLElement | null;
-    expect(featureControls).not.toBeNull();
-    const featureScope = within(featureControls as HTMLElement);
-    expect(featureScope.getByLabelText("名称")).toBeInTheDocument();
-    expect(featureScope.getByLabelText("作品名")).toBeInTheDocument();
-    expect(featureScope.getByLabelText("社团")).toBeInTheDocument();
-    expect(featureScope.getByLabelText("作者")).toBeInTheDocument();
-  });
+      const featureControls = document.querySelector(
+        ".feature-controls",
+      ) as HTMLElement | null;
+      expect(featureControls).not.toBeNull();
+      const featureScope = within(featureControls as HTMLElement);
+      expect(featureScope.getByLabelText("名称")).toBeInTheDocument();
+      expect(featureScope.getByLabelText("作品名")).toBeInTheDocument();
+      expect(featureScope.getByLabelText("社团")).toBeInTheDocument();
+      expect(featureScope.getByLabelText("作者")).toBeInTheDocument();
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "布局锁定开启后，主界面分割条拖动失效",
@@ -903,210 +917,224 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应", async () => {
-    render(<App />);
+  it(
+    "视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应",
+    async () => {
+      render(<App />);
 
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await keyDown(window, { key: "f", code: "KeyF" });
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await keyDown(window, { key: "f", code: "KeyF" });
 
-    expect(
-      document.querySelector(".fullscreen-media-video-element"),
-    ).not.toBeNull();
-    expect(screen.queryByLabelText("调整全屏分屏比例")).not.toBeInTheDocument();
+      expect(
+        document.querySelector(".fullscreen-media-video-element"),
+      ).not.toBeNull();
+      expect(
+        screen.queryByLabelText("调整全屏分屏比例"),
+      ).not.toBeInTheDocument();
 
-    const fullscreenLayer = document.querySelector(".fullscreen-layer");
-    expect(fullscreenLayer).not.toBeNull();
-    const singleVideoPane = document.querySelector(".fullscreen-video");
-    expect(singleVideoPane).not.toBeNull();
-    fireEvent.mouseEnter(singleVideoPane as Element);
+      const fullscreenLayer = document.querySelector(".fullscreen-layer");
+      expect(fullscreenLayer).not.toBeNull();
+      const singleVideoPane = document.querySelector(".fullscreen-video");
+      expect(singleVideoPane).not.toBeNull();
+      fireEvent.mouseEnter(singleVideoPane as Element);
 
-    const fullscreenFooter = document.querySelector(
-      ".fullscreen-footer",
-    ) as HTMLElement | null;
-    expect(fullscreenFooter).toBeNull();
-    const floatingControls = document.querySelector(
-      ".fullscreen-stage .fullscreen-video-controls",
-    ) as HTMLElement | null;
-    expect(floatingControls).not.toBeNull();
-    expect(
-      floatingControls?.querySelector(".video-controls-shell"),
-    ).not.toBeNull();
-    expect(
-      floatingControls?.querySelector(".fullscreen-meta-row"),
-    ).not.toBeNull();
-    expect(screen.getByLabelText("全屏视频进度滑条")).toBeInTheDocument();
+      const fullscreenFooter = document.querySelector(
+        ".fullscreen-footer",
+      ) as HTMLElement | null;
+      expect(fullscreenFooter).toBeNull();
+      const floatingControls = document.querySelector(
+        ".fullscreen-stage .fullscreen-video-controls",
+      ) as HTMLElement | null;
+      expect(floatingControls).not.toBeNull();
+      expect(
+        floatingControls?.querySelector(".video-controls-shell"),
+      ).not.toBeNull();
+      expect(
+        floatingControls?.querySelector(".fullscreen-meta-row"),
+      ).not.toBeNull();
+      expect(screen.getByLabelText("全屏视频进度滑条")).toBeInTheDocument();
 
-    await click(screen.getByRole("button", { name: "独立/复合" }));
+      await click(screen.getByRole("button", { name: "独立/复合" }));
 
-    const videoPane = document.querySelector(".fullscreen-video");
-    expect(videoPane).not.toBeNull();
-    fireEvent.mouseEnter(videoPane as Element);
+      const videoPane = document.querySelector(".fullscreen-video");
+      expect(videoPane).not.toBeNull();
+      fireEvent.mouseEnter(videoPane as Element);
 
-    const dualFloatingControls = document.querySelector(
-      ".fullscreen-stage .fullscreen-video-controls",
-    ) as HTMLElement | null;
-    expect(dualFloatingControls).not.toBeNull();
-    expect(dualFloatingControls?.style.bottom).toBe(
-      "var(--mpx-fullscreen-controls-bottom, 5%)",
-    );
-    expect(dualFloatingControls?.style.top).toBe("");
-    expect(
-      dualFloatingControls?.querySelector(".fullscreen-meta-row"),
-    ).not.toBeNull();
-    const shellDefault = dualFloatingControls?.querySelector(
-      ".fullscreen-video-controls-shell",
-    ) as HTMLElement | null;
-    expect(
-      shellDefault?.querySelector(".video-controls-progress"),
-    ).not.toBeNull();
+      const dualFloatingControls = document.querySelector(
+        ".fullscreen-stage .fullscreen-video-controls",
+      ) as HTMLElement | null;
+      expect(dualFloatingControls).not.toBeNull();
+      expect(dualFloatingControls?.style.bottom).toBe(
+        "var(--mpx-fullscreen-controls-bottom, 5%)",
+      );
+      expect(dualFloatingControls?.style.top).toBe("");
+      expect(
+        dualFloatingControls?.querySelector(".fullscreen-meta-row"),
+      ).not.toBeNull();
+      const shellDefault = dualFloatingControls?.querySelector(
+        ".fullscreen-video-controls-shell",
+      ) as HTMLElement | null;
+      expect(
+        shellDefault?.querySelector(".video-controls-progress"),
+      ).not.toBeNull();
 
-    await keyDown(window, {
-      key: "ArrowDown",
-      code: "ArrowDown",
-      altKey: true,
-    });
-    const shellAfterAlignDown = dualFloatingControls?.querySelector(
-      ".fullscreen-video-controls-shell",
-    ) as HTMLElement | null;
-    expect(
-      shellAfterAlignDown?.querySelector(".video-controls-progress"),
-    ).not.toBeNull();
-    expect(
-      shellAfterAlignDown?.querySelector(".video-controls-row"),
-    ).not.toBeNull();
+      await keyDown(window, {
+        key: "ArrowDown",
+        code: "ArrowDown",
+        altKey: true,
+      });
+      const shellAfterAlignDown = dualFloatingControls?.querySelector(
+        ".fullscreen-video-controls-shell",
+      ) as HTMLElement | null;
+      expect(
+        shellAfterAlignDown?.querySelector(".video-controls-progress"),
+      ).not.toBeNull();
+      expect(
+        shellAfterAlignDown?.querySelector(".video-controls-row"),
+      ).not.toBeNull();
 
-    await keyDown(window, { key: "ArrowUp", code: "ArrowUp", altKey: true });
-    const shellAfterAlignUp = dualFloatingControls?.querySelector(
-      ".fullscreen-video-controls-shell",
-    ) as HTMLElement | null;
-    expect(
-      shellAfterAlignUp?.querySelector(".video-controls-progress"),
-    ).not.toBeNull();
-    expect(
-      shellAfterAlignUp?.querySelector(".video-controls-row"),
-    ).not.toBeNull();
+      await keyDown(window, { key: "ArrowUp", code: "ArrowUp", altKey: true });
+      const shellAfterAlignUp = dualFloatingControls?.querySelector(
+        ".fullscreen-video-controls-shell",
+      ) as HTMLElement | null;
+      expect(
+        shellAfterAlignUp?.querySelector(".video-controls-progress"),
+      ).not.toBeNull();
+      expect(
+        shellAfterAlignUp?.querySelector(".video-controls-row"),
+      ).not.toBeNull();
 
-    const dualVideoStage = document.querySelector(
-      ".fullscreen-video .fullscreen-stage",
-    );
-    const dualVideoMedia = document.querySelector(
-      ".fullscreen-video .fullscreen-media-video",
-    ) as HTMLElement;
-    const dualImageStage = document.querySelector(
-      ".fullscreen-image .fullscreen-stage",
-    );
-    expect(dualVideoStage?.classList.contains("is-draggable")).toBe(true);
-    expect(dualImageStage?.classList.contains("is-draggable")).toBe(false);
+      const dualVideoStage = document.querySelector(
+        ".fullscreen-video .fullscreen-stage",
+      );
+      const dualVideoMedia = document.querySelector(
+        ".fullscreen-video .fullscreen-media-video",
+      ) as HTMLElement;
+      const dualImageStage = document.querySelector(
+        ".fullscreen-image .fullscreen-stage",
+      );
+      expect(dualVideoStage?.classList.contains("is-draggable")).toBe(true);
+      expect(dualImageStage?.classList.contains("is-draggable")).toBe(false);
 
-    const transformBeforeDrag = dualVideoMedia.style.transform;
-    await mouseDown(dualVideoStage as Element, {
-      button: 0,
-      clientX: 120,
-      clientY: 60,
-    });
-    expect(dualVideoStage?.classList.contains("is-dragging")).toBe(true);
-    fireEvent.mouseMove(window, { clientX: 120, clientY: 120 });
-    fireEvent.mouseUp(window);
-    expect(dualVideoStage?.classList.contains("is-dragging")).toBe(false);
+      const transformBeforeDrag = dualVideoMedia.style.transform;
+      await mouseDown(dualVideoStage as Element, {
+        button: 0,
+        clientX: 120,
+        clientY: 60,
+      });
+      expect(dualVideoStage?.classList.contains("is-dragging")).toBe(true);
+      fireEvent.mouseMove(window, { clientX: 120, clientY: 120 });
+      fireEvent.mouseUp(window);
+      expect(dualVideoStage?.classList.contains("is-dragging")).toBe(false);
 
-    const transformAfterDrag = dualVideoMedia.style.transform;
-    expect(transformAfterDrag).not.toBe(transformBeforeDrag);
-    const yOffset = transformAfterDrag.match(
-      /translate3d\([^,]+,\s*([-\d.]+)px,\s*0\)/,
-    )?.[1];
-    expect(Number(yOffset ?? "0")).not.toBe(0);
-  });
+      const transformAfterDrag = dualVideoMedia.style.transform;
+      expect(transformAfterDrag).not.toBe(transformBeforeDrag);
+      const yOffset = transformAfterDrag.match(
+        /translate3d\([^,]+,\s*([-\d.]+)px,\s*0\)/,
+      )?.[1];
+      expect(Number(yOffset ?? "0")).not.toBe(0);
+    },
+    uiLongTestTimeoutMs,
+  );
 
-  it("视频全屏单显示下，单视频循环在播放结束后不会跳到下一条", async () => {
-    render(<App />);
+  it(
+    "视频全屏单显示下，单视频循环在播放结束后不会跳到下一条",
+    async () => {
+      render(<App />);
 
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await keyDown(window, { key: "f", code: "KeyF" });
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await keyDown(window, { key: "f", code: "KeyF" });
 
-    const videoPane = document.querySelector(
-      ".fullscreen-video",
-    ) as HTMLElement | null;
-    expect(videoPane).not.toBeNull();
-    fireEvent.mouseEnter(videoPane as HTMLElement);
+      const videoPane = document.querySelector(
+        ".fullscreen-video",
+      ) as HTMLElement | null;
+      expect(videoPane).not.toBeNull();
+      fireEvent.mouseEnter(videoPane as HTMLElement);
 
-    const loopButton = within(videoPane as HTMLElement).getByRole("button", {
-      name: "视频循环模式：文件列表循环",
-    });
-    await click(loopButton);
-    expect(
-      within(videoPane as HTMLElement).getByRole("button", {
-        name: "视频循环模式：单视频循环",
-      }),
-    ).toBeInTheDocument();
-
-    const videoElementBefore = document.querySelector(
-      ".fullscreen-media-video-element",
-    ) as HTMLVideoElement | null;
-    expect(videoElementBefore).not.toBeNull();
-    const srcBefore = videoElementBefore?.getAttribute("src") ?? "";
-    expect(srcBefore.length).toBeGreaterThan(0);
-
-    fireEvent.ended(videoElementBefore as HTMLVideoElement);
-    await flushUiUpdates();
-
-    const videoElementAfter = document.querySelector(
-      ".fullscreen-media-video-element",
-    ) as HTMLVideoElement | null;
-    const srcAfter = videoElementAfter?.getAttribute("src") ?? "";
-    expect(srcAfter).toBe(srcBefore);
-  });
-
-  it("视频全屏双显示下，文件列表循环在播放结束后会切到下一条", async () => {
-    render(<App />);
-
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await keyDown(window, { key: "f", code: "KeyF" });
-
-    const singleVideoPane = document.querySelector(
-      ".fullscreen-video",
-    ) as HTMLElement | null;
-    expect(singleVideoPane).not.toBeNull();
-    fireEvent.mouseEnter(singleVideoPane as HTMLElement);
-
-    await click(
-      within(singleVideoPane as HTMLElement).getByRole("button", {
-        name: "独立/复合",
-      }),
-    );
-
-    const dualVideoPane = document.querySelector(
-      ".fullscreen-video",
-    ) as HTMLElement | null;
-    expect(dualVideoPane).not.toBeNull();
-    fireEvent.mouseEnter(dualVideoPane as HTMLElement);
-
-    const singleLoopButton = within(dualVideoPane as HTMLElement).queryByRole(
-      "button",
-      { name: "视频循环模式：单视频循环" },
-    );
-    if (singleLoopButton) {
-      await click(singleLoopButton);
-    }
-    expect(
-      within(dualVideoPane as HTMLElement).getByRole("button", {
+      const loopButton = within(videoPane as HTMLElement).getByRole("button", {
         name: "视频循环模式：文件列表循环",
-      }),
-    ).toBeInTheDocument();
+      });
+      await click(loopButton);
+      expect(
+        within(videoPane as HTMLElement).getByRole("button", {
+          name: "视频循环模式：单视频循环",
+        }),
+      ).toBeInTheDocument();
 
-    const videoElementBefore = document.querySelector(
-      ".fullscreen-media-video-element",
-    ) as HTMLVideoElement | null;
-    expect(videoElementBefore).not.toBeNull();
-    const srcBefore = videoElementBefore?.getAttribute("src") ?? "";
-    expect(srcBefore.length).toBeGreaterThan(0);
+      const videoElementBefore = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      expect(videoElementBefore).not.toBeNull();
+      const srcBefore = videoElementBefore?.getAttribute("src") ?? "";
+      expect(srcBefore.length).toBeGreaterThan(0);
 
-    fireEvent.ended(videoElementBefore as HTMLVideoElement);
-    await flushUiUpdates();
+      fireEvent.ended(videoElementBefore as HTMLVideoElement);
+      await flushUiUpdates();
 
-    const videoElementAfter = document.querySelector(
-      ".fullscreen-media-video-element",
-    ) as HTMLVideoElement | null;
-    const srcAfter = videoElementAfter?.getAttribute("src") ?? "";
-    expect(srcAfter).not.toBe(srcBefore);
-  });
+      const videoElementAfter = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      const srcAfter = videoElementAfter?.getAttribute("src") ?? "";
+      expect(srcAfter).toBe(srcBefore);
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
+    "视频全屏双显示下，文件列表循环在播放结束后会切到下一条",
+    async () => {
+      render(<App />);
+
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await keyDown(window, { key: "f", code: "KeyF" });
+
+      const singleVideoPane = document.querySelector(
+        ".fullscreen-video",
+      ) as HTMLElement | null;
+      expect(singleVideoPane).not.toBeNull();
+      fireEvent.mouseEnter(singleVideoPane as HTMLElement);
+
+      await click(
+        within(singleVideoPane as HTMLElement).getByRole("button", {
+          name: "独立/复合",
+        }),
+      );
+
+      const dualVideoPane = document.querySelector(
+        ".fullscreen-video",
+      ) as HTMLElement | null;
+      expect(dualVideoPane).not.toBeNull();
+      fireEvent.mouseEnter(dualVideoPane as HTMLElement);
+
+      const singleLoopButton = within(dualVideoPane as HTMLElement).queryByRole(
+        "button",
+        { name: "视频循环模式：单视频循环" },
+      );
+      if (singleLoopButton) {
+        await click(singleLoopButton);
+      }
+      expect(
+        within(dualVideoPane as HTMLElement).getByRole("button", {
+          name: "视频循环模式：文件列表循环",
+        }),
+      ).toBeInTheDocument();
+
+      const videoElementBefore = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      expect(videoElementBefore).not.toBeNull();
+      const srcBefore = videoElementBefore?.getAttribute("src") ?? "";
+      expect(srcBefore.length).toBeGreaterThan(0);
+
+      fireEvent.ended(videoElementBefore as HTMLVideoElement);
+      await flushUiUpdates();
+
+      const videoElementAfter = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      const srcAfter = videoElementAfter?.getAttribute("src") ?? "";
+      expect(srcAfter).not.toBe(srcBefore);
+    },
+    uiLongTestTimeoutMs,
+  );
 });

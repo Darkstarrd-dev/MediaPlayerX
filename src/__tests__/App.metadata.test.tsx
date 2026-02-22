@@ -82,35 +82,73 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("获取元数据弹窗展示双源结果列与分源请求响应预览", async () => {
-    render(<App />);
+  it(
+    "获取元数据弹窗展示双源结果列与分源请求响应预览",
+    async () => {
+      render(<App />);
 
-    await click(getMetadataManageModeButton());
-    await click(screen.getByRole("button", { name: "获取元数据" }));
+      await click(getMetadataManageModeButton());
+      await click(screen.getByRole("button", { name: "获取元数据" }));
 
-    const searchExternalMetadata = vi.fn(
-      async (request: { source?: "nhentai" | "ehentai" }) => {
-        if (request.source === "ehentai") {
+      const searchExternalMetadata = vi.fn(
+        async (request: { source?: "nhentai" | "ehentai" }) => {
+          if (request.source === "ehentai") {
+            return {
+              items: [
+                {
+                  source: "ehentai" as const,
+                  id: "1919810",
+                  title: "[Circle] mock-eh-title",
+                  title_original: null,
+                  cover: null,
+                  url: "https://example.com/eh/1919810",
+                  token: "token1919810",
+                  tags: ["parody:original"],
+                  pages: 1,
+                  posted: null,
+                  rating: null,
+                  favorited: null,
+                  raw: { source: "ehentai", mock: true },
+                },
+              ],
+              debug: {
+                source: "ehentai" as const,
+                started_at_ms: 1,
+                finished_at_ms: 2,
+                success: true,
+                result_count: 1,
+                steps: [
+                  {
+                    at_ms: 1,
+                    stage: "ehentai.search-page.request",
+                    message: "开始请求",
+                    request: { url: "https://e-hentai.org/" },
+                  },
+                ],
+              },
+            };
+          }
+
           return {
             items: [
               {
-                source: "ehentai" as const,
-                id: "1919810",
-                title: "[Circle] mock-eh-title",
+                source: "nhentai" as const,
+                id: "114514",
+                title: "mock-nh-title",
                 title_original: null,
                 cover: null,
-                url: "https://example.com/eh/1919810",
-                token: "token1919810",
-                tags: ["parody:original"],
+                url: "https://example.com/nh/114514",
+                token: "",
+                tags: ["language:chinese"],
                 pages: 1,
                 posted: null,
                 rating: null,
                 favorited: null,
-                raw: { source: "ehentai", mock: true },
+                raw: { source: "nhentai", mock: true },
               },
             ],
             debug: {
-              source: "ehentai" as const,
+              source: "nhentai" as const,
               started_at_ms: 1,
               finished_at_ms: 2,
               success: true,
@@ -118,120 +156,86 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
               steps: [
                 {
                   at_ms: 1,
-                  stage: "ehentai.search-page.request",
+                  stage: "nhentai.gallery.request",
                   message: "开始请求",
-                  request: { url: "https://e-hentai.org/" },
+                  request: { url: "https://nhentai.net/api/gallery/114514" },
                 },
               ],
             },
           };
-        }
+        },
+      );
 
-        return {
-          items: [
-            {
-              source: "nhentai" as const,
-              id: "114514",
-              title: "mock-nh-title",
-              title_original: null,
-              cover: null,
-              url: "https://example.com/nh/114514",
-              token: "",
-              tags: ["language:chinese"],
-              pages: 1,
-              posted: null,
-              rating: null,
-              favorited: null,
-              raw: { source: "nhentai", mock: true },
-            },
-          ],
-          debug: {
-            source: "nhentai" as const,
-            started_at_ms: 1,
-            finished_at_ms: 2,
-            success: true,
-            result_count: 1,
-            steps: [
-              {
-                at_ms: 1,
-                stage: "nhentai.gallery.request",
-                message: "开始请求",
-                request: { url: "https://nhentai.net/api/gallery/114514" },
-              },
-            ],
-          },
-        };
-      },
-    );
+      window.mediaPlayerBackend = {
+        searchExternalMetadata,
+      } as unknown as typeof window.mediaPlayerBackend;
 
-    window.mediaPlayerBackend = {
-      searchExternalMetadata,
-    } as unknown as typeof window.mediaPlayerBackend;
+      const dialog = screen.getByRole("dialog", { name: "获取元数据" });
+      const scope = within(dialog);
 
-    const dialog = screen.getByRole("dialog", { name: "获取元数据" });
-    const scope = within(dialog);
+      expect(
+        dialog.querySelectorAll(".metadata-fetch-source-column").length,
+      ).toBe(2);
 
-    expect(
-      dialog.querySelectorAll(".metadata-fetch-source-column").length,
-    ).toBe(2);
+      await click(scope.getByRole("button", { name: "检索" }));
 
-    await click(scope.getByRole("button", { name: "检索" }));
+      await waitFor(() => {
+        expect(searchExternalMetadata).toHaveBeenCalledTimes(2);
+      });
 
-    await waitFor(() => {
-      expect(searchExternalMetadata).toHaveBeenCalledTimes(2);
-    });
+      const calledSources = searchExternalMetadata.mock.calls.map(
+        (call) => call[0]?.source,
+      );
+      expect(calledSources).toEqual(
+        expect.arrayContaining(["nhentai", "ehentai"]),
+      );
 
-    const calledSources = searchExternalMetadata.mock.calls.map(
-      (call) => call[0]?.source,
-    );
-    expect(calledSources).toEqual(
-      expect.arrayContaining(["nhentai", "ehentai"]),
-    );
+      const nhColumn = dialog.querySelector(
+        '[data-source="nhentai"]',
+      ) as HTMLElement | null;
+      const ehColumn = dialog.querySelector(
+        '[data-source="ehentai"]',
+      ) as HTMLElement | null;
+      expect(nhColumn).not.toBeNull();
+      expect(ehColumn).not.toBeNull();
 
-    const nhColumn = dialog.querySelector(
-      '[data-source="nhentai"]',
-    ) as HTMLElement | null;
-    const ehColumn = dialog.querySelector(
-      '[data-source="ehentai"]',
-    ) as HTMLElement | null;
-    expect(nhColumn).not.toBeNull();
-    expect(ehColumn).not.toBeNull();
+      await waitFor(() => {
+        const nhScope = within(nhColumn as HTMLElement);
+        const ehScope = within(ehColumn as HTMLElement);
+        const nhRequest = nhScope.getByLabelText(
+          "Request Body",
+        ) as HTMLTextAreaElement;
+        const nhResponse = nhScope.getByLabelText(
+          "Response Body",
+        ) as HTMLTextAreaElement;
+        const nhDebug = nhScope.getByLabelText(
+          "Debug Trace",
+        ) as HTMLTextAreaElement;
+        const ehRequest = ehScope.getByLabelText(
+          "Request Body",
+        ) as HTMLTextAreaElement;
+        const ehResponse = ehScope.getByLabelText(
+          "Response Body",
+        ) as HTMLTextAreaElement;
+        const ehDebug = ehScope.getByLabelText(
+          "Debug Trace",
+        ) as HTMLTextAreaElement;
 
-    await waitFor(() => {
-      const nhScope = within(nhColumn as HTMLElement);
-      const ehScope = within(ehColumn as HTMLElement);
-      const nhRequest = nhScope.getByLabelText(
-        "Request Body",
-      ) as HTMLTextAreaElement;
-      const nhResponse = nhScope.getByLabelText(
-        "Response Body",
-      ) as HTMLTextAreaElement;
-      const nhDebug = nhScope.getByLabelText(
-        "Debug Trace",
-      ) as HTMLTextAreaElement;
-      const ehRequest = ehScope.getByLabelText(
-        "Request Body",
-      ) as HTMLTextAreaElement;
-      const ehResponse = ehScope.getByLabelText(
-        "Response Body",
-      ) as HTMLTextAreaElement;
-      const ehDebug = ehScope.getByLabelText(
-        "Debug Trace",
-      ) as HTMLTextAreaElement;
+        expect(nhRequest.value).toContain('"source": "nhentai"');
+        expect(nhResponse.value).toContain('"source": "nhentai"');
+        expect(nhDebug.value).toContain('"nhentai.gallery.request"');
+        expect(ehRequest.value).toContain('"source": "ehentai"');
+        expect(ehResponse.value).toContain('"source": "ehentai"');
+        expect(ehDebug.value).toContain('"ehentai.search-page.request"');
+      });
 
-      expect(nhRequest.value).toContain('"source": "nhentai"');
-      expect(nhResponse.value).toContain('"source": "nhentai"');
-      expect(nhDebug.value).toContain('"nhentai.gallery.request"');
-      expect(ehRequest.value).toContain('"source": "ehentai"');
-      expect(ehResponse.value).toContain('"source": "ehentai"');
-      expect(ehDebug.value).toContain('"ehentai.search-page.request"');
-    });
-
-    await keyDown(window, { key: "Escape", code: "Escape" });
-    await waitFor(() => {
-      expect(screen.queryByRole("dialog", { name: "获取元数据" })).toBeNull();
-    });
-  });
+      await keyDown(window, { key: "Escape", code: "Escape" });
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog", { name: "获取元数据" })).toBeNull();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "获取元数据支持按来源过滤、回车检索并可解析 ehentai 结果",
@@ -404,87 +408,105 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("进入元数据管理时自动退出原图显示并回到元数据编辑视图", async () => {
-    render(<App />);
+  it(
+    "进入元数据管理时自动退出原图显示并回到元数据编辑视图",
+    async () => {
+      render(<App />);
 
-    const firstThumbButton = screen
-      .getByText("幻旅系列 001 #1")
-      .closest("button");
-    expect(firstThumbButton).not.toBeNull();
-    await click(firstThumbButton as HTMLButtonElement);
+      const firstThumbButton = screen
+        .getByText("幻旅系列 001 #1")
+        .closest("button");
+      expect(firstThumbButton).not.toBeNull();
+      await click(firstThumbButton as HTMLButtonElement);
 
-    await waitFor(() => {
-      expect(document.querySelector(".metadata-image-real")).not.toBeNull();
-    });
+      await waitFor(() => {
+        expect(document.querySelector(".metadata-image-real")).not.toBeNull();
+      });
 
-    await click(getMetadataManageModeButton());
+      await click(getMetadataManageModeButton());
 
-    await waitFor(() => {
-      expect(document.querySelector(".metadata-image-real")).toBeNull();
-      expect(
-        screen.getByRole("group", { name: "图包评分" }),
-      ).toBeInTheDocument();
-    });
-  });
+      await waitFor(() => {
+        expect(document.querySelector(".metadata-image-real")).toBeNull();
+        expect(
+          screen.getByRole("group", { name: "图包评分" }),
+        ).toBeInTheDocument();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
-  it("原图显示阶段不再渲染旧版分辨率色块占位", async () => {
-    render(<App />);
+  it(
+    "原图显示阶段不再渲染旧版分辨率色块占位",
+    async () => {
+      render(<App />);
 
-    const firstThumbButton = screen
-      .getByText("幻旅系列 001 #1")
-      .closest("button");
-    expect(firstThumbButton).not.toBeNull();
-    await click(firstThumbButton as HTMLButtonElement);
+      const firstThumbButton = screen
+        .getByText("幻旅系列 001 #1")
+        .closest("button");
+      expect(firstThumbButton).not.toBeNull();
+      await click(firstThumbButton as HTMLButtonElement);
 
-    await waitFor(() => {
-      expect(document.querySelector(".metadata-image-real")).not.toBeNull();
-      expect(document.querySelector(".metadata-image-media")).toBeNull();
-    });
-  });
+      await waitFor(() => {
+        expect(document.querySelector(".metadata-image-real")).not.toBeNull();
+        expect(document.querySelector(".metadata-image-media")).toBeNull();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
-  it("原图说明仅显示文件名/分辨率/大小三行，不重复图包标题", async () => {
-    render(<App />);
+  it(
+    "原图说明仅显示文件名/分辨率/大小三行，不重复图包标题",
+    async () => {
+      render(<App />);
 
-    const firstThumbButton = screen
-      .getByText("幻旅系列 001 #1")
-      .closest("button");
-    expect(firstThumbButton).not.toBeNull();
-    await click(firstThumbButton as HTMLButtonElement);
+      const firstThumbButton = screen
+        .getByText("幻旅系列 001 #1")
+        .closest("button");
+      expect(firstThumbButton).not.toBeNull();
+      await click(firstThumbButton as HTMLButtonElement);
 
-    await waitFor(() => {
-      const caption = document.querySelector(
-        ".metadata-image-caption",
-      ) as HTMLElement | null;
-      expect(caption).not.toBeNull();
-      const lines = caption?.querySelectorAll("span") ?? [];
-      expect(lines).toHaveLength(3);
-      expect(lines[0]?.textContent ?? "").toContain("img_0001.jpg");
-      expect(lines[1]?.textContent ?? "").toBe("920 x 920");
-      expect(lines[2]?.textContent ?? "").toBe("180KB");
-      expect(caption?.querySelector("strong")).toBeNull();
-    });
-  });
+      await waitFor(() => {
+        const caption = document.querySelector(
+          ".metadata-image-caption",
+        ) as HTMLElement | null;
+        expect(caption).not.toBeNull();
+        const lines = caption?.querySelectorAll("span") ?? [];
+        expect(lines).toHaveLength(3);
+        expect(lines[0]?.textContent ?? "").toContain("img_0001.jpg");
+        expect(lines[1]?.textContent ?? "").toBe("920 x 920");
+        expect(lines[2]?.textContent ?? "").toBe("180KB");
+        expect(caption?.querySelector("strong")).toBeNull();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
-  it("退出原图显示后元数据面板恢复常规布局，不保持 focus 容器样式", async () => {
-    render(<App />);
+  it(
+    "退出原图显示后元数据面板恢复常规布局，不保持 focus 容器样式",
+    async () => {
+      render(<App />);
 
-    const firstThumbButton = screen
-      .getByText("幻旅系列 001 #1")
-      .closest("button");
-    expect(firstThumbButton).not.toBeNull();
-    await click(firstThumbButton as HTMLButtonElement);
+      const firstThumbButton = screen
+        .getByText("幻旅系列 001 #1")
+        .closest("button");
+      expect(firstThumbButton).not.toBeNull();
+      await click(firstThumbButton as HTMLButtonElement);
 
-    await waitFor(() => {
-      expect(document.querySelector(".metadata-content-focus")).not.toBeNull();
-    });
+      await waitFor(() => {
+        expect(
+          document.querySelector(".metadata-content-focus"),
+        ).not.toBeNull();
+      });
 
-    await click(screen.getByRole("button", { name: "切换到元数据显示" }));
+      await click(screen.getByRole("button", { name: "切换到元数据显示" }));
 
-    await waitFor(() => {
-      expect(document.querySelector(".metadata-content-focus")).toBeNull();
-      expect(document.querySelector(".metadata-rating-group")).not.toBeNull();
-    });
-  });
+      await waitFor(() => {
+        expect(document.querySelector(".metadata-content-focus")).toBeNull();
+        expect(document.querySelector(".metadata-rating-group")).not.toBeNull();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "元数据评分支持清空到空星，并可继续点击设星",
@@ -521,95 +543,109 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("图片模式只读元数据评分可用并可写入", async () => {
-    const writePackageGradeSpy = vi.spyOn(
-      MockMediaRepository.prototype,
-      "writePackageGradeSync",
-    );
-    render(<App />);
+  it(
+    "图片模式只读元数据评分可用并可写入",
+    async () => {
+      const writePackageGradeSpy = vi.spyOn(
+        MockMediaRepository.prototype,
+        "writePackageGradeSync",
+      );
+      render(<App />);
 
-    const ratingGroup = screen.getByRole("group", { name: "图包评分" });
-    const ratingThreeStar = within(ratingGroup).getByRole("button", {
-      name: "图包评分 3 星",
-    }) as HTMLButtonElement;
-    expect(ratingThreeStar.disabled).toBe(false);
-
-    await click(ratingThreeStar);
-    expect(writePackageGradeSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        grade: 3,
-      }),
-    );
-
-    await waitFor(() => {
+      const ratingGroup = screen.getByRole("group", { name: "图包评分" });
+      const ratingThreeStar = within(ratingGroup).getByRole("button", {
+        name: "图包评分 3 星",
+      }) as HTMLButtonElement;
       expect(ratingThreeStar.disabled).toBe(false);
-    });
 
-    await mouseDown(screen.getByRole("button", { name: "清空评分" }), {
-      button: 0,
-    });
-    await waitFor(() => {
+      await click(ratingThreeStar);
       expect(writePackageGradeSpy).toHaveBeenCalledWith(
         expect.objectContaining({
-          grade: null,
+          grade: 3,
         }),
       );
-    });
-  });
 
-  it("视频模式元数据默认只读，包含评分与操作区", async () => {
-    render(<App />);
+      await waitFor(() => {
+        expect(ratingThreeStar.disabled).toBe(false);
+      });
 
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await ensureVideoInfoTab();
+      await mouseDown(screen.getByRole("button", { name: "清空评分" }), {
+        button: 0,
+      });
+      await waitFor(() => {
+        expect(writePackageGradeSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            grade: null,
+          }),
+        );
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
-    expect(screen.getByLabelText("文件名")).toBeInTheDocument();
-    expect(screen.getByText("作品名")).toBeInTheDocument();
-    expect(screen.getByText("社团")).toBeInTheDocument();
-    expect(screen.getByText("作者")).toBeInTheDocument();
-    expect(
-      document.querySelectorAll(
-        ".metadata-localized-field .metadata-localized-value.is-clickable",
-      ).length,
-    ).toBeGreaterThanOrEqual(3);
-    expect(screen.getByText(/标签|Tags/)).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "视频评分" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "视频评分 无评分" }),
-    ).toBeDisabled();
-    expect(screen.queryByRole("button", { name: "保存" })).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "同步文件名到作品名" }),
-    ).toBeNull();
-    expect(document.querySelector(".metadata-video-stats")).toBeNull();
-  });
+  it(
+    "视频模式元数据默认只读，包含评分与操作区",
+    async () => {
+      render(<App />);
 
-  it("视频信息字段回车会触发 writeVideoMetadata 调用", async () => {
-    const writeVideoMetadataSpy = vi.spyOn(
-      MockMediaRepository.prototype,
-      "writeVideoMetadataSync",
-    );
-    render(<App />);
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await ensureVideoInfoTab();
 
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await click(getMetadataManageModeButton());
-    await ensureVideoInfoTab();
+      expect(screen.getByLabelText("文件名")).toBeInTheDocument();
+      expect(screen.getByText("作品名")).toBeInTheDocument();
+      expect(screen.getByText("社团")).toBeInTheDocument();
+      expect(screen.getByText("作者")).toBeInTheDocument();
+      expect(
+        document.querySelectorAll(
+          ".metadata-localized-field .metadata-localized-value.is-clickable",
+        ).length,
+      ).toBeGreaterThanOrEqual(3);
+      expect(screen.getByText(/标签|Tags/)).toBeInTheDocument();
+      expect(
+        screen.getByRole("group", { name: "视频评分" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "视频评分 无评分" }),
+      ).toBeDisabled();
+      expect(screen.queryByRole("button", { name: "保存" })).toBeNull();
+      expect(
+        screen.queryByRole("button", { name: "同步文件名到作品名" }),
+      ).toBeNull();
+      expect(document.querySelector(".metadata-video-stats")).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
 
-    const workTitleInput = screen.getByLabelText(
-      "英文标题",
-    ) as HTMLInputElement;
-    fireEvent.change(workTitleInput, { target: { value: "新的视频作品名" } });
-    await keyDown(workTitleInput, { key: "Enter", code: "Enter" });
-
-    await waitFor(() => {
-      expect(writeVideoMetadataSpy).toHaveBeenCalled();
-      expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          work_title: "新的视频作品名",
-        }),
+  it(
+    "视频信息字段回车会触发 writeVideoMetadata 调用",
+    async () => {
+      const writeVideoMetadataSpy = vi.spyOn(
+        MockMediaRepository.prototype,
+        "writeVideoMetadataSync",
       );
-    });
-  });
+      render(<App />);
+
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await click(getMetadataManageModeButton());
+      await ensureVideoInfoTab();
+
+      const workTitleInput = screen.getByLabelText(
+        "英文标题",
+      ) as HTMLInputElement;
+      fireEvent.change(workTitleInput, { target: { value: "新的视频作品名" } });
+      await keyDown(workTitleInput, { key: "Enter", code: "Enter" });
+
+      await waitFor(() => {
+        expect(writeVideoMetadataSpy).toHaveBeenCalled();
+        expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            work_title: "新的视频作品名",
+          }),
+        );
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "系列ID匹配时支持动画版/漫画版双向跳转",
@@ -807,162 +843,178 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("元数据管理支持写入图片与视频系列ID", async () => {
-    const writePackageMetadataSpy = vi.spyOn(
-      MockMediaRepository.prototype,
-      "writePackageMetadataSync",
-    );
-    const writeVideoMetadataSpy = vi.spyOn(
-      MockMediaRepository.prototype,
-      "writeVideoMetadataSync",
-    );
-    render(<App />);
-
-    await click(getMetadataManageModeButton());
-
-    const imageSeriesLabel = await screen.findByText("系列ID");
-    const imageSeriesInput = imageSeriesLabel
-      .closest("label")
-      ?.querySelector("input") as HTMLInputElement;
-    expect(imageSeriesInput).toBeInTheDocument();
-    fireEvent.change(imageSeriesInput, {
-      target: { value: "series-image-001" },
-    });
-    await keyDown(imageSeriesInput, { key: "Enter", code: "Enter" });
-
-    await waitFor(() => {
-      expect(writePackageMetadataSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          series_id: "series-image-001",
-        }),
+  it(
+    "元数据管理支持写入图片与视频系列ID",
+    async () => {
+      const writePackageMetadataSpy = vi.spyOn(
+        MockMediaRepository.prototype,
+        "writePackageMetadataSync",
       );
-    });
-
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await ensureVideoInfoTab();
-
-    const videoSeriesLabel = await screen.findByText("系列ID");
-    const videoSeriesInput = videoSeriesLabel
-      .closest("label")
-      ?.querySelector("input") as HTMLInputElement;
-    expect(videoSeriesInput).toBeInTheDocument();
-    fireEvent.change(videoSeriesInput, {
-      target: { value: "series-video-001" },
-    });
-    await keyDown(videoSeriesInput, { key: "Enter", code: "Enter" });
-
-    await waitFor(() => {
-      expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          series_id: "series-video-001",
-        }),
+      const writeVideoMetadataSpy = vi.spyOn(
+        MockMediaRepository.prototype,
+        "writeVideoMetadataSync",
       );
-    });
-  });
+      render(<App />);
 
-  it("视频评分可点击并写入 grade", async () => {
-    const writeVideoMetadataSpy = vi.spyOn(
-      MockMediaRepository.prototype,
-      "writeVideoMetadataSync",
-    );
-    render(<App />);
+      await click(getMetadataManageModeButton());
 
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await click(getMetadataManageModeButton());
-    await ensureVideoInfoTab();
-    await click(screen.getByRole("button", { name: "视频评分 5 星" }));
+      const imageSeriesLabel = await screen.findByText("系列ID");
+      const imageSeriesInput = imageSeriesLabel
+        .closest("label")
+        ?.querySelector("input") as HTMLInputElement;
+      expect(imageSeriesInput).toBeInTheDocument();
+      fireEvent.change(imageSeriesInput, {
+        target: { value: "series-image-001" },
+      });
+      await keyDown(imageSeriesInput, { key: "Enter", code: "Enter" });
 
-    await waitFor(() => {
-      expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          grade: 5,
-        }),
+      await waitFor(() => {
+        expect(writePackageMetadataSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            series_id: "series-image-001",
+          }),
+        );
+      });
+
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await ensureVideoInfoTab();
+
+      const videoSeriesLabel = await screen.findByText("系列ID");
+      const videoSeriesInput = videoSeriesLabel
+        .closest("label")
+        ?.querySelector("input") as HTMLInputElement;
+      expect(videoSeriesInput).toBeInTheDocument();
+      fireEvent.change(videoSeriesInput, {
+        target: { value: "series-video-001" },
+      });
+      await keyDown(videoSeriesInput, { key: "Enter", code: "Enter" });
+
+      await waitFor(() => {
+        expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            series_id: "series-video-001",
+          }),
+        );
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
+    "视频评分可点击并写入 grade",
+    async () => {
+      const writeVideoMetadataSpy = vi.spyOn(
+        MockMediaRepository.prototype,
+        "writeVideoMetadataSync",
       );
-    });
-  });
+      render(<App />);
 
-  it("默认只读元数据作品名标题复制当前值，点击值不触发切换", async () => {
-    const writeText = vi.fn(async () => undefined);
-    Object.defineProperty(window.navigator, "clipboard", {
-      value: { writeText },
-      configurable: true,
-    });
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await click(getMetadataManageModeButton());
+      await ensureVideoInfoTab();
+      await click(screen.getByRole("button", { name: "视频评分 5 星" }));
 
-    render(<App />);
+      await waitFor(() => {
+        expect(writeVideoMetadataSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            grade: 5,
+          }),
+        );
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
-    const workTitleField = screen
-      .getAllByText("作品名")
-      .find((node) =>
-        node.classList.contains("metadata-field-name"),
+  it(
+    "默认只读元数据作品名标题复制当前值，点击值不触发切换",
+    async () => {
+      const writeText = vi.fn(async () => undefined);
+      Object.defineProperty(window.navigator, "clipboard", {
+        value: { writeText },
+        configurable: true,
+      });
+
+      render(<App />);
+
+      const workTitleField = screen
+        .getAllByText("作品名")
+        .find((node) =>
+          node.classList.contains("metadata-field-name"),
+        ) as HTMLElement;
+      const workTitleLabel = workTitleField.closest("label") as HTMLElement;
+      const workTitleValue = workTitleLabel.querySelector(
+        ".metadata-localized-value",
       ) as HTMLElement;
-    const workTitleLabel = workTitleField.closest("label") as HTMLElement;
-    const workTitleValue = workTitleLabel.querySelector(
-      ".metadata-localized-value",
-    ) as HTMLElement;
-    const workTitleLangButton = within(workTitleLabel).getByRole(
-      "button",
-    ) as HTMLButtonElement;
-    const beforeLang = workTitleLangButton.textContent;
-    const beforeValue = workTitleValue.textContent?.trim() ?? "";
+      const workTitleLangButton = within(workTitleLabel).getByRole(
+        "button",
+      ) as HTMLButtonElement;
+      const beforeLang = workTitleLangButton.textContent;
+      const beforeValue = workTitleValue.textContent?.trim() ?? "";
 
-    await click(workTitleField);
+      await click(workTitleField);
 
-    await waitFor(() => {
-      expect(writeText).toHaveBeenCalledWith(beforeValue);
-    });
+      await waitFor(() => {
+        expect(writeText).toHaveBeenCalledWith(beforeValue);
+      });
 
-    await click(workTitleValue);
+      await click(workTitleValue);
 
-    expect(
-      (within(workTitleLabel).getByRole("button") as HTMLButtonElement)
-        .textContent,
-    ).toBe(beforeLang);
-    expect(workTitleValue.textContent?.trim() ?? "").toBe(beforeValue);
-    expect(screen.queryByRole("button", { name: "检索结果" })).toBeNull();
-  });
+      expect(
+        (within(workTitleLabel).getByRole("button") as HTMLButtonElement)
+          .textContent,
+      ).toBe(beforeLang);
+      expect(workTitleValue.textContent?.trim() ?? "").toBe(beforeValue);
+      expect(screen.queryByRole("button", { name: "检索结果" })).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
 
-  it("默认只读元数据作者与社团标题点击复制当前值", async () => {
-    const writeText = vi.fn(async () => undefined);
-    Object.defineProperty(window.navigator, "clipboard", {
-      value: { writeText },
-      configurable: true,
-    });
+  it(
+    "默认只读元数据作者与社团标题点击复制当前值",
+    async () => {
+      const writeText = vi.fn(async () => undefined);
+      Object.defineProperty(window.navigator, "clipboard", {
+        value: { writeText },
+        configurable: true,
+      });
 
-    render(<App />);
+      render(<App />);
 
-    const authorFieldName = screen
-      .getAllByText("作者")
-      .find((node) =>
-        node.classList.contains("metadata-field-name"),
+      const authorFieldName = screen
+        .getAllByText("作者")
+        .find((node) =>
+          node.classList.contains("metadata-field-name"),
+        ) as HTMLElement;
+      const authorLabel = authorFieldName.closest("label") as HTMLElement;
+      const authorValue = authorLabel.querySelector(
+        ".metadata-localized-value",
       ) as HTMLElement;
-    const authorLabel = authorFieldName.closest("label") as HTMLElement;
-    const authorValue = authorLabel.querySelector(
-      ".metadata-localized-value",
-    ) as HTMLElement;
-    await click(authorFieldName);
+      await click(authorFieldName);
 
-    const circleFieldName = screen
-      .getAllByText("社团")
-      .find((node) =>
-        node.classList.contains("metadata-field-name"),
+      const circleFieldName = screen
+        .getAllByText("社团")
+        .find((node) =>
+          node.classList.contains("metadata-field-name"),
+        ) as HTMLElement;
+      const circleLabel = circleFieldName.closest("label") as HTMLElement;
+      const circleValue = circleLabel.querySelector(
+        ".metadata-localized-value",
       ) as HTMLElement;
-    const circleLabel = circleFieldName.closest("label") as HTMLElement;
-    const circleValue = circleLabel.querySelector(
-      ".metadata-localized-value",
-    ) as HTMLElement;
-    await click(circleFieldName);
+      await click(circleFieldName);
 
-    await waitFor(() => {
-      expect(writeText).toHaveBeenNthCalledWith(
-        1,
-        authorValue.textContent?.trim() ?? "",
-      );
-      expect(writeText).toHaveBeenNthCalledWith(
-        2,
-        circleValue.textContent?.trim() ?? "",
-      );
-    });
-  });
+      await waitFor(() => {
+        expect(writeText).toHaveBeenNthCalledWith(
+          1,
+          authorValue.textContent?.trim() ?? "",
+        );
+        expect(writeText).toHaveBeenNthCalledWith(
+          2,
+          circleValue.textContent?.trim() ?? "",
+        );
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "默认只读元数据点击作者值可静默触发检索并通过返回按钮清空",
@@ -1034,74 +1086,88 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     uiLongTestTimeoutMs,
   );
 
-  it("视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空", async () => {
-    render(<App />);
+  it(
+    "视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空",
+    async () => {
+      render(<App />);
 
-    await click(screen.getByRole("button", { name: "视频模式" }));
+      await click(screen.getByRole("button", { name: "视频模式" }));
 
-    const circleLabel = screen
-      .getByText("社团")
-      .closest("label") as HTMLElement;
-    const circleValue = circleLabel.querySelector(
-      ".metadata-localized-value.is-clickable",
-    ) as HTMLElement;
-    await click(circleValue);
+      const circleLabel = screen
+        .getByText("社团")
+        .closest("label") as HTMLElement;
+      const circleValue = circleLabel.querySelector(
+        ".metadata-localized-value.is-clickable",
+      ) as HTMLElement;
+      await click(circleValue);
 
-    expect(
-      screen.queryByRole("group", { name: "search-mode-switch" }),
-    ).toBeNull();
-    expect(
-      screen.getByRole("button", { name: "检索结果" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "设为根" })).toBeNull();
-
-    await click(screen.getByRole("button", { name: "返回" }));
-    expect(screen.queryByRole("button", { name: "检索结果" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "返回" })).toBeNull();
-    expect(screen.getByRole("button", { name: "设为根" })).toBeInTheDocument();
-  });
-
-  it("元数据管理支持按字段回车批量写入，不覆盖未提交字段", async () => {
-    const writePackageMetadataSpy = vi.spyOn(
-      MockMediaRepository.prototype,
-      "writePackageMetadataSync",
-    );
-    render(<App />);
-
-    await click(getMetadataManageModeButton());
-
-    await waitFor(() => {
       expect(
-        document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
-          .length,
-      ).toBeGreaterThan(0);
-    });
+        screen.queryByRole("group", { name: "search-mode-switch" }),
+      ).toBeNull();
+      expect(
+        screen.getByRole("button", { name: "检索结果" }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "设为根" })).toBeNull();
 
-    await click(
-      document.querySelector(
-        ".sidebar-row.is-manage .sidebar-label",
-      ) as HTMLButtonElement,
-    );
-    const circleInput = screen.getByLabelText("英文社团名") as HTMLInputElement;
-    fireEvent.change(circleInput, { target: { value: "批量社团更名" } });
-    await keyDown(circleInput, { key: "Enter", code: "Enter" });
+      await click(screen.getByRole("button", { name: "返回" }));
+      expect(screen.queryByRole("button", { name: "检索结果" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "返回" })).toBeNull();
+      expect(
+        screen.getByRole("button", { name: "设为根" }),
+      ).toBeInTheDocument();
+    },
+    uiLongTestTimeoutMs,
+  );
 
-    await waitFor(() => {
-      expect(writePackageMetadataSpy).toHaveBeenCalled();
-    });
+  it(
+    "元数据管理支持按字段回车批量写入，不覆盖未提交字段",
+    async () => {
+      const writePackageMetadataSpy = vi.spyOn(
+        MockMediaRepository.prototype,
+        "writePackageMetadataSync",
+      );
+      render(<App />);
 
-    const payloads = writePackageMetadataSpy.mock.calls.map((call) => call[0]);
-    expect(payloads.every((payload) => payload.circle === "批量社团更名")).toBe(
-      true,
-    );
-    expect(
-      new Set(payloads.map((payload) => payload.package_id)).size,
-    ).toBeGreaterThan(1);
-    expect(
-      new Set(payloads.map((payload) => payload.author)).size,
-    ).toBeGreaterThan(1);
-  });
+      await click(getMetadataManageModeButton());
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".sidebar-row.is-manage .sidebar-label")
+            .length,
+        ).toBeGreaterThan(0);
+      });
+
+      await click(
+        document.querySelector(
+          ".sidebar-row.is-manage .sidebar-label",
+        ) as HTMLButtonElement,
+      );
+      const circleInput = screen.getByLabelText(
+        "英文社团名",
+      ) as HTMLInputElement;
+      fireEvent.change(circleInput, { target: { value: "批量社团更名" } });
+      await keyDown(circleInput, { key: "Enter", code: "Enter" });
+
+      await waitFor(() => {
+        expect(writePackageMetadataSpy).toHaveBeenCalled();
+      });
+
+      const payloads = writePackageMetadataSpy.mock.calls.map(
+        (call) => call[0],
+      );
+      expect(
+        payloads.every((payload) => payload.circle === "批量社团更名"),
+      ).toBe(true);
+      expect(
+        new Set(payloads.map((payload) => payload.package_id)).size,
+      ).toBeGreaterThan(1);
+      expect(
+        new Set(payloads.map((payload) => payload.author)).size,
+      ).toBeGreaterThan(1);
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "元数据管理面板已移除自动标签与嵌入按钮，仅保留同步名称",

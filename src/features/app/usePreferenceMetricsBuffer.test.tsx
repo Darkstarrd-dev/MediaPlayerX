@@ -65,7 +65,9 @@ function createPackage(id: string, imageCount: number) {
 
 describe("usePreferenceMetricsBuffer", () => {
   it("图片仅在全屏会话结束时写入偏好记录", async () => {
-    const writeAppState = vi.fn().mockResolvedValue({ updated_at_ms: Date.now() });
+    const writeAppState = vi
+      .fn()
+      .mockResolvedValue({ updated_at_ms: Date.now() });
     const repository = { writeAppState } as unknown as MediaRepository;
     const imagePackage = createPackage("pkg-a", 10);
     const packageById = new Map([[imagePackage.id, imagePackage]]);
@@ -116,22 +118,24 @@ describe("usePreferenceMetricsBuffer", () => {
       expect(writeAppState).toHaveBeenCalledTimes(1);
     });
     const payload = JSON.parse(writeAppState.mock.calls[0][0].state_json) as {
-      image_by_source_id: Record<string, { event_count: number; pages_read: number }>;
+      image_by_source_id: Record<
+        string,
+        { event_count: number; pages_read: number }
+      >;
     };
     expect(payload.image_by_source_id["pkg-a"]?.event_count).toBe(1);
     expect(payload.image_by_source_id["pkg-a"]?.pages_read).toBe(6);
   });
 
   it("视频非全屏播放不足10秒视为噪音不写入，超过10秒在停止时写入", async () => {
-    const writeAppState = vi.fn().mockResolvedValue({ updated_at_ms: Date.now() });
+    const writeAppState = vi
+      .fn()
+      .mockResolvedValue({ updated_at_ms: Date.now() });
     const repository = { writeAppState } as unknown as MediaRepository;
     const video = createVideo("video-a", 120);
 
     const { rerender } = renderHook(
-      (props: {
-        videoPlaying: boolean;
-        videoTime: number;
-      }) =>
+      (props: { videoPlaying: boolean; videoTime: number }) =>
         usePreferenceMetricsBuffer({
           repository,
           mode: "video",
@@ -165,9 +169,77 @@ describe("usePreferenceMetricsBuffer", () => {
       expect(writeAppState).toHaveBeenCalledTimes(1);
     });
     const payload = JSON.parse(writeAppState.mock.calls[0][0].state_json) as {
-      video_by_id: Record<string, { event_count: number; watch_seconds: number }>;
+      video_by_id: Record<
+        string,
+        { event_count: number; watch_seconds: number }
+      >;
     };
     expect(payload.video_by_id["video-a"]?.event_count).toBe(1);
-    expect(payload.video_by_id["video-a"]?.watch_seconds).toBeGreaterThanOrEqual(12);
+    expect(
+      payload.video_by_id["video-a"]?.watch_seconds,
+    ).toBeGreaterThanOrEqual(12);
+  });
+
+  it("写入 appState 时保持 repository 方法上下文", async () => {
+    class RepositoryWithContext {
+      marker = "alive";
+      writeCalls: Array<{ state_key: string; state_json: string }> = [];
+
+      async writeAppState(request: { state_key: string; state_json: string }) {
+        if (this.marker !== "alive") {
+          throw new Error("repository context lost");
+        }
+        this.writeCalls.push(request);
+        return { updated_at_ms: Date.now() };
+      }
+    }
+
+    const repository =
+      new RepositoryWithContext() as unknown as MediaRepository;
+    const imagePackage = createPackage("pkg-context", 3);
+    const packageById = new Map([[imagePackage.id, imagePackage]]);
+
+    const { rerender } = renderHook(
+      (props: {
+        mode: "image" | "video" | "music";
+        fullscreenActive: boolean;
+        focusedImageRef: { packageId: string; imageIndex: number } | null;
+      }) =>
+        usePreferenceMetricsBuffer({
+          repository,
+          mode: props.mode,
+          fullscreenActive: props.fullscreenActive,
+          focusedImageRef: props.focusedImageRef,
+          packageById,
+          videos: [],
+          selectedVideoId: "",
+          videoPlaying: false,
+          videoTime: 0,
+        }),
+      {
+        initialProps: {
+          mode: "image",
+          fullscreenActive: false,
+          focusedImageRef: null,
+        },
+      },
+    );
+
+    rerender({
+      mode: "image",
+      fullscreenActive: true,
+      focusedImageRef: { packageId: "pkg-context", imageIndex: 0 },
+    });
+    rerender({
+      mode: "image",
+      fullscreenActive: false,
+      focusedImageRef: { packageId: "pkg-context", imageIndex: 0 },
+    });
+
+    await waitFor(() => {
+      expect(
+        (repository as unknown as RepositoryWithContext).writeCalls.length,
+      ).toBe(1);
+    });
   });
 });

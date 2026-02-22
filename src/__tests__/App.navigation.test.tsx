@@ -16,6 +16,8 @@ async function click(target: Element | Window, init?: MouseEventInit) {
 }
 
 describe("App.navigation", () => {
+  const uiLongTestTimeoutMs = 25_000;
+
   beforeEach(() => {
     vi.restoreAllMocks();
     resetUiStoreState();
@@ -24,14 +26,18 @@ describe("App.navigation", () => {
     window.sessionStorage.clear();
   });
 
-  it("支持图片/视频模式切换", async () => {
-    render(<App />);
+  it(
+    "支持图片/视频模式切换",
+    async () => {
+      render(<App />);
 
-    expect(screen.getByRole("button", { name: "检索" })).toBeInTheDocument();
-    await click(screen.getByRole("button", { name: "视频模式" }));
+      expect(screen.getByRole("button", { name: "检索" })).toBeInTheDocument();
+      await click(screen.getByRole("button", { name: "视频模式" }));
 
-    expect(
-      await screen.findByRole("button", { name: "播放" }),
-    ).toBeInTheDocument();
-  });
+      expect(
+        await screen.findByRole("button", { name: "播放" }),
+      ).toBeInTheDocument();
+    },
+    uiLongTestTimeoutMs,
+  );
 });

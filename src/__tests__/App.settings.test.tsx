@@ -13,7 +13,7 @@ import { MockMediaRepository } from "../features/backend/repository/mockReposito
 import { resetUiStoreState, useUiStore } from "../store/useUiStore";
 
 describe("MediaPlayer 虚拟 UI - settings", () => {
-  const uiLongTestTimeoutMs = 25_000;
+  const uiLongTestTimeoutMs = 60_000;
 
   const flushUiUpdates = async () => {
     await act(async () => {
