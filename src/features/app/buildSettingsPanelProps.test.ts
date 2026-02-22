@@ -36,6 +36,10 @@ describe("buildSettingsPanelProps", () => {
       thumbnailWidth: 512,
       thumbnailGenerationConcurrency: 4,
       thumbnailResolveConcurrency: 8,
+      thumbnailWarmupRadius: 1,
+      thumbnailWarmupConcurrency: 2,
+      fullscreenPrefetchRadius: 6,
+      fullscreenDecodeCacheSize: 10,
       proxyServer: "",
       ehentaiCookies: "",
       subtitleFeatureEnabled: false,
@@ -130,6 +134,10 @@ describe("buildSettingsPanelProps", () => {
     props.onSubtitleFeatureEnabledChange(true);
     props.onSubtitleLanguageChange("ja");
     props.onThemeParameterButtonVisibleChange(true);
+    props.onThumbnailWarmupRadiusChange(3);
+    props.onThumbnailWarmupConcurrencyChange(4);
+    props.onFullscreenPrefetchRadiusChange(8);
+    props.onFullscreenDecodeCacheSizeChange(16);
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 });
     expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 });
@@ -163,6 +171,18 @@ describe("buildSettingsPanelProps", () => {
     });
     expect(updateSettings).toHaveBeenNthCalledWith(11, {
       themeParameterButtonVisible: true,
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(12, {
+      thumbnailWarmupRadius: 3,
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(13, {
+      thumbnailWarmupConcurrency: 4,
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(14, {
+      fullscreenPrefetchRadius: 8,
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(15, {
+      fullscreenDecodeCacheSize: 16,
     });
   });
 });

@@ -34,6 +34,10 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWidth: number;
   thumbnailGenerationConcurrency: number;
   thumbnailResolveConcurrency: number;
+  thumbnailWarmupRadius: number;
+  thumbnailWarmupConcurrency: number;
+  fullscreenPrefetchRadius: number;
+  fullscreenDecodeCacheSize: number;
   proxyServer: string;
   ehentaiCookies: string;
   subtitleFeatureEnabled: boolean;
@@ -143,6 +147,10 @@ export function buildSettingsPanelProps(
     thumbnailWidth: params.thumbnailWidth,
     thumbnailGenerationConcurrency: params.thumbnailGenerationConcurrency,
     thumbnailResolveConcurrency: params.thumbnailResolveConcurrency,
+    thumbnailWarmupRadius: params.thumbnailWarmupRadius,
+    thumbnailWarmupConcurrency: params.thumbnailWarmupConcurrency,
+    fullscreenPrefetchRadius: params.fullscreenPrefetchRadius,
+    fullscreenDecodeCacheSize: params.fullscreenDecodeCacheSize,
     proxyServer: params.proxyServer,
     ehentaiCookies: params.ehentaiCookies,
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
@@ -325,12 +333,20 @@ export function buildSettingsPanelProps(
       params.updateSettings({ thumbnailResolveConcurrency: value }),
     onResetThumbnailGenerationConcurrency: () =>
       params.updateSettings({
-        thumbnailGenerationConcurrency: 4,
+        thumbnailGenerationConcurrency: 6,
       }),
     onResetThumbnailResolveConcurrency: () =>
       params.updateSettings({
         thumbnailResolveConcurrency: 8,
       }),
+    onThumbnailWarmupRadiusChange: (value) =>
+      params.updateSettings({ thumbnailWarmupRadius: value }),
+    onThumbnailWarmupConcurrencyChange: (value) =>
+      params.updateSettings({ thumbnailWarmupConcurrency: value }),
+    onFullscreenPrefetchRadiusChange: (value) =>
+      params.updateSettings({ fullscreenPrefetchRadius: value }),
+    onFullscreenDecodeCacheSizeChange: (value) =>
+      params.updateSettings({ fullscreenDecodeCacheSize: value }),
     onProxyServerChange: (value) =>
       params.updateSettings({ proxyServer: value }),
     onEhentaiCookiesChange: (value) =>

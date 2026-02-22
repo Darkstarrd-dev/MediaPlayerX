@@ -216,6 +216,7 @@ export interface FullscreenLayerProps {
   videoFitMode: VideoFitMode
   videoLoopMode: 'single' | 'list'
   fullscreenVideoControlsMaxWidth: number
+  fullscreenDecodeCacheSize?: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
   imageConvertPreviewMode?: boolean
@@ -297,6 +298,7 @@ function FullscreenLayer({
   videoFitMode,
   videoLoopMode,
   fullscreenVideoControlsMaxWidth,
+  fullscreenDecodeCacheSize = 10,
   autoPlayEnabled,
   autoPlayInterval,
   imageConvertPreviewMode = false,
@@ -369,6 +371,7 @@ function FullscreenLayer({
   const { displayedImageSrc, displayedImageAspect, setDisplayedImageAspect } = useFullscreenImageSource({
     focusedImageSrc,
     focusedImage,
+    decodeCacheSize: fullscreenDecodeCacheSize,
   })
   const [displayedImageNaturalSize, setDisplayedImageNaturalSize] = useState<{ width: number; height: number } | null>(null)
   const [videoControlsVisible, setVideoControlsVisible] = useState(false)

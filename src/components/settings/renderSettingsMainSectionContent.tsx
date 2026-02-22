@@ -47,6 +47,10 @@ export function renderSettingsMainSection({
   thumbnailWidthInputValue,
   thumbnailGenerationConcurrencyInput,
   thumbnailResolveConcurrencyInput,
+  thumbnailWarmupRadius,
+  thumbnailWarmupConcurrency,
+  fullscreenPrefetchRadius,
+  fullscreenDecodeCacheSize,
   proxyServer,
   ehentaiCookies,
   subtitleFeatureEnabled,
@@ -142,6 +146,10 @@ export function renderSettingsMainSection({
   onThumbnailResolveConcurrencyInputBlur,
   onThumbnailResolveConcurrencyInputKeyDown,
   onResetThumbnailResolveConcurrency,
+  onThumbnailWarmupRadiusChange,
+  onThumbnailWarmupConcurrencyChange,
+  onFullscreenPrefetchRadiusChange,
+  onFullscreenDecodeCacheSizeChange,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
@@ -708,6 +716,84 @@ export function renderSettingsMainSection({
                 onMediaPreloadMemoryBudgetMbChange(Number(event.target.value))
               }
             />
+          </label>
+        </section>
+      </div>
+    );
+  }
+
+  if (activeSection === "performance") {
+    return (
+      <div className="settings-block">
+        <section className="settings-group">
+          <header className="settings-group-head">
+            <span>{t("ui.settings.performanceLoadSection")}</span>
+          </header>
+
+          <label htmlFor="settings-thumbnail-warmup-radius-select">
+            {t("ui.settings.thumbnailWarmupRadius")}
+            <select
+              id="settings-thumbnail-warmup-radius-select"
+              value={String(thumbnailWarmupRadius)}
+              onChange={(event) =>
+                onThumbnailWarmupRadiusChange(Number(event.target.value))
+              }
+            >
+              <option value="0">{t("ui.settings.warmupRadiusOff")}</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </label>
+
+          <label htmlFor="settings-thumbnail-warmup-concurrency-select">
+            {t("ui.settings.thumbnailWarmupConcurrency")}
+            <select
+              id="settings-thumbnail-warmup-concurrency-select"
+              value={String(thumbnailWarmupConcurrency)}
+              onChange={(event) =>
+                onThumbnailWarmupConcurrencyChange(Number(event.target.value))
+              }
+            >
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+
+          <label htmlFor="settings-fullscreen-prefetch-radius-select">
+            {t("ui.settings.fullscreenPrefetchRadius")}
+            <select
+              id="settings-fullscreen-prefetch-radius-select"
+              value={String(fullscreenPrefetchRadius)}
+              onChange={(event) =>
+                onFullscreenPrefetchRadiusChange(Number(event.target.value))
+              }
+            >
+              <option value="2">2</option>
+              <option value="4">4</option>
+              <option value="6">6</option>
+              <option value="8">8</option>
+              <option value="12">12</option>
+            </select>
+          </label>
+
+          <label htmlFor="settings-fullscreen-decode-cache-size-select">
+            {t("ui.settings.fullscreenDecodeCacheSize")}
+            <select
+              id="settings-fullscreen-decode-cache-size-select"
+              value={String(fullscreenDecodeCacheSize)}
+              onChange={(event) =>
+                onFullscreenDecodeCacheSizeChange(Number(event.target.value))
+              }
+            >
+              <option value="4">4</option>
+              <option value="6">6</option>
+              <option value="8">8</option>
+              <option value="10">10</option>
+              <option value="16">16</option>
+            </select>
           </label>
         </section>
       </div>

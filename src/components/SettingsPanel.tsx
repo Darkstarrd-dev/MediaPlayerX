@@ -59,6 +59,10 @@ export interface SettingsPanelProps {
   thumbnailWidth: number;
   thumbnailGenerationConcurrency: number;
   thumbnailResolveConcurrency: number;
+  thumbnailWarmupRadius: number;
+  thumbnailWarmupConcurrency: number;
+  fullscreenPrefetchRadius: number;
+  fullscreenDecodeCacheSize: number;
   proxyServer: string;
   ehentaiCookies: string;
   subtitleFeatureEnabled: boolean;
@@ -181,6 +185,10 @@ export interface SettingsPanelProps {
   onThumbnailResolveConcurrencyChange: (value: number) => void;
   onResetThumbnailGenerationConcurrency: () => void;
   onResetThumbnailResolveConcurrency: () => void;
+  onThumbnailWarmupRadiusChange: (value: number) => void;
+  onThumbnailWarmupConcurrencyChange: (value: number) => void;
+  onFullscreenPrefetchRadiusChange: (value: number) => void;
+  onFullscreenDecodeCacheSizeChange: (value: number) => void;
   onProxyServerChange: (value: string) => void;
   onEhentaiCookiesChange: (value: string) => void;
   onSubtitleFeatureEnabledChange: (value: boolean) => void;
@@ -265,6 +273,7 @@ const MOUSE_CAPTURE_PRESETS: Array<{ labelKey: string; combo: string }> = [
 
 const SETTINGS_SECTIONS: Array<{ id: SettingsSection; labelKey: string }> = [
   { id: "layout", labelKey: "ui.settings.sectionLayout" },
+  { id: "performance", labelKey: "ui.settings.sectionPerformance" },
   { id: "model", labelKey: "ui.settings.sectionModel" },
   { id: "shortcuts", labelKey: "ui.settings.sectionShortcuts" },
   { id: "database", labelKey: "ui.settings.sectionDatabase" },
@@ -295,6 +304,7 @@ function shouldIgnoreSettingsPanelDragStart(
 function resolveSettingsSection(raw: unknown): SettingsSection {
   if (
     raw === "layout" ||
+    raw === "performance" ||
     raw === "system" ||
     raw === "model" ||
     raw === "database" ||
@@ -336,6 +346,10 @@ function SettingsPanel({
   thumbnailWidth,
   thumbnailGenerationConcurrency,
   thumbnailResolveConcurrency,
+  thumbnailWarmupRadius,
+  thumbnailWarmupConcurrency,
+  fullscreenPrefetchRadius,
+  fullscreenDecodeCacheSize,
   proxyServer,
   ehentaiCookies,
   subtitleFeatureEnabled,
@@ -425,6 +439,10 @@ function SettingsPanel({
   onThumbnailResolveConcurrencyChange,
   onResetThumbnailGenerationConcurrency,
   onResetThumbnailResolveConcurrency,
+  onThumbnailWarmupRadiusChange,
+  onThumbnailWarmupConcurrencyChange,
+  onFullscreenPrefetchRadiusChange,
+  onFullscreenDecodeCacheSizeChange,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
@@ -958,6 +976,10 @@ function SettingsPanel({
     thumbnailWidthInputValue,
     thumbnailGenerationConcurrencyInput,
     thumbnailResolveConcurrencyInput,
+    thumbnailWarmupRadius,
+    thumbnailWarmupConcurrency,
+    fullscreenPrefetchRadius,
+    fullscreenDecodeCacheSize,
     proxyServer,
     ehentaiCookies,
     subtitleFeatureEnabled,
@@ -1061,6 +1083,10 @@ function SettingsPanel({
     onThumbnailResolveConcurrencyInputKeyDown:
       handleThumbnailResolveConcurrencyInputKeyDown,
     onResetThumbnailResolveConcurrency,
+    onThumbnailWarmupRadiusChange,
+    onThumbnailWarmupConcurrencyChange,
+    onFullscreenPrefetchRadiusChange,
+    onFullscreenDecodeCacheSizeChange,
     onProxyServerChange,
     onEhentaiCookiesChange,
     onSubtitleFeatureEnabledChange,

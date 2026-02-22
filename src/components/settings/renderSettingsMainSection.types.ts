@@ -8,6 +8,7 @@ import type { ShortcutConflict } from "../../shortcuts";
 
 export type SettingsSection =
   | "layout"
+  | "performance"
   | "system"
   | "model"
   | "database"
@@ -47,6 +48,10 @@ export interface RenderSettingsMainSectionParams {
   thumbnailWidthInputValue: string;
   thumbnailGenerationConcurrencyInput: string;
   thumbnailResolveConcurrencyInput: string;
+  thumbnailWarmupRadius: number;
+  thumbnailWarmupConcurrency: number;
+  fullscreenPrefetchRadius: number;
+  fullscreenDecodeCacheSize: number;
   proxyServer: string;
   ehentaiCookies: string;
   subtitleFeatureEnabled: boolean;
@@ -183,6 +188,10 @@ export interface RenderSettingsMainSectionParams {
     event: ReactKeyboardEvent<HTMLInputElement>,
   ) => void;
   onResetThumbnailResolveConcurrency: () => void;
+  onThumbnailWarmupRadiusChange: (value: number) => void;
+  onThumbnailWarmupConcurrencyChange: (value: number) => void;
+  onFullscreenPrefetchRadiusChange: (value: number) => void;
+  onFullscreenDecodeCacheSizeChange: (value: number) => void;
   onProxyServerChange: (value: string) => void;
   onEhentaiCookiesChange: (value: string) => void;
   onSubtitleFeatureEnabledChange: (value: boolean) => void;

@@ -41,6 +41,7 @@ interface BuildFullscreenLayerPropsParams {
   videoFitMode: VideoFitMode
   videoLoopMode: 'single' | 'list'
   fullscreenVideoControlsMaxWidth: number
+  fullscreenDecodeCacheSize?: number
   autoPlayEnabled: boolean
   autoPlayInterval: number
   imageConvertPreviewMode?: boolean
@@ -120,6 +121,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     videoFitMode: params.videoFitMode,
     videoLoopMode: params.videoLoopMode,
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
+    fullscreenDecodeCacheSize: params.fullscreenDecodeCacheSize ?? 10,
     autoPlayEnabled: params.autoPlayEnabled,
     autoPlayInterval: params.autoPlayInterval,
     imageConvertPreviewMode: params.imageConvertPreviewMode,

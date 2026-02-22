@@ -489,6 +489,7 @@ export function useAppTopLayerState({
     videoLoopMode,
     fullscreenVideoControlsMaxWidth:
       appSettings.fullscreenVideoControlsMaxWidth,
+    fullscreenDecodeCacheSize: appSettings.fullscreenDecodeCacheSize,
     autoPlayEnabled: appSettings.autoPlayEnabled,
     autoPlayInterval: appSettings.autoPlayInterval,
     updateSettings: appSettings.updateSettings,
@@ -550,6 +551,10 @@ export function useAppTopLayerState({
     thumbnailWidth: appSettings.thumbnailWidth,
     thumbnailGenerationConcurrency: appSettings.thumbnailGenerationConcurrency,
     thumbnailResolveConcurrency: appSettings.thumbnailResolveConcurrency,
+    thumbnailWarmupRadius: appSettings.thumbnailWarmupRadius,
+    thumbnailWarmupConcurrency: appSettings.thumbnailWarmupConcurrency,
+    fullscreenPrefetchRadius: appSettings.fullscreenPrefetchRadius,
+    fullscreenDecodeCacheSize: appSettings.fullscreenDecodeCacheSize,
     proxyServer: appSettings.proxyServer,
     ehentaiCookies: appSettings.ehentaiCookies,
     subtitleFeatureEnabled: appSettings.subtitleFeatureEnabled,

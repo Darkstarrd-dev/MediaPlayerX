@@ -498,6 +498,54 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
 
   if (
+    typeof next.thumbnailWarmupRadius === "number" &&
+    Number.isFinite(next.thumbnailWarmupRadius)
+  ) {
+    next.thumbnailWarmupRadius = Math.max(
+      0,
+      Math.min(3, Math.floor(next.thumbnailWarmupRadius)),
+    );
+  } else if ("thumbnailWarmupRadius" in next) {
+    delete next.thumbnailWarmupRadius;
+  }
+
+  if (
+    typeof next.thumbnailWarmupConcurrency === "number" &&
+    Number.isFinite(next.thumbnailWarmupConcurrency)
+  ) {
+    next.thumbnailWarmupConcurrency = Math.max(
+      1,
+      Math.min(4, Math.floor(next.thumbnailWarmupConcurrency)),
+    );
+  } else if ("thumbnailWarmupConcurrency" in next) {
+    delete next.thumbnailWarmupConcurrency;
+  }
+
+  if (
+    typeof next.fullscreenPrefetchRadius === "number" &&
+    Number.isFinite(next.fullscreenPrefetchRadius)
+  ) {
+    next.fullscreenPrefetchRadius = Math.max(
+      2,
+      Math.min(12, Math.floor(next.fullscreenPrefetchRadius)),
+    );
+  } else if ("fullscreenPrefetchRadius" in next) {
+    delete next.fullscreenPrefetchRadius;
+  }
+
+  if (
+    typeof next.fullscreenDecodeCacheSize === "number" &&
+    Number.isFinite(next.fullscreenDecodeCacheSize)
+  ) {
+    next.fullscreenDecodeCacheSize = Math.max(
+      4,
+      Math.min(16, Math.floor(next.fullscreenDecodeCacheSize)),
+    );
+  } else if ("fullscreenDecodeCacheSize" in next) {
+    delete next.fullscreenDecodeCacheSize;
+  }
+
+  if (
     typeof next.musicVisualizerRenderLongEdgePx === "number" &&
     Number.isFinite(next.musicVisualizerRenderLongEdgePx)
   ) {
