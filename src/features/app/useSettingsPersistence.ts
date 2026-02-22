@@ -546,6 +546,36 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
 
   if (
+    typeof next.fullscreenResamplingEnabled !== "boolean" &&
+    "fullscreenResamplingEnabled" in next
+  ) {
+    delete next.fullscreenResamplingEnabled;
+  }
+
+  const isValidFullscreenKernel = (
+    value: unknown,
+  ): value is AppSettings["fullscreenUpsamplingKernel"] => {
+    return (
+      value === "lanczos3" ||
+      value === "mitchell" ||
+      value === "nearest" ||
+      value === "cubic"
+    );
+  };
+
+  if (!isValidFullscreenKernel(next.fullscreenUpsamplingKernel)) {
+    if ("fullscreenUpsamplingKernel" in next) {
+      delete next.fullscreenUpsamplingKernel;
+    }
+  }
+
+  if (!isValidFullscreenKernel(next.fullscreenDownsamplingKernel)) {
+    if ("fullscreenDownsamplingKernel" in next) {
+      delete next.fullscreenDownsamplingKernel;
+    }
+  }
+
+  if (
     typeof next.musicVisualizerRenderLongEdgePx === "number" &&
     Number.isFinite(next.musicVisualizerRenderLongEdgePx)
   ) {

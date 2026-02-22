@@ -190,6 +190,19 @@ export const zhCnCatalog = {
   "ui.settings.thumbnailWarmupConcurrency": "预热批量级别",
   "ui.settings.fullscreenPrefetchRadius": "全屏预取深度",
   "ui.settings.fullscreenDecodeCacheSize": "全屏解码缓存数",
+  "ui.settings.fullscreenResamplingEnabled": "全屏重采样",
+  "ui.settings.fullscreenResamplingEnabledTooltip":
+    "开启后将按屏幕目标尺寸预先生成全屏图像；未就绪时自动回退原图，不阻塞翻页。",
+  "ui.settings.fullscreenDownsamplingKernel": "下采样算法",
+  "ui.settings.fullscreenDownsamplingKernelTooltip":
+    "原图大于屏幕时使用。Lanczos3更锐利，Mitchell更均衡，Cubic更平滑，Nearest保留像素边缘。",
+  "ui.settings.fullscreenUpsamplingKernel": "上采样算法",
+  "ui.settings.fullscreenUpsamplingKernelTooltip":
+    "原图小于屏幕时使用。像素图推荐 Nearest，普通图推荐 Lanczos3 或 Mitchell。",
+  "ui.settings.resamplingKernelLanczos3": "Lanczos3（锐利）",
+  "ui.settings.resamplingKernelMitchell": "Mitchell（均衡）",
+  "ui.settings.resamplingKernelNearest": "Nearest（像素风）",
+  "ui.settings.resamplingKernelCubic": "Cubic（平滑）",
   "ui.settings.layoutSection": "布局参数",
   "ui.settings.layoutLocked": "布局锁定",
   "ui.settings.debugSection": "调试设置",

@@ -37,6 +37,9 @@ interface UseResolvedMediaStateParams {
   orderedRootScopedImageRefs: FocusedImageRef[]
   fullscreenActive: boolean
   fullscreenPrefetchRadius?: number
+  fullscreenResamplingEnabled?: boolean
+  fullscreenUpsamplingKernel?: 'lanczos3' | 'mitchell' | 'nearest' | 'cubic'
+  fullscreenDownsamplingKernel?: 'lanczos3' | 'mitchell' | 'nearest' | 'cubic'
   showNamesOnly: boolean
   refsInPage: FocusedImageRef[]
   visibleImageRefs?: FocusedImageRef[]
@@ -81,6 +84,9 @@ export function useResolvedMediaState({
   orderedRootScopedImageRefs,
   fullscreenActive,
   fullscreenPrefetchRadius = 4,
+  fullscreenResamplingEnabled = false,
+  fullscreenUpsamplingKernel = 'lanczos3',
+  fullscreenDownsamplingKernel = 'lanczos3',
   showNamesOnly,
   refsInPage,
   visibleImageRefs,
@@ -169,9 +175,51 @@ export function useResolvedMediaState({
       )
     }
 
+    const viewportWidth = typeof window !== 'undefined' ? Math.max(1, Math.min(7680, Math.round(window.innerWidth))) : 1920
+    const viewportHeight = typeof window !== 'undefined' ? Math.max(1, Math.min(4320, Math.round(window.innerHeight))) : 1080
+
+    const pushFullscreenImageTarget = (image: ImageItem | null, priority = false) => {
+      if (!image || image.width <= 0 || image.height <= 0) {
+        return
+      }
+
+      const fittedScale = Math.min(viewportWidth / image.width, viewportHeight / image.height)
+      if (!Number.isFinite(fittedScale) || fittedScale <= 0 || (fittedScale > 0.98 && fittedScale < 1.02)) {
+        return
+      }
+
+      const fittedWidth = Math.max(1, Math.min(7680, Math.round(image.width * fittedScale)))
+      const fittedHeight = Math.max(1, Math.min(4320, Math.round(image.height * fittedScale)))
+      const kernel = fittedScale < 1 ? fullscreenDownsamplingKernel : fullscreenUpsamplingKernel
+
+      pushTarget(
+        {
+          targetId: `image-fullscreen:${image.id}`,
+          locator: image.mediaLocator,
+          variant: 'fullscreen',
+          fullscreenTargetWidth: fittedWidth,
+          fullscreenTargetHeight: fittedHeight,
+          fullscreenKernel: kernel,
+        },
+        priority,
+      )
+    }
+
+    const pushFullscreenImageTargetByRef = (ref: FocusedImageRef | null | undefined, priority = false) => {
+      if (!ref) {
+        return
+      }
+      const image = packageById.get(ref.packageId)?.images[ref.imageIndex] ?? null
+      pushFullscreenImageTarget(image, priority)
+    }
+
     pushOriginalImageTarget(focusedImage)
     pushOriginalImageTarget(metadataImage)
     pushOriginalImageTargetByRef(refsInPage[0], true)
+
+    if (fullscreenActive && fullscreenResamplingEnabled) {
+      pushFullscreenImageTarget(focusedImage, true)
+    }
 
     if (focusedRef && orderedRootScopedImageRefs.length > 0) {
       const focusedIndex = orderedRootScopedImageRefs.findIndex(
@@ -182,6 +230,11 @@ export function useResolvedMediaState({
         for (let offset = 1; offset <= prefetchRadius; offset += 1) {
           pushOriginalImageTargetByRef(orderedRootScopedImageRefs[focusedIndex + offset], true)
           pushOriginalImageTargetByRef(orderedRootScopedImageRefs[focusedIndex - offset], true)
+
+          if (fullscreenActive && fullscreenResamplingEnabled) {
+            pushFullscreenImageTargetByRef(orderedRootScopedImageRefs[focusedIndex + offset])
+            pushFullscreenImageTargetByRef(orderedRootScopedImageRefs[focusedIndex - offset])
+          }
         }
       }
     }
@@ -297,6 +350,9 @@ export function useResolvedMediaState({
     focusedRef,
     fullscreenActive,
     fullscreenPrefetchRadius,
+    fullscreenResamplingEnabled,
+    fullscreenUpsamplingKernel,
+    fullscreenDownsamplingKernel,
     orderedRootScopedImageRefs,
     packageById,
     refsInPage,
@@ -401,6 +457,17 @@ export function useResolvedMediaState({
     return next
   }, [resolvedMedia.urlByTargetId])
 
+  const fullscreenImageUrlById = useMemo<Record<string, string>>(() => {
+    const next: Record<string, string> = {}
+    for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
+      if (!targetId.startsWith('image-fullscreen:')) {
+        continue
+      }
+      next[targetId.slice('image-fullscreen:'.length)] = url
+    }
+    return next
+  }, [resolvedMedia.urlByTargetId])
+
   const videoCoverImageUrlById = useMemo<Record<string, string>>(() => {
     const next: Record<string, string> = {}
     for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
@@ -427,7 +494,12 @@ export function useResolvedMediaState({
     ? (originalImageUrlById[metadataImage.id] ?? thumbnailImageUrlById[metadataImage.id] ?? null)
     : null
   const fullscreenImageSrc = focusedImage
-    ? (originalImageUrlById[focusedImage.id] ?? thumbnailImageUrlById[focusedImage.id] ?? null)
+    ? (
+        fullscreenImageUrlById[focusedImage.id] ??
+        originalImageUrlById[focusedImage.id] ??
+        thumbnailImageUrlById[focusedImage.id] ??
+        null
+      )
     : null
   const focusedVideoSrc = focusedVideo ? (resolvedMedia.urlByTargetId[`video:${focusedVideo.id}`] ?? null) : null
   const focusedAudioSrc = focusedAudio ? (resolvedMedia.urlByTargetId[`audio:${focusedAudio.id}`] ?? null) : null

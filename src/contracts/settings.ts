@@ -63,6 +63,12 @@ export const subtitleAdvancedVadPresetSchema = z.enum([
   "conservative",
   "aggressive",
 ]);
+export const fullscreenResamplingKernelSchema = z.enum([
+  "lanczos3",
+  "mitchell",
+  "nearest",
+  "cubic",
+]);
 
 export const musicVisualizerShaderSettingsSchema = z.object({
   renderLongEdgePx: z.number().int().min(240).max(4096),
@@ -140,6 +146,9 @@ export const appSettingsSchema = z.object({
   thumbnailWarmupConcurrency: z.number().int().min(1).max(4),
   fullscreenPrefetchRadius: z.number().int().min(2).max(12),
   fullscreenDecodeCacheSize: z.number().int().min(4).max(16),
+  fullscreenResamplingEnabled: z.boolean(),
+  fullscreenUpsamplingKernel: fullscreenResamplingKernelSchema,
+  fullscreenDownsamplingKernel: fullscreenResamplingKernelSchema,
   musicVisualizerRenderLongEdgePx: z.number().int().min(240).max(4096),
   musicVisualizerFpsCap: musicVisualizerFpsCapSchema,
   musicVisualizerSelectedShaderId: z.string().max(64),

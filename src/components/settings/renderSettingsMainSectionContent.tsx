@@ -51,6 +51,9 @@ export function renderSettingsMainSection({
   thumbnailWarmupConcurrency,
   fullscreenPrefetchRadius,
   fullscreenDecodeCacheSize,
+  fullscreenResamplingEnabled,
+  fullscreenUpsamplingKernel,
+  fullscreenDownsamplingKernel,
   proxyServer,
   ehentaiCookies,
   subtitleFeatureEnabled,
@@ -150,6 +153,9 @@ export function renderSettingsMainSection({
   onThumbnailWarmupConcurrencyChange,
   onFullscreenPrefetchRadiusChange,
   onFullscreenDecodeCacheSizeChange,
+  onFullscreenResamplingEnabledChange,
+  onFullscreenUpsamplingKernelChange,
+  onFullscreenDownsamplingKernelChange,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
@@ -795,6 +801,81 @@ export function renderSettingsMainSection({
               <option value="16">16</option>
             </select>
           </label>
+
+          <label className="settings-toggle-row">
+            <span title={t("ui.settings.fullscreenResamplingEnabledTooltip")}>{t("ui.settings.fullscreenResamplingEnabled")}</span>
+            <input
+              type="checkbox"
+              checked={fullscreenResamplingEnabled}
+              onChange={(event) =>
+                onFullscreenResamplingEnabledChange(event.target.checked)
+              }
+            />
+          </label>
+
+          {fullscreenResamplingEnabled ? (
+            <>
+              <label htmlFor="settings-fullscreen-downsampling-kernel-select">
+                <span title={t("ui.settings.fullscreenDownsamplingKernelTooltip")}>{t("ui.settings.fullscreenDownsamplingKernel")}</span>
+                <select
+                  id="settings-fullscreen-downsampling-kernel-select"
+                  value={fullscreenDownsamplingKernel}
+                  onChange={(event) =>
+                    onFullscreenDownsamplingKernelChange(
+                      event.target.value as
+                        | "lanczos3"
+                        | "mitchell"
+                        | "nearest"
+                        | "cubic",
+                    )
+                  }
+                >
+                  <option value="lanczos3">
+                    {t("ui.settings.resamplingKernelLanczos3")}
+                  </option>
+                  <option value="mitchell">
+                    {t("ui.settings.resamplingKernelMitchell")}
+                  </option>
+                  <option value="nearest">
+                    {t("ui.settings.resamplingKernelNearest")}
+                  </option>
+                  <option value="cubic">
+                    {t("ui.settings.resamplingKernelCubic")}
+                  </option>
+                </select>
+              </label>
+
+              <label htmlFor="settings-fullscreen-upsampling-kernel-select">
+                <span title={t("ui.settings.fullscreenUpsamplingKernelTooltip")}>{t("ui.settings.fullscreenUpsamplingKernel")}</span>
+                <select
+                  id="settings-fullscreen-upsampling-kernel-select"
+                  value={fullscreenUpsamplingKernel}
+                  onChange={(event) =>
+                    onFullscreenUpsamplingKernelChange(
+                      event.target.value as
+                        | "lanczos3"
+                        | "mitchell"
+                        | "nearest"
+                        | "cubic",
+                    )
+                  }
+                >
+                  <option value="lanczos3">
+                    {t("ui.settings.resamplingKernelLanczos3")}
+                  </option>
+                  <option value="mitchell">
+                    {t("ui.settings.resamplingKernelMitchell")}
+                  </option>
+                  <option value="nearest">
+                    {t("ui.settings.resamplingKernelNearest")}
+                  </option>
+                  <option value="cubic">
+                    {t("ui.settings.resamplingKernelCubic")}
+                  </option>
+                </select>
+              </label>
+            </>
+          ) : null}
         </section>
       </div>
     );

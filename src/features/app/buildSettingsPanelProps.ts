@@ -38,6 +38,9 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWarmupConcurrency: number;
   fullscreenPrefetchRadius: number;
   fullscreenDecodeCacheSize: number;
+  fullscreenResamplingEnabled: boolean;
+  fullscreenUpsamplingKernel: AppSettings["fullscreenUpsamplingKernel"];
+  fullscreenDownsamplingKernel: AppSettings["fullscreenDownsamplingKernel"];
   proxyServer: string;
   ehentaiCookies: string;
   subtitleFeatureEnabled: boolean;
@@ -151,6 +154,9 @@ export function buildSettingsPanelProps(
     thumbnailWarmupConcurrency: params.thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius: params.fullscreenPrefetchRadius,
     fullscreenDecodeCacheSize: params.fullscreenDecodeCacheSize,
+    fullscreenResamplingEnabled: params.fullscreenResamplingEnabled,
+    fullscreenUpsamplingKernel: params.fullscreenUpsamplingKernel,
+    fullscreenDownsamplingKernel: params.fullscreenDownsamplingKernel,
     proxyServer: params.proxyServer,
     ehentaiCookies: params.ehentaiCookies,
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
@@ -347,6 +353,12 @@ export function buildSettingsPanelProps(
       params.updateSettings({ fullscreenPrefetchRadius: value }),
     onFullscreenDecodeCacheSizeChange: (value) =>
       params.updateSettings({ fullscreenDecodeCacheSize: value }),
+    onFullscreenResamplingEnabledChange: (value) =>
+      params.updateSettings({ fullscreenResamplingEnabled: value }),
+    onFullscreenUpsamplingKernelChange: (value) =>
+      params.updateSettings({ fullscreenUpsamplingKernel: value }),
+    onFullscreenDownsamplingKernelChange: (value) =>
+      params.updateSettings({ fullscreenDownsamplingKernel: value }),
     onProxyServerChange: (value) =>
       params.updateSettings({ proxyServer: value }),
     onEhentaiCookiesChange: (value) =>

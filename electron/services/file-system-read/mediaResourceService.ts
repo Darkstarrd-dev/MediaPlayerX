@@ -21,6 +21,7 @@ import {
   type MediaProtocolStreamResponsePayload,
 } from '../../fileSystemMediaReaders'
 import { detectMimeTypeByExtension, normalizeAllowlistKey } from '../../fileSystemServiceHelpers'
+import { maybeResolveFullscreenLocator } from '../../fileSystemFullscreenResizer'
 import { maybeResolveThumbnailLocator } from '../../fileSystemThumbnailResolver'
 import type { MediaTokenRecord, MediaTokenService } from './mediaTokenService'
 import type { RuntimeDependencySnapshot } from './runtimeDependencyService'
@@ -188,6 +189,20 @@ export class MediaResourceService {
     })
     if (thumbnailLocator) {
       locator = thumbnailLocator
+    }
+
+    if (!thumbnailLocator && request.fullscreen_resize) {
+      const fullscreenLocator = await maybeResolveFullscreenLocator({
+        locator,
+        request,
+        thumbnailCacheRootDir: this.options.thumbnailCacheRootDir,
+        ensureRuntimeDependencies: this.options.ensureRuntimeDependencies,
+        readImageBufferForThumbnail: this.options.readImageBufferForThumbnail,
+        runWithCpuToken: this.options.runWithThumbnailCpuToken,
+      })
+      if (fullscreenLocator) {
+        locator = fullscreenLocator
+      }
     }
 
     const mimeType = locator.mime_type || detectMimeTypeByExtension(locator.extension, locator.media_type)

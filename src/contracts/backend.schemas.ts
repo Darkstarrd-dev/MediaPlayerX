@@ -255,6 +255,13 @@ export const resolveMediaResourceRequestSchema = z.object({
       generation_concurrency: z.number().int().min(1).max(16).optional(),
     })
     .optional(),
+  fullscreen_resize: z
+    .object({
+      target_width: z.number().int().min(1).max(7680),
+      target_height: z.number().int().min(1).max(4320),
+      kernel: z.enum(["lanczos3", "mitchell", "nearest", "cubic"]),
+    })
+    .optional(),
 });
 
 export const resolveMediaResourceResponseSchema = z.object({

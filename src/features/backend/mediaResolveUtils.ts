@@ -12,10 +12,13 @@ const THUMBNAIL_MAX_QUALITY = 100
 export interface MediaResolveTarget {
   targetId: string
   locator: MediaLocator | null
-  variant?: 'original' | 'thumbnail'
+  variant?: 'original' | 'thumbnail' | 'fullscreen'
   thumbnailMaxEdge?: number
   thumbnailQuality?: number
   thumbnailGenerationConcurrency?: number
+  fullscreenTargetWidth?: number
+  fullscreenTargetHeight?: number
+  fullscreenKernel?: 'lanczos3' | 'mitchell' | 'nearest' | 'cubic'
 }
 
 export interface SyncResolveRepository extends MediaRepository {
@@ -43,6 +46,13 @@ export function buildRequestKey(target: MediaResolveTarget): string | null {
   }
 
   const base = mediaLocatorKey(target.locator)
+  if (target.variant === 'fullscreen') {
+    const targetWidth = Math.max(1, Math.min(7680, Math.round(target.fullscreenTargetWidth ?? 1920)))
+    const targetHeight = Math.max(1, Math.min(4320, Math.round(target.fullscreenTargetHeight ?? 1080)))
+    const kernel = target.fullscreenKernel ?? 'lanczos3'
+    return `${base}|variant:fullscreen|w:${targetWidth}|h:${targetHeight}|k:${kernel}`
+  }
+
   if (target.variant !== 'thumbnail') {
     return `${base}|variant:original`
   }
@@ -61,6 +71,18 @@ export function buildResolveRequest(target: MediaResolveTarget): ResolveMediaRes
         max_edge: Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320))),
         quality: Math.max(THUMBNAIL_MIN_QUALITY, Math.min(THUMBNAIL_MAX_QUALITY, Math.round(target.thumbnailQuality ?? 82))),
         generation_concurrency: Math.max(1, Math.min(16, Math.round(target.thumbnailGenerationConcurrency ?? 4))),
+      },
+    }
+  }
+
+  if (target.variant === 'fullscreen') {
+    return {
+      locator: mapMediaLocatorToDto(target.locator as MediaLocator),
+      preferred_variant: 'original',
+      fullscreen_resize: {
+        target_width: Math.max(1, Math.min(7680, Math.round(target.fullscreenTargetWidth ?? 1920))),
+        target_height: Math.max(1, Math.min(4320, Math.round(target.fullscreenTargetHeight ?? 1080))),
+        kernel: target.fullscreenKernel ?? 'lanczos3',
       },
     }
   }

@@ -202,6 +202,19 @@ export const enUsCatalog: { [K in keyof ZhCnCatalog]: string } = {
   "ui.settings.thumbnailWarmupConcurrency": "Warmup batch level",
   "ui.settings.fullscreenPrefetchRadius": "Fullscreen prefetch depth",
   "ui.settings.fullscreenDecodeCacheSize": "Fullscreen decode cache size",
+  "ui.settings.fullscreenResamplingEnabled": "Fullscreen resampling",
+  "ui.settings.fullscreenResamplingEnabledTooltip":
+    "When enabled, fullscreen images are pre-generated for the viewport target size. If not ready, it falls back to original image without blocking page turning.",
+  "ui.settings.fullscreenDownsamplingKernel": "Downsampling kernel",
+  "ui.settings.fullscreenDownsamplingKernelTooltip":
+    "Used when source image is larger than the viewport. Lanczos3 is sharper, Mitchell is balanced, Cubic is smoother, Nearest preserves pixel edges.",
+  "ui.settings.fullscreenUpsamplingKernel": "Upsampling kernel",
+  "ui.settings.fullscreenUpsamplingKernelTooltip":
+    "Used when source image is smaller than the viewport. Nearest is recommended for pixel art, Lanczos3 or Mitchell for regular images.",
+  "ui.settings.resamplingKernelLanczos3": "Lanczos3 (sharp)",
+  "ui.settings.resamplingKernelMitchell": "Mitchell (balanced)",
+  "ui.settings.resamplingKernelNearest": "Nearest (pixel-art)",
+  "ui.settings.resamplingKernelCubic": "Cubic (smooth)",
   "ui.settings.layoutSection": "Layout parameters",
   "ui.settings.layoutLocked": "Layout lock",
   "ui.settings.debugSection": "Debug settings",

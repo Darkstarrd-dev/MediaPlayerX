@@ -63,6 +63,13 @@ export interface SettingsPanelProps {
   thumbnailWarmupConcurrency: number;
   fullscreenPrefetchRadius: number;
   fullscreenDecodeCacheSize: number;
+  fullscreenResamplingEnabled: boolean;
+  fullscreenUpsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
+  fullscreenDownsamplingKernel:
+    | "lanczos3"
+    | "mitchell"
+    | "nearest"
+    | "cubic";
   proxyServer: string;
   ehentaiCookies: string;
   subtitleFeatureEnabled: boolean;
@@ -189,6 +196,13 @@ export interface SettingsPanelProps {
   onThumbnailWarmupConcurrencyChange: (value: number) => void;
   onFullscreenPrefetchRadiusChange: (value: number) => void;
   onFullscreenDecodeCacheSizeChange: (value: number) => void;
+  onFullscreenResamplingEnabledChange: (value: boolean) => void;
+  onFullscreenUpsamplingKernelChange: (
+    value: "lanczos3" | "mitchell" | "nearest" | "cubic",
+  ) => void;
+  onFullscreenDownsamplingKernelChange: (
+    value: "lanczos3" | "mitchell" | "nearest" | "cubic",
+  ) => void;
   onProxyServerChange: (value: string) => void;
   onEhentaiCookiesChange: (value: string) => void;
   onSubtitleFeatureEnabledChange: (value: boolean) => void;
@@ -350,6 +364,9 @@ function SettingsPanel({
   thumbnailWarmupConcurrency,
   fullscreenPrefetchRadius,
   fullscreenDecodeCacheSize,
+  fullscreenResamplingEnabled,
+  fullscreenUpsamplingKernel,
+  fullscreenDownsamplingKernel,
   proxyServer,
   ehentaiCookies,
   subtitleFeatureEnabled,
@@ -443,6 +460,9 @@ function SettingsPanel({
   onThumbnailWarmupConcurrencyChange,
   onFullscreenPrefetchRadiusChange,
   onFullscreenDecodeCacheSizeChange,
+  onFullscreenResamplingEnabledChange,
+  onFullscreenUpsamplingKernelChange,
+  onFullscreenDownsamplingKernelChange,
   onProxyServerChange,
   onEhentaiCookiesChange,
   onSubtitleFeatureEnabledChange,
@@ -980,6 +1000,9 @@ function SettingsPanel({
     thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius,
     fullscreenDecodeCacheSize,
+    fullscreenResamplingEnabled,
+    fullscreenUpsamplingKernel,
+    fullscreenDownsamplingKernel,
     proxyServer,
     ehentaiCookies,
     subtitleFeatureEnabled,
@@ -1087,6 +1110,9 @@ function SettingsPanel({
     onThumbnailWarmupConcurrencyChange,
     onFullscreenPrefetchRadiusChange,
     onFullscreenDecodeCacheSizeChange,
+    onFullscreenResamplingEnabledChange,
+    onFullscreenUpsamplingKernelChange,
+    onFullscreenDownsamplingKernelChange,
     onProxyServerChange,
     onEhentaiCookiesChange,
     onSubtitleFeatureEnabledChange,
