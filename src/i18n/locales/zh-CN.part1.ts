@@ -680,6 +680,10 @@ export const zhCnCatalogPart1 = {
   "ui.sidebar.renameDialogNumberPadWidthPlaceholder": "位数补零",
   "ui.sidebar.renameDialogRemoveStartPlaceholder": "起始位置",
   "ui.sidebar.renameDialogRemoveEndPlaceholder": "结束位置",
+  "ui.sidebar.renameDialogRemoveHeadPlaceholder": "从头移除",
+  "ui.sidebar.renameDialogRemoveTailPlaceholder": "从尾移除",
+  "ui.sidebar.renameDialogRemoveRangeHint": "区间移除（按名称字符位置，1-based，含首尾）",
+  "ui.sidebar.renameDialogRemoveEdgesHint": "额外移除（从头往后 / 从尾往前，单位：字符）",
   "ui.sidebar.renameDialogMetadataTemplatePlaceholder": "元数据模板",
   "ui.sidebar.renameDialogPreviewLabel": "预览",
   "ui.sidebar.renameDialogPreviewSummary":

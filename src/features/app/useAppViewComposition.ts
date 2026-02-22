@@ -121,6 +121,8 @@ export function useAppViewComposition({
     sidebarRenameNumberPadWidth,
     sidebarRenameRemoveStart,
     sidebarRenameRemoveEnd,
+    sidebarRenameRemoveHead,
+    sidebarRenameRemoveTail,
     sidebarRenameMetadataTemplate,
     sidebarRenamePreviewRows,
     setSidebarRenameDialogOpen,
@@ -137,6 +139,8 @@ export function useAppViewComposition({
     setSidebarRenameNumberPadWidth,
     setSidebarRenameRemoveStart,
     setSidebarRenameRemoveEnd,
+    setSidebarRenameRemoveHead,
+    setSidebarRenameRemoveTail,
     setSidebarRenameMetadataTemplate,
     setSidebarRenamePreviewRows,
     setManageOperationHint,
@@ -144,6 +148,19 @@ export function useAppViewComposition({
     workspaceRef,
     workspaceBodyRef,
   } = sessionState
+
+  const topLayerState = useAppTopLayerBindings({
+    runtimeSources,
+    readNavigationState,
+    displayState,
+  })
+
+  const workspaceState = useAppWorkspaceBindings({
+    runtimeSources,
+    readNavigationState,
+    displayState,
+    managementErrorRows: topLayerState.managementErrorRows,
+  })
 
   const [sidebarRenamePending, setSidebarRenamePending] = useState(false)
   const [sidebarRenameError, setSidebarRenameError] = useState<string | null>(null)
@@ -161,8 +178,10 @@ export function useAppViewComposition({
     setSidebarRenameNumberStart('1')
     setSidebarRenameNumberStep('1')
     setSidebarRenameNumberPadWidth('3')
-    setSidebarRenameRemoveStart('1')
-    setSidebarRenameRemoveEnd('1')
+    setSidebarRenameRemoveStart('0')
+    setSidebarRenameRemoveEnd('0')
+    setSidebarRenameRemoveHead('0')
+    setSidebarRenameRemoveTail('0')
     setSidebarRenameMetadataTemplate('[author.jp(if exist)(author.en(if exist))]/[author(if only one exist)]-[circle just like author ] - [title.jp(if exist)]/[title(if only one exist)]')
     setSidebarRenamePreviewRows([])
     setSidebarRenamePending(false)
@@ -178,6 +197,8 @@ export function useAppViewComposition({
     setSidebarRenamePreviewRows,
     setSidebarRenameRemoveEnd,
     setSidebarRenameRemoveStart,
+    setSidebarRenameRemoveHead,
+    setSidebarRenameRemoveTail,
     setSidebarRenameMetadataTemplate,
     setSidebarRenameReplaceFrom,
     setSidebarRenameReplaceTo,
@@ -258,11 +279,17 @@ export function useAppViewComposition({
       }
     }
     if (sidebarRenameMode === 'remove-range') {
+      const removeStart = Math.max(0, Number.parseInt(sidebarRenameRemoveStart, 10) || 0)
+      const removeEnd = Math.max(0, Number.parseInt(sidebarRenameRemoveEnd, 10) || 0)
+      const removeHead = Math.max(0, Number.parseInt(sidebarRenameRemoveHead, 10) || 0)
+      const removeTail = Math.max(0, Number.parseInt(sidebarRenameRemoveTail, 10) || 0)
       return {
         targets,
         mode: 'remove-range',
-        remove_start: Number.parseInt(sidebarRenameRemoveStart, 10) || 1,
-        remove_end: Number.parseInt(sidebarRenameRemoveEnd, 10) || 1,
+        remove_start: removeStart,
+        remove_end: removeEnd,
+        remove_head: removeHead,
+        remove_tail: removeTail,
         fail_fast: true,
         preview_only: previewOnly,
       }
@@ -281,7 +308,9 @@ export function useAppViewComposition({
     sidebarRenameNumberStart,
     sidebarRenameNumberStep,
     sidebarRenameRemoveEnd,
+    sidebarRenameRemoveHead,
     sidebarRenameRemoveStart,
+    sidebarRenameRemoveTail,
     sidebarRenameMetadataTemplate,
     sidebarRenameReplaceFrom,
     sidebarRenameReplaceTo,
@@ -433,7 +462,8 @@ export function useAppViewComposition({
     if (!batchModeActive) {
       return
     }
-    if (sidebarRenameMode === 'remove-range') {
+    if (sidebarRenameMode === 'replace') {
+      setSidebarRenamePreviewRows([])
       return
     }
     void refreshSidebarRenamePreview()
@@ -441,27 +471,28 @@ export function useAppViewComposition({
     refreshSidebarRenamePreview,
     sidebarRenameDialogOpen,
     sidebarRenameMode,
+    sidebarRenameDraft,
+    sidebarRenameNumberBase,
+    sidebarRenameNumberStart,
+    sidebarRenameNumberStep,
+    sidebarRenameNumberPadWidth,
+    sidebarRenameRemoveStart,
+    sidebarRenameRemoveEnd,
+    sidebarRenameRemoveHead,
+    sidebarRenameRemoveTail,
+    sidebarRenameMetadataTemplate,
     sidebarRenameTargetImageIds.length,
     sidebarRenameTargetNodeIds.length,
   ])
-
-  const topLayerState = useAppTopLayerBindings({
-    runtimeSources,
-    readNavigationState,
-    displayState,
-  })
-
-  const workspaceState = useAppWorkspaceBindings({
-    runtimeSources,
-    readNavigationState,
-    displayState,
-    managementErrorRows: topLayerState.managementErrorRows,
-  })
 
   const workspaceStateWithRename = {
     ...workspaceState,
     imageMainSectionProps: {
       ...workspaceState.imageMainSectionProps,
+      onManageRename: openManageRenameDialog,
+    },
+    videoMainSectionProps: {
+      ...workspaceState.videoMainSectionProps,
       onManageRename: openManageRenameDialog,
     },
   }
@@ -540,6 +571,8 @@ export function useAppViewComposition({
       numberPadWidth: sidebarRenameNumberPadWidth,
       removeStart: sidebarRenameRemoveStart,
       removeEnd: sidebarRenameRemoveEnd,
+      removeHead: sidebarRenameRemoveHead,
+      removeTail: sidebarRenameRemoveTail,
       metadataTemplate: sidebarRenameMetadataTemplate,
       previewRows: sidebarRenamePreviewRows,
       errorMessage: sidebarRenameError,
@@ -558,6 +591,8 @@ export function useAppViewComposition({
       onNumberPadWidthChange: setSidebarRenameNumberPadWidth,
       onRemoveStartChange: setSidebarRenameRemoveStart,
       onRemoveEndChange: setSidebarRenameRemoveEnd,
+      onRemoveHeadChange: setSidebarRenameRemoveHead,
+      onRemoveTailChange: setSidebarRenameRemoveTail,
       onMetadataTemplateChange: setSidebarRenameMetadataTemplate,
       onRefreshPreview: () => {
         void refreshSidebarRenamePreview()

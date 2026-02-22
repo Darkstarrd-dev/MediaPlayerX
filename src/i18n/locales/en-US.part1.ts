@@ -717,6 +717,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.sidebar.renameDialogNumberPadWidthPlaceholder": "Pad width",
   "ui.sidebar.renameDialogRemoveStartPlaceholder": "Start position",
   "ui.sidebar.renameDialogRemoveEndPlaceholder": "End position",
+  "ui.sidebar.renameDialogRemoveHeadPlaceholder": "Remove from head",
+  "ui.sidebar.renameDialogRemoveTailPlaceholder": "Remove from tail",
+  "ui.sidebar.renameDialogRemoveRangeHint": "Range remove (1-based positions, inclusive)",
+  "ui.sidebar.renameDialogRemoveEdgesHint": "Extra remove (from head forward / from tail backward)",
   "ui.sidebar.renameDialogMetadataTemplatePlaceholder": "Metadata template",
   "ui.sidebar.renameDialogPreviewLabel": "Preview",
   "ui.sidebar.renameDialogPreviewSummary":

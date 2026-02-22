@@ -53,8 +53,10 @@ export function useAppSessionState({
   const [sidebarRenameNumberStart, setSidebarRenameNumberStart] = useState('1')
   const [sidebarRenameNumberStep, setSidebarRenameNumberStep] = useState('1')
   const [sidebarRenameNumberPadWidth, setSidebarRenameNumberPadWidth] = useState('3')
-  const [sidebarRenameRemoveStart, setSidebarRenameRemoveStart] = useState('1')
-  const [sidebarRenameRemoveEnd, setSidebarRenameRemoveEnd] = useState('1')
+  const [sidebarRenameRemoveStart, setSidebarRenameRemoveStart] = useState('0')
+  const [sidebarRenameRemoveEnd, setSidebarRenameRemoveEnd] = useState('0')
+  const [sidebarRenameRemoveHead, setSidebarRenameRemoveHead] = useState('0')
+  const [sidebarRenameRemoveTail, setSidebarRenameRemoveTail] = useState('0')
   const [sidebarRenameMetadataTemplate, setSidebarRenameMetadataTemplate] = useState('[author.jp(if exist)(author.en(if exist))]/[author(if only one exist)]-[circle just like author ] - [title.jp(if exist)]/[title(if only one exist)]')
   const [sidebarRenamePreviewRows, setSidebarRenamePreviewRows] = useState<Array<{ nodeId: string; sourceName: string; targetName: string; reason: string | null }>>([])
   const [importMenuOpen, setImportMenuOpen] = useState(false)
@@ -156,6 +158,10 @@ export function useAppSessionState({
     setSidebarRenameRemoveStart,
     sidebarRenameRemoveEnd,
     setSidebarRenameRemoveEnd,
+    sidebarRenameRemoveHead,
+    setSidebarRenameRemoveHead,
+    sidebarRenameRemoveTail,
+    setSidebarRenameRemoveTail,
     sidebarRenameMetadataTemplate,
     setSidebarRenameMetadataTemplate,
     sidebarRenamePreviewRows,

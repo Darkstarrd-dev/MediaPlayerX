@@ -305,6 +305,7 @@
   color: var(--mpx-accent);
 }
 
+
 .settings-block input[type='text'],
 .settings-block input[type='number'],
 .settings-block input[type='color'],
@@ -732,6 +733,18 @@
   margin: 0;
   color: var(--mpx-text-2);
   font-size: 12px;
+}
+
+.sidebar-rename-hint {
+  margin: 0;
+  color: var(--mpx-text-2);
+  font-size: 12px;
+}
+
+.sidebar-rename-input-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .sidebar-rename-preview-list {

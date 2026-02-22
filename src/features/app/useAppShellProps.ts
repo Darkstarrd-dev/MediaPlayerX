@@ -43,6 +43,8 @@ interface SidebarRenameDialogInput {
   numberPadWidth: string
   removeStart: string
   removeEnd: string
+  removeHead: string
+  removeTail: string
   metadataTemplate: string
   previewRows: Array<{ nodeId: string; sourceName: string; targetName: string; reason: string | null }>
   errorMessage: string | null
@@ -56,6 +58,8 @@ interface SidebarRenameDialogInput {
   onNumberPadWidthChange: (value: string) => void
   onRemoveStartChange: (value: string) => void
   onRemoveEndChange: (value: string) => void
+  onRemoveHeadChange: (value: string) => void
+  onRemoveTailChange: (value: string) => void
   onMetadataTemplateChange: (value: string) => void
   onRefreshPreview: () => void
   onCancel: () => void
@@ -188,6 +192,10 @@ export function useAppShellProps({
     numberPadWidthPlaceholder: t('ui.sidebar.renameDialogNumberPadWidthPlaceholder'),
     removeStartPlaceholder: t('ui.sidebar.renameDialogRemoveStartPlaceholder'),
     removeEndPlaceholder: t('ui.sidebar.renameDialogRemoveEndPlaceholder'),
+    removeHeadPlaceholder: t('ui.sidebar.renameDialogRemoveHeadPlaceholder'),
+    removeTailPlaceholder: t('ui.sidebar.renameDialogRemoveTailPlaceholder'),
+    removeRangeHint: t('ui.sidebar.renameDialogRemoveRangeHint'),
+    removeEdgesHint: t('ui.sidebar.renameDialogRemoveEdgesHint'),
     metadataTemplatePlaceholder: t('ui.sidebar.renameDialogMetadataTemplatePlaceholder'),
     previewLabel: t('ui.sidebar.renameDialogPreviewLabel'),
     previewSummaryText:
@@ -208,6 +216,8 @@ export function useAppShellProps({
     numberPadWidth: sidebarRenameDialogParams.numberPadWidth,
     removeStart: sidebarRenameDialogParams.removeStart,
     removeEnd: sidebarRenameDialogParams.removeEnd,
+    removeHead: sidebarRenameDialogParams.removeHead,
+    removeTail: sidebarRenameDialogParams.removeTail,
     metadataTemplate: sidebarRenameDialogParams.metadataTemplate,
     previewRows: sidebarRenameDialogParams.previewRows,
     errorMessage: sidebarRenameDialogParams.errorMessage,
@@ -221,6 +231,8 @@ export function useAppShellProps({
     onNumberPadWidthChange: sidebarRenameDialogParams.onNumberPadWidthChange,
     onRemoveStartChange: sidebarRenameDialogParams.onRemoveStartChange,
     onRemoveEndChange: sidebarRenameDialogParams.onRemoveEndChange,
+    onRemoveHeadChange: sidebarRenameDialogParams.onRemoveHeadChange,
+    onRemoveTailChange: sidebarRenameDialogParams.onRemoveTailChange,
     onMetadataTemplateChange: sidebarRenameDialogParams.onMetadataTemplateChange,
     onRefreshPreview: sidebarRenameDialogParams.onRefreshPreview,
     onCancel: sidebarRenameDialogParams.onCancel,

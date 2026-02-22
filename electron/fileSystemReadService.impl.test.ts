@@ -649,6 +649,48 @@ describe("FileSystemMediaReadService", () => {
     ).toBe(true);
   });
 
+  it("外部删除导入源后会通过 watcher 自动清理并广播变更", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-auto-prune-watcher-"),
+    );
+    createdRoots.push(root);
+
+    const imageDirectory = path.join(root, "gallery");
+    await writeBinary(
+      path.join(imageDirectory, "a.jpg"),
+      [0xff, 0xd8, 0xff, 0xd9],
+    );
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const before = await service.readLibrarySnapshot();
+    expect(before.image_directories.length).toBeGreaterThan(0);
+
+    const eventPayloads: Array<{ reason: string; updated_at_ms: number }> = [];
+    const unsubscribe = service.onLibraryChanged((payload) => {
+      eventPayloads.push(payload);
+    });
+
+    await fs.rm(imageDirectory, { recursive: true, force: true });
+
+    await expect
+      .poll(
+        () =>
+          eventPayloads.some(
+            (payload) => payload.reason === "auto-prune-missing-sources",
+          ),
+        { timeout: 5_000, interval: 100 },
+      )
+      .toBe(true);
+
+    const after = await service.readLibrarySnapshot();
+    unsubscribe();
+
+    expect(after.image_directories).toHaveLength(0);
+  });
+
   it("导入任务以纯引用登记库外文件并完成刷新", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-import-root-"));
     const outsideRoot = await fs.mkdtemp(

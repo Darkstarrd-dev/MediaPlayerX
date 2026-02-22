@@ -585,6 +585,14 @@ export function useReadOnlyDataAccess({
         return
       }
 
+      if (payload.reason === 'auto-prune-missing-sources') {
+        triggerLibraryRefresh()
+        triggerSidebarRefresh()
+        triggerPageRefresh()
+        triggerMetadataRefresh()
+        return
+      }
+
       const isMetadataManageWriteReason =
         payload.reason === 'write-package-grade' ||
         payload.reason === 'write-package-metadata' ||
@@ -641,6 +649,42 @@ export function useReadOnlyDataAccess({
     triggerPageRefresh,
     triggerSidebarRefresh,
     suspendLibraryChangedRefresh,
+  ])
+
+  useEffect(() => {
+    if (isSynchronousTestMode) {
+      return
+    }
+
+    const refreshOnForeground = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return
+      }
+      triggerLibraryRefresh()
+      triggerSidebarRefresh()
+      triggerPageRefresh()
+      triggerMetadataRefresh()
+    }
+
+    const onVisibilityChange = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refreshOnForeground()
+      }
+    }
+
+    window.addEventListener('focus', refreshOnForeground)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      window.removeEventListener('focus', refreshOnForeground)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [
+    isSynchronousTestMode,
+    triggerLibraryRefresh,
+    triggerMetadataRefresh,
+    triggerPageRefresh,
+    triggerSidebarRefresh,
   ])
 
   useEffect(() => {

@@ -57,6 +57,67 @@ interface ManagementRenameServiceDependencies {
   ) => Promise<void>;
 }
 
+function applyRemoveRangeUnion(
+  sourceName: string,
+  removeStart?: number,
+  removeEnd?: number,
+  removeHead?: number,
+  removeTail?: number,
+): string {
+  const length = sourceName.length;
+  if (length === 0) {
+    return sourceName;
+  }
+
+  const intervals: Array<{ start: number; endExclusive: number }> = [];
+  const normalizedStart = Math.max(0, removeStart ?? 0);
+  const normalizedEnd = Math.max(0, removeEnd ?? 0);
+  if (normalizedStart > 0 && normalizedEnd > 0 && normalizedEnd >= normalizedStart) {
+    const startIndex = Math.min(length, normalizedStart - 1);
+    const endExclusive = Math.min(length, normalizedEnd);
+    if (endExclusive > startIndex) {
+      intervals.push({ start: startIndex, endExclusive });
+    }
+  }
+
+  const normalizedHead = Math.max(0, removeHead ?? 0);
+  if (normalizedHead > 0) {
+    const endExclusive = Math.min(length, normalizedHead);
+    if (endExclusive > 0) {
+      intervals.push({ start: 0, endExclusive });
+    }
+  }
+
+  const normalizedTail = Math.max(0, removeTail ?? 0);
+  if (normalizedTail > 0) {
+    const start = Math.max(0, length - normalizedTail);
+    if (start < length) {
+      intervals.push({ start, endExclusive: length });
+    }
+  }
+
+  if (intervals.length === 0) {
+    return sourceName;
+  }
+
+  intervals.sort((left, right) => left.start - right.start);
+  let cursor = 0;
+  let nextName = "";
+  for (const interval of intervals) {
+    if (interval.endExclusive <= cursor) {
+      continue;
+    }
+    if (interval.start > cursor) {
+      nextName += sourceName.slice(cursor, interval.start);
+    }
+    cursor = Math.max(cursor, interval.endExclusive);
+  }
+  if (cursor < length) {
+    nextName += sourceName.slice(cursor);
+  }
+  return nextName;
+}
+
 export class ManagementRenameService {
   constructor(
     private readonly dependencies: ManagementRenameServiceDependencies,
@@ -280,13 +341,13 @@ export class ManagementRenameService {
         const value = start + index * step;
         nextBaseName = `${request.numbering_base_name ?? ""}${String(value).padStart(padWidth, "0")}`;
       } else if (request.mode === "remove-range") {
-        const startIndex = Math.max(0, (request.remove_start ?? 1) - 1);
-        const endIndexExclusive = Math.min(
-          sourceName.length,
-          request.remove_end ?? request.remove_start ?? 1,
+        nextBaseName = applyRemoveRangeUnion(
+          sourceName,
+          request.remove_start,
+          request.remove_end,
+          request.remove_head,
+          request.remove_tail,
         );
-        nextBaseName =
-          sourceName.slice(0, startIndex) + sourceName.slice(endIndexExclusive);
       } else {
         nextBaseName = renderMetadataTemplate(
           request.metadata_template ?? "",
@@ -396,7 +457,13 @@ export class ManagementRenameService {
               !failedTargetKeySet.has(toTargetKey(operation.target)),
           );
 
-    const results: RenameItemsResponseDto["results"] = operationsToApply.map(
+    const operationsForResult = previewOnly
+      ? plannedOperations.filter(
+          (operation) => !failedTargetKeySet.has(toTargetKey(operation.target)),
+        )
+      : operationsToApply;
+
+    const results: RenameItemsResponseDto["results"] = operationsForResult.map(
       (operation) => ({
         target: operation.target,
         source_name: operation.sourceName,
@@ -669,13 +736,13 @@ export class ManagementRenameService {
         const value = start + index * step;
         nextBaseName = `${request.numbering_base_name ?? ""}${String(value).padStart(padWidth, "0")}`;
       } else if (request.mode === "remove-range") {
-        const startPosition = request.remove_start ?? 1;
-        const endPosition = request.remove_end ?? startPosition;
-        const startIndex = Math.max(0, startPosition - 1);
-        const endIndexExclusive = Math.min(sourceBaseName.length, endPosition);
-        nextBaseName =
-          sourceBaseName.slice(0, startIndex) +
-          sourceBaseName.slice(endIndexExclusive);
+        nextBaseName = applyRemoveRangeUnion(
+          sourceBaseName,
+          request.remove_start,
+          request.remove_end,
+          request.remove_head,
+          request.remove_tail,
+        );
       } else {
         nextBaseName = buildMetadataSynthesisName(
           parsed,
@@ -763,6 +830,9 @@ export class ManagementRenameService {
       failFast && failed.length > 0
         ? []
         : resolvedTargets.filter((item) => !failureNodeIdSet.has(item.nodeId));
+    const resultTargets = previewOnly
+      ? resolvedTargets.filter((item) => !failureNodeIdSet.has(item.nodeId))
+      : applyTargets;
 
     const movedMappings: Array<{ fromPath: string; toPath: string }> = [];
     for (const target of applyTargets) {
@@ -789,7 +859,9 @@ export class ManagementRenameService {
           continue;
         }
       }
+    }
 
+    for (const target of resultTargets) {
       results.push({
         node_id: target.nodeId,
         source_name: target.sourceName,

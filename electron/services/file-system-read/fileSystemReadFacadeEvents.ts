@@ -16,6 +16,7 @@ export interface LibraryChangedEventPayload {
     | 'manage-hide'
     | 'manage-delete-image-items'
     | 'manage-delete-sidebar-nodes'
+    | 'auto-prune-missing-sources'
     | 'thumbnail-rendering-start'
     | 'thumbnail-rendering-progress'
     | 'thumbnail-rendering-end'

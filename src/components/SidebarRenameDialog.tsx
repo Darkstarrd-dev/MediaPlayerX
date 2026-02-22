@@ -1,3 +1,5 @@
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
+
 interface SidebarRenameDialogProps {
   open: boolean
   pending?: boolean
@@ -19,6 +21,10 @@ interface SidebarRenameDialogProps {
   numberPadWidthPlaceholder: string
   removeStartPlaceholder: string
   removeEndPlaceholder: string
+  removeHeadPlaceholder: string
+  removeTailPlaceholder: string
+  removeRangeHint: string
+  removeEdgesHint: string
   metadataTemplatePlaceholder: string
   previewLabel: string
   previewSummaryText: string | null
@@ -33,6 +39,8 @@ interface SidebarRenameDialogProps {
   numberPadWidth: string
   removeStart: string
   removeEnd: string
+  removeHead: string
+  removeTail: string
   metadataTemplate: string
   previewRows: Array<{ nodeId: string; sourceName: string; targetName: string; reason: string | null }>
   errorMessage?: string | null
@@ -46,6 +54,8 @@ interface SidebarRenameDialogProps {
   onNumberPadWidthChange: (value: string) => void
   onRemoveStartChange: (value: string) => void
   onRemoveEndChange: (value: string) => void
+  onRemoveHeadChange: (value: string) => void
+  onRemoveTailChange: (value: string) => void
   onMetadataTemplateChange: (value: string) => void
   onRefreshPreview: () => void
   onConfirm: () => void
@@ -73,7 +83,10 @@ function SidebarRenameDialog({
   numberPadWidthPlaceholder,
   removeStartPlaceholder,
   removeEndPlaceholder,
-  metadataTemplatePlaceholder,
+  removeHeadPlaceholder,
+  removeTailPlaceholder,
+  removeRangeHint,
+  removeEdgesHint,
   previewLabel,
   previewSummaryText,
   confirmLabel,
@@ -87,7 +100,8 @@ function SidebarRenameDialog({
   numberPadWidth,
   removeStart,
   removeEnd,
-  metadataTemplate,
+  removeHead,
+  removeTail,
   previewRows,
   errorMessage = null,
   onChange,
@@ -100,13 +114,46 @@ function SidebarRenameDialog({
   onNumberPadWidthChange,
   onRemoveStartChange,
   onRemoveEndChange,
-  onMetadataTemplateChange,
+  onRemoveHeadChange,
+  onRemoveTailChange,
   onRefreshPreview,
   onConfirm,
   onCancel,
 }: SidebarRenameDialogProps) {
+  const parseNonNegativeInt = (raw: string): number => {
+    const parsed = Number.parseInt(raw, 10)
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return 0
+    }
+    return parsed
+  }
+
+  const handleNumericArrowAdjust = (
+    event: ReactKeyboardEvent<HTMLInputElement>,
+    currentValue: string,
+    onValueChange: (value: string) => void,
+    min = 0,
+    max = Number.MAX_SAFE_INTEGER,
+  ): number | null => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+      return null
+    }
+    event.preventDefault()
+    const delta = event.key === 'ArrowRight' ? 1 : -1
+    const current = parseNonNegativeInt(currentValue)
+    const next = Math.min(max, Math.max(min, current + delta))
+    onValueChange(String(next))
+    return next
+  }
+
   const batchModeActive = targetCount > 1 || mode !== 'single'
   const singleConfirmDisabled = pending || value.trim().length === 0
+  const showManualPreviewButton = mode === 'replace'
+  const firstFailedRow = previewRows.find((row) => row.reason)
+  const displayedPreviewRows = [
+    ...previewRows.filter((row) => !row.reason),
+    ...(firstFailedRow ? [firstFailedRow] : []),
+  ]
 
   if (!open) {
     return null
@@ -145,21 +192,49 @@ function SidebarRenameDialog({
 
             {mode === 'remove-range' ? (
               <>
-                <input className="manage-group-name-input" type="number" value={removeStart} placeholder={removeStartPlaceholder} disabled={pending} onChange={(event) => onRemoveStartChange(event.target.value)} />
-                <input className="manage-group-name-input" type="number" value={removeEnd} placeholder={removeEndPlaceholder} disabled={pending} onChange={(event) => onRemoveEndChange(event.target.value)} />
+                <p className="sidebar-rename-hint">{removeRangeHint}</p>
+                <div className="sidebar-rename-input-row">
+                  <input className="manage-group-name-input" type="number" min={0} value={removeStart} placeholder={removeStartPlaceholder} disabled={pending} onChange={(event) => onRemoveStartChange(event.target.value)} onKeyDown={(event) => {
+                    const nextStart = handleNumericArrowAdjust(event, removeStart, onRemoveStartChange)
+                    if (nextStart == null) {
+                      return
+                    }
+                    const currentEnd = parseNonNegativeInt(removeEnd)
+                    if (currentEnd > 0 && nextStart > 0 && currentEnd < nextStart) {
+                      onRemoveEndChange(String(nextStart))
+                    }
+                  }} />
+                  <input className="manage-group-name-input" type="number" min={0} value={removeEnd} placeholder={removeEndPlaceholder} disabled={pending} onChange={(event) => onRemoveEndChange(event.target.value)} onKeyDown={(event) => {
+                    const nextEnd = handleNumericArrowAdjust(event, removeEnd, onRemoveEndChange)
+                    if (nextEnd == null) {
+                      return
+                    }
+                    const currentStart = parseNonNegativeInt(removeStart)
+                    if (nextEnd > 0 && currentStart > 0 && nextEnd < currentStart) {
+                      onRemoveEndChange(String(currentStart))
+                    }
+                  }} />
+                </div>
+                <p className="sidebar-rename-hint">{removeEdgesHint}</p>
+                <div className="sidebar-rename-input-row">
+                  <input className="manage-group-name-input" type="number" min={0} value={removeHead} placeholder={removeHeadPlaceholder} disabled={pending} onChange={(event) => onRemoveHeadChange(event.target.value)} onKeyDown={(event) => {
+                    handleNumericArrowAdjust(event, removeHead, onRemoveHeadChange)
+                  }} />
+                  <input className="manage-group-name-input" type="number" min={0} value={removeTail} placeholder={removeTailPlaceholder} disabled={pending} onChange={(event) => onRemoveTailChange(event.target.value)} onKeyDown={(event) => {
+                    handleNumericArrowAdjust(event, removeTail, onRemoveTailChange)
+                  }} />
+                </div>
               </>
             ) : null}
 
-            {mode === 'metadata' ? (
-              <textarea className="manage-group-name-input" value={metadataTemplate} placeholder={metadataTemplatePlaceholder} disabled={pending} onChange={(event) => onMetadataTemplateChange(event.target.value)} rows={3} />
+            {showManualPreviewButton ? (
+              <div className="settings-floating-actions manage-group-actions">
+                <button className="feature-action-btn main-icon-square-btn" type="button" disabled={pending} onClick={onRefreshPreview}>{previewLabel}</button>
+              </div>
             ) : null}
-
-            <div className="settings-floating-actions manage-group-actions">
-              <button className="feature-action-btn main-icon-square-btn" type="button" disabled={pending} onClick={onRefreshPreview}>{previewLabel}</button>
-            </div>
             {previewSummaryText ? <p className="sidebar-rename-preview-summary">{previewSummaryText}</p> : null}
             <div className="sidebar-rename-preview-list">
-              {previewRows.slice(0, 24).map((row) => (
+              {displayedPreviewRows.slice(0, 24).map((row) => (
                 <p key={row.nodeId} className={`sidebar-rename-preview-row ${row.reason ? 'is-failed' : ''}`}>
                   {row.sourceName} {'->'} {row.targetName}{row.reason ? ` (${row.reason})` : ''}
                 </p>

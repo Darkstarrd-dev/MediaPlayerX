@@ -23,6 +23,8 @@ export const renameSidebarNodesRequestSchema = z
     numbering_pad_width: z.number().int().min(1).max(12).optional(),
     remove_start: z.number().int().min(0).optional(),
     remove_end: z.number().int().min(0).optional(),
+    remove_head: z.number().int().min(0).optional(),
+    remove_tail: z.number().int().min(0).optional(),
   })
   .superRefine((value, ctx) => {
     if (value.mode === "replace") {
@@ -60,21 +62,13 @@ export const renameSidebarNodesRequestSchema = z
     if (value.mode === "remove-range") {
       const start = value.remove_start;
       const end = value.remove_end;
-      if (typeof start !== "number") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "remove_start is required for remove-range mode",
-          path: ["remove_start"],
-        });
-      }
-      if (typeof end !== "number") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "remove_end is required for remove-range mode",
-          path: ["remove_end"],
-        });
-      }
-      if (typeof start === "number" && typeof end === "number" && end < start) {
+      if (
+        typeof start === "number" &&
+        typeof end === "number" &&
+        start > 0 &&
+        end > 0 &&
+        end < start
+      ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "remove_end must be >= remove_start",
@@ -144,8 +138,10 @@ export const renameItemsRequestSchema = z
     numbering_start: z.number().int().optional(),
     numbering_step: z.number().int().optional(),
     numbering_pad_width: z.number().int().min(1).max(12).optional(),
-    remove_start: z.number().int().min(1).optional(),
-    remove_end: z.number().int().min(1).optional(),
+    remove_start: z.number().int().min(0).optional(),
+    remove_end: z.number().int().min(0).optional(),
+    remove_head: z.number().int().min(0).optional(),
+    remove_tail: z.number().int().min(0).optional(),
     metadata_template: z.string().optional(),
   })
   .superRefine((value, ctx) => {
@@ -190,23 +186,11 @@ export const renameItemsRequestSchema = z
       return;
     }
     if (value.mode === "remove-range") {
-      if (typeof value.remove_start !== "number") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "remove_start is required for remove-range mode",
-          path: ["remove_start"],
-        });
-      }
-      if (typeof value.remove_end !== "number") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "remove_end is required for remove-range mode",
-          path: ["remove_end"],
-        });
-      }
       if (
         typeof value.remove_start === "number" &&
         typeof value.remove_end === "number" &&
+        value.remove_start > 0 &&
+        value.remove_end > 0 &&
         value.remove_end < value.remove_start
       ) {
         ctx.addIssue({

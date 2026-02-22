@@ -803,6 +803,8 @@ export class MockMediaWriteHandlers {
       numbering_pad_width: request.numbering_pad_width,
       remove_start: request.remove_start,
       remove_end: request.remove_end,
+      remove_head: request.remove_head,
+      remove_tail: request.remove_tail,
     }
 
     const sidebarResponse = this.renameSidebarNodesSync(toSidebarRequest)

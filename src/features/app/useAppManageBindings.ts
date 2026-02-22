@@ -60,7 +60,15 @@ export function useAppManageBindings({
     activeSelectionScope,
     clearAllSelections,
     replaceImageCheckedIds,
+    backendRead,
   } = readNavigationState
+
+  const {
+    retryLibrary,
+    retrySidebar,
+    retryPage,
+    retryMetadata,
+  } = backendRead
 
   const backendWrite = useWriteDataAccess({
     repository: mediaRepository,
@@ -142,24 +150,58 @@ export function useAppManageBindings({
       return
     }
 
-    const reviewTask = manageAdReview.task
-    const isCoverApplyMode = manageAdReview.applyActionMode === 'cover'
-    const isReviewReady = reviewTask?.status === 'review'
-    const shouldRouteToAdReviewDelete =
-      isReviewReady &&
-      imageCheckedIds.some((imageId) => reviewTask.candidates.some((candidate) => candidate.image_id === imageId))
+    try {
+      const reviewTask = manageAdReview.task
+      const isCoverApplyMode = manageAdReview.applyActionMode === 'cover'
+      const isReviewReady = reviewTask?.status === 'review'
+      const shouldRouteToAdReviewDelete =
+        isReviewReady &&
+        imageCheckedIds.some((imageId) => reviewTask.candidates.some((candidate) => candidate.image_id === imageId))
 
-    const shouldRouteToCoverReviewHide = Boolean(isCoverApplyMode && isReviewReady)
+      const shouldRouteToCoverReviewHide = Boolean(isCoverApplyMode && isReviewReady)
 
-    if (shouldRouteToCoverReviewHide || shouldRouteToAdReviewDelete) {
-      setDeleteConfirmOpen(false)
-      setManageOperationHint(null)
-      await manageAdReview.confirmDeleteSelectedCandidates()
-      return
+      if (shouldRouteToCoverReviewHide || shouldRouteToAdReviewDelete) {
+        setDeleteConfirmOpen(false)
+        setManageOperationHint(null)
+        await manageAdReview.confirmDeleteSelectedCandidates()
+        return
+      }
+
+      await confirmManageDelete()
+    } finally {
+      retryLibrary()
+      retrySidebar()
+      retryPage()
+      retryMetadata()
     }
+  }, [
+    confirmManageDelete,
+    imageCheckedIds,
+    manageAdReview,
+    retryLibrary,
+    retryMetadata,
+    retryPage,
+    retrySidebar,
+    setDeleteConfirmOpen,
+    setManageOperationHint,
+  ])
 
-    await confirmManageDelete()
-  }, [confirmManageDelete, imageCheckedIds, manageAdReview, setDeleteConfirmOpen, setManageOperationHint])
+  const confirmManageRemoveOnlyWithRefresh = useCallback(async () => {
+    try {
+      await confirmManageRemoveOnly()
+    } finally {
+      retryLibrary()
+      retrySidebar()
+      retryPage()
+      retryMetadata()
+    }
+  }, [
+    confirmManageRemoveOnly,
+    retryLibrary,
+    retryMetadata,
+    retryPage,
+    retrySidebar,
+  ])
 
   const runtimeCapabilities = useRuntimeCapabilities({
     repository: mediaRepository,
@@ -180,7 +222,7 @@ export function useAppManageBindings({
     confirmManageMove,
     requestManageMove,
     confirmManageDelete: confirmManageDeleteWithAdReview,
-    confirmManageRemoveOnly,
+    confirmManageRemoveOnly: confirmManageRemoveOnlyWithRefresh,
     manageAdReview,
     runtimeCapabilities,
   }

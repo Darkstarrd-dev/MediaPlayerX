@@ -1,4 +1,4 @@
-import { promises as fs } from "node:fs";
+import { promises as fs, watch, type FSWatcher } from "node:fs";
 import path from "node:path";
 
 import {
@@ -109,6 +109,7 @@ import {
   isPathAllowlisted,
   type MediaAccessGuardContext,
 } from "./fileSystemMediaAccessGuard";
+import { normalizeAllowlistKey } from "./fileSystemServiceHelpers";
 import {
   type MediaProtocolResponsePayload,
   type MediaProtocolStreamResponsePayload,
@@ -193,6 +194,8 @@ export interface FileSystemMediaReadServiceOptions {
 export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private static readonly SYNC_PRUNE_ENTRY_THRESHOLD = 256;
 
+  private static readonly EXTERNAL_SOURCE_PRUNE_DEBOUNCE_MS = 600;
+
   private static readonly INTERACTIVE_READ_HOT_WINDOW_MS = 2_500;
 
   private static readonly ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY =
@@ -244,6 +247,9 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private readonly maxConcurrentImagePageReads = 2;
   private activeImagePageTasks: ActiveReadTask<ReadImagePageResponseDto>[] = [];
   private queuedImagePageTask: QueuedReadTask<ReadImagePageResponseDto> | null =
+    null;
+  private readonly externalSourceWatcherByPathKey = new Map<string, FSWatcher>();
+  private externalSourcePruneDebounceTimer: ReturnType<typeof setTimeout> | null =
     null;
   private disposed = false;
 
@@ -582,6 +588,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.librarySnapshotService.invalidateCache();
     const importSources = this.database.readImportSources();
     this.importPathRegistry.hydrate(importSources);
+    this.refreshExternalSourceWatchers();
     this.mediaTokenService.cleanupExpiredTokens();
   }
 
@@ -745,6 +752,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
 
   dispose(): void {
     this.disposed = true;
+    this.stopExternalSourceWatchers();
     this.readLibrarySnapshotInFlight = null;
     this.readLibrarySnapshotLiteInFlight = null;
     this.clearActiveReadTasks("read queue cleared: service disposed");
@@ -764,6 +772,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     }
     this.importTaskService.recoverInterruptedImportTasks();
     this.importPathRegistry.hydrate(this.database.readImportSources());
+    this.refreshExternalSourceWatchers();
     this.archiveNormalizationService.recoverPersistedQueue();
     this.stateHydrated = true;
   }
@@ -819,6 +828,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
         directories: nextSources.directories,
         files: nextSources.files,
       });
+      this.refreshExternalSourceWatchers();
     }
   }
 
@@ -831,6 +841,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       importPathRegistry: this.importPathRegistry,
       database: this.database,
     });
+    this.refreshExternalSourceWatchers();
   }
 
   private async replaceImportSourcePaths(
@@ -842,6 +853,114 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       importPathRegistry: this.importPathRegistry,
       database: this.database,
     });
+    this.refreshExternalSourceWatchers();
+  }
+
+  private scheduleExternalSourcePrune(): void {
+    if (this.disposed) {
+      return;
+    }
+    if (this.externalSourcePruneDebounceTimer !== null) {
+      clearTimeout(this.externalSourcePruneDebounceTimer);
+    }
+    this.externalSourcePruneDebounceTimer = setTimeout(() => {
+      this.externalSourcePruneDebounceTimer = null;
+      this.runExternalSourceRefreshFromWatcher();
+    }, FileSystemMediaReadService.EXTERNAL_SOURCE_PRUNE_DEBOUNCE_MS);
+  }
+
+  private runExternalSourceRefreshFromWatcher(): void {
+    if (this.disposed || this.importTaskService.hasRunningImportTasks()) {
+      return;
+    }
+
+    void this.refreshSnapshotFromFilesystem()
+      .then(() => {
+        if (this.disposed) {
+          return;
+        }
+        this.emitLibraryChanged({
+          reason: "auto-prune-missing-sources",
+          updated_at_ms: Date.now(),
+        });
+      })
+      .catch((error) => {
+        if (this.disposed) {
+          return;
+        }
+        console.warn("external source watcher refresh failed", {
+          reason:
+            error instanceof Error && error.message
+              ? error.message
+              : String(error),
+        });
+      });
+  }
+
+  private refreshExternalSourceWatchers(): void {
+    if (this.disposed) {
+      return;
+    }
+
+    const desiredWatchPathByKey = new Map<string, string>();
+    for (const rootPath of this.importPathRegistry.getImportDirectoryRoots()) {
+      const resolvedPath = path.resolve(rootPath);
+      desiredWatchPathByKey.set(
+        normalizeAllowlistKey(resolvedPath),
+        resolvedPath,
+      );
+    }
+    for (const filePath of this.importPathRegistry.getImportFilePaths()) {
+      const parentPath = path.dirname(path.resolve(filePath));
+      desiredWatchPathByKey.set(normalizeAllowlistKey(parentPath), parentPath);
+    }
+
+    for (const [pathKey, watcher] of this.externalSourceWatcherByPathKey) {
+      if (desiredWatchPathByKey.has(pathKey)) {
+        continue;
+      }
+      watcher.close();
+      this.externalSourceWatcherByPathKey.delete(pathKey);
+    }
+
+    const recursiveWatchSupported =
+      process.platform === "win32" || process.platform === "darwin";
+    for (const [pathKey, watchPath] of desiredWatchPathByKey) {
+      if (this.externalSourceWatcherByPathKey.has(pathKey)) {
+        continue;
+      }
+      try {
+        const watcher = watch(
+          watchPath,
+          { recursive: recursiveWatchSupported },
+          () => {
+            this.scheduleExternalSourcePrune();
+          },
+        );
+        watcher.on("error", () => {
+          const existingWatcher = this.externalSourceWatcherByPathKey.get(pathKey);
+          if (existingWatcher === watcher) {
+            this.externalSourceWatcherByPathKey.delete(pathKey);
+          }
+          watcher.close();
+          this.scheduleExternalSourcePrune();
+        });
+        this.externalSourceWatcherByPathKey.set(pathKey, watcher);
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  private stopExternalSourceWatchers(): void {
+    if (this.externalSourcePruneDebounceTimer !== null) {
+      clearTimeout(this.externalSourcePruneDebounceTimer);
+      this.externalSourcePruneDebounceTimer = null;
+    }
+    for (const watcher of this.externalSourceWatcherByPathKey.values()) {
+      watcher.close();
+    }
+    this.externalSourceWatcherByPathKey.clear();
   }
 
   private syncSnapshotFromDatabase(): LibrarySnapshotDto {
@@ -1013,6 +1132,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     ]);
 
     this.importPathRegistry.clear();
+    this.stopExternalSourceWatchers();
     this.archiveNormalizationService.clear();
     this.mediaTokenService.clearActiveTokens();
     this.importTaskService.clearRuntimeState();
