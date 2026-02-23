@@ -239,14 +239,27 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .image-grid,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-rating-group,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-edit-grid,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-booklet-bindings,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .feature-tag-picker-panel,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .playlist-item {
   border-color: color-mix(in srgb, var(--mpx-border-1) 86%, var(--mpx-palette-accent-raw) 14%);
   box-shadow: var(--mpx-card-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-main-shell {
+  margin-top: 8px;
+  margin-right: var(--mpx-main-padding);
+  margin-bottom: 0;
+  margin-left: var(--mpx-main-padding);
+  border: 1px solid #b8b2a6;
+  border-radius: 12px;
+  background: linear-gradient(to bottom, var(--mpx-metal-light), var(--mpx-metal-base));
+  box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(245, 242, 236, 0.92);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-main-shell .sidebar-tree {
+  background: transparent;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-footer {
@@ -261,6 +274,14 @@
   border: 1px solid #b8b2a6;
   border-radius: 12px;
   padding: 0.5rem 1rem;
+  background: linear-gradient(to bottom, var(--mpx-metal-light), var(--mpx-metal-base));
+  box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(245, 242, 236, 0.92);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-editor-shell > .metadata-rating-group,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-editor-shell > .metadata-edit-grid {
+  border: 1px solid #b8b2a6;
+  border-radius: 12px;
   background: linear-gradient(to bottom, var(--mpx-metal-light), var(--mpx-metal-base));
   box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(245, 242, 236, 0.92);
 }
