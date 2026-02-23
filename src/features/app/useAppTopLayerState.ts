@@ -62,6 +62,10 @@ interface UseAppTopLayerStateParams {
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>;
   onToggleManageMode: () => void;
   onToggleMetadataManageMode: () => void;
+  sidebarCollapsed: boolean;
+  metadataCollapsed: boolean;
+  onToggleSidebarPanel: () => void;
+  onToggleMetadataPanel: () => void;
   importTasks: ImportTaskDto[];
   dismissedImportTaskIds: Record<string, true>;
   setDismissedImportTaskIds: Dispatch<SetStateAction<Record<string, true>>>;
@@ -205,6 +209,10 @@ export function useAppTopLayerState({
   setSearchPanelCollapsed,
   onToggleManageMode,
   onToggleMetadataManageMode,
+  sidebarCollapsed,
+  metadataCollapsed,
+  onToggleSidebarPanel,
+  onToggleMetadataPanel,
   importTasks,
   dismissedImportTaskIds,
   setDismissedImportTaskIds,
@@ -708,6 +716,10 @@ export function useAppTopLayerState({
     setSearchPanelCollapsed,
     onToggleManageMode,
     onToggleMetadataManageMode,
+    sidebarCollapsed,
+    metadataCollapsed,
+    onToggleSidebarPanel,
+    onToggleMetadataPanel,
     onOpenThemeParameter: () => setThemeParameterPanelOpen(true),
   });
 

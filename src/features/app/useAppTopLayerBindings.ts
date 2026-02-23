@@ -364,6 +364,9 @@ export function useAppTopLayerBindings({
     applySidebarRatio,
     applyMetadataRatio,
     videoByIdEffective,
+    collapseSidebar,
+    sidebarCollapsed,
+    onExpandSidebar,
   } = readNavigationState
 
   const {
@@ -539,6 +542,18 @@ export function useAppTopLayerBindings({
     setSearchPanelCollapsed: readNavigationState.setSearchPanelCollapsed,
     onToggleManageMode: toggleManageMode,
     onToggleMetadataManageMode: toggleMetadataManageMode,
+    sidebarCollapsed,
+    metadataCollapsed: appSettings.metadataCollapsed,
+    onToggleSidebarPanel: () => {
+      if (sidebarCollapsed) {
+        onExpandSidebar()
+        return
+      }
+      collapseSidebar()
+    },
+    onToggleMetadataPanel: () => {
+      appSettings.updateSettings({ metadataCollapsed: !appSettings.metadataCollapsed })
+    },
     importTasks: importState.importTasks,
     dismissedImportTaskIds,
     setDismissedImportTaskIds,

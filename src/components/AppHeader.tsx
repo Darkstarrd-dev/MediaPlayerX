@@ -226,6 +226,11 @@ export interface AppHeaderProps {
   onOpenThemeParameter: () => void
   onOpenHelp: () => void
   onOpenSettings: () => void
+  sidebarCollapsed?: boolean
+  metadataCollapsed?: boolean
+  showPanelToggleControls?: boolean
+  onToggleSidebarPanel?: () => void
+  onToggleMetadataPanel?: () => void
 }
 
 function AppHeader(props: AppHeaderProps) {
@@ -257,6 +262,11 @@ function AppHeader(props: AppHeaderProps) {
     onOpenThemeParameter,
     onOpenHelp,
     onOpenSettings,
+    sidebarCollapsed = false,
+    metadataCollapsed = false,
+    showPanelToggleControls = false,
+    onToggleSidebarPanel,
+    onToggleMetadataPanel,
   } = props
   const { t } = useI18n()
   const [windowMaximized, setWindowMaximized] = useState(false)
@@ -420,7 +430,35 @@ function AppHeader(props: AppHeaderProps) {
         </div>
 
         <div className="header-group header-group-modes" data-slot="fg-header-g2">
-          <div className="mode-switch-wrap">
+          <div className={`mode-switch-wrap ${showPanelToggleControls ? 'has-panel-toggles' : ''}`}>
+            {showPanelToggleControls ? (
+              <div className="panel-toggle-wrap" data-slot="fg-header-g2-panel-toggles">
+                <button
+                  className={`mode-action-btn panel-toggle-btn ${sidebarCollapsed ? 'is-collapsed' : ''}`}
+                  data-slot="fg-header-g2-toggle-sidebar"
+                  type="button"
+                  aria-label={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
+                  title={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
+                  onClick={() => {
+                    onToggleSidebarPanel?.()
+                  }}
+                >
+                  <span className="window-control-btn-text">L</span>
+                </button>
+                <button
+                  className={`mode-action-btn panel-toggle-btn ${metadataCollapsed ? 'is-collapsed' : ''}`}
+                  data-slot="fg-header-g2-toggle-metadata"
+                  type="button"
+                  aria-label={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
+                  title={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
+                  onClick={() => {
+                    onToggleMetadataPanel?.()
+                  }}
+                >
+                  <span className="window-control-btn-text">R</span>
+                </button>
+              </div>
+            ) : null}
             <div className="mode-switch" role="group" aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}>
               <button
                 {...buildA11yPropsByRegistry({ key: 'headerModeImage', t })}

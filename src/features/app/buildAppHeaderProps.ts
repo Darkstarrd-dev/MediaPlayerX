@@ -40,9 +40,15 @@ interface BuildAppHeaderPropsParams {
   onToggleManageMode: () => void
   onToggleMetadataManageMode: () => void
   onOpenThemeParameter: () => void
+  sidebarCollapsed?: boolean
+  metadataCollapsed?: boolean
+  onToggleSidebarPanel?: () => void
+  onToggleMetadataPanel?: () => void
 }
 
 export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeaderProps {
+  const activePaletteId = params.paletteMode === 'night' ? params.paletteNightId : params.paletteDayId
+  const luxuryWhiteActive = params.styleId.startsWith('soft-skeuomorphic') && activePaletteId === 'skeuomorphic-luxury-white'
   return {
     headerHeight: params.headerHeight,
     mode: params.mode,
@@ -132,5 +138,10 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     onOpenThemeParameter: params.onOpenThemeParameter,
     onOpenHelp: () => params.updateSettings({ helpOpen: true }),
     onOpenSettings: () => params.updateSettings({ settingsOpen: true }),
+    sidebarCollapsed: params.sidebarCollapsed ?? false,
+    metadataCollapsed: params.metadataCollapsed ?? false,
+    showPanelToggleControls: luxuryWhiteActive,
+    onToggleSidebarPanel: params.onToggleSidebarPanel,
+    onToggleMetadataPanel: params.onToggleMetadataPanel,
   }
 }

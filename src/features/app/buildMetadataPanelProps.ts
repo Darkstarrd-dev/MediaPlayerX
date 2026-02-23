@@ -128,6 +128,7 @@ interface BuildMetadataPanelPropsParams {
   onOpenMusicCover: () => void;
   onOpenMusicBooklet: () => void;
   onResetMusicBookletBinding: () => void;
+  titleCollapseEnabled?: boolean;
 }
 
 function normalizePlaylistName(rawValue: string): string {
@@ -231,6 +232,7 @@ export function buildMetadataPanelProps(
     videoById: params.videoById,
     onCollapse: () => params.updateSettings({ metadataCollapsed: true }),
     onExpand: () => params.updateSettings({ metadataCollapsed: false }),
+    titleCollapseEnabled: params.titleCollapseEnabled ?? true,
     onGradeChange: params.onGradeChange,
     onSavePackageMetadata: params.onSavePackageMetadata,
     onSavePackageParsedMetadata: params.onSavePackageParsedMetadata,

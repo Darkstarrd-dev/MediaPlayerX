@@ -293,6 +293,12 @@ export function useAppWorkspaceProps({
     return videosForSidebar.map((video) => video.id);
   }, [videoTreeForSidebar, videosForSidebar]);
 
+  const activePaletteId = appSettings.paletteMode === "night"
+    ? appSettings.paletteNightId
+    : appSettings.paletteDayId;
+  const luxuryWhiteActive = appSettings.styleId.startsWith("soft-skeuomorphic")
+    && activePaletteId === "skeuomorphic-luxury-white";
+
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
     sidebarFocus: appSettings.sidebarFocus,
@@ -381,6 +387,7 @@ export function useAppWorkspaceProps({
     setAudioPlaylistIds,
     onToggleManageNode: toggleSidebarNodeChecked,
     onClearSidebarSelection: clearSidebarSelections,
+    titleCollapseEnabled: !luxuryWhiteActive,
   });
 
   const {
@@ -1264,6 +1271,7 @@ export function useAppWorkspaceProps({
     setPlaylistIds,
     setDragVideoId,
     videoQueueSource,
+    titleCollapseEnabled: !luxuryWhiteActive,
   });
 
   const mainFooter = buildMainFooter({

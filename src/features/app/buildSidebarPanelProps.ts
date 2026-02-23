@@ -55,6 +55,7 @@ interface BuildSidebarPanelPropsParams {
   setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>;
   onToggleManageNode: (nodeId: string, shiftKey: boolean) => void;
   onClearSidebarSelection: () => void;
+  titleCollapseEnabled?: boolean;
 }
 
 export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
@@ -125,6 +126,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     },
     onSelectAudio: params.setSelectedAudioId,
     onCollapseSidebar: params.collapseSidebar,
+    titleCollapseEnabled: params.titleCollapseEnabled ?? true,
     collapsedFolderNodeIds: params.collapsedFolderNodeIds,
     onSetCollapsedFolderNodeIds: params.setCollapsedFolderNodeIds,
     onSetCurrentRoot: params.applyCurrentRootFromSelection,

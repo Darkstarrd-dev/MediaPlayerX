@@ -178,6 +178,7 @@ export interface MetadataPanelProps {
   onOpenMusicCover: () => void;
   onOpenMusicBooklet: () => void;
   onResetMusicBookletBinding: () => void;
+  titleCollapseEnabled?: boolean;
 }
 
 function MetadataPanel({
@@ -293,6 +294,7 @@ function MetadataPanel({
   onOpenMusicCover,
   onOpenMusicBooklet,
   onResetMusicBookletBinding,
+  titleCollapseEnabled = true,
 }: MetadataPanelProps) {
   const { t } = useI18n();
   const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(
@@ -899,7 +901,8 @@ function MetadataPanel({
             className="metadata-title-btn"
             data-slot="fg-meta-toolbar-title"
             type="button"
-            onClick={onCollapse}
+            disabled={!titleCollapseEnabled}
+            onClick={titleCollapseEnabled ? onCollapse : undefined}
           >
             {t("ui.metadata.panelTitle")}
           </button>

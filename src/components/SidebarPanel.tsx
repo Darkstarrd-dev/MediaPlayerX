@@ -261,6 +261,7 @@ interface SidebarPanelProps {
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void;
   collapsedFolderNodeIds?: string[];
   onSetCollapsedFolderNodeIds?: (nodeIds: string[]) => void;
+  titleCollapseEnabled?: boolean;
 }
 
 function SidebarPanel({
@@ -303,6 +304,7 @@ function SidebarPanel({
   onToggleManageNode,
   collapsedFolderNodeIds,
   onSetCollapsedFolderNodeIds,
+  titleCollapseEnabled = true,
 }: SidebarPanelProps) {
   const { t } = useI18n();
   const manageStyleEnabled = manageMode || metadataManageMode;
@@ -1306,7 +1308,7 @@ function SidebarPanel({
     sidebarFocus,
   ]);
 
-  const renderRow = ({ node, depth }: VisibleSidebarRow): ReactElement => {
+  const renderRow = ({ node }: VisibleSidebarRow): ReactElement => {
     const isFolder = node.kind === "folder";
     const imageNodeType =
       node.imageNodeType ?? (isFolder ? "folder" : "package");
@@ -1358,7 +1360,6 @@ function SidebarPanel({
         key={node.id}
         data-sidebar-node-id={node.id}
         className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isFocusedNode ? "is-active" : ""} ${isHoverActive ? "is-hover-active" : ""} ${isPressedActive ? "is-pressed-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
-        style={{ paddingLeft: `${depth * sidebarIndentStep + 10}px` }}
       >
         <span
           className={`sidebar-bullet ${loadState ? `is-${loadState}` : ""}`}
@@ -1539,7 +1540,8 @@ function SidebarPanel({
           className="sidebar-title-btn"
           data-slot="fg-sidebar-toolbar-title"
           type="button"
-          onClick={onCollapseSidebar}
+          disabled={!titleCollapseEnabled}
+          onClick={titleCollapseEnabled ? onCollapseSidebar : undefined}
         >
           {currentRootLabel ?? t("ui.sidebar.structure")}
         </button>

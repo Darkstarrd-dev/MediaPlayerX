@@ -78,6 +78,7 @@ interface BuildWorkspaceMetadataPanelPropsParams {
   setPlaylistIds: any;
   setDragVideoId: any;
   videoQueueSource: "sidebar" | "playlist";
+  titleCollapseEnabled?: boolean;
 }
 
 export function buildWorkspaceMetadataPanelProps({
@@ -148,6 +149,7 @@ export function buildWorkspaceMetadataPanelProps({
   setPlaylistIds,
   setDragVideoId,
   videoQueueSource,
+  titleCollapseEnabled,
 }: BuildWorkspaceMetadataPanelPropsParams) {
   const applyMetadataFeatureSearch = (patch: {
     workTitle?: string;
@@ -349,5 +351,6 @@ export function buildWorkspaceMetadataPanelProps({
     },
     setPlaylistIds,
     setDragVideoId,
+    titleCollapseEnabled,
   } as any);
 }

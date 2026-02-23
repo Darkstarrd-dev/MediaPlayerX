@@ -226,6 +226,12 @@
   height: calc(var(--mpx-header-btn-size) + 4px);
 }
 
+.panel-toggle-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .mode-switch button {
   display: inline-flex;
   align-items: center;
