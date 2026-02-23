@@ -5,6 +5,7 @@ import type {
   ManageReviewModeDto,
   StartImageConvertTaskRequestDto,
 } from '../../contracts/backend'
+import type { ImageConvertAdjustProfile } from './useAppSessionState'
 import type { AppSettings } from '../../contracts/settings'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../../types'
@@ -20,10 +21,13 @@ interface BuildImageMainSectionPropsParams {
   canThumbnailScaleUp: boolean
   imageConvertScale: number
   imageConvertLongestEdgePx: number | null
+  imageConvertAdjustProfile: ImageConvertAdjustProfile
   imageConvertFormat: 'webp' | 'jpeg' | 'png' | 'avif'
   imageConvertQuality: number
   imageConvertPreviewMode: boolean
   imageConvertPreviewScale: number
+  imageConvertPreviewLongestEdgePx: number | null
+  imageConvertPreviewAdjustProfile: ImageConvertAdjustProfile
   imageConvertPreviewFormat: 'webp' | 'jpeg' | 'png' | 'avif'
   imageConvertPreviewQuality: number
   backendPageLoading: boolean
@@ -140,6 +144,8 @@ interface BuildImageMainSectionPropsParams {
     descendantNodeCount: number
     coverImageUrl: string | null
   }>
+  nodeBrowsePageStart: number
+  nodeBrowsePageSize: number
   onSelectNodeBrowseItem: (nodeId: string, imageSourceId?: string) => void
   onThumbnailWheelTurnPage: (direction: 'next' | 'prev') => void
   onThumbnailWheelSwitchSidebarNode: (direction: 'next' | 'prev') => void
@@ -157,10 +163,13 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     canThumbnailScaleUp: params.canThumbnailScaleUp,
     imageConvertScale: params.imageConvertScale,
     imageConvertLongestEdgePx: params.imageConvertLongestEdgePx,
+    imageConvertAdjustProfile: params.imageConvertAdjustProfile,
     imageConvertFormat: params.imageConvertFormat,
     imageConvertQuality: params.imageConvertQuality,
     imageConvertPreviewMode: params.imageConvertPreviewMode,
     imageConvertPreviewScale: params.imageConvertPreviewScale,
+    imageConvertPreviewLongestEdgePx: params.imageConvertPreviewLongestEdgePx,
+    imageConvertPreviewAdjustProfile: params.imageConvertPreviewAdjustProfile,
     imageConvertPreviewFormat: params.imageConvertPreviewFormat,
     imageConvertPreviewQuality: params.imageConvertPreviewQuality,
     loading: params.enableLoadingSkeleton ? params.backendPageLoading : false,
@@ -271,6 +280,8 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     nodeBrowseMode: params.nodeBrowseMode,
     nodeBrowseLabel: params.nodeBrowseLabel,
     nodeBrowseItems: params.nodeBrowseItems,
+    nodeBrowsePageStart: params.nodeBrowsePageStart,
+    nodeBrowsePageSize: params.nodeBrowsePageSize,
     onSelectNodeBrowseItem: params.onSelectNodeBrowseItem,
     onThumbnailWheelTurnPage: params.onThumbnailWheelTurnPage,
     onThumbnailWheelSwitchSidebarNode: params.onThumbnailWheelSwitchSidebarNode,

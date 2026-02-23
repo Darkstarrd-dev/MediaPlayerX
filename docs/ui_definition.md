@@ -168,7 +168,7 @@
 |---|---|---|---|---|---|
 | `fg.main.footer` | `.main-footer` | `data-slot="fg-main-footer"` | always | 主面板 footer | |
 | `fg.main.footer.meta` | `.main-footer-meta` | `data-slot="fg-main-footer-meta"` | always | 路径/元信息 | |
-| `fg.main.footer.pagination` | `.main-footer-pagination` | `data-slot="fg-main-footer-pagination"` | `mode=image && !nodeBrowseMode && imageTotalPages>1` | 页码翻页区 | |
+| `fg.main.footer.pagination` | `.main-footer-pagination` | `data-slot="fg-main-footer-pagination"` | `mode=image && imageTotalPages>1` | 页码翻页区 | 含节点浏览分页 |
 
 ## 6. Foreground / Meta
 
@@ -213,6 +213,7 @@
 | `fs.image.controls.shell` | `.fullscreen-footer` | `data-slot="fs-image-controls-shell"` | 图像 pane 可见 | 全屏图像控制壳 | |
 | `fs.image.controls.autoplay.pop` | `.fullscreen-autoplay-popover` | `data-slot="fs-image-controls-autoplay-pop"` | autoplay popover open | 自动播放参数弹层 | upward |
 | `fs.image.controls.zoom.pop` | `.fullscreen-zoom-popover` | `data-slot="fs-image-controls-zoom-pop"` | zoom popover open | 缩放参数弹层 | upward |
+| `fs.image.controls.adjust.panel` | `.fullscreen-image-adjust-mask > .fullscreen-image-adjust-panel` | `data-slot="fs-image-controls-adjust-panel"` | 图像预览态点击 `ADJ` 后 | 全屏图像调节面板 | 默认左下，可拖拽 |
 | `fs.image.convertPreview.panel` | `.fullscreen-image-compare` | `-` | `mode=image && imageConvertPreviewMode` | 图包转换左右对比容器 | 左原图右预览图 |
 | `fs.image.convertPreview.splitter` | `.fullscreen-image-compare-divider` | `-` | `mode=image && imageConvertPreviewMode && !imageConvertPreviewError` | 对比中线拖拽控件 | 调整对比比例 |
 | `fs.image.convertPreview.error.ovl` | `.fullscreen-image-compare-error` | `-` | `mode=image && imageConvertPreviewMode && imageConvertPreviewError!=null` | 转换预览失败提示层 | 回退原图显示 |

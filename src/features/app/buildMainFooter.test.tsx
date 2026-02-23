@@ -93,7 +93,9 @@ describe('buildMainFooter', () => {
     expect(screen.getByText('第 2 / 3 页')).toBeInTheDocument()
   })
 
-  it('节点浏览模式不渲染分页控件', () => {
+  it('节点浏览模式且多页时渲染分页控件', () => {
+    const onPrevPage = vi.fn()
+    const onNextPage = vi.fn()
     const node = buildMainFooter({
       t,
       mode: 'image',
@@ -105,6 +107,33 @@ describe('buildMainFooter', () => {
       nodeBrowseMode: true,
       normalizedPageIndex: 1,
       imageTotalPages: 3,
+      onPrevPage,
+      onNextPage,
+    })
+
+    render(<div className="main-footer">{node}</div>)
+    expect(document.querySelector('.main-footer-pagination')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '上一页' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '下一页' })).toBeInTheDocument()
+
+    screen.getByRole('button', { name: '上一页' }).click()
+    screen.getByRole('button', { name: '下一页' }).click()
+    expect(onPrevPage).toHaveBeenCalledTimes(1)
+    expect(onNextPage).toHaveBeenCalledTimes(1)
+  })
+
+  it('节点浏览模式单页时不渲染分页控件', () => {
+    const node = buildMainFooter({
+      t,
+      mode: 'image',
+      focusedImage: sampleImage,
+      focusedImagePackage: samplePackage,
+      focusedVideo: null,
+      focusedAudio: null,
+      sidebarFocusedPath: null,
+      nodeBrowseMode: true,
+      normalizedPageIndex: 0,
+      imageTotalPages: 1,
       onPrevPage: vi.fn(),
       onNextPage: vi.fn(),
     })

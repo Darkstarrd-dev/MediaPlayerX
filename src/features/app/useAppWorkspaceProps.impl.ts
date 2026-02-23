@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { buildImageMainSectionProps } from "./buildImageMainSectionProps";
 import { buildMainFooter } from "./buildMainFooter";
@@ -108,6 +108,8 @@ export function useAppWorkspaceProps({
   setImageConvertScale,
   imageConvertLongestEdgePx,
   setImageConvertLongestEdgePx,
+  imageConvertAdjustProfile,
+  setImageConvertAdjustProfile,
   imageConvertFormat,
   setImageConvertFormat,
   imageConvertQuality,
@@ -116,6 +118,10 @@ export function useAppWorkspaceProps({
   setImageConvertPreviewMode,
   imageConvertPreviewScale,
   setImageConvertPreviewScale,
+  imageConvertPreviewLongestEdgePx,
+  setImageConvertPreviewLongestEdgePx,
+  imageConvertPreviewAdjustProfile,
+  setImageConvertPreviewAdjustProfile,
   imageConvertPreviewFormat,
   setImageConvertPreviewFormat,
   imageConvertPreviewQuality,
@@ -235,6 +241,9 @@ export function useAppWorkspaceProps({
   musicBookletBindings,
 }: UseAppWorkspacePropsParams) {
   const { t } = useI18n();
+  const [nodeBrowsePageByNodeId, setNodeBrowsePageByNodeId] = useState<
+    Record<string, number>
+  >({});
 
   const featureTagOptionsEffective = Array.from(
     new Set(
@@ -459,16 +468,6 @@ export function useAppWorkspaceProps({
     imageTotalPagesEffective,
   });
 
-  const onPrevPageForMain = adReviewResultsMode
-    ? () => setAdReviewPageIndex((value) => Math.max(0, value - 1))
-    : goPrevPage;
-  const onNextPageForMain = adReviewResultsMode
-    ? () =>
-        setAdReviewPageIndex((value) =>
-          Math.min(Math.max(0, imageTotalPagesForMain - 1), value + 1),
-        )
-    : goNextPage;
-
   const { imageSidebarNodeIdsForWheel, imageSidebarNodeIndexByIdForWheel } =
     buildImageSidebarWheelContext(mode, sidebarImageTreeNodes);
 
@@ -489,15 +488,21 @@ export function useAppWorkspaceProps({
     }
     setImageConvertPreviewMode(false);
     setImageConvertPreviewScale(imageConvertScale);
+    setImageConvertPreviewLongestEdgePx(imageConvertLongestEdgePx);
+    setImageConvertPreviewAdjustProfile(imageConvertAdjustProfile);
     setImageConvertPreviewFormat(imageConvertFormat);
     setImageConvertPreviewQuality(imageConvertQuality);
   }, [
     fullscreenActive,
+    imageConvertAdjustProfile,
     imageConvertFormat,
+    imageConvertLongestEdgePx,
     imageConvertPreviewMode,
     imageConvertQuality,
     imageConvertScale,
+    setImageConvertPreviewAdjustProfile,
     setImageConvertPreviewFormat,
+    setImageConvertPreviewLongestEdgePx,
     setImageConvertPreviewMode,
     setImageConvertPreviewQuality,
     setImageConvertPreviewScale,
@@ -521,6 +526,77 @@ export function useAppWorkspaceProps({
     sourceCoverImageUrlBySourceId,
     thumbnailImageUrlById,
   });
+  const nodeBrowsePageSize = Math.max(1, pagedPageSize);
+  const nodeBrowseNodeId = nodeBrowseMode ? (selectedSidebarNode?.id ?? "") : "";
+  const nodeBrowseRawPageIndex =
+    nodeBrowseNodeId && nodeBrowsePageByNodeId[nodeBrowseNodeId] != null
+      ? nodeBrowsePageByNodeId[nodeBrowseNodeId]
+      : 0;
+  const nodeBrowseTotalPages = nodeBrowseMode
+    ? Math.max(1, Math.ceil(nodeBrowseItems.length / nodeBrowsePageSize))
+    : 1;
+  const nodeBrowseNormalizedPageIndex = nodeBrowseMode
+    ? Math.max(0, Math.min(nodeBrowseTotalPages - 1, nodeBrowseRawPageIndex))
+    : 0;
+  const nodeBrowsePageStart = nodeBrowseMode
+    ? nodeBrowseNormalizedPageIndex * nodeBrowsePageSize
+    : 0;
+
+  useEffect(() => {
+    if (!nodeBrowseMode || !nodeBrowseNodeId) {
+      return;
+    }
+    if (nodeBrowseRawPageIndex === nodeBrowseNormalizedPageIndex) {
+      return;
+    }
+    setNodeBrowsePageByNodeId((previous) => ({
+      ...previous,
+      [nodeBrowseNodeId]: nodeBrowseNormalizedPageIndex,
+    }));
+  }, [
+    nodeBrowseMode,
+    nodeBrowseNodeId,
+    nodeBrowseNormalizedPageIndex,
+    nodeBrowseRawPageIndex,
+  ]);
+
+  const setNodeBrowsePage = (updater: (value: number) => number) => {
+    if (!nodeBrowseMode || !nodeBrowseNodeId) {
+      return;
+    }
+    setNodeBrowsePageByNodeId((previous) => {
+      const currentRaw = previous[nodeBrowseNodeId] ?? 0;
+      const current = Math.max(0, Math.min(nodeBrowseTotalPages - 1, currentRaw));
+      const next = Math.max(0, Math.min(nodeBrowseTotalPages - 1, updater(current)));
+      if (next === currentRaw) {
+        return previous;
+      }
+      return {
+        ...previous,
+        [nodeBrowseNodeId]: next,
+      };
+    });
+  };
+
+  const onPrevPageForMain = nodeBrowseMode
+    ? () => setNodeBrowsePage((value) => value - 1)
+    : adReviewResultsMode
+      ? () => setAdReviewPageIndex((value) => Math.max(0, value - 1))
+      : goPrevPage;
+  const onNextPageForMain = nodeBrowseMode
+    ? () => setNodeBrowsePage((value) => value + 1)
+    : adReviewResultsMode
+      ? () =>
+          setAdReviewPageIndex((value) =>
+            Math.min(Math.max(0, imageTotalPagesForMain - 1), value + 1),
+          )
+      : goNextPage;
+  const normalizedPageIndexForFooter = nodeBrowseMode
+    ? nodeBrowseNormalizedPageIndex
+    : normalizedPageIndexForMain;
+  const imageTotalPagesForFooter = nodeBrowseMode
+    ? nodeBrowseTotalPages
+    : imageTotalPagesForMain;
 
   const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageBase, {
     manageMode,
@@ -612,10 +688,13 @@ export function useAppWorkspaceProps({
     canThumbnailScaleUp,
     imageConvertScale,
     imageConvertLongestEdgePx,
+    imageConvertAdjustProfile,
     imageConvertFormat,
     imageConvertQuality,
     imageConvertPreviewMode,
     imageConvertPreviewScale,
+    imageConvertPreviewLongestEdgePx,
+    imageConvertPreviewAdjustProfile,
     imageConvertPreviewFormat,
     imageConvertPreviewQuality,
     backendPageLoading,
@@ -839,6 +918,8 @@ export function useAppWorkspaceProps({
         return;
       }
       setImageConvertPreviewScale(imageConvertScale);
+      setImageConvertPreviewLongestEdgePx(imageConvertLongestEdgePx);
+      setImageConvertPreviewAdjustProfile(imageConvertAdjustProfile);
       setImageConvertPreviewFormat(imageConvertFormat);
       setImageConvertPreviewQuality(imageConvertQuality);
       setImageConvertPreviewMode(true);
@@ -846,6 +927,8 @@ export function useAppWorkspaceProps({
     },
     onConfirmImageConvertPreview: () => {
       setImageConvertScale(imageConvertPreviewScale);
+      setImageConvertLongestEdgePx(imageConvertPreviewLongestEdgePx);
+      setImageConvertAdjustProfile(imageConvertPreviewAdjustProfile);
       setImageConvertFormat(imageConvertPreviewFormat);
       setImageConvertQuality(imageConvertPreviewQuality);
       setImageConvertPreviewMode(false);
@@ -853,6 +936,8 @@ export function useAppWorkspaceProps({
     },
     onCancelImageConvertPreview: () => {
       setImageConvertPreviewScale(imageConvertScale);
+      setImageConvertPreviewLongestEdgePx(imageConvertLongestEdgePx);
+      setImageConvertPreviewAdjustProfile(imageConvertAdjustProfile);
       setImageConvertPreviewFormat(imageConvertFormat);
       setImageConvertPreviewQuality(imageConvertQuality);
       setImageConvertPreviewMode(false);
@@ -863,6 +948,8 @@ export function useAppWorkspaceProps({
       ? (selectedSidebarNode?.label ?? t("ui.image.nodeBrowseDefaultLabel"))
       : "",
     nodeBrowseItems,
+    nodeBrowsePageStart,
+    nodeBrowsePageSize,
     onSelectNodeBrowseItem: (nodeId, imageSourceId) => {
       setSelectedSidebarNodeId(nodeId);
       if (imageSourceId) {
@@ -1182,8 +1269,8 @@ export function useAppWorkspaceProps({
       ? (effectiveSidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null)
       : null,
     nodeBrowseMode,
-    normalizedPageIndex: normalizedPageIndexForMain,
-    imageTotalPages: imageTotalPagesForMain,
+    normalizedPageIndex: normalizedPageIndexForFooter,
+    imageTotalPages: imageTotalPagesForFooter,
     onPrevPage: onPrevPageForMain,
     onNextPage: onNextPageForMain,
   });

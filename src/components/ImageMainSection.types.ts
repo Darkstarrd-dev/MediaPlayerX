@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 
 import type {
+  ImageConvertAdjustProfile,
   ManageAdReviewTaskDto,
   ManageReviewModeDto,
   StartImageConvertTaskRequestDto,
@@ -19,10 +20,13 @@ export interface ImageMainSectionProps {
   canThumbnailScaleUp?: boolean;
   imageConvertScale?: number;
   imageConvertLongestEdgePx?: number | null;
+  imageConvertAdjustProfile?: ImageConvertAdjustProfile;
   imageConvertFormat?: "webp" | "jpeg" | "png" | "avif";
   imageConvertQuality?: number;
   imageConvertPreviewMode?: boolean;
   imageConvertPreviewScale?: number;
+  imageConvertPreviewLongestEdgePx?: number | null;
+  imageConvertPreviewAdjustProfile?: ImageConvertAdjustProfile;
   imageConvertPreviewFormat?: "webp" | "jpeg" | "png" | "avif";
   imageConvertPreviewQuality?: number;
   loading: boolean;
@@ -142,6 +146,8 @@ export interface ImageMainSectionProps {
     descendantNodeCount: number;
     coverImageUrl: string | null;
   }>;
+  nodeBrowsePageStart?: number;
+  nodeBrowsePageSize?: number;
   onSelectNodeBrowseItem?: (nodeId: string, imageSourceId?: string) => void;
   onThumbnailWheelTurnPage?: (direction: "next" | "prev") => void;
   onThumbnailWheelSwitchSidebarNode?: (direction: "next" | "prev") => void;

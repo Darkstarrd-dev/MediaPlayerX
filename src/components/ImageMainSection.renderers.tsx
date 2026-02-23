@@ -25,6 +25,8 @@ interface RenderImageMainContentParams {
   actualCellWidth: number;
   thumbnailGap: number;
   nodeBrowseItems: NodeBrowseItem[];
+  nodeBrowsePageStart: number;
+  nodeBrowsePageSize: number;
   markThumbInputMouse: () => void;
   scrollFocusedThumbIntoView: (target: EventTarget | null) => void;
   scheduleFocusedThumbOriginSync: () => void;
@@ -66,6 +68,8 @@ export function renderImageMainContent({
   actualCellWidth,
   thumbnailGap,
   nodeBrowseItems,
+  nodeBrowsePageStart,
+  nodeBrowsePageSize,
   markThumbInputMouse,
   scrollFocusedThumbIntoView,
   scheduleFocusedThumbOriginSync,
@@ -92,6 +96,14 @@ export function renderImageMainContent({
   vectorMode,
   vectorCandidates,
 }: RenderImageMainContentParams): JSX.Element {
+  const nodeBrowsePagedItems =
+    nodeBrowsePageSize > 0
+      ? nodeBrowseItems.slice(
+          Math.max(0, nodeBrowsePageStart),
+          Math.max(0, nodeBrowsePageStart) + Math.max(1, nodeBrowsePageSize),
+        )
+      : nodeBrowseItems;
+
   if (nodeBrowseMode) {
     return (
       <div
@@ -104,7 +116,7 @@ export function renderImageMainContent({
           gap: `${thumbnailGap}px`,
         }}
       >
-        {nodeBrowseItems.map((item) => (
+        {nodeBrowsePagedItems.map((item) => (
           <div
             key={item.nodeId}
             className="thumb-card"

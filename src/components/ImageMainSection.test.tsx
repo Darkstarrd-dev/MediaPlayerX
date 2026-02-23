@@ -342,6 +342,119 @@ describe('ImageMainSection layout', () => {
     expect(document.querySelector('.pager-line')).toBeNull()
   })
 
+  it('节点浏览模式按分页切片渲染当前页卡片', () => {
+    const onSelectNodeBrowseItem = vi.fn()
+    render(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={1}
+        enableLoadingSkeleton={false}
+        activePackage={basePackage}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={[]}
+        refsInPage={[]}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={8}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[basePackage.id, basePackage]])}
+        imageUrlById={{}}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={vi.fn()}
+        metadataPending={false}
+        metadataTargetPackageLabel={basePackage.displayName}
+        metadataFetchDefaultText={basePackage.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageMoveNodes={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+        nodeBrowseMode={true}
+        nodeBrowseLabel="目录A"
+        nodeBrowseItems={[
+          {
+            nodeId: 'folder-1',
+            label: '子目录-1',
+            imageNodeType: 'folder',
+            packageCount: 0,
+            imageCount: 12,
+            descendantNodeCount: 3,
+            coverImageUrl: null,
+          },
+          {
+            nodeId: 'folder-2',
+            label: '子目录-2',
+            imageNodeType: 'folder',
+            packageCount: 0,
+            imageCount: 8,
+            descendantNodeCount: 2,
+            coverImageUrl: null,
+          },
+          {
+            nodeId: 'folder-3',
+            label: '子目录-3',
+            imageNodeType: 'folder',
+            packageCount: 0,
+            imageCount: 5,
+            descendantNodeCount: 1,
+            coverImageUrl: null,
+          },
+        ]}
+        nodeBrowsePageStart={1}
+        nodeBrowsePageSize={1}
+        onSelectNodeBrowseItem={onSelectNodeBrowseItem}
+      />,
+    )
+
+    const cards = document.querySelectorAll(
+      '[data-slot="fg-main-content-image-node-grid-card"]',
+    )
+    expect(cards).toHaveLength(1)
+
+    const cardButton = document.querySelector(
+      '[data-slot="fg-main-content-image-node-grid-card"] .thumb-card-main',
+    ) as HTMLButtonElement | null
+    expect(cardButton).not.toBeNull()
+
+    fireEvent.click(cardButton as HTMLButtonElement)
+    expect(onSelectNodeBrowseItem).toHaveBeenCalledWith('folder-2', undefined)
+  })
+
   it('缩略图在新批次未准备好时显示占位，准备完成后整批替换', async () => {
     const refsInPage = [
       { packageId: packageWithImages.id, imageIndex: 0 },
@@ -930,6 +1043,100 @@ describe('ImageMainSection layout', () => {
     expect(onThumbnailWheelSwitchSidebarNode).not.toHaveBeenCalled()
 
     fireEvent.wheel(grid, { deltaY: -120, ctrlKey: true })
+    expect(onThumbnailWheelSwitchSidebarNode).toHaveBeenCalledWith('prev')
+  })
+
+  it('节点浏览网格滚轮同样触发翻页与 sidebar 切换', () => {
+    const onThumbnailWheelTurnPage = vi.fn()
+    const onThumbnailWheelSwitchSidebarNode = vi.fn()
+
+    render(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={1}
+        enableLoadingSkeleton={false}
+        activePackage={basePackage}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={[]}
+        refsInPage={[]}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={2}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[basePackage.id, basePackage]])}
+        imageUrlById={{}}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={vi.fn()}
+        metadataPending={false}
+        metadataTargetPackageLabel={basePackage.displayName}
+        metadataFetchDefaultText={basePackage.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageMoveNodes={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+        nodeBrowseMode={true}
+        nodeBrowseLabel="目录A"
+        nodeBrowseItems={[
+          {
+            nodeId: 'folder-1',
+            label: '子目录-示例',
+            imageNodeType: 'folder',
+            packageCount: 0,
+            imageCount: 12,
+            descendantNodeCount: 3,
+            coverImageUrl: null,
+          },
+        ]}
+        onSelectNodeBrowseItem={vi.fn()}
+        onThumbnailWheelTurnPage={onThumbnailWheelTurnPage}
+        onThumbnailWheelSwitchSidebarNode={onThumbnailWheelSwitchSidebarNode}
+      />,
+    )
+
+    const nodeGrid = document.querySelector('.image-grid.node-browse-grid') as HTMLDivElement
+    expect(nodeGrid).not.toBeNull()
+
+    fireEvent.wheel(nodeGrid, { deltaY: 120 })
+    expect(onThumbnailWheelTurnPage).toHaveBeenCalledWith('next')
+    expect(onThumbnailWheelSwitchSidebarNode).not.toHaveBeenCalled()
+
+    fireEvent.wheel(nodeGrid, { deltaY: -120, ctrlKey: true })
     expect(onThumbnailWheelSwitchSidebarNode).toHaveBeenCalledWith('prev')
   })
 })

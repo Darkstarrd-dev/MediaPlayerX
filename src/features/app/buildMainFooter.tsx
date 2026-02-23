@@ -34,6 +34,7 @@ export function buildMainFooter({
   onNextPage,
 }: BuildMainFooterParams): ReactNode {
   const translate: TranslateFn = t ?? ((key) => key)
+  void nodeBrowseMode
   let primary = sidebarFocusedPath ?? '-'
 
   if (mode === 'image' && (focusedImagePackage || focusedImage)) {
@@ -48,7 +49,7 @@ export function buildMainFooter({
     primary = focusedAudio.absolutePath
   }
 
-  const showPagination = mode === 'image' && !nodeBrowseMode && imageTotalPages > 1
+  const showPagination = mode === 'image' && imageTotalPages > 1
 
   return (
     <>
