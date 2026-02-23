@@ -46,10 +46,6 @@
     gap: 6px;
   }
 
-  .settings-debug-toggle-row {
-    grid-template-columns: 1fr;
-  }
-
   .theme-parameter-control {
     grid-template-columns: 1fr;
     gap: 6px;

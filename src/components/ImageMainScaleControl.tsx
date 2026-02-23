@@ -1,4 +1,5 @@
 import { buildA11yPropsByRegistry } from "../i18n/a11y";
+import { useRef } from "react";
 import type { useI18n } from "../i18n/useI18n";
 
 type TranslateFn = ReturnType<typeof useI18n>["t"];
@@ -28,6 +29,8 @@ export function ImageMainScaleControl({
   onScaleDraftChange,
   onScaleChange,
 }: ImageMainScaleControlProps) {
+  const lastEmittedScaleRef = useRef<number | null>(null);
+
   return (
     <div
       className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? "is-open" : ""}`}
@@ -99,7 +102,10 @@ export function ImageMainScaleControl({
                   1,
                   Math.min(thumbnailScaleLevelCount, Math.round(nextValue)),
                 );
-                onScaleChange(roundedLevel);
+                if (lastEmittedScaleRef.current !== roundedLevel) {
+                  lastEmittedScaleRef.current = roundedLevel;
+                  onScaleChange(roundedLevel);
+                }
               }}
             />
           </div>
