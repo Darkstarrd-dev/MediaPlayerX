@@ -70,7 +70,6 @@
 9. 完善未定义按钮 tooltip：补齐缺失文案 key 与挂载点，保证 icon-only 按钮 hover/focus 都能给出说明。
 10. 调整 tooltip 容器样式以适配 day/night 双模式（含对比度、边框、阴影和背景透明度）。
 11. 将 tooltip 字体大小配置接入设置面板，并纳入 theme token 与持久化设置。
-12. 按 `docs/offline-auto-subtitle-implementation-plan.md` 执行离线自动字幕实施；研究依据保留 `docs/ref/subtitle.md`。
 13. 参考 `https://idc.xpzsd.codes/` 的背景特效和边框特效方案。
 14. 基于 tags 的近似推荐系统。
 15. 基于用户 stars 评分的 random 推荐系统。
