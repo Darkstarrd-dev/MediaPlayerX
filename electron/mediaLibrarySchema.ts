@@ -2,7 +2,7 @@ import type { SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 
 export const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
 
-const SCHEMA_VERSION = 11
+const SCHEMA_VERSION = 12
 
 export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
   const versionRow = db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
@@ -252,6 +252,45 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
 
     CREATE INDEX IF NOT EXISTS idx_video_pref_session_time
       ON video_preference_sessions(ended_at_ms DESC);
+
+    CREATE TABLE IF NOT EXISTS image_preference_runtime (
+      session_id TEXT PRIMARY KEY,
+      source_id TEXT NOT NULL,
+      started_at_ms INTEGER NOT NULL,
+      last_checkpoint_ms INTEGER NOT NULL,
+      checkpoint_seq INTEGER NOT NULL DEFAULT 0,
+      pages_read INTEGER NOT NULL DEFAULT 0,
+      total_pages INTEGER NOT NULL DEFAULT 0,
+      completion_ratio REAL NOT NULL DEFAULT 0,
+      is_fullscreen INTEGER NOT NULL DEFAULT 1,
+      FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_image_pref_runtime_source
+      ON image_preference_runtime(source_id);
+
+    CREATE INDEX IF NOT EXISTS idx_image_pref_runtime_checkpoint
+      ON image_preference_runtime(last_checkpoint_ms DESC);
+
+    CREATE TABLE IF NOT EXISTS video_preference_runtime (
+      session_id TEXT PRIMARY KEY,
+      video_id TEXT NOT NULL,
+      started_at_ms INTEGER NOT NULL,
+      last_checkpoint_ms INTEGER NOT NULL,
+      checkpoint_seq INTEGER NOT NULL DEFAULT 0,
+      watch_seconds REAL NOT NULL DEFAULT 0,
+      total_seconds INTEGER NOT NULL DEFAULT 0,
+      completion_ratio REAL NOT NULL DEFAULT 0,
+      had_fullscreen INTEGER NOT NULL DEFAULT 0,
+      last_video_time REAL NOT NULL DEFAULT 0,
+      FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_video_pref_runtime_video
+      ON video_preference_runtime(video_id);
+
+    CREATE INDEX IF NOT EXISTS idx_video_pref_runtime_checkpoint
+      ON video_preference_runtime(last_checkpoint_ms DESC);
   `)
 
   if (currentVersion < 2) {
@@ -443,6 +482,49 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
 
       CREATE INDEX IF NOT EXISTS idx_video_pref_session_time
         ON video_preference_sessions(ended_at_ms DESC);
+    `)
+  }
+
+  if (currentVersion < 12) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS image_preference_runtime (
+        session_id TEXT PRIMARY KEY,
+        source_id TEXT NOT NULL,
+        started_at_ms INTEGER NOT NULL,
+        last_checkpoint_ms INTEGER NOT NULL,
+        checkpoint_seq INTEGER NOT NULL DEFAULT 0,
+        pages_read INTEGER NOT NULL DEFAULT 0,
+        total_pages INTEGER NOT NULL DEFAULT 0,
+        completion_ratio REAL NOT NULL DEFAULT 0,
+        is_fullscreen INTEGER NOT NULL DEFAULT 1,
+        FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_image_pref_runtime_source
+        ON image_preference_runtime(source_id);
+
+      CREATE INDEX IF NOT EXISTS idx_image_pref_runtime_checkpoint
+        ON image_preference_runtime(last_checkpoint_ms DESC);
+
+      CREATE TABLE IF NOT EXISTS video_preference_runtime (
+        session_id TEXT PRIMARY KEY,
+        video_id TEXT NOT NULL,
+        started_at_ms INTEGER NOT NULL,
+        last_checkpoint_ms INTEGER NOT NULL,
+        checkpoint_seq INTEGER NOT NULL DEFAULT 0,
+        watch_seconds REAL NOT NULL DEFAULT 0,
+        total_seconds INTEGER NOT NULL DEFAULT 0,
+        completion_ratio REAL NOT NULL DEFAULT 0,
+        had_fullscreen INTEGER NOT NULL DEFAULT 0,
+        last_video_time REAL NOT NULL DEFAULT 0,
+        FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_video_pref_runtime_video
+        ON video_preference_runtime(video_id);
+
+      CREATE INDEX IF NOT EXISTS idx_video_pref_runtime_checkpoint
+        ON video_preference_runtime(last_checkpoint_ms DESC);
     `)
   }
 

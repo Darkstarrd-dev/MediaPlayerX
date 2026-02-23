@@ -1,6 +1,27 @@
 import type { SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 import { parseJson } from './mediaLibraryStoreUtils'
 
+function clampNonNegativeInt(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0
+  }
+  return Math.floor(value)
+}
+
+function clampNonNegativeNumber(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0
+  }
+  return value
+}
+
+function clampCompletionRatio(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+  return Math.max(0, Math.min(1, value))
+}
+
 export class MediaLibraryMetadataStore {
   constructor(private readonly db: SQLiteDatabaseLike) {}
 
@@ -664,6 +685,402 @@ export class MediaLibraryMetadataStore {
         payload.totalSeconds,
         payload.completionRatio,
         payload.lastEventTimeMs,
+        Date.now(),
+      )
+  }
+
+  upsertImagePreferenceRuntime(
+    payload: {
+      sessionId: string
+      sourceId: string
+      startedAtMs: number
+      lastCheckpointMs: number
+      checkpointSeq: number
+      pagesRead: number
+      totalPages: number
+      completionRatio: number
+      isFullscreen: boolean
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO image_preference_runtime (
+            session_id,
+            source_id,
+            started_at_ms,
+            last_checkpoint_ms,
+            checkpoint_seq,
+            pages_read,
+            total_pages,
+            completion_ratio,
+            is_fullscreen
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(session_id) DO UPDATE SET
+            source_id = excluded.source_id,
+            started_at_ms = excluded.started_at_ms,
+            last_checkpoint_ms = excluded.last_checkpoint_ms,
+            checkpoint_seq = excluded.checkpoint_seq,
+            pages_read = excluded.pages_read,
+            total_pages = excluded.total_pages,
+            completion_ratio = excluded.completion_ratio,
+            is_fullscreen = excluded.is_fullscreen
+          WHERE excluded.checkpoint_seq >= image_preference_runtime.checkpoint_seq
+        `,
+      )
+      .run(
+        payload.sessionId,
+        payload.sourceId,
+        payload.startedAtMs,
+        payload.lastCheckpointMs,
+        payload.checkpointSeq,
+        payload.pagesRead,
+        payload.totalPages,
+        payload.completionRatio,
+        payload.isFullscreen ? 1 : 0,
+      )
+  }
+
+  upsertVideoPreferenceRuntime(
+    payload: {
+      sessionId: string
+      videoId: string
+      startedAtMs: number
+      lastCheckpointMs: number
+      checkpointSeq: number
+      watchSeconds: number
+      totalSeconds: number
+      completionRatio: number
+      hadFullscreen: boolean
+      lastVideoTime: number
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO video_preference_runtime (
+            session_id,
+            video_id,
+            started_at_ms,
+            last_checkpoint_ms,
+            checkpoint_seq,
+            watch_seconds,
+            total_seconds,
+            completion_ratio,
+            had_fullscreen,
+            last_video_time
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(session_id) DO UPDATE SET
+            video_id = excluded.video_id,
+            started_at_ms = excluded.started_at_ms,
+            last_checkpoint_ms = excluded.last_checkpoint_ms,
+            checkpoint_seq = excluded.checkpoint_seq,
+            watch_seconds = excluded.watch_seconds,
+            total_seconds = excluded.total_seconds,
+            completion_ratio = excluded.completion_ratio,
+            had_fullscreen = excluded.had_fullscreen,
+            last_video_time = excluded.last_video_time
+          WHERE excluded.checkpoint_seq >= video_preference_runtime.checkpoint_seq
+        `,
+      )
+      .run(
+        payload.sessionId,
+        payload.videoId,
+        payload.startedAtMs,
+        payload.lastCheckpointMs,
+        payload.checkpointSeq,
+        payload.watchSeconds,
+        payload.totalSeconds,
+        payload.completionRatio,
+        payload.hadFullscreen ? 1 : 0,
+        payload.lastVideoTime,
+      )
+  }
+
+  deleteImagePreferenceRuntime(sessionId: string): void {
+    this.db
+      .prepare(
+        `
+          DELETE FROM image_preference_runtime
+          WHERE session_id = ?
+        `,
+      )
+      .run(sessionId)
+  }
+
+  deleteVideoPreferenceRuntime(sessionId: string): void {
+    this.db
+      .prepare(
+        `
+          DELETE FROM video_preference_runtime
+          WHERE session_id = ?
+        `,
+      )
+      .run(sessionId)
+  }
+
+  recoverAllPreferenceRuntimeSessions(endReason: string): {
+    imageRecovered: number
+    videoRecovered: number
+  } {
+    const imageRows = this.db
+      .prepare(
+        `
+          SELECT
+            session_id,
+            source_id,
+            started_at_ms,
+            last_checkpoint_ms,
+            pages_read,
+            total_pages,
+            completion_ratio,
+            is_fullscreen
+          FROM image_preference_runtime
+          ORDER BY last_checkpoint_ms ASC
+        `,
+      )
+      .all() as Array<{
+      session_id: string
+      source_id: string
+      started_at_ms: number
+      last_checkpoint_ms: number
+      pages_read: number
+      total_pages: number
+      completion_ratio: number
+      is_fullscreen: number
+    }>
+
+    const videoRows = this.db
+      .prepare(
+        `
+          SELECT
+            session_id,
+            video_id,
+            started_at_ms,
+            last_checkpoint_ms,
+            watch_seconds,
+            total_seconds,
+            completion_ratio,
+            had_fullscreen
+          FROM video_preference_runtime
+          ORDER BY last_checkpoint_ms ASC
+        `,
+      )
+      .all() as Array<{
+      session_id: string
+      video_id: string
+      started_at_ms: number
+      last_checkpoint_ms: number
+      watch_seconds: number
+      total_seconds: number
+      completion_ratio: number
+      had_fullscreen: number
+    }>
+
+    let imageRecovered = 0
+    let videoRecovered = 0
+
+    const insertImageSession = this.db.prepare(
+      `
+        INSERT OR IGNORE INTO image_preference_sessions (
+          session_id,
+          source_id,
+          started_at_ms,
+          ended_at_ms,
+          pages_read,
+          total_pages,
+          completion_ratio,
+          is_fullscreen,
+          end_reason
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+    )
+    const insertVideoSession = this.db.prepare(
+      `
+        INSERT OR IGNORE INTO video_preference_sessions (
+          session_id,
+          video_id,
+          started_at_ms,
+          ended_at_ms,
+          watch_seconds,
+          total_seconds,
+          completion_ratio,
+          had_fullscreen,
+          is_noise,
+          end_reason
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+    )
+
+    for (const row of imageRows) {
+      const startedAtMs = clampNonNegativeInt(row.started_at_ms)
+      const endedAtMs = Math.max(startedAtMs, clampNonNegativeInt(row.last_checkpoint_ms))
+      const pagesRead = clampNonNegativeInt(row.pages_read)
+      const totalPages = clampNonNegativeInt(row.total_pages)
+      const completionRatio =
+        totalPages > 0 ? clampCompletionRatio(pagesRead / totalPages) : clampCompletionRatio(row.completion_ratio)
+      const insertResult = insertImageSession.run(
+        row.session_id,
+        row.source_id,
+        startedAtMs,
+        endedAtMs,
+        pagesRead,
+        totalPages,
+        completionRatio,
+        row.is_fullscreen > 0 ? 1 : 0,
+        endReason,
+      ) as { changes?: number }
+      if ((insertResult.changes ?? 0) > 0) {
+        imageRecovered += 1
+        this.accumulateImagePreferenceMetric({
+          sourceId: row.source_id,
+          pagesRead,
+          totalPages,
+          endedAtMs,
+        })
+      }
+      this.deleteImagePreferenceRuntime(row.session_id)
+    }
+
+    for (const row of videoRows) {
+      const startedAtMs = clampNonNegativeInt(row.started_at_ms)
+      const endedAtMs = Math.max(startedAtMs, clampNonNegativeInt(row.last_checkpoint_ms))
+      const watchSeconds = clampNonNegativeNumber(row.watch_seconds)
+      const totalSeconds = clampNonNegativeInt(row.total_seconds)
+      const completionRatio =
+        totalSeconds > 0 ? clampCompletionRatio(watchSeconds / totalSeconds) : clampCompletionRatio(row.completion_ratio)
+      const hadFullscreen = row.had_fullscreen > 0
+      const isNoise = !hadFullscreen && watchSeconds < 10
+      const insertResult = insertVideoSession.run(
+        row.session_id,
+        row.video_id,
+        startedAtMs,
+        endedAtMs,
+        watchSeconds,
+        totalSeconds,
+        completionRatio,
+        hadFullscreen ? 1 : 0,
+        isNoise ? 1 : 0,
+        endReason,
+      ) as { changes?: number }
+      if ((insertResult.changes ?? 0) > 0) {
+        videoRecovered += 1
+        if (!isNoise) {
+          this.accumulateVideoPreferenceMetric({
+            videoId: row.video_id,
+            watchSeconds,
+            totalSeconds,
+            endedAtMs,
+          })
+        }
+      }
+      this.deleteVideoPreferenceRuntime(row.session_id)
+    }
+
+    return {
+      imageRecovered,
+      videoRecovered,
+    }
+  }
+
+  private accumulateImagePreferenceMetric(payload: {
+    sourceId: string
+    pagesRead: number
+    totalPages: number
+    endedAtMs: number
+  }): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO image_preference_metrics (
+            source_id,
+            event_count,
+            pages_read,
+            total_pages,
+            completion_ratio,
+            last_event_time_ms,
+            updated_at_ms
+          )
+          VALUES (?, 1, ?, ?, ?, ?, ?)
+          ON CONFLICT(source_id) DO UPDATE SET
+            event_count = image_preference_metrics.event_count + 1,
+            pages_read = MAX(image_preference_metrics.pages_read, excluded.pages_read),
+            total_pages = MAX(image_preference_metrics.total_pages, excluded.total_pages),
+            completion_ratio = CASE
+              WHEN MAX(image_preference_metrics.total_pages, excluded.total_pages) > 0 THEN
+                MIN(
+                  1,
+                  CAST(MAX(image_preference_metrics.pages_read, excluded.pages_read) AS REAL)
+                    / MAX(image_preference_metrics.total_pages, excluded.total_pages)
+                )
+              ELSE 0
+            END,
+            last_event_time_ms = MAX(
+              COALESCE(image_preference_metrics.last_event_time_ms, 0),
+              COALESCE(excluded.last_event_time_ms, 0)
+            ),
+            updated_at_ms = excluded.updated_at_ms
+        `,
+      )
+      .run(
+        payload.sourceId,
+        payload.pagesRead,
+        payload.totalPages,
+        payload.totalPages > 0 ? clampCompletionRatio(payload.pagesRead / payload.totalPages) : 0,
+        payload.endedAtMs,
+        Date.now(),
+      )
+  }
+
+  private accumulateVideoPreferenceMetric(payload: {
+    videoId: string
+    watchSeconds: number
+    totalSeconds: number
+    endedAtMs: number
+  }): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO video_preference_metrics (
+            video_id,
+            event_count,
+            watch_seconds,
+            total_seconds,
+            completion_ratio,
+            last_event_time_ms,
+            updated_at_ms
+          )
+          VALUES (?, 1, ?, ?, ?, ?, ?)
+          ON CONFLICT(video_id) DO UPDATE SET
+            event_count = video_preference_metrics.event_count + 1,
+            watch_seconds = video_preference_metrics.watch_seconds + excluded.watch_seconds,
+            total_seconds = MAX(video_preference_metrics.total_seconds, excluded.total_seconds),
+            completion_ratio = CASE
+              WHEN MAX(video_preference_metrics.total_seconds, excluded.total_seconds) > 0 THEN
+                MIN(
+                  1,
+                  (video_preference_metrics.watch_seconds + excluded.watch_seconds)
+                    / MAX(video_preference_metrics.total_seconds, excluded.total_seconds)
+                )
+              ELSE 0
+            END,
+            last_event_time_ms = MAX(
+              COALESCE(video_preference_metrics.last_event_time_ms, 0),
+              COALESCE(excluded.last_event_time_ms, 0)
+            ),
+            updated_at_ms = excluded.updated_at_ms
+        `,
+      )
+      .run(
+        payload.videoId,
+        payload.watchSeconds,
+        payload.totalSeconds,
+        payload.totalSeconds > 0 ? clampCompletionRatio(payload.watchSeconds / payload.totalSeconds) : 0,
+        payload.endedAtMs,
         Date.now(),
       )
   }

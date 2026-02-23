@@ -115,9 +115,18 @@ describe("usePreferenceMetricsBuffer", () => {
     });
 
     await waitFor(() => {
-      expect(writeAppState).toHaveBeenCalledTimes(1);
+      expect(writeAppState).toHaveBeenCalled();
+      const reasons = writeAppState.mock.calls.map((call) => {
+        const payload = JSON.parse(call[0].state_json) as { reason?: string };
+        return payload.reason;
+      });
+      expect(reasons).toContain("image-session-end");
     });
-    const payload = JSON.parse(writeAppState.mock.calls[0][0].state_json) as {
+    const endPayload = writeAppState.mock.calls
+      .map((call) => JSON.parse(call[0].state_json) as { reason?: string })
+      .find((payload) => payload.reason === "image-session-end");
+    expect(endPayload).toBeTruthy();
+    const payload = endPayload as {
       image_by_source_id: Record<
         string,
         { event_count: number; pages_read: number }
@@ -158,25 +167,55 @@ describe("usePreferenceMetricsBuffer", () => {
     rerender({ videoPlaying: true, videoTime: 5 });
     rerender({ videoPlaying: false, videoTime: 5 });
 
-    await new Promise((resolve) => window.setTimeout(resolve, 10));
-    expect(writeAppState).toHaveBeenCalledTimes(0);
+    await waitFor(() => {
+      expect(writeAppState).toHaveBeenCalled();
+    });
+    const noisePayload = writeAppState.mock.calls
+      .map(
+        (call) =>
+          JSON.parse(call[0].state_json) as {
+            video_session_events?: Array<{ is_noise?: boolean }>;
+          },
+      )
+      .find((payload) =>
+        (payload.video_session_events ?? []).some((event) => event.is_noise),
+      );
+    expect(noisePayload).toBeTruthy();
 
     rerender({ videoPlaying: true, videoTime: 0 });
     rerender({ videoPlaying: true, videoTime: 12 });
     rerender({ videoPlaying: false, videoTime: 12 });
 
     await waitFor(() => {
-      expect(writeAppState).toHaveBeenCalledTimes(1);
+      const hasEffectiveMetricWrite = writeAppState.mock.calls.some((call) => {
+        const payload = JSON.parse(call[0].state_json) as {
+          video_by_id?: Record<string, { event_count?: number }>;
+        };
+        return (payload.video_by_id?.["video-a"]?.event_count ?? 0) >= 1;
+      });
+      expect(hasEffectiveMetricWrite).toBe(true);
     });
-    const payload = JSON.parse(writeAppState.mock.calls[0][0].state_json) as {
+    const payload = writeAppState.mock.calls
+      .map(
+        (call) =>
+          JSON.parse(call[0].state_json) as {
+            video_by_id: Record<
+              string,
+              { event_count: number; watch_seconds: number }
+            >;
+          },
+      )
+      .find((candidate) => (candidate.video_by_id["video-a"]?.event_count ?? 0) >= 1);
+    expect(payload).toBeTruthy();
+    const effectivePayload = payload as {
       video_by_id: Record<
         string,
         { event_count: number; watch_seconds: number }
       >;
     };
-    expect(payload.video_by_id["video-a"]?.event_count).toBe(1);
+    expect(effectivePayload.video_by_id["video-a"]?.event_count).toBe(1);
     expect(
-      payload.video_by_id["video-a"]?.watch_seconds,
+      effectivePayload.video_by_id["video-a"]?.watch_seconds,
     ).toBeGreaterThanOrEqual(12);
   });
 
@@ -216,13 +255,31 @@ describe("usePreferenceMetricsBuffer", () => {
     rerender({ focusedImageRef: { packageId: "pkg-b", imageIndex: 0 } });
 
     await waitFor(() => {
-      expect(writeAppState).toHaveBeenCalledTimes(1);
+      expect(writeAppState).toHaveBeenCalled();
+      const reasons = writeAppState.mock.calls.map((call) => {
+        const payload = JSON.parse(call[0].state_json) as { reason?: string };
+        return payload.reason;
+      });
+      expect(reasons).toContain("image-switch-node");
     });
-    const payload = JSON.parse(writeAppState.mock.calls[0][0].state_json) as {
+    const payload = writeAppState.mock.calls
+      .map(
+        (call) =>
+          JSON.parse(call[0].state_json) as {
+            reason?: string;
+            image_by_source_id: Record<
+              string,
+              { event_count: number; pages_read: number }
+            >;
+          },
+      )
+      .find((candidate) => candidate.reason === "image-switch-node");
+    expect(payload).toBeTruthy();
+    const switchPayload = payload as {
       image_by_source_id: Record<string, { event_count: number; pages_read: number }>;
     };
-    expect(payload.image_by_source_id["pkg-a"]?.event_count).toBe(1);
-    expect(payload.image_by_source_id["pkg-a"]?.pages_read).toBe(5);
+    expect(switchPayload.image_by_source_id["pkg-a"]?.event_count).toBe(1);
+    expect(switchPayload.image_by_source_id["pkg-a"]?.pages_read).toBe(5);
   });
 
   it("写入 appState 时保持 repository 方法上下文", async () => {
@@ -284,7 +341,7 @@ describe("usePreferenceMetricsBuffer", () => {
     await waitFor(() => {
       expect(
         (repository as unknown as RepositoryWithContext).writeCalls.length,
-      ).toBe(1);
+      ).toBeGreaterThanOrEqual(1);
     });
   });
 });

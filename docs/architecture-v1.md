@@ -144,13 +144,17 @@ Last updated: 2026-02-22
   - 会话事实层：
     - `image_preference_sessions`（按图片会话记录，包含开始/结束时间、页数、完成度、结束原因）
     - `video_preference_sessions`（按视频会话记录，包含开始/结束时间、时长、完成度、是否噪音 `is_noise`）
+  - 运行时检查点层：
+    - `image_preference_runtime`（进行中图片会话的 checkpoint，用于崩溃恢复）
+    - `video_preference_runtime`（进行中视频会话的 checkpoint，用于崩溃恢复）
 
 ### 偏好行为指标写入策略（Preference Metrics）
 
-- 采集与展示解耦：运行时先写内存缓冲，避免高频拖慢主链路；展示通过快照 DTO 读取专表结果。
+- 采集与展示解耦：运行时先写内存缓冲；通过心跳 checkpoint（默认 2s）异步上送，展示通过快照 DTO 读取专表结果。
 - 图片事件仅在“图片全屏会话”中采集；会话结束触发一次落库（退出全屏/模式切换/退出 App）。
-- 视频事件支持全屏与非全屏采集；非全屏会话 `<10s` 视为噪音不落库；其余会话在停止/切换节点/切换模式/退出 App 时一次落库。
-- 统一入口：Renderer 通过 `writeAppState(xp_preference_metrics_v1)` 上送缓冲快照（聚合缓存 + 会话事件），Main 在 `writeAppState` 分支解析并写入专表，保持 IPC 面稳定。
+- 视频事件支持全屏与非全屏采集；非全屏会话 `<10s` 会保留事实层并标记 `is_noise=1`，但不计入聚合缓存。
+- 统一入口：Renderer 通过 `writeAppState(xp_preference_metrics_v1)` 上送缓冲快照（聚合缓存 + 会话事件 + runtime checkpoint），Main 在 `writeAppState` 分支解析并写入专表，保持 IPC 面稳定。
+- 崩溃恢复：主进程启动时扫描 `*_preference_runtime`，将遗留会话补写到 `*_preference_sessions`（`end_reason=recovered-after-crash`），并回填聚合缓存后清理 runtime 行。
 - 指标口径与字段定义以 `docs/preference-metrics-spec-v1.md` 为唯一事实源。
 
 ### 向量字段职责（当前实现）

@@ -1162,6 +1162,199 @@ describe("FileSystemMediaReadService", () => {
     }
   });
 
+  it("runtime checkpoint 会先落入 runtime 表并在会话结束后清理", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-preference-runtime-checkpoint-"),
+    );
+    createdRoots.push(root);
+
+    const imagePath = path.join(root, "gallery", "a.jpg");
+    await writeBinary(imagePath, [0xff, 0xd8, 0xff, 0xd9]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const snapshot = await service.readLibrarySnapshot();
+    const source = snapshot.image_directories.find(
+      (item) =>
+        path.resolve(item.absolute_path) ===
+        path.resolve(path.dirname(imagePath)),
+    );
+    expect(source).toBeTruthy();
+    if (!source) {
+      throw new Error("image source fixture not found");
+    }
+
+    await service.writeAppState({
+      state_key: "xp_preference_metrics_v1",
+      state_json: JSON.stringify({
+        version: 2,
+        reason: "runtime-heartbeat",
+        image_by_source_id: {},
+        video_by_id: {},
+        image_session_events: [],
+        video_session_events: [],
+        image_runtime_checkpoints: [
+          {
+            session_id: "img-runtime-flow-1",
+            source_id: source.id,
+            started_at_ms: 1_739_600_000_000,
+            last_checkpoint_ms: 1_739_600_002_000,
+            checkpoint_seq: 1,
+            pages_read: 2,
+            total_pages: Math.max(1, source.images.length),
+            completion_ratio: 0.2,
+            is_fullscreen: true,
+          },
+        ],
+      }),
+    });
+
+    const dbPath = path.join(root, DATABASE_RELATIVE_PATH);
+    const db = new DatabaseSync(dbPath);
+    try {
+      const runtimeBeforeFinalize = db
+        .prepare(
+          `
+            SELECT COUNT(*) AS count
+            FROM image_preference_runtime
+            WHERE session_id = ?
+          `,
+        )
+        .get("img-runtime-flow-1") as { count: number };
+      expect(runtimeBeforeFinalize.count).toBe(1);
+
+      await service.writeAppState({
+        state_key: "xp_preference_metrics_v1",
+        state_json: JSON.stringify({
+          version: 2,
+          reason: "image-session-end",
+          image_by_source_id: {
+            [source.id]: {
+              event_count: 1,
+              pages_read: 2,
+              total_pages: Math.max(1, source.images.length),
+              completion_ratio:
+                source.images.length > 0 ? 2 / source.images.length : 0,
+              last_event_time_ms: 1_739_600_003_000,
+            },
+          },
+          video_by_id: {},
+          image_session_events: [
+            {
+              session_id: "img-runtime-flow-1",
+              source_id: source.id,
+              started_at_ms: 1_739_600_000_000,
+              ended_at_ms: 1_739_600_003_000,
+              pages_read: 2,
+              total_pages: Math.max(1, source.images.length),
+              completion_ratio:
+                source.images.length > 0 ? 2 / source.images.length : 0,
+              is_fullscreen: true,
+              end_reason: "image-session-end",
+            },
+          ],
+          video_session_events: [],
+        }),
+      });
+
+      const runtimeAfterFinalize = db
+        .prepare(
+          `
+            SELECT COUNT(*) AS count
+            FROM image_preference_runtime
+            WHERE session_id = ?
+          `,
+        )
+        .get("img-runtime-flow-1") as { count: number };
+      expect(runtimeAfterFinalize.count).toBe(0);
+    } finally {
+      db.close();
+    }
+  });
+
+  it("runtime-only 写入不会覆盖 app_state 中已存在的聚合缓存", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-preference-runtime-keep-metrics-"),
+    );
+    createdRoots.push(root);
+
+    const imagePath = path.join(root, "gallery", "a.jpg");
+    await writeBinary(imagePath, [0xff, 0xd8, 0xff, 0xd9]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const snapshot = await service.readLibrarySnapshot();
+    const source = snapshot.image_directories.find(
+      (item) =>
+        path.resolve(item.absolute_path) ===
+        path.resolve(path.dirname(imagePath)),
+    );
+    expect(source).toBeTruthy();
+    if (!source) {
+      throw new Error("image source fixture not found");
+    }
+
+    await service.writeAppState({
+      state_key: "xp_preference_metrics_v1",
+      state_json: JSON.stringify({
+        version: 2,
+        reason: "image-session-end",
+        image_by_source_id: {
+          [source.id]: {
+            event_count: 1,
+            pages_read: 1,
+            total_pages: Math.max(1, source.images.length),
+            completion_ratio:
+              source.images.length > 0 ? 1 / source.images.length : 0,
+            last_event_time_ms: 1_739_700_000_000,
+          },
+        },
+        video_by_id: {},
+        image_session_events: [],
+        video_session_events: [],
+      }),
+    });
+
+    await service.writeAppState({
+      state_key: "xp_preference_metrics_v1",
+      state_json: JSON.stringify({
+        version: 2,
+        reason: "runtime-heartbeat",
+        image_by_source_id: {},
+        video_by_id: {},
+        image_session_events: [],
+        video_session_events: [],
+        image_runtime_checkpoints: [
+          {
+            session_id: "img-runtime-keep-1",
+            source_id: source.id,
+            started_at_ms: 1_739_700_001_000,
+            last_checkpoint_ms: 1_739_700_002_000,
+            checkpoint_seq: 1,
+            pages_read: 1,
+            total_pages: Math.max(1, source.images.length),
+            completion_ratio:
+              source.images.length > 0 ? 1 / source.images.length : 0,
+            is_fullscreen: true,
+          },
+        ],
+      }),
+    });
+
+    const appState = await service.readAppState({
+      state_key: "xp_preference_metrics_v1",
+      fallback_json: "{}",
+    });
+    const parsed = JSON.parse(appState.state_json) as {
+      image_by_source_id?: Record<string, { event_count?: number }>;
+    };
+    expect(parsed.image_by_source_id?.[source.id]?.event_count).toBe(1);
+  });
+
   it("连续写入偏好 app_state 时会保留图片与视频最近会话历史", async () => {
     const root = await fs.mkdtemp(
       path.join(os.tmpdir(), "mpx-preference-state-history-"),
@@ -1242,6 +1435,32 @@ describe("FileSystemMediaReadService", () => {
       }),
     });
 
+    await service.writeAppState({
+      state_key: "xp_preference_metrics_v1",
+      state_json: JSON.stringify({
+        version: 2,
+        reason: "video-session-end",
+        updated_at_ms: 1_739_100_011_000,
+        image_by_source_id: {},
+        video_by_id: {},
+        image_session_events: [],
+        video_session_events: [
+          {
+            session_id: "vid-history-1",
+            video_id: video.id,
+            started_at_ms: 1_739_100_010_000,
+            ended_at_ms: 1_739_100_020_000,
+            watch_seconds: 12,
+            total_seconds: Math.max(1, video.duration_sec),
+            completion_ratio: 0.12,
+            had_fullscreen: false,
+            is_noise: false,
+            end_reason: "video-session-end",
+          },
+        ],
+      }),
+    });
+
     const appState = await service.readAppState({
       state_key: "xp_preference_metrics_v1",
       fallback_json: "{}",
@@ -1250,6 +1469,12 @@ describe("FileSystemMediaReadService", () => {
       image_session_events?: Array<{ session_id?: string }>;
       video_session_events?: Array<{ session_id?: string }>;
     };
+    const videoSessionIds = (parsedState.video_session_events ?? []).map(
+      (item) => item.session_id,
+    );
+    const duplicateVideoSessionCount = videoSessionIds.filter(
+      (sessionId) => sessionId === "vid-history-1",
+    ).length;
 
     expect(parsedState.image_session_events?.map((item) => item.session_id)).toContain(
       "img-history-1",
@@ -1257,6 +1482,7 @@ describe("FileSystemMediaReadService", () => {
     expect(parsedState.video_session_events?.map((item) => item.session_id)).toContain(
       "vid-history-1",
     );
+    expect(duplicateVideoSessionCount).toBe(1);
   });
 
   it("管理删除图片文件后会返回正确 deleted_count 并刷新快照", async () => {

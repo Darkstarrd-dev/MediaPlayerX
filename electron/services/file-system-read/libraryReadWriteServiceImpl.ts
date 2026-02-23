@@ -92,6 +92,7 @@ import {
   filterHiddenImagesFromSources,
   isAutoLiveSubtitleFile,
   normalizeExternalMetadataText,
+  parsePreferenceRuntimeCheckpoints,
   parsePersistedPreferenceMetrics,
   resolveCoverFileExtension,
   resolveFallbackCoverColor,
@@ -134,23 +135,66 @@ function asEventArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
+function dedupeSessionEventsBySessionId(events: unknown[]): unknown[] {
+  const seenSessionIds = new Set<string>();
+  const dedupedReversed: unknown[] = [];
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index];
+    if (!event || typeof event !== "object") {
+      dedupedReversed.push(event);
+      continue;
+    }
+    const record = event as Record<string, unknown>;
+    const sessionIdRaw = record.session_id;
+    const sessionId =
+      typeof sessionIdRaw === "string" ? sessionIdRaw.trim() : "";
+    if (!sessionId) {
+      dedupedReversed.push(event);
+      continue;
+    }
+    if (seenSessionIds.has(sessionId)) {
+      continue;
+    }
+    seenSessionIds.add(sessionId);
+    dedupedReversed.push(event);
+  }
+  return dedupedReversed.reverse();
+}
+
+function hasObjectKeys(value: unknown): boolean {
+  return Boolean(value && typeof value === "object" && Object.keys(value as Record<string, unknown>).length > 0);
+}
+
 function mergePreferenceMetricsState(
   previousState: unknown,
   incomingState: unknown,
 ): Record<string, unknown> {
   const previousRecord = asRecord(previousState);
-  const incomingRecord = asRecord(incomingState);
-  const mergedImageSessions = [
+  const incomingRecordRaw = asRecord(incomingState);
+  const {
+    image_runtime_checkpoints: _incomingImageRuntimeCheckpoints,
+    video_runtime_checkpoints: _incomingVideoRuntimeCheckpoints,
+    ...incomingRecord
+  } = incomingRecordRaw;
+  const mergedImageSessions = dedupeSessionEventsBySessionId([
     ...asEventArray(previousRecord.image_session_events),
     ...asEventArray(incomingRecord.image_session_events),
-  ].slice(-PREFERENCE_DEBUG_SESSION_HISTORY_LIMIT);
-  const mergedVideoSessions = [
+  ]).slice(-PREFERENCE_DEBUG_SESSION_HISTORY_LIMIT);
+  const mergedVideoSessions = dedupeSessionEventsBySessionId([
     ...asEventArray(previousRecord.video_session_events),
     ...asEventArray(incomingRecord.video_session_events),
-  ].slice(-PREFERENCE_DEBUG_SESSION_HISTORY_LIMIT);
+  ]).slice(-PREFERENCE_DEBUG_SESSION_HISTORY_LIMIT);
+  const mergedImageMetrics = hasObjectKeys(incomingRecord.image_by_source_id)
+    ? incomingRecord.image_by_source_id
+    : previousRecord.image_by_source_id;
+  const mergedVideoMetrics = hasObjectKeys(incomingRecord.video_by_id)
+    ? incomingRecord.video_by_id
+    : previousRecord.video_by_id;
 
   return {
     ...incomingRecord,
+    image_by_source_id: mergedImageMetrics,
+    video_by_id: mergedVideoMetrics,
     image_session_events: mergedImageSessions,
     video_session_events: mergedVideoSessions,
   };
@@ -1055,7 +1099,38 @@ export class LibraryReadWriteService {
     const updatedAtMs = Date.now();
 
     if (request.state_key === XP_PREFERENCE_METRICS_STATE_KEY) {
-      const parsedMetrics = parsePersistedPreferenceMetrics(parsedState);
+      const parsedMetrics = parsePersistedPreferenceMetrics(incomingState);
+      const runtimeCheckpoints = parsePreferenceRuntimeCheckpoints(incomingState);
+
+      for (const checkpoint of runtimeCheckpoints.imageCheckpoints) {
+        this.options.database.upsertImagePreferenceRuntime({
+          sessionId: checkpoint.sessionId,
+          sourceId: checkpoint.sourceId,
+          startedAtMs: checkpoint.startedAtMs,
+          lastCheckpointMs: checkpoint.lastCheckpointMs,
+          checkpointSeq: checkpoint.checkpointSeq,
+          pagesRead: checkpoint.pagesRead,
+          totalPages: checkpoint.totalPages,
+          completionRatio: checkpoint.completionRatio,
+          isFullscreen: checkpoint.isFullscreen,
+        });
+      }
+
+      for (const checkpoint of runtimeCheckpoints.videoCheckpoints) {
+        this.options.database.upsertVideoPreferenceRuntime({
+          sessionId: checkpoint.sessionId,
+          videoId: checkpoint.videoId,
+          startedAtMs: checkpoint.startedAtMs,
+          lastCheckpointMs: checkpoint.lastCheckpointMs,
+          checkpointSeq: checkpoint.checkpointSeq,
+          watchSeconds: checkpoint.watchSeconds,
+          totalSeconds: checkpoint.totalSeconds,
+          completionRatio: checkpoint.completionRatio,
+          hadFullscreen: checkpoint.hadFullscreen,
+          lastVideoTime: checkpoint.lastVideoTime,
+        });
+      }
+
       const shouldUpdatePreferenceMetrics =
         parsedMetrics.imageBySourceId.size > 0 ||
         parsedMetrics.videoById.size > 0 ||
@@ -1088,6 +1163,7 @@ export class LibraryReadWriteService {
           isFullscreen: session.isFullscreen,
           endReason: session.endReason,
         });
+        this.options.database.deleteImagePreferenceRuntime(session.sessionId);
       }
 
       for (const session of parsedMetrics.videoSessions) {
@@ -1103,6 +1179,7 @@ export class LibraryReadWriteService {
           isNoise: session.isNoise,
           endReason: session.endReason,
         });
+        this.options.database.deleteVideoPreferenceRuntime(session.sessionId);
       }
 
       for (const [sourceId, metric] of parsedMetrics.imageBySourceId) {

@@ -75,6 +75,32 @@ interface PreferenceDebugViewModel {
   videoSessionPreview: unknown[];
 }
 
+function dedupeSessionEventsForDebug(events: unknown[]): unknown[] {
+  const seenSessionIds = new Set<string>();
+  const dedupedReversed: unknown[] = [];
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index];
+    if (!event || typeof event !== "object") {
+      dedupedReversed.push(event);
+      continue;
+    }
+    const record = event as Record<string, unknown>;
+    const sessionIdRaw = record.session_id;
+    const sessionId =
+      typeof sessionIdRaw === "string" ? sessionIdRaw.trim() : "";
+    if (!sessionId) {
+      dedupedReversed.push(event);
+      continue;
+    }
+    if (seenSessionIds.has(sessionId)) {
+      continue;
+    }
+    seenSessionIds.add(sessionId);
+    dedupedReversed.push(event);
+  }
+  return dedupedReversed.reverse();
+}
+
 function parsePreferenceDebugViewModel(rawStateJson: string): PreferenceDebugViewModel {
   let parsed: unknown;
   try {
@@ -95,12 +121,14 @@ function parsePreferenceDebugViewModel(rawStateJson: string): PreferenceDebugVie
     record.video_by_id && typeof record.video_by_id === "object"
       ? (record.video_by_id as Record<string, unknown>)
       : {};
-  const imageSessionEvents = Array.isArray(record.image_session_events)
+  const imageSessionEventsRaw = Array.isArray(record.image_session_events)
     ? record.image_session_events
     : [];
-  const videoSessionEvents = Array.isArray(record.video_session_events)
+  const videoSessionEventsRaw = Array.isArray(record.video_session_events)
     ? record.video_session_events
     : [];
+  const imageSessionEvents = dedupeSessionEventsForDebug(imageSessionEventsRaw);
+  const videoSessionEvents = dedupeSessionEventsForDebug(videoSessionEventsRaw);
 
   const updatedAtRaw = record.updated_at_ms;
   const updatedAtMs =

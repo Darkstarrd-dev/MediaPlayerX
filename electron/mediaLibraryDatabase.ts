@@ -38,6 +38,8 @@ export class MediaLibraryDatabase {
 
   private disposed = false
 
+  private static readonly PREFERENCE_RUNTIME_RECOVERY_REASON = 'recovered-after-crash'
+
   constructor(optionsOrRootDir: MediaLibraryDatabaseOptions | string) {
     const options =
       typeof optionsOrRootDir === 'string'
@@ -57,6 +59,12 @@ export class MediaLibraryDatabase {
     this.metadataStore = new MediaLibraryMetadataStore(this.db)
     this.playlistStore = new MediaLibraryPlaylistStore(this.db, this.runInTransaction.bind(this))
     this.taskStore = new MediaLibraryTaskStore(this.db)
+
+    this.runInTransaction(() => {
+      this.metadataStore.recoverAllPreferenceRuntimeSessions(
+        MediaLibraryDatabase.PREFERENCE_RUNTIME_RECOVERY_REASON,
+      )
+    })
 
     this.upsertRootConfig('library_root', rootDir)
   }
@@ -389,6 +397,47 @@ export class MediaLibraryDatabase {
     this.metadataStore.insertVideoPreferenceSession(payload)
   }
 
+  upsertImagePreferenceRuntime(
+    payload: {
+      sessionId: string
+      sourceId: string
+      startedAtMs: number
+      lastCheckpointMs: number
+      checkpointSeq: number
+      pagesRead: number
+      totalPages: number
+      completionRatio: number
+      isFullscreen: boolean
+    },
+  ): void {
+    this.metadataStore.upsertImagePreferenceRuntime(payload)
+  }
+
+  upsertVideoPreferenceRuntime(
+    payload: {
+      sessionId: string
+      videoId: string
+      startedAtMs: number
+      lastCheckpointMs: number
+      checkpointSeq: number
+      watchSeconds: number
+      totalSeconds: number
+      completionRatio: number
+      hadFullscreen: boolean
+      lastVideoTime: number
+    },
+  ): void {
+    this.metadataStore.upsertVideoPreferenceRuntime(payload)
+  }
+
+  deleteImagePreferenceRuntime(sessionId: string): void {
+    this.metadataStore.deleteImagePreferenceRuntime(sessionId)
+  }
+
+  deleteVideoPreferenceRuntime(sessionId: string): void {
+    this.metadataStore.deleteVideoPreferenceRuntime(sessionId)
+  }
+
   readPlaylist(): string[] {
     return this.playlistStore.readPlaylist()
   }
@@ -426,6 +475,8 @@ export class MediaLibraryDatabase {
       this.db.prepare('DELETE FROM video_preference_metrics').run()
       this.db.prepare('DELETE FROM image_preference_sessions').run()
       this.db.prepare('DELETE FROM video_preference_sessions').run()
+      this.db.prepare('DELETE FROM image_preference_runtime').run()
+      this.db.prepare('DELETE FROM video_preference_runtime').run()
       this.db.prepare('DELETE FROM package_grade').run()
       this.db.prepare('DELETE FROM image_item').run()
       this.db.prepare('DELETE FROM media_source').run()

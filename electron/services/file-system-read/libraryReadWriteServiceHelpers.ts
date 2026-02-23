@@ -58,6 +58,31 @@ export interface PersistedVideoPreferenceSession {
   endReason: string;
 }
 
+export interface PersistedImagePreferenceRuntimeCheckpoint {
+  sessionId: string;
+  sourceId: string;
+  startedAtMs: number;
+  lastCheckpointMs: number;
+  checkpointSeq: number;
+  pagesRead: number;
+  totalPages: number;
+  completionRatio: number;
+  isFullscreen: boolean;
+}
+
+export interface PersistedVideoPreferenceRuntimeCheckpoint {
+  sessionId: string;
+  videoId: string;
+  startedAtMs: number;
+  lastCheckpointMs: number;
+  checkpointSeq: number;
+  watchSeconds: number;
+  totalSeconds: number;
+  completionRatio: number;
+  hadFullscreen: boolean;
+  lastVideoTime: number;
+}
+
 function clampNonNegativeInt(value: unknown): number {
   const parsed =
     typeof value === "number" && Number.isFinite(value)
@@ -245,6 +270,86 @@ export function parsePersistedPreferenceMetrics(raw: unknown): {
         hadFullscreen: parseBooleanFlag(session.had_fullscreen),
         isNoise: parseBooleanFlag(session.is_noise),
         endReason: String(session.end_reason ?? "").trim(),
+      });
+    }
+  }
+
+  return result;
+}
+
+export function parsePreferenceRuntimeCheckpoints(raw: unknown): {
+  imageCheckpoints: PersistedImagePreferenceRuntimeCheckpoint[];
+  videoCheckpoints: PersistedVideoPreferenceRuntimeCheckpoint[];
+} {
+  const result = {
+    imageCheckpoints: [] as PersistedImagePreferenceRuntimeCheckpoint[],
+    videoCheckpoints: [] as PersistedVideoPreferenceRuntimeCheckpoint[],
+  };
+
+  if (!raw || typeof raw !== "object") {
+    return result;
+  }
+
+  const record = raw as Record<string, unknown>;
+  const imageCheckpoints = record.image_runtime_checkpoints;
+  if (Array.isArray(imageCheckpoints)) {
+    for (const entry of imageCheckpoints) {
+      if (!entry || typeof entry !== "object") {
+        continue;
+      }
+      const checkpoint = entry as Record<string, unknown>;
+      const sessionId = String(checkpoint.session_id ?? "").trim();
+      const sourceId = String(checkpoint.source_id ?? "").trim();
+      const startedAtMs = parsePositiveTimestamp(checkpoint.started_at_ms);
+      const lastCheckpointMs = parsePositiveTimestamp(
+        checkpoint.last_checkpoint_ms,
+      );
+      if (!sessionId || !sourceId || !startedAtMs || !lastCheckpointMs) {
+        continue;
+      }
+
+      result.imageCheckpoints.push({
+        sessionId,
+        sourceId,
+        startedAtMs,
+        lastCheckpointMs,
+        checkpointSeq: clampNonNegativeInt(checkpoint.checkpoint_seq),
+        pagesRead: clampNonNegativeInt(checkpoint.pages_read),
+        totalPages: clampNonNegativeInt(checkpoint.total_pages),
+        completionRatio: clampCompletionRatio(checkpoint.completion_ratio),
+        isFullscreen: parseBooleanFlag(checkpoint.is_fullscreen),
+      });
+    }
+  }
+
+  const videoCheckpoints = record.video_runtime_checkpoints;
+  if (Array.isArray(videoCheckpoints)) {
+    for (const entry of videoCheckpoints) {
+      if (!entry || typeof entry !== "object") {
+        continue;
+      }
+      const checkpoint = entry as Record<string, unknown>;
+      const sessionId = String(checkpoint.session_id ?? "").trim();
+      const videoId = String(checkpoint.video_id ?? "").trim();
+      const startedAtMs = parsePositiveTimestamp(checkpoint.started_at_ms);
+      const lastCheckpointMs = parsePositiveTimestamp(
+        checkpoint.last_checkpoint_ms,
+      );
+      if (!sessionId || !videoId || !startedAtMs || !lastCheckpointMs) {
+        continue;
+      }
+
+      result.videoCheckpoints.push({
+        sessionId,
+        videoId,
+        startedAtMs,
+        lastCheckpointMs,
+        checkpointSeq: clampNonNegativeInt(checkpoint.checkpoint_seq),
+        watchSeconds: clampNonNegativeNumber(checkpoint.watch_seconds),
+        totalSeconds: clampNonNegativeInt(checkpoint.total_seconds),
+        completionRatio: clampCompletionRatio(checkpoint.completion_ratio),
+        hadFullscreen: parseBooleanFlag(checkpoint.had_fullscreen),
+        lastVideoTime: clampNonNegativeNumber(checkpoint.last_video_time),
       });
     }
   }

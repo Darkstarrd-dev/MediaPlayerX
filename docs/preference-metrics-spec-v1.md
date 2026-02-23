@@ -7,6 +7,7 @@ Last updated: 2026-02-23
 > 2026-02-23 起，偏好链路升级为“双层模型”：
 > - `*_preference_sessions`：会话事实层（SSOT，推荐/分析主数据）
 > - `*_preference_metrics`：聚合缓存层（UI 展示与快速读取）
+> - `*_preference_runtime`：会话运行时检查点层（崩溃恢复主数据）
 
 ## 1. 总体原则
 
@@ -22,6 +23,8 @@ Last updated: 2026-02-23
 | `video_preference_metrics` | 视频级 | `video_id` | 聚合缓存（用于 UI 快速展示） |
 | `image_preference_sessions` | 图片会话级 | `session_id` | 会话事实层（推荐/分析主数据） |
 | `video_preference_sessions` | 视频会话级 | `session_id` | 会话事实层（推荐/分析主数据） |
+| `image_preference_runtime` | 图片会话运行时 | `session_id` | 进行中会话检查点（崩溃恢复） |
+| `video_preference_runtime` | 视频会话运行时 | `session_id` | 进行中会话检查点（崩溃恢复） |
 
 ## 3. 字段口径
 
@@ -107,10 +110,14 @@ Last updated: 2026-02-23
 
 ## 7. 写入链路
 
-- Renderer 将内存缓冲编码为 `xp_preference_metrics_v1` 的 `state_json`，同时包含聚合缓存与待落库会话事件。
+- Renderer 将内存缓冲编码为 `xp_preference_metrics_v1` 的 `state_json`，同时包含聚合缓存、待落库会话事件与运行时检查点（runtime checkpoint）。
+- 会话开始后立即写入首个 runtime checkpoint；会话进行中按固定心跳（当前 2s）持续写入 checkpoint。
 - Main 在 `writeAppState` 中解析该 key：
+  - 写入 `image_preference_runtime` 与 `video_preference_runtime`（运行时检查点层）；
   - 写入 `image_preference_sessions` 与 `video_preference_sessions`（事实层）；
   - 写入 `image_preference_metrics` 与 `video_preference_metrics`（聚合缓存层）。
+- 会话结束写入事实层后，会同步清理对应 runtime 记录，避免重复恢复。
+- 数据库启动时会执行 runtime 恢复：将遗留 runtime 会话补齐为事实层记录，`end_reason` 记为 `recovered-after-crash`。
 - 为调试面板可观测性，`app_state.xp_preference_metrics_v1` 会保留最近会话事件滚动窗口（图片/视频分别保留最近 200 条）。
 - 同时保留 `app_state` 原始 JSON 作为诊断与回溯数据。
 
