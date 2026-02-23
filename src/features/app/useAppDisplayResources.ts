@@ -439,18 +439,6 @@ export function useAppDisplayResources({
           ),
         });
 
-  // 调试日志：记录自动字幕文本变化
-  useEffect(() => {
-    if (autoSubtitleRunning && liveSubtitle.activeText) {
-      console.log(
-        "[Subtitle Render] Auto subtitle text:",
-        `"${liveSubtitle.activeText}"`,
-        "at",
-        videoTime.toFixed(2),
-      );
-    }
-  }, [autoSubtitleRunning, liveSubtitle.activeText, videoTime]);
-
   const refreshSubtitleOptions = useCallback(() => {
     setSubtitleReloadNonce((value) => value + 1);
   }, []);
@@ -459,11 +447,7 @@ export function useAppDisplayResources({
 
   const selectSubtitleById = useCallback(
     async (subtitleId: string, sourceOptions?: VideoSubtitleOption[]) => {
-      console.log("[Subtitle] selectSubtitleById called:", subtitleId);
-
-      // 如果选择自动字幕
       if (subtitleId === AUTO_SUBTITLE_ID) {
-        console.log("[Subtitle] Switching to auto subtitle mode");
         setManualSubtitleOverride(false);
         setSelectedSubtitleId(AUTO_SUBTITLE_ID);
         setSelectedSubtitleLocator(null);
@@ -481,7 +465,6 @@ export function useAppDisplayResources({
             });
           }
         }
-        console.log("[Subtitle] Auto subtitle mode activated");
         return;
       }
 
@@ -489,11 +472,9 @@ export function useAppDisplayResources({
         (item) => item.id === subtitleId,
       );
       if (!option) {
-        console.warn("[Subtitle] Subtitle option not found:", subtitleId);
         return;
       }
 
-      console.log("[Subtitle] Loading manual subtitle:", option.label);
       setSubtitleLoading(true);
       setSubtitleMessage(null);
       try {
@@ -527,10 +508,6 @@ export function useAppDisplayResources({
                 };
         }
 
-        console.log(
-          "[Subtitle] Manual subtitle loaded successfully:",
-          option.label,
-        );
         setManualSubtitleOverride(true);
         setSelectedSubtitleId(option.id);
         setSelectedSubtitleLocator(locator);
@@ -677,15 +654,8 @@ export function useAppDisplayResources({
         !currentlySelectedIsAuto
       ) {
         setSelectedSubtitleId(persistedSubtitleId);
-        // 自动加载持久化的字幕（但只尝试一次）
         if (!autoLoadAttemptedRef.current.has(autoLoadKey)) {
           autoLoadAttemptedRef.current.add(autoLoadKey);
-          console.log(
-            "[Subtitle] Auto-loading persisted subtitle:",
-            persistedSubtitleId,
-            "for video:",
-            videoId,
-          );
           void selectSubtitleById(persistedSubtitleId, finalOptions);
         }
       } else if (
@@ -777,15 +747,8 @@ export function useAppDisplayResources({
           !currentlySelectedIsAuto
         ) {
           setSelectedSubtitleId(persistedSubtitleId);
-          // 自动加载持久化的字幕（但只尝试一次）
           if (!autoLoadAttemptedRef.current.has(autoLoadKey)) {
             autoLoadAttemptedRef.current.add(autoLoadKey);
-            console.log(
-              "[Subtitle] Auto-loading persisted subtitle:",
-              persistedSubtitleId,
-              "for video:",
-              videoId,
-            );
             void selectSubtitleById(persistedSubtitleId, finalOptions);
           }
         } else if (
@@ -841,13 +804,6 @@ export function useAppDisplayResources({
   ]);
 
   useEffect(() => {
-    console.log("[Subtitle Track] Checking subtitle track URL conditions:", {
-      autoSubtitleRunning,
-      isVideoMode,
-      hasVideo: !!focusedVideoEffective?.id,
-      hasLocator: !!selectedSubtitleLocator,
-    });
-
     if (
       autoSubtitleRunning ||
       !isVideoMode ||
@@ -858,20 +814,11 @@ export function useAppDisplayResources({
       return;
     }
 
-    console.log(
-      "[Subtitle Track] Resolving subtitle track URL for locator:",
-      selectedSubtitleLocator,
-    );
-
     if (isSynchronousSubtitleMode && syncMediaRepository) {
       const response = syncMediaRepository.resolveMediaResourceSync({
         locator: toLocatorDto(selectedSubtitleLocator),
         preferred_variant: "original",
       });
-      console.log(
-        "[Subtitle Track] Resolved track URL (sync):",
-        response.resource_url,
-      );
       setSubtitleTrackUrl(response.resource_url);
       return;
     }
@@ -886,10 +833,6 @@ export function useAppDisplayResources({
         if (!active) {
           return;
         }
-        console.log(
-          "[Subtitle Track] Resolved track URL (async):",
-          response.resource_url,
-        );
         setSubtitleTrackUrl(response.resource_url);
       })
       .catch((error: unknown) => {
