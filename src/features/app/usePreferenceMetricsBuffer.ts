@@ -36,6 +36,7 @@ interface BufferedVideoMetric {
 interface ImageSessionState {
   active: boolean;
   sourceId: string;
+  startedAtMs: number;
   maxIndex: number;
   totalPages: number;
 }
@@ -43,10 +44,36 @@ interface ImageSessionState {
 interface VideoSessionState {
   active: boolean;
   videoId: string;
+  startedAtMs: number;
   lastVideoTime: number;
   accumulatedSec: number;
   totalSeconds: number;
   hasFullscreen: boolean;
+}
+
+interface BufferedImageSessionEvent {
+  session_id: string;
+  source_id: string;
+  started_at_ms: number;
+  ended_at_ms: number;
+  pages_read: number;
+  total_pages: number;
+  completion_ratio: number;
+  is_fullscreen: boolean;
+  end_reason: string;
+}
+
+interface BufferedVideoSessionEvent {
+  session_id: string;
+  video_id: string;
+  started_at_ms: number;
+  ended_at_ms: number;
+  watch_seconds: number;
+  total_seconds: number;
+  completion_ratio: number;
+  had_fullscreen: boolean;
+  is_noise: boolean;
+  end_reason: string;
 }
 
 function clampNonNegativeInt(value: number): number {
@@ -70,6 +97,11 @@ function clampRatio(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
+function createSessionId(prefix: string, counterRef: { current: number }): string {
+  counterRef.current += 1;
+  return `${prefix}-${Date.now()}-${counterRef.current}`;
+}
+
 export function usePreferenceMetricsBuffer({
   repository,
   mode,
@@ -89,17 +121,22 @@ export function usePreferenceMetricsBuffer({
   const imageSessionRef = useRef<ImageSessionState>({
     active: false,
     sourceId: "",
+    startedAtMs: 0,
     maxIndex: 0,
     totalPages: 0,
   });
   const videoSessionRef = useRef<VideoSessionState>({
     active: false,
     videoId: "",
+    startedAtMs: 0,
     lastVideoTime: 0,
     accumulatedSec: 0,
     totalSeconds: 0,
     hasFullscreen: false,
   });
+  const pendingImageSessionsRef = useRef<BufferedImageSessionEvent[]>([]);
+  const pendingVideoSessionsRef = useRef<BufferedVideoSessionEvent[]>([]);
+  const sessionCounterRef = useRef(0);
   const writeChainRef = useRef(Promise.resolve());
   const lastFlushedJsonRef = useRef("");
 
@@ -191,12 +228,17 @@ export function usePreferenceMetricsBuffer({
       };
     }
 
+    const pendingImageSessions = [...pendingImageSessionsRef.current];
+    const pendingVideoSessions = [...pendingVideoSessionsRef.current];
+
     const payload = {
       version: 1,
       reason,
       updated_at_ms: Date.now(),
       image_by_source_id: imageBySourceId,
       video_by_id: videoById,
+      image_session_events: pendingImageSessions,
+      video_session_events: pendingVideoSessions,
     };
     const stateJson = JSON.stringify(payload);
     if (stateJson === lastFlushedJsonRef.current) {
@@ -210,18 +252,27 @@ export function usePreferenceMetricsBuffer({
           state_key: PREFERENCE_METRICS_STATE_KEY,
           state_json: stateJson,
         });
+        if (pendingImageSessions.length > 0) {
+          pendingImageSessionsRef.current.splice(0, pendingImageSessions.length);
+        }
+        if (pendingVideoSessions.length > 0) {
+          pendingVideoSessionsRef.current.splice(0, pendingVideoSessions.length);
+        }
         lastFlushedJsonRef.current = stateJson;
       });
   }, []);
 
-  const commitImageSession = useCallback((): boolean => {
+  const commitImageSession = useCallback((endReason: string): boolean => {
     const session = imageSessionRef.current;
     if (!session.active || !session.sourceId) {
       return false;
     }
 
+    const endedAtMs = Date.now();
     const pagesRead = clampNonNegativeInt(session.maxIndex + 1);
     const totalPages = clampNonNegativeInt(session.totalPages);
+    const completionRatio =
+      totalPages > 0 ? clampRatio(pagesRead / totalPages) : 0;
     const existing = imageMetricsBySourceIdRef.current.get(
       session.sourceId,
     ) ?? {
@@ -239,29 +290,61 @@ export function usePreferenceMetricsBuffer({
       existing.totalPages > 0
         ? clampRatio(existing.pagesRead / existing.totalPages)
         : 0;
-    existing.lastEventTimeMs = Date.now();
+    existing.lastEventTimeMs = endedAtMs;
     imageMetricsBySourceIdRef.current.set(session.sourceId, existing);
+
+    pendingImageSessionsRef.current.push({
+      session_id: createSessionId("img", sessionCounterRef),
+      source_id: session.sourceId,
+      started_at_ms: session.startedAtMs > 0 ? session.startedAtMs : endedAtMs,
+      ended_at_ms: endedAtMs,
+      pages_read: pagesRead,
+      total_pages: totalPages,
+      completion_ratio: completionRatio,
+      is_fullscreen: true,
+      end_reason: endReason,
+    });
 
     imageSessionRef.current = {
       active: false,
       sourceId: "",
+      startedAtMs: 0,
       maxIndex: 0,
       totalPages: 0,
     };
     return true;
   }, []);
 
-  const commitVideoSession = useCallback((): boolean => {
+  const commitVideoSession = useCallback((endReason: string): boolean => {
     const session = videoSessionRef.current;
     if (!session.active || !session.videoId) {
       return false;
     }
 
+    const endedAtMs = Date.now();
     const effectiveDuration = clampNonNegativeFloat(session.accumulatedSec);
     const shouldDropAsNoise = !session.hasFullscreen && effectiveDuration < 10;
+    const totalSeconds = clampNonNegativeInt(session.totalSeconds);
+    const completionRatio =
+      totalSeconds > 0 ? clampRatio(effectiveDuration / totalSeconds) : 0;
+
+    pendingVideoSessionsRef.current.push({
+      session_id: createSessionId("vid", sessionCounterRef),
+      video_id: session.videoId,
+      started_at_ms: session.startedAtMs > 0 ? session.startedAtMs : endedAtMs,
+      ended_at_ms: endedAtMs,
+      watch_seconds: effectiveDuration,
+      total_seconds: totalSeconds,
+      completion_ratio: completionRatio,
+      had_fullscreen: session.hasFullscreen,
+      is_noise: shouldDropAsNoise,
+      end_reason: endReason,
+    });
+
     videoSessionRef.current = {
       active: false,
       videoId: "",
+      startedAtMs: 0,
       lastVideoTime: 0,
       accumulatedSec: 0,
       totalSeconds: 0,
@@ -275,7 +358,7 @@ export function usePreferenceMetricsBuffer({
     const existing = videoMetricsByIdRef.current.get(session.videoId) ?? {
       eventCount: 0,
       watchSeconds: 0,
-      totalSeconds: clampNonNegativeInt(session.totalSeconds),
+      totalSeconds,
       completionRatio: 0,
       lastEventTimeMs: null,
     };
@@ -284,13 +367,13 @@ export function usePreferenceMetricsBuffer({
     existing.watchSeconds += effectiveDuration;
     existing.totalSeconds = Math.max(
       existing.totalSeconds,
-      clampNonNegativeInt(session.totalSeconds),
+      totalSeconds,
     );
     existing.completionRatio =
       existing.totalSeconds > 0
         ? clampRatio(existing.watchSeconds / existing.totalSeconds)
         : 0;
-    existing.lastEventTimeMs = Date.now();
+    existing.lastEventTimeMs = endedAtMs;
     videoMetricsByIdRef.current.set(session.videoId, existing);
     return true;
   }, []);
@@ -303,7 +386,7 @@ export function usePreferenceMetricsBuffer({
     const currentImageSession = imageSessionRef.current;
 
     if (currentImageSession.active && !shouldTrackImage) {
-      const committed = commitImageSession();
+      const committed = commitImageSession("image-session-end");
       if (committed) {
         flushToDatabase("image-session-end");
       }
@@ -316,14 +399,19 @@ export function usePreferenceMetricsBuffer({
         imageSessionRef.current = {
           active: true,
           sourceId: focusedImageRef.packageId,
+          startedAtMs: Date.now(),
           maxIndex: clampNonNegativeInt(focusedImageRef.imageIndex),
           totalPages,
         };
       } else if (currentImageSession.sourceId !== focusedImageRef.packageId) {
-        commitImageSession();
+        const committed = commitImageSession("image-switch-node");
+        if (committed) {
+          flushToDatabase("image-switch-node");
+        }
         imageSessionRef.current = {
           active: true,
           sourceId: focusedImageRef.packageId,
+          startedAtMs: Date.now(),
           maxIndex: clampNonNegativeInt(focusedImageRef.imageIndex),
           totalPages,
         };
@@ -350,7 +438,7 @@ export function usePreferenceMetricsBuffer({
 
     if (!shouldTrackVideo) {
       if (currentVideoSession.active) {
-        const committed = commitVideoSession();
+        const committed = commitVideoSession("video-session-end");
         if (committed) {
           flushToDatabase("video-session-end");
         }
@@ -362,6 +450,7 @@ export function usePreferenceMetricsBuffer({
       videoSessionRef.current = {
         active: true,
         videoId: selectedVideoId,
+        startedAtMs: Date.now(),
         lastVideoTime: clampNonNegativeFloat(videoTime),
         accumulatedSec: 0,
         totalSeconds: selectedVideoDuration,
@@ -371,13 +460,14 @@ export function usePreferenceMetricsBuffer({
     }
 
     if (currentVideoSession.videoId !== selectedVideoId) {
-      const committed = commitVideoSession();
+      const committed = commitVideoSession("video-switch-node");
       if (committed) {
         flushToDatabase("video-switch-node");
       }
       videoSessionRef.current = {
         active: true,
         videoId: selectedVideoId,
+        startedAtMs: Date.now(),
         lastVideoTime: clampNonNegativeFloat(videoTime),
         accumulatedSec: 0,
         totalSeconds: selectedVideoDuration,
@@ -414,8 +504,8 @@ export function usePreferenceMetricsBuffer({
 
   useEffect(() => {
     const flushBeforeUnload = () => {
-      const imageCommitted = commitImageSession();
-      const videoCommitted = commitVideoSession();
+      const imageCommitted = commitImageSession("beforeunload");
+      const videoCommitted = commitVideoSession("beforeunload");
       if (imageCommitted || videoCommitted) {
         flushToDatabase("beforeunload");
       }

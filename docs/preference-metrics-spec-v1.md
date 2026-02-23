@@ -1,8 +1,12 @@
 # 偏好行为指标口径表（v1）
 
-Last updated: 2026-02-22
+Last updated: 2026-02-23
 
 本文档定义“偏好行为指标（Preference Metrics）”在 MediaPlayerX 中的字段口径、采集边界、写入时机与噪音过滤规则，供后续推荐模型直接接入。
+
+> 2026-02-23 起，偏好链路升级为“双层模型”：
+> - `*_preference_sessions`：会话事实层（SSOT，推荐/分析主数据）
+> - `*_preference_metrics`：聚合缓存层（UI 展示与快速读取）
 
 ## 1. 总体原则
 
@@ -14,8 +18,10 @@ Last updated: 2026-02-22
 
 | 表名 | 粒度 | 主键 | 说明 |
 |---|---|---|---|
-| `image_preference_metrics` | 图包级 | `source_id` | 一条记录代表某图包的聚合偏好行为 |
-| `video_preference_metrics` | 视频级 | `video_id` | 一条记录代表某视频的聚合偏好行为 |
+| `image_preference_metrics` | 图包级 | `source_id` | 聚合缓存（用于 UI 快速展示） |
+| `video_preference_metrics` | 视频级 | `video_id` | 聚合缓存（用于 UI 快速展示） |
+| `image_preference_sessions` | 图片会话级 | `session_id` | 会话事实层（推荐/分析主数据） |
+| `video_preference_sessions` | 视频会话级 | `session_id` | 会话事实层（推荐/分析主数据） |
 
 ## 3. 字段口径
 
@@ -50,6 +56,7 @@ Last updated: 2026-02-22
 - 结束并写入触发：
   - 退出全屏；
   - 切换到其他模式的全屏；
+  - 切换图包节点；
   - 退出 App（`beforeunload`）。
 
 ### 4.2 视频会话
@@ -61,20 +68,53 @@ Last updated: 2026-02-22
   - 切换模式；
   - 退出 App（`beforeunload`）。
 
-## 5. 噪音过滤规则
+## 5. 会话事实层字段口径（新增）
 
-- 视频非全屏会话若累计播放时长 `<10s`，判定为噪音，不写入数据库。
+### 5.1 图片会话（`image_preference_sessions`）
+
+| 字段 | 类型 | 口径定义 |
+|---|---|---|
+| `session_id` | TEXT | 会话唯一 ID（renderer 生成） |
+| `source_id` | TEXT | 图包 ID |
+| `started_at_ms` | INTEGER | 会话开始时间（进入全屏） |
+| `ended_at_ms` | INTEGER | 会话结束时间 |
+| `pages_read` | INTEGER | 本次会话已读页数（`max_index + 1`） |
+| `total_pages` | INTEGER | 本次会话图包总页数 |
+| `completion_ratio` | REAL | 本次会话完成度（`pages_read / total_pages`） |
+| `is_fullscreen` | INTEGER | 是否全屏会话（当前固定为 1） |
+| `end_reason` | TEXT | 结束原因（如 `image-session-end`/`image-switch-node`/`beforeunload`） |
+
+### 5.2 视频会话（`video_preference_sessions`）
+
+| 字段 | 类型 | 口径定义 |
+|---|---|---|
+| `session_id` | TEXT | 会话唯一 ID（renderer 生成） |
+| `video_id` | TEXT | 视频 ID |
+| `started_at_ms` | INTEGER | 会话开始时间（进入播放） |
+| `ended_at_ms` | INTEGER | 会话结束时间 |
+| `watch_seconds` | REAL | 本次会话累计有效播放秒数 |
+| `total_seconds` | INTEGER | 本次会话视频总时长 |
+| `completion_ratio` | REAL | 本次会话完成度（`watch_seconds / total_seconds`） |
+| `had_fullscreen` | INTEGER | 会话期间是否曾进入全屏 |
+| `is_noise` | INTEGER | 噪音标记（非全屏且 `<10s` 记为 1） |
+| `end_reason` | TEXT | 结束原因（如 `video-session-end`/`video-switch-node`/`beforeunload`） |
+
+## 6. 噪音过滤规则
+
+- 视频非全屏会话若累计播放时长 `<10s`，判定为噪音，并写入 `video_preference_sessions.is_noise=1`（不再丢弃事实数据）。
 - 全屏视频会话不受 10 秒噪音阈值限制。
 - 图片会话无最小时长阈值，是否有效由“是否进入全屏图片会话”决定。
 
-## 6. 写入链路
+## 7. 写入链路
 
-- Renderer 将内存缓冲编码为 `xp_preference_metrics_v1` 的 `state_json`。
-- Main 在 `writeAppState` 中解析该 key，写入 `image_preference_metrics` 与 `video_preference_metrics`。
+- Renderer 将内存缓冲编码为 `xp_preference_metrics_v1` 的 `state_json`，同时包含聚合缓存与待落库会话事件。
+- Main 在 `writeAppState` 中解析该 key：
+  - 写入 `image_preference_sessions` 与 `video_preference_sessions`（事实层）；
+  - 写入 `image_preference_metrics` 与 `video_preference_metrics`（聚合缓存层）。
 - 同时保留 `app_state` 原始 JSON 作为诊断与回溯数据。
 
-## 7. 推荐模型接入建议
+## 8. 推荐模型接入建议
 
-- 训练特征优先使用：`event_count`、`completion_ratio`、`watch_seconds`、`last_event_time_ms`。
-- 时间衰减建议在离线特征层处理：基于 `last_event_time_ms` 计算 `recency_decay`。
-- 若后续引入 session 明细表，可将当前聚合表作为“在线快速特征缓存”。
+- 推荐/分析优先基于事实层：`*_preference_sessions`（`watch_seconds/pages_read`、`completion_ratio`、`ended_at_ms`、`is_noise`）。
+- 聚合缓存层仅用于 UI 快速显示，不作为推荐建模的唯一输入。
+- 时间衰减建议在离线特征层处理：基于 `ended_at_ms` 计算 `recency_decay`。

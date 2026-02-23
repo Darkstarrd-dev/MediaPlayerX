@@ -33,6 +33,31 @@ interface PersistedVideoPreferenceMetric {
   lastEventTimeMs: number | null;
 }
 
+export interface PersistedImagePreferenceSession {
+  sessionId: string;
+  sourceId: string;
+  startedAtMs: number;
+  endedAtMs: number;
+  pagesRead: number;
+  totalPages: number;
+  completionRatio: number;
+  isFullscreen: boolean;
+  endReason: string;
+}
+
+export interface PersistedVideoPreferenceSession {
+  sessionId: string;
+  videoId: string;
+  startedAtMs: number;
+  endedAtMs: number;
+  watchSeconds: number;
+  totalSeconds: number;
+  completionRatio: number;
+  hadFullscreen: boolean;
+  isNoise: boolean;
+  endReason: string;
+}
+
 function clampNonNegativeInt(value: unknown): number {
   const parsed =
     typeof value === "number" && Number.isFinite(value)
@@ -80,13 +105,42 @@ function parsePreferenceLastEventTime(value: unknown): number | null {
   return Math.floor(parsed);
 }
 
+function parsePositiveTimestamp(value: unknown): number | null {
+  const parsed =
+    typeof value === "number" && Number.isFinite(value)
+      ? value
+      : Number(value ?? NaN);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  return Math.floor(parsed);
+}
+
+function parseBooleanFlag(value: unknown): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value > 0;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "1" || normalized === "true" || normalized === "yes";
+  }
+  return false;
+}
+
 export function parsePersistedPreferenceMetrics(raw: unknown): {
   imageBySourceId: Map<string, PersistedImagePreferenceMetric>;
   videoById: Map<string, PersistedVideoPreferenceMetric>;
+  imageSessions: PersistedImagePreferenceSession[];
+  videoSessions: PersistedVideoPreferenceSession[];
 } {
   const result = {
     imageBySourceId: new Map<string, PersistedImagePreferenceMetric>(),
     videoById: new Map<string, PersistedVideoPreferenceMetric>(),
+    imageSessions: [] as PersistedImagePreferenceSession[],
+    videoSessions: [] as PersistedVideoPreferenceSession[],
   };
 
   if (!raw || typeof raw !== "object") {
@@ -134,6 +188,63 @@ export function parsePersistedPreferenceMetrics(raw: unknown): {
         lastEventTimeMs: parsePreferenceLastEventTime(
           metric.last_event_time_ms,
         ),
+      });
+    }
+  }
+
+  const imageSessions = record.image_session_events;
+  if (Array.isArray(imageSessions)) {
+    for (const entry of imageSessions) {
+      if (!entry || typeof entry !== "object") {
+        continue;
+      }
+      const session = entry as Record<string, unknown>;
+      const sessionId = String(session.session_id ?? "").trim();
+      const sourceId = String(session.source_id ?? "").trim();
+      const startedAtMs = parsePositiveTimestamp(session.started_at_ms);
+      const endedAtMs = parsePositiveTimestamp(session.ended_at_ms);
+      if (!sessionId || !sourceId || !startedAtMs || !endedAtMs) {
+        continue;
+      }
+      result.imageSessions.push({
+        sessionId,
+        sourceId,
+        startedAtMs,
+        endedAtMs,
+        pagesRead: clampNonNegativeInt(session.pages_read),
+        totalPages: clampNonNegativeInt(session.total_pages),
+        completionRatio: clampCompletionRatio(session.completion_ratio),
+        isFullscreen: parseBooleanFlag(session.is_fullscreen),
+        endReason: String(session.end_reason ?? "").trim(),
+      });
+    }
+  }
+
+  const videoSessions = record.video_session_events;
+  if (Array.isArray(videoSessions)) {
+    for (const entry of videoSessions) {
+      if (!entry || typeof entry !== "object") {
+        continue;
+      }
+      const session = entry as Record<string, unknown>;
+      const sessionId = String(session.session_id ?? "").trim();
+      const videoId = String(session.video_id ?? "").trim();
+      const startedAtMs = parsePositiveTimestamp(session.started_at_ms);
+      const endedAtMs = parsePositiveTimestamp(session.ended_at_ms);
+      if (!sessionId || !videoId || !startedAtMs || !endedAtMs) {
+        continue;
+      }
+      result.videoSessions.push({
+        sessionId,
+        videoId,
+        startedAtMs,
+        endedAtMs,
+        watchSeconds: clampNonNegativeNumber(session.watch_seconds),
+        totalSeconds: clampNonNegativeInt(session.total_seconds),
+        completionRatio: clampCompletionRatio(session.completion_ratio),
+        hadFullscreen: parseBooleanFlag(session.had_fullscreen),
+        isNoise: parseBooleanFlag(session.is_noise),
+        endReason: String(session.end_reason ?? "").trim(),
       });
     }
   }

@@ -1,10 +1,12 @@
 import os from "node:os";
 import path from "node:path";
 import { promises as fs } from "node:fs";
+import { createRequire } from "node:module";
 
 import { afterEach, describe, expect, it } from "vitest";
 
 import { MEDIA_PROTOCOL_SCHEME } from "./channels";
+import { DATABASE_RELATIVE_PATH } from "./mediaLibrarySchema";
 import { FileSystemMediaReadService } from "./fileSystemReadService";
 import {
   enqueueImportAndWait,
@@ -13,6 +15,14 @@ import {
   writeStoredZip,
   writeTinyPng,
 } from "./fileSystemReadService.test.helpers";
+
+const require = createRequire(process.execPath);
+const { DatabaseSync } = require("node:sqlite") as {
+  DatabaseSync: new (path: string) => {
+    prepare: (sql: string) => { all: (...params: unknown[]) => unknown };
+    close: () => void;
+  };
+};
 
 describe("FileSystemMediaReadService", () => {
   const createdRoots: string[] = [];
@@ -981,6 +991,175 @@ describe("FileSystemMediaReadService", () => {
       (item) => path.resolve(item) === path.resolve(outsideAudioPath),
     );
     expect(stillHasSourcePath).toBe(false);
+  });
+
+  it("写入偏好指标 app_state 后会更新快照并广播变更", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-preference-metrics-write-"),
+    );
+    createdRoots.push(root);
+
+    const imagePath = path.join(root, "gallery", "a.jpg");
+    const videoPath = path.join(root, "video", "clip.mp4");
+    await writeBinary(imagePath, [0xff, 0xd8, 0xff, 0xd9]);
+    await writeBinary(videoPath, [0x00, 0x00, 0x00, 0x18]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const before = await service.readLibrarySnapshot();
+    const source = before.image_directories.find(
+      (item) => path.resolve(item.absolute_path) === path.resolve(path.dirname(imagePath)),
+    );
+    const video = before.videos.find(
+      (item) => path.resolve(item.absolute_path) === path.resolve(videoPath),
+    );
+    expect(source).toBeTruthy();
+    expect(video).toBeTruthy();
+    if (!source || !video) {
+      throw new Error("fixture import failed");
+    }
+
+    const changedEvents: Array<{ reason: string; updated_at_ms: number }> = [];
+    const unsubscribe = service.onLibraryChanged((payload) => {
+      changedEvents.push(payload);
+    });
+
+    await service.writeAppState({
+      state_key: "xp_preference_metrics_v1",
+      state_json: JSON.stringify({
+        version: 1,
+        image_by_source_id: {
+          [source.id]: {
+            event_count: 1,
+            pages_read: 1,
+            total_pages: source.images.length,
+            completion_ratio: source.images.length > 0 ? 1 / source.images.length : 0,
+            last_event_time_ms: 1_739_000_000_000,
+          },
+        },
+        video_by_id: {
+          [video.id]: {
+            event_count: 2,
+            watch_seconds: 22.5,
+            total_seconds: Math.max(1, video.duration_sec),
+            completion_ratio: 0.25,
+            last_event_time_ms: 1_739_000_100_000,
+          },
+        },
+      }),
+    });
+
+    const after = await service.readLibrarySnapshot();
+    unsubscribe();
+
+    const sourceAfter = after.image_directories.find((item) => item.id === source.id);
+    const videoAfter = after.videos.find((item) => item.id === video.id);
+    expect(sourceAfter?.preference_metrics).toMatchObject({
+      event_count: 1,
+      pages_read: 1,
+      total_pages: source.images.length,
+    });
+    expect(videoAfter?.preference_metrics).toMatchObject({
+      event_count: 2,
+      watch_seconds: 22.5,
+    });
+    expect(
+      changedEvents.some((payload) => payload.reason === "write-preference-metrics"),
+    ).toBe(true);
+  });
+
+  it("视频短停留会话会入库并标记 is_noise", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-preference-noise-session-"),
+    );
+    createdRoots.push(root);
+
+    const videoPath = path.join(root, "video", "clip.mp4");
+    await writeBinary(videoPath, [0x00, 0x00, 0x00, 0x18]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const snapshot = await service.readLibrarySnapshot();
+    const video = snapshot.videos.find(
+      (item) => path.resolve(item.absolute_path) === path.resolve(videoPath),
+    );
+    expect(video).toBeTruthy();
+    if (!video) {
+      throw new Error("video fixture not found");
+    }
+
+    await service.writeAppState({
+      state_key: "xp_preference_metrics_v1",
+      state_json: JSON.stringify({
+        version: 2,
+        image_by_source_id: {},
+        video_by_id: {},
+        image_session_events: [],
+        video_session_events: [
+          {
+            session_id: "vid-noise-1",
+            video_id: video.id,
+            started_at_ms: 1_739_000_000_000,
+            ended_at_ms: 1_739_000_001_000,
+            watch_seconds: 4.2,
+            total_seconds: Math.max(1, video.duration_sec),
+            completion_ratio: 0.042,
+            had_fullscreen: false,
+            is_noise: true,
+            end_reason: "video-session-end",
+          },
+          {
+            session_id: "vid-real-1",
+            video_id: video.id,
+            started_at_ms: 1_739_000_010_000,
+            ended_at_ms: 1_739_000_020_000,
+            watch_seconds: 15,
+            total_seconds: Math.max(1, video.duration_sec),
+            completion_ratio: 0.15,
+            had_fullscreen: false,
+            is_noise: false,
+            end_reason: "video-session-end",
+          },
+        ],
+      }),
+    });
+
+    const dbPath = path.join(root, DATABASE_RELATIVE_PATH);
+    const db = new DatabaseSync(dbPath);
+    try {
+      const rows = db
+        .prepare(
+          `
+            SELECT session_id, is_noise, watch_seconds
+            FROM video_preference_sessions
+            WHERE video_id = ?
+            ORDER BY session_id ASC
+          `,
+        )
+        .all(video.id) as Array<{
+        session_id: string;
+        is_noise: number;
+        watch_seconds: number;
+      }>;
+      expect(rows).toEqual([
+        {
+          session_id: "vid-noise-1",
+          is_noise: 1,
+          watch_seconds: 4.2,
+        },
+        {
+          session_id: "vid-real-1",
+          is_noise: 0,
+          watch_seconds: 15,
+        },
+      ]);
+    } finally {
+      db.close();
+    }
   });
 
   it("管理删除图片文件后会返回正确 deleted_count 并刷新快照", async () => {

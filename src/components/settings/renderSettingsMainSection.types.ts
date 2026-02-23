@@ -155,6 +155,18 @@ export interface RenderSettingsMainSectionParams {
   mediaCapabilitiesLoading: boolean;
   mediaCapabilitiesError: string | null;
   mediaCapabilities: RuntimeMediaCapabilityProbeResult[];
+  preferenceDebugLoading: boolean;
+  preferenceDebugError: string | null;
+  preferenceDebugData: {
+    reason: string;
+    updatedAtMs: number | null;
+    imageAggregateCount: number;
+    videoAggregateCount: number;
+    imageSessionCount: number;
+    videoSessionCount: number;
+    imageSessionPreview: unknown[];
+    videoSessionPreview: unknown[];
+  } | null;
   renderBindingRows: () => JSX.Element;
   onResetShortcuts: () => void;
   onUiLocaleChange: (value: "auto" | "zh-CN" | "en-US") => void;
@@ -268,4 +280,5 @@ export interface RenderSettingsMainSectionParams {
   onPickDatabaseDirectoryPath: () => void;
   onPickThumbnailCacheDirectoryPath: () => void;
   onRefreshRuntimeInfo: () => void;
+  onRefreshPreferenceDebug: () => void;
 }

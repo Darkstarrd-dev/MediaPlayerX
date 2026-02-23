@@ -667,4 +667,93 @@ export class MediaLibraryMetadataStore {
         Date.now(),
       )
   }
+
+  insertImagePreferenceSession(
+    payload: {
+      sessionId: string
+      sourceId: string
+      startedAtMs: number
+      endedAtMs: number
+      pagesRead: number
+      totalPages: number
+      completionRatio: number
+      isFullscreen: boolean
+      endReason: string
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          INSERT OR REPLACE INTO image_preference_sessions (
+            session_id,
+            source_id,
+            started_at_ms,
+            ended_at_ms,
+            pages_read,
+            total_pages,
+            completion_ratio,
+            is_fullscreen,
+            end_reason
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .run(
+        payload.sessionId,
+        payload.sourceId,
+        payload.startedAtMs,
+        payload.endedAtMs,
+        payload.pagesRead,
+        payload.totalPages,
+        payload.completionRatio,
+        payload.isFullscreen ? 1 : 0,
+        payload.endReason,
+      )
+  }
+
+  insertVideoPreferenceSession(
+    payload: {
+      sessionId: string
+      videoId: string
+      startedAtMs: number
+      endedAtMs: number
+      watchSeconds: number
+      totalSeconds: number
+      completionRatio: number
+      hadFullscreen: boolean
+      isNoise: boolean
+      endReason: string
+    },
+  ): void {
+    this.db
+      .prepare(
+        `
+          INSERT OR REPLACE INTO video_preference_sessions (
+            session_id,
+            video_id,
+            started_at_ms,
+            ended_at_ms,
+            watch_seconds,
+            total_seconds,
+            completion_ratio,
+            had_fullscreen,
+            is_noise,
+            end_reason
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .run(
+        payload.sessionId,
+        payload.videoId,
+        payload.startedAtMs,
+        payload.endedAtMs,
+        payload.watchSeconds,
+        payload.totalSeconds,
+        payload.completionRatio,
+        payload.hadFullscreen ? 1 : 0,
+        payload.isNoise ? 1 : 0,
+        payload.endReason,
+      )
+  }
 }

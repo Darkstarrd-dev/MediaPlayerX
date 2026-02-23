@@ -128,6 +128,76 @@ describe('MediaLibrarySnapshotStore', () => {
     expect(path.normalize(snapshot.videos[0]?.absolute_path ?? '')).toBe(path.normalize(sharedVideoPath))
   })
 
+  it('readSnapshotLite 会返回图片与视频偏好指标', async () => {
+    const root = await createTempMediaRoot('mpx-snapshot-lite-preference-')
+    roots.push(root)
+
+    const harness = openMigratedSqliteDatabase(root)
+    closers.push(harness.close)
+    const store = new MediaLibrarySnapshotStore(harness.db, createTransactionRunner(harness.db))
+
+    const source = createImageSourceFixture({
+      sourceId: 'pkg-pref',
+      packageName: 'pkg-pref.zip',
+      absolutePath: 'D:/root/pkg-pref.zip',
+      sourceType: 'package',
+    })
+    const video = createVideoFixture('video-pref', 'D:/root/video-pref.mp4')
+    store.replaceSnapshot({
+      image_packages: [source],
+      image_directories: [],
+      videos: [video],
+      audios: [],
+    })
+
+    const updatedAtMs = Date.now()
+    harness.db
+      .prepare(
+        `
+          INSERT INTO image_preference_metrics (
+            source_id,
+            event_count,
+            pages_read,
+            total_pages,
+            completion_ratio,
+            last_event_time_ms,
+            updated_at_ms
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .run(source.id, 3, 5, 12, 0.416, 1_739_000_000_000, updatedAtMs)
+
+    harness.db
+      .prepare(
+        `
+          INSERT INTO video_preference_metrics (
+            video_id,
+            event_count,
+            watch_seconds,
+            total_seconds,
+            completion_ratio,
+            last_event_time_ms,
+            updated_at_ms
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .run(video.id, 2, 24.5, 100, 0.245, 1_739_000_100_000, updatedAtMs)
+
+    const lite = store.readSnapshotLite()
+    expect(lite.image_packages[0]?.preference_metrics).toMatchObject({
+      event_count: 3,
+      pages_read: 5,
+      total_pages: 12,
+    })
+    expect(lite.videos[0]?.preference_metrics).toMatchObject({
+      event_count: 2,
+      watch_seconds: 24.5,
+      total_seconds: 100,
+    })
+  })
+
   it('setImagesHidden 与 deleteImageItems 可更新 hidden 并在删除后重排 ordinal', async () => {
     const root = await createTempMediaRoot('mpx-snapshot-delete-')
     roots.push(root)

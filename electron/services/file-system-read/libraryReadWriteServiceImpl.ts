@@ -1011,9 +1011,59 @@ export class LibraryReadWriteService {
     this.options.markInteractiveRead();
     const parsedState = JSON.parse(request.state_json);
     this.options.database.writeAppState(request.state_key, parsedState);
+    const updatedAtMs = Date.now();
 
     if (request.state_key === XP_PREFERENCE_METRICS_STATE_KEY) {
       const parsedMetrics = parsePersistedPreferenceMetrics(parsedState);
+      const shouldUpdatePreferenceMetrics =
+        parsedMetrics.imageBySourceId.size > 0 ||
+        parsedMetrics.videoById.size > 0 ||
+        parsedMetrics.imageSessions.length > 0 ||
+        parsedMetrics.videoSessions.length > 0;
+      const snapshot = shouldUpdatePreferenceMetrics
+        ? await this.options.ensureSnapshotLoaded().catch(() => null)
+        : null;
+
+      const sourceById = snapshot
+        ? new Map(
+            [...snapshot.image_packages, ...snapshot.image_directories].map(
+              (source) => [source.id, source],
+            ),
+          )
+        : null;
+      const videoById = snapshot
+        ? new Map(snapshot.videos.map((video) => [video.id, video]))
+        : null;
+
+      for (const session of parsedMetrics.imageSessions) {
+        this.options.database.insertImagePreferenceSession({
+          sessionId: session.sessionId,
+          sourceId: session.sourceId,
+          startedAtMs: session.startedAtMs,
+          endedAtMs: session.endedAtMs,
+          pagesRead: session.pagesRead,
+          totalPages: session.totalPages,
+          completionRatio: session.completionRatio,
+          isFullscreen: session.isFullscreen,
+          endReason: session.endReason,
+        });
+      }
+
+      for (const session of parsedMetrics.videoSessions) {
+        this.options.database.insertVideoPreferenceSession({
+          sessionId: session.sessionId,
+          videoId: session.videoId,
+          startedAtMs: session.startedAtMs,
+          endedAtMs: session.endedAtMs,
+          watchSeconds: session.watchSeconds,
+          totalSeconds: session.totalSeconds,
+          completionRatio: session.completionRatio,
+          hadFullscreen: session.hadFullscreen,
+          isNoise: session.isNoise,
+          endReason: session.endReason,
+        });
+      }
+
       for (const [sourceId, metric] of parsedMetrics.imageBySourceId) {
         this.options.database.writeImagePreferenceMetrics(sourceId, {
           eventCount: metric.eventCount,
@@ -1022,7 +1072,20 @@ export class LibraryReadWriteService {
           completionRatio: metric.completionRatio,
           lastEventTimeMs: metric.lastEventTimeMs,
         });
+
+        const source = sourceById?.get(sourceId);
+        if (source) {
+          source.preference_metrics = {
+            event_count: metric.eventCount,
+            pages_read: metric.pagesRead,
+            total_pages: metric.totalPages,
+            completion_ratio: metric.completionRatio,
+            last_event_time_ms: metric.lastEventTimeMs,
+            updated_at_ms: updatedAtMs,
+          };
+        }
       }
+
       for (const [videoId, metric] of parsedMetrics.videoById) {
         this.options.database.writeVideoPreferenceMetrics(videoId, {
           eventCount: metric.eventCount,
@@ -1031,11 +1094,30 @@ export class LibraryReadWriteService {
           completionRatio: metric.completionRatio,
           lastEventTimeMs: metric.lastEventTimeMs,
         });
+
+        const video = videoById?.get(videoId);
+        if (video) {
+          video.preference_metrics = {
+            event_count: metric.eventCount,
+            watch_seconds: metric.watchSeconds,
+            total_seconds: metric.totalSeconds,
+            completion_ratio: metric.completionRatio,
+            last_event_time_ms: metric.lastEventTimeMs,
+            updated_at_ms: updatedAtMs,
+          };
+        }
+      }
+
+      if (shouldUpdatePreferenceMetrics) {
+        this.options.emitLibraryChanged({
+          reason: "write-preference-metrics",
+          updated_at_ms: updatedAtMs,
+        });
       }
     }
 
     return writeAppStateResponseSchema.parse({
-      updated_at_ms: Date.now(),
+      updated_at_ms: updatedAtMs,
     });
   }
 }

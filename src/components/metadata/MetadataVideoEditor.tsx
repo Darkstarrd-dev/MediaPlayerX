@@ -170,12 +170,14 @@ export function MetadataVideoEditor({
   const [playlistNameDraft, setPlaylistNameDraft] = useState("");
   const [selectedSavedPlaylist, setSelectedSavedPlaylist] = useState("");
   const videoPreference = focusedVideo?.preferenceMetrics ?? null;
-  const videoWatchSecondsText = videoPreference
-    ? `${Math.max(0, videoPreference.watchSeconds).toFixed(1)}s / ${Math.max(0, videoPreference.totalSeconds)}s`
-    : "-";
-  const videoCompletionPercentText = videoPreference
-    ? `${(Math.max(0, Math.min(1, videoPreference.completionRatio)) * 100).toFixed(1)}%`
-    : "-";
+  const videoEventCount = Math.max(0, videoPreference?.eventCount ?? 0);
+  const videoWatchSeconds = Math.max(0, videoPreference?.watchSeconds ?? 0);
+  const videoTotalSeconds = Math.max(
+    0,
+    videoPreference?.totalSeconds ?? focusedVideo?.durationSec ?? 0,
+  );
+  const videoWatchSecondsText = `${videoWatchSeconds.toFixed(1)}s / ${videoTotalSeconds}s`;
+  const videoCompletionPercentText = `${(Math.max(0, Math.min(1, videoPreference?.completionRatio ?? 0)) * 100).toFixed(1)}%`;
   const videoLastEventTimeText =
     videoPreference?.lastEventTimeMs && videoPreference.lastEventTimeMs > 0
       ? new Date(videoPreference.lastEventTimeMs).toLocaleString("zh-CN", {
@@ -542,29 +544,43 @@ export function MetadataVideoEditor({
                   />
                 </label>
               ) : null}
-              {editable ? (
-                <label>
-                  <span>{t("ui.metadata.preferenceEventCount")}</span>
-                  <input readOnly value={videoPreference?.eventCount ?? 0} />
-                </label>
-              ) : null}
-              {editable ? (
-                <label>
-                  <span>{t("ui.metadata.preferenceWatchSeconds")}</span>
-                  <input readOnly value={videoWatchSecondsText} />
-                </label>
-              ) : null}
-              {editable ? (
-                <label>
-                  <span>{t("ui.metadata.preferenceCompletionRatio")}</span>
-                  <input readOnly value={videoCompletionPercentText} />
-                </label>
-              ) : null}
-              {editable ? (
-                <label>
-                  <span>{t("ui.metadata.preferenceLastEventAt")}</span>
-                  <input readOnly value={videoLastEventTimeText} />
-                </label>
+              {!editable ? (
+                <details
+                  className="metadata-preference-record"
+                  data-slot="fg-meta-main-video-editor-preference-record"
+                >
+                  <summary>{t("ui.metadata.preferenceRecordTitle")}</summary>
+                  <div className="metadata-preference-record-content">
+                    <label>
+                      <span>{t("ui.metadata.preferenceEventCount")}</span>
+                      <input readOnly value={videoEventCount} />
+                      <small className="metadata-field-hint" aria-hidden="true">
+                        preference_metrics.event_count (read-only)
+                      </small>
+                    </label>
+                    <label>
+                      <span>{t("ui.metadata.preferenceWatchSeconds")}</span>
+                      <input readOnly value={videoWatchSecondsText} />
+                      <small className="metadata-field-hint" aria-hidden="true">
+                        preference_metrics.watch_seconds / total_seconds (read-only)
+                      </small>
+                    </label>
+                    <label>
+                      <span>{t("ui.metadata.preferenceCompletionRatio")}</span>
+                      <input readOnly value={videoCompletionPercentText} />
+                      <small className="metadata-field-hint" aria-hidden="true">
+                        preference_metrics.completion_ratio (read-only)
+                      </small>
+                    </label>
+                    <label>
+                      <span>{t("ui.metadata.preferenceLastEventAt")}</span>
+                      <input readOnly value={videoLastEventTimeText} />
+                      <small className="metadata-field-hint" aria-hidden="true">
+                        preference_metrics.last_event_time_ms (read-only)
+                      </small>
+                    </label>
+                  </div>
+                </details>
               ) : null}
               <label>
                 <span>

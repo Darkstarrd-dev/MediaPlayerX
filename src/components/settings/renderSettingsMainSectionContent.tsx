@@ -116,6 +116,9 @@ export function renderSettingsMainSection({
   mediaCapabilitiesLoading,
   mediaCapabilitiesError,
   mediaCapabilities,
+  preferenceDebugLoading,
+  preferenceDebugError,
+  preferenceDebugData,
   renderBindingRows,
   onResetShortcuts,
   onUiLocaleChange,
@@ -203,6 +206,7 @@ export function renderSettingsMainSection({
   onPickDatabaseDirectoryPath,
   onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
+  onRefreshPreferenceDebug,
 }: RenderSettingsMainSectionParams): JSX.Element {
   const settingsTip = (key: string): string => t(`ui.settings.tooltip.${key}`);
 
@@ -952,6 +956,10 @@ export function renderSettingsMainSection({
       mediaCapabilitiesError,
       mediaCapabilities,
       onRefreshRuntimeInfo,
+      preferenceDebugLoading,
+      preferenceDebugError,
+      preferenceDebugData,
+      onRefreshPreferenceDebug,
     });
   }
 

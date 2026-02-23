@@ -61,6 +61,68 @@ const THUMBNAIL_GENERATION_CONCURRENCY_MIN = 1;
 const THUMBNAIL_GENERATION_CONCURRENCY_MAX = 16;
 const THUMBNAIL_RESOLVE_CONCURRENCY_MIN = 1;
 const THUMBNAIL_RESOLVE_CONCURRENCY_MAX = 32;
+const PREFERENCE_METRICS_STATE_KEY = "xp_preference_metrics_v1";
+const PREFERENCE_DEBUG_SESSION_PREVIEW_LIMIT = 8;
+
+interface PreferenceDebugViewModel {
+  reason: string;
+  updatedAtMs: number | null;
+  imageAggregateCount: number;
+  videoAggregateCount: number;
+  imageSessionCount: number;
+  videoSessionCount: number;
+  imageSessionPreview: unknown[];
+  videoSessionPreview: unknown[];
+}
+
+function parsePreferenceDebugViewModel(rawStateJson: string): PreferenceDebugViewModel {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawStateJson);
+  } catch {
+    parsed = {};
+  }
+
+  const record =
+    parsed && typeof parsed === "object"
+      ? (parsed as Record<string, unknown>)
+      : {};
+  const imageBySourceId =
+    record.image_by_source_id && typeof record.image_by_source_id === "object"
+      ? (record.image_by_source_id as Record<string, unknown>)
+      : {};
+  const videoById =
+    record.video_by_id && typeof record.video_by_id === "object"
+      ? (record.video_by_id as Record<string, unknown>)
+      : {};
+  const imageSessionEvents = Array.isArray(record.image_session_events)
+    ? record.image_session_events
+    : [];
+  const videoSessionEvents = Array.isArray(record.video_session_events)
+    ? record.video_session_events
+    : [];
+
+  const updatedAtRaw = record.updated_at_ms;
+  const updatedAtMs =
+    typeof updatedAtRaw === "number" && Number.isFinite(updatedAtRaw)
+      ? Math.floor(updatedAtRaw)
+      : null;
+
+  return {
+    reason: String(record.reason ?? "-"),
+    updatedAtMs,
+    imageAggregateCount: Object.keys(imageBySourceId).length,
+    videoAggregateCount: Object.keys(videoById).length,
+    imageSessionCount: imageSessionEvents.length,
+    videoSessionCount: videoSessionEvents.length,
+    imageSessionPreview: imageSessionEvents
+      .slice(-PREFERENCE_DEBUG_SESSION_PREVIEW_LIMIT)
+      .reverse(),
+    videoSessionPreview: videoSessionEvents
+      .slice(-PREFERENCE_DEBUG_SESSION_PREVIEW_LIMIT)
+      .reverse(),
+  };
+}
 
 function shouldIgnoreSettingsPanelDragStart(
   target: EventTarget | null,
@@ -185,7 +247,7 @@ function SettingsPanel({
   runtimeInfo,
   mediaCapabilitiesLoading,
   mediaCapabilitiesError,
-  mediaCapabilities,
+    mediaCapabilities,
   onClose,
   onUiLocaleChange,
   onStyleChange,
@@ -299,6 +361,13 @@ function SettingsPanel({
     y: 0,
   });
   const [settingsPanelDragging, setSettingsPanelDragging] = useState(false);
+  const [preferenceDebugLoading, setPreferenceDebugLoading] = useState(false);
+  const [preferenceDebugError, setPreferenceDebugError] =
+    useState<string | null>(null);
+  const [preferenceDebugData, setPreferenceDebugData] =
+    useState<PreferenceDebugViewModel | null>(null);
+  const [preferenceDebugRefreshNonce, setPreferenceDebugRefreshNonce] =
+    useState(0);
 
   const headerHeightScale = toScale("headerHeight", headerHeight);
   const settingsFontSizeScale = toScale("settingsFontSize", settingsFontSize);
@@ -358,6 +427,10 @@ function SettingsPanel({
       panelDragStateRef.current = null;
       setSettingsPanelOffset({ x: 0, y: 0 });
       setSettingsPanelDragging(false);
+      setPreferenceDebugLoading(false);
+      setPreferenceDebugError(null);
+      setPreferenceDebugData(null);
+      setPreferenceDebugRefreshNonce(0);
     }
   }, [
     settingsOpen,
@@ -386,6 +459,61 @@ function SettingsPanel({
       setActiveSection(normalized);
     }
   }, [activeSectionRaw]);
+
+  useEffect(() => {
+    if (!settingsOpen || activeSection !== "system") {
+      return;
+    }
+
+    const backendApi =
+      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
+    if (!backendApi || typeof backendApi.readAppState !== "function") {
+      setPreferenceDebugLoading(false);
+      setPreferenceDebugError(t("ui.settings.preferenceDebugUnsupported"));
+      setPreferenceDebugData(null);
+      return;
+    }
+
+    let active = true;
+    setPreferenceDebugLoading(true);
+    setPreferenceDebugError(null);
+
+    void backendApi
+      .readAppState({
+        state_key: PREFERENCE_METRICS_STATE_KEY,
+        fallback_json: "{}",
+      })
+      .then((response) => {
+        if (!active) {
+          return;
+        }
+        setPreferenceDebugData(
+          parsePreferenceDebugViewModel(response.state_json),
+        );
+      })
+      .catch((error) => {
+        if (!active) {
+          return;
+        }
+        const fallback = t("ui.settings.preferenceDebugReadFailed");
+        const message =
+          error instanceof Error && error.message.trim().length > 0
+            ? error.message
+            : fallback;
+        setPreferenceDebugError(message);
+        setPreferenceDebugData(null);
+      })
+      .finally(() => {
+        if (!active) {
+          return;
+        }
+        setPreferenceDebugLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeSection, preferenceDebugRefreshNonce, settingsOpen, t]);
 
   useEffect(() => {
     if (!capturingTarget) {
@@ -727,6 +855,10 @@ function SettingsPanel({
     stopSettingsPanelDragging();
   };
 
+  const handleRefreshPreferenceDebug = () => {
+    setPreferenceDebugRefreshNonce((value) => value + 1);
+  };
+
   const mainSection = renderSettingsMainSection({
     t,
     activeSection,
@@ -830,6 +962,9 @@ function SettingsPanel({
     mediaCapabilitiesLoading,
     mediaCapabilitiesError,
     mediaCapabilities,
+    preferenceDebugLoading,
+    preferenceDebugError,
+    preferenceDebugData,
     renderBindingRows,
     onResetShortcuts,
     onUiLocaleChange,
@@ -924,6 +1059,7 @@ function SettingsPanel({
     onPickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath,
     onRefreshRuntimeInfo,
+    onRefreshPreferenceDebug: handleRefreshPreferenceDebug,
   });
 
   const currentBinding = bindingTarget ? getBinding(bindingTarget) : "";

@@ -180,6 +180,51 @@ describe("usePreferenceMetricsBuffer", () => {
     ).toBeGreaterThanOrEqual(12);
   });
 
+  it("图片全屏内切换图包会先提交上一图包会话并写入", async () => {
+    const writeAppState = vi
+      .fn()
+      .mockResolvedValue({ updated_at_ms: Date.now() });
+    const repository = { writeAppState } as unknown as MediaRepository;
+    const packageA = createPackage("pkg-a", 8);
+    const packageB = createPackage("pkg-b", 5);
+    const packageById = new Map([
+      [packageA.id, packageA],
+      [packageB.id, packageB],
+    ]);
+
+    const { rerender } = renderHook(
+      (props: { focusedImageRef: { packageId: string; imageIndex: number } }) =>
+        usePreferenceMetricsBuffer({
+          repository,
+          mode: "image",
+          fullscreenActive: true,
+          focusedImageRef: props.focusedImageRef,
+          packageById,
+          videos: [],
+          selectedVideoId: "",
+          videoPlaying: false,
+          videoTime: 0,
+        }),
+      {
+        initialProps: {
+          focusedImageRef: { packageId: "pkg-a", imageIndex: 1 },
+        },
+      },
+    );
+
+    rerender({ focusedImageRef: { packageId: "pkg-a", imageIndex: 4 } });
+    rerender({ focusedImageRef: { packageId: "pkg-b", imageIndex: 0 } });
+
+    await waitFor(() => {
+      expect(writeAppState).toHaveBeenCalledTimes(1);
+    });
+    const payload = JSON.parse(writeAppState.mock.calls[0][0].state_json) as {
+      image_by_source_id: Record<string, { event_count: number; pages_read: number }>;
+    };
+    expect(payload.image_by_source_id["pkg-a"]?.event_count).toBe(1);
+    expect(payload.image_by_source_id["pkg-a"]?.pages_read).toBe(5);
+  });
+
   it("写入 appState 时保持 repository 方法上下文", async () => {
     class RepositoryWithContext {
       marker = "alive";

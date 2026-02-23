@@ -356,6 +356,39 @@ export class MediaLibraryDatabase {
     this.metadataStore.writeVideoPreferenceMetrics(videoId, payload)
   }
 
+  insertImagePreferenceSession(
+    payload: {
+      sessionId: string
+      sourceId: string
+      startedAtMs: number
+      endedAtMs: number
+      pagesRead: number
+      totalPages: number
+      completionRatio: number
+      isFullscreen: boolean
+      endReason: string
+    },
+  ): void {
+    this.metadataStore.insertImagePreferenceSession(payload)
+  }
+
+  insertVideoPreferenceSession(
+    payload: {
+      sessionId: string
+      videoId: string
+      startedAtMs: number
+      endedAtMs: number
+      watchSeconds: number
+      totalSeconds: number
+      completionRatio: number
+      hadFullscreen: boolean
+      isNoise: boolean
+      endReason: string
+    },
+  ): void {
+    this.metadataStore.insertVideoPreferenceSession(payload)
+  }
+
   readPlaylist(): string[] {
     return this.playlistStore.readPlaylist()
   }
@@ -391,6 +424,8 @@ export class MediaLibraryDatabase {
       this.db.prepare('DELETE FROM media_source_external_metadata').run()
       this.db.prepare('DELETE FROM image_preference_metrics').run()
       this.db.prepare('DELETE FROM video_preference_metrics').run()
+      this.db.prepare('DELETE FROM image_preference_sessions').run()
+      this.db.prepare('DELETE FROM video_preference_sessions').run()
       this.db.prepare('DELETE FROM package_grade').run()
       this.db.prepare('DELETE FROM image_item').run()
       this.db.prepare('DELETE FROM media_source').run()

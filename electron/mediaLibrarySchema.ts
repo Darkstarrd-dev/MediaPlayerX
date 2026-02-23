@@ -2,7 +2,7 @@ import type { SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
 
 export const DATABASE_RELATIVE_PATH = '.mediaplayerx/state/library.sqlite'
 
-const SCHEMA_VERSION = 10
+const SCHEMA_VERSION = 11
 
 export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
   const versionRow = db.prepare('PRAGMA user_version').get() as { user_version?: number } | undefined
@@ -213,6 +213,45 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
       updated_at_ms INTEGER NOT NULL,
       FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS image_preference_sessions (
+      session_id TEXT PRIMARY KEY,
+      source_id TEXT NOT NULL,
+      started_at_ms INTEGER NOT NULL,
+      ended_at_ms INTEGER NOT NULL,
+      pages_read INTEGER NOT NULL DEFAULT 0,
+      total_pages INTEGER NOT NULL DEFAULT 0,
+      completion_ratio REAL NOT NULL DEFAULT 0,
+      is_fullscreen INTEGER NOT NULL DEFAULT 1,
+      end_reason TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_image_pref_session_source_time
+      ON image_preference_sessions(source_id, ended_at_ms DESC);
+
+    CREATE INDEX IF NOT EXISTS idx_image_pref_session_time
+      ON image_preference_sessions(ended_at_ms DESC);
+
+    CREATE TABLE IF NOT EXISTS video_preference_sessions (
+      session_id TEXT PRIMARY KEY,
+      video_id TEXT NOT NULL,
+      started_at_ms INTEGER NOT NULL,
+      ended_at_ms INTEGER NOT NULL,
+      watch_seconds REAL NOT NULL DEFAULT 0,
+      total_seconds INTEGER NOT NULL DEFAULT 0,
+      completion_ratio REAL NOT NULL DEFAULT 0,
+      had_fullscreen INTEGER NOT NULL DEFAULT 0,
+      is_noise INTEGER NOT NULL DEFAULT 0,
+      end_reason TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_video_pref_session_video_time
+      ON video_preference_sessions(video_id, ended_at_ms DESC);
+
+    CREATE INDEX IF NOT EXISTS idx_video_pref_session_time
+      ON video_preference_sessions(ended_at_ms DESC);
   `)
 
   if (currentVersion < 2) {
@@ -361,6 +400,49 @@ export function migrateMediaLibrarySchema(db: SQLiteDatabaseLike): void {
         updated_at_ms INTEGER NOT NULL,
         FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
       );
+    `)
+  }
+
+  if (currentVersion < 11) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS image_preference_sessions (
+        session_id TEXT PRIMARY KEY,
+        source_id TEXT NOT NULL,
+        started_at_ms INTEGER NOT NULL,
+        ended_at_ms INTEGER NOT NULL,
+        pages_read INTEGER NOT NULL DEFAULT 0,
+        total_pages INTEGER NOT NULL DEFAULT 0,
+        completion_ratio REAL NOT NULL DEFAULT 0,
+        is_fullscreen INTEGER NOT NULL DEFAULT 1,
+        end_reason TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY(source_id) REFERENCES media_source(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_image_pref_session_source_time
+        ON image_preference_sessions(source_id, ended_at_ms DESC);
+
+      CREATE INDEX IF NOT EXISTS idx_image_pref_session_time
+        ON image_preference_sessions(ended_at_ms DESC);
+
+      CREATE TABLE IF NOT EXISTS video_preference_sessions (
+        session_id TEXT PRIMARY KEY,
+        video_id TEXT NOT NULL,
+        started_at_ms INTEGER NOT NULL,
+        ended_at_ms INTEGER NOT NULL,
+        watch_seconds REAL NOT NULL DEFAULT 0,
+        total_seconds INTEGER NOT NULL DEFAULT 0,
+        completion_ratio REAL NOT NULL DEFAULT 0,
+        had_fullscreen INTEGER NOT NULL DEFAULT 0,
+        is_noise INTEGER NOT NULL DEFAULT 0,
+        end_reason TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY(video_id) REFERENCES video_item(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_video_pref_session_video_time
+        ON video_preference_sessions(video_id, ended_at_ms DESC);
+
+      CREATE INDEX IF NOT EXISTS idx_video_pref_session_time
+        ON video_preference_sessions(ended_at_ms DESC);
     `)
   }
 

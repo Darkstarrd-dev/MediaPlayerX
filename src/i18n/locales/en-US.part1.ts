@@ -413,6 +413,24 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.mediaCapabilitiesTimeout":
     "Decode capability probe timed out (>{{ms}}ms)",
   "ui.settings.mediaCapabilitiesProbeFailed": "Decode capability probe failed",
+  "ui.settings.preferenceDebugLegend": "Preference debug panel",
+  "ui.settings.preferenceDebugHint":
+    "Inspect preference aggregate snapshot and latest reported session events from xp_preference_metrics_v1 app_state.",
+  "ui.settings.preferenceDebugLoading": "Loading preference debug data...",
+  "ui.settings.preferenceDebugUnsupported":
+    "Current backend does not expose readAppState; preference debug data is unavailable.",
+  "ui.settings.preferenceDebugReadFailed": "Failed to read preference debug data",
+  "ui.settings.preferenceDebugNoData": "No preference debug data",
+  "ui.settings.preferenceDebugReason": "Last write reason",
+  "ui.settings.preferenceDebugUpdatedAt": "Last write time",
+  "ui.settings.preferenceDebugImageAggregateCount": "Image aggregate items",
+  "ui.settings.preferenceDebugVideoAggregateCount": "Video aggregate items",
+  "ui.settings.preferenceDebugImageSessionCount": "Latest image session events",
+  "ui.settings.preferenceDebugVideoSessionCount": "Latest video session events",
+  "ui.settings.preferenceDebugImageSessionsLatest":
+    "Latest image session events (max 8)",
+  "ui.settings.preferenceDebugVideoSessionsLatest":
+    "Latest video session events (max 8)",
   "ui.error.codeTag": "Error code {{code}}",
   "ui.error.unknown": "Unknown error",
   "ui.settings.mediaCapabilitySupported":
@@ -626,6 +644,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.metadata.author": "Author",
   "ui.metadata.trackTitle": "Track title",
   "ui.metadata.seriesId": "Series ID",
+  "ui.metadata.preferenceRecordTitle": "Behavior analysis record",
   "ui.metadata.preferenceEventCount": "Event count",
   "ui.metadata.preferencePagesRead": "Pages read",
   "ui.metadata.preferenceWatchSeconds": "Watch duration",

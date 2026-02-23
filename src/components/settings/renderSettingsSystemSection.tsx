@@ -13,7 +13,18 @@ interface RenderSettingsSystemSectionParams {
   mediaCapabilitiesLoading: RenderSettingsMainSectionParams["mediaCapabilitiesLoading"];
   mediaCapabilitiesError: RenderSettingsMainSectionParams["mediaCapabilitiesError"];
   mediaCapabilities: RenderSettingsMainSectionParams["mediaCapabilities"];
+  preferenceDebugLoading: RenderSettingsMainSectionParams["preferenceDebugLoading"];
+  preferenceDebugError: RenderSettingsMainSectionParams["preferenceDebugError"];
+  preferenceDebugData: RenderSettingsMainSectionParams["preferenceDebugData"];
   onRefreshRuntimeInfo: RenderSettingsMainSectionParams["onRefreshRuntimeInfo"];
+  onRefreshPreferenceDebug: RenderSettingsMainSectionParams["onRefreshPreferenceDebug"];
+}
+
+function formatDateTimeOrDash(timestamp: number | null): string {
+  if (typeof timestamp !== "number" || !Number.isFinite(timestamp) || timestamp <= 0) {
+    return "-";
+  }
+  return new Date(timestamp).toLocaleString();
 }
 
 export function renderSettingsSystemSection(
@@ -165,6 +176,102 @@ export function renderSettingsSystemSection(
             ])}
           </div>
         ) : null}
+      </fieldset>
+
+      <fieldset className="settings-subsection">
+        <legend>{params.t("ui.settings.preferenceDebugLegend")}</legend>
+        <p className="settings-placeholder">
+          {params.t("ui.settings.preferenceDebugHint")}
+        </p>
+        <div className="settings-runtime-actions">
+          <button
+            className="settings-icon-btn main-icon-square-btn"
+            type="button"
+            disabled={params.preferenceDebugLoading}
+            aria-label={
+              params.preferenceDebugLoading
+                ? params.t("a11y.settings.loadingDiagnostics")
+                : params.t("a11y.settings.refreshDiagnostics")
+            }
+            title={
+              params.preferenceDebugLoading
+                ? params.t("a11y.settings.loadingDiagnostics")
+                : params.t("a11y.settings.refreshDiagnostics")
+            }
+            onClick={params.onRefreshPreferenceDebug}
+          >
+            <MainUiIcon name="refresh" />
+          </button>
+        </div>
+        {params.preferenceDebugLoading ? (
+          <p className="settings-placeholder">
+            {params.t("ui.settings.preferenceDebugLoading")}
+          </p>
+        ) : null}
+        {params.preferenceDebugError ? (
+          <p className="settings-danger-text">{params.preferenceDebugError}</p>
+        ) : null}
+        {params.preferenceDebugData ? (
+          <>
+            <div className="settings-runtime-grid">
+              <span>{params.t("ui.settings.preferenceDebugReason")}</span>
+              <code>{params.preferenceDebugData.reason}</code>
+              <span>{params.t("ui.settings.preferenceDebugUpdatedAt")}</span>
+              <code>
+                {formatDateTimeOrDash(params.preferenceDebugData.updatedAtMs)}
+              </code>
+              <span>
+                {params.t("ui.settings.preferenceDebugImageAggregateCount")}
+              </span>
+              <code>{params.preferenceDebugData.imageAggregateCount}</code>
+              <span>
+                {params.t("ui.settings.preferenceDebugVideoAggregateCount")}
+              </span>
+              <code>{params.preferenceDebugData.videoAggregateCount}</code>
+              <span>
+                {params.t("ui.settings.preferenceDebugImageSessionCount")}
+              </span>
+              <code>{params.preferenceDebugData.imageSessionCount}</code>
+              <span>
+                {params.t("ui.settings.preferenceDebugVideoSessionCount")}
+              </span>
+              <code>{params.preferenceDebugData.videoSessionCount}</code>
+            </div>
+
+            <details>
+              <summary>
+                {params.t("ui.settings.preferenceDebugImageSessionsLatest")}
+              </summary>
+              <pre className="settings-code-block">
+                {JSON.stringify(
+                  params.preferenceDebugData.imageSessionPreview,
+                  null,
+                  2,
+                )}
+              </pre>
+            </details>
+
+            <details>
+              <summary>
+                {params.t("ui.settings.preferenceDebugVideoSessionsLatest")}
+              </summary>
+              <pre className="settings-code-block">
+                {JSON.stringify(
+                  params.preferenceDebugData.videoSessionPreview,
+                  null,
+                  2,
+                )}
+              </pre>
+            </details>
+          </>
+        ) : (
+          !params.preferenceDebugLoading &&
+          !params.preferenceDebugError && (
+            <p className="settings-placeholder">
+              {params.t("ui.settings.preferenceDebugNoData")}
+            </p>
+          )
+        )}
       </fieldset>
     </div>
   );
