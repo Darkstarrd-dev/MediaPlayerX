@@ -881,6 +881,70 @@ describe("MediaPlayer 虚拟 UI", () => {
   );
 
   it(
+    "非全屏场景即使自动播放已启用也不会继续自动翻页",
+    async () => {
+      render(<App />);
+
+      const readMainFocusedOrdinal = () => {
+        const title = document.querySelector(".main-toolbar-title")?.textContent ?? "";
+        const matched = title.match(/\((\d+)\/(\d+)\)/);
+        return Number(matched?.[1] ?? 0);
+      };
+
+      const readFullscreenImageSrc = () =>
+        (
+          document.querySelector(
+            ".fullscreen-media-image-element",
+          ) as HTMLImageElement | null
+        )?.getAttribute("src") ?? null;
+
+      await keyDown(window, { key: "ArrowRight", code: "ArrowRight" });
+      await keyDown(window, { key: "f", code: "KeyF" });
+      await waitFor(() => {
+        expect(document.querySelector(".fullscreen-layer")).not.toBeNull();
+      });
+
+      const fullscreenLayer = document.querySelector(".fullscreen-layer") as Element;
+      fireEvent.mouseMove(fullscreenLayer, {
+        clientY: window.innerHeight - 4,
+      });
+
+      const beforeAutoplaySrc = readFullscreenImageSrc();
+      expect(beforeAutoplaySrc).not.toBeNull();
+
+      const autoplayToggle = screen.getByRole("button", { name: "自动播放" });
+      await click(autoplayToggle);
+      expect(autoplayToggle).toHaveAttribute("aria-pressed", "true");
+
+      await waitFor(
+        () => {
+          const nextSrc = readFullscreenImageSrc();
+          expect(nextSrc).not.toBeNull();
+          expect(nextSrc).not.toBe(beforeAutoplaySrc);
+        },
+        { timeout: 3_600 },
+      );
+
+      await keyDown(window, { key: "f", code: "KeyF" });
+      await waitFor(() => {
+        expect(document.querySelector(".fullscreen-layer")).toBeNull();
+      });
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 120));
+      });
+      const ordinalAfterExit = readMainFocusedOrdinal();
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 3_400));
+      });
+
+      expect(readMainFocusedOrdinal()).toBe(ordinalAfterExit);
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
     "视频播放后暂停保留当前画面，切换视频后回到封面态，Save as cover 走后端写链路并保持封面态",
     async () => {
       render(<App />);
