@@ -122,6 +122,40 @@ interface LibraryReadWriteServiceOptions {
   }) => void;
 }
 
+const PREFERENCE_DEBUG_SESSION_HISTORY_LIMIT = 200;
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function asEventArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function mergePreferenceMetricsState(
+  previousState: unknown,
+  incomingState: unknown,
+): Record<string, unknown> {
+  const previousRecord = asRecord(previousState);
+  const incomingRecord = asRecord(incomingState);
+  const mergedImageSessions = [
+    ...asEventArray(previousRecord.image_session_events),
+    ...asEventArray(incomingRecord.image_session_events),
+  ].slice(-PREFERENCE_DEBUG_SESSION_HISTORY_LIMIT);
+  const mergedVideoSessions = [
+    ...asEventArray(previousRecord.video_session_events),
+    ...asEventArray(incomingRecord.video_session_events),
+  ].slice(-PREFERENCE_DEBUG_SESSION_HISTORY_LIMIT);
+
+  return {
+    ...incomingRecord,
+    image_session_events: mergedImageSessions,
+    video_session_events: mergedVideoSessions,
+  };
+}
+
 export class LibraryReadWriteService {
   private readonly subtitleCleanupTaskById = new Map<
     string,
@@ -1009,7 +1043,14 @@ export class LibraryReadWriteService {
     request: WriteAppStateRequestDto,
   ): Promise<WriteAppStateResponseDto> {
     this.options.markInteractiveRead();
-    const parsedState = JSON.parse(request.state_json);
+    const incomingState = JSON.parse(request.state_json);
+    const parsedState =
+      request.state_key === XP_PREFERENCE_METRICS_STATE_KEY
+        ? mergePreferenceMetricsState(
+            this.options.database.readAppState(request.state_key, {}),
+            incomingState,
+          )
+        : incomingState;
     this.options.database.writeAppState(request.state_key, parsedState);
     const updatedAtMs = Date.now();
 

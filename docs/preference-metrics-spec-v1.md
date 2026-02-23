@@ -111,6 +111,7 @@ Last updated: 2026-02-23
 - Main 在 `writeAppState` 中解析该 key：
   - 写入 `image_preference_sessions` 与 `video_preference_sessions`（事实层）；
   - 写入 `image_preference_metrics` 与 `video_preference_metrics`（聚合缓存层）。
+- 为调试面板可观测性，`app_state.xp_preference_metrics_v1` 会保留最近会话事件滚动窗口（图片/视频分别保留最近 200 条）。
 - 同时保留 `app_state` 原始 JSON 作为诊断与回溯数据。
 
 ## 8. 推荐模型接入建议
