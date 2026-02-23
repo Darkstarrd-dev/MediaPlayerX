@@ -964,7 +964,6 @@ function SidebarPanel({
     // Do selection toggle on pointer down so Shift+Click and drag toggling are stable.
     // Click handler only performs fallback toggle in manage styles; navigation happens in non-manage styles.
     event.preventDefault();
-    onSelectNode(startNodeId);
     suppressManageClickRef.current = true;
     onToggleManageNode(startNodeId, event.shiftKey);
 
@@ -1020,6 +1019,9 @@ function SidebarPanel({
       const state = manageDragStateRef.current;
       if (!state || upEvent.pointerId !== state.pointerId) {
         return;
+      }
+      if (upEvent.type === "pointerup") {
+        onSelectNode(state.lastNodeId);
       }
       detachManageDragListeners();
     };
@@ -1278,12 +1280,12 @@ function SidebarPanel({
             }
             onClick={(event) => {
               if (manageStyleEnabled) {
-                onSelectNode(node.id);
                 if (suppressManageClickRef.current) {
                   suppressManageClickRef.current = false;
-                } else {
-                  onToggleManageNode?.(node.id, event.shiftKey);
+                  return;
                 }
+                onSelectNode(node.id);
+                onToggleManageNode?.(node.id, event.shiftKey);
                 return;
               }
               if (mode === "image" && searchResultReadonly) {
