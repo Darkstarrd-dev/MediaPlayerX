@@ -162,7 +162,11 @@ function dedupeSessionEventsBySessionId(events: unknown[]): unknown[] {
 }
 
 function hasObjectKeys(value: unknown): boolean {
-  return Boolean(value && typeof value === "object" && Object.keys(value as Record<string, unknown>).length > 0);
+  return Boolean(
+    value &&
+    typeof value === "object" &&
+    Object.keys(value as Record<string, unknown>).length > 0,
+  );
 }
 
 function mergePreferenceMetricsState(
@@ -171,11 +175,9 @@ function mergePreferenceMetricsState(
 ): Record<string, unknown> {
   const previousRecord = asRecord(previousState);
   const incomingRecordRaw = asRecord(incomingState);
-  const {
-    image_runtime_checkpoints: _incomingImageRuntimeCheckpoints,
-    video_runtime_checkpoints: _incomingVideoRuntimeCheckpoints,
-    ...incomingRecord
-  } = incomingRecordRaw;
+  const incomingRecord = { ...incomingRecordRaw };
+  delete incomingRecord.image_runtime_checkpoints;
+  delete incomingRecord.video_runtime_checkpoints;
   const mergedImageSessions = dedupeSessionEventsBySessionId([
     ...asEventArray(previousRecord.image_session_events),
     ...asEventArray(incomingRecord.image_session_events),
@@ -1100,7 +1102,8 @@ export class LibraryReadWriteService {
 
     if (request.state_key === XP_PREFERENCE_METRICS_STATE_KEY) {
       const parsedMetrics = parsePersistedPreferenceMetrics(incomingState);
-      const runtimeCheckpoints = parsePreferenceRuntimeCheckpoints(incomingState);
+      const runtimeCheckpoints =
+        parsePreferenceRuntimeCheckpoints(incomingState);
 
       for (const checkpoint of runtimeCheckpoints.imageCheckpoints) {
         this.options.database.upsertImagePreferenceRuntime({

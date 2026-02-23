@@ -1,92 +1,110 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useAppShellProps } from './useAppShellProps'
-import { useAppTopLayerBindings } from './useAppTopLayerBindings'
-import { useAppWorkspaceBindings } from './useAppWorkspaceBindings'
-import { toErrorDetailWithCode } from './errorCode'
-import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
-import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
-import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
-import type { MediaLocator } from '../../types'
-import type { RenameItemTargetDto, RenameItemsRequestDto, RenameItemsResponseDto } from '../../contracts/backend'
-import { useI18n } from '../../i18n/useI18n'
-import { computeRenameDialogParams } from './renameDialogLogic'
+import { useAppShellProps } from "./useAppShellProps";
+import { useAppTopLayerBindings } from "./useAppTopLayerBindings";
+import { useAppWorkspaceBindings } from "./useAppWorkspaceBindings";
+import { toErrorDetailWithCode } from "./errorCode";
+import type { AppRuntimeSourcesResult } from "./useAppRuntimeSources";
+import type { AppReadAndNavigationResult } from "./useAppReadAndNavigation";
+import type { AppDisplayAndEffectsResult } from "./useAppDisplayAndEffects";
+import type { MediaLocator } from "../../types";
+import type {
+  RenameItemTargetDto,
+  RenameItemsRequestDto,
+  RenameItemsResponseDto,
+} from "../../contracts/backend";
+import { useI18n } from "../../i18n/useI18n";
+import { computeRenameDialogParams } from "./renameDialogLogic";
 
 function resolveMediaLocatorPath(locator: MediaLocator): string {
-  if (locator.kind === 'filesystem') {
-    return locator.absolutePath
+  if (locator.kind === "filesystem") {
+    return locator.absolutePath;
   }
-  return `${locator.archivePath}#${locator.entryName}`
+  return `${locator.archivePath}#${locator.entryName}`;
 }
 
-function buildManageDeleteTargetPaths(readNavigationState: AppReadAndNavigationResult): string[] {
-  const targetPaths: string[] = []
-  const pathSet = new Set<string>()
+function buildManageDeleteTargetPaths(
+  readNavigationState: AppReadAndNavigationResult,
+): string[] {
+  const targetPaths: string[] = [];
+  const pathSet = new Set<string>();
 
   for (const nodeId of readNavigationState.sidebarCheckedNodeIds) {
-    const node = readNavigationState.sidebarNodeById.get(nodeId)
+    const node = readNavigationState.sidebarNodeById.get(nodeId);
     if (!node) {
-      continue
+      continue;
     }
 
-    const packagePath = node.packageId ? readNavigationState.packageByIdEffective.get(node.packageId)?.absolutePath : null
-    const videoPath = node.videoId ? readNavigationState.videoByIdEffective.get(node.videoId)?.absolutePath : null
-    const audioPath = node.audioId ? readNavigationState.audioByIdEffective.get(node.audioId)?.absolutePath : null
-    const fallbackPath = node.pathKey
-    const resolvedPath = packagePath ?? videoPath ?? audioPath ?? fallbackPath
+    const packagePath = node.packageId
+      ? readNavigationState.packageByIdEffective.get(node.packageId)
+          ?.absolutePath
+      : null;
+    const videoPath = node.videoId
+      ? readNavigationState.videoByIdEffective.get(node.videoId)?.absolutePath
+      : null;
+    const audioPath = node.audioId
+      ? readNavigationState.audioByIdEffective.get(node.audioId)?.absolutePath
+      : null;
+    const fallbackPath = node.pathKey;
+    const resolvedPath = packagePath ?? videoPath ?? audioPath ?? fallbackPath;
     if (resolvedPath && !pathSet.has(resolvedPath)) {
-      pathSet.add(resolvedPath)
-      targetPaths.push(resolvedPath)
+      pathSet.add(resolvedPath);
+      targetPaths.push(resolvedPath);
     }
   }
 
   if (readNavigationState.imageCheckedIds.length > 0) {
-    const pendingImageIdSet = new Set(readNavigationState.imageCheckedIds)
+    const pendingImageIdSet = new Set(readNavigationState.imageCheckedIds);
     for (const imagePackage of readNavigationState.packageByIdEffective.values()) {
       if (pendingImageIdSet.size === 0) {
-        break
+        break;
       }
 
       for (const image of imagePackage.images) {
         if (!pendingImageIdSet.has(image.id)) {
-          continue
+          continue;
         }
 
-        const path = resolveMediaLocatorPath(image.mediaLocator)
+        const path = resolveMediaLocatorPath(image.mediaLocator);
         if (!pathSet.has(path)) {
-          pathSet.add(path)
-          targetPaths.push(path)
+          pathSet.add(path);
+          targetPaths.push(path);
         }
 
-        pendingImageIdSet.delete(image.id)
+        pendingImageIdSet.delete(image.id);
         if (pendingImageIdSet.size === 0) {
-          break
+          break;
         }
       }
     }
   }
 
-  return targetPaths
+  return targetPaths;
 }
 
 function toRenameTargetKey(target: RenameItemTargetDto): string {
-  if (target.kind === 'sidebar-node') {
-    return `sidebar-node:${target.node_id}`
+  if (target.kind === "sidebar-node") {
+    return `sidebar-node:${target.node_id}`;
   }
-  if (target.kind === 'image-item') {
-    return `image-item:${target.image_id}`
+  if (target.kind === "image-item") {
+    return `image-item:${target.image_id}`;
   }
-  return `archive-entry:${target.archive_path}#${target.entry_name}`
+  return `archive-entry:${target.archive_path}#${target.entry_name}`;
 }
 
 function buildRenamePreviewRows(
   response: RenameItemsResponseDto,
   orderedTargets: RenameItemTargetDto[],
-): Array<{ nodeId: string; sourceName: string; targetName: string; reason: string | null }> {
-  const targetOrder = new Map<string, number>()
+): Array<{
+  nodeId: string;
+  sourceName: string;
+  targetName: string;
+  reason: string | null;
+}> {
+  const targetOrder = new Map<string, number>();
   orderedTargets.forEach((target, index) => {
-    targetOrder.set(toRenameTargetKey(target), index)
-  })
+    targetOrder.set(toRenameTargetKey(target), index);
+  });
 
   const rows = response.results.map((item) => ({
     nodeId: JSON.stringify(item.target),
@@ -94,40 +112,42 @@ function buildRenamePreviewRows(
     sourceName: item.source_name,
     targetName: item.target_name,
     reason: item.reason,
-  }))
-  const existing = new Set(rows.map((row) => row.nodeId))
+  }));
+  const existing = new Set(rows.map((row) => row.nodeId));
   for (const failed of response.failed) {
-    const nodeId = JSON.stringify(failed.target)
+    const nodeId = JSON.stringify(failed.target);
     if (existing.has(nodeId)) {
-      continue
+      continue;
     }
-    const fallbackTarget = toRenameTargetKey(failed.target)
+    const fallbackTarget = toRenameTargetKey(failed.target);
     rows.push({
       nodeId,
       targetKey: fallbackTarget,
       sourceName: fallbackTarget,
       targetName: fallbackTarget,
       reason: failed.reason,
-    })
-    existing.add(nodeId)
+    });
+    existing.add(nodeId);
   }
   rows.sort((left, right) => {
-    const leftOrder = targetOrder.get(left.targetKey) ?? Number.MAX_SAFE_INTEGER
-    const rightOrder = targetOrder.get(right.targetKey) ?? Number.MAX_SAFE_INTEGER
-    return leftOrder - rightOrder
-  })
+    const leftOrder =
+      targetOrder.get(left.targetKey) ?? Number.MAX_SAFE_INTEGER;
+    const rightOrder =
+      targetOrder.get(right.targetKey) ?? Number.MAX_SAFE_INTEGER;
+    return leftOrder - rightOrder;
+  });
   return rows.map(({ nodeId, sourceName, targetName, reason }) => ({
     nodeId,
     sourceName,
     targetName,
     reason,
-  }))
+  }));
 }
 
 interface UseAppViewCompositionParams {
-  runtimeSources: AppRuntimeSourcesResult
-  readNavigationState: AppReadAndNavigationResult
-  displayState: AppDisplayAndEffectsResult
+  runtimeSources: AppRuntimeSourcesResult;
+  readNavigationState: AppReadAndNavigationResult;
+  displayState: AppDisplayAndEffectsResult;
 }
 
 export function useAppViewComposition({
@@ -135,19 +155,16 @@ export function useAppViewComposition({
   readNavigationState,
   displayState,
 }: UseAppViewCompositionParams) {
-  const { t } = useI18n()
+  const { t } = useI18n();
   const {
     benchSettings,
     appSettings,
     repositoryBootstrap,
     sessionState,
     importState,
-  } = runtimeSources
+  } = runtimeSources;
 
-  const {
-    mediaRepository,
-    repositoryMode,
-  } = repositoryBootstrap
+  const { mediaRepository, repositoryMode } = repositoryBootstrap;
 
   const {
     mode,
@@ -156,7 +173,7 @@ export function useAppViewComposition({
     metadataRatio,
     layoutLocked,
     sidebarFocus,
-  } = appSettings
+  } = appSettings;
 
   const {
     selectedPackageId,
@@ -204,46 +221,50 @@ export function useAppViewComposition({
     appBodyRef,
     workspaceRef,
     workspaceBodyRef,
-  } = sessionState
+  } = sessionState;
 
   const topLayerState = useAppTopLayerBindings({
     runtimeSources,
     readNavigationState,
     displayState,
-  })
+  });
 
   const workspaceState = useAppWorkspaceBindings({
     runtimeSources,
     readNavigationState,
     displayState,
     managementErrorRows: topLayerState.managementErrorRows,
-  })
+  });
 
-  const [sidebarRenamePending, setSidebarRenamePending] = useState(false)
-  const [sidebarRenameError, setSidebarRenameError] = useState<string | null>(null)
-  const renamePreviewRequestIdRef = useRef(0)
+  const [sidebarRenamePending, setSidebarRenamePending] = useState(false);
+  const [sidebarRenameError, setSidebarRenameError] = useState<string | null>(
+    null,
+  );
+  const renamePreviewRequestIdRef = useRef(0);
 
   const closeSidebarRenameDialog = useCallback(() => {
-    setSidebarRenameDialogOpen(false)
-    setSidebarRenameTargetNodeId(null)
-    setSidebarRenameTargetNodeIds([])
-    setSidebarRenameTargetImageIds([])
-    setSidebarRenameDraft('')
-    setSidebarRenameMode('single')
-    setSidebarRenameReplaceFrom('')
-    setSidebarRenameReplaceTo('')
-    setSidebarRenameNumberBase('item-')
-    setSidebarRenameNumberStart('1')
-    setSidebarRenameNumberStep('1')
-    setSidebarRenameNumberPadWidth('3')
-    setSidebarRenameRemoveStart('0')
-    setSidebarRenameRemoveEnd('0')
-    setSidebarRenameRemoveHead('0')
-    setSidebarRenameRemoveTail('0')
-    setSidebarRenameMetadataTemplate('[author.jp(if exist)(author.en(if exist))]/[author(if only one exist)]-[circle just like author ] - [title.jp(if exist)]/[title(if only one exist)]')
-    setSidebarRenamePreviewRows([])
-    setSidebarRenamePending(false)
-    setSidebarRenameError(null)
+    setSidebarRenameDialogOpen(false);
+    setSidebarRenameTargetNodeId(null);
+    setSidebarRenameTargetNodeIds([]);
+    setSidebarRenameTargetImageIds([]);
+    setSidebarRenameDraft("");
+    setSidebarRenameMode("single");
+    setSidebarRenameReplaceFrom("");
+    setSidebarRenameReplaceTo("");
+    setSidebarRenameNumberBase("item-");
+    setSidebarRenameNumberStart("1");
+    setSidebarRenameNumberStep("1");
+    setSidebarRenameNumberPadWidth("3");
+    setSidebarRenameRemoveStart("0");
+    setSidebarRenameRemoveEnd("0");
+    setSidebarRenameRemoveHead("0");
+    setSidebarRenameRemoveTail("0");
+    setSidebarRenameMetadataTemplate(
+      "[author.jp(if exist)(author.en(if exist))]/[author(if only one exist)]-[circle just like author ] - [title.jp(if exist)]/[title(if only one exist)]",
+    );
+    setSidebarRenamePreviewRows([]);
+    setSidebarRenamePending(false);
+    setSidebarRenameError(null);
   }, [
     setSidebarRenameDialogOpen,
     setSidebarRenameDraft,
@@ -263,7 +284,7 @@ export function useAppViewComposition({
     setSidebarRenameTargetNodeId,
     setSidebarRenameTargetNodeIds,
     setSidebarRenameTargetImageIds,
-  ])
+  ]);
 
   const openManageRenameDialog = useCallback(() => {
     const result = computeRenameDialogParams({
@@ -274,18 +295,18 @@ export function useAppViewComposition({
       selectedSidebarNodeId,
       videosForSidebar: readNavigationState.videosForSidebar,
       packageByIdEffective: readNavigationState.packageByIdEffective,
-    })
+    });
     if (!result) {
-      return
+      return;
     }
-    setSidebarRenameTargetNodeId(result.targetNodeId)
-    setSidebarRenameTargetNodeIds(result.targetNodeIds)
-    setSidebarRenameTargetImageIds(result.targetImageIds)
-    setSidebarRenameDraft(result.draft)
-    setSidebarRenameMode(result.renameMode)
-    setSidebarRenamePreviewRows([])
-    setSidebarRenameError(null)
-    setSidebarRenameDialogOpen(true)
+    setSidebarRenameTargetNodeId(result.targetNodeId);
+    setSidebarRenameTargetNodeIds(result.targetNodeIds);
+    setSidebarRenameTargetImageIds(result.targetImageIds);
+    setSidebarRenameDraft(result.draft);
+    setSidebarRenameMode(result.renameMode);
+    setSidebarRenamePreviewRows([]);
+    setSidebarRenameError(null);
+    setSidebarRenameDialogOpen(true);
   }, [
     readNavigationState.imageCheckedIds,
     readNavigationState.packageByIdEffective,
@@ -301,259 +322,327 @@ export function useAppViewComposition({
     setSidebarRenameTargetNodeId,
     setSidebarRenameTargetNodeIds,
     setSidebarRenamePreviewRows,
-  ])
+  ]);
 
-  const buildBatchRenameRequest = useCallback((previewOnly: boolean): RenameItemsRequestDto | null => {
-    const failFast = false
-    const targets = [
-      ...sidebarRenameTargetNodeIds.map((nodeId) => ({ kind: 'sidebar-node' as const, node_id: nodeId })),
-      ...sidebarRenameTargetImageIds.map((imageId) => ({ kind: 'image-item' as const, image_id: imageId })),
-    ]
+  const buildBatchRenameRequest = useCallback(
+    (previewOnly: boolean): RenameItemsRequestDto | null => {
+      const failFast = false;
+      const targets = [
+        ...sidebarRenameTargetNodeIds.map((nodeId) => ({
+          kind: "sidebar-node" as const,
+          node_id: nodeId,
+        })),
+        ...sidebarRenameTargetImageIds.map((imageId) => ({
+          kind: "image-item" as const,
+          image_id: imageId,
+        })),
+      ];
 
-    if (targets.length === 0) {
-      return null
-    }
+      if (targets.length === 0) {
+        return null;
+      }
 
-    if (sidebarRenameMode === 'single') {
+      if (sidebarRenameMode === "single") {
+        return {
+          targets,
+          mode: "single",
+          single_new_name: sidebarRenameDraft,
+          fail_fast: failFast,
+          preview_only: previewOnly,
+        };
+      }
+
+      if (sidebarRenameMode === "replace") {
+        return {
+          targets,
+          mode: "replace",
+          replace_from: sidebarRenameReplaceFrom,
+          replace_to: sidebarRenameReplaceTo,
+          fail_fast: failFast,
+          preview_only: previewOnly,
+        };
+      }
+      if (sidebarRenameMode === "numbering") {
+        return {
+          targets,
+          mode: "numbering",
+          numbering_base_name: sidebarRenameNumberBase,
+          numbering_start: Number.parseInt(sidebarRenameNumberStart, 10) || 1,
+          numbering_step: Number.parseInt(sidebarRenameNumberStep, 10) || 1,
+          numbering_pad_width:
+            Number.parseInt(sidebarRenameNumberPadWidth, 10) || 3,
+          fail_fast: failFast,
+          preview_only: previewOnly,
+        };
+      }
+      if (sidebarRenameMode === "remove-range") {
+        const removeStart = Math.max(
+          0,
+          Number.parseInt(sidebarRenameRemoveStart, 10) || 0,
+        );
+        const removeEnd = Math.max(
+          0,
+          Number.parseInt(sidebarRenameRemoveEnd, 10) || 0,
+        );
+        const removeHead = Math.max(
+          0,
+          Number.parseInt(sidebarRenameRemoveHead, 10) || 0,
+        );
+        const removeTail = Math.max(
+          0,
+          Number.parseInt(sidebarRenameRemoveTail, 10) || 0,
+        );
+        return {
+          targets,
+          mode: "remove-range",
+          remove_start: removeStart,
+          remove_end: removeEnd,
+          remove_head: removeHead,
+          remove_tail: removeTail,
+          fail_fast: failFast,
+          preview_only: previewOnly,
+        };
+      }
       return {
         targets,
-        mode: 'single',
-        single_new_name: sidebarRenameDraft,
+        mode: "metadata",
+        metadata_template: sidebarRenameMetadataTemplate,
         fail_fast: failFast,
         preview_only: previewOnly,
-      }
-    }
-
-    if (sidebarRenameMode === 'replace') {
-      return {
-        targets,
-        mode: 'replace',
-        replace_from: sidebarRenameReplaceFrom,
-        replace_to: sidebarRenameReplaceTo,
-        fail_fast: failFast,
-        preview_only: previewOnly,
-      }
-    }
-    if (sidebarRenameMode === 'numbering') {
-      return {
-        targets,
-        mode: 'numbering',
-        numbering_base_name: sidebarRenameNumberBase,
-        numbering_start: Number.parseInt(sidebarRenameNumberStart, 10) || 1,
-        numbering_step: Number.parseInt(sidebarRenameNumberStep, 10) || 1,
-        numbering_pad_width: Number.parseInt(sidebarRenameNumberPadWidth, 10) || 3,
-        fail_fast: failFast,
-        preview_only: previewOnly,
-      }
-    }
-    if (sidebarRenameMode === 'remove-range') {
-      const removeStart = Math.max(0, Number.parseInt(sidebarRenameRemoveStart, 10) || 0)
-      const removeEnd = Math.max(0, Number.parseInt(sidebarRenameRemoveEnd, 10) || 0)
-      const removeHead = Math.max(0, Number.parseInt(sidebarRenameRemoveHead, 10) || 0)
-      const removeTail = Math.max(0, Number.parseInt(sidebarRenameRemoveTail, 10) || 0)
-      return {
-        targets,
-        mode: 'remove-range',
-        remove_start: removeStart,
-        remove_end: removeEnd,
-        remove_head: removeHead,
-        remove_tail: removeTail,
-        fail_fast: failFast,
-        preview_only: previewOnly,
-      }
-    }
-    return {
-      targets,
-      mode: 'metadata',
-      metadata_template: sidebarRenameMetadataTemplate,
-      fail_fast: failFast,
-      preview_only: previewOnly,
-    }
-  }, [
-    sidebarRenameMode,
-    sidebarRenameNumberBase,
-    sidebarRenameNumberPadWidth,
-    sidebarRenameNumberStart,
-    sidebarRenameNumberStep,
-    sidebarRenameRemoveEnd,
-    sidebarRenameRemoveHead,
-    sidebarRenameRemoveStart,
-    sidebarRenameRemoveTail,
-    sidebarRenameMetadataTemplate,
-    sidebarRenameReplaceFrom,
-    sidebarRenameReplaceTo,
-    sidebarRenameTargetImageIds,
-    sidebarRenameTargetNodeIds,
-    sidebarRenameDraft,
-  ])
+      };
+    },
+    [
+      sidebarRenameMode,
+      sidebarRenameNumberBase,
+      sidebarRenameNumberPadWidth,
+      sidebarRenameNumberStart,
+      sidebarRenameNumberStep,
+      sidebarRenameRemoveEnd,
+      sidebarRenameRemoveHead,
+      sidebarRenameRemoveStart,
+      sidebarRenameRemoveTail,
+      sidebarRenameMetadataTemplate,
+      sidebarRenameReplaceFrom,
+      sidebarRenameReplaceTo,
+      sidebarRenameTargetImageIds,
+      sidebarRenameTargetNodeIds,
+      sidebarRenameDraft,
+    ],
+  );
 
   const refreshSidebarRenamePreview = useCallback(async () => {
     if (!displayState.backendWrite.renameItems) {
-      return
+      return;
     }
-    const request = buildBatchRenameRequest(true)
+    const request = buildBatchRenameRequest(true);
     if (!request) {
-      setSidebarRenamePreviewRows([])
-      return
+      setSidebarRenamePreviewRows([]);
+      return;
     }
 
-    const requestId = renamePreviewRequestIdRef.current + 1
-    renamePreviewRequestIdRef.current = requestId
+    const requestId = renamePreviewRequestIdRef.current + 1;
+    renamePreviewRequestIdRef.current = requestId;
 
     try {
-      const response = await displayState.backendWrite.renameItems(request)
+      const response = await displayState.backendWrite.renameItems(request);
       if (renamePreviewRequestIdRef.current !== requestId) {
-        return
+        return;
       }
-      setSidebarRenamePreviewRows(buildRenamePreviewRows(response, request.targets))
-      setSidebarRenameError(null)
+      setSidebarRenamePreviewRows(
+        buildRenamePreviewRows(response, request.targets),
+      );
+      setSidebarRenameError(null);
     } catch {
       if (renamePreviewRequestIdRef.current !== requestId) {
-        return
+        return;
       }
-      setSidebarRenameError(t('ui.manage.hint.operationFailedUnknownReason'))
+      setSidebarRenameError(t("ui.manage.hint.operationFailedUnknownReason"));
     }
-  }, [buildBatchRenameRequest, displayState.backendWrite, setSidebarRenameError, setSidebarRenamePreviewRows, t])
+  }, [
+    buildBatchRenameRequest,
+    displayState.backendWrite,
+    setSidebarRenameError,
+    setSidebarRenamePreviewRows,
+    t,
+  ]);
 
   const confirmSidebarRename = useCallback(async () => {
-    const batchModeActive = sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length > 1 || sidebarRenameMode !== 'single'
+    const batchModeActive =
+      sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length >
+        1 || sidebarRenameMode !== "single";
     if (batchModeActive) {
       if (!displayState.backendWrite.renameItems) {
-        const unsupportedMessage = t('ui.manage.hint.renameUnsupported')
-        setManageOperationHint(unsupportedMessage)
-        setSidebarRenameError(unsupportedMessage)
-        return
+        const unsupportedMessage = t("ui.manage.hint.renameUnsupported");
+        setManageOperationHint(unsupportedMessage);
+        setSidebarRenameError(unsupportedMessage);
+        return;
       }
-      const request = buildBatchRenameRequest(false)
+      const request = buildBatchRenameRequest(false);
       if (!request) {
-        closeSidebarRenameDialog()
-        return
+        closeSidebarRenameDialog();
+        return;
       }
 
-      setSidebarRenamePending(true)
-      setSidebarRenameError(null)
+      setSidebarRenamePending(true);
+      setSidebarRenameError(null);
       try {
-        const response = await displayState.backendWrite.renameItems(request)
+        const response = await displayState.backendWrite.renameItems(request);
         if (response.failed.length === 0 && response.renamed_count > 0) {
-          const renamedNodeIdMap = new Map<string, string>()
+          const renamedNodeIdMap = new Map<string, string>();
           for (const item of response.results) {
-            if (item.target.kind !== 'sidebar-node') {
-              continue
+            if (item.target.kind !== "sidebar-node") {
+              continue;
             }
-            const separatorIndex = item.target.node_id.indexOf(':')
+            const separatorIndex = item.target.node_id.indexOf(":");
             if (separatorIndex <= 0) {
-              continue
+              continue;
             }
-            const kind = item.target.node_id.slice(0, separatorIndex)
-            const normalizedTargetPath = item.target_path.replace(/\\/g, '/')
-            renamedNodeIdMap.set(item.target.node_id, `${kind}:${normalizedTargetPath}`)
+            const kind = item.target.node_id.slice(0, separatorIndex);
+            const normalizedTargetPath = item.target_path.replace(/\\/g, "/");
+            renamedNodeIdMap.set(
+              item.target.node_id,
+              `${kind}:${normalizedTargetPath}`,
+            );
           }
 
           if (renamedNodeIdMap.size > 0) {
-            setSidebarRenameTargetNodeIds((previous) => previous.map((nodeId) => renamedNodeIdMap.get(nodeId) ?? nodeId))
-            setSidebarRenameTargetNodeId((previous) => (previous ? (renamedNodeIdMap.get(previous) ?? previous) : previous))
+            setSidebarRenameTargetNodeIds((previous) =>
+              previous.map((nodeId) => renamedNodeIdMap.get(nodeId) ?? nodeId),
+            );
+            setSidebarRenameTargetNodeId((previous) =>
+              previous
+                ? (renamedNodeIdMap.get(previous) ?? previous)
+                : previous,
+            );
             if (selectedSidebarNodeId) {
-              const nextSelectedNodeId = renamedNodeIdMap.get(selectedSidebarNodeId)
+              const nextSelectedNodeId = renamedNodeIdMap.get(
+                selectedSidebarNodeId,
+              );
               if (nextSelectedNodeId) {
-                sessionState.setSelectedSidebarNodeId(nextSelectedNodeId)
+                sessionState.setSelectedSidebarNodeId(nextSelectedNodeId);
               }
             }
           }
 
-          setManageOperationHint(t('ui.manage.hint.renameSuccess'))
-          const executedRows = buildRenamePreviewRows(response, request.targets)
-          setSidebarRenamePreviewRows(executedRows.map((row) => {
-            if (row.reason && row.reason !== 'unchanged') {
-              return row
-            }
-            return {
-              ...row,
-              sourceName: row.targetName,
-              reason: 'unchanged',
-            }
-          }))
-          setSidebarRenameReplaceFrom('')
-          setSidebarRenameReplaceTo('')
-          setSidebarRenameError(null)
+          setManageOperationHint(t("ui.manage.hint.renameSuccess"));
+          const executedRows = buildRenamePreviewRows(
+            response,
+            request.targets,
+          );
+          setSidebarRenamePreviewRows(
+            executedRows.map((row) => {
+              if (row.reason && row.reason !== "unchanged") {
+                return row;
+              }
+              return {
+                ...row,
+                sourceName: row.targetName,
+                reason: "unchanged",
+              };
+            }),
+          );
+          setSidebarRenameReplaceFrom("");
+          setSidebarRenameReplaceTo("");
+          setSidebarRenameError(null);
         } else {
-          const failedReason = response.failed[0]?.reason ?? t('ui.manage.hint.operationFailedUnknownReason')
-          const failedMessage = t('ui.manage.hint.renameFailed', { message: failedReason })
-          setManageOperationHint(failedMessage)
-          setSidebarRenameError(failedMessage)
+          const failedReason =
+            response.failed[0]?.reason ??
+            t("ui.manage.hint.operationFailedUnknownReason");
+          const failedMessage = t("ui.manage.hint.renameFailed", {
+            message: failedReason,
+          });
+          setManageOperationHint(failedMessage);
+          setSidebarRenameError(failedMessage);
         }
       } catch (error) {
-        const failedMessage = t('ui.manage.hint.renameFailed', { message: toErrorDetailWithCode(error, t) })
-        setManageOperationHint(failedMessage)
-        setSidebarRenameError(failedMessage)
+        const failedMessage = t("ui.manage.hint.renameFailed", {
+          message: toErrorDetailWithCode(error, t),
+        });
+        setManageOperationHint(failedMessage);
+        setSidebarRenameError(failedMessage);
       } finally {
-        readNavigationState.backendRead.retryLibrary()
-        readNavigationState.backendRead.retrySidebar()
-        readNavigationState.backendRead.retryPage()
-        readNavigationState.backendRead.retryMetadata()
-        setSidebarRenamePending(false)
+        readNavigationState.backendRead.retryLibrary();
+        readNavigationState.backendRead.retrySidebar();
+        readNavigationState.backendRead.retryPage();
+        readNavigationState.backendRead.retryMetadata();
+        setSidebarRenamePending(false);
       }
-      return
+      return;
     }
 
     if (!displayState.backendWrite.renameSidebarNode) {
-      const unsupportedMessage = t('ui.manage.hint.renameUnsupported')
-      setManageOperationHint(unsupportedMessage)
-      setSidebarRenameError(unsupportedMessage)
-      closeSidebarRenameDialog()
-      return
+      const unsupportedMessage = t("ui.manage.hint.renameUnsupported");
+      setManageOperationHint(unsupportedMessage);
+      setSidebarRenameError(unsupportedMessage);
+      closeSidebarRenameDialog();
+      return;
     }
 
-    const targetNodeId = sidebarRenameTargetNodeId?.trim() ?? ''
-    const targetName = sidebarRenameDraft.trim()
+    const targetNodeId = sidebarRenameTargetNodeId?.trim() ?? "";
+    const targetName = sidebarRenameDraft.trim();
     if (!targetNodeId) {
-      closeSidebarRenameDialog()
-      return
+      closeSidebarRenameDialog();
+      return;
     }
     if (!targetName) {
-      const emptyMessage = t('ui.manage.hint.renameNameRequired')
-      setManageOperationHint(emptyMessage)
-      setSidebarRenameError(emptyMessage)
-      return
+      const emptyMessage = t("ui.manage.hint.renameNameRequired");
+      setManageOperationHint(emptyMessage);
+      setSidebarRenameError(emptyMessage);
+      return;
     }
 
-    setSidebarRenamePending(true)
-    setSidebarRenameError(null)
+    setSidebarRenamePending(true);
+    setSidebarRenameError(null);
 
     try {
-      const response = await displayState.backendWrite.renameSidebarNode(targetNodeId, targetName)
+      const response = await displayState.backendWrite.renameSidebarNode(
+        targetNodeId,
+        targetName,
+      );
       if (response.renamed_count > 0) {
-        const kindDelimiterIndex = targetNodeId.indexOf(':')
-        const kind = kindDelimiterIndex > 0 ? targetNodeId.slice(0, kindDelimiterIndex) : ''
-        const nextPath = response.target_path?.replace(/\\/g, '/') ?? ''
+        const kindDelimiterIndex = targetNodeId.indexOf(":");
+        const kind =
+          kindDelimiterIndex > 0
+            ? targetNodeId.slice(0, kindDelimiterIndex)
+            : "";
+        const nextPath = response.target_path?.replace(/\\/g, "/") ?? "";
         if (kind && nextPath) {
-          const nextNodeId = `${kind}:${nextPath}`
-          sessionState.setSelectedSidebarNodeId(nextNodeId)
-          setSidebarRenameTargetNodeId(nextNodeId)
-          setSidebarRenameTargetNodeIds([nextNodeId])
-          requestAnimationFrame(() => readNavigationState.ensureSidebarNodeVisible(nextNodeId))
+          const nextNodeId = `${kind}:${nextPath}`;
+          sessionState.setSelectedSidebarNodeId(nextNodeId);
+          setSidebarRenameTargetNodeId(nextNodeId);
+          setSidebarRenameTargetNodeIds([nextNodeId]);
+          requestAnimationFrame(() =>
+            readNavigationState.ensureSidebarNodeVisible(nextNodeId),
+          );
         }
-        setManageOperationHint(t('ui.manage.hint.renameSuccess'))
-        setSidebarRenameReplaceFrom('')
-        setSidebarRenameReplaceTo('')
-        setSidebarRenameDraft(targetName)
-        setSidebarRenameError(null)
-        return
+        setManageOperationHint(t("ui.manage.hint.renameSuccess"));
+        setSidebarRenameReplaceFrom("");
+        setSidebarRenameReplaceTo("");
+        setSidebarRenameDraft(targetName);
+        setSidebarRenameError(null);
+        return;
       }
 
-      const failedReason = response.failed[0]?.reason ?? t('ui.manage.hint.operationFailedUnknownReason')
-      const failedMessage = t('ui.manage.hint.renameFailed', { message: failedReason })
-      setManageOperationHint(failedMessage)
-      setSidebarRenameError(failedMessage)
+      const failedReason =
+        response.failed[0]?.reason ??
+        t("ui.manage.hint.operationFailedUnknownReason");
+      const failedMessage = t("ui.manage.hint.renameFailed", {
+        message: failedReason,
+      });
+      setManageOperationHint(failedMessage);
+      setSidebarRenameError(failedMessage);
     } catch (error) {
-      const failedMessage = t('ui.manage.hint.renameFailed', { message: toErrorDetailWithCode(error, t) })
-      setManageOperationHint(failedMessage)
-      setSidebarRenameError(failedMessage)
+      const failedMessage = t("ui.manage.hint.renameFailed", {
+        message: toErrorDetailWithCode(error, t),
+      });
+      setManageOperationHint(failedMessage);
+      setSidebarRenameError(failedMessage);
     } finally {
-      readNavigationState.backendRead.retryLibrary()
-      readNavigationState.backendRead.retrySidebar()
-      readNavigationState.backendRead.retryPage()
-      readNavigationState.backendRead.retryMetadata()
-      setSidebarRenamePending(false)
+      readNavigationState.backendRead.retryLibrary();
+      readNavigationState.backendRead.retrySidebar();
+      readNavigationState.backendRead.retryPage();
+      readNavigationState.backendRead.retryMetadata();
+      setSidebarRenamePending(false);
     }
   }, [
     buildBatchRenameRequest,
@@ -568,28 +657,32 @@ export function useAppViewComposition({
     setSidebarRenamePreviewRows,
     setSidebarRenameReplaceFrom,
     setSidebarRenameReplaceTo,
+    setSidebarRenameTargetNodeId,
+    setSidebarRenameTargetNodeIds,
     sidebarRenameDraft,
     sidebarRenameMode,
     sidebarRenameTargetNodeId,
     sidebarRenameTargetImageIds.length,
     sidebarRenameTargetNodeIds.length,
     t,
-  ])
+  ]);
 
   useEffect(() => {
     if (!sidebarRenameDialogOpen) {
-      return
+      return;
     }
-    const batchModeActive = sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length > 1 || sidebarRenameMode !== 'single'
+    const batchModeActive =
+      sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length >
+        1 || sidebarRenameMode !== "single";
     if (!batchModeActive) {
-      return
+      return;
     }
     const timeoutId = window.setTimeout(() => {
-      void refreshSidebarRenamePreview()
-    }, 150)
+      void refreshSidebarRenamePreview();
+    }, 150);
     return () => {
-      window.clearTimeout(timeoutId)
-    }
+      window.clearTimeout(timeoutId);
+    };
   }, [
     refreshSidebarRenamePreview,
     sidebarRenameDialogOpen,
@@ -608,7 +701,7 @@ export function useAppViewComposition({
     sidebarRenameMetadataTemplate,
     sidebarRenameTargetImageIds.length,
     sidebarRenameTargetNodeIds.length,
-  ])
+  ]);
 
   const workspaceStateWithRename = {
     ...workspaceState,
@@ -620,9 +713,10 @@ export function useAppViewComposition({
       ...workspaceState.videoMainSectionProps,
       onManageRename: openManageRenameDialog,
     },
-  }
+  };
 
-  const manageDeleteTargetPaths = buildManageDeleteTargetPaths(readNavigationState)
+  const manageDeleteTargetPaths =
+    buildManageDeleteTargetPaths(readNavigationState);
 
   const shellProps = useAppShellProps({
     repositoryMode,
@@ -686,7 +780,8 @@ export function useAppViewComposition({
       open: sidebarRenameDialogOpen,
       pending: sidebarRenamePending,
       mode: sidebarRenameMode,
-      targetCount: sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length,
+      targetCount:
+        sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length,
       value: sidebarRenameDraft,
       replaceFrom: sidebarRenameReplaceFrom,
       replaceTo: sidebarRenameReplaceTo,
@@ -702,9 +797,9 @@ export function useAppViewComposition({
       previewRows: sidebarRenamePreviewRows,
       errorMessage: sidebarRenameError,
       onChange: (value) => {
-        setSidebarRenameDraft(value)
+        setSidebarRenameDraft(value);
         if (sidebarRenameError) {
-          setSidebarRenameError(null)
+          setSidebarRenameError(null);
         }
       },
       onModeChange: setSidebarRenameMode,
@@ -720,7 +815,7 @@ export function useAppViewComposition({
       onRemoveTailChange: setSidebarRenameRemoveTail,
       onMetadataTemplateChange: setSidebarRenameMetadataTemplate,
       onRefreshPreview: () => {
-        void refreshSidebarRenamePreview()
+        void refreshSidebarRenamePreview();
       },
       onUseSourceNameAsReplaceFrom: setSidebarRenameReplaceFrom,
       onCancel: closeSidebarRenameDialog,
@@ -741,7 +836,7 @@ export function useAppViewComposition({
       goNextPage: readNavigationState.goNextPage,
       goPrevPage: readNavigationState.goPrevPage,
     },
-  })
+  });
 
   return {
     onDragEnterImport: importState.onDragEnterImport,
@@ -749,5 +844,5 @@ export function useAppViewComposition({
     onDragOverImport: importState.onDragOverImport,
     onDropImport: importState.onDropImport,
     ...shellProps,
-  }
+  };
 }
