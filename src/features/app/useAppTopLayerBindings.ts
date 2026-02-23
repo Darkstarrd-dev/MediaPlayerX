@@ -4,6 +4,7 @@ import {
   normalizePathForCompare,
 } from './mediaPathUtils'
 import { useAppTopLayerState } from './useAppTopLayerState'
+import type { ImageConvertAdjustProfile } from './useAppSessionState'
 import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
 import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
@@ -90,6 +91,149 @@ function resolveImageConvertTargetSize(
   }
 }
 
+function clampByte(value: number): number {
+  return Math.max(0, Math.min(255, Math.round(value)))
+}
+
+function buildCurveLutFromAnchors(
+  shadowX: number,
+  midtoneX: number,
+  highlightX: number,
+  shadowYOffset: number,
+  midtoneYOffset: number,
+  highlightYOffset: number,
+): Uint8ClampedArray {
+  const clampedShadowX = clampByte(shadowX)
+  const clampedMidtoneX = clampByte(midtoneX)
+  const clampedHighlightX = clampByte(highlightX)
+  const anchorX = [
+    0,
+    Math.max(1, Math.min(clampedShadowX, clampedMidtoneX - 2)),
+    Math.max(clampedShadowX + 1, Math.min(clampedMidtoneX, clampedHighlightX - 1)),
+    Math.max(clampedMidtoneX + 2, Math.min(clampedHighlightX, 254)),
+    255,
+  ]
+  const anchorY = [
+    0,
+    clampByte(anchorX[1] - shadowYOffset * 0.52),
+    clampByte(anchorX[2] - midtoneYOffset * 0.52),
+    clampByte(anchorX[3] - highlightYOffset * 0.52),
+    255,
+  ]
+  const slope = new Array<number>(anchorX.length).fill(0)
+  slope[0] = (anchorY[1] - anchorY[0]) / (anchorX[1] - anchorX[0])
+  slope[slope.length - 1] =
+    (anchorY[anchorY.length - 1] - anchorY[anchorY.length - 2]) /
+    (anchorX[anchorX.length - 1] - anchorX[anchorX.length - 2])
+  for (let index = 1; index < slope.length - 1; index += 1) {
+    slope[index] =
+      (anchorY[index + 1] - anchorY[index - 1]) /
+      (anchorX[index + 1] - anchorX[index - 1])
+  }
+
+  const lut = new Uint8ClampedArray(256)
+  for (let x = 0; x <= 255; x += 1) {
+    let segmentIndex = 0
+    while (
+      segmentIndex < anchorX.length - 2 &&
+      x > anchorX[segmentIndex + 1]
+    ) {
+      segmentIndex += 1
+    }
+    const x0 = anchorX[segmentIndex]
+    const x1 = anchorX[segmentIndex + 1]
+    const y0 = anchorY[segmentIndex]
+    const y1 = anchorY[segmentIndex + 1]
+    const span = Math.max(1, x1 - x0)
+    const t = (x - x0) / span
+    const m0 = slope[segmentIndex]
+    const m1 = slope[segmentIndex + 1]
+    const h00 = 2 * t * t * t - 3 * t * t + 1
+    const h10 = t * t * t - 2 * t * t + t
+    const h01 = -2 * t * t * t + 3 * t * t
+    const h11 = t * t * t - t * t
+    const y = h00 * y0 + h10 * span * m0 + h01 * y1 + h11 * span * m1
+    lut[x] = clampByte(y)
+  }
+  return lut
+}
+
+function createImageConvertLut(profile: ImageConvertAdjustProfile): Uint8ClampedArray {
+  const lut = new Uint8ClampedArray(256)
+  const normalizedContrast = Math.max(-100, Math.min(100, profile.contrast)) / 100
+  const contrastFactor = (259 * (normalizedContrast * 255 + 255)) / (255 * (259 - normalizedContrast * 255))
+  const brightnessOffset = (Math.max(-100, Math.min(100, profile.brightness)) / 100) * 255
+  const inputBlack = Math.max(0, Math.min(254, Math.round(profile.level_input_black)))
+  const inputWhite = Math.max(inputBlack + 1, Math.min(255, Math.round(profile.level_input_white)))
+  const gamma = Math.max(0.1, Math.min(5, profile.level_gamma))
+  const curveShadow = Math.max(-100, Math.min(100, profile.curve_shadow))
+  const curveMidtone = Math.max(-100, Math.min(100, profile.curve_midtone))
+  const curveHighlight = Math.max(-100, Math.min(100, profile.curve_highlight))
+  const curveLut =
+    profile.mode === 'curve'
+      ? buildCurveLutFromAnchors(
+        profile.curve_shadow_x,
+        profile.curve_midtone_x,
+        profile.curve_highlight_x,
+        curveShadow,
+        curveMidtone,
+        curveHighlight,
+      )
+      : null
+
+  for (let index = 0; index < 256; index += 1) {
+    let value = index
+    if (profile.mode === 'basic') {
+      value = contrastFactor * (value - 128) + 128 + brightnessOffset
+    }
+    if (profile.mode === 'levels') {
+      const leveled = (value - inputBlack) / (inputWhite - inputBlack)
+      const clampedLeveled = Math.max(0, Math.min(1, leveled))
+      value = 255 * Math.pow(clampedLeveled, 1 / gamma)
+    }
+    if (profile.mode === 'curve') {
+      value = curveLut ? curveLut[clampByte(value)] : value
+    }
+    lut[index] = clampByte(value)
+  }
+
+  return lut
+}
+
+function applyImageConvertAdjustToCanvas(
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  profile: ImageConvertAdjustProfile,
+): void {
+  const isIdentityProfile =
+    (profile.mode === 'basic' && profile.brightness === 0 && profile.contrast === 0) ||
+    (profile.mode === 'levels' &&
+      profile.level_input_black === 0 &&
+      profile.level_input_white === 255 &&
+      profile.level_gamma === 1) ||
+    (profile.mode === 'curve' &&
+      profile.curve_shadow_x === 64 &&
+      profile.curve_midtone_x === 128 &&
+      profile.curve_highlight_x === 192 &&
+      profile.curve_shadow === 0 &&
+      profile.curve_midtone === 0 &&
+      profile.curve_highlight === 0)
+  if (isIdentityProfile) {
+    return
+  }
+
+  const imageData = context.getImageData(0, 0, width, height)
+  const lut = createImageConvertLut(profile)
+  const pixels = imageData.data
+  for (let index = 0; index < pixels.length; index += 4) {
+    pixels[index] = lut[pixels[index]]
+    pixels[index + 1] = lut[pixels[index + 1]]
+    pixels[index + 2] = lut[pixels[index + 2]]
+  }
+  context.putImageData(imageData, 0, 0)
+}
+
 interface UseAppTopLayerBindingsParams {
   runtimeSources: AppRuntimeSourcesResult
   readNavigationState: AppReadAndNavigationResult
@@ -140,6 +284,9 @@ export function useAppTopLayerBindings({
     imageConvertScale,
     setImageConvertScale,
     imageConvertLongestEdgePx,
+    setImageConvertLongestEdgePx,
+    imageConvertAdjustProfile,
+    setImageConvertAdjustProfile,
     imageConvertFormat,
     setImageConvertFormat,
     imageConvertQuality,
@@ -148,6 +295,10 @@ export function useAppTopLayerBindings({
     setImageConvertPreviewMode,
     imageConvertPreviewScale,
     setImageConvertPreviewScale,
+    imageConvertPreviewLongestEdgePx,
+    setImageConvertPreviewLongestEdgePx,
+    imageConvertPreviewAdjustProfile,
+    setImageConvertPreviewAdjustProfile,
     imageConvertPreviewFormat,
     setImageConvertPreviewFormat,
     imageConvertPreviewQuality,
@@ -250,7 +401,7 @@ export function useAppTopLayerBindings({
             sourceWidth,
             sourceHeight,
             imageConvertPreviewScale,
-            imageConvertLongestEdgePx,
+            imageConvertPreviewLongestEdgePx,
           )
           const targetWidth = targetSize.width
           const targetHeight = targetSize.height
@@ -267,6 +418,12 @@ export function useAppTopLayerBindings({
           context.imageSmoothingQuality = imageConvertPreviewQuality >= 70 ? 'high' : imageConvertPreviewQuality >= 40 ? 'medium' : 'low'
           context.clearRect(0, 0, targetWidth, targetHeight)
           context.drawImage(imageElement, 0, 0, targetWidth, targetHeight)
+          applyImageConvertAdjustToCanvas(
+            context,
+            targetWidth,
+            targetHeight,
+            imageConvertPreviewAdjustProfile,
+          )
 
           const mimeType = resolveImageConvertMimeType(imageConvertPreviewFormat)
           const quality = imageConvertPreviewFormat === 'png'
@@ -296,7 +453,8 @@ export function useAppTopLayerBindings({
   }, [
     fullscreenImageSrc,
     imageConvertPreviewFormat,
-    imageConvertLongestEdgePx,
+    imageConvertPreviewAdjustProfile,
+    imageConvertPreviewLongestEdgePx,
     imageConvertPreviewMode,
     imageConvertPreviewQuality,
     imageConvertPreviewScale,
@@ -365,7 +523,8 @@ export function useAppTopLayerBindings({
     subtitleOverlayStyle,
     imageConvertPreviewMode,
     imageConvertPreviewScale,
-    imageConvertPreviewLongestEdgePx: imageConvertLongestEdgePx,
+    imageConvertPreviewLongestEdgePx,
+    imageConvertPreviewAdjustProfile,
     imageConvertPreviewFormat,
     imageConvertPreviewQuality,
     imageConvertPreviewRenderedSrc,
@@ -381,6 +540,8 @@ export function useAppTopLayerBindings({
     },
     onConfirmImageConvertPreview: () => {
       setImageConvertScale(imageConvertPreviewScale)
+      setImageConvertLongestEdgePx(imageConvertPreviewLongestEdgePx)
+      setImageConvertAdjustProfile(imageConvertPreviewAdjustProfile)
       setImageConvertFormat(imageConvertPreviewFormat)
       setImageConvertQuality(imageConvertPreviewQuality)
       setImageConvertPreviewMode(false)
@@ -388,10 +549,18 @@ export function useAppTopLayerBindings({
     },
     onCancelImageConvertPreview: () => {
       setImageConvertPreviewScale(imageConvertScale)
+      setImageConvertPreviewLongestEdgePx(imageConvertLongestEdgePx)
+      setImageConvertPreviewAdjustProfile(imageConvertAdjustProfile)
       setImageConvertPreviewFormat(imageConvertFormat)
       setImageConvertPreviewQuality(imageConvertQuality)
       setImageConvertPreviewMode(false)
       setFullscreenActiveWithAutoStop(false)
+    },
+    onApplyImageConvertPreviewScaleToLongestEdge: (value) => {
+      setImageConvertPreviewLongestEdgePx(value)
+    },
+    onChangeImageConvertPreviewAdjustProfile: (nextProfile) => {
+      setImageConvertPreviewAdjustProfile(nextProfile)
     },
     bindFullscreenVideoElement,
     focusedVideoCoverImageSrc,

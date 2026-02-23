@@ -7,6 +7,7 @@ import type { AlignDirection } from './paneMath'
 import { FullscreenMetaMarquee } from './FullscreenMetaMarquee'
 import { MainUiIcon } from '../MainUiIcon'
 import { VideoControlIcon } from '../VideoControlIcon'
+import type { ImageConvertAdjustProfile } from '../../features/app/useAppSessionState'
 
 const IMAGE_CONVERT_FORMAT_OPTIONS = ['webp', 'jpeg', 'png', 'avif'] as const
 type ImageConvertFormat = (typeof IMAGE_CONVERT_FORMAT_OPTIONS)[number]
@@ -152,9 +153,14 @@ interface FullscreenFooterProps {
   imageConvertPreviewLongestEdgePx?: number | null
   imageConvertPreviewFormat?: ImageConvertFormat
   imageConvertPreviewQuality?: number
+  imageConvertPreviewAdjustProfile?: ImageConvertAdjustProfile
+  showImageConvertAdjustPanel?: boolean
+  canApplyScaleToLongestEdge?: boolean
   onChangeImageConvertPreviewScale?: (value: number) => void
   onChangeImageConvertPreviewFormat?: (value: ImageConvertFormat) => void
   onChangeImageConvertPreviewQuality?: (value: number) => void
+  onApplyImageConvertPreviewScaleToLongestEdge?: () => void
+  onToggleImageConvertAdjustPanel?: () => void
   onConfirmImageConvertPreview?: () => void
   onCancelImageConvertPreview?: () => void
 }
@@ -206,9 +212,27 @@ export function FullscreenFooter({
   imageConvertPreviewLongestEdgePx = null,
   imageConvertPreviewFormat = 'webp',
   imageConvertPreviewQuality = 80,
+  imageConvertPreviewAdjustProfile = {
+    mode: 'basic',
+    brightness: 0,
+    contrast: 0,
+    level_input_black: 0,
+    level_input_white: 255,
+    level_gamma: 1,
+    curve_shadow_x: 64,
+    curve_midtone_x: 128,
+    curve_highlight_x: 192,
+    curve_shadow: 0,
+    curve_midtone: 0,
+    curve_highlight: 0,
+  },
+  showImageConvertAdjustPanel = false,
+  canApplyScaleToLongestEdge = false,
   onChangeImageConvertPreviewScale,
   onChangeImageConvertPreviewFormat,
   onChangeImageConvertPreviewQuality,
+  onApplyImageConvertPreviewScaleToLongestEdge,
+  onToggleImageConvertAdjustPanel,
   onConfirmImageConvertPreview,
   onCancelImageConvertPreview,
 }: FullscreenFooterProps) {
@@ -497,6 +521,18 @@ export function FullscreenFooter({
                 </div>
               </div>
 
+              <button
+                className="video-action-btn fullscreen-action-btn"
+                type="button"
+                title="应用当前缩放结果到 Longest Edge"
+                disabled={!canApplyScaleToLongestEdge}
+                onClick={() => {
+                  onApplyImageConvertPreviewScaleToLongestEdge?.()
+                }}
+              >
+                <span className="fullscreen-action-content">AS</span>
+              </button>
+
               <div className={`header-popover-control header-popover-control--upward ${showPreviewFormatPopover ? 'is-open' : ''}`} onMouseEnter={() => setOpenPreviewFormatPopover(true)} onMouseLeave={() => {
                 if (popoverDebugPinned) {
                   return
@@ -562,6 +598,17 @@ export function FullscreenFooter({
                   </div>
                 </div>
               </div>
+
+              <button
+                className={`video-action-btn fullscreen-action-btn ${showImageConvertAdjustPanel ? 'is-active' : ''}`}
+                type="button"
+                title={`调节面板 (${imageConvertPreviewAdjustProfile.mode.toUpperCase()})`}
+                onClick={() => {
+                  onToggleImageConvertAdjustPanel?.()
+                }}
+              >
+                <span className="fullscreen-action-content">ADJ</span>
+              </button>
             </>
           ) : null}
 

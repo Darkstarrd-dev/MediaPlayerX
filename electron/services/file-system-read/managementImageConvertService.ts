@@ -53,6 +53,120 @@ interface RunImageConvertTaskResult {
   first_error_detail: string | null;
 }
 
+function clampByte(value: number): number {
+  return Math.max(0, Math.min(255, Math.round(value)));
+}
+
+function buildCurveLutFromAnchors(
+  shadowX: number,
+  midtoneX: number,
+  highlightX: number,
+  shadowYOffset: number,
+  midtoneYOffset: number,
+  highlightYOffset: number,
+): Uint8ClampedArray {
+  const clampedShadowX = clampByte(shadowX);
+  const clampedMidtoneX = clampByte(midtoneX);
+  const clampedHighlightX = clampByte(highlightX);
+  const anchorX = [
+    0,
+    Math.max(1, Math.min(clampedShadowX, clampedMidtoneX - 2)),
+    Math.max(clampedShadowX + 1, Math.min(clampedMidtoneX, clampedHighlightX - 1)),
+    Math.max(clampedMidtoneX + 2, Math.min(clampedHighlightX, 254)),
+    255,
+  ];
+  const anchorY = [
+    0,
+    clampByte(anchorX[1] - shadowYOffset * 0.52),
+    clampByte(anchorX[2] - midtoneYOffset * 0.52),
+    clampByte(anchorX[3] - highlightYOffset * 0.52),
+    255,
+  ];
+  const slope = new Array<number>(anchorX.length).fill(0);
+  slope[0] = (anchorY[1] - anchorY[0]) / (anchorX[1] - anchorX[0]);
+  slope[slope.length - 1] =
+    (anchorY[anchorY.length - 1] - anchorY[anchorY.length - 2]) /
+    (anchorX[anchorX.length - 1] - anchorX[anchorX.length - 2]);
+  for (let index = 1; index < slope.length - 1; index += 1) {
+    slope[index] =
+      (anchorY[index + 1] - anchorY[index - 1]) /
+      (anchorX[index + 1] - anchorX[index - 1]);
+  }
+
+  const lut = new Uint8ClampedArray(256);
+  for (let x = 0; x <= 255; x += 1) {
+    let segmentIndex = 0;
+    while (segmentIndex < anchorX.length - 2 && x > anchorX[segmentIndex + 1]) {
+      segmentIndex += 1;
+    }
+    const x0 = anchorX[segmentIndex];
+    const x1 = anchorX[segmentIndex + 1];
+    const y0 = anchorY[segmentIndex];
+    const y1 = anchorY[segmentIndex + 1];
+    const span = Math.max(1, x1 - x0);
+    const t = (x - x0) / span;
+    const m0 = slope[segmentIndex];
+    const m1 = slope[segmentIndex + 1];
+    const h00 = 2 * t * t * t - 3 * t * t + 1;
+    const h10 = t * t * t - 2 * t * t + t;
+    const h01 = -2 * t * t * t + 3 * t * t;
+    const h11 = t * t * t - t * t;
+    const y = h00 * y0 + h10 * span * m0 + h01 * y1 + h11 * span * m1;
+    lut[x] = clampByte(y);
+  }
+  return lut;
+}
+
+function createImageConvertLut(
+  profile: NonNullable<StartImageConvertTaskRequestDto["adjust"]>,
+): Uint8ClampedArray {
+  const lut = new Uint8ClampedArray(256);
+  const normalizedContrast = Math.max(-100, Math.min(100, profile.contrast)) / 100;
+  const contrastFactor =
+    (259 * (normalizedContrast * 255 + 255)) /
+    (255 * (259 - normalizedContrast * 255));
+  const brightnessOffset =
+    (Math.max(-100, Math.min(100, profile.brightness)) / 100) * 255;
+  const inputBlack = Math.max(0, Math.min(254, Math.round(profile.level_input_black)));
+  const inputWhite = Math.max(
+    inputBlack + 1,
+    Math.min(255, Math.round(profile.level_input_white)),
+  );
+  const gamma = Math.max(0.1, Math.min(5, profile.level_gamma));
+  const curveShadow = Math.max(-100, Math.min(100, profile.curve_shadow));
+  const curveMidtone = Math.max(-100, Math.min(100, profile.curve_midtone));
+  const curveHighlight = Math.max(-100, Math.min(100, profile.curve_highlight));
+  const curveLut =
+    profile.mode === "curve"
+      ? buildCurveLutFromAnchors(
+        profile.curve_shadow_x,
+        profile.curve_midtone_x,
+        profile.curve_highlight_x,
+        curveShadow,
+        curveMidtone,
+        curveHighlight,
+      )
+      : null;
+
+  for (let index = 0; index < 256; index += 1) {
+    let value = index;
+    if (profile.mode === "basic") {
+      value = contrastFactor * (value - 128) + 128 + brightnessOffset;
+    }
+    if (profile.mode === "levels") {
+      const leveled = (value - inputBlack) / (inputWhite - inputBlack);
+      const clampedLeveled = Math.max(0, Math.min(1, leveled));
+      value = 255 * Math.pow(clampedLeveled, 1 / gamma);
+    }
+    if (profile.mode === "curve") {
+      value = curveLut ? curveLut[clampByte(value)] : value;
+    }
+    lut[index] = clampByte(value);
+  }
+
+  return lut;
+}
+
 interface ManagementImageConvertServiceDependencies {
   thumbnailCacheRootDir: string;
   ensureStateLoaded: () => Promise<void>;
@@ -157,7 +271,11 @@ export class ManagementImageConvertService {
     sourceBuffer: Buffer,
     request: Pick<
       StartImageConvertTaskRequestDto,
-      "scale_factor" | "longest_edge_px" | "target_format" | "quality"
+      | "scale_factor"
+      | "longest_edge_px"
+      | "adjust"
+      | "target_format"
+      | "quality"
     >,
   ): Promise<Buffer> {
     const sharpModule = await getSharpModule();
@@ -199,6 +317,27 @@ export class ManagementImageConvertService {
           fit: "fill",
         });
       }
+    }
+
+    if (request.adjust) {
+      const rawPayload = await pipeline
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      const { data, info } = rawPayload;
+      const lut = createImageConvertLut(request.adjust);
+      for (let index = 0; index < data.length; index += info.channels) {
+        data[index] = lut[data[index] ?? 0];
+        data[index + 1] = lut[data[index + 1] ?? 0];
+        data[index + 2] = lut[data[index + 2] ?? 0];
+      }
+      pipeline = sharp(data, {
+        raw: {
+          width: info.width,
+          height: info.height,
+          channels: info.channels,
+        },
+      });
     }
 
     if (request.target_format === "webp") {

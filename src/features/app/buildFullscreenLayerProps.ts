@@ -5,6 +5,7 @@ import type { FullscreenLayerProps } from '../../components/FullscreenLayer'
 import { clamp } from '../../utils/ui'
 import type { ImageItem, VideoItem } from '../../types'
 import type { VideoFitMode } from '../media/videoFitMode'
+import type { ImageConvertAdjustProfile } from './useAppSessionState'
 
 interface BuildFullscreenLayerPropsParams {
   mode: FullscreenLayerProps['mode']
@@ -48,6 +49,7 @@ interface BuildFullscreenLayerPropsParams {
   imageConvertPreviewMode?: boolean
   imageConvertPreviewScale?: number
   imageConvertPreviewLongestEdgePx?: number | null
+  imageConvertPreviewAdjustProfile?: ImageConvertAdjustProfile
   imageConvertPreviewFormat?: 'webp' | 'jpeg' | 'png' | 'avif'
   imageConvertPreviewQuality?: number
   imageConvertPreviewRenderedSrc?: string | null
@@ -55,6 +57,8 @@ interface BuildFullscreenLayerPropsParams {
   onChangeImageConvertPreviewScale?: (value: number) => void
   onChangeImageConvertPreviewFormat?: (value: 'webp' | 'jpeg' | 'png' | 'avif') => void
   onChangeImageConvertPreviewQuality?: (value: number) => void
+  onApplyImageConvertPreviewScaleToLongestEdge?: (value: number | null) => void
+  onChangeImageConvertPreviewAdjustProfile?: (profile: ImageConvertAdjustProfile) => void
   onConfirmImageConvertPreview?: () => void
   onCancelImageConvertPreview?: () => void
   updateSettings: (patch: Partial<AppSettings>) => void
@@ -129,6 +133,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     imageConvertPreviewMode: params.imageConvertPreviewMode,
     imageConvertPreviewScale: params.imageConvertPreviewScale,
     imageConvertPreviewLongestEdgePx: params.imageConvertPreviewLongestEdgePx,
+    imageConvertPreviewAdjustProfile: params.imageConvertPreviewAdjustProfile,
     imageConvertPreviewFormat: params.imageConvertPreviewFormat,
     imageConvertPreviewQuality: params.imageConvertPreviewQuality,
     imageConvertPreviewRenderedSrc: params.imageConvertPreviewRenderedSrc,
@@ -151,6 +156,8 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     onChangeImageConvertPreviewScale: params.onChangeImageConvertPreviewScale,
     onChangeImageConvertPreviewFormat: params.onChangeImageConvertPreviewFormat,
     onChangeImageConvertPreviewQuality: params.onChangeImageConvertPreviewQuality,
+    onApplyImageConvertPreviewScaleToLongestEdge: params.onApplyImageConvertPreviewScaleToLongestEdge,
+    onChangeImageConvertPreviewAdjustProfile: params.onChangeImageConvertPreviewAdjustProfile,
     onConfirmImageConvertPreview: params.onConfirmImageConvertPreview,
     onCancelImageConvertPreview: params.onCancelImageConvertPreview,
     onToggleVideoPlay: () => params.setVideoPlaying((value) => !value),

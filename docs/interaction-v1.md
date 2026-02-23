@@ -243,11 +243,13 @@ Last updated: 2026-02-22
   - 管理态 RS 面板新增 `Longest Edge(px)` 输入：留空时按 `Scale`；有值时按“最长边=目标像素”缩放并保持比例，且不放大小图（仅缩小）。
   - 当 `Longest Edge(px)` 有值时，全屏预览里的 `S` 控件禁用，避免与“最长边优先”策略冲突。
   - 预览态新增 `ADJ` 调节面板（大面板）：
-    - `Basic`：Brightness + Contrast。
-    - `Levels`：Input Black / Input White / Gamma（在 Basic 之上生效）。
-    - `Curve`：Shadows / Midtones / Highlights（三段曲线，在 Levels 之上生效）。
+    - `Basic`：Brightness + Contrast（仅显示并仅应用该模式参数）。
+    - `Levels`：Input Black / Input White / Gamma（仅显示并仅应用该模式参数）。
+    - `Curve`：Master 曲线编辑（线性对角线为默认无改动状态，节点支持 X/Y 调节；仅显示并仅应用该模式参数）。
     - 面板默认左下角显示，可拖拽移动位置，避免遮挡对比主画面。
-    - 面板内提供 `Reset`（恢复到本次打开 ADJ 时的初始快照）与 `Cancel`（恢复初始快照并关闭 ADJ）。
+    - 面板内提供 `Reset`（仅复位当前模式参数，不切换模式）与 `Cancel`（恢复本次打开 ADJ 的初始快照并关闭 ADJ）。
+    - ADJ 打开时隐藏全屏 control-shell，且允许继续拖动对比分割条；面板外点击不关闭 ADJ。
+    - ADJ 关闭入口仅 `Cancel` 按钮与 `Esc`（`Esc` 优先关闭 ADJ，而非退出全屏）。
   - 预览态 `OK` 后保存当前调节参数到会话，下一次调节以上次结果为基础继续。
   - 预览态中心区新增“确定/取消”；确定提交草稿参数到管理面板，取消丢弃草稿并退出预览。
   - 主显示区为“同图左右对比”：左侧原图、右侧转换预览图，中间分割条可拖拽。

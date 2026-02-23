@@ -163,6 +163,7 @@
 | `fs.image.controls.shell` | `--mpx-slot-fs-image-controls-shell-*` |
 | `fs.image.controls.autoplay.pop` | `--mpx-slot-fs-image-controls-autoplay-pop-*` |
 | `fs.image.controls.zoom.pop` | `--mpx-slot-fs-image-controls-zoom-pop-*` |
+| `fs.image.controls.adjust.panel` | `--mpx-slot-fs-image-controls-adjust-panel-*` |
 | `fs.image.convertPreview.panel` | `--mpx-slot-fs-image-convert-preview-panel-*` |
 | `fs.image.convertPreview.splitter` | `--mpx-slot-fs-image-convert-preview-splitter-*` |
 | `fs.image.convertPreview.error.ovl` | `--mpx-slot-fs-image-convert-preview-error-ovl-*` |

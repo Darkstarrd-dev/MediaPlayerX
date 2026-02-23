@@ -2,15 +2,12 @@ import { useEffect } from "react";
 
 import { normalizeSeriesId, pickFirstBySeriesId } from "./workspaceSharedUtils";
 import { isEditableTarget } from "../../utils/ui";
+import { computeRenameDialogParams } from "./renameDialogLogic";
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
 import type { AppSessionStateResult } from "./useAppSessionState";
 import type { MediaStateResult } from "../media/useMediaState";
 import type { AppReadAndNavigationResult } from "./useAppReadAndNavigation";
 import type { FullscreenPlaybackBindingsResult } from "./useFullscreenPlaybackBindings";
-
-function stripFileExtension(value: string): string {
-  return value.replace(/\.[^./\\]+$/, "");
-}
 
 interface UseAppInteractionLayerParams {
   appSettings: AppSettingsStoreSnapshot;
@@ -667,6 +664,20 @@ export function useAppInteractionLayer({
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
+      const imageAdjustPanelOpen =
+        document.documentElement.dataset.mpxImageAdjustPanelOpen === "1";
+
+      if (imageAdjustPanelOpen && event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        window.dispatchEvent(new CustomEvent("mpx:image-adjust-cancel"));
+        return;
+      }
+
+      if (imageAdjustPanelOpen && event.key !== "Escape") {
+        return;
+      }
+
       if (featureTagPickerOpen) {
         return;
       }
@@ -697,76 +708,30 @@ export function useAppInteractionLayer({
               eventTarget.closest(".sidebar") !== null);
 
           if (event.code === "KeyR") {
-            const checkedNodeIds = sidebarCheckedNodeIds.filter((nodeId) =>
-              sidebarNodeById.has(nodeId),
-            );
-            const targetNodeIds =
-              checkedNodeIds.length > 0 ? checkedNodeIds : [];
-            const targetImageIds = manageMode ? imageCheckedIds : [];
-            const batchSelectionActive =
-              manageMode &&
-              (targetNodeIds.length > 0 || targetImageIds.length > 0);
-
-            if (batchSelectionActive) {
-              event.preventDefault();
-              event.stopPropagation();
-              setSidebarRenameTargetNodeId(null);
-              setSidebarRenameTargetNodeIds(targetNodeIds);
-              setSidebarRenameTargetImageIds(targetImageIds);
-              setSidebarRenameDraft("");
-              setSidebarRenameMode("replace");
-              setSidebarRenamePreviewRows([]);
-              setSidebarRenameDialogOpen(true);
+            if (!manageMode && !sidebarShortcutActive) {
               return;
             }
 
-            if (!sidebarShortcutActive) {
+            const result = computeRenameDialogParams({
+              manageMode,
+              sidebarCheckedNodeIds,
+              imageCheckedIds,
+              sidebarNodeById,
+              selectedSidebarNodeId,
+              videosForSidebar,
+              packageByIdEffective,
+            });
+            if (!result) {
               return;
             }
 
-            const targetNodeId =
-              selectedSidebarNodeId &&
-              sidebarNodeById.has(selectedSidebarNodeId)
-                ? selectedSidebarNodeId
-                : null;
-            if (!targetNodeId) {
-              return;
-            }
-
-            const targetNode = sidebarNodeById.get(targetNodeId);
-            const preferredDraft = (() => {
-              if (!targetNode) {
-                return "";
-              }
-
-              if (targetNode.videoId) {
-                const video = videosForSidebar.find(
-                  (item) => item.id === targetNode.videoId,
-                );
-                if (video) {
-                  return stripFileExtension(video.fileName);
-                }
-              }
-
-              if (targetNode.packageId) {
-                const source = packageByIdEffective.get(targetNode.packageId);
-                if (source) {
-                  const fileName =
-                    source.absolutePath.split(/[\\/]/).pop() ??
-                    targetNode.label;
-                  return stripFileExtension(fileName);
-                }
-              }
-
-              return targetNode.label;
-            })();
             event.preventDefault();
             event.stopPropagation();
-            setSidebarRenameTargetNodeId(targetNodeId);
-            setSidebarRenameTargetNodeIds([targetNodeId]);
-            setSidebarRenameTargetImageIds([]);
-            setSidebarRenameDraft(preferredDraft);
-            setSidebarRenameMode("single");
+            setSidebarRenameTargetNodeId(result.targetNodeId);
+            setSidebarRenameTargetNodeIds(result.targetNodeIds);
+            setSidebarRenameTargetImageIds(result.targetImageIds);
+            setSidebarRenameDraft(result.draft);
+            setSidebarRenameMode(result.renameMode);
             setSidebarRenamePreviewRows([]);
             setSidebarRenameDialogOpen(true);
             return;
@@ -958,6 +923,14 @@ export function useAppInteractionLayer({
     };
 
     const onMouseDown = (event: MouseEvent) => {
+      if (document.documentElement.dataset.mpxImageAdjustPanelOpen === "1") {
+        if (event.button === 2) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        return;
+      }
+
       if (featureTagPickerOpen) {
         return;
       }

@@ -420,6 +420,20 @@ export function useShortcutEngine({
 
       const imageConvertExecuting =
         document.documentElement.dataset.mpxImageConvertExecuting === "1";
+      const imageAdjustPanelOpen =
+        document.documentElement.dataset.mpxImageAdjustPanelOpen === "1";
+
+      if (imageAdjustPanelOpen && event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        window.dispatchEvent(new CustomEvent("mpx:image-adjust-cancel"));
+        return;
+      }
+
+      if (imageAdjustPanelOpen && event.key !== "Escape") {
+        return;
+      }
+
       if (imageConvertExecuting && event.key !== "Escape") {
         event.preventDefault();
         event.stopPropagation();

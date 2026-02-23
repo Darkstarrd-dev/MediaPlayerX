@@ -54,6 +54,8 @@ export {
   saveManageSubtitleCleanupResponseSchema,
   imageConvertTaskStatusSchema,
   imageConvertFormatSchema,
+  imageConvertAdjustModeSchema,
+  imageConvertAdjustProfileSchema,
   imageConvertTaskSchema,
   startImageConvertTaskRequestSchema,
   startImageConvertTaskResponseSchema,

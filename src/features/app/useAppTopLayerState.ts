@@ -9,6 +9,7 @@ import { findShortcutConflicts } from "../../shortcuts";
 import type { BrowserMode, ImageItem, VideoItem } from "../../types";
 import type { ImportTaskDto } from "../../contracts/backend";
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
+import type { ImageConvertAdjustProfile } from "./useAppSessionState";
 import type { MediaRepository, RepositoryMode } from "../backend/repository";
 import { buildAppHeaderProps } from "./buildAppHeaderProps";
 import { buildBackendErrorRows } from "./buildBackendErrorRows";
@@ -111,6 +112,7 @@ interface UseAppTopLayerStateParams {
   imageConvertPreviewMode?: boolean;
   imageConvertPreviewScale?: number;
   imageConvertPreviewLongestEdgePx?: number | null;
+  imageConvertPreviewAdjustProfile?: ImageConvertAdjustProfile;
   imageConvertPreviewFormat?: "webp" | "jpeg" | "png" | "avif";
   imageConvertPreviewQuality?: number;
   imageConvertPreviewRenderedSrc?: string | null;
@@ -120,6 +122,12 @@ interface UseAppTopLayerStateParams {
     value: "webp" | "jpeg" | "png" | "avif",
   ) => void;
   onChangeImageConvertPreviewQuality?: (value: number) => void;
+  onApplyImageConvertPreviewScaleToLongestEdge?: (
+    value: number | null,
+  ) => void;
+  onChangeImageConvertPreviewAdjustProfile?: (
+    profile: ImageConvertAdjustProfile,
+  ) => void;
   onConfirmImageConvertPreview?: () => void;
   onCancelImageConvertPreview?: () => void;
   bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void;
@@ -230,6 +238,20 @@ export function useAppTopLayerState({
   imageConvertPreviewMode = false,
   imageConvertPreviewScale = 1,
   imageConvertPreviewLongestEdgePx = null,
+  imageConvertPreviewAdjustProfile = {
+    mode: "basic",
+    brightness: 0,
+    contrast: 0,
+    level_input_black: 0,
+    level_input_white: 255,
+    level_gamma: 1,
+    curve_shadow_x: 64,
+    curve_midtone_x: 128,
+    curve_highlight_x: 192,
+    curve_shadow: 0,
+    curve_midtone: 0,
+    curve_highlight: 0,
+  },
   imageConvertPreviewFormat = "webp",
   imageConvertPreviewQuality = 80,
   imageConvertPreviewRenderedSrc = null,
@@ -237,6 +259,8 @@ export function useAppTopLayerState({
   onChangeImageConvertPreviewScale,
   onChangeImageConvertPreviewFormat,
   onChangeImageConvertPreviewQuality,
+  onApplyImageConvertPreviewScaleToLongestEdge,
+  onChangeImageConvertPreviewAdjustProfile,
   onConfirmImageConvertPreview,
   onCancelImageConvertPreview,
   bindFullscreenVideoElement,
@@ -467,6 +491,7 @@ export function useAppTopLayerState({
     imageConvertPreviewMode,
     imageConvertPreviewScale,
     imageConvertPreviewLongestEdgePx,
+    imageConvertPreviewAdjustProfile,
     imageConvertPreviewFormat,
     imageConvertPreviewQuality,
     imageConvertPreviewRenderedSrc,
@@ -474,6 +499,8 @@ export function useAppTopLayerState({
     onChangeImageConvertPreviewScale,
     onChangeImageConvertPreviewFormat,
     onChangeImageConvertPreviewQuality,
+    onApplyImageConvertPreviewScaleToLongestEdge,
+    onChangeImageConvertPreviewAdjustProfile,
     onConfirmImageConvertPreview,
     onCancelImageConvertPreview,
     bindFullscreenVideoElement,

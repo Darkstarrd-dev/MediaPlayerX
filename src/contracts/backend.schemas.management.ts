@@ -220,6 +220,21 @@ export const imageConvertTaskStatusSchema = z.enum([
   "failed",
 ]);
 export const imageConvertFormatSchema = z.enum(["webp", "jpeg", "png", "avif"]);
+export const imageConvertAdjustModeSchema = z.enum(["basic", "levels", "curve"]);
+export const imageConvertAdjustProfileSchema = z.object({
+  mode: imageConvertAdjustModeSchema,
+  brightness: z.number().min(-100).max(100),
+  contrast: z.number().min(-100).max(100),
+  level_input_black: z.number().int().min(0).max(254),
+  level_input_white: z.number().int().min(1).max(255),
+  level_gamma: z.number().min(0.1).max(5),
+  curve_shadow_x: z.number().int().min(1).max(254),
+  curve_midtone_x: z.number().int().min(1).max(254),
+  curve_highlight_x: z.number().int().min(1).max(254),
+  curve_shadow: z.number().min(-100).max(100),
+  curve_midtone: z.number().min(-100).max(100),
+  curve_highlight: z.number().min(-100).max(100),
+});
 export const imageConvertTaskSchema = z.object({
   task_id: z.string().min(1),
   status: imageConvertTaskStatusSchema,
@@ -237,6 +252,7 @@ export const startImageConvertTaskRequestSchema = z.object({
   node_ids: z.array(z.string().min(1)).min(1),
   scale_factor: z.number().min(0.1).max(1.0),
   longest_edge_px: z.number().int().min(1).max(16384).optional(),
+  adjust: imageConvertAdjustProfileSchema.optional(),
   target_format: imageConvertFormatSchema,
   quality: z.number().int().min(10).max(100),
   concurrency: z.number().int().min(1).max(16),

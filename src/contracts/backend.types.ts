@@ -231,6 +231,12 @@ export type ImageConvertTaskStatusDto = Infer<
   typeof Backend.imageConvertTaskStatusSchema
 >;
 export type ImageConvertFormatDto = Infer<typeof Backend.imageConvertFormatSchema>;
+export type ImageConvertAdjustModeDto = Infer<
+  typeof Backend.imageConvertAdjustModeSchema
+>;
+export type ImageConvertAdjustProfile = Infer<
+  typeof Backend.imageConvertAdjustProfileSchema
+>;
 export type ImageConvertTaskDto = Infer<typeof Backend.imageConvertTaskSchema>;
 export type StartImageConvertTaskRequestDto = Infer<
   typeof Backend.startImageConvertTaskRequestSchema

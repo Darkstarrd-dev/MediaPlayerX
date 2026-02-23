@@ -5,6 +5,7 @@ import type { BackendErrorRow } from './buildBackendErrorRows'
 import type { ManageAdReviewActionsResult } from './useManageAdReviewActions'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 import type { MusicBookletBindingsResult } from './useMusicBookletBindings'
+import type { ImageConvertAdjustProfile } from './useAppSessionState'
 import type { WriteDataAccessResult } from '../backend'
 import type { MediaRepository } from '../backend/repository'
 import type {
@@ -101,6 +102,8 @@ export interface UseAppWorkspacePropsParams {
   setImageConvertScale: Dispatch<SetStateAction<number>>
   imageConvertLongestEdgePx: number | null
   setImageConvertLongestEdgePx: Dispatch<SetStateAction<number | null>>
+  imageConvertAdjustProfile: ImageConvertAdjustProfile
+  setImageConvertAdjustProfile: Dispatch<SetStateAction<ImageConvertAdjustProfile>>
   imageConvertFormat: 'webp' | 'jpeg' | 'png' | 'avif'
   setImageConvertFormat: Dispatch<SetStateAction<'webp' | 'jpeg' | 'png' | 'avif'>>
   imageConvertQuality: number
@@ -109,6 +112,10 @@ export interface UseAppWorkspacePropsParams {
   setImageConvertPreviewMode: Dispatch<SetStateAction<boolean>>
   imageConvertPreviewScale: number
   setImageConvertPreviewScale: Dispatch<SetStateAction<number>>
+  imageConvertPreviewLongestEdgePx: number | null
+  setImageConvertPreviewLongestEdgePx: Dispatch<SetStateAction<number | null>>
+  imageConvertPreviewAdjustProfile: ImageConvertAdjustProfile
+  setImageConvertPreviewAdjustProfile: Dispatch<SetStateAction<ImageConvertAdjustProfile>>
   imageConvertPreviewFormat: 'webp' | 'jpeg' | 'png' | 'avif'
   setImageConvertPreviewFormat: Dispatch<SetStateAction<'webp' | 'jpeg' | 'png' | 'avif'>>
   imageConvertPreviewQuality: number

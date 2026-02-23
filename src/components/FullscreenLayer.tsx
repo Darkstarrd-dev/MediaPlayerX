@@ -14,6 +14,7 @@ import {
 import type { BrowserMode, ImageItem, VideoItem } from '../types'
 import { clamp } from '../utils/ui'
 import type { VideoFitMode } from '../features/media/videoFitMode'
+import type { ImageConvertAdjustProfile } from '../features/app/useAppSessionState'
 import { buildA11yPropsByRegistry } from '../i18n/a11y'
 import { useI18n } from '../i18n/useI18n'
 import { FullscreenFooter } from './fullscreen/FullscreenFooter'
@@ -51,6 +52,213 @@ const DUAL_VIDEO_CONTROLS_MIN_WITH_LEFT_GROUP = 500
 const DUAL_IMAGE_CONTROLS_MIN_TWO_GROUPS = 460
 const DUAL_VIDEO_CONTROLS_MIN_TWO_GROUPS = 360
 const FULLSCREEN_DIVIDER_WIDTH = 8
+const IMAGE_ADJUST_HISTOGRAM_BIN_COUNT = 64
+const IMAGE_ADJUST_CURVE_CANVAS_WIDTH = 360
+const IMAGE_ADJUST_CURVE_CANVAS_HEIGHT = 220
+const IMAGE_ADJUST_CURVE_PADDING = 18
+const IMAGE_ADJUST_PANEL_DRAG_MARGIN = 8
+
+function loadImageElementForAdjust(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.crossOrigin = 'anonymous'
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('image adjust preview image load failed'))
+    image.src = src
+  })
+}
+
+function buildImageAdjustHistogramBins(
+  imageData: Uint8ClampedArray,
+  channelStride: number,
+): number[] {
+  const bins = Array.from({ length: IMAGE_ADJUST_HISTOGRAM_BIN_COUNT }, () => 0)
+  if (channelStride <= 0) {
+    return bins
+  }
+  for (let index = 0; index < imageData.length; index += channelStride) {
+    const red = imageData[index] ?? 0
+    const green = imageData[index + 1] ?? 0
+    const blue = imageData[index + 2] ?? 0
+    const luminance = Math.round(red * 0.2126 + green * 0.7152 + blue * 0.0722)
+    const binIndex = Math.max(0, Math.min(IMAGE_ADJUST_HISTOGRAM_BIN_COUNT - 1, Math.floor((luminance / 256) * IMAGE_ADJUST_HISTOGRAM_BIN_COUNT)))
+    bins[binIndex] += 1
+  }
+  const peak = Math.max(1, ...bins)
+  return bins.map((value) => Number((value / peak).toFixed(4)))
+}
+
+function clampByte(value: number): number {
+  return Math.max(0, Math.min(255, Math.round(value)))
+}
+
+function resolveNormalizedCurveAnchorX(
+  shadowX: number,
+  midtoneX: number,
+  highlightX: number,
+): { shadowX: number; midtoneX: number; highlightX: number } {
+  const clampedShadowX = clampByte(shadowX)
+  const clampedMidtoneX = clampByte(midtoneX)
+  const clampedHighlightX = clampByte(highlightX)
+  const normalizedShadowX = Math.max(1, Math.min(clampedShadowX, clampedMidtoneX - 2))
+  const normalizedMidtoneX = Math.max(
+    normalizedShadowX + 1,
+    Math.min(clampedMidtoneX, clampedHighlightX - 1),
+  )
+  const normalizedHighlightX = Math.max(
+    normalizedMidtoneX + 2,
+    Math.min(clampedHighlightX, 254),
+  )
+  return {
+    shadowX: normalizedShadowX,
+    midtoneX: normalizedMidtoneX,
+    highlightX: normalizedHighlightX,
+  }
+}
+
+function resolveNormalizedCurveAnchors(
+  shadowX: number,
+  midtoneX: number,
+  highlightX: number,
+  shadowYOffset: number,
+  midtoneYOffset: number,
+  highlightYOffset: number,
+): {
+  anchorX: [number, number, number, number, number]
+  anchorY: [number, number, number, number, number]
+} {
+  const normalizedX = resolveNormalizedCurveAnchorX(shadowX, midtoneX, highlightX)
+  const anchorX: [number, number, number, number, number] = [
+    0,
+    normalizedX.shadowX,
+    normalizedX.midtoneX,
+    normalizedX.highlightX,
+    255,
+  ]
+  const anchorY: [number, number, number, number, number] = [
+    0,
+    clampByte(anchorX[1] - shadowYOffset * 0.52),
+    clampByte(anchorX[2] - midtoneYOffset * 0.52),
+    clampByte(anchorX[3] - highlightYOffset * 0.52),
+    255,
+  ]
+  return {
+    anchorX,
+    anchorY,
+  }
+}
+
+function buildCurveLutFromAnchors(
+  shadowX: number,
+  midtoneX: number,
+  highlightX: number,
+  shadowYOffset: number,
+  midtoneYOffset: number,
+  highlightYOffset: number,
+): Uint8ClampedArray {
+  const { anchorX, anchorY } = resolveNormalizedCurveAnchors(
+    shadowX,
+    midtoneX,
+    highlightX,
+    shadowYOffset,
+    midtoneYOffset,
+    highlightYOffset,
+  )
+
+  const slope = new Array<number>(anchorX.length).fill(0)
+  slope[0] = (anchorY[1] - anchorY[0]) / (anchorX[1] - anchorX[0])
+  slope[slope.length - 1] =
+    (anchorY[anchorY.length - 1] - anchorY[anchorY.length - 2]) /
+    (anchorX[anchorX.length - 1] - anchorX[anchorX.length - 2])
+  for (let index = 1; index < slope.length - 1; index += 1) {
+    slope[index] =
+      (anchorY[index + 1] - anchorY[index - 1]) /
+      (anchorX[index + 1] - anchorX[index - 1])
+  }
+
+  const lut = new Uint8ClampedArray(256)
+  for (let x = 0; x <= 255; x += 1) {
+    let segmentIndex = 0
+    while (segmentIndex < anchorX.length - 2 && x > anchorX[segmentIndex + 1]) {
+      segmentIndex += 1
+    }
+    const x0 = anchorX[segmentIndex]
+    const x1 = anchorX[segmentIndex + 1]
+    const y0 = anchorY[segmentIndex]
+    const y1 = anchorY[segmentIndex + 1]
+    const span = Math.max(1, x1 - x0)
+    const t = (x - x0) / span
+    const m0 = slope[segmentIndex]
+    const m1 = slope[segmentIndex + 1]
+    const h00 = 2 * t * t * t - 3 * t * t + 1
+    const h10 = t * t * t - 2 * t * t + t
+    const h01 = -2 * t * t * t + 3 * t * t
+    const h11 = t * t * t - t * t
+    const y = h00 * y0 + h10 * span * m0 + h01 * y1 + h11 * span * m1
+    lut[x] = clampByte(y)
+  }
+
+  return lut
+}
+
+function resolveCurveControlPoints(profile: ImageConvertAdjustProfile): Array<{ key: 'shadow' | 'midtone' | 'highlight'; x: number; y: number; value: number }> {
+  const innerWidth = IMAGE_ADJUST_CURVE_CANVAS_WIDTH - IMAGE_ADJUST_CURVE_PADDING * 2
+  const innerHeight = IMAGE_ADJUST_CURVE_CANVAS_HEIGHT - IMAGE_ADJUST_CURVE_PADDING * 2
+  const { anchorX, anchorY } = resolveNormalizedCurveAnchors(
+    profile.curve_shadow_x,
+    profile.curve_midtone_x,
+    profile.curve_highlight_x,
+    profile.curve_shadow,
+    profile.curve_midtone,
+    profile.curve_highlight,
+  )
+
+  return [
+    {
+      key: 'shadow',
+      x: Math.round((anchorX[1] / 255) * innerWidth),
+      y: Math.round((1 - anchorY[1] / 255) * innerHeight),
+      value: profile.curve_shadow,
+    },
+    {
+      key: 'midtone',
+      x: Math.round((anchorX[2] / 255) * innerWidth),
+      y: Math.round((1 - anchorY[2] / 255) * innerHeight),
+      value: profile.curve_midtone,
+    },
+    {
+      key: 'highlight',
+      x: Math.round((anchorX[3] / 255) * innerWidth),
+      y: Math.round((1 - anchorY[3] / 255) * innerHeight),
+      value: profile.curve_highlight,
+    },
+  ]
+}
+
+function resolveCurvePathD(profile: ImageConvertAdjustProfile): string {
+  const innerWidth = IMAGE_ADJUST_CURVE_CANVAS_WIDTH - IMAGE_ADJUST_CURVE_PADDING * 2
+  const innerHeight = IMAGE_ADJUST_CURVE_CANVAS_HEIGHT - IMAGE_ADJUST_CURVE_PADDING * 2
+  const lut = buildCurveLutFromAnchors(
+    profile.curve_shadow_x,
+    profile.curve_midtone_x,
+    profile.curve_highlight_x,
+    profile.curve_shadow,
+    profile.curve_midtone,
+    profile.curve_highlight,
+  )
+  let pathData = ''
+  for (let x = 0; x <= 255; x += 2) {
+    const output = lut[x] ?? x
+    const px = IMAGE_ADJUST_CURVE_PADDING + (x / 255) * innerWidth
+    const py = IMAGE_ADJUST_CURVE_PADDING + (1 - output / 255) * innerHeight
+    pathData += `${x === 0 ? 'M' : ' L'} ${px} ${py}`
+  }
+  const output = lut[255] ?? 255
+  const px = IMAGE_ADJUST_CURVE_PADDING + innerWidth
+  const py = IMAGE_ADJUST_CURVE_PADDING + (1 - output / 255) * innerHeight
+  pathData += ` L ${px} ${py}`
+  return pathData
+}
 
 function resolveMediaPathForFooter(item: { mediaLocator: ImageItem['mediaLocator'] } | { mediaLocator: VideoItem['mediaLocator'] }): string {
   const locator = item.mediaLocator
@@ -223,6 +431,7 @@ export interface FullscreenLayerProps {
   imageConvertPreviewMode?: boolean
   imageConvertPreviewScale?: number
   imageConvertPreviewLongestEdgePx?: number | null
+  imageConvertPreviewAdjustProfile?: ImageConvertAdjustProfile
   imageConvertPreviewFormat?: 'webp' | 'jpeg' | 'png' | 'avif'
   imageConvertPreviewQuality?: number
   imageConvertPreviewRenderedSrc?: string | null
@@ -241,6 +450,8 @@ export interface FullscreenLayerProps {
   onChangeImageConvertPreviewScale?: (value: number) => void
   onChangeImageConvertPreviewFormat?: (value: 'webp' | 'jpeg' | 'png' | 'avif') => void
   onChangeImageConvertPreviewQuality?: (value: number) => void
+  onApplyImageConvertPreviewScaleToLongestEdge?: (value: number | null) => void
+  onChangeImageConvertPreviewAdjustProfile?: (profile: ImageConvertAdjustProfile) => void
   onConfirmImageConvertPreview?: () => void
   onCancelImageConvertPreview?: () => void
   onToggleVideoPlay: () => void
@@ -306,6 +517,20 @@ function FullscreenLayer({
   imageConvertPreviewMode = false,
   imageConvertPreviewScale = 1,
   imageConvertPreviewLongestEdgePx = null,
+  imageConvertPreviewAdjustProfile = {
+    mode: 'basic',
+    brightness: 0,
+    contrast: 0,
+    level_input_black: 0,
+    level_input_white: 255,
+    level_gamma: 1,
+    curve_shadow_x: 64,
+    curve_midtone_x: 128,
+    curve_highlight_x: 192,
+    curve_shadow: 0,
+    curve_midtone: 0,
+    curve_highlight: 0,
+  },
   imageConvertPreviewFormat = 'webp',
   imageConvertPreviewQuality = 80,
   imageConvertPreviewRenderedSrc = null,
@@ -324,6 +549,8 @@ function FullscreenLayer({
   onChangeImageConvertPreviewScale,
   onChangeImageConvertPreviewFormat,
   onChangeImageConvertPreviewQuality,
+  onApplyImageConvertPreviewScaleToLongestEdge,
+  onChangeImageConvertPreviewAdjustProfile,
   onConfirmImageConvertPreview,
   onCancelImageConvertPreview,
   onToggleVideoPlay,
@@ -356,6 +583,16 @@ function FullscreenLayer({
   const imageConvertPreviewActive = mode === 'image' && imageConvertPreviewMode
   const effectiveFullscreenDisplay = imageConvertPreviewActive ? 'image-only' : fullscreenDisplay
   const [imageConvertCompareSplit, setImageConvertCompareSplit] = useState(0.5)
+  const [imageConvertAdjustPanelOpen, setImageConvertAdjustPanelOpen] = useState(false)
+  const [imageConvertAdjustPanelPosition, setImageConvertAdjustPanelPosition] = useState<{ x: number; y: number } | null>(null)
+  const [imageConvertAdjustPanelDragging, setImageConvertAdjustPanelDragging] = useState(false)
+  const [imageAdjustHistogramBins, setImageAdjustHistogramBins] = useState<number[]>(
+    Array.from({ length: IMAGE_ADJUST_HISTOGRAM_BIN_COUNT }, () => 0),
+  )
+  const imageConvertAdjustInitialProfileRef = useRef<ImageConvertAdjustProfile | null>(null)
+  const imageAdjustPanelRef = useRef<HTMLElement>(null)
+  const levelsEditorTrackRef = useRef<HTMLDivElement>(null)
+  const curveSvgRef = useRef<SVGSVGElement>(null)
 
   const { imageViewportSize, videoViewportSize } = useFullscreenViewportSize({
     fullscreenActive,
@@ -379,6 +616,132 @@ function FullscreenLayer({
   const [videoControlsVisible, setVideoControlsVisible] = useState(false)
   const [draggingPane, setDraggingPane] = useState<PaneKey | null>(null)
   const [footerHovering, setFooterHovering] = useState(false)
+
+  useEffect(() => {
+    if (!imageConvertPreviewActive) {
+      setImageConvertAdjustPanelOpen(false)
+      setImageConvertAdjustPanelDragging(false)
+      imageConvertAdjustInitialProfileRef.current = null
+    }
+  }, [imageConvertPreviewActive])
+
+  useEffect(() => {
+    document.documentElement.dataset.mpxImageAdjustPanelOpen =
+      imageConvertAdjustPanelOpen ? '1' : '0'
+    return () => {
+      document.documentElement.dataset.mpxImageAdjustPanelOpen = '0'
+    }
+  }, [imageConvertAdjustPanelOpen])
+
+  useEffect(() => {
+    const onCancelByGlobalEvent = () => {
+      const initialProfile = imageConvertAdjustInitialProfileRef.current
+      if (initialProfile) {
+        onChangeImageConvertPreviewAdjustProfile?.({
+          ...initialProfile,
+        })
+      }
+      setImageConvertAdjustPanelOpen(false)
+    }
+    window.addEventListener('mpx:image-adjust-cancel', onCancelByGlobalEvent)
+    return () => {
+      window.removeEventListener('mpx:image-adjust-cancel', onCancelByGlobalEvent)
+    }
+  }, [onChangeImageConvertPreviewAdjustProfile])
+
+  useEffect(() => {
+    if (imageConvertAdjustPanelOpen) {
+      onSetFooterVisible(false)
+    }
+  }, [imageConvertAdjustPanelOpen, onSetFooterVisible])
+
+  useEffect(() => {
+    if (!imageConvertAdjustPanelPosition) {
+      return
+    }
+    const panelElement = imageAdjustPanelRef.current
+    const panelWidth = panelElement?.offsetWidth ?? 560
+    const panelHeight = panelElement?.offsetHeight ?? 480
+    const nextX = clamp(
+      imageConvertAdjustPanelPosition.x,
+      IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+      Math.max(
+        IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+        fullscreenViewport.width - panelWidth - IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+      ),
+    )
+    const nextY = clamp(
+      imageConvertAdjustPanelPosition.y,
+      IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+      Math.max(
+        IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+        fullscreenViewport.height - panelHeight - IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+      ),
+    )
+    if (nextX !== imageConvertAdjustPanelPosition.x || nextY !== imageConvertAdjustPanelPosition.y) {
+      setImageConvertAdjustPanelPosition({ x: nextX, y: nextY })
+    }
+  }, [
+    fullscreenViewport.height,
+    fullscreenViewport.width,
+    imageConvertAdjustPanelPosition,
+  ])
+
+  useEffect(() => {
+    if (!imageConvertPreviewActive || !imageConvertAdjustPanelOpen) {
+      return
+    }
+    const source = imageConvertPreviewRenderedSrc ?? displayedImageSrc
+    if (!source) {
+      setImageAdjustHistogramBins(
+        Array.from({ length: IMAGE_ADJUST_HISTOGRAM_BIN_COUNT }, () => 0),
+      )
+      return
+    }
+
+    let cancelled = false
+    void (async () => {
+      try {
+        const imageElement = await loadImageElementForAdjust(source)
+        if (cancelled) {
+          return
+        }
+        const sampleWidth = Math.max(1, Math.min(480, imageElement.naturalWidth || imageElement.width || 1))
+        const sampleHeight = Math.max(1, Math.min(360, imageElement.naturalHeight || imageElement.height || 1))
+        const canvas = document.createElement('canvas')
+        canvas.width = sampleWidth
+        canvas.height = sampleHeight
+        const context = canvas.getContext('2d', { willReadFrequently: true })
+        if (!context) {
+          return
+        }
+        context.clearRect(0, 0, sampleWidth, sampleHeight)
+        context.drawImage(imageElement, 0, 0, sampleWidth, sampleHeight)
+        const rawData = context.getImageData(0, 0, sampleWidth, sampleHeight)
+        if (cancelled) {
+          return
+        }
+        setImageAdjustHistogramBins(
+          buildImageAdjustHistogramBins(rawData.data, rawData.data.length > 0 ? 4 : 0),
+        )
+      } catch {
+        if (!cancelled) {
+          setImageAdjustHistogramBins(
+            Array.from({ length: IMAGE_ADJUST_HISTOGRAM_BIN_COUNT }, () => 0),
+          )
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    displayedImageSrc,
+    imageConvertAdjustPanelOpen,
+    imageConvertPreviewActive,
+    imageConvertPreviewRenderedSrc,
+  ])
 
   useEffect(() => {
     setDisplayedImageNaturalSize(null)
@@ -909,11 +1272,28 @@ function FullscreenLayer({
     const resolutionText = width > 0 && height > 0 ? `${width} x ${height}` : '-'
     return `${resolveMediaPathForFooter(focusedImage)} | ${resolutionText} | ${formatImageSizeForFooter(focusedImage.sizeKb)}`
   })()
+
+  const applyScaleResultToLongestEdge = () => {
+    if (!imageConvertPreviewActive) {
+      return
+    }
+    const sourceWidth = displayedImageNaturalSize?.width ?? focusedImage?.width ?? 0
+    const sourceHeight = displayedImageNaturalSize?.height ?? focusedImage?.height ?? 0
+    const sourceLongestEdge = Math.max(0, Math.round(Math.max(sourceWidth, sourceHeight)))
+    if (sourceLongestEdge <= 0) {
+      return
+    }
+    const nextLongestEdge = Math.max(
+      1,
+      Math.min(16384, Math.round(sourceLongestEdge * imageConvertPreviewScale)),
+    )
+    onApplyImageConvertPreviewScaleToLongestEdge?.(nextLongestEdge)
+  }
   const footerVideoInfo = focusedVideo
     ? `${resolveMediaPathForFooter(focusedVideo)} | ${focusedVideo.width} x ${focusedVideo.height} | ${formatVideoSizeForFooter(focusedVideo.sizeMb)}`
     : t('ui.fullscreen.noVideo')
 
-  const imageControls = showFullscreenFooter
+  const imageControls = showFullscreenFooter && !imageConvertAdjustPanelOpen
     ? (
         <FullscreenFooter
           mode={mode}
@@ -951,11 +1331,16 @@ function FullscreenLayer({
           imageConvertPreviewMode={imageConvertPreviewActive}
           imageConvertPreviewScale={imageConvertPreviewScale}
           imageConvertPreviewLongestEdgePx={imageConvertPreviewLongestEdgePx}
+          imageConvertPreviewAdjustProfile={imageConvertPreviewAdjustProfile}
           imageConvertPreviewFormat={imageConvertPreviewFormat}
           imageConvertPreviewQuality={imageConvertPreviewQuality}
+          showImageConvertAdjustPanel={imageConvertAdjustPanelOpen}
+          canApplyScaleToLongestEdge={imageConvertPreviewActive && imageConvertPreviewLongestEdgePx == null}
           onChangeImageConvertPreviewScale={onChangeImageConvertPreviewScale}
           onChangeImageConvertPreviewFormat={onChangeImageConvertPreviewFormat}
           onChangeImageConvertPreviewQuality={onChangeImageConvertPreviewQuality}
+          onApplyImageConvertPreviewScaleToLongestEdge={applyScaleResultToLongestEdge}
+          onToggleImageConvertAdjustPanel={handleOpenAdjustPanel}
           onConfirmImageConvertPreview={onConfirmImageConvertPreview}
           onCancelImageConvertPreview={onCancelImageConvertPreview}
         />
@@ -1076,6 +1461,257 @@ function FullscreenLayer({
     />
   )
 
+  const updatePreviewAdjustProfile = (
+    patch: Partial<ImageConvertAdjustProfile>,
+  ) => {
+    onChangeImageConvertPreviewAdjustProfile?.({
+      ...imageConvertPreviewAdjustProfile,
+      ...patch,
+    })
+  }
+
+  function restoreAdjustProfileFromInitial(): void {
+    const initialProfile = imageConvertAdjustInitialProfileRef.current
+    if (!initialProfile) {
+      return
+    }
+    onChangeImageConvertPreviewAdjustProfile?.({
+      ...initialProfile,
+    })
+  }
+
+  function handleOpenAdjustPanel(): void {
+    if (imageConvertAdjustPanelOpen) {
+      return
+    }
+    imageConvertAdjustInitialProfileRef.current = {
+      ...imageConvertPreviewAdjustProfile,
+    }
+    setImageConvertAdjustPanelOpen(true)
+  }
+
+  function handleResetAdjustPanel(): void {
+    if (imageConvertPreviewAdjustProfile.mode === 'basic') {
+      updatePreviewAdjustProfile({
+        brightness: 0,
+        contrast: 0,
+      })
+      return
+    }
+    if (imageConvertPreviewAdjustProfile.mode === 'levels') {
+      updatePreviewAdjustProfile({
+        level_input_black: 0,
+        level_input_white: 255,
+        level_gamma: 1,
+      })
+      return
+    }
+    updatePreviewAdjustProfile({
+      curve_shadow_x: 64,
+      curve_midtone_x: 128,
+      curve_highlight_x: 192,
+      curve_shadow: 0,
+      curve_midtone: 0,
+      curve_highlight: 0,
+    })
+  }
+
+  function handleCancelAdjustPanel(): void {
+    restoreAdjustProfileFromInitial()
+    setImageConvertAdjustPanelOpen(false)
+  }
+
+  const levelBlackRatio = clamp(imageConvertPreviewAdjustProfile.level_input_black / 255, 0, 1)
+  const levelWhiteRatio = clamp(imageConvertPreviewAdjustProfile.level_input_white / 255, 0, 1)
+  const levelSpan = Math.max(0.0001, levelWhiteRatio - levelBlackRatio)
+  const levelGammaRatio = clamp(
+    levelBlackRatio + levelSpan * Math.pow(0.5, imageConvertPreviewAdjustProfile.level_gamma),
+    levelBlackRatio + 0.01,
+    levelWhiteRatio - 0.01,
+  )
+
+  const startLevelHandleDrag = (
+    handle: 'black' | 'gamma' | 'white',
+    event: ReactMouseEvent<HTMLButtonElement>,
+  ) => {
+    if (event.button !== 0) {
+      return
+    }
+    const trackElement = levelsEditorTrackRef.current
+    if (!trackElement) {
+      return
+    }
+    event.preventDefault()
+    event.stopPropagation()
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const rect = trackElement.getBoundingClientRect()
+      if (rect.width <= 1) {
+        return
+      }
+      const rawRatio = clamp((moveEvent.clientX - rect.left) / rect.width, 0, 1)
+      const currentBlack = imageConvertPreviewAdjustProfile.level_input_black
+      const currentWhite = imageConvertPreviewAdjustProfile.level_input_white
+      if (handle === 'black') {
+        const nextBlack = Math.min(currentWhite - 1, Math.round(rawRatio * 255))
+        updatePreviewAdjustProfile({ level_input_black: nextBlack })
+        return
+      }
+      if (handle === 'white') {
+        const nextWhite = Math.max(currentBlack + 1, Math.round(rawRatio * 255))
+        updatePreviewAdjustProfile({ level_input_white: nextWhite })
+        return
+      }
+      const span = Math.max(1, currentWhite - currentBlack)
+      const normalized = clamp((rawRatio * 255 - currentBlack) / span, 0.001, 0.999)
+      const nextGamma = clamp(Math.log(normalized) / Math.log(0.5), 0.1, 5)
+      updatePreviewAdjustProfile({ level_gamma: Number(nextGamma.toFixed(3)) })
+    }
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }
+
+  const curvePoints = resolveCurveControlPoints(imageConvertPreviewAdjustProfile)
+  const curvePathD = resolveCurvePathD(imageConvertPreviewAdjustProfile)
+  const curveInnerWidth = IMAGE_ADJUST_CURVE_CANVAS_WIDTH - IMAGE_ADJUST_CURVE_PADDING * 2
+  const curveInnerHeight = IMAGE_ADJUST_CURVE_CANVAS_HEIGHT - IMAGE_ADJUST_CURVE_PADDING * 2
+  const curveHistogramBars = imageAdjustHistogramBins.map((ratio, index) => {
+    const barWidth = curveInnerWidth / IMAGE_ADJUST_HISTOGRAM_BIN_COUNT
+    const barHeight = Math.max(1, ratio * curveInnerHeight)
+    return {
+      x: IMAGE_ADJUST_CURVE_PADDING + index * barWidth,
+      y: IMAGE_ADJUST_CURVE_PADDING + curveInnerHeight - barHeight,
+      width: Math.max(0.5, barWidth - 0.5),
+      height: barHeight,
+    }
+  })
+
+  const startAdjustPanelDrag = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (event.button !== 0) {
+      return
+    }
+    const panelElement = imageAdjustPanelRef.current
+    if (!panelElement) {
+      return
+    }
+    const panelRect = panelElement.getBoundingClientRect()
+    const dragOffsetX = event.clientX - panelRect.left
+    const dragOffsetY = event.clientY - panelRect.top
+    const panelWidth = panelElement.offsetWidth
+    const panelHeight = panelElement.offsetHeight
+    event.preventDefault()
+    event.stopPropagation()
+    setImageConvertAdjustPanelDragging(true)
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const nextX = clamp(
+        moveEvent.clientX - dragOffsetX,
+        IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+        Math.max(
+          IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+          fullscreenViewport.width - panelWidth - IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+        ),
+      )
+      const nextY = clamp(
+        moveEvent.clientY - dragOffsetY,
+        IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+        Math.max(
+          IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+          fullscreenViewport.height - panelHeight - IMAGE_ADJUST_PANEL_DRAG_MARGIN,
+        ),
+      )
+      setImageConvertAdjustPanelPosition({ x: nextX, y: nextY })
+    }
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+      setImageConvertAdjustPanelDragging(false)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }
+
+  const imageAdjustPanelInlineStyle: CSSProperties | undefined = imageConvertAdjustPanelPosition
+    ? {
+        left: `${Math.round(imageConvertAdjustPanelPosition.x)}px`,
+        top: `${Math.round(imageConvertAdjustPanelPosition.y)}px`,
+        bottom: 'auto',
+      }
+    : undefined
+
+  const startCurvePointDrag = (
+    pointKey: 'shadow' | 'midtone' | 'highlight',
+    event: ReactMouseEvent<SVGCircleElement>,
+  ) => {
+    if (event.button !== 0) {
+      return
+    }
+    const svgElement = curveSvgRef.current
+    if (!svgElement) {
+      return
+    }
+    event.preventDefault()
+    event.stopPropagation()
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const rect = svgElement.getBoundingClientRect()
+      if (rect.width <= 1 || rect.height <= 1) {
+        return
+      }
+      const innerWidth = IMAGE_ADJUST_CURVE_CANVAS_WIDTH - IMAGE_ADJUST_CURVE_PADDING * 2
+      const innerHeight = IMAGE_ADJUST_CURVE_CANVAS_HEIGHT - IMAGE_ADJUST_CURVE_PADDING * 2
+      const normalizedX = clamp((moveEvent.clientX - rect.left) / rect.width, 0, 1)
+      const normalizedY = clamp((moveEvent.clientY - rect.top) / rect.height, 0, 1)
+      const localX = clamp(normalizedX * IMAGE_ADJUST_CURVE_CANVAS_WIDTH - IMAGE_ADJUST_CURVE_PADDING, 0, innerWidth)
+      const localY = clamp(normalizedY * IMAGE_ADJUST_CURVE_CANVAS_HEIGHT - IMAGE_ADJUST_CURVE_PADDING, 0, innerHeight)
+      const currentShadowX = imageConvertPreviewAdjustProfile.curve_shadow_x
+      const currentMidtoneX = imageConvertPreviewAdjustProfile.curve_midtone_x
+      const currentHighlightX = imageConvertPreviewAdjustProfile.curve_highlight_x
+
+      let nextX = Math.round((localX / innerWidth) * 255)
+      if (pointKey === 'shadow') {
+        nextX = clamp(nextX, 1, currentMidtoneX - 1)
+      } else if (pointKey === 'midtone') {
+        nextX = clamp(nextX, currentShadowX + 1, currentHighlightX - 1)
+      } else {
+        nextX = clamp(nextX, currentMidtoneX + 1, 254)
+      }
+
+      const nextAnchorY = clampByte(Math.round((1 - localY / innerHeight) * 255))
+      const nextValue = clamp((nextX - nextAnchorY) / 0.52, -100, 100)
+      if (pointKey === 'shadow') {
+        updatePreviewAdjustProfile({
+          curve_shadow_x: nextX,
+          curve_shadow: Number(nextValue.toFixed(1)),
+        })
+      } else if (pointKey === 'midtone') {
+        updatePreviewAdjustProfile({
+          curve_midtone_x: nextX,
+          curve_midtone: Number(nextValue.toFixed(1)),
+        })
+      } else {
+        updatePreviewAdjustProfile({
+          curve_highlight_x: nextX,
+          curve_highlight: Number(nextValue.toFixed(1)),
+        })
+      }
+    }
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }
+
   return (
     <div
       className="fullscreen-layer"
@@ -1128,6 +1764,232 @@ function FullscreenLayer({
           <section className="fullscreen-single-pane" data-slot="fs-nondual-root">{videoPane}</section>
         )}
       </div>
+
+      {imageConvertPreviewActive && imageConvertAdjustPanelOpen ? (
+        <div
+          className="fullscreen-image-adjust-mask"
+          data-slot="fs-image-controls-adjust-panel"
+        >
+          <section
+            ref={imageAdjustPanelRef}
+            className={`fullscreen-image-adjust-panel${imageConvertAdjustPanelDragging ? ' is-dragging' : ''}`}
+            style={imageAdjustPanelInlineStyle}
+            onMouseDown={(event) => {
+              event.stopPropagation()
+            }}
+          >
+            <div
+              className="fullscreen-image-adjust-drag-head"
+              onMouseDown={startAdjustPanelDrag}
+            >
+              <h3>图像调节</h3>
+              <span>拖拽移动</span>
+            </div>
+            <div className="fullscreen-image-adjust-mode-group">
+              {(['basic', 'levels', 'curve'] as const).map((modeKey) => (
+                <button
+                  key={modeKey}
+                  className={imageConvertPreviewAdjustProfile.mode === modeKey ? 'is-active' : ''}
+                  type="button"
+                  onClick={() => {
+                    updatePreviewAdjustProfile({ mode: modeKey })
+                  }}
+                >
+                  {modeKey.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            {imageConvertPreviewAdjustProfile.mode === 'basic' ? (
+              <>
+                <label className="fullscreen-image-adjust-row">
+                  <span>Brightness {Math.round(imageConvertPreviewAdjustProfile.brightness)}</span>
+                  <input
+                    type="range"
+                    min={-100}
+                    max={100}
+                    step={1}
+                    value={imageConvertPreviewAdjustProfile.brightness}
+                    onChange={(event) => {
+                      updatePreviewAdjustProfile({ brightness: Number(event.target.value) })
+                    }}
+                  />
+                </label>
+                <label className="fullscreen-image-adjust-row">
+                  <span>Contrast {Math.round(imageConvertPreviewAdjustProfile.contrast)}</span>
+                  <input
+                    type="range"
+                    min={-100}
+                    max={100}
+                    step={1}
+                    value={imageConvertPreviewAdjustProfile.contrast}
+                    onChange={(event) => {
+                      updatePreviewAdjustProfile({ contrast: Number(event.target.value) })
+                    }}
+                  />
+                </label>
+              </>
+            ) : null}
+            {imageConvertPreviewAdjustProfile.mode === 'levels' ? (
+              <section className="fullscreen-image-adjust-editor-block">
+                <header className="fullscreen-image-adjust-editor-head">
+                  <strong>Levels</strong>
+                  <span>
+                    B {Math.round(imageConvertPreviewAdjustProfile.level_input_black)}
+                    {' | '}
+                    G {imageConvertPreviewAdjustProfile.level_gamma.toFixed(2)}
+                    {' | '}
+                    W {Math.round(imageConvertPreviewAdjustProfile.level_input_white)}
+                  </span>
+                </header>
+                <div className="fullscreen-image-adjust-levels-editor" ref={levelsEditorTrackRef}>
+                  <div className="fullscreen-image-adjust-levels-histogram" aria-hidden="true">
+                    {imageAdjustHistogramBins.map((value, index) => (
+                      <span
+                        key={`level-hist-${index}`}
+                        className="fullscreen-image-adjust-levels-histogram-bar"
+                        style={{ height: `${Math.max(2, Math.round(value * 100))}%` }}
+                      />
+                    ))}
+                  </div>
+                  <div className="fullscreen-image-adjust-levels-track" aria-label="Levels editor">
+                    <button
+                      aria-label="Input Black"
+                      className="fullscreen-image-adjust-levels-handle is-black"
+                      style={{ left: `${(levelBlackRatio * 100).toFixed(2)}%` }}
+                      type="button"
+                      onMouseDown={(event) => {
+                        startLevelHandleDrag('black', event)
+                      }}
+                    />
+                    <button
+                      aria-label="Gamma"
+                      className="fullscreen-image-adjust-levels-handle is-gamma"
+                      style={{ left: `${(levelGammaRatio * 100).toFixed(2)}%` }}
+                      type="button"
+                      onMouseDown={(event) => {
+                        startLevelHandleDrag('gamma', event)
+                      }}
+                    />
+                    <button
+                      aria-label="Input White"
+                      className="fullscreen-image-adjust-levels-handle is-white"
+                      style={{ left: `${(levelWhiteRatio * 100).toFixed(2)}%` }}
+                      type="button"
+                      onMouseDown={(event) => {
+                        startLevelHandleDrag('white', event)
+                      }}
+                    />
+                  </div>
+                </div>
+              </section>
+            ) : null}
+            {imageConvertPreviewAdjustProfile.mode === 'curve' ? (
+              <section className="fullscreen-image-adjust-editor-block">
+                <header className="fullscreen-image-adjust-editor-head">
+                  <strong>Curve (Master)</strong>
+                  <span>
+                    S {Math.round(imageConvertPreviewAdjustProfile.curve_shadow)}
+                    {' | '}
+                    M {Math.round(imageConvertPreviewAdjustProfile.curve_midtone)}
+                    {' | '}
+                    H {Math.round(imageConvertPreviewAdjustProfile.curve_highlight)}
+                  </span>
+                </header>
+                <svg
+                  ref={curveSvgRef}
+                  className="fullscreen-image-adjust-curve-svg"
+                  viewBox={`0 0 ${IMAGE_ADJUST_CURVE_CANVAS_WIDTH} ${IMAGE_ADJUST_CURVE_CANVAS_HEIGHT}`}
+                  role="img"
+                  aria-label="Curve editor"
+                >
+                  <defs>
+                    <pattern
+                      id="fullscreen-image-adjust-curve-grid"
+                      width="54"
+                      height="54"
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <path d="M 54 0 L 0 0 0 54" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="1" />
+                    </pattern>
+                  </defs>
+                  <rect
+                    x={IMAGE_ADJUST_CURVE_PADDING}
+                    y={IMAGE_ADJUST_CURVE_PADDING}
+                    width={IMAGE_ADJUST_CURVE_CANVAS_WIDTH - IMAGE_ADJUST_CURVE_PADDING * 2}
+                    height={IMAGE_ADJUST_CURVE_CANVAS_HEIGHT - IMAGE_ADJUST_CURVE_PADDING * 2}
+                    fill="url(#fullscreen-image-adjust-curve-grid)"
+                    stroke="currentColor"
+                    strokeOpacity="0.3"
+                  />
+                  <g className="fullscreen-image-adjust-curve-histogram" aria-hidden="true">
+                    {curveHistogramBars.map((bar, index) => (
+                      <rect
+                        key={`curve-hist-${index}`}
+                        className="fullscreen-image-adjust-curve-histogram-bar"
+                        x={bar.x}
+                        y={bar.y}
+                        width={bar.width}
+                        height={bar.height}
+                      />
+                    ))}
+                  </g>
+                  <line
+                    x1={IMAGE_ADJUST_CURVE_PADDING}
+                    y1={IMAGE_ADJUST_CURVE_CANVAS_HEIGHT - IMAGE_ADJUST_CURVE_PADDING}
+                    x2={IMAGE_ADJUST_CURVE_CANVAS_WIDTH - IMAGE_ADJUST_CURVE_PADDING}
+                    y2={IMAGE_ADJUST_CURVE_PADDING}
+                    stroke="currentColor"
+                    strokeOpacity="0.35"
+                    strokeDasharray="4 3"
+                  />
+                  <path
+                    d={curvePathD}
+                    fill="none"
+                    stroke="var(--mpx-accent-500, #58a6ff)"
+                    strokeWidth="2"
+                  />
+                  {curvePoints.map((point) => (
+                    <g key={`curve-point-${point.key}`}>
+                      <circle
+                        cx={point.x + IMAGE_ADJUST_CURVE_PADDING}
+                        cy={point.y + IMAGE_ADJUST_CURVE_PADDING}
+                        r={8}
+                        className="fullscreen-image-adjust-curve-point-hit"
+                        onMouseDown={(event) => {
+                          startCurvePointDrag(point.key, event)
+                        }}
+                      />
+                      <circle
+                        cx={point.x + IMAGE_ADJUST_CURVE_PADDING}
+                        cy={point.y + IMAGE_ADJUST_CURVE_PADDING}
+                        r={4}
+                        className="fullscreen-image-adjust-curve-point"
+                        onMouseDown={(event) => {
+                          startCurvePointDrag(point.key, event)
+                        }}
+                      />
+                    </g>
+                  ))}
+                </svg>
+              </section>
+            ) : null}
+            <div className="fullscreen-image-adjust-actions">
+              <button
+                type="button"
+                onClick={handleResetAdjustPanel}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelAdjustPanel}
+              >
+                Cancel
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
     </div>
   )
