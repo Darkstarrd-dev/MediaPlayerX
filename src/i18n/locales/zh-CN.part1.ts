@@ -687,7 +687,7 @@ export const zhCnCatalogPart1 = {
   "ui.sidebar.renameDialogMetadataTemplatePlaceholder": "元数据模板",
   "ui.sidebar.renameDialogPreviewLabel": "预览",
   "ui.sidebar.renameDialogPreviewSummary":
-    "预览：共 {{total}} 项，失败 {{failed}} 项",
+    "共 {{total}} 项，成功 {{success}} 项，失败 {{failed}} 项，维持原名 {{unchanged}} 项",
   "ui.sidebar.searchResultsRoot": "检索结果",
   "ui.sidebar.adReviewResultsRoot": "广告疑似结果",
   "ui.fullscreen.singleDisplay": "单显示",

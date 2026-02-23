@@ -21,6 +21,7 @@ import { MediaLibraryDatabase } from "../../mediaLibraryDatabase";
 import {
   buildMetadataSynthesisName,
   isFileSystemRootPath,
+  isMetadataUnknownToken,
   isValidGroupName,
   type ParsedSidebarNodeRef,
   parseSidebarNodeId,
@@ -118,6 +119,28 @@ function applyRemoveRangeUnion(
   return nextName;
 }
 
+function splitNameAndExtension(fileName: string): {
+  baseName: string;
+  extension: string;
+} {
+  const extension = path.extname(fileName);
+  if (!extension) {
+    return {
+      baseName: fileName,
+      extension: "",
+    };
+  }
+  return {
+    baseName: fileName.slice(0, fileName.length - extension.length),
+    extension,
+  };
+}
+
+function withNumericSuffix(fileName: string, index: number): string {
+  const { baseName, extension } = splitNameAndExtension(fileName);
+  return `${baseName}-${index}${extension}`;
+}
+
 export class ManagementRenameService {
   constructor(
     private readonly dependencies: ManagementRenameServiceDependencies,
@@ -129,6 +152,7 @@ export class ManagementRenameService {
     const normalizedTargets = request.targets;
     const previewOnly = request.preview_only ?? false;
     const failFast = request.fail_fast ?? true;
+    const effectiveFailFast = previewOnly ? false : failFast;
     await this.dependencies.ensureStateLoaded();
     const snapshot = await this.dependencies.ensureSnapshotLoaded();
     const mediaAccessContext = this.dependencies.buildMediaAccessContext();
@@ -218,6 +242,14 @@ export class ManagementRenameService {
       };
     };
 
+    const sourceNameByTargetKey = new Map<string, string>();
+    const unchangedItems: Array<{
+      target: RenameItemTargetDto;
+      sourceName: string;
+      sourcePath: string;
+      sourceExtension: string;
+    }> = [];
+
     for (const [index, target] of normalizedTargets.entries()) {
       let sourcePath = "";
       let sourceName = "";
@@ -231,7 +263,7 @@ export class ManagementRenameService {
         const parsed = parseSidebarNodeId(target.node_id);
         if (!parsed) {
           failed.push({ target, reason: "invalid node id" });
-          if (failFast) {
+          if (effectiveFailFast) {
             break;
           }
           continue;
@@ -242,7 +274,7 @@ export class ManagementRenameService {
         );
         if (!resolvedSourcePath) {
           failed.push({ target, reason: "node not found" });
-          if (failFast) {
+          if (effectiveFailFast) {
             break;
           }
           continue;
@@ -251,7 +283,7 @@ export class ManagementRenameService {
         const sourceStat = await fs.stat(sourcePath).catch(() => null);
         if (!sourceStat) {
           failed.push({ target, reason: "path not found" });
-          if (failFast) {
+          if (effectiveFailFast) {
             break;
           }
           continue;
@@ -284,7 +316,7 @@ export class ManagementRenameService {
         const found = imageById.get(target.image_id);
         if (!found) {
           failed.push({ target, reason: "image not found" });
-          if (failFast) {
+          if (effectiveFailFast) {
             break;
           }
           continue;
@@ -310,9 +342,10 @@ export class ManagementRenameService {
       }
 
       const accessiblePath = archivePath || sourcePath.split("#")[0];
+      sourceNameByTargetKey.set(toTargetKey(target), sourceName);
       if (!isPathAllowlisted(accessiblePath, mediaAccessContext)) {
         failed.push({ target, reason: "path outside allowlist" });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -323,17 +356,13 @@ export class ManagementRenameService {
         nextBaseName = request.single_new_name?.trim() ?? "";
       } else if (request.mode === "replace") {
         const replaceFrom = request.replace_from ?? "";
-        if (!replaceFrom) {
-          failed.push({ target, reason: "replace_from empty" });
-          if (failFast) {
-            break;
-          }
-          continue;
+        if (replaceFrom) {
+          nextBaseName = sourceName.replaceAll(
+            replaceFrom,
+            request.replace_to ?? "",
+          );
         }
-        nextBaseName = sourceName.replaceAll(
-          replaceFrom,
-          request.replace_to ?? "",
-        );
+        // replaceFrom 为空时 nextBaseName 保持 sourceName 不变
       } else if (request.mode === "numbering") {
         const start = request.numbering_start ?? 1;
         const step = request.numbering_step ?? 1;
@@ -349,16 +378,37 @@ export class ManagementRenameService {
           request.remove_tail,
         );
       } else {
-        nextBaseName = renderMetadataTemplate(
-          request.metadata_template ?? "",
-          metadataFields,
-        );
+        // metadata 模式：无任何可用的作者、社团名称时保持原名
+        // 通过共享 token 集合判断数据库占位符，应对多语言扩展
+        const isRealValue = (v: string): boolean =>
+          v !== "" && !isMetadataUnknownToken(v);
+        const hasAuthorOrCircle =
+          isRealValue(metadataFields.authorJp) ||
+          isRealValue(metadataFields.authorEn) ||
+          isRealValue(metadataFields.circleJp) ||
+          isRealValue(metadataFields.circleEn);
+        if (hasAuthorOrCircle) {
+          nextBaseName = renderMetadataTemplate(
+            request.metadata_template ?? "",
+            metadataFields,
+          );
+        }
       }
 
       const normalizedBaseName = nextBaseName.trim();
+      if (normalizedBaseName === sourceName) {
+        // 名称未变化，记录为维持原名
+        unchangedItems.push({
+          target,
+          sourceName,
+          sourcePath,
+          sourceExtension,
+        });
+        continue;
+      }
       if (!isValidGroupName(normalizedBaseName)) {
         failed.push({ target, reason: "invalid target name" });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -404,8 +454,7 @@ export class ManagementRenameService {
       }
     }
 
-    if (failed.length === 0) {
-      const plannedFileTargetByKey = new Set<string>();
+    {
       const sourcePathKeySet = new Set<string>();
       for (const operation of plannedOperations) {
         if (!operation.filesystemFromPath || !operation.filesystemToPath) {
@@ -416,27 +465,159 @@ export class ManagementRenameService {
         );
       }
 
-      for (const operation of plannedOperations) {
-        if (operation.filesystemToPath) {
-          const targetKey = normalizeAllowlistKey(operation.filesystemToPath);
-          if (plannedFileTargetByKey.has(targetKey)) {
+      if (previewOnly) {
+        const plannedFileTargetByDir = new Map<string, Set<string>>();
+        for (const operation of plannedOperations) {
+          if (!operation.filesystemToPath || !operation.filesystemFromPath) {
+            continue;
+          }
+          const targetDir = path.dirname(operation.filesystemToPath);
+          const fileName = path.basename(operation.filesystemToPath);
+          const usedFileNames =
+            plannedFileTargetByDir.get(targetDir) ?? new Set<string>();
+
+          let resolvedFileName = fileName;
+          let suffixIndex = 2;
+          let collided = false;
+          while (true) {
+            const candidatePath = path.resolve(
+              path.join(targetDir, resolvedFileName),
+            );
+            const candidateKey = normalizeAllowlistKey(candidatePath);
+            const candidateUsed = usedFileNames.has(
+              resolvedFileName.toLowerCase(),
+            );
+            const exists = await fs.stat(candidatePath).catch(() => null);
+            const existsConflict =
+              Boolean(exists) && !sourcePathKeySet.has(candidateKey);
+            if (!candidateUsed && !existsConflict) {
+              operation.filesystemToPath = candidatePath;
+              operation.targetPath = candidatePath;
+              operation.targetName = resolvedFileName;
+              usedFileNames.add(resolvedFileName.toLowerCase());
+              plannedFileTargetByDir.set(targetDir, usedFileNames);
+              break;
+            }
+            collided = true;
+            resolvedFileName = withNumericSuffix(fileName, suffixIndex);
+            suffixIndex += 1;
+          }
+
+          if (collided) {
             failed.push({
               target: operation.target,
-              reason: "duplicate destination in batch",
+              reason: "duplicate destination",
             });
-            break;
           }
-          plannedFileTargetByKey.add(targetKey);
-          const exists = await fs
-            .stat(operation.filesystemToPath)
-            .catch(() => null);
-          if (exists && !sourcePathKeySet.has(targetKey)) {
+        }
+
+        const plannedArchiveTargetByGroup = new Map<string, Set<string>>();
+        for (const operation of plannedOperations) {
+          if (!operation.archivePath || !operation.archiveToEntryName) {
+            continue;
+          }
+          const normalizedEntry = operation.archiveToEntryName.replace(
+            /\\/g,
+            "/",
+          );
+          const entryDir = path.posix.dirname(normalizedEntry);
+          const entryName = path.posix.basename(normalizedEntry);
+          const groupKey = `${normalizeAllowlistKey(operation.archivePath)}#${entryDir}`;
+          const usedNames =
+            plannedArchiveTargetByGroup.get(groupKey) ?? new Set<string>();
+          let resolvedEntryName = entryName;
+          let suffixIndex = 2;
+          let collided = false;
+          while (usedNames.has(resolvedEntryName.toLowerCase())) {
+            collided = true;
+            resolvedEntryName = withNumericSuffix(entryName, suffixIndex);
+            suffixIndex += 1;
+          }
+          usedNames.add(resolvedEntryName.toLowerCase());
+          plannedArchiveTargetByGroup.set(groupKey, usedNames);
+
+          const nextEntryName =
+            entryDir === "."
+              ? resolvedEntryName
+              : `${entryDir}/${resolvedEntryName}`;
+          operation.archiveToEntryName = nextEntryName;
+          operation.targetName = resolvedEntryName;
+          operation.targetPath = `${operation.archivePath}#${nextEntryName}`;
+
+          if (collided) {
             failed.push({
               target: operation.target,
-              reason: "destination already exists",
+              reason: "duplicate destination",
             });
-            break;
           }
+        }
+      } else {
+        const plannedFileTargetByDir = new Map<string, Set<string>>();
+        for (const operation of plannedOperations) {
+          if (!operation.filesystemToPath || !operation.filesystemFromPath) {
+            continue;
+          }
+          const targetDir = path.dirname(operation.filesystemToPath);
+          const fileName = path.basename(operation.filesystemToPath);
+          const usedFileNames =
+            plannedFileTargetByDir.get(targetDir) ?? new Set<string>();
+
+          let resolvedFileName = fileName;
+          let suffixIndex = 2;
+          while (true) {
+            const candidatePath = path.resolve(
+              path.join(targetDir, resolvedFileName),
+            );
+            const candidateKey = normalizeAllowlistKey(candidatePath);
+            const candidateUsed = usedFileNames.has(
+              resolvedFileName.toLowerCase(),
+            );
+            const exists = await fs.stat(candidatePath).catch(() => null);
+            const existsConflict =
+              Boolean(exists) && !sourcePathKeySet.has(candidateKey);
+            if (!candidateUsed && !existsConflict) {
+              operation.filesystemToPath = candidatePath;
+              operation.targetPath = candidatePath;
+              operation.targetName = resolvedFileName;
+              usedFileNames.add(resolvedFileName.toLowerCase());
+              plannedFileTargetByDir.set(targetDir, usedFileNames);
+              break;
+            }
+            resolvedFileName = withNumericSuffix(fileName, suffixIndex);
+            suffixIndex += 1;
+          }
+        }
+
+        const plannedArchiveTargetByGroup = new Map<string, Set<string>>();
+        for (const operation of plannedOperations) {
+          if (!operation.archivePath || !operation.archiveToEntryName) {
+            continue;
+          }
+          const normalizedEntry = operation.archiveToEntryName.replace(
+            /\\/g,
+            "/",
+          );
+          const entryDir = path.posix.dirname(normalizedEntry);
+          const entryName = path.posix.basename(normalizedEntry);
+          const groupKey = `${normalizeAllowlistKey(operation.archivePath)}#${entryDir}`;
+          const usedNames =
+            plannedArchiveTargetByGroup.get(groupKey) ?? new Set<string>();
+          let resolvedEntryName = entryName;
+          let suffixIndex = 2;
+          while (usedNames.has(resolvedEntryName.toLowerCase())) {
+            resolvedEntryName = withNumericSuffix(entryName, suffixIndex);
+            suffixIndex += 1;
+          }
+          usedNames.add(resolvedEntryName.toLowerCase());
+          plannedArchiveTargetByGroup.set(groupKey, usedNames);
+
+          const nextEntryName =
+            entryDir === "."
+              ? resolvedEntryName
+              : `${entryDir}/${resolvedEntryName}`;
+          operation.archiveToEntryName = nextEntryName;
+          operation.targetName = resolvedEntryName;
+          operation.targetPath = `${operation.archivePath}#${nextEntryName}`;
         }
       }
     }
@@ -450,7 +631,7 @@ export class ManagementRenameService {
     }
 
     const operationsToApply =
-      failFast && failed.length > 0
+      effectiveFailFast && failed.length > 0
         ? []
         : plannedOperations.filter(
             (operation) =>
@@ -479,17 +660,52 @@ export class ManagementRenameService {
       const operation = operationByTargetKey.get(
         toTargetKey(failedItem.target),
       );
-      if (!operation) {
+      if (operation) {
+        results.push({
+          target: operation.target,
+          source_name: operation.sourceName,
+          target_name: operation.targetName,
+          source_path: operation.sourcePath,
+          target_path: operation.targetPath,
+          applied: false,
+          reason: failedItem.reason,
+        });
         continue;
       }
+
+      const storedSourceName =
+        sourceNameByTargetKey.get(toTargetKey(failedItem.target)) ?? null;
+      const fallbackSource = storedSourceName ??
+        (failedItem.target.kind === "sidebar-node"
+          ? failedItem.target.node_id
+          : failedItem.target.kind === "image-item"
+            ? failedItem.target.image_id
+            : failedItem.target.entry_name);
+      const fallbackPath =
+        failedItem.target.kind === "archive-entry"
+          ? `${path.resolve(failedItem.target.archive_path)}#${failedItem.target.entry_name}`
+          : fallbackSource;
       results.push({
-        target: operation.target,
-        source_name: operation.sourceName,
-        target_name: operation.targetName,
-        source_path: operation.sourcePath,
-        target_path: operation.targetPath,
+        target: failedItem.target,
+        source_name: fallbackSource,
+        target_name: fallbackSource,
+        source_path: fallbackPath,
+        target_path: fallbackPath,
         applied: false,
         reason: failedItem.reason,
+      });
+    }
+
+    for (const item of unchangedItems) {
+      const fullName = item.sourceName + item.sourceExtension;
+      results.push({
+        target: item.target,
+        source_name: item.sourceName,
+        target_name: fullName,
+        source_path: item.sourcePath,
+        target_path: item.sourcePath,
+        applied: false,
+        reason: "unchanged",
       });
     }
 
@@ -638,6 +854,7 @@ export class ManagementRenameService {
     const now = Date.now();
     const previewOnly = request.preview_only ?? false;
     const failFast = request.fail_fast ?? true;
+    const effectiveFailFast = previewOnly ? false : failFast;
     const normalizedNodeIds = Array.from(
       new Set(request.node_ids.map((value) => value.trim()).filter(Boolean)),
     );
@@ -672,7 +889,7 @@ export class ManagementRenameService {
       const parsed = parseSidebarNodeId(nodeId);
       if (!parsed) {
         failed.push({ node_id: nodeId, reason: "invalid node id" });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -681,7 +898,7 @@ export class ManagementRenameService {
       const sourcePath = resolveSidebarNodeSourcePath(parsed, snapshot);
       if (!sourcePath) {
         failed.push({ node_id: nodeId, reason: "node not found" });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -693,7 +910,7 @@ export class ManagementRenameService {
           node_id: nodeId,
           reason: "refuse to rename filesystem root",
         });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -701,7 +918,7 @@ export class ManagementRenameService {
 
       if (!isPathAllowlisted(resolvedSourcePath, mediaAccessContext)) {
         failed.push({ node_id: nodeId, reason: "path outside allowlist" });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -710,7 +927,7 @@ export class ManagementRenameService {
       const sourceStat = await fs.stat(resolvedSourcePath).catch(() => null);
       if (!sourceStat) {
         failed.push({ node_id: nodeId, reason: "path not found" });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -754,7 +971,7 @@ export class ManagementRenameService {
       const normalizedTargetBaseName = nextBaseName.trim();
       if (!isValidGroupName(normalizedTargetBaseName)) {
         failed.push({ node_id: nodeId, reason: "invalid target name" });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -776,7 +993,7 @@ export class ManagementRenameService {
         normalizeAllowlistKey(resolvedSourcePath)
       ) {
         failed.push({ node_id: nodeId, reason: "source equals target" });
-        if (failFast) {
+        if (effectiveFailFast) {
           break;
         }
         continue;
@@ -797,29 +1014,65 @@ export class ManagementRenameService {
       const sourceKeySet = new Set(
         resolvedTargets.map((item) => normalizeAllowlistKey(item.sourcePath)),
       );
-      const plannedTargetByKey = new Map<string, string>();
-      for (const target of resolvedTargets) {
-        const targetKey = normalizeAllowlistKey(target.targetPath);
-        if (plannedTargetByKey.has(targetKey)) {
-          failed.push({
-            node_id: target.nodeId,
-            reason: "duplicate destination in batch",
-          });
-          if (failFast) {
-            break;
-          }
-          continue;
-        }
-        plannedTargetByKey.set(targetKey, target.nodeId);
+      if (previewOnly) {
+        const plannedTargetByDir = new Map<string, Set<string>>();
+        for (const target of resolvedTargets) {
+          const targetDir = path.dirname(target.targetPath);
+          const fileName = path.basename(target.targetPath);
+          const usedNames = plannedTargetByDir.get(targetDir) ?? new Set<string>();
 
-        const exists = await fs.stat(target.targetPath).catch(() => null);
-        if (exists && !sourceKeySet.has(targetKey)) {
-          failed.push({
-            node_id: target.nodeId,
-            reason: "destination already exists",
-          });
-          if (failFast) {
-            break;
+          let resolvedFileName = fileName;
+          let suffixIndex = 2;
+          let collided = false;
+          while (true) {
+            const candidatePath = path.resolve(path.join(targetDir, resolvedFileName));
+            const candidateKey = normalizeAllowlistKey(candidatePath);
+            const alreadyUsed = usedNames.has(resolvedFileName.toLowerCase());
+            const exists = await fs.stat(candidatePath).catch(() => null);
+            const existsConflict = Boolean(exists) && !sourceKeySet.has(candidateKey);
+            if (!alreadyUsed && !existsConflict) {
+              target.targetPath = candidatePath;
+              target.targetName = resolvedFileName;
+              usedNames.add(resolvedFileName.toLowerCase());
+              plannedTargetByDir.set(targetDir, usedNames);
+              break;
+            }
+            collided = true;
+            resolvedFileName = withNumericSuffix(fileName, suffixIndex);
+            suffixIndex += 1;
+          }
+
+          if (collided) {
+            failed.push({
+              node_id: target.nodeId,
+              reason: "duplicate destination",
+            });
+          }
+        }
+      } else {
+        const plannedTargetByDir = new Map<string, Set<string>>();
+        for (const target of resolvedTargets) {
+          const targetDir = path.dirname(target.targetPath);
+          const fileName = path.basename(target.targetPath);
+          const usedNames = plannedTargetByDir.get(targetDir) ?? new Set<string>();
+
+          let resolvedFileName = fileName;
+          let suffixIndex = 2;
+          while (true) {
+            const candidatePath = path.resolve(path.join(targetDir, resolvedFileName));
+            const candidateKey = normalizeAllowlistKey(candidatePath);
+            const alreadyUsed = usedNames.has(resolvedFileName.toLowerCase());
+            const exists = await fs.stat(candidatePath).catch(() => null);
+            const existsConflict = Boolean(exists) && !sourceKeySet.has(candidateKey);
+            if (!alreadyUsed && !existsConflict) {
+              target.targetPath = candidatePath;
+              target.targetName = resolvedFileName;
+              usedNames.add(resolvedFileName.toLowerCase());
+              plannedTargetByDir.set(targetDir, usedNames);
+              break;
+            }
+            resolvedFileName = withNumericSuffix(fileName, suffixIndex);
+            suffixIndex += 1;
           }
         }
       }
@@ -827,7 +1080,7 @@ export class ManagementRenameService {
 
     const failureNodeIdSet = new Set(failed.map((item) => item.node_id));
     const applyTargets =
-      failFast && failed.length > 0
+      effectiveFailFast && failed.length > 0
         ? []
         : resolvedTargets.filter((item) => !failureNodeIdSet.has(item.nodeId));
     const resultTargets = previewOnly

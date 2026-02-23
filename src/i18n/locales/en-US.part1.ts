@@ -724,7 +724,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.sidebar.renameDialogMetadataTemplatePlaceholder": "Metadata template",
   "ui.sidebar.renameDialogPreviewLabel": "Preview",
   "ui.sidebar.renameDialogPreviewSummary":
-    "Preview: total {{total}}, failed {{failed}}",
+    "Total {{total}}, success {{success}}, failed {{failed}}, unchanged {{unchanged}}",
   "ui.sidebar.searchResultsRoot": "Search results",
   "ui.sidebar.adReviewResultsRoot": "Ad review suspects",
   "ui.fullscreen.singleDisplay": "Single",

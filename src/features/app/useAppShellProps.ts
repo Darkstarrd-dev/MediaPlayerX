@@ -200,10 +200,18 @@ export function useAppShellProps({
     previewLabel: t('ui.sidebar.renameDialogPreviewLabel'),
     previewSummaryText:
       sidebarRenameDialogParams.previewRows.length > 0
-        ? t('ui.sidebar.renameDialogPreviewSummary', {
-            total: String(sidebarRenameDialogParams.previewRows.length),
-            failed: String(sidebarRenameDialogParams.previewRows.filter((row) => row.reason).length),
-          })
+        ? (() => {
+            const total = sidebarRenameDialogParams.previewRows.length
+            const failed = sidebarRenameDialogParams.previewRows.filter((row) => row.reason && row.reason !== 'unchanged').length
+            const unchanged = sidebarRenameDialogParams.previewRows.filter((row) => row.reason === 'unchanged').length
+            const success = total - failed - unchanged
+            return t('ui.sidebar.renameDialogPreviewSummary', {
+              total: String(total),
+              success: String(success),
+              failed: String(failed),
+              unchanged: String(unchanged),
+            })
+          })()
         : null,
     confirmLabel: t('ui.common.confirm'),
     cancelLabel: t('ui.common.cancel'),

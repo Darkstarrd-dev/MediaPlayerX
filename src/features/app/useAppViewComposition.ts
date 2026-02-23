@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAppShellProps } from './useAppShellProps'
 import { useAppTopLayerBindings } from './useAppTopLayerBindings'
@@ -8,8 +8,9 @@ import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
 import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
 import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
 import type { MediaLocator } from '../../types'
-import type { RenameItemsRequestDto } from '../../contracts/backend'
+import type { RenameItemTargetDto, RenameItemsRequestDto, RenameItemsResponseDto } from '../../contracts/backend'
 import { useI18n } from '../../i18n/useI18n'
+import { computeRenameDialogParams } from './renameDialogLogic'
 
 function resolveMediaLocatorPath(locator: MediaLocator): string {
   if (locator.kind === 'filesystem') {
@@ -68,6 +69,61 @@ function buildManageDeleteTargetPaths(readNavigationState: AppReadAndNavigationR
   return targetPaths
 }
 
+function toRenameTargetKey(target: RenameItemTargetDto): string {
+  if (target.kind === 'sidebar-node') {
+    return `sidebar-node:${target.node_id}`
+  }
+  if (target.kind === 'image-item') {
+    return `image-item:${target.image_id}`
+  }
+  return `archive-entry:${target.archive_path}#${target.entry_name}`
+}
+
+function buildRenamePreviewRows(
+  response: RenameItemsResponseDto,
+  orderedTargets: RenameItemTargetDto[],
+): Array<{ nodeId: string; sourceName: string; targetName: string; reason: string | null }> {
+  const targetOrder = new Map<string, number>()
+  orderedTargets.forEach((target, index) => {
+    targetOrder.set(toRenameTargetKey(target), index)
+  })
+
+  const rows = response.results.map((item) => ({
+    nodeId: JSON.stringify(item.target),
+    targetKey: toRenameTargetKey(item.target),
+    sourceName: item.source_name,
+    targetName: item.target_name,
+    reason: item.reason,
+  }))
+  const existing = new Set(rows.map((row) => row.nodeId))
+  for (const failed of response.failed) {
+    const nodeId = JSON.stringify(failed.target)
+    if (existing.has(nodeId)) {
+      continue
+    }
+    const fallbackTarget = toRenameTargetKey(failed.target)
+    rows.push({
+      nodeId,
+      targetKey: fallbackTarget,
+      sourceName: fallbackTarget,
+      targetName: fallbackTarget,
+      reason: failed.reason,
+    })
+    existing.add(nodeId)
+  }
+  rows.sort((left, right) => {
+    const leftOrder = targetOrder.get(left.targetKey) ?? Number.MAX_SAFE_INTEGER
+    const rightOrder = targetOrder.get(right.targetKey) ?? Number.MAX_SAFE_INTEGER
+    return leftOrder - rightOrder
+  })
+  return rows.map(({ nodeId, sourceName, targetName, reason }) => ({
+    nodeId,
+    sourceName,
+    targetName,
+    reason,
+  }))
+}
+
 interface UseAppViewCompositionParams {
   runtimeSources: AppRuntimeSourcesResult
   readNavigationState: AppReadAndNavigationResult
@@ -104,6 +160,7 @@ export function useAppViewComposition({
 
   const {
     selectedPackageId,
+    selectedSidebarNodeId,
     setSelectedPackageId,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
@@ -164,6 +221,7 @@ export function useAppViewComposition({
 
   const [sidebarRenamePending, setSidebarRenamePending] = useState(false)
   const [sidebarRenameError, setSidebarRenameError] = useState<string | null>(null)
+  const renamePreviewRequestIdRef = useRef(0)
 
   const closeSidebarRenameDialog = useCallback(() => {
     setSidebarRenameDialogOpen(false)
@@ -208,24 +266,33 @@ export function useAppViewComposition({
   ])
 
   const openManageRenameDialog = useCallback(() => {
-    const targetNodeIds = readNavigationState.sidebarCheckedNodeIds
-    const targetImageIds = readNavigationState.imageCheckedIds
-    const hasTargets = targetNodeIds.length > 0 || targetImageIds.length > 0
-    if (!hasTargets) {
+    const result = computeRenameDialogParams({
+      manageMode: true,
+      sidebarCheckedNodeIds: readNavigationState.sidebarCheckedNodeIds,
+      imageCheckedIds: readNavigationState.imageCheckedIds,
+      sidebarNodeById: readNavigationState.sidebarNodeById,
+      selectedSidebarNodeId,
+      videosForSidebar: readNavigationState.videosForSidebar,
+      packageByIdEffective: readNavigationState.packageByIdEffective,
+    })
+    if (!result) {
       return
     }
-
-    setSidebarRenameTargetNodeId(null)
-    setSidebarRenameTargetNodeIds(targetNodeIds)
-    setSidebarRenameTargetImageIds(targetImageIds)
-    setSidebarRenameDraft('')
-    setSidebarRenameMode('replace')
+    setSidebarRenameTargetNodeId(result.targetNodeId)
+    setSidebarRenameTargetNodeIds(result.targetNodeIds)
+    setSidebarRenameTargetImageIds(result.targetImageIds)
+    setSidebarRenameDraft(result.draft)
+    setSidebarRenameMode(result.renameMode)
     setSidebarRenamePreviewRows([])
     setSidebarRenameError(null)
     setSidebarRenameDialogOpen(true)
   }, [
     readNavigationState.imageCheckedIds,
+    readNavigationState.packageByIdEffective,
     readNavigationState.sidebarCheckedNodeIds,
+    readNavigationState.sidebarNodeById,
+    readNavigationState.videosForSidebar,
+    selectedSidebarNodeId,
     setSidebarRenameDialogOpen,
     setSidebarRenameDraft,
     setSidebarRenameMode,
@@ -237,6 +304,7 @@ export function useAppViewComposition({
   ])
 
   const buildBatchRenameRequest = useCallback((previewOnly: boolean): RenameItemsRequestDto | null => {
+    const failFast = false
     const targets = [
       ...sidebarRenameTargetNodeIds.map((nodeId) => ({ kind: 'sidebar-node' as const, node_id: nodeId })),
       ...sidebarRenameTargetImageIds.map((imageId) => ({ kind: 'image-item' as const, image_id: imageId })),
@@ -251,7 +319,7 @@ export function useAppViewComposition({
         targets,
         mode: 'single',
         single_new_name: sidebarRenameDraft,
-        fail_fast: true,
+        fail_fast: failFast,
         preview_only: previewOnly,
       }
     }
@@ -262,7 +330,7 @@ export function useAppViewComposition({
         mode: 'replace',
         replace_from: sidebarRenameReplaceFrom,
         replace_to: sidebarRenameReplaceTo,
-        fail_fast: true,
+        fail_fast: failFast,
         preview_only: previewOnly,
       }
     }
@@ -274,7 +342,7 @@ export function useAppViewComposition({
         numbering_start: Number.parseInt(sidebarRenameNumberStart, 10) || 1,
         numbering_step: Number.parseInt(sidebarRenameNumberStep, 10) || 1,
         numbering_pad_width: Number.parseInt(sidebarRenameNumberPadWidth, 10) || 3,
-        fail_fast: true,
+        fail_fast: failFast,
         preview_only: previewOnly,
       }
     }
@@ -290,7 +358,7 @@ export function useAppViewComposition({
         remove_end: removeEnd,
         remove_head: removeHead,
         remove_tail: removeTail,
-        fail_fast: true,
+        fail_fast: failFast,
         preview_only: previewOnly,
       }
     }
@@ -298,7 +366,7 @@ export function useAppViewComposition({
       targets,
       mode: 'metadata',
       metadata_template: sidebarRenameMetadataTemplate,
-      fail_fast: true,
+      fail_fast: failFast,
       preview_only: previewOnly,
     }
   }, [
@@ -329,18 +397,23 @@ export function useAppViewComposition({
       return
     }
 
+    const requestId = renamePreviewRequestIdRef.current + 1
+    renamePreviewRequestIdRef.current = requestId
+
     try {
       const response = await displayState.backendWrite.renameItems(request)
-      setSidebarRenamePreviewRows(response.results.map((item) => ({
-        nodeId: JSON.stringify(item.target),
-        sourceName: item.source_name,
-        targetName: item.target_name,
-        reason: item.reason,
-      })))
+      if (renamePreviewRequestIdRef.current !== requestId) {
+        return
+      }
+      setSidebarRenamePreviewRows(buildRenamePreviewRows(response, request.targets))
+      setSidebarRenameError(null)
     } catch {
-      setSidebarRenamePreviewRows([])
+      if (renamePreviewRequestIdRef.current !== requestId) {
+        return
+      }
+      setSidebarRenameError(t('ui.manage.hint.operationFailedUnknownReason'))
     }
-  }, [buildBatchRenameRequest, displayState.backendWrite, setSidebarRenamePreviewRows])
+  }, [buildBatchRenameRequest, displayState.backendWrite, setSidebarRenameError, setSidebarRenamePreviewRows, t])
 
   const confirmSidebarRename = useCallback(async () => {
     const batchModeActive = sidebarRenameTargetNodeIds.length + sidebarRenameTargetImageIds.length > 1 || sidebarRenameMode !== 'single'
@@ -462,11 +535,12 @@ export function useAppViewComposition({
     if (!batchModeActive) {
       return
     }
-    if (sidebarRenameMode === 'replace') {
-      setSidebarRenamePreviewRows([])
-      return
+    const timeoutId = window.setTimeout(() => {
+      void refreshSidebarRenamePreview()
+    }, 150)
+    return () => {
+      window.clearTimeout(timeoutId)
     }
-    void refreshSidebarRenamePreview()
   }, [
     refreshSidebarRenamePreview,
     sidebarRenameDialogOpen,
@@ -480,6 +554,8 @@ export function useAppViewComposition({
     sidebarRenameRemoveEnd,
     sidebarRenameRemoveHead,
     sidebarRenameRemoveTail,
+    sidebarRenameReplaceFrom,
+    sidebarRenameReplaceTo,
     sidebarRenameMetadataTemplate,
     sidebarRenameTargetImageIds.length,
     sidebarRenameTargetNodeIds.length,

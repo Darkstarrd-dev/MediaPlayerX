@@ -448,8 +448,51 @@ describe('ManagementMutationService.renameItems', () => {
 
     expect(response.renamed_count).toBe(0)
     expect(response.failed.length).toBeGreaterThan(0)
-    expect(response.failed[0]?.reason).toContain('duplicate destination in batch')
+    expect(response.failed[0]?.reason).toContain('duplicate destination')
     expect(harness.database.moveSnapshotEntriesByPaths).not.toHaveBeenCalled()
+  })
+
+  it('预览保留重名冲突错误，执行时自动为重复目标追加数字后缀', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-items-dup-fix-'))
+    tempRoots.push(rootDir)
+
+    const sourcePathA = path.join(rootDir, 'source', 'a.zip')
+    const sourcePathB = path.join(rootDir, 'source', 'b.zip')
+    await ensureFile(sourcePathA)
+    await ensureFile(sourcePathB)
+
+    const snapshot = createSnapshotForPackages([sourcePathA, sourcePathB])
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const previewResponse = await harness.service.renameItems({
+      targets: [
+        { kind: 'sidebar-node', node_id: 'package:a.zip' },
+        { kind: 'sidebar-node', node_id: 'package:b.zip' },
+      ],
+      mode: 'single',
+      single_new_name: 'same',
+      fail_fast: true,
+      preview_only: true,
+    })
+
+    expect(previewResponse.failed.length).toBeGreaterThan(0)
+    expect(previewResponse.failed.some((item) => item.reason.includes('duplicate destination'))).toBe(true)
+
+    const executeResponse = await harness.service.renameItems({
+      targets: [
+        { kind: 'sidebar-node', node_id: 'package:a.zip' },
+        { kind: 'sidebar-node', node_id: 'package:b.zip' },
+      ],
+      mode: 'single',
+      single_new_name: 'same',
+      fail_fast: false,
+      preview_only: false,
+    })
+
+    expect(executeResponse.failed).toEqual([])
+    expect(executeResponse.renamed_count).toBe(2)
+    const targetNames = executeResponse.results.map((item) => item.target_name).sort()
+    expect(targetNames).toEqual(['same-2.zip', 'same.zip'])
   })
 
   it('archive-entry 非图片扩展名应拒绝重命名', async () => {

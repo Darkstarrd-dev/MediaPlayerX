@@ -46,13 +46,10 @@ export const renameSidebarNodesRequestSchema = z
     }
 
     if (value.mode === "numbering") {
-      if (
-        !value.numbering_base_name ||
-        value.numbering_base_name.trim().length === 0
-      ) {
+      if (typeof value.numbering_base_name !== "string") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "numbering_base_name is required for numbering mode",
+          message: "numbering_base_name must be a string for numbering mode",
           path: ["numbering_base_name"],
         });
       }
@@ -173,13 +170,10 @@ export const renameItemsRequestSchema = z
       return;
     }
     if (value.mode === "numbering") {
-      if (
-        !value.numbering_base_name ||
-        value.numbering_base_name.trim().length === 0
-      ) {
+      if (typeof value.numbering_base_name !== "string") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "numbering_base_name is required for numbering mode",
+          message: "numbering_base_name must be a string for numbering mode",
           path: ["numbering_base_name"],
         });
       }

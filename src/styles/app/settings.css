@@ -713,7 +713,11 @@
 }
 
 .sidebar-rename-dialog {
-  width: min(560px, 92%);
+  width: 80vw;
+  height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-rename-title {
@@ -750,16 +754,37 @@
 .sidebar-rename-preview-list {
   display: grid;
   gap: 4px;
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.sidebar-rename-preview-list::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar-rename-preview-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   margin: 0;
   color: var(--mpx-text-1);
   font-size: 12px;
 }
 
+.sidebar-rename-preview-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sidebar-rename-preview-row.is-failed {
   color: var(--mpx-status-danger-text);
+}
+
+.sidebar-rename-preview-row.is-unchanged {
+  color: var(--mpx-text-2);
 }
 
 .manage-group-actions .feature-action-btn {

@@ -21,6 +21,20 @@ export const ZIP_IMAGE_ENTRY_EXTENSIONS = new Set<string>([
   ".avif",
 ]);
 
+/**
+ * 数据库层面对空元数据字段使用的占位符 token 集合。
+ * snapshot store / source factory 在存储时用此集合中的值替代空字符串。
+ * 重命名服务用此集合判断字段是否为真实元数据。
+ * 新增语言或调整占位符策略时，仅需维护此集合。
+ */
+export const METADATA_UNKNOWN_TOKENS: ReadonlySet<string> = new Set([
+  "未知",
+]);
+
+export function isMetadataUnknownToken(value: string): boolean {
+  return METADATA_UNKNOWN_TOKENS.has(value);
+}
+
 export const IMAGE_CONVERT_TARGET_EXTENSION_BY_FORMAT: Record<
   StartImageConvertTaskRequestDto["target_format"],
   string

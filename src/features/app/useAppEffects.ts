@@ -1,92 +1,112 @@
-import { useEffect, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react'
+import {
+  useEffect,
+  type Dispatch,
+  type MutableRefObject,
+  type RefObject,
+  type SetStateAction,
+} from "react";
 
-import type { AppSettings } from '../../contracts/settings'
-import { resolvePaletteIdForStyle, resolvePalettePairForStyle, resolveStyleId } from '../theme/themeRegistry'
-import type { AudioItem, BrowserMode, FocusedImageRef, ImagePackage, SidebarNode, VectorCandidate, VideoItem } from '../../types'
-import { clamp } from '../../utils/ui'
+import type { AppSettings } from "../../contracts/settings";
+import {
+  resolvePaletteIdForStyle,
+  resolvePalettePairForStyle,
+  resolveStyleId,
+} from "../theme/themeRegistry";
+import type {
+  AudioItem,
+  BrowserMode,
+  FocusedImageRef,
+  ImagePackage,
+  SidebarNode,
+  VectorCandidate,
+  VideoItem,
+} from "../../types";
+import { clamp } from "../../utils/ui";
 
-const TOP_PANEL_MIN_HEIGHT = 80
-const TOP_PANEL_MAX_HEIGHT = 360
+const TOP_PANEL_MIN_HEIGHT = 80;
+const TOP_PANEL_MAX_HEIGHT = 360;
 
 interface UseAppEffectsParams {
-  appBodyRef: RefObject<HTMLDivElement | null>
-  gridElement: HTMLDivElement | null
-  vectorPanelContentRef: RefObject<HTMLDivElement | null>
-  wasFullscreenRef: MutableRefObject<boolean>
-  lastExpandedSidebarRatioRef: MutableRefObject<number>
-  mode: BrowserMode
-  showNamesOnly: boolean
-  sidebarRatio: number
-  sidebarCollapseRatio: number
-  normalizeSidebarRatio: (candidate: number) => number
-  sidebarCollapsed: boolean
-  sidebarFocus: 'sidebar' | 'main'
-  vectorResultsActive: boolean
-  thumbnailScale: number
-  normalizedThumbnailScale: number
-  activePackage: ImagePackage | null
-  imageFocusActive: boolean
-  focusByPackage: Record<string, number>
-  pagedPageSize: number
-  vectorSearchResults: VectorCandidate[]
-  vectorFocusIndex: number
-  selectedPackageId: string
-  orderedRootScopedPackages: ImagePackage[]
-  rootScopedPackageIds: Set<string>
-  flatSidebarNodes: SidebarNode[]
-  focusedRef: FocusedImageRef | null
-  imageSourceNodeIdMap: Map<string, string>
-  selectedSidebarNodeId: string | null
-  sidebarNodeById: Map<string, SidebarNode>
-  vectorResultPackageNodeIdMap: Map<string, string>
-  vectorSidebarNodes: SidebarNode[]
-  videosForSidebar: VideoItem[]
-  audiosForSidebar: AudioItem[]
-  rootScopedVideoIds: Set<string>
-  rootScopedAudioIds: Set<string>
-  selectedVideoId: string
-  videoQueueSource: 'sidebar' | 'playlist'
-  selectedAudioId: string
-  videoNodeIdMap: Map<string, string>
-  audioNodeIdMap: Map<string, string>
-  ensureSidebarNodeVisible: (nodeId: string) => void
-  fullscreenActive: boolean
-  fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
-  fullscreenVideoFocus: boolean
-  autoPlayEnabled: boolean
-  autoPlayInterval: number
-  moveImage: (delta: number) => void
-  vectorMode: boolean
-  manageMode: boolean
-  metadataManageMode: boolean
-  adReviewPanelOpen: boolean
-  adReviewFocusTaskId: string | null
-  searchPanelCollapsed: boolean
-  searchPanelMode: 'vector' | 'feature'
-  workspaceBottomPanelHeight: number
-  featureTagPickerOpen: boolean
-  styleId: string
-  paletteId: string
-  paletteMode: 'day' | 'night'
-  paletteDayId: string
-  paletteNightId: string
-  themeId: string
-  settingsBackdropOpacity: number
-  setAppBodyWidth: Dispatch<SetStateAction<number>>
-  setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>
-  setVectorFocusIndex: Dispatch<SetStateAction<number>>
-  setVectorPage: Dispatch<SetStateAction<number>>
-  setPageByPackage: Dispatch<SetStateAction<Record<string, number>>>
-  setSelectedPackageId: Dispatch<SetStateAction<string>>
-  setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>
-  setSelectedAudioId: Dispatch<SetStateAction<string>>
-  selectVideoFromBrowser: (videoId: string) => void
-  setFullscreenEntryDisplay: Dispatch<SetStateAction<'image-only' | 'video-only'>>
-  setFullscreenDisplay: Dispatch<SetStateAction<'dual' | 'video-only' | 'image-only'>>
-  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
-  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>
-  setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>
-  updateSettings: (patch: Partial<AppSettings>) => void
+  appBodyRef: RefObject<HTMLDivElement | null>;
+  gridElement: HTMLDivElement | null;
+  vectorPanelContentRef: RefObject<HTMLDivElement | null>;
+  wasFullscreenRef: MutableRefObject<boolean>;
+  lastExpandedSidebarRatioRef: MutableRefObject<number>;
+  mode: BrowserMode;
+  showNamesOnly: boolean;
+  sidebarRatio: number;
+  sidebarCollapseRatio: number;
+  normalizeSidebarRatio: (candidate: number) => number;
+  sidebarCollapsed: boolean;
+  sidebarFocus: "sidebar" | "main";
+  vectorResultsActive: boolean;
+  activePackage: ImagePackage | null;
+  imageFocusActive: boolean;
+  focusByPackage: Record<string, number>;
+  pagedPageSize: number;
+  vectorSearchResults: VectorCandidate[];
+  vectorFocusIndex: number;
+  selectedPackageId: string;
+  orderedRootScopedPackages: ImagePackage[];
+  rootScopedPackageIds: Set<string>;
+  flatSidebarNodes: SidebarNode[];
+  focusedRef: FocusedImageRef | null;
+  imageSourceNodeIdMap: Map<string, string>;
+  selectedSidebarNodeId: string | null;
+  sidebarNodeById: Map<string, SidebarNode>;
+  vectorResultPackageNodeIdMap: Map<string, string>;
+  vectorSidebarNodes: SidebarNode[];
+  videosForSidebar: VideoItem[];
+  audiosForSidebar: AudioItem[];
+  rootScopedVideoIds: Set<string>;
+  rootScopedAudioIds: Set<string>;
+  selectedVideoId: string;
+  videoQueueSource: "sidebar" | "playlist";
+  selectedAudioId: string;
+  videoNodeIdMap: Map<string, string>;
+  audioNodeIdMap: Map<string, string>;
+  ensureSidebarNodeVisible: (nodeId: string) => void;
+  fullscreenActive: boolean;
+  fullscreenDisplay: "dual" | "video-only" | "image-only";
+  fullscreenVideoFocus: boolean;
+  autoPlayEnabled: boolean;
+  autoPlayInterval: number;
+  moveImage: (delta: number) => void;
+  vectorMode: boolean;
+  manageMode: boolean;
+  metadataManageMode: boolean;
+  adReviewPanelOpen: boolean;
+  adReviewFocusTaskId: string | null;
+  searchPanelCollapsed: boolean;
+  searchPanelMode: "vector" | "feature";
+  workspaceBottomPanelHeight: number;
+  featureTagPickerOpen: boolean;
+  styleId: string;
+  paletteId: string;
+  paletteMode: "day" | "night";
+  paletteDayId: string;
+  paletteNightId: string;
+  themeId: string;
+  settingsBackdropOpacity: number;
+  setAppBodyWidth: Dispatch<SetStateAction<number>>;
+  setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>;
+  setVectorFocusIndex: Dispatch<SetStateAction<number>>;
+  setVectorPage: Dispatch<SetStateAction<number>>;
+  setPageByPackage: Dispatch<SetStateAction<Record<string, number>>>;
+  setSelectedPackageId: Dispatch<SetStateAction<string>>;
+  setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>;
+  setSelectedAudioId: Dispatch<SetStateAction<string>>;
+  selectVideoFromBrowser: (videoId: string) => void;
+  setFullscreenEntryDisplay: Dispatch<
+    SetStateAction<"image-only" | "video-only">
+  >;
+  setFullscreenDisplay: Dispatch<
+    SetStateAction<"dual" | "video-only" | "image-only">
+  >;
+  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>;
+  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>;
+  setShowFullscreenFooter: Dispatch<SetStateAction<boolean>>;
+  updateSettings: (patch: Partial<AppSettings>) => void;
 }
 
 export function useAppEffects({
@@ -103,8 +123,6 @@ export function useAppEffects({
   sidebarCollapsed,
   sidebarFocus,
   vectorResultsActive,
-  thumbnailScale,
-  normalizedThumbnailScale,
   activePackage,
   imageFocusActive,
   focusByPackage,
@@ -171,182 +189,220 @@ export function useAppEffects({
 }: UseAppEffectsParams) {
   useEffect(() => {
     if (!appBodyRef.current) {
-      return
+      return;
     }
 
     const observer = new ResizeObserver((entries) => {
-      const target = entries[0]
+      const target = entries[0];
       if (!target) {
-        return
+        return;
       }
-      const nextWidth = Math.round(target.contentRect.width)
+      const nextWidth = Math.round(target.contentRect.width);
       if (nextWidth <= 0) {
-        return
+        return;
       }
-      setAppBodyWidth((previous) => (Math.abs(previous - nextWidth) < 1 ? previous : nextWidth))
-    })
+      setAppBodyWidth((previous) =>
+        Math.abs(previous - nextWidth) < 1 ? previous : nextWidth,
+      );
+    });
 
-    observer.observe(appBodyRef.current)
-    return () => observer.disconnect()
-  }, [appBodyRef, setAppBodyWidth])
+    observer.observe(appBodyRef.current);
+    return () => observer.disconnect();
+  }, [appBodyRef, setAppBodyWidth]);
 
   useEffect(() => {
-    if (mode !== 'image') {
-      return
+    if (mode !== "image") {
+      return;
     }
 
     if (!gridElement) {
-      return
+      return;
     }
 
     const updateGridSize = (width: number, height: number) => {
       if (width <= 1 || height <= 1) {
-        return
+        return;
       }
 
-      const nextWidth = Math.round(width)
-      const nextHeight = Math.round(height)
+      const nextWidth = Math.round(width);
+      const nextHeight = Math.round(height);
       setGridSize((previous) => {
-        if (Math.abs(previous.width - nextWidth) < 1 && Math.abs(previous.height - nextHeight) < 1) {
-          return previous
+        if (
+          Math.abs(previous.width - nextWidth) < 1 &&
+          Math.abs(previous.height - nextHeight) < 1
+        ) {
+          return previous;
         }
-        return { width: nextWidth, height: nextHeight }
-      })
-    }
-
-    const initialRect = gridElement.getBoundingClientRect()
-    updateGridSize(initialRect.width, initialRect.height)
+        return { width: nextWidth, height: nextHeight };
+      });
+    };
 
     const observer = new ResizeObserver((entries) => {
-      const entry = entries[0]
+      const entry = entries[0];
       if (!entry) {
-        return
+        return;
       }
 
-      updateGridSize(entry.contentRect.width, entry.contentRect.height)
-    })
+      updateGridSize(entry.contentRect.width, entry.contentRect.height);
+    });
 
-    observer.observe(gridElement)
+    observer.observe(gridElement);
 
     return () => {
-      observer.disconnect()
-    }
-  }, [gridElement, mode, setGridSize, showNamesOnly])
+      observer.disconnect();
+    };
+  }, [gridElement, mode, setGridSize, showNamesOnly]);
 
   useEffect(() => {
     if (sidebarRatio >= sidebarCollapseRatio) {
-      lastExpandedSidebarRatioRef.current = sidebarRatio
+      lastExpandedSidebarRatioRef.current = sidebarRatio;
     }
-  }, [lastExpandedSidebarRatioRef, sidebarCollapseRatio, sidebarRatio])
+  }, [lastExpandedSidebarRatioRef, sidebarCollapseRatio, sidebarRatio]);
 
   useEffect(() => {
-    const normalized = normalizeSidebarRatio(sidebarRatio)
+    const normalized = normalizeSidebarRatio(sidebarRatio);
     if (Math.abs(normalized - sidebarRatio) < 0.0005) {
-      return
+      return;
     }
-    updateSettings({ sidebarRatio: normalized })
-  }, [normalizeSidebarRatio, sidebarRatio, updateSettings])
+    updateSettings({ sidebarRatio: normalized });
+  }, [normalizeSidebarRatio, sidebarRatio, updateSettings]);
 
   useEffect(() => {
-    if (!sidebarCollapsed || sidebarFocus !== 'sidebar') {
-      return
+    if (!sidebarCollapsed || sidebarFocus !== "sidebar") {
+      return;
     }
-    updateSettings({ sidebarFocus: 'main' })
-  }, [sidebarCollapsed, sidebarFocus, updateSettings])
+    updateSettings({ sidebarFocus: "main" });
+  }, [sidebarCollapsed, sidebarFocus, updateSettings]);
 
   useEffect(() => {
-    if (!vectorResultsActive || sidebarFocus !== 'sidebar') {
-      return
+    if (!vectorResultsActive || sidebarFocus !== "sidebar") {
+      return;
     }
-    updateSettings({ sidebarFocus: 'main' })
-  }, [sidebarFocus, updateSettings, vectorResultsActive])
-
-  useEffect(() => {
-    if (thumbnailScale === normalizedThumbnailScale) {
-      return
-    }
-    updateSettings({ thumbnailScale: normalizedThumbnailScale })
-  }, [normalizedThumbnailScale, thumbnailScale, updateSettings])
+    updateSettings({ sidebarFocus: "main" });
+  }, [sidebarFocus, updateSettings, vectorResultsActive]);
 
   useEffect(() => {
     if (!activePackage || showNamesOnly || !imageFocusActive) {
-      return
+      return;
     }
 
-    const focused = clamp(focusByPackage[activePackage.id] ?? 0, 0, activePackage.images.length - 1)
-    const nextPage = Math.floor(focused / pagedPageSize)
+    const focused = clamp(
+      focusByPackage[activePackage.id] ?? 0,
+      0,
+      activePackage.images.length - 1,
+    );
+    const nextPage = Math.floor(focused / pagedPageSize);
     setPageByPackage((previous) => {
       if ((previous[activePackage.id] ?? 0) === nextPage) {
-        return previous
+        return previous;
       }
 
       return {
         ...previous,
         [activePackage.id]: nextPage,
-      }
-    })
-  }, [activePackage, focusByPackage, imageFocusActive, pagedPageSize, setPageByPackage, showNamesOnly])
+      };
+    });
+  }, [
+    activePackage,
+    focusByPackage,
+    imageFocusActive,
+    pagedPageSize,
+    setPageByPackage,
+    showNamesOnly,
+  ]);
 
   useEffect(() => {
     if (vectorSearchResults.length === 0) {
-      setVectorFocusIndex(0)
-      setVectorPage(0)
-      return
+      setVectorFocusIndex(0);
+      setVectorPage(0);
+      return;
     }
 
-    setVectorFocusIndex((value) => clamp(value, 0, vectorSearchResults.length - 1))
-  }, [setVectorFocusIndex, setVectorPage, vectorSearchResults.length])
+    setVectorFocusIndex((value) =>
+      clamp(value, 0, vectorSearchResults.length - 1),
+    );
+  }, [setVectorFocusIndex, setVectorPage, vectorSearchResults.length]);
 
   useEffect(() => {
     if (!vectorResultsActive) {
-      return
+      return;
     }
 
     if (showNamesOnly) {
-      setVectorPage(0)
-      return
+      setVectorPage(0);
+      return;
     }
 
-    setVectorPage(Math.floor(vectorFocusIndex / pagedPageSize))
-  }, [pagedPageSize, setVectorPage, showNamesOnly, vectorFocusIndex, vectorResultsActive])
+    setVectorPage(Math.floor(vectorFocusIndex / pagedPageSize));
+  }, [
+    pagedPageSize,
+    setVectorPage,
+    showNamesOnly,
+    vectorFocusIndex,
+    vectorResultsActive,
+  ]);
 
   useEffect(() => {
-    if (!vectorResultsActive || mode !== 'image' || !focusedRef) {
-      return
+    if (!vectorResultsActive || mode !== "image" || !focusedRef) {
+      return;
     }
 
-    const sidebarNodeId = vectorResultPackageNodeIdMap.get(focusedRef.packageId)
+    const sidebarNodeId = vectorResultPackageNodeIdMap.get(
+      focusedRef.packageId,
+    );
     if (!sidebarNodeId || sidebarNodeId === selectedSidebarNodeId) {
-      return
+      return;
     }
 
-    setSelectedSidebarNodeId(sidebarNodeId)
-  }, [focusedRef, mode, selectedSidebarNodeId, setSelectedSidebarNodeId, vectorResultPackageNodeIdMap, vectorResultsActive])
+    setSelectedSidebarNodeId(sidebarNodeId);
+  }, [
+    focusedRef,
+    mode,
+    selectedSidebarNodeId,
+    setSelectedSidebarNodeId,
+    vectorResultPackageNodeIdMap,
+    vectorResultsActive,
+  ]);
 
   useEffect(() => {
     if (orderedRootScopedPackages.length === 0) {
-      return
+      return;
     }
 
     if (!rootScopedPackageIds.has(selectedPackageId)) {
-      const firstReadyPackage = orderedRootScopedPackages.find((item) => item.images.length > 0)
-      setSelectedPackageId((firstReadyPackage ?? orderedRootScopedPackages[0]).id)
+      const firstReadyPackage = orderedRootScopedPackages.find(
+        (item) => item.images.length > 0,
+      );
+      setSelectedPackageId(
+        (firstReadyPackage ?? orderedRootScopedPackages[0]).id,
+      );
     }
-  }, [orderedRootScopedPackages, rootScopedPackageIds, selectedPackageId, setSelectedPackageId])
+  }, [
+    orderedRootScopedPackages,
+    rootScopedPackageIds,
+    selectedPackageId,
+    setSelectedPackageId,
+  ]);
 
   useEffect(() => {
-    const adReviewFocusActive = adReviewPanelOpen && Boolean(adReviewFocusTaskId)
-    if (mode !== 'image' || vectorResultsActive || sidebarFocus === 'sidebar' || adReviewFocusActive) {
-      return
+    const adReviewFocusActive =
+      adReviewPanelOpen && Boolean(adReviewFocusTaskId);
+    if (
+      mode !== "image" ||
+      vectorResultsActive ||
+      sidebarFocus === "sidebar" ||
+      adReviewFocusActive
+    ) {
+      return;
     }
 
-    const nextImageNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? null
+    const nextImageNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? null;
     if (!nextImageNodeId) {
-      return
+      return;
     }
 
     if (nextImageNodeId !== selectedSidebarNodeId) {
-      setSelectedSidebarNodeId(nextImageNodeId)
+      setSelectedSidebarNodeId(nextImageNodeId);
     }
   }, [
     adReviewFocusTaskId,
@@ -358,34 +414,46 @@ export function useAppEffects({
     setSelectedSidebarNodeId,
     sidebarFocus,
     vectorResultsActive,
-  ])
+  ]);
 
   useEffect(() => {
-    const adReviewFocusActive = adReviewPanelOpen && Boolean(adReviewFocusTaskId)
-    if (mode !== 'image' || adReviewFocusActive) {
-      return
+    const adReviewFocusActive =
+      adReviewPanelOpen && Boolean(adReviewFocusTaskId);
+    if (mode !== "image" || adReviewFocusActive) {
+      return;
     }
 
-    const selectedNode = selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null) : null
+    const selectedNode = selectedSidebarNodeId
+      ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
+      : null;
     const selectedNodeMatchesImageMode =
       selectedNode !== null &&
-      (selectedNode.kind === 'folder' || selectedNode.kind === 'package')
+      (selectedNode.kind === "folder" || selectedNode.kind === "package");
 
     if (selectedNodeMatchesImageMode) {
-      return
+      return;
     }
 
-    let fallbackNodeId: string | null
+    let fallbackNodeId: string | null;
     if (vectorResultsActive) {
       fallbackNodeId =
-        (focusedRef ? vectorResultPackageNodeIdMap.get(focusedRef.packageId) ?? null : null) ?? vectorSidebarNodes[0]?.id ?? null
+        (focusedRef
+          ? (vectorResultPackageNodeIdMap.get(focusedRef.packageId) ?? null)
+          : null) ??
+        vectorSidebarNodes[0]?.id ??
+        null;
     } else {
-      const firstImagePackageNodeId = imageSourceNodeIdMap.values().next().value ?? null
-      fallbackNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? firstImagePackageNodeId ?? flatSidebarNodes[0]?.id ?? null
+      const firstImagePackageNodeId =
+        imageSourceNodeIdMap.values().next().value ?? null;
+      fallbackNodeId =
+        imageSourceNodeIdMap.get(selectedPackageId) ??
+        firstImagePackageNodeId ??
+        flatSidebarNodes[0]?.id ??
+        null;
     }
 
     if (fallbackNodeId !== selectedSidebarNodeId) {
-      setSelectedSidebarNodeId(fallbackNodeId)
+      setSelectedSidebarNodeId(fallbackNodeId);
     }
   }, [
     flatSidebarNodes,
@@ -401,130 +469,198 @@ export function useAppEffects({
     vectorSidebarNodes,
     adReviewPanelOpen,
     adReviewFocusTaskId,
-  ])
+  ]);
 
   useEffect(() => {
-    if (mode !== 'video') {
-      return
+    if (mode !== "video") {
+      return;
     }
 
     if (videosForSidebar.length === 0) {
-      if (selectedVideoId !== '') {
-        selectVideoFromBrowser('')
+      if (selectedVideoId !== "") {
+        selectVideoFromBrowser("");
       }
-      return
+      return;
     }
 
     if (!rootScopedVideoIds.has(selectedVideoId)) {
-      selectVideoFromBrowser(videosForSidebar[0].id)
+      selectVideoFromBrowser(videosForSidebar[0].id);
     }
-  }, [mode, rootScopedVideoIds, selectVideoFromBrowser, selectedVideoId, videosForSidebar])
+  }, [
+    mode,
+    rootScopedVideoIds,
+    selectVideoFromBrowser,
+    selectedVideoId,
+    videosForSidebar,
+  ]);
 
   useEffect(() => {
-    if (mode !== 'video') {
-      return
+    if (mode !== "video") {
+      return;
     }
 
-    if (videoQueueSource !== 'sidebar') {
-      return
+    if (videoQueueSource !== "sidebar") {
+      return;
     }
 
-    const nextVideoNodeId = videoNodeIdMap.get(selectedVideoId) ?? null
+    // 当前选中的是 folder 节点时，说明用户在浏览文件夹层级，不覆盖
+    const currentNode = selectedSidebarNodeId
+      ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
+      : null;
+    if (currentNode && !currentNode.videoId) {
+      return;
+    }
+
+    const nextVideoNodeId = videoNodeIdMap.get(selectedVideoId) ?? null;
     if (!nextVideoNodeId) {
-      return
+      return;
     }
 
     if (nextVideoNodeId !== selectedSidebarNodeId) {
-      setSelectedSidebarNodeId(nextVideoNodeId)
+      setSelectedSidebarNodeId(nextVideoNodeId);
     }
-  }, [mode, selectedSidebarNodeId, selectedVideoId, setSelectedSidebarNodeId, videoNodeIdMap, videoQueueSource])
+  }, [
+    mode,
+    selectedSidebarNodeId,
+    selectedVideoId,
+    setSelectedSidebarNodeId,
+    sidebarNodeById,
+    videoNodeIdMap,
+    videoQueueSource,
+  ]);
 
   useEffect(() => {
-    if (mode !== 'video') {
-      return
+    if (mode !== "video") {
+      return;
     }
 
     if (selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)) {
-      return
+      return;
     }
 
-    const fallbackNodeId = videoNodeIdMap.get(selectedVideoId) ?? flatSidebarNodes[0]?.id ?? null
+    const fallbackNodeId =
+      videoNodeIdMap.get(selectedVideoId) ?? flatSidebarNodes[0]?.id ?? null;
     if (fallbackNodeId !== selectedSidebarNodeId) {
-      setSelectedSidebarNodeId(fallbackNodeId)
+      setSelectedSidebarNodeId(fallbackNodeId);
     }
-  }, [flatSidebarNodes, mode, selectedSidebarNodeId, selectedVideoId, setSelectedSidebarNodeId, sidebarNodeById, videoNodeIdMap])
+  }, [
+    flatSidebarNodes,
+    mode,
+    selectedSidebarNodeId,
+    selectedVideoId,
+    setSelectedSidebarNodeId,
+    sidebarNodeById,
+    videoNodeIdMap,
+  ]);
 
   useEffect(() => {
     if (audiosForSidebar.length === 0) {
-      if (selectedAudioId !== '') {
-        setSelectedAudioId('')
+      if (selectedAudioId !== "") {
+        setSelectedAudioId("");
       }
-      return
+      return;
     }
 
     if (!rootScopedAudioIds.has(selectedAudioId)) {
-      setSelectedAudioId(audiosForSidebar[0].id)
+      setSelectedAudioId(audiosForSidebar[0].id);
     }
-  }, [audiosForSidebar, rootScopedAudioIds, selectedAudioId, setSelectedAudioId])
+  }, [
+    audiosForSidebar,
+    rootScopedAudioIds,
+    selectedAudioId,
+    setSelectedAudioId,
+  ]);
 
   useEffect(() => {
-    if (mode !== 'music') {
-      return
+    if (mode !== "music") {
+      return;
     }
 
-    const nextAudioNodeId = audioNodeIdMap.get(selectedAudioId) ?? null
+    const nextAudioNodeId = audioNodeIdMap.get(selectedAudioId) ?? null;
     if (!nextAudioNodeId) {
-      return
+      return;
     }
 
     if (nextAudioNodeId !== selectedSidebarNodeId) {
-      setSelectedSidebarNodeId(nextAudioNodeId)
+      setSelectedSidebarNodeId(nextAudioNodeId);
     }
-  }, [audioNodeIdMap, mode, selectedAudioId, selectedSidebarNodeId, setSelectedSidebarNodeId])
+  }, [
+    audioNodeIdMap,
+    mode,
+    selectedAudioId,
+    selectedSidebarNodeId,
+    setSelectedSidebarNodeId,
+  ]);
 
   useEffect(() => {
-    if (mode !== 'music') {
-      return
+    if (mode !== "music") {
+      return;
     }
 
-    const selectedNode = selectedSidebarNodeId ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null) : null
-    const selectedNodeMatchesMusicMode = selectedNode !== null && selectedNode.kind === 'audio'
+    const selectedNode = selectedSidebarNodeId
+      ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
+      : null;
+    const selectedNodeMatchesMusicMode =
+      selectedNode !== null && selectedNode.kind === "audio";
 
     if (selectedNodeMatchesMusicMode) {
-      return
+      return;
     }
 
-    const fallbackNodeId = audioNodeIdMap.get(selectedAudioId) ?? flatSidebarNodes[0]?.id ?? null
+    const fallbackNodeId =
+      audioNodeIdMap.get(selectedAudioId) ?? flatSidebarNodes[0]?.id ?? null;
     if (fallbackNodeId !== selectedSidebarNodeId) {
-      setSelectedSidebarNodeId(fallbackNodeId)
+      setSelectedSidebarNodeId(fallbackNodeId);
     }
-  }, [audioNodeIdMap, flatSidebarNodes, mode, selectedAudioId, selectedSidebarNodeId, setSelectedSidebarNodeId, sidebarNodeById])
+  }, [
+    audioNodeIdMap,
+    flatSidebarNodes,
+    mode,
+    selectedAudioId,
+    selectedSidebarNodeId,
+    setSelectedSidebarNodeId,
+    sidebarNodeById,
+  ]);
 
   useEffect(() => {
-    if (sidebarCollapsed || sidebarFocus !== 'sidebar' || !selectedSidebarNodeId) {
-      return
+    if (
+      sidebarCollapsed ||
+      sidebarFocus !== "sidebar" ||
+      !selectedSidebarNodeId
+    ) {
+      return;
     }
-    ensureSidebarNodeVisible(selectedSidebarNodeId)
-  }, [ensureSidebarNodeVisible, selectedSidebarNodeId, sidebarCollapsed, sidebarFocus])
+    ensureSidebarNodeVisible(selectedSidebarNodeId);
+  }, [
+    ensureSidebarNodeVisible,
+    selectedSidebarNodeId,
+    sidebarCollapsed,
+    sidebarFocus,
+  ]);
 
   useEffect(() => {
     if (!vectorResultsActive || sidebarCollapsed || !selectedSidebarNodeId) {
-      return
+      return;
     }
-    ensureSidebarNodeVisible(selectedSidebarNodeId)
-  }, [ensureSidebarNodeVisible, selectedSidebarNodeId, sidebarCollapsed, vectorResultsActive])
+    ensureSidebarNodeVisible(selectedSidebarNodeId);
+  }, [
+    ensureSidebarNodeVisible,
+    selectedSidebarNodeId,
+    sidebarCollapsed,
+    vectorResultsActive,
+  ]);
 
   useEffect(() => {
-    const enteringFullscreen = fullscreenActive && !wasFullscreenRef.current
+    const enteringFullscreen = fullscreenActive && !wasFullscreenRef.current;
     if (enteringFullscreen) {
-      const entryDisplay = mode === 'video' ? 'video-only' : 'image-only'
-      setFullscreenEntryDisplay(entryDisplay)
-      setFullscreenDisplay(entryDisplay)
-      setFullscreenVideoFocus(mode === 'video')
-      setFullscreenSwapped(false)
-      setShowFullscreenFooter(false)
+      const entryDisplay = mode === "video" ? "video-only" : "image-only";
+      setFullscreenEntryDisplay(entryDisplay);
+      setFullscreenDisplay(entryDisplay);
+      setFullscreenVideoFocus(mode === "video");
+      setFullscreenSwapped(false);
+      setShowFullscreenFooter(false);
     }
-    wasFullscreenRef.current = fullscreenActive
+    wasFullscreenRef.current = fullscreenActive;
   }, [
     fullscreenActive,
     mode,
@@ -534,71 +670,99 @@ export function useAppEffects({
     setFullscreenVideoFocus,
     setShowFullscreenFooter,
     wasFullscreenRef,
-  ])
+  ]);
 
   useEffect(() => {
-    const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined
+    const windowApi =
+      typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
     if (!windowApi?.setFullscreen) {
-      return
+      return;
     }
 
     void windowApi.setFullscreen(fullscreenActive).catch(() => {
       // ignore runtime bridge errors and keep renderer behavior intact
-    })
-  }, [fullscreenActive])
+    });
+  }, [fullscreenActive]);
 
   useEffect(() => {
-    const canAutoplayImages = mode === 'image' || (fullscreenActive && fullscreenDisplay === 'dual' && !fullscreenVideoFocus && imageFocusActive)
+    const canAutoplayImages =
+      mode === "image" ||
+      (fullscreenActive &&
+        fullscreenDisplay === "dual" &&
+        !fullscreenVideoFocus &&
+        imageFocusActive);
     if (!canAutoplayImages || !autoPlayEnabled) {
-      return
+      return;
     }
 
     const timer = window.setInterval(() => {
-      moveImage(1)
-    }, autoPlayInterval * 1000)
+      moveImage(1);
+    }, autoPlayInterval * 1000);
 
-    return () => window.clearInterval(timer)
-  }, [autoPlayEnabled, autoPlayInterval, fullscreenActive, fullscreenDisplay, fullscreenVideoFocus, imageFocusActive, mode, moveImage])
+    return () => window.clearInterval(timer);
+  }, [
+    autoPlayEnabled,
+    autoPlayInterval,
+    fullscreenActive,
+    fullscreenDisplay,
+    fullscreenVideoFocus,
+    imageFocusActive,
+    mode,
+    moveImage,
+  ]);
 
-  const activeTopPanelKind = manageMode ? 'manage' : metadataManageMode ? 'metadata' : vectorMode ? 'search' : 'none'
+  const activeTopPanelKind = manageMode
+    ? "manage"
+    : metadataManageMode
+      ? "metadata"
+      : vectorMode
+        ? "search"
+        : "none";
 
   useEffect(() => {
-    if (searchPanelCollapsed || activeTopPanelKind === 'none') {
-      return
+    if (searchPanelCollapsed || activeTopPanelKind === "none") {
+      return;
     }
 
-    const content = vectorPanelContentRef.current
+    const content = vectorPanelContentRef.current;
     if (!content) {
-      return
+      return;
     }
 
     const measurePanelHeight = () => {
-      const panel = content.parentElement
-      const styles = panel ? window.getComputedStyle(panel) : null
+      const panel = content.parentElement;
+      const styles = panel ? window.getComputedStyle(panel) : null;
       const readPx = (value: string | undefined) => {
-        const parsed = Number.parseFloat(value ?? '')
-        return Number.isFinite(parsed) ? parsed : 0
-      }
+        const parsed = Number.parseFloat(value ?? "");
+        return Number.isFinite(parsed) ? parsed : 0;
+      };
       const chromeHeight = styles
-        ? readPx(styles.paddingTop) + readPx(styles.paddingBottom) + readPx(styles.borderTopWidth) + readPx(styles.borderBottomWidth)
-        : 20
-      const measured = clamp(Math.ceil(content.scrollHeight + chromeHeight + 1), TOP_PANEL_MIN_HEIGHT, TOP_PANEL_MAX_HEIGHT)
+        ? readPx(styles.paddingTop) +
+          readPx(styles.paddingBottom) +
+          readPx(styles.borderTopWidth) +
+          readPx(styles.borderBottomWidth)
+        : 20;
+      const measured = clamp(
+        Math.ceil(content.scrollHeight + chromeHeight + 1),
+        TOP_PANEL_MIN_HEIGHT,
+        TOP_PANEL_MAX_HEIGHT,
+      );
       if (Math.abs(measured - workspaceBottomPanelHeight) < 1) {
-        return
+        return;
       }
-      updateSettings({ workspaceBottomPanelHeight: measured })
-    }
+      updateSettings({ workspaceBottomPanelHeight: measured });
+    };
 
-    const rafId = window.requestAnimationFrame(measurePanelHeight)
+    const rafId = window.requestAnimationFrame(measurePanelHeight);
     const observer = new ResizeObserver(() => {
-      measurePanelHeight()
-    })
-    observer.observe(content)
+      measurePanelHeight();
+    });
+    observer.observe(content);
 
     return () => {
-      window.cancelAnimationFrame(rafId)
-      observer.disconnect()
-    }
+      window.cancelAnimationFrame(rafId);
+      observer.disconnect();
+    };
   }, [
     activeTopPanelKind,
     featureTagPickerOpen,
@@ -607,21 +771,29 @@ export function useAppEffects({
     updateSettings,
     vectorPanelContentRef,
     workspaceBottomPanelHeight,
-  ])
+  ]);
 
   useEffect(() => {
-    const nextStyleId = resolveStyleId(styleId)
-    const nextPalettePair = resolvePalettePairForStyle(nextStyleId, paletteDayId, paletteNightId)
-    const targetPaletteId = paletteMode === 'night' ? nextPalettePair.night : nextPalettePair.day
-    const nextPaletteId = resolvePaletteIdForStyle(targetPaletteId, nextStyleId)
-    const nextThemeId = nextPaletteId
+    const nextStyleId = resolveStyleId(styleId);
+    const nextPalettePair = resolvePalettePairForStyle(
+      nextStyleId,
+      paletteDayId,
+      paletteNightId,
+    );
+    const targetPaletteId =
+      paletteMode === "night" ? nextPalettePair.night : nextPalettePair.day;
+    const nextPaletteId = resolvePaletteIdForStyle(
+      targetPaletteId,
+      nextStyleId,
+    );
+    const nextThemeId = nextPaletteId;
 
     if (
-      nextStyleId !== styleId
-      || nextPaletteId !== paletteId
-      || nextThemeId !== themeId
-      || nextPalettePair.day !== paletteDayId
-      || nextPalettePair.night !== paletteNightId
+      nextStyleId !== styleId ||
+      nextPaletteId !== paletteId ||
+      nextThemeId !== themeId ||
+      nextPalettePair.day !== paletteDayId ||
+      nextPalettePair.night !== paletteNightId
     ) {
       updateSettings({
         styleId: nextStyleId,
@@ -629,17 +801,31 @@ export function useAppEffects({
         paletteDayId: nextPalettePair.day,
         paletteNightId: nextPalettePair.night,
         themeId: nextThemeId,
-      })
+      });
     }
 
-    document.documentElement.dataset.mpxStyle = nextStyleId
-    document.documentElement.dataset.mpxPalette = nextPaletteId
-    document.documentElement.dataset.mpxTheme = nextThemeId
-    document.documentElement.dataset.mpxPaletteMode = paletteMode
-  }, [paletteDayId, paletteId, paletteMode, paletteNightId, styleId, themeId, updateSettings])
+    document.documentElement.dataset.mpxStyle = nextStyleId;
+    document.documentElement.dataset.mpxPalette = nextPaletteId;
+    document.documentElement.dataset.mpxTheme = nextThemeId;
+    document.documentElement.dataset.mpxPaletteMode = paletteMode;
+  }, [
+    paletteDayId,
+    paletteId,
+    paletteMode,
+    paletteNightId,
+    styleId,
+    themeId,
+    updateSettings,
+  ]);
 
   useEffect(() => {
-    const normalizedOpacity = Math.max(0, Math.min(100, settingsBackdropOpacity))
-    document.documentElement.style.setProperty('--mpx-settings-backdrop-opacity', `${normalizedOpacity.toFixed(0)}%`)
-  }, [settingsBackdropOpacity])
+    const normalizedOpacity = Math.max(
+      0,
+      Math.min(100, settingsBackdropOpacity),
+    );
+    document.documentElement.style.setProperty(
+      "--mpx-settings-backdrop-opacity",
+      `${normalizedOpacity.toFixed(0)}%`,
+    );
+  }, [settingsBackdropOpacity]);
 }

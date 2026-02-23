@@ -149,11 +149,6 @@ function SidebarRenameDialog({
   const batchModeActive = targetCount > 1 || mode !== 'single'
   const singleConfirmDisabled = pending || value.trim().length === 0
   const showManualPreviewButton = mode === 'replace'
-  const firstFailedRow = previewRows.find((row) => row.reason)
-  const displayedPreviewRows = [
-    ...previewRows.filter((row) => !row.reason),
-    ...(firstFailedRow ? [firstFailedRow] : []),
-  ]
 
   if (!open) {
     return null
@@ -161,7 +156,21 @@ function SidebarRenameDialog({
 
   return (
     <div className="settings-floating-mask" data-slot="fg-sidebar-shortcut-rename-panel" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="sidebar-rename-dialog">
-      <section className="settings-floating-panel manage-group-dialog sidebar-rename-dialog" role="document">
+      <section
+        className="settings-floating-panel manage-group-dialog sidebar-rename-dialog"
+        role="document"
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') {
+            event.preventDefault()
+            onCancel()
+            return
+          }
+          if (event.key === 'Enter' && batchModeActive && !pending) {
+            event.preventDefault()
+            onConfirm()
+          }
+        }}
+      >
         <h3 className="sidebar-rename-title">{inputLabel}</h3>
         {batchModeActive ? (
           <>
@@ -234,10 +243,11 @@ function SidebarRenameDialog({
             ) : null}
             {previewSummaryText ? <p className="sidebar-rename-preview-summary">{previewSummaryText}</p> : null}
             <div className="sidebar-rename-preview-list">
-              {displayedPreviewRows.slice(0, 24).map((row) => (
-                <p key={row.nodeId} className={`sidebar-rename-preview-row ${row.reason ? 'is-failed' : ''}`}>
-                  {row.sourceName} {'->'} {row.targetName}{row.reason ? ` (${row.reason})` : ''}
-                </p>
+              {previewRows.slice(0, 24).map((row) => (
+                <div key={row.nodeId} className={`sidebar-rename-preview-row ${row.reason && row.reason !== 'unchanged' ? 'is-failed' : ''} ${row.reason === 'unchanged' ? 'is-unchanged' : ''}`}>
+                  <span className="sidebar-rename-preview-cell">{row.sourceName}</span>
+                  <span className="sidebar-rename-preview-cell">{row.reason && row.reason !== 'unchanged' ? row.reason : row.targetName}</span>
+                </div>
               ))}
             </div>
           </>
