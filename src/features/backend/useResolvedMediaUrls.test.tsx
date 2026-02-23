@@ -250,4 +250,82 @@ describe('useResolvedMediaUrls', () => {
 
     expect(resolveMediaResource).toHaveBeenCalledTimes(1)
   })
+
+  it('active-only 在缓存刷新窗口会保留当前目标 url，避免短暂置空', async () => {
+    const pendingResolves: Array<
+      (value: { resource_url: string; expires_at_ms: number }) => void
+    > = []
+    const resolveMediaResource = vi.fn(
+      () =>
+        new Promise<{ resource_url: string; expires_at_ms: number }>((resolve) => {
+          pendingResolves.push(resolve)
+        }),
+    )
+
+    const repository = {
+      resolveMediaResource,
+    } as unknown as MediaRepository
+
+    const { result, rerender } = renderHook(
+      ({ targets }: { targets: MediaResolveTarget[] }) =>
+        useResolvedMediaUrls({
+          repository,
+          targets,
+          options: {
+            applyMode: 'immediate',
+            stateScope: 'active-only',
+          },
+        }),
+      {
+        initialProps: {
+          targets: [baseTarget],
+        },
+      },
+    )
+
+    await waitFor(() => {
+      expect(resolveMediaResource).toHaveBeenCalledTimes(1)
+    })
+
+    await act(async () => {
+      const resolveFirst = pendingResolves.shift()
+      resolveFirst?.({
+        resource_url: 'mpx://resource-old',
+        // 小于刷新提前量，下一轮会触发刷新请求
+        expires_at_ms: Date.now() + 1_000,
+      })
+      await Promise.resolve()
+    })
+
+    await waitFor(() => {
+      expect(result.current.urlByTargetId['target-1']).toBe('mpx://resource-old')
+    })
+
+    rerender({
+      targets: [{ ...baseTarget }],
+    })
+
+    await waitFor(() => {
+      expect(resolveMediaResource).toHaveBeenCalledTimes(2)
+    })
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(result.current.urlByTargetId['target-1']).toBe('mpx://resource-old')
+
+    await act(async () => {
+      const resolveSecond = pendingResolves.shift()
+      resolveSecond?.({
+        resource_url: 'mpx://resource-new',
+        expires_at_ms: Date.now() + 60_000,
+      })
+      await Promise.resolve()
+    })
+
+    await waitFor(() => {
+      expect(result.current.urlByTargetId['target-1']).toBe('mpx://resource-new')
+    })
+  })
 })

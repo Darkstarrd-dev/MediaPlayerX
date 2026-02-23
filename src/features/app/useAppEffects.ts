@@ -713,10 +713,9 @@ export function useAppEffects({
 
   useEffect(() => {
     const canAutoplayImages =
-      (mode === "image" && !fullscreenActive) ||
-      (fullscreenActive &&
-        (fullscreenDisplay === "image-only" ||
-          (fullscreenDisplay === "dual" && !fullscreenVideoFocus)));
+      fullscreenActive &&
+      (fullscreenDisplay === "image-only" ||
+        (fullscreenDisplay === "dual" && !fullscreenVideoFocus));
     if (!canAutoplayImages || !autoPlayEnabled) {
       return;
     }
@@ -732,7 +731,6 @@ export function useAppEffects({
     fullscreenActive,
     fullscreenDisplay,
     fullscreenVideoFocus,
-    mode,
     moveImage,
   ]);
 

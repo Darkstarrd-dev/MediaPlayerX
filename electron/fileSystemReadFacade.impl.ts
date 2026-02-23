@@ -527,10 +527,14 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   }
   private markInteractiveRead(): void {
     this.lastInteractiveReadAtMs = Date.now();
+    this.archiveNormalizationService.onInteractiveRead();
     this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_IDLE_MS);
   }
   private isInteractiveReadHot(): boolean {
-    return false;
+    return (
+      Date.now() - this.lastInteractiveReadAtMs <
+      FileSystemMediaReadService.INTERACTIVE_READ_HOT_WINDOW_MS
+    );
   }
   private isRar7zPath(targetPath: string): boolean {
     const ext = path.extname(targetPath).toLowerCase();

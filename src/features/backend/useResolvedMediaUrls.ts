@@ -312,26 +312,35 @@ export function useResolvedMediaUrls({
     }
 
     if (stateScope === 'active-only') {
-      const nextUrls: Record<string, string> = {}
-      for (const [requestKey, targetIds] of targetIdsByRequestKey) {
-        const cached = urlCacheByLocatorKeyRef.current.get(requestKey)
-        const now = Date.now()
-        const cachedUrl =
-          cached && cached.expiresAtMs > now + CACHE_REFRESH_LEEWAY_MS
-            ? cached.resourceUrl
-            : null
-        if (!cachedUrl) {
-          if (cached) {
-            urlCacheByLocatorKeyRef.current.delete(requestKey)
-          }
-          continue
-        }
-        for (const targetId of targetIds) {
-          nextUrls[targetId] = cachedUrl
-        }
-      }
-
       setUrlByTargetId((previous) => {
+        const nextUrls: Record<string, string> = {}
+        for (const [requestKey, targetIds] of targetIdsByRequestKey) {
+          const cached = urlCacheByLocatorKeyRef.current.get(requestKey)
+          const now = Date.now()
+          const cachedUrl =
+            cached && cached.expiresAtMs > now + CACHE_REFRESH_LEEWAY_MS
+              ? cached.resourceUrl
+              : null
+
+          if (!cachedUrl) {
+            if (cached) {
+              urlCacheByLocatorKeyRef.current.delete(requestKey)
+            }
+
+            for (const targetId of targetIds) {
+              const previousUrl = previous[targetId]
+              if (typeof previousUrl === 'string' && previousUrl.length > 0) {
+                nextUrls[targetId] = previousUrl
+              }
+            }
+            continue
+          }
+
+          for (const targetId of targetIds) {
+            nextUrls[targetId] = cachedUrl
+          }
+        }
+
         const prevKeys = Object.keys(previous)
         const nextKeys = Object.keys(nextUrls)
         if (prevKeys.length === nextKeys.length) {
