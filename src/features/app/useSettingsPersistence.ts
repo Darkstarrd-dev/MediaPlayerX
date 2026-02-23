@@ -521,6 +521,14 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.thumbnailWarmupConcurrency;
   }
 
+  // 缩略图级别迁移：旧 1-9 → 新 1-7，超出范围 clamp
+  if (
+    typeof next.thumbnailScale === "number" &&
+    Number.isFinite(next.thumbnailScale)
+  ) {
+    next.thumbnailScale = Math.max(1, Math.min(7, Math.round(next.thumbnailScale)));
+  }
+
   if (
     typeof next.fullscreenPrefetchRadius === "number" &&
     Number.isFinite(next.fullscreenPrefetchRadius)

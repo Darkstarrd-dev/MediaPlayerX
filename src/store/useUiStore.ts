@@ -32,7 +32,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   workspaceBottomPanelHeight: 164,
   fullscreenVideoControlsMaxWidth: 980,
   mediaPreloadMemoryBudgetMb: 1024,
-  thumbnailScale: 5,
+  thumbnailScale: 4,
   thumbnailGap: 8,
   showNamesOnly: false,
   metadataCollapsed: false,
