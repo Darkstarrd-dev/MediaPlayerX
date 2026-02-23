@@ -27,9 +27,11 @@ interface SidebarRenameDialogProps {
   removeEdgesHint: string
   metadataTemplatePlaceholder: string
   previewLabel: string
+  applyFromSourceLabel: string
   previewSummaryText: string | null
   confirmLabel: string
   cancelLabel: string
+  closeLabel: string
   value: string
   replaceFrom: string
   replaceTo: string
@@ -58,6 +60,7 @@ interface SidebarRenameDialogProps {
   onRemoveTailChange: (value: string) => void
   onMetadataTemplateChange: (value: string) => void
   onRefreshPreview: () => void
+  onUseSourceNameAsReplaceFrom: (value: string) => void
   onConfirm: () => void
   onCancel: () => void
 }
@@ -88,9 +91,11 @@ function SidebarRenameDialog({
   removeRangeHint,
   removeEdgesHint,
   previewLabel,
+  applyFromSourceLabel,
   previewSummaryText,
   confirmLabel,
   cancelLabel,
+  closeLabel,
   value,
   replaceFrom,
   replaceTo,
@@ -117,6 +122,7 @@ function SidebarRenameDialog({
   onRemoveHeadChange,
   onRemoveTailChange,
   onRefreshPreview,
+  onUseSourceNameAsReplaceFrom,
   onConfirm,
   onCancel,
 }: SidebarRenameDialogProps) {
@@ -171,7 +177,19 @@ function SidebarRenameDialog({
           }
         }}
       >
-        <h3 className="sidebar-rename-title">{inputLabel}</h3>
+        <div className="sidebar-rename-header">
+          <h3 className="sidebar-rename-title">{inputLabel}</h3>
+          <button
+            className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn"
+            type="button"
+            aria-label={closeLabel}
+            title={closeLabel}
+            disabled={pending}
+            onClick={onCancel}
+          >
+            ×
+          </button>
+        </div>
         {batchModeActive ? (
           <>
             <label className="sidebar-rename-mode-label">{modeLabel}</label>
@@ -245,7 +263,21 @@ function SidebarRenameDialog({
             <div className="sidebar-rename-preview-list">
               {previewRows.slice(0, 24).map((row) => (
                 <div key={row.nodeId} className={`sidebar-rename-preview-row ${row.reason && row.reason !== 'unchanged' ? 'is-failed' : ''} ${row.reason === 'unchanged' ? 'is-unchanged' : ''}`}>
-                  <span className="sidebar-rename-preview-cell">{row.sourceName}</span>
+                  {mode === 'replace' ? (
+                    <button
+                      className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn"
+                      type="button"
+                      disabled={pending}
+                      title={row.sourceName}
+                      onClick={() => {
+                        onUseSourceNameAsReplaceFrom(row.sourceName)
+                      }}
+                    >
+                      {applyFromSourceLabel}: {row.sourceName}
+                    </button>
+                  ) : (
+                    <span className="sidebar-rename-preview-cell" title={row.sourceName}>{row.sourceName}</span>
+                  )}
                   <span className="sidebar-rename-preview-cell">{row.reason && row.reason !== 'unchanged' ? row.reason : row.targetName}</span>
                 </div>
               ))}

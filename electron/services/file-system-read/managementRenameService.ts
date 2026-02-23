@@ -248,6 +248,7 @@ export class ManagementRenameService {
       sourceName: string;
       sourcePath: string;
       sourceExtension: string;
+      reason: "unchanged" | "replace-target-not-found";
     }> = [];
 
     for (const [index, target] of normalizedTargets.entries()) {
@@ -255,6 +256,7 @@ export class ManagementRenameService {
       let sourceName = "";
       let sourceExtension = "";
       let sourceIsFile = true;
+      let replaceMatched = false;
       let metadataFields = buildFields(null, null, null, "");
       let archivePath = "";
       let archiveEntryName = "";
@@ -357,6 +359,7 @@ export class ManagementRenameService {
       } else if (request.mode === "replace") {
         const replaceFrom = request.replace_from ?? "";
         if (replaceFrom) {
+          replaceMatched = sourceName.includes(replaceFrom);
           nextBaseName = sourceName.replaceAll(
             replaceFrom,
             request.replace_to ?? "",
@@ -403,6 +406,12 @@ export class ManagementRenameService {
           sourceName,
           sourcePath,
           sourceExtension,
+          reason:
+            request.mode === "replace" &&
+            (request.replace_from ?? "").length > 0 &&
+            !replaceMatched
+              ? "replace-target-not-found"
+              : "unchanged",
         });
         continue;
       }
@@ -705,7 +714,7 @@ export class ManagementRenameService {
         source_path: item.sourcePath,
         target_path: item.sourcePath,
         applied: false,
-        reason: "unchanged",
+        reason: item.reason,
       });
     }
 

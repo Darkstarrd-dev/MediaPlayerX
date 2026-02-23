@@ -116,6 +116,50 @@ function resolveImagePackageParentNodeIds(nodes: SidebarNode[]): string[] {
   return orderedNodeIds;
 }
 
+function resolveVideoParentNodeIds(nodes: SidebarNode[]): string[] {
+  const orderedNodeIds: string[] = [];
+  const walk = (items: SidebarNode[], depth: number) => {
+    for (const node of items) {
+      const canBeParentTarget = node.kind === "folder" && depth > 0;
+      const hasDirectVideoChild = node.children.some(
+        (child) => child.kind === "video" || Boolean(child.videoId),
+      );
+      if (canBeParentTarget && hasDirectVideoChild) {
+        orderedNodeIds.push(node.id);
+      }
+
+      if (node.children.length > 0) {
+        walk(node.children, depth + 1);
+      }
+    }
+  };
+
+  walk(nodes, 0);
+  return orderedNodeIds;
+}
+
+function resolveAudioParentNodeIds(nodes: SidebarNode[]): string[] {
+  const orderedNodeIds: string[] = [];
+  const walk = (items: SidebarNode[], depth: number) => {
+    for (const node of items) {
+      const canBeParentTarget = node.kind === "folder" && depth > 0;
+      const hasDirectAudioChild = node.children.some(
+        (child) => child.kind === "audio" || Boolean(child.audioId),
+      );
+      if (canBeParentTarget && hasDirectAudioChild) {
+        orderedNodeIds.push(node.id);
+      }
+
+      if (node.children.length > 0) {
+        walk(node.children, depth + 1);
+      }
+    }
+  };
+
+  walk(nodes, 0);
+  return orderedNodeIds;
+}
+
 function isSameNodeIdSet(left: Set<string>, right: Set<string>): boolean {
   if (left.size !== right.size) {
     return false;
@@ -260,6 +304,7 @@ function SidebarPanel({
   onSetCollapsedFolderNodeIds,
 }: SidebarPanelProps) {
   const { t } = useI18n();
+  const manageStyleEnabled = manageMode || metadataManageMode;
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>();
   const [
     localCollapsedImageFolderNodeIds,
@@ -321,13 +366,17 @@ function SidebarPanel({
   }, []);
 
   useEffect(() => {
+    if (manageStyleEnabled) {
+      return;
+    }
+
     if (!selectedSidebarNodeId) {
       return;
     }
     requestAnimationFrame(() => {
       refreshOverflowState(selectedSidebarNodeId);
     });
-  }, [refreshOverflowState, selectedSidebarNodeId, sidebarFontSize]);
+  }, [manageStyleEnabled, refreshOverflowState, selectedSidebarNodeId, sidebarFontSize]);
 
   useEffect(() => {
     if (!hoveredNodeId) {
@@ -424,6 +473,26 @@ function SidebarPanel({
     [imageTreeNodes, mode],
   );
 
+  const videoParentNodeIds = useMemo(
+    () => (mode === "video" ? resolveVideoParentNodeIds(videoTreeNodes) : []),
+    [mode, videoTreeNodes],
+  );
+
+  const videoNodeOrderIndexById = useMemo(
+    () => (mode === "video" ? resolveNodeOrderIndexById(videoTreeNodes) : new Map<string, number>()),
+    [mode, videoTreeNodes],
+  );
+
+  const audioParentNodeIds = useMemo(
+    () => (mode === "music" ? resolveAudioParentNodeIds(audioTreeNodes) : []),
+    [audioTreeNodes, mode],
+  );
+
+  const audioNodeOrderIndexById = useMemo(
+    () => (mode === "music" ? resolveNodeOrderIndexById(audioTreeNodes) : new Map<string, number>()),
+    [audioTreeNodes, mode],
+  );
+
   const allImagePackageParentsCollapsed = useMemo(() => {
     if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
       return false;
@@ -487,17 +556,206 @@ function SidebarPanel({
     selectedSidebarNodeId,
   ]);
 
+  const videoParentNavigation = useMemo(() => {
+    if (mode !== "video" || videoParentNodeIds.length === 0) {
+      return {
+        previousNodeId: null as string | null,
+        nextNodeId: null as string | null,
+      };
+    }
+
+    const selectedTargetIndex = selectedSidebarNodeId
+      ? videoParentNodeIds.indexOf(selectedSidebarNodeId)
+      : -1;
+    if (selectedTargetIndex >= 0) {
+      return {
+        previousNodeId: videoParentNodeIds[selectedTargetIndex - 1] ?? null,
+        nextNodeId: videoParentNodeIds[selectedTargetIndex + 1] ?? null,
+      };
+    }
+
+    const selectedOrder = selectedSidebarNodeId
+      ? videoNodeOrderIndexById.get(selectedSidebarNodeId)
+      : undefined;
+    if (selectedOrder === undefined) {
+      return {
+        previousNodeId: null,
+        nextNodeId: videoParentNodeIds[0] ?? null,
+      };
+    }
+
+    let previousNodeId: string | null = null;
+    let nextNodeId: string | null = null;
+    for (const targetNodeId of videoParentNodeIds) {
+      const targetOrder = videoNodeOrderIndexById.get(targetNodeId);
+      if (targetOrder === undefined) {
+        continue;
+      }
+      if (targetOrder < selectedOrder) {
+        previousNodeId = targetNodeId;
+        continue;
+      }
+      if (targetOrder > selectedOrder) {
+        nextNodeId = targetNodeId;
+        break;
+      }
+    }
+
+    return {
+      previousNodeId,
+      nextNodeId,
+    };
+  }, [mode, selectedSidebarNodeId, videoNodeOrderIndexById, videoParentNodeIds]);
+
+  const allVideoParentsCollapsed = useMemo(() => {
+    if (mode !== "video" || videoParentNodeIds.length === 0) {
+      return false;
+    }
+    return videoParentNodeIds.every((nodeId) => collapsedImageFolderNodeIds.has(nodeId));
+  }, [collapsedImageFolderNodeIds, mode, videoParentNodeIds]);
+
+  const audioParentNavigation = useMemo(() => {
+    if (mode !== "music" || audioParentNodeIds.length === 0) {
+      return {
+        previousNodeId: null as string | null,
+        nextNodeId: null as string | null,
+      };
+    }
+
+    const selectedTargetIndex = selectedSidebarNodeId
+      ? audioParentNodeIds.indexOf(selectedSidebarNodeId)
+      : -1;
+    if (selectedTargetIndex >= 0) {
+      return {
+        previousNodeId: audioParentNodeIds[selectedTargetIndex - 1] ?? null,
+        nextNodeId: audioParentNodeIds[selectedTargetIndex + 1] ?? null,
+      };
+    }
+
+    const selectedOrder = selectedSidebarNodeId
+      ? audioNodeOrderIndexById.get(selectedSidebarNodeId)
+      : undefined;
+    if (selectedOrder === undefined) {
+      return {
+        previousNodeId: null,
+        nextNodeId: audioParentNodeIds[0] ?? null,
+      };
+    }
+
+    let previousNodeId: string | null = null;
+    let nextNodeId: string | null = null;
+    for (const targetNodeId of audioParentNodeIds) {
+      const targetOrder = audioNodeOrderIndexById.get(targetNodeId);
+      if (targetOrder === undefined) {
+        continue;
+      }
+      if (targetOrder < selectedOrder) {
+        previousNodeId = targetNodeId;
+        continue;
+      }
+      if (targetOrder > selectedOrder) {
+        nextNodeId = targetNodeId;
+        break;
+      }
+    }
+
+    return {
+      previousNodeId,
+      nextNodeId,
+    };
+  }, [audioNodeOrderIndexById, audioParentNodeIds, mode, selectedSidebarNodeId]);
+
+  const allAudioParentsCollapsed = useMemo(() => {
+    if (mode !== "music" || audioParentNodeIds.length === 0) {
+      return false;
+    }
+    return audioParentNodeIds.every((nodeId) => collapsedImageFolderNodeIds.has(nodeId));
+  }, [audioParentNodeIds, collapsedImageFolderNodeIds, mode]);
+
+  const focusSidebarNodeWithRetry = useCallback((targetNodeId: string) => {
+    let frame = 0;
+    const maxFrames = 6;
+
+    const tryFocus = () => {
+      const currentContainer = sidebarTreeRef.current;
+      if (!currentContainer) {
+        return;
+      }
+      const rowElement = Array.from(
+        currentContainer.querySelectorAll<HTMLElement>("[data-sidebar-node-id]"),
+      ).find((element) => element.dataset.sidebarNodeId === targetNodeId);
+      const labelElement = rowElement?.querySelector<HTMLButtonElement>(
+        "[data-slot='fg-sidebar-main-label']",
+      );
+      if (labelElement) {
+        labelElement.focus({ preventScroll: true });
+        return;
+      }
+
+      frame += 1;
+      if (frame < maxFrames) {
+        requestAnimationFrame(tryFocus);
+      }
+    };
+
+    requestAnimationFrame(tryFocus);
+  }, []);
+
+  const scrollSidebarToNode = useCallback((targetNodeId: string) => {
+    const container = sidebarTreeRef.current;
+    if (!container) {
+      return;
+    }
+
+    const rows: VisibleSidebarRow[] = [];
+    flattenVisibleSidebarRows(
+      activeTreeNodes,
+      0,
+      mode,
+      collapsedImageFolderNodeIds,
+      rows,
+    );
+    const targetIndex = rows.findIndex((row) => row.node.id === targetNodeId);
+    if (targetIndex < 0) {
+      return;
+    }
+
+    const rowHeight = Math.max(
+      24,
+      Math.round(sidebarFontSize + sidebarVerticalGap + 14),
+    );
+    const rowTop = targetIndex * rowHeight;
+    const rowBottom = rowTop + rowHeight;
+    const viewTop = container.scrollTop;
+    const viewBottom = viewTop + container.clientHeight;
+    if (rowTop < viewTop) {
+      container.scrollTop = Math.max(0, rowTop - 4);
+    } else if (rowBottom > viewBottom) {
+      container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
+    }
+  }, [activeTreeNodes, collapsedImageFolderNodeIds, mode, sidebarFontSize, sidebarVerticalGap]);
+
   const jumpToImageParentNode = useCallback((targetNodeId: string | null) => {
     if (mode !== "image" || !targetNodeId) {
       return;
     }
 
     onSelectNode(targetNodeId);
+    scrollSidebarToNode(targetNodeId);
+    focusSidebarNodeWithRetry(targetNodeId);
+
     const targetNode = imageNodeById.get(targetNodeId);
     if (targetNode?.imageSourceId) {
       onSelectPackage(targetNode.imageSourceId);
     }
-  }, [imageNodeById, mode, onSelectNode, onSelectPackage]);
+  }, [
+    focusSidebarNodeWithRetry,
+    imageNodeById,
+    mode,
+    onSelectNode,
+    onSelectPackage,
+    scrollSidebarToNode,
+  ]);
 
   const toggleCollapseImagePackageParentNodes = useCallback(() => {
     if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
@@ -537,6 +795,116 @@ function SidebarPanel({
     imagePackageParentNodeIds,
     mode,
     updateCollapsedImageFolderNodeIds,
+  ]);
+
+  const toggleCollapseVideoParentNodes = useCallback(() => {
+    if (mode !== "video" || videoParentNodeIds.length === 0) {
+      return;
+    }
+
+    suppressAutoExpandAncestorFoldersRef.current = true;
+    updateCollapsedImageFolderNodeIds((previous) => {
+      const next = new Set(previous);
+      if (allVideoParentsCollapsed) {
+        let changed = false;
+        for (const nodeId of videoParentNodeIds) {
+          if (!next.delete(nodeId)) {
+            continue;
+          }
+          changed = true;
+        }
+        return changed ? next : previous;
+      }
+
+      let changed = false;
+      for (const nodeId of videoParentNodeIds) {
+        if (next.has(nodeId)) {
+          continue;
+        }
+        next.add(nodeId);
+        changed = true;
+      }
+      return changed ? next : previous;
+    });
+
+    requestAnimationFrame(() => {
+      suppressAutoExpandAncestorFoldersRef.current = false;
+    });
+  }, [
+    allVideoParentsCollapsed,
+    mode,
+    updateCollapsedImageFolderNodeIds,
+    videoParentNodeIds,
+  ]);
+
+  const toggleCollapseAudioParentNodes = useCallback(() => {
+    if (mode !== "music" || audioParentNodeIds.length === 0) {
+      return;
+    }
+
+    suppressAutoExpandAncestorFoldersRef.current = true;
+    updateCollapsedImageFolderNodeIds((previous) => {
+      const next = new Set(previous);
+      if (allAudioParentsCollapsed) {
+        let changed = false;
+        for (const nodeId of audioParentNodeIds) {
+          if (!next.delete(nodeId)) {
+            continue;
+          }
+          changed = true;
+        }
+        return changed ? next : previous;
+      }
+
+      let changed = false;
+      for (const nodeId of audioParentNodeIds) {
+        if (next.has(nodeId)) {
+          continue;
+        }
+        next.add(nodeId);
+        changed = true;
+      }
+      return changed ? next : previous;
+    });
+
+    requestAnimationFrame(() => {
+      suppressAutoExpandAncestorFoldersRef.current = false;
+    });
+  }, [
+    allAudioParentsCollapsed,
+    audioParentNodeIds,
+    mode,
+    updateCollapsedImageFolderNodeIds,
+  ]);
+
+  const jumpToVideoParentNode = useCallback((targetNodeId: string | null) => {
+    if (mode !== "video" || !targetNodeId) {
+      return;
+    }
+
+    onSelectNode(targetNodeId);
+    scrollSidebarToNode(targetNodeId);
+    focusSidebarNodeWithRetry(targetNodeId);
+  }, [
+    focusSidebarNodeWithRetry,
+    mode,
+    onSelectNode,
+    scrollSidebarToNode,
+  ]);
+
+  const jumpToAudioParentNode = useCallback((targetNodeId: string | null) => {
+    if (mode !== "music" || !targetNodeId) {
+      return;
+    }
+
+    onSelectNode(targetNodeId);
+    scrollSidebarToNode(targetNodeId);
+    focusSidebarNodeWithRetry(targetNodeId);
+  }, [
+    focusSidebarNodeWithRetry,
+    mode,
+    onSelectNode,
+    scrollSidebarToNode,
   ]);
 
   useEffect(() => {
@@ -579,8 +947,6 @@ function SidebarPanel({
     updateCollapsedImageFolderNodeIds,
   ]);
 
-  const manageStyleEnabled = manageMode || metadataManageMode;
-
   const startManagePointerToggle = (
     startNodeId: string,
     event: ReactPointerEvent<HTMLElement>,
@@ -598,6 +964,7 @@ function SidebarPanel({
     // Do selection toggle on pointer down so Shift+Click and drag toggling are stable.
     // Click handler only performs fallback toggle in manage styles; navigation happens in non-manage styles.
     event.preventDefault();
+    onSelectNode(startNodeId);
     suppressManageClickRef.current = true;
     onToggleManageNode(startNodeId, event.shiftKey);
 
@@ -682,6 +1049,26 @@ function SidebarPanel({
     : t("a11y.sidebar.collapseImageParents");
   const previousImageParentLabel = t("a11y.sidebar.previousImageParent");
   const nextImageParentLabel = t("a11y.sidebar.nextImageParent");
+  const parentJumpModeEnabled =
+    mode === "image" || mode === "video" || mode === "music";
+  const allTargetParentsCollapsed =
+    mode === "image"
+      ? allImagePackageParentsCollapsed
+      : mode === "video"
+        ? allVideoParentsCollapsed
+        : allAudioParentsCollapsed;
+  const targetParentNodeIds =
+    mode === "image"
+      ? imagePackageParentNodeIds
+      : mode === "video"
+        ? videoParentNodeIds
+        : audioParentNodeIds;
+  const targetParentNavigation =
+    mode === "image"
+      ? imageParentNavigation
+      : mode === "video"
+        ? videoParentNavigation
+        : audioParentNavigation;
 
   const visibleSidebarRows = useMemo(() => {
     const rows: VisibleSidebarRow[] = [];
@@ -808,7 +1195,7 @@ function SidebarPanel({
     if (rowBottom > viewBottom) {
       container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
     }
-  }, [estimatedRowHeight, selectedSidebarNodeId, visibleSidebarRows]);
+  }, [estimatedRowHeight, manageStyleEnabled, selectedSidebarNodeId, visibleSidebarRows]);
 
   const renderRow = ({ node, depth }: VisibleSidebarRow): ReactElement => {
     const isFolder = node.kind === "folder";
@@ -891,6 +1278,7 @@ function SidebarPanel({
             }
             onClick={(event) => {
               if (manageStyleEnabled) {
+                onSelectNode(node.id);
                 if (suppressManageClickRef.current) {
                   suppressManageClickRef.current = false;
                 } else {
@@ -1057,32 +1445,44 @@ function SidebarPanel({
           ) : null}
 
           {showRootToggle ? (
-            mode === "image" ? (
+            parentJumpModeEnabled ? (
               <button
                 className="sidebar-head-icon-btn"
                 data-slot="fg-sidebar-toolbar-collapse-all"
                 type="button"
                 aria-label={collapseImageParentsLabel}
-                title={allImagePackageParentsCollapsed ? t("tip.sidebar.expandImageParents") : t("tip.sidebar.collapseImageParents")}
-                disabled={imagePackageParentNodeIds.length === 0}
-                onClick={toggleCollapseImagePackageParentNodes}
+                title={allTargetParentsCollapsed ? t("tip.sidebar.expandImageParents") : t("tip.sidebar.collapseImageParents")}
+                disabled={targetParentNodeIds.length === 0}
+                onClick={
+                  mode === "image"
+                    ? toggleCollapseImagePackageParentNodes
+                    : mode === "video"
+                      ? toggleCollapseVideoParentNodes
+                      : toggleCollapseAudioParentNodes
+                }
               >
-                <MainUiIcon name={allImagePackageParentsCollapsed ? "expand" : "collapse"} />
+                <MainUiIcon name={allTargetParentsCollapsed ? "expand" : "collapse"} />
               </button>
             ) : null
           ) : null}
 
           {showRootToggle ? (
-            mode === "image" ? (
+            parentJumpModeEnabled ? (
               <button
                 className="sidebar-head-icon-btn"
                 data-slot="fg-sidebar-toolbar-prev-image-parent"
                 type="button"
                 aria-label={previousImageParentLabel}
                 title={t("tip.sidebar.previousImageParent")}
-                disabled={!imageParentNavigation.previousNodeId}
+                disabled={!targetParentNavigation.previousNodeId}
                 onClick={() => {
-                  jumpToImageParentNode(imageParentNavigation.previousNodeId);
+                  if (mode === "image") {
+                    jumpToImageParentNode(targetParentNavigation.previousNodeId);
+                  } else if (mode === "video") {
+                    jumpToVideoParentNode(targetParentNavigation.previousNodeId);
+                  } else {
+                    jumpToAudioParentNode(targetParentNavigation.previousNodeId);
+                  }
                 }}
               >
                 <MainUiIcon name="prev" />
@@ -1091,16 +1491,22 @@ function SidebarPanel({
           ) : null}
 
           {showRootToggle ? (
-            mode === "image" ? (
+            parentJumpModeEnabled ? (
               <button
                 className="sidebar-head-icon-btn"
                 data-slot="fg-sidebar-toolbar-next-image-parent"
                 type="button"
                 aria-label={nextImageParentLabel}
                 title={t("tip.sidebar.nextImageParent")}
-                disabled={!imageParentNavigation.nextNodeId}
+                disabled={!targetParentNavigation.nextNodeId}
                 onClick={() => {
-                  jumpToImageParentNode(imageParentNavigation.nextNodeId);
+                  if (mode === "image") {
+                    jumpToImageParentNode(targetParentNavigation.nextNodeId);
+                  } else if (mode === "video") {
+                    jumpToVideoParentNode(targetParentNavigation.nextNodeId);
+                  } else {
+                    jumpToAudioParentNode(targetParentNavigation.nextNodeId);
+                  }
                 }}
               >
                 <MainUiIcon name="next" />

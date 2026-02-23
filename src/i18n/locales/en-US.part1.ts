@@ -711,6 +711,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.sidebar.renameDialogModeSingle": "Single",
   "ui.sidebar.renameDialogReplaceFromPlaceholder": "Replace from",
   "ui.sidebar.renameDialogReplaceToPlaceholder": "Replace to",
+  "ui.sidebar.renameDialogApplyFromSourceLabel": "Use source",
   "ui.sidebar.renameDialogNumberBasePlaceholder": "Base name",
   "ui.sidebar.renameDialogNumberStartPlaceholder": "Start",
   "ui.sidebar.renameDialogNumberStepPlaceholder": "Step",

@@ -62,6 +62,7 @@ interface SidebarRenameDialogInput {
   onRemoveTailChange: (value: string) => void
   onMetadataTemplateChange: (value: string) => void
   onRefreshPreview: () => void
+  onUseSourceNameAsReplaceFrom: (value: string) => void
   onCancel: () => void
   onConfirm: () => Promise<void>
 }
@@ -198,6 +199,7 @@ export function useAppShellProps({
     removeEdgesHint: t('ui.sidebar.renameDialogRemoveEdgesHint'),
     metadataTemplatePlaceholder: t('ui.sidebar.renameDialogMetadataTemplatePlaceholder'),
     previewLabel: t('ui.sidebar.renameDialogPreviewLabel'),
+    applyFromSourceLabel: t('ui.sidebar.renameDialogApplyFromSourceLabel'),
     previewSummaryText:
       sidebarRenameDialogParams.previewRows.length > 0
         ? (() => {
@@ -215,6 +217,7 @@ export function useAppShellProps({
         : null,
     confirmLabel: t('ui.common.confirm'),
     cancelLabel: t('ui.common.cancel'),
+    closeLabel: t('ui.common.close'),
     value: sidebarRenameDialogParams.value,
     replaceFrom: sidebarRenameDialogParams.replaceFrom,
     replaceTo: sidebarRenameDialogParams.replaceTo,
@@ -243,6 +246,7 @@ export function useAppShellProps({
     onRemoveTailChange: sidebarRenameDialogParams.onRemoveTailChange,
     onMetadataTemplateChange: sidebarRenameDialogParams.onMetadataTemplateChange,
     onRefreshPreview: sidebarRenameDialogParams.onRefreshPreview,
+    onUseSourceNameAsReplaceFrom: sidebarRenameDialogParams.onUseSourceNameAsReplaceFrom,
     onCancel: sidebarRenameDialogParams.onCancel,
     onConfirm: () => {
       void sidebarRenameDialogParams.onConfirm()

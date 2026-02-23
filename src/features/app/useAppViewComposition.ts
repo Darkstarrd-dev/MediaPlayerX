@@ -435,8 +435,46 @@ export function useAppViewComposition({
       try {
         const response = await displayState.backendWrite.renameItems(request)
         if (response.failed.length === 0 && response.renamed_count > 0) {
+          const renamedNodeIdMap = new Map<string, string>()
+          for (const item of response.results) {
+            if (item.target.kind !== 'sidebar-node') {
+              continue
+            }
+            const separatorIndex = item.target.node_id.indexOf(':')
+            if (separatorIndex <= 0) {
+              continue
+            }
+            const kind = item.target.node_id.slice(0, separatorIndex)
+            const normalizedTargetPath = item.target_path.replace(/\\/g, '/')
+            renamedNodeIdMap.set(item.target.node_id, `${kind}:${normalizedTargetPath}`)
+          }
+
+          if (renamedNodeIdMap.size > 0) {
+            setSidebarRenameTargetNodeIds((previous) => previous.map((nodeId) => renamedNodeIdMap.get(nodeId) ?? nodeId))
+            setSidebarRenameTargetNodeId((previous) => (previous ? (renamedNodeIdMap.get(previous) ?? previous) : previous))
+            if (selectedSidebarNodeId) {
+              const nextSelectedNodeId = renamedNodeIdMap.get(selectedSidebarNodeId)
+              if (nextSelectedNodeId) {
+                sessionState.setSelectedSidebarNodeId(nextSelectedNodeId)
+              }
+            }
+          }
+
           setManageOperationHint(t('ui.manage.hint.renameSuccess'))
-          closeSidebarRenameDialog()
+          const executedRows = buildRenamePreviewRows(response, request.targets)
+          setSidebarRenamePreviewRows(executedRows.map((row) => {
+            if (row.reason && row.reason !== 'unchanged') {
+              return row
+            }
+            return {
+              ...row,
+              sourceName: row.targetName,
+              reason: 'unchanged',
+            }
+          }))
+          setSidebarRenameReplaceFrom('')
+          setSidebarRenameReplaceTo('')
+          setSidebarRenameError(null)
         } else {
           const failedReason = response.failed[0]?.reason ?? t('ui.manage.hint.operationFailedUnknownReason')
           const failedMessage = t('ui.manage.hint.renameFailed', { message: failedReason })
@@ -490,10 +528,15 @@ export function useAppViewComposition({
         if (kind && nextPath) {
           const nextNodeId = `${kind}:${nextPath}`
           sessionState.setSelectedSidebarNodeId(nextNodeId)
+          setSidebarRenameTargetNodeId(nextNodeId)
+          setSidebarRenameTargetNodeIds([nextNodeId])
           requestAnimationFrame(() => readNavigationState.ensureSidebarNodeVisible(nextNodeId))
         }
         setManageOperationHint(t('ui.manage.hint.renameSuccess'))
-        closeSidebarRenameDialog()
+        setSidebarRenameReplaceFrom('')
+        setSidebarRenameReplaceTo('')
+        setSidebarRenameDraft(targetName)
+        setSidebarRenameError(null)
         return
       }
 
@@ -519,6 +562,12 @@ export function useAppViewComposition({
     readNavigationState,
     sessionState,
     setManageOperationHint,
+    selectedSidebarNodeId,
+    setSidebarRenameDraft,
+    setSidebarRenameError,
+    setSidebarRenamePreviewRows,
+    setSidebarRenameReplaceFrom,
+    setSidebarRenameReplaceTo,
     sidebarRenameDraft,
     sidebarRenameMode,
     sidebarRenameTargetNodeId,
@@ -673,6 +722,7 @@ export function useAppViewComposition({
       onRefreshPreview: () => {
         void refreshSidebarRenamePreview()
       },
+      onUseSourceNameAsReplaceFrom: setSidebarRenameReplaceFrom,
       onCancel: closeSidebarRenameDialog,
       onConfirm: confirmSidebarRename,
     },

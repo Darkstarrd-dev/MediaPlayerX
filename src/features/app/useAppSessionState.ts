@@ -4,6 +4,36 @@ import type { AudioItem, BrowserMode, ImagePackage, MusicLoopMode, VectorCandida
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03
 
+export interface ImageConvertAdjustProfile {
+  mode: 'basic' | 'levels' | 'curve'
+  brightness: number
+  contrast: number
+  level_input_black: number
+  level_input_white: number
+  level_gamma: number
+  curve_shadow_x: number
+  curve_midtone_x: number
+  curve_highlight_x: number
+  curve_shadow: number
+  curve_midtone: number
+  curve_highlight: number
+}
+
+const DEFAULT_IMAGE_CONVERT_ADJUST_PROFILE: ImageConvertAdjustProfile = {
+  mode: 'basic',
+  brightness: 0,
+  contrast: 0,
+  level_input_black: 0,
+  level_input_white: 255,
+  level_gamma: 1,
+  curve_shadow_x: 64,
+  curve_midtone_x: 128,
+  curve_highlight_x: 192,
+  curve_shadow: 0,
+  curve_midtone: 0,
+  curve_highlight: 0,
+}
+
 interface UseAppSessionStateParams {
   imageSources: ImagePackage[]
   audios: AudioItem[]
@@ -72,10 +102,13 @@ export function useAppSessionState({
   )
   const [imageConvertScale, setImageConvertScale] = useState(1)
   const [imageConvertLongestEdgePx, setImageConvertLongestEdgePx] = useState<number | null>(null)
+  const [imageConvertAdjustProfile, setImageConvertAdjustProfile] = useState<ImageConvertAdjustProfile>(DEFAULT_IMAGE_CONVERT_ADJUST_PROFILE)
   const [imageConvertFormat, setImageConvertFormat] = useState<'webp' | 'jpeg' | 'png' | 'avif'>('webp')
   const [imageConvertQuality, setImageConvertQuality] = useState(80)
   const [imageConvertPreviewMode, setImageConvertPreviewMode] = useState(false)
   const [imageConvertPreviewScale, setImageConvertPreviewScale] = useState(1)
+  const [imageConvertPreviewLongestEdgePx, setImageConvertPreviewLongestEdgePx] = useState<number | null>(null)
+  const [imageConvertPreviewAdjustProfile, setImageConvertPreviewAdjustProfile] = useState<ImageConvertAdjustProfile>(DEFAULT_IMAGE_CONVERT_ADJUST_PROFILE)
   const [imageConvertPreviewFormat, setImageConvertPreviewFormat] = useState<'webp' | 'jpeg' | 'png' | 'avif'>('webp')
   const [imageConvertPreviewQuality, setImageConvertPreviewQuality] = useState(80)
 
@@ -188,6 +221,8 @@ export function useAppSessionState({
     setImageConvertScale,
     imageConvertLongestEdgePx,
     setImageConvertLongestEdgePx,
+    imageConvertAdjustProfile,
+    setImageConvertAdjustProfile,
     imageConvertFormat,
     setImageConvertFormat,
     imageConvertQuality,
@@ -196,6 +231,10 @@ export function useAppSessionState({
     setImageConvertPreviewMode,
     imageConvertPreviewScale,
     setImageConvertPreviewScale,
+    imageConvertPreviewLongestEdgePx,
+    setImageConvertPreviewLongestEdgePx,
+    imageConvertPreviewAdjustProfile,
+    setImageConvertPreviewAdjustProfile,
     imageConvertPreviewFormat,
     setImageConvertPreviewFormat,
     imageConvertPreviewQuality,

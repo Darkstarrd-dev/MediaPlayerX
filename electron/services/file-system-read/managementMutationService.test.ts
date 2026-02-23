@@ -377,6 +377,53 @@ describe('ManagementMutationService.renameItems', () => {
     expect(harness.database.renameImageArchiveEntries).not.toHaveBeenCalled()
   })
 
+  it('replace 模式应可删除完整长片段（含符号与空格）', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-items-replace-long-'))
+    tempRoots.push(rootDir)
+
+    const sourcePath = path.join(rootDir, 'videos', '夏の初撮り - H動漫-裏番-線上看 - Hanime1.me.mp4')
+    await ensureFile(sourcePath)
+
+    const snapshot = createSnapshotForVideos([sourcePath])
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.renameItems({
+      targets: [{ kind: 'sidebar-node', node_id: 'video:夏の初撮り - H動漫-裏番-線上看 - Hanime1.me.mp4' }],
+      mode: 'replace',
+      replace_from: '- H動漫-裏番-線上看 - Hanime1.me',
+      replace_to: '',
+      fail_fast: false,
+      preview_only: true,
+    })
+
+    expect(response.failed).toEqual([])
+    expect(response.results).toHaveLength(1)
+    expect(response.results[0]?.target_name).toBe('夏の初撮り.mp4')
+  })
+
+  it('replace 模式未命中时应返回 replace-target-not-found', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-items-replace-no-match-'))
+    tempRoots.push(rootDir)
+
+    const sourcePath = path.join(rootDir, 'videos', '夏の初撮り - H動漫-裏番-線上看 - Hanime1.me.mp4')
+    await ensureFile(sourcePath)
+
+    const snapshot = createSnapshotForVideos([sourcePath])
+    const harness = createServiceHarness(rootDir, snapshot)
+
+    const response = await harness.service.renameItems({
+      targets: [{ kind: 'sidebar-node', node_id: 'video:夏の初撮り - H動漫-裏番-線上看 - Hanime1.me.mp4' }],
+      mode: 'replace',
+      replace_from: '- H動漫-裏番-線上看 - H1.me',
+      replace_to: '',
+      fail_fast: false,
+      preview_only: true,
+    })
+
+    expect(response.results).toHaveLength(1)
+    expect(response.results[0]?.reason).toBe('replace-target-not-found')
+  })
+
   it('应支持 archive-entry 改名并回写 zip 与数据库映射', async () => {
     const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mpx-manage-rename-items-zip-'))
     tempRoots.push(rootDir)

@@ -476,6 +476,10 @@ export function useAppEffects({
       return;
     }
 
+    if (manageMode) {
+      return;
+    }
+
     if (videosForSidebar.length === 0) {
       if (selectedVideoId !== "") {
         selectVideoFromBrowser("");
@@ -487,6 +491,7 @@ export function useAppEffects({
       selectVideoFromBrowser(videosForSidebar[0].id);
     }
   }, [
+    manageMode,
     mode,
     rootScopedVideoIds,
     selectVideoFromBrowser,
@@ -496,6 +501,10 @@ export function useAppEffects({
 
   useEffect(() => {
     if (mode !== "video") {
+      return;
+    }
+
+    if (manageMode) {
       return;
     }
 
@@ -520,6 +529,7 @@ export function useAppEffects({
       setSelectedSidebarNodeId(nextVideoNodeId);
     }
   }, [
+    manageMode,
     mode,
     selectedSidebarNodeId,
     selectedVideoId,
@@ -534,6 +544,10 @@ export function useAppEffects({
       return;
     }
 
+    if (manageMode) {
+      return;
+    }
+
     if (selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)) {
       return;
     }
@@ -545,6 +559,7 @@ export function useAppEffects({
     }
   }, [
     flatSidebarNodes,
+    manageMode,
     mode,
     selectedSidebarNodeId,
     selectedVideoId,
@@ -624,6 +639,7 @@ export function useAppEffects({
 
   useEffect(() => {
     if (
+      manageMode ||
       sidebarCollapsed ||
       sidebarFocus !== "sidebar" ||
       !selectedSidebarNodeId
@@ -633,18 +649,25 @@ export function useAppEffects({
     ensureSidebarNodeVisible(selectedSidebarNodeId);
   }, [
     ensureSidebarNodeVisible,
+    manageMode,
     selectedSidebarNodeId,
     sidebarCollapsed,
     sidebarFocus,
   ]);
 
   useEffect(() => {
-    if (!vectorResultsActive || sidebarCollapsed || !selectedSidebarNodeId) {
+    if (
+      manageMode ||
+      !vectorResultsActive ||
+      sidebarCollapsed ||
+      !selectedSidebarNodeId
+    ) {
       return;
     }
     ensureSidebarNodeVisible(selectedSidebarNodeId);
   }, [
     ensureSidebarNodeVisible,
+    manageMode,
     selectedSidebarNodeId,
     sidebarCollapsed,
     vectorResultsActive,
