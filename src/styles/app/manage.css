@@ -37,6 +37,12 @@
     0 0 0 4px var(--mpx-manage-select-ring);
 }
 
+:root[data-mpx-style^='soft-skeuomorphic'][data-mpx-palette='skeuomorphic-luxury-white'] .sidebar .sidebar-row.is-manage.is-selected .sidebar-bullet {
+  opacity: 1;
+  background: #8c939e;
+  box-shadow: none;
+}
+
 .manage-panel {
   background: var(--mpx-bg-muted);
   height: auto;

@@ -176,7 +176,7 @@
 }
 
 .metadata-image-caption {
-  border-top: 1px solid var(--mpx-border-1);
+  border-top: none;
   padding-top: 6px;
   color: var(--mpx-text-2);
   font-size: 12px;
