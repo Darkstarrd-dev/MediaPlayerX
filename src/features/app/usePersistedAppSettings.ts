@@ -39,7 +39,7 @@ export function toPersistedAppSettings(
     thumbnailGap: settings.thumbnailGap,
     showNamesOnly: settings.showNamesOnly,
     metadataCollapsed: settings.metadataCollapsed,
-    autoPlayEnabled: settings.autoPlayEnabled,
+    autoPlayEnabled: false,
     autoPlayInterval: settings.autoPlayInterval,
     searchField: settings.searchField,
     searchText: settings.searchText,
