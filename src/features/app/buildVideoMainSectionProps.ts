@@ -101,6 +101,7 @@ interface BuildVideoMainSectionPropsParams {
   bindVideoElement: (element: HTMLVideoElement | null) => void
   setSubtitleVisible: Dispatch<SetStateAction<boolean>>
   selectSubtitleById: (subtitleId: string) => Promise<void>
+  updateSettings: (patch: { sidebarFocus?: 'sidebar' | 'main' }) => void
 }
 
 export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsParams) {
@@ -181,6 +182,9 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     liveSubtitleText: params.liveSubtitleText,
     subtitleOverlayStyle: params.subtitleOverlayStyle,
     bindVideoElement: params.bindVideoElement,
+    onRequestMainFocus: () => {
+      params.updateSettings({ sidebarFocus: 'main' })
+    },
     onTogglePlay: () => {
       if (!params.focusedVideoId) {
         return

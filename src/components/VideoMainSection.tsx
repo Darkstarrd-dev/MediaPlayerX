@@ -71,6 +71,7 @@ interface VideoMainSectionProps {
   liveSubtitleText: string | null
   subtitleOverlayStyle: CSSProperties
   bindVideoElement: (element: HTMLVideoElement | null) => void
+  onRequestMainFocus: () => void
   fullscreenActive: boolean
   coverImageUrl: string | null
   focusedVideo: VideoItem | null
@@ -159,6 +160,7 @@ function VideoMainSection({
   liveSubtitleText,
   subtitleOverlayStyle,
   bindVideoElement,
+  onRequestMainFocus,
   fullscreenActive,
   coverImageUrl,
   focusedVideo,
@@ -538,7 +540,11 @@ function VideoMainSection({
         )}
       </div>
 
-      <div className="video-preview" data-slot="fg-main-content-video-preview">
+      <div
+        className="video-preview"
+        data-slot="fg-main-content-video-preview"
+        onPointerDownCapture={onRequestMainFocus}
+      >
         <div className="video-screen" data-slot="fg-main-content-video-preview-screen" style={{ background: videoScreenBackground }}>
         {videoSourceUrl ? (
           <video
@@ -614,7 +620,11 @@ function VideoMainSection({
         </div>
       </div>
 
-      <div className="video-controls-shell" data-slot="fg-main-content-video-controls">
+      <div
+        className="video-controls-shell"
+        data-slot="fg-main-content-video-controls"
+        onPointerDownCapture={onRequestMainFocus}
+      >
         <div className="video-controls-progress" data-slot="fg-main-content-video-controls-progress">
           <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
           <SkeuoRunway

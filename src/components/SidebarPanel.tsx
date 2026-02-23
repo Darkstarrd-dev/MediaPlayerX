@@ -338,11 +338,20 @@ function SidebarPanel({
     manageDragStateRef.current = null;
   }, []);
 
+  const clearSidebarAlignRaf = useCallback(() => {
+    if (sidebarAlignRafIdRef.current === null) {
+      return;
+    }
+    cancelAnimationFrame(sidebarAlignRafIdRef.current);
+    sidebarAlignRafIdRef.current = null;
+  }, []);
+
   useEffect(
     () => () => {
       detachManageDragListeners();
+      clearSidebarAlignRaf();
     },
-    [detachManageDragListeners],
+    [clearSidebarAlignRaf, detachManageDragListeners],
   );
 
   const refreshOverflowState = useCallback((nodeId: string | null) => {
@@ -439,6 +448,9 @@ function SidebarPanel({
   const sidebarTreeRef = useRef<HTMLDivElement | null>(null);
   const [sidebarScrollTop, setSidebarScrollTop] = useState(0);
   const [sidebarViewportHeight, setSidebarViewportHeight] = useState(0);
+  const previousSelectedSidebarNodeIdRef = useRef<string | null>(null);
+  const previousSidebarFocusRef = useRef<"sidebar" | "main">(sidebarFocus);
+  const sidebarAlignRafIdRef = useRef<number | null>(null);
 
   const imageNodeById = useMemo(() => {
     if (mode !== "image") {
@@ -907,7 +919,7 @@ function SidebarPanel({
     scrollSidebarToNode,
   ]);
 
-  useEffect(() => {
+  const expandSelectedSidebarNodeAncestors = useCallback(() => {
     if (!selectedSidebarNodeId) {
       return;
     }
@@ -1167,37 +1179,96 @@ function SidebarPanel({
     };
   }, []);
 
-  useEffect(() => {
-    if (!selectedSidebarNodeId) {
-      return;
+  const alignSidebarNodeIntoView = useCallback((targetNodeId: string): boolean => {
+    const container = sidebarTreeRef.current;
+    if (!container) {
+      return true;
+    }
+
+    const renderedRow = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-sidebar-node-id]"),
+    ).find((row) => row.dataset.sidebarNodeId === targetNodeId);
+
+    if (renderedRow) {
+      const rowTop = renderedRow.offsetTop;
+      const rowBottom = rowTop + renderedRow.offsetHeight;
+      const viewTop = container.scrollTop;
+      const viewBottom = viewTop + container.clientHeight;
+
+      if (rowTop < viewTop) {
+        container.scrollTop = Math.max(0, rowTop - 4);
+      } else if (rowBottom > viewBottom) {
+        container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
+      }
+      return true;
     }
 
     const targetIndex = visibleSidebarRows.findIndex(
-      (row) => row.node.id === selectedSidebarNodeId,
+      (row) => row.node.id === targetNodeId,
     );
     if (targetIndex < 0) {
-      return;
+      return true;
     }
 
-    const container = sidebarTreeRef.current;
-    if (!container) {
-      return;
-    }
-
-    const rowTop = targetIndex * estimatedRowHeight;
-    const rowBottom = rowTop + estimatedRowHeight;
+    const estimatedAlignRowHeight = Math.max(34, estimatedRowHeight);
+    const rowTop = targetIndex * estimatedAlignRowHeight;
+    const rowBottom = rowTop + estimatedAlignRowHeight;
     const viewTop = container.scrollTop;
     const viewBottom = viewTop + container.clientHeight;
 
     if (rowTop < viewTop) {
       container.scrollTop = Math.max(0, rowTop - 4);
+    } else if (rowBottom > viewBottom) {
+      container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
+    }
+
+    return false;
+  }, [estimatedRowHeight, visibleSidebarRows]);
+
+  const alignSidebarNodeIntoViewWithRetry = useCallback((targetNodeId: string) => {
+    clearSidebarAlignRaf();
+    let frame = 0;
+    const maxFrames = 6;
+
+    const tryAlign = () => {
+      const aligned = alignSidebarNodeIntoView(targetNodeId);
+      if (aligned || frame >= maxFrames) {
+        sidebarAlignRafIdRef.current = null;
+        return;
+      }
+      frame += 1;
+      sidebarAlignRafIdRef.current = requestAnimationFrame(tryAlign);
+    };
+
+    tryAlign();
+  }, [alignSidebarNodeIntoView, clearSidebarAlignRaf]);
+
+  useEffect(() => {
+    const previousSelectedSidebarNodeId = previousSelectedSidebarNodeIdRef.current;
+    const previousSidebarFocus = previousSidebarFocusRef.current;
+    previousSelectedSidebarNodeIdRef.current = selectedSidebarNodeId;
+    previousSidebarFocusRef.current = sidebarFocus;
+
+    if (!selectedSidebarNodeId) {
       return;
     }
 
-    if (rowBottom > viewBottom) {
-      container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
+    const selectedNodeChanged = selectedSidebarNodeId !== previousSelectedSidebarNodeId;
+    const leftSidebarFocus =
+      previousSidebarFocus === "sidebar" && sidebarFocus === "main";
+
+    if (!selectedNodeChanged && !leftSidebarFocus) {
+      return;
     }
-  }, [estimatedRowHeight, manageStyleEnabled, selectedSidebarNodeId, visibleSidebarRows]);
+
+    expandSelectedSidebarNodeAncestors();
+    alignSidebarNodeIntoViewWithRetry(selectedSidebarNodeId);
+  }, [
+    alignSidebarNodeIntoViewWithRetry,
+    expandSelectedSidebarNodeAncestors,
+    selectedSidebarNodeId,
+    sidebarFocus,
+  ]);
 
   const renderRow = ({ node, depth }: VisibleSidebarRow): ReactElement => {
     const isFolder = node.kind === "folder";

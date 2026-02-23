@@ -1079,6 +1079,7 @@ export function useAppWorkspaceProps({
     liveSubtitleText,
     subtitleOverlayStyle,
     bindVideoElement: bindMainVideoElement,
+    updateSettings: appSettings.updateSettings,
     setSubtitleVisible,
     selectSubtitleById,
     onSubtitleCleanupSaved: refreshSubtitleOptions,

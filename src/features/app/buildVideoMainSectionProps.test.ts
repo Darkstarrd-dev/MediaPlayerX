@@ -117,6 +117,7 @@ describe('buildVideoMainSectionProps', () => {
       bindVideoElement: vi.fn(),
       setSubtitleVisible: vi.fn(),
       selectSubtitleById: vi.fn(async () => undefined),
+      updateSettings: vi.fn(),
     })
 
     expect(props.subtitleCleanupLlmEndpoint).toBe('http://127.0.0.1:1234/v1/chat/completions')
