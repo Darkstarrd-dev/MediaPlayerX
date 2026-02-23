@@ -778,6 +778,92 @@ describe("useReadOnlyDataAccess visibility and import throttle", () => {
     );
   });
 
+  it("archive-normalized 事件仅刷新 library，不刷新 sidebar/page/metadata", async () => {
+    const snapshot = createLibrarySnapshot();
+    const source = snapshot.image_packages[0];
+    if (!source) {
+      throw new Error("mock source not found");
+    }
+
+    const readLibrarySnapshot = vi.fn(async () => snapshot);
+    const readImageSidebarTree = vi.fn(
+      async (): Promise<ReadImageSidebarTreeResponseDto> => {
+        return createSidebarResponse(source);
+      },
+    );
+    const readImagePage = vi.fn(
+      async (
+        request: ReadImagePageRequestDto,
+      ): Promise<ReadImagePageResponseDto> => {
+        return {
+          source_id: source.id,
+          total_items: source.images.length,
+          page_index: request.page_index,
+          page_size: request.page_size,
+          refs: [{ package_id: source.id, image_index: 0 }],
+        };
+      },
+    );
+    const readImageMetadata = vi.fn(
+      async (): Promise<ReadImageMetadataResponseDto> => {
+        return {
+          package: source,
+          image: source.images[0],
+          grade: source.mock_grade,
+        };
+      },
+    );
+
+    let listener:
+      | ((payload: { reason: string; updated_at_ms: number }) => void)
+      | null = null;
+    const repository = createBaselineRepository({
+      getInitialLibrarySnapshot: () => null,
+      readLibrarySnapshot,
+      readImageSidebarTree,
+      readImagePage,
+      readImageMetadata,
+      onLibraryChanged: (registeredListener) => {
+        listener = registeredListener;
+        return () => {
+          if (listener === registeredListener) {
+            listener = null;
+          }
+        };
+      },
+    });
+
+    renderHook(
+      (params: ReturnType<typeof createHookParams>) =>
+        useReadOnlyDataAccess(params),
+      {
+        initialProps: createHookParams(repository),
+      },
+    );
+
+    await waitFor(() => {
+      expect(readLibrarySnapshot).toHaveBeenCalledTimes(1);
+      expect(readImageSidebarTree).toHaveBeenCalledTimes(1);
+      expect(readImagePage).toHaveBeenCalledTimes(1);
+      expect(readImageMetadata).toHaveBeenCalledTimes(1);
+    });
+
+    await act(async () => {
+      listener?.({
+        reason: "archive-normalized",
+        updated_at_ms: Date.now(),
+      });
+      await new Promise((resolve) => setTimeout(resolve, 220));
+    });
+
+    await waitFor(() => {
+      expect(readLibrarySnapshot.mock.calls.length).toBeGreaterThan(1);
+    });
+    expect(readImageSidebarTree).toHaveBeenCalledTimes(1);
+    expect(readImagePage).toHaveBeenCalledTimes(1);
+    expect(readImageMetadata).toHaveBeenCalledTimes(1);
+  });
+
   it("importRefreshThrottle=false 时 import-task-updated 触发全量刷新（恢复旧行为）", async () => {
     setBenchSettings({
       enabled: true,

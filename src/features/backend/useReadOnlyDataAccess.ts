@@ -625,6 +625,11 @@ export function useReadOnlyDataAccess({
         return
       }
 
+      if (payload.reason === 'archive-normalized') {
+        scheduleRefresh('library-only')
+        return
+      }
+
       scheduleRefresh('all')
     })
 
