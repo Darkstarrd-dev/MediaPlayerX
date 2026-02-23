@@ -73,7 +73,11 @@ function applyRemoveRangeUnion(
   const intervals: Array<{ start: number; endExclusive: number }> = [];
   const normalizedStart = Math.max(0, removeStart ?? 0);
   const normalizedEnd = Math.max(0, removeEnd ?? 0);
-  if (normalizedStart > 0 && normalizedEnd > 0 && normalizedEnd >= normalizedStart) {
+  if (
+    normalizedStart > 0 &&
+    normalizedEnd > 0 &&
+    normalizedEnd >= normalizedStart
+  ) {
     const startIndex = Math.min(length, normalizedStart - 1);
     const endExclusive = Math.min(length, normalizedEnd);
     if (endExclusive > startIndex) {
@@ -573,6 +577,7 @@ export class ManagementRenameService {
 
           let resolvedFileName = fileName;
           let suffixIndex = 2;
+          let collided = false;
           while (true) {
             const candidatePath = path.resolve(
               path.join(targetDir, resolvedFileName),
@@ -592,8 +597,22 @@ export class ManagementRenameService {
               plannedFileTargetByDir.set(targetDir, usedFileNames);
               break;
             }
+
+            collided = true;
+            if (failFast) {
+              failed.push({
+                target: operation.target,
+                reason: "duplicate destination",
+              });
+              break;
+            }
+
             resolvedFileName = withNumericSuffix(fileName, suffixIndex);
             suffixIndex += 1;
+          }
+
+          if (failFast && collided) {
+            continue;
           }
         }
 
@@ -613,10 +632,24 @@ export class ManagementRenameService {
             plannedArchiveTargetByGroup.get(groupKey) ?? new Set<string>();
           let resolvedEntryName = entryName;
           let suffixIndex = 2;
+          let collided = false;
           while (usedNames.has(resolvedEntryName.toLowerCase())) {
+            collided = true;
+            if (failFast) {
+              failed.push({
+                target: operation.target,
+                reason: "duplicate destination",
+              });
+              break;
+            }
             resolvedEntryName = withNumericSuffix(entryName, suffixIndex);
             suffixIndex += 1;
           }
+
+          if (failFast && collided) {
+            continue;
+          }
+
           usedNames.add(resolvedEntryName.toLowerCase());
           plannedArchiveTargetByGroup.set(groupKey, usedNames);
 
@@ -684,7 +717,8 @@ export class ManagementRenameService {
 
       const storedSourceName =
         sourceNameByTargetKey.get(toTargetKey(failedItem.target)) ?? null;
-      const fallbackSource = storedSourceName ??
+      const fallbackSource =
+        storedSourceName ??
         (failedItem.target.kind === "sidebar-node"
           ? failedItem.target.node_id
           : failedItem.target.kind === "image-item"
@@ -1028,17 +1062,21 @@ export class ManagementRenameService {
         for (const target of resolvedTargets) {
           const targetDir = path.dirname(target.targetPath);
           const fileName = path.basename(target.targetPath);
-          const usedNames = plannedTargetByDir.get(targetDir) ?? new Set<string>();
+          const usedNames =
+            plannedTargetByDir.get(targetDir) ?? new Set<string>();
 
           let resolvedFileName = fileName;
           let suffixIndex = 2;
           let collided = false;
           while (true) {
-            const candidatePath = path.resolve(path.join(targetDir, resolvedFileName));
+            const candidatePath = path.resolve(
+              path.join(targetDir, resolvedFileName),
+            );
             const candidateKey = normalizeAllowlistKey(candidatePath);
             const alreadyUsed = usedNames.has(resolvedFileName.toLowerCase());
             const exists = await fs.stat(candidatePath).catch(() => null);
-            const existsConflict = Boolean(exists) && !sourceKeySet.has(candidateKey);
+            const existsConflict =
+              Boolean(exists) && !sourceKeySet.has(candidateKey);
             if (!alreadyUsed && !existsConflict) {
               target.targetPath = candidatePath;
               target.targetName = resolvedFileName;
@@ -1063,16 +1101,20 @@ export class ManagementRenameService {
         for (const target of resolvedTargets) {
           const targetDir = path.dirname(target.targetPath);
           const fileName = path.basename(target.targetPath);
-          const usedNames = plannedTargetByDir.get(targetDir) ?? new Set<string>();
+          const usedNames =
+            plannedTargetByDir.get(targetDir) ?? new Set<string>();
 
           let resolvedFileName = fileName;
           let suffixIndex = 2;
           while (true) {
-            const candidatePath = path.resolve(path.join(targetDir, resolvedFileName));
+            const candidatePath = path.resolve(
+              path.join(targetDir, resolvedFileName),
+            );
             const candidateKey = normalizeAllowlistKey(candidatePath);
             const alreadyUsed = usedNames.has(resolvedFileName.toLowerCase());
             const exists = await fs.stat(candidatePath).catch(() => null);
-            const existsConflict = Boolean(exists) && !sourceKeySet.has(candidateKey);
+            const existsConflict =
+              Boolean(exists) && !sourceKeySet.has(candidateKey);
             if (!alreadyUsed && !existsConflict) {
               target.targetPath = candidatePath;
               target.targetName = resolvedFileName;
