@@ -18,6 +18,8 @@ docs/perf/runs
 docs/perf/ui-runs
 coverage/
 library
+library-bench/
+testdata/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
